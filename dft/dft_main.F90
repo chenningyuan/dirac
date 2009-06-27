@@ -13,6 +13,9 @@ module dft_main
 #ifdef MOD_AORESPONSE
   use aor_xc
 #endif
+#ifdef VAR_MPI
+  use dft_mpi
+#endif
 
   implicit none
 
@@ -339,12 +342,7 @@ contains
 
 #ifdef VAR_MPI
       if (is_parallel_calculation) then
-        call mpi_bcast(npoint,         &
-                       1,              &
-                       my_MPI_INTEGER, &
-                       mparid,         &
-                       mpi_comm_world, &
-                       ierr)
+        call dft_mpi_bcast(npoint)
       end if
 #endif
 
@@ -371,12 +369,7 @@ contains
 
 #ifdef VAR_MPI
         if (is_parallel_calculation) then
-          call mpi_bcast(ibatch,         &
-                         1,              &
-                         my_MPI_INTEGER, &
-                         mparid,         &
-                         mpi_comm_world, &
-                         ierr)
+          call dft_mpi_bcast(ibatch)
 
           nodesall = nodes + 1
 
@@ -1177,8 +1170,7 @@ contains
       end if
 
 !     sync nxcmat
-      call mpi_bcast(nxcmat, &
-     &               1, my_MPI_INTEGER, mparid, mpi_comm_world, ierr)
+      call dft_mpi_bcast(nxcmat)
 
 !     sync various parameters
       call sync_dft_cfg()
@@ -1201,16 +1193,14 @@ contains
 ! 
 !***********************************************************************
       real(8) :: DMAT(nr_ao_total, nr_ao_total),DTRMAT(*), &
-     &          DMAT_RESP_AO(*),DMAT_OUTER_AO(*)
+     &          DMAT_RESP_AO(nr_ao_total, nr_ao_total), &
+     &          DMAT_outer_AO(nr_ao_total, nr_ao_total)
       integer ::          ISYMOP(NXCMAT),IHRMOP(NXCMAT)
       type(dft_options_t) :: dft_options
       integer :: nxcmat, lmat, ierr
-      CALL MPI_BCAST(ISYMOP,NXCMAT,my_MPI_INTEGER,MPARID, &
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(IHRMOP,NXCMAT,my_MPI_INTEGER,MPARID, &
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(DMAT,nr_ao_total*nr_ao_total,MPI_DOUBLE_PRECISION,MPARID, &
-     &               MPI_COMM_WORLD,IERR)
+      call dft_mpi_bcast(isymop)
+      call dft_mpi_bcast(ihrmop)
+      call dft_mpi_bcast(dmat)
       IF(dft_options%lr.OR.dft_options%qr) THEN
         lmat = nr_ao_total*nr_ao_total*nr_qu*nxcmat
         CALL MPI_BCAST(DTRMAT,LMAT,MPI_DOUBLE_PRECISION,MPARID, &
@@ -1218,12 +1208,9 @@ contains
       ENDIF
 
       if (dft_cfg_saop_is_active) then
-        CALL MPI_BCAST(DMAT_OUTER_AO,nr_ao_total*nr_ao_total, &
-     &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
+        call dft_mpi_bcast(dmat_outer_ao)
         if (dft_cfg_saop_with_response_part) then
-!             SAOP with response part
-        CALL MPI_BCAST(DMAT_RESP_AO,nr_ao_total*nr_ao_total, &
-     &                 MPI_DOUBLE_PRECISION,MPARID,MPI_COMM_WORLD,IERR)
+          call dft_mpi_bcast(dmat_resp_ao)
         ENDIF
       ENDIF
       end subroutine

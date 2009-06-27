@@ -5,6 +5,10 @@ module dft_cb_interface
 !          outside this module to keep the interface clean
 !          hide as much as you can for public - it will save us lots of trouble in future
 
+#ifdef VAR_MPI
+  use dft_mpi
+#endif
+
   implicit none
 
   public init_dft_cb
@@ -129,189 +133,27 @@ contains
   end subroutine
 
 #ifdef VAR_MPI
-  subroutine my_pack_integer(pack_integer, ipos, ndim, array, i_am_the_master)
-
-!   ----------------------------------------------------------------------------
-    integer, intent(inout) :: pack_integer(:)
-    integer, intent(inout) :: ipos
-    integer, intent(in)    :: ndim
-    integer, intent(inout) :: array(ndim)
-    logical, intent(in)    :: i_am_the_master
-!   ----------------------------------------------------------------------------
-    integer                :: i
-!   ----------------------------------------------------------------------------
-
-    do i = 1, ndim
-      if (i_am_the_master) then
-        pack_integer(ipos + i - 1) = array(i)
-      else
-        array(i) = pack_integer(ipos + i - 1)
-      end if
-    end do
-    ipos = ipos + ndim
-
-  end subroutine
-
-  subroutine my_pack_double_precision(pack_double_precision, ipos, ndim, array, i_am_the_master)
-
-!   ----------------------------------------------------------------------------
-    real(8), intent(inout) :: pack_double_precision(:)
-    integer, intent(inout) :: ipos
-    integer, intent(in)    :: ndim
-    real(8), intent(inout) :: array(ndim)
-    logical, intent(in)    :: i_am_the_master
-!   ----------------------------------------------------------------------------
-    integer                :: i
-!   ----------------------------------------------------------------------------
-
-    do i = 1, ndim
-      if (i_am_the_master) then
-        pack_double_precision(ipos + i - 1) = array(i)
-      else
-        array(i) = pack_double_precision(ipos + i - 1)
-      end if
-    end do
-    ipos = ipos + ndim
-
-  end subroutine
-
   subroutine sync_dft_cb()
 
-#include "mpif.h"
-#include "infpar.h"
-
-!   ----------------------------------------------------------------------------
-!   ----------------------------------------------------------------------------
-    logical             :: i_am_the_master
-    integer             :: idx, ierr, ipos
-    logical             :: pack_logical(2)
-    real(8)             :: pack_double_precision(max_nr_shells*3*2)
-    integer             :: pack_integer(2158)
-!                                   1000000 is a phantasy number
-    integer, parameter  :: nbytes = 1000000
-    character           :: scratch(nbytes)
-!   ----------------------------------------------------------------------------
-
-    if (mytid == mparid) then
-      i_am_the_master = .true.
-    else
-      i_am_the_master = .false.
-    end if
-
-    if (i_am_the_master) then
-
-      pack_integer( 1) = nr_qu
-      pack_integer( 2) = nr_ao_total
-      pack_integer( 3) = nr_ao_large
-      pack_integer( 4) = nr_ao_small
-      pack_integer( 5) = nr_boson_sym
-      pack_integer( 6) = nr_ls_components
-      pack_integer( 7) = nr_open_shells
-      pack_integer( 8) = nr_electrons_orbital
-      pack_integer( 9) = nr_electrons_orbital_active
-      pack_integer(10) = print_unit
-      ipos = 11
-      call my_pack_integer(pack_integer, ipos, size(nr_density_blocks), nr_density_blocks, i_am_the_master)
-      call my_pack_integer(pack_integer, ipos, size(nr_ao            ), nr_ao            , i_am_the_master)
-      call my_pack_integer(pack_integer, ipos, size(st_ao            ), st_ao            , i_am_the_master)
-      call my_pack_integer(pack_integer, ipos, size(iq               ), iq               , i_am_the_master)
-      call my_pack_integer(pack_integer, ipos, size(dft_cb_pq_to_uq  ), dft_cb_pq_to_uq  , i_am_the_master)
-      call my_pack_integer(pack_integer, ipos, size(dft_cb_uq_to_pq  ), dft_cb_uq_to_pq  , i_am_the_master)
-
-      pack_logical(1) = is_gga_functional
-      pack_logical(2) = is_parallel_calculation
-
-      ipos = 1
-      call my_pack_double_precision(pack_double_precision, ipos, size(dft_cb_cent), dft_cb_cent, i_am_the_master)
-
-      idx = 1
-      call mpi_pack(pack_logical,                  &
-                    size(pack_logical),            &
-                    mpi_logical,                   &
-                    scratch,                       &
-                    nbytes,                        &
-                    idx,                           &
-                    mpi_comm_world,                &
-                    ierr)
-      call mpi_pack(pack_double_precision,         &
-                    size(pack_double_precision),   &
-                    mpi_double_precision,          &
-                    scratch,                       &
-                    nbytes,                        &
-                    idx,                           &
-                    mpi_comm_world,                &
-                    ierr)
-      call mpi_pack(pack_integer,                  &
-                    size(pack_integer),            &
-                    my_MPI_INTEGER,                &
-                    scratch,                       &
-                    nbytes,                        &
-                    idx,                           &
-                    mpi_comm_world,                &
-                    ierr)
-
-    end if
-
-    call mpi_bcast(scratch,                        &
-                   nbytes,                         &
-                   mpi_packed,                     &
-                   0,                              &
-                   mpi_comm_world,                 &
-                   ierr)
-
-    if (.not. i_am_the_master) then
-
-      idx = 1
-      call mpi_unpack(scratch,                     &
-                      nbytes,                      &
-                      idx,                         &
-                      pack_logical,                &
-                      size(pack_logical),          &
-                      mpi_logical,                 &
-                      mpi_comm_world,              &
-                      ierr)
-      call mpi_unpack(scratch,                     &
-                      nbytes,                      &
-                      idx,                         &
-                      pack_double_precision,       &
-                      size(pack_double_precision), &
-                      mpi_double_precision,        &
-                      mpi_comm_world,              &
-                      ierr)
-      call mpi_unpack(scratch,                     &
-                      nbytes,                      &
-                      idx,                         &
-                      pack_integer,                &
-                      size(pack_integer),          &
-                      my_MPI_INTEGER,              &
-                      mpi_comm_world,              &
-                      ierr)
-
-      nr_qu                       = pack_integer( 1)
-      nr_ao_total                 = pack_integer( 2)
-      nr_ao_large                 = pack_integer( 3)
-      nr_ao_small                 = pack_integer( 4)
-      nr_boson_sym                = pack_integer( 5)
-      nr_ls_components            = pack_integer( 6)
-      nr_open_shells              = pack_integer( 7)
-      nr_electrons_orbital        = pack_integer( 8)
-      nr_electrons_orbital_active = pack_integer( 9)
-      print_unit                  = pack_integer(10)
-      ipos = 11
-      call my_pack_integer(pack_integer, ipos, size(nr_density_blocks), nr_density_blocks, i_am_the_master)
-      call my_pack_integer(pack_integer, ipos, size(nr_ao            ), nr_ao            , i_am_the_master)
-      call my_pack_integer(pack_integer, ipos, size(st_ao            ), st_ao            , i_am_the_master)
-      call my_pack_integer(pack_integer, ipos, size(iq               ), iq               , i_am_the_master)
-      call my_pack_integer(pack_integer, ipos, size(dft_cb_pq_to_uq  ), dft_cb_pq_to_uq  , i_am_the_master)
-      call my_pack_integer(pack_integer, ipos, size(dft_cb_uq_to_pq  ), dft_cb_uq_to_pq  , i_am_the_master)
-
-      is_gga_functional       = pack_logical(1)
-      is_parallel_calculation = pack_logical(2)
-
-      ipos = 1
-      call my_pack_double_precision(pack_double_precision, ipos, size(dft_cb_cent), dft_cb_cent, i_am_the_master)
-
-    end if
+    call dft_mpi_bcast(nr_qu                      )
+    call dft_mpi_bcast(nr_ao_total                )
+    call dft_mpi_bcast(nr_ao_large                )
+    call dft_mpi_bcast(nr_ao_small                )
+    call dft_mpi_bcast(nr_boson_sym               )
+    call dft_mpi_bcast(nr_ls_components           )
+    call dft_mpi_bcast(nr_open_shells             )
+    call dft_mpi_bcast(nr_electrons_orbital       )
+    call dft_mpi_bcast(nr_electrons_orbital_active)
+    call dft_mpi_bcast(print_unit                 )
+    call dft_mpi_bcast(nr_density_blocks          )
+    call dft_mpi_bcast(nr_ao                      )
+    call dft_mpi_bcast(st_ao                      )
+    call dft_mpi_bcast(iq                         )
+    call dft_mpi_bcast(dft_cb_pq_to_uq            )
+    call dft_mpi_bcast(dft_cb_uq_to_pq            )
+    call dft_mpi_bcast(is_gga_functional          )
+    call dft_mpi_bcast(is_parallel_calculation    )
+    call dft_mpi_bcast(dft_cb_cent                )
 
   end subroutine
 #endif /* ifdef VAR_MPI */

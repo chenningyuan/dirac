@@ -4,38 +4,37 @@ module dft_mpi
 
 #ifdef VAR_MPI
   public dft_mpi_bcast
-#else
-  public dft_mpi_empty
-#endif
 
   private
 
-#ifdef VAR_MPI
   interface dft_mpi_bcast
-    module procedure dft_mpi_bcast_n
+    module procedure dft_mpi_bcast_i0
     module procedure dft_mpi_bcast_i1
     module procedure dft_mpi_bcast_i2
+    module procedure dft_mpi_bcast_i3
+    module procedure dft_mpi_bcast_i4
+    module procedure dft_mpi_bcast_r0
     module procedure dft_mpi_bcast_r1
     module procedure dft_mpi_bcast_r2
-    module procedure dft_mpi_bcast_l
+    module procedure dft_mpi_bcast_r3
+    module procedure dft_mpi_bcast_l0
+    module procedure dft_mpi_bcast_l1
   end interface
 
 #include "infpar.h"
 #include "mpif.h"
 
   integer :: ierr
-#endif
 
 contains
 
-#ifdef VAR_MPI
-  subroutine dft_mpi_bcast_n(n)
+  subroutine dft_mpi_bcast_i0(x)
 
 !   ----------------------------------------------------------------------------
-    integer :: n
+    integer :: x
 !   ----------------------------------------------------------------------------
 
-    call mpi_bcast(n, 1, my_MPI_INTEGER, mparid, mpi_comm_world, ierr)
+    call mpi_bcast(x, 1, my_MPI_INTEGER, mparid, mpi_comm_world, ierr)
 
   end subroutine
 
@@ -59,6 +58,36 @@ contains
 
   end subroutine
 
+  subroutine dft_mpi_bcast_i3(x)
+
+!   ----------------------------------------------------------------------------
+    integer :: x(:, :, :)
+!   ----------------------------------------------------------------------------
+
+    call mpi_bcast(x, size(x), my_MPI_INTEGER, mparid, mpi_comm_world, ierr)
+
+  end subroutine
+
+  subroutine dft_mpi_bcast_i4(x)
+
+!   ----------------------------------------------------------------------------
+    integer :: x(:, :, :, :)
+!   ----------------------------------------------------------------------------
+
+    call mpi_bcast(x, size(x), my_MPI_INTEGER, mparid, mpi_comm_world, ierr)
+
+  end subroutine
+
+  subroutine dft_mpi_bcast_r0(x)
+
+!   ----------------------------------------------------------------------------
+    real(8) :: x
+!   ----------------------------------------------------------------------------
+
+    call mpi_bcast(x, 1, mpi_double_precision, mparid, mpi_comm_world, ierr)
+
+  end subroutine
+
   subroutine dft_mpi_bcast_r1(x)
 
 !   ----------------------------------------------------------------------------
@@ -79,7 +108,27 @@ contains
 
   end subroutine
 
-  subroutine dft_mpi_bcast_l(x)
+  subroutine dft_mpi_bcast_r3(x)
+
+!   ----------------------------------------------------------------------------
+    real(8) :: x(:, :, :)
+!   ----------------------------------------------------------------------------
+
+    call mpi_bcast(x, size(x), mpi_double_precision, mparid, mpi_comm_world, ierr)
+
+  end subroutine
+
+  subroutine dft_mpi_bcast_l0(x)
+
+!   ----------------------------------------------------------------------------
+    logical :: x
+!   ----------------------------------------------------------------------------
+
+    call mpi_bcast(x, 1, mpi_logical, mparid, mpi_comm_world, ierr)
+
+  end subroutine
+
+  subroutine dft_mpi_bcast_l1(x)
 
 !   ----------------------------------------------------------------------------
     logical :: x(:)
@@ -89,10 +138,5 @@ contains
 
   end subroutine
 #endif /* ifdef VAR_MPI */
-
-#ifndef VAR_MPI */
-  subroutine dft_mpi_empty()
-  end subroutine
-#endif
 
 end module
