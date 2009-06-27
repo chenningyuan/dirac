@@ -1128,7 +1128,6 @@ C***********************************************************************
 C
 C     Loop over all irreps in molecule
 C
-      IFXYZ = IBTXOR(ISYMAX(3,1),ISYMAX(3,2))
       ISTRA = 1
       CALL DZERO(AAO,NBAST*NVEC)
       DO 100 IREPA = 0, MAXREP
@@ -1197,7 +1196,6 @@ C
 C
 C     Loop over all irreps in molecule
 C
-      IFXYZ = IBTXOR(ISYMAX(3,1),ISYMAX(3,2))
       CALL DZERO(AAO,NTBAS(0)*NVEC)
       DO 100 IREPA = 0, MAXREP
         DO IC = 1,2
@@ -1257,7 +1255,6 @@ C***********************************************************************
 #include "maxorb.h"
 #include "mxcent.h"
       DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
-      DIMENSION IR(2)
 #include "shells.h"
 #include "pincom.h"
 #include "symmet.h"
@@ -1267,7 +1264,6 @@ C***********************************************************************
 C
 C     Loop over all irreps in molecule
 C
-      IFXYZ = IBTXOR(ISYMAX(3,1),ISYMAX(3,2))
       ISTRA = 1
       CALL DZERO(ASO,NBAST*NVEC)
       DO 100 IREPA = 0, MAXREP
@@ -1320,7 +1316,6 @@ C***********************************************************************
 #include "maxorb.h"
 #include "mxcent.h"
       DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
-      DIMENSION IR(2)
 #include "shells.h"
 #include "pincom.h"
 #include "symmet.h"
@@ -1330,7 +1325,6 @@ C***********************************************************************
 C
 C     Loop over all irreps in molecule
 C
-      IFXYZ = IBTXOR(ISYMAX(3,1),ISYMAX(3,2))
       ISTRA = 1
       CALL DZERO(ASO,NBAST*NVEC)
       DO 100 IREPA = 0, MAXREP
