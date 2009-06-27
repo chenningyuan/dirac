@@ -478,7 +478,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       use dft_cfg
       use dft_temp
-      use dft_ao
 
 #include "implicit.h"
 #include "priunit.h"
@@ -500,10 +499,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &            NCNT(NBAST), BUF(NBAST,4),
      &            VX(DERVS1)
       DIMENSION RHG(3)
-
       nder = 0
       if (dft_temp_need_gao1) nder = 1
-
 
       DO 300 IPNT = 1, NPOINT
          WGHT = WEIGHT(IPNT)
@@ -511,9 +508,11 @@ C
 C       AOs
 C       ===
 C
-        CALL dft_GETSOS(GAO,GAO1,
+        call getsos(gao,gao1,dummy,dummy,
+     &               ncnt,
      &              CORX(IPNT),CORY(IPNT),CORZ(IPNT),
-     &              BUF,NBAST,NDER)
+     &               BUF,
+     &               nbast,nder,.false.,0)
 C
 C       Test accuracy of numerical integration
 C       ======================================

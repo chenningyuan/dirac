@@ -4,8 +4,9 @@ module dft_main
   use dft_cfg
   use dft_temp
   use dft_ao_in_mem
-  use dft_ao
+  use dft_ao_new
   use dft_density
+  use dft_basis_info
 ! if you really have to use common blocks, then
 ! please put them in dft_cb_interface
   use dft_cb_interface
@@ -16,15 +17,9 @@ module dft_main
   implicit none
 
   public dftexc
-  public dftdrv
-  public dftdr1
   public reaqua
 #ifdef VAR_MPI
-  public dftres
-  public dftprd
   public dftnod
-  public dftpar_init1
-  public dftpar_init2
 #endif
 
   private
@@ -38,6 +33,11 @@ module dft_main
   integer    :: istat(mpi_status_size)
 #endif /* ifdef INT_STAR8 */
 #endif /* ifdef VAR_MPI */
+
+#include "functionals.h"
+#ifdef MOD_AUTODIFF
+#include "../autodiff/xc_fortran_interface.h"
+#endif
 
 contains
 
@@ -193,6 +193,7 @@ contains
      &                    dmat, dmat_perturbed, dmat_saop_resp, dmat_saop_outer)
       end if
 #endif /* ifdef VAR_MPI */
+      call init_dft_basis_info(is_parallel_calculation)
 
 !     integrate
       call dftdrv(dmat,              &
@@ -305,7 +306,7 @@ contains
       if (dft_temp_need_gao1) then
         call alloc(gao1, ndim*3)
       end if
-      call alloc(buffer, ndim)
+      call alloc(buffer, ndim*4)
 
 
     dft_temp_nr_electrons = 0.0d0
@@ -599,10 +600,6 @@ contains
 !
 !***********************************************************************
 
-#include "functionals.h"
-#ifdef MOD_AUTODIFF
-#include "../autodiff/xc_fortran_interface.h"
-#endif
 
       integer :: npoint, iprint, nxcmat, ibatch, ioff, i, itimes
       logical :: gga_qr
@@ -1072,86 +1069,6 @@ contains
 
       end subroutine
 
-
-
-
-      SUBROUTINE DFTPRD
-!
-!     Communicate DIRAC common blocks for parallell DFT-calculation
-!     Communicate arguments received from main program
-!
-!     Common blocks initialized : dcborb, dcbbas, dgroup, 
-!                                 symmet
-!
-!     Based on traprd, Written by T. Saue 2000
-!
-!***********************************************************************
-!
-#if defined (VAR_MPI)
-      INCLUDE 'mpif.h'
-#endif
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "dcbbas.h"
-#include "dgroup.h"
-#include "symmet.h"
-#include "infpar.h"
-#include "shells.h"
-#include "nuclei.h"
-!
-#if defined (VAR_MPI)
-
-         integer :: ierr
-         integer :: nsaue
-         integer :: numelm
-         integer :: icommsize
-
-!TROND: Temporary fix !!!
-      NSAUE=3*NUCIND
-      CALL MPI_BCAST(CORD,NSAUE,MPI_DOUBLE_PRECISION,MPARID, &
-     &               MPI_COMM_WORLD,IERR)
-      NSAUE=3*MXSHEL
-      CALL MPI_BCAST(CENT,NSAUE,MPI_DOUBLE_PRECISION,MPARID, &
-     &               MPI_COMM_WORLD,IERR)
-!
-!     ********************************
-!     ****** Send COMMON blocks ******
-!     ********************************
-!
-!  
-!.....dcbbas.h for VTBUBS
-      IF(MYTID.EQ.MPARID) THEN
-        NUMELM = ICOMMSIZE(I1_DCBBAS,I2_DCBBAS)
-      ENDIF
-      CALL MPI_BCAST(NUMELM,1,my_MPI_INTEGER,MPARID, &
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(I1_DCBBAS,NUMELM,my_MPI_INTEGER,MPARID, &
-     &               MPI_COMM_WORLD,IERR)
-!.....dgroup.h for VTBUBS
-      IF(MYTID.EQ.MPARID) THEN
-        NUMELM = ICOMMSIZE(I1_DGROUP,I2_DGROUP)
-      ENDIF
-      CALL MPI_BCAST(NUMELM,1,my_MPI_INTEGER,MPARID, &
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(I1_DGROUP,NUMELM,my_MPI_INTEGER,MPARID, &
-     &               MPI_COMM_WORLD,IERR)
-!.....symmet.h
-      IF(MYTID.EQ.MPARID) THEN
-        NUMELM = ICOMMSIZE(I1_SYMMTI,I2_SYMMTI)
-      ENDIF
-      CALL MPI_BCAST(NUMELM,1,my_MPI_INTEGER,MPARID, &
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(I1_SYMMTI,NUMELM,my_MPI_INTEGER,MPARID, &
-     &               MPI_COMM_WORLD,IERR)
-      NUMELM = NSYMMTR
-      CALL MPI_BCAST(NUMELM,1,my_MPI_INTEGER,MPARID, &
-     &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(FMULT,NUMELM,MPI_DOUBLE_PRECISION,MPARID, &
-     &               MPI_COMM_WORLD,IERR)
-#endif
-!
-      end subroutine
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DFTNOD()
 !***********************************************************************
@@ -1215,6 +1132,7 @@ contains
       CALL DFTPAR_INIT2(dft_options,NXCMAT, ksym, khrm, &
      &                  KDEN,KDTR, &
      &                  KDMAT_RESP_AO,KDMAT_OUTER_AO)
+      call init_dft_basis_info(.true.)
 !.....Initialization
       IPRINT = 0
 !.....Integrate
@@ -1261,9 +1179,6 @@ contains
 !     sync nxcmat
       call mpi_bcast(nxcmat, &
      &               1, my_MPI_INTEGER, mparid, mpi_comm_world, ierr)
-
-!     sync various common blocks
-      call dftprd()
 
 !     sync various parameters
       call sync_dft_cfg()
