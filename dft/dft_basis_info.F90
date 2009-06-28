@@ -33,6 +33,8 @@ module dft_basis_info
   integer, public, allocatable :: dft_ipind(:)
   real(8), public, allocatable :: dft_pt(:)
   integer, public, allocatable :: dft_kstrt(:)
+  real(8), public, allocatable :: dft_cent(:, :, :)
+  integer, public              :: dft_isymax(3, 2)
 
   real(8), public, allocatable :: dft_csp(:)
   integer, public, allocatable :: dft_ispadr(:)
@@ -40,10 +42,6 @@ module dft_basis_info
   integer, public, allocatable :: dft_icos(:, :)
   integer, public, allocatable :: dft_ibbas(:, :)
   integer, public, allocatable :: dft_nbbas(:, :)
-
-  real(8), public, allocatable :: shift_x(:)
-  real(8), public, allocatable :: shift_y(:)
-  real(8), public, allocatable :: shift_z(:)
 
   integer, public, allocatable :: l_exp(:)
   integer, public, allocatable :: m_exp(:)
@@ -105,10 +103,7 @@ contains
       call alloc(dft_ipind, mxcorb)
       allocate(dft_pt(0:7))
       call alloc(dft_kstrt, mxshel)
-
-      call alloc(shift_x, mxshel)
-      call alloc(shift_y, mxshel)
-      call alloc(shift_z, mxshel)
+      call alloc(dft_cent, mxshel, 3, 2)
 
       nr_cartesian_ao = 0
       do ishell = 1, mxshel
@@ -162,6 +157,8 @@ contains
       dft_isymao = isymao
       dft_pt     = pt
       dft_kstrt  = kstrt
+      dft_cent   = cent
+      dft_isymax = isymax
 
       dft_csp    = csp
       dft_ispadr = ispadr
@@ -211,14 +208,6 @@ contains
           end if
         end do
 
-        do isym = 0, maxopr
-          if (iand(isym, istbao(ishell)) == 0) then
-            shift_x(ishell) = pt(iand(isymax(1, 1), isym))*cent(ishell, 1, 1)
-            shift_y(ishell) = pt(iand(isymax(2, 1), isym))*cent(ishell, 2, 1)
-            shift_z(ishell) = pt(iand(isymax(3, 1), isym))*cent(ishell, 3, 1)
-          end if
-        end do
-
       end do
 
       dft_basis_info_set = .true.
@@ -255,6 +244,8 @@ contains
       call dft_mpi_bcast(dft_ipind                   )
       call dft_mpi_bcast(dft_pt                      )
       call dft_mpi_bcast(dft_kstrt                   )
+      call dft_mpi_bcast(dft_cent                    )
+      call dft_mpi_bcast(dft_isymax                  )
 
       call dft_mpi_bcast(dft_csp                     )
       call dft_mpi_bcast(dft_ispadr                  )
@@ -263,14 +254,9 @@ contains
       call dft_mpi_bcast(dft_ibbas                   )
       call dft_mpi_bcast(dft_nbbas                   )
 
-      call dft_mpi_bcast(shift_x                     )
-      call dft_mpi_bcast(shift_y                     )
-      call dft_mpi_bcast(shift_z                     )
-
       call dft_mpi_bcast(l_exp                       )
       call dft_mpi_bcast(m_exp                       )
       call dft_mpi_bcast(n_exp                       )
-      call dft_mpi_bcast(sbuffer                     )
 
       dft_basis_info_synced = .true.
 

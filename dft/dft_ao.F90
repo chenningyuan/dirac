@@ -93,7 +93,7 @@ contains
     integer, intent(in)    :: ndim
     integer, intent(in)    :: nder
 !   ----------------------------------------------------------------------------
-    integer                :: i, iend, ishell
+    integer                :: i, iend, ishell, isym
     real(8)                :: px, py, pz
 !   ----------------------------------------------------------------------------
 
@@ -104,27 +104,32 @@ contains
 !   expression using levy-leblond, in this case comment this out
     if (nr_ls_components .eq. 1) iend = dft_nr_large_shells
 
+    i = 1
     do ishell = 1, iend
+      do isym = 0, dft_maxopr
+        if (iand(isym, dft_istbao(ishell)) == 0) then
 
-      px = cx - shift_x(ishell)
-      py = cy - shift_y(ishell)
-      pz = cz - shift_z(ishell)
+          px = cx - dft_pt(iand(dft_isymax(1, 1), isym))*dft_cent(ishell, 1, 1)
+          py = cy - dft_pt(iand(dft_isymax(2, 1), isym))*dft_cent(ishell, 2, 1)
+          pz = cz - dft_pt(iand(dft_isymax(3, 1), isym))*dft_cent(ishell, 3, 1)
 
-      i = spherical_off(ishell) + 1
+          if (nder == 0) then
+            call get_gao(ishell, &
+                         gao(i), &
+                         px, py, pz)
+          else if (nder == 1) then
+            call get_gao1(ishell,     &
+                          gao(i),     &
+                          gao1(i, 1), &
+                          gao1(i, 2), &
+                          gao1(i, 3), &
+                          px, py, pz)
+          end if
 
-      if (nder == 0) then
-        call get_gao(ishell, &
-                     gao(i), &
-                     px, py, pz)
-      else if (nder == 1) then
-        call get_gao1(ishell,     &
-                      gao(i),     &
-                      gao1(i, 1), &
-                      gao1(i, 2), &
-                      gao1(i, 3), &
-                      px, py, pz)
-      end if
+          i = i + spherical_deg(ishell)
 
+        end if
+      end do
     end do
 
   end subroutine
@@ -409,12 +414,6 @@ contains
         mul = dft_istbao(ishell)
         n   = n_quantum_nr(ishell)
 
-        do isym = 0, dft_maxopr
-          if (iand(isym, mul) == 0) then
-            f  = dft_pt(iand(isym, ieor(irep, dft_isymao(n, nshell))))
-          endif
-        end do
-
         iao = dft_kstrt(ishell) + nshell
 
         icount = icount + 1
@@ -429,8 +428,17 @@ contains
 !       shift by difference boson sorted minus boson unsorted
         iso_bs = iso + dft_ibbas(irep, ic) - dft_icos(irep + 1, ic)
 
-        so(iso_bs) = so(iso_bs) + f*ao(iao)
+        do isym = 0, dft_maxopr
+          if (iand(isym, mul) == 0) then
 
+            f = dft_pt(iand(isym, ieor(irep, dft_isymao(n, nshell))))
+
+            so (iso_bs) = so (iso_bs) + f*ao (iao)
+
+            iao = iao + spherical_deg(ishell)
+
+          endif
+        end do
       end do
       i = i + nr_ao
     end do
@@ -467,12 +475,6 @@ contains
         mul = dft_istbao(ishell)
         n   = n_quantum_nr(ishell)
 
-        do isym = 0, dft_maxopr
-          if (iand(isym, mul) == 0) then
-            f  = dft_pt(iand(isym, ieor(irep, dft_isymao(n, nshell))))
-          endif
-        end do
-
         iao = dft_kstrt(ishell) + nshell
 
         icount = icount + 1
@@ -487,11 +489,20 @@ contains
 !       shift by difference boson sorted minus boson unsorted
         iso_bs = iso + dft_ibbas(irep, ic) - dft_icos(irep + 1, ic)
 
-        so (iso_bs) = so (iso_bs) + f*ao (iao)
-        sox(iso_bs) = sox(iso_bs) + f*aox(iao)
-        soy(iso_bs) = soy(iso_bs) + f*aoy(iao)
-        soz(iso_bs) = soz(iso_bs) + f*aoz(iao)
+        do isym = 0, dft_maxopr
+          if (iand(isym, mul) == 0) then
 
+            f = dft_pt(iand(isym, ieor(irep, dft_isymao(n, nshell))))
+
+            so (iso_bs) = so (iso_bs) + f*ao (iao)
+            sox(iso_bs) = sox(iso_bs) + f*aox(iao)
+            soy(iso_bs) = soy(iso_bs) + f*aoy(iao)
+            soz(iso_bs) = soz(iso_bs) + f*aoz(iao)
+
+            iao = iao + spherical_deg(ishell)
+
+          endif
+        end do
       end do
       i = i + nr_ao
     end do
