@@ -559,8 +559,8 @@ C
  6001 FORMAT(2X,I3,5X,2F20.15,F10.5)
  6002 FORMAT(3X,'MP2   =',F20.15/3X,'EMP2  =',F20.15/)
  6003 FORMAT(//3X,'NIT',10X,'ENERGY',20X,'RMS',7X,'T1-DIAGN')
- 6004 FORMAT(//' Requested convergence not reached in CCSD : RMS = ',
-     &F20.15)
+ 6004 FORMAT(//' WARNING: Requested convergence not reached in CCSD :',
+     &         'RMS = ',F20.15)
  6071 FORMAT(//,'  CCSD results',/)
  6072 FORMAT(' SCF energy :',T40,F25.15)
  6073 FORMAT(' MP2 correlation energy :',T40,F25.15)
