@@ -82,7 +82,7 @@ call FLSHFO(LUPRI)
 end subroutine print_HSFS_Dirac_info
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-subroutine HSFSINP(WORD,reset)
+subroutine HSFSINP(WORD)
 !-----------------------------------------------------------------------------
 !
 !  Read parameters for the external HSFS programs, which are passed 
@@ -98,40 +98,27 @@ subroutine HSFSINP(WORD,reset)
 #include "implicit.h"
 #include "priunit.h"
 
-!CHARACTER(len=7), INTENT(IN) :: WORDIN
+CHARACTER(len=7), INTENT(INOUT) :: WORD
 
-Logical, save :: set = .false.
-Logical, intent(in) :: reset
+!Logical, save :: set = .false.
+!Logical, intent(in) :: reset
 
 Logical :: PROPER_POS
 
 CHARACTER:: PROMPT*1=' ',PROMPT_M*1=' ' 
-CHARACTER(len=7) :: WORD, METHOD, KEYWORD=' '
+CHARACTER(len=7) :: METHOD, KEYWORD=' '
 
 ! ... nice F90 version 
-character(len=7) :: TABLE_TEMP, TABLE(10) =  (/'.PRINT ','.NACT  ','.NCORE ','.NOHSD ','.DRYRUN', & 
-                                              '.CONV  ','.METHOD','.XXXXXX','.XXXXXX','.XXXXXX' /)
-
-! if (set) then
-!  if (reset) set = .false.
-!  write(lupri,*) 'HSFSINP was called .... leaving at the beginning ... '
-!  Return
-! endif
-! if (reset) then
-!   set = .false.
-! else
-!   set = .true.
-! endif
-
-
+character(len=7) :: TABLE_TEMP, TABLE(10) =  & 
+  (/'.PRINT ','.NACT  ','.NCORE ','.NOHSD ','.DRYRUN', & 
+    '.CONV  ','.METHOD','.XXXXXX','.XXXXXX','.XXXXXX' /)
 !
 !  Initializations...
 !
 
-write(LUPRI,*) 'in HSFSINP, entering WORD=',WORDIN
+!write(LUPRI,*) 'in HSFSINP, entering WORD=',WORDIN
 
 ! ... entering label MUST be the beginning of *HSFS input list
-!PROPER_POS = (WORDIN .EQ. '*HSFS')
 PROPER_POS = (WORD .EQ. '*HSFS')
 
 IF (PROPER_POS) THEN
@@ -141,15 +128,15 @@ Do
   Read(LUCMD,'(A7)',ERR=910, END=930) WORD; PROMPT = WORD(1:1);  ! print *,'WORD=',WORD
   KEYWORD = WORD 
 
-  write(LUPRI,*) 'HSFSINP: read WORD=',WORD,' PROMPT=',PROMPT
+  !write(LUPRI,*) 'HSFSINP: read WORD=',WORD,' PROMPT=',PROMPT
 
 ! Now decide !
 
   If (PROMPT == '*' ) Then
-    write(LUPRI,*) 'HSFSINP: leaving reading cycle !'
+    !write(LUPRI,*) 'HSFSINP: leaving reading cycle !'
     Exit
   Else If ((PROMPT == '#') .or. (PROMPT == '!')) Then
-    print *,'comment catched !', WORD
+   ! print *,'comment catched !', WORD
     Cycle ! ... continue the cycle..
   Else If (PROMPT == '.') Then
     ! ... keywords are beginning ...
@@ -203,11 +190,6 @@ ENDIF
    enddo
  endif
 
-! WRITE(LUPRI,'( 1X,A,I3)') '*                NELE   : ',NELE
-! WRITE(LUPRI,'(1X,A,I3)')  '*             NCMO_DIRAC=',NCMO_DIRAC
-! WRITE(LUPRI,'(1X,A,I3)')  '*             NACT_DIRAC=',NACT_DIRAC
-! WRITE(LUPRI,'(1X,A,I3)')  '*            NFRZV_DIRAC=',NFRZV_DIRAC
-
 ! if (nohsccfiles) then
 !  WRITE(LUPRI,'(1X,A)') '* Do not prepare HSCC files (dry run). You might take them from GAMESS.'
 ! else
@@ -231,22 +213,32 @@ ENDIF
 
 end subroutine HSFSINP
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine read_hsfs_methods(WORDIN)
+!-----------------------------------------------------------------------------
+!
+!    read the sequence of individual HSFS methods which are to be run
+!
+!-----------------------------------------------------------------------------
  use high_sect_execs
 #include "implicit.h"
 #include "priunit.h"
 CHARACTER(len=7) :: WORDIN, METHOD, KEYWORD=' '
 CHARACTER:: PROMPT*1=' ',PROMPT_M*1=' ' 
 
-write(LUPRI,*) 'HSFS methods input reading, WORDIN=',WORDIN
+!write(LUPRI,*) 'HSFS methods input reading, WORDIN=',WORDIN
 
-         im = 0
-         Do
+IF (.NOT.WORDIN == '.METHOD') THEN
+   WRITE(LUPRI,*) 'WORDIN=',WORDIN
+   CALL QUIT('read_hsfs_methods: worng entering word ! Must be .WORDIN ')
+ELSE
+  im = 0
+  Do
            Read(LUCMD,'(A7)') METHOD;  PROMPT_M = METHOD(1:1)
-           write(LUPRI,*) 'HSFS methods; METHOD=',METHOD
+           !write(LUPRI,*) 'HSFS methods; METHOD=',METHOD
            !If (PROMPT_M == '*' .or. PROMPT_M == '.' ) Then
            If (METHOD == '.END') Then
-             write(LUPRI,*) 'HSFS methods leaving'
+             !write(LUPRI,*) 'HSFS methods leaving'
              Exit
            Else IF (PROMPT_M == '#' .or. PROMPT_M == '!') Then
              Cycle
@@ -264,10 +256,12 @@ write(LUPRI,*) 'HSFS methods input reading, WORDIN=',WORDIN
              CALL PRTAB(size(hs_method_name),hs_method_name,METHOD//' input keywords',LUPRI)
              CALL QUIT('Illegal keyword in HSFSMETHODS.')
            EndIf
-         EndDo
+  EndDo
 
-        ! store number of methods
-        num_methods = im
+  ! store number of methods
+   num_methods = im
+
+ENDIF
 
 end subroutine read_hsfs_methods
 

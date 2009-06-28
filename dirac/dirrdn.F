@@ -2563,7 +2563,7 @@ C
    14 CONTINUE
 #ifdef MOD_HSFS
       IF (DOHSFS) THEN
-        CALL HSFSINP(WORD,.FALSE.,.FALSE.)
+        CALL HSFSINP(WORD)
       ELSE
         WRITE(LUPRI,'(2X,A)')
      &'*HSFS input found, but not processed (because DOHSFS=.false.).'
