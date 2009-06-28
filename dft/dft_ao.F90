@@ -1,4 +1,4 @@
-module dft_ao_new
+module dft_ao
 
 ! * gao, gao1, ... are not dzeroed for more performance
 !   if you change the code make sure that elements of these vectors
@@ -11,7 +11,7 @@ module dft_ao_new
 
   implicit none
 
-  public dft_getsos
+  public get_so
 
   private
 
@@ -19,14 +19,14 @@ module dft_ao_new
 
 contains
 
-  subroutine dft_getsos(gao,     &
-                        gao1,    &
-                        cx,      &
-                        cy,      &
-                        cz,      &
-                        buffer,  &
-                        ndim,    &
-                        nder)
+  subroutine get_so(gao,    &
+                    gao1,   &
+                    cx,     &
+                    cy,     &
+                    cz,     &
+                    buffer, &
+                    ndim,   &
+                    nder)
 
 !   ----------------------------------------------------------------------------
     real(8), intent(inout) :: gao(ndim)
@@ -212,16 +212,11 @@ contains
     real(8), intent(in)    :: px, py, pz
 !   ----------------------------------------------------------------------------
     integer                :: i, ic, jc
+    integer                :: l, m, n
     real(8)                :: p2, f1, f2
+    real(8)                :: tx, ty, tz, ux, uy, uz
+    real(8)                :: p0, p0t
 !   ----------------------------------------------------------------------------
-
-
-      integer :: l, m, n
-!     real(8) :: tga, tgx, tgy, tgz, tx, ty, tz
-!     real(8) ::                    p0
-      real(8) :: gax, gay, gaz ,ga
-      real(8) :: tx, ty, tz, ux, uy, uz, p0, p0t
-      real(8) :: tp0
 
     p2 = px**2.0d0 + py**2.0d0 + pz**2.0d0
 

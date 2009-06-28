@@ -4,7 +4,7 @@ module dft_main
   use dft_cfg
   use dft_temp
   use dft_ao_in_mem
-  use dft_ao_new
+  use dft_ao
   use dft_density
   use dft_basis_info
 ! if you really have to use common blocks, then
@@ -20,7 +20,6 @@ module dft_main
   implicit none
 
   public dftexc
-  public reaqua
 #ifdef VAR_MPI
   public dftnod
 #endif
@@ -691,13 +690,11 @@ contains
         end if
       end if
 
-      wght = weight(ipoint)
-
       if (.not. (dft_cfg_keep_ao .and. batch_is_in_mem(ibatch))) then
-        call dft_getsos(gao_p, gao1_p, &
-     &                  corx(ipoint), cory(ipoint), corz(ipoint), &
-     &                  buffer, ndim, &
-     &                  nder)
+        call get_so(gao_p, gao1_p, &
+     &              corx(ipoint), cory(ipoint), corz(ipoint), &
+     &              buffer, ndim, &
+     &              nder)
       end if
 
       if (dft_cfg_keep_ao) then
@@ -747,6 +744,8 @@ contains
           z = ddot(3, rhg, 1, rhg, 1)
           rhogrd = dsqrt(z)
         end if
+
+        wght = weight(ipoint)
 
 !       number of electrons
         dft_temp_nr_electrons = dft_temp_nr_electrons + wght*rho
@@ -986,12 +985,6 @@ contains
 
 
 
-      end subroutine
-      SUBROUTINE REAQUA(X,Y,Z,WT,LUQUAD,NPOINT)
-      real(8) :: X(NPOINT),Y(NPOINT),Z(NPOINT),WT(NPOINT)
-      integer :: luquad
-      integer :: npoint
-      READ(LUQUAD) X,Y,Z,WT
       end subroutine
       
 

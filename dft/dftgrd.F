@@ -1769,3 +1769,10 @@ C=======================================================================
 
       RETURN
       END
+
+      SUBROUTINE REAQUA(X,Y,Z,WT,LUQUAD,NPOINT)
+      real(8) :: X(NPOINT),Y(NPOINT),Z(NPOINT),WT(NPOINT)
+      integer :: luquad
+      integer :: npoint
+      READ(LUQUAD) X,Y,Z,WT
+      end subroutine
