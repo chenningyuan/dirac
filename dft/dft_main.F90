@@ -287,7 +287,6 @@ contains
       type(dft_options_t) :: dft_options
 
       real(8), allocatable :: gao(:)
-      real(8), allocatable :: gao1(:)
       real(8), allocatable :: buffer(:)
 
       real(8), allocatable :: kx(:)
@@ -304,10 +303,9 @@ contains
       integer :: npnts, npoint, nrest, IDISP_REST
       logical :: i_am_the_master
       NDIM = nr_ao_total
-      call alloc(gao, ndim)
-      if (dft_temp_need_gao1) then
-        call alloc(gao1, ndim*3)
-      end if
+
+!fixme adapt for lda !if (dft_temp_need_gao1) then
+      call alloc(gao,    ndim*4)
       call alloc(buffer, ndim*4)
 
 
@@ -510,7 +508,7 @@ contains
      &              DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
      &              DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP, &
      &              dft_options, &
-     &              gao, gao1, buffer, &
+     &              gao,       buffer, &
      &              IPRINT)
 
         call dealloc(kx)
@@ -531,9 +529,6 @@ contains
 #endif
 
       call dealloc(gao)
-      if (dft_temp_need_gao1) then
-        call dealloc(gao1)
-      end if
       call dealloc(buffer)
 
 
@@ -584,7 +579,7 @@ contains
      &                  DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
      &                  DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP, &
      &                  dft_options, &
-     &                  GAO,GAO1, &
+     &                  GAO,      &
      &                  buffer,IPRINT)
 !***********************************************************************
 !
@@ -615,8 +610,7 @@ contains
       real(8) :: rho, rho13, rho_outer, rho_resp, rhogrd
       type(dft_options_t) :: dft_options
 
-      real(8), target  :: gao(nr_ao_total)
-      real(8), target  :: gao1(nr_ao_total*3)
+      real(8), target  :: gao(nr_ao_total*4)
       real(8), pointer :: gao_p(:)
       real(8), pointer :: gao1_p(:)
 
@@ -676,8 +670,8 @@ contains
     end if
 
     if (.not. (dft_cfg_keep_ao .and. batch_is_in_mem(ibatch))) then
-      gao_p  => gao
-      gao1_p => gao1
+      gao_p  => gao(1:ndim)
+      gao1_p => gao(ndim+1:4*ndim)
     end if
 
     do ipoint = 1, npoint
@@ -691,7 +685,7 @@ contains
       end if
 
       if (.not. (dft_cfg_keep_ao .and. batch_is_in_mem(ibatch))) then
-        call get_so(gao_p, gao1_p, &
+        call get_so(gao, &
      &              corx(ipoint), cory(ipoint), corz(ipoint), &
      &              buffer, ndim, &
      &              nder)
@@ -917,12 +911,6 @@ contains
      &                   gao_p,gao1_p, &
      &                   rho,rhogrd,rhg,wght,dft_temp_gga_ha,buffer)
           endif
-!         VRG contribution
-!         if (dft_cfg_cdft_vrg) then
-!           call vrg_lr(dtrmat,excmat,nxcmat, &
-!    &                  isymop,ihrmop,gao,gao1, &
-!    &                  rho,rhogrd,rhg,wght,dft_temp_gga_hs,buffer)
-!         endif
         endif
 
 

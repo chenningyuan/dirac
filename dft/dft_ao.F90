@@ -19,8 +19,7 @@ module dft_ao
 
 contains
 
-  subroutine get_so(gao,    &
-                    gao1,   &
+  subroutine get_so(ao,     &
                     cx,     &
                     cy,     &
                     cz,     &
@@ -29,8 +28,7 @@ contains
                     nder)
 
 !   ----------------------------------------------------------------------------
-    real(8), intent(inout) :: gao(ndim)
-    real(8), intent(inout) :: gao1(ndim, 3)
+    real(8), intent(inout) :: ao(ndim, 4)
     real(8), intent(in)    :: cx
     real(8), intent(in)    :: cy
     real(8), intent(in)    :: cz
@@ -38,41 +36,30 @@ contains
     real(8), intent(inout) :: buffer(*)
     integer, intent(in)    :: nder
 !   ----------------------------------------------------------------------------
+    integer                :: nvec
+!   ----------------------------------------------------------------------------
 
 !   get values in ao basis
-    call get_ao(gao,  &
-                gao1, &
-                cx,   &
-                cy,   &
-                cz,   &
-                ndim, &
+    call get_ao(ao(1, 1), &
+                ao(1, 2), &
+                cx,       &
+                cy,       &
+                cz,       &
+                ndim,     &
                 nder)
 
 !   without symmetry skip the rest
     if (nr_boson_sym == 1) return
 
     if (nder == 0) then
-      call dzero(buffer, ndim)
-!     transform from ao(bu) to so(bs)
-      call ao_to_so_lda(gao, &
-                        buffer)
-      call dcopy(ndim, buffer, 1, gao, 1)
+      nvec = 1
+    else if (nder == 1) then
+      nvec = 4
     end if
-
-    if (nder == 1) then
-      call dzero(buffer, ndim*4)
-!     transform from ao(bu) to so(bs)
-      call ao_to_so_gga(gao,                 &
-                        gao1(1, 1),          &
-                        gao1(1, 2),          &
-                        gao1(1, 3),          &
-                        buffer(1),           &
-                        buffer(ndim   + 1),  &
-                        buffer(ndim*2 + 1),  &
-                        buffer(ndim*3 + 1))
-      call dcopy(ndim,   buffer,           1, gao,  1)
-      call dcopy(ndim*3, buffer(ndim + 1), 1, gao1, 1)
-    end if
+    call dzero(buffer, ndim*nvec)
+!   transform from ao(bu) to so(bs)
+    call ao_to_so(ndim, nvec, ao, buffer)
+    call dcopy(ndim*nvec, buffer, 1, ao, 1)
 
   end subroutine
 
@@ -390,76 +377,52 @@ contains
 
   end subroutine
 
-  subroutine ao_to_so_lda(ao, so)
+  subroutine get_ao_b1(px,     &
+                       py,     &
+                       pz,     &
+                       ishell, &
+                       ao,     &
+                       ao_bx,  &
+                       ao_by,  &
+                       ao_bz)
 
 !   ----------------------------------------------------------------------------
+    real(8), intent(in)  :: px
+    real(8), intent(in)  :: py
+    real(8), intent(in)  :: pz
+    integer, intent(in)  :: ishell
     real(8), intent(in)  :: ao(*)
-    real(8), intent(out) :: so(*)
+    real(8), intent(out) :: ao_bx(*)
+    real(8), intent(out) :: ao_by(*)
+    real(8), intent(out) :: ao_bz(*)
 !   ----------------------------------------------------------------------------
-    integer              :: iao, iso, ishell, nshell
-    integer              :: ic, icount, iso_bs
-    integer              :: i, nr_ao, mul, irep, isym, n
+    integer              :: ic
     real(8)              :: f
 !   ----------------------------------------------------------------------------
 
-    i = 1
-    do irep = 0, dft_maxrep
-      nr_ao = dft_nbbas(irep, 1) + dft_nbbas(irep, 2)
-      icount = 0
-      do iso = i, i + nr_ao - 1
+    do ic = 1, cartesian_deg(ishell)
 
-        ishell = iand(ishft(dft_ipind(iso), -16), 65535)
-        nshell = iand(ishft(dft_ipind(iso),  -8),   255)
+      f = 0.5d0*ao(ic)
 
-        mul = dft_istbao(ishell)
-        n   = n_quantum_nr(ishell)
+      ao_bx(ic) = f*px
+      ao_by(ic) = f*py
+      ao_bz(ic) = f*pz
 
-        iao = dft_kstrt(ishell) + nshell
-
-        icount = icount + 1
-        if (icount > dft_nbbas(irep, 1)) then
-!         is small
-          ic = 2
-        else
-!         is large
-          ic = 1
-        end if
-
-!       shift by difference boson sorted minus boson unsorted
-        iso_bs = iso + dft_ibbas(irep, ic) - dft_icos(irep + 1, ic)
-
-        do isym = 0, dft_maxopr
-          if (iand(isym, mul) == 0) then
-
-            f = dft_pt(iand(isym, ieor(irep, dft_isymao(n, nshell))))
-
-            so (iso_bs) = so (iso_bs) + f*ao (iao)
-
-            iao = iao + spherical_deg(ishell)
-
-          endif
-        end do
-      end do
-      i = i + nr_ao
     end do
 
   end subroutine
 
-  subroutine ao_to_so_gga(ao, aox, aoy, aoz, so, sox, soy, soz)
+  subroutine ao_to_so(ndim, nvec, ao, so)
 
 !   ----------------------------------------------------------------------------
-    real(8), intent(in)  :: ao(*)
-    real(8), intent(in)  :: aox(*)
-    real(8), intent(in)  :: aoy(*)
-    real(8), intent(in)  :: aoz(*)
-    real(8), intent(out) :: so(*)
-    real(8), intent(out) :: sox(*)
-    real(8), intent(out) :: soy(*)
-    real(8), intent(out) :: soz(*)
+    integer, intent(in)  :: ndim
+    integer, intent(in)  :: nvec
+    real(8), intent(in)  :: ao(ndim, nvec)
+    real(8), intent(out) :: so(ndim, nvec)
 !   ----------------------------------------------------------------------------
     integer              :: iao, iso, ishell, nshell
     integer              :: ic, icount, iso_bs
-    integer              :: i, nr_ao, mul, irep, isym, n
+    integer              :: i, nr_ao, mul, irep, isym, n, ivec
     real(8)              :: f
 !   ----------------------------------------------------------------------------
 
@@ -494,10 +457,9 @@ contains
 
             f = dft_pt(iand(isym, ieor(irep, dft_isymao(n, nshell))))
 
-            so (iso_bs) = so (iso_bs) + f*ao (iao)
-            sox(iso_bs) = sox(iso_bs) + f*aox(iao)
-            soy(iso_bs) = soy(iso_bs) + f*aoy(iao)
-            soz(iso_bs) = soz(iso_bs) + f*aoz(iao)
+            do ivec = 1, nvec
+              so(iso_bs, ivec) = so(iso_bs, ivec) + f*ao(iao, ivec)
+            end do
 
             iao = iao + spherical_deg(ishell)
 
