@@ -130,14 +130,9 @@ taylor<Nvar,Ndeg> pow(const taylor<Nvar,Ndeg> &t, int n)
 {
   if (n < 1)
     return pow(t,tnum_t(n));
-  taylor<Nvar,Ndeg> res(1), tpow = t;
-  while (n>0)
-    {
-      if (n & 1)
-	res *= tpow;
-      tpow *= tpow;
-      n = n/2;
-    }
+  taylor<Nvar,Ndeg> res = t;
+  while (n-- > 1)
+      res *= t;
   return res;
 }
 
