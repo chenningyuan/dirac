@@ -162,6 +162,18 @@ int main(void)
 	cout << "Error evaluating multivariate, error " << p.eval(x)-473.26 << endl;
 	res++;
       }
+    taylor<4,5> p1,p2,pp;
+    for (int i=0;i<10;i++)
+	p1[i] = i+1;
+    for (int i=0;i<10;i++)
+	p2[i] = i+1+(i & 3);
+    pp = p1*p2;
+    double r[4] = {3.1,4,5,6};
+    if (fabs(pp.eval(r) - p1.eval(r)*p2.eval(r)) > 1e-15)
+    {
+	cout << "Error evaluating multivariate:" << pp.eval(r) << " " << p1.eval(r)*p2.eval(r) << endl;
+	res++;
+    }
   }
   
   // composition
