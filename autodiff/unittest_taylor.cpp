@@ -169,7 +169,7 @@ int main(void)
 	p2[i] = i+1+(i & 3);
     pp = p1*p2;
     double r[4] = {3.1,4,5,6};
-    if (fabs(pp.eval(r) - p1.eval(r)*p2.eval(r)) > 1e-15)
+    if (fabs(pp.eval(r) - p1.eval(r)*p2.eval(r)) > 1e-15*fabs(pp.eval(r)))
     {
 	cout << "Error evaluating multivariate:" << pp.eval(r) << " " << p1.eval(r)*p2.eval(r) << endl;
 	res++;
