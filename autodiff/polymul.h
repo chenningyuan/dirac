@@ -53,7 +53,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 
 // Some compilers implement the C99 restrict also in C++.
-#ifdef __GNUC__
+#ifdef __GNUC__AND_NOT_STUPID_ICC__
 #define POLYMUL_RESTRICT __restrict__
 #else
 #define POLYMUL_RESTRICT 
