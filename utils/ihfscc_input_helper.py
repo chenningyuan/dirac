@@ -249,8 +249,11 @@ class molecular_electronic_structure:
 			self.active_per_irrep[irrep] = 0
 			self.active_occ_per_irrep[irrep] = 0
 			self.active_vir_per_irrep[irrep] = 0
+                        print "debug, irrep:",irrep,"  ",self.fermion_irreps
 
 		for spinor in self.spinor_list:
+                        print spinor.fermion
+                        print self.active_per_irrep[spinor.fermion]
 			if spinor.eigenvalue >= float(high) and spinor.eigenvalue <= float(low):
 				self.active_spinors.append(spinor)
 				self.active_per_irrep[spinor.fermion] = self.active_per_irrep[spinor.fermion] + 1 
@@ -286,21 +289,23 @@ class molecular_electronic_structure:
 
 
 	def set_spinor_list(self,scf_output):
-		start_regexp_definition                      = "\s+ SCF - CYCLE"
-		end_regexp_definition                        = "    gap     :\s+([-+]?\d+?\.\d*) au"
-		lumo_energy_regexp_definition                = "    E\(LUMO\) :\s+([-+]?\d+?\.\d*) au"   
-		homo_energy_regexp_definition                = "  - E\(HOMO\) :\s+([-+]?\d+?\.\d*) au"
-		symmetry_definition_linear_regexp_definition = "\* Block\s+([0-9]+) in ([a-zA-Z][0-9][gu])\:  Omega \=\s+([0-9\/]+)"
-		occupied_or_not_regexp_definition            = ".+ f = ([0-9.]+)"
-	   	eigenvalues_and_degeneracy_regexp_definition = "\s+(-?\d+\.\d+)\s+\(\s*([0-9]+)\)"
+		start_regexp_definition                        = "\s+ SCF - CYCLE"
+		end_regexp_definition                          = "    gap     :\s+([-+]?\d+?\.\d*) au"
+		lumo_energy_regexp_definition                  = "    E\(LUMO\) :\s+([-+]?\d+?\.\d*) au"   
+		homo_energy_regexp_definition                  = "  - E\(HOMO\) :\s+([-+]?\d+?\.\d*) au"
+		symmetry_definition_spinfree_regexp_definition = "\* Boson symmetry ([a-zA-Z][0-9]?)([gu])?"
+		symmetry_definition_linear_regexp_definition   = "\* Block\s+([0-9]+) in ([a-zA-Z][0-9][gu ])\:  Omega \=\s+([0-9\/]+)"
+		occupied_or_not_regexp_definition              = ".+ f = \s*([0-9.]+)"
+	   	eigenvalues_and_degeneracy_regexp_definition   = "\s+(-?\d*\.\d+)\s+\(\s*([0-9]+)\)"
 
-		start                      = re.compile (r''+ start_regexp_definition                      +'', re.IGNORECASE)
-		end                        = re.compile (r''+ end_regexp_definition                        +'', re.IGNORECASE)
-		lumo_energy                = re.compile (r''+ lumo_energy_regexp_definition                +'', re.IGNORECASE)
-		homo_energy                = re.compile (r''+ homo_energy_regexp_definition                +'', re.IGNORECASE)
-		symmetry_definition_linear = re.compile (r''+ symmetry_definition_linear_regexp_definition +'', re.IGNORECASE)
-		occupied_or_not            = re.compile (r''+ occupied_or_not_regexp_definition            +'', re.IGNORECASE)
-		eigenvalues_and_degeneracy = re.compile (r''+ eigenvalues_and_degeneracy_regexp_definition +'', re.IGNORECASE)
+		start                        = re.compile (r''+ start_regexp_definition                      +'', re.IGNORECASE)
+		end                          = re.compile (r''+ end_regexp_definition                        +'', re.IGNORECASE)
+		lumo_energy                  = re.compile (r''+ lumo_energy_regexp_definition                +'', re.IGNORECASE)
+		homo_energy                  = re.compile (r''+ homo_energy_regexp_definition                +'', re.IGNORECASE)
+		symmetry_definition_linear   = re.compile (r''+ symmetry_definition_linear_regexp_definition +'', re.IGNORECASE)
+		symmetry_definition_spinfree = re.compile (r''+ symmetry_definition_spinfree_regexp_definition +'', re.IGNORECASE)
+		occupied_or_not              = re.compile (r''+ occupied_or_not_regexp_definition            +'', re.IGNORECASE)
+		eigenvalues_and_degeneracy   = re.compile (r''+ eigenvalues_and_degeneracy_regexp_definition +'', re.IGNORECASE)
 
 		reading_scf_result = False 
 		spinor_occupancy   = 0.0
@@ -325,6 +330,22 @@ class molecular_electronic_structure:
 
 				elif occupied_or_not.match(l):
 					spinor_occupancy = occupied_or_not.match(l).group(1)	
+
+				elif symmetry_definition_spinfree.match(l):
+                                        if ( symmetry_definition_spinfree.match(l).group(2) == "g" ):
+                                           fermion_symmetry = "E1g"
+					   boson_symmetry   = symmetry_definition_spinfree.match(l).group(1)+"g"
+                                        elif ( symmetry_definition_spinfree.match(l).group(2) == "u" ):
+                                           fermion_symmetry = "E1u"
+					   boson_symmetry   = symmetry_definition_spinfree.match(l).group(1)+"u"
+                                        else:
+                                           fermion_symmetry = "E1"
+					   boson_symmetry   = symmetry_definition_spinfree.match(l).group(1)
+
+					if fermion_symmetry not in self.fermion_irreps:
+						self.fermion_irreps.append(fermion_symmetry)
+					if boson_symmetry not in self.boson_irreps:
+						self.boson_irreps.append(boson_symmetry)
 
 				elif symmetry_definition_linear.match(l):
 					fermion_symmetry = symmetry_definition_linear.match(l).group(2)
