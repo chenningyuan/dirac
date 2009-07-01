@@ -1,6 +1,70 @@
 #include "taylor.h"
 #include "auto_functionals.h"
 
+// Helpers
+
+template<int N>
+void get_rhoa(taylor<5,N> &rhoa, tnum_t R0)
+{
+  rhoa.zero();
+  rhoa[0] = R0/2;
+  if (N>0)
+    {
+      rhoa[1] = 0.5;
+      rhoa[2] = 0.5;
+    }
+}
+template<int N>
+void get_rhob(taylor<5,N> &rhob, tnum_t R0)
+{
+  rhob.zero();
+  rhob[0] = R0/2;
+  if (N>0)
+    {
+      rhob[1] = 0.5;
+      rhob[2] = -0.5;
+    }
+}
+
+template<int N>
+void get_grada2(taylor<5,N> &ga2, tnum_t Z0)
+{
+  ga2.zero();
+  ga2[0] = Z0/4;
+  if (N>0)
+    {
+      ga2[3] = 0.25; // Z
+      ga2[4] = 0.25; // X
+      ga2[5] = 0.5;  // Y
+    }
+}
+
+template<int N>
+void get_gradab(taylor<5,N> &gab, tnum_t Z0)
+{
+  gab.zero();
+  gab[0] = Z0/4;
+  if (N>0)
+    {
+      gab[3] = 0.25; // Z
+      gab[4] = -0.25; // X
+      gab[5] = 0;  // Y
+    }
+}
+
+template<int N>
+void get_gradb2(taylor<5,N> &gb2, tnum_t Z0)
+{
+  gb2.zero();
+  gb2[0] = Z0/4;
+  if (N>0)
+    {
+      gb2[3] = 0.25; // Z
+      gb2[4] = 0.25; // X
+      gb2[5] = -0.5;  // Y
+    }
+}
+
 // VWN:
 
 const tnum_t  para[] = {-0.10498,   0.0621814,  3.72744, 12.9352};
@@ -133,14 +197,15 @@ static taylor<5,N> lyp_correlation(tnum_t R0, tnum_t Z0)
     taylor<5,N> rho(R0,0,AUTO_FUNCTIONAL_SCALING);
     taylor<5,N> rho2 = rho*rho;
     taylor<5,N> rhom13 = pow(rho,-1.0/3.0);
-    taylor<5,N> S(0,1,AUTO_FUNCTIONAL_SCALING), 
-      Z(Z0,2,AUTO_FUNCTIONAL_SCALING), 
-      X(0,3,AUTO_FUNCTIONAL_SCALING), 
-      Y(0,4,AUTO_FUNCTIONAL_SCALING);
-    taylor<5,N> ngrada2 = (X+Z+2*Y)/4;
-    taylor<5,N> ngradb2 = (X+Z-2*Y)/4;
-    taylor<5,N> rhoa = (rho + S)/2;
-    taylor<5,N> rhob = (rho - S)/2;
+    taylor<5,N> Z(Z0,2,AUTO_FUNCTIONAL_SCALING);
+    taylor<5,N> ngrada2;
+    taylor<5,N> ngradb2;
+    taylor<5,N> rhoa;
+    taylor<5,N> rhob;
+    get_rhoa(rhoa,R0);
+    get_rhob(rhob,R0);
+    get_grada2(ngrada2,Z0);
+    get_gradb2(ngradb2,Z0);
 
     taylor<5,N> denom = 1+D*rhom13;
     taylor<5,N> omega = exp(-C*rhom13)/denom*pow(rho,-11.0/3.0);
@@ -188,16 +253,18 @@ static taylor<5,N> becke_exchange(tnum_t R0,tnum_t Z0)
 
   if (rhob[0]>BECKE_THRESHOLD)
     {
-      taylor<5,N> gb = sqrt(X+Z-2*Y)/2;  
-      taylor<5,N> xb = gb*pow(rhob,-4.0/3.0);
+      taylor<5,N> gb2;
+      get_gradb2(gb2,Z0);
+      taylor<5,N> xb = sqrt(gb2)*pow(rhob,-4.0/3.0);
       taylor<5,N> rb = pow(rhob,4.0/3.0);
       taylor<5,N> denomb = 1.0 +6.0*xb*BETA*asinh(xb);
        eb = rb*xb*xb/denomb; 
     } 
   if (rhoa[0]>BECKE_THRESHOLD) 
     {
-      taylor<5,N> ga = sqrt(X+Z+2*Y)/2;  
-      taylor<5,N> xa = ga*pow(rhoa,-4.0/3.0);
+      taylor<5,N> ga2;
+      get_grada2(ga2,Z0);
+      taylor<5,N> xa = sqrt(ga2)*pow(rhoa,-4.0/3.0);
       taylor<5,N> ra = pow(rhoa,4.0/3.0);
       taylor<5,N> denoma = 1.0 +6.0*BETA*xa*asinh(xa);
       ea = ra*xa*xa/denoma;
