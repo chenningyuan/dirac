@@ -1,69 +1,6 @@
 #include "taylor.h"
 #include "auto_functionals.h"
 
-// Helpers
-
-template<int N>
-void get_rhoa(taylor<5,N> &rhoa, tnum_t R0)
-{
-  rhoa.zero();
-  rhoa[0] = R0/2;
-  if (N>0)
-    {
-      rhoa[1] = 0.5;
-      rhoa[2] = 0.5;
-    }
-}
-template<int N>
-void get_rhob(taylor<5,N> &rhob, tnum_t R0)
-{
-  rhob.zero();
-  rhob[0] = R0/2;
-  if (N>0)
-    {
-      rhob[1] = 0.5;
-      rhob[2] = -0.5;
-    }
-}
-
-template<int N>
-void get_grada2(taylor<5,N> &ga2, tnum_t Z0)
-{
-  ga2.zero();
-  ga2[0] = Z0/4;
-  if (N>0)
-    {
-      ga2[3] = 0.25; // Z
-      ga2[4] = 0.25; // X
-      ga2[5] = 0.5;  // Y
-    }
-}
-
-template<int N>
-void get_gradab(taylor<5,N> &gab, tnum_t Z0)
-{
-  gab.zero();
-  gab[0] = Z0/4;
-  if (N>0)
-    {
-      gab[3] = 0.25; // Z
-      gab[4] = -0.25; // X
-      gab[5] = 0;  // Y
-    }
-}
-
-template<int N>
-void get_gradb2(taylor<5,N> &gb2, tnum_t Z0)
-{
-  gb2.zero();
-  gb2[0] = Z0/4;
-  if (N>0)
-    {
-      gb2[3] = 0.25; // Z
-      gb2[4] = 0.25; // X
-      gb2[5] = -0.5;  // Y
-    }
-}
 
 // VWN:
 
