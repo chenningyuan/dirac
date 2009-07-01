@@ -437,9 +437,9 @@ integer, parameter :: max_methods=30
 character(len=4) :: method_name(max_methods)
 
 ! ... all method-names
-character(len=4) :: hs_method_name(19) = (/'csd','csv','csu','csw','csx','csy','csz',  & 
-                                           'chv','chu','chw','chx','chy','chz','chp',  & 
-                                           'chq','cst','cht','m21b','m12b' /)
+character(len=4) :: hs_method_name(19) = (/'csd ','csv ','csu ','csw ','csx ','csy ','csz ',  & 
+                                           'chv ','chu ','chw ','chx ','chy ','chz ','chp ',  & 
+                                           'chq ','cst ','cht ','m21b','m12b' /)
 
 contains
 
