@@ -622,6 +622,9 @@ contains
       integer :: ipoint, nder, ndim, need_limit
       real(8) :: wght, z, ddot, dftenergy, taylor_deriv
 
+#ifdef MOD_AUTODIFF
+    call init_factorial_common_block()
+#endif
 
     ndim = nr_ao_total
 
