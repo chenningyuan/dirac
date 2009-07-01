@@ -8,3 +8,5 @@
 #define LDA_SLATER 1
 #define GGA_BECKE 3
 #define GGA_LYP 4
+#define GGA_PBEX 5
+#define GGA_PBEC 6

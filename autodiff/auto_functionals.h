@@ -24,6 +24,12 @@ taylor<5,N> lyp_correlation(tnum_t R0, tnum_t Z0);
 template<int N>
 taylor<5,N> becke_exchange(tnum_t R0, tnum_t Z0);
 
+template<int N>
+taylor <5,N> pbe_exchange(tnum_t R0, tnum_t Z0);
+
+template<int N>
+taylor <5,N> pbe_correlation(tnum_t R0, tnum_t Z0);
+
 
 // Helpers
 

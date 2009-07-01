@@ -31,8 +31,13 @@ template
 taylor<5,1> pbe_exchange(tnum_t R0, tnum_t Z0);
 template
 taylor<5,2> pbe_exchange(tnum_t R0, tnum_t Z0);
+template
+taylor<5,3> pbe_exchange(tnum_t R0, tnum_t Z0);
+template
+taylor<5,4> pbe_exchange(tnum_t R0, tnum_t Z0);
+template
+taylor<5,5> pbe_exchange(tnum_t R0, tnum_t Z0);
 
-#if 0
 template<int N>
 taylor <5,N> pbe_correlation(tnum_t R0, tnum_t Z0)
 {
@@ -71,5 +76,11 @@ template
 taylor<5,1> pbe_correlation(tnum_t R0, tnum_t Z0);
 template
 taylor<5,2> pbe_correlation(tnum_t R0, tnum_t Z0);
+template
+taylor<5,3> pbe_correlation(tnum_t R0, tnum_t Z0);
+template
+taylor<5,4> pbe_correlation(tnum_t R0, tnum_t Z0);
+template
+taylor<5,5> pbe_correlation(tnum_t R0, tnum_t Z0);
 
-#endif
+

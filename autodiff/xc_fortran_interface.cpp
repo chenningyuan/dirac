@@ -123,6 +123,12 @@ static void gga_helper(int functional,
     case GGA_BECKE:
       *t = becke_exchange<Ndeg>(R,Z);
       break;
+    case GGA_PBEX:
+      *t = pbe_exchange<Ndeg>(R,Z);
+      break;
+    case GGA_PBEC:
+      *t = pbe_correlation<Ndeg>(R,Z);
+      break;
     default:
       assert(0 && "Unknown GGA functional");
       break;
