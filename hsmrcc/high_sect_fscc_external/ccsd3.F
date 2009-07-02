@@ -670,6 +670,8 @@ c     write (6,*) ' transf indx from ',i,' to ',num
       dimension j(4),msk(4)
       data msk /'ff000000'X,'ff0000'X,'ff00'X,'ff'X/
 
+      character(*) namet ! mi: fix for prtime
+
 c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       ipack(i1,i2,i3,i4)=ior(ior(ishft(i1,24),ishft(i2,16)),
      1                       ior(ishft(i3,8) ,i4)         )
@@ -713,6 +715,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
        ! ... print out
       call prt(namet,namet,iparm)
       call prtime(namet,ije1(nij1),1)
+
       return
       end subroutine reorder
 
@@ -1821,6 +1824,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 !     common /rsp1/  nrsp1,irsp1(100)
 #endif
 
+      character(*) :: name
       logical lrsp
       data zero / 1.d-13/
 
@@ -1886,17 +1890,18 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       return
       end
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine seltyp4(iii,iiv,name,iparm)
-!------------------------------------------------------------------------
+!---------------------------------------------------------------------------------
 !
-!  this program for pppp only. integrals <ij|kl> collected, i.ge.j .
+!  this routine for pppp only. integrals <ij|kl> collected, i.ge.j .
 !
-!  ints collected in gen, indices in itmp. at the end, arrays are
+!  integrals are collected in "gen", indices in "itmp" 
+!   at the end, arrays are
 !  sorted and expanded according to indices (in igen) generated
-!  by tmplt.
+!  in routine tmplt.
 !
-!------------------------------------------------------------------------
+!----------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use ctmp_mod 
       use cij1_mod 
@@ -1928,6 +1933,10 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 #include "cint.h"
 !      common /cint/ nint,idum1,vint(ndint),iint(ndint)
 #endif
+
+!    miro: to prevent ugly crash in prtime routine due to rubbish in
+!    "name"
+      character(*) name
 
       data zero / 1.e-13/
 
@@ -2007,6 +2016,7 @@ c     call unpack(iint(i),j1,j2,j3,j4)
          if (j3.eq.j4) gen(istrt2+nout)=vint(i)*0.5d0
          itmp(nout)=ipack(j4,j3,j2,j1)
 190   continue
+
       call vxsort(itmp,nout,lngth,gen(istrt2+1),
      1 igen(istrt1+1))
 c  indices not retained for pppp.
@@ -2014,8 +2024,12 @@ c  indices not retained for pppp.
       write (6,1900) lngth,iii,iiv
 1900  format('collected ',i9,' integrals of type ',2i6)
       if (iopt(10).eq.0) call wrtfile(9,0,"pppp")
+
       call prt(name,name,iparm)
+
+!   miro: name must be specified to prevent trash characters in name 
       call prtime(name,lngth,0)
+
       return
       end
 

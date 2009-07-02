@@ -148,7 +148,7 @@ function GetNBSYM() result(nbsym_dirac)
 #include "priunit.h"
 #include "dgroup.h"
  nbsym_dirac = NBSYM
- write(LUPRI,'(2x,a,i2)') 'get NBSYM=',NBSYM
+! write(LUPRI,'(2x,a,i2)') 'get NBSYM=',NBSYM
 end function GetNBSYM
 
 function get_test() result(nintg)
@@ -246,7 +246,7 @@ subroutine read_mrconee
 #include "priunit.h"
 #include "dgroup.h"
 
-logical :: is_mrc, adjust
+logical :: is_mrc, adjust, print_mt = .false.
 !integer, external :: GetNBSYM
 
  inquire(FILE='MRCONEE',EXIST=is_mrc)
@@ -314,18 +314,23 @@ endif
 
 !-----------------------------------------------------------
 
+
 ! fill irrep_product_dirac !
 
   irrep_product_dirac=0
 
   write(LUPRI,*) 'GetNBSYM=',NBSYM
-  write(LUPRI,*) 'Multiplication table'
+! write(LUPRI,*) 'Multiplication table'
 
   do i=1,NBSYM
   do j=1,NBSYM
-   ! write(LUPRI,*) i,j,'...',REPNA(MULTB(i,j,1))
+
+   if (print_mt) then
     write(LUPRI,*) i,j,'...',REPNA(MULTB(i,j,1)),REPNA(MULTB(i,j,1)-2*NBSYM)
-    irrep_product_dirac(i,j)= MULTB(i,j,1)-2*NBSYM
+   endif
+
+   irrep_product_dirac(i,j)= MULTB(i,j,1)-2*NBSYM
+
   enddo
   enddo
 
@@ -370,21 +375,29 @@ write(LUPRI,*)  '... hsfs_indx vector allocated'
 
 do isp=1, nsp
 
+  if (iprint_hsfs >= 4) then
    write (LUPRI,'(2x,a,i2,a,2i3,a,f18.13,a,a4)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
    IREPSP(ISP),IREPSP(NSP+ISP),                                                      &
    ' EPS1(ISP)=',EPS1(ISP),'--> ',REPNA(IREPSP(NSP+ISP))
+  endif
 
-   if (IREPSP(ISP).eq.1.or.IREPSP(ISP).eq.3) then
+  if (IREPSP(ISP).eq.1.or.IREPSP(ISP).eq.3) then
      boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) ) = boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) ) + 1 
-  ! write(LUPRI,*) 'irrep:',boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) )
-   endif
+
+     if (iprint_hsfs >= 6) then
+       write(LUPRI,*) 'irrep:',boson_irps_indx%p_iA1D( IREPSP(NSP+ISP) )
+     endif
+
+  endif
 
 enddo
 
 ! do the check
 icheck=0
 do i=1,GetNBSYM()
- write(LUPRI,*) i,'irrep:',boson_irps_indx%p_iA1D(i)
+ if (iprint_hsfs >= 6) then
+    write(LUPRI,*) i,'irrep:',boson_irps_indx%p_iA1D(i)
+ endif
  icheck=icheck+boson_irps_indx%p_iA1D(i)
 enddo
 
@@ -395,11 +408,13 @@ if (icheck /= nsp/2) then
  call quit('wrong number of spinors !')
 endif
 
+if (iprint_hsfs >= 5) then
 write(LUPRI,*) 'filled irreps'
 do i=1,GetNBSYM()
 ! boson_irps_indx%p_iA1D(i)=0
  write(LUPRI,*) i,REPNA(i),' irrep:',boson_irps_indx%p_iA1D(i)
 enddo
+endif
 
 ! ... fill "hsfs_indx" vector: map order MRCONEE -> HSFS
 ik=0
@@ -417,13 +432,18 @@ do j=1,nsp
 enddo
 enddo
 
-write(LUPRI,*) 'HSFS index order'
+write(LUPRI,*) 'HSFS - MOLTRA index mapping is ready.'
+
 do isp=1,nsp
 
 if (IREPSP(ISP).eq.1.or.IREPSP(ISP).eq.3) then
-  write (LUPRI,'(2x,a,i2,a,2i3,a,f18.13,a,a4,a,i4)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
+
+  if ( iprint_hsfs >= 6) then
+    write (LUPRI,'(2x,a,i2,a,2i3,a,f18.13,a,a4,a,i4)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
   IREPSP(ISP),IREPSP(NSP+ISP), &
  ' EPS1(ISP)=',EPS1(ISP),'-->',REPNA(IREPSP(NSP+ISP)),' hsfs_indx:',hsfs_indx%p_iA1D(isp)
+  endif
+
 endif
 
 enddo
@@ -435,17 +455,15 @@ enddo
  write(LUPRI,'(/,2x,a)') 'going to write luhsfs data...'
 
  ! ... save some stuff 
-!write(luhsfs,iostat=ios) GetNBSYM(), nsp/2
  nirp=GetNBSYM()
 
 write(luhsfs) nirp, nsp/2
 write(LUPRI,'(2x,a,i2,a,i4)') 'written nirp=',nirp,' nort=',nsp/2
 
-!write(luhsfs) ( boson_irps_indx%p_iA1D(i),i=1,GetNBSYM() )
 write(luhsfs) ( boson_irps_indx%p_iA1D(i),i=1,nirp )
-write(LUPRI,*) 'written boson_irps:',( boson_irps_indx%p_iA1D(i),i=1,nirp )
 
-write(LUPRI,*) 
+write(LUPRI,'(1x,a,8i2,/)') 'written boson_irps:',( boson_irps_indx%p_iA1D(i),i=1,nirp )
+
 
 ix=0
 do isp=1,nsp
@@ -453,7 +471,11 @@ do isp=1,nsp
   indx_found=.false.
   do j=1,nsp
      if (isp == hsfs_indx%p_iA1D(j)) then
-        ! write(LUPRI,*) 'found:',isp,hsfs_indx%p_iA1D(j),j  
+
+       if ( iprint_hsfs >= 10 ) then
+         write(LUPRI,*) 'found:',isp,hsfs_indx%p_iA1D(j),j  
+       endif
+
        indx_found=.true.
        Exit
      endif
@@ -463,13 +485,18 @@ do isp=1,nsp
 if (indx_found) then
  ix = ix + 1
  write(luhsfs) EPS1( j )
- write(LUPRI,*) isp,j,REPNA(IREPSP(NSP+j)),EPS1(j )
+
+ if ( iprint_hsfs >= 10 ) then
+   write(LUPRI,*) isp,j,REPNA(IREPSP(NSP+j)),EPS1(j )
+ endif
+
 endif
 
 enddo
 
-write(LUPRI,'(/,2x,a,2i4)') 'one-electron HSFS stuff written into luhsfs file, numbers:',ix,nsp/2
+write(LUPRI,'(/,2x,a)') 'one-electron HSFS stuff written into luhsfs file'
 if (ix.ne.nsp/2) then
+write(LUPRI,'(/,2x,a,2i4)') 'one-electron HSFS stuff written into luhsfs file, numbers ix,nsp/2:',ix,nsp/2
   call quit('wrongly extracted HSFS indexes !')
 endif
 
@@ -548,9 +575,6 @@ enddo
 enddo
 
 endif
-
-
-write(LUPRI,*)
 
 !do i=1,8
 !do j=1,8

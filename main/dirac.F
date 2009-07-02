@@ -417,6 +417,19 @@ C
 !        CALL KRCC_CALC('KR-CC',WFCONV,WORK,LWORK)
 !     END IF
 C
+
+C
+C***********************************************************************
+C***** High Sect F S C C  M O D U L E **********************************
+C***********************************************************************
+C
+#ifdef MOD_HSFS
+!     ... interface from HSFS module
+      IF (DOHSFS) THEN
+        CALL HSFS_STUFF(WORK,LWORK)
+      ENDIF
+#endif
+
       CALL QEXIT('PAMPSI')
       RETURN
 C

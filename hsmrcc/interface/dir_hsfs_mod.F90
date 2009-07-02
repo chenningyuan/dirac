@@ -1,5 +1,8 @@
 !
 module DIRAC_HSFS
+!
+! HSFS parameters read in through the DIRAC input
+!
 
 ! convergence
 integer :: iconv_hsfs=8
@@ -11,6 +14,9 @@ integer, parameter :: luhsfs=18
 
 !! HSFS indexes 
 !integer, allocatable :: iord_hsfs(:) 
+
+! ... depends only on integral file (no transformation etc..)
+logical :: i_file_based=.false.
 
 contains
 

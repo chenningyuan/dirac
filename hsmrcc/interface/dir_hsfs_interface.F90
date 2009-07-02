@@ -2,6 +2,12 @@
 subroutine HSFS_STUFF(WORK,LWORK)
 !----------------------------------------------------------------------------------
 !
+!  Read DIRAC-MOLTRA produced files MRCONEE/MDCINT and  prepare
+!  DIRAC_hsfs file containing all data for the HSFS run.
+! 
+!  If MOLTRA section is skipped, or if .I_FILE is active in HSFS  input, do
+!  not prepare the DIRAC_hsfs file
+! 
 !  Called from PAMTRA, if defined (MOD_HSFS)
 !
 !  Written by Miro Ilias, Tel Aviv/Prievidza 2009
@@ -9,22 +15,17 @@ subroutine HSFS_STUFF(WORK,LWORK)
 !----------------------------------------------------------------------------------
 use Memory
 use io_moltra
-
+use DIRAC_HSFS
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbpsi.h"
 
 real*8, intent(in) :: WORK(LWORK)
-!logical :: check_point = .false.
-!logical :: check_point = .true.
-!integer (kind=4) :: ipos1,ipos2,ipos3,ipos4
-!integer :: ipos1,ipos2,ipos3,ipos4
 
-!logical :: check_MOints = .false.
-!logical :: check_MOints = .true.
-
-if (.not.DOHSFS) then
- write(LUPRI,'(2x,a)') 'DOHSFS=.false., no HSFS data preparation'
+! ... skip if specified
+if (i_file_based) then
+ write(LUPRI,'(/,2x,a)') '*** No HSFS data preparation from DIRAC-MOLTRA files. ***'
+ write(LUPRI,'(/,2x,a,/)') 'Assuming interface file DIRAC_hsfs is provided. '
  return
 endif
 
@@ -109,7 +110,7 @@ CHARACTER(len=7) :: METHOD, KEYWORD=' '
 ! ... nice F90 version 
 character(len=7) :: TABLE_TEMP, TABLE(10) =  & 
   (/'.PRINT ','.NACT  ','.NCORE ','.NOHSD ','.DRYRUN', & 
-    '.CONV  ','.METHOD','.XXXXXX','.XXXXXX','.XXXXXX' /)
+    '.CONV  ','.METHOD','.I_FILE','.XXXXXX','.XXXXXX' /)
 !
 !  Initializations...
 !
@@ -153,6 +154,8 @@ Do
           call read_hsfs_methods(WORD)
 !      Case ('.DRYRUN')
 !        nohsccfiles=.true.
+      Case ('.I_FILE')
+          i_file_based=.true.
       Case Default
         Write(LUPRI,'(/,3A,/)') ' Keyword "',KEYWORD, &
         '" is not yet implemented in HSFSINP.'
@@ -186,6 +189,12 @@ ENDIF
    do i=1,num_methods
      write(LUPRI,*) i,method_name(i)
    enddo
+ endif
+
+ if (i_file_based) then
+  write(LUPRI,'(1X,A)') '* starts from the DIRAC_hsfs file containg integrals and other data.'
+ else
+  write(LUPRI,'(1X,A)') '* starts from DIRAC produced data (integrals etc)'
  endif
 
 ! if (nohsccfiles) then
@@ -244,7 +253,8 @@ ELSE
                im = im + 1
                if (im > max_methods) then
                 write(LUPRI,*) 'im, max_methods=',im, max_methods
-                call quit('number of methods exceeded !')
+                call quit('number of methods exceeded ! increase max_methods' &
+               //' parameter !')
                endif
               ! write(LUPRI,*) 'valid method name=',METHOD
                method_name(im)=METHOD 

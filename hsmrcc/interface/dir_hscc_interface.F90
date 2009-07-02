@@ -398,12 +398,9 @@ subroutine get_dirac_ints(nort,eps,nn,ind,v,nint)
 !  
 !  nint - number of 2-el.integrals
 !  
-!  called from readv(ccsd3.F), ie the from HSFS method
+!  called from readv(ccsd3.F) -  HighSectFS method
 !
 !------------------------------------------------------------------------------
-! use Memory
-! use Vectors
-! use io_moltra
 #if defined MOD_HSFS
 use print_level
 use DIRAC_HSFS

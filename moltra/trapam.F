@@ -451,10 +451,10 @@ C
       CALL HSCC_STUFF(WORK,LWORK)
 #endif
 
-#ifdef MOD_HSFS
+!#ifdef MOD_HSFS
 !     ... interface from HSFS module
-      CALL HSFS_STUFF(WORK,LWORK)
-#endif
+!      CALL HSFS_STUFF(WORK,LWORK)
+!#endif
 
       CALL QEXIT('PAMTRA')
       RETURN

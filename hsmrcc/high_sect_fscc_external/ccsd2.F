@@ -3,6 +3,7 @@
 !------------------------------------------------------------------------
 !
 !    check whether there is enough space on static arrays (nn<=n0)
+!
 !------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
@@ -3370,7 +3371,12 @@ c             write (6,*) ' '
 !
 !  print time using system specific routine
 !
-!  tit - while call it's entering string, but here defined as real*8 
+!  tit - while call it's entering string, therefore here must be taken as
+!  character
+!
+!  n - hm, like additional specifikation number  (?)
+!  
+!  iparm - parameter, which must be lower than printing value
 !
 !--------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -3421,7 +3427,7 @@ c             write (6,*) ' '
 
 !     print 900,temp,acum,diff,n,datex,timex
       print 900,tit,acum,diff,n,datex,timex
-900   format (' time after ',a9,1x,f10.3,'; added ',
+900   format (' time after :',a9,1x,f10.3,'; added ',
      1 f10.3,'. n=',i8,'. ',2A12)
 
       csdltim = t
