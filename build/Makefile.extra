@@ -122,6 +122,7 @@ diag:
 	  size $(TARGET) 2> /dev/null | grep $(TARGET) | awk '{printf $$3/(1024*1024)}'; \
 	  echo ' MB' || echo 'can not be determined'
 	@echo -e "Sorted list of all object sizes (patience please):"
-	@readelf -s $(TARGET) 2> /dev/null | awk '{printf "%12.3f %s    %s\n",(($$3)+0)/(1024),"kB",$$8}' | sort -n -r -u || \
+# ... miro: some awk's are not recognizing '--non-decimal-data' ! todo: try to make it universal for all architectures
+	@readelf -s $(TARGET) 2> /dev/null | awk --non-decimal-data '{printf "%12.3f %s    %s\n",(($$3)+0)/(1024),"kB",$$8}' | sort -n -r -u || \
 	echo 'can not be determined, readelf not present'
 	
