@@ -2463,7 +2463,7 @@ C     =================================================
 C
          DO IFREQ = 1,NFREQ
            AFREQ = EVALR(IFREQ)
-           CALL LINRED(NZRED,NREDM,REDE,REDS,AFREQ,REDGP,
+           CALL XRSLINRED(NZRED,NREDM,REDE,REDS,AFREQ,REDGP,
      &          EVECR(1,IFREQ),IBTYP,INERT,NPRED,IPRXRS,
      &          WORK,KFREE,LFREE)
          ENDDO
@@ -2513,8 +2513,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck Linred */
-      SUBROUTINE LINRED(N,LDA,AE,AS,W,G,X,IBTYP,INERT,
+C/* Deck XRSLinred */
+      SUBROUTINE XRSLINRED(N,LDA,AE,AS,W,G,X,IBTYP,INERT,
      &                  NPVEC,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -2533,7 +2533,7 @@ C
       DIMENSION AE(LDA,N),AS(LDA,N),G(N),X(N),
      &          DET(2),INERT(3),IBTYP(2,*),WORK(*)
 C
-      CALL QENTER('LINRED')
+      CALL QENTER('XRSLINRED')
       KFRSAV = KFREE
 C
 C     Memory allocation
@@ -2552,9 +2552,9 @@ C     Place G in buffer X
 C
       CALL DCOPY(N,G,1,X,1)
       IF(IPRINT.GE.3) THEN
-        WRITE(LUPRI,'(A)') 'LINRED: Reduced E[2] - WS[2] matrix'
+        WRITE(LUPRI,'(A)') 'XRSLINRED: Reduced E[2] - WS[2] matrix'
         CALL PRIRMT(WORK(KA2),LDA,N,N,IBTYP)
-        WRITE(LUPRI,'(A)') 'LINRED: Reduced gradient'
+        WRITE(LUPRI,'(A)') 'XRSLINRED: Reduced gradient'
         CALL PRIRVC(X,N,IBTYP)
       ENDIF
       IF(IMFREQ) THEN
@@ -2569,27 +2569,28 @@ C
 C       Print section
 C
         IPAR = INERT(2) - NPVEC
-        IF(IPRINT.GE.3.OR.IPAR.GT.0) THEN
+        IF(IPRINT.GE.2.OR.IPAR.GT.0 .OR. INERT(3) .ne. 0) THEN
           WRITE(LUPRI,'(/3X,A,F12.5)') '* Reduced matrix. Frequency:',W
-          WRITE(LUPRI,'(5X,A,I5)')
+          WRITE(LUPRI,'(2(5X,A,I5/),5X,A,I5,A,I5)')
      &      '* Number of positive eigenvalues:',INERT(1),
      &      '* Number of zero     eigenvalues:',INERT(3),
-     &      '* Number of negative eigenvalues:',INERT(2)
+     &      '* Number of negative eigenvalues:',INERT(2),
+     &      '  number of +- (ep) trial vectors:',NPBEC
           IF(IPAR.GT.0) THEN
-            WRITE(LUPRI,'(A,A)')
-     &      '*** WARNING - Possible instability detected ',
+            WRITE(LUPRI,'(/A)')
+     &      '*** WARNING - Possible instability detected '//
      &      'in reduced system !'
           ENDIF
         ENDIF
       ENDIF
       IF(IPRINT.GE.3) THEN
         WRITE(LUPRI,'(A,F12.5,A)') 
-     &      'LINRED: Solution vector at frequency:',W,' a.u.'
+     &      'XRSLINRED: Solution vector at frequency:',W,' a.u.'
         CALL PRIRVC(X,N,IBTYP)
       ENDIF
 
-      CALL MEMREL('LINRED',WORK,1,KFRSAV,KFREE,LFREE)
-      CALL QEXIT('LINRED')
+      CALL MEMREL('XRSLINRED',WORK,1,KFRSAV,KFREE,LFREE)
+      CALL QEXIT('XRSLINRED')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
