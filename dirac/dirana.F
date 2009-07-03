@@ -222,7 +222,7 @@ C          ... read from file
            CALL READMP2NAT(WORK(KCMO),WORK(KOCC),WORK(KEIG_NAT))
            WRITE(LUPRI,'(/A)')
      &           ' (MULPOP)  Orbitals and occupancies read from' //
-     &           ' label NEWNATOB/MP2NATOC on file KRMCOLD'
+     &           ' label NEWNATOB/MP2NOOCC on file KRMCOLD'
 C
            CLOSE(LUKRMC,STATUS='KEEP')
          ELSE
@@ -530,7 +530,7 @@ C     SMAT - overlap matrix
 C     COEF - coefficients
 C
 C     KRMC_FLG = 2: Orbitals and occupancies read from 
-C                   label NEWNATOB/MP2NATOC on file KRMCOLD
+C                   label NEWNATOB/MP2NOOCC on file KRMCOLD
 C     KRMC_FLG = 1: Orbitals read from
 C                   label NEWORB on file KRMCSCF
 C     KRMC_FLG = 0  Orbitals read from DFCOEF
@@ -602,7 +602,7 @@ c     ... closed shell
 100     CONTINUE
         ELSE IF(KRMC_FLG.EQ.2) THEN
 C       ... MP2-NOs
-           OCC2(I) = OCC(NPSH(IFRP)+JVEC(I))
+           OCC2(I) = OCC(NPSH(IFRP)+IORB(IFRP)+JVEC(I))
         ELSE IF(KRMC_FLG.EQ.3) THEN
 C       ... CI-NOs
            OCC2(I) = OCC(NPSH(IFRP)+IORB(IFRP)+JVEC(I))

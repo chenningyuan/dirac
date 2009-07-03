@@ -65,7 +65,7 @@ C  .MULPOP  - perform Mulliken population analysis for MP2-NOs
 C
 C  FIXME more ideas for options: (18-Apr-2008)
 C
-C  .FOCKNO  - transform to selected NO's to canonical Fock orbitals in
+C  .FOCKNO  - transform selected NO's to canonical Fock orbitals in
 C             subspace (?? for better convergence in CI?)
 C  
       SAVE SET
@@ -391,7 +391,7 @@ C       read occ. numbers and transf. matrix
 C       ------------------------------------
 C
         CALL OPNFIL(LUKRMC,'KRMCOLD','OLD','MP2NOG')
-        CALL REAKRMC(LUKRMC,'MP2NATOC',WORK(KOCC_NAT),NESHT)
+        CALL REAKRMC(LUKRMC,'MP2NOOCC',WORK(KOCC_NAT),NESHT)
 C
         IF( .NOT. SKIP_MP2DEN ) THEN
 C
@@ -1001,7 +1001,7 @@ C     initialize
       CALL DZERO(EIG,NORBT)
 C     read MP2-NO vecs and occupancies from file KRMCOLD
       CALL REAKRMC(LUKRMC,'NEWNATOB',CMO,NCMOTQ)
-      CALL REAKRMC(LUKRMC,'MP2NATOC',EIG_NAT,NESHT)
+      CALL REAKRMC(LUKRMC,'MP2NOOCC',EIG_NAT,NESHT)
 C
       IOFF2 = 1
 C
