@@ -110,6 +110,7 @@ C      use the NOEPRN keyword (see below)
 C INTNMR here in NMRINP is read before INTXLR (in XLRINP), 
 C  so it has its own default value
 C of all 3 integral classed (LL+LS+SS)
+!miro TODO: take the integral default from HAMINP
       INTNMR = 7  
 C
 C     Process input 
@@ -141,7 +142,13 @@ C
                CALL QUIT('Illegal keyword in NMRINP.')
     1          CONTINUE
 C ... read user specified gauge origin
-                  READ(LUCMD,*) (GAGORG(ICOOR), ICOOR = 1,3)
+                  READ(LUCMD,*,IOSTAT=IOS) (GAGORG(ICOOR),ICOOR=1,3)
+                  IF (IOS.NE.0) THEN
+                   WRITE(LUPRI,*) '(GAGORG(ICOOR),ICOOR=1,3:',
+     &             (GAGORG(ICOOR),ICOOR=1,3)
+                   CALL QUIT(
+     & 'NMRINP: error in reading (GAGORG(ICOOR),ICOOR=1,3) !')
+                  ENDIF
                   GORG = .TRUE.
                GO TO 100
     2          CONTINUE
@@ -161,8 +168,14 @@ C     for the exp.value term h(Bm)
     5          CONTINUE
 C INTFLG: specify what two-electron integrals to include
 C         for the two-electron London contibution g(B)_mnpq
-                  READ(LUCMD,*) ILLINT,ISLINT,ISSINT
-                  INTNMR = ILLINT + 2*ISLINT + 4*ISSINT
+                 READ(LUCMD,*,IOSTAT=IOS) ILLINT,ISLINT,ISSINT
+                 IF (IOS.NE.0) THEN
+                  WRITE(LUPRI,*)
+     &  'ILLINT,ISLINT,ISSINT:',ILLINT,ISLINT,ISSINT
+                  CALL QUIT(
+     & 'NMRINP: Error in reading ILLINT,ISLINT,ISSINT!')
+                 ENDIF
+                 INTNMR = ILLINT + 2*ISLINT + 4*ISSINT
                GO TO 100
     6          CONTINUE
 C  ... do not calculate two-electron London contribution, g(B)_mnpq
@@ -188,7 +201,7 @@ C     in the URKBAL scheme; in RKBAL the default is .FALSE.
 C&&&& LONDON: use London atomic orbitals rather than conventional atomic orbitals
                LONDON = .TRUE.
 #else
-               WRITE(LUPRI,'(1X,A)') '* This version of DIRAC does not'
+               WRITE(LUPRI,'(,1X,A)') '* This version of DIRAC does not'
      & //' support London atomic orbitals !'
      
 #endif
@@ -238,12 +251,14 @@ C     CALL PRSYMB(LUPRI,'=',75,0)
 
       IF (GORG) THEN
          CALL PRSYMB(LUPRI,'=',75,0)
-         WRITE(LUPRI,'(1X,A)') '*NMRINP: '
+         WRITE(LUPRI,'(3X,A)')
+     &   'NMRINP: Input for London magnetic field gradient'//
+     &   '(NMR shieldings, magnetizabilities).'
          CALL PRSYMB(LUPRI,'=',75,0)
-         WRITE(LUPRI,'(A,3F12.6,/)') 'User defined gauge '//
-     &   'origin used:',(GAGORG(I), I = 1, 3)
-         IF (.NOT.SYMCON.AND.LONDON) WRITE(LUPRI,'(1X,A,/)')
-     &  ' WARNING: User defined gauge '//
+         WRITE(LUPRI,'(3X,A,3F12.6)') 'User defined gauge '//
+     &   'origin used (a.u.):',(GAGORG(I), I = 1, 3)
+         IF (.NOT.SYMCON.AND.LONDON) WRITE(LUPRI,'(3X,A,/)')
+     &  'WARNING: User defined gauge '//
      &  'may give wrong results when using symmetry !'   
 CMI      .... Don't forget to copy GAGORG into the DIPORG !!!
          CALL DCOPY(3,GAGORG,1,DIPORG,1)
@@ -261,9 +276,9 @@ C ... call the routine in abacus/hergp.F
          CALL MEMREL('NMRINP.CMMASS',WORK,KWORK,KGEOM,KFREE,LFREE)
          CALL DCOPY(3,CMXYZ,1,GAGORG,1)
          CALL DCOPY(3,GAGORG,1,DIPORG,1)
-         WRITE(LUPRI,'(A,3F12.6)')
-     &  'NMRINP: Center of mass used as the gauge & dipole '//
-     &  'origin :',(GAGORG(I), I = 1, 3)
+         WRITE(LUPRI,'(1X,A,3F12.6)')
+     &  '* Center of mass used for the gauge & dipole '//
+     &  'origin (a.u.) :',(GAGORG(I), I = 1, 3)
        END IF
       END IF
 
