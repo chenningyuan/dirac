@@ -479,6 +479,7 @@ C      if problems are encountered, should be reverted to scheme 4
 c
 c     activate/deactivate fine sorting of 1HT data for scheme6
 c
+      is6sort           = 0
       do_finesort       = .false.
       set_auto_finesort = .false.
 c
@@ -793,6 +794,7 @@ C&&&& MDCINT - Force writing of the MDCINT file in MOLFDIR format
    25          CONTINUE
 !&&&& MOLTRA scheme 6 stuff
                READ(LUCMD,*) IS6SORT
+#ifndef VAR_PFS
                if (is6sort.eq.0) then
                   do_finesort       = .false.
                   set_auto_finesort = .false.
@@ -800,6 +802,11 @@ C&&&& MDCINT - Force writing of the MDCINT file in MOLFDIR format
                   do_finesort       = .true.
                   set_auto_finesort = .false.
                endif
+#else
+               write (*,*) 'MPI-IO enabled! 1HT sort deactivated'
+               do_finesort       = .false.
+               set_auto_finesort = .false.
+#endif
                GO TO 100
    26          CONTINUE
 !&&&& XXXXXXXXXXXXXXXXXXX

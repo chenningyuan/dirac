@@ -610,7 +610,7 @@ C
       IF (MOD(NBSYMP*NSTR1T,NBUF_L).GT.0) KL_IN_BUF = KL_IN_BUF + 1
 
 caspg, debug
-      if (.false.) then
+      if (.true.) then
       if (MYTID.eq.0) then
       write (*,*) 'debug, in DEFINE_SORT:'
       write (*,*) '                              N_BUFFER:',N_BUFFER
@@ -677,10 +677,12 @@ c                    .. also store information for the fine-sort of 1HT integral
         ENDDO
       ENDDO
 C
+#ifndef VAR_PFS
 c aspg, for 1HT fine-sort
       call init_finesort_commons(kl_in_buf,n_buffer,node_for_buffer)
       call dealloc(node_for_buffer)
 c aspg, for 1HT fine-sort
+#endif
 
       IF(IPRINT.GE.3) THEN
          CALL HEADER('Arrays for sort of halftr. integrals ',-1)
@@ -1216,8 +1218,15 @@ c aspg, testing
         itimes_izloop  = 0                
                                           
         call timer('START ',TIMSTR,TIMEND)
-                                                                        
+ 
+#ifndef VAR_PFS                                                                       
         if (do_finesort) call sort_buffers(mytid,1)
+#endif        
+
+        write (*,*) ' '
+        write (*,*) '<<< Starting 2HT on node ',mytid
+        write (*,*) ' '
+
 c aspg, testing
 c
       NIJOFF = 0
@@ -1329,6 +1338,11 @@ C
 #if defined (VAR_PFS)
       CALL LOCAL_FILE_CLOSE_READ
 #endif
+        write (*,*) ' '
+        write (*,*) '>>> Finished 2HT on node ',mytid
+        call timer('2HT_all',TIMSTR,TIMEND)
+        write (*,*) ' '
+
       CALL QEXIT('MS6IN2')
 C
       RETURN

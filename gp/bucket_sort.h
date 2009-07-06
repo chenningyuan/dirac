@@ -10,10 +10,13 @@ C
 C     The length of records, measured in integer words.
 C     Performance tip : Make this an multiple of 1024 MINUS 1 (to leave space for the 2 additional administrative ints)
 C
-      PARAMETER (NGBFSZ=2*1024-1)
+      PARAMETER (NADMIN=1)
+      PARAMETER (NKWORDS=32)
+      PARAMETER (NKBUFFS=1)
+      PARAMETER (NGBFSZ=NKWORDS*1024-NADMIN)
 C
 C     The maximum number of buckets per file.
-      PARAMETER (N_BUFFER=1024)
+      PARAMETER (N_BUFFER=NKBUFFS*1024)
 C
 C     The memory needed to store all buckets for one sort (need MAX_MEM
 C     times one real and two integer numbers)
@@ -56,9 +59,6 @@ c aspg, 2009-04-24
 c
 c variables used in the fine-sorting of the 1HT of scheme6
 c
-      PARAMETER (MAXKLINBUF=150)
-      PARAMETER (MAXRECINBUF=5000)
-
       PARAMETER (MAX_BUF_files=1)
       PARAMETER (I_SORTED_UNIT=400)
 
