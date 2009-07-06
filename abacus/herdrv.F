@@ -316,7 +316,12 @@ C
             ONEPRP = .TRUE.
             GO TO 100
   110    CONTINUE
-            READ (LUCMD, *) (ORIGIN(I),I=1,3)
+            READ (LUCMD, *,IOSTAT=IOS) (ORIGIN(I),I=1,3)
+            IF (IOS.NE.0) THEN
+              WRITE(LUPRI,*) 'Error in reading (ORIGIN(I),I=1,3)!'
+              WRITE(LUPRI,*) '(ORIGIN(I),I=1,3):', (ORIGIN(I),I=1,3)
+              CALL QUIT('Error in reading (ORIGIN(I),I=1,3)!')
+            ENDIF
             GO TO 100
   111    CONTINUE
             SECMOM = .TRUE.
@@ -599,10 +604,16 @@ C
             SUPMAT = .FALSE.
             GO TO 100
  170     CONTINUE
-            READ (LUCMD, *) (GAGORG(I),I=1,3)
+            READ (LUCMD, *,IOSTAT=IOS) (GAGORG(I),I=1,3)
+            IF (IOS.NE.0) THEN
+              CALL QUIT('Error in reading (GAGORG(I),I=1,3)!')
+            ENDIF
             GO TO 100
  171     CONTINUE
-            READ (LUCMD, *) (DIPORG(I),I=1,3)
+            READ (LUCMD, *,IOSTAT=IOS) (DIPORG(I),I=1,3)
+            IF (IOS.NE.0) THEN
+              CALL QUIT('Error in reading (DIPORG(I),I=1,3)!')
+            ENDIF
             GO TO 100
  172     CONTINUE
             GFACDI = .TRUE.
@@ -626,7 +637,10 @@ C
             GO TO 100
  177     CONTINUE
 C&&& Nuclear model
-            READ (LUCMD, *) INUC
+            READ (LUCMD, *,IOSTAT=IOS) INUC
+            IF (IOS.NE.0) THEN
+             CALL QUIT('Error in reading nuclear model INUC  !')
+            ENDIF
             IF    (INUC.EQ.1) THEN
               GAUNUC = .FALSE.
             ELSEIF(INUC.EQ.2) THEN
@@ -904,14 +918,17 @@ CC&&&& DENSFIT: Density fitting (Not yet implemented)
             WRITE (LUPRI,'(10X,A)')
      $       '- first electric derivatives of one-electron'
             WRITE (LUPRI,'(12X,A)') 'Hamiltonian integrals'
-	 ENDIF
+         ENDIF
       END IF
+
+! Miro: I hope that these coordinates are in atomic units
       IF (DNRM2(3,ORIGIN,1) .GT. D0) WRITE (LUPRI,'(/,A,3F20.15)')
-     &    ' Operator center:', (ORIGIN(I),I=1,3)
+     &    ' Operator center (a.u.):', (ORIGIN(I),I=1,3)
       IF (DNRM2(3,GAGORG,1) .GT. D0) WRITE (LUPRI,'(/,A,3F20.15)')
-     &    ' Gauge origin   :', (GAGORG(I),I=1,3)
+     &    ' Gauge origin (a.u.)   :', (GAGORG(I),I=1,3)
       IF (DNRM2(3,DIPORG,1) .GT. D0) WRITE (LUPRI,'(/,A,3F20.15)')
-     &    ' Dipole origin  :', (DIPORG(I),I=1,3)
+     &    ' Dipole origin (a.u.)  :', (DIPORG(I),I=1,3)
+
       IF (EXPIKR) WRITE (LUPRI,'(/,A,3F20.15)')
      &    ' Wave numbers:', (EXPKR(I),I=1,3)
       IF (SOTEST) WRITE (LUPRI,'(/,A,/)')

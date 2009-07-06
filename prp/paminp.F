@@ -412,9 +412,9 @@ CMI   g_tensors operator centers might be changed
      &'These initial settings of center and origins'//
      &' might be changed later:'
       WRITE (LUPRI,'(1X,A,3F18.10)')
-     &     '* Operator center:', (ORIGIN(I),I=1,3),
-     &     '* Gauge origin   :', (GAGORG(I),I=1,3),
-     &     '* Dipole origin  :', (DIPORG(I),I=1,3)
+     &     '* Operator center (a.u.):', (ORIGIN(I),I=1,3),
+     &     '* Gauge origin    (a.u.):', (GAGORG(I),I=1,3),
+     &     '* Dipole origin   (a.u.):', (DIPORG(I),I=1,3)
       GAGORGX = GAGORG(1)
       GAGORGY = GAGORG(2)
       GAGORGZ = GAGORG(3)
@@ -422,11 +422,11 @@ CMI   g_tensors operator centers might be changed
       IF (DOPCT) THEN
        IF (.NOT.NOPCT) THEN
          WRITE(LUPRI,'(2X,A)') 
-     & '...do the picture change transformation of the'//
+     & '...perform the picture change transformation of the'//
      & ' four-comp. property operators'
        ELSE
          WRITE(LUPRI,'(2X,A)') 
-     & '...do NOT do the picture change transformation of the'//
+     & '...do NOT perform the picture change transformation of the'//
      & ' four-comp. property operators - take only LL block(s)'
        ENDIF
       ELSE
