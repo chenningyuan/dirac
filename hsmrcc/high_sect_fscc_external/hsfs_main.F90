@@ -26,12 +26,16 @@
 
  End Subroutine HIGH_SECTOR_FSCC_METHODS
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  Subroutine Init_HSFS_Modules
+!---------------------------------------------------------------------------------------
 !
-! initialize the whole bunch of former static allocations in common blocks
-! which now are nice F90 modules with allocatable variables
+!  initialize the whole bunch of former static allocations in former common blocks
+! which are now replaced by nice F90 modules with allocatable variables
 !
+!---------------------------------------------------------------------------------------
 use gen_mod
+use sym_mod
 use cint_mod
 use dat_mod
 use fock_mod
@@ -42,8 +46,11 @@ use cij4_mod
 use cij5_mod
 use cij6_mod
 use cfiles_mod
+use rsp1_mod
+use rsp2_mod
  
  call init_gen_mod
+ call init_sym_mod
  call init_cint_mod
  call init_dat_mod
  call init_fock_mod
@@ -54,6 +61,8 @@ use cfiles_mod
  call init_cij5_mod
  call init_cij6_mod
  call init_cfiles_mod
+ call init_rsp1_mod
+ call init_rsp2_mod
 
  End Subroutine Init_HSFS_Modules
 
