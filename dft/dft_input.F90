@@ -18,6 +18,28 @@ module dft_input
 
 contains
 
+  subroutine reset_hfx()
+
+#include "dcbham.h"
+
+    hfxfac = 0.0d0
+
+  end subroutine
+
+  subroutine add_hfx(w)
+
+!   ----------------------------------------------------------------------------
+    real(8), intent(in) :: w
+!   ----------------------------------------------------------------------------
+
+#include "dcbham.h"
+
+    if (dabs(w) > tiny) then
+      hfxfac = hfxfac + w
+    end if
+
+  end subroutine
+
   subroutine add_weight(i, w, is_gga)
 
 !   ----------------------------------------------------------------------------
@@ -70,7 +92,6 @@ contains
   subroutine parse_functional(line)
 
 #include "../autodiff/xc_fortran_interface.h"
-#include "dcbham.h"
 
 !   ----------------------------------------------------------------------------
     character(80)              :: line
@@ -83,8 +104,7 @@ contains
     dft_cfg_lda_functional_weight_array = 0.0d0
     dft_cfg_gga_functional_weight_array = 0.0d0
 
-!fixme: later allow hybrids, now set to zero
-    hfxfac = 0.0d0
+    call reset_hfx()
 
     call lowercase(line)
 
@@ -115,6 +135,14 @@ contains
       call add_weight(i=GGA_BECKE,  w=w, is_gga=.true.)
       call add_weight(i=GGA_LYP,    w=w, is_gga=.true.)
 
+!     b3lyp
+      w = get_weight(word_array(i), 'b3lyp')
+      call add_weight(i=LDA_SLATER, w=0.80d0*w, is_gga=.false.)
+      call add_weight(i=LDA_VWN,    w=0.19d0*w, is_gga=.false.)
+      call add_weight(i=GGA_BECKE,  w=0.72d0*w, is_gga=.true.)
+      call add_weight(i=GGA_LYP,    w=0.81d0*w, is_gga=.true.)
+      call add_hfx(0.20d0*w)
+
 !     pbe
       w = get_weight(word_array(i), 'pbe')
       call add_weight(i=GGA_PBEX,   w=w, is_gga=.true.)
@@ -141,6 +169,9 @@ contains
 
       w = get_weight(word_array(i), 'pbec')
       call add_weight(i=GGA_PBEC,   w=w, is_gga=.true.)
+
+      w = get_weight(word_array(i), 'hfx')
+      call add_hfx(w)
 
     end do
 
