@@ -1,0 +1,10 @@
+ 
+Basis tests for high-sector spin-free  Fock Space Coupled Cluster method.
+
+You have to prepare the "input" file and copy it to working directory:
+   
+   pam -copy input ....
+
+
+
+ 
