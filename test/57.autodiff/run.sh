@@ -17,6 +17,12 @@ export MENU=pbex.inp
 export MENU=pbec.inp
 ../run.sh
 
+export MENU=pbe0.inp
+../run.sh
+
+export MENU=pbe.inp
+../run.sh
+
 export MOL=he
 
 export MENU=blyp_sdft.inp

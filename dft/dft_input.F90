@@ -34,9 +34,7 @@ contains
 
 #include "dcbham.h"
 
-    if (dabs(w) > tiny) then
-      hfxfac = hfxfac + w
-    end if
+    hfxfac = hfxfac + w
 
   end subroutine
 
@@ -48,12 +46,10 @@ contains
     logical, intent(in) :: is_gga
 !   ----------------------------------------------------------------------------
 
-    if (dabs(w) > tiny) then
-      if (is_gga) then
-        dft_cfg_gga_functional_weight_array(i) = dft_cfg_gga_functional_weight_array(i) + w
-      else
-        dft_cfg_lda_functional_weight_array(i) = dft_cfg_lda_functional_weight_array(i) + w
-      end if
+    if (is_gga) then
+      dft_cfg_gga_functional_weight_array(i) = dft_cfg_gga_functional_weight_array(i) + w
+    else
+      dft_cfg_lda_functional_weight_array(i) = dft_cfg_lda_functional_weight_array(i) + w
     end if
 
   end subroutine
@@ -121,57 +117,75 @@ contains
 
 !     lda
       w = get_weight(word_array(i), 'lda')
-      call add_weight(i=LDA_SLATER, w=w, is_gga=.false.)
-      call add_weight(i=LDA_VWN,    w=w, is_gga=.false.)
+      if (dabs(w) > tiny) then
+        call add_weight(i=LDA_SLATER, w=w, is_gga=.false.)
+        call add_weight(i=LDA_VWN,    w=w, is_gga=.false.)
+      end if
 
 !     svwn = lda
       w = get_weight(word_array(i), 'svwn')
-      call add_weight(i=LDA_SLATER, w=w, is_gga=.false.)
-      call add_weight(i=LDA_VWN,    w=w, is_gga=.false.)
+      if (dabs(w) > tiny) then
+        call add_weight(i=LDA_SLATER, w=w, is_gga=.false.)
+        call add_weight(i=LDA_VWN,    w=w, is_gga=.false.)
+      end if
 
 !     blyp
       w = get_weight(word_array(i), 'blyp')
-      call add_weight(i=LDA_SLATER, w=w, is_gga=.false.)
-      call add_weight(i=GGA_BECKE,  w=w, is_gga=.true.)
-      call add_weight(i=GGA_LYP,    w=w, is_gga=.true.)
+      if (dabs(w) > tiny) then
+        call add_weight(i=LDA_SLATER, w=w, is_gga=.false.)
+        call add_weight(i=GGA_BECKE,  w=w, is_gga=.true.)
+        call add_weight(i=GGA_LYP,    w=w, is_gga=.true.)
+      end if
 
 !     b3lyp
       w = get_weight(word_array(i), 'b3lyp')
-      call add_weight(i=LDA_SLATER, w=0.80d0*w, is_gga=.false.)
-      call add_weight(i=LDA_VWN,    w=0.19d0*w, is_gga=.false.)
-      call add_weight(i=GGA_BECKE,  w=0.72d0*w, is_gga=.true.)
-      call add_weight(i=GGA_LYP,    w=0.81d0*w, is_gga=.true.)
-      call add_hfx(0.20d0*w)
+      if (dabs(w) > tiny) then
+        call add_weight(i=LDA_SLATER, w=0.80d0*w, is_gga=.false.)
+        call add_weight(i=LDA_VWN,    w=0.19d0*w, is_gga=.false.)
+        call add_weight(i=GGA_BECKE,  w=0.72d0*w, is_gga=.true.)
+        call add_weight(i=GGA_LYP,    w=0.81d0*w, is_gga=.true.)
+        call add_hfx(0.20d0*w)
+      end if
 
 !     pbe
       w = get_weight(word_array(i), 'pbe')
-      call add_weight(i=GGA_PBEX,   w=w, is_gga=.true.)
-      call add_weight(i=GGA_PBEC,   w=w, is_gga=.true.)
+      if (dabs(w) > tiny) then
+        call add_weight(i=GGA_PBEX,   w=w, is_gga=.true.)
+        call add_weight(i=GGA_PBEC,   w=w, is_gga=.true.)
+      end if
+
+!     pbe0
+      w = get_weight(word_array(i), 'pbe0')
+      if (dabs(w) > tiny) then
+        call add_weight(i=GGA_PBEX,   w=0.75d0*w, is_gga=.true.)
+        call add_weight(i=GGA_PBEC,   w=w,        is_gga=.true.)
+        call add_hfx(0.25d0*w)
+      end if
 
 
 !     now atomic functional acronyms
 !     ==============================
 
       w = get_weight(word_array(i), 'slater')
-      call add_weight(i=LDA_SLATER, w=w, is_gga=.false.)
+      if (dabs(w) > tiny) call add_weight(i=LDA_SLATER, w=w, is_gga=.false.)
 
       w = get_weight(word_array(i), 'vwn')
-      call add_weight(i=LDA_VWN,    w=w, is_gga=.false.)
+      if (dabs(w) > tiny) call add_weight(i=LDA_VWN,    w=w, is_gga=.false.)
 
       w = get_weight(word_array(i), 'becke')
-      call add_weight(i=GGA_BECKE,  w=w, is_gga=.true.)
+      if (dabs(w) > tiny) call add_weight(i=GGA_BECKE,  w=w, is_gga=.true.)
 
       w = get_weight(word_array(i), 'lyp')
-      call add_weight(i=GGA_LYP,    w=w, is_gga=.true.)
+      if (dabs(w) > tiny) call add_weight(i=GGA_LYP,    w=w, is_gga=.true.)
 
       w = get_weight(word_array(i), 'pbex')
-      call add_weight(i=GGA_PBEX,   w=w, is_gga=.true.)
+      if (dabs(w) > tiny) call add_weight(i=GGA_PBEX,   w=w, is_gga=.true.)
 
       w = get_weight(word_array(i), 'pbec')
-      call add_weight(i=GGA_PBEC,   w=w, is_gga=.true.)
+      if (dabs(w) > tiny) call add_weight(i=GGA_PBEC,   w=w, is_gga=.true.)
 
       w = get_weight(word_array(i), 'hfx')
-      call add_hfx(w)
+      if (dabs(w) > tiny) call add_hfx(w)
 
     end do
 
