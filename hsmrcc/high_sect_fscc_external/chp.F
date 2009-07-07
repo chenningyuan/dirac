@@ -138,10 +138,8 @@ c     iopt(9) - incomplete model space
       call ordvv_chp
       call calvv0_chp
       call pdiag
-
       iter=0
       call tvinit_chp
-
       if (iopt(4).ne.0) then
         if (iopt(17).eq.0) then
           call dbdiag ("dum1","vv0 ","dum3","dum4",0100,1)
@@ -397,7 +395,7 @@ c ******************************************
 !
 !----------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
-     use dat_mod
+      use dat_mod
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -417,7 +415,7 @@ c ******************************************
         call dveps6   ("t3p ")
       end if
       return
-      end subroutine tvinit_chp
+      end 
 
 c **************************************************
       subroutine ordta0_chp
