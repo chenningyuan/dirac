@@ -174,6 +174,11 @@ int main(void)
 	cout << "Error evaluating multivariate:" << pp.eval(r) << " " << p1.eval(r)*p2.eval(r) << endl;
 	res++;
     }
+    // Evaluate with taylor vars
+    taylor<1,2> pv[4], pr;
+    for (int i=0;i<4;i++)
+      pv[i][1] = i;
+    pr = tin.eval(pv);
   }
   
   // composition
