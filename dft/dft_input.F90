@@ -1,16 +1,159 @@
 module dft_input
 
   use dft_cfg
+  use character_processing
 
   implicit none
 
+#ifdef MOD_AUTODIFF
+  public parse_functional
+#endif
   public parse_dft_input
   public consistency_after_dft_input
   public report_after_dft_input
 
   private
 
+  real(8), parameter :: tiny = 1.0d-20
+
 contains
+
+  subroutine add_weight(i, w, is_gga)
+
+!   ----------------------------------------------------------------------------
+    integer, intent(in) :: i
+    real(8), intent(in) :: w
+    logical, intent(in) :: is_gga
+!   ----------------------------------------------------------------------------
+
+    if (dabs(w) > tiny) then
+      if (is_gga) then
+        dft_cfg_gga_functional_weight_array(i) = dft_cfg_gga_functional_weight_array(i) + w
+      else
+        dft_cfg_lda_functional_weight_array(i) = dft_cfg_lda_functional_weight_array(i) + w
+      end if
+    end if
+
+  end subroutine
+
+  function get_weight(word, functional)
+
+!   ----------------------------------------------------------------------------
+    character(*), intent(in)  :: word
+    character(*), intent(in)  :: functional
+    real(8)                   :: get_weight
+!   ----------------------------------------------------------------------------
+    integer                   :: i
+!   ----------------------------------------------------------------------------
+
+    get_weight = 0.0d0
+
+    if (word_contains(word, '=')) then
+
+      i = index(word, '=')
+
+      if (word(1:i-1) == functional) then
+        read(word(i+1:len(word)), *) get_weight
+      end if
+
+    else
+
+      if (word == functional) then
+        get_weight = 1.0d0
+      end if
+
+    end if
+
+  end function
+
+#ifdef MOD_AUTODIFF
+  subroutine parse_functional(line)
+
+#include "../autodiff/xc_fortran_interface.h"
+#include "dcbham.h"
+
+!   ----------------------------------------------------------------------------
+    character(80)              :: line
+!   ----------------------------------------------------------------------------
+    character(80), allocatable :: word_array(:)
+    integer                    :: i, nr_words
+    real(8)                    :: w
+!   ----------------------------------------------------------------------------
+
+    dft_cfg_lda_functional_weight_array = 0.0d0
+    dft_cfg_gga_functional_weight_array = 0.0d0
+
+!fixme: later allow hybrids, now set to zero
+    hfxfac = 0.0d0
+
+    call lowercase(line)
+
+    nr_words = word_count(line)
+
+    allocate(word_array(nr_words))
+    read(line, *) (word_array(i), i = 1, nr_words)
+
+    do i = 1, nr_words
+
+
+!     first check aliases
+!     ===================
+
+!     lda
+      w = get_weight(word_array(i), 'lda')
+      call add_weight(i=LDA_SLATER, w=w, is_gga=.false.)
+      call add_weight(i=LDA_VWN,    w=w, is_gga=.false.)
+
+!     svwn = lda
+      w = get_weight(word_array(i), 'svwn')
+      call add_weight(i=LDA_SLATER, w=w, is_gga=.false.)
+      call add_weight(i=LDA_VWN,    w=w, is_gga=.false.)
+
+!     blyp
+      w = get_weight(word_array(i), 'blyp')
+      call add_weight(i=LDA_SLATER, w=w, is_gga=.false.)
+      call add_weight(i=GGA_BECKE,  w=w, is_gga=.true.)
+      call add_weight(i=GGA_LYP,    w=w, is_gga=.true.)
+
+!     pbe
+      w = get_weight(word_array(i), 'pbe')
+      call add_weight(i=GGA_PBEX,   w=w, is_gga=.true.)
+      call add_weight(i=GGA_PBEC,   w=w, is_gga=.true.)
+
+
+!     now atomic functional acronyms
+!     ==============================
+
+      w = get_weight(word_array(i), 'slater')
+      call add_weight(i=LDA_SLATER, w=w, is_gga=.false.)
+
+      w = get_weight(word_array(i), 'vwn')
+      call add_weight(i=LDA_VWN,    w=w, is_gga=.false.)
+
+      w = get_weight(word_array(i), 'becke')
+      call add_weight(i=GGA_BECKE,  w=w, is_gga=.true.)
+
+      w = get_weight(word_array(i), 'lyp')
+      call add_weight(i=GGA_LYP,    w=w, is_gga=.true.)
+
+      w = get_weight(word_array(i), 'pbex')
+      call add_weight(i=GGA_PBEX,   w=w, is_gga=.true.)
+
+      w = get_weight(word_array(i), 'pbec')
+      call add_weight(i=GGA_PBEC,   w=w, is_gga=.true.)
+
+    end do
+
+    deallocate(word_array)
+
+    do i = 1, size(dft_cfg_gga_functional_weight_array)
+      if (dabs(dft_cfg_gga_functional_weight_array(i)) > tiny) then
+        dft_cfg_is_gga_autodiff = .true.
+      end if
+    end do
+
+  end subroutine
+#endif /* ifdef MOD_AUTODIFF */
 
   function get_lucmd() result(u)
 
@@ -46,7 +189,7 @@ contains
 
   subroutine parse_dft_input(word_io)
 
-!   radovan: if you add new keywords then it's 
+!   radovan: if you add new keywords then it's
 !            nice if the user gets the confirmation
 !            that something is happening in the output
 !            so write something in report_after_dft_input
@@ -249,9 +392,6 @@ contains
           case ('.OLDDFT')
             dft_cfg_old_dft = .true.
 
-          case ('.AUTODI')
-            dft_cfg_autodiff = .true.
-
           case ('.GRID T')
             read(u, '(a80)') line
 !           call dftgridinput(line)
@@ -394,25 +534,25 @@ contains
 !   alda
 
     if (dft_cfg_alda_hs .or. dft_cfg_alda_ha) then
-  
+
       write(u, '(a)')        ' * Adiabatic local density approximation (ALDA):'
       write(u, '(a)')        '   - approximate all functional derivatives '// &
                              'beyond the xc potential by SVWN derivatives'
-  
+
       if (dft_cfg_alda_hs .and. .not. dft_cfg_alda_ha) then
         write(u, '(a)')      '   - use ALDA only for the Hermitian part '// &
                              '(density contribution)'
         write(u, '(a)')      '   - use the proper xc kernel for the anti-Hermitian '// &
                              'part (spin density contribution)'
       end if
-  
+
       if (dft_cfg_alda_ha .and. .not. dft_cfg_alda_hs) then
         write(u, '(a)')      '   - use ALDA only for the anti-Hermitian part '// &
                              '(spin density contribution)'
         write(u, '(a)')      '   - use the proper xc kernel for the Hermitian '// &
                              'part (density contribution)'
       end if
-  
+
       if (dft_cfg_xalda) then
         write(u, '(a)')      '   - keep the fraction of exact exchange of the '// &
                              'xc functional in the solution of the response equation'
@@ -421,7 +561,7 @@ contains
                              'switched off in the solution of the response equation'
         write(u, '(a)')      '     (if you want to keep it, use .XALDA)'
       end if
-  
+
     end if !if (dft_cfg_alda_hs .or. dft_cfg_alda_ha) then
 
   end subroutine

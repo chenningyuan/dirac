@@ -81,7 +81,7 @@ c=======================================================================
 
       logical   is_gga,
      &          allow_nonhermitian
-      integer:: nxcmat, im, im_off, irepop, k, k_start, j
+      integer:: nxcmat, im, im_off, irepop, k, k_start, j, i
       real(8) ::gr_0_norm, w, r_0, worth_it, ddot
       real(8) ::dtrmat(*),
      &          excmat(*)
@@ -94,7 +94,8 @@ c=======================================================================
      &          s_b (  3), vxc_scalar(3), vxc_vector(3, 3), y_b(3),
      &          gs_b(3,3),
      &          vxc(99),
-     &          derv(99), taylor_deriv, z
+     &          derv(99), taylor_deriv, z, f
+      real(8), parameter :: tiny = 1.0d-20
 
       k_start = 1
       if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
@@ -158,30 +159,31 @@ c=======================================================================
               vxc = 0.0d0
               Z   = gr_0_norm*gr_0_norm
 
-!             remember that BLYP = Slater + Becke correction + LYP
-              call lda_eval(LDA_SLATER, 2, r_0, derv)
+!             lda
+              do i = 1, size(dft_cfg_lda_functional_weight_array)
+                f = dft_cfg_lda_functional_weight_array(i)
+                if (dabs(f) > tiny) then
+                  call lda_eval(i, 2, r_0, derv)
               vxc(fss) = vxc(fss)
-     &                 + taylor_deriv(derv, 2, (/0, 2/))
+     &                 + f*taylor_deriv(derv, 2, (/0, 2/))
+                end if
+              end do
 
-              call gga_eval(GGA_BECKE, 2, r_0, Z, derv)
+!             gga
+              do i = 1, size(dft_cfg_gga_functional_weight_array)
+                f = dft_cfg_gga_functional_weight_array(i)
+                if (dabs(f) > tiny) then
+                  call gga_eval(i, 2, r_0, z, derv)
               vxc(fss) = vxc(fss)
-     &                 + taylor_deriv(derv, 5, (/0, 2, 0, 0, 0/))
+     &                 + f*taylor_deriv(derv, 5, (/0, 2, 0, 0, 0/))
               vxc(fsy) = vxc(fsy)
-     &                 + taylor_deriv(derv, 5, (/0, 1, 0, 0, 1/))
+     &                 + f*taylor_deriv(derv, 5, (/0, 1, 0, 0, 1/))
               vxc(fyy) = vxc(fyy)
-     &                 + taylor_deriv(derv, 5, (/0, 0, 0, 0, 2/))
+     &                 + f*taylor_deriv(derv, 5, (/0, 0, 0, 0, 2/))
               vxc(fx)  = vxc(fx)
-     &                 + taylor_deriv(derv, 5, (/0, 0, 0, 1, 0/))
-
-              call gga_eval(GGA_LYP, 2, r_0, Z, derv)
-              vxc(fss) = vxc(fss)
-     &                 + taylor_deriv(derv, 5, (/0, 2, 0, 0, 0/))
-              vxc(fsy) = vxc(fsy)
-     &                 + taylor_deriv(derv, 5, (/0, 1, 0, 0, 1/))
-              vxc(fyy) = vxc(fyy)
-     &                 + taylor_deriv(derv, 5, (/0, 0, 0, 0, 2/))
-              vxc(fx)  = vxc(fx)
-     &                 + taylor_deriv(derv, 5, (/0, 0, 0, 1, 0/))
+     &                 + f*taylor_deriv(derv, 5, (/0, 0, 0, 1, 0/))
+                end if
+              end do
 
               vxc = vxc*w
 
@@ -201,13 +203,15 @@ c=======================================================================
 
               vxc = 0.0d0
 
-              call lda_eval(LDA_SLATER, 2, r_0, derv)
+!             lda
+              do i = 1, size(dft_cfg_lda_functional_weight_array)
+                f = dft_cfg_lda_functional_weight_array(i)
+                if (dabs(f) > tiny) then
+                  call lda_eval(i, 2, r_0, derv)
               vxc(fss) = vxc(fss)
-     &                 + taylor_deriv(derv, 2, (/0, 2/))
-
-              call lda_eval(LDA_VWN, 2, r_0, derv)
-              vxc(fss) = vxc(fss)
-     &                 + taylor_deriv(derv, 2, (/0, 2/))
+     &                 + f*taylor_deriv(derv, 2, (/0, 2/))
+                end if
+              end do
 
               vxc = vxc*w
 

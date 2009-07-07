@@ -92,6 +92,9 @@ c=======================================================================
 !
      &          vxc(99),
      &          derv(99)
+      real(8), parameter :: tiny = 1.0d-20
+      real(8) :: f
+      integer :: i
 
 #include "ibtfun.h"
 
@@ -170,57 +173,73 @@ c=======================================================================
         enddo
       endif
 
-      if (add_grad) then
+#ifdef MOD_AUTODIFF
+      if (dft_cfg_autodiff) then
 
-       !if (dft_cfg_autodiff) then
-       !  call quit('implement me first')
-       !else
-          call dftpot2(vxc, w, r_0, gr_0_norm)
-       !end if
+        vxc = 0.0d0
+        Z   = gr_0_norm*gr_0_norm
+
+!       lda
+        do i = 1, size(dft_cfg_lda_functional_weight_array)
+          f = dft_cfg_lda_functional_weight_array(i)
+          if (dabs(f) > tiny) then
+            call lda_eval(i, 3, r_0, derv)
+
+      vxc(frrr) = vxc(frrr) + f*taylor_deriv(derv, 2, (/3, 0/))
+      vxc(frss) = vxc(frss) + f*taylor_deriv(derv, 2, (/1, 2/))
+
+          end if
+        end do
+
+!       gga
+        do i = 1, size(dft_cfg_gga_functional_weight_array)
+          f = dft_cfg_gga_functional_weight_array(i)
+          if (dabs(f) > tiny) then
+            call gga_eval(i, 3, r_0, z, derv)
+
+      vxc(frrr) = vxc(frrr) + f*taylor_deriv(derv, 5, (/3, 0, 0, 0, 0/))
+      vxc(frss) = vxc(frss) + f*taylor_deriv(derv, 5, (/1, 2, 0, 0, 0/))
+
+      vxc(frrz) = vxc(frrz) + f*taylor_deriv(derv, 5, (/2, 0, 1, 0, 0/))
+      vxc(frsy) = vxc(frsy) + f*taylor_deriv(derv, 5, (/1, 1, 0, 0, 1/))
+      vxc(frx)  = vxc(frx)  + f*taylor_deriv(derv, 5, (/1, 0, 0, 1, 0/))
+      vxc(fryy) = vxc(fryy) + f*taylor_deriv(derv, 5, (/1, 0, 0, 0, 2/))
+      vxc(frz)  = vxc(frz)  + f*taylor_deriv(derv, 5, (/1, 0, 1, 0, 0/))
+      vxc(frzz) = vxc(frzz) + f*taylor_deriv(derv, 5, (/1, 0, 2, 0, 0/))
+      vxc(fssz) = vxc(fssz) + f*taylor_deriv(derv, 5, (/0, 2, 1, 0, 0/))
+      vxc(fsy)  = vxc(fsy)  + f*taylor_deriv(derv, 5, (/0, 1, 0, 0, 1/))
+      vxc(fszy) = vxc(fszy) + f*taylor_deriv(derv, 5, (/0, 1, 1, 0, 1/))
+      vxc(fyy)  = vxc(fyy)  + f*taylor_deriv(derv, 5, (/0, 0, 0, 0, 2/))
+      vxc(fzx)  = vxc(fzx)  + f*taylor_deriv(derv, 5, (/0, 0, 1, 1, 0/))
+      vxc(fzyy) = vxc(fzyy) + f*taylor_deriv(derv, 5, (/0, 0, 1, 0, 2/))
+      vxc(fzz)  = vxc(fzz)  + f*taylor_deriv(derv, 5, (/0, 0, 2, 0, 0/))
+      vxc(fzzz) = vxc(fzzz) + f*taylor_deriv(derv, 5, (/0, 0, 3, 0, 0/))
+
+          end if
+        end do
+
+        vxc = vxc*w
 
       else
+#endif /* ifdef MOD_AUTODIFF */
 
-#ifdef MOD_AUTODIFF
-        if (dft_cfg_autodiff) then
-
-          vxc = 0.0d0
-
-          call lda_eval(LDA_SLATER, 3, r_0, derv)
-          vxc(frrr) = vxc(frrr)
-     &              + taylor_deriv(derv, 2, (/3, 0/))
-
-          call lda_eval(LDA_VWN, 3, r_0, derv)
-          vxc(frrr) = vxc(frrr)
-     &              + taylor_deriv(derv, 2, (/3, 0/))
-
-          vxc = vxc*w
-
-        else
-#endif
-
-          call dftpot2(vxc, w, r_0, 0.0d0)
-
-#ifdef MOD_AUTODIFF
-        end if
-#endif
-
+      if (add_grad) then
+        call dftpot2(vxc, w, r_0, gr_0_norm)
+      else
+        call dftpot2(vxc, w, r_0, 0.0d0)
       end if
 
-      if(add_spin) then
-        if(add_grad) then
-         !if (dft_cfg_autodiff) then
-         !  call quit('implement me first')
-         !else
-            call sdftpot2(vxc, w, r_0, gr_0_norm)
-         !end if
+      if (add_spin) then
+        if (add_grad) then
+          call sdftpot2(vxc, w, r_0, gr_0_norm)
         else
-         !if (dft_cfg_autodiff) then
-         !  call quit('implement me first')
-         !else
-            call sdftpot2(vxc, w, r_0, 0.0d0)
-         !end if
-        endif
-      endif
+          call sdftpot2(vxc, w, r_0, 0.0d0)
+        end if
+      end if
+
+#ifdef MOD_AUTODIFF
+      end if
+#endif
 
 !-------------------------------------------------------------------------------
 !     collect s_bc_h

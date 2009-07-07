@@ -41,6 +41,8 @@ module dft_main
 #include "../autodiff/xc_fortran_interface.h"
 #endif
 
+  real(8), parameter :: tiny = 1.0d-20
+
 contains
 
       subroutine dftexc(dmat, &
@@ -140,6 +142,13 @@ contains
 
       dft_temp_gga_hs = is_gga_functional
       dft_temp_gga_ha = is_gga_functional
+
+#ifdef MOD_AUTODIFF
+      if (dft_cfg_autodiff) then
+        dft_temp_gga_hs = dft_cfg_is_gga_autodiff
+        dft_temp_gga_ha = dft_cfg_is_gga_autodiff
+      end if
+#endif
 
       if (dft_options%lr .or. dft_options%qr) then
         if (dft_cfg_alda_hs) dft_temp_gga_hs = .false.
@@ -620,7 +629,7 @@ contains
       real(8), allocatable :: klrxcvec(:)
 
       integer :: ipoint, nder, ndim, need_limit
-      real(8) :: wght, z, ddot, dftenergy, taylor_deriv
+      real(8) :: wght, z, ddot, dftenergy, taylor_deriv, f
 
 #ifdef MOD_AUTODIFF
     call init_factorial_common_block()
@@ -749,28 +758,39 @@ contains
 
 !       energy density
         if (dft_options%energy) then
-          energy_density = 0.0d0
+
 #ifdef MOD_AUTODIFF
           if (dft_cfg_autodiff) then
-            if (dft_temp_gga_hs) then
-              call lda_eval(LDA_SLATER, 0, rho, derv)
-              energy_density = energy_density + derv(1)
-              call gga_eval(GGA_BECKE, 0, rho, z, derv)
-              energy_density = energy_density + derv(1)
-              call gga_eval(GGA_LYP, 0, rho, z, derv)
-              energy_density = energy_density + derv(1)
-            else
-              call lda_eval(LDA_SLATER, 0, rho, derv)
-              energy_density = energy_density + derv(1)
-              call lda_eval(LDA_VWN, 0, rho, derv)
-              energy_density = energy_density + derv(1)
-            end if
+
+            energy_density = 0.0d0
+
+!           lda
+            do i = 1, size(dft_cfg_lda_functional_weight_array)
+              f = dft_cfg_lda_functional_weight_array(i)
+              if (dabs(f) > tiny) then
+                call lda_eval(i, 0, rho, derv)
+                energy_density = energy_density + f*derv(1)
+              end if
+            end do
+
+!           gga
+            do i = 1, size(dft_cfg_gga_functional_weight_array)
+              f = dft_cfg_gga_functional_weight_array(i)
+              if (dabs(f) > tiny) then
+                call gga_eval(i, 0, rho, z, derv)
+                energy_density = energy_density + f*derv(1)
+              end if
+            end do
+
           else
 #endif /* ifdef MOD_AUTODIFF */
+
             energy_density = dftenergy(rho, rhogrd)
+
 #ifdef MOD_AUTODIFF
           end if
 #endif
+
           dft_temp_xc_energy = dft_temp_xc_energy &
                              + wght*energy_density
         end if
@@ -795,30 +815,24 @@ contains
 
             vx = 0.0d0
 
-            if (dft_temp_gga_hs) then
+!           lda
+            do i = 1, size(dft_cfg_lda_functional_weight_array)
+              f = dft_cfg_lda_functional_weight_array(i)
+              if (dabs(f) > tiny) then
+                call lda_eval(i, 1, rho, derv)
+                vx(fr0) = vx(fr0) + f*taylor_deriv(derv, 2, (/1, 0/))
+              end if
+            end do
 
-!             remember that BLYP = Slater + Becke correction + LYP
-              call lda_eval(LDA_SLATER, 1, rho, derv)
-              vx(fr0) = vx(fr0) &
-     &                + taylor_deriv(derv, 2, (/1, 0/))
-              call gga_eval(GGA_BECKE, 1, rho, Z, derv)
-              vx(fr0) = vx(fr0) &
-     &                + taylor_deriv(derv, 5, (/1, 0, 0, 0, 0/))
-              vx(fz0) = vx(fz0) &
-     &                + taylor_deriv(derv, 5, (/0, 0, 1, 0, 0/))
-              call gga_eval(GGA_LYP, 1, rho, Z, derv)
-              vx(fr0) = vx(fr0) &
-     &                + taylor_deriv(derv, 5, (/1, 0, 0, 0, 0/))
-              vx(fz0) = vx(fz0) &
-     &                + taylor_deriv(derv, 5, (/0, 0, 1, 0, 0/))
-            else
-              call lda_eval(LDA_SLATER, 1, rho, derv)
-              vx(fr0) = vx(fr0) &
-     &                + taylor_deriv(derv, 2, (/1, 0/))
-              call lda_eval(LDA_VWN, 1, rho, derv)
-              vx(fr0) = vx(fr0) &
-     &                + taylor_deriv(derv, 2, (/1, 0/))
-            end if
+!           gga
+            do i = 1, size(dft_cfg_gga_functional_weight_array)
+              f = dft_cfg_gga_functional_weight_array(i)
+              if (dabs(f) > tiny) then
+                call gga_eval(i, 1, rho, z, derv)
+                vx(fr0) = vx(fr0) + f*taylor_deriv(derv, 5, (/1, 0, 0, 0, 0/))
+                vx(fz0) = vx(fz0) + f*taylor_deriv(derv, 5, (/0, 0, 1, 0, 0/))
+              end if
+            end do
 
             vx = vx*wght
 

@@ -3,12 +3,13 @@
 .PROPERTIES
 **HAMILTONIAN
 .LEVY-LEBLOND
-.DFT
- BLYP
+.DFTAUTO
+ lda vwn=-1.0 becke=1.0 lyp
+!just to test the functional read-in, complicated way to say "blyp"
+!BLYP
 *DFT
 .DEBUG          !very coarse grid
 .ZIPGRID
-.AUTODIFF
 **INTEGRALS
 .NUCMOD
  1

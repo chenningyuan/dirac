@@ -4008,7 +4008,7 @@ C
 !                   49        50        51        52
      &            '.NOAMFI','.QDOTS ','.X2C   ','.X2C4  ',
 !                   53        54        55        56
-     &            '.NOSFMU','xXXXXXX','xXXXXXX','xXXXXXX'/
+     &            '.NOSFMU','.DFTAUT','xXXXXXX','xXXXXXX'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4270,7 +4270,7 @@ C             projection scheme
            call quit('place .ALDA keyword after *DFT')
            go to 100
 
-
+!          .DFT
   117      CONTINUE
 C&&& DFT    : Kohn-Sham (DFT) Hamiltonian
 #ifdef MOD_DFT
@@ -4303,6 +4303,7 @@ c DIRAOF->SKLFC1
                SETFUN = .TRUE.
 #endif
             GO TO 100
+
   118     CONTINUE
 C&&& HFXFAC: weight of pure exchange
              READ(LUCMD,*) HFXFAC
@@ -4573,8 +4574,22 @@ C&&& NOSFMU: do not generate spinfree multiplication table in spinfree calculati
 C    (see MRCON1 of the MOLTRA module)
           NOSFMU = .TRUE.
           GOTO 100
-  154     CONTINUE
-          GOTO 100
+
+!         .DFTAUTO (dft with automatic differentiation)
+  154     continue
+#ifdef MOD_DFT
+#ifdef MOD_AUTODIFF
+          read(lucmd, '(a80)') line
+          call parse_functional(line)
+!         CALL DFTINPUT(LINE, INPERR)
+!fixme    reporting and consistency in here ...
+          dft_cfg_autodiff          = .true.
+          dirac_cfg_dft_calculation = .true.
+          dirac_cfg_scf_calculation = .true.
+#endif /* ifdef MOD_AUTODIFF */
+#endif /* ifdef MOD_DFT */
+          go to 100
+
   155     CONTINUE
           GOTO 100
   156     CONTINUE
