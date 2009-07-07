@@ -9,9 +9,9 @@
       use cfiles_mod
       use cint_mod
       use dat_mod
-#include "csdtime.h"
 #include "implicit.h"
 #include "priunit.h"
+#include "csdtime.h"
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -32,6 +32,7 @@
       character*256 filenm,filenm51,filenm53,filenm55,filenm60,filenm6,
      1              filenm20,filenm31,filenm32,filenm33
       real*4 cputime
+
 c     iopt(1) - print.
 c     iopt(2) - no. of iterations.
 c     iopt(3) - convergence = 10**(-iopt(3))

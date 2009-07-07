@@ -40,7 +40,8 @@ usage()
    echo '     -autodiff        : Include autodiff module'
    echo '     -cap             : Include CAP module'
    echo '     -hscc            : Include interface for the (external) HSMRCC code together with its objects'
-   echo '     -hsfs            : Include higher external Higher sector FSCC codes together with objects'
+   echo '     -hsfs            : Include higher external Higher sector FSCC code'
+   echo '     -hsfsdyn         : Include higher external Higher sector FSCC code - dynamic allocation version.'
    echo '     -qdots           : Include Quantum Dots functionality (artificial atom)'
    echo '     -ihfscc          : Include Intermediate Hamiltonian functionality to FSCC code'
    echo '     -amfi            : Include the AMFI functionality into DIRAC'
@@ -281,14 +282,24 @@ setup()
    if [ -n "$HSFSMOD" ]; then
          HSFSFLG='-DMOD_HSFS'
          HSFSTAR=1
-	 # delet old file
+         if [ -n "$HSFSDYNMOD" ]; then
+            # add important preprocessor flag
+            HSFSFLG=$HSFSFLG' -DHSFS_DYN_ALLOC'
+            #echo 'dynamic HSFS: preprocessor flag='$HSFSFLG
+         fi
+	 # delete first the old file
 	 if [ -f hsmrcc/high_sect_fscc_external/Makefile.hsfs ]; then
             /bin/rm -r hsmrcc/high_sect_fscc_external/Makefile.hsfs
 	 fi
          cp hsmrcc/high_sect_fscc_external/Makefile.hsfs.in  hsmrcc/high_sect_fscc_external/Makefile.hsfs || \
          (echo "Error exit: hsmrcc/high_sect_fscc/Makefile.hsfs not activated !"; exit 1)
-         echo " - HS FS CC mode active with own HSFS routines, active Makefile.hsfs."
-   fi
+
+         if [ -n "$HSFSDYNMOD" ]; then
+           echo " - HS FS CC mode with dynamic allocations active, actived Makefile.hsfs."
+         else
+           echo " - HS FS CC mode with static allocations active, actived Makefile.hsfs."
+         fi
+   fi  
    #
    #  Dirac Quantum Dots modification
    #
@@ -834,6 +845,12 @@ while [ -n "$1" ]; do
          ;;
       -hsfs)
          HSFSMOD=1
+         HSCCMOD=1
+         OOFMOD=1
+         ;;
+      -hsfsdyn)
+         HSFSMOD=1
+         HSFSDYNMOD=1
          HSCCMOD=1
          OOFMOD=1
          ;;

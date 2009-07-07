@@ -1701,6 +1701,7 @@ c   move p to p transitions to folded
 !       
 !-----------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
+      use print_level
       use cfiles_mod
       use gen_mod
       use cij1_mod
@@ -3239,11 +3240,17 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       return
       end
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine diis(iter,icnvg,i12,name1n,name1o,name2n,name2o)
 !-----------------------------------------------------------------------------
 !
 ! Iteration speed up
+!
+! Entering parameters:  
+!           iter - actual iteration
+!           icnvg -
+!           i12 -
+!           ...
 !
 ! called from chu,chv,csd,csu,csv
 !
@@ -3255,7 +3262,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       use cij1_mod
       use cij2_mod
 #include "implicit.h"
-#include "priunut.h"
+#include "priunit.h"
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"

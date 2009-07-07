@@ -4,11 +4,11 @@
 !---------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use gen_mod
+      use cfiles_mod
       use cint_mod
       use dat_mod
       use cij1_mod
       use cij2_mod
-!      implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
 #include "csdtime.h"
@@ -85,6 +85,8 @@ c     iopt(10) .ne.0 - do not save pppp.
       csdstim = cputime(real(0.))
       csdltim = csdstim
 
+!    ... miro: important initialization (not all compilers assign zero
+!    by default)
       nflcur=0
       Nstrt(1,0)=0
       nstrt(2,0)=0
@@ -501,9 +503,9 @@ c
 !
 !------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
+      use dat_mod
 #include "implicit.h"
 #include "priunit.h"
-      use dat_mod
 #else
 #include "implicit.h"
 !      implicit real*8 (a-h,o-z)
@@ -546,12 +548,12 @@ c**************************************************************
 !
 !--------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
-#include "implicit.h"
-#include "priunit.h"
       use cfiles_mod
       use gen_mod
       use cij1_mod
       use cij2_mod
+#include "implicit.h"
+#include "priunit.h"
 #else
 #include "implicit.h"
 !     implicit real*8 (a-h,o-z)

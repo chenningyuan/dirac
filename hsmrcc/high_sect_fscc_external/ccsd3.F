@@ -994,6 +994,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 !---------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod 
+      use gen_mod 
       use cij1_mod 
       use cij2_mod 
       use ctmp_mod 
@@ -3457,6 +3458,8 @@ c
       use gen_mod
 #include "implicit.h"
 #include "priunit.h"
+! ... this is for ij(ndij),ije...
+#include "param_ccsd.h"
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -3527,6 +3530,8 @@ c
       use ctmp_mod
 #include "implicit.h"
 #include "priunit.h"
+!  ... needed for static alloc of ij(ndij),ije...
+#include "param_ccsd.h"
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -3581,6 +3586,8 @@ c
       use gen_mod
 #include "implicit.h"
 #include "priunit.h"
+! ... needed for static alloc ij(nij),ije...
+#include "param_ccsd.h"
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"

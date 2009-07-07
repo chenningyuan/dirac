@@ -1,10 +1,10 @@
 !
 ! ===  Modules to replace individual common blocks with dynamical allocations &
-! other object oriented functionalities
+! with  other object oriented functionalities
 !
 
-module hsfs_parameters
-end module hsfs_parameters
+!module hsfs_parameters
+!end module hsfs_parameters
 
 module gen_mod
 ! to replace gen.h

@@ -3,7 +3,7 @@
 !---------------------------------------------------------------------
 !
 !
-!
+! some description...
 !---------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
@@ -11,9 +11,9 @@
       use dat_mod
       use cij1_mod
       use gen_mod
-#include "csdtime.h"
 #include "implicit.h"
 #include "priunit.h"
+#include "csdtime.h"
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -1048,11 +1048,11 @@ C  *********************************************************************
       subroutine calvv0_cht
 !---------------------------------------------------------------------
 !
-!
+! add description
 !
 !---------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
-      use dat_gen
+      use dat_mod
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -1278,6 +1278,7 @@ C *********************************************************************
 !---------------------------------------------------------------------
 !
 !
+! add description
 !
 !---------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC

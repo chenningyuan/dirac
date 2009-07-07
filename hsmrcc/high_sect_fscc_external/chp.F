@@ -138,8 +138,10 @@ c     iopt(9) - incomplete model space
       call ordvv_chp
       call calvv0_chp
       call pdiag
+
       iter=0
       call tvinit_chp
+
       if (iopt(4).ne.0) then
         if (iopt(17).eq.0) then
           call dbdiag ("dum1","vv0 ","dum3","dum4",0100,1)
@@ -151,6 +153,7 @@ c     iopt(9) - incomplete model space
           call wrtrle ("t3p ",3,1)     
         end if
       endif
+
       call prt("thp ","thp     ",2)
       call fmax("thp ",tmax,itmax)
       write(6,2400) tmax,idec(itmax)
@@ -267,7 +270,7 @@ c  different endings
       call prtime("end     ",iter,0)
 !      stop
       end
-c *********************************************
+c **************************************************************************************
       subroutine ordvv_chp
 !---------------------------------------------------------------------------------------
 c va: hhpp
@@ -388,6 +391,11 @@ c**************************************************************
       end
 c ******************************************
       subroutine tvinit_chp
+!----------------------------------------------------------
+!
+!
+!
+!----------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
      use dat_mod
 #include "implicit.h"
@@ -409,7 +417,8 @@ c ******************************************
         call dveps6   ("t3p ")
       end if
       return
-      end
+      end subroutine tvinit_chp
+
 c **************************************************
       subroutine ordta0_chp
 !     implicit real*8 (a-h,o-z)
