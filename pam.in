@@ -357,8 +357,9 @@ execute_dirac()
       BDIR=`echo $BDIR | cut -d ":" -f 2-`
    done
       
-      # attach to the output file the size of all static allocations in the executable
-      echo -e "Size of all static allocations (pam script minion): \c" > $OUTPUT_FILE
+      # attach to the output file the size of all static allocations in the executable and other usefull info
+      echo -e "DIRAC launched (pam script) by `whoami`@`hostname -f` at `date` \n" > $OUTPUT_FILE
+      echo -e "Size of all static allocations  : \c" >> $OUTPUT_FILE
       size $BIN_DIR/$DIRAC 2> /dev/null | grep $BIN_DIR/$DIRAC 2> /dev/null \
       | awk '{printf $3/(1024*1024)} ' 2> /dev/null >> $OUTPUT_FILE; echo ' MB' >> $OUTPUT_FILE \
       || echo 'can not be determined' >> $OUTPUT_FILE
@@ -421,7 +422,7 @@ print_header()
    echo "   ****************************************"
    echo
    echo '   $Revision$'
-   echo "   Host        : `hostname`"
+   echo "   User@Host   : `whoami`@`hostname -f`"
    echo "   Date        : `date`"
    echo "   Command     : $0 $ARG_SAVE "
    echo "   PID         : $$"

@@ -1367,7 +1367,7 @@ find_valgrind(){
      $echo "Assigned VALGRIND debugging & checking tool (http://valgrind.org): "$valgrind_tool
   else 
      valgrind_tool= 
-     $echo "\nVALGRIND debugging tool (http://valgrind.org) not found. "
+     $echo "VALGRIND debugging & profiling tool (http://valgrind.org) not found. "
   fi
 }
 
