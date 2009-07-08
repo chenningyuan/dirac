@@ -694,4 +694,8 @@ C    &        (REP(ISYMAX(I,2)),'(',ISYMAX(I,2)+1,')',I=1,3)
 
       RETURN
       END
+#else
+! miro: fix for OpenMPI ifort (mpif90); empty *.F file not accepted 
+      SUBROUTINE DUMMY_ROUTINE
+      END
 #endif
