@@ -1283,20 +1283,21 @@ find_profiler(){
 # search for profiler - now only gprof
 profiler=''
 if [ -n "`which gprof 2>/dev/null`" ]; then
-    profiler="gprof"
+   # profiler="gprof"
+    profiler=`which gprof`
 fi
 # ...
 if [ -z "$profiler" ]; then
   $echo "\n gprof profiler not found - not possible do code profiling"
 else
-  $echo "\nAssigned program profiler: "$profiler
+  $echo "\nAssigned PROFILER tool: "$profiler
 fi
 }
 
 find_debugger(){
 ###############################################################
 #
-#   search for debugger and put "the best" into pam
+#   search for debugger and put \"the best\" into pam
 #
 ###############################################################
 
@@ -1323,13 +1324,14 @@ if [ ! -z "$a" ]; then
   ### looking priority: idb, pgdbg, dbx, gdb ....
   #hjaaj: should only use e.g. pgdbg if compiler is pg*
   if [ -n "`which idb 2>/dev/null`" ]; then
-    which_debug="idb"
+    which_debug=`which idb`
   elif [ -n "`which pgdbg 2>/dev/null`" ]; then
-    which_debug="pgdbg"
+    which_debug=`which pgdbg`
   elif [ -n "`which dbx 2>/dev/null`" ]; then
-    which_debug="dbx"
+    which_debug=`which dbx`
   elif [ -n "`which gdb 2>/dev/null`" ]; then
-    which_debug="gdb"
+#    which_debug="gdb"
+    which_debug=`which gdb`
   fi
 fi
 
@@ -1340,7 +1342,7 @@ fi
 if [ -z $which_debug ]; then
   case $machine in
      i[3-6]86-*|x86_64-*|ia64-unknown-linux|*apple*)
-        debug="gdb"
+        debug=`which gdb`
      ;;
   esac
 else
@@ -1355,6 +1357,18 @@ fi
 
 echo
 
+}
+
+#######  found and assign valgrind  #######
+find_valgrind(){
+
+  if [ -n "`which valgrind 2>/dev/null`" ]; then
+     valgrind_tool=`which valgrind`
+     $echo "Assigned VALGRIND debugging & checking tool (http://valgrind.org): "$valgrind_tool
+  else 
+     valgrind_tool= 
+     $echo "\nVALGRIND debugging tool (http://valgrind.org) not found. "
+  fi
 }
 
 setup_math_lib(){
@@ -2735,6 +2749,10 @@ RSH=$rsh
 #
 DEBUGGER=$debug
 #
+#  valgrind debugging and checking tool - check it according to your machine installation
+#
+VALGRIND=$valgrind_tool
+#
 # profiler - check it according to your machine installation, we offer gprof :)
 #
 PROFILER=$profiler
@@ -3012,6 +3030,7 @@ parallel_stuff
 safeflags_stuff
 find_compilers
 find_debugger
+find_valgrind
 find_profiler
 if [ "$mesp" = "mpi" ]; then
   find_mpi_path

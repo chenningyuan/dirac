@@ -105,8 +105,10 @@ extrausage ()
    echo '     -keepwrk               : Keep work area after calculation (default: remove)'
    echo '     -aw n                  : Set maximum memory (in megawords) that can be allocated dynamically (per allocation)'
    echo '     -dftmem n              : Set maximum memory (in Mb) for storing AOs in DFT numerical integration'
-   echo '     -debug                 : Run dirac in debugger "'$DEBUGGER'"'
-   echo '     -prof                  : After finishing run profiling with "'$PROFILER'"'
+   echo '     -debug                 : Run dirac in debugger:"'$DEBUGGER'"'
+   echo '     -vg1 "valgrind_params" : Run dirac in valgrind (http://valgrind.org) with parameters :"'$VALGRIND'"'
+   echo '     -vg                    : Run dirac in valgrind (http://valgrind.org), no parameters'
+   echo '     -prof                  : After finishing dirac executable perform profiling with:"'$PROFILER'"'
 }
 #
 #
@@ -236,7 +238,9 @@ setup_command()
 
       fi
    else
-#  Sequential run:
+# --------------------
+#   Sequential run:
+# --------------------
       DIRAC_CMD=
    fi
    #
@@ -246,8 +250,29 @@ setup_command()
       if [ -n "$DIRAC_CMD" ]; then
          echo "WARNING. DEBUG requested, thus these options ignored: $DIRAC_CMD"
       fi
-      DIRAC_CMD="$DEBUGGER"
+      if [ -n "$DEBUGGER" ]; then
+        DIRAC_CMD="$DEBUGGER"
+      else
+        echo "WARNING. DEBUG requested, but no debugger assigned ! Check your architecture/script."
+      fi
    fi
+
+   #
+   # Valgrid check (will ignore any MPIRUN)
+   #
+   if [ -n "$VALGRIND_CHECK" ]; then
+      if [ -n "$DIRAC_CMD" ]; then
+         echo "WARNING. VALGRID check requested, thus these options are ignored: $DIRAC_CMD"
+      fi
+      if [ -n "$VALGRIND" ]; then
+        # DIRAC_CMD="$VALGRIND_TOOL"
+        # DIRAC_CMD="$VALGRIND_TOOL --log-file=$OUTPUT_FILE.valgrind_log" # provide with the default DIRAC output file
+         DIRAC_CMD="$VALGRIND_TOOL --log-fd=1" # flush all Valgrind messages to stdout = DIRAC output file
+      else
+        echo 'WARNING. VALGRIND check requested, but "valgrind" not assigned ! Check your architecture/script.'
+      fi
+   fi
+
    #
    # Finally append executable
    #
@@ -335,7 +360,7 @@ execute_dirac()
    if [ -n "$DEBUG"  ]; then
       $NICE_CMD $DIRAC_CMD | tee $OUTPUT_FILE
    else
-      # attach size of all static allocations in the executable
+      # attach to the output file the size of all static allocations in the executable
       echo -e "Size of all static allocations: \c" > $OUTPUT_FILE
       size $DIRAC_CMD 2> /dev/null | grep  $DIRAC_CMD 2> /dev/null \
       | awk '{printf $3/(1024*1024)} ' 2> /dev/null >> $OUTPUT_FILE; echo ' MB' >> $OUTPUT_FILE \
@@ -349,7 +374,13 @@ execute_dirac()
    fi
 }
 
-### profile dirac
+##########################################################
+###                                                    ###
+###                                                    ###
+###                 profile dirac                      ###
+###                                                    ###
+###                                                    ###
+##########################################################
 profile_dirac()
 {
 
@@ -368,7 +399,7 @@ if [ -n "$PROFILER" ]; then
   $echo "\nNo profiling, gmon.out not found."
  fi
 else
- $echo "\nNo profiler assigned although profiling wanted. Check the script."
+ $echo "\nNo profiler assigned although the profiling wanted. Check your architecture and the script."
 fi
 }
 
@@ -700,7 +731,7 @@ copy_files()
    # COPY MOLECULE AND MENU FILE
    #
    if [[ -n $MOL ]]; then
-       $echo "   Copying $LOC/$MOL.$EXT to working directory : \c"
+       $echo "   Copying $LOC/$MOL.$EXT to working directory as MOLECULE.$EXTOUT : \c"
        if [ -f $LOC/$MOL.$EXT ]; then
 	   cp $LOC/$MOL.$EXT MOLECULE.$EXTOUT || \
 	       ( \
@@ -730,7 +761,7 @@ copy_files()
    fi
 
    if [[ -n "$MENU" ]]; then
-       $echo "   Copying $LOC/$MENU.inp to working directory : \c"
+       $echo "   Copying $LOC/$MENU.inp to working directory as DIRAC.INP : \c"
        if [ -f $LOC/$MENU.inp ]; then
 	   cp $LOC/$MENU.inp DIRAC.INP || \
 	       ( \
@@ -856,6 +887,7 @@ initialize()
 
    DEBUG=
    PROFILE=
+   VALGRIND_CHECK=
 
    GET_FILES=
 
@@ -944,6 +976,15 @@ while [ -n "$1" ]; do
          ;;
       -prof)
          PROFILE=1
+         ;;
+      -vg)
+	 VALGRIND_CHECK=1
+	 VALGRIND_TOOL="$VALGRIND"
+         ;;
+      -vg1)
+         shift
+	 VALGRIND_CHECK=1
+	 VALGRIND_TOOL="$VALGRIND $1"
          ;;
       -get|-save)
          shift
