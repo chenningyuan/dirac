@@ -18,6 +18,7 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.sdu.dk
 !
+#if defined MOD_CAP
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck capout */
       SUBROUTINE CAPOUT(IPRINT,
@@ -28,22 +29,20 @@ C***********************************************************************
 C
 C    Dumps files for the CAP integral module.
 C
+C    Called from BASOUT(herrdn.F)
+C
 C    Written by Miro Ilias, January 2007, Tel Aviv
 C
 C***********************************************************************
-
       !use cap
-
 #include "implicit.h"
 #include "priunit.h"
 
-C#include "dcbgen.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
 #include "primit.h"
-C#include "cbirea.h"
 #include "chrxyz.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -695,3 +694,4 @@ C    &        (REP(ISYMAX(I,2)),'(',ISYMAX(I,2)+1,')',I=1,3)
 
       RETURN
       END
+#endif

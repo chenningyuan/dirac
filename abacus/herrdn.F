@@ -2559,13 +2559,15 @@ C
      &    ' Threshold for integrals (to be written to file):',THRS
       END IF
 
+#if defined MOD_AMFI
 CMI   ... prepare the MNF.INP basis set input file for AMFI
       CALL MNFOUT(NONTYP,NONT,IQM(1,1),NBLCK(1,1),
      &           JCO(1,1,1),NUC(1,1),NRC(1,1),SEG(1,1),
      &           KATOM,KANG,KBLOCK,
      &           KPRIM,CPRIMU)
+#endif
 
-#ifdef MOD_CAP
+#if defined MOD_CAP
 CMI   ... prepare the basis set input files for the CAP program
       CALL CAPOUT(IPREAD,NONTYP,NONT,IQM,NBLCK,
      &           JCO,NUC,NRC,SEG,
