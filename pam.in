@@ -356,16 +356,19 @@ execute_dirac()
       echo "      $TDIR"
       BDIR=`echo $BDIR | cut -d ":" -f 2-`
    done
-   $echo "      $BDIR \n"
-   if [ -n "$DEBUG"  ]; then
-      $NICE_CMD $DIRAC_CMD | tee $OUTPUT_FILE
-   else
+      
       # attach to the output file the size of all static allocations in the executable
-      echo -e "Size of all static allocations: \c" > $OUTPUT_FILE
-      size $DIRAC_CMD 2> /dev/null | grep  $DIRAC_CMD 2> /dev/null \
+      echo -e "Size of all static allocations (pam script minion): \c" > $OUTPUT_FILE
+      size $BIN_DIR/$DIRAC 2> /dev/null | grep $BIN_DIR/$DIRAC 2> /dev/null \
       | awk '{printf $3/(1024*1024)} ' 2> /dev/null >> $OUTPUT_FILE; echo ' MB' >> $OUTPUT_FILE \
       || echo 'can not be determined' >> $OUTPUT_FILE
 
+   $echo "      $BDIR \n"
+   if [ -n "$DEBUG"  ]; then
+      # ... dirac run in serial debugging mode - append to pam generated output
+      $NICE_CMD $DIRAC_CMD | tee -a $OUTPUT_FILE
+   else
+      # ... standard serial run 
       $NICE_CMD $DIRAC_CMD >> $OUTPUT_FILE || \
          ( \
             $echo "\n   $DIRAC returned non-zero exit code" ; \
