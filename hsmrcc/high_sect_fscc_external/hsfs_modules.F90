@@ -78,6 +78,7 @@ module cfiles_mod
  integer, allocatable :: namefl(:),nstrt(:,:),iiia(:),iiva(:)
 contains
 subroutine init_cfiles_mod
+#include "priunit.h"
 integer :: istat
  allocate(namefl(cfiles_size),stat=istat)
  call alloc_stat_check("namefl(cfiles_size)",istat)
@@ -87,6 +88,9 @@ integer :: istat
  call alloc_stat_check("iiia(cfiles_size)",istat)
  allocate(iiva(cfiles_size),stat=istat)
  call alloc_stat_check("iiva(cfiles_size)",istat) 
+
+ write(LUPRI,*) 'cfiles_mod initialized'
+
 end subroutine init_cfiles_mod
 
 subroutine dealloc_cfiles_mod
@@ -100,13 +104,15 @@ end module cfiles_mod
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 module cij1_mod
 ! ... to replace cij1.h
-#include "param_ccsd.h"
 integer :: nij1,iii1,iiv1
 integer, allocatable ::  ij1(:),ije1(:)
 contains
 subroutine init_cij1_mod
+#include "priunit.h"
+#include "param_ccsd.h"
  allocate(ij1(1:ndij))
  allocate(ije1(0:ndij))
+ write(LUPRI,*) 'cij1_mod initialized'
 end subroutine init_cij1_mod
 
 subroutine dealloc_cij1_mod
@@ -121,9 +127,11 @@ integer :: nij2,iii2,iiv2
 integer, allocatable ::  ij2(:),ije2(:)
 contains
 subroutine init_cij2_mod
+#include "priunit.h"
 #include "param_ccsd.h"
  allocate(ij2(1:ndij))
  allocate(ije2(0:ndij))
+ write(LUPRI,*) 'cij2_mod initialized'
 end subroutine init_cij2_mod
 
 subroutine dealloc_cij2_mod
@@ -138,9 +146,11 @@ integer :: nij3,iii3,iiv3
 integer, allocatable ::  ij3(:),ije3(:)
 contains
 subroutine init_cij3_mod
+#include "priunit.h"
 #include "param_ccsd.h"
  allocate(ij3(1:ndij))
  allocate(ije3(0:ndij))
+ write(LUPRI,*) 'cij3_mod initialized'
 end subroutine init_cij3_mod
 
 subroutine dealloc_cij3_mod
@@ -155,9 +165,11 @@ integer :: nij4,iii4,iiv4
 integer, allocatable :: ij4(:),ije4(:)
 contains
 subroutine init_cij4_mod
+#include "priunit.h"
 #include "param_ccsd.h"
  allocate(ij4(1:ndij))
  allocate(ije4(0:ndij))
+ write(LUPRI,*) 'cij4_mod initialized'
 end subroutine init_cij4_mod
 
 subroutine dealloc_cij4_mod
@@ -172,9 +184,11 @@ integer :: nij5,iii5,iiv5
 integer, allocatable :: ij5(:),ije5(:)
 contains
 subroutine init_cij5_mod
+#include "priunit.h"
 #include "param_ccsd.h"
  allocate(ij5(1:ndij))
  allocate(ije5(0:ndij))
+ write(LUPRI,*) 'cij5_mod initialized'
 end subroutine init_cij5_mod
 
 subroutine dealloc_cij5_mod
@@ -189,9 +203,11 @@ integer :: nij6,iii6,iiv6
 integer, allocatable :: ij6(:),ije6(:)
 contains
 subroutine init_cij6_mod
+#include "priunit.h"
 #include "param_ccsd.h"
  allocate(ij6(1:ndij))
  allocate(ije6(0:ndij))
+ write(LUPRI,*) 'cij6_mod initialized'
 end subroutine init_cij6_mod
 
 subroutine dealloc_cij6_mod
@@ -206,8 +222,10 @@ integer :: nrsp1
 integer, allocatable ::  irsp1(:)
 contains
 subroutine init_rsp1_mod
+#include "priunit.h"
 integer, parameter :: rsp1_size=100
 allocate(irsp1(rsp1_size))
+ write(LUPRI,*) 'rsp1_mod initialized'
 end subroutine init_rsp1_mod
 
 subroutine dealloc_rsp1_mod
@@ -221,8 +239,10 @@ integer :: nrsp2
 integer, allocatable ::  irsp2(:)
 contains
 subroutine init_rsp2_mod
+#include "priunit.h"
 integer, parameter :: rsp2_size=500
 allocate(irsp2(rsp2_size))
+ write(LUPRI,*) 'rsp2_mod initialized'
 end subroutine init_rsp2_mod
 
 subroutine dealloc_rsp2_mod
@@ -236,9 +256,11 @@ integer :: nir
 integer, allocatable :: igmt(:,:),ici(:)
 contains
 subroutine init_dpd_mod
+#include "priunit.h"
 integer,parameter :: dpd_size=200
 allocate(ici(1:dpd_size))
 allocate(igmt(1:8,1:8))
+ write(LUPRI,*) 'dpd_mod initialized'
 end subroutine init_dpd_mod
 
 subroutine dealloc_dpd_mod
@@ -253,9 +275,11 @@ integer, allocatable  :: itmp(:)
  real*8, allocatable  ::  tmp(:)
 contains
 subroutine init_ctmp_mod
+#include "priunit.h"
 #include "param_ccsd.h"
 allocate(tmp(1:ndp4))
 allocate(itmp(1:ndp4))
+ write(LUPRI,*) 'ctmp_mod initialized'
 end subroutine init_ctmp_mod
 
 subroutine dealloc_ctmp_mod
@@ -270,12 +294,14 @@ module crle_mod
 integer, allocatable  :: isize(:)
 contains
 subroutine init_crle_mod
+#include "priunit.h"
 #include "param_ccsd.h"
 allocate(trle1(1:nrle1))
 allocate(trle2(1:nrle2))
 allocate(trle3(1:nrle3))
 allocate(trle4(1:nrle4))
 allocate(isize(1:4))
+ write(LUPRI,*) 'crle_mod initialized'
 end subroutine init_crle_mod
 
 subroutine dealloc_crle_mod
@@ -293,9 +319,11 @@ integer :: nvlspo, ndets,isplit
 integer, allocatable  :: lstvso(:),lstdet(:)
 contains
 subroutine init_det_mod
+#include "priunit.h"
 integer, parameter :: lstvso_size=100, lstdet_size=1000
 allocate(lstvso(1:lstvso_size))
 allocate(lstdet(1:lstdet_size))
+ write(LUPRI,*) 'det_mod initialized'
 end subroutine init_det_mod
 
 subroutine dealloc_det_mod
@@ -311,11 +339,13 @@ integer, allocatable  :: ic(:), icv(:), iopt(:)
 real*8, allocatable  :: eps(:)
 contains
 subroutine init_dat_mod
+#include "priunit.h"
 integer, parameter :: dat_size=200, iopt_size=40
 allocate(ic(1:dat_size))
 allocate(icv(1:dat_size))
 allocate(eps(1:dat_size))
 allocate(iopt(1:iopt_size))
+ write(LUPRI,*) 'dat_mod initialized'
 end subroutine init_dat_mod
 
 subroutine dealloc_dat_mod
@@ -332,8 +362,10 @@ integer :: nvalo
 integer, allocatable  :: iv(:)
 contains
 subroutine init_idv_mod
+#include "priunit.h"
 integer, parameter :: idv_size=200
 allocate(iv(1:idv_size))
+ write(LUPRI,*) 'idv_mod initialized'
 end subroutine init_idv_mod
 
 subroutine dealloc_idv_mod
@@ -346,7 +378,9 @@ module prm_mod
 integer, allocatable  :: iperm(:,:)
 contains
 subroutine init_prm_mod
+#include "priunit.h"
 allocate(iperm(0:6,1:720))
+ write(LUPRI,*) 'prm_mod initialized'
 end subroutine init_prm_mod
 
 subroutine dealloc_prm_mod
@@ -360,9 +394,11 @@ integer ::  nsym,nclass
 integer, allocatable  :: iclass(:),isym(:,:),ibias(:)
 contains
 subroutine init_sym_mod
+#include "priunit.h"
 allocate(iclass(1:16))
 allocate(isym(1:16,1:8))
 allocate(ibias(1:17))
+ write(LUPRI,*) 'sym_mod initialized'
 end subroutine init_sym_mod
 
 subroutine dealloc_sym_mod
@@ -377,8 +413,10 @@ module ijtemp_mod
 integer, allocatable  :: ijtmp1(:)
 contains
 subroutine init_ijtemp_mod
+#include "priunit.h"
 #include "param_ccsd.h"
 allocate(ijtmp1(1:ndp6))
+ write(LUPRI,*) 'ijtemp_mod initialized'
 end subroutine init_ijtemp_mod
 
 subroutine dealloc_ijtemp_mod
@@ -391,8 +429,12 @@ module tv2_mod
 real*8, allocatable :: a(:,:)
 contains
 subroutine init_tv2_mod
- allocate (a(500,500))
+#include "priunit.h"
+integer, parameter :: tv2_size=500
+ allocate (a(tv2_size,tv2_size))
+ write(LUPRI,*) 'tv2_mod initialized'
 end subroutine init_tv2_mod
+
 subroutine dealloc_tv2_mod
  deallocate(a)
 end subroutine dealloc_tv2_mod
@@ -400,10 +442,8 @@ end module tv2_mod
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 module print_level
-
  integer, private :: iprint=0
  logical, private :: print_level_read = .false.
-
 contains
 
 subroutine extract_print_level
@@ -428,6 +468,7 @@ end function getiprint
 
 end module print_level
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 module high_sect_execs
 
 integer :: num_methods = 0
@@ -447,7 +488,7 @@ contains
 subroutine get_line_arguments
 !------------------------------------------------------------------
 !
-!    get arguments for order of methods 
+! get arguments for order of methods for the standalone HighSect FSCC code
 !
 ! NOTE: be aware not all F90 are supporting argument
 !      line reading intrinsic function !

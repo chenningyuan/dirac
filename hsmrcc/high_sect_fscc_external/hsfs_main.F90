@@ -10,6 +10,7 @@
 
  End
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  Subroutine HIGH_SECTOR_FSCC_METHODS
 
   use high_sect_execs
@@ -48,6 +49,8 @@ use cij6_mod
 use cfiles_mod
 use rsp1_mod
 use rsp2_mod
+
+  call header ('Output from Init_HSFS_Modules',-1)
  
  call init_gen_mod
  call init_sym_mod

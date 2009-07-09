@@ -1171,6 +1171,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       use ctmp_mod 
 #include "implicit.h"
 #include "priunit.h"
+#include "param_ccsd.h"
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -1191,7 +1192,12 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 #endif
 
 !!!!!! miro: ndij very big, needed dynamic allocs !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      dimension ia(10),ja(10),msk(5),indx(ndij),dummy(ndij),iord(10)
+!     dimension ia(10),ja(10),msk(5),indx(ndij),dummy(ndij),iord(10)
+      dimension indx(ndij),dummy(ndij)
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      dimension ia(10),ja(10),msk(5),iord(10)
+
+
       data msk / 'f0000'x,'f000'x,'f00'x,'f0'x,'f'x /
 
       i1=iord(1)
@@ -1366,6 +1372,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       use ctmp_mod 
 #include "implicit.h"
 #include "priunit.h"
+#include "param_ccsd.h"
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -1386,7 +1393,11 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 #endif
 
 !!!!!!!!! to be replaced by dynamic allocs !!!!!!!!!!!!!!!!!!!!!!!!
-      dimension ia(12),ja(12),msk(6),indx(ndij),dummy(ndij),iord(12)
+!     dimension ia(12),ja(12),msk(6),indx(ndij),dummy(ndij),iord(12)
+      dimension indx(ndij),dummy(ndij)
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      dimension ia(12),ja(12),msk(6),iord(12)
+
       data msk / 'f00000'x,'f0000'x,'f000'x,'f00'x,'f0'x,'f'x /
 
       i1=iord(1)
@@ -3110,6 +3121,7 @@ c
       use cij3_mod
 #include "implicit.h"
 #include "priunit.h"
+#include "param_ccsd.h"
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -3133,8 +3145,10 @@ c
 
 !!!!!!!!!!!!!!!!!! ninds needs dynamic alloc !!!!!!!!!!!!!!!!!!!!
       dimension ia(5,6),ind(12),ninds(ndij)
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       data ia / 5,1,1,0,0,1,5,2,0,0,2,2,5,0,0,
      1          6,3,3,0,0,3,6,4,0,0,4,4,6,0,0 /
+
       call files_ccsd (name3,ntape3,new,1,-1,-1)
       if (new.ne.0) then
         write (6,*) ' t3 file in t1t2 does not exist'
@@ -3227,6 +3241,7 @@ c
       use cij3_mod
 #include "implicit.h"
 #include "priunit.h"
+#include "param_ccsd.h"
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -3249,11 +3264,15 @@ c
 #endif
 
 !!!!!!!!!!!!! needs dynamic alloc for ninds !!!!!!!!!!!!!!!
-      dimension ia(4,8),ind(16),ninds(ndij)
+!     dimension ia(4,8),ind(16),ninds(ndij)
+      dimension ninds(ndij)
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      dimension ia(4,8),ind(16)
 
       data ia / 1,3,3,3,3,1,4,4,4,4,1,5,5,5,5,1, 
      1          2,6,6,6,6,2,7,7,7,7,2,8,8,8,8,2 /
 
+!!!! TODO: into module !
       ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),
      1ior(ishft(k,8),l))
 
@@ -3338,6 +3357,8 @@ c
 !
 !
 !
+! add some description...
+!
 !------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use ctmp_mod
@@ -3348,6 +3369,7 @@ c
       use cij3_mod
 #include "implicit.h"
 #include "priunit.h"
+#include "param_ccsd.h"
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -3369,12 +3391,17 @@ c
 !      common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
 #endif
 
-!!!!!!!!!!!!!!!!! need dynamic alloc !!!!!!!!!!!!!!!!!!!!!!!!!!!
-      dimension ia(3,8),ind(16),ninds(ndij)
+!!!!!!!!!!!!!!!!!!!!!!!!! need dynamic alloc !!!!!!!!!!!!!!!!!!!!!!!!!!!
+!    ! dimension ia(3,8),ind(16),ninds(ndij)
+      dimension ninds(ndij)
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      dimension ia(3,8),ind(16)
 
       data ia / 1,1,1,2,5,5,5,2,6,6,6,2,3,3,3,4,7,7,7,4,8,8,8,4 /
+
       ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),
      1ior(ishft(k,8),l))
+
       iparm=iparm-1
       call files_ccsd (name4,ntape4,new,1,-1,-1)
       if (new.ne.0) then

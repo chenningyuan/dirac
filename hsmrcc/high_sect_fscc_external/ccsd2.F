@@ -3512,9 +3512,17 @@ c *************************************************
       character typ(2,5),cc(200)
       character*8 title(10)
       data typ /'c','C','h','H','p','P','g','G','v','V'/
+      logical :: is_input_file,is_open
 
+!!! first reading of the input file - open it !!!
+!!!! anyway, input file presence must be checked !!!
+      inquire(file='input',exist=is_input_file,opened=is_open)
       ! needed for repeating reading by subsequent executables
-      rewind(LUCMD) 
+      if (.not.is_input_file) then
+         call quit('input file not present !')
+      endif
+
+      rewind(LUCMD)
 
 !     read (5,'(10a8)')     title
       read (LUCMD,'(10a8)')     title
