@@ -552,6 +552,37 @@ C
       RETURN
       END
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck FINDIUNNO */
+      INTEGER FUNCTION FINDIUNNO(ICENT,LL,IUNNO,IPRINT)
+C***********************************************************************
+C
+C Find out unique index of the nuclei.
+C 
+C Used byt CAPWRIBAS2.
+C
+C Written by Miro Ilias, Tel Aviv, February 2007
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+      DIMENSION IUNNO(MXCENT,2)
+
+      INNO = 0
+      DO I = 1 , MXCENT
+       IF (IUNNO(I,1).EQ.ICENT.AND.IUNNO(I,2).EQ.LL) INNO = I
+      ENDDO
+
+      IF (INNO.EQ.0) THEN
+       call QUIT('error in INTEGER FUNCTION FINDIUNNO !')
+      ENDIF
+  
+      FINDIUNNO = INNO
+
+      RETURN
+      END
+
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !  /* Deck capsymout */
       SUBROUTINE CAPSYMOUT

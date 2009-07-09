@@ -6652,17 +6652,19 @@ C
       RETURN
       END
 
+#if defined MOD_AMFI
 C  /* Deck mnfout */
       SUBROUTINE MNFOUT(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &     KATOM,KANG,KBLOCK,KPRIM,CPRIMU)
-CMI  &     KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI,KASYM)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C     Now also dumps a file MNF.INP for use for SO mean-field approximation
 C     Written by K.Ruud 160297 
 C
 C     Added and modified by Miro Ilias for the AMFI part
-C      Strasbourg, 2005
+C     Strasbourg, 2005
 C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
@@ -6785,37 +6787,8 @@ C     END of IF master (i.e. if MYTID .eq. MPARID)
       RETURN
 C     end of SUBROUTINE MNFOUT
       END
+#endif
 
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck FINDIUNNO */
-      INTEGER FUNCTION FINDIUNNO(ICENT,LL,IUNNO,IPRINT)
-C***********************************************************************
-C
-C Find out unique index of the nuclei.
-C
-C Written by Miro Ilias, Tel Aviv, February 2007
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-#include "mxcent.h"
-      DIMENSION IUNNO(MXCENT,2)
-
-      INNO = 0
-      DO I = 1 , MXCENT
-       IF (IUNNO(I,1).EQ.ICENT.AND.IUNNO(I,2).EQ.LL) INNO = I
-      ENDDO
-
-      IF (INNO.EQ.0) THEN
-       call QUIT('error in INTEGER FUNCTION FINDIUNNO !')
-      ENDIF
-  
-      FINDIUNNO = INNO
-
-      RETURN
-      END
-
-      
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck Getsph */
       SUBROUTINE GETSPH(WORK,LWORK,IPRINT)
@@ -6955,7 +6928,7 @@ C     have been normalized, so this contribution has to be removed
 C     from the normalization of the contracted basis.
 C
 C     This is DKCON, written by K. Ruud, 
-C     and imported from DALTON (with polsih) by T. Saue Jan 15 2008
+C     and imported from DALTON (with polish) by T. Saue Jan 15 2008
 C
 C******************************************************************************
 #include "implicit.h"
