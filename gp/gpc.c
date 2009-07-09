@@ -164,8 +164,8 @@ void sysinf_(fortran_int_t *parcal)
 
    /* Information about compilation */
 
-   printf(" Last compilation  : %s %s (by %s@%s)\n", 
-      __TIME__,__DATE__,WHO_COMPILED,WHERE_COMPILED);
+   printf(" Last compilation  : %s %s (by %s@%s:%s)\n", 
+      __TIME__,__DATE__,WHO_COMPILED,WHERE_COMPILED, COMPILED_DIRAC_DIR);
 
    printf(" FORTRAN compiler  : %s \n", FCOMP);
    printf(" C compiler        : %s \n", CCOMP);

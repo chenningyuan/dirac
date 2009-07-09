@@ -77,6 +77,7 @@ dontbuild:dontbuild.in
 gp/compinfo.h:
 	@echo "#define WHO_COMPILED \"${LOGNAME}\"" > $@
 	@echo "#define WHERE_COMPILED \"${HOSTNAME}\"" >> $@
+	@echo "#define COMPILED_DIRAC_DIR \"${PWD}\"" >> $@
 	@echo "#define ILP_DATA_MODEL \"${ILP_DATATYPE}\"" >> $@
 	@echo "#define FCOMP \"${F77} ${F77FLAGS}\"" >> $@
 	@echo "#define CCOMP \"${CC} ${CFLAGS}\"" >> $@
