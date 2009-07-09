@@ -170,6 +170,7 @@ void sysinf_(fortran_int_t *parcal)
    printf(" FORTRAN compiler  : %s \n", FCOMP);
    printf(" C compiler        : %s \n", CCOMP);
    printf(" External libraries: %s \n", LIBRARIES);
+   printf(" Internal libraries: DIRAC_BLAS=%s  DIRAC_LAPACK=%s \n", DIRAC_BLAS, DIRAC_LAPACK);
    printf(" ILP data model    : %s \n", ILP_DATA_MODEL);
    printf(" SVN URL:          : %s \n", DIRAC_URL);
    printf(" SVN Changeset     : %s \n", VERSION);

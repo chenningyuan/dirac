@@ -76,12 +76,15 @@ dontbuild:dontbuild.in
 .PHONY:gp/compinfo.h
 gp/compinfo.h:
 	@echo "#define WHO_COMPILED \"${LOGNAME}\"" > $@
-	@echo "#define WHERE_COMPILED \"${HOSTNAME}\"" >> $@
+#	@echo "#define WHERE_COMPILED \"${HOSTNAME}\"" >> $@
+	@echo "#define WHERE_COMPILED \"`hostname -f`\"" >> $@
 	@echo "#define COMPILED_DIRAC_DIR \"${PWD}\"" >> $@
 	@echo "#define ILP_DATA_MODEL \"${ILP_DATATYPE}\"" >> $@
 	@echo "#define FCOMP \"${F77} ${F77FLAGS}\"" >> $@
 	@echo "#define CCOMP \"${CC} ${CFLAGS}\"" >> $@
 	@echo "#define LIBRARIES \"${LIBS}\"" >> $@
+	@echo "#define DIRAC_BLAS \"${USED_DIRAC_BLAS}\"" >> $@
+	@echo "#define DIRAC_LAPACK \"${USED_DIRAC_LAPACK}\"" >> $@
 	@echo "#define DIRAC_URL \"${DIRAC_SVN_URL}\"" >> $@
 	@echo "#define VERSION \"${DIRAC_SNAP}\"" >> $@
 
