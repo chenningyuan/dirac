@@ -511,9 +511,12 @@ C     microiterations
 C     (used for Sternheimer and/or uncoupled approx.)
 C
       IF(MAXITR.EQ.0.OR.UNCOUP) THEN
-CTROND        DO I = 1,NFREQ
-CTROND          EVECR(1,I) = D1
-CTROND        ENDDO
+        IF (.NOT. UNCOUP) THEN
+C         ... EVECR set in subroutine XRSST2 for UNCOUP
+          DO I = 1,NFREQ
+            EVECR(1,I) = D1
+          ENDDO
+        END IF
         NZRED  = NTSIM
         NCRED  = NCSIM
         NERED  = NESIM
