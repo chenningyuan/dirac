@@ -4748,7 +4748,7 @@ C  always do control print out
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(A)')
      &' NMR diamagnetic shielding contributions '//
-     &' (Aucar et al, JCP 110(1999) 6208)'
+     &' (Aucar et al, JCP 110 (1999) 6208)'
        IF (LONDON) THEN
         WRITE(LUPRI,'(2X,A)')
      &'- for London atomic orbitals (invariant gauge origin)'
@@ -6671,12 +6671,14 @@ C   ... make separate print out of e-e and e-p response contributions
          END DO
          IF (.NOT.LONDON) THEN
            AVEDIAX=AVEDIA
+           AVEPARX=AVEPAR
          ELSE
            AVEDIAX=AVEDIA1
+           AVEPARX=AVEPAR-AVEDIA1
          ENDIF
          WRITE (LUPRI,'(/A,F14.6,8X,A,F14.6)')
      &          ' e-p "diamagnetic" contribution:',AVEDIAX,
-     &          ' e-e "paramagnetic": ',AVEPAR
+     &          ' e-e "paramagnetic": ',AVEPARX
          IF (NSTDIA) THEN
             IF (.NOT.LONDON) THEN
               CALL HEADER('.NSTDIA CGO diamagnetic term '//
