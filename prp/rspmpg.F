@@ -94,8 +94,8 @@ C
 c     qedrun    = .TRUE.        !not implemented
       XLR_LSFG(1) = .TRUE.        !Generate G-matrix in MO basis
       XLR_LSFG(2) = .TRUE.        !Generate G-matrix in MO basis
-      XLRNRM    = .TRUE.        !normalize solutionvector
-      XLRDIH    = .TRUE.        !pre-conditioning of trail vectors
+      XLRNRM    = .TRUE.        !normalize solution vector
+      XLRDIH    = .TRUE.        !pre-conditioning of trial vectors
 C                                
       ORBDEF(1) = .TRUE.
       ORBDEF(2) = .TRUE.
