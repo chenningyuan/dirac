@@ -5445,7 +5445,8 @@ C
 #ifdef MOD_DFT
       call parse_dft_input(word)
 #else
-      call quit('*DFT specified, but DFT is not included in this version')
+      call quit('*DFT specified, '
+     &          //'but DFT is not included in this version')
 #endif
       go to 200
 
