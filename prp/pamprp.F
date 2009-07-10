@@ -6361,6 +6361,23 @@ C    The 3 B field directions as B operators in <<A;B>> :
 C
 C     Fill shielding matrices
 C
+      IF (XLR_SKIPEE) THEN
+         IF (XLR_SKIPEP) THEN
+           IABLRF_EE = -999999999
+           IABLRF_EP = -999999999
+         ELSE
+           IABLRF_EE = -999999999
+           IABLRF_EP = 2
+         END IF
+      ELSE
+         IF (XLR_SKIPEP) THEN
+           IABLRF_EE = 2
+           IABLRF_EP = -999999999
+         ELSE
+           IABLRF_EE = 2
+           IABLRF_EP = 3
+         END IF
+      END IF
 #if defined (XH4)
       WRITE(LUPRI,'(A)') '*** WARNING *** Using code for XH4 !'
 #endif
@@ -6402,10 +6419,11 @@ CTROND           ENDIF
                JA = IBUFA(IA)
                KA = IPSHIELD(JA)
 C...           First extract the e-e contribution
-               TMPMAT(IPTAX(JB,2),JA) = -ABLRF(IFREQ,KA,KB,2)
+               IF (.NOT. XLR_SKIPEE) TMPMAT(IPTAX(JB,2),JA) =
+     &            -ABLRF(IFREQ,KA,KB,IABLRF_EE)
 C...           then extract the e-p "diamagnetic" contribution
-               TMPMAT(IPTAX(JB,2),JA+NCMAT)
-     &            = -ABLRF(IFREQ,KA,KB,3)
+               IF (.NOT. XLR_SKIPEP) TMPMAT(IPTAX(JB,2),JA+NCMAT) =
+     &            -ABLRF(IFREQ,KA,KB,IABLRF_EP)
             ENDDO
          ENDDO
 #if defined (XH4)
