@@ -49,6 +49,7 @@ use cij6_mod
 use cfiles_mod
 use rsp1_mod
 use rsp2_mod
+use dpd_mod
 
   call header ('Output from Init_HSFS_Modules',-1)
  
@@ -66,6 +67,7 @@ use rsp2_mod
  call init_cfiles_mod
  call init_rsp1_mod
  call init_rsp2_mod
+ call init_dpd_mod
 
  End Subroutine Init_HSFS_Modules
 
