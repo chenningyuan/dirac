@@ -201,7 +201,7 @@ C     in the URKBAL scheme; in RKBAL the default is .FALSE.
 C&&&& LONDON: use London atomic orbitals rather than conventional atomic orbitals
                LONDON = .TRUE.
 #else
-               WRITE(LUPRI,'(,1X,A)') '* This version of DIRAC does not'
+               WRITE(LUPRI,'(1X, A)') '* This version of DIRAC does not'
      & //' support London atomic orbitals !'
      
 #endif
