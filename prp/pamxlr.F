@@ -377,7 +377,7 @@ C
      &            '.ITRINT','.CNVINT','.REAXVC','.TRIAB ',
      &            '.RESFAC','.ANALYZ','.STERNH','.SKIPEE',
      &            '.MXLOAD','.A_NOSP','.B_NOSP','.UNCOUP',
-     &            '.IMAGIN','.GAUSS-','.XXXXXX','.XXXXXX'/
+     &            '.IMAGIN','.GAUSS-','.E2CHEK','.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -452,6 +452,7 @@ C     Calculation of C6 dispersion coefficient
       XSTERN     = .FALSE.
       NOSPIA     = .FALSE.
       NOSPIB     = .FALSE.
+      XLR_E2CHEK = .FALSE.
       DO I = 1,NFSYM
          XLR_INDSTR(2,I) = ' '
          XLR_INDSTR(1,I) = ' '
@@ -715,6 +716,8 @@ C%%% GAUSS-LEGENDRE: specify number of quadrature points
                END IF
                GO TO 100
  35            CONTINUE
+C&&& E2CHEK: explicit contruction of the electronic Hessian E2
+               XLR_E2CHEK = .TRUE.
                GO TO 100
  36            CONTINUE
                GO TO 100
@@ -768,6 +771,8 @@ C
      &  ' * NB !!! Uncoupled calculation.'
       IF(XLRANA) WRITE(LUPRI,'(A)')
      &   ' * Analysis of solution vectors.'
+      IF(XLR_E2CHEK) WRITE(LUPRI,'(A)')
+     &   ' * Explicit contruction of the electronic Hessian'
       IF(XSTERN .AND. DOXLR) THEN
         WRITE(LUPRI,'(1X,A)')
      &'* Sternheimer: Approximating Hessian for ep-rotations by -2mc^2',
@@ -1093,6 +1098,7 @@ C
       ITRINT(2) = ITRILR(2)
       INTDEF    = INTXLR
       STERNH    = XSTERN
+      E2CHEK    = XLR_E2CHEK
 C
 C     Restart info used by MCSCF program.
 C

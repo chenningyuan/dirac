@@ -3928,5 +3928,6 @@ C
       FKRMC  = .FALSE.
       UNCOUP = .FALSE.
       IMFREQ = .FALSE.
+      E2CHEK = .FALSE.
       RETURN
       END
