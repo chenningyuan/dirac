@@ -718,6 +718,7 @@ C%%% GAUSS-LEGENDRE: specify number of quadrature points
  35            CONTINUE
 C&&& E2CHEK: explicit contruction of the electronic Hessian E2
                XLR_E2CHEK = .TRUE.
+               XLRDIH = .FALSE.
                GO TO 100
  36            CONTINUE
                GO TO 100

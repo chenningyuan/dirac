@@ -841,6 +841,12 @@ C       ... linear response
         IF(NZXOPE.GT.0) NESIM = NVEC*IFAC
         IF(NZXOPP.GT.0) NPSIM = NVEC*IFAC
         IF(NZCONF.GT.0) NCSIM = NVEC*IFAC
+        IF(E2CHEK) THEN
+          IFAC = NZ*IFAC
+          NESIM = NZXOPE*IFAC
+          NPSIM = NZXOPP*IFAC
+          NCSIM = NZCONF*IFAC
+        ENDIF
       ELSE
 C       ... linear response single residue; excitation energies
 CHJ TODO nov.2000:
@@ -3392,7 +3398,24 @@ C        L I N E A R   R E S P O N S E   F U N C T I O N S
 C        =================================================
 C        
 C        
-        IF(RSREST) THEN
+        IF(E2CHEK) THEN
+          IB = 0
+          DO IVAR = 1,NVAR
+            DO IZ = 1,NZ
+              IXX  = IPX
+              DO IH = 1,2
+                IB = IB + 1
+                CALL DZERO(BVEC(1,1,IB),NBDIM)
+                BVEC(IVAR,IZ,IB) = D1
+                IBTYP(1,IBOFF+IB)     = NBTYP
+                IBTYP(2,IBOFF+IB)     = IXX
+                IBVEC(NBPREV+IB)      = IBOFF + IB
+                IVEC(IB)              = 1
+                IXX = IMX
+              ENDDO
+            ENDDO
+          ENDDO
+        ELSEIF(RSREST) THEN
 C          
 C       Restart on solution vectors; scan through file
 C          
