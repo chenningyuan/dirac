@@ -574,11 +574,13 @@ C
               CALL PRBVEC(LUPRI,WORK(KBCI),NCSIM,NZCONF)
             ENDIF
             IF(NESIM.GT.0) THEN
-              WRITE(LUPRI,'(/I5,A)')NESIM,' Electron trial vectors'
+              WRITE(LUPRI,'(/I5,A)')NESIM,
+     &        ' Electronic (++) trial vectors'
               CALL PRBVEC(LUPRI,WORK(KBOE),NESIM,NZXOPE)
             ENDIF
             IF(NPSIM.GT.0) THEN
-              WRITE(LUPRI,'(/I5,A)')NPSIM,' Positron trial vectors'
+              WRITE(LUPRI,'(/I5,A)')NPSIM,
+     &        ' Electronic (-+) trial vectors'
               CALL PRBVEC(LUPRI,WORK(KBOP),NPSIM,NZXOPP)
             ENDIF
           END IF
@@ -2728,6 +2730,7 @@ C
 C
       IREP = JSYMOP - 1
       DO I = 1,NBSIM
+        WRITE(6,'(A,I4)') '* Vector nr. ',I
         CALL PRQMAT(BVEC(1,1,I),NBDIM,1,NBDIM,1,NZ,
      &              IPQTOQ(1,IREP),IUNIT)
       ENDDO
@@ -3398,24 +3401,7 @@ C        L I N E A R   R E S P O N S E   F U N C T I O N S
 C        =================================================
 C        
 C        
-        IF(E2CHEK) THEN
-          IB = 0
-          DO IVAR = 1,NVAR
-            DO IZ = 1,NZ
-              IXX  = IPX
-              DO IH = 1,2
-                IB = IB + 1
-                CALL DZERO(BVEC(1,1,IB),NBDIM)
-                BVEC(IVAR,IZ,IB) = D1
-                IBTYP(1,IBOFF+IB)     = NBTYP
-                IBTYP(2,IBOFF+IB)     = IXX
-                IBVEC(NBPREV+IB)      = IBOFF + IB
-                IVEC(IB)              = 1
-                IXX = IMX
-              ENDDO
-            ENDDO
-          ENDDO
-        ELSEIF(RSREST) THEN
+        IF(RSREST) THEN
 C          
 C       Restart on solution vectors; scan through file
 C          
@@ -3455,7 +3441,24 @@ C
           ENDIF
         ENDIF
 
-        IF(DIAGHE) THEN
+        IF(E2CHEK) THEN
+          IB = 0
+          DO IVAR = 1,NVAR
+            DO IZ = 1,NZ
+              IXX  = IPX
+              DO IH = 1,2
+                IB = IB + 1
+                CALL DZERO(BVEC(1,1,IB),NBDIM)
+                BVEC(IVAR,IZ,IB) = D1
+                IBTYP(1,IBOFF+IB)     = NBTYP
+                IBTYP(2,IBOFF+IB)     = IXX
+                IBVEC(NBPREV+IB)      = IBOFF + IB
+                IVEC(IB)              = 1
+                IXX = IMX
+              ENDDO
+            ENDDO
+          ENDDO
+        ELSEIF(DIAGHE) THEN
           GPTMP = DNRM2(NBDIM,GP,1)
           HDTMP = DNRM2(NVAR,HDIAG,1)/NVAR
           IF (IPRXRS.GE.3) WRITE(LUPRI,'(1X,A,1P,D12.5)')
