@@ -4352,8 +4352,6 @@ C        This saves some FLOPs when there is electronic rotations, but
 C        no positronic rotations (and vice versa). However, it's just simpler
 C        to let the second index run over all orbitals.
 C
-CTROND
-         WRITE(6,*) 'test..',SPINFR,ITIM,TRIPLET
          IF(NS.NE.0.AND.NI.NE.0) THEN
 CTROND           IF(SPINFR .AND. (ITIM .EQ. 1) .AND. .NOT. TRIPLET) THEN
            IF(SPINFR .AND. (ITIM .EQ. 1)) THEN
