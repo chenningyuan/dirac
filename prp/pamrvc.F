@@ -4354,7 +4354,10 @@ C        to let the second index run over all orbitals.
 C
          IF(NS.NE.0.AND.NI.NE.0) THEN
 CTROND           IF(SPINFR .AND. (ITIM .EQ. 1) .AND. .NOT. TRIPLET) THEN
-           IF(SPINFR .AND. (ITIM .EQ. 1)) THEN
+!radovan this breaks test 46
+!          IF(SPINFR .AND. (ITIM .EQ. 1)) THEN
+!        for the moment i revert:
+           IF(SPINFR .AND. (ITIM .EQ. 1) .AND. .NOT. TRIPLET) THEN
              CALL QBTRANS(IREP,'AOMO','S',D0,
      &           NFBAS(I1,0),NFBAS(I2,0),NS,NI,
      &           FAO(I2BASX(I1,I2)+1),NTBAS(0),NTBAS(0),NZ,
