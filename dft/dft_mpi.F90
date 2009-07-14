@@ -19,6 +19,7 @@ module dft_mpi
     module procedure dft_mpi_bcast_r3
     module procedure dft_mpi_bcast_l0
     module procedure dft_mpi_bcast_l1
+    module procedure dft_mpi_bcast_l2
   end interface
 
 #include "infpar.h"
@@ -132,6 +133,16 @@ contains
 
 !   ----------------------------------------------------------------------------
     logical :: x(:)
+!   ----------------------------------------------------------------------------
+
+    call mpi_bcast(x, size(x), mpi_logical, mparid, mpi_comm_world, ierr)
+
+  end subroutine
+
+  subroutine dft_mpi_bcast_l2(x)
+
+!   ----------------------------------------------------------------------------
+    logical :: x(:, :)
 !   ----------------------------------------------------------------------------
 
     call mpi_bcast(x, size(x), mpi_logical, mparid, mpi_comm_world, ierr)

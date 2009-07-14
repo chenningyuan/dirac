@@ -6,6 +6,9 @@ module dft_ao
 !   note that in levy-leblond or x2c4 mode some elements will
 !   contain garbage but they are not (= should not be) used
 
+!gosia:
+!!!#define debug_me
+
   use dft_cb_interface
   use dft_basis_info
 
@@ -19,70 +22,70 @@ module dft_ao
 
 contains
 
-  subroutine get_so(ao,     &
-                    cx,     &
+  subroutine get_so(cx,     &
                     cy,     &
                     cz,     &
+                    ao,     &
                     buffer, &
-                    ndim,   &
-                    nder)
+                    ndim)
 
 !   ----------------------------------------------------------------------------
-    real(8), intent(inout) :: ao(ndim, 4)
     real(8), intent(in)    :: cx
     real(8), intent(in)    :: cy
     real(8), intent(in)    :: cz
-    integer, intent(in)    :: ndim
+    real(8), intent(inout) :: ao(*)
     real(8), intent(inout) :: buffer(*)
-    integer, intent(in)    :: nder
+    integer, intent(in)    :: ndim
 !   ----------------------------------------------------------------------------
-    integer                :: nvec
+    integer                :: nvec, i
 !   ----------------------------------------------------------------------------
 
-!   get values in ao basis
-    call get_ao(ao(1, 1), &
-                ao(1, 2), &
-                cx,       &
-                cy,       &
-                cz,       &
-                ndim,     &
-                nder)
+#ifdef debug_me                
+   do i = 1, ndim*ndimfactor
+     write(*, *) 'debug get_so 1.: i, ao(i)', i, ao(i)
+   end do
+#endif
+
+    call get_ao(cx,     &
+                cy,     &
+                cz,     &
+                ao,     &
+                ndim)
+
+#ifdef debug_me                
+   do i = 1, ndim*ndimfactor
+     write(*, *) 'debug get_so 2.: i, ao(i)', i, ao(i)
+   end do
+#endif
 
 !   without symmetry skip the rest
     if (nr_boson_sym == 1) return
 
-    if (nder == 0) then
-      nvec = 1
-    else if (nder == 1) then
-      nvec = 4
-    end if
-    call dzero(buffer, ndim*nvec)
+    call dzero(buffer, ndim*ndimfactor)
 !   transform from ao(bu) to so(bs)
-    call ao_to_so(ndim, nvec, ao, buffer)
-    call dcopy(ndim*nvec, buffer, 1, ao, 1)
+    call ao_to_so(ndim, ndimfactor, ao, buffer)
+    call dcopy(ndim*ndimfactor, buffer, 1, ao, 1)
 
   end subroutine
 
-  subroutine get_ao(gao,  &
-                    gao1, &
-                    cx,   &
+  subroutine get_ao(cx,   &
                     cy,   &
                     cz,   &
-                    ndim, &
-                    nder)
-
+                    ao,   &
+                    ndim)
 !   ----------------------------------------------------------------------------
-    real(8), intent(inout) :: gao(ndim)
-    real(8), intent(inout) :: gao1(ndim, 3)
     real(8), intent(in)    :: cx
     real(8), intent(in)    :: cy
     real(8), intent(in)    :: cz
+    real(8)                :: ao(*)
     integer, intent(in)    :: ndim
-    integer, intent(in)    :: nder
 !   ----------------------------------------------------------------------------
     integer                :: i, iend, ishell, isym
     real(8)                :: px, py, pz
+    integer                :: ofg, ofm
 !   ----------------------------------------------------------------------------
+
+! gosia: to rewrite later on...
 
     iend = dft_nr_shells
 !   if levy-leblond or x2c
@@ -91,27 +94,59 @@ contains
 !   expression using levy-leblond, in this case comment this out
     if (nr_ls_components .eq. 1) iend = dft_nr_large_shells
 
+    ofg = 0
+    ofm = 0
     i = 1
     do ishell = 1, iend
       do isym = 0, dft_maxopr
         if (iand(isym, dft_istbao(ishell)) == 0) then
-
           px = cx - dft_pt(iand(dft_isymax(1, 1), isym))*dft_cent(ishell, 1, 1)
           py = cy - dft_pt(iand(dft_isymax(2, 1), isym))*dft_cent(ishell, 2, 1)
           pz = cz - dft_pt(iand(dft_isymax(3, 1), isym))*dft_cent(ishell, 3, 1)
 
-          if (nder == 0) then
-            call get_gao(ishell, &
-                         gao(i), &
+          ! gosia: lines below slightly rewritten as now we have to refer to
+          ! different place in ao array to get the derivatives that we
+          ! want
+
+!         this is because get_gao1 does both ao and ao1
+          if (need_ao_order(0, 0) .and. .not. need_ao_order(1, 0)) then
+            call get_gao(ishell,         &
+                         ao(i),   &
                          px, py, pz)
-          else if (nder == 1) then
-            call get_gao1(ishell,     &
-                          gao(i),     &
-                          gao1(i, 1), &
-                          gao1(i, 2), &
-                          gao1(i, 3), &
+          else if (need_ao_order(1, 0)) then
+            ! ao_start(1, 0) indicate the place in ao where
+            ! geom derivs should start
+            ofg = ao_start(1, 0) + i - 1
+            call get_gao1(ishell,                   &
+                          ao(i),             &
+                          ao(ofg),           &
+                          ao(ofg + ndim),    &
+                          ao(ofg + 2*ndim),  &
                           px, py, pz)
           end if
+
+          if (need_ao_order(0, 1)) then
+            ! ao_start(0, 1) indicate the place in ao where
+            ! magn dervs should start
+            ofm = ao_start(0, 1) + i - 1
+            call get_ao_b1(px, py, pz,             &
+                           ishell,                 &
+                           ao(i),           &
+                           ao(ofm),         &
+                           ao(ofm + ndim),  &
+                           ao(ofm + 2*ndim))
+          end if
+
+#ifdef debug_me
+   write(*, *) 'debug get_ao'
+   write(*, *) 'i, ao_00(i): ', i, ao(i)
+   !write(*, *) 'i, ao_gx(i): ', i, ao(ofg)
+   !write(*, *) 'i, ao_gy(i): ', i, ao(ofg + ndim)
+   !write(*, *) 'i, ao_gz(i): ', i, ao(ofg + 2*ndim)
+   write(*, *) 'i, ao_bx(i): ', i, ao(ofm)
+   write(*, *) 'i, ao_by(i): ', i, ao(ofm + ndim)
+   write(*, *) 'i, ao_bz(i): ', i, ao(ofm + 2*ndim)
+#endif
 
           i = i + spherical_deg(ishell)
 
@@ -197,10 +232,10 @@ contains
 
 !   ----------------------------------------------------------------------------
     integer, intent(in)    :: ishell
-    real(8), intent(out)   :: gao(*)
-    real(8), intent(out)   :: gaox(*)
-    real(8), intent(out)   :: gaoy(*)
-    real(8), intent(out)   :: gaoz(*)
+    real(8)                :: gao(*)
+    real(8)                :: gaox(*)
+    real(8)                :: gaoy(*)
+    real(8)                :: gaoz(*)
     real(8), intent(in)    :: px, py, pz
 !   ----------------------------------------------------------------------------
     integer                :: i, ic, jc
@@ -409,7 +444,7 @@ contains
       ao_bz(ic) = f*pz
 
     end do
-
+    
   end subroutine
 
   subroutine ao_to_so(ndim, nvec, ao, so)
@@ -425,7 +460,7 @@ contains
     integer              :: i, nr_ao, mul, irep, isym, n, ivec
     real(8)              :: f
 !   ----------------------------------------------------------------------------
-
+! gosia: change ao(ndim, nvec)... now it won't work
     i = 1
     do irep = 0, dft_maxrep
       nr_ao = dft_nbbas(irep, 1) + dft_nbbas(irep, 2)

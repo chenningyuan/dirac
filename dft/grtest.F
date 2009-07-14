@@ -478,6 +478,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       use dft_cfg
       use dft_temp
+      use dft_basis_info
 
 #include "implicit.h"
 #include "priunit.h"
@@ -500,7 +501,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &            VX(DERVS1)
       DIMENSION RHG(3)
       nder = 0
-      if (dft_temp_need_gao1) nder = 1
+      if (need_ao_order(1, 0)) nder = 1
 
       DO 300 IPNT = 1, NPOINT
          WGHT = WEIGHT(IPNT)

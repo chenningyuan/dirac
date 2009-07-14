@@ -38,7 +38,6 @@ module dft_temp
   logical, public :: dft_temp_grid_is_done   = .false.
   logical, public :: dft_temp_gga_hs         = .false.
   logical, public :: dft_temp_gga_ha         = .false.
-  logical, public :: dft_temp_need_gao1      = .false.
   logical, public :: dft_temp_reload_batches = .false.
 
 ! these are not broadcast, only mpi_reduced
@@ -62,7 +61,6 @@ contains
     dft_options%lr           = .false.
     dft_options%qr           = .false.
     dft_options%aor_xc_order = 0
-
   end subroutine
 
 #ifdef VAR_MPI
@@ -71,7 +69,6 @@ contains
     call dft_mpi_bcast(dft_temp_grid_is_done  )
     call dft_mpi_bcast(dft_temp_gga_hs        )
     call dft_mpi_bcast(dft_temp_gga_ha        )
-    call dft_mpi_bcast(dft_temp_need_gao1     )
     call dft_mpi_bcast(dft_temp_reload_batches)
 
   end subroutine

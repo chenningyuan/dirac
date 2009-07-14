@@ -579,25 +579,25 @@ contains
 !   alda
 
     if (dft_cfg_alda_hs .or. dft_cfg_alda_ha) then
-
+  
       write(u, '(a)')        ' * Adiabatic local density approximation (ALDA):'
       write(u, '(a)')        '   - approximate all functional derivatives '// &
                              'beyond the xc potential by SVWN derivatives'
-
+  
       if (dft_cfg_alda_hs .and. .not. dft_cfg_alda_ha) then
         write(u, '(a)')      '   - use ALDA only for the Hermitian part '// &
                              '(density contribution)'
         write(u, '(a)')      '   - use the proper xc kernel for the anti-Hermitian '// &
                              'part (spin density contribution)'
       end if
-
+  
       if (dft_cfg_alda_ha .and. .not. dft_cfg_alda_hs) then
         write(u, '(a)')      '   - use ALDA only for the anti-Hermitian part '// &
                              '(spin density contribution)'
         write(u, '(a)')      '   - use the proper xc kernel for the Hermitian '// &
                              'part (density contribution)'
       end if
-
+  
       if (dft_cfg_xalda) then
         write(u, '(a)')      '   - keep the fraction of exact exchange of the '// &
                              'xc functional in the solution of the response equation'
@@ -606,7 +606,7 @@ contains
                              'switched off in the solution of the response equation'
         write(u, '(a)')      '     (if you want to keep it, use .XALDA)'
       end if
-
+  
     end if !if (dft_cfg_alda_hs .or. dft_cfg_alda_ha) then
 
   end subroutine

@@ -69,7 +69,7 @@ contains
       type(dft_options_t) :: dft_options
       integer, intent(in) :: iprint
 !     --------------------------------------------------------------------------
-      integer             :: iz, im, iq
+      integer             :: iz, im, iq, g_order, m_order, ndim
       real(8)             :: time_start, time_in_xc, second
       real(8)             :: ddot
 
@@ -171,19 +171,38 @@ contains
         end if
       end if
 
+!   they have to be zeroed out here, because this is done each iteration
+    max_ao_g_order = 0
+    max_ao_m_order = 0
 
-!     check whether derivatives of basis functions are needed
+!radovan: need to test vrg first
+!   if (dft_temp_gga_hs .or. dft_temp_gga_ha .or. dft_cfg_cdft_vrg) then
+    if (dft_temp_gga_hs .or. dft_temp_gga_ha) then
+      max_ao_g_order = 1
+    end if
 
-!     it should already be set to .false. but just to be sure
-      dft_temp_need_gao1 = .false.
+    if (dft_options%london) then
+      max_ao_m_order = 1
+    end if
 
-      if (dft_temp_gga_hs .or. dft_temp_gga_ha) then
-        dft_temp_need_gao1 = .true.
-      end if
+!radovan: this is not so nice here, will fix it later
+    ndim = nr_ao_total
 
-      if (dft_cfg_cdft_vrg) then
-        dft_temp_need_gao1 = .true.
-      end if
+    ndimfactor = 0
+
+!radovan: has to be reinitialized here
+!         otherwise you get very strange effects with ALDA
+!         (ndimfactor decreases in response part)
+    need_ao_order = .false.
+
+    do g_order = 0, max_ao_g_order
+      do m_order = 0, max_ao_m_order
+        need_ao_order(g_order, m_order) = .true.
+        ao_start     (g_order, m_order) = ndimfactor*ndim + 1
+        ndimfactor = ndimfactor + (3**g_order)*(3**m_order)
+        ao_end       (g_order, m_order) = ndimfactor*ndim
+      end do
+    end do
 
 #ifdef VAR_MPI
       if (is_parallel_calculation) then
@@ -205,7 +224,7 @@ contains
       end if
 #endif /* ifdef VAR_MPI */
       call init_dft_basis_info(is_parallel_calculation)
-
+      
 !     integrate
       call dftdrv(dmat,              &
                   dmat_saop_resp,    &
@@ -295,9 +314,6 @@ contains
       integer    ::iprint, nxcmat, ibatch
       type(dft_options_t) :: dft_options
 
-      real(8), allocatable :: gao(:)
-      real(8), allocatable :: buffer(:)
-
       real(8), allocatable :: kx(:)
       real(8), allocatable :: ky(:)
       real(8), allocatable :: kz(:)
@@ -311,11 +327,6 @@ contains
       integer :: i, idummy, ierr, myNPOINT, nr_points_part, ndim, NODESALL
       integer :: npnts, npoint, nrest, IDISP_REST
       logical :: i_am_the_master
-      NDIM = nr_ao_total
-
-!fixme adapt for lda !if (dft_temp_need_gao1) then
-      call alloc(gao,    ndim*4)
-      call alloc(buffer, ndim*4)
 
 
     dft_temp_nr_electrons = 0.0d0
@@ -512,12 +523,12 @@ contains
 #if defined (VAR_MPI) 
         end if !IF(is_parallel_calculation) THEN
 #endif
+        
         call dftdr1(kx, ky, kz, kw, &
                     mynpoint, ibatch, &
      &              DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
      &              DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP, &
      &              dft_options, &
-     &              gao,       buffer, &
      &              IPRINT)
 
         call dealloc(kx)
@@ -536,9 +547,6 @@ contains
       IF(is_parallel_calculation) CALL DFTRES(EXCMAT,NXCMAT,dft_options, &
      &                       IPRINT)
 #endif
-
-      call dealloc(gao)
-      call dealloc(buffer)
 
 
       IF(MYTID.NE.MPARID) RETURN
@@ -579,7 +587,7 @@ contains
               'grid is inappropriate'
       end if
       write(print_unit, *)
-
+      
       end subroutine
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DFTDR1(CORX,CORY,CORZ, &
@@ -588,8 +596,7 @@ contains
      &                  DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
      &                  DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP, &
      &                  dft_options, &
-     &                  GAO,      &
-     &                  buffer,IPRINT)
+     &                  IPRINT)
 !***********************************************************************
 !
 !     Written by Trond Saue and T.Helgaker
@@ -608,7 +615,6 @@ contains
       real(8) :: dmat_outer_ao(*)
       real(8) :: dtrmat(*)
       real(8) :: excmat(*)
-      real(8) :: buffer(*)
       real(8) :: vx(dervs1)
       integer :: isymop(nxcmat)
       integer :: ihrmop(nxcmat)
@@ -619,28 +625,36 @@ contains
       real(8) :: rho, rho13, rho_outer, rho_resp, rhogrd
       type(dft_options_t) :: dft_options
 
-      real(8), target  :: gao(nr_ao_total*4)
-      real(8), pointer :: gao_p(:)
-      real(8), pointer :: gao1_p(:)
-
-      real(8), allocatable :: kcfit(:)
-      real(8), allocatable :: kxcvec(:)
-      real(8), allocatable :: klrcfit(:)
-      real(8), allocatable :: klrxcvec(:)
-
-      integer :: ipoint, nder, ndim, need_limit
+      integer :: ipoint, ndim, need_limit
       real(8) :: wght, z, ddot, dftenergy, taylor_deriv, f
+
+      integer :: itest, jtest
+
+! this pointer is useful for .KEEPAO, then it can point to memory
+! otherwise it points to ao_global
+  real(8), pointer             :: ao_p(:)
+
+
+! never mpi_bcast this
+  real(8), allocatable, target :: ao_global(:)
+  real(8), allocatable         :: buffer(:)
+
+
+
+!here we will figure out the number of ndims
+!is interesting for density fitting and for x2c4 and levy-leblond
+    ndim = nr_ao_total
+    call alloc(ao_global, ndim*ndimfactor)
+    call alloc(buffer,    ndim*ndimfactor)
 
 #ifdef MOD_AUTODIFF
     call init_factorial_common_block()
 #endif
 
     ndim = nr_ao_total
-
-    nder   = 0
+    ! gosia: do we need this itimes below    
     itimes = 1
-    if (dft_temp_need_gao1) then
-      nder   = 1
+    if (need_ao_order(1, 0)) then
       itimes = 4
     end if
 
@@ -682,9 +696,10 @@ contains
     end if
 
     if (.not. (dft_cfg_keep_ao .and. batch_is_in_mem(ibatch))) then
-      gao_p  => gao(1:ndim)
-      gao1_p => gao(ndim+1:4*ndim)
-    end if
+!     so we either don't use .KEEPAO or the AOs are not yet stored
+!     so let it point to ao_global
+      ao_p => ao_global
+    end if    
 
     do ipoint = 1, npoint
 
@@ -695,14 +710,12 @@ contains
 !         write(*, *) 'debug recalculating aos'
         end if
       end if
-
+      
       if (.not. (dft_cfg_keep_ao .and. batch_is_in_mem(ibatch))) then
-        call get_so(gao, &
-     &              corx(ipoint), cory(ipoint), corz(ipoint), &
-     &              buffer, ndim, &
-     &              nder)
+!       here get magnetic dervs of aos
+        call get_so(corx(ipoint), cory(ipoint), corz(ipoint), &
+                    ao_p, buffer, ndim)
       end if
-
       if (dft_cfg_keep_ao) then
 
 !       copy ao to mem
@@ -710,28 +723,13 @@ contains
           if (ipoint == 1) then
             write(*, *) 'debug storing ao to mem', ioff
           end if
-          call dcopy(ndim,            &
-                     gao_p,           &
-                     1,               &
-                     ao_in_mem(ioff), &
-                     1)
-          if (dft_temp_need_gao1) then
-            call dcopy(3*ndim,                 &
-                       gao1_p,                 &
-                       1,                      &
-                       ao_in_mem(ioff + ndim), &
-                       1)
-          end if
+          call dcopy(ndim*ndimfactor, ao_p, 1, ao_in_mem(ioff), 1)
         end if
 
 !       if already in mem, set pointer
         if (batch_is_in_mem(ibatch)) then
-          gao_p => ao_in_mem(ioff:ioff + ndim)
-          if (dft_temp_need_gao1) then
-            gao1_p => ao_in_mem(ioff + ndim:ioff + ndim*4)
-          end if
+          ao_p => ao_in_mem(ioff:ioff + ndim*ndimfactor)
         end if
-
         ioff = ioff + itimes*ndim
         
         if (ipoint == npoint) then
@@ -740,13 +738,13 @@ contains
       end if
 
 !     density
-      call get_n(rho, 0, dmat, buffer, gao_p)
+      call get_n(rho, 0, dmat, buffer, ao_p)
 
       if (rho > dft_cfg_dfthr0) then
 
 !       density gradient
-        if (dft_temp_need_gao1) then
-          call get_gn(rhg, 0, dmat, buffer, gao_p, gao1_p)
+        if (need_ao_order(1, 0)) then
+          call get_gn(rhg, 0, dmat, buffer, ao_p, ao_p(ao_start(1, 0):ao_end(1, 0)))
           z = ddot(3, rhg, 1, rhg, 1)
           rhogrd = dsqrt(z)
         end if
@@ -784,13 +782,10 @@ contains
 
           else
 #endif /* ifdef MOD_AUTODIFF */
-
             energy_density = dftenergy(rho, rhogrd)
-
 #ifdef MOD_AUTODIFF
           end if
 #endif
-
           dft_temp_xc_energy = dft_temp_xc_energy &
                              + wght*energy_density
         end if
@@ -852,20 +847,19 @@ contains
 !           yields two identical terms (one left, one right)
             vx(fz0) = 2.0d0*vx(fz0)
           end if
-
 !         asymptotic correction
           if (dft_cfg_saop_is_active) then
             call get_n(rho_outer,     &
                        0,             &
                        dmat_outer_ao, &
                        buffer,           &
-                       gao_p)
+                       ao_p)
             if (dft_cfg_saop_with_response_part) then
               call get_n(rho_resp,     &
                          0,            &
                          dmat_resp_ao, &
                          buffer,          &
-                         gao_p)
+                         ao_p)
             end if
           end if
           if (dft_cfg_grac_is_active .or. dft_cfg_saop_is_active) then
@@ -881,6 +875,7 @@ contains
 
 !       exchange-correlation contribution to kohn-sham matrix
         if (dft_options%energy) then
+!       here we will add LAO contribution to KS matrix
           if (dft_temp_gga_hs) then
             vt = vx(fz0)*rhg
 
@@ -891,13 +886,28 @@ contains
             end if
 #endif
 
-            call gga_distribute(vx(fr0), vt, 0, excmat, gao_p, gao1_p)
+            call gga_distribute(vx(fr0), vt, 0, excmat, ao_p, ao_p(ao_start(1, 0):ao_end(1, 0)))
+            !gosia, if london then add: 
+            !if (dft_options%london) then
+            !  call gga_london_distribute()
+            !end if
           else
-            call lda_distribute(vx(fr0),     0, excmat, gao_p)
+            call lda_distribute(vx(fr0),     0, excmat, ao_p)
+            if (dft_options%london) then
+              call lda_london_distribute(vx(fr0), 0,       &
+                                         excmat,           &
+                                         ao_p, &
+                                         ao_p(ao_start(0, 1):ao_end(0, 1)),          &
+                                         corx(ipoint),     &
+                                         cory(ipoint),     &
+                                         corz(ipoint),     &
+                                         dft_gagorg(1),    &
+                                         dft_gagorg(2),    &
+                                         dft_gagorg(3))
+            end if
+!           call lda_london_distribute ...
           end if
         end if
-
-
 
 
 
@@ -906,26 +916,62 @@ contains
 !       linear response
         if(dft_options%lr) then
 
-          call dft_lr(dtrmat, &
-     &                excmat, &
-     &                nxcmat, &
-     &                isymop, &
-     &                ihrmop, &
-     &                .false., &
-     &                gao_p, &
-     &                gao1_p, &
-     &                rho, &
-     &                rhogrd, &
-     &                rhg, &
-     &                wght, &
-     &                dft_temp_gga_hs, &
-     &                buffer)
+          !here we will do LAO contribution to LR
+! gosia: we can try this for a moment:
+          if(dft_options%london) then
+            call dft_lr(dtrmat, &
+     &                  excmat, &
+     &                  nxcmat, &
+     &                  isymop, &
+     &                  ihrmop, &
+     &                  .false., &
+     &                  ao_p, &
+     &                  ao_p(ao_start(1, 0)), &
+     &                  rho, &
+     &                  rhogrd, &
+     &                  rhg, &
+     &                  wght, &
+     &                  dft_temp_gga_hs, &
+     &                  buffer)
+                 !do sth
+          else !gosia: both the same for a moment
+            call dft_lr(dtrmat, &
+     &                  excmat, &
+     &                  nxcmat, &
+     &                  isymop, &
+     &                  ihrmop, &
+     &                  .false., &
+     &                  ao_p, &
+     &                  ao_p(ao_start(1, 0)), &
+     &                  rho, &
+     &                  rhogrd, &
+     &                  rhg, &
+     &                  wght, &
+     &                  dft_temp_gga_hs, &
+     &                  buffer)
+          end if
+
+!         call dft_lr(dtrmat, &
+!     &                excmat, &
+!     &                nxcmat, &
+!     &                isymop, &
+!     &                ihrmop, &
+!     &                .false., &
+!     &                ao_p, &
+!     &                ao_p(ao_start(1, 0)), &
+!     &                rho, &
+!     &                rhogrd, &
+!     &                rhg, &
+!     &                wght, &
+!     &                dft_temp_gga_hs, &
+!     &                buffer)
+
 
 !         spin magnetization contribution
           if (dft_cfg_sdft) then
             call sdft_lr(dtrmat,excmat,nxcmat, &
      &                   isymop,ihrmop,.false., &
-     &                   gao_p,gao1_p, &
+     &                   ao_p,ao_p(ao_start(1, 0)), &
      &                   rho,rhogrd,rhg,wght,dft_temp_gga_ha,buffer)
           endif
         endif
@@ -938,7 +984,7 @@ contains
           call sdft_qr(gga_qr, &
      &                 dft_cfg_sdft, &
      &                 dtrmat,excmat, &
-     &                 isymop,ihrmop,gao_p,gao1_p, &
+     &                 isymop,ihrmop,ao_p,ao_p(ao_start(1, 0)), &
      &                 rho,rhogrd,rhg,wght,buffer)
 
 !         the idea here is that   r^[B]               \omega_{ia}^[C]
@@ -953,12 +999,12 @@ contains
           
           call dft_lr(dtrmat,excmat,3, &
      &                isymop,ihrmop,.true., &
-     &                gao_p,gao1_p, &
+     &                ao_p,ao_p(ao_start(1, 0)), &
      &                rho,rhogrd,rhg,wght,dft_temp_gga_hs,buffer)
           if (dft_cfg_sdft) then
             call sdft_lr(dtrmat,excmat,3, &
      &                   isymop,ihrmop,.true., &
-     &                   gao_p,gao1_p, &
+     &                   ao_p,ao_p(ao_start(1, 0)), &
      &                   rho,rhogrd,rhg,wght,dft_temp_gga_ha,buffer)
           endif
 
@@ -974,8 +1020,8 @@ contains
      &                      dtrmat,  &
      &                      excmat, &
      &                      isymop, &
-     &                      gao_p, &
-     &                      gao1_p, &
+     &                      ao_p, &
+     &                      ao_p(ao_start(1, 0)), &
      &                      rho, &
      &                      rhg, &
      &                      wght, &
@@ -988,9 +1034,12 @@ contains
       end if !if (rho > dft_cfg_dfthr0) then
     end do !do ipoint = 1, npoint
 
+    nullify(ao_p)
 
+    call dealloc(ao_global)
+    call dealloc(buffer)
 
-      end subroutine
+    end subroutine
       
 
 

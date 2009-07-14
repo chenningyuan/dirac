@@ -41,6 +41,9 @@ module dft_cb_interface
   logical, public :: is_parallel_calculation
 
   real(8), public :: dft_cb_cent(max_nr_shells, 3, 2)
+! gosia - let's try to add here info about user-defined gauge origin
+! hope that gagorg from include/orgcom.h is the one we need:
+  real(8), public :: dft_gagorg(3)
 
   private
 
@@ -61,6 +64,7 @@ contains
 #include "shells.h"
 #include "symmet.h"
 #include "nuclei.h"
+#include "orgcom.h"
 
 !   ----------------------------------------------------------------------------
 !   ----------------------------------------------------------------------------
@@ -84,6 +88,8 @@ contains
     is_parallel_calculation = parcal
 
     dft_cb_cent(1:max_nr_shells, 1:3, 1:2) = cent(1:max_nr_shells, 1:3, 1:2)
+
+    dft_gagorg(3) = gagorg(3) ! added
 
     dft_cb_pq_to_uq = 0
     dft_cb_uq_to_pq = 0
@@ -154,6 +160,7 @@ contains
     call dft_mpi_bcast(is_gga_functional          )
     call dft_mpi_bcast(is_parallel_calculation    )
     call dft_mpi_bcast(dft_cb_cent                )
+    call dft_mpi_bcast(dft_gagorg                 )!added
 
   end subroutine
 #endif /* ifdef VAR_MPI */

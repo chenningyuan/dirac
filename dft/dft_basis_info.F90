@@ -48,6 +48,15 @@ module dft_basis_info
   integer, public, allocatable :: n_exp(:)
   real(8), public, allocatable :: sbuffer(:)
 
+  integer, parameter :: max_order_limit = 2
+
+  integer, public    :: ndimfactor      = 0
+  integer, public    :: max_ao_g_order  = 0
+  integer, public    :: max_ao_m_order  = 0
+  logical, public    :: need_ao_order(0:max_order_limit, 0:max_order_limit) = .false.
+  integer, public    :: ao_start     (0:max_order_limit, 0:max_order_limit) = 0
+  integer, public    :: ao_end       (0:max_order_limit, 0:max_order_limit) = 0
+
   private
 
   logical :: dft_basis_info_allocated = .false.
@@ -257,6 +266,13 @@ contains
       call dft_mpi_bcast(l_exp                       )
       call dft_mpi_bcast(m_exp                       )
       call dft_mpi_bcast(n_exp                       )
+
+      call dft_mpi_bcast(ndimfactor    )
+      call dft_mpi_bcast(max_ao_g_order)
+      call dft_mpi_bcast(max_ao_m_order)
+      call dft_mpi_bcast(need_ao_order )
+      call dft_mpi_bcast(ao_start      )
+      call dft_mpi_bcast(ao_end        )
 
       dft_basis_info_synced = .true.
 

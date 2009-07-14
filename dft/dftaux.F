@@ -52,6 +52,8 @@ c=======================================================================
       use dft_cfg
       use dft_density
       use dft_cb_interface
+      !gosia added:
+      use dft_temp
 
       implicit none
 
@@ -80,6 +82,11 @@ c=======================================================================
      &          vxc(99),
      &          derv(99), taylor_deriv, z, f
       real(8), parameter :: tiny = 1.0d-20
+
+! gosia: added
+      real(8)             :: cx, cy, cz
+      type(dft_options_t) :: dft_options
+      real(8)             :: gaob1(nr_ao_total,3)
 
       do im = 1,nxcmat
         irepop = isymop(im) - 1
@@ -126,11 +133,25 @@ c=======================================================================
 #endif
 
             vxc_scalar = vxc(fRR)*r_b
-
+! gosia: adapt for london...only here?
+! changed: gao->ao_global            
             call lda_distribute(vxc_scalar,
      &                          irepop,
      &                          excmat(1, 1, 1, im),
      &                          gao)
+            if (dft_options%london) then
+! and this is the only thing i do for linear response:
+! not yet tested...                    
+              call lda_london_distribute(vxc_scalar,
+     &                                   irepop,
+     &                                   excmat(1, 1, 1, im),
+     &                                   gao,
+     &                                   gaob1,
+     &                                   cx, cy, cz,
+     &                                   dft_gagorg(1), 
+     &                                   dft_gagorg(2),
+     &                                   dft_gagorg(3)) 
+            end if !london
           endif
         else
 
