@@ -50,6 +50,7 @@ use cfiles_mod
 use rsp1_mod
 use rsp2_mod
 use dpd_mod
+use ctmp_mod
 
   call header ('Output from Init_HSFS_Modules',-1)
  
@@ -68,6 +69,7 @@ use dpd_mod
  call init_rsp1_mod
  call init_rsp2_mod
  call init_dpd_mod
+ call init_ctmp_mod
 
  End Subroutine Init_HSFS_Modules
 

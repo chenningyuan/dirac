@@ -2,7 +2,7 @@
       subroutine dimx(nn,n0,na)
 !------------------------------------------------------------------------
 !
-!    check whether there is enough space on static arrays (nn<=n0)
+!    check whether there is enough space of arrays (nn<=n0)
 !
 !------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -20,10 +20,11 @@
       character*8 na
 
       if (nn.le.n0) then   
+        ! ... proper return
         return
       else
         write (LUPRI,10) na,nn,n0
-10      format('0 **** dimension overflow at ',a8,1h:,i8,
+10      format('dimx: **** dimension overflow at ',a8,1h:,i8,
      1   ', n allowed ',i8)
         do 20 i=1,nflcur
           write (LUPRI,99) i,namefl(i),nstrt(2,i)-nstrt(2,i-1)
