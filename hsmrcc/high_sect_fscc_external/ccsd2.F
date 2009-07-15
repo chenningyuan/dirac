@@ -1754,6 +1754,7 @@ c  calculate heff matrix elements
       use cij1_mod
 #include "implicit.h"
 #include "priunit.h"
+#include "param_ccsd.h"
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"

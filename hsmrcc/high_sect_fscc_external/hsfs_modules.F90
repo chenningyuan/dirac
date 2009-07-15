@@ -3,16 +3,14 @@
 ! with  other object oriented functionalities
 !
 
-!module hsfs_parameters
-!end module hsfs_parameters
-
 module gen_mod
 ! to replace gen.h
 real*8, allocatable :: gen(:)
 integer, allocatable :: igen(:)
 contains
 subroutine init_gen_mod
-#include "param_ccsd.h"
+ use hsfs_parameters
+!#include "param_ccsd.h"
 integer :: istat
  allocate(gen(nbig),stat=istat)
  allocate(igen(nbig),stat=istat)
@@ -33,12 +31,15 @@ module cint_mod
   real*8, allocatable ::  vint(:)
 contains
 subroutine init_cint_mod
-#include "param_ccsd.h"
+ use hsfs_parameters
+#include "priunit.h"
+!#include "param_ccsd.h"
 integer :: istat
  allocate(iint(ndint),stat=istat)
  call alloc_stat_check("iint(ndint)",istat)
  allocate(vint(ndint),stat=istat)
  call alloc_stat_check("vint(ndint)",istat)
+ write(LUPRI,*) 'cint_mod initialized'
 end subroutine init_cint_mod
 
 subroutine dealloc_cint_mod
@@ -55,12 +56,15 @@ module fock_mod
  real*8,  allocatable :: fock(:)
 contains
 subroutine init_fock_mod
-#include "param_ccsd.h"
+ use hsfs_parameters
+!#include "param_ccsd.h"
+#include "priunit.h"
 integer :: istat
  allocate(ifock(ndt1),stat=istat)
  call alloc_stat_check("ifock(ndt1)",istat)
  allocate(fock(ndt1),stat=istat)
  call alloc_stat_check("fock(ndt1)",istat)
+ write(LUPRI,*) 'fock_mod initialized'
 end subroutine init_fock_mod
 
 subroutine dealloc_fock_mod
@@ -78,6 +82,7 @@ module cfiles_mod
  integer, allocatable :: namefl(:),nstrt(:,:),iiia(:),iiva(:)
 contains
 subroutine init_cfiles_mod
+ use hsfs_parameters
 #include "priunit.h"
 integer :: istat
  allocate(namefl(cfiles_size),stat=istat)
@@ -108,8 +113,9 @@ integer :: nij1,iii1,iiv1
 integer, allocatable ::  ij1(:),ije1(:)
 contains
 subroutine init_cij1_mod
+ use hsfs_parameters
 #include "priunit.h"
-#include "param_ccsd.h"
+!#include "param_ccsd.h"
  allocate(ij1(1:ndij))
  allocate(ije1(0:ndij))
  write(LUPRI,*) 'cij1_mod initialized'
@@ -127,8 +133,9 @@ integer :: nij2,iii2,iiv2
 integer, allocatable ::  ij2(:),ije2(:)
 contains
 subroutine init_cij2_mod
+ use hsfs_parameters
 #include "priunit.h"
-#include "param_ccsd.h"
+!#include "param_ccsd.h"
  allocate(ij2(1:ndij))
  allocate(ije2(0:ndij))
  write(LUPRI,*) 'cij2_mod initialized'
@@ -146,8 +153,9 @@ integer :: nij3,iii3,iiv3
 integer, allocatable ::  ij3(:),ije3(:)
 contains
 subroutine init_cij3_mod
+ use hsfs_parameters
 #include "priunit.h"
-#include "param_ccsd.h"
+!#include "param_ccsd.h"
  allocate(ij3(1:ndij))
  allocate(ije3(0:ndij))
  write(LUPRI,*) 'cij3_mod initialized'
@@ -165,8 +173,9 @@ integer :: nij4,iii4,iiv4
 integer, allocatable :: ij4(:),ije4(:)
 contains
 subroutine init_cij4_mod
+ use hsfs_parameters
 #include "priunit.h"
-#include "param_ccsd.h"
+!#include "param_ccsd.h"
  allocate(ij4(1:ndij))
  allocate(ije4(0:ndij))
  write(LUPRI,*) 'cij4_mod initialized'
@@ -184,8 +193,9 @@ integer :: nij5,iii5,iiv5
 integer, allocatable :: ij5(:),ije5(:)
 contains
 subroutine init_cij5_mod
+ use hsfs_parameters
 #include "priunit.h"
-#include "param_ccsd.h"
+!#include "param_ccsd.h"
  allocate(ij5(1:ndij))
  allocate(ije5(0:ndij))
  write(LUPRI,*) 'cij5_mod initialized'
@@ -203,8 +213,9 @@ integer :: nij6,iii6,iiv6
 integer, allocatable :: ij6(:),ije6(:)
 contains
 subroutine init_cij6_mod
+ use hsfs_parameters
 #include "priunit.h"
-#include "param_ccsd.h"
+!#include "param_ccsd.h"
  allocate(ij6(1:ndij))
  allocate(ije6(0:ndij))
  write(LUPRI,*) 'cij6_mod initialized'
@@ -222,6 +233,7 @@ integer :: nrsp1
 integer, allocatable ::  irsp1(:)
 contains
 subroutine init_rsp1_mod
+ use hsfs_parameters
 #include "priunit.h"
 integer, parameter :: rsp1_size=100
 allocate(irsp1(rsp1_size))
@@ -239,6 +251,7 @@ integer :: nrsp2
 integer, allocatable ::  irsp2(:)
 contains
 subroutine init_rsp2_mod
+ use hsfs_parameters
 #include "priunit.h"
 integer, parameter :: rsp2_size=500
 allocate(irsp2(rsp2_size))
@@ -256,6 +269,7 @@ integer :: nir
 integer, allocatable :: igmt(:,:),ici(:)
 contains
 subroutine init_dpd_mod
+ use hsfs_parameters
 #include "priunit.h"
 integer,parameter :: dpd_size=200
 allocate(ici(1:dpd_size))
@@ -275,8 +289,9 @@ integer, allocatable  :: itmp(:)
  real*8, allocatable  ::  tmp(:)
 contains
 subroutine init_ctmp_mod
+ use hsfs_parameters
 #include "priunit.h"
-#include "param_ccsd.h"
+!#include "param_ccsd.h"
 allocate(tmp(1:ndp4))
 allocate(itmp(1:ndp4))
  write(LUPRI,*) 'ctmp_mod initialized'
@@ -294,8 +309,9 @@ module crle_mod
 integer, allocatable  :: isize(:)
 contains
 subroutine init_crle_mod
+ use hsfs_parameters
 #include "priunit.h"
-#include "param_ccsd.h"
+!#include "param_ccsd.h"
 allocate(trle1(1:nrle1))
 allocate(trle2(1:nrle2))
 allocate(trle3(1:nrle3))
@@ -319,6 +335,7 @@ integer :: nvlspo, ndets,isplit
 integer, allocatable  :: lstvso(:),lstdet(:)
 contains
 subroutine init_det_mod
+ use hsfs_parameters
 #include "priunit.h"
 integer, parameter :: lstvso_size=100, lstdet_size=1000
 allocate(lstvso(1:lstvso_size))
@@ -339,6 +356,7 @@ integer, allocatable  :: ic(:), icv(:), iopt(:)
 real*8, allocatable  :: eps(:)
 contains
 subroutine init_dat_mod
+ use hsfs_parameters
 #include "priunit.h"
 integer, parameter :: dat_size=200, iopt_size=40
 allocate(ic(1:dat_size))
@@ -362,6 +380,7 @@ integer :: nvalo
 integer, allocatable  :: iv(:)
 contains
 subroutine init_idv_mod
+! use hsfs_parameters
 #include "priunit.h"
 integer, parameter :: idv_size=200
 allocate(iv(1:idv_size))
@@ -378,6 +397,7 @@ module prm_mod
 integer, allocatable  :: iperm(:,:)
 contains
 subroutine init_prm_mod
+! use hsfs_parameters
 #include "priunit.h"
 allocate(iperm(0:6,1:720))
  write(LUPRI,*) 'prm_mod initialized'
@@ -413,8 +433,9 @@ module ijtemp_mod
 integer, allocatable  :: ijtmp1(:)
 contains
 subroutine init_ijtemp_mod
+ use hsfs_parameters
 #include "priunit.h"
-#include "param_ccsd.h"
+!#include "param_ccsd.h"
 allocate(ijtmp1(1:ndp6))
  write(LUPRI,*) 'ijtemp_mod initialized'
 end subroutine init_ijtemp_mod

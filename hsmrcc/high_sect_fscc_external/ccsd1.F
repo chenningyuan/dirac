@@ -133,6 +133,7 @@ C  *******************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "strt.h"
+#include "param_ccsd.h"
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -2296,7 +2297,7 @@ c  iparm=6 : 8x2=8
       subroutine add(name1,f1,name2,f2,namet)
 !-------------------------------------------------------------
 !
-!
+! what does it do ?
 !
 !-------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -2378,6 +2379,7 @@ c   namet=f*namef
       use gen_mod
       use cij1_mod
       use cij2_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -2415,14 +2417,24 @@ c   namet=f*namef
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine dbdiag (name1,name2,name3,name4,irleop,isign)
+!--------------------------------------------------------------------------------------
+!
+!
+! what does it do ?
+!
+!
+!
+!--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
-      use cij1_mod
       use dat_mod
+      use cij1_mod
       use crle_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
+!#include "param_ccsd.h"
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -2450,6 +2462,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 
       if (iopa(1).eq.1) then
         call files_ccsd (name1,ntape,new,1,-1,-1)
+        ! ... nij1 must be 
         isize(1)=ije1(nij1)
         call dimx(isize(1),nrle1,"nrle1   ")
         istrt1=nstrt(1,ntape-1)+2*nij1+4
@@ -2547,13 +2560,14 @@ CUK   common /crle/ trle(nrle,4),isize(4)
         end if
       end if
       return
-      end
+      end subroutine dbdiag
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine detlst(nval)
 !-----------------------------------------------------------------------------
 !
 !
+! what does it do ?
 !
 !-----------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC

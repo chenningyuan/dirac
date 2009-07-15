@@ -35,6 +35,8 @@
 ! which are now replaced by nice F90 modules with allocatable variables
 !
 !---------------------------------------------------------------------------------------
+use hsfs_parameters
+
 use gen_mod
 use sym_mod
 use cint_mod
@@ -52,7 +54,10 @@ use rsp2_mod
 use dpd_mod
 use ctmp_mod
 
-  call header ('Output from Init_HSFS_Modules',-1)
+ call header ('Output from Init_HSFS_Modules',-1)
+
+ ! very important - assigning dimensions of arrays  for various allocations
+ call assign_hsfs_parameters
  
  call init_gen_mod
  call init_sym_mod

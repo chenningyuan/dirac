@@ -2178,9 +2178,10 @@ c  indices not retained for pppp.
       use gen_mod
       use dat_mod
       use sym_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
-#include "param_ccsd.h"
+!#include "param_ccsd.h"
 #else
 !      implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -2203,6 +2204,7 @@ c  indices not retained for pppp.
 #endif
 
       integer*4 ch1,ch2
+
 !     4-indexes (up 256) packed into one number
       ipack(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),
      1               ior(ishft(k,8),l))
