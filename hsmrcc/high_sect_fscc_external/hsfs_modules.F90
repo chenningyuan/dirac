@@ -305,18 +305,19 @@ end module ctmp_mod
 
 module crle_mod
 ! .. to replace crle.h
- real*8, allocatable  :: trle1(:),trle2(:),trle3(:),trle4(:) 
-integer, allocatable  :: isize(:)
+ real(kind=8), allocatable  :: trle1(:),trle2(:),trle3(:),trle4(:) 
+ integer,      allocatable  :: isize(:)
 contains
 subroutine init_crle_mod
  use hsfs_parameters
+ integer, parameter :: isize_size = 4
 #include "priunit.h"
 !#include "param_ccsd.h"
 allocate(trle1(1:nrle1))
 allocate(trle2(1:nrle2))
 allocate(trle3(1:nrle3))
 allocate(trle4(1:nrle4))
-allocate(isize(1:4))
+allocate(isize(1:isize_size))
  write(LUPRI,*) 'crle_mod initialized'
 end subroutine init_crle_mod
 

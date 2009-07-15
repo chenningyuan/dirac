@@ -3045,6 +3045,7 @@ c   special for scratch files, which start with s
       use cij1_mod
       use cij2_mod
       use cij3_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -3070,7 +3071,7 @@ c   special for scratch files, which start with s
 
       call files_ccsd(name1a,ntape1a,new,2,-1,-1)
       if (new.ne.0) then
-        write (6,*) ' t1a file in t1sqr does not exist'
+        write (LUPRI,*) ' t1a file in t1sqr does not exist'
         call abext('t1sqr   ')
       endif
       call files_ccsd(name1b,ntape1b,new,3,-1,-1)

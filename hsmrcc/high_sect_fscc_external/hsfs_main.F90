@@ -31,8 +31,8 @@
  Subroutine Init_HSFS_Modules
 !---------------------------------------------------------------------------------------
 !
-!  initialize the whole bunch of former static allocations in former common blocks
-! which are now replaced by nice F90 modules with allocatable variables
+!   initialize the whole bunch of former static allocations in former common blocks
+!  which are now replaced by nice F90 modules with allocatable variables
 !
 !---------------------------------------------------------------------------------------
 use hsfs_parameters
@@ -53,6 +53,7 @@ use rsp1_mod
 use rsp2_mod
 use dpd_mod
 use ctmp_mod
+use crle_mod
 
  call header ('Output from Init_HSFS_Modules',-1)
 
@@ -75,8 +76,9 @@ use ctmp_mod
  call init_rsp2_mod
  call init_dpd_mod
  call init_ctmp_mod
+ call init_crle_mod
 
- End Subroutine Init_HSFS_Modules
+End Subroutine Init_HSFS_Modules
 
  Subroutine alloc_stat_check(alloc_label,istat)
 #include "priunit.h"

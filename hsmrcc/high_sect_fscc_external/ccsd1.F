@@ -2306,6 +2306,7 @@ c  iparm=6 : 8x2=8
       use cij1_mod
       use cij2_mod
       use cij3_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -2329,23 +2330,25 @@ c  iparm=6 : 8x2=8
 
 c   namet=name1*f1+name2*f2
       if ((name1.eq.name2).and.(name1.eq.namet)) then
-        write (6,*) 'all three names in add are identical'
+        write (LUPRI,*) 'all three names in add are identical'
         call abext('add     ')
       end if
       call files_ccsd(name1,ntape1,new,2,-1,-1)
       if (new.ne.0) then
-        write(6,'('' add input file does not exist '',a8)') name1
+        write(LUPRI,'('' add input file does not exist '',a8)') name1
         call abext('add     ')
       endif
       call files_ccsd(name2,ntape2,new,3,-1,-1)
       if (new.ne.0) then
-        write(6,'('' add input file does not exist '',a8)') name2
+        write(LUPRI,'('' add input file does not exist '',a8)') name2
         call abext('add     ')
       endif
+      ! ......   error trap branch
       if((iii2.ne.iii3).or.(iiv2.ne.iiv3).or.(ije2(nij2).ne.ije3(nij3)))
      1 then
-        write (6,*) ' added files do not match. names iii iiv nsize='
-        write (6,123) name1,name2,iii2,iii3,iiv2,iiv3,ije2(nij2),
+        write (LUPRI,*) 
+     &  ' added files do not match. names iii iiv nsize='
+        write (LUPRI,123) name1,name2,iii2,iii3,iiv2,iiv3,ije2(nij2),
      1  ije3(nij3)
 123     format(2a8,6i10)
         call abext('add     ')
@@ -2462,7 +2465,6 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 
       if (iopa(1).eq.1) then
         call files_ccsd (name1,ntape,new,1,-1,-1)
-        ! ... nij1 must be 
         isize(1)=ije1(nij1)
         call dimx(isize(1),nrle1,"nrle1   ")
         istrt1=nstrt(1,ntape-1)+2*nij1+4
