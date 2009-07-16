@@ -2377,7 +2377,13 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine vands(n,ia,is,ic)
+!------------------------------------------------------------ 
+!
+! do and() of array "ia(*)" with scalar "is"
+!
+!------------------------------------------------------------ 
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
@@ -2657,7 +2663,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 !--------------------------------------------------------------------------------
 !
 !
-!
+!  what does it do ?
 !
 !--------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -2666,6 +2672,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       use cij1_mod
       use dat_mod
       use crle_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else

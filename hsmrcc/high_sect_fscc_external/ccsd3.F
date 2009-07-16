@@ -645,6 +645,7 @@ c     write (6,*) ' transf indx from ',i,' to ',num
       use gen_mod 
       use cij1_mod 
       use cij2_mod 
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -670,7 +671,7 @@ c     write (6,*) ' transf indx from ',i,' to ',num
       dimension j(4),msk(4)
       data msk /'ff000000'X,'ff0000'X,'ff00'X,'ff'X/
 
-      character(*) namet ! mi: fix for prtime
+      character(*) namet ! mi: fix - data specification for prtime
 
 c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       ipack(i1,i2,i3,i4)=ior(ior(ishft(i1,24),ishft(i2,16)),
