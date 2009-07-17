@@ -445,7 +445,7 @@ C
      &            'xMSOUT ','.POSITR','.CORE  ','.SCHEME','.THROUT',
      &            '.NO2IND','.NO4IND','.2INDEX','.INTFL2','.INTFL4',
      &            '.PRPTRA','.SCREEN','.RCORBS','.NOMDCI','.NOSCAT',
-     &            '.PAR4BS','.SCATTE','.MDCINT','.HSCC  ','.S6FHTS',
+     &            '.PAR4BS','.SCATTE','.MDCINT','.HSCC  ','.HTSORT',
      &            '.XXXXXX'/
       DATA SET/.FALSE./
 C
