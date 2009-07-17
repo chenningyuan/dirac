@@ -460,6 +460,7 @@ C 2600  format(' Fock element no',i3,2x,2i3,f15.6)
       use cij6_mod 
       use cfiles_mod 
       use gen_mod 
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else

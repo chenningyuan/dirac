@@ -9,6 +9,7 @@
       use dat_mod
       use cij1_mod
       use cij2_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #include "csdtime.h"
