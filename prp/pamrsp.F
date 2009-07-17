@@ -3114,8 +3114,16 @@ C
 C     Electronic part
 C
       IF(NZXOPE.GT.0) THEN
-         CALL E2ODI1(HEDIAG,WORK(KFC),WORK(KFV),
-     &           WORK(KDV),WORK(KFGENPV),JXOPE,NZXOPE)
+         IF(STERNC) THEN
+C           Sternheimer approx.: diagonal of e-p Hessian
+C           approximated with -2mc^2
+C           An extra factor two (see E2ODI1 for details)
+            FAC = -DM4*CVAL*CVAL
+            CALL DCOPY(NZXOPE,FAC,0,HEDIAG,1)
+         ELSE
+           CALL E2ODI1(HEDIAG,WORK(KFC),WORK(KFV),
+     &             WORK(KDV),WORK(KFGENPV),JXOPE,NZXOPE)
+         ENDIF
          CALL S2ODI1(SEDIAG,WORK(KDV),JXOPE,NZXOPE)
          IF(IPRXRS.GE.5) THEN
             WRITE(LUPRI,'(/A)')
@@ -3956,5 +3964,6 @@ C
       UNCOUP = .FALSE.
       IMFREQ = .FALSE.
       E2CHEK = .FALSE.
+      STERNC = .FALSE.
       RETURN
       END

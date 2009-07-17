@@ -377,7 +377,7 @@ C
      &            '.ITRINT','.CNVINT','.REAXVC','.TRIAB ',
      &            '.RESFAC','.ANALYZ','.STERNH','.SKIPEE',
      &            '.MXLOAD','.A_NOSP','.B_NOSP','.UNCOUP',
-     &            '.IMAGIN','.GAUSS-','.E2CHEK','.XXXXXX'/
+     &            '.IMAGIN','.GAUSS-','.E2CHEK','.STERNC'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -450,6 +450,7 @@ C     Calculation of C6 dispersion coefficient
       XLR_UNCOUP = .FALSE.
       XLRANA     = .FALSE.
       XSTERN     = .FALSE.
+      XSTERNC    = .FALSE.
       NOSPIA     = .FALSE.
       NOSPIB     = .FALSE.
       XLR_E2CHEK = .FALSE.
@@ -721,6 +722,8 @@ C&&& E2CHEK: explicit contruction of the electronic Hessian E2
                XLRDIH = .FALSE.
                GO TO 100
  36            CONTINUE
+C&&& STERNC: Sternheimer complement
+               XSTERNC = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -756,7 +759,12 @@ C           (see PRPDEF) /hj jan 2001
         XLR_UNCOUP = .TRUE.
         XLR_SKIPEE = .TRUE.
         XLR_SKIPEP = .FALSE.
-        ITRXLR = 0
+        XLR_XVCFIL = 'NORXVC'
+      ENDIF
+      IF(XSTERNC) THEN
+        XLR_UNCOUP = .TRUE.
+        XLR_SKIPEE = .FALSE.
+        XLR_SKIPEP = .TRUE.
         XLR_XVCFIL = 'NORXVC'
       ENDIF
       IF (XLR_UNCOUP) THEN
@@ -792,6 +800,18 @@ C
      &     '.STERNH is not valid for Levy-Leblond/no-pair/.SKIPEP'
            CALL QUIT(
      &     '.STERNH is not valid for Levy-Leblond/no-pair/.SKIPEP')
+        END IF
+      END IF
+      IF(XSTERNC .AND. DOXLR) THEN
+        WRITE(LUPRI,'(1X,A)')
+     &'* Sternheimer complement: ',
+     &'  Note that .STERNH forces .MAXITR 0 and .SKIPEP and',
+     &'  neglects any of .SKIPEP, .REAXVC, and .NOPREC'
+        IF (LEVYLE.OR.BSS.OR.FREEPJ.OR.VEXTPJ.OR.XLR_SKIPEE) THEN
+           WRITE (LUPRI,'(/A)') ' FATAL ERROR: '//
+     &     '.STERNC is not valid for Levy-Leblond/no-pair/.SKIPEE'
+           CALL QUIT(
+     &     '.STERNC is not valid for Levy-Leblond/no-pair/.SKIPEE')
         END IF
       END IF
       IF (XLR_SKIPEE) THEN
@@ -1099,6 +1119,7 @@ C
       ITRINT(2) = ITRILR(2)
       INTDEF    = INTXLR
       STERNH    = XSTERN
+      STERNC    = XSTERNC
       E2CHEK    = XLR_E2CHEK
 C
 C     Restart info used by MCSCF program.

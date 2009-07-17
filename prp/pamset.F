@@ -149,6 +149,7 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbbas.h"
+#include "dcbxrs.h"
 C
       DIMENSION JXOPE(2,*),IND(MXFBAS,3,NFSYM),NIND(2,3,NFSYM)
       DIMENSION NOROT(*)
@@ -187,6 +188,24 @@ C
      &           NIND(1,1,ISYM)
          ENDIF
          IF(NIND(2,1,ISYM).EQ.0) GOTO 300
+C
+C        For Sternheimer complement add inactive-inactive elements
+C        =========================================================
+         IF(STERNC) THEN
+           JSTI  = NIND(1,1,JSYM) + 1
+           JENDI = NIND(1,1,JSYM) + NIND(2,1,JSYM)
+           DO IN = ISTI,IENDI
+             INDI = IND(IN,1,ISYM)
+             DO JA = JSTI,JENDI
+               INDA = IND(JA,1,JSYM)
+               IF (NOROT(INDI) .EQ. 0 .AND. NOROT(INDA) .EQ. 0) THEN
+                  NXOPE          = NXOPE + 1
+                  JXOPE(1,NXOPE) = INDI
+                  JXOPE(2,NXOPE) = INDA
+               END IF
+             ENDDO
+           ENDDO
+         ENDIF
 C        
 C        Inactive - active elements
 C        ==========================
