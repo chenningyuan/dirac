@@ -3075,7 +3075,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(DM2 = -2.0D0)
+      PARAMETER(DM4 = -4.0D0)
 C
 #include "dcbgen.h"
 #include "dcbxrs.h"
@@ -3131,7 +3131,8 @@ C
          IF(STERNH) THEN
 C           Sternheimer approx.: diagonal of e-p Hessian
 C           approximated with -2mc^2
-            FAC = DM2*CVAL*CVAL
+C           An extra factor two (see E2ODI1 for details)
+            FAC = DM4*CVAL*CVAL
             CALL DCOPY(NZXOPP,FAC,0,HPDIAG,1)
          ELSE
             CALL E2ODI1(HPDIAG,WORK(KFC),WORK(KFV),

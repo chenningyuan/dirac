@@ -752,6 +752,13 @@ C           (see PRPDEF) /hj jan 2001
      &   'QED invalid for Levy-Leblond/no-pair/.SKIPEP'
          INPERR = INPERR + 1
       END IF
+      IF(XSTERN) THEN
+        XLR_UNCOUP = .TRUE.
+        XLR_SKIPEE = .TRUE.
+        XLR_SKIPEP = .FALSE.
+        ITRXLR = 0
+        XLR_XVCFIL = 'NORXVC'
+      ENDIF
       IF (XLR_UNCOUP) THEN
         ITRXLR = 0
         XLRDIH = .TRUE.
@@ -786,13 +793,6 @@ C
            CALL QUIT(
      &     '.STERNH is not valid for Levy-Leblond/no-pair/.SKIPEP')
         END IF
-Chj Oct 2000: check if .STERNH should invoke the following:
-        XLRDIH = .TRUE.
-        XLR_SKIPEE = .TRUE.
-        XLR_SKIPEP = .FALSE.
-        ITRXLR = 0
-        XLR_XVCFIL = 'NORXVC'
-Chj Oct 2000 end
       END IF
       IF (XLR_SKIPEE) THEN
         WRITE(LUPRI,'(A)') ' * NB!!! No e-e rotations'

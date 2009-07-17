@@ -2406,6 +2406,7 @@ C
       IND1OP = N1OPER
       IF(N1OPER.GT.MAX1OP) THEN
         WRITE(LUPRI,'(A6,A)') OP1KEY,' out of bounds in OP1IND'
+        WRITE(LUPRI,'(A,I5)') 'Current value of MAX1OP: ',MAX1OP
         CALL QUIT('OP1IND: Out of bounds !')
       ELSE
         IPR1OP(IND1OP) = INDXPR
