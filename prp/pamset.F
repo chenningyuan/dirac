@@ -197,6 +197,7 @@ C
      &           '*** WARNING(SETXEE): Active positrons detected:',
      &           NIND(1,2,JSYM)
          ENDIF
+C                 inactive               active
          IF (NIND(2,1,ISYM).EQ.0.OR.NIND(2,2,JSYM).EQ.0) GO TO 200
          DO IN = ISTI,IENDI
             INDI = IND(IN,1,ISYM)
@@ -214,6 +215,7 @@ C        Inactive-secondary elements
 C        ===========================
 C        
  200     CONTINUE
+C                 inactive               secondary
          IF (NIND(2,1,ISYM).EQ.0.OR.NIND(2,3,JSYM).EQ.0) GO TO 300
          DO IN = ISTI,IENDI
             INDI = IND(IN,1,ISYM)
@@ -231,6 +233,7 @@ C        Active-secondary elements
 C        =========================
 C        
  300     CONTINUE
+C                 active                 secondary
          IF (NIND(2,2,ISYM).EQ.0.OR.NIND(2,3,JSYM).EQ.0) GO TO 10
          DO IA = ISTA,IENDA
             INDA = IND(IA,2,ISYM)
