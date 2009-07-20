@@ -3630,8 +3630,11 @@ C
           call reset_dft_options(dft_options)
           dft_options%lr = .true.
 
+!                           buf holds the unperturbed density matrix
           call dftexc(work(kbuf),
+!                     fmo is actually the perturbed ao density matrix
      &                fmo,
+!                     fao is really fao (confusing naming reuses memory)
      &                fao,
      &                nosim,
      &                nosim,
