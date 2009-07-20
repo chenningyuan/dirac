@@ -22,9 +22,6 @@ C
 C 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : pamrvc.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xrssvc */
