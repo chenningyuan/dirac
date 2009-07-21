@@ -10,6 +10,7 @@
       use cfiles_mod
       use gen_mod
       use cij1_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -50,6 +51,7 @@ c  zero out file (create if does not exist)
       use cfiles_mod
       use gen_mod
       use cij1_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 
@@ -88,6 +90,7 @@ c  zero out file (create if does not exist)
       use cfiles_mod
       use gen_mod
       use cij1_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -128,12 +131,18 @@ c  zero out file (create if does not exist)
 
 C  *******************************************************************
       function find2 (j1,j2) 
+!----------------------------------------------------------------------
+!
+!
+!
+!----------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use gen_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #include "strt.h"
-#include "param_ccsd.h"
+!#include "param_ccsd.h"
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -160,6 +169,10 @@ C  *******************************************************************
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       function find4(j1,j2,j3,j4)
+!--------------------------------------------------------------------------------------
+!
+!
+!--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use gen_mod
 #include "implicit.h"
@@ -191,6 +204,10 @@ C  *******************************************************************
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       function find6 (j1,j2,j3,j4,j5,j6)
+!--------------------------------------------------------------------------------------
+!
+!
+!--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use gen_mod
       use cij3_mod
@@ -233,9 +250,15 @@ C  *******************************************************************
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       function find8 (j1,j2,j3,j4,j5,j6,j7,j8)
+!--------------------------------------------------------------------------------------
+!
+!
+!
+!--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use gen_mod
       use cij4_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #include "strt.h"
@@ -275,9 +298,14 @@ C  *******************************************************************
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       function find10 (ja,jb,jc,jd,je,jf,jg,jh,ji,jj)
+!--------------------------------------------------------------------------------------
+!
+!
+!--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use gen_mod
       use cij5_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #include "strt.h"
@@ -329,10 +357,15 @@ C  *******************************************************************
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       function find12 (ja,jb,jc,jd,je,jf,jg,jh,ji,jj,jk,jl)
+!--------------------------------------------------------------------------------------
+!
+!--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use gen_mod
       use cij6_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #include "strt.h"
@@ -387,15 +420,18 @@ C  *******************************************************************
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 ! renamed due to name overlaping with relccsd routine
 !      subroutine fold(name2,namef)
       subroutine fold_ccsd(name2,namef)
+!----------------------------------------------------------------------------
 !
 !c  two-electron part modified to include chp, chq.
 !c  880922.
 !c  all four indices now checked. incomplete space implemented
 !c  for chp, chq only for exclusion of whole symmetries.
 !
+!----------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -404,6 +440,7 @@ C  *******************************************************************
       use rsp1_mod
       use rsp2_mod
       use dat_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -523,6 +560,9 @@ c   move p to p transitions to folded
       end
 
       subroutine fold4 (nameu,namef,ind,ninds)
+!--------------------------------------------------------------------------------------
+!
+!--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
 !     implicit real*8 (a-h,o-z)
       use cfiles_mod
@@ -530,6 +570,7 @@ c   move p to p transitions to folded
       use cij1_mod
       use cij2_mod
       use dat_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -604,13 +645,20 @@ c   move p to p transitions to folded
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine fold6 (nameu,namef,ind,iparm)
+!--------------------------------------------------------------------------------------
+!
+!
+!
+!--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
       use cij1_mod
       use cij2_mod
       use dat_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -708,12 +756,17 @@ c   move p to p transitions to folded
       end
 
       subroutine fold8 (nameu,namef,ind,iparm)
+!--------------------------------------------------------------------------------------
+!
+!
+!--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
       use cij1_mod
       use cij2_mod
       use dat_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -807,9 +860,11 @@ c   move p to p transitions to folded
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine msub1 (name2,name3,namet)
+!--------------------------------------------------------------------------------------
 !
 !        special type of diagrams
 !
+!--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -818,6 +873,7 @@ c   move p to p transitions to folded
       use cij3_mod
       use ctmp_mod
       use dpd_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 
@@ -971,6 +1027,11 @@ c   move p to p transitions to folded
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine msub2 (name2,name3,namet)
+!--------------------------------------------------------------------------------------
+!
+!
+!
+!--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -979,6 +1040,7 @@ c   move p to p transitions to folded
       use cij3_mod
       use ctmp_mod
       use dpd_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -1114,6 +1176,11 @@ c   move p to p transitions to folded
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine msub3(name2,name3,namet)
+!--------------------------------------------------------------------------------------
+!
+!
+!
+!--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -1122,6 +1189,7 @@ c   move p to p transitions to folded
       use cij3_mod
       use ctmp_mod
       use dpd_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -1268,6 +1336,10 @@ c   move p to p transitions to folded
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine msub4 (name2,name3,namet)
+!--------------------------------------------------------------------------------------
+!
+!
+!--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -1275,6 +1347,7 @@ c   move p to p transitions to folded
       use cij2_mod
       use cij3_mod
       use dpd_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -1411,6 +1484,11 @@ c   move p to p transitions to folded
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine msub5 (name2,name3,namet)
+!--------------------------------------------------------------------------------------
+!
+!
+!
+!--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -1419,6 +1497,7 @@ c   move p to p transitions to folded
       use cij3_mod
       use ctmp_mod
       use dpd_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -1543,6 +1622,10 @@ c   move p to p transitions to folded
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine msub6 (name2,name3,namet)
+!--------------------------------------------------------------------------------------
+!
+!
+!--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -1551,6 +1634,7 @@ c   move p to p transitions to folded
       use cij3_mod
       use ctmp_mod
       use dpd_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -1708,6 +1792,7 @@ c   move p to p transitions to folded
       use cij1_mod
       use cij2_mod
       use cij3_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -1860,6 +1945,11 @@ c
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine mult6 (name2,name3,namet,id)
+!--------------------------------------------------------------------------------------
+!
+!
+!
+!--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -1867,6 +1957,7 @@ c
       use cij2_mod
       use cij3_mod
       use dpd_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -2249,12 +2340,14 @@ c
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine mult8 (name2,name3,namet,iparm)
+!--------------------------------------------------------------------------------------
 c  iparm=1 : 6x4=8
 c  iparm=2 : 8x4=4,8x2=6
 c  iparm=3 : 8x4=6
 c  iparm=4 : 8x4=8
 c  iparm=5 : 6x6=8
 c  iparm=6 : 8x2=8
+!--------------------------------------------------------------------------------------
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
@@ -2376,7 +2469,11 @@ c   namet=name1*f1+name2*f2
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine cmult(namef,f,namet)
+!--------------------------------------------------------------------------------------
+!
 c   namet=f*namef
+!
+!--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -2726,6 +2823,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       use cij2_mod
       use cij3_mod
       use idv_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -2848,6 +2946,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       use cij2_mod
       use cij3_mod
       use idv_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -2974,6 +3073,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       use cij3_mod
       use cij4_mod
       use idv_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -3096,9 +3196,11 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine diage6 (name2,name3,name4,name5,namet,iord)
+!--------------------------------------------------------------------------------------
 !
 !c   6x(4+4+4)=12
 !
+!--------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -3108,6 +3210,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       use cij4_mod
       use cij5_mod
       use idv_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -3277,6 +3380,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       use dat_mod
       use cij1_mod
       use cij2_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else

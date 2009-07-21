@@ -67,6 +67,7 @@
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod 
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -737,6 +738,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       use sym_mod 
       use ctmp_mod 
       use dpd_mod 
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -888,6 +890,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       use sym_mod 
       use ctmp_mod 
       use dpd_mod 
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -1000,6 +1003,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       use cij1_mod 
       use cij2_mod 
       use ctmp_mod 
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -1084,6 +1088,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       use sym_mod 
       use ijtemp_mod 
       use ctmp_mod 
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -1171,9 +1176,10 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       use cij1_mod 
       use cij2_mod 
       use ctmp_mod 
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
-#include "param_ccsd.h"
+!#include "param_ccsd.h"
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -1198,7 +1204,6 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       dimension indx(ndij),dummy(ndij)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       dimension ia(10),ja(10),msk(5),iord(10)
-
 
       data msk / 'f0000'x,'f000'x,'f00'x,'f0'x,'f'x /
 
@@ -1280,6 +1285,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       use sym_mod 
       use ijtemp_mod 
       use ctmp_mod 
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -1372,9 +1378,10 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       use cij1_mod 
       use cij2_mod 
       use ctmp_mod 
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
-#include "param_ccsd.h"
+!#include "param_ccsd.h"
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -1497,6 +1504,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       use dat_mod 
       use rsp2_mod 
       use cint_mod 
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -1810,6 +1818,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       use dat_mod 
       use fock_mod 
       use rsp1_mod 
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -1923,6 +1932,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       use gen_mod 
       use dat_mod 
       use cint_mod 
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -2393,6 +2403,7 @@ c   special for scratch files, which start with "s".
       use gen_mod
       use dat_mod
       use sym_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -2566,6 +2577,7 @@ c   special for scratch files, which start with s
       use dat_mod
       use sym_mod
       use dpd_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -2749,6 +2761,7 @@ c   special for scratch files, which start with s
       use dat_mod
       use sym_mod
       use idv_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -2896,6 +2909,7 @@ c   special for scratch files, which start with s
       use dat_mod
       use sym_mod
       use idv_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -3125,9 +3139,10 @@ c
       use cij1_mod
       use cij2_mod
       use cij3_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
-#include "param_ccsd.h"
+!#include "param_ccsd.h"
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -3245,9 +3260,10 @@ c
       use cij1_mod
       use cij2_mod
       use cij3_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
-#include "param_ccsd.h"
+!#include "param_ccsd.h"
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -3373,9 +3389,10 @@ c
       use cij1_mod
       use cij2_mod
       use cij3_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
-#include "param_ccsd.h"
+!#include "param_ccsd.h"
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -3489,10 +3506,11 @@ c
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 ! ... this is for ij(ndij),ije...
-#include "param_ccsd.h"
+!#include "param_ccsd.h"
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -3561,10 +3579,11 @@ c
       use cfiles_mod
       use gen_mod
       use ctmp_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 !  ... needed for static alloc of ij(ndij),ije...
-#include "param_ccsd.h"
+!#include "param_ccsd.h"
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -3617,10 +3636,11 @@ c
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 ! ... needed for static alloc ij(nij),ije...
-#include "param_ccsd.h"
+!#include "param_ccsd.h"
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"

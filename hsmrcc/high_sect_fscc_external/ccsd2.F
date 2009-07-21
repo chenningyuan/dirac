@@ -46,6 +46,7 @@
       use gen_mod
       use dat_mod
       use cij1_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -108,6 +109,7 @@
       use gen_mod
       use dat_mod
       use cij1_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -188,6 +190,7 @@
       use gen_mod
       use dat_mod
       use cij1_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -246,6 +249,7 @@
       use cij1_mod
       use dat_mod
       use rsp2_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #include "csize.h"
@@ -478,6 +482,7 @@ c     order and print collected energies.
       use dat_mod
       use det_mod
       use idv_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #include "strt.h"
@@ -519,14 +524,18 @@ c     order and print collected energies.
 
       external ispin,hmatel
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! TODO: replace with dyn .alloc !!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! TODO: replace with dyn .alloc
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       dimension ecol(200),eicol(200),ncol(200),iscol(200),idcol(2,600),
      1 ntr(12)
       dimension ev(60),evi(60)
       dimension scr(200),vec(60,60),veci(60,60),ham(60,60)
       dimension lldet(6,700),lsdet(700),list(6)
 
-      equivalence (veci,ham)
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!   be carefull when replacing with F90 structures !!!!
+      equivalence (veci,ham) 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       data ntr /1hx,1hs,1hp,1hd,1hf,1hg,1hh,1hi,1hk,1hl,1hm,1hn/
 
@@ -947,9 +956,14 @@ c     order and write collected energies.
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine expnd(iwork,iwork1,work,work1,nw,nw1)
+!--------------------------------------------------------------------------------
+!
 c   move from work1 (indx iwork1) to work, filling out according to
 c   indx iwork
+!
+!--------------------------------------------------------------------------------
 
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -989,6 +1003,7 @@ c   indx iwork
       use cij1_mod
       use cfiles_mod
       use gen_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -1038,6 +1053,7 @@ c   indx iwork
       use cij1_mod
       use cfiles_mod
       use gen_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -1087,6 +1103,7 @@ c   indx iwork
       use cfiles_mod
       use gen_mod
       use cij1_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -1133,6 +1150,7 @@ c   indx iwork
       use cfiles_mod
       use gen_mod
       use dat_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #include "csize.h"
@@ -1200,6 +1218,7 @@ c  calculate heff matrix elements
       use cij2_mod
       use cij3_mod
       use dat_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #include "strt.h"
@@ -1713,7 +1732,13 @@ c  calculate heff matrix elements
       return
       end 
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       function imax (id1,ind1,id2,ind2,iparm)
+!--------------------------------------------------------------------------------
+!
+!
+!
+!--------------------------------------------------------------------------------
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
@@ -1752,9 +1777,10 @@ c  calculate heff matrix elements
       use cfiles_mod
       use gen_mod
       use cij1_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
-#include "param_ccsd.h"
+!#include "param_ccsd.h"
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -1957,9 +1983,12 @@ C
       RETURN
       END SUBROUTINE ivsort
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine kcopy(n,ia,ib)
+!--------------------------------------------------------------------------------
 ! copy n members of integer array "ia" to array "ib"
 !     implicit real*8 (a-h,o-z)
+!--------------------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
 
@@ -2057,10 +2086,15 @@ C
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine move(namef,namet)
+!--------------------------------------------------------------------------------
+!
+!
+!--------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
       use cij1_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -2112,6 +2146,7 @@ C
       use cij2_mod
       use cij3_mod
       use crle_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -2136,7 +2171,6 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 !    1 trle4(nrle4),isize(4)
 #include "crle.h"
 #endif
-
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! dynamic alloc !!!!!!!!!!!!!!!!!!!!!!!!!!!!
       double precision r(31,31),z(31),a(31),rcond,rmult
       integer*4 ipvt(31)
@@ -2339,6 +2373,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       use gen_mod
       use cij1_mod
       use cij2_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -2617,6 +2652,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -2734,6 +2770,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       use gen_mod
       use cij1_mod
       use dat_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -2838,8 +2875,12 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine parse(ii,i1,i2,i3,i4)
+!--------------------------------------------------------------------------------
+!
 ! extracts 4 digits from the 4-digit integer number
 !     implicit real*8 (a-h,o-z)
+!
+!--------------------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
 
@@ -2896,6 +2937,10 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine perm (i1,i2,isign,nval1)
+!--------------------------------------------------------------------------------
+!
+!
+!--------------------------------------------------------------------------------
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
@@ -3093,6 +3138,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       use gen_mod
       use dat_mod
       use cij1_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -3197,6 +3243,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       use gen_mod
       use cij1_mod
       use dat_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -3290,6 +3337,7 @@ c             write (6,*) ' '
       use gen_mod
       use cij1_mod
       use dat_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
@@ -3601,6 +3649,7 @@ c *************************************************
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
