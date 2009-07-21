@@ -651,7 +651,6 @@ c     write (6,*) ' transf indx from ',i,' to ',num
 #include "implicit.h"
 #include "priunit.h"
 #else
-
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
@@ -698,6 +697,11 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       istrt22=nstrt(2,ntapef-1)
       lngth1=ije1(nij1)
       lngth2=ije2(nij2)
+
+      write(LUPRI,*) 'reorder:',igen(istrt21+1),igen(istrt21+1+lngth2)
+      write(LUPRI,*) 'itmp ndp4,1+lngth2:',ndp4,1+lngth2
+      write(LUPRI,*) 'itmp:',itmp(1),itmp(1+lngth2)
+
       call vands(lngth2,igen(istrt21+1),msk(i1),itmp)
       call vshfcs(lngth2,itmp,8*i1-8,itmp)
       call vands(lngth2,igen(istrt21+1),msk(i2),itmp(lngth2+600))
