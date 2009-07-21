@@ -67,6 +67,7 @@ static int  kt3_read(const char* conf_line);
 static int  olyp_read(const char* conf_line);
 static int  pbe_read(const char* conf_line);
 static int  pbe0_read(const char* conf_line);
+static int  rpbe_read(const char* conf_line);
 
 static int  gga_isgga(void);
 static int  xalpha_read(const char* conf_line);
@@ -104,6 +105,7 @@ Functional KT3Functional =    GGA_FUNCTIONAL("KT3",     kt3_read);
 Functional OLYPFunctional =   GGA_FUNCTIONAL("OLYP" ,   olyp_read);
 Functional PBE0Functional =   GGA_FUNCTIONAL("PBE0",    pbe0_read);
 Functional PBEFunctional =    GGA_FUNCTIONAL("PBE",     pbe_read); 
+Functional RPBEFunctional =   GGA_FUNCTIONAL("RPBE",    rpbe_read); 
 
 /* MIXED FUNCTIONALS */
 typedef struct FuncList_ FuncList;
@@ -334,6 +336,16 @@ pbe0_read(const char* conf_line)
     return 1;
 }
 
+
+static int
+rpbe_read(const char* conf_line)
+{
+    gga_fun_list = add_functional(gga_fun_list, &PbecFunctional, 1.0);
+    gga_fun_list = add_functional(gga_fun_list, &RpbexFunctional, 1.0);
+    fun_set_hf_weight(0);
+    return 1;
+}
+ 
 
 /* gga_key_read:
    read general GGA input: 

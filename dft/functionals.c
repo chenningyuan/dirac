@@ -54,6 +54,7 @@ Functional* available_functionals[] = {
     &PZ81Functional,
     &PbecFunctional,
     &PbexFunctional,
+    &RpbexFunctional,
     &SlaterFunctional,
     &VWN3Functional,
     &VWN5Functional,
@@ -77,6 +78,7 @@ Functional* available_functionals[] = {
     &OLYPFunctional,
     &PBE0Functional,
     &PBEFunctional,
+    &RPBEFunctional,
     &SVWN3Functional,
     &SVWN5Functional,
     NULL
