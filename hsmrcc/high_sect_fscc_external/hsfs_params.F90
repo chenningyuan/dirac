@@ -19,11 +19,11 @@ integer :: nrle4 = -1
 contains
 
 subroutine assign_hsfs_parameters
-!
-! very important - assigning dimensions of arrays for various allocations
+!-----------------------------------------------------------------------------------
+! very important - assign dimensions of arrays for various allocations
 !
 ! MUST be the first calling 
-!
+!------------------------------------------------------------------------------------
 #include "priunit.h"
 
 write(LUPRI,*) 'assigning HSFS parameters...'
