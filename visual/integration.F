@@ -105,6 +105,13 @@ C=======================================================================
         CALL AROUND('2D Gauss-Lobatto numerical integration')
 
         DO IORIENTATION = 2,2
+!radovan: this means that i want xz plane
+!         1 = xy
+!         2 = xz
+!         3 = yz
+!         i avoided whole loop because with the aromatic compounds
+!         one of the planes cut through an atom and it's difficult to 
+!         converge then
 
           WRITE(LUPRI,'(A)')
           WRITE(LUPRI,'(A12,A3)') 'orientation:',
@@ -122,6 +129,8 @@ C=======================================================================
 
           NR_PIECES = 5
           N         = 10
+!radovan: this means i integrate from 0,0 to 10,10 a.u.
+!         due to planar symmetry i integrated only one half!!!
           DIMI      = 10.0D0
           DIMJ      = 10.0D0
           LUNIT     = 45
