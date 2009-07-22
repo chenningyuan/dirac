@@ -330,6 +330,10 @@ C remember that kmaxtot=nbasis(L)+nbasis(S)+nbasisaux+1
 
 !     if Levy-Leblond or IOTC
 !     don't work on small component shells
+
+!radovan:
+!     comment out this check (= include all shells) if you wish
+!     to calculate the relativistic current with Levy-Leblond
       IF (MC .EQ. 1) ISHEND = NLRGSH
 
 #ifdef MOD_DNF

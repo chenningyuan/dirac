@@ -295,6 +295,9 @@ C        iq = iqtopq(5-ixyz,isymax(ixyz,2))
       if(joff .gt. joff_max) call quit('joff .gt. joff_max')
 
       ICHECK = K + L
+
+!     skip this if for levy-leblond and relativistic current density
+!     could be removed permanently but haven't tested it
       IF((MC .EQ. 1) .AND. (ICHECK .GT. 2)) GOTO 1
 
       CALL GET_DENSITY_SUBSUB(LGET,
@@ -309,6 +312,8 @@ C        iq = iqtopq(5-ixyz,isymax(ixyz,2))
 1     CONTINUE
 
       ICHECK = M + N
+!     skip this if for levy-leblond and relativistic current density
+!     could be removed permanently but haven't tested it
       IF((MC .EQ. 1) .AND. (ICHECK .GT. 2)) GOTO 2
 
       CALL GET_DENSITY_SUBSUB(LGET,
