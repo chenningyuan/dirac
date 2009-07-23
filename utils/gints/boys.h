@@ -84,4 +84,13 @@ taylor<Nvar,Ndeg> boys(const taylor<Nvar,Ndeg>& arg)
   return res;
 }
 
+template<int Nvar, int Ndeg, int Narg>
+void boys_opt(taylor<Nvar,Ndeg>& res,
+	      const taylor<Nvar,Narg>& arg)
+{
+  taylor<1,Ndeg> tmp;
+  boys_internal::boys_taylor(tmp,arg[0]);
+  arg.compose(res,tmp);
+}
+
 #endif

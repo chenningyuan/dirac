@@ -21,6 +21,9 @@
 
 using namespace std;
 
+#define MAX(a,b) ((a) > (b) ? (a) : (b))
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
+
 #define MAX_L 3
 
 class shell
@@ -291,12 +294,15 @@ void coulomb_kernel(taylor<3,N> &k,
 		    double alpha1, double alpha2, const double *d)
 {
   double asum = alpha1 + alpha2;
-  taylor<3,N> d2;
+  taylor<3,MIN(N,2)> d2;
   d2_taylor(d2,d);
-  k = (2*pow(M_PI,5.0/2.0)/(alpha1*alpha2*sqrt(asum)))*
-    boys((alpha1*alpha2/asum)*d2);
+  d2 *= alpha1*alpha2/asum;
+  boys_opt(k,d2);
+  k *= 2*pow(M_PI,5.0/2.0)/(alpha1*alpha2*sqrt(asum));
   dfactors(k);
 }
+
+// -4.08e9 33s
 
 template<int N1, int N2, int Nc1, int Nc2>
 void overlap(matrix<double,Nc1,Nc2> &S, 
@@ -634,6 +640,8 @@ void coulombbench(void)
 
 int main(void)
 {
+  setup_tables();
   coulombbench();
+  //check_kinetic();
   return 0;
 }
