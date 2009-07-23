@@ -75,12 +75,12 @@ void boys_taylor(taylor<1,Ndeg>& res, tnum_t x0)
 } // end of namespace boys_internal
 
 template<int Nvar, int Ndeg>
-taylor<Nvar,Ndeg> boys(const taylor<1,Ndeg>& arg)
+taylor<Nvar,Ndeg> boys(const taylor<Nvar,Ndeg>& arg)
 {
   taylor<1,Ndeg> tmp;
-  boys_taylor(tmp,arg[0]);
+  boys_internal::boys_taylor(tmp,arg[0]);
   taylor<Nvar,Ndeg> res;
-  t.compose(res,tmp);
+  arg.compose(res,tmp);
   return res;
 }
 

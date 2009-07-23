@@ -15,7 +15,7 @@
   x Kinetic energy - " " -
   x Shell products -> third shell coefficients
   Local potentials: Product shell -> Nuclear attraction, multipole
-  Shell/Shell electrostatic
+  x Shell/Shell electrostatic
  */
 
 
@@ -114,14 +114,6 @@ void dfactors(taylor<3,N> &t)
 }
 
 
-/* 
-   Create shell coefficients for normalized cartesian or spherical
-   gaussians.
-*/
-template<int Ndeg>
-void cartesian_function(taylor<3,Ndeg> &fn, double alpha, int ijk[3]);
-template<int Ndeg>
-void spherical_function(taylor<3,Ndeg> &fn, double alpha, int L, int M);
 
 // Calculate the taylor expansion of (x + d)^2
 template<int N>
@@ -237,7 +229,7 @@ void shell_products(matrix<taylor<3,N1+N2>,Nc1,Nc2> &prod, shell &s12,
 		    exponents[0] = poly3_exponents(m,p);
 		    exponents[1] = poly3_exponents(n,p);
 		    exponents[2] = poly3_exponents(k,p);
-		    //tabulated
+		    //tabulated version of
 		    //w *= c[p][c[p].term_index(exponents)];		    
 		    w *= c[p][poly3_term_index[exponents[0]]
 		      [exponents[1]][exponents[2]]];
@@ -301,16 +293,17 @@ void coulomb_kernel(taylor<3,N> &k,
   double asum = alpha1 + alpha2;
   taylor<3,N> d2;
   d2_taylor(d2,d);
-  k = (2*pow(M_PI,5.0/2.0)/(alpha1*alpha2*sqrt(alphasum)))*
-    boys(alpha1*alpha2/asum*d2);
+  k = (2*pow(M_PI,5.0/2.0)/(alpha1*alpha2*sqrt(asum)))*
+    boys((alpha1*alpha2/asum)*d2);
   dfactors(k);
 }
 
 template<int N1, int N2, int Nc1, int Nc2>
 void overlap(matrix<double,Nc1,Nc2> &S, 
 	     const taylor<3,N1> c1[], 
+	     const shell &s1,
 	     const taylor<3,N2> c2[],
-	     const shell &s1, const shell &s2)
+	     const shell &s2)
 {
   taylor<3,N1+N2> ovl;
   double d[3];
@@ -323,8 +316,9 @@ void overlap(matrix<double,Nc1,Nc2> &S,
 template<int N1, int N2, int Nc1, int Nc2>
 void kinetic(matrix<double,Nc1,Nc2> &T, 
 	     const taylor<3,N1> c1[], 
+	     const shell &s1,
 	     const taylor<3,N2> c2[],
-	     const shell &s1, const shell &s2)
+	     const shell &s2)
 {
   taylor<3,N1+N2> kin;
   double d[3];
@@ -337,8 +331,9 @@ void kinetic(matrix<double,Nc1,Nc2> &T,
 template<int N1, int N2, int Nc1, int Nc2>
 void coulomb(matrix<double,Nc1,Nc2> &C, 
 	     const taylor<3,N1> c1[], 
+	     const shell &s1,
 	     const taylor<3,N2> c2[],
-	     const shell &s1, const shell &s2)
+	     const shell &s2)
 {
   taylor<3,N1+N2> kernel;
   double d[3];
@@ -346,6 +341,26 @@ void coulomb(matrix<double,Nc1,Nc2> &C,
     d[i] = s1.R[i] - s2.R[i];
   coulomb_kernel(kernel, s1.alpha, s2.alpha, d);
   contract_d12(C,c1,c2,kernel);
+}
+
+/* 
+   Create shell coefficients for normalized cartesian or spherical
+   gaussians.
+*/
+template<int Ndeg>
+void cartesian_function(taylor<3,Ndeg> &fn, const shell &s, int ijk[3])
+{
+  matrix<double,1,1> S;
+  fn.zero();
+  fn[poly3_term_index[ijk[0]][ijk[1]][ijk[2]]] = 1;
+  overlap(S,&fn,&fn,s,s);
+  fn[poly3_term_index[ijk[0]][ijk[1]][ijk[2]]] /= sqrt(S(0,0));
+}
+template<int Ndeg>
+void spherical_function(taylor<3,Ndeg> &fn, const shell &s, int L, int M)
+{
+  assert(L <= Ndeg);
+  //  assert(abs(M) <= L);
 }
 
 
@@ -453,7 +468,7 @@ void check_overlap(void)
 	c1[0][i] = 1;
 	c2[0].zero();
 	c2[0][j] = 1;
-	overlap(S,c1,c2,s1,s2);
+	overlap(S,c1,s1,c2,s2);
 	c1[0].exponents(i,e6);
 	c2[0].exponents(j,e6+3);
 	if (fabs(S(0,0) - ovl6d[ovl6d.term_index(e6)]) > 1e-15)
@@ -499,7 +514,7 @@ void check_kinetic(void)
 	c1[0][i] = 1;
 	c2[0].zero();
 	c2[0][j] = 1;
-	kinetic(S,c1,c2,s1,s2);
+	kinetic(S,c1,s1,c2,s2);
 	c1[0].exponents(i,e6);
 	c2[0].exponents(j,e6+3);
 	if (fabs(S(0,0) - kin6d[kin6d.term_index(e6)]) > 1e-15)
@@ -587,12 +602,38 @@ void evalbench(void)
   cout << fsum;
 }
 
+void coulombbench(void)
+{
+  taylor<3,4> ddorbs[25],ddrhs;
+  shell s1,s2;
+  matrix<double,25,1> J;
+  s1.alpha = 3;
+  s1.R[0] = 1;
+  s1.R[1] = 2;
+  s1.R[2] = 3;
+  s2.alpha = 2;
+  s2.R[0] = 1;
+  s2.R[1] = 2;
+  s2.R[2] = 3;
+
+  // fill with randomness
+  for (int i=0;i<25;i++)
+    for (int j=0;j<ddorbs[i].size();j++)
+      ddorbs[i][j] = cos(i*1.5+j);
+  for (int j=0;j<ddrhs.size();j++)
+    ddrhs[j] = j;
+  double fsum = 0;
+  for (int i=0;i<1e6;i++)
+    {
+      coulomb(J,ddorbs,s1,&ddrhs,s2);
+      fsum += J(0,0);
+    }
+  cout << fsum;
+}
+
+
 int main(void)
 {
-  setup_tables();
-  check_overlap();
-  check_kinetic();
-  check_funvalue();
-  check_shell_product();
+  coulombbench();
   return 0;
 }
