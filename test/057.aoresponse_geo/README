@@ -1,5 +1,0 @@
-.MOLGRD contains only LL integrals (no LS, no SS, no LVCORR SS)
-
-LL 2e contribution does not match perfectly
-(deviates in 7th digit)
-investigate later, now accept this as reference
