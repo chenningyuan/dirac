@@ -22,9 +22,7 @@ C
 C 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : her1pro.F
+
 C
 C
 C  /* Deck pr1int */
@@ -287,7 +285,7 @@ C
 #include "maxorb.h"
 #include "iratdef.h"
 #include "efield.h"
-      PARAMETER (NTABLE = 77)
+      PARAMETER (NTABLE = 81)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE,DOATOM(*)
       CHARACTER LABINT(*)*8, WORD*7, TABLE(NTABLE)*7, MTFORM*6,
@@ -318,9 +316,10 @@ C
      &            'EFTNTL ', 'NUCFIEL',
      &            'RM1H3  ', 'RM1RN  ', 'RM1H2  ',
      &            'RM1N1H ', 'RDSUSLN', 'RDSUSLL', 'RM2H3  ',
-     &            'RM2H2  ', 'CAP_RE ', 'CAP_IM ','CAP_OVL',
-     &            'CAPD1R ', 'CAPD1I ', 'CAPDVE ','SOPPINT',
-     &            'CAPD_VD', 'GEO1KIN', 'GEO1NUC','GEO1OVL'
+     &            'RM2H2  ', 'CAP_RE ', 'CAP_IM ', 'CAP_OVL',
+     &            'CAPD1R ', 'CAPD1I ', 'CAPDVE ', 'SOPPINT',
+     &            'CAPD_VD', 'G1O    ', 'G1N    ', 'G1B    ',
+     &            'G1KX   ', 'G1KY   ', 'G1KZ   ', 'xxxxxxx'
      &                         /
 
 C
@@ -341,7 +340,7 @@ C
      &             34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,
      &             49,50,51,52,53,54,55,56,57,58,
      &             59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,
-     &             75,76,77), I
+     &             75,76,77,78,79,80), I
          END IF
   100 CONTINUE
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -1860,47 +1859,92 @@ C
       GO TO 200
 
 
-!     geo1kin: first geo derivatives of kinetic energy integrals
-!     ==========================================================
+!     g1o: first geo derivatives of overlap integrals
+!     ===============================================
    
  75   continue
-      inttyp = 70
-      if (iprint .gt. 5) write (lupri, '(/a/)')
-     &  'first geo derivatives of '
-     &  //'kinetic energy integrals'
-      call setatm(doatom, natom, inttyp)
-      call geo1_typ('KIN', noptyp, intrep, labint, doatom, natom)
-      anti   = .false.
-      square = .false.
-      go to 200
-
-
-!     geo1nuc: first geo derivatives of nuclear attraction integrals
-!     ==============================================================
-   
- 76   continue
-      inttyp = 71
-      if (iprint .gt. 5) write (lupri, '(/a/)')
-     &  'first geo derivatives of '
-     &  //'nuclear attraction integrals'
-      call setatm(doatom, natom, inttyp)
-      call geo1_typ('NUC', noptyp, intrep, labint, doatom, natom)
-      anti   = .false.
-      square = .false.
-      go to 200
-
-
-!     geo1ovl: first geo derivatives of overlap integrals
-!     ===================================================
-   
- 77   continue
-      inttyp = 72
-      if (iprint .gt. 5) write (lupri, '(/a/)')
+      inttyp = 100
+      if (iprint > 5) write (lupri, '(/a/)')
      &  'first geo derivatives of '
      &  //'overlap integrals'
       call setatm(doatom, natom, inttyp)
-      call geo1_typ('OVL', noptyp, intrep, labint, doatom, natom)
+      call g1_typ('O', noptyp, intrep, labint, doatom)
       anti   = .false.
+      square = .false.
+      go to 200
+
+
+!     g1n: first geo derivatives of nuclear attraction integrals
+!     ==========================================================
+   
+ 76   continue
+      inttyp = 101
+      if (iprint > 5) write (lupri, '(/a/)')
+     &  'first geo derivatives of '
+     &  //'nuclear attraction integrals'
+      call setatm(doatom, natom, inttyp)
+      call g1_typ('N', noptyp, intrep, labint, doatom)
+      anti   = .false.
+      square = .false.
+      go to 200
+
+
+!     g1b: first geo derivatives of beta integrals
+!     ============================================
+   
+ 77   continue
+      inttyp = 102
+      if (iprint > 5) write (lupri, '(/a/)')
+     &  'first geo derivatives of '
+     &  //'beta integrals'
+      call setatm(doatom, natom, inttyp)
+      call g1_typ('B', noptyp, intrep, labint, doatom)
+      anti   = .false.
+      square = .false.
+      go to 200
+
+
+!     g1kx: first geo derivatives of kinetic energy (x) integrals
+!     ===========================================================
+   
+ 78   continue
+      inttyp = 103
+      if (iprint > 5) write (lupri, '(/a/)')
+     &  'first geo derivatives of '
+     &  //'kinetic energy (x) integrals'
+      call setatm(doatom, natom, inttyp)
+      call g1_typ('KX', noptyp, intrep, labint, doatom)
+      anti   = .true.
+      square = .false.
+      go to 200
+
+
+!     g1ky: first geo derivatives of kinetic energy (y) integrals
+!     ===========================================================
+   
+ 79   continue
+      inttyp = 104
+      if (iprint > 5) write (lupri, '(/a/)')
+     &  'first geo derivatives of '
+     &  //'kinetic energy (y) integrals'
+      call setatm(doatom, natom, inttyp)
+      call g1_typ('KY', noptyp, intrep, labint, doatom)
+      anti   = .true.
+      square = .false.
+      go to 200
+
+
+!     g1kz: first geo derivatives of kinetic energy (z) integrals
+!     ===========================================================
+   
+ 80   continue
+      inttyp = 105
+      if (iprint > 5) write (lupri, '(/a/)')
+     &  'first geo derivatives of '
+     &  //'kinetic energy (z) integrals'
+      call setatm(doatom, natom, inttyp)
+      call g1_typ('KZ', noptyp, intrep, labint, doatom)
+      anti   = .true.
       square = .false.
       go to 200
 
@@ -2765,12 +2809,11 @@ C
       RETURN
       END
 
-      subroutine geo1_typ(what_kind,
-     &                    noptyp,
-     &                    intrep,
-     &                    labint,
-     &                    doatom,
-     &                    natom)
+      subroutine g1_typ(what_kind,
+     &                  noptyp,
+     &                  intrep,
+     &                  labint,
+     &                  doatom)
 
       implicit none 
 
@@ -2781,38 +2824,99 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "chrnos.h"
+#include "chrxyz.h"
 
-      character(3) what_kind
-      integer      noptyp
-      integer      intrep(9*mxcent)
-      character(8) labint(9*mxcent)
-      logical      doatom(nucind)
-      integer      natom
+      character(*), intent(in)  :: what_kind
+      integer     , intent(out) :: noptyp
+      integer     , intent(out) :: intrep(*)
+      character(8), intent(out) :: labint(*)
+      logical     , intent(in)  :: doatom(*)
 
-      integer   is, ixyz, iatom, irep, ityp
+      integer                   :: is, js
+      integer                   :: ixyz, jxyz
+      integer                   :: i, iatom, irep
 
-      noptyp = 3*natom
-      call ntypts(noptyp)
-
-      ityp = 0
+      i = 0
       do irep = 0, maxrep
         do iatom = 1, nucind
           if (doatom(iatom)) then
             do ixyz = 1, 3
-              is = iptcnt(3*(iatom - 1) + ixyz, irep, 1)
-              if (is .gt. 0) then
-                ityp = ityp + 1
-                labint(ityp) = 'GEO1'
-     &                         //what_kind
-     &                         //chrnos(is/100)
-     &                         //chrnos(mod(is, 100)/10)
-     &                         //chrnos(mod(is, 10))
-                intrep(ityp) = irep
+              is = iptcnt(3*(iatom - 1) + ixyz,irep,1)
+              if (is > 0) then
+                i = i + 1
+                labint(i) = 'G1'
+     &                      //what_kind
+     &                      //chrnos(is/100)
+     &                      //chrnos(mod(is, 100)/10)
+     &                      //chrnos(mod(is, 10))
+                intrep(i) = irep
               end if
             end do
           end if
         end do
       end do
+
+      noptyp = i
+      call ntypts(noptyp)
+
+      end subroutine
+
+      subroutine g1xyz_typ(what_kind,
+     &                     noptyp,
+     &                     intrep,
+     &                     intadr,
+     &                     labint,
+     &                     doatom)
+
+      implicit none 
+
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "chrxyz.h"
+
+      character(1), intent(in)  :: what_kind
+      integer     , intent(out) :: noptyp
+      integer     , intent(out) :: intrep(*)
+      integer     , intent(out) :: intadr(*)
+      character(8), intent(out) :: labint(*)
+      logical     , intent(in)  :: doatom(*)
+
+      integer                   :: is, js
+      integer                   :: ixyz, jxyz
+      integer                   :: i, iatom, irep
+
+      i = 0
+      do irep = 0, maxrep
+        do iatom = 1, nucind
+          if (doatom(iatom)) then
+            do ixyz = 1, 3
+              is = iptcnt(3*(iatom - 1) + ixyz,irep,1)
+              if (is > 0) then
+                do jxyz = 1, 3
+                  i = i + 1
+                  labint(i) = 'G1'
+     &                        //what_kind
+     &                        //chrxyz(jxyz)
+     &                        //chrnos(is/100)
+     &                        //chrnos(mod(is, 100)/10)
+     &                        //chrnos(mod(is, 10))
+                  intrep(i) = ieor(irep, isymax(jxyz, 1))
+                  js = 3*(is - 1) + jxyz
+                  intadr(js) = i
+                end do
+              end if
+            end do
+          end if
+        end do
+      end do
+
+      noptyp = i
+      call ntypts(noptyp)
 
       end subroutine
 

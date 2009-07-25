@@ -22,9 +22,6 @@ C
 C 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : her1int.F
 C
 C
 #ifdef UNDEF
@@ -46,23 +43,19 @@ C
 C
       IF (IPRINT .GT. 5) WRITE (LUPRI,'(A,/)')
      &     ' <<<<<<<<<< OUTPUT FROM PR1DRV >>>>>>>>>> '
-      IF (INTTYP .EQ. 12) THEN
-         NPOINT = NPQUAD
-         NSHINT = 9*NATOM*NATOM
-      else if (inttyp .eq. 70) then
-         npoint = 1
-         nshint = 3*noptyp
-      else if (inttyp .eq. 71) then
-         npoint = 1
-         nshint = 3*noptyp
-      else if (inttyp .eq. 72) then
-         npoint = 1
-         nshint = 3*noptyp
-      ELSE
-         NPOINT = 1
-         NSHINT = NOPTYP
-      END IF
-C
+
+      npoint = 1
+
+      if      (inttyp == 12) then
+        npoint = npquad
+        nshint = 9*natom*natom
+      else if (inttyp == 101) then
+!       g1n
+        nshint = 3*noptyp
+      else
+        nshint = noptyp
+      end if
+
       KWEIGH = 1
       KABSCI = KWEIGH + NPOINT
       KLAST  = KABSCI + NPOINT
@@ -407,26 +400,48 @@ C     type 58 already defined (NUCFIEL)
          JMAXM = 0
          DONUC1 = .FALSE.
          DOMOM1 = .FALSE.
-      else if (inttyp .eq. 70) then
-         jmaxd  = 3
-         jmaxm  = 0
-         donuc1 = .true.
-         domom1 = .false.
-      else if (inttyp .eq. 71) then
-         jmaxd  = 3
-         jmaxm  = 0
-         donuc1 = .true.
-         domom1 = .false.
-      else if (inttyp .eq. 72) then
-         jmaxd  = 3
-         jmaxm  = 0
-         donuc1 = .true.
-         domom1 = .false.
       ELSE IF (INTTYP .EQ.73) THEN
          JMAXD  = 1
          JMAXM  = 0
          DONUC1 = .TRUE.
          DOMOM1 = .TRUE.
+
+      else if (inttyp == 100) then
+!        g1o
+         jmaxd  = 1
+         jmaxm  = 0
+         donuc1 = .true.
+         domom1 = .false.
+      else if (inttyp == 101) then
+!        g1n
+         jmaxd  = 1
+         jmaxm  = 0
+         donuc1 = .true.
+         domom1 = .false.
+      else if (inttyp == 102) then
+!        g1b
+         jmaxd  = 1
+         jmaxm  = 0
+         donuc1 = .true.
+         domom1 = .false.
+      else if (inttyp == 103) then
+!        g1kx
+         jmaxd  = 2
+         jmaxm  = 0
+         donuc1 = .true.
+         domom1 = .true.
+      else if (inttyp == 104) then
+!        g1ky
+         jmaxd  = 2
+         jmaxm  = 0
+         donuc1 = .true.
+         domom1 = .true.
+      else if (inttyp == 105) then
+!        g1kz
+         jmaxd  = 2
+         jmaxm  = 0
+         donuc1 = .true.
+         domom1 = .true.
 C
 C hjaaj: INTTYP .gt. 200 are special relativistic operators for Dirac ...
 C
@@ -682,6 +697,7 @@ C  /* Deck pr1sop */
      &                  SQUARE,IPRINT,JMAXD,JMAXM,ISHELA,ISHELB,IORBA,
      &                  IORBB,KAB,CORBX0,CORBY0,CORBZ0,TOLOG,TOLS,
      &                  DONUC1,DOMOM1,MULTA,MULTB)
+
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -696,7 +712,8 @@ C
       KSHINT = 1
       KSYMC  = KSHINT + KCKTAB*NSHINT
       KCENTC = KSYMC  + (NUCDEP + 1)/IRAT
-      KFACTR = KCENTC + (NUCDEP + 1)/IRAT
+      KNCNTC = KCENTC + (NUCDEP + 1)/IRAT
+      KFACTR = KNCNTC + (NUCDEP + 1)/IRAT
       KCORCX = KFACTR + NUCDEP
       KCORCY = KCORCX + NUCDEP
       KCORCZ = KCORCY + NUCDEP
@@ -710,7 +727,8 @@ C
      &            NSHINT,SQUARE,IPRINT,WORK(KFACTR),JMAXD,JMAXM,ISHELA,
      &            ISHELB,IORBA,IORBB,KAB,CORBX0,CORBY0,CORBZ0,
      &            WORK(KCORCX),WORK(KCORCY),WORK(KCORCZ),WORK(KCENTC),
-     &     WORK(KSYMC),WORK(KGEXP),TOLOG,TOLS,DONUC1,DOMOM1,MULTA,MULTB)
+     &     WORK(KSYMC),WORK(KGEXP),TOLOG,TOLS,DONUC1,DOMOM1,MULTA,MULTB,
+     &            WORK(KNCNTC))
       RETURN
       END
 C  /* Deck pr1so1 */
@@ -720,7 +738,7 @@ C  /* Deck pr1so1 */
      &                  NSHINT,SQUARE,IPRINT,FACINT,JMAXD,JMAXM,ISHELA,
      &                  ISHELB,IORBA,IORBB,KAB,CORBX0,CORBY0,CORBZ0,
      &                  CORCX,CORCY,CORCZ,JCENTC,JSYMC,GEXP,TOLOG,TOLS,
-     &                  DONUC1,DOMOM1,MULTA,MULTB)
+     &                  DONUC1,DOMOM1,MULTA,MULTB,ncentc)
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -735,6 +753,7 @@ C
      &          WEIGHT(NPOINT), ABSCIS(NPOINT), FACINT(*),
      &          CORCX(*), CORCY(*), CORCZ(*),
      &          INTADR(*), JSYMC(*), JCENTC(*), GEXP(*)
+      integer :: ncentc(*)
 C
 #include "onecom.h"
 #include "nuclei.h"
@@ -773,9 +792,7 @@ C
      &                    .OR. (INTTYP .EQ. 55)
      &                    .OR. (INTTYP .EQ. 56)
      &                    .OR. (INTTYP .EQ. 57)
-     &                    .or. (inttyp .eq. 70)
-     &                    .or. (inttyp .eq. 71)
-     &                    .or. (inttyp .eq. 72)
+     &                    .or. (inttyp == 101)
      &                    .OR. (INTTYP .EQ. 62)) THEN
          JMAX = NHKTA + NHKTB - 2
          IF (INTTYP .EQ.  5) JMAX = JMAX + 1
@@ -801,9 +818,7 @@ C
          IF (INTTYP .EQ. 56) JMAX = JMAX + 4
          IF (INTTYP .EQ. 57) JMAX = JMAX + 4
          IF (INTTYP .EQ. 58) JMAX = JMAX + 1
-         if (inttyp .eq. 70) jmax = jmax + 1
-         if (inttyp .eq. 71) jmax = jmax + 1
-         if (inttyp .eq. 72) jmax = jmax + 1
+         if (inttyp == 101) jmax = jmax + 1
          IF (INTTYP .EQ. 203) JMAX = JMAX + 1 ! RM1H2
          IF (INTTYP .EQ. 204) JMAX = JMAX + 2 ! RNST
          IF (INTTYP .EQ. 208) JMAX = JMAX + 2 ! RM2H2
@@ -813,9 +828,7 @@ C
      &                            .OR. (INTTYP .EQ. 25)
      &                            .OR. (INTTYP .EQ. 54)
      &                            .OR. (INTTYP .EQ. 58)
-     &                            .or. (inttyp .eq. 70)
-     &                            .or. (inttyp .eq. 71)
-     &                            .or. (inttyp .eq. 72)
+     &                            .or. (inttyp == 101)
      &                            .OR. (INTTYP .EQ. 203) ! RM1H2
      &                            .OR. (INTTYP .EQ. 208) ! RM2H2
          ISTEPU = JMAX + 1
@@ -842,6 +855,7 @@ C
                      CORCZ(NATOMC)  = XYZ(3,ISYMOP)*CORCZ0
                      GEXP(NATOMC)   = GNUEXP(IATOMC)
                      FACINT(NATOMC) = FACTOR
+                     NCENTC(NATOMC) = NUCNUM(IATOMC,ISYMOP+1)
                   END IF
   310          CONTINUE
             END IF
@@ -853,6 +867,7 @@ C     *****************************************
 C     ***** Loop over symmetry operations *****
 C     *****************************************
 C
+
       DO 100 ISYMOP = 0, MAXOPR
       IF(IBTAND(ISYMOP,MAB) .EQ. 0) THEN
          LDIAG  = (ISHELA .EQ. ISHELB) .AND. (.NOT.SQUARE)
@@ -860,6 +875,7 @@ C
          CORBX  = XYZ(1,ISYMOP)*CORBX0
          CORBY  = XYZ(2,ISYMOP)*CORBY0
          CORBZ  = XYZ(3,ISYMOP)*CORBZ0
+         ICENTB = NUCNUM(NCENTB,ISYMOP+1)
          DIFABX = CORAX - CORBX
          DIFABY = CORAY - CORBY
          DIFABZ = CORAZ - CORBZ
@@ -898,7 +914,7 @@ C
      &               NOPTYP,NBAST,IORDER,DOATOM,IPRINT,TOLS,TOLOG,
      &               NATOMC,DISTAB,FACINT,CORCX,CORCY,CORCZ,JMAXD,
      &               JMAXM,DIFABX,DIFABY,DIFABZ,NPOINT,WEIGHT,ABSCIS,
-     &               GEXP,TRIANG,KAB,DONUC1,DOMOM1,HUCFAC)
+     &               GEXP,TRIANG,KAB,DONUC1,DOMOM1,HUCFAC,ncentc)
 C
 C        ****************************************
 C        ***** Transform to spherical basis *****
@@ -952,9 +968,32 @@ C
          ELSE IF (INTTYP .EQ. 57) THEN
             CALL EFTTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
-!        else if (inttyp .eq. 70) then
-!        else if (inttyp .eq. 71) then
-!        else if (inttyp .eq. 72) then
+
+         else if (inttyp == 100) then
+!          g1o
+           call s1htra(shlint, soint, isymop, 
+     &                 nelmnt, noptyp, anti, iprint)
+         else if (inttyp == 101) then
+!          g1n
+           call g1htra(shlint,soint,facint,jsymc,jcentc,ncentc,natomc,
+     &                 isymop,nelmnt,noptyp,anti,intadr,iprint)
+         else if (inttyp == 102) then
+!          g1b
+           call s1htra(shlint, soint, isymop, 
+     &                 nelmnt, noptyp, anti, iprint)
+         else if (inttyp == 103) then
+!          g1kx
+           call s1htra(shlint, soint, isymop, 
+     &                 nelmnt, noptyp, anti, iprint)
+         else if (inttyp == 104) then
+!          g1ky
+           call s1htra(shlint, soint, isymop, 
+     &                 nelmnt, noptyp, anti, iprint)
+         else if (inttyp == 105) then
+!          g1kz
+           call s1htra(shlint, soint, isymop, 
+     &                 nelmnt, noptyp, anti, iprint)
+
          ELSE
             FULMAT = .TRUE.
             DO 200 I = 1, NOPTYP
@@ -984,7 +1023,7 @@ C  /* Deck pr1prm */
      &                  NOPTYP,NBAST,IORDER,DOATOM,IPRINT,TOLS,TOLOG,
      &                  NATOMC,DISTAB,FACINT,CORCX,CORCY,CORCZ,JMAXD,
      &                  JMAXM,DIFABX,DIFABY,DIFABZ,NPOINT,WEIGHT,ABSCIS,
-     &                  GEXP,TRIANG,KAB,DONUC1,DOMOM1,HUCFAC)
+     &                  GEXP,TRIANG,KAB,DONUC1,DOMOM1,HUCFAC,ncentc)
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -992,6 +1031,7 @@ C
       CHARACTER LABINT(NOPTYP)*8
       DIMENSION WORK(LWORK), FACINT(NATOMC), CORCX(NATOMC),
      &          CORCY(NATOMC), CORCZ(NATOMC), SHLINT(KCKTAB,*), GEXP(*)
+      integer :: ncentc(*)
 #include "onecom.h"
 C
       JMAXA  = NHKTA - 1
@@ -1024,7 +1064,8 @@ C     Integrals for Parity Violation - chirality
      &               WORK(KAHGTF),SHLINT,WORK(KLAST),LWRK,
      &               LABINT,INTTYP,NOPTYP,NBAST,IORDER,DOATOM,IPRINT,
      &               TOLS,TOLOG,NATOMC,DISTAB,FACINT,CORCX,CORCY,CORCZ,
-     &               DIFABX,DIFABY,DIFABZ,GEXP,DONUC1,DOMOM1,HUCFAC)
+     &               DIFABX,DIFABY,DIFABZ,GEXP,DONUC1,DOMOM1,HUCFAC,
+     &               ncentc)
       ELSE
 C     Diamagnetic spin-orbit integrals
          CALL PR1PRD(WORK(KODC),JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
@@ -1040,7 +1081,8 @@ C  /* Deck pr1pra */
      &                  WORK,LWORK,LABINT,INTTYP,NOPTYP,
      &                  NBAST,IORDER,DOATOM,IPRINT,TOLS,TOLOG,NATOMC,
      &                  DISTAB,FACINT,CORCX,CORCY,CORCZ,DIFABX,DIFABY,
-     &                  DIFABZ,GEXP,DONUC1,DOMOM1,HUCFAC)
+     &                  DIFABZ,GEXP,DONUC1,DOMOM1,HUCFAC,
+     &                  ncentc)
 C MI/HJAaJ - added new integrals for NMR & magnetizabilities with LAO
 #include "implicit.h"
 #include "priunit.h"
@@ -1058,6 +1100,7 @@ C
      &          FACINT(NATOMC), CORCX(NATOMC), CORCY(NATOMC),
      &          CORCZ(NATOMC), SHLINT(KCKTAB,*), AHGTF(*), GEXP(*),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
+      integer :: ncentc(*)
 C
 #include "onecom.h"
 #include "orgcom.h"
@@ -1072,9 +1115,12 @@ C     DIFODC true if we have JMAXD .gt. 0 (take derivatives)
      &    .OR. (INTTYP.EQ.27) .OR. (INTTYP.EQ.28) .OR. (INTTYP.EQ.34)
      &    .OR. (INTTYP.EQ.40) .OR. (INTTYP.EQ.44) .OR. (INTTYP.EQ.50)
      &    .OR. (INTTYP.EQ.51) .OR. (INTTYP.EQ.52)
-     &    .or. (inttyp .eq. 70)
-     &    .or. (inttyp .eq. 71)
-     &    .or. (inttyp .eq. 72)
+     &    .or. (inttyp == 100)
+     &    .or. (inttyp == 101)
+     &    .or. (inttyp == 102)
+     &    .or. (inttyp == 103)
+     &    .or. (inttyp == 104)
+     &    .or. (inttyp == 105)
      &    .OR. (INTTYP.EQ.201) .OR. (INTTYP.EQ.207)
 
 C     ADD Nuclear Attraction Integrals, true if we need V_ne operator.
@@ -1210,9 +1256,7 @@ C
      &                       .OR. (INTTYP .EQ. 55)
      &                       .OR. (INTTYP .EQ. 56)
      &                       .OR. (INTTYP .EQ. 57)
-     &                       .or. (inttyp .eq. 70)
-     &                       .or. (inttyp .eq. 71)
-     &                       .or. (inttyp .eq. 72)
+     &                       .or. (inttyp == 101)
      &                       .OR. (INTTYP .EQ. 203) ! RM1H2
      &                       .OR. (INTTYP .EQ. 204) ! RNST
      &                       .OR. (INTTYP .EQ. 208) ! RM2H2 
@@ -1227,17 +1271,24 @@ C
             FACTOR = D1
             DO 300 IATOMC = 1, NATOMC
                if (addnai 
-     &             .or. (inttyp .eq. 70)
-     &             .or. (inttyp .eq. 71)
-     &             .or. (inttyp .eq. 72)) then
-                 FACTOR = FACINT(IATOMC)
+     &             .or. (inttyp == 101)) then
+                 factor = facint(iatomc)
+                 if (dabs(factor) < 1.0d-40) then
+                   call dzero(ahgtf(iadr), nahgtf)
+                   iadr = iadr + nahgtf
+                   go to 300
+                 end if
                end if
+
                DIFCPX = CORCX(IATOMC) - CORPX
                DIFCPY = CORCY(IATOMC) - CORPY
                DIFCPZ = CORCZ(IATOMC) - CORPZ
-               IF((INTTYP.EQ.54 .OR. INTTYP.EQ.58
-     &            .OR.INTTYP.EQ.203)
-     &            .AND.(ABS(GEXP(IATOMC)).GT.GNUTHR)) THEN
+               if ((inttyp == 54 .or.
+     &              inttyp == 58 .or.
+!101: first geo derivatives of nuclear attraction integrals
+     &              inttyp == 101 .or.
+     &              inttyp == 203) .and.
+     &             (abs(gexp(iatomc)) > gnuthr)) then
 C                 58: NUCFIEL
                   EXPFAC = GEXP(IATOMC)
                   EXPFAC = EXPFAC/(EXPFAC + EXPP)
@@ -1250,6 +1301,7 @@ C                 58: NUCFIEL
                   CALL HERNAI(AHGTF,JMAX,EXPP,DIFCPX,DIFCPY,DIFCPZ
      &                 ,FACTOR,IADR,ISTEPU,ISTEPV,NAHGTF,IPRINT)
                END IF
+               
                IF (ADDNAI) THEN
                   CALL DAXPY(NAHGTF,D1,AHGTF(IADR),1,AHGTF(1),1)
                ELSE
@@ -1281,8 +1333,7 @@ C        -----------------------------------------------------
 C
          ELSE IF ((INTTYP .EQ. 3) .OR. (INTTYP .EQ. 14) .OR.
      &            (INTTYP .EQ. 44)) THEN
-            CALL DPVINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
-     &                  CORPX,CORPY,CORPZ)
+            CALL DPVINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT)
 C
 C        Quadrupole integrals
 C        --------------------
@@ -1667,22 +1718,101 @@ C
      &                  CORCX,CORCY,CORCZ)
 
 
-!        first geo derivatives of the kinetic energy
-!        ===========================================
+!     g1o: first geo derivatives of overlap integrals
+!     ===============================================
 
-         else if (inttyp .eq. 70) then
-            call geo1kin_integrals(odc, 
-     &                             jmaxa, 
-     &                             jmaxb, 
-     &                             jmaxt, 
-     &                             jmaxd, 
-     &                             jmaxm, 
-     &                             shgtf, 
-     &                             shlint,
-     &                             ahgtf, 
-     &                             natomc, 
-     &                             noptyp, 
-     &                             ncentc)
+         else if (inttyp == 100) then
+           call dpvint(odc, 
+     &                 jmaxa, 
+     &                 jmaxb, 
+     &                 jmaxt, 
+     &                 jmaxd, 
+     &                 jmaxm, 
+     &                 shgtf, 
+     &                 shlint)
+
+
+!     g1n: first geo derivatives of nuclear attraction integrals
+!     ==========================================================
+
+         else if (inttyp == 101) then
+           call g1n_integrals(jmaxa, 
+     &                        jmaxb, 
+     &                        jmaxt, 
+     &                        jmaxd, 
+     &                        jmaxm, 
+     &                        odc, 
+     &                        natomc, 
+     &                        ncentc,
+     &                        ahgtf, 
+     &                        noptyp, 
+     &                        shlint)
+
+
+!     g1b: first geo derivatives of beta integrals
+!     ============================================
+
+         else if (inttyp == 102) then
+           call dpvint(odc, 
+     &                 jmaxa, 
+     &                 jmaxb, 
+     &                 jmaxt, 
+     &                 jmaxd, 
+     &                 jmaxm, 
+     &                 shgtf, 
+     &                 shlint)
+
+
+!     g1kx: first geo derivatives of kinetic energy (x) integrals
+!     ===========================================================
+
+         else if (inttyp == 103) then
+           if (icenta /= icentb) then
+             call g1k_integrals(1, 0, 0,
+     &                          jmaxa,
+     &                          jmaxb,
+     &                          jmaxt,
+     &                          jmaxd,
+     &                          jmaxm,
+     &                          odc,
+     &                          shgtf,
+     &                          shlint)
+           end if
+
+
+!     g1ky: first geo derivatives of kinetic energy (y) integrals
+!     ===========================================================
+
+         else if (inttyp == 104) then
+           if (icenta /= icentb) then
+             call g1k_integrals(0, 1, 0,
+     &                          jmaxa,
+     &                          jmaxb,
+     &                          jmaxt,
+     &                          jmaxd,
+     &                          jmaxm,
+     &                          odc,
+     &                          shgtf,
+     &                          shlint)
+           end if
+
+
+!     g1kz: first geo derivatives of kinetic energy (z) integrals
+!     ===========================================================
+
+         else if (inttyp == 105) then
+           if (icenta /= icentb) then
+             call g1k_integrals(0, 0, 1,
+     &                          jmaxa,
+     &                          jmaxb,
+     &                          jmaxt,
+     &                          jmaxd,
+     &                          jmaxm,
+     &                          odc,
+     &                          shgtf,
+     &                          shlint)
+           end if
+
 
 C
 C        rp integrals, RM1H3  i c Q_MN < r (alpha.p) >
@@ -2024,18 +2154,17 @@ C
       RETURN
       END
 
-      subroutine geo1kin_integrals(odc,
-     &                             jmaxa,
-     &                             jmaxb,
-     &                             jmaxt,
-     &                             jmaxd,
-     &                             jmaxm,
-     &                             shgtf,
-     &                             shlint,
-     &                             ahgtf,
-     &                             natomc,
-     &                             noptyp,
-     &                             ncentc)
+      subroutine g1n_integrals(jmaxa,
+     &                         jmaxb,
+     &                         jmaxt,
+     &                         jmaxd,
+     &                         jmaxm,
+     &                         odc,
+     &                         natomc,
+     &                         ncentc,
+     &                         ahgtf,
+     &                         noptyp,
+     &                         shlint)
 
       implicit none
 
@@ -2045,36 +2174,48 @@ C
 #include "lmns.h"
 
 !     --------------------------------------------------------------------------
-      double precision odc(0:jmaxa,0:jmaxb,0:jmaxt,0:jmaxd,0:jmaxm,3)
-      integer          jmaxa, jmaxb, jmaxt, jmaxd, jmaxm
-      double precision shgtf
-      double precision shlint(kcktab, noptyp, 3)
-      double precision ahgtf(*)
-      integer          natomc
-      integer          noptyp
-      integer          ncentc(*)
+      integer, intent(in)    :: jmaxa
+      integer, intent(in)    :: jmaxb
+      integer, intent(in)    :: jmaxt
+      integer, intent(in)    :: jmaxd
+      integer, intent(in)    :: jmaxm
+      real(8) :: odc(0:jmaxa, 0:jmaxb, 0:jmaxt, 0:jmaxd, 0:jmaxm, 3)
+      integer, intent(in)    :: natomc
+      integer, intent(in)    :: ncentc(*)
+      real(8), intent(in)    :: ahgtf(*)
+      integer, intent(in)    :: noptyp
+      real(8), intent(inout) :: shlint(kcktab, noptyp, 3)
 !     --------------------------------------------------------------------------
-      integer          i
-      integer          xa, ya, za
-      integer          xb, yb, zb
-      integer          xc, yc, zc
-      integer          ia, la, ma, na
-      integer          ib, lb, mb, nb
-      double precision dx0, dy0, dz0
-      double precision dx1, dy1, dz1
-      double precision dx2, dy2, dz2
-      double precision tx, ty, tz, txx, txy, txz, tyy, tyz, tzz
+      integer :: i, ioff, iatom
+      integer :: ix,  iy,  iz
+      integer :: la,  ma,  na
+      integer :: lb,  mb,  nb
+      integer :: ia,  ib
+      integer :: iax, iay, iaz, ia0
+      integer :: iu,  iv
+      integer :: xa,  ya,  za
+      integer :: xb,  yb,  zb
+      integer :: xc,  yc,  zc
+      real(8) :: ax,  ay,  az
+      real(8) :: cx,  cy,  cz
+      real(8) :: fx,  fy,  fz
+      real(8) :: gx,  gy,  gz
+      real(8) :: ahx, ahy, ahz, ah0
+      real(8) :: ff, gf, fg, gg, fff, gff, fgf, ffg
+      logical :: ab_same_center
 !     --------------------------------------------------------------------------
+
+      ab_same_center = (icenta == icentb)
 
       xa = 3*(icenta - 1) + 1
       ya = 3*(icenta - 1) + 2
       za = 3*(icenta - 1) + 3
+
       xb = 3*(icentb - 1) + 1
       yb = 3*(icentb - 1) + 2
       zb = 3*(icentb - 1) + 3
 
       i = 0
-
       do ia = 1, kckta
 
         la = lvalua(ia)
@@ -2082,47 +2223,98 @@ C
         na = nvalua(ia)
 
         do ib = 1, kcktb
+          i = i + 1
 
           lb = lvalub(ib)
           mb = mvalub(ib)
           nb = nvalub(ib)
 
-          dx0 = shgtf*odc(la, lb, 0, 0, 0, 1)
-          dy0 = shgtf*odc(ma, mb, 0, 0, 0, 2)
-          dz0 = shgtf*odc(na, nb, 0, 0, 0, 3)
-          dx1 = shgtf*odc(la, lb, 0, 1, 0, 1)
-          dy1 = shgtf*odc(ma, mb, 0, 1, 0, 2)
-          dz1 = shgtf*odc(na, nb, 0, 1, 0, 3)
-          dx2 = shgtf*odc(la, lb, 0, 2, 0, 1)
-          dy2 = shgtf*odc(ma, mb, 0, 2, 0, 2)
-          dz2 = shgtf*odc(na, nb, 0, 2, 0, 3)
-        
-          i = i + 1
+          iv = 1
+          do iz = 0, na + nb + 1
+            iu = iv
 
-          txx = dx2*dy0*dz0
-          txy = dx1*dy1*dz0
-          txz = dx1*dy0*dz1
-          tyy = dx0*dy2*dz0
-          tyz = dx0*dy1*dz1
-          tzz = dx0*dy0*dz2
+            fz = odc(na, nb, iz, 0, 0, 3)
+            if (.not. ab_same_center) then
+              gz = odc(na, nb, iz, 1, 0, 3)
+            end if
 
-          tx = 1.0d0*(txx + txy + txz)
-          ty = 1.0d0*(txy + tyy + tyz)
-          tz = 1.0d0*(txz + tyz + tzz)
+            do iy = 0, ma + mb + 1
 
-          shlint(i, xa, 1) = shlint(i, xa, 1) + tx
-          shlint(i, ya, 1) = shlint(i, ya, 1) + ty
-          shlint(i, za, 1) = shlint(i, za, 1) + tz
-          shlint(i, xb, 2) = shlint(i, xb, 2) - tx
-          shlint(i, yb, 2) = shlint(i, yb, 2) - ty
-          shlint(i, zb, 2) = shlint(i, zb, 2) - tz
+              fy = odc(ma, mb, iy, 0, 0, 2)
+              ff = fy*fz
+              if (.not. ab_same_center) then
+                gy = odc(ma, mb, iy, 1, 0, 2)
+                gf = gy*fz
+                fg = fy*gz
+                gg = gy*gz
+              end if
 
+              do ix = 0, la + lb + 1
+
+                fx = odc(la, lb, ix, 0, 0, 1)
+                fff = fx*ff
+                if (.not. ab_same_center) then
+                  gx = odc(la, lb, ix, 1, 0, 1)
+                  gff = gx*ff
+                  fgf = fx*gf
+                  ffg = fx*fg
+                end if
+
+                ia0 = iu  + ix
+                iax = ia0 + 1
+                iay = ia0 + istepu
+                iaz = ia0 + istepv
+
+                ioff = 0
+                do iatom = 1, natomc
+ 
+                  if (.not. ab_same_center) then
+
+                    ah0 = ahgtf(ia0 + ioff)
+
+                    ax =  gff*ah0
+                    ay =  fgf*ah0
+                    az =  ffg*ah0
+
+                    shlint(i, xa, 1) = shlint(i, xa, 1) + ax
+                    shlint(i, ya, 1) = shlint(i, ya, 1) + ay
+                    shlint(i, za, 1) = shlint(i, za, 1) + az
+                    shlint(i, xb, 2) = shlint(i, xb, 2) - ax
+                    shlint(i, yb, 2) = shlint(i, yb, 2) - ay
+                    shlint(i, zb, 2) = shlint(i, zb, 2) - az
+
+                  end if
+
+                  ahx = ahgtf(iax + ioff)
+                  ahy = ahgtf(iay + ioff)
+                  ahz = ahgtf(iaz + ioff)
+
+                  cx = -fff*ahx
+                  cy = -fff*ahy
+                  cz = -fff*ahz
+
+                  xc = 3*(ncentc(iatom) - 1) + 1
+                  yc = 3*(ncentc(iatom) - 1) + 2
+                  zc = 3*(ncentc(iatom) - 1) + 3
+ 
+                  shlint(i, xb, 2) = shlint(i, xb, 2) - cx
+                  shlint(i, yb, 2) = shlint(i, yb, 2) - cy
+                  shlint(i, zb, 2) = shlint(i, zb, 2) - cz
+                  shlint(i, xc, 3) = shlint(i, xc, 3) + cx
+                  shlint(i, yc, 3) = shlint(i, yc, 3) + cy
+                  shlint(i, zc, 3) = shlint(i, zc, 3) + cz
+      
+                  ioff = ioff + nahgtf
+                end do
+              end do
+              iu = iu + istepu
+            end do
+            iv = iv + istepv
+          end do
         end do
       end do
 
       end subroutine
-
-
 
 
 C  /* Deck dplint */
@@ -3925,8 +4117,7 @@ C
       RETURN
       END
 C  /* Deck dpvint */
-      SUBROUTINE DPVINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
-     &                  CORPX,CORPY,CORPZ)
+      SUBROUTINE DPVINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT)
 C
 C     tuh Jan. 17 1990
 C
@@ -3959,6 +4150,80 @@ C
   100 CONTINUE
       RETURN
       END
+
+      subroutine g1k_integrals(ix,
+     &                         iy,
+     &                         iz,
+     &                         jmaxa,
+     &                         jmaxb,
+     &                         jmaxt,
+     &                         jmaxd,
+     &                         jmaxm,
+     &                         odc,
+     &                         shgtf,
+     &                         shlint)
+
+      implicit none
+
+#include "maxaqn.h"
+#include "onecom.h"
+#include "lmns.h"
+
+!     --------------------------------------------------------------------------
+      integer, intent(in)    :: ix
+      integer, intent(in)    :: iy
+      integer, intent(in)    :: iz
+      integer, intent(in)    :: jmaxa
+      integer, intent(in)    :: jmaxb
+      integer, intent(in)    :: jmaxt
+      integer, intent(in)    :: jmaxd
+      integer, intent(in)    :: jmaxm
+      real(8), intent(in)    ::
+     &               odc(0:jmaxa, 0:jmaxb, 0:jmaxt, 0:jmaxd, 0:jmaxm, 3)
+      real(8), intent(in)    :: shgtf
+      real(8), intent(inout) :: shlint(kcktab, 3)
+!     --------------------------------------------------------------------------
+      integer                :: i, ia, ib, id, ixyz
+      integer                :: lmn(2, 3)
+      real(8)                :: derv(3, 0:2)
+      real(8)                :: tx, ty, tz
+!     --------------------------------------------------------------------------
+
+      i = 0
+      do ia = 1,kckta
+
+        lmn(1, 1) = lvalua(ia)
+        lmn(1, 2) = mvalua(ia)
+        lmn(1, 3) = nvalua(ia)
+
+        do ib = 1, kcktb
+          i = i + 1
+
+          lmn(2, 1) = lvalub(ib)
+          lmn(2, 2) = mvalub(ib)
+          lmn(2, 3) = nvalub(ib)
+
+          do ixyz = 1, 3
+            do id = 0, 2
+              derv(ixyz, id) = 
+     &                   odc(lmn(1, ixyz), lmn(2, ixyz), 0, id, 0, ixyz)
+            end do
+          end do
+          derv = shgtf*derv
+
+          tx = derv(1, ix+1)*derv(2, iy+0)*derv(3, iz+0)
+          ty = derv(1, ix+0)*derv(2, iy+1)*derv(3, iz+0)
+          tz = derv(1, ix+0)*derv(2, iy+0)*derv(3, iz+1)
+
+          shlint(i, 1) = shlint(i, 1) - tx
+          shlint(i, 2) = shlint(i, 2) - ty
+          shlint(i, 3) = shlint(i, 3) - tz
+
+        end do
+      end do
+
+      end subroutine
+
 C  /* Deck frmint */
       SUBROUTINE FRMINT(SHLINT,NOPTYP,EXPP,XP,YP,ZP,SAAB,DOATOM)
 C
@@ -6431,5 +6696,158 @@ C
             IADRAV = IADRAV + ISTEPV
  200     CONTINUE
  100  CONTINUE
+      RETURN
+      END
+
+
+      SUBROUTINE G1HTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NCENTC,NATOMC,
+     &                  ISYMOP,NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
+C
+C     tuh
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <maxorb.h>
+      LOGICAL FULMAT, ANTI
+      DIMENSION SHLINT(KCKTAB,NOPTYP,3), SOINT(NELMNT,NOPTYP),
+     &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
+     &          NCENTC(NATOMC),INTADR(*)
+#include <onecom.h>
+#include <symmet.h>
+#include <ibtfun.h>
+C
+      FULMAT = .TRUE.
+C
+C     Loops over ireps and Cartesian coordinats
+C
+      DO 100 IREP = 0, MAXREP
+      DO 100 ICOOR = 1, 3
+C
+C        Center A
+C        ========
+C 
+         ICOORA = 3*(ICENTA - 1) + ICOOR
+         ISCORA = IPTCNT(3*(NCENTA - 1) + ICOOR,IREP,1)
+         IF (ISCORA .GT. 0) THEN
+            FC = HKAB
+            IF (IREP .EQ. 0) THEN
+               CALL SYM1S(SHLINT(1,ICOORA,1),SOINT(1,ISCORA),
+     &                    ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
+     &                    FC,LDIAG,FULMAT,DUM,IDUM,IPRINT,0)
+            ELSE
+               CALL SYM1N(SHLINT(1,ICOORA,1),SOINT(1,ISCORA),
+     &                    IREP,ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
+     &                    FC,LDIAG,FULMAT,ANTI,DUM,IDUM,IPRINT)
+            END IF
+         END IF
+C
+C        Center B
+C        ========
+C
+         ICOORB = 3*(ICENTB - 1) + ICOOR
+         ISCORB = IPTCNT(3*(NCENTB - 1) + ICOOR,IREP,1)
+         IF (ISCORB .GT. 0) THEN
+            FC = HKAB*PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
+     &               *PT(IBTAND(IREP,ISYMOP))
+            IF (IREP .EQ. 0) THEN
+               CALL SYM1S(SHLINT(1,ICOORB,2),SOINT(1,ISCORB),
+     &                    ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
+     &                    FC,LDIAG,FULMAT,DUM,IDUM,IPRINT,0)
+            ELSE
+               CALL SYM1N(SHLINT(1,ICOORB,2),SOINT(1,ISCORB),
+     &                    IREP,ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
+     &                    FC,LDIAG,FULMAT,ANTI,DUM,IDUM,IPRINT)
+            END IF
+         END IF
+C
+C        Center C
+C        ========
+C
+         DO 200 IATOM = 1, NATOMC
+            ICOORC = 3*(NCENTC(IATOM) - 1) + ICOOR
+            ISCORC = IPTCNT(3*(JCENTC(IATOM) - 1) + ICOOR,IREP,1)
+            IF (ISCORC .GT. 0) THEN
+               FC = HKAB*PT(IBTAND(ISYMAX(ICOOR,1),JSYMC(IATOM)))
+     &                  *PT(IBTAND(IREP,JSYMC(IATOM)))
+               IF (IREP .EQ. 0) THEN
+                  CALL SYM1S(SHLINT(1,ICOORC,3),SOINT(1,ISCORC),
+     &                       ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
+     &                       FC,LDIAG,FULMAT,DUM,IDUM,IPRINT,0)
+               ELSE
+                  CALL SYM1N(SHLINT(1,ICOORC,3),SOINT(1,ISCORC),
+     &                       IREP,ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,
+     &                       KHKTB,FC,LDIAG,FULMAT,ANTI,DUM,IDUM,IPRINT)
+               END IF
+            END IF
+  200    CONTINUE
+C
+  100 CONTINUE
+C
+      RETURN
+      END
+
+      SUBROUTINE S1HTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,IPRINT)
+C
+C     tuh
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <maxaqn.h>
+#include <mxcent.h>
+#include <maxorb.h>
+      LOGICAL FULMAT, ANTI
+      DIMENSION SHLINT(KCKTAB,3), SOINT(NELMNT,NOPTYP)
+#include <onecom.h>
+#include <symmet.h>
+#include <ibtfun.h>
+C
+      FULMAT = .TRUE.
+C
+C     Loops over ireps and Cartesian coordinats
+C
+      DO 100 IREP = 0, MAXREP
+      DO 100 ICOOR = 1, 3
+C
+C        Center A
+C        ========
+C 
+         ISCORA = IPTCNT(3*(NCENTA - 1) + ICOOR,IREP,1)
+         IF (ISCORA .GT. 0) THEN
+            FC = HKAB
+            IF (IREP .EQ. 0) THEN
+               CALL SYM1S(SHLINT(1,ICOOR),SOINT(1,ISCORA),
+     &                    ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
+     &                    FC,LDIAG,FULMAT,DUM,IDUM,IPRINT,0)
+            ELSE
+               CALL SYM1N(SHLINT(1,ICOOR),SOINT(1,ISCORA),
+     &                    IREP,ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
+     &                    FC,LDIAG,FULMAT,ANTI,DUM,IDUM,IPRINT)
+            END IF
+         END IF
+C
+C        Center B
+C        ========
+C
+         ISCORB = IPTCNT(3*(NCENTB - 1) + ICOOR,IREP,1)
+         IF (ISCORB .GT. 0) THEN
+            FC = -HKAB*PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
+     &               *PT(IBTAND(IREP,ISYMOP))
+            IF (IREP .EQ. 0) THEN
+               CALL SYM1S(SHLINT(1,ICOOR),SOINT(1,ISCORB),
+     &                    ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
+     &                    FC,LDIAG,FULMAT,DUM,IDUM,IPRINT,0)
+            ELSE
+               CALL SYM1N(SHLINT(1,ICOOR),SOINT(1,ISCORB),
+     &                    IREP,ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
+     &                    FC,LDIAG,FULMAT,ANTI,DUM,IDUM,IPRINT)
+            END IF
+         END IF
+C
+  100 CONTINUE
+C
       RETURN
       END
