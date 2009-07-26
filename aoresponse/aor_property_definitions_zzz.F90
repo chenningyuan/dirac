@@ -18,7 +18,7 @@ contains
     integer,      parameter     :: max_order = 7
     type(matrix)                :: P, Dp(max_order), Fp(max_order)
     integer                     :: iorder
-    real(8)                     :: g(max_order)
+    complex(8)                  :: g(max_order)
     integer                     :: i(max_order)
     character(2)                :: l(max_order)
 !   ----------------------------------------------------------------------------

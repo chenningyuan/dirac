@@ -1,12 +1,34 @@
 module dirac_interface
 
-  use kinds_m
   use memory_allocator
   use matrix_defop
   use matrix_genop
   use aor_cfg
+  use character_processing
 
   implicit none
+
+  public di_get_gbds
+  public di_read_operator_int
+  public do_dft
+  public get_s
+  public get_f
+  public get_p
+  public get_i_or_s_c
+  public debug_1grad
+  public debug_2grad
+  public grcont
+  public ask_for_integrals
+  public response_solver
+  public dipnuc_ifc
+  public qdrnuc_ifc
+  public gradnn_ifc
+  public di_set_f77_work
+  public di_select_wrk
+  public di_deselect_wrk
+  public daxpy_iz_jz
+
+  private
 
   interface di_get_gbds
     module procedure get_G
@@ -16,19 +38,130 @@ module dirac_interface
     module procedure get_P
   end interface
 
-  integer, parameter            :: max_nr_op = 137
-  character(16),           save :: op_name_to_aoproper(max_nr_op)
+#include "mxcent.h"
+#include "../abacus/cbinuc.h"
+#include "cbihr2.h"
+#include "dcbbas.h"
+#include "dcbcls.h"
+#include "dcbgen.h"
+#include "dcbgrd.h"
+#include "dcbham.h"
+#include "dcborb.h"
+#include "dcbprl.h"
+#include "dcbxpr.h"
+#include "dcbxrs.h"
+#include "dgroup.h"
+#include "dipole.h"
+#include "dorps.h"
+#include "exeinf.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "symmet.h"
+
+  save
+
+  integer          :: coulomb_mem_req   ! Memory requirements for the Coulomb build
+  integer          :: dft_mem_req       ! Memory requirements for the DFT build
+  real(8), pointer :: f77_work(:)       ! Fortran 77 work array pointer
+  integer          :: len_f77_work  = 0 ! Length of the work array 
+  integer          :: memory_usage  = 0 ! Amount of work array used
+  integer          :: mem_wrk_count = 0 ! Counts
+
+  integer,      parameter :: max_aoproper_indices = 900
+  character(16) :: op_name_to_aoproper_index(max_aoproper_indices) = '----------------'
 
 contains
+
+  subroutine daxpy_iz_jz(f, A, iz, B, jz)
+
+!   ----------------------------------------------------------------------------
+    real(8),      intent(in)    :: f
+    integer,      intent(in)    :: iz, jz
+    type(matrix), intent(inout) :: A, B
+!   ----------------------------------------------------------------------------
+    integer                     :: n
+!   ----------------------------------------------------------------------------
+
+    n = A%nrow*A%ncol
+    call daxpy(n, f, A%elms((iz-1)*n + 1), 1, B%elms((jz-1)*n + 1), 1)
+
+  end subroutine
+
+  function index_on_aoproper(op_name)
+
+!   ----------------------------------------------------------------------------
+    integer                   :: index_on_aoproper
+    character(*), intent(in)  :: op_name
+!   ----------------------------------------------------------------------------
+    integer                   :: i
+!   ----------------------------------------------------------------------------
+
+    index_on_aoproper = 0
+    do i = 1, max_aoproper_indices
+      if (op_name_to_aoproper_index(i) == op_name(1:len_trim(op_name))) then
+        index_on_aoproper = i
+      end if
+    end do
+
+    if (index_on_aoproper == 0) then
+      call quit('index_on_aoproper: index for ' &
+              //op_name(1:len_trim(op_name))    &
+              //' not found')
+    end if
+
+  end function
+
+  SUBROUTINE di_set_f77_work(wrk,lwork)
+     real(8),target :: wrk(:)
+     integer            :: lwork, ltempwork
+     logical            :: ldummy1,ldummy2
+     len_f77_work = lwork
+     f77_work     => wrk
+!    call get_linsca_work(ldummy1,ldummy2,ltempwork,lwork)
+!    call di_set_coulomb_mem_req(ltempwork)
+!    ! Simen: Refine!
+!    call di_set_dft_mem_req(ltempwork)
+  END SUBROUTINE di_set_f77_work
+
+  SUBROUTINE di_select_wrk(wrk, mem_req)
+     real(8),pointer :: wrk(:)
+     integer, intent(in) :: mem_req
+!     if (mem_req .GT. len_f77_work - memory_usage) then
+!    if (mem_req .GT. len_f77_work) then
+!       call quit('code di_create_wrk first')
+!       call di_create_wrk(wrk,mem_req)
+!    else
+!        wrk => f77_work((memory_usage+1):len_f77_work)
+!        memory_usage = memory_usage + mem_req
+
+        wrk => f77_work
+
+        memory_usage  = mem_req
+        mem_wrk_count = mem_wrk_count + 1
+        if (mem_wrk_count > 1) call quit('counter > 1 not implemented')
+!    endif
+  end subroutine
+
+  SUBROUTINE di_deselect_wrk(wrk, mem_req)
+     real(8),pointer :: wrk(:)
+     integer, intent(in) :: mem_req
+!    if (mem_req .GT. len_f77_work) then
+!       call di_delete_wrk(wrk)
+!       call quit('code di_delete_wrk first')
+!    else
+        nullify(wrk)
+!        memory_usage = memory_usage - mem_req
+        memory_usage  = 0
+        mem_wrk_count = mem_wrk_count - 1
+!    endif
+  end subroutine
 
   subroutine print_prp_common_blocks()
 
 !   ----------------------------------------------------------------------------
     integer :: i 
 !   ----------------------------------------------------------------------------
-
-#include "dcbxpr.h"
-#include "dcbprl.h"
 
     do i = 1, nprps
       write(*, *) 'dcbxpr:  --------------'
@@ -56,6 +189,16 @@ contains
       write(*, *) 'dcbprl:  -----------'
     end do
 
+    do i = 1, nprpcls
+      write(*, *) 'dcbcls:  ----------'
+      write(*, *) 'dcbcls:  i         ', i            
+      write(*, *) 'dcbcls:  CLSCAL(i) ', CLSCAL(i)
+      write(*, *) 'dcbcls:  CLSINT(i) ', CLSINT(i)
+      write(*, *) 'dcbcls:  CLSCMB(i) ', CLSCMB(i)
+      write(*, *) 'dcbcls:  IORDCL(i) ', IORDCL(i)
+      write(*, *) 'dcbcls:  ----------'
+    end do
+
   end subroutine
 
   subroutine request_1el_integrals(label, blocks)
@@ -72,6 +215,7 @@ contains
 #include "dcbcls.h"
 
     last_position = nprpcls + 1
+
     if (last_position > maxcls) then
       call quit('request_1el_integrals: last_position > maxcls')
     end if
@@ -80,8 +224,8 @@ contains
     clsint(last_position) = label
     clscmb(last_position) = blocks
 
-!   important only for c/s moment integrals
-!   here set it to something
+!   important only for cartesian or spherical moment integrals
+!   here just set it to something
     iordcl(last_position) = 0
 
     nprpcls = last_position
@@ -101,10 +245,10 @@ contains
                     dmat,     &
                     nr_dmat)
 
-    real(kind_dp)              :: work(*)
+    real(8)              :: work(*)
     integer                    :: lwork
 
-    real(kind_dp)              :: g(*)
+    real(8)              :: g(*)
     integer                    :: g_dim
 
     logical                    :: geo, london
@@ -113,28 +257,20 @@ contains
 
     logical                    :: energy, fock
 
-    real(kind_dp)              :: dmat(*)
+    real(8)              :: dmat(*)
     integer                    :: nr_dmat
 !   ----------------------------------------------------------------------------
-    real(kind_dp), allocatable :: fmat(:)
+    real(8), allocatable :: fmat(:)
 
-    real(kind_dp)              :: dummy
+    real(8)              :: dummy
     integer                    :: idummy
 
     logical                    :: gencnt
 
     integer                    :: i, i2typ, itype, ifctyp(8), iatom, fmat_dim
 
-    real(kind_dp)              :: skip(3, 14, 3)
-    real(kind_dp)              :: screen, f
-
-#include "mxcent.h"
-#include "cbihr2.h"
-#include "dcbgrd.h"
-#include "dcbgen.h"
-#include "dcbbas.h"
-#include "exeinf.h"
-#include "dorps.h"
+    real(8)              :: skip(3, 14, 3)
+    real(8)              :: screen, f
 
     dopert = .true.
 
@@ -254,18 +390,6 @@ contains
     logical                  :: debug_me    = .false.
 !   ----------------------------------------------------------------------------
 
-!fixme: make proper interfaces
-#include "mxcent.h"
-#include "cbihr2.h"
-#include "dcbgrd.h"
-#include "dcbgen.h"
-#include "dcborb.h"
-#include "exeinf.h"
-#include "dorps.h"
-#include "dcbbas.h"
-#include "nuclei.h"
-#include "dgroup.h"
-
     lwork = 20000000
     call alloc(work, lwork)
 
@@ -379,26 +503,19 @@ contains
 !   ----------------------------------------------------------------------------
     logical                     :: debug_me = .false.
 
-    real(kind_dp)               :: skip(3, 14, 3)
-    real(kind_dp)               :: screen
+    real(8)               :: skip(3, 14, 3)
+    real(8)               :: screen
 
     integer                     :: i, j, k, i2typ, itype, ifctyp(8)
 
-    real(kind_dp), allocatable  :: r(:, :)
+    real(8), allocatable  :: r(:, :)
 
-    real(kind_dp), allocatable  :: work(:)
+    real(8), allocatable  :: work(:)
     integer                     :: lwork
 
-    real(kind_dp)               :: dummy
+    real(8)               :: dummy
     integer                     :: idummy
 !   ----------------------------------------------------------------------------
-
-#include "mxcent.h"
-#include "cbihr2.h"
-#include "dcbgrd.h"
-#include "dcbgen.h"
-#include "exeinf.h"
-#include "dorps.h"
 
     D = 4.0d0*D
     if (debug_me) then
@@ -498,10 +615,10 @@ contains
     do i = 1, 4
       j = (i - 1)*3 + 1
 
-      write(*, '(a14, 3f21.10)') '2grad tot', r(j, 5), r(j + 1, 5), r(j + 2, 5)
-      write(*, '(a14, 3f21.10)') '2grad  LL', r(j, 1), r(j + 1, 1), r(j + 2, 1)
-      write(*, '(a14, 3f21.10)') '2grad  LS', r(j, 2), r(j + 1, 2), r(j + 2, 2)
-      write(*, '(a14, 3f21.10)') '2grad  SS', r(j, 3), r(j + 1, 3), r(j + 2, 3)
+      write(*, '(a14, 3f27.16)') '2grad tot', r(j, 5), r(j + 1, 5), r(j + 2, 5)
+      write(*, '(a14, 3f27.16)') '2grad  LL', r(j, 1), r(j + 1, 1), r(j + 2, 1)
+      write(*, '(a14, 3f27.16)') '2grad  LS', r(j, 2), r(j + 1, 2), r(j + 2, 2)
+      write(*, '(a14, 3f27.16)') '2grad  SS', r(j, 3), r(j + 1, 3), r(j + 2, 3)
       write(*, '(a14         )') '---------'
 
     end do
@@ -514,11 +631,8 @@ contains
 
   subroutine dipnuc_ifc(n, f, fg)
 
-#include "mxcent.h"
-#include "dipole.h"
-
     integer       :: n
-    real(kind_dp) :: f(3), fg(3, 3*n)
+    real(8) :: f(3), fg(3, 3*n)
 
     call dipnuc((/0.0d0/), (/0.0d0/), 0, .true.)
 
@@ -529,11 +643,7 @@ contains
 
   subroutine qdrnuc_ifc(q)
 
-#include "mxcent.h"
-#include "nuclei.h"
-#include "priunit.h"
-
-    real(kind_dp) :: q(6)
+    real(8) :: q(6)
 
     call quit('implement qdrnuc_ifc first')
 !   call nucqdr(cord(:, 1:nucdep), (/0.0d0, 0.0d0, 0.0d0/), lupri, 0)
@@ -543,12 +653,8 @@ contains
 
   subroutine gradnn_ifc(n, g)
 
-#include "mxcent.h"
-#include "../abacus/cbinuc.h"
-#include "energy.h"
-
     integer       :: n
-    real(kind_dp) :: g(3*n)
+    real(8) :: g(3*n)
 
     iprint = 0
     maxdif = 1
@@ -577,8 +683,6 @@ contains
 !   ----------------------------------------------------------------------------
     type(matrix)                :: F1, F2
     integer,      parameter     :: file_unit = 70
-
-#include "dcbbas.h"
 
     call init_mat(F1, ntbas(0), ntbas(0))
     call init_mat(F2, ntbas(0), ntbas(0))
@@ -612,11 +716,8 @@ contains
     integer                      :: npos_nr
     integer,       allocatable   :: npos(:)
 
-    real(kind_dp), allocatable   :: work(:)
-    integer                      :: kfree, lfree, freemem, verbose = 0
-
-#include "dcbbas.h"
-#include "dcbdhf.h"
+    real(8), pointer   :: work(:)
+    integer                      :: lwork
 
     if (.not. mat_isdef(G)) call init_mat(G, ntbas(0), ntbas(0))
     G = 1.0d0*D !inherit symmetry information
@@ -625,11 +726,12 @@ contains
     call stex_get_npos(npos_nr)
     call alloc(npos, npos_nr)
 
-!   call alloc_maxsize(freemem, 1, verbose)
-!   lfree = (freemem/2)*2
-    lfree = n2bbasxq*20
-    call alloc(work, lfree)
-    kfree = 1
+!   fixme: 
+!   call with proper limit
+!   at the moment i don't know the limit
+!   simply give entire work and hope for the best
+    lwork = len_f77_work
+    call di_select_wrk(work, lwork)
 
     call twofck(G%irep + 1, &
 !               G%ih_sym, &
@@ -641,9 +743,10 @@ contains
                 npos,     &
                 intflg,   &
                 0,        &
-                work(kfree), lfree)
+                work, len_f77_work)
 
-    call dealloc(work)
+    call di_deselect_wrk(work, lwork)
+
     call dealloc(npos)
 
     G = 4.0d0*G
@@ -655,14 +758,11 @@ contains
 !   ----------------------------------------------------------------------------
     type(matrix),  intent(inout) :: C
 !   ----------------------------------------------------------------------------
-    real(kind_dp), allocatable   :: eigenvalues(:)
+    real(8), allocatable   :: eigenvalues(:)
     integer,       parameter     :: file_unit = 66
-    real(kind_dp)                :: dummy_dp
+    real(8)                :: dummy_dp
     integer                      :: dummy_i
 !   ----------------------------------------------------------------------------
-
-#include "dcborb.h"
-#include "dcbbas.h"
 
     if (.not. mat_isdef(C)) call init_mat(C, ntbas(0), norbt)
 
@@ -701,10 +801,6 @@ contains
     integer                     :: pus_start, eui_start, eus_start
     integer                     :: i, s, iz
     logical                     :: debug_me = .false.
-
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dgroup.h"
 
     pgs_nr = npsh(1)
     pus_nr = npsh(2)
@@ -786,51 +882,43 @@ contains
 
     type(matrix),  intent(inout) :: S
 !   ----------------------------------------------------------------------------
-    real(kind_dp), allocatable   :: work(:)
-    integer                      :: kfree, lfree, kwork, lwork
-
-#include "dcbbas.h"
-#include "dcbham.h"
-
-    kfree = 1
-
-#include "memint.h"
+    real(8), pointer   :: work(:)
+    integer            :: lwork
 
     if (.not. mat_isdef(S)) call init_mat(S, ntbas(0), ntbas(0))
     S%elms = 0.0d0
 
-    lfree = 2*((nnbbasx + n2bbasx)*2)/2
-    call alloc(work, lfree)
+    lwork = 2*((nnbbasx + n2bbasx)*2)/2
+    call di_select_wrk(work, lwork)
 
-    call gtovlt(S%elms, ssmtrc, work, lfree)
+    call gtovlt(S%elms, ssmtrc, work, lwork)
 
-    call dealloc(work)
+    call di_deselect_wrk(work, lwork)
 
     S = 2.0d0*S
 
   end subroutine
+
 
   subroutine get_P(op_name, P)
 
     character(*),  intent(in)    :: op_name
     type(matrix),  intent(inout) :: P
 !   ----------------------------------------------------------------------------
-    real(kind_dp), allocatable   :: ptri(:), op1int(:)
+    real(8), allocatable   :: ptri(:), op1int(:)
     logical,       allocatable   :: first(:), lexpst(:)
     integer                      :: op_index, file_unit, idimension
-    real(kind_dp)                :: dummy_dp
+    real(8)                :: dummy_dp
     logical                      :: file_exists, debug_me = .false.
 
-    real(kind_dp), allocatable   :: work(:)
-    integer                      :: kfree, lfree, freemem, verbose = 0
+    real(8), pointer   :: work(:)
+    integer            :: lwork
 
-#include "dgroup.h"
-#include "dcbbas.h"
-#include "dcbgen.h"
-#include "dcbxpr.h"
+    file_unit = lu1int
+    call opnfil(file_unit, 'AOPROPER', 'UNKNOWN', 'get_P')
+    rewind file_unit
 
-!   write(*, *) 'debug', op_name
-    op_index = find_op_index(op_name)
+    op_index = index_on_aoproper(op_name)
 
     idimension = nnbbasx
     if (iprptim(op_index) == 0) then
@@ -844,10 +932,6 @@ contains
 
     lexpst = .false.
 
-    file_unit = lu1int
-
-    call opnfil(file_unit, 'AOPROPER', 'UNKNOWN', 'get_P')
-
     if (.not. mat_isdef(P)) call init_mat(P, ntbas(0), ntbas(0))
     P%elms = 0.0d0
 
@@ -855,11 +939,8 @@ contains
     P%tr_sym = iprptim(op_index)
     P%ih_sym = P%tr_sym
 
-!   call alloc_maxsize(freemem, 1, verbose)
-!   lfree = (freemem/2)*2
-    lfree = n2bbasxq*2
-    call alloc(work, lfree)
-    kfree = 1
+    lwork = n2bbasxq*2
+    call di_select_wrk(work, lwork)
 
     call prpex2(op_index,   &
                 dummy_dp,   &
@@ -870,9 +951,9 @@ contains
                 P%elms,     &
                 op1int,     &
                 first,      &
-                work, kfree, lfree, 0)
+                work, 1, lwork, 0)
 
-    call dealloc(work)
+    call di_deselect_wrk(work, lwork)
     close(file_unit, status = 'keep')
 
     P = 2.0d0*P
@@ -906,9 +987,6 @@ contains
     integer                :: pus_start, eui_start, eus_start
     integer                :: i, s
     logical                :: debug_me = .false.
-
-#include "dcborb.h"
-#include "dgroup.h"
 
     pgs_nr = npsh(1)
     pus_nr = npsh(2)
@@ -1000,7 +1078,7 @@ contains
 
   subroutine response_solver(freq, RHS, Dp)
 
-    real(kind_dp), intent(in)    :: freq
+    real(8), intent(in)    :: freq
     type(matrix),  intent(inout) :: RHS
     type(matrix),  intent(inout) :: Dp
 !   -------------------------------------------------------------------------
@@ -1010,20 +1088,21 @@ contains
     integer,       allocatable   :: ibtyp_pointer_pp(:)
     integer,       allocatable   :: ibtyp_pointer_pn(:)
 
-    real(kind_dp), allocatable   :: eigval(:)
-    real(kind_dp), allocatable   :: eigvec(:)
-    real(kind_dp), allocatable   :: convergence(:)
+    real(8), allocatable   :: eigval(:)
+    real(8), allocatable   :: eigvec(:)
+    real(8), allocatable   :: convergence(:)
 
-    real(kind_dp), allocatable   :: response_vector_pph(:, :, :)
-    real(kind_dp), allocatable   :: response_vector_ppa(:, :, :)
-    real(kind_dp), allocatable   :: response_vector_pnh(:, :, :)
-    real(kind_dp), allocatable   :: response_vector_pna(:, :, :)
+    real(8), allocatable   :: response_vector_pph(:, :, :)
+    real(8), allocatable   :: response_vector_ppa(:, :, :)
+    real(8), allocatable   :: response_vector_pnh(:, :, :)
+    real(8), allocatable   :: response_vector_pna(:, :, :)
 
-    real(kind_dp), allocatable   :: work(:)
-    integer                      :: kfree, lfree, freemem, verbose = 0
+    real(8), pointer   :: work(:)
+    integer            :: lwork
+    integer            :: kfree, lfree
 
-    real(kind_dp), allocatable   :: prop_gradient_pp(:)
-    real(kind_dp), allocatable   :: prop_gradient_pn(:)
+    real(8), allocatable   :: prop_gradient_pp(:)
+    real(8), allocatable   :: prop_gradient_pn(:)
 
     integer,       allocatable   :: orbital_rotation_vector_pp(:)
     integer,       allocatable   :: orbital_rotation_vector_pn(:)
@@ -1038,15 +1117,8 @@ contains
     logical                      :: do_pp    = .false.
     logical                      :: do_pn    = .false.
 
-    real(kind_dp)                :: dummy_dp
+    real(8)                :: dummy_dp
     integer                      :: dummy_i
-
-#include "dcbbas.h"
-#include "dcbgen.h"
-#include "dcbham.h"
-#include "dcborb.h"
-#include "dcbxrs.h"
-#include "dgroup.h"
 
     if (.not. aor_cfg_skip_pp) do_pp = .true.
     if (.not. aor_cfg_skip_pn) do_pn = .true.
@@ -1149,12 +1221,15 @@ contains
     Wp     = 1.0d-100*RHS_mo
     RHS_mo = 0
 
-!   call alloc_maxsize(freemem, 1, verbose)
-!   lfree = (freemem/2)*2
-    lfree = n2bbasxq*30
-    call alloc(work, lfree)
-    kfree = 1
+!   fixme: 
+!   call with proper limit
+!   at the moment i don't know the limit
+!   simply give entire work and hope for the best
+    lwork = len_f77_work
+    call di_select_wrk(work, lwork)
 
+    kfree = 1
+    lfree = len_f77_work
     call memget('INTE', kzxope, 2*length_pp, work, kfree, lfree)
     call memget('INTE', kzxopp, 2*length_pn, work, kfree, lfree)
 
@@ -1245,7 +1320,7 @@ contains
 
     call dealloc(convergence)
     call dealloc(eigval)
-    call dealloc(work)
+    call di_deselect_wrk(work, lwork)
 
 
 !   construct response vector
@@ -1396,20 +1471,17 @@ contains
 
     character(*),  intent(in)    :: vector_type
     integer,       intent(in)    :: ih
-    real(kind_dp), intent(inout) :: response_vector(:, :, :)
+    real(8), intent(inout) :: response_vector(:, :, :)
     integer,       intent(in)    :: length
     integer,       intent(in)    :: nr_freq
     integer,       intent(in)    :: ibtyp(2, *)
     integer,       intent(in)    :: ibtyp_pointer(*)
-    real(kind_dp), intent(in)    :: eigvec(*)
+    real(8), intent(in)    :: eigvec(*)
 !   ----------------------------------------------------------------------------
     integer,       allocatable   :: ivecs(:)
-    real(kind_dp), allocatable   :: buffer(:)
+    real(8), allocatable   :: buffer(:)
     character(6)                 :: file_name
     integer                      :: file_unit, nbtyp
-
-#include "dcbxrs.h"
-#include "dgroup.h"
 
     call alloc(ivecs, nr_freq)
 
@@ -1456,10 +1528,8 @@ contains
 
   subroutine print_vector(vector, vector_dimension)
 
-    real(kind_dp), intent(in) :: vector(:)
+    real(8), intent(in) :: vector(:)
     integer,       intent(in) :: vector_dimension
-
-#include "dgroup.h"
 
     call prqmat(vector,           &
                 vector_dimension, &
@@ -1474,10 +1544,8 @@ contains
 
   subroutine print_q_vector(vector, vector_dimension)
 
-    real(kind_dp), intent(in) :: vector(:)
+    real(8), intent(in) :: vector(:)
     integer,       intent(in) :: vector_dimension
-
-#include "dgroup.h"
 
     call prqmat(vector,           &
                 vector_dimension, &
@@ -1490,157 +1558,150 @@ contains
 
   end subroutine
 
-  function find_op_index(op_name) result(op_index)
-
-    character(*), intent(in) :: op_name
-    integer                  :: op_index, i
-
-    op_index = -1
-
-    do i = 1, max_nr_op
-      if (op_name_to_aoproper(i) == op_name) then
-        op_index = i
-      end if
-    end do
-
-    if (op_index == -1) then
-      call quit('find_op_index: index for '//op_name//' not found')
-    end if
-
-  end function
-
-  subroutine add_op_by_hand(op_name,    &
-                            typ,        &
-                            pg_sym,     &
-                            tr_sym,     &
-                            prefactors, &
-                            pointers,   &
-                            blocks)
+  subroutine add_op(op_name,    &
+                    label,      &
+                    typ,        &
+                    nr_components,        &
+                    tr_sym,     &
+                    pg_sym,     &
+                    prefactors, &
+                    blocks)
 
 !   ----------------------------------------------------------------------------
     character(16), intent(in)  :: op_name
+    character(8), intent(in)   :: label(nr_components)
     integer,       intent(in)  :: typ
-    integer,       intent(in)  :: pg_sym
+    integer,       intent(in)  :: nr_components
     integer,       intent(in)  :: tr_sym
+    integer,       intent(in)  :: pg_sym
     real(8),       intent(in)  :: prefactors(3)
-    integer,       intent(in)  :: pointers(3)
     character(4),  intent(in)  :: blocks
 !   ----------------------------------------------------------------------------
-    integer                    :: i
+    integer                    :: i, j, k, imax, icomp
 !   ----------------------------------------------------------------------------
 
-#include "dcbxpr.h"
-#include "dcbprl.h"
+!   dcbxpr.h
 
     i = nprps + 1
 
-    prpnam(i)  = op_name
-    iprptyp(i) = typ
+    op_name_to_aoproper_index(i) = op_name
+    prpnam(i)    = op_name
+    facprp(:, i) = prefactors(:)
+    iprptyp(i)   = typ
+
+    imax = 0
+    do j = 1, i - 1
+      do k = 1, 3
+        if (iprplbl(k, j) > imax) then
+          imax = iprplbl(k, j)
+        end if
+      end do
+    end do
+    iprplbl(:, i) = (/imax + 1, 0, 0/)
+!fixme
+    if (typ == 8) then
+      iprplbl(:, i) = (/imax + 1, imax + 2, imax + 3/)
+    end if
+
     iprpsym(i) = pg_sym
     iprptim(i) = tr_sym
-
-    facprp(1:3,  i) = prefactors(1:3)
-    iprplbl(1:3, i) = pointers(1:3)
+!   iprptim(i) = 1
 
     nprps = i
 
-    op_name_to_aoproper(i) = op_name
+!   dcbprl.h
 
-    i = nprplbl + 1
-
-    prplbl(i)  = op_name
-    pdoint(i)  = blocks
-    iprlrep(i) = pg_sym - 1
-    iprltyp(i) = tr_sym
-
+    i = nprplbl
+    do icomp = 1, nr_components
+      i = i + 1
+      prplbl(i)  = label(icomp)
+      pdoint(i)  = blocks
+      iprlrep(i) = pg_sym - 1
+      iprltyp(i) = tr_sym
+    end do
     nprplbl = i
 
   end subroutine
 
-  subroutine add_op(op_name,       &
-                    typ,           &
-                    nr_components, &
-                    prefactors,    &
-                    labels)
-
-!   ----------------------------------------------------------------------------
-    character(7), intent(in)  :: op_name
-    integer,      intent(in)  :: typ
-    integer,      intent(in)  :: nr_components
-    real(8),      intent(in)  :: prefactors(nr_components)
-    character(8), intent(in)  :: labels(nr_components)
-!   ----------------------------------------------------------------------------
-    integer                   :: i
-    integer                   :: pg_sym
-    integer                   :: tr_sym
-    real(8),      allocatable :: work(:)
-    integer                   :: lwork
-!   ----------------------------------------------------------------------------
-
-    lwork = 200000
-    call alloc(work, lwork)
-
-    call xprind(op_name//'         ', &                                
-                typ,                  &              
-                nr_components,        &                           
-                prefactors,           &                                
-                labels,               &                                
-                i,                    &            
-                pg_sym,               &                 
-                tr_sym,               &                     
-                work,                 &               
-                lwork,                &                
-                0)
-
-    call dealloc(work)
-
-    op_name_to_aoproper(i) = op_name
-
-  end subroutine
-
   subroutine ask_for_integrals()
-      integer :: i
-      real(8) :: v(3)
 
-      do i = 1, max_nr_op
-        op_name_to_aoproper(i) = ''
-      end do
+!   ----------------------------------------------------------------------------
+    character(1) :: ss
+    character(4) :: blocks
+    character(8) :: s
+    real(8)      :: f
+    integer      :: i, nr_atoms
+    integer      :: nr_ls_components
+!   ----------------------------------------------------------------------------
 
-      call add_op('XDIPLEN', 1, 1, (/1.0d0/), (/'XDIPLEN '/))
-      call add_op('YDIPLEN', 1, 1, (/1.0d0/), (/'YDIPLEN '/))
-      call add_op('ZDIPLEN', 1, 1, (/1.0d0/), (/'ZDIPLEN '/))
+    call get_natoms(nr_atoms)
 
-!     call request_1el_integrals('BETAMAT', '000+')
-      call request_1el_integrals('GEO1KIN', '+00+')
+    nr_ls_components = mc
+    if (nr_ls_components == 2) then
+      ss = '+'
+    else
+      ss = '0'
+    end if
 
-      v = (/1.0d0, 0.0d0, 0.0d0/)
+!   add to dcbcls
 
-      call add_op_by_hand('GEO1KIN001      ',1,1,1,v, &
-                          (/ 9, 0, 0/), '+00+')
-      call add_op_by_hand('GEO1KIN002      ',1,1,1,v,  &
-                          (/10, 0, 0/), '+00+')
-      call add_op_by_hand('GEO1KIN003      ',1,1,1,v,  &
-                          (/11, 0, 0/), '+00+')
-      call add_op_by_hand('GEO1KIN004      ',1,1,1,v,  &
-                          (/12, 0, 0/), '+00+')
-      call add_op_by_hand('GEO1KIN005      ',1,1,1,v,  &
-                          (/13, 0, 0/), '+00+')
-      call add_op_by_hand('GEO1KIN006      ',1,1,1,v,  &
-                          (/14, 0, 0/), '+00+')
-      call add_op_by_hand('GEO1KIN007      ',1,1,1,v,  &
-                          (/15, 0, 0/), '+00+')
-      call add_op_by_hand('GEO1KIN008      ',1,1,1,v,  &
-                          (/16, 0, 0/), '+00+')
-      call add_op_by_hand('GEO1KIN009      ',1,1,1,v,  &
-                          (/17, 0, 0/), '+00+')
-      call add_op_by_hand('GEO1KIN010      ',1,1,1,v,  &
-                          (/18, 0, 0/), '+00+')
-      call add_op_by_hand('GEO1KIN011      ',1,1,1,v,  &
-                          (/19, 0, 0/), '+00+')
-      call add_op_by_hand('GEO1KIN012      ',1,1,1,v,  &
-                          (/20, 0, 0/), '+00+')
+    call request_1el_integrals('DIPLEN ', '+00'//ss)
+    call request_1el_integrals('G1O    ', '+00'//ss)
+    call request_1el_integrals('G1N    ', '+00'//ss)
+    call request_1el_integrals('G1B    ', '000+')
+    call request_1el_integrals('G1KX   ', '0++0')
+    call request_1el_integrals('G1KY   ', '0++0')
+    call request_1el_integrals('G1KZ   ', '0++0')
 
-      call print_prp_common_blocks()
+!   add to dcbxpr and dcbprl
+
+!                                   type
+!                                   ¦  trsym
+!                name               ¦  ¦   pgsym                prefactors----          blocks
+!                ¦                  ¦  ¦   ¦                    ¦      ¦      \         |
+    call add_op('XDIPLEN         ', (/'XDIPLEN '/), 1,1, 1, (isymax(1, 1) + 1), (/1.0d0, 0.0d0, 0.0d0/), '+00'//ss)
+    call add_op('YDIPLEN         ', (/'YDIPLEN '/), 1,1, 1, (isymax(2, 1) + 1), (/1.0d0, 0.0d0, 0.0d0/), '+00'//ss)
+    call add_op('ZDIPLEN         ', (/'ZDIPLEN '/), 1,1, 1, (isymax(3, 1) + 1), (/1.0d0, 0.0d0, 0.0d0/), '+00'//ss)
+
+    f = 1.0d0
+    blocks = '+00'//ss
+    do i = 1, nr_atoms*3
+      s = 'G1O'//prefix_zeros(i, 3)//'  '
+      call add_op(s//'        ', (/s/), 1, 1, 1, 1, (/f, 0.0d0, 0.0d0/), blocks)
+    end do
+
+    f = 1.0d0
+    blocks = '+00'//ss
+    do i = 1, nr_atoms*3
+      s = 'G1N'//prefix_zeros(i, 3)//'  '
+      call add_op(s//'        ', (/s/), 1, 1, 1, 1, (/f, 0.0d0, 0.0d0/), blocks)
+    end do
+
+!   fixme: adapt for mc == 1
+    f = 2.0d0*(cval**2.0d0)
+    blocks = '000+'
+    do i = 1, nr_atoms*3
+      s = 'G1B'//prefix_zeros(i, 3)//'  '
+      call add_op(s//'        ', (/s/), 1, 1, 1, 1, (/f, 0.0d0, 0.0d0/), blocks)
+    end do
+
+    f = cval
+    blocks = '0++0'
+    do i = 1, nr_atoms*3
+      s = 'G1KX'//prefix_zeros(i, 3)//' '
+      call add_op(s//'        ', (/s/), 1, 1,-1, 1, (/f, 0.0d0, 0.0d0/), blocks)
+    end do
+    do i = 1, nr_atoms*3
+      s = 'G1KY'//prefix_zeros(i, 3)//' '
+      call add_op(s//'        ', (/s/), 1, 1,-1, 1, (/f, 0.0d0, 0.0d0/), blocks)
+    end do
+    do i = 1, nr_atoms*3
+      s = 'G1KZ'//prefix_zeros(i, 3)//' '
+      call add_op(s//'        ', (/s/), 1, 1,-1, 1, (/f, 0.0d0, 0.0d0/), blocks)
+    end do
+
+    call print_prp_common_blocks()
+
   end subroutine
 
 end module

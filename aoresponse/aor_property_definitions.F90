@@ -4,27 +4,30 @@ module aor_property_definitions
     use matrix_genop
     use aoresponse_visual_m
     use dirac_interface
-    use prop_integ
+    use prop_integrals
     use rsp_equations
+    use aor_cfg
 
     implicit none
 
     character(1)  :: fc(3) = (/'x', 'y', 'z'/)
-    real(kind_dp) :: tiny = 1.0d-10
+    real(8) :: tiny = 1.0d-10
 
 contains
 
-      subroutine MolGradi(S,D,F,nc)
-          type(matrix):: S,D,F,W,Sg(1)
-          real(8):: Eg(nc); integer:: nc,i
-          Eg=0; call prop_energy((/'GEO'/),(/D/),Eg)
-          W = D*F*D
-          do i=1,nc
-              call prop_overlap((/'GEO'/),S,Sg,c=(/i/))
-              Eg(i) = Eg(i) - dot(W,Sg(1)); Sg(1)=0
-          end do; W=0
-!         print '("Eg"/<nc/3>(3(f22.15)/))',Eg
-      end subroutine
+  subroutine MolGradi(S,D,F,nc)
+      type(matrix):: S,D,F,W,Sg(1)
+      complex(8):: Eg(nc); integer:: nc,i
+      Eg=0; call prop_energy((/'GEO'/),(/D/),Eg)
+      W = D*F*D
+      do i=1,nc
+          call prop_overlap((/'GEO'/),S,Sg,c=(/i/))
+          Eg(i) = Eg(i) - dot(W,Sg(1)); Sg(1)=0
+      end do; W=0
+      write(*, *) 'start molecular gradient'
+      write(*, '(6f23.16)') Eg
+      write(*, *) 'end molecular gradient'
+  end subroutine
 
   subroutine test_grcont(n, nr_atoms, test_london, test_geo)
 
@@ -141,7 +144,7 @@ contains
     type(matrix), intent(inout) :: D, F
 !   ----------------------------------------------------------------------------
     type(matrix)                :: G(1)
-    real(kind_dp)               :: xc_energy
+    real(8)               :: xc_energy
     character(4)                :: nop(0)
 
     D = 1.0d0*D
@@ -223,7 +226,7 @@ contains
 
     type(matrix), intent(inout) :: S, D, F
 !   ----------------------------------------------------------------------------
-    real(kind_dp)               :: e_i(3)
+    complex(8)               :: e_i(3)
     integer                     :: i, j
 
     S = 1.0d0*S
@@ -234,7 +237,7 @@ contains
     call prop_energy((/'EL'/), (/D/), e_i)
 
     do i = 1, 3
-      print '("@ -< "a1" > = " f26.10)', fc(i), -e_i(i)
+      print '("@ -< "a1" > = " f26.10)', fc(i), -real(e_i(i))
     end do
 
   end subroutine
@@ -243,10 +246,10 @@ contains
 
 !   ----------------------------------------------------------------------------
     type(matrix), intent(inout) :: S, D, F
-    real(8),      intent(in)    :: w(2)
+    complex(8),      intent(in)    :: w(2)
 !   ----------------------------------------------------------------------------
     type(matrix)                :: D_i(3), F_i(3)
-    real(8)                     :: e_ij(3, 3), avg
+    complex(8)                     :: e_ij(3, 3), avg
     integer                     :: i, j
 !   ----------------------------------------------------------------------------
 
@@ -270,7 +273,7 @@ contains
       call aoresponse_visual_driver((/D, D_i/))
     end if
 
-    print '("@ alpha (w = "2f7.3")")', w(1), w(2)
+    print '("@ alpha (w = "2f7.3")")', real(w(1)), real(w(2))
 
     do i = 1, 3
 
@@ -279,132 +282,31 @@ contains
 
       do j = 1, 3
         if (abs(e_ij(i, j)) > tiny) then
-          print '("@" a10 a2 f26.10)', fc(i), fc(j), -e_ij(i, j)
+          print '("@" a10 a2 f26.10)', fc(i), fc(j), -real(e_ij(i, j))
         end if
       end do
     end do
 
     avg = 0.0d0
     do i = 1, 3
-      avg = avg - e_ij(i, i)/3.0d0
+      avg = avg - real(e_ij(i, i))/3.0d0
     end do
 
-    print '("@ averaged alpha (w = "2f7.3"):" f26.10)', w(1), &
-                                                        w(2), &
+    print '("@ averaged alpha (w = "2f7.3"):" f26.10)', real(w(1)), &
+                                                        real(w(2)), &
                                                         avg
 
   end subroutine
 
-  subroutine beta_debug_xc(S, D, F, w)
-
-    type(matrix), intent(inout) :: S, D, F
-    real(kind_dp)               :: w(3)
-!   ----------------------------------------------------------------------------
-    type(matrix)                :: D_i(3), D_j(3), D_ij(3, 3), D_k(3), F_k(3)
-    type(matrix)                :: F_i(3), F_j(3), F_ij(3, 3)
-    type(matrix)                :: X_i(3), X_j(3), X_ij(3, 3), A, L_k(3), Y_k(3)
-    real(kind_dp)               :: e_ijk(3, 3, 3)
-    integer                     :: i, j, k
-
-    if (abs(sum(w)) > tiny) call quit('beta: frequencies do not sum up to zero')
-
-    S = 1.0d0*S
-    D = 1.0d0*D
-    F = 1.0d0*F
-
-    call pert_dens((/'EL'/), S, (/D/), (/F/), D_i, F_i, w=w(1:1))
-    call pert_dens((/'EL'/), S, (/D/), (/F/), D_j, F_j, w=w(2:2))
-    call pert_dens((/'EL'/), S, (/D/), (/F/), D_k, F_k, w=w(2:2))
-
-    e_ijk = 0.0d0
-
-    
-
-    do k = 1, 3
-      X_i(k) = 1.0d-100*F
-      X_j(k) = 1.0d-100*F
-    end do
-!   call xc_contribution(e_ijk, 3, D, (/D_i, D_j/), (/X_i, X_j/), (/F_ij/))
-!   Lagrange contribution -Y_k (FDS - SDF) e_j
-!   do k = 1, 3
-!     Y_k(k) = D_k(k)*S*D - D*S*D_k(k)
-!   end do
-
-!   do i = 1, 3
-!     do j = 1, 3
-
-!       A = (X_j(j)*D_i(i) + X_i(i)*D_j(j))*S - S*(D_i(i)*X_j(j) + D_j(j)*X_i(i))
-
-!       do k = 1, 3
-!         e_ijk(i, j, k) = e_ijk(i, j, k) - 0.5d0*tr(Y_k(k), A)
-!       end do
-
-!       A = 0
-
-!     end do
-!   end do
-!   Lagrange contribution -L_k (DSD - D) e_j
-    do k = 1, 3
-      Y_k(k) = X_i(k)*D*S + S*D*X_i(k) - X_i(k)
-    end do
-
-    do i = 1, 3
-      do j = 1, 3
-
-        A = D_i(i)*S*D_j(j) + D_j(j)*S*D_i(i)
-
-        do k = 1, 3
-          e_ijk(i, j, k) = e_ijk(i, j, k) - tr(Y_k(k), A)
-        end do
-
-        A = 0
-
-      end do
-    end do
-
-    do k = 1, 3
-      F_i(k) = F_i(k) + X_i(k)
-      F_j(k) = F_j(k) + X_j(k)
-    end do
-
-
-
-    call pert_dens((/'EL', 'EL'/), S, (/D, D_i, D_j/), (/F, F_i, F_j/), D_ij, F_ij, w=w(1:2))
-
-    call prop_energy((/'EL'/), (/D, D_i, D_j, D_ij/), e_ijk, b=(/3, 3/))
-
-    print '("@ beta (w = "3f7.3")")', w(1), w(2), w(3)
-
-    do i = 1, 3
-
-      D_i(i) = 0
-      D_j(i) = 0
-      F_i(i) = 0
-      F_j(i) = 0
-
-      do j = 1, 3
-
-        D_ij(i, j) = 0
-        F_ij(i, j) = 0
-
-        do k = 1, 3
-          if (abs(e_ijk(i, j, k)) > tiny) then
-            print '("@" a10 a2 a2 f26.10)', fc(i), fc(j), fc(k), -e_ijk(i, j, k)
-          end if
-        end do
-      end do
-    end do
-
-  end subroutine
 
   subroutine beta(S, D, F, w)
 
     type(matrix), intent(inout) :: S, D, F
-    real(kind_dp)               :: w(3)
+    complex(8)               :: w(3)
 !   ----------------------------------------------------------------------------
     type(matrix)                :: D_i(3), D_j(3), D_ij(3, 3)
     type(matrix)                :: F_i(3), F_j(3), F_ij(3, 3)
-    real(kind_dp)               :: e_ijk(3, 3, 3)
+    complex(8)               :: e_ijk(3, 3, 3)
     integer                     :: i, j, k
 
     if (abs(sum(w)) > tiny) call quit('beta: frequencies do not sum up to zero')
@@ -425,7 +327,7 @@ contains
     e_ijk = 0.0d0
     call prop_energy((/'EL'/), (/D, D_i, D_j, D_ij/), e_ijk, b=(/3, 3/))
 
-    print '("@ beta (w = "3f7.3")")', w(1), w(2), w(3)
+    print '("@ beta (w = "3f7.3")")', real(w(1)), real(w(2)), real(w(3))
 
     do i = 1, 3
 
@@ -441,7 +343,7 @@ contains
 
         do k = 1, 3
           if (abs(e_ijk(i, j, k)) > tiny) then
-            print '("@" a10 a2 a2 f26.10)', fc(i), fc(j), fc(k), -e_ijk(i, j, k)
+            print '("@" a10 a2 a2 f26.10)', fc(i), fc(j), fc(k), -real(e_ijk(i, j, k))
           end if
         end do
       end do
@@ -452,12 +354,12 @@ contains
   subroutine beta_2np1(S, D, F, w)
 
     type(matrix), intent(inout) :: S, D, F
-    real(kind_dp)               :: w(3)
+    complex(8)               :: w(3)
 !   ----------------------------------------------------------------------------
     type(matrix)                :: A, Y_k(3)
     type(matrix)                :: D_i(3), D_j(3), D_k(3)
     type(matrix)                :: F_i(3), F_j(3), F_k(3)
-    real(kind_dp)               :: e_ijk(3, 3, 3)
+    real(8)               :: e_ijk(3, 3, 3)
     integer                     :: i, j, k
     character(4)                :: nop(0)
 
@@ -544,7 +446,7 @@ contains
       end do
     end do
 
-    print '("@ beta (w = "3f7.3")")', w(1), w(2), w(3)
+    print '("@ beta (w = "3f7.3")")', real(w(1)), real(w(2)), real(w(3))
 
     A = 0
 
@@ -563,7 +465,7 @@ contains
       do j = 1, 3
         do k = 1, 3
           if (abs(e_ijk(i, j, k)) > tiny) then
-            print '("@" a10 a2 a2 f26.10)', fc(i), fc(j), fc(k), -e_ijk(i, j, k)
+            print '("@" a10 a2 a2 f26.10)', fc(i), fc(j), fc(k), -real(e_ijk(i, j, k))
           end if
         end do
       end do
@@ -573,15 +475,15 @@ contains
 
   subroutine beta_element(scale_by, add_to, ui, uj, uk, S, D, F, w)
 
-    real(kind_dp), intent(in)    :: scale_by
-    real(kind_dp), intent(inout) :: add_to
+    real(8), intent(in)    :: scale_by
+    real(8), intent(inout) :: add_to
     integer,       intent(in)    :: ui, uj, uk
     type(matrix),  intent(inout) :: S, D, F
-    real(kind_dp), intent(in)    :: w(3)
+    complex(8), intent(in)    :: w(3)
 !   ----------------------------------------------------------------------------
     type(matrix)                 :: D_i(3), D_j(3), D_ij(3, 3)
     type(matrix)                 :: F_i(3), F_j(3), F_ij(3, 3)
-    real(kind_dp)                :: e_ijk(3, 3, 3)
+    complex(8)                :: e_ijk(3, 3, 3)
     integer                      :: i, j, k
 
     if (abs(sum(w)) > tiny) call quit('beta: frequencies do not sum up to zero')
@@ -656,14 +558,14 @@ contains
         do k = 1, 3
 
           if (abs(e_ijk(i, j, k)) > tiny) then
-            print '("@ beta (w = "3f8.4")" a10 a2 a2 f26.10)', w(1),  &
-                                                               w(2),  &
-                                                               w(3),  &
+            print '("@ beta (w = "3f8.4")" a10 a2 a2 f26.10)', real(w(1)),  &
+                                                               real(w(2)),  &
+                                                               real(w(3)),  &
                                                                fc(i), &
                                                                fc(j), &
                                                                fc(k), &
-                                                              -e_ijk(i, j, k)
-            add_to = add_to - scale_by*e_ijk(i, j, k)
+                                                              -real(e_ijk(i, j, k))
+            add_to = add_to - scale_by*real(e_ijk(i, j, k))
           end if
         end do
       end do
@@ -673,15 +575,15 @@ contains
 
   subroutine gamma_element(scale_by, add_to, ui, uj, uk, ul, S, D, F, w)
 
-    real(kind_dp), intent(in)    :: scale_by
-    real(kind_dp), intent(inout) :: add_to
+    real(8), intent(in)    :: scale_by
+    real(8), intent(inout) :: add_to
     integer,       intent(in)    :: ui, uj, uk, ul
     type(matrix),  intent(inout) :: S, D, F
-    real(kind_dp), intent(in)    :: w(4)
+    complex(8), intent(in)    :: w(4)
 !   ----------------------------------------------------------------------------
     type(matrix)                 :: D_i(3), D_j(3), D_k(3), D_ij(3, 3), D_ik(3, 3), D_jk(3, 3), D_ijk(3, 3, 3)
     type(matrix)                 :: F_i(3), F_j(3), F_k(3), F_ij(3, 3), F_ik(3, 3), F_jk(3, 3), F_ijk(3, 3, 3)
-    real(kind_dp)                :: e_ijkl(3, 3, 3, 3)
+    complex(8)                :: e_ijkl(3, 3, 3, 3)
     integer                      :: i, j, k, l
 
     if (abs(sum(w)) > tiny) call quit('gamma: frequencies do not sum up to zero')
@@ -826,16 +728,16 @@ contains
 
           do l = 1, 3
             if (abs(e_ijkl(i, j, k, l)) > tiny) then
-              print '("@ gamma (w = "4f9.4")" a10 a2 a2 a2 f26.10)', w(1),  &
-                                                                     w(2),  &
-                                                                     w(3),  &
-                                                                     w(4),  &
+              print '("@ gamma (w = "4f9.4")" a10 a2 a2 a2 f26.10)', real(w(1)),  &
+                                                                     real(w(2)),  &
+                                                                     real(w(3)),  &
+                                                                     real(w(4)),  &
                                                                      fc(i), &
                                                                      fc(j), &
                                                                      fc(k), &
                                                                      fc(l), &
-                                                                    -e_ijkl(i, j, k, l)
-              add_to = add_to - scale_by*e_ijkl(i, j, k, l)
+                                                                    -real(e_ijkl(i, j, k, l))
+              add_to = add_to - scale_by*real(e_ijkl(i, j, k, l))
             end if
           end do
         end do
@@ -847,11 +749,11 @@ contains
   subroutine gamma(S, D, F, w)
 
     type(matrix),  intent(inout) :: S, D, F
-    real(kind_dp), intent(in)    :: w(4)
+    complex(8), intent(in)    :: w(4)
 !   ----------------------------------------------------------------------------
     type(matrix)                 :: D_i(3), D_j(3), D_k(3), D_ij(3, 3), D_ik(3, 3), D_jk(3, 3), D_ijk(3, 3, 3)
     type(matrix)                 :: F_i(3), F_j(3), F_k(3), F_ij(3, 3), F_ik(3, 3), F_jk(3, 3), F_ijk(3, 3, 3)
-    real(kind_dp)                :: e_ijkl(3, 3, 3, 3)
+    complex(8)                   :: e_ijkl(3, 3, 3, 3)
     integer                      :: i, j, k, l
 
     if (abs(sum(w)) > tiny) call quit('gamma: frequencies do not sum up to zero')
@@ -875,7 +777,7 @@ contains
     e_ijkl = 0.0d0
     call prop_energy((/'EL'/), (/D, D_i, D_j, D_k, D_ij, D_ik, D_jk, D_ijk/), e_ijkl, b=(/3, 3, 3/))
 
-    print '("@ gamma (w = "4f9.4")")', w(1), w(2), w(3), w(4)
+    print '("@ gamma (w = "4f9.4")")', real(w(1)), real(w(2)), real(w(3)), real(w(4))
 
     do i = 1, 3
 
@@ -902,7 +804,7 @@ contains
 
           do l = 1, 3
             if (abs(e_ijkl(i, j, k, l)) > tiny) then
-              print '("@" a10 a2 a2 a2 f26.10)', fc(i), fc(j), fc(k), fc(l), -e_ijkl(i, j, k, l)
+              print '("@" a10 a2 a2 a2 f26.10)', fc(i), fc(j), fc(k), fc(l), -real(e_ijkl(i, j, k, l))
             end if
           end do
         end do
@@ -910,74 +812,5 @@ contains
     end do
 
   end subroutine
-
-
-
-
-
-
-
-subroutine beta_debug(S,D,F,w)
-    type(Matrix):: S,D,Df(3),De(3),Dfe(3*3), T, M
-    type(Matrix)::   F,Ff(3),Fe(3),Ffe(3*3), G(1), H(1)
-    real*8:: w(3),Efff(3*3*3); integer:: i,j, ij
-    character*(4) :: NOP(0)
-    S=S; D=D; F=F !track them
-    if (abs(sum(w))>1d-15) call QUIT('PropTest/HyPolari: sum(w) should be zero!')
-    call pert_dens((/'EL'/),S,(/D/),(/F/),Df,Ff,w=w(1:1))
-    do i = 1, 3
-
-       H(1) = 1.0d-50*D
-       call prop_fock((/'EL'/),(/D/),H,c=(/i/))
-       G(1) = 1.0d-50*D
-       call prop_fock(NOP,(/D,Df(i)/),G)
-
-       T = H(1) + G(1) - Ff(i)
-!      write(*, *) 'debug_norm 1:', T**T
-
-       T = Df(i)*S*D + D*S*Df(i) - Df(i)
-!      write(*, *) 'debug_norm 2:', T**T
-
-!      M = H(1)*D*S - S*D*H(1)
-!      write(*, *) 'debug matrix 1:'
-!      call print_mat(M)
-
-!      M = G(1)*D*S - S*D*G(1)
-!      write(*, *) 'debug matrix 2:'
-!      call print_mat(M)
-
-!      M = Ff(i)*D*S - S*D*Ff(i)
-!      write(*, *) 'debug matrix 3:'
-!      call print_mat(M)
-
-!      M = F*Df(i)*S - S*Df(i)*F
-!      write(*, *) 'debug matrix 4:'
-!      call print_mat(M)
-
-       T = Ff(i)*D*S - S*D*Ff(i) + F*Df(i)*S - S*Df(i)*F
-!      write(*, *) 'debug matrix 5:'
-!      call print_mat(T)
-!      write(*, *) 'debug_norm 4:', T**T
-
-    end do
-!   call quit('over and out')
-!   call pert_dens((/'EL'/),S,(/D/),(/F/),Df,Ff,w=w(1:1))
-    call pert_dens((/'EL'/),S,(/D/),(/F/),De,Fe,w=w(2:2))
-    call pert_dens((/'EL','EL'/),S,(/D,Df,De/),(/F,Ff,Fe/),Dfe,Ffe,w=w(1:2))
-    do i = 1, 3
-       do j = 1, 3
-          ij = i + 3*(j-1)
-          T = Dfe(ij)*S*D + De(j)*S*Df(i) + Df(i)*S*De(j) + D*S*Dfe(ij) - Dfe(ij)
-!      write(*, *) 'debug_norm 5:', T**T
-      end do
-    end do
-
-    Efff=0; call prop_energy((/'EL'/),(/D,Df,De,Dfe/),Efff,b=(/3,3/))
-    print '("First hyperpolarizability -Efff w="3f6.3/9(3f26.13/))',w,-Efff
-    do i=1,3; Df(i)=0; De(i)=0; Ff(i)=0; Fe(i)=0; enddo
-    do i=1,3*3; Dfe(i)=0; Ffe(i)=0; enddo
-    print*
-end subroutine
-
 
 end module

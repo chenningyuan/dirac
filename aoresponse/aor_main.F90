@@ -14,16 +14,21 @@ module aor_main
 
 contains
 
-  subroutine aoresponse_driver()
+  subroutine aoresponse_driver(work, lwork)
 
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 
     type(matrix)  :: S, C_i, D, F
-    real(kind_dp) :: freq(4)
+    complex(8) :: freq(4)
     real(kind_dp) :: add_to
     integer       :: natoms_ifc
+    integer, intent(in)    :: lwork
+    real(8), intent(inout) :: work(lwork)
+
+!  initialize fortran 77 work memory interface
+   call di_set_f77_work(work, lwork)
 
 #ifdef MOD_AUTODIFF
     call init_binomial()
@@ -52,9 +57,9 @@ contains
 
     if (aor_cfg_test_geo) then
 !     call test_grcont(D%nrow, natoms_ifc(), .false., .true.)
-      call debug_1grad(D, F, natoms_ifc())
-      call debug_2grad(D,    natoms_ifc())
-      call MolGradi(S,D,F,3*natoms_ifc())
+!     call debug_1grad(D, F, natoms_ifc())
+!     call debug_2grad(D,    natoms_ifc())
+      call molgradi(S, D, F, 3*natoms_ifc())
     end if
 
     if (aor_cfg_alpha) then
@@ -92,10 +97,10 @@ contains
 
       print '(a30 " (w = "4f9.4"):" f26.10)', &
             '@ averaged gamma dc Kerr',       &
-            freq(1),                          &
-            freq(2),                          &
-            freq(3),                          &
-            freq(4),                          &
+            real(freq(1)),                    &
+            real(freq(2)),                    &
+            real(freq(3)),                    &
+            real(freq(4)),                    &
             add_to
 
     end if
@@ -120,10 +125,10 @@ contains
 
       print '(a30 " (w = "4f9.4"):" f26.10)', &
             '@ averaged gamma dc SHG',        &
-            freq(1),                          &
-            freq(2),                          &
-            freq(3),                          &
-            freq(4),                          &
+            real(freq(1)),                    &
+            real(freq(2)),                    &
+            real(freq(3)),                    &
+            real(freq(4)),                    &
             add_to
 
     end if
@@ -146,10 +151,10 @@ contains
 
       print '(a30 " (w = "4f9.4"):" f26.10)', &
             '@ averaged gamma dc THG',        &
-            freq(1),                          &
-            freq(2),                          &
-            freq(3),                          &
-            freq(4),                          &
+            real(freq(1)),                    &
+            real(freq(2)),                    &
+            real(freq(3)),                    &
+            real(freq(4)),                    &
             add_to
 
     end if
@@ -173,11 +178,11 @@ contains
       add_to = add_to/15.0d0
 
       print '(a30 " (w = "4f9.4"):" f26.10)', &
-            '@ averaged gamma IDRI',          &
-            freq(1),                          &
-            freq(2),                          &
-            freq(3),                          &
-            freq(4),                          &
+            '@ averaged gamma dc IDRI',       &
+            real(freq(1)),                    &
+            real(freq(2)),                    &
+            real(freq(3)),                    &
+            real(freq(4)),                    &
             add_to
 
     end if
@@ -196,9 +201,9 @@ contains
 
       print '(a30 " (w = "3f9.4"):" f26.10)', &
             '@ averaged static beta',         &
-            freq(1),                          &
-            freq(2),                          &
-            freq(3),                          &
+            real(freq(1)),                          &
+            real(freq(2)),                          &
+            real(freq(3)),                          &
             add_to
 
     end if
@@ -216,10 +221,10 @@ contains
 
       print '(a30 " (w = "4f9.4"):" f26.10)', &
             '@ averaged static gamma',        &
-            freq(1),                          &
-            freq(2),                          &
-            freq(3),                          &
-            freq(4),                          &
+            real(freq(1)),                          &
+            real(freq(2)),                          &
+            real(freq(3)),                          &
+            real(freq(4)),                          &
             add_to
 
     end if
