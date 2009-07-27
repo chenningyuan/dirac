@@ -638,7 +638,9 @@ c     write (6,*) ' transf indx from ',i,' to ',num
 !
 ! iparm - print level
 !
-! change characteriostics of the diagram, for example 2143 as iord means changing order of indexes
+!  namet, namef
+!
+! change characteristics of the diagram, for example 2143 as iord means changing order of indexes
 !
 !---------------------------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -672,7 +674,7 @@ c     write (6,*) ' transf indx from ',i,' to ',num
       dimension j(4),msk(4)
       data msk /'ff000000'X,'ff0000'X,'ff00'X,'ff'X/
 
-      character(*) namet ! mi fix - data specification for prtime
+      character(*) namet, namef ! mi fix - data specification for prtime
 
 c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       ipack(i1,i2,i3,i4)=ior(ior(ishft(i1,24),ishft(i2,16)),
@@ -698,9 +700,11 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       lngth1=ije1(nij1)
       lngth2=ije2(nij2)
 
+!    miro: set up temporarily primitive error tran for HSFS_dynamic
       write(LUPRI,*) 'reorder:',igen(istrt21+1),igen(istrt21+1+lngth2)
       write(LUPRI,*) 'itmp ndp4,1+lngth2:',ndp4,1+lngth2
-      write(LUPRI,*) 'itmp:',itmp(1),itmp(1+lngth2)
+      write(LUPRI,*) 'itmp(1):',itmp(1)
+      write(LUPRI,*) 'itmp(1+lngth2):',itmp(1+lngth2)
 
       call vands(lngth2,igen(istrt21+1),msk(i1),itmp)
       call vshfcs(lngth2,itmp,8*i1-8,itmp)

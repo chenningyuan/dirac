@@ -285,8 +285,8 @@ end module dpd_mod
 
 module ctmp_mod
 ! .. to replace ctmp.h
-integer, allocatable  :: itmp(:)
- real*8, allocatable  ::  tmp(:)
+real(kind=8), allocatable  ::    tmp(:)
+     integer, allocatable  ::   itmp(:)
 contains
 subroutine init_ctmp_mod
  use hsfs_parameters
@@ -294,6 +294,7 @@ subroutine init_ctmp_mod
 !#include "param_ccsd.h"
 allocate(tmp(1:ndp4))
 allocate(itmp(1:ndp4))
+write(LUPRI,*) 'ctmp_mod initialized, ndp4=',ndp4
 write(LUPRI,*) 'ctmp_mod initialized, itmp:',itmp(1),itmp(2),itmp(ndp4-1),itmp(ndp4)
 end subroutine init_ctmp_mod
 
