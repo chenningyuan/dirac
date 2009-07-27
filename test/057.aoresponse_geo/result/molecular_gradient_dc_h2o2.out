@@ -1,7 +1,8 @@
-DIRAC launched (pam script) by bast@larry at Fri Jul 24 09:49:20 CEST 2009 
-
-Size of all static allocations  : 67.1744 MB
-DIRAC serial allocating 38400000 words (292 MB) of memory
+DIRAC launched (pam script) by bast@larry at Tue Jul 28 00:06:40 CEST 2009
+in : /home/bast/dirac/latest_gfortran_gcc_a/test/057.aoresponse_geo
+===========================================================================================
+Size of all static allocations (pam script) : 67.1747 MB
+DIRAC serial allocating 196608000 words (1500 MB) of memory
  ******************************************************************************
  *                                                                            *
  *                                O U T P U T                                 *
@@ -135,16 +136,17 @@ DIRAC serial allocating 38400000 words (292 MB) of memory
  Operating system  : Linux 2.6.28-13-generic
  Machine           : i686
  Run               : Sequential
- Last compilation  : 09:45:38 Jul 24 2009 (by bast@)
- FORTRAN compiler  : /usr/bin/gfortran -g -fno-range-check -O3 -ffast-math -funroll-loops -Iinclude -Jmodules -DARCH32BIT -DGFORTRAN=433 -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=157286400 -DVAR_MFDS -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON 
- C compiler        : /usr/bin/gcc -g -O3 -ffast-math -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON -DSYS_LINUX -DINSTALL_WRKMEM=157286400 -DSYS_FLAVOR=LINUX 
+ Last compilation  : 23:55:54 Jul 27 2009 (by bast@larry:/home/bast/dirac/latest_gfortran_gcc_a)
+ FORTRAN compiler  : /usr/bin/gfortran -g -fno-range-check -O3 -ffast-math -funroll-loops -Iinclude -Jmodules -DARCH32BIT -DGFORTRAN=433 -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=196608000 -DVAR_MFDS -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON 
+ C compiler        : /usr/bin/gcc -g -O3 -ffast-math -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON -DSYS_LINUX -DINSTALL_WRKMEM=196608000 -DSYS_FLAVOR=LINUX 
  External libraries: -L/usr/lib -lblas -L/usr/lib -llapack -lcblas -lf77blas -latlas -L/usr/lib -llapack 
+ Internal libraries: DIRAC_BLAS=NO  DIRAC_LAPACK=NO 
  ILP data model    : ILP32 
- SVN URL:          : 'http://dirac.chem.sdu.dk/svnDirac/Dirac/branches/1dham' 
- SVN Changeset     : '9279' 
+ SVN URL:          : 'http://dirac.chem.sdu.dk/svnDirac/Dirac/trunk' 
+ SVN Changeset     : '9335' 
 
  
-     Date and time (Linux)  : Fri Jul 24 09:49:20 2009 
+     Date and time (Linux)  : Tue Jul 28 00:06:41 2009 
      Host name              :                                         
 
 
@@ -981,7 +983,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)               1
- dcbxpr:  facprp(1, i)     37557.730482371204     
+ dcbxpr:  facprp(1, i)     37557.730487546956     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           34
@@ -994,7 +996,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)               1
- dcbxpr:  facprp(1, i)     37557.730482371204     
+ dcbxpr:  facprp(1, i)     37557.730487546956     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           35
@@ -1007,7 +1009,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)               1
- dcbxpr:  facprp(1, i)     37557.730482371204     
+ dcbxpr:  facprp(1, i)     37557.730487546956     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           36
@@ -1020,7 +1022,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)               1
- dcbxpr:  facprp(1, i)     37557.730482371204     
+ dcbxpr:  facprp(1, i)     37557.730487546956     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           37
@@ -1033,7 +1035,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)               1
- dcbxpr:  facprp(1, i)     37557.730482371204     
+ dcbxpr:  facprp(1, i)     37557.730487546956     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           38
@@ -1046,7 +1048,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)               1
- dcbxpr:  facprp(1, i)     37557.730482371204     
+ dcbxpr:  facprp(1, i)     37557.730487546956     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           39
@@ -1059,7 +1061,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)               1
- dcbxpr:  facprp(1, i)     37557.730482371204     
+ dcbxpr:  facprp(1, i)     37557.730487546956     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           40
@@ -1072,7 +1074,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)               1
- dcbxpr:  facprp(1, i)     37557.730482371204     
+ dcbxpr:  facprp(1, i)     37557.730487546956     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           41
@@ -1085,7 +1087,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)               1
- dcbxpr:  facprp(1, i)     37557.730482371204     
+ dcbxpr:  facprp(1, i)     37557.730487546956     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           42
@@ -1098,7 +1100,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)               1
- dcbxpr:  facprp(1, i)     37557.730482371204     
+ dcbxpr:  facprp(1, i)     37557.730487546956     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           43
@@ -1111,7 +1113,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)               1
- dcbxpr:  facprp(1, i)     37557.730482371204     
+ dcbxpr:  facprp(1, i)     37557.730487546956     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           44
@@ -1124,7 +1126,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)               1
- dcbxpr:  facprp(1, i)     37557.730482371204     
+ dcbxpr:  facprp(1, i)     37557.730487546956     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           45
@@ -1137,7 +1139,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           46
@@ -1150,7 +1152,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           47
@@ -1163,7 +1165,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           48
@@ -1176,7 +1178,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           49
@@ -1189,7 +1191,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           50
@@ -1202,7 +1204,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           51
@@ -1215,7 +1217,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           52
@@ -1228,7 +1230,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           53
@@ -1241,7 +1243,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           54
@@ -1254,7 +1256,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           55
@@ -1267,7 +1269,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           56
@@ -1280,7 +1282,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           57
@@ -1293,7 +1295,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           58
@@ -1306,7 +1308,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           59
@@ -1319,7 +1321,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           60
@@ -1332,7 +1334,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           61
@@ -1345,7 +1347,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           62
@@ -1358,7 +1360,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           63
@@ -1371,7 +1373,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           64
@@ -1384,7 +1386,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           65
@@ -1397,7 +1399,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           66
@@ -1410,7 +1412,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           67
@@ -1423,7 +1425,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           68
@@ -1436,7 +1438,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           69
@@ -1449,7 +1451,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           70
@@ -1462,7 +1464,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           71
@@ -1475,7 +1477,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           72
@@ -1488,7 +1490,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           73
@@ -1501,7 +1503,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           74
@@ -1514,7 +1516,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           75
@@ -1527,7 +1529,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           76
@@ -1540,7 +1542,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           77
@@ -1553,7 +1555,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           78
@@ -1566,7 +1568,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           79
@@ -1579,7 +1581,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           80
@@ -1592,7 +1594,7 @@ Point group: C1
  dcbxpr:  iprptyp(i)               1
  dcbxpr:  iprpsym(i)               1
  dcbxpr:  iprptim(i)              -1
- dcbxpr:  facprp(1, i)     137.03599980000001     
+ dcbxpr:  facprp(1, i)     137.03599980944233     
  dcbxpr:  facprp(2, i)     0.0000000000000000     
  dcbxpr:  facprp(3, i)     0.0000000000000000     
  dcbxpr:  iprplbl(1, i)           81
@@ -2171,7 +2173,7 @@ Point group: C1
  dcbcls:  CLSCAL(i)  T
  dcbcls:  CLSINT(i) OVERLAP
  dcbcls:  CLSCMB(i) +00+
- dcbcls:  IORDCL(i)    147369660
+ dcbcls:  IORDCL(i)    147349212
  dcbcls:  ----------
  dcbcls:  ----------
  dcbcls:  i                    2
@@ -2294,7 +2296,7 @@ Point group: C1
    L   A     * Deleted:          0(Proj:          0, Lindep:          0)
    S   A     * Deleted:          6(Proj:          6, Lindep:          0)
 
- >>> Time used in Lwdn_a is   0.11 seconds
+ >>> Time used in Lwdn_a is   0.12 seconds
 
 
 
@@ -2312,7 +2314,7 @@ No. of positive energy orbitals (NESH):    22
 No. of negative energy orbitals (NPSH):    22
 Total no. of orbitals      (NORB):    44
 
- >>> Time used in PAMSET is   0.29 seconds
+ >>> Time used in PAMSET is   0.31 seconds
 
 
 
@@ -2325,257 +2327,257 @@ Total no. of orbitals      (NORB):    44
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Fri Jul 24 09:49:22 2009
+########## START ITERATION NO.   1 ##########   Tue Jul 28 00:06:44 2009
 
-It.   1    -55.36487409487      1.00D+20  0.00D+00  0.00D+00               0.02800101s   Scr. nuclei    Fri Jul 24
+It.   1    -55.36487409487      1.00D+20  0.00D+00  0.00D+00               0.06400406s   Scr. nuclei    Tue Jul 28
 
-########## START ITERATION NO.   2##########   Fri Jul 24 09:49:22 2009
+########## START ITERATION NO.   2##########   Tue Jul 28 00:06:44 2009
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   20.07%    0.00%    0.00%   0.04400301s
-SOfock:SL  1.00D-16    0.00%   23.38%    0.00%    0.00%   0.25601596s
+SOfock:LL  1.00D-16    0.00%   20.07%    0.00%    0.00%   0.02800107s
+SOfock:SL  1.00D-16    0.00%   23.38%    0.00%    0.00%   0.24401593s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.44402802s
+>>> Total CPU-time : 0.46402895s
 
-########## END ITERATION NO.   2 ##########   Fri Jul 24 09:49:22 2009
+########## END ITERATION NO.   2 ##########   Tue Jul 28 00:06:44 2009
 
-It.   2    -149.0660663593      9.37D+01  5.71D+00  2.53D+00               0.44402802s   LL SL          Fri Jul 24
+It.   2    -149.0660663593      9.37D+01  5.71D+00  2.53D+00               0.46402895s   LL SL          Tue Jul 28
 
-########## START ITERATION NO.   3##########   Fri Jul 24 09:49:22 2009
+########## START ITERATION NO.   3##########   Tue Jul 28 00:06:44 2009
 
     3 *** Differential density matrix. DCOVLP     = 0.9528
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   20.07%    0.00%    0.00%   0.08800602s
-SOfock:SL  1.00D-16    0.00%   23.34%    0.00%    0.00%   0.24001503s
+SOfock:LL  1.00D-16    0.00%   20.07%    0.00%    0.00%   0.09600592s
+SOfock:SL  1.00D-16    0.00%   23.34%    0.00%    0.00%   0.26401615s
 >>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.40002501s
+>>> Total CPU-time : 0.39602494s
 
-########## END ITERATION NO.   3 ##########   Fri Jul 24 09:49:22 2009
+########## END ITERATION NO.   3 ##########   Tue Jul 28 00:06:44 2009
 
-It.   3    -149.8732886894      8.07D-01 -1.55D+00  1.01D+00   DIIS   2    0.40002501s   LL SL          Fri Jul 24
+It.   3    -149.8732886894      8.07D-01 -1.55D+00  1.01D+00   DIIS   2    0.39602494s   LL SL          Tue Jul 28
 
-########## START ITERATION NO.   4##########   Fri Jul 24 09:49:23 2009
+########## START ITERATION NO.   4##########   Tue Jul 28 00:06:45 2009
 
     4 *** Differential density matrix. DCOVLP     = 0.9649
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   20.07%    0.00%    0.00%   0.09600604s
-SOfock:SL  1.00D-16    0.00%   23.54%    0.00%    0.00%   0.26001596s
+SOfock:LL  1.00D-16    0.00%   20.07%    0.00%    0.00%   0.07600498s
+SOfock:SL  1.00D-16    0.00%   23.54%    0.00%    0.00%   0.26801682s
 >>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.43602693s
+>>> Total CPU-time : 0.41202497s
 
-########## END ITERATION NO.   4 ##########   Fri Jul 24 09:49:23 2009
+########## END ITERATION NO.   4 ##########   Tue Jul 28 00:06:45 2009
 
-It.   4    -150.0297601269      1.56D-01  4.48D-01  2.79D-02   DIIS   3    0.43602693s   LL SL          Fri Jul 24
+It.   4    -150.0297601269      1.56D-01  4.48D-01  2.79D-02   DIIS   3    0.41202497s   LL SL          Tue Jul 28
 
-########## START ITERATION NO.   5##########   Fri Jul 24 09:49:24 2009
+########## START ITERATION NO.   5##########   Tue Jul 28 00:06:46 2009
 
     5 *** Differential density matrix. DCOVLP     = 0.9986
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   20.09%    0.00%    0.00%   0.09600604s
-SOfock:SL  1.00D-16    0.00%   24.26%    0.00%    0.00%   0.25201607s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.39202487s
+SOfock:LL  1.00D-16    0.00%   20.09%    0.00%    0.00%   0.07600498s
+SOfock:SL  1.00D-16    0.00%   24.26%    0.00%    0.00%   0.24401498s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.39602518s
 
-########## END ITERATION NO.   5 ##########   Fri Jul 24 09:49:24 2009
+########## END ITERATION NO.   5 ##########   Tue Jul 28 00:06:46 2009
 
-It.   5    -150.0299828603      2.23D-04 -2.68D-03  4.09D-03   DIIS   4    0.39202487s   LL SL          Fri Jul 24
+It.   5    -150.0299828603      2.23D-04 -2.68D-03  4.09D-03   DIIS   4    0.39602518s   LL SL          Tue Jul 28
 
-########## START ITERATION NO.   6##########   Fri Jul 24 09:49:24 2009
+########## START ITERATION NO.   6##########   Tue Jul 28 00:06:47 2009
 
     6 *** Differential density matrix. DCOVLP     = 0.9998
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-16    0.00%   20.13%    0.00%    0.00%   0.09600616s
-SOfock:SL  1.00D-16    0.00%   24.72%    0.00%    0.00%   0.24801588s
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.38402414s
+SOfock:SL  1.00D-16    0.00%   24.72%    0.00%    0.00%   0.24801493s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.43202686s
 
-########## END ITERATION NO.   6 ##########   Fri Jul 24 09:49:24 2009
+########## END ITERATION NO.   6 ##########   Tue Jul 28 00:06:47 2009
 
-It.   6    -150.0299926028      9.74D-06  5.50D-04  1.32D-03   DIIS   5    0.38402414s   LL SL          Fri Jul 24
+It.   6    -150.0299926028      9.74D-06  5.50D-04  1.32D-03   DIIS   5    0.43202686s   LL SL          Tue Jul 28
 
-########## START ITERATION NO.   7##########   Fri Jul 24 09:49:25 2009
+########## START ITERATION NO.   7##########   Tue Jul 28 00:06:47 2009
 
     7 *** Differential density matrix. DCOVLP     = 0.9999
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   20.16%    0.00%    0.00%   0.07200503s
-SOfock:SL  1.00D-16    0.00%   25.03%    0.00%    0.00%   0.24401498s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.36802220s
+SOfock:LL  1.00D-16    0.00%   20.16%    0.00%    0.00%   0.07600522s
+SOfock:SL  1.00D-16    0.00%   25.03%    0.00%    0.00%   0.24001503s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.39202499s
 
-########## END ITERATION NO.   7 ##########   Fri Jul 24 09:49:25 2009
+########## END ITERATION NO.   7 ##########   Tue Jul 28 00:06:47 2009
 
-It.   7    -150.0299940123      1.41D-06  3.18D-04  3.60D-04   DIIS   6    0.36802220s   LL SL          Fri Jul 24
+It.   7    -150.0299940123      1.41D-06  3.18D-04  3.60D-04   DIIS   6    0.39202499s   LL SL          Tue Jul 28
 
-########## START ITERATION NO.   8##########   Fri Jul 24 09:49:25 2009
+########## START ITERATION NO.   8##########   Tue Jul 28 00:06:48 2009
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   20.20%    0.00%    0.00%   0.09600592s
-SOfock:SL  1.00D-16    0.00%   25.55%    0.00%    0.00%   0.26401711s
+SOfock:LL  1.00D-16    0.00%   20.20%    0.00%    0.00%   0.09200573s
+SOfock:SL  1.00D-16    0.00%   25.55%    0.00%    0.00%   0.24401522s
 >>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.43202686s
+>>> Total CPU-time : 0.41602612s
 
-########## END ITERATION NO.   8 ##########   Fri Jul 24 09:49:25 2009
+########## END ITERATION NO.   8 ##########   Tue Jul 28 00:06:48 2009
 
-It.   8    -150.0299941404      1.28D-07  1.17D-04  8.11D-05   DIIS   7    0.43202686s   LL SL          Fri Jul 24
+It.   8    -150.0299941404      1.28D-07  1.17D-04  8.11D-05   DIIS   7    0.41602612s   LL SL          Tue Jul 28
 
-########## START ITERATION NO.   9##########   Fri Jul 24 09:49:26 2009
+########## START ITERATION NO.   9##########   Tue Jul 28 00:06:49 2009
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   20.34%    0.00%    0.00%   0.09200597s
-SOfock:SL  1.00D-16    0.00%   26.36%    0.00%    0.00%   0.26401591s
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.41202593s
+SOfock:LL  1.00D-16    0.00%   20.34%    0.00%    0.00%   0.08000469s
+SOfock:SL  1.00D-16    0.00%   26.36%    0.00%    0.00%   0.24001503s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.39602470s
 
-########## END ITERATION NO.   9 ##########   Fri Jul 24 09:49:26 2009
+########## END ITERATION NO.   9 ##########   Tue Jul 28 00:06:49 2009
 
-It.   9    -150.0299941462      5.82D-09  2.28D-05  1.89D-05   DIIS   8    0.41202593s   LL SL          Fri Jul 24
+It.   9    -150.0299941462      5.82D-09  2.28D-05  1.89D-05   DIIS   8    0.39602470s   LL SL          Tue Jul 28
 
-########## START ITERATION NO.  10##########   Fri Jul 24 09:49:27 2009
+########## START ITERATION NO.  10##########   Tue Jul 28 00:06:49 2009
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   20.74%    0.00%    0.00%   0.08400512s
-SOfock:SL  1.00D-16    0.00%   27.93%    0.00%    0.00%   0.24001503s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.35202193s
+SOfock:LL  1.00D-16    0.00%   20.74%    0.00%    0.00%   0.08400536s
+SOfock:SL  1.00D-16    0.00%   27.93%    0.00%    0.00%   0.24801493s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.40802526s
 
-########## END ITERATION NO.  10 ##########   Fri Jul 24 09:49:27 2009
+########## END ITERATION NO.  10 ##########   Tue Jul 28 00:06:49 2009
 
-It.  10    -150.0299941465      2.62D-10 -7.46D-06  1.22D-05   DIIS   9    0.35202193s   LL SL          Fri Jul 24
+It.  10    -150.0299941465      2.62D-10 -7.46D-06  1.22D-05   DIIS   9    0.40802526s   LL SL          Tue Jul 28
 
-########## START ITERATION NO.  11##########   Fri Jul 24 09:49:27 2009
+########## START ITERATION NO.  11##########   Tue Jul 28 00:06:50 2009
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   20.75%    0.00%    0.00%   0.08000517s
-SOfock:SL  1.00D-16    0.00%   27.98%    0.00%    0.00%   0.24001503s
+SOfock:LL  1.00D-16    0.00%   20.75%    0.00%    0.00%   0.09600592s
+SOfock:SL  1.00D-16    0.00%   27.98%    0.00%    0.00%   0.27601719s
 >>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.40402508s
+>>> Total CPU-time : 0.44402790s
 
-########## END ITERATION NO.  11 ##########   Fri Jul 24 09:49:27 2009
+########## END ITERATION NO.  11 ##########   Tue Jul 28 00:06:50 2009
 
-It.  11    -150.0299941466      1.49D-10  3.46D-06  5.87D-06   DIIS   9    0.40402508s   LL SL          Fri Jul 24
+It.  11    -150.0299941466      1.49D-10  3.46D-06  5.87D-06   DIIS   9    0.44402790s   LL SL          Tue Jul 28
 
-########## START ITERATION NO.  12##########   Fri Jul 24 09:49:28 2009
+########## START ITERATION NO.  12##########   Tue Jul 28 00:06:51 2009
 
    12 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   20.72%    0.00%    0.00%   0.08800602s
-SOfock:SL  1.00D-16    0.00%   28.03%    0.00%    0.00%   0.24001503s
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.40402603s
+SOfock:LL  1.00D-16    0.00%   20.72%    0.00%    0.00%   0.09200621s
+SOfock:SL  1.00D-16    0.00%   28.03%    0.00%    0.00%   0.24001455s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.41202497s
 
-########## END ITERATION NO.  12 ##########   Fri Jul 24 09:49:28 2009
+########## END ITERATION NO.  12 ##########   Tue Jul 28 00:06:51 2009
 
-It.  12    -150.0299941467      6.30D-11 -4.00D-06  1.63D-06   DIIS   9    0.40402603s   LL SL          Fri Jul 24
+It.  12    -150.0299941467      6.30D-11 -4.00D-06  1.63D-06   DIIS   9    0.41202497s   LL SL          Tue Jul 28
 
-########## START ITERATION NO.  13##########   Fri Jul 24 09:49:29 2009
+########## START ITERATION NO.  13##########   Tue Jul 28 00:06:51 2009
 
    13 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   21.26%    0.00%    0.00%   0.10000706s
-SOfock:SL  1.00D-16    0.00%   29.70%    0.00%    0.12%   0.24401474s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.40002489s
+SOfock:LL  1.00D-16    0.00%   21.26%    0.00%    0.00%   0.10000610s
+SOfock:SL  1.00D-16    0.00%   29.70%    0.00%    0.12%   0.25601578s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.43202686s
 
-########## END ITERATION NO.  13 ##########   Fri Jul 24 09:49:29 2009
+########## END ITERATION NO.  13 ##########   Tue Jul 28 00:06:51 2009
 
-It.  13    -150.0299941467      4.15D-12  9.01D-07  9.05D-07   DIIS   9    0.40002489s   LL SL          Fri Jul 24
+It.  13    -150.0299941467      4.15D-12  9.01D-07  9.05D-07   DIIS   9    0.43202686s   LL SL          Tue Jul 28
 
-########## START ITERATION NO.  14##########   Fri Jul 24 09:49:29 2009
+########## START ITERATION NO.  14##########   Tue Jul 28 00:06:52 2009
 
    14 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-16    0.00%   21.31%    0.00%    0.00%   0.09200621s
-SOfock:SL  1.00D-16    0.00%   29.90%    0.00%    0.10%   0.26801586s
+SOfock:SL  1.00D-16    0.00%   29.90%    0.00%    0.10%   0.25201511s
 >>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.43202686s
+>>> Total CPU-time : 0.42402744s
 
-########## END ITERATION NO.  14 ##########   Fri Jul 24 09:49:29 2009
+########## END ITERATION NO.  14 ##########   Tue Jul 28 00:06:52 2009
 
-It.  14    -150.0299941467      1.53D-12  7.17D-07  2.43D-07   DIIS   9    0.43202686s   LL SL          Fri Jul 24
+It.  14    -150.0299941467      1.53D-12  7.17D-07  2.43D-07   DIIS   9    0.42402744s   LL SL          Tue Jul 28
 
-########## START ITERATION NO.  15##########   Fri Jul 24 09:49:30 2009
+########## START ITERATION NO.  15##########   Tue Jul 28 00:06:53 2009
 
    15 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   22.03%    0.00%    0.00%   0.09200525s
-SOfock:SL  1.00D-16    0.00%   32.29%    0.00%    0.75%   0.25201607s
+SOfock:LL  1.00D-16    0.00%   22.03%    0.00%    0.00%   0.10000610s
+SOfock:SL  1.00D-16    0.00%   32.29%    0.00%    0.75%   0.26001596s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.39202404s
+>>> Total CPU-time : 0.43602657s
 
-########## END ITERATION NO.  15 ##########   Fri Jul 24 09:49:30 2009
+########## END ITERATION NO.  15 ##########   Tue Jul 28 00:06:53 2009
 
-It.  15    -150.0299941467      1.14D-13  1.64D-07  9.06D-08   DIIS   9    0.39202404s   LL SL          Fri Jul 24
+It.  15    -150.0299941467      1.14D-13  1.64D-07  9.06D-08   DIIS   9    0.43602657s   LL SL          Tue Jul 28
 
-########## START ITERATION NO.  16##########   Fri Jul 24 09:49:30 2009
+########## START ITERATION NO.  16##########   Tue Jul 28 00:06:53 2009
 
    16 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   23.37%    0.00%    0.00%   0.08800602s
-SOfock:SL  1.00D-16    0.00%   35.03%    0.00%    2.04%   0.22001410s
+SOfock:LL  1.00D-16    0.00%   23.37%    0.00%    0.00%   0.09600592s
+SOfock:SL  1.00D-16    0.00%   35.03%    0.00%    2.04%   0.27601767s
 >>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.38802481s
+>>> Total CPU-time : 0.44002819s
 
-########## END ITERATION NO.  16 ##########   Fri Jul 24 09:49:30 2009
+########## END ITERATION NO.  16 ##########   Tue Jul 28 00:06:53 2009
 
-It.  16    -150.0299941467      0.00D+00 -3.21D-08  3.92D-08   DIIS   9    0.38802481s   LL SL          Fri Jul 24
+It.  16    -150.0299941467      0.00D+00 -3.21D-08  3.92D-08   DIIS   9    0.44002819s   LL SL          Tue Jul 28
 
-########## START ITERATION NO.  17##########   Fri Jul 24 09:49:31 2009
+########## START ITERATION NO.  17##########   Tue Jul 28 00:06:54 2009
 
    17 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   24.13%    0.00%    0.09%   0.09600592s
-SOfock:SL  1.00D-16    0.00%   36.38%    0.00%    2.47%   0.25601578s
+SOfock:LL  1.00D-16    0.00%   24.13%    0.00%    0.09%   0.09200668s
+SOfock:SL  1.00D-16    0.00%   36.38%    0.00%    2.47%   0.24801445s
 >>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.40002537s
+>>> Total CPU-time : 0.42402649s
 
-########## END ITERATION NO.  17 ##########   Fri Jul 24 09:49:31 2009
+########## END ITERATION NO.  17 ##########   Tue Jul 28 00:06:54 2009
 
-It.  17    -150.0299941467     -5.68D-14 -1.97D-08  7.80D-09   DIIS   9    0.40002537s   LL SL          Fri Jul 24
+It.  17    -150.0299941467     -5.68D-14 -1.97D-08  7.80D-09   DIIS   9    0.42402649s   LL SL          Tue Jul 28
 
-########## START ITERATION NO.  18##########   Fri Jul 24 09:49:32 2009
+########## START ITERATION NO.  18##########   Tue Jul 28 00:06:55 2009
 
    18 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   27.71%    0.00%    0.85%   0.08000469s
-SOfock:SL  1.00D-16    0.00%   42.00%    0.00%    2.72%   0.22401524s
+SOfock:LL  1.00D-16    0.00%   27.71%    0.00%    0.85%   0.08800507s
+SOfock:SL  1.00D-16    0.00%   42.00%    0.00%    2.72%   0.22401428s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.35202217s
+>>> Total CPU-time : 0.38002300s
 
-########## END ITERATION NO.  18 ##########   Fri Jul 24 09:49:32 2009
+########## END ITERATION NO.  18 ##########   Tue Jul 28 00:06:55 2009
 
-It.  18    -150.0299941467     -5.68D-14 -2.38D-09  2.82D-09   DIIS   9    0.35202217s   LL SL          Fri Jul 24
+It.  18    -150.0299941467     -5.68D-14 -2.38D-09  2.82D-09   DIIS   9    0.38002300s   LL SL          Tue Jul 28
 
-########## START ITERATION NO.  19##########   Fri Jul 24 09:49:32 2009
+########## START ITERATION NO.  19##########   Tue Jul 28 00:06:55 2009
 
    19 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   29.20%    0.01%    0.99%   0.08400583s
-SOfock:SL  1.00D-16    0.00%   44.96%    0.01%    1.91%   0.22401428s
+SOfock:LL  1.00D-16    0.00%   29.20%    0.01%    0.99%   0.08000565s
+SOfock:SL  1.00D-16    0.00%   44.96%    0.01%    1.91%   0.22401333s
 >>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.37602282s
+>>> Total CPU-time : 0.37602425s
 
-########## END ITERATION NO.  19 ##########   Fri Jul 24 09:49:32 2009
+########## END ITERATION NO.  19 ##########   Tue Jul 28 00:06:55 2009
 
-It.  19    -150.0299941467      0.00D+00 -7.21D-10  1.01D-09   DIIS   9    0.37602282s   LL SL          Fri Jul 24
+It.  19    -150.0299941467      0.00D+00 -7.21D-10  1.01D-09   DIIS   9    0.37602425s   LL SL          Tue Jul 28
 
-########## START ITERATION NO.  20##########   Fri Jul 24 09:49:33 2009
+########## START ITERATION NO.  20##########   Tue Jul 28 00:06:56 2009
 
    20 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   31.63%    0.01%    1.13%   0.08800459s
-SOfock:SL  1.00D-16    0.00%   48.19%    0.00%    1.87%   0.24801636s
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.38402462s
+SOfock:LL  1.00D-16    0.00%   31.63%    0.01%    1.13%   0.08800411s
+SOfock:SL  1.00D-16    0.00%   48.19%    0.00%    1.87%   0.22801399s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.38002300s
 
-########## END ITERATION NO.  20 ##########   Fri Jul 24 09:49:33 2009
+########## END ITERATION NO.  20 ##########   Tue Jul 28 00:06:56 2009
 
-It.  20    -150.0299941467      1.71D-13  2.84D-10  3.41D-10   DIIS   9    0.38402462s   LL SL          Fri Jul 24
+It.  20    -150.0299941467      1.71D-13  2.84D-10  3.41D-10   DIIS   9    0.38002300s   LL SL          Tue Jul 28
 
 
                                    SCF - CYCLE
@@ -2591,31 +2593,31 @@ It.  20    -150.0299941467      1.71D-13  2.84D-10  3.41D-10   DIIS   9    0.384
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.   1    -55.36487409487      1.00D+20  0.00D+00  0.00D+00               0.02800101s   Scr. nuclei    Fri Jul 24
-It.   2    -149.0660663593      9.37D+01  5.71D+00  2.53D+00               0.44402802s   LL SL          Fri Jul 24
-It.   3    -149.8732886894      8.07D-01 -1.55D+00  1.01D+00   DIIS   2    0.40002501s   LL SL          Fri Jul 24
-It.   4    -150.0297601269      1.56D-01  4.48D-01  2.79D-02   DIIS   3    0.43602693s   LL SL          Fri Jul 24
-It.   5    -150.0299828603      2.23D-04 -2.68D-03  4.09D-03   DIIS   4    0.39202487s   LL SL          Fri Jul 24
-It.   6    -150.0299926028      9.74D-06  5.50D-04  1.32D-03   DIIS   5    0.38402414s   LL SL          Fri Jul 24
-It.   7    -150.0299940123      1.41D-06  3.18D-04  3.60D-04   DIIS   6    0.36802220s   LL SL          Fri Jul 24
-It.   8    -150.0299941404      1.28D-07  1.17D-04  8.11D-05   DIIS   7    0.43202686s   LL SL          Fri Jul 24
-It.   9    -150.0299941462      5.82D-09  2.28D-05  1.89D-05   DIIS   8    0.41202593s   LL SL          Fri Jul 24
-It.  10    -150.0299941465      2.62D-10 -7.46D-06  1.22D-05   DIIS   9    0.35202193s   LL SL          Fri Jul 24
-It.  11    -150.0299941466      1.49D-10  3.46D-06  5.87D-06   DIIS   9    0.40402508s   LL SL          Fri Jul 24
-It.  12    -150.0299941467      6.30D-11 -4.00D-06  1.63D-06   DIIS   9    0.40402603s   LL SL          Fri Jul 24
-It.  13    -150.0299941467      4.15D-12  9.01D-07  9.05D-07   DIIS   9    0.40002489s   LL SL          Fri Jul 24
-It.  14    -150.0299941467      1.53D-12  7.17D-07  2.43D-07   DIIS   9    0.43202686s   LL SL          Fri Jul 24
-It.  15    -150.0299941467      1.14D-13  1.64D-07  9.06D-08   DIIS   9    0.39202404s   LL SL          Fri Jul 24
-It.  16    -150.0299941467      0.00D+00 -3.21D-08  3.92D-08   DIIS   9    0.38802481s   LL SL          Fri Jul 24
-It.  17    -150.0299941467     -5.68D-14 -1.97D-08  7.80D-09   DIIS   9    0.40002537s   LL SL          Fri Jul 24
-It.  18    -150.0299941467     -5.68D-14 -2.38D-09  2.82D-09   DIIS   9    0.35202217s   LL SL          Fri Jul 24
-It.  19    -150.0299941467      0.00D+00 -7.21D-10  1.01D-09   DIIS   9    0.37602282s   LL SL          Fri Jul 24
-It.  20    -150.0299941467      1.71D-13  2.84D-10  3.41D-10   DIIS   9    0.38402462s   LL SL          Fri Jul 24
+It.   1    -55.36487409487      1.00D+20  0.00D+00  0.00D+00               0.06400406s   Scr. nuclei    Tue Jul 28
+It.   2    -149.0660663593      9.37D+01  5.71D+00  2.53D+00               0.46402895s   LL SL          Tue Jul 28
+It.   3    -149.8732886894      8.07D-01 -1.55D+00  1.01D+00   DIIS   2    0.39602494s   LL SL          Tue Jul 28
+It.   4    -150.0297601269      1.56D-01  4.48D-01  2.79D-02   DIIS   3    0.41202497s   LL SL          Tue Jul 28
+It.   5    -150.0299828603      2.23D-04 -2.68D-03  4.09D-03   DIIS   4    0.39602518s   LL SL          Tue Jul 28
+It.   6    -150.0299926028      9.74D-06  5.50D-04  1.32D-03   DIIS   5    0.43202686s   LL SL          Tue Jul 28
+It.   7    -150.0299940123      1.41D-06  3.18D-04  3.60D-04   DIIS   6    0.39202499s   LL SL          Tue Jul 28
+It.   8    -150.0299941404      1.28D-07  1.17D-04  8.11D-05   DIIS   7    0.41602612s   LL SL          Tue Jul 28
+It.   9    -150.0299941462      5.82D-09  2.28D-05  1.89D-05   DIIS   8    0.39602470s   LL SL          Tue Jul 28
+It.  10    -150.0299941465      2.62D-10 -7.46D-06  1.22D-05   DIIS   9    0.40802526s   LL SL          Tue Jul 28
+It.  11    -150.0299941466      1.49D-10  3.46D-06  5.87D-06   DIIS   9    0.44402790s   LL SL          Tue Jul 28
+It.  12    -150.0299941467      6.30D-11 -4.00D-06  1.63D-06   DIIS   9    0.41202497s   LL SL          Tue Jul 28
+It.  13    -150.0299941467      4.15D-12  9.01D-07  9.05D-07   DIIS   9    0.43202686s   LL SL          Tue Jul 28
+It.  14    -150.0299941467      1.53D-12  7.17D-07  2.43D-07   DIIS   9    0.42402744s   LL SL          Tue Jul 28
+It.  15    -150.0299941467      1.14D-13  1.64D-07  9.06D-08   DIIS   9    0.43602657s   LL SL          Tue Jul 28
+It.  16    -150.0299941467      0.00D+00 -3.21D-08  3.92D-08   DIIS   9    0.44002819s   LL SL          Tue Jul 28
+It.  17    -150.0299941467     -5.68D-14 -1.97D-08  7.80D-09   DIIS   9    0.42402649s   LL SL          Tue Jul 28
+It.  18    -150.0299941467     -5.68D-14 -2.38D-09  2.82D-09   DIIS   9    0.38002300s   LL SL          Tue Jul 28
+It.  19    -150.0299941467      0.00D+00 -7.21D-10  1.01D-09   DIIS   9    0.37602425s   LL SL          Tue Jul 28
+It.  20    -150.0299941467      1.71D-13  2.84D-10  3.41D-10   DIIS   9    0.38002300s   LL SL          Tue Jul 28
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   20 iterations.
 * Average elapsed time per iteration: 
       No 2-ints    :    0.00000000s
-      LL SL        :    0.57894737s
+      LL SL        :    0.68421053s
 
 
                                    TOTAL ENERGY
@@ -2692,24 +2694,24 @@ It.  20    -150.0299941467      1.71D-13  2.84D-10  3.41D-10   DIIS   9    0.384
 * Reading two-electron Fock matrix for DHF molecular gradient
 
 * REAFCK: Fock matrix read from file DFFCK2                                                      
-* Heading :DIRAC: No title specified !!!                     Fri Jul 24 09:49:33 2009
+* Heading :DIRAC: No title specified !!!                     Tue Jul 28 00:06:57 2009
 
 * Reading one-electron Fock matrix for DHF molecular gradient
 
 * REAFCK: Fock matrix read from file DFFCK1                                                      
-* Heading :DIRAC: No title specified !!!                     Fri Jul 24 09:49:22 2009
+* Heading :DIRAC: No title specified !!!                     Tue Jul 28 00:06:44 2009
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -150.029994146708134
-* Heading :DIRAC: No title specified !!!                     Fri Jul 24 09:49:33 2009
+* Heading :DIRAC: No title specified !!!                     Tue Jul 28 00:06:56 2009
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -150.029994146708134
-* Heading :DIRAC: No title specified !!!                     Fri Jul 24 09:49:33 2009
+* Heading :DIRAC: No title specified !!!                     Tue Jul 28 00:06:56 2009
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -150.029994146708134
-* Heading :DIRAC: No title specified !!!                     Fri Jul 24 09:49:33 2009
+* Heading :DIRAC: No title specified !!!                     Tue Jul 28 00:06:56 2009
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -150.029994146708134
-* Heading :DIRAC: No title specified !!!                     Fri Jul 24 09:49:33 2009
+* Heading :DIRAC: No title specified !!!                     Tue Jul 28 00:06:56 2009
 
 
         ******************************************************************
@@ -2721,7 +2723,7 @@ It.  20    -150.0299941467      1.71D-13  2.84D-10  3.41D-10   DIIS   9    0.384
  No special information in this calculation!
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -150.029994146708134
-* Heading :DIRAC: No title specified !!!                     Fri Jul 24 09:49:33 2009
+* Heading :DIRAC: No title specified !!!                     Tue Jul 28 00:06:56 2009
 
 
                                 Output from SCDENS
@@ -2739,7 +2741,7 @@ Charge :    1.0000 --> Small component charge :  -0.00001300
                            ---------------------------
 
 
-Time for one-electron part of gradient    :      0.06 seconds.
+Time for one-electron part of gradient    :      0.08 seconds.
 
 
 
@@ -2757,7 +2759,7 @@ Time for one-electron part of gradient    :      0.06 seconds.
  Calculate LL-Two-electron gradient: yes
 
 
- Time for LL-two-electron part of gradient :      0.07 seconds.
+ Time for LL-two-electron part of gradient :      0.06 seconds.
 
 
 
@@ -2768,7 +2770,7 @@ Time for one-electron part of gradient    :      0.06 seconds.
  Calculate LS-Two-electron gradient: yes
 
 
- Time for LS-two-electron part of gradient :      0.35 seconds.
+ Time for LS-two-electron part of gradient :      0.36 seconds.
 
 
 
@@ -2788,14 +2790,14 @@ Time for one-electron part of gradient    :      0.06 seconds.
                                --------------------
 
 
- One-electron part of gradient    CPU  :      0.06s    WALL :      0.00s
+ One-electron part of gradient    CPU  :      0.08s    WALL :      0.00s
 
  GAB matrix for screening         CPU  :      0.00s    WALL :      0.00s
- LL-Two-electron part of gradient CPU  :      0.07s    WALL :      0.00s
- LS-Two-electron part of gradient CPU  :      0.35s    WALL :      1.00s
+ LL-Two-electron part of gradient CPU  :      0.06s    WALL :      0.00s
+ LS-Two-electron part of gradient CPU  :      0.36s    WALL :      0.00s
  SS-Two-electron part SKIPPED!
- Total two-electron part of grad. CPU  :      0.42s    WALL :      1.00s
- Total time in RMOLGRD1           CPU  :      0.48s    WALL :      1.00s
+ Total two-electron part of grad. CPU  :      0.42s    WALL :      0.00s
+ Total time in RMOLGRD1           CPU  :      0.50s    WALL :      0.00s
 
 
 
@@ -2808,21 +2810,21 @@ Time for one-electron part of gradient    :      0.06 seconds.
                          Kinetic energy integral gradient
                          --------------------------------
 
- O      Total          0.1995736356117753        -0.1785252107270831         0.4921911720123730
-        Momentum       0.3991332566146432        -0.3571173959437663         0.9843385734999898
-        Beta mtx.     -0.1995596210028678         0.1785921852166832        -0.4921474014876168
+ O      Total          0.1995736356117751        -0.1785252107270829         0.4921911720123730
+        Momentum       0.3991332566146430        -0.3571173959437661         0.9843385734999898
+        Beta mtx.     -0.1995596210028679         0.1785921852166831        -0.4921474014876168
 
- O      Total         -0.1995590878921066         0.1785173246865954         0.4922266074079900
-        Momentum      -0.3991041589771168         0.3571016275367722         0.9844094328641548
+ O      Total         -0.1995590878921067         0.1785173246865948         0.4922266074079903
+        Momentum      -0.3991041589771168         0.3571016275367715         0.9844094328641553
         Beta mtx.      0.1995450710850101        -0.1785843028501768        -0.4921828254561649
 
- H      Total         -0.1989634984499933        -0.1022739650341527        -0.4921904880872937
-        Momentum      -0.3979094224784864        -0.2045230515548257        -0.9843372058208670
-        Beta mtx.      0.1989459240284931         0.1022490865206730         0.4921467177335733
+ H      Total         -0.1989634984499936        -0.1022739650341527        -0.4921904880872932
+        Momentum      -0.3979094224784868        -0.2045230515548257        -0.9843372058208665
+        Beta mtx.      0.1989459240284932         0.1022490865206730         0.4921467177335733
 
- H      Total          0.1989489507303254         0.1022818510746402        -0.4922272913330691
-        Momentum       0.3978803248409608         0.2045388199618199        -0.9844108005432773
-        Beta mtx.     -0.1989313741106354        -0.1022569688871797         0.4921835092102083
+ H      Total          0.1989489507303253         0.1022818510746404        -0.4922272913330697
+        Momentum       0.3978803248409606         0.2045388199618201        -0.9844108005432780
+        Beta mtx.     -0.1989313741106353        -0.1022569688871797         0.4921835092102083
 
 Weights:
  Momentum        66.667399232%
@@ -2866,8 +2868,8 @@ Weights:
         LL             0.1365933483644708        -0.1858566466466724         0.2938029461458654
         SS             0.0000051303018412        -0.0000064890987806         0.0000120759027191
 
- O      Total         -0.1365879130433544         0.1858599909861925         0.2938330964904159
-        LL            -0.1365827829857324         0.1858535021227926         0.2938210194157924
+ O      Total         -0.1365879130433545         0.1858599909861925         0.2938330964904159
+        LL            -0.1365827829857325         0.1858535021227926         0.2938210194157924
         SS            -0.0000051300576220         0.0000064888633998         0.0000120770746235
 
  H      Total         -0.1179160227289618        -0.0472369146485110        -0.2938154328418270
@@ -2930,58 +2932,22 @@ Weights:
 
 
 
-@                              molgrad, no 2
-@                              -------------
-
-@O                    -1.1575549442764703         7.3761509046072131        -2.9175210693846996
-@O                     1.1574243822016692        -7.3761246874137338        -2.9176211294159411
-@H                     1.1409248583589808         0.7401115711886055         2.9175152782060865
-@H                    -1.1407942962841793        -0.7401377883820730         2.9176269205945498
-
-
-
-
-
-@                            molgrad, no lvcorr
-@                            ------------------
+@                   molecular gradient, no ls, no lvcorr
+@                   ------------------------------------
 
 @O                     0.0047375202828528         0.0206332415905486        -0.0018882146837069
 @O                    -0.0047450844822866        -0.0206362337039785        -0.0018697039667619
-@H                    -0.0078270109989651        -0.0098433726274167         0.0018879527671531
-@H                     0.0078345751983981         0.0098463647408606         0.0018699658833126
-
-
-
-
-
-@                             molgradn, no er
-@                             ---------------
-
-@O                    -1.0209564656101584         7.1902877688617597        -2.6237060473361149
-@O                     1.0208364691583145        -7.1902646964275405        -2.6237880329255252
-@H                     1.0230088356300189         0.6928746565400945         2.6236998453642597
-@H                    -1.0228888391781752        -0.6928977289743015         2.6237942348973760
-
-
-
-
-
-@                         Total molecular gradient
-@                         ------------------------
-
-@O                     0.0047375202828528         0.0206332415905486        -0.0018882146837069
-@O                    -0.0047450844822866        -0.0206362337039785        -0.0018697039667619
-@H                    -0.0078270109989651        -0.0098433726274167         0.0018879527671531
-@H                     0.0078345751983981         0.0098463647408606         0.0018699658833126
+@H                    -0.0078270109989655        -0.0098433726274167         0.0018879527671540
+@H                     0.0078345751983981         0.0098463647408609         0.0018699658833126
 
 
 
 
 * REAFCK: Fock matrix read from file DFFCK1                                                      
-* Heading :DIRAC: No title specified !!!                     Fri Jul 24 09:49:22 2009
+* Heading :DIRAC: No title specified !!!                     Tue Jul 28 00:06:44 2009
 
 * REAFCK: Fock matrix read from file DFFCK2                                                      
-* Heading :DIRAC: No title specified !!!                     Fri Jul 24 09:49:33 2009
+* Heading :DIRAC: No title specified !!!                     Tue Jul 28 00:06:57 2009
  electron count from S**D: (  18.000000000000014     ,  0.0000000000000000     )
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
  electronic energy from F**D - 0.5d0*G(1)**D: ( -93.317117994570694     ,  0.0000000000000000     )
@@ -2990,10 +2956,10 @@ SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 @ -< y > =              -0.0000001052
 @ -< z > =               1.4325340098
  start molecular gradient
-     0.0047373590520386     0.0000000000000000     0.0206342028897450     0.0000000000000000    -0.0018885244610031     0.0000000000000000
-    -0.0047449232806912     0.0000000000000000    -0.0206371950252651     0.0000000000000000    -0.0018700137183579     0.0000000000000000
-    -0.0078268881820873     0.0000000000000000    -0.0098433383189873     0.0000000000000000     0.0018882625439014     0.0000000000000000
-     0.0078344524107426     0.0000000000000000     0.0098463304545161     0.0000000000000000     0.0018702756354361     0.0000000000000000
+     0.0047375202426399     0.0000000000000000     0.0206332415819392     0.0000000000000000    -0.0018882146942459     0.0000000000000000
+    -0.0047450844461600     0.0000000000000000    -0.0206362337151288     0.0000000000000000    -0.0018697039662188     0.0000000000000000
+    -0.0078270109963232     0.0000000000000000    -0.0098433726203873     0.0000000000000000     0.0018879527773401     0.0000000000000000
+     0.0078345751998428     0.0000000000000000     0.0098463647535585     0.0000000000000000     0.0018699658831012     0.0000000000000000
  end molecular gradient
 @         36 matrix allocations (total)
 @          8 matrix allocations (peak)
@@ -3001,10 +2967,10 @@ SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 @          6 matrix multiplications
 
  
-     Date and time (Linux)  : Fri Jul 24 09:49:34 2009 
+     Date and time (Linux)  : Tue Jul 28 00:06:58 2009 
      Host name              :                                         
->>>> Node 0, utime: 8, stime: 0, minflt: 96552, majflt: 0, nvcsw: 339, nivcsw: 1225
->>>> Total WALL time used in DIRAC: 14s
+>>>> Node 0, utime: 9, stime: 1, minflt: 386926, majflt: 0, nvcsw: 394, nivcsw: 1684
+>>>> Total WALL time used in DIRAC: 18s
 *****************************************************
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
