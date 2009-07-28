@@ -1,23 +1,13 @@
 #include <iostream>
 #include <cmath>
+#include <cstdlib>
 #include "taylor.h"
 #include "matrix.h"
 #include "boys.h"
 
 /*
-  Internally use hermite-gaussians D^n g_s(x).
-  A shell is a set of hermite gaussians with a given
-  exponent and location.
-
-  Functions needed:
-  Calculating Cartesian/Spherical gaussian shell coefficients
-  x Overlap given two shells and coefficients on those shells
-  x Kinetic energy - " " -
-  x Shell products -> third shell coefficients
-  Local potentials: Product shell -> Nuclear attraction, multipole
-  x Shell/Shell electrostatic
+  One and two electron program, by Ulf Ekstrom 2009
  */
-
 
 using namespace std;
 
@@ -35,7 +25,6 @@ public:
 
 matrix<int,polymul_internal::binomial<3+4*MAX_L,4*MAX_L>::value,3> poly3_exponents;
 int poly3_term_index[4*MAX_L+1][4*MAX_L+1][4*MAX_L+1]; // Index of the term with the given exponents
-
 
 taylor<3,4*MAX_L> fac3(0);
 taylor<6,2*MAX_L> fac6(0);
@@ -105,7 +94,6 @@ void printpoly(ostream &dst, const polynomial<num,Nvar,Ndeg> &p)
     }
 }
 
-
 // Multiply by  i!j!.. to each term, to get derivatives from
 // Taylor coefficients
 template<int N>
@@ -115,8 +103,6 @@ void dfactors(taylor<3,N> &t)
   for (int i=0;i<t.size();i++)
     t[i] *= fac3[i];
 }
-
-
 
 // Calculate the taylor expansion of (x + d)^2
 template<int N>
@@ -141,7 +127,6 @@ void d2_taylor(taylor<3,N> &d2, const double d[3])
   for (int i=10;i<d2.size();i++)
     d2[i] = 0;
 }
-
 
 // Evaluate functions of this shell at R. This is the definition
 // of the basis functions.
@@ -171,7 +156,6 @@ void funvalue(double f[],
 
    All terms R1^n R2^m P^k with k > n + m are zero., so a bit
    tarded.
-
 */
 template<int N>
 void gauss_product_1d(taylor<3,N> &c, 
@@ -199,7 +183,6 @@ void gauss_product_1d(taylor<3,N> &c,
     c[i] *= normfac[poly3_exponents(i,2)];
   dfactors(c);
 }
-
 
 /* Given vectors on two shells s1 and s2, compute the new shell
    s12 of the product function and the expansion of the product
@@ -241,7 +224,6 @@ void shell_products(matrix<taylor<3,N1+N2>,Nc1,Nc2> &prod, shell &s12,
 	      }
       }
 }
-
 
 // Given a function that depends only on the distance
 // between two shells, contract over vectors on these
@@ -302,8 +284,6 @@ void coulomb_kernel(taylor<3,N> &k,
   dfactors(k);
 }
 
-// -4.08e9 33s
-
 template<int N1, int N2, int Nc1, int Nc2>
 void overlap(matrix<double,Nc1,Nc2> &S, 
 	     const taylor<3,N1> c1[], 
@@ -351,297 +331,169 @@ void coulomb(matrix<double,Nc1,Nc2> &C,
 
 /* 
    Create shell coefficients for normalized cartesian or spherical
-   gaussians.
+   gaussians. In principle not difficult to make this generic. See
+   inverse Weierstrass transform.
 */
+template<int Ndeg>
+void cartesian_function_unnormalized(taylor<3,Ndeg> &fn, 
+				     const shell &s, int ijk[3])
+{
+  assert(ijk[0] + ijk[1] + ijk[2] <= Ndeg);  
+  double c1d[3][Ndeg+1];
+  for (int i=0;i<3;i++)
+    for (int j=0;j<=Ndeg;j++)
+      c1d[i][j] = 0;
+  fn.zero();
+  for (int i=0;i<3;i++)
+    switch(ijk[i])
+      {
+      case 0: // s
+	c1d[i][0] = 1;
+	break;
+      case 1: // p
+	c1d[i][1] = 1/(2*s.alpha);
+	break;
+      case 2: // d
+	c1d[i][0] = 1/(2*s.alpha);
+	c1d[i][2] = 1/pow(2*s.alpha,2);
+	break;
+      case 3: // f
+	c1d[i][1] = 3/pow(2*s.alpha,2);
+	c1d[i][3] = 1/pow(2*s.alpha,3);
+	break;
+      default:
+	assert(0 && "Unimplemented cartesian -> hermite order :-(");
+	break;
+      }
+  for (int i=0;i<=Ndeg;i++)
+    for (int j=0;j<=Ndeg-i;j++)
+      for (int k=0;k<=Ndeg-i-j;k++)
+	fn[poly3_term_index[i][j][k]] = c1d[0][i]*c1d[1][j]*c1d[2][k];
+}
+
 template<int Ndeg>
 void cartesian_function(taylor<3,Ndeg> &fn, const shell &s, int ijk[3])
 {
+  cartesian_function_unnormalized(fn, s, ijk);
   matrix<double,1,1> S;
-  fn.zero();
-  fn[poly3_term_index[ijk[0]][ijk[1]][ijk[2]]] = 1;
-  overlap(S,&fn,&fn,s,s);
-  fn[poly3_term_index[ijk[0]][ijk[1]][ijk[2]]] /= sqrt(S(0,0));
+  overlap(S,&fn,s,&fn,s);
+  fn *= 1/sqrt(S(0,0));
 }
+
 template<int Ndeg>
 void spherical_function(taylor<3,Ndeg> &fn, const shell &s, int L, int M)
 {
   assert(L <= Ndeg);
-  //  assert(abs(M) <= L);
+  assert(M*M <= L*L); // |M| <= L
+  assert(0 && "TODO");
 }
 
-
-template<int Ntot>
-void overlap_6d(taylor<6,Ntot> &ovl, 
-		double alpha1, double alpha2, const double *d)
+template<int N>
+class cartesian_shell
 {
-  double asum = alpha1 + alpha2;
-  // Inefficient like hell:
-  taylor<6,Ntot> d1(d[0],0), d2(d[1],1), d3(d[2],2);
-  d1[4] = -1;
-  d2[5] = -1;
-  d3[6] = -1;
-  taylor<6,Ntot> dsq = pow(d1,2) + pow(d2,2) + pow(d3,2);
-  ovl = pow(M_PI/asum,3.0/2.0)*exp(-(alpha1*alpha2)/asum*dsq);
-  for (int i=0;i<ovl.size();i++)
-    ovl[i] *= fac6[i];
-}
-
-
-template<int Ntot>
-void kinetic_6d(taylor<6,Ntot> &kin, 
-		double alpha1, double alpha2, const double *d)
-{
-  double asum = alpha1 + alpha2;
-  // Inefficient like hell:
-  taylor<6,Ntot> d1(d[0],0), d2(d[1],1), d3(d[2],2);
-  d1[4] = -1;
-  d2[5] = -1;
-  d3[6] = -1;
-  taylor<6,Ntot> dsq = pow(d1,2) + pow(d2,2) + pow(d3,2);
-  double h = alpha1*alpha2/asum;
-
-  kin = (h*(3-2*h*dsq))*pow(M_PI/asum,3.0/2.0)*exp(-(alpha1*alpha2)/asum*dsq);
-  for (int i=0;i<kin.size();i++)
-    kin[i] *= fac6[i];
-}
-
-void check_funvalue(void)
-{
-  shell s;
-  s.alpha = 7;
-  s.R[0] = 0.1;
-  s.R[1] = -0.2;
-  s.R[2] = 0.3;
-  double r[3] = {0.4,0.5,0.6};
-  taylor<3,0> c[1];
-  c[0].zero();
-  c[0][0] = 1;
-  double f;
-  // s function test
-  funvalue(&f,c,1,s,r);
-  double fcorr = exp(-s.alpha*(pow(r[0] - s.R[0],2)+
-			       pow(r[1] - s.R[1],2)+
-			       pow(r[2] - s.R[2],2)));
-  if (fabs(f-fcorr)>1e-15)
-    {
-      cerr << "check_funvalue, ERROR in s function. expected " <<
-	fcorr << " got " << f << endl;
-    }
-  taylor<3,1> cp[1];
-  cp[0].zero();
-  cp[0][1] = 1;
-  // p function test
-  funvalue(&f,cp,1,s,r);
-  fcorr = -2*s.alpha*(r[0] - s.R[0])*exp(-s.alpha*(pow(r[0] - s.R[0],2)+
-						   pow(r[1] - s.R[1],2)+
-						   pow(r[2] - s.R[2],2)));
-  if (fabs(f-fcorr)>1e-15)
-    {
-      cerr << "check_funvalue, ERROR in p function. expected " <<
-	fcorr << " got " << f << endl;
-    }
-  cerr << "End of check_funval." << endl;
-}
-
-void check_overlap(void)
-{
-  // First slow method
-  taylor<6,5> ovl6d;
-  shell s1,s2;
-  double d[3];
-  s1.alpha = 2;
-  s1.R[0] = 1.2;
-  s1.R[1] = -0.2;
-  s1.R[2] = 0.5;
-  s2.alpha = 0.3;
-  s2.R[0] = 0.8;
-  s2.R[1] = -0.5;
-  s2.R[2] = 0.1;
-  for (int i=0;i<3;i++)
-    d[i] = s1.R[i] - s2.R[i];
-  overlap_6d(ovl6d,s1.alpha,s2.alpha,d);
-  
-  // compare to "fast" method
-  int ncheck = 0;
-  int e6[6];
-  taylor<3,2> c1[1];
-  taylor<3,3> c2[1];
-  matrix<double,1,1> S;
-  for (int i=0;i<c1[0].size();i++)
-    for (int j=0;j<c2[0].size();j++)
+public:
+  cartesian_shell(const double R[], double alpha)
+  {
+    int ijk[3] = {N,0,0};
+    s.alpha = alpha;
+    s.R[0] = R[0];
+    s.R[1] = R[1];
+    s.R[2] = R[2];
+    for (int i=0;i<taylor<2,N>::len;i++)
       {
-	c1[0].zero();
-	c1[0][i] = 1;
-	c2[0].zero();
-	c2[0][j] = 1;
-	overlap(S,c1,s1,c2,s2);
-	c1[0].exponents(i,e6);
-	c2[0].exponents(j,e6+3);
-	if (fabs(S(0,0) - ovl6d[ovl6d.term_index(e6)]) > 1e-15)
-	  {
-	    cerr << "Error in overlap, expected " << 
-	      ovl6d[ovl6d.term_index(e6)] <<
-	      " got " << S(0,0) << endl;
-	  }
-	ncheck++;
+	cartesian_function(c[i], s, ijk);
+	taylor<3,N>::next_exponents(3,ijk);
       }
-  cout << "End of check overlap. Checked " << ncheck << endl;
-}
-
-
-void check_kinetic(void)
-{
-  // First slow method
-  taylor<6,5> kin6d;
-  shell s1,s2;
-  double d[3];
-  s1.alpha = 2;
-  s1.R[0] = 1.2;
-  s1.R[1] = -0.2;
-  s1.R[2] = 0.5;
-  s2.alpha = 0.3;
-  s2.R[0] = 0.8;
-  s2.R[1] = -0.5;
-  s2.R[2] = 0.1;
-  for (int i=0;i<3;i++)
-    d[i] = s1.R[i] - s2.R[i];
-  kinetic_6d(kin6d,s1.alpha,s2.alpha,d);
-  
-  // compare to "fast" method
-  int ncheck = 0;
-  int e6[6];
-  taylor<3,2> c1[1];
-  taylor<3,3> c2[1];
-  matrix<double,1,1> S;
-  for (int i=0;i<c1[0].size();i++)
-    for (int j=0;j<c2[0].size();j++)
-      {
-	c1[0].zero();
-	c1[0][i] = 1;
-	c2[0].zero();
-	c2[0][j] = 1;
-	kinetic(S,c1,s1,c2,s2);
-	c1[0].exponents(i,e6);
-	c2[0].exponents(j,e6+3);
-	if (fabs(S(0,0) - kin6d[kin6d.term_index(e6)]) > 1e-15)
-	  {
-	    cerr << "Error in kinetic, expected " << 
-	      kin6d[kin6d.term_index(e6)] <<
-	      " got " << S(0,0) << endl;
-	  }
-	ncheck++;
-      }
-  cout << "End of check kinetic. Checked " << ncheck << endl;
-}
-
-
-void check_shell_product(void)
-{
-  shell s1,s2;
-  s1.alpha = 2;
-  s1.R[0] = 0;//1.2;
-  s1.R[1] = 0;//-0.2;
-  s1.R[2] = 0;//0.5;
-  s2.alpha = 0.3;
-  /*  s2.R[0] = 0.8;
-  s2.R[1] = -0.5;
-  s2.R[2] = 0.1;*/
-  s2.R[0] = s1.R[0];
-  s2.R[1] = s1.R[1];
-  s2.R[2] = s1.R[2];
-  taylor<3,2> c1[polymul_internal::binomial<3+2,2>::value];
-  taylor<3,3> c2[polymul_internal::binomial<3+3,3>::value];
-  matrix<taylor<3,5>,polymul_internal::binomial<3+2,2>::value,
-    polymul_internal::binomial<3+3,3>::value> c12;
-  shell s12;
-  for (int i=0;i<c1[0].size();i++)
-    {
-      c1[i].zero();
-      c1[i][i] = 1;
-    }
-  for (int i=0;i<c2[0].size();i++)
-    {
-      c2[i].zero();
-      c2[i][i] = 1;
-    }
-  shell_products(c12,s12,c1,s1,c2,s2);
-  /* Evaluate and compare at some points */
-  for (int i=0;i<c1[0].size();i++)
-    for (int j=0;j<c2[0].size();j++)
-  for (double x = -1; x < 1; x+= 0.21)
-    for (double y = -1; y < 1; y+= 0.22)
-      for (double z = -1; z < 1; z+= 0.23)
-	{
-	  double r[] = {x,y,z};
-	  double f1,f2,f12;
-	  funvalue(&f1,&c1[i],1,s1,r);
-	  funvalue(&f2,&c2[j],1,s2,r);
-	  funvalue(&f12,&c12(i,j),1,s12,r);
-	  if (fabs(f1*f2 - f12) > 1e-15)
-	    cerr << "Checking shell products (" << 0 << ", " << 0 << ") expected " <<
-	      f1*f2 << ", got " << f12 << endl;
-	}
-  cerr << "End of check_shell_products\n";
-}
-
-
-void evalbench(void)
-{
-  double fval[5],fsum = 0;
-  taylor<3,3> forbs[5];
+  }
   shell s;
-  double r[3] = {4,5,6};
-  s.alpha = 3;
-  s.R[0] = 1;
-  s.R[1] = 2;
-  s.R[2] = 3;
+  int nfun;
+  taylor<3,N> c[taylor<2,N>::len];
+  enum{ nr_contr = taylor<2,N>::len };
+};
 
-  // fill with randomness
-  for (int i=0;i<5;i++)
-    for (int j=0;j<forbs[i].size();j++)
-      forbs[i][j] = cos(i*1.5+j);
-  for (int i=0;i<1e6;i++)
-    {
-      funvalue(fval,forbs,5,s,r);
-      fsum += fval[0]+fval[1];
-    }
-  cout << fsum;
-}
-
-void coulombbench(void)
+template<int N1, int N2>
+void print_overlap(const double R1[], double alpha1,
+		   const double R2[], double alpha2)
 {
-  taylor<3,4> ddorbs[25],ddrhs;
-  shell s1,s2;
-  matrix<double,25,1> J;
-  s1.alpha = 3;
-  s1.R[0] = 1;
-  s1.R[1] = 2;
-  s1.R[2] = 3;
-  s2.alpha = 2;
-  s2.R[0] = 1;
-  s2.R[1] = 2;
-  s2.R[2] = 3;
-
-  // fill with randomness
-  for (int i=0;i<25;i++)
-    for (int j=0;j<ddorbs[i].size();j++)
-      ddorbs[i][j] = cos(i*1.5+j);
-  for (int j=0;j<ddrhs.size();j++)
-    ddrhs[j] = j;
-  double fsum = 0;
-  for (int i=0;i<1e6;i++)
-    {
-      coulomb(J,ddorbs,s1,&ddrhs,s2);
-      fsum += J(0,0);
-    }
-  cout << fsum;
+  cartesian_shell<N1> s1(R1,alpha1);
+  cartesian_shell<N2> s2(R2,alpha2);
+  matrix<double, cartesian_shell<N1>::nr_contr, 
+    cartesian_shell<N2>::nr_contr> A;
+  overlap(A,s1.c,s1.s,s2.c,s2.s);
+  A.print(cout);
 }
 
+template<int N1, int N2>
+void print_kinetic(const double R1[], double alpha1,
+		   const double R2[], double alpha2)
+{
+  cartesian_shell<N1> s1(R1,alpha1);
+  cartesian_shell<N2> s2(R2,alpha2);
+  matrix<double, cartesian_shell<N1>::nr_contr, 
+    cartesian_shell<N2>::nr_contr> A;
+  kinetic(A,s1.c,s1.s,s2.c,s2.s);
+  A.print(cout);
+}
 
-int main(void)
+template<int N1, int N2, int N3, int N4>
+void print_coulomb(const double R[], const double alpha[])
+{
+  cartesian_shell<N1> s1(R,alpha[0]);
+  cartesian_shell<N2> s2(R+3,alpha[1]);
+  cartesian_shell<N3> s3(R+6,alpha[2]);
+  cartesian_shell<N4> s4(R+9,alpha[3]);
+  matrix<taylor<3,N1+N2>,cartesian_shell<N1>::nr_contr,
+    cartesian_shell<N2>::nr_contr> c12;
+  matrix<taylor<3,N3+N4>,cartesian_shell<N3>::nr_contr,
+    cartesian_shell<N4>::nr_contr> c34;
+  shell s12, s34;
+  shell_products(c12,s12,s1.c,s1.s,s2.c,s2.s);
+  shell_products(c34,s34,s3.c,s3.s,s4.c,s4.s);
+  matrix<double, cartesian_shell<N1>::nr_contr*cartesian_shell<N2>::nr_contr, 
+    cartesian_shell<N3>::nr_contr*cartesian_shell<N4>::nr_contr> A; 
+  coulomb(A,&c12(0,0),s12,&c34(0,0),s34);
+  A.print(cout);
+}
+
+#include "call_tables.inc"
+
+int main(int argc, char *argv[])
 {
   setup_tables();
-  coulombbench();
-  //check_kinetic();
+  cout << scientific;
+  cout.precision(16);
+  if (argc != 2)
+    {
+      cerr << "Usage: gints TYPE\n";
+      cerr << "where TYPE is one of overlap, kinetic, coulomb.\n";
+      cerr << "Reads two (or four) shells, in the format\n";
+      cerr << "L Rx Ry Rz alpha\n";
+      cerr << "where L is the angular momentum quantum number.\n";
+      return EXIT_FAILURE;
+    }
+  string type(argv[1]);
+  if (not (type == "overlap" or type == "kinetic" or type == "coulomb"))
+    {
+      cerr << "gints: Unknown integral type " << type << endl;
+      return EXIT_FAILURE;
+    }
+  double R[4][3], alpha[4];
+  int L[4];
+  int nshells = 2;
+  if (type == "coulomb")
+    nshells = 4;
+  for (int i=0;i<nshells;i++)
+    cin >> L[i] >> R[i][0] >> R[i][1] >> R[i][2] >> alpha[i];
+  if (cin.fail())
+    {
+      cerr << "gints: Error reading shell parameters.\n";
+      return EXIT_FAILURE;
+    }
+  if (type == "overlap")
+    overlaps[L[0]][L[1]](R[0],alpha[0],R[1],alpha[1]);
+  else if (type == "kinetic")
+    kinetics[L[0]][L[1]](R[0],alpha[0],R[1],alpha[1]);
+  else if (type == "coulomb")
+    coulombs[L[0]][L[1]][L[2]][L[3]](&R[0][0],alpha);
   return 0;
 }

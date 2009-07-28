@@ -651,11 +651,11 @@ class polynomial_evaluator<numtype, vartype, Nvar, 0>
 }
 // End of namespace polymul_internal
 
-
 template<class numtype, int Nvar, int Ndeg>
   class polynomial
 {
  public:
+  enum { len = polymul_internal::binomial<Nvar+Ndeg,Ndeg>::value };
   polynomial(void) {}
   polynomial(const numtype &c0) 
     { 
@@ -738,7 +738,7 @@ template<class numtype, int Nvar, int Ndeg>
 
   numtype c[polymul_internal::binomial<Nvar+Ndeg,Ndeg>::value];
 
- protected:
+  // protected:
   static void next_exponents(int nvar, int m[Nvar])
   {
     int k = 0;
