@@ -4,10 +4,10 @@
 #include <fstream>
 
 template<class numtype, int nrows, int ncols>
-class matrix
+class tmatrix
 {
  public:
-  matrix() {}
+  tmatrix() {}
   void zero(void)
   {
     for (int i=0;i<ncols;i++)
@@ -37,6 +37,75 @@ class matrix
   }
  protected:
   numtype c[ncols][nrows];
+};
+
+
+template<class numtype>
+class matrix
+{
+ public:
+  matrix(int nrows, int ncols) 
+  {
+    assert(nrows > 0);
+    assert(ncols > 0);
+    this->rows = nrows;
+    this->cols = ncols;
+    pitch = nrows;
+    owns_c = true;
+    c = new numtype[rows*cols];
+  }
+  matrix(numtype *wrapped_data, int nrows, int ncols, int pitch) 
+  {
+    this->rows = nrows;
+    this->cols = ncols;
+    this->pitch = pitch;
+    owns_c = false;
+  }
+  ~matrix(void)
+  {
+    if (owns_c)
+      delete[] c;
+  }
+  void zero(void)
+  {
+    for (int i=0;i<cols;i++)
+      for (int j=0;j<rows;j++)
+	c[i*pitch+j] = 0;
+  }
+  numtype &operator()(int row, int col) 
+  { 
+    if (col<0 or col >= cols)
+	cerr << "col: " << col << " cols: " << cols << endl;
+    assert(col>=0 && col < cols);
+    assert(row>=0 && row < rows);
+    return c[col*pitch + row];
+  }
+  const numtype &operator()(int row, int col) const 
+  { 
+    assert(col>=0 && col < cols);
+    assert(row>=0 && row < rows);
+    return c[col*pitch + row];
+  }
+  void print(std::ostream &dst) const
+  {
+    for (int i=0;i<rows;i++)
+      {
+	for (int j=0;j<cols;j++)
+	  dst << (*this)(i,j) << " ";
+	dst << "\n";
+      }
+  }
+  matrix<numtype> block(int firstrow, int firstcol, int nrows, int ncols)
+  {
+    assert(firstcol>=0 && firstcol + ncols <= cols);
+    assert(firstrow>=0 && firstrow + nrows <= rows);
+    return matrix(c + firstcol*pitch + firstrow,nrows,ncols,pitch);
+  }
+  int rows, cols;
+ protected:
+  int pitch;
+  numtype *c;
+  bool owns_c;
 };
 
 #endif

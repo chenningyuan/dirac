@@ -2,6 +2,7 @@
 #include <cmath>
 #include <cstdlib>
 #include "taylor.h"
+using namespace std;
 #include "matrix.h"
 #include "boys.h"
 
@@ -23,7 +24,7 @@ public:
   double R[3];
 };
 
-matrix<int,polymul_internal::binomial<3+4*MAX_L,4*MAX_L>::value,3> poly3_exponents;
+tmatrix<int,polymul_internal::binomial<3+4*MAX_L,4*MAX_L>::value,3> poly3_exponents;
 int poly3_term_index[4*MAX_L+1][4*MAX_L+1][4*MAX_L+1]; // Index of the term with the given exponents
 
 taylor<3,4*MAX_L> fac3(0);
@@ -188,8 +189,8 @@ void gauss_product_1d(taylor<3,N> &c,
    s12 of the product function and the expansion of the product
    at that shell. One expansion is computed for each pairs of vectors
    from c1 and c2. */
-template<int N1, int N2, int Nc1, int Nc2>
-void shell_products(matrix<taylor<3,N1+N2>,Nc1,Nc2> &prod, shell &s12,
+template<int N1, int N2>
+void shell_products(matrix<taylor<3,N1+N2> > &prod, shell &s12,
 		    const taylor<3,N1> c1[], const shell &s1,
 		    const taylor<3,N2> c2[], const shell &s2)
 {
@@ -200,8 +201,8 @@ void shell_products(matrix<taylor<3,N1+N2>,Nc1,Nc2> &prod, shell &s12,
   gauss_product_1d(c[0],s1.R[0],s2.R[0],s1.alpha,s2.alpha);
   gauss_product_1d(c[1],s1.R[1],s2.R[1],s1.alpha,s2.alpha);
   gauss_product_1d(c[2],s1.R[2],s2.R[2],s1.alpha,s2.alpha);
-  for (int i = 0; i < Nc1; i++)
-    for (int j = 0; j < Nc2; j++)
+  for (int i = 0; i < prod.rows; i++)
+    for (int j = 0; j < prod.cols; j++)
       {
 	prod(i,j).zero();
 	int exponents[3];
@@ -230,20 +231,20 @@ void shell_products(matrix<taylor<3,N1+N2>,Nc1,Nc2> &prod, shell &s12,
 // shells. f is the taylor expansion of the function,
 // in the vector d[3], the distance between the shells.
 // Application to overlap, kinetic energy and Coulomb
-template<int N1, int N2, int Nc1, int Nc2>
-void contract_d12(matrix<double,Nc1,Nc2> &res, 
+template<int N1, int N2>
+void contract_d12(matrix<double> &res, 
 		  const taylor<3,N1> c1[], 
 		  const taylor<3,N2> c2[], 
 		  const taylor<3,N1+N2> &f)
 {
   taylor<3,N1> tmp1;
   taylor<3,N2> tmp2;
-  for (int i=0;i<Nc2;i++)
+  for (int i=0;i<res.cols;i++)
     {
       tmp2 = c2[i];
       tmp2.invert_parity();
       polycontract(tmp1,tmp2,f);
-      for (int j=0;j<Nc1;j++)
+      for (int j=0;j<res.rows;j++)
 	res(j,i) = tmp1.dot(c1[j]);
     }
 }
@@ -284,8 +285,8 @@ void coulomb_kernel(taylor<3,N> &k,
   dfactors(k);
 }
 
-template<int N1, int N2, int Nc1, int Nc2>
-void overlap(matrix<double,Nc1,Nc2> &S, 
+template<int N1, int N2>
+void overlap(matrix<double> &S, 
 	     const taylor<3,N1> c1[], 
 	     const shell &s1,
 	     const taylor<3,N2> c2[],
@@ -299,8 +300,8 @@ void overlap(matrix<double,Nc1,Nc2> &S,
   contract_d12(S,c1,c2,ovl);
 }
 
-template<int N1, int N2, int Nc1, int Nc2>
-void kinetic(matrix<double,Nc1,Nc2> &T, 
+template<int N1, int N2>
+void kinetic(matrix<double> &T, 
 	     const taylor<3,N1> c1[], 
 	     const shell &s1,
 	     const taylor<3,N2> c2[],
@@ -314,8 +315,8 @@ void kinetic(matrix<double,Nc1,Nc2> &T,
   contract_d12(T,c1,c2,kin);
 }
 
-template<int N1, int N2, int Nc1, int Nc2>
-void coulomb(matrix<double,Nc1,Nc2> &C, 
+template<int N1, int N2>
+void coulomb(matrix<double> &C, 
 	     const taylor<3,N1> c1[], 
 	     const shell &s1,
 	     const taylor<3,N2> c2[],
@@ -375,7 +376,7 @@ template<int Ndeg>
 void cartesian_function(taylor<3,Ndeg> &fn, const shell &s, int ijk[3])
 {
   cartesian_function_unnormalized(fn, s, ijk);
-  matrix<double,1,1> S;
+  matrix<double> S(1,1);
   overlap(S,&fn,s,&fn,s);
   fn *= 1/sqrt(S(0,0));
 }
@@ -417,8 +418,8 @@ void print_overlap(const double R1[], double alpha1,
 {
   cartesian_shell<N1> s1(R1,alpha1);
   cartesian_shell<N2> s2(R2,alpha2);
-  matrix<double, cartesian_shell<N1>::nr_contr, 
-    cartesian_shell<N2>::nr_contr> A;
+  matrix<double> A(cartesian_shell<N1>::nr_contr, 
+		   cartesian_shell<N2>::nr_contr);
   overlap(A,s1.c,s1.s,s2.c,s2.s);
   A.print(cout);
 }
@@ -429,8 +430,8 @@ void print_kinetic(const double R1[], double alpha1,
 {
   cartesian_shell<N1> s1(R1,alpha1);
   cartesian_shell<N2> s2(R2,alpha2);
-  matrix<double, cartesian_shell<N1>::nr_contr, 
-    cartesian_shell<N2>::nr_contr> A;
+  matrix<double> A(cartesian_shell<N1>::nr_contr, 
+		   cartesian_shell<N2>::nr_contr);
   kinetic(A,s1.c,s1.s,s2.c,s2.s);
   A.print(cout);
 }
@@ -442,15 +443,15 @@ void print_coulomb(const double R[], const double alpha[])
   cartesian_shell<N2> s2(R+3,alpha[1]);
   cartesian_shell<N3> s3(R+6,alpha[2]);
   cartesian_shell<N4> s4(R+9,alpha[3]);
-  matrix<taylor<3,N1+N2>,cartesian_shell<N1>::nr_contr,
-    cartesian_shell<N2>::nr_contr> c12;
-  matrix<taylor<3,N3+N4>,cartesian_shell<N3>::nr_contr,
-    cartesian_shell<N4>::nr_contr> c34;
+  matrix<taylor<3,N1+N2> > c12(cartesian_shell<N1>::nr_contr,
+				cartesian_shell<N2>::nr_contr);
+  matrix<taylor<3,N3+N4> > c34(cartesian_shell<N3>::nr_contr,
+				 cartesian_shell<N4>::nr_contr);
   shell s12, s34;
   shell_products(c12,s12,s1.c,s1.s,s2.c,s2.s);
   shell_products(c34,s34,s3.c,s3.s,s4.c,s4.s);
-  matrix<double, cartesian_shell<N1>::nr_contr*cartesian_shell<N2>::nr_contr, 
-    cartesian_shell<N3>::nr_contr*cartesian_shell<N4>::nr_contr> A; 
+  matrix<double> A(cartesian_shell<N1>::nr_contr*cartesian_shell<N2>::nr_contr, 
+		   cartesian_shell<N3>::nr_contr*cartesian_shell<N4>::nr_contr);
   coulomb(A,&c12(0,0),s12,&c34(0,0),s34);
   A.print(cout);
 }
@@ -469,6 +470,8 @@ int main(int argc, char *argv[])
       cerr << "Reads two (or four) shells, in the format\n";
       cerr << "L Rx Ry Rz alpha\n";
       cerr << "where L is the angular momentum quantum number.\n";
+      cerr << "The basis functions are normalized cartesian\n" 
+	   << "functions sorted lexicographically.\n";
       return EXIT_FAILURE;
     }
   string type(argv[1]);
@@ -482,8 +485,17 @@ int main(int argc, char *argv[])
   int nshells = 2;
   if (type == "coulomb")
     nshells = 4;
+  while (1)
+    {
   for (int i=0;i<nshells;i++)
-    cin >> L[i] >> R[i][0] >> R[i][1] >> R[i][2] >> alpha[i];
+    {
+      cin >> L[i] >> R[i][0] >> R[i][1] >> R[i][2] >> alpha[i];
+      if (L[i] > MAX_L)
+	{
+	  cerr << "gints: L value " << L[i] << " too high.";
+	  return EXIT_FAILURE;
+	}
+    }
   if (cin.fail())
     {
       cerr << "gints: Error reading shell parameters.\n";
@@ -495,5 +507,6 @@ int main(int argc, char *argv[])
     kinetics[L[0]][L[1]](R[0],alpha[0],R[1],alpha[1]);
   else if (type == "coulomb")
     coulombs[L[0]][L[1]][L[2]][L[3]](&R[0][0],alpha);
+    }
   return 0;
 }
