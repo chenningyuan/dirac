@@ -705,7 +705,7 @@ C
         CALL PRSYMB(LUPRI,'-',75,0)
         WRITE(LUPRI,'(4X,A)')'- Parity violation - chirality'
       ENDIF
-      IF(EFG) THEN    
+      IF(EFN) THEN    
         CALL PRSYMB(LUPRI,'-',75,0)
         WRITE(LUPRI,'(4X,A)')'- Electric field at nuclei'
       ENDIF
