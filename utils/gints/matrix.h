@@ -48,17 +48,18 @@ class matrix
   {
     assert(nrows > 0);
     assert(ncols > 0);
-    this->rows = nrows;
-    this->cols = ncols;
+    rows = nrows;
+    cols = ncols;
     pitch = nrows;
     owns_c = true;
     c = new numtype[rows*cols];
   }
   matrix(numtype *wrapped_data, int nrows, int ncols, int pitch) 
   {
-    this->rows = nrows;
-    this->cols = ncols;
+    rows = nrows;
+    cols = ncols;
     this->pitch = pitch;
+    this->c = wrapped_data;
     owns_c = false;
   }
   ~matrix(void)
@@ -72,16 +73,32 @@ class matrix
       for (int j=0;j<rows;j++)
 	c[i*pitch+j] = 0;
   }
+  numtype *column_ptr(int col) 
+  { 
+    assert(col>=0 && col < cols);
+    return &c[col*pitch];
+  }
+  const numtype *column_ptr(int col) const
+  { 
+    assert(col>=0 && col < cols);
+    return &c[col*pitch];
+  }
   numtype &operator()(int row, int col) 
   { 
-    if (col<0 or col >= cols)
-	cerr << "col: " << col << " cols: " << cols << endl;
+    if (!((row>=0 && row < rows)))
+      {
+	std::cerr << "row = " << row << " rows = " << rows << "\n";
+      }
     assert(col>=0 && col < cols);
     assert(row>=0 && row < rows);
     return c[col*pitch + row];
   }
   const numtype &operator()(int row, int col) const 
   { 
+    if (!((col>=0 && col < cols)))
+      {
+	std::cerr << "col = " << col << " cols = " << cols << "\n";
+      }
     assert(col>=0 && col < cols);
     assert(row>=0 && row < rows);
     return c[col*pitch + row];

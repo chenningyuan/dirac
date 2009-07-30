@@ -651,35 +651,50 @@ class polynomial_evaluator<numtype, vartype, Nvar, 0>
 }
 // End of namespace polymul_internal
 
+// Length of a nvar,neg polynomial
+// = binomial(nvar+ndeg,ndeg), but this one
+// can be evaluated at run time.
+inline int polylen(int nvar, int ndeg)
+{
+  int len = 1;
+  for (int k=1;k<=nvar;k++)
+    {
+      len *= ndeg + k;
+      len /= k;
+    }
+  return len;
+}
+
 template<class numtype, int Nvar, int Ndeg>
   class polynomial
 {
  public:
-  enum { len = polymul_internal::binomial<Nvar+Ndeg,Ndeg>::value };
+  enum { size = polymul_internal::binomial<Nvar+Ndeg,Ndeg>::value };
   polynomial(void) {}
   polynomial(const numtype &c0) 
     { 
       c[0] = c0;
-      for (int i=1;i<this->size();i++)
+      for (int i=1;i<size;i++)
 	c[i] = 0;
     }
-  numtype operator[](int i) const
+  polynomial<numtype, Nvar, Ndeg> &operator=(const numtype &c0)
+    {
+      c[0] = c0;
+      for (int i=1;i<size;i++)
+	c[i] = 0;
+      return *this;
+    }
+  const numtype &operator[](int i) const
   {
     assert(i>=0);
-    assert(i<this->size());
+    assert(i<this->size);
     return c[i];
   }
   numtype &operator[](int i)
   {
     assert(i>=0);
-    assert(i<this->size());
+    assert(i<this->size);
     return c[i];
-  }
-  static int size(void) { return polymul_internal::binomial<Nvar+Ndeg,Ndeg>::value; }
-  void zero(void)
-  {
-    for (int i=0;i<size();i++)
-      c[i] = 0;
   }
   // This is a _very slow_ function to get the exponents
   // of a particular term. 
@@ -693,9 +708,9 @@ template<class numtype, int Nvar, int Ndeg>
       }
     for (int i=0;i<Nvar;i++)
       exponents[i] = 0;
-    if (term >= polymul_internal::binomial<Nvar+Ndeg,Ndeg>::value)
+    if (term >= size)
       {
-	assert(0 && "term < binomial<Nvar+Ndeg,Ndeg>::value");
+	assert(0 && "term > size");
       }
     for (int i=0;i<term;i++)
       polynomial<numtype,Nvar,Ndeg>::next_exponents(Nvar,exponents);
@@ -710,7 +725,7 @@ template<class numtype, int Nvar, int Ndeg>
     N--;
     while (N >= 0)
       {
-	idx += polynomial<numtype,Nvar,Ndeg>::polylen(Nvar-i,N);
+	idx += polylen(Nvar-i,N);
 	N -= exponents[i];
 	i++;
       }
@@ -724,21 +739,6 @@ template<class numtype, int Nvar, int Ndeg>
       eval(c,x);
   }
 
-  template<class vartype>
-  vartype eval_new(const vartype x[Nvar]) const
-  {
-    polynomial<numtype,Nvar,Ndeg> terms;
-    polymul_internal::polynomial_evaluator<numtype,vartype,Nvar,Ndeg>
-      ::eval_terms(terms.c,x);    
-    vartype sum = c[0];
-    for (int i=1;i<this->size();i++)
-      sum += c[i]*terms[i];
-    return sum;
-  }
-
-  numtype c[polymul_internal::binomial<Nvar+Ndeg,Ndeg>::value];
-
-  // protected:
   static void next_exponents(int nvar, int m[Nvar])
   {
     int k = 0;
@@ -769,18 +769,7 @@ template<class numtype, int Nvar, int Ndeg>
 	m[nvar-1] = 0;
       }
   }
-  // = binomial(nvar+ndeg,ndeg), but this one
-  // can be evaluated at run time.
-  static int polylen(int nvar, int ndeg)
-  {
-    int len = 1;
-    for (int k=1;k<=nvar;k++)
-      {
-	len *= ndeg + k;
-	len /= k;
-      }
-    return len;
-  }
+  numtype c[size];
 };
 
 
@@ -825,11 +814,11 @@ void polyterms(polynomial<numtype, Nvar,Ndeg> &p,
 // dot(P*p2,p3) = dot(P,p1) (P*p2 is polynomial multiplication,
 // dot means summing the product of all coefficients).
 template<class numtype, int Nvar, int Ndeg1, int Ndeg2>
-inline void polycontract(polynomial<numtype, Nvar,Ndeg1> &p1,
-		  const polynomial<numtype, Nvar,Ndeg2> &p2,
-		  const polynomial<numtype, Nvar,Ndeg1+Ndeg2> &p3)
+inline void polycontract(polynomial<numtype, Nvar,Ndeg1> & POLYMUL_RESTRICT p1,
+			 const polynomial<numtype, Nvar,Ndeg2> &p2,
+			 const polynomial<numtype, Nvar,Ndeg1+Ndeg2> &p3)
 {
-  for (int i=0;i<p1.size();i++)
+  for (int i=0;i<p1.size;i++)
     p1[i] = 0;
   polymul_internal::polynomial_multiplier<numtype,Nvar,Ndeg1,Ndeg2>
     ::antimul(p3.c,p1.c,p2.c);

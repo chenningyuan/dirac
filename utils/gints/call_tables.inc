@@ -1,122 +1,56 @@
 // Function table to pick the right left and right L value
-void (*overlaps[4][4])(const double R1[], double alpha1,
-		       const double R2[], double alpha2) = 
+void (*overlap_tab[4][4])(matrix<double> &S, 
+			  const matrix<double> &c1, 
+			  const shell &s1,
+			  const matrix<double> &c2,
+			  const shell &s2) = 
 {
-  {print_overlap<0,0>, print_overlap<0,1>, print_overlap<0,2>, print_overlap<0,3>},
-  {print_overlap<1,1>, print_overlap<1,1>, print_overlap<1,2>, print_overlap<1,3>},
-  {print_overlap<2,2>, print_overlap<2,1>, print_overlap<2,2>, print_overlap<2,3>},
-  {print_overlap<3,3>, print_overlap<3,1>, print_overlap<3,2>, print_overlap<3,3>}
+  {overlap<0,0>, overlap<0,1>, overlap<0,2>, overlap<0,3>},
+  {overlap<1,1>, overlap<1,1>, overlap<1,2>, overlap<1,3>},
+  {overlap<2,2>, overlap<2,1>, overlap<2,2>, overlap<2,3>},
+  {overlap<3,3>, overlap<3,1>, overlap<3,2>, overlap<3,3>}
 };
 
-void (*kinetics[4][4])(const double R1[], double alpha1,
-		       const double R2[], double alpha2) = 
+void (*kinetic_tab[4][4])(matrix<double> &T,
+			  const matrix<double> &c1, 
+			  const shell &s1,
+			  const matrix<double> &c2,
+			  const shell &s2) =
 {
-  {print_kinetic<0,0>, print_kinetic<0,1>, print_kinetic<0,2>, print_kinetic<0,3>},
-  {print_kinetic<1,1>, print_kinetic<1,1>, print_kinetic<1,2>, print_kinetic<1,3>},
-  {print_kinetic<2,2>, print_kinetic<2,1>, print_kinetic<2,2>, print_kinetic<2,3>},
-  {print_kinetic<3,3>, print_kinetic<3,1>, print_kinetic<3,2>, print_kinetic<3,3>}
+  {kinetic<0,0>, kinetic<0,1>, kinetic<0,2>, kinetic<0,3>},
+  {kinetic<1,1>, kinetic<1,1>, kinetic<1,2>, kinetic<1,3>},
+  {kinetic<2,2>, kinetic<2,1>, kinetic<2,2>, kinetic<2,3>},
+  {kinetic<3,3>, kinetic<3,1>, kinetic<3,2>, kinetic<3,3>}
 };
 
-void (*coulombs[4][4][4][4])(const double R[], const double alpha[]) = 
+void (*coulomb_tab[7][7])(matrix<double> &J,
+			  const matrix<double> &c1, 
+			  const shell &s1,
+			  const matrix<double> &c2,
+			  const shell &s2) =
 {
-  {
-    {
-      {print_coulomb<0,0,0,0>, print_coulomb<0,0,0,1>, print_coulomb<0,0,0,2>, print_coulomb<0,0,0,3>},
-      {print_coulomb<0,0,1,0>, print_coulomb<0,0,1,1>, print_coulomb<0,0,1,2>, print_coulomb<0,0,1,3>},
-      {print_coulomb<0,0,2,0>, print_coulomb<0,0,2,1>, print_coulomb<0,0,2,2>, print_coulomb<0,0,2,3>},
-      {print_coulomb<0,0,3,0>, print_coulomb<0,0,3,1>, print_coulomb<0,0,3,2>, print_coulomb<0,0,3,3>},
-    },
-    {
-      {print_coulomb<0,1,0,0>, print_coulomb<0,1,0,1>, print_coulomb<0,1,0,2>, print_coulomb<0,1,0,3>},
-      {print_coulomb<0,1,1,0>, print_coulomb<0,1,1,1>, print_coulomb<0,1,1,2>, print_coulomb<0,1,1,3>},
-      {print_coulomb<0,1,2,0>, print_coulomb<0,1,2,1>, print_coulomb<0,1,2,2>, print_coulomb<0,1,2,3>},
-      {print_coulomb<0,1,3,0>, print_coulomb<0,1,3,1>, print_coulomb<0,1,3,2>, print_coulomb<0,1,3,3>},
-    },
-    {
-      {print_coulomb<0,2,0,0>, print_coulomb<0,2,0,1>, print_coulomb<0,2,0,2>, print_coulomb<0,2,0,3>},
-      {print_coulomb<0,2,1,0>, print_coulomb<0,2,1,1>, print_coulomb<0,2,1,2>, print_coulomb<0,2,1,3>},
-      {print_coulomb<0,2,2,0>, print_coulomb<0,2,2,1>, print_coulomb<0,2,2,2>, print_coulomb<0,2,2,3>},
-      {print_coulomb<0,2,3,0>, print_coulomb<0,2,3,1>, print_coulomb<0,2,3,2>, print_coulomb<0,2,3,3>},
-    },
-    {
-      {print_coulomb<0,3,0,0>, print_coulomb<0,3,0,1>, print_coulomb<0,3,0,2>, print_coulomb<0,3,0,3>},
-      {print_coulomb<0,3,1,0>, print_coulomb<0,3,1,1>, print_coulomb<0,3,1,2>, print_coulomb<0,3,1,3>},
-      {print_coulomb<0,3,2,0>, print_coulomb<0,3,2,1>, print_coulomb<0,3,2,2>, print_coulomb<0,3,2,3>},
-      {print_coulomb<0,3,3,0>, print_coulomb<0,3,3,1>, print_coulomb<0,3,3,2>, print_coulomb<0,3,3,3>},
-    }},
-  {
-    {
-      {print_coulomb<1,0,0,0>, print_coulomb<1,0,0,1>, print_coulomb<1,0,0,2>, print_coulomb<1,0,0,3>},
-      {print_coulomb<1,0,1,0>, print_coulomb<1,0,1,1>, print_coulomb<1,0,1,2>, print_coulomb<1,0,1,3>},
-      {print_coulomb<1,0,2,0>, print_coulomb<1,0,2,1>, print_coulomb<1,0,2,2>, print_coulomb<1,0,2,3>},
-      {print_coulomb<1,0,3,0>, print_coulomb<1,0,3,1>, print_coulomb<1,0,3,2>, print_coulomb<1,0,3,3>},
-    },
-    {
-      {print_coulomb<1,1,0,0>, print_coulomb<1,1,0,1>, print_coulomb<1,1,0,2>, print_coulomb<1,1,0,3>},
-      {print_coulomb<1,1,1,0>, print_coulomb<1,1,1,1>, print_coulomb<1,1,1,2>, print_coulomb<1,1,1,3>},
-      {print_coulomb<1,1,2,0>, print_coulomb<1,1,2,1>, print_coulomb<1,1,2,2>, print_coulomb<1,1,2,3>},
-      {print_coulomb<1,1,3,0>, print_coulomb<1,1,3,1>, print_coulomb<1,1,3,2>, print_coulomb<1,1,3,3>},
-    },
-    {
-      {print_coulomb<1,2,0,0>, print_coulomb<1,2,0,1>, print_coulomb<1,2,0,2>, print_coulomb<1,2,0,3>},
-      {print_coulomb<1,2,1,0>, print_coulomb<1,2,1,1>, print_coulomb<1,2,1,2>, print_coulomb<1,2,1,3>},
-      {print_coulomb<1,2,2,0>, print_coulomb<1,2,2,1>, print_coulomb<1,2,2,2>, print_coulomb<1,2,2,3>},
-      {print_coulomb<1,2,3,0>, print_coulomb<1,2,3,1>, print_coulomb<1,2,3,2>, print_coulomb<1,2,3,3>},
-    },
-    {
-      {print_coulomb<1,3,0,0>, print_coulomb<1,3,0,1>, print_coulomb<1,3,0,2>, print_coulomb<1,3,0,3>},
-      {print_coulomb<1,3,1,0>, print_coulomb<1,3,1,1>, print_coulomb<1,3,1,2>, print_coulomb<1,3,1,3>},
-      {print_coulomb<1,3,2,0>, print_coulomb<1,3,2,1>, print_coulomb<1,3,2,2>, print_coulomb<1,3,2,3>},
-      {print_coulomb<1,3,3,0>, print_coulomb<1,3,3,1>, print_coulomb<1,3,3,2>, print_coulomb<1,3,3,3>},
-    }},
-  {
-    {
-      {print_coulomb<2,0,0,0>, print_coulomb<2,0,0,1>, print_coulomb<2,0,0,2>, print_coulomb<2,0,0,3>},
-      {print_coulomb<2,0,1,0>, print_coulomb<2,0,1,1>, print_coulomb<2,0,1,2>, print_coulomb<2,0,1,3>},
-      {print_coulomb<2,0,2,0>, print_coulomb<2,0,2,1>, print_coulomb<2,0,2,2>, print_coulomb<2,0,2,3>},
-      {print_coulomb<2,0,3,0>, print_coulomb<2,0,3,1>, print_coulomb<2,0,3,2>, print_coulomb<2,0,3,3>},
-    },
-    {
-      {print_coulomb<2,1,0,0>, print_coulomb<2,1,0,1>, print_coulomb<2,1,0,2>, print_coulomb<2,1,0,3>},
-      {print_coulomb<2,1,1,0>, print_coulomb<2,1,1,1>, print_coulomb<2,1,1,2>, print_coulomb<2,1,1,3>},
-      {print_coulomb<2,1,2,0>, print_coulomb<2,1,2,1>, print_coulomb<2,1,2,2>, print_coulomb<2,1,2,3>},
-      {print_coulomb<2,1,3,0>, print_coulomb<2,1,3,1>, print_coulomb<2,1,3,2>, print_coulomb<2,1,3,3>},
-    },
-    {
-      {print_coulomb<2,2,0,0>, print_coulomb<2,2,0,1>, print_coulomb<2,2,0,2>, print_coulomb<2,2,0,3>},
-      {print_coulomb<2,2,1,0>, print_coulomb<2,2,1,1>, print_coulomb<2,2,1,2>, print_coulomb<2,2,1,3>},
-      {print_coulomb<2,2,2,0>, print_coulomb<2,2,2,1>, print_coulomb<2,2,2,2>, print_coulomb<2,2,2,3>},
-      {print_coulomb<2,2,3,0>, print_coulomb<2,2,3,1>, print_coulomb<2,2,3,2>, print_coulomb<2,2,3,3>},
-    },
-    {
-      {print_coulomb<2,3,0,0>, print_coulomb<2,3,0,1>, print_coulomb<2,3,0,2>, print_coulomb<2,3,0,3>},
-      {print_coulomb<2,3,1,0>, print_coulomb<2,3,1,1>, print_coulomb<2,3,1,2>, print_coulomb<2,3,1,3>},
-      {print_coulomb<2,3,2,0>, print_coulomb<2,3,2,1>, print_coulomb<2,3,2,2>, print_coulomb<2,3,2,3>},
-      {print_coulomb<2,3,3,0>, print_coulomb<2,3,3,1>, print_coulomb<2,3,3,2>, print_coulomb<2,3,3,3>},
-    }},
-  {
-    {
-      {print_coulomb<3,0,0,0>, print_coulomb<3,0,0,1>, print_coulomb<3,0,0,2>, print_coulomb<3,0,0,3>},
-      {print_coulomb<3,0,1,0>, print_coulomb<3,0,1,1>, print_coulomb<3,0,1,2>, print_coulomb<3,0,1,3>},
-      {print_coulomb<3,0,2,0>, print_coulomb<3,0,2,1>, print_coulomb<3,0,2,2>, print_coulomb<3,0,2,3>},
-      {print_coulomb<3,0,3,0>, print_coulomb<3,0,3,1>, print_coulomb<3,0,3,2>, print_coulomb<3,0,3,3>},
-    },
-    {
-      {print_coulomb<3,1,0,0>, print_coulomb<3,1,0,1>, print_coulomb<3,1,0,2>, print_coulomb<3,1,0,3>},
-      {print_coulomb<3,1,1,0>, print_coulomb<3,1,1,1>, print_coulomb<3,1,1,2>, print_coulomb<3,1,1,3>},
-      {print_coulomb<3,1,2,0>, print_coulomb<3,1,2,1>, print_coulomb<3,1,2,2>, print_coulomb<3,1,2,3>},
-      {print_coulomb<3,1,3,0>, print_coulomb<3,1,3,1>, print_coulomb<3,1,3,2>, print_coulomb<3,1,3,3>},
-    },
-    {
-      {print_coulomb<3,2,0,0>, print_coulomb<3,2,0,1>, print_coulomb<3,2,0,2>, print_coulomb<3,2,0,3>},
-      {print_coulomb<3,2,1,0>, print_coulomb<3,2,1,1>, print_coulomb<3,2,1,2>, print_coulomb<3,2,1,3>},
-      {print_coulomb<3,2,2,0>, print_coulomb<3,2,2,1>, print_coulomb<3,2,2,2>, print_coulomb<3,2,2,3>},
-      {print_coulomb<3,2,3,0>, print_coulomb<3,2,3,1>, print_coulomb<3,2,3,2>, print_coulomb<3,2,3,3>},
-    },
-    {
-      {print_coulomb<3,3,0,0>, print_coulomb<3,3,0,1>, print_coulomb<3,3,0,2>, print_coulomb<3,3,0,3>},
-      {print_coulomb<3,3,1,0>, print_coulomb<3,3,1,1>, print_coulomb<3,3,1,2>, print_coulomb<3,3,1,3>},
-      {print_coulomb<3,3,2,0>, print_coulomb<3,3,2,1>, print_coulomb<3,3,2,2>, print_coulomb<3,3,2,3>},
-      {print_coulomb<3,3,3,0>, print_coulomb<3,3,3,1>, print_coulomb<3,3,3,2>, print_coulomb<3,3,3,3>},
-    }},
+  {coulomb<0,0>, coulomb<0,1>, coulomb<0,2>, coulomb<0,3>,
+   coulomb<0,4>, coulomb<0,5>, coulomb<0,6>},
+  {coulomb<1,1>, coulomb<1,1>, coulomb<1,2>, coulomb<1,3>,
+   coulomb<1,4>, coulomb<1,5>, coulomb<1,6>},
+  {coulomb<2,2>, coulomb<2,1>, coulomb<2,2>, coulomb<2,3>,
+   coulomb<2,4>, coulomb<2,5>, coulomb<2,6>},
+  {coulomb<3,3>, coulomb<3,1>, coulomb<3,2>, coulomb<3,3>,
+   coulomb<3,4>, coulomb<3,5>, coulomb<3,6>},
+  {coulomb<4,3>, coulomb<4,1>, coulomb<4,2>, coulomb<4,3>,
+   coulomb<4,4>, coulomb<4,5>, coulomb<4,6>},
+  {coulomb<5,3>, coulomb<5,1>, coulomb<5,2>, coulomb<5,3>,
+   coulomb<5,4>, coulomb<5,5>, coulomb<5,6>},
+  {coulomb<6,3>, coulomb<6,1>, coulomb<6,2>, coulomb<6,3>,
+   coulomb<6,4>, coulomb<6,5>, coulomb<6,6>}
+};
+
+void (*shell_product_tab[4][4])(matrix<double> &prod, shell &s12,
+				const matrix<double> &c1, const shell &s1,
+				const matrix<double> &c2, const shell &s2) =
+{
+  {shell_product<0,0>, shell_product<0,1>, shell_product<0,2>, shell_product<0,3>},
+  {shell_product<1,1>, shell_product<1,1>, shell_product<1,2>, shell_product<1,3>},
+  {shell_product<2,2>, shell_product<2,1>, shell_product<2,2>, shell_product<2,3>},
+  {shell_product<3,3>, shell_product<3,1>, shell_product<3,2>, shell_product<3,3>}
 };
