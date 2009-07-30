@@ -64,7 +64,7 @@ C
       IMPLICIT NONE
 
       INCLUDE "mpif.h"
-#include "global_file.h"
+#include "bucket_sort.h"
 #include "infpar.h"
 
       INTEGER IERR
@@ -106,7 +106,7 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
       IMPLICIT NONE
 
       INCLUDE "mpif.h"
-#include "global_file.h"
+#include "bucket_sort.h"
 #include "infpar.h"
 
       INTEGER IERR
@@ -148,7 +148,7 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
       IMPLICIT NONE
 
       INCLUDE "mpif.h"
-#include "global_file.h"
+#include "bucket_sort.h"
 
       INTEGER IERR
 
@@ -162,7 +162,7 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
       IMPLICIT NONE
 
       INCLUDE "mpif.h"
-#include "global_file.h"
+#include "bucket_sort.h"
 
       INTEGER IERR
 
@@ -177,7 +177,7 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
       INTEGER TARGET_NODE, SOURCE_NODE, LOCAL_RECORD
 
       INCLUDE "mpif.h"
-#include "global_file.h"
+#include "bucket_sort.h"
 #include "infpar.h"
       INTEGER IERR
 
@@ -192,7 +192,7 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
          CALL MPI_ABORT(MPI_COMM_WORLD,1,IERR)
       ENDIF
       IF (LOCAL_RECORD .LT. 1 .OR. LOCAL_RECORD .GT. GF_MAXREC) THEN
-C increase GF_MAXREC in global_file.h
+C increase GF_MAXREC in bucket_sort.h
          PRINT *, 'ERROR: GLOBAL_FILE_RECORD: LOCAL_RECORD = ',
      +      LOCAL_RECORD
          CALL MPI_ABORT(MPI_COMM_WORLD,1,IERR)
@@ -217,7 +217,7 @@ C increase GF_MAXREC in global_file.h
       INTEGER(KIND=MPI_OFFSET_KIND) GLOBAL_FILE_OFFSET
       INTEGER TARGET_NODE, SOURCE_NODE, LOCAL_RECORD
 
-#include "global_file.h"
+#include "bucket_sort.h"
 
       INTEGER GLOBAL_FILE_RECORD
       EXTERNAL GLOBAL_FILE_RECORD
@@ -236,7 +236,7 @@ C     in two parts (the first part performs an implicit cast).
       INTEGER TARGET_NODE, SOURCE_NODE, LOCAL_RECORD
 
       INCLUDE "mpif.h"
-#include "global_file.h"
+#include "bucket_sort.h"
       INTEGER(KIND=MPI_OFFSET_KIND) RECORD_OFFSET
       INTEGER IERR
 
@@ -260,7 +260,7 @@ C     in two parts (the first part performs an implicit cast).
       INTEGER IGBUF
 
       INCLUDE "mpif.h"
-#include "global_file.h"
+#include "bucket_sort.h"
 
       DIMENSION RGBUF(NGBFSZ)
       DIMENSION IGBUF(2,NGBFSZ)
@@ -312,7 +312,7 @@ C     in two parts (the first part performs an implicit cast).
       INTEGER TARGET_NODE, SOURCE_NODE, LOCAL_RECORD
 
       INCLUDE "mpif.h"
-#include "global_file.h"
+#include "bucket_sort.h"
       INTEGER   STATUS(MPI_STATUS_SIZE)
       INTEGER NUMREAD
       INTEGER IERR
@@ -347,7 +347,7 @@ C
 C     Read back the sorted integrals and put them at the right position
 C
       INCLUDE "mpif.h"
-#include "global_file.h"
+#include "bucket_sort.h"
 #include "infpar.h"
       INTEGER SOURCE_NODE
       REAL*8 RGBUF(NGBFSZ)
@@ -386,11 +386,16 @@ C
 
 C           Pick out the integrals that we need.
 
+            IF (N.GT.NGBFSZ) THEN
+               PRINT *, 'ERROR: GLOBAL_FILE_READ: N, NGBFSZ =',
+     +                  N, NGBFSZ
+               CALL MPI_ABORT(MPI_COMM_WORLD,1,IERR)
+            ENDIF
             DO I = 1, N
                IF (IGBUF(2,I).EQ.ICOL) THEN
                   IF (IGBUF(1,I) .LT. 1 .OR. IGBUF(1,I) .GT. NROW) THEN
                      PRINT *, 'ERROR: GLOBAL_FILE_READ: IGBUF(1,I) =',
-     +                        IGBUF(1,I)
+     +                        IGBUF(1,I),'I =',I
                      CALL MPI_ABORT(MPI_COMM_WORLD,1,IERR)
                   ENDIF
                   A(IGBUF(1,I)) = RGBUF(I)
@@ -411,7 +416,7 @@ C           Pick out the integrals that we need.
       IMPLICIT NONE
 
       INCLUDE "mpif.h"
-#include "global_file.h"
+#include "bucket_sort.h"
 #include "infpar.h"
 
       INTEGER IERR
@@ -446,7 +451,7 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
       IMPLICIT NONE
 
       INCLUDE "mpif.h"
-#include "global_file.h"
+#include "bucket_sort.h"
 
       INTEGER IERR
 
@@ -460,7 +465,7 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
       IMPLICIT NONE
 
       INCLUDE "mpif.h"
-#include "global_file.h"
+#include "bucket_sort.h"
 #include "infpar.h"
       CHARACTER LF_RECBUF(GF_RECLEN)
       INTEGER SOURCE_NODE,LOCAL_RECORD
@@ -517,7 +522,7 @@ CSK         ... zero NUMREAD, otherwise it may fail
       IMPLICIT NONE
 
       INCLUDE "mpif.h"
-#include "global_file.h"
+#include "bucket_sort.h"
 #include "infpar.h"
 
       INTEGER SOURCE_NODE
@@ -541,7 +546,7 @@ CSK         ... zero NUMREAD, otherwise it may fail
       INTEGER SOURCE_NODE, LOCAL_RECORD
 
       INCLUDE "mpif.h"
-#include "global_file.h"
+#include "bucket_sort.h"
 #include "infpar.h"
       INTEGER IERR
 
@@ -551,7 +556,7 @@ CSK         ... zero NUMREAD, otherwise it may fail
          CALL MPI_ABORT(MPI_COMM_WORLD,1,IERR)
       ENDIF
       IF (LOCAL_RECORD .LT. 1 .OR. LOCAL_RECORD .GT. GF_MAXREC) THEN
-C increase GF_MAXREC in global_file.h
+C increase GF_MAXREC in bucket_sort.h
          PRINT *, 'ERROR: LOCAL_FILE_RECORD: LOCAL_RECORD = ',
      +      LOCAL_RECORD
          CALL MPI_ABORT(MPI_COMM_WORLD,1,IERR)
@@ -566,7 +571,7 @@ C increase GF_MAXREC in global_file.h
       IMPLICIT NONE
       INTEGER SOURCE_NODE, LOCAL_RECORD
 
-#include "global_file.h"
+#include "bucket_sort.h"
 
       INTEGER IREC
       INTEGER LOCAL_FILE_RECORD
@@ -581,7 +586,7 @@ C increase GF_MAXREC in global_file.h
       SUBROUTINE LOCAL_FILE_CLOSE_READ
       IMPLICIT NONE
 
-#include "global_file.h"
+#include "bucket_sort.h"
 
       CLOSE(UNIT=LF_UNIT,STATUS='DELETE')
 

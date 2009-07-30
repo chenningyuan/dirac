@@ -1513,9 +1513,11 @@ C
       PERC = N_WRITTEN+N_DELETED
       PERC = 100.D0/PERC
       PERC = PERC*N_WRITTEN
-      WRITE (LUPRI,1000) N_WRITTEN,PERC
- 1000 FORMAT (/" Buffers flushed:",I16," HT integrals written (",
-     &        F6.2,"% )") 
+      GIGABYTES = N_WRITTEN * 16.0
+      GIGABYTES = GIGABYTES / (1024.0**3)
+      WRITE (LUPRI,1000) MYTID,N_WRITTEN,PERC, GIGABYTES
+ 1000 FORMAT (/" Node",I5," finished first half transformation",I16,
+     &         " HT integrals written (",F6.2,"%, ",F9.2," GB)") 
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
