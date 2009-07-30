@@ -178,8 +178,7 @@ void gauss_taylor(taylor<1,Ndeg>& t, const tnum_t &a)
   exp_taylor(t,-a*a);
   t.stretch(-2*a);
   taylor<1,Ndeg> g;
-  g.zero();
-  g[0] = 1;
+  g = 1;
   for (int i=1;i<=Ndeg/2;i++)
     g[2*i] = -g[2*(i-1)]/i;
   t*=g;

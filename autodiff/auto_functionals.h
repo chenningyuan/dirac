@@ -36,8 +36,7 @@ taylor <5,N> pbe_correlation(tnum_t R0, tnum_t Z0);
 template<int N>
 inline void get_rhoa(taylor<5,N> &rhoa, tnum_t R0)
 {
-  rhoa.zero();
-  rhoa[0] = R0/2;
+  rhoa = R0/2;
   if (N>0)
     {
       rhoa[1] = 0.5;
@@ -47,8 +46,7 @@ inline void get_rhoa(taylor<5,N> &rhoa, tnum_t R0)
 template<int N>
 inline void get_rhob(taylor<5,N> &rhob, tnum_t R0)
 {
-  rhob.zero();
-  rhob[0] = R0/2;
+  rhob = R0/2;
   if (N>0)
     {
       rhob[1] = 0.5;
@@ -59,8 +57,7 @@ inline void get_rhob(taylor<5,N> &rhob, tnum_t R0)
 template<int N>
 inline void get_grada2(taylor<5,N> &ga2, tnum_t Z0)
 {
-  ga2.zero();
-  ga2[0] = Z0/4;
+  ga2 = Z0/4;
   if (N>0)
     {
       ga2[3] = 0.25; // Z
@@ -72,8 +69,7 @@ inline void get_grada2(taylor<5,N> &ga2, tnum_t Z0)
 template<int N>
 inline void get_gradab(taylor<5,N> &gab, tnum_t Z0)
 {
-  gab.zero();
-  gab[0] = Z0/4;
+  gab = Z0/4;
   if (N>0)
     {
       gab[3] = 0.25; // Z
@@ -85,8 +81,7 @@ inline void get_gradab(taylor<5,N> &gab, tnum_t Z0)
 template<int N>
 inline void get_gradb2(taylor<5,N> &gb2, tnum_t Z0)
 {
-  gb2.zero();
-  gb2[0] = Z0/4;
+  gb2 = Z0/4;
   if (N>0)
     {
       gb2[3] = 0.25; // Z
