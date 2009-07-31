@@ -15,19 +15,61 @@ module aor_property_definitions
 
 contains
 
-  subroutine MolGradi(S,D,F,nc)
-      type(matrix):: S,D,F,W,Sg(1)
-      complex(8):: Eg(nc); integer:: nc,i
-      Eg=0; call prop_energy((/'GEO'/),(/D/),Eg)
-      W = D*F*D
-      do i=1,nc
-          call prop_overlap((/'GEO'/),S,Sg,c=(/i/))
-          Eg(i) = Eg(i) - dot(W,Sg(1)); Sg(1)=0
-      end do; W=0
-      write(*, *) 'start molecular gradient'
-      write(*, '(6f23.16)') Eg
-      write(*, *) 'end molecular gradient'
-  end subroutine
+   subroutine aor_magnetizability(S, D, F, w)
+   !no-Lon and London magnetizability
+      type(matrix), intent(in)  :: S, D, F
+      complex(8),   intent(in)  :: w
+      complex(8)                :: Eoo(3,3), Ebb(3,3)
+      type(matrix) :: Db(3), Fb(3), DFD, ihTb(3), Sb(3), Sbb(3,3)
+      integer      :: i,j
+
+      !no-London
+      call pert_dens( (/'MAGO'/), S, (/D/), (/F/), Db, Fb, w=(/w/) )
+      Eoo = 0
+      call prop_energy( (/'MAGO','MAGO'/), (/D/), Eoo); Eoo=-Eoo !sign change
+      print '(a/3(3f18.13/)/)', 'E0oo', Eoo; Eoo=0
+      call prop_energy( (/'MAGO'/), (/D,Db/), Eoo)
+      print '(a/3(3f18.13/)/)', 'E1oDo', Eoo; Eoo=0
+      Db=0; Fb=0
+
+!     !London diamag
+!     call pert_dens( (/'MAG'/), S, (/D/), (/F/), Db, Fb, w=(/w/) )
+!     Ebb = 0
+!     call prop_energy( (/'MAG','MAG'/), (/D/), Ebb); Ebb=-Ebb !sign change
+!     print '(a/3(3f18.13/)/)', 'E0bb', Ebb; Ebb=0
+!     !here, the term -i/2TbbD is missing, which is zero
+!     DFD = D*F*D
+!     call prop_overlap( (/'MAG','MAG'/), S, Sbb)
+!     do j = 1, 3
+!        do i = 1, 3
+!           Ebb(i,j) = Ebb(i,j) + tr(Sbb(i,j),DFD) !sign change
+!        end do
+!     end do; DFD=0; Sbb=0
+!     print '(a/3(3f18.13/)/)', '-SbbW', Ebb; Ebb=0
+
+!     !London paramag
+!     call prop_energy( (/'MAG'/), (/D,Db/), Ebb, o=(/2/))
+!     print '(a/3(3f18.13/)/)', 'E1bDb', Ebb; Ebb=0
+
+!     call prop_overlap( (/'MAG'/), S, ihTb, w=(/-w/2,0*w/) )
+!     do j = 1, 3
+!        do i = 1, 3
+!           Ebb(i,j) = Ebb(i,j) - tr(Sb(i),Db(j))
+!        end do
+!     end do
+!     print '(a/3(3f18.13/)/)', '-i/2TbDb', Ebb; Ebb=0
+
+!     call prop_overlap( (/'MAG'/), S, ihTb, w=(/+w/2,0*w/) )
+!     do j = 1, 3
+!        DFD = Db(j)*(F+(w/2)*S)*D + D*(Fb(j)-ihTb(j))*D + D*(F-(w/2)*S)*Db(j)
+!        do i = 1, 3
+!           Ebb(i,j) = Ebb(i,j) - tr(Sb(i),DFD)
+!        end do
+!     end do; DFD=0; Sb=0; ihTb=0; Db=0; Fb=0
+!     print '(a/3(3f18.13/)/)', '-SbWb', Ebb; Ebb=0
+
+!     print '(a,2f6.3/3(3f18.13/)/)', 'London Magnetizability = Ebb', -w, w, Ebb
+   end subroutine
 
   subroutine test_grcont(n, nr_atoms, test_london, test_geo)
 
@@ -219,6 +261,27 @@ contains
     write(*, *) 'test_matrix_defop: tr(D, F)',        tr(D, F)
     write(*, *) 'test_matrix_defop: norm(F)',         norm(F)
     write(*, *) 'test_matrix_defop: sqrt(dot(F, F))', sqrt(dot(F, F))
+
+  end subroutine
+
+  subroutine aor_quadrupole(S, D, F)
+
+    type(matrix), intent(inout) :: S, D, F
+!   ----------------------------------------------------------------------------
+    complex(8)                  :: e_ij(6) = 0.0d0
+    integer                     :: i, j
+
+    S = 1.0d0*S
+    D = 1.0d0*D
+    F = 1.0d0*F
+
+!   e_i = 0.0d0
+    call prop_energy((/'ELGR'/), (/D/), e_ij)
+
+    do i = 1, 6
+      write(*, *) 'blub', i, e_ij(i)
+!     print '("@ -< "a1" > = " f26.10)', fc(i), -real(e_i(i))
+    end do
 
   end subroutine
 

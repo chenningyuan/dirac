@@ -125,9 +125,11 @@ C     Written by T.Saue June 24 1996
 C     The last revision: 1997/09/15 - jth (addition of gradient code)
 C
 C***********************************************************************
+
+      use dirac_cfg
 #ifdef MOD_AORESPONSE
       use aor_main
-#endif /* MOD_AORESPONSE */
+#endif
 
 #ifdef MOD_EMB
 !     USE FDE_MOD, ONLY: DO_GRID_OUT,FDE_GRIDOUT
@@ -284,10 +286,10 @@ C
 #endif
 
 #ifdef MOD_AORESPONSE
-      if (test_aoresponse) then
+      if (dirac_cfg_aoresponse) then
         call aoresponse_driver(work(kfree), lfree)
       end if
-#endif /* MOD_AORESPONSE */
+#endif
 
 C
 CMI   CALL MEMREL('PAMPRP',WORK,KWORK,KWORK,KFREE,LFREE)

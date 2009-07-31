@@ -276,7 +276,11 @@ contains
             call oneint(xyz(jj) // 'ANGMOM ', A(1))
             do i = 1, pb
                ii = pb1-pb+i
-               e(i+pb*j) = tr(A(1), D(ii))/2 !half, factor 2 hidden in tr
+#ifndef PRG_DIRAC
+               e(i+pb*j) = tr(A(1), D(ii))/2.0d0 !half, factor 2 hidden in tr
+#else
+               e(i+pb*j) = tr(A(1), D(ii))
+#endif
             end do
          end do
       else if (n==1 .and. p(1)=='MAG' .and. m/=0) then !no m==0 because because MAG imag
@@ -396,10 +400,6 @@ contains
             if (m == 0) then
 !             another factor for molecular gradient
               r(1:3*natom) = 0.5d0*r(1:3*natom)
-#ifdef PRG_DIRAC
-!             another factor for DIRAC
-              r(1:3*natom) = 4.0d0*r(1:3*natom)
-#endif
             end if
             if (do_dft()) then
                if (m==0) call di_get_geomDeriv_molgrad_DFT( r( 3*natom+1 : 3*natom*2 ), &
@@ -436,6 +436,8 @@ contains
          end if
          if (do_dft()) print* !after all the "...integrated to nn electrons..." prints
       else if (n==2 .and. all(p==(/'MAGO','MAGO'/))) then
+#ifndef PRG_DIRAC
+!in 4-c mode this is not needed, allow later for other hamiltonians
          do k = 0, c(4)-c(2)
             kk = c(2)+k
             do j = 0, c(3)-c(1)
@@ -448,6 +450,7 @@ contains
                end do
             end do
          end do
+#endif /* ifndef PRG_DIRAC */
       else if (n==2 .and. all(p==(/'EL ','MAG'/)) .and. m/=0) then !no m==0 because MAG imag
          do l = 0, c(4)-c(2)
             ll = c(2)+l
@@ -556,8 +559,6 @@ contains
                jj = c(1)+j
                call oneint(prefix_zeros(kk, 2) &
                            // ' DPG ' // xyz(jj), A(1))
-!ajt                    A(1) = oneint(c09(kk/100)//c09(mod(kk,100)/10) &
-!ajt                                //c09(mod(kk,10))//'DPG '//xyz(jj))
                do i = 1, pb
                   ii = pb1-pb+i
                   i1 = i+pb*(j+(c(3)-c(1)+1)*k)
@@ -575,7 +576,7 @@ contains
                do i = 1, pb
                   ii = pb1-pb+i
                   i1 = i+pb*(j+(c(3)-c(1)+1)*k)
-                  e(i1) = e(i1) + tr(A(1), D(ii))/2 !factor 1/2
+                  e(i1) = e(i1) + 0.5d0*tr(A(1), D(ii))
                end do
             end do
          end do
@@ -593,8 +594,6 @@ contains
                if (jj>3) j1 = j1+1
                call oneint(prefix_zeros(kk, 2) // 'QDG ' &
                            // xyz(1+mod(j1,3)) // xyz(1+j1/3), A(1))
-!ajt                call oneint(c09(jj/100)//c09(mod(jj,100)/10)//c09(mod(jj,10))// &
-!ajt                             'QDG'//xyz(1+(ii-1)/3)//xyz(1+mod(ii-1,3)),A(1))
                do i = 1, pb
                   ii = pb1-pb+i
                   i1 = i+pb*(j+(c(3)-c(1)+1)*k)
@@ -881,7 +880,11 @@ contains
          do i = 1, c(2)-c(1)+1
             ii = c(1)+i-1
             call oneint(xyz(ii) // 'ANGMOM ', A(1))
-            F(i) = F(i) + (1/2d0)*A(1) !factor 1/2 here
+#ifndef PRG_DIRAC
+            F(i) = F(i) + 0.5d0*A(1)
+#else
+            F(i) = F(i) +       A(1)
+#endif
          end do
       else if (n==1 .and. p(1)=='MAG') then
          if (m==0) then
@@ -955,6 +958,8 @@ contains
             end do
          end do
       else if (n==2 .and. all(p==(/'MAGO','MAGO'/))) then !only m==0
+#ifndef PRG_DIRAC
+!in 4-c mode this is not needed, allow later for other hamiltonians
          do j = 0, c(4)-c(2)
             jj = c(2)+j
             do i = 1, c(3)-c(1)+1
@@ -964,6 +969,7 @@ contains
                F(kk) = F(kk) + A(1)
             end do
          end do
+#endif /* ifndef PRG_DIRAC */
       else if (n==2 .and. all(p==(/'MAG','MAG'/))) then
          !call twofck('MM',D(1),(/(D(1),i=1,9)/))
          call quit('prop_fock: MAG-MAG has a bug and is disabled')

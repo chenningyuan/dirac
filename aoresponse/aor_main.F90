@@ -5,6 +5,7 @@ module aor_main
   use matrix_defop
   use matrix_stat
   use dirac_interface
+  use vib_prop
   use aor_cfg
   use aor_binomial
   use aor_property_definitions
@@ -23,12 +24,16 @@ contains
     type(matrix)  :: S, C_i, D, F
     complex(8) :: freq(4)
     real(kind_dp) :: add_to
-    integer       :: natoms_ifc
+    integer       :: i, j
     integer, intent(in)    :: lwork
     real(8), intent(inout) :: work(lwork)
+    complex(8),allocatable:: tsr(:) !ajt: scratch for property tensors
 
 !  initialize fortran 77 work memory interface
    call di_set_f77_work(work, lwork)
+
+!  for debugging, remove later
+   call print_prp_common_blocks()
 
 #ifdef MOD_AUTODIFF
     call init_binomial()
@@ -44,7 +49,6 @@ contains
     call get_i_or_s_C(C_i, 'i')
 
     D   = C_i*dag(C_i)
-    D   = 0.5d0*D
 
     call get_F(F)
 
@@ -55,6 +59,25 @@ contains
     call energy(D, F)
     call mu(S, D, F)
 
+    if (aor_cfg_quadrupole) then
+      call aor_quadrupole(S, D, F)
+    end if
+
+    if (aor_cfg_roa) then
+           print '(//a,f11.8/)','linscf calls roa_pol_gpri_aten_gra w=',aor_cfg_freq(1)
+           call get_natoms(j); j=3*j
+           allocate(tsr(3*3+3*3+3*6+3*3*j+3*3*j+3*6*j)) !ajt: hack
+           call roa_pol_gpri_aten_gra(S,D,F,j,aor_cfg_freq(1)*(1d0,0d0),tsr(1:9),tsr(10:18),tsr(19:36), &
+                                      tsr(37:36+9*j),tsr(37+9*j:36+18*j),tsr(37+18*j:36+36*j))
+!          !ajt VIBCTL seems to want g-prime = <<mu,mag>>(w;-w) (opposite sign) (maybe I'm wrong)
+!          tsr(10:18) = -tsr(10:18)
+!          tsr(37+9*j:36+18*j) = -tsr(37+9*j:36+18*j)
+!          call VIBCTL_ifc(j,aor_cfg_freq(1),real(tsr(1:9)),real(tsr(10:18)),real(tsr(19:36)),     &
+!                          (/((0d0,0d0),i=1,3*j)/),real(tsr(37:36+9*j)),real(tsr(37+9*j:36+18*j)), &
+!                          real(tsr(37+18*j:36+36*j)),wrk,lwrk)
+           deallocate(tsr)
+    end if
+
     if (aor_cfg_test_geo) then
 !     call test_grcont(D%nrow, natoms_ifc(), .false., .true.)
 !     call debug_1grad(D, F, natoms_ifc())
@@ -64,6 +87,10 @@ contains
 
     if (aor_cfg_alpha) then
       call alpha(S, D, F, (/freq(1), -freq(1)/))
+    end if
+
+    if (aor_cfg_magnetizability) then
+      call aor_magnetizability(S, D, F, freq(1))
     end if
 
     if (aor_cfg_beta) then

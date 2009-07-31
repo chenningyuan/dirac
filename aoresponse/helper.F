@@ -185,30 +185,6 @@
 
       end
 
-      function natoms_ifc()
-
-#include "mxcent.h"
-#include "nuclei.h"
-
-      integer natoms_ifc
-
-      natoms_ifc = natoms
-
-      end
-
-      subroutine get_natoms(nr_atoms)
-
-#include "mxcent.h"
-#include "nuclei.h"
-
-      integer nr_atoms
-
-      nr_atoms = natoms
-
-      end subroutine
-
-
-
 
 !     XC stuff
 !     ========

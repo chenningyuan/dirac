@@ -430,9 +430,10 @@ contains
       type(matrix),           intent(in) :: A
       integer,      optional, intent(in) :: unit, colwidth
       character(*), optional, intent(in) :: label, braces
-      integer                            :: uni, colw, dec, i, j, siz
+      integer                            :: uni, colw, dec, i, j, siz, iz, n
       character*8                        :: fmt
       character*4                        :: brac
+      real(8), external                  :: ddot
 
 #ifndef PRG_DIRAC
       uni = 6 !process optional argument unit, which defaults to stdout
@@ -480,6 +481,13 @@ contains
       write(*, *) 'ih_sym = ', A%ih_sym
       write(*, *) 'tr_sym = ', A%tr_sym
       write(*, *) 'irep   = ', A%irep
+
+      do iz = 1, nz
+        n = A%nrow*A%ncol
+        write(*, *) 'norm(iz) ', iz, sqrt(ddot(n, A%elms((iz - 1)*n + 1), 1, &
+                                                  A%elms((iz - 1)*n + 1), 1))
+        write(*, *) 'sum(iz)  ', iz, sum(A%elms((iz - 1)*n + 1:(iz - 1)*n + n))
+      end do
 
       if (associated(A%elms)) then
         call prqmat(A%elms,            &

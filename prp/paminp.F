@@ -42,9 +42,12 @@ C       Written by Trond Saue and Hans Joergen Aa.Jensen
 C       Last revision: June 14 1996 - tsaue
 C
 C***********************************************************************
+
+         use dirac_cfg
 #ifdef MOD_AORESPONSE
          use aor_input
-#endif /* MOD_AORESPONSE */
+         use dirac_interface
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -124,7 +127,6 @@ C
       ESRANISO     = .FALSE.
       NPRPWF       = 1
       PRPWF(1)     = 'DHF'
-      test_aoresponse = .false.
 
 CMI Activate the  picture change transformations
 C   of four-component property matrixes 
@@ -498,14 +500,18 @@ C     *STEX
          CALL QUIT('*STEX not included in this version')
 #endif
          GO TO 200
-   10 CONTINUE
+
+!     *AORESPONSE
+   10 continue
 #ifdef MOD_AORESPONSE
-         test_aoresponse = .true.
+         dirac_cfg_aoresponse = .true.
          call parse_aor_input(word)
+         call ask_for_integrals()
 #else
-         CALL QUIT('*AORESPONSE not included in this version')
-#endif /* MOD_AORESPONSE */
-         GO TO 200
+         call quit('*AORESPONSE not included in this version')
+#endif
+      go to 200
+
     1 CONTINUE
       IF(DOXLR) CALL XLRINP(WORD,.TRUE.,WORK,LWORK)
 CMI ... read again the input

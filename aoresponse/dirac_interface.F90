@@ -8,6 +8,7 @@ module dirac_interface
 
   implicit none
 
+  public print_q_vector
   public di_get_gbds
   public di_read_operator_int
   public do_dft
@@ -20,6 +21,8 @@ module dirac_interface
   public grcont
   public ask_for_integrals
   public response_solver
+  public natoms_ifc
+  public get_natoms
   public dipnuc_ifc
   public qdrnuc_ifc
   public gradnn_ifc
@@ -27,6 +30,10 @@ module dirac_interface
   public di_select_wrk
   public di_deselect_wrk
   public daxpy_iz_jz
+  public get_lucmd
+  public get_lupri
+  public get_nucind
+  public print_prp_common_blocks
 
   private
 
@@ -38,6 +45,7 @@ module dirac_interface
     module procedure get_P
   end interface
 
+#include "priunit.h"
 #include "mxcent.h"
 #include "../abacus/cbinuc.h"
 #include "cbihr2.h"
@@ -58,20 +66,54 @@ module dirac_interface
 #include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
+#include "nqcc.h"
 
   save
 
   integer          :: coulomb_mem_req   ! Memory requirements for the Coulomb build
   integer          :: dft_mem_req       ! Memory requirements for the DFT build
   real(8), pointer :: f77_work(:)       ! Fortran 77 work array pointer
-  integer          :: len_f77_work  = 0 ! Length of the work array 
+  integer          :: len_f77_work  = 0 ! Length of the work array
   integer          :: memory_usage  = 0 ! Amount of work array used
   integer          :: mem_wrk_count = 0 ! Counts
 
   integer,      parameter :: max_aoproper_indices = 900
   character(16) :: op_name_to_aoproper_index(max_aoproper_indices) = '----------------'
 
+  character(2)  ::  i_iterator(3) = (/ 'X',  'Y',  'Z'/)
+  character(2)  :: ij_iterator(6) = (/'XX', 'XY', 'XZ', 'YY', 'YZ', 'ZZ'/)
+
 contains
+
+  function get_lucmd() result(u)
+
+!   ----------------------------------------------------------------------------
+    integer :: u
+!   ----------------------------------------------------------------------------
+
+    u = lucmd
+
+  end function
+
+  function get_lupri() result(u)
+
+!   ----------------------------------------------------------------------------
+    integer :: u
+!   ----------------------------------------------------------------------------
+
+    u = lupri
+
+  end function
+
+  function get_nucind() result(u)
+
+!   ----------------------------------------------------------------------------
+    integer :: u
+!   ----------------------------------------------------------------------------
+
+    u = nucind
+
+  end function
 
   subroutine daxpy_iz_jz(f, A, iz, B, jz)
 
@@ -160,30 +202,30 @@ contains
   subroutine print_prp_common_blocks()
 
 !   ----------------------------------------------------------------------------
-    integer :: i 
+    integer :: i
 !   ----------------------------------------------------------------------------
 
     do i = 1, nprps
       write(*, *) 'dcbxpr:  --------------'
-      write(*, *) 'dcbxpr:  i             ', i            
-      write(*, *) 'dcbxpr:  prpnam(i)     ', prpnam(i)     
-      write(*, *) 'dcbxpr:  iprptyp(i)    ', iprptyp(i)    
-      write(*, *) 'dcbxpr:  iprpsym(i)    ', iprpsym(i)    
-      write(*, *) 'dcbxpr:  iprptim(i)    ', iprptim(i)    
-      write(*, *) 'dcbxpr:  facprp(1, i)  ', facprp(1, i)  
-      write(*, *) 'dcbxpr:  facprp(2, i)  ', facprp(2, i)  
-      write(*, *) 'dcbxpr:  facprp(3, i)  ', facprp(3, i)  
-      write(*, *) 'dcbxpr:  iprplbl(1, i) ', iprplbl(1, i) 
-      write(*, *) 'dcbxpr:  iprplbl(2, i) ', iprplbl(2, i) 
-      write(*, *) 'dcbxpr:  iprplbl(3, i) ', iprplbl(3, i) 
+      write(*, *) 'dcbxpr:  i             ', i
+      write(*, *) 'dcbxpr:  prpnam(i)     ', prpnam(i)
+      write(*, *) 'dcbxpr:  iprptyp(i)    ', iprptyp(i)
+      write(*, *) 'dcbxpr:  iprpsym(i)    ', iprpsym(i)
+      write(*, *) 'dcbxpr:  iprptim(i)    ', iprptim(i)
+      write(*, *) 'dcbxpr:  facprp(1, i)  ', facprp(1, i)
+      write(*, *) 'dcbxpr:  facprp(2, i)  ', facprp(2, i)
+      write(*, *) 'dcbxpr:  facprp(3, i)  ', facprp(3, i)
+      write(*, *) 'dcbxpr:  iprplbl(1, i) ', iprplbl(1, i)
+      write(*, *) 'dcbxpr:  iprplbl(2, i) ', iprplbl(2, i)
+      write(*, *) 'dcbxpr:  iprplbl(3, i) ', iprplbl(3, i)
       write(*, *) 'dcbxpr:  --------------'
     end do
 
     do i = 1, nprplbl
       write(*, *) 'dcbprl:  -----------'
-      write(*, *) 'dcbprl:  i          ', i            
-      write(*, *) 'dcbprl:  prplbl(i)  ', prplbl(i) 
-      write(*, *) 'dcbprl:  pdoint(i)  ', pdoint(i) 
+      write(*, *) 'dcbprl:  i          ', i
+      write(*, *) 'dcbprl:  prplbl(i)  ', prplbl(i)
+      write(*, *) 'dcbprl:  pdoint(i)  ', pdoint(i)
       write(*, *) 'dcbprl:  iprlrep(i) ', iprlrep(i)
       write(*, *) 'dcbprl:  iprltyp(i) ', iprltyp(i)
       write(*, *) 'dcbprl:  -----------'
@@ -191,7 +233,7 @@ contains
 
     do i = 1, nprpcls
       write(*, *) 'dcbcls:  ----------'
-      write(*, *) 'dcbcls:  i         ', i            
+      write(*, *) 'dcbcls:  i         ', i
       write(*, *) 'dcbcls:  CLSCAL(i) ', CLSCAL(i)
       write(*, *) 'dcbcls:  CLSINT(i) ', CLSINT(i)
       write(*, *) 'dcbcls:  CLSCMB(i) ', CLSCMB(i)
@@ -203,32 +245,28 @@ contains
 
   subroutine request_1el_integrals(label, blocks)
 
-!   can be used like this:
-!   call request_1el_integrals('BETAMAT', '000+')
 !   ----------------------------------------------------------------------------
     character(7), intent(in) :: label
     character(4), intent(in) :: blocks
 !   ----------------------------------------------------------------------------
-    integer                  :: last_position
+    integer                  :: i
 !   ----------------------------------------------------------------------------
 
-#include "dcbcls.h"
+    i = nprpcls + 1
 
-    last_position = nprpcls + 1
-
-    if (last_position > maxcls) then
-      call quit('request_1el_integrals: last_position > maxcls')
+    if (i > maxcls) then
+      call quit('request_1el_integrals: i > maxcls')
     end if
 
-    clscal(last_position) = .true.
-    clsint(last_position) = label
-    clscmb(last_position) = blocks
+    clscal(i) = .true.
+    clsint(i) = label
+    clscmb(i) = blocks
 
 !   important only for cartesian or spherical moment integrals
 !   here just set it to something
-    iordcl(last_position) = 0
+    iordcl(i) = 0
 
-    nprpcls = last_position
+    nprpcls = i
 
   end subroutine
 
@@ -257,7 +295,7 @@ contains
 
     logical                    :: energy, fock
 
-    real(8)              :: dmat(*)
+    real(8), intent(in)  :: dmat(*)
     integer                    :: nr_dmat
 !   ----------------------------------------------------------------------------
     real(8), allocatable :: fmat(:)
@@ -347,11 +385,11 @@ contains
                 relcal, gencnt, dummy, dummy)
 
     if (fock) then
-       if (geo)                          f = 0.25d0
-       if (london .and. max_derv .eq. 1) f = 0.50d0
-       if (london .and. max_derv .eq. 2) f = 1.00d0
+      if (geo)                          f = 0.25d0
+      if (london .and. max_derv .eq. 1) f = 0.50d0
+      if (london .and. max_derv .eq. 2) f = 1.00d0
 
-       call dscal(fmat_dim, f, fmat, 1)
+      call dscal(fmat_dim, f, fmat, 1)
     end if
 
     call dcopy(g_dim, fmat, 1, g, 1)
@@ -462,7 +500,7 @@ contains
     call alloc(w08, nucdep)
 
     call onedr1(w01,                                                       &
-                D_folded%elms, F_folded%elms,                              & 
+                D_folded%elms, F_folded%elms,                              &
                 w02, w03, w04, w05, w06, w07, w08,                         &
                 dummy, work, lwork, 0, .true., 1, .true., .true., .false., &
                 ntbas(0), nnbbasx, nnbbast, doint,                         &
@@ -641,13 +679,75 @@ contains
 
   end subroutine
 
+
+      function natoms_ifc()
+
+      integer natoms_ifc
+
+      natoms_ifc = natoms
+
+      end function
+
+      subroutine get_natoms(nr_atoms)
+
+
+      integer nr_atoms
+
+      nr_atoms = natoms
+
+      end subroutine
+
+
   subroutine qdrnuc_ifc(q)
 
-    real(8) :: q(6)
+!   nuclear contribution to quadrupole moments
+!   based on Kenneth's nucqdr in Dalton
 
-    call quit('implement qdrnuc_ifc first')
-!   call nucqdr(cord(:, 1:nucdep), (/0.0d0, 0.0d0, 0.0d0/), lupri, 0)
-!   q = (/qdrnuc(1,1), qdrnuc(1:2, 2), qdrnuc(1:3, 3)/)
+!   ----------------------------------------------------------------------------
+    real(8), intent(out) :: q(6)
+!   ----------------------------------------------------------------------------
+    real(8)              :: qn(3, 3), x, y, z, r2
+    integer              :: ix, iy, iz, i, isymop, k
+!   ----------------------------------------------------------------------------
+
+    qn = 0.0d0
+
+    ix = iptax(1, 1)
+    iy = iptax(2, 1)
+    iz = iptax(3, 1)
+
+    k = 0
+    do i = 1, nucind
+      do isymop = 0, maxopr
+        if (iand(isymop, istbnu(i)) == 0) then
+          k = k + 1
+
+          x  = cord(1, k)
+          y  = cord(2, k)
+          z  = cord(3, k)
+
+          r2 = x*x + y*y + z*z
+          r2 = r2/3.0d0
+
+          qn(ix, ix) = qn(ix, ix) + charge(i)*(x*x - r2)
+          qn(iy, iy) = qn(iy, iy) + charge(i)*(y*y - r2)
+          qn(iz, iz) = qn(iz, iz) + charge(i)*(z*z - r2)
+          qn(ix, iy) = qn(ix, iy) + charge(i)* x*y
+          qn(ix, iz) = qn(ix, iz) + charge(i)* x*z
+          qn(iy, iz) = qn(iy, iz) + charge(i)* y*z
+
+        end if
+      end do
+    end do
+
+    qn(iy, ix) = qn(ix, iy)
+    qn(iz, ix) = qn(ix, iz)
+    qn(iz, iy) = qn(iy, iz)
+
+    qn = 1.5d0*qn
+
+!   ordering is: xx, yx, yy, zx, zy, zx
+    q = (/qn(1, 1), qn(1:2, 2), qn(1:3, 3)/)
 
   end subroutine
 
@@ -701,7 +801,6 @@ contains
     if (.not. mat_isdef(F)) call init_mat(F, ntbas(0), ntbas(0))
 
     F = F1 + F2
-    F = 2.0d0*F
 
     F1 = 0
     F2 = 0
@@ -717,7 +816,11 @@ contains
     integer,       allocatable   :: npos(:)
 
     real(8), pointer   :: work(:)
-    integer                      :: lwork
+    integer                      :: lwork, local_intflg
+    integer                      :: ill_int
+    integer                      :: isl_int
+    integer                      :: iss_int
+    integer                      :: igt_int
 
     if (.not. mat_isdef(G)) call init_mat(G, ntbas(0), ntbas(0))
     G = 1.0d0*D !inherit symmetry information
@@ -726,30 +829,36 @@ contains
     call stex_get_npos(npos_nr)
     call alloc(npos, npos_nr)
 
-!   fixme: 
+    ill_int   = iand(intgen,   1)
+    isl_int   = iand(intgen/2, 1)
+    iss_int   = iand(intgen/4, 1)
+    igt_int   = iand(intgen/8, 1)
+
+    local_intflg = ill_int + 2*isl_int + 4*iss_int + 8*igt_int
+
+!   fixme:
 !   call with proper limit
 !   at the moment i don't know the limit
 !   simply give entire work and hope for the best
     lwork = len_f77_work
     call di_select_wrk(work, lwork)
 
-    call twofck(G%irep + 1, &
-!               G%ih_sym, &
-                0,        &
-                1,        &
-                G%elms,   &
-                D%elms,   &
-                1,        &
-                npos,     &
-                intflg,   &
-                0,        &
-                work, len_f77_work)
+    call twofck((/G%irep + 1/), &
+!               (/G%ih_sym/),   &
+                (/0/),          &
+                (/1/),          &
+                  G%elms,       &
+                  D%elms,       &
+                  1,            &
+                  npos,         &
+                  local_intflg, &
+                  0,            &
+                  work,         &
+                  lwork)
 
     call di_deselect_wrk(work, lwork)
 
     call dealloc(npos)
-
-    G = 4.0d0*G
 
   end subroutine
 
@@ -895,8 +1004,6 @@ contains
 
     call di_deselect_wrk(work, lwork)
 
-    S = 2.0d0*S
-
   end subroutine
 
 
@@ -955,8 +1062,6 @@ contains
 
     call di_deselect_wrk(work, lwork)
     close(file_unit, status = 'keep')
-
-    P = 2.0d0*P
 
     if (debug_me) then
       call print_mat(P, label = 'debug P in AO basis')
@@ -1221,7 +1326,7 @@ contains
     Wp     = 1.0d-100*RHS_mo
     RHS_mo = 0
 
-!   fixme: 
+!   fixme:
 !   call with proper limit
 !   at the moment i don't know the limit
 !   simply give entire work and hope for the best
@@ -1246,13 +1351,13 @@ contains
 !   parameters
 !   ==========
 
-!fixme:check call setrsp
-
+    call setrsp
 
     static    = .false.
 
     lineq     = .true.
-    fkrmc     = .false.
+!   in setrsp
+!   fkrmc     = .false.
     lsvcfg(1) = .true.
     lsvcfg(2) = .true.
     tknorm    = .false.
@@ -1268,7 +1373,8 @@ contains
     cnvint(2) = 1.0d20
     itrint(1) = 1
     itrint(2) = 1
-    uncoup    = .false.
+!   in setrsp
+!   uncoup    = .false.
     sternh    = .false.
 
     ill_int   = iand(intgen,   1)
@@ -1439,8 +1545,6 @@ contains
     call get_i_or_s_C(Cs, 's')
 
     Dp = (Ci*(Wp*dag(Cs))) - (Cs*(Wp*dag(Ci)))
-!   Dp = (Ci*(dag(Wp)*dag(Cs))) + (Cs*(Wp*dag(Ci)))
-    Dp = 0.5d0*Dp
 
 !fixme
     Dp%ih_sym = Wp%ih_sym
@@ -1469,21 +1573,21 @@ contains
                                        ibtyp_pointer,   &
                                        eigvec)
 
-    character(*),  intent(in)    :: vector_type
-    integer,       intent(in)    :: ih
-    real(8), intent(inout) :: response_vector(:, :, :)
-    integer,       intent(in)    :: length
-    integer,       intent(in)    :: nr_freq
-    integer,       intent(in)    :: ibtyp(2, *)
-    integer,       intent(in)    :: ibtyp_pointer(*)
-    real(8), intent(in)    :: eigvec(*)
 !   ----------------------------------------------------------------------------
-    integer,       allocatable   :: ivecs(:)
-    real(8), allocatable   :: buffer(:)
-    character(6)                 :: file_name
-    integer                      :: file_unit, nbtyp
-
-    call alloc(ivecs, nr_freq)
+    character(*), intent(in)  :: vector_type
+    integer,      intent(in)  :: ih
+    real(8),      intent(out) :: response_vector(*)
+    integer,      intent(in)  :: length
+    integer,      intent(in)  :: nr_freq
+    integer,      intent(in)  :: ibtyp(*)
+    integer,      intent(in)  :: ibtyp_pointer(*)
+    real(8),      intent(in)  :: eigvec(*)
+!   ----------------------------------------------------------------------------
+    integer,      allocatable :: ivecs(:)
+    real(8),      allocatable :: buffer(:)
+    character(6)              :: file_name
+    integer                   :: file_unit, nbtyp
+!   ----------------------------------------------------------------------------
 
     select case (vector_type)
       case ('pp')
@@ -1491,13 +1595,14 @@ contains
         file_unit = luboe
         file_name = 'PAMBOE'
       case ('pn')
-        nbtyp     = -1
+        nbtyp     = 2
         file_unit = lubop
         file_name = 'PAMBOP'
       case default
         call quit('error in construct_response_vector: unknown vector type')
     end select
 
+    call alloc(ivecs,  nr_freq)
     call alloc(buffer, length*nz)
 
     open(file_unit,              &
@@ -1516,8 +1621,6 @@ contains
                 ibtyp_pointer,   &
                 ivecs,           &
                 buffer)
-
-    call dscal(length*nz,  0.5d0, response_vector, 1)
 
     close(file_unit, status = 'keep')
 
@@ -1544,7 +1647,7 @@ contains
 
   subroutine print_q_vector(vector, vector_dimension)
 
-    real(8), intent(in) :: vector(:)
+    real(8), intent(in) :: vector(*)
     integer,       intent(in) :: vector_dimension
 
     call prqmat(vector,           &
@@ -1559,67 +1662,52 @@ contains
   end subroutine
 
   subroutine add_op(op_name,    &
-                    label,      &
+                    blocks,     &
                     typ,        &
-                    nr_components,        &
                     tr_sym,     &
                     pg_sym,     &
                     prefactors, &
-                    blocks)
+                    labels)
 
 !   ----------------------------------------------------------------------------
-    character(16), intent(in)  :: op_name
-    character(8), intent(in)   :: label(nr_components)
-    integer,       intent(in)  :: typ
-    integer,       intent(in)  :: nr_components
-    integer,       intent(in)  :: tr_sym
-    integer,       intent(in)  :: pg_sym
-    real(8),       intent(in)  :: prefactors(3)
-    character(4),  intent(in)  :: blocks
+    character(16), intent(in) :: op_name
+    character(4),  intent(in) :: blocks
+    integer,       intent(in) :: typ
+    integer,       intent(in) :: tr_sym
+    integer,       intent(in) :: pg_sym
+    real(8),       intent(in) :: prefactors(:)
+    character(8),  intent(in) :: labels(:)
 !   ----------------------------------------------------------------------------
-    integer                    :: i, j, k, imax, icomp
+    integer                   :: i, ixpr, iprl
 !   ----------------------------------------------------------------------------
 
-!   dcbxpr.h
+    ixpr = nprps + 1
+    iprl = nprplbl
 
-    i = nprps + 1
+    prpnam(ixpr)  = op_name
+    iprptyp(ixpr) = typ
+    iprpsym(ixpr) = pg_sym
+    iprptim(ixpr) = tr_sym
 
-    op_name_to_aoproper_index(i) = op_name
-    prpnam(i)    = op_name
-    facprp(:, i) = prefactors(:)
-    iprptyp(i)   = typ
+    do i = 1, size(prefactors)
 
-    imax = 0
-    do j = 1, i - 1
-      do k = 1, 3
-        if (iprplbl(k, j) > imax) then
-          imax = iprplbl(k, j)
-        end if
-      end do
+      iprl = iprl + 1
+
+      prplbl(iprl)  = labels(i)
+      pdoint(iprl)  = blocks
+      iprlrep(iprl) = pg_sym - 1
+      iprltyp(iprl) = tr_sym
+
+      facprp(i, ixpr)  = prefactors(i)
+      iprplbl(i, ixpr) = iprl
+
     end do
-    iprplbl(:, i) = (/imax + 1, 0, 0/)
-!fixme
-    if (typ == 8) then
-      iprplbl(:, i) = (/imax + 1, imax + 2, imax + 3/)
-    end if
 
-    iprpsym(i) = pg_sym
-    iprptim(i) = tr_sym
-!   iprptim(i) = 1
+    nprps   = ixpr
+    nprplbl = iprl
 
-    nprps = i
-
-!   dcbprl.h
-
-    i = nprplbl
-    do icomp = 1, nr_components
-      i = i + 1
-      prplbl(i)  = label(icomp)
-      pdoint(i)  = blocks
-      iprlrep(i) = pg_sym - 1
-      iprltyp(i) = tr_sym
-    end do
-    nprplbl = i
+!   private
+    op_name_to_aoproper_index(ixpr) = op_name
 
   end subroutine
 
@@ -1628,11 +1716,15 @@ contains
 !   ----------------------------------------------------------------------------
     character(1) :: ss
     character(4) :: blocks
-    character(8) :: s
+    character(8) :: s, s1, s2
     real(8)      :: f
-    integer      :: i, nr_atoms
+    integer      :: i, nr_atoms, icomponent, iatom
     integer      :: nr_ls_components
 !   ----------------------------------------------------------------------------
+!   todo: 1. adapt for symmetry
+!            only diplen is right at the moment
+!         2. generalize for other hamiltonians 
+!            not every combination hamiltonian--property is tested
 
     call get_natoms(nr_atoms)
 
@@ -1645,7 +1737,16 @@ contains
 
 !   add to dcbcls
 
+!                               for the electric field
     call request_1el_integrals('DIPLEN ', '+00'//ss)
+    call request_1el_integrals('DPLGRA ', '+00'//ss)
+    call request_1el_integrals('QUAGRA ', '+00'//ss)
+!                               for the magnetic field
+    call request_1el_integrals('DIPLEN ', '0++0')
+    call request_1el_integrals('DPLGRA ', '0++0')
+
+    call request_1el_integrals('THETA  ', '+00'//ss)
+    call request_1el_integrals('DSUSCGO', '+00'//ss)
     call request_1el_integrals('G1O    ', '+00'//ss)
     call request_1el_integrals('G1N    ', '+00'//ss)
     call request_1el_integrals('G1B    ', '000+')
@@ -1655,52 +1756,213 @@ contains
 
 !   add to dcbxpr and dcbprl
 
-!                                   type
-!                                   ¦  trsym
-!                name               ¦  ¦   pgsym                prefactors----          blocks
-!                ¦                  ¦  ¦   ¦                    ¦      ¦      \         |
-    call add_op('XDIPLEN         ', (/'XDIPLEN '/), 1,1, 1, (isymax(1, 1) + 1), (/1.0d0, 0.0d0, 0.0d0/), '+00'//ss)
-    call add_op('YDIPLEN         ', (/'YDIPLEN '/), 1,1, 1, (isymax(2, 1) + 1), (/1.0d0, 0.0d0, 0.0d0/), '+00'//ss)
-    call add_op('ZDIPLEN         ', (/'ZDIPLEN '/), 1,1, 1, (isymax(3, 1) + 1), (/1.0d0, 0.0d0, 0.0d0/), '+00'//ss)
+    f = 1.0d0
+    blocks = '+00'//ss
+    call add_op('XDIPLEN         ', &
+                blocks,             &
+                1,                  &
+                1,                  &
+                (isymax(1, 1) + 1), &
+                (/f/),              &
+                (/'XDIPLEN '/))
+    call add_op('YDIPLEN         ', &
+                blocks,             &
+                1,                  &
+                1,                  &
+                (isymax(2, 1) + 1), &
+                (/f/),              &
+                (/'YDIPLEN '/))
+    call add_op('ZDIPLEN         ', &
+                blocks,             &
+                1,                  &
+                1,                  &
+                (isymax(3, 1) + 1), &
+                (/f/),              &
+                (/'ZDIPLEN '/))
 
     f = 1.0d0
     blocks = '+00'//ss
-    do i = 1, nr_atoms*3
-      s = 'G1O'//prefix_zeros(i, 3)//'  '
-      call add_op(s//'        ', (/s/), 1, 1, 1, 1, (/f, 0.0d0, 0.0d0/), blocks)
+    do icomponent = 1, size(ij_iterator)
+      s = ij_iterator(icomponent)//'THETA '
+      call add_op(s//'        ',      &
+                  blocks,             &
+                  1,                  &
+                  1,                  &
+                  1,                  &
+                  (/f/),              &
+                  (/s/))
+    end do
+
+    f = 0.5d0*cval
+    blocks = '0++0'
+    call add_op('XANGMOM         ', &
+                blocks,             &
+                5,                  &
+               -1,                  &
+                1,                  &
+                (/f, f/),           &
+                (/'ZDIPLEN ', 'YDIPLEN '/))
+    call add_op('YANGMOM         ', &
+                blocks,             &
+                6,                  &
+               -1,                  &
+                1,                  &
+                (/f, f/),           &
+                (/'XDIPLEN ', 'ZDIPLEN '/))
+    call add_op('ZANGMOM         ', &
+                blocks,             &
+                7,                  &
+               -1,                  &
+                1,                  &
+                (/f, f/),           &
+                (/'YDIPLEN ', 'XDIPLEN '/))
+
+    f = -cval
+    blocks = '0++0'
+    do iatom = 1, nr_atoms*3
+      s1 = prefix_zeros(iatom, 2)//' DPG Z'
+      s2 = prefix_zeros(iatom, 2)//' DPG Y'
+      call add_op(prefix_zeros(iatom, 3)//'AMDRX        ', &
+                  blocks,                                  &
+                  5,                                       &
+                 -1,                                       &
+                  1,                                       &
+                  (/f,  f/),                               &
+                  (/s1, s2/))
+      s1 = prefix_zeros(iatom, 2)//' DPG X'
+      s2 = prefix_zeros(iatom, 2)//' DPG Z'
+      call add_op(prefix_zeros(iatom, 3)//'AMDRY        ', &
+                  blocks,                                  &
+                  6,                                       &
+                 -1,                                       &
+                  1,                                       &
+                  (/f,  f/),                               &
+                  (/s1, s2/))
+      s1 = prefix_zeros(iatom, 2)//' DPG Y'
+      s2 = prefix_zeros(iatom, 2)//' DPG X'
+      call add_op(prefix_zeros(iatom, 3)//'AMDRZ        ', &
+                  blocks,                                  &
+                  7,                                       &
+                 -1,                                       &
+                  1,                                       &
+                  (/f,  f/),                               &
+                  (/s1, s2/))
     end do
 
     f = 1.0d0
     blocks = '+00'//ss
-    do i = 1, nr_atoms*3
-      s = 'G1N'//prefix_zeros(i, 3)//'  '
-      call add_op(s//'        ', (/s/), 1, 1, 1, 1, (/f, 0.0d0, 0.0d0/), blocks)
+    do icomponent = 1, size(ij_iterator)
+      s = ij_iterator(icomponent)//'SUSCGO'
+      call add_op(s//'        ',      &
+                  blocks,             &
+                  1,                  &
+                  1,                  &
+                  1,                  &
+                  (/f/),              &
+                  (/s/))
     end do
 
-!   fixme: adapt for mc == 1
+    f = 1.0d0
+    blocks = '+00'//ss
+    do iatom = 1, nr_atoms*3
+      do icomponent = 1, size(i_iterator)
+        s = prefix_zeros(iatom, 2)//' DPG '//i_iterator(icomponent)
+        call add_op(s//'        ',      &
+                    blocks,             &
+                    1,                  &
+                    1,                  &
+                    1,                  &
+                    (/f/),              &
+                    (/s/))
+      end do
+    end do
+
+    f = 1.0d0
+    blocks = '+00'//ss
+    do iatom = 1, nr_atoms*3
+      do icomponent = 1, size(ij_iterator)
+        s = prefix_zeros(iatom, 2)//'QDG '//ij_iterator(icomponent)
+        call add_op(s//'        ',      &
+                    blocks,             &
+                    1,                  &
+                    1,                  &
+                    1,                  &
+                    (/f/),              &
+                    (/s/))
+      end do
+    end do
+
+    f = 1.0d0
+    blocks = '+00'//ss
+    do iatom = 1, nr_atoms*3
+      s = 'G1O'//prefix_zeros(iatom, 3)//'  '
+      call add_op(s//'        ',      &
+                  blocks,             &
+                  1,                  &
+                  1,                  &
+                  1,                  &
+                  (/f/),              &
+                  (/s/))
+    end do
+
+    f = 1.0d0
+    blocks = '+00'//ss
+    do iatom = 1, nr_atoms*3
+      s = 'G1N'//prefix_zeros(iatom, 3)//'  '
+      call add_op(s//'        ',      &
+                  blocks,             &
+                  1,                  &
+                  1,                  &
+                  1,                  &
+                  (/f/),              &
+                  (/s/))
+    end do
+
     f = 2.0d0*(cval**2.0d0)
     blocks = '000+'
-    do i = 1, nr_atoms*3
-      s = 'G1B'//prefix_zeros(i, 3)//'  '
-      call add_op(s//'        ', (/s/), 1, 1, 1, 1, (/f, 0.0d0, 0.0d0/), blocks)
+    do iatom = 1, nr_atoms*3
+      s = 'G1B'//prefix_zeros(iatom, 3)//'  '
+      call add_op(s//'        ',      &
+                  blocks,             &
+                  1,                  &
+                  1,                  &
+                  1,                  &
+                  (/f/),              &
+                  (/s/))
     end do
 
     f = cval
     blocks = '0++0'
-    do i = 1, nr_atoms*3
-      s = 'G1KX'//prefix_zeros(i, 3)//' '
-      call add_op(s//'        ', (/s/), 1, 1,-1, 1, (/f, 0.0d0, 0.0d0/), blocks)
+    do iatom = 1, nr_atoms*3
+      s = 'G1KX'//prefix_zeros(iatom, 3)//'  '
+      call add_op(s//'        ',      &
+                  blocks,             &
+                  1,                  &
+                 -1,                  &
+                  1,                  &
+                  (/f/),              &
+                  (/s/))
     end do
-    do i = 1, nr_atoms*3
-      s = 'G1KY'//prefix_zeros(i, 3)//' '
-      call add_op(s//'        ', (/s/), 1, 1,-1, 1, (/f, 0.0d0, 0.0d0/), blocks)
+    do iatom = 1, nr_atoms*3
+      s = 'G1KY'//prefix_zeros(iatom, 3)//'  '
+      call add_op(s//'        ',      &
+                  blocks,             &
+                  1,                  &
+                 -1,                  &
+                  1,                  &
+                  (/f/),              &
+                  (/s/))
     end do
-    do i = 1, nr_atoms*3
-      s = 'G1KZ'//prefix_zeros(i, 3)//' '
-      call add_op(s//'        ', (/s/), 1, 1,-1, 1, (/f, 0.0d0, 0.0d0/), blocks)
+    do iatom = 1, nr_atoms*3
+      s = 'G1KZ'//prefix_zeros(iatom, 3)//'  '
+      call add_op(s//'        ',      &
+                  blocks,             &
+                  1,                  &
+                 -1,                  &
+                  1,                  &
+                  (/f/),              &
+                  (/s/))
     end do
-
-    call print_prp_common_blocks()
 
   end subroutine
 

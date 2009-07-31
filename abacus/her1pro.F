@@ -285,7 +285,7 @@ C
 #include "maxorb.h"
 #include "iratdef.h"
 #include "efield.h"
-      PARAMETER (NTABLE = 81)
+      PARAMETER (NTABLE = 96)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE,DOATOM(*)
       CHARACTER LABINT(*)*8, WORD*7, TABLE(NTABLE)*7, MTFORM*6,
@@ -298,30 +298,54 @@ C
 #include "nuclei.h"
 #include "huckel.h"
 #include "cbihr1.h"
-C
+!                   1          2          3          4
       DATA TABLE /'OVERLAP', 'DIPLEN ', 'DIPVEL ', 'QUADRUP',
+!                   5          6          7          8
      &            'SPNORB ', 'SECMOM ', 'THETA  ', 'CARMOM ',
+!                   9         10         11         12
      &            'SPHMOM ', 'SOLVENT', 'FERMI C', 'PSO    ',
+!                  13         14         15         16
      &            'SPIN-DI', 'DSO    ', 'SDFC   ', 'HDO    ',
+!                  17         18         19         20
      &            'S1MAG  ', 'S2MAG  ', 'ANGLON ', 'ANGMOM ',
+!                  21         22         23         24
      &            'LONMOM ', 'MAGMOM ', 'KINENER', 'DSUSNOL',
+!                  25         26         27         28
      &            'DSUSLAN', 'DSUSLH ', 'DIASUS ', 'NUCSNLO',
+!                  29         30         31         32
      &            'NUCSLO ', 'NUCSHI ', 'NEFIELD', 'ELFGRDC',
+!                  33         34         35         36
      &            'ELFGRDS', 'S1MAGL ', 'S1MAGR ', 'HDOBR  ',
+!                  37         38         39         40
      &            'NUCPOT ', 'HBDO   ', 'SQHDO  ', 'DSUSCGO',
+!                  41         42         43         44
      &            'NSTCGO ', 'EXPIKR ', 'MASSVEL', 'DARWIN ',
+!                  45         46         47         48
      &            'CM1    ', 'CM2    ', 'SQHDOR ', 'SQOVLAP',
+!                  49         50         51         52
      &            'LONSOL1', 'LONSOL2', 'NSTCGOS', 'S1ELE  ', 
+!                  53         54         55         56
      &            'S1ELB  ', 'ONEELD ', 'PVC    ', 'EFT    ',
-     &            'EFTNTL ', 'NUCFIEL',
-     &            'RM1H3  ', 'RM1RN  ', 'RM1H2  ',
-     &            'RM1N1H ', 'RDSUSLN', 'RDSUSLL', 'RM2H3  ',
-     &            'RM2H2  ', 'CAP_RE ', 'CAP_IM ', 'CAP_OVL',
-     &            'CAPD1R ', 'CAPD1I ', 'CAPDVE ', 'SOPPINT',
-     &            'CAPD_VD', 'G1O    ', 'G1N    ', 'G1B    ',
-     &            'G1KX   ', 'G1KY   ', 'G1KZ   ', 'xxxxxxx'
-     &                         /
-
+!                  57         58         59         60
+     &            'EFTNTL ', 'NUCFIEL', 'RM1H3  ', 'RM1RN  ', 
+!                  61         62         63         64
+     &            'RM1H2  ', 'RM1N1H ', 'RDSUSLN', 'RDSUSLL', 
+!                  65         66         67         68
+     &            'RM2H3  ', 'RM2H2  ', 'CAP_RE ', 'CAP_IM ', 
+!                  69         70         71         72
+     &            'CAP_OVL', 'CAPD1R ', 'CAPD1I ', 'CAPDVE ', 
+!                  73         74         75         76
+     &            'SOPPINT', 'CAPD_VD', 'G1O    ', 'G1N    ', 
+!                  77         78         79         80
+     &            'G1B    ', 'G1KX   ', 'G1KY   ', 'G1KZ   ', 
+!                  81         82         83         84
+     &            'DPLGRA ', 'QUAGRA ', 'xxxxxxx', 'xxxxxxx', 
+!                  85         86         87         88
+     &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 
+!                  89         90         91         92
+     &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 
+!                  93         94         95         96
+     &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx'/
 C
 #include "ibtfun.h"
 C
@@ -335,12 +359,29 @@ C
       SOLVNT = .FALSE.
       DO 100 I = 1, NTABLE
          IF (TABLE(I) .EQ. WORD) THEN
-            GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,
-     &             19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,
-     &             34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,
-     &             49,50,51,52,53,54,55,56,57,58,
-     &             59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,
-     &             75,76,77,78,79,80), I
+            GO TO (
+     &               1,  2,  3,  4,
+     &               5,  6,  7,  8,
+     &               9, 10, 11, 12,
+     &              13, 14, 15, 16,
+     &              17, 18, 19, 20,
+     &              21, 22, 23, 24,
+     &              25, 26, 27, 28,
+     &              29, 30, 31, 32,
+     &              33, 34, 35, 36,
+     &              37, 38, 39, 40,
+     &              41, 42, 43, 44,
+     &              45, 46, 47, 48,
+     &              49, 50, 51, 52,
+     &              53, 54, 55, 56,
+     &              57, 58, 59, 60,
+     &              61, 62, 63, 64,
+     &              65, 66, 67, 68,
+     &              69, 70, 71, 72,
+     &              73, 74, 75, 76,
+     &              77, 78, 79, 80,
+     &              81, 82
+     &            ), I
          END IF
   100 CONTINUE
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -1904,6 +1945,11 @@ C
       go to 200
 
 
+!todo (radovan): the kinetic energy dervs can be done much more
+!                compactly using inttyp alphadot
+!                will fix it when i have time
+
+
 !     g1kx: first geo derivatives of kinetic energy (x) integrals
 !     ===========================================================
    
@@ -1947,6 +1993,40 @@ C
       anti   = .true.
       square = .false.
       go to 200
+
+C
+C     Dipole gradient integrals DPLGRA
+C     -------------------------
+C
+ 81   CONTINUE
+      IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &   ' Calculation of dipole gradient integrals'
+         INTTYP = 52
+         CALL SETATM(doatom,NATOM,INTTYP)
+         CALL DPGTYP(NOPTYP,INTREP,INTADR,LABINT,doatom,NATOM)
+         ANTI = .FALSE.
+         SQUARE = .FALSE.
+      GOTO 200
+C
+C     Quadrupole gradient integrals QUAGRA
+C     -----------------------------
+C
+ 82   CONTINUE
+      IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &   ' Calculation of quadrupole gradient integrals'
+         INTTYP = 53
+         CALL SETATM(doatom,NATOM,INTTYP)
+         CALL QUGTYP(NOPTYP,INTREP,INTADR,LABINT,doatom,NATOM)
+         ANTI = .FALSE.
+         SQUARE = .FALSE.
+      GOTO 200
+
+
+
+
+
+
+
 
 
   200 CONTINUE
@@ -2980,14 +3060,13 @@ C  /* Deck efgtyp */
 C
       NOPTYP = 6*NATOM
       CALL NTYPTS(NOPTYP)
-      CALL IZERO(IFGTBL,6*NUCIND*(MAXREP + 1))
-c      CALL DZERO(IFGTBL,6*NUCIND*(MAXREP + 1))
+
+      ifgtbl = 0
 C
       ITYP = 0
       DO 100 IATOM = 1, NUCIND
       IF (DOATOM(IATOM)) THEN
          IJ = 0
-ctec         NAME = NAMEX(3*(IATOM - 1) + 1)(1:2)
          DO 200 ICOOR1 = 1, 3
          DO 200 ICOOR2 = ICOOR1, 3
             IJ = IJ + 1
@@ -2998,8 +3077,6 @@ ctec         NAME = NAMEX(3*(IATOM - 1) + 1)(1:2)
                   IOFF = IOFF + 1
                   ITYP = ITYP + 1
                   IFGTBL(IATOM,IJ,IREPC) = ITYP
-c                  LABINT(ITYP) = NAME//'EFG '//CHRXYZ(ICOOR1)//
-c     &                           CHRXYZ(ICOOR2)
                   LABINT(ITYP) = CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'EFG'//
      &                  CHRNOS(IATOM/10)//CHRNOS(MOD(IATOM,10))//
      &                  CHRNOS(IOFF)
@@ -3833,3 +3910,93 @@ C
      &   ' quadrature points: ',DIFMAX
       RETURN
       END
+
+
+      SUBROUTINE DPGTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <maxmom.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <nuclei.h>
+      DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
+      LOGICAL DOATOM(NUCIND)
+      CHARACTER LABINT(9*MXCENT)*8
+#include <symmet.h>
+#include <chrnos.h>
+#include <chrxyz.h>
+#include <ibtfun.h>
+      ITYP = 0
+      DO 100 IREP = 0, MAXREP
+         DO 200 IATOM = 1, NUCIND
+            IF (DOATOM(IATOM)) THEN
+               DO 300 ICOOR = 1, 3
+                  ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
+                  IF (ISCOOR .GT. 0) THEN
+                     IXY = 0
+                     DO 400 LCOOR = 1, 3
+                        ITYP = ITYP + 1
+                        IXY = IXY + 1
+                        LABINT(ITYP) = CHRNOS(ISCOOR/10)//
+     &                                 CHRNOS(MOD(ISCOOR,10))//' DPG '//
+     &                                 CHRXYZ(LCOOR)
+                        IAX = ISYMAX(LCOOR,1)
+                        INTREP(ITYP) = IBTXOR(IREP,IAX)
+                        LSCOOR = 3*(ISCOOR - 1) + IXY
+                        INTADR(LSCOOR) = ITYP
+ 400                 CONTINUE
+                  END IF
+ 300           CONTINUE
+            END IF
+ 200     CONTINUE
+ 100  CONTINUE
+      NOPTYP = ITYP
+      CALL NTYPTS(NOPTYP)
+      RETURN
+      END
+      SUBROUTINE QUGTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+#include <maxmom.h>
+#include <mxcent.h>
+#include <maxorb.h>
+#include <nuclei.h>
+      DIMENSION INTREP(18*MXCENT), INTADR(18*MXCENT)
+      LOGICAL DOATOM(NUCIND)
+      CHARACTER LABINT(18*MXCENT)*8
+#include <symmet.h>
+#include <chrnos.h>
+#include <chrxyz.h>
+#include <ibtfun.h>
+      ITYP = 0
+      DO 100 IREP = 0, MAXREP
+         DO 200 IATOM = 1, NUCIND
+            IF (DOATOM(IATOM)) THEN
+               DO 300 ICOOR = 1, 3
+                  ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
+                  IF (ISCOOR .GT. 0) THEN
+                     IXY = 0
+                     DO 400 LCOOR = 1, 3
+                     DO 400 MCOOR = LCOOR, 3
+                        ITYP = ITYP + 1
+                        IXY = IXY + 1
+                        LABINT(ITYP) = CHRNOS(ISCOOR/10)//
+     &                                 CHRNOS(MOD(ISCOOR,10))//'QDG '//
+     &                                 CHRXYZ(LCOOR)//CHRXYZ(MCOOR)
+                        IAX = IBTXOR(ISYMAX(LCOOR,1),ISYMAX(MCOOR,1))
+                        INTREP(ITYP) = IBTXOR(IREP,IAX)
+                        LSCOOR = 6*(ISCOOR - 1) + IXY
+                        INTADR(LSCOOR) = ITYP
+ 400                 CONTINUE
+                  END IF
+ 300           CONTINUE
+            END IF
+ 200     CONTINUE
+ 100  CONTINUE
+      NOPTYP = ITYP
+      CALL NTYPTS(NOPTYP)
+      RETURN
+      END
+

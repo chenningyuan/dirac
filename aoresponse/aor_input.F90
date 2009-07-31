@@ -11,30 +11,6 @@ module aor_input
 
 contains
 
-  function get_lucmd() result(u)
-
-#include "priunit.h"
-
-!   ----------------------------------------------------------------------------
-    integer :: u
-!   ----------------------------------------------------------------------------
-
-    u = lucmd
-
-  end function
-
-  function get_lupri() result(u)
-
-#include "priunit.h"
-
-!   ----------------------------------------------------------------------------
-    integer :: u
-!   ----------------------------------------------------------------------------
-
-    u = lupri
-
-  end function
-
   subroutine parse_aor_input(word_io)
 
 !   ----------------------------------------------------------------------------
@@ -48,12 +24,10 @@ contains
 
     if (word_io /= '*AORESP') return
 
-    call aor_cfg_init()
-    call ask_for_integrals()
-
     u = get_lucmd()
 
     do while (.true.)
+
       read (u, '(a7)') word
       first = word(1:1)
 
@@ -69,18 +43,8 @@ contains
 
         select case (word)
 
-          case ('.SKIPEE')
-            aor_cfg_skip_pp = .true.
-
-          case ('.SKIPEP')
-            aor_cfg_skip_pn = .true.
-
           case ('.THRESH')
             read(u, *) aor_cfg_threshold_response, aor_cfg_threshold_rhs
-
-!         give frequency for a process
-          case ('.FREQ_P')
-            read(u, *) aor_cfg_freq_process
 
 !         give 4 frequencies
 !         \alpha will use only first 2
@@ -91,9 +55,23 @@ contains
             read(u, *) aor_cfg_freq(3)
             read(u, *) aor_cfg_freq(4)
 
+!         give frequency for a process
+          case ('.FREQ_P')
+            read(u, *) aor_cfg_freq_process
+
+          case ('.SKIPPP', '.SKIPEE')
+            aor_cfg_skip_pp = .true.
+
+          case ('.SKIPPN', '.SKIPEP')
+            aor_cfg_skip_pn = .true.
+
 !         frequency-dependent \alpha
           case ('.ALPHA ')
             aor_cfg_alpha = .true.
+
+!         static \alpha
+          case ('.0ALPHA')
+            aor_cfg_alpha_lin_static = .true.
 
 !         frequency-dependent \beta by the n+1 rule
           case ('.BETA  ')
@@ -103,17 +81,13 @@ contains
           case ('.BETA2N')
             aor_cfg_beta_2np1 = .true.
 
-!         frequency-dependent \gamma
-          case ('.GAMMA ')
-            aor_cfg_gamma = .true.
-
-!         static \alpha
-          case ('.0ALPHA')
-            aor_cfg_alpha_lin_static = .true.
-
 !         static \beta
           case ('.0BETA ')
             aor_cfg_beta_lin_static = .true.
+
+!         frequency-dependent \gamma
+          case ('.GAMMA ')
+            aor_cfg_gamma = .true.
 
 !         static \gamma
           case ('.0GAMMA')
@@ -131,14 +105,20 @@ contains
           case ('.DC-KER')
             aor_cfg_gamma_lin_dc_kerr = .true.
 
+          case ('.MAGNET')
+            aor_cfg_magnetizability = .true.
+
+          case ('.QUADRU')
+            aor_cfg_quadrupole = .true.
+
+          case ('.ROA   ')
+            aor_cfg_roa = .true.
+
           case ('.INTEGR')
             aor_cfg_integrate = .true.
 
           case ('.VISUAL')
             aor_cfg_visual = .true.
-
-          case ('.TESTXC')
-            aor_cfg_test_xc = .true.
 
           case ('.TESTGE')
             aor_cfg_test_geo = .true.
