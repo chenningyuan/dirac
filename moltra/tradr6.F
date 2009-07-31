@@ -143,14 +143,10 @@ C
      &                     WORK(KRGBUF),WORK(KIGBUF),WORK(KLSORT))
 #if defined (VAR_MPI)
       ELSE
-CSK_debug     WRITE(LUPRI,*) 'calling FIRST_HALFTR_PARALLEL: MYTID',MYTID
          CALL FIRST_HALFTR_PARALLEL (WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                     NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP,
      &                     GABRAO,DRIJ,
      &                     WORK(KRGBUF),WORK(KIGBUF),WORK(KLSORT))
-#if defined (VAR_PFS)
-         CALL GLOBAL_FILE_CLOSE_WRITE
-#endif
       ENDIF
 #endif
       CALL MEMREL('TRDR6T',WORK,KRGBUF,KRGBUF,KFREE,LFREE)
@@ -508,6 +504,9 @@ C
          CALL BUFFER_FILE_FLUSH (1,RGBUF,IGBUF,LSORT,NFPCK12T*NBSYM)
          CALL BUFFER_FILE_END ()
       ENDIF
+#if defined (VAR_PFS)
+      CALL GLOBAL_FILE_CLOSE_WRITE
+#endif
 C
       RETURN
       END
@@ -556,13 +555,6 @@ C     Distribute the spinors over the nodes, we will also employ the master (nod
 C     in the second halftransformation, so add one to NUMNOD
 C
       NMPROC = NUMNOD + 1
-CMI   ... catch mpi-like error
-      IF (NMPROC.EQ.0) THEn
-        WRITE(LUPRI,'(/,2x,a,i8,1x,a,i12)') 
-     &  'Error NMPROC=',NMPROC,'NUMNOD=',NUMNOD
-        CALL FLSHFO(LUPRI)
-        CALL QUIT('DEFINE_SORT: mpi-like error exit, NMPROC is zero !')
-      ENDIF
       L_ON_NODE = NSTR2T / NMPROC
       L_REMAIN = MOD(NSTR2T,NMPROC)
       NODE = -1
@@ -608,22 +600,6 @@ C
       NBSYMP = NBSYM / NFSYM
       KL_IN_BUF = (NBSYMP * NSTR1T) / NBUF_L
       IF (MOD(NBSYMP*NSTR1T,NBUF_L).GT.0) KL_IN_BUF = KL_IN_BUF + 1
-
-caspg, debug
-      if (.true.) then
-      if (MYTID.eq.0) then
-      write (*,*) 'debug, in DEFINE_SORT:'
-      write (*,*) '                              N_BUFFER:',N_BUFFER
-      write (*,*) '                              NSTR2T  :',NSTR2T
-      write (*,*) '              NBUF_L(=N_BUFFER/NSTR2T):',NBUF_L
-      write (*,*) '                              NBSYM   :',NBSYM
-      write (*,*) '                              NBSYMP  :',NBSYMP
-      write (*,*) '                              NFSYM   :',NFSYM
-      write (*,*) '                              NSTR1T  :',NSTR1T
-      write (*,*) 'KL_IN_BUF(=(NBSYMP*NSTR1T)/NBUF_L) (a):',KL_IN_BUF
-      endif
-      endif
-caspg, debug
 
 c temporarty storage for 1HT fine-sorting 
       call alloc(node_for_buffer,N_BUFFER)
