@@ -1,18 +1,19 @@
 module vib_prop
 !Calculation and outputting of vibrational (optical) properties.
 !This file is currently common to Dalton and Dirac
-#ifndef PRG_DIRAC
-use matrix_operations, only: mat_print
-#endif
 
    use matrix_defop
    use prop_integrals
    use rsp_equations
+#ifdef PRG_DIRAC
+   use dirac_interface
+#endif
+
    implicit none
 
    public roa_pol_gpri_aten_gra,cars_shyp_polgra
    public vib_ana_polari,print_shypol
-   public molgradi
+   public dg_energy
 
    private
 
@@ -870,47 +871,50 @@ contains
    end subroutine
 
 
-  subroutine MolGradi(S,D,F,nc)
-      type(matrix):: S,D,F,W,Sg(1)
-      complex(8):: Eg(nc); integer:: nc,i
-      real(8) :: ddot
-      Eg=0; call prop_energy((/'GEO'/),(/D/),Eg)
-      W = D*F*D
-      do i=1,nc
-          call prop_overlap((/'GEO'/),S,Sg,c=(/i/))
-          Eg(i) = Eg(i) - dot(W,Sg(1))
-          Sg(1)=0
-      end do
-      W=0
+  subroutine dg_energy(S, D, F, n)
+
+!   ----------------------------------------------------------------------------
+    type(matrix)        :: S, D, F
+    integer, intent(in) :: n
+!   ----------------------------------------------------------------------------
+    type(matrix)        :: W, Sg(1)
+    integer             :: i, iatom, ix, iy, iz
+    complex(8)          :: g(n)
+!   ----------------------------------------------------------------------------
+
+    g = 0.0d0
+
+    call prop_energy((/'GEO'/), (/D/), g)
+
+    W = D*F*D
+
+    do i = 1, n
+
+      call prop_overlap((/'GEO'/), S, Sg, c=(/i/))
+      g(i) = g(i) - dot(W, Sg(1))
+      Sg(1) = 0
+
+    end do
+
+    W = 0
+
+    call header('molecular gradient', -1)
+
+    do iatom = 1, nr_atoms
+      ix = 3*(iatom - 1) + 1
+      iy = 3*(iatom - 1) + 2
+      iz = 3*(iatom - 1) + 3
+      write(*, '(a6, 3e26.16)') sym_dep_nuc_name(iatom), real(g(ix)), real(g(iy)), real(g(iz))
+    end do
+
+    call prsymb(unit_output, '-', 46, 0)
+
+!   g = 0.0d0
+
       write(*, *) 'start molecular gradient'
-      write(*, '(6f23.16)') Eg
+      write(*, '(6f23.16)') g
       write(*, *) 'end molecular gradient'
+
   end subroutine
-
-
-
-! subroutine DipGradi(S,D,F,nc)
-!     type(matrix):: S,D,F,Df(3),Ff(3),DFD(3),Sg(1)
-!     real(8):: Efg(3,nc); integer:: nc,i,j
-!     !dipole moment
-!     Efg(:,1)=0; call prop_energy((/'EL'/),(/D/),Efg)
-!     i = max(1,ceiling(log10(maxval(abs(Efg(:,1))))))
-!     print '("Dipole = -Ef"/3f19.<16-i>/)',-Efg(:,1)
-!     !first order equations
-!     call pert_dens((/'EL'/),S,(/D/),(/F/),Df,Ff,w=(/0d0/))
-!     Efg=0; call prop_energy((/'EL','GEO'/),(/D/),Efg)
-!     call prop_energy((/'GEO'/),(/D,Df/),Efg)
-!     do i=1,3; DFD(i) = Df(i)*F*D+D*Ff(i)*D+D*F*Df(i); end do
-!     do j=1,nc
-!         call prop_overlap((/'GEO'/),S,Sg,c=(/j/))
-!         do i=1,3
-!             Efg(i,j) = Efg(i,j) - dot(DFD(i),Sg(1))
-!         end do; Sg(1)=0
-!     end do; do i=1,3; DFD(i)=0; end do
-!     i = max(1,ceiling(log10(maxval(abs(Efg)))))
-!     print '("d/dg Dipole = -Efg w:"2f6.3/<nc>(3f19.<16-i>/))',0d0,0d0,-Efg
-!     do i=1,3; Df(i)=0; Ff(i)=0; end do
-! end subroutine
-
 
 end module

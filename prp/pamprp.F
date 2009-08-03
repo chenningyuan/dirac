@@ -287,6 +287,9 @@ C
 
 #ifdef MOD_AORESPONSE
       if (dirac_cfg_aoresponse) then
+!       initialize common block info
+        call init_cb_info()
+!       main aoresponse driver
         call aoresponse_driver(work(kfree), lfree)
       end if
 #endif

@@ -26,11 +26,10 @@ module aor_cfg
   logical, public :: aor_cfg_magnetizability    = .false.
   logical, public :: aor_cfg_quadrupole         = .false.
   logical, public :: aor_cfg_roa                = .false.
+  logical, public :: aor_cfg_dg_energy          = .false.
 
   logical, public :: aor_cfg_integrate          = .false.
   logical, public :: aor_cfg_visual             = .false.
-  logical, public :: aor_cfg_test_geo           = .false.
-  logical, public :: aor_cfg_test_london        = .false.
 
   logical, public :: aor_cfg_zzz                = .false.
   integer, public :: aor_cfg_zzz_order          = 0

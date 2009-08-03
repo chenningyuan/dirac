@@ -15,13 +15,13 @@ module dirac_interface
   public get_s
   public get_f
   public get_p
+  public get_g
   public get_i_or_s_c
   public debug_1grad
   public debug_2grad
   public grcont
   public ask_for_integrals
   public response_solver
-  public natoms_ifc
   public get_natoms
   public dipnuc_ifc
   public qdrnuc_ifc
@@ -30,12 +30,34 @@ module dirac_interface
   public di_select_wrk
   public di_deselect_wrk
   public daxpy_iz_jz
-  public get_lucmd
-  public get_lupri
-  public get_nucind
   public print_prp_common_blocks
+  public init_cb_info
+
+  save
+
+  integer,      public              :: unit_input       = 0
+  integer,      public              :: unit_output      = 0
+
+  integer,      public              :: nr_atoms         = 0
+  integer,      public              :: nr_sym_dep_nuc   = 0
+  integer,      public              :: nr_sym_indep_nuc = 0
+  character(6), public, allocatable :: sym_dep_nuc_name(:)
+
+  logical,      public              :: nonzero_small_metric = .false.
+
+  integer,      public              :: integral_flag        = 0
+  logical,      public              :: include_ll_integrals = .false.
+  logical,      public              :: include_ls_integrals = .false.
+  logical,      public              :: include_ss_integrals = .false.
+  logical,      public              :: include_gt_integrals = .false.
 
   private
+
+  logical :: cb_info_allocated = .false.
+  logical :: cb_info_set       = .false.
+#ifdef VAR_MPI
+  logical :: cb_info_synced    = .false.
+#endif
 
   interface di_get_gbds
     module procedure get_G
@@ -68,52 +90,82 @@ module dirac_interface
 #include "symmet.h"
 #include "nqcc.h"
 
-  save
+  integer, parameter :: max_aoproper_indices = 900
+  character(16)      :: op_name_to_aoproper_index(max_aoproper_indices) = '----------------'
 
-  integer          :: coulomb_mem_req   ! Memory requirements for the Coulomb build
-  integer          :: dft_mem_req       ! Memory requirements for the DFT build
-  real(8), pointer :: f77_work(:)       ! Fortran 77 work array pointer
-  integer          :: len_f77_work  = 0 ! Length of the work array
-  integer          :: memory_usage  = 0 ! Amount of work array used
-  integer          :: mem_wrk_count = 0 ! Counts
+  character(2)       ::  i_iterator(3) = (/ 'X',  'Y',  'Z'/)
+  character(2)       :: ij_iterator(6) = (/'XX', 'XY', 'XZ', 'YY', 'YZ', 'ZZ'/)
 
-  integer,      parameter :: max_aoproper_indices = 900
-  character(16) :: op_name_to_aoproper_index(max_aoproper_indices) = '----------------'
-
-  character(2)  ::  i_iterator(3) = (/ 'X',  'Y',  'Z'/)
-  character(2)  :: ij_iterator(6) = (/'XX', 'XY', 'XZ', 'YY', 'YZ', 'ZZ'/)
+  integer            :: coulomb_mem_req   ! Memory requirements for the Coulomb build
+  integer            :: dft_mem_req       ! Memory requirements for the DFT build
+  real(8), pointer   :: f77_work(:)       ! Fortran 77 work array pointer
+  integer            :: len_f77_work  = 0 ! Length of the work array
+  integer            :: memory_usage  = 0 ! Amount of work array used
+  integer            :: mem_wrk_count = 0 ! Counts
 
 contains
 
-  function get_lucmd() result(u)
+  subroutine init_cb_info()
 
 !   ----------------------------------------------------------------------------
-    integer :: u
+    integer :: ill_int
+    integer :: ils_int
+    integer :: iss_int
+    integer :: igt_int
 !   ----------------------------------------------------------------------------
 
-    u = lucmd
+    if (.not. cb_info_allocated) then
 
-  end function
+      allocate(sym_dep_nuc_name(mxcent))
 
-  function get_lupri() result(u)
+      cb_info_allocated = .true.
 
-!   ----------------------------------------------------------------------------
-    integer :: u
-!   ----------------------------------------------------------------------------
+    end if
 
-    u = lupri
+!   if (.not. cb_info_set) then
 
-  end function
+      unit_input       = lucmd
+      unit_output      = lupri
 
-  function get_nucind() result(u)
+      nr_atoms         = natoms
+      nr_sym_dep_nuc   = nucdep
+      nr_sym_indep_nuc = nucind
+      sym_dep_nuc_name = namdep
 
-!   ----------------------------------------------------------------------------
-    integer :: u
-!   ----------------------------------------------------------------------------
+      if (mc == 2) then
+        nonzero_small_metric = .true.
+      else
+        nonzero_small_metric = .false.
+      end if
 
-    u = nucind
+      ill_int = iand(intgen,   1)
+      ils_int = iand(intgen/2, 1)
+      iss_int = iand(intgen/4, 1)
+      igt_int = iand(intgen/8, 1)
 
-  end function
+      integral_flag = 0
+      if (ill_int == 1) then
+        integral_flag = integral_flag + 1
+        include_ll_integrals = .true.
+      end if
+      if (ils_int == 1) then
+        integral_flag = integral_flag + 2
+        include_ls_integrals = .true.
+      end if
+      if (iss_int == 1) then
+        integral_flag = integral_flag + 4
+        include_ss_integrals = .true.
+      end if
+      if (igt_int == 1) then
+        integral_flag = integral_flag + 8
+        include_gt_integrals = .true.
+      end if
+
+      cb_info_set = .true.
+
+!   end if
+
+  end subroutine
 
   subroutine daxpy_iz_jz(f, A, iz, B, jz)
 
@@ -283,32 +335,34 @@ contains
                     dmat,     &
                     nr_dmat)
 
+!   ----------------------------------------------------------------------------
     real(8)              :: work(*)
-    integer                    :: lwork
+    integer, intent(in)  :: lwork
 
-    real(8)              :: g(*)
-    integer                    :: g_dim
+    real(8), intent(out) :: g(*)
+    integer, intent(in)  :: g_dim
 
-    logical                    :: geo, london
+    logical, intent(in)  :: geo
+    logical, intent(in)  :: london
 
-    integer                    :: max_derv, iatom_in
+    integer, intent(in)  :: max_derv
+    integer, intent(in)  :: iatom_in
 
-    logical                    :: energy, fock
+    logical, intent(in)  :: energy
+    logical, intent(in)  :: fock
 
     real(8), intent(in)  :: dmat(*)
-    integer                    :: nr_dmat
+    integer, intent(in)  :: nr_dmat
 !   ----------------------------------------------------------------------------
-    real(8), allocatable :: fmat(:)
+    real(8), allocatable :: tmat(:), fmat(:)
 
-    real(8)              :: dummy
-    integer                    :: idummy
+    logical              :: gencnt
 
-    logical                    :: gencnt
-
-    integer                    :: i, i2typ, itype, ifctyp(8), iatom, fmat_dim
+    integer              :: i2typ, itype, ifctyp(8), iatom, fmat_dim
 
     real(8)              :: skip(3, 14, 3)
     real(8)              :: screen, f
+!   ----------------------------------------------------------------------------
 
     dopert = .true.
 
@@ -365,32 +419,41 @@ contains
       call quit('programming error in call to grcont')
     end if
 
+    f = 1.0d0
+    if (fock) then
+      if (geo)                        f = 0.25d0
+      if (london .and. max_derv == 1) f = 0.50d0
+      if (london .and. max_derv == 2) f = 1.00d0
+    end if
+
+    allocate(tmat(fmat_dim))
     allocate(fmat(fmat_dim))
+
     fmat = 0.0d0
 
-!   LL integrals
-!   ============
+    if (include_ll_integrals) then
 
-    i2typ    = 1
-    intclass = 0
+      i2typ    = 1
+      intclass = 0
+    
+      tmat = 0.0d0
+      call dzero(skip, 3*14*3)
+    
+      call twoint(work, lwork, fmat, dmat, 4*nr_dmat, (/0/),             &
+                  ifctyp, (/0.0d0/), (/0/), (/0/), itype,                &
+                  max_derv, iatom, .true., .true., .false., tktime,      &
+                  1, 0, 0, 0, 0, .false., (/0/), i2typ,                  &
+                  icedif, screen, (/0.0d0/), (/0.0d0/), (/0.0d0/), skip, &
+                  relcal, gencnt, (/0.0d0/), (/0.0d0/))
+    
+      call daxpy(fmat_dim, f, tmat, 1, fmat, 1)
 
-!   call dzero(gradee, mxcoor)
-    call dzero(skip, 3*14*3)
-
-    call twoint(work, lwork, fmat, dmat, 4*nr_dmat, idummy,       &
-                ifctyp, dummy, idummy, idummy, itype,             &
-                max_derv, iatom, .true., .true., .false., tktime, &
-                1, 0, 0, 0, 0, .false., idummy, i2typ,            &
-                icedif, screen, dummy, dummy, dummy, skip,        &
-                relcal, gencnt, dummy, dummy)
-
-    if (fock) then
-      if (geo)                          f = 0.25d0
-      if (london .and. max_derv .eq. 1) f = 0.50d0
-      if (london .and. max_derv .eq. 2) f = 1.00d0
-
-      call dscal(fmat_dim, f, fmat, 1)
     end if
+
+
+
+
+
 
     call dcopy(g_dim, fmat, 1, g, 1)
 
@@ -679,24 +742,15 @@ contains
 
   end subroutine
 
+  subroutine get_natoms(return_nr_atoms)
 
-      function natoms_ifc()
+!   ----------------------------------------------------------------------------
+    integer, intent(out) :: return_nr_atoms
+!   ----------------------------------------------------------------------------
 
-      integer natoms_ifc
+    return_nr_atoms = nr_atoms
 
-      natoms_ifc = natoms
-
-      end function
-
-      subroutine get_natoms(nr_atoms)
-
-
-      integer nr_atoms
-
-      nr_atoms = natoms
-
-      end subroutine
-
+  end subroutine
 
   subroutine qdrnuc_ifc(q)
 
@@ -816,11 +870,7 @@ contains
     integer,       allocatable   :: npos(:)
 
     real(8), pointer   :: work(:)
-    integer                      :: lwork, local_intflg
-    integer                      :: ill_int
-    integer                      :: isl_int
-    integer                      :: iss_int
-    integer                      :: igt_int
+    integer                      :: lwork
 
     if (.not. mat_isdef(G)) call init_mat(G, ntbas(0), ntbas(0))
     G = 1.0d0*D !inherit symmetry information
@@ -829,13 +879,6 @@ contains
     call stex_get_npos(npos_nr)
     call alloc(npos, npos_nr)
 
-    ill_int   = iand(intgen,   1)
-    isl_int   = iand(intgen/2, 1)
-    iss_int   = iand(intgen/4, 1)
-    igt_int   = iand(intgen/8, 1)
-
-    local_intflg = ill_int + 2*isl_int + 4*iss_int + 8*igt_int
-
 !   fixme:
 !   call with proper limit
 !   at the moment i don't know the limit
@@ -843,17 +886,17 @@ contains
     lwork = len_f77_work
     call di_select_wrk(work, lwork)
 
-    call twofck((/G%irep + 1/), &
-!               (/G%ih_sym/),   &
-                (/0/),          &
-                (/1/),          &
-                  G%elms,       &
-                  D%elms,       &
-                  1,            &
-                  npos,         &
-                  local_intflg, &
-                  0,            &
-                  work,         &
+    call twofck((/G%irep + 1/),  &
+!               (/G%ih_sym/),    &
+                (/0/),           &
+                (/1/),           &
+                  G%elms,        &
+                  D%elms,        &
+                  1,             &
+                  npos,          &
+                  integral_flag, &
+                  0,             &
+                  work,          &
                   lwork)
 
     call di_deselect_wrk(work, lwork)
@@ -1216,7 +1259,6 @@ contains
     integer                      :: length_pn
 
     integer                      :: nr_freq
-    integer                      :: ill_int, isl_int, iss_int, igt_int
 
     logical                      :: debug_me = .false.
     logical                      :: do_pp    = .false.
@@ -1377,12 +1419,7 @@ contains
 !   uncoup    = .false.
     sternh    = .false.
 
-    ill_int   = iand(intgen,   1)
-    isl_int   = iand(intgen/2, 1)
-    iss_int   = iand(intgen/4, 1)
-    igt_int   = iand(intgen/8, 1)
-
-    intdef    = ill_int + 2*isl_int + 4*iss_int + 8*igt_int
+    intdef    = integral_flag
 
 !   nr_freq   = size(freq)
     nr_freq   = 1
@@ -1718,22 +1755,15 @@ contains
     character(4) :: blocks
     character(8) :: s, s1, s2
     real(8)      :: f
-    integer      :: i, nr_atoms, icomponent, iatom
-    integer      :: nr_ls_components
+    integer      :: icomponent, iatom
 !   ----------------------------------------------------------------------------
 !   todo: 1. adapt for symmetry
 !            only diplen is right at the moment
 !         2. generalize for other hamiltonians 
 !            not every combination hamiltonian--property is tested
 
-    call get_natoms(nr_atoms)
-
-    nr_ls_components = mc
-    if (nr_ls_components == 2) then
-      ss = '+'
-    else
-      ss = '0'
-    end if
+    ss = '0'
+    if (nonzero_small_metric) ss = '+'
 
 !   add to dcbcls
 

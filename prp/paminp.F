@@ -505,7 +505,13 @@ C     *STEX
    10 continue
 #ifdef MOD_AORESPONSE
          dirac_cfg_aoresponse = .true.
+
+!        this is to get lucmd and lupri
+!        later it is initialized again (not ideal i know)
+         call init_cb_info()
+
          call parse_aor_input(word)
+
          call ask_for_integrals()
 #else
          call quit('*AORESPONSE not included in this version')

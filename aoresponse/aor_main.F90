@@ -78,11 +78,11 @@ contains
            deallocate(tsr)
     end if
 
-    if (aor_cfg_test_geo) then
+    if (aor_cfg_dg_energy) then
 !     call test_grcont(D%nrow, natoms_ifc(), .false., .true.)
 !     call debug_1grad(D, F, natoms_ifc())
 !     call debug_2grad(D,    natoms_ifc())
-      call molgradi(S, D, F, 3*natoms_ifc())
+      call dg_energy(S, D, F, 3*nr_atoms)
     end if
 
     if (aor_cfg_alpha) then

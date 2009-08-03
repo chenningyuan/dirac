@@ -19,16 +19,13 @@ contains
     character(7)                :: word
     character(80)               :: line
     character(1)                :: first
-    integer                     :: u
 !   ----------------------------------------------------------------------------
 
     if (word_io /= '*AORESP') return
 
-    u = get_lucmd()
-
     do while (.true.)
 
-      read (u, '(a7)') word
+      read (unit_input, '(a7)') word
       first = word(1:1)
 
       select case (first)
@@ -44,20 +41,20 @@ contains
         select case (word)
 
           case ('.THRESH')
-            read(u, *) aor_cfg_threshold_response, aor_cfg_threshold_rhs
+            read(unit_input, *) aor_cfg_threshold_response, aor_cfg_threshold_rhs
 
 !         give 4 frequencies
 !         \alpha will use only first 2
 !         \beta only first 3
           case ('.FREQ  ')
-            read(u, *) aor_cfg_freq(1)
-            read(u, *) aor_cfg_freq(2)
-            read(u, *) aor_cfg_freq(3)
-            read(u, *) aor_cfg_freq(4)
+            read(unit_input, *) aor_cfg_freq(1)
+            read(unit_input, *) aor_cfg_freq(2)
+            read(unit_input, *) aor_cfg_freq(3)
+            read(unit_input, *) aor_cfg_freq(4)
 
 !         give frequency for a process
           case ('.FREQ_P')
-            read(u, *) aor_cfg_freq_process
+            read(unit_input, *) aor_cfg_freq_process
 
           case ('.SKIPPP', '.SKIPEE')
             aor_cfg_skip_pp = .true.
@@ -114,23 +111,20 @@ contains
           case ('.ROA   ')
             aor_cfg_roa = .true.
 
+          case ('.MOLGRD')
+            aor_cfg_dg_energy = .true.
+
           case ('.INTEGR')
             aor_cfg_integrate = .true.
 
           case ('.VISUAL')
             aor_cfg_visual = .true.
 
-          case ('.TESTGE')
-            aor_cfg_test_geo = .true.
-
-          case ('.TESTLO')
-            aor_cfg_test_london = .true.
-
 !         calculate static derivatives E_{zzz...}
 !         of given order
           case ('.ZZZ   ')
             aor_cfg_zzz = .true.
-            read(u, *) aor_cfg_zzz_order
+            read(unit_input, *) aor_cfg_zzz_order
 
           case default
             call quit('illegal keyword after '//word_io//': '//word)
