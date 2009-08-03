@@ -64,7 +64,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
 c aspg
 c with verbosity factor we want to control the printing of
-c of the sorting progress, in intervals of 25%)
+c of the sorting progress, in intervals of 25% now
 c 
           verbosity_factor = (N_BUFFER/(NUMNOD+1)/4)
 
@@ -84,16 +84,6 @@ c use that as scratch space
              endif
           enddo
 
-c aspg, debug
-          if (thisnode.eq.0) then
-          write (*,*) ' - debug:'
-          write (*,*) '   maximum records per buffer',
-     &                 max_records_per_buffer
-          write (*,*) '         buffer size (b)   ', 
-     &                 (max_records_per_buffer*(4*2+8)*data_chunksize)
-          endif
-c aspg, debug
-
           if (max_records_per_buffer.eq.0) then
              call quit('All zero-sized buffers is not possible!')
           endif
@@ -103,19 +93,6 @@ c more scratch allocation
           isiz0 = (max_records_per_buffer+1)*data_chunksize
           isiz1 = isiz0
           isiz2 = isiz1*2
-
-c aspg, debug
-          if (thisnode.eq.0) then
-             write (*,*) ' '
-             write (*,*) ' - debug:'
-             write (*,*) '   size of data chunk (units) ',data_chunksize    
-             write (*,*) '   metadata  storage unit     ',imdsz
-             write (*,*) '   temporary storage unit 0, size: ',isiz0
-             write (*,*) '   temporary storage unit 1, size: ',isiz1
-             write (*,*) '   temporary storage unit 2, size: ',isiz2
-             write (*,*) ' '
-          endif
-c aspg, debug
 
           call init_metadata_file(i_metadata_file)  
        

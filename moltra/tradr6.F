@@ -1152,8 +1152,6 @@ C
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
-      integer*8 total_used
-      common/totalreads/total_used
 C
       DIMENSION NSTR(2,0:2,4)
       DIMENSION LSORT(3,NFPCK12T,0:7)
@@ -1187,23 +1185,15 @@ C
 C
 C     Transform righthand indices to molecular spinor basis
 C
-c aspg, testing
-        total_used     = 0
-        itimes_bufread = 0                
-        itimes_qtrans  = 0                
-        itimes_izloop  = 0                
-                                          
-        call timer('START ',TIMSTR,TIMEND)
+      call timer('START ',TIMSTR,TIMEND)
  
 #ifndef VAR_PFS                                                                       
-        if (do_finesort) call sort_buffers(mytid,1)
+      if (do_finesort) call sort_buffers(mytid,1)
 #endif        
 
-        write (*,*) ' '
-        write (*,*) '<<< Starting 2HT on node ',mytid
-        write (*,*) ' '
-
-c aspg, testing
+      write (*,*) ' '
+      write (*,*) '<<< Starting 2HT on node ',mytid
+      write (*,*) ' '
 c
       NIJOFF = 0
       NKLOFF = 0

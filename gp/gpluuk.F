@@ -1799,14 +1799,9 @@ c          by the fine sorting routines before the 2HT actually starts
 C
 #include "implicit.h"
 #include "priunit.h"
-c debug
-      integer*8 total_used
-      common/totalreads/total_used
-c debug
 #include "bucket_sort.h"
 #include "infpar.h"
        REAL*8 RGBUF(NGBFSZ),A(NROW)
-       integer used, unused
        DIMENSION IGBUF(2,NGBFSZ)
        logical do_finesort
 
@@ -1820,43 +1815,23 @@ c debug
  
        CALL DZERO (A,NROW)
  
-       itimes = 0
-       used   = 0
-       unused = 0
- 
        irec = irec_initial
 
     1  if ((irec.eq.0).or.(irec.lt.irec_final)) then
-
-          if (.false.) then
-             write (*,*) ' '
-           write (*,*) ' ---+ i/o stats for buffer ',ibuf,' column',icol
-             write (*,*) '    + number of reads   ',itimes
-             write (*,*) '    + integrals used    ',used
-             write (*,*) '    + integrals unused  ',unused
-             write (*,*) ' '
-             total_used = total_used + used
-             write (*,*) '    + integrals used (total) ',total_used
-             write (*,*) ' '
-          endif
-
           return
        endif
 C
 C     Read a batch and the link to the previous record.
 C
       READ (LGFIL,REC=IREC) IRECN,N,RGBUF,IGBUF
-      itimes=itimes+1
       IREC = IRECN
 C
 C     Pick out the integrals that we need.
 C
       DO I = 1, N
          IF (IGBUF(2,I).EQ.ICOL) THEN
-            used=used+1
             A(IGBUF(1,I)) = RGBUF(I)
          else
-         unused=unused+1 
          ENDIF
       ENDDO
 C
@@ -1887,24 +1862,12 @@ c getting metadata for this buffer, column combination in the metadata file
 
  11      if (imdrec.eq.0) goto 12
             read(LMFIL,REC=imdrec) imdrecn,iactive,kl,meta
-c aspg debug
-            if (.false.) then
-               write (*,*) ' '
-               write (*,*) '       current  ',imdrec
-               write (*,*) '       next     ',imdrecn
-               write (*,*) '       buff     ',iactive
-               write (*,*) '       kl       ',kl
-               write (*,*) '       metadata ',(meta(i), i=1,3)
-               write (*,*) ' '
-            endif
-c aspg debug
             if (meta(1).eq.icol) goto 12
 
             imdrec = imdrecn
             goto 11
  12      continue
 
-c debugging metadata usage. forcing it to read everything again...
          irec_initial = meta(2)
          irec_final   = meta(3)
 
