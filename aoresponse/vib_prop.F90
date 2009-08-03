@@ -909,12 +909,6 @@ contains
 
     call prsymb(unit_output, '-', 46, 0)
 
-!   g = 0.0d0
-
-      write(*, *) 'start molecular gradient'
-      write(*, '(6f23.16)') g
-      write(*, *) 'end molecular gradient'
-
   end subroutine
 
 end module

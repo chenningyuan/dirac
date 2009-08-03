@@ -17,8 +17,6 @@ module dirac_interface
   public get_p
   public get_g
   public get_i_or_s_c
-  public debug_1grad
-  public debug_2grad
   public grcont
   public ask_for_integrals
   public response_solver
@@ -450,283 +448,47 @@ contains
 
     end if
 
+    if (include_ls_integrals) then
 
+      i2typ    = 2
+      intclass = 1
+    
+      tmat = 0.0d0
+      call dzero(skip, 3*14*3)
+    
+      call twoint(work, lwork, fmat, dmat, 4*nr_dmat, (/0/),             &
+                  ifctyp, (/0.0d0/), (/0/), (/0/), itype,                &
+                  max_derv, iatom, .true., .true., .false., tktime,      &
+                  1, 0, 0, 0, 0, .false., (/0/), i2typ,                  &
+                  icedif, screen, (/0.0d0/), (/0.0d0/), (/0.0d0/), skip, &
+                  relcal, gencnt, (/0.0d0/), (/0.0d0/))
+    
+      call daxpy(fmat_dim, f, tmat, 1, fmat, 1)
 
+    end if
 
+    if (include_ss_integrals) then
 
+      i2typ    = 3
+      intclass = 2
+    
+      tmat = 0.0d0
+      call dzero(skip, 3*14*3)
+    
+      call twoint(work, lwork, fmat, dmat, 4*nr_dmat, (/0/),             &
+                  ifctyp, (/0.0d0/), (/0/), (/0/), itype,                &
+                  max_derv, iatom, .true., .true., .false., tktime,      &
+                  1, 0, 0, 0, 0, .false., (/0/), i2typ,                  &
+                  icedif, screen, (/0.0d0/), (/0.0d0/), (/0.0d0/), skip, &
+                  relcal, gencnt, (/0.0d0/), (/0.0d0/))
+    
+      call daxpy(fmat_dim, f, tmat, 1, fmat, 1)
+
+    end if
 
     call dcopy(g_dim, fmat, 1, g, 1)
 
     deallocate(fmat)
-
-  end subroutine
-
-  subroutine debug_1grad(D, F, nr_atoms)
-
-!   ----------------------------------------------------------------------------
-    type(matrix), intent(in) :: D
-    type(matrix), intent(in) :: F
-    integer                  :: nr_atoms
-!   ----------------------------------------------------------------------------
-    type(matrix)             :: C, D_folded, F_mo, F_temp, F_folded
-
-    integer                  :: i, j, k, ifctyp(8), iz, ifsym, ioff
-
-    real(8), allocatable     :: work(:)
-    integer                  :: lwork
-
-    real(8), allocatable     :: w01(:)
-    real(8), allocatable     :: w02(:)
-    real(8), allocatable     :: w03(:)
-    real(8), allocatable     :: w04(:)
-    integer, allocatable     :: w05(:)
-    integer, allocatable     :: w06(:)
-    integer, allocatable     :: w07(:)
-    real(8), allocatable     :: w08(:)
-
-    real(8)                  :: dummy
-    integer                  :: idummy
-
-    logical                  :: doint(2, 2) = .true.
-    logical                  :: debug_me    = .false.
-!   ----------------------------------------------------------------------------
-
-    lwork = 20000000
-    call alloc(work, lwork)
-
-    D_folded = 4.0d0*D
-    F_temp   = 0.5d0*F
-
-    call bstobu(D_folded%elms, nz, work, lwork)
-    call bstobu(F_temp%elms,   nz, work, lwork)
-
-    call get_C(C)
-
-    F_mo   = dag(C)*(F_temp*C)
-    F_temp = 1.0d-50*F_mo
-
-    do ifsym = 1, nfsym
-      if (nish(ifsym) > 0) then
-        ioff = i2orbt(ifsym) + npsh(ifsym)*norb(ifsym)
-        call dcopy(nish(ifsym)*norb(ifsym), F_mo%elms(1 + ioff), 1, F_temp%elms(1 + ioff), 1)
-      end if
-    end do
-
-    F_temp   = 2.0d0*F_temp
-    F_folded = C*(F_temp*dag(C))
-
-    C      = 0
-    F_mo   = 0
-    F_temp = 0
-
-    do iz = 1, nz
-      call rmolgrd_foldmat(D_folded%elms((iz - 1)*n2bbasx + 1), ntbas(0), (iz == 1))
-      call rmolgrd_foldmat(F_folded%elms((iz - 1)*n2bbasx + 1), ntbas(0), (iz == 1))
-    end do
-
-!   fixme: half-phases ...
-!   fixme: QO to AO
-
-    if (debug_me) then
-      call print_mat(F_mo,     label = 'debug F_mo')
-      call print_mat(F_temp,   label = 'debug F_temp')
-      call print_mat(F_folded, label = 'debug F_folded')
-      call print_mat(D_folded, label = 'debug D_folded')
-    end if
-
-    grd_nosmlv = .false.
-    grd_nosmls = .false.
-
-    dopert = .true.
-    ftronv = .true.
-    relgrd = .true.
-
-    call rsetsym(.false., relgrd, .false., .false.)
-    call rtroini(.false.)
-
-    call troinv(work, lwork)
-
-!   set ifctyp
-    ifctyp    = 0
-    ifctyp(1) = 13 !coulomb and exchange
-    ifctyp(2) = 22 !only exchange
-    ifctyp(3) = 22
-    ifctyp(4) = 22
-
-    call alloc(w01, nnbbasx*3)
-    call alloc(w02, nucdep*3)
-    call alloc(w03, nucdep*3)
-    call alloc(w04, nucdep*3)
-    call alloc(w05, nucdep)
-    call alloc(w06, nucdep)
-    call alloc(w07, nucdep)
-    call alloc(w08, nucdep)
-
-    call onedr1(w01,                                                       &
-                D_folded%elms, F_folded%elms,                              &
-                w02, w03, w04, w05, w06, w07, w08,                         &
-                dummy, work, lwork, 0, .true., 1, .true., .true., .false., &
-                ntbas(0), nnbbasx, nnbbast, doint,                         &
-                (/'FFFF', 'FFFF'/), .false.)
-
-    D_folded = 0
-    F_folded = 0
-
-    call dealloc(work)
-
-    call dealloc(w01)
-    call dealloc(w02)
-    call dealloc(w03)
-    call dealloc(w04)
-    call dealloc(w05)
-    call dealloc(w06)
-    call dealloc(w07)
-    call dealloc(w08)
-
-    do i = 1, nr_atoms
-      j = (i - 1)*3 + 1
-      write(*, '(a14, 3f21.10)') '1grad kin mo', (gradkn(j + k, 1), k = 0, 2)
-      write(*, '(a14, 3f21.10)') '1grad kin be', (gradkn(j + k, 2), k = 0, 2)
-      write(*, '(a14, 3f21.10)') '1grad nuc LL', (gradnu(j + k, 1), k = 0, 2)
-      write(*, '(a14, 3f21.10)') '1grad nuc SS', (gradnu(j + k, 2), k = 0, 2)
-      write(*, '(a14, 3f21.10)') '1grad reo LL', (gradro(j + k, 1), k = 0, 2)
-      write(*, '(a14, 3f21.10)') '1grad reo SS', (gradro(j + k, 2), k = 0, 2)
-      write(*, '(a14         )') '---------'
-    end do
-
-  end subroutine
-
-  subroutine debug_2grad(D, nr_atoms)
-
-!   ----------------------------------------------------------------------------
-    type(matrix), intent(inout) :: D
-    integer                     :: nr_atoms
-!   ----------------------------------------------------------------------------
-    logical                     :: debug_me = .false.
-
-    real(8)               :: skip(3, 14, 3)
-    real(8)               :: screen
-
-    integer                     :: i, j, k, i2typ, itype, ifctyp(8)
-
-    real(8), allocatable  :: r(:, :)
-
-    real(8), allocatable  :: work(:)
-    integer                     :: lwork
-
-    real(8)               :: dummy
-    integer                     :: idummy
-!   ----------------------------------------------------------------------------
-
-    D = 4.0d0*D
-    if (debug_me) then
-      call print_mat(D, label = 'debug D in AO basis')
-    end if
-
-    do i = 1, 3*mxcent
-      dopert(i, 1) = .true.
-      dopert(i, 2) = .true.
-    end do
-
-    ftronv = .true.
-    relgrd = .true.
-    call rsetsym(.false., relgrd, .false., .false.)
-    call rtroini(.false.)
-
-    lwork = 20000000
-    call alloc(work, lwork)
-
-    call troinv(work, lwork)
-
-    itype  = 2
-    screen = -1.0d0
-
-!   set ifctyp
-    ifctyp    = 0
-    ifctyp(1) = 13 !coulomb and exchange
-    ifctyp(2) = 22 !only exchange
-    ifctyp(3) = 22
-    ifctyp(4) = 22
-
-    call alloc(r, nr_atoms*3, 5)
-    r = 0.0d0
-
-
-!   LL integrals
-!   ============
-
-    i2typ    = 1
-    intclass = 0
-
-    call dzero(gradee, mxcoor)
-    call dzero(skip, 3*14*3)
-
-    call twoint(work, lwork, dummy, D%elms, 4, idummy,     &
-                ifctyp, dummy, idummy, idummy, itype,      &
-                1, 0, .true., .true., .false., tktime,     &
-                1, 0, 0, 0, 0, .false., idummy, i2typ,     &
-                icedif, screen, dummy, dummy, dummy, skip, &
-                relcal, .false., dummy, dummy)
-
-    call dcopy(nr_atoms*3, gradee, 1, r(:, 1), 1)
-    call daxpy(nr_atoms*3, 1.0d0, gradee, 1, r(:, 5), 1)
-
-
-!   LS integrals
-!   ============
-
-    i2typ    = 2
-    intclass = 1
-
-    call dzero(gradee, mxcoor)
-    call dzero(skip, 3*14*3)
-
-    call twoint(work, lwork, dummy, D%elms, 4, idummy,     &
-                ifctyp, dummy, idummy, idummy, itype,      &
-                1, 0, .true., .true., .false., tktime,     &
-                1, 0, 0, 0, 0, .false., idummy, i2typ,     &
-                icedif, screen, dummy, dummy, dummy, skip, &
-                relcal, .false., dummy, dummy)
-
-    call dcopy(nr_atoms*3, gradee, 1, r(:, 2), 1)
-    call daxpy(nr_atoms*3, 1.0d0, gradee, 1, r(:, 5), 1)
-
-
-!   SS integrals
-!   ============
-
-    i2typ    = 3
-    intclass = 2
-
-    call dzero(gradee, mxcoor)
-    call dzero(skip, 3*14*3)
-
-    call twoint(work, lwork, dummy, D%elms, 4, idummy,     &
-                ifctyp, dummy, idummy, idummy, itype,      &
-                1, 0, .true., .true., .false., tktime,     &
-                1, 0, 0, 0, 0, .false., idummy, i2typ,     &
-                icedif, screen, dummy, dummy, dummy, skip, &
-                relcal, .false., dummy, dummy)
-
-    call dcopy(nr_atoms*3, gradee, 1, r(:, 3), 1)
-    call daxpy(nr_atoms*3, 1.0d0, gradee, 1, r(:, 5), 1)
-
-    call dealloc(work)
-
-    do i = 1, 4
-      j = (i - 1)*3 + 1
-
-      write(*, '(a14, 3f27.16)') '2grad tot', r(j, 5), r(j + 1, 5), r(j + 2, 5)
-      write(*, '(a14, 3f27.16)') '2grad  LL', r(j, 1), r(j + 1, 1), r(j + 2, 1)
-      write(*, '(a14, 3f27.16)') '2grad  LS', r(j, 2), r(j + 1, 2), r(j + 2, 2)
-      write(*, '(a14, 3f27.16)') '2grad  SS', r(j, 3), r(j + 1, 3), r(j + 2, 3)
-      write(*, '(a14         )') '---------'
-
-    end do
-
-    call dealloc(r)
-
-    D = 0.25d0*D
 
   end subroutine
 
@@ -1721,6 +1483,10 @@ contains
     ixpr = nprps + 1
     iprl = nprplbl
 
+    if (ixpr > maxprps) then
+      call quit('add_op: ixpr > maxprps')
+    end if
+
     prpnam(ixpr)  = op_name
     iprptyp(ixpr) = typ
     iprpsym(ixpr) = pg_sym
@@ -1729,6 +1495,10 @@ contains
     do i = 1, size(prefactors)
 
       iprl = iprl + 1
+ 
+      if (iprl > maxprplbl) then
+        call quit('add_op: iprl > maxprplbl')
+      end if
 
       prplbl(iprl)  = labels(i)
       pdoint(iprl)  = blocks
