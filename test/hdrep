@@ -200,7 +200,16 @@ foreach $thisline (<FILE1>) {
         if ($real < 0) {$posreal = -$real;}
         if ($diff < 0) {$diff = -$diff;}
         if ($posreal > 1.0) {$diff = $diff / $posreal;}
-        if ($posreal < 1.0) {$diff = $diff * $posreal;}
+
+#radovan: posreal is zero if the number is zero
+#         so the following line will result in "no error"
+#         for results that are zero:
+#       if ($posreal < 1.0) {$diff = $diff * $posreal;}
+#
+#         instead do:
+        if ($posreal < 1.0) {
+           if ($posreal > 0.0) {$diff = $diff * $posreal;}
+           }
 
         if ($signcheck == 0) {
             
