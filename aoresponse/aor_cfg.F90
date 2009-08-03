@@ -26,6 +26,7 @@ module aor_cfg
   logical, public :: aor_cfg_magnetizability    = .false.
   logical, public :: aor_cfg_quadrupole         = .false.
   logical, public :: aor_cfg_roa                = .false.
+  logical, public :: aor_cfg_cars               = .false.
   logical, public :: aor_cfg_dg_energy          = .false.
 
   logical, public :: aor_cfg_integrate          = .false.

@@ -78,6 +78,21 @@ contains
            deallocate(tsr)
     end if
 
+    if (aor_cfg_cars) then
+           print '(//a,f11.8/)','linscf calls cars_shyp_polgra w=',aor_cfg_freq(1)
+           call get_natoms(j); j=3*j
+           allocate(tsr(3+3*3+3*3*3*3+3*3*j)) !ajt: hack
+           call cars_shyp_polgra(S,D,F,j,aor_cfg_freq(1)*(1d0,0d0),tsr(1:3),tsr(4:12), &
+                                 tsr(13:93),tsr(94:93+9*j))
+!          call print_shypol(aor_cfg_freq(1)*(/-1,1,-1,1/),real(tsr(1:3)), &
+!                            (/real(tsr(4:12)),(0d0,i=1,9*3)/),(/(0d0,i=1,27*6)/),real(tsr(13:93)),lupri)
+!          call vib_ana_polari(aor_cfg_freq(1)*(/-1,1,-1,1/),real(tsr(1:3)),j,(/(0d0,i=1,3*j*4)/), &
+!                              (/real(tsr(94:93+9*j)),(0d0,i=1,9*j),real(tsr(94:93+9*j)), &
+!                              real(tsr(94:93+9*j)),(0d0,i=1,9*j),real(tsr(94:93+9*j))/), &
+!                              (/(0d0,i=1,27*j*4)/),lupri)
+           deallocate(tsr)
+    end if
+
     if (aor_cfg_dg_energy) then
 !     call test_grcont(D%nrow, natoms_ifc(), .false., .true.)
 !     call debug_1grad(D, F, natoms_ifc())

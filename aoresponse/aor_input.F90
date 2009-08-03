@@ -111,6 +111,9 @@ contains
           case ('.ROA   ')
             aor_cfg_roa = .true.
 
+          case ('.CARS  ')
+            aor_cfg_cars = .true.
+
           case ('.MOLGRD')
             aor_cfg_dg_energy = .true.
 
