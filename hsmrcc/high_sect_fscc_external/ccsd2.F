@@ -2574,6 +2574,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
+! miro : watch up for array leaks !
       dimension itmp(ntmp),t(nt),it(nt)
 
       if (getiprint() >= 5) then
@@ -2606,7 +2607,10 @@ CUK   common /crle/ trle(nrle,4),isize(4)
         !write (LUPRI,'(1x,a,2i5)') 'ntmp.lt.nt !, ntmp,nt:',ntmp,nt
         lt=nt
         ltmp=ntmp
+
 !       ... cycle
+! mi: Fortran runtime error: Array reference out of bounds for array 'itmp', lower bound of dimension 1 exceeded (0 < 1)
+!
 20      if (itmp(ltmp).eq.it(lt)) then
           t(lt)=t(ltmp)
           lt=lt-1
@@ -3214,12 +3218,12 @@ CUK   common /crle/ trle(nrle,4),isize(4)
         endif
 
 !       ... mi:  printout/error trap !
-        if (dabs(a(io)).gt.1.0d+7) then
-         write(LUPRI,*) 'error ! big value ! index istrt2+i=',istrt2+i
-         write(LUPRI,*) 'istrt1=nstrt(1,num-1)+2*nij+4,where num=',num
-         write(LUPRI,*) 'a(io)=gen(istrt2+i)=',gen(istrt2+i)
-         call quit('prt: big values of integral!')
-        endif
+!       if (dabs(a(io)).gt.1.0d+7) then
+!        write(LUPRI,*) 'error ! big value ! index istrt2+i=',istrt2+i
+!        write(LUPRI,*) 'istrt1=nstrt(1,num-1)+2*nij+4,where num=',num
+!        write(LUPRI,*) 'a(io)=gen(istrt2+i)=',gen(istrt2+i)
+!        call quit('prt: big values of integral!')
+!       endif
 
       endif
 30    continue
