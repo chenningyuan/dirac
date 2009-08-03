@@ -31,7 +31,7 @@
 !       PRPNAM  - user specified name of operator
 !
       INTEGER MAXPRPS
-      PARAMETER (MAXPRPS = 400)
+      PARAMETER (MAXPRPS = 1000)
 
       CHARACTER*16 PRPNAM(MAXPRPS)
       REAL*8 FACPRP(3, MAXPRPS)
