@@ -1,0 +1,7 @@
+$ERROR 1.E-7
+
+FromRE:dg Alpha
+ToRE:SCR
+
+FromRE:Gamma =
+ToRE:matrix allocations
