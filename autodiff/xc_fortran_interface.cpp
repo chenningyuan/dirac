@@ -54,7 +54,7 @@ static void lda_helper(int functional,
       break;
     }
 #ifdef TAYLOR_QD
-  for (int i=0;i<tmp.size();i++)
+  for (int i=0;i<tmp.size;i++)
     res[i] = to_double(tmp[i]);
   fpu_fix_end(&cw);
 #endif
@@ -134,7 +134,7 @@ static void gga_helper(int functional,
       break;
     }
 #ifdef TAYLOR_QD
-  for (int i=0;i<tmp.size();i++)
+  for (int i=0;i<tmp.size;i++)
     res[i] = to_double(tmp[i]);
   fpu_fix_end(&cw);
 #endif

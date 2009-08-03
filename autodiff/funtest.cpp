@@ -30,7 +30,7 @@ int main(void)
   cout.precision(30);
 
   res = vwn_correlation<N>(1e-6);
-  for (int i=0;i<res.size();i++)
+  for (int i=0;i<res.size;i++)
     cout << res[i] << endl;
 
 #ifdef TAYLOR_QD

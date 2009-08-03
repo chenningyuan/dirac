@@ -65,7 +65,7 @@ int taylor_compare(const taylor<Nvar,Ndeg>& t1,
 		   double thres)
 {
   int nfail = 0;
-  for (int i=0;i<t1.size();i++)
+  for (int i=0;i<t1.size;i++)
     {
       tnum_t err = 2*fabs(t1[i] - t2[i])/(1 + 0.5*fabs(t1[i]+t2[i]));
       if (err > thres)
@@ -82,7 +82,7 @@ template<int Nvar, int Ndeg>
 tnum_t taylor_sumsq(const taylor<Nvar,Ndeg>& t)
 {
   tnum_t s = 0;
-  for (int i=0;i<t.size();i++)
+  for (int i=0;i<t.size;i++)
     s += t[i]*t[i];
   return s;
 }
@@ -130,7 +130,7 @@ int main(void)
 
   // Test multidimensional multiply consistency
   taylor<4,5> tmul(0),tacc(1),t1,t2,t3;
-  for (int i=0;i<t1.size();i++)
+  for (int i=0;i<t1.size;i++)
     {
       t1[i] = i+1;
       t2[i] = -3+i*i;
@@ -154,7 +154,7 @@ int main(void)
   // Evaluate multivariate polynomial and check the results
   {
     taylor<2,2> p;
-    for (int i=0;i<p.size();i++)
+    for (int i=0;i<p.size;i++)
       p[i] = i+1;
     double x[2] = {3,7.1};
     if (fabs(p.eval(x)-473.26)/473.26 > 1e-15)
