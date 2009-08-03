@@ -287,10 +287,10 @@ C
 
 #ifdef MOD_AORESPONSE
       if (dirac_cfg_aoresponse) then
-!       initialize common block info
-        call init_cb_info()
 !       main aoresponse driver
         call aoresponse_driver(work(kfree), lfree)
+!       initialize dirac interface
+        call init_dirac_interface()
       end if
 #endif
 

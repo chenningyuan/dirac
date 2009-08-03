@@ -508,7 +508,7 @@ C     *STEX
 
 !        this is to get lucmd and lupri
 !        later it is initialized again (not ideal i know)
-         call init_cb_info()
+         call init_dirac_interface()
 
          call parse_aor_input(word)
 

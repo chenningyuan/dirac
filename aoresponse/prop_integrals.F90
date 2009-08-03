@@ -436,8 +436,10 @@ contains
          end if
          if (do_dft()) print* !after all the "...integrated to nn electrons..." prints
       else if (n==2 .and. all(p==(/'MAGO','MAGO'/))) then
-#ifndef PRG_DIRAC
-!in 4-c mode this is not needed, allow later for other hamiltonians
+
+#ifdef PRG_DIRAC
+         if (.not. diamagnetic_via_pn) then
+#endif
          do k = 0, c(4)-c(2)
             kk = c(2)+k
             do j = 0, c(3)-c(1)
@@ -450,7 +452,10 @@ contains
                end do
             end do
          end do
-#endif /* ifndef PRG_DIRAC */
+#ifdef PRG_DIRAC
+         endif
+#endif
+
       else if (n==2 .and. all(p==(/'EL ','MAG'/)) .and. m/=0) then !no m==0 because MAG imag
          do l = 0, c(4)-c(2)
             ll = c(2)+l
@@ -958,8 +963,10 @@ contains
             end do
          end do
       else if (n==2 .and. all(p==(/'MAGO','MAGO'/))) then !only m==0
-#ifndef PRG_DIRAC
-!in 4-c mode this is not needed, allow later for other hamiltonians
+
+#ifdef PRG_DIRAC
+         if (.not. diamagnetic_via_pn) then
+#endif
          do j = 0, c(4)-c(2)
             jj = c(2)+j
             do i = 1, c(3)-c(1)+1
@@ -969,7 +976,10 @@ contains
                F(kk) = F(kk) + A(1)
             end do
          end do
-#endif /* ifndef PRG_DIRAC */
+#ifdef PRG_DIRAC
+         endif
+#endif
+
       else if (n==2 .and. all(p==(/'MAG','MAG'/))) then
          !call twofck('MM',D(1),(/(D(1),i=1,9)/))
          call quit('prop_fock: MAG-MAG has a bug and is disabled')

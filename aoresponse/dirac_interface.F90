@@ -29,7 +29,7 @@ module dirac_interface
   public di_deselect_wrk
   public daxpy_iz_jz
   public print_prp_common_blocks
-  public init_cb_info
+  public init_dirac_interface
 
   save
 
@@ -49,12 +49,16 @@ module dirac_interface
   logical,      public              :: include_ss_integrals = .false.
   logical,      public              :: include_gt_integrals = .false.
 
+  logical,      public              :: include_pp_rotations = .false.
+  logical,      public              :: include_pn_rotations = .false.
+  logical,      public              :: diamagnetic_via_pn   = .false.
+
   private
 
-  logical :: cb_info_allocated = .false.
-  logical :: cb_info_set       = .false.
+  logical :: dirac_interface_data_allocated = .false.
+  logical :: dirac_interface_data_set       = .false.
 #ifdef VAR_MPI
-  logical :: cb_info_synced    = .false.
+  logical :: dirac_interface_data_synced    = .false.
 #endif
 
   interface di_get_gbds
@@ -103,7 +107,7 @@ module dirac_interface
 
 contains
 
-  subroutine init_cb_info()
+  subroutine init_dirac_interface()
 
 !   ----------------------------------------------------------------------------
     integer :: ill_int
@@ -112,15 +116,15 @@ contains
     integer :: igt_int
 !   ----------------------------------------------------------------------------
 
-    if (.not. cb_info_allocated) then
+    if (.not. dirac_interface_data_allocated) then
 
       allocate(sym_dep_nuc_name(mxcent))
 
-      cb_info_allocated = .true.
+      dirac_interface_data_allocated = .true.
 
     end if
 
-!   if (.not. cb_info_set) then
+!   if (.not. dirac_interface_data_set) then
 
       unit_input       = lucmd
       unit_output      = lupri
@@ -159,7 +163,16 @@ contains
         include_gt_integrals = .true.
       end if
 
-      cb_info_set = .true.
+      if (.not. aor_cfg_skip_pp) then
+        include_pp_rotations = .true.
+      end if
+
+      if (nonzero_small_metric .and. .not. aor_cfg_skip_pn) then
+        include_pn_rotations = .true.
+        diamagnetic_via_pn   = .true.
+      end if
+
+      dirac_interface_data_set = .true.
 
 !   end if
 
@@ -1023,15 +1036,10 @@ contains
     integer                      :: nr_freq
 
     logical                      :: debug_me = .false.
-    logical                      :: do_pp    = .false.
-    logical                      :: do_pn    = .false.
 
     real(8)                :: dummy_dp
     integer                      :: dummy_i
 
-    if (.not. aor_cfg_skip_pp) do_pp = .true.
-    if (.not. aor_cfg_skip_pn) do_pn = .true.
-    if (levyle .or. bss)       do_pn = .false.
 
     call set_orbital_rotation_vector(.false.,                    &
                                      length_pp,                  &
@@ -1043,8 +1051,8 @@ contains
     nzxope  = 0
     nzxopp  = 0
 
-    if (do_pp) nzxope = length_pp
-    if (do_pn) nzxopp = length_pn
+    if (include_pp_rotations) nzxope = length_pp
+    if (include_pn_rotations) nzxopp = length_pn
 
     nzxopt  = nzxope + nzxopp
 
@@ -1079,7 +1087,7 @@ contains
       call print_mat(RHS_mo, label = 'debug RHS in MO basis')
     end if
 
-    if (do_pp) then
+    if (include_pp_rotations) then
 
       call alloc(prop_gradient_pp, length_pp*nz)
       prop_gradient_pp = 0.0d0
@@ -1103,7 +1111,7 @@ contains
 
     end if
 
-    if (do_pn) then
+    if (include_pn_rotations) then
 
       call alloc(prop_gradient_pn, length_pn*nz)
       prop_gradient_pn = 0.0d0
@@ -1142,8 +1150,8 @@ contains
     call memget('INTE', kzxope, 2*length_pp, work, kfree, lfree)
     call memget('INTE', kzxopp, 2*length_pn, work, kfree, lfree)
 
-    call fill_work(do_pp,                      &
-                   do_pn,                      &
+    call fill_work(include_pp_rotations,                      &
+                   include_pn_rotations,                      &
                    length_pp,                  &
                    length_pn,                  &
                    orbital_rotation_vector_pp, &
@@ -1231,7 +1239,7 @@ contains
 !   construct response vector
 !   =========================
 
-    if (do_pp) then
+    if (include_pp_rotations) then
 
       call alloc(response_vector_pph, length_pp, nz, nr_freq)
       call alloc(response_vector_ppa, length_pp, nz, nr_freq)
@@ -1266,7 +1274,7 @@ contains
 
     end if
 
-    if (do_pn) then
+    if (include_pn_rotations) then
 
       call alloc(response_vector_pnh, length_pn, nz, nr_freq)
       call alloc(response_vector_pna, length_pn, nz, nr_freq)
@@ -1312,7 +1320,7 @@ contains
 
     Wp%elms = 0.0d0
 
-    if (do_pp) then
+    if (include_pp_rotations) then
 
       call scatter_vector(length_pp, orbital_rotation_vector_pp, 1.0d0, response_vector_pph, Wp%elms, Wp%irep + 1)
       call scatter_vector(length_pp, orbital_rotation_vector_pp,-1.0d0, response_vector_ppa, Wp%elms, Wp%irep + 1)
@@ -1324,7 +1332,7 @@ contains
 
     end if
 
-    if (do_pn) then
+    if (include_pn_rotations) then
 
       call scatter_vector(length_pn, orbital_rotation_vector_pn, 1.0d0, response_vector_pnh, Wp%elms, Wp%irep + 1)
       call scatter_vector(length_pn, orbital_rotation_vector_pn,-1.0d0, response_vector_pna, Wp%elms, Wp%irep + 1)
