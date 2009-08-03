@@ -701,10 +701,10 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       lngth2=ije2(nij2)
 
 !    miro: set up temporarily primitive error tran for HSFS_dynamic
-      write(LUPRI,*) 'reorder:',igen(istrt21+1),igen(istrt21+1+lngth2)
-      write(LUPRI,*) 'itmp ndp4,1+lngth2:',ndp4,1+lngth2
-      write(LUPRI,*) 'itmp(1):',itmp(1)
-      write(LUPRI,*) 'itmp(1+lngth2):',itmp(1+lngth2)
+!      write(LUPRI,*) 'reorder:',igen(istrt21+1),igen(istrt21+1+lngth2)
+!      write(LUPRI,*) 'itmp ndp4,1+lngth2:',ndp4,1+lngth2
+       write(LUPRI,*) 'check itmp(1):',itmp(1)
+!      write(LUPRI,*) 'itmp(1+lngth2):',itmp(1+lngth2)
 
       call vands(lngth2,igen(istrt21+1),msk(i1),itmp)
       call vshfcs(lngth2,itmp,8*i1-8,itmp)
@@ -3640,6 +3640,8 @@ c
 !
 !           change nf-index grouping to nt-index grouping
 !
+! entering arrays ij, ije
+!
 !------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
@@ -3662,8 +3664,9 @@ c
 !      common /i/ igen(nbig)
 #endif
 
-!!!!!!!!!!!!!! need dynamic alloc of "ij1, ije1" !!!!!!!!!!!!!!!!!!!
-      dimension ij(nij),ije(0:nij),ij1(ndij),ije1(0:ndij)
+      dimension ij(nij),ije(0:nij)
+!!!!!!!!!!!!!! needs dynamic alloc of "ij1, ije1" !!!!!!!!!!!!!!!!!!!
+      dimension ij1(ndij),ije1(0:ndij)
 
       integer*4 ch1,ch2
 
