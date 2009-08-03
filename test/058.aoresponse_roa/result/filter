@@ -1,3 +1,10 @@
-$ERROR 1.E-12
-FromRE:molecular gradient
-ToRE:---------------------------------
+$ERROR 1.E-7
+
+FromRE:dg polari
+ToRE:G-prime
+
+FromRE:dg G-prime
+ToRE:A-tensor
+
+FromRE:dg A-tensor
+ToRE:matrix allocations
