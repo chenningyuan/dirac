@@ -100,6 +100,115 @@ lda_eval_(const int *functional,
     };
 }
 
+template<int Nvar, int Ndeg>
+static void contract_helper(double *dxc_dD,
+			    const double* dxc_drho,
+			    const double* drho_dD)
+{
+  taylor<1, Ndeg> *pout = reinterpret_cast< taylor<1,Ndeg>* >(dxc_dD);
+  const taylor<Nvar,Ndeg> *pxc = 
+    reinterpret_cast< const taylor<Nvar,Ndeg>* >(dxc_drho);
+  taylor<1, Ndeg> at[Nvar];
+  // Insert the relations dExc/dD = dExc/drho * drho/dD, by
+  // inserting drho_i = drho_dD[i]*dD
+  for (int i=0;i<Nvar;i++)
+    {
+      at[0] = 0;
+      at[0][1] = drho_dD[i];
+    }
+  *pout = pxc->eval(at); //Result is a Ndeg taylor expansion in D
+}
+
+/*
+  Given drho_dD (an array of length 2), and the xc
+  derivatives up to some order (from lda_eval),
+  calculate dxc_dD up to order.
+ */
+extern "C" void
+lda_contract_(double *dxc_dD,
+	      const int *order,
+	      const double* dxc_drho,
+	      const double* drho_dD)
+{
+  switch(*order)
+    {
+    case 0:
+      contract_helper<2,0>(dxc_dD,dxc_drho,drho_dD);
+      break;
+    case 1:
+      contract_helper<2,1>(dxc_dD,dxc_drho,drho_dD);
+      break;
+    case 2:
+      contract_helper<2,2>(dxc_dD,dxc_drho,drho_dD);
+      break;
+    case 3:
+      contract_helper<2,3>(dxc_dD,dxc_drho,drho_dD);
+      break;
+    case 4:
+      contract_helper<2,4>(dxc_dD,dxc_drho,drho_dD);
+      break;
+    case 5:
+      contract_helper<2,5>(dxc_dD,dxc_drho,drho_dD);
+      break;
+    case 6:
+      contract_helper<2,6>(dxc_dD,dxc_drho,drho_dD);
+      break;
+    case 7:
+      contract_helper<2,7>(dxc_dD,dxc_drho,drho_dD);
+      break;
+    case 8:
+      contract_helper<2,8>(dxc_dD,dxc_drho,drho_dD);
+      break;
+    default:
+      assert(0 && "Unimplemented order in lda_contract");
+    };
+}
+
+
+/*
+  Given drho_dD (an array of length 5), and the xc
+  derivatives up to some order (from gga_eval),
+  calculate dxc_dD up to order.
+ */
+extern "C" void
+gga_contract_(double *dxc_dD,
+	      const int *order,
+	      const double* dxc_drho,
+	      const double* drho_dD)
+{
+  switch(*order)
+    {
+    case 0:
+      contract_helper<5,0>(dxc_dD,dxc_drho,drho_dD);
+      break;
+    case 1:
+      contract_helper<5,1>(dxc_dD,dxc_drho,drho_dD);
+      break;
+    case 2:
+      contract_helper<5,2>(dxc_dD,dxc_drho,drho_dD);
+      break;
+    case 3:
+      contract_helper<5,3>(dxc_dD,dxc_drho,drho_dD);
+      break;
+    case 4:
+      contract_helper<5,4>(dxc_dD,dxc_drho,drho_dD);
+      break;
+    case 5:
+      contract_helper<5,5>(dxc_dD,dxc_drho,drho_dD);
+      break;
+    case 6:
+      contract_helper<5,6>(dxc_dD,dxc_drho,drho_dD);
+      break;
+    case 7:
+      contract_helper<5,7>(dxc_dD,dxc_drho,drho_dD);
+      break;
+    case 8:
+      contract_helper<5,8>(dxc_dD,dxc_drho,drho_dD);
+      break;
+    default:
+      assert(0 && "Unimplemented order in gga_contract");
+    };
+}
 
 template<int Ndeg>
 static void gga_helper(int functional,
