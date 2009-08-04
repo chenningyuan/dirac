@@ -675,13 +675,13 @@ template<class numtype, int Nvar, int Ndeg>
     { 
       c[0] = c0;
       for (int i=1;i<size;i++)
-	c[i] = 0;
+	c[i] = numtype(0);
     }
   polynomial<numtype, Nvar, Ndeg> &operator=(const numtype &c0)
     {
       c[0] = c0;
       for (int i=1;i<size;i++)
-	c[i] = 0;
+	c[i] = numtype(0);
       return *this;
     }
   const numtype &operator[](int i) const

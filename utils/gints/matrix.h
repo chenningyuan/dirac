@@ -2,6 +2,7 @@
 #define MATRIX_H
 
 #include <fstream>
+#include <utility>
 
 template<class numtype, int nrows, int ncols>
 class tmatrix
@@ -73,6 +74,12 @@ class matrix
       for (int j=0;j<rows;j++)
 	c[i*pitch+j] = 0;
   }
+  void eye(void)
+  {
+    for (int i=0;i<cols;i++)
+      for (int j=0;j<rows;j++)
+	c[i*pitch+j] = (i == j) ? 1 : 0;
+  }
   numtype *column_ptr(int col) 
   { 
     assert(col>=0 && col < cols);
@@ -83,22 +90,14 @@ class matrix
     assert(col>=0 && col < cols);
     return &c[col*pitch];
   }
-  numtype &operator()(int row, int col) 
+  inline numtype &operator()(int row, int col) 
   { 
-    if (!((row>=0 && row < rows)))
-      {
-	std::cerr << "row = " << row << " rows = " << rows << "\n";
-      }
     assert(col>=0 && col < cols);
     assert(row>=0 && row < rows);
     return c[col*pitch + row];
   }
-  const numtype &operator()(int row, int col) const 
+  inline const numtype &operator()(int row, int col) const 
   { 
-    if (!((col>=0 && col < cols)))
-      {
-	std::cerr << "col = " << col << " cols = " << cols << "\n";
-      }
     assert(col>=0 && col < cols);
     assert(row>=0 && row < rows);
     return c[col*pitch + row];

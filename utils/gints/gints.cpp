@@ -485,17 +485,6 @@ public:
   { 
     nr_functions = 0; 
   }
-  basis(const basis &b1, const basis &b2) 
-  { 
-    nr_functions = 0; 
-    for (unsigned int i=0;i<b1.shells.size();i++)
-      for (unsigned int j=0;j<b2.shells.size();j++)
-	{
-	  shell_basis *b = new shell_basis(*b1.shells[i],*b2.shells[j]);
-	  shells.push_back(b);
-	  nr_functions += b->cols;
-	}
-  }
   void add_shell(const double R[3], double alpha, int L)
   {
     shell_basis *b = new shell_basis(R,alpha,L);
@@ -537,28 +526,7 @@ public:
 	  }
 	ic += shells[i]->cols;
       }
-  }
-  // Computes integral_psi(1) r_12^-1 psi(2). If psi1
-  // and psi2 are overlaps distributions is this two electron
-  // integrals (and a lot of them!)
-  void coulomb(matrix<double> &J, const basis &b2)
-  {
-    assert(J.rows = nr_functions);
-    assert(J.cols = b2.nr_functions);
-    int ic = 0;
-    for (unsigned int i=0;i<shells.size();i++)
-      {
-	int jc = 0;
-	for (unsigned int j=0;j<b2.shells.size();j++)
-	  {
-	    matrix<double> J12 = 
-	      J.block(ic,jc,shells[i]->cols,b2.shells[j]->cols);
-	    shells[i]->coulomb(J12,*b2.shells[j]);
-	    jc += b2.shells[j]->cols;
-	  }
-	ic += shells[i]->cols;
-      }
-  }
+  }  
   void read_from(istream &src)
   {
     double R[3],alpha;
@@ -580,11 +548,105 @@ public:
 };
 
 
+class product_basis : public basis
+{
+public:
+  product_basis(const basis &b1, const basis &b2) : basis()
+  { 
+    nr_functions = 0;
+    int i1 = 0;
+    for (unsigned int i=0;i<b1.shells.size();i++)
+      {
+	int i2 = 0;
+	for (unsigned int j=0;j<b2.shells.size();j++)
+	  {
+	    shell_basis *b = new shell_basis(*b1.shells[i],*b2.shells[j]);
+	    shells.push_back(b);
+	    nr_functions += b->cols;
+	    for (int ii=i1;ii<i1+b1.shells[i]->cols;ii++)
+	      for (int jj=i2;jj<i2+b2.shells[j]->cols;jj++)
+		origin.push_back(make_pair(ii,jj));
+	    i2 += b2.shells[j]->cols;
+	  }
+	i1 += b1.shells[i]->cols;
+      }
+  }
+  // Computes integral_psi(1) r_12^-1 psi(2). If psi1
+  // and psi2 are overlaps distributions is this two electron
+  // integrals (and a lot of them!)
+  // b2 is the basis the density matrix lives on.
+  void coulomb(matrix<double> &J, const basis &b2)
+  {
+    assert(J.rows = nr_functions);
+    assert(J.cols = b2.nr_functions);
+    int ic = 0;
+    for (unsigned int i=0;i<shells.size();i++)
+      {
+	int jc = 0;
+	unsigned int j;
+	if (&b2 == this)
+	  j = i;
+	else
+	  j = 0;
+	for (;j<b2.shells.size();j++)
+	  {
+	    matrix<double> J12 = 
+	      J.block(ic,jc,shells[i]->cols,b2.shells[j]->cols);
+	    shells[i]->coulomb(J12,*b2.shells[j]);
+	    jc += b2.shells[j]->cols;
+	  }
+	ic += shells[i]->cols;
+      }
+  }
+  // Computes integral_psi(1) r_12^-1 psi(2). If psi1
+  // and psi2 are overlaps distributions is this two electron
+  // integrals (and a lot of them!)
+  // b2 is the basis the density matrix lives on.
+  void coulomb_contract(matrix<double> &J, matrix<double> &K, 
+			const matrix<double> &D, const product_basis &b2)
+  {
+    J.zero();
+    K.zero();
+    int ic = 0;
+    for (unsigned int i=0;i<shells.size();i++)
+      {
+	int jc = 0;
+	for (unsigned int j=0;j<b2.shells.size();j++)
+	  {
+	    matrix<double> J12(shells[i]->cols, b2.shells[j]->cols);
+	    shells[i]->coulomb(J12, *b2.shells[j]);
+	    // Coulomb
+	    for (int k=0;k<shells[i]->cols;k++)
+	      for (int m=0;m<b2.shells[j]->cols;m++)
+		{
+		  J(origin[ic+k].first, origin[ic+k].second) += J12(k,m)*
+		    D(b2.origin[jc+m].first,b2.origin[jc+m].second);
+		  //		  K(origin[ic+k].first, b2.origin[jc+m].first) += J12(k,m)*
+		  // D(origin[ic+k].second,b2.origin[jc+m].second);
+		}		  
+	    jc += b2.shells[j]->cols;
+	  }
+	ic += shells[i]->cols;
+      }
+  }
+protected:
+  // For each function, tell where the product came from
+  vector< pair<int,int> > origin; 
+};
+
+
 int main(int argc, char *argv[])
 {
   setup_tables();
   cout.precision(16);
   cout << scientific;
+  taylor<1,12> btab,berf;
+  double x = 8.125435345;
+  boys_internal::boys_taylor(btab,x);
+  boys_internal::boys_taylor_largex(berf,x);
+  for (int i=0;i<btab.size;i++)
+    cout << btab[i] << "  \t" << berf[i] << " " << (btab[i]-berf[i])/(btab[i]+berf[i]) << endl;
+#if 0
   basis b;
   b.read_from(cin);
   cerr << "Read " << b.nr_funs() << " functions, (" << b.shells.size() << " shells).\n";
@@ -592,10 +654,13 @@ int main(int argc, char *argv[])
   //b.kinetic(S,b);
   //S.print(cout);
 
-  basis bb(b,b); //product basis
+  product_basis bb(b,b); //product basis
   cerr << "Product basis done." << endl;
-  matrix<double> J(bb.nr_funs(),bb.nr_funs());
-  bb.coulomb(J,bb);
+  matrix<double> J(b.nr_funs(),b.nr_funs()),K(b.nr_funs(),b.nr_funs()),
+    D(b.nr_funs(),b.nr_funs());
+  D.eye();
+  bb.coulomb_contract(J,K,D,bb);
   //J.print(cout);
+#endif
   return 0;
 }

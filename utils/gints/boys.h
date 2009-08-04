@@ -3,32 +3,38 @@
 
 #include <cmath>
 #include "taylor.h"
+#include "boys_table.h"
 
 namespace boys_internal
 {
-static double fac(int n)
-{
-  double f = 1;
-  while (n > 1)
-    f *= n--;
-  return f;
-}
 
-static double boys_taylor(double x, int n)
-{
-  long double xn=1, sum = 0;
-  int k = 0;
-  while (1)
-    {
-      long double term = xn/(2*n+1+2*k);
-      sum += term;
-      if (fabs(term/sum) < 1e-16)
-	return sum;
-      k++;
-      xn = xn*(-x)/k;
-    }
-}
+#define NTERMS 8 // Order of the interpolation in the table.
 
+#define INVFAC_LEN 21
+static const double invfac[INVFAC_LEN] = 
+  {
+    1,
+    1,
+    0.500000000000000,
+    0.16666666666666667,
+    0.041666666666666667,
+    0.008333333333333333,
+    0.001388888888888889,
+    1.98412698412698e-04,
+    2.48015873015873e-05,
+    2.75573192239859e-06,
+    2.75573192239859e-07,
+    2.50521083854417e-08,
+    2.08767569878681e-09,
+    1.60590438368216e-10,
+    1.14707455977297e-11,
+    7.64716373181983e-13,
+    4.77947733238739e-14,
+    2.81145725434552e-15,
+    1.56192069685862e-16,
+    8.22063524662432e-18,
+    4.11031762331216e-19,
+  };
 
 // This method is accurate for the first 16 terms
 // (relative accuracy better than 10^-14)
@@ -43,31 +49,31 @@ static void boys_taylor_largex(taylor<1,Ndeg>& res, tnum_t x0)
   res *= erf(sqrtt);
 }
 
-// Boys function for small arguments, based on downward
-// recursion.
 template<int Ndeg>
-static void boys_taylor_smallx(taylor<1,Ndeg>& res, double x)
+void boys_taylor_table(taylor<1,Ndeg>& val, double x)
 {
-  double expmx = exp(-x);
-  int n = Ndeg;
-  res[Ndeg] = boys_taylor(x,Ndeg);
-  while (n>=0)
-    {
-      n--;
-      if (n >= 0)
-	res[n] = (2*x*res[n+1] + expmx)/(2*n+1);
-    }
-  for (n=0;n<=Ndeg;n++)
-    res[n] /= pow(-1,n)*fac(n);
+  assert(NTERMS<=INVFAC_LEN);
+  assert(n>=0);
+  assert(n<BOYS_MAXDEG-NTERMS+1);
+  const int itab = int(x/BOYS_DELTA+0.5);
+  assert(itab >= 0 && "Negative argument to boys()");
+  assert(itab < BOYS_STEPS);
+  double delta = x - itab*BOYS_DELTA;
+  // Horner scheme
+  for (int j=0;j<=Ndeg;j++)
+    val[j] = boystab[itab][NTERMS-1+j]*invfac[NTERMS-1];
+  for (int i=NTERMS-1;i>=0;i--)
+    for (int j=0;j<=Ndeg;j++)
+      val[j] = val[j]*delta + boystab[itab][i+j]*invfac[i];
+  for (int j=0;j<=Ndeg;j++)
+    val[j] *= invfac[j];
 }
 
-// At worst x (=5) Currently accurate to (relative) 
-// 1e-12 for 15:th derivative, others better.
 template<int Ndeg>
 void boys_taylor(taylor<1,Ndeg>& res, tnum_t x0)
 {
-  if (x0 < 5) // 5 seems to give balanced accuracy, but smallx should be improved.
-    boys_taylor_smallx(res,x0);
+  if (x0 < BOYS_DELTA*BOYS_STEPS) 
+    boys_taylor_table(res,x0);
   else
     boys_taylor_largex(res,x0);
 }
