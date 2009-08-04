@@ -211,7 +211,7 @@ C
                 END IF
              END DO
              IF (MULT(MULCNT) .EQ. 1) THEN
-                ICHARGE = IZATOM(ICENT)
+                ICHARGE = NINT(CHARGE(icent))
                 IF (WORD .EQ. 'ATOM') THEN
 C FIXME ?          hjaaj Oct 2003: should we remove point charges ??
                    IATOM = IATOM + 1
@@ -236,7 +236,7 @@ C FIXME ?          hjaaj Oct 2003: should we remove point charges ??
                       CRX = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
                       CRY = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
                       CRZ = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
-                      ICHARGE = IZATOM(ICENT)
+                      ICHARGE = NINT(CHARGE(icent))
                       IF (WORD .EQ. 'ATOM') THEN
                          IATOM = IATOM + 1
                          WRITE (LUMOLDEN,'(A,1X,I5,1X,I5,3(1X,F20.10))')

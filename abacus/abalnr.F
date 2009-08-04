@@ -1133,7 +1133,7 @@ C
             DO ISYMOP = 0, MAXOPR
                IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                   JATOM = JATOM + 1
-                  NATTYP = IZATOM(IATOM)
+                  NATTYP = NINT(CHARGE(IATOM))
                   IF (NATTYP .NE. 0 .AND. .NOT. NOORBT(IATOM)) THEN
                      AMASS = DISOTP(NATTYP,ISOTOP(JATOM),'MASS')
                      TMASS = TMASS + AMASS
