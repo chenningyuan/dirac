@@ -318,6 +318,7 @@ C
 C     If vibrational analysis is based on Hessian read from file,
 C     we overwrite the Hessian information, K.Ruud and G.Hangartner, Oct.-96
 C
+      luhes = 0
       IF (HESFIL) THEN
          CALL DZERO(WORK(KHESS),NCORD*NCORD)
          CALL GPINQ('DALTON.HES','EXIST',HESEXS)
@@ -2436,15 +2437,17 @@ C
 #include "symmet.h"
 #include "nuclei.h"
 #include "abainf.h"
-#include "inftap.h"
+#include "nuctap.h"
 #include "cbivib.h"
 #include "cbinum.h"
 #include "cbiwlk.h"
 #include "gnrinf.h"
 #include "ibtfun.h"
 C      
-      CALL GPOPEN(LUWLK,ABAWLK,'OLD','SEQUENTIAL','UNFORMATTED',IDUMMY,
-     &          .FALSE.)
+      luwlk = 0
+      CALL GPOPEN(LUWLK,'DALTON.WLK','OLD',
+     &            'SEQUENTIAL','UNFORMATTED',IDUMMY,
+     &            .FALSE.)
       REWIND (LUWLK)
       READ (LUWLK)
       READ (LUWLK)
@@ -2858,12 +2861,14 @@ C Conversion factors from au to derivated cgs
      &          ROAGLU(3,3,MXFR), ROAAU(3,3,3,MXFR)
 C
 #include "abainf.h"
-#include "inftap.h"
+#include "nuctap.h"
 #include "cbivib.h"
 C
 C     Read in Cartesian gradients
 C
-      CALL GPOPEN(LUWLK,ABAWLK,'OLD','SEQUENTIAL','UNFORMATTED',IDUMMY,
+      luwlk = 0
+      CALL GPOPEN(LUWLK,'DALTON.WLK','OLD',
+     &            'SEQUENTIAL','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUWLK
       READ (LUWLK)
@@ -4090,9 +4095,11 @@ C
 #include "dummy.h"
       DIMENSION COOR0(NCRIND), GRAD0(NCART), HESS0(NCART,NCART),
      &          GRADF(NCART), HESS(NCART,NCART)
-#include "inftap.h"
+#include "nuctap.h"
 C
-      CALL GPOPEN(LUWLK,ABAWLK,'OLD','SEQUENTIAL','UNFORMATTED',IDUMMY,
+      luwlk = 0
+      CALL GPOPEN(LUWLK,'DALTON.WLK','OLD',
+     &            'SEQUENTIAL','UNFORMATTED',IDUMMY,
      &            .FALSE.)
       REWIND LUWLK
       READ (LUWLK)
