@@ -901,3 +901,35 @@ C
       NDXGTA = NUM
       RETURN
       END
+C  /* Deck dgetrn */
+      SUBROUTINE DGETRN(AGE,NROWA,NRDIMA)
+C
+C 3-Apr-1987 HJAaJ (DGETRS)
+C 900108-hjaaj: block with NBLK for reduced paging
+C   when virtual memory
+C new name 971103-hjaaj (old name DGETRS was same as 
+C   a routine in LAPACK for solving linear equations;
+C   when linking with complib on SGI/IRIX the LAPACK routine
+C   was loaded instead of this one).
+C
+C Replace AGE by AGE(transposed)
+C
+#include <implicit.h>
+      DIMENSION AGE(NRDIMA,*)
+      PARAMETER (NBLK = 128)
+      DO 400 JBLK = 1,NROWA,NBLK
+         JEND = MIN(NROWA,JBLK-1+NBLK)
+         DO 300 IBLK = 1,JBLK,NBLK
+            IEND = MIN(NROWA,IBLK-1+NBLK)
+            DO 200 J = JBLK,JEND
+               DO 100 I = IBLK,MIN(J-1,IEND)
+                  SWAP     = AGE(I,J)
+                  AGE(I,J) = AGE(J,I)
+                  AGE(J,I) = SWAP
+  100          CONTINUE
+  200       CONTINUE
+  300    CONTINUE
+  400 CONTINUE
+      RETURN
+      END
+

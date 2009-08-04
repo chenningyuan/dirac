@@ -69,12 +69,12 @@ contains
            allocate(tsr(3*3+3*3+3*6+3*3*j+3*3*j+3*6*j)) !ajt: hack
            call roa_pol_gpri_aten_gra(S,D,F,j,aor_cfg_freq(1)*(1d0,0d0),tsr(1:9),tsr(10:18),tsr(19:36), &
                                       tsr(37:36+9*j),tsr(37+9*j:36+18*j),tsr(37+18*j:36+36*j))
-!          !ajt VIBCTL seems to want g-prime = <<mu,mag>>(w;-w) (opposite sign) (maybe I'm wrong)
-!          tsr(10:18) = -tsr(10:18)
-!          tsr(37+9*j:36+18*j) = -tsr(37+9*j:36+18*j)
-!          call VIBCTL_ifc(j,aor_cfg_freq(1),real(tsr(1:9)),real(tsr(10:18)),real(tsr(19:36)),     &
-!                          (/((0d0,0d0),i=1,3*j)/),real(tsr(37:36+9*j)),real(tsr(37+9*j:36+18*j)), &
-!                          real(tsr(37+18*j:36+36*j)),wrk,lwrk)
+           !ajt VIBCTL seems to want g-prime = <<mu,mag>>(w;-w) (opposite sign) (maybe I'm wrong)
+           tsr(10:18) = -tsr(10:18)
+           tsr(37+9*j:36+18*j) = -tsr(37+9*j:36+18*j)
+           call VIBCTL_ifc(j,aor_cfg_freq(1),real(tsr(1:9)),real(tsr(10:18)),real(tsr(19:36)),     &
+                           (/((0d0,0d0),i=1,3*j)/),real(tsr(37:36+9*j)),real(tsr(37+9*j:36+18*j)), &
+                           real(tsr(37+18*j:36+36*j)),work,lwork)
            deallocate(tsr)
     end if
 

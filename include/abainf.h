@@ -4,7 +4,8 @@
      &        ECD, NODIFC, DODRCT, SUPMAT, PARALL, MOLGFA, SPINRO,      &
      &        MASSVE, DARWIN, ABALNR, VROA, NOCMC, EXPFCK, RAMAN,       &
      &        QUADRU, NQCC, HYPER, VERDET, MCD, GSDIP, GSQUAD, GSOCT,   &
-     &        GSDIDI, GSDIQU, GSQUQU
+     &        GSDIDI, GSDIQU, GSQUQU,                                   &
+     &        lincpl, numhes
       INTEGER IPRDEF, NWNABA, NTCSY(8), NSCSY(8), ISOTOP(MXCENT)
       COMMON /ABAINF/ IPRDEF, NWNABA, MOLGRD, MOLHES, DIPDER, POLAR,    &
      &                TSTINP, VIB, RESTAR, DOWALK, GDALL, CCSD, H2MO,   &
@@ -13,5 +14,7 @@
      &                ECD, DODRCT, SUPMAT, PARALL, MOLGFA, SPINRO,      &
      &                MASSVE, DARWIN, ABALNR, VROA, NODIFC, ISOTOP,     &
      &                NOCMC, EXPFCK, RAMAN, QUADRU, NQCC, HYPER, VERDET,&
-     &                MCD, GSDIP, GSQUAD, GSOCT, GSDIDI, GSDIQU, GSQUQU
+     &                MCD, GSDIP, GSQUAD, GSOCT,                        &
+     &                GSDIDI, GSDIQU, GSQUQU,                           &
+     &                lincpl, numhes
 

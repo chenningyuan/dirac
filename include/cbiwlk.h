@@ -1,9 +1,7 @@
-C
-C$Id$
-C
+      PARAMETER (MAXTMP = 20)
       LOGICAL WFPRED, REJECT, KEEPSY, VIBCNV,
      *        START, DOREPW, IMAGE, STRICT, NOORTH, NATCON, V3CAL,
-     *        VIBAVE, NMODIF, ECKART
+     *        VIBAVE, NMODIF, ECKART, DOTEMP, DOCENT, REUSED
       COMMON /CBIWLK/ TOLST, TRUSTR, TRUSTI, TRUSTD,
      &                REJMIN, REJMAX, RTRMIN, RTRGOD,
      &                XMXNUC, ZERGRD, DISPLC,
@@ -14,6 +12,7 @@ C
      &                IPART(MXCENT), DOREPW(0:7),
      &                NZEROG, IZEROG(MXCOOR), START,
      &                WFPRED, REJECT, KEEPSY, VIBCNV,
-     &                IMAGE, ISOTPS(MXCENT), STRICT,
+     &                IMAGE, STRICT,
      &                NOORTH, NATCON, V3CAL, VIBAVE, NMODIF,
-     &                ECKART
+     &                ECKART, DOTEMP, DOCENT, TEMP(MAXTMP), NTEMP,
+     &                REUSED

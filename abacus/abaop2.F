@@ -601,3 +601,16 @@ C
       END IF
       RETURN
       END
+C  /* Deck numcrd */
+      SUBROUTINE NUMCRD(ICART, IINT)
+C
+C     Simply returns the number of Cartesian (total) coordinates and
+C     the number of redundant internal coordinates.
+C
+#include "implicit.h"
+#include "mxcent.h"
+#include "optinf.h"
+      ICART = ICRTCR
+      IINT  = IINTCR
+      RETURN
+      END
