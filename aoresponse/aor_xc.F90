@@ -3,6 +3,7 @@ module aor_xc
   use dft_cfg
   use dft_density
   use aor_binomial
+  use dft_cb_interface
 
   implicit none
 
@@ -37,8 +38,8 @@ contains
     real(8), intent(in)    :: dmat(ntbas(0), ntbas(0), nz, nr_dmat)
     real(8), intent(inout) :: fmat(ntbas(0), ntbas(0), nz)
     integer, intent(in)    :: isymop(nr_dmat)
-    real(8), intent(in)    :: gao(*)
-    real(8), intent(in)    :: gao1(*)
+    real(8), intent(in)    :: gao(nr_ao_total)
+    real(8), intent(in)    :: gao1(nr_ao_total*3)
     real(8), intent(in)    :: r_0
     real(8), intent(in)    :: gr_0(3)
     real(8), intent(in)    :: w

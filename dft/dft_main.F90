@@ -1020,8 +1020,8 @@ contains
      &                      dtrmat,  &
      &                      excmat, &
      &                      isymop, &
-     &                      ao_p, &
-     &                      ao_p(ao_start(1, 0)), &
+     &                      ao_p(ao_start(0, 0):ao_end(0, 0)), &
+     &                      ao_p(ao_start(1, 0):ao_end(1, 0)), &
      &                      rho, &
      &                      rhg, &
      &                      wght, &
