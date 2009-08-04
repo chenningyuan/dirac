@@ -1,10 +1,11 @@
 $ERROR 1.E-7
-
 FromRE:dg polari
 ToRE:G-prime
 
+$ERROR 1.E-7
 FromRE:dg G-prime
 ToRE:A-tensor
 
+$ERROR 1.E-7
 FromRE:dg A-tensor
-ToRE:*****************************
+ToRE:this is the end
