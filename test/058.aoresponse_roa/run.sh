@@ -4,7 +4,7 @@ for mol in *mol; do
     for inp in *inp; do
         export MENU=$inp
         export MOL=$mol
-        ../run.sh
+        ../run.sh -copy DALTON.HES
     done
 done
 

@@ -7,4 +7,4 @@ FromRE:dg G-prime
 ToRE:A-tensor
 
 FromRE:dg A-tensor
-ToRE:matrix allocations
+ToRE:*****************************
