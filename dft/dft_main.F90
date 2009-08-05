@@ -37,11 +37,6 @@ module dft_main
 #endif /* ifdef INT_STAR8 */
 #endif /* ifdef VAR_MPI */
 
-#include "functionals.h"
-#ifdef MOD_AUTODIFF
-#include "../autodiff/xc_fortran_interface.h"
-#endif
-
   real(8), parameter :: tiny = 1.0d-20
 
 contains
@@ -621,12 +616,12 @@ contains
       real(8) :: energy_density
 
       real(8) :: RHG(3),VT(3)
-      real(8) :: derv(99)
+      real(8) :: derv(0:99)
       real(8) :: rho, rho13, rho_outer, rho_resp, rhogrd
       type(dft_options_t) :: dft_options
 
       integer :: ipoint, ndim, need_limit
-      real(8) :: wght, z, ddot, dftenergy, taylor_deriv, f
+      real(8) :: wght, z, ddot, taylor_deriv, f
 
       integer :: itest, jtest
 
@@ -757,45 +752,16 @@ contains
 !       energy density
         if (dft_options%energy) then
 
-#ifdef MOD_AUTODIFF
-          if (dft_cfg_autodiff) then
+          call get_functional_derv(0,    &
+                                   wght, &
+                                   rho,  &
+                                   z,    &
+                                   0,    &
+                                   derv)
 
-            energy_density = 0.0d0
+          dft_temp_xc_energy = dft_temp_xc_energy + derv(d_0)
 
-!           lda
-            do i = 1, size(dft_cfg_lda_functional_weight_array)
-              f = dft_cfg_lda_functional_weight_array(i)
-              if (dabs(f) > tiny) then
-                call lda_eval(i, 0, rho, derv)
-                energy_density = energy_density + f*derv(1)
-              end if
-            end do
-
-!           gga
-            do i = 1, size(dft_cfg_gga_functional_weight_array)
-              f = dft_cfg_gga_functional_weight_array(i)
-              if (dabs(f) > tiny) then
-                call gga_eval(i, 0, rho, z, derv)
-                energy_density = energy_density + f*derv(1)
-              end if
-            end do
-
-          else
-#endif /* ifdef MOD_AUTODIFF */
-            energy_density = dftenergy(rho, rhogrd)
-#ifdef MOD_AUTODIFF
-          end if
-#endif
-          dft_temp_xc_energy = dft_temp_xc_energy &
-                             + wght*energy_density
         end if
-
-
-
-
-
-
-
 
 
 !       exchange-correlation potential 
@@ -837,7 +803,7 @@ contains
           end if
           if (dft_cfg_grac_is_active .or. dft_cfg_saop_is_active) then
             rho13 = rho**(1.0d0/3.0d0)
-            call dftac(derv, wght, rho, rho13, &
+            call dftac(derv(d_r), wght, rho, rho13, &
      &                 rho_resp, rho_outer, rhogrd)
           end if
 

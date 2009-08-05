@@ -7,6 +7,7 @@ module dft_functional_derv
 
   public get_functional_derv
 
+  integer, parameter, public :: d_0   =  0
   integer, parameter, public :: d_r   =  1
   integer, parameter, public :: d_z   =  2
   integer, parameter, public :: d_x   =  3
@@ -55,10 +56,10 @@ contains
     real(8), intent(in)  :: r_0
     real(8), intent(in)  :: z_0
     integer, intent(in)  :: n
-    real(8), intent(out) :: derv(n)
+    real(8), intent(out) :: derv(0:n)
 !   ----------------------------------------------------------------------------
     real(8)              :: t(99), t_lda(99), t_gga(99)
-    real(8)              :: f, taylor_deriv
+    real(8)              :: f, taylor_deriv, dftenergy
     integer              :: i
 !   ----------------------------------------------------------------------------
 
@@ -90,6 +91,9 @@ contains
 
       select case (order)
 
+        case (0)
+          derv(d_0) = t_lda(1) + t_gga(1)
+
         case (1)
           derv(d_r) = taylor_deriv(t_lda, 2, (/1, 0/)) &
                     + taylor_deriv(t_gga, 5, (/1, 0, 0, 0, 0/))
@@ -105,8 +109,11 @@ contains
 
       select case (order)
 
+        case (0)
+          derv(d_0) = dftenergy(r_0, dsqrt(z_0))
+
         case (1)
-          call dftpot0(derv, 1.0d0, r_0, dsqrt(z_0))
+          call dftpot0(derv(d_r), 1.0d0, r_0, dsqrt(z_0))
 
         case default
           call quit('get_functional_derv: order too high')
