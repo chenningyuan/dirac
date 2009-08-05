@@ -710,38 +710,178 @@ public:
 };
 
 
+
+void print_usage(ostream &dst)
+{
+  dst << "Usage: gints -b BASIS [-bb BASIS] [-o|-k|-n CHARGES]\n";
+  dst << "Options:\n";
+  dst << " -o    Overlap\n";
+  dst << " -k    Kinetic energy\n";
+  dst << " -n    Nuclear attraction (point charges)\n";
+  dst << "       Charges are read from CHARGES, in format Q X Y Z\n";
+  dst << "If a second basis set file is give use this as\n";
+  dst << "the bra ('right') basis.\n";
+}
+
 int main(int argc, char *argv[])
 {
+  // Parse command line options
+  string type("none");
+  string point_charge_path;
+  string basis_path;
+  string second_basis_path("");
+  for (int i=1;i<argc;i++)
+    {
+      if (argv[i] == string("-h"))
+	{
+	  print_usage(cout);
+	  return EXIT_SUCCESS;
+	}
+      else if (argv[i] == string("-o"))
+	type = "overlap";
+      else if (argv[i] == string("-k"))
+	type = "kinetic";
+      else if (argv[i] == string("-n"))
+	{
+	  type = "pointcharge";
+	  if (argc>i+1)
+	    {
+	      point_charge_path = string(argv[i+1]);
+	      i++;
+	    }
+	  else
+	    {
+	      cerr << "Expected FILE argument to -n, quitting.\n";
+	      return EXIT_FAILURE;
+	    }
+	}
+      else if (argv[i] == string("-b"))
+	{
+	  if (argc>i+1)
+	    {
+	      basis_path = string(argv[i+1]);
+	      i++;
+	    }
+	  else
+	    {
+	      cerr << "Expected FILE argument to -b, quitting.\n";
+	      return EXIT_FAILURE;
+	    }
+	}
+      else if (argv[i] == string("-bb"))
+	{
+	  if (argc>i+1)
+	    {
+	      second_basis_path = string(argv[i+1]);
+	      i++;
+	    }
+	  else
+	    {
+	      cerr << "Expected FILE argument to -bb, quitting.\n";
+	      return EXIT_FAILURE;
+	    }
+	}
+      else
+	{
+	  cerr << "Unknown option '" << argv[i] << "', try -h.\n";
+	  return EXIT_FAILURE;
+	}
+    }
+  if (type == "none")
+    {
+      cerr << "Nothing to calculate, quitting.\n";
+      return EXIT_FAILURE;
+    }
+  if (basis_path == "")
+    {
+      cerr << "No basis given, quitting.\n";
+      return EXIT_FAILURE;
+    }
+
   setup_tables();
+
+  basis b;
+  {
+    ifstream basfile(basis_path.c_str());
+    if (basfile.fail())
+      {
+	cerr << "Error opening basis file " << basis_path << ", quitting.\n";
+	return EXIT_FAILURE;
+      }
+    b.read_from(basfile);
+    cerr << "Read basis: " << b.nr_funs() << " functions, (" << 
+      b.shells.size() << " shells).\n";
+  }
+  basis *b2;
+  if (second_basis_path != "")
+    {
+      b2 = new basis();
+      ifstream basfile(second_basis_path.c_str());
+      if (basfile.fail())
+	{
+	  cerr << "Error opening basis file " << second_basis_path 
+	       << ", quitting.\n";
+	  return EXIT_FAILURE;
+	}
+      b2->read_from(basfile);
+      cerr << "Read second basis: " << b2->nr_funs() << " functions, (" 
+	   << b2->shells.size() << " shells).\n";
+    }
+  else
+    {
+      b2 = &b;
+    }
+  basis &bb = *b2;
+
   cout.precision(16);
   cout << scientific;
-  basis b;
-  b.read_from(cin);
-  cerr << "Read " << b.nr_funs() << " functions, (" << b.shells.size() << " shells).\n";
-  ofstream ovl("S");
-  ovl.precision(16);
-  ovl << scientific;
-  matrix<double> S(b.nr_funs(),b.nr_funs());
-  b.overlap(S,b);
-  S.print(ovl);
-  ovl.close();
-
-  product_basis bb(b,b); //product basis
-  cerr.precision(5);
-  cerr << "Product basis done (" << bb.nr_funs() << 
-    " functions, " << bb.shells.size() << " shells)." << endl;
-  matrix<double> F(b.nr_funs(),b.nr_funs());
-  matrix<double> charges(2,4);
-  charges(0,0) = 1;
-  charges(0,1) = 1.4523499293;
-  charges(0,2) = 0;
-  charges(0,3) = .8996235720;
-  charges(1,0) = 1;
-  charges(1,1) = -1.4523499293;
-  charges(1,2) = 0;
-  charges(1,3) = .8996235720;
-  bb.point_charges(F,charges);
-  F.symmetrize_from_lower();
-  F.print(cout);
-  return 0;
+  
+  if (type == "overlap")
+    {
+      matrix<double> S(b.nr_funs(),bb.nr_funs());
+      b.overlap(S,bb);
+      S.print(cout);
+    }
+  else if (type == "kinetic")
+    {
+      matrix<double> S(b.nr_funs(),bb.nr_funs());
+      b.kinetic(S,bb);
+      S.print(cout);
+    }
+  else if (type == "pointcharge")
+    {
+      vector<double> q;
+      ifstream chargef(point_charge_path.c_str());
+      if (chargef.fail())
+	{
+	  cerr << "gints: Error opening point charge file '" 
+	       << point_charge_path << "', quitting.\n";
+	  return EXIT_FAILURE;
+	}
+      double x;
+      chargef >> x;
+      while (!chargef.fail())
+	{
+	  q.push_back(x);
+	  chargef >> x;
+	}
+      if (q.size() % 4 != 0 || !chargef.eof())
+	{
+	  cerr << "gints: Invalid data in point charge file '" 
+	       << point_charge_path << "', quitting.\n";
+	  return EXIT_FAILURE;
+	}
+      matrix<double> charges(q.size()/4,4);
+      int k = 0;
+      for (unsigned int i=0;i<q.size()/4;i++)
+	for (int j=0;j<4;j++)
+	  charges(i,j) = q[k++];
+      product_basis prodbas(b,bb);
+      matrix<double> F(b.nr_funs(),bb.nr_funs());
+      prodbas.point_charges(F,charges);
+      if (&b == &bb)
+	F.symmetrize_from_lower();
+      F.print(cout);
+    }
+  return EXIT_SUCCESS;
 }
