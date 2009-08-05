@@ -600,7 +600,7 @@ contains
 !***********************************************************************
 
 
-      integer :: npoint, iprint, nxcmat, ibatch, ioff, i, itimes
+      integer :: npoint, iprint, nxcmat, ibatch, ioff, i
       logical :: gga_qr
       real(8) :: corx(*)
       real(8) :: cory(*)
@@ -646,12 +646,8 @@ contains
     call init_factorial_common_block()
 #endif
 
+!gosia: this is already done above...
     ndim = nr_ao_total
-    ! gosia: do we need this itimes below    
-    itimes = 1
-    if (need_ao_order(1, 0)) then
-      itimes = 4
-    end if
 
     if (dft_cfg_keep_ao) then
       if (dft_cfg_ao_mem_limit < 1) then
@@ -677,11 +673,11 @@ contains
       ioff = batch_pointer(ibatch)
       if (.not. batch_is_in_mem(ibatch)) then
         do i = ibatch + 1, max_nr_of_batches
-          batch_pointer(i) = batch_pointer(i) + npoint*itimes*ndim
+          batch_pointer(i) = batch_pointer(i) + npoint*ndim*ndimfactor
         end do
       end if
 
-      need_limit = ioff + itimes*ndim*npoint
+      need_limit = ioff + npoint*ndim*ndimfactor
       if (need_limit > dft_cfg_ao_mem_limit) then
         batch_fits_in_mem(ibatch) = .false.
         write(*, *) 'debug cannot keep batch', ibatch
@@ -725,7 +721,7 @@ contains
         if (batch_is_in_mem(ibatch)) then
           ao_p => ao_in_mem(ioff:ioff + ndim*ndimfactor)
         end if
-        ioff = ioff + itimes*ndim
+        ioff = ioff + ndim*ndimfactor
         
         if (ipoint == npoint) then
           if (batch_fits_in_mem(ibatch)) batch_is_in_mem(ibatch) = .true.
