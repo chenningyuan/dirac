@@ -432,7 +432,7 @@ public:
   shell_basis(const double R[3], double alpha, int order, int nvec) 
     : matrix<double>(shell_size[order],nvec)
   {
-    assert(order <= MAX_L);
+    assert(order <= 2*MAX_L);
     this->order = order;
     s.alpha = alpha;
     s.R[0] = R[0];
@@ -477,6 +477,7 @@ public:
   shell_basis(const shell_basis &b1, const shell_basis &b2) 
     : matrix<double>(shell_size[b1.order+b2.order],b1.cols*b2.cols)
   {
+    assert(order <= 2*MAX_L);
     order = b1.order+b2.order;
     shell_product_tab[b1.order][b2.order](*this,s,b1,b1.s,b2,b2.s);
   }
