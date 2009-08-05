@@ -80,6 +80,13 @@ class matrix
       for (int j=0;j<rows;j++)
 	c[i*pitch+j] = (i == j) ? 1 : 0;
   }
+  void symmetrize_from_lower(void)
+  {
+    assert(rows == cols);
+    for (int i=0;i<cols;i++)
+      for (int j=i+1;j<cols;j++)
+	c[j*pitch+i] = c[i*pitch+j];
+  }
   numtype *column_ptr(int col) 
   { 
     assert(col>=0 && col < cols);
@@ -89,6 +96,12 @@ class matrix
   { 
     assert(col>=0 && col < cols);
     return &c[col*pitch];
+  }
+  inline const numtype &get(int row, int col) const
+  { 
+    assert(col>=0 && col < cols);
+    assert(row>=0 && row < rows);
+    return c[col*pitch + row];
   }
   inline numtype &operator()(int row, int col) 
   { 
@@ -101,6 +114,18 @@ class matrix
     assert(col>=0 && col < cols);
     assert(row>=0 && row < rows);
     return c[col*pitch + row];
+  }
+  inline numtype &operator()(const std::pair<int,int> &element)
+  { 
+    assert(element.second>=0 && element.second < cols);
+    assert(element.first>=0 && element.first < rows);
+    return c[element.second*pitch + element.first];
+  }
+  inline const numtype &operator()(const std::pair<int,int> &element) const
+  { 
+    assert(element.second>=0 && element.second < cols);
+    assert(element.first>=0 && element.first < rows);
+    return c[element.second*pitch + element.first];
   }
   void print(std::ostream &dst) const
   {

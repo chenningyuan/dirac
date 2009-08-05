@@ -259,6 +259,29 @@ void coulomb(matrix<double> &C,
   contract_d12<N1,N2>(C,c1,c2,kernel);
 }
 
+template<int N>
+void pointcharge(matrix<double> &C,
+		 const matrix<double> &c1, 
+		 const shell &s,
+		 const double r[3],
+		 double Z)
+{
+  assert(C.rows == c1.cols);
+  assert(c1.rows == (taylor<3,N>::size));
+  double d[3] = {s.R[0]-r[0],
+		 s.R[1]-r[1],
+		 s.R[2]-r[2]};
+  taylor<3,MIN(N,2)> d2;
+  taylor<3,N> k;
+  d2_taylor(d2,d);
+  d2 *= s.alpha;
+  boys_opt(k,d2);
+  k *= -2*Z*M_PI/s.alpha;
+  dfactors(k);
+  for (int i=0;i<c1.cols;i++)
+    C(i,0) = k.dot(column_as_taylor<N>(c1,i));
+}
+
 /* 
    Represent the product D^n_R1 D^m_R2 g(a1,x-R1)*g(a2,x-R2) as a sum
    sum_k c_k D^k_RP g(a1+a2,x-RP)
@@ -461,6 +484,10 @@ public:
   {
     return cols;
   }
+  double exponent(void) const
+  {
+    return s.alpha;
+  }
   void overlap(matrix<double> &S, const shell_basis &b2)
   {
     overlap_tab[order][b2.order](S,*this,s,b2,b2.s);
@@ -472,6 +499,10 @@ public:
   void coulomb(matrix<double> &S, const shell_basis &b2)
   {
     coulomb_tab[order][b2.order](S,*this,s,b2,b2.s);
+  }
+  void point_charge(matrix<double> &S, const double R[3], double Z)
+  {
+    pointcharge_tab[order](S,*this,s,R,Z);
   }
 protected:
   int order;
@@ -554,21 +585,70 @@ public:
   product_basis(const basis &b1, const basis &b2) : basis()
   { 
     nr_functions = 0;
-    int i1 = 0;
-    for (unsigned int i=0;i<b1.shells.size();i++)
+    if (&b1 == &b2)
       {
-	int i2 = 0;
-	for (unsigned int j=0;j<b2.shells.size();j++)
+	int i1 = 0;
+	for (unsigned int i=0;i<b1.shells.size();i++)
 	  {
-	    shell_basis *b = new shell_basis(*b1.shells[i],*b2.shells[j]);
-	    shells.push_back(b);
-	    nr_functions += b->cols;
-	    for (int ii=i1;ii<i1+b1.shells[i]->cols;ii++)
-	      for (int jj=i2;jj<i2+b2.shells[j]->cols;jj++)
-		origin.push_back(make_pair(ii,jj));
-	    i2 += b2.shells[j]->cols;
+	    int i2 = 0;
+	    for (unsigned int j=0;j<=i;j++)
+	      {
+		shell_basis *b = new shell_basis(*b1.shells[i],*b2.shells[j]);
+		shells.push_back(b);
+		nr_functions += b->cols;
+		for (int ii=i1;ii<i1+b1.shells[i]->cols;ii++)
+		  for (int jj=i2;jj<i2+b2.shells[j]->cols;jj++)
+		    origin.push_back(make_pair(ii,jj));
+		i2 += b2.shells[j]->cols;
+	      }
+	    i1 += b1.shells[i]->cols;
 	  }
-	i1 += b1.shells[i]->cols;
+      }
+    else
+      {
+	int i1 = 0;
+	for (unsigned int i=0;i<b1.shells.size();i++)
+	  {
+	    int i2 = 0;
+	    for (unsigned int j=0;j<b2.shells.size();j++)
+	      {
+		shell_basis *b = new shell_basis(*b1.shells[i],*b2.shells[j]);
+		shells.push_back(b);
+		nr_functions += b->cols;
+		for (int ii=i1;ii<i1+b1.shells[i]->cols;ii++)
+		  for (int jj=i2;jj<i2+b2.shells[j]->cols;jj++)
+		    origin.push_back(make_pair(ii,jj));
+		i2 += b2.shells[j]->cols;
+	      }
+	    i1 += b1.shells[i]->cols;
+	  }
+      }
+  }
+  // Given a list of point charges and positions
+  // Q1 x1 y1 z1
+  // Q2 x2 y2 z2 
+  // ...
+  // Calculate the matrix between the elements of the originating 
+  // basis sets.
+  void point_charges(matrix<double> &F, 
+		     const matrix<double> &charge_and_pos)
+  {
+    assert(charge_and_pos.cols == 4);
+    F.zero();
+    int ic = 0;   
+    for (unsigned int i=0;i<shells.size();i++)
+      {
+	for (int j=0;j<charge_and_pos.rows;j++)
+	  {
+	    double R[3] = {charge_and_pos(j,1),
+			   charge_and_pos(j,2),
+			   charge_and_pos(j,3)};
+	    matrix<double> A(shells[i]->cols, 1);
+	    shells[i]->point_charge(A, R, charge_and_pos(j,0));
+	    for (int k=0;k<shells[i]->cols;k++)
+	      F(origin[ic+k]) += A(k,0);
+	  }
+	ic += shells[i]->cols;
       }
   }
   // Computes integral_psi(1) r_12^-1 psi(2). If psi1
@@ -602,12 +682,13 @@ public:
   // and psi2 are overlaps distributions is this two electron
   // integrals (and a lot of them!)
   // b2 is the basis the density matrix lives on.
-  void coulomb_contract(matrix<double> &J, matrix<double> &K, 
-			const matrix<double> &D, const product_basis &b2)
+  void coulomb_contract(matrix<double> &J,
+			const matrix<double> &D, 
+			const product_basis &b2)
   {
+    //TODO: optimize if this == &b2
     J.zero();
-    K.zero();
-    int ic = 0;
+    int ic = 0;   
     for (unsigned int i=0;i<shells.size();i++)
       {
 	int jc = 0;
@@ -615,23 +696,17 @@ public:
 	  {
 	    matrix<double> J12(shells[i]->cols, b2.shells[j]->cols);
 	    shells[i]->coulomb(J12, *b2.shells[j]);
-	    // Coulomb
 	    for (int k=0;k<shells[i]->cols;k++)
 	      for (int m=0;m<b2.shells[j]->cols;m++)
-		{
-		  J(origin[ic+k].first, origin[ic+k].second) += J12(k,m)*
-		    D(b2.origin[jc+m].first,b2.origin[jc+m].second);
-		  //		  K(origin[ic+k].first, b2.origin[jc+m].first) += J12(k,m)*
-		  // D(origin[ic+k].second,b2.origin[jc+m].second);
-		}		  
+		J(origin[ic+k]) += J12(k,m)*D(b2.origin[jc+m]);
 	    jc += b2.shells[j]->cols;
 	  }
 	ic += shells[i]->cols;
       }
   }
-protected:
+  //protected:
   // For each function, tell where the product came from
-  vector< pair<int,int> > origin; 
+  vector< pair<int,int> > origin;
 };
 
 
@@ -640,27 +715,33 @@ int main(int argc, char *argv[])
   setup_tables();
   cout.precision(16);
   cout << scientific;
-  taylor<1,12> btab,berf;
-  double x = 8.125435345;
-  boys_internal::boys_taylor(btab,x);
-  boys_internal::boys_taylor_largex(berf,x);
-  for (int i=0;i<btab.size;i++)
-    cout << btab[i] << "  \t" << berf[i] << " " << (btab[i]-berf[i])/(btab[i]+berf[i]) << endl;
-#if 0
   basis b;
   b.read_from(cin);
   cerr << "Read " << b.nr_funs() << " functions, (" << b.shells.size() << " shells).\n";
-  //  matrix<double> S(b.nr_funs(),b.nr_funs());
-  //b.kinetic(S,b);
-  //S.print(cout);
+  ofstream ovl("S");
+  ovl.precision(16);
+  ovl << scientific;
+  matrix<double> S(b.nr_funs(),b.nr_funs());
+  b.overlap(S,b);
+  S.print(ovl);
+  ovl.close();
 
   product_basis bb(b,b); //product basis
-  cerr << "Product basis done." << endl;
-  matrix<double> J(b.nr_funs(),b.nr_funs()),K(b.nr_funs(),b.nr_funs()),
-    D(b.nr_funs(),b.nr_funs());
-  D.eye();
-  bb.coulomb_contract(J,K,D,bb);
-  //J.print(cout);
-#endif
+  cerr.precision(5);
+  cerr << "Product basis done (" << bb.nr_funs() << 
+    " functions, " << bb.shells.size() << " shells)." << endl;
+  matrix<double> F(b.nr_funs(),b.nr_funs());
+  matrix<double> charges(2,4);
+  charges(0,0) = 1;
+  charges(0,1) = 1.4523499293;
+  charges(0,2) = 0;
+  charges(0,3) = .8996235720;
+  charges(1,0) = 1;
+  charges(1,1) = -1.4523499293;
+  charges(1,2) = 0;
+  charges(1,3) = .8996235720;
+  bb.point_charges(F,charges);
+  F.symmetrize_from_lower();
+  F.print(cout);
   return 0;
 }

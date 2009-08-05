@@ -53,8 +53,6 @@ template<int Ndeg>
 void boys_taylor_table(taylor<1,Ndeg>& val, double x)
 {
   assert(NTERMS<=INVFAC_LEN);
-  assert(n>=0);
-  assert(n<BOYS_MAXDEG-NTERMS+1);
   const int itab = int(x/BOYS_DELTA+0.5);
   assert(itab >= 0 && "Negative argument to boys()");
   assert(itab < BOYS_STEPS);
@@ -72,7 +70,7 @@ void boys_taylor_table(taylor<1,Ndeg>& val, double x)
 template<int Ndeg>
 void boys_taylor(taylor<1,Ndeg>& res, tnum_t x0)
 {
-  if (x0 < BOYS_DELTA*BOYS_STEPS) 
+  if (x0 < BOYS_DELTA*(BOYS_STEPS-1)) 
     boys_taylor_table(res,x0);
   else
     boys_taylor_largex(res,x0);

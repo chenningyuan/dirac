@@ -54,3 +54,15 @@ void (*shell_product_tab[4][4])(matrix<double> &prod, shell &s12,
   {shell_product<2,0>, shell_product<2,1>, shell_product<2,2>, shell_product<2,3>},
   {shell_product<3,0>, shell_product<3,1>, shell_product<3,2>, shell_product<3,3>}
 };
+
+
+
+void (*pointcharge_tab[7])(matrix<double> &C,
+			   const matrix<double> &c1, 
+			   const shell &s,
+			   const double r[3],
+			   double Z) =
+{
+  pointcharge<0>, pointcharge<1>, pointcharge<2>, pointcharge<3>,
+  pointcharge<4>, pointcharge<5>, pointcharge<6>
+};
