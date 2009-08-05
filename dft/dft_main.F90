@@ -3,6 +3,7 @@ module dft_main
   use memory_allocator
   use dft_cfg
   use dft_temp
+  use dft_functional_derv
   use dft_ao_in_mem
   use dft_ao
   use dft_density
@@ -615,7 +616,6 @@ contains
       real(8) :: dmat_outer_ao(*)
       real(8) :: dtrmat(*)
       real(8) :: excmat(*)
-      real(8) :: vx(dervs1)
       integer :: isymop(nxcmat)
       integer :: ihrmop(nxcmat)
       real(8) :: energy_density
@@ -805,48 +805,21 @@ contains
      &      .or. dft_options%gradient &
      &      .or. dft_options%london) then
 
-#ifdef MOD_AUTODIFF
-          if (dft_cfg_autodiff) then
-
-            vx = 0.0d0
-
-!           lda
-            do i = 1, size(dft_cfg_lda_functional_weight_array)
-              f = dft_cfg_lda_functional_weight_array(i)
-              if (dabs(f) > tiny) then
-                call lda_eval(i, 1, rho, derv)
-                vx(fr0) = vx(fr0) + f*taylor_deriv(derv, 2, (/1, 0/))
-              end if
-            end do
-
-!           gga
-            do i = 1, size(dft_cfg_gga_functional_weight_array)
-              f = dft_cfg_gga_functional_weight_array(i)
-              if (dabs(f) > tiny) then
-                call gga_eval(i, 1, rho, z, derv)
-                vx(fr0) = vx(fr0) + f*taylor_deriv(derv, 5, (/1, 0, 0, 0, 0/))
-                vx(fz0) = vx(fz0) + f*taylor_deriv(derv, 5, (/0, 0, 1, 0, 0/))
-              end if
-            end do
-
-            vx = vx*wght
-
-          else
-#endif /* ifdef MOD_AUTODIFF */
-
-            call dftpot0(vx, wght, rho, rhogrd)
-
-#ifdef MOD_AUTODIFF
-          end if
-#endif
+          call get_functional_derv(1,                  &
+                                   wght,               &
+                                   rho,                &
+                                   z,                  &
+                                   nr_nonzero_derv(1), &
+                                   derv)
 
           if (dft_temp_gga_hs) then
 !           this factor has nothing to do
 !           with symmetrization later
 !           it comes from the fact that derivative of Z
 !           yields two identical terms (one left, one right)
-            vx(fz0) = 2.0d0*vx(fz0)
+            derv(d_z) = 2.0d0*derv(d_z)
           end if
+
 !         asymptotic correction
           if (dft_cfg_saop_is_active) then
             call get_n(rho_outer,     &
@@ -864,7 +837,7 @@ contains
           end if
           if (dft_cfg_grac_is_active .or. dft_cfg_saop_is_active) then
             rho13 = rho**(1.0d0/3.0d0)
-            call dftac(vx, wght, rho, rho13, &
+            call dftac(derv, wght, rho, rho13, &
      &                 rho_resp, rho_outer, rhogrd)
           end if
 
@@ -877,7 +850,7 @@ contains
         if (dft_options%energy) then
 !       here we will add LAO contribution to KS matrix
           if (dft_temp_gga_hs) then
-            vt = vx(fz0)*rhg
+            vt = derv(d_z)*rhg
 
 #ifdef TEST_GAO1_SYMMETRY
             if (abs(corx(ipoint)) > 1.0d-10) then
@@ -886,15 +859,15 @@ contains
             end if
 #endif
 
-            call gga_distribute(vx(fr0), vt, 0, excmat, ao_p, ao_p(ao_start(1, 0):ao_end(1, 0)))
+            call gga_distribute(derv(d_r), vt, 0, excmat, ao_p, ao_p(ao_start(1, 0):ao_end(1, 0)))
             !gosia, if london then add: 
             !if (dft_options%london) then
             !  call gga_london_distribute()
             !end if
           else
-            call lda_distribute(vx(fr0),     0, excmat, ao_p)
+            call lda_distribute(derv(d_r),     0, excmat, ao_p)
             if (dft_options%london) then
-              call lda_london_distribute(vx(fr0), 0,       &
+              call lda_london_distribute(derv(d_r), 0,       &
                                          excmat,           &
                                          ao_p, &
                                          ao_p(ao_start(0, 1):ao_end(0, 1)),          &

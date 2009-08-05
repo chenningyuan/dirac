@@ -11,6 +11,8 @@ module dft_basis_info
 
   save
 
+  integer, parameter, public   :: mxbllen = 160
+
   integer, public              :: nr_cartesian_ao     = 0
   integer, public              :: dft_nr_shells       = 0
   integer, public              :: dft_nr_large_shells = 0
