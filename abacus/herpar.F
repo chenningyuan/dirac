@@ -600,6 +600,11 @@ C
       CALL MPI_BCAST(HFXMU,1,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
 
+      call mpi_bcast(spinfr, 1, mpi_logical, mparid,
+     &               mpi_comm_world, ierr)
+
+
+
 C
 C     ITYPE = 3 : direct SCF (AO-basis)
 C     ITYPE = 9 : direct SCF (SO-basis)
@@ -1420,6 +1425,10 @@ C
      &               MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(HFXMU,1,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
+
+      call mpi_bcast(spinfr, 1, mpi_logical, mparid,
+     &               mpi_comm_world, ierr)
+
       IF(ITYPE.EQ.3.OR.ITYPE.EQ.9.OR.ITYPE.EQ.2.OR.ITYPE.EQ.4) THEN
         CALL MPI_BCAST(N2RED,1,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
