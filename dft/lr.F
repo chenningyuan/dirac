@@ -48,7 +48,7 @@ c     /* sdft_lr */
      &                   gao,
      &                   gao1,
      &                   r_0,
-     &                   gr_0_norm,
+     &                   z,
      &                   gr_0,
      &                   w,
      &                   is_gga,
@@ -62,6 +62,7 @@ c=======================================================================
 
       use dft_cfg
       use dft_density
+      use dft_functional_derv
 
       implicit none
 #include "priunit.h"
@@ -73,16 +74,11 @@ c=======================================================================
 #include "dcbham.h"
 #include "dgroup.h"
 #include "inforb.h"
-#include "../dft/functionals.h"
-
-#ifdef MOD_AUTODIFF
-#include "../autodiff/xc_fortran_interface.h"
-#endif
 
       logical   is_gga,
      &          allow_nonhermitian
       integer:: nxcmat, im, im_off, irepop, k, k_start, j, i
-      real(8) ::gr_0_norm, w, r_0, worth_it, ddot
+      real(8) ::z, w, r_0, worth_it, ddot
       real(8) ::dtrmat(*),
      &          excmat(*)
       integer:: isymop(*),
@@ -93,8 +89,7 @@ c=======================================================================
       real(8):: gr_0(  3),
      &          s_b (  3), vxc_scalar(3), vxc_vector(3, 3), y_b(3),
      &          gs_b(3,3),
-     &          vxc(99),
-     &          derv(99), taylor_deriv, z, f
+     &          derv(0:99)
       real(8), parameter :: tiny = 1.0d-20
 
       k_start = 1
@@ -151,95 +146,28 @@ c=======================================================================
 
         if(worth_it .gt. dft_cfg_dfthrl) then
 
-          if (is_gga) then
-
-#ifdef MOD_AUTODIFF
-            if (dft_cfg_autodiff) then
-
-              vxc = 0.0d0
-              Z   = gr_0_norm*gr_0_norm
-
-!             lda
-              do i = 1, size(dft_cfg_lda_functional_weight_array)
-                f = dft_cfg_lda_functional_weight_array(i)
-                if (dabs(f) > tiny) then
-                  call lda_eval(i, 2, r_0, derv)
-              vxc(fss) = vxc(fss)
-     &                 + f*taylor_deriv(derv, 2, (/0, 2/))
-                end if
-              end do
-
-!             gga
-              do i = 1, size(dft_cfg_gga_functional_weight_array)
-                f = dft_cfg_gga_functional_weight_array(i)
-                if (dabs(f) > tiny) then
-                  call gga_eval(i, 2, r_0, z, derv)
-              vxc(fss) = vxc(fss)
-     &                 + f*taylor_deriv(derv, 5, (/0, 2, 0, 0, 0/))
-              vxc(fsy) = vxc(fsy)
-     &                 + f*taylor_deriv(derv, 5, (/0, 1, 0, 0, 1/))
-              vxc(fyy) = vxc(fyy)
-     &                 + f*taylor_deriv(derv, 5, (/0, 0, 0, 0, 2/))
-              vxc(fx)  = vxc(fx)
-     &                 + f*taylor_deriv(derv, 5, (/0, 0, 0, 1, 0/))
-                end if
-              end do
-
-              vxc = vxc*w
-
-            else
-#endif
-
-              call sdftpot1(vxc, w, r_0, gr_0_norm)
-
-#ifdef MOD_AUTODIFF
-            end if
-#endif
-
-          else
-
-#ifdef MOD_AUTODIFF
-            if (dft_cfg_autodiff) then
-
-              vxc = 0.0d0
-
-!             lda
-              do i = 1, size(dft_cfg_lda_functional_weight_array)
-                f = dft_cfg_lda_functional_weight_array(i)
-                if (dabs(f) > tiny) then
-                  call lda_eval(i, 2, r_0, derv)
-              vxc(fss) = vxc(fss)
-     &                 + f*taylor_deriv(derv, 2, (/0, 2/))
-                end if
-              end do
-
-              vxc = vxc*w
-
-            else
-#endif
-
-              call sdftpot1(vxc, w, r_0, 0.0d0)
-
-#ifdef MOD_AUTODIFF
-            end if
-#endif
-
-          end if
+          call get_functional_derv(2,            
+     &                             w,             
+     &                             r_0,            
+     &                             z,               
+     &                             nr_nonzero_derv(2),
+     &                             derv)
 
           do k = k_start,3
 
-      vxc_scalar(k) = vxc(fss)*s_b(k)
+      vxc_scalar(k) = derv(d_ss)*s_b(k)
 
       if(is_gga) then
         y_b(k) = ddot(3,gr_0,1,gs_b(1,k),1)
 
-        vxc_scalar(k) = vxc_scalar(k) + vxc(fsy)*y_b(k)
+        vxc_scalar(k) = vxc_scalar(k) + derv(d_sy)*y_b(k)
       endif
 
       if(is_gga) then
         do j = 1,3
-          vxc_vector(j,k) = (s_b(k)*vxc(fsy) + y_b(k)*vxc(fyy))*gr_0(j)
-     &                  + vxc(fx)*gs_b(j,k)*2.0d0
+          vxc_vector(j,k) = (s_b(k)*derv(d_sy) 
+     &                    + y_b(k)*derv(d_yy))*gr_0(j)
+     &                    + derv(d_x)*gs_b(j,k)*2.0d0
         enddo
       endif
 

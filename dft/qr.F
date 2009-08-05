@@ -7,7 +7,7 @@
      &                   gao,
      &                   gao1,
      &                   r_0,
-     &                   gr_0_norm,
+     &                   z,
      &                   gr_0,
      &                   w,
      &                   buf)
@@ -21,6 +21,7 @@ c=======================================================================
       use dft_main
       use dft_cfg
       use dft_density
+      use dft_functional_derv
 
 #include "implicit.h"
 #include "priunit.h"
@@ -34,11 +35,6 @@ c=======================================================================
 #include "dcbham.h"
 #include "dgroup.h"
 #include "inforb.h"
-#include "../dft/functionals.h"
-
-#ifdef MOD_AUTODIFF
-#include "../autodiff/xc_fortran_interface.h"
-#endif
 
       logical   add_grad,
      &          add_spin
@@ -90,8 +86,7 @@ c=======================================================================
 !               vector h- part: q_{kj}^[BC] with k = x,y,z and j = x,y,z
      &          v_bc_ah(3,3),
 !
-     &          vxc(99),
-     &          derv(99)
+     &          derv(0:nr_nonzero_derv(3))
       real(8), parameter :: tiny = 1.0d-20
       real(8) :: f
       integer :: i
@@ -173,95 +168,34 @@ c=======================================================================
         enddo
       endif
 
-#ifdef MOD_AUTODIFF
-      if (dft_cfg_autodiff) then
-
-        vxc = 0.0d0
-        Z   = gr_0_norm*gr_0_norm
-
-!       lda
-        do i = 1, size(dft_cfg_lda_functional_weight_array)
-          f = dft_cfg_lda_functional_weight_array(i)
-          if (dabs(f) > tiny) then
-            call lda_eval(i, 3, r_0, derv)
-
-      vxc(frrr) = vxc(frrr) + f*taylor_deriv(derv, 2, (/3, 0/))
-      vxc(frss) = vxc(frss) + f*taylor_deriv(derv, 2, (/1, 2/))
-
-          end if
-        end do
-
-!       gga
-        do i = 1, size(dft_cfg_gga_functional_weight_array)
-          f = dft_cfg_gga_functional_weight_array(i)
-          if (dabs(f) > tiny) then
-            call gga_eval(i, 3, r_0, z, derv)
-
-      vxc(frrr) = vxc(frrr) + f*taylor_deriv(derv, 5, (/3, 0, 0, 0, 0/))
-      vxc(frss) = vxc(frss) + f*taylor_deriv(derv, 5, (/1, 2, 0, 0, 0/))
-
-      vxc(frrz) = vxc(frrz) + f*taylor_deriv(derv, 5, (/2, 0, 1, 0, 0/))
-      vxc(frsy) = vxc(frsy) + f*taylor_deriv(derv, 5, (/1, 1, 0, 0, 1/))
-      vxc(frx)  = vxc(frx)  + f*taylor_deriv(derv, 5, (/1, 0, 0, 1, 0/))
-      vxc(fryy) = vxc(fryy) + f*taylor_deriv(derv, 5, (/1, 0, 0, 0, 2/))
-      vxc(frz)  = vxc(frz)  + f*taylor_deriv(derv, 5, (/1, 0, 1, 0, 0/))
-      vxc(frzz) = vxc(frzz) + f*taylor_deriv(derv, 5, (/1, 0, 2, 0, 0/))
-      vxc(fssz) = vxc(fssz) + f*taylor_deriv(derv, 5, (/0, 2, 1, 0, 0/))
-      vxc(fsy)  = vxc(fsy)  + f*taylor_deriv(derv, 5, (/0, 1, 0, 0, 1/))
-      vxc(fszy) = vxc(fszy) + f*taylor_deriv(derv, 5, (/0, 1, 1, 0, 1/))
-      vxc(fyy)  = vxc(fyy)  + f*taylor_deriv(derv, 5, (/0, 0, 0, 0, 2/))
-      vxc(fzx)  = vxc(fzx)  + f*taylor_deriv(derv, 5, (/0, 0, 1, 1, 0/))
-      vxc(fzyy) = vxc(fzyy) + f*taylor_deriv(derv, 5, (/0, 0, 1, 0, 2/))
-      vxc(fzz)  = vxc(fzz)  + f*taylor_deriv(derv, 5, (/0, 0, 2, 0, 0/))
-      vxc(fzzz) = vxc(fzzz) + f*taylor_deriv(derv, 5, (/0, 0, 3, 0, 0/))
-
-          end if
-        end do
-
-        vxc = vxc*w
-
-      else
-#endif /* ifdef MOD_AUTODIFF */
-
-      if (add_grad) then
-        call dftpot2(vxc, w, r_0, gr_0_norm)
-      else
-        call dftpot2(vxc, w, r_0, 0.0d0)
-      end if
-
-      if (add_spin) then
-        if (add_grad) then
-          call sdftpot2(vxc, w, r_0, gr_0_norm)
-        else
-          call sdftpot2(vxc, w, r_0, 0.0d0)
-        end if
-      end if
-
-#ifdef MOD_AUTODIFF
-      end if
-#endif
+      call get_functional_derv(3,
+     &                         w,
+     &                         r_0,
+     &                         z,
+     &                         nr_nonzero_derv(3),
+     &                         derv)
 
 !-------------------------------------------------------------------------------
 !     collect s_bc_h
 
       s_bc_h = d0
 
-      s_bc_h = s_bc_h + vxc(fRRR)*(r_b*r_c)
+      s_bc_h = s_bc_h + derv(d_RRR)*(r_b*r_c)
 
       if(add_grad) then
-        s_bc_h = s_bc_h + vxc(fRRZ)*(r_b*Z_c + Z_b*r_c)
-     &                  + vxc(fRZZ)*(Z_b*Z_c)
-     &                  + vxc(fRZ)*Z_bc
+        s_bc_h = s_bc_h + derv(d_RRZ)*(r_b*Z_c + Z_b*r_c)
+     &                  + derv(d_RZZ)*(Z_b*Z_c)
+     &                  + derv(d_RZ)*Z_bc
       endif
 
       if(add_spin) then
         do k = k_start,3
-          s_bc_h = s_bc_h + vxc(fRSS)*(s_b(k)*s_c(k))
+          s_bc_h = s_bc_h + derv(d_RSS)*(s_b(k)*s_c(k))
 
           if(add_grad) then
-            s_bc_h = s_bc_h + vxc(fRSY)*(s_b(k)*Y_c(k) + Y_b(k)*s_c(k))
-     &                      + vxc(fRYY)*(Y_b(k)*Y_c(k))
-     &                      + vxc(fRX)*X_bc(k)
+       s_bc_h = s_bc_h + derv(d_RSY)*(s_b(k)*Y_c(k) + Y_b(k)*s_c(k))
+     &                 + derv(d_RYY)*(Y_b(k)*Y_c(k))
+     &                 + derv(d_RX)*X_bc(k)
           endif
         enddo
       endif
@@ -273,13 +207,13 @@ c=======================================================================
 
       if(add_spin) then
         do k = k_start,3
-          s_bc_ah(k) = s_bc_ah(k) + vxc(fRSS)*(r_b*s_c(k) + s_b(k)*r_c)
+       s_bc_ah(k) = s_bc_ah(k) + derv(d_RSS)*(r_b*s_c(k) + s_b(k)*r_c)
 
           if(add_grad) then
-           s_bc_ah(k) = s_bc_ah(k) + vxc(fRSY)*(r_b*Y_c(k) + Y_b(k)*r_c)
-     &                             + vxc(fSSZ)*(Z_b*s_c(k) + s_b(k)*Z_c)
-     &                             + vxc(fSZY)*(Z_b*Y_c(k) + Y_b(k)*Z_c)
-     &                             + vxc(fSY)*Y_bc(k)
+       s_bc_ah(k) = s_bc_ah(k) + derv(d_RSY)*(r_b*Y_c(k) + Y_b(k)*r_c)
+     &                         + derv(d_SSZ)*(Z_b*s_c(k) + s_b(k)*Z_c)
+     &                         + derv(d_SZY)*(Z_b*Y_c(k) + Y_b(k)*Z_c)
+     &                         + derv(d_SY)*Y_bc(k)
           endif
         enddo
       endif
@@ -297,18 +231,18 @@ c=======================================================================
         v_bc_h_Z_c = d0
 
         v_bc_h_Z_0 = v_bc_h_Z_0
-     &             + vxc(fZZZ)*(Z_b*Z_c)
-     &             + vxc(fRZZ)*(r_b*Z_c + Z_b*r_c)
-     &             + vxc(fRRZ)*(r_b*r_c)
+     &             + derv(d_ZZZ)*(Z_b*Z_c)
+     &             + derv(d_RZZ)*(r_b*Z_c + Z_b*r_c)
+     &             + derv(d_RRZ)*(r_b*r_c)
 
         v_bc_h_Z_0 = v_bc_h_Z_0
-     &             + vxc(fZZ)*Z_bc
+     &             + derv(d_ZZ)*Z_bc
         v_bc_h_Z_b = v_bc_h_Z_b
-     &             + vxc(fRZ)*r_c
-     &             + vxc(fZZ)*Z_c
+     &             + derv(d_RZ)*r_c
+     &             + derv(d_ZZ)*Z_c
         v_bc_h_Z_c = v_bc_h_Z_c
-     &             + vxc(fRZ)*r_b
-     &             + vxc(fZZ)*Z_b
+     &             + derv(d_RZ)*r_b
+     &             + derv(d_ZZ)*Z_b
 
         if(add_spin) then
 
@@ -321,31 +255,31 @@ c=======================================================================
 
           do k = k_start,3
             v_bc_h_Z_0  = v_bc_h_Z_0
-     &                  + vxc(fZYY)*(Y_b(k)*Y_c(k))
-     &                  + vxc(fSZY)*(s_b(k)*Y_c(k) + Y_b(k)*s_c(k))
-     &                  + vxc(fSSZ)*(s_b(k)*s_c(k))
+     &                  + derv(d_ZYY)*(Y_b(k)*Y_c(k))
+     &                  + derv(d_SZY)*(s_b(k)*Y_c(k) + Y_b(k)*s_c(k))
+     &                  + derv(d_SSZ)*(s_b(k)*s_c(k))
 
             v_bc_h_Y_0(k) = v_bc_h_Y_0(k)
-     &                    + vxc(fYY)*Y_bc(k)
+     &                    + derv(d_YY)*Y_bc(k)
             v_bc_h_Y_b(k) = v_bc_h_Y_b(k)
-     &                    + vxc(fSY)*s_c(k)
-     &                    + vxc(fYY)*Y_c(k)
+     &                    + derv(d_SY)*s_c(k)
+     &                    + derv(d_YY)*Y_c(k)
             v_bc_h_Y_c(k) = v_bc_h_Y_c(k)
-     &                    + vxc(fSY)*s_b(k)
-     &                    + vxc(fYY)*Y_b(k)
+     &                    + derv(d_SY)*s_b(k)
+     &                    + derv(d_YY)*Y_b(k)
 
             v_bc_h_X_b(k) = v_bc_h_X_b(k)
-     &                    + vxc(fRX)*r_c
-     &                    + vxc(fZX)*Z_c
+     &                    + derv(d_RX)*r_c
+     &                    + derv(d_ZX)*Z_c
             v_bc_h_X_c(k) = v_bc_h_X_c(k)
-     &                    + vxc(fRX)*r_b
-     &                    + vxc(fZX)*Z_b
+     &                    + derv(d_RX)*r_b
+     &                    + derv(d_ZX)*Z_b
 
             v_bc_h_Y_0(k) = v_bc_h_Y_0(k)
-     &                    + vxc(fRSY)*(r_b*s_c(k) + s_b(k)*r_c)
-     &                    + vxc(fRYY)*(r_b*Y_c(k) + Y_b(k)*r_c)
-     &                    + vxc(fSZY)*(Z_b*s_c(k) + s_b(k)*Z_c)
-     &                    + vxc(fZYY)*(Z_b*Y_c(k) + Y_b(k)*Z_c)
+     &                    + derv(d_RSY)*(r_b*s_c(k) + s_b(k)*r_c)
+     &                    + derv(d_RYY)*(r_b*Y_c(k) + Y_b(k)*r_c)
+     &                    + derv(d_SZY)*(Z_b*s_c(k) + s_b(k)*Z_c)
+     &                    + derv(d_ZYY)*(Z_b*Y_c(k) + Y_b(k)*Z_c)
           enddo
         endif
 

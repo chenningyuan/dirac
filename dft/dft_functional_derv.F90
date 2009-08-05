@@ -58,6 +58,7 @@ contains
     integer, intent(in)  :: n
     real(8), intent(out) :: derv(0:n)
 !   ----------------------------------------------------------------------------
+!fixme get the 99 properly by a call (there is a routine for that)
     real(8)              :: t(99), t_lda(99), t_gga(99)
     real(8)              :: f, taylor_deriv, dftenergy
     integer              :: i
@@ -99,6 +100,38 @@ contains
                     + taylor_deriv(t_gga, 5, (/1, 0, 0, 0, 0/))
           derv(d_z) = taylor_deriv(t_gga, 5, (/0, 0, 1, 0, 0/))
 
+        case (2)
+          derv(d_rr) = taylor_deriv(t_lda, 2, (/2, 0/)) &
+                     + taylor_deriv(t_gga, 5, (/2, 0, 0, 0, 0/))
+          derv(d_ss) = taylor_deriv(t_lda, 2, (/0, 2/)) &
+                     + taylor_deriv(t_gga, 5, (/0, 2, 0, 0, 0/))
+          derv(d_rz) = taylor_deriv(t_gga, 5, (/1, 0, 1, 0, 0/))
+          derv(d_zz) = taylor_deriv(t_gga, 5, (/0, 0, 2, 0, 0/))
+          derv(d_sy) = taylor_deriv(t_gga, 5, (/0, 1, 0, 0, 1/))
+          derv(d_yy) = taylor_deriv(t_gga, 5, (/0, 0, 0, 0, 2/))
+          derv(d_z)  = taylor_deriv(t_gga, 5, (/0, 0, 1, 0, 0/))
+          derv(d_x)  = taylor_deriv(t_gga, 5, (/0, 0, 0, 1, 0/))
+
+        case (3)
+          derv(d_rrr) = taylor_deriv(t_lda, 2, (/3, 0/)) &
+                      + taylor_deriv(t_gga, 5, (/3, 0, 0, 0, 0/))
+          derv(d_rss) = taylor_deriv(t_lda, 2, (/1, 2/)) &
+                      + taylor_deriv(t_gga, 5, (/1, 2, 0, 0, 0/))
+          derv(d_rrz) = taylor_deriv(t_gga, 5, (/2, 0, 1, 0, 0/))
+          derv(d_rsy) = taylor_deriv(t_gga, 5, (/1, 1, 0, 0, 1/))
+          derv(d_rx)  = taylor_deriv(t_gga, 5, (/1, 0, 0, 1, 0/))
+          derv(d_ryy) = taylor_deriv(t_gga, 5, (/1, 0, 0, 0, 2/))
+          derv(d_rz)  = taylor_deriv(t_gga, 5, (/1, 0, 1, 0, 0/))
+          derv(d_rzz) = taylor_deriv(t_gga, 5, (/1, 0, 2, 0, 0/))
+          derv(d_ssz) = taylor_deriv(t_gga, 5, (/0, 2, 1, 0, 0/))
+          derv(d_sy)  = taylor_deriv(t_gga, 5, (/0, 1, 0, 0, 1/))
+          derv(d_szy) = taylor_deriv(t_gga, 5, (/0, 1, 1, 0, 1/))
+          derv(d_yy)  = taylor_deriv(t_gga, 5, (/0, 0, 0, 0, 2/))
+          derv(d_zx)  = taylor_deriv(t_gga, 5, (/0, 0, 1, 1, 0/))
+          derv(d_zyy) = taylor_deriv(t_gga, 5, (/0, 0, 1, 0, 2/))
+          derv(d_zz)  = taylor_deriv(t_gga, 5, (/0, 0, 2, 0, 0/))
+          derv(d_zzz) = taylor_deriv(t_gga, 5, (/0, 0, 3, 0, 0/))
+
         case default
           call quit('get_functional_derv: order too high')
 
@@ -113,7 +146,13 @@ contains
           derv(d_0) = dftenergy(r_0, dsqrt(z_0))
 
         case (1)
-          call dftpot0(derv(d_r), 1.0d0, r_0, dsqrt(z_0))
+          call dftpot0(derv(1), 1.0d0, r_0, dsqrt(z_0))
+
+        case (2)
+          call sdftpot1(derv(1), 1.0d0, r_0, dsqrt(z_0))
+
+        case (3)
+          call sdftpot2(derv(1), 1.0d0, r_0, dsqrt(z_0))
 
         case default
           call quit('get_functional_derv: order too high')

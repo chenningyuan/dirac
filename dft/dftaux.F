@@ -36,12 +36,13 @@ c     /* dft_lr */
      &                  gao,
      &                  gao1,
      &                  r_0,
-     &                  gr_0_norm,
+     &                  z,
      &                  gr_0,
      &                  w,
      &                  is_gga,
      &                  buf)
 c=======================================================================
+!fixme sdft_lr and dft_lr should really be only one routine
 c     linear transformation, spin density contribution is in sdft_lr
 c-----------------------------------------------------------------------
 c     T. Helgaker, T. Saue
@@ -52,22 +53,17 @@ c=======================================================================
       use dft_cfg
       use dft_density
       use dft_cb_interface
-      !gosia added:
       use dft_temp
+      use dft_functional_derv
 
       implicit none
-
-#include "functionals.h"
-#ifdef MOD_AUTODIFF
-#include "../autodiff/xc_fortran_interface.h"
-#endif
 
       logical   is_gga,
      &          allow_nonhermitian
       integer:: nxcmat, im, j, irepop, i
       integer:: isymop(nxcmat),
      &          ihrmop(nxcmat)
-      real(8):: r_0, w, gr_0_norm, dabs, Z_b, vxc_scalar, ddot, r_b
+      real(8):: r_0, w, z, dabs, Z_b, vxc_scalar, ddot, r_b
       real(8):: dtrmat(nr_ao_total,nr_ao_total,nr_qu,nxcmat),
      &          excmat(nr_ao_total,nr_ao_total,nr_qu,nxcmat),
      &          gao(nr_ao_total),
@@ -79,8 +75,7 @@ c=======================================================================
 !
      &          vxc_vector(3),
 !
-     &          vxc(99),
-     &          derv(99), taylor_deriv, z, f
+     &          derv(0:99)
       real(8), parameter :: tiny = 1.0d-20
 
 ! gosia: added
@@ -100,64 +95,7 @@ c=======================================================================
      &             buf, 
      &             gao)
 
-        if(.not. is_gga) then
-
-!-------------------------------------------------------------------------------
-!         LDA
-
-          if(dabs(r_b) .gt. dft_cfg_dfthrl) then
-
-#ifdef MOD_AUTODIFF
-            if (dft_cfg_autodiff) then
-
-              vxc = 0.0d0
-
-!             lda
-              do i = 1, size(dft_cfg_lda_functional_weight_array)
-                f = dft_cfg_lda_functional_weight_array(i)
-                if (dabs(f) > tiny) then
-                  call lda_eval(i, 2, r_0, derv)
-                 vxc(frr) = vxc(frr) + f*taylor_deriv(derv, 2, (/2, 0/))
-                end if
-              end do
-       
-              vxc = vxc*w
-
-            else
-#endif
-
-              call dftpot1(vxc, w, r_0, 0.0d0)
-
-#ifdef MOD_AUTODIFF
-            end if
-#endif
-
-            vxc_scalar = vxc(fRR)*r_b
-! gosia: adapt for london...only here?
-! changed: gao->ao_global            
-            call lda_distribute(vxc_scalar,
-     &                          irepop,
-     &                          excmat(1, 1, 1, im),
-     &                          gao)
-            if (dft_options%london) then
-! and this is the only thing i do for linear response:
-! not yet tested...                    
-              call lda_london_distribute(vxc_scalar,
-     &                                   irepop,
-     &                                   excmat(1, 1, 1, im),
-     &                                   gao,
-     &                                   gaob1,
-     &                                   cx, cy, cz,
-     &                                   dft_gagorg(1), 
-     &                                   dft_gagorg(2),
-     &                                   dft_gagorg(3)) 
-            end if !london
-          endif
-        else
-
-!-------------------------------------------------------------------------------
-!         GGA
-
+        if (is_gga) then
           if (allow_nonhermitian) then
             call get_gn_nonhermitian(gr_b,
      &                               irepop,
@@ -173,76 +111,46 @@ c=======================================================================
      &                  gao,
      &                  gao1)
           end if
+        end if
 
-!         worth_it = max(
-!    &                   dabs(r_b),
-!    &                   dabs(gr_b(1)),
-!    &                   dabs(gr_b(2)),
-!    &                   dabs(gr_b(3))
-!    &                  )
+        call get_functional_derv(2,
+     &                           w,
+     &                           r_0,
+     &                           z,
+     &                           nr_nonzero_derv(2),
+     &                           derv)
 
-!         if(worth_it .gt. dft_cfg_dfthrl) then
+        if (is_gga) then
 
-#ifdef MOD_AUTODIFF
-            if (dft_cfg_autodiff) then
+          z_b = 2.0d0*ddot(3,gr_0,1,gr_b,1)
 
-              vxc = 0.0d0
-              Z   = gr_0_norm*gr_0_norm
+          vxc_scalar = derv(d_rr)*r_b
+     &               + derv(d_rz)*z_b
 
-!             lda
-              do i = 1, size(dft_cfg_lda_functional_weight_array)
-                f = dft_cfg_lda_functional_weight_array(i)
-                if (dabs(f) > tiny) then
-                  call lda_eval(i, 2, r_0, derv)
-                 vxc(frr) = vxc(frr) + f*taylor_deriv(derv, 2, (/2, 0/))
-                end if
-              end do
-       
-!             gga
-              do i = 1, size(dft_cfg_gga_functional_weight_array)
-                f = dft_cfg_gga_functional_weight_array(i)
-                if (dabs(f) > tiny) then
-                  call gga_eval(i, 2, r_0, z, derv)
-        vxc(frr) = vxc(frr) + f*taylor_deriv(derv, 5, (/2, 0, 0, 0, 0/))
-        vxc(frz) = vxc(frz) + f*taylor_deriv(derv, 5, (/1, 0, 1, 0, 0/))
-        vxc(fzz) = vxc(fzz) + f*taylor_deriv(derv, 5, (/0, 0, 2, 0, 0/))
-        vxc(fz0) = vxc(fz0) + f*taylor_deriv(derv, 5, (/0, 0, 1, 0, 0/))
-                end if
-              end do
-             
-              vxc = vxc*w
+          do j = 1,3
+            vxc_vector(j) = derv(d_zz)*z_b*gr_0(j)
+     &                    + derv(d_rz)*r_b*gr_0(j)
+     &                    + derv(d_z)*gr_b(j)
+          enddo
 
-            else
-#endif
+!         this factor is *not* for the symmetrization later
+          call dscal(3, 2.0d0, vxc_vector, 1)
 
-              call dftpot1(vxc, w, r_0, gr_0_norm)
+          call gga_distribute(vxc_scalar,
+     &                        vxc_vector,
+     &                        irepop,
+     &                        excmat(1, 1, 1, im),
+     &                        gao,
+     &                        gao1)
 
-#ifdef MOD_AUTODIFF
-            end if
-#endif
+        else
+          vxc_scalar = derv(d_rr)*r_b
+          call lda_distribute(vxc_scalar,
+     &                        irepop,
+     &                        excmat(1, 1, 1, im),
+     &                        gao)
+        end if
 
-            Z_b = 2.0d0*ddot(3,gr_0,1,gr_b,1)
-
-            vxc_scalar = vxc(fRR)*r_b
-     &                 + vxc(fRZ)*Z_b
-
-            do j = 1,3
-              vxc_vector(j) = vxc(fZZ)*Z_b*gr_0(j)
-     &                      + vxc(fRZ)*r_b*gr_0(j)
-     &                      + vxc(fZ0)*gr_b(j)
-            enddo
-
-!           this factor is *not* for the symmetrization later
-            call dscal(3,2.0d0,vxc_vector,1)
-
-            call gga_distribute(vxc_scalar,
-     &                          vxc_vector,
-     &                          irepop,
-     &                          excmat(1, 1, 1, im),
-     &                          gao,
-     &                          gao1)
-!         endif
-        endif
  99     continue
       enddo
 

@@ -851,55 +851,20 @@ contains
 !       linear response
         if(dft_options%lr) then
 
-          !here we will do LAO contribution to LR
-! gosia: we can try this for a moment:
-          if(dft_options%london) then
-            call dft_lr(dtrmat, &
-     &                  excmat, &
-     &                  nxcmat, &
-     &                  isymop, &
-     &                  ihrmop, &
-     &                  .false., &
-     &                  ao_p, &
-     &                  ao_p(ao_start(1, 0)), &
-     &                  rho, &
-     &                  rhogrd, &
-     &                  rhg, &
-     &                  wght, &
-     &                  dft_temp_gga_hs, &
-     &                  buffer)
-                 !do sth
-          else !gosia: both the same for a moment
-            call dft_lr(dtrmat, &
-     &                  excmat, &
-     &                  nxcmat, &
-     &                  isymop, &
-     &                  ihrmop, &
-     &                  .false., &
-     &                  ao_p, &
-     &                  ao_p(ao_start(1, 0)), &
-     &                  rho, &
-     &                  rhogrd, &
-     &                  rhg, &
-     &                  wght, &
-     &                  dft_temp_gga_hs, &
-     &                  buffer)
-          end if
-
-!         call dft_lr(dtrmat, &
-!     &                excmat, &
-!     &                nxcmat, &
-!     &                isymop, &
-!     &                ihrmop, &
-!     &                .false., &
-!     &                ao_p, &
-!     &                ao_p(ao_start(1, 0)), &
-!     &                rho, &
-!     &                rhogrd, &
-!     &                rhg, &
-!     &                wght, &
-!     &                dft_temp_gga_hs, &
-!     &                buffer)
+          call dft_lr(dtrmat, &
+      &                excmat, &
+      &                nxcmat, &
+      &                isymop, &
+      &                ihrmop, &
+      &                .false., &
+      &                ao_p, &
+      &                ao_p(ao_start(1, 0)), &
+      &                rho, &
+      &                z, &
+      &                rhg, &
+      &                wght, &
+      &                dft_temp_gga_hs, &
+      &                buffer)
 
 
 !         spin magnetization contribution
@@ -907,7 +872,7 @@ contains
             call sdft_lr(dtrmat,excmat,nxcmat, &
      &                   isymop,ihrmop,.false., &
      &                   ao_p,ao_p(ao_start(1, 0)), &
-     &                   rho,rhogrd,rhg,wght,dft_temp_gga_ha,buffer)
+     &                   rho,z,rhg,wght,dft_temp_gga_ha,buffer)
           endif
         endif
 
@@ -920,7 +885,7 @@ contains
      &                 dft_cfg_sdft, &
      &                 dtrmat,excmat, &
      &                 isymop,ihrmop,ao_p,ao_p(ao_start(1, 0)), &
-     &                 rho,rhogrd,rhg,wght,buffer)
+     &                 rho,z,rhg,wght,buffer)
 
 !         the idea here is that   r^[B]               \omega_{ia}^[C]
 !                                 r^[C]               \omega_{ia}^[B]
@@ -935,12 +900,12 @@ contains
           call dft_lr(dtrmat,excmat,3, &
      &                isymop,ihrmop,.true., &
      &                ao_p,ao_p(ao_start(1, 0)), &
-     &                rho,rhogrd,rhg,wght,dft_temp_gga_hs,buffer)
+     &                rho,z,rhg,wght,dft_temp_gga_hs,buffer)
           if (dft_cfg_sdft) then
             call sdft_lr(dtrmat,excmat,3, &
      &                   isymop,ihrmop,.true., &
      &                   ao_p,ao_p(ao_start(1, 0)), &
-     &                   rho,rhogrd,rhg,wght,dft_temp_gga_ha,buffer)
+     &                   rho,z,rhg,wght,dft_temp_gga_ha,buffer)
           endif
 
         endif
