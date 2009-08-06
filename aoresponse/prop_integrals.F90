@@ -1180,14 +1180,23 @@ contains
       else
           call quit('prop_integrals/twoctr: wrong size(E) for what=' // what)
       end if
+
+#ifdef PRG_DIRAC
+!     try with the entire work array aoresponse got
+!     di_select_wrk will allocate more if not enough
+      lwrk = len_f77_work
+#endif /* ifdef PRG_DIRAC */
+
       call di_select_wrk(wrk, lwrk)
-      wrk(              1 :   nr_qu*nbas**2) = Da%elms !call mat_to_full(D ,1d0,A(:,:,1))
-      wrk(nr_qu*nbas**2+1 : 2*nr_qu*nbas**2) = Db%elms !call mat_to_full(DD,1d0,A(:,:,2))
+
       e = 0.0d0
-      call GRCONT(wrk( 2*nr_qu*nbas**2+1 : lwrk ), (size(wrk)-2*nr_qu*nbas**2),      &
-                  E, size(E), what(1:1)=='G', what(1:1)=='M', len(what), &
-                  0, .true., .false., wrk(1:2*nr_qu*nbas**2), 2)
+
+      call grcont(wrk, lwrk, &
+                  e, size(e), what(1:1)=='G', what(1:1)=='M', len(what), &
+                  0, .true., .false., (/Da%elms, Db%elms/), 2)
+
       call di_deselect_wrk(wrk, lwrk)
+
    end subroutine
 
 

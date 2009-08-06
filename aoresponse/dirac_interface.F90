@@ -101,7 +101,7 @@ module dirac_interface
   integer            :: coulomb_mem_req   ! Memory requirements for the Coulomb build
   integer            :: dft_mem_req       ! Memory requirements for the DFT build
   real(8), pointer   :: f77_work(:)       ! Fortran 77 work array pointer
-  integer            :: len_f77_work  = 0 ! Length of the work array
+  integer, public    :: len_f77_work  = 0 ! Length of the work array
   integer            :: memory_usage  = 0 ! Amount of work array used
   integer            :: mem_wrk_count = 0 ! Counts
 
@@ -229,37 +229,77 @@ contains
 !    call di_set_dft_mem_req(ltempwork)
   END SUBROUTINE di_set_f77_work
 
-  SUBROUTINE di_select_wrk(wrk, mem_req)
-     real(8),pointer :: wrk(:)
-     integer, intent(in) :: mem_req
-!     if (mem_req .GT. len_f77_work - memory_usage) then
-!    if (mem_req .GT. len_f77_work) then
-!       call quit('code di_create_wrk first')
-!       call di_create_wrk(wrk,mem_req)
-!    else
-!        wrk => f77_work((memory_usage+1):len_f77_work)
-!        memory_usage = memory_usage + mem_req
+  subroutine di_select_wrk(work, need_mem)
 
-        wrk => f77_work
+!   ----------------------------------------------------------------------------
+    real(8), pointer    :: work(:)
+    integer, intent(in) :: need_mem
+!   ----------------------------------------------------------------------------
 
-        memory_usage  = mem_req
-        mem_wrk_count = mem_wrk_count + 1
-        if (mem_wrk_count > 1) call quit('counter > 1 not implemented')
-!    endif
+    if (need_mem > len_f77_work) then
+
+       call di_create_wrk(work, need_mem)
+
+    else
+
+      work => f77_work
+
+      memory_usage  = need_mem
+      mem_wrk_count = mem_wrk_count + 1
+
+      if (mem_wrk_count > 1) call quit('counter > 1 not implemented')
+
+    endif
+
   end subroutine
 
-  SUBROUTINE di_deselect_wrk(wrk, mem_req)
-     real(8),pointer :: wrk(:)
-     integer, intent(in) :: mem_req
-!    if (mem_req .GT. len_f77_work) then
-!       call di_delete_wrk(wrk)
-!       call quit('code di_delete_wrk first')
-!    else
-        nullify(wrk)
-!        memory_usage = memory_usage - mem_req
-        memory_usage  = 0
-        mem_wrk_count = mem_wrk_count - 1
-!    endif
+  subroutine di_deselect_wrk(work, need_mem)
+
+!   ----------------------------------------------------------------------------
+    real(8), pointer    :: work(:)
+    integer, intent(in) :: need_mem
+!   ----------------------------------------------------------------------------
+
+    if (need_mem > len_f77_work) then
+
+       call di_delete_wrk(work)
+
+    else
+
+      nullify(work)
+
+      memory_usage  = 0
+      mem_wrk_count = mem_wrk_count - 1
+
+    endif
+
+  end subroutine
+
+  subroutine di_create_wrk(work, need_mem)
+
+!   ----------------------------------------------------------------------------
+    real(8), pointer    :: work(:)
+    integer, intent(in) :: need_mem
+!   ----------------------------------------------------------------------------
+    integer             :: error
+!   ----------------------------------------------------------------------------
+
+    allocate(work(need_mem), stat=error)
+
+    if (error /= 0) then
+      call quit('unable to allocate work space in di_create_wrk')
+    end if
+
+  end subroutine
+
+  subroutine di_delete_wrk(work)
+
+!   ----------------------------------------------------------------------------
+    real(8), pointer    :: work(:)
+!   ----------------------------------------------------------------------------
+
+    deallocate(work)
+
   end subroutine
 
   subroutine print_prp_common_blocks()
