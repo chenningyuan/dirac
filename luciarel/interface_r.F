@@ -1270,7 +1270,7 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 *
       NTESTL = 0000
       NTEST = max(NTESTL,IPRNT)
-      NTEST = 1
+      NTEST = 0
 *
 * Constants
       IZERO = 0
@@ -3123,17 +3123,17 @@ C     dimension DMFC(*),H2AC(*)
         MZ = NZ
       end if
 *
-C     if (NTEST.ge.2) then
+      if (NTEST.ge.2) then
         write(6,*)
         write(6,'(A,6X,4I3)') '  INDEX array: ',(INDEX(I),I=1,4,1)
-C     end if
-C     if (NTEST.ge.5) then
+      end if
+      if (NTEST.ge.5) then
         write(6,*) 
         write(6,*) ' GETIND_NZ3 : '
         write(6,*) '  NZ,MZ : ',NZ,MZ
         write(6,*) '  No. of active orbitals : ',NASHT/2
         write(6,*) '  Compound index dimension: ',NNASHX
-C     end if
+      end if
 *
       if (NTEST.ge.1) then
         write(6,*)
