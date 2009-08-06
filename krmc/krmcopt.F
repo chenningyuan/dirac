@@ -3044,6 +3044,8 @@ C
 C
              IF( NATOLCR ) THEN
                GOTO 500
+		 ELSE IF( IANACI .eq. 1 ) THEN
+		   GOTO 500
              ELSE
                GOTO 1000
              ENDIF
