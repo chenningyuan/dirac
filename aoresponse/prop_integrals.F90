@@ -395,40 +395,44 @@ contains
          !two-electron integral contribution
          do i = 1, pb
             ii = pb1-pb+i
-            call twoctr('G', D(1), D(ii), r(1:3*natom))
-            r(1:3*natom) = r(1:3*natom)*8 !factor 8 on these integrals
-            if (m == 0) then
-!             another factor for molecular gradient
-              r(1:3*natom) = 0.5d0*r(1:3*natom)
+            if (.not. (iszero(D(1)) .or. iszero(D(ii)))) then
+              call twoctr('G', D(1), D(ii), r(1:3*natom))
+              r(1:3*natom) = r(1:3*natom)*8 !factor 8 on these integrals
+              if (m == 0) then
+!               another factor for molecular gradient
+                r(1:3*natom) = 0.5d0*r(1:3*natom)
+              end if
+              if (do_dft()) then
+                 if (m==0) call di_get_geomDeriv_molgrad_DFT( r( 3*natom+1 : 3*natom*2 ), &
+                                                             natom, D(1))
+                 if (m/=0) call di_get_geomDeriv_FxD_DFT( r( 3*natom+1 : 3*natom*2 ), &
+                                                         natom, D(1), D(ii))
+                 r(1:3*natom) = r(1:3*natom) + r( 3*natom+1 : 3*natom*2 )
+              end if
+              do k = 0, c(2)-c(1)
+                 kk = c(1)+k
+                 e(i+pb*k) = e(i+pb*k) + r(kk)
+              end do
             end if
-            if (do_dft()) then
-               if (m==0) call di_get_geomDeriv_molgrad_DFT( r( 3*natom+1 : 3*natom*2 ), &
-                                                           natom, D(1))
-               if (m/=0) call di_get_geomDeriv_FxD_DFT( r( 3*natom+1 : 3*natom*2 ), &
-                                                       natom, D(1), D(ii))
-               r(1:3*natom) = r(1:3*natom) + r( 3*natom+1 : 3*natom*2 )
-            end if
-            do k = 0, c(2)-c(1)
-               kk = c(1)+k
-               e(i+pb*k) = e(i+pb*k) + r(kk)
-            end do
          end do
          if (m==0 .or. m==1) then !nothing more
          else if (m==2) then !integrals over products of first order densities
             do j = 0, b(2)-1
                jj = 1+b(1)+1+j
                do i = 1, b(1)
-                  call twoctr('G', D(1+i), D(jj), r(1:3*natom))
-                  r(1:3*natom) = r(1:3*natom)*8 !factor 8 on these integrals
-                  if (do_dft()) then
-                     call di_get_geomDeriv_GxD_DFT( r( 3*natom+1 : 3*natom*2), &
-                                                   natom, D(1), D(1+i), D(jj))
-                     r(1:3*natom) = r(1:3*natom) + r( 3*natom+1 : 3*natom*2 )
-                  end if
-                  do k = 0, c(2)-c(1)
-                     kk = c(1)+k
-                     e(i+b(1)*j+pb*k) = e(i+b(1)*j+pb*k) + r(kk) !factor 8 here
-                  end do
+                 if (.not. (iszero(D(1+i)) .or. iszero(D(jj)))) then
+                   call twoctr('G', D(1+i), D(jj), r(1:3*natom))
+                   r(1:3*natom) = r(1:3*natom)*8 !factor 8 on these integrals
+                   if (do_dft()) then
+                      call di_get_geomDeriv_GxD_DFT( r( 3*natom+1 : 3*natom*2), &
+                                                    natom, D(1), D(1+i), D(jj))
+                      r(1:3*natom) = r(1:3*natom) + r( 3*natom+1 : 3*natom*2 )
+                   end if
+                   do k = 0, c(2)-c(1)
+                      kk = c(1)+k
+                      e(i+b(1)*j+pb*k) = e(i+b(1)*j+pb*k) + r(kk) !factor 8 here
+                   end do
+                 end if
                end do
             end do
          else
@@ -1180,12 +1184,6 @@ contains
       else
           call quit('prop_integrals/twoctr: wrong size(E) for what=' // what)
       end if
-
-#ifdef PRG_DIRAC
-!     try with the entire work array aoresponse got
-!     di_select_wrk will allocate more if not enough
-      lwrk = len_f77_work
-#endif /* ifdef PRG_DIRAC */
 
       call di_select_wrk(wrk, lwrk)
 
