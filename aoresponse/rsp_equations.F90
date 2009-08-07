@@ -429,7 +429,7 @@ contains
       real(8)        :: nrm, ww(1), gamsav
       type(matrix)   :: DS, RHS(3), SOL(4) !(3) for tot-real-imag parts
 #ifdef PRG_DIRAC               
-      type(matrix)   :: R
+      type(matrix)   :: R, RHSdag
 #endif /* PRG_DIRAC */
       character*4    :: nop(0)
       logical, save  :: first = .true., firstcplx = .true.
@@ -518,8 +518,12 @@ contains
 
       Dp = Dp + 2d0*(SOL(1)*dag(DS) - DS*SOL(1))
 #else
+
+      RHSdag = dag(RHS(1))
+
 !     isolate h+ part
-      R = -0.5d0*(RHS(1) - dag(RHS(1)))
+      R = RHS(1) - RHSdag
+      R = -0.5d0*R
       if (rsp_equations_debug) then
         call print_mat(R, label = 'debug solve_scf_eq: R h+')
       end if
@@ -529,9 +533,11 @@ contains
         call response_solver(real(w), R, SOL(1))
         Dp = Dp + SOL(1)
       end if
+      R = 0
 
 !     isolate h- part
-      R = -0.5d0*(RHS(1) + dag(RHS(1)))
+      R = RHS(1) + RHSdag
+      R = -0.5d0*R
       if (rsp_equations_debug) then
         call print_mat(R, label = 'debug solve_scf_eq: R h-')
       end if
@@ -541,8 +547,10 @@ contains
         call response_solver(real(w), R, SOL(1))
         Dp = Dp + SOL(1)
       end if
-
       R = 0
+
+      RHSdag = 0
+
 #endif /* ifndef PRG_DIRAC */
 
       DSD    = 0
