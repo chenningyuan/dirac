@@ -2449,7 +2449,7 @@ C
          WRITE(LUPRI,'(A,I5)')
      &        'No. of negative energy orbitals (NPSH): ',NPSH(1)
          WRITE(LUPRI,'(A,I5)')
-     &        'Total no. of orbitals      (NORB): ',NORB(1)
+     &        'Total no. of orbitals           (NORB): ',NORB(1)
       ELSE
          WRITE(LUPRI,'(35X,5(A5,1X,I1,1X))') 
      &        ('Irrep',I,I=1,NFSYM),'Sum'
