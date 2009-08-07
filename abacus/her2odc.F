@@ -251,6 +251,7 @@ C
                   NUCT12(ISYM) = NUCT12(ISYM) + 1
                   NREDP1(IPRM1,ISYM) = 1
                   NREDP2(IPRM2,ISYM) = 1
+!radovan: srfmax can be uninitialized the first time
                   SRFMAX = MAX(SRFMAX,ABSFAC)
                   EXP1PI = EXP1*EXPPI
                   EXP2PI = EXP2*EXPPI
