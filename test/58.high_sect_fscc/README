@@ -1,9 +1,9 @@
  
-Basis tests for high-sector spin-free  Fock Space Coupled Cluster method.
+Basis tests for the spin-free higher-sectors Fock Space Coupled Cluster method.
 
 You have to prepare the "input" file and copy it to working directory:
    
-   pam -copy input ....
+   pam -copy input -noarch Mg.D2h.mol dc_sf.scf_motra_hsfs.inp
 
 
 
