@@ -169,6 +169,7 @@ c     iopt(10) .ne.0 - do not save pppp.
       end if
       call diffmax("tv  ","tnew","s2  ",diff,idiff)
       call diffmax("t1v ","t1nw","s2  ",diff1,idiff1)
+      df3 = 0.0d0 ! mi initialization
       if (iopt(17).ne.0) then
         call dfmax3 ("t31 ","t3nw","s2  ",df3,iddf3,inddf3)
       end if
@@ -210,6 +211,7 @@ c diis
       call prt("tnew","new t   ",2)
       call prt("t1nw","new t1  ",2)
       call prt("tvf ","new tf  ",2)
+! runtime check: The variable 'csv_$DF3' is being used without being defined
       if (max(abs(diff),abs(diff1),abs(df3)).lt.convrg) go to 910
       call wrtfile(52,0,"tv  ")
       call wrtfile(52,1,"t1v ")

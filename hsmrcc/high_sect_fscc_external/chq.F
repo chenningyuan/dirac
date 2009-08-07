@@ -193,6 +193,7 @@ c     iopt(9) - incomplete model space
         write (6,'('' t averaged with fnew '',f7.3)') fnew
       endif
       call fmax("tnew",tmax,itmax)
+      t3max = 0.0d0 ! mi init
       if (iopt(17).ne.0) then
         call fmax6 ("t3nw",t3max,id3mx,ind3mx)
       end if
@@ -203,6 +204,7 @@ c     iopt(9) - incomplete model space
       write (6,*) ' '
       write (6,'('' iteration # '',i3,'' diffmx='',
      1 e10.3,2x,i12)') iter,diff
+      df3=0.0d0 ! mi init
       if (iopt(17).ne.0) then
         write (6,2401) df3,idec(iddf3),idec(inddf3)
 2401    format (24x,e10.3,2x,i12,2x,i12)

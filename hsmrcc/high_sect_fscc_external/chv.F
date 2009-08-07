@@ -197,6 +197,7 @@ c     iopt(10) .ne.0 - do not save pppp.
       end if
       call diffmax("thv ","tnew","s2  ",diff,idiff)
       call diffmax("t1hv","t1nw","s2  ",diff1,idiff1)
+      df3=0.0d0 ! mi initialization
       if (iopt(17).ne.0) then
         call dfmax3 ("t31 ","t3nw","s2  ",df3,iddf3,inddf3)
       end if

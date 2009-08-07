@@ -184,6 +184,7 @@ c  iopt(19) is 0 for GAMESS, 1 for ACES2(4.92), 2 for ACES2(99)
 !   =================================
 !     ==== Old reading - skip  ====
 !   =================================
+      nort = - 1 ! mi-to satisfy runtime check
       if (.not.skip_old_read) then
 
       rewind(12,iostat=ios)
@@ -200,7 +201,13 @@ c  iopt(19) is 0 for GAMESS, 1 for ACES2(4.92), 2 for ACES2(99)
         call  abext('readv : failed read (12) nort,(eps(i),i=1,nort)')
       endif
 
+        write(LUPRI,*) 'readv - nort=',nort
+        CALL FLSHFO(LUPRI)
+
       endif
+
+       write(LUPRI,*) 'readv - nort,norb,skip_old_read=',
+     &                  nort,norb,skip_old_read
 
       if (nort.ne.norb.and..not.skip_old_read) then
         write (*,*) 'discrepancy in norb: ',norb,nort 

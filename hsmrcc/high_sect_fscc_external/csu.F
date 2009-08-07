@@ -179,10 +179,12 @@ c  if possible, as significant time saving is achieved.
         write (6,'('' t averaged with fnew '',f7.3)') fnew
       endif
       call fmax("tnew",tmax,itmax)
+      t3max = 0.0d0 ! mi initialization
       if (iopt(17).ne.0) then
         call fmax6 ("t32 ",t3max,id3mx,ind3mx)
       end if
       call diffmax("tu  ","tnew","s2  ",diff,idiff)
+      df3 = 0.0d0 ! mi initialization
       if (iopt(17).ne.0) then
         call dfmax3 ("t32 ","t3nw","s2  ",df3,iddf3,inddf3)
       end if
