@@ -337,10 +337,9 @@ contains
     do i = 1, nprpcls
       write(*, *) 'dcbcls:  ----------'
       write(*, *) 'dcbcls:  i         ', i
-      write(*, *) 'dcbcls:  CLSCAL(i) ', CLSCAL(i)
-      write(*, *) 'dcbcls:  CLSINT(i) ', CLSINT(i)
-      write(*, *) 'dcbcls:  CLSCMB(i) ', CLSCMB(i)
-      write(*, *) 'dcbcls:  IORDCL(i) ', IORDCL(i)
+      write(*, *) 'dcbcls:  clscal(i) ', clscal(i)
+      write(*, *) 'dcbcls:  clsint(i) ', clsint(i)
+      write(*, *) 'dcbcls:  clscmb(i) ', clscmb(i)
       write(*, *) 'dcbcls:  ----------'
     end do
 

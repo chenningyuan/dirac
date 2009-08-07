@@ -33,7 +33,7 @@ contains
    call di_set_f77_work(work, lwork)
 
 !  for debugging, remove later
-   call print_prp_common_blocks()
+!  call print_prp_common_blocks()
 
 #ifdef MOD_AUTODIFF
     call init_binomial()
