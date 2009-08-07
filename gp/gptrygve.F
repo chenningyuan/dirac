@@ -815,7 +815,9 @@ C
 C
 C     We've got a file number now, get rid of the direct access case
 C
-      IF (ACCESF(1:6) .EQ. 'DIRECT') THEN
+!radovan: if we don't check for statln, valgrind issues *many* errors
+!         anyway it can't be 'DIRECT' if it's not at least six characters long
+      IF ((STATLN .GT. 5) .and. (ACCESF(1:6) .EQ. 'DIRECT')) THEN
          IF (FILELN .EQ. 0) THEN
             FILELN = 13
             FILENM(1:FILELN) = 'GPOPEN_UNIT'//CHRNOS(LUNIT/10)//
