@@ -28,7 +28,9 @@ subroutine assign_hsfs_parameters
 
 write(LUPRI,*) 'assigning HSFS parameters...'
 
- nbig = 9000000
+! nbig =  9000000
+  nbig = 20000000
+
  ndij = 960000
  ndint =150000
 

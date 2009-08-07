@@ -2290,6 +2290,8 @@ c  symmetry operations
       do 220 jd=jd1,jd2
       if ((ic(jd).ne.i4).or.(icv(jd).lt.j4)) go to 220
       nt=nt+1
+! mi: complain due to leak :
+! Array reference out of bounds for array 'igen', upper bound of dimension 1 exceeded (10098089 > 9000000)
       igen(nt)=ipack(ja,jb,jc,jd)
 220   continue
 230   continue
@@ -3664,7 +3666,8 @@ c
 !      common /i/ igen(nbig)
 #endif
 
-      dimension ij(nij),ije(0:nij)
+!     dimension ij(nij),ije(0:nij)
+      dimension ij(*),ije(0:*)
 !!!!!!!!!!!!!! needs dynamic alloc of "ij1, ije1" !!!!!!!!!!!!!!!!!!!
       dimension ij1(ndij),ije1(0:ndij)
 
@@ -3696,8 +3699,10 @@ c
       i12=ishft(igen(istrt+i),8*nt-32)
       if (i12.ne.iirp) then
         nij=nij+1
+!mi:  runtime-check complains due to "ij" index leak !
         ij(nij)=i12
         iirp=i12
+!mi:  runtime-check complains due to "ije" index leak !
         ije(nij-1)=i-1
       endif
 320   continue

@@ -11,9 +11,13 @@ contains
 subroutine init_gen_mod
  use hsfs_parameters
 !#include "param_ccsd.h"
+#include "priunit.h"
 integer :: istat
  allocate(gen(nbig),stat=istat)
+ call alloc_stat_check("gen(nbig)",istat)
  allocate(igen(nbig),stat=istat)
+ call alloc_stat_check("igen(nbig)",istat)
+ write(LUPRI,*) "gen_mod allocated (gen,igen), size=",nbig
 end subroutine init_gen_mod
 
 subroutine dealloc_gen_mod

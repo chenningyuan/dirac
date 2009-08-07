@@ -960,8 +960,8 @@ c     order and write collected energies.
       subroutine expnd(iwork,iwork1,work,work1,nw,nw1)
 !--------------------------------------------------------------------------------
 !
-c   move from work1 (indx iwork1) to work, filling out according to
-c   indx iwork
+!   move from work1 (indx iwork1) to work, filling out according to
+!   indx iwork
 !
 !--------------------------------------------------------------------------------
 
@@ -969,12 +969,15 @@ c   indx iwork
 #include "implicit.h"
 #include "priunit.h"
       dimension iwork(nw),iwork1(nw1),work(nw),work1(nw1)
+
       if (nw1.eq.nw) then
         call dcopy(nw,work1,1,work,1)
         return
       endif
       iw1=nw1
       iw=nw
+!mi: leak complain
+!Fortran runtime error: Array reference out of bounds for array 'iwork1', lower bound of dimension 1 exceeded (0 < 1)
 10    if (iwork1(iw1).eq.iwork(iw)) then
         work(iw)=work1(iw1)
         iw1=iw1-1
@@ -987,7 +990,10 @@ c   indx iwork
         write (6,*) 'aborted from expnd'
         call abext('expnd   ')
       endif
-      if (iw.ne.0) go to 10
+!     if (iw.ne.0) go to 10
+! mi: fix the iwork1 index leak ...
+      if (iw.ne.0.and.iw1.gt.0) go to 10
+
 100   format (' unmatched label ',z8)
       return
       end
@@ -2576,6 +2582,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 #include "priunit.h"
 ! miro : watch up for array leaks !
       dimension itmp(ntmp),t(nt),it(nt)
+!     dimension itmp(*),t(nt),it(nt)
 
       if (getiprint() >= 5) then
        call header('Output from vxsort',-1)
@@ -2604,12 +2611,14 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       endif
 
       if (ntmp.lt.nt) then
+
         !write (LUPRI,'(1x,a,2i5)') 'ntmp.lt.nt !, ntmp,nt:',ntmp,nt
         lt=nt
         ltmp=ntmp
 
 !       ... cycle
-! mi: Fortran runtime error: Array reference out of bounds for array 'itmp', lower bound of dimension 1 exceeded (0 < 1)
+! mi: Fortran runtime error: 
+!  Array reference out of bounds for array 'itmp', lower bound of dimension 1 exceeded (0 < 1)
 !
 20      if (itmp(ltmp).eq.it(lt)) then
           t(lt)=t(ltmp)
@@ -2633,7 +2642,9 @@ CUK   common /crle/ trle(nrle,4),isize(4)
          EndDo
          call abext('vxsort  ')   
         endif
-        if (lt.gt.0) go to 20
+!    mi: fix for ltmp
+!       if (lt.gt.0) go to 20
+        if (lt.gt.0.and.ltmp.gt.0) go to 20
       endif ! of ntmp < nt
 
       return

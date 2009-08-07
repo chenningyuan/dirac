@@ -4,6 +4,7 @@
 !  all integral indexes are in igen, their values are in gen (up to 256 basis functions, 32bit model)
 !
 !
+#if !defined HSFS_DYN_ALLOC
       real*8   gen(nbig)                              
       integer igen(nbig)     
 
@@ -12,4 +13,5 @@
 
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
+#endif
 
