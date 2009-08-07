@@ -8,4 +8,8 @@ ToRE:A-tensor
 
 $ERROR 1.E-7
 FromRE:dg A-tensor
-ToRE:this is the end
+ToRE:ABACUS - ROTATIONAL AND VIBRATIONAL ANALYSIS
+
+$ERROR 1.E-7
+FromRE:Raman related properties for freq
+ToRE:Molecular Partition Functions
