@@ -1185,6 +1185,10 @@ contains
           call quit('prop_integrals/twoctr: wrong size(E) for what=' // what)
       end if
 
+#ifdef PRG_DIRAC
+      lwrk = len_f77_work
+#endif
+
       call di_select_wrk(wrk, lwrk)
 
       e = 0.0d0
