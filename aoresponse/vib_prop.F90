@@ -8,6 +8,7 @@ module vib_prop
 #ifdef PRG_DIRAC
    use dirac_interface
 #endif
+   use aor_restart
 
    implicit none
 
@@ -533,6 +534,7 @@ contains
      complex(8),   intent(out) :: Efqg(3, 6, nc)
 
      character(4)              :: perturbation
+     character(8)              :: restart_label
      character(10)             :: perturbation_print
 
 !    tensor printout needs exact ranks
@@ -549,7 +551,7 @@ contains
 
      integer                   :: i, j, k
                                
-     type(matrix)              :: Sg(1), DFD(3, 6), Df(3), Ff(3)
+     type(matrix)              :: Sg(1), DFD3(3, 3), DFD6(3, 6), Df(3), Ff(3)
                                
      type(matrix)              :: D_j3(3), D_j6(6), Df_j3(3, 3), Df_j6(3, 6)
      type(matrix)              :: F_j3(3), F_j6(6), Ff_j3(3, 3), Ff_j6(3, 6)
@@ -572,71 +574,99 @@ contains
      Ef_j  = 0.0d0
      Ef_jg = 0.0d0
 
-     call prop_energy((/perturbation/), (/D, Df/), Ef_j)
+     restart_label = 'ff      '
+     if (.not. find_restart_tensor(restart_label, (/-w, w/), size(Ef_j))) then
+
+       call prop_energy((/perturbation/), (/D, Df/), Ef_j)
+       call write_restart_tensor(restart_label, (/-w, w/), Ef_j)
+
+     else
+
+       call read_restart_tensor(Ef_j)
+       write(*, *) 'successful restart from record '//restart_label
+
+     end if
+
      call print_tensor((/r_i, r_j/), -Ef_j, perturbation_print, (/-w, w/))
 
-!    could be done like that:
-!    call pert_dens((/perturbation/), S, (/D/), (/F/), D_j3, F_j3, w=(/w/))
-!    call pert_dens((/'EL  ', perturbation/), &
-!                     S,                      &
-!                   (/D, Df, D_j3/),          &
-!                   (/F, Ff, F_j3/),          &
-!                     Df_j3,                  &
-!                     Ff_j3,                  &
-!                     w=(/-w, w/))
+     restart_label = 'ffg     '
+     if (.not. find_restart_tensor(restart_label, (/-w, w, 0*w/), size(Ef_jg))) then
+!      calculate, don't read from restart file
 
-!    but here we save some time
-     do j = 1, r_j
-       D_j3(j) = dag(Df(j))
-       F_j3(j) = dag(Ff(j))
+!      could be done like that:
+!      call pert_dens((/perturbation/), S, (/D/), (/F/), D_j3, F_j3, w=(/w/))
+!      call pert_dens((/'EL  ', perturbation/), &
+!                       S,                      &
+!                     (/D, Df, D_j3/),          &
+!                     (/F, Ff, F_j3/),          &
+!                       Df_j3,                  &
+!                       Ff_j3,                  &
+!                       w=(/-w, w/))
 
-       call pert_dens((/'EL  ', perturbation/), &
-                        S,                      &
-                      (/D, Df(1:j), D_j3(j)/),  &
-                      (/F, Ff(1:j), F_j3(j)/),  &
-                        Df_j3(1, j),            &
-                        Ff_j3(1, j),            &
-                        w=(/-w, w/),            &
-                        c=(/1, j, j, j/))
-
-       do i = 1, j - 1
-         Df_j3(j, i) = dag(Df_j3(i, j))
-         Ff_j3(j, i) = dag(Ff_j3(i, j))
-       end do
-     end do
-
-     call prop_energy((/perturbation, 'GEO '/), (/D, Df/), Ef_jg)
-     call prop_energy((/'EL ', 'GEO'/), (/D, D_j3/), Ef_jg, o=(/2/))
-     call prop_energy((/'GEO'/), (/D, Df, D_j3, Df_j3/), Ef_jg, b=(/r_i, r_j/))
-
-     do j = 1, r_j
-       do i = 1, r_i
-         DFD(i, j) = Df_j3(i, j)*F*D         &
-                   + D*F*Df_j3(i,j)          &
-                   + D_j3(j)*Ff(i)*D         &
-                   + D*Ff(i)*D_j3(j)         &
-                   + Df(i)*F_j3(j)*D         &
-                   + D*F_j3(j)*Df(i)         &
-                   + D*Ff_j3(i, j)*D         &
-                   + D_j3(j)*(F + w*S)*Df(i) &
-                   + Df(i)*(F - w*S)*D_j3(j)
-       end do
-     end do
-
-!    deallocate matrices
-     D_j3  = 0
-     Df_j3 = 0
-     F_j3  = 0
-     Ff_j3 = 0
-
-     do k = 1, nc
-       call prop_overlap((/'GEO'/), S, Sg, c=(/k/))
+!      but here we save some time
        do j = 1, r_j
-         do i = 1, r_i
-           Ef_jg(i, j, k) = Ef_jg(i, j, k) - tr(Sg(1), DFD(i, j))
+         D_j3(j) = dag(Df(j))
+         F_j3(j) = dag(Ff(j))
+      
+         call pert_dens((/'EL  ', perturbation/), &
+                          S,                      &
+                        (/D, Df(1:j), D_j3(j)/),  &
+                        (/F, Ff(1:j), F_j3(j)/),  &
+                          Df_j3(1, j),            &
+                          Ff_j3(1, j),            &
+                          w=(/-w, w/),            &
+                          c=(/1, j, j, j/))
+      
+         do i = 1, j - 1
+           Df_j3(j, i) = dag(Df_j3(i, j))
+           Ff_j3(j, i) = dag(Ff_j3(i, j))
          end do
        end do
-     end do
+       
+       call prop_energy((/perturbation, 'GEO '/), (/D, Df/), Ef_jg)
+       call prop_energy((/'EL ', 'GEO'/), (/D, D_j3/), Ef_jg, o=(/2/))
+       call prop_energy((/'GEO'/), (/D, Df, D_j3, Df_j3/), Ef_jg, b=(/r_i, r_j/))
+       
+       do j = 1, r_j
+         do i = 1, r_i
+           DFD3(i, j) = Df_j3(i, j)*F*D         &
+                      + D*F*Df_j3(i,j)          &
+                      + D_j3(j)*Ff(i)*D         &
+                      + D*Ff(i)*D_j3(j)         &
+                      + Df(i)*F_j3(j)*D         &
+                      + D*F_j3(j)*Df(i)         &
+                      + D*Ff_j3(i, j)*D         &
+                      + D_j3(j)*(F + w*S)*Df(i) &
+                      + Df(i)*(F - w*S)*D_j3(j)
+         end do
+       end do
+       
+!      deallocate matrices
+       D_j3  = 0
+       Df_j3 = 0
+       F_j3  = 0
+       Ff_j3 = 0
+       
+       do k = 1, nc
+         call prop_overlap((/'GEO'/), S, Sg, c=(/k/))
+         do j = 1, r_j
+           do i = 1, r_i
+             Ef_jg(i, j, k) = Ef_jg(i, j, k) - tr(Sg(1), DFD3(i, j))
+           end do
+         end do
+       end do
+       Sg   = 0
+       DFD3 = 0
+       
+       call write_restart_tensor(restart_label, (/-w, w, 0*w/), Ef_jg)
+
+     else
+!      don't calculate, read from restart file
+
+       call read_restart_tensor(Ef_jg)
+       write(*, *) 'successful restart from record '//restart_label
+
+     end if
 
      call print_tensor((/r_i, r_j, nc/), -Ef_jg, 'd/dg '//perturbation_print, (/-w, w, 0*w/))
 
@@ -662,50 +692,78 @@ contains
      Ef_j  = 0.0d0
      Ef_jg = 0.0d0
 
-     call prop_energy((/perturbation/), (/D, Df/), Ef_j)
+     restart_label = 'fb      '
+     if (.not. find_restart_tensor(restart_label, (/-w, w/), size(Ef_j))) then
+
+       call prop_energy((/perturbation/), (/D, Df/), Ef_j)
+       call write_restart_tensor(restart_label, (/-w, w/), Ef_j)
+
+     else
+
+       call read_restart_tensor(Ef_j)
+       write(*, *) 'successful restart from record '//restart_label
+
+     end if
+
      call print_tensor((/r_i, r_j/), -Ef_j, perturbation_print, (/-w, w/))
 
-     call pert_dens((/perturbation/), S, (/D/), (/F/), D_j3, F_j3, w=(/w/))
-     call pert_dens((/'EL  ', perturbation/), &
-                      S,                      &
-                    (/D, Df, D_j3/),          &
-                    (/F, Ff, F_j3/),          &
-                      Df_j3,                  &
-                      Ff_j3,                  &
-                      w=(/-w, w/))
+     restart_label = 'fbg     '
+     if (.not. find_restart_tensor(restart_label, (/-w, w, 0*w/), size(Ef_jg))) then
+!      calculate, don't read from restart file
 
-     call prop_energy((/perturbation, 'GEO '/), (/D, Df/), Ef_jg)
-     call prop_energy((/'EL ', 'GEO'/), (/D, D_j3/), Ef_jg, o=(/2/))
-     call prop_energy((/'GEO'/), (/D, Df, D_j3, Df_j3/), Ef_jg, b=(/r_i, r_j/))
-
-     do j = 1, r_j
-       do i = 1, r_i
-         DFD(i, j) = Df_j3(i, j)*F*D         &
-                   + D*F*Df_j3(i,j)          &
-                   + D_j3(j)*Ff(i)*D         &
-                   + D*Ff(i)*D_j3(j)         &
-                   + Df(i)*F_j3(j)*D         &
-                   + D*F_j3(j)*Df(i)         &
-                   + D*Ff_j3(i, j)*D         &
-                   + D_j3(j)*(F + w*S)*Df(i) &
-                   + Df(i)*(F - w*S)*D_j3(j)
-       end do
-     end do
-
-!    deallocate matrices
-     D_j3  = 0
-     Df_j3 = 0
-     F_j3  = 0
-     Ff_j3 = 0
-
-     do k = 1, nc
-       call prop_overlap((/'GEO'/), S, Sg, c=(/k/))
+       call pert_dens((/perturbation/), S, (/D/), (/F/), D_j3, F_j3, w=(/w/))
+       call pert_dens((/'EL  ', perturbation/), &
+                        S,                      &
+                      (/D, Df, D_j3/),          &
+                      (/F, Ff, F_j3/),          &
+                        Df_j3,                  &
+                        Ff_j3,                  &
+                        w=(/-w, w/))
+       
+       call prop_energy((/perturbation, 'GEO '/), (/D, Df/), Ef_jg)
+       call prop_energy((/'EL ', 'GEO'/), (/D, D_j3/), Ef_jg, o=(/2/))
+       call prop_energy((/'GEO'/), (/D, Df, D_j3, Df_j3/), Ef_jg, b=(/r_i, r_j/))
+       
        do j = 1, r_j
          do i = 1, r_i
-           Ef_jg(i, j, k) = Ef_jg(i, j, k) - tr(Sg(1), DFD(i, j))
+           DFD3(i, j) = Df_j3(i, j)*F*D         &
+                      + D*F*Df_j3(i,j)          &
+                      + D_j3(j)*Ff(i)*D         &
+                      + D*Ff(i)*D_j3(j)         &
+                      + Df(i)*F_j3(j)*D         &
+                      + D*F_j3(j)*Df(i)         &
+                      + D*Ff_j3(i, j)*D         &
+                      + D_j3(j)*(F + w*S)*Df(i) &
+                      + Df(i)*(F - w*S)*D_j3(j)
          end do
        end do
-     end do
+       
+!      deallocate matrices
+       D_j3  = 0
+       Df_j3 = 0
+       F_j3  = 0
+       Ff_j3 = 0
+       
+       do k = 1, nc
+         call prop_overlap((/'GEO'/), S, Sg, c=(/k/))
+         do j = 1, r_j
+           do i = 1, r_i
+             Ef_jg(i, j, k) = Ef_jg(i, j, k) - tr(Sg(1), DFD3(i, j))
+           end do
+         end do
+       end do
+       Sg   = 0
+       DFD3 = 0
+       
+       call write_restart_tensor(restart_label, (/-w, w, 0*w/), Ef_jg)
+
+     else
+!      don't calculate, read from restart file
+
+       call read_restart_tensor(Ef_jg)
+       write(*, *) 'successful restart from record '//restart_label
+
+     end if
 
      call print_tensor((/r_i, r_j, nc/), -Ef_jg, 'd/dg '//perturbation_print, (/-w, w, 0*w/))
 
@@ -731,50 +789,78 @@ contains
      Ef_j  = 0.0d0
      Ef_jg = 0.0d0
 
-     call prop_energy((/perturbation/), (/D, Df/), Ef_j)
+     restart_label = 'fq      '
+     if (.not. find_restart_tensor(restart_label, (/-w, w/), size(Ef_j))) then
+
+       call prop_energy((/perturbation/), (/D, Df/), Ef_j)
+       call write_restart_tensor(restart_label, (/-w, w/), Ef_j)
+
+     else
+
+       call read_restart_tensor(Ef_j)
+       write(*, *) 'successful restart from record '//restart_label
+
+     end if
+
      call print_tensor((/r_i, r_j/), -Ef_j, perturbation_print, (/-w, w/))
 
-     call pert_dens((/perturbation/), S, (/D/), (/F/), D_j6, F_j6, w=(/w/))
-     call pert_dens((/'EL  ', perturbation/), &
-                      S,                      &
-                    (/D, Df, D_j6/),          &
-                    (/F, Ff, F_j6/),          &
-                      Df_j6,                  &
-                      Ff_j6,                  &
-                      w=(/-w, w/))
+     restart_label = 'fqg     '
+     if (.not. find_restart_tensor(restart_label, (/-w, w, 0*w/), size(Ef_jg))) then
+!      calculate, don't read from restart file
 
-     call prop_energy((/perturbation, 'GEO '/), (/D, Df/), Ef_jg)
-     call prop_energy((/'EL ', 'GEO'/), (/D, D_j6/), Ef_jg, o=(/2/))
-     call prop_energy((/'GEO'/), (/D, Df, D_j6, Df_j6/), Ef_jg, b=(/r_i, r_j/))
-
-     do j = 1, r_j
-       do i = 1, r_i
-         DFD(i, j) = Df_j6(i, j)*F*D         &
-                   + D*F*Df_j6(i,j)          &
-                   + D_j6(j)*Ff(i)*D         &
-                   + D*Ff(i)*D_j6(j)         &
-                   + Df(i)*F_j6(j)*D         &
-                   + D*F_j6(j)*Df(i)         &
-                   + D*Ff_j6(i, j)*D         &
-                   + D_j6(j)*(F + w*S)*Df(i) &
-                   + Df(i)*(F - w*S)*D_j6(j)
-       end do
-     end do
-
-!    deallocate matrices
-     D_j6  = 0
-     Df_j6 = 0
-     F_j6  = 0
-     Ff_j6 = 0
-
-     do k = 1, nc
-       call prop_overlap((/'GEO'/), S, Sg, c=(/k/))
+       call pert_dens((/perturbation/), S, (/D/), (/F/), D_j6, F_j6, w=(/w/))
+       call pert_dens((/'EL  ', perturbation/), &
+                        S,                      &
+                      (/D, Df, D_j6/),          &
+                      (/F, Ff, F_j6/),          &
+                        Df_j6,                  &
+                        Ff_j6,                  &
+                        w=(/-w, w/))
+       
+       call prop_energy((/perturbation, 'GEO '/), (/D, Df/), Ef_jg)
+       call prop_energy((/'EL ', 'GEO'/), (/D, D_j6/), Ef_jg, o=(/2/))
+       call prop_energy((/'GEO'/), (/D, Df, D_j6, Df_j6/), Ef_jg, b=(/r_i, r_j/))
+       
        do j = 1, r_j
          do i = 1, r_i
-           Ef_jg(i, j, k) = Ef_jg(i, j, k) - tr(Sg(1), DFD(i, j))
+           DFD6(i, j) = Df_j6(i, j)*F*D         &
+                      + D*F*Df_j6(i,j)          &
+                      + D_j6(j)*Ff(i)*D         &
+                      + D*Ff(i)*D_j6(j)         &
+                      + Df(i)*F_j6(j)*D         &
+                      + D*F_j6(j)*Df(i)         &
+                      + D*Ff_j6(i, j)*D         &
+                      + D_j6(j)*(F + w*S)*Df(i) &
+                      + Df(i)*(F - w*S)*D_j6(j)
          end do
        end do
-     end do
+       
+!      deallocate matrices
+       D_j6  = 0
+       Df_j6 = 0
+       F_j6  = 0
+       Ff_j6 = 0
+       
+       do k = 1, nc
+         call prop_overlap((/'GEO'/), S, Sg, c=(/k/))
+         do j = 1, r_j
+           do i = 1, r_i
+             Ef_jg(i, j, k) = Ef_jg(i, j, k) - tr(Sg(1), DFD6(i, j))
+           end do
+         end do
+       end do
+       Sg   = 0
+       DFD6 = 0
+       
+       call write_restart_tensor(restart_label, (/-w, w, 0*w/), Ef_jg)
+
+     else
+!      don't calculate, read from restart file
+
+       call read_restart_tensor(Ef_jg)
+       write(*, *) 'successful restart from record '//restart_label
+
+     end if
 
      call print_tensor((/r_i, r_j, nc/), -Ef_jg, 'd/dg '//perturbation_print, (/-w, w, 0*w/))
 
@@ -786,14 +872,12 @@ contains
      deallocate(Ef_j)
      deallocate(Ef_jg)
 
+
 !    finally deallocate rest
-     Sg  = 0
-     DFD = 0
      Df  = 0
      Ff  = 0
 
    end subroutine
-
 
    subroutine cars_shyp_polgra(S,D,F,nc,w,Ef,Eff,Effff,Effg)
    !For frequency w, Eff returns polarizability alpha(-w,w), Effg polarizability

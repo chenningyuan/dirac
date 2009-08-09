@@ -1,11 +1,21 @@
 #!/bin/bash
 
-for mol in *mol; do
-    for inp in *inp; do
-        export MENU=$inp
-        export MOL=$mol
-        ../run.sh -copy DALTON.HES
-    done
-done
+export MOL=h2o2.mol
+
+export MENU=roa_ll.inp
+../run.sh -copy DALTON.HES
+
+export MENU=roa_dc.inp
+../run.sh -copy DALTON.HES
+
+export MENU=roa_ll_restart1.inp
+cp restart1 aoresponse.restart
+../run.sh -copy DALTON.HES -copy aoresponse.restart
+rm -f aoresponse.restart
+
+export MENU=roa_ll_restart2.inp
+cp restart2 aoresponse.restart
+../run.sh -copy DALTON.HES -copy aoresponse.restart
+rm -f aoresponse.restart
 
 exit 0
