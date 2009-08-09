@@ -20,8 +20,6 @@ module prop_integrals
            di_get_geomDeriv_GxD_DFT,     &
            di_select_wrk,                &
            di_deselect_wrk
-                   
-   use matrix_operations, only: mat_to_full, mat_set_from_full
 #else
     use dirac_interface
     use dft_cfg
@@ -430,7 +428,7 @@ contains
                    end if
                    do k = 0, c(2)-c(1)
                       kk = c(1)+k
-                      e(i+b(1)*j+pb*k) = e(i+b(1)*j+pb*k) + r(kk) !factor 8 here
+                      e(i+b(1)*j+pb*k) = e(i+b(1)*j+pb*k) + r(kk)
                    end do
                  end if
                end do
@@ -1186,6 +1184,11 @@ contains
       end if
 
 #ifdef PRG_DIRAC
+!radovan: where does the 50*nr_qu*nbas**2+10000*nr_qu*nbas+5000000
+!         come from?
+!         is it a guess?
+!         for DIRAC it's too much (and more than needed)
+!         so rather use the whole work array and hope for the best
       lwrk = len_f77_work
 #endif
 
@@ -1217,15 +1220,6 @@ contains
       logical      :: prop_imag
       prop_imag = tab(idx(p))%imag
    end function
-
-
-!    function prop_rank(p)
-!       character(*) :: p
-!       integer      :: prop_rank
-!       prop_rank = tab(idx(p))%rank
-!       if (prop_rank == 0) stop 'prop_rank: rank not initialized'
-!    end function
-
 
    function prop_shape(p)
       character(*), intent(in) :: p(:)
