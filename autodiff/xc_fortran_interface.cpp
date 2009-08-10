@@ -1,6 +1,11 @@
+#include <iostream>
+#include <cstdlib>
 #include "taylor.h"
 #include "xc_fortran_interface.h"
 #include "auto_functionals.h"
+#include "dispatch.h"
+
+using namespace std;
 
 /*
   Use the variable ordering R,S,Z,X,Y; which are
@@ -27,20 +32,16 @@
 
  */
 
+// If you change MAX_ORDER you also have to update TEMPLATE_TAB!
+#define MAX_ORDER 8
+
 template<int Ndeg>
 static void lda_helper(int functional,
 		       int order,
 		       double R,
 		       double *res)
 {
-#ifndef TAYLOR_QD
   taylor<2,Ndeg> *t = reinterpret_cast< taylor<2,Ndeg> * >(res);
-#else
-  taylor<2,Ndeg> tmp;
-  taylor<2,Ndeg> *t = &tmp;
-  unsigned int cw;
-  fpu_fix_start(&cw);
-#endif
   switch(functional)
     {
     case LDA_VWN:
@@ -53,11 +54,6 @@ static void lda_helper(int functional,
       assert(0 && "Unknown LDA functional");
       break;
     }
-#ifdef TAYLOR_QD
-  for (int i=0;i<tmp.size;i++)
-    res[i] = to_double(tmp[i]);
-  fpu_fix_end(&cw);
-#endif
 }
 
 extern "C" void
@@ -66,38 +62,18 @@ lda_eval_(const int *functional,
 	  const double* R,
 	  double* result)
 {
-  switch(*order)
+  static void (*lda_helper_tab[])(int, int, double, double *) =
+    {FUNLIST(lda_helper,MAX_ORDER)};
+  if (*order >= 0 && *order < MAX_ORDER)
     {
-    case 0:
-      lda_helper<0>(*functional,*order,*R,result);
-      break;
-    case 1:
-      lda_helper<1>(*functional,*order,*R,result);
-      break;
-    case 2:
-      lda_helper<2>(*functional,*order,*R,result);
-      break;
-    case 3:
-      lda_helper<3>(*functional,*order,*R,result);
-      break;
-    case 4:
-      lda_helper<4>(*functional,*order,*R,result);
-      break;
-    case 5:
-      lda_helper<5>(*functional,*order,*R,result);
-      break;
-    case 6:
-      lda_helper<6>(*functional,*order,*R,result);
-      break;
-    case 7:
-      lda_helper<7>(*functional,*order,*R,result);
-      break;
-    case 8:
-      lda_helper<8>(*functional,*order,*R,result);
-      break;
-    default:
-      assert(0 && "Unimplemented order of LDA functional");
-    };
+      lda_helper_tab[*order](*functional,*order,*R,result);
+    }
+  else
+    {
+      cerr << "lda_eval(): Invalid functional order " << *order << 
+	", MAX_ORDER = " << MAX_ORDER << endl;
+      exit(-1);
+    }
 }
 
 template<int Nvar, int Ndeg>
@@ -255,27 +231,17 @@ gga_eval_(const int *functional,
 	  const double *R, const double *Z,
 	  double *result)
 {
-  switch(*order)
+  static void (*gga_helper_tab[])(int, int, double, double,
+					      double *) =
+    {FUNLIST(gga_helper,MAX_ORDER)};
+  if (*order >= 0 && *order < MAX_ORDER)
     {
-    case 0:
-      gga_helper<0>(*functional,*order,*R, *Z,result);
-      break;
-    case 1:
-      gga_helper<1>(*functional,*order,*R, *Z,result);
-      break;
-    case 2:
-      gga_helper<2>(*functional,*order,*R, *Z,result);
-      break;
-    case 3:
-      gga_helper<3>(*functional,*order,*R, *Z,result);
-      break;
-    case 4:
-      gga_helper<4>(*functional,*order,*R, *Z,result);
-      break;
-    case 5:
-      gga_helper<5>(*functional,*order,*R, *Z,result);
-      break;
-    default:
-      assert(0 && "Unimplemented order of GGA functional");
-    };
+      gga_helper_tab[*order](*functional,*order,*R,*Z,result);
+    }
+  else
+    {
+      cerr << "gga_eval(): Invalid functional order " << *order << 
+	", MAX_ORDER = " << MAX_ORDER << endl;
+      exit(-1);
+    }
 }
