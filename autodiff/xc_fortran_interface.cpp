@@ -32,9 +32,6 @@ using namespace std;
 
  */
 
-// If you change MAX_ORDER you also have to update TEMPLATE_TAB!
-#define MAX_ORDER 8
-
 template<int Ndeg>
 static void lda_helper(int functional,
 		       int order,
@@ -63,15 +60,15 @@ lda_eval_(const int *functional,
 	  double* result)
 {
   static void (*lda_helper_tab[])(int, int, double, double *) =
-    {FUNLIST(lda_helper,MAX_ORDER)};
-  if (*order >= 0 && *order < MAX_ORDER)
+    {FUNLIST(lda_helper,MAX_LDA_ORDER)};
+  if (*order >= 0 && *order < MAX_LDA_ORDER)
     {
       lda_helper_tab[*order](*functional,*order,*R,result);
     }
   else
     {
       cerr << "lda_eval(): Invalid functional order " << *order << 
-	", MAX_ORDER = " << MAX_ORDER << endl;
+	", MAX_ORDER = " << MAX_LDA_ORDER << endl;
       exit(-1);
     }
 }
@@ -233,15 +230,15 @@ gga_eval_(const int *functional,
 {
   static void (*gga_helper_tab[])(int, int, double, double,
 					      double *) =
-    {FUNLIST(gga_helper,MAX_ORDER)};
-  if (*order >= 0 && *order < MAX_ORDER)
+    {FUNLIST(gga_helper,MAX_GGA_ORDER)};
+  if (*order >= 0 && *order < MAX_GGA_ORDER)
     {
       gga_helper_tab[*order](*functional,*order,*R,*Z,result);
     }
   else
     {
       cerr << "gga_eval(): Invalid functional order " << *order << 
-	", MAX_ORDER = " << MAX_ORDER << endl;
+	", MAX_GGA_ORDER = " << MAX_GGA_ORDER << endl;
       exit(-1);
     }
 }
