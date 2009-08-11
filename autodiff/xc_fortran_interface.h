@@ -11,7 +11,9 @@
 #define GGA_PBEX   4
 #define GGA_PBEC   5
 
+#if 0
 // If you change MAX_ORDER to be very high you might have to
 // update dispatch.h to create a macro for that order.
+#endif
 #define MAX_LDA_ORDER 8
 #define MAX_GGA_ORDER 5
