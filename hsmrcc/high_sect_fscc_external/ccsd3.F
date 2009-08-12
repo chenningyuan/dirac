@@ -710,7 +710,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 !    miro: set up temporarily primitive error tran for HSFS_dynamic
 !      write(LUPRI,*) 'reorder:',igen(istrt21+1),igen(istrt21+1+lngth2)
 !      write(LUPRI,*) 'itmp ndp4,1+lngth2:',ndp4,1+lngth2
-       write(LUPRI,*) 'check itmp(1):',itmp(1)
+!      write(LUPRI,*) 'check itmp(1):',itmp(1)
 !      write(LUPRI,*) 'itmp(1+lngth2):',itmp(1+lngth2)
 
       call vands(lngth2,igen(istrt21+1),msk(i1),itmp)
@@ -3071,6 +3071,7 @@ c   special for scratch files, which start with s
 !
 !
 !------------------------------------------------------------------------
+      use print_level
 #if defined HSFS_DYN_ALLOC
       use ctmp_mod
       use cfiles_mod
@@ -3101,6 +3102,14 @@ c   special for scratch files, which start with s
 #include "cij3.h"
 !     common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
 #endif
+
+      if (getiprint() >= 5) then
+        call header('Output from t1sqr',-1)
+        write(LUPRI,*) 'name1a=',name1a
+        write(LUPRI,*) 'name1b=',name1b
+        write(LUPRI,*) 'name2=',name2
+        write(LUPRI,*) 'namet=',namet
+      endif
 
       call files_ccsd(name1a,ntape1a,new,2,-1,-1)
       if (new.ne.0) then
@@ -3136,8 +3145,26 @@ c
      1                   ishft(iand(ishft(it3,-8),'ff'X),16)),
      2               ior(ishft(iand(it2,'ff'X)          , 8),
      3                   iand(it3,'ff'X)                    ))
+
+      if (getiprint() >= 5) then
+        write(LUPRI,*) 't1sqr: before call vxsort'
+        write(LUPRI,*) 'ntmp=',ntmp
+        write(LUPRI,*) 'nsize1=',nsize1
+        write(LUPRI,*) 'nsize2=',nsize2
+        write(LUPRI,*) 'nsize3=',nsize3
+        write(LUPRI,*) 'istrt11=',istrt11
+        write(LUPRI,*) 'istrt12=',istrt12
+      endif
+
       call vxsort(itmp,ntmp,nsize1,gen(istrt12+1),igen(istrt11+1))
+
+      if (getiprint() >= 5) then
+        write(LUPRI,*) 'namet=',namet 
+        write(LUPRI,*) 'name2=',name2
+      endif
+
       call add(namet,1.d0,name2,1.d0,namet)
+
       return
       end
 
