@@ -198,7 +198,7 @@ C notation changed from 'd' to 'd-' for consistency with EMSL
 
 !#define ALLOW_NONSTANDARD_AUGMENTATION
 #ifdef ALLOW_NONSTANDARD_AUGMENTATION
-         else if ((basnam(3:15) == 'aug-Turbomole')
+         else if ((basnam(3:15) == 'aug-Turbomole') .or.
      &            (basnam(3:11) == 'aug-dyall')) then
            bastmp(1:74) = basnam(7:80)
            if      (basnam(1:2) == 's-') then
