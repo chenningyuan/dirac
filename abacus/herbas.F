@@ -195,6 +195,22 @@ C notation changed from 'd' to 'd-' for consistency with EMSL
      &              'augmentation level'
                CALL QUIT('Illegal augmentation level in HERBAS')
             END IF
+
+!#define ALLOW_AUG_TURBOMOLE_BASIS
+#ifdef ALLOW_AUG_TURBOMOLE_BASIS
+         else if (basnam(3:15) == 'aug-Turbomole') then
+           bastmp(1:74) = basnam(7:80)
+           if      (basnam(1:2) == 's-') then
+             iaug = 1
+           else if (basnam(1:2) == 'd-') then
+             iaug = 2
+           else if (basnam(1:2) == 't-') then
+             iaug = 3
+           else
+             call quit('illegal aug-Turbomole basis in herbas')
+           end if
+#endif /* ifdef ALLOW_AUG_TURBOMOLE_BASIS */
+
 C for backward compatibility the old notation is retained
          ELSE IF (BASNAM(2:9) .EQ. 'aug-cc-p') THEN
             BASTMP(1:79) = BASNAM(2:80)
@@ -689,6 +705,7 @@ C
                   EXMIN1 = ALPHA(1,NBLOCK)
                   EXMIN2 = ALPHA(2,NBLOCK)
                END IF
+
                do iex = 3, intexp - 1
                   IF (ALPHA(IEX,NBLOCK) .LT. EXMIN1) THEN
                      EXMIN2 = EXMIN1
@@ -697,6 +714,17 @@ C
                      EXMIN2 = ALPHA(IEX,NBLOCK)
                   END IF
                end do
+
+#ifdef ALLOW_AUG_TURBOMOLE_BASIS
+!radovan:      if an angular momentum has only one exponent
+!              then exmin1 = 0.0d0, in this case we tweak it
+!              (factor 3.5 is my choice, no really good reason for it)
+               if (exmin1 < 1.0d-10) then
+                 exmin1 = exmin2
+                 exmin2 = exmin1*3.5d0
+               end if
+#endif /* ifdef ALLOW_AUG_TURBOMOLE_BASIS */
+
                ALPHA(INTEXP,NBLOCK) = EXMIN1*EXMIN1/EXMIN2
                CPRIMU(INTEXP,INTORB,NBLOCK) = 1.0D0
             end do
