@@ -22,7 +22,8 @@ C
 C
 c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 c     /* dft_lr */
-      subroutine dft_lr(dtrmat,
+      subroutine dft_lr(block_length,
+     &                  dtrmat,
      &                  excmat,
      &                  nxcmat,
      &                  isymop,
@@ -36,7 +37,7 @@ c     /* dft_lr */
      &                  gao,
      &                  gao1,
      &                  r_0,
-     &                  z,
+     &                  z_0,
      &                  gr_0,
      &                  w,
      &                  is_gga,
@@ -55,15 +56,17 @@ c=======================================================================
       use dft_cb_interface
       use dft_temp
       use dft_functional_derv
+      use dft_basis_info
 
       implicit none
 
+      integer:: block_length
       logical   is_gga,
      &          allow_nonhermitian
       integer:: nxcmat, im, j, irepop, i
       integer:: isymop(nxcmat),
      &          ihrmop(nxcmat)
-      real(8):: r_0, w, z, dabs, Z_b, vxc_scalar, ddot, r_b
+      real(8):: r_0(*), w(*), z_0(*), dabs, Z_b, vxc_scalar, ddot, r_b
       real(8):: dtrmat(nr_ao_total,nr_ao_total,nr_qu,nxcmat),
      &          excmat(nr_ao_total,nr_ao_total,nr_qu,nxcmat),
      &          gao(nr_ao_total),
@@ -75,7 +78,7 @@ c=======================================================================
 !
      &          vxc_vector(3),
 !
-     &          derv(0:99)
+     &          derv(mxbllen, 0:99)
       real(8), parameter :: tiny = 1.0d-20
 
 ! gosia: added
@@ -114,9 +117,10 @@ c=======================================================================
         end if
 
         call get_functional_derv(2,
+     &                           block_length,
      &                           w,
      &                           r_0,
-     &                           z,
+     &                           z_0,
      &                           nr_nonzero_derv(2),
      &                           derv)
 
@@ -124,13 +128,13 @@ c=======================================================================
 
           z_b = 2.0d0*ddot(3,gr_0,1,gr_b,1)
 
-          vxc_scalar = derv(d_rr)*r_b
-     &               + derv(d_rz)*z_b
+          vxc_scalar = derv(1, d_rr)*r_b
+     &               + derv(1, d_rz)*z_b
 
           do j = 1,3
-            vxc_vector(j) = derv(d_zz)*z_b*gr_0(j)
-     &                    + derv(d_rz)*r_b*gr_0(j)
-     &                    + derv(d_z)*gr_b(j)
+            vxc_vector(j) = derv(1, d_zz)*z_b*gr_0(j)
+     &                    + derv(1, d_rz)*r_b*gr_0(j)
+     &                    + derv(1, d_z)*gr_b(j)
           enddo
 
 !         this factor is *not* for the symmetrization later
@@ -144,7 +148,7 @@ c=======================================================================
      &                        gao1)
 
         else
-          vxc_scalar = derv(d_rr)*r_b
+          vxc_scalar = derv(1, d_rr)*r_b
           call lda_distribute(vxc_scalar,
      &                        irepop,
      &                        excmat(1, 1, 1, im),

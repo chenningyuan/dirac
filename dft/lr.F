@@ -34,7 +34,8 @@ C...      http://dirac.chem.sdu.dk
 C
 c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 c     /* sdft_lr */
-      subroutine sdft_lr(dtrmat,
+      subroutine sdft_lr(block_length,
+     &                   dtrmat,
      &                   excmat,
      &                   nxcmat,
      &                   isymop,
@@ -48,7 +49,7 @@ c     /* sdft_lr */
      &                   gao,
      &                   gao1,
      &                   r_0,
-     &                   z,
+     &                   z_0,
      &                   gr_0,
      &                   w,
      &                   is_gga,
@@ -63,6 +64,7 @@ c=======================================================================
       use dft_cfg
       use dft_density
       use dft_functional_derv
+      use dft_basis_info
 
       implicit none
 #include "priunit.h"
@@ -75,10 +77,11 @@ c=======================================================================
 #include "dgroup.h"
 #include "inforb.h"
 
+      integer, intent(in) :: block_length
       logical   is_gga,
      &          allow_nonhermitian
       integer:: nxcmat, im, im_off, irepop, k, k_start, j, i
-      real(8) ::z, w, r_0, worth_it, ddot
+      real(8) ::z_0(*), w(*), r_0(*), worth_it, ddot
       real(8) ::dtrmat(*),
      &          excmat(*)
       integer:: isymop(*),
@@ -89,7 +92,7 @@ c=======================================================================
       real(8):: gr_0(  3),
      &          s_b (  3), vxc_scalar(3), vxc_vector(3, 3), y_b(3),
      &          gs_b(3,3),
-     &          derv(0:99)
+     &          derv(mxbllen, 0:99)
       real(8), parameter :: tiny = 1.0d-20
 
       k_start = 1
@@ -147,27 +150,28 @@ c=======================================================================
         if(worth_it .gt. dft_cfg_dfthrl) then
 
           call get_functional_derv(2,            
+     &                             block_length,             
      &                             w,             
      &                             r_0,            
-     &                             z,               
+     &                             z_0,               
      &                             nr_nonzero_derv(2),
      &                             derv)
 
           do k = k_start,3
 
-      vxc_scalar(k) = derv(d_ss)*s_b(k)
+      vxc_scalar(k) = derv(1, d_ss)*s_b(k)
 
       if(is_gga) then
         y_b(k) = ddot(3,gr_0,1,gs_b(1,k),1)
 
-        vxc_scalar(k) = vxc_scalar(k) + derv(d_sy)*y_b(k)
+        vxc_scalar(k) = vxc_scalar(k) + derv(1, d_sy)*y_b(k)
       endif
 
       if(is_gga) then
         do j = 1,3
-          vxc_vector(j,k) = (s_b(k)*derv(d_sy) 
-     &                    + y_b(k)*derv(d_yy))*gr_0(j)
-     &                    + derv(d_x)*gs_b(j,k)*2.0d0
+          vxc_vector(j,k) = (s_b(k)*derv(1, d_sy) 
+     &                    + y_b(k)*derv(1, d_yy))*gr_0(j)
+     &                    + derv(1, d_x)*gs_b(j,k)*2.0d0
         enddo
       endif
 

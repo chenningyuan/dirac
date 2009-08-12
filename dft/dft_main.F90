@@ -39,6 +39,8 @@ module dft_main
 
   real(8), parameter :: tiny = 1.0d-20
 
+  integer, parameter :: block_length = 1 !later more, now slowdft
+
 contains
 
       subroutine dftexc(dmat, &
@@ -616,12 +618,15 @@ contains
       real(8) :: energy_density
 
       real(8) :: RHG(3),VT(3)
-      real(8) :: derv(0:99)
-      real(8) :: rho, rho13, rho_outer, rho_resp, rhogrd
+      real(8) :: derv(mxbllen, 0:99)
+      real(8) :: r_0(mxbllen)
+      real(8) :: z_0(mxbllen)
+      real(8) :: w(mxbllen)
+      real(8) :: rho13, rho_outer, rho_resp
       type(dft_options_t) :: dft_options
 
       integer :: ipoint, ndim, need_limit
-      real(8) :: wght, z, ddot, taylor_deriv, f
+      real(8) :: ddot, taylor_deriv, f
 
       integer :: itest, jtest
 
@@ -729,33 +734,33 @@ contains
       end if
 
 !     density
-      call get_n(rho, 0, dmat, buffer, ao_p)
+      call get_n(r_0(1), 0, dmat, buffer, ao_p)
 
-      if (rho > dft_cfg_dfthr0) then
+      if (r_0(1) > dft_cfg_dfthr0) then
 
 !       density gradient
         if (need_ao_order(1, 0)) then
           call get_gn(rhg, 0, dmat, buffer, ao_p, ao_p(ao_start(1, 0):ao_end(1, 0)))
-          z = ddot(3, rhg, 1, rhg, 1)
-          rhogrd = dsqrt(z)
+          z_0(1) = ddot(3, rhg, 1, rhg, 1)
         end if
 
-        wght = weight(ipoint)
+        w(1) = weight(ipoint)
 
 !       number of electrons
-        dft_temp_nr_electrons = dft_temp_nr_electrons + wght*rho
+        dft_temp_nr_electrons = dft_temp_nr_electrons + w(1)*r_0(1)
 
 !       energy density
         if (dft_options%energy) then
 
-          call get_functional_derv(0,    &
-                                   wght, &
-                                   rho,  &
-                                   z,    &
-                                   0,    &
+          call get_functional_derv(0,            &
+                                   block_length, &
+                                   w,            &
+                                   r_0,          &
+                                   z_0,          &
+                                   0,            &
                                    derv)
 
-          dft_temp_xc_energy = dft_temp_xc_energy + derv(d_0)
+          dft_temp_xc_energy = dft_temp_xc_energy + derv(1, d_0)
 
         end if
 
@@ -768,18 +773,19 @@ contains
      &      .or. dft_options%london) then
 
           call get_functional_derv(1,                  &
-                                   wght,               &
-                                   rho,                &
-                                   z,                  &
+                                   block_length,       &
+                                   w,                  &
+                                   r_0,                &
+                                   z_0,                &
                                    nr_nonzero_derv(1), &
                                    derv)
 
           if (dft_temp_gga_hs) then
 !           this factor has nothing to do
 !           with symmetrization later
-!           it comes from the fact that derivative of Z
+!           it comes from the fact that derivative of z
 !           yields two identical terms (one left, one right)
-            derv(d_z) = 2.0d0*derv(d_z)
+            derv(1, d_z) = 2.0d0*derv(1, d_z)
           end if
 
 !         asymptotic correction
@@ -798,9 +804,9 @@ contains
             end if
           end if
           if (dft_cfg_grac_is_active .or. dft_cfg_saop_is_active) then
-            rho13 = rho**(1.0d0/3.0d0)
-            call dftac(derv(d_r), wght, rho, rho13, &
-     &                 rho_resp, rho_outer, rhogrd)
+            rho13 = r_0(1)**(1.0d0/3.0d0)
+            call dftac(derv, w(1), r_0(1), rho13, &
+     &                 rho_resp, rho_outer, z_0(1))
           end if
 
         end if !exchange-correlation potential
@@ -812,7 +818,7 @@ contains
         if (dft_options%energy) then
 !       here we will add LAO contribution to KS matrix
           if (dft_temp_gga_hs) then
-            vt = derv(d_z)*rhg
+            vt = derv(1, d_z)*rhg
 
 #ifdef TEST_GAO1_SYMMETRY
             if (abs(corx(ipoint)) > 1.0d-10) then
@@ -821,26 +827,9 @@ contains
             end if
 #endif
 
-            call gga_distribute(derv(d_r), vt, 0, excmat, ao_p, ao_p(ao_start(1, 0):ao_end(1, 0)))
-            !gosia, if london then add: 
-            !if (dft_options%london) then
-            !  call gga_london_distribute()
-            !end if
+            call gga_distribute(derv(1, d_r), vt, 0, excmat, ao_p, ao_p(ao_start(1, 0):ao_end(1, 0)))
           else
-            call lda_distribute(derv(d_r),     0, excmat, ao_p)
-            if (dft_options%london) then
-              call lda_london_distribute(derv(d_r), 0,       &
-                                         excmat,           &
-                                         ao_p, &
-                                         ao_p(ao_start(0, 1):ao_end(0, 1)),          &
-                                         corx(ipoint),     &
-                                         cory(ipoint),     &
-                                         corz(ipoint),     &
-                                         dft_gagorg(1),    &
-                                         dft_gagorg(2),    &
-                                         dft_gagorg(3))
-            end if
-!           call lda_london_distribute ...
+            call lda_distribute(derv(1, d_r),     0, excmat, ao_p)
           end if
         end if
 
@@ -851,7 +840,7 @@ contains
 !       linear response
         if(dft_options%lr) then
 
-          call dft_lr(dtrmat, &
+          call dft_lr(block_length, dtrmat, &
       &                excmat, &
       &                nxcmat, &
       &                isymop, &
@@ -859,20 +848,21 @@ contains
       &                .false., &
       &                ao_p, &
       &                ao_p(ao_start(1, 0)), &
-      &                rho, &
-      &                z, &
+      &                r_0(1), &
+      &                z_0(1), &
       &                rhg, &
-      &                wght, &
+      &                w(1), &
       &                dft_temp_gga_hs, &
       &                buffer)
 
 
 !         spin magnetization contribution
           if (dft_cfg_sdft) then
-            call sdft_lr(dtrmat,excmat,nxcmat, &
-     &                   isymop,ihrmop,.false., &
-     &                   ao_p,ao_p(ao_start(1, 0)), &
-     &                   rho,z,rhg,wght,dft_temp_gga_ha,buffer)
+            call sdft_lr(block_length, &
+                         dtrmat,excmat,nxcmat, &
+                         isymop,ihrmop,.false., &
+                         ao_p,ao_p(ao_start(1, 0)), &
+                         r_0(1),z_0(1),rhg,w(1),dft_temp_gga_ha,buffer)
           endif
         endif
 
@@ -881,11 +871,12 @@ contains
         if(dft_options%qr) then
 
           gga_qr = dft_temp_gga_hs .or. dft_temp_gga_ha
-          call sdft_qr(gga_qr, &
-     &                 dft_cfg_sdft, &
-     &                 dtrmat,excmat, &
-     &                 isymop,ihrmop,ao_p,ao_p(ao_start(1, 0)), &
-     &                 rho,z,rhg,wght,buffer)
+          call sdft_qr(block_length, &
+                       gga_qr,       &
+                       dft_cfg_sdft, &
+                       dtrmat,excmat, &
+                       isymop,ihrmop,ao_p,ao_p(ao_start(1, 0)), &
+                       r_0(1),z_0(1),rhg,w(1),buffer)
 
 !         the idea here is that   r^[B]               \omega_{ia}^[C]
 !                                 r^[C]               \omega_{ia}^[B]
@@ -897,15 +888,15 @@ contains
 !         can be evaluated using (s)dft_lr (below)
 !         only the remaining part is done in sdft_qr (above)
           
-          call dft_lr(dtrmat,excmat,3, &
+          call dft_lr(block_length,dtrmat,excmat,3, &
      &                isymop,ihrmop,.true., &
      &                ao_p,ao_p(ao_start(1, 0)), &
-     &                rho,z,rhg,wght,dft_temp_gga_hs,buffer)
+     &                r_0(1),z_0(1),rhg,w(1),dft_temp_gga_hs,buffer)
           if (dft_cfg_sdft) then
-            call sdft_lr(dtrmat,excmat,3, &
+            call sdft_lr(block_length,dtrmat,excmat,3, &
      &                   isymop,ihrmop,.true., &
      &                   ao_p,ao_p(ao_start(1, 0)), &
-     &                   rho,z,rhg,wght,dft_temp_gga_ha,buffer)
+     &                   r_0(1),z_0(1),rhg,w(1),dft_temp_gga_ha,buffer)
           endif
 
         endif
@@ -922,16 +913,16 @@ contains
      &                      isymop, &
      &                      ao_p(ao_start(0, 0):ao_end(0, 0)), &
      &                      ao_p(ao_start(1, 0):ao_end(1, 0)), &
-     &                      rho, &
+     &                      r_0(1), &
      &                      rhg, &
-     &                      wght, &
+     &                      w(1), &
      &                      buffer)
           end if
 #endif /* ifdef MOD_AORESPONSE */
 #endif /* ifdef MOD_AUTODIFF */
 
 
-      end if !if (rho > dft_cfg_dfthr0) then
+      end if !if (r_0(1) > dft_cfg_dfthr0) then
     end do !do ipoint = 1, npoint
 
     nullify(ao_p)

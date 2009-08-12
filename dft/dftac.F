@@ -22,8 +22,8 @@ C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* deck dftac */
-      SUBROUTINE DFTAC(VX,WEIGHT,
-     &                 RHO,RHO13,RHO_RESP,RHO_OUTER,GRADIENT_NORM)
+      SUBROUTINE DFTAC(derv,WEIGHT,
+     &                 RHO,RHO13,RHO_RESP,RHO_OUTER,z_0)
 C=======================================================================
 C     common routine for GRAC and SAOP
 C
@@ -46,6 +46,8 @@ C     radovan bast                         last revision: september 2006
 C=======================================================================
 
        use dft_cfg
+       use dft_basis_info
+       use dft_functional_derv
 
 #include "implicit.h"
 #include "priunit.h"
@@ -58,8 +60,8 @@ C-----------------------------------------------------------------------
 #include "dgroup.h"
 #include "functionals.h"
 C
-      DIMENSION VX(DERVS1),
-     &          VX_BULK(DERVS1),
+      real(8) :: derv(mxbllen, 0:99)
+      DIMENSION VX_BULK(DERVS1),
      &          VX_OUTER(DERVS1),
      &          VX_SLATER(DERVS1),
      &          VX_RESP(DERVS1)
@@ -72,7 +74,7 @@ C
         RHO43 = RHO*RHO13
         X = D0
         IF(RHO43 .NE. D0) THEN
-          X = SQRT(GRADIENT_NORM*GRADIENT_NORM)/RHO43
+          X = dsqrt(z_0)/RHO43
         ELSE
           RETURN
         ENDIF
@@ -97,14 +99,14 @@ C
         vx_slater = 0.0d0
         vx_resp = 0.0d0
 C
-        CALL GLLBHOLEPOT(VX_SLATER,WEIGHT,RHO,GRADIENT_NORM)
+        CALL GLLBHOLEPOT(VX_SLATER,WEIGHT,RHO,dsqrt(z_0))
         VX_RESP(FR0) = 0.42D0*WEIGHT*RHO_RESP/RHO
         VX_BULK(FR0) = VX_SLATER(FR0) + VX_RESP(FR0)
       ELSE
-        VX_BULK(FR0) = VX(FR0)
+        VX_BULK(FR0) = derv(1, d_r)
       END IF
 C
-      VX_BULK(FZ0) = VX(FZ0)
+      VX_BULK(FZ0) = derv(1, d_z)
 C
 C
 C     asymptotic potential
@@ -113,9 +115,9 @@ C
       VX_OUTER = 0.0d0
 C
       IF(dft_cfg_asymptote_is_lb94)
-     &                CALL LB94POT(VX_OUTER,WEIGHT,RHO,GRADIENT_NORM)
+     &                CALL LB94POT(VX_OUTER,WEIGHT,RHO,dsqrt(z_0))
       IF(dft_cfg_asymptote_is_lbalpha)
-     &                CALL LBALPHAPOT(VX_OUTER,WEIGHT,RHO,GRADIENT_NORM)
+     &                CALL LBALPHAPOT(VX_OUTER,WEIGHT,RHO,dsqrt(z_0))
 C
 C
 C     howto FADE (with D0 .LE. FADE .LE. D1)
@@ -132,10 +134,10 @@ C
 C     connection
 C     ==========
 C
-      VX = 0.0d0
+!     VX = 0.0d0
 C
-      VX(FZ0) = (D1-FADE)* VX_BULK(FZ0)
-      VX(FR0) = (D1-FADE)*(VX_BULK(FR0)-WEIGHT*SHIFTBULK)
+      derv(1, d_z) = (D1-FADE)* VX_BULK(FZ0)
+      derv(1, d_r) = (D1-FADE)*(VX_BULK(FR0)-WEIGHT*SHIFTBULK)
      &        +     FADE * VX_OUTER(FR0)*(D1-HFXFAC)
 C
 C

@@ -1,4 +1,5 @@
-      subroutine sdft_qr(add_grad,
+      subroutine sdft_qr(block_length,
+     &                   add_grad,
      &                   add_spin,
      &                   dtrmat,
      &                   excmat,
@@ -7,7 +8,7 @@
      &                   gao,
      &                   gao1,
      &                   r_0,
-     &                   z,
+     &                   z_0,
      &                   gr_0,
      &                   w,
      &                   buf)
@@ -22,6 +23,7 @@ c=======================================================================
       use dft_cfg
       use dft_density
       use dft_functional_derv
+      use dft_basis_info
 
 #include "implicit.h"
 #include "priunit.h"
@@ -36,6 +38,7 @@ c=======================================================================
 #include "dgroup.h"
 #include "inforb.h"
 
+      integer, intent(in) :: block_length
       logical   add_grad,
      &          add_spin
       dimension dtrmat(nbast,nbast,nz,3),
@@ -45,6 +48,9 @@ c=======================================================================
      &          gao(*),
      &          gao1(*),
      &          buf(*),
+     &          r_0(*),
+     &          z_0(*),
+     &          w(*),
 !
      &          gr_0 (  3),
      &          gr_b (  3),
@@ -86,7 +92,7 @@ c=======================================================================
 !               vector h- part: q_{kj}^[BC] with k = x,y,z and j = x,y,z
      &          v_bc_ah(3,3),
 !
-     &          derv(0:nr_nonzero_derv(3))
+     &          derv(mxbllen, 0:nr_nonzero_derv(3))
       real(8), parameter :: tiny = 1.0d-20
       real(8) :: f
       integer :: i
@@ -169,9 +175,10 @@ c=======================================================================
       endif
 
       call get_functional_derv(3,
+     &                         block_length,
      &                         w,
      &                         r_0,
-     &                         z,
+     &                         z_0,
      &                         nr_nonzero_derv(3),
      &                         derv)
 
@@ -180,22 +187,22 @@ c=======================================================================
 
       s_bc_h = d0
 
-      s_bc_h = s_bc_h + derv(d_RRR)*(r_b*r_c)
+      s_bc_h = s_bc_h + derv(1, d_RRR)*(r_b*r_c)
 
       if(add_grad) then
-        s_bc_h = s_bc_h + derv(d_RRZ)*(r_b*Z_c + Z_b*r_c)
-     &                  + derv(d_RZZ)*(Z_b*Z_c)
-     &                  + derv(d_RZ)*Z_bc
+        s_bc_h = s_bc_h + derv(1, d_RRZ)*(r_b*Z_c + Z_b*r_c)
+     &                  + derv(1, d_RZZ)*(Z_b*Z_c)
+     &                  + derv(1, d_RZ)*Z_bc
       endif
 
       if(add_spin) then
         do k = k_start,3
-          s_bc_h = s_bc_h + derv(d_RSS)*(s_b(k)*s_c(k))
+          s_bc_h = s_bc_h + derv(1, d_RSS)*(s_b(k)*s_c(k))
 
           if(add_grad) then
-       s_bc_h = s_bc_h + derv(d_RSY)*(s_b(k)*Y_c(k) + Y_b(k)*s_c(k))
-     &                 + derv(d_RYY)*(Y_b(k)*Y_c(k))
-     &                 + derv(d_RX)*X_bc(k)
+       s_bc_h = s_bc_h + derv(1, d_RSY)*(s_b(k)*Y_c(k) + Y_b(k)*s_c(k))
+     &                 + derv(1, d_RYY)*(Y_b(k)*Y_c(k))
+     &                 + derv(1, d_RX)*X_bc(k)
           endif
         enddo
       endif
@@ -207,13 +214,15 @@ c=======================================================================
 
       if(add_spin) then
         do k = k_start,3
-       s_bc_ah(k) = s_bc_ah(k) + derv(d_RSS)*(r_b*s_c(k) + s_b(k)*r_c)
+       s_bc_ah(k) = s_bc_ah(k)
+     &            + derv(1, d_RSS)*(r_b*s_c(k) + s_b(k)*r_c)
 
           if(add_grad) then
-       s_bc_ah(k) = s_bc_ah(k) + derv(d_RSY)*(r_b*Y_c(k) + Y_b(k)*r_c)
-     &                         + derv(d_SSZ)*(Z_b*s_c(k) + s_b(k)*Z_c)
-     &                         + derv(d_SZY)*(Z_b*Y_c(k) + Y_b(k)*Z_c)
-     &                         + derv(d_SY)*Y_bc(k)
+       s_bc_ah(k) = s_bc_ah(k) 
+     &            + derv(1, d_RSY)*(r_b*Y_c(k) + Y_b(k)*r_c)
+     &            + derv(1, d_SSZ)*(Z_b*s_c(k) + s_b(k)*Z_c)
+     &            + derv(1, d_SZY)*(Z_b*Y_c(k) + Y_b(k)*Z_c)
+     &            + derv(1, d_SY)*Y_bc(k)
           endif
         enddo
       endif
@@ -231,18 +240,18 @@ c=======================================================================
         v_bc_h_Z_c = d0
 
         v_bc_h_Z_0 = v_bc_h_Z_0
-     &             + derv(d_ZZZ)*(Z_b*Z_c)
-     &             + derv(d_RZZ)*(r_b*Z_c + Z_b*r_c)
-     &             + derv(d_RRZ)*(r_b*r_c)
+     &             + derv(1, d_ZZZ)*(Z_b*Z_c)
+     &             + derv(1, d_RZZ)*(r_b*Z_c + Z_b*r_c)
+     &             + derv(1, d_RRZ)*(r_b*r_c)
 
         v_bc_h_Z_0 = v_bc_h_Z_0
-     &             + derv(d_ZZ)*Z_bc
+     &             + derv(1, d_ZZ)*Z_bc
         v_bc_h_Z_b = v_bc_h_Z_b
-     &             + derv(d_RZ)*r_c
-     &             + derv(d_ZZ)*Z_c
+     &             + derv(1, d_RZ)*r_c
+     &             + derv(1, d_ZZ)*Z_c
         v_bc_h_Z_c = v_bc_h_Z_c
-     &             + derv(d_RZ)*r_b
-     &             + derv(d_ZZ)*Z_b
+     &             + derv(1, d_RZ)*r_b
+     &             + derv(1, d_ZZ)*Z_b
 
         if(add_spin) then
 
@@ -255,31 +264,31 @@ c=======================================================================
 
           do k = k_start,3
             v_bc_h_Z_0  = v_bc_h_Z_0
-     &                  + derv(d_ZYY)*(Y_b(k)*Y_c(k))
-     &                  + derv(d_SZY)*(s_b(k)*Y_c(k) + Y_b(k)*s_c(k))
-     &                  + derv(d_SSZ)*(s_b(k)*s_c(k))
+     &                  + derv(1, d_ZYY)*(Y_b(k)*Y_c(k))
+     &                  + derv(1, d_SZY)*(s_b(k)*Y_c(k) + Y_b(k)*s_c(k))
+     &                  + derv(1, d_SSZ)*(s_b(k)*s_c(k))
 
             v_bc_h_Y_0(k) = v_bc_h_Y_0(k)
-     &                    + derv(d_YY)*Y_bc(k)
+     &                    + derv(1, d_YY)*Y_bc(k)
             v_bc_h_Y_b(k) = v_bc_h_Y_b(k)
-     &                    + derv(d_SY)*s_c(k)
-     &                    + derv(d_YY)*Y_c(k)
+     &                    + derv(1, d_SY)*s_c(k)
+     &                    + derv(1, d_YY)*Y_c(k)
             v_bc_h_Y_c(k) = v_bc_h_Y_c(k)
-     &                    + derv(d_SY)*s_b(k)
-     &                    + derv(d_YY)*Y_b(k)
+     &                    + derv(1, d_SY)*s_b(k)
+     &                    + derv(1, d_YY)*Y_b(k)
 
             v_bc_h_X_b(k) = v_bc_h_X_b(k)
-     &                    + derv(d_RX)*r_c
-     &                    + derv(d_ZX)*Z_c
+     &                    + derv(1, d_RX)*r_c
+     &                    + derv(1, d_ZX)*Z_c
             v_bc_h_X_c(k) = v_bc_h_X_c(k)
-     &                    + derv(d_RX)*r_b
-     &                    + derv(d_ZX)*Z_b
+     &                    + derv(1, d_RX)*r_b
+     &                    + derv(1, d_ZX)*Z_b
 
             v_bc_h_Y_0(k) = v_bc_h_Y_0(k)
-     &                    + derv(d_RSY)*(r_b*s_c(k) + s_b(k)*r_c)
-     &                    + derv(d_RYY)*(r_b*Y_c(k) + Y_b(k)*r_c)
-     &                    + derv(d_SZY)*(Z_b*s_c(k) + s_b(k)*Z_c)
-     &                    + derv(d_ZYY)*(Z_b*Y_c(k) + Y_b(k)*Z_c)
+     &                    + derv(1, d_RSY)*(r_b*s_c(k) + s_b(k)*r_c)
+     &                    + derv(1, d_RYY)*(r_b*Y_c(k) + Y_b(k)*r_c)
+     &                    + derv(1, d_SZY)*(Z_b*s_c(k) + s_b(k)*Z_c)
+     &                    + derv(1, d_ZYY)*(Z_b*Y_c(k) + Y_b(k)*Z_c)
           enddo
         endif
 
