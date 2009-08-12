@@ -2436,18 +2436,23 @@ c   namet=name1*f1+name2*f2
         write(LUPRI,'('' add input file does not exist '',a8)') name2
         call abext('add     ')
       endif
-      ! ......   error trap branch
+      ! ......   error trap
       if((iii2.ne.iii3).or.(iiv2.ne.iiv3).or.(ije2(nij2).ne.ije3(nij3)))
-     1 then
-        write (LUPRI,*) 
-     &  ' added files do not match. names iii iiv nsize='
-        write (LUPRI,123) name1,name2,iii2,iii3,iiv2,iiv3,ije2(nij2),
-     1  ije3(nij3)
+     & then
+        write (LUPRI,'(/,2x,a)') 
+!    &  ' added files do not match. names iii iiv nsize='
+     &  'add: added files do not match ! compared variables:'
+        write (LUPRI,*) 'iii2,iii3:',iii2,iii3
+        write (LUPRI,*) 'iiv2,iiv3:',iiv2,iiv3
+        write (LUPRI,*) 'nij2,nij3:',nij2,nij3 
+        write (LUPRI,*) 'ije2(nij2),ije3(nij3):',ije2(nij2),ije3(nij3)
+!       write (LUPRI,123) name1,name2,iii2,iii3,iiv2,iiv3,ije2(nij2),
+!    1  ije3(nij3)
 123     format(2a8,6i10)
         call abext('add     ')
       endif
       call files_ccsd(namet,ntapet,new,1,iii2,iiv2)
-      nsize=ije2(nij2)
+      nsize=ije2(nij2) ! picks up nsize
       if (name1.eq.namet) then
         if (f1.ne.1.d0) call rvmuls(nsize,gen(nstrt(2,ntape1-1)+1),
      1  f1,gen(nstrt(2,ntape1-1)+1))
@@ -3544,6 +3549,9 @@ c       call prt(name2n,"t2diis  ",0)
       endif
       return
       end
+
+#if defined HSFSCC_USE_OLD_DIIS
+!miro: I had to cut it off otherwise it's hurting dynamical allocation mode !
 c ***********************************************
 !      subroutine diis(iter,i12,name1n,name1o,name2n,name2o)
 ! old diis_o.f file
@@ -3660,4 +3668,4 @@ c
       endif
       return
       end
-
+#endif

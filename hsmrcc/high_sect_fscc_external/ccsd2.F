@@ -2610,7 +2610,8 @@ CUK   common /crle/ trle(nrle,4),isize(4)
         endif
       endif
 
-      if (ntmp.lt.nt) then
+!     if (ntmp.lt.nt) then
+      if (ntmp.lt.nt.and.ntmp.gt.0) then ! mi fix
 
         !write (LUPRI,'(1x,a,2i5)') 'ntmp.lt.nt !, ntmp,nt:',ntmp,nt
         lt=nt
