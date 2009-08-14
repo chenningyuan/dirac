@@ -834,50 +834,23 @@ contains
         end if
 
 
-
-
-
 !       linear response
         if(dft_options%lr) then
-
-          call dft_lr(block_length, dtrmat, &
-      &                excmat, &
-      &                nxcmat, &
-      &                isymop, &
-      &                ihrmop, &
-      &                .false., &
-      &                ao_p, &
-      &                ao_p(ao_start(1, 0)), &
-      &                r_0(1), &
-      &                z_0(1), &
-      &                rhg, &
-      &                w(1), &
-      &                dft_temp_gga_hs, &
-      &                buffer)
-
-
-!         spin magnetization contribution
-!         if (dft_cfg_sdft) then
-!           call sdft_lr(block_length, &
-!                        dtrmat,excmat,nxcmat, &
-!                        isymop,ihrmop,.false., &
-!                        ao_p,ao_p(ao_start(1, 0)), &
-!                        r_0(1),z_0(1),rhg,w(1),dft_temp_gga_ha,buffer)
-            call lr(block_length,         &
-                    nxcmat,               &
-                    dtrmat,               &
-                    excmat,               &
-                    isymop,               &
-                    ihrmop,               &
-                    .false.,              &
-                    ao_p,                 &
-                    r_0,                  &
-                    rhg,                  &
-                    z_0,                  &
-                    w,                    &
-                    dft_temp_gga_ha,      &
-                    buffer)
-!         endif
+          call lr(block_length,    &
+                  nxcmat,          &
+                  dtrmat,          &
+                  excmat,          &
+                  isymop,          &
+                  ihrmop,          &
+                  .false.,         &
+                  ao_p,            &
+                  r_0,             &
+                  rhg,             &
+                  z_0,             &
+                  w,               &
+                  dft_temp_gga_hs, &
+                  dft_temp_gga_ha, &
+                  buffer)
         endif
 
 
@@ -901,31 +874,22 @@ contains
           
 !         can be evaluated using lr code (below)
 !         only the remaining part is done in sdft_qr (above)
-          
-          call dft_lr(block_length,dtrmat,excmat,3, &
-     &                isymop,ihrmop,.true., &
-     &                ao_p,ao_p(ao_start(1, 0)), &
-     &                r_0(1),z_0(1),rhg,w(1),dft_temp_gga_hs,buffer)
-!         if (dft_cfg_sdft) then
-!           call sdft_lr(block_length,dtrmat,excmat,3, &
-!    &                   isymop,ihrmop,.true., &
-!    &                   ao_p,ao_p(ao_start(1, 0)), &
-!    &                   r_0(1),z_0(1),rhg,w(1),dft_temp_gga_ha,buffer)
-!         endif
-            call lr(block_length,         &
-                    nxcmat,               &
-                    dtrmat,               &
-                    excmat,               &
-                    isymop,               &
-                    ihrmop,               &
-                    .true.,               &
-                    ao_p,                 &
-                    r_0,                  &
-                    rhg,                  &
-                    z_0,                  &
-                    w,                    &
-                    dft_temp_gga_ha,      &
-                    buffer)
+!         
+          call lr(block_length,    &
+                  nxcmat,          &
+                  dtrmat,          &
+                  excmat,          &
+                  isymop,          &
+                  ihrmop,          &
+                  .true.,          &
+                  ao_p,            &
+                  r_0,             &
+                  rhg,             &
+                  z_0,             &
+                  w,               &
+                  dft_temp_gga_hs, &
+                  dft_temp_gga_ha, &
+                  buffer)
 
         endif
 
@@ -1195,7 +1159,8 @@ contains
                 gr_0,               &
                 z_0,                &
                 w,                  &
-                is_gga,             &
+                is_gga_qr,          &
+                is_gga_qi,          &
                 buffer)
 
 !   ----------------------------------------------------------------------------
@@ -1211,107 +1176,173 @@ contains
     real(8), intent(in)    :: gr_0(*)
     real(8), intent(in)    :: z_0(*)
     real(8), intent(in)    :: w(*)
-    logical, intent(in)    :: is_gga
+    logical, intent(in)    :: is_gga_qr
+    logical, intent(in)    :: is_gga_qi
     real(8), intent(in)    :: buffer(*)
 !   ----------------------------------------------------------------------------
-    real(8)                :: s_b(3)
-    real(8)                :: vxc_scalar(3)
-    real(8)                :: vxc_vector(3, 3)
+    logical                :: calculate_qr, calculate_qi
+
+    real(8)                :: u_qr,    u_qi(3)
+    real(8)                :: v_qr(3), v_qi(3, 3)
+
+    real(8)                ::  r_b,     s_b(3)
+    real(8)                :: gr_b(3), gs_b(3, 3)
+
+    real(8)                :: z_b
     real(8)                :: y_b(3)
-    real(8)                :: gs_b(3, 3)
+
     real(8)                :: derv(mxbllen, 0:99)
     real(8)                :: ddot
     integer                :: k_start, k, im, im_off, j
 !   ----------------------------------------------------------------------------
+
+    call get_functional_derv(2,                  &
+                             block_length,       &           
+                             w,                  &
+                             r_0,                &
+                             z_0,                &  
+                             nr_nonzero_derv(2), &
+                             derv)
 
     k_start = 1
     if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
 
     do im = 1, nr_mat
 
-      if (                                            &
-           dft_cfg_sdft                               &
-           .and.                                      &
-           (                                          &
-             (ih(im) == -1)                           &
-             .or.                                     &
-             (allow_nonhermitian .and. (ih(im) == 0)) &
-           )                                          &
-         ) then
+      calculate_qr = .false.
+      calculate_qi = .false.
 
-        im_off = nr_ao_total*nr_ao_total*nr_qu*(im - 1)
-        
-        call get_s(s_b,                &
-                   isym(im) - 1,     &
+      if (ih(im) == +1) calculate_qr = .true.
+      if (ih(im) == -1) calculate_qi = .true.
+
+      if (ih(im) == 0 .and. allow_nonhermitian) then
+        calculate_qr = .true.
+        calculate_qi = .true.
+      end if
+
+      im_off = nr_ao_total*nr_ao_total*nr_qu*(im - 1)
+
+!     hermitian contribution (qr = quaternion real)
+      if (calculate_qr) then
+
+        call get_n(r_b,                        &
+                   isym(im) - 1,               &
                    dmat_perturbed(1 + im_off), &
-                   buffer,                &
+                   buffer,                     &
                    ao_p)
         
-        if (is_gga) then
+        if (is_gga_qr) then
           if (allow_nonhermitian) then
-            call get_gs_nonhermitian(gs_b,               &
-                                     isym(im) - 1,     &
+            call get_gn_nonhermitian(gr_b,                       &
+                                     isym(im) - 1,               &
                                      dmat_perturbed(1 + im_off), &
-                                     buffer,                &
-                                     ao_p,                &
+                                     buffer,                     &
+                                     ao_p,                       &
                                      ao_p(ao_start(1, 0)))
           else
-            call get_gs(gs_b,               &
-                        isym(im) - 1,     &
+            call get_gn(gr_b,                       &
+                        isym(im) - 1,               &
                         dmat_perturbed(1 + im_off), &
-                        buffer,                &
-                        ao_p,                &
+                        buffer,                     &
+                        ao_p,                       &
                         ao_p(ao_start(1, 0)))
           end if
         end if
 
-        call get_functional_derv(2,            &
-                                 block_length,  &           
-                                 w,             &
-                                 r_0,            &
-                                 z_0,             &  
-                                 nr_nonzero_derv(2),&
-                                 derv)
+        u_qr = derv(1, d_rr)*r_b
+        
+        if (is_gga_qr) then
+          z_b  = 2.0d0*ddot(3, gr_0, 1, gr_b, 1)
+          u_qr = u_qr + derv(1, d_rz)*z_b
 
-        do k = k_start,3
+          do j = 1, 3
+            v_qr(j) = gr_0(j)*(                   & 
+                                r_b*derv(1, d_rz) &
+                              + z_b*derv(1, d_zz) &   
+                              )                   &
+                    + gr_b(j)*derv(1, d_z)
+          end do
+          v_qr = 2.0d0*v_qr
+        end if
 
-          vxc_scalar(k) = derv(1, d_ss)*s_b(k)
+        if (is_gga_qr) then
+          call gga_distribute(u_qr,             &
+                              v_qr,             &
+                              isym(im) - 1,     &
+                              fmat(1 + im_off), &
+                              ao_p,             &
+                              ao_p(ao_start(1, 0)))
+        else
+          call lda_distribute(u_qr,             &
+                              isym(im) - 1,     &
+                              fmat(1 + im_off), &
+                              ao_p)
+        end if
+
+      end if !end of qr contribution
+
+!     antihermitian contribution (qi = quaternion imaginary)
+      if (calculate_qi) then
+
+        call get_s(s_b,                        &
+                   isym(im) - 1,               &
+                   dmat_perturbed(1 + im_off), &
+                   buffer,                     &
+                   ao_p)
+        
+        if (is_gga_qi) then
+          if (allow_nonhermitian) then
+            call get_gs_nonhermitian(gs_b,                       &
+                                     isym(im) - 1,               &
+                                     dmat_perturbed(1 + im_off), &
+                                     buffer,                     &
+                                     ao_p,                       &
+                                     ao_p(ao_start(1, 0)))
+          else
+            call get_gs(gs_b,                       &
+                        isym(im) - 1,               &
+                        dmat_perturbed(1 + im_off), &
+                        buffer,                     &
+                        ao_p,                       &
+                        ao_p(ao_start(1, 0)))
+          end if
+        end if
+
+        do k = k_start, 3
+
+          u_qi(k) = derv(1, d_ss)*s_b(k)
          
-          if(is_gga) then
-            y_b(k) = ddot(3,gr_0,1,gs_b(1,k),1)
-         
-            vxc_scalar(k) = vxc_scalar(k) + derv(1, d_sy)*y_b(k)
-          endif
+          if (is_gga_qi) then
+            y_b(k)  = ddot(3, gr_0, 1, gs_b(1, k), 1)
+            u_qi(k) = u_qi(k) + derv(1, d_sy)*y_b(k)
 
-          if(is_gga) then
-            do j = 1,3
-              vxc_vector(j,k) = (s_b(k)*derv(1, d_sy) &
-                              + y_b(k)*derv(1, d_yy))*gr_0(j)&
-                              + derv(1, d_x)*gs_b(j,k)*2.0d0
-            enddo
-          endif
+            do j = 1, 3
+              v_qi(j, k) = gr_0(j)*(                   & 
+                                  s_b(k)*derv(1, d_sy) &
+                                + y_b(k)*derv(1, d_yy) &   
+                                )                      &
+                      + 2.0d0*gs_b(j, k)*derv(1, d_x)
+            end do
+          end if
+        end do
 
-        enddo
-
-        if (is_gga) then
-          call gga_distribute_qi(vxc_scalar, &
-                                 vxc_vector, &
-                                 isym(im) - 1,&
-                                 fmat(1 + im_off),&
-                                 ao_p,              &
+        if (is_gga_qi) then
+          call gga_distribute_qi(u_qi,             &
+                                 v_qi,             &
+                                 isym(im) - 1,     &
+                                 fmat(1 + im_off), &
+                                 ao_p,             &
                                  ao_p(ao_start(1, 0)))
         else
-          call lda_distribute_qi(vxc_scalar, &
-                                 isym(im) - 1,&
-                                 fmat(1 + im_off),&
+          call lda_distribute_qi(u_qi,             &
+                                 isym(im) - 1,     &
+                                 fmat(1 + im_off), &
                                  ao_p)
         end if
 
+      end if !end of qi contribution
 
-      endif
-    enddo
-
-
+    end do
 
   end subroutine
 
