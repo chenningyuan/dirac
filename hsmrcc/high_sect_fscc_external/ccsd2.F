@@ -3467,7 +3467,8 @@ c             write (6,*) ' '
 !      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #endif
 
-      character(*) tit ! to cut off trash characters
+!mi: I had to deactivate it otherwise I got crash in printout
+!     character(*) tit ! to cut off trash characters
       real*4 cputime
       CHARACTER*8  TIMEX,DATEX*10
       character*12 temp
@@ -3483,7 +3484,7 @@ c             write (6,*) ' '
       diff = t - csdltim
       acum = t - csdstim
 
-!mi: generalized routine ( gp/gpluuk.F )
+!mi: take DIRAC general routine ( gp/gpluuk.F )
       CALL DAYTIME(DATEX,TIMEX)
 
 !      write(LUPRI,*)        ' * tit=',tit
@@ -3498,10 +3499,25 @@ c             write (6,*) ' '
 !     temp=tit
 !     call clean_string(temp)
 
+!      write(LUPRI,*) 'prtime....'
+!      write(LUPRI,*) 'len(tit)=',len(tit)
+!      write(LUPRI,*) 'trim(tit)=',trim(tit)
+!     temp=tit
+!     call flush(LUPRI)
+!     write(LUPRI,'(a,a9)') 'temp=',temp
+      call flush(LUPRI)
+!     write(LUPRI,'(a,a9)') 'tit=',tit
+!     write(LUPRI,*) 'diff=',diff
+!     write(LUPRI,*) 'n=',n
+!     write(LUPRI,*) 'datex=',datex
+!     write(LUPRI,*) 'timex=',timex
+
+!!!! might be prioblem...
 !     print 900,temp,acum,diff,n,datex,timex
       print 900,tit,acum,diff,n,datex,timex
 900   format (' time after :',a9,1x,f10.3,'; added ',
-     1 f10.3,'. n=',i8,'. ',2A12)
+!    & f10.3,'. n=',i8,'. ',2A)
+     & f10.3,'. n=',i8,'. ',2A12)
 
       csdltim = t
       call flush (LUPRI)
