@@ -71,6 +71,8 @@ Functional* available_functionals[] = {
     &BPW91Functional,
     &Camb3lypFunctional,
     &GGAKeyFunctional,
+    &CamFunctional,
+    &HseFunctional,
     &KT1Functional,
     &KT2Functional,
     &KT3Functional,
