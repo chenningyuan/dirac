@@ -65,6 +65,7 @@ static void cam_third(FunThirdFuncDrv *ds, real factor,
                       const FunDensProp* dp);
 
 static int hse_read(const char *conf_line);
+static void hse_report(void);
 
 Functional Camb3lypFunctional = {
   "Camb3lyp",       /* name */
@@ -92,7 +93,7 @@ Functional HseFunctional = {
   "HSE",       /* name */
   cam_isgga,   /* gga-corrected */
   hse_read,
-  cam_report,
+  hse_report,
   cam_energy,
   cam_first,
   cam_second,
@@ -194,43 +195,16 @@ static const char *cam_keywords[] = { "alpha", "beta", "mu" };
 static int
 camb3lyp_read(const char *conf_line)
 {
-    double weights[ELEMENTS(cam_keywords)];
-
-    weights[0] = 0.19;
-    weights[1] = 0.46;
-    weights[2] = 0.33;
-    if(!parse_table("CAM-B3LYP", conf_line,
-                    ELEMENTS(cam_keywords), cam_keywords, weights))
-        return 0;
-    /* sanity checks */
-    if(weights[2]<=0) weights[2] = 1e-30;
-    fun_set_hf_weight(weights[0]);
-    fun_set_cam_param(weights[2], weights[1]);
-     camBeta = weights[1];
-     camMu = weights[2];
-     camAlpha = weights[0];
-
-
-    cam_free_config();
-
-    exchangeFunctionals = newFunc(&BeckeFunctional, BECKE88_CORR_WEIGHT,
-                                  exchangeFunctionals);
-    exchangeFunctionals = newFunc(&SlaterFunctional, 1.0,
-                                  exchangeFunctionals);
-    correlationFunctionals = newFunc(&LYPFunctional, LYP_WEIGHT,
-                                     correlationFunctionals);
-    correlationFunctionals = newFunc(&VWNFunctional, VWN_WEIGHT,
-                                     correlationFunctionals);
-
-    return 1;
+    return cam_read("p:alpha=0.19 p:beta=0.46 p:mu=0.33 x:slater=1 x:becke=1 c:lyp=0.81 c:vwn5=0.19");
 }
 
 
 static void
 camb3lyp_report(void)
 {
-    fun_printf("CAM-B3LYP functional with alpha=%5.3f beta=%5.3f mu=%5.3f",
-               camAlpha, camBeta, camMu);
+    fun_printf("  T. Yanai, D. Tew and N. C. Handy, Chem. Phys. Lett., 393 (2004) 51");
+    cam_report();
+    return;
 }
 
 /* General CAM part */
@@ -359,14 +333,16 @@ static void
 cam_report(void)
 {
     struct FunctionalList *l;
-    fun_printf("CAM functional with alpha=%5.3g beta=%5.3g mu=%5.3g",
+    fun_printf("  CAM functional with alpha=%5.3g beta=%5.3g mu=%5.3g",
                camAlpha, camBeta, camMu);
-    fun_printf("   and exchange functionals and weights:");
+    fun_printf("    and exchange functionals and weights:");
     for(l=exchangeFunctionals; l; l = l->next)
         fun_printf("%20s : %lg", l->func->name, l->weight);
-    fun_printf("   and correlation functionals and weights:");
+    fun_printf("    and correlation functionals and weights:");
     for(l=correlationFunctionals; l; l = l->next)
         fun_printf("%20s : %lg", l->func->name, l->weight);
+    fun_printf("  Short-range exchange functionals are obtained according to:");
+    fun_printf("    H. Iikura, T. Tsuneda, T. Yanai, K. Hirao, J. Chem. Phys. 115(2001) 3540");
 }
 
 static int
@@ -380,6 +356,13 @@ hse_read(const char *conf_line)
        With HSE's erratum and mu_HF:= mu_PBE/sqrt(2):         -0.51020009241
     */
     return cam_read("p:alpha=0.25 p:beta=-0.25 p:mu=0.1890 c:pbec=1 x:pbex=1");
+}
+static void
+hse_report(void)
+{
+    fun_printf("  J. Heyd, G.E. Scuseria and M. Ernzerhof, J. Chem. Phys. 118 (2003) 8207");
+    cam_report();
+    return;
 }
 
 /* ===================================================================
