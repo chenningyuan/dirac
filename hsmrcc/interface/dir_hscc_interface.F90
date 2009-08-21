@@ -417,9 +417,10 @@ use DIRAC_HSFS
 
    call header('Output from "get_dirac_ints"',-1)
 
-   write(LUPRI,'(2x,a,i5)') 'iprint_hsfs=',iprint_hsfs
-   write(LUPRI,'(2x,a,i5)') 'get_iprint=',getiprint()
+!  call set_print_level(iprint_hsfs)
+!  write(LUPRI,'(2x,a,i5)') 'getiprint=',getiprint()
    iprint_hsfs = getiprint()
+!  write(LUPRI,'(2x,a,i5)') 'iprint_hsfs=',iprint_hsfs
 
    call open_dirac_hsfs_file; rewind(luhsfs)
    write(LUPRI,*) luhsfs,' file open'

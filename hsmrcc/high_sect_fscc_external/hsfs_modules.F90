@@ -474,23 +474,35 @@ module print_level
 contains
 
 subroutine extract_print_level
-! extract print level from common block variabla
+! extract print level from the common block variable
+#include "priunit.h"
 #include "dat.h"
- iprint = iopt(1)
- print_level_read = .true.! print variable is extracted
+ if (.not.print_level_read) then
+  iprint = iopt(1)
+  write(LUPRI,'(2X,A,I3)') 'print level set to:',iprint
+ else
+  write(LUPRI,'(2X,A,I3)') 'print level was already set before to:',iprint
+ endif
+! print_level_read = .true.! print variable is extracted
 end subroutine extract_print_level
+
+subroutine set_print_level(ipr)
+!#include "priunit.h"
+ integer, intent(in) :: ipr
+ iprint=ipr
+ print_level_read = .true.! print variable is extracted
+! write(LUPRI,'(2x,a,i3)') 'set_print_level: new print level set, iprint=',iprint
+end subroutine set_print_level
 
 function getiprint() result(ipr)
 ! get private module value
-  integer :: ipr
-
+ integer :: ipr
  if (.not.print_level_read) then
    call quit('getiprint: print variable NOT extracted !')
  else
   ipr = iprint
   return
  endif
-
 end function getiprint
 
 end module print_level

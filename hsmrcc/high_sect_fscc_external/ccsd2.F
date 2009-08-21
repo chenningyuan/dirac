@@ -2343,7 +2343,9 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine rvmuls(n,a,s,c)
+!  ...  c(i)=a(i)*s
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
@@ -2353,6 +2355,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine rvmulv(n,a,b,c)
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
@@ -3582,10 +3585,10 @@ c *************************************************
       subroutine rdin
 !--------------------------------------------------------------------------------
 !
-!     input reading routine called from each executable
+!           input reading routine called from each executable
 !
 !--------------------------------------------------------------------------------
-       use print_level
+      use print_level
 #if defined HSFS_DYN_ALLOC
       use dat_mod
 #include "implicit.h"

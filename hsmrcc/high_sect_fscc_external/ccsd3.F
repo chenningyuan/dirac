@@ -498,11 +498,11 @@ C 2600  format(' Fock element no',i3,2x,2i3,f15.6)
 
       integer*4 ch1,ch2
 
-      !if (getiprint() >= 5) then
-      if (getiprint() >= 4) then
+      if (getiprint() >= 5) then
         call header("Output from files_ccsd",-1)
+        write(LUPRI,'(4x,a)')     '...entering data:'
         write(LUPRI,'(2x,a,i7)')  'nflcur=',nflcur
-        write(LUPRI,'(2x,a,a4)')  'name=',name
+        write(LUPRI,'(2x,a,a8)')  'name=',name
         write(LUPRI,'(2x,a,i7)')  'ijnum=',ijnum
         write(LUPRI,'(2x,a,2i5)') 'iii,iiv=',iii,iiv
        ! write(LUPRI,*) 'new=',new
@@ -563,7 +563,6 @@ C Gal 95
           iii1=igen(nstrt(1,num-1)+2*nija+3)
           iiv1=igen(nstrt(1,num-1)+2*nija+4)
 
-         ! if (iopt(1).ge.5) then
           if (getiprint().ge.5) then
             write(LUPRI,*) 'ijnum=1, nij1=',nij1
             write(LUPRI,*) 'nija,iii1,iiv1:',nija,iii1,iiv1
@@ -575,8 +574,7 @@ C Gal 95
           iii2=igen(nstrt(1,num-1)+2*nija+3)
           iiv2=igen(nstrt(1,num-1)+2*nija+4)
 
-         ! if (iopt(1).ge.5) then
-          if (getiprint().ge.4) then
+          if (getiprint().ge.5) then
             write(LUPRI,*) 'ijnum=2, nij2=',nij2
             write(LUPRI,*) 'nija,iii2,iiv2:',nija,iii2,iiv2
           endif
@@ -604,7 +602,7 @@ C Gal 95
         else
           write (LUPRI,*) 
      &    'ccsd_files called with incorrect ijnum, ',ijnum
-          call abext('ccsd_files   ')  
+          call abext('ccsd_files   ')
         endif
 
         return
@@ -3068,7 +3066,7 @@ c   special for scratch files, which start with s
       subroutine t1sqr(name1a,name1b,name2,namet)
 !------------------------------------------------------------------------
 !
-!
+! what does it do ?
 !
 !------------------------------------------------------------------------
       use print_level
@@ -3135,6 +3133,7 @@ c
       istrt22=nstrt(2,ntape1a-1)
       istrt31=nstrt(1,ntape1b-1)+2*nij3+4
       istrt32=nstrt(2,ntape1b-1)
+!   .......................................................
       do 120 i2=1,nsize2
       do 120 i3=1,nsize3
       ntmp=ntmp+1
@@ -3146,7 +3145,7 @@ c
      2               ior(ishft(iand(it2,'ff'X)          , 8),
      3                   iand(it3,'ff'X)                    ))
 
-      if (getiprint() >= 5) then
+      if (getiprint() >= 8) then
         write(LUPRI,*) 't1sqr: before call vxsort'
         write(LUPRI,*) 'ntmp=',ntmp
         write(LUPRI,*) 'nsize1=',nsize1
@@ -3158,15 +3157,22 @@ c
 
       call vxsort(itmp,ntmp,nsize1,gen(istrt12+1),igen(istrt11+1))
 
-      if (getiprint() >= 5) then
+      if (getiprint() >= 8) then
+        write(LUPRI,*) 't1sqr: after vxsort, before call add'
         write(LUPRI,*) 'namet=',namet 
         write(LUPRI,*) 'name2=',name2
       endif
 
       call add(namet,1.d0,name2,1.d0,namet)
 
+      if (getiprint() >= 8) then
+        write(LUPRI,*) 't1sqr: after call add'
+        write(LUPRI,*) 'namet=',namet 
+        write(LUPRI,*) 'name2=',name2
+      endif
+
       return
-      end
+      end subroutine t1sqr
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine t1t2 (name1,name2,name3,names,iord,iparm) 
@@ -3176,6 +3182,7 @@ c
 !
 !
 !------------------------------------------------------------------------
+      use print_level
 #if defined HSFS_DYN_ALLOC
       use ctmp_mod
       use cfiles_mod

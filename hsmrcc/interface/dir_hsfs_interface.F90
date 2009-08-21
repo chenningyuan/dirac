@@ -93,6 +93,7 @@ subroutine HSFSINP(WORD)
 !
 !-----------------------------------------------------------------------------
   use DIRAC_HSFS
+  use print_level
   use high_sect_execs
 #include "implicit.h"
 #include "priunit.h"
@@ -102,7 +103,7 @@ CHARACTER(len=7), INTENT(INOUT) :: WORD
 !Logical, save :: set = .false.
 !Logical, intent(in) :: reset
 
-Logical :: PROPER_POS
+Logical :: PROPER_POS, iprint_read=.false.
 
 CHARACTER:: PROMPT*1=' ',PROMPT_M*1=' ' 
 CHARACTER(len=7) :: METHOD, KEYWORD=' '
@@ -146,6 +147,7 @@ Do
       Case ('.PRINT')
         READ(LUCMD,*) iprint_hsfs
         write(LUPRI,*) ' read IPRINT_hsfs=',iprint_hsfs
+        iprint_read = .true.
        Case ('.CONV')
          READ(LUCMD,*) iconv_hsfs
          write(LUPRI,*) ' read iconv_hsfs=',iconv_hsfs
@@ -178,7 +180,17 @@ ENDIF
  CALL PRSYMB(LUPRI,'=',75,0)
  WRITE(LUPRI,'(1X,A)') 'HSFSINP: DIRAC set-up for the external standalone HSFS codes'
  CALL PRSYMB(LUPRI,'=',75,0)
- WRITE(LUPRI,'(/,1X,A,I3)') '* General print level   : ',iprint_hsfs
+
+   WRITE(LUPRI,'(/,1X,A,I3)') '* General print level   : ',iprint_hsfs
+ if (iprint_read) then
+   call set_print_level(iprint_hsfs)
+   WRITE(LUPRI,'(/,2X,A)') 'print level set in this procedure'
+ else
+   WRITE(LUPRI,'(/,2X,A)') 'print level to be set after reading "input"'
+ endif
+
+! if (nohsccfiles) then
+
  WRITE(LUPRI,'(1X,A,I3)')   '* Convergence           : ',iconv_hsfs
 
  write(LUPRI,'(1X,A,I3)') '* Number of individual HSFS methods: ',num_methods
@@ -191,10 +203,10 @@ ENDIF
    enddo
  endif
 
- if (i_file_based) then
-  write(LUPRI,'(1X,A)') '* starts from the DIRAC_hsfs file containg integrals and other data.'
+ if (iprint_read) then
+   call set_print_level(iprint_hsfs)
  else
-  write(LUPRI,'(1X,A)') '* starts from DIRAC produced data (integrals etc)'
+
  endif
 
 ! if (nohsccfiles) then

@@ -1785,8 +1785,8 @@ c   move p to p transitions to folded
 ! m3 - how many lines will be contracted (multiplied) to produce final diagram "namet"
 !       
 !-----------------------------------------------------------------------
-#if defined HSFS_DYN_ALLOC
       use print_level
+#if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
       use cij1_mod
@@ -1796,7 +1796,6 @@ c   move p to p transitions to folded
 #include "implicit.h"
 #include "priunit.h"
 #else
-      use print_level
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
@@ -2393,6 +2392,7 @@ c  iparm=6 : 8x2=8
 ! what does it do ?
 !
 !-------------------------------------------------------------
+      use print_level
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -2420,6 +2420,16 @@ c  iparm=6 : 8x2=8
 !     common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
 #include "cij3.h"
 #endif
+
+      if (getiprint()>=5) then
+       call header ('Output from add',-1)
+       write(LUPRI,'(2x,a,a8)')    'name1=',name1
+       write(LUPRI,'(2x,a,d12.6)') 'f1=',f1
+       write(LUPRI,'(2x,a,a8)')    'name2=',name2
+       write(LUPRI,'(2x,a,d12.6)') 'f2=',f2
+       write(LUPRI,'(2x,a,a8)')    'namet=',namet
+       call flush(LUPRI)
+      endif
 
 c   namet=name1*f1+name2*f2
       if ((name1.eq.name2).and.(name1.eq.namet)) then
@@ -2449,6 +2459,8 @@ c   namet=name1*f1+name2*f2
 !       write (LUPRI,123) name1,name2,iii2,iii3,iiv2,iiv3,ije2(nij2),
 !    1  ije3(nij3)
 123     format(2a8,6i10)
+        write(LUPRI,*) 'getiprint()=',getiprint()
+        call flush(LUPRI)
         call abext('add     ')
       endif
       call files_ccsd(namet,ntapet,new,1,iii2,iiv2)
@@ -2469,8 +2481,13 @@ c   namet=name1*f1+name2*f2
         call daxpy(nsize,f2,gen(nstrt(2,ntape2-1)+1),
      1  1,gen(nstrt(2,ntapet-1)+1),1)
       endif
+
+      if (getiprint()>=5) then
+        write(LUPRI,*) 'end of add'
+      endif
+
       return
-      end
+      end subroutine add
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine cmult(namef,f,namet)
