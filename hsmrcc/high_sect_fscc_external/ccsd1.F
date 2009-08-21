@@ -2389,7 +2389,7 @@ c  iparm=6 : 8x2=8
       subroutine add(name1,f1,name2,f2,namet)
 !-------------------------------------------------------------
 !
-! what does it do ?
+!         what does it do ?
 !
 !-------------------------------------------------------------
       use print_level
@@ -2483,7 +2483,7 @@ c   namet=name1*f1+name2*f2
       endif
 
       if (getiprint()>=5) then
-        write(LUPRI,*) 'end of add'
+        write(LUPRI,'(2x,a,/)') '...end of add'
       endif
 
       return
