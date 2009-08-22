@@ -64,7 +64,7 @@ enum retrieveSymbolKinds {symbolName = 1, symbolRetAddr};
 
 /* public (callable from fortran) functions.  */
 
-void get_traceback_info_(enum allowedActions*, char *fstring, int *fsize);
+void get_traceback_info_(enum allowedActions *action, char *fstring, int *fsize, size_t *trace_depth);
 
 /* internal (not meant to be called from fortran) function */
 
@@ -85,7 +85,7 @@ void print_prettytrace_to_stdout (size_t size, char **strings);
       fsize   : when passing information back to the fortran program, *fsize holds the size of the "result" array in fortran
 */
 
-void get_traceback_info_(enum allowedActions *action, char *fstring, int *fsize)
+void get_traceback_info_(enum allowedActions *action, char *fstring, int *fsize, size_t *trace_depth)
 {
   void *array[MAXDEPTH_TRACE];
   size_t size = 0;
@@ -99,6 +99,7 @@ void get_traceback_info_(enum allowedActions *action, char *fstring, int *fsize)
 /* calls to gnu libc routines */
    size    = backtrace (array, MAXDEPTH_TRACE);
    strings = backtrace_symbols (array, size);
+   *trace_depth = size; 
 #endif /* GNU_TRACEBACK */
 
    if ( strings != NULL ) 
@@ -213,6 +214,7 @@ void print_trace_to_string(char *symbol_in, char *symbol_out, int length)
       symbol_out[i] = ' ';
 
    symbol_out[length-1] = '\0';
+
 }
 
 

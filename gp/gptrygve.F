@@ -254,6 +254,7 @@ C  /* Deck quit */
 #include "dcbgen.h"
 #endif
       CHARACTER TEXT*(*), STRING*70, BLA*1
+      INTEGER STACK_DEPTH
 C
 #if defined (VAR_MPI)
       IF (MYTID .GT. 0) THEN
@@ -286,7 +287,7 @@ C     Write to stderr
 #if defined (SYS_LINUX)
 C aspg, replacing trace with os-provided traceback facilities. linux support for now
 C 3 = pretty print traceback to stdout...
-      CALL GET_TRACEBACK_INFO (3,BLA,1) 
+      CALL GET_TRACEBACK_INFO (3,BLA,1,STACK_DEPTH) 
 #else
       CALL TRACE
 #endif /* SYS_LINUX */

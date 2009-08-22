@@ -158,6 +158,7 @@ program dirprg
      print '(a/)','*****************************************************'
   endif
   call dealloc(memory)
+  call allocator_report(mytid)
 #ifdef VAR_MPI
   if (iparcal .eq. 1 ) call mpixfinalize()
 #endif
