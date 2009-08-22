@@ -7,8 +7,8 @@
    derivative evaluation", Pawel Salek, 2005
 
     This functional is connected by making following changes:
-    1. add "extern Functional srvwn5Functional;" to 'functionals.h'
-    2. add "&srvwn5Functional," to 'functionals.c'
+    1. add "extern Functional SRVWN5Functional;" to 'functionals.h'
+    2. add "&SRVWN5Functional," to 'functionals.c'
     3. add "fun-srvwn5.c" to 'Makefile.am', 'Makefile.in' or 'Makefile'.
 
     This functional has been generated from following input:
@@ -104,7 +104,7 @@ static void srvwn5_first(FunFirstFuncDrv *ds,   real factor,
 static void srvwn5_second(FunSecondFuncDrv *ds, real factor,
                           const FunDensProp* dp);
  
-Functional Srvwn5Functional = {
+Functional SRVWN5Functional = {
   "SRVWN5",       /* name */
   srvwn5_isgga,   /* gga-corrected */
   srvwn5_read,

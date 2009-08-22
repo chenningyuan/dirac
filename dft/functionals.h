@@ -236,6 +236,9 @@ extern Functional EmbInteractionFunctional;
 extern Functional TF_KinFunctional;     /* Thomas-Fermi */
 extern Functional VW_KinFunctional;     /* TF + Von Weizaecker */
 
+/* range-separated functionals */
+extern Functional SRVWN5Functional;
+
 
 /* Lists of available functionals: */
 extern Functional* available_functionals[];     /* XC functionals */
