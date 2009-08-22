@@ -25,6 +25,8 @@ echo "Copying source tree to ../Dirac08"
 mkdir ../Dirac08
 tar c . | (cd ../Dirac08; tar x)
 
+#  Now go to release directory
+#
 cd ../Dirac08
 
 #

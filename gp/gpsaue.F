@@ -7413,7 +7413,7 @@ C
 C* Estimate fit:
       WRITE(LUPRI,'(3X,A,I3)') '* Polynomial fit of order:',NORDER
       WRITE(LUPRI,'(3X,A)') '* Coefficients:'
-      WRITE(LUPRI,'(3X,A,I3,A,1P,E24.16)') ('c(',(I-1),'):  ',
+      WRITE(LUPRI,'(3X,A,I3,A,1P,E14.6)') ('c(',(I-1),'):  ',
      &      C(I),I=1,NDIM)  
       WRITE(LUPRI,'(3X,A,E9.4)') '* Chi square :  ',CHISQ
       WRITE(LUPRI,'(3X,A,E9.4)') '* Chi square per point:  ',CHISQ/NP
@@ -7422,7 +7422,7 @@ C
       WRITE(ILOGG,'(72A1)') ('=',I=1,72)
       WRITE(ILOGG,'(3X,A,I3)') '* Polynomial fit of order:',NORDER
       WRITE(ILOGG,'(3X,A)') '* Coefficients:'
-      WRITE(ILOGG,'(3X,A,I3,A,1P,E24.16)') ('c(',(I-1),'):  ',
+      WRITE(ILOGG,'(3X,A,I3,A,1P,E14.6)') ('c(',(I-1),'):  ',
      &      C(I),I=1,NDIM)  
       WRITE(LUPRI,'(8X,A,4X,2A)')
      &   'X',' Predicted Y',' Relative error'
@@ -7469,9 +7469,9 @@ C* for Newton-Raphsons method
      &    '* Local minimum   :',TEMP,' Angstroms'
         WRITE(ILOGG,'(A,F18.5,A)') 
      &    '* Local minimum   :',TEMP,' Angstroms'
-        WRITE(LUPRI,'(A,1P,E24.14,A)') 
+        WRITE(LUPRI,'(A,1P,E18.10,A)') 
      &    '* Expected energy :',YOPT,' Hartrees'
-        WRITE(ILOGG,'(A,1P,E24.14,A)') 
+        WRITE(ILOGG,'(A,1P,E18.10,A)') 
      &    '* Expected energy :',YOPT,' Hartrees'
       ENDIF
       RETURN

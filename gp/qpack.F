@@ -195,14 +195,13 @@ C
 C  Printe traceback from Q stack
 C
       CHARACTER BLA*1
-      INTEGER STACK_DEPTH
       COMMON /QSTACK/ LEVELQ, LQTREE
 #include "qnames.h"
 C
 #if defined (SYS_LINUX)
 C aspg, replacing trace with os-provided traceback facilities. linux support for now  
 C 3 = pretty print traceback to stdout...
-      CALL GET_TRACEBACK_INFO (3,BLA,1,STACK_DEPTH)
+      CALL GET_TRACEBACK_INFO (3,BLA,1)
 #else
       IF (LEVELQ .EQ. 0) GO TO 9000
       WRITE (LUPRI,'(//A)') ' QTRACE dump of internal trace stack'

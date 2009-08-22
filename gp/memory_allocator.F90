@@ -55,12 +55,12 @@
 !
       module memory_allocator
 
-         use simple_memory_tracker
+         use memory_tracker
                   
          implicit none
          private
          public alloc, dealloc, allocp, deallocp, initData, alloc_maxsize
-         public allocator_init, allocator_report, allocator_setmax
+         public allocator_init, allocator_setmax
 
          interface alloc
             module procedure alloc_real_1d
@@ -120,8 +120,7 @@
          integer, parameter :: kreal = 8, kcomplex = 8
 
          integer, parameter :: alreadyAllocated = 1, alreadyDeallocated = 2, &
-                               allocateFailure  = 3, deallocateFailure  = 4, &
-                               malformedAllocCall = 5
+                               allocateFailure  = 3, deallocateFailure  = 4
 
 ! actions for getting backtrace information
 ! have to find a better way to keep this in sync with the C part...
@@ -140,7 +139,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
             subroutine allocErrorHandler(status,size,data_kind,var_id,ignoreError)
-               integer                        :: status, traceStackDepth
+               integer                        :: status
 ! optional arguments
                logical, optional              :: ignoreError
                integer, optional              :: size
@@ -186,7 +185,7 @@
                ErrorMessage = InfoMessage
                trace_result = 'unknown (stack trace info unavailable)'
 
-               call get_traceback_info (printAllocCaller,trace_result,charArrayLength,traceStackDepth)
+               call get_traceback_info (printAllocCaller,trace_result,charArrayLength)
                
                select case (status)
                   case (alreadyAllocated)      
@@ -216,14 +215,9 @@
 
 
                   case (deallocateFailure)
-                     InfoMessage  = 'Memory deallocation failed at '//trace_result(1:42)
+                     InfoMessage  = 'Memory deallocation failed at '//trace_result(1:42)//' !'
                      ErrorMessage = 'deallocation failed!'
                      isFatal = .False.
-
-                  case (malformedAllocCall)
-                     InfoMessage  = 'Malformed call to alloc() failed at '//trace_result(1:42)
-                     ErrorMessage = 'Call to alloc() incorrectly done. Please submit a bug report.'
-                     isFatal = .True.
    
                end select
 
@@ -250,14 +244,14 @@
                
             end subroutine allocErrorHandler
 
-!            subroutine allocInitAllocated(data,size)
-!               integer  :: i, size1(1), size
-!               real(kind=kreal), allocatable, target :: data(:)
-!
-!               call initData(data,size1,size)
-!!               call allocRegisterAllocation(kind(data),size)
-!!
-!            end subroutine allocInitAllocated
+            subroutine allocInitAllocated(data,size)
+               integer  :: i, size
+               real(kind=kreal), allocatable, target :: data(:)
+
+               call initData(data,size)
+!               call allocRegisterAllocation(kind(data),size)
+
+            end subroutine allocInitAllocated
 
             subroutine quit2(message)
                character(len=*) :: message
@@ -278,19 +272,11 @@
                forall (i=1:size) data(i) = 0.0D0
             end subroutine initData_real_1di8
 
-            subroutine initData_real_1d(data,offset1,offset2)
-               integer :: i, offset1,offset2
+            subroutine initData_real_1d(data,size)
+               integer :: i,size
                real(kind=kreal) :: data(:)
 
-! aspg: for some reason, initializing the data here doesnt work starting
-!       from offset1 up to offset2, but starting from 1 to the size
-!       of the array works. wonder if this is a compiler issue or me
-!       just making a mess..
-
-               do i=1,(offset2-offset1)+1
-                  data(i) = 0.0D0
-               enddo
-
+               forall (i=1:size) data(i) = 0.0D0
             end subroutine initData_real_1d
 
             subroutine initData_real_2d(data,size1,size2)
@@ -355,32 +341,23 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !
 
-             subroutine registerAllocation(size, kind)
-                integer :: size, kind, traceStackDepth
-                character(len=charArrayLength) :: trace_result
-
+!            subroutine registerAllocationReal(data,size)
+!               real(kind=kreal), allocatable, target :: data(:)
 !               integer, pointer           :: p_mem
 !               character(len=300)                    :: trace_result
+
 !               call get_memory_address(data, p_mem)
 !               call print_trace_allocfromfnct(trace_result)
+!               call appendAllocation(chunk,p_mem,trace_result)
 
-                trace_result = ' '
-                call get_traceback_info (2,trace_result,charArrayLength,traceStackDepth)
-
-!               write (*,*) 'at call to alloc at : '//trace_result(1:42)
-!               write (*,*) '                      trace depth is ',traceStackDepth
-
-                call trackRegisterAllocation(size,kind,trace_result,traceStackDepth) 
-
-             end subroutine registerAllocation
+!            end subroutine registerAllocationReal
 
 
 !
 ! using allocatables
 !
-            subroutine alloc_real_1d(data,size,d1,d2,id)
-               integer                               :: size, status, size1_local, size2_local, offset1,offset2, size_by_difference
-               integer, optional                     :: d1,d2
+            subroutine alloc_real_1d(data,size,id)
+               integer                               :: size, status
                character(len=*), optional            :: id
                character(len=charArrayLength)        :: local_id
                real(kind=kreal), allocatable, target :: data(:)
@@ -391,48 +368,19 @@
                   write (local_id,'(a)') 'None' 
                endif
 
-               if (present(d1)) then
-                  size1_local = d1
-               else
-                  size1_local = 0
-               endif  
-  
-               if (present(d2)) then
-                  size2_local = d2
-               else
-                  size2_local = 0
-               endif  
-  
-               size_by_difference = size2_local - size1_local + 1
-               if (    ((size.eq.0).and. (size1_local.eq.0).and.(size2_local.eq.0))    & 
-                   .or.((size.ne.0).and.((size1_local.ne.0).or.(size2_local.ne.0))))  then
-                  call allocErrorHandler(malformedAllocCall,size,kind(data),var_id=local_id)
-               endif
-
-
                if (.not.allocated(data)) then
-                  if (size.eq.0) then 
-                     allocate(data(size1_local:size2_local),stat=status)
-                     offset1 = size1_local
-                     offset2 = size2_local
-                  else
-                     allocate(data(size),stat=status) 
-                     offset1 = 1
-                     offset2 = size
-                  endif
+                  allocate(data(size),stat=status) 
 
                   if ( status.ne.0 ) then
                      call allocErrorHandler(allocateFailure,size,kind(data),var_id=local_id)
                   else
-                     call initData(data,offset1,offset2)
-                     call registerAllocation(((offset2-offset1)+1),kind(data))
+                     call initData(data,size)
+!                    call registerAllocation(data,size)
                   endif
                else
                   call allocErrorHandler(alreadyAllocated,var_id=local_id)
                endif
-
             end subroutine alloc_real_1d
-
 
             subroutine alloc_real_2d(data,size1,size2,id)
                integer                               :: size1,size2, status, totalsize
@@ -591,7 +539,6 @@
                      call allocErrorHandler(allocateFailure,size,kind(data),var_id=local_id)
                   else
                      call initData(data,size)
-                     call registerAllocation(size,kind(data))
                   endif
                else
                   call allocErrorHandler(alreadyAllocated,var_id=local_id)
@@ -672,7 +619,7 @@
                   if ( status.ne.0 ) then
                      call allocErrorHandler(allocateFailure,size,kind(data),var_id=local_id)
                   else
-                     call initData(data,1,size)
+                     call initData(data,size)
                   endif
                else
                   call allocErrorHandler(alreadyAllocated,var_id=local_id)
@@ -993,18 +940,10 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       subroutine allocator_init
-! full fledged tracker routines
-!         call trackInitMemoryStack()
+         call trackInitMemoryStack()
 !         call trackCreateGroup('main')          ! always create a main tracking group
 !         call trackInitGroup('main')
-! simple tracker routines
-          call trackCreateTracker
       end subroutine allocator_init
-
-      subroutine allocator_report(mytid)
-         integer :: mytid
-         call trackPrintStats(mytid)
-      end subroutine allocator_report
 
       subroutine allocator_setmax(maxmemsize)
          integer :: maxmemsize
@@ -1067,7 +1006,7 @@
             do i=1,nstep
                allocate(data(maximum),stat=status)
                if (status.eq.0) then
-                  call initData(data,1,maximum)
+                  call initData(data,maximum)
                   if (verbose.gt.0) write (*,*) 'at try',i,': allocation ok for ',maximum,'8-byte words'
                   maxsize = maximum 
                   deallocate(data)
