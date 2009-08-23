@@ -651,9 +651,6 @@ contains
     call init_factorial_common_block()
 #endif
 
-!gosia: this is already done above...
-    ndim = nr_ao_total
-
     if (dft_cfg_keep_ao) then
       if (dft_cfg_ao_mem_limit < 1) then
 !       write(*, *) 'debug will not keep ao in mem, mem too small'
