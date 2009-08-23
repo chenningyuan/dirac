@@ -85,6 +85,7 @@ Functional* available_functionals[] = {
     &SVWN5Functional,
     /* range-separated fnuctionals */
     &SRVWN5Functional,
+    &HjsxFunctional,
     NULL
 };
 
