@@ -54,7 +54,7 @@ gamr(rhoa,rhob):= (gam + rs(rhoa,rhob) );
 
 g0(rhoa,rhob):=  DC * ( (gamr(rhoa,rhob))^(3/2) + bet ) * exp(-AC *sqrt(gamr(rhoa,rhob)))  ; 
 
-C2(rhoa,rhob):= 2 * E_para(rhoa,rhob) /( PI * (g0(rhoa,rhob)  -1/2) ); 
+C2(rhoa,rhob):= 2 * E_para(rhoa,rhob) /( PI * (rhoa+rhob) *  (g0(rhoa,rhob)  -1/2) ); 
    
 dnom(rhoa,rhob):= 1 + C1(rhoa,rhob) * mu + C2(rhoa,rhob) * mu^2;
 
