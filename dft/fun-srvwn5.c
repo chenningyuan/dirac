@@ -104,7 +104,7 @@ static void srvwn5_first(FunFirstFuncDrv *ds,   real factor,
 static void srvwn5_second(FunSecondFuncDrv *ds, real factor,
                           const FunDensProp* dp);
  
-Functional Srvwn5Functional = {
+Functional SRVWN5Functional = {
   "SRVWN5",       /* name */
   srvwn5_isgga,   /* gga-corrected */
   srvwn5_read,
