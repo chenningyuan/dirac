@@ -262,7 +262,6 @@ C  *******************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "strt.h"
-
 #else
 !      implicit real*8 (a-h,o-z)
 #include "implicit.h"

@@ -457,6 +457,8 @@ C 2600  format(' Fock element no',i3,2x,2i3,f15.6)
 !
 !  returns num
 !
+! miro TODO: make only one return with control printout before
+!
 !-----------------------------------------------------------------------------------
       use print_level
 #if defined HSFS_DYN_ALLOC
@@ -506,6 +508,18 @@ C 2600  format(' Fock element no',i3,2x,2i3,f15.6)
         write(LUPRI,'(2x,a,i7)')  'ijnum=',ijnum
         write(LUPRI,'(2x,a,2i5)') 'iii,iiv=',iii,iiv
        ! write(LUPRI,*) 'new=',new
+        write(LUPRI,*) 'nij1,ije1(nij1),iii1,iiv1=',
+     &                  nij1,ije1(nij1),iii1,iiv1
+        write(LUPRI,*) 'nij2,ije2(nij2),iii2,iiv2=',
+     &                  nij2,ije2(nij2),iii2,iiv2
+        write(LUPRI,*) 'nij3,ije3(nij3),iii3,iiv3=',
+     &                  nij3,ije3(nij3),iii3,iiv3
+        write(LUPRI,*) 'nij4,ije4(nij4),iii4,iiv4=',
+     &                  nij4,ije4(nij4),iii4,iiv4
+        write(LUPRI,*) 'nij5,ije5(nij5),iii5,iiv5=',
+     &                  nij5,ije5(nij5),iii5,iiv5
+        write(LUPRI,*) 'nij6,ije6(nij6),iii6,iiv6=',
+     &                  nij6,ije6(nij6),iii6,iiv6
       endif
 
 !   ... skips filling common blocks variables (no diagram ready now)
@@ -555,6 +569,7 @@ C Gal 95
         if (ijnum.eq.0) return
 
         nija=igen(nstrt(1,num-1)+1)
+
 !         ...  filling  cij* common blocks with diagrams created earlier
         if (ijnum.eq.1) then
 !         ...   cij* common blocks ...
@@ -584,21 +599,45 @@ C Gal 95
           call kcopy(nija+1,igen(nstrt(1,num-1)+nija+2),ije3(0))
           iii3=igen(nstrt(1,num-1)+2*nija+3)
           iiv3=igen(nstrt(1,num-1)+2*nija+4)
+
+          if (getiprint().ge.5) then
+            write(LUPRI,*) 'ijnum=3, nij3=',nij3
+            write(LUPRI,*) 'nija,iii3,iiv3:',nija,iii3,iiv3
+          endif
+
         elseif (ijnum.eq.4) then
           call kcopy(nija+1,igen(nstrt(1,num-1)+1),nij4)
           call kcopy(nija+1,igen(nstrt(1,num-1)+nija+2),ije4(0))
           iii4=igen(nstrt(1,num-1)+2*nija+3)
           iiv4=igen(nstrt(1,num-1)+2*nija+4)
+
+          if (getiprint().ge.5) then
+            write(LUPRI,*) 'ijnum=4, nij4=',nij4
+            write(LUPRI,*) 'nija,iii4,iiv4:',nija,iii4,iiv4
+          endif
+
         elseif (ijnum.eq.5) then
           call kcopy(nija+1,igen(nstrt(1,num-1)+1),nij5)
           call kcopy(nija+1,igen(nstrt(1,num-1)+nija+2),ije5(0))
           iii5=igen(nstrt(1,num-1)+2*nija+3)
           iiv5=igen(nstrt(1,num-1)+2*nija+4)
+
+          if (getiprint().ge.5) then
+            write(LUPRI,*) 'ijnum=5, nij5=',nij5
+            write(LUPRI,*) 'nija,iii5,iiv5:',nija,iii5,iiv5
+          endif
+
         elseif (ijnum.eq.6) then
           call kcopy(nija+1,igen(nstrt(1,num-1)+1),nij6)
           call kcopy(nija+1,igen(nstrt(1,num-1)+nija+2),ije6(0))
           iii6=igen(nstrt(1,num-1)+2*nija+3)
           iiv6=igen(nstrt(1,num-1)+2*nija+4)
+
+          if (getiprint().ge.6) then
+            write(LUPRI,*) 'ijnum=6, nij6=',nij6
+            write(LUPRI,*) 'nija,iii6,iiv6:',nija,iii6,iiv6
+          endif
+
         else
           write (LUPRI,*) 
      &    'ccsd_files called with incorrect ijnum, ',ijnum
@@ -2197,6 +2236,7 @@ c  indices not retained for pppp.
 !   ii1234<0 - collect 1/2 file (i>j)
 !
 !--------------------------------------------------------------------------------
+      use print_level
 #if defined HSFS_DYN_ALLOC
       use cij1_mod
       use cfiles_mod
@@ -2235,7 +2275,8 @@ c  indices not retained for pppp.
      1               ior(ishft(k,8),l))
 
 
-      if (iopt(1).ge.5) then ! control printout
+!     if (iopt(1).ge.5) then ! control printout
+      if (getiprint() >= 5) then ! control printout
         call header('Output from "tmplt"',-1)
         !write(LUPRI,'(2x,a,i3)') 'nint=',nint
       endif
@@ -2245,7 +2286,8 @@ c  indices not retained for pppp.
       call parse(j1234,j1,j2,j3,j4)
 
       call files_ccsd(name,num,new,1,i1234,j1234)
-      if (iopt(1).ge.5) then ! control printout
+!     if (iopt(1).ge.5) then ! control printout
+      if (getiprint() >= 5) then ! control printout
         write(LUPRI,*) "tmplt: after files_ccsd, new=",new
         write(LUPRI,*) "tmplt: after files_ccsd, num=",num
       endif
@@ -2262,7 +2304,8 @@ c  indices not retained for pppp.
       nt=nstrt(1,num-1)+2*ndij+4
       nt0=nt
 
-      if (iopt(1).ge.5) then ! ... control printout
+!     if (iopt(1).ge.5) then ! ... control printout
+      if (getiprint() >= 5) then ! ... control printout
         write(LUPRI,'(/,2x,a,i12)') 'tmplt, nt=',nt
       endif
 
@@ -2312,7 +2355,8 @@ c  symmetry operations
 !       ij(nij)=ior(ishft(ja,8),jb)
         ij1(nij1)=ior(ishft(ja,8),jb)
 
-        if (iopt(1).ge.5) then
+!       if (iopt(1).ge.5) then
+        if (getiprint() >= 5) then
 !         write(LUPRI,*) 'nij,ije(nij),ij(nij)=',nij,ije(nij),ij(nij)
           write(LUPRI,*) 'nij1,ije1(nij1),ij1(nij1)=',
      &     nij1,ije1(nij1),ij1(nij1)
@@ -3122,6 +3166,16 @@ c   special for scratch files, which start with s
       iii=(iii2/10)*1000+(iii3/10)*100+mod(iii2,10)*10+mod(iii3,10)
       iiv=(iiv2/10)*1000+(iiv3/10)*100+mod(iiv2,10)*10+mod(iiv3,10)
       call tmplt(iii,iiv,namet,ntapet)
+
+      if (getiprint() >= 9) then
+        write(LUPRI,'(/,4x,a)')  't1sqr data:'
+        write(LUPRI,*) 'nij1,ije1(nij1),iii1,iiv1=',
+     &                  nij1,ije1(nij1),iii1,iiv1
+        write(LUPRI,*) 'nij2,ije2(nij2),iii2,iiv2=',
+     &                  nij2,ije2(nij2),iii2,iiv2
+        write(LUPRI,*) 'nij3,ije3(nij3),iii3,iiv3=',
+     &                  nij3,ije3(nij3),iii3,iiv3
+      endif
 c
       ntmp=0
       nsize1=ije1(nij1)
@@ -3146,7 +3200,7 @@ c
      3                   iand(it3,'ff'X)                    ))
 
       if (getiprint() >= 8) then
-        write(LUPRI,*) 't1sqr: before call vxsort'
+        write(LUPRI,'(/,2x,a)') 't1sqr: before call vxsort'
         write(LUPRI,*) 'ntmp=',ntmp
         write(LUPRI,*) 'nsize1=',nsize1
         write(LUPRI,*) 'nsize2=',nsize2
