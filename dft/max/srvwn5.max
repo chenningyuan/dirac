@@ -29,14 +29,14 @@ t6_p(rhoa,rhob):=atan(Q_p/(2*x(rhoa,rhob) + b[1]));
 
 E_para(rhoa,rhob):=  0.5 * A[1]*(t1_p(rhoa,rhob) + t2_p(rhoa,rhob) - t3_p*(t4_p(rhoa,rhob) + t5_p*t6_p(rhoa,rhob)));
 
-/* dfine Mu-dependentpart (1+ C1 mu + C2  mu^2)  */
+/* dfine Mu-dependentpart (1+ C1 MU + C2  MU^2)  */
 
 /* VWN5 parametrization of the lDA correlation energy */
 
 L(rhoa,grada,rhob,gradb,gradab):=  (E_para(rhoa,rhob) )*(rhoa+rhob);
 
 
-/* define parameters for he mu-dependent part */
+/* define parameters for he MU-dependent part */
 
 u1:1.0271;
 u2:-0.2302;
@@ -56,7 +56,7 @@ g0(rhoa,rhob):=  DC * ( (gamr(rhoa,rhob))^(3/2) + bet ) * exp(-AC *sqrt(gamr(rho
 
 C2(rhoa,rhob):= 2 * E_para(rhoa,rhob) /( PI * (rhoa+rhob) *  (g0(rhoa,rhob)  -1/2) ); 
    
-dnom(rhoa,rhob):= 1 + C1(rhoa,rhob) * mu + C2(rhoa,rhob) * mu^2;
+dnom(rhoa,rhob):= 1 + C1(rhoa,rhob) * MU + C2(rhoa,rhob) * MU^2;
 
 K(rhoa,grada,rhob,gradb,gradab):= L(rhoa,grada,rhob,gradb,gradab) / dnom(rhoa,rhob);
 
