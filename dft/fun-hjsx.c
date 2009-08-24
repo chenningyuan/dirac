@@ -99,9 +99,10 @@ K(rhoa,grada,rhob,gradb,gradab):=  (1/2) * ldax(rhoa,rhob) * rho(rhoa,rhob) * (F
  
 #include "functionals.h"
  
-   /* only for test we  define MU  here at the moment */
-    real MU=0.4;
-   /*                          */
+/* only for test we  define MU  here at the moment */
+  real MU=0.4;
+/*                          */
+
 
 /* INTERFACE PART */
 static int hjsx_isgga(void) { return 1; } /* FIXME: detect! */
@@ -123,6 +124,10 @@ Functional HjsxFunctional = {
 };
  
 /* IMPLEMENTATION PART */
+/* only for test we  define MU  here at the moment to be =0*/
+#define MU    0
+/* ***********************  */
+
 static int
 hjsx_read(const char *conf_line)
 {
