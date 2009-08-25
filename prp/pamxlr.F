@@ -1979,7 +1979,7 @@ C...secondary electron orbitals
         ENDDO
       ELSEIF(IC.EQ.2) THEN
         DO IFRP = 1,NFSYM
-C...inactive electron orbitals
+C...inactive positron orbitals
           NI = NI + NCLS(2,1,IFRP)
 C...secondary positron orbitals
           NV = NV + NCLS(1,3,IFRP)
@@ -2079,6 +2079,7 @@ C     Analyze major excitations
       DO I = 1,NVEC
       IF(LFLAG(I)) THEN
         LFLAG(I) = .FALSE.
+        II = IBTYP(I)
         DO IZ = 1,NZ
           CALL DCOPY(NBDIM,BVEC(1,IZ,I),1,BUF1(1,IZ),1)
         ENDDO
@@ -2086,7 +2087,8 @@ C     Analyze major excitations
 C       Frequency dependent case; search for partner
           DO J = 1,NVEC
           IF(LFLAG(J)) THEN
-            IF(DABS(FREQ(I)-FREQ(J)).LT.DTOL) THEN
+            JJ = IBTYP(J)
+            IF(DABS(FREQ(I)-FREQ(J)).LT.DTOL.AND.(JJ.EQ.-II)) THEN
               LFLAG(J)=.FALSE.
               DO IZ = 1,NZ
                 CALL DAXPY(NBDIM,D1,BVEC(1,IZ,J),1,BUF1(1,IZ),1)
