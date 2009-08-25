@@ -241,16 +241,20 @@ contains
 !            so write something in report_after_dft_input
 
 !   ----------------------------------------------------------------------------
-    character(7), intent(inout) :: word_io
+    character(kw_length), intent(inout) :: word_io
 !   ----------------------------------------------------------------------------
-    character(7)                :: word
-    character(80)               :: line
-    character(1)                :: first
-    character(4)                :: first_4
-    integer                     :: u
+    character(kw_length)                :: word_io_lower
+    character(kw_length)                :: word
+    character(80)                       :: line
+    character(1)                        :: first
+    character(4)                        :: first_4
+    integer                             :: u
 !   ----------------------------------------------------------------------------
 
-    if (word_io /= '*DFT   ') return
+    word_io_lower = word_io
+    call lowercase(word_io_lower)
+
+    if (word_io_lower /= '*dft   ') return
 
     u = get_lucmd()
 
@@ -268,7 +272,7 @@ contains
 !         comment: ignore line
 
         case ('*')
-!         section: go back
+!         another section: go back
           word_io = word
           return
 

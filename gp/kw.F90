@@ -8,14 +8,15 @@ module kw
   public reset_available_kw_list
   public check_whether_kw_found
 
+  integer, parameter, public :: kw_length = 7
+
   private
 
-  integer, parameter   :: kw_length = 7
-  integer, parameter   :: max_nr_kw = 200
-
-  character(kw_length) :: available_kw_list(max_nr_kw)
-  integer              :: nr_available_kw
-  logical              :: kw_found
+  integer, parameter         :: max_nr_kw = 200
+                             
+  character(kw_length)       :: available_kw_list(max_nr_kw)
+  integer                    :: nr_available_kw
+  logical                    :: kw_found
 
 contains
 
