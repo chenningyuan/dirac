@@ -245,7 +245,7 @@ contains
 
     do while (.true.)
 
-      read (unit_in, '(a7)') word
+      read(unit_in, '(a7)') word
       first = word(1:1)
 
       select case (first)
@@ -265,12 +265,12 @@ contains
 
           if (kw_matches(word, '.IMPORT')) then
             dft_cfg_import_grid = .true.
-            read(unit_in, '(a30)') dft_cfg_gridfile
+            call kw_read(word, dft_cfg_gridfile)
           end if
 
           if (kw_matches(word, '.EXPORT')) then
             dft_cfg_export_grid = .true.
-            read(unit_in, '(a30)') dft_cfg_gridfile
+            call kw_read(word, dft_cfg_gridfile)
           end if
 
           if (kw_matches(word, '.FROMVX')) then
@@ -278,15 +278,15 @@ contains
           end if
 
           if (kw_matches(word, '.RADINT')) then
-            read(unit_in, *) dft_cfg_radint
+            call kw_read(word, dft_cfg_radint)
           end if
 
           if (kw_matches(word, '.ANGMIN')) then
-            read(unit_in, *) dft_cfg_angmin
+            call kw_read(word, dft_cfg_angmin)
           end if
 
           if (kw_matches(word, '.ANGINT')) then
-            read(unit_in, *) dft_cfg_angint
+            call kw_read(word, dft_cfg_angint)
           end if
 
           if (kw_matches(word, '.COARSE')) then
@@ -300,11 +300,11 @@ contains
           end if
 
           if (kw_matches(word, '.PRINT ')) then
-            read(unit_in, *) dft_cfg_print_level
+            call kw_read(word, dft_cfg_print_level)
           end if
 
           if (kw_matches(word, '.INTCHK')) then
-            read(unit_in, *) dft_cfg_integration_check_level
+            call kw_read(word, dft_cfg_integration_check_level)
           end if
 
           if (kw_matches(word, '.NOPRUN')) then
@@ -320,7 +320,7 @@ contains
 
           if (kw_matches(word, '.ERRELS')) then
 !           threshold for accepted error in integrated number of electrons
-            read(unit_in, *) dft_cfg_accepted_error
+            call kw_read(word, dft_cfg_accepted_error)
           end if
 
           if (kw_matches(word, '.GRAC  ')) then
@@ -338,10 +338,11 @@ contains
             else
               call quit('keyword following .GRAC not recognized')
             end if
-            read(unit_in, *) dft_cfg_grac_alpha, &
-                       dft_cfg_grac_beta,  &
-                       dft_cfg_ac_ip,      &
-                       dft_cfg_ac_threshold
+            call kw_read(word,               &
+                         dft_cfg_grac_alpha, &
+                         dft_cfg_grac_beta,  &
+                         dft_cfg_ac_ip,      &
+                         dft_cfg_ac_threshold)
           end if
 
           if (kw_matches(word, '.SAOP  ')) then
@@ -443,9 +444,10 @@ contains
           end if
 
           if (kw_matches(word, '.THRESH')) then
-            read(unit_in, *) dft_cfg_dfthr0, &
-                             dft_cfg_dfthrl, &
-                             dft_cfg_dfthri
+            call kw_read(word,           &
+                         dft_cfg_dfthr0, &
+                         dft_cfg_dfthrl, &
+                         dft_cfg_dfthri)
           end if
 
           if (kw_matches(word, '.4CGRID')) then
@@ -463,7 +465,7 @@ contains
           end if
 
           if (kw_matches(word, '.GRID T')) then
-            read(unit_in, '(a80)') line
+            call kw_read(word, line)
 !           call dftgridinput(line)
           end if
 

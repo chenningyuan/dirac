@@ -7,19 +7,165 @@ module kw
   public kw_matches
   public reset_available_kw_list
   public check_whether_kw_found
+  public kw_read
 
   integer, parameter, public :: kw_length = 7
   integer, parameter, public :: unit_in   = 5
 
   private
 
-  integer, parameter         :: max_nr_kw = 200
+  interface kw_read
+    module procedure kw_read_c
+    module procedure kw_read_i1
+    module procedure kw_read_r1
+    module procedure kw_read_r2
+    module procedure kw_read_r3
+    module procedure kw_read_r4
+  end interface
+
+  integer, parameter         :: max_nr_kw   = 200
+  integer, parameter         :: line_length = 80
                              
   character(kw_length)       :: available_kw_list(max_nr_kw)
   integer                    :: nr_available_kw
   logical                    :: kw_found
 
 contains
+
+  subroutine kw_read_c(kw_input, c)
+
+!   ----------------------------------------------------------------------------
+    character(kw_length), intent(in)  :: kw_input
+    character(*),         intent(out) :: c
+!   ----------------------------------------------------------------------------
+    character(line_length)            :: line
+!   ----------------------------------------------------------------------------
+
+    read(unit_in, *) line
+    backspace unit_in
+
+    read(unit_in, *, err=1) c
+
+    return
+
+ 1  call kw_read_error(kw_input, line)
+
+  end subroutine
+
+  subroutine kw_read_i1(kw_input, i)
+
+!   ----------------------------------------------------------------------------
+    character(kw_length), intent(in)  :: kw_input
+    integer,              intent(out) :: i
+!   ----------------------------------------------------------------------------
+    character(line_length)            :: line
+!   ----------------------------------------------------------------------------
+
+    read(unit_in, *) line
+    backspace unit_in
+
+    read(unit_in, *, err=1) i
+
+    return
+
+ 1  call kw_read_error(kw_input, line)
+
+  end subroutine
+
+  subroutine kw_read_r1(kw_input, r)
+
+!   ----------------------------------------------------------------------------
+    character(kw_length), intent(in)  :: kw_input
+    real(8),              intent(out) :: r
+!   ----------------------------------------------------------------------------
+    character(line_length)            :: line
+!   ----------------------------------------------------------------------------
+
+    read(unit_in, *) line
+    backspace unit_in
+
+    read(unit_in, *, err=1) r
+
+    return
+
+ 1  call kw_read_error(kw_input, line)
+
+  end subroutine
+
+  subroutine kw_read_r2(kw_input, r1, r2)
+
+!   ----------------------------------------------------------------------------
+    character(kw_length), intent(in)  :: kw_input
+    real(8),              intent(out) :: r1, r2
+!   ----------------------------------------------------------------------------
+    character(line_length)            :: line
+!   ----------------------------------------------------------------------------
+
+    read(unit_in, *) line
+    backspace unit_in
+
+    read(unit_in, *, err=1) r1, r2
+
+    return
+
+ 1  call kw_read_error(kw_input, line)
+
+  end subroutine
+
+  subroutine kw_read_r3(kw_input, r1, r2, r3)
+
+!   ----------------------------------------------------------------------------
+    character(kw_length), intent(in)  :: kw_input
+    real(8),              intent(out) :: r1, r2, r3
+!   ----------------------------------------------------------------------------
+    character(line_length)            :: line
+!   ----------------------------------------------------------------------------
+
+    read(unit_in, *) line
+    backspace unit_in
+
+    read(unit_in, *, err=1) r1, r2, r3
+
+    return
+
+ 1  call kw_read_error(kw_input, line)
+
+  end subroutine
+
+  subroutine kw_read_r4(kw_input, r1, r2, r3, r4)
+
+!   ----------------------------------------------------------------------------
+    character(kw_length), intent(in)  :: kw_input
+    real(8),              intent(out) :: r1, r2, r3, r4
+!   ----------------------------------------------------------------------------
+    character(line_length)            :: line
+!   ----------------------------------------------------------------------------
+
+    read(unit_in, *) line
+    backspace unit_in
+
+    read(unit_in, *, err=1) r1, r2, r3, r4
+
+    return
+
+ 1  call kw_read_error(kw_input, line)
+
+  end subroutine
+
+  subroutine kw_read_error(kw_input, line)
+
+!   ----------------------------------------------------------------------------
+    character(kw_length),   intent(in)  :: kw_input
+    character(line_length), intent(in)  :: line
+!   ----------------------------------------------------------------------------
+
+    write(*, *) 'error in input line:'
+    write(*, *) line
+    write(*, *) 'following keyword '//kw_input
+
+    call quit('error in line following keyword '//kw_input)
+
+  end subroutine
 
   subroutine reset_available_kw_list()
 
