@@ -1078,7 +1078,7 @@ C
       DIMENSION IORBCL(4,NORBT),IND(MXFBAS),
      &          NIND(2,NTYP,2),WORK(KFREE)
 C
-      NDIM = NORBT*3
+      NDIM = NORBT*4
       CALL IZERO(IORBCL,NDIM)
 C
 C     Unpack strings
@@ -1127,11 +1127,18 @@ C     Print section
 C
       IF(IPRINT.GE.3) THEN
         CALL HEADER('Output from DEFORB',-1)
-        DO IFRP = 1,NFSYM
-          WRITE(LUPRI,'(A,A3)') '* Fermion ircop:',FREP(IFRP)
-          WRITE(LUPRI,'(5X,3I5)')
-     &    (I,IORBCL(1,IORB(IFRP)+I),IORBCL(2,IORB(IFRP)+I),
-     &     I = 1,NORB(IFRP))
+        WRITE(6,'(A)')
+     &     '* Defined types:',
+     &     '  ITYP = 1   inactive',
+     &     '  ITYP = 2   active',
+     &     '  ITYP = 3   secondary'
+        WRITE(6,'(/3X,A)')
+     &      'IFRP IND  ITYP ITYP_IND'
+        DO I = 1,NORBT
+          IF(IORBCL(1,I).NE.0) THEN
+             WRITE(LUPRI,'(4I5)')
+     &     IORBCL(3,I),IORBCL(4,I),IORBCL(1,I),IORBCL(2,I)
+          ENDIF
         ENDDO
       ENDIF
       RETURN
