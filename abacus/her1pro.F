@@ -174,7 +174,7 @@ C     *******************************
 C     ****** Process integrals ******
 C     *******************************
 C
-      IF(IPRINT.GE.1) THEN
+      IF(IPRINT.GE.2) THEN
         WRITE(LUPRI,'(2(A,I5),5X,A,I15)')
      &   '* PR1IN1: INTTYP = ',INTTYP,
      &   ' NOPTYP= ',NOPTYP,' NELMNT= ',NELMNT

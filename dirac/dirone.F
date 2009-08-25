@@ -64,7 +64,7 @@ C     =========================================================================
 C
       DO 10 I = 1,NPRPCLS
       IF(.NOT.CLSCAL(I)) GOTO 10
-        IF(IPRONE.GE.1) THEN
+        IF(IPRONE.GE.2) THEN
           WRITE(LUPRI,'(A,A7)') '* ONEGEN: ',CLSINT(I)
         ENDIF
 Chj     CLSCMB and PDOINT is now '+', '-', or '0',
