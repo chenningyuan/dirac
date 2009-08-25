@@ -25,7 +25,7 @@ module kw
 
   integer, parameter         :: max_nr_kw   = 200
   integer, parameter         :: line_length = 80
-                             
+
   character(kw_length)       :: available_kw_list(max_nr_kw)
   integer                    :: nr_available_kw
   logical                    :: kw_found
@@ -38,17 +38,11 @@ contains
     character(kw_length), intent(in)  :: kw_input
     character(*),         intent(out) :: c
 !   ----------------------------------------------------------------------------
-    character(line_length)            :: line
-!   ----------------------------------------------------------------------------
-
-    read(unit_in, *) line
-    backspace unit_in
 
     read(unit_in, *, err=1) c
-
     return
 
- 1  call kw_read_error(kw_input, line)
+ 1  call kw_read_error(kw_input)
 
   end subroutine
 
@@ -58,17 +52,11 @@ contains
     character(kw_length), intent(in)  :: kw_input
     integer,              intent(out) :: i
 !   ----------------------------------------------------------------------------
-    character(line_length)            :: line
-!   ----------------------------------------------------------------------------
-
-    read(unit_in, *) line
-    backspace unit_in
 
     read(unit_in, *, err=1) i
-
     return
 
- 1  call kw_read_error(kw_input, line)
+ 1  call kw_read_error(kw_input)
 
   end subroutine
 
@@ -78,17 +66,11 @@ contains
     character(kw_length), intent(in)  :: kw_input
     real(8),              intent(out) :: r
 !   ----------------------------------------------------------------------------
-    character(line_length)            :: line
-!   ----------------------------------------------------------------------------
-
-    read(unit_in, *) line
-    backspace unit_in
 
     read(unit_in, *, err=1) r
-
     return
 
- 1  call kw_read_error(kw_input, line)
+ 1  call kw_read_error(kw_input)
 
   end subroutine
 
@@ -98,17 +80,11 @@ contains
     character(kw_length), intent(in)  :: kw_input
     real(8),              intent(out) :: r1, r2
 !   ----------------------------------------------------------------------------
-    character(line_length)            :: line
-!   ----------------------------------------------------------------------------
-
-    read(unit_in, *) line
-    backspace unit_in
 
     read(unit_in, *, err=1) r1, r2
-
     return
 
- 1  call kw_read_error(kw_input, line)
+ 1  call kw_read_error(kw_input)
 
   end subroutine
 
@@ -118,17 +94,11 @@ contains
     character(kw_length), intent(in)  :: kw_input
     real(8),              intent(out) :: r1, r2, r3
 !   ----------------------------------------------------------------------------
-    character(line_length)            :: line
-!   ----------------------------------------------------------------------------
-
-    read(unit_in, *) line
-    backspace unit_in
 
     read(unit_in, *, err=1) r1, r2, r3
-
     return
 
- 1  call kw_read_error(kw_input, line)
+ 1  call kw_read_error(kw_input)
 
   end subroutine
 
@@ -138,26 +108,24 @@ contains
     character(kw_length), intent(in)  :: kw_input
     real(8),              intent(out) :: r1, r2, r3, r4
 !   ----------------------------------------------------------------------------
-    character(line_length)            :: line
-!   ----------------------------------------------------------------------------
-
-    read(unit_in, *) line
-    backspace unit_in
 
     read(unit_in, *, err=1) r1, r2, r3, r4
-
     return
 
- 1  call kw_read_error(kw_input, line)
+ 1  call kw_read_error(kw_input)
 
   end subroutine
 
-  subroutine kw_read_error(kw_input, line)
+  subroutine kw_read_error(kw_input)
 
 !   ----------------------------------------------------------------------------
     character(kw_length),   intent(in)  :: kw_input
-    character(line_length), intent(in)  :: line
 !   ----------------------------------------------------------------------------
+    character(line_length)              :: line
+!   ----------------------------------------------------------------------------
+
+    backspace unit_in
+    read(unit_in, *) line
 
     write(*, *) 'error in input line:'
     write(*, *) line
