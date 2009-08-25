@@ -201,18 +201,6 @@ contains
   end subroutine
 #endif /* ifdef MOD_AUTODIFF */
 
-  function get_lucmd() result(u)
-
-#include "priunit.h"
-
-!   ----------------------------------------------------------------------------
-    integer :: u
-!   ----------------------------------------------------------------------------
-
-    u = lucmd
-
-  end function
-
   function get_lupri() result(u)
 
 #include "priunit.h"
@@ -248,7 +236,6 @@ contains
     character(80)                       :: line
     character(1)                        :: first
     character(4)                        :: first_4
-    integer                             :: u
 !   ----------------------------------------------------------------------------
 
     word_io_lower = word_io
@@ -256,39 +243,34 @@ contains
 
     if (word_io_lower /= '*dft   ') return
 
-    u = get_lucmd()
-
     do while (.true.)
 
-      read (u, '(a7)') word
+      read (unit_in, '(a7)') word
       first = word(1:1)
 
       select case (first)
 
-        case ('!')
-!         comment: ignore line
-
-        case ('#')
+        case ('!', '#')
 !         comment: ignore line
 
         case ('*')
-!         another section: go back
+!         another section, go back
           word_io = word
           return
 
         case default
-!         is probably a kw: check it
+!         is probably a kw, check it
 
           call reset_available_kw_list()
 
           if (kw_matches(word, '.IMPORT')) then
             dft_cfg_import_grid = .true.
-            read(u, '(a30)') dft_cfg_gridfile
+            read(unit_in, '(a30)') dft_cfg_gridfile
           end if
 
           if (kw_matches(word, '.EXPORT')) then
             dft_cfg_export_grid = .true.
-            read(u, '(a30)') dft_cfg_gridfile
+            read(unit_in, '(a30)') dft_cfg_gridfile
           end if
 
           if (kw_matches(word, '.FROMVX')) then
@@ -296,15 +278,15 @@ contains
           end if
 
           if (kw_matches(word, '.RADINT')) then
-            read(u, *) dft_cfg_radint
+            read(unit_in, *) dft_cfg_radint
           end if
 
           if (kw_matches(word, '.ANGMIN')) then
-            read(u, *) dft_cfg_angmin
+            read(unit_in, *) dft_cfg_angmin
           end if
 
           if (kw_matches(word, '.ANGINT')) then
-            read(u, *) dft_cfg_angint
+            read(unit_in, *) dft_cfg_angint
           end if
 
           if (kw_matches(word, '.COARSE')) then
@@ -318,11 +300,11 @@ contains
           end if
 
           if (kw_matches(word, '.PRINT ')) then
-            read(u, *) dft_cfg_print_level
+            read(unit_in, *) dft_cfg_print_level
           end if
 
           if (kw_matches(word, '.INTCHK')) then
-            read(u, *) dft_cfg_integration_check_level
+            read(unit_in, *) dft_cfg_integration_check_level
           end if
 
           if (kw_matches(word, '.NOPRUN')) then
@@ -338,13 +320,13 @@ contains
 
           if (kw_matches(word, '.ERRELS')) then
 !           threshold for accepted error in integrated number of electrons
-            read(u, *) dft_cfg_accepted_error
+            read(unit_in, *) dft_cfg_accepted_error
           end if
 
           if (kw_matches(word, '.GRAC  ')) then
 !           gradient regulated asymptotic correction
             dft_cfg_grac = .true.
-            read(u, '(a4)') first_4
+            read(unit_in, '(a4)') first_4
             if      (first_4 == 'LB94') then
               dft_cfg_asymptote_is_lb94 = .true.
             else if (first_4 == 'LBal') then
@@ -356,7 +338,7 @@ contains
             else
               call quit('keyword following .GRAC not recognized')
             end if
-            read(u, *) dft_cfg_grac_alpha, &
+            read(unit_in, *) dft_cfg_grac_alpha, &
                        dft_cfg_grac_beta,  &
                        dft_cfg_ac_ip,      &
                        dft_cfg_ac_threshold
@@ -365,7 +347,7 @@ contains
           if (kw_matches(word, '.SAOP  ')) then
 !           statistical averaging of (model) orbital potentials
             dft_cfg_saop = .true.
-            read(u, '(a4)') first_4
+            read(unit_in, '(a4)') first_4
             if      (first_4 == 'LB94') then
               dft_cfg_asymptote_is_lb94 = .true.
             else if (first_4 == 'LBal') then
@@ -461,9 +443,9 @@ contains
           end if
 
           if (kw_matches(word, '.THRESH')) then
-            read(u, *) dft_cfg_dfthr0, &
-                       dft_cfg_dfthrl, &
-                       dft_cfg_dfthri
+            read(unit_in, *) dft_cfg_dfthr0, &
+                             dft_cfg_dfthrl, &
+                             dft_cfg_dfthri
           end if
 
           if (kw_matches(word, '.4CGRID')) then
@@ -481,7 +463,7 @@ contains
           end if
 
           if (kw_matches(word, '.GRID T')) then
-            read(u, '(a80)') line
+            read(unit_in, '(a80)') line
 !           call dftgridinput(line)
           end if
 

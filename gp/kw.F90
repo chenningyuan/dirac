@@ -9,6 +9,7 @@ module kw
   public check_whether_kw_found
 
   integer, parameter, public :: kw_length = 7
+  integer, parameter, public :: unit_in   = 5
 
   private
 
