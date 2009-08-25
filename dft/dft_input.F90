@@ -1,6 +1,7 @@
 module dft_input
 
   use dft_cfg
+  use kw
   use character_processing
 
   implicit none
@@ -259,65 +260,84 @@ contains
       first = word(1:1)
 
       select case (first)
+
         case ('!')
-!         ignore line
+!         comment: ignore line
+
         case ('#')
-!         ignore line
+!         comment: ignore line
+
         case ('*')
+!         section: go back
           word_io = word
           return
-        case ('.')
 
-        select case (word)
+        case default
+!         is probably a kw: check it
 
-          case ('.IMPORT')
+          call reset_available_kw_list()
+
+          if (kw_matches(word, '.IMPORT')) then
             dft_cfg_import_grid = .true.
             read(u, '(a30)') dft_cfg_gridfile
+          end if
 
-          case ('.EXPORT')
+          if (kw_matches(word, '.EXPORT')) then
             dft_cfg_export_grid = .true.
             read(u, '(a30)') dft_cfg_gridfile
+          end if
 
-          case ('.FROMVX')
+          if (kw_matches(word, '.FROMVX')) then
             call quit('explicit xc potential (.FROMVX) not available')
+          end if
 
-          case ('.RADINT')
+          if (kw_matches(word, '.RADINT')) then
             read(u, *) dft_cfg_radint
+          end if
 
-          case ('.ANGMIN')
+          if (kw_matches(word, '.ANGMIN')) then
             read(u, *) dft_cfg_angmin
+          end if
 
-          case ('.ANGINT')
+          if (kw_matches(word, '.ANGINT')) then
             read(u, *) dft_cfg_angint
+          end if
 
-          case ('.COARSE')
+          if (kw_matches(word, '.COARSE')) then
             dft_cfg_radint = 1.0d-11
             dft_cfg_angint = 35
+          end if
 
-          case ('.DEBUG')
+          if (kw_matches(word, '.DEBUG ')) then
             dft_cfg_radint = 1.0d-3
             dft_cfg_angint = 10
+          end if
 
-          case ('.PRINT')
+          if (kw_matches(word, '.PRINT ')) then
             read(u, *) dft_cfg_print_level
+          end if
 
-          case ('.INTCHK')
+          if (kw_matches(word, '.INTCHK')) then
             read(u, *) dft_cfg_integration_check_level
+          end if
 
-          case ('.NOPRUN')
+          if (kw_matches(word, '.NOPRUN')) then
 !           turn off pruning of angular grid
             dft_cfg_no_pruning = .true.
+          end if
 
-          case ('.ATSIZE')
+          if (kw_matches(word, '.ATSIZE')) then
 !           estimate relative atomic sizes for use in the Becke
 !           partitioning scheme from atomic contributions
             dft_cfg_estimate_radii = .true.
+          end if
 
-          case ('.ERRELS')
+          if (kw_matches(word, '.ERRELS')) then
 !           threshold for accepted error in integrated number of electrons
             read(u, *) dft_cfg_accepted_error
+          end if
 
-          case ('.GRAC  ')
+          if (kw_matches(word, '.GRAC  ')) then
 !           gradient regulated asymptotic correction
             dft_cfg_grac = .true.
             read(u, '(a4)') first_4
@@ -336,8 +356,9 @@ contains
                        dft_cfg_grac_beta,  &
                        dft_cfg_ac_ip,      &
                        dft_cfg_ac_threshold
+          end if
 
-          case ('.SAOP  ')
+          if (kw_matches(word, '.SAOP  ')) then
 !           statistical averaging of (model) orbital potentials
             dft_cfg_saop = .true.
             read(u, '(a4)') first_4
@@ -352,8 +373,9 @@ contains
             else
               call quit('keyword following .SAOP not recognized')
             end if
+          end if
 
-          case ('.SAOP! ')
+          if (kw_matches(word, '.SAOP! ')) then
 !           "original" SAOP as in JCP 112, 1344 (2000).
             dft_cfg_saop                    = .true.
             dft_cfg_saop_with_response_part = .true.
@@ -362,42 +384,52 @@ contains
             dft_cfg_alda_ha                 = .true.
             call setaldahs(.true.) !activate alda for the h+ part
             call setaldaha(.true.) !activate alda for the h- part
+          end if
 
-          case ('.SDFT  ')
+          if (kw_matches(word, '.SDFT  ')) then
             dft_cfg_sdft = .true.
+          end if
 
-          case ('.COLLIN')
+          if (kw_matches(word, '.COLLIN')) then
             dft_cfg_sdft_collinear = .true.
+          end if
 
-          case ('.BETA  ')
+          if (kw_matches(word, '.BETA  ')) then
             dft_cfg_sdft_beta = .true.
+          end if
 
-          case ('.VRG   ')
+          if (kw_matches(word, '.VRG   ')) then
             dft_cfg_cdft_vrg = .true.
+          end if
 
-          case ('.ZIPGRI')
+          if (kw_matches(word, '.ZIPGRI')) then
             dft_cfg_zipgrid = .true.
+          end if
 
-          case ('.GAUTSC')
+          if (kw_matches(word, '.GAUTSC')) then
             call set_lscale_dft_gaunt()
+          end if
 
-          case ('.ALDA  ')
+          if (kw_matches(word, '.ALDA  ')) then
             dft_cfg_alda_hs = .true.
             dft_cfg_alda_ha = .true.
             call setaldahs(.true.) !activate alda for the h+ part
             call setaldaha(.true.) !activate alda for the h- part
+          end if
 
-          case ('.ALDA+ ')
+          if (kw_matches(word, '.ALDA+ ')) then
 !           use alda only for the      hermitian part
             dft_cfg_alda_hs = .true.
             call setaldahs(.true.) !activate alda for the h+ part
+          end if
 
-          case ('.ALDA- ')
+          if (kw_matches(word, '.ALDA- ')) then
 !           use alda only for the anti-hermitian part
             dft_cfg_alda_ha = .true.
             call setaldaha(.true.) !activate alda for the h- part
+          end if
 
-          case ('.XALDA ')
+          if (kw_matches(word, '.XALDA ')) then
 !           use        (1-f)*S + VWN + f*HFx
 !           instead of       S + VWN
             dft_cfg_xalda   = .true.
@@ -406,47 +438,51 @@ contains
             call setxalda(.true.)
             call setaldahs(.true.) !activate alda for the h+ part
             call setaldaha(.true.) !activate alda for the h- part
+          end if
 
-          case ('.XALDA+')
+          if (kw_matches(word, '.XALDA+')) then
 !           use xalda only for the      hermitian part
             dft_cfg_xalda   = .true.
             dft_cfg_alda_hs = .true.
             call setxalda(.true.)
             call setaldahs(.true.) !activate alda for the h+ part
+          end if
 
-          case ('.XALDA-')
+          if (kw_matches(word, '.XALDA-')) then
 !           use xalda only for the anti-hermitian part
             dft_cfg_xalda   = .true.
             dft_cfg_alda_ha = .true.
             call setxalda(.true.)
             call setaldaha(.true.) !activate alda for the h- part
+          end if
 
-          case ('.THRESH')
+          if (kw_matches(word, '.THRESH')) then
             read(u, *) dft_cfg_dfthr0, &
                        dft_cfg_dfthrl, &
                        dft_cfg_dfthri
+          end if
 
-          case ('.4CGRID')
+          if (kw_matches(word, '.4CGRID')) then
 !           include small component in the grid generation
 !           also for 1- and 2-c dft calculations
             dft_cfg_force_4c_grid = .true.
+          end if
 
-          case ('.KEEPAO')
+          if (kw_matches(word, '.KEEPAO')) then
             dft_cfg_keep_ao = .true.
+          end if
 
-          case ('.OLDDFT')
+          if (kw_matches(word, '.OLDDFT')) then
             dft_cfg_old_dft = .true.
+          end if
 
-          case ('.GRID T')
+          if (kw_matches(word, '.GRID T')) then
             read(u, '(a80)') line
 !           call dftgridinput(line)
+          end if
 
-          case default
-            call quit('illegal keyword after '//word_io//': '//word)
-        end select
+          call check_whether_kw_found(word, '*DFT   ')
 
-        case default
-          call quit('illegal keyword after '//word_io//': '//word)
       end select
 
     end do
