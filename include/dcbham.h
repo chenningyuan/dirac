@@ -131,7 +131,7 @@
      &                RESTFCK, CONT2C, START2C, GAUNT, ALLAMFA, VACPOL, &
      &                RDSUSLLMOD,MIXVAC,VACREF,POSVAC,CAP,CMPEIG,       &
      &                DKH1, DKH2, NOAMFI, QDOTS, LSCALE_DFT_GAUNT,      &
-     &                NOSFMU,MOLMF                                      &
+     &                NOSFMU,MOLMF,                                     &
      &                I2_DCLHAM
 
 !    Do NOT add any variables after the end tag !!!
