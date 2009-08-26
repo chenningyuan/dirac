@@ -507,7 +507,6 @@ C 2600  format(' Fock element no',i3,2x,2i3,f15.6)
         write(LUPRI,'(2x,a,a8)')  'name=',name
         write(LUPRI,'(2x,a,i7)')  'ijnum=',ijnum
         write(LUPRI,'(2x,a,2i5)') 'iii,iiv=',iii,iiv
-       ! write(LUPRI,*) 'new=',new
         write(LUPRI,*) 'nij1,ije1(nij1),iii1,iiv1=',
      &                  nij1,ije1(nij1),iii1,iiv1
         write(LUPRI,*) 'nij2,ije2(nij2),iii2,iiv2=',
@@ -2231,9 +2230,9 @@ c  indices not retained for pppp.
 ! Creates the structure of diagrams with iii,iiv numbers; make space for diagrams
 ! on gen,igen
 !
-! Calculates number of integrals, pair, sort integrals according to first ij-indexes 
+! Calculates number of integrals, pairs, sorts integrals according to two first (ij) indexes 
 !
-!   ii1234<0 - collect 1/2 file (i>j)
+! ii1234<0 - collect 1/2 file (i>j)
 !
 !--------------------------------------------------------------------------------
       use print_level
@@ -2286,7 +2285,7 @@ c  indices not retained for pppp.
       call parse(j1234,j1,j2,j3,j4)
 
       call files_ccsd(name,num,new,1,i1234,j1234)
-!     if (iopt(1).ge.5) then ! control printout
+
       if (getiprint() >= 5) then ! control printout
         write(LUPRI,*) "tmplt: after files_ccsd, new=",new
         write(LUPRI,*) "tmplt: after files_ccsd, num=",num
@@ -2294,6 +2293,9 @@ c  indices not retained for pppp.
 
       if (new.le.0) then
        ! write(LUPRI,*) "tmplt: new.le.0, return"
+        if (getiprint() >= 8) then
+          write(LUPRI,'(2x,a)') "tmplt: new <= 0, leaving"
+        endif
         return
       endif
 
@@ -2355,7 +2357,6 @@ c  symmetry operations
 !       ij(nij)=ior(ishft(ja,8),jb)
         ij1(nij1)=ior(ishft(ja,8),jb)
 
-!       if (iopt(1).ge.5) then
         if (getiprint() >= 5) then
 !         write(LUPRI,*) 'nij,ije(nij),ij(nij)=',nij,ije(nij),ij(nij)
           write(LUPRI,*) 'nij1,ije1(nij1),ij1(nij1)=',
@@ -2366,7 +2367,7 @@ c  symmetry operations
 C	print '(Z8)',(igen(i),i=nt00+1,nt)
 !       if (nij.gt.ndij) then 
         if (nij1.gt.ndij) then 
-          write (*,*) ' nij1 reached ',nij1,' at jab=',ja,jb
+          write (LUPRI,*) 'tmplt: nij1 reached ',nij1,' at jab=',ja,jb
         endif
 !       call dimx(nij,ndij,"tmpndij")
         call dimx(nij1,ndij,"tmpndij")
@@ -3605,9 +3606,10 @@ c
       subroutine tchng6 (nij,ij,ije,ntapef,iparm) 
 !------------------------------------------------------------------------
 !
-!
+! entering arrays ij(*),ije(*)
 !
 !------------------------------------------------------------------------
+      use print_level
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -3629,8 +3631,15 @@ c
 !      common /i/ igen(nbig)
 #endif
 
-!!!!!!!!! need own dynamic allocation of ij1,ije1, itmp !!!!!!!!!!!!!!!!!
-      dimension ij(ndij),ije(0:ndij),ij1(ndij),ije1(0:ndij),itmp(ndij)
+      dimension ij(ndij),ije(0:ndij)
+!!!!!!!!! needs own dynamic allocation for ij1,ije1, itmp !!!!!!!!!!!!!!!!!
+      dimension ij1(ndij),ije1(0:ndij),itmp(ndij)
+
+      if (getiprint() >= 5) then ! control printout
+        call header('Output from "tchng6"',-1)
+        write(LUPRI,*) 'ntapef=',ntapef
+        write(LUPRI,*) ' iparm=',iparm
+      endif
 
       call dimx (ije(nij),ndp3,"tchng6  ")
       if (iparm.eq.2) then
@@ -3670,8 +3679,13 @@ c
         call kcopy (nij,ij1(1),ij(1))
         call kcopy (nij+1,ije1(0),ije(0))
       end if
+
+      if (getiprint() >= 5) then ! control printout
+        write(LUPRI,*) 'nij,ij(nij),ije(nij)=',nij,ij(nij),ije(nij)
+      endif
+
       return
-      end
+      end subroutine tchng6
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine tchng8 (nij,ij,ije,ntapef) 
@@ -3740,6 +3754,7 @@ c
 ! entering arrays ij, ije
 !
 !------------------------------------------------------------------------
+      use print_level
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -3762,14 +3777,29 @@ c
 #endif
 
 !     dimension ij(nij),ije(0:nij)
+! mi - to fix index leak 
       dimension ij(*),ije(0:*)
+
 !!!!!!!!!!!!!! needs dynamic alloc of "ij1, ije1" !!!!!!!!!!!!!!!!!!!
       dimension ij1(ndij),ije1(0:ndij)
 
       integer*4 ch1,ch2
 
-      if (nt.eq.nf) return
+      if (getiprint() >= 5) then ! control printout
+        call header('Output from "tmpcng"',-1)
+        write(LUPRI,*) 'nt,nf:',nt,nf
+        write(LUPRI,*) 'ntapef=',ntapef
+      endif
+      
+      if (nt.eq.nf) then
+         if (getiprint() >= 5) then 
+           write(LUPRI,*) 'tmpcng exit (nt=nf): nt,nf:',nt,nf
+         endif
+         return
+      endif
+
       if (nt.gt.nf) go to 310
+
       nij1=0
       iirp='ffff'X
       do 160 i=1,nij
@@ -3785,7 +3815,12 @@ c
       nij=nij1
       call kcopy(nij,ij1,ij)
       call kcopy(nij+1,ije1(0),ije(0))
+
+      if (getiprint() >= 5) then 
+        write(LUPRI,*) 'tmpcng exit 1: nij,ije(nij)=',nij,ije(nij)
+      endif
       return
+
 310   istrt=nstrt(1,ntapef-1)+2*nij+4
       nsize=igen(istrt-2)
       iirp='ffff'X
@@ -3801,10 +3836,16 @@ c
         ije(nij-1)=i-1
       endif
 320   continue
+
       ije(nij)=nsize
       call dimx(nij,ndij,"tmpcng")
+
+      if (getiprint() >= 5) then 
+        write(LUPRI,*) 'tmpcng exit 2: nij,ije(nij)=',nij,ije(nij)
+      endif
+
       return
-      end
+      end subroutine tmpcng
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       function v1det (ja,jb)
