@@ -4160,14 +4160,14 @@ c
       use cij6_mod 
 !      use cfiles_mod 
 !      use gen_mod 
-!      use hsfs_parameters
+      use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
 #else
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
-!#include "param_ccsd.h"
+#include "param_ccsd.h"
 #include "cij1.h"
 !     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
 #include "cij2.h"
