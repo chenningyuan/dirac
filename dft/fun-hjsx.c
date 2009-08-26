@@ -13,8 +13,10 @@
 
     This functional has been generated from following input:
     ------ cut here -------
- For details of the max-input see Suceria et al JCTC 5(4), 754 (2009) and  Suceria et al JCP 128, 194105 (2008) 
- dfine constants where AE= A, B , C, D E and a[i], b[i] are the coefficient of hse fubction 
+ For details of the max-input see Suceria et al JCTC 5(4), 754 (2009) 
+ and  Suceria et al JCP 128, 194105 (2008).
+ 
+ Dfine constants where AE= A, B , C, D E and a[i], b[i] are the coefficient of hse fubction 
 
 PI:3.14159265358979312;
 AE:[0.757211,-0.106364,-0.118649,0.609650,-0.0477963];
