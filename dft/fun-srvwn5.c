@@ -13,6 +13,11 @@
 
     This functional has been generated from following input:
     ------ cut here -------
+ This routine of short-range-(LDA-VWN5)corelation contains two parts, 
+ the first is the well known SVWN5 correlation, and the second is the 
+ MU- dependent part from the reference:
+ J. Toulouse, A. Savin and H-J Flad, IJQC  100, (6) 1047 (200).   
+
 PI: 3.14159265358979312;
 rs(rhoa,rhob):= (3/(4*PI*(rhoa+rhob)))^(1/3);
 x(rhoa,rhob):= sqrt(rs(rhoa,rhob));
