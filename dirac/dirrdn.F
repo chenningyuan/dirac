@@ -3927,13 +3927,11 @@ C  /* Deck haminp */
       SUBROUTINE HAMINP(WORK,LWORK)
 C***********************************************************************
 C
-C     Input section for modification of Dirac-Coulomb Hamiltonian
+C     Input section for definition of the Hamiltonian
 C
 C     Called from: PAMINP
 C
 C     Written by T.Saue - May 1996
-C     Last revision: May 27 1998 - tsaue and kmi
-C                    2005/06 - MI for 2comp.Hamiltonians
 C
 C***********************************************************************
       use dirac_cfg
@@ -4008,7 +4006,7 @@ C
 !                   49        50        51        52
      &            '.NOAMFI','.QDOTS ','.X2C   ','.X2C4  ',
 !                   53        54        55        56
-     &            '.NOSFMU','.DFTAUT','xXXXXXX','xXXXXXX'/
+     &            '.NOSFMU','.DFTAUT','.MMF   ','xXXXXXX'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4028,6 +4026,7 @@ C     ===================
 C
       IPRHAM  = 0
       QED     = .FALSE.
+      MOLMF   = .FALSE.
       ONESYS  = .FALSE.
       FREEPJ  = .FALSE.
       VEXTPJ  = .FALSE.
@@ -4591,6 +4590,8 @@ C    (see MRCON1 of the MOLTRA module)
           go to 100
 
   155     CONTINUE
+C&&& Activate : molecular mean field approximation for correlated calculations
+          MOLMF = .TRUE.
           GOTO 100
   156     CONTINUE
           GOTO 100
