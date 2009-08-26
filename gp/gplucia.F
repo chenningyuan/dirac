@@ -304,7 +304,7 @@ C?            END IF
 *
 * Input
 * NSTB : Number of strings before active gasspace
-* NSTA : Number of strings after accive gasspace
+* NSTA : Number of strings after active gasspace
 * IOFFK : Offset for K group of strings in active gasspace, i.e. start of
 *         this symmetry of active K group strings
 * IOFFI : Offset for I group of strings in active gasspace, i.e. start of
