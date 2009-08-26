@@ -49,6 +49,7 @@ usage()
    echo '     -oof             : Include object oriented modularity of Fotran 90/95'
    echo '     -adc             : Include ADC electron propagator module'
    echo '     -ecp             : Include ARGOS ECP module'
+   echo '     -srdft           : Include srDFT module'
    echo '     -log             : Enable matrix logging in Matlab format'
    echo '     tarfile          : Name of export archive to create (if any)'
    echo '     tarfile=export   : Make DIRAC.new.tar.gz'
@@ -222,9 +223,9 @@ setup()
       echo " - autodiff module"
    fi
 
-   #
-   #      CAP module
-   #
+#
+#      CAP module
+#
    if [ -n "$CAPMOD" ]; then
          CAPFLG='-DMOD_CAP'
          CAPTAR=1
@@ -319,6 +320,17 @@ setup()
        #  echo "OOF module not included"
        echo 
    fi
+#  srDFT
+   if [ -n "$SRDFTMOD" ]; then
+      SRDFT_FLG='-DMOD_SRDFT'
+      SRDFT_TAR=1
+      DFTFLG='-DMOD_DFT'
+      DFTTAR=1
+      KRMCFLG='-DMOD_KRMC'
+      KRMCTAR=1
+      echo " - srDFT module (implies DFT and KRMC)"
+   fi
+
    if [ -n "$LOGMOD" ]; then
        LOG_FLG=-DMOD_LOG
        echo ' - Will log interesting matrices in matlab format (very verbose!)'
@@ -550,6 +562,12 @@ EOF
       tar rvf \$szCurrDir.tar \$szCurrDir/oof/{*.c,*.F,*.F90,*.f90,Makefile.in,*.inc,*.c} 2>> export.log
 EOF
    fi
+   if [ "$SRDFT_TAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/srdft/{*.F,*.F90,*.f90,Makefile.in} 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/srdft/{*.c,*.F,*.F90,*.f90,Makefile.in,*.inc,*.c} 2>> export.log
+EOF
+   fi
 # A DIRAC administrator should have everything
    if [ "$PAMADM" ]; then
       cat <<EOF>> ./export
@@ -587,7 +605,10 @@ rmline()
 #
 which_modules()
 {
-for mod in $ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG $ADCFLG $VISUALFLG $AORESPONSEFLG $MATRIX_OPERATIONS_FLG $AUTODIFFFLG $CAPFLG $HSCCFLG $HSFSFLG $QDOTSFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG $AMFIFLG $LONDONFLG $LOG_FLG
+for mod in $ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG \
+$ADCFLG $VISUALFLG $AORESPONSEFLG $MATRIX_OPERATIONS_FLG $AUTODIFFFLG \
+$CAPFLG $HSCCFLG $HSFSFLG $QDOTSFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG \
+$AMFIFLG $LONDONFLG $SRDFT_FLG $LOG_FLG
 do
   if [ -n "$MODS" ]; then
     MODS="$MODS $mod"
@@ -707,6 +728,10 @@ fi
 if [ -n "$XPPFLG" ]; then
    dirs="$dirs prp/xpp"
    rmline build/dontbuild "prp/xpp/\.\*"
+fi
+if [ -n "$SRDFT_FLG" ]; then
+   dirs="$dirs srdft"
+   rmline build/dontbuild "srdft/\.\*"
 fi
 ##
 ##  take care of F90/95 modules - this is for the cleaning !
@@ -860,6 +885,9 @@ while [ -n "$1" ]; do
          ;;
       -oof)
          OOFMOD=1
+         ;;
+      -srdft)
+         SRDFTMOD=1
          ;;
       -log)
 	 LOGMOD=1
