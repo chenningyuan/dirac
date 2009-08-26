@@ -507,18 +507,7 @@ C 2600  format(' Fock element no',i3,2x,2i3,f15.6)
         write(LUPRI,'(2x,a,a8)')  'name=',name
         write(LUPRI,'(2x,a,i7)')  'ijnum=',ijnum
         write(LUPRI,'(2x,a,2i5)') 'iii,iiv=',iii,iiv
-        write(LUPRI,*) 'nij1,ije1(nij1),iii1,iiv1=',
-     &                  nij1,ije1(nij1),iii1,iiv1
-        write(LUPRI,*) 'nij2,ije2(nij2),iii2,iiv2=',
-     &                  nij2,ije2(nij2),iii2,iiv2
-        write(LUPRI,*) 'nij3,ije3(nij3),iii3,iiv3=',
-     &                  nij3,ije3(nij3),iii3,iiv3
-        write(LUPRI,*) 'nij4,ije4(nij4),iii4,iiv4=',
-     &                  nij4,ije4(nij4),iii4,iiv4
-        write(LUPRI,*) 'nij5,ije5(nij5),iii5,iiv5=',
-     &                  nij5,ije5(nij5),iii5,iiv5
-        write(LUPRI,*) 'nij6,ije6(nij6),iii6,iiv6=',
-     &                  nij6,ije6(nij6),iii6,iiv6
+        call print_cijx_stuff
       endif
 
 !   ... skips filling common blocks variables (no diagram ready now)
@@ -559,13 +548,29 @@ C Gal 95
           if ((i.ne.num).and.(iiia(i).eq.iii).and.(iiva(i).eq.iiv)) then
             new=-1
             call imove(i,num)
+            if (getiprint() >= 5) then
+              write(LUPRI,*) 'files_ccsd exit 1; nflcur,num=',nflcur,num
+              call print_cijx_stuff
+            endif
             return
           endif
 15        continue
+
+          if (getiprint() >= 5) then
+             write(LUPRI,*) 'files_ccsd exit 2; nflcur,num=',nflcur,num
+             call print_cijx_stuff
+          endif
           return
+
         endif
 
-        if (ijnum.eq.0) return
+        if (ijnum.eq.0) then 
+          if (getiprint() >= 5) then
+             write(LUPRI,*) 'files_ccsd exit 3; nflcur,num=',nflcur,num
+             call print_cijx_stuff
+          endif
+          return
+        endif
 
         nija=igen(nstrt(1,num-1)+1)
 
@@ -636,14 +641,18 @@ C Gal 95
             write(LUPRI,*) 'ijnum=6, nij6=',nij6
             write(LUPRI,*) 'nija,iii6,iiv6:',nija,iii6,iiv6
           endif
-
         else
           write (LUPRI,*) 
      &    'ccsd_files called with incorrect ijnum, ',ijnum
           call abext('ccsd_files   ')
         endif
 
+        if (getiprint() >= 5) then
+          write(LUPRI,*) 'files_ccsd exit 4; nflcur,num=',nflcur,num
+          call print_cijx_stuff
+        endif
         return
+
       endif
 
 c  new file when nflcur is 0
@@ -656,7 +665,13 @@ c  new file when nflcur is 0
 
       new=1
 
-      if (iii.eq.-2) return ! return
+      if (iii.eq.-2) then
+        if (getiprint() >= 5) then
+           write(LUPRI,*) 'files_ccsd exit 5; nflcur,num=',nflcur,num
+           call print_cijx_stuff
+        endif
+        return ! return
+      endif
 
       if (nflcur.eq.1) go to 40 ! skip the cycle
 
@@ -672,7 +687,12 @@ c     write (6,*) ' transf indx from ',i,' to ',num
 
 40    continue ! bye step
 
+      if (getiprint() >= 5) then
+        write(LUPRI,*) 'files_ccsd exit 6; nflcur,num=',nflcur,num
+        call print_cijx_stuff
+      endif
       return
+
       end subroutine files_ccsd
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4122,4 +4142,62 @@ c
 10    continue
       return
       end
+
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine print_cijx_stuff
+!---------------------------------------------------------------------------------------
+!
+!                       control printout
+!
+!---------------------------------------------------------------------------------------
+!     use print_level
+#if defined HSFS_DYN_ALLOC
+      use cij1_mod 
+      use cij2_mod 
+      use cij3_mod 
+      use cij4_mod 
+      use cij5_mod 
+      use cij6_mod 
+!      use cfiles_mod 
+!      use gen_mod 
+!      use hsfs_parameters
+#include "implicit.h"
+#include "priunit.h"
+#else
+!     implicit real*8 (a-h,o-z)
+#include "implicit.h"
+#include "priunit.h"
+!#include "param_ccsd.h"
+#include "cij1.h"
+!     common /cij1/ nij1,ij1(ndij),ije1(0:ndij),iii1,iiv1
+#include "cij2.h"
+!     common /cij2/ nij2,ij2(ndij),ije2(0:ndij),iii2,iiv2
+#include "cij3.h"
+!     common /cij3/ nij3,ij3(ndij),ije3(0:ndij),iii3,iiv3
+#include "cij4.h"
+!     common /cij4/ nij4,ij4(ndij),ije4(0:ndij),iii4,iiv4
+#include "cij5.h"
+!     common /cij5/ nij5,ij5(ndij),ije5(0:ndij),iii5,iiv5
+#include "cij6.h"
+!     common /cij6/ nij6,ij6(ndij),ije6(0:ndij),iii6,iiv6
+!#include "cfiles.h"
+!      common /cfiles/ namefl(200),nstrt(2,0:200),nflcur,
+!     1 iiia(200),iiva(200)
+!#include "gen.h"
+!     common // gen(nbig)
+!     common /i/ igen(nbig)
+#endif
+        write(LUPRI,*) 'nij1,ije1(nij1),iii1,iiv1=',
+     &                  nij1,ije1(nij1),iii1,iiv1
+        write(LUPRI,*) 'nij2,ije2(nij2),iii2,iiv2=',
+     &                  nij2,ije2(nij2),iii2,iiv2
+        write(LUPRI,*) 'nij3,ije3(nij3),iii3,iiv3=',
+     &                  nij3,ije3(nij3),iii3,iiv3
+        write(LUPRI,*) 'nij4,ije4(nij4),iii4,iiv4=',
+     &                  nij4,ije4(nij4),iii4,iiv4
+        write(LUPRI,*) 'nij5,ije5(nij5),iii5,iiv5=',
+     &                  nij5,ije5(nij5),iii5,iiv5
+        write(LUPRI,*) 'nij6,ije6(nij6),iii6,iiv6=',
+     &                  nij6,ije6(nij6),iii6,iiv6
+      end subroutine print_cijx_stuff
 
