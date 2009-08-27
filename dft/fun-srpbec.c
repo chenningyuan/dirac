@@ -165,16 +165,21 @@ srpbec_energy(const FunDensProp *dp)
         t7*t8*t10+.06346820609770369*t5*t6)/(0.0185525709000164*t7*
         t8/pow(t9,2.0)+.1362078224626486*t5*t6*t10+1.0)+1.0)-0.062182*
         t3*t4;
+/* radovan: b not defined
     t12 = sqrt(.6203504908994001/pow(b+3.2581,.3333333333333333)+
         4.7125);
+*/
     t13 = pow(t12,3.0)+163.44;
     t14 = 1/pow(2.718281828459045,3.2581*t12);
     t15 = 3.395305452627101*t13*t14-0.5;
 
    /* code */
+
+/* radovan: rho not defined
     res = t1*t11/(.6366197723675814*t1*t11*pow(MU,2.0)/(t15*
         rho)-2.299523075142916*pow(t1,2.0)*t11*t13*t14*MU/(pow(t15,
         2.0)*pow(rho,2.0))+1.0);
+*/
 
     return res;
 }
@@ -218,13 +223,17 @@ srpbec_first(FunFirstFuncDrv *ds, real factor, const FunDensProp *dp)
     t18 = 1/t17;
     t19 = 2.146079601698033*t15*t18+1.0;
     t20 = .03109219370393603*log(t19)-0.062182*t3*t7;
+/* radovan: b not defined
     t21 = sqrt(.6203504908994001/pow(b+3.2581,.3333333333333333)+
         4.7125);
+*/
     t22 = pow(t21,3.0)+163.44;
     t23 = 1/pow(2.718281828459045,3.2581*t21);
     t24 = 3.395305452627101*t22*t23-0.5;
     t25 = 1/pow(t24,2.0);
+/* radovan: rho not defined
     t26 = 1/pow(rho,2.0);
+*/
     t27 = pow(t1,2.0);
     t28 = 1/pow(t1,1.333333333333333);
     t29 = -.4002143174996818/pow(t4,3.0)-.7418564737168959*
@@ -246,7 +255,9 @@ srpbec_first(FunFirstFuncDrv *ds, real factor, const FunDensProp *dp)
         t8*t33*t14-.1362078224626486*t8*t9*t35*t16*t12)*t36)+.9999999999999999*
         t29*t3*t30*t31;
     t38 = 1/t24;
+/* radovan: rho undefined
     t39 = 1/rho;
+*/
     t40 = pow(MU,2.0);
     t41 = -2.299523075142916*t22*t23*t25*t26*t27*t20*MU+.6366197723675814*
         t38*t39*t1*t20*t40+1.0;
@@ -340,13 +351,17 @@ srpbec_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
     t20 = 1/t19;
     t21 = 2.146079601698033*t17*t20+1.0;
     t22 = .03109219370393603*log(t21)-0.062182*t3*t7;
+/* radovan: b not defined
     t23 = sqrt(.6203504908994001/pow(b+3.2581,.3333333333333333)+
         4.7125);
+*/
     t24 = pow(t23,3.0)+163.44;
     t25 = 1/pow(2.718281828459045,3.2581*t23);
     t26 = 3.395305452627101*t24*t25-0.5;
     t27 = 1/pow(t26,2.0);
+/* radovan: rho not defined
     t28 = 1/pow(rho,2.0);
+*/
     t29 = pow(t1,2.0);
     t30 = 1/pow(t1,1.333333333333333);
     t31 = -.4002143174996818/pow(t4,3.0)-.7418564737168959*
@@ -371,7 +386,9 @@ srpbec_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
     t43 = .03109219370393603*t34*t42+.002747799777968419*
         t30*t7+.9999999999999999*t31*t3*t32*t33;
     t44 = 1/t26;
+/* radovan: rho not defined
     t45 = 1/rho;
+*/
     t46 = pow(MU,2.0);
     t47 = .6366197723675814*t44*t45*t22*t46+.6366197723675814*
         t44*t45*t1*t43*t46-4.599046150285831*t24*t25*t27*t28*t1*t22*
