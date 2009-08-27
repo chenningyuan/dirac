@@ -13,6 +13,10 @@
 
     This functional has been generated from following input:
     ------ cut here -------
+
+ The revised PBE functional is one improved version of PBE for details see 
+    B. Hammer, L. B. Hansen and  J. K. Norkov, Phy. Rev. B. 59 (11), 7413 (1999).   
+
 pi:3.14159265358979312;
 
 xa:sqrt(grada*grada)/rhoa^(4/3);
