@@ -3,6 +3,7 @@ module character_processing
   implicit none
 
   public lowercase
+  public uppercase
   public prefix_zeros
   public word_count
   public word_contains
@@ -28,6 +29,28 @@ contains
       ia = iachar(s(i:i))
       if (ia >= iachar('A') .and. ia <= iachar('Z')) then
         lowercase(i:i) = achar(ia + off)
+      end if
+    enddo
+
+  end function
+
+  function uppercase(s)
+
+!   ----------------------------------------------------------------------------
+    character(*), intent(in) :: s
+    character(len(s))        :: uppercase
+!   ----------------------------------------------------------------------------
+    integer                  :: off, i, ia
+!   ----------------------------------------------------------------------------
+
+    uppercase = s
+
+    off = iachar('A') - iachar('a')
+
+    do i = 1, len(s)
+      ia = iachar(s(i:i))
+      if (ia >= iachar('a') .and. ia <= iachar('Z')) then
+        uppercase(i:i) = achar(ia + off)
       end if
     enddo
 
