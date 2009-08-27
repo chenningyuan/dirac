@@ -120,7 +120,7 @@ Functional SRVWN5Functional = {
 };
  
 /* IMPLEMENTATION PART */
-#define MU    0
+#define MU    0.4
 static int
 srvwn5_read(const char *conf_line)
 {
