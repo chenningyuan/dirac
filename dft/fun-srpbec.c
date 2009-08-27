@@ -128,6 +128,7 @@ Functional SrpbecFunctional = {
 };
  
 /* IMPLEMENTATION PART */
+#define MU    0.4
 static int
 srpbec_read(const char *conf_line)
 {
