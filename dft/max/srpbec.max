@@ -52,21 +52,23 @@ pbec(rhoa,grada,rhob,gradb,gradab):=(rhoa+rhob)*(eps(rhoa,rhob)+H(d(rhoa,rhob,gr
 
 /* Part II */
 
-d:32/(3*pi);
-a:3.2581; 
-bet:163.44; 
-gam:4.7125;
+dc:32/(3*pi);
+ac:3.2581; 
+betc:163.44; 
+gamc:4.7125;
 rho(a,b):=a + b;
+
 /* rs:=r as defined above */
-grs12: sqrt( gam+ r(a,b) );
-expgrs12: exp(-a * grs12);
-g0: d * ( grs12**3 + bet ) * expgrs12;
 
-d2: 2/(pi * rho * (g0 - 1/2));
-d1: -2 * pbec(rhoa,grada,rhob,gradb,gradab) *(d2**2) * sqrt( 2*pi) * rho(rhoa,rhob) * g0/ 3; 
-d2: d2 * pbec(rhoa,grada,rhob,gradb,gradab);
+grs12: sqrt( gamc+ r(rhoa,rhob) );
+expgrs12: exp(-ac * grs12);
+g0:dc * ( grs12**3 + betc ) * expgrs12;
 
-denom: 1 + d1 * MU + d2 * MU^2;
+d2:2/(pi * rho(rhoa,rhob) * (g0 - 1/2));
+d1:-2 * pbec(rhoa,grada,rhob,gradb,gradab) *(d2**2) * sqrt( 2*pi) * rho(rhoa,rhob) * g0/ 3; 
+d2:d2 * pbec(rhoa,grada,rhob,gradb,gradab);
+
+denom:1 + d1 * MU + d2 * MU^2;
 
 /* parzt III */
 
