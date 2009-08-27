@@ -3940,6 +3940,7 @@ C***********************************************************************
 #endif
 #ifdef MOD_DFT
       use dft_cfg
+      use input_parsing
       use dft_input
 #endif
 

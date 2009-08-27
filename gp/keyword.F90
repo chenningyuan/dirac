@@ -1,4 +1,4 @@
-module kw
+module keyword
 
   use character_processing
 
@@ -171,19 +171,10 @@ contains
 !   ----------------------------------------------------------------------------
     character(kw_length), intent(in) :: kw_input
     character(kw_length), intent(in) :: kw_option
-!   ----------------------------------------------------------------------------
-    character(kw_length)             :: kw_input_lower
-    character(kw_length)             :: kw_option_lower
     logical                          :: kw_matches
 !   ----------------------------------------------------------------------------
 
-    kw_input_lower  = kw_input
-    kw_option_lower = kw_option
-
-    call lowercase(kw_input_lower)
-    call lowercase(kw_option_lower)
-
-    if (kw_input_lower == kw_option_lower) then
+    if (lowercase(kw_input) == lowercase(kw_option)) then
       kw_matches = .true.
       kw_found   = .true.
     else

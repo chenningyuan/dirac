@@ -11,24 +11,27 @@ module character_processing
 
 contains
 
-  subroutine lowercase(s)
+  function lowercase(s)
 
 !   ----------------------------------------------------------------------------
-    character(*), intent(inout) :: s
+    character(*), intent(in) :: s
+    character(len(s))        :: lowercase
 !   ----------------------------------------------------------------------------
-    integer                     :: off, i, ia
+    integer                  :: off, i, ia
 !   ----------------------------------------------------------------------------
+
+    lowercase = s
 
     off = iachar('a') - iachar('A')
 
     do i = 1, len(s)
       ia = iachar(s(i:i))
       if (ia >= iachar('A') .and. ia <= iachar('Z')) then
-        s(i:i) = achar(ia + off)
+        lowercase(i:i) = achar(ia + off)
       end if
     enddo
 
-  end subroutine
+  end function
 
   function prefix_zeros(i, n)
 
