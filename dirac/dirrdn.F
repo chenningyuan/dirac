@@ -41,6 +41,9 @@ C     Last revision: 260496 - tsaue
 C               Febr.2006 - MI to modify for pure two-comp. mode
 C
 C***********************************************************************
+
+      use input_reader
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"
@@ -99,6 +102,12 @@ C
       OPEN(LUCMD,FILE='DIRAC.INP')
       CALL HAMINP(WORK,LWORK)
       CLOSE(LUCMD)
+
+
+!     this is the new input reader
+      call read_input()
+
+
 
 CMI   ... instead of calling OP1INI in HAMINP, call it after
       CALL OP1INI(WORK,LWORK)
@@ -3940,7 +3949,7 @@ C***********************************************************************
 #endif
 #ifdef MOD_DFT
       use dft_cfg
-      use input_parsing
+      use input_reader
       use dft_input
 #endif
 
@@ -5444,12 +5453,8 @@ C
 
 !     *DFT
     3 continue
-#ifdef MOD_DFT
-      call parse_dft_input(word)
-#else
-      call quit('*DFT specified, '
-     &          //'but DFT is not included in this version')
-#endif
+!     this is needed until the old input scheme is replaced
+      call move_to_next_star(word)
       go to 200
 
 
