@@ -51,14 +51,14 @@ contains
       select case (word(1:1))
 
         case ('!', '#')
-!         ignore line
+!         comment
 
         case ('*')
-!         it is a section
+!         section
           kw_section = uppercase(word)
 
         case default
-!         it is a keyword
+!         keyword
           select case (kw_section)
 
 !           case ('**METHO', '**WAVE ')
@@ -70,8 +70,8 @@ contains
             case ('*END OF')
               go to 1
 
-            case ('       ')
-              call quit('keyword '//word//' without section')
+!           case ('       ')
+!             call quit('keyword '//word//' without section')
 
             case default
 !             activate as soon as everything is merged to here
