@@ -26,39 +26,39 @@ operator_d = {}
 
 operator_d['1x'] = """ 'operator'
  XAVECTOR
- 'NEF 03'
- 'NEF 02'
+ 'NEF 003'
+ 'NEF 002'
  COMFACTOR
  -137.03599980944"""
 operator_d['1y'] = """ 'operator'
  YAVECTOR
- 'NEF 01'
- 'NEF 03'
+ 'NEF 001'
+ 'NEF 003'
  COMFACTOR
  -137.03599980944"""
 operator_d['1z'] = """ 'operator'
  ZAVECTOR
- 'NEF 02'
- 'NEF 01'
+ 'NEF 002'
+ 'NEF 001'
  COMFACTOR
  -137.03599980944"""
 
 operator_d['2x'] = """ 'operator'
  XAVECTOR
- 'NEF 06'
- 'NEF 05'
+ 'NEF 006'
+ 'NEF 005'
  COMFACTOR
  -137.03599980944"""
 operator_d['2y'] = """ 'operator'
  YAVECTOR
- 'NEF 04'
- 'NEF 06'
+ 'NEF 004'
+ 'NEF 006'
  COMFACTOR
  -137.03599980944"""
 operator_d['2z'] = """ 'operator'
  ZAVECTOR
- 'NEF 05'
- 'NEF 04'
+ 'NEF 005'
+ 'NEF 004'
  COMFACTOR
  -137.03599980944"""
 
