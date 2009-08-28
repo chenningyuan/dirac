@@ -13,8 +13,9 @@
 
     This functional has been generated from following input:
     ------ cut here -------
- For details of the max-input see Suceria et al J. chem. theory and comp.  5(4), 754 (2009),
-   and  Suceria et al J. Chem. Phys. 128, 194105 (2008) 
+References: 
+ For details of the max-input see Suceria et al J. Chem. Theo. and Comp. 5(4),754 (2009),
+ and  Suceria et al J. Chem. Phys. 128, 194105 (2008) 
 
 
  define MU, which later must be chaged to a global MU 
@@ -126,9 +127,9 @@ Functional HjsxFunctional = {
 };
  
 /* IMPLEMENTATION PART */
-/* We  define  MU  localy here at the moment to be =0.4 */
+ /* We  define  MU  localy at the moment to be =0.4
+    but later should be changed to a global on */
 #define MU    0.4
-/* ***********************  */
 static int
 hjsx_read(const char *conf_line)
 {
