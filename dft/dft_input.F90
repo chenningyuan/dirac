@@ -88,6 +88,20 @@ contains
 
 #include "../autodiff/xc_fortran_interface.h"
 
+!   radovan: line is made lowercase, then cut into words
+!            if word contains "=" the weight is read
+!            otherwise it is set to 1.0
+!
+!            equivalent functionals:
+!            lda
+!            slater vwn
+!            slater=1.0 vwn=1.0
+!
+!            equivalent functionals:
+!            b3lyp
+!            slater=0.8 becke=0.72 hfx=0.2 vwn=0.19 lyp=0.81
+!            lda slater=-0.2 hfx=0.2 becke=0.72 vwn=-0.81 lyp=0.81
+
 !   ----------------------------------------------------------------------------
     character(80)              :: line
 !   ----------------------------------------------------------------------------
