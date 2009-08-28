@@ -86,7 +86,9 @@ Functional* available_functionals[] = {
     /* range-separated fnuctionals */
     &SRVWN5Functional,
     &HjsxFunctional,
+/* radovan: file missing?
     &SrpbecFunctional,
+ */
     NULL
 };
 

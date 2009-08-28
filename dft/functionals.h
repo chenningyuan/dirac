@@ -239,7 +239,9 @@ extern Functional VW_KinFunctional;     /* TF + Von Weizaecker */
 /* range-separated functionals */
 extern Functional SRVWN5Functional;
 extern Functional HjsxFunctional;
+/* radovan: is the file missing?
 extern Functional SrpbecFunctional;
+ */
 
 
 /* Lists of available functionals: */
