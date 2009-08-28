@@ -13,10 +13,15 @@
 
     This functional has been generated from following input:
     ------ cut here -------
- For details of the max-input see Suceria et al JCTC 5(4), 754 (2009) 
- and  Suceria et al JCP 128, 194105 (2008).
- 
- Dfine constants where AE= A, B , C, D E and a[i], b[i] are the coefficient of hse fubction 
+ For details of the max-input see Suceria et al J. chem. theory and comp.  5(4), 754 (2009),
+   and  Suceria et al J. Chem. Phys. 128, 194105 (2008) 
+
+
+ define MU, which later must be chaged to a global MU 
+ At the moment we  define MU in the fun-hjsx.c routine by adding #define MU=0.4 
+
+ Define pi and the constants where AE[]=[ A, B , C, D, E],
+   and a[i], b[i] are the coefficient of hse fubction 
 
 PI:3.14159265358979312;
 AE:[0.757211,-0.106364,-0.118649,0.609650,-0.0477963];
@@ -101,11 +106,6 @@ K(rhoa,grada,rhob,gradb,gradab):=  (1/2) * ldax(rhoa,rhob) * rho(rhoa,rhob) * (F
  
 #include "functionals.h"
  
-/* only for test we  define MU  here at the moment */
-  real MU=0.4;
-/*                          */
-
-
 /* INTERFACE PART */
 static int hjsx_isgga(void) { return 1; } /* FIXME: detect! */
 static int hjsx_read(const char *conf_line);
@@ -126,10 +126,9 @@ Functional HjsxFunctional = {
 };
  
 /* IMPLEMENTATION PART */
-/* only for test we  define MU  here at the moment to be =0*/
-#define MU    0
+/* We  define  MU  localy here at the moment to be =0.4 */
+#define MU    0.4
 /* ***********************  */
-
 static int
 hjsx_read(const char *conf_line)
 {
