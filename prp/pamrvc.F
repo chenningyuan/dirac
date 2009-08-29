@@ -655,7 +655,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dmoli3 */
-      SUBROUTINE DMOLI3(ITYP,IH,DMAT,CMO,BMAT,WORK,KFREE,LFREE)
+      SUBROUTINE DMOLI3(ITYP,IH,DMAT,CMO,BMAT)
 C***********************************************************************
 C
 C     Generate modified density matrix for use in generation of
@@ -693,7 +693,7 @@ C
 #include "dgroup.h"
 #include "dcbxrs.h"
 C
-      DIMENSION DMAT(N2BBASX,NZ),CMO(*),BMAT(NORBT,NORBT,NZ),WORK(*)
+      DIMENSION DMAT(N2BBASX,NZ),CMO(*),BMAT(NORBT,NORBT,NZ)
       LOGICAL   LBIT
 C
       EXTERNAL BDQALGEBRA
@@ -751,7 +751,7 @@ C
 C          Generate modified density matrix as transformation MO to AO
 C
            IF(NI.EQ.0.OR.NS.EQ.0) GOTO 10
-            CALL QTRANS('MOAO','S',D0,
+            CALL QTRANS90('MOAO','S',D0,
      &                  NFBAS(I1,0),NFBAS(I2,0),NS,NI,
      &                  DMAT(I2BASX(I1,I2)+1,1),NTBAS(0),NTBAS(0),
      &                  NZ,IPQTOQ(1,IREP),
@@ -759,7 +759,7 @@ C
      &                  NZ,IPQTOQ(1,IREP),
      &                  CMO(JS),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
      &                  CMO(JI),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
-     &                  WORK(KFREE),LFREE,IPRXRS)
+     &                  IPRXRS)
 C
          ELSE
 C           write(lupri,*) 'active DMOLI3'
@@ -775,14 +775,14 @@ C
 C          Generate modified density matrix as transformation MO to AO
 C
            IF(NI.EQ.0.OR.NS.EQ.0) GOTO 10
-            CALL QTRANS('MOAO','S',D0,
+            CALL QTRANS90('MOAO','S',D0,
      &                  NFBAS(I1,0),NFBAS(I2,0),NS,NI,
      &                  DMAT(I2BASX(I1,I2)+1,1),NTBAS(0),NTBAS(0),
      &                  NZ,IPQTOQ(1,IREP),
      &                  BMAT(IS,II,1),NORBT,NORBT,NZ,IPQTOQ(1,IREP),
      &                  CMO(JS),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,IREP),
      &                  CMO(JI),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,IREP),
-     &                  WORK(KFREE),LFREE,IPRXRS)
+     &                  IPRXRS)
 C
 C
          END IF
@@ -3879,8 +3879,7 @@ C        -----------------------------
 C
 C        The matrix is scaled with 0.5 in DMOLI3.
 C
-         CALL DMOLI3(ITYP,IHRMOP(IM),DMAT(1,IM),CMO,BMAT,
-     &                 WORK,KFREE,LFREE)
+         CALL DMOLI3(ITYP,IHRMOP(IM),DMAT(1,IM),CMO,BMAT)
 C
 #endif
          IF (IPRXRS .GT. 8) THEN
@@ -3966,8 +3965,7 @@ C
 C
 C           Backtransform to MO basis and (anti)symmetrize.
 C
-            CALL DMOLI3(ITYP,IHRMOP(IM),DMAT(1,IM),CMO,BMAT,
-     &           WORK,KFREE,LFREE)
+            CALL DMOLI3(ITYP,IHRMOP(IM),DMAT(1,IM),CMO,BMAT)
 C
 C
             IF(IPRXRS.GE.8) THEN
@@ -4074,8 +4072,7 @@ C
 C
 C           Backtransform to AO basis
 C
-            CALL DMOLI3(ITYP,IHRMOP(IM),DMAT(1,IM),CMO,BMAT,
-     &           WORK,KFREE,LFREE)
+            CALL DMOLI3(ITYP,IHRMOP(IM),DMAT(1,IM),CMO,BMAT)
 C
 C           Print section
 C
@@ -4153,8 +4150,7 @@ C
 C
 C           Backtransform to AO basis
 C
-            CALL DMOLI3(ITYP,IHRMOP(IM),DMAT(1,IM),CMO,BMAT,
-     &           WORK,KFREE,LFREE)
+            CALL DMOLI3(ITYP,IHRMOP(IM),DMAT(1,IM),CMO,BMAT)
 C
             IF(IPRXRS.GE.8) THEN
                WRITE(LUPRI,'(A,I5)')
@@ -4227,8 +4223,7 @@ C
 C
 C           Backtransform to AO basis
 C
-            CALL DMOLI3(ITYP,IHRMOP(IM),DMAT(1,IM),CMO,BMAT,
-     &           WORK,KFREE,LFREE)
+            CALL DMOLI3(ITYP,IHRMOP(IM),DMAT(1,IM),CMO,BMAT)
 C
 C           Print section
 C

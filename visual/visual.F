@@ -348,8 +348,7 @@ C=======================================================================
           CALL SETUP_FO_DMAT_AO(CMO,
      &                          IXVECTOR,
      &                          DMAT_AO(1+IOFF),
-     &                          occupation,
-     &                          WORK(KFREE),LFREE)
+     &                          occupation)
         ENDIF
         IOFF = IOFF + N2BBASXQ
       ENDDO

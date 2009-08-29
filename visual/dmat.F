@@ -87,10 +87,7 @@
      &            1, 
      &            dmat_ao,
      &            cmo, 
-     &            dmat_mo,
-     &            work,
-     &            kfree,
-     &            lfree)
+     &            dmat_mo)
 #endif /* ifdef ALLOW_NEO_OR_VO_DENSITY */
 
       call dealloc(dmat_mo)
@@ -185,8 +182,7 @@ C     /* SETUP_FO_DMAT_AO */
       SUBROUTINE SETUP_FO_DMAT_AO(CMO,
      &                            IXVECTOR,
      &                            DMAT_AO,
-     &                            STRING,
-     &                            WORK,LWORK)
+     &                            STRING)
 C=======================================================================
 C     description in here ...
 C-----------------------------------------------------------------------
@@ -219,8 +215,7 @@ C=======================================================================
      &          LBIT
       DIMENSION CMO(*),
      &          DMAT_AO(*),
-     &          STRING(*),
-     &          WORK(LWORK)
+     &          STRING(*)
 
       real(8), allocatable :: bvec(:)
       real(8), allocatable :: bmat(:)
@@ -392,11 +387,9 @@ C=======================================================================
 
       CALL DZERO(DMAT_AO,N2BBASXQ)
           IF(TYP1(1:1) .EQ. 'E') THEN
-        CALL DMOLI3(0,IHERMITICITY,DMAT_AO,CMO,BMAT,
-     &              WORK,KFREE,LFREE)
+        CALL DMOLI3(0,IHERMITICITY,DMAT_AO,CMO,BMAT)
       ELSEIF(TYP1(1:1) .EQ. 'P') THEN
-        CALL DMOLI3(1,IHERMITICITY,DMAT_AO,CMO,BMAT,
-     &              WORK,KFREE,LFREE)
+        CALL DMOLI3(1,IHERMITICITY,DMAT_AO,CMO,BMAT)
       ENDIF
       call dealloc(bmat)
 
