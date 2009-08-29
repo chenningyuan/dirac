@@ -333,7 +333,7 @@ C=======================================================================
      &            UNUSED,6)
       CLOSE(LUCOEF,STATUS = 'KEEP')
 
-      CALL FNDOCC(EIG,WORK,KFREE,LFREE)
+      call fndocc(eig)
 
 !     orbital string
 

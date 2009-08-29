@@ -3452,7 +3452,7 @@ C     ... 1020 is used for reading, thus no '1P' !!! /hjaaj
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck fndocc */
-      SUBROUTINE FNDOCC(EIG,WORK,KFREE,LFREE)
+      SUBROUTINE FNDOCC(EIG)
 C***********************************************************************
 C
 C     Find DHF occupation based on eigenvalues
@@ -3466,7 +3466,7 @@ C
 #include "dcbdhf.h"
 #include "dgroup.h"
 C
-      DIMENSION EIG(*),WORK(*)
+      DIMENSION EIG(*)
       DIMENSION IEIGMIN(2)
 C
       DO I = 1,NFSYM
@@ -3532,7 +3532,7 @@ C
          NASH_DHF(I) = NASH(I)
       END DO
 C     Subtract frozen orbitals (if any) from orbital classes
-      CALL SUBFRZ(WORK,KFREE,LFREE)
+      CALL SUBFRZ()
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4086,7 +4086,7 @@ C
 C
 C     Determine new occupation
 C
-      CALL FNDOCC(EIG,WORK,KFREE,LFREE)
+      CALL FNDOCC(EIG)
 C
       TEST = .FALSE.
       DO IFRP = 1,NFSYM
@@ -4122,7 +4122,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Subfrz */
-      SUBROUTINE SUBFRZ(WORK,KFREE,LFREE)
+      SUBROUTINE SUBFRZ()
 C***********************************************************************
 C
 C     For each orbital class determine the number of frozen orbitals
@@ -4130,6 +4130,8 @@ C
 C     Written by T. Saue Apr 16 2004
 C
 C***********************************************************************
+
+         use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -4137,7 +4139,8 @@ C
 #include "dcbdhf.h"
 #include "dcborb.h"
 #include "dgroup.h"
-      DIMENSION WORK(*)
+      integer, allocatable :: ind(:)
+      integer, allocatable :: ibf(:)
 C
       IF(NFROT.GT.0) CALL OPNFIL(LUTMAT,'DFFROZ','OLD','SUBFRZ')
       DO IFRP = 1,NFSYM
@@ -4147,18 +4150,18 @@ C
           NACSHMF(IFRP,IOPEN) = NACSH(IFRP,IOPEN)
         END DO
         IF(NFRO(IFRP).GT.0) THEN
-          CALL MEMGET('INTE',KIND,NFRO(IFRP),WORK,KFREE,LFREE)
-          CALL MEMGET('INTE',KIBF,NORB(IFRP),WORK,KFREE,LFREE)
-          CALL ORBARR(IFRP,WORK(KIBF))
-          CALL READI(LUTMAT,NFRO(IFRP),WORK(KIND))
+          call alloc(ind, nfro(ifrp))
+          call alloc(ibf, norb(ifrp))
+          CALL ORBARR(IFRP,IBF)
+          CALL READI(LUTMAT,NFRO(IFRP),IND)
           READ(LUTMAT)
-          CALL SUBFR1(IFRP,WORK(KIND),WORK(KIBF))
-          CALL MEMREL('SUBFRZ.froz',WORK,KIND,KIND,KFREE,LFREE)
+          CALL SUBFR1(IFRP,IND,IBF)
+          call dealloc(ind)
+          call dealloc(ibf)
         ENDIF
       ENDDO
       IF(NFROT.GT.0) CLOSE(LUTMAT,STATUS='KEEP')
 C
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Subfr1 */
