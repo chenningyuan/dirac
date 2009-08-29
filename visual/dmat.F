@@ -160,7 +160,9 @@ C=======================================================================
 
       DO II = II1,II2
 
-        FACTOR = STRING(II - IOFF + NESH(1)*(IFSYM1-1))
+!fixme
+!       factor = string(ii - ioff + nesh(1)*(ifsym1-1))
+        factor = 1.0d0
         IF(TYP(1:1) .EQ. 'P') THEN
           DO IS = IS1,IS2
             BMAT(IS,II,IZ) = BVEC(ICOUNTER)*FACTOR
