@@ -194,6 +194,8 @@ C                                                           radovan bast
 C                                              last revision: april 2007
 C=======================================================================
 
+      use memory_allocator
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbqal.h"
@@ -219,6 +221,9 @@ C=======================================================================
      &          DMAT_AO(*),
      &          STRING(*),
      &          WORK(LWORK)
+
+      real(8), allocatable :: bvec(:)
+      real(8), allocatable :: bmat(:)
 
 #include "memint.h"
 
@@ -304,21 +309,19 @@ C=======================================================================
 
 !     allocate memory
 
-      CALL MEMGET('REAL',KBVEC    ,NBDIM*NZ,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBMAT    ,N2ORBXQ,
-     &            WORK,KFREE,LFREE)
+      call alloc(bvec, nbdim*nz)
+      call alloc(bmat, n2orbxq)
 
 !     read vector
 
-      CALL DZERO(WORK(KBVEC),NBDIM*NZ)
-      CALL READT(LUNIT_XVECTOR,NBDIM*NZ,WORK(KBVEC))
+      CALL DZERO(BVEC,NBDIM*NZ)
+      CALL READT(LUNIT_XVECTOR,NBDIM*NZ,BVEC)
 
       CLOSE(LUNIT_XVECTOR,STATUS = 'KEEP')
 
 !     scatter vector onto MO density matrix
 
-      CALL DZERO(WORK(KBMAT),N2ORBXQ)
+      CALL DZERO(BMAT,N2ORBXQ)
       ICOUNTER = 1
 
 !     my static electric perturbations are ungerade
@@ -336,64 +339,66 @@ C=======================================================================
 
       DO IZ = 1,NZ
         IF(NFSYM .EQ. 1) THEN
-          CALL SCATTER_BVEC(WORK(KBVEC),
+          CALL SCATTER_BVEC(BVEC,
      &                      ICOUNTER,
      &                      TYP1,
-     &                      WORK(KBMAT),
+     &                      BMAT,
      &                      IZ,
      &                      1,1,
      &                      STRING)
         ELSE
           IF(IGERADE .EQ. -1) THEN
-            CALL SCATTER_BVEC(WORK(KBVEC),
+            CALL SCATTER_BVEC(BVEC,
      &                        ICOUNTER,
      &                        TYP1,
-     &                        WORK(KBMAT),
+     &                        BMAT,
      &                        IZ,
      &                        1,2,
      &                        STRING)
-            CALL SCATTER_BVEC(WORK(KBVEC),
+            CALL SCATTER_BVEC(BVEC,
      &                        ICOUNTER,
      &                        TYP1,
-     &                        WORK(KBMAT),
+     &                        BMAT,
      &                        IZ,
      &                        2,1,
      &                        STRING)
           ELSE
-            CALL SCATTER_BVEC(WORK(KBVEC),
+            CALL SCATTER_BVEC(BVEC,
      &                        ICOUNTER,
      &                        TYP1,
-     &                        WORK(KBMAT),
+     &                        BMAT,
      &                        IZ,
      &                        1,1,
      &                        STRING)
-            CALL SCATTER_BVEC(WORK(KBVEC),
+            CALL SCATTER_BVEC(BVEC,
      &                        ICOUNTER,
      &                        TYP1,
-     &                        WORK(KBMAT),
+     &                        BMAT,
      &                        IZ,
      &                        2,2,
      &                        STRING)
           ENDIF
         ENDIF
       ENDDO
-      CALL DSCAL(N2ORBXQ,-D1,WORK(KBMAT),1)
+      CALL DSCAL(N2ORBXQ,-D1,BMAT,1)
+      call dealloc(bvec)
 
       DO IZ = 1,NZ
         IOFF = NORBT*NORBT*(IZ - 1)
-        CALL FULMAT('S',NORBT,NORBT,WORK(KBMAT+IOFF)) !symmetrize
+        CALL FULMAT('S',NORBT,NORBT,BMAT(1+IOFF)) !symmetrize
       ENDDO
 
 !     get AO density matrix
 
       CALL DZERO(DMAT_AO,N2BBASXQ)
           IF(TYP1(1:1) .EQ. 'E') THEN
-        CALL DMOLI3(0,IHERMITICITY,DMAT_AO,CMO,WORK(KBMAT),
+        CALL DMOLI3(0,IHERMITICITY,DMAT_AO,CMO,BMAT,
      &              WORK,KFREE,LFREE)
       ELSEIF(TYP1(1:1) .EQ. 'P') THEN
-        CALL DMOLI3(1,IHERMITICITY,DMAT_AO,CMO,WORK(KBMAT),
+        CALL DMOLI3(1,IHERMITICITY,DMAT_AO,CMO,BMAT,
      &              WORK,KFREE,LFREE)
       ENDIF
+      call dealloc(bmat)
 
       IF(NZ .LT. 4) THEN
         DO IZ = 1,NZ
@@ -405,9 +410,4 @@ C=======================================================================
 
       CALL DSCAL(N2BBASXQ,D2,DMAT_AO,1)
 
-!     release memory
-
-      CALL MEMREL('SETUP_FO_DMAT_AO',WORK,KBVEC,KBVEC,KFREE,LFREE)
-
-      RETURN
       END

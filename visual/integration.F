@@ -5,8 +5,7 @@ C     /* VISUAL_INTEGRATION */
      &                              GAO1,
      &                              GAO2,
      &                              NCNT,
-     &                              BUF,
-     &                              WORK,LWORK)
+     &                              BUF)
 C=======================================================================
 C     description in here ...
 C-----------------------------------------------------------------------
@@ -15,6 +14,7 @@ C                                              last revision: april 2007
 C=======================================================================
 
        use dft_main
+       use memory_allocator
 
 #include "implicit.h"
 #include "priunit.h"
@@ -30,11 +30,13 @@ C=======================================================================
      &          GAO2(*),
      &          NCNT(*),
      &          BUF(*),
-     &          WORK(LWORK),
      &          QUANTITY_INTEGRAL(0:3),
      &          QUANTITY_INTEGRAL_LAST(0:3)
 
-#include "memint.h"
+      real(8), allocatable :: x(:)
+      real(8), allocatable :: y(:)
+      real(8), allocatable :: z(:)
+      real(8), allocatable :: w(:)
 
       CALL DZERO(QUANTITY_INTEGRAL,4)
       IF(LBIT(LBIT_VISUAL,3)) THEN !3D
@@ -43,7 +45,7 @@ C=======================================================================
 
         LUNIT = 44
 
-        CALL DFTGRD(DMAT_AO,WORK(KFREE),LFREE,1)
+        call dftgrd(dmat_ao, 1)
 
         REWIND LUNIT
 
@@ -52,28 +54,28 @@ C=======================================================================
 
         IF(NR_POINTS .LE. 0) GOTO 2
 
-        CALL MEMGET('REAL',KX,NR_POINTS,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KY,NR_POINTS,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KZ,NR_POINTS,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KW,NR_POINTS,WORK,KFREE,LFREE)
+        call alloc(x, nr_points)
+        call alloc(y, nr_points)
+        call alloc(z, nr_points)
+        call alloc(w, nr_points)
 
-        CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),
-     &              WORK(KW),
-     &              LUNIT,NR_POINTS)
+        call reaqua(x, y, z, w, lunit, nr_points)
 
         CALL INTEGRATE_QUANTITY(DMAT_AO,
      &                          GAO,
      &                          GAO1,
      &                          GAO2,
-     &                          WORK(KX),WORK(KY),WORK(KZ),
+     &                          x, y, z,
      &                          NCNT,
      &                          BUF,
      &                          QUANTITY_INTEGRAL,
-     &                          WORK(KW),
-     &                          NR_POINTS,
-     &                          WORK,KFREE,LFREE)
+     &                          w,
+     &                          NR_POINTS)
 
-        CALL MEMREL('VISUAL_INTEGRATION',WORK,KX,KX,KFREE,LFREE)
+        call dealloc(x)
+        call dealloc(y)
+        call dealloc(z)
+        call dealloc(w)
 
         GOTO 1
  2      CONTINUE
@@ -145,29 +147,29 @@ C=======================================================================
             REWIND LUNIT
             READ(LUNIT) NR_POINTS
 
-            CALL MEMGET('REAL',KX,NR_POINTS,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KY,NR_POINTS,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KZ,NR_POINTS,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KW,NR_POINTS,WORK,KFREE,LFREE)
+            call alloc(x, nr_points)
+            call alloc(y, nr_points)
+            call alloc(z, nr_points)
+            call alloc(w, nr_points)
 
-            CALL REAQUA(WORK(KX),WORK(KY),WORK(KZ),
-     &                  WORK(KW),
-     &                  LUNIT,NR_POINTS)
+            call reaqua(x, y, z, w, lunit, nr_points)
 
             CALL DZERO(QUANTITY_INTEGRAL,4)
             CALL INTEGRATE_QUANTITY(DMAT_AO,
      &                              GAO,
      &                              GAO1,
      &                              GAO2,
-     &                              WORK(KX),WORK(KY),WORK(KZ),
+     &                              x, y, z,
      &                              NCNT,
      &                              BUF,
      &                              QUANTITY_INTEGRAL,
-     &                              WORK(KW),
-     &                              NR_POINTS,
-     &                              WORK,KFREE,LFREE)
+     &                              w,
+     &                              NR_POINTS)
 
-            CALL MEMREL('VISUAL_INTEGRATION',WORK,KX,KX,KFREE,LFREE)
+            call dealloc(x)
+            call dealloc(y)
+            call dealloc(z)
+            call dealloc(w)
 
             CLOSE(LUNIT,STATUS = 'DELETE')
 
@@ -216,8 +218,7 @@ C     /* INTEGRATE_QUANTITY */
      &                              BUF,
      &                              QUANTITY_INTEGRAL,
      &                              WEIGHT,
-     &                              NR_POINTS,
-     &                              WORK,KFREE,LFREE)
+     &                              NR_POINTS)
 C=======================================================================
 C     description in here ...
 C-----------------------------------------------------------------------
@@ -244,7 +245,6 @@ C=======================================================================
      &          BUF(*),
      &          QUANTITY_INTEGRAL(0:3),
      &          WEIGHT(*),
-     &          WORK(*),
      &          QUANTITY(0:3)
 
       DO IPOINT = 1,NR_POINTS
@@ -257,8 +257,7 @@ C=======================================================================
      &                             PZ(IPOINT),
      &                             NCNT,
      &                             BUF,
-     &                             QUANTITY,
-     &                             WORK,KFREE,LFREE)
+     &                             QUANTITY)
 
         CALL DAXPY(4,WEIGHT(IPOINT),QUANTITY,1,
      &                              QUANTITY_INTEGRAL,1)

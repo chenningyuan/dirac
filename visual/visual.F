@@ -493,8 +493,7 @@ C=======================================================================
      &                               XYZ_LIST(IPOINT_IN_LIST,3),
      &                               NCNT,
      &                               BUF,
-     &                               QUANTITY,
-     &                               WORK,KFREE,LFREE)
+     &                               QUANTITY)
 
           WRITE(LUPRI,'(3E14.6,4E18.10)') XYZ_LIST(IPOINT_IN_LIST,1),
      &                                    XYZ_LIST(IPOINT_IN_LIST,2),
@@ -553,8 +552,7 @@ C=======================================================================
      &                                     PX,PY,PZ,
      &                                     NCNT,
      &                                     BUF,
-     &                                     QUANTITY,
-     &                                     WORK,KFREE,LFREE)
+     &                                     QUANTITY)
 
 !               write to file
 
@@ -655,8 +653,7 @@ C=======================================================================
      &                                   PX,PY,PZ,
      &                                   NCNT,
      &                                   BUF,
-     &                                   QUANTITY(0,KCUBE),
-     &                                   WORK,KFREE,LFREE)
+     &                                   QUANTITY(0,KCUBE))
             ENDDO
 
 !           write to file
@@ -682,8 +679,7 @@ C     /* GET_QUANTITY_IN_POINT */
      &                                 PX,PY,PZ,
      &                                 NCNT,
      &                                 BUF,
-     &                                 QUANTITY_ADDMEUP,
-     &                                 WORK,KFREE,LFREE)
+     &                                 QUANTITY_ADDMEUP)
 C=======================================================================
 C     description in here ...
 C-----------------------------------------------------------------------
@@ -733,7 +729,6 @@ C=======================================================================
      &          BUF(*),
      &          QUANTITY(0:3),
      &          QUANTITY_ADDMEUP(0:3),
-     &          WORK(*),
      &          VECTOR_A(3),
      &          VECTOR_B(3)
 
