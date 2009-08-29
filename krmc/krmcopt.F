@@ -1797,7 +1797,7 @@ C        ***************************************************
 C
          NVEC = 1
          CALL NUMLST(OPT_DELSTR(I),ILIST,NORB(I),
-     &        -NPSH(I),NESH(I),I,NVEC,WORK(KFREE),LFREE)
+     &        -NPSH(I),NESH(I),I,NVEC)
          NDSH(I) = 0
 C
 C        changed to OPT_DELSTR which is more natural and also 
@@ -1808,7 +1808,7 @@ C        orbitals...
 C        FIXME: IMPLEMENT ME - SK Aug 2008
 C
 csk      CALL NUMLST(OPT_FRZSTR(I),ILIST,NORB(I),
-csk  &        -NPSH(I),NESH(I),I,NVEC,WORK(KFREE),LFREE)
+csk  &        -NPSH(I),NESH(I),I,NVEC)
 
          IF (NVEC .GT. 0) THEN
             LNOROT = .TRUE.

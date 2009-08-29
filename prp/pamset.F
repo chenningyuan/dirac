@@ -815,7 +815,7 @@ C
           NVEC = 1
           CALL  NUMLST(INDSTR(ITYP,IFRP),IND(1,ITYP,IFRP),
      &                 NFBAS(IFRP,0),-NFBAS(IFRP,2),NFBAS(IFRP,1),
-     &                 IFRP,NVEC,WORK(KFREE),LFREE)
+     &                 IFRP,NVEC)
           CALL ORBCNT(IND(1,ITYP,IFRP),NVEC,IFRP,
      &                NIND(1,ITYP,IFRP),NIND(2,ITYP,IFRP))
 C
@@ -1091,7 +1091,7 @@ C
           NVEC = 1
           CALL NUMLST(INDSTR(ITYP,IFRP),IND,
      &                NFBAS(IFRP,0),-NFBAS(IFRP,2),NFBAS(IFRP,1),
-     &                IFRP,NVEC,WORK(KFREE),LFREE)
+     &                IFRP,NVEC)
           CALL ORBCNT(IND,NVEC,IFRP,NIND(1,ITYP,IFRP),NIND(2,ITYP,IFRP))
 C
 C         Absolute indices of positronic orbitals
@@ -1436,7 +1436,7 @@ C       -----------------
 C
         NVEC = 0
         CALL  NUMLST(INDSTR(1,I),IDUMMY,NR(I),
-     &             IR(1,I),IR(2,I),I,NVEC,WORK(KFREE),LFREE)
+     &             IR(1,I),IR(2,I),I,NVEC)
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A)') 
      &       '- Inactive orbitals  : No electrons'
@@ -1450,7 +1450,7 @@ C       ---------------
 C
         NVEC = 0
         CALL  NUMLST(INDSTR(2,I),IDUMMY,NR(I),
-     &             IR(1,I),IR(2,I),I,NVEC,WORK(KFREE),LFREE)
+     &             IR(1,I),IR(2,I),I,NVEC)
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A)') 
      &       '- Active orbitals    : No electrons'
@@ -1464,7 +1464,7 @@ C       ------------------
 C
         NVEC = 0
         CALL  NUMLST(INDSTR(3,I),IDUMMY,NR(I),
-     &            IR(1,I),IR(2,I),I,NVEC,WORK(KFREE),LFREE)
+     &            IR(1,I),IR(2,I),I,NVEC)
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A)') 
      &       '- Secondary orbitals : No electrons'

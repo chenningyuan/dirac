@@ -873,7 +873,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck numlst */
-      SUBROUTINE NUMLST(A,ILIST,NLIST,IRNGE1,IRNGE2,IFRP,IP,WORK,LWORK)
+      SUBROUTINE NUMLST(A,ILIST,NLIST,IRNGE1,IRNGE2,IFRP,IP)
 C*****************************************************************************
 C
 C     Original purpose was to read the numbers in the string A which has
@@ -905,33 +905,35 @@ C     lower treshold, upper treshold and minimal gap (to prevent cutting through
 C     quasi-degenerate orbitals).
 C
 C*****************************************************************************
+
+      use memory_allocator
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dcborb.h"
 #include "dcbgen.h"
 C
       CHARACTER A*(*)
-      DIMENSION ILIST(NLIST),WORK(LWORK)
+      DIMENSION ILIST(NLIST)
       LOGICAL TOBE
+  
+      real(8), allocatable :: eig(:)
+      integer, allocatable :: ibg(:)
+      integer, allocatable :: itm(:)
 
       CALL QENTER('NUMLST')
 C
-C     Memory initialization
-C     =====================
-C
-      KWORK = 1
-      KFREE = KWORK
-      LFREE = LWORK
 C
 C     Distinguish between the two branches
 C
       NA = LEN(A)
       IF (INDEX(A(1:NA),'energy') .EQ. 0) THEN
-         CALL MEMGET('INTE',KITM,IRNGE2-IRNGE1+1,WORK,KFREE,LFREE)
-         CALL NUMLS1(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,WORK(KITM))
+         call alloc(itm, IRNGE2-IRNGE1+1)
+         CALL NUMLS1(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,ITM)
+         call dealloc(itm)
       ELSE
-         CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
-         CALL MEMGET('INTE',KIBG,NORBT,WORK,KFREE,LFREE)
+         call alloc(eig, norbt)
+         call alloc(ibg, norbt)
 C
 C        Get eigenvalues from DFCOEF
 C
@@ -947,21 +949,19 @@ C           why we check for I_DCBORB_SET as well.
 C
 C
             IP = - 666
-            CALL NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,WORK(KEIG))
+            CALL NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,EIG)
          ELSE
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PCMOUT')
-            CALL REACMO(LUCOEF,'DFCOEF',DUM,WORK(KEIG),WORK(KIBG),DUM,4,
-     &                  WORK,KFREE,LFREE)
+            CALL REACMO_no_work(LUCOEF,'DFCOEF',DUM,EIG,IBG,DUM,4)
             CLOSE(LUCOEF,STATUS='KEEP')
             IOFF = IORB(IFRP)+NPSH(IFRP)
-            CALL NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,WORK(KEIG+IOFF))
+            CALL NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,EIG(1+IOFF))
          ENDIF
+         call dealloc(eig)
+         call dealloc(ibg)
       ENDIF
-C
-      CALL MEMREL('NUMLST',WORK,KWORK,KWORK,KFREE,LFREE)
-C
+
       CALL QEXIT('NUMLST')
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck numls1 */
@@ -2354,7 +2354,7 @@ C
         NVECS = 1
         CALL MEMGET('INTE',KJVEC,NORB(IFRP),WORK,KFREE,LFREE)
         CALL NUMLST(VECROT(IFRP),WORK(KJVEC),NORB(IFRP),
-     &             -NPSH(IFRP),NESH(IFRP),IFRP,NVECS,WORK(KFREE),LFREE)
+     &             -NPSH(IFRP),NESH(IFRP),IFRP,NVECS)
         CALL ORBCN2(WORK(KJVEC),NVECS,IFRP,NPVECS,NEVECS)
         IF(MOD(NVECS,2).EQ.1) THEN
           CALL QUIT('CMOROT: Odd number of orbitals to rotate !')
@@ -2570,7 +2570,7 @@ C
       CALL MEMGET('INTE',KVEC,NORB(IFRP),WORK,KFREE,LFREE)
       NSTR(IFRP,0) = 1
       CALL NUMLST(VECREF,WORK(KVEC),NORB(IFRP),-NSTR(IFRP,2),
-     &            NSTR(IFRP,1),IFRP,NSTR(IFRP,0),WORK(KFREE),LFREE)
+     &            NSTR(IFRP,1),IFRP,NSTR(IFRP,0))
       CALL ORBCNT(WORK(KVEC),NSTR(IFRP,0),IFRP,
      &            NSTR(IFRP,2),NSTR(IFRP,1))
       NSTR(IFRP,0) = NSTR(IFRP,1) + NSTR(IFRP,2)

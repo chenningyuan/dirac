@@ -3186,7 +3186,7 @@ C
         NVEC(IFRP,0) = 1
         CALL  NUMLST(VECMVO(IFRP),WORK(KVEC(IFRP,1)),
      &               NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &               IFRP,NVEC(IFRP,0),WORK(KFREE),LFREE)
+     &               IFRP,NVEC(IFRP,0))
         CALL ORBCNT(WORK(KVEC(IFRP,1)),NVEC(IFRP,0),IFRP,
      &              NVEC(IFRP,2),NVEC(IFRP,1))
         NVEC(IFRP,0) = NVEC(IFRP,1) + NVEC(IFRP,2)

@@ -1389,7 +1389,7 @@ C&&&  .MOFREEZE
                   NMOFREEZE(I) = -1
                   CALL NUMLST(CTEMP,IMOFREEZE(1+(I-1)*(NMOFREEZE(1))),
      &                 MXMOFREEZE,1,MXMOFREEZE,
-     &                 I,NMOFREEZE(I),WORK,LWORK)
+     &                 I,NMOFREEZE(I))
                END DO
                WRITE (LUPRI,*)'Freezing orbitals in fermion symmetry 1'
                WRITE (LUPRI,*) (IMOFREEZE(I),I=1,NMOFREEZE(1))
@@ -1579,7 +1579,7 @@ C
             DO I = 1,NFSYM
               NVEC = 0
               CALL  NUMLST(VCPROJ(I,J),IDUMMY,NFBAS(I,0),
-     &                  -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
+     &                  -NFBAS(I,2),NFBAS(I,1),I,NVEC)
               IF(NVEC.EQ.0) THEN
                 WRITE(LUPRI,'(7X,A,A3)')
      &             '- No orbitals in fermion ircop ',FREP(I)
@@ -1596,7 +1596,7 @@ C
             DO I = 1,NFSYM
               NVEC = 0
               CALL  NUMLST(VCPROJ(I,J),IDUMMY,NFBAS(I,0),
-     &                  -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
+     &                  -NFBAS(I,2),NFBAS(I,1),I,NVEC)
               IF(NVEC.EQ.0) THEN
                 WRITE(LUPRI,'(5X,A,A3)')
      &             '- No orbitals in fermion ircop ',FREP(I)
@@ -2280,7 +2280,7 @@ C
               READ(LUCMD,'(A90)') CTEMP
               IREORD(I) = -1
               CALL NUMLST(CTEMP,IMOORD(1,I),MXREORD,1,MXREORD,
-     &                    I,IREORD(I),WORK,LWORK)
+     &                    I,IREORD(I))
             END DO
             GO TO 100
   105    CONTINUE
@@ -2297,7 +2297,7 @@ C
               READ(LUCMD,'(A72)') CTEMP
               IREORF(I) = -1
               CALL NUMLST(CTEMP,IMOORF(1,I),MXREORD,1,MXREORD,
-     &                    I,IREORF(I),WORK,LWORK)
+     &                    I,IREORF(I))
                   END DO
             GO TO 100
   106    CONTINUE
@@ -3351,7 +3351,7 @@ C
       DO I = 1,NFSYM
         NVEC = 0
         CALL  NUMLST(VECPOP(I),IDUMMY,NFBAS(I,0),
-     &              -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
+     &              -NFBAS(I,2),NFBAS(I,1),I,NVEC)
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A,A3)')
      &       '- No orbitals in fermion ircop ',FREP(I)
@@ -3555,7 +3555,7 @@ C
       DO I = 1,NFSYM
         NVEC = 0
         CALL  NUMLST(VECPRJ(I),IDUMMY,NFBAS(I,0),
-     &              -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
+     &              -NFBAS(I,2),NFBAS(I,1),I,NVEC)
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A,A3)')
      &       '- No orbitals in fermion ircop ',FREP(I)
@@ -3576,7 +3576,7 @@ C
           DO I = 1,NFSYM
             NVEC = 0
             CALL  NUMLST(VECREF(I,J),IDUMMY,NFBAS(I,0),
-     &                -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
+     &                -NFBAS(I,2),NFBAS(I,1),I,NVEC)
             IF(NVEC.EQ.0) THEN
               WRITE(LUPRI,'(4X,A,A3)')
      &           '- No orbitals in fermion ircop ',FREP(I)
@@ -3610,7 +3610,7 @@ C
           DO I = 1,NFSYM
             NVEC = 0
             CALL  NUMLST(VECREF(I,J),IDUMMY,NFBAS(I,0),
-     &                -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
+     &                -NFBAS(I,2),NFBAS(I,1),I,NVEC)
             IF(NVEC.EQ.0) THEN
               WRITE(LUPRI,'(4X,A,A3)')
      &           '- No orbitals in fermion ircop ',FREP(I)
@@ -3776,7 +3776,7 @@ C
       DO I = 1,NFSYM
         NVEC = 0
         CALL  NUMLST(VECPRI(I),IDUMMY,NFBAS(I,0),
-     &              -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
+     &              -NFBAS(I,2),NFBAS(I,1),I,NVEC)
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A,A3)')
      &       '- No orbital string specified in fermion ircop ',FREP(I)
@@ -5347,7 +5347,7 @@ C
             DO I = 1,NFSYM
               NVEC = 0
               CALL  NUMLST(VCPROJ(I,J),IDUMMY,NFBAS(I,0),
-     &                  -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
+     &                  -NFBAS(I,2),NFBAS(I,1),I,NVEC)
               IF(NVEC.EQ.0) THEN
                 WRITE(LUPRI,'(7X,A,A3)')
      &             '- No orbitals in fermion ircop ',FREP(I)
@@ -5364,7 +5364,7 @@ C
             DO I = 1,NFSYM
               NVEC = 0
               CALL  NUMLST(VCPROJ(I,J),IDUMMY,NFBAS(I,0),
-     &                  -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
+     &                  -NFBAS(I,2),NFBAS(I,1),I,NVEC)
               IF(NVEC.EQ.0) THEN
                 WRITE(LUPRI,'(5X,A,A3)')
      &             '- No orbitals in fermion ircop ',FREP(I)
@@ -5393,7 +5393,7 @@ C
             DO I = 1,NFSYM
               NVEC = 0
               CALL  NUMLST(VCPROJ(I,J),IDUMMY,NFBAS(I,0),
-     &                  -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
+     &                  -NFBAS(I,2),NFBAS(I,1),I,NVEC)
               IF(NVEC.EQ.0) THEN
                 WRITE(LUPRI,'(7X,A,A3)')
      &             '- No orbitals in fermion ircop ',FREP(I)
@@ -5410,7 +5410,7 @@ C
             DO I = 1,NFSYM
               NVEC = 0
               CALL  NUMLST(VCPROJ(I,J),IDUMMY,NFBAS(I,0),
-     &                  -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
+     &                  -NFBAS(I,2),NFBAS(I,1),I,NVEC)
               IF(NVEC.EQ.0) THEN
                 WRITE(LUPRI,'(7X,A,A3)')
      &             '- No orbitals in fermion ircop ',FREP(I)
@@ -5825,7 +5825,7 @@ C
         LINE = ' '
         READ(IUNIT,'(A72)') LINE
         LAB(I) = LINE(1:12)
-        CALL NUMLST(LINE(12:72),IBUF,NDIM,1,NDIM,1,NGRP,WORK,LWORK)
+        CALL NUMLST(LINE(12:72),IBUF,NDIM,1,NDIM,1,NGRP)
         DO J = 1,NGRP
           ILAB(IBUF(J)) = I
         ENDDO
@@ -6027,7 +6027,7 @@ C
       DO I = 1,NFSYM
         NVEC = 0
         CALL  NUMLST(VECMVO(I),IDUMMY,NFBAS(I,0),
-     &            -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
+     &            -NFBAS(I,2),NFBAS(I,1),I,NVEC)
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A,A3)')
      &       '- No orbitals in fermion ircop ',FREP(I)
@@ -6817,7 +6817,7 @@ C
               DO I = 1,NFSYM
                  NVEC = 0
                  CALL  NUMLST(VECREF(I,J),IDUMMY,NFBAS(I,0),
-     S                -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
+     S                -NFBAS(I,2),NFBAS(I,1),I,NVEC)
                  IF(NVEC.EQ.0) THEN
                     WRITE(LUPRI,'(4X,A,A3)')
      S                   '- No orbitals in fermion ircop ',FREP(I)
@@ -6834,7 +6834,7 @@ C
               DO I = 1,NFSYM
                  NVEC = 0
                  CALL  NUMLST(VECREF(I,J),IDUMMY,NFBAS(I,0),
-     S                -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
+     S                -NFBAS(I,2),NFBAS(I,1),I,NVEC)
                  IF(NVEC.EQ.0) THEN
                     WRITE(LUPRI,'(4X,A,A3)')
      S                   '- No orbitals in fermion ircop ',FREP(I)

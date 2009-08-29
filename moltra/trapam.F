@@ -93,7 +93,7 @@ C
           NSTR(IFRP,0,I) = - 1
           CALL  NUMLST(TRA4_INDSTR(I,IFRP),WORK(KVEC(IFRP,I)),
      &                 NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &                 IFRP,NSTR(IFRP,0,I),WORK(KFREE),LFREE)
+     &                 IFRP,NSTR(IFRP,0,I))
           CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),IFRP,
      &              NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
@@ -278,7 +278,7 @@ C
          ELSE
             CALL NUMLST(TRA_CORSTR(IFRP),WORK(KVEC(IFRP,5)),
      &                  NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &                  IFRP,NSPC(IFRP,0),WORK(KFREE),LFREE)
+     &                  IFRP,NSPC(IFRP,0))
             CALL ORBCNT(WORK(KVEC(IFRP,5)),NSPC(IFRP,0),IFRP,
      &                  NSPC(IFRP,2),NSPC(IFRP,1))
          ENDIF
@@ -565,7 +565,7 @@ C
         NSTR(IFRP,0,1) = - 1
         CALL NUMLST(MP2_INDSTR(1,IFRP),WORK(KVEC(IFRP,1)),
      &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &              IFRP,NSTR(IFRP,0,1),WORK(KFREE),LFREE)
+     &              IFRP,NSTR(IFRP,0,1))
         CALL ORBCNT(WORK(KVEC(IFRP,1)),NSTR(IFRP,0,1),IFRP,
      &              NSTR(IFRP,2,1),NSTR(IFRP,1,1))
         NSTR(IFRP,0,1)   = NSTR(IFRP,1,1) + NSTR(IFRP,2,1)
@@ -590,7 +590,7 @@ C
         NSTR(IFRP,0,2) = - 1
         CALL  NUMLST(MP2_INDSTR(2,IFRP),WORK(KVEC(IFRP,2)),
      &               NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &               IFRP,NSTR(IFRP,0,2),WORK(KFREE),LFREE)
+     &               IFRP,NSTR(IFRP,0,2))
         CALL ORBCNT(WORK(KVEC(IFRP,2)),NSTR(IFRP,0,2),IFRP,
      &              NSTR(IFRP,2,2),NSTR(IFRP,1,2))
         NSTR(IFRP,0,2)   = NSTR(IFRP,1,2) + NSTR(IFRP,2,2)
@@ -830,7 +830,7 @@ C
         NSTR(IFRP,0,1) = - 1
         CALL NUMLST(MPR_INDSTR(1,IFRP),WORK(KVEC(IFRP,1)),
      &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &              IFRP,NSTR(IFRP,0,1),WORK(KFREE),LFREE)
+     &              IFRP,NSTR(IFRP,0,1))
         CALL ORBCNT(WORK(KVEC(IFRP,1)),NSTR(IFRP,0,1),IFRP,
      &              NSTR(IFRP,2,1),NSTR(IFRP,1,1))
         NSTR(IFRP,0,1) = NSTR(IFRP,1,1) + NSTR(IFRP,2,1)
@@ -863,7 +863,7 @@ C
         NSTR(IFRP,0,2) = - 1
         CALL NUMLST(MPR_INDSTR(2,IFRP),WORK(KVEC(IFRP,2)),
      &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &              IFRP,NSTR(IFRP,0,2),WORK(KFREE),LFREE)
+     &              IFRP,NSTR(IFRP,0,2))
         CALL ORBCNT(WORK(KVEC(IFRP,2)),NSTR(IFRP,0,2),IFRP,
      &              NSTR(IFRP,2,2),NSTR(IFRP,1,2))
         NSTR(IFRP,0,2)   = NSTR(IFRP,1,2) + NSTR(IFRP,2,2)
@@ -896,7 +896,7 @@ C
         NSTR(IFRP,0,3) = - 1
         CALL NUMLST(MPR_INDSTR(3,IFRP),WORK(KVEC(IFRP,3)),
      &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &              IFRP,NSTR(IFRP,0,3),WORK(KFREE),LFREE)
+     &              IFRP,NSTR(IFRP,0,3))
         CALL ORBCNT(WORK(KVEC(IFRP,3)),NSTR(IFRP,0,3),IFRP,
      &              NSTR(IFRP,2,3),NSTR(IFRP,1,3))
         NSTR(IFRP,0,3)   = NSTR(IFRP,1,3) + NSTR(IFRP,2,3)
@@ -932,7 +932,7 @@ C
         NSTR(IFRP,0,4) = - 1
         CALL NUMLST(MPR_INDSTR(4,IFRP),WORK(KVEC(IFRP,4)),
      &              NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &              IFRP,NSTR(IFRP,0,4),WORK(KFREE),LFREE)
+     &              IFRP,NSTR(IFRP,0,4))
         CALL ORBCNT(WORK(KVEC(IFRP,4)),NSTR(IFRP,0,4),IFRP,
      &              NSTR(IFRP,2,4),NSTR(IFRP,1,4))
         NSTR(IFRP,0,4)   = NSTR(IFRP,1,4) + NSTR(IFRP,2,4)

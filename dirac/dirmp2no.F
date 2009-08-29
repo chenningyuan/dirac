@@ -623,7 +623,7 @@ C
           NSTR(IFRP,0,I) = - 1
           CALL  NUMLST(TRA4_INDSTR(I,IFRP),WORK(KVEC(IFRP,I)),
      &                 NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &                 IFRP,NSTR(IFRP,0,I),WORK(KFREE),LFREE)
+     &                 IFRP,NSTR(IFRP,0,I))
           CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),IFRP,
      &              NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
@@ -789,7 +789,7 @@ C
          ELSE
             CALL NUMLST(TRA_CORSTR(IFRP),WORK(KVEC(IFRP,5)),
      &                  NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &                  IFRP,NSPC(IFRP,0),WORK(KFREE),LFREE)
+     &                  IFRP,NSPC(IFRP,0))
             CALL ORBCNT(WORK(KVEC(IFRP,5)),NSPC(IFRP,0),IFRP,
      &                  NSPC(IFRP,2),NSPC(IFRP,1))
          ENDIF

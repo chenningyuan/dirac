@@ -369,7 +369,7 @@ C     Active occupied and virtual space: only electrons allowed
         WRITE(LUPRI,'(4X,A,A3)') 'Fermion ircop:',FREP(I)
         NVEC = 0
         CALL  NUMLST(MP2_INDSTR(1,I),IDUMMY,NFBAS(I,IC),
-     &               IR(1,I),IR(2,I),I,NVEC,WORK,LWORK)
+     &               IR(1,I),IR(2,I),I,NVEC)
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A)')
      &       '- Occupied space : No electrons'
@@ -380,7 +380,7 @@ C     Active occupied and virtual space: only electrons allowed
         IF(DMP2_VIRTHR.NE.DUMMY) MP2_INDSTR(2,I) = 'all '
         NVEC = 0
         CALL  NUMLST(MP2_INDSTR(2,I),IDUMMY,NFBAS(I,IC),
-     &               IR(1,I),IR(2,I),I,NVEC,WORK,LWORK)
+     &               IR(1,I),IR(2,I),I,NVEC)
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A)')
      &       '- Virtual  space : No electrons'
@@ -938,7 +938,7 @@ C
         NVEC = 0
         WRITE(LUPRI,'(4X,A,A3)') 'Fermion ircop:',FREP(I)
         CALL  NUMLST(TRA_INDSTR(I),IDUMMY,NFBAS(I,IC),
-     &             IR(1,I),IR(2,I),I,NVEC,WORK,LWORK)
+     &             IR(1,I),IR(2,I),I,NVEC)
         IF(NVEC.EQ.0) THEN
           WRITE(LUPRI,'(4X,A)') ' No explicit orbitals specified '
         ELSE
@@ -968,7 +968,7 @@ C
         DO J = 1,2
           NVEC = 0
           CALL  NUMLST(TRA2_INDSTR(J,I),IDUMMY,NFBAS(I,IC),
-     &               IR(1,I),IR(2,I),I,NVEC,WORK,LWORK)
+     &               IR(1,I),IR(2,I),I,NVEC)
           IF(NVEC.EQ.0) THEN
             WRITE(LUPRI,'(4X,A,I2)')
      &      ' No explicit orbitals specified for index ',J
@@ -1066,7 +1066,7 @@ C
         DO J = 1,4
           NVEC = 0
           CALL  NUMLST(TRA4_INDSTR(J,I),IDUMMY,NFBAS(I,IC),
-     &               IR(1,I),IR(2,I),I,NVEC,WORK,LWORK)
+     &               IR(1,I),IR(2,I),I,NVEC)
           IF(NVEC.EQ.0) THEN
             WRITE(LUPRI,'(4X,A,I2)')
      &      ' No explicit orbitals specified for index ',J

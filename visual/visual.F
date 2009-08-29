@@ -338,8 +338,7 @@ C=======================================================================
 !     orbital string
 
       call alloc(occupation, norbt)
-
-      call setup_orbital_string(occupation, work(kfree), lfree)
+      call setup_orbital_string(occupation)
 
 !     density matrices
 
@@ -1129,7 +1128,7 @@ C=======================================================================
       RETURN
       END
 
-      subroutine setup_orbital_string(occupation, w, lw)
+      subroutine setup_orbital_string(occupation)
 
       use memory_allocator
 
@@ -1140,8 +1139,6 @@ C=======================================================================
 #include "visual.h"
 
       real(8)              :: occupation(norbt)
-      integer              :: lw
-      real(8)              :: w(lw)
 
       logical              :: lbit
       integer, allocatable :: kvec(:)
@@ -1168,9 +1165,7 @@ C=======================================================================
      &               -npsh(ifsym),
      &                nesh(ifsym),
      &                ifsym,
-     &                nvec,
-     &                w,
-     &                lw)
+     &                nvec)
 
           do i = 1, nvec
             ishift = kvec(i)

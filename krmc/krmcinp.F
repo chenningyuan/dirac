@@ -644,7 +644,7 @@ C
       DO I = 1, NFSYM
          NVEC = 0
          CALL NUMLST(KRMC_FRZSTR(I),IDUMMY,NFBAS(I,0),
-     &        -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
+     &        -NFBAS(I,2),NFBAS(I,1),I,NVEC)
          NVECT = NVECT + NVEC
       END DO
       IF (NVECT .GT. 0) THEN
@@ -661,7 +661,7 @@ C
       DO I = 1, NFSYM
          NVEC = 0
          CALL NUMLST(KRMC_DELSTR(I),IDUMMY,NFBAS(I,0),
-     &        -NFBAS(I,2),NFBAS(I,1),I,NVEC,WORK,LWORK)
+     &        -NFBAS(I,2),NFBAS(I,1),I,NVEC)
          NVECT = NVECT + NVEC
       END DO
       IF (NVECT .GT. 0) THEN

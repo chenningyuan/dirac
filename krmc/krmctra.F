@@ -804,7 +804,7 @@ C
 C         ... -1 tells NUMLST to _not_ reorder orbital list
           CALL  NUMLST(TRA4_INDSTR(I,IFRP),WORK(KVEC(IFRP,I)),
      &                 NR(IFRP),IR(1,IFRP),IR(2,IFRP),
-     &                 IFRP,NSTR(IFRP,0,I),WORK(KFREE),LFREE)
+     &                 IFRP,NSTR(IFRP,0,I))
           CALL ORBCNT(WORK(KVEC(IFRP,I)),NSTR(IFRP,0,I),IFRP,
      &              NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
