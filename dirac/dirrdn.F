@@ -3154,7 +3154,7 @@ C
 !      *VISUAL
     9  continue
 #ifdef MOD_VISUAL
-       call visual_input(word, .false., work, lwork)
+       call visual_input(word, .false.)
 #else
        call quit('*VISUAL not available in this version')
 #endif /* MOD_VISUAL */
@@ -3178,7 +3178,7 @@ C
 #endif
       IF(DOLOC) CALL LOCINP(WORD,.TRUE.,WORK,LWORK)
 #ifdef MOD_VISUAL
-      IF(DO_VISUAL) CALL VISUAL_INPUT(WORD,.TRUE.,WORK,LWORK)
+      IF(DO_VISUAL) CALL VISUAL_INPUT(WORD,.TRUE.)
 #endif /* MOD_VISUAL */
 C
       CALL QEXIT('ANWINP')

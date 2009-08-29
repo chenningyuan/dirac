@@ -325,6 +325,9 @@ C  /* Deck reacmo */
       SUBROUTINE REACMO(IUNIT,CMOFIL,CMO,EIG,IBEIG,TOTERG,IOPT,
      &                  WORK,KFREE,LFREE)
 C***********************************************************************
+C     radovan: there exists also
+!              SUBROUTINE REACMO_no_work(IUNIT,CMOFIL,CMO,EIG,IBEIG,TOTERG,IOPT)
+C
 C
 C     Read DHF-coefficients and eigenvalues from unformatted file
 C     Read option is provided from bit-packed IOPT:

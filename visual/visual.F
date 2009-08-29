@@ -1,6 +1,6 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* VISUAL_INPUT */
-      SUBROUTINE VISUAL_INPUT(WORD,RESET,WORK,LWORK)
+      SUBROUTINE VISUAL_INPUT(WORD,RESET)
 C=======================================================================
 C     description in here ...
 C-----------------------------------------------------------------------
@@ -22,7 +22,6 @@ C=======================================================================
      &          RESET,
      &          LBIT
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD_SAVE*7
-      DIMENSION WORK(LWORK)
 
       SAVE SET
 
@@ -304,43 +303,37 @@ C=======================================================================
       DIMENSION WORK(LWORK)
       real(8), allocatable :: occupation(:)
 
+      real(8), allocatable :: cmo(:)
+      real(8), allocatable :: eig(:)
+      real(8), allocatable :: dmat_ao(:)
+      real(8), allocatable :: gao(:)
+      real(8), allocatable :: gao1(:)
+      real(8), allocatable :: gao2(:)
+      real(8), allocatable :: buf(:)
+      integer, allocatable :: ncnt(:)
+
 #include "memint.h"
 
-!     CALL VISUAL_CHECK_CONSISTENCY()
-!     CALL VISUAL_REPORT()
-
-!     allocate memory
-
-      CALL MEMGET('REAL',KCMO      ,N2BBASXQ,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG      ,NORBT,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDMAT_AO  ,N2BBASXQ*(MAX_NR_XVECTORS+1),
-     &            WORK,KFREE,LFREE)
-!     CALL MEMGET('REAL',KSMAT     ,N2BBASX,
-!    &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGAO      ,NTBAS(0),
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGAO1     ,NTBAS(0)*3,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGAO2     ,NTBAS(0)*6,
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KNCNT     ,NTBAS(0),
-     &            WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBUF      ,NTBAS(0)*4,
-     &            WORK,KFREE,LFREE)
+      call alloc(cmo      ,n2bbasxq)
+      call alloc(eig      ,norbt)
+      call alloc(dmat_ao  ,n2bbasxq*(max_nr_xvectors+1))
+      call alloc(gao      ,ntbas(0))
+      call alloc(gao1     ,ntbas(0)*3)
+      call alloc(gao2     ,ntbas(0)*6)
+      call alloc(ncnt     ,ntbas(0))
+      call alloc(buf      ,ntbas(0)*4)
 
 !     coefficients
 
-      CALL DZERO(WORK(KCMO),N2BBASXQ)
-      CALL DZERO(WORK(KEIG),NORBT)
+      CALL DZERO(CMO,N2BBASXQ)
+      CALL DZERO(EIG,NORBT)
 
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','VISUAL')
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),UNUSED,
-     &            UNUSED,6,WORK,KFREE,LFREE)
+      CALL REACMO_no_work(LUCOEF,'DFCOEF',CMO,EIG,UNUSED,
+     &            UNUSED,6)
       CLOSE(LUCOEF,STATUS = 'KEEP')
 
-      CALL FNDOCC(WORK(KEIG),WORK,KFREE,LFREE)
+      CALL FNDOCC(EIG,WORK,KFREE,LFREE)
 
 !     orbital string
 
@@ -353,50 +346,46 @@ C=======================================================================
       IOFF = 0
       DO IXVECTOR = 1,NR_XVECTORS
         IF(.NOT. XVECTOR_FILE(IXVECTOR) .EQ. 'ZORDER') THEN
-          CALL SETUP_FO_DMAT_AO(WORK(KCMO),
+          CALL SETUP_FO_DMAT_AO(CMO,
      &                          IXVECTOR,
-     &                          WORK(KDMAT_AO+IOFF),
+     &                          DMAT_AO(1+IOFF),
      &                          occupation,
      &                          WORK(KFREE),LFREE)
         ENDIF
         IOFF = IOFF + N2BBASXQ
       ENDDO
-      CALL SETUP_ZO_DMAT_AO(WORK(KCMO),
-     &                      WORK(KDMAT_AO+IOFF),
+      CALL SETUP_ZO_DMAT_AO(CMO,
+     &                      DMAT_AO(1+IOFF),
      &                      occupation,
      &                      WORK(KFREE),LFREE)
 
       call dealloc(occupation)
 
-!     CALL GTOVLX(WORK(KSMAT),SSMTRC,WORK(KFREE),LFREE)
-!     addme = DDOT(N2BBASX,WORK(KDMAT_AO),1,WORK(KSMAT),1)
-!     write(lupri,*) 'debug', addme
-!     addme = DDOT(N2BBASX,WORK(KDMAT_AO+IOFF),1,WORK(KSMAT),1)
-!     write(lupri,*) 'debug', addme
-
-      CALL VISUAL_DRIVER(WORK(KDMAT_AO),
-     &                   WORK(KGAO),
-     &                   WORK(KGAO1),
-     &                   WORK(KGAO2),
-     &                   WORK(KNCNT),
-     &                   WORK(KBUF),
-     &                   WORK(KFREE),LFREE)
+      call visual_driver(dmat_ao,
+     &                   gao,
+     &                   gao1,
+     &                   gao2,
+     &                   ncnt,
+     &                   buf)
 
       IF(LBIT(LBIT_VISUAL,8)) THEN !integration
-        CALL VISUAL_INTEGRATION(WORK(KDMAT_AO),
-     &                          WORK(KGAO),
-     &                          WORK(KGAO1),
-     &                          WORK(KGAO2),
-     &                          WORK(KNCNT),
-     &                          WORK(KBUF),
-     &                          WORK(KFREE),LFREE)
+        call visual_integration(dmat_ao,
+     &                          gao,
+     &                          gao1,
+     &                          gao2,
+     &                          ncnt,
+     &                          buf)
       ENDIF
 
-!     release memory
+      call dealloc(cmo)
+      call dealloc(eig)
+      call dealloc(dmat_ao)
+      call dealloc(gao)
+      call dealloc(gao1)
+      call dealloc(gao2)
+      call dealloc(ncnt)
+      call dealloc(buf)
 
-      CALL MEMREL('VISUAL',WORK,KCMO,KCMO,KFREE,LFREE)
-
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* VISUAL_DRIVER */
@@ -405,8 +394,7 @@ C     /* VISUAL_DRIVER */
      &                         GAO1,
      &                         GAO2,
      &                         NCNT,
-     &                         BUF,
-     &                         WORK,LWORK)
+     &                         BUF)
 C=======================================================================
 C     description in here ...
 C-----------------------------------------------------------------------
@@ -441,7 +429,6 @@ C=======================================================================
      &          GAO2(*),
      &          NCNT(*),
      &          BUF(*),
-     &          WORK(LWORK),
      &          QUANTITY(0:3,NCUBE(3)),
      &          STEP_3D(3,0:3),
      &          ATOM_XYZ(4,NUCDEP)
