@@ -64,7 +64,19 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 namespace polymul_internal
 {
-
+  
+template <int n>
+struct factorial
+{
+  enum { fac = n*factorial<n-1>::fac };
+};
+  
+template <>
+struct factorial<0>
+{
+  enum { fac = 1 };
+};
+  
 // Template to evaluate binomial coefficients at compile time.
 template <int n, int k>
 struct binomial
@@ -90,13 +102,162 @@ struct binomial<0,k>
   enum { value = k > 0 ? 1 : 0 };
 };
 
+template <int Nvar, int Ndeg>
+struct polylen
+{
+  enum { len = binomial<Nvar+Ndeg,Ndeg>::value };
+};
+
+// Term <-> degree
+
+template <int Nvar, int term>
+struct term_deg
+{
+  enum { deg = term_deg<Nvar,term-1>::deg + 
+	 ((term == polylen< Nvar,term_deg<Nvar,term-1>::deg>::len) ? 1 : 0) 
+  };
+};
+
+template <int Nvar>
+struct term_deg<Nvar,0>
+{
+  enum { deg = 0 };
+};
+
+template <int term>
+struct term_deg<1,term>
+{
+  enum { deg = term };
+};
+
+template <>
+struct term_deg<1,0>
+{
+  enum { deg = 0 };
+};
+
+// term -> term within highest order
+
+template <int Nvar, int term>
+struct term_sub
+{
+  enum { sub = term - polylen<Nvar,
+	 term_deg<Nvar,term>::deg-1>::len };
+};
+
+// term multiplication table
+
+template <int Nvar, int t1, int t2>
+struct term_prod
+{
+  enum { prod = polylen<Nvar,term_deg<Nvar,t1>::deg+term_deg<Nvar,t2>::deg-1>::len +
+	 term_prod<Nvar-1,t1-polylen<Nvar,term_deg<Nvar,t1>::deg-1>::len,
+	                  t2-polylen<Nvar,term_deg<Nvar,t2>::deg-1>::len>::prod
+  };
+};
+
+template <int Nvar, int t2>
+struct term_prod<Nvar, 0, t2>
+{
+  enum { prod = t2 };
+};
+
+template <int Nvar, int t1>
+struct term_prod<Nvar, t1, 0>
+{
+  enum { prod = t1 };
+};
+
+template <int Nvar>
+struct term_prod<Nvar, 0, 0>
+{
+  enum { prod = 0 };
+};
+
+template <>
+struct term_prod<0, 0, 0>
+{
+  enum { prod = 0 };
+};
+
+// Determining the term exponents at compile time
+
+template <int Nvar, int term>
+struct first_exponent
+{
+  enum { e = term_deg<Nvar,term>::deg -
+	 term_deg<Nvar-1,term_sub<Nvar,term>::sub>::deg };
+};
+
+template <int term>
+struct first_exponent<1,term>
+{
+  enum { e = term };
+};
+
+template <int Nvar>
+struct first_exponent<Nvar,0>
+{
+  enum { e = 0 };
+};
+
+template <>
+struct first_exponent<1,0>
+{
+  enum { e = 0 };
+};
+
+// Derivative factors
+// WARNING: may overflow (do we get compiler warning from this?)
+
+template <int Nvar, int term>
+struct deriv_fac
+{
+  enum { fac = factorial< first_exponent<Nvar,term>::e >::fac *
+	 deriv_fac<Nvar-1,term_sub<Nvar,term>::sub>::fac };
+};
+
+template <int term>
+struct deriv_fac<1,term>
+{
+  enum { fac = factorial< term >::fac };
+};
+
+template <int Nvar>
+struct deriv_fac<Nvar,0>
+{
+  enum { fac = 1 };
+};
+
+template <>
+struct deriv_fac<1,0>
+{
+  enum { fac = 1 };
+};
+
+
+template<class numtype, int Nvar, int term>
+struct deriv_fac_multiplier
+{
+  static void mul_fac(numtype c[])
+  {
+    deriv_fac_multiplier<numtype,Nvar,term-1>::mul_fac(c);
+    c[term] *= deriv_fac<Nvar,term>::fac;
+  }
+};
+
+template<class numtype, int Nvar>
+struct deriv_fac_multiplier<numtype,Nvar,0>
+{
+  static void mul_fac(numtype c[]) {}
+};
+
 
 // Recursive template classes for multiplication.
 
 template<class numtype, int Nvar, int Ndeg1, int Ndeg2>
-class polynomial_multiplier
+struct polynomial_multiplier
 {
- public:
   // _add_ the product between p1 and p2 to dst.
   static void mul(numtype POLYMUL_RESTRICT dst[], const numtype p1[], const numtype p2[])
   { 
@@ -157,9 +318,8 @@ class polynomial_multiplier
 };
 
 template<class numtype, int Ndeg1, int Ndeg2>
-  class polynomial_multiplier<numtype, 1, Ndeg1, Ndeg2>
+  struct polynomial_multiplier<numtype, 1, Ndeg1, Ndeg2>
 {
- public:
   static void mul(numtype POLYMUL_RESTRICT dst[], const numtype p1[], const numtype p2[])
   {
     for (int i=0;i<=Ndeg1;i++)
@@ -203,9 +363,8 @@ template<class numtype, int Ndeg1, int Ndeg2>
 };
 
 template<class numtype, int Nvar, int Ndeg2>
-  class polynomial_multiplier<numtype, Nvar, 0, Ndeg2>
+  struct polynomial_multiplier<numtype, Nvar, 0, Ndeg2>
 {
- public:
   static void mul(numtype POLYMUL_RESTRICT dst[], const numtype p1[], const numtype p2[])
   {
     for (int i=0;i<binomial<Nvar+Ndeg2,Ndeg2>::value;i++)
@@ -239,9 +398,8 @@ template<class numtype, int Nvar, int Ndeg2>
 };
 
 template<class numtype, int Ndeg2>
-  class polynomial_multiplier<numtype, 1, 0, Ndeg2>
+  struct polynomial_multiplier<numtype, 1, 0, Ndeg2>
 {
- public:
   static void mul(numtype POLYMUL_RESTRICT dst[], const numtype p1[], const numtype p2[])
   {
     for (int i=0;i<binomial<1+Ndeg2,Ndeg2>::value;i++)
@@ -275,9 +433,8 @@ template<class numtype, int Ndeg2>
 };
 
 template<class numtype, int Nvar, int Ndeg1>
-  class polynomial_multiplier<numtype, Nvar, Ndeg1, 0>
+  struct polynomial_multiplier<numtype, Nvar, Ndeg1, 0>
 {
- public:
   static void mul(numtype POLYMUL_RESTRICT dst[], const numtype p1[], const numtype p2[])
   {
     for (int i=0;i<binomial<Nvar+Ndeg1,Ndeg1>::value;i++)
@@ -311,9 +468,8 @@ template<class numtype, int Nvar, int Ndeg1>
 };
 
 template<class numtype, int Nvar>
-  class polynomial_multiplier<numtype, Nvar, 0, 0>
+  struct polynomial_multiplier<numtype, Nvar, 0, 0>
 {
- public:
   static void mul(numtype POLYMUL_RESTRICT dst[], const numtype p1[], const numtype p2[])
   {
     dst[0] += p1[0]*p2[0];
@@ -345,9 +501,8 @@ template<class numtype, int Nvar>
 // Ndeg2 _must_ be less or equal to Ndeg1, otherwise the recursion
 // will not terminate.
 template<class numtype, int Nvar, int Ndeg1, int Ndeg2>
-class taylor_multiplier
+struct taylor_multiplier
 {
- public:
   static void mul(numtype POLYMUL_RESTRICT dst[], const numtype p1[], const numtype p2[])
   {
     polynomial_multiplier<numtype,Nvar,Ndeg1-Ndeg2,Ndeg2>
@@ -363,9 +518,8 @@ class taylor_multiplier
 };
 
 template<class numtype, int Nvar, int Ndeg1>
-  class taylor_multiplier<numtype, Nvar,Ndeg1,0>
+  struct taylor_multiplier<numtype, Nvar,Ndeg1,0>
 {
- public:
   static void mul(numtype POLYMUL_RESTRICT dst[], const numtype p1[], const numtype p2[])
   {
     for (int i=0;i<binomial<Ndeg1+Nvar,Ndeg1>::value;i++)
@@ -380,9 +534,8 @@ template<class numtype, int Nvar, int Ndeg1>
 
 
 template<class numtype, int Nvar, int Ndeg, int Ndeg2, int i2> // (2)
-class taylor_inplace_multiplier
+struct taylor_inplace_multiplier
 {
- public:
   static void mul(numtype p1[], const numtype p2[])
   {
     if (i2 <= Ndeg2)
@@ -399,9 +552,8 @@ class taylor_inplace_multiplier
 };
 
 template<class numtype, int Nvar, int Ndeg, int Ndeg2>
-class taylor_inplace_multiplier<numtype, Nvar, Ndeg, Ndeg2, Ndeg> // (3) final contribution to M1(Ndeg)
+struct taylor_inplace_multiplier<numtype, Nvar, Ndeg, Ndeg2, Ndeg> // (3) final contribution to M1(Ndeg)
 {
- public:
   static void mul(numtype POLYMUL_RESTRICT p1[], const numtype p2[])
   {
     if (Ndeg <= Ndeg2)
@@ -415,9 +567,8 @@ class taylor_inplace_multiplier<numtype, Nvar, Ndeg, Ndeg2, Ndeg> // (3) final c
 };
 
 template<class numtype, int Nvar, int Ndeg, int Ndeg2>
-class taylor_inplace_multiplier<numtype, Nvar, Ndeg, Ndeg2, 0> // (1) comes in here, sets M1(Ndeg)
+struct taylor_inplace_multiplier<numtype, Nvar, Ndeg, Ndeg2, 0> // (1) comes in here, sets M1(Ndeg)
 {
- public:
   static void mul(numtype POLYMUL_RESTRICT p1[], const numtype p2[])
   {
     for (int i=binomial<Nvar+Ndeg-1,Ndeg-1>::value;i<binomial<Nvar+Ndeg,Ndeg>::value;i++)
@@ -427,9 +578,8 @@ class taylor_inplace_multiplier<numtype, Nvar, Ndeg, Ndeg2, 0> // (1) comes in h
 };
 
 template<class numtype, int Nvar, int Ndeg2>
-class taylor_inplace_multiplier<numtype, Nvar, 0, Ndeg2, 0> // (4), last coefficient.
+struct taylor_inplace_multiplier<numtype, Nvar, 0, Ndeg2, 0> // (4), last coefficient.
 {
- public:
   static void mul(numtype POLYMUL_RESTRICT p1[], const numtype p2[])
   {
     p1[0] *= p2[0];
@@ -437,9 +587,8 @@ class taylor_inplace_multiplier<numtype, Nvar, 0, Ndeg2, 0> // (4), last coeffic
 };
 
 template<class numtype, int Ndeg2>
-class taylor_inplace_multiplier<numtype, 1, 0, Ndeg2, 0> // (4), last coefficient.
+struct taylor_inplace_multiplier<numtype, 1, 0, Ndeg2, 0> // (4), last coefficient.
 {
- public:
   static void mul(numtype POLYMUL_RESTRICT p1[], const numtype p2[])
   {
     p1[0] *= p2[0];
@@ -447,9 +596,8 @@ class taylor_inplace_multiplier<numtype, 1, 0, Ndeg2, 0> // (4), last coefficien
 };
 
 template<class numtype, int Ndeg, int Ndeg2>
-class taylor_inplace_multiplier<numtype, 1, Ndeg, Ndeg2, 0> //Above code is only for Ndeg>1
+struct taylor_inplace_multiplier<numtype, 1, Ndeg, Ndeg2, 0> //Above code is only for Ndeg>1
 {
- public:
   static void mul(numtype POLYMUL_RESTRICT p1[], const numtype p2[])
   {
     p1[Ndeg] *= p2[0];
@@ -467,10 +615,28 @@ class taylor_inplace_multiplier<numtype, 1, Ndeg, Ndeg2, 0> //Above code is only
   }
 };
 
- template<class numtype, class vartype, int Nvar, int Ndeg>
-class polynomial_evaluator
+template<class numtype, int Nvar, int lterm, int rterm>
+struct term_multiplier
 {
- public:
+  static void mul(numtype POLYMUL_RESTRICT dst[], const numtype p[], const numtype &c)
+  {
+    term_multiplier<numtype,Nvar,lterm-1,rterm>::mul(dst,p,c);
+    dst[term_prod<Nvar,lterm,rterm>::prod] += p[lterm]*c;
+  }
+};
+
+template<class numtype, int Nvar, int rterm>
+struct term_multiplier<numtype, Nvar, 0, rterm>
+{
+  static void mul(numtype POLYMUL_RESTRICT dst[], const numtype p[], const numtype &c)
+  {
+    dst[rterm] += p[0]*c;
+  }
+};
+
+ template<class numtype, class vartype, int Nvar, int Ndeg>
+struct polynomial_evaluator
+{
   static vartype eval(const numtype p[], const vartype x[])
   {
     return polynomial_evaluator<numtype,vartype,Nvar,Ndeg>
@@ -516,9 +682,8 @@ class polynomial_evaluator
 
 
 template<class numtype, class vartype, int Nvar>
-class polynomial_evaluator<numtype, vartype, Nvar, 1>
+struct polynomial_evaluator<numtype, vartype, Nvar, 1>
 {
- public:
   static vartype eval(const numtype p[], const vartype x[])
   {
     return polynomial_evaluator<numtype,vartype,Nvar,1>
@@ -561,9 +726,8 @@ class polynomial_evaluator<numtype, vartype, Nvar, 1>
 
  */
 template<class numtype, class vartype, int Ndeg>
-class polynomial_evaluator<numtype, vartype, 1, Ndeg>
+struct polynomial_evaluator<numtype, vartype, 1, Ndeg>
 {
- public:
   // a + bx + cx^2 = a + x(b + x(c))
   static vartype eval(const numtype p[], const vartype x[])
   {
@@ -597,9 +761,8 @@ class polynomial_evaluator<numtype, vartype, 1, Ndeg>
 
 
 template<class numtype, class vartype>
-class polynomial_evaluator<numtype, vartype, 1, 1>
+struct polynomial_evaluator<numtype, vartype, 1, 1>
 {
- public:
   // a + bx + cx^2 = a + x(b + x(c))
   static vartype eval(const numtype p[], const vartype x[])
   {
@@ -628,9 +791,8 @@ class polynomial_evaluator<numtype, vartype, 1, 1>
 };
 
 template<class numtype, class vartype, int Nvar>
-class polynomial_evaluator<numtype, vartype, Nvar, 0>
+struct polynomial_evaluator<numtype, vartype, Nvar, 0>
 {
- public:
   static vartype eval(const numtype p[], const vartype x[])
   {
     return p[0];
@@ -646,7 +808,6 @@ class polynomial_evaluator<numtype, vartype, Nvar, 0>
     p[0] = 1;
   }
 };
-
 
 }
 // End of namespace polymul_internal
@@ -669,19 +830,19 @@ template<class numtype, int Nvar, int Ndeg>
   class polynomial
 {
  public:
-  enum { size = polymul_internal::binomial<Nvar+Ndeg,Ndeg>::value };
+  enum { size = polymul_internal::polylen<Nvar,Ndeg>::len };
   polynomial(void) {}
   polynomial(const numtype &c0) 
     { 
       c[0] = c0;
       for (int i=1;i<size;i++)
-	c[i] = numtype(0);
+	c[i] = 0;
     }
   polynomial<numtype, Nvar, Ndeg> &operator=(const numtype &c0)
     {
       c[0] = c0;
       for (int i=1;i<size;i++)
-	c[i] = numtype(0);
+	c[i] = 0;
       return *this;
     }
   const numtype &operator[](int i) const
@@ -784,6 +945,7 @@ inline void polymul(polynomial<numtype, Nvar,Ndeg1+Ndeg2> & POLYMUL_RESTRICT dst
     ::mul_set(dst.c,p1.c,p2.c);
 }
 
+
 template<class numtype, int Nvar, int Ndeg>
 inline void taylormul(polynomial<numtype, Nvar,Ndeg> & POLYMUL_RESTRICT dst,
 		 const polynomial<numtype, Nvar,Ndeg> &p1,
@@ -800,6 +962,19 @@ inline void taylormul(polynomial<numtype, Nvar,Ndeg> & POLYMUL_RESTRICT p1,
   assert(Ndeg2 <= Ndeg);
   polymul_internal::taylor_inplace_multiplier<numtype,Nvar,Ndeg,Ndeg2,0>
     ::mul(p1.c,p2.c);
+}
+
+// _Add_ the product of p and the single polynomial term rterm with coefficient c
+// to dst. 
+template<class numtype, int Nvar, int Ndeg, int rterm>
+inline void polymul_term(polynomial<numtype, Nvar,Ndeg+polymul_internal::term_deg<Nvar,rterm>::deg> 
+			   & POLYMUL_RESTRICT dst,
+			   const polynomial<numtype, Nvar,Ndeg> &p,
+			   const numtype &c)
+{
+  polymul_internal::term_multiplier<numtype,Nvar,polymul_internal
+    ::polylen<Nvar,Ndeg>::len-1,rterm>
+    ::mul(dst.c,p.c,c);
 }
 
 template<class numtype, int Nvar, int Ndeg>
@@ -824,4 +999,20 @@ inline void polycontract(polynomial<numtype, Nvar,Ndeg1> & POLYMUL_RESTRICT p1,
     ::antimul(p3.c,p1.c,p2.c);
 }
 
+// Multiply each term in the polynomial with appropriate
+// factorials to generate derivatives, i.e.
+// x^n y^m z^k would be multiplied by n!m!k!
+// NOTE: The factors are generated as enums, limiting
+// the numeric range to rather small values.
+template<class numtype, int Nvar, int Ndeg>
+void polydfac(polynomial<numtype, Nvar, Ndeg> &p)
+{
+  polymul_internal
+    ::deriv_fac_multiplier<numtype,Nvar,
+       polymul_internal::polylen<Nvar,Ndeg>::len>::mul_fac(p.c);   
+}
+
 #endif
+
+
+

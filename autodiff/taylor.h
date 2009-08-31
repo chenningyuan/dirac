@@ -59,6 +59,12 @@ public:
     if (Ndeg>0)
       this->c[var+1] = var_value;
   }
+  // Multiply each term with the correct factorials to get 
+  // derivatives, i.e. x^2y^3 is multiplied by 2!3!
+  void deriv_facs(void)
+  {
+    polydfac(*this);
+  }
   void integrate(void)
   {
     assert(Nvar == 1 && "Implement this..");
