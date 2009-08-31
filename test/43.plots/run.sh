@@ -21,4 +21,7 @@ MENU=visual_21; export MENU
 MENU=visual_12; export MENU
 ../run.sh -incmo -copy xvc_2x -copy xvc_2y -copy xvc_2z -get PLOT_3D; mv PLOT_3D $MENU.3d
 
+MENU=visual_zo; export MENU
+../run.sh -incmo
+
 exit 0
