@@ -6,6 +6,8 @@
    by ulfek 2009 
 */
 
+// Note that these parameters have be in sync with those in
+// xc_funf.h (Fortran version)
 #define XC_PARAMS_LEN 6 // Length of the xc_funparams enum
 #define XC_MAX_ORDER 5 // Update xc_eval* if this changes
 
@@ -20,14 +22,14 @@ enum xc_funparams
   };
 
 // Set the functional as defined by the parameters in the
-// params array. 
+// params array. This function also has a fortran version.
 void xc_set_functional(const double params[XC_PARAMS_LEN]);
 
 // Evaluate the exchange-correlation functional defined by
 // a previous call to xc_set_functional() with the density
 // parameters in densvar, with derivatives up to the given
 // order. The result is put in the result array, in graded
-// lexicographical ordering.
+// lexicographical ordering. This function also has a fortran version.
 void xc_eval_lda(double result[], int order, const double densvars[2]);
 void xc_eval_gga(double result[], int order, const double densvars[5]);
 
