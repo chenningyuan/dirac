@@ -1,20 +1,19 @@
 #include "taylor.h"
 #include "auto_functionals.h"
 
-
 /*
   PBE Exchange
   Imported from Dalton fun-pbex.c, originally by Pawel Salek(?).
  */
 
 template<int N>
-taylor <5,N> pbe_exchange(tnum_t R0, tnum_t Z0)
+taylor <5,N> pbe_exchange(const double d[5])
 {
   taylor <5,N> rhoa,rhob,grada2,gradb2;
-  get_rhoa(rhoa,R0);
-  get_rhob(rhob,R0);
-  get_grada2(grada2,Z0);
-  get_gradb2(gradb2,Z0);
+  get_rhoa(rhoa,d);
+  get_rhob(rhob,d);
+  get_grada2(grada2,d);
+  get_gradb2(gradb2,d);
   double t1 = pow(2.0,0.33333333333333);
   return  0.5*(-1.477117532764045*t1*pow(rhob,1.333333333333333)*
              (1.804-0.804/(0.00449279948023*gradb2/pow(rhob,2.666666666666667)+
@@ -26,27 +25,27 @@ taylor <5,N> pbe_exchange(tnum_t R0, tnum_t Z0)
 
 
 template
-taylor<5,0> pbe_exchange(tnum_t R0, tnum_t Z0);
+taylor<5,0> pbe_exchange(const double d[5]);
 template
-taylor<5,1> pbe_exchange(tnum_t R0, tnum_t Z0);
+taylor<5,1> pbe_exchange(const double d[5]);
 template
-taylor<5,2> pbe_exchange(tnum_t R0, tnum_t Z0);
+taylor<5,2> pbe_exchange(const double d[5]);
 template
-taylor<5,3> pbe_exchange(tnum_t R0, tnum_t Z0);
+taylor<5,3> pbe_exchange(const double d[5]);
 template
-taylor<5,4> pbe_exchange(tnum_t R0, tnum_t Z0);
+taylor<5,4> pbe_exchange(const double d[5]);
 template
-taylor<5,5> pbe_exchange(tnum_t R0, tnum_t Z0);
+taylor<5,5> pbe_exchange(const double d[5]);
 
 template<int N>
-taylor <5,N> pbe_correlation(tnum_t R0, tnum_t Z0)
+taylor <5,N> pbe_correlation(const double d[5])
 {
   taylor <5,N> rhoa, rhob, grada2, gradb2, gradab;
-  get_rhoa(rhoa,R0);
-  get_rhob(rhob,R0);
-  get_grada2(grada2,Z0);
-  get_gradab(gradab,Z0);
-  get_gradb2(gradb2,Z0);
+  get_rhoa(rhoa,d);
+  get_rhob(rhob,d);
+  get_grada2(grada2,d);
+  get_gradab(gradab,d);
+  get_gradb2(gradb2,d);
   taylor <5,N> t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;
 
   t1 = rhob+rhoa;
@@ -71,16 +70,14 @@ taylor <5,N> pbe_correlation(tnum_t R0, tnum_t Z0)
 
 
 template
-taylor<5,0> pbe_correlation(tnum_t R0, tnum_t Z0);
+taylor<5,0> pbe_correlation(const double d[5]);
 template
-taylor<5,1> pbe_correlation(tnum_t R0, tnum_t Z0);
+taylor<5,1> pbe_correlation(const double d[5]);
 template
-taylor<5,2> pbe_correlation(tnum_t R0, tnum_t Z0);
+taylor<5,2> pbe_correlation(const double d[5]);
 template
-taylor<5,3> pbe_correlation(tnum_t R0, tnum_t Z0);
+taylor<5,3> pbe_correlation(const double d[5]);
 template
-taylor<5,4> pbe_correlation(tnum_t R0, tnum_t Z0);
+taylor<5,4> pbe_correlation(const double d[5]);
 template
-taylor<5,5> pbe_correlation(tnum_t R0, tnum_t Z0);
-
-
+taylor<5,5> pbe_correlation(const double d[5]);

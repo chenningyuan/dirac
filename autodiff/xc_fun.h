@@ -6,7 +6,7 @@
    by ulfek 2009 
 */
 
-#define XC_PARAMS_LEN 5 // Length of the xc_funparams enum
+#define XC_PARAMS_LEN 6 // Length of the xc_funparams enum
 #define XC_MAX_ORDER 5 // Update xc_eval* if this changes
 
 enum xc_funparams
@@ -34,6 +34,7 @@ void xc_eval_gga(double result[], int order, const double densvars[5]);
 
 /*
   Use the variable ordering R,S,Z,X,Y; which are
+                            0 1 2 3 4
   defined as
 
       R = \rho_\alpha + \rho_\beta
