@@ -13,6 +13,7 @@ enum xc_funparams
   {
     XC_SLATER_EXCHANGE = 0,
     XC_VWN_CORRELATION,
+    XC_BECKE_EXCHANGE,
     XC_LYP_CORRELATION,
     XC_PBE_EXCHANGE,
     XC_PBE_CORRELATION,
@@ -22,7 +23,7 @@ enum xc_funparams
 // params array. 
 void xc_set_functional(const double params[XC_PARAMS_LEN]);
 
-// Evaluate the exchange-corrlation functional defined by
+// Evaluate the exchange-correlation functional defined by
 // a previous call to xc_set_functional() with the density
 // parameters in densvar, with derivatives up to the given
 // order. The result is put in the result array, in graded
