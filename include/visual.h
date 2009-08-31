@@ -1,21 +1,21 @@
-C     visualization/integration common block
-C     ======================================
-C
-C     LBIT(LBIT_VISUAL, 1) list of points
-C     LBIT(LBIT_VISUAL, 2) 2D
-C     LBIT(LBIT_VISUAL, 3) 3D
-C     LBIT(LBIT_VISUAL, 4)
-C     LBIT(LBIT_VISUAL, 5)
-C     LBIT(LBIT_VISUAL, 6)
-C     LBIT(LBIT_VISUAL, 7) use orbital string
-C     LBIT(LBIT_VISUAL, 8) integrate
-C     LBIT(LBIT_VISUAL, 9)
-C     LBIT(LBIT_VISUAL,10)
-C
+!     visualization/integration common block
+!     ======================================
+!
+!     LBIT(LBIT_VISUAL, 1) list of points
+!     LBIT(LBIT_VISUAL, 2) 2D
+!     LBIT(LBIT_VISUAL, 3) 3D
+!     LBIT(LBIT_VISUAL, 4)
+!     LBIT(LBIT_VISUAL, 5)
+!     LBIT(LBIT_VISUAL, 6)
+!     LBIT(LBIT_VISUAL, 7) use orbital string
+!     LBIT(LBIT_VISUAL, 8) integrate
+!     LBIT(LBIT_VISUAL, 9)
+!     LBIT(LBIT_VISUAL,10)
+!
       integer max_nr_xvectors, max_nr_points_in_list
       PARAMETER (MAX_NR_XVECTORS = 25)
       PARAMETER (MAX_NR_POINTS_IN_LIST = 100)
-C
+!
       CHARACTER       XVECTOR_FILE(MAX_NR_XVECTORS)*6,                  &
      &                ORBITAL_STRING(2)*72,                             &
      &                ORIENTATION(3)*2

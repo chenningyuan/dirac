@@ -1,7 +1,7 @@
-      subroutine setup_zo_dmat_ao(cmo,
-     &                            dmat_ao,
-     &                            occupation,
-     &                            w,
+      subroutine setup_zo_dmat_ao(cmo, &
+     &                            dmat_ao, &
+     &                            occupation, &
+     &                            w, &
      &                            lw)
 
       use memory_allocator
@@ -49,35 +49,35 @@
 #ifdef ALLOW_NEO_OR_VO_DENSITY
 
       do ifsym = 1, nfsym
-        call qtrans('MOAO',
-     &              'S',
-     &              0.0d0,
-     &              nfbas(ifsym, 0),
-     &              nfbas(ifsym, 0),
-     &              norb(ifsym),
-     &              norb(ifsym),
-     &              dmat_ao(1 + i2basx(ifsym, ifsym)),
-     &              ntbas(0),
-     &              ntbas(0),
-     &              1,
-     &              ipqtoq(1, 0),
-     &              dmat_mo(1 + i2orbx(ifsym, ifsym)),
-     &              norbt,
-     &              norbt,
-     &              1,
-     &              ipqtoq(1, 0),
-     &              cmo(1 + icmoq(ifsym)),
-     &              nfbas(ifsym, 0),
-     &              norb(ifsym),
-     &              nz,
-     &              ipqtoq(1, 0),
-     &              cmo(1 + icmoq(ifsym)),
-     &              nfbas(ifsym, 0),
-     &              norb(ifsym),
-     &              nz,
-     &              ipqtoq(1, 0),
-     &              w,
-     &              lw,
+        call qtrans('MOAO',    &
+     &              'S',    &
+     &              0.0d0,    &
+     &              nfbas(ifsym, 0),    &
+     &              nfbas(ifsym, 0),    &
+     &              norb(ifsym),    &
+     &              norb(ifsym),    &
+     &              dmat_ao(1 + i2basx(ifsym, ifsym)),    &
+     &              ntbas(0),    &
+     &              ntbas(0),    &
+     &              1,    &
+     &              ipqtoq(1, 0),    &
+     &              dmat_mo(1 + i2orbx(ifsym, ifsym)),    &
+     &              norbt,    &
+     &              norbt,    &
+     &              1,    &
+     &              ipqtoq(1, 0),    &
+     &              cmo(1 + icmoq(ifsym)),    &
+     &              nfbas(ifsym, 0),    &
+     &              norb(ifsym),    &
+     &              nz,    &
+     &              ipqtoq(1, 0),    &
+     &              cmo(1 + icmoq(ifsym)),    &
+     &              nfbas(ifsym, 0),    &
+     &              norb(ifsym),    &
+     &              nz,    &
+     &              ipqtoq(1, 0),    &
+     &              w,    &
+     &              lw,    &
      &              0)
       end do
 
@@ -103,22 +103,20 @@
       end subroutine
 
 
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* SCATTER_BVEC */
-      SUBROUTINE SCATTER_BVEC(BVEC,
-     &                        ICOUNTER,
-     &                        TYP,
-     &                        BMAT,
-     &                        IZ,
-     &                        IFSYM1,
-     &                        IFSYM2,
+      SUBROUTINE SCATTER_BVEC(BVEC, &
+     &                        ICOUNTER, &
+     &                        TYP, &
+     &                        BMAT, &
+     &                        IZ, &
+     &                        IFSYM1, &
+     &                        IFSYM2, &
      &                        STRING)
-C=======================================================================
-C     scatter solution vector BVEC onto BMAT
-C-----------------------------------------------------------------------
-C                                                           radovan bast
-C                                              last revision: april 2007
-C=======================================================================
+!=======================================================================
+!     scatter solution vector BVEC onto BMAT
+!-----------------------------------------------------------------------
+!                                                           radovan bast
+!                                              last revision: april 2007
+!=======================================================================
 
 #include "implicit.h"
 #include "priunit.h"
@@ -132,11 +130,11 @@ C=======================================================================
 
       CHARACTER TYP*2
       LOGICAL   LBIT
-      DIMENSION BVEC(*),
-     &          BMAT(NORBT,NORBT,NZ),
-     &          STRING(*),
-     &          NEI(2),
-     &          NES(2),
+      DIMENSION BVEC(*), &
+     &          BMAT(NORBT,NORBT,NZ), &
+     &          STRING(*), &
+     &          NEI(2), &
+     &          NES(2), &
      &          NP(2)
 
       DO I = 1,2
@@ -175,20 +173,17 @@ C=======================================================================
 
       ENDDO
 
-      RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* SETUP_FO_DMAT_AO */
-      SUBROUTINE SETUP_FO_DMAT_AO(CMO,
-     &                            IXVECTOR,
-     &                            DMAT_AO,
+      SUBROUTINE SETUP_FO_DMAT_AO(CMO, &
+     &                            IXVECTOR, &
+     &                            DMAT_AO, &
      &                            STRING)
-C=======================================================================
-C     description in here ...
-C-----------------------------------------------------------------------
-C                                                           radovan bast
-C                                              last revision: april 2007
-C=======================================================================
+!=======================================================================
+!     description in here ...
+!-----------------------------------------------------------------------
+!                                                           radovan bast
+!                                              last revision: april 2007
+!=======================================================================
 
       use memory_allocator
 
@@ -205,16 +200,16 @@ C=======================================================================
 #include "pgroup.h"
 #include "dcbxrs.h"
 
-      CHARACTER LAB1*16,
-     &          LAB2*16,
-     &          TYP1*2,
-     &          TYP2*2,
-     &          LBUF*16,
+      CHARACTER LAB1*16,&
+     &          LAB2*16,&
+     &          TYP1*2,&
+     &          TYP2*2,&
+     &          LBUF*16,&
      &          PBUF*1
-      LOGICAL   FILE_EXISTS,
+      LOGICAL   FILE_EXISTS,&
      &          LBIT
-      DIMENSION CMO(*),
-     &          DMAT_AO(*),
+      DIMENSION CMO(*),&
+     &          DMAT_AO(*),&
      &          STRING(*)
 
       real(8), allocatable :: bvec(:)
@@ -225,15 +220,15 @@ C=======================================================================
       INQUIRE(FILE = XVECTOR_FILE(IXVECTOR),EXIST = FILE_EXISTS)
       IF(.NOT. FILE_EXISTS) THEN
         WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
-        WRITE(LUPRI,'(A,A6,A)') 'solution vector file ',
+        WRITE(LUPRI,'(A,A6,A)') 'solution vector file ', &
      &    XVECTOR_FILE(IXVECTOR),' not found'
         CALL QUIT('ERROR in VISUAL')
       ENDIF
       LUNIT_XVECTOR = 17
-      OPEN(LUNIT_XVECTOR,
-     &     FILE = XVECTOR_FILE(IXVECTOR),
-     &     STATUS = 'OLD',
-     &     ACCESS = 'SEQUENTIAL',
+      OPEN(LUNIT_XVECTOR, &
+     &     FILE = XVECTOR_FILE(IXVECTOR), &
+     &     STATUS = 'OLD', &
+     &     ACCESS = 'SEQUENTIAL', &
      &     FORM = 'UNFORMATTED')
 
 !     get number of vectors on file
@@ -289,8 +284,8 @@ C=======================================================================
 
 !     get type and dimensions of record IWHICH_XVECTOR(IXVECTOR)
 
-      READ(LUNIT_XVECTOR) LAB1, LAB2, TYP1, TYP2, FREQ1, FREQ2,
-     &                    JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2,
+      READ(LUNIT_XVECTOR) LAB1, LAB2, TYP1, TYP2, FREQ1, FREQ2, &
+     &                    JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2, &
      &                    UNUSED, LEN, INTFLG, ERGRSP, NBAS, NORBS
 
       IF(TYP1(2:2) .EQ. '+') IHERMITICITY =  1
@@ -334,43 +329,43 @@ C=======================================================================
 
       DO IZ = 1,NZ
         IF(NFSYM .EQ. 1) THEN
-          CALL SCATTER_BVEC(BVEC,
-     &                      ICOUNTER,
-     &                      TYP1,
-     &                      BMAT,
-     &                      IZ,
-     &                      1,1,
+          CALL SCATTER_BVEC(BVEC, &
+     &                      ICOUNTER, &
+     &                      TYP1, &
+     &                      BMAT, &
+     &                      IZ, &
+     &                      1,1, &
      &                      STRING)
         ELSE
           IF(IGERADE .EQ. -1) THEN
-            CALL SCATTER_BVEC(BVEC,
-     &                        ICOUNTER,
-     &                        TYP1,
-     &                        BMAT,
-     &                        IZ,
-     &                        1,2,
+            CALL SCATTER_BVEC(BVEC, &
+     &                        ICOUNTER, &
+     &                        TYP1, &
+     &                        BMAT, &
+     &                        IZ, &
+     &                        1,2, &
      &                        STRING)
-            CALL SCATTER_BVEC(BVEC,
-     &                        ICOUNTER,
-     &                        TYP1,
-     &                        BMAT,
-     &                        IZ,
-     &                        2,1,
+            CALL SCATTER_BVEC(BVEC, &
+     &                        ICOUNTER, &
+     &                        TYP1, &
+     &                        BMAT, &
+     &                        IZ, &
+     &                        2,1, &
      &                        STRING)
           ELSE
-            CALL SCATTER_BVEC(BVEC,
-     &                        ICOUNTER,
-     &                        TYP1,
-     &                        BMAT,
-     &                        IZ,
-     &                        1,1,
+            CALL SCATTER_BVEC(BVEC, &
+     &                        ICOUNTER, &
+     &                        TYP1, &
+     &                        BMAT, &
+     &                        IZ, &
+     &                        1,1, &
      &                        STRING)
-            CALL SCATTER_BVEC(BVEC,
-     &                        ICOUNTER,
-     &                        TYP1,
-     &                        BMAT,
-     &                        IZ,
-     &                        2,2,
+            CALL SCATTER_BVEC(BVEC, &
+     &                        ICOUNTER, &
+     &                        TYP1, &
+     &                        BMAT, &
+     &                        IZ, &
+     &                        2,2, &
      &                        STRING)
           ENDIF
         ENDIF
