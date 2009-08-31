@@ -3,12 +3,18 @@
 Fortran version of xc_fun. Note that the indices XC_* are increased
 by one to match with fortran indexing.
 
-Fortran interface (order is integer, the others 
-		   double precision):
+Fortran interface:
 
 subroutine xc_set_functional(params)
-subroutine xc_eval_lda(result, order, densvars)
+  double precision, dimension(XC_PARAMS_LEN), intent(in) :: densvars
+
 subroutine xc_eval_gga(result, order, densvars)
+  double precision, dimension(:), intent(out) :: result
+  integer, intent(in) :: order
+  double precision, dimension(5), intent(in) :: densvars
+
+subroutine xc_eval_lda(result, order, densvars)
+  Same as xc_eval_gga, but dimension of densvars is 2 instead of 5
 
 This file must be kept in sync with xc_fun.h
 #endif
