@@ -362,6 +362,7 @@ contains
     end if
 
     if (kw_matches(word, '.LINE  ')) then
+      visual_cfg_line = .true.
       call kw_read(word, visual_cfg_line_nr_steps)
       call kw_read(word, visual_cfg_line_from(1), &
                          visual_cfg_line_from(2), &

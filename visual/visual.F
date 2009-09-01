@@ -151,25 +151,37 @@ C=======================================================================
      &          STEP_3D(3,0:3),
      &          ATOM_XYZ(4,NUCDEP)
 
+      real(8) :: r(3), v(3)
+
 !     open files
 
-      LUNIT_2D = 13
-      LUNIT_3D = 14
+      lunit_2d   = 13
+      lunit_3d   = 14
+      lunit_line = 15
 
       if (visual_cfg_2d) then
-        OPEN(LUNIT_2D,
-     &       FILE   = 'PLOT_2D',
-     &       STATUS = 'NEW',
-     &       ACCESS = 'SEQUENTIAL',
-     &       FORM   = 'FORMATTED')
-      ENDIF
+        open(lunit_2d,
+     &       file   = 'PLOT_2D',
+     &       status = 'new',
+     &       access = 'sequential',
+     &       form   = 'formatted')
+      end if
+
       if (visual_cfg_3d) then
-        OPEN(LUNIT_3D,
-     &       FILE   = 'PLOT_3D',
-     &       STATUS = 'NEW',
-     &       ACCESS = 'SEQUENTIAL',
-     &       FORM   = 'FORMATTED')
-      ENDIF
+        open(lunit_3d,
+     &       file   = 'PLOT_3D',
+     &       status = 'new',
+     &       access = 'sequential',
+     &       form   = 'formatted')
+      end if
+
+      if (visual_cfg_line) then
+        open(lunit_line,
+     &       file   = 'PLOT_LINE',
+     &       status = 'new',
+     &       access = 'sequential',
+     &       form   = 'formatted')
+      end if
 
       if (visual_cfg_list) then
 
@@ -216,6 +228,35 @@ C=======================================================================
         WRITE(LUPRI,'(A)')
 
       ENDIF
+
+      if (visual_cfg_line) then
+
+        v = visual_cfg_line_to - visual_cfg_line_from
+        v = v/visual_cfg_line_nr_steps
+
+        do istep = 0, visual_cfg_line_nr_steps
+
+          r = visual_cfg_line_from + istep*v
+
+          call get_quantity_in_point(dmat_ao,
+     &                               gao,
+     &                               gao1,
+     &                               gao2,
+     &                               r(1), r(2), r(3),
+     &                               ncnt,
+     &                               buf,
+     &                               quantity)
+
+          write(lunit_line, '(7e18.10)') r(1), 
+     &                                   r(2),
+     &                                   r(3),
+     &                                   quantity(0, 1),
+     &                                   quantity(1, 1),
+     &                                   quantity(2, 1),
+     &                                   quantity(3, 1)
+
+        end do
+      end if
 
       if (visual_cfg_2d) then
 
@@ -376,9 +417,11 @@ C=======================================================================
 
 !     close files
 
-      if (visual_cfg_2d) close( lunit_2d, status = 'keep')
-      if (visual_cfg_3d) close( lunit_3d, status = 'keep')
-      END
+      if (visual_cfg_2d)   close(lunit_2d,   status = 'keep')
+      if (visual_cfg_3d)   close(lunit_3d,   status = 'keep')
+      if (visual_cfg_line) close(lunit_line, status = 'keep')
+
+      end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* GET_QUANTITY_IN_POINT */
       SUBROUTINE GET_QUANTITY_IN_POINT(DMAT_AO,
