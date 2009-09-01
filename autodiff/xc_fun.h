@@ -10,6 +10,16 @@
 // xc_funf.h (Fortran version)
 #define XC_PARAMS_LEN 6 // Length of the xc_funparams enum
 #define XC_MAX_ORDER 5 // Update xc_eval* if this changes
+#define XC_FUNCTIONAL_SCALING 1.0 // Scale derivatives by this factor
+
+enum xc_vars
+  {
+    XC_R = 0, // R = \rho_\alpha + \rho_\beta
+    XC_S,     // S = \rho_\alpha - \rho_\beta
+    XC_Z,     // Z = \nabla R \cdot \nabla R
+    XC_X,     // X = \nabla S \cdot \nabla S
+    XC_Y      // Y = \nabla R \cdot \nabla S
+  };
 
 enum xc_funparams
   {
@@ -42,9 +52,9 @@ void xc_eval_gga(double result[], int order, const double densvars[5]);
       R = \rho_\alpha + \rho_\beta
       S = \rho_\alpha - \rho_\beta
 
-      Z = \nabla R \cdot \nabla R
-      X = \nabla S \cdot \nabla S
-      Y = \nabla R \cdot \nabla S
+      
+      
+      
 
       and conversely
 

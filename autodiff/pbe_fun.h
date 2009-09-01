@@ -1,6 +1,3 @@
-#include "taylor.h"
-#include "auto_functionals.h"
-
 /*
   PBE Exchange
   Imported from Dalton fun-pbex.c, originally by Pawel Salek(?).
@@ -23,19 +20,6 @@ taylor <5,N> pbe_exchange(const double d[5])
 	     1.0)));
 }
 
-
-template
-taylor<5,0> pbe_exchange(const double d[5]);
-template
-taylor<5,1> pbe_exchange(const double d[5]);
-template
-taylor<5,2> pbe_exchange(const double d[5]);
-template
-taylor<5,3> pbe_exchange(const double d[5]);
-template
-taylor<5,4> pbe_exchange(const double d[5]);
-template
-taylor<5,5> pbe_exchange(const double d[5]);
 
 template<int N>
 taylor <5,N> pbe_correlation(const double d[5])
@@ -64,20 +48,8 @@ taylor <5,N> pbe_correlation(const double d[5])
   /* code */
   return t1*(0.03109219370394*
           log(2.146079601698033*(0.00864486614818*
-				 t7*t8*t10+0.0634682060977*t5*t6)/(0.01855257090002*t7*t8/pow(t9,
-		 2.0)+0.13620782246265*t5*t6*t10+1.0)+1.0)-0.062182*t3*t4);
+				 t7*t8*t10+0.0634682060977*t5*t6)/
+	      (0.01855257090002*t7*t8/pow(t9,2.0)
+	       +0.13620782246265*t5*t6*t10+1.0)+1.0)-0.062182*t3*t4);
 }
 
-
-template
-taylor<5,0> pbe_correlation(const double d[5]);
-template
-taylor<5,1> pbe_correlation(const double d[5]);
-template
-taylor<5,2> pbe_correlation(const double d[5]);
-template
-taylor<5,3> pbe_correlation(const double d[5]);
-template
-taylor<5,4> pbe_correlation(const double d[5]);
-template
-taylor<5,5> pbe_correlation(const double d[5]);

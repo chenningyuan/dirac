@@ -28,3 +28,9 @@ This file must be kept in sync with xc_fun.h
 #define XC_LYP_CORRELATION 4
 #define XC_PBE_EXCHANGE    5
 #define XC_PBE_CORRELATION 6
+
+#define XC_R 1 
+#define XC_S 2 
+#define XC_Z 3 
+#define XC_X 4
+#define XC_Y 5

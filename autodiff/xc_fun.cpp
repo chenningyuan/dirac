@@ -1,5 +1,8 @@
 #include "xc_fun.h"
-#include "auto_functionals.h"
+#include "fun_helpers.h"
+#include "lda_fun.h"
+#include "blyp_fun.h"
+#include "pbe_fun.h"
 
 static double xc_params[XC_PARAMS_LEN];
 
