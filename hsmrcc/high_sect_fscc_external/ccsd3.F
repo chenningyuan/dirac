@@ -699,7 +699,7 @@ c     write (6,*) ' transf indx from ',i,' to ',num
       subroutine reorder(namef,namet,iord,iparm)
 !---------------------------------------------------------------------------------------------------
 !
-! iparm - print level
+!  iparm - print level
 !
 !  namet, namef
 !
@@ -763,10 +763,11 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       lngth1=ije1(nij1)
       lngth2=ije2(nij2)
 
-!    miro: set up temporarily primitive error tran for HSFS_dynamic
+!    miro: set up temporarily primitive error trap for HSFS_dynamic
 !      write(LUPRI,*) 'reorder:',igen(istrt21+1),igen(istrt21+1+lngth2)
 !      write(LUPRI,*) 'itmp ndp4,1+lngth2:',ndp4,1+lngth2
-!      write(LUPRI,*) 'check itmp(1):',itmp(1)
+!   ... this works for gfortran/gdb; ifort/idb gives other error...
+      write(LUPRI,*) 'reorder: check itmp(1):',itmp(1)
 !      write(LUPRI,*) 'itmp(1+lngth2):',itmp(1+lngth2)
 
       call vands(lngth2,igen(istrt21+1),msk(i1),itmp)
