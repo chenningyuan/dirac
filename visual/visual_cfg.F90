@@ -25,6 +25,7 @@ module visual_cfg
   integer,       public :: visual_cfg_irep_xvector(max_nr_xvectors)    = 0
   integer,       public :: visual_cfg_iwhich_xvector(max_nr_xvectors)  = 1
   integer,       public :: visual_cfg_ioption_xvector(max_nr_xvectors) = 0
+  integer,       public :: visual_cfg_line_nr_steps                    = 0
 
   real(8),       public :: visual_cfg_add_3d                             = 4.0d0
   real(8),       public :: visual_cfg_common_factor                      = 1.0d0
@@ -33,6 +34,8 @@ module visual_cfg
   real(8),       public :: visual_cfg_gauge_origin(3)                    = 0.0d0
   real(8),       public :: visual_cfg_add_2d                             = 4.0d0
   real(8),       public :: visual_cfg_step_2d                            = 0.1d0
+  real(8),       public :: visual_cfg_line_from(3)                       = 0.0d0
+  real(8),       public :: visual_cfg_line_to(3)                         = 0.0d0
 
   private
 
