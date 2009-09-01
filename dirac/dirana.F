@@ -37,6 +37,9 @@ C     Written by T.Saue Sep 11 1995
 C     Last revision : KApril 27 1996
 C
 C***********************************************************************
+
+      use dirac_cfg
+
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -102,7 +105,7 @@ C
 C
 
 #ifdef MOD_VISUAL
-      IF(DO_VISUAL) CALL VISUAL(WORK,LWORK)
+      if (dirac_cfg_visual) call visual(work, lwork)
 #endif /* MOD_VISUAL */
 
 #ifdef ANALYZE_PROPERTY_GRADIENT

@@ -19,6 +19,8 @@ module dirac_cfg
   logical, public :: dirac_cfg_scf_calculation = .false.
 !                    ao response
   logical, public :: dirac_cfg_aoresponse      = .false.
+!                    visualization module
+  logical, public :: dirac_cfg_visual          = .false.
 
   private
 

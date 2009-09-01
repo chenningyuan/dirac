@@ -2929,6 +2929,9 @@ C       Written by Trond Saue, April 1996
 C       Last revision: April 27 1996 - tsaue
 C
 C***********************************************************************
+
+      use dirac_cfg
+
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
@@ -2966,9 +2969,6 @@ C
       DO1WT   = .FALSE.
       DOLOC   = .FALSE.
  
- 
-!     initialize visual.h
-      DO_VISUAL = .FALSE.
 
 C
 C     Read menu file
@@ -3058,7 +3058,7 @@ C&&&& LOCALIZE : Molecular orbital localization
 !        .VISUAL
   109    continue
 #ifdef MOD_VISUAL
-         do_visual = .true.
+         dirac_cfg_visual = .true.
          njobs = njobs + 1
 #else
          call quit('.VISUAL not available in this version')
@@ -3092,7 +3092,7 @@ C
      &     '* Mulliken population analysis'
       IF(DOPRJ) WRITE(LUPRI,'(1X,A)')
      &     '* Projection onto another solution '
-      IF(DO_VISUAL) WRITE(LUPRI,'(1X,A)')
+      IF(dirac_cfg_visual) WRITE(LUPRI,'(1X,A)')
      &     '* Visualization'
       IF(DO3RHO) WRITE(LUPRI,'(1X,A)')
      &    '* Write out density for visualization (Gaussian cube format)'
@@ -3178,7 +3178,7 @@ C
 #endif
       IF(DOLOC) CALL LOCINP(WORD,.TRUE.,WORK,LWORK)
 #ifdef MOD_VISUAL
-      IF(DO_VISUAL) CALL VISUAL_INPUT(WORD,.TRUE.)
+      IF(dirac_cfg_visual) CALL VISUAL_INPUT(WORD,.TRUE.)
 #endif /* MOD_VISUAL */
 C
       CALL QEXIT('ANWINP')
