@@ -14,6 +14,7 @@ C                                              last revision: april 2007
 C=======================================================================
 
        use dft_main
+       use visual_cfg
        use memory_allocator
 
 #include "implicit.h"
@@ -21,9 +22,6 @@ C=======================================================================
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
 
-#include "visual.h"
-
-      LOGICAL   LBIT
       DIMENSION DMAT_AO(*),
      &          GAO(*),
      &          GAO1(*),
@@ -39,7 +37,7 @@ C=======================================================================
       real(8), allocatable :: w(:)
 
       CALL DZERO(QUANTITY_INTEGRAL,4)
-      IF(LBIT(LBIT_VISUAL,3)) THEN !3D
+      if (visual_cfg_3d) then
 
         CALL AROUND('3D numerical integration')
 
@@ -102,7 +100,7 @@ C=======================================================================
 
       ENDIF !3D
 
-      IF(LBIT(LBIT_VISUAL,2)) THEN !2D
+      if (visual_cfg_2d) then
 
         CALL AROUND('2D Gauss-Lobatto numerical integration')
 
@@ -117,7 +115,7 @@ C=======================================================================
 
           WRITE(LUPRI,'(A)')
           WRITE(LUPRI,'(A12,A3)') 'orientation:',
-     &                            ORIENTATION(IORIENTATION)
+     &                   visual_cfg_orientation(IORIENTATION)
           WRITE(LUPRI,'(A)')
           WRITE(LUPRI,'(A)')
           WRITE(LUPRI,'(A12,A25,2A20,A14,2A13)') 'scalar',
@@ -141,7 +139,7 @@ C=======================================================================
 
           DO WHILE(.TRUE.)
 
-            CALL LOBATTO_2D_GRID(ORIENTATION(IORIENTATION),
+            CALL LOBATTO_2D_GRID(visual_cfg_orientation(IORIENTATION),
      &                           NR_PIECES,N,DIMI,DIMJ,LUNIT)
 
             REWIND LUNIT
@@ -231,9 +229,6 @@ C=======================================================================
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
 
-#include "visual.h"
-
-      LOGICAL   LBIT
       DIMENSION DMAT_AO(*),
      &          GAO(*),
      &          GAO1(*),
@@ -438,12 +433,11 @@ C                                              last revision: april 2007
 C=======================================================================
 
       use memory_allocator
+      use visual_cfg
 #include "implicit.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
       PARAMETER (NMAX = 1000)
-
-#include "visual.h"
 
       CHARACTER*30 FILE_NAME
       CHARACTER*2  GRID_ORIENTATION
@@ -478,19 +472,19 @@ C=======================================================================
               IF(GRID_ORIENTATION .EQ. 'xy') THEN
                 PX(IPOINT) = OFFI + (X(I)+D1)*DIMI/(D2*NR_PIECES)
                 PY(IPOINT) = OFFJ + (X(J)+D1)*DIMJ/(D2*NR_PIECES)
-                PZ(IPOINT) = ORIGIN_2D(3)
+                PZ(IPOINT) = visual_cfg_origin_2d(3)
               ENDIF
 
               IF(GRID_ORIENTATION .EQ. 'xz') THEN
                 PX(IPOINT) = OFFI + (X(I)+D1)*DIMI/(D2*NR_PIECES)
                 PZ(IPOINT) = OFFJ + (X(J)+D1)*DIMJ/(D2*NR_PIECES)
-                PY(IPOINT) = ORIGIN_2D(2)
+                PY(IPOINT) = visual_cfg_origin_2d(2)
               ENDIF
 
               IF(GRID_ORIENTATION .EQ. 'yz') THEN
                 PY(IPOINT) = OFFI + (X(I)+D1)*DIMI/(D2*NR_PIECES)
                 PZ(IPOINT) = OFFJ + (X(J)+D1)*DIMJ/(D2*NR_PIECES)
-                PX(IPOINT) = ORIGIN_2D(1)
+                PX(IPOINT) = visual_cfg_origin_2d(1)
               ENDIF
 
               WEIGHT(IPOINT) = W(I)*W(J)*DIMI*DIMJ

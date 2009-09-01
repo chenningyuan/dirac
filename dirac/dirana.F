@@ -46,7 +46,6 @@ C
 #include "dcbgen.h"
 #include "dcbana.h"
 #include "dcbbas.h"
-#include "visual.h"
 C Used from COMMON blocks:
 C  CBIANA: DOPOP,DOANA,DOEXP
 C  DCBBAS: N2BBASX

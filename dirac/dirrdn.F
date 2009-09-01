@@ -2944,7 +2944,6 @@ C
 C
 #include "dcblab.h"
 #include "dcbana.h"
-#include "visual.h"
 C
       DATA TABDIR /'*END OF','*MULPOP','*PROJEC','*PRIVEC',
      &             '*RHO1  ','*DENSIT','*WT1   ','*LOCALI',

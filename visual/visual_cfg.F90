@@ -4,8 +4,8 @@ module visual_cfg
 
   save
 
-  integer, parameter    :: max_nr_xvectors       = 25
-  integer, parameter    :: max_nr_points_in_list = 100
+  integer, parameter, public :: max_nr_xvectors       = 6
+  integer, parameter, public :: max_nr_points_in_list = 100
 
   character(6),  public :: visual_cfg_xvector_file(max_nr_xvectors)
   character(72), public :: visual_cfg_orbital_string(2)

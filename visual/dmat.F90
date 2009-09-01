@@ -124,12 +124,10 @@
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
 
 #include "dcborb.h"
-#include "visual.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 
       CHARACTER TYP*2
-      LOGICAL   LBIT
       DIMENSION BVEC(*), &
      &          BMAT(NORBT,NORBT,NZ), &
      &          STRING(*), &
@@ -186,6 +184,7 @@
 !=======================================================================
 
       use memory_allocator
+      use visual_cfg
 
 #include "implicit.h"
 #include "priunit.h"
@@ -193,7 +192,6 @@
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
 
-#include "visual.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -206,8 +204,7 @@
      &          TYP2*2,&
      &          LBUF*16,&
      &          PBUF*1
-      LOGICAL   FILE_EXISTS,&
-     &          LBIT
+      LOGICAL   FILE_EXISTS
       DIMENSION CMO(*),&
      &          DMAT_AO(*),&
      &          STRING(*)
@@ -215,18 +212,16 @@
       real(8), allocatable :: bvec(:)
       real(8), allocatable :: bmat(:)
 
-#include "memint.h"
-
-      INQUIRE(FILE = XVECTOR_FILE(IXVECTOR),EXIST = FILE_EXISTS)
+      INQUIRE(FILE = visual_cfg_xvector_file(IXVECTOR),EXIST = FILE_EXISTS)
       IF(.NOT. FILE_EXISTS) THEN
         WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
         WRITE(LUPRI,'(A,A6,A)') 'solution vector file ', &
-     &    XVECTOR_FILE(IXVECTOR),' not found'
+     &    visual_cfg_XVECTOR_FILE(IXVECTOR),' not found'
         CALL QUIT('ERROR in VISUAL')
       ENDIF
       LUNIT_XVECTOR = 17
       OPEN(LUNIT_XVECTOR, &
-     &     FILE = XVECTOR_FILE(IXVECTOR), &
+     &     FILE = visual_cfg_xvector_file(IXVECTOR), &
      &     STATUS = 'OLD', &
      &     ACCESS = 'SEQUENTIAL', &
      &     FORM = 'UNFORMATTED')
@@ -248,19 +243,19 @@
 
 !     errors
 
-      IF(NR_VECTORS .EQ. 0) THEN
+      IF(visual_cfg_NR_xVECTORS .EQ. 0) THEN
         WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
         WRITE(LUPRI,'(A)') 'NR_VECTORS .EQ. 0'
         CALL QUIT('ERROR in VISUAL')
       ENDIF
 
-      IF(IWHICH_XVECTOR(IXVECTOR) .GT. NR_VECTORS) THEN
+      IF(visual_cfg_IWHICH_XVECTOR(IXVECTOR) .GT. NR_VECTORS) THEN
         WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
         WRITE(LUPRI,'(A)') 'IWHICH_XVECTOR(IXVECTOR) .GT. NR_VECTORS'
         CALL QUIT('ERROR in VISUAL')
       ENDIF
 
-      IF(IWHICH_XVECTOR(IXVECTOR) .LT. 1) THEN
+      IF(visual_cfg_IWHICH_XVECTOR(IXVECTOR) .LT. 1) THEN
         WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
         WRITE(LUPRI,'(A)') 'IWHICH_XVECTOR(IXVECTOR) .LT. 1'
         CALL QUIT('ERROR in VISUAL')
@@ -273,7 +268,7 @@
  3    CONTINUE
       READ(LUNIT_XVECTOR)
       IVECTOR = IVECTOR + 1
-      IF(IVECTOR .EQ. IWHICH_XVECTOR(IXVECTOR)) THEN
+      IF(IVECTOR .EQ. visual_cfg_IWHICH_XVECTOR(IXVECTOR)) THEN
         BACKSPACE(LUNIT_XVECTOR)
         GOTO 4
       ELSE
@@ -292,10 +287,10 @@
       IF(TYP1(2:2) .EQ. '-') IHERMITICITY = -1
 
       JSYMOP                 = JSYMOP1
-      IREP_XVECTOR(IXVECTOR) = JSYMOP - 1
-      IREPOP                 = JSYMOP - 1
-      JOPSY                  = JBTOF(IREP_XVECTOR(IXVECTOR),1)
-      NBDIM                  = LEN/NZ
+      visual_cfg_irep_xvector(IXVECTOR) = JSYMOP - 1
+      IREPOP = JSYMOP - 1
+      JOPSY  = JBTOF(visual_cfg_IREP_XVECTOR(IXVECTOR),1)
+      NBDIM  = LEN/NZ
 
 !     allocate memory
 
@@ -390,7 +385,7 @@
 
       IF(NZ .LT. 4) THEN
         DO IZ = 1,NZ
-          IQ = IPQTOQ(IZ,IREP_XVECTOR(IXVECTOR))
+          IQ = IPQTOQ(IZ,visual_cfg_IREP_XVECTOR(IXVECTOR))
           IOFF = NTBAS(0)*NTBAS(0)*(IZ-1)
           CALL Q2BPHASE('D',IQ,1,DMAT_AO(1+IOFF))
         ENDDO

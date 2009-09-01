@@ -8,19 +8,20 @@ C                                                           radovan bast
 C                                              last revision: april 2007
 C=======================================================================
 
-#include "implicit.h"
+       use visual_cfg
+
+       implicit none
 #include "priunit.h"
 #include "dummy.h"
 
-      PARAMETER (NTABLE = 60)
+       integer, parameter :: NTABLE = 60
+       integer :: IPOINT_IN_LIST, ixvector, i
 
 #include "dcbgen.h"
-#include "visual.h"
 #include "dgroup.h"
 
       LOGICAL   SET,
-     &          RESET,
-     &          LBIT
+     &          RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD_SAVE*7
 
       SAVE SET
@@ -68,40 +69,6 @@ C=======================================================================
         SET = .TRUE.
       ENDIF
 
-!     initialize visual.h
-
-      LBIT_VISUAL = 0
-
-      NCUBE(1) = 80
-      NCUBE(2) = 80
-      NCUBE(3) = 80
-
-      ORIGIN_2D(1)    = 0.0D0
-      ORIGIN_2D(2)    = 0.0D0
-      ORIGIN_2D(3)    = 0.0D0
-
-      GAUGE_ORIGIN(1) = 0.0D0
-      GAUGE_ORIGIN(2) = 0.0D0
-      GAUGE_ORIGIN(3) = 0.0D0
-
-      ADD_3D        = 4.0D0
-      COMMON_FACTOR = 1.0D0
-      ADD_2D        = 4.0D0
-      STEP_2D       = 0.1D0
-
-      DO IXVECTOR = 1,MAX_NR_XVECTORS
-        IREP_XVECTOR(IXVECTOR)    = 0
-        IWHICH_XVECTOR(IXVECTOR)  = 1
-        IOPTION_XVECTOR(IXVECTOR) = 0
-      ENDDO
-
-      NR_XVECTORS = 0
-      IPRVIS = 0
-
-      ORIENTATION(1) = 'xy'
-      ORIENTATION(2) = 'xz'
-      ORIENTATION(3) = 'yz'
-
 !     process input
 
       IF(WORD .EQ. '*VISUAL') THEN
@@ -132,60 +99,63 @@ C=======================================================================
           CALL QUIT('Illegal keyword in VISUAL_INPUT.')
 
     1     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL,1)
-          READ(LUCMD,*) NR_POINTS_IN_LIST
-          IF(NR_POINTS_IN_LIST .GT. MAX_NR_POINTS_IN_LIST)
-     &       CALL QUIT('increase MAX_NR_POINTS_IN_LIST in visual.h')
-          DO IPOINT_IN_LIST = 1,NR_POINTS_IN_LIST
-            READ(LUCMD,*) XYZ_LIST(IPOINT_IN_LIST,1),
-     &                    XYZ_LIST(IPOINT_IN_LIST,2),
-     &                    XYZ_LIST(IPOINT_IN_LIST,3)
+          visual_cfg_list = .true.
+          READ(LUCMD,*) visual_cfg_NR_POINTS_IN_LIST
+          IF(visual_cfg_NR_POINTS_IN_LIST 
+     &           .GT. MAX_NR_POINTS_IN_LIST)
+     &       CALL QUIT('increase MAX_NR_POINTS_IN_LIST')
+          DO IPOINT_IN_LIST = 1,visual_cfg_NR_POINTS_IN_LIST
+            READ(LUCMD,*) visual_cfg_XYZ_LIST(IPOINT_IN_LIST,1),
+     &                    visual_cfg_XYZ_LIST(IPOINT_IN_LIST,2),
+     &                    visual_cfg_XYZ_LIST(IPOINT_IN_LIST,3)
           ENDDO
           GOTO 100
 
     2     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL,2)
+          visual_cfg_2d = .true.
           GOTO 100
 
     3     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL,3)
+          visual_cfg_3d = .true.
           GOTO 100
 
     4     CONTINUE
-          READ(LUCMD,*) NR_XVECTORS
-          DO IXVECTOR = 1,NR_XVECTORS
-            READ(LUCMD,*) XVECTOR_FILE(IXVECTOR),
-     &                    IWHICH_XVECTOR(IXVECTOR),
-     &                    IQ_XVECTOR(IXVECTOR),
-     &                    IOPTION_XVECTOR(IXVECTOR)
+          READ(LUCMD,*) visual_cfg_NR_XVECTORS
+          DO IXVECTOR = 1,visual_cfg_NR_XVECTORS
+            READ(LUCMD,*) visual_cfg_XVECTOR_FILE(IXVECTOR),
+     &                    visual_cfg_IWHICH_XVECTOR(IXVECTOR),
+     &                    visual_cfg_IQ_XVECTOR(IXVECTOR),
+     &                    visual_cfg_IOPTION_XVECTOR(IXVECTOR)
           ENDDO
           GOTO 100
 
     5     CONTINUE
-          READ(LUCMD,*) IPRVIS
     6     CONTINUE
           GOTO 100
 
     7     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL,7)
-          READ(LUCMD,'(A)') ORBITAL_STRING(1)
-          IF(NFSYM .GT. 1) READ(LUCMD,'(A)') ORBITAL_STRING(2)
+          visual_cfg_use_orbital_string = .true.
+          READ(LUCMD,'(A)') visual_cfg_ORBITAL_STRING(1)
+          IF(NFSYM .GT. 1) 
+     &      READ(LUCMD,'(A)') visual_cfg_ORBITAL_STRING(2)
           GOTO 100
 
     8     CONTINUE
-          CALL SET_LBIT(LBIT_VISUAL,8)
+          visual_cfg_integrate = .true.
           GOTO 100
 
     9     CONTINUE
-          READ(LUCMD,*) ADD_3D
+          READ(LUCMD,*) visual_cfg_ADD_3D
           GOTO 100
 
    10     CONTINUE
-          READ(LUCMD,*) NCUBE(1), NCUBE(2), NCUBE(3)
+          READ(LUCMD,*) visual_cfg_NCUBE(1),
+     &                  visual_cfg_NCUBE(2),
+     &                  visual_cfg_NCUBE(3)
           GOTO 100
 
    11     CONTINUE
-          READ(LUCMD,*) COMMON_FACTOR
+          READ(LUCMD,*) visual_cfg_COMMON_FACTOR
           GOTO 100
 
    12     CONTINUE
@@ -193,23 +163,23 @@ C=======================================================================
           GOTO 100
 
    14     CONTINUE
-          READ(LUCMD,*) ORIGIN_2D(1),
-     &                  ORIGIN_2D(2),
-     &                  ORIGIN_2D(3)
+          READ(LUCMD,*) visual_cfg_ORIGIN_2D(1),
+     &                  visual_cfg_ORIGIN_2D(2),
+     &                  visual_cfg_ORIGIN_2D(3)
           GOTO 100
 
    15     CONTINUE
-          READ(LUCMD,*) GAUGE_ORIGIN(1),
-     &                  GAUGE_ORIGIN(2),
-     &                  GAUGE_ORIGIN(3)
+          READ(LUCMD,*) visual_cfg_GAUGE_ORIGIN(1),
+     &                  visual_cfg_GAUGE_ORIGIN(2),
+     &                  visual_cfg_GAUGE_ORIGIN(3)
           GOTO 100
 
    16     CONTINUE
-          READ(LUCMD,*) ADD_2D
+          READ(LUCMD,*) visual_cfg_ADD_2D
           GOTO 100
 
    17     CONTINUE
-          READ(LUCMD,*) STEP_2D
+          READ(LUCMD,*) visual_cfg_STEP_2D
           GOTO 100
 
    18     CONTINUE
@@ -267,11 +237,6 @@ C=======================================================================
         ENDIF
       ENDIF
   300 CONTINUE
-      CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(1X,A)') 'VISUALIZATION module:'
-      CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(A,I3)') '* Print level: ',IPRVIS
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* VISUAL */
@@ -284,6 +249,7 @@ C                                              last revision: april 2007
 C=======================================================================
 
       use memory_allocator
+      use visual_cfg
 
 #include "implicit.h"
 #include "priunit.h"
@@ -294,12 +260,10 @@ C=======================================================================
 #include "dcbbas.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
-#include "visual.h"
 #include "maxorb.h"
 #include "dcbham.h"
 #include "dgroup.h"
 
-      LOGICAL   LBIT
       DIMENSION WORK(LWORK)
       real(8), allocatable :: occupation(:)
 
@@ -311,8 +275,6 @@ C=======================================================================
       real(8), allocatable :: gao2(:)
       real(8), allocatable :: buf(:)
       integer, allocatable :: ncnt(:)
-
-#include "memint.h"
 
       call alloc(cmo      ,n2bbasxq)
       call alloc(eig      ,norbt)
@@ -343,8 +305,8 @@ C=======================================================================
 !     density matrices
 
       IOFF = 0
-      DO IXVECTOR = 1,NR_XVECTORS
-        IF(.NOT. XVECTOR_FILE(IXVECTOR) .EQ. 'ZORDER') THEN
+      DO IXVECTOR = 1, visual_cfg_NR_XVECTORS
+        IF(.NOT. visual_cfg_xVECTOR_FILE(IXVECTOR) .EQ. 'ZORDER') THEN
           CALL SETUP_FO_DMAT_AO(CMO,
      &                          IXVECTOR,
      &                          DMAT_AO(1+IOFF),
@@ -355,7 +317,7 @@ C=======================================================================
       CALL SETUP_ZO_DMAT_AO(CMO,
      &                      DMAT_AO(1+IOFF),
      &                      occupation,
-     &                      WORK(KFREE),LFREE)
+     &                      WORK,Lwork)
 
       call dealloc(occupation)
 
@@ -366,7 +328,7 @@ C=======================================================================
      &                   ncnt,
      &                   buf)
 
-      IF(LBIT(LBIT_VISUAL,8)) THEN !integration
+      IF(visual_cfg_integrate) THEN !integration
         call visual_integration(dmat_ao,
      &                          gao,
      &                          gao1,
@@ -400,6 +362,8 @@ C                                                           radovan bast
 C                                              last revision: april 2007
 C=======================================================================
 
+      use visual_cfg
+
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -410,7 +374,6 @@ C=======================================================================
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
 
 #include "dcbgen.h"
-#include "visual.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbham.h"
@@ -420,32 +383,29 @@ C=======================================================================
 #include "sdpre.h"
 #include "ibtfun.h"
 
-      LOGICAL   LBIT
       DIMENSION DMAT_AO(*),
      &          GAO(*),
      &          GAO1(*),
      &          GAO2(*),
      &          NCNT(*),
      &          BUF(*),
-     &          QUANTITY(0:3,NCUBE(3)),
+     &          QUANTITY(0:3,visual_cfg_NCUBE(3)),
      &          STEP_3D(3,0:3),
      &          ATOM_XYZ(4,NUCDEP)
-
-#include "memint.h"
 
 !     open files
 
       LUNIT_2D = 13
       LUNIT_3D = 14
 
-      IF(LBIT(LBIT_VISUAL,2)) THEN !2D
+      if (visual_cfg_2d) then
         OPEN(LUNIT_2D,
      &       FILE   = 'PLOT_2D',
      &       STATUS = 'NEW',
      &       ACCESS = 'SEQUENTIAL',
      &       FORM   = 'FORMATTED')
       ENDIF
-      IF(LBIT(LBIT_VISUAL,3)) THEN !3D
+      if (visual_cfg_3d) then
         OPEN(LUNIT_3D,
      &       FILE   = 'PLOT_3D',
      &       STATUS = 'NEW',
@@ -453,7 +413,7 @@ C=======================================================================
      &       FORM   = 'FORMATTED')
       ENDIF
 
-      IF(LBIT(LBIT_VISUAL,1)) THEN !list of points
+      if (visual_cfg_list) then
 
         CALL AROUND('Requested density at point(s)')
 
@@ -467,22 +427,23 @@ C=======================================================================
      &                                        'z-component'
         WRITE(LUPRI,'(A)')
 
-        DO IPOINT_IN_LIST = 1,NR_POINTS_IN_LIST
+        DO IPOINT_IN_LIST = 1, visual_cfg_nr_points_in_list
 
           CALL GET_QUANTITY_IN_POINT(DMAT_AO,
      &                               GAO,
      &                               GAO1,
      &                               GAO2,
-     &                               XYZ_LIST(IPOINT_IN_LIST,1),
-     &                               XYZ_LIST(IPOINT_IN_LIST,2),
-     &                               XYZ_LIST(IPOINT_IN_LIST,3),
+     &            visual_cfg_XYZ_LIST(IPOINT_IN_LIST,1),
+     &            visual_cfg_XYZ_LIST(IPOINT_IN_LIST,2),
+     &            visual_cfg_XYZ_LIST(IPOINT_IN_LIST,3),
      &                               NCNT,
      &                               BUF,
      &                               QUANTITY)
 
-          WRITE(LUPRI,'(3E14.6,4E18.10)') XYZ_LIST(IPOINT_IN_LIST,1),
-     &                                    XYZ_LIST(IPOINT_IN_LIST,2),
-     &                                    XYZ_LIST(IPOINT_IN_LIST,3),
+          WRITE(LUPRI,'(3E14.6,4E18.10)') 
+     &             visual_cfg_XYZ_LIST(IPOINT_IN_LIST,1),
+     &             visual_cfg_XYZ_LIST(IPOINT_IN_LIST,2),
+     &             visual_cfg_XYZ_LIST(IPOINT_IN_LIST,3),
      &                                    QUANTITY(0,1),
      &                                    QUANTITY(1,1),
      &                                    QUANTITY(2,1),
@@ -498,9 +459,9 @@ C=======================================================================
 
       ENDIF
 
-      IF(LBIT(LBIT_VISUAL,2)) THEN !2D
+      if (visual_cfg_2d) then
 
-        NR_STEPS = 1 + ADD_2D*D2/STEP_2D
+        NR_STEPS = 1 + visual_cfg_ADD_2D*D2/visual_cfg_STEP_2D
 
         DO IORIENTATION = 1,3
 
@@ -508,27 +469,31 @@ C=======================================================================
           NJ = NR_STEPS
           NK = NR_STEPS
 
-          IF(ORIENTATION(IORIENTATION) .EQ. 'xy') NK = 1
-          IF(ORIENTATION(IORIENTATION) .EQ. 'xz') NJ = 1
-          IF(ORIENTATION(IORIENTATION) .EQ. 'yz') NI = 1
+          IF(visual_cfg_ORIENTATION(IORIENTATION) .EQ. 'xy') NK = 1
+          IF(visual_cfg_ORIENTATION(IORIENTATION) .EQ. 'xz') NJ = 1
+          IF(visual_cfg_ORIENTATION(IORIENTATION) .EQ. 'yz') NI = 1
 
           WRITE(LUNIT_2D,'(A)')
-          WRITE(LUNIT_2D,'(A)') 'plane: ' // ORIENTATION(IORIENTATION)
+          WRITE(LUNIT_2D,'(A)') 
+     &             'plane: ' // visual_cfg_ORIENTATION(IORIENTATION)
 
           DO I = 1,NI
             DO J = 1,NJ
               DO K = 1,NK
 
-                PX = ORIGIN_2D(1) - ADD_2D + (I-1)*STEP_2D
-                PY = ORIGIN_2D(2) - ADD_2D + (J-1)*STEP_2D
-                PZ = ORIGIN_2D(3) - ADD_2D + (K-1)*STEP_2D
+        PX = visual_cfg_ORIGIN_2D(1) - visual_cfg_ADD_2D 
+     &          + (I-1)*visual_cfg_STEP_2D
+        PY = visual_cfg_ORIGIN_2D(2) - visual_cfg_ADD_2D
+     &          + (j-1)*visual_cfg_STEP_2D
+        PZ = visual_cfg_ORIGIN_2D(3) - visual_cfg_ADD_2D
+     &          + (k-1)*visual_cfg_STEP_2D
 
-                IF(ORIENTATION(IORIENTATION) .EQ. 'xy')
-     &                                        PZ = ORIGIN_2D(3)
-                IF(ORIENTATION(IORIENTATION) .EQ. 'xz')
-     &                                        PY = ORIGIN_2D(2)
-                IF(ORIENTATION(IORIENTATION) .EQ. 'yz')
-     &                                        PX = ORIGIN_2D(1)
+                IF(visual_cfg_ORIENTATION(IORIENTATION) .EQ. 'xy')
+     &                     PZ = visual_cfg_ORIGIN_2D(3)
+                IF(visual_cfg_ORIENTATION(IORIENTATION) .EQ. 'xz')
+     &                     PY = visual_cfg_ORIGIN_2D(2)
+                IF(visual_cfg_ORIENTATION(IORIENTATION) .EQ. 'yz')
+     &                     PX = visual_cfg_ORIGIN_2D(1)
 
                 CALL GET_QUANTITY_IN_POINT(DMAT_AO,
      &                                     GAO,
@@ -552,7 +517,7 @@ C=======================================================================
         ENDDO
       ENDIF !2D
 
-      IF(LBIT(LBIT_VISUAL,3)) THEN !3D
+      if (visual_cfg_3d) then
 
 !       calculate cube parameters
 
@@ -571,7 +536,7 @@ C=======================================================================
 !       ATOM_XYZ(3,I) z-coordinate of atom I
 !       ATOM_XYZ(4,I) charge of atom I
 
-        NCUBE(0) = NUCDEP
+        visual_cfg_NCUBE(0) = NUCDEP
         CALL DZERO(STEP_3D,12)
         DO I = 1,3
           STEP_3D(I,0) = CORD(I,1)
@@ -598,9 +563,10 @@ C=======================================================================
 !       add some space, calculate step sizes and convert step vectors to angstrom
 
         DO I = 1,3
-          STEP_3D(I,0) = STEP_3D(I,0) - ADD_3D
-          STEP_3D(I,I) = (STEP_3D(I,I) + (ADD_3D*D2))*XTANG
-          STEP_3D(I,I) = (STEP_3D(I,I) - STEP_3D(I,0))/(NCUBE(I) - 1)
+          STEP_3D(I,0) = STEP_3D(I,0) - visual_cfg_ADD_3D
+          STEP_3D(I,I) = (STEP_3D(I,I) + (visual_cfg_ADD_3D*D2))*XTANG
+      STEP_3D(I,I) = (STEP_3D(I,I) - STEP_3D(I,0))
+     &        /(visual_cfg_NCUBE(I) - 1)
         ENDDO
 
 !       write header
@@ -608,7 +574,8 @@ C=======================================================================
         WRITE(LUNIT_3D,'(A)') 'some'
         WRITE(LUNIT_3D,'(A)') 'text'
         DO I = 0,3
-          WRITE(LUNIT_3D,'(I5,4F12.6)') NCUBE(I), (STEP_3D(J,I),J=1,3)
+          WRITE(LUNIT_3D,'(I5,4F12.6)') visual_cfg_NCUBE(I), 
+     &               (STEP_3D(J,I),J=1,3)
         ENDDO
         DO I = 1,NUCDEP
           WRITE(LUNIT_3D,'(I5,4F12.6)')
@@ -617,9 +584,9 @@ C=======================================================================
 
 !       grid walk
 
-        DO ICUBE = 1,NCUBE(1)
-          DO JCUBE = 1,NCUBE(2)
-            DO KCUBE = 1,NCUBE(3)
+        DO ICUBE = 1,visual_cfg_NCUBE(1)
+          DO JCUBE = 1,visual_cfg_NCUBE(2)
+            DO KCUBE = 1,visual_cfg_NCUBE(3)
 
               PX = STEP_3D(1,0) + (ICUBE-1)*STEP_3D(1,1)
      &                          + (JCUBE-1)*STEP_3D(1,2)
@@ -643,17 +610,16 @@ C=======================================================================
 
 !           write to file
 
-            WRITE(LUNIT_3D,'(6E13.5)') (QUANTITY(0,M),M=1,NCUBE(3))
+            WRITE(LUNIT_3D,'(6E13.5)') 
+     &         (QUANTITY(0,M),M=1, visual_cfg_NCUBE(3))
           ENDDO
         ENDDO
       ENDIF !3D
 
 !     close files
 
-      IF(LBIT(LBIT_VISUAL,2)) CLOSE(LUNIT_2D, STATUS = 'KEEP')
-      IF(LBIT(LBIT_VISUAL,3)) CLOSE(LUNIT_3D, STATUS = 'KEEP')
-
-      RETURN
+      if (visual_cfg_2d) close( lunit_2d, status = 'keep')
+      if (visual_cfg_3d) close( lunit_3d, status = 'keep')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* GET_QUANTITY_IN_POINT */
@@ -671,6 +637,8 @@ C-----------------------------------------------------------------------
 C                                                           radovan bast
 C                                              last revision: april 2007
 C=======================================================================
+
+      use visual_cfg
 
 #include "implicit.h"
 #include "priunit.h"
@@ -693,7 +661,6 @@ C=======================================================================
       PARAMETER (DP53 = D5/D3)
 
 #include "dcbgen.h"
-#include "visual.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbham.h"
@@ -703,8 +670,7 @@ C=======================================================================
 #include "sdpre.h"
 #include "ibtfun.h"
 
-      LOGICAL   LBIT,
-     &          NEED_GAO1,
+      LOGICAL   NEED_GAO1,
      &          NEED_GAO2
       DIMENSION DMAT_AO(*),
      &          GAO(*),
@@ -752,21 +718,21 @@ C=======================================================================
       NEED_GAO1 = .FALSE.
       NEED_GAO2 = .FALSE.
 
-      DO IXVECTOR = 1,NR_XVECTORS
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_DIVM     ) NEED_GAO1 = .TRUE.
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_ROTM     ) NEED_GAO1 = .TRUE.
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_DIVJ     ) NEED_GAO1 = .TRUE.
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_ROTJ     ) NEED_GAO1 = .TRUE.
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_JPARA    ) NEED_GAO1 = .TRUE.
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_DIVJPARA ) NEED_GAO1 = .TRUE.
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_ROTJPARA ) NEED_GAO1 = .TRUE.
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_ELF      ) NEED_GAO1 = .TRUE.
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_K        ) NEED_GAO1 = .TRUE.
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_H        ) NEED_GAO1 = .TRUE.
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_GRADIENT ) NEED_GAO1 = .TRUE.
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_LAPLACIAN) NEED_GAO1 = .TRUE.
+      DO IXVECTOR = 1, visual_cfg_NR_XVECTORS
+      IF(visual_cfg_iq_xvector(IXVECTOR)==IQ_DIVM     ) NEED_GAO1=.TRUE.
+      IF(visual_cfg_iq_xvector(IXVECTOR)==IQ_ROTM     ) NEED_GAO1=.TRUE.
+      IF(visual_cfg_iq_xvector(IXVECTOR)==IQ_DIVJ     ) NEED_GAO1=.TRUE.
+      IF(visual_cfg_iq_xvector(IXVECTOR)==IQ_ROTJ     ) NEED_GAO1=.TRUE.
+      IF(visual_cfg_iq_xvector(IXVECTOR)==IQ_JPARA    ) NEED_GAO1=.TRUE.
+      IF(visual_cfg_iq_xvector(IXVECTOR)==IQ_DIVJPARA ) NEED_GAO1=.TRUE.
+      IF(visual_cfg_iq_xvector(IXVECTOR)==IQ_ROTJPARA ) NEED_GAO1=.TRUE.
+      IF(visual_cfg_iq_xvector(IXVECTOR)==IQ_ELF      ) NEED_GAO1=.TRUE.
+      IF(visual_cfg_iq_xvector(IXVECTOR)==IQ_K        ) NEED_GAO1=.TRUE.
+      IF(visual_cfg_iq_xvector(IXVECTOR)==IQ_H        ) NEED_GAO1=.TRUE.
+      IF(visual_cfg_iq_xvector(IXVECTOR)==IQ_GRADIENT ) NEED_GAO1=.TRUE.
+      IF(visual_cfg_iq_xvector(IXVECTOR)==IQ_LAPLACIAN) NEED_GAO1=.TRUE.
 
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_LAPLACIAN) NEED_GAO2 = .TRUE.
+      IF(visual_cfg_iq_xvector(IXVECTOR)==IQ_LAPLACIAN) NEED_GAO2=.TRUE.
       ENDDO
 
       IF(NEED_GAO1) THEN
@@ -784,28 +750,28 @@ C=======================================================================
 
       CALL DZERO(QUANTITY_ADDMEUP,4)
 
-      DO IXVECTOR = 1,NR_XVECTORS
+      DO IXVECTOR = 1, visual_cfg_NR_XVECTORS
         IOFF = N2BBASXQ*(IXVECTOR-1)
 
-        IF(XVECTOR_FILE(IXVECTOR) .EQ. 'ZORDER')
-     &                                       IOFF = N2BBASXQ*NR_XVECTORS
+        IF(visual_cfg_XVECTOR_FILE(IXVECTOR) .EQ. 'ZORDER')
+     &      IOFF = N2BBASXQ*visual_cfg_NR_XVECTORS
 
         CALL DZERO(QUANTITY,4)
 
         IQ = IQ_N
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
           DENSITY = D0
 
           DO IC = 1,MC
             IF(IC .EQ. 1) THEN
-              IF(.NOT. IOPTION_XVECTOR(IXVECTOR) .EQ. 2) THEN
-                CALL GETRH1(DENSITY,1,IREP_XVECTOR(IXVECTOR),
+              IF(.NOT. visual_cfg_IOPTION_XVECTOR(IXVECTOR) .EQ. 2) THEN
+                CALL GETRH1(DENSITY,1,visual_cfg_irep_xvector(IXVECTOR),
      &                      GAO,DMAT_AO(1+IOFF),BUF)
               ENDIF
             ENDIF
             IF(IC .EQ. 2) THEN
-              IF(.NOT. IOPTION_XVECTOR(IXVECTOR) .EQ. 1) THEN
-                CALL GETRH1(DENSITY,2,IREP_XVECTOR(IXVECTOR),
+              IF(.NOT. visual_cfg_IOPTION_XVECTOR(IXVECTOR) .EQ. 1) THEN
+                CALL GETRH1(DENSITY,2,visual_cfg_irep_xvector(IXVECTOR),
      &                      GAO,DMAT_AO(1+IOFF),BUF)
               ENDIF
             ENDIF
@@ -815,9 +781,9 @@ C=======================================================================
         ENDIF
 
         IQ = IQ_GRADIENT
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
           CALL GETGRHO(VECTOR_A,
-     &                 IREP_XVECTOR(IXVECTOR),
+     &                 visual_cfg_irep_xvector(IXVECTOR),
      &                 GAO,
      &                 GAO1,
      &                 DMAT_AO(1+IOFF),
@@ -827,7 +793,7 @@ C=======================================================================
         ENDIF
 
         IQ = IQ_LAPLACIAN
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
           CALL GETLRHO(RXX,
      &                 RXY,
      &                 RXZ,
@@ -844,7 +810,7 @@ C=======================================================================
         ENDIF
 
         IQ = IQ_ELF
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
           FERMI_KIN = D0
           DO IXYZ = 1,3
             DO IC = 1,MC
@@ -852,7 +818,7 @@ C=======================================================================
 
               CALL GETRH1(SCALAR,
      &                    IC,
-     &                    IREP_XVECTOR(IXVECTOR),
+     &                    visual_cfg_irep_xvector(IXVECTOR),
      &                    GAO1(1+(IXYZ-1)*NTBAS(0)),
      &                    DMAT_AO(1+IOFF),
      &                    BUF)
@@ -864,13 +830,13 @@ C=======================================================================
           FERMI_KIN = FERMI_KIN/D2
 
           CALL GETRHO(DENSITY,
-     &                IREP_XVECTOR(IXVECTOR),
+     &                visual_cfg_irep_xvector(IXVECTOR),
      &                GAO,
      &                DMAT_AO(1+IOFF),
      &                BUF)
 
           CALL GETGRHO(VECTOR_A,
-     &                 IREP_XVECTOR(IXVECTOR),
+     &                 visual_cfg_irep_xvector(IXVECTOR),
      &                 GAO,
      &                 GAO1,
      &                 DMAT_AO(1+IOFF),
@@ -890,9 +856,9 @@ C=======================================================================
         ENDIF
 
         IQ = IQ_JDIA
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
           CALL GETRHO(DENSITY,
-     &                IREP_XVECTOR(IXVECTOR),
+     &                visual_cfg_irep_xvector(IXVECTOR),
      &                GAO,
      &                DMAT_AO(1+IOFF),
      &                BUF)
@@ -905,10 +871,10 @@ C=======================================================================
         ENDIF
 
         IQ = IQ_M
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
           CALL GET_M(.TRUE.,
      &               VECTOR_A,
-     &               IREP_XVECTOR(IXVECTOR),
+     &               visual_cfg_irep_xvector(IXVECTOR),
      &               GAO,
      &               DMAT_AO(1+IOFF),
      &               BUF)
@@ -917,10 +883,10 @@ C=======================================================================
         ENDIF
 
         IQ = IQ_J
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
           CALL GET_J(.TRUE.,
      &               VECTOR_A,
-     &               IREP_XVECTOR(IXVECTOR),
+     &               visual_cfg_irep_xvector(IXVECTOR),
      &               GAO,
      &               DMAT_AO(1+IOFF),
      &               BUF)
@@ -929,10 +895,10 @@ C=======================================================================
         ENDIF
 
         IQ = IQ_JPARA
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
           CALL GET_JPARA(.TRUE.,
      &                   VECTOR_A,
-     &                   IREP_XVECTOR(IXVECTOR),
+     &                   visual_cfg_irep_xvector(IXVECTOR),
      &                   GAO,
      &                   GAO1,
      &                   DMAT_AO(1+IOFF),
@@ -942,10 +908,10 @@ C=======================================================================
         ENDIF
 
         IQ = IQ_DIVM
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
           CALL GET_DIVM(.TRUE.,
      &                  SCALAR,
-     &                  IREP_XVECTOR(IXVECTOR),
+     &                  visual_cfg_irep_xvector(IXVECTOR),
      &                  GAO,
      &                  GAO1,
      &                  DMAT_AO(1+IOFF),
@@ -955,10 +921,10 @@ C=======================================================================
         ENDIF
 
         IQ = IQ_DIVJ
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
           CALL GET_DIVJ(.TRUE.,
      &                  SCALAR,
-     &                  IREP_XVECTOR(IXVECTOR),
+     &                  visual_cfg_irep_xvector(IXVECTOR),
      &                  GAO,
      &                  GAO1,
      &                  DMAT_AO(1+IOFF),
@@ -968,10 +934,10 @@ C=======================================================================
         ENDIF
 
         IQ = IQ_H
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
           CALL GET_DIVM(.TRUE.,
      &                  SCALAR,
-     &                  IREP_XVECTOR(IXVECTOR),
+     &                  visual_cfg_irep_xvector(IXVECTOR),
      &                  GAO,
      &                  GAO1,
      &                  DMAT_AO(1+IOFF),
@@ -981,10 +947,10 @@ C=======================================================================
         ENDIF
 
         IQ = IQ_K
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
           CALL GET_DIVJ(.TRUE.,
      &                  SCALAR,
-     &                  IREP_XVECTOR(IXVECTOR),
+     &                  visual_cfg_irep_xvector(IXVECTOR),
      &                  GAO,
      &                  GAO1,
      &                  DMAT_AO(1+IOFF),
@@ -994,10 +960,10 @@ C=======================================================================
         ENDIF
 
         IQ = IQ_ROTM
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
           CALL GET_ROTM(.TRUE.,
      &                  VECTOR_A,
-     &                  IREP_XVECTOR(IXVECTOR),
+     &                  visual_cfg_irep_xvector(IXVECTOR),
      &                  GAO,
      &                  GAO1,
      &                  DMAT_AO(1+IOFF),
@@ -1007,10 +973,10 @@ C=======================================================================
         ENDIF
 
         IQ = IQ_ROTJ
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
           CALL GET_ROTJ(.TRUE.,
      &                  VECTOR_A,
-     &                  IREP_XVECTOR(IXVECTOR),
+     &                  visual_cfg_irep_xvector(IXVECTOR),
      &                  GAO,
      &                  GAO1,
      &                  DMAT_AO(1+IOFF),
@@ -1020,10 +986,10 @@ C=======================================================================
         ENDIF
 
         IQ = IQ_ROTJPARA
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
           CALL GET_ROTJPARA(.TRUE.,
      &                      VECTOR_A,
-     &                      IREP_XVECTOR(IXVECTOR),
+     &                      visual_cfg_irep_xvector(IXVECTOR),
      &                      GAO,
      &                      GAO1,
      &                      DMAT_AO(1+IOFF),
@@ -1033,10 +999,10 @@ C=======================================================================
         ENDIF
 
         IQ = IQ_GAMMA5
-        IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ) THEN
+        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
           CALL GET_GAMMA5(.TRUE.,
      &                    SCALAR,
-     &                    IREP_XVECTOR(IXVECTOR),
+     &                    visual_cfg_irep_xvector(IXVECTOR),
      &                    GAO,
      &                    DMAT_AO(1+IOFF),
      &                    BUF)
@@ -1044,20 +1010,20 @@ C=======================================================================
           CALL DAXPY(1,D1,SCALAR,1,QUANTITY(0),1)
         ENDIF
 
-        IF((IQ_XVECTOR(IXVECTOR) .EQ. IQ_NUCDIPX) .OR.
-     &     (IQ_XVECTOR(IXVECTOR) .EQ. IQ_NUCDIPY) .OR.
-     &     (IQ_XVECTOR(IXVECTOR) .EQ. IQ_NUCDIPZ)) THEN
+        IF((visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_NUCDIPX) .OR.
+     &     (visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_NUCDIPY) .OR.
+     &     (visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_NUCDIPZ)) THEN
 
           CALL GET_J(.TRUE.,
      &               VECTOR_A,
-     &               IREP_XVECTOR(IXVECTOR),
+     &               visual_cfg_irep_xvector(IXVECTOR),
      &               GAO,
      &               DMAT_AO(1+IOFF),
      &               BUF)
 
-          RX = PX - CORD(1,IOPTION_XVECTOR(IXVECTOR))
-          RY = PY - CORD(2,IOPTION_XVECTOR(IXVECTOR))
-          RZ = PZ - CORD(3,IOPTION_XVECTOR(IXVECTOR))
+          RX = PX - CORD(1,visual_cfg_IOPTION_XVECTOR(IXVECTOR))
+          RY = PY - CORD(2,visual_cfg_IOPTION_XVECTOR(IXVECTOR))
+          RZ = PZ - CORD(3,visual_cfg_IOPTION_XVECTOR(IXVECTOR))
 
           VECTOR_B(1) = RY*VECTOR_A(3) - RZ*VECTOR_A(2)
           VECTOR_B(2) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
@@ -1066,46 +1032,46 @@ C=======================================================================
           RSQ = RX*RX + RY*RY + RZ*RZ
           FACTOR = -D1/(RSQ**DP32)
 
-          IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_NUCDIPX)
+          IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_NUCDIPX)
      &      CALL DAXPY(1,FACTOR,VECTOR_B(1),1,QUANTITY(0),1)
-          IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_NUCDIPY)
+          IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_NUCDIPY)
      &      CALL DAXPY(1,FACTOR,VECTOR_B(2),1,QUANTITY(0),1)
-          IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_NUCDIPZ)
+          IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_NUCDIPZ)
      &      CALL DAXPY(1,FACTOR,VECTOR_B(3),1,QUANTITY(0),1)
         ENDIF
 
-        IF((IQ_XVECTOR(IXVECTOR) .EQ. IQ_EDIPX) .OR.
-     &     (IQ_XVECTOR(IXVECTOR) .EQ. IQ_EDIPY) .OR.
-     &     (IQ_XVECTOR(IXVECTOR) .EQ. IQ_EDIPZ)) THEN
+        IF((visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_EDIPX) .OR.
+     &     (visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_EDIPY) .OR.
+     &     (visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_EDIPZ)) THEN
 
           CALL GETRHO(DENSITY,
-     &                IREP_XVECTOR(IXVECTOR),
+     &                visual_cfg_irep_xvector(IXVECTOR),
      &                GAO,
      &                DMAT_AO(1+IOFF),
      &                BUF)
 
-          IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_EDIPX)
+          IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_EDIPX)
      &      CALL DAXPY(1,D1,DENSITY*PX,1,QUANTITY(0),1)
-          IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_EDIPY)
+          IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_EDIPY)
      &      CALL DAXPY(1,D1,DENSITY*PY,1,QUANTITY(0),1)
-          IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_EDIPZ)
+          IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_EDIPZ)
      &      CALL DAXPY(1,D1,DENSITY*PZ,1,QUANTITY(0),1)
         ENDIF
 
-        IF((IQ_XVECTOR(IXVECTOR) .EQ. IQ_MDIPX) .OR.
-     &     (IQ_XVECTOR(IXVECTOR) .EQ. IQ_MDIPY) .OR.
-     &     (IQ_XVECTOR(IXVECTOR) .EQ. IQ_MDIPZ)) THEN
+        IF((visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_MDIPX) .OR.
+     &     (visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_MDIPY) .OR.
+     &     (visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_MDIPZ)) THEN
 
           CALL GET_J(.TRUE.,
      &               VECTOR_A,
-     &               IREP_XVECTOR(IXVECTOR),
+     &               visual_cfg_irep_xvector(IXVECTOR),
      &               GAO,
      &               DMAT_AO(1+IOFF),
      &               BUF)
 
-          RX = PX - GAUGE_ORIGIN(1)
-          RY = PY - GAUGE_ORIGIN(2)
-          RZ = PZ - GAUGE_ORIGIN(3)
+          RX = PX - visual_cfg_GAUGE_ORIGIN(1)
+          RY = PY - visual_cfg_GAUGE_ORIGIN(2)
+          RZ = PZ - visual_cfg_GAUGE_ORIGIN(3)
 
           VECTOR_B(1) = RY*VECTOR_A(3) - RZ*VECTOR_A(2)
           VECTOR_B(2) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
@@ -1113,15 +1079,16 @@ C=======================================================================
 
           FACTOR = -DP12
 
-          IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_MDIPX)
+          IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_MDIPX)
      &      CALL DAXPY(1,FACTOR,VECTOR_B(1),1,QUANTITY(0),1)
-          IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_MDIPY)
+          IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_MDIPY)
      &      CALL DAXPY(1,FACTOR,VECTOR_B(2),1,QUANTITY(0),1)
-          IF(IQ_XVECTOR(IXVECTOR) .EQ. IQ_MDIPZ)
+          IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_MDIPZ)
      &      CALL DAXPY(1,FACTOR,VECTOR_B(3),1,QUANTITY(0),1)
         ENDIF
 
-        CALL DAXPY(4,COMMON_FACTOR,QUANTITY(0),1,QUANTITY_ADDMEUP(0),1)
+        CALL DAXPY(4,visual_cfg_COMMON_FACTOR,
+     &       QUANTITY(0),1,QUANTITY_ADDMEUP(0),1)
       ENDDO
 
       RETURN
@@ -1130,16 +1097,15 @@ C=======================================================================
       subroutine setup_orbital_string(occupation)
 
       use memory_allocator
+      use visual_cfg
 
       implicit none
 
 #include "dcborb.h"
 #include "dgroup.h"
-#include "visual.h"
 
       real(8)              :: occupation(norbt)
 
-      logical              :: lbit
       integer, allocatable :: kvec(:)
       integer              :: i, ifsym, nvec, ioff, ishift
 
@@ -1151,14 +1117,13 @@ C=======================================================================
 
         ioff = ioff + npsh(ifsym)
 
-!       use orbital string
-        if (lbit(lbit_visual, 7)) then
+        if (visual_cfg_use_orbital_string) then
 
           call alloc(kvec, norb(ifsym))
           kvec = 0
           nvec = 1
 
-          call numlst(orbital_string(ifsym),
+          call numlst(visual_cfg_orbital_string(ifsym),
      &                kvec,
      &                norb(ifsym),
      &               -npsh(ifsym),
