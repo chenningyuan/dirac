@@ -17,6 +17,7 @@ module keyword
   interface kw_read
     module procedure kw_read_c
     module procedure kw_read_i1
+    module procedure kw_read_i3
     module procedure kw_read_r1
     module procedure kw_read_r2
     module procedure kw_read_r3
@@ -54,6 +55,20 @@ contains
 !   ----------------------------------------------------------------------------
 
     read(unit_in, *, err=1) i
+    return
+
+ 1  call kw_read_error(kw_input)
+
+  end subroutine
+
+  subroutine kw_read_i3(kw_input, i1, i2, i3)
+
+!   ----------------------------------------------------------------------------
+    character(kw_length), intent(in)  :: kw_input
+    integer,              intent(out) :: i1, i2, i3
+!   ----------------------------------------------------------------------------
+
+    read(unit_in, *, err=1) i1, i2, i3
     return
 
  1  call kw_read_error(kw_input)

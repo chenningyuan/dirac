@@ -16,6 +16,8 @@ module input_reader
 
   private
 
+#include "dgroup.h"
+
 contains
 
   subroutine set_lscale_dft_gaunt()
@@ -66,6 +68,9 @@ contains
 
             case ('*DFT   ')
               call read_input_dft(word, kw_section)
+
+            case ('*VISUAL')
+              call read_input_visual(word, kw_section)
 
             case ('*END OF')
               go to 1
@@ -321,6 +326,106 @@ contains
     if (kw_matches(word, '.GRID T')) then
       call kw_read(word, line)
 !     call dftgridinput(line)
+    end if
+
+    call check_whether_kw_found(word, kw_section)
+
+  end subroutine
+
+  subroutine read_input_visual(word, kw_section)
+
+    use visual_cfg
+
+!   ----------------------------------------------------------------------------
+    character(kw_length), intent(in) :: word
+    character(kw_length), intent(in) :: kw_section
+!   ----------------------------------------------------------------------------
+    integer                          :: i
+!   ----------------------------------------------------------------------------
+
+#ifndef MOD_VISUAL
+    call quit(kw_section//' not available in this version')
+#endif
+
+    dirac_cfg_visual = .true.
+
+    call reset_available_kw_list()
+
+    if (kw_matches(word, '.LIST  ')) then
+      visual_cfg_list = .true.
+      call kw_read(word, visual_cfg_nr_points_in_list)
+      do i = 1, visual_cfg_nr_points_in_list
+        call kw_read(word, visual_cfg_xyz_list(i, 1), &
+                           visual_cfg_xyz_list(i, 2), &
+                           visual_cfg_xyz_list(i, 3))
+      end do
+    end if
+
+    if (kw_matches(word, '.LINE  ')) then
+    end if
+
+    if (kw_matches(word, '.2D    ')) then
+      visual_cfg_2d = .true.
+    end if
+
+    if (kw_matches(word, '.3D    ')) then
+      visual_cfg_3d = .true.
+    end if
+
+    if (kw_matches(word, '.QUANTI')) then
+      call kw_read(word, visual_cfg_nr_xvectors)
+      do i = 1, visual_cfg_nr_xvectors
+        read(unit_in, *) visual_cfg_xvector_file(i),   &
+                         visual_cfg_iwhich_xvector(i), &
+                         visual_cfg_iq_xvector(i),     &
+                         visual_cfg_ioption_xvector(i)
+      end do
+    end if
+
+    if (kw_matches(word, '.INTEGR')) then
+      visual_cfg_integrate = .true.
+    end if
+
+    if (kw_matches(word, '.ORBSTR')) then
+      visual_cfg_use_orbital_string = .true.
+      call kw_read(word, visual_cfg_orbital_string(1))
+      if (nfsym > 1) then
+        call kw_read(word, visual_cfg_orbital_string(2))
+      end if
+    end if
+
+    if (kw_matches(word, '.COMMON')) then
+      call kw_read(word, visual_cfg_common_factor)
+    end if
+
+    if (kw_matches(word, '.2DADD ')) then
+      call kw_read(word, visual_cfg_add_2d)
+    end if
+
+    if (kw_matches(word, '.3DADD ')) then
+      call kw_read(word, visual_cfg_add_3d)
+    end if
+
+    if (kw_matches(word, '.CUBE  ')) then
+      call kw_read(word, visual_cfg_ncube(1), &
+                         visual_cfg_ncube(2), &
+                         visual_cfg_ncube(3))
+    end if
+
+    if (kw_matches(word, '.2DORIG')) then
+      call kw_read(word, visual_cfg_origin_2d(1), &
+                         visual_cfg_origin_2d(2), &
+                         visual_cfg_origin_2d(3))
+    end if
+
+    if (kw_matches(word, '.2DSTEP')) then
+      call kw_read(word, visual_cfg_step_2d)
+    end if
+
+    if (kw_matches(word, '.GAUGE ')) then
+      call kw_read(word, visual_cfg_gauge_origin(1), &
+                         visual_cfg_gauge_origin(2), &
+                         visual_cfg_gauge_origin(3))
     end if
 
     call check_whether_kw_found(word, kw_section)

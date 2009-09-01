@@ -105,6 +105,10 @@ C
 
 
 !     this is the new input reader
+!     contains:
+!     *DFT
+!     *VISUAL
+!     ignores rest
       call read_input()
 
 
@@ -2931,6 +2935,7 @@ C
 C***********************************************************************
 
       use dirac_cfg
+      use input_reader
 
 #include "implicit.h"
 #include "priunit.h"
@@ -3053,17 +3058,10 @@ C&&&& LOCALIZE : Molecular orbital localization
             GO TO 100
   108    CONTINUE
             GO TO 100
-
-!        .VISUAL
-  109    continue
-#ifdef MOD_VISUAL
-         dirac_cfg_visual = .true.
-         njobs = njobs + 1
-#else
-         call quit('.VISUAL not available in this version')
-#endif /* MOD_VISUAL */
-         go to 100
-
+  109    CONTINUE
+!           do nothing
+!           keep .VISUAL for backwards compatibility
+            GO TO 100
   110    CONTINUE
             GO TO 100
   111    CONTINUE
@@ -3091,8 +3089,6 @@ C
      &     '* Mulliken population analysis'
       IF(DOPRJ) WRITE(LUPRI,'(1X,A)')
      &     '* Projection onto another solution '
-      IF(dirac_cfg_visual) WRITE(LUPRI,'(1X,A)')
-     &     '* Visualization'
       IF(DO3RHO) WRITE(LUPRI,'(1X,A)')
      &    '* Write out density for visualization (Gaussian cube format)'
       IF(DO1RHO) WRITE(LUPRI,'(1X,A)')
@@ -3150,14 +3146,11 @@ C
         CALL LOCINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
 
-!      *VISUAL
-    9  continue
-#ifdef MOD_VISUAL
-       call visual_input(word, .false.)
-#else
-       call quit('*VISUAL not available in this version')
-#endif /* MOD_VISUAL */
-       go to 200
+!     *VISUAL
+    9 continue
+!     this is needed until the old input scheme is replaced
+      call move_to_next_star(word)
+      go to 200
 
    10 CONTINUE
         GO TO 200
@@ -3176,14 +3169,8 @@ C
       IF(DO1WT) CALL WT1IN(WORD,.TRUE.,WORK,LWORK)
 #endif
       IF(DOLOC) CALL LOCINP(WORD,.TRUE.,WORK,LWORK)
-#ifdef MOD_VISUAL
-      IF(dirac_cfg_visual) CALL VISUAL_INPUT(WORD,.TRUE.)
-#endif /* MOD_VISUAL */
 C
       CALL QEXIT('ANWINP')
-      RETURN
-C
-C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck popinp */
