@@ -93,7 +93,7 @@ C     Default orbital strings is all occupied and all virtuals
         IF(NOCC(I).GT.0) THEN
           WRITE(MP2_INDSTR(1,I),'(I4,A2,I4)') 1,'..',NOCC(I)
         ENDIF
-        WRITE(MP2_INDSTR(2,I),'(I4,A2,I4)') NOCC(I)+1,'..',NFBAS(I,1)
+        WRITE(MP2_INDSTR(2,I),'(A)') 'all'
       ENDDO
       MP2_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
       IF (LEVYLE.OR.BSS) MP2_INTFLG = ILLINT
