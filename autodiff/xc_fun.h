@@ -39,31 +39,9 @@ void xc_set_functional(const double params[XC_PARAMS_LEN]);
 // a previous call to xc_set_functional() with the density
 // parameters in densvar, with derivatives up to the given
 // order. The result is put in the result array, in graded
-// lexicographical ordering. This function also has a fortran version.
+// lexicographical ordering. This function also has a fortran 
+// version.
 void xc_eval_lda(double result[], int order, const double densvars[2]);
 void xc_eval_gga(double result[], int order, const double densvars[5]);
-
-
-/*
-  Use the variable ordering R,S,Z,X,Y; which are
-                            0 1 2 3 4
-  defined as
-
-      R = \rho_\alpha + \rho_\beta
-      S = \rho_\alpha - \rho_\beta
-
-      
-      
-      
-
-      and conversely
-
-      na = (R + S)/2
-      nb = (R - S)/2
-
-      Dna^2 = (X+Z+2*Y)/4
-      Dnb^2 = (X+Z-2*Y)/4
-      DnaDnb = (Z - X)/4
-*/
 
 #endif
