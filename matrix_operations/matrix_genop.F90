@@ -476,17 +476,19 @@ contains
       end if
       write (uni,'()') !final empty line
 #else
-      write(*, *) 'matrix = ', label
-      write(*, *) 'ih_sym = ', A%ih_sym
-      write(*, *) 'tr_sym = ', A%tr_sym
-      write(*, *) 'irep   = ', A%irep
+      write(*, *) 'matrix  = ', label
+      write(*, *) 'ih_sym  = ', A%ih_sym
+      write(*, *) 'tr_sym  = ', A%tr_sym
+      write(*, *) 'irep    = ', A%irep
+      write(*, *) 'rows mo = ', A%rows_are_mo
+      write(*, *) 'cols mo = ', A%cols_are_mo
 
-      do iz = 1, nz
-        n = A%nrow*A%ncol
-        write(*, *) 'norm(iz) ', iz, sqrt(ddot(n, A%elms((iz - 1)*n + 1), 1, &
-                                                  A%elms((iz - 1)*n + 1), 1))
-        write(*, *) 'sum(iz)  ', iz, sum(A%elms((iz - 1)*n + 1:(iz - 1)*n + n))
-      end do
+!     do iz = 1, nz
+!       n = A%nrow*A%ncol
+!       write(*, *) 'norm(iz) ', iz, sqrt(ddot(n, A%elms((iz - 1)*n + 1), 1, &
+!                                                 A%elms((iz - 1)*n + 1), 1))
+!       write(*, *) 'sum(iz)  ', iz, sum(A%elms((iz - 1)*n + 1:(iz - 1)*n + n))
+!     end do
 
       if (associated(A%elms)) then
         call prqmat(A%elms,            &
