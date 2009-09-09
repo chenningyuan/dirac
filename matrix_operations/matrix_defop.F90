@@ -396,10 +396,9 @@ contains
       end if
 
 #ifdef PRG_DIRAC
-      A%ih_sym = B%ih_sym
-      A%tr_sym = B%tr_sym
-      A%irep   = B%irep
+      call copy_matrix_sym(A, B)
 #endif
+
    end subroutine
 
 
@@ -491,10 +490,9 @@ contains
       end if
 
 #ifdef PRG_DIRAC
-      C%ih_sym = B%ih_sym
-      C%tr_sym = B%tr_sym
-      C%irep   = B%irep
+      call copy_matrix_sym(C, B)
 #endif
+
    end subroutine
 
 
@@ -563,6 +561,7 @@ contains
       C%tr_sym = A%tr_sym*B%tr_sym
       C%irep   = ieor(A%irep, B%irep)
 #endif
+
    end function
 
 
@@ -573,9 +572,7 @@ contains
       type(tmp_mat), pointer           :: TA, TB
 
 #ifdef PRG_DIRAC
-      B%ih_sym = A%ih_sym
-      B%tr_sym = A%tr_sym
-      B%irep   = A%irep
+      call copy_matrix_sym(B, A)
 #endif
 
       !if (matrix_defop_debug) print *,'real_times_mat',r,' *',loc(A),' =>',loc(B)
@@ -646,10 +643,9 @@ contains
       end if
 
 #ifdef PRG_DIRAC
-      B%ih_sym = A%ih_sym
-      B%tr_sym = A%tr_sym
-      B%irep   = A%irep
+      call copy_matrix_sym(B, A)
 #endif
+
    end function
 
 

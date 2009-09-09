@@ -36,6 +36,9 @@ module matrix_genop
    public mat_print_nontmp
    public mat_real_part
    public mat_imag_part
+#ifdef PRG_DIRAC
+   public copy_matrix_sym
+#endif
 
    private
 
@@ -126,14 +129,10 @@ contains
          call mat_init_full(C, nrow, ncol)
 #ifdef PRG_DIRAC
          if (present(A) .and. .not. present(B)) then
-           C%ih_sym = A%ih_sym
-           C%tr_sym = A%tr_sym
-           C%irep   = A%irep  
+           call copy_matrix_sym(C, A)
          end if
          if (present(B) .and. .not. present(A)) then
-           C%ih_sym = B%ih_sym
-           C%tr_sym = B%tr_sym
-           C%irep   = B%irep  
+           call copy_matrix_sym(C, B)
          end if
          if (present(A) .and.       present(B)) then
            C%ih_sym = A%ih_sym*B%ih_sym
@@ -563,5 +562,19 @@ contains
          nullify(B%elms) !mark as zero
       end if
    end function
+
+#ifdef PRG_DIRAC
+   subroutine copy_matrix_sym(A, B)
+     
+     type(matrix) :: A, B
+     
+     A%ih_sym      = B%ih_sym
+     A%tr_sym      = B%tr_sym
+     A%irep        = B%irep
+     A%rows_are_mo = B%rows_are_mo
+     A%cols_are_mo = B%cols_are_mo
+   
+   end subroutine
+#endif
 
 end module

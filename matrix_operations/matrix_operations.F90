@@ -43,9 +43,13 @@ module matrix_operations
     integer             :: ih_sym = 1
     integer             :: tr_sym = 1
     integer             :: irep   = 0
+    logical             :: rows_are_mo = .false.
+    logical             :: cols_are_mo = .false.
   end type
 
 #include "dgroup.h"
+#include "dcbbas.h"
+#include "dcborb.h"
 
 contains
 
@@ -115,30 +119,16 @@ contains
     real(8),      intent(in)    :: alpha, beta
     type(matrix), intent(inout) :: C
 !   ----------------------------------------------------------------------------
-    integer                     :: m, n, k, nza, nzb, nzc
-    character                   :: ta, tb
+    integer                     :: m, n, k, l
+    integer                     :: nza,   nzb,   nzc
+    integer                     :: off_a, off_b, off_c
+    integer                     :: nr_ar, nr_br, nr_cr
+    integer                     :: nr_ac, nr_bc, nr_cc
+    integer                     :: ifsym
+    integer                     :: nr_ao, nr_mo
+    character                   :: ta,    tb
     integer                     :: iq(4) = (/1, 2, 3, 4/)
 !   ----------------------------------------------------------------------------
-
-    if      (transa == 'n' .or. transa == 'N') then
-      m = A%nrow
-      k = A%ncol
-    else if (transa == 't' .or. transa == 'T') then
-      m = A%ncol
-      k = A%nrow
-    else
-      call quit('unknown trans possibility in mat_mul')
-    end if
-
-    if      (transb == 'n' .or. transb == 'N') then
-      n = B%ncol
-      if (B%nrow /= k) call quit('dimensions do not match in mat_mul')
-    else if (transb == 't' .or. transb == 'T') then
-      n = B%nrow
-      if (B%ncol /= k) call quit('dimensions do not match in mat_mul')
-    else
-      call quit('unknown trans possibility in mat_mul')
-    end if
 
     nza = nz
     nzb = nz
@@ -148,19 +138,78 @@ contains
                   iq               , nzc)
     end if
 
-    ta = 'N'
-    tb = 'N'
-    if (transa == 't') ta = 'H'
-    if (transb == 't') tb = 'H'
-    if (transa == 'T') ta = 'H'
-    if (transb == 'T') tb = 'H'
+    off_a = 0
+    off_b = 0
+    off_c = 0
 
-    call qgemm(m, n, k,                                                &
-               alpha,                                                  &
-               ta, 'N', ipqtoq(1, A%irep), A%elms, A%nrow, A%ncol, nz, &
-               tb, 'N', ipqtoq(1, B%irep), B%elms, B%nrow, B%ncol, nz, &
-               beta,                                                   &
-                        iq               , C%elms, C%nrow, C%ncol, nz)
+!   do ifsym = 1, nfsym
+    do ifsym = 1, 1
+
+!     nr_ao = nfbas(ifsym, 0)
+!     nr_mo = norb(ifsym)
+
+!     nr_ar = nr_ao
+!     nr_ac = nr_ao
+!     nr_br = nr_ao
+!     nr_bc = nr_ao
+!     nr_cr = nr_ao
+!     nr_cc = nr_ao
+
+!     if (A%rows_are_mo) nr_ar = nr_mo
+!     if (A%cols_are_mo) nr_ac = nr_mo
+!     if (B%rows_are_mo) nr_br = nr_mo
+!     if (B%cols_are_mo) nr_bc = nr_mo
+!     if (C%rows_are_mo) nr_cr = nr_mo
+!     if (C%cols_are_mo) nr_cc = nr_mo
+
+      nr_ar = A%nrow
+      nr_ac = A%ncol
+      nr_br = B%nrow
+      nr_bc = B%ncol
+      nr_cr = C%nrow
+      nr_cc = C%ncol
+
+      select case (transa)
+        case ('n', 'N')
+          m  = nr_ar
+          k  = nr_ac
+          ta = 'N'
+        case ('t', 'T')
+          m  = nr_ac
+          k  = nr_ar
+          ta = 'H'
+        case default
+          call quit('unknown trans possibility in mat_mul')
+      end select
+ 
+      select case (transb)
+        case ('n', 'N')
+          l  = nr_br
+          n  = nr_bc
+          tb = 'N'
+        case ('t', 'T')
+          l  = nr_bc
+          n  = nr_br
+          tb = 'H'
+        case default
+          call quit('unknown trans possibility in mat_mul')
+      end select
+
+      if (k /= l) then
+        call quit('dimensions do not match in mat_mul')
+      end if
+
+      call qgemm(m, n, k,                                                         &
+                 alpha,                                                           &
+                 ta, 'N', ipqtoq(1, A%irep), A%elms(1 + off_a), nr_ar, nr_ac, nz, &
+                 tb, 'N', ipqtoq(1, B%irep), B%elms(1 + off_b), nr_br, nr_bc, nz, &
+                 beta,    iq               , C%elms(1 + off_c), nr_cr, nr_cc, nz)
+
+      off_a = off_a + nr_ar*nr_ac*nz
+      off_b = off_b + nr_br*nr_bc*nz
+      off_c = off_c + nr_cr*nr_cc*nz
+
+    end do
 
     matrix_stat_multiplications = matrix_stat_multiplications + 1
 
@@ -190,6 +239,9 @@ contains
     if (B%nrow /= A%ncol .or. B%ncol /= A%nrow) then
       call quit('wrong dimensions in mat_trans')
     end if
+
+    B%cols_are_mo = A%rows_are_mo
+    B%rows_are_mo = A%cols_are_mo
 
     i_dim = A%nrow
     j_dim = A%ncol
