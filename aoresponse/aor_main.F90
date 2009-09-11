@@ -50,9 +50,8 @@ contains
 
     call get_S(S)
 
-    call get_i_or_s_C(C_i, 'i')
-
-    D   = C_i*dag(C_i)
+    call get_C(C_i, i=1.0d0, s=0.0d0, g=1.0d0, u=1.0d0)
+    D = C_i*dag(C_i)
 
     call get_F(F)
 

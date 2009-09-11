@@ -16,7 +16,7 @@ module dirac_interface
   public get_f
   public get_p
   public get_g
-  public get_i_or_s_c
+  public get_C
   public grcont
   public ask_for_integrals
   public response_solver
@@ -719,7 +719,7 @@ contains
 
   end subroutine
 
-  subroutine get_C(C)
+  subroutine get_full_c(C)
 
 !   ----------------------------------------------------------------------------
     type(matrix),  intent(inout) :: C
@@ -736,7 +736,7 @@ contains
 
     call alloc(eigenvalues, norbt)
 
-    call opnfil(file_unit, 'DFCOEF', 'OLD', 'get_C')
+    call opnfil(file_unit, 'DFCOEF', 'OLD', 'get_full_c')
 
     call reacmo(file_unit,   &
                 'DFCOEF',    &
@@ -755,92 +755,114 @@ contains
 
   end subroutine
 
-  subroutine get_i_or_s_C(C, kind)
+  subroutine get_C(C, i, s, g, u)
 
-    type(matrix), intent(inout) :: C
-    character,    intent(in)    :: kind
 !   ----------------------------------------------------------------------------
-    type(matrix)                :: T
-    integer                     :: pgs_nr,    egi_nr,    egs_nr
-    integer                     :: pus_nr,    eui_nr,    eus_nr
-    integer                     :: pgs_start, egi_start, egs_start
-    integer                     :: pus_start, eui_start, eus_start
-    integer                     :: i, s, iz
-    logical                     :: debug_me = .false.
+    type(matrix), intent(inout) :: C
+    real(8),      intent(in)    :: i, s, g, u
+!   ----------------------------------------------------------------------------
+    type(matrix)                :: C_file
 
-    pgs_nr = npsh(1)
-    pus_nr = npsh(2)
-    egi_nr = nish(1)
-    eui_nr = nish(2)
-    egs_nr = nssh(1)
-    eus_nr = nssh(2)
+    integer                     :: nr_g_mo_ns
+    integer                     :: nr_g_mo_pi
+    integer                     :: nr_g_mo_ps
+    integer                     :: nr_u_mo_ns
+    integer                     :: nr_u_mo_pi
+    integer                     :: nr_u_mo_ps
+    integer                     :: nr_g_mo
+    integer                     :: nr_u_mo
+    integer                     :: nr_g_ao
+    integer                     :: nr_u_ao
+    integer                     :: k, l, m, n, ir, iw1, iw2, iz
+!   ----------------------------------------------------------------------------
 
-    pgs_start = 1
-    egi_start = pgs_start + pgs_nr
-    egs_start = egi_start + egi_nr
+    nr_g_mo_ns = npsh(1)
+    nr_g_mo_pi = nish(1)
+    nr_g_mo_ps = nssh(1)
+    nr_g_mo    = nr_g_mo_ns + nr_g_mo_pi + nr_g_mo_ps
+    nr_u_mo_ns = npsh(2)
+    nr_u_mo_pi = nish(2)
+    nr_u_mo_ps = nssh(2)
+    nr_u_mo    = nr_u_mo_ns + nr_u_mo_pi + nr_u_mo_ps
+    nr_g_ao    = nfbas(1, 0)
+    nr_u_ao    = nfbas(2, 0)
 
-    pus_start = pgs_nr    + pus_nr + egi_nr + 1
-    eui_start = pus_start + pus_nr
-    eus_start = eui_start + eui_nr
+    if (.not. mat_isdef(C)) call init_mat(C, ntbas(0), norbt)
+    C%elms = 0.0d0
 
-    call get_C(C)
+    call get_full_c(C_file)
 
-    if (nfsym == 2) then
+    ir = 0
 
-      select case (kind)
+    do iz = 1, nz
 
-        case ('i')
-          do iz = 1, nz
-            do s = pgs_start, pgs_start + pgs_nr - 1
-              call dzero(C%elms(1 + (s-1)*ntbas(0) + (iz-1)*ntbas(0)*norbt), ntbas(0))
-            end do
-            do s = egs_start, egs_start + egs_nr - 1
-              call dzero(C%elms(1 + (s-1)*ntbas(0) + (iz-1)*ntbas(0)*norbt), ntbas(0))
-            end do
-            do s = pus_start, pus_start + pus_nr - 1
-              call dzero(C%elms(1 + (s-1)*ntbas(0) + (iz-1)*ntbas(0)*norbt), ntbas(0))
-            end do
-            do s = eus_start, eus_start + eus_nr - 1
-              call dzero(C%elms(1 + (s-1)*ntbas(0) + (iz-1)*ntbas(0)*norbt), ntbas(0))
-            end do
-          end do
+      iw1 = (iz - 1)*(nr_g_mo + nr_u_mo)*(nr_g_ao + nr_u_ao)
+      k   = 0
 
-        case ('s')
-          do iz = 1, nz
-            do i = egi_start, egi_start + egi_nr - 1
-              call dzero(C%elms(1 + (i-1)*ntbas(0) + (iz-1)*ntbas(0)*norbt), ntbas(0))
-            end do
-            do i = eui_start, eui_start + eui_nr - 1
-              call dzero(C%elms(1 + (i-1)*ntbas(0) + (iz-1)*ntbas(0)*norbt), ntbas(0))
-            end do
-          end do
+      do m = 1, nr_g_mo_ns
+        k = k + 1
+        do n = 1, nr_g_ao
+          ir  = ir + 1
+          iw2 = iw1 + (k - 1)*(nr_g_ao + nr_u_ao) + n
+          C%elms(iw2) = C_file%elms(ir)*g*s
+        end do
+      end do
 
-      end select
+      do m = 1, nr_g_mo_pi
+        k = k + 1
+        do n = 1, nr_g_ao
+          ir  = ir + 1
+          iw2 = iw1 + (k - 1)*(nr_g_ao + nr_u_ao) + n
+          C%elms(iw2) = C_file%elms(ir)*g*i
+        end do
+      end do
 
-    else
+      do m = 1, nr_g_mo_ps
+        k = k + 1
+        do n = 1, nr_g_ao
+          ir  = ir + 1
+          iw2 = iw1 + (k - 1)*(nr_g_ao + nr_u_ao) + n
+          C%elms(iw2) = C_file%elms(ir)*g*s
+        end do
+      end do
 
-      select case (kind)
+    end do
 
-        case ('i')
-          do iz = 1, nz
-            do s = pgs_start, pgs_start + pgs_nr - 1
-              call dzero(C%elms(1 + (s-1)*ntbas(0) + (iz-1)*ntbas(0)*norbt), ntbas(0))
-            end do
-            do s = egs_start, egs_start + egs_nr - 1
-              call dzero(C%elms(1 + (s-1)*ntbas(0) + (iz-1)*ntbas(0)*norbt), ntbas(0))
-            end do
-          end do
+    if (nfsym == 1) return
 
-        case ('s')
-          do iz = 1, nz
-            do i = egi_start, egi_start + egi_nr - 1
-              call dzero(C%elms(1 + (i-1)*ntbas(0) + (iz-1)*ntbas(0)*norbt), ntbas(0))
-            end do
-          end do
+    do iz = 1, nz
 
-      end select
+      iw1 = (iz - 1)*(nr_g_mo + nr_u_mo)*(nr_g_ao + nr_u_ao)
+      k   = 0
 
-    end if
+      do m = 1, nr_u_mo_ns
+        k = k + 1
+        do n = nr_g_ao + 1, nr_g_ao + nr_u_ao
+          ir  = ir + 1
+          iw2 = iw1 + (nr_g_mo + k - 1)*(nr_g_ao + nr_u_ao) + n
+          C%elms(iw2) = C_file%elms(ir)*u*s
+        end do
+      end do
+
+      do m = 1, nr_u_mo_pi
+        k = k + 1
+        do n = nr_g_ao + 1, nr_g_ao + nr_u_ao
+          ir  = ir + 1
+          iw2 = iw1 + (nr_g_mo + k - 1)*(nr_g_ao + nr_u_ao) + n
+          C%elms(iw2) = C_file%elms(ir)*u*i
+        end do
+      end do
+
+      do m = 1, nr_u_mo_ps
+        k = k + 1
+        do n = nr_g_ao + 1, nr_g_ao + nr_u_ao
+          ir  = ir + 1
+          iw2 = iw1 + (nr_g_mo + k - 1)*(nr_g_ao + nr_u_ao) + n
+          C%elms(iw2) = C_file%elms(ir)*u*s
+        end do
+      end do
+
+    end do
 
   end subroutine
 
@@ -852,7 +874,8 @@ contains
     if (.not. mat_isdef(S)) call init_mat(S, ntbas(0), ntbas(0))
     S%elms = 0.0d0
 
-    call gtovlt(S%elms, ssmtrc)
+!   call gtovlt(S%elms, ssmtrc)
+    call gtovlx(S%elms, ssmtrc)
 
   end subroutine
 
@@ -1105,7 +1128,7 @@ contains
                                      orbital_rotation_vector_pp, &
                                      orbital_rotation_vector_pn)
 
-    call get_C(C)
+    call get_C(C, i=1.0d0, s=1.0d0, g=1.0d0, u=1.0d0)
     RHS_mo = dag(C)*(RHS*C)
     C      = 0
 
@@ -1380,8 +1403,8 @@ contains
     Dp%elms = 0.0d0
     if (.not. static) Dp%ih_sym = 0
 
-    call get_i_or_s_C(Ci, 'i')
-    call get_i_or_s_C(Cs, 's')
+    call get_C(Ci, i=1.0d0, s=0.0d0, g=1.0d0, u=1.0d0)
+    call get_C(Cs, i=0.0d0, s=1.0d0, g=1.0d0, u=1.0d0)
 
     Dp = (Ci*(Wp*dag(Cs))) - (Cs*(Wp*dag(Ci)))
 
