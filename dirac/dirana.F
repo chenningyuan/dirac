@@ -378,7 +378,7 @@ C
 C     Get overlap matrix
 C     ==================
 C
-      CALL GTOVLX(SMAT,SSMTRC,WORK,LWORK)
+      CALL GTOVLX(SMAT,SSMTRC)
 C
 C     If necessary, backtransform overlap matrix to AO-basis
 C     ======================================================
@@ -2551,7 +2551,7 @@ C
 C
 C Get overlap matrix 
 C
-      CALL GTOVLX(WORK(KSMAT),SSMTRC,WORK(KFREE),LFREE) 
+      CALL GTOVLX(WORK(KSMAT),SSMTRC)
       IF(IPRLOC.GE.6) THEN
          WRITE(LUPRI,'(/A)') '* ORBLOC: Molecular coefficients:'
          CALL PRQMAT(WORK(KCMO),NFBAS(IFRP,0),NORB(IFRP),
@@ -2621,7 +2621,7 @@ C     PRJLOC = FALSE localization with Mulliken analysis
      S            WORK(KFREE),LFREE)
       IF(PRJLOC) THEN
 C     PRJLOC = TRUE localization with projection analysis
-         CALL GTOVLX(WORK(KSMAT),SSMTRC,WORK(KFREE),LFREE)
+         CALL GTOVLX(WORK(KSMAT),SSMTRC)
          CALL ORBLP1(WORK(KSMAT),WORK(KSCOEF),WORK(KPMAT),NFBAS(IFRP,1),
      S               NFBAS(IFRP,2),NISH(IFRP),DINVM,WORK(KFREE),LFREE)
       ELSE
@@ -2677,7 +2677,7 @@ C     PRJLOC = FALSE localization with Mulliken analysis
      S            WORK(KFREE),LFREE)
       IF(PRJLOC) THEN
 C     PRJLOC = TRUE localization with projection analysis
-         CALL GTOVLX(WORK(KSMAT),SSMTRC,WORK(KFREE),LFREE)
+         CALL GTOVLX(WORK(KSMAT),SSMTRC)
          CALL ORBLP1(WORK(KSMAT),WORK(KSCOEF),WORK(KPMAT),NFBAS(IFRP,1),
      S        NFBAS(IFRP,2),NISH(IFRP),DINVM,WORK(KFREE),LFREE)
       ELSE
@@ -3751,7 +3751,7 @@ C
      &          WORK(*)
 C
       CALL MEMGET('REAL',KSMAT,N2BAST,WORK,KFREE,LFREE)
-      CALL GTOVLT(WORK(KSMAT),SSMTRC,WORK(KFREE),LFREE)
+      CALL GTOVLT(WORK(KSMAT),SSMTRC)
       IS = KSMAT
       POLT = D0
       DO IFRP = 1,NFSYM
@@ -3867,7 +3867,7 @@ C.....Reference + polarization coefficients
       CLOSE(LUCOEF,STATUS='KEEP')
 C
       CALL MEMGET('REAL',KSMAT,N2BAST,WORK,KFREE,LFREE)
-      CALL GTOVLT(WORK(KSMAT),SSMTRC,WORK(KFREE),LFREE)
+      CALL GTOVLT(WORK(KSMAT),SSMTRC)
       IS = KSMAT
       IC = 0
       DO IFRP = 1,NFSYM

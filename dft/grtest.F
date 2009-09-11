@@ -188,7 +188,7 @@ C     Get analytical SMAT(I,J,2)
 C
       NELM = NTBAS(0)*NTBAS(0)
       smat = 0.0d0
-      CALL GTOVLX_no_work(SMAT(1,1,2),SSMTRC)
+      CALL GTOVLX(SMAT(1,1,2),SSMTRC)
 C
 C     integrate
 C

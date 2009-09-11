@@ -1094,7 +1094,7 @@ C
 C     Matrix to hold orbitals.
 C
       CALL MEMGET('REAL',KSAO,N2BBASX,WORK,KFREE,LFREE)
-      CALL GTOVLX(WORK(KSAO),D1,WORK(KFREE),LFREE)
+      CALL GTOVLX(WORK(KSAO),D1)
       WRITE (LUPRI,'(/A)')
      &   ' -> Gram-Schmidt orthonormalizing MO coefficients.'
 C

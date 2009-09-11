@@ -848,18 +848,11 @@ contains
 
     type(matrix),  intent(inout) :: S
 !   ----------------------------------------------------------------------------
-    real(8), pointer   :: work(:)
-    integer            :: lwork
 
     if (.not. mat_isdef(S)) call init_mat(S, ntbas(0), ntbas(0))
     S%elms = 0.0d0
 
-    lwork = 2*((nnbbasx + n2bbasx)*2)/2
-    call di_select_wrk(work, lwork)
-
-    call gtovlt(S%elms, ssmtrc, work, lwork)
-
-    call di_deselect_wrk(work, lwork)
+    call gtovlt(S%elms, ssmtrc)
 
   end subroutine
 

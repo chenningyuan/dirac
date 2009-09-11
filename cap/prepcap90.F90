@@ -170,7 +170,7 @@ call QENTER('GetUnpckOvlpMtx')
 
 ! call lower level routine
  !call GTOVLX( PW(get_qmtx_kstart(smat)), SSMTRC, PW(get_kfree()), ILFREE )
- call GTOVLX( AccessWork(get_qmtx_kstart(smat)), SSMTRC, AccessWork(get_kfree()), ILFREE )
+ call GTOVLX( AccessWork(get_qmtx_kstart(smat)), SSMTRC)
 
  !call GTOVLX( PW(get_qmtx_kstart(smat)), SSMTRC, PW(get_kfree()), get_lfree() )
  !call GTOVLX( PW(get_qmtx_kstart(smat)), 1.0D0, PW(get_kfree()), get_lfree() )

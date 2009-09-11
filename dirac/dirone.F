@@ -1746,7 +1746,7 @@ C
 C     Get overlap matrix packed on fermion irreps
 C     ===========================================
 C
-      CALL GTOVLT(SMAT,D1,WORK,LWORK)
+      CALL GTOVLT(SMAT,D1)
 C
 C     Generate IRKB array for use in RKBLOW
 C     =====================================
@@ -2837,7 +2837,7 @@ CMI       ... control print out ...
       RETURN
       END
 
-      SUBROUTINE GTOVLX_no_work(SMAT,SSMETR)
+      SUBROUTINE GTOVLX(SMAT,SSMETR)
 C*****************************************************************************
 C
 C     Get overlap matrix from file AOPROPER
@@ -2907,81 +2907,9 @@ C
       CALL QEXIT('GTOVLX')
       RETURN
       END
-
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck gtovlx */
-      SUBROUTINE GTOVLX(SMAT,SSMETR,WORK,LWORK)
-C*****************************************************************************
-C
-C     Get overlap matrix from file AOPROPER
-C     The SS block is scaled by the factor SSMETR
-C     No symmetry packing
-C
-C     Written by T.Saue May 26 1996
-C     Last revision: Jan 20 1998 - L. Visscher
-C
-C*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D1 = 1.0D0)
-C
-#include "dcbgen.h"
-#include "cbihr1.h"
-#include "dcbbas.h"
-#include "dgroup.h"
-      DIMENSION SMAT(N2BBASX),WORK(LWORK)
-      CHARACTER*8 RTNLBL(2)
-      CALL QENTER('GTOVLX')
-#include "memint.h"
-C      
-C     Allocate integral buffer
-C     ========================
-C
-      CALL MEMGET('REAL',KSBUF,NNBBASX,WORK,KFREE,LFREE)
-C
-C     Read integral from file
-C     =======================
-C
-      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
-      CALL PRPREA(LU1INT,'OVERLAP ',RTNLBL,'TFFT',WORK(KSBUF),NNBBASX,
-     &            IPRONE)
-      CLOSE(LU1INT,STATUS = 'KEEP')
-C
-C     Make full matrix
-C     ================
-C
-      CALL DSPTSI(NTBAS(0),WORK(KSBUF),SMAT)
-C
-C     Memory deallocation
-C     ===================
-C
-      CALL MEMREL('GTOVLX',WORK,KWORK,KWORK,KFREE,LFREE)
-C
-C     Reindex to sorted basis
-C     =======================
-C
-      CALL BUTOBS(SMAT,1,WORK,LWORK)
-C
-C     Scale SS-block
-C     ==============
-C
-      IF(SSMETR.NE.D1) THEN
-        DO I = 1,NFSYM
-           JJ =  I2BASX(I,I) + (NFBAS(I,1) * NTBAS(0)) + NFBAS(I,1) + 1
-           DO J = 1, NFBAS(I,2)
-              CALL DSCAL (NFBAS(I,2),SSMETR,SMAT(JJ),1)
-              JJ = JJ + NTBAS(0)
-           ENDDO
-        ENDDO
-      ENDIF
-C
-      CALL QEXIT('GTOVLX')
-      RETURN
-      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gtovlt */
-      SUBROUTINE GTOVLT(SMAT,SSMETR,WORK,LWORK)
+      SUBROUTINE GTOVLT(SMAT,SSMETR)
 C*****************************************************************************
 C
 C     Get overlap matrix from file AOPROPER
@@ -2994,6 +2922,7 @@ C
 CMI/Sept2005 The SMAT must be allocated at least to the N2BAST size !
 C
 C*****************************************************************************
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -3006,30 +2935,32 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "symmet.h"
-      DIMENSION SMAT(*),WORK(LWORK)
+      DIMENSION SMAT(*)
       CHARACTER*8 RTNLBL(2)
+      real(8), allocatable :: stri(:)
+      real(8), allocatable :: sbuf(:)
       CALL QENTER('GTOVLT')
 #include "memint.h"
 C      
 C     Allocate integral buffer
 C     ========================
 C
-      CALL MEMGET('REAL',KSTRI,NNBBASX,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KSBUF,N2BBASX,WORK,KFREE,LFREE)
+      call alloc(stri, nnbbasx)
+      call alloc(sbuf, n2bbasx)
 C
 C     Read integral from file
 C     =======================
 C
       OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
      &         FILE='AOPROPER')
-      CALL PRPREA(LU1INT,'OVERLAP ',RTNLBL,'TFFT',WORK(KSTRI),NNBBASX,
+      CALL PRPREA(LU1INT,'OVERLAP ',RTNLBL,'TFFT',STRI,NNBBASX,
      &            IPRONE)
       CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C     Make full matrix
 C     ================
 C
-      CALL DSPTSI(NTBAS(0),WORK(KSTRI),WORK(KSBUF))
+      CALL DSPTSI(NTBAS(0),STRI,SBUF)
 C
       CALL DZERO(SMAT,N2BAST)
       NBRP     = 4/NZ
@@ -3044,7 +2975,7 @@ C
               ISOFF = IOFF + (IBBAS(IREP,IC)-IBAS(I))*(NFBAS(I,0)+1)
               IUOFF = ICOS(ISYM,IC)*(NTBAS(0)+1)
               DO J = 1,NBBAS(IREP,IC)
-                CALL DCOPY(NBBAS(IREP,IC),WORK(KSBUF+IUOFF),1,
+                CALL DCOPY(NBBAS(IREP,IC),SBUF(1+IUOFF),1,
      &                                    SMAT(1+ISOFF)    ,1)
                 IUOFF = IUOFF + NTBAS(0)
                 ISOFF = ISOFF + NFBAS(I,0)
@@ -3073,7 +3004,8 @@ C
 C     Memory deallocation
 C     ===================
 C
-      CALL MEMREL('GTOVLT',WORK,KWORK,KWORK,KFREE,LFREE)
+      call dealloc(stri)
+      call dealloc(sbuf)
       CALL QEXIT('GTOVLT')
       RETURN
       END
@@ -4702,7 +4634,7 @@ C
 C     Get overlap matrix
 C     ==================
 C
-      CALL GTOVLX(WORK(KSMAT1),D1,WORK(KFREE),LFREE)
+      CALL GTOVLX(WORK(KSMAT1),D1)
 C
 C     Backtransform overlap matrix to AO-basis
 C     ========================================
