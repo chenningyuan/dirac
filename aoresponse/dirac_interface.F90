@@ -1052,7 +1052,8 @@ contains
     type(matrix),  intent(inout) :: RHS
     type(matrix),  intent(inout) :: Dp
 !   -------------------------------------------------------------------------
-    type(matrix)                 :: RHS_mo, C, Ci, Cs, Wp
+    type(matrix)                 :: RHS_mo, Wp
+    type(matrix)                 :: C, Cig, Ciu, Csg, Csu
 
     integer,       allocatable   :: ibtyp(:)
     integer,       allocatable   :: ibtyp_pointer_pp(:)
@@ -1085,7 +1086,7 @@ contains
     logical                      :: debug_me = .false.
 
     real(8)                :: dummy_dp
-    integer                      :: dummy_i, iz, k, m, n, off
+    integer                      :: dummy_i, iz, k, i, s, off
 
 
     if (irep_is_ungerade(RHS%irep)) then
@@ -1131,17 +1132,16 @@ contains
     RHS_mo = dag(C)*(RHS*C)
     C      = 0
 
-!fixme
-    RHS_mo%ih_sym = RHS%ih_sym
-    RHS_mo%tr_sym = RHS%tr_sym
-    RHS_mo%irep   = RHS%irep
+    call copy_matrix_sym(RHS_mo, RHS)
 
     if (debug_me) then
       call print_mat(RHS,    label = 'debug RHS in AO basis')
       call print_mat(RHS_mo, label = 'debug RHS in MO basis')
     end if
 
+
 !   get positive -> positive property gradient
+!   ==========================================
 
     if (include_pp_rotations) then
 
@@ -1149,10 +1149,10 @@ contains
       do iz = 1, nz
         off = (iz - 1)*norbt*norbt
         do k = 1, length_pp
-          m = orbital_rotation_vector_pp(1, k)
-          n = orbital_rotation_vector_pp(2, k)
+          i = orbital_rotation_vector_pp(1, k)
+          s = orbital_rotation_vector_pp(2, k)
           prop_gradient_pp(k, iz) = prop_gradient_pp(k, iz) &
-                                  - 2.0d0*RHS_mo%elms(off + (m - 1)*norbt + n)
+                                  - 2.0d0*RHS_mo%elms(off + (i - 1)*norbt + s)
         end do
       end do
 
@@ -1163,7 +1163,9 @@ contains
 
     end if
 
+
 !   get positive -> negative property gradient
+!   ==========================================
 
     if (include_pn_rotations) then
 
@@ -1171,10 +1173,10 @@ contains
       do iz = 1, nz
         off = (iz - 1)*norbt*norbt
         do k = 1, length_pn
-          m = orbital_rotation_vector_pn(1, k)
-          n = orbital_rotation_vector_pn(2, k)
+          i = orbital_rotation_vector_pn(1, k)
+          s = orbital_rotation_vector_pn(2, k)
           prop_gradient_pn(k, iz) = prop_gradient_pn(k, iz) &
-                                  - 2.0d0*RHS_mo%elms(off + (m - 1)*norbt + n)
+                                  - 2.0d0*RHS_mo%elms(off + (i - 1)*norbt + s)
         end do
       end do
 
@@ -1185,7 +1187,8 @@ contains
 
     end if
 
-    Wp     = 1.0d-100*RHS_mo
+!   inherit shape
+    Wp     = RHS_mo
     RHS_mo = 0
 
 !   fixme:
@@ -1245,8 +1248,7 @@ contains
     nr_freq   = 1
     jsymop    = RHS%irep + 1
     jtimop    = RHS%tr_sym
-!   jopsy     = RHS%fermi_pointer
-    jopsy     = 1
+    jopsy     = jbtof(RHS%irep, 1)
     nfreq     = nr_freq
     nexsim    = nr_freq
     nexstv    = nr_freq
@@ -1365,58 +1367,73 @@ contains
     call dealloc(eigvec)
 
 
-!   construct perturbed AO density matrix Dp
-!   ========================================
+!   scatter response vectors
+!   ========================
 
     Wp%elms = 0.0d0
 
     if (include_pp_rotations) then
-
-      call scatter_vector(length_pp, orbital_rotation_vector_pp, 1.0d0, response_vector_pph, Wp%elms, Wp%irep + 1)
-      call scatter_vector(length_pp, orbital_rotation_vector_pp,-1.0d0, response_vector_ppa, Wp%elms, Wp%irep + 1)
+      call scatter_vector(length_pp, orbital_rotation_vector_pp, 1.0d0, response_vector_pph, Wp%elms, Wp%irep)
+      call scatter_vector(length_pp, orbital_rotation_vector_pp,-1.0d0, response_vector_ppa, Wp%elms, Wp%irep)
 
       call dealloc(orbital_rotation_vector_pp)
-
       call dealloc(response_vector_pph)
       call dealloc(response_vector_ppa)
-
     end if
 
     if (include_pn_rotations) then
-
-      call scatter_vector(length_pn, orbital_rotation_vector_pn, 1.0d0, response_vector_pnh, Wp%elms, Wp%irep + 1)
-      call scatter_vector(length_pn, orbital_rotation_vector_pn,-1.0d0, response_vector_pna, Wp%elms, Wp%irep + 1)
+      call scatter_vector(length_pn, orbital_rotation_vector_pn, 1.0d0, response_vector_pnh, Wp%elms, Wp%irep)
+      call scatter_vector(length_pn, orbital_rotation_vector_pn,-1.0d0, response_vector_pna, Wp%elms, Wp%irep)
 
       call dealloc(orbital_rotation_vector_pn)
-
       call dealloc(response_vector_pnh)
       call dealloc(response_vector_pna)
-
     end if
 
-    Dp      = RHS
-    Dp%elms = 0.0d0
-    if (.not. static) Dp%ih_sym = 0
 
-    call get_C(Ci, i=1.0d0, s=0.0d0, g=1.0d0, u=1.0d0)
-    call get_C(Cs, i=0.0d0, s=1.0d0, g=1.0d0, u=1.0d0)
+!   get coefficients
+!   ================
 
-    Dp = (Ci*(Wp*dag(Cs))) - (Cs*(Wp*dag(Ci)))
+    call get_C(Cig, i=1.0d0, s=0.0d0, g=1.0d0, u=0.0d0)
+    call get_C(Csg, i=0.0d0, s=1.0d0, g=1.0d0, u=0.0d0)
 
-!fixme
-    Dp%ih_sym = Wp%ih_sym
-    Dp%tr_sym = Wp%tr_sym
-    Dp%irep   = Wp%irep
+    if (nfsym == 2) then
+      call get_C(Ciu, i=1.0d0, s=0.0d0, g=0.0d0, u=1.0d0)
+      call get_C(Csu, i=0.0d0, s=1.0d0, g=0.0d0, u=1.0d0)
+    end if
+
+
+!   construct perturbed AO density matrix
+!   =====================================
+
+    if (nfsym == 2) then
+      if (irep_is_ungerade(Wp%irep)) then
+        Dp = (Cig*(Wp*dag(Csu))) &
+           + (Ciu*(Wp*dag(Csg))) &
+           - (Csg*(Wp*dag(Ciu))) &
+           - (Csu*(Wp*dag(Cig)))
+      else
+        Dp = (Cig*(Wp*dag(Csg))) &
+           + (Ciu*(Wp*dag(Csu))) &
+           - (Csg*(Wp*dag(Cig))) &
+           - (Csu*(Wp*dag(Ciu)))
+      end if
+      Ciu = 0
+      Csu = 0
+    else
+      Dp = (Cig*(Wp*dag(Csg))) &
+         - (Csg*(Wp*dag(Cig)))
+    end if
+    Cig = 0
+    Csg = 0
+
+    call copy_matrix_sym(Dp, Wp)
 
     if (debug_me) then
       call print_mat(Wp, label = 'debug Wp')
       call print_mat(Dp, label = 'debug Dp')
-      call print_mat(Ci, label = 'debug Ci')
-      call print_mat(Cs, label = 'debug Cs')
     end if
 
-    Ci = 0
-    Cs = 0
     Wp = 0
 
   end subroutine

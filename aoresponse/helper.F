@@ -3,7 +3,7 @@
      &                          h,
      &                          response_vector,
      &                          matrix,
-     &                          pg_sym)
+     &                          irep)
 
       implicit none
 
@@ -16,7 +16,7 @@
       double precision h
       double precision response_vector
       double precision matrix
-      integer          pg_sym
+      integer          irep
 
       integer          x, i, s, iz
       double precision f
@@ -32,7 +32,7 @@
 
         do iz = 1, nz
 
-          if (ipqtoq(iz, pg_sym-1) > 1) then
+          if (ipqtoq(iz, irep) > 1) then
             f = -1.0
           else
             f =  1.0
