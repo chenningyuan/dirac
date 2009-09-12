@@ -1,10 +1,9 @@
-      subroutine setup_zo_dmat_ao(cmo, &
-     &                            dmat_ao, &
-     &                            occupation, &
-     &                            w, &
-     &                            lw)
+      subroutine setup_zo_dmat_ao(dmat_ao, &
+                                  occupation)
 
       use memory_allocator
+      use matrix_defop
+      use dirac_interface
 
       implicit none
 
@@ -13,85 +12,30 @@
 #include "dcbbas.h"
 #include "dcbxrs.h"
 
-      real(8)              :: cmo(*)
       real(8)              :: dmat_ao(n2bbasxq)
-      real(8)              :: occupation(norbt)
-      integer              :: lw
-      real(8)              :: w(lw)
-      integer              :: iz, iq, irepop, ioff, ifsym, io
-      real(8), allocatable :: dmat_mo(:)
+      real(8), intent(in)  :: occupation(norbt)
 
-      call alloc(dmat_mo, norbt*norbt*nz)
-      dmat_mo = 0.0d0
+      integer              :: iz, iq, ioff, io, irepop
+      type(matrix)         :: D, D_mo, C
 
+      call init_mat(D_mo, norbt, norbt)
+
+      D_mo%elms = 0.0d0
       do io = 1, norbt
-        dmat_mo((io-1)*norbt + io) = occupation(io)
+        D_mo%elms((io-1)*norbt + io) = occupation(io)
       end do
-!     call output(dmat_mo,
-!    &            1,
-!    &            norbt,
-!    &            1,
-!    &            norbt,
-!    &            norbt,
-!    &            norbt,
-!    &            1,
-!    &            6)
 
-      dmat_ao = 0.0d0
+      call get_C(C, i=1.0d0, s=1.0d0, g=1.0d0, u=1.0d0)
 
-      jsymop = 1
+      D    = C*(D_mo*dag(C))
+      D_mo = 0
+      C    = 0
+
+      D = 2.0d0*D
+      call dcopy(ntbas(0)*ntbas(0)*nz, D%elms, 1, dmat_ao, 1)
+      D = 0
+
       irepop = 0
-      jopsy  = jbtof(irepop, 1)
-
-!radovan: activate this for negative energy orbital
-!         and virtual orbital densities
-#define ALLOW_NEO_OR_VO_DENSITY
-#ifdef ALLOW_NEO_OR_VO_DENSITY
-
-      do ifsym = 1, nfsym
-        call qtrans('MOAO',    &
-     &              'S',    &
-     &              0.0d0,    &
-     &              nfbas(ifsym, 0),    &
-     &              nfbas(ifsym, 0),    &
-     &              norb(ifsym),    &
-     &              norb(ifsym),    &
-     &              dmat_ao(1 + i2basx(ifsym, ifsym)),    &
-     &              ntbas(0),    &
-     &              ntbas(0),    &
-     &              1,    &
-     &              ipqtoq(1, 0),    &
-     &              dmat_mo(1 + i2orbx(ifsym, ifsym)),    &
-     &              norbt,    &
-     &              norbt,    &
-     &              1,    &
-     &              ipqtoq(1, 0),    &
-     &              cmo(1 + icmoq(ifsym)),    &
-     &              nfbas(ifsym, 0),    &
-     &              norb(ifsym),    &
-     &              nz,    &
-     &              ipqtoq(1, 0),    &
-     &              cmo(1 + icmoq(ifsym)),    &
-     &              nfbas(ifsym, 0),    &
-     &              norb(ifsym),    &
-     &              nz,    &
-     &              ipqtoq(1, 0),    &
-     &              w,    &
-     &              lw,    &
-     &              0)
-      end do
-
-      dmat_ao = 2.0d0*dmat_ao
-#else
-      call dmoli3(0, 
-     &            1, 
-     &            dmat_ao,
-     &            cmo, 
-     &            dmat_mo)
-#endif /* ifdef ALLOW_NEO_OR_VO_DENSITY */
-
-      call dealloc(dmat_mo)
-
       if (nz < 4) then
         do iz = 1, nz
           iq   = ipqtoq(iz, irepop)

@@ -104,7 +104,7 @@ C
 C
 
 #ifdef MOD_VISUAL
-      if (dirac_cfg_visual) call visual(work, lwork)
+      if (dirac_cfg_visual) call visual()
 #endif /* MOD_VISUAL */
 
 #ifdef ANALYZE_PROPERTY_GRADIENT

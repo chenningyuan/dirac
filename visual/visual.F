@@ -1,4 +1,4 @@
-      SUBROUTINE VISUAL(WORK,LWORK)
+      SUBROUTINE VISUAL()
 C=======================================================================
 C     description in here ...
 C-----------------------------------------------------------------------
@@ -22,7 +22,6 @@ C=======================================================================
 #include "dcbham.h"
 #include "dgroup.h"
 
-      DIMENSION WORK(LWORK)
       real(8), allocatable :: occupation(:)
 
       real(8), allocatable :: cmo(:)
@@ -72,10 +71,8 @@ C=======================================================================
         ENDIF
         IOFF = IOFF + N2BBASXQ
       ENDDO
-      CALL SETUP_ZO_DMAT_AO(CMO,
-     &                      DMAT_AO(1+IOFF),
-     &                      occupation,
-     &                      WORK,Lwork)
+      CALL SETUP_ZO_DMAT_AO(DMAT_AO(1+IOFF),
+     &                      occupation)
 
       call dealloc(occupation)
 
