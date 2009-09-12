@@ -369,39 +369,32 @@
           CHARACTER(len=linelen)             :: str
           CHARACTER(LEN=namelen)             :: name
           REAL(KIND=8)                       :: x(3)
-          INTEGER                            :: i,index,tmp_file,ios
+          INTEGER                            :: ios
  
           CALL QENTER('READ_ATOMS')
-
-          call filter_comments(filenum,tmp_file)
 
           mol=>null()
           IF (.NOT.(PARHER).AND.IPREAD>1)                               
      &         WRITE(LUPRI,*) 'Reading coordinates from xyz file...'
 
           ios=0
-          index=1
           do while(.not.(ios.ne.0))
 
-            name=' '
+            name='init'
             x(1:3)=0.0
 
-            READ(tmp_file, *,iostat=ios) name, x(1), x(2), x(3)
+            READ(filenum, *,iostat=ios) name, x(1), x(2), x(3)
             IF (IPREAD >= 4) THEN
               write(lupri,*) 'READ_ATOMS: read coordinates:',           
-     &        x(1),x(2),x(3)
+     &        x(1),x(2),x(3)," error code = ",ios
             ENDIF
 
-            if (ios.ne.0) then
-! Error try to detect what went wrong.
-              backspace(tmp_file)
-              READ(tmp_file, '(192a)',iostat=ios) str
-            else
+c           todo : the current reading relies on ios giving an error for no-atom lines, improve upon this
+            if (ios.eq.0.AND.name.ne.'init') then
               CALL ADD_ATOM(mol,fatom,name,x)  
             end if
           end do
 
-          close(tmp_file)
 
           IF(.NOT.(PARHER).AND. IPREAD>1) WRITE(LUPRI,*) 'Done'
 
@@ -655,8 +648,8 @@
           integer                            :: tmp_file,ios
 
 !     FOR UNIT CONVERSION
-          REAL(KIND=8)      :: UNITS=1.0
-          CHARACTER(LEN=32) :: UNITNAME='a.u.', tmpunit=' '
+          REAL(KIND=8)      :: UNIT_CONVERSION,ONE=1.0
+          CHARACTER(LEN=32) :: UNITNAME='Angstrom'
         
           CHARACTER(LEN=linelen)             :: str,section(3)
           INTEGER                            :: i,j,index,iqm
@@ -668,23 +661,20 @@
 !     FOR explicitely typed basissets.
           INTEGER,TARGET,ALLOCATABLE         :: JCO(:)
 
-          IF (.NOT.(PARHER).AND.IPREAD>1)                               & 
-     &      WRITE(LUPRI,*) 'Reading basisset information from file...'
-
-!     initialization for security
+!     take out comments from the input file and initialize
          call filter_comments(filenum,tmp_file)
           
           mol=>null()
           bas=>null()
           index=1
-          section=' '
+          section=''
 
           NSYMOP=0
           ADDSYM=.TRUE.
           KASYM(:,:)=' '
 
-!     Standard for xyz is angstrom.
-          UNITS=1/XTANG
+!     Standard for xyz is angstrom, initialize with the AU/ANG conversion factor
+          UNIT_CONVERSION = ONE / XTANG
 
 
           DO
@@ -695,22 +685,44 @@
             ELSE IF (str(1:2)=='**') THEN
               section(1)=str              
             ELSE IF (str(1:1)=='*') THEN
-              IF (str=='*END') section=' '
               section(2)=str
+!             Reinitialize section after we read an *END
+              IF (str=='*END') section=''
             ELSE IF (str(1:1)=='.') THEN
                section(3)=str
-               SELECT CASE(section(2))
-               CASE('*SYMMETRY')
-                  
-                  IF (section(3)=='.NOSYM') ADDSYM=.FALSE.
-               END SELECT
+            ENDIF
 
-            ELSE IF(section(1)=='**MOLECULE') THEN
-              IF (section(2)=='*BASIS'.AND.section(3)=='.DEFAULT') THEN
-!     JHS050707 In the subsection .DEFAULT we give only give the name of a 'LARGE BASIS' type
+!          
+!           We only need to do something if we are reading a **MOLECULE block.
+!           The options and suboptions are flattened out in one if then else if construction.
+            IF(section(1)=='**MOLECULE') THEN
+
+!            Symmetry specification
+              IF (section(2)=='*SYMMETRY'.AND.                         
+     &            section(3)=='.NOSYM') THEN
+                      ADDSYM=.FALSE.
+!             ELSE IF(section(2)=='*SYMMETRY') THEN
+!                BACKSPACE(tmp_file)
+!                CALL READ_VAR(tmp_file,linelen,NSYMOP,index,skip=.FALSE.)                
+!                do i=1,3
+!                  do j=1,3
+!                    if (index<=0) then
+!                      write(LUPRI,*)                                    & 
+!     &                   'ERROR:hermodules.F reading symmetry.'
+!            CALL QUIT('*** ERROR READ_BASIS, symmetry not               &
+!     &                     correctly specified')
+!                    CALL READ_VAR(tmp_file,linelen,kasym(i,j),           &
+!     &           index,1,.FALSE.)
+!                    end if
+!                  end do
+!                end do
+
+!             Basis specification
+              ELSE IF (section(2)=='*BASIS'.AND.
+     &                 section(3)=='.DEFAULT') THEN
+!               In the subsection .DEFAULT we give only give the name of a 'LARGE BASIS' type
 !               like cc-pVDZ etc. This will be the basisset for all atoms that are not
 !               specified in the .SPECIAL section.
-                BACKSPACE(tmp_file)
                 read(tmp_file,*,iostat=ios) tmpbas%file
                 if (.not.(ios.ne.0) .and. tmpbas%file>' ') then         
                   tmpbas%name='DEFAULT'
@@ -728,7 +740,6 @@
               ELSE IF(section(2)=='*BASIS'.AND.                         
      &                section(3)=='.SPECIAL') THEN
 !     JHS050707 For some or all atoms we can give an other basisset than the .DEFAULT
-                BACKSPACE(tmp_file)
                 tmpbas%name=' '
                 tmpbas%comp=' '
                 tmpbas%type=' '
@@ -810,31 +821,10 @@
                     CYCLE
                   END SELECT
                 end if
-!              ELSE IF (section(2)=='*BASIS') THEN
-!     JHS050707  TO BE IMPLEMENTED Specify an other coordinate system than cartesian.
-!                SELECT CASE (section(3))
-!                CASE ('.SPHERICAL'); coordintesys='S'
-!                CASE ('.OWN'); 
-!                 
-      
-!             ELSE IF(section(2)=='*SYMMETRY') THEN
-!                BACKSPACE(tmp_file)
-!                CALL READ_VAR(tmp_file,linelen,NSYMOP,index,skip=.FALSE.)                
-!                do i=1,3
-!                  do j=1,3
-!                    if (index<=0) then
-!                      write(LUPRI,*)                                    & 
-!     &                   'ERROR:hermodules.F reading symmetry.'
-!            CALL QUIT('*** ERROR READ_BASIS, symmetry not               &
-!     &                     correctly specified')
-!                    CALL READ_VAR(tmp_file,linelen,kasym(i,j),           &
-!     &           index,1,.FALSE.)
-!                    end if
-!                  end do
-!                end do
                   
-              ELSE IF (section(2)=='*CENTERS') THEN
-!     JHS050707 We specify the charges, the others are found in the table of nucdata.h
+              ELSE IF (section(2)==''.AND.                         
+     &                 section(3)=='.CENTERS') THEN
+!               Explicit specification of charges for non-standard nuclei, defaults are taken from nucdata.h
                 BACKSPACE(tmp_file)
                 name=' '
                 charge=0.0
@@ -861,40 +851,37 @@
                     EXIT
                   END IF
                 END DO
-              ELSE IF(section(2)=='*UNITS') THEN
-!     JHS050707 If a unit is specified, the coordinates in the .XYZ file are given in these 
+
+              ELSE IF (section(2)==''.AND.                         
+     &                 section(3)=='.UNITS') THEN
+!               If this block is specified, the coordinates in the .XYZ file are given in these 
 !               units and we have to transform them to a.u.
 !               The conversion factor may be given in Angstrom typed as 'ANGSTROM' or 'A'
 !               Note: Angstroms are known and can be specified by 'A' or 'ANGSTROM'
-                IF (str==' ') CYCLE
+                read(tmp_file,*,iostat=ios) str
                 SELECT CASE(str)
                 CASE('ANGSTROM', 'A')
-                  UNITS=1/XTANG
+                  UNIT_CONVERSION = ONE / XTANG
                   unitname='angstrom'
-                CASE('AU')
-                  UNITS=XTANG
-                  unitname='au'
+                CASE('AU','a.u.','bohr')
+                  UNIT_CONVERSION = ONE
+                  unitname='bohr'
                 CASE DEFAULT
-                  BACKSPACE(tmp_file)
-                  tmpunit=' '
-                  read(tmp_file,*,iostat=ios) unitname,units,tmpunit
+                  backspace (tmp_file)
+                  read(tmp_file,*,iostat=ios) unitname,unit_conversion
                   if (ios.ne.0) then
-                    read(tmp_file,*,iostat=ios) unitname,units
-                    if (ios.ne.0) then
-                    write(tmp_file,*) "ERROR(readbasis) :", 
-     &          "Specify a unitname and a unit and it's value *UNITS"
-                    cycle
-                    end if
+                    write(lupri,*) "ERROR(readbasis) :", 
+     &    "Specify a unitname and the conversion factor to atomic units"
+                    call Quit ("error reading units in .UNITS")
                   end if
-                  SELECT CASE(tmpunit)
-                  CASE ('ANGSTROM', 'A')
-                    UNITS=UNITS/XTANG
-                  END SELECT
                 END SELECT
+
+!             End of processing of the **MOLECULE BLOCK
               END IF
             END IF
           END DO
 
+!         We want users to specify the default basis, quit if they don't
           IF(.NOT.(ASSOCIATED(firstbas))) THEN
             WRITE(LUPRI,*) 'No basisset given in input file.            & 
      &            Specify a basisset in  **MOLECULE *BASIS .DEFAULT'
@@ -902,9 +889,7 @@
      &           input file.')
           END IF
           
-          IF(.NOT.(PARHER).AND.IPREAD>1) WRITE(LUPRI,*) 'Done'
-
-!     JHS050707 We now have add all data that was explicitly added in the .INP file.
+!     We now have add all data that was explicitly added in the .INP file.
 !     Add default basis.
           IF(.NOT.(PARHER).AND.IPREAD>1)                                &
      &         WRITE(LUPRI,*) 'Processing basissets...'
@@ -924,17 +909,15 @@
             prevname=mol%name
             mol=>mol%next
           END DO
-
-          IF(.NOT.(PARHER).AND.IPREAD>1) WRITE(LUPRI,*) 'Done'
           
 !     Convert units
-          IF(.NOT.(UNITS==1.0) .AND. .NOT.(PARHER)) THEN
-            WRITE(LUPRI,*) 'Coordinates entered in ', unitname
-            WRITE(LUPRI,*) 'Converting ',unitname,'to atomic units'
-            WRITE(LUPRI,*) 'Conversion factor=', UNITS 
+          IF(.NOT.(unitname=='bohr')) THEN
+            WRITE(LUPRI,*) 'Coordinates were entered in ', unitname
+            WRITE(LUPRI,*) 'Converting to atomic units with',
+     &                     ' conversion factor=', UNIT_CONVERSION 
             mol=>firstatom
             DO WHILE (ASSOCIATED(mol))
-              mol%x=mol%x*UNITS
+              mol%x=mol%x*UNIT_CONVERSION
               mol=>mol%next
             END DO
           END IF

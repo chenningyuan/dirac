@@ -120,7 +120,8 @@
      &        ONECOFF, NOSPIN, BSS, NOPRTR, BLOCKD, YREQ1, ALLAMFA,     &
      &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
      &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP, CMPEIG,  &
-     &        DKH1, DKH2, NOAMFI, QDOTS,LSCALE_DFT_GAUNT,NOSFMU,MOLMF
+     &        DKH1, DKH2, NOAMFI, QDOTS,LSCALE_DFT_GAUNT,NOSFMU,MOLMF,  &
+     &        DO_FDE
 
       COMMON /DCLHAM/ I1_DCLHAM,                                        &
      &                QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL,      &
@@ -131,7 +132,7 @@
      &                RESTFCK, CONT2C, START2C, GAUNT, ALLAMFA, VACPOL, &
      &                RDSUSLLMOD,MIXVAC,VACREF,POSVAC,CAP,CMPEIG,       &
      &                DKH1, DKH2, NOAMFI, QDOTS, LSCALE_DFT_GAUNT,      &
-     &                NOSFMU,MOLMF,                                     &
+     &                NOSFMU,MOLMF,DO_FDE,                              &
      &                I2_DCLHAM
 
 !    Do NOT add any variables after the end tag !!!

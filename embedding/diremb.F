@@ -36,15 +36,14 @@
 ! in the end  : the embedding potential is added to fdemat. 
 !
       MODULE FDE_MOD
-C      IMPLICIT NONE
       USE GRID_FILE
       USE FILE, ONLY: OPEN_FILE
 
       PRIVATE
       PUBLIC GetFDEPotential_FromFile, FDEINI,FDEINP,FDE_GRIDOUT
-      PUBLIC DO_FDE,DO_GRID_OUT
+      PUBLIC DO_GRID_OUT
            
-      LOGICAL,SAVE :: DO_FDE=.FALSE.,DO_GRID_OUT=.FALSE.
+      LOGICAL,SAVE :: DO_GRID_OUT=.FALSE.
       INTEGER,SAVE :: LUFDEPOT=45,LUTESTING=46,LUGRIDOUT=47
       INTEGER,SAVE :: print_fde=0
       CHARACTER(LEN=60),SAVE :: FDEPOT='EMBPOT',GRIDOUT_NAME=''
@@ -86,18 +85,14 @@ C      IMPLICIT NONE
 #include "memint.h"
 
       ndimension   = nbast 
-      debug        = .true.
+      debug        = .false.
 
       if (debug) write (LUPRI,*) 'debug: before opening FDE pot file'
 
 !     before proceeding, we check if the FDE  potential is available, 
-      write (LUPRI,*) ' '
-      write (LUPRI,*) ' FDE Potential will be read from file: ',
-     &                 FDEPOT(1:20)
-      write (LUPRI,*) ' '
       inquire(FILE=FDEPOT,EXIST=embpot_found)
       if (.not.embpot_found) then
-         write(LUPRI,*) 'JHS', FDEPOT, embpot_found
+         write(LUPRI,*) FDEPOT, ' file not found, we can not proceed..'
          call quit ('Fatal error: FDE potential file not present')
       endif
  
@@ -269,7 +264,7 @@ ation of getsos for our case. if there was
       END SUBROUTINE
 
 
-      SUBROUTINE FDEINP(WORD,FDEHAM)
+      SUBROUTINE FDEINP(WORD,Echo_Input)
 #include "implicit.h"
 #include "priunit.h" 
 #include "dcbgen.h"
@@ -278,7 +273,7 @@ C
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 C
 C
-      logical :: FDEHAM,newdef
+      logical :: Echo_Input,newdef
 C
 #include "memint.h"
 
@@ -294,7 +289,6 @@ C
         WORD1 = WORD
         DO
           READ (LUCMD, '(A7)') WORD
-          write (*,*) 'processing line: ',word
           SELECT CASE (WORD(1:1))
           CASE('!','#')
             CYCLE
@@ -306,16 +300,10 @@ C
               CYCLE
             CASE ('.EMBPOT')
 ! read filename for the embedding potential
-              write (*,*) 'reading potential filename' 
               READ(LUCMD,'(A30)') FDEPOT 
-              write (*,*) 'file is ',fdepot
-C     JHS TMP hack for the case there is no embedding potential
-              DO_FDE=.TRUE.
             CASE ('.PRINT')
 ! set printlevel 
-              write (*,*) 'reading potential filename' 
               READ(LUCMD,*) print_fde 
-              write (*,*) 'print level is ',print_fde
             CASE ('.LEVEL')
               READ(LUCMD,'(A30)') out_level
               select case(out_level)
@@ -331,7 +319,6 @@ C     JHS TMP hack for the case there is no embedding potential
               READ(LUCMD,'(A30)') GRIDOUT_NAME
               DO_GRID_OUT=.TRUE.
               DOPRP=.TRUE.
-              WRITE(LUPRI,*) 'FDE GRID for updated density',GRIDOUT_NAME
             CASE DEFAULT
               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
      *           '" not recognized in FDEINP.'
@@ -350,15 +337,25 @@ C     JHS TMP hack for the case there is no embedding potential
       END IF
 
 !     options are echoed
-      IF(FDEHAM) THEN
+      IF(Echo_Input) THEN
         write (lupri,*) ' '
-        CALL PRSYMB(LUPRI,'=',75,0)
+        CALL PRSYMB(LUPRI,'=',101,1)
+        WRITE(LUPRI,'(1X,2A,/1X,2A)')
+     &     'Frozen Density Embedding to include enviroment effects',
+     &     ' using the fixed potential method described in:',
+     &     'A.S.P. Gomes, C. R. Jacob and L. Visscher, ',
+     &     'Phys. Chem. Chem. Phys. 10 (2008) 5353–5362.'
+        CALL PRSYMB(LUPRI,'=',101,1)
+        WRITE(LUPRI,*)
         WRITE(LUPRI,'(1X,A)')
-     &     ' Frozen Density Embedding Calculation Setup'
-        CALL PRSYMB(LUPRI,'=',75,0)
+     &     ' Frozen Density Embedding Calculation set-up:'
+        CALL PRSYMB(LUPRI,'-',44,2)
+        WRITE(LUPRI,*)
         WRITE(LUPRI,'(A,I5)')  ' * Print level: ',print_fde
-       write(LUPRI,'(A,A60)') ' * FDE Potential read from file: ',FDEPOT
-        write (lupri,*) ' '
+         write(LUPRI,'(A,A60)')  ' * FDE Potential read from file: ',
+     &   FDEPOT
+         IF (DO_GRID_OUT) write(LUPRI,'(2A)') 
+     &   ' * FDE Gridfile with updated density written to:',GRIDOUT_NAME
       END IF
 
       END SUBROUTINE

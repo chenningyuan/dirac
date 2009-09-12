@@ -707,6 +707,7 @@ C
      &    'zation','  IMPORTANT'//
      &    ': *WAVE F must be present for readin of wavefunction.'
 
+C     LV: This option is badly out of place, has nothing to do with jobs !
       IF (NOSFCRASH) THEN
         WRITE(LUPRI,'(3X,A)')
      &  '* If crash, end with no segment.fault.'//
@@ -770,9 +771,6 @@ C     Written by T.Saue - November 1992
 C     Last revision: 1997/09/15 - jth
 C
 C***********************************************************************
-c#ifdef MOD_EMB
-c      USE Embedding
-c#endif
        use dirac_cfg
 
 #include "implicit.h"
@@ -796,9 +794,7 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#ifdef MOD_EMB
 #include "fde.h"
-#endif
 C
       SAVE SET
       DATA TABLE /'.PROJEC','.PRINT ','.MAXITR','.ERGCNV','.EVCCNV',
@@ -1436,9 +1432,7 @@ C&&& OLEVEL: Open-shell level shifts
 !     Setup embedding
 !     ===============
 
-C#ifdef MOD_EMB
 C      CALL init_embedding ()
-C#endif
 
 C
 C     Determine occupation
@@ -1683,11 +1677,8 @@ CMI     CALL QUIT('DHFINP: Zero electrons not allowed!')
         WRITE(LUPRI,'(2X,A)') 'Warning: zero electrons in SCF !'
       END IF
 
-C! Print embedding information
-C
-C#ifdef MOD_EMB
-C      CALL report_embedding ()
-C#endif
+C! Print embedding information for the freeze & thaw scheme (not used currently)
+C     IF (DO_FDE) CALL report_embedding ()
 
       IF(.NOT.dirac_cfg_scf_calculation) GOTO 999
 C
@@ -3930,9 +3921,7 @@ C     Written by T.Saue - May 1996
 C
 C***********************************************************************
       use dirac_cfg
-#ifdef MOD_EMB
-      USE FDE_MOD, ONLY: DO_FDE, FDEINI, FDEINP
-#endif
+      USE FDE_MOD, ONLY: FDEINI, FDEINP
 #ifdef MOD_DFT
       use dft_cfg
       use input_reader
@@ -4046,9 +4035,7 @@ C
       POSVAC  = .FALSE.
       VACREF  = .TRUE.
       CAP     = .FALSE.
-#ifdef MOD_EMB
       DO_FDE  = .FALSE.
-#endif
       INTV1C  = 0
       ONECNV  = D0
       N1OPER  = 0
@@ -4491,10 +4478,8 @@ C&&& POSVAC: Use positronic vacuum polarisation
              GO TO 100
   142     CONTINUE
 C&&& FDE: Frozen density embedding switch 
-#ifdef MOD_EMB
-C             DO_FDE = .TRUE.
+             DO_FDE = .TRUE.
              CALL FDEINI()
-#endif
              GO TO 100
   143     CONTINUE
 C&&& IOTC4: do IOTC in 4c-mode
@@ -5457,9 +5442,7 @@ C       if *CAP in input but MOD_CAP is not defined !!!
         GO TO 200
 #endif
     5 CONTINUE
-#ifdef MOD_EMB
-        CALL FDEINP(WORD,.FALSE.)
-#endif
+        CALL FDEINP(WORD,.TRUE.)
         GO TO 200
     6 CONTINUE
 #ifdef MOD_AMFI
@@ -5495,9 +5478,6 @@ C
       IF (CAP) CALL CAPINP(WORD,.TRUE.,WORK,LWORK)
 #endif
 
-#ifdef MOD_EMB
-      IF (DO_FDE) CALL FDEINP(WORD,.TRUE.)
-#endif
 #ifdef MOD_AMFI
       IF (IBSS.GT.999.AND..NOT.NOAMFI) THEN
          CALL AMFI_RELSCF_INP(WORD,.TRUE.)

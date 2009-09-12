@@ -1061,9 +1061,7 @@ C
 C   Called from PSIDHF
 C
 C*****************************************************************************
-#ifdef MOD_EMB
-      USE FDE_MOD, ONLY: GetFDEPotential_FromFile, DO_FDE
-#endif
+      USE FDE_MOD, ONLY: GetFDEPotential_FromFile
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1087,7 +1085,6 @@ C
 CMI   ... in the case of BSS-postDHF we read 1el.picture change transformed operator
 C       in ONEFCK ... no need to prepare LUFCK1 !!!!
 
-#ifdef MOD_EMB
 c     call header ('1-electron matrix, before call to FDE',-1)
 c     call printdmat(1,7,fock)
       if (do_fde) then
@@ -1095,7 +1092,6 @@ c     call printdmat(1,7,fock)
       endif
 c     call header ('1-electron matrix, after call to FDE',-1)
 c     call printdmat(1,ndimension,fock)
-#endif
 
       CALL OPNFIL(LUFCK1,'DFFCK1','UNKNOWN','ONEFC1')
       CALL WRIFCK(LUFCK1,FOCK,1)
@@ -1120,9 +1116,7 @@ C
 !     Finalize Embedding Module
 !     ===========================
 
-C#ifdef MOD_EMB
 C      CALL end_Embedding ()
-C#endif
 
       RETURN
       END

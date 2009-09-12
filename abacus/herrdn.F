@@ -385,9 +385,6 @@ C               .XYZ files are treated using the Module READFILE. In the long
 C                 run this module should also be able to read .MOL files
 C               These are the only two extensions at the moment.
 
-!     sorry, but commenting this out (radovan)
-!     IF(PARHER) WRITE(LUPRI,*) 'File type found: ', TRIM(moltype)
-
       SELECT CASE(TRIM(moltype))
       CASE ('MOL')
 

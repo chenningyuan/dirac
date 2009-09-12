@@ -89,8 +89,9 @@ setup()
       ADCMOD=1
       MATRIX_OPERATIONS_MOD=1
       AORESPONSEMOD=1
+      EMBMOD=1
+# LV: inform me before taking EMBMOD out of the -adm options !!!
 # MI  - needs to be fixed for gfortran !!!
-#      EMBMOD=1
 #      ECPMOD=1
       echo " - DIRAC administrator ..."
    fi
@@ -161,13 +162,9 @@ setup()
    #  ab initio/DFT embedding module
    #
    if [ -n "$EMBMOD" ]; then
-      if [ -n "$DFTMOD" ]; then
-         EMBFLG='-DMOD_EMB'
-         EMBTAR=1
-         echo " - ab initio/DFT embedding module (with Fortran90/95 modules)"
-      else
-         echo "ab initio/DFT embedding module not included - depends on DFT module "
-      fi
+      EMBFLG='-DMOD_EMB'
+      EMBTAR=1
+      echo " - ab initio/DFT embedding module (with Fortran90/95 modules)"
    fi
    #
    #  XML

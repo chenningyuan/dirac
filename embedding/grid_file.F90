@@ -47,24 +47,17 @@ CONTAINS
     INTEGER                 :: i,npoints
     
 
-    write(lupri,*) 'vc', present(vc)
-
     REWIND(file)
-    write(lupri,*) 'rewind'
-    !READ(file,'(i)') npoints
     READ(file,*) npoints
     
-    write(lupri,*) 'npoints',npoints
     ALLOCATE(points(4,1:npoints))
     
     if (present(vc)) then
        ALLOCATE(vc(1:npoints))
-       write(lupri,*) 'With vc'
        DO i=1,npoints
           READ(file,*) points(:,i),vc(i)
        END DO
     else
-       write(lupri,*) 'Without'
        DO i=1,npoints
           READ(file,*) points(:,i)
        END DO
