@@ -5,6 +5,7 @@ module dirac_interface
   use matrix_genop
   use aor_cfg
   use character_processing
+  use symmetry_info
 
   implicit none
 
@@ -947,13 +948,11 @@ contains
 
   end subroutine
 
-  subroutine set_orbital_rotation_vector(set,                        &
-                                         length_pp,                  &
+  subroutine set_orbital_rotation_vector(length_pp,                  &
                                          length_pn,                  &
                                          orbital_rotation_vector_pp, &
                                          orbital_rotation_vector_pn)
 
-    logical, intent(in)    :: set
     integer, intent(inout) :: length_pp
     integer, intent(inout) :: length_pn
     integer, intent(out)   :: orbital_rotation_vector_pp(2, length_pp)
@@ -989,34 +988,26 @@ contains
       do i = egi_start, egi_start + egi_nr - 1
         do s = eus_start, eus_start + eus_nr - 1
           length_pp = length_pp + 1
-          if (set) then
             orbital_rotation_vector_pp(1, length_pp) = i
             orbital_rotation_vector_pp(2, length_pp) = s
-          end if
         end do
         do s = pus_start, pus_start + pus_nr - 1
           length_pn = length_pn + 1
-          if (set) then
             orbital_rotation_vector_pn(1, length_pn) = i
             orbital_rotation_vector_pn(2, length_pn) = s
-          end if
         end do
       end do
 
       do i = eui_start, eui_start + eui_nr - 1
         do s = egs_start, egs_start + egs_nr - 1
           length_pp = length_pp + 1
-          if (set) then
             orbital_rotation_vector_pp(1, length_pp) = i
             orbital_rotation_vector_pp(2, length_pp) = s
-          end if
         end do
         do s = pgs_start, pgs_start + pgs_nr - 1
           length_pn = length_pn + 1
-          if (set) then
             orbital_rotation_vector_pn(1, length_pn) = i
             orbital_rotation_vector_pn(2, length_pn) = s
-          end if
         end do
       end do
 
@@ -1025,17 +1016,13 @@ contains
       do i = egi_start, egi_start + egi_nr - 1
         do s = egs_start, egs_start + egs_nr - 1
           length_pp = length_pp + 1
-          if (set) then
             orbital_rotation_vector_pp(1, length_pp) = i
             orbital_rotation_vector_pp(2, length_pp) = s
-          end if
         end do
         do s = pgs_start, pgs_start + pgs_nr - 1
           length_pn = length_pn + 1
-          if (set) then
             orbital_rotation_vector_pn(1, length_pn) = i
             orbital_rotation_vector_pn(2, length_pn) = s
-          end if
         end do
       end do
 
@@ -1096,11 +1083,13 @@ contains
     integer                      :: dummy_i
 
 
-    call set_orbital_rotation_vector(.false.,                    &
-                                     length_pp,                  &
-                                     length_pn,                  &
-                                     orbital_rotation_vector_pp, &
-                                     orbital_rotation_vector_pn)
+    if (irep_is_ungerade(RHS%irep)) then
+      length_pp = nish(1)*nssh(2) + nish(2)*nssh(1)
+      length_pn = nish(1)*npsh(2) + nish(2)*npsh(1)
+    else
+      length_pp = nish(1)*nssh(1) + nish(2)*nssh(2)
+      length_pn = nish(1)*npsh(1) + nish(2)*npsh(2)
+    end if
 
     nzconf  = 0
     nzxope  = 0
@@ -1122,8 +1111,7 @@ contains
     call alloc(orbital_rotation_vector_pp, 2*length_pp)
     call alloc(orbital_rotation_vector_pn, 2*length_pn)
 
-    call set_orbital_rotation_vector(.true.,                     &
-                                     length_pp,                  &
+    call set_orbital_rotation_vector(length_pp,                  &
                                      length_pn,                  &
                                      orbital_rotation_vector_pp, &
                                      orbital_rotation_vector_pn)
@@ -1147,6 +1135,7 @@ contains
       call alloc(prop_gradient_pp, length_pp*nz)
       prop_gradient_pp = 0.0d0
 
+!fixme this call can be simplified
       call prporb(prop_gradient_pp,           &
                   orbital_rotation_vector_pp, &
                   length_pp,                  &

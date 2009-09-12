@@ -183,6 +183,7 @@ C                           Modified activation of LSYMOP
 C                           GROUPS and SYMOP are initialized in BLOCK DATA
 C
 C*****************************************************************************
+       use symmetry_info
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -342,6 +343,7 @@ C
             REP(I)(IPOS:IPOS) = 'g'
           ELSE
             REP(I)(IPOS:IPOS) = 'u'
+            irep_is_ungerade(i) = .true.
           ENDIF
         ENDIF
   100 CONTINUE
