@@ -72,6 +72,9 @@ contains
             case ('*VISUAL')
               call read_input_visual(word, kw_section)
 
+            case ('*AORESP')
+              call read_input_aoresponse(word, kw_section)
+
             case ('*END OF')
               go to 1
 
@@ -442,6 +445,140 @@ contains
       call kw_read(word, visual_cfg_gauge_origin(1), &
                          visual_cfg_gauge_origin(2), &
                          visual_cfg_gauge_origin(3))
+    end if
+
+    call check_whether_kw_found(word, kw_section)
+
+  end subroutine
+
+  subroutine read_input_aoresponse(word, kw_section)
+
+    use aor_cfg
+
+!   ----------------------------------------------------------------------------
+    character(kw_length), intent(in) :: word
+    character(kw_length), intent(in) :: kw_section
+!   ----------------------------------------------------------------------------
+!   integer                          :: i
+!   ----------------------------------------------------------------------------
+
+#ifndef MOD_AORESPONSE
+    call quit(kw_section//' not available in this version')
+#endif
+
+    call reset_available_kw_list()
+
+    if (kw_matches(word, '.THRESH')) then
+      call kw_read(word, aor_cfg_threshold_response, aor_cfg_threshold_rhs)
+    end if
+
+    if (kw_matches(word, '.FREQ  ')) then
+!     give 4 frequencies
+!     \alpha will use only first 2
+!     \beta only first 3
+      call kw_read(word, aor_cfg_freq(1), &
+                         aor_cfg_freq(2), &
+                         aor_cfg_freq(3), &
+                         aor_cfg_freq(4))
+    end if
+
+    if (kw_matches(word, '.FREQ_P')) then
+!     give frequency for a process
+      call kw_read(word, aor_cfg_freq_process)
+    end if
+
+    if (kw_matches(word, '.SKIPEE')) then
+      aor_cfg_skip_pp = .true.
+    end if
+
+    if (kw_matches(word, '.SKIPEP')) then
+      aor_cfg_skip_pn = .true.
+    end if
+
+    if (kw_matches(word, '.ALPHA ')) then
+!     frequency-dependent \alpha
+      aor_cfg_alpha = .true.
+    end if
+
+    if (kw_matches(word, '.0ALPHA')) then
+!     static \alpha
+      aor_cfg_alpha_lin_static = .true.
+    end if
+
+    if (kw_matches(word, '.BETA  ')) then
+!     frequency-dependent \beta by the n+1 rule
+      aor_cfg_beta = .true.
+    end if
+
+    if (kw_matches(word, '.BETA2N')) then
+!     frequency-dependent \beta by the 2n+1 rule
+      aor_cfg_beta_2np1 = .true.
+    end if
+
+    if (kw_matches(word, '.0BETA ')) then
+!     static \beta
+      aor_cfg_beta_lin_static = .true.
+    end if
+
+    if (kw_matches(word, '.GAMMA ')) then
+!     frequency-dependent \gamma
+      aor_cfg_gamma = .true.
+    end if
+
+    if (kw_matches(word, '.0GAMMA')) then
+!     static \gamma
+      aor_cfg_gamma_lin_static = .true.
+    end if
+
+    if (kw_matches(word, '.DC-SHG')) then
+      aor_cfg_gamma_lin_dc_shg = .true.
+    end if
+
+    if (kw_matches(word, '.THG   ')) then
+      aor_cfg_gamma_lin_thg = .true.
+    end if
+
+    if (kw_matches(word, '.IDRI  ')) then
+      aor_cfg_gamma_lin_idri = .true.
+    end if
+
+    if (kw_matches(word, '.DC-KER')) then
+      aor_cfg_gamma_lin_dc_kerr = .true.
+    end if
+
+    if (kw_matches(word, '.MAGNET')) then
+      aor_cfg_magnetizability = .true.
+    end if
+
+    if (kw_matches(word, '.QUADRU')) then
+      aor_cfg_quadrupole = .true.
+    end if
+
+    if (kw_matches(word, '.ROA   ')) then
+      aor_cfg_roa = .true.
+    end if
+
+    if (kw_matches(word, '.CARS  ')) then
+      aor_cfg_cars = .true.
+    end if
+
+    if (kw_matches(word, '.MOLGRD')) then
+      aor_cfg_dg_energy = .true.
+    end if
+
+    if (kw_matches(word, '.INTEGR')) then
+      aor_cfg_integrate = .true.
+    end if
+
+    if (kw_matches(word, '.VISUAL')) then
+      aor_cfg_visual = .true.
+    end if
+
+    if (kw_matches(word, '.ZZZ   ')) then
+!     calculate static derivatives E_{zzz...}
+!     of given order
+      aor_cfg_zzz = .true.
+      call kw_read(word, aor_cfg_zzz_order)
     end if
 
     call check_whether_kw_found(word, kw_section)
