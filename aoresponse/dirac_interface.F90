@@ -486,17 +486,17 @@ contains
 
       i2typ    = 1
       intclass = 0
-    
+
       tmat = 0.0d0
       call dzero(skip, 3*14*3)
-    
+
       call twoint(work, lwork, fmat, dmat, 4*nr_dmat, (/0/),             &
                   ifctyp, (/0.0d0/), (/0/), (/0/), itype,                &
                   max_derv, iatom, .true., .true., .false., tktime,      &
                   1, 0, 0, 0, 0, .false., (/0/), i2typ,                  &
                   icedif, screen, (/0.0d0/), (/0.0d0/), (/0.0d0/), skip, &
                   relcal, gencnt, (/0.0d0/), (/0.0d0/))
-    
+
       call daxpy(fmat_dim, f, tmat, 1, fmat, 1)
 
     end if
@@ -505,17 +505,17 @@ contains
 
       i2typ    = 2
       intclass = 1
-    
+
       tmat = 0.0d0
       call dzero(skip, 3*14*3)
-    
+
       call twoint(work, lwork, fmat, dmat, 4*nr_dmat, (/0/),             &
                   ifctyp, (/0.0d0/), (/0/), (/0/), itype,                &
                   max_derv, iatom, .true., .true., .false., tktime,      &
                   1, 0, 0, 0, 0, .false., (/0/), i2typ,                  &
                   icedif, screen, (/0.0d0/), (/0.0d0/), (/0.0d0/), skip, &
                   relcal, gencnt, (/0.0d0/), (/0.0d0/))
-    
+
       call daxpy(fmat_dim, f, tmat, 1, fmat, 1)
 
     end if
@@ -524,17 +524,17 @@ contains
 
       i2typ    = 3
       intclass = 2
-    
+
       tmat = 0.0d0
       call dzero(skip, 3*14*3)
-    
+
       call twoint(work, lwork, fmat, dmat, 4*nr_dmat, (/0/),             &
                   ifctyp, (/0.0d0/), (/0/), (/0/), itype,                &
                   max_derv, iatom, .true., .true., .false., tktime,      &
                   1, 0, 0, 0, 0, .false., (/0/), i2typ,                  &
                   icedif, screen, (/0.0d0/), (/0.0d0/), (/0.0d0/), skip, &
                   relcal, gencnt, (/0.0d0/), (/0.0d0/))
-    
+
       call daxpy(fmat_dim, f, tmat, 1, fmat, 1)
 
     end if
@@ -948,94 +948,99 @@ contains
 
   end subroutine
 
-  subroutine set_orbital_rotation_vector(length_pp,                  &
-                                         length_pn,                  &
-                                         orbital_rotation_vector_pp, &
-                                         orbital_rotation_vector_pn)
+  subroutine set_orbital_rotation_vector(irep,       &
+                                         length,     &
+                                         from_block, &
+                                         to_block,   &
+                                         orbital_rotation_vector)
 
-    integer, intent(inout) :: length_pp
-    integer, intent(inout) :: length_pn
-    integer, intent(out)   :: orbital_rotation_vector_pp(2, length_pp)
-    integer, intent(out)   :: orbital_rotation_vector_pn(2, length_pn)
-!   ---------------------------------------------------------------------------
-    integer                :: pgs_nr,    egi_nr,    egs_nr
-    integer                :: pus_nr,    eui_nr,    eus_nr
-    integer                :: pgs_start, egi_start, egs_start
-    integer                :: pus_start, eui_start, eus_start
-    integer                :: i, s
-    logical                :: debug_me = .false.
+!   ----------------------------------------------------------------------------
+    integer, intent(in)  :: irep
+    integer, intent(in)  :: length
+    integer, intent(in)  :: from_block
+    integer, intent(in)  :: to_block
+    integer, intent(out) :: orbital_rotation_vector(2, length)
+!   ----------------------------------------------------------------------------
+    integer, parameter   :: ns = 1
+    integer, parameter   :: pi = 2
+    integer, parameter   :: ps = 3
 
-    pgs_nr = npsh(1)
-    pus_nr = npsh(2)
-    egi_nr = nish(1)
-    eui_nr = nish(2)
-    egs_nr = nssh(1)
-    eus_nr = nssh(2)
+    integer, parameter   :: g  = 1
+    integer, parameter   :: u  = 2
 
-    pgs_start = 1
-    egi_start = pgs_start + pgs_nr
-    egs_start = egi_start + egi_nr
+    logical              :: gu_combine(2, 2)
 
-    pus_start = pgs_nr    + pus_nr + egi_nr + 1
-    eui_start = pus_start + pus_nr
-    eus_start = eui_start + eui_nr
+    integer              :: nr_mo(2, 3)       = 0
+    integer              :: range_mo(2, 3, 2) = 0
 
-    length_pp = 0
-    length_pn = 0
+    integer              :: i, s, k
+    integer              :: m, m1, m2
+    integer              :: gu, gu1, gu2
+    integer              :: block, block1, block2
 
-    if (nfsym == 2) then
+    logical              :: debug_me = .false.
+!   ----------------------------------------------------------------------------
 
-      do i = egi_start, egi_start + egi_nr - 1
-        do s = eus_start, eus_start + eus_nr - 1
-          length_pp = length_pp + 1
-            orbital_rotation_vector_pp(1, length_pp) = i
-            orbital_rotation_vector_pp(2, length_pp) = s
-        end do
-        do s = pus_start, pus_start + pus_nr - 1
-          length_pn = length_pn + 1
-            orbital_rotation_vector_pn(1, length_pn) = i
-            orbital_rotation_vector_pn(2, length_pn) = s
-        end do
-      end do
+    nr_mo(g, ns) = npsh(g)
+    nr_mo(g, pi) = nish(g)
+    nr_mo(g, ps) = nssh(g)
 
-      do i = eui_start, eui_start + eui_nr - 1
-        do s = egs_start, egs_start + egs_nr - 1
-          length_pp = length_pp + 1
-            orbital_rotation_vector_pp(1, length_pp) = i
-            orbital_rotation_vector_pp(2, length_pp) = s
-        end do
-        do s = pgs_start, pgs_start + pgs_nr - 1
-          length_pn = length_pn + 1
-            orbital_rotation_vector_pn(1, length_pn) = i
-            orbital_rotation_vector_pn(2, length_pn) = s
+    nr_mo(u, ns) = npsh(u)
+    nr_mo(u, pi) = nish(u)
+    nr_mo(u, ps) = nssh(u)
+
+    k = 0
+    do gu = 1, 2
+      do block = 1, 3
+        do m = 1, nr_mo(gu, block)
+          k = k + 1
+          if (k > range_mo(gu, block, 1)) range_mo(gu, block, 1) = k
+          range_mo(gu, block, 2) = k
         end do
       end do
+    end do
 
+    gu_combine = .false.
+    if (irep_is_ungerade(irep)) then
+      gu_combine(1, 2) = .true.
+      gu_combine(2, 1) = .true.
     else
-
-      do i = egi_start, egi_start + egi_nr - 1
-        do s = egs_start, egs_start + egs_nr - 1
-          length_pp = length_pp + 1
-            orbital_rotation_vector_pp(1, length_pp) = i
-            orbital_rotation_vector_pp(2, length_pp) = s
-        end do
-        do s = pgs_start, pgs_start + pgs_nr - 1
-          length_pn = length_pn + 1
-            orbital_rotation_vector_pn(1, length_pn) = i
-            orbital_rotation_vector_pn(2, length_pn) = s
-        end do
-      end do
-
+      gu_combine(1, 1) = .true.
+      gu_combine(2, 2) = .true.
     end if
 
-    if (debug_me) then
-      call header('debug orbital_rotation_vector_pp', -1)
-      do i = 1, size(orbital_rotation_vector_pp)/2
-        write(*, *) i, orbital_rotation_vector_pp(1, i), '->', orbital_rotation_vector_pp(2, i)
+    k = 0
+    i = 0
+    do gu1 = 1, 2
+      do block1 = 1, 3
+        do m1 = 1, nr_mo(gu1, block1)
+          i = i + 1
+          s = 0
+          do gu2 = 1, 2
+            do block2 = 1, 3
+              if (gu_combine(gu1, gu2)         &
+                  .and. (block1 == from_block) &
+                  .and. (block2 == to_block)) then
+                do m2 = 1, nr_mo(gu2, block2)
+                  k = k + 1
+                  s = s + 1
+                  orbital_rotation_vector(1, k) = i
+                  orbital_rotation_vector(2, k) = s
+                end do
+              else
+                s = s + nr_mo(gu2, block2)
+              end if
+            end do
+          end do
+        end do
       end do
-      call header('debug orbital_rotation_vector_pn', -1)
-      do i = 1, size(orbital_rotation_vector_pn)/2
-        write(*, *) i, orbital_rotation_vector_pn(1, i), '->', orbital_rotation_vector_pn(2, i)
+    end do
+
+    if (debug_me) then
+      call header('debug orbital_rotation_vector', -1)
+      do k = 1, length
+        write(*, *) k, orbital_rotation_vector(1, k), &
+                 '->', orbital_rotation_vector(2, k)
       end do
     end if
 
@@ -1066,11 +1071,11 @@ contains
     integer            :: lwork
     integer            :: kfree, lfree
 
-    real(8), allocatable   :: prop_gradient_pp(:)
-    real(8), allocatable   :: prop_gradient_pn(:)
+    real(8), allocatable   :: prop_gradient_pp(:, :)
+    real(8), allocatable   :: prop_gradient_pn(:, :)
 
-    integer,       allocatable   :: orbital_rotation_vector_pp(:)
-    integer,       allocatable   :: orbital_rotation_vector_pn(:)
+    integer,       allocatable   :: orbital_rotation_vector_pp(:, :)
+    integer,       allocatable   :: orbital_rotation_vector_pn(:, :)
 
     integer                      :: length_pp
     integer                      :: length_pn
@@ -1080,7 +1085,7 @@ contains
     logical                      :: debug_me = .false.
 
     real(8)                :: dummy_dp
-    integer                      :: dummy_i
+    integer                      :: dummy_i, iz, k, m, n, off
 
 
     if (irep_is_ungerade(RHS%irep)) then
@@ -1108,12 +1113,18 @@ contains
     nzvar   = nzxopt
     nzvarq  = nzxoptq
 
-    call alloc(orbital_rotation_vector_pp, 2*length_pp)
-    call alloc(orbital_rotation_vector_pn, 2*length_pn)
+    call alloc(orbital_rotation_vector_pp, 2, length_pp)
+    call set_orbital_rotation_vector(RHS%irep,  &
+                                     length_pp, &
+                                     2,         &
+                                     3,         &
+                                     orbital_rotation_vector_pp)
 
-    call set_orbital_rotation_vector(length_pp,                  &
-                                     length_pn,                  &
-                                     orbital_rotation_vector_pp, &
+    call alloc(orbital_rotation_vector_pn, 2, length_pn)
+    call set_orbital_rotation_vector(RHS%irep,  &
+                                     length_pn, &
+                                     2,         &
+                                     1,         &
                                      orbital_rotation_vector_pn)
 
     call get_C(C, i=1.0d0, s=1.0d0, g=1.0d0, u=1.0d0)
@@ -1130,23 +1141,20 @@ contains
       call print_mat(RHS_mo, label = 'debug RHS in MO basis')
     end if
 
+!   get positive -> positive property gradient
+
     if (include_pp_rotations) then
 
-      call alloc(prop_gradient_pp, length_pp*nz)
-      prop_gradient_pp = 0.0d0
-
-!fixme this call can be simplified
-      call prporb(prop_gradient_pp,           &
-                  orbital_rotation_vector_pp, &
-                  length_pp,                  &
-                  RHS_mo%elms,                &
-                  norbt,                      &
-                  dummy_dp,                   &
-                  nz,                         &
-                  RHS_mo%ih_sym,              &
-                  0)
-
-      call dscal(length_pp*nz, -1.0d0, prop_gradient_pp, 1)
+      call alloc(prop_gradient_pp, length_pp, nz)
+      do iz = 1, nz
+        off = (iz - 1)*norbt*norbt
+        do k = 1, length_pp
+          m = orbital_rotation_vector_pp(1, k)
+          n = orbital_rotation_vector_pp(2, k)
+          prop_gradient_pp(k, iz) = prop_gradient_pp(k, iz) &
+                                  - 2.0d0*RHS_mo%elms(off + (m - 1)*norbt + n)
+        end do
+      end do
 
       if (debug_me) then
         call header('debug prop_gradient_pp', -1)
@@ -1155,22 +1163,20 @@ contains
 
     end if
 
+!   get positive -> negative property gradient
+
     if (include_pn_rotations) then
 
-      call alloc(prop_gradient_pn, length_pn*nz)
-      prop_gradient_pn = 0.0d0
-
-      call prporb(prop_gradient_pn,           &
-                  orbital_rotation_vector_pn, &
-                  length_pn,                  &
-                  RHS_mo%elms,                &
-                  norbt,                      &
-                  dummy_dp,                   &
-                  nz,                         &
-                  RHS_mo%ih_sym,              &
-                  0)
-
-      call dscal(length_pn*nz, -1.0d0, prop_gradient_pn, 1)
+      call alloc(prop_gradient_pn, length_pn, nz)
+      do iz = 1, nz
+        off = (iz - 1)*norbt*norbt
+        do k = 1, length_pn
+          m = orbital_rotation_vector_pn(1, k)
+          n = orbital_rotation_vector_pn(2, k)
+          prop_gradient_pn(k, iz) = prop_gradient_pn(k, iz) &
+                                  - 2.0d0*RHS_mo%elms(off + (m - 1)*norbt + n)
+        end do
+      end do
 
       if (debug_me) then
         call header('debug prop_gradient_pn', -1)
@@ -1547,7 +1553,7 @@ contains
     do i = 1, size(prefactors)
 
       iprl = iprl + 1
- 
+
       if (iprl > maxprplbl) then
         call quit('add_op: iprl > maxprplbl')
       end if
@@ -1581,7 +1587,7 @@ contains
 !   ----------------------------------------------------------------------------
 !   todo: 1. adapt for symmetry
 !            only diplen is right at the moment
-!         2. generalize for other hamiltonians 
+!         2. generalize for other hamiltonians
 !            not every combination hamiltonian--property is tested
 
     ss = '0'
