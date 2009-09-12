@@ -644,8 +644,6 @@ contains
 
 #ifdef PRG_DIRAC
       call copy_matrix_sym(B, A)
-      B%rows_are_mo = A%cols_are_mo
-      B%cols_are_mo = A%rows_are_mo
 #endif
 
    end function

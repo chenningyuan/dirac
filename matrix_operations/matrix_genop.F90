@@ -476,12 +476,10 @@ contains
       end if
       write (uni,'()') !final empty line
 #else
-      write(*, *) 'matrix  = ', label
-      write(*, *) 'ih_sym  = ', A%ih_sym
-      write(*, *) 'tr_sym  = ', A%tr_sym
-      write(*, *) 'irep    = ', A%irep
-      write(*, *) 'rows mo = ', A%rows_are_mo
-      write(*, *) 'cols mo = ', A%cols_are_mo
+      write(*, *) 'matrix = ', label
+      write(*, *) 'ih_sym = ', A%ih_sym
+      write(*, *) 'tr_sym = ', A%tr_sym
+      write(*, *) 'irep   = ', A%irep
 
 !     do iz = 1, nz
 !       n = A%nrow*A%ncol
@@ -570,11 +568,9 @@ contains
      
      type(matrix) :: A, B
      
-     A%ih_sym      = B%ih_sym
-     A%tr_sym      = B%tr_sym
-     A%irep        = B%irep
-     A%rows_are_mo = B%rows_are_mo
-     A%cols_are_mo = B%cols_are_mo
+     A%ih_sym = B%ih_sym
+     A%tr_sym = B%tr_sym
+     A%irep   = B%irep
    
    end subroutine
 #endif
