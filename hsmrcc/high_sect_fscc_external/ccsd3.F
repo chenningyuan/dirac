@@ -2454,9 +2454,11 @@ c  one electron
       call dimx(nstrt(2,num),nbig,"tmplt2")
 
 c   special for scratch files, which start with "s".
-           itmp=4H       
+!          itmp=4H       
+           itmpx=4H       
            jtmp='ffffff00'X
-           ch1 = iand(itmp,jtmp)
+!          ch1 = iand(itmp,jtmp)
+           ch1 = iand(itmpx,jtmp)
            ch2 = iand (name, '000000ff'X)
            isaa = ior (ch1, ch2)
       i_4hs=4hs
@@ -3654,7 +3656,8 @@ c
 
       dimension ij(ndij),ije(0:ndij)
 !!!!!!!!! needs own dynamic allocation for ij1,ije1, itmp !!!!!!!!!!!!!!!!!
-      dimension ij1(ndij),ije1(0:ndij),itmp(ndij)
+!     dimension ij1(ndij),ije1(0:ndij),itmp(ndij)
+      dimension ij1(ndij),ije1(0:ndij)
 
       if (getiprint() >= 5) then ! control printout
         call header('Output from "tchng6"',-1)
