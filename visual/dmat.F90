@@ -10,12 +10,11 @@
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "dcbxrs.h"
 
       real(8)              :: dmat_ao(n2bbasxq)
       real(8), intent(in)  :: occupation(norbt)
 
-      integer              :: iz, iq, ioff, io, irepop
+      integer              :: io
       type(matrix)         :: D, D_mo, C
 
       call init_mat(D_mo, norbt, norbt)
@@ -34,15 +33,6 @@
       D = 2.0d0*D
       call dcopy(ntbas(0)*ntbas(0)*nz, D%elms, 1, dmat_ao, 1)
       D = 0
-
-      irepop = 0
-      if (nz < 4) then
-        do iz = 1, nz
-          iq   = ipqtoq(iz, irepop)
-          ioff = ntbas(0)*ntbas(0)*(iz - 1)
-          call q2bphase('D', iq, 1, dmat_ao(1 + ioff))
-        end do
-      end if
 
       end subroutine
 
