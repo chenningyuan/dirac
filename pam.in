@@ -269,7 +269,9 @@ setup_command()
         # DIRAC_CMD="$VALGRIND_TOOL --log-file=$OUTPUT_FILE.valgrind_log" # provide with the default DIRAC output file
          DIRAC_CMD="$VALGRIND_TOOL --log-fd=1" # flush all Valgrind messages to stdout = DIRAC output file
       else
-        echo 'WARNING. VALGRIND check requested, but "valgrind" not assigned ! Check your architecture/script.'
+        echo 'VALGRIND check requested, but "valgrind" not assigned ! Check your architecture/script.'
+        echo 'error exit'
+        EXIT=1; exitfunc
       fi
    fi
 
