@@ -778,11 +778,11 @@ contains
 
     nr_g_mo_ns = npsh(1)
     nr_g_mo_pi = nish(1)
-    nr_g_mo_ps = nssh(1)
+    nr_g_mo_ps = nesh(1) - nr_g_mo_pi
     nr_g_mo    = nr_g_mo_ns + nr_g_mo_pi + nr_g_mo_ps
     nr_u_mo_ns = npsh(2)
     nr_u_mo_pi = nish(2)
-    nr_u_mo_ps = nssh(2)
+    nr_u_mo_ps = nesh(2) - nr_u_mo_pi
     nr_u_mo    = nr_u_mo_ns + nr_u_mo_pi + nr_u_mo_ps
     nr_g_ao    = nfbas(1, 0)
     nr_u_ao    = nfbas(2, 0)
