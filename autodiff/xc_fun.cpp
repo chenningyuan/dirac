@@ -31,11 +31,30 @@ static void lda_helper(double *result, const double densvars[2])
   res.deriv_facs();
 }
 
+// Insert zeros to get five variable layout for
+// lda results.
+template<int N>
+static taylor<5,N> as_gga(const taylor<2,N> &lda)
+{
+  taylor<5,N> gga = 0;
+  int exponents[5] = {0,0,0,0,0};
+  for (int i = 0; i < lda.size; i++)
+    {
+      lda.exponents(i,exponents);
+      gga[gga.term_index(exponents)] = lda[i];
+    }
+  return gga;
+}
+
 template<int N>
 static void gga_helper(double *result, const double densvars[5])
 {
   taylor<5,N> &res = *reinterpret_cast<taylor<5,N> *>(result);
   res = 0;
+  if (xc_params[XC_VWN_CORRELATION] != 0)
+    res += xc_params[XC_VWN_CORRELATION]*as_gga(vwn_correlation<N>(densvars));
+  if (xc_params[XC_SLATER_EXCHANGE] != 0)
+    res += xc_params[XC_SLATER_EXCHANGE]*as_gga(slater_exchange<N>(densvars));
   if (xc_params[XC_LYP_CORRELATION] != 0)
     res += xc_params[XC_LYP_CORRELATION]*lyp_correlation<N>(densvars);
   if (xc_params[XC_PBE_CORRELATION] != 0)
