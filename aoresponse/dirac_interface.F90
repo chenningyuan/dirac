@@ -5,7 +5,6 @@ module dirac_interface
   use matrix_genop
   use aor_cfg
   use character_processing
-  use symmetry_info
 
   implicit none
 
@@ -1001,10 +1000,12 @@ contains
     end do
 
     gu_combine = .false.
-    if (irep_is_ungerade(irep)) then
+    if (jbtof(irep, 1) == 2) then
+!     ungerade perturbation
       gu_combine(1, 2) = .true.
       gu_combine(2, 1) = .true.
     else
+!     gerade perturbation
       gu_combine(1, 1) = .true.
       gu_combine(2, 2) = .true.
     end if
@@ -1089,10 +1090,12 @@ contains
     integer                      :: dummy_i, iz, k, i, s, off
 
 
-    if (irep_is_ungerade(RHS%irep)) then
+    if (jbtof(RHS%irep, 1) == 2) then
+!     ungerade perturbation
       length_pp = nish(1)*nssh(2) + nish(2)*nssh(1)
       length_pn = nish(1)*npsh(2) + nish(2)*npsh(1)
     else
+!     gerade perturbation
       length_pp = nish(1)*nssh(1) + nish(2)*nssh(2)
       length_pn = nish(1)*npsh(1) + nish(2)*npsh(2)
     end if
@@ -1407,12 +1410,14 @@ contains
 !   =====================================
 
     if (nfsym == 2) then
-      if (irep_is_ungerade(Wp%irep)) then
+      if (jbtof(Wp%irep, 1) == 2) then
+!       ungerade perturbation
         Dp = (Cig*(Wp*dag(Csu))) &
            + (Ciu*(Wp*dag(Csg))) &
            - (Csg*(Wp*dag(Ciu))) &
            - (Csu*(Wp*dag(Cig)))
       else
+!       gerade perturbation
         Dp = (Cig*(Wp*dag(Csg))) &
            + (Ciu*(Wp*dag(Csu))) &
            - (Csg*(Wp*dag(Cig))) &
