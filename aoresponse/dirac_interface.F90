@@ -134,9 +134,11 @@ contains
       nr_sym_indep_nuc = nucind
       sym_dep_nuc_name = namdep
 
+      nonzero_small_metric = .false.
       if (mc == 2) then
         nonzero_small_metric = .true.
-      else
+      end if
+      if (bss .or. twocomp) then
         nonzero_small_metric = .false.
       end if
 
