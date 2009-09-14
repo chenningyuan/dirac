@@ -7,7 +7,6 @@
  B3LYP
 *DFT
 .DEBUG          !very coarse grid
-.ZIPGRID
 .INTCHK
  1
 **INTEGRALS
