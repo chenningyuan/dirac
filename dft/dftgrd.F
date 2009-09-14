@@ -530,7 +530,9 @@ C          Scale weights with multiplicity of center
 
 
 !        drop points that are redundant and rescale
-         IF(dft_cfg_ZIPGRID) CALL ZIP_GRID(IATOM,X8,Y8,Z8,WT8,NTHIS)
+         if (.not. dft_cfg_nozip) then
+           call zip_grid(iatom, x8, y8, z8, wt8, nthis)
+         end if
 
 
 C
