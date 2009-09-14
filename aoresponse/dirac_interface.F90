@@ -1049,46 +1049,51 @@ contains
 
   subroutine response_solver(freq, RHS, Dp)
 
-    real(8), intent(in)    :: freq
-    type(matrix),  intent(inout) :: RHS
-    type(matrix),  intent(inout) :: Dp
-!   -------------------------------------------------------------------------
-    type(matrix)                 :: RHS_mo, Wp
-    type(matrix)                 :: C, Cig, Ciu, Csg, Csu
+!   1. RHS (AO) -> RHS (MO)
+!   2. RHS (MO) -> property gradient
+!   3. solve response equation, in:  property gradient
+!                               out: response vector
+!   4. response vector -> Wp (MO)
+!   5. Wp (MO)         -> Dp (AO)
 
-    integer,       allocatable   :: ibtyp(:)
-    integer,       allocatable   :: ibtyp_pointer_pp(:)
-    integer,       allocatable   :: ibtyp_pointer_pn(:)
+!   ----------------------------------------------------------------------------
+    real(8),      intent(in)    :: freq
+    type(matrix), intent(inout) :: RHS
+    type(matrix), intent(inout) :: Dp
+!   ----------------------------------------------------------------------------
+    type(matrix)                :: RHS_mo, Wp
+    type(matrix)                :: C, Cig, Ciu, Csg, Csu
 
-    real(8), allocatable   :: eigval(:)
-    real(8), allocatable   :: eigvec(:)
-    real(8), allocatable   :: convergence(:)
+    integer,      allocatable   :: ibtyp(:)
+    integer,      allocatable   :: ibtyp_pointer_pp(:)
+    integer,      allocatable   :: ibtyp_pointer_pn(:)
 
-    real(8), allocatable   :: response_vector_pph(:, :, :)
-    real(8), allocatable   :: response_vector_ppa(:, :, :)
-    real(8), allocatable   :: response_vector_pnh(:, :, :)
-    real(8), allocatable   :: response_vector_pna(:, :, :)
+    real(8),      allocatable   :: eigval(:)
+    real(8),      allocatable   :: eigvec(:)
+    real(8),      allocatable   :: convergence(:)
+                  
+    real(8),      allocatable   :: response_vector_pph(:, :, :)
+    real(8),      allocatable   :: response_vector_ppa(:, :, :)
+    real(8),      allocatable   :: response_vector_pnh(:, :, :)
+    real(8),      allocatable   :: response_vector_pna(:, :, :)
 
-    real(8), pointer   :: work(:)
-    integer            :: lwork
-    integer            :: kfree, lfree
+    real(8),      pointer       :: work(:)
+    integer                     :: lwork, kfree, lfree
 
-    real(8), allocatable   :: prop_gradient_pp(:, :)
-    real(8), allocatable   :: prop_gradient_pn(:, :)
+    real(8),      allocatable   :: prop_gradient_pp(:, :)
+    real(8),      allocatable   :: prop_gradient_pn(:, :)
 
-    integer,       allocatable   :: orbital_rotation_vector_pp(:, :)
-    integer,       allocatable   :: orbital_rotation_vector_pn(:, :)
+    integer,      allocatable   :: orbital_rotation_vector_pp(:, :)
+    integer,      allocatable   :: orbital_rotation_vector_pn(:, :)
 
-    integer                      :: length_pp
-    integer                      :: length_pn
+    integer                     :: length_pp
+    integer                     :: length_pn
 
-    integer                      :: nr_freq
+    integer                     :: iz, k, i, s, off
+    integer                     :: nr_freq
 
-    logical                      :: debug_me = .false.
-
-    real(8)                :: dummy_dp
-    integer                      :: dummy_i, iz, k, i, s, off
-
+    logical                     :: debug_me = .false.
+!   ----------------------------------------------------------------------------
 
     if (jbtof(RHS%irep, 1) == 2) then
 !     ungerade perturbation
@@ -1274,11 +1279,11 @@ contains
 
     call dcopy(nr_freq, freq, 1, eigval, 1)
 
-    call xrsctl(dummy_dp,         &
+    call xrsctl((/0.0d0/),        &
                 prop_gradient_pp, &
                 prop_gradient_pn, &
                 ibtyp,            &
-                dummy_i,          &
+                (/0/),            &
                 ibtyp_pointer_pp, &
                 ibtyp_pointer_pn, &
                 convergence,      &
