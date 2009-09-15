@@ -95,11 +95,7 @@ contains
       integer      :: IS(nc/3),i,internal=0,negative=0,unit=-1
       logical      :: ex
       character*22 :: fmt
-#ifndef PRG_DIRAC
       call NUCLEI_ifc(nc/3,Z,IS,G)
-#else
-      call quit('implement NUCLEI_ifc in load_vib_modes')
-#endif /* ifndef PRG_DIRAC */
       call GPINQ('DALTON.HES','EXIST',ex)
       if (.not.ex) call quit('load_vib_modes: Hessian file DALTON.HES not found')
       call GPOPEN(unit,'DALTON.HES','OLD',' ','FORMATTED',0,.false.)
@@ -112,7 +108,6 @@ contains
       if (i==0.and..not.all(G==Rc)) & !if Rc read, compare
          call quit('load_vib_modes: Different geometry in DALTON.HES and MOLECULE.INP')
       call GPCLOSE(unit,'KEEP')
-#ifndef PRG_DIRAC
       call VIBHES(1,nc,G,nq,(/(0d0,i=1,nc)/),H,(/(0d0,i=1,6*nc)/) &
                  ,nint(Z),(/(0d0,i=1,2*nc*nc)/)); nq=nc-nq
       call VIBMAS(M,Mtot,IS,nint(Z),nc/3,G,orig,1)
@@ -120,9 +115,6 @@ contains
                  ,w,Q,(/(0d0,i=1,nc*nc)/),(/(0d0,i=1,30*nc*nc+1)/) &
                  ,30*nc*nc+1,nc,internal,negative,.false.,1)
       call NUCLEI_ifc(nc/3,Z,IS,G)
-#else
-      call quit('implement some routines in load_vib_modes')
-#endif /* ifndef PRG_DIRAC */
       w = sign(sqrt(abs(w)),w)
    end subroutine
 

@@ -18,6 +18,7 @@ contains
 
   subroutine aoresponse_driver(work, lwork)
 
+#include "priunit.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -87,12 +88,12 @@ contains
            allocate(tsr(3+3*3+3*3*3*3+3*3*j)) !ajt: hack
            call cars_shyp_polgra(S,D,F,j,aor_cfg_freq(1)*(1d0,0d0),tsr(1:3),tsr(4:12), &
                                  tsr(13:93),tsr(94:93+9*j))
-!          call print_shypol(aor_cfg_freq(1)*(/-1,1,-1,1/),real(tsr(1:3)), &
-!                            (/real(tsr(4:12)),(0d0,i=1,9*3)/),(/(0d0,i=1,27*6)/),real(tsr(13:93)),lupri)
-!          call vib_ana_polari(aor_cfg_freq(1)*(/-1,1,-1,1/),real(tsr(1:3)),j,(/(0d0,i=1,3*j*4)/), &
-!                              (/real(tsr(94:93+9*j)),(0d0,i=1,9*j),real(tsr(94:93+9*j)), &
-!                              real(tsr(94:93+9*j)),(0d0,i=1,9*j),real(tsr(94:93+9*j))/), &
-!                              (/(0d0,i=1,27*j*4)/),lupri)
+           call print_shypol(aor_cfg_freq(1)*(/-1,1,-1,1/),real(tsr(1:3)), &
+                             (/real(tsr(4:12)),(0d0,i=1,9*3)/),(/(0d0,i=1,27*6)/),real(tsr(13:93)),lupri)
+           call vib_ana_polari(aor_cfg_freq(1)*(/-1,1,-1,1/),real(tsr(1:3)),j,(/(0d0,i=1,3*j*4)/), &
+                               (/real(tsr(94:93+9*j)),(0d0,i=1,9*j),real(tsr(94:93+9*j)), &
+                               real(tsr(94:93+9*j)),(0d0,i=1,9*j),real(tsr(94:93+9*j))/), &
+                               (/(0d0,i=1,27*j*4)/),lupri)
            deallocate(tsr)
     end if
 
