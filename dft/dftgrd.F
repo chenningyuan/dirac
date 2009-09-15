@@ -103,6 +103,9 @@ CTROND      IBIG  = 100000
       NNAT    = NAT*(NAT-1)/2
       N2AT    = NAT*NAT 
 
+!     radovan: workaround to get nonzero length array
+      if (nnat == 0) nnat = 1
+
       call alloc(KSP   ,4*NUM    )
       call alloc(KX8   ,IBIG     )
       call alloc(KY8   ,IBIG     )
