@@ -2660,6 +2660,10 @@ C     =============
             WRITE(LUPRI,'(1X,A)')
      &         '* Gradient evaluated with numerical differentiation.'
          ELSE
+            if (bss) then
+              call quit('analytical molecular '//
+     &                  'gradient not implemented for BSS/X2C/IOTC')
+            end if
             WRITE(LUPRI,'(1X,A)')
      &         '* Gradient evaluated analytically.'
          END IF
