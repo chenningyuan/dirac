@@ -10,7 +10,6 @@ module aor_main
   use aor_binomial
   use aor_property_definitions
   use aor_property_definitions_zzz
-  use aor_restart
 
   implicit none
 
@@ -31,9 +30,6 @@ contains
     real(8), intent(inout) :: work(lwork)
     complex(8),allocatable:: tsr(:) !ajt: scratch for property tensors
 
-!   open restart file
-    call open_restart_file()
-    
 !   initialize fortran 77 work memory interface
     call di_set_f77_work(work, lwork)
     
@@ -280,9 +276,6 @@ contains
     F = 0
 
     call print_matrix_stat()
-
-!   close restart file
-    call close_restart_file()
 
   end subroutine
 

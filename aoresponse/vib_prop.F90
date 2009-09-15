@@ -548,6 +548,9 @@ contains
      type(matrix)              :: D_j3(3), D_j6(6), Df_j3(3, 3), Df_j6(3, 6)
      type(matrix)              :: F_j3(3), F_j6(6), Ff_j3(3, 3), Ff_j6(3, 6)
 
+!    open restart file
+     call open_restart_file()
+
      r_i = r_f
 
      call pert_dens((/'EL'/), S, (/D/), (/F/), Df, Ff, w=(/-w/))
@@ -869,6 +872,9 @@ contains
      Df  = 0
      Ff  = 0
 
+!    close restart file
+     call close_restart_file()
+
    end subroutine
 
    subroutine cars_shyp_polgra(S,D,F,nc,w,Ef,Eff,Effff,Effg)
@@ -986,5 +992,31 @@ contains
     call prsymb(unit_output, '-', 46, 0)
 
   end subroutine
+
+
+
+! subroutine DipGradi(S,D,F,nc)
+!     type(matrix):: S,D,F,Df(3),Ff(3),DFD(3),Sg(1)
+!     real(8):: Efg(3,nc); integer:: nc,i,j
+!     !dipole moment
+!     Efg(:,1)=0; call prop_energy((/'EL'/),(/D/),Efg)
+!     i = max(1,ceiling(log10(maxval(abs(Efg(:,1))))))
+!     print '("Dipole = -Ef"/3f19.<16-i>/)',-Efg(:,1)
+!     !first order equations
+!     call pert_dens((/'EL'/),S,(/D/),(/F/),Df,Ff,w=(/0d0/))
+!     Efg=0; call prop_energy((/'EL','GEO'/),(/D/),Efg)
+!     call prop_energy((/'GEO'/),(/D,Df/),Efg)
+!     do i=1,3; DFD(i) = Df(i)*F*D+D*Ff(i)*D+D*F*Df(i); end do
+!     do j=1,nc
+!         call prop_overlap((/'GEO'/),S,Sg,c=(/j/))
+!         do i=1,3
+!             Efg(i,j) = Efg(i,j) - dot(DFD(i),Sg(1))
+!         end do; Sg(1)=0
+!     end do; do i=1,3; DFD(i)=0; end do
+!     i = max(1,ceiling(log10(maxval(abs(Efg)))))
+!     print '("d/dg Dipole = -Efg w:"2f6.3/<nc>(3f19.<16-i>/))',0d0,0d0,-Efg
+!     do i=1,3; Df(i)=0; Ff(i)=0; end do
+! end subroutine
+
 
 end module

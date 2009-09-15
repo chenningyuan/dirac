@@ -1,6 +1,8 @@
 module aor_restart
 
-  use dirac_interface
+!radovan: this module is common to Dalton and DIRAC
+!         and is used to restart property calculations
+!         (perhaps more interesting in DIRAC where calculations are long)
 
   implicit none
 
