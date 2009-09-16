@@ -334,7 +334,7 @@ C
 C     Print section
 C     =============
 C     
-      IF(IPRINT.GE.4) THEN
+      IF(IPRINT.GE.2) THEN
          CALL HEADER('Output from SETXEE',-1)        
          WRITE(LUPRI,'(A,I10)') 'e-e rotations (non-redundant): ',NXOPE
          WRITE(LUPRI,'(2I6)') (JXOPE(1,J),JXOPE(2,J),J=1,NXOPE)
@@ -439,7 +439,7 @@ C
 C     Print section
 C     =============
 C
-      IF(IPRINT.GE.4) THEN
+      IF(IPRINT.GE.2) THEN
         CALL HEADER('Output from SETXEP',-1)        
         WRITE(LUPRI,'(A,I10)') 'e-p rotations: ',NXOPP
         WRITE(LUPRI,'(2I6)') (JXOPP(1,J),JXOPP(2,J),J=1,NXOPP)
