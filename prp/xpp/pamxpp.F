@@ -179,7 +179,7 @@ C     ATMPPF : "A" transition moment for each excitation
 C     OMEGA  : calculated excitation energies
 C     RCNV   : residual error for each excitation
 C     IORBCL : for orbital analysis
-C     ISSYM   : supersymmetry
+C     ISSYM  : supersymmetry
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -278,7 +278,7 @@ C         Transfer number of excitations for this symmetry to dcbxrs.h
 C         (NFREQ is used for allocations and loops)
 C
           IF (NZCONF.EQ.0) THEN
-             NEXMAX = NZXOPE
+             NEXMAX = NZXOPEQ
           ELSE
              NEXMAX = NZCONF
           END IF
