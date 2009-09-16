@@ -706,7 +706,7 @@ C
 C
 C     Print section
 C
-      IF(IPRXRS.GE.10) THEN
+      IF(IPRXRS.GE.5) THEN
         WRITE(LUPRI,'(A)') 'DMOLI3: Input B-matrix:'
         CALL PRQMAT(BMAT,NORBT,NORBT,NORBT,NORBT,NZ,
      &                IPQTOQ(1,IREP),LUPRI)
