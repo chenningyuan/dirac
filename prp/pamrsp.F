@@ -861,7 +861,7 @@ C           elements NEXSTV and NEXSTV+1/+2 are (nearly) degenerate
            NEXST2 = MIN(NEXST2,NZCONF)
            NCSIM = 2*NEXST2
         ELSE IF (NZXOPE.GT.0) THEN
-           NEXST2 = MIN(NEXST2,NZXOPE)
+           NEXST2 = MIN(NEXST2,NZXOPEQ)
            NESIM = 2*NEXST2
         ELSE
            CALL QUIT('XRSST-EXCITA: No conf or e-e variables')
@@ -3583,7 +3583,8 @@ C
 C     E X C I T A T I O N  E N E R G I E S etc.
 C     ========================================
 C
-         NEXST2 = NBVEC / 2
+Ctsaue: divide also by NZ to get all possible singlets and triplets
+         NEXST2 = NBVEC/2/NZ
          IF ( TYP .NE. 'C' .AND. NASHT .GT. 0) THEN
 C        ... SDIAG(i) = 1 for CI-vector and = 2 for RPA
             DO IVAR = 1,NVAR
@@ -3595,7 +3596,6 @@ C        Find lowest NEXST2 elements in HDIAG,
 C        IVEC is temporarily used as pointer
 C
          CALL FNDMIN(NEXST2,IVEC,HDIAG,NVAR,WORK(KFREE),LFREE)
-C        CALL FNDMIN(NELMNT,IPLACE,VEC,NVEC,WRK,LWRK)
          IF (IPRXRS.GE.3) WRITE(LUPRI,'(2A/,(2I10,F20.5))')
      &         ' Lowest HDIAG elements in XRSST2, type ',TYP,
      &         (I,IVEC(I),HDIAG(IVEC(I)),I=1,NEXST2)
@@ -3613,25 +3613,34 @@ C
                GO TO 210
             END IF
          END IF
-         NBVEC = 2*NEXST2
+         NEXST2Q=NEXST2*NZ
+         NBVEC = 2*NEXST2Q
          CALL DZERO(BVEC,NBVEC*NBDIM)
-         DO IP = 1,NEXST2
-            IM = IP + NEXST2
-            IBTYP(1,IBOFF+IP)     = NBTYP
-            IBTYP(2,IBOFF+IP)     = IPX
-            IBVEC(NBPREV+IP)      = IBOFF + IP
-            IBTYP(1,IBOFF+IM)     = NBTYP
-            IBTYP(2,IBOFF+IM)     = IMX
-            IBVEC(NBPREV+IM)      = IBOFF + IM
 C
-            IVAR = IVEC(IP)
-            BVEC(IVAR,1,IP) = D1
-            BVEC(IVAR,1,IM) = D1
-C
-            IVEC(IP) = 1
-            IVEC(IM) = 1
+Ctsaue:  One should run over all values of NZ to get all
+C        singlets and triplets allowed in the selected symmetry
+C        In C1 symmetry the spin states go as
+C           1 - S0
+C           2 - Tz
+C           3 - Ty
+C           4 - Tx
+         IP = 0
+         DO I = 1,NEXST2
+           IVAR = IVEC(I)
+           DO IZ = 1,NZ
+             IP = IP + 1
+             IM = IP + NEXST2Q
+             IBTYP(1,IBOFF+IP)     = NBTYP
+             IBTYP(2,IBOFF+IP)     = IPX
+             IBVEC(NBPREV+IP)      = IBOFF + IP
+             IBTYP(1,IBOFF+IM)     = NBTYP
+             IBTYP(2,IBOFF+IM)     = IMX
+             IBVEC(NBPREV+IM)      = IBOFF + IM
+             BVEC(IVAR,IZ,IP) = D1
+             BVEC(IVAR,IZ,IM) = D1
+           ENDDO
          ENDDO
-C
+         CALL ICOPY(NBVEC,1,0,IVEC,1)
       END IF
 C
 C     Orthogonalize new b-vectors against all previous b-vectors
