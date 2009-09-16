@@ -914,10 +914,6 @@ C
       IVEC = 0
       IREP = JSYMOP-1
 C
-cjth  IF (IPRXRS .GE. 10) THEN
-cjth     KFRSAV = KFREE
-cjth     CALL MEMGET('REAL',KTEMP,N2ORBXQ,WORK,KFREE,LFREE)
-cjth  END IF
 C
 C     *************************************************************
 C     *** Add one-index tranformed Fock-matrices; e-e rotations ***
@@ -977,9 +973,6 @@ C
      &           IPQTOQ(1,IREP),LUPRI)
          ENDIF
 C
-c        jth     IF (IPRXRS .GE. 10) THEN
-c        jth        CALL DCOPY(N2ORBXQ,FMO(1,IM),1,WORK(KTEMP),1)
-c        jth     END IF
 C
 C        Add one-index transformed Fock-matrix
 C        -------------------------------------
@@ -987,14 +980,6 @@ C
 C
          CALL FMOLI3(ITYP,FMO(1,IM),BMAT,FBUF,
      &        WORK,KFREE,LFREE)
-c        jth     IF (IPRXRS .GE. 10) THEN
-c        jth        CALL DAXPY(N2ORBXQ,-1.0D00,FMO(1,IM),1,WORK(KTEMP),1)
-c        jth        CALL DSCAL(N2ORBXQ,-1.0D00,WORK(KTEMP),1)
-c        jth        WRITE(LUPRI,'(A,I5)')
-c        jth &        '* FMOLI: Inactive 1-index transformed Fock matrix:',I
-c        jth        CALL PRQMAT(WORK(KTEMP),NORBT,NORBT,NORBT,NORBT,NZ,
-c        jth &                  IPQTOQ(1,IREP),LUPRI)
-c        jth     END IF
 C
          IF (NASHT .GT. 0) THEN
 C
@@ -3555,7 +3540,6 @@ C
       DIMENSION IBCVC(*), IBEVC(*), IBPVC(*), IBTYP(*), NPOS(*)
       DIMENSION ISYMOP(*), IHRMOP(*), IFCKOP(*)
       DIMENSION WORK(*)
-
 #ifdef MOD_DFT
       type(dft_options_t) :: dft_options
 #endif
@@ -3602,9 +3586,6 @@ C
 #endif
       CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FAO,FMO,NDMAT,NPOS,INTFLG,
      &     IPRTWO,WORK(KFREE),LFREE)
-
-
-
 
 #ifdef MOD_DFT
 !       construct kohn-sham contribution
@@ -3921,23 +3902,9 @@ C
 C
 C           Scatter BVEC into BMAT
 C
-Chj         CALL MEMGET('REAL',KBTMP,N2ORBXQ,WORK,KFREE,LFREE)
-Chj         CALL DZERO(WORK(KBTMP),N2ORBXQ)
-Chj         CALL XOPSCT(BEVEC(IBOFF),WORK(KZXOPE),NZXOPE,
-Chj  &           WORK(KBTMP),NORBT,NZ)
             CALL DZERO(BMAT,N2ORBXQ)
             CALL XOPSCT(BEVEC(IBOFF),WORK(KZXOPE),NZXOPE,
      &           BMAT,NORBT,NZ)
-C
-C           Transpose (DCX_{pi} = B_{ip})
-C
-Chj         IZOFF = 1
-Chj         DO IZ = 1, NZ
-Chj            CALL MTRSP(NORBT,NORBT,WORK(KBTMP+IZOFF-1),NORBT,
-Chj  &              BMAT(IZOFF),NORBT)
-Chj            IZOFF = IZOFF + N2ORBX
-Chj         END DO
-            CALL MEMREL('inactive e-e',WORK,1,KFRSAV,KFREE,LFREE)
 C
 C           Take symmetric/antisymmetric combinations to form BMAT
 C
@@ -3966,7 +3933,6 @@ C
 C           Backtransform to MO basis and (anti)symmetrize.
 C
             CALL DMOLI3(ITYP,IHRMOP(IM),DMAT(1,IM),CMO,BMAT)
-C
 C
             IF(IPRXRS.GE.8) THEN
                WRITE(LUPRI,'(3(A,I3))')
@@ -4069,7 +4035,6 @@ C
      &              IPQTOQ(1,IREP),LUPRI)
             END IF
 C
-C
 C           Backtransform to AO basis
 C
             CALL DMOLI3(ITYP,IHRMOP(IM),DMAT(1,IM),CMO,BMAT)
@@ -4106,23 +4071,9 @@ C
 C
 C           Scatter BVEC into BMAT
 C
-Chj         CALL MEMGET('REAL',KBTMP,N2ORBXQ,WORK,KFREE,LFREE)
-Chj         CALL DZERO(WORK(KBTMP),N2ORBXQ)
-Chj         CALL XOPSCT(BPVEC(IBOFF),WORK(KZXOPP),NZXOPP,
-Chj  &           WORK(KBTMP),NORBT,NZ)
             CALL DZERO(BMAT,N2ORBXQ)
             CALL XOPSCT(BPVEC(IBOFF),WORK(KZXOPP),NZXOPP,
      &           BMAT,NORBT,NZ)
-C
-C           Transpose (DCX_{pi} = B_{ip})
-C
-Chj         IZOFF = 1
-Chj         DO IZ = 1, NZ
-Chj            CALL MTRSP(NORBT,NORBT,WORK(KBTMP+IZOFF-1),NORBT,
-Chj  &              BMAT(IZOFF),NORBT)
-Chj            IZOFF = IZOFF + N2ORBX
-Chj         END DO
-Chj         CALL MEMREL('inactive e-p',WORK,1,KFRSAV,KFREE,LFREE)
 C
 C           Take symmetric/antisymmetric combinations to form BMAT
 C
@@ -4348,10 +4299,6 @@ C        no positronic rotations (and vice versa). However, it's just simpler
 C        to let the second index run over all orbitals.
 C
          IF(NS.NE.0.AND.NI.NE.0) THEN
-CTROND           IF(SPINFR .AND. (ITIM .EQ. 1) .AND. .NOT. TRIPLET) THEN
-!radovan this breaks test 46
-!          IF(SPINFR .AND. (ITIM .EQ. 1)) THEN
-!        for the moment i revert:
            IF(SPINFR .AND. (ITIM .EQ. 1) .AND. .NOT. TRIPLET) THEN
              CALL QBTRANS(IREP,'AOMO','S',D0,
      &           NFBAS(I1,0),NFBAS(I2,0),NS,NI,
