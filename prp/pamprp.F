@@ -8098,7 +8098,7 @@ C     ... deallocate the memory...
 C       .. extract LL block from VMAT into WORK(KPRLL)
         CALL EXTRLL(IREP,VMAT,WORK(KPRLL),IPRINT)
 
-C      ... save WORK(KPRLL)into BSSMAT under label PRP2Cxxx, with xxx=INDXPR
+C      ... save WORK(KPRLL) into BSSMAT under label P2C_xxxx, with xxxx=INDXPR
         CALL NUM2STR(INDXPR,NUMSTR) 
         PRPLABEL = 'P2C_'//NUMSTR
 caspg
