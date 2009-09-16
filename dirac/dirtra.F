@@ -3679,10 +3679,10 @@ C...             ...transform this block (only real part)
           ENDIF
 C
         ENDIF
-C        IF(IPRINT.GE.5) THEN
-C          CALL HEADER('QTRANS: AO-to-MO-transformed Fock matrix',-1)
-C          CALL PRQMAT(FMO,NRMO,NCMO,LRMO,LCMO,NZMO,IPQTOQ(1,0,1),LUPRI)
-C        ENDIF
+        IF(IPRINT.GE.5) THEN
+          CALL HEADER('QBTRANS: AO-to-MO-transformed Fock matrix',-1)
+          CALL PRQMAT(FMO,NRMO,NCMO,LRMO,LCMO,NZMO,IQMO,LUPRI)
+        ENDIF
 C
 C     *******************************************************
 C     *****  MO - to - AO -transformation : F' = CF(C+) *****
@@ -3738,10 +3738,10 @@ C
      &       'H','N',IQTM2,TM2,LR2,LC2,NZTM2,
      &       FADD,IQAO,FAO,LRAO,LCAO,NZAO)
         ENDIF
-C       IF(IPRINT.GE.5) THEN
-C          CALL HEADER('QTRANS: MO-to-AO-transformed Fock matrix',-1)
-C          CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IPQTOQ(1,0,1),LUPRI)
-C        ENDIF
+       IF(IPRINT.GE.5) THEN
+          CALL HEADER('QBTRANS: MO-to-AO-transformed Fock matrix',-1)
+          CALL PRQMAT(FAO,NRAO,NCAO,LRAO,LCAO,NZAO,IQAO,LUPRI)
+        ENDIF
       ELSE
         CALL QUIT('QBTRANS: Unknown keyword TYP '//TYP)
       ENDIF
