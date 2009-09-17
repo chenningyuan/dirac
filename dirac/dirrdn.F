@@ -42,7 +42,11 @@ C               Febr.2006 - MI to modify for pure two-comp. mode
 C
 C***********************************************************************
 
+      use dirac_cfg
       use input_reader
+#ifdef MOD_DFT
+      use dft_input
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -108,9 +112,16 @@ C
 !     contains:
 !     *DFT
 !     *VISUAL
+!     *AORESPONSE
 !     ignores rest
       call read_input()
 
+#ifdef MOD_DFT
+      if (dirac_cfg_dft_calculation) then
+        call consistency_after_dft_input()
+        call report_after_dft_input()
+      end if
+#endif
 
 
 CMI   ... instead of calling OP1INI in HAMINP, call it after
@@ -5464,12 +5475,6 @@ CMI  ... reading input routine for AMFI+RELSCF
 C
     1 CONTINUE
 
-#ifdef MOD_DFT
-      if (dirac_cfg_dft_calculation) then
-        call consistency_after_dft_input()
-        call report_after_dft_input()
-      end if
-#endif
 
 
       IF(SOLVEN) CALL SOLVIN(WORD,WORK,LWORK)
