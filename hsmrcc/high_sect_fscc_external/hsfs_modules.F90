@@ -300,6 +300,7 @@ allocate(tmp(1:ndp4))
 allocate(itmp(1:ndp4))
 write(LUPRI,*) 'ctmp_mod initialized, ndp4=',ndp4
 write(LUPRI,*) 'ctmp_mod initialized, itmp:',itmp(1),itmp(2),itmp(ndp4-1),itmp(ndp4)
+write(LUPRI,*) 'ctmp_mod: size(itmp)=',size(itmp)
 end subroutine init_ctmp_mod
 
 subroutine dealloc_ctmp_mod

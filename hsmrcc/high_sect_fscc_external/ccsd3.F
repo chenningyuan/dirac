@@ -767,6 +767,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 !      write(LUPRI,*) 'reorder:',igen(istrt21+1),igen(istrt21+1+lngth2)
 !      write(LUPRI,*) 'itmp ndp4,1+lngth2:',ndp4,1+lngth2
 !   ... this works for gfortran/gdb; ifort/idb gives other error...
+      write(LUPRI,*) 'reorder: size(itmp):',size(itmp)
       write(LUPRI,*) 'reorder: check itmp(1):',itmp(1)
 !      write(LUPRI,*) 'itmp(1+lngth2):',itmp(1+lngth2)
 
