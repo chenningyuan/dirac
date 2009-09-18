@@ -478,10 +478,13 @@ C
     5 CONTINUE
         CALL GRDINP(WORD,.FALSE.)
         GO TO 200
+
+!     *NMR
     6 CONTINUE
 CMI ... changed for LAO-based magnetic properties
         CALL NMRINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
+
     7 CONTINUE
 #ifdef MOD_ESR
         CALL ESRINP(WORD,.FALSE.,WORK,LWORK)

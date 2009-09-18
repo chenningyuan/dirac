@@ -46,6 +46,7 @@ C*****************************************************************************
 #include "dcbnmr.h"
 #include "dcbham.h"
 #include "nuclei.h"
+#include "codata.h"
 C
 
       PARAMETER (NTABLE = 15)
@@ -58,7 +59,7 @@ C
       DATA TABLE /'.GAUGEO','.NOLOND','.SYMCON','.NOORTH',
      &            '.INTFLG','.NOTWO ','.NOONEI','.DOEPRN',
      &            '.NOEPRN','.LONDON','.USECM ','.MLLSUS',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX'   /
+     &            '.AGAUGE','.XXXXXX','.XXXXXX'   /
       DATA SET/.FALSE./
 C
       CALL QENTER('NMRINP')
@@ -140,6 +141,8 @@ C
      *            '" not recognized in NMRINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in NMRINP.')
+
+!              .GAUGEO
     1          CONTINUE
 C ... read user specified gauge origin
                   READ(LUCMD,*,IOSTAT=IOS) (GAGORG(ICOOR),ICOOR=1,3)
@@ -151,6 +154,7 @@ C ... read user specified gauge origin
                   ENDIF
                   GORG = .TRUE.
                GO TO 100
+
     2          CONTINUE
 C ... use conventional atomic orbitals instead of London atomic orbitals
                LONDON = .FALSE.
@@ -215,8 +219,19 @@ C&&&& MLSUS: Activate the modification of the relativistic RDSUSLL term
                RDSUSLLMOD = .TRUE.
                MODRDSUSLL = .TRUE.
                GO TO 100
-   13          CONTINUE
-               GO TO 100
+
+!              .AGAUGE
+   13          continue
+!              read user specified gauge origin in angstrom
+               read(lucmd, *, iostat=ios) gagorg
+               if (ios /= 0) then
+                 call quit('error in reading .AGAUGE')
+               end if
+!              convert from angstrom to bohr
+               gagorg = gagorg/xtang
+               gorg = .true.
+               go to 100
+
    14          CONTINUE
                GO TO 100
    15          CONTINUE
@@ -368,7 +383,7 @@ C =========================================================================
 C   .... defined conventional atomic orbitals (AO), not London AO
        IF (SHIELD.OR.MSUSCP.OR.OPTROT) THEN
         WRITE(LUPRI,'(1X,A)')
-     &': Used conventional atomic orbitals, not London orbitals !'
+     &'  Used conventional atomic orbitals, not London orbitals !'
         WRITE(LUPRI,'(1X,A)')
      &'WARNING: Calculated magnetic properties are dependent'//
      &' on the choice of the gauge origin!'   
