@@ -159,14 +159,19 @@ contains
       call kw_read(word, dft_cfg_angint)
     end if
 
+    if (kw_matches(word, '.DEBUG ')) then
+      dft_cfg_radint = 1.0d-3
+      dft_cfg_angint = 10
+    end if
+
     if (kw_matches(word, '.COARSE')) then
       dft_cfg_radint = 1.0d-11
       dft_cfg_angint = 35
     end if
 
-    if (kw_matches(word, '.DEBUG ')) then
-      dft_cfg_radint = 1.0d-3
-      dft_cfg_angint = 10
+    if (kw_matches(word, '.ULTRAF')) then
+      dft_cfg_radint = 2.0d-15
+      dft_cfg_angint = 64
     end if
 
     if (kw_matches(word, '.PRINT ')) then
