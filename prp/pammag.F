@@ -59,7 +59,7 @@ C
       DATA TABLE /'.GAUGEO','.NOLOND','.SYMCON','.NOORTH',
      &            '.INTFLG','.NOTWO ','.NOONEI','.DOEPRN',
      &            '.NOEPRN','.LONDON','.USECM ','.MLLSUS',
-     &            '.AGAUGE','.XXXXXX','.XXXXXX'   /
+     &            '.GO_ANG','.XXXXXX','.XXXXXX'   /
       DATA SET/.FALSE./
 C
       CALL QENTER('NMRINP')
@@ -220,12 +220,12 @@ C&&&& MLSUS: Activate the modification of the relativistic RDSUSLL term
                MODRDSUSLL = .TRUE.
                GO TO 100
 
-!              .AGAUGE
+!              .GO_ANG
    13          continue
 !              read user specified gauge origin in angstrom
                read(lucmd, *, iostat=ios) gagorg
                if (ios /= 0) then
-                 call quit('error in reading .AGAUGE')
+                 call quit('error in reading .GO_ANG')
                end if
 !              convert from angstrom to bohr
                gagorg = gagorg/xtang
