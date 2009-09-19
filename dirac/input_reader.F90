@@ -348,7 +348,9 @@ contains
 
   subroutine read_input_visual(word, kw_section)
 
+#ifdef MOD_VISUAL
     use visual_cfg
+#endif
 
 !   ----------------------------------------------------------------------------
     character(kw_length), intent(in) :: word
@@ -359,7 +361,7 @@ contains
 
 #ifndef MOD_VISUAL
     call quit(kw_section//' not available in this version')
-#endif
+#else
 
     dirac_cfg_visual = .true.
 
@@ -459,12 +461,15 @@ contains
     end if
 
     call check_whether_kw_found(word, kw_section)
+#endif /* ifndef MOD_VISUAL */
 
   end subroutine
 
   subroutine read_input_aoresponse(word, kw_section)
 
+#ifdef MOD_AORESPONSE
     use aor_cfg
+#endif
 
 !   ----------------------------------------------------------------------------
     character(kw_length), intent(in) :: word
@@ -475,7 +480,7 @@ contains
 
 #ifndef MOD_AORESPONSE
     call quit(kw_section//' not available in this version')
-#endif
+#else
 
     call reset_available_kw_list()
 
@@ -593,6 +598,7 @@ contains
     end if
 
     call check_whether_kw_found(word, kw_section)
+#endif /* ifndef MOD_AORESPONSE */
 
   end subroutine
 
