@@ -3932,7 +3932,9 @@ C     Written by T.Saue - May 1996
 C
 C***********************************************************************
       use dirac_cfg
+#ifdef MOD_EMB
       USE FDE_MOD, ONLY: FDEINI, FDEINP
+#endif
 #ifdef MOD_DFT
       use dft_cfg
       use input_reader

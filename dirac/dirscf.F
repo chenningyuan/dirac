@@ -1061,7 +1061,9 @@ C
 C   Called from PSIDHF
 C
 C*****************************************************************************
+#ifdef MOD_EMB
       USE FDE_MOD, ONLY: GetFDEPotential_FromFile
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
