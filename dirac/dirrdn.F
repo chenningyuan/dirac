@@ -3937,9 +3937,9 @@ C***********************************************************************
 #endif
 #ifdef MOD_DFT
       use dft_cfg
-      use input_reader
       use dft_input
 #endif
+      use input_reader
 
 #include "implicit.h"
 #include "priunit.h"
@@ -4489,11 +4489,18 @@ C&&& POSVAC: Use positronic vacuum polarisation
              VACPOL = .TRUE.
              POSVAC = .TRUE.
              GO TO 100
-  142     CONTINUE
-C&&& FDE: Frozen density embedding switch 
-             DO_FDE = .TRUE.
-             CALL FDEINI()
-             GO TO 100
+
+!         .FDE
+!         frozen density embedding
+  142     continue
+#ifdef MOD_FDE
+          do_fde = .true.
+          call fdeini()
+#else
+          call quit('FDE is not included in this version')
+#endif /* ifdef MOD_FDE */
+          go to 100
+
   143     CONTINUE
 C&&& IOTC4: do IOTC in 4c-mode
 !radovan: note that .X2C4 points to here
@@ -5454,9 +5461,15 @@ C       if *CAP in input but MOD_CAP is not defined !!!
      &  '*CAP specified, but CAP is not included in this version')
         GO TO 200
 #endif
+
+!     .FDE
+!     frozen density embedding
     5 CONTINUE
-        CALL FDEINP(WORD,.TRUE.)
-        GO TO 200
+#ifdef MOD_FDE
+      call fdeinp(word, .true.)
+#endif /* ifdef MOD_FDE */
+      GO TO 200
+
     6 CONTINUE
 #ifdef MOD_AMFI
 CMI  ... reading input routine for AMFI+RELSCF
@@ -5470,6 +5483,7 @@ CMI  ... reading input routine for AMFI+RELSCF
      &  '*AMFI specified, but AMFI is not included in this version')
 #endif
         GO TO 200
+
     7 CONTINUE
         GO TO 200
     8 CONTINUE

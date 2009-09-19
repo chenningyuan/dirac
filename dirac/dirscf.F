@@ -1089,9 +1089,11 @@ C       in ONEFCK ... no need to prepare LUFCK1 !!!!
 
 c     call header ('1-electron matrix, before call to FDE',-1)
 c     call printdmat(1,7,fock)
+#ifdef MOD_EMB
       if (do_fde) then
          call GetFDEPotential_FromFile(fock,work,lwork)
       endif
+#endif
 c     call header ('1-electron matrix, after call to FDE',-1)
 c     call printdmat(1,ndimension,fock)
 
