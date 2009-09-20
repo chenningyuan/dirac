@@ -307,6 +307,7 @@ subroutine check_ctmp_mod
 ! for run-time check...
 #include "priunit.h"
 if (allocated(tmp).and.allocated(itmp)) then
+ call FLSHFO(LUPRI)
  write(LUPRI,*) 'ctmp_mod: size(itmp)=',size(itmp)
  write(LUPRI,*) 'ctmp_mod, check of itmp(1,2,ndp4-1,ndp4):'
  write(LUPRI,*)  itmp(1),itmp(2),itmp(ndp4-1),itmp(ndp4)
