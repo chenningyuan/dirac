@@ -864,6 +864,7 @@ c   move p to p transitions to folded
 !        special type of diagrams
 !
 !--------------------------------------------------------------------------------------
+      use print_level
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -908,6 +909,8 @@ c   move p to p transitions to folded
       ipack3(i,j,k)=ior(ior(ishft(i,16),ishft(j,8)),k)
       ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),
      1ior(ishft(k,8),l))
+
+      call check_ctmp_mod
 
       call files_ccsd (name2,ntape2,new,2,-1,-1)
       if (new.ne.0) then
@@ -1021,6 +1024,9 @@ c   move p to p transitions to folded
 60        continue
 50      continue
 10    continue
+
+      call check_ctmp_mod
+
       return
       end
 
@@ -1031,6 +1037,7 @@ c   move p to p transitions to folded
 !
 !
 !--------------------------------------------------------------------------------------
+      use print_level
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -1068,6 +1075,8 @@ c   move p to p transitions to folded
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       dimension ia(8),ib(10000),ibe(0:10000)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+      call check_ctmp_mod
 
       call files_ccsd (name2,ntape2,new,2,-1,-1)
       if (new.ne.0) then
@@ -1170,6 +1179,9 @@ c   move p to p transitions to folded
 210       continue
 200     continue
       end if
+     
+      call check_ctmp_mod
+
       return
       end
 
@@ -1221,6 +1233,8 @@ c   move p to p transitions to folded
       ipack3(i,j,k)=ior(ior(ishft(i,16),ishft(j,8)),k)
       ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),
      1ior(ishft(k,8),l))
+
+      call check_ctmp_mod
 
       call files_ccsd (name2,ntape2,new,2,-1,-1)
       if (new.ne.0) then
@@ -1330,6 +1344,9 @@ c   move p to p transitions to folded
 160       continue
 150     continue
 110   continue
+
+      call check_ctmp_mod
+
       return
       end
 
@@ -1478,6 +1495,7 @@ c   move p to p transitions to folded
 340       continue
 330     continue
 300   continue
+
       return
       end
 
@@ -1530,6 +1548,8 @@ c   move p to p transitions to folded
       ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),
      1ior(ishft(k,8),l))
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+      call check_ctmp_mod
 
       call files_ccsd (name2,ntape2,new,2,-1,-1)
       if (new.ne.0) then
@@ -1616,6 +1636,9 @@ c   move p to p transitions to folded
           end if
 430     continue
 410   continue
+
+      call check_ctmp_mod
+
       return
       end
 
@@ -1664,6 +1687,8 @@ c   move p to p transitions to folded
       ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),
      1ior(ishft(k,8),l))
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+      call check_ctmp_mod
 
       call files_ccsd (name2,ntape2,new,2,-1,-1)
       if (new.ne.0) then
@@ -1767,6 +1792,9 @@ c   move p to p transitions to folded
 160       continue
 150     continue
 110   continue
+
+      call check_ctmp_mod
+
       return
       end
 

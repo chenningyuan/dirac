@@ -303,6 +303,17 @@ write(LUPRI,*) 'ctmp_mod initialized, itmp:',itmp(1),itmp(2),itmp(ndp4-1),itmp(n
 write(LUPRI,*) 'ctmp_mod: size(itmp)=',size(itmp)
 end subroutine init_ctmp_mod
 
+subroutine check_ctmp_mod
+! for run-time check...
+#include "priunit.h"
+if (allocated(tmp).and.allocated(itmp)) then
+ write(LUPRI,*) 'ctmp_mod: size(itmp)=',size(itmp)
+ write(LUPRI,*) 'ctmp_mod, check of itmp(1,2,ndp4-1,ndp4):'
+ write(LUPRI,*)  itmp(1),itmp(2),itmp(ndp4-1),itmp(ndp4)
+ write(LUPRI,*) 
+endif
+end subroutine check_ctmp_mod
+
 subroutine dealloc_ctmp_mod
  deallocate(tmp)
  deallocate(itmp)
@@ -808,3 +819,10 @@ end module high_sect_execs
 
  end module get_gamess_mo_ints
 
+#if !defined HSFS_DYN_ALLOC
+subroutine check_ctmp_mod
+! .. empty for HSFS static
+ continue
+ return
+end subroutine check_ctmp_mod
+#endif

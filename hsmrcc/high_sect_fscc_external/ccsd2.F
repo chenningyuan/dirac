@@ -2875,7 +2875,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       subroutine zeroup(ntmp,itmp,t,zero)
 !--------------------------------------------------------------------------------
 !
-!  moves 'zero' elements & their indexes at the end of the array
+!       moves 'zero' elements & their indexes at the end of the array
 !
 !--------------------------------------------------------------------------------
 !     implicit real*8 (a-h,o-z)

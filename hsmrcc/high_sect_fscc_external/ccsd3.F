@@ -706,12 +706,14 @@ c     write (6,*) ' transf indx from ',i,' to ',num
 ! change characteristics of the diagram, for example 2143 as iord means changing order of indexes
 !
 !---------------------------------------------------------------------------------------------------
+      use print_level
 #if defined HSFS_DYN_ALLOC
-      use ctmp_mod 
+!     use ctmp_mod 
       use cfiles_mod 
       use gen_mod 
       use cij1_mod 
       use cij2_mod 
+      use ctmp_mod 
       use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
@@ -737,11 +739,20 @@ c     write (6,*) ' transf indx from ',i,' to ',num
       dimension j(4),msk(4)
       data msk /'ff000000'X,'ff0000'X,'ff00'X,'ff'X/
 
-      character(*) namet, namef ! mi fix - data specification for prtime
+!     character(*) namet, namef ! mi fix - data specification for prtime
 
 c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       ipack(i1,i2,i3,i4)=ior(ior(ishft(i1,24),ishft(i2,16)),
      1                       ior(ishft(i3,8) ,i4)         )
+
+      if (getiprint() >= 5) then
+        call header('Output from "reorder"',-1)
+        write(LUPRI,*) 'namef=',namef
+        write(LUPRI,*) 'namet=',namet
+        write(LUPRI,*) 'iord=',iord
+        write(LUPRI,*) 'iparm=',iparm
+        call check_ctmp_mod
+      endif
 
       call files_ccsd(namef,ntapef,new,2,-1,-1)
       if (new.ne.0) then
@@ -764,13 +775,10 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       lngth2=ije2(nij2)
 
 !    miro: set up temporarily primitive error trap for HSFS_dynamic
-!      write(LUPRI,*) 'reorder:',igen(istrt21+1),igen(istrt21+1+lngth2)
-!      write(LUPRI,*) 'itmp ndp4,1+lngth2:',ndp4,1+lngth2
-!   ... this works for gfortran/gdb; ifort/idb gives other error...
-      write(LUPRI,*) 'reorder: size(itmp):',size(itmp)
-      write(LUPRI,*) 'reorder: check itmp(1):',itmp(1)
-!      write(LUPRI,*) 'itmp(1+lngth2):',itmp(1+lngth2)
+!   ... this works for gfortran/gdb; however, ifort/idb gives other error...
+      call check_ctmp_mod
 
+!miro: "lngth2+600" could cause index leak for "itmp" array 
       call vands(lngth2,igen(istrt21+1),msk(i1),itmp)
       call vshfcs(lngth2,itmp,8*i1-8,itmp)
       call vands(lngth2,igen(istrt21+1),msk(i2),itmp(lngth2+600))
@@ -783,10 +791,14 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       call vshfcs(lngth2,itmp(lngth2+600),8*i4-32,itmp(lngth2+600))
       call viorv(lngth2,itmp,itmp(lngth2+600),itmp)
 
+      call check_ctmp_mod
+
 !     ... acting on gen !!!
       call dcopy(lngth2,gen(istrt22+1),1,gen(istrt12+1),1)
       call vxsort(itmp,lngth2,lngth1,gen(istrt12+1),
      1 igen(istrt11+1))
+
+      call check_ctmp_mod
 
        ! ... print out
       call prt(namet,namet,iparm)
@@ -803,6 +815,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 !
 !
 !---------------------------------------------------------------------------
+      use print_level
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod 
       use gen_mod 
@@ -842,6 +855,14 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 ! ... to be replaced by include file ...
       ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),
      &ior(ishft(k,8),l))
+
+      if (getiprint() >= 5) then
+        call header('Output from "reordx"',-1)
+        write(LUPRI,*) 'namef=',namef
+        write(LUPRI,*) 'namet=',namet
+        write(LUPRI,*) 'iord=',iord
+        call check_ctmp_mod
+      endif
 
       do 500 i=1,8
         ja(i)=0
@@ -944,6 +965,9 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
         end if
       end do  
       call dcopy (nsize,tmp(1),1,gen(istrt12+1),1)
+
+      call check_ctmp_mod
+
       return
       end
 
@@ -955,6 +979,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 !
 !
 !---------------------------------------------------------------------------
+      use print_level
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod 
       use gen_mod 
@@ -992,16 +1017,32 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       dimension ia(6),ja(6),msk(4),igot(8)
       data msk /'ff000000'x,'ff0000'x,'ff00'x,'ff'x/
 
+      if (getiprint() >= 5) then
+        call header('Output from "reord6"',-1)
+        write(LUPRI,*) 'namef=',namef
+        write(LUPRI,*) 'namet=',namet
+        write(LUPRI,*) 'iord=',iord
+        write(LUPRI,*) 'ndp8=ndp3/nir=',ndp8
+        write(LUPRI,*) 'ndp4=',ndp4
+        call check_ctmp_mod
+      endif
+
       ndp8=ndp3/nir
+      if (ndp8.gt.ndp4) then 
+       call quit('ndp8 > ndp4 !')
+      endif
+
       call files_ccsd (namef,ntapef,new,2,-1,-1)
       if (new.ne.0) then
         write (6,*) 'reord6 input tape does not exist, ',name2
-        stop                      
+!       stop                      
+        call quit('reord6 input tape does not exist')
       end if
       call parse6 (iord,idum1,idum2,i1,i2,i3,i4)
       if ((idum1.ne.1).or.(idum2.ne.2)) then
         write (6,*) 'reord6 called with incorrect iord'
-        stop
+!       stop
+        call quit('reord6 called with incorrect iord')
       end if
       call parse6 (iii2,ia(1),ia(2),ia(3),ia(4),ia(5),ia(6))
       call parse6 (iiv2,ja(1),ja(2),ja(3),ja(4),ja(5),ja(6))
@@ -1027,7 +1068,8 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
         call dimx (lngth,ndp8,"reord6  ")
         if (ije2(i)-ije2(i-1).ne.lngth) then
           write (6,*) 'mismatch in block lengths - reord6'
-          stop                    
+          !stop
+          call quit('mismatch in block lengths - reord6')
         end if
         ii=iand(ishft(ij2(i),-8),'ff'x)
         jj=iand(ij2(i),'ff'x)
@@ -1037,6 +1079,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
           istrt=istrtf1+ije2(i-1)+1
           call vands  (lngth,igen(istrt),msk(i1),itmp(1))
           call vshfcs (lngth,itmp(1),8*i1-8,itmp(1))
+!         miro: ndp8 must be lower than ndp4, checked above
           call vands  (lngth,igen(istrt),msk(i2),itmp(ndp8))
           call vshfcs (lngth,itmp(ndp8),8*i2-16,itmp(ndp8))
           call viorv  (lngth,itmp(1),itmp(ndp8),itmp(1))
@@ -1059,6 +1102,9 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
      1    gen(istrtf2+ije2(i-1)+itmp(ndp3+(ii-1)*ndp8+j))
 80      continue
 10    continue
+
+      call check_ctmp_mod
+
       call prtime ("reord6   ",0,1)
       return
       end
@@ -1070,6 +1116,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 !
 !
 !---------------------------------------------------------------------------
+      use print_level
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod 
       use gen_mod 
@@ -1100,6 +1147,8 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 
       dimension ia(6),ja(6),msk(3)
       data msk / 'ff0000'x,'ff00'x,'ff'x /
+
+      call check_ctmp_mod
 
       call files_ccsd (namef,ntapef,new,2,-1,-1)
       if (new.ne.0) then
@@ -1142,7 +1191,11 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
         call dcopy (lngth,gen(istrt22+ije2(itmp(i)-1)+1),1,
      1  gen(istrt12+ije1(i-1)+1),1)
 30    continue
+
+      call check_ctmp_mod
+
       call prtime ("reord7  ",0,1)
+
       return
       end
 
@@ -1153,6 +1206,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 !
 !
 !---------------------------------------------------------------------------
+      use print_level
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod 
       use gen_mod 
@@ -1189,6 +1243,8 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 
       dimension ia(10),ja(10),msk(5),iord(10)
       data msk / 'f0000'x,'f000'x,'f00'x,'f0'x,'f'x /
+
+      call check_ctmp_mod
 
       call files_ccsd (namef,ntapef,new,2,-1,-1)
       if (new.ne.0) then
@@ -1234,6 +1290,9 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
         call dcopy  (lngth,tmp,1,gen(istrtt2+ije1(i-1)+1),1)
 10    continue
       call prtime ("reord10  ",0,1)
+
+      call check_ctmp_mod
+
       return
       end
 
@@ -1243,6 +1302,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 !
 !
 !-----------------------------------------------------------------------------------
+      use print_level
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod 
       use gen_mod 
@@ -1279,6 +1339,8 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       dimension ia(10),ja(10),msk(5),iord(10)
 
       data msk / 'f0000'x,'f000'x,'f00'x,'f0'x,'f'x /
+
+      call check_ctmp_mod
 
       i1=iord(1)
       i2=iord(2)
@@ -1339,6 +1401,9 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 20      continue
 10    continue
       call dcopy (k,tmp,1,gen(istrtt2+1),1)   
+
+      call check_ctmp_mod
+
       call prtime ("reord11 ",0,2)
       return
       end
@@ -1350,6 +1415,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 !
 !
 !------------------------------------------------------------------------------------
+      use print_level
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod 
       use gen_mod 
@@ -1387,7 +1453,10 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       dimension ia(12),ja(12),msk(6),iord(12)
       data msk / 'f00000'x,'f0000'x,'f000'x,'f00'x,'f0'x,'f'x /
 
+      call check_ctmp_mod
+
       call files_ccsd (namef,ntapef,new,2,-1,-1)
+
       if (new.ne.0) then
         write (6,*) 'reord12 input tape does not exist, ',name2
         stop                     
@@ -1434,7 +1503,11 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
         call vsort  (ijtmp1(ndp5),lngth,tmp)
         call dcopy  (lngth,tmp,1,gen(istrtt2+ije1(i-1)+1),1)
 10    continue
+
       call prtime ("reord12  ",0,1)
+
+      call check_ctmp_mod
+
       return
       end
 
@@ -1481,6 +1554,8 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       dimension ia(12),ja(12),msk(6),iord(12)
 
       data msk / 'f00000'x,'f0000'x,'f000'x,'f00'x,'f0'x,'f'x /
+
+      call check_ctmp_mod
 
       i1=iord(1)
       i2=iord(2)
@@ -1546,6 +1621,9 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 20      continue
 10    continue
       call dcopy (k,tmp,1,gen(istrtt2+1),1)   
+
+      call check_ctmp_mod
+
       call prtime ("reord13 ",0,2)
       return
       end
@@ -1569,6 +1647,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 ! Important: integrals must be unique ! No repeating
 !
 !------------------------------------------------------------------------
+      use print_level
 #if defined HSFS_DYN_ALLOC
       use ctmp_mod 
       use cij1_mod 
@@ -1626,6 +1705,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
         write(LUPRI,'(2x,a,i6)') 'nij1=',nij1
         write(LUPRI,'(2x,a,i6)') 'nflcur=',nflcur
         write(LUPRI,*)
+        call check_ctmp_mod
       endif
 
       call tmplt(iii,iiv,name,num)
@@ -1709,6 +1789,8 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       gen(istrt2+nout)=vint(i)
       itmp(nout)=ipack(j1,j2,j3,j4)
 
+        call check_ctmp_mod
+
       if (iopt(1).ge.7) then
         write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
       endif
@@ -1728,6 +1810,8 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       nout=nout+1
       gen(istrt2+nout)=vint(i)
       itmp(nout)=ipack(j3,j2,j1,j4)
+
+        call check_ctmp_mod
 
       if (iopt(1).ge.7) then
         write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
@@ -1753,6 +1837,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       if (iopt(1).ge.7) then
         write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
       endif
+        call check_ctmp_mod
 
 130   if ((j1.eq.j3).or.(j2.eq.j4)) go to 140
       if (ipack(ic(j3),ic(j4),ic(j1),ic(j2)).ne.i1234) go to 140
@@ -1771,6 +1856,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       if (iopt(1).ge.7) then
         write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
       endif
+        call check_ctmp_mod
 
 140   if ((j1.eq.j2).and.(j3.eq.j4)) go to 190
 
@@ -1790,6 +1876,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       if (iopt(1).ge.7) then
         write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
       endif
+        call check_ctmp_mod
 
 150   if (j1.eq.j3) go to 160
       if (ipack(ic(j2),ic(j3),ic(j4),ic(j1)).ne.i1234) go to 160
@@ -1808,6 +1895,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       if (iopt(1).ge.7) then
         write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
       endif
+        call check_ctmp_mod
 
 160   if (j2.eq.j4) go to 170
       if (ipack(ic(j4),ic(j1),ic(j2),ic(j3)).ne.i1234) go to 170
@@ -1826,6 +1914,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       if (iopt(1).ge.7) then
         write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
       endif
+        call check_ctmp_mod
 
 170   if ((j1.eq.j3).or.(j2.eq.j4)) go to 190
       if (ipack(ic(j4),ic(j3),ic(j2),ic(j1)).ne.i1234) go to 190
@@ -1844,6 +1933,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       if (iopt(1).ge.7) then
         write(LUPRI,*) nout,itmp(nout),gen(istrt2+nout)
       endif
+        call check_ctmp_mod
 
 190   continue ! end of cycle
 
@@ -1861,6 +1951,8 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 !     call vxsort(itmp,nout,ije(nij),gen(istrt2+1),
       call vxsort(itmp,nout,ije1(nij1),gen(istrt2+1),
      1 igen(istrt1+1))
+
+        call check_ctmp_mod
 
 !     write (LUPRI,1900) ije(nij),iii,iiv
       write (LUPRI,1900) ije1(nij1),iii,iiv
@@ -1927,6 +2019,8 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 !      32-bit function (to be moved into module)
       ipack(i1,i2)=ior(ishft(i1,8),i2)
 
+        call check_ctmp_mod
+
       if (iopt(8).eq.0) then
         call clear(name,iii,iiv)
         return
@@ -1979,6 +2073,9 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 !     write (6,1900) ije(nij),iii,iiv
       write (6,1900) ije1(nij1),iii,iiv
 1900  format('collected ',i9,' integrals of type ',2i6)
+
+      call check_ctmp_mod
+
       call prt(name,name,iparm)
 !     call prtime(name,ije(nij),0)
       call prtime(name,ije1(nij1),0)
@@ -2039,6 +2136,8 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 
       ipack(i1,i2,i3,i4)=ior(ior(ishft(i1,24),ishft(i2,16)),
      1                       ior(ishft(i3,8),i4)           )
+
+      call check_ctmp_mod
 
       if ((iii.ne.3333).or.(iiv.ne.0)) then
         write (*,*) ' seltyp4 called with incorrect iii, iiv:',iii,iiv
@@ -2121,6 +2220,8 @@ c  indices not retained for pppp.
       write (6,1900) lngth,iii,iiv
 1900  format('collected ',i9,' integrals of type ',2i6)
       if (iopt(10).eq.0) call wrtfile(9,0,"pppp")
+
+      call check_ctmp_mod
 
       call prt(name,name,iparm)
 
@@ -3176,6 +3277,7 @@ c   special for scratch files, which start with s
         write(LUPRI,*) 'name1b=',name1b
         write(LUPRI,*) 'name2=',name2
         write(LUPRI,*) 'namet=',namet
+        call check_ctmp_mod
       endif
 
       call files_ccsd(name1a,ntape1a,new,2,-1,-1)
@@ -3234,7 +3336,11 @@ c
         write(LUPRI,*) 'istrt12=',istrt12
       endif
 
+      call check_ctmp_mod
+
       call vxsort(itmp,ntmp,nsize1,gen(istrt12+1),igen(istrt11+1))
+
+      call check_ctmp_mod
 
       if (getiprint() >= 8) then
         write(LUPRI,*) 't1sqr: after vxsort, before call add'
@@ -3248,6 +3354,7 @@ c
         write(LUPRI,*) 't1sqr: after call add'
         write(LUPRI,*) 'namet=',namet 
         write(LUPRI,*) 'name2=',name2
+        call check_ctmp_mod
       endif
 
       return
@@ -3299,6 +3406,8 @@ c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       data ia / 5,1,1,0,0,1,5,2,0,0,2,2,5,0,0,
      1          6,3,3,0,0,3,6,4,0,0,4,4,6,0,0 /
+
+        call check_ctmp_mod
 
       call files_ccsd (name3,ntape3,new,1,-1,-1)
       if (new.ne.0) then
@@ -3373,6 +3482,9 @@ c
      1    gen(istrt12+ije1(i-1)+1),igen(istrt11+ije1(i-1)+1))
         end if
 70    continue
+
+        call check_ctmp_mod
+
       call add (names,1.d0,name3,1.d0,names)
       return
       end
@@ -3427,6 +3539,8 @@ c
 !!!! TODO: into module !
       ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),
      1ior(ishft(k,8),l))
+
+        call check_ctmp_mod
 
       call files_ccsd (name4,ntape4,new,1,-1,-1)
       if (new.ne.0) then
@@ -3499,7 +3613,10 @@ c
      1    gen(istrt12+ije1(i-1)+1),igen(istrt11+ije1(i-1)+1))
         end if
 80    continue
+        call check_ctmp_mod
+
       call add (namet,1.d0,name4,1.d0,namet)
+
       return
       end
 
@@ -3512,6 +3629,7 @@ c
 ! add some description...
 !
 !------------------------------------------------------------------------
+      use print_level
 #if defined HSFS_DYN_ALLOC
       use ctmp_mod
       use cfiles_mod
@@ -3555,11 +3673,17 @@ c
       ipack4(i,j,k,l)=ior(ior(ishft(i,24),ishft(j,16)),
      1ior(ishft(k,8),l))
 
+      if (getiprint() >= 5) then ! control printout
+        call header('Output from "t2sqr"',-1)
+        write(LUPRI,*) 'iparm=',iparm     
+      endif
+        call check_ctmp_mod
+
       iparm=iparm-1
       call files_ccsd (name4,ntape4,new,1,-1,-1)
       if (new.ne.0) then
         write (6,*) ' t4 file in t2sqr does not exist'
-        stop
+        call quit('t4 file in t2sqr does not exist')
       endif
       call tmplt8 (iii1,iiv1,namet,ntapet)
       call files_ccsd (namet,ntapet,new,1,-1,-1)
@@ -3610,19 +3734,28 @@ c
                 iquit=1
               else
                 write (6,*) 't2sqr - block id not found '
-                stop
+                call quit('t2sqr - block id not found')
               end if
             end do
           end if
 30      continue
 20    continue
+
+      call check_ctmp_mod
+       
       do 70 i=1,nij1
         if (ninds(i).gt.0) then
           call vxsort (itmp(ije1(i-1)+1),ninds(i),ije1(i)-ije1(i-1),
      1    gen(istrt12+ije1(i-1)+1),igen(istrt11+ije1(i-1)+1))
         end if
 70    continue
+
+      call check_ctmp_mod
+
       call add (namet,1.d0,name4,1.d0,namet)
+
+      call check_ctmp_mod
+
       return
       end
 
@@ -3719,6 +3852,7 @@ c
 !
 !
 !------------------------------------------------------------------------
+      use print_level
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -3746,6 +3880,12 @@ c
 !!!!!!!!!!! need dynamic alloc of ije1 !!!!!!!!!!
       dimension ij(ndij),ije(0:ndij),ije1(0:ndij)
 
+      if (getiprint() >= 5) then ! control printout
+        call header('Output from "tchng8"',-1)
+        write(LUPRI,*)  'nij=',nij
+        call check_ctmp_mod
+      endif
+
       call dimx (ije(nij),ndp3,"tchng8  ")
       nij1=0
       istrt=nstrt(1,ntapef-1)+2*nij+4
@@ -3763,10 +3903,14 @@ c
           end if
 20      continue
 10    continue
+
+      call check_ctmp_mod
+
       call dimx (nij1,ndij,"tchng8  ")
       ije1(nij1)=ije(nij)
       nij=nij1
       call kcopy (nij+1,ije1(0),ije(0))
+
       return
       end
 
