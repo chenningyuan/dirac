@@ -478,7 +478,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       use dft_cfg
       use dft_temp
-      use dft_basis_info
+      use dft_ao
 
 #include "implicit.h"
 #include "priunit.h"

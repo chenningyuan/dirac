@@ -7,7 +7,6 @@ module dft_main
   use dft_ao_in_mem
   use dft_ao
   use dft_density
-  use dft_basis_info
 ! if you really have to use common blocks, then
 ! please put them in dft_cb_interface
   use dft_cb_interface

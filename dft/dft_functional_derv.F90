@@ -1,7 +1,6 @@
 module dft_functional_derv
 
   use dft_cfg
-  use dft_basis_info
 
   implicit none
 

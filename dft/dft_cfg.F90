@@ -21,6 +21,8 @@ module dft_cfg
 
   save
 
+  integer, parameter, public   :: mxbllen = 160
+
   character(30), public :: dft_cfg_gridfile
 
   logical, public :: dft_cfg_keep_ao                 = .false.

@@ -23,7 +23,6 @@ c=======================================================================
       use dft_cfg
       use dft_density
       use dft_functional_derv
-      use dft_basis_info
 
 #include "implicit.h"
 #include "priunit.h"

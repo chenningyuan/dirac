@@ -46,7 +46,6 @@ C     radovan bast                         last revision: september 2006
 C=======================================================================
 
        use dft_cfg
-       use dft_basis_info
        use dft_functional_derv
 
 #include "implicit.h"
