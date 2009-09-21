@@ -67,8 +67,9 @@ setup()
 #
 #  Administrator needs everything.....
 #
+MODS_MESSAGE=
    echo
-   echo "*** Active modules:"
+   echo "Active modules:"
    echo
    echo_style=sysv
    unset noclobber
@@ -93,7 +94,9 @@ setup()
 # LV: inform me before taking EMBMOD out of the -adm options !!!
 # MI  - needs to be fixed for gfortran !!!
 #      ECPMOD=1
-      echo " - DIRAC administrator ..."
+       THIS_MOD_MESSAGE=" - DIRAC administrator ..."
+       echo $THIS_MOD_MESSAGE
+       MODS_MESSAGE=$MODS_MESSAGE"# "$THIS_MOD_MESSAGE"\n"
    fi
    #
    #  DFT
@@ -101,7 +104,9 @@ setup()
    if [ -n "$DFTMOD" ]; then
       DFTFLG='-DMOD_DFT'
       DFTTAR=1
-      echo " - DFT module (DFT)"
+      THIS_MOD_MESSAGE=" - DFT module (DFT)"
+      echo $THIS_MOD_MESSAGE
+      MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
    #
    #  ESR
@@ -109,7 +114,9 @@ setup()
    if [ -n "$ESRMOD" ]; then
       ESRFLG='-DMOD_ESR'
       ESRTAR=1
-      echo " - ESR property module (ESR)"
+      THIS_MOD_MESSAGE=" - ESR property module (ESR)"
+      echo $THIS_MOD_MESSAGE
+      MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
    #
    #  XPP and STEX
@@ -117,7 +124,9 @@ setup()
    if [ -n "$XPPMOD" ]; then
       XPPFLG='-DMOD_XPP -DMOD_STEX'
       XPPTAR=1
-      echo " - Excitation energy module (XPP and STEX)"
+      THIS_MOD_MESSAGE=" - Excitation energy module (XPP and STEX)"
+      echo $THIS_MOD_MESSAGE
+      MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
    #
    #  KRMC and LUCIAREL
@@ -125,14 +134,18 @@ setup()
    if [ -n "$KRMCMOD" ]; then
       KRMCFLG='-DMOD_KRMC'
       KRMCTAR=1
-      echo " - KR-MCSCF and LUCIAREL modules (KRMC)"
+      THIS_MOD_MESSAGE=" - KR-MCSCF and LUCIAREL modules (KRMC)"
+      echo $THIS_MOD_MESSAGE
+      MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
    #
    #  Increase common block sizes to handle more centers and basis sets
    #
    if [ -n "$LARGEMOL" ]; then
       LRGMOLFLG='-DLARGE_MOLECULES'
-      echo " - Increasing common block sizes to handle larger systems"
+      THIS_MOD_MESSAGE=" - Increasing common block sizes to handle larger systems"
+      echo $THIS_MOD_MESSAGE
+      MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
    #
    #  ERI two-electron integral module
@@ -140,7 +153,9 @@ setup()
    if [ -n "$ERIMOD" ]; then
       ERIFLG='-DMOD_ERI'
       ERITAR=1
-      echo " - ERI two-electron integral module"
+      THIS_MOD_MESSAGE=" - ERI two-electron integral module"
+      echo $THIS_MOD_MESSAGE
+      MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
    #
    #  DNF density fitting module
@@ -148,7 +163,9 @@ setup()
    if [ -n "$DNFMOD" ]; then
       DNFFLG='-DMOD_DNF'
       DNFTAR=1
-      echo " - DNF density fitting module"
+      THIS_MOD_MESSAGE=" - DNF density fitting module"
+      echo $THIS_MOD_MESSAGE
+      MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
    #
    #  FMM  module
@@ -156,7 +173,9 @@ setup()
    if [ -n "$FMMMOD" ]; then
       FMMFLG='-DMOD_FMM'
       FMMTAR=1
-      echo " - Fast Multipole Method (fmm) module"
+      THIS_MOD_MESSAGE=" - Fast Multipole Method (fmm) module"
+      echo $THIS_MOD_MESSAGE
+      MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
    #
    #  ab initio/DFT embedding module
@@ -164,7 +183,9 @@ setup()
    if [ -n "$EMBMOD" ]; then
       EMBFLG='-DMOD_EMB'
       EMBTAR=1
-      echo " - ab initio/DFT embedding module (with Fortran90/95 modules)"
+      THIS_MOD_MESSAGE=" - ab initio/DFT embedding module (with Fortran90/95 modules)"
+      echo $THIS_MOD_MESSAGE
+      MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
    #
    #  XML
@@ -172,7 +193,9 @@ setup()
    if [ -n "$XMLMOD" ]; then
       XMLFLG='-DMOD_XML'
       XMLTAR=1
-      echo " - XML input/output module (with Fortran90/95 modules)"
+      THIS_MOD_MESSAGE=" - XML input/output module (with Fortran90/95 modules)"
+      echo $THIS_MOD_MESSAGE
+      MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
    #
    #  ADC electron propagator module
@@ -180,7 +203,9 @@ setup()
    if [ -n "$ADCMOD" ]; then
       ADCFLG='-DMOD_ADC'
       ADCTAR=1
-      echo " - ADC electron propagator module"
+      THIS_MOD_MESSAGE=" - ADC electron propagator module"
+      echo $THIS_MOD_MESSAGE
+      MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
    #
    #  ECP module
@@ -188,7 +213,9 @@ setup()
    if [ -n "$ECPMOD" ]; then
       ECPFLG='-DMOD_ECP'
       ECPTAR=1
-      echo " - ECP argos module"
+      THIS_MOD_MESSAGE=" - ECP argos module"
+      echo $THIS_MOD_MESSAGE
+      MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
    #
    #  visualization module
@@ -196,7 +223,9 @@ setup()
    if [ -n "$VISUALMOD" ]; then
       VISUALFLG='-DMOD_VISUAL'
       VISUALTAR=1
-      echo " - visualization module"
+      THIS_MOD_MESSAGE=" - visualization module"
+      echo $THIS_MOD_MESSAGE
+      MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
    #
    #  AO response module
@@ -204,75 +233,81 @@ setup()
    if [ -n "$AORESPONSEMOD" ]; then
       AORESPONSEFLG='-DMOD_AORESPONSE'
       AORESPONSETAR=1
-      echo " - AO response module"
+      THIS_MOD_MESSAGE=" - AO response module"
+      echo $THIS_MOD_MESSAGE
+      MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
 
 #  matrix operations
    if [ -n "$MATRIX_OPERATIONS_MOD" ]; then
       MATRIX_OPERATIONS_FLG='-DMOD_MATRIX_OPERATIONS'
       MATRIX_OPERATIONS_TAR=1
-      echo " - matrix operations module"
+      THIS_MOD_MESSAGE=" - matrix operations module"
+      echo $THIS_MOD_MESSAGE
+      MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
 
 #  autodiff
    if [ -n "$AUTODIFFMOD" ]; then
       AUTODIFFFLG='-DMOD_AUTODIFF'
-      echo " - autodiff module"
+      THIS_MOD_MESSAGE=" - autodiff module"
+      echo $THIS_MOD_MESSAGE
+      MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
 
 #
 #      CAP module
 #
    if [ -n "$CAPMOD" ]; then
-         CAPFLG='-DMOD_CAP'
-         CAPTAR=1
-         echo " - CAP module"
-  # else
-      #  echo "CAP module is not included "
-      #  echo 
+      CAPFLG='-DMOD_CAP'
+      CAPTAR=1
+      THIS_MOD_MESSAGE=" - CAP module"
+      echo $THIS_MOD_MESSAGE
+      MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
     fi
    #
    #   IHFSCCSD functionality
    #
    if [ -n "$IHFSCCMOD" ]; then
-         IHFSCCFLG='-DMOD_IHFSCC'
-         echo " - IHFSCC code enabled"
-  # else
-      #  echo "HSMRCC interface module is not included "
-      #  echo 
+      IHFSCCFLG='-DMOD_IHFSCC'
+      THIS_MOD_MESSAGE=" - IHFSCC code enabled"
+      echo $THIS_MOD_MESSAGE
+      MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
     fi
 
    #
    #  AMFI functionality
    #
    if [ -n "$AMFIMOD" ]; then
-         AMFIFLG='-DMOD_AMFI'
-         echo " - AMFI functionality enabled"
+      AMFIFLG='-DMOD_AMFI'
+      THIS_MOD_MESSAGE=" - AMFI functionality enabled"
+      echo $THIS_MOD_MESSAGE
+      MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
    #
    # London orbitals 
    #
    if [ -n "$LONDONMOD" ]; then
-         LONDONFLG='-DMOD_LONDON'
-         echo " - London atomic orbitals enabled"
+      LONDONFLG='-DMOD_LONDON'
+      THIS_MOD_MESSAGE=" - London atomic orbitals enabled"
+      echo $THIS_MOD_MESSAGE
+      MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
    #
    #   HSMRCC Dirac-interface module
    #
    if [ -n "$HSCCMOD" ]; then
-         HSCCFLG='-DMOD_HSCC'
-         HSCCTAR=1
-	 # delet old file
-	 if [ -f hsmrcc/hsmrcc_external/Makefile.hsmrcc ]; then
+      HSCCFLG='-DMOD_HSCC'
+      HSCCTAR=1
+     # delete the old file
+      if [ -f hsmrcc/hsmrcc_external/Makefile.hsmrcc ]; then
 	   /bin/rm -r hsmrcc/hsmrcc_external/Makefile.hsmrcc
-	 fi
-         cp hsmrcc/hsmrcc_external/Makefile.hsmrcc.in  hsmrcc/hsmrcc_external/Makefile.hsmrcc || \
-         (echo "Error exit: hsmrcc/hsmrcc_external/Makefile.hsmrcc not activated !"; exit 1)
-         echo " - HSMRCC interface module, plus own HSMRCC routines, active Makefile.hsmrcc."
-
-       #  cp hsmrcc/second_quant/Makefile.secquant.in  hsmrcc/second_quant/Makefile.secquant || \
-       #  (echo "Error exit:  !"; exit 1)
-       #  echo " - second quantization module active"
+      fi
+      cp hsmrcc/hsmrcc_external/Makefile.hsmrcc.in  hsmrcc/hsmrcc_external/Makefile.hsmrcc || \
+      (echo "Error exit: hsmrcc/hsmrcc_external/Makefile.hsmrcc not activated !"; exit 1)
+      THIS_MOD_MESSAGE=" - HSMRCC interface module, plus own HSMRCC routines, active Makefile.hsmrcc."
+      echo $THIS_MOD_MESSAGE
+      MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
    #
    #  Higher Sector Fock-space (HSFS) Coupled Cluster module 
@@ -283,7 +318,6 @@ setup()
          if [ -n "$HSFSDYNMOD" ]; then
             # add important preprocessor flag
             HSFSFLG=$HSFSFLG' -DHSFS_DYN_ALLOC'
-            #echo 'dynamic HSFS: preprocessor flag='$HSFSFLG
          fi
 	 # delete first the old file
 	 if [ -f hsmrcc/high_sect_fscc_external/Makefile.hsfs ]; then
@@ -293,9 +327,13 @@ setup()
          (echo "Error exit: hsmrcc/high_sect_fscc/Makefile.hsfs not activated !"; exit 1)
 
          if [ -n "$HSFSDYNMOD" ]; then
-           echo " - HS FS CC mode with dynamic allocations active, actived Makefile.hsfs."
+           THIS_MOD_MESSAGE=" - HS FS CC mode with dynamic allocations active, actived Makefile.hsfs."
+           echo $THIS_MOD_MESSAGE
+           MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
          else
-           echo " - HS FS CC mode with static allocations active, actived Makefile.hsfs."
+           THIS_MOD_MESSAGE=" - HS FS CC mode with static allocations active, actived Makefile.hsfs."
+           echo $THIS_MOD_MESSAGE
+           MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
          fi
    fi  
    #
@@ -304,7 +342,9 @@ setup()
    if [ -n "$QDOTSMOD" ]; then
          QDOTSFLG='-DMOD_QDOTS'
         # QDOTSTAR=1
-         echo " - Quantum Dots (artificial atom) enabled"
+         THIS_MOD_MESSAGE=" - Quantum Dots (artificial atom) enabled"
+         echo $THIS_MOD_MESSAGE
+         MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
    #
    # Object oriented fortran90/95 mocularity module
@@ -312,7 +352,9 @@ setup()
    if [ -n "$OOFMOD" ]; then
          OOF_FLG='-DMOD_OOF'
          OOF_TAR=1
-         echo " - OOF module"
+         THIS_MOD_MESSAGE=" - OOF module"
+         echo $THIS_MOD_MESSAGE
+         MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
       else
        #  echo "OOF module not included"
        echo 
@@ -325,14 +367,17 @@ setup()
       DFTTAR=1
       KRMCFLG='-DMOD_KRMC'
       KRMCTAR=1
-      echo " - srDFT module (implies DFT and KRMC)"
+      THIS_MOD_MESSAGE=" - srDFT module (implies DFT and KRMC)"
+      echo $THIS_MOD_MESSAGE
+      MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
 
    if [ -n "$LOGMOD" ]; then
-       LOG_FLG=-DMOD_LOG
-       echo ' - Will log interesting matrices in matlab format (very verbose!)'
+      LOG_FLG=-DMOD_LOG
+      THIS_MOD_MESSAGE=' - Will log interesting matrices in matlab format (very verbose!)'
+      echo $THIS_MOD_MESSAGE
+      MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
-#  exit
    #
    # Defining the tarfile that is used for export
    #
@@ -735,7 +780,11 @@ fi
 ##
    dirs="$dirs modules"
 
-echo "# file generated by the minions (pamadm) of Dirac - DO NOT EDIT!" > build/Makefile.moddef
+echo "# file generated by the minions (pamadm) of Dirac - DO NOT EDIT!"   > build/Makefile.moddef
+echo "#---------------------------------------------------------------"  >>  build/Makefile.moddef
+echo "#  Active modules:"                                                >>  build/Makefile.moddef
+echo -e $MODS_MESSAGE                                                    >>  build/Makefile.moddef
+
 echo "MODS="$MODS >> build/Makefile.moddef
 
 $echo "Determining svn URL & revision (with svn info) ... \c"
