@@ -7,7 +7,6 @@ module dft_ao
 !   contain garbage but they are not (= should not be) used
 
   use memory_allocator
-  use dft_cfg
 #ifdef VAR_MPI
   use dirac_mpi
 #endif
@@ -19,13 +18,13 @@ module dft_ao
 
   save
 
-  integer, parameter :: max_order_limit = 2
-  integer, public    :: nr_ao_slices      = 0
-  integer, public    :: max_ao_g_order  = 0
-  integer, public    :: max_ao_m_order  = 0
-  integer, public    :: ao_start     (0:max_order_limit, 0:max_order_limit) = 0
-  integer, public    :: ao_end       (0:max_order_limit, 0:max_order_limit) = 0
-  logical, public    :: need_ao_order(0:max_order_limit, 0:max_order_limit) = .false.
+  integer, public    :: nr_ao_slices   = 0
+  integer, public    :: max_ao_g_order = 0
+  integer, public    :: max_ao_m_order = 0
+  integer, parameter :: max_order      = 2
+  integer, public    :: ao_start     (0:max_order, 0:max_order) = 0
+  integer, public    :: ao_end       (0:max_order, 0:max_order) = 0
+  logical, public    :: need_ao_order(0:max_order, 0:max_order) = .false.
 
   private
 
