@@ -3302,6 +3302,7 @@ c   special for scratch files, which start with s
      &                  nij2,ije2(nij2),iii2,iiv2
         write(LUPRI,*) 'nij3,ije3(nij3),iii3,iiv3=',
      &                  nij3,ije3(nij3),iii3,iiv3
+        call check_ctmp_mod
       endif
 c
       ntmp=0
@@ -3334,18 +3335,16 @@ c
         write(LUPRI,*) 'nsize3=',nsize3
         write(LUPRI,*) 'istrt11=',istrt11
         write(LUPRI,*) 'istrt12=',istrt12
+        call check_ctmp_mod
       endif
 
-      call check_ctmp_mod
-
       call vxsort(itmp,ntmp,nsize1,gen(istrt12+1),igen(istrt11+1))
-
-      call check_ctmp_mod
 
       if (getiprint() >= 8) then
         write(LUPRI,*) 't1sqr: after vxsort, before call add'
         write(LUPRI,*) 'namet=',namet 
         write(LUPRI,*) 'name2=',name2
+        call check_ctmp_mod
       endif
 
       call add(namet,1.d0,name2,1.d0,namet)
