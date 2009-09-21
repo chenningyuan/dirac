@@ -655,10 +655,10 @@ C
       CALL MEMGET('REAL',KEIG,NORBT   ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
       CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KIBEIG),
-     &            DHFEMP,14,WORK,KFREE,LFREE)
+     &            ESCF,14,WORK,KFREE,LFREE)
       CLOSE(LUCOEF,STATUS='KEEP')
       WRITE(LUPRI,'(A,F18.10,/)')
-     &  'Coefficients imported. Total DHF energy:', DHFEMP
+     &  'Coefficients imported. Total DHF energy:', ESCF
 C
 C     Select the set that we need
 C
@@ -743,6 +743,10 @@ C
       WRITE(LUPRI,'(/15X,A)') '######## Final MP2 energy. ########'
       WRITE(LUPRI,'(15X,A,F23.14,4X,A)') '####', EMP2, '####'
       WRITE(LUPRI,'(15X,A,/)') '###################################'
+      WRITE(LUPRI,1000) 
+      WRITE(LUPRI,1001) ESCF
+      WRITE(LUPRI,1002) EMP2
+      WRITE(LUPRI,1003) ESCF+EMP2
       CALL FLSHFO(LUPRI)
 C
 C     Recover information from DCBTRA
@@ -757,6 +761,10 @@ C
       CALL QEXIT('PSIMP2')
 C
       RETURN
+ 1000 FORMAT (/' Overview of calculated energies')
+ 1001 FORMAT('@ SCF energy :',T40,F25.15)
+ 1002 FORMAT('@ MP2 correlation energy :',T40,F25.15)
+ 1003 FORMAT('@ Total MP2 energy :',T40,F25.15)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck lagtau */
