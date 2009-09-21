@@ -627,7 +627,7 @@ contains
     real(8), allocatable         :: buffer(:)
 
     call alloc(ao,     total_ao_vector_length)
-    call alloc(buffer, size(ao))
+    call alloc(buffer, total_ao_vector_length)
 
 #ifdef MOD_AUTODIFF
     call init_factorial_common_block()
@@ -657,11 +657,11 @@ contains
       ioff = batch_pointer(ibatch)
       if (.not. batch_is_in_mem(ibatch)) then
         do i = ibatch + 1, max_nr_of_batches
-          batch_pointer(i) = batch_pointer(i) + npoint*size(ao)
+          batch_pointer(i) = batch_pointer(i) + npoint*total_ao_vector_length
         end do
       end if
 
-      need_limit = ioff + npoint*size(ao)
+      need_limit = ioff + npoint*total_ao_vector_length
       if (need_limit > dft_cfg_ao_mem_limit) then
         batch_fits_in_mem(ibatch) = .false.
         write(*, *) 'debug cannot keep batch', ibatch
@@ -698,14 +698,14 @@ contains
           if (ipoint == 1) then
             write(*, *) 'debug storing ao to mem', ioff
           end if
-          call dcopy(size(ao), ao_p, 1, ao_in_mem(ioff), 1)
+          call dcopy(total_ao_vector_length, ao_p, 1, ao_in_mem(ioff), 1)
         end if
 
 !       if already in mem, set pointer
         if (batch_is_in_mem(ibatch)) then
-          ao_p => ao_in_mem(ioff:ioff + size(ao))
+          ao_p => ao_in_mem(ioff:ioff + total_ao_vector_length)
         end if
-        ioff = ioff + size(ao)
+        ioff = ioff + total_ao_vector_length
         
         if (ipoint == npoint) then
           if (batch_fits_in_mem(ibatch)) batch_is_in_mem(ibatch) = .true.
