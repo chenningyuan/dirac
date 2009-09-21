@@ -1,9 +1,12 @@
 module dft_ao
 
-! * in order to calculate aos using this module
+! - in order to calculate aos using this module
 !   you need to initialize some data first
 !   by calling dft_ao_init from each node
-! * aos are not dzeroed for more performance
+! - *after* the module data is initialized you can allocate
+!   the ao vector and a buffer, both with the length total_ao_vector_length*mxbllen
+! - (de)allocate them only once (each iteration), not in every point
+! - aos are not dzeroed for more performance
 !   if you change the code make sure that elements of these vectors
 !   are not read before they are written for the first time
 !   note that in levy-leblond or x2c4 mode some elements will
@@ -112,8 +115,6 @@ contains
     real(8), intent(inout) :: ao(*)
     real(8), intent(inout) :: buffer(*)
 !   ----------------------------------------------------------------------------
-    integer                :: nvec, i
-!   ----------------------------------------------------------------------------
 
     call get_ao(cx,     &
                 cy,     &
@@ -123,10 +124,9 @@ contains
 !   without symmetry skip the rest
     if (nr_boson_sym == 1) return
 
-    call dzero(buffer, nr_ao*nr_ao_slices)
 !   transform from ao(bu) to so(bs)
-    call ao_to_so(nr_ao, nr_ao_slices, ao, buffer)
-    call dcopy(nr_ao*nr_ao_slices, buffer, 1, ao, 1)
+    call ao_to_so(ao, buffer)
+    call dcopy(total_ao_vector_length, buffer, 1, ao, 1)
 
   end subroutine
 
@@ -488,19 +488,19 @@ contains
     
   end subroutine
 
-  subroutine ao_to_so(ndim, nvec, ao, so)
+  subroutine ao_to_so(ao, so)
 
 !   ----------------------------------------------------------------------------
-    integer, intent(in)  :: ndim
-    integer, intent(in)  :: nvec
-    real(8), intent(in)  :: ao(ndim, nvec)
-    real(8), intent(out) :: so(ndim, nvec)
+    real(8), intent(in)  :: ao(*)
+    real(8), intent(out) :: so(*)
 !   ----------------------------------------------------------------------------
     integer              :: iao, iso, ishell, nshell
     integer              :: ic, icount, iso_bs
-    integer              :: i, nr_ao_irep, mul, irep, isym, n, ivec
+    integer              :: i, nr_ao_irep, mul, irep, isym, n, ivec, off
     real(8)              :: f
 !   ----------------------------------------------------------------------------
+
+    call dzero(so, total_ao_vector_length) 
 
     i = 1
     do irep = 0, dft_maxrep
@@ -533,8 +533,9 @@ contains
 
             f = dft_pt(iand(isym, ieor(irep, dft_isymao(n, nshell))))
 
-            do ivec = 1, nvec
-              so(iso_bs, ivec) = so(iso_bs, ivec) + f*ao(iao, ivec)
+            do ivec = 1, nr_ao_slices
+              off = nr_ao*(ivec - 1)
+              so(off + iso_bs) = so(off + iso_bs) + f*ao(off + iao)
             end do
 
             iao = iao + spherical_deg(ishell)
