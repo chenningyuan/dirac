@@ -3,6 +3,7 @@
 # listed in safebuild will be built with "safe" flags.
 # This files might require GNU make
 
+include build/Makefile.moddef
 include Makefile.config
 
 TARGET=$(INSTALL_DIR)/dirac.x

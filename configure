@@ -2158,10 +2158,9 @@ get_largefiles(){
     esac
 }
 
-getmods()
+checkmods()
 {
     if [ -r build/Makefile.moddef ]; then
-	egrep '^MODS=' build/Makefile.moddef | cut -c 6-
     else
 	echo "Error, cannot find the file: build/Makefile.moddef" >&2
 	echo 'You must run "pamadm" before "configure" to correct this problem. Quitting.' >&2
@@ -2183,7 +2182,7 @@ f90_inc="-I$INCLUDE_DIR"
 cc_inc="-I$INCLUDE_DIR"
 find_real_f90
 get_f90_flags
-cpp_cc=`getmods`
+cpp_cc="\$(MODS)"
 
 case $machine in
 #
@@ -2483,10 +2482,10 @@ case $F90_COMP_NAME in
    xlf*|mpfort|mpxlf_r)
 # IBM's xlf should be comma delimited, the others take spaces
      IBMMOD=1
-     cpp_f90="$cpp_f90 `getmods`"
+     cpp_f90="utils/replace_args_and_execute.sh s/^-D/-WF,D/g $cpp_f90 \$(MODS)"
      ;;
    *)
-     cpp_f90="$cpp_f90 `getmods`"
+     cpp_f90="$cpp_f90 \$(MODS)"
 esac
 
 ##################################################
@@ -3024,7 +3023,7 @@ if [ $IPRINT -gt "0" ];  then
   echo 'configure print level set to '$IPRINT
 fi
 
-getmods > /dev/null # Make sure that pamadm was run before configure
+checkmods # Make sure that pamadm was run before configure
 guess_system
 parallel_stuff
 safeflags_stuff
