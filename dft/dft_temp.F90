@@ -6,7 +6,7 @@ module dft_temp
 !          (2) the difference between dft_temp and dft_cfg is ...
 
 #ifdef VAR_MPI
-  use dft_mpi
+  use dirac_mpi
 #endif
 
   implicit none
@@ -66,10 +66,10 @@ contains
 #ifdef VAR_MPI
   subroutine sync_dft_temp()
 
-    call dft_mpi_bcast(dft_temp_grid_is_done  )
-    call dft_mpi_bcast(dft_temp_gga_hs        )
-    call dft_mpi_bcast(dft_temp_gga_ha        )
-    call dft_mpi_bcast(dft_temp_reload_batches)
+    call dirac_mpi_bcast(dft_temp_grid_is_done  )
+    call dirac_mpi_bcast(dft_temp_gga_hs        )
+    call dirac_mpi_bcast(dft_temp_gga_ha        )
+    call dirac_mpi_bcast(dft_temp_reload_batches)
 
   end subroutine
 
@@ -79,12 +79,12 @@ contains
     type(dft_options_t), intent(inout) :: dft_options
 !   ----------------------------------------------------------------------------
 
-    call dft_mpi_bcast(dft_options%energy      )
-    call dft_mpi_bcast(dft_options%gradient    )
-    call dft_mpi_bcast(dft_options%london      )
-    call dft_mpi_bcast(dft_options%lr          )
-    call dft_mpi_bcast(dft_options%qr          )
-    call dft_mpi_bcast(dft_options%aor_xc_order)
+    call dirac_mpi_bcast(dft_options%energy      )
+    call dirac_mpi_bcast(dft_options%gradient    )
+    call dirac_mpi_bcast(dft_options%london      )
+    call dirac_mpi_bcast(dft_options%lr          )
+    call dirac_mpi_bcast(dft_options%qr          )
+    call dirac_mpi_bcast(dft_options%aor_xc_order)
 
   end subroutine
 #endif /* ifdef VAR_MPI */

@@ -1,25 +1,25 @@
-module dft_mpi
+module dirac_mpi
 
   implicit none
 
 #ifdef VAR_MPI
-  public dft_mpi_bcast
+  public dirac_mpi_bcast
 
   private
 
-  interface dft_mpi_bcast
-    module procedure dft_mpi_bcast_i0
-    module procedure dft_mpi_bcast_i1
-    module procedure dft_mpi_bcast_i2
-    module procedure dft_mpi_bcast_i3
-    module procedure dft_mpi_bcast_i4
-    module procedure dft_mpi_bcast_r0
-    module procedure dft_mpi_bcast_r1
-    module procedure dft_mpi_bcast_r2
-    module procedure dft_mpi_bcast_r3
-    module procedure dft_mpi_bcast_l0
-    module procedure dft_mpi_bcast_l1
-    module procedure dft_mpi_bcast_l2
+  interface dirac_mpi_bcast
+    module procedure dirac_mpi_bcast_i0
+    module procedure dirac_mpi_bcast_i1
+    module procedure dirac_mpi_bcast_i2
+    module procedure dirac_mpi_bcast_i3
+    module procedure dirac_mpi_bcast_i4
+    module procedure dirac_mpi_bcast_r0
+    module procedure dirac_mpi_bcast_r1
+    module procedure dirac_mpi_bcast_r2
+    module procedure dirac_mpi_bcast_r3
+    module procedure dirac_mpi_bcast_l0
+    module procedure dirac_mpi_bcast_l1
+    module procedure dirac_mpi_bcast_l2
   end interface
 
 #include "infpar.h"
@@ -29,7 +29,7 @@ module dft_mpi
 
 contains
 
-  subroutine dft_mpi_bcast_i0(x)
+  subroutine dirac_mpi_bcast_i0(x)
 
 !   ----------------------------------------------------------------------------
     integer :: x
@@ -39,7 +39,7 @@ contains
 
   end subroutine
 
-  subroutine dft_mpi_bcast_i1(x)
+  subroutine dirac_mpi_bcast_i1(x)
 
 !   ----------------------------------------------------------------------------
     integer :: x(:)
@@ -49,7 +49,7 @@ contains
 
   end subroutine
 
-  subroutine dft_mpi_bcast_i2(x)
+  subroutine dirac_mpi_bcast_i2(x)
 
 !   ----------------------------------------------------------------------------
     integer :: x(:, :)
@@ -59,7 +59,7 @@ contains
 
   end subroutine
 
-  subroutine dft_mpi_bcast_i3(x)
+  subroutine dirac_mpi_bcast_i3(x)
 
 !   ----------------------------------------------------------------------------
     integer :: x(:, :, :)
@@ -69,7 +69,7 @@ contains
 
   end subroutine
 
-  subroutine dft_mpi_bcast_i4(x)
+  subroutine dirac_mpi_bcast_i4(x)
 
 !   ----------------------------------------------------------------------------
     integer :: x(:, :, :, :)
@@ -79,7 +79,7 @@ contains
 
   end subroutine
 
-  subroutine dft_mpi_bcast_r0(x)
+  subroutine dirac_mpi_bcast_r0(x)
 
 !   ----------------------------------------------------------------------------
     real(8) :: x
@@ -89,7 +89,7 @@ contains
 
   end subroutine
 
-  subroutine dft_mpi_bcast_r1(x)
+  subroutine dirac_mpi_bcast_r1(x)
 
 !   ----------------------------------------------------------------------------
     real(8) :: x(:)
@@ -99,7 +99,7 @@ contains
 
   end subroutine
 
-  subroutine dft_mpi_bcast_r2(x)
+  subroutine dirac_mpi_bcast_r2(x)
 
 !   ----------------------------------------------------------------------------
     real(8) :: x(:, :)
@@ -109,7 +109,7 @@ contains
 
   end subroutine
 
-  subroutine dft_mpi_bcast_r3(x)
+  subroutine dirac_mpi_bcast_r3(x)
 
 !   ----------------------------------------------------------------------------
     real(8) :: x(:, :, :)
@@ -119,7 +119,7 @@ contains
 
   end subroutine
 
-  subroutine dft_mpi_bcast_l0(x)
+  subroutine dirac_mpi_bcast_l0(x)
 
 !   ----------------------------------------------------------------------------
     logical :: x
@@ -129,7 +129,7 @@ contains
 
   end subroutine
 
-  subroutine dft_mpi_bcast_l1(x)
+  subroutine dirac_mpi_bcast_l1(x)
 
 !   ----------------------------------------------------------------------------
     logical :: x(:)
@@ -139,7 +139,7 @@ contains
 
   end subroutine
 
-  subroutine dft_mpi_bcast_l2(x)
+  subroutine dirac_mpi_bcast_l2(x)
 
 !   ----------------------------------------------------------------------------
     logical :: x(:, :)

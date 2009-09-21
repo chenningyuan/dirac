@@ -14,7 +14,7 @@ module dft_main
   use aor_xc
 #endif
 #ifdef VAR_MPI
-  use dft_mpi
+  use dirac_mpi
 #endif
 
   implicit none
@@ -356,7 +356,7 @@ contains
 
 #ifdef VAR_MPI
       if (is_parallel_calculation) then
-        call dft_mpi_bcast(npoint)
+        call dirac_mpi_bcast(npoint)
       end if
 #endif
 
@@ -383,7 +383,7 @@ contains
 
 #ifdef VAR_MPI
         if (is_parallel_calculation) then
-          call dft_mpi_bcast(ibatch)
+          call dirac_mpi_bcast(ibatch)
 
           nodesall = nodes + 1
 
@@ -1096,7 +1096,7 @@ contains
       end if
 
 !     sync nxcmat
-      call dft_mpi_bcast(nxcmat)
+      call dirac_mpi_bcast(nxcmat)
 
 !     sync various parameters
       call sync_dft_cfg()
@@ -1124,9 +1124,9 @@ contains
       integer ::          ISYMOP(NXCMAT),IHRMOP(NXCMAT)
       type(dft_options_t) :: dft_options
       integer :: nxcmat, lmat, ierr
-      call dft_mpi_bcast(isymop)
-      call dft_mpi_bcast(ihrmop)
-      call dft_mpi_bcast(dmat)
+      call dirac_mpi_bcast(isymop)
+      call dirac_mpi_bcast(ihrmop)
+      call dirac_mpi_bcast(dmat)
       IF(dft_options%lr.OR.dft_options%qr) THEN
         lmat = nr_ao_total*nr_ao_total*nr_qu*nxcmat
         CALL MPI_BCAST(DTRMAT,LMAT,MPI_DOUBLE_PRECISION,MPARID, &
@@ -1134,9 +1134,9 @@ contains
       ENDIF
 
       if (dft_cfg_saop_is_active) then
-        call dft_mpi_bcast(dmat_outer_ao)
+        call dirac_mpi_bcast(dmat_outer_ao)
         if (dft_cfg_saop_with_response_part) then
-          call dft_mpi_bcast(dmat_resp_ao)
+          call dirac_mpi_bcast(dmat_resp_ao)
         ENDIF
       ENDIF
       end subroutine

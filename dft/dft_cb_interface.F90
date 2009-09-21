@@ -6,7 +6,7 @@ module dft_cb_interface
 !          hide as much as you can for public - it will save us lots of trouble in future
 
 #ifdef VAR_MPI
-  use dft_mpi
+  use dirac_mpi
 #endif
 
   implicit none
@@ -137,24 +137,24 @@ contains
 #ifdef VAR_MPI
   subroutine sync_dft_cb()
 
-    call dft_mpi_bcast(nr_qu                      )
-    call dft_mpi_bcast(nr_ao_total                )
-    call dft_mpi_bcast(nr_ao_large                )
-    call dft_mpi_bcast(nr_ao_small                )
-    call dft_mpi_bcast(nr_open_shells             )
-    call dft_mpi_bcast(nr_electrons_orbital       )
-    call dft_mpi_bcast(nr_electrons_orbital_active)
-    call dft_mpi_bcast(print_unit                 )
-    call dft_mpi_bcast(nr_density_blocks          )
-    call dft_mpi_bcast(nr_ao                      )
-    call dft_mpi_bcast(st_ao                      )
-    call dft_mpi_bcast(iq                         )
-    call dft_mpi_bcast(dft_cb_pq_to_uq            )
-    call dft_mpi_bcast(dft_cb_uq_to_pq            )
-    call dft_mpi_bcast(is_gga_functional          )
-    call dft_mpi_bcast(is_parallel_calculation    )
-    call dft_mpi_bcast(dft_cb_cent                )
-    call dft_mpi_bcast(dft_gagorg                 )!added
+    call dirac_mpi_bcast(nr_qu                      )
+    call dirac_mpi_bcast(nr_ao_total                )
+    call dirac_mpi_bcast(nr_ao_large                )
+    call dirac_mpi_bcast(nr_ao_small                )
+    call dirac_mpi_bcast(nr_open_shells             )
+    call dirac_mpi_bcast(nr_electrons_orbital       )
+    call dirac_mpi_bcast(nr_electrons_orbital_active)
+    call dirac_mpi_bcast(print_unit                 )
+    call dirac_mpi_bcast(nr_density_blocks          )
+    call dirac_mpi_bcast(nr_ao                      )
+    call dirac_mpi_bcast(st_ao                      )
+    call dirac_mpi_bcast(iq                         )
+    call dirac_mpi_bcast(dft_cb_pq_to_uq            )
+    call dirac_mpi_bcast(dft_cb_uq_to_pq            )
+    call dirac_mpi_bcast(is_gga_functional          )
+    call dirac_mpi_bcast(is_parallel_calculation    )
+    call dirac_mpi_bcast(dft_cb_cent                )
+    call dirac_mpi_bcast(dft_gagorg                 )!added
 
   end subroutine
 #endif /* ifdef VAR_MPI */

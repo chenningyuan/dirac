@@ -9,7 +9,7 @@ module dft_ao
   use memory_allocator
   use dft_cfg
 #ifdef VAR_MPI
-  use dft_mpi
+  use dirac_mpi
 #endif
 
   implicit none
@@ -596,7 +596,7 @@ contains
 
 #ifdef VAR_MPI
       if (is_parallel_calculation) then
-        call dft_mpi_bcast(nr_cartesian_ao)
+        call dirac_mpi_bcast(nr_cartesian_ao)
       end if
 #endif
 
@@ -699,50 +699,50 @@ contains
     if (is_parallel_calculation .and. .not. dft_basis_info_synced) then
 
 !     is done above
-!     call dft_mpi_bcast(nr_cartesian_ao             )
-      call dft_mpi_bcast(dft_nr_shells               )
-      call dft_mpi_bcast(dft_nr_large_shells         )
-      call dft_mpi_bcast(dft_maxrep                  )
-      call dft_mpi_bcast(dft_maxopr                  )
-      call dft_mpi_bcast(nr_boson_sym                )
-      call dft_mpi_bcast(nr_ls_components            )
+!     call dirac_mpi_bcast(nr_cartesian_ao             )
+      call dirac_mpi_bcast(dft_nr_shells               )
+      call dirac_mpi_bcast(dft_nr_large_shells         )
+      call dirac_mpi_bcast(dft_maxrep                  )
+      call dirac_mpi_bcast(dft_maxopr                  )
+      call dirac_mpi_bcast(nr_boson_sym                )
+      call dirac_mpi_bcast(nr_ls_components            )
 
-      call dft_mpi_bcast(primitive_exp1              )
-      call dft_mpi_bcast(primitive_exp2              )
-      call dft_mpi_bcast(contraction_coef1           )
-      call dft_mpi_bcast(contraction_coef2           )
-      call dft_mpi_bcast(nr_nonzero_contraction_coefs)
-      call dft_mpi_bcast(cartesian_deg               )
-      call dft_mpi_bcast(cartesian_off               )
-      call dft_mpi_bcast(spherical_deg               )
-      call dft_mpi_bcast(spherical_off               )
-      call dft_mpi_bcast(n_quantum_nr                )
-      call dft_mpi_bcast(is_spherical                )
-      call dft_mpi_bcast(dft_istbao                  )
-      call dft_mpi_bcast(dft_isymao                  )
-      call dft_mpi_bcast(dft_ipind                   )
-      call dft_mpi_bcast(dft_pt                      )
-      call dft_mpi_bcast(dft_kstrt                   )
-      call dft_mpi_bcast(dft_cent                    )
-      call dft_mpi_bcast(dft_isymax                  )
+      call dirac_mpi_bcast(primitive_exp1              )
+      call dirac_mpi_bcast(primitive_exp2              )
+      call dirac_mpi_bcast(contraction_coef1           )
+      call dirac_mpi_bcast(contraction_coef2           )
+      call dirac_mpi_bcast(nr_nonzero_contraction_coefs)
+      call dirac_mpi_bcast(cartesian_deg               )
+      call dirac_mpi_bcast(cartesian_off               )
+      call dirac_mpi_bcast(spherical_deg               )
+      call dirac_mpi_bcast(spherical_off               )
+      call dirac_mpi_bcast(n_quantum_nr                )
+      call dirac_mpi_bcast(is_spherical                )
+      call dirac_mpi_bcast(dft_istbao                  )
+      call dirac_mpi_bcast(dft_isymao                  )
+      call dirac_mpi_bcast(dft_ipind                   )
+      call dirac_mpi_bcast(dft_pt                      )
+      call dirac_mpi_bcast(dft_kstrt                   )
+      call dirac_mpi_bcast(dft_cent                    )
+      call dirac_mpi_bcast(dft_isymax                  )
 
-      call dft_mpi_bcast(dft_csp                     )
-      call dft_mpi_bcast(dft_ispadr                  )
+      call dirac_mpi_bcast(dft_csp                     )
+      call dirac_mpi_bcast(dft_ispadr                  )
 
-      call dft_mpi_bcast(dft_icos                    )
-      call dft_mpi_bcast(dft_ibbas                   )
-      call dft_mpi_bcast(dft_nbbas                   )
+      call dirac_mpi_bcast(dft_icos                    )
+      call dirac_mpi_bcast(dft_ibbas                   )
+      call dirac_mpi_bcast(dft_nbbas                   )
 
-      call dft_mpi_bcast(l_exp                       )
-      call dft_mpi_bcast(m_exp                       )
-      call dft_mpi_bcast(n_exp                       )
+      call dirac_mpi_bcast(l_exp                       )
+      call dirac_mpi_bcast(m_exp                       )
+      call dirac_mpi_bcast(n_exp                       )
 
-      call dft_mpi_bcast(ndimfactor    )
-      call dft_mpi_bcast(max_ao_g_order)
-      call dft_mpi_bcast(max_ao_m_order)
-      call dft_mpi_bcast(need_ao_order )
-      call dft_mpi_bcast(ao_start      )
-      call dft_mpi_bcast(ao_end        )
+      call dirac_mpi_bcast(ndimfactor    )
+      call dirac_mpi_bcast(max_ao_g_order)
+      call dirac_mpi_bcast(max_ao_m_order)
+      call dirac_mpi_bcast(need_ao_order )
+      call dirac_mpi_bcast(ao_start      )
+      call dirac_mpi_bcast(ao_end        )
 
       dft_basis_info_synced = .true.
 
