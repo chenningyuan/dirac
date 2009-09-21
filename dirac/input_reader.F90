@@ -619,7 +619,7 @@ contains
 
     call reset_available_kw_list()
 
-    if (kw_matches(word, '.DEBUG')) then
+    if (kw_matches(word, '.DEBUG ')) then
       relcc_debug = .true.
     end if
 
@@ -627,7 +627,7 @@ contains
       relcc_timing = .true.
     end if
 
-    if (kw_matches(word, '.NOSOR')) then
+    if (kw_matches(word, '.NOSORT')) then
       relcc_do_sort = .false.
     end if
 
@@ -639,11 +639,11 @@ contains
       relcc_do_gradient = .true.
     end if
 
-    if (kw_matches(word, '.FOCKS')) then
+    if (kw_matches(word, '.FOCKSP')) then
       relcc_do_fspc     = .true.
     end if
 
-    if (kw_matches(word, '.PRINT')) then
+    if (kw_matches(word, '.PRINT ')) then
       call kw_read(word, relcc_print)
     end if
 
