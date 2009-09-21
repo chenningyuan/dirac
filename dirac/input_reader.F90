@@ -75,6 +75,9 @@ contains
             case ('*AORESP')
               call read_input_aoresponse(word, kw_section)
 
+            case ('**RELCC')
+              call read_input_relcc(word, kw_section)
+
             case ('*END OF')
               go to 1
 
@@ -602,4 +605,50 @@ contains
 
   end subroutine
 
-end module
+  subroutine read_input_relcc(word, kw_section)
+
+    use relcc_cfg
+
+!   ----------------------------------------------------------------------------
+    character(kw_length), intent(in) :: word
+    character(kw_length), intent(in) :: kw_section
+!   ----------------------------------------------------------------------------
+    character(80)                    :: line
+    character(4)                     :: first_4
+!   ----------------------------------------------------------------------------
+
+    call reset_available_kw_list()
+
+    if (kw_matches(word, '.DEBUG')) then
+      relcc_debug = .true.
+    end if
+
+    if (kw_matches(word, '.TIMING')) then
+      relcc_timing = .true.
+    end if
+
+    if (kw_matches(word, '.NOSOR')) then
+      relcc_do_sort = .false.
+    end if
+
+    if (kw_matches(word, '.ENERGY')) then
+      relcc_do_energy = .true.
+    end if
+
+    if (kw_matches(word, '.GRADIE')) then
+      relcc_do_gradient = .true.
+    end if
+
+    if (kw_matches(word, '.FOCKS')) then
+      relcc_do_fspc     = .true.
+    end if
+
+    if (kw_matches(word, '.PRINT')) then
+      call kw_read(word, relcc_print)
+    end if
+
+    call check_whether_kw_found(word, kw_section)
+
+  end subroutine
+
+ end module

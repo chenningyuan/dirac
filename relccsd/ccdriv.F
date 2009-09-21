@@ -132,6 +132,9 @@ C--------------------------------------------------------------------
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCINPT (IN,IW)
+      use relcc_cfg
+!     All initialization should be done in relcc_cfg, ultimately all common
+!     blocks should go, keep them for the moment for compatibility with reladc
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -213,19 +216,21 @@ C
          NELEC_F1(I) = 0
          NELEC_F2(I) = 0
       ENDDO
-      IPRNT = 0
-      DOSORT  = .TRUE.
-      DOENER  = .TRUE.
-      DOFOPR  = .FALSE.
-      DOSOPR  = .FALSE.
-      DOFSPC  = .FALSE.
+      IPRNT   = relcc_print
+      DOSORT  = relcc_do_sort
+      DOENER  = relcc_do_energy
+      DOFOPR  = relcc_do_gradient
+      DOSOPR  = .FALSE. ! This option is to be removed until we have at least the MP2 Hessian
+      DOFSPC  = relcc_do_fspc
 #ifdef MOD_IHFSCC
       DOIH  = .FALSE.
 #endif
-      DEBUG  = .FALSE.
-      TIMING = .FALSE.
+      DEBUG  = relcc_debug
+      TIMING = relcc_timing
       MWORD = 0
-C
+C     
+C     Note that reading this namelist may override the Dirac style input. Leave 
+C     this at the discretion of the user for the moment.
       READ (IN,RELCCSD,END=2,ERR=1)
       GOTO 2
     1 CALL QUIT('Error exit while reading namelist RELCCSD')

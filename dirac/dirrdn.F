@@ -112,6 +112,7 @@ C
 !     contains:
 !     *DFT
 !     *VISUAL
+!     **RELCC
 !     *AORESPONSE
 !     ignores rest
       call read_input()
@@ -2310,6 +2311,7 @@ C
 C&&&& RELCCSD: Perfrom CCSD, CCSD(T) or MP2 with relccsd
             IF (.NOT.NOTRA) DOTRA = .TRUE.
             DOCCM = .TRUE.
+            dirac_cfg_relcc = .true.
             NJOBS = NJOBS + 1
             GO TO 100
   107    CONTINUE
