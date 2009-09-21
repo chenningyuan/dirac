@@ -19,57 +19,56 @@ module dft_ao
 
   save
 
-  integer, public              :: nr_cartesian_ao     = 0
-  integer, public              :: dft_nr_shells       = 0
-  integer, public              :: dft_nr_large_shells = 0
-  integer, public              :: dft_maxrep          = 0
-  integer, public              :: dft_maxopr          = 0
-  integer, public              :: nr_boson_sym        = 0
-  integer, public              :: nr_ls_components    = 0
-
-  real(8), public, allocatable :: primitive_exp1(:)
-  real(8), public, allocatable :: primitive_exp2(:, :)
-  real(8), public, allocatable :: contraction_coef1(:)
-  real(8), public, allocatable :: contraction_coef2(:, :)
-  integer, public, allocatable :: nr_nonzero_contraction_coefs(:)
-  integer, public, allocatable :: cartesian_deg(:)
-  integer, public, allocatable :: cartesian_off(:)
-  integer, public, allocatable :: spherical_deg(:)
-  integer, public, allocatable :: spherical_off(:)
-  integer, public, allocatable :: n_quantum_nr(:)
-  logical, public, allocatable :: is_spherical(:)
-  integer, public, allocatable :: dft_istbao(:)
-  integer, public, allocatable :: dft_isymao(:, :)
-  integer, public, allocatable :: dft_ipind(:)
-  real(8), public, allocatable :: dft_pt(:)
-  integer, public, allocatable :: dft_kstrt(:)
-  real(8), public, allocatable :: dft_cent(:, :, :)
-  integer, public              :: dft_isymax(3, 2)
-
-  real(8), public, allocatable :: dft_csp(:)
-  integer, public, allocatable :: dft_ispadr(:)
-
-  integer, public, allocatable :: dft_icos(:, :)
-  integer, public, allocatable :: dft_ibbas(:, :)
-  integer, public, allocatable :: dft_nbbas(:, :)
-
-  integer, public, allocatable :: l_exp(:)
-  integer, public, allocatable :: m_exp(:)
-  integer, public, allocatable :: n_exp(:)
-  real(8), public, allocatable :: sbuffer(:)
-
   integer, parameter :: max_order_limit = 2
-
   integer, public    :: ndimfactor      = 0
   integer, public    :: max_ao_g_order  = 0
   integer, public    :: max_ao_m_order  = 0
-  logical, public    :: need_ao_order(0:max_order_limit, 0:max_order_limit) = .false.
   integer, public    :: ao_start     (0:max_order_limit, 0:max_order_limit) = 0
   integer, public    :: ao_end       (0:max_order_limit, 0:max_order_limit) = 0
+  logical, public    :: need_ao_order(0:max_order_limit, 0:max_order_limit) = .false.
 
   private
 
-  real(8), parameter :: tiny = 1.0d-30
+  integer              :: nr_cartesian_ao     = 0
+  integer              :: dft_nr_shells       = 0
+  integer              :: dft_nr_large_shells = 0
+  integer              :: dft_maxrep          = 0
+  integer              :: dft_maxopr          = 0
+  integer              :: nr_boson_sym        = 0
+  integer              :: nr_ls_components    = 0
+
+  real(8), allocatable :: primitive_exp1(:)
+  real(8), allocatable :: primitive_exp2(:, :)
+  real(8), allocatable :: contraction_coef1(:)
+  real(8), allocatable :: contraction_coef2(:, :)
+  integer, allocatable :: nr_nonzero_contraction_coefs(:)
+  integer, allocatable :: cartesian_deg(:)
+  integer, allocatable :: cartesian_off(:)
+  integer, allocatable :: spherical_deg(:)
+  integer, allocatable :: spherical_off(:)
+  integer, allocatable :: n_quantum_nr(:)
+  logical, allocatable :: is_spherical(:)
+  integer, allocatable :: dft_istbao(:)
+  integer, allocatable :: dft_isymao(:, :)
+  integer, allocatable :: dft_ipind(:)
+  real(8), allocatable :: dft_pt(:)
+  integer, allocatable :: dft_kstrt(:)
+  real(8), allocatable :: dft_cent(:, :, :)
+  integer              :: dft_isymax(3, 2)
+
+  real(8), allocatable :: dft_csp(:)
+  integer, allocatable :: dft_ispadr(:)
+
+  integer, allocatable :: dft_icos(:, :)
+  integer, allocatable :: dft_ibbas(:, :)
+  integer, allocatable :: dft_nbbas(:, :)
+
+  integer, allocatable :: l_exp(:)
+  integer, allocatable :: m_exp(:)
+  integer, allocatable :: n_exp(:)
+  real(8), allocatable :: sbuffer(:)
+
+  real(8), parameter   :: tiny = 1.0d-30
 
   logical :: dft_basis_info_allocated = .false.
   logical :: dft_basis_info_set       = .false.
