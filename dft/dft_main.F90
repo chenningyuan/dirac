@@ -185,19 +185,19 @@ contains
 !radovan: this is not so nice here, will fix it later
     ndim = nr_ao_total
 
-    ndimfactor = 0
+    nr_ao_slices = 0
 
 !radovan: has to be reinitialized here
 !         otherwise you get very strange effects with ALDA
-!         (ndimfactor decreases in response part)
+!         (nr_ao_slices decreases in response part)
     need_ao_order = .false.
 
     do g_order = 0, max_ao_g_order
       do m_order = 0, max_ao_m_order
         need_ao_order(g_order, m_order) = .true.
-        ao_start     (g_order, m_order) = ndimfactor*ndim + 1
-        ndimfactor = ndimfactor + (3**g_order)*(3**m_order)
-        ao_end       (g_order, m_order) = ndimfactor*ndim
+        ao_start     (g_order, m_order) = nr_ao_slices*ndim + 1
+        nr_ao_slices = nr_ao_slices + (3**g_order)*(3**m_order)
+        ao_end       (g_order, m_order) = nr_ao_slices*ndim
       end do
     end do
 
@@ -321,7 +321,7 @@ contains
       real(8), allocatable :: kxdum(:)
       real(8) :: dummy
       real(8) :: error_nr_electrons, nr_electrons_orbital_total
-      integer :: i, idummy, ierr, myNPOINT, nr_points_part, ndim, NODESALL
+      integer :: i, idummy, ierr, myNPOINT, nr_points_part, NODESALL
       integer :: npnts, npoint, nrest, IDISP_REST
       logical :: i_am_the_master
 
@@ -630,12 +630,12 @@ contains
       integer :: itest, jtest
 
 ! this pointer is useful for .KEEPAO, then it can point to memory
-! otherwise it points to ao_global
+! otherwise it points to ao
   real(8), pointer             :: ao_p(:)
 
 
 ! never mpi_bcast this
-  real(8), allocatable, target :: ao_global(:)
+  real(8), allocatable, target :: ao(:)
   real(8), allocatable         :: buffer(:)
 
 
@@ -643,8 +643,9 @@ contains
 !here we will figure out the number of ndims
 !is interesting for density fitting and for x2c4 and levy-leblond
     ndim = nr_ao_total
-    call alloc(ao_global, ndim*ndimfactor)
-    call alloc(buffer,    ndim*ndimfactor)
+
+    call alloc(ao,     ndim*nr_ao_slices)
+    call alloc(buffer, size(ao))
 
 #ifdef MOD_AUTODIFF
     call init_factorial_common_block()
@@ -674,11 +675,11 @@ contains
       ioff = batch_pointer(ibatch)
       if (.not. batch_is_in_mem(ibatch)) then
         do i = ibatch + 1, max_nr_of_batches
-          batch_pointer(i) = batch_pointer(i) + npoint*ndim*ndimfactor
+          batch_pointer(i) = batch_pointer(i) + npoint*size(ao)
         end do
       end if
 
-      need_limit = ioff + npoint*ndim*ndimfactor
+      need_limit = ioff + npoint*size(ao)
       if (need_limit > dft_cfg_ao_mem_limit) then
         batch_fits_in_mem(ibatch) = .false.
         write(*, *) 'debug cannot keep batch', ibatch
@@ -689,8 +690,8 @@ contains
 
     if (.not. (dft_cfg_keep_ao .and. batch_is_in_mem(ibatch))) then
 !     so we either don't use .KEEPAO or the AOs are not yet stored
-!     so let it point to ao_global
-      ao_p => ao_global
+!     so let it point to ao
+      ao_p => ao
     end if    
 
     do ipoint = 1, npoint
@@ -706,7 +707,7 @@ contains
       if (.not. (dft_cfg_keep_ao .and. batch_is_in_mem(ibatch))) then
 !       here get magnetic dervs of aos
         call get_so(corx(ipoint), cory(ipoint), corz(ipoint), &
-                    ao_p, buffer, ndim)
+                    ao_p, buffer)
       end if
       if (dft_cfg_keep_ao) then
 
@@ -715,14 +716,14 @@ contains
           if (ipoint == 1) then
             write(*, *) 'debug storing ao to mem', ioff
           end if
-          call dcopy(ndim*ndimfactor, ao_p, 1, ao_in_mem(ioff), 1)
+          call dcopy(size(ao), ao_p, 1, ao_in_mem(ioff), 1)
         end if
 
 !       if already in mem, set pointer
         if (batch_is_in_mem(ibatch)) then
-          ao_p => ao_in_mem(ioff:ioff + ndim*ndimfactor)
+          ao_p => ao_in_mem(ioff:ioff + size(ao))
         end if
-        ioff = ioff + ndim*ndimfactor
+        ioff = ioff + size(ao)
         
         if (ipoint == npoint) then
           if (batch_fits_in_mem(ibatch)) batch_is_in_mem(ibatch) = .true.
@@ -915,7 +916,7 @@ contains
 
     nullify(ao_p)
 
-    call dealloc(ao_global)
+    call dealloc(ao)
     call dealloc(buffer)
 
     end subroutine

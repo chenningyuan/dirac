@@ -20,7 +20,7 @@ module dft_ao
   save
 
   integer, parameter :: max_order_limit = 2
-  integer, public    :: ndimfactor      = 0
+  integer, public    :: nr_ao_slices      = 0
   integer, public    :: max_ao_g_order  = 0
   integer, public    :: max_ao_m_order  = 0
   integer, public    :: ao_start     (0:max_order_limit, 0:max_order_limit) = 0
@@ -29,6 +29,7 @@ module dft_ao
 
   private
 
+  integer              :: nr_ao               = 0
   integer              :: nr_cartesian_ao     = 0
   integer              :: dft_nr_shells       = 0
   integer              :: dft_nr_large_shells = 0
@@ -100,8 +101,7 @@ contains
                     cy,     &
                     cz,     &
                     ao,     &
-                    buffer, &
-                    ndim)
+                    buffer)
 
 !   ----------------------------------------------------------------------------
     real(8), intent(in)    :: cx
@@ -109,7 +109,6 @@ contains
     real(8), intent(in)    :: cz
     real(8), intent(inout) :: ao(*)
     real(8), intent(inout) :: buffer(*)
-    integer, intent(in)    :: ndim
 !   ----------------------------------------------------------------------------
     integer                :: nvec, i
 !   ----------------------------------------------------------------------------
@@ -117,30 +116,27 @@ contains
     call get_ao(cx,     &
                 cy,     &
                 cz,     &
-                ao,     &
-                ndim)
+                ao)
 
 !   without symmetry skip the rest
     if (nr_boson_sym == 1) return
 
-    call dzero(buffer, ndim*ndimfactor)
+    call dzero(buffer, nr_ao*nr_ao_slices)
 !   transform from ao(bu) to so(bs)
-    call ao_to_so(ndim, ndimfactor, ao, buffer)
-    call dcopy(ndim*ndimfactor, buffer, 1, ao, 1)
+    call ao_to_so(nr_ao, nr_ao_slices, ao, buffer)
+    call dcopy(nr_ao*nr_ao_slices, buffer, 1, ao, 1)
 
   end subroutine
 
   subroutine get_ao(cx,   &
                     cy,   &
                     cz,   &
-                    ao,   &
-                    ndim)
+                    ao)
 !   ----------------------------------------------------------------------------
     real(8), intent(in)    :: cx
     real(8), intent(in)    :: cy
     real(8), intent(in)    :: cz
     real(8)                :: ao(*)
-    integer, intent(in)    :: ndim
 !   ----------------------------------------------------------------------------
     integer                :: i, iend, ishell, isym
     real(8)                :: px, py, pz
@@ -174,8 +170,8 @@ contains
             call get_gao1(ishell,                   &
                           ao(i),             &
                           ao(ofg),           &
-                          ao(ofg + ndim),    &
-                          ao(ofg + 2*ndim),  &
+                          ao(ofg + nr_ao),    &
+                          ao(ofg + 2*nr_ao),  &
                           px, py, pz)
           end if
 
@@ -187,8 +183,8 @@ contains
                            ishell,                 &
                            ao(i),           &
                            ao(ofm),         &
-                           ao(ofm + ndim),  &
-                           ao(ofm + 2*ndim))
+                           ao(ofm + nr_ao),  &
+                           ao(ofm + 2*nr_ao))
           end if
 
           i = i + spherical_deg(ishell)
@@ -500,15 +496,15 @@ contains
 !   ----------------------------------------------------------------------------
     integer              :: iao, iso, ishell, nshell
     integer              :: ic, icount, iso_bs
-    integer              :: i, nr_ao, mul, irep, isym, n, ivec
+    integer              :: i, nr_ao_irep, mul, irep, isym, n, ivec
     real(8)              :: f
 !   ----------------------------------------------------------------------------
 
     i = 1
     do irep = 0, dft_maxrep
-      nr_ao = dft_nbbas(irep, 1) + dft_nbbas(irep, 2)
+      nr_ao_irep = dft_nbbas(irep, 1) + dft_nbbas(irep, 2)
       icount = 0
-      do iso = i, i + nr_ao - 1
+      do iso = i, i + nr_ao_irep - 1
 
         ishell = iand(ishft(dft_ipind(iso), -16), 65535)
         nshell = iand(ishft(dft_ipind(iso),  -8),   255)
@@ -544,7 +540,7 @@ contains
           endif
         end do
       end do
-      i = i + nr_ao
+      i = i + nr_ao_irep
     end do
 
   end subroutine
@@ -636,6 +632,7 @@ contains
       dft_isymax = isymax
       nr_boson_sym                = nbsym
       nr_ls_components            = mc
+      nr_ao = ntbas(0)
 
       dft_csp    = csp
       dft_ispadr = ispadr
@@ -706,6 +703,7 @@ contains
       call dirac_mpi_bcast(dft_maxopr                  )
       call dirac_mpi_bcast(nr_boson_sym                )
       call dirac_mpi_bcast(nr_ls_components            )
+      call dirac_mpi_bcast(nr_ao                       )
 
       call dirac_mpi_bcast(primitive_exp1              )
       call dirac_mpi_bcast(primitive_exp2              )
@@ -737,7 +735,7 @@ contains
       call dirac_mpi_bcast(m_exp                       )
       call dirac_mpi_bcast(n_exp                       )
 
-      call dirac_mpi_bcast(ndimfactor    )
+      call dirac_mpi_bcast(nr_ao_slices    )
       call dirac_mpi_bcast(max_ao_g_order)
       call dirac_mpi_bcast(max_ao_m_order)
       call dirac_mpi_bcast(need_ao_order )
