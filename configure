@@ -2044,7 +2044,7 @@ get_f90_flags(){
       F_profile="" # please add
       ;;
     ifort)
-      opt="-g -O3 -ip -w -assume byterecl -diag-disable vec"
+      opt="-g -O3 -ip -w -assume byterecl -vec-report0"
       safe="-g -w -assume byterecl"
       cpp_cc="$cpp_cc -DVAR_IFC"
       mod="-module $MODULE_DIR"
@@ -2160,13 +2160,10 @@ get_largefiles(){
 
 checkmods()
 {
-    if [ -r build/Makefile.moddef ]; then
-	return 0
-    else
+    if [ ! -r build/Makefile.moddef ]; then
 	echo "Error, cannot find the file: build/Makefile.moddef" >&2
 	echo 'You must run "pamadm" before "configure" to correct this problem. Quitting.' >&2
-	# Suicide is painless, it brings on many changes
-	kill $$
+	kill $$ # Suicide is painless, it brings on many changes
     fi
 }
 
