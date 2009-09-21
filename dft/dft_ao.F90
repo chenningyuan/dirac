@@ -74,6 +74,10 @@ module dft_ao
   integer, allocatable :: n_exp(:)
   real(8), allocatable :: sbuffer(:)
 
+  integer              :: nr_so_ao
+  integer, allocatable :: i_so_ao(:, :)
+  real(8), allocatable :: f_so_ao(:)
+
   real(8), parameter   :: tiny = 1.0d-30
 
   logical :: dft_basis_info_allocated = .false.
@@ -491,59 +495,20 @@ contains
   subroutine ao_to_so(ao, so)
 
 !   ----------------------------------------------------------------------------
-    real(8), intent(in)  :: ao(*)
-    real(8), intent(out) :: so(*)
+    real(8), intent(in)  :: ao(total_ao_vector_length)
+    real(8), intent(out) :: so(total_ao_vector_length)
 !   ----------------------------------------------------------------------------
-    integer              :: iao, iso, ishell, nshell
-    integer              :: ic, icount, iso_bs
-    integer              :: i, nr_ao_irep, mul, irep, isym, n, ivec, off
-    real(8)              :: f
+    integer              :: i, n, off
 !   ----------------------------------------------------------------------------
 
-    call dzero(so, total_ao_vector_length) 
+    so = 0.0d0
 
-    i = 1
-    do irep = 0, dft_maxrep
-      nr_ao_irep = dft_nbbas(irep, 1) + dft_nbbas(irep, 2)
-      icount = 0
-      do iso = i, i + nr_ao_irep - 1
-
-        ishell = iand(ishft(dft_ipind(iso), -16), 65535)
-        nshell = iand(ishft(dft_ipind(iso),  -8),   255)
-
-        mul = dft_istbao(ishell)
-        n   = n_quantum_nr(ishell)
-
-        iao = dft_kstrt(ishell) + nshell
-
-        icount = icount + 1
-        if (icount > dft_nbbas(irep, 1)) then
-!         is small
-          ic = 2
-        else
-!         is large
-          ic = 1
-        end if
-
-!       shift by difference boson sorted minus boson unsorted
-        iso_bs = iso + dft_ibbas(irep, ic) - dft_icos(irep + 1, ic)
-
-        do isym = 0, dft_maxopr
-          if (iand(isym, mul) == 0) then
-
-            f = dft_pt(iand(isym, ieor(irep, dft_isymao(n, nshell))))
-
-            do ivec = 1, nr_ao_slices
-              off = nr_ao*(ivec - 1)
-              so(off + iso_bs) = so(off + iso_bs) + f*ao(off + iao)
-            end do
-
-            iao = iao + spherical_deg(ishell)
-
-          endif
-        end do
+    do n = 1, nr_ao_slices
+      off = nr_ao*(n - 1)
+      do i = 1, nr_so_ao
+        so(off + i_so_ao(1, i)) = so(off + i_so_ao(1, i)) &
+                                + ao(off + i_so_ao(2, i))*f_so_ao(i)
       end do
-      i = i + nr_ao_irep
     end do
 
   end subroutine
@@ -560,6 +525,11 @@ contains
     integer             :: g_order
     integer             :: m_order
     integer             :: iprim, i, j, icount, i_c, i_s, contracted_shell_nr, ishell, isym
+
+    integer              :: iao, iso,         nshell
+    integer              :: ic,         iso_bs
+    integer              ::    nr_ao_irep, mul, irep,       n, ivec, off
+    real(8)              :: f
 #ifdef VAR_MPI
     logical             :: i_am_the_master
 #endif
@@ -609,6 +579,14 @@ contains
       call alloc(m_exp,   nr_cartesian_ao)
       call alloc(n_exp,   nr_cartesian_ao)
       call alloc(sbuffer, nr_cartesian_ao)
+
+!fixme cartesian only convenience here
+      call alloc(i_so_ao, 2, nr_cartesian_ao*8)
+      call alloc(f_so_ao, nr_cartesian_ao*8)
+!     call alloc(i_so_ao, 2, ntbas(0)*8)
+!     call alloc(f_so_ao, ntbas(0)*8)
+      i_so_ao = 0
+      f_so_ao = 0.0d0
 
       dft_basis_info_allocated = .true.
 
@@ -693,6 +671,53 @@ contains
 
       end do
 
+!     ao to so business
+      i = 1
+      nr_so_ao = 0
+      do irep = 0, dft_maxrep
+        nr_ao_irep = dft_nbbas(irep, 1) + dft_nbbas(irep, 2)
+        icount = 0
+        do iso = i, i + nr_ao_irep - 1
+      
+          ishell = iand(ishft(dft_ipind(iso), -16), 65535)
+          nshell = iand(ishft(dft_ipind(iso),  -8),   255)
+      
+          mul = dft_istbao(ishell)
+          n   = n_quantum_nr(ishell)
+      
+          iao = dft_kstrt(ishell) + nshell
+      
+          icount = icount + 1
+          if (icount > dft_nbbas(irep, 1)) then
+!           is small
+            ic = 2
+          else
+!           is large
+            ic = 1
+          end if
+      
+!         shift by difference boson sorted minus boson unsorted
+          iso_bs = iso + dft_ibbas(irep, ic) - dft_icos(irep + 1, ic)
+      
+          do isym = 0, dft_maxopr
+            if (iand(isym, mul) == 0) then
+      
+              f = dft_pt(iand(isym, ieor(irep, dft_isymao(n, nshell))))
+      
+              nr_so_ao = nr_so_ao + 1
+
+              i_so_ao(1, nr_so_ao) = iso_bs
+              i_so_ao(2, nr_so_ao) = iao
+              f_so_ao(nr_so_ao)    = f
+      
+              iao = iao + spherical_deg(ishell)
+      
+            endif
+          end do
+        end do
+        i = i + nr_ao_irep
+      end do
+
       dft_basis_info_set = .true.
 
     end if
@@ -740,19 +765,12 @@ contains
       call dirac_mpi_bcast(n_quantum_nr                )
       call dirac_mpi_bcast(is_spherical                )
       call dirac_mpi_bcast(dft_istbao                  )
-      call dirac_mpi_bcast(dft_isymao                  )
-      call dirac_mpi_bcast(dft_ipind                   )
       call dirac_mpi_bcast(dft_pt                      )
-      call dirac_mpi_bcast(dft_kstrt                   )
       call dirac_mpi_bcast(dft_cent                    )
       call dirac_mpi_bcast(dft_isymax                  )
 
       call dirac_mpi_bcast(dft_csp                     )
       call dirac_mpi_bcast(dft_ispadr                  )
-
-      call dirac_mpi_bcast(dft_icos                    )
-      call dirac_mpi_bcast(dft_ibbas                   )
-      call dirac_mpi_bcast(dft_nbbas                   )
 
       call dirac_mpi_bcast(l_exp                       )
       call dirac_mpi_bcast(m_exp                       )
@@ -763,6 +781,10 @@ contains
       call dirac_mpi_bcast(ao_start      )
       call dirac_mpi_bcast(ao_end        )
       call dirac_mpi_bcast(total_ao_vector_length)
+
+      call dirac_mpi_bcast(nr_so_ao)
+      call dirac_mpi_bcast(i_so_ao)
+      call dirac_mpi_bcast(f_so_ao)
 
       dft_basis_info_synced = .true.
 
