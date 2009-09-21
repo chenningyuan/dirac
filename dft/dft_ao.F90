@@ -14,13 +14,11 @@ module dft_ao
   implicit none
 
   public get_so
-  public init_dft_basis_info
+  public dft_ao_init
 
   save
 
   integer, public    :: nr_ao_slices   = 0
-  integer, public    :: max_ao_g_order = 0
-  integer, public    :: max_ao_m_order = 0
   integer, parameter :: max_order      = 2
   integer, public    :: ao_start     (0:max_order, 0:max_order) = 0
   integer, public    :: ao_end       (0:max_order, 0:max_order) = 0
@@ -544,11 +542,17 @@ contains
 
   end subroutine
 
-  subroutine init_dft_basis_info(is_parallel_calculation)
+  subroutine dft_ao_init(is_parallel_calculation, &
+                         max_ao_g_order,          &
+                         max_ao_m_order)
 
 !   ----------------------------------------------------------------------------
     logical, intent(in) :: is_parallel_calculation
+    integer, intent(in) :: max_ao_g_order
+    integer, intent(in) :: max_ao_m_order
 !   ----------------------------------------------------------------------------
+    integer             :: g_order
+    integer             :: m_order
     integer             :: iprim, i, j, icount, i_c, i_s, contracted_shell_nr, ishell, isym
 #ifdef VAR_MPI
     logical             :: i_am_the_master
@@ -687,6 +691,18 @@ contains
 
     end if
 
+    need_ao_order = .false.
+    nr_ao_slices  = 0
+
+    do g_order = 0, max_ao_g_order
+      do m_order = 0, max_ao_m_order
+        need_ao_order(g_order, m_order) = .true.
+        ao_start     (g_order, m_order) = nr_ao_slices*nr_ao + 1
+        nr_ao_slices = nr_ao_slices + (3**g_order)*(3**m_order)
+        ao_end       (g_order, m_order) = nr_ao_slices*nr_ao
+      end do
+    end do
+
 #ifdef VAR_MPI
     end if !if (i_am_the_master) then
 #endif
@@ -735,8 +751,6 @@ contains
       call dirac_mpi_bcast(n_exp                       )
 
       call dirac_mpi_bcast(nr_ao_slices    )
-      call dirac_mpi_bcast(max_ao_g_order)
-      call dirac_mpi_bcast(max_ao_m_order)
       call dirac_mpi_bcast(need_ao_order )
       call dirac_mpi_bcast(ao_start      )
       call dirac_mpi_bcast(ao_end        )

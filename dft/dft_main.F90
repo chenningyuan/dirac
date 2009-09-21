@@ -66,13 +66,14 @@ contains
       type(dft_options_t) :: dft_options
       integer, intent(in) :: iprint
 !     --------------------------------------------------------------------------
-      integer             :: iz, im, iq, g_order, m_order, ndim
+      integer             :: iz, im, iq, g_order, m_order
       real(8)             :: time_start, time_in_xc, second
       real(8)             :: ddot
 
       real(8), allocatable :: dmat_saop_outer(:)
       real(8), allocatable :: dmat_saop_resp(:)
 
+      integer              :: max_ao_g_order, max_ao_m_order
 !     --------------------------------------------------------------------------
 
       call init_dft_cb()
@@ -168,39 +169,6 @@ contains
         end if
       end if
 
-!   they have to be zeroed out here, because this is done each iteration
-    max_ao_g_order = 0
-    max_ao_m_order = 0
-
-!radovan: need to test vrg first
-!   if (dft_temp_gga_hs .or. dft_temp_gga_ha .or. dft_cfg_cdft_vrg) then
-    if (dft_temp_gga_hs .or. dft_temp_gga_ha) then
-      max_ao_g_order = 1
-    end if
-
-    if (dft_options%london) then
-      max_ao_m_order = 1
-    end if
-
-!radovan: this is not so nice here, will fix it later
-    ndim = nr_ao_total
-
-    nr_ao_slices = 0
-
-!radovan: has to be reinitialized here
-!         otherwise you get very strange effects with ALDA
-!         (nr_ao_slices decreases in response part)
-    need_ao_order = .false.
-
-    do g_order = 0, max_ao_g_order
-      do m_order = 0, max_ao_m_order
-        need_ao_order(g_order, m_order) = .true.
-        ao_start     (g_order, m_order) = nr_ao_slices*ndim + 1
-        nr_ao_slices = nr_ao_slices + (3**g_order)*(3**m_order)
-        ao_end       (g_order, m_order) = nr_ao_slices*ndim
-      end do
-    end do
-
 #ifdef VAR_MPI
       if (is_parallel_calculation) then
 
@@ -220,7 +188,29 @@ contains
      &                    dmat, dmat_perturbed, dmat_saop_resp, dmat_saop_outer)
       end if
 #endif /* ifdef VAR_MPI */
-      call init_dft_basis_info(is_parallel_calculation)
+
+    max_ao_g_order = 0
+!radovan: need to test vrg first
+!   if (dft_temp_gga_hs .or. dft_temp_gga_ha .or. dft_cfg_cdft_vrg) then
+    if (dft_temp_gga_hs .or. dft_temp_gga_ha) then
+      max_ao_g_order = 1
+    end if
+
+    max_ao_m_order = 0
+    if (dft_options%london) then
+      max_ao_m_order = 1
+    end if
+
+#ifdef VAR_MPI
+    if (is_parallel_calculation) then
+      call dirac_mpi_bcast(max_ao_g_order)
+      call dirac_mpi_bcast(max_ao_m_order)
+    end if
+#endif
+
+    call dft_ao_init(is_parallel_calculation, &
+                     max_ao_g_order,          &
+                     max_ao_m_order)
       
 !     integrate
       call dftdrv(dmat,              &
@@ -1012,6 +1002,7 @@ contains
       real(8)              :: wall1, cpu1
       integer              :: lmat
       integer              :: iprint
+      integer              :: max_ao_g_order, max_ao_m_order
 !
 !
       PARHER = .TRUE.
@@ -1052,7 +1043,15 @@ contains
       CALL DFTPAR_INIT2(dft_options,NXCMAT, ksym, khrm, &
      &                  KDEN,KDTR, &
      &                  KDMAT_RESP_AO,KDMAT_OUTER_AO)
-      call init_dft_basis_info(.true.)
+
+    call dirac_mpi_bcast(max_ao_g_order)
+    call dirac_mpi_bcast(max_ao_m_order)
+    call dft_ao_init(.true.,         &
+                     max_ao_g_order, &
+                     max_ao_m_order)
+
+
+
 !.....Initialization
       IPRINT = 0
 !.....Integrate
