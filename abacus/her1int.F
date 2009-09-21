@@ -6773,7 +6773,7 @@ C
             IF (IREP .EQ. 0) THEN
                CALL SYM1S(SHLINT(1,ICOORA,1),SOINT(1,ISCORA),
      &                    ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
-     &                    FC,LDIAG,FULMAT,DUM,IDUM,IPRINT,0)
+     &                    FC,LDIAG,FULMAT,DUM,IDUM,IPRINT)
             ELSE
                CALL SYM1N(SHLINT(1,ICOORA,1),SOINT(1,ISCORA),
      &                    IREP,ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
@@ -6792,7 +6792,7 @@ C
             IF (IREP .EQ. 0) THEN
                CALL SYM1S(SHLINT(1,ICOORB,2),SOINT(1,ISCORB),
      &                    ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
-     &                    FC,LDIAG,FULMAT,DUM,IDUM,IPRINT,0)
+     &                    FC,LDIAG,FULMAT,DUM,IDUM,IPRINT)
             ELSE
                CALL SYM1N(SHLINT(1,ICOORB,2),SOINT(1,ISCORB),
      &                    IREP,ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
@@ -6812,7 +6812,7 @@ C
                IF (IREP .EQ. 0) THEN
                   CALL SYM1S(SHLINT(1,ICOORC,3),SOINT(1,ISCORC),
      &                       ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
-     &                       FC,LDIAG,FULMAT,DUM,IDUM,IPRINT,0)
+     &                       FC,LDIAG,FULMAT,DUM,IDUM,IPRINT)
                ELSE
                   CALL SYM1N(SHLINT(1,ICOORC,3),SOINT(1,ISCORC),
      &                       IREP,ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,
@@ -6858,7 +6858,7 @@ C
             IF (IREP .EQ. 0) THEN
                CALL SYM1S(SHLINT(1,ICOOR),SOINT(1,ISCORA),
      &                    ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
-     &                    FC,LDIAG,FULMAT,DUM,IDUM,IPRINT,0)
+     &                    FC,LDIAG,FULMAT,DUM,IDUM,IPRINT)
             ELSE
                CALL SYM1N(SHLINT(1,ICOOR),SOINT(1,ISCORA),
      &                    IREP,ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
@@ -6876,7 +6876,7 @@ C
             IF (IREP .EQ. 0) THEN
                CALL SYM1S(SHLINT(1,ICOOR),SOINT(1,ISCORB),
      &                    ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
-     &                    FC,LDIAG,FULMAT,DUM,IDUM,IPRINT,0)
+     &                    FC,LDIAG,FULMAT,DUM,IDUM,IPRINT)
             ELSE
                CALL SYM1N(SHLINT(1,ICOOR),SOINT(1,ISCORB),
      &                    IREP,ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
@@ -7045,7 +7045,7 @@ ckr                  FACSYM = HKAB
                   IF (IREPO .EQ. 0) THEN
                      CALL SYM1S(SHLINT(1,ICOMP),SOINT(1,ITYP),ISYMOP,
      &                          MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
-     &                          FACSYM,LDIAG,FULMAT,DUM,IDUM,IPRINT,0)
+     &                          FACSYM,LDIAG,FULMAT,DUM,IDUM,IPRINT)
                   ELSE
                      CALL SYM1N(SHLINT(1,ICOMP),SOINT(1,ITYP),IREPO,
      &                          ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,
@@ -7066,7 +7066,7 @@ C    &                          *PT(IBTAND(IREP,ISYMOP))
                      CALL SYM1S(SHLINT(1,ICOMP + 9),SOINT(1,ITYP),
      &                          ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,
      &                          KHKTB,FACSYM,LDIAG,FULMAT,DUM,IDUM,
-     &                          IPRINT,0)
+     &                          IPRINT)
                   ELSE
                      CALL SYM1N(SHLINT(1,ICOMP + 9),SOINT(1,ITYP),
      &                          IREPO,ISYMOP,MULA,MULB,NHKTA,NHKTB,
@@ -7116,7 +7116,7 @@ ckr                  FACSYM = HKAB
                   IF (IREPO .EQ. 0) THEN
                      CALL SYM1S(SHLINT(1,ICOMP),SOINT(1,ITYP),ISYMOP,
      &                          MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
-     &                          FACSYM,LDIAG,FULMAT,DUM,IDUM,IPRINT,0)
+     &                          FACSYM,LDIAG,FULMAT,DUM,IDUM,IPRINT)
                   ELSE
                      CALL SYM1N(SHLINT(1,ICOMP),SOINT(1,ITYP),IREPO,
      &                          ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,
@@ -7135,7 +7135,7 @@ ckr                  FACSYM = HKAB*PT(IBTAND(IREPCL,ISYMOP))
                      CALL SYM1S(SHLINT(1,ICOMP + 18),SOINT(1,ITYP),
      &                          ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,
      &                          KHKTB,FACSYM,LDIAG,FULMAT,DUM,IDUM,
-     &                          IPRINT,0)
+     &                          IPRINT)
                   ELSE
                      CALL SYM1N(SHLINT(1,ICOMP + 18),SOINT(1,ITYP),
      &                          IREPO,ISYMOP,MULA,MULB,NHKTA,NHKTB,
