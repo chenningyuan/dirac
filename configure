@@ -2161,6 +2161,7 @@ get_largefiles(){
 checkmods()
 {
     if [ -r build/Makefile.moddef ]; then
+	return 0
     else
 	echo "Error, cannot find the file: build/Makefile.moddef" >&2
 	echo 'You must run "pamadm" before "configure" to correct this problem. Quitting.' >&2
