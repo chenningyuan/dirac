@@ -6,7 +6,6 @@ module dft_ao
 !   note that in levy-leblond or x2c4 mode some elements will
 !   contain garbage but they are not (= should not be) used
 
-  use dft_cb_interface
   use dft_basis_info
 
   implicit none

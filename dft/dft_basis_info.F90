@@ -18,6 +18,8 @@ module dft_basis_info
   integer, public              :: dft_nr_large_shells = 0
   integer, public              :: dft_maxrep          = 0
   integer, public              :: dft_maxopr          = 0
+  integer, public              :: nr_boson_sym        = 0
+  integer, public              :: nr_ls_components    = 0
 
   real(8), public, allocatable :: primitive_exp1(:)
   real(8), public, allocatable :: primitive_exp2(:, :)
@@ -77,6 +79,8 @@ module dft_basis_info
 #include "sphtrm.h"
 #include "dcbbas.h"
 #include "pincom.h"
+#include "dgroup.h"
+#include "dcbham.h"
 
 #ifdef VAR_MPI
 #include "infpar.h"
@@ -170,6 +174,8 @@ contains
       dft_kstrt  = kstrt
       dft_cent   = cent
       dft_isymax = isymax
+      nr_boson_sym                = nbsym
+      nr_ls_components            = mc
 
       dft_csp    = csp
       dft_ispadr = ispadr
@@ -238,6 +244,8 @@ contains
       call dft_mpi_bcast(dft_nr_large_shells         )
       call dft_mpi_bcast(dft_maxrep                  )
       call dft_mpi_bcast(dft_maxopr                  )
+      call dft_mpi_bcast(nr_boson_sym                )
+      call dft_mpi_bcast(nr_ls_components            )
 
       call dft_mpi_bcast(primitive_exp1              )
       call dft_mpi_bcast(primitive_exp2              )

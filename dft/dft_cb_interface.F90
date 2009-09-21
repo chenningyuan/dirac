@@ -24,8 +24,6 @@ module dft_cb_interface
   integer, public :: nr_ao_total
   integer, public :: nr_ao_large
   integer, public :: nr_ao_small
-  integer, public :: nr_boson_sym
-  integer, public :: nr_ls_components
   integer, public :: nr_open_shells
   integer, public :: nr_electrons_orbital
   integer, public :: nr_electrons_orbital_active
@@ -77,8 +75,6 @@ contains
     nr_ao_total                 = ntbas(0)
     nr_ao_large                 = ntbas(1)
     nr_ao_small                 = ntbas(2)
-    nr_boson_sym                = nbsym
-    nr_ls_components            = mc
     nr_open_shells              = nasht
     nr_electrons_orbital        = nelect
     nr_electrons_orbital_active = naelec
@@ -145,8 +141,6 @@ contains
     call dft_mpi_bcast(nr_ao_total                )
     call dft_mpi_bcast(nr_ao_large                )
     call dft_mpi_bcast(nr_ao_small                )
-    call dft_mpi_bcast(nr_boson_sym               )
-    call dft_mpi_bcast(nr_ls_components           )
     call dft_mpi_bcast(nr_open_shells             )
     call dft_mpi_bcast(nr_electrons_orbital       )
     call dft_mpi_bcast(nr_electrons_orbital_active)
