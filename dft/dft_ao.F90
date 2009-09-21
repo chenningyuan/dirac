@@ -1,6 +1,9 @@
 module dft_ao
 
-! * gao, gao1, ... are not dzeroed for more performance
+! * in order to calculate aos using this module
+!   you need to initialize some data first
+!   by calling dft_ao_init from each node
+! * aos are not dzeroed for more performance
 !   if you change the code make sure that elements of these vectors
 !   are not read before they are written for the first time
 !   note that in levy-leblond or x2c4 mode some elements will
@@ -18,14 +21,16 @@ module dft_ao
 
   save
 
-  integer, public    :: nr_ao_slices   = 0
-  integer, parameter :: max_order      = 2
+  integer, public    :: total_ao_vector_length = 0
+
+  integer, parameter :: max_order = 2
   integer, public    :: ao_start     (0:max_order, 0:max_order) = 0
   integer, public    :: ao_end       (0:max_order, 0:max_order) = 0
   logical, public    :: need_ao_order(0:max_order, 0:max_order) = .false.
 
   private
 
+  integer              :: nr_ao_slices   = 0
   integer              :: nr_ao               = 0
   integer              :: nr_cartesian_ao     = 0
   integer              :: dft_nr_shells       = 0
@@ -703,6 +708,8 @@ contains
       end do
     end do
 
+    total_ao_vector_length = nr_ao_slices*nr_ao
+
 #ifdef VAR_MPI
     end if !if (i_am_the_master) then
 #endif
@@ -754,6 +761,7 @@ contains
       call dirac_mpi_bcast(need_ao_order )
       call dirac_mpi_bcast(ao_start      )
       call dirac_mpi_bcast(ao_end        )
+      call dirac_mpi_bcast(total_ao_vector_length)
 
       dft_basis_info_synced = .true.
 

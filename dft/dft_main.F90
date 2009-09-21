@@ -614,27 +614,19 @@ contains
       real(8) :: rho13, rho_outer, rho_resp
       type(dft_options_t) :: dft_options
 
-      integer :: ipoint, ndim, need_limit
+      integer :: ipoint, need_limit
       real(8) :: ddot, taylor_deriv, f
 
       integer :: itest, jtest
 
-! this pointer is useful for .KEEPAO, then it can point to memory
-! otherwise it points to ao
-  real(8), pointer             :: ao_p(:)
+!   this pointer is useful for .KEEPAO, then it can point to memory
+!   otherwise it points to ao
+    real(8), pointer             :: ao_p(:)
 
+    real(8), allocatable, target :: ao(:)
+    real(8), allocatable         :: buffer(:)
 
-! never mpi_bcast this
-  real(8), allocatable, target :: ao(:)
-  real(8), allocatable         :: buffer(:)
-
-
-
-!here we will figure out the number of ndims
-!is interesting for density fitting and for x2c4 and levy-leblond
-    ndim = nr_ao_total
-
-    call alloc(ao,     ndim*nr_ao_slices)
+    call alloc(ao,     total_ao_vector_length)
     call alloc(buffer, size(ao))
 
 #ifdef MOD_AUTODIFF
