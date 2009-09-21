@@ -362,7 +362,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xrssep */
-      SUBROUTINE XRSSEP(BCVEC,BEVEC,BPVEC, SCVEC,SEVEC,SPVEC,
+      SUBROUTINE XRSSEP(BCVEC,BEVEC,BPVEC,SCVEC,SEVEC,SPVEC,
      &     IBCVC,IBEVC,IBPVC,
      &     IBTYP,GPOE,GPOP,NPOS,WORK,KFREE,LFREE)
 C***********************************************************************
@@ -543,7 +543,7 @@ C
       CALL MEMGET('REAL',KF,NDIM*N2BBASXQ,WORK,KFREE,LFREE)
 C
       IF (LSVCFG(1)) THEN
-         CALL GMOLITX(WORK(KF),WORK(KDVT),WORK(KDV),
+        CALL GMOLITX(WORK(KF),WORK(KDVT),WORK(KDV),
      &     BEVEC,BPVEC,IBCVC,IBEVC,IBPVC,IBTYP,NPOS,WORK,KFREE,LFREE)
       ELSE
         CALL DZERO(WORK(KF),N2BBASXQ*NDIM)
@@ -3664,7 +3664,7 @@ C
          IAOMAT = IAOMAT + 1
          IMOMAT = IMOMAT + 1
          CALL DZERO(FMO(1,IMOMAT),N2ORBXQ)
-         CALL GMOLITX2(FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,IBEIG,
+         CALL GMOLITX2(-1,JREP,FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,IBEIG,
      &        WORK(KFREE),LFREE)
          IF ( IPRXRS .GE. 8) THEN
             WRITE(LUPRI,9010) I
@@ -3682,12 +3682,18 @@ C
 C     Increment IMAT for FCX's since there is always a FCX
 C     independent of NISHT.
 C
+      JZ    = -1
+      IBOFF =  1
       DO I = 1, NESIM
-         IMOMAT = IMOMAT + 1
+         IF(SPINFR .AND. (JTIMOP .EQ. 1)) THEN
+           CALL SPFEXC(BEVEC(IBOFF),WORK(KZXOPE),NZXOPE,IBEIG,JZ,JREP)
+           IBOFF = IBOFF + NZXOPEQ
+         ENDIF
+          IMOMAT = IMOMAT + 1
          CALL DZERO(FMO(1,IMOMAT),N2ORBXQ)
          IF (NISHT .GT. 0) THEN
             IAOMAT = IAOMAT + 1
-            CALL GMOLITX2(FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,IBEIG,
+            CALL GMOLITX2(JZ,JREP,FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,IBEIG,
      &           WORK(KFREE),LFREE)
             IF ( IPRXRS .GE. 8) THEN
                WRITE(LUPRI,9011) 'e-e inactive QCX', I
@@ -3702,7 +3708,7 @@ C
             IMOMAT = IMOMAT + 1
             IAOMAT = IAOMAT + 1
             CALL DZERO(FMO(1,IMOMAT),N2ORBXQ)
-            CALL GMOLITX2(FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,IBEIG,
+            CALL GMOLITX2(JZ,JREP,FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,IBEIG,
      &           WORK(KFREE),LFREE)
             IF ( IPRXRS .GE. 8) THEN
                WRITE(LUPRI,9011) 'e-e active FVX', I
@@ -3723,7 +3729,7 @@ C
          CALL DZERO(FMO(1,IMOMAT),N2ORBXQ)
          IF (NISHT .GT. 0) THEN
             IAOMAT = IAOMAT + 1
-            CALL GMOLITX2(FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,IBEIG,
+            CALL GMOLITX2(-1,JREP,FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,IBEIG,
      &           WORK(KFREE),LFREE)
             IF ( IPRXRS .GE. 8) THEN
                WRITE(LUPRI,9011) 'e-p inactive QCX', I
@@ -3738,7 +3744,7 @@ C
             IMOMAT = IMOMAT + 1
             IAOMAT = IAOMAT + 1
             CALL DZERO(FMO(1,IMOMAT),N2ORBXQ)
-            CALL GMOLITX2(FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,IBEIG,
+            CALL GMOLITX2(-1,JREP,FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,IBEIG,
      &           WORK(KFREE),LFREE)
             IF ( IPRXRS .GE. 8) THEN
                WRITE(LUPRI,9011) 'e-p active FVX', I
@@ -4237,14 +4243,21 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck gmolitx2 */
-      SUBROUTINE GMOLITX2(FMO,FAO,CMO,IBEIG,WORK,LWORK)
+      SUBROUTINE GMOLITX2(IOPT,JREP,FMO,FAO,CMO,IBEIG,WORK,LWORK)
 C***********************************************************************
 C
 C     Transform the G-matrix to MO-basis.
 C
 C     Input:
-C     - FAO: the Fock matrix in AO basis
-C     - CMO: the MO-AO transformation matrix
+C     - FAO:  the Fock matrix in AO basis
+C     - CMO:  the MO-AO transformation matrix
+C     - IOPT: in the spinfree time-symmetric case IOPT.GT.0
+C             indicates that QBTRANS should be used, that is
+C             SO effects are quenched by only transforming
+C             to specific symmetry-blocks of the Fock
+C             matrix in MO-basis. IOPT then indicates what
+C             component of FMO to transform, whereas
+C     - JREP: indicates what symmetry-blocks to transform to
 C
 C     Output:
 C     - FMO: the Fock matrix in MO basis
@@ -4299,17 +4312,22 @@ C        no positronic rotations (and vice versa). However, it's just simpler
 C        to let the second index run over all orbitals.
 C
          IF(NS.NE.0.AND.NI.NE.0) THEN
-           IF(SPINFR .AND. (ITIM .EQ. 1) .AND. .NOT. TRIPLET) THEN
-             CALL QBTRANS(IREP,'AOMO','S',D0,
+           IF(IOPT.GT.0) THEN
+             CALL QBTRANS(JREP,'AOMO','S',D0,
      &           NFBAS(I1,0),NFBAS(I2,0),NS,NI,
      &           FAO(I2BASX(I1,I2)+1),NTBAS(0),NTBAS(0),NZ,
      &           IPQTOQ(1,IREP),
-     &           FMO(IS,II,1),NORBT,NORBT,NZ,IPQTOQ(1,IREP),
+     &           FMO(IS,II,IOPT),NORBT,NORBT,1,IPQTOQ(IOPT,IREP),
      &           CMO(JS),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
      &           IBEIG(IS),
      &           CMO(JI),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
      &           IBEIG(II),
      &           WORK(KFREE),LFREE,IPRXRS)
+             DO IZ = 1,NZ
+             IF(IZ.NE.IOPT) THEN
+               CALL DZERO(FMO(1,1,IZ),N2ORBX)
+             ENDIF  
+             ENDDO
            ELSE
              CALL QTRANS('AOMO','S',D0,
      &           NFBAS(I1,0),NFBAS(I2,0),NS,NI,
@@ -5213,6 +5231,41 @@ C
         CALL PRQMAT(FMO,NORBT,NORBT,NORBT,
      &              NORBT,NZ,IPQTOQ(1,IREP),LUPRI)
       ENDIF
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck spfexc   */
+      SUBROUTINE SPFEXC(BVEC,JXOP,NXOP,IBEIG,JZ,JREP)
+C***********************************************************************
+C
+C     Analyze spinfree trial vector to identify spin symmetry
+C     Only one symmetry and one component IZ should be non-zero.
+C
+C     Written by T. Saue 2009
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0)    
+C
+#include "dgroup.h"
+      DIMENSION BVEC(NXOP,NZ),JXOP(2,NXOP),IBEIG(*)
+C
+#include "ibtfun.h"
+      JZ  = 0
+      TMP = D0
+      DO IZ = 1,NZ
+        DO J = 1,NXOP
+          IF(ABS(BVEC(J,IZ)).GT.TMP) THEN
+            TMP = ABS(BVEC(J,IZ))
+            JZ = IZ
+            JJ = J
+          ENDIF
+        ENDDO
+      ENDDO
+      I1 = JXOP(1,JJ)
+      I2 = JXOP(2,JJ)
+      JREP = IBTXOR(IBEIG(I1),IBEIG(I2))
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
