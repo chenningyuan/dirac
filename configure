@@ -1996,9 +1996,10 @@ get_f90_flags(){
       safe="-g -Wno=155"
       mod="-fmod=$MODULE_DIR"
       noformain="" # please add it
-      F_check_flags="-Wuninitialized -Wunreachable-code" # please add more
-      F_profile="" # please add
-      ldflag="-lstdc++"
+      F_check_flags="-Wall -fbounds-check" # please add more
+      F_profile="-pg" # 
+      #ldflag="-lstdc++"
+      ldflag="" # mi: must be omitted
       ;;
     gfortran*)
      # to determine version you need the compiler with its full path 
