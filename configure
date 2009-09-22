@@ -1992,14 +1992,13 @@ get_f90_flags(){
   check_array_bounds=""
   case "$F90real" in
     g95)
-      opt="-g -O3 -ffast-math -Wno=155"
-      safe="-g -Wno=155"
+      opt="-g -O3 -ffast-math -Wno=155 -fsloppy-char"
+      safe="-g -Wno=155 -fsloppy-char"
       mod="-fmod=$MODULE_DIR"
       noformain="" # please add it
       F_check_flags="-Wall -fbounds-check" # please add more
       F_profile="-pg" # 
-      #ldflag="-lstdc++"
-      ldflag="" # mi: must be omitted
+      ldflag="" # mi: "-lstdc++" must be omitted
       ;;
     gfortran*)
      # to determine version you need the compiler with its full path 
