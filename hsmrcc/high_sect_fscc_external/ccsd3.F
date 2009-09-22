@@ -708,12 +708,11 @@ c     write (6,*) ' transf indx from ',i,' to ',num
 !---------------------------------------------------------------------------------------------------
       use print_level
 #if defined HSFS_DYN_ALLOC
-!     use ctmp_mod 
+      use ctmp_mod 
       use cfiles_mod 
       use gen_mod 
       use cij1_mod 
       use cij2_mod 
-      use ctmp_mod 
       use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
