@@ -740,9 +740,6 @@ C
 C     Print MP2 energy
 C     ----------------
 C
-      WRITE(LUPRI,'(/15X,A)') '######## Final MP2 energy. ########'
-      WRITE(LUPRI,'(15X,A,F23.14,4X,A)') '####', EMP2, '####'
-      WRITE(LUPRI,'(15X,A,/)') '###################################'
       WRITE(LUPRI,1000) 
       WRITE(LUPRI,1001) ESCF
       WRITE(LUPRI,1002) EMP2
