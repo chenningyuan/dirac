@@ -486,7 +486,7 @@ end module tv2_mod
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 module print_level
  integer, private :: iprint=0
- logical, private :: print_level_read=.false.
+ logical(kind=1), private :: print_level_read=.false.
  !logical :: print_level_read = .false.
 contains
 
@@ -516,11 +516,12 @@ function getiprint() result(ipr)
 ! get private module value
 #include "priunit.h"
  integer :: ipr
- write(LUPRI,*) 'getiprint: print_level_read,iprint=',print_level_read,iprint
+ write(LUPRI,*) 'getiprint: print_level_read=',print_level_read,' iprint=',iprint
+ call FLSHFO(LUPRI)
  if (.not.print_level_read) then
    call quit('getiprint: print variable NOT extracted !')
  else
-  ipr = iprint
+   ipr = iprint
   return
  endif
  return

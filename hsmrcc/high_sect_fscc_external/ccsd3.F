@@ -740,6 +740,7 @@ c     write (6,*) ' transf indx from ',i,' to ',num
       data msk /z'ff000000',z'ff0000',z'ff00',z'ff'/
 
 !     character(*) namet, namef ! mi fix - data specification for prtime
+      character*4 namet, namef ! mi fix - data specification for prtime
 
 c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       ipack(i1,i2,i3,i4)=ior(ior(ishft(i1,24),ishft(i2,16)),
@@ -2340,6 +2341,9 @@ c  indices not retained for pppp.
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
+
+      character*4 namef,names
+
       call reorder(namef,names,2143,5) ! switch indexes
       call add(namef,1.d0,names,1.d0,namef)
       return
