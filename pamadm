@@ -33,7 +33,7 @@ usage()
    echo '     -xpp             : Include PP excitation energy and STEX modules'
    echo '     -xml             : Include XML input/output module'
    echo '     -krmc            : Include KR-MCSCF and LUCIAREL modules'
-   echo '     -emb             : Include ab initio/DFT-embedding module (with the F90/95 modularity feature)'
+   echo '     -emb             : Include ab initio/DFT-embedding module'
    echo '     -visual          : Include visualization module'
    echo '     -aoresponse      : Include AO response module'
    echo '     -matrixop        : Include matrix operations module'
@@ -183,7 +183,7 @@ MODS_MESSAGE=
    if [ -n "$EMBMOD" ]; then
       EMBFLG='-DMOD_EMB'
       EMBTAR=1
-      THIS_MOD_MESSAGE=" - ab initio/DFT embedding module (with Fortran90/95 modules)"
+      THIS_MOD_MESSAGE=" - ab initio/DFT embedding module"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
@@ -193,7 +193,7 @@ MODS_MESSAGE=
    if [ -n "$XMLMOD" ]; then
       XMLFLG='-DMOD_XML'
       XMLTAR=1
-      THIS_MOD_MESSAGE=" - XML input/output module (with Fortran90/95 modules)"
+      THIS_MOD_MESSAGE=" - XML input/output module"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
