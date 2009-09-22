@@ -1422,7 +1422,7 @@ C      WRITE(LUPRI,'(A,6I6)') 'IFTUV-beg.: ', (IFTUV(I),I=1,6)
 
       IF ( IPRINT .GE. 2 ) THEN
        CALL HEADER('FTUV summary:',-1)
-       WRITE(LUPRI,'(3X,11(X,A))') 'Class','NTFTUV', 
+       WRITE(LUPRI,'(3X,11(1X,A))') 'Class','NTFTUV', 
      &        'KSFTUV','JMAXF','NCNTF','ICNTC',' ICNTD', 
      &        '  RCD ',' max extent','   min F',' Cauchy'
       END IF
