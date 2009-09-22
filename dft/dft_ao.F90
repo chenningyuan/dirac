@@ -58,7 +58,6 @@ module dft_ao
   integer              :: dft_maxrep          = 0
   integer              :: dft_maxopr          = 0
   integer              :: nr_boson_sym        = 0
-  integer              :: nr_ls_components    = 0
 
   real(8), allocatable :: primitive_exp1(:)
   real(8), allocatable :: primitive_exp2(:, :)
@@ -97,6 +96,7 @@ module dft_ao
   real(8), allocatable :: f_so_ao(:)
 
   logical              :: use_ao_screening = .false.
+  logical              :: only_large       = .false.
 
   real(8), parameter   :: tiny = 1.0d-30
 
@@ -170,7 +170,7 @@ contains
 !   don't work on small component shells
 !   this will make problems if you calculate the relativistic current density
 !   expression using levy-leblond, in this case comment this out
-    if (nr_ls_components .eq. 1) iend = dft_nr_large_shells
+    if (only_large) iend = dft_nr_large_shells
 
     i = 1
     do ishell = 1, iend
@@ -661,7 +661,7 @@ contains
       dft_cent   = cent
       dft_isymax = isymax
       nr_boson_sym                = nbsym
-      nr_ls_components            = mc
+      if (mc == 1) only_large = .true.
       nr_ao = ntbas(0)
 
       dft_csp    = csp
@@ -753,25 +753,30 @@ contains
 !           is large
             ic = 1
           end if
-      
-!         shift by difference boson sorted minus boson unsorted
-          iso_bs = iso + dft_ibbas(irep, ic) - dft_icos(irep + 1, ic)
-      
-          do isym = 0, dft_maxopr
-            if (iand(isym, mul) == 0) then
-      
-              f = dft_pt(iand(isym, ieor(irep, dft_isymao(n, nshell))))
-      
-              nr_so_ao = nr_so_ao + 1
 
-              i_so_ao(1, nr_so_ao) = iso_bs
-              i_so_ao(2, nr_so_ao) = iao
-              f_so_ao(nr_so_ao)    = f
+          if (.not. (only_large .and. (ic == 2))) then
       
-              iao = iao + spherical_deg(ishell)
-      
-            endif
-          end do
+!           shift by difference boson sorted minus boson unsorted
+            iso_bs = iso + dft_ibbas(irep, ic) - dft_icos(irep + 1, ic)
+           
+            do isym = 0, dft_maxopr
+              if (iand(isym, mul) == 0) then
+           
+                f = dft_pt(iand(isym, ieor(irep, dft_isymao(n, nshell))))
+           
+                nr_so_ao = nr_so_ao + 1
+           
+                i_so_ao(1, nr_so_ao) = iso_bs
+                i_so_ao(2, nr_so_ao) = iao
+                f_so_ao(nr_so_ao)    = f
+           
+                iao = iao + spherical_deg(ishell)
+           
+              endif
+            end do
+
+          end if
+
         end do
         i = i + nr_ao_irep
       end do
@@ -808,7 +813,6 @@ contains
       call dirac_mpi_bcast(dft_maxrep                  )
       call dirac_mpi_bcast(dft_maxopr                  )
       call dirac_mpi_bcast(nr_boson_sym                )
-      call dirac_mpi_bcast(nr_ls_components            )
       call dirac_mpi_bcast(nr_ao                       )
 
       call dirac_mpi_bcast(primitive_exp1              )
@@ -840,6 +844,7 @@ contains
       call dirac_mpi_bcast(ao_start      )
       call dirac_mpi_bcast(ao_end        )
       call dirac_mpi_bcast(total_ao_vector_length)
+      call dirac_mpi_bcast(only_large)
 
       call dirac_mpi_bcast(nr_so_ao)
       call dirac_mpi_bcast(i_so_ao)
