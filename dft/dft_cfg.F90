@@ -25,6 +25,7 @@ module dft_cfg
 
   character(30), public :: dft_cfg_gridfile
 
+  logical, public :: dft_cfg_screening               = .false.
   logical, public :: dft_cfg_keep_ao                 = .false.
   logical, public :: dft_cfg_explicit_potential      = .false.
   logical, public :: dft_cfg_no_pruning              = .false.
@@ -78,6 +79,7 @@ contains
 
   subroutine sync_dft_cfg()
 
+    call dirac_mpi_bcast(dft_cfg_screening                  )
     call dirac_mpi_bcast(dft_cfg_keep_ao                    )
     call dirac_mpi_bcast(dft_cfg_explicit_potential         )
     call dirac_mpi_bcast(dft_cfg_no_pruning                 )

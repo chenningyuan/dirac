@@ -20,6 +20,9 @@ module dft_ao
 !   are not read before they are written for the first time
 !   note that in levy-leblond or x2c4 mode some elements will
 !   contain garbage but they are not (= should not be) used
+! - this module is called dft_ao but should be usable also outside dft
+!   this is why some information is passed through dft_ao_init and not queried
+!   from dft_cfg, to keep this module generic, please dont "use dft_cfg" here
 
 !   some "bad ideas" = ideas which did not improve things
 !   so that future generations do not waste time on this:
@@ -61,6 +64,7 @@ module dft_ao
   real(8), allocatable :: primitive_exp2(:, :)
   real(8), allocatable :: contraction_coef1(:)
   real(8), allocatable :: contraction_coef2(:, :)
+  real(8), allocatable :: shell_extent(:)
   integer, allocatable :: nr_nonzero_contraction_coefs(:)
   integer, allocatable :: cartesian_deg(:)
   integer, allocatable :: cartesian_off(:)
@@ -92,7 +96,16 @@ module dft_ao
   integer, allocatable :: i_so_ao(:, :)
   real(8), allocatable :: f_so_ao(:)
 
+  logical              :: use_ao_screening = .false.
+
   real(8), parameter   :: tiny = 1.0d-30
+
+! this is probably eq. 8.2.25 in the pink book
+  real(8), parameter   :: g(10) = (/1.0d0, 1.3333d0, 1.6d0, 1.83d0, 2.03d0, 2.22d0, 2.39d0, 2.55d0, 2.70d0, 2.84d0/)
+
+!                         cell_size          = 3.2d0
+!                         half_cell_diagonal = cell_size*0.5d0*sqrt(3.0d0)
+  real(8), parameter   :: half_cell_diagonal = 2.77128129d0
 
   logical :: dft_basis_info_allocated = .false.
   logical :: dft_basis_info_set       = .false.
@@ -121,6 +134,8 @@ contains
     real(8), intent(inout) :: buffer(*)
 !   ----------------------------------------------------------------------------
 
+    if (use_ao_screening) call dzero(ao, total_ao_vector_length)
+
     call get_ao(cx,     &
                 cy,     &
                 cz,     &
@@ -146,7 +161,7 @@ contains
     real(8)                :: ao(*)
 !   ----------------------------------------------------------------------------
     integer                :: i, iend, ishell, isym
-    real(8)                :: px, py, pz
+    real(8)                :: px, py, pz, p2
     integer                :: ofg, ofm
 !   ----------------------------------------------------------------------------
 
@@ -161,37 +176,48 @@ contains
     do ishell = 1, iend
       do isym = 0, dft_maxopr
         if (iand(isym, dft_istbao(ishell)) == 0) then
+
           px = cx - dft_pt(iand(dft_isymax(1, 1), isym))*dft_cent(ishell, 1, 1)
           py = cy - dft_pt(iand(dft_isymax(2, 1), isym))*dft_cent(ishell, 2, 1)
           pz = cz - dft_pt(iand(dft_isymax(3, 1), isym))*dft_cent(ishell, 3, 1)
 
-!         this is because get_gao1 does both ao and ao1
-          if (need_ao_order(0, 0) .and. .not. need_ao_order(1, 0)) then
-            call get_gao(ishell,         &
-                         ao(i),   &
-                         px, py, pz)
-          else if (need_ao_order(1, 0)) then
-            ! ao_start(1, 0) indicate the place in ao where
-            ! geom derivs should start
-            ofg = ao_start(1, 0) + i - 1
-            call get_gao1(ishell,                   &
-                          ao(i),             &
-                          ao(ofg),           &
-                          ao(ofg + nr_ao),    &
-                          ao(ofg + 2*nr_ao),  &
-                          px, py, pz)
-          end if
+          p2 = px*px + py*py + pz*pz
 
-          if (need_ao_order(0, 1)) then
-            ! ao_start(0, 1) indicate the place in ao where
-            ! magn dervs should start
-            ofm = ao_start(0, 1) + i - 1
-            call get_ao_b1(px, py, pz,             &
-                           ishell,                 &
-                           ao(i),           &
-                           ao(ofm),         &
-                           ao(ofm + nr_ao),  &
-                           ao(ofm + 2*nr_ao))
+          if (                            &
+              (.not. use_ao_screening)    &
+              .or.                        &
+              (p2 < shell_extent(ishell)) &
+             ) then
+
+!           this is because get_gao1 does both ao and ao1
+            if (need_ao_order(0, 0) .and. .not. need_ao_order(1, 0)) then
+              call get_gao(ishell,         &
+                           ao(i),   &
+                           px, py, pz, p2)
+            else if (need_ao_order(1, 0)) then
+              ! ao_start(1, 0) indicate the place in ao where
+              ! geom derivs should start
+              ofg = ao_start(1, 0) + i - 1
+              call get_gao1(ishell,                   &
+                            ao(i),             &
+                            ao(ofg),           &
+                            ao(ofg + nr_ao),    &
+                            ao(ofg + 2*nr_ao),  &
+                            px, py, pz, p2)
+            end if
+            
+            if (need_ao_order(0, 1)) then
+              ! ao_start(0, 1) indicate the place in ao where
+              ! magn dervs should start
+              ofm = ao_start(0, 1) + i - 1
+              call get_ao_b1(px, py, pz,         &
+                             ishell,                 &
+                             ao(i),           &
+                             ao(ofm),         &
+                             ao(ofm + nr_ao),  &
+                             ao(ofm + 2*nr_ao))
+            end if
+
           end if
 
           i = i + spherical_deg(ishell)
@@ -204,18 +230,16 @@ contains
 
   subroutine get_gao(ishell, &
                      gao,    &
-                     px, py, pz)
+                     px, py, pz, p2)
 
 !   ----------------------------------------------------------------------------
     integer, intent(in)    :: ishell
     real(8), intent(out)   :: gao(*)
-    real(8), intent(in)    :: px, py, pz
+    real(8), intent(in)    :: px, py, pz, p2
 !   ----------------------------------------------------------------------------
     integer                :: i, ic, jc
-    real(8)                :: p2, f1, f2
+    real(8)                :: f1, f2
 !   ----------------------------------------------------------------------------
-
-    p2 = px**2.0d0 + py**2.0d0 + pz**2.0d0
 
     f1 = 0.0d0
     if (dabs(contraction_coef1(ishell)) > tiny) then
@@ -274,7 +298,7 @@ contains
                       gaox,   &
                       gaoy,   &
                       gaoz,   &
-                      px, py, pz)
+                      px, py, pz, p2)
 
 !   ----------------------------------------------------------------------------
     integer, intent(in)    :: ishell
@@ -282,16 +306,14 @@ contains
     real(8)                :: gaox(*)
     real(8)                :: gaoy(*)
     real(8)                :: gaoz(*)
-    real(8), intent(in)    :: px, py, pz
+    real(8), intent(in)    :: px, py, pz, p2
 !   ----------------------------------------------------------------------------
     integer                :: i, ic, jc
     integer                :: l, m, n
-    real(8)                :: p2, f1, f2
+    real(8)                :: f1, f2
     real(8)                :: tx, ty, tz, ux, uy, uz
     real(8)                :: p0, p0t
 !   ----------------------------------------------------------------------------
-
-    p2 = px**2.0d0 + py**2.0d0 + pz**2.0d0
 
     f1 = 0.0d0
     if (dabs(contraction_coef1(ishell)) > tiny) then
@@ -516,7 +538,9 @@ contains
 
   subroutine dft_ao_init(is_parallel_calculation, &
                          max_ao_g_order,          &
-                         max_ao_m_order)
+                         max_ao_m_order,          &
+                         use_screening,           &
+                         ao_threshold)
 
 #include "mxcent.h"
 #include "maxorb.h"
@@ -535,6 +559,8 @@ contains
     logical, intent(in) :: is_parallel_calculation
     integer, intent(in) :: max_ao_g_order
     integer, intent(in) :: max_ao_m_order
+    logical, intent(in) :: use_screening
+    real(8), intent(in) :: ao_threshold
 !   ----------------------------------------------------------------------------
     integer             :: g_order
     integer             :: m_order
@@ -543,11 +569,13 @@ contains
     integer              :: iao, iso,         nshell
     integer              :: ic,         iso_bs
     integer              ::    nr_ao_irep, mul, irep,       n, ivec, off
-    real(8)              :: f
+    real(8)              :: f, r
 #ifdef VAR_MPI
     logical             :: i_am_the_master
 #endif
 !   ----------------------------------------------------------------------------
+
+    use_ao_screening = use_screening
 
     if (.not. dft_basis_info_allocated) then
 
@@ -555,6 +583,7 @@ contains
       call alloc(primitive_exp2, mxshel, mxcont)
       call alloc(contraction_coef1, mxshel)
       call alloc(contraction_coef2, mxshel, mxcont)
+      call alloc(shell_extent, mxshel)
       call alloc(nr_nonzero_contraction_coefs, mxshel)
       call alloc(cartesian_deg, mxshel)
       call alloc(cartesian_off, mxshel)
@@ -673,6 +702,9 @@ contains
         contraction_coef1(ishell) = priccf(i, contracted_shell_nr)
         primitive_exp1(ishell)    = priexp(i)
 
+!       get shell extents
+        shell_extent(ishell) = 0.0d0
+
         icount = 0
         do iprim = i + 1, j
           if (dabs(priccf(iprim, contracted_shell_nr)) > 1.0d-30) then
@@ -680,8 +712,20 @@ contains
             nr_nonzero_contraction_coefs(ishell) = icount
             contraction_coef2(ishell, icount)    = priccf(iprim, contracted_shell_nr)
             primitive_exp2(ishell, icount)       = priexp(iprim)
+
+!           get shell extents
+            r = (log(abs(contraction_coef2(ishell, icount))) &
+               - log(ao_threshold))/primitive_exp2(ishell, icount)
+
+            if (shell_extent(ishell) < r) shell_extent(ishell) = r
           end if
         end do
+
+        shell_extent(ishell) = sqrt(shell_extent(ishell))*g(n_quantum_nr(ishell)) &
+                             + half_cell_diagonal
+
+!       better square this one than sqrt p2 in each point
+        shell_extent(ishell) = shell_extent(ishell)**2.0d0
 
       end do
 
@@ -771,6 +815,7 @@ contains
       call dirac_mpi_bcast(primitive_exp2              )
       call dirac_mpi_bcast(contraction_coef1           )
       call dirac_mpi_bcast(contraction_coef2           )
+      call dirac_mpi_bcast(shell_extent                )
       call dirac_mpi_bcast(nr_nonzero_contraction_coefs)
       call dirac_mpi_bcast(cartesian_deg               )
       call dirac_mpi_bcast(cartesian_off               )

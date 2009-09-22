@@ -332,6 +332,10 @@ contains
       dft_cfg_force_4c_grid = .true.
     end if
 
+    if (kw_matches(word, '.SCREEN')) then
+      dft_cfg_screening = .true.
+    end if
+
     if (kw_matches(word, '.KEEPAO')) then
       dft_cfg_keep_ao = .true.
     end if

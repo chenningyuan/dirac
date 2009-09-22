@@ -210,7 +210,9 @@ contains
 
     call dft_ao_init(is_parallel_calculation, &
                      max_ao_g_order,          &
-                     max_ao_m_order)
+                     max_ao_m_order,          &
+                     dft_cfg_screening,       &
+                     dft_cfg_dfthri)
       
 !     integrate
       call dftdrv(dmat,              &
@@ -1038,11 +1040,11 @@ contains
 
     call dirac_mpi_bcast(max_ao_g_order)
     call dirac_mpi_bcast(max_ao_m_order)
-    call dft_ao_init(.true.,         &
-                     max_ao_g_order, &
-                     max_ao_m_order)
-
-
+    call dft_ao_init(.true.,            &
+                     max_ao_g_order,    &
+                     max_ao_m_order,    &
+                     dft_cfg_screening, &
+                     dft_cfg_dfthri)
 
 !.....Initialization
       IPRINT = 0
