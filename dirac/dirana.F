@@ -4224,7 +4224,7 @@ c     to mo basis
      &     cmo,ntbas(0),norbt,nz,ipqtoq(1,0),0)
       deallocate( Pso )
       deallocate( Pao )
-      call purify(P,norbt,nz,1.0D-8,work,lwork)
+      call purify(P,norbt,nz,1.0D-8)
       end
 
 
