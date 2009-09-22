@@ -754,6 +754,8 @@ contains
             ic = 1
           end if
 
+!         do not plan to AO-SO transform small component functions
+!         in case of zero small-small metric (.LEVY-LEBLOND and .X2C4)
           if (.not. (only_large .and. (ic == 2))) then
       
 !           shift by difference boson sorted minus boson unsorted
