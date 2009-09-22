@@ -1,16 +1,30 @@
 module dft_ao
 
+!   this is based on DIRAC and Dalton
+!   routines written by T. Helgaker, P. Salek, T. Saue, and others
+
 ! - in order to calculate aos using this module
 !   you need to initialize some data first
 !   by calling dft_ao_init from each node
+! - dft_ao_init will set symmetry and basis set information
+!   that is needed in each point and then mpi_bcast this info to the nodes
+! - we try to not recalculate data which does not change from point to point
+!   (like symmetry)
 ! - *after* the module data is initialized you can allocate
-!   the ao vector and a buffer, both with the length total_ao_vector_length*mxbllen
+!   the ao vector and a buffer, both with the length total_ao_vector_length
 ! - (de)allocate them only once (each iteration), not in every point
+!   this is also the reason why the ao vector and buffer are not allocated here - this would
+!   be very inefficient
 ! - aos are not dzeroed for more performance
 !   if you change the code make sure that elements of these vectors
 !   are not read before they are written for the first time
 !   note that in levy-leblond or x2c4 mode some elements will
 !   contain garbage but they are not (= should not be) used
+
+!   some "bad ideas" = ideas which did not improve things
+!   so that future generations do not waste time on this:
+! - ao to so transformation using dgemv: possible, but much slower than present scheme
+! - derivatives of aos by numerical differentiation: again, turned out to be much slower
 
   use memory_allocator
 #ifdef VAR_MPI
