@@ -85,8 +85,10 @@ contains
       integer :: n, m, ne, op(size(p)), cc(size(p)*2), i, isize
       logical :: zerg,imag
       !process and check arguments
+
+!      this is for g95 with -i8
        isize=size(D)
-     ! call prop_check('prop_energy', D(1), p, c=c, nd=size(D), b=b, o=o,    &
+
       call prop_check('prop_energy', D(1), p, c=c, nd=isize, b=b, o=o,    &
                       np=n, op=op, cc=cc, m=m, ne=ne, zerg=zerg, imag=imag)
       if (zerg .or. m==0.and.imag) return !the result is zero
@@ -95,8 +97,10 @@ contains
       subroutine subr()
          integer    :: bb(m), oe(ne)
          complex(8) :: ee(ne)
+
+!        this is for g95 with -i8
          isize = size(D)
-         !call prop_order(n, op, cc, m, size(D), ne, bb, oe, b=b, o=o)
+
          call prop_order(n, op, cc, m, isize, ne, bb, oe, b=b, o=o)
          !call core function erg
          ee = 0
@@ -122,7 +126,10 @@ contains
                o(:)    !o(m) indices in e of each rank in D; default 1,2..m
       integer :: n, m, nf, op(size(p)), cc(2*size(p)), i, isize
       logical :: zfck
+
+!      this is for g95 with -i8
        isize=size(D)
+
       call prop_check('prop_fock',D(1),p, c=c,nd=isize,b=b,o=o &
                      ,np=n,op=op,cc=cc,m=m,ne=nf,zfck=zfck)
       if (zfck) return !the result is zero
@@ -131,7 +138,10 @@ contains
       subroutine subr()
          integer      :: bb(m), of(nf),isize
          type(matrix) :: FF(nf)
+
+!        this is for g95 with -i8
          isize=size(D)
+
          call prop_order(n, op, cc, m, isize, nf, bb, of, b=b, o=o)
          !order F into FF, call core function fock_core, then reorder back into F
          do i = 1, nf
