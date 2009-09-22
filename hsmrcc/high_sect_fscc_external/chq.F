@@ -139,7 +139,7 @@ c     iopt(9) - incomplete model space
       end if
       call t1sqr("t1c ","t1c ","tc  ","tcm ")
       call t1sqr("t1v ","t1c ","tv  ","tvm ")
-      call reorder("t1c ","s2  ",1243,5,0)
+      call reorder("t1c ","s2  ",1243,5)
       call t1sqr("t1g ","s2  ","tg  ","tgm ")
       call reorder("t1g ","s1  ",1243,4)
       call t1sqr("t1v ","s1  ","thp ","tpm ")
@@ -358,27 +358,27 @@ c
       call seltyp(3223,1010,"vhgp",4)
       call seltyp(3323,1010,"vpgp",4)
       call seltyp(3222,1010,"vhgh",4)
-      call reorder("hhpp","va1 ",1324,4,0)
-      call reorder("hhpp","va2 ",1423,4,0)
-      call reorder("hhpp","va3 ",1243,4,0)
-      call reorder("hhpp","va4 ",3412,4,0)
-      call reorder("hhpp","va8 ",3421,4,0)
-      call reorder("hhhp","vc2 ",1243,4,0)
-      call reorder("hppp","vd7 ",1324,4,0)
-      call reorder("hppp","vd8 ",2314,4,0)
-      call reorder("hppp","vd11",2413,4,0)
-      call reorder("hppp","vd12",2134,4,0)
-      call reorder("hppp","vd14",2143,4,0)
-      call reorder("vhhp","vvc2",1243,4,0)
-      call reorder("vhhp","vvc3",1342,4,0)
-      call reorder("ghpp","vga1",1243,4,0)
-      call reorder("vhgp","vgv ",1324,4,0)
+      call reorder("hhpp","va1 ",1324,4)
+      call reorder("hhpp","va2 ",1423,4)
+      call reorder("hhpp","va3 ",1243,4)
+      call reorder("hhpp","va4 ",3412,4)
+      call reorder("hhpp","va8 ",3421,4)
+      call reorder("hhhp","vc2 ",1243,4)
+      call reorder("hppp","vd7 ",1324,4)
+      call reorder("hppp","vd8 ",2314,4)
+      call reorder("hppp","vd11",2413,4)
+      call reorder("hppp","vd12",2134,4)
+      call reorder("hppp","vd14",2143,4)
+      call reorder("vhhp","vvc2",1243,4)
+      call reorder("vhhp","vvc3",1342,4)
+      call reorder("ghpp","vga1",1243,4)
+      call reorder("vhgp","vgv ",1324,4)
       call selt1(33,0,"pp  ",4)
       call selt1(23,0,"hp  ",4)
       call selt1(22,0,"hh  ",4)
       call selt1(32,10,"vh  ",4)
       call selt1(23,10,"gp  ",4)
-      call reorder("hp  ","ph  ",1243,4,0)
+      call reorder("hp  ","ph  ",1243,4)
       if (iopt(17).ne.0) then
         call seltyp   (3322,0010,"ppgh",4)
       end if
@@ -390,7 +390,7 @@ c
         call seltyp   (2322,0001,"hphg",4)
         call seltyp   (3322,1001,"vphg",4)
         call seltyp   (2333,1000,"gppp",4)
-        call reorder  ("hhpp","va6 ",1243,4,0)
+        call reorder  ("hhpp","va6 ",1243,4)
       end if
       call prtime("ordv",0,0)
       return
@@ -440,17 +440,17 @@ c **************************************************
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
-      call reorder("tc  ","tc1 ",1423,4,0)
-      call reorder("tc  ","tc2 ",1324,4,0)
-      call reorder("tcm ","tcm1",1423,4,0)
-      call reorder("tv  ","tv1 ",1243,4,0)
-      call reorder("tvm ","tvm2",1423,4,0)
-      call reorder("tg  ","tg3 ",1243,4,0)
-      call reorder("tgm ","tgm2",1432,4,0)
-      call reorder("t1c ","t1cr",1243,4,0)
-      call reorder("t1v ","t1vr",1243,4,0)
-      call reorder("t1g ","t1gr",1243,4,0)
-      call reorder("tg  ","tgr ",3412,4,0)
+      call reorder("tc  ","tc1 ",1423,4)
+      call reorder("tc  ","tc2 ",1324,4)
+      call reorder("tcm ","tcm1",1423,4)
+      call reorder("tv  ","tv1 ",1243,4)
+      call reorder("tvm ","tvm2",1423,4)
+      call reorder("tg  ","tg3 ",1243,4)
+      call reorder("tgm ","tgm2",1432,4)
+      call reorder("t1c ","t1cr",1243,4)
+      call reorder("t1v ","t1vr",1243,4)
+      call reorder("t1g ","t1gr",1243,4)
+      call reorder("tg  ","tgr ",3412,4)
       call clear("tb1 ",3322,1010)
       call clear("tb2 ",3223,1100)
       call clear("tb4 ",3232,1001)
@@ -683,15 +683,15 @@ C  *********************************************************************
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
-      call reorder("tb1 ","s2  ",1432,4,1)
+      call reorder("tb1 ","s2  ",1432,4)
       call add("vv0 ",1.d0,"s2  ",1.d0,"vv0 ")
-      call reorder("tb2 ","s2  ",1324,4,1)
+      call reorder("tb2 ","s2  ",1324,4)
       call add("vv0 ",1.d0,"s2  ",1.d0,"vv0 ")
-      call reorder("tb4 ","s2  ",1243,4,1)
+      call reorder("tb4 ","s2  ",1243,4)
       call add("vv0 ",1.d0,"s2  ",1.d0,"vv0 ")
-      call reorder("tb6 ","s2  ",1423,4,1)
+      call reorder("tb6 ","s2  ",1423,4)
       call add("vv0 ",1.d0,"s2  ",1.d0,"vv0 ")
-      call reorder("tb15","s2  ",1342,4,1)
+      call reorder("tb15","s2  ",1342,4)
       call add("vv0 ",1.d0,"s2  ",1.d0,"vv0 ")
       call prtime("ordtb0  ",0,1)
       return
@@ -701,8 +701,8 @@ c *****************************************************
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
-      call reorder("thq ","ta1 ",1342,4,1)
-      call reorder("thq ","ta3 ",1324,4,1)
+      call reorder("thq ","ta1 ",1342,4)
+      call reorder("thq ","ta3 ",1324,4)
       call clear("tb2 ",3223,1100)
       call clear("tb6 ",3232,1100)
       call clear("tb5 ",2332,1010)
@@ -906,13 +906,13 @@ c ******************************************************
 #endif
 
       i=1
-      call reorder("tb5 ","s2  ",3412,5,1)
+      call reorder("tb5 ","s2  ",3412,5)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
-10    call reorder("tb2 ","s2  ",1324,5,1)
+10    call reorder("tb2 ","s2  ",1324,5)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
-      call reorder("tb4 ","s2  ",1243,5,1)
+      call reorder("tb4 ","s2  ",1243,5)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
-      call reorder("tb6 ","s2  ",1423,5,1)
+      call reorder("tb6 ","s2  ",1423,5)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
       if (i.eq.77) go to 11
       call fold_ccsd("tnew","thqf")
@@ -978,7 +978,7 @@ c **********************************************
 c  incl 14c, 19c, 29c
 c  14c
       call add("va4 ",-2.d0,"va8 ",1.d0,"s2  ")
-      call reorder("tcm ","s1  ",3412,4,0)
+      call reorder("tcm ","s1  ",3412,4)
       call mult("s1  ","s2  ","p14c",113)
 c  19c
       call add("vd11",2.d0,"vd8 ",-1.d0,"s2  ")
@@ -1036,7 +1036,7 @@ c  13c
       call add("hhpp",-2.d0,"va3 ",1.d0,"s2  ")
       call mult("tcm ","s2  ","p13c",113)
 c  18c
-      call reorder("hhhp","s2  ",1324,5,0)
+      call reorder("hhhp","s2  ",1324,5)
       call add("s2  ",-2.d0,"hhhp",1.d0,"s2  ")
       call mult("t1c ","s2  ","s1  ",022)
       call add("p13c",1.d0,"s1  ",1.d0,"p13c")
@@ -1067,12 +1067,12 @@ c  incl 12c, 22d, 25c
 c  12c
       call mult("tgm2","va2 ","s3  ",222)
 c 22d
-      call reorder("hhhp","s1  ",1342,5,0)
+      call reorder("hhhp","s1  ",1342,5)
       call mult("t1g ","s1  ","s2  ",131)
       call add("s3  ",1.d0,"s2  ",1.d0,"s3  ")
 c  25c
       call mult("t1c ","ghpp","s2  ",131)
-      call reorder("s2  ","s1  ",2134,5,0)
+      call reorder("s2  ","s1  ",2134,5)
       call add("s3  ",1.d0,"s1  ",-1.d0,"s3  ")
 c --------------
       call mult("tvm2","s3  ","s2  ",222)
@@ -1101,16 +1101,16 @@ c *****************************************************
 c  4c
       call add("va1 ",2.d0,"hphp",-1.d0,"p4c ")
 c  20c
-      call reorder("hphh","s1  ",1243,5,0)
+      call reorder("hphh","s1  ",1243,5)
       call add("s1  ",-2.d0,"hphh",1.d0,"s1  ")
       call mult("t1cr","s1  ","s2  ",131)
-      call reorder("s2  ","s1  ",2143,5,0)
+      call reorder("s2  ","s1  ",2143,5)
       call add("p4c ",1.d0,"s1  ",1.d0,"p4c ")
 c  23c
-      call reorder("hppp","s1  ",1243,5,0)
+      call reorder("hppp","s1  ",1243,5)
       call add("s1  ",-1.d0,"hppp",2.d0,"s1  ")
       call mult("t1c ","s1  ","s2  ",131)
-      call reorder("s2  ","s1  ",1324,5,0)
+      call reorder("s2  ","s1  ",1324,5)
       call add("p4c ",1.d0,"s1  ",1.d0,"p4c ")
       call prt("p4c ","pdig4c  ",3)
       call prtime("pdig4c  ",0,1)
@@ -1156,7 +1156,7 @@ c  11c
       call add("p5c ",1.d0,"s1  ",1.d0,"p5c ")
 c  21c
       call mult("t1cr","vc2 ","s1  ",131)
-      call reorder("s1  ","s3  ",2134,5,0)
+      call reorder("s1  ","s3  ",2134,5)
       call add("p5c ",1.d0,"s3  ",1.d0,"p5c ")
 c  24c
       call mult("t1c ","vd12","s1  ",131)
@@ -1170,7 +1170,7 @@ c ********************************************
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
-      call reorder("thp ","s3  ",1423,4,1)
+      call reorder("thp ","s3  ",1423,4)
       call mult("s3  ","p5c ","s1  ",222)
       call add("tb2 ",1.d0,"s1  ",1.d0,"tb2 ")
       call prt("s1  ","diag5c  ",3)
@@ -1194,7 +1194,7 @@ c *******************************************************
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
-      call reorder("ghph","s1  ",1243,5,0)
+      call reorder("ghph","s1  ",1243,5)
       call mult("tvm2","s1  ","s2  ",222)
       call add("tb1 ",1.d0,"s2  ",-1.d0,"tb1 ")
       call prt("s2  ","-diag6c ",3)
@@ -1221,7 +1221,7 @@ c   incl 20d, 23d
 c  20d
       call add("vvc2",-2.d0,"vvc3",1.d0,"s2  ")
       call mult("t1g ","s2  ","s1  ",131)
-      call reorder("s1  ","s3  ",2134,5,0)
+      call reorder("s1  ","s3  ",2134,5)
 c   diag 23d
       call add("vga1",2.d0,"ghpp",-1.d0,"s2  ")
       call mult("t1v ","s2  ","s1  ",131)
@@ -1241,7 +1241,7 @@ c ***************************************************
 c  incl 26c 26d
 c  26c
       call mult("t1c ","vhhp","s1  ",131)
-      call reorder("s1  ","s3  ",2143,5,0)
+      call reorder("s1  ","s3  ",2143,5)
 c  26d
       call mult("t1v ","hhhp","s1  ",131)
 c ---------------------
@@ -1312,11 +1312,11 @@ c  11c.1
       call add("s3  ",1.d0,"s1  ",1.d0,"s3  ")
 c  21c.1
       call mult("t1cr","vc2 ","s1  ",131)
-      call reorder("s1  ","s2  ",2134,5,0)
+      call reorder("s1  ","s2  ",2134,5)
       call add("s3  ",1.d0,"s2  ",1.d0,"s3  ")
 c  24c.1
       call mult("t1c ","vd7 ","s1  ",131)
-      call reorder("s1  ","s2  ",1423,5,0)
+      call reorder("s1  ","s2  ",1423,5)
       call add("s3  ",1.d0,"s2  ",-1.d0,"s3  ")
 c ---------------------
       call mult("t1v ","s3  ","s2  ",131)
@@ -1336,7 +1336,8 @@ c  24
       call mult("t1v ","vga1","s1  ",131)
 c   21
       call mult("t1g ","vvc2","s2  ",131)
-      call reorder("s2  ","s3  ",2134,5,0)
+      !call reorder("s2  ","s3  ",2134,5,0)
+      call reorder("s2  ","s3  ",2134,5)
       call add("s3  ",1.d0,"s1  ",-1.d0,"s3  ")
 c ----------------------
       call mult("s3  ","tc1 ","s2  ",222)
@@ -1353,10 +1354,12 @@ c ************************************************************
 c   incl 13d 18d 28d
 c  13d
       call add("va1 ",-2.d0,"va2 ",1.d0,"s2  ")
-      call reorder("tvm ","s3  ",1324,4,0)
+      !call reorder("tvm ","s3  ",1324,4,0)
+      call reorder("tvm ","s3  ",1324,4)
       call mult("s3  ","s2  ","s1  ",113)
 c   18
-      call reorder("vhhp","s3  ",1324,4,0)
+      !call reorder("vhhp","s3  ",1324,4,0)
+      call reorder("vhhp","s3  ",1324,4)
       call add("s3  ",-2.d0,"vhhp",1.d0,"s2  ")
       call mult("s2  ","t1c ","s3  ",202)
       call add("s1  ",1.d0,"s3  ",1.d0,"s1  ")
@@ -1379,8 +1382,10 @@ c   incl 14d, 19d
       call add("va4 ",-2.d0,"va8 ",1.d0,"s2  ")
       call mult("tgm ","s2  ","s3  ",113)
 c   19
-      call reorder("ghpp","s1  ",1324,5,0)
-      call reorder("ghpp","s2  ",1423,5,0)
+      !call reorder("ghpp","s1  ",1324,5,0)
+      call reorder("ghpp","s1  ",1324,5)
+      !call reorder("ghpp","s2  ",1423,5,0)
+      call reorder("ghpp","s2  ",1423,5)
       call add("s1  ",2.d0,"s2  ",-1.d0,"s1  ")
       call mult("t1c ","s1  ","s2  ",022)
       call add("s2  ",1.d0,"s3  ",1.d0,"s2  ")
@@ -1398,13 +1403,16 @@ c ******************************************************
 #include "priunit.h"
 c  incl 22c, 25d
       call mult("vvc3","t1cr","s1  ",311)
-      call reorder("s1  ","s3  ",1423,5,0)
+      !call reorder("s1  ","s3  ",1423,5,0)
+      call reorder("s1  ","s3  ",1423,5)
 c   diag 25d
-      call reorder("hppp","s1  ",4123,5,0)
+      !call reorder("hppp","s1  ",4123,5,0)
+      call reorder("hppp","s1  ",4123,5)
       call mult("t1v ","s1  ","s2  ",131)
       call add("s3  ",1.d0,"s2  ",-1.d0,"s3  ")
 c ----------------------------------
-      call reorder("tg  ","s2  ",1432,4,0)
+      !call reorder("tg  ","s2  ",1432,4,0)
+      call reorder("tg  ","s2  ",1432,4)
       call mult("s3  ","s2  ","s1  ",222)
       call add("tb1 ",1.d0,"s1  ",1.d0,"tb1 ")
       call prt("s1  ","diag22c ",3)
@@ -1436,7 +1444,8 @@ c  17d
       call prt("s2  ","-diag17d",3)
       call prtime("diag17d ",0,1)
 c  17c
-      call reorder("vhhp","s1  ",1243,5,0)
+      !call reorder("vhhp","s1  ",1243,5,0)
+      call reorder("vhhp","s1  ",1243,5)
       call mult("s1  ","t1g ","s2  ",311)
       call add("tb4 ",1.d0,"s2  ",-1.d0,"tb4 ")
       call prt("s2  ","-diag17c",3)
@@ -1451,7 +1460,8 @@ c **********************************************************
 c   incl  27d, 29d
 c   27d
       call mult("tv  ","hppp","s1  ",222)
-      call reorder("s1  ","s2  ",1243,5,0)
+      !call reorder("s1  ","s2  ",1243,5,0)
+      call reorder("s1  ","s2  ",1243,5)
 c   29a
       call mult("tv1 ","hp  ","s1  ",311)
       call add("s1  ",-1.d0,"s2  ",-1.d0,"s1  ")
@@ -1489,10 +1499,12 @@ c  -2*t1**4 compensates for overcounting.
 c  11c.1
       call mult("t1c ","va1 ","s1  ",131)
       call mult("t1cr","s1  ","s2  ",131)
-      call reorder("s2  ","s1  ",2134,5,0)
+      !call reorder("s2  ","s1  ",2134,5,0)
+      call reorder("s2  ","s1  ",2134,5)
 c  21c.1
       call mult("t1cr","vc2 ","s2  ",131)
-      call reorder("s2  ","s3  ",2134,5,0)
+      !call reorder("s2  ","s3  ",2134,5,0)
+      call reorder("s2  ","s3  ",2134,5)
       call add("s1  ",1.d0,"s3  ",1.d0,"s1  ")
 c  -2*t1**4 ?
       call mult("t1v ","s1  ","s3  ",131)
@@ -1518,25 +1530,30 @@ c *************************************************
 #endif
 
 c  f2c
-      call reorder("thq ","s1  ",1243,5,1)
+!     call reorder("thq ","s1  ",1243,5,1)
+      call reorder("thq ","s1  ",1243,5)
       call mult("s1  ","tgf ","s2  ",311)
       call add("tb4 ",1.d0,"s2  ",1.d0,"tb4 ")
       call prt("s2  ","f2c ",3)
 c  f3c
-      call reorder("thqf","s3  ",1342,5,1)
+!     call reorder("thqf","s3  ",1342,5,1)
+      call reorder("thqf","s3  ",1342,5)
       call mult("t1gr","s3  ","s2  ",131)
-      call reorder("s2  ","s1  ",2134,5,1)
+!     call reorder("s2  ","s1  ",2134,5,1)
+      call reorder("s2  ","s1  ",2134,5)
       call unfold_ccsd("s1  ","s2  ",4)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
       call prt("s1  ","f3a ",3)
 c  f1d.1
       call mult("t1gr","s3  ","s2  ",131)
       call mult("s2  ","t1vr","s1  ",311)
-      call reorder("s1  ","s2  ",2134,5,1)
+!     call reorder("s1  ","s2  ",2134,5,1)
+      call reorder("s1  ","s2  ",2134,5)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
       call prt("s2  ","f1a ",3)
 c  f2d
-      call reorder("thq ","s1  ",2341,5,1)
+!     call reorder("thq ","s1  ",2341,5,1)
+      call reorder("thq ","s1  ",2341,5)
       call mult("tvf ","s1  ","s2  ",131)
       call add("tnew",1.d0,"s2  ",-1.d0,"tnew")
       call prt("s2  ","f2d ",3)
@@ -1546,18 +1563,22 @@ c  f3d
       call add("tnew",1.d0,"s1  ",-1.d0,"tnew")
       call prt("s1  ","-f3d",3)
 c  f1e
-      call reorder("thq ","s1  ",2413,5,1)
+!     call reorder("thq ","s1  ",2413,5,1)
+      call reorder("thq ","s1  ",2413,5)
       call mult("s3  ","s1  ","s2  ",222)
       call add("tb2 ",1.d0,"s2  ",-2.d0,"tb2 ")
       call prt("s2  ","f1e ",3)
 c  f1c
-      call reorder("thpf","s2  ",1432,5,1)
+!     call reorder("thpf","s2  ",1432,5,1)
+      call reorder("thpf","s2  ",1432,5)
       call mult("s2  ","s1  ","s3  ",222)
       call add("tb2 ",1.d0,"s3  ",1.d0,"tb2 ")
       call prt("s3  ","f1c ",3)
 c  f1d
-      call reorder("thp ","s1  ",2314,4,1)
-      call reorder("thqf","s3  ",1342,5,1)
+!     call reorder("thp ","s1  ",2314,4,1)
+      call reorder("thp ","s1  ",2314,4)
+!     call reorder("thqf","s3  ",1342,5,1)
+      call reorder("thqf","s3  ",1342,5)
       call mult("s3  ","s1  ","s2  ",222)
       call add("tb2 ",1.d0,"s2  ",1.d0,"tb2 ")
       call prt("s2  ","f1d ",3)

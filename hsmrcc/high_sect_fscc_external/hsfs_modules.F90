@@ -486,7 +486,8 @@ end module tv2_mod
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 module print_level
  integer, private :: iprint=0
- logical, private :: print_level_read = .false.
+ logical, private :: print_level_read=.false.
+ !logical :: print_level_read = .false.
 contains
 
 subroutine extract_print_level
@@ -499,26 +500,30 @@ subroutine extract_print_level
  else
   write(LUPRI,'(2X,A,I3)') 'print level was already set before to:',iprint
  endif
-! print_level_read = .true.! print variable is extracted
+ print_level_read = .true.! print variable is extracted
 end subroutine extract_print_level
 
 subroutine set_print_level(ipr)
-!#include "priunit.h"
+#include "priunit.h"
  integer, intent(in) :: ipr
  iprint=ipr
  print_level_read = .true.! print variable is extracted
-! write(LUPRI,'(2x,a,i3)') 'set_print_level: new print level set, iprint=',iprint
+ write(LUPRI,'(2x,a,i3)') 'set_print_level: new print level set, iprint=',iprint
+ write(LUPRI,*) 'set_print_level: print_level_read=',print_level_read
 end subroutine set_print_level
 
 function getiprint() result(ipr)
 ! get private module value
+#include "priunit.h"
  integer :: ipr
+ write(LUPRI,*) 'getiprint: print_level_read,iprint=',print_level_read,iprint
  if (.not.print_level_read) then
    call quit('getiprint: print variable NOT extracted !')
  else
   ipr = iprint
   return
  endif
+ return
 end function getiprint
 
 end module print_level

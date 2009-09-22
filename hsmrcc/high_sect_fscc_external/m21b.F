@@ -284,7 +284,8 @@ c     diag hbv-a
       call move     ("pgvv","hbv ")
 c  diag hbv-b
       call mult     ("ph  ","tr6 ","s1  ",131)
-      call add      ("s1  ",-1.d0,"hbv ",1.d0,"hbv ",1.d0)
+      !call add      ("s1  ",-1.d0,"hbv ",1.d0,"hbv ",1.d0)
+      call add      ("s1  ",-1.d0,"hbv ",1.d0,"hbv ")
 c  diag hbv-c
       call reorder  ("ppvh","s2  ",2341,4)
       call add      ("vm2 ",2.d0,"s2  ",-1.d0,"s1  ")

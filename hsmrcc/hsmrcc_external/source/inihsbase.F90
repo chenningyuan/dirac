@@ -131,8 +131,12 @@ use IOModule
          ': UOUT assigned file is ',FileHSMR
       endif
       if (OPTION(RESTART).and.(.not.OPTION(NOAPND))) then
-       !  ierrno = fseek(UOUT,0,2)
-         call fseek(UOUT,0,2,ierrno) ! GNU/gfortran substitute
+
+         !ierrno = fseek(UOUT,0,2) ! mi: original 
+         !call fseek(UOUT,0,2)
+
+        ! call fseek(UOUT,0,2,ierrno) ! GNU/gfortran substitute
+
          if (ierrno/=0) then
            write(UOUT,*) ': fseek error on UOUT'
            call flushout

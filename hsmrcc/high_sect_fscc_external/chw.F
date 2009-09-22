@@ -106,8 +106,10 @@ c     iopt(10) .ne.0 - do not write tape9
       call rdfile  (55,0,"thu ",-1)
       call rdfile  (55,1,"thuf",-1)
       if (iopt(17).ne.0) then
-        call rdfile (53,3,"t31 ")
-        call rdfile (55,2,"t32 ")
+        !call rdfile (53,3,"t31 ")
+        call rdfile (53,3,"t31 ",-1)
+        !call rdfile (55,2,"t32 ")
+        call rdfile (55,2,"t32 ",-1)
         if (iopt(17).eq.3) then
           call rdbox_chw
         end if

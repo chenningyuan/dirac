@@ -241,7 +241,8 @@ C  *******************************************************************
       lngth=ije3(isave)-ije3(isave-1)
       do 20 i=1,lngth
         ii=igen(istrt31+ije3(isave-1)+i)
-        if (ind.eq.iand(ii,'ffffff'x)) then
+       ! if (ind.eq.iand(ii,'ffffff'x)) then
+        if (ind.eq.iand(ii,z'ffffff')) then
           find6=gen(istrt32+ije3(isave-1)+i)
         end if
 20    continue
@@ -481,7 +482,8 @@ C  *******************************************************************
       if (iii1.lt.100) then
 c   1-electron t.
         do 120 i=1,nsize2
-        i1=iand(igen(istrt21+i),'ff'X)
+        !i1=iand(igen(istrt21+i),'ff'X)
+        i1=iand(igen(istrt21+i),z'ff')
         if (icv(i1).eq.0) go to 120
         if (iopt(9).ne.0) then
           do 105 ir=1,nrsp1
@@ -507,13 +509,13 @@ c   transition from r space eliminated
          i_4hthqf=4hthqf
 !        if (namef.eq.4hthpf) then
          if (namef.eq.i_4hthpf) then
-          i12=ior(iand(ishft(igen(istrt21+i),-16),'ff00'X),
-     1              iand(igen(istrt21+i),'ff'X))
+          i12=ior(iand(ishft(igen(istrt21+i),-16),z'ff00'),
+     1              iand(igen(istrt21+i),z'ff'))
          else if (namef.eq.i_4hthqf) then
-          i12=ior(iand(ishft(igen(istrt21+i),-16),'ff00'X),
-     1              iand(ishft(igen(istrt21+i),-8),'ff'X))
+          i12=ior(iand(ishft(igen(istrt21+i),-16),z'ff00'),
+     1              iand(ishft(igen(istrt21+i),-8),z'ff'))
          else
-           i12=iand(ishft(igen(istrt21+i),-16),'ffff'X)
+           i12=iand(ishft(igen(istrt21+i),-16),z'ffff')
           endif
           do 130 ir=1,nrsp2
           if (irsp2(ir).eq.i12) then
@@ -523,22 +525,22 @@ c   transition from r space eliminated
 130       continue
         endif
 c   move p to p transitions to folded
-        i1=iand(ishft(igen(istrt21+i),-24),'ff'X)
-        i2=iand(ishft(igen(istrt21+i),-16),'ff'X)
-        i3=iand(ishft(igen(istrt21+i),-8) ,'ff'X)
-        i4=iand(      igen(istrt21+i)     ,'ff'X)
+        i1=iand(ishft(igen(istrt21+i),-24),z'ff')
+        i2=iand(ishft(igen(istrt21+i),-16),z'ff')
+        i3=iand(ishft(igen(istrt21+i),-8) ,z'ff')
+        i4=iand(      igen(istrt21+i)     ,z'ff')
         if ((icv(i1).eq.0).or.(icv(i2).eq.0)) go to 180
         if ((icv(i3).eq.0).or.(icv(i4).eq.0)) go to 180
         if (iopt(9).eq.0) go to 170
         i_4hthpf=4hthpf
         i_4hthqf=4hthqf
         if (namef.eq.i_4hthpf) then
-          i34=iand(ishft(igen(istrt21+i),-8),'ffff'X)
+          i34=iand(ishft(igen(istrt21+i),-8),z'ffff')
         else if (namef.eq.i_4hthqf) then
-          i34=ior(iand(ishft(igen(istrt21+i),-8),'ff00'X),
-     1            iand(igen(istrt21+i),'ff'X))
+          i34=ior(iand(ishft(igen(istrt21+i),-8),z'ff00'),
+     1            iand(igen(istrt21+i),z'ff'))
         else
-          i34=iand(igen(istrt21+i),'ffff'X)
+          i34=iand(igen(istrt21+i),z'ffff')
         endif
         do 150 ir=1,nrsp2
 150     if (i34.eq.irsp2(ir)) go to 180
@@ -600,7 +602,9 @@ c   move p to p transitions to folded
 10    continue
       if (ninds.eq.2) then
         if (iiv2.ne.0) then
-          call parse (iiv2,jj1(1),jj1(2))
+!        mi: inconsitent number of routine parameters !!!!!
+          !call parse (iiv2,jj1(1),jj1(2))
+          call parse (iiv2,jj1(1),jj1(2),0,0)
         end if
         jj1(ind)=1
         iiv1=10*jj1(1)+jj1(2)
@@ -955,12 +959,12 @@ c   move p to p transitions to folded
       ibe(0)=0
       do 10 i=1,nij2
         do 20 j=0,3
-          ia(4-j)=iand(ishft(ij2(i),-8*j),'ff'x)
+          ia(4-j)=iand(ishft(ij2(i),-8*j),z'ff')
 20      continue
         ii=0
         n=0
         do 30 j=1,ije2(i)-ije2(i-1)
-          jj=iand(ishft(igen(istrt21+ije2(i-1)+j),-8),'ff'x)
+          jj=iand(ishft(igen(istrt21+ije2(i-1)+j),-8),z'ff')
           if (ii.ne.jj) then
             n=n+1
             ib(n)=jj
@@ -975,7 +979,7 @@ c   move p to p transitions to folded
           ia(5)=ib(j)
           do 60 k=1,nij3 
             do 70 m=0,2
-            ia(8-m)=iand(ishft(ij3(k),-8*m),'ff'x)
+            ia(8-m)=iand(ishft(ij3(k),-8*m),z'ff')
 70          continue
             ii=1
             do 80 m=1,8
@@ -1154,7 +1158,7 @@ c   move p to p transitions to folded
         do 200 i=1,nij1
           id3=ij1(i)
           do 210 j=1,ije1(i)-ije1(i-1)
-            ind3=iand(igen(istrt11+ije1(i-1)+j),'ffffff'x)
+            ind3=iand(igen(istrt11+ije1(i-1)+j),z'ffffff')
             iquit=0
             do while (iquit.eq.0)
               ii=imax(id3,ind3,id4,ind4,2)
@@ -1278,12 +1282,12 @@ c   move p to p transitions to folded
       ibe(0)=0
       do 110 i=1,nij2
         do 120 j=0,3
-          ia(4-j)=iand(ishft(ij2(i),-8*j),'ff'x)
+          ia(4-j)=iand(ishft(ij2(i),-8*j),z'ff')
 120     continue
         ii=0
         n=0
         do 130 j=1,ije2(i)-ije2(i-1)
-          jj=iand(ishft(igen(istrt21+ije2(i-1)+j),-24),'ff'x)
+          jj=iand(ishft(igen(istrt21+ije2(i-1)+j),-24),z'ff')
           if (ii.ne.jj) then
             n=n+1
             ib(n)=jj
@@ -1333,7 +1337,7 @@ c   move p to p transitions to folded
                 else if (indold.lt.indnew) then
                   indc=indc+1
                   ii=igen(istrt11+ije1(idc-1)+indc)
-                  indold=iand(ii,'ffffff'x)  
+                  indold=iand(ii,z'ffffff')  
                 else
                   write (6,*) 'msub3 - label not in template'
                   stop
@@ -1437,12 +1441,12 @@ c   move p to p transitions to folded
       ibe(0)=0
       do 300 i=1,nij2
         do 310 j=0,3
-          ia(4-j)=iand(ishft(ij2(i),-8*j),'ff'x)
+          ia(4-j)=iand(ishft(ij2(i),-8*j),z'ff')
 310     continue
         ii=0
         n=0
         do 320 j=1,ije2(i)-ije2(i-1)
-          jj=iand(ishft(igen(istrt21+ije2(i-1)+j),-16),'ffff'x)
+          jj=iand(ishft(igen(istrt21+ije2(i-1)+j),-16),z'ffff')
           if (ii.ne.jj) then
             n=n+1
             ib(n)=jj
@@ -1454,11 +1458,11 @@ c   move p to p transitions to folded
 320     continue
         call dimx (n,10000,'msub4')
         do 330 j=1,n
-          ia(5)=iand(ishft(ib(j),-8),'ff'x)
-          ia(6)=iand(ib(j),'ff'x)
+          ia(5)=iand(ishft(ib(j),-8),z'ff')
+          ia(6)=iand(ib(j),z'ff')
           do 340 k=1,nij3 
-            ia(7)=iand(ishft(ij3(k),-8),'ff'x)
-            ia(8)=iand(ij3(k),'ff'x)
+            ia(7)=iand(ishft(ij3(k),-8),z'ff')
+            ia(8)=iand(ij3(k),z'ff')
             ii=1
             do 350 m=1,8
               ii=igmt(ii,ici(ia(m)))
@@ -1595,11 +1599,11 @@ c   move p to p transitions to folded
       indold=0
       do 410 i=1,nij2
         do 420 k=0,3
-          ia(4-k)=iand(ishft(ij2(i),-8*k),'ff'x)
+          ia(4-k)=iand(ishft(ij2(i),-8*k),z'ff')
 420     continue
         do 430 j=1,nij3
           do 440 k=0,3
-            ia(8-k)=iand(ishft(ij3(j),-8*k),'ff'x)
+            ia(8-k)=iand(ishft(ij3(j),-8*k),z'ff')
 440       continue
           ii=1
           do 450 k=1,8
@@ -1734,12 +1738,12 @@ c   move p to p transitions to folded
       ibe(0)=0
       do 110 i=1,nij2
         do 120 j=0,3
-          ia(4-j)=iand(ishft(ij2(i),-8*j),'ff'x)
+          ia(4-j)=iand(ishft(ij2(i),-8*j),z'ff')
 120     continue
         ii=0
         n=0
         do 130 j=ije2(i-1)+1,ije2(i)
-          jj=iand(ishft(igen(istrt21+j),-8),'ffffff'x)
+          jj=iand(ishft(igen(istrt21+j),-8),z'ffffff')
           if (ii.ne.jj) then
             n=n+1
             ib(n)=jj
@@ -1751,9 +1755,9 @@ c   move p to p transitions to folded
 130     continue
         call dimx (n,10000,'msub6')
         do 150 j=1,n
-          ia(5)=iand(ishft(ib(j),-16),'ff'x)
-          ia(6)=iand(ishft(ib(j),-8),'ff'x)
-          ia(7)=iand(ib(j),'ff'x)
+          ia(5)=iand(ishft(ib(j),-16),z'ff')
+          ia(6)=iand(ishft(ib(j),-8),z'ff')
+          ia(7)=iand(ib(j),z'ff')
           do 160 k=1,nij3 
             ia(8)=ij3(k)
             ii=1
@@ -1902,7 +1906,7 @@ c
       call dcopy(nsize1,0.d0,0,gen(istrt12+1),1)
       kbb=0
       kcc=0
-      ib0='ffff'X
+      ib0=z'ffff'
       msk1=256**m2-1
 
 !     cycle of i1 for the final diagram
@@ -2048,8 +2052,8 @@ c
           call tmplt6 (iii1,iiv1,namet,ntapet)
           istrt11=nstrt(1,ntapet-1)+2*nij1+4
           istrt12=nstrt(2,ntapet-1)
-          msk1='ffffff'x
-          msk2='ffffff'x
+          msk1=z'ffffff'
+          msk2=z'ffffff'
         else if (id.eq.2) then
           if (((iii2-1000*(iii2/1000)).ne.(iii3-1000*(iii3/1000))).or.
      1        ((iiv2-1000*(iiv2/1000)).ne.(iiv3-1000*(iiv3/1000)))) then
@@ -2062,8 +2066,8 @@ c
             call tmpcng (nij3,ij3,ije3,ntape3,2,1)
             iii1=10*(iii2/1000)+iii3/1000
             iiv1=10*(iiv2/1000)+iiv3/1000
-            msk1='ffffff'x
-            msk2='ff'x
+            msk1=z'ffffff'
+            msk2=z'ff'
             call tmplt (iii1,iiv1,namet,ntapet)
             istrt11=nstrt(1,ntapet-1)+2*nij1+4
             istrt12=nstrt(2,ntapet-1)
@@ -2072,8 +2076,8 @@ c
             call tmpcng (nij2,ij2,ije2,ntape2,2,1)
             iii1=1000*(iii2/1000)+iii3/1000
             iiv1=1000*(iiv2/1000)+iiv3/1000
-            msk1='ff'x
-            msk2='ffffff'x
+            msk1=z'ff'
+            msk2=z'ffffff'
             call tmplt (iii1,iiv1,namet,ntapet)
             istrt11=nstrt(1,ntapet-1)+2*nij1+4
             istrt12=nstrt(2,ntapet-1)
@@ -2095,8 +2099,8 @@ c
             istrt11=nstrt(1,ntapet-1)+2*nij1+4
             istrt12=nstrt(2,ntapet-1)
             call tchng6 (nij1,ij1,ije1,ntapet,4)
-            msk1='ffffffff'x
-            msk2='ffff'x
+            msk1=z'ffffffff'
+            msk2=z'ffff'
           else if (iii2.le.3333) then
             call tchng6 (nij3,ij3,ije3,ntape3,4)
             iii1=10000*(iii2/100)+iii3/100
@@ -2105,8 +2109,8 @@ c
             istrt11=nstrt(1,ntapet-1)+2*nij1+4
             istrt12=nstrt(2,ntapet-1)
             call tchng6 (nij1,ij1,ije1,ntapet,2)
-            msk1='ffff'x
-            msk2='ffffffff'x
+            msk1=z'ffff'
+            msk2=z'ffffffff'
           end if
         else if (id.eq.4) then
           if (((iii2-1000*(iii2/1000)).ne.(iii3-1000*(iii3/1000))).or.
@@ -2121,8 +2125,8 @@ c
           call tmplt6 (iii1,iiv1,namet,ntapet)
           istrt11=nstrt(1,ntapet-1)+2*nij1+4
           istrt12=nstrt(2,ntapet-1)
-          msk1='ffffff'x
-          msk2='ffffff'x
+          msk1=z'ffffff'
+          msk2=z'ffffff'
         end if
         ibsave=msk1      
         icsave=msk2
@@ -2294,12 +2298,12 @@ c
           itce(0)=0
           do 30 i=1,nij2
             do 40 j=0,3
-              ia(4-j)=iand(ishft(ij2(i),-8*j),'ff'x)
+              ia(4-j)=iand(ishft(ij2(i),-8*j),z'ff')
 40          continue
             ii=0
             n=0
             do 50 j=1,ije2(i)-ije2(i-1)
-              jj=iand(ishft(igen(istrt21+ije2(i-1)+j),-8),'ff'x)
+              jj=iand(ishft(igen(istrt21+ije2(i-1)+j),-8),z'ff')
               if (ii.ne.jj) then
                 n=n+1
                 itc(n)=jj
@@ -2617,8 +2621,8 @@ CUK   common /crle/ trle(nrle,4),isize(4)
         istrt2=nstrt(2,ntape-1)
         do 20 i=1,isize(1)
           it=igen(istrt1+i)
-          ka=iand(ishft(it,-8),'ff'x)
-          kb=iand(it,'ff'x)
+          ka=iand(ishft(it,-8),z'ff')
+          kb=iand(it,z'ff')
           trle1(i)=-1.d0*isign*(eps(ka)-eps(kb))
           trle1(isize(1)+i)=gen(istrt2+i)
 20      continue
@@ -2632,10 +2636,10 @@ CUK   common /crle/ trle(nrle,4),isize(4)
         istrt2=nstrt(2,ntape-1)
         do 10 i=1,isize(2)
           it=igen(istrt1+i)
-          ka=iand(ishft(it,-24),'ff'x)
-          kb=iand(ishft(it,-16),'ff'x)
-          kc=iand(ishft(it,-8),'ff'x)
-          kd=iand(it,'ff'x)
+          ka=iand(ishft(it,-24), z'ff')
+          kb=iand(ishft(it,-16), z'ff')
+          kc=iand(ishft(it,-8),  z'ff')
+          kd=iand(it,            z'ff')
           trle2(i)=-1.d0*isign*(eps(ka)+eps(kb)-eps(kc)-eps(kd))
           trle2(isize(2)+i)=gen(istrt2+i)
 10      continue
@@ -2649,14 +2653,14 @@ CUK   common /crle/ trle(nrle,4),isize(4)
         istrt2=nstrt(2,ntape-1)
         do 30 i=1,nij1 
           id=ij1(i)             
-          ka=iand(ishft(id,-16),'ff'x)
-          kb=iand(ishft(id,-8),'ff'x)
-          kc=iand(id,'ff'x)
+          ka=iand(ishft(id,-16), z'ff')
+          kb=iand(ishft(id,-8),  z'ff')
+          kc=iand(id,z'ff')
           do 40 j=ije1(i-1)+1,ije1(i)
             ind=igen(istrt1+j)
-            kd=iand(ishft(ind,-16),'ff'x)
-            ke=iand(ishft(ind,-8),'ff'x)
-            kf=iand(ind,'ff'x)
+            kd=iand(ishft(ind,-16), z'ff')
+            ke=iand(ishft(ind,-8),  z'ff')
+            kf=iand(ind,            z'ff')
             trle3(j)=-1.d0*isign*
      1      (eps(ka)+eps(kb)+eps(kc)-eps(kd)-eps(ke)-eps(kf))
             trle3(isize(3)+j)=gen(istrt2+j)
@@ -2673,14 +2677,14 @@ CUK   common /crle/ trle(nrle,4),isize(4)
         if (iii1.le.333333) then
           do 50 i=1,nij1 
             id=ij1(i)             
-            ka=iand(ishft(id,-16),'ff'x)
-            kb=iand(ishft(id,-8),'ff'x)
-            kc=iand(id,'ff'x)
+            ka=iand(ishft(id,-16),  z'ff')
+            kb=iand(ishft(id,-8),   z'ff')
+            kc=iand(id,  z'ff')
             do 60 j=ije1(i-1)+1,ije1(i)
               ind=igen(istrt1+j)
-              kd=iand(ishft(ind,-16),'ff'x)
-              ke=iand(ishft(ind,-8),'ff'x)
-              kf=iand(ind,'ff'x)
+              kd=iand(ishft(ind,-16),  z'ff')
+              ke=iand(ishft(ind,-8),   z'ff')
+              kf=iand(ind,             z'ff')
               trle4(j)=-1.d0*isign*
      1        (eps(ka)+eps(kb)+eps(kc)-eps(kd)-eps(ke)-eps(kf))
               trle4(isize(4)+j)=gen(istrt2+j)
@@ -2689,16 +2693,16 @@ CUK   common /crle/ trle(nrle,4),isize(4)
         else if (iii1.gt.333333) then
           do 70 i=1,nij1 
             id=ij1(i)             
-            ka=iand(ishft(id,-24),'ff'x)
-            kb=iand(ishft(id,-16),'ff'x)
-            kc=iand(ishft(id,-8),'ff'x)
-            kd=iand(id,'ff'x)
+            ka=iand(ishft(id,-24),  z'ff')
+            kb=iand(ishft(id,-16),  z'ff')
+            kc=iand(ishft(id,-8),   z'ff')
+            kd=iand(id,             z'ff')
             do 80 j=ije1(i-1)+1,ije1(i)
               ind=igen(istrt1+j)
-              ke=iand(ishft(ind,-24),'ff'x)
-              kf=iand(ishft(ind,-16),'ff'x)
-              kg=iand(ishft(ind,-8),'ff'x)
-              kh=iand(ind,'ff'x)
+              ke=iand(ishft(ind,-24),  z'ff')
+              kf=iand(ishft(ind,-16),  z'ff')
+              kg=iand(ishft(ind,-8),   z'ff')
+              kh=iand(ind,             z'ff')
               trle4(j)=-1.d0*isign*
      1        (eps(ka)+eps(kb)+eps(kc)+eps(kd)
      2        -eps(ke)-eps(kf)-eps(kg)-eps(kh))
@@ -2924,13 +2928,13 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       call dcopy (ije1(nij1),0.d0,0,gen(istrt12+1),1)
       do 10 i=1,nij1
         do 60 k=4,0,-1
-          ii=iand(ishft(ij1(i),-4*k),'f'x)
+          ii=iand(ishft(ij1(i),-4*k),z'f')
           ia(5-k)=iv(ii)
 60      continue
         do 20 j=1,ije1(i)-ije1(i-1)
           ii=igen(istrt11+ije1(i-1)+j)
           do 70 k=4,0,-1
-            jj=iand(ishft(ii,-4*k),'f'x)
+            jj=iand(ishft(ii,-4*k),z'f')
             ia(10-k)=iv(jj)
 70        continue
           igot2=0
@@ -2953,7 +2957,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
             nel1=0
             do 50 k=1,ije2(k2save)-ije2(k2save-1)
               ii=igen(istrt21+ije2(k2save-1)+k)
-              if (ia(iord(5)).eq.iand(ishft(ii,-8),'ff'x)) then
+              if (ia(iord(5)).eq.iand(ishft(ii,-8),z'ff')) then
                 nel1=nel1+1
                 call dimx (nel1,1000,'dge5n2')
                 save1(nel1)=gen(istrt22+ije2(k2save-1)+k)
@@ -2962,7 +2966,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
             nel2=0
             do 80 k=1,ije3(k3save)-ije3(k3save-1)
               ii=igen(istrt31+ije3(k3save-1)+k)
-              if (ia(iord(10)).eq.iand(ishft(ii,-8),'ff'x)) then
+              if (ia(iord(10)).eq.iand(ishft(ii,-8),z'ff')) then
                 nel2=nel2+1
                 call dimx (nel2,1000,'dge5n2')
                 save2(nel2)=gen(istrt32+ije3(k3save-1)+k)
@@ -3049,13 +3053,13 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       call tchng6 (nij3,ij3,ije3,ntape3,4)
       do 10 i=1,nij1
         do 60 k=5,0,-1
-          ii=iand(ishft(ij1(i),-4*k),'f'x)
+          ii=iand(ishft(ij1(i),-4*k),z'f')
           ia(6-k)=iv(ii)
 60      continue
         do 20 j=1,ije1(i)-ije1(i-1)
           ii=igen(istrt11+ije1(i-1)+j)
           do 70 k=5,0,-1
-            jj=iand(ishft(ii,-4*k),'f'x)
+            jj=iand(ishft(ii,-4*k),z'f')
             ia(12-k)=iv(jj)
 70        continue
           igot2=0
@@ -3079,7 +3083,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
             ii=ipack3(ia(iord(5)),ia(iord(6)),ia(iord(7)))
             do 40 k=1,ije2(k2save)-ije2(k2save-1)
               jj=igen(istrt21+ije2(k2save-1)+k)
-              if (ii.eq.iand(ishft(jj,-8),'ffffff'x)) then
+              if (ii.eq.iand(ishft(jj,-8),z'ffffff')) then
                 nel1=nel1+1
                 save1(nel1)=gen(istrt22+ije2(k2save-1)+k)
                 call dimx (nel1,1000,'dge6n2')
@@ -3089,7 +3093,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
             ii=ia(iord(12))  
             do 80 k=1,ije3(k3save)-ije3(k3save-1)
               jj=igen(istrt31+ije3(k3save-1)+k)
-              if (ii.eq.iand(ishft(jj,-8),'ff'x)) then
+              if (ii.eq.iand(ishft(jj,-8),z'ff')) then
                 nel2=nel2+1
                 save2(nel2)=gen(istrt32+ije3(k3save-1)+k)
                 call dimx (nel2,1000,'dge6n2')
@@ -3185,13 +3189,13 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       call tmpcng (nij4,ij4,ije4,ntape4,2,3)
       do 10 i=1,nij1
         do 60 k=4,0,-1
-          ii=iand(ishft(ij1(i),-4*k),'f'x)
+          ii=iand(ishft(ij1(i),-4*k),z'f')
           ia(5-k)=iv(ii)
 60      continue
         do 20 j=1,ije1(i)-ije1(i-1)
           ii=igen(istrt11+ije1(i-1)+j)
           do 70 k=4,0,-1
-            jj=iand(ishft(ii,-4*k),'f'x)
+            jj=iand(ishft(ii,-4*k),z'f')
             ia(10-k)=iv(jj)
 70        continue
           igot2=0
@@ -3221,13 +3225,13 @@ CUK   common /crle/ trle(nrle,4),isize(4)
           if ((igot2.eq.1).and.(igot3.eq.1).and.(igot4.eq.1)) then
             sum=0.d0
             do 90 k=1,ije3(k3save)-ije3(k3save-1)
-              ii=iand(igen(istrt31+ije3(k3save-1)+k),'ff'x)
+              ii=iand(igen(istrt31+ije3(k3save-1)+k),z'ff')
               do 100 l=1,ije4(k4save)-ije4(k4save-1)
-                jj=iand(igen(istrt41+ije4(k4save-1)+l),'ff'x)
+                jj=iand(igen(istrt41+ije4(k4save-1)+l),z'ff')
                 kk=ior(ishft(ii,8),jj)
                 do 110 m=1,ije2(k2save)-ije2(k2save-1)
                   if (kk.eq.   
-     1            iand(igen(istrt21+ije2(k2save-1)+m),'ffff'x)) then
+     1            iand(igen(istrt21+ije2(k2save-1)+m),z'ffff')) then
                     sum=sum+
      1              gen(istrt22+ije2(k2save-1)+m)*
      2              gen(istrt32+ije3(k3save-1)+k)*
@@ -3328,13 +3332,13 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       call tmpcng (nij5,ij5,ije5,ntape5,2,3)
       do 10 i=1,nij1
         do 60 k=5,0,-1
-          ii=iand(ishft(ij1(i),-4*k),'f'x)
+          ii=iand(ishft(ij1(i),-4*k),z'f')
           ia(6-k)=iv(ii)
 60      continue
         do 20 j=1,ije1(i)-ije1(i-1)
           ii=igen(istrt11+ije1(i-1)+j)
           do 70 k=5,0,-1
-            jj=iand(ishft(ii,-4*k),'f'x)
+            jj=iand(ishft(ii,-4*k),z'f')
             ia(12-k)=iv(jj)
 70        continue
           igot2=0
@@ -3373,15 +3377,15 @@ CUK   common /crle/ trle(nrle,4),isize(4)
      1    (igot4.eq.1).and.(igot5.eq.1)) then
             sum=0.d0
             do 90 k=1,ije3(k3save)-ije3(k3save-1)
-              ii=iand(igen(istrt31+ije3(k3save-1)+k),'ff'x)
+              ii=iand(igen(istrt31+ije3(k3save-1)+k),z'ff')
               do 100 l=1,ije4(k4save)-ije4(k4save-1)
-                jj=iand(igen(istrt41+ije4(k4save-1)+l),'ff'x)
+                jj=iand(igen(istrt41+ije4(k4save-1)+l),z'ff')
                 do 130 m=1,ije5(k5save)-ije5(k5save-1)
-                  kk=iand(igen(istrt51+ije5(k5save-1)+l),'ff'x)
+                  kk=iand(igen(istrt51+ije5(k5save-1)+l),z'ff')
                   ll=ipack3(ii,jj,kk)
                   do 110 n=1,ije2(k2save)-ije2(k2save-1)
                     if (ll.eq.
-     1              iand(igen(istrt21+ije2(k2save-1)+n),'ffffff'x)) then
+     1              iand(igen(istrt21+ije2(k2save-1)+n),z'ffffff')) then
                       sum=sum+
      1                gen(istrt22+ije2(k2save-1)+n)*
      2                gen(istrt32+ije3(k3save-1)+k)*

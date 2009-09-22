@@ -336,17 +336,17 @@ c
 cuk temporary
       call seltyp   (3333,1111,"vvvv",0)
 cuk
-      call reorder  ("hhpp","va1 ",1324,4,0)
-      call reorder  ("hhpp","va2 ",1423,4,0)
-      call reorder  ("hhpp","va4 ",3412,4,0)
-      call reorder  ("hhpp","va6 ",1243,4,0)
-      call reorder  ("hhpp","va8 ",3421,4,0)
-      call reorder  ("hppp","vd7 ",2314,4,0)
-      call reorder  ("hppp","vd11",2413,4,0)
-      call reorder  ("hppp","vd12",2134,4,0)
-      call reorder  ("hppp","vd14",2143,4,0)
-      call reorder  ("vhpp","vva1",1324,4,0)
-      call reorder  ("vhhp","vvc1",1324,4,0)
+      call reorder  ("hhpp","va1 ",1324,4)
+      call reorder  ("hhpp","va2 ",1423,4)
+      call reorder  ("hhpp","va4 ",3412,4)
+      call reorder  ("hhpp","va6 ",1243,4)
+      call reorder  ("hhpp","va8 ",3421,4)
+      call reorder  ("hppp","vd7 ",2314,4)
+      call reorder  ("hppp","vd11",2413,4)
+      call reorder  ("hppp","vd12",2134,4)
+      call reorder  ("hppp","vd14",2143,4)
+      call reorder  ("vhpp","vva1",1324,4)
+      call reorder  ("vhhp","vvc1",1324,4)
       call selt1    (33,0,"pp  ",4)
       call selt1    (23,0,"hp  ",4)
       call selt1    (32,10,"vh  ",4)
@@ -416,19 +416,19 @@ c  tb15 = tnew 1342
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
-      call reorder("tc  ","tc1 ",1324,4,0)
-      call reorder("tc  ","tc3 ",1423,4,0)
-      call reorder("tc  ","tc4 ",3412,4,0)
-      call reorder("tv  ","tv1 ",1324,4,0)
-      call reorder("tv  ","tv2 ",1423,4,0)
-      call reorder("tv  ","tv3 ",1432,4,0)
-      call reorder("tv  ","tv6 ",1243,4,0)
-      call reorder("tvm ","tvm1",1324,4,0)
-      call reorder("tvm ","tvm2",1423,4,0)
-      call reorder("tcm ","tcm2",1423,4,0)
-      call reorder("tcm ","tcm4",3412,4,0)
-      call reorder("t1c ","t1cr",1243,4,0)
-      call reorder("t1v ","t1vr",1243,4,0)
+      call reorder("tc  ","tc1 ",1324,4)
+      call reorder("tc  ","tc3 ",1423,4)
+      call reorder("tc  ","tc4 ",3412,4)
+      call reorder("tv  ","tv1 ",1324,4)
+      call reorder("tv  ","tv2 ",1423,4)
+      call reorder("tv  ","tv3 ",1432,4)
+      call reorder("tv  ","tv6 ",1243,4)
+      call reorder("tvm ","tvm1",1324,4)
+      call reorder("tvm ","tvm2",1423,4)
+      call reorder("tcm ","tcm2",1423,4)
+      call reorder("tcm ","tcm4",3412,4)
+      call reorder("t1c ","t1cr",1243,4)
+      call reorder("t1v ","t1vr",1243,4)
       call clear("tb1 ",3333,1010)
       call clear("tb4 ",3333,11)
       call clear("tb15",3333,1010)
@@ -635,11 +635,11 @@ C  ********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 
-      call reorder("tb1 ","s2  ",1324,4,1)
+      call reorder("tb1 ","s2  ",1324,4)
       call add("vu0 ",1.d0,"s2  ",1.d0,"vu0 ")
-      call reorder("tb4 ","s2  ",3412,4,1)
+      call reorder("tb4 ","s2  ",3412,4)
       call add("vu0 ",1.d0,"s2  ",1.d0,"vu0 ")
-      call reorder("tb15","s2  ",1342,4,1)
+      call reorder("tb15","s2  ",1342,4)
       call add("vu0 ",1.d0,"s2  ",1.d0,"vu0 ")
       call prtime("ordtb0  ",0,1)
       return
@@ -651,9 +651,9 @@ c *****************************************************
 #include "implicit.h"
 #include "priunit.h"
 
-      call reorder("tu  ","ta3 ",1432,4,1)
-      call reorder("tm  ","tm4 ",3412,4,1)
-      call reorder("tm  ","tm6 ",1243,4,1)
+      call reorder("tu  ","ta3 ",1432,4)
+      call reorder("tm  ","tm4 ",3412,4)
+      call reorder("tm  ","tm6 ",1243,4)
       call clear("tb1 ",3333,1010)
       call clear("tb2 ",3333,1001)
       call clear("tb4 ",3333,11)
@@ -869,15 +869,15 @@ c ******************************************************
 #include "dat.h"
 #endif
 
-      call reorder("tb1 ","s2  ",1324,5,1)
+      call reorder("tb1 ","s2  ",1324,5)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
-      call reorder("tb2 ","s2  ",1423,5,1)
+      call reorder("tb2 ","s2  ",1423,5)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
-      call reorder("tb4 ","s2  ",3412,5,1)
+      call reorder("tb4 ","s2  ",3412,5)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
-      call reorder("tb6 ","s2  ",1243,5,1)
+      call reorder("tb6 ","s2  ",1243,5)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
-      call reorder("tb15","s2  ",1342,5,1)
+      call reorder("tb15","s2  ",1342,5)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
       call sqr("tnew","s2  ")
       call fold_ccsd("tnew","tuf ")
@@ -984,11 +984,11 @@ c   incl diags 9 10 20 23
       call add("va1 ",-2.d0,"va2 ",1.d0,"s3  ")
       call mult("s2  ","s3  ","s1  ",222)
 c   diag 20
-      call reorder("vhhp","s2  ",1243,5,0)
-      call reorder("vhhp","s3  ",1342,5,0)
+      call reorder("vhhp","s2  ",1243,5)
+      call reorder("vhhp","s3  ",1342,5)
       call add("s2  ",-2.d0,"s3  ",1.d0,"s2  ")
       call mult("s2  ","t1cr","s3  ",311)
-      call reorder("s3  ","s2  ",1423,5,0)
+      call reorder("s3  ","s2  ",1423,5)
       call add("s1  ",1.d0,"s2  ",1.d0,"s1  ")
 c   diag 23
       call add("vd12",2.d0,"vd14",-1.d0,"s2  ")
@@ -1094,11 +1094,11 @@ c   incl diags 21 17 22
       call mult("tv2 ","vvc1","s1  ",222)
 c   diag 17
       call seltyp(3323,1100,"s2  ",5)
-      call reorder("s2  ","s3  ",2413,5,0)
+      call reorder("s2  ","s3  ",2413,5)
       call add("s1  ",1.d0,"s3  ",-1.d0,"s1  ")
 c   diag 22
       call mult("tv2 ","vhhp","s2  ",222)
-      call reorder("s2  ","s3  ",3214,5,0)
+      call reorder("s2  ","s3  ",3214,5)
       call add("s1  ",1.d0,"s3  ",1.d0,"s1  ")
 c --------------
       call mult("s1  ","t1cr","s2  ",311)
@@ -1118,7 +1118,7 @@ c   diag 29
       call mult("tu  ","hp  ","s2  ",311)
 c   diag 27
       call mult("tm6 ","hppp","s1  ",222)
-      call reorder("s1  ","s3  ",1243,5,1)
+      call reorder("s1  ","s3  ",1243,5)
       call add("s2  ",1.d0,"s3  ",1.d0,"s2  ")
 c ---------------
       call mult("s2  ","t1cr","s1  ",311)
@@ -1134,7 +1134,7 @@ c **********************************************************
 #include "implicit.h"
 #include "priunit.h"
       call mult("t1v ","hp  ","s2  ",111)
-      call reorder("tv  ","s3  ",1432,5,0)
+      call reorder("tv  ","s3  ",1432,5)
       call mult("s2  ","s3  ","s1  ",131)
       call add("vu0 ",1.d0,"s1  ",-1.d0,"vu0 ")
       call prt("s1  ","-diag28 ",3)
@@ -1147,8 +1147,10 @@ c *********************************************************
 #include "implicit.h"
 #include "priunit.h"
 c   incl diags 26 16
-      call reorder("tcm ","s1  ",3412,5,0)
-      call reorder("vhhp","s2  ",1432,5,0)
+      !call reorder("tcm ","s1  ",3412,5,0)
+      call reorder("tcm ","s1  ",3412,5)
+      !call reorder("vhhp","s2  ",1432,5,0)
+      call reorder("vhhp","s2  ",1432,5)
       call mult("s1  ","s2  ","s3  ",222)
 c   diag 16
       call seltyp(3333,10,"s2  ",5)

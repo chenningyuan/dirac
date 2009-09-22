@@ -268,10 +268,10 @@ C--------------------------------------------------------
 
       if (abs(v(i)).lt.zero) go to 130
 
-      J1=iand(ishft(ind(i),-24),'ff'X)
-      J2=iand(ishft(ind(i),-16),'ff'X)
-      J3=iand(ishft(ind(i),-8) ,'ff'X)
-      J4=iand(ind(i)           ,'ff'X)
+      J1=iand(ishft(ind(i),-24),z'ff')
+      J2=iand(ishft(ind(i),-16),z'ff')
+      J3=iand(ishft(ind(i),-8) ,z'ff')
+      J4=iand(ind(i)           ,z'ff')
 
       if(iopt(19).eq.2) then ! ACESII
         j1=irerdrv(j1)
@@ -313,10 +313,10 @@ C--------------------------------------------------------
 
           ! very important - use switch to DIRAC notation of indexes
           do i=1, nint
-            J1=iand(ishft(ind(i),-24),'ff'X)
-            J2=iand(ishft(ind(i),-16),'ff'X)
-            J3=iand(ishft(ind(i),-8) ,'ff'X)
-            J4=iand(ind(i)           ,'ff'X)
+            J1=iand(ishft(ind(i),-24),z'ff')
+            J2=iand(ishft(ind(i),-16),z'ff')
+            J3=iand(ishft(ind(i),-8) ,z'ff')
+            J4=iand(ind(i)           ,z'ff')
 
             !ipckindx=ipack(j1,j2,j3,j4)
             ipckindx=ipack(j1,j3,j2,j4) ! dirac notation !
@@ -382,14 +382,14 @@ C--------------------------------------------------------
       write (*,*) nfock,' nonzero fock matrix elements left'
 
       do 250 i=1,nfock
-      i1=iand(ifock(i),'ff'X)
+      i1=iand(ifock(i),z'ff')
       i2=ishft(ifock(i),-8)
       if (i1.ne.i2) go to 250
       if (iopt(8).eq.2) eps(i1)=fock(i)
       fock(i)=fock(i)-eps(i1)
 250   continue
       do 260 i=1,nfock
-      i1=iand(ifock(i),'ff'X)
+      i1=iand(ifock(i),z'ff')
       i2=ishft(ifock(i),-8)
 C      write (*,2600) i,i1,i2,fock(i)
 C 2600  format(' Fock element no',i3,2x,2i3,f15.6)
@@ -526,9 +526,9 @@ c  different type (must be sn files). iii=-1 means ignore iii.
       if (iii.gt.-1.and.((iii.ne.iiia(num)).or.(iiv.ne.iiva(num)))) then
 C Gal 95
            itmp=4H       
-           jtmp='ffffff00'X
+           jtmp=z'ffffff00'
            ch1 = iand(itmp,jtmp)
-           ch2 = iand (namefl(num), '000000ff'X)
+           ch2 = iand (namefl(num), z'000000ff')
            isaa = ior (ch1, ch2)
 
           i_4hs=4hs 
@@ -737,7 +737,8 @@ c     write (6,*) ' transf indx from ',i,' to ',num
 #endif
 
       dimension j(4),msk(4)
-      data msk /'ff000000'X,'ff0000'X,'ff00'X,'ff'X/
+      !data msk /'ff000000'X,'ff0000'X,'ff00'X,'ff'X/
+      data msk /z'ff000000',z'ff0000',z'ff00',z'ff'/
 
 !     character(*) namet, namef ! mi fix - data specification for prtime
 
@@ -907,8 +908,8 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       nsize=ije2(nij2)
       do 30 i=1,nsize     
         do 40 j=0,3
-          ia(4-j)=iand(ishft(itmp(i),-8*j),'ff'x)
-          ia(8-j)=iand(ishft(itmp(ndp3+i),-8*j),'ff'x)
+          ia(4-j)=iand(ishft(itmp(i),-8*j),z'ff')
+          ia(8-j)=iand(ishft(itmp(ndp3+i),-8*j),z'ff')
 40      continue
         itmp(i)=ipack4(ia(i1),ia(i2),ia(i3),ia(i4))
         itmp(ndp3+i)=ipack4(ia(i5),ia(i6),ia(i7),ia(i8))
@@ -1015,7 +1016,8 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 #endif
 
       dimension ia(6),ja(6),msk(4),igot(8)
-      data msk /'ff000000'x,'ff0000'x,'ff00'x,'ff'x/
+      ! data msk /'ff000000'x,'ff0000'x,'ff00'x,'ff'x/
+      data msk /z'ff000000',z'ff0000',z'ff00',z'ff'/
 
       if (getiprint() >= 5) then
         call header('Output from "reord6"',-1)
@@ -1071,8 +1073,8 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
           !stop
           call quit('mismatch in block lengths - reord6')
         end if
-        ii=iand(ishft(ij2(i),-8),'ff'x)
-        jj=iand(ij2(i),'ff'x)
+        ii=iand(ishft(ij2(i),-8),z'ff')
+        jj=iand(ij2(i),z'ff')
         ii=igmt(ici(ii),ici(jj))
         if (igot(ii).eq.0) then
           igot(ii)=1
@@ -1146,7 +1148,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 #endif
 
       dimension ia(6),ja(6),msk(3)
-      data msk / 'ff0000'x,'ff00'x,'ff'x /
+      data msk / z'ff0000',z'ff00',z'ff' /
 
       call check_ctmp_mod
 
@@ -1242,7 +1244,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 #endif
 
       dimension ia(10),ja(10),msk(5),iord(10)
-      data msk / 'f0000'x,'f000'x,'f00'x,'f0'x,'f'x /
+      data msk / z'f0000',z'f000',z'f00',z'f0',z'f' /
 
       call check_ctmp_mod
 
@@ -1338,7 +1340,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       dimension ia(10),ja(10),msk(5),iord(10)
 
-      data msk / 'f0000'x,'f000'x,'f00'x,'f0'x,'f'x /
+      data msk / z'f0000',z'f000',z'f00',z'f0',z'f' /
 
       call check_ctmp_mod
 
@@ -1451,7 +1453,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 #endif
 
       dimension ia(12),ja(12),msk(6),iord(12)
-      data msk / 'f00000'x,'f0000'x,'f000'x,'f00'x,'f0'x,'f'x /
+      data msk / z'f00000',z'f0000',z'f000',z'f00',z'f0',z'f' /
 
       call check_ctmp_mod
 
@@ -1553,7 +1555,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       dimension ia(12),ja(12),msk(6),iord(12)
 
-      data msk / 'f00000'x,'f0000'x,'f000'x,'f00'x,'f0'x,'f'x /
+      data msk / z'f00000',z'f0000',z'f000',z'f00',z'f0',z'f' /
 
       call check_ctmp_mod
 
@@ -1753,10 +1755,10 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       if (abs(vint(i)).lt.zero) go to 190
 
 !      TODO: replace with module function !
-      j1=iand(ishft(iint(i),-24),'ff'X)
-      j2=iand(ishft(iint(i),-16),'ff'X)
-      j3=iand(ishft(iint(i),-8) ,'ff'X)
-      j4=iand(      iint(i),     'ff'X)
+      j1=iand(ishft(iint(i),-24),z'ff')
+      j2=iand(ishft(iint(i),-16),z'ff')
+      j3=iand(ishft(iint(i),-8) ,z'ff')
+      j4=iand(      iint(i),     z'ff')
 
       if (iopt(1).ge.5) then ! control printout
          write(LUPRI,'(1x,i5,a,i10,a,4i4,a,f18.12)')
@@ -2043,8 +2045,8 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       nout=0
       do 190 i=1,nfock
       if (abs(fock(i)).lt.zero) go to 190
-      j1=iand(ishft(ifock(i),-8),'ff'X)
-      j2=iand(ifock(i),'ff'X)
+      j1=iand(ishft(ifock(i),-8),z'ff')
+      j2=iand(ifock(i),z'ff')
       if(ipack(ic(j1),ic(j2)).ne.i12) go to 110
       if(iand(ipack(icv(j1),icv(j2)),iv12).ne.iv12) go to 110
       if (lrsp) then
@@ -2156,10 +2158,10 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       do 190 i=1,nint
       if (abs(vint(i)).lt.zero) go to 190
 c     call unpack(iint(i),j1,j2,j3,j4)
-      j1=iand(ishft(iint(i),-24),'ff'X)
-      j2=iand(ishft(iint(i),-16),'ff'X)
-      j3=iand(ishft(iint(i),-8) ,'ff'X)
-      j4=iand(           iint(i),'ff'X)
+      j1=iand(ishft(iint(i),-24),z'ff')
+      j2=iand(ishft(iint(i),-16),z'ff')
+      j3=iand(ishft(iint(i),-8) ,z'ff')
+      j4=iand(           iint(i),z'ff')
       if (ic(j1).ne.3) go to 190
       if (ic(j2).ne.3) go to 190
       if (ic(j3).ne.3) go to 190
@@ -2558,10 +2560,10 @@ c  one electron
 c   special for scratch files, which start with "s".
 !          itmp=4H       
            itmpx=4H       
-           jtmp='ffffff00'X
+           jtmp=z'ffffff00'
 !          ch1 = iand(itmp,jtmp)
            ch1 = iand(itmpx,jtmp)
-           ch2 = iand (name, '000000ff'X)
+           ch2 = iand (name, z'000000ff')
            isaa = ior (ch1, ch2)
       i_4hs=4hs
 !     if (isaa.eq.4hs   ) then
@@ -2731,9 +2733,9 @@ c   special for scratch files, which start with "s".
       call dimx (nstrt(2,num),nbig,"tmplt62 ")
 c   special for scratch files, which start with s
            itmp=4H       
-           jtmp='ffffff00'X
+           jtmp=z'ffffff00'
            ch1 = iand(itmp,jtmp)
-           ch2 = iand (name, '000000ff'X)
+           ch2 = iand (name, z'000000ff')
            isaa = ior (ch1, ch2)
 
        i_4hs=4hs
@@ -2916,9 +2918,9 @@ c   special for scratch files, which start with s
       call dimx (nstrt(2,num),nbig,"tmplt62 ")
 c   special for scratch files, which start with s
            itmp=4H      
-           jtmp='ffffff00'X
+           jtmp=z'ffffff00'
            ch1 = iand(itmp,jtmp)
-           ch2 = iand (name, '000000ff'X)
+           ch2 = iand (name, z'000000ff')
            isaa = ior (ch1, ch2)
 
       i_4hs=4hs
@@ -3063,9 +3065,9 @@ c   special for scratch files, which start with s
       call dimx (nstrt(2,num),nbig,"tmplt62 ")
 c   special for scratch files, which start with s
            itmp=4H       
-           jtmp='ffffff00'X
+           jtmp=z'ffffff00'
            ch1 = iand(itmp,jtmp)
-           ch2 = iand (name, '000000ff'X)
+           ch2 = iand (name, z'000000ff')
            isaa = ior (ch1, ch2)
 
       i_4hs=4hs
@@ -3215,9 +3217,9 @@ c   special for scratch files, which start with s
       call dimx (nstrt(2,num),nbig,"tmplt62 ")
 c   special for scratch files, which start with s
            itmp=4H       
-           jtmp='ffffff00'X
+           jtmp=z'ffffff00'
            ch1 = iand(itmp,jtmp)
-           ch2 = iand (name, '000000ff'X)
+           ch2 = iand (name, z'000000ff')
            isaa = ior (ch1, ch2)
 
        i_4hs=4hs
@@ -3322,10 +3324,10 @@ c
       gen(istrt12+ntmp)=gen(istrt22+i2)*gen(istrt32+i3)
       it2=igen(istrt21+i2)
       it3=igen(istrt31+i3)
-120   itmp(ntmp)=ior(ior(ishft(iand(ishft(it2,-8),'ff'X),24),
-     1                   ishft(iand(ishft(it3,-8),'ff'X),16)),
-     2               ior(ishft(iand(it2,'ff'X)          , 8),
-     3                   iand(it3,'ff'X)                    ))
+120   itmp(ntmp)=ior(ior(ishft(iand(ishft(it2,-8),z'ff'),24),
+     1                   ishft(iand(ishft(it3,-8),z'ff'),16)),
+     2               ior(ishft(iand(it2,z'ff')          , 8),
+     3                   iand(it3,z'ff')                    ))
 
       if (getiprint() >= 8) then
         write(LUPRI,'(/,2x,a)') 't1sqr: before call vxsort'
@@ -3446,11 +3448,11 @@ c
           if (abs(v).gt.1.d-13) then
             ii=igen(istrt21+i)
             do 40 k=1,4
-              ind(k+6)=iand(ishft(ii,(k-4)*8),'ff'x)
+              ind(k+6)=iand(ishft(ii,(k-4)*8),z'ff')
 40          continue
             ii=igen(istrt31+j)
-            ind(11)=iand(ishft(ii,-8),'ff'x)
-            ind(12)=iand(ii,'ff'x)
+            ind(11)=iand(ishft(ii,-8),z'ff')
+            ind(12)=iand(ii,z'ff')
             do 50 k=1,6
               ind(k)=ind(ia(5,k)+6)
 50          continue
@@ -3574,13 +3576,13 @@ c
             v=gen(istrt22+i)*gen(istrt32+k)
             if (abs(v).gt.1.d-13) then
               ii=igen(istrt21+i)
-              ind(9)=iand(ishft(ii,-8),'ff'x)
-              ind(10)=iand(ii,'ff'x)
+              ind(9)=iand(ishft(ii,-8),z'ff')
+              ind(10)=iand(ii,z'ff')
               ii=ij3(j) 
               jj=igen(istrt31+k)
               do 50 m=1,3
-                ind(m+10)=iand(ishft(ii,(m-3)*8),'ff'x)
-                ind(m+13)=iand(ishft(jj,(m-3)*8),'ff'x)
+                ind(m+10)=iand(ishft(ii,(m-3)*8),z'ff')
+                ind(m+13)=iand(ishft(jj,(m-3)*8),z'ff')
 50            continue
               do 70 m=1,8
                 ind(m)=ind(ia(iparm,m)+8)
@@ -3713,8 +3715,8 @@ c
             ii=igen(istrt21+i)
             jj=igen(istrt31+j)
             do 40 k=1,4
-              ind(k+8)=iand(ishft(ii,(k-4)*8),'ff'x)
-              ind(k+12)=iand(ishft(jj,(k-4)*8),'ff'x)
+              ind(k+8)=iand(ishft(ii,(k-4)*8),z'ff')
+              ind(k+12)=iand(ishft(jj,(k-4)*8),z'ff')
 40          continue
             do 50 k=1,8
               ind(k)=ind(ia(iparm,k)+8)
@@ -3801,7 +3803,7 @@ c
       call dimx (ije(nij),ndp3,"tchng6  ")
       if (iparm.eq.2) then
         nij1=0
-        iirp='ffff'x
+        iirp=z'ffff'
         do 10 i=1,nij
           ii=ishft(ij(i),-8)
           if (ii.ne.iirp) then
@@ -3819,9 +3821,9 @@ c
         nij1=0
         istrt=nstrt(1,ntapef-1)+2*nij+4
         do 30 i=1,nij
-          iirp='ffffffff'x
+          iirp=z'ffffffff'
           do 40 j=ije(i-1)+1,ije(i)
-            ii=iand(ishft(igen(istrt+j),-16),'ff'x)
+            ii=iand(ishft(igen(istrt+j),-16),z'ff')
             if (ii.ne.iirp) then
               nij1=nij1+1
               iirp=ii
@@ -3889,14 +3891,14 @@ c
       nij1=0
       istrt=nstrt(1,ntapef-1)+2*nij+4
       do 10 i=1,nij
-        iirp='ffffffff'x
+        iirp=z'ffffffff'
         do 20 j=ije(i-1)+1,ije(i)
-          ii=iand(ishft(igen(istrt+j),-16),'ffff'x)
+          ii=iand(ishft(igen(istrt+j),-16),z'ffff')
           if (ii.ne.iirp) then
             nij1=nij1+1
             iirp=ii
-            itmp(nij1)=iand(ishft(ij(i),-8),'ffffff'x)
-            jj=iand(ij(i),'ff'x)
+            itmp(nij1)=iand(ishft(ij(i),-8),z'ffffff')
+            jj=iand(ij(i),z'ff')
             itmp(ndp3+nij1)=ior(ishft(jj,16),ii)
             ije1(nij1-1)=j-1
           end if
@@ -3969,7 +3971,7 @@ c
       if (nt.gt.nf) go to 310
 
       nij1=0
-      iirp='ffff'X
+      iirp=z'ffff'
       do 160 i=1,nij
       i12=ishft(ij(i),-8*(nf-nt))
       if (i12.ne.iirp) then
@@ -3991,7 +3993,7 @@ c
 
 310   istrt=nstrt(1,ntapef-1)+2*nij+4
       nsize=igen(istrt-2)
-      iirp='ffff'X
+      iirp=z'ffff'
       nij=0
       do 320 i=1,nsize
       i12=ishft(igen(istrt+i),8*nt-32)

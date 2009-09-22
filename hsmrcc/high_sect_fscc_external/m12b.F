@@ -366,7 +366,8 @@ c     diag hbg-a
       call move     ("hvgg","hbg ")
 c  diag hbg-b
       call mult     ("hp  ","tr6 ","s1  ",131)
-      call add      ("s1  ",1.d0,"hbg ",1.d0,"hbg ",1.d0)
+      !call add      ("s1  ",1.d0,"hbg ",1.d0,"hbg ",1.d0)
+      call add      ("s1  ",1.d0,"hbg ",1.d0,"hbg ")
 c  diag hbg-c
       call reorder  ("hhgp","s2  ",2341,4)
       call add      ("vm2 ",2.d0,"s2  ",-1.d0,"s1  ")
@@ -1059,7 +1060,8 @@ c  diag q16
       call add      ("s2  ",-1.d0,"ttqf",1.d0,"ttqf")
 c  diag q17    
       call fold6    ("t12p","s1  ",4,1)
-      call reord6   ("s1  ","s2  ",124635,4)
+      !call reord6   ("s1  ","s2  ",124635,4)
+      call reord6   ("s1  ","s2  ",124635)
       call mult6    ("s2  ","vm18","s1  ",3)
       call reord6   ("s1  ","s2  ",125346)
       call add      ("s2  ",-1.d0,"ttqf",1.d0,"ttqf")

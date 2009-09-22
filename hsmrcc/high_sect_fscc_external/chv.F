@@ -388,21 +388,21 @@ c
       call seltyp   (2333,1000,"gppp",4)
       call seltyp   (2323,1000,"gphp",4)
       call seltyp   (2222,1000,"ghhh",4)
-      call reorder  ("pphh","va1 ",1324,4,0)
-      call reorder  ("pphh","va2 ",1423,4,0)
-      call reorder  ("pphh","va4 ",3412,4,0)
-      call reorder  ("pphh","va6 ",1243,4,0)
-      call reorder  ("pphh","va8 ",3421,4,0)
-      call reorder  ("ppph","vc4 ",3412,4,0)
-      call reorder  ("ppph","vc9 ",3124,4,0)
-      call reorder  ("ppph","vc10",3214,4,0)
-      call reorder  ("ppph","vc11",2413,4,0)
-      call reorder  ("phhh","vd7 ",2413,4,0)
-      call reorder  ("phhh","vd8 ",2314,4,0)
-      call reorder  ("phhh","vd12",2134,4,0)
-      call reorder  ("phhh","vd14",2143,4,0)
-      call reorder  ("gphh","vva1",1324,4,0)
-      call reorder  ("gpph","vvc1",1324,4,0)
+      call reorder  ("pphh","va1 ",1324,4)
+      call reorder  ("pphh","va2 ",1423,4)
+      call reorder  ("pphh","va4 ",3412,4)
+      call reorder  ("pphh","va6 ",1243,4)
+      call reorder  ("pphh","va8 ",3421,4)
+      call reorder  ("ppph","vc4 ",3412,4)
+      call reorder  ("ppph","vc9 ",3124,4)
+      call reorder  ("ppph","vc10",3214,4)
+      call reorder  ("ppph","vc11",2413,4)
+      call reorder  ("phhh","vd7 ",2413,4)
+      call reorder  ("phhh","vd8 ",2314,4)
+      call reorder  ("phhh","vd12",2134,4)
+      call reorder  ("phhh","vd14",2143,4)
+      call reorder  ("gphh","vva1",1324,4)
+      call reorder  ("gpph","vvc1",1324,4)
       call selt1    (22,0,"hh  ",4)
       call selt1    (32,0,"ph  ",4)
       call selt1    (33,0,"pp  ",4)
@@ -800,14 +800,14 @@ c  tb15 = tnew 1342
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
-      call reorder("tc  ","tc1 ",1324,4,0)
-      call reorder("tc  ","tc2 ",1423,4,0)
-      call reorder("tc  ","tc3 ",1432,4,0)
-      call reorder("tc  ","tc4 ",3412,4,0)
-      call reorder("tcm ","tcm1",1324,4,0)
-      call reorder("tcm ","tcm2",1423,4,0)
-      call reorder("tcm ","tcm4",3412,4,0)
-      call reorder("t1c ","t1cr",1243,4,0)
+      call reorder("tc  ","tc1 ",1324,4)
+      call reorder("tc  ","tc2 ",1423,4)
+      call reorder("tc  ","tc3 ",1432,4)
+      call reorder("tc  ","tc4 ",3412,4)
+      call reorder("tcm ","tcm1",1324,4)
+      call reorder("tcm ","tcm2",1423,4)
+      call reorder("tcm ","tcm4",3412,4)
+      call reorder("t1c ","t1cr",1243,4)
       call clear("tb1 ",2232,1000)
       call clear("tb4 ",2223,10)
       call clear("tb15",2232,1000)
@@ -820,11 +820,11 @@ c ******************************************************
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
-      call reorder("tb1 ","s2  ",1324,4,1)
+      call reorder("tb1 ","s2  ",1324,4)
       call add("vv0 ",1.d0,"s2  ",1.d0,"vv0 ")
-      call reorder("tb4 ","s2  ",3412,4,1)
+      call reorder("tb4 ","s2  ",3412,4)
       call add("vv0 ",1.d0,"s2  ",1.d0,"vv0 ")
-      call reorder("tb15","s2  ",1342,4,1)
+      call reorder("tb15","s2  ",1342,4)
       call add("vv0 ",1.d0,"s2  ",1.d0,"vv0 ")
       call prtime("ordtb0  ",0,1)
       return
@@ -835,13 +835,13 @@ c *****************************************************
 #include "implicit.h"
 #include "priunit.h"
 
-      call reorder("thv ","ta1 ",1324,4,1)
-      call reorder("thv ","ta2 ",1423,4,1)
-      call reorder("tm  ","tm2 ",1423,4,1)
-      call reorder("thv ","ta3 ",1432,4,1)
-      call reorder("thv ","ta6 ",1243,4,1)
-      call reorder("thv ","ta15",1342,4,1)
-      call reorder("t1hv","t1or",1243,4,1)
+      call reorder("thv ","ta1 ",1324,4)
+      call reorder("thv ","ta2 ",1423,4)
+      call reorder("tm  ","tm2 ",1423,4)
+      call reorder("thv ","ta3 ",1432,4)
+      call reorder("thv ","ta6 ",1243,4)
+      call reorder("thv ","ta15",1342,4)
+      call reorder("t1hv","t1or",1243,4)
       call clear("tb1 ",2232,1000)
       call clear("tb2 ",2223,1000)
       call clear("tb4 ",2223,10)
@@ -1644,15 +1644,15 @@ C  ********************************************************************
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"
-      call reorder("tb1 ","s2  ",1324,5,1)
+      call reorder("tb1 ","s2  ",1324,5)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
-      call reorder("tb2 ","s2  ",1423,5,1)
+      call reorder("tb2 ","s2  ",1423,5)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
-      call reorder("tb4 ","s2  ",3412,5,1)
+      call reorder("tb4 ","s2  ",3412,5)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
-      call reorder("tb6 ","s2  ",1243,5,1)
+      call reorder("tb6 ","s2  ",1243,5)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
-      call reorder("tb15","s2  ",1342,5,1)
+      call reorder("tb15","s2  ",1342,5)
       call add("tnew",1.d0,"s2  ",1.d0,"tnew")
       call diveps("tnew")
       call cmult("tnew",-1.d0,"tnew")
@@ -1795,11 +1795,11 @@ c   incl diags 9 10a 20a 23a
       call add("va1 ",-2.d0,"va2 ",1.d0,"s3  ")
       call mult("s2  ","s3  ","pdg9",222)
 c   20a
-      call reorder("ppph","s2  ",3421,4,0)
-      call reorder("ppph","s3  ",3412,4,0)
+      call reorder("ppph","s2  ",3421,4)
+      call reorder("ppph","s3  ",3412,4)
       call add("s2  ",2.d0,"s3  ",-1.d0,"s2  ")
       call mult("t1cr","s2  ","s3  ",131)
-      call reorder("s3  ","s2  ",2143,5,1)
+      call reorder("s3  ","s2  ",2143,5)
       call add("pdg9",1.d0,"s2  ",1.d0,"pdg9")
 c   23a
       call add("vd12",-2.d0,"vd14",1.d0,"s2  ")
@@ -1880,8 +1880,8 @@ c   incl 13a 18a
       call add("va1 ",-2.d0,"va2 ",1.d0,"s2  ")
       call mult("tcm1","s2  ","pd13",113)
 c   18a
-      call reorder("ppph","s2  ",3124,4,0)
-      call reorder("ppph","s3  ",3214,4,0)
+      call reorder("ppph","s2  ",3124,4)
+      call reorder("ppph","s3  ",3214,4)
       call add("s2  ",2.d0,"s3  ",-1.d0,"s2  ")
       call mult("s2  ","t1c ","s3  ",202)
       call add("pd13",1.d0,"s3  ",1.d0,"pd13")
@@ -1984,11 +1984,11 @@ c   diag 21b
       call mult("tc2 ","vvc1","s2  ",222)
       call add("s3  ",1.d0,"s2  ",-1.d0,"s3  ")
 c   diag 17a
-      call reorder("gpph","s2  ",2413,5,0)
+      call reorder("gpph","s2  ",2413,5)
       call add("s3  ",1.d0,"s2  ",1.d0,"s3  ")
 c ---------------------------------
       call mult("s3  ","t1cr","s2  ",311)
-      call reorder("s2  ","s3  ",3142,5,0)
+      call reorder("s2  ","s3  ",3142,5)
       call add("vv0 ",1.d0,"s3  ",1.d0,"vv0 ")
       call prt("s3  ","diag20b ",3)
       call prtime("diag20b ",0,1)
@@ -2005,7 +2005,7 @@ c   27a
 c   29a
       call mult("thv ","ph  ","s3  ",311)
       call add("s2  ",1.d0,"s3  ",-1.d0,"s2  ")
-      call reorder("s2  ","s3  ",1324,5,1)
+      call reorder("s2  ","s3  ",1324,5)
 c   21a
       call mult("ta2 ","vc9 ","s2  ",222)
       call add("s3  ",1.d0,"s2  ",-1.d0,"s3  ")
@@ -2022,13 +2022,13 @@ c ********************************************
 #include "implicit.h"
 #include "priunit.h"
 c   diag 17b
-      call reorder("gphp","s3  ",2314,5,0)
+      call reorder("gphp","s3  ",2314,5)
 c  incl 22a, 17b
       call mult("tc2 ","gpph","s2  ",222)
       call add("s3  ",1.d0,"s2  ",-1.d0,"s3  ")
 c ----------------------------------
       call mult("s3  ","t1cr","s2  ",311)
-      call reorder("s2  ","s3  ",3124,5,0)
+      call reorder("s2  ","s3  ",3124,5)
       call add("vv0 ",1.d0,"s3  ",1.d0,"vv0 ")
       call prt("s3  ","diag22a ",3)
       call prtime("diag22a ",0,1)
@@ -2043,11 +2043,11 @@ c   incl 22b, 27b, 29b
       call mult("ta2 ","vc10","s2  ",222)
 c   27b
       call mult("thv ","phhh","s1  ",222)
-      call reorder("s1  ","s3  ",1423,5,1)
+      call reorder("s1  ","s3  ",1423,5)
       call add("s2  ",-1.d0,"s3  ",1.d0,"s2  ")
 c   29b
       call mult("ta6 ","ph  ","s1  ",311)
-      call reorder("s1  ","s3  ",1324,5,1)
+      call reorder("s1  ","s3  ",1324,5)
       call add("s2  ",1.d0,"s3  ",-1.d0,"s2  ")
 c -------------
       call mult("s2  ","t1cr","s1  ",311)
@@ -2073,16 +2073,16 @@ c   25b
 c   16a
         call add("s3  ",1.d0,"phhh",-1.d0,"s3  ")
 c   25b & 16a
-      call reorder("s3  ","s2  ",1324,5,1)
+      call reorder("s3  ","s2  ",1324,5)
       call add("pd23",1.d0,"s2  ",1.d0,"pd23")
 c   26b
-      call reorder("ppph","s2  ",3412,4,0)
+      call reorder("ppph","s2  ",3412,4)
       call mult("s2  ","tcm4","s3  ",222)
-      call reorder("s3  ","s2  ",1342,5,1)
+      call reorder("s3  ","s2  ",1342,5)
       call add("pd23",1.d0,"s2  ",1.d0,"pd23")
 c   28b
-      call reorder("tc  ","s2  ",1342,5,1)
-      call reorder("ph  ","s3  ",1243,5,1)
+      call reorder("tc  ","s2  ",1342,5)
+      call reorder("ph  ","s3  ",1243,5)
       call mult("s2  ","s3  ","s1  ",311)
       call add("pd23",1.d0,"s1  ",-1.d0,"pd23")
       call prt("pd23","pd23b   ",3)
@@ -2115,15 +2115,15 @@ c ***************************************************
 #include "implicit.h"
 #include "priunit.h"
 c   incl 26a, 16b
-      call reorder("tcm ","s1  ",3412,5,0)
-      call reorder("gpph","s2  ",1432,5,0)
+      call reorder("tcm ","s1  ",3412,5)
+      call reorder("gpph","s2  ",1432,5)
       call mult("s1  ","s2  ","s3  ",222)
 c   diag 16b
       call seltyp(2222,10,"s2  ",5)
       call add("s3  ",1.d0,"s2  ",1.d0,"s3  ")
 c --------------------------------------
       call mult("s3  ","t1c ","s2  ",311)
-      call reorder("s2  ","s3  ",3412,5,0)
+      call reorder("s2  ","s3  ",3412,5)
       call add("vv0 ",1.d0,"s3  ",-1.d0,"vv0 ")
       call prt("s3  ","-diag26a",3)
       call prtime("diag26a ",0,1)
@@ -2189,7 +2189,7 @@ c *****************************************************
 #include "priunit.h"
 
       call add("gpph",2.d0,"vvc1",-1.d0,"s2  ")
-      call reorder("tcm ","s1  ",3214,5,0)
+      call reorder("tcm ","s1  ",3214,5)
       call mult("s2  ","s1  ","s3  ",113)
       call add("vv10",1.d0,"s3  ",1.d0,"vv10")
       call prt("s3  ","dg1n6   ",3)
@@ -2277,7 +2277,8 @@ c **************************************************
 #include "dat.h"
 #endif
 
-      call reorder("thv ","s2  ",2341,5,1)
+      !call reorder("thv ","s2  ",2341,5,1)
+      call reorder("thv ","s2  ",2341,5)
       call mult("thvf","s2  ","s3  ",131)
       call add("tnew",1.d0,"s3  ",1.d0,"tnew")
       call prt("s3  ","dfold1  ",3)
@@ -2328,11 +2329,12 @@ C  *********************************************************************
 
       call rdfile  (20,0,"bx1 ",-1)
       call rdfile  (20,1,"bx2 ",-1)
-      call reads   (20,2,"s1  ",-1)
+      call reads   (20,2,"s1  ")
       call reorder ("s1  ","bx3 ",2143,4)
-      call reads   (20,3,"s1  ",-1)
+      call reads   (20,3,"s1  ")
       call reorder ("s1  ","bx4 ",2143,4)
-      call reads   (20,4,"s1  ",-1)
+      !call reads   (20,4,"s1  ",-1)
+      call reads   (20,4,"s1  ")
       call reorder ("s1  ","bx5 ",2143,4)
       call rdfile  (20,5,"bx6 ",-1)
       call rdfile  (20,6,"bx7 ",-1)

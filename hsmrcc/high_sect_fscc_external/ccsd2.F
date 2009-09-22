@@ -78,10 +78,10 @@
         do 20 i=1,nsize
         if (gen(istrt2+i).ne.0.) then
           igg=igen(istrt1+i)
-          ka=iand(ishft(igg,-24),'ff'X)
-          kb=iand(ishft(igg,-16),'ff'X)
-          kc=iand(ishft(igg, -8),'ff'X)
-          kd=iand(      igg     ,'ff'X)
+          ka=iand(ishft(igg,-24),z'ff')
+          kb=iand(ishft(igg,-16),z'ff')
+          kc=iand(ishft(igg, -8),z'ff')
+          kd=iand(      igg     ,z'ff')
           gen(istrt2+i)=gen(istrt2+i)/
      2    (eps(ka)+eps(kb)-eps(kc)-eps(kd))
         endif
@@ -89,8 +89,8 @@
       else
         do 25 i=1,nsize
         if (gen(istrt2+i).ne.0.d0) then
-          kc=iand(ishft(igen(istrt1+i),-8),'ff'X)
-          kd=iand(      igen(istrt1+i)    ,'ff'X)
+          kc=iand(ishft(igen(istrt1+i),-8),z'ff')
+          kd=iand(      igen(istrt1+i)    ,z'ff')
           gen(istrt2+i)=gen(istrt2+i)/(eps(kc)-eps(kd))
         endif
 25      continue
@@ -139,14 +139,14 @@
       ijump=0
       do 10 i=1,nij1
         ig=ij1(i)
-        ka=iand(ishft(ig,-16),'ff'x)
-        kb=iand(ishft(ig,-8),'ff'x)
-        kc=iand(ig,'ff'x)
+        ka=iand(ishft(ig,-16),  z'ff')
+        kb=iand(ishft(ig,-8),   z'ff')
+        kc=iand(ig,             z'ff')
         do 20 j=ije1(i-1)+1,ije1(i)
           ig=igen(istrt1+j)
-          kd=iand(ishft(ig,-16),'ff'x)
-          ke=iand(ishft(ig,-8),'ff'x)
-          kf=iand(ig,'ff'x)
+          kd=iand(ishft(ig,-16),  z'ff')
+          ke=iand(ishft(ig,-8),   z'ff')
+          kf=iand(ig,             z'ff')
           if ((icv(ka).eq.1).and.(icv(kb).eq.1).and.
      1    (icv(kc).eq.1).and.(icv(kd).eq.1).and.
      2    (icv(ke).eq.1).and.(icv(kf).eq.1)) then
@@ -219,16 +219,16 @@
       istrt2=nstrt(2,ntape-1)
       do 10 i=1,nij1
         id=ij1(i)
-        ka=iand(ishft(id,-24),'ff'x)
-        kb=iand(ishft(id,-16),'ff'x)
-        kc=iand(ishft(id,-8),'ff'x)
-        kd=iand(id,'ff'x)
+        ka=iand(ishft(id,-24),  z'ff')
+        kb=iand(ishft(id,-16),  z'ff')
+        kc=iand(ishft(id,-8),   z'ff')
+        kd=iand(id,             z'ff')
         do 20 j=ije1(i-1)+1,ije1(i)
           ind=igen(istrt1+j)
-          ke=iand(ishft(ind,-24),'ff'x)
-          kf=iand(ishft(ind,-16),'ff'x)
-          kg=iand(ishft(ind,-8),'ff'x)
-          kh=iand(ind,'ff'x)
+          ke=iand(ishft(ind,-24),  z'ff')
+          kf=iand(ishft(ind,-16),  z'ff')
+          kg=iand(ishft(ind,-8),   z'ff')
+          kh=iand(ind,             z'ff')
             gen(istrt2+j)=gen(istrt2+j)/
      1      (eps(ka)+eps(kb)+eps(kc)+eps(kd)
      2      -eps(ke)-eps(kf)-eps(kg)-eps(kh))
@@ -279,6 +279,9 @@
       dimension lldet(2,400)
       dimension ecol(400),ncol(400),iscol(400),idcol(2,400),ntr(12)
       dimension igr(400)
+
+      ! mi: must set for g95
+      real*4 time,cputime
 
       data ntr /1hx,1hs,1hp,1hd,1hf,1hg,1hh,1hi,1hk,1hl,1hm,1hn/
 c
@@ -459,7 +462,9 @@ c     order and print collected energies.
      1 'ev,',f8.0,'cm-1. term ',i1,a1,'. gr',i3,', major det=',2i3)
 880   ecol(i)=10000.
 890   continue
-      time=cputime(0.)
+      !time=cputime(0.0)
+      time=cputime(0.0d0)
+
       return
       end
 
@@ -593,7 +598,8 @@ c     order and print collected energies.
           end if
 190     continue
       end if
-      call dimx (nvlspo,100,"nvlspo  ","eneru   ",0)
+      !call dimx (nvlspo,100,"nvlspo  ","eneru   ",0)
+      call dimx (nvlspo,100,"nvlspo  ")
       if (ihp.eq.3) then
         if (nval.ne.21) then
           call files_ccsd ("tvf ",ntape1,new,1,-1,-1)
@@ -765,7 +771,8 @@ c
 1010      continue
         end if
       end if
-      call dimx(ndets,700,"ndets   ","ener",240)
+      !call dimx(ndets,700,"ndets   ","ener",240)
+      call dimx(ndets,700,"ndets   ")
 c
 c     lsdet is -1 for a determinant not yet treated.
 c               n for the nth determinant currently treated.
@@ -823,7 +830,8 @@ c  some matrix elements may have been overlooked. correct.
 3902      format (1x,i3,':',1x,6(1x,i3))
 3901    continue
       end if 
-      call dimx(ndt,60,"ndt ","ener",350)
+      !call dimx(ndt,60,"ndt ","ener",350)
+      call dimx(ndt,60,"ndt ")
 c     if (ipr.lt.2) go to 830
       write (*,8100)
 8100  format ('  effective hamiltonian:')
@@ -1042,7 +1050,7 @@ c     order and write collected energies.
           if (abs(gen(istrt2+ije1(i-1)+j)).gt.abs(tmax)) then
             tmax=gen(istrt2+ije1(i-1)+j)
             idmax=ij1(i)
-            indmax=iand(igen(istrt1+ije1(i-1)+j),'ffffff'x)
+            indmax=iand(igen(istrt1+ije1(i-1)+j),z'ffffff')
           endif
 20      continue
 10    continue
@@ -1263,8 +1271,8 @@ c  calculate heff matrix elements
         else if (nval.eq.2) then
           if (ispin(id1,2).ne.ispin(id2,2)) return
           do 20 i=0,1 
-            k1(2-i)=iand(ishft(id1,-8*i),'ff'x)
-            k2(2-i)=iand(ishft(id2,-8*i),'ff'x)
+            k1(2-i)=iand(ishft(id1,-8*i),z'ff')
+            k2(2-i)=iand(ishft(id2,-8*i),z'ff')
 20        continue
           call match6 (k1,k2,2,isign,nm)
           hmatel=v2det(k1(1),k1(2),k2(1),k2(2))                  
@@ -1277,8 +1285,8 @@ c  calculate heff matrix elements
         else if (nval.eq.3) then
           if (ispin(id1,3).ne.ispin(id2,3)) return
           do 10 i=0,2 
-            k1(3-i)=iand(ishft(id1,-8*i),'ff'x)
-            k2(3-i)=iand(ishft(id2,-8*i),'ff'x)
+            k1(3-i)=iand(ishft(id1,-8*i),z'ff')
+            k2(3-i)=iand(ishft(id2,-8*i),z'ff')
 10        continue
           call match6 (k1,k2,3,isign,nm)
           hmatel=v3det(k1(1),k1(2),k1(3),k2(1),k2(2),k2(3))
@@ -1297,8 +1305,8 @@ c  calculate heff matrix elements
         else if (nval.eq.4) then
          if (ispin(id1,4).ne.ispin(id2,4)) return
           do 40 i=0,3 
-            k1(4-i)=iand(ishft(id1,-8*i),'ff'x)
-            k2(4-i)=iand(ishft(id2,-8*i),'ff'x)
+            k1(4-i)=iand(ishft(id1,-8*i),z'ff')
+            k2(4-i)=iand(ishft(id2,-8*i),z'ff')
 40        continue
           call match6 (k1,k2,4,isign,nm)
           hmatel=v4det(k1(1),k1(2),k1(3),k1(4),k2(1),k2(2),k2(3),k2(4))
@@ -1327,9 +1335,9 @@ c  calculate heff matrix elements
         else if (nval.eq.5) then
           if (ispin(id1,5).ne.ispin(id2,5)) return
           do 70 i=0,4 
-            ii=iand(ishft(id1,-4*i),'f'x)
+            ii=iand(ishft(id1,-4*i),z'f')
             k1(5-i)=ifndso(ii)
-            ii=iand(ishft(id2,-4*i),'f'x)
+            ii=iand(ishft(id2,-4*i),z'f')
             k2(5-i)=ifndso(ii)
 70        continue
           call match6 (k1,k2,5,isign,nm)
@@ -1382,9 +1390,9 @@ c  calculate heff matrix elements
         else if (nval.eq.6) then
           if (ispin(id1,6).ne.ispin(id2,6)) return
           do 100 i=0,5 
-            ii=iand(ishft(id1,-4*i),'f'x)
+            ii=iand(ishft(id1,-4*i),z'f')
             k1(6-i)=ifndso(ii)
-            ii=iand(ishft(id2,-4*i),'f'x)
+            ii=iand(ishft(id2,-4*i),z'f')
             k2(6-i)=ifndso(ii)
 100       continue
           call match6 (k1,k2,6,isign,nm)
@@ -1487,14 +1495,14 @@ c  calculate heff matrix elements
       else if (nval.ge.12) then
         hmatel=0.d0
         do 200 i=0,2
-          k1(3-i)=iand(ishft(id1,-8*i),'ff'x)
+          k1(3-i)=iand(ishft(id1,-8*i), z'ff')
           k1save(3-i)=k1(3-i)
           if (mod(k1(3-i),2).eq.0) then
             k1s(3-i)=-1
           else
             k1s(3-i)=1
           end if
-          k2(3-i)=iand(ishft(id2,-8*i),'ff'x)
+          k2(3-i)=iand(ishft(id2,-8*i),  z'ff')
           k2save(3-i)=k2(3-i)
           if (mod(k2(3-i),2).eq.0) then
             k2s(3-i)=-1
@@ -1673,10 +1681,10 @@ c  calculate heff matrix elements
 #include "implicit.h"
 #include "priunit.h"
 
-      i1=iand(ishft(ihex,-24),'ff'X)
-      i2=iand(ishft(ihex,-16),'ff'X)
-      i3=iand(ishft(ihex,-8) ,'ff'X)
-      i4=iand(          ihex ,'ff'X)
+      i1=iand(ishft(ihex,-24),  z'ff')
+      i2=iand(ishft(ihex,-16),  z'ff')
+      i3=iand(ishft(ihex,-8) ,  z'ff')
+      i4=iand(          ihex ,  z'ff')
       if (i3.eq.0) then
         idec=i1*100+i2
       else
@@ -1816,9 +1824,9 @@ c  calculate heff matrix elements
       call dimx(nstrt(2,ntapet),nbig,"imove2")
 c   special for scratch files, which start with "s".
            itmp=4H       
-           jtmp='ffffff00'X
+           jtmp=z'ffffff00'
            ch1 = iand(itmp,jtmp)
-           ch2 = iand (namefl(ntapet), '000000ff'X)
+           ch2 = iand (namefl(ntapet), z'000000ff')
            isaa = ior (ch1, ch2)
 
       i_4hs=4hs
@@ -1849,7 +1857,7 @@ c   special for scratch files, which start with "s".
       if (nval.le.4) then
         ispin=0
         do 10 i=1,nval   
-          j=iand(ishft(idet,-8*(i-1)),'ff'x)
+          j=iand(ishft(idet,-8*(i-1)),z'ff')
           if (mod(j,2).eq.1) then
             ispin=ispin+1
           else if (mod(j,2).eq.0) then
@@ -1859,7 +1867,7 @@ c   special for scratch files, which start with "s".
       else if ((nval.eq.5).or.(nval.eq.6)) then
         ispin=0
         do 20 i=0,nval-1
-          j=iand(ishft(idet,-4*i),'f'x)
+          j=iand(ishft(idet,-4*i),z'f')
           if (mod(j,2).eq.1) then
             ispin=ispin+1
           else if (mod(j,2).eq.0) then
@@ -1873,9 +1881,9 @@ c   special for scratch files, which start with "s".
           isign=1
         end if
         ispin=0
-        jj(1)=iand(ishft(idet,-16),'ff'x)
-        jj(2)=iand(ishft(idet,-8),'ff'x)
-        jj(3)=iand(idet,'ff'x)
+        jj(1)=iand(ishft(idet,-16),z'ff')
+        jj(2)=iand(ishft(idet,-8), z'ff')
+        jj(3)=iand(idet,z'ff')
         do 30 i=1,2
           if (mod(jj(i),2).eq.1) then
             ispin=ispin+isign
@@ -2008,17 +2016,17 @@ C
       function lftbit(n)
       integer*4 n,i,ipos
       integer*4 nlim(32)
-      data nlim/'0'o,'1'o,'2'o,'4'o,
-     x             '10'o,'20'o,'40'o,
-     x             '100'o,'200'o,'400'o,
-     x             '1000'o,'2000'o,'4000'o,
-     x             '10000'o,'20000'o,'40000'o,
-     x             '100000'o,'200000'o,'400000'o,
-     x             '1000000'o,'2000000'o,'4000000'o,
-     x             '10000000'o,'20000000'o,'40000000'o,
-     x             '100000000'o,'200000000'o,'400000000'o,
-     x             '1000000000'o,'2000000000'o,'4000000000'o,
-     x             '10000000000'o/
+      data nlim/   o'0',o'1',o'2',o'4',
+     x             o'10',o'20',o'40',
+     x             o'100',o'200',o'400',
+     x             o'1000',o'2000',o'4000',
+     x             o'10000',o'20000',o'40000',
+     x             o'100000',o'200000',o'400000',
+     x             o'1000000',o'2000000',o'4000000',
+     x             o'10000000',o'20000000',o'40000000',
+     x             o'100000000',o'200000000',o'400000000',
+     x             o'1000000000',o'2000000000',o'4000000000',
+     x             o'10000000000'/
         ipos=0
         do i=1,32
         if (n.ge.nlim(i)) ipos=i
@@ -2824,16 +2832,16 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 !       do 10 i=1,nij   
         do 10 i=1,nij1
 !         i1=iand(ishft(ij(i),-16),'ff'x)
-          i1=iand(ishft(ij1(i),-16),'ff'x)
+          i1=iand(ishft(ij1(i),-16),z'ff')
 !         i2=iand(ishft(ij(i),-8),'ff'x)
-          i2=iand(ishft(ij1(i),-8),'ff'x)
+          i2=iand(ishft(ij1(i),-8),z'ff')
 !         i3=iand(ij(i),'ff'x)
-          i3=iand(ij1(i),'ff'x)
+          i3=iand(ij1(i),z'ff')
 !         do 20 j=ije(i-1)+1,ije(i)      
           do 20 j=ije1(i-1)+1,ije1(i)      
-            i4=iand(ishft(igen(istrt1+j),-16),'ff'x)
-            i5=iand(ishft(igen(istrt1+j),-8),'ff'x)
-            i6=iand(igen(istrt1+j),'ff'x)
+            i4=iand(ishft(igen(istrt1+j),-16),z'ff')
+            i5=iand(ishft(igen(istrt1+j),-8),z'ff')
+            i6=iand(igen(istrt1+j),z'ff')
             if ((icv(i1).eq.1).and.(icv(i2).eq.1).and.
      1      (icv(i3).eq.1).and.(icv(i4).eq.1).and.
      2      (icv(i5).eq.1).and.(icv(i6).eq.1)) then
@@ -2846,19 +2854,19 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 !       do 30 i=1,nij   
         do 30 i=1,nij1
 !         i1=iand(ishft(ij(i),-24),'ff'x)
-          i1=iand(ishft(ij1(i),-24),'ff'x)
+          i1=iand(ishft(ij1(i),-24),z'ff')
 !         i2=iand(ishft(ij(i),-16),'ff'x)
-          i2=iand(ishft(ij1(i),-16),'ff'x)
+          i2=iand(ishft(ij1(i),-16),z'ff')
 !         i3=iand(ishft(ij(i),-8),'ff'x)
-          i3=iand(ishft(ij1(i),-8),'ff'x)
+          i3=iand(ishft(ij1(i),-8),z'ff')
 !         i4=iand(ij(i),'ff'x)
-          i4=iand(ij1(i),'ff'x)
+          i4=iand(ij1(i),z'ff')
 !         do 40 j=ije(i-1)+1,ije(i)      
           do 40 j=ije1(i-1)+1,ije1(i)      
-            i5=iand(ishft(igen(istrt1+j),-24),'ff'x)
-            i6=iand(ishft(igen(istrt1+j),-16),'ff'x)
-            i7=iand(ishft(igen(istrt1+j),-8),'ff'x)
-            i8=iand(igen(istrt1+j),'ff'x)
+            i5=iand(ishft(igen(istrt1+j),-24),z'ff')
+            i6=iand(ishft(igen(istrt1+j),-16),z'ff')
+            i7=iand(ishft(igen(istrt1+j),-8),z'ff')
+            i8=iand(igen(istrt1+j),z'ff')
             if ((icv(i1).eq.1).and.(icv(i2).eq.1).and.
      1      (icv(i3).eq.1).and.(icv(i4).eq.1).and.
      2      (icv(i5).eq.1).and.(icv(i6).eq.1).and.   
@@ -3225,10 +3233,10 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       if (abs(gen(istrt2+i)).ge.flim) then
         io=io+1
         a(io)=gen(istrt2+i)
-        ind(1,io)=iand(ishft(igen(istrt1+i),-24),'ff'X)
-        ind(2,io)=iand(ishft(igen(istrt1+i),-16),'ff'X)
-        ind(3,io)=iand(ishft(igen(istrt1+i),-8) ,'ff'X)
-        ind(4,io)=iand(           igen(istrt1+i),'ff'X)
+        ind(1,io)=iand(ishft(igen(istrt1+i),-24),z'ff')
+        ind(2,io)=iand(ishft(igen(istrt1+i),-16),z'ff')
+        ind(3,io)=iand(ishft(igen(istrt1+i),-8) ,z'ff')
+        ind(4,io)=iand(           igen(istrt1+i),z'ff')
         if (io.eq.6) then
           write(LUPRI,140) ((ind(jj,ii),jj=1,4),a(ii),ii=1,6)
           io=0
@@ -3314,11 +3322,11 @@ CUK   common /crle/ trle(nrle,4),isize(4)
           if (abs(gen(istrt2+j)).ge.flim) then
             if (iflag.eq.1) then
 !             id(1)=iand(ishft(ij(i),-16),'ff'x)
-              id(1)=iand(ishft(ij1(i),-16),'ff'x)
+              id(1)=iand(ishft(ij1(i),-16),z'ff')
 !             id(2)=iand(ishft(ij(i),-8),'ff'x)
-              id(2)=iand(ishft(ij1(i),-8),'ff'x)
+              id(2)=iand(ishft(ij1(i),-8),z'ff')
 !             id(3)=iand(ij(i),'ff'x)
-              id(3)=iand(ij1(i),'ff'x)
+              id(3)=iand(ij1(i),z'ff')
 c             write (6,*) ' ' 
               write (6,98) i,(id(k),k=1,3)
 98            format ('record no. ',i6,' is ',3i2)
@@ -3328,9 +3336,9 @@ c             write (6,*) ' '
             io=io+1
             a(io)=gen(istrt2+j)
             ii=igen(istrt1+j)
-            ind(1,io)=iand(ishft(ii,-16),'ff'x)
-            ind(2,io)=iand(ishft(ii,-8),'ff'x)
-            ind(3,io)=iand(ii,'ff'x)
+            ind(1,io)=iand(ishft(ii,-16),z'ff')
+            ind(2,io)=iand(ishft(ii,-8),z'ff')
+            ind(3,io)=iand(ii,z'ff')
             if (io.eq.4) then
               write (6,97) ((ind(m,n),m=1,3),a(n),n=1,4)
               io=0
@@ -3408,13 +3416,13 @@ c             write (6,*) ' '
           if (abs(gen(istrt2+j)).ge.flim) then
             if (iflag.eq.1) then
 !             id(1)=iand(ishft(ij(i),-24),'ff'x)
-              id(1)=iand(ishft(ij1(i),-24),'ff'x)
+              id(1)=iand(ishft(ij1(i),-24),z'ff')
 !             id(2)=iand(ishft(ij(i),-16),'ff'x)
-              id(2)=iand(ishft(ij1(i),-16),'ff'x)
+              id(2)=iand(ishft(ij1(i),-16),z'ff')
 !             id(3)=iand(ishft(ij(i),-8),'ff'x)
-              id(3)=iand(ishft(ij1(i),-8),'ff'x)
+              id(3)=iand(ishft(ij1(i),-8),z'ff')
 !             id(4)=iand(ij(i),'ff'x)
-              id(4)=iand(ij1(i),'ff'x)
+              id(4)=iand(ij1(i),z'ff')
               write (6,*) ' ' 
               write (6,98) i,(id(k),k=1,4)
 98            format ('record no. ',i6,' is ',4i2)
@@ -3424,10 +3432,10 @@ c             write (6,*) ' '
             io=io+1
             a(io)=gen(istrt2+j)
             ii=igen(istrt1+j)
-            ind(1,io)=iand(ishft(ii,-24),'ff'x)
-            ind(2,io)=iand(ishft(ii,-16),'ff'x)
-            ind(3,io)=iand(ishft(ii,-8),'ff'x)
-            ind(4,io)=iand(ii,'ff'x)
+            ind(1,io)=iand(ishft(ii,-24), z'ff')
+            ind(2,io)=iand(ishft(ii,-16), z'ff')
+            ind(3,io)=iand(ishft(ii,-8),  z'ff')
+            ind(4,io)=iand(ii,            z'ff')
             if (io.eq.4) then
               write (6,97) ((ind(m,n),m=1,4),a(n),n=1,4)
               io=0
@@ -3484,6 +3492,7 @@ c             write (6,*) ' '
       if (iparm.gt.iopt(1)) return
 
       t=cputime(real(0.0))
+!      t=cputime(double(0.0))
 !     t = mclock()/1000000.
 
       diff = t - csdltim
@@ -3565,9 +3574,12 @@ c             write (6,*) ' '
       end subroutine clean_string
 
 c *************************************************
-      function cputime(x)
+!     function cputime(x)
+!     real*8 function cputime(x)
+      real*4 function cputime(x)
 CDEC  Real*8 Runsec
       Real*8 Runsec
+      real*8 x
 C
 CNVX  cputime = CPUTIME(0.0)
 CRAY  cputime = Second()

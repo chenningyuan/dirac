@@ -1280,6 +1280,8 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
    integer :: BufSize, NumRecBuf, NumBlocks, IndBlock
    integer :: NumIntRec, EnPkInd
    double precision :: ASInt
+   integer :: IM56=-56,IM48=-48,IM40=-40,IM32=-32,IM16=-16
+
    integer NXX
    integer NPACKIC, NPACK, LABEL
    real :: dtim, dtime, tarray(2)
@@ -1360,9 +1362,12 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
                call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'32 bit, aa ')
 #else
                LABEL = IXPREAD(NPACK)
-               P =       ISHFT( LABEL, -48 )
-               Q = IAND( ISHFT( LABEL, -32 ), 65535 )
-               R = IAND( ISHFT( LABEL, -16 ), 65535 )
+              ! P =       ISHFT( LABEL, -48 )
+               P =       ISHFT( LABEL, IM48 )
+              ! Q = IAND( ISHFT( LABEL, -32 ), 65535 )
+               Q = IAND( ISHFT( LABEL, IM48 ), 65535 )
+              ! R = IAND( ISHFT( LABEL, -16 ), 65535 )
+               R = IAND( ISHFT( LABEL, IM16 ), 65535 )
                S = IAND( LABEL, 65535 )
                call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'64 bit, ab')
 #endif
@@ -1400,10 +1405,14 @@ subroutine IntFileGen_TwoBody(TimeTaken,RecLen,NumRec,StVRec,              &
                   call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'64 bit, bb')
                ELSE
                   LABEL = IXPREAD((NPACK/2)+1)
-                  P = ISHFT( LABEL, -56 )
-                  Q = IAND( ISHFT( LABEL, -48 ), 255 )
-                  R = IAND( ISHFT( LABEL, -40 ), 255 )
-                  S = IAND( ISHFT( LABEL, -32 ), 255 )
+                  !P = ISHFT( LABEL, -56 )
+                  P = ISHFT( LABEL, IM56 )
+                  !Q = IAND( ISHFT( LABEL, -48 ), 255 )
+                  Q = IAND( ISHFT( LABEL, IM48 ), 255 )
+                  !R = IAND( ISHFT( LABEL, -40 ), 255 )
+                  R = IAND( ISHFT( LABEL, IM40 ), 255 )
+                 ! S = IAND( ISHFT( LABEL, -32 ), 255 )
+                  S = IAND( ISHFT( LABEL, IM32 ), 255 )
                   call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'64 bit, bc')  
                ENDIF
 #endif
@@ -1744,6 +1753,8 @@ subroutine IntFileGen_OneBody(TimeTaken,UF,RecLen,NumRec, &
    integer :: PQ, IPQ
    integer :: ASBufInd, BufSize
    double precision :: ASInt, FInt
+   integer :: IM56=-56,IM48=-48,IM40=-40,IM32=-32,IM16=-16
+
    integer NXX
    integer NPACKIC, NPACK, LABEL
    real :: dtim, dtime, tarray(2)
@@ -1786,9 +1797,12 @@ subroutine IntFileGen_OneBody(TimeTaken,UF,RecLen,NumRec, &
                call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'32 bit, ca')
 #else
                LABEL = IXPREAD(NPACK)
-               P =       ISHFT( LABEL, -48 )
-               Q = IAND( ISHFT( LABEL, -32 ), 65535 )
-               R = IAND( ISHFT( LABEL, -16 ), 65535 )
+               ! P =       ISHFT( LABEL, -48 )
+               P =       ISHFT( LABEL, IM48 )
+              ! Q = IAND( ISHFT( LABEL, -32 ), 65535 )
+               Q = IAND( ISHFT( LABEL, IM32 ), 65535 )
+              ! R = IAND( ISHFT( LABEL, -16 ), 65535 )
+               R = IAND( ISHFT( LABEL, IM16 ), 65535 )
                S = IAND( LABEL, 65535 )
                call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'64 bit, cb')
 #endif
@@ -1826,10 +1840,14 @@ subroutine IntFileGen_OneBody(TimeTaken,UF,RecLen,NumRec, &
                   call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'64 bit, db')
                ELSE
                   LABEL = IXPREAD((NPACK/2)+1)
-                  P = ISHFT( LABEL, -56 )
-                  Q = IAND( ISHFT( LABEL, -48 ), 255 )
-                  R = IAND( ISHFT( LABEL, -40 ), 255 )
-                  S = IAND( ISHFT( LABEL, -32 ), 255 )
+                  !P = ISHFT( LABEL, -56 )
+                  P = ISHFT( LABEL, IM56 )
+                 ! Q = IAND( ISHFT( LABEL, -48 ), 255 )
+                  Q = IAND( ISHFT( LABEL, IM48 ), 255 )
+                 ! R = IAND( ISHFT( LABEL, -40 ), 255 )
+                  R = IAND( ISHFT( LABEL, IM40 ), 255 )
+                 ! S = IAND( ISHFT( LABEL, -32 ), 255 )
+                  S = IAND( ISHFT( LABEL, IM32 ), 255 )
                   call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'64 bit, dc')
                ENDIF
 #endif
@@ -1999,6 +2017,7 @@ subroutine  check_gms_integrals
    integer :: NumIntRec, EnPkInd
    integer  ::   IUNIQ, LABELSIZE, NINTMX
    double precision :: ASInt
+   integer :: IM56=-56,IM48=-48,IM40=-40,IM32=-32,IM16=-16
 
    double precision, allocatable :: XXPREAD(:)
    integer, allocatable :: IXPREAD(:)
@@ -2059,9 +2078,12 @@ subroutine  check_gms_integrals
                call print_gms_int_ind(P,Q,R,S,ASInt)
 #else
                LABEL = IXPREAD(NPACK)
-               P =       ISHFT( LABEL, -48 )
-               Q = IAND( ISHFT( LABEL, -32 ), 65535 )
-               R = IAND( ISHFT( LABEL, -16 ), 65535 )
+              ! P =       ISHFT( LABEL, -48 )
+               P =       ISHFT( LABEL, IM48 )
+              ! Q = IAND( ISHFT( LABEL, -32 ), 65535 )
+               Q = IAND( ISHFT( LABEL, IM32 ), 65535 )
+              ! R = IAND( ISHFT( LABEL, -16 ), 65535 )
+               R = IAND( ISHFT( LABEL, IM16 ), 65535 )
                S = IAND( LABEL, 65535 )
                call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'64 bit, ab')
                call print_gms_int_ind(P,Q,R,S,ASInt)
@@ -2092,10 +2114,14 @@ subroutine  check_gms_integrals
                   call print_gms_int_ind(P,Q,R,S,ASInt)
                ELSE
                   LABEL = IXPREAD((NPACK/2)+1)
-                  P = ISHFT( LABEL, -56 )
-                  Q = IAND( ISHFT( LABEL, -48 ), 255 )
-                  R = IAND( ISHFT( LABEL, -40 ), 255 )
-                  S = IAND( ISHFT( LABEL, -32 ), 255 )
+                 ! P = ISHFT( LABEL, -56 )
+                  P = ISHFT( LABEL, IM56 )
+                !  Q = IAND( ISHFT( LABEL, -48 ), 255 )
+                  Q = IAND( ISHFT( LABEL, IM48 ), 255 )
+                 ! R = IAND( ISHFT( LABEL, -40 ), 255 )
+                  R = IAND( ISHFT( LABEL, IM40 ), 255 )
+                 ! S = IAND( ISHFT( LABEL, -32 ), 255 )
+                  S = IAND( ISHFT( LABEL, IM32 ), 255 )
                   call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'64 bit, bc')  
                   call print_gms_int_ind(P,Q,R,S,ASInt)
                ENDIF
@@ -2142,6 +2168,7 @@ subroutine get_gms_spacial_integrals(lu_file,IUNIQ,LABELSIZE,NINTMX,v,ind,nnint)
    integer :: P, Q, R, S
    integer :: NumIntRec, EnPkInd
    double precision :: ASInt
+   integer :: IM56=-56,IM48=-48,IM40=-40,IM32=-32,IM16=-16
 
    double precision, allocatable :: XXPREAD(:)
    integer, allocatable :: IXPREAD(:)
@@ -2200,9 +2227,12 @@ subroutine get_gms_spacial_integrals(lu_file,IUNIQ,LABELSIZE,NINTMX,v,ind,nnint)
                call print_gms_int_ind_mul(LABEL,P,Q,R,S,ASInt)
 #else
                LABEL = IXPREAD(NPACK)
-               P =       ISHFT( LABEL, -48 )
-               Q = IAND( ISHFT( LABEL, -32 ), 65535 )
-               R = IAND( ISHFT( LABEL, -16 ), 65535 )
+              ! P =       ISHFT( LABEL, -48 )
+               P =       ISHFT( LABEL, IM48 )
+              ! Q = IAND( ISHFT( LABEL, -32 ), 65535 )
+               Q = IAND( ISHFT( LABEL, IM32 ), 65535 )
+              ! R = IAND( ISHFT( LABEL, -16 ), 65535 )
+               R = IAND( ISHFT( LABEL, IM16 ), 65535 )
                S = IAND( LABEL, 65535 )
                call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'64 bit, ab')
                call print_gms_int_ind_mul(LABEL,P,Q,R,S,ASInt)
@@ -2234,10 +2264,14 @@ subroutine get_gms_spacial_integrals(lu_file,IUNIQ,LABELSIZE,NINTMX,v,ind,nnint)
                   call print_gms_int_ind_mul(LABEL,P,Q,R,S,ASInt)
                ELSE
                   LABEL = IXPREAD((NPACK/2)+1)
-                  P = ISHFT( LABEL, -56 )
-                  Q = IAND( ISHFT( LABEL, -48 ), 255 )
-                  R = IAND( ISHFT( LABEL, -40 ), 255 )
-                  S = IAND( ISHFT( LABEL, -32 ), 255 )
+                 ! P = ISHFT( LABEL, -56 )
+                  P = ISHFT( LABEL, IM56 )
+                 ! Q = IAND( ISHFT( LABEL, -48 ), 255 )
+                  Q = IAND( ISHFT( LABEL, IM48 ), 255 )
+                 ! R = IAND( ISHFT( LABEL, -40 ), 255 )
+                  R = IAND( ISHFT( LABEL, IM40 ), 255 )
+                 ! S = IAND( ISHFT( LABEL, -32 ), 255 )
+                  S = IAND( ISHFT( LABEL, IM32 ), 255 )
                   call check_PQRS(P,Q,R,S,LABELSIZE,LABEL,NPACK,'64 bit, bc')  
                   call print_gms_int_ind_mul(LABEL,P,Q,R,S,ASInt)
                ENDIF

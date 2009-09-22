@@ -556,9 +556,9 @@ c   diag f1
           nsize1=ije1(nij1)
           istrt11=nstrt(1,ntape-1)+2*nij1+4
           istrt12=nstrt(2,ntape-1)
-          if (iand(idi,'00ff'x).eq.iand(idj,'00ff'x)) then
-            ii1=iand(ishft(idi,-8),'ff'x)
-            ii2=iand(ishft(idj,-8),'ff'x)
+          if (iand(idi,z'00ff').eq.iand(idj,z'00ff')) then
+            ii1=iand(ishft(idi,-8),z'ff')
+            ii2=iand(ishft(idj,-8),z'ff')
             a(i,j)=a(i,j)+find2(ii1,ii2)
           end if
 c   diag f2
@@ -566,9 +566,9 @@ c   diag f2
           nsize1=ije1(nij1)
           istrt11=nstrt(1,ntape-1)+2*nij1+4
           istrt12=nstrt(2,ntape-1)
-          if (iand(idi,'ff00'x).eq.iand(idj,'ff00'x)) then
-            ii1=iand(idi,'ff'x)
-            ii2=iand(idj,'ff'x)
+          if (iand(idi,z'ff00').eq.iand(idj,z'ff00')) then
+            ii1=iand(idi,z'ff')
+            ii2=iand(idj,z'ff')
             a(i,j)=a(i,j)-find2(ii1,ii2)
           end if
 c   diag f3
@@ -576,20 +576,20 @@ c   diag f3
           nsize2=ije1(nij1)
           istrt21=nstrt(1,ntape-1)+2*nij1+4
           istrt22=nstrt(2,ntape-1)
-          ii1=iand(ishft(idi,-8),'ff'x)
-          ii2=iand(idj,'ff'x)
-          ii3=iand(ishft(idj,-8),'ff'x)
-          ii4=iand(idi,'ff'x)
+          ii1=iand(ishft(idi,-8),z'ff')
+          ii2=iand(idj,z'ff')
+          ii3=iand(ishft(idj,-8),z'ff')
+          ii4=iand(idi,z'ff')
           a(i,j)=a(i,j)+find4(ii1,ii2,ii3,ii4)
 c   diag f4
           call files ("tqf ",ntape,new,1,-1,-1)
           nsize2=ije1(nij1)
           istrt21=nstrt(1,ntape-1)+2*nij1+4
           istrt22=nstrt(2,ntape-1)
-          ii1=iand(ishft(idi,-8),'ff'x)
-          ii2=iand(idj,'ff'x)
-          ii3=iand(idi,'ff'x)
-          ii4=iand(ishft(idj,-8),'ff'x)
+          ii1=iand(ishft(idi,-8),z'ff')
+          ii2=iand(idj,z'ff')
+          ii3=iand(idi,z'ff')
+          ii4=iand(ishft(idj,-8),z'ff')
           a(i,j)=a(i,j)-2.d0*find4(ii1,ii2,ii3,ii4)
 50      continue
 40    continue
@@ -1367,9 +1367,9 @@ c   diags boxX
           nsize1=ije1(nij1)
           istrt11=nstrt(1,ntape-1)+2*nij1+4
           istrt12=nstrt(2,ntape-1)
-          if (iand(idi,'ffffff00'x).eq.iand(idj,'ffffff00'x)) then
-            ii1=iand(idj,'ff'x)
-            ii2=iand(idi,'ff'x)
+          if (iand(idi,z'ffffff00').eq.iand(idj,z'ffffff00')) then
+            ii1=iand(idj,z'ff')
+            ii2=iand(idi,z'ff')
             a(i,j)=a(i,j)+find2(ii1,ii2)
           end if
 c   diag f1
@@ -1377,15 +1377,15 @@ c   diag f1
           nsize1=ije1(nij1)
           istrt11=nstrt(1,ntape-1)+2*nij1+4
           istrt12=nstrt(2,ntape-1)
-          if (iand(idi,'ff00ffff'x).eq.iand(idj,'ff00ffff'x)) then
-            ii1=iand(ishft(idi,-16),'ff'x)
-            ii2=iand(ishft(idj,-16),'ff'x)
+          if (iand(idi,z'ff00ffff').eq.iand(idj,z'ff00ffff')) then
+            ii1=iand(ishft(idi,-16),z'ff')
+            ii2=iand(ishft(idj,-16),z'ff')
             a(i,j)=a(i,j)+find2(ii1,ii2)
           end if
 c   diag f2
-          if (iand(idi,'00ffffff'x).eq.iand(idj,'00ffffff'x)) then
-            ii1=iand(ishft(idi,-24),'ff'x)
-            ii2=iand(ishft(idj,-24),'ff'x)
+          if (iand(idi,z'00ffffff').eq.iand(idj,z'00ffffff')) then
+            ii1=iand(ishft(idi,-24),z'ff')
+            ii2=iand(ishft(idj,-24),z'ff')
             a(i,j)=a(i,j)+find2(ii1,ii2)
           end if
 c   diag f3
@@ -1393,9 +1393,9 @@ c   diag f3
           nsize1=ije1(nij1)
           istrt11=nstrt(1,ntape-1)+2*nij1+4
           istrt12=nstrt(2,ntape-1)
-          if (iand(idi,'ffff00ff'x).eq.iand(idj,'ffff00ff'x)) then
-            ii1=iand(ishft(idi,-8),'ff'x)
-            ii2=iand(ishft(idj,-8),'ff'x)
+          if (iand(idi,z'ffff00ff').eq.iand(idj,z'ffff00ff')) then
+            ii1=iand(ishft(idi,-8),z'ff')
+            ii2=iand(ishft(idj,-8),z'ff')
             a(i,j)=a(i,j)-find2(ii1,ii2)
           end if
 c   diag f4
@@ -1403,11 +1403,11 @@ c   diag f4
           nsize2=ije1(nij1)
           istrt21=nstrt(1,ntape-1)+2*nij1+4
           istrt22=nstrt(2,ntape-1)
-          if (iand(idi,'0000ffff'x).eq.iand(idj,'0000ffff'x)) then
-            ii1=iand(ishft(idi,-24),'ff'x)
-            ii2=iand(ishft(idi,-16),'ff'x)
-            ii3=iand(ishft(idj,-24),'ff'x)
-            ii4=iand(ishft(idj,-16),'ff'x)
+          if (iand(idi,z'0000ffff').eq.iand(idj,z'0000ffff')) then
+            ii1=iand(ishft(idi,-24),z'ff')
+            ii2=iand(ishft(idi,-16),z'ff')
+            ii3=iand(ishft(idj,-24),z'ff')
+            ii4=iand(ishft(idj,-16),z'ff')
             a(i,j)=a(i,j)-find4(ii1,ii2,ii3,ii4)
           end if
 c   diag f6
@@ -1415,19 +1415,19 @@ c   diag f6
           nsize2=ije1(nij1)
           istrt21=nstrt(1,ntape-1)+2*nij1+4
           istrt22=nstrt(2,ntape-1)
-          if (iand(idi,'ff0000ff'x).eq.iand(idj,'ff0000ff'x)) then
-            ii1=iand(ishft(idi,-16),'ff'x)
-            ii2=iand(ishft(idj,-8),'ff'x)
-            ii3=iand(ishft(idj,-16),'ff'x)
-            ii4=iand(ishft(idi,-8),'ff'x)
+          if (iand(idi,z'ff0000ff').eq.iand(idj,z'ff0000ff')) then
+            ii1=iand(ishft(idi,-16),z'ff')
+            ii2=iand(ishft(idj,-8),z'ff')
+            ii3=iand(ishft(idj,-16),z'ff')
+            ii4=iand(ishft(idi,-8),z'ff')
             a(i,j)=a(i,j)+find4(ii1,ii2,ii3,ii4)
           end if
 c   diag f7
-          if (iand(idi,'00ff00ff'x).eq.iand(idj,'00ff00ff'x)) then
-            ii1=iand(ishft(idi,-24),'ff'x)
-            ii2=iand(ishft(idj,-8),'ff'x)
-            ii3=iand(ishft(idj,-24),'ff'x)
-            ii4=iand(ishft(idi,-8),'ff'x)
+          if (iand(idi,z'00ff00ff').eq.iand(idj,z'00ff00ff')) then
+            ii1=iand(ishft(idi,-24),  z'ff')
+            ii2=iand(ishft(idj,-8),   z'ff')
+            ii3=iand(ishft(idj,-24),  z'ff')
+            ii4=iand(ishft(idi,-8),   z'ff')
             a(i,j)=a(i,j)+find4(ii1,ii2,ii3,ii4)
           end if
 c   diag f9
@@ -1435,21 +1435,21 @@ c   diag f9
           nsize2=ije1(nij1)
           istrt21=nstrt(1,ntape-1)+2*nij1+4
           istrt22=nstrt(2,ntape-1)
-          if (iand(idi,'00ff00ff'x).eq.iand(idj,'00ff00ff'x)) then
-            ii1=iand(ishft(idi,-24),'ff'x)
-            ii2=iand(ishft(idj,-8),'ff'x)
-            ii3=iand(ishft(idi,-8),'ff'x)
-            ii4=iand(ishft(idj,-24),'ff'x)
+          if (iand(idi,z'00ff00ff').eq.iand(idj,z'00ff00ff')) then
+            ii1=iand(ishft(idi,-24),  z'ff')
+            ii2=iand(ishft(idj,-8),   z'ff')
+            ii3=iand(ishft(idi,-8),   z'ff')
+            ii4=iand(ishft(idj,-24),  z'ff')
             a(i,j)=a(i,j)-2.d0*find4(ii1,ii2,ii3,ii4)
           end if
 c   diag f10
-          if ((iand(idi,'ff'x).eq.iand(idj,'ff'x)).and.  
-     1    (iand(ishft(idi,-16),'ff'x).eq.
-     2    iand(ishft(idj,-24),'ff'x))) then
-            ii1=iand(ishft(idi,-24),'ff'x)
-            ii2=iand(ishft(idj,-8),'ff'x)
-            ii3=iand(ishft(idi,-8),'ff'x)
-            ii4=iand(ishft(idj,-16),'ff'x)
+          if ((iand(idi,z'ff').eq.iand(idj,z'ff')).and.  
+     1    (iand(ishft(idi,-16), z'ff').eq.
+     2    iand(ishft(idj,-24), z'ff'))) then
+            ii1=iand(ishft(idi,-24),  z'ff')
+            ii2=iand(ishft(idj,-8),   z'ff')
+            ii3=iand(ishft(idi,-8),   z'ff')
+            ii4=iand(ishft(idj,-16),  z'ff')
             a(i,j)=a(i,j)+find4(ii1,ii2,ii3,ii4)
           end if
           if ((iopt(17).eq.1).or.(iopt(17).eq.2)) then
@@ -2537,12 +2537,12 @@ C  ******************************************************************
           ipa(np)=ii
         end if
 100   continue
-      inda=iand(ishft(idi,-24),'ff'x)
-      indb=iand(ishft(idi,-16),'ff'x)
-      indc=iand(ishft(idi,-8),'ff'x)
-      indd=iand(idi,'ff'x)
-      if (iand(idi,'ffffff00'x).eq.iand(idj,'ffffff00'x)) then
-        ind1=iand(idj,'ff'x)
+      inda=iand(ishft(idi,-24),  z'ff')
+      indb=iand(ishft(idi,-16),  z'ff')
+      indc=iand(ishft(idi,-8),   z'ff')
+      indd=iand(idi,             z'ff')
+      if (iand(idi,z'ffffff00').eq.iand(idj,z'ffffff00')) then
+        ind1=iand(idj,z'ff')
         call files ("hhhp",ntape,new,1,-1,-1)
         nsizea=ije1(nij1)
         istrta1=nstrt(1,ntape-1)+2*nij1+4
