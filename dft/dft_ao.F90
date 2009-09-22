@@ -100,19 +100,6 @@ module dft_ao
   logical :: dft_basis_info_synced    = .false.
 #endif
 
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "shells.h"
-#include "symmet.h"
-#include "aovec.h"
-#include "primit.h"
-#include "sphtrm.h"
-#include "dcbbas.h"
-#include "pincom.h"
-#include "dgroup.h"
-#include "dcbham.h"
-
 #ifdef VAR_MPI
 #include "infpar.h"
 #include "mpif.h"
@@ -530,6 +517,19 @@ contains
   subroutine dft_ao_init(is_parallel_calculation, &
                          max_ao_g_order,          &
                          max_ao_m_order)
+
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "shells.h"
+#include "symmet.h"
+#include "aovec.h"
+#include "primit.h"
+#include "sphtrm.h"
+#include "dcbbas.h"
+#include "pincom.h"
+#include "dgroup.h"
+#include "dcbham.h"
 
 !   ----------------------------------------------------------------------------
     logical, intent(in) :: is_parallel_calculation
