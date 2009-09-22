@@ -82,10 +82,12 @@ contains
                c(:), & !c(n) component indices, or c(n+n) components ranges of each p
                b(:), & !b(m) ranks of D(:) expansion: size(D)=product(b+1)
                o(:) !o(m) indices in e of each rank in D; default 1,2..m
-      integer :: n, m, ne, op(size(p)), cc(size(p)*2), i
+      integer :: n, m, ne, op(size(p)), cc(size(p)*2), i, isize
       logical :: zerg,imag
       !process and check arguments
-      call prop_check('prop_energy', D(1), p, c=c, nd=size(D), b=b, o=o,    &
+       isize=size(D)
+     ! call prop_check('prop_energy', D(1), p, c=c, nd=size(D), b=b, o=o,    &
+      call prop_check('prop_energy', D(1), p, c=c, nd=isize, b=b, o=o,    &
                       np=n, op=op, cc=cc, m=m, ne=ne, zerg=zerg, imag=imag)
       if (zerg .or. m==0.and.imag) return !the result is zero
       call subr() !since bb(m) and oe(ne) and ee(ne)
@@ -93,7 +95,9 @@ contains
       subroutine subr()
          integer    :: bb(m), oe(ne)
          complex(8) :: ee(ne)
-         call prop_order(n, op, cc, m, size(D), ne, bb, oe, b=b, o=o)
+         isize = size(D)
+         !call prop_order(n, op, cc, m, size(D), ne, bb, oe, b=b, o=o)
+         call prop_order(n, op, cc, m, isize, ne, bb, oe, b=b, o=o)
          !call core function erg
          ee = 0
          call energy_core(n, m, (/ (p(op(i)), i=1,n) /),                 &
@@ -116,17 +120,19 @@ contains
                c(:), & !c(n) component indices, or c(n+n) components ranges of each p
                b(:), & !b(m) ranks of D(:) expansion: size(D)=product(b+1)
                o(:)    !o(m) indices in e of each rank in D; default 1,2..m
-      integer :: n, m, nf, op(size(p)), cc(2*size(p)), i
+      integer :: n, m, nf, op(size(p)), cc(2*size(p)), i, isize
       logical :: zfck
-      call prop_check('prop_fock',D(1),p, c=c,nd=size(D),b=b,o=o &
+       isize=size(D)
+      call prop_check('prop_fock',D(1),p, c=c,nd=isize,b=b,o=o &
                      ,np=n,op=op,cc=cc,m=m,ne=nf,zfck=zfck)
       if (zfck) return !the result is zero
       call subr() !since bb(m) and oe(ne) and FF(ne)
    contains
       subroutine subr()
-         integer      :: bb(m), of(nf)
+         integer      :: bb(m), of(nf),isize
          type(matrix) :: FF(nf)
-         call prop_order(n, op, cc, m, size(D), nf, bb, of, b=b, o=o)
+         isize=size(D)
+         call prop_order(n, op, cc, m, isize, nf, bb, of, b=b, o=o)
          !order F into FF, call core function fock_core, then reorder back into F
          do i = 1, nf
             FF(of(i)) = F(i)
@@ -1161,7 +1167,7 @@ contains
       type(matrix), intent(in)    :: Da, Db
       real(8),      intent(inout) :: E(:)
       real(8), pointer :: wrk(:)
-      integer          :: lwrk, nr_qu = 1
+      integer          :: lwrk, nr_qu = 1, isize, ilen
 #ifdef PRG_DIRAC
 !radovan: it's not ideal to have explicit matrix dimensions here
 !         DIRAC: nbas*nbas*4
@@ -1196,8 +1202,9 @@ contains
 
       e = 0.0d0
 
+      isize = size(e); ilen=len(what)
       call grcont(wrk, lwrk, &
-                  e, size(e), what(1:1)=='G', what(1:1)=='M', len(what), &
+                  e, isize, what(1:1)=='G', what(1:1)=='M', ilen, &
                   0, .true., .false., (/Da%elms, Db%elms/), 2)
 
       call di_deselect_wrk(wrk, lwrk)
@@ -1242,7 +1249,7 @@ contains
       integer,    optional,intent(out) :: np, op(size(p)), cc(2*size(p)), m, ne
       complex(8), optional,intent(out) :: ww(size(p)+1)
       logical,    optional,intent(out) :: zerg, zfck, zovl, imag
-      integer :: n, ip(size(p)), i, j, k
+      integer :: n, ip(size(p)), i, j, k, icount
       logical :: one,zer
       call init(S0)
       n = size(p)
@@ -1270,7 +1277,9 @@ contains
          zovl = any((/ (.not.tab(ip(i))%bas, i=1,n) /))
       !the integrals are imaginary when
       if (present(imag)) & 
-         imag = (mod(count((/ (tab(ip(i))%imag, i=1,n) /)),2) == 1)
+        ! imag = (mod(count((/ (tab(ip(i))%imag, i=1,n) /)),2) == 1)
+            icount = count((/ (tab(ip(i))%imag, i=1,n) /))
+         imag = (mod(icount,2) == 1)
       !process optional c to produce cc
       if (present(c)) then
          if (size(c) /= n .and. size(c) /= n+n) &
