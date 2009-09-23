@@ -39,6 +39,9 @@ C
 C***********************************************************************
 
       use dirac_cfg
+#ifdef MOD_VISUAL
+      use visual
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -104,7 +107,7 @@ C
 C
 
 #ifdef MOD_VISUAL
-      if (dirac_cfg_visual) call visual()
+      if (dirac_cfg_visual) call run_visual()
 #endif /* MOD_VISUAL */
 
 #ifdef ANALYZE_PROPERTY_GRADIENT

@@ -224,6 +224,7 @@ C                                                           radovan bast
 C                                              last revision: april 2007
 C=======================================================================
 
+      use visual
 #include "implicit.h"
 #include "priunit.h"
 
