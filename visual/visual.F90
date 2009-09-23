@@ -6,26 +6,26 @@ module visual
 
   implicit none
 
-contains
+  public run_visual
+  public get_quantity_in_point
 
-      SUBROUTINE run_VISUAL()
-!=======================================================================
-!     description in here ...
-!-----------------------------------------------------------------------
-!                                                           radovan bast
-!                                              last revision: april 2007
-!=======================================================================
-
+  private
 
 #include "priunit.h"
 #include "dcborb.h"
 #include "dcbbas.h"
-#include "dcbdhf.h"
-#include "dcbgen.h"
 #include "maxorb.h"
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dummy.h"
+#include "mxcent.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+#include "symmet.h"
+
+contains
+
+      SUBROUTINE run_VISUAL()
 
       real(8), allocatable :: occupation(:)
 
@@ -37,7 +37,7 @@ contains
       real(8), allocatable :: gao2(:)
       real(8), allocatable :: buf(:)
       integer, allocatable :: ncnt(:)
-      integer :: ioff, IXVECTOR
+      integer :: ioff, IXVECTOR, lucoef
       real(8) :: toterg, time_start, second
 
       call alloc(cmo      ,n2bbasxq)
@@ -54,6 +54,7 @@ contains
       CALL DZERO(CMO,N2BBASXQ)
       CALL DZERO(EIG,NORBT)
 
+      lucoef = 137
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','VISUAL')
       CALL REACMO_no_work(LUCOEF,'DFCOEF',CMO,EIG,idummy, &
      &            toterg, 6)
@@ -123,24 +124,6 @@ contains
      &                         GAO2, &
      &                         NCNT, &
      &                         BUF)
-!=======================================================================
-!     description in here ...
-!-----------------------------------------------------------------------
-!                                                           radovan bast
-!                                              last revision: april 2007
-!=======================================================================
-
-#include "priunit.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "dcbgen.h"
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dcbham.h"
-#include "nuclei.h"
-#include "dgroup.h"
-#include "symmet.h"
 
       real(8) ::          DMAT_AO(*)
       real(8) ::          GAO(*)
@@ -436,24 +419,6 @@ contains
      &                                 NCNT, &
      &                                 BUF, &
      &                                 QUANTITY_ADDMEUP)
-!=======================================================================
-!     description in here ...
-!-----------------------------------------------------------------------
-!                                                           radovan bast
-!                                              last revision: april 2007
-!=======================================================================
-
-#include "priunit.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "dcbgen.h"
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dcbham.h"
-#include "nuclei.h"
-#include "dgroup.h"
-#include "symmet.h"
 
       LOGICAL   NEED_GAO1, &
      &          NEED_GAO2
@@ -886,9 +851,6 @@ contains
       END subroutine
 
       subroutine setup_orbital_string(occupation)
-
-#include "dcborb.h"
-#include "dgroup.h"
 
       real(8)              :: occupation(norbt)
 
