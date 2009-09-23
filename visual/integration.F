@@ -1,11 +1,8 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* VISUAL_INTEGRATION */
       SUBROUTINE VISUAL_INTEGRATION(DMAT_AO,
-     &                              GAO,
-     &                              GAO1,
-     &                              GAO2,
-     &                              NCNT,
-     &                              BUF)
+     &                              AO,
+     &                              buffer)
 C=======================================================================
 C     description in here ...
 C-----------------------------------------------------------------------
@@ -23,11 +20,8 @@ C=======================================================================
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
 
       DIMENSION DMAT_AO(*),
-     &          GAO(*),
-     &          GAO1(*),
-     &          GAO2(*),
-     &          NCNT(*),
-     &          BUF(*),
+     &          AO(*),
+     &          buffer(*),
      &          QUANTITY_INTEGRAL(0:3),
      &          QUANTITY_INTEGRAL_LAST(0:3)
 
@@ -60,12 +54,9 @@ C=======================================================================
         call reaqua(x, y, z, w, lunit, nr_points)
 
         CALL INTEGRATE_QUANTITY(DMAT_AO,
-     &                          GAO,
-     &                          GAO1,
-     &                          GAO2,
+     &                          AO,
      &                          x, y, z,
-     &                          NCNT,
-     &                          BUF,
+     &                          buffer,
      &                          QUANTITY_INTEGRAL,
      &                          w,
      &                          NR_POINTS)
@@ -154,12 +145,9 @@ C=======================================================================
 
             CALL DZERO(QUANTITY_INTEGRAL,4)
             CALL INTEGRATE_QUANTITY(DMAT_AO,
-     &                              GAO,
-     &                              GAO1,
-     &                              GAO2,
+     &                              AO,
      &                              x, y, z,
-     &                              NCNT,
-     &                              BUF,
+     &                              buffer,
      &                              QUANTITY_INTEGRAL,
      &                              w,
      &                              NR_POINTS)
@@ -208,12 +196,9 @@ C=======================================================================
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* INTEGRATE_QUANTITY */
       SUBROUTINE INTEGRATE_QUANTITY(DMAT_AO,
-     &                              GAO,
-     &                              GAO1,
-     &                              GAO2,
+     &                              AO,
      &                              PX,PY,PZ,
-     &                              NCNT,
-     &                              BUF,
+     &                              buffer,
      &                              QUANTITY_INTEGRAL,
      &                              WEIGHT,
      &                              NR_POINTS)
@@ -231,28 +216,22 @@ C=======================================================================
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
 
       DIMENSION DMAT_AO(*),
-     &          GAO(*),
-     &          GAO1(*),
-     &          GAO2(*),
+     &          AO(*),
      &          PX(*),
      &          PY(*),
      &          PZ(*),
-     &          NCNT(*),
-     &          BUF(*),
+     &          buffer(*),
      &          QUANTITY_INTEGRAL(0:3),
      &          WEIGHT(*),
      &          QUANTITY(0:3)
 
       DO IPOINT = 1,NR_POINTS
         CALL GET_QUANTITY_IN_POINT(DMAT_AO,
-     &                             GAO,
-     &                             GAO1,
-     &                             GAO2,
+     &                             AO,
      &                             PX(IPOINT),
      &                             PY(IPOINT),
      &                             PZ(IPOINT),
-     &                             NCNT,
-     &                             BUF,
+     &                             buffer,
      &                             QUANTITY)
 
         CALL DAXPY(4,WEIGHT(IPOINT),QUANTITY,1,

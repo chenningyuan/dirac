@@ -3,6 +3,7 @@ module visual
   use memory_allocator
   use visual_cfg
   use codata
+  use dft_ao
 
   implicit none
 
@@ -23,6 +24,38 @@ module visual
 #include "nuclei.h"
 #include "symmet.h"
 
+      integer, parameter :: IQ_N           =  1 !                  \psi^\dag        \psi = n
+      integer, parameter :: IQ_M           =  2 !                  \psi^\dag \Sigma \psi
+      integer, parameter :: IQ_DIVM        =  3 !    \nabla \cdot  \psi^\dag \Sigma \psi
+      integer, parameter :: IQ_ROTM        =  4 !    \nabla \times \psi^\dag \Sigma \psi
+      integer, parameter :: IQ_J           =  5 !-ec               \psi^\dag \alpha \psi = j
+      integer, parameter :: IQ_DIVJ        =  6 !-ec \nabla \cdot  \psi^\dag \alpha \psi
+      integer, parameter :: IQ_ROTJ        =  7 !-ec \nabla \times \psi^\dag \alpha \psi
+      integer, parameter :: IQ_JPARA       =  8 !                  j_para
+      integer, parameter :: IQ_DIVJPARA    =  9 !    \nabla \cdot  j_para
+      integer, parameter :: IQ_ROTJPARA    = 10 !    \nabla \times j_para
+      integer, parameter :: IQ_JDIA        = 11 !                  j_dia (hardcoded for B along z)
+      integer, parameter :: IQ_ELF         = 12 !                  ELF
+      integer, parameter :: IQ_K           = 13 !                c \psi^\dag (\alpha \cdot p) \psi
+      integer, parameter :: IQ_H           = 14 !                  \psi^\dag (\Sigma \cdot p) \psi
+      integer, parameter :: IQ_GAMMA5      = 15 !                  \psi^\dag  \gamma^5        \psi
+
+!     WARNING: the factor 1/c^2 is missing on purpose for compatibility with the
+!              operators defined in prp/pamprp.F
+      integer, parameter :: IQ_NUCDIPX     = 16 !      -1/(r_K^3) (r_K \times j)_x
+      integer, parameter :: IQ_NUCDIPY     = 17 !      -1/(r_K^3) (r_K \times j)_y
+      integer, parameter :: IQ_NUCDIPZ     = 18 !      -1/(r_K^3) (r_K \times j)_z
+
+      integer, parameter :: IQ_EDIPX       = 19 !                  r_x n
+      integer, parameter :: IQ_EDIPY       = 20 !                  r_y n
+      integer, parameter :: IQ_EDIPZ       = 21 !                  r_z n
+      integer, parameter :: IQ_MDIPX       = 22 !            -1/2 (r_gauge \times j)_x
+      integer, parameter :: IQ_MDIPY       = 23 !            -1/2 (r_gauge \times j)_y
+      integer, parameter :: IQ_MDIPZ       = 24 !            -1/2 (r_gauge \times j)_z
+
+      integer, parameter :: IQ_GRADIENT    = 25 !
+      integer, parameter :: IQ_LAPLACIAN   = 26 !
+
 contains
 
       SUBROUTINE run_VISUAL()
@@ -32,22 +65,49 @@ contains
       real(8), allocatable :: cmo(:)
       real(8), allocatable :: eig(:)
       real(8), allocatable :: dmat_ao(:)
-      real(8), allocatable :: gao(:)
-      real(8), allocatable :: gao1(:)
-      real(8), allocatable :: gao2(:)
-      real(8), allocatable :: buf(:)
-      integer, allocatable :: ncnt(:)
+
+      real(8), allocatable :: ao(:)
+      real(8), allocatable :: buffer(:)
+
       integer :: ioff, IXVECTOR, lucoef
       real(8) :: toterg, time_start, second
+      integer :: max_ao_g_order, max_ao_m_order
+
+      max_ao_g_order = 0
+      max_ao_m_order = 0
+
+      do ixvector = 1, visual_cfg_nr_xvectors
+        if (visual_cfg_iq_xvector(ixvector) == iq_divm     ) max_ao_g_order = 1
+        if (visual_cfg_iq_xvector(ixvector) == iq_rotm     ) max_ao_g_order = 1
+        if (visual_cfg_iq_xvector(ixvector) == iq_divj     ) max_ao_g_order = 1
+        if (visual_cfg_iq_xvector(ixvector) == iq_rotj     ) max_ao_g_order = 1
+        if (visual_cfg_iq_xvector(ixvector) == iq_jpara    ) max_ao_g_order = 1
+        if (visual_cfg_iq_xvector(ixvector) == iq_divjpara ) max_ao_g_order = 1
+        if (visual_cfg_iq_xvector(ixvector) == iq_rotjpara ) max_ao_g_order = 1
+        if (visual_cfg_iq_xvector(ixvector) == iq_elf      ) max_ao_g_order = 1
+        if (visual_cfg_iq_xvector(ixvector) == iq_k        ) max_ao_g_order = 1
+        if (visual_cfg_iq_xvector(ixvector) == iq_h        ) max_ao_g_order = 1
+        if (visual_cfg_iq_xvector(ixvector) == iq_gradient ) max_ao_g_order = 1
+        if (visual_cfg_iq_xvector(ixvector) == iq_laplacian) then
+!         debug this:
+!         call getsos(gao,gao1,gao2,(/0.0d0/),ncnt,px,py,pz, &
+!    &                buf,ntbas(0),2,.false.,0)
+          call quit('debug laplacian in visual/visual.f90')
+        end if
+      end do
+
+      call dft_ao_init(.false.,        &
+                       max_ao_g_order, &
+                       max_ao_m_order, &
+                       .false.,        &
+                       1.0d-15)
+
+    call alloc(ao,     total_ao_vector_length)
+    call alloc(buffer, total_ao_vector_length)
 
       call alloc(cmo      ,n2bbasxq)
       call alloc(eig      ,norbt)
       call alloc(dmat_ao  ,n2bbasxq*(max_nr_xvectors+1))
-      call alloc(gao      ,ntbas(0))
-      call alloc(gao1     ,ntbas(0)*3)
-      call alloc(gao2     ,ntbas(0)*6)
-      call alloc(ncnt     ,ntbas(0))
-      call alloc(buf      ,ntbas(0)*4)
 
 !     coefficients
 
@@ -86,54 +146,33 @@ contains
       call dealloc(occupation)
 
       time_start = second()
-      call visual_driver(dmat_ao, &
-     &                   gao, &
-     &                   gao1, &
-     &                   gao2, &
-     &                   ncnt, &
-     &                   buf)
+      call visual_driver(dmat_ao, ao, buffer)
 
       call timtxt('>>>> time used in plot:', (second() - time_start), lupri)
 
       time_start = second()
       IF(visual_cfg_integrate) THEN !integration
-        call visual_integration(dmat_ao, &
-     &                          gao, &
-     &                          gao1, &
-     &                          gao2, &
-     &                          ncnt, &
-     &                          buf)
+        call visual_integration(dmat_ao, ao, buffer)
       ENDIF
       call timtxt('>>>> time used in integration:', (second() - time_start), lupri)
 
       call dealloc(cmo)
       call dealloc(eig)
       call dealloc(dmat_ao)
-      call dealloc(gao)
-      call dealloc(gao1)
-      call dealloc(gao2)
-      call dealloc(ncnt)
-      call dealloc(buf)
+
+    call dealloc(ao)
+    call dealloc(buffer)
 
       END subroutine
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!     /* VISUAL_DRIVER */
-      SUBROUTINE VISUAL_DRIVER(DMAT_AO, &
-     &                         GAO, &
-     &                         GAO1, &
-     &                         GAO2, &
-     &                         NCNT, &
-     &                         BUF)
+
+      subroutine visual_driver(dmat_ao, ao, buffer)
 
       real(8) ::          DMAT_AO(*)
-      real(8) ::          GAO(*)
-      real(8) ::          GAO1(*)
-      real(8) ::          GAO2(*)
-      real(8) ::          BUF(*)
+      real(8) ::          AO(*)
+      real(8) ::          buffer(*)
       real(8) ::          QUANTITY(0:3,visual_cfg_NCUBE(3))
       real(8) ::          STEP_3D(3,0:3)
       real(8) ::          ATOM_XYZ(4,NUCDEP)
-      integer ::          NCNT(*)
 
       real(8) :: r(3), v(3), px, py, pz
       integer :: ICUBE, jCUBE, kCUBE, IORIENTATION, IPOINT_IN_LIST
@@ -187,14 +226,11 @@ contains
         DO IPOINT_IN_LIST = 1, visual_cfg_nr_points_in_list
 
           CALL GET_QUANTITY_IN_POINT(DMAT_AO, &
-     &                               GAO, &
-     &                               GAO1, &
-     &                               GAO2, &
+     &                               AO, &
      &            visual_cfg_XYZ_LIST(IPOINT_IN_LIST,1), &
      &            visual_cfg_XYZ_LIST(IPOINT_IN_LIST,2), &
      &            visual_cfg_XYZ_LIST(IPOINT_IN_LIST,3), &
-     &                               NCNT, &
-     &                               BUF, &
+     &                               buffer, &
      &                               QUANTITY)
 
           WRITE(LUPRI,'(3E14.6,4E18.10)')  &
@@ -226,12 +262,9 @@ contains
           r = visual_cfg_line_from + istep*v
 
           call get_quantity_in_point(dmat_ao, &
-     &                               gao, &
-     &                               gao1, &
-     &                               gao2, &
+     &                               ao, &
      &                               r(1), r(2), r(3), &
-     &                               ncnt, &
-     &                               buf, &
+     &                               buffer, &
      &                               quantity)
 
           write(lunit_line, '(7e18.10)') r(1),  &
@@ -282,12 +315,9 @@ contains
      &                     PX = visual_cfg_ORIGIN_2D(1)
 
                 CALL GET_QUANTITY_IN_POINT(DMAT_AO, &
-     &                                     GAO, &
-     &                                     GAO1, &
-     &                                     GAO2, &
+     &                                     ao, &
      &                                     PX,PY,PZ, &
-     &                                     NCNT, &
-     &                                     BUF, &
+     &                                     buffer, &
      &                                     QUANTITY)
 
 !               write to file
@@ -385,12 +415,9 @@ contains
      &                          + (KCUBE-1)*STEP_3D(3,3)
 
               CALL GET_QUANTITY_IN_POINT(DMAT_AO, &
-     &                                   GAO, &
-     &                                   GAO1, &
-     &                                   GAO2, &
+     &                                   ao, &
      &                                   PX,PY,PZ, &
-     &                                   NCNT, &
-     &                                   BUF, &
+     &                                   buffer, &
      &                                   QUANTITY(0,KCUBE))
             ENDDO
 
@@ -412,26 +439,18 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !     /* GET_QUANTITY_IN_POINT */
       SUBROUTINE GET_QUANTITY_IN_POINT(DMAT_AO, &
-     &                                 GAO, &
-     &                                 GAO1, &
-     &                                 GAO2, &
+     &                                 ao, &
      &                                 PX,PY,PZ, &
-     &                                 NCNT, &
-     &                                 BUF, &
+     &                                 buffer, &
      &                                 QUANTITY_ADDMEUP)
 
-      LOGICAL   NEED_GAO1, &
-     &          NEED_GAO2
       real(8) ::          DMAT_AO(*)
-      real(8) ::          GAO(*)
-      real(8) ::          GAO1(*)
-      real(8) ::          GAO2(*)
-      real(8) ::          BUF(*)
+      real(8) ::          AO(*)
+      real(8) ::          buffer(*)
       real(8) ::          QUANTITY(0:3)
       real(8) ::          QUANTITY_ADDMEUP(0:3)
       real(8) ::          VECTOR_A(3)
       real(8) ::          VECTOR_B(3)
-      integer ::          NCNT(*)
       real(8) :: factor, fermi_kin, elf_chi, GRADIENT_SQUARED, density
       real(8) :: RSQ
       real(8) :: rxx, rxy, rxz, ryy, ryz, rzz
@@ -439,70 +458,7 @@ contains
       real(8) :: rx, ry, rz, TF_KIN, BOSON_KIN
       integer :: ic, iq, IXVECTOR, ixyz, ioff
 
-      integer, parameter :: IQ_N           =  1 !                  \psi^\dag        \psi = n
-      integer, parameter :: IQ_M           =  2 !                  \psi^\dag \Sigma \psi
-      integer, parameter :: IQ_DIVM        =  3 !    \nabla \cdot  \psi^\dag \Sigma \psi
-      integer, parameter :: IQ_ROTM        =  4 !    \nabla \times \psi^\dag \Sigma \psi
-      integer, parameter :: IQ_J           =  5 !-ec               \psi^\dag \alpha \psi = j
-      integer, parameter :: IQ_DIVJ        =  6 !-ec \nabla \cdot  \psi^\dag \alpha \psi
-      integer, parameter :: IQ_ROTJ        =  7 !-ec \nabla \times \psi^\dag \alpha \psi
-      integer, parameter :: IQ_JPARA       =  8 !                  j_para
-      integer, parameter :: IQ_DIVJPARA    =  9 !    \nabla \cdot  j_para
-      integer, parameter :: IQ_ROTJPARA    = 10 !    \nabla \times j_para
-      integer, parameter :: IQ_JDIA        = 11 !                  j_dia (hardcoded for B along z)
-      integer, parameter :: IQ_ELF         = 12 !                  ELF
-      integer, parameter :: IQ_K           = 13 !                c \psi^\dag (\alpha \cdot p) \psi
-      integer, parameter :: IQ_H           = 14 !                  \psi^\dag (\Sigma \cdot p) \psi
-      integer, parameter :: IQ_GAMMA5      = 15 !                  \psi^\dag  \gamma^5        \psi
-
-!     WARNING: the factor 1/c^2 is missing on purpose for compatibility with the
-!              operators defined in prp/pamprp.F
-      integer, parameter :: IQ_NUCDIPX     = 16 !      -1/(r_K^3) (r_K \times j)_x
-      integer, parameter :: IQ_NUCDIPY     = 17 !      -1/(r_K^3) (r_K \times j)_y
-      integer, parameter :: IQ_NUCDIPZ     = 18 !      -1/(r_K^3) (r_K \times j)_z
-
-      integer, parameter :: IQ_EDIPX       = 19 !                  r_x n
-      integer, parameter :: IQ_EDIPY       = 20 !                  r_y n
-      integer, parameter :: IQ_EDIPZ       = 21 !                  r_z n
-      integer, parameter :: IQ_MDIPX       = 22 !            -1/2 (r_gauge \times j)_x
-      integer, parameter :: IQ_MDIPY       = 23 !            -1/2 (r_gauge \times j)_y
-      integer, parameter :: IQ_MDIPZ       = 24 !            -1/2 (r_gauge \times j)_z
-
-      integer, parameter :: IQ_GRADIENT    = 25 !
-      integer, parameter :: IQ_LAPLACIAN   = 26 !
-
-      NEED_GAO1 = .FALSE.
-      NEED_GAO2 = .FALSE.
-
-      DO IXVECTOR = 1, visual_cfg_NR_XVECTORS
-      IF(visual_cfg_iq_xvector(IXVECTOR)==IQ_DIVM     ) NEED_GAO1=.TRUE.
-      IF(visual_cfg_iq_xvector(IXVECTOR)==IQ_ROTM     ) NEED_GAO1=.TRUE.
-      IF(visual_cfg_iq_xvector(IXVECTOR)==IQ_DIVJ     ) NEED_GAO1=.TRUE.
-      IF(visual_cfg_iq_xvector(IXVECTOR)==IQ_ROTJ     ) NEED_GAO1=.TRUE.
-      IF(visual_cfg_iq_xvector(IXVECTOR)==IQ_JPARA    ) NEED_GAO1=.TRUE.
-      IF(visual_cfg_iq_xvector(IXVECTOR)==IQ_DIVJPARA ) NEED_GAO1=.TRUE.
-      IF(visual_cfg_iq_xvector(IXVECTOR)==IQ_ROTJPARA ) NEED_GAO1=.TRUE.
-      IF(visual_cfg_iq_xvector(IXVECTOR)==IQ_ELF      ) NEED_GAO1=.TRUE.
-      IF(visual_cfg_iq_xvector(IXVECTOR)==IQ_K        ) NEED_GAO1=.TRUE.
-      IF(visual_cfg_iq_xvector(IXVECTOR)==IQ_H        ) NEED_GAO1=.TRUE.
-      IF(visual_cfg_iq_xvector(IXVECTOR)==IQ_GRADIENT ) NEED_GAO1=.TRUE.
-      IF(visual_cfg_iq_xvector(IXVECTOR)==IQ_LAPLACIAN) NEED_GAO1=.TRUE.
-
-      IF(visual_cfg_iq_xvector(IXVECTOR)==IQ_LAPLACIAN) NEED_GAO2=.TRUE.
-      ENDDO
-
-      IF(NEED_GAO1) THEN
-        IF(NEED_GAO2) THEN
-          CALL GETSOS(GAO,GAO1,GAO2,(/0.0d0/),NCNT,PX,PY,PZ, &
-     &                BUF,NTBAS(0),2,.FALSE.,0)
-        ELSE
-          CALL GETSOS(GAO,GAO1,(/0.0d0/),(/0.0d0/),NCNT,PX,PY,PZ, &
-     &                BUF,NTBAS(0),1,.FALSE.,0)
-        ENDIF
-      ELSE
-        CALL GETSOS(GAO,(/0.0d0/),(/0.0d0/),(/0.0d0/),NCNT,PX,PY,PZ, &
-     &              BUF,NTBAS(0),0,.FALSE.,0)
-      ENDIF
+      call get_so(px, py, pz, ao, buffer)
 
       CALL DZERO(QUANTITY_ADDMEUP,4)
 
@@ -522,13 +478,13 @@ contains
             IF(IC .EQ. 1) THEN
               IF(.NOT. visual_cfg_IOPTION_XVECTOR(IXVECTOR) .EQ. 2) THEN
                 CALL GETRH1(DENSITY,1,visual_cfg_irep_xvector(IXVECTOR), &
-     &                      GAO,DMAT_AO(1+IOFF),BUF)
+     &                      AO,DMAT_AO(1+IOFF),buffer)
               ENDIF
             ENDIF
             IF(IC .EQ. 2) THEN
               IF(.NOT. visual_cfg_IOPTION_XVECTOR(IXVECTOR) .EQ. 1) THEN
                 CALL GETRH1(DENSITY,2,visual_cfg_irep_xvector(IXVECTOR), &
-     &                      GAO,DMAT_AO(1+IOFF),BUF)
+     &                      AO,DMAT_AO(1+IOFF),buffer)
               ENDIF
             ENDIF
           ENDDO
@@ -540,29 +496,29 @@ contains
         IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
           CALL GETGRHO(VECTOR_A, &
      &                 visual_cfg_irep_xvector(IXVECTOR), &
-     &                 GAO, &
-     &                 GAO1, &
+     &                 AO, &
+     &                 ao(ao_start(1, 0):ao_end(1, 0)), &
      &                 DMAT_AO(1+IOFF), &
-     &                 BUF)
+     &                 buffer)
 
           CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
         ENDIF
 
         IQ = IQ_LAPLACIAN
         IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          CALL GETLRHO(RXX, &
-     &                 RXY, &
-     &                 RXZ, &
-     &                 RYY, &
-     &                 RYZ, &
-     &                 RZZ, &
-     &                 GAO, &
-     &                 GAO1, &
-     &                 GAO2, &
-     &                 DMAT_AO(1+IOFF), &
-     &                 BUF)
+!         CALL GETLRHO(RXX, &
+!    &                 RXY, &
+!    &                 RXZ, &
+!    &                 RYY, &
+!    &                 RYZ, &
+!    &                 RZZ, &
+!    &                 GAO, &
+!    &                 GAO1, &
+!    &                 GAO2, &
+!    &                 DMAT_AO(1+IOFF), &
+!    &                 buffer)
 
-          CALL DAXPY(1,1.0d0,RXX + RYY + RZZ,1,QUANTITY(0),1)
+!         CALL DAXPY(1,1.0d0,RXX + RYY + RZZ,1,QUANTITY(0),1)
         ENDIF
 
         IQ = IQ_ELF
@@ -575,9 +531,9 @@ contains
               CALL GETRH1(SCALAR, &
      &                    IC, &
      &                    visual_cfg_irep_xvector(IXVECTOR), &
-     &                    GAO1(1+(IXYZ-1)*NTBAS(0)), &
+     &                    AO(ao_start(1, 0)+(IXYZ-1)*NTBAS(0)), &
      &                    DMAT_AO(1+IOFF), &
-     &                    BUF)
+     &                    buffer)
 
               FERMI_KIN = FERMI_KIN + SCALAR
             ENDDO
@@ -587,16 +543,16 @@ contains
 
           CALL GETRHO(DENSITY, &
      &                visual_cfg_irep_xvector(IXVECTOR), &
-     &                GAO, &
+     &                AO, &
      &                DMAT_AO(1+IOFF), &
-     &                BUF)
+     &                buffer)
 
           CALL GETGRHO(VECTOR_A, &
      &                 visual_cfg_irep_xvector(IXVECTOR), &
-     &                 GAO, &
-     &                 GAO1, &
+     &                 AO, &
+     &                 ao(ao_start(1, 0):ao_end(1, 0)), &
      &                 DMAT_AO(1+IOFF), &
-     &                 BUF)
+     &                 buffer)
 
           GRADIENT_SQUARED = DDOT(3,VECTOR_A,1,VECTOR_A,1)
 
@@ -615,9 +571,9 @@ contains
         IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
           CALL GETRHO(DENSITY, &
      &                visual_cfg_irep_xvector(IXVECTOR), &
-     &                GAO, &
+     &                AO, &
      &                DMAT_AO(1+IOFF), &
-     &                BUF)
+     &                buffer)
 
           VECTOR_A(1) = -0.5d0*PY*DENSITY
           VECTOR_A(2) =  0.5d0*PX*DENSITY
@@ -631,9 +587,9 @@ contains
           CALL GET_M(.TRUE., &
      &               VECTOR_A, &
      &               visual_cfg_irep_xvector(IXVECTOR), &
-     &               GAO, &
+     &               AO, &
      &               DMAT_AO(1+IOFF), &
-     &               BUF)
+     &               buffer)
 
           CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
         ENDIF
@@ -643,9 +599,9 @@ contains
           CALL GET_J(.TRUE., &
      &               VECTOR_A, &
      &               visual_cfg_irep_xvector(IXVECTOR), &
-     &               GAO, &
+     &               AO, &
      &               DMAT_AO(1+IOFF), &
-     &               BUF)
+     &               buffer)
 
           CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
         ENDIF
@@ -655,10 +611,10 @@ contains
           CALL GET_JPARA(.TRUE., &
      &                   VECTOR_A, &
      &                   visual_cfg_irep_xvector(IXVECTOR), &
-     &                   GAO, &
-     &                   GAO1, &
+     &                   AO, &
+     &                   ao(ao_start(1, 0):ao_end(1, 0)), &
      &                   DMAT_AO(1+IOFF), &
-     &                   BUF)
+     &                   buffer)
 
           CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
         ENDIF
@@ -668,10 +624,10 @@ contains
           CALL GET_DIVM(.TRUE., &
      &                  SCALAR, &
      &                  visual_cfg_irep_xvector(IXVECTOR), &
-     &                  GAO, &
-     &                  GAO1, &
+     &                  AO, &
+     &                  ao(ao_start(1, 0):ao_end(1, 0)), &
      &                  DMAT_AO(1+IOFF), &
-     &                  BUF)
+     &                  buffer)
 
           CALL DAXPY(1,1.0d0,SCALAR,1,QUANTITY(0),1)
         ENDIF
@@ -681,10 +637,10 @@ contains
           CALL GET_DIVJ(.TRUE., &
      &                  SCALAR, &
      &                  visual_cfg_irep_xvector(IXVECTOR), &
-     &                  GAO, &
-     &                  GAO1, &
+     &                  AO, &
+     &                  ao(ao_start(1, 0):ao_end(1, 0)), &
      &                  DMAT_AO(1+IOFF), &
-     &                  BUF)
+     &                  buffer)
 
           CALL DAXPY(1,1.0d0,SCALAR,1,QUANTITY(0),1)
         ENDIF
@@ -694,10 +650,10 @@ contains
           CALL GET_DIVM(.TRUE., &
      &                  SCALAR, &
      &                  visual_cfg_irep_xvector(IXVECTOR), &
-     &                  GAO, &
-     &                  GAO1, &
+     &                  AO, &
+     &                  ao(ao_start(1, 0):ao_end(1, 0)), &
      &                  DMAT_AO(1+IOFF), &
-     &                  BUF)
+     &                  buffer)
 
           CALL DAXPY(1,0.25d0,SCALAR,1,QUANTITY(0),1)
         ENDIF
@@ -707,10 +663,10 @@ contains
           CALL GET_DIVJ(.TRUE., &
      &                  SCALAR, &
      &                  visual_cfg_irep_xvector(IXVECTOR), &
-     &                  GAO, &
-     &                  GAO1, &
+     &                  AO, &
+     &                  ao(ao_start(1, 0):ao_end(1, 0)), &
      &                  DMAT_AO(1+IOFF), &
-     &                  BUF)
+     &                  buffer)
 
           CALL DAXPY(1,0.5d0,SCALAR,1,QUANTITY(0),1)
         ENDIF
@@ -720,10 +676,10 @@ contains
           CALL GET_ROTM(.TRUE., &
      &                  VECTOR_A, &
      &                  visual_cfg_irep_xvector(IXVECTOR), &
-     &                  GAO, &
-     &                  GAO1, &
+     &                  AO, &
+     &                  ao(ao_start(1, 0):ao_end(1, 0)), &
      &                  DMAT_AO(1+IOFF), &
-     &                  BUF)
+     &                  buffer)
 
           CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
         ENDIF
@@ -733,10 +689,10 @@ contains
           CALL GET_ROTJ(.TRUE., &
      &                  VECTOR_A, &
      &                  visual_cfg_irep_xvector(IXVECTOR), &
-     &                  GAO, &
-     &                  GAO1, &
+     &                  AO, &
+     &                  ao(ao_start(1, 0):ao_end(1, 0)), &
      &                  DMAT_AO(1+IOFF), &
-     &                  BUF)
+     &                  buffer)
 
           CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
         ENDIF
@@ -746,10 +702,10 @@ contains
           CALL GET_ROTJPARA(.TRUE., &
      &                      VECTOR_A, &
      &                      visual_cfg_irep_xvector(IXVECTOR), &
-     &                      GAO, &
-     &                      GAO1, &
+     &                      AO, &
+     &                      ao(ao_start(1, 0):ao_end(1, 0)), &
      &                      DMAT_AO(1+IOFF), &
-     &                      BUF)
+     &                      buffer)
 
           CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
         ENDIF
@@ -759,9 +715,9 @@ contains
           CALL GET_GAMMA5(.TRUE., &
      &                    SCALAR, &
      &                    visual_cfg_irep_xvector(IXVECTOR), &
-     &                    GAO, &
+     &                    AO, &
      &                    DMAT_AO(1+IOFF), &
-     &                    BUF)
+     &                    buffer)
 
           CALL DAXPY(1,1.0d0,SCALAR,1,QUANTITY(0),1)
         ENDIF
@@ -773,9 +729,9 @@ contains
           CALL GET_J(.TRUE., &
      &               VECTOR_A, &
      &               visual_cfg_irep_xvector(IXVECTOR), &
-     &               GAO, &
+     &               AO, &
      &               DMAT_AO(1+IOFF), &
-     &               BUF)
+     &               buffer)
 
           RX = PX - CORD(1,visual_cfg_IOPTION_XVECTOR(IXVECTOR))
           RY = PY - CORD(2,visual_cfg_IOPTION_XVECTOR(IXVECTOR))
@@ -802,9 +758,9 @@ contains
 
           CALL GETRHO(DENSITY, &
      &                visual_cfg_irep_xvector(IXVECTOR), &
-     &                GAO, &
+     &                AO, &
      &                DMAT_AO(1+IOFF), &
-     &                BUF)
+     &                buffer)
 
           IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_EDIPX) &
      &      CALL DAXPY(1,1.0d0,DENSITY*PX,1,QUANTITY(0),1)
@@ -821,9 +777,9 @@ contains
           CALL GET_J(.TRUE., &
      &               VECTOR_A, &
      &               visual_cfg_irep_xvector(IXVECTOR), &
-     &               GAO, &
+     &               AO, &
      &               DMAT_AO(1+IOFF), &
-     &               BUF)
+     &               buffer)
 
           RX = PX - visual_cfg_GAUGE_ORIGIN(1)
           RY = PY - visual_cfg_GAUGE_ORIGIN(2)
