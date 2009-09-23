@@ -1,14 +1,14 @@
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* VISUAL_INTEGRATION */
-      SUBROUTINE VISUAL_INTEGRATION(DMAT_AO,
-     &                              AO,
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!     /* VISUAL_INTEGRATION */
+      SUBROUTINE VISUAL_INTEGRATION(DMAT_AO, &
+     &                              AO, &
      &                              buffer)
-C=======================================================================
-C     description in here ...
-C-----------------------------------------------------------------------
-C                                                           radovan bast
-C                                              last revision: april 2007
-C=======================================================================
+!=======================================================================
+!     description in here ...
+!-----------------------------------------------------------------------
+!                                                           radovan bast
+!                                              last revision: april 2007
+!=======================================================================
 
        use dft_main
        use visual_cfg
@@ -19,10 +19,10 @@ C=======================================================================
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
 
-      DIMENSION DMAT_AO(*),
-     &          AO(*),
-     &          buffer(*),
-     &          QUANTITY_INTEGRAL(0:3),
+      DIMENSION DMAT_AO(*), &
+     &          AO(*), &
+     &          buffer(*), &
+     &          QUANTITY_INTEGRAL(0:3), &
      &          QUANTITY_INTEGRAL_LAST(0:3)
 
       real(8), allocatable :: x(:)
@@ -53,12 +53,12 @@ C=======================================================================
 
         call reaqua(x, y, z, w, lunit, nr_points)
 
-        CALL INTEGRATE_QUANTITY(DMAT_AO,
-     &                          AO,
-     &                          x, y, z,
-     &                          buffer,
-     &                          QUANTITY_INTEGRAL,
-     &                          w,
+        CALL INTEGRATE_QUANTITY(DMAT_AO, &
+     &                          AO, &
+     &                          x, y, z, &
+     &                          buffer, &
+     &                          QUANTITY_INTEGRAL, &
+     &                          w, &
      &                          NR_POINTS)
 
         call dealloc(x)
@@ -72,15 +72,15 @@ C=======================================================================
         CLOSE(LUNIT,STATUS = 'DELETE')
 
         WRITE(LUPRI,'(A)')
-        WRITE(LUPRI,'(A12,A25,2A20)') 'scalar',
-     &                                'x-component',
-     &                                'y-component',
+        WRITE(LUPRI,'(A12,A25,2A20)') 'scalar', &
+     &                                'x-component', &
+     &                                'y-component', &
      &                                'z-component'
         WRITE(LUPRI,'(A)')
 
-        WRITE(LUPRI,'(4E20.10)') QUANTITY_INTEGRAL(0),
-     &                           QUANTITY_INTEGRAL(1),
-     &                           QUANTITY_INTEGRAL(2),
+        WRITE(LUPRI,'(4E20.10)') QUANTITY_INTEGRAL(0), &
+     &                           QUANTITY_INTEGRAL(1), &
+     &                           QUANTITY_INTEGRAL(2), &
      &                           QUANTITY_INTEGRAL(3)
 
         WRITE(LUPRI,'(A)')
@@ -105,16 +105,16 @@ C=======================================================================
 !         converge then
 
           WRITE(LUPRI,'(A)')
-          WRITE(LUPRI,'(A12,A3)') 'orientation:',
+          WRITE(LUPRI,'(A12,A3)') 'orientation:', &
      &                   visual_cfg_orientation(IORIENTATION)
           WRITE(LUPRI,'(A)')
           WRITE(LUPRI,'(A)')
-          WRITE(LUPRI,'(A12,A25,2A20,A14,2A13)') 'scalar',
-     &                                           'x-component',
-     &                                           'y-component',
-     &                                           'z-component',
-     &                                           'pieces',
-     &                                           'order',
+          WRITE(LUPRI,'(A12,A25,2A20,A14,2A13)') 'scalar', &
+     &                                           'x-component', &
+     &                                           'y-component', &
+     &                                           'z-component', &
+     &                                           'pieces', &
+     &                                           'order', &
      &                                           'error'
           WRITE(LUPRI,'(A)')
 
@@ -130,7 +130,7 @@ C=======================================================================
 
           DO WHILE(.TRUE.)
 
-            CALL LOBATTO_2D_GRID(visual_cfg_orientation(IORIENTATION),
+            CALL LOBATTO_2D_GRID(visual_cfg_orientation(IORIENTATION), &
      &                           NR_PIECES,N,DIMI,DIMJ,LUNIT)
 
             REWIND LUNIT
@@ -144,12 +144,12 @@ C=======================================================================
             call reaqua(x, y, z, w, lunit, nr_points)
 
             CALL DZERO(QUANTITY_INTEGRAL,4)
-            CALL INTEGRATE_QUANTITY(DMAT_AO,
-     &                              AO,
-     &                              x, y, z,
-     &                              buffer,
-     &                              QUANTITY_INTEGRAL,
-     &                              w,
+            CALL INTEGRATE_QUANTITY(DMAT_AO, &
+     &                              AO, &
+     &                              x, y, z, &
+     &                              buffer, &
+     &                              QUANTITY_INTEGRAL, &
+     &                              w, &
      &                              NR_POINTS)
 
             call dealloc(x)
@@ -161,15 +161,15 @@ C=======================================================================
 
             ERROR = D0
             DO IXYZ = 0,3
-              SOMETHING = QUANTITY_INTEGRAL(IXYZ)
+              SOMETHING = QUANTITY_INTEGRAL(IXYZ) &
      &                  - QUANTITY_INTEGRAL_LAST(IXYZ)
               ERROR = ERROR + DABS(SOMETHING)
             ENDDO
 
-            WRITE(LUPRI,'(4E20.10,I8,I14,E23.10)') QUANTITY_INTEGRAL(0),
-     &                                             QUANTITY_INTEGRAL(1),
-     &                                             QUANTITY_INTEGRAL(2),
-     &                                             QUANTITY_INTEGRAL(3),
+            WRITE(LUPRI,'(4E20.10,I8,I14,E23.10)') QUANTITY_INTEGRAL(0), &
+     &                                             QUANTITY_INTEGRAL(1), &
+     &                                             QUANTITY_INTEGRAL(2), &
+     &                                             QUANTITY_INTEGRAL(3), &
      &                                             NR_PIECES, N, ERROR
 
             IF(ERROR .LT. 1.0D-7) GOTO 3
@@ -177,7 +177,7 @@ C=======================================================================
             N = N + 10
 
             CALL DZERO(QUANTITY_INTEGRAL_LAST,4)
-            CALL DAXPY(4,D1,QUANTITY_INTEGRAL,1,
+            CALL DAXPY(4,D1,QUANTITY_INTEGRAL,1, &
      &                      QUANTITY_INTEGRAL_LAST,1)
           ENDDO
  3        CONTINUE
@@ -193,21 +193,21 @@ C=======================================================================
 
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* INTEGRATE_QUANTITY */
-      SUBROUTINE INTEGRATE_QUANTITY(DMAT_AO,
-     &                              AO,
-     &                              PX,PY,PZ,
-     &                              buffer,
-     &                              QUANTITY_INTEGRAL,
-     &                              WEIGHT,
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!     /* INTEGRATE_QUANTITY */
+      SUBROUTINE INTEGRATE_QUANTITY(DMAT_AO, &
+     &                              AO, &
+     &                              PX,PY,PZ, &
+     &                              buffer, &
+     &                              QUANTITY_INTEGRAL, &
+     &                              WEIGHT, &
      &                              NR_POINTS)
-C=======================================================================
-C     description in here ...
-C-----------------------------------------------------------------------
-C                                                           radovan bast
-C                                              last revision: april 2007
-C=======================================================================
+!=======================================================================
+!     description in here ...
+!-----------------------------------------------------------------------
+!                                                           radovan bast
+!                                              last revision: april 2007
+!=======================================================================
 
       use visual
 #include "implicit.h"
@@ -215,40 +215,40 @@ C=======================================================================
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
 
-      DIMENSION DMAT_AO(*),
-     &          AO(*),
-     &          PX(*),
-     &          PY(*),
-     &          PZ(*),
-     &          buffer(*),
-     &          QUANTITY_INTEGRAL(0:3),
-     &          WEIGHT(*),
+      DIMENSION DMAT_AO(*), &
+     &          AO(*), &
+     &          PX(*), &
+     &          PY(*), &
+     &          PZ(*), &
+     &          buffer(*), &
+     &          QUANTITY_INTEGRAL(0:3), &
+     &          WEIGHT(*), &
      &          QUANTITY(0:3)
 
       DO IPOINT = 1,NR_POINTS
-        CALL GET_QUANTITY_IN_POINT(DMAT_AO,
-     &                             AO,
-     &                             PX(IPOINT),
-     &                             PY(IPOINT),
-     &                             PZ(IPOINT),
-     &                             buffer,
+        CALL GET_QUANTITY_IN_POINT(DMAT_AO, &
+     &                             AO, &
+     &                             PX(IPOINT), &
+     &                             PY(IPOINT), &
+     &                             PZ(IPOINT), &
+     &                             buffer, &
      &                             QUANTITY)
 
-        CALL DAXPY(4,WEIGHT(IPOINT),QUANTITY,1,
+        CALL DAXPY(4,WEIGHT(IPOINT),QUANTITY,1, &
      &                              QUANTITY_INTEGRAL,1)
       ENDDO
 
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* LEGENDRE_POLYNOMIAL */
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!     /* LEGENDRE_POLYNOMIAL */
       SUBROUTINE LEGENDRE_POLYNOMIAL(P,N,X)
-C=======================================================================
-C     description in here ...
-C-----------------------------------------------------------------------
-C                                                           radovan bast
-C                                              last revision: april 2007
-C=======================================================================
+!=======================================================================
+!     description in here ...
+!-----------------------------------------------------------------------
+!                                                           radovan bast
+!                                              last revision: april 2007
+!=======================================================================
 
 #include "implicit.h"
 
@@ -267,22 +267,22 @@ C=======================================================================
 
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* LEGENDRE_POLYNOMIAL_DERIVATIVES */
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!     /* LEGENDRE_POLYNOMIAL_DERIVATIVES */
       SUBROUTINE LEGENDRE_POLYNOMIAL_DERIVATIVES(P,DP,N,X)
-C=======================================================================
-C     description in here ...
-C-----------------------------------------------------------------------
-C                                                           radovan bast
-C                                              last revision: april 2007
-C=======================================================================
+!=======================================================================
+!     description in here ...
+!-----------------------------------------------------------------------
+!                                                           radovan bast
+!                                              last revision: april 2007
+!=======================================================================
 
 #include "implicit.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
       PARAMETER (NMAX = 1000)
 
-      DIMENSION P(0:NMAX),
+      DIMENSION P(0:NMAX), &
      &          DP(NMAX)
 
       DO I = 1,N
@@ -291,15 +291,15 @@ C=======================================================================
 
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* LOBATTO_1D_GRID */
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!     /* LOBATTO_1D_GRID */
       SUBROUTINE LOBATTO_1D_GRID(N,X,W)
-C=======================================================================
-C     description in here ...
-C-----------------------------------------------------------------------
-C                                                           radovan bast
-C                                              last revision: april 2007
-C=======================================================================
+!=======================================================================
+!     description in here ...
+!-----------------------------------------------------------------------
+!                                                           radovan bast
+!                                              last revision: april 2007
+!=======================================================================
 
 #include "implicit.h"
 
@@ -307,9 +307,9 @@ C=======================================================================
       PARAMETER (NMAX = 1000)
       PARAMETER (THRESHOLD = 1.0D-12)
 
-      DIMENSION X(NMAX),
-     &          W(NMAX),
-     &          P(0:NMAX),
+      DIMENSION X(NMAX), &
+     &          W(NMAX), &
+     &          P(0:NMAX), &
      &          DP(NMAX)
 
       X_OLD = -D1 + THRESHOLD
@@ -350,15 +350,15 @@ C=======================================================================
 
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* LEGENDRE_1D_GRID */
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!     /* LEGENDRE_1D_GRID */
       SUBROUTINE LEGENDRE_1D_GRID(N,X,W)
-C=======================================================================
-C     description in here ...
-C-----------------------------------------------------------------------
-C                                                           radovan bast
-C                                              last revision: april 2007
-C=======================================================================
+!=======================================================================
+!     description in here ...
+!-----------------------------------------------------------------------
+!                                                           radovan bast
+!                                              last revision: april 2007
+!=======================================================================
 
 #include "implicit.h"
 
@@ -366,9 +366,9 @@ C=======================================================================
       PARAMETER (NMAX = 1000)
       PARAMETER (THRESHOLD = 1.0D-12)
 
-      DIMENSION X(NMAX),
-     &          W(NMAX),
-     &          P(0:NMAX),
+      DIMENSION X(NMAX), &
+     &          W(NMAX), &
+     &          P(0:NMAX), &
      &          DP(NMAX)
 
       X_OLD = -D1
@@ -401,16 +401,16 @@ C=======================================================================
 
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* LOBATTO_2D_GRID */
-      SUBROUTINE LOBATTO_2D_GRID(GRID_ORIENTATION,
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!     /* LOBATTO_2D_GRID */
+      SUBROUTINE LOBATTO_2D_GRID(GRID_ORIENTATION, &
      &                           NR_PIECES,N,DIMI,DIMJ,LUNIT)
-C=======================================================================
-C     description in here ...
-C-----------------------------------------------------------------------
-C                                                           radovan bast
-C                                              last revision: april 2007
-C=======================================================================
+!=======================================================================
+!     description in here ...
+!-----------------------------------------------------------------------
+!                                                           radovan bast
+!                                              last revision: april 2007
+!=======================================================================
 
       use memory_allocator
       use visual_cfg
@@ -431,10 +431,10 @@ C=======================================================================
 
       WRITE(FILE_NAME,'(A5,I2)') 'GRID.', LUNIT
 
-      OPEN(LUNIT,
-     &     FILE = FILE_NAME,
-     &     STATUS = 'UNKNOWN',
-     &     ACCESS = 'SEQUENTIAL',
+      OPEN(LUNIT, &
+     &     FILE = FILE_NAME, &
+     &     STATUS = 'UNKNOWN', &
+     &     ACCESS = 'SEQUENTIAL', &
      &     FORM = 'UNFORMATTED')
       REWIND LUNIT
 
