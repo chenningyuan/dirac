@@ -204,6 +204,7 @@ C       Written by Trond Saue, Tromsoe October 1993
 C       Last revision: Nov 14 1994 - tsaue
 C
 C***********************************************************************
+        use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -220,7 +221,6 @@ C
 #include "dcbgen.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
-#include "codata.h"
 #include "logging.h"
 C
       DATA TABDIR /'*END OF','*PARALL','*XXXXXX','*XXXXXX',
@@ -3797,12 +3797,12 @@ C     Written by T.Saue May 14 1996
 C     Last revision: May 14 1996 - tsaue
 C
 C***********************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0, D0 = 0.0D0)
 C
 #include "maxaqn.h"
-#include "codata.h"
 #include "maxorb.h"
 C
 #include "siripc.h"

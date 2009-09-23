@@ -225,6 +225,7 @@ C     See also: J. Comput. Chem. 18, 20 (1997), Eq. (31).
 C
 C     Wim Klopper, University of Karlsruhe, 22 November 2002.
 C
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -233,7 +234,6 @@ C
       DIMENSION RJ000(NPPX,0:JMAX),FACINT(NPPX),ALPHA(NPPX),
      &          COORPQ(NPPX,3),WVALU(NPPX),INDADR(NPPX),WORK(LWORK)
 C
-#include "codata.h"
 #include "drw2el.h"
 #include "ericom.h"
 #include "erithr.h"
@@ -327,6 +327,7 @@ C     See also: J. Comput. Chem. 18, 20 (1997), Eq. (31).
 C
 C     Wim Klopper, University of Karlsruhe, 22 November 2002.
 C
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -336,7 +337,6 @@ C
      &          COORPQ(NPPX,3),WVALU(NPPX),INDADR(NPPX),WORK(LWORK)
 C
 #include "drw2el.h"
-#include "codata.h"
 #include "ericom.h"
 #include "erithr.h"
 #include "sdpre.h"

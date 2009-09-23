@@ -177,6 +177,7 @@ C
 C     Written by Anette Noerager - Mar 2000
 C
 C***********************************************************************
+       use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -207,7 +208,6 @@ C
 #include "dcborb.h"
 #include "dcbdhf.h"
 #include "dgroup.h"
-#include "codata.h"
 C
       CALL QENTER('PRPESR')
 C
@@ -1132,9 +1132,9 @@ C
 C     April 2000 A. Noerager
 C     
 C***********************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
-#include "codata.h"
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0)
       PARAMETER (FACTOR = ALPHAC*ALPHAC/(XFMP))

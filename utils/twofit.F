@@ -38,10 +38,10 @@ C
 C     Written by T. Saue April 2001
 C
 C***********************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "codata.h"
       PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
       PARAMETER(XTM = XTANG*ANGM,XTCM=2.19474625D+05)
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)

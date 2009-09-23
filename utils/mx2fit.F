@@ -130,10 +130,10 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SYMSTR(A,B,C,D,X,Y,MORDER,MP,MITER,AM,BM,IBUF)
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "codata.h"
       PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
       PARAMETER(XTM = XTANG*ANGM,XTCM=2.19474625D+05)
       PARAMETER(DTOL = 1.0D-4,DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
@@ -295,10 +295,10 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ASMSTR(A,B,C,D,X,Y,YB,XB,MORDER,MP,MITER,
      &                  AM,BM,IBUF)
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "codata.h"
       PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
       PARAMETER(XTM = XTANG*ANGM,XTCM=2.19474625D+05)
       PARAMETER(DTOL = 1.0D-4,DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
@@ -445,10 +445,10 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ANGDEF(A,B,C,D,X,Y,MORDER,MP,MITER,AM,BM,IBUF)
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "codata.h"
       PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
       PARAMETER(XTM = XTANG*ANGM,XTCM=2.19474625D+05)
       PARAMETER(DTOL = 1.0D-4,DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)

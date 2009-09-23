@@ -2000,10 +2000,10 @@ C  *  radovan bast              december 2004             07/02/2005   *
 C  *                                                                   *
 C  *********************************************************************
 C
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "codata.h"
 C
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 C
@@ -2898,13 +2898,13 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "dummy.h"
-#include "codata.h"
       PARAMETER (D3 = 3.0D0, D0 = 0.0D0)
       PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PMASS*PMASS)
      &                   *6.5796838999D15)
@@ -3182,9 +3182,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck spiana */
       SUBROUTINE SPIANA(PRIBAS,SPNPAR,IATOM1,IATOM2,
      &                  WORK,KFREE,LFREE)
+      use codata
 #include "implicit.h"
 #include "priunit.h"
-#include "codata.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D3 = 3.0D0, D1 = 1.0D0)
 #include "mxcent.h"
 #include "nuclei.h"
@@ -3544,13 +3544,13 @@ C     Written by T.Saue Feb 19 1997
 C     Last revised Jan 19 1998 - tsaue
 C
 C***********************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "dummy.h"
-#include "codata.h"
       PARAMETER (PRMASS = 1.007276470D0, D3 = 3.0D0, D0 = 0.0D0)
       PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PRMASS*PRMASS)
      &                   *6.5796838999D15)
@@ -5562,6 +5562,7 @@ C    Written by MI, jan. 2003
 C    Last modifications: MI, April 2006; MI, Nov. 2007, Tel Aviv     
 C     
 C***********************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -5575,7 +5576,6 @@ C***********************************************************************
 #include "nuclei.h"
 #include "symmet.h"
 #include "dcbsusc.h"
-#include "codata.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D0=0.0D0,
      &           SI = (XTANG*XTANG*ECHARGE*ECHARGE/EMASS)*1.0D-21,
      &           CGS = SI*XFMOL*1.0D6, THRESHM = 1.0D-5)
@@ -6560,9 +6560,9 @@ C     Written by T.Enevoldsen Nov. 14 1997
 C
 CMI/Dec '04  DMATLO is reserved for future use
 C***********************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
-#include "codata.h"
 #include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
@@ -6813,6 +6813,7 @@ C     PV contribution to NMR shielding
 C-----------------------------------------------------------------------
 C     radovan bast                         last revision: september 2006
 C=======================================================================
+      use codata
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
@@ -6824,7 +6825,6 @@ C-----------------------------------------------------------------------
 #include "nuclei.h"
 #include "maxaqn.h"
 #include "maxorb.h"
-#include "codata.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
 C
@@ -6982,6 +6982,7 @@ C     PV contribution to spin-spin coupling
 C-----------------------------------------------------------------------
 C     radovan bast                         last revision: september 2006
 C=======================================================================
+      use codata
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
@@ -6993,7 +6994,6 @@ C-----------------------------------------------------------------------
 #include "nuclei.h"
 #include "maxaqn.h"
 #include "maxorb.h"
-#include "codata.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
 C
@@ -7673,6 +7673,7 @@ C    Output routine for molecular g-factor
 C
 C
       SUBROUTINE MGFRES(GEOM,AMASS,KATOM,IPRINT)
+      use codata
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
@@ -7680,7 +7681,6 @@ C
 C#include <mxorb.h>
 #include <maxorb.h>
 C#include <pmass.h>
-#include "codata.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D4 = 4.0D0,
      &           THRESH = 1.0D-5)
       LOGICAL PLANAR, LINEAR, D12, D23
@@ -8358,9 +8358,9 @@ C     Output routine for optical rotation, based on LNROUT from DALTON
 C     Written by T. Saue in collaboration with K. Ruud Feb 2008
 C
 C***********************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
-#include "codata.h"
       PARAMETER(D0=0.0D0,D1=1.0D0,D3=3.0D0,
      &          FACTOR = (288.0D-30)*(PI**2)*XFMOL*(XTANG**4))
 #include "mxcent.h"

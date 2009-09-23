@@ -7236,10 +7236,10 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "codata.h"
       PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
       PARAMETER(XTM = XTANG*ANGM,XTCM=2.19474625D+05)
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
@@ -7270,10 +7270,10 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "codata.h"
       PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
       PARAMETER(XTM = XTANG*ANGM,XTCM=2.19474625D+05)
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0,D4=4.0D0)
@@ -7311,10 +7311,10 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "codata.h"
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2=2.0D0)
       DIMENSION X(NP)
       XDEV=D1/SQRT(D2*UM*OMEGA)
@@ -7356,10 +7356,10 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "codata.h"
       PARAMETER(D2=2.0D0,D4=4.0D0)
       DE = OMEGA*OMEGA/WXE/D4
       WRITE(LUPRI,'(A,F8.4,A)') '* Estimated D_e:',DE*XTEV, 'eV'
@@ -7383,10 +7383,10 @@ C
 C     Written by T. Saue Nov 17 2008
 C
 C***********************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "codata.h"
       DIMENSION X(NP),Y(NP),A(NP,*),B(NP),C(NP),D(NP)
       WRITE(LUPRI,'(A)') 
      &  'Polynomial fit: Give order of polynomial '
@@ -7447,10 +7447,10 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "codata.h"
       PARAMETER(DTOL = 1.0D-4)
 C
       DIMENSION X(NP),Y(NP),C(NP)

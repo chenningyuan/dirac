@@ -210,12 +210,12 @@ C Modified for more selective printing of bonded atoms,
 C     Jan-1995 Hanne Heiberg
 C     Added punching atom bonds for Gamess graphic output, K.Ruud-95
 C
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "codata.h"
       PARAMETER (MAXANG = 20)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D1P5 = 1.5D00)
       LOGICAL SKIP, DIF, PRINT, PUNCH

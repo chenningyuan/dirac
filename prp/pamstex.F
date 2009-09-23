@@ -34,6 +34,7 @@ C           Phys.Rev.A 73(2006)022501
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE STEX_INPUT(WORD,RESET,WORK,LWORK)
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -46,7 +47,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "pgroup.h"
 #include "dcbxpr.h"
 #include "dcbstex.h"
-#include "codata.h"
       PARAMETER (NTABLE = 6)
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,

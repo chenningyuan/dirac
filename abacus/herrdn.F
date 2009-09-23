@@ -464,13 +464,13 @@ C       ISHELL - runs over all shells
 C       IPRIM - runs over all primitives
 C       NUCIND2 - runs over all symmetry independent centers
 C******************************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
-#include "codata.h"
 #include "argoscom.h"
 #include "argoscomch.h"
       PARAMETER (D0 = 0.0D0, THRMIN = 1.D-15)
@@ -829,13 +829,13 @@ C                      - determine Cartesian powers
 C               NHKOFF(J) - offset for components in list of l-functions
 C               MAXOPR - maximum number of operations to loop over
 C***********************************************************************
+       use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
-#include "codata.h"
 #include "cbirea.h"
 C
 #include "ccom.h"
@@ -892,6 +892,7 @@ C
 C       Read orbital and geometry input data
 C
 C***********************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -901,7 +902,6 @@ C***********************************************************************
 #include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (DSM = 1.0D-30)
-#include "codata.h"
 #include "cbirea.h"
       DIMENSION WORK(LWORK)
       LOGICAL SEG,ANG,NOORBTS,NOFITFS,ZMTTST,CNTBAS
@@ -1889,12 +1889,12 @@ C
 C        Read and process data about symmetry independent centers
 C
 C*****************************************************************************
+       use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
-#include "codata.h"
       PARAMETER(D0 = 0.0D00, CORMAX = 1.D5)
 #if defined (SYS_HPUX)
       PARAMETER (LUERR = 7)
@@ -2019,13 +2019,13 @@ C       Process orbital and geometry input data
 C
 C*****************************************************************************
 C
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
-#include "codata.h"
 #include "cbirea.h"
 #include "dcbgen.h"
 #include "argoscom.h"
@@ -2375,6 +2375,7 @@ C
 C     Print orbital and geometry input data
 C
 C*****************************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2382,7 +2383,6 @@ C*****************************************************************************
 #include "mx2orb.h"
 #include "aovec.h"
 #include "maxaqn.h"
-#include "codata.h"
 #include "cbirea.h"
 #include "dcbgen.h"
       DIMENSION WORK(LWORK)
@@ -3539,13 +3539,13 @@ C
 CMI LCOMP is 1 (L) or 2 (S component)
 C
 C******************************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
-#include "codata.h"
 C
 #include "infpar.h"
       PARAMETER (D0 = 0.0D0)
@@ -3760,13 +3760,13 @@ C     Process basis data
 C     written by Luuk Visscher, trivial modification of orbpro
 C
 C******************************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
-#include "codata.h"
       PARAMETER (D0 = 0.0D0)
 C
 #include "cbirea.h"
@@ -3885,13 +3885,13 @@ C
 C  /* Deck orbout */
       SUBROUTINE ORBOUT(ICLS,NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &           IPCON,KATOM,KANG,KBLOCK,KPRIM,ALPHA,CPRIMU,NRMPRI)
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
-#include "codata.h"
       PARAMETER (D0 = 0.0D0)
 C
 #include "ccom.h"
@@ -4134,13 +4134,13 @@ C
 C     Process molecular data
 C
 C******************************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
-#include "codata.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
 C
 #include "cbirea.h"
@@ -5737,6 +5737,7 @@ C
       END
 C  /* Deck reapri */
       SUBROUTINE REAPRI
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -5744,7 +5745,6 @@ C  /* Deck reapri */
 #include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
-#include "codata.h"
 C
 #include "abainf.h"
 #include "cbirea.h"
@@ -5958,11 +5958,11 @@ C  /* Deck buildz */
 C
 C     Modified for HERMIT/SIRIUS/ABACUS -> K.Ruud, May-95
 C
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "codata.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
       PARAMETER (DSM = 1.0D-30)
       PARAMETER (AR=PI/180.0D+00)

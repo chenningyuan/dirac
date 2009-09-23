@@ -35,8 +35,8 @@ C     Original source code provided by Kim Baldridge at SDSC. Punches
 C     molecule coordinate information as well as normal coordinate modes
 C     Modified for use in DALTON by K.Ruud, September 1995
 C
+      use codata
 #include "implicit.h"
-#include "codata.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -157,6 +157,7 @@ C     Original source code provided by Kim Baldridge at SDSC. Punches
 C     molecule orbital information
 C     Modified for use in DALTON by K.Ruud, September 1995
 C
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -164,7 +165,6 @@ C
 #include "aovec.h"
 #include "maxorb.h"
 #include "pi.h"
-#include "codata.h"
 C
       PARAMETER (LUIP = 4)
       PARAMETER (ONE=1.0D+00, HALF=0.5D+00, PT75 = 0.75D+00, 

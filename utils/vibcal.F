@@ -27,9 +27,9 @@ C     vibrational states
 C
 C     Written by T. Saue Feb 13 2007
 C***********************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
-#include "codata.h"
       CHARACTER POTFIL*30,PRPFIL*30,REPLY*1
 C      PARAMETER(V2=4.6822365486E-01,V3=-1.1951834335E+00,U=9.703)
 C      PARAMETER(V4=6.2052157257E+00)

@@ -3057,9 +3057,9 @@ C     Solve one-electron systems with finite nuclei and project
 C     out all free positronic solutions
 C
 C*****************************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
-#include "codata.h"
       PARAMETER(DP5 = 0.5D0,D0 = 0.0D0)
 C
 #include "dcbgen.h"

@@ -1375,9 +1375,9 @@ C  /* Deck runopt */
       SUBROUTINE RUNOPT(IWOFF,WRKDLM,MXRCRD,EGRAD,CSTEP,SCLVEC,GRDOLD,
      &     GRDMAT,STPMAT,HESOLD,GRDARR,STPARR,GEINFO,WILBMT,
      &     BMTRAN,HESINT,VECMOD,WORK,LWORK)
+      use codata
 #include "implicit.h"
 #include "dummy.h"
-#include "codata.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "optinf.h"

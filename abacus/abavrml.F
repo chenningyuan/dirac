@@ -173,6 +173,7 @@ C  /* Deck mkvrv1 */
 C     
 C     Punch out geometry to VRML-file
 C
+      use codata
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -184,7 +185,6 @@ C
 #include "cbiwlk.h"
 #include "priunit.h"
 #include "symmet.h"
-#include "codata.h"
       DIMENSION GVEC(NCORD), EVEC(NCORD), ATCHRG(NCORD)
       DIMENSION ATMARR(MXCENT,8)
       CHARACTER*12 FILENM
@@ -289,6 +289,7 @@ C  /* Deck mkvrs1 */
 C     
 C     Punch out geometry to VRML-file
 C
+      use codata
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -300,7 +301,6 @@ C
 #include "cbiwlk.h"
 #include "priunit.h"
 #include "symmet.h"
-#include "codata.h"
       DIMENSION ATM(5,0:MXCENT)
       DIMENSION DRTAXS(5,0:MAXAXS), DMRPLN(5,0:MAXMIR)
       DIMENSION ATMARR(MXCENT,8)
@@ -1002,6 +1002,7 @@ C  /* Deck atmini */
 
 C     Expand all symmetry-dependent atoms.
 C
+      use codata
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -1012,7 +1013,6 @@ C
 #include "gnrinf.h"
 #include "cbiwlk.h"
 #include "priunit.h"
-#include "codata.h"
 #include "symmet.h"
       DIMENSION ATMARR(MXCENT,8)
       LOGICAL BOHR

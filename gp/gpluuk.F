@@ -435,6 +435,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PRT_EV (LUPRI,N_IRPS,N_EV,REPNA,E_OFF,ECCIM,IRCW,EV,
      &                   INDX,IRPS,IND)
 C
+      use codata
 #include "implicit.h"
 C
 C---------------Description--------------------------------------------
@@ -480,10 +481,6 @@ C     DIMENSION EV(*)
       CHARACTER*4 REPNA(*)
       REAL*8   , ALLOCATABLE :: EVI(:)
       LOGICAL DODBG
-C
-C---------------Common Blocks--------------------------------------
-C
-#include "codata.h"
 C
 C---------------Local variables--------------------------------------
 C
@@ -643,7 +640,7 @@ C    &    EV(2,INDX(I)),NEW
 
       WRITE(LUPRI,1020) AVER/DBLE(N_TOTAL)+E_OFF
 
-CMI ... print out conversion factors (from codata.h)
+CMI ... print out conversion factors (from codata)
 CMI   WRITE(LUPRI,'(/,1X,A,F14.10,A,F17.9,A)')
 CMI  & '( 1 au =',XTEV,' eV  / ',XTKAYS,' cm-1)' 
 
@@ -742,6 +739,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                       IRSEC1,IRSEC2,IRSEC12,REPNAO,NACTV,
      &                       TSHOLD)
 C
+      use codata
 #include "implicit.h"
 C
 C---------------Description--------------------------------------------
@@ -797,10 +795,6 @@ C
       REAL*8 E_OFF
 
 C
-C---------------Common Blocks--------------------------------------
-C
-#include "codata.h"
-C
 C---------------Local variables--------------------------------------
 C
       PARAMETER (DEGEN=1.D-9)
@@ -829,7 +823,7 @@ C     Sort them from low to high
 C
       CALL INDEXX(N_TOTAL,EV,INDX)
 C
-CMI ... print out conversion factors (from codata.h)
+CMI ... print out conversion factors (from codata)
       WRITE(LUPRI,'(/,1X,A,F14.10,A,F17.9,A)')
      & '( 1 au =',XTEV,' eV  / ',XTKAYS,' cm-1)' 
 

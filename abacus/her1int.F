@@ -2444,6 +2444,7 @@ C
 C     K.Ruud, Nov. 1991. Based on TUH's subroutine CINT0, but modified
 C     for use in HERPRO.
 C
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -2451,7 +2452,6 @@ C
      &          SHLINT(KCKTAB)
 #include "onecom.h"
 #include "lmns.h"
-#include "codata.h"
       PARAMETER (ALPMVL = ALPHA2*0.125D0, ALPMV2 = ALPHA2*0.25D0)
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
@@ -4330,12 +4330,12 @@ C  /* Deck dwnint */
 C
 C     shki, Jan. 93 (based on FRMINT tuh feb 91)
 C
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "codata.h"
 C
       PARAMETER (D0 = 0.0D0)
       PARAMETER (DWNFAC = 0.5D0*PI*ALPHA2)

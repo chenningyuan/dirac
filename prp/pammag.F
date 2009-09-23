@@ -38,6 +38,7 @@ C
 C     Added: MI & HJAaJ, 2002/2003
 C
 C*****************************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "orgcom.h"
@@ -46,7 +47,6 @@ C*****************************************************************************
 #include "dcbnmr.h"
 #include "dcbham.h"
 #include "nuclei.h"
-#include "codata.h"
 C
 
       PARAMETER (NTABLE = 15)

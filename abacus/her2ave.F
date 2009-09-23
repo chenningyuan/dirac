@@ -2409,12 +2409,12 @@ CMI ... stolen from dalton(abacus/abadip.F)
 C      for making the dirac output of magnetizabilities 
 C      the same as is in the older brother dalton
 
+       use codata
 #include <implicit.h>
 #include <priunit.h>
 #include <maxaqn.h>
 #include <mxcent.h>
 #include <maxorb.h>
-#include <codata.h>
 C#include <debye.h>
       PARAMETER (D1 = 1.0 D00)
       LOGICAL ALLREP, INERT, LARGE

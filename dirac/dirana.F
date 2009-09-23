@@ -2162,11 +2162,11 @@ C
 C     Written by Trond Saue May 9 2000
 C
 C***********************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
 C
-#include "codata.h"
       DIMENSION DMAT(*),GAO(*),COORD(3,2),RHO(0:2),BUF(*),WORK(*)
 #include "dcbbas.h"
 #include "dcbham.h"
@@ -2397,12 +2397,12 @@ C
 C     Written by Trond Saue Nov 6 2002
 C
 C***********************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "codata.h"
 C
 #include "symmet.h"
 #include "nuclei.h"

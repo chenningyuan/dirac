@@ -470,12 +470,12 @@ C      2) vibrational analysis (VIBANA)
 C      3) partition functions  (PRTFUN)
 C      4) vibrational polarizabilities (VIBPOL)
 C
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "codata.h"
 #include "iratdef.h"
 C
       LOGICAL DIPDER, POLAR, LINEAR, NOTALL, NONE, RAMPRP
@@ -714,9 +714,9 @@ C  /* Deck rotana */
       SUBROUTINE ROTANA(GEOM,AMASS,VINRTI,VCMNUC,
      &                  AIMOM,BIMOM,CIMOM,
      &                  LINEAR,NATOMS,NCORD,IPRINT)
+      use codata
 #include "implicit.h"
 #include "priunit.h"
-#include "codata.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -847,6 +847,7 @@ C  /* Deck vibana */
      &                  NSPEC,IFRQCM,NUMMOD,
      &                  IMAGIN,IREPS,INTENS,ROAAFQ,ROAGNQ,ROAGLQ,ROAAQ,
      &                  WORK,LWORK,NCORD,NOTALL,DOVCD,LINEAR,IPRINT)
+      use codata
 #include "implicit.h"
 #include "dummy.h"
 C
@@ -857,7 +858,6 @@ C
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "codata.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0, THRSH = 1.0D-8)
       PARAMETER (ESUDIP = 1D4*DEBYE**2,
      &           ESUROT =  ECHARGE*XTANG*CCM*1D40*ECHARGE*HBAR/EMASS)
@@ -1283,6 +1283,7 @@ C  /* Deck vibnor */
       SUBROUTINE VIBNOR(HESS,AMASS,DKIN,HESSMW,
      &                  EVAL,EVEC,EVECS,WRK,LWRK,
      &                  NCORD,NINTRN,NNEG,NOTALL,IPRINT)
+      use codata
 #include "implicit.h"
 C
 C     Find normal coordinates in DNORCR and normal frequences in FREQ
@@ -1300,7 +1301,6 @@ C
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "codata.h"
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 ,
      &            THRSH1 = 1.0D-14, THRSH2 = 1.0D-3, THRSH3 = 1.0D-7)
       LOGICAL NOTALL
@@ -1440,13 +1440,13 @@ C
 C  /* Deck prtfun */
       SUBROUTINE PRTFUN(TOTMAS,AIMOM,BIMOM,CIMOM,EVAL,
      &                  LINEAR,NCORD,NUMMOD)
+      use codata
 #include "implicit.h"
 C
 C     Calculate translational, rotational, and vibrational
 C     partition functions
 C
 #include "priunit.h"
-#include "codata.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D12 = 12.0D0)
       PARAMETER (D1P5 = 1.5D0, D2P5 = 2.5D0)
       PARAMETER (RPFFAC = 0.041 229 342 D0,
@@ -1814,10 +1814,10 @@ C  /* Deck intern */
       SUBROUTINE INTERN(NCORD,NINTER,GRAD,HESS,HESCOR,DGRAD,CAAT,BMAT,
      &                  BADJIN,QMAT,QINV,BHES,FINT,DINT,AATINT,HINT,W2,
      &                  IWORK,CMAT,QQ,CTYPE,WRK,LWORK)
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "codata.h"
 #include "facang.h"
       PARAMETER (D0 = 0.D0, D1 = 1.0D0, DM1 = - 1.0D0)
 C
@@ -2419,6 +2419,7 @@ C
 C  /* Deck vibv3 */
       SUBROUTINE VIBV3(EVEC,FREQAU,FMATF,FMATT,CORR,
      &                 POS,AMASS,WORK,LWORK,NCORD,NUMMOD)
+      use codata
 #include "implicit.h"
 #include "dummy.h"
 #include "thrzer.h"
@@ -2426,7 +2427,6 @@ C  /* Deck vibv3 */
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
-#include "codata.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, D24 = 24.0D0, D36 = 36.0D0)
       DIMENSION EVEC(NCORD,NCORD), FREQAU(NCORD), 
@@ -2824,6 +2824,7 @@ C  /* Deck vibro1 */
      &                  ALMN,GMMNL,GMMNNL,RMINN,DPOLN,CZL,CZNL,CXL,CXNL,
      &                  C0L,C0NL,CBL,CBNL,CONVER,BOLTZ,ROAAFD,ROAGND,
      &                  ROAGLD,ROAAD,ROAAFU,ROAGNU,ROAGLU,ROAAU)
+      use codata
 #include "implicit.h"
 #include "dummy.h"
 C
@@ -2835,7 +2836,6 @@ C
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "codata.h"
 #include "cbilnr.h"
 C
       INTEGER F
@@ -3132,6 +3132,7 @@ C
 C     Determines the irep of a given normal coordinate, by comparing
 C     the results of symmetry operations with the character table.
 C
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -3139,7 +3140,6 @@ C
 #include "maxaqn.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "codata.h"
 #include "pgroup.h"
 #include "optinf.h"
 C
@@ -3324,8 +3324,8 @@ C     This subroutine calculates vibrationally averaged molecular
 C     properties assuming that the calculation is performed at the effective
 C     geometry. K.Ruud, San Diego, March 1999
 C
+      use codata
 #include "implicit.h"
-#include "codata.h"
 #include "thrzer.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -3942,8 +3942,8 @@ C THIS SUBROUTINE COMPUTES THE CENTRIFUGAL DISTORTION OF THE MOLECULE
 C Juhani Lounila 21.1.1998 
 C
 C ***************************************************************************
+      use codata
 #include "implicit.h"
-#include "codata.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0)
       LOGICAL LINEAR
@@ -4172,10 +4172,10 @@ C     LIN2 linear bending. A-C-B distorted perpendicular to the plane.
 C     ABD - positive if A moves toward the vector cross product CD*CA.
 C     The linear bendings are A-C-B, i.e., the apex atom is third.
 C
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "codata.h"
       LOGICAL WRI, QONLY, FREAD, NEW, OLD, GETB
       PARAMETER (D1 = 1.0D00, FREAD = .FALSE., D0 = 0.0D00)
 C

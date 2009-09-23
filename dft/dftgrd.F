@@ -1339,12 +1339,12 @@ C     in one dimension, along bonds.
 C     Written by Olav Fossgaard - June 2003
 C
 C***********************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 
       PARAMETER(D0=0.0D0,D2=2.0D0)
 
-#include "codata.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "dcbbas.h"
@@ -1519,9 +1519,9 @@ C                                                                      C
 C      Written by Olav Fossgaard - June 2003                           C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
+      use codata
 #include "implicit.h"
 #include "priunit.h"
-#include "codata.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "dcbbas.h"

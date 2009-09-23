@@ -1717,13 +1717,13 @@ C  /* Deck fcpri */
 C
 C     tuh 131288
 C
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "chrxyz.h"
-#include "codata.h"
       PARAMETER(D1 = 1.D0, D10E6 = 1.D6)
       LOGICAL DONE, CARTRA
       CHARACTER FIELD*1, KEY*(*)

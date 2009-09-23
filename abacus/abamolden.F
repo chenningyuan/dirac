@@ -65,6 +65,7 @@ C
       SUBROUTINE MOGTO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &                 KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI)
 
+      use codata
 #include "implicit.h"
 #include "maxorb.h"
 #include "molde.h"
@@ -73,7 +74,6 @@ C
 #include "mxcent.h"
 #include "aovec.h"
 #include "maxaqn.h"
-#include "codata.h"
       PARAMETER (D0 = 0.0D0)
 C
 #include "ccom.h"
@@ -154,13 +154,13 @@ c
 #endif /* ifndef PRG_DIRAC */
 
       SUBROUTINE MOATOMS(WORD)
-C          
+C 
+      use codata         
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "codata.h"
 
       CHARACTER*6 NAME
       CHARACTER*4 WORD
@@ -370,10 +370,10 @@ C              note OCCUP(NOCCT) only over occupied orbitals
 #endif /* ifndef PRG_DIRAC */
 
       SUBROUTINE MOFREQ(EVEC,NUMMOD,NCORD,FREQAU)
+      use codata
 #include "implicit.h" 
 #include "mxcent.h"
 #include "maxorb.h"
-#include "codata.h"
 #include "molde.h"
 #include "inftap.h"
 
@@ -398,10 +398,10 @@ C              note OCCUP(NOCCT) only over occupied orbitals
 #ifndef PRG_DIRAC
 
       SUBROUTINE MOSCFCON(ITER,EMCSCF,WRITENOW)
+      use codata
 #include "implicit.h" 
 #include "mxcent.h"
 #include "maxorb.h"
-#include "codata.h"
 #include "molde.h"
 #include "inftap.h"
         LOGICAL WRITENOW
@@ -424,10 +424,10 @@ C              note OCCUP(NOCCT) only over occupied orbitals
       END
 
       SUBROUTINE MOGECON(WRITENOW,EMCSCF)
+      use codata
 #include "implicit.h" 
 #include "mxcent.h"
 #include "maxorb.h"
-#include "codata.h"
 #include "molde.h"
 #include "inftap.h"
       LOGICAL WRITENOW

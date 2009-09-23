@@ -1952,6 +1952,7 @@ C
 C     Last revision: 1997/07/02 jth
 C
 C*****************************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1968,7 +1969,6 @@ C
 #include "symmet.h"
 #include "dcbgen.h"
 #include "dcbgrd.h"
-#include "codata.h"
 C
       CALL QENTER('ESTGLS')
 C
@@ -2031,6 +2031,7 @@ C
 C     Last revision: 1997/07/02 jth
 C
 C*****************************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -2038,7 +2039,6 @@ C*****************************************************************************
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
-#include "codata.h"
 C
       PARAMETER( D0 = 0.0D00, DP1 = 0.1D00)
       DIMENSION TGRAD(MXCOOR)

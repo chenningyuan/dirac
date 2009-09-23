@@ -357,12 +357,12 @@ C  /* Deck dipadd */
       END
 C  /* Deck polpri */
       SUBROUTINE POLPRI(AMAT,SPC,ITYPE1)
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "codata.h"
       PARAMETER (D1 = 1.0 D00)
       LOGICAL ALLREP, INERT, LARGE
       DIMENSION AMAT(3,3), IND(3)

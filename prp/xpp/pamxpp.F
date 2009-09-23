@@ -1212,9 +1212,9 @@ C
 C     Written by H.J.Aa. Jensen 2000, based on XLROUT
 C
 C*****************************************************************************
+         use codata
 #include "implicit.h"
 #include "priunit.h"
-#include "codata.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"

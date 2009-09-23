@@ -631,7 +631,7 @@ c           todo : the current reading relies on ios giving an error for no-atom
 
 
         SUBROUTINE READ_BASIS(filenum,linelen,lupri)
-#include "codata.h"
+        use codata
 #include "infpar.h"
 #include "cbirea.h"
 !     JHS050707 Reads basis names and possibly the coefficients typed in the DIRAC.INP file.
@@ -928,15 +928,15 @@ c           todo : the current reading relies on ios giving an error for no-atom
         SUBROUTINE WRITE_ATOMS(lupri)
 !     JHS050707 Writes the data contained in the list of atoms to the common blocks.
 
-      IMPLICIT NONE
 
+      use codata
+      IMPLICIT NONE
 !     CONSTANTS
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
-#include "codata.h"
 
 !     COMMONBLOCKS
 #include "clsfmm.h"
@@ -1074,15 +1074,15 @@ c           todo : the current reading relies on ios giving an error for no-atom
 !               Note the routine is higly similar tot the subroutine READI1 for
 !               .MOL files, the main difference is the split between reading the files
 !               and writing them to the commonblocks
-      IMPLICIT NONE
 
+      use codata
+      IMPLICIT NONE
 !     CONSTANTS
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
-#include "codata.h"
 
 !     COMMONBLOCKS
 #include "clsfmm.h"

@@ -657,6 +657,7 @@ C
 C     Written by johhe 2002
 C
 C***********************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbxqr.h"
@@ -666,7 +667,6 @@ C***********************************************************************
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "pgroup.h"
-#include "codata.h"
 C
       PARAMETER ( LUCMO = 22, D0 = 0.0D0, D2R3 = (2.0D0/3.0D0),
      &            D2 = 2.0D0, D4 = 4.0D0 )
