@@ -76,11 +76,9 @@ contains
 
       integer :: IXVECTOR, lucoef
       real(8) :: toterg, time_start, second
-      integer :: max_ao_g_order, max_ao_m_order, i, nr_dmat
+      integer :: max_ao_g_order, max_ao_m_order, i, nr_dmat, io
 
-      type(matrix)         :: D(max_nr_xvectors)
-
-      call init_mat(D(1), ntbas(0), ntbas(0))
+      type(matrix)         :: D(max_nr_xvectors), D_mo, C
 
       max_ao_g_order = 0
       max_ao_m_order = 0
@@ -136,11 +134,27 @@ contains
       call alloc(occupation, norbt)
       call setup_orbital_string(occupation)
 
-!     density matrices
+!     get coefficients
 
-      call setup_zo_dmat_ao(D(1)%elms, occupation)
+      call get_C(C, i=1.0d0, s=1.0d0, g=1.0d0, u=1.0d0)
+
+!     get unperturbed MO density matrix
+
+      call init_mat(D_mo, norbt, norbt)
+      D_mo%elms = 0.0d0
+      do io = 1, norbt
+        D_mo%elms((io-1)*norbt + io) = occupation(io)
+      end do
+
+!     transform to AO
+
+      D(1) = C*(D_mo*dag(C))
+      D(1) = 2.0d0*D(1)
+      D_mo = 0
+      C    = 0
+
+!     get perturbed matrices
       nr_dmat = 1
-
       do ixvector = 1, visual_cfg_nr_xvectors
         if (.not. visual_cfg_xvector_file(ixvector) .eq. 'ZORDER') then
           nr_dmat = nr_dmat + 1
