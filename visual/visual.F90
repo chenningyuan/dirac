@@ -4,6 +4,8 @@ module visual
   use visual_cfg
   use codata
   use dft_ao
+  use matrix_defop
+  use dirac_interface
 
   implicit none
 
@@ -56,6 +58,10 @@ module visual
       integer, parameter :: IQ_GRADIENT    = 25 !
       integer, parameter :: IQ_LAPLACIAN   = 26 !
 
+
+
+      integer, save      :: vector_to_matrix(max_nr_xvectors) = 0
+
 contains
 
       SUBROUTINE run_VISUAL()
@@ -64,14 +70,17 @@ contains
 
       real(8), allocatable :: cmo(:)
       real(8), allocatable :: eig(:)
-      real(8), allocatable :: dmat_ao(:)
 
       real(8), allocatable :: ao(:)
       real(8), allocatable :: buffer(:)
 
-      integer :: ioff, IXVECTOR, lucoef
+      integer :: IXVECTOR, lucoef
       real(8) :: toterg, time_start, second
-      integer :: max_ao_g_order, max_ao_m_order
+      integer :: max_ao_g_order, max_ao_m_order, i, nr_dmat
+
+      type(matrix)         :: D(max_nr_xvectors)
+
+      call init_mat(D(1), ntbas(0), ntbas(0))
 
       max_ao_g_order = 0
       max_ao_m_order = 0
@@ -107,7 +116,6 @@ contains
 
       call alloc(cmo      ,n2bbasxq)
       call alloc(eig      ,norbt)
-      call alloc(dmat_ao  ,n2bbasxq*(max_nr_xvectors+1))
 
 !     coefficients
 
@@ -130,46 +138,52 @@ contains
 
 !     density matrices
 
-      IOFF = 0
-      DO IXVECTOR = 1, visual_cfg_NR_XVECTORS
-        IF(.NOT. visual_cfg_xVECTOR_FILE(IXVECTOR) .EQ. 'ZORDER') THEN
-          CALL SETUP_FO_DMAT_AO(CMO, &
-     &                          IXVECTOR, &
-     &                          DMAT_AO(1+IOFF), &
-     &                          occupation)
-        ENDIF
-        IOFF = IOFF + N2BBASXQ
-      ENDDO
-      CALL SETUP_ZO_DMAT_AO(DMAT_AO(1+IOFF), &
-     &                      occupation)
+      call setup_zo_dmat_ao(D(1)%elms, occupation)
+      nr_dmat = 1
+
+      do ixvector = 1, visual_cfg_nr_xvectors
+        if (.not. visual_cfg_xvector_file(ixvector) .eq. 'ZORDER') then
+          nr_dmat = nr_dmat + 1
+          D(nr_dmat) = 1.0d-100*D(1)
+          call setup_fo_dmat_ao(cmo, ixvector, D(nr_dmat)%elms, occupation)
+          vector_to_matrix(ixvector) = nr_dmat
+        else
+          vector_to_matrix(ixvector) = 1
+        end if
+      end do
 
       call dealloc(occupation)
 
       time_start = second()
-      call visual_driver(dmat_ao, ao, buffer)
+      call visual_driver(nr_dmat, D, ao, buffer)
 
       call timtxt('>>>> time used in plot:', (second() - time_start), lupri)
 
       time_start = second()
       IF(visual_cfg_integrate) THEN !integration
-        call visual_integration(dmat_ao, ao, buffer)
+        call visual_integration(nr_dmat, D, ao, buffer)
       ENDIF
       call timtxt('>>>> time used in integration:', (second() - time_start), lupri)
 
+      do i = 1, nr_dmat
+        D(i) = 0
+      end do
+
       call dealloc(cmo)
       call dealloc(eig)
-      call dealloc(dmat_ao)
 
     call dealloc(ao)
     call dealloc(buffer)
 
       END subroutine
 
-      subroutine visual_driver(dmat_ao, ao, buffer)
+      subroutine visual_driver(nr_dmat, D, ao, buffer)
 
-      real(8) ::          DMAT_AO(*)
-      real(8) ::          AO(*)
-      real(8) ::          buffer(*)
+      integer, intent(in) :: nr_dmat
+      type(matrix)        :: D(nr_dmat)
+      real(8), intent(in) :: ao(*)
+      real(8), intent(in) :: buffer(*)
+
       real(8) ::          QUANTITY(0:3,visual_cfg_NCUBE(3))
       real(8) ::          STEP_3D(3,0:3)
       real(8) ::          ATOM_XYZ(4,NUCDEP)
@@ -225,7 +239,7 @@ contains
 
         DO IPOINT_IN_LIST = 1, visual_cfg_nr_points_in_list
 
-          CALL GET_QUANTITY_IN_POINT(DMAT_AO, &
+          CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &
      &                               AO, &
      &            visual_cfg_XYZ_LIST(IPOINT_IN_LIST,1), &
      &            visual_cfg_XYZ_LIST(IPOINT_IN_LIST,2), &
@@ -261,7 +275,7 @@ contains
 
           r = visual_cfg_line_from + istep*v
 
-          call get_quantity_in_point(dmat_ao, &
+          call get_quantity_in_point(nr_dmat, D, &
      &                               ao, &
      &                               r(1), r(2), r(3), &
      &                               buffer, &
@@ -314,7 +328,7 @@ contains
                 IF(visual_cfg_ORIENTATION(IORIENTATION) .EQ. 'yz') &
      &                     PX = visual_cfg_ORIGIN_2D(1)
 
-                CALL GET_QUANTITY_IN_POINT(DMAT_AO, &
+                CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &
      &                                     ao, &
      &                                     PX,PY,PZ, &
      &                                     buffer, &
@@ -414,7 +428,7 @@ contains
      &                          + (JCUBE-1)*STEP_3D(3,2) &
      &                          + (KCUBE-1)*STEP_3D(3,3)
 
-              CALL GET_QUANTITY_IN_POINT(DMAT_AO, &
+              CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &
      &                                   ao, &
      &                                   PX,PY,PZ, &
      &                                   buffer, &
@@ -438,13 +452,14 @@ contains
       end subroutine
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !     /* GET_QUANTITY_IN_POINT */
-      SUBROUTINE GET_QUANTITY_IN_POINT(DMAT_AO, &
+      SUBROUTINE GET_QUANTITY_IN_POINT(nr_dmat, D, &
      &                                 ao, &
      &                                 PX,PY,PZ, &
      &                                 buffer, &
      &                                 QUANTITY_ADDMEUP)
 
-      real(8) ::          DMAT_AO(*)
+      integer, intent(in) :: nr_dmat
+      type(matrix)        :: D(nr_dmat)
       real(8) ::          AO(*)
       real(8) ::          buffer(*)
       real(8) ::          QUANTITY(0:3)
@@ -456,17 +471,16 @@ contains
       real(8) :: rxx, rxy, rxz, ryy, ryz, rzz
       real(8) :: px, py, pz, ddot, scalar
       real(8) :: rx, ry, rz, TF_KIN, BOSON_KIN
-      integer :: ic, iq, IXVECTOR, ixyz, ioff
+      integer :: ic, iq, IXVECTOR, ixyz, imat
 
       call get_so(px, py, pz, ao, buffer)
 
       CALL DZERO(QUANTITY_ADDMEUP,4)
 
       DO IXVECTOR = 1, visual_cfg_NR_XVECTORS
-        IOFF = N2BBASXQ*(IXVECTOR-1)
+        imat = vector_to_matrix(ixvector)
 
-        IF(visual_cfg_XVECTOR_FILE(IXVECTOR) .EQ. 'ZORDER') &
-     &      IOFF = N2BBASXQ*visual_cfg_NR_XVECTORS
+!       IF(visual_cfg_XVECTOR_FILE(IXVECTOR) .EQ. 'ZORDER') &
 
         CALL DZERO(QUANTITY,4)
 
@@ -478,13 +492,13 @@ contains
             IF(IC .EQ. 1) THEN
               IF(.NOT. visual_cfg_IOPTION_XVECTOR(IXVECTOR) .EQ. 2) THEN
                 CALL GETRH1(DENSITY,1,visual_cfg_irep_xvector(IXVECTOR), &
-     &                      AO,DMAT_AO(1+IOFF),buffer)
+     &                      AO,D(imat)%elms,buffer)
               ENDIF
             ENDIF
             IF(IC .EQ. 2) THEN
               IF(.NOT. visual_cfg_IOPTION_XVECTOR(IXVECTOR) .EQ. 1) THEN
                 CALL GETRH1(DENSITY,2,visual_cfg_irep_xvector(IXVECTOR), &
-     &                      AO,DMAT_AO(1+IOFF),buffer)
+     &                      AO,D(imat)%elms,buffer)
               ENDIF
             ENDIF
           ENDDO
@@ -498,7 +512,7 @@ contains
      &                 visual_cfg_irep_xvector(IXVECTOR), &
      &                 AO, &
      &                 ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                 DMAT_AO(1+IOFF), &
+     &                 D(imat)%elms, &
      &                 buffer)
 
           CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
@@ -515,7 +529,7 @@ contains
 !    &                 GAO, &
 !    &                 GAO1, &
 !    &                 GAO2, &
-!    &                 DMAT_AO(1+IOFF), &
+!    &                 D(imat)%elms, &
 !    &                 buffer)
 
 !         CALL DAXPY(1,1.0d0,RXX + RYY + RZZ,1,QUANTITY(0),1)
@@ -532,7 +546,7 @@ contains
      &                    IC, &
      &                    visual_cfg_irep_xvector(IXVECTOR), &
      &                    AO(ao_start(1, 0)+(IXYZ-1)*NTBAS(0)), &
-     &                    DMAT_AO(1+IOFF), &
+     &                    D(imat)%elms, &
      &                    buffer)
 
               FERMI_KIN = FERMI_KIN + SCALAR
@@ -544,14 +558,14 @@ contains
           CALL GETRHO(DENSITY, &
      &                visual_cfg_irep_xvector(IXVECTOR), &
      &                AO, &
-     &                DMAT_AO(1+IOFF), &
+     &                D(imat)%elms, &
      &                buffer)
 
           CALL GETGRHO(VECTOR_A, &
      &                 visual_cfg_irep_xvector(IXVECTOR), &
      &                 AO, &
      &                 ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                 DMAT_AO(1+IOFF), &
+     &                 D(imat)%elms, &
      &                 buffer)
 
           GRADIENT_SQUARED = DDOT(3,VECTOR_A,1,VECTOR_A,1)
@@ -572,7 +586,7 @@ contains
           CALL GETRHO(DENSITY, &
      &                visual_cfg_irep_xvector(IXVECTOR), &
      &                AO, &
-     &                DMAT_AO(1+IOFF), &
+     &                D(imat)%elms, &
      &                buffer)
 
           VECTOR_A(1) = -0.5d0*PY*DENSITY
@@ -588,7 +602,7 @@ contains
      &               VECTOR_A, &
      &               visual_cfg_irep_xvector(IXVECTOR), &
      &               AO, &
-     &               DMAT_AO(1+IOFF), &
+     &               D(imat)%elms, &
      &               buffer)
 
           CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
@@ -600,7 +614,7 @@ contains
      &               VECTOR_A, &
      &               visual_cfg_irep_xvector(IXVECTOR), &
      &               AO, &
-     &               DMAT_AO(1+IOFF), &
+     &               D(imat)%elms, &
      &               buffer)
 
           CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
@@ -613,7 +627,7 @@ contains
      &                   visual_cfg_irep_xvector(IXVECTOR), &
      &                   AO, &
      &                   ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                   DMAT_AO(1+IOFF), &
+     &                   D(imat)%elms, &
      &                   buffer)
 
           CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
@@ -626,7 +640,7 @@ contains
      &                  visual_cfg_irep_xvector(IXVECTOR), &
      &                  AO, &
      &                  ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                  DMAT_AO(1+IOFF), &
+     &                  D(imat)%elms, &
      &                  buffer)
 
           CALL DAXPY(1,1.0d0,SCALAR,1,QUANTITY(0),1)
@@ -639,7 +653,7 @@ contains
      &                  visual_cfg_irep_xvector(IXVECTOR), &
      &                  AO, &
      &                  ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                  DMAT_AO(1+IOFF), &
+     &                  D(imat)%elms, &
      &                  buffer)
 
           CALL DAXPY(1,1.0d0,SCALAR,1,QUANTITY(0),1)
@@ -652,7 +666,7 @@ contains
      &                  visual_cfg_irep_xvector(IXVECTOR), &
      &                  AO, &
      &                  ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                  DMAT_AO(1+IOFF), &
+     &                  D(imat)%elms, &
      &                  buffer)
 
           CALL DAXPY(1,0.25d0,SCALAR,1,QUANTITY(0),1)
@@ -665,7 +679,7 @@ contains
      &                  visual_cfg_irep_xvector(IXVECTOR), &
      &                  AO, &
      &                  ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                  DMAT_AO(1+IOFF), &
+     &                  D(imat)%elms, &
      &                  buffer)
 
           CALL DAXPY(1,0.5d0,SCALAR,1,QUANTITY(0),1)
@@ -678,7 +692,7 @@ contains
      &                  visual_cfg_irep_xvector(IXVECTOR), &
      &                  AO, &
      &                  ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                  DMAT_AO(1+IOFF), &
+     &                  D(imat)%elms, &
      &                  buffer)
 
           CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
@@ -691,7 +705,7 @@ contains
      &                  visual_cfg_irep_xvector(IXVECTOR), &
      &                  AO, &
      &                  ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                  DMAT_AO(1+IOFF), &
+     &                  D(imat)%elms, &
      &                  buffer)
 
           CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
@@ -704,7 +718,7 @@ contains
      &                      visual_cfg_irep_xvector(IXVECTOR), &
      &                      AO, &
      &                      ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                      DMAT_AO(1+IOFF), &
+     &                      D(imat)%elms, &
      &                      buffer)
 
           CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
@@ -716,7 +730,7 @@ contains
      &                    SCALAR, &
      &                    visual_cfg_irep_xvector(IXVECTOR), &
      &                    AO, &
-     &                    DMAT_AO(1+IOFF), &
+     &                    D(imat)%elms, &
      &                    buffer)
 
           CALL DAXPY(1,1.0d0,SCALAR,1,QUANTITY(0),1)
@@ -730,7 +744,7 @@ contains
      &               VECTOR_A, &
      &               visual_cfg_irep_xvector(IXVECTOR), &
      &               AO, &
-     &               DMAT_AO(1+IOFF), &
+     &               D(imat)%elms, &
      &               buffer)
 
           RX = PX - CORD(1,visual_cfg_IOPTION_XVECTOR(IXVECTOR))
@@ -759,7 +773,7 @@ contains
           CALL GETRHO(DENSITY, &
      &                visual_cfg_irep_xvector(IXVECTOR), &
      &                AO, &
-     &                DMAT_AO(1+IOFF), &
+     &                D(imat)%elms, &
      &                buffer)
 
           IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_EDIPX) &
@@ -778,7 +792,7 @@ contains
      &               VECTOR_A, &
      &               visual_cfg_irep_xvector(IXVECTOR), &
      &               AO, &
-     &               DMAT_AO(1+IOFF), &
+     &               D(imat)%elms, &
      &               buffer)
 
           RX = PX - visual_cfg_GAUGE_ORIGIN(1)

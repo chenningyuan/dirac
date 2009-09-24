@@ -1,29 +1,22 @@
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!     /* VISUAL_INTEGRATION */
-      SUBROUTINE VISUAL_INTEGRATION(DMAT_AO, &
-     &                              AO, &
-     &                              buffer)
-!=======================================================================
-!     description in here ...
-!-----------------------------------------------------------------------
-!                                                           radovan bast
-!                                              last revision: april 2007
-!=======================================================================
+      subroutine visual_integration(nr_dmat, D, ao, buffer)
 
        use dft_main
        use visual_cfg
        use memory_allocator
+  use matrix_defop
+  use dirac_interface
 
 #include "implicit.h"
 #include "priunit.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
+      integer, intent(in) :: nr_dmat
+      type(matrix)        :: D(nr_dmat)
+      real(8), intent(in) :: ao(*)
+      real(8), intent(in) :: buffer(*)
 
-      DIMENSION DMAT_AO(*), &
-     &          AO(*), &
-     &          buffer(*), &
-     &          QUANTITY_INTEGRAL(0:3), &
-     &          QUANTITY_INTEGRAL_LAST(0:3)
+      dimension QUANTITY_INTEGRAL(0:3), &
+                QUANTITY_INTEGRAL_LAST(0:3)
 
       real(8), allocatable :: x(:)
       real(8), allocatable :: y(:)
@@ -37,7 +30,7 @@
 
         LUNIT = 44
 
-        call dftgrd(dmat_ao, 1)
+        call dftgrd(D(1)%elms, 1)
 
         REWIND LUNIT
 
@@ -53,7 +46,7 @@
 
         call reaqua(x, y, z, w, lunit, nr_points)
 
-        CALL INTEGRATE_QUANTITY(DMAT_AO, &
+        CALL INTEGRATE_QUANTITY(nr_dmat, D, &
      &                          AO, &
      &                          x, y, z, &
      &                          buffer, &
@@ -144,7 +137,7 @@
             call reaqua(x, y, z, w, lunit, nr_points)
 
             CALL DZERO(QUANTITY_INTEGRAL,4)
-            CALL INTEGRATE_QUANTITY(DMAT_AO, &
+            CALL INTEGRATE_QUANTITY(nr_dmat, D, &
      &                              AO, &
      &                              x, y, z, &
      &                              buffer, &
@@ -195,7 +188,7 @@
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !     /* INTEGRATE_QUANTITY */
-      SUBROUTINE INTEGRATE_QUANTITY(DMAT_AO, &
+      SUBROUTINE INTEGRATE_QUANTITY(nr_dmat, D, &
      &                              AO, &
      &                              PX,PY,PZ, &
      &                              buffer, &
@@ -210,13 +203,16 @@
 !=======================================================================
 
       use visual
+  use matrix_defop
+  use dirac_interface
 #include "implicit.h"
 #include "priunit.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
 
-      DIMENSION DMAT_AO(*), &
-     &          AO(*), &
+      integer, intent(in) :: nr_dmat
+      type(matrix)        :: D(nr_dmat)
+      dimension AO(*), &
      &          PX(*), &
      &          PY(*), &
      &          PZ(*), &
@@ -226,7 +222,7 @@
      &          QUANTITY(0:3)
 
       DO IPOINT = 1,NR_POINTS
-        CALL GET_QUANTITY_IN_POINT(DMAT_AO, &
+        CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &
      &                             AO, &
      &                             PX(IPOINT), &
      &                             PY(IPOINT), &
