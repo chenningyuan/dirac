@@ -137,6 +137,10 @@ C     Written by T. Saue - November 1994
 C     Last revision : Sep 11 1995 - tsaue
 C***********************************************************************
       use dirac_cfg
+#ifdef MOD_VISUAL
+      use visual
+#endif
+
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -171,6 +175,14 @@ C*****  R E S P O N S E    M O D U L E  ********************************
 C***********************************************************************
 C
       IF(DOPRP) CALL PAMPRP(WORK,LWORK)
+
+
+
+#ifdef MOD_VISUAL
+!     visualization module
+      if (dirac_cfg_visual) call run_visual()
+#endif
+
 C
 C***********************************************************************
 C***** H E I N Z *******************************************************

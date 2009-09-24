@@ -3152,7 +3152,7 @@ C
 
 !     *VISUAL
     9 continue
-!     this is needed until the old input scheme is replaced
+!     this is here for backwards compatibility, *VISUAL used to be under **ANALYZE
       call move_to_next_star(word)
       go to 200
 

@@ -69,7 +69,9 @@ contains
             case ('*DFT   ')
               call read_input_dft(word, kw_section)
 
-            case ('*VISUAL')
+!           *VISUAL is for backward compatibility
+!           *VISUAL used to be under **ANALYZE
+            case ('**VISUA', '*VISUAL')
               call read_input_visual(word, kw_section)
 
             case ('*AORESP')
