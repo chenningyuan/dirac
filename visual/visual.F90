@@ -103,14 +103,6 @@ contains
         end if
       end do
 
-      call dft_ao_init(.false.,        &
-                       max_ao_g_order, &
-                       max_ao_m_order, &
-                       .false.,        &
-                       1.0d-15)
-
-    call alloc(ao,     total_ao_vector_length)
-    call alloc(buffer, total_ao_vector_length)
 
       call alloc(cmo      ,n2bbasxq)
       call alloc(eig      ,norbt)
@@ -128,6 +120,7 @@ contains
       CLOSE(LUCOEF,STATUS = 'KEEP')
 
       call fndocc(eig)
+      call dealloc(eig)
 
 !     orbital string
 
@@ -167,29 +160,40 @@ contains
       end do
 
       call dealloc(occupation)
-
-      time_start = second()
-      call visual_driver(nr_dmat, D, ao, buffer)
-
-      call timtxt('>>>> time used in plot:', (second() - time_start), lupri)
-
-      time_start = second()
-      IF(visual_cfg_integrate) THEN !integration
-        call visual_integration(nr_dmat, D, ao, buffer)
-      ENDIF
-      call timtxt('>>>> time used in integration:', (second() - time_start), lupri)
-
-      do i = 1, nr_dmat
-        D(i) = 0
-      end do
-
       call dealloc(cmo)
-      call dealloc(eig)
+
+!   initialize AO module
+    call dft_ao_init(.false.,        &
+                     max_ao_g_order, &
+                     max_ao_m_order, &
+                     .false.,        &
+                     1.0d-15)
+
+    call alloc(ao,     total_ao_vector_length)
+    call alloc(buffer, total_ao_vector_length)
+
+    time_start = second()
+!   if (visual_cfg_integrate) then
+      call visual_driver(nr_dmat, D, ao, buffer)
+!   end if
+    call timtxt('>>>> time used in plot:', (second() - time_start), lupri)
+
+    time_start = second()
+    if (visual_cfg_integrate) then
+      call visual_integration(nr_dmat, D, ao, buffer)
+    end if
+    call timtxt('>>>> time used in integration:', (second() - time_start), lupri)
 
     call dealloc(ao)
     call dealloc(buffer)
 
-      END subroutine
+!   deallocate density matrices
+    do i = 1, nr_dmat
+      D(i) = 0
+    end do
+
+    end subroutine
+
 
       subroutine visual_driver(nr_dmat, D, ao, buffer)
 
