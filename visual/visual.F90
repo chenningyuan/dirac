@@ -152,8 +152,9 @@ contains
         if (.not. visual_cfg_xvector_file(ixvector) .eq. 'ZORDER') then
           nr_dmat = nr_dmat + 1
           D(nr_dmat) = 1.0d-100*D(1)
-          call setup_fo_dmat_ao(cmo, ixvector, D(nr_dmat)%elms, occupation)
+          call setup_fo_dmat_ao(cmo, ixvector, D(nr_dmat), occupation)
           vector_to_matrix(ixvector) = nr_dmat
+          write(*, *) 'blub', D(nr_dmat)%irep, D(nr_dmat)%ih_sym
         else
           vector_to_matrix(ixvector) = 1
         end if

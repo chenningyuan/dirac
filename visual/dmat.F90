@@ -71,7 +71,7 @@
       END
       SUBROUTINE SETUP_FO_DMAT_AO(CMO, &
      &                            IXVECTOR, &
-     &                            DMAT_AO, &
+     &                            D, &
      &                            STRING)
 !=======================================================================
 !     description in here ...
@@ -82,6 +82,8 @@
 
       use memory_allocator
       use visual_cfg
+      use matrix_defop
+      use dirac_interface
 
 #include "implicit.h"
 #include "priunit.h"
@@ -102,8 +104,8 @@
      &          LBUF*16,&
      &          PBUF*1
       LOGICAL   FILE_EXISTS
+      type(matrix) :: D
       DIMENSION CMO(*),&
-     &          DMAT_AO(*),&
      &          STRING(*)
 
       real(8), allocatable :: bvec(:)
@@ -188,6 +190,10 @@
       IREPOP = JSYMOP - 1
       JOPSY  = JBTOF(visual_cfg_IREP_XVECTOR(IXVECTOR),1)
       NBDIM  = LEN/NZ
+  
+      D%irep   = jsymop - 1
+      D%ih_sym = ihermiticity
+
 
 !     allocate memory
 
@@ -272,11 +278,11 @@
 
 !     get AO density matrix
 
-      CALL DZERO(DMAT_AO,N2BBASXQ)
+      CALL DZERO(D%elms,N2BBASXQ)
           IF(TYP1(1:1) .EQ. 'E') THEN
-        CALL DMOLI3(0,IHERMITICITY,DMAT_AO,CMO,BMAT)
+        CALL DMOLI3(0,IHERMITICITY,D%elms,CMO,BMAT)
       ELSEIF(TYP1(1:1) .EQ. 'P') THEN
-        CALL DMOLI3(1,IHERMITICITY,DMAT_AO,CMO,BMAT)
+        CALL DMOLI3(1,IHERMITICITY,D%elms,CMO,BMAT)
       ENDIF
       call dealloc(bmat)
 
@@ -284,10 +290,10 @@
         DO IZ = 1,NZ
           IQ = IPQTOQ(IZ,visual_cfg_IREP_XVECTOR(IXVECTOR))
           IOFF = NTBAS(0)*NTBAS(0)*(IZ-1)
-          CALL Q2BPHASE('D',IQ,1,DMAT_AO(1+IOFF))
+          CALL Q2BPHASE('D',IQ,1,D%elms(1+IOFF))
         ENDDO
       ENDIF
 
-      CALL DSCAL(N2BBASXQ,D2,DMAT_AO,1)
+      CALL DSCAL(N2BBASXQ,D2,D%elms,1)
 
       END
