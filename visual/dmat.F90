@@ -111,6 +111,11 @@
       real(8), allocatable :: bvec(:)
       real(8), allocatable :: bmat(:)
 
+      integer, allocatable :: orbital_rotation_indices(:, :)
+      real(8), allocatable :: response_vector(:, :, :)
+      integer              :: length
+      character(2)         :: vector_type
+
       INQUIRE(FILE = visual_cfg_xvector_file(IXVECTOR),EXIST = FILE_EXISTS)
       IF(.NOT. FILE_EXISTS) THEN
         WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
@@ -190,9 +195,41 @@
       IREPOP = JSYMOP - 1
       JOPSY  = JBTOF(visual_cfg_IREP_XVECTOR(IXVECTOR),1)
       NBDIM  = LEN/NZ
-  
+      length = nbdim 
       D%irep   = jsymop - 1
       D%ih_sym = ihermiticity
+
+    select case (typ1(1:1))
+      case ('E')
+        vector_type = 'pp'
+      case ('P')
+        vector_type = 'pn'
+      case default
+        call quit('unexpected typ1(1:1)')
+    end select
+
+    call alloc(orbital_rotation_indices, 2, length)
+    write(*, *) 'blub vec', vector_type, length
+
+    select case (vector_type)
+      case ('pp')
+        call set_orbital_rotation_indices(D%irep, &
+                                          length, &
+                                          2,      &
+                                          3,      &
+                                          orbital_rotation_indices)
+      case ('pn')
+        call set_orbital_rotation_indices(D%irep, &
+                                          length, &
+                                          2,      &
+                                          1,      &
+                                          orbital_rotation_indices)
+      case default
+        call quit('unexpected vector_type')
+    end select
+
+ 
+
 
 
 !     allocate memory
@@ -295,5 +332,6 @@
       ENDIF
 
       CALL DSCAL(N2BBASXQ,D2,D%elms,1)
+      call dealloc(orbital_rotation_indices)
 
       END

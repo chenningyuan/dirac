@@ -30,6 +30,8 @@ module dirac_interface
   public daxpy_iz_jz
   public print_prp_common_blocks
   public init_dirac_interface
+  public scatter_vector
+  public set_orbital_rotation_indices
 
   save
 
@@ -949,18 +951,18 @@ contains
 
   end subroutine
 
-  subroutine set_orbital_rotation_vector(irep,       &
-                                         length,     &
-                                         from_block, &
-                                         to_block,   &
-                                         orbital_rotation_vector)
+  subroutine set_orbital_rotation_indices(irep,       &
+                                          length,     &
+                                          from_block, &
+                                          to_block,   &
+                                          orbital_rotation_indices)
 
 !   ----------------------------------------------------------------------------
     integer, intent(in)  :: irep
     integer, intent(in)  :: length
     integer, intent(in)  :: from_block
     integer, intent(in)  :: to_block
-    integer, intent(out) :: orbital_rotation_vector(2, length)
+    integer, intent(out) :: orbital_rotation_indices(2, length)
 !   ----------------------------------------------------------------------------
     integer, parameter   :: ns = 1
     integer, parameter   :: pi = 2
@@ -984,11 +986,11 @@ contains
 
     nr_mo(g, ns) = npsh(g)
     nr_mo(g, pi) = nish(g)
-    nr_mo(g, ps) = nssh(g)
+    nr_mo(g, ps) = nesh(g) - nish(g)
 
     nr_mo(u, ns) = npsh(u)
     nr_mo(u, pi) = nish(u)
-    nr_mo(u, ps) = nssh(u)
+    nr_mo(u, ps) = nesh(u) - nish(u)
 
     k = 0
     do gu = 1, 2
@@ -1027,8 +1029,8 @@ contains
                 do m2 = 1, nr_mo(gu2, block2)
                   k = k + 1
                   s = s + 1
-                  orbital_rotation_vector(1, k) = i
-                  orbital_rotation_vector(2, k) = s
+                  orbital_rotation_indices(1, k) = i
+                  orbital_rotation_indices(2, k) = s
                 end do
               else
                 s = s + nr_mo(gu2, block2)
@@ -1040,10 +1042,10 @@ contains
     end do
 
     if (debug_me) then
-      call header('debug orbital_rotation_vector', -1)
+      call header('debug orbital_rotation_indices', -1)
       do k = 1, length
-        write(*, *) k, orbital_rotation_vector(1, k), &
-                 '->', orbital_rotation_vector(2, k)
+        write(*, *) k, orbital_rotation_indices(1, k), &
+                 '->', orbital_rotation_indices(2, k)
       end do
     end if
 
@@ -1085,8 +1087,8 @@ contains
     real(8),      allocatable   :: prop_gradient_pp(:, :)
     real(8),      allocatable   :: prop_gradient_pn(:, :)
 
-    integer,      allocatable   :: orbital_rotation_vector_pp(:, :)
-    integer,      allocatable   :: orbital_rotation_vector_pn(:, :)
+    integer,      allocatable   :: orbital_rotation_indices_pp(:, :)
+    integer,      allocatable   :: orbital_rotation_indices_pn(:, :)
 
     integer                     :: length_pp
     integer                     :: length_pn
@@ -1096,6 +1098,8 @@ contains
 
     logical                     :: debug_me = .false.
 !   ----------------------------------------------------------------------------
+
+!   fixme: nssh not always properly set, change to nesh minus nish
 
     if (jbtof(RHS%irep, 1) == 2) then
 !     ungerade perturbation
@@ -1124,19 +1128,19 @@ contains
     nzvar   = nzxopt
     nzvarq  = nzxoptq
 
-    call alloc(orbital_rotation_vector_pp, 2, length_pp)
-    call set_orbital_rotation_vector(RHS%irep,  &
-                                     length_pp, &
-                                     2,         &
-                                     3,         &
-                                     orbital_rotation_vector_pp)
+    call alloc(orbital_rotation_indices_pp, 2, length_pp)
+    call set_orbital_rotation_indices(RHS%irep,  &
+                                      length_pp, &
+                                      2,         &
+                                      3,         &
+                                      orbital_rotation_indices_pp)
 
-    call alloc(orbital_rotation_vector_pn, 2, length_pn)
-    call set_orbital_rotation_vector(RHS%irep,  &
-                                     length_pn, &
-                                     2,         &
-                                     1,         &
-                                     orbital_rotation_vector_pn)
+    call alloc(orbital_rotation_indices_pn, 2, length_pn)
+    call set_orbital_rotation_indices(RHS%irep,  &
+                                      length_pn, &
+                                      2,         &
+                                      1,         &
+                                      orbital_rotation_indices_pn)
 
     call get_C(C, i=1.0d0, s=1.0d0, g=1.0d0, u=1.0d0)
     RHS_mo = dag(C)*(RHS*C)
@@ -1159,8 +1163,8 @@ contains
       do iz = 1, nz
         off = (iz - 1)*norbt*norbt
         do k = 1, length_pp
-          i = orbital_rotation_vector_pp(1, k)
-          s = orbital_rotation_vector_pp(2, k)
+          i = orbital_rotation_indices_pp(1, k)
+          s = orbital_rotation_indices_pp(2, k)
           prop_gradient_pp(k, iz) = prop_gradient_pp(k, iz) &
                                   - 2.0d0*RHS_mo%elms(off + (i - 1)*norbt + s)
         end do
@@ -1183,8 +1187,8 @@ contains
       do iz = 1, nz
         off = (iz - 1)*norbt*norbt
         do k = 1, length_pn
-          i = orbital_rotation_vector_pn(1, k)
-          s = orbital_rotation_vector_pn(2, k)
+          i = orbital_rotation_indices_pn(1, k)
+          s = orbital_rotation_indices_pn(2, k)
           prop_gradient_pn(k, iz) = prop_gradient_pn(k, iz) &
                                   - 2.0d0*RHS_mo%elms(off + (i - 1)*norbt + s)
         end do
@@ -1217,8 +1221,8 @@ contains
                    include_pn_rotations,                      &
                    length_pp,                  &
                    length_pn,                  &
-                   orbital_rotation_vector_pp, &
-                   orbital_rotation_vector_pn, &
+                   orbital_rotation_indices_pp, &
+                   orbital_rotation_indices_pn, &
                    work(kzxope),               &
                    work(kzxopp))
 
@@ -1383,19 +1387,39 @@ contains
     Wp%elms = 0.0d0
 
     if (include_pp_rotations) then
-      call scatter_vector(length_pp, orbital_rotation_vector_pp, 1.0d0, response_vector_pph, Wp%elms, Wp%irep)
-      call scatter_vector(length_pp, orbital_rotation_vector_pp,-1.0d0, response_vector_ppa, Wp%elms, Wp%irep)
+      call scatter_vector(length_pp,                   &
+                          orbital_rotation_indices_pp, &
+                          1.0d0,                       &
+                          response_vector_pph,         &
+                          Wp%elms,                     &
+                          Wp%irep)
+      call scatter_vector(length_pp,                   &
+                          orbital_rotation_indices_pp, &
+                         -1.0d0,                       &
+                          response_vector_ppa,         &
+                          Wp%elms,                     &
+                          Wp%irep)
 
-      call dealloc(orbital_rotation_vector_pp)
+      call dealloc(orbital_rotation_indices_pp)
       call dealloc(response_vector_pph)
       call dealloc(response_vector_ppa)
     end if
 
     if (include_pn_rotations) then
-      call scatter_vector(length_pn, orbital_rotation_vector_pn, 1.0d0, response_vector_pnh, Wp%elms, Wp%irep)
-      call scatter_vector(length_pn, orbital_rotation_vector_pn,-1.0d0, response_vector_pna, Wp%elms, Wp%irep)
+      call scatter_vector(length_pn,                   &
+                          orbital_rotation_indices_pn, &
+                          1.0d0,                       &
+                          response_vector_pnh,         &
+                          Wp%elms,                     &
+                          Wp%irep)
+      call scatter_vector(length_pn,                   &
+                          orbital_rotation_indices_pn, &
+                         -1.0d0,                       &
+                          response_vector_pna,         &
+                          Wp%elms,                     &
+                          Wp%irep)
 
-      call dealloc(orbital_rotation_vector_pn)
+      call dealloc(orbital_rotation_indices_pn)
       call dealloc(response_vector_pnh)
       call dealloc(response_vector_pna)
     end if
@@ -1853,16 +1877,16 @@ contains
 
   end subroutine
 
-  subroutine scatter_vector(length,                  &
-                            orbital_rotation_vector, &
-                            h,                       &
-                            response_vector,         &
-                            matrix,                  &
+  subroutine scatter_vector(length,                   &
+                            orbital_rotation_indices, &
+                            h,                        &
+                            response_vector,          &
+                            matrix,                   &
                             irep)
 
 !   ----------------------------------------------------------------------------
     integer, intent(in)  :: length
-    integer, intent(in)  :: orbital_rotation_vector(2, length)
+    integer, intent(in)  :: orbital_rotation_indices(2, length)
     real(8), intent(in)  :: h
     real(8), intent(in)  :: response_vector(length, nz)
     real(8), intent(out) :: matrix(norbt, norbt, nz)
@@ -1874,8 +1898,8 @@ contains
 
     do is = 1, length
 
-      i = orbital_rotation_vector(1, is)
-      s = orbital_rotation_vector(2, is)
+      i = orbital_rotation_indices(1, is)
+      s = orbital_rotation_indices(2, is)
 
       do iz = 1, nz
 
