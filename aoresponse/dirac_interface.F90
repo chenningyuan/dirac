@@ -1853,4 +1853,49 @@ contains
 
   end subroutine
 
+  subroutine scatter_vector(length,                  &
+                            orbital_rotation_vector, &
+                            h,                       &
+                            response_vector,         &
+                            matrix,                  &
+                            irep)
+
+!   ----------------------------------------------------------------------------
+    integer, intent(in)  :: length
+    integer, intent(in)  :: orbital_rotation_vector(2, length)
+    real(8), intent(in)  :: h
+    real(8), intent(in)  :: response_vector(length, nz)
+    real(8), intent(out) :: matrix(norbt, norbt, nz)
+    integer, intent(in)  :: irep
+!   ----------------------------------------------------------------------------
+    integer              :: i, s, is, iz
+    real(8)              :: f
+!   ----------------------------------------------------------------------------
+
+    do is = 1, length
+
+      i = orbital_rotation_vector(1, is)
+      s = orbital_rotation_vector(2, is)
+
+      do iz = 1, nz
+
+        if (ipqtoq(iz, irep) > 1) then
+          f = -1.0
+        else
+          f =  1.0
+        end if
+
+!              row
+!              ¦
+!              ¦  column
+!              ¦  ¦
+        matrix(s, i, iz) = matrix(s, i, iz) &
+                         +     response_vector(is, iz)
+        matrix(i, s, iz) = matrix(i, s, iz) &
+                         - f*h*response_vector(is, iz)
+      end do
+    end do
+
+  end subroutine
+
 end module
