@@ -64,175 +64,179 @@ module visual
 
       integer, save      :: vector_to_matrix(max_nr_xvectors) = 0
 
+      integer, parameter :: file_unit = 137
+
 contains
 
-      SUBROUTINE run_VISUAL()
+    subroutine run_visual()
 
-      real(8), allocatable :: occupation(:)
+!   ----------------------------------------------------------------------------
+    type(matrix)         :: D_mo, D(max_nr_xvectors)
+    type(matrix)         :: C, Cig, Ciu, Csg, Csu
 
-      real(8), allocatable :: eig(:)
+    real(8), allocatable :: eigenvalues(:)
+    real(8), allocatable :: occupation(:)
+    real(8), allocatable :: ao(:)
+    real(8), allocatable :: buffer(:)
 
-      real(8), allocatable :: ao(:)
-      real(8), allocatable :: buffer(:)
+    real(8)              :: energy, time_start, second
+    integer              :: max_ao_g_order, max_ao_m_order
+    integer              :: ioff, imat, iq, iz, m, nr_dmat, ivector
+!   ----------------------------------------------------------------------------
 
-      integer :: IXVECTOR, lucoef
-      real(8) :: toterg, time_start, second
-      integer :: max_ao_g_order, max_ao_m_order, i, nr_dmat, io, ioff, iq, iz
+    max_ao_g_order = 0
+    max_ao_m_order = 0
 
-      type(matrix)         :: D(max_nr_xvectors), D_mo
-      type(matrix)         :: C, Cig, Ciu, Csg, Csu
+    do ivector = 1, visual_cfg_nr_xvectors
 
-      max_ao_g_order = 0
-      max_ao_m_order = 0
+      if (visual_cfg_iq_xvector(ivector) == iq_divm     ) max_ao_g_order = 1
+      if (visual_cfg_iq_xvector(ivector) == iq_rotm     ) max_ao_g_order = 1
+      if (visual_cfg_iq_xvector(ivector) == iq_divj     ) max_ao_g_order = 1
+      if (visual_cfg_iq_xvector(ivector) == iq_rotj     ) max_ao_g_order = 1
+      if (visual_cfg_iq_xvector(ivector) == iq_jpara    ) max_ao_g_order = 1
+      if (visual_cfg_iq_xvector(ivector) == iq_divjpara ) max_ao_g_order = 1
+      if (visual_cfg_iq_xvector(ivector) == iq_rotjpara ) max_ao_g_order = 1
+      if (visual_cfg_iq_xvector(ivector) == iq_elf      ) max_ao_g_order = 1
+      if (visual_cfg_iq_xvector(ivector) == iq_k        ) max_ao_g_order = 1
+      if (visual_cfg_iq_xvector(ivector) == iq_h        ) max_ao_g_order = 1
+      if (visual_cfg_iq_xvector(ivector) == iq_gradient ) max_ao_g_order = 1
 
-      do ixvector = 1, visual_cfg_nr_xvectors
-        if (visual_cfg_iq_xvector(ixvector) == iq_divm     ) max_ao_g_order = 1
-        if (visual_cfg_iq_xvector(ixvector) == iq_rotm     ) max_ao_g_order = 1
-        if (visual_cfg_iq_xvector(ixvector) == iq_divj     ) max_ao_g_order = 1
-        if (visual_cfg_iq_xvector(ixvector) == iq_rotj     ) max_ao_g_order = 1
-        if (visual_cfg_iq_xvector(ixvector) == iq_jpara    ) max_ao_g_order = 1
-        if (visual_cfg_iq_xvector(ixvector) == iq_divjpara ) max_ao_g_order = 1
-        if (visual_cfg_iq_xvector(ixvector) == iq_rotjpara ) max_ao_g_order = 1
-        if (visual_cfg_iq_xvector(ixvector) == iq_elf      ) max_ao_g_order = 1
-        if (visual_cfg_iq_xvector(ixvector) == iq_k        ) max_ao_g_order = 1
-        if (visual_cfg_iq_xvector(ixvector) == iq_h        ) max_ao_g_order = 1
-        if (visual_cfg_iq_xvector(ixvector) == iq_gradient ) max_ao_g_order = 1
-        if (visual_cfg_iq_xvector(ixvector) == iq_laplacian) then
+      if (visual_cfg_iq_xvector(ivector) == iq_laplacian) then
 !         debug this:
 !         call getsos(gao,gao1,gao2,(/0.0d0/),ncnt,px,py,pz, &
 !    &                buf,ntbas(0),2,.false.,0)
           call quit('debug laplacian in visual/visual.f90')
-        end if
-      end do
+      end if
+
+    end do
 
 
-      call alloc(eig, norbt)
-      eig = 0.0d0
+!   find occupation
+!   ===============
+
+    call alloc(eigenvalues, norbt)
+    eigenvalues = 0.0d0
+
+    call opnfil(file_unit, 'DFCOEF', 'OLD', 'visual.F90')
+    call reacmo_no_work(file_unit, 'DFCOEF', (/0.0d0/), eigenvalues, (/0/), energy, 4)
+    close(file_unit, status = 'keep')
+
+    call fndocc(eigenvalues)
+    call dealloc(eigenvalues)
 
 
-      lucoef = 137
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','VISUAL')
-      CALL REACMO_no_work(LUCOEF, 'DFCOEF', (/0.0d0/), EIG, (/0/), &
-     &            toterg, 4)
-      CLOSE(LUCOEF,STATUS = 'KEEP')
+!   get orbital string
+!   ==================
 
-      call fndocc(eig)
-      call dealloc(eig)
-
-
-
-!     orbital string
-
-      call alloc(occupation, norbt)
-      call setup_orbital_string(occupation)
-
-
+    call alloc(occupation, norbt)
+    call setup_orbital_string(occupation)
 
 
 !   get coefficients
 !   ================
 
-    call get_C(C,   i=1.0d0, s=1.0d0, g=1.0d0, u=1.0d0)
-    call get_C(Cig, i=1.0d0, s=0.0d0, g=1.0d0, u=0.0d0)
-    call get_C(Csg, i=0.0d0, s=1.0d0, g=1.0d0, u=0.0d0)
+    call get_c(C,   i=1.0d0, s=1.0d0, g=1.0d0, u=1.0d0)
+    call get_c(Cig, i=1.0d0, s=0.0d0, g=1.0d0, u=0.0d0)
+    call get_c(Csg, i=0.0d0, s=1.0d0, g=1.0d0, u=0.0d0)
 
     if (nfsym == 2) then
-      call get_C(Ciu, i=1.0d0, s=0.0d0, g=0.0d0, u=1.0d0)
-      call get_C(Csu, i=0.0d0, s=1.0d0, g=0.0d0, u=1.0d0)
+      call get_c(Ciu, i=1.0d0, s=0.0d0, g=0.0d0, u=1.0d0)
+      call get_c(Csu, i=0.0d0, s=1.0d0, g=0.0d0, u=1.0d0)
     end if
 
 
+!   get unperturbed density matrix
+!   ==============================
+
+    call init_mat(D_mo, norbt, norbt)
+    D_mo%elms = 0.0d0
+
+    do m = 1, norbt
+      D_mo%elms((m - 1)*norbt + m) = occupation(m)
+    end do
+
+    D(1) = C*(D_mo*dag(C))
 
 
+!   get perturbed matrices
+!   ======================
 
+    nr_dmat = 1
+    do ivector = 1, visual_cfg_nr_xvectors
+      if (.not. visual_cfg_xvector_file(ivector) .eq. 'ZORDER') then
+        nr_dmat = nr_dmat + 1
+        vector_to_matrix(ivector) = nr_dmat
 
+        call setup_fo_dmat_ao(ivector, occupation, D_mo)
 
-
-
-
-
-
-
-!     get unperturbed MO density matrix
-
-      call init_mat(D_mo, norbt, norbt)
-      D_mo%elms = 0.0d0
-      do io = 1, norbt
-        D_mo%elms((io-1)*norbt + io) = occupation(io)
-      end do
-
-!     transform to AO
-
-      D(1) = C*(D_mo*dag(C))
-
-!     get perturbed matrices
-      nr_dmat = 1
-      do ixvector = 1, visual_cfg_nr_xvectors
-        if (.not. visual_cfg_xvector_file(ixvector) .eq. 'ZORDER') then
-          nr_dmat = nr_dmat + 1
-          D(nr_dmat) = 1.0d-100*D(1)
-          D_mo%elms = 0.0d0
-          call setup_fo_dmat_ao(ixvector, occupation, D_mo)
-          vector_to_matrix(ixvector) = nr_dmat
-
-
-
-
-!         construct perturbed AO density matrix
-!         =====================================
-
-          if (nfsym == 2) then
-            if (jbtof(D_mo%irep, 1) == 2) then
-!             ungerade perturbation
-              D(nr_dmat) = (Cig*(D_mo*dag(Csu))) &
-                         + (Ciu*(D_mo*dag(Csg))) &
-                         - (Csg*(D_mo*dag(Ciu))) &
-                         - (Csu*(D_mo*dag(Cig)))
-            else
-!             gerade perturbation
-              D(nr_dmat) = (Cig*(D_mo*dag(Csg))) &
-                         + (Ciu*(D_mo*dag(Csu))) &
-                         - (Csg*(D_mo*dag(Cig))) &
-                         - (Csu*(D_mo*dag(Ciu)))
-            end if
+        if (nfsym == 2) then
+          if (jbtof(D_mo%irep, 1) == 2) then
+!           ungerade perturbation
+            D(nr_dmat) = (Cig*(D_mo*dag(Csu))) &
+                       + (Ciu*(D_mo*dag(Csg))) &
+                       - (Csg*(D_mo*dag(Ciu))) &
+                       - (Csu*(D_mo*dag(Cig)))
           else
+!           gerade perturbation
             D(nr_dmat) = (Cig*(D_mo*dag(Csg))) &
-                       - (Csg*(D_mo*dag(Cig)))
+                       + (Ciu*(D_mo*dag(Csu))) &
+                       - (Csg*(D_mo*dag(Cig))) &
+                       - (Csu*(D_mo*dag(Ciu)))
           end if
-         
-          call copy_matrix_sym(D(nr_dmat), D_mo)
-
         else
-          vector_to_matrix(ixvector) = 1
+          D(nr_dmat) = (Cig*(D_mo*dag(Csg))) &
+                     - (Csg*(D_mo*dag(Cig)))
         end if
-      end do
+       
+        call copy_matrix_sym(D(nr_dmat), D_mo)
+
+      else
+        vector_to_matrix(ivector) = 1
+      end if
+    end do
 
 
+!   insert half phases
+!   ==================
 
+    do imat = 2, nr_dmat
+      if (nz < 4) then
+        do iz = 1, nz
+          iq   = ipqtoq(iz, D(imat)%irep)
+          ioff = ntbas(0)*ntbas(0)*(iz - 1)
+          call q2bphase('D', iq, 1, D(imat)%elms(1 + ioff))
+        end do
+      end if
+    end do
 
 
 !   scale density matrices
-    do i = 1, nr_dmat
+!   ======================
 
-      IF(NZ .LT. 4) THEN
-        DO IZ = 1,NZ
-          IQ = IPQTOQ(IZ, D(i)%irep)
-          IOFF = NTBAS(0)*NTBAS(0)*(IZ-1)
-          CALL Q2BPHASE('D',IQ,1,D(i)%elms(1+IOFF))
-        ENDDO
-      ENDIF
-
-
-
-      D(i) = 2.0d0*D(i)
+    do imat = 1, nr_dmat
+      D(imat) = 2.0d0*D(imat)
     end do
 
-      D_mo = 0
-      C    = 0
 
-      call dealloc(occupation)
+!   deallocate various things
+!   =========================
 
-!   initialize AO module
+    call dealloc(occupation)
+
+    D_mo = 0
+
+    C    = 0
+    Cig  = 0
+    Csg  = 0
+
+    if (nfsym == 2) then
+      Ciu = 0
+      Csu = 0
+    end if
+
+!   initialize ao module
+!   ====================
+
     call dft_ao_init(.false.,        &
                      max_ao_g_order, &
                      max_ao_m_order, &
@@ -241,6 +245,10 @@ contains
 
     call alloc(ao,     total_ao_vector_length)
     call alloc(buffer, total_ao_vector_length)
+
+
+!   plot and integrate
+!   ==================
 
     time_start = second()
 !   if (visual_cfg_integrate) then
@@ -257,9 +265,12 @@ contains
     call dealloc(ao)
     call dealloc(buffer)
 
+
 !   deallocate density matrices
-    do i = 1, nr_dmat
-      D(i) = 0
+!   ===========================
+
+    do imat = 1, nr_dmat
+      D(imat) = 0
     end do
 
     end subroutine
@@ -1112,6 +1123,7 @@ contains
 
 !fixme: this is a good place to zero elements according to occupation
 
+    D_mo%elms = 0.0d0
     call scatter_vector(length,                   &
                         orbital_rotation_indices, &
                         ih_factor,                &
