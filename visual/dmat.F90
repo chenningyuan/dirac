@@ -14,11 +14,10 @@
       use matrix_defop
       use dirac_interface
 
-#include "implicit.h"
+      implicit none
+
 #include "priunit.h"
 #include "dcbqal.h"
-
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
 
 #include "dcborb.h"
 #include "dgroup.h"
@@ -34,8 +33,8 @@
      &          PBUF*1
       LOGICAL   FILE_EXISTS
       type(matrix) :: D, D_mo
-      DIMENSION CMO(*),&
-     &          STRING(*)
+      real(8) :: CMO(*)
+      real(8) :: STRING(*)
 
       real(8), allocatable :: bvec(:)
       real(8), allocatable :: bmat(:)
@@ -45,6 +44,11 @@
       integer              :: length
       character(2)         :: vector_type
       real(8)              :: ih_factor
+
+      integer              :: nr_vectors, LUNIT_XVECTOR
+      integer              :: ixvector, NBAS, NORBS, len
+      integer              :: JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2, IVECTOR
+      real(8)              :: FREQ1, FREQ2, ERGRSP, unused
 
       INQUIRE(FILE = visual_cfg_xvector_file(IXVECTOR),EXIST = FILE_EXISTS)
       IF(.NOT. FILE_EXISTS) THEN
@@ -117,18 +121,10 @@
      &                    JSYMOP1, JSYMOP2, JTIMOP1, JTIMOP2, &
      &                    UNUSED, LEN, INTFLG, ERGRSP, NBAS, NORBS
 
-      IF(TYP1(2:2) .EQ. '+') IHERMITICITY =  1
-      IF(TYP1(2:2) .EQ. '-') IHERMITICITY = -1
 
-      JSYMOP                 = JSYMOP1
-      visual_cfg_irep_xvector(IXVECTOR) = JSYMOP - 1
-      IREPOP = JSYMOP - 1
-      JOPSY  = JBTOF(visual_cfg_IREP_XVECTOR(IXVECTOR),1)
-      NBDIM  = LEN/NZ
-      length = nbdim 
-      D_mo%irep   = jsymop - 1
-      D_mo%ih_sym = ihermiticity
-
+      visual_cfg_irep_xvector(IXVECTOR) = JSYMOP1 - 1
+      length  = LEN/NZ
+      D_mo%irep   = JSYMOP1 - 1
 
 
 
@@ -139,6 +135,17 @@
         vector_type = 'pn'
       case default
         call quit('unexpected typ1(1:1)')
+    end select
+
+    select case (typ1(2:2))
+      case ('+')
+        D_mo%ih_sym =  1
+        ih_factor   =  1.0d0
+      case ('-')
+        D_mo%ih_sym = -1
+        ih_factor   = -1.0d0
+      case default
+        call quit('unexpected typ1(2:2)')
     end select
 
     call alloc(orbital_rotation_indices, 2, length)
@@ -167,15 +174,6 @@
 !   read response vector
     call readt(lunit_xvector, length*nz, response_vector)
     close(lunit_xvector, status = 'keep')
-
-    select case (D_mo%ih_sym)
-      case (+1)
-        ih_factor =  1.0d0
-      case (-1)
-        ih_factor = -1.0d0
-      case default
-        call quit('unexpected D_mo%ih_sym')
-    end select
 
     call scatter_vector(length,                   &
                         orbital_rotation_indices, &
