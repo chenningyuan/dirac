@@ -72,7 +72,7 @@
       SUBROUTINE SETUP_FO_DMAT_AO(CMO, &
      &                            IXVECTOR, &
      &                            D, &
-     &                            STRING)
+     &                            STRING, D_mo)
 !=======================================================================
 !     description in here ...
 !-----------------------------------------------------------------------
@@ -104,7 +104,7 @@
      &          LBUF*16,&
      &          PBUF*1
       LOGICAL   FILE_EXISTS
-      type(matrix) :: D
+      type(matrix) :: D, D_mo
       DIMENSION CMO(*),&
      &          STRING(*)
 
@@ -115,6 +115,7 @@
       real(8), allocatable :: response_vector(:, :, :)
       integer              :: length
       character(2)         :: vector_type
+      real(8)              :: ih_factor
 
       INQUIRE(FILE = visual_cfg_xvector_file(IXVECTOR),EXIST = FILE_EXISTS)
       IF(.NOT. FILE_EXISTS) THEN
@@ -245,6 +246,24 @@
       CLOSE(LUNIT_XVECTOR,STATUS = 'KEEP')
 
 !     scatter vector onto MO density matrix
+
+
+    select case (D%ih_sym)
+      case (+1)
+        ih_factor =  1.0d0
+      case (-1)
+        ih_factor = -1.0d0
+      case default
+        call quit('unexpected D%ih_sym')
+    end select
+
+    call scatter_vector(length,                   &
+                        orbital_rotation_indices, &
+                        ih_factor,                &
+                        bvec,                     &
+                        D_mo%elms,                &
+                        D%irep)
+
 
       CALL DZERO(BMAT,N2ORBXQ)
       ICOUNTER = 1
