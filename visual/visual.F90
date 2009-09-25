@@ -5,6 +5,7 @@ module visual
   use codata
   use dft_ao
   use matrix_defop
+  use matrix_genop
   use dirac_interface
 
   implicit none
@@ -76,9 +77,10 @@ contains
 
       integer :: IXVECTOR, lucoef
       real(8) :: toterg, time_start, second
-      integer :: max_ao_g_order, max_ao_m_order, i, nr_dmat, io
+      integer :: max_ao_g_order, max_ao_m_order, i, nr_dmat, io, ioff, iq, iz
 
-      type(matrix)         :: D(max_nr_xvectors), D_mo, C
+      type(matrix)         :: D(max_nr_xvectors), D_mo
+      type(matrix)         :: C, Cig, Ciu, Csg, Csu
 
       max_ao_g_order = 0
       max_ao_m_order = 0
@@ -127,9 +129,32 @@ contains
       call alloc(occupation, norbt)
       call setup_orbital_string(occupation)
 
-!     get coefficients
 
-      call get_C(C, i=1.0d0, s=1.0d0, g=1.0d0, u=1.0d0)
+
+
+!   get coefficients
+!   ================
+
+    call get_C(C,   i=1.0d0, s=1.0d0, g=1.0d0, u=1.0d0)
+    call get_C(Cig, i=1.0d0, s=0.0d0, g=1.0d0, u=0.0d0)
+    call get_C(Csg, i=0.0d0, s=1.0d0, g=1.0d0, u=0.0d0)
+
+    if (nfsym == 2) then
+      call get_C(Ciu, i=1.0d0, s=0.0d0, g=0.0d0, u=1.0d0)
+      call get_C(Csu, i=0.0d0, s=1.0d0, g=0.0d0, u=1.0d0)
+    end if
+
+
+
+
+
+
+
+
+
+
+
+
 
 !     get unperturbed MO density matrix
 
@@ -142,7 +167,6 @@ contains
 !     transform to AO
 
       D(1) = C*(D_mo*dag(C))
-      D(1) = 2.0d0*D(1)
 
 !     get perturbed matrices
       nr_dmat = 1
@@ -150,14 +174,61 @@ contains
         if (.not. visual_cfg_xvector_file(ixvector) .eq. 'ZORDER') then
           nr_dmat = nr_dmat + 1
           D(nr_dmat) = 1.0d-100*D(1)
+          D_mo%elms = 0.0d0
           call setup_fo_dmat_ao(cmo, ixvector, D(nr_dmat), occupation, D_mo)
           vector_to_matrix(ixvector) = nr_dmat
-          write(*, *) 'blub', D(nr_dmat)%irep, D(nr_dmat)%ih_sym
+
+
+
+
+!         construct perturbed AO density matrix
+!         =====================================
+
+          if (nfsym == 2) then
+            if (jbtof(D_mo%irep, 1) == 2) then
+!             ungerade perturbation
+              D(nr_dmat) = (Cig*(D_mo*dag(Csu))) &
+                         + (Ciu*(D_mo*dag(Csg))) &
+                         - (Csg*(D_mo*dag(Ciu))) &
+                         - (Csu*(D_mo*dag(Cig)))
+            else
+!             gerade perturbation
+              D(nr_dmat) = (Cig*(D_mo*dag(Csg))) &
+                         + (Ciu*(D_mo*dag(Csu))) &
+                         - (Csg*(D_mo*dag(Cig))) &
+                         - (Csu*(D_mo*dag(Ciu)))
+            end if
+          else
+            D(nr_dmat) = (Cig*(D_mo*dag(Csg))) &
+                       - (Csg*(D_mo*dag(Cig)))
+          end if
+         
+          call copy_matrix_sym(D(nr_dmat), D_mo)
+
         else
           vector_to_matrix(ixvector) = 1
         end if
       end do
 
+
+
+
+
+!   scale density matrices
+    do i = 1, nr_dmat
+
+      IF(NZ .LT. 4) THEN
+        DO IZ = 1,NZ
+          IQ = IPQTOQ(IZ, D(i)%irep)
+          IOFF = NTBAS(0)*NTBAS(0)*(IZ-1)
+          CALL Q2BPHASE('D',IQ,1,D(i)%elms(1+IOFF))
+        ENDDO
+      ENDIF
+
+
+
+      D(i) = 2.0d0*D(i)
+    end do
 
       D_mo = 0
       C    = 0

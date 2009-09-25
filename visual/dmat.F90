@@ -197,8 +197,8 @@
       JOPSY  = JBTOF(visual_cfg_IREP_XVECTOR(IXVECTOR),1)
       NBDIM  = LEN/NZ
       length = nbdim 
-      D%irep   = jsymop - 1
-      D%ih_sym = ihermiticity
+      D_mo%irep   = jsymop - 1
+      D_mo%ih_sym = ihermiticity
 
     select case (typ1(1:1))
       case ('E')
@@ -210,20 +210,19 @@
     end select
 
     call alloc(orbital_rotation_indices, 2, length)
-    write(*, *) 'blub vec', vector_type, length
 
     select case (vector_type)
       case ('pp')
-        call set_orbital_rotation_indices(D%irep, &
-                                          length, &
-                                          2,      &
-                                          3,      &
+        call set_orbital_rotation_indices(D_mo%irep, &
+                                          length,    &
+                                          2,         &
+                                          3,         &
                                           orbital_rotation_indices)
       case ('pn')
-        call set_orbital_rotation_indices(D%irep, &
-                                          length, &
-                                          2,      &
-                                          1,      &
+        call set_orbital_rotation_indices(D_mo%irep, &
+                                          length,    &
+                                          2,         &
+                                          1,         &
                                           orbital_rotation_indices)
       case default
         call quit('unexpected vector_type')
@@ -248,13 +247,13 @@
 !     scatter vector onto MO density matrix
 
 
-    select case (D%ih_sym)
+    select case (D_mo%ih_sym)
       case (+1)
         ih_factor =  1.0d0
       case (-1)
         ih_factor = -1.0d0
       case default
-        call quit('unexpected D%ih_sym')
+        call quit('unexpected D_mo%ih_sym')
     end select
 
     call scatter_vector(length,                   &
@@ -262,11 +261,13 @@
                         ih_factor,                &
                         bvec,                     &
                         D_mo%elms,                &
-                        D%irep)
+                        D_mo%irep)
+
+    call dealloc(orbital_rotation_indices)
 
 
-      CALL DZERO(BMAT,N2ORBXQ)
-      ICOUNTER = 1
+!     CALL DZERO(BMAT,N2ORBXQ)
+!     ICOUNTER = 1
 
 !     my static electric perturbations are ungerade
 !               magnetic                     gerade
@@ -278,79 +279,78 @@
 !     the code will fail when calculating with symmetry
 !     but for the moment it does its job ...
 
-      IGERADE = -IHERMITICITY
-      IF(DABS(FREQ1) .GT. 1.0D-9) IGERADE = -1
+!     IGERADE = -IHERMITICITY
+!     IF(DABS(FREQ1) .GT. 1.0D-9) IGERADE = -1
 
-      DO IZ = 1,NZ
-        IF(NFSYM .EQ. 1) THEN
-          CALL SCATTER_BVEC(BVEC, &
-     &                      ICOUNTER, &
-     &                      TYP1, &
-     &                      BMAT, &
-     &                      IZ, &
-     &                      1,1, &
-     &                      STRING)
-        ELSE
-          IF(IGERADE .EQ. -1) THEN
-            CALL SCATTER_BVEC(BVEC, &
-     &                        ICOUNTER, &
-     &                        TYP1, &
-     &                        BMAT, &
-     &                        IZ, &
-     &                        1,2, &
-     &                        STRING)
-            CALL SCATTER_BVEC(BVEC, &
-     &                        ICOUNTER, &
-     &                        TYP1, &
-     &                        BMAT, &
-     &                        IZ, &
-     &                        2,1, &
-     &                        STRING)
-          ELSE
-            CALL SCATTER_BVEC(BVEC, &
-     &                        ICOUNTER, &
-     &                        TYP1, &
-     &                        BMAT, &
-     &                        IZ, &
-     &                        1,1, &
-     &                        STRING)
-            CALL SCATTER_BVEC(BVEC, &
-     &                        ICOUNTER, &
-     &                        TYP1, &
-     &                        BMAT, &
-     &                        IZ, &
-     &                        2,2, &
-     &                        STRING)
-          ENDIF
-        ENDIF
-      ENDDO
-      CALL DSCAL(N2ORBXQ,-D1,BMAT,1)
-      call dealloc(bvec)
+!     DO IZ = 1,NZ
+!       IF(NFSYM .EQ. 1) THEN
+!         CALL SCATTER_BVEC(BVEC, &
+!    &                      ICOUNTER, &
+!    &                      TYP1, &
+!    &                      BMAT, &
+!    &                      IZ, &
+!    &                      1,1, &
+!    &                      STRING)
+!       ELSE
+!         IF(IGERADE .EQ. -1) THEN
+!           CALL SCATTER_BVEC(BVEC, &
+!    &                        ICOUNTER, &
+!    &                        TYP1, &
+!    &                        BMAT, &
+!    &                        IZ, &
+!    &                        1,2, &
+!    &                        STRING)
+!           CALL SCATTER_BVEC(BVEC, &
+!    &                        ICOUNTER, &
+!    &                        TYP1, &
+!    &                        BMAT, &
+!    &                        IZ, &
+!    &                        2,1, &
+!    &                        STRING)
+!         ELSE
+!           CALL SCATTER_BVEC(BVEC, &
+!    &                        ICOUNTER, &
+!    &                        TYP1, &
+!    &                        BMAT, &
+!    &                        IZ, &
+!    &                        1,1, &
+!    &                        STRING)
+!           CALL SCATTER_BVEC(BVEC, &
+!    &                        ICOUNTER, &
+!    &                        TYP1, &
+!    &                        BMAT, &
+!    &                        IZ, &
+!    &                        2,2, &
+!    &                        STRING)
+!         ENDIF
+!       ENDIF
+!     ENDDO
+!     CALL DSCAL(N2ORBXQ,-D1,BMAT,1)
+!     call dealloc(bvec)
 
-      DO IZ = 1,NZ
-        IOFF = NORBT*NORBT*(IZ - 1)
-        CALL FULMAT('S',NORBT,NORBT,BMAT(1+IOFF)) !symmetrize
-      ENDDO
+!     DO IZ = 1,NZ
+!       IOFF = NORBT*NORBT*(IZ - 1)
+!       CALL FULMAT('S',NORBT,NORBT,BMAT(1+IOFF)) !symmetrize
+!     ENDDO
 
 !     get AO density matrix
 
-      CALL DZERO(D%elms,N2BBASXQ)
-          IF(TYP1(1:1) .EQ. 'E') THEN
-        CALL DMOLI3(0,IHERMITICITY,D%elms,CMO,BMAT)
-      ELSEIF(TYP1(1:1) .EQ. 'P') THEN
-        CALL DMOLI3(1,IHERMITICITY,D%elms,CMO,BMAT)
-      ENDIF
-      call dealloc(bmat)
+!     CALL DZERO(D%elms,N2BBASXQ)
+!         IF(TYP1(1:1) .EQ. 'E') THEN
+!       CALL DMOLI3(0,IHERMITICITY,D%elms,CMO,BMAT)
+!     ELSEIF(TYP1(1:1) .EQ. 'P') THEN
+!       CALL DMOLI3(1,IHERMITICITY,D%elms,CMO,BMAT)
+!     ENDIF
+!     call dealloc(bmat)
 
-      IF(NZ .LT. 4) THEN
-        DO IZ = 1,NZ
-          IQ = IPQTOQ(IZ,visual_cfg_IREP_XVECTOR(IXVECTOR))
-          IOFF = NTBAS(0)*NTBAS(0)*(IZ-1)
-          CALL Q2BPHASE('D',IQ,1,D%elms(1+IOFF))
-        ENDDO
-      ENDIF
+!     IF(NZ .LT. 4) THEN
+!       DO IZ = 1,NZ
+!         IQ = IPQTOQ(IZ,visual_cfg_IREP_XVECTOR(IXVECTOR))
+!         IOFF = NTBAS(0)*NTBAS(0)*(IZ-1)
+!         CALL Q2BPHASE('D',IQ,1,D%elms(1+IOFF))
+!       ENDDO
+!     ENDIF
 
-      CALL DSCAL(N2BBASXQ,D2,D%elms,1)
-      call dealloc(orbital_rotation_indices)
+!     CALL DSCAL(N2BBASXQ,D2,D%elms,1)
 
       END
