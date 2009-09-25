@@ -70,7 +70,6 @@ contains
 
       real(8), allocatable :: occupation(:)
 
-      real(8), allocatable :: cmo(:)
       real(8), allocatable :: eig(:)
 
       real(8), allocatable :: ao(:)
@@ -107,23 +106,20 @@ contains
       end do
 
 
-      call alloc(cmo      ,n2bbasxq)
-      call alloc(eig      ,norbt)
+      call alloc(eig, norbt)
+      eig = 0.0d0
 
-!     coefficients
-
-      CALL DZERO(CMO,N2BBASXQ)
-      CALL DZERO(EIG,NORBT)
 
       lucoef = 137
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','VISUAL')
-      CALL REACMO_no_work(LUCOEF,'DFCOEF',CMO,EIG,idummy, &
-     &            toterg, 6)
-
+      CALL REACMO_no_work(LUCOEF, 'DFCOEF', (/0.0d0/), EIG, (/0/), &
+     &            toterg, 4)
       CLOSE(LUCOEF,STATUS = 'KEEP')
 
       call fndocc(eig)
       call dealloc(eig)
+
+
 
 !     orbital string
 
@@ -176,7 +172,7 @@ contains
           nr_dmat = nr_dmat + 1
           D(nr_dmat) = 1.0d-100*D(1)
           D_mo%elms = 0.0d0
-          call setup_fo_dmat_ao(cmo, ixvector, D(nr_dmat), occupation, D_mo)
+          call setup_fo_dmat_ao(ixvector, occupation, D_mo)
           vector_to_matrix(ixvector) = nr_dmat
 
 
@@ -235,7 +231,6 @@ contains
       C    = 0
 
       call dealloc(occupation)
-      call dealloc(cmo)
 
 !   initialize AO module
     call dft_ao_init(.false.,        &
@@ -964,9 +959,7 @@ contains
 
       end subroutine
 
-      SUBROUTINE SETUP_FO_DMAT_AO(CMO, &
-     &                            IXVECTOR, &
-     &                            D, &
+      SUBROUTINE SETUP_FO_DMAT_AO(IXVECTOR, &
      &                            STRING, D_mo)
 
       CHARACTER LAB1*16,&
@@ -976,12 +969,10 @@ contains
      &          LBUF*16,&
      &          PBUF*1
       LOGICAL   FILE_EXISTS
-      type(matrix) :: D, D_mo
-      real(8) :: CMO(*)
+      type(matrix) :: D_mo
       real(8) :: STRING(*)
 
       real(8), allocatable :: bvec(:)
-      real(8), allocatable :: bmat(:)
 
       integer, allocatable :: orbital_rotation_indices(:, :)
       real(8), allocatable :: response_vector(:, :)
@@ -1118,6 +1109,8 @@ contains
 !   read response vector
     call readt(lunit_xvector, length*nz, response_vector)
     close(lunit_xvector, status = 'keep')
+
+!fixme: this is a good place to zero elements according to occupation
 
     call scatter_vector(length,                   &
                         orbital_rotation_indices, &
