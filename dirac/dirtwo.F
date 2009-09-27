@@ -4079,6 +4079,7 @@ C
       IF (IPRINT.GE.2) THEN
         CALL HEADER('Output from SETFCK',-1)
         WRITE(LUPRI,'(A,F7.4)') '* Exchange factor: ',HFXFAC
+        WRITE(LUPRI,'(A,2F7.4)') '* Mu- factor: ',HFXMU, HFXATT
         IF (IPRINT.GE.3) THEN
          WRITE(LUPRI,'(3X,A,I2,A,I2)')
      &   '* Entering parameters:  NFMAT=',NFMAT,' MZ= ',MZ
