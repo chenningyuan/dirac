@@ -1325,14 +1325,14 @@ C
           IF (LMP2)
      &    CALL QUIT('PAMTR1: MP2 not implemented for strategy 4')
           CALL TRDR4T(WORK,KFREE,LFREE,IPRINT,INTFLG,
-     &                WORK(KGAB),WORK(KDRIJ),NSTR,
+     &                KGAB,KDRIJ,NSTR,
      &                ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
       ELSEIF (ISTRAT.EQ.5) THEN
           CALL QUIT('PAMTR1: strategy 5 can only do lagrangians')
       ELSEIF (ISTRAT.EQ.6) THEN
 c..not yet activated
           CALL TRDR6T(WORK,KFREE,LFREE,IPRINT,INTFLG,
-     &                WORK(KGAB),WORK(KDRIJ),NSTR,
+     &                KGAB,KDRIJ,NSTR,
      &                ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
       ELSE
         WRITE(LUPRI,'(A)')
@@ -3962,7 +3962,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #if defined (VAR_MPI)
 C/* Deck TRAPARI*/
       SUBROUTINE TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
-     &                   KINDX,GABRAO,DRIJ,INTFLG,NSTR,ANTIS,LMP2)
+     &                   KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Written by Luuk Visscher (based on HERNOD) August 1997
@@ -3992,7 +3992,6 @@ C
       LOGICAL ANTIS,LMP2
       DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4),
      &          WORK(*)
-      DIMENSION DRIJ(*),GABRAO(*)
       LOGICAL NODV,NOPV,NOCONT,RETUR,NEWGEO,FINISH
 C
       CALL QENTER('TRAPARI')
@@ -4039,7 +4038,7 @@ C
 C        I2TYP will defined at each node
          CALL SDINIT(DUMMY,NDMAT,IDUMMY,IDUMMY,ITYPE,MAXDIF,IDUMMY,
      &               NODV,NOPV,NOCONT,TKTIME,RTNTWO,IDUMMY,
-     &               IDUMMY,SCRTRA,GABRAO,DRIJ,DUMMY)
+     &               IDUMMY,SCRTRA,WORK(KGAB),WORK(KDRIJ),DUMMY)
 C
       ELSE
 C
@@ -4050,15 +4049,15 @@ C
          CALL RVINIT(WORK,KFREE,LFREE,NDMAT,NFMAT,ITYPE,
      &               IATOM,MAXDIF,MYTID,NODV,NOPV,NOCONT,RETUR,
      &               TKTIME,NEWGEO,FINISH,I2TYP,ICEDIF,SCRTRA,
-     &               KFMAT,KDMAT,KIFC,KIRD,GABRAO,DRIJ,KDMRSO)
+     &               KFMAT,KDMAT,KIFC,KIRD,KGAB,KDRIJ,KDMRSO)
       ENDIF
 C
 C        *****************************************************
 C        ***** Send or receive DIRAC initialization data *****
 C        *****************************************************
+         CALL TRAPRD(WORK,KFREE,LFREE,KQ,KE,KIBE,KINDX,
+     &               WORK(KGAB),WORK(KDRIJ),INTFLG,NSTR,ANTIS,LMP2)
 C
-      CALL TRAPRD(WORK,KFREE,LFREE,KQ,KE,KIBE,KINDX,
-     &            GABRAO,DRIJ,INTFLG,NSTR,ANTIS,LMP2)
 C
 C     Do not call MEMREL since the variable size arrays are represented
 C     as pointers when the routine is called from a slave
@@ -4403,18 +4402,11 @@ C
 #include "memint.h"
       KFRSAV = KFREE
 C
-C     Get memory for screening matrices
-C
-      N2GAB   = NSYMBL*NSYMBL
-      NDRIJ   = N2GAB*NFSYM*2
-      CALL MEMGET('REAL',KGAB,N2GAB,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDRIJ,NDRIJ,WORK,KFREE,LFREE)
-C
 C     Initialize the common blocks.
 C
       IPRINT = -1
       CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
-     &             KINDX,WORK(KGAB),WORK(KDRIJ),
+     &             KINDX,KGAB,KDRIJ,
      &             INTFLG,NSTR,ANTIS,LMP2)
 C
       IF (ISTRAT.EQ.1) THEN
@@ -4424,12 +4416,12 @@ C
       ELSEIF (ISTRAT.EQ.2) THEN
          IF (.NOT. MP2ORG) THEN
             CALL TR2NOD(WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
-     &           KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2,
+     &           KINDX,WORK(KGAB),WORK(KDRIJ),INTFLG,NSTR,ANTIS,LMP2,
      &           DINTSKP,TIM1)
          ELSE
             CALL TR2PAR(WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
-     &           KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2,EMP2,
-     &           DINTSKP,TIM1)
+     &           KINDX,WORK(KGAB),WORK(KDRIJ),INTFLG,NSTR,ANTIS,
+     &           LMP2,EMP2,DINTSKP,TIM1)
          END IF
       ELSEIF (ISTRAT.EQ.3) THEN
          WRITE(LUPRI,'(A)')
@@ -4445,7 +4437,7 @@ C
          CALL QUIT('TRANOD: No parallel strategy 5 (yet)!')
       ELSEIF (ISTRAT.EQ.6) THEN
           CALL TRDR6T(WORK,KFREE,LFREE,IPRINT,INTFLG,
-     &                WORK(KGAB),WORK(KDRIJ),NSTR,
+     &                KGAB,KDRIJ,NSTR,
      &                ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
       ELSE
          WRITE(LUPRI,'(A,I10,A)')

@@ -22,7 +22,7 @@ C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR6T */
-      SUBROUTINE TRDR6T(WORK,KFREE,LFREE,IPRINT,INTFLG,GABRAO,DRIJ,
+      SUBROUTINE TRDR6T(WORK,KFREE,LFREE,IPRINT,INTFLG,KGAB,KDRIJ,
      &                  NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
 C***********************************************************************
 C
@@ -83,7 +83,6 @@ C***********************************************************************
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION NSTR(2,0:2,4),
      &          KQ(2,4),KE(2,4),KIBE(2,4),WORK(*),DINTSKP(*)
-      REAL*8 GABRAO(*),DRIJ(*) 
 #if defined (VAR_MPI)
       REAL*8 XINTSTAT(8)
       INTEGER ILEN_STAT
@@ -139,13 +138,13 @@ C
 #endif
          CALL FIRST_HALFTR_SERIAL (WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                     NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP,
-     &                     GABRAO,DRIJ,
+     &                     KGAB,KDRIJ,
      &                     WORK(KRGBUF),WORK(KIGBUF),WORK(KLSORT))
 #if defined (VAR_MPI)
       ELSE
          CALL FIRST_HALFTR_PARALLEL (WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                     NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP,
-     &                     GABRAO,DRIJ,
+     &                     KGAB,KDRIJ,
      &                     WORK(KRGBUF),WORK(KIGBUF),WORK(KLSORT))
       ENDIF
 #endif
@@ -225,7 +224,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck First_HalfTr_Serial */
       SUBROUTINE FIRST_HALFTR_SERIAL (WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                  NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP,
-     &                  GABRAO,DRIJ,RGBUF,IGBUF,LSORT)
+     &                  KGAB,KDRIJ,RGBUF,IGBUF,LSORT)
 C***********************************************************************
 C
 C     Loop over distributions (**|rs), transform 2 indices 
@@ -265,7 +264,6 @@ C***********************************************************************
 #include "dgroup.h"
 
 #include "blocks.h"
-      DIMENSION GABRAO(*),DRIJ(*)
       DIMENSION LSORT(3,NFPCK12T,0:7)
       DIMENSION RGBUF(*)
       DIMENSION IGBUF(2,*)
@@ -300,7 +298,7 @@ CLV:Gaunt       DO IC = 1, 3
              CALL TRDRV6(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                  NSTR,WORK(KINDX),TRIAN,
      &                  KQ,KE,KIBE,IC,I2TYP,IBSTRT,IBEND,
-     &                  GABRAO,DRIJ,DINTSKP,
+     &                  WORK(KGAB),WORK(KDRIJ),DINTSKP,
      &                  LSORT,RGBUF,IGBUF)
           ENDDO
        ENDDO
@@ -315,7 +313,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck First_HalfTr_Parallel */
       SUBROUTINE FIRST_HALFTR_PARALLEL (WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                  NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP,
-     &                  GABRAO,DRIJ,RGBUF,IGBUF,LSORT)
+     &                  KGAB,KDRIJ,RGBUF,IGBUF,LSORT)
 C***********************************************************************
 C
 C     Loop over distributions (**|rs), transform 2 indices 
@@ -358,7 +356,6 @@ C***********************************************************************
 #include "dgroup.h"
 
 #include "blocks.h"
-      DIMENSION GABRAO(*),DRIJ(*)
       DIMENSION LSORT(3,NFPCK12T,0:7)
       DIMENSION RGBUF(*)
       DIMENSION IGBUF(2,*)
@@ -379,7 +376,7 @@ C
 C       Initialize (for the slave this is done in TRANOD)
 C
         CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
-     &               KINDX,GABRAO,DRIJ,INTFLG,NSTR,ANTIS,LMP2)
+     &               KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
 C
 C     We send out all the tasks (shell pairs in this case) to the slaves
 C     - reverse order of IC and ISHLA to get better load balancing
@@ -490,7 +487,7 @@ C
          CALL TRDRV6(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &               NSTR(1,0,1),WORK(KINDX),TRIAN,
      &               KQ,KE,KIBE,IC,I2TYP,ISHLBS,ISHLBE,
-     &               GABRAO,DRIJ,DINTSKP,
+     &               WORK(KGAB),WORK(KDRIJ),DINTSKP,
      &               LSORT,RGBUF,IGBUF)
          GOTO 100
   200    CONTINUE

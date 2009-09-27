@@ -28,7 +28,7 @@ C FILE    : tradr4.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR4T */
-      SUBROUTINE TRDR4T(WORK,KFREE,LFREE,IPRINT,INTFLG,GABRAO,DRIJ,
+      SUBROUTINE TRDR4T(WORK,KFREE,LFREE,IPRINT,INTFLG,KGAB,KDRIJ,
      &                  NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
 C***********************************************************************
 C
@@ -84,7 +84,7 @@ C***********************************************************************
 
 #include "blocks.h"
       LOGICAL ANTIS,LMP2,TRIAN(2),LBIT
-      DIMENSION NSTR(2,0:2,4),DRIJ(*),GABRAO(*),
+      DIMENSION NSTR(2,0:2,4),
      &          KQ(2,4),KE(2,4),KIBE(2,4),WORK(*),DINTSKP(*)
       CHARACTER*7 CIC(3)
       DATA CIC/'(LL|??)', '(SS|??)', '(LS|??)'/
@@ -115,7 +115,7 @@ C
 C       Initialize
 C
         CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
-     &               KINDX,GABRAO,DRIJ,INTFLG,NSTR,ANTIS,LMP2)
+     &       KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
 C
 C       Initialize scratch file as permanent file for Master if NOMDCINT.
 C
@@ -251,7 +251,7 @@ CLV:Gaunt  DO IC = 1, 3
               CALL TRDRV4(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                   NSTR,ANTIS,LMP2,WORK(KINDX),TRIAN,
      &                   KQ,KE,KIBE,IC,I2TYP,IBSTRT,IBEND,
-     &                   GABRAO,DRIJ,DINTSKP)
+     &                   WORK(KGAB),WORK(KDRIJ),DINTSKP)
            ENDDO
         ENDIF
         ENDDO

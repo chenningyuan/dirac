@@ -555,7 +555,6 @@ C     Send SMLV1C and ONECAP,INTV1C
 #endif
 C
 C     Send parint.h
-
       NUMELM = ICOMMSIZE(I1_PARINT,I2_PARINT)
       CALL MPI_BCAST(NUMELM,1,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
@@ -572,14 +571,12 @@ C
       END IF
       ISEND(1) = NDMAT
       ISEND(2) = NFMAT
-      
       CALL MPI_BCAST(ISEND,2,my_MPI_INTEGER,MPARID,MPI_COMM_WORLD,IERR)
       IF(NDMAT.GT.0.AND.ITYPE.NE.4) THEN
         CALL MPI_BCAST(DMAT,N2BASX*NDMAT,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
       ENDIF
 C
-      
       IF(NFMAT.GT.0) THEN
         CALL MPI_BCAST(IREPDM,NDMAT,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)
@@ -599,7 +596,6 @@ C
      &               MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(HFXMU,1,MPI_DOUBLE_PRECISION,MPARID,
      &               MPI_COMM_WORLD,IERR)
-
       call mpi_bcast(spinfr, 1, mpi_logical, mparid,
      &               mpi_comm_world, ierr)
 
@@ -633,7 +629,6 @@ C       ... broadcast screening matrix
         CALL MPI_BCAST(DMRSO,N2RED*NDMAT,MPI_DOUBLE_PRECISION,MPARID,
      &                 MPI_COMM_WORLD,IERR)
       END IF
-
 #endif
       RETURN
       END
@@ -1100,7 +1095,7 @@ C
       CALL RVINIT(WORK,KFREE,LFREE,NDMAT,NFMAT,ITYPE,
      &            IATOM,MAXDIF,MYTID,NODV,NOPV,NOCONT,RETUR,
      &            TKTIME,NEWGEO,FINISH,I2TYP,ICEDIF,SCREEN,
-     &            KFMAT,KDMAT,KIFC,KIRD,KDMRAO,KGABAO,KDMRSO)
+     &            KFMAT,KDMAT,KIFC,KIRD,KGABAO,KDMRAO,KDMRSO)
 C
       IF (FINISH) GOTO 999
 C
@@ -1194,7 +1189,7 @@ C  /* Deck rvinit */
       SUBROUTINE RVINIT(WORK,KFREE,LFREE,NDMAT,NFMAT,ITYPE,
      &                  IATOM,MAXDIF,MYTI,NODV,NOPV,NOCONT,RETUR,
      &                  TKTIME,NEWGEO,FINISH,I2TYP,ICEDIF,SCREEN,
-     &                  KFMAT,KDMAT,KIFC,KIRD,KDMRAO,KGABAO,KDMRSO)
+     &                  KFMAT,KDMAT,KIFC,KIRD,KGABAO,KDMRAO,KDMRSO)
 C
 C     Written by Henrik Koch and Paal Dahle
 C     Revised Oct 4 1996 - tsaue
@@ -1365,7 +1360,6 @@ C
       IF (NEWGEO) RDINPC = .FALSE.
 C     
       CALL SETHER(0,NEWGEO,RELCAL,WORK(KFREE),LFREE)
-CMI   CALL SETHER(0,NEWGEO,WORK(KFREE),LFREE)
 C
 C     ... xyz input reader fails/gives wrong results from now on 
 C         in parallel if there is no update 
@@ -1428,7 +1422,6 @@ C
 
       call mpi_bcast(spinfr, 1, mpi_logical, mparid,
      &               mpi_comm_world, ierr)
-
       IF(ITYPE.EQ.3.OR.ITYPE.EQ.9.OR.ITYPE.EQ.2.OR.ITYPE.EQ.4) THEN
         CALL MPI_BCAST(N2RED,1,my_MPI_INTEGER,MPARID,
      &               MPI_COMM_WORLD,IERR)

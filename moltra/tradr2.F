@@ -128,7 +128,7 @@ C
          CALL MEMGET('INTE',KDSLST,MAXSHL*6,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KTIMDS,MAXSHL,WORK,KFREE,LFREE)
          CALL TR2MST(EMP2,WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
-     &        KINDX,KGAB,INTFLG,ICMOIJ,NSTR,NSTRT,NSTRIJ,NSTTIJ,
+     &        KINDX,KGAB,KDRIJ,INTFLG,ICMOIJ,NSTR,NSTRT,NSTRIJ,NSTTIJ,
      &        ANTIS,LMP2,MAXSHL,WORK(KDSLST),WORK(KTIMDS))
       ELSE IF (PARCAL .AND. MP2ORG) THEN
 C
@@ -146,7 +146,7 @@ C
          CALL DZERO(WORK(KTIM),NTIM)
          KDRIJ = KFREE
          CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
-     &        KINDX,WORK(KGAB),KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
+     &        KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
 C     
 C     Divide index transformation in tasks with different batches
 C     of spinors. First find number of tasks.
@@ -313,7 +313,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR23 */
       SUBROUTINE TRDR23(WORK,KFREE,LFREE,IPRINT,
      &     EMP2,ISPNR,JSPNR,LENTSK,INTFLG,NDMOQR,ICMOQR,
-     &     NSTR,ANTIS,LMP2,INDX,KQ,KE,DINTSKP,GABAO,TIM1)
+     &     NSTR,ANTIS,LMP2,INDX,KQ,KE,DINTSKP,GABRAO,TIM1)
 C
 C     Written by Luuk Visscher, December 1996
 C     Modifications by Jon Laerdahl, June 1997
@@ -337,7 +337,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &          NSTRT(4),ITQMT(0:7,0:7,2),
      &          NDMOQR(2,2,4),ICMOQR(2,4),
      &          IJP12(0:7),IJP34(2),IHM(0:7),
-     &          TIM1(7),DINTSKP(*),GABAO(*),WORK(*)
+     &          TIM1(7),DINTSKP(*),GABRAO(*),WORK(*)
       DIMENSION ISAMEIJ(4)
 C
 #include "ibtfun.h"
@@ -395,7 +395,7 @@ CTROND  ...this may be improved TODO
         DO I = 1,4
           ISAMEIJ(I) = I
         ENDDO
-        CALL PR4SC1(KDRIJ,WORK,KFREE,LFREE,DINTSKP,GABAO,
+        CALL PR4SC1(KDRIJ,WORK,KFREE,LFREE,DINTSKP,GABRAO,
      &              WORK(KQ(1,1)),WORK(KQ(1,2)),
      &              WORK(KQ(1,3)),WORK(KQ(1,4)),
      &              NDMOQR,ICMOQR,NSTR,ISAMEIJ,IPRINT)
@@ -549,7 +549,7 @@ C
 C
             CALL TIMEC('START ',TIMSTR,TIMEND)
             CALL CALDIS(I2TYP,WORK(KGMAT),INDX,WORK(KDXAB),
-     &                  NODV,NOPV,GABAO,WORK(KDRIJ),DINTSKP,SCRTRA,
+     &                  NODV,NOPV,GABRAO,WORK(KDRIJ),DINTSKP,SCRTRA,
      &                  WORK(KFREE),LFREE,IPRINT)
 C
             CALL TIMEC('CALDIS',TIMSTR,TIMEND) 
@@ -868,7 +868,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TD23V2 */
       SUBROUTINE TD23V2(IJBTCH,MXBTCH,WORK,KFREE,LFREE,IPRINT,ERGMP2,
      &     ISPNR,JSPNR,LENTSK,INTFLG,NDMOQR,ICMOQR,NSTR,INDX,
-     &     KQ,KE,DINTSKP,GABAO,TIM1,NDSLST,IDSLST,TIMDIS)
+     &     KQ,KE,DINTSKP,GABRAO,TIM1,NDSLST,IDSLST,TIMDIS)
 C
 C     Sequential MP2 driver (modified version of TRDR23)
 C
@@ -885,7 +885,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dgroup.h"
       DIMENSION KQ(2,4), KE(2,2), NSTR(2,0:2,4), INDX(3,*),
      &     NSTRT(4), ITQMT(0:7,0:7,2), IJP12(0:7), NDMOQR(2,2,4),
-     &     ICMOQR(2,4), TIM1(7), DINTSKP(*), GABAO(*), WORK(*),
+     &     ICMOQR(2,4), TIM1(7), DINTSKP(*), GABRAO(*), WORK(*),
      &     IDSLST(6,NDSLST), TIMDIS(NDSLST), IDSNFO(6)
       DIMENSION ISAMEIJ(4)
       CHARACTER*(24) TMSTMP
@@ -926,7 +926,7 @@ C
          DO I = 1, 4
             ISAMEIJ(I) = I
          ENDDO
-         CALL PR4SC1(KDRIJ,WORK,KFREE,LFREE,DINTSKP,GABAO,
+         CALL PR4SC1(KDRIJ,WORK,KFREE,LFREE,DINTSKP,GABRAO,
      &        WORK(KQ(1,1)),WORK(KQ(1,2)),WORK(KQ(1,3)),WORK(KQ(1,4)),
      &        NDMOQR,ICMOQR,NSTR,ISAMEIJ,IPRINT)
       ELSE
@@ -963,7 +963,7 @@ C ----------------------------------------------------------------------
          CALL FLSHFO(LUPRI)
          IF (IDSLST(1,ISHLND) .EQ. 0) GOTO 100
          CALL SHLTRA(IDSLST(1,ISHLND),WORK,KFREE,LFREE,IPRINT,KQ,
-     &        INDX,INTFLG,NSTR,NSTRT,DINTSKP,GABAO,NDMOQR,ICMOQR,
+     &        INDX,INTFLG,NSTR,NSTRT,DINTSKP,GABRAO,NDMOQR,ICMOQR,
      &        ITQMT,NTQMT,KTQMAT,TIM1)
 C
 C     Print integrals if requested (above threshold TPRI34):
@@ -1176,7 +1176,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck SHLTRA */
       SUBROUTINE SHLTRA(IDSNFO,WORK,KFREE,LFREE,IPRINT,KQ,
-     &     INDX,INTFLG,NSTR,NSTRT,DINTSKP,GABAO,NDMOQR,ICMOQR,
+     &     INDX,INTFLG,NSTR,NSTRT,DINTSKP,GABRAO,NDMOQR,ICMOQR,
      &     ITQMT,NTQMT,KTQMAT,TIM1)
 C
 C     Calculate contribution to 3/4-transformed matrix from _one_
@@ -1194,7 +1194,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcbmp2.h"
 #include "dgroup.h"
       DIMENSION IDSNFO(6), KQ(2,4), KE(2,2), INDX(3,*),
-     &     NSTR(2,0:2,4), NSTRT(4), DINTSKP(*), GABAO(*), WORK(*),
+     &     NSTR(2,0:2,4), NSTRT(4), DINTSKP(*), GABRAO(*), WORK(*),
      &     NDMOQR(2,2,4), ICMOQR(2,4), TIM1(7),
      &     ITQMT(0:7,0:7,2), IJP12(0:7), IHM(0:7), ISAMEIJ(4)
       CHARACTER*(24) TMSTMP
@@ -1209,7 +1209,7 @@ C
          DO I = 1, 4
             ISAMEIJ(I) = I
          ENDDO
-         CALL PR4SC1(KDRIJ,WORK,KFREE,LFREE,DINTSKP,GABAO,
+         CALL PR4SC1(KDRIJ,WORK,KFREE,LFREE,DINTSKP,GABRAO,
      &        WORK(KQ(1,1)),WORK(KQ(1,2)),
      &        WORK(KQ(1,3)),WORK(KQ(1,4)),
      &        NDMOQR,ICMOQR,NSTR,ISAMEIJ,IPRINT)
@@ -1345,8 +1345,9 @@ C
          NODV = NASHT.EQ.0
          NOPV = NASHT.LT.2
          CALL TIMEC('START ',TIMSTR,TIMEND)
-         CALL CALDIS(I2TYP,WORK(KGMAT),INDX,WORK(KDXAB),NODV,NOPV,GABAO,
-     &        WORK(KDRIJ),DINTSKP,SCRTRA,WORK(KFREE),LFREE,IPRINT)
+         CALL CALDIS(I2TYP,WORK(KGMAT),INDX,WORK(KDXAB),NODV,NOPV,
+     &        GABRAO,WORK(KDRIJ),DINTSKP,SCRTRA,
+     &        WORK(KFREE),LFREE,IPRINT)
          CALL TIMEC('CALDIS',TIMSTR,TIMEND) 
          TIM1(1) = TIM1(1) + TIMEND - TIMSTR
 C
@@ -2587,7 +2588,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TR2MST */
       SUBROUTINE TR2MST(ERGMP2,WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
-     &     KINDX,KGAB,INTFLG,ICMOIJ,NSTR,NSTRT,NSTRIJ,NSTTIJ,
+     &     KINDX,KGAB,KDRIJ,INTFLG,ICMOIJ,NSTR,NSTRT,NSTRIJ,NSTTIJ,
      &     ANTIS,LMP2,NDSLST,IDSLST,TIMDIS)
 C***********************************************************************
 C
@@ -2630,7 +2631,7 @@ C
       TMMP2 = 0.D0
       CALL MKNSTT(NSTR,NSTRT)
       CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
-     &     KINDX,WORK(KGAB),KFRSAV,INTFLG,NSTR,ANTIS,LMP2)
+     &     KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2)
 C     
 C     Task set-up
 C        Set up tasks with different batches of spinors if requested.
@@ -2908,7 +2909,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TR2NOD */
       SUBROUTINE TR2NOD(WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
-     &     KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2,
+     &     KINDX,GABRAO,DRIJ,INTFLG,NSTR,ANTIS,LMP2,
      &     DINTSKP,TIM1)
 C***********************************************************************
 C
@@ -2935,7 +2936,7 @@ C
       LOGICAL ANTIS, LMP2, L2TYP(0:3), TRIAN(2), MP2FIN
       DIMENSION KQ(2,4), KE(2,2), NSTR(2,0:2,4), NSTRT(4), KIBE(2,4),
      &     WORK(*), TIM1(7), DINTSKP(8), IDSNFO(6), IBTNFO(2),
-     &     ITQMT(0:7,0:7,2)
+     &     ITQMT(0:7,0:7,2),DRIJ(*),GABRAO(*)
       DIMENSION NSTRIJ(2,0:2,4), NSTTIJ(4), ICMOIJ(2,4)
       DIMENSION ISAMEIJ(4)
 C
@@ -2976,7 +2977,7 @@ C
          DO I = 1, 4
             ISAMEIJ(I) = I
          ENDDO
-         CALL PR4SC1(KDRIJ,WORK,KFREE,LFREE,DINTSKP,WORK(KGAB),
+         CALL PR4SC1(DRIJ,WORK,KFREE,LFREE,DINTSKP,GABRAO,
      &        WORK(KQ(1,1)),WORK(KQ(1,2)),
      &        WORK(KQ(1,3)),WORK(KQ(1,4)),
      &        NDMOQR,ICMOIJ,NSTRIJ,ISAMEIJ,IPRINT)
@@ -3031,7 +3032,7 @@ C
       CALL MPE_LOG_EVENT(9, 0, "start calc")
 #endif
       CALL SHLTRA(IDSNFO,WORK,KFREE,LFREE,IPRINT,KQ,
-     &        WORK(KINDX),INTFLG,NSTRIJ,NSTTIJ,DINTSKP,WORK(KGAB),
+     &        WORK(KINDX),INTFLG,NSTRIJ,NSTTIJ,DINTSKP,GABRAO,
      &        NDMOQR,ICMOIJ,ITQMT,NTQMT,KTQMAT,TIM1)
       INTGTH = INTGTH + 1
 C
@@ -3131,7 +3132,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TR2PAR */
       SUBROUTINE TR2PAR(WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
-     &        KINDX,KGAB,KDRIJ,INTFLG,NSTR,ANTIS,LMP2,
+     &        KINDX,GABRAO,DRIJ,INTFLG,NSTR,ANTIS,LMP2,
      &        EMP2,DINTSKP,TIM1)
 C***********************************************************************
 C
@@ -3157,7 +3158,7 @@ C
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION KQ(2,4),KE(2,2),NSTR(2,0:2,4),NSTRT(4),KIBE(2,4)
       DIMENSION NSTRIJ(2,0:2,4),ICMOIJ(2,4)
-      DIMENSION WORK(*),TIM1(7),DINTSKP(8)
+      DIMENSION WORK(*),TIM1(7),DINTSKP(8),GABRAO(*),DRIJ(*)
 C
 C     Initialization
 C
