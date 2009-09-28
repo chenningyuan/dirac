@@ -1,7 +1,9 @@
 #include <iostream>
-#include "taylor.h"
 
 using namespace std;
+
+#include "taylor.h"
+
 
 // Some taylor coefficients around x = 2.5, calculated using
 // Maxima bfloat(taylor(...))
@@ -213,11 +215,14 @@ int main(void)
 	    res++;
 	  }
       }
-/*
-  taylor<1,6> sinx(0,0),sint = sinc(sinx);
-  for (int i=0;i<sint.size;i++)
-      cout << i << " "<< sint[i] << endl;
-*/
+  // Shifting
+  taylor<1,6> sinx(1e-3,0),sint = sin(sinx);
+  taylor<1,12> shift_sinx(0,0),shift_sint = sin(shift_sinx);
+  taylor<1,6> shifted;
+  double dx = 1e-3;
+  shift_sint.shift(shifted,&dx);
+  res += taylor_compare(sint,shifted,1e-15);
+
 #ifdef TAYLOR_QD
   fpu_fix_end(&cw);
 #endif

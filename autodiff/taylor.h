@@ -88,6 +88,25 @@ public:
   {
     this->stretch(-1); // TODO: optimized version of stretch(-1)
   }
+  // Calculate a shifted version of this taylor expansion of one variable.
+  // out(x) ~= this(x+dx). Of course the shifted taylor series is no longer
+  // exact around the new "zero" point. For this reason NdegOut may be choosen
+  // to be smaller than Ndeg.
+  // TODO: implement for more variables, and without runtime polylen.
+  template<int NdegOut>
+  void shift(taylor<1,NdegOut> &out, const tnum_t dx[Nvar]) const
+  {
+      assert(Nvar == 1);
+      assert(NdegOut <= Ndeg);
+      tnum_t dxpow[Ndeg];
+      out = 0;
+      dxpow[0] = 1;
+      for (int i=1;i<=Ndeg;i++)
+	  dxpow[i] = dx[0]*dxpow[i-1];
+      for (int i=0;i<=NdegOut;i++)
+	  for (int j=i;j<=Ndeg;j++)
+	      out[i] += polylen(j-i,i)*dxpow[j-i]*(*this)[j];
+  }
   taylor<Nvar,Ndeg> operator-(void) const
     {
       taylor<Nvar,Ndeg> res = *this;
