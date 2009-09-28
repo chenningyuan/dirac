@@ -324,13 +324,15 @@ void sinc_taylor_at0(taylor<1,Ndeg>& t)
 template<int Nvar, int Ndeg>
 taylor<Nvar,Ndeg> sinc(const taylor<Nvar,Ndeg> &t)
 {
-    if (fabs(t[0]) < 1e-15)
+    if (fabs(t[0]) < 1e-3)
     {
-	taylor<1,Ndeg> tmp;
+	taylor<1,Ndeg+8> tmp;
 	sinc_taylor_at0(tmp);
-	
+	taylor<1,Ndeg> tmp2;	
+	tnum_t dx = t[0];
+	tmp.shift(tmp2,&dx);
 	taylor<Nvar,Ndeg> res;
-	t.compose(res,tmp);
+	t.compose(res,tmp2);
 	return res;
     }
     else

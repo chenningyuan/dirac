@@ -223,6 +223,14 @@ int main(void)
   shift_sint.shift(shifted,&dx);
   res += taylor_compare(sint,shifted,1e-15);
 
+/*
+  // sinc
+  cout << scientific;
+  cout.precision(16);
+  taylor<1,6> sincx(1e-4,0), sincout = sinc(sincx);
+  for (int i=0;i<sincout.size;i++)
+      cout << i << " " << sincout[i] << endl;
+*/
 #ifdef TAYLOR_QD
   fpu_fix_end(&cw);
 #endif
