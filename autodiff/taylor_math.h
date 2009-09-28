@@ -208,6 +208,75 @@ taylor<Nvar,Ndeg> erf(const taylor<Nvar,Ndeg> &t)
 }
 
 
+template<int Ndeg>
+void sin_taylor(taylor<1,Ndeg>& t, const tnum_t &a)
+{
+    if (Ndeg > 0)
+    {
+	tnum_t s = sin(a), c = cos(a), fac = 1;
+	for (int i=0;2*i<Ndeg;i++)
+	{
+	    t[2*i] = fac*s;
+	    fac /= (2*i+1);
+	    t[2*i+1] = fac*c;
+	    fac /= -(2*i+2);
+	}
+	if (Ndeg % 2 == 0)
+	    t[Ndeg] = s*fac;
+    }
+    else
+    {
+	t[0] = sin(a);
+    }   
+}
+
+template<int Nvar, int Ndeg>
+taylor<Nvar,Ndeg> sin(const taylor<Nvar,Ndeg> &t)
+{
+  taylor<1,Ndeg> tmp;
+  sin_taylor(tmp,t[0]);
+
+  taylor<Nvar,Ndeg> res;
+  t.compose(res,tmp);
+  return res;
+}
+
+
+template<int Ndeg>
+void cos_taylor(taylor<1,Ndeg>& t, const tnum_t &a)
+{
+    if (Ndeg > 0)
+    {
+	tnum_t s = sin(a), c = cos(a), fac = 1;
+	for (int i=0;2*i<Ndeg;i++)
+	{
+	    t[2*i] = fac*c;
+	    fac /= -(2*i+1);
+	    t[2*i+1] = fac*s;
+	    fac /= (2*i+2);
+	}
+	if (Ndeg % 2 == 0)
+	    t[Ndeg] = c*fac;
+    }
+    else
+    {
+	t[0] = cos(a);
+    }   
+}
+
+
+template<int Nvar, int Ndeg>
+taylor<Nvar,Ndeg> cos(const taylor<Nvar,Ndeg> &t)
+{
+  taylor<1,Ndeg> tmp;
+  cos_taylor(tmp,t[0]);
+
+  taylor<Nvar,Ndeg> res;
+  t.compose(res,tmp);
+  return res;
+}
+
+
 // hyperbolic arcsin function. d/dx asinh(x) = 1/sqrt(1+x^2)
 // 1 + (a+x)^2 = 1+a^2 + 2ax + x^2
 template<int Ndeg>
@@ -233,3 +302,41 @@ taylor<Nvar,Ndeg> asinh(const taylor<Nvar,Ndeg> &t)
   t.compose(res,tmp);
   return res;
 }
+
+
+template<int Ndeg>
+void sinc_taylor_at0(taylor<1,Ndeg>& t)
+{
+    t[0] = 1;
+    tnum_t fac = 1;
+    for (int i=1;i<=Ndeg/2;i++)
+    {
+	fac /= (2*i);
+	t[2*i-1] = 0;
+	fac /= -(2*i+1);
+	t[2*i] = fac;
+    }
+    if (Ndeg % 2 == 1)
+	t[Ndeg] = 0;
+}
+
+
+template<int Nvar, int Ndeg>
+taylor<Nvar,Ndeg> sinc(const taylor<Nvar,Ndeg> &t)
+{
+    if (fabs(t[0]) < 1e-15)
+    {
+	taylor<1,Ndeg> tmp;
+	sinc_taylor_at0(tmp);
+	
+	taylor<Nvar,Ndeg> res;
+	t.compose(res,tmp);
+	return res;
+    }
+    else
+    {
+	return sin(t)/t;
+    }
+}
+
+

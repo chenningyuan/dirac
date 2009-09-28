@@ -213,6 +213,11 @@ int main(void)
 	    res++;
 	  }
       }
+/*
+  taylor<1,6> sinx(0,0),sint = sinc(sinx);
+  for (int i=0;i<sint.size;i++)
+      cout << i << " "<< sint[i] << endl;
+*/
 #ifdef TAYLOR_QD
   fpu_fix_end(&cw);
 #endif
