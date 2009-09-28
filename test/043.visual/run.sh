@@ -7,7 +7,8 @@ for molecule in ne_auto.mol; do
     export MENU=response_ez_ez.inp
     ../run.sh -outcmo -get  PAMXVC
     export MENU=visual_zo.inp
-    ../run.sh -incmo  -copy PAMXVC -get PLOT_3D; mv PLOT_3D ${molecule%\.mol}_zo.3d
+    ../run.sh -incmo  -copy PAMXVC -get PLOT_3D
+    mv PLOT_3D ${molecule%\.mol}_zo.3d
     export MENU=visual_ez_ez.inp
     ../run.sh -incmo  -copy PAMXVC
 
