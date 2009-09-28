@@ -1,3 +1,3 @@
-$ERROR 1.E-12
+$ERROR 1.E-8
 FromRE:molecular gradient
 ToRE:---------------------------------
