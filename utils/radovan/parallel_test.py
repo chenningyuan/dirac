@@ -40,7 +40,7 @@ module load openmpi/1.3.2
 export LD_LIBRARY_PATH=/global/apps/intel/mkl/10.1.0.015/lib/em64t:$LD_LIBRARY_PATH
 export OMP_NUM_THREADS=1
 
-pam=/home/bast/dirac/pam_stable
+pam=/home/bast/dirac/r9723_ifort_icc_mkl_i4_a/pam
 
 scratch=/global/work/$USER/$PBS_JOBID
 mkdir -p $scratch
@@ -49,12 +49,12 @@ cd $PBS_O_WORKDIR
 pam_command
 
 cd $PBS_O_WORKDIR
-../crep result/output result/filter >                   result/output.rep
-../crep        output result/filter >        output.rep
-../bdrep                                     output.rep result/output.rep > diff.txt
+../crep result/output result/filter >            result/output.rep
+../crep        output result/filter > output.rep
+../bdrep                              output.rep result/output.rep > diff_$PBS_JOBID\.txt
 
-if [ -s diff.txt ]; then
-  cat diff.txt | mail -s "test directory output failed" email_recipient
+if [ -s diff_$PBS_JOBID\.txt ]; then
+  cat diff_$PBS_JOBID\.txt | mail -s "test directory output failed" email_recipient
 fi
 
 cd $PBS_O_WORKDIR
