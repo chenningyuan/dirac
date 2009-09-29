@@ -8,12 +8,12 @@ export MOL;
 echo "DC Hamiltonian, FSCCSD"
 MENU=fsccsd
 export MENU;
-../run.sh
+../run.sh -mw 100
 #############
 echo "DC Hamiltonian, IH FSCCSD"
 MENU=fsccsd_IH
 export MENU;
-../run.sh
+../run.sh -mw 100
 #############
 #REMOVE_BEGIN
 #echo "BSS Hamiltonian, IH FSCCSD"
@@ -26,7 +26,7 @@ export MENU;
 echo "BSS+MFSSO Hamiltonian, IH FSCCSD"
 MENU=bss+mfsso.fsccsd_IH;
 export MENU;
-../run.sh
+../run.sh -mw 110
 #REMOVE_END
 #############
 
