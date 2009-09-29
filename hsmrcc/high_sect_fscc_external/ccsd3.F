@@ -596,6 +596,7 @@ C Gal 95
 
           if (getiprint().ge.5) then
             write(LUPRI,*) 'ijnum=1, nij1=',nij1
+            write(LUPRI,*) 'num=',num
             write(LUPRI,*) 'nija,iii1,iiv1:',nija,iii1,iiv1
           endif
 
@@ -607,6 +608,7 @@ C Gal 95
 
           if (getiprint().ge.5) then
             write(LUPRI,*) 'ijnum=2, nij2=',nij2
+            write(LUPRI,*) 'num=',num
             write(LUPRI,*) 'nija,iii2,iiv2:',nija,iii2,iiv2
           endif
 
@@ -618,6 +620,7 @@ C Gal 95
 
           if (getiprint().ge.5) then
             write(LUPRI,*) 'ijnum=3, nij3=',nij3
+            write(LUPRI,*) 'num=',num
             write(LUPRI,*) 'nija,iii3,iiv3:',nija,iii3,iiv3
           endif
 
@@ -629,6 +632,7 @@ C Gal 95
 
           if (getiprint().ge.5) then
             write(LUPRI,*) 'ijnum=4, nij4=',nij4
+            write(LUPRI,*) 'num=',num
             write(LUPRI,*) 'nija,iii4,iiv4:',nija,iii4,iiv4
           endif
 
@@ -640,6 +644,7 @@ C Gal 95
 
           if (getiprint().ge.5) then
             write(LUPRI,*) 'ijnum=5, nij5=',nij5
+            write(LUPRI,*) 'num=',num
             write(LUPRI,*) 'nija,iii5,iiv5:',nija,iii5,iiv5
           endif
 
@@ -651,6 +656,7 @@ C Gal 95
 
           if (getiprint().ge.6) then
             write(LUPRI,*) 'ijnum=6, nij6=',nij6
+            write(LUPRI,*) 'num=',num
             write(LUPRI,*) 'nija,iii6,iiv6:',nija,iii6,iiv6
           endif
         else
