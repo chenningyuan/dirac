@@ -890,7 +890,8 @@ contains
     type(matrix),  intent(inout) :: P
 !   ----------------------------------------------------------------------------
     real(8), allocatable   :: ptri(:), op1int(:)
-    logical,       allocatable   :: first(:), lexpst(:)
+    logical,       allocatable   :: first(:)
+    logical                      :: lexpst(2) = .false.
     integer                      :: op_index, file_unit, idimension
     real(8)                :: dummy_dp
     logical                      :: file_exists, debug_me = .false.
@@ -912,9 +913,6 @@ contains
     call alloc(ptri, nz*idimension)
     call alloc(op1int, idimension)
     allocate(first(nz))
-    allocate(lexpst(nfsym))
-
-    lexpst = .false.
 
     if (.not. mat_isdef(P)) call init_mat(P, ntbas(0), ntbas(0))
     P%elms = 0.0d0
@@ -947,7 +945,6 @@ contains
     call dealloc(ptri)
     call dealloc(op1int)
     deallocate(first)
-    deallocate(lexpst)
 
   end subroutine
 
