@@ -523,7 +523,13 @@ C 2600  format(' Fock element no',i3,2x,2i3,f15.6)
 
 c  next lines for case where temp file reopened with same name,
 c  different type (must be sn files). iii=-1 means ignore iii.
-      if (iii.gt.-1.and.((iii.ne.iiia(num)).or.(iiv.ne.iiva(num)))) then
+      if (iii.gt.-1.and.((iii.ne.iiia(num)).or.(iiv.ne.iiva(num))))then
+
+           if (getiprint() >= 5) then
+             write(LUPRI,*) '1) num,iiia(num)=',num,iiia(num),
+     &       '...iiva(num)=',iiva(num)
+           endif
+
 C Gal 95
            itmp=4H       
            jtmp=z'ffffff00'
@@ -538,9 +544,15 @@ C Gal 95
 120         format(' file ',a8,' with iii iiv',2i5,' previously',2i5)
             call abext('files   ') ! interrupts
           endif
-        endif
+       endif
 
-      if (iii.gt.-1.and.((iii.ne.iiia(num)).or.(iiv.ne.iiva(num)))) then
+       if (iii.gt.-1.and.((iii.ne.iiia(num)).or.(iiv.ne.iiva(num))))then
+
+          if (getiprint() >= 5) then
+             write(LUPRI,*) '2) num,iiia(num)=',num,iiia(num),
+     &       '...iiva(num)=',iiva(num)
+          endif
+
           new=1 ! new file
           iiia(num)=iii
           iiva(num)=iiv
@@ -691,6 +703,7 @@ c     write (6,*) ' transf indx from ',i,' to ',num
         write(LUPRI,*) 'files_ccsd exit 6; nflcur,num=',nflcur,num
         call print_cijx_stuff
       endif
+
       return
 
       end subroutine files_ccsd
