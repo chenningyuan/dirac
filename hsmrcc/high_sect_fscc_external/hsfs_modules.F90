@@ -516,7 +516,7 @@ function getiprint() result(ipr)
 ! get private module value
 #include "priunit.h"
  integer :: ipr
- write(LUPRI,*) 'getiprint: print_level_read=',print_level_read,' iprint=',iprint
+! write(LUPRI,*) 'getiprint: print_level_read=',print_level_read,' iprint=',iprint
  call FLSHFO(LUPRI)
  if (.not.print_level_read) then
    call quit('getiprint: print variable NOT extracted !')
