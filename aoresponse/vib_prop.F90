@@ -548,6 +548,9 @@ contains
      type(matrix)              :: D_j3(3), D_j6(6), Df_j3(3, 3), Df_j6(3, 6)
      type(matrix)              :: F_j3(3), F_j6(6), Ff_j3(3, 3), Ff_j6(3, 6)
 
+!    this is for g95 -i8
+     integer                   :: isize
+
 !    open restart file
      call open_restart_file()
 
@@ -557,7 +560,7 @@ contains
 
 
 !    'EL'--'EL' equations
-!    ======================
+!    ====================
 
      r_j = r_e
      perturbation       = 'EL  '
@@ -570,7 +573,8 @@ contains
      Ef_jg = 0.0d0
 
      restart_label = 'ff      '
-     if (.not. find_restart_tensor(restart_label, (/-w, w/), size(Ef_j))) then
+     isize = size(Ef_j)
+     if (.not. find_restart_tensor(restart_label, (/-w, w/), isize)) then
 
        call prop_energy((/perturbation/), (/D, Df/), Ef_j)
        call write_restart_tensor(restart_label, (/-w, w/), Ef_j)
@@ -585,7 +589,8 @@ contains
      call print_tensor((/r_i, r_j/), -Ef_j, perturbation_print, (/-w, w/))
 
      restart_label = 'ffg     '
-     if (.not. find_restart_tensor(restart_label, (/-w, w, 0*w/), size(Ef_jg))) then
+     isize = size(Ef_jg)
+     if (.not. find_restart_tensor(restart_label, (/-w, w, 0*w/), isize)) then
 !      calculate, don't read from restart file
 
 !      could be done like that:
@@ -688,7 +693,8 @@ contains
      Ef_jg = 0.0d0
 
      restart_label = 'fb      '
-     if (.not. find_restart_tensor(restart_label, (/-w, w/), size(Ef_j))) then
+     isize = size(Ef_j)
+     if (.not. find_restart_tensor(restart_label, (/-w, w/), isize)) then
 
        call prop_energy((/perturbation/), (/D, Df/), Ef_j)
        call write_restart_tensor(restart_label, (/-w, w/), Ef_j)
@@ -703,7 +709,8 @@ contains
      call print_tensor((/r_i, r_j/), -Ef_j, perturbation_print, (/-w, w/))
 
      restart_label = 'fbg     '
-     if (.not. find_restart_tensor(restart_label, (/-w, w, 0*w/), size(Ef_jg))) then
+     isize = size(Ef_jg)
+     if (.not. find_restart_tensor(restart_label, (/-w, w, 0*w/), isize)) then
 !      calculate, don't read from restart file
 
        call pert_dens((/perturbation/), S, (/D/), (/F/), D_j3, F_j3, w=(/w/))
@@ -785,7 +792,8 @@ contains
      Ef_jg = 0.0d0
 
      restart_label = 'fq      '
-     if (.not. find_restart_tensor(restart_label, (/-w, w/), size(Ef_j))) then
+     isize = size(Ef_j)
+     if (.not. find_restart_tensor(restart_label, (/-w, w/), isize)) then
 
        call prop_energy((/perturbation/), (/D, Df/), Ef_j)
        call write_restart_tensor(restart_label, (/-w, w/), Ef_j)
@@ -800,7 +808,8 @@ contains
      call print_tensor((/r_i, r_j/), -Ef_j, perturbation_print, (/-w, w/))
 
      restart_label = 'fqg     '
-     if (.not. find_restart_tensor(restart_label, (/-w, w, 0*w/), size(Ef_jg))) then
+     isize = size(Ef_jg)
+     if (.not. find_restart_tensor(restart_label, (/-w, w, 0*w/), isize)) then
 !      calculate, don't read from restart file
 
        call pert_dens((/perturbation/), S, (/D/), (/F/), D_j6, F_j6, w=(/w/))
