@@ -927,6 +927,7 @@ C
 C     Distinguish between the two branches
 C
       NA = LEN(A)
+      IF (NA.GT.80) NA = 80
       IF (INDEX(A(1:NA),'energy') .EQ. 0) THEN
          call alloc(itm, IRNGE2-IRNGE1+1)
          CALL NUMLS1(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,ITM)
@@ -1009,6 +1010,7 @@ C
       NUM2 = 0
       INO  = 0
       NA   = LEN(A)
+      IF (NA.GT.80) NA = 80
       IF(NA.GE.3) THEN
         IF( INDEX(A(1:NA),'all') .GT. 0) THEN
           IC = 0
@@ -1243,6 +1245,7 @@ C     Determine begin and end of the part of the string that contains
 C     the energy values
 C
       NA = LEN(A)
+      IF (NA.GT.80) NA = 80
       MA = INDEX(A(1:NA),'energy') + 6
 C     
       READ (A(MA:NA),*,END=900,ERR=900) ELOW,EHIGH,EGAP
@@ -1367,6 +1370,7 @@ C     Determine begin and end of the part of the string that contains
 C     the energy values
 C
       NA = LEN(A)
+      IF (NA.GT.80) NA = 80
       MA = INDEX(A(1:NA),'NO-occ') + 6
 C     
       READ (A(MA:NA),*,END=900,ERR=900) OHIGH,OLOW,OGAP

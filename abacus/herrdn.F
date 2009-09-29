@@ -3093,7 +3093,6 @@ C  /* Deck famcopy */
 #include "mxcent.h"
       PARAMETER(D1 = 1.0D0)
       DIMENSION ALPHA(KPRIM), CPRIMU(KPRIM,KPRIM)
-      CHARACTER*80 STRING
 #include "cbirea.h"
       DIMENSION ILIST(MXFAMEXP),TMP(MXFAMEXP+2)
 #include "molinp.h"
@@ -3111,10 +3110,7 @@ C     Eg.: 1..20
 C
       CALL RDLINE(LUINFO)
       NUCIJ = 1
-C..LV: This funny construction uses a string with length 80 to avoid a problem in NUMLST that
-C      occurred (on a mac) upon directly passing MLINE(NMLINE)
-      READ (MLINE(NMLINE),'(A)') STRING
-      CALL NUMLST(STRING,ILIST,NFAMEXP(IC),1,NFAMEXP(IC),
+      CALL NUMLST(MLINE(NMLINE),ILIST,NFAMEXP(IC),1,NFAMEXP(IC),
      &     1,NUCIJ,TMP,MXFAMEXP)
       NRCIJ = NUCIJ
       DO 300 L = 1, NUCIJ
