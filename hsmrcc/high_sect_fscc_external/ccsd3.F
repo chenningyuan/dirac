@@ -700,7 +700,7 @@ c  new file when nflcur is 0
         call imove(i,num)
 
 c       write (6,*) ' transf indx from ',i,' to ',num
-        if (getiprint() >= 5) then
+        if (getiprint() >= 6) then
          write (LUPRI,*) ' transf indx from ',i,' to ',num
         endif
 
@@ -4377,5 +4377,6 @@ c
      &                  nij5,ije5(nij5),iii5,iiv5
         write(LUPRI,*) 'nij6,ije6(nij6),iii6,iiv6=',
      &                  nij6,ije6(nij6),iii6,iiv6
+
       end subroutine print_cijx_stuff
 

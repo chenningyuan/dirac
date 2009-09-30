@@ -1787,10 +1787,11 @@ c  calculate heff matrix elements
 !  "ntapef" - file name to be copied into another file "ntapet"
 !
 !------------------------------------------------------------------
+      use print_level
 #if defined HSFS_DYN_ALLOC
+      use cij1_mod
       use cfiles_mod
       use gen_mod
-      use cij1_mod
       use hsfs_parameters
 #include "implicit.h"
 #include "priunit.h"
@@ -1812,8 +1813,28 @@ c  calculate heff matrix elements
       integer*4 ch1,ch2
 
       nija=igen(nstrt(1,ntapef-1)+1)
-      call kcopy(nija+1,igen(nstrt(1,ntapef-1)+1),nij1) ! why copying to single variable ??
+
+      if (getiprint() >= 6) then
+        write(LUPRI,'(/,4x,a)') 'Output from "imove"'
+        write(LUPRI,*) 'ntapef=',ntapef,' ntapet=',ntapet
+        write(LUPRI,*) 'nija=',nija,' nij1=',nij1,' ije1(0)=',ije1(0)
+        call print_cijx_stuff
+      endif
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      call kcopy(nija+1,igen(nstrt(1,ntapef-1)+1),nij1) ! why copying to single variable ?? WRONG ! MUST BE ARRAY !!!
+
+      if (getiprint() >= 6) then
+        write(LUPRI,'(4x,a)') '"imove" - after kcopy (1)'
+        call print_cijx_stuff
+      endif
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       call kcopy(nija+1,igen(nstrt(1,ntapef-1)+nija+2),ije1(0))
+
+      if (getiprint() >= 6) then
+        write(LUPRI,'(4x,a)') '"imove" - after kcopy (2)'
+        call print_cijx_stuff
+      endif
 
       iii1=igen(nstrt(1,ntapef-1)+2*nija+3)
       iiv1=igen(nstrt(1,ntapef-1)+2*nija+4)
@@ -1822,6 +1843,7 @@ c  calculate heff matrix elements
 
       call dimx(nstrt(1,ntapet),nbig,"imove1")
       call dimx(nstrt(2,ntapet),nbig,"imove2")
+
 c   special for scratch files, which start with "s".
            itmp=4H       
            jtmp=z'ffffff00'
@@ -1838,8 +1860,15 @@ c   special for scratch files, which start with "s".
         call dimx(nstrt(1,ntapet),nbig,"imove1  ")
         call dimx(nstrt(2,ntapet),nbig,"imove2  ")
       endif
+
       call kcopy(ije1(nij1)+2*nij1+4,igen(nstrt(1,ntapef-1)+1),
      1 igen(nstrt(1,ntapet-1)+1))
+
+      if (getiprint() >= 6) then
+        write(LUPRI,'(4x,a)') '"imove" - on exit'
+        call print_cijx_stuff
+      endif
+
       return
       end subroutine imove
 
