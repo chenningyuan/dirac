@@ -439,14 +439,14 @@ C 2600  format(' Fock element no',i3,2x,2i3,f15.6)
       subroutine files_ccsd(name,num,new,ijnum,iii,iiv)
 !-----------------------------------------------------------------------------------
 !
-!   subroutine finds # of file named NAME. if not found,
-!   increases nflcur by 1, starts new file.
+!   subroutine finds # of file named NAME; if not found,
+!   increases "nflcur" by 1 and starts new file.
 !
 !   nflcur set to 0 at start of program.
 !
 !   new is 1 for new file, -1 for new file with indices copied from
 !   another file, 0 for existing file. 
-
+!
 !   ijnum=0 used for existing
 !   scratch file, i.e. file to be completely rewritten.
 !
@@ -502,15 +502,15 @@ C 2600  format(' Fock element no',i3,2x,2i3,f15.6)
 
       if (getiprint() >= 5) then
         call header("Output from files_ccsd",-1)
-        write(LUPRI,'(4x,a)')     '...entering data:'
-        write(LUPRI,'(2x,a,i7)')  'nflcur=',nflcur
-        write(LUPRI,'(2x,a,a8)')  'name=',name
-        write(LUPRI,'(2x,a,i7)')  'ijnum=',ijnum
-        write(LUPRI,'(2x,a,2i5)') 'iii,iiv=',iii,iiv
+        write(LUPRI,'(4x,a)')       '>>>>> entering data:'
+        write(LUPRI,'(2x,a,i7)')    'nflcur=',nflcur
+        write(LUPRI,'(2x,a,a8)')    'name=',name
+        write(LUPRI,'(2x,2(a,i7))') 'num=',num,' ijnum=',ijnum
+        write(LUPRI,'(2x,a,2i5)')   'iii,iiv=',iii,iiv
         call print_cijx_stuff
       endif
 
-!   ... skips filling common blocks variables (no diagram ready now)
+!      ... skips filling common blocks variables (no diagram ready now)
       if (nflcur.eq.0) go to 20 
 
 ! namefl(:) - array with all diagram names
@@ -698,7 +698,12 @@ c  new file when nflcur is 0
       if ((iiia(i).eq.iii).and.(iiva(i).eq.iiv)) then
         new=-1
         call imove(i,num)
-c     write (6,*) ' transf indx from ',i,' to ',num
+
+c       write (6,*) ' transf indx from ',i,' to ',num
+        if (getiprint() >= 5) then
+         write (LUPRI,*) ' transf indx from ',i,' to ',num
+        endif
+
         go to 40
       endif
 30    continue
@@ -707,6 +712,7 @@ c     write (6,*) ' transf indx from ',i,' to ',num
 
       if (getiprint() >= 5) then
         write(LUPRI,*) 'files_ccsd exit 6; nflcur,num=',nflcur,num
+        write(LUPRI,*) 'files_ccsd exit: iii,iiv=',iii,iiv
         call print_cijx_stuff
       endif
 
