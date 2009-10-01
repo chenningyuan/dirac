@@ -588,8 +588,12 @@ C Gal 95
 
 !         ...  filling  cij* common blocks with diagrams created earlier
         if (ijnum.eq.1) then
-!         ...   cij* common blocks ...
-          call kcopy(nija+1,igen(nstrt(1,num-1)+1),nij1) ! fill nij1,ij1(:)
+         ! this is wrong 
+!         call kcopy(nija+1,igen(nstrt(1,num-1)+1),nij1) ! fill nij1,ij1(:)
+          nij1=nija ! Ephraim's substitution
+          do k=1,nija
+            ij1(k)=igen(nstrt(1,num-1)+1+k)
+          enddo
           call kcopy(nija+1,igen(nstrt(1,num-1)+nija+2),ije1(0)) ! fill ije1(:)
           iii1=igen(nstrt(1,num-1)+2*nija+3)
           iiv1=igen(nstrt(1,num-1)+2*nija+4)
@@ -601,7 +605,11 @@ C Gal 95
           endif
 
         elseif (ijnum.eq.2) then
-          call kcopy(nija+1,igen(nstrt(1,num-1)+1),nij2)
+!         call kcopy(nija+1,igen(nstrt(1,num-1)+1),nij2) ! wrong !
+          nij2=nija ! Ephraim's substitution
+          do k=1,nija
+            ij2(k)=igen(nstrt(1,num-1)+1+k)
+          enddo
           call kcopy(nija+1,igen(nstrt(1,num-1)+nija+2),ije2(0))
           iii2=igen(nstrt(1,num-1)+2*nija+3)
           iiv2=igen(nstrt(1,num-1)+2*nija+4)
@@ -613,7 +621,11 @@ C Gal 95
           endif
 
         elseif (ijnum.eq.3) then
-          call kcopy(nija+1,igen(nstrt(1,num-1)+1),nij3)
+!         call kcopy(nija+1,igen(nstrt(1,num-1)+1),nij3)
+          nij3=nija ! Ephraim's substitution
+          do k=1,nija
+            ij3(k)=igen(nstrt(1,num-1)+1+k)
+          enddo
           call kcopy(nija+1,igen(nstrt(1,num-1)+nija+2),ije3(0))
           iii3=igen(nstrt(1,num-1)+2*nija+3)
           iiv3=igen(nstrt(1,num-1)+2*nija+4)
@@ -625,7 +637,11 @@ C Gal 95
           endif
 
         elseif (ijnum.eq.4) then
-          call kcopy(nija+1,igen(nstrt(1,num-1)+1),nij4)
+         !call kcopy(nija+1,igen(nstrt(1,num-1)+1),nij4) ! wrong !
+          nij4=nija ! Ephraim's substitution
+          do k=1,nija
+            ij4(k)=igen(nstrt(1,num-1)+1+k)
+          enddo
           call kcopy(nija+1,igen(nstrt(1,num-1)+nija+2),ije4(0))
           iii4=igen(nstrt(1,num-1)+2*nija+3)
           iiv4=igen(nstrt(1,num-1)+2*nija+4)
@@ -637,7 +653,11 @@ C Gal 95
           endif
 
         elseif (ijnum.eq.5) then
-          call kcopy(nija+1,igen(nstrt(1,num-1)+1),nij5)
+!         call kcopy(nija+1,igen(nstrt(1,num-1)+1),nij5)
+          nij5=nija ! Ephraim's substitution
+          do k=1,nija
+            ij5(k)=igen(nstrt(1,num-1)+1+k)
+          enddo
           call kcopy(nija+1,igen(nstrt(1,num-1)+nija+2),ije5(0))
           iii5=igen(nstrt(1,num-1)+2*nija+3)
           iiv5=igen(nstrt(1,num-1)+2*nija+4)
@@ -649,7 +669,11 @@ C Gal 95
           endif
 
         elseif (ijnum.eq.6) then
-          call kcopy(nija+1,igen(nstrt(1,num-1)+1),nij6)
+!         call kcopy(nija+1,igen(nstrt(1,num-1)+1),nij6)
+          nij6=nija ! Ephraim's substitution
+          do k=1,nija
+            ij6(k)=igen(nstrt(1,num-1)+1+k)
+          enddo
           call kcopy(nija+1,igen(nstrt(1,num-1)+nija+2),ije6(0))
           iii6=igen(nstrt(1,num-1)+2*nija+3)
           iiv6=igen(nstrt(1,num-1)+2*nija+4)

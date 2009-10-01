@@ -1111,8 +1111,10 @@ c     order and write collected energies.
       subroutine fmax(namef,tmax,itmax)
 !--------------------------------------------------------------------------------
 !
+! returns tmax, itmax
 !
 !--------------------------------------------------------------------------------
+      use print_level
 #if defined HSFS_DYN_ALLOC
       use cfiles_mod
       use gen_mod
@@ -1151,6 +1153,11 @@ c     order and write collected energies.
         itmax=igen(istrt1+i)
       endif
 20    continue
+
+      if (getiprint()>= 5) then
+       write(LUPRI,*) 'fmax: tmax,itmax=',tmax,itmax
+      endif
+
       return
       end
 

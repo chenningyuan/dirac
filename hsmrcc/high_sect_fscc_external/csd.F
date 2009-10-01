@@ -2,6 +2,7 @@
 !---------------------------------------------------------------------
 !               closed shell CCSD method
 !---------------------------------------------------------------------
+      use print_level
 #if defined HSFS_DYN_ALLOC
       use gen_mod
       use cfiles_mod
@@ -238,7 +239,6 @@ c     iopt(10) .ne.0 - do not save pppp.
       if (iopt(17).ge.4) then
         write (LUPRI,2402) df4,idec(iddf4),idec(inddf4)
       end if
-
 !2401  format (24x,f14.9,2x,i8,2x,i8)
 2401  format (24x,d14.9,2x,i8,2x,i8)
 2402  format (22x,e10.3,2x,i8,2x,i8)
@@ -296,6 +296,7 @@ c diis
 
 !     write(LUPRI,*) abs(diff),abs(diff1),abs(df3),abs(df4) ! control printout
 
+!  ----   if end of convergence, jump out
       if (max(abs(diff),abs(diff1),
      1 abs(df3),abs(df4)).lt.convrg) go to 910
 

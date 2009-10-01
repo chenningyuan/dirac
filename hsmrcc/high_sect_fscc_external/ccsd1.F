@@ -3403,6 +3403,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       return
       end
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine diffmax(name1,name2,names,tmax,itmax)
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
