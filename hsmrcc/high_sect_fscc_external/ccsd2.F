@@ -1822,7 +1822,12 @@ c  calculate heff matrix elements
       endif
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      call kcopy(nija+1,igen(nstrt(1,ntapef-1)+1),nij1) ! why copying to single variable ?? WRONG ! MUST BE ARRAY !!!
+!     call kcopy(nija+1,igen(nstrt(1,ntapef-1)+1),nij1) ! why copying to single variable ?? WRONG ! MUST BE ARRAY !!!
+!          using Ephraim's substitution:
+      nij1=nija
+      do k=1,nija
+        ij1(k)=igen(nstrt(1,ntapef-1)+1+k)
+      enddo
 
       if (getiprint() >= 6) then
         write(LUPRI,'(4x,a)') '"imove" - after kcopy (1)'
