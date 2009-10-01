@@ -15,7 +15,6 @@
 #include "priunit.h"
 #include "csdtime.h"
 #include "dbg.h"
-
 #else
 !      implicit real*8 (a-h,o-z)
 #include "implicit.h"

@@ -1013,6 +1013,7 @@ c     order and write collected energies.
 !
 !
 !--------------------------------------------------------------------------------
+      use print_level
 #if defined HSFS_DYN_ALLOC
       use cij1_mod
       use cfiles_mod
@@ -1054,8 +1055,14 @@ c     order and write collected energies.
           endif
 20      continue
 10    continue
+
+      if (getiprint()>= 5) then
+        write(LUPRI,*) 'fmax6: tmax,namef=',tmax,namef
+        write(LUPRI,*) 'fmax6: idmax,indmax=',idmax,indmax
+      endif
+
       return
-      end
+      end subroutine fmax6
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine fmax8 (namef,tmax,idmax,indmax)
@@ -1063,6 +1070,7 @@ c     order and write collected energies.
 !
 !
 !--------------------------------------------------------------------------------
+      use print_level
 #if defined HSFS_DYN_ALLOC
       use cij1_mod
       use cfiles_mod
@@ -1104,8 +1112,14 @@ c     order and write collected energies.
           endif
 20      continue
 10    continue
+
+      if (getiprint()>= 5) then
+       write(LUPRI,*) 'fmax8: tmax,namef=',tmax,namef
+       write(LUPRI,*) 'fmax8: idmax,indmax=',idmax,indmax
+      endif
+
       return
-      end
+      end subroutine fmax8
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine fmax(namef,tmax,itmax)
@@ -1155,11 +1169,12 @@ c     order and write collected energies.
 20    continue
 
       if (getiprint()>= 5) then
-       write(LUPRI,*) 'fmax: tmax,itmax=',tmax,itmax
+       write(LUPRI,*) 'fmax: tmax,namef=',tmax,namef
+       write(LUPRI,*) 'fmax: itmax=',itmax
       endif
 
       return
-      end
+      end subroutine fmax
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       function hdet11(ldet,ia,ib)
