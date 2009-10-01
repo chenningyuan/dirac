@@ -5,9 +5,10 @@
 #include <sstream>
 #include <exception>
 #include "taylor.h"
-using namespace std;
 #include "taylor_newton.h"
 #include "quaternion.h"
+
+using namespace std;
 
 int verbosity = 0; // 0 - standard amount of output, -1 no output, >0 debugging output.
 
@@ -110,8 +111,9 @@ vec<double,3> center_of_mass(const vector<string> &sym, const vector<vec<double,
 	if (Z<0)
 	{
 	    if (verbosity>=0)
-		cerr << "Unknown element " << sym[i] << ", assuming mass = 1 amu" << endl;
-	    m = 0;
+		cerr << "Unknown element " << sym[i] << 
+		    ", assuming mass = 1 amu" << endl;
+	    m = 1;
 	}
 	else
 	{
@@ -258,8 +260,8 @@ int rot_fit_rms(int argc, char *argv[], ostream &dst)
 	cerr << 
 	    "Usage: moltool -rms MOLECULE1 MOLECULE2\n"
 	    " Translate MOLECULE2 to have the same center of mass\n"
-	    " as MOLECULE1, then rotate MOLECULE2 to match MOLECULE1\n"
-	    " in the best possible (RMS) way.\n";
+	    " as MOLECULE1, then rotate MOLECULE2 around its c.m. to\n"
+	    " match MOLECULE1 in the best possible (RMS) way.\n";
 	return -1;
     }
     vector<string> refsym, rotsym;
@@ -272,7 +274,8 @@ int rot_fit_rms(int argc, char *argv[], ostream &dst)
 	return -1;
     }
     // Move both molecules to have their center of mass at the origin
-    vec<double,3> ref_cm = center_of_mass(refsym,refr), rot_cm = center_of_mass(rotsym,rotr);
+    vec<double,3> ref_cm = center_of_mass(refsym,refr), 
+	rot_cm = center_of_mass(rotsym,rotr);
     for (int i=0;i<refr.size();i++)
     {
 	refr[i] -= ref_cm;
@@ -282,7 +285,7 @@ int rot_fit_rms(int argc, char *argv[], ostream &dst)
     quaternion<double> Rtot = 1;
     double best = 1e100;
     double max_step = 1;
-    for (int ii=0;ii<14;ii++)
+    for (int ii=0;ii<1000;ii++)
     {
 	quaternion< taylor<3,2> > Rt;
 	taylor<3,2> devt;
@@ -302,8 +305,8 @@ int rot_fit_rms(int argc, char *argv[], ostream &dst)
 	}
 	double step_norm = sqrt(x.abs2());
 	if (verbosity > 0)
-	    cerr << "RMS: " << sqrt(best/rotr.size()) << ", step norm: " << step_norm << endl;
-//	cerr << "Step: " << step_norm << endl;
+	    cerr << "RMS: " << sqrt(best/rotr.size()) << 
+		", step norm: " << step_norm << endl;
 	quaternion<double> R = quaternion_rotor(x);
 	rotate_geom(rotr,R);
 	Rtot = R*Rtot;
@@ -311,10 +314,10 @@ int rot_fit_rms(int argc, char *argv[], ostream &dst)
 	    break;
     }
     
-    Rtot = log(Rtot);
-    Rtot *=2;
     if (verbosity>=0)
     {
+	Rtot = log(Rtot);
+	Rtot *=2;
 	cerr.precision(15);
 	cerr << "Translate " << -rot_cm[0] << " " << -rot_cm[1] << " " << -rot_cm[2] << endl;
 	cerr << "Rotation axis: " << Rtot[1] << " " << Rtot[2] << " " << Rtot[3] << endl;

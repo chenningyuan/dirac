@@ -103,7 +103,7 @@ int levenberg_step(vec<double, Nvar> &x, const taylor<Nvar,2> &t, double max_ste
 
 	if (lambda > 1e10)
 	    return -1;
-	//cerr << "lambda = " << lambda << endl;
+
 	devt[4] += lambda;
 	devt[7] += lambda;
 	devt[9] += lambda;
