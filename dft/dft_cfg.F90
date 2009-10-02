@@ -56,7 +56,7 @@ module dft_cfg
   real(8), public :: dft_cfg_accepted_error                  = 1.0d-3
   real(8), public :: dft_cfg_dfthr0                          = 1.0d-9
   real(8), public :: dft_cfg_dfthrl                          = 1.0d-10
-  real(8), public :: dft_cfg_dfthri                          = 1.0d-15
+  real(8), public :: dft_cfg_dfthri                          = 2.0d-12
   real(8), public :: dft_cfg_ac_ip                           = 0.0d0
   real(8), public :: dft_cfg_ac_threshold                    = 0.0d0
   real(8), public :: dft_cfg_homo_eigenvalue                 = 0.0d0

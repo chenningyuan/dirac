@@ -103,9 +103,8 @@ module dft_ao
 ! this is probably eq. 8.2.25 in the pink book
   real(8), parameter   :: g(10) = (/1.0d0, 1.3333d0, 1.6d0, 1.83d0, 2.03d0, 2.22d0, 2.39d0, 2.55d0, 2.70d0, 2.84d0/)
 
-!                         cell_size          = 3.2d0
-!                         half_cell_diagonal = cell_size*0.5d0*sqrt(3.0d0)
-  real(8), parameter   :: half_cell_diagonal = 2.77128129d0
+  real(8), parameter   :: cell_size          = 2.25d0
+  real(8), parameter   :: half_cell_diagonal = cell_size*0.5d0*sqrt(3.0d0)
 
   logical :: dft_basis_info_allocated = .false.
   logical :: dft_basis_info_set       = .false.
@@ -155,14 +154,19 @@ contains
                     cz,   &
                     ao)
 !   ----------------------------------------------------------------------------
-    real(8), intent(in)    :: cx
-    real(8), intent(in)    :: cy
-    real(8), intent(in)    :: cz
-    real(8)                :: ao(*)
+    real(8), intent(in) :: cx
+    real(8), intent(in) :: cy
+    real(8), intent(in) :: cz
+    real(8)             :: ao(*)
 !   ----------------------------------------------------------------------------
-    integer                :: i, iend, ishell, isym
-    real(8)                :: px, py, pz, p2
-    integer                :: ofg, ofm
+    integer             :: i, iend, ishell, isym
+    real(8)             :: px, py, pz, p2
+    integer             :: ofg, ofm
+
+!#define DEBUG_SHELL_RANGE
+#ifdef DEBUG_SHELL_RANGE
+    character(dft_nr_shells) :: shell_range
+#endif
 !   ----------------------------------------------------------------------------
 
     iend = dft_nr_shells
@@ -171,6 +175,12 @@ contains
 !   this will make problems if you calculate the relativistic current density
 !   expression using levy-leblond, in this case comment this out
     if (only_large) iend = dft_nr_large_shells
+
+#ifdef DEBUG_SHELL_RANGE
+    do ishell = 1, iend
+       shell_range(ishell:ishell) = ' '
+    end do
+#endif
 
     i = 1
     do ishell = 1, iend
@@ -183,11 +193,19 @@ contains
 
           p2 = px*px + py*py + pz*pz
 
-          if (                            &
-              (.not. use_ao_screening)    &
-              .or.                        &
-              (p2 < shell_extent(ishell)) &
+!         note that in contrast to dalton:
+!       - shell_extent contains already the half_cell_diagonal
+!       - is squared (for more performance)
+
+          if (                             &
+              (.not. use_ao_screening)     &
+              .or.                         &
+              (p2 <= shell_extent(ishell)) &
              ) then
+
+#ifdef DEBUG_SHELL_RANGE
+            shell_range(ishell:ishell) = '*'
+#endif
 
 !           this is because get_gao1 does both ao and ao1
             if (need_ao_order(0, 0) .and. .not. need_ao_order(1, 0)) then
@@ -225,6 +243,10 @@ contains
         end if
       end do
     end do
+
+#ifdef DEBUG_SHELL_RANGE
+    write(*, *) 'shell range: [', shell_range(1:iend), ']'
+#endif
 
   end subroutine
 
@@ -706,16 +728,18 @@ contains
         shell_extent(ishell) = 0.0d0
 
         icount = 0
-        do iprim = i + 1, j
+        do iprim = i, j
           if (dabs(priccf(iprim, contracted_shell_nr)) > 1.0d-30) then
-            icount = icount + 1
-            nr_nonzero_contraction_coefs(ishell) = icount
-            contraction_coef2(ishell, icount)    = priccf(iprim, contracted_shell_nr)
-            primitive_exp2(ishell, icount)       = priexp(iprim)
+            if (iprim > i) then
+              icount = icount + 1
+              nr_nonzero_contraction_coefs(ishell) = icount
+              contraction_coef2(ishell, icount)    = priccf(iprim, contracted_shell_nr)
+              primitive_exp2(ishell, icount)       = priexp(iprim)
+            end if
 
 !           get shell extents
-            r = (log(abs(contraction_coef2(ishell, icount))) &
-               - log(ao_threshold))/primitive_exp2(ishell, icount)
+            r = (log(abs(priccf(iprim, contracted_shell_nr))) &
+               - log(ao_threshold))/priexp(iprim)
 
             if (shell_extent(ishell) < r) shell_extent(ishell) = r
           end if
@@ -724,7 +748,7 @@ contains
         shell_extent(ishell) = sqrt(shell_extent(ishell))*g(n_quantum_nr(ishell)) &
                              + half_cell_diagonal
 
-!       better square this one than sqrt p2 in each point
+!       better square this once than sqrt p2 in each point
         shell_extent(ishell) = shell_extent(ishell)**2.0d0
 
       end do
