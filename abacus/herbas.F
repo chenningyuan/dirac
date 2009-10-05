@@ -198,8 +198,22 @@ C notation changed from 'd' to 'd-' for consistency with EMSL
 
 !#define ALLOW_NONSTANDARD_AUGMENTATION
 #ifdef ALLOW_NONSTANDARD_AUGMENTATION
-         else if ((basnam(3:15) == 'aug-Turbomole') .or.
-     &            (basnam(3:11) == 'aug-dyall')) then
+!        else if (basnam(3:15) == 'aug-Turbomole') then
+!radovan: this does not work because basis set is max 20 characters long
+         else if (basnam(3:13) == 'a-Turbomole') then
+           bastmp(1:76) = basnam(5:80)
+           if      (basnam(1:2) == 's-') then
+             iaug = 1
+           else if (basnam(1:2) == 'd-') then
+             iaug = 2
+           else if (basnam(1:2) == 't-') then
+             iaug = 3
+           else if (basnam(1:2) == 'q-') then
+             iaug = 4
+           else
+             call quit('illegal augmentation in herbas')
+           end if
+         else if (basnam(3:11) == 'aug-dyall') then
            bastmp(1:74) = basnam(7:80)
            if      (basnam(1:2) == 's-') then
              iaug = 1
@@ -693,43 +707,53 @@ C
 C Read all of the primitives, and the coeffecients
 C If this is some kind of augmented basis set, we augment it here, kr-96
 C
-C Fix jan -01 VB: For certain elements some of the cc basis sets do 
-C not contain exponents that are monotonically decreasing.
-C Before augmenting we have to determine the two lowest exponents.
-C
          IF (IAUG .GT. 0) THEN
             do kaug = 1, iaug
-               INTEXP = INTEXP + 1
-               INTORB = INTORB + 1
-               IF (ALPHA(1,NBLOCK) .GT. ALPHA(2,NBLOCK)) THEN
-                  EXMIN1 = ALPHA(2,NBLOCK)
-                  EXMIN2 = ALPHA(1,NBLOCK)
-               ELSE
-                  EXMIN1 = ALPHA(1,NBLOCK)
-                  EXMIN2 = ALPHA(2,NBLOCK)
-               END IF
 
-               do iex = 3, intexp - 1
-                  IF (ALPHA(IEX,NBLOCK) .LT. EXMIN1) THEN
-                     EXMIN2 = EXMIN1
-                     EXMIN1 = ALPHA(IEX,NBLOCK)
-                  ELSE IF (ALPHA(IEX,NBLOCK) .LT. EXMIN2) THEN
-                     EXMIN2 = ALPHA(IEX,NBLOCK)
-                  END IF
-               end do
+!             find lowest nonzero alpha
+!             note that they do not have to be monotonically decreasing!
+              alpha_lowest = maxval(alpha(1:intexp, nblock))
+              do iprim = 1, intexp
+                if (
+     &              (alpha(iprim, nblock) < alpha_lowest)
+     &              .and.
+     &              (alpha(iprim, nblock) > 0.0d0)
+     &             ) then
+                  alpha_lowest = alpha(iprim, nblock)
+                end if
+              end do
 
+!             find second lowest nonzero alpha
+              alpha_second_lowest = maxval(alpha(1:intexp, nblock))
+              do iprim = 1, intexp
+                if (
+     &              (alpha(iprim, nblock) < alpha_second_lowest)
+     &              .and.
+     &              (alpha(iprim, nblock) > alpha_lowest)
+     &             ) then
+                  alpha_second_lowest = alpha(iprim, nblock)
+                end if
+              end do
+
+              if (dabs(alpha_second_lowest 
+     &                    - alpha_lowest) < 1.0d-20) then
 #ifdef ALLOW_NONSTANDARD_AUGMENTATION
-!radovan:      if an angular momentum has only one exponent
-!              then exmin1 = 0.0d0, in this case we tweak it
-!              (factor 3.5 is my choice, no really good reason for it)
-               if (exmin1 < 1.0d-10) then
-                 exmin1 = exmin2
-                 exmin2 = exmin1*3.5d0
-               end if
-#endif /* ifdef ALLOW_NONSTANDARD_AUGMENTATION */
+!               if there is only one primitive in the original set
+!               then alpha_second_lowest equals alpha_lowest
+!               in this case alpha_second_lowest is multiplied by 3.5
+!               (factor 3.5 is my choice, no really good reason for it)
+                alpha_second_lowest = 3.5d0*alpha_lowest
+#else
+                call quit('error in automatic augmentation')
+#endif
+              end if
 
-               ALPHA(INTEXP,NBLOCK) = EXMIN1*EXMIN1/EXMIN2
-               CPRIMU(INTEXP,INTORB,NBLOCK) = 1.0D0
+              intexp = intexp + 1
+              intorb = intorb + 1
+
+              alpha(intexp, nblock) 
+     &            = alpha_lowest*alpha_lowest/alpha_second_lowest
+              cprimu(intexp, intorb, nblock) = 1.0d0
             end do
 
              IF (IPRINT.GE.5) THEN
