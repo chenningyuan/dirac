@@ -92,27 +92,46 @@ contains
       real(8),intent(out) :: w(nc),Q(nc,nc) !frequencies, normal modes Q(:,k)
       real(8)      :: M(nc/3),Mtot,Z(nc/3),G(nc),Rc(nc),H(nc,nc),orig(3)=0
 ! Bin Gao: change unit to -1 for Dalton main branch
-      integer      :: IS(nc/3),i,internal=0,negative=0,unit=-1
+      integer      :: IS(nc/3),internal=0,negative=0,unit=-1
       logical      :: ex
       character*22 :: fmt
+      integer      :: ic, jc, io, nc_read
       call NUCLEI_ifc(nc/3,Z,IS,G)
       call GPINQ('DALTON.HES','EXIST',ex)
       if (.not.ex) call quit('load_vib_modes: Hessian file DALTON.HES not found')
       call GPOPEN(unit,'DALTON.HES','OLD',' ','FORMATTED',0,.false.)
-      read (unit,'(i12)') i
-      if (i/=nc) call quit('load_vib_modes: DALTON.HES inconsistent with MOLECULE.INP')
-      write (fmt,'(a,i4,a,i4,a)') '(',nc,'(/',nc,'(g24.17/)))'
-      read (unit,fmt) H
-      write (fmt(1:15),'(a,i3,a)') '(',nc,'(/g24.17))'
-      read (unit,fmt,iostat=i) Rc !if no geometry at the end, reads EOF
-      if (i==0.and..not.all(G==Rc)) & !if Rc read, compare
-         call quit('load_vib_modes: Different geometry in DALTON.HES and MOLECULE.INP')
+
+      read (unit, *) nc_read
+      if (nc_read /= nc) call quit('load_vib_modes: DALTON.HES inconsistent with MOLECULE.INP')
+
+      do ic = 1, nc
+        read (unit, *)
+        do jc = 1, nc
+          read (unit, *) H(ic, jc)
+        end do
+      end do
+
+      read (unit, *)
+      do ic = 1, nc
+        read (unit, *, iostat = io) Rc(ic)
+      end do
+
+!     Rc read from DALTON.HES (io is 0), check whether geometry matches
+      if (io == 0) then
+        do ic = 1, nc
+!         be tolerant with digits
+          if (dabs(G(ic) - Rc(ic)) > 1.0d-6) then
+            call quit('load_vib_modes: Different geometry in DALTON.HES and MOLECULE.INP')
+          end if
+        end do
+      end if
+
       call GPCLOSE(unit,'KEEP')
-      call VIBHES(1,nc,G,nq,(/(0d0,i=1,nc)/),H,(/(0d0,i=1,6*nc)/) &
-                 ,nint(Z),(/(0d0,i=1,2*nc*nc)/)); nq=nc-nq
+      call VIBHES(1,nc,G,nq,(/(0d0,ic=1,nc)/),H,(/(0d0,ic=1,6*nc)/) &
+                 ,nint(Z),(/(0d0,ic=1,2*nc*nc)/)); nq=nc-nq
       call VIBMAS(M,Mtot,IS,nint(Z),nc/3,G,orig,1)
-      call VIBNOR(H,M,(/(0d0,i=1,nc)/),(/(0d0,i=1,nc*(nc+1)/2)/) &
-                 ,w,Q,(/(0d0,i=1,nc*nc)/),(/(0d0,i=1,30*nc*nc+1)/) &
+      call VIBNOR(H,M,(/(0d0,ic=1,nc)/),(/(0d0,ic=1,nc*(nc+1)/2)/) &
+                 ,w,Q,(/(0d0,ic=1,nc*nc)/),(/(0d0,ic=1,30*nc*nc+1)/) &
                  ,30*nc*nc+1,nc,internal,negative,.false.,1)
       call NUCLEI_ifc(nc/3,Z,IS,G)
       w = sign(sqrt(abs(w)),w)
