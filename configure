@@ -1395,6 +1395,8 @@ setup_math_lib(){
                       optblas=$2;;
     libmkl_itp) append LIB "-L$2 -lguide -lpthread -lmkl_itp"
                       optblas=$2;;
+    libmkl_intel_lp64) append LIB "-L$2 -lmkl_lapack -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lguide -lpthread"
+                       optblas=$2;;
 
     # miro: this is the only ILP64 library we offer
     libmkl_ilp64)
@@ -1574,6 +1576,7 @@ while [ -n "$old_libs" ]; do
     "-lmkl_lapack -lguide -lpthread -lmkl") lib_name="libmkl";;
     "-lmkl_lapack -lmkl_ipf -lguide -ldl") lib_name="libmkl_ipf";;
     "-lmkl_lapack -lguide -lpthread -lmkl_intel_ilp64 -lmkl") lib_name="libmkl_ilp64";;
+    "-lmkl_lapack -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lguide -lpthread") lib_name="libmkl_intel_lp64";;
     "-lguide -lpthread -lmkl_itp") lib_name="libmkl_itp" ;;
   esac
   return_libs="$return_libs $lib_name$col_sep $lib_pwd$col_sep Previous installation$row_sep"
@@ -1630,7 +1633,7 @@ fi
 ext_list='.so .a'
        #  $userlib comes from the parameter list
 lib_list="$userlib libblas libatlas libesslp2 libessl libcomplib.sgimath \ 
-    libmkl libmkl_ipf libmkl_itp libmkl_ilp64 sunperf libveclib libdxml liblapack"
+    libmkl libmkl_ipf libmkl_itp libmkl_intel_lp64 libmkl_ilp64 sunperf libveclib libdxml liblapack"
 LIB=""
 math_dirs=$dir_list
 
