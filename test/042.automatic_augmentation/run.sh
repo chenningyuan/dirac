@@ -16,6 +16,11 @@ export MOL=s-aug-Turbomole-DZP.mol
 export MOL=d-aug-Turbomole-DZP.mol
 ../run.sh
 
+export MOL=Turbomole-TZVPP.mol
+../run.sh
+export MOL=s-aug-Turbomole-TZVPP.mol
+../run.sh
+
 export MOL=dyall.v2z.mol
 ../run.sh
 export MOL=d-aug-dyall.v2z.mol
