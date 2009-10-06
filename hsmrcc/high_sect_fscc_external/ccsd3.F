@@ -2481,7 +2481,6 @@ c  indices not retained for pppp.
       nt=nstrt(1,num-1)+2*ndij+4
       nt0=nt
 
-!     if (iopt(1).ge.5) then ! ... control printout
       if (getiprint() >= 5) then ! ... control printout
         write(LUPRI,'(/,2x,a,i12)') 'tmplt, nt=',nt
       endif
