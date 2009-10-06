@@ -195,6 +195,9 @@ use densfit_common
 !
   work_matrix(1:n_fit,1:n_fit) = weight_matrix(1:n_fit,1:n_fit)
   fit_coefficients(1:n_fit) = weight_vector(1:n_fit)
+
+! miro: fix for g95
+  info=0
 !
 ! Perform the fit
 !
