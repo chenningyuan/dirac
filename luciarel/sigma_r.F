@@ -3496,7 +3496,9 @@ CT                  CALL QEXIT ('MATCS')
       ITPAR(2) = KTYP
 *     ITPAR(1) = KTYP
 *     ITPAR(2) = LTYP
-      CALL NEWTYP_REL(ISCTP,IACAR,ITPAR,2,KSTTYP)
+CSK - 6th of October 2009 - commented out because of wrong number of
+Carguments in calling list - thanks to Miro for pointig it out
+CSK   CALL NEWTYP_REL(ISCTP,IACAR,ITPAR,2,KSTTYP)
 C     NEWTYP_REL(INSPGP,IACOP,ITPOP,NOP,OUTSPGP)
 C      SYMCOM(ITASK,IOBJ,I1,I2,I12)
       CALL SYMCOM_REL(3,0,KLSM,ISCSM,KSTRSM)
@@ -4197,18 +4199,20 @@ C?             call memchk
 C?             WRITE(6,*) 'Do memory check ...before dmk0one'
 C?             call memchk
 *
-               call dmk0one(IASM,IATP,JASM,JATP,
-     &              IAGRP,NIB,
-     &              NGAS,IAOC,JAOC,
-     &              SB,CB,
-     &              ADSXA,STSTSX,
-     &              NOBPTS,IOBPTS,
-     &              MAXI,MAXK,
-     &              SSCR,CSCR,I1,XI1S,I2,XI2S,XINT,
-     &              NSMOB,NSMST,MOCAA,
-     &              SCLFAC,
-     &              ONEINTS,INTSPACE,
-     &              IRI,IRICO,IPM1,IUB,ISMDST,NTEST)
+CSK - 6th of October 2009 - commented out because of wrong number of
+Carguments in calling list - thanks to Miro for pointig it out
+CSK            call dmk0one(IASM,IATP,JASM,JATP,
+CSK  &              IAGRP,NIB,
+CSK  &              NGAS,IAOC,JAOC,
+CSK  &              SB,CB,
+CSK  &              ADSXA,STSTSX,
+CSK  &              NOBPTS,IOBPTS,
+CSK  &              MAXI,MAXK,
+CSK  &              SSCR,CSCR,I1,XI1S,I2,XI2S,XINT,
+CSK  &              NSMOB,NSMST,MOCAA,
+CSK  &              SCLFAC,
+CSK  &              ONEINTS,INTSPACE,
+CSK  &              IRI,IRICO,IPM1,IUB,ISMDST,NTEST)
 *
                IF(NTEST.GE.500) THEN
                   WRITE(6,*) ' SB transposed  after dmk0one'
@@ -4532,16 +4536,18 @@ c    &           IBU,JBU,KBU,LBU,XIJILS)
 C?       WRITE(6,*) 'Do memory check ...before dmk1one'
 C?       call memchk
 *
-         call dmk1one(IASM,IBSM,IATP,IBTP,JASM,JBSM,
-     &        JATP,JBTP,IAGRP,IBGRP,JAGRP,JBGRP,NIA,NIB,
-     &        NJA,NJB,NGAS,IAOC,IBOC,JAOC,JBOC,
-     &        SB,CB,
-     &        ADSXA,STSTSX,NOBPTS,NOBPTS2,
-     &        IOBPTS,IOBPTS2,MAXI,MAXK,
-     &        SSCR,CSCR,I1,XI1S,I2,XI2S,
-     &        XINT,NSMOB,NSMST,
-     &        ONEINTS,INTSPACE,SCLFAC,
-     &        IRI,IRICO,IPM1,IUB,ISMDST,NTEST)
+CSK - 6th of October 2009 - commented out because of wrong number of
+Carguments in calling list - thanks to Miro for pointig it out
+CSK      call dmk1one(IASM,IBSM,IATP,IBTP,JASM,JBSM,
+CSK  &        JATP,JBTP,IAGRP,IBGRP,JAGRP,JBGRP,NIA,NIB,
+CSK  &        NJA,NJB,NGAS,IAOC,IBOC,JAOC,JBOC,
+CSK  &        SB,CB,
+CSK  &        ADSXA,STSTSX,NOBPTS,NOBPTS2,
+CSK  &        IOBPTS,IOBPTS2,MAXI,MAXK,
+CSK  &        SSCR,CSCR,I1,XI1S,I2,XI2S,
+CSK  &        XINT,NSMOB,NSMST,
+CSK  &        ONEINTS,INTSPACE,SCLFAC,
+CSK  &        IRI,IRICO,IPM1,IUB,ISMDST,NTEST)
 *
          if (NTEST.ge.500) then
             if (IPM1.eq.-1) write(6,*) 'MARKER-1'

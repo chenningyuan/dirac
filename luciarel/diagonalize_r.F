@@ -3003,7 +3003,7 @@ C                      INPRDD(VEC1,VEC2,LU1,LU2,IREW,LBLK)
            IPRECOND = 1
            CALL H0M1TD(LU3,LUDIA,LU4,LBLK,NP1+NP2+NQ,IPNTR,
      &                 H0,-EIGAPR,H0SCR,XH0IX,
-     &                 NP1,NP2,NQ,VEC1,VEC2,IPRT,IPRECOND)
+     &                 NP1,NP2,NQ,VEC1,VEC2,IPRT)
 C               H0M1TD(LUOUT,LUDIA,LUIN,LBLK,NPQDM,IPNTR,
 C    &                  H0,SHIFT,WORK,XH0PSX,
 C    &                  NP1,NP2,NQ,VEC1,VEC2,NTESTG,IPRECOND)
@@ -3044,7 +3044,7 @@ C    &                  NP1,NP2,NQ,VEC1,VEC2,NTESTG,IPRECOND)
 *
              CALL H0M1TD(LU4,LUDIA,LU5,LBLK,Np1+Np2+NQ,
      &                   IPNTR,H0,-EIGAPR,H0SCR,XH0IX,
-     &                   NP1,NP2,NQ,VEC1,VEC2,IPRT,IPRECOND)
+     &                   NP1,NP2,NQ,VEC1,VEC2,IPRT)
 *
 * Gamma = X(T) * (H0 - E) ** -1 * X
               GAMMA = INPRDD(VEC1,VEC2,LU5,LU4,1,LBLK)
