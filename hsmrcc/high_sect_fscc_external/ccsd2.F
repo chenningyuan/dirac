@@ -1153,14 +1153,24 @@ c     order and write collected energies.
 
       call files_ccsd(namef,ntapef,new,1,-1,-1)
       if (new.ne.0) then
-        write(*,*) ' file for fmax not found'
+        write(LUPRI,*) 'file for fmax not found, namef=',namef
         call abext('fmax    ')
       endif
+! find out maximal element and its index
       tmax=0.d0
       itmax=0
+!    ... size of array 
       nsize=ije1(nij1)
+!    ... starting position of elements
       istrt1=nstrt(1,ntapef-1)+2*nij1+4
+!    ... starting position of indexes
       istrt2=nstrt(2,ntapef-1)
+
+      if (getiprint()>= 5) then
+       write(LUPRI,*) 'fmax: nsize=',nsize,' istrt1=',istrt1,
+     & ' istrt2=',istrt2 
+      endif
+
       do 20 i=1,nsize
       if (abs(gen(istrt2+i)).gt.abs(tmax)) then
         tmax=gen(istrt2+i)
