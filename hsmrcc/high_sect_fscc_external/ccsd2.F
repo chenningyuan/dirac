@@ -1172,15 +1172,21 @@ c     order and write collected energies.
       endif
 
       do 20 i=1,nsize
+
+        if (getiprint()>= 12) then
+          write(LUPRI,*) 'fmax: i=',i,' gen(istrt2+i)=',gen(istrt2+i)
+        endif
+
       if (abs(gen(istrt2+i)).gt.abs(tmax)) then
         tmax=gen(istrt2+i)
         itmax=igen(istrt1+i)
       endif
+
 20    continue
 
       if (getiprint()>= 5) then
-       write(LUPRI,*) 'fmax: tmax,namef=',tmax,namef
-       write(LUPRI,*) 'fmax: itmax=',itmax
+        write(LUPRI,*) 'fmax: tmax,namef=',tmax,namef
+        write(LUPRI,*) 'fmax: itmax=',itmax
       endif
 
       return

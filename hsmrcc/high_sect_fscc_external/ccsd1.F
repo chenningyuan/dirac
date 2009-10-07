@@ -2511,6 +2511,13 @@ c   namet=name1*f1+name2*f2
      1  1,gen(nstrt(2,ntape1-1)+1),1)
         if (getiprint()>=5) then
           write(LUPRI,*) 'add: name1.eq.namet, f1,f2=',f1,f2
+          write(LUPRI,*) 'add: nstrt(2,ntape1-1)+1:',nstrt(2,ntape1-1)+1
+          if (getiprint()>=10) then
+            do i=1,nsize
+               write(LUPRI,*) 'i=',i,'. gen(nstrt(2,ntape1-1)+1+i)=',
+     &         gen(nstrt(2,ntape1-1)+1+i)
+            enddo
+          endif
         endif
       elseif (name2.eq.namet) then
         if (f2.ne.1.d0) call rvmuls(nsize,gen(nstrt(2,ntape2-1)+1),
@@ -2519,6 +2526,13 @@ c   namet=name1*f1+name2*f2
      1  1,gen(nstrt(2,ntape2-1)+1),1)
         if (getiprint() >= 5) then
           write(LUPRI,*) 'add: name2.eq.namet, f1,f2=',f1,f2
+          write(LUPRI,*) 'add: nstrt(2,ntape2-1)+1:',nstrt(2,ntape2-1)+1
+          if (getiprint()>=10) then
+            do i=1,nsize
+               write(LUPRI,*) 'i=',i,' gen(nstrt(2,ntape2-1)+1+i)=',
+     &         gen(nstrt(2,ntape1-1)+1+i)
+            enddo
+          endif
         endif
       else
         call rvmuls(nsize,gen(nstrt(2,ntape1-1)+1),
@@ -2527,6 +2541,13 @@ c   namet=name1*f1+name2*f2
      1  1,gen(nstrt(2,ntapet-1)+1),1)
         if (getiprint() >= 5) then
           write(LUPRI,*) 'add: else branch, f1,f2=',f1,f2
+          write(LUPRI,*) 'add: nstrt(2,ntapet-1)+1:',nstrt(2,ntapet-1)+1
+          if (getiprint()>=10) then
+            do i=1,nsize
+              write(LUPRI,*) 'i=',i,'. gen(nstrt(2,ntapet-1)+1+i)=',
+     &        gen(nstrt(2,ntapet-1)+1+i)
+            enddo
+          endif
         endif
       endif
 
