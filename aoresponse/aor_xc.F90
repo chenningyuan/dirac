@@ -1,18 +1,30 @@
 module aor_xc
 
+#ifdef MOD_AUTODIFF
   use dft_cfg
   use dft_density
   use aor_binomial
   use dft_cb_interface
+  use xc_fun
 
   implicit none
 
+  public aor_xc_new
+
+  private
+
+  type xc_response_contribution
+    real(8) :: prefactor
+    integer :: nr_density_variables
+    integer :: density_variable_list(XC_MAX_ORDER)
+    integer :: matrix_list(XC_MAX_ORDER)
+    integer :: functional_derv_order(5)
+    integer :: previous
+    integer :: next
+  end type
+
 contains
 
-  subroutine aor_xc_empty()
-  end subroutine
-
-#ifdef MOD_AUTODIFF
   subroutine aor_xc_new(order,   &
                         nr_dmat, &
                         use_gga, &
