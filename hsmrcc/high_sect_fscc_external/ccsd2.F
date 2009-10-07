@@ -2419,7 +2419,9 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine rvmuls(n,a,s,c)
+!  ... multiplication of a vector by a scalar
 !  ...  c(i)=a(i)*s
+! miro: why not using "daxpy" ?
 !     implicit real*8 (a-h,o-z)
 #include "implicit.h"
 #include "priunit.h"

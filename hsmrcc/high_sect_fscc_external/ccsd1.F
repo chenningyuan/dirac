@@ -2490,32 +2490,49 @@ c   namet=name1*f1+name2*f2
 !       write (LUPRI,123) name1,name2,iii2,iii3,iiv2,iiv3,ije2(nij2),
 !    1  ije3(nij3)
 123     format(2a8,6i10)
-        write(LUPRI,*) 'getiprint()=',getiprint()
         call flush(LUPRI)
         call abext('add     ')
       endif
+
       call files_ccsd(namet,ntapet,new,1,iii2,iiv2)
+
       nsize=ije2(nij2) ! picks up nsize
+
+      if (getiprint() >= 5) then
+        write(LUPRI,*) 'add: nsize=ije2(nij2)=',nsize
+       write(LUPRI,'(2x,3(a,a8))') 'name1=',name1,' name2=',name2,
+     &                             ' namet=',namet
+      endif
+
       if (name1.eq.namet) then
         if (f1.ne.1.d0) call rvmuls(nsize,gen(nstrt(2,ntape1-1)+1),
      1  f1,gen(nstrt(2,ntape1-1)+1))
         call daxpy(nsize,f2,gen(nstrt(2,ntape2-1)+1),
      1  1,gen(nstrt(2,ntape1-1)+1),1)
+        if (getiprint()>=5) then
+          write(LUPRI,*) 'add: name1.eq.namet, f1,f2=',f1,f2
+        endif
       elseif (name2.eq.namet) then
         if (f2.ne.1.d0) call rvmuls(nsize,gen(nstrt(2,ntape2-1)+1),
      1  f2,gen(nstrt(2,ntape2-1)+1))
         call daxpy(nsize,f1,gen(nstrt(2,ntape1-1)+1),
      1  1,gen(nstrt(2,ntape2-1)+1),1)
+        if (getiprint() >= 5) then
+          write(LUPRI,*) 'add: name2.eq.namet, f1,f2=',f1,f2
+        endif
       else
         call rvmuls(nsize,gen(nstrt(2,ntape1-1)+1),
      1  f1,gen(nstrt(2,ntapet-1)+1))
         call daxpy(nsize,f2,gen(nstrt(2,ntape2-1)+1),
      1  1,gen(nstrt(2,ntapet-1)+1),1)
+        if (getiprint() >= 5) then
+          write(LUPRI,*) 'add: else branch, f1,f2=',f1,f2
+        endif
       endif
 
-      if (getiprint()>=5) then
-        write(LUPRI,'(2x,a,/)') '...end of add'
-      endif
+!      if (getiprint()>=5) then
+!        write(LUPRI,'(2x,a,/)') '...end of add'
+!      endif
 
       return
       end subroutine add
