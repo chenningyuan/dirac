@@ -29,7 +29,6 @@ contains
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "../dft/functionals.h"
-#include "../autodiff/xc_fortran_interface.h"
 
 !   ----------------------------------------------------------------------------
     integer, intent(in)    :: order
@@ -125,24 +124,25 @@ contains
     derv_im = 0.0d0
 #endif
 
-    if (use_gga) then
+!fixme
+!   if (use_gga) then
 
-      call lda_eval(LDA_SLATER, order, r(0),          derv_i(1, 1))
-      call gga_eval(GGA_BECKE,  order, r(0), z(0, 0), derv_i(1, 2))
-      call gga_eval(GGA_LYP,    order, r(0), z(0, 0), derv_i(1, 3))
+!     call lda_eval(LDA_SLATER, order, r(0),          derv_i(1, 1))
+!     call gga_eval(GGA_BECKE,  order, r(0), z(0, 0), derv_i(1, 2))
+!     call gga_eval(GGA_LYP,    order, r(0), z(0, 0), derv_i(1, 3))
 
-    else
+!   else
 
-      call lda_eval(LDA_SLATER, order, r(0), derv_i(1, 1))
-      call lda_eval(LDA_VWN,    order, r(0), derv_i(1, 2))
-#ifdef CHECK_DERV
-      call lda_eval(LDA_SLATER, order, r(0)+f, derv_ip(1, 1))
-      call lda_eval(LDA_VWN,    order, r(0)+f, derv_ip(1, 2))
-      call lda_eval(LDA_SLATER, order, r(0)-f, derv_im(1, 1))
-      call lda_eval(LDA_VWN,    order, r(0)-f, derv_im(1, 2))
-#endif
+!     call lda_eval(LDA_SLATER, order, r(0), derv_i(1, 1))
+!     call lda_eval(LDA_VWN,    order, r(0), derv_i(1, 2))
+!ifdef CHECK_DERV
+!     call lda_eval(LDA_SLATER, order, r(0)+f, derv_ip(1, 1))
+!     call lda_eval(LDA_VWN,    order, r(0)+f, derv_ip(1, 2))
+!     call lda_eval(LDA_SLATER, order, r(0)-f, derv_im(1, 1))
+!     call lda_eval(LDA_VWN,    order, r(0)-f, derv_im(1, 2))
+!endif
 
-    end if
+!   end if
 
 !   multiply by the weight
 

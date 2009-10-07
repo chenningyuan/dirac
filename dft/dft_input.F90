@@ -37,22 +37,6 @@ contains
 
   end subroutine
 
-  subroutine add_weight(i, w, is_gga)
-
-!   ----------------------------------------------------------------------------
-    integer, intent(in) :: i
-    real(8), intent(in) :: w
-    logical, intent(in) :: is_gga
-!   ----------------------------------------------------------------------------
-
-    if (is_gga) then
-      dft_cfg_gga_functional_weight_array(i) = dft_cfg_gga_functional_weight_array(i) + w
-    else
-      dft_cfg_lda_functional_weight_array(i) = dft_cfg_lda_functional_weight_array(i) + w
-    end if
-
-  end subroutine
-
   function get_weight(word, functional)
 
 !   ----------------------------------------------------------------------------
@@ -86,7 +70,7 @@ contains
 #ifdef MOD_AUTODIFF
   subroutine parse_functional(line)
 
-#include "../autodiff/xc_fortran_interface.h"
+    use xc_fun
 
 !   radovan: line is made lowercase, then cut into words
 !            if word contains "=" the weight is read
@@ -108,10 +92,14 @@ contains
     character(80), allocatable :: word_array(:)
     integer                    :: i, nr_words
     real(8)                    :: w
+    real(8)                    :: w_array(XC_PARAMS_LEN)
+    integer                    :: gga_functionals(4) = (/XC_BECKE_EXCHANGE,  &
+                                                         XC_LYP_CORRELATION, &
+                                                         XC_PBE_EXCHANGE,    &
+                                                         XC_PBE_CORRELATION/)
 !   ----------------------------------------------------------------------------
 
-    dft_cfg_lda_functional_weight_array = 0.0d0
-    dft_cfg_gga_functional_weight_array = 0.0d0
+    w_array = 0.0d0
 
     call reset_hfx()
 
@@ -125,90 +113,106 @@ contains
     do i = 1, nr_words
 
 
-!     first check aliases
-!     ===================
+!     composite functionals
+!     =====================
 
 !     lda
       w = get_weight(word_array(i), 'lda')
       if (dabs(w) > tiny) then
-        call add_weight(i=LDA_SLATER, w=w, is_gga=.false.)
-        call add_weight(i=LDA_VWN,    w=w, is_gga=.false.)
+        w_array(XC_SLATER_EXCHANGE) = w_array(XC_SLATER_EXCHANGE) + w
+        w_array(XC_VWN_CORRELATION) = w_array(XC_VWN_CORRELATION) + w
       end if
 
 !     svwn = lda
       w = get_weight(word_array(i), 'svwn')
       if (dabs(w) > tiny) then
-        call add_weight(i=LDA_SLATER, w=w, is_gga=.false.)
-        call add_weight(i=LDA_VWN,    w=w, is_gga=.false.)
+        w_array(XC_SLATER_EXCHANGE) = w_array(XC_SLATER_EXCHANGE) + w
+        w_array(XC_VWN_CORRELATION) = w_array(XC_VWN_CORRELATION) + w
       end if
 
 !     blyp
       w = get_weight(word_array(i), 'blyp')
       if (dabs(w) > tiny) then
-        call add_weight(i=LDA_SLATER, w=w, is_gga=.false.)
-        call add_weight(i=GGA_BECKE,  w=w, is_gga=.true.)
-        call add_weight(i=GGA_LYP,    w=w, is_gga=.true.)
+        w_array(XC_SLATER_EXCHANGE) = w_array(XC_SLATER_EXCHANGE) + w
+        w_array(XC_BECKE_EXCHANGE)  = w_array(XC_BECKE_EXCHANGE)  + w
+        w_array(XC_LYP_CORRELATION) = w_array(XC_LYP_CORRELATION) + w
       end if
 
 !     b3lyp
       w = get_weight(word_array(i), 'b3lyp')
       if (dabs(w) > tiny) then
-        call add_weight(i=LDA_SLATER, w=0.80d0*w, is_gga=.false.)
-        call add_weight(i=LDA_VWN,    w=0.19d0*w, is_gga=.false.)
-        call add_weight(i=GGA_BECKE,  w=0.72d0*w, is_gga=.true.)
-        call add_weight(i=GGA_LYP,    w=0.81d0*w, is_gga=.true.)
+        w_array(XC_SLATER_EXCHANGE) = w_array(XC_SLATER_EXCHANGE) + 0.80d0*w
+        w_array(XC_VWN_CORRELATION) = w_array(XC_VWN_CORRELATION) + 0.19d0*w
+        w_array(XC_BECKE_EXCHANGE)  = w_array(XC_BECKE_EXCHANGE)  + 0.72d0*w
+        w_array(XC_LYP_CORRELATION) = w_array(XC_LYP_CORRELATION) + 0.81d0*w
         call add_hfx(0.20d0*w)
       end if
 
 !     pbe
       w = get_weight(word_array(i), 'pbe')
       if (dabs(w) > tiny) then
-        call add_weight(i=GGA_PBEX,   w=w, is_gga=.true.)
-        call add_weight(i=GGA_PBEC,   w=w, is_gga=.true.)
+        w_array(XC_PBE_EXCHANGE)    = w_array(XC_PBE_EXCHANGE)    + w
+        w_array(XC_PBE_CORRELATION) = w_array(XC_PBE_CORRELATION) + w
       end if
 
 !     pbe0
       w = get_weight(word_array(i), 'pbe0')
       if (dabs(w) > tiny) then
-        call add_weight(i=GGA_PBEX,   w=0.75d0*w, is_gga=.true.)
-        call add_weight(i=GGA_PBEC,   w=w,        is_gga=.true.)
+        w_array(XC_PBE_EXCHANGE)    = w_array(XC_PBE_EXCHANGE)    + 0.75d0*w
+        w_array(XC_PBE_CORRELATION) = w_array(XC_PBE_CORRELATION) +        w
         call add_hfx(0.25d0*w)
       end if
 
 
-!     now atomic functional acronyms
-!     ==============================
+!     "atomic" functionals
+!     ====================
 
       w = get_weight(word_array(i), 'slater')
-      if (dabs(w) > tiny) call add_weight(i=LDA_SLATER, w=w, is_gga=.false.)
+      if (dabs(w) > tiny) then
+        w_array(XC_SLATER_EXCHANGE) = w_array(XC_SLATER_EXCHANGE) + w
+      end if
 
       w = get_weight(word_array(i), 'vwn')
-      if (dabs(w) > tiny) call add_weight(i=LDA_VWN,    w=w, is_gga=.false.)
+      if (dabs(w) > tiny) then
+        w_array(XC_VWN_CORRELATION) = w_array(XC_VWN_CORRELATION) + w
+      end if
 
       w = get_weight(word_array(i), 'becke')
-      if (dabs(w) > tiny) call add_weight(i=GGA_BECKE,  w=w, is_gga=.true.)
+      if (dabs(w) > tiny) then
+        w_array(XC_BECKE_EXCHANGE) = w_array(XC_BECKE_EXCHANGE) + w
+      end if
 
       w = get_weight(word_array(i), 'lyp')
-      if (dabs(w) > tiny) call add_weight(i=GGA_LYP,    w=w, is_gga=.true.)
+      if (dabs(w) > tiny) then
+        w_array(XC_LYP_CORRELATION) = w_array(XC_LYP_CORRELATION) + w
+      end if
 
       w = get_weight(word_array(i), 'pbex')
-      if (dabs(w) > tiny) call add_weight(i=GGA_PBEX,   w=w, is_gga=.true.)
+      if (dabs(w) > tiny) then
+        w_array(XC_PBE_EXCHANGE) = w_array(XC_PBE_EXCHANGE) + w
+      end if
 
       w = get_weight(word_array(i), 'pbec')
-      if (dabs(w) > tiny) call add_weight(i=GGA_PBEC,   w=w, is_gga=.true.)
+      if (dabs(w) > tiny) then
+        w_array(XC_PBE_CORRELATION) = w_array(XC_PBE_CORRELATION) + w
+      end if
 
       w = get_weight(word_array(i), 'hfx')
-      if (dabs(w) > tiny) call add_hfx(w)
+      if (dabs(w) > tiny) then
+        call add_hfx(w)
+      end if
 
     end do
 
     deallocate(word_array)
 
-    do i = 1, size(dft_cfg_gga_functional_weight_array)
-      if (dabs(dft_cfg_gga_functional_weight_array(i)) > tiny) then
+    do i = 1, size(gga_functionals)
+      if (dabs(w_array(gga_functionals(i))) > tiny) then
         dft_cfg_is_gga_autodiff = .true.
       end if
     end do
+
+    call set_functional(w_array)
 
   end subroutine
 #endif /* ifdef MOD_AUTODIFF */
@@ -359,25 +363,25 @@ contains
 !   alda
 
     if (dft_cfg_alda_hs .or. dft_cfg_alda_ha) then
-  
+
       write(u, '(a)')        ' * Adiabatic local density approximation (ALDA):'
       write(u, '(a)')        '   - approximate all functional derivatives '// &
                              'beyond the xc potential by SVWN derivatives'
-  
+
       if (dft_cfg_alda_hs .and. .not. dft_cfg_alda_ha) then
         write(u, '(a)')      '   - use ALDA only for the Hermitian part '// &
                              '(density contribution)'
         write(u, '(a)')      '   - use the proper xc kernel for the anti-Hermitian '// &
                              'part (spin density contribution)'
       end if
-  
+
       if (dft_cfg_alda_ha .and. .not. dft_cfg_alda_hs) then
         write(u, '(a)')      '   - use ALDA only for the anti-Hermitian part '// &
                              '(spin density contribution)'
         write(u, '(a)')      '   - use the proper xc kernel for the Hermitian '// &
                              'part (density contribution)'
       end if
-  
+
       if (dft_cfg_xalda) then
         write(u, '(a)')      '   - keep the fraction of exact exchange of the '// &
                              'xc functional in the solution of the response equation'
@@ -386,7 +390,7 @@ contains
                              'switched off in the solution of the response equation'
         write(u, '(a)')      '     (if you want to keep it, use .XALDA)'
       end if
-  
+
     end if !if (dft_cfg_alda_hs .or. dft_cfg_alda_ha) then
 
   end subroutine

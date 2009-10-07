@@ -52,18 +52,16 @@ module dft_cfg
   logical, public :: dft_cfg_asymptote_is_lbalpha    = .false.
   logical, public :: dft_cfg_is_gga_autodiff         = .false.
 
-  real(8), public :: dft_cfg_radint                          = 1.0d-13
-  real(8), public :: dft_cfg_accepted_error                  = 1.0d-3
-  real(8), public :: dft_cfg_dfthr0                          = 1.0d-9
-  real(8), public :: dft_cfg_dfthrl                          = 1.0d-10
-  real(8), public :: dft_cfg_dfthri                          = 2.0d-12
-  real(8), public :: dft_cfg_ac_ip                           = 0.0d0
-  real(8), public :: dft_cfg_ac_threshold                    = 0.0d0
-  real(8), public :: dft_cfg_homo_eigenvalue                 = 0.0d0
-  real(8), public :: dft_cfg_grac_alpha                      = 0.0d0
-  real(8), public :: dft_cfg_grac_beta                       = 0.0d0
-  real(8), public :: dft_cfg_lda_functional_weight_array(20) = 0.0d0
-  real(8), public :: dft_cfg_gga_functional_weight_array(20) = 0.0d0
+  real(8), public :: dft_cfg_radint          = 1.0d-13
+  real(8), public :: dft_cfg_accepted_error  = 1.0d-3
+  real(8), public :: dft_cfg_dfthr0          = 1.0d-9
+  real(8), public :: dft_cfg_dfthrl          = 1.0d-10
+  real(8), public :: dft_cfg_dfthri          = 2.0d-12
+  real(8), public :: dft_cfg_ac_ip           = 0.0d0
+  real(8), public :: dft_cfg_ac_threshold    = 0.0d0
+  real(8), public :: dft_cfg_homo_eigenvalue = 0.0d0
+  real(8), public :: dft_cfg_grac_alpha      = 0.0d0
+  real(8), public :: dft_cfg_grac_beta       = 0.0d0
 
   integer, public :: dft_cfg_angmin                  = 15
   integer, public :: dft_cfg_angint                  = 41
@@ -115,8 +113,6 @@ contains
     call dirac_mpi_bcast(dft_cfg_homo_eigenvalue            )
     call dirac_mpi_bcast(dft_cfg_grac_alpha                 )
     call dirac_mpi_bcast(dft_cfg_grac_beta                  )
-    call dirac_mpi_bcast(dft_cfg_lda_functional_weight_array)
-    call dirac_mpi_bcast(dft_cfg_gga_functional_weight_array)
     call dirac_mpi_bcast(dft_cfg_angmin                     )
     call dirac_mpi_bcast(dft_cfg_angint                     )
     call dirac_mpi_bcast(dft_cfg_ao_mem_limit               )

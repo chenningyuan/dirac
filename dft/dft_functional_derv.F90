@@ -1,6 +1,9 @@
 module dft_functional_derv
 
   use dft_cfg
+#ifdef MOD_AUTODIFF
+  use xc_fun
+#endif
 
   implicit none
 
@@ -34,9 +37,6 @@ module dft_functional_derv
   private
 
 #include "functionals.h"
-#ifdef MOD_AUTODIFF
-#include "../autodiff/xc_fortran_interface.h"
-#endif
 
   real(8), parameter :: tiny    = 1.0d-20
   integer, parameter :: max_dim = 99
@@ -61,10 +61,9 @@ contains
     real(8), intent(out) :: derv(mxbllen, 0:n)
 !   ----------------------------------------------------------------------------
     real(8)              :: t(max_dim, mxbllen)
-    real(8)              :: t_lda(max_dim, mxbllen)
-    real(8)              :: t_gga(max_dim, mxbllen)
-    real(8)              :: f, taylor_deriv, dftenergy
-    integer              :: i, k, l
+    integer              :: k, l
+    integer, external    :: taylor_index
+    real(8), external    :: dftenergy
 !   ----------------------------------------------------------------------------
 
     derv = 0.0d0
@@ -72,78 +71,53 @@ contains
 #ifdef MOD_AUTODIFF
     if (dft_cfg_autodiff) then
 
-!     lda
-      t_lda = 0.0d0
-      do i = 1, size(dft_cfg_lda_functional_weight_array)
-        f = dft_cfg_lda_functional_weight_array(i)
-        if (dabs(f) > tiny) then
-          do k = 1, block_length
-            call lda_eval(i, order, r_0(k), t(1, k))
-            call daxpy(max_dim, f*w(k), t(1, k), 1, t_lda(1, k), 1)
-          end do
-        end if
-      end do
-
-!     gga
-      t_gga = 0.0d0
-      do i = 1, size(dft_cfg_gga_functional_weight_array)
-        f = dft_cfg_gga_functional_weight_array(i)
-        if (dabs(f) > tiny) then
-          do k = 1, block_length
-            call gga_eval(i, order, r_0(k), z_0(k), t(1, k))
-            call daxpy(max_dim, f*w(k), t(1, k), 1, t_gga(1, k), 1)
-          end do
-        end if
+      do k = 1, block_length
+        call eval_gga(t(1, k), order, (/r_0(k), 0.0d0, z_0(k), 0.0d0, 0.0d0/))
       end do
 
       select case (order)
 
         case (0)
           do k = 1, block_length
-            derv(k, d_0) = t_lda(1, k) + t_gga(1, k)
+            derv(k, d_0) = t(1, k)
           end do
 
         case (1)
           do k = 1, block_length
-            derv(k, d_r) = taylor_deriv(t_lda(1, k), 2, (/1, 0/)) &
-                         + taylor_deriv(t_gga(1, k), 5, (/1, 0, 0, 0, 0/))
-            derv(k, d_z) = taylor_deriv(t_gga(1, k), 5, (/0, 0, 1, 0, 0/))
+            derv(k, d_r) = t(taylor_index(5, (/1, 0, 0, 0, 0/)), k)
+            derv(k, d_z) = t(taylor_index(5, (/0, 0, 1, 0, 0/)), k)
           end do
 
         case (2)
           do k = 1, block_length
-            derv(k, d_rr) = taylor_deriv(t_lda(1, k), 2, (/2, 0/)) &
-                          + taylor_deriv(t_gga(1, k), 5, (/2, 0, 0, 0, 0/))
-            derv(k, d_ss) = taylor_deriv(t_lda(1, k), 2, (/0, 2/)) &
-                          + taylor_deriv(t_gga(1, k), 5, (/0, 2, 0, 0, 0/))
-            derv(k, d_rz) = taylor_deriv(t_gga(1, k), 5, (/1, 0, 1, 0, 0/))
-            derv(k, d_zz) = taylor_deriv(t_gga(1, k), 5, (/0, 0, 2, 0, 0/))
-            derv(k, d_sy) = taylor_deriv(t_gga(1, k), 5, (/0, 1, 0, 0, 1/))
-            derv(k, d_yy) = taylor_deriv(t_gga(1, k), 5, (/0, 0, 0, 0, 2/))
-            derv(k, d_z)  = taylor_deriv(t_gga(1, k), 5, (/0, 0, 1, 0, 0/))
-            derv(k, d_x)  = taylor_deriv(t_gga(1, k), 5, (/0, 0, 0, 1, 0/))
+            derv(k, d_rr) = t(taylor_index(5, (/2, 0, 0, 0, 0/)), k)
+            derv(k, d_ss) = t(taylor_index(5, (/0, 2, 0, 0, 0/)), k)
+            derv(k, d_rz) = t(taylor_index(5, (/1, 0, 1, 0, 0/)), k)
+            derv(k, d_zz) = t(taylor_index(5, (/0, 0, 2, 0, 0/)), k)
+            derv(k, d_sy) = t(taylor_index(5, (/0, 1, 0, 0, 1/)), k)
+            derv(k, d_yy) = t(taylor_index(5, (/0, 0, 0, 0, 2/)), k)
+            derv(k, d_z ) = t(taylor_index(5, (/0, 0, 1, 0, 0/)), k)
+            derv(k, d_x ) = t(taylor_index(5, (/0, 0, 0, 1, 0/)), k)
           end do
 
         case (3)
           do k = 1, block_length
-            derv(k, d_rrr) = taylor_deriv(t_lda(1, k), 2, (/3, 0/)) &
-                           + taylor_deriv(t_gga(1, k), 5, (/3, 0, 0, 0, 0/))
-            derv(k, d_rss) = taylor_deriv(t_lda(1, k), 2, (/1, 2/)) &
-                           + taylor_deriv(t_gga(1, k), 5, (/1, 2, 0, 0, 0/))
-            derv(k, d_rrz) = taylor_deriv(t_gga(1, k), 5, (/2, 0, 1, 0, 0/))
-            derv(k, d_rsy) = taylor_deriv(t_gga(1, k), 5, (/1, 1, 0, 0, 1/))
-            derv(k, d_rx)  = taylor_deriv(t_gga(1, k), 5, (/1, 0, 0, 1, 0/))
-            derv(k, d_ryy) = taylor_deriv(t_gga(1, k), 5, (/1, 0, 0, 0, 2/))
-            derv(k, d_rz)  = taylor_deriv(t_gga(1, k), 5, (/1, 0, 1, 0, 0/))
-            derv(k, d_rzz) = taylor_deriv(t_gga(1, k), 5, (/1, 0, 2, 0, 0/))
-            derv(k, d_ssz) = taylor_deriv(t_gga(1, k), 5, (/0, 2, 1, 0, 0/))
-            derv(k, d_sy)  = taylor_deriv(t_gga(1, k), 5, (/0, 1, 0, 0, 1/))
-            derv(k, d_szy) = taylor_deriv(t_gga(1, k), 5, (/0, 1, 1, 0, 1/))
-            derv(k, d_yy)  = taylor_deriv(t_gga(1, k), 5, (/0, 0, 0, 0, 2/))
-            derv(k, d_zx)  = taylor_deriv(t_gga(1, k), 5, (/0, 0, 1, 1, 0/))
-            derv(k, d_zyy) = taylor_deriv(t_gga(1, k), 5, (/0, 0, 1, 0, 2/))
-            derv(k, d_zz)  = taylor_deriv(t_gga(1, k), 5, (/0, 0, 2, 0, 0/))
-            derv(k, d_zzz) = taylor_deriv(t_gga(1, k), 5, (/0, 0, 3, 0, 0/))
+            derv(k, d_rrr) = t(taylor_index(5, (/3, 0, 0, 0, 0/)), k)
+            derv(k, d_rss) = t(taylor_index(5, (/1, 2, 0, 0, 0/)), k)
+            derv(k, d_rrz) = t(taylor_index(5, (/2, 0, 1, 0, 0/)), k)
+            derv(k, d_rsy) = t(taylor_index(5, (/1, 1, 0, 0, 1/)), k)
+            derv(k, d_rx ) = t(taylor_index(5, (/1, 0, 0, 1, 0/)), k)
+            derv(k, d_ryy) = t(taylor_index(5, (/1, 0, 0, 0, 2/)), k)
+            derv(k, d_rz ) = t(taylor_index(5, (/1, 0, 1, 0, 0/)), k)
+            derv(k, d_rzz) = t(taylor_index(5, (/1, 0, 2, 0, 0/)), k)
+            derv(k, d_ssz) = t(taylor_index(5, (/0, 2, 1, 0, 0/)), k)
+            derv(k, d_sy ) = t(taylor_index(5, (/0, 1, 0, 0, 1/)), k)
+            derv(k, d_szy) = t(taylor_index(5, (/0, 1, 1, 0, 1/)), k)
+            derv(k, d_yy ) = t(taylor_index(5, (/0, 0, 0, 0, 2/)), k)
+            derv(k, d_zx ) = t(taylor_index(5, (/0, 0, 1, 1, 0/)), k)
+            derv(k, d_zyy) = t(taylor_index(5, (/0, 0, 1, 0, 2/)), k)
+            derv(k, d_zz ) = t(taylor_index(5, (/0, 0, 2, 0, 0/)), k)
+            derv(k, d_zzz) = t(taylor_index(5, (/0, 0, 3, 0, 0/)), k)
           end do
 
         case default
@@ -158,22 +132,22 @@ contains
 
         case (0)
           do k = 1, block_length
-            derv(k, d_0) = w(k)*dftenergy(r_0(k), dsqrt(z_0(k)))
+            derv(k, d_0) = dftenergy(r_0(k), dsqrt(z_0(k)))
           end do
 
         case (1)
           do k = 1, block_length
-            call dftpot0(t(1, k), w(k), r_0(k), dsqrt(z_0(k)))
+            call dftpot0(t(1, k), 1.0d0, r_0(k), dsqrt(z_0(k)))
           end do
 
         case (2)
           do k = 1, block_length
-            call sdftpot1(t(1, k), w(k), r_0(k), dsqrt(z_0(k)))
+            call sdftpot1(t(1, k), 1.0d0, r_0(k), dsqrt(z_0(k)))
           end do
 
         case (3)
           do k = 1, block_length
-            call sdftpot2(t(1, k), w(k), r_0(k), dsqrt(z_0(k)))
+            call sdftpot2(t(1, k), 1.0d0, r_0(k), dsqrt(z_0(k)))
           end do
 
         case default
@@ -190,6 +164,13 @@ contains
 #ifdef MOD_AUTODIFF
     end if
 #endif
+
+!   multiply by weight
+    do l = 0, n
+      do k = 1, block_length
+        derv(k, l) = w(k)*derv(k, l)
+      end do
+    end do
 
   end subroutine
 
