@@ -1802,7 +1802,6 @@ c   move p to p transitions to folded
       return
       end
 
-
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine mult(name2,name3,namet,mmm)
 !-----------------------------------------------------------------------
@@ -1909,7 +1908,9 @@ c
       ib0=z'ffff'
       msk1=256**m2-1
 
-!     cycle of i1 for the final diagram
+!===============================================
+!       cycle of i1 for the final diagram
+!===============================================
       do 250 i1=1,nsize1
 
       ib=ishft(igen(istrt11+i1),-8*m2)
@@ -1957,6 +1958,13 @@ c
 
       gen(istrt12+i1)=ddot(n2,gen(n20),1,
      1 gen(n30),1)
+
+      if (getiprint().ge.13) then
+       write(LUPRI,*) 'mult: istrt12+i1,n20,n30,n2:',
+     &                istrt12+i1,n20,n30,n2
+       write(LUPRI,*) 'mult: gen(n20),gen(n30),gen(istrt12+i1):',
+     &            gen(n20),gen(n30),gen(istrt12+i1)
+      endif
 
 ! insert printing & checking
       if (dabs(gen(istrt12+i1)).ge.1.0d+5) then
