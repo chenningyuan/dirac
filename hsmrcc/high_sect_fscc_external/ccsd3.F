@@ -4030,9 +4030,10 @@ c
         ije1(nij1-1)=ije(i-1)
       endif
 
+! miro: important printout to check arrays !
       if (getiprint() >= 15) then 
-       write(LUPRI,*) 'i,nij1,ij1(nij1),ije1(nij1-1)',
-     &              i,nij1,ij1(nij1),ije1(nij1-1)
+       write(LUPRI,*) 'i,i12,nij1,ij1(nij1),ije1(nij1-1)',
+     &              i,i12,nij1,ij1(nij1),ije1(nij1-1)
       endif
 
 160   continue
