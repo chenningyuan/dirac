@@ -1914,9 +1914,15 @@ c
         call tmpcng(nij2,ij2,ije2,ntape2,2,4-m3)
         call tmpcng(nij3,ij3,ije3,ntape3,2,4-m3)
       endif
+
+!       write(LUPRI,*) 'mult: nsize1,nsize2,nsize3:',
+!    &                  nsize1,nsize2,nsize3
 c
       ! zeroe array for final diagram values
       call dcopy(nsize1,0.d0,0,gen(istrt12+1),1)
+
+!       write(LUPRI,*) 'mult: nsize1,nsize2,nsize3:',
+!    &                  nsize1,nsize2,nsize3
 
       kbb=0
       kcc=0

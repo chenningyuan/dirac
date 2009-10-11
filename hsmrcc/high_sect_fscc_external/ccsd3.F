@@ -3995,9 +3995,9 @@ c
 !      common /i/ igen(nbig)
 #endif
 
-!     dimension ij(nij),ije(0:nij)
+      dimension ij(nij),ije(0:nij)
 ! mi - to fix index leak 
-      dimension ij(*),ije(0:*)
+!     dimension ij(*),ije(0:*)
 
 !!!!!!!!!!!!!! needs dynamic alloc of "ij1, ije1" !!!!!!!!!!!!!!!!!!!
       dimension ij1(ndij),ije1(0:ndij)
@@ -4006,7 +4006,7 @@ c
 
       if (getiprint() >= 5) then ! control printout
         call header('Output from "tmpcng"',-1)
-        write(LUPRI,*) 'nt,nf:',nt,nf
+        write(LUPRI,*) 'nij,nt,nf:',nij,nt,nf
         write(LUPRI,*) 'ntapef=',ntapef
       endif
       
@@ -4029,9 +4029,21 @@ c
         iirp=i12
         ije1(nij1-1)=ije(i-1)
       endif
+
+      if (getiprint() >= 15) then 
+       write(LUPRI,*) 'i,nij1,ij1(nij1),ije1(nij1-1)',
+     &              i,nij1,ij1(nij1),ije1(nij1-1)
+      endif
+
 160   continue
+
       ije1(nij1)=ije(nij)
-      nij=nij1
+
+!    refresh nij
+      nij=nij1  
+
+!     write(LUPRI,*) 'tmpcng: nij=',nij
+
       call kcopy(nij,ij1,ij)
       call kcopy(nij+1,ije1(0),ije(0))
 
