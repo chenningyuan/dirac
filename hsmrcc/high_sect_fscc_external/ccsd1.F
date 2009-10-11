@@ -1850,6 +1850,7 @@ c   move p to p transitions to folded
        write(LUPRI,'(2x,a,a4)') 'name3=',name3
        write(LUPRI,'(2x,a,a4)') 'namet=',namet
        write(LUPRI,'(2x,a,i4)') 'mmm=',mmm
+       call print_cijx_stuff
       endif
 
       ! split mmm into 3 digits m1,m2,m3

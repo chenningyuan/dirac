@@ -3970,7 +3970,7 @@ c
 !
 !           change nf-index grouping to nt-index grouping
 !
-! entering arrays ij, ije
+! entering arrays: ij, ije
 !
 !------------------------------------------------------------------------
       use print_level
@@ -3995,9 +3995,9 @@ c
 !      common /i/ igen(nbig)
 #endif
 
-      dimension ij(nij),ije(0:nij)
+!     dimension ij(nij),ije(0:nij)
 ! mi - to fix index leak 
-!     dimension ij(*),ije(0:*)
+      dimension ij(*),ije(0:*)
 
 !!!!!!!!!!!!!! needs dynamic alloc of "ij1, ije1" !!!!!!!!!!!!!!!!!!!
       dimension ij1(ndij),ije1(0:ndij)
@@ -4032,8 +4032,8 @@ c
 
 ! miro: important printout to check arrays !
       if (getiprint() >= 15) then 
-       write(LUPRI,*) 'i,i12,nij1,ij1(nij1),ije1(nij1-1)',
-     &              i,i12,nij1,ij1(nij1),ije1(nij1-1)
+       write(LUPRI,*) 'i,ij(i),nij1,ije(i-1)',
+     &                 i,ij(i),nij1,ije(i-1)
       endif
 
 160   continue
@@ -4399,18 +4399,19 @@ c
 !     common // gen(nbig)
 !     common /i/ igen(nbig)
 #endif
-        write(LUPRI,*) 'nij1,ije1(nij1),iii1,iiv1=',
-     &                  nij1,ije1(nij1),iii1,iiv1
-        write(LUPRI,*) 'nij2,ije2(nij2),iii2,iiv2=',
-     &                  nij2,ije2(nij2),iii2,iiv2
-        write(LUPRI,*) 'nij3,ije3(nij3),iii3,iiv3=',
-     &                  nij3,ije3(nij3),iii3,iiv3
-        write(LUPRI,*) 'nij4,ije4(nij4),iii4,iiv4=',
-     &                  nij4,ije4(nij4),iii4,iiv4
-        write(LUPRI,*) 'nij5,ije5(nij5),iii5,iiv5=',
-     &                  nij5,ije5(nij5),iii5,iiv5
-        write(LUPRI,*) 'nij6,ije6(nij6),iii6,iiv6=',
-     &                  nij6,ije6(nij6),iii6,iiv6
+        write(LUPRI,'(4x,a)') 'Content of cijn blocks/modules:'
+        write(LUPRI,*) 'nij1,ij1(nij1),ije1(nij1),iii1,iiv1=',
+     &                  nij1,ij1(nij1),ije1(nij1),iii1,iiv1
+        write(LUPRI,*) 'nij2,ij2(nij2),ije2(nij2),iii2,iiv2=',
+     &                  nij2,ij2(nij2),ije2(nij2),iii2,iiv2
+        write(LUPRI,*) 'nij3,ij3(nij3),ije3(nij3),iii3,iiv3=',
+     &                  nij3,ij3(nij3),ije3(nij3),iii3,iiv3
+        write(LUPRI,*) 'nij4,ij4(nij4),ije4(nij4),iii4,iiv4=',
+     &                  nij4,ij4(nij4),ije4(nij4),iii4,iiv4
+        write(LUPRI,*) 'nij5,ij5(nij5),ije5(nij5),iii5,iiv5=',
+     &                  nij5,ij5(nij5),ije5(nij5),iii5,iiv5
+        write(LUPRI,*) 'nij6,ij6(nij6),ije6(nij6),iii6,iiv6=',
+     &                  nij6,ij6(nij6),ije6(nij6),iii6,iiv6
 
       end subroutine print_cijx_stuff
 
