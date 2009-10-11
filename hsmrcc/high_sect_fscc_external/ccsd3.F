@@ -804,7 +804,8 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
         write(LUPRI,*) 'namet=',namet
         write(LUPRI,*) 'iord=',iord
         write(LUPRI,*) 'iparm=',iparm
-        call check_ctmp_mod
+        ! call check_ctmp_mod
+         call print_cijx_stuff
       endif
 
       call files_ccsd(namef,ntapef,new,2,-1,-1)
@@ -813,6 +814,12 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 10      format(' reorder input tape ',a6,' does not exist.')
         call abext('reorder ')
       endif
+
+      if (getiprint() >= 5) then
+         write(LUPRI,'(4x,a)') 'reorder: cijn printout:'
+         call print_cijx_stuff
+      endif
+
       call parse(iord,i1,i2,i3,i4)
       call parse(iii2,j(1),j(2),j(3),j(4))
       iii1=1000*j(i1)+100*j(i2)+10*j(i3)+j(i4)
@@ -829,7 +836,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 
 !    miro: set up temporarily primitive error trap for HSFS_dynamic
 !   ... this works for gfortran/gdb; however, ifort/idb gives other error...
-      call check_ctmp_mod
+!     call check_ctmp_mod
 
 !miro: "lngth2+600" could cause index leak for "itmp" array ???
 ! todo: replace 600 with  some internal parameter ...
@@ -845,13 +852,13 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       call vshfcs(lngth2,itmp(lngth2+600),8*i4-32,itmp(lngth2+600))
       call viorv(lngth2,itmp,itmp(lngth2+600),itmp)
 
-      call check_ctmp_mod
+!     call check_ctmp_mod
 
 !     ... acting on gen !!!
       call dcopy(lngth2,gen(istrt22+1),1,gen(istrt12+1),1)
       call vxsort(itmp,lngth2,lngth1,gen(istrt12+1),igen(istrt11+1))
 
-      call check_ctmp_mod
+!     call check_ctmp_mod
 
        ! ... print out
       call prt(namet,namet,iparm)
