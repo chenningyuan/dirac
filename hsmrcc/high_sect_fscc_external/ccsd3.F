@@ -2533,7 +2533,7 @@ c  symmetry operations
 
         if (getiprint() >= 5) then
 !         write(LUPRI,*) 'nij,ije(nij),ij(nij)=',nij,ije(nij),ij(nij)
-          write(LUPRI,*) 'nij1,ije1(nij1),ij1(nij1)=',
+          write(LUPRI,*) 'tmplt: nij1,ije1(nij1),ij1(nij1)=',
      &     nij1,ije1(nij1),ij1(nij1)
         endif
 
@@ -2622,6 +2622,11 @@ c   special for scratch files, which start with "s".
         nstrt(2,num)=nstrt(2,num-1)+ndp3
         call dimx(nstrt(1,num),nbig,"tmplt1")
         call dimx(nstrt(2,num),nbig,"tmplt2")
+      endif
+
+      if (getiprint() >= 10) then ! control printout
+        write(LUPRI,'(4x,a)') 'tmplt - cijn control printout:'
+        call print_cijx_stuff
       endif
 
       return
