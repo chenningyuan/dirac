@@ -1855,6 +1855,10 @@ c   move p to p transitions to folded
       ! split mmm into 3 digits m1,m2,m3
       call parse(mmm,idum,m1,m2,m3)
 
+      if (getiprint().ge.5) then
+        write(LUPRI,*) 'mult: obtained m1,m2,m3:',m1,m2,m3
+      endif
+
       ! find diagram "name2", fill cij2 common block,returns number ntape2
       call files_ccsd(name2,ntape2,new,2,-1,-1)
       if (new.ne.0) then
@@ -1894,6 +1898,16 @@ c   move p to p transitions to folded
       nsize1=ije1(nij1) ! how many values in resulting diagram
       nsize2=ije2(nij2) !                in 1 diagram
       nsize3=ije3(nij3) !                in 2 diagram
+
+      if (getiprint().ge.10) then
+        write(LUPRI,*) 'mult: istrt11,istrt12:',istrt11,istrt12
+        write(LUPRI,*) 'mult: istrt21,istrt22:',istrt21,istrt22
+        write(LUPRI,*) 'mult: istrt31,istrt32:',istrt31,istrt32
+        write(LUPRI,*) 'mult: nij1,nij2,nij3:',
+     &                  nij1,nij2,nij3
+        write(LUPRI,*) 'mult: nsize1,nsize2,nsize3:',
+     &                  nsize1,nsize2,nsize3
+      endif
 c
       if (m3.ne.2) then
         call tmpcng(nij1,ij1,ije1,ntapet,2,4-m2)
@@ -1903,6 +1917,7 @@ c
 c
       ! zeroe array for final diagram values
       call dcopy(nsize1,0.d0,0,gen(istrt12+1),1)
+
       kbb=0
       kcc=0
       ib0=z'ffff'
