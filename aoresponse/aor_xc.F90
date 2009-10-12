@@ -20,21 +20,30 @@ module aor_xc
 ! end interface
 
   type xc_contribution
-    real(8) :: prefactor                       = 1.0d0
-    integer :: functional_derv_orders(5)       = 0
-    integer :: nr_n                            = 0
-    integer :: n_to_matrix(XC_MAX_ORDER)       = 0
-    integer :: nr_z                            = 0
-    integer :: z_to_matrix_left(XC_MAX_ORDER)  = 0
-    integer :: z_to_matrix_right(XC_MAX_ORDER) = 0
-    integer :: next                            = 0
+    real(8) :: prefactor                         = 1.0d0
+    integer :: functional_derv_orders(5)         = 0
+    integer :: nr_densities(5)                   = 0
+    integer :: s_use_matrix(1:2, XC_MAX_ORDER)   = 0
+    integer :: p_use_matrix_l(3:5, XC_MAX_ORDER) = 0
+    integer :: p_use_matrix_r(3:5, XC_MAX_ORDER) = 0
+    integer :: gradient_matrix                   = 0
+    integer :: next                              = 0
   end type
 
-  integer, parameter :: max_nr_of_xc_contributions = 10
+  integer, parameter :: max_nr_of_xc_contributions = 1000
 
   save
 
-  type(xc_contribution) :: xc_u_qr(max_nr_of_xc_contributions)
+  integer               :: nr_xc_ur
+  integer               :: nr_xc_vr
+
+  integer               :: istart_xc_ur
+  integer               :: istart_xc_vr
+
+  type(xc_contribution) :: xc_ur(max_nr_of_xc_contributions)
+  type(xc_contribution) :: xc_vr(max_nr_of_xc_contributions)
+
+  logical :: debug_me = .true.
 
 contains
 
@@ -43,8 +52,11 @@ contains
 !   ----------------------------------------------------------------------------
     integer, intent(in) :: order
 !   ----------------------------------------------------------------------------
-    integer             :: i
+    integer             :: i, j, ilast_accepted
 !   ----------------------------------------------------------------------------
+
+    nr_xc_ur = 0
+    nr_xc_vr = 0
 
     select case (order)
 
@@ -53,78 +65,144 @@ contains
       i = 0
 
       i = i + 1
-      xc_u_qr(i)%nr_n = 1
-      xc_u_qr(i)%n_to_matrix(1) = 1
-      xc_u_qr(i)%next = i + 1        
+      xc_ur(i)%nr_densities(1) = 1
+      xc_ur(i)%s_use_matrix(1, 1) = 1
+      xc_ur(i)%next = i + 1        
+      nr_xc_ur      = nr_xc_ur + 1
 
       i = i + 1
-      xc_u_qr(i)%nr_z = 1
-      xc_u_qr(i)%z_to_matrix_left(1) = 0
-      xc_u_qr(i)%z_to_matrix_right(1) = 1
-      xc_u_qr(i)%next = i + 1        
+      xc_ur(i)%nr_densities(3)   = 1
+      xc_ur(i)%p_use_matrix_l(3, 1) = 0
+      xc_ur(i)%p_use_matrix_r(3, 1) = 1
+      xc_ur(i)%next = i + 1        
+      nr_xc_ur      = nr_xc_ur + 1
 
-      xc_u_qr(i)%next = 0
-
-    case (3)
+      xc_ur(i)%next = 0
 
       i = 0
 
       i = i + 1
-      xc_u_qr(i)%prefactor = 2.0d0
-      xc_u_qr(i)%nr_n                 = 2
-      xc_u_qr(i)%n_to_matrix(1)       = 1
-      xc_u_qr(i)%n_to_matrix(2)       = 2
-      xc_u_qr(i)%next                 = i + 1
+      xc_vr(i)%nr_densities(1) = 1
+      xc_vr(i)%s_use_matrix(1, 1) = 1
+      xc_vr(i)%gradient_matrix = 0
+      xc_vr(i)%next = i + 1        
+      nr_xc_vr      = nr_xc_vr + 1
 
       i = i + 1
-      xc_u_qr(i)%prefactor = 2.0d0
-      xc_u_qr(i)%nr_n                 = 1
-      xc_u_qr(i)%nr_z                 = 1
-      xc_u_qr(i)%n_to_matrix(1)       = 1
-      xc_u_qr(i)%z_to_matrix_left(1)  = 0
-      xc_u_qr(i)%z_to_matrix_right(1) = 2
-      xc_u_qr(i)%next                 = i + 1
+      xc_vr(i)%nr_densities(3) = 1
+      xc_vr(i)%p_use_matrix_l(3, 1) = 0
+      xc_vr(i)%p_use_matrix_r(3, 1) = 1
+      xc_vr(i)%gradient_matrix = 0
+      xc_vr(i)%next = i + 1        
+      nr_xc_vr      = nr_xc_vr + 1
 
       i = i + 1
-      xc_u_qr(i)%prefactor = 2.0d0
-      xc_u_qr(i)%nr_n                 = 1
-      xc_u_qr(i)%nr_z                 = 1
-      xc_u_qr(i)%n_to_matrix(1)       = 2
-      xc_u_qr(i)%z_to_matrix_left(1)  = 0
-      xc_u_qr(i)%z_to_matrix_right(1) = 1
-      xc_u_qr(i)%next                 = i + 1
+      xc_vr(i)%gradient_matrix = 1
+      xc_vr(i)%next = i + 1        
+      nr_xc_vr      = nr_xc_vr + 1
 
-      i = i + 1
-      xc_u_qr(i)%prefactor = 2.0d0
-      xc_u_qr(i)%nr_z                 = 2
-      xc_u_qr(i)%z_to_matrix_left(1)  = 0
-      xc_u_qr(i)%z_to_matrix_right(1) = 1
-      xc_u_qr(i)%z_to_matrix_left(2)  = 0
-      xc_u_qr(i)%z_to_matrix_right(2) = 2
-      xc_u_qr(i)%next                 = i + 1
+      xc_vr(i)%next = 0
 
-      i = i + 1
-      xc_u_qr(i)%prefactor = 2.0d0
-      xc_u_qr(i)%nr_z                 = 2
-      xc_u_qr(i)%z_to_matrix_left(1)  = 1
-      xc_u_qr(i)%z_to_matrix_right(1) = 2
-      xc_u_qr(i)%z_to_matrix_left(2)  = 2
-      xc_u_qr(i)%z_to_matrix_right(2) = 1
-      xc_u_qr(i)%next                 = i + 1
+!   case (3)
 
-      xc_u_qr(i)%next = 0
+!     i = 0
+
+!     i = i + 1
+!     xc_ur(i)%prefactor = 2.0d0
+!     xc_ur(i)%nr_n                 = 2
+!     xc_ur(i)%n_to_matrix(1)       = 1
+!     xc_ur(i)%n_to_matrix(2)       = 2
+!     xc_ur(i)%next                 = i + 1
+
+!     i = i + 1
+!     xc_ur(i)%prefactor = 2.0d0
+!     xc_ur(i)%nr_n                 = 1
+!     xc_ur(i)%nr_z                 = 1
+!     xc_ur(i)%n_to_matrix(1)       = 1
+!     xc_ur(i)%z_to_matrix_left(1)  = 0
+!     xc_ur(i)%z_to_matrix_right(1) = 2
+!     xc_ur(i)%next                 = i + 1
+
+!     i = i + 1
+!     xc_ur(i)%prefactor = 2.0d0
+!     xc_ur(i)%nr_n                 = 1
+!     xc_ur(i)%nr_z                 = 1
+!     xc_ur(i)%n_to_matrix(1)       = 2
+!     xc_ur(i)%z_to_matrix_left(1)  = 0
+!     xc_ur(i)%z_to_matrix_right(1) = 1
+!     xc_ur(i)%next                 = i + 1
+
+!     i = i + 1
+!     xc_ur(i)%prefactor = 2.0d0
+!     xc_ur(i)%nr_z                 = 2
+!     xc_ur(i)%z_to_matrix_left(1)  = 0
+!     xc_ur(i)%z_to_matrix_right(1) = 1
+!     xc_ur(i)%z_to_matrix_left(2)  = 0
+!     xc_ur(i)%z_to_matrix_right(2) = 2
+!     xc_ur(i)%next                 = i + 1
+
+!     i = i + 1
+!     xc_ur(i)%prefactor = 2.0d0
+!     xc_ur(i)%nr_z                 = 2
+!     xc_ur(i)%z_to_matrix_left(1)  = 1
+!     xc_ur(i)%z_to_matrix_right(1) = 2
+!     xc_ur(i)%z_to_matrix_left(2)  = 2
+!     xc_ur(i)%z_to_matrix_right(2) = 1
+!     xc_ur(i)%next                 = i + 1
+
+!     xc_ur(i)%next = 0
 
     end select
 
+    ilast_accepted = 0
+    istart_xc_ur   = 0
     i = 1
-    do
-      xc_u_qr(i)%functional_derv_orders    = (/1, 0, 0, 0, 0/)
-      xc_u_qr(i)%functional_derv_orders(1) = xc_u_qr(i)%functional_derv_orders(1) + xc_u_qr(i)%nr_n 
-      xc_u_qr(i)%functional_derv_orders(3) = xc_u_qr(i)%functional_derv_orders(3) + xc_u_qr(i)%nr_z
+    if (nr_xc_ur > 0) then
+      do
+        xc_ur(i)%functional_derv_orders = (/1, 0, 0, 0, 0/)
+        do j = 1, 5
+          xc_ur(i)%functional_derv_orders(j) = xc_ur(i)%functional_derv_orders(j) &
+                                             + xc_ur(i)%nr_densities(j)
+        end do
 
-      i = xc_u_qr(i)%next
-      if (i == 0) exit
-    end do
+!       term is accepted
+        if (istart_xc_ur == 0) istart_xc_ur = i
+        ilast_accepted = i
+!       if (debug_me) then
+!         write(*, *) 'blub accepted ur', xc_ur(i)%functional_derv_orders
+!       end if
+
+!       term is not accepted
+        if (ilast_accepted /= 0) then
+!         xc_ur(ilast_accepted)%next = xc_ur(i)%next
+        end if
+
+        i = xc_ur(i)%next
+        if (i == 0) exit
+      end do
+    end if
+
+    istart_xc_vr = 1
+    i = 1
+    if (nr_xc_vr > 0) then
+      do
+        xc_vr(i)%functional_derv_orders = (/0, 0, 1, 0, 0/)
+        do j = 1, 5
+          xc_vr(i)%functional_derv_orders(j) = xc_vr(i)%functional_derv_orders(j) &
+                                             + xc_vr(i)%nr_densities(j)
+        end do
+
+!       term is accepted
+        if (istart_xc_vr /= 1) istart_xc_vr = i
+        ilast_accepted = i
+
+!       term is not accepted
+!       xc_vr(ilast_accepted)%next = xc_vr(i)%next
+
+        i = xc_vr(i)%next
+        if (i == 0) exit
+      end do
+    end if
 
   end subroutine
 
@@ -161,7 +239,9 @@ contains
 !   ----------------------------------------------------------------------------
     integer, parameter     :: max_order = 10
 
-    real(8)                :: ur, ur_temp
+    real(8)                :: t
+    real(8)                :: ur
+    real(8)                :: vr(3)
     real(8)                :: derv(99)
 
     real(8)                :: n(0:max_order)
@@ -170,7 +250,7 @@ contains
     real(8)                :: z_0
 
 
-    integer                :: i, j, in, iz
+    integer                :: i, j, in, iz, iv
     real(8), external      :: ddot
     integer, external      :: taylor_index
 !   ----------------------------------------------------------------------------
@@ -232,29 +312,61 @@ contains
 
     ur = 0.0d0
 
-    i = 1
-    do
-      ur_temp = w*derv(taylor_index(5, xc_u_qr(i)%functional_derv_orders))
-
-      do j = 1, xc_u_qr(i)%nr_n
-        ur_temp = ur_temp*n(xc_u_qr(i)%n_to_matrix(j))
+    if (nr_xc_ur > 0) then
+      i = 1
+      do
+        t = w*derv(taylor_index(5, xc_ur(i)%functional_derv_orders))
+     
+        iv = 1
+        do j = 1, xc_ur(i)%nr_densities(iv)
+          t = t*n(xc_ur(i)%s_use_matrix(iv, j))
+        end do
+     
+        iv = 3
+        do j = 1, xc_ur(i)%nr_densities(iv)
+          t = t*z(xc_ur(i)%p_use_matrix_l(iv, j), xc_ur(i)%p_use_matrix_r(iv, j))
+        end do
+     
+        ur = ur + t
+     
+        i = xc_ur(i)%next
+        if (i == 0) exit
       end do
+    end if
 
-      do j = 1, xc_u_qr(i)%nr_z
-        ur_temp = ur_temp*z(xc_u_qr(i)%z_to_matrix_left(j), xc_u_qr(i)%z_to_matrix_right(j))
+
+!   get vr contribution
+!   ===================
+
+    vr = 0.0d0
+
+    if (nr_xc_vr > 0) then
+      i = 1
+      do
+        t = w*derv(taylor_index(5, xc_vr(i)%functional_derv_orders))
+     
+        iv = 1
+        do j = 1, xc_vr(i)%nr_densities(iv)
+          t = t*n(xc_vr(i)%s_use_matrix(iv, j))
+        end do
+     
+        iv = 3
+        do j = 1, xc_vr(i)%nr_densities(iv)
+          t = t*z(xc_vr(i)%p_use_matrix_l(iv, j), xc_vr(i)%p_use_matrix_r(iv, j))
+        end do
+     
+        vr = vr + t*gn(:, xc_vr(i)%gradient_matrix)
+     
+        i = xc_vr(i)%next
+        if (i == 0) exit
       end do
+    end if
 
-      ur = ur + ur_temp
-
-      i = xc_u_qr(i)%next
-      if (i == 0) exit
-    end do
-
-!   if (use_gga) then
-!     call gga_distribute(s, 2.0d0*v, 0, fmat, gao, gao1)
-!   else
-      call lda_distribute(ur,          0, fmat, gao)
-!   end if
+    if (use_gga) then
+      call gga_distribute(ur, 2.0d0*vr, 0, fmat, gao, gao1)
+    else
+      call lda_distribute(ur,           0, fmat, gao)
+    end if
 
   end subroutine
 
