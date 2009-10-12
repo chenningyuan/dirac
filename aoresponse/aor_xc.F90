@@ -10,22 +10,255 @@ module aor_xc
   implicit none
 
   public aor_xc_new
+  public init_xc_contributions
 
   private
 
-  type xc_response_contribution
-    real(8) :: prefactor
-    integer :: nr_density_variables
-    integer :: density_variable_list(XC_MAX_ORDER)
-    integer :: matrix_list(XC_MAX_ORDER)
-    integer :: functional_derv_order(5)
-    integer :: previous
-    integer :: next
+! interface eval_expansion
+!   module procedure eval_n_expansion
+!   module procedure eval_z_expansion
+! end interface
+
+  type xc_contribution
+    real(8) :: prefactor                       = 1.0d0
+    integer :: functional_derv_orders(5)       = 0
+    integer :: nr_n                            = 0
+    integer :: n_to_matrix(XC_MAX_ORDER)       = 0
+    integer :: nr_z                            = 0
+    integer :: z_to_matrix_left(XC_MAX_ORDER)  = 0
+    integer :: z_to_matrix_right(XC_MAX_ORDER) = 0
+    integer :: next                            = 0
   end type
+
+  integer, parameter :: max_nr_of_xc_contributions = 10
+
+  save
+
+  type(xc_contribution) :: xc_u_qr(max_nr_of_xc_contributions)
 
 contains
 
+  subroutine init_xc_contributions(order)
+
+!   ----------------------------------------------------------------------------
+    integer, intent(in) :: order
+!   ----------------------------------------------------------------------------
+    integer             :: i
+!   ----------------------------------------------------------------------------
+
+    select case (order)
+
+    case (2)
+
+      i = 0
+
+      i = i + 1
+      xc_u_qr(i)%nr_n = 1
+      xc_u_qr(i)%n_to_matrix(1) = 1
+      xc_u_qr(i)%next = i + 1        
+
+      i = i + 1
+      xc_u_qr(i)%nr_z = 1
+      xc_u_qr(i)%z_to_matrix_left(1) = 0
+      xc_u_qr(i)%z_to_matrix_right(1) = 1
+      xc_u_qr(i)%next = i + 1        
+
+      xc_u_qr(i)%next = 0
+
+    case (3)
+
+      i = 0
+
+      i = i + 1
+      xc_u_qr(i)%prefactor = 2.0d0
+      xc_u_qr(i)%nr_n                 = 2
+      xc_u_qr(i)%n_to_matrix(1)       = 1
+      xc_u_qr(i)%n_to_matrix(2)       = 2
+      xc_u_qr(i)%next                 = i + 1
+
+      i = i + 1
+      xc_u_qr(i)%prefactor = 2.0d0
+      xc_u_qr(i)%nr_n                 = 1
+      xc_u_qr(i)%nr_z                 = 1
+      xc_u_qr(i)%n_to_matrix(1)       = 1
+      xc_u_qr(i)%z_to_matrix_left(1)  = 0
+      xc_u_qr(i)%z_to_matrix_right(1) = 2
+      xc_u_qr(i)%next                 = i + 1
+
+      i = i + 1
+      xc_u_qr(i)%prefactor = 2.0d0
+      xc_u_qr(i)%nr_n                 = 1
+      xc_u_qr(i)%nr_z                 = 1
+      xc_u_qr(i)%n_to_matrix(1)       = 2
+      xc_u_qr(i)%z_to_matrix_left(1)  = 0
+      xc_u_qr(i)%z_to_matrix_right(1) = 1
+      xc_u_qr(i)%next                 = i + 1
+
+      i = i + 1
+      xc_u_qr(i)%prefactor = 2.0d0
+      xc_u_qr(i)%nr_z                 = 2
+      xc_u_qr(i)%z_to_matrix_left(1)  = 0
+      xc_u_qr(i)%z_to_matrix_right(1) = 1
+      xc_u_qr(i)%z_to_matrix_left(2)  = 0
+      xc_u_qr(i)%z_to_matrix_right(2) = 2
+      xc_u_qr(i)%next                 = i + 1
+
+      i = i + 1
+      xc_u_qr(i)%prefactor = 2.0d0
+      xc_u_qr(i)%nr_z                 = 2
+      xc_u_qr(i)%z_to_matrix_left(1)  = 1
+      xc_u_qr(i)%z_to_matrix_right(1) = 2
+      xc_u_qr(i)%z_to_matrix_left(2)  = 2
+      xc_u_qr(i)%z_to_matrix_right(2) = 1
+      xc_u_qr(i)%next                 = i + 1
+
+      xc_u_qr(i)%next = 0
+
+    end select
+
+    i = 1
+    do
+      xc_u_qr(i)%functional_derv_orders    = (/1, 0, 0, 0, 0/)
+      xc_u_qr(i)%functional_derv_orders(1) = xc_u_qr(i)%functional_derv_orders(1) + xc_u_qr(i)%nr_n 
+      xc_u_qr(i)%functional_derv_orders(3) = xc_u_qr(i)%functional_derv_orders(3) + xc_u_qr(i)%nr_z
+
+      i = xc_u_qr(i)%next
+      if (i == 0) exit
+    end do
+
+  end subroutine
+
   subroutine aor_xc_new(order,   &
+                        nr_dmat, &
+                        use_gga, &
+                        dmat,    &
+                        fmat,    &
+                        isymop,  &
+                        gao,     &
+                        gao1,    &
+                        r_0,     &
+                        gr_0,    &
+                        w,       &
+                        buf)
+
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "../dft/functionals.h"
+
+!   ----------------------------------------------------------------------------
+    integer, intent(in)    :: order
+    integer, intent(in)    :: nr_dmat
+    logical, intent(in)    :: use_gga
+    real(8), intent(in)    :: dmat(ntbas(0), ntbas(0), nz, nr_dmat)
+    real(8), intent(inout) :: fmat(ntbas(0), ntbas(0), nz)
+    integer, intent(in)    :: isymop(nr_dmat)
+    real(8), intent(in)    :: gao(nr_ao_total)
+    real(8), intent(in)    :: gao1(nr_ao_total*3)
+    real(8), intent(in)    :: r_0
+    real(8), intent(in)    :: gr_0(3)
+    real(8), intent(in)    :: w
+    real(8), intent(in)    :: buf(*)
+!   ----------------------------------------------------------------------------
+    integer, parameter     :: max_order = 10
+
+    real(8)                :: ur, ur_temp
+    real(8)                :: derv(99)
+
+    real(8)                :: n(0:max_order)
+    real(8)                :: z(0:max_order, 0:max_order)
+    real(8)                :: gn(3, 0:max_order)
+    real(8)                :: z_0
+
+
+    integer                :: i, j, in, iz
+    real(8), external      :: ddot
+    integer, external      :: taylor_index
+!   ----------------------------------------------------------------------------
+
+!   get perturbed densities
+
+    n(0) = r_0
+
+    do i = 1, nr_dmat
+      call get_n(n(i), &
+                 isymop(i) - 1,             &
+                 dmat(1, 1, 1, i),          &
+                 buf,                       &
+                 gao)
+    end do
+
+!   get perturbed densitiy gradients and gradient norms
+
+    if (use_gga) then
+
+      gn(:, 0) = gr_0
+
+      do i = 1, nr_dmat
+
+        call get_gn(gn(1, i),         &
+                    isymop(i) - 1,    &
+                    dmat(1, 1, 1, i), &
+                    buf,              &
+                    gao,              &
+                    gao1)
+      end do
+
+      do i = 0, nr_dmat
+!       do j = 0, nr_dmat
+        do j = i, nr_dmat
+!         the perturbed z carries factor 2
+!         because derivative of z gives 2 identical terms
+!         (one "left", one "right")
+          z(i, j) = 2.0d0*ddot(3, gn(1, i), 1, gn(1, j), 1)
+        end do
+      end do
+!     correct wrong prefactor 2 of the unperturbed z
+      z(0, 0) = 0.5d0*z(0, 0)
+
+    end if
+
+
+!   get functional derivatives
+!   ==========================
+
+!   if (use_gga) then
+      call eval_gga(derv, order, (/r_0, 0.0d0, z(0, 0), 0.0d0, 0.0d0/))
+!   else
+!   end if
+
+
+!   get ur contribution
+!   ===================
+
+    ur = 0.0d0
+
+    i = 1
+    do
+      ur_temp = w*derv(taylor_index(5, xc_u_qr(i)%functional_derv_orders))
+
+      do j = 1, xc_u_qr(i)%nr_n
+        ur_temp = ur_temp*n(xc_u_qr(i)%n_to_matrix(j))
+      end do
+
+      do j = 1, xc_u_qr(i)%nr_z
+        ur_temp = ur_temp*z(xc_u_qr(i)%z_to_matrix_left(j), xc_u_qr(i)%z_to_matrix_right(j))
+      end do
+
+      ur = ur + ur_temp
+
+      i = xc_u_qr(i)%next
+      if (i == 0) exit
+    end do
+
+!   if (use_gga) then
+!     call gga_distribute(s, 2.0d0*v, 0, fmat, gao, gao1)
+!   else
+      call lda_distribute(ur,          0, fmat, gao)
+!   end if
+
+  end subroutine
+
+  subroutine aor_xc_new_save_old(order,   &
                         nr_dmat, &
                         use_gga, &
                         dmat,    &
@@ -295,16 +528,16 @@ contains
 
     else if (order == 6) then
 
-      s_aux(4) = 15.0d0*r(1)*r(2)*r(2)          
+      s_aux(4) = 15.0d0*r(1)*r(2)*r(2)
       s_aux(3) = 10.0d0*r(2)*r(3)
 
     else if (order == 7) then
 
-      s_aux(5) = 45.0d0*r(1)*r(1)*r(2)*r(2)          
+      s_aux(5) = 45.0d0*r(1)*r(1)*r(2)*r(2)
       s_aux(4) = 60.0d0*r(1)*r(2)*r(3) &
-               + 15.0d0*r(2)*r(2)*r(2)               
+               + 15.0d0*r(2)*r(2)*r(2)
       s_aux(3) = 15.0d0*r(2)*r(4) &
-               + 10.0d0*r(3)*r(3)                    
+               + 10.0d0*r(3)*r(3)
 
     else if (order == 8) then
 
