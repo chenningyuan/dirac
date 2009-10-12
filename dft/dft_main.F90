@@ -10,6 +10,9 @@ module dft_main
 ! if you really have to use common blocks, then
 ! please put them in dft_cb_interface
   use dft_cb_interface
+#ifdef MOD_AUTODIFF
+  use xc_fun
+#endif
 #ifdef MOD_AORESPONSE
   use aor_xc
 #endif
@@ -77,6 +80,10 @@ contains
 !     --------------------------------------------------------------------------
 
       call init_dft_cb()
+
+#ifdef MOD_AUTODIFF
+      call init_xc_contributions(dft_options%aor_xc_order)
+#endif
 
 !     start timer
       time_start = second()
