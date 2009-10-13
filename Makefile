@@ -114,7 +114,7 @@ clean:
 include utils/Makefile.utils
 
 .SUFFIXES :
-.SUFFIXES : .F .F90 .f90 .c .cpp .s .r .o .i .fc .p 
+.SUFFIXES : .F .F90 .f90 .c .cpp .s .r .o .i .fc .p .g
 
 .F.o:
 	$(F77) $(F77FLAGS) -c -o $*.o $*.F
@@ -127,6 +127,18 @@ include utils/Makefile.utils
 
 .c.o:
 	$(CC) $(CFLAGS) -c -o $*.o $*.c
+
+# HJAaJ specials for debugging /Oct 09
+# for xxx.F: "make xxx.g" will compile xxx.F to xxx.o 
+#            with F77FLAGS_SAFE instead of F77FLAGS
+.F.g:
+	$(F77) $(F77FLAGS_SAFE) -c -o $*.o $*.F
+.F90.g:
+	$(F90) $(F90FLAGS_SAFE) -c -o $*.o $*.F90
+.f90.g:
+	$(F90) $(F90FLAGS_SAFE) -c -o $*.o $*.f90
+.c.g:
+	$(CC)  $(CFLAGS_SAFE) -c -o $*.o $*.c
 
 .cpp.o:
 	$(CC) $(CFLAGS) -c -o $*.o $*.cpp
