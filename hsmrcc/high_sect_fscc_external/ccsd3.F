@@ -59,8 +59,10 @@
       end
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      subroutine reads (nt,nrec,name) 
+      subroutine reads (nt,nrec,namein) 
 !---------------------------------------------------------------------------
+!
+! entering parameter "name" renamed to "namein"
 !
 !
 !---------------------------------------------------------------------------
@@ -86,7 +88,7 @@
       rewind nt
       igotit=0
       do 20 i=1,nflcur
-        if (namefl(i).eq.name) then
+        if (namefl(i).eq.namein) then
           nfl=i
           igotit=1
         end if
@@ -99,18 +101,19 @@
         do 10 i=1,4*nrec
 10      read (nt)
       endif
+
       read (nt,iostat=ieof) nij
       if (ieof.lt.0) then
-        write (6,*) 'reads encountered end of file'
-        stop
-      end if
+        write (LUPRI,*) 'reads encountered end of file'
+        call quit('reads encountered end of file!')
+      endif
       istrt1=nstrt(1,nfl-1)
       istrt2=nstrt(2,nfl-1)
       igen(istrt1+1)=nij
       read (nt) (igen(istrt1+i),i=2,2*nij+4)
       iiia(nfl)=igen(istrt1+2*nij+3)
       iiva(nfl)=igen(istrt1+2*nij+4)
-      namefl(nfl)=name
+      namefl(nfl)=namein
       nsize=igen(istrt1+2*nij+2)
       read (nt) (igen(istrt1+2*nij+4+i),i=1,nsize)
       read (nt) (gen(istrt2+i),i=1,nsize)
@@ -2529,6 +2532,11 @@ c  symmetry operations
 ! mi: complain due to leak :
 ! Array reference out of bounds for array 'igen', upper bound of dimension 1 exceeded (10098089 > 9000000)
       igen(nt)=ipack(ja,jb,jc,jd)
+
+      if (getiprint() >= 15) then
+        write(LUPRI,*) 'tmplt: nt,igen(nt):',nt,igen(nt)
+      endif
+
 220   continue
 230   continue
 240   continue
@@ -2585,9 +2593,15 @@ c  one electron
       if ((ic(jd).ne.i4).or.(icv(jd).lt.j4)) go to 340
       nt=nt+1
       igen(nt)=ipack(0,0,jc,jd)
+
+      if (getiprint() >= 15) then
+        write(LUPRI,*) 'tmplt (2): nt,igen(nt): ',nt,igen(nt)
+      endif
+
 340   continue
 350   continue
 360   continue
+
 !     nij=1
       nij1=1
 !     ije(1)=nt-nt0
