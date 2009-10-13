@@ -815,6 +815,7 @@ C     Last revision : July 30 1996 - tsaue
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
       DIMENSION IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*),
      &          GPCI(*),GPOE(*),GPOP(*),
      &          EVALR(*),EVECR(*),WORK(*)
@@ -869,6 +870,26 @@ C           elements NEXSTV and NEXSTV+1/+2 are (nearly) degenerate
       ENDIF
 C
       NTSIM = NESIM + NPSIM + NCSIM
+C.....Check for out of bounds
+      IF(STATIC) THEN
+        NSIM = NFREQ
+      ELSE
+        NSIM = NFREQ+NFREQ
+      ENDIF
+      NBUF = 0      
+      IF(NZXOPE.GT.0) NBUF = NBUF + 1
+      IF(NZXOPP.GT.0) NBUF = NBUF + 1
+      IF(NZCONF.GT.0) NBUF = NBUF + 1
+      NTOT = NZRED+NTSIM+NSIM*NBUF
+      IF(NTOT.GT.NREDM) THEN
+        WRITE(LUPRI,'(A,I6)') 
+     &    '* Current number of trial vectors       :',NZRED,
+     &    '* Requested number of new trial vectors :',NTSIM,
+     &    '* Solution vectors generated in XRSNEX  :',NSIM*NBUF,
+     &    '* Maximum number of trial vectors NREDM :',NREDM,
+     &    '* Increase MAXRED to                    :',NTOT
+        CALL QUIT('* XRSST: Increase size of reduced space MAXRED !')
+      ENDIF
       NBTOT = NESIM*NZXOPEQ + NPSIM*NZXOPPQ + NCSIM*NZCONFQ
       CALL MEMGET('REAL',KBTOT,NBTOT,WORK,KFREE,LFREE)
       KFIRST = KBTOT
@@ -2645,6 +2666,13 @@ C
         NSIM = MFREQ
       ELSE
         NSIM = MFREQ + MFREQ
+      ENDIF
+      IF((NSIM+NZRED).GT.NREDM) THEN
+        WRITE(LUPRI,'(A,I6)') 
+     &    '* Current number of trial vectors       :',NZRED,
+     &    '* Requested number of new trial vectors :',NSIM,
+     &    '* Maximum number of trial vectors NREDM :',NREDM
+        CALL QUIT('* XRSNEX:Increase size of reduced space MAXRED !')
       ENDIF
       NBTOT = NSIM*(NZXOPEQ+NZXOPPQ+NZCONFQ)
       CALL MEMGET('REAL',KBTOT,NBTOT,WORK,KFREE,LFREE)
