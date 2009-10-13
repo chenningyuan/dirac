@@ -612,6 +612,11 @@ C Gal 95
           nij2=nija ! Ephraim's substitution
           do k=1,nija
             ij2(k)=igen(nstrt(1,num-1)+1+k)
+            if (getiprint().ge.15) then
+              write(LUPRI,*) nstrt(1,num-1)+1+k,
+     &        '. igen(nstrt(1,num-1)+1+k)=',
+     &        igen(nstrt(1,num-1)+1+k)
+            endif
           enddo
           call kcopy(nija+1,igen(nstrt(1,num-1)+nija+2),ije2(0))
           iii2=igen(nstrt(1,num-1)+2*nija+3)
