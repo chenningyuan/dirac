@@ -353,11 +353,9 @@ C
             ISPHTR = ILSPH+2*ISSPH
             GO TO 100
   110     CONTINUE
-#ifdef MOD_ECP
 C&&&& ECP: do ECP calculation, non-relativistic
             ECPCALC = .TRUE.
             TWOCOMP = .TRUE.
-#endif
             GO TO 100
   111     CONTINUE
           LOGMEMGET = .TRUE.
@@ -448,11 +446,15 @@ C
      &  '* Running in the four-component mode'
       ENDIF
 
-#ifdef MOD_ECP
-      IF (ECPCALC)
-     &  WRITE(LUPRI,'(1X,A)') 
+      IF (ECPCALC) THEN
+        WRITE(LUPRI,'(1X,A)') 
      &   '  employing effective-core-potentials (ECP)'
+#ifndef MOD_ECP
+        WRITE(LUPRI,'(//A)')
+     &   ' SORRY! .ECP is not implemented in this version.'
+        CALL QUIT('.ECP is not implemented in this version.')
 #endif
+      END IF
       IF(PARCAL) WRITE(LUPRI,'(1X,A)') '* Parallel run'
       IF(IDFLAG.GT.0) THEN
         WRITE(LUPRI,'(1X,A)') '* Direct evaluation of '//
