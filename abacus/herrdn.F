@@ -1075,6 +1075,7 @@ C            Construct basis set for dummy centers if requested
 C            ==================================================
 C
              NQ = NINT(Q + 0.01D0)
+             QB = Q
              IF ((LCMMAX .GT. -1) .AND. (NQ .EQ. 0)) THEN
                WRITE(LUPRI,'(/A)') 'BASINP: CM basis not implemented !'
                CALL QUIT('BASINP: CM basis not implemented in Dirac !')
@@ -1156,7 +1157,13 @@ C
                   ENDIF
                ELSE IF ( BSKEYWORD(1:5) .EQ. 'BASIS') THEN
                   IBSFLAG = 3
-                  READ (MLINE(NMLINE),'(12X,A20)',IOSTAT=IOS) BASFIL
+                  IF(MLINE(NMLINE)(13:14).EQ.'Q=') THEN
+                    READ (MLINE(NMLINE)(15:),*,IOSTAT=IOS) QB,BASFIL
+                    WRITE(6,*) '* WARNING: Reading basis ',BASFIL,
+     &                         ' using charge ',QB
+                  ELSE
+                    READ (MLINE(NMLINE),'(12X,A20)',IOSTAT=IOS) BASFIL
+                  ENDIF
                   IF (IOS.NE.0)THEN
                     CALL QUIT('Error in reading BASIS...')
                   ENDIF
@@ -1258,7 +1265,7 @@ C
      &                 NRC(IBLOCK(1),1),SEG(IBLOCK(1),1),
      &                 ALPHA(1,IBLOCK(1),1),
      &                 CPRIM(1,1,IBLOCK(1),1),CPRIMU(1,1,IBLOCK(1),1),
-     &                 NBLOCK,ISGEN(IBLOCK(1)),KAOVEC,KPRIM,Q,1,DSM,
+     &                 NBLOCK,ISGEN(IBLOCK(1)),KAOVEC,KPRIM,QB,1,DSM,
      &                 BASREF(1,I,1))
                   NBLCK(I,1) = NBLOCK
 C
