@@ -1501,9 +1501,14 @@ for index in $lib_index; do
     $echo "Default (internal) LAPACK used."
     append cpp_f90 "-DUSE_DIRAC_DLAMCH -DUSE_DIRAC_DLAPACK -DUSE_DIRAC_ZLAPACK"
   elif [ ! -z $index ]; then
-    get_item "$libs" lib_name $index 2
-    set -- $lib_name
-    setup_math_lib $1 $2
+    if [ ! '$old_libs' ]; then
+       echo "blablab"
+       get_item "$libs" lib_name $index 2
+       set -- $lib_name
+       setup_math_lib $1 $2
+    else
+       export LIB="$old_libs"
+    fi
   fi
 done
 
@@ -1543,6 +1548,7 @@ old_lib () {
 # Gets old libraries from Makefile.config
 return_libs=""
 old_libs=`./config.status "LIBS"`
+my_old_libs=$old_libs
 
 if [ $IPRINT -ge "5" ];  then
  echo 'old_lib: from Makefile.config extracted old_libs='$old_libs
@@ -1555,6 +1561,7 @@ old_libs="$old_libs -L"
 
 while [ -n "$old_libs" ]; do
   tmp_libs=${old_libs%%-L*}
+  tmp_libs=${tmp_libs##-framework}
   tmp_libs=${tmp_libs## }
   tmp_libs=${tmp_libs%% }
   old_libs=${old_libs#*-L}
@@ -1564,6 +1571,7 @@ while [ -n "$old_libs" ]; do
 
 # Undo setup_math_lib routine
   case "$tmp_libs" in
+    "veclib") lib_name="apple's veclib";;
     "-lesslp2") lib_name="libesslp2" ;;
     "-lessl") lib_name="libessl" ;;
     "-lblas") lib_name="libblas" ;;
@@ -1583,6 +1591,7 @@ while [ -n "$old_libs" ]; do
 done
 eval "$1=\"$return_libs\""
 
+old_libs=$my_old_libs
 if [ $IPRINT -ge "5" ];  then
     echo 'old_lib: old_libs='$old_libs
     echo 'old_lib: tmp_libs='$tmp_libs
