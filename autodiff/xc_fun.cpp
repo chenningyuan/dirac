@@ -66,15 +66,15 @@ static void gga_helper(double *result, const double densvars[5])
   if (xc_params[XC_LYP_CORRELATION] != 0)
     res += xc_params[XC_LYP_CORRELATION]*
       lyp_correlation<N>(t[0],t[1],t[2],t[3],t[4]);
-  /*  if (xc_params[XC_PBE_CORRELATION] != 0)
+  if (xc_params[XC_PBE_CORRELATION] != 0)
     res += xc_params[XC_PBE_CORRELATION]*
-    pbe_correlation<N>(t[0],t[1],t[2],t[3],t[4]);*/
+    pbe_correlation<N>(t[0],t[1],t[2],t[3],t[4]);
   if (xc_params[XC_BECKE_EXCHANGE] != 0)
     res += xc_params[XC_BECKE_EXCHANGE]*
       becke_exchange<N>(t[0],t[1],t[2],t[3],t[4]);
-  /*  if (xc_params[XC_PBE_EXCHANGE] != 0)
+  if (xc_params[XC_PBE_EXCHANGE] != 0)
     res += xc_params[XC_PBE_EXCHANGE]*
-    pbe_exchange<N>(t[0],t[1],t[2],t[3],t[4]);*/
+    pbe_exchange<N>(t[0],t[1],t[2],t[3],t[4]);
 
   res.deriv_facs();
 }
