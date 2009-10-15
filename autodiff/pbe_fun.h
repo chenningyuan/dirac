@@ -4,13 +4,14 @@
  */
 
 template<int N>
-taylor <5,N> pbe_exchange(const double d[5])
+taylor <5,N> pbe_exchange(const taylor<5,N> &R,
+			  const taylor<5,N> &S,
+			  const taylor<5,N> &Z,
+			  const taylor<5,N> &X,
+			  const taylor<5,N> &Y)
 {
-  taylor <5,N> rhoa,rhob,grada2,gradb2;
-  get_rhoa(rhoa,d);
-  get_rhob(rhob,d);
-  get_grada2(grada2,d);
-  get_gradb2(gradb2,d);
+  taylor <5,N> rhoa = get_rhoa(R,S), rhob = get_rhob(R,S), 
+    grada2 = get_grada2(Z,X,Y), gradb2 = get_gradb2(Z,X,Y);
   double t1 = pow(2.0,0.33333333333333);
   return  0.5*(-1.477117532764045*t1*pow(rhob,1.333333333333333)*
              (1.804-0.804/(0.00449279948023*gradb2/pow(rhob,2.666666666666667)+
@@ -22,14 +23,15 @@ taylor <5,N> pbe_exchange(const double d[5])
 
 
 template<int N>
-taylor <5,N> pbe_correlation(const double d[5])
+taylor <5,N> pbe_correlation(const taylor<5,N> &R,
+			     const taylor<5,N> &S,
+			     const taylor<5,N> &Z,
+			     const taylor<5,N> &X,
+			     const taylor<5,N> &Y)
 {
-  taylor <5,N> rhoa, rhob, grada2, gradb2, gradab;
-  get_rhoa(rhoa,d);
-  get_rhob(rhob,d);
-  get_grada2(grada2,d);
-  get_gradab(gradab,d);
-  get_gradb2(gradb2,d);
+  taylor <5,N> rhoa = get_rhoa(R,S), rhob = get_rhob(R,S), 
+    grada2 = get_grada2(Z,X,Y), gradb2 = get_gradb2(Z,X,Y),
+    gradab = get_gradab(Z,X,Y);
   taylor <5,N> t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;
 
   t1 = rhob+rhoa;

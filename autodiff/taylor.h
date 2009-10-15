@@ -193,6 +193,13 @@ public:
 };
 
 template<int Nvar, int Ndeg>
+void taylorize(taylor<Nvar, Ndeg> t[Nvar], const tnum_t x0[Nvar])
+{
+  for (int i=0;i<Nvar;i++)
+    t[i] = x0[i];
+}
+
+template<int Nvar, int Ndeg>
 taylor<Nvar, Ndeg> operator*(const tnum_t &x, const taylor<Nvar,Ndeg>& t)
 {
   taylor<Nvar,Ndeg> tmp;

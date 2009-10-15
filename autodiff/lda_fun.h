@@ -46,15 +46,13 @@ static taylor<2,N> vwn_f(const taylor<2,N>& s,const double p[])
 }
 
 template<int N>
-static taylor<2,N> vwn_correlation(const double d[2])
+static taylor<2,N> vwn_correlation(const taylor<2,N> &R,
+				   const taylor<2,N> &S)
 {
   static const double  para[] = {-0.10498,   0.0621814,  3.72744, 12.9352};
   static const double ferro[] = {-0.325,     0.0310907,  7.06042, 18.0578};
   static const double inter[] = {-0.0047584, -0.0337737, 1.13107, 13.0045};
-  taylor<2,N> R,S;
-  get_R(R,d);
   assert(R[0] > 1e-20);
-  get_S(S,d);
   taylor<2,N> t,g,dd,s = pow(3/(4*TAYLOR_PI),double(1.0)/6)/pow(R,double(1.0)/6);
   t = S/R;
   g = 1.92366105093154*(pow(1 + t,double(4.0)/3) + pow(1 - t,double(4.0)/3) - 2);
@@ -64,12 +62,9 @@ static taylor<2,N> vwn_correlation(const double d[2])
 }
 
 template<int N>
-static taylor<2,N> slater_exchange(const double d[2])
+static taylor<2,N> slater_exchange(const taylor<2,N> &R,
+				   const taylor<2,N> &S)
 {
-  
-  taylor<2,N> R,S;
-  get_R(R,d);
-  get_S(S,d);
-  const double prefactor = -3.0/4.0*pow(6/TAYLOR_PI, double(1.0)/3.0);
-  return prefactor*(pow((R+S)/2,double(4.0)/3) + pow((R-S)/2,double(4.0)/3));
+  const double prefactor = -3.0/4.0*pow(6/TAYLOR_PI, 1.0/3.0);
+  return prefactor*(pow((R+S)/2,4.0/3) + pow((R-S)/2,4.0/3));
 }
