@@ -42,11 +42,11 @@ const double composed_good[] = { 1.49182469764127,
 
 #define NR_COEFF_CHECK 6
 
-template<int Nvar, int Ndeg>
+template<class T, int Nvar, int Ndeg>
 int taylor_check(const char *label,
-		  const taylor<Nvar,Ndeg>& t,
-		  const double correct[],
-		  double thres)
+		 const taylor<T,Nvar,Ndeg>& t,
+		 const double correct[],
+		 double thres)
 {
   int nfail = 0;
   for (int i=0;i<NR_COEFF_CHECK;i++)
@@ -61,15 +61,15 @@ int taylor_check(const char *label,
   return nfail;
 }
 
-template<int Nvar, int Ndeg>
-int taylor_compare(const taylor<Nvar,Ndeg>& t1,
-		   const taylor<Nvar,Ndeg>& t2,
+template<class T, int Nvar, int Ndeg>
+int taylor_compare(const taylor<T,Nvar,Ndeg>& t1,
+		   const taylor<T,Nvar,Ndeg>& t2,
 		   double thres)
 {
   int nfail = 0;
   for (int i=0;i<t1.size;i++)
     {
-      tnum_t err = 2*fabs(t1[i] - t2[i])/(1 + 0.5*fabs(t1[i]+t2[i]));
+      T err = 2*fabs(t1[i] - t2[i])/(1 + 0.5*fabs(t1[i]+t2[i]));
       if (err > thres)
 	{
 	  cout << "Difference in coefficient " << i << ". Correct:" << t1[i] << ", taylor:" << t2[i] << " difference: " <<  t1[i] - t2[i] << endl;
@@ -80,10 +80,10 @@ int taylor_compare(const taylor<Nvar,Ndeg>& t1,
 }
 
 
-template<int Nvar, int Ndeg>
-tnum_t taylor_sumsq(const taylor<Nvar,Ndeg>& t)
+template<class T, int Nvar, int Ndeg>
+T taylor_sumsq(const taylor<T,Nvar,Ndeg>& t)
 {
-  tnum_t s = 0;
+  T s = 0;
   for (int i=0;i<t.size;i++)
     s += t[i]*t[i];
   return s;
@@ -105,17 +105,17 @@ long stupid_binomial(int n, int k)
     return fac(n)/(fac(k)*fac(n-k));
 }
 
-template<int N>
-taylor<2,N> binomial_generating_function(void)
+template<class T, int N>
+taylor<T,2,N> binomial_generating_function(void)
 {
-  taylor<2,N> x(0,0),y(0,1);
+  taylor<T,2,N> x(0,0),y(0,1);
   return 1/(1-(1+x)*y); //generating function for the binomial coefficients
 }
 
 int main(void)
 {
   double x0 = 2.5;
-  taylor<1,6> tin(x0,0);
+  taylor<double,1,6> tin(x0,0);
   int res = 0;
 
 #ifdef TAYLOR_QD
@@ -131,7 +131,7 @@ int main(void)
   res += taylor_check("atan",atan(tin),atan_good,1e-15);
 
   // Test multidimensional multiply consistency
-  taylor<4,5> tmul(0),tacc(1),t1,t2,t3;
+  taylor<double,4,5> tmul(0),tacc(1),t1,t2,t3;
   for (int i=0;i<t1.size;i++)
     {
       t1[i] = i+1;
@@ -155,7 +155,7 @@ int main(void)
     }
   // Evaluate multivariate polynomial and check the results
   {
-    taylor<2,2> p;
+    taylor<double,2,2> p;
     for (int i=0;i<p.size;i++)
       p[i] = i+1;
     double x[2] = {3,7.1};
@@ -164,7 +164,7 @@ int main(void)
 	cout << "Error evaluating multivariate, error " << p.eval(x)-473.26 << endl;
 	res++;
       }
-    taylor<4,5> p1,p2,pp;
+    taylor<double,4,5> p1,p2,pp;
     for (int i=0;i<10;i++)
 	p1[i] = i+1;
     for (int i=0;i<10;i++)
@@ -177,21 +177,21 @@ int main(void)
 	res++;
     }
     // Evaluate with taylor vars
-    taylor<1,2> pv[4], pr;
+    taylor<double,1,2> pv[4], pr;
     for (int i=0;i<4;i++)
       pv[i][1] = i;
     pr = tin.eval(pv);
   }
   
   // composition
-  taylor<2,2> p(2.5);
+  taylor<double,2,2> p(2.5);
   p[1] = 3;
   p[2] = 7; // Now p = 2.5 + 3*x + 7*y
-  taylor<2,2> ret = exp(1/p);
+  taylor<double,2,2> ret = exp(1/p);
   res += taylor_check("exp(1/(2.5+3*x+7*y))",ret,composed_good,1e-15);
 
   // Term indexing
-  taylor<3,3> index_tester;
+  taylor<double,3,3> index_tester;
   int exponents1[] = {2,0,1};
   int exponents2[] = {0,1,1};
   /* 1 x y z x^2 xy xz y^2 yz z^2 x^3 x^2y x^2z xy^2 xyz xz^2 y^3 y^2z yz^2 z^3
@@ -204,7 +204,7 @@ int main(void)
     }
 
   // Generating function binomial coeffs.
-  taylor<2,10> nchoosek = binomial_generating_function<10>();
+  taylor<double,2,10> nchoosek = binomial_generating_function<double,10>();
   for (int i=0;i<=10;i++)
     for (int j=0;i+j<=10;j++)
       {
@@ -216,9 +216,9 @@ int main(void)
 	  }
       }
   // Shifting
-  taylor<1,6> sinx(1e-3,0),sint = sin(sinx);
-  taylor<1,12> shift_sinx(0,0),shift_sint = sin(shift_sinx);
-  taylor<1,6> shifted;
+  taylor<double,1,6> sinx(1e-3,0),sint = sin(sinx);
+  taylor<double,1,12> shift_sinx(0,0),shift_sint = sin(shift_sinx);
+  taylor<double,1,6> shifted;
   double dx = 1e-3;
   shift_sint.shift(shifted,&dx);
   res += taylor_compare(sint,shifted,1e-15);
@@ -227,7 +227,7 @@ int main(void)
   // sinc
   cout << scientific;
   cout.precision(16);
-  taylor<1,6> sincx(1e-4,0), sincout = sinc(sincx);
+  taylor<double,1,6> sincx(1e-4,0), sincout = sinc(sincx);
   for (int i=0;i<sincout.size;i++)
       cout << i << " " << sincout[i] << endl;
 */

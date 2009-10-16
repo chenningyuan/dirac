@@ -3,50 +3,69 @@
 // Elementary functions. For inclusion in taylor.h only!
 
 //Taylor series of 1/(a+x)
-template<int N>
-void inv_taylor(taylor<1,N>& t, const tnum_t &a)
+template<class T,int N>
+void inv_taylor(taylor<T,1,N>& t, const T &a)
 {
-  assert(a != tnum_t(0) && "1/(a+x) not analytic at a = 0");
+  assert(a != T(0) && "1/(a+x) not analytic at a = 0");
   t[0] = 1/a;
   for (int i=1;i<=N;i++)
     t[i] = -t[i-1]/a;
 }
 
-template<int Nvar, int Ndeg>
-taylor<Nvar, Ndeg> operator/(const tnum_t &x, const taylor<Nvar,Ndeg>& t)
+template<class T,int Nvar, int Ndeg>
+taylor<T,Nvar, Ndeg> operator/(const T &x, const taylor<T,Nvar,Ndeg>& t)
 {
-  taylor<1,Ndeg> tmp;
+  taylor<T,1,Ndeg> tmp;
   inv_taylor(tmp,t[0]);
   tmp*=x;
-  taylor<Nvar, Ndeg> res;
+  taylor<T,Nvar, Ndeg> res;
   t.compose(res,tmp);
   return res;
 }
 
-template<int Nvar, int Ndeg>
-taylor<Nvar, Ndeg> operator/(const taylor<Nvar,Ndeg>& t, const tnum_t &x)
+template<class T,int Nvar, int Ndeg>
+taylor<T,Nvar, Ndeg> operator/(int x, const taylor<T,Nvar,Ndeg>& t)
 {
-  taylor<Nvar,Ndeg> tmp = t;
+  taylor<T,1,Ndeg> tmp;
+  inv_taylor(tmp,t[0]);
+  tmp*=x;
+  taylor<T,Nvar, Ndeg> res;
+  t.compose(res,tmp);
+  return res;
+}
+
+template<class T,int Nvar, int Ndeg>
+taylor<T,Nvar, Ndeg> operator/(const taylor<T,Nvar,Ndeg>& t, const T &x)
+{
+  taylor<T,Nvar,Ndeg> tmp = t;
   tmp *= 1/x;
   return tmp;
 }
 
-template<int Nvar, int Ndeg>
-taylor<Nvar, Ndeg> operator/(const taylor<Nvar,Ndeg>&t1, const taylor<Nvar,Ndeg>& t2)
+template<class T,int Nvar, int Ndeg>
+taylor<T,Nvar, Ndeg> operator/(const taylor<T,Nvar,Ndeg>& t, int x)
 {
-  taylor<1,Ndeg> tmp;
+  taylor<T,Nvar,Ndeg> tmp = t;
+  tmp *= 1/T(x);
+  return tmp;
+}
+
+template<class T,int Nvar, int Ndeg>
+taylor<T,Nvar, Ndeg> operator/(const taylor<T,Nvar,Ndeg>&t1, const taylor<T,Nvar,Ndeg>& t2)
+{
+  taylor<T,1,Ndeg> tmp;
   inv_taylor(tmp,t2[0]);
-  taylor<Nvar, Ndeg> res;
+  taylor<T,Nvar, Ndeg> res;
   t2.compose(res,tmp);
   res*=t1;
   return res;
 }
 
 // Evaluate the taylor series of exp(x0+x)=exp(x0)*exp(x)
-template<int Ndeg>
-void exp_taylor(taylor<1,Ndeg> &t, const tnum_t &x0)
+template<class T,int Ndeg>
+void exp_taylor(taylor<T,1,Ndeg> &t, const T &x0)
 {
-  tnum_t ifac = 1;
+  T ifac = 1;
   t[0] = exp(x0);
   for (int i=1;i<=Ndeg;i++)
     {
@@ -55,24 +74,24 @@ void exp_taylor(taylor<1,Ndeg> &t, const tnum_t &x0)
     }
 }
 
-template<int Nvar, int Ndeg>
-taylor<Nvar,Ndeg> exp(const taylor<Nvar,Ndeg> &t)
+template<class T,int Nvar, int Ndeg>
+taylor<T,Nvar,Ndeg> exp(const taylor<T,Nvar,Ndeg> &t)
 {
-  taylor<1,Ndeg> tmp;
+  taylor<T,1,Ndeg> tmp;
   exp_taylor(tmp,t[0]);
 
-  taylor<Nvar,Ndeg> res;
+  taylor<T,Nvar,Ndeg> res;
   t.compose(res,tmp);
   return res;
 }
 
 // Log series log(a+x) = log(1+x/a) + log(a)
-template<int N>
-void log_taylor(taylor<1,N> &t, const tnum_t &x0)
+template<class T,int N>
+void log_taylor(taylor<T,1,N> &t, const T &x0)
 {
-  assert(x0 != tnum_t(0) && "log(x) not analytic at x = 0");
+  assert(x0 != T(0) && "log(x) not analytic at x = 0");
   t[0] = log(x0);
-  tnum_t xn = x0;
+  T xn = x0;
   for (int i=1;i<=N;i++)
     {
       t[i] = (2*(i & 1)-1)/(i*xn);
@@ -80,57 +99,57 @@ void log_taylor(taylor<1,N> &t, const tnum_t &x0)
     }
 }
 
-template<int Nvar, int Ndeg>
-taylor<Nvar,Ndeg> log(const taylor<Nvar,Ndeg> &t)
+template<class T,int Nvar, int Ndeg>
+taylor<T,Nvar,Ndeg> log(const taylor<T,Nvar,Ndeg> &t)
 {
-  taylor<1,Ndeg> tmp;
+  taylor<T,1,Ndeg> tmp;
   log_taylor(tmp,t[0]);
 
-  taylor<Nvar,Ndeg> res;
+  taylor<T,Nvar,Ndeg> res;
   t.compose(res,tmp);
   return res;
 }
 
 /* Use that (x0+x)^a=x0^a*(1+x/x0)^a */
-template<int N>
-void pow_taylor(taylor<1,N>& t, const tnum_t &x0, const tnum_t &a)
+template<class T,int N>
+void pow_taylor(taylor<T,1,N>& t, const T &x0, const T &a)
 {
-  assert(x0 != tnum_t(0) && "pow(x,a) not analytic at x = 0");
+  assert(x0 != T(0) && "pow(x,a) not analytic at x = 0");
   t[0] = pow(x0,a);
   for (int i=1;i<=N;i++)
     t[i] = t[i-1]*(a-i+1)/(x0*i);
 }
 
-template<int Nvar, int Ndeg>
-taylor<Nvar,Ndeg> pow(const taylor<Nvar,Ndeg> &t, const tnum_t &a)
+template<class T,int Nvar, int Ndeg>
+taylor<T,Nvar,Ndeg> pow(const taylor<T,Nvar,Ndeg> &t, const T &a)
 {
-  taylor<1,Ndeg> tmp;
+  taylor<T,1,Ndeg> tmp;
   pow_taylor(tmp,t[0],a);
 
-  taylor<Nvar,Ndeg> res;
+  taylor<T,Nvar,Ndeg> res;
   t.compose(res,tmp);
   return res;
 }
 
-template<int Nvar, int Ndeg>
-taylor<Nvar,Ndeg> sqrt(const taylor<Nvar,Ndeg> &t)
+template<class T,int Nvar, int Ndeg>
+taylor<T,Nvar,Ndeg> sqrt(const taylor<T,Nvar,Ndeg> &t)
 {
-  taylor<1,Ndeg> tmp;
+  taylor<T,1,Ndeg> tmp;
   pow_taylor(tmp,t[0],0.5);
 
-  taylor<Nvar,Ndeg> res;
+  taylor<T,Nvar,Ndeg> res;
   t.compose(res,tmp);
   return res;
 }
 
 //Integer exponent version is analytical at t[0] = 0
 // TODO: speed this up a bit by using compose
-template<int Nvar, int Ndeg>
-taylor<Nvar,Ndeg> pow(const taylor<Nvar,Ndeg> &t, int n)
+template<class T,int Nvar, int Ndeg>
+taylor<T,Nvar,Ndeg> pow(const taylor<T,Nvar,Ndeg> &t, int n)
 {
   if (n < 1)
-    return pow(t,tnum_t(n));
-  taylor<Nvar,Ndeg> res = t;
+    return pow(t,T(n));
+  taylor<T,Nvar,Ndeg> res = t;
   while (n-- > 1)
       res *= t;
   return res;
@@ -138,14 +157,14 @@ taylor<Nvar,Ndeg> pow(const taylor<Nvar,Ndeg> &t, int n)
 
 // Use that d/dx atan(x) = 1/(1 + x^2),
 // Taylor expand in x^2 and integrate.
-template<int Ndeg>
-void atan_taylor(taylor<1,Ndeg>& t, const tnum_t &a)
+template<class T,int Ndeg>
+void atan_taylor(taylor<T,1,Ndeg>& t, const T &a)
 {
   // Calculate taylor expansion of 1/(1+a^2+x)
-  taylor<1,Ndeg> invt,x;
+  taylor<T,1,Ndeg> invt,x;
   inv_taylor(invt,1+a*a);
   //insert x = 2*a*x + x^2
-  x = taylor<1,Ndeg>(0);
+  x = taylor<T,1,Ndeg>(0);
   if (Ndeg > 0)
     x[1] = 2*a;
   if (Ndeg > 1)
@@ -156,13 +175,13 @@ void atan_taylor(taylor<1,Ndeg>& t, const tnum_t &a)
   t[0] = atan(a);
 }
 
-template<int Nvar, int Ndeg>
-taylor<Nvar,Ndeg> atan(const taylor<Nvar,Ndeg> &t)
+template<class T,int Nvar, int Ndeg>
+taylor<T,Nvar,Ndeg> atan(const taylor<T,Nvar,Ndeg> &t)
 {
-  taylor<1,Ndeg> tmp;
+  taylor<T,1,Ndeg> tmp;
   atan_taylor(tmp,t[0]);
 
-  taylor<Nvar,Ndeg> res;
+  taylor<T,Nvar,Ndeg> res;
   t.compose(res,tmp);
   return res;
 }
@@ -172,12 +191,12 @@ taylor<Nvar,Ndeg> atan(const taylor<Nvar,Ndeg> &t)
    exp(-a^2-2a*x)*exp(-x^2)
 
  */
-template<int Ndeg>
-void gauss_taylor(taylor<1,Ndeg>& t, const tnum_t &a)
+template<class T,int Ndeg>
+void gauss_taylor(taylor<T,1,Ndeg>& t, const T &a)
 {
   exp_taylor(t,-a*a);
   t.stretch(-2*a);
-  taylor<1,Ndeg> g;
+  taylor<T,1,Ndeg> g;
   g = 1;
   for (int i=1;i<=Ndeg/2;i++)
     g[2*i] = -g[2*(i-1)]/i;
@@ -186,8 +205,8 @@ void gauss_taylor(taylor<1,Ndeg>& t, const tnum_t &a)
 
 // Use that d/dx erf(x) = 2/sqrt(pi)*exp(-x^2),
 // Taylor expand in x^2 and integrate.
-template<int Ndeg>
-void erf_taylor(taylor<1,Ndeg>& t, const tnum_t &a)
+template<class T,int Ndeg>
+void erf_taylor(taylor<T,1,Ndeg>& t, const T &a)
 {
   gauss_taylor(t,a);
   t*=2/sqrt(TAYLOR_PI);
@@ -196,24 +215,24 @@ void erf_taylor(taylor<1,Ndeg>& t, const tnum_t &a)
   t[0] = erf(a);
 }
 
-template<int Nvar, int Ndeg>
-taylor<Nvar,Ndeg> erf(const taylor<Nvar,Ndeg> &t)
+template<class T,int Nvar, int Ndeg>
+taylor<T,Nvar,Ndeg> erf(const taylor<T,Nvar,Ndeg> &t)
 {
-  taylor<1,Ndeg> tmp;
+  taylor<T,1,Ndeg> tmp;
   erf_taylor(tmp,t[0]);
 
-  taylor<Nvar,Ndeg> res;
+  taylor<T,Nvar,Ndeg> res;
   t.compose(res,tmp);
   return res;
 }
 
 
-template<int Ndeg>
-void sin_taylor(taylor<1,Ndeg>& t, const tnum_t &a)
+template<class T,int Ndeg>
+void sin_taylor(taylor<T,1,Ndeg>& t, const T &a)
 {
     if (Ndeg > 0)
     {
-	tnum_t s = sin(a), c = cos(a), fac = 1;
+	T s = sin(a), c = cos(a), fac = 1;
 	for (int i=0;2*i<Ndeg;i++)
 	{
 	    t[2*i] = fac*s;
@@ -230,24 +249,24 @@ void sin_taylor(taylor<1,Ndeg>& t, const tnum_t &a)
     }   
 }
 
-template<int Nvar, int Ndeg>
-taylor<Nvar,Ndeg> sin(const taylor<Nvar,Ndeg> &t)
+template<class T,int Nvar, int Ndeg>
+taylor<T,Nvar,Ndeg> sin(const taylor<T,Nvar,Ndeg> &t)
 {
-  taylor<1,Ndeg> tmp;
+  taylor<T,1,Ndeg> tmp;
   sin_taylor(tmp,t[0]);
 
-  taylor<Nvar,Ndeg> res;
+  taylor<T,Nvar,Ndeg> res;
   t.compose(res,tmp);
   return res;
 }
 
 
-template<int Ndeg>
-void cos_taylor(taylor<1,Ndeg>& t, const tnum_t &a)
+template<class T,int Ndeg>
+void cos_taylor(taylor<T,1,Ndeg>& t, const T &a)
 {
     if (Ndeg > 0)
     {
-	tnum_t s = sin(a), c = cos(a), fac = 1;
+	T s = sin(a), c = cos(a), fac = 1;
 	for (int i=0;2*i<Ndeg;i++)
 	{
 	    t[2*i] = fac*c;
@@ -265,13 +284,13 @@ void cos_taylor(taylor<1,Ndeg>& t, const tnum_t &a)
 }
 
 
-template<int Nvar, int Ndeg>
-taylor<Nvar,Ndeg> cos(const taylor<Nvar,Ndeg> &t)
+template<class T,int Nvar, int Ndeg>
+taylor<T,Nvar,Ndeg> cos(const taylor<T,Nvar,Ndeg> &t)
 {
-  taylor<1,Ndeg> tmp;
+  taylor<T,1,Ndeg> tmp;
   cos_taylor(tmp,t[0]);
 
-  taylor<Nvar,Ndeg> res;
+  taylor<T,Nvar,Ndeg> res;
   t.compose(res,tmp);
   return res;
 }
@@ -279,10 +298,10 @@ taylor<Nvar,Ndeg> cos(const taylor<Nvar,Ndeg> &t)
 
 // hyperbolic arcsin function. d/dx asinh(x) = 1/sqrt(1+x^2)
 // 1 + (a+x)^2 = 1+a^2 + 2ax + x^2
-template<int Ndeg>
-void asinh_taylor(taylor<1,Ndeg>& t, const tnum_t &a)
+template<class T,int Ndeg>
+void asinh_taylor(taylor<T,1,Ndeg>& t, const T &a)
 {
-  taylor<1,Ndeg> tmp(1+a*a);
+  taylor<T,1,Ndeg> tmp(1+a*a);
   if (Ndeg>0)
     tmp[1] = 2*a;
   if (Ndeg>1)
@@ -292,23 +311,23 @@ void asinh_taylor(taylor<1,Ndeg>& t, const tnum_t &a)
   t[0] = asinh(a);
 }
 
-template<int Nvar, int Ndeg>
-taylor<Nvar,Ndeg> asinh(const taylor<Nvar,Ndeg> &t)
+template<class T,int Nvar, int Ndeg>
+taylor<T,Nvar,Ndeg> asinh(const taylor<T,Nvar,Ndeg> &t)
 {
-  taylor<1,Ndeg> tmp;
+  taylor<T,1,Ndeg> tmp;
   asinh_taylor(tmp,t[0]);
 
-  taylor<Nvar,Ndeg> res;
+  taylor<T,Nvar,Ndeg> res;
   t.compose(res,tmp);
   return res;
 }
 
 
-template<int Ndeg>
-void sinc_taylor_at0(taylor<1,Ndeg>& t)
+template<class T,int Ndeg>
+void sinc_taylor_at0(taylor<T,1,Ndeg>& t)
 {
     t[0] = 1;
-    tnum_t fac = 1;
+    T fac = 1;
     for (int i=1;i<=Ndeg/2;i++)
     {
 	fac /= (2*i);
@@ -321,17 +340,17 @@ void sinc_taylor_at0(taylor<1,Ndeg>& t)
 }
 
 
-template<int Nvar, int Ndeg>
-taylor<Nvar,Ndeg> sinc(const taylor<Nvar,Ndeg> &t)
+template<class T,int Nvar, int Ndeg>
+taylor<T,Nvar,Ndeg> sinc(const taylor<T,Nvar,Ndeg> &t)
 {
     if (fabs(t[0]) < 1e-3)
     {
-	taylor<1,Ndeg+8> tmp;
+	taylor<T,1,Ndeg+8> tmp;
 	sinc_taylor_at0(tmp);
-	taylor<1,Ndeg> tmp2;	
-	tnum_t dx = t[0];
+	taylor<T,1,Ndeg> tmp2;	
+	T dx = t[0];
 	tmp.shift(tmp2,&dx);
-	taylor<Nvar,Ndeg> res;
+	taylor<T,Nvar,Ndeg> res;
 	t.compose(res,tmp2);
 	return res;
     }

@@ -1,5 +1,5 @@
+#include "taylor.h"
 #include "xc_fun.h"
-#include "fun_helpers.h"
 #include "lda_fun.h"
 #include "blyp_fun.h"
 #include "pbe_fun.h"
@@ -21,8 +21,8 @@ void xc_set_functional_(const double *params)
 template<int N>
 static void lda_helper(double *result, const double d[2])
 {
-  taylor<2,N> &res = *reinterpret_cast<taylor<2,N> *>(result);
-  const taylor<2,N> 
+  taylor<double,2,N> &res = *reinterpret_cast<taylor<double,2,N> *>(result);
+  const taylor<double,2,N> 
     R(d[0],0,XC_FUNCTIONAL_SCALING), 
     S(d[1],1,XC_FUNCTIONAL_SCALING);
   res = 0;
@@ -37,9 +37,9 @@ static void lda_helper(double *result, const double d[2])
 // Insert zeros to get five variable layout for
 // lda results.
 template<int N>
-static taylor<5,N> as_gga(const taylor<2,N> &lda)
+static taylor<double,5,N> as_gga(const taylor<double,2,N> &lda)
 {
-  taylor<5,N> gga = 0;
+  taylor<double,5,N> gga = 0;
   int exponents[5] = {0,0,0,0,0};
   for (int i = 0; i < lda.size; i++)
     {
@@ -52,8 +52,8 @@ static taylor<5,N> as_gga(const taylor<2,N> &lda)
 template<int N>
 static void gga_helper(double *result, const double d[5])
 {
-  taylor<5,N> &res = *reinterpret_cast<taylor<5,N> *>(result);
-  const taylor<5,N> 
+  taylor<double,5,N> &res = *reinterpret_cast<taylor<double,5,N> *>(result);
+  const taylor<double,5,N> 
     R(d[0],0,XC_FUNCTIONAL_SCALING),
     S(d[1],1,XC_FUNCTIONAL_SCALING),
     Z(d[2],2,XC_FUNCTIONAL_SCALING),
@@ -61,13 +61,14 @@ static void gga_helper(double *result, const double d[5])
     Y(d[4],4,XC_FUNCTIONAL_SCALING);
   // Some functionals are easier described in terms of alpha and beta
   // quantities, prepare those here:
-  const taylor<5,N> rhoa = 0.5*(R+S);
-  const taylor<5,N> rhob = 0.5*(R-S);
-  const taylor<5,N> grada2 = 0.25*(Z+X+2*Y);
-  const taylor<5,N> gradab = 0.25*(Z-X);
-  const taylor<5,N> gradb2 = 0.25*(Z+X-2*Y);
+  const taylor<double,5,N> 
+    rhoa = 0.5*(R+S),
+    rhob = 0.5*(R-S),
+    grada2 = 0.25*(Z+X+2*Y),
+    gradab = 0.25*(Z-X),
+    gradb2 = 0.25*(Z+X-2*Y);
   // For lda:
-  const taylor<2,N> 
+  const taylor<double,2,N> 
     Rlda(d[0],0,XC_FUNCTIONAL_SCALING),
     Slda(d[1],1,XC_FUNCTIONAL_SCALING);
   // Add upp all active functionals
