@@ -99,7 +99,9 @@ K(rhoa,grada,rhob,gradb,gradab):= L(rhoa,grada,rhob,gradb,gradab) / dnom(rhoa,rh
 #define __CVERSION__
  
 #include "functionals.h"
- 
+#include "dcbham.h" 
+#define MU dcrham_.hfxmu
+
 /* INTERFACE PART */
 static int srvwn5_isgga(void) { return 1; } /* FIXME: detect! */
 static int srvwn5_read(const char *conf_line);
@@ -120,7 +122,7 @@ Functional SRVWN5Functional = {
 };
  
 /* IMPLEMENTATION PART */
-#define MU    0.4
+
 static int
 srvwn5_read(const char *conf_line)
 {
@@ -138,7 +140,6 @@ srvwn5_energy(const FunDensProp *dp)
     real grada = dp->grada, gradb = dp->gradb, gradab = dp->gradab;
 
     real t1, t2, t3, t4, t5, t6, t7, t8;
-
     t1 = rhob+rhoa;
     t2 = 1/pow(t1,.1666666666666667);
     t3 = atan(6.15199081975908/(1.575246635799487*t2+3.72744));

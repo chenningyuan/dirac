@@ -109,6 +109,8 @@ K(rhoa,grada,rhob,gradb,gradab):= pbec(rhoa,grada,rhob,gradb,gradab)/ denom;
 #define __CVERSION__
  
 #include "functionals.h"
+#include "dcbham.h" 
+#define MU dcrham_.hfxmu
  
 /* INTERFACE PART */
 static int srpbec_isgga(void) { return 1; } /* FIXME: detect! */
@@ -130,7 +132,6 @@ Functional SrpbecFunctional = {
 };
  
 /* IMPLEMENTATION PART */
-#define MU    0.4
 static int
 srpbec_read(const char *conf_line)
 {
