@@ -192,11 +192,31 @@ public:
   }
 };
 
-template<int Nvar, int Ndeg>
-void taylorize(taylor<Nvar, Ndeg> t[Nvar], const tnum_t x0[Nvar])
+// <> comparisons are taken to mean comparing the constant
+// coefficient. This makes the transition from numbers to
+// taylor objects easier.
+template<class T, int Nvar, int Ndeg>
+bool operator<(const T &x, const taylor<Nvar,Ndeg> &t)
 {
-  for (int i=0;i<Nvar;i++)
-    t[i] = x0[i];
+  return x < t[0];
+}
+
+template<class T, int Nvar, int Ndeg>
+bool operator>(const T &x, const taylor<Nvar,Ndeg> &t)
+{
+  return x > t[0];
+}
+
+template<class T, int Nvar, int Ndeg>
+bool operator<(const taylor<Nvar,Ndeg> &t, const T &x)
+{
+  return t[0] < x;
+}
+
+template<class T, int Nvar, int Ndeg>
+bool operator>(const taylor<Nvar,Ndeg> &t, const T &x)
+{
+  return t[0] > x;
 }
 
 template<int Nvar, int Ndeg>

@@ -20,40 +20,40 @@ static double vwn_c(const double p[])
 		  sqrt(4*p[3] - p[2]*p[2])/(p[2] + 2*p[0])));
 }
 
-template<int N>
-static taylor<2,N> vwn_x(const taylor<2,N>& s,const double p[])
+template<class num>
+static num vwn_x(const num& s,const double p[])
 {
   return s*s + p[2]*s + p[3];
 }
 
-template<int N>
-static taylor<2,N> vwn_y(const taylor<2,N>& s,const double p[])
+template<class num>
+static num vwn_y(const num& s,const double p[])
 {
   return s - p[0];
 }
 
-template<int N>
-static taylor<2,N> vwn_z(const taylor<2,N>& s,const double p[])
+template<class num>
+static num vwn_z(const num& s,const double p[])
 {
   return sqrt(4*p[3] - p[2]*p[2])/(2*s + p[2]);
 }
 
-template<int N>
-static taylor<2,N> vwn_f(const taylor<2,N>& s,const double p[])
+template<class num>
+static num vwn_f(const num& s,const double p[])
 {
   return 0.5*p[1]*(2*log(s) + vwn_a(p)*log(vwn_x(s, p)) - vwn_b(p)*log(vwn_y(s, p)) + 
 		   vwn_c(p)*atan(vwn_z(s, p)));
 }
 
-template<int N>
-static taylor<2,N> vwn_correlation(const taylor<2,N> &R,
-				   const taylor<2,N> &S)
+template<class num>
+static num vwn_correlation(const num &R,
+			   const num &S)
 {
   static const double  para[] = {-0.10498,   0.0621814,  3.72744, 12.9352};
   static const double ferro[] = {-0.325,     0.0310907,  7.06042, 18.0578};
   static const double inter[] = {-0.0047584, -0.0337737, 1.13107, 13.0045};
-  assert(R[0] > 1e-20);
-  taylor<2,N> t,g,dd,s = pow(3/(4*TAYLOR_PI),double(1.0)/6)/pow(R,double(1.0)/6);
+  assert(R > 1e-20);
+  num t,g,dd,s = pow(3/(4*TAYLOR_PI),double(1.0)/6)/pow(R,double(1.0)/6);
   t = S/R;
   g = 1.92366105093154*(pow(1 + t,double(4.0)/3) + pow(1 - t,double(4.0)/3) - 2);
   dd = g*((vwn_f(s, ferro) - vwn_f(s, para))*pow(t,4) +
@@ -61,9 +61,9 @@ static taylor<2,N> vwn_correlation(const taylor<2,N> &R,
   return R*(vwn_f(s, para) + dd);
 }
 
-template<int N>
-static taylor<2,N> slater_exchange(const taylor<2,N> &R,
-				   const taylor<2,N> &S)
+template<class num>
+static num slater_exchange(const num &R,
+			   const num &S)
 {
   const double prefactor = -3.0/4.0*pow(6/TAYLOR_PI, 1.0/3.0);
   return prefactor*(pow((R+S)/2,4.0/3) + pow((R-S)/2,4.0/3));

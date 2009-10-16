@@ -19,16 +19,15 @@ void xc_set_functional_(const double *params)
 }
 
 template<int N>
-static void lda_helper(double *result, const double densvars[2])
+static void lda_helper(double *result, const double d[2])
 {
   taylor<2,N> &res = *reinterpret_cast<taylor<2,N> *>(result);
-  taylor<2,N> t[2];
-  taylorize(t,densvars);
+  const taylor<2,N> R(d[0]), S(d[1]);
   res = 0;
   if (xc_params[XC_VWN_CORRELATION] != 0)
-    res += xc_params[XC_VWN_CORRELATION]*vwn_correlation<N>(t[0],t[1]);
+    res += xc_params[XC_VWN_CORRELATION]*vwn_correlation(R,S);
   if (xc_params[XC_SLATER_EXCHANGE] != 0)
-    res += xc_params[XC_SLATER_EXCHANGE]*slater_exchange<N>(t[0],t[1]);
+    res += xc_params[XC_SLATER_EXCHANGE]*slater_exchange(R,S);
 
   res.deriv_facs();
 }
@@ -49,32 +48,43 @@ static taylor<5,N> as_gga(const taylor<2,N> &lda)
 }
 
 template<int N>
-static void gga_helper(double *result, const double densvars[5])
+static void gga_helper(double *result, const double d[5])
 {
   taylor<5,N> &res = *reinterpret_cast<taylor<5,N> *>(result);
-  taylor<5,N> t[5];
-  taylor<2,N> tlda[2];
-  taylorize(t,densvars);
-  taylorize(tlda,densvars);
+  const taylor<5,N> R(d[0]),S(d[1]),Z(d[2]),X(d[3]),Y(d[4]);
+  // Some functionals are easier described in terms of alpha
+  // and beta quantities, prepare those here:
+  const taylor<5,N> rhoa = 0.5*(R+S);
+  const taylor<5,N> rhob = 0.5*(R-S);
+  const taylor<5,N> grada2 = 0.25*(Z+X+2*Y);
+  const taylor<5,N> gradab = 0.25*(Z-X);
+  const taylor<5,N> gradb2 = 0.25*(Z+X-2*Y);
+  // For lda:
+  const taylor<2,N> Rlda(d[0]),Slda(d[1]);
   res = 0;
   if (xc_params[XC_VWN_CORRELATION] != 0)
     res += xc_params[XC_VWN_CORRELATION]*
-      as_gga(vwn_correlation<N>(tlda[0],tlda[1]));
+      as_gga(vwn_correlation(Rlda,Slda));
+
   if (xc_params[XC_SLATER_EXCHANGE] != 0)
     res += xc_params[XC_SLATER_EXCHANGE]*
-      as_gga(slater_exchange<N>(tlda[0],tlda[1])); 
+      as_gga(slater_exchange(Rlda,Slda)); 
+
   if (xc_params[XC_LYP_CORRELATION] != 0)
     res += xc_params[XC_LYP_CORRELATION]*
-      lyp_correlation<N>(t[0],t[1],t[2],t[3],t[4]);
+      lyp_correlation(R,rhoa,rhob,Z,grada2,gradb2);
+
   if (xc_params[XC_PBE_CORRELATION] != 0)
     res += xc_params[XC_PBE_CORRELATION]*
-    pbe_correlation<N>(t[0],t[1],t[2],t[3],t[4]);
+      pbe_correlation(R,grada2,gradab,gradb2);
+
   if (xc_params[XC_BECKE_EXCHANGE] != 0)
     res += xc_params[XC_BECKE_EXCHANGE]*
-      becke_exchange<N>(t[0],t[1],t[2],t[3],t[4]);
+      becke_exchange(rhoa,rhob,grada2,gradb2);
+
   if (xc_params[XC_PBE_EXCHANGE] != 0)
     res += xc_params[XC_PBE_EXCHANGE]*
-    pbe_exchange<N>(t[0],t[1],t[2],t[3],t[4]);
+      pbe_exchange(rhoa,rhob,grada2,gradb2);
 
   res.deriv_facs();
 }
