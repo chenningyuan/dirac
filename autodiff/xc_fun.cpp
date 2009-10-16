@@ -86,7 +86,7 @@ static void gga_helper(double *result, const double d[5])
 
   if (xc_params[XC_PBE_CORRELATION] != 0)
     res += xc_params[XC_PBE_CORRELATION]*
-      pbe_correlation(R,grada2,gradab,gradb2);
+      pbe_correlation(R,Z);
 
   if (xc_params[XC_BECKE_EXCHANGE] != 0)
     res += xc_params[XC_BECKE_EXCHANGE]*

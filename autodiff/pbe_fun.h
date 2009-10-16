@@ -21,9 +21,7 @@ static num pbe_exchange(const num &rhoa,
 
 template<class num>
 static num pbe_correlation(const num &R,
-			   const num &grada2,
-			   const num &gradab,
-			   const num &gradb2)
+			   const num &Z)
 {
   num t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;
 
@@ -33,7 +31,7 @@ static num pbe_correlation(const num &R,
   t4 = log(16.0818243221511/(2.225569421150687*t2+0.18970043257476/
       pow(t1,0.66666666666667)+5.98255043577108/pow(t1,0.16666666666667)+
         0.80042863499936/sqrt(t1))+1.0);
-  t5 = gradb2+2.0*gradab+grada2; // Simpler form here?
+  t5 = Z;
   t6 = 1/pow(t1,2.333333333333334);
   t7 = pow(t5,2.0);
   t8 = 1/pow(t1,4.666666666666667);
