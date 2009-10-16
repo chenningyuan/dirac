@@ -22,7 +22,9 @@ template<int N>
 static void lda_helper(double *result, const double d[2])
 {
   taylor<2,N> &res = *reinterpret_cast<taylor<2,N> *>(result);
-  const taylor<2,N> R(d[0]), S(d[1]);
+  const taylor<2,N> 
+    R(d[0],0,XC_FUNCTIONAL_SCALING), 
+    S(d[1],1,XC_FUNCTIONAL_SCALING);
   res = 0;
   if (xc_params[XC_VWN_CORRELATION] != 0)
     res += xc_params[XC_VWN_CORRELATION]*vwn_correlation(R,S);
@@ -51,16 +53,24 @@ template<int N>
 static void gga_helper(double *result, const double d[5])
 {
   taylor<5,N> &res = *reinterpret_cast<taylor<5,N> *>(result);
-  const taylor<5,N> R(d[0]),S(d[1]),Z(d[2]),X(d[3]),Y(d[4]);
-  // Some functionals are easier described in terms of alpha
-  // and beta quantities, prepare those here:
+  const taylor<5,N> 
+    R(d[0],0,XC_FUNCTIONAL_SCALING),
+    S(d[1],1,XC_FUNCTIONAL_SCALING),
+    Z(d[2],2,XC_FUNCTIONAL_SCALING),
+    X(d[3],3,XC_FUNCTIONAL_SCALING),
+    Y(d[4],4,XC_FUNCTIONAL_SCALING);
+  // Some functionals are easier described in terms of alpha and beta
+  // quantities, prepare those here:
   const taylor<5,N> rhoa = 0.5*(R+S);
   const taylor<5,N> rhob = 0.5*(R-S);
   const taylor<5,N> grada2 = 0.25*(Z+X+2*Y);
   const taylor<5,N> gradab = 0.25*(Z-X);
   const taylor<5,N> gradb2 = 0.25*(Z+X-2*Y);
   // For lda:
-  const taylor<2,N> Rlda(d[0]),Slda(d[1]);
+  const taylor<2,N> 
+    Rlda(d[0],0,XC_FUNCTIONAL_SCALING),
+    Slda(d[1],1,XC_FUNCTIONAL_SCALING);
+  // Add upp all active functionals
   res = 0;
   if (xc_params[XC_VWN_CORRELATION] != 0)
     res += xc_params[XC_VWN_CORRELATION]*
