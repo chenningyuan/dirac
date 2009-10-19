@@ -7,8 +7,7 @@
 */
 
 // Note that these parameters have be in sync with those in
-// xc_funf.h (Fortran version)
-#define XC_PARAMS_LEN 6 // Length of the xc_funparams enum
+// xc_fun_module.f90 (Fortran version)
 #define XC_MAX_ORDER 5 // Update xc_eval* if this changes
 #define XC_FUNCTIONAL_SCALING 1.0 // Scale derivatives by this factor
 
@@ -29,6 +28,8 @@ enum xc_funparams
     XC_LYP_CORRELATION,
     XC_PBE_EXCHANGE,
     XC_PBE_CORRELATION,
+    XC_RPBE_EXCHANGE,
+    XC_PARAMS_LEN // This has to be last!
   };
 
 // Set the functional as defined by the parameters in the

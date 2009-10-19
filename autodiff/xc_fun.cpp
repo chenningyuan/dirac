@@ -67,6 +67,9 @@ static void gga_helper(double *result, const double d[5])
     grada2 = 0.25*(Z+X+2*Y),
     gradab = 0.25*(Z-X),
     gradb2 = 0.25*(Z+X-2*Y);
+  // Here we can in principle precalculate other common quantities
+  // such as pow(rho,-1/3)
+
   // For lda:
   const taylor<double,2,N> 
     Rlda(d[0],0,XC_FUNCTIONAL_SCALING),
@@ -96,6 +99,10 @@ static void gga_helper(double *result, const double d[5])
   if (xc_params[XC_PBE_EXCHANGE] != 0)
     res += xc_params[XC_PBE_EXCHANGE]*
       pbe_exchange(rhoa,rhob,grada2,gradb2);
+
+  if (xc_params[XC_RPBE_EXCHANGE] != 0)
+    res += xc_params[XC_RPBE_EXCHANGE]*
+      rpbe_exchange(rhoa,rhob,grada2,gradab,gradb2);
 
   res.deriv_facs();
 }
@@ -132,3 +139,50 @@ void xc_eval_gga_(double *result, int *order, const double *densvars)
   xc_eval_gga(result,*order,densvars);
 }
 
+#ifdef XC_FUN_NUMTEST
+
+#include <qd/qd_real.h>
+#include <iostream>
+using namespace std;
+
+template<class num, int Nvar, int Ndeg>
+void printpoly(ostream &dst, const polynomial<num,Nvar,Ndeg> &p)
+{
+  int exps[Nvar] = {0};
+  for (int i=0;i<p.size;i++)
+    {
+      p.exponents(i,exps);
+      for (int j=0;j<Nvar;j++)
+	cout << exps[j] << " ";
+      cout << " " << p[i] << endl;
+    }
+}
+
+
+#define TEST_ORDER 6
+
+int main(void)
+{
+  unsigned int cw;
+  fpu_fix_start(&cw);
+  taylor<float, 2, TEST_ORDER> R_lda_f(1.0,0), S_lda_f(0.0,1), res_f;
+  taylor<double, 2, TEST_ORDER> R_lda_d(1.0,0), S_lda_d(0.0,1), res_d;
+  taylor<qd_real, 2, TEST_ORDER> R_lda_ld(1.0,0), S_lda_ld(0.0,1), res_ld, cmp;
+  polynomial<qd_real, 2, TEST_ORDER> pqd;
+  res_ld = qd_real(0);
+  pqd = 0;
+  res_ld = 0;
+  res_f = vwn_correlation(R_lda_f,S_lda_f);
+  res_d = vwn_correlation(R_lda_d,S_lda_d);
+  res_ld = vwn_correlation(R_lda_ld,S_lda_ld);
+  cout << "float:" << endl;
+  res_f.convert_to(cmp);
+  printpoly(cout,cmp-res_ld);
+  cout << "double:" << endl;
+  res_d.convert_to(cmp);
+  printpoly(cout,cmp-res_ld);
+  fpu_fix_end(&cw);
+  return 0;
+}
+
+#endif

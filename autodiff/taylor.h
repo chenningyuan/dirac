@@ -59,6 +59,12 @@ public:
     if (Ndeg>0)
       this->c[var+1] = var_value;
   }
+  template<class S>
+  taylor<T,Nvar,Ndeg> &operator=(const S& c0)
+  {
+    polynomial<T,Nvar,Ndeg>::operator=(c0);
+    return *this;
+  }
   // Multiply each term with the correct factorials to get 
   // derivatives, i.e. x^2y^3 is multiplied by 2!3!
   void deriv_facs(void)
@@ -141,7 +147,7 @@ public:
     {
       assert(Nres >= Ndeg);
       taylor<T, Nvar,Ndeg> tmp = *this;
-      tmp[0] = 0;
+      tmp[0] = T(0);
       res = 0;
       for (int i=Nres;i>0;i--)
 	{

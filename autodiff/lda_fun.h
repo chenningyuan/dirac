@@ -53,9 +53,9 @@ static num vwn_correlation(const num &R,
   static const double ferro[] = {-0.325,     0.0310907,  7.06042, 18.0578};
   static const double inter[] = {-0.0047584, -0.0337737, 1.13107, 13.0045};
   assert(R > 1e-20);
-  num t,g,dd,s = pow(3/(4*TAYLOR_PI),double(1.0)/6)/pow(R,double(1.0)/6);
+  num t,g,dd,s = pow(3/(4*M_PI),1.0/6)/pow(R,1.0/6);
   t = S/R;
-  g = 1.92366105093154*(pow(1 + t,double(4.0)/3) + pow(1 - t,double(4.0)/3) - 2);
+  g = 1.92366105093154*(pow(1 + t,4.0/3) + pow(1 - t,4.0/3) - 2);
   dd = g*((vwn_f(s, ferro) - vwn_f(s, para))*pow(t,4) +
 	  vwn_f(s, inter)*(1 - pow(t,4))*0.584822305543806);
   return R*(vwn_f(s, para) + dd);
@@ -65,6 +65,6 @@ template<class num>
 static num slater_exchange(const num &R,
 			   const num &S)
 {
-  const double prefactor = -3.0/4.0*pow(6/TAYLOR_PI, 1.0/3.0);
+  const double prefactor = -3.0/4.0*pow(6/M_PI, 1.0/3.0);
   return prefactor*(pow((R+S)/2,4.0/3) + pow((R-S)/2,4.0/3));
 }

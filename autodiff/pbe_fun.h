@@ -45,3 +45,19 @@ static num pbe_correlation(const num &R,
 	       +0.13620782246265*t5*t6*t10+1.0)+1.0)-0.062182*t3*t4);
 }
 
+
+template<class num>
+static num rpbe_exchange(const num &rhoa,
+			 const num &rhob,
+			 const num &grada,
+			 const num &gradab,
+			 const num &gradb)
+{
+  double t1 = pow(2.0,.3333333333333333);
+
+   /* code */
+  return 0.5*(-1.477117532764045*(0.804*(1.0-1.0/exp(.004492799480231091*pow(gradb,2.0)/pow(rhob,2.666666666666667)))+
+        1.0)*t1*pow(rhob,1.333333333333333)-1.477117532764045*(0.804*
+        (1.0-1.0/exp(.004492799480231091*pow(grada,
+        2.0)/pow(rhoa,2.666666666666667)))+1.0)*t1*pow(rhoa,1.333333333333333));
+}
