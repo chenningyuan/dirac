@@ -111,8 +111,8 @@ taylor<T,Nvar,Ndeg> log(const taylor<T,Nvar,Ndeg> &t)
 }
 
 /* Use that (x0+x)^a=x0^a*(1+x/x0)^a */
-template<class T,int N>
-void pow_taylor(taylor<T,1,N>& t, const T &x0, const T &a)
+template<class S,class T,int N>
+void pow_taylor(taylor<T,1,N>& t, const T &x0, const S &a)
 {
   assert(x0 != T(0) && "pow(x,a) not analytic at x = 0");
   t[0] = pow(x0,a);

@@ -44,8 +44,74 @@ static num pbe_correlation(const num &R,
 	      (0.01855257090002*t7*t8/pow(t9,2.0)
 	       +0.13620782246265*t5*t6*t10+1.0)+1.0)-0.062182*t3*t4);
 }
+#if 0
+template<class num>
+static zeta(const num &a, const num &b)
+{
+  return (a-b)/(a+b);
+}
+
+template<class num>
+static r(const num &a, const num &b)
+{
+  return 0.25*pow(3,1.0/3)*pow(4,2.0/3)*pow(1/(M_PI*(a+b)),1.0/3);
+}
+
+template<class num>
+static u(const num &a, const num &b)
+{
+  return 0.5*(pow(1+zeta(a,b),2.0/3)+(pow(1-zeta(a,b),2.0/3)))
+}
+
+template<class num>
+static H(const num &d, const num &a, const num &b)
+{
+  return 0.5*(pow(1+zeta(a,b),2.0/3)+(pow(1-zeta(a,b),2.0/3)))
+}
 
 
+
+template<class num>
+static A(const num &a, const num &b)
+{
+  return 2*iota/(lambda*(exp(-2*iota*epsilon(a,b)/
+			     (lambda*lambda)) - 1));
+}
+
+template<class num>
+static K(const num &d, const num &a, const num &b)
+{
+  0.25*lambda*lambda/iota*
+    log(1+2*iota*
+	(d*d+N(a,b)*pow(d,4))/
+	(lambda*(1+N(a,b)*d*d+pow(N(a,b),2)*pow(d,4))));
+}
+
+template<class num>
+static e(const num &r,
+	 double t,
+	 double u,
+	 double v,
+	 double w,
+	 double x,
+	 double y,
+	 double p)
+{
+  return -2*t*(1+u*r)*log(1+0.5/
+	    (t*(v*sqrt(r)+w*r+x*pow(r,3.0/2)+y*pow(r,p+1))));
+}
+
+template<class num>
+static omega(const num &z)
+{
+
+template<class num>
+static num pbe_correlation_new(const num &R,
+			       const num &Z)
+{
+  
+}
+#endif
 template<class num>
 static num rpbe_exchange(const num &rhoa,
 			 const num &rhob,

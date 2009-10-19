@@ -42,7 +42,7 @@ static num becke_exchange(const num &rhoa,
 {
   static const double BECKE_THRESHOLD = 1e-14;
   static const double BETA = 0.0042;  
-  num ea = 0,eb = 0;
+  num ea = num(0),eb = num(0);
 
   if (rhob>BECKE_THRESHOLD)
     {

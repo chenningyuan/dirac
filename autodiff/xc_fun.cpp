@@ -34,26 +34,11 @@ static void lda_helper(double *result, const double d[2])
   res.deriv_facs();
 }
 
-// Insert zeros to get five variable layout for
-// lda results.
-template<int N>
-static taylor<double,5,N> as_gga(const taylor<double,2,N> &lda)
+template<class num, int N>
+static void gga_helper(num *result, const num d[5])
 {
-  taylor<double,5,N> gga = 0;
-  int exponents[5] = {0,0,0,0,0};
-  for (int i = 0; i < lda.size; i++)
-    {
-      lda.exponents(i,exponents);
-      gga[gga.term_index(exponents)] = lda[i];
-    }
-  return gga;
-}
-
-template<int N>
-static void gga_helper(double *result, const double d[5])
-{
-  taylor<double,5,N> &res = *reinterpret_cast<taylor<double,5,N> *>(result);
-  const taylor<double,5,N> 
+  taylor<num,5,N> &res = *reinterpret_cast<taylor<num,5,N> *>(result);
+  const taylor<num,5,N> 
     R(d[0],0,XC_FUNCTIONAL_SCALING),
     S(d[1],1,XC_FUNCTIONAL_SCALING),
     Z(d[2],2,XC_FUNCTIONAL_SCALING),
@@ -61,7 +46,7 @@ static void gga_helper(double *result, const double d[5])
     Y(d[4],4,XC_FUNCTIONAL_SCALING);
   // Some functionals are easier described in terms of alpha and beta
   // quantities, prepare those here:
-  const taylor<double,5,N> 
+  const taylor<num,5,N> 
     rhoa = 0.5*(R+S),
     rhob = 0.5*(R-S),
     grada2 = 0.25*(Z+X+2*Y),
@@ -70,19 +55,15 @@ static void gga_helper(double *result, const double d[5])
   // Here we can in principle precalculate other common quantities
   // such as pow(rho,-1/3)
 
-  // For lda:
-  const taylor<double,2,N> 
-    Rlda(d[0],0,XC_FUNCTIONAL_SCALING),
-    Slda(d[1],1,XC_FUNCTIONAL_SCALING);
   // Add upp all active functionals
   res = 0;
   if (xc_params[XC_VWN_CORRELATION] != 0)
     res += xc_params[XC_VWN_CORRELATION]*
-      as_gga(vwn_correlation(Rlda,Slda));
+      vwn_correlation(R,S);
 
   if (xc_params[XC_SLATER_EXCHANGE] != 0)
     res += xc_params[XC_SLATER_EXCHANGE]*
-      as_gga(slater_exchange(Rlda,Slda)); 
+      slater_exchange(R,S); 
 
   if (xc_params[XC_LYP_CORRELATION] != 0)
     res += xc_params[XC_LYP_CORRELATION]*
@@ -126,8 +107,8 @@ void xc_eval_lda_(double *result, int *order, const double *densvars)
 void xc_eval_gga(double *result, int order, const double densvars[5])
 {
   static void (*f[XC_MAX_ORDER+1])(double *, const double *) = 
-    {gga_helper<0>,gga_helper<1>,gga_helper<2>,gga_helper<3>,
-     gga_helper<4>,gga_helper<5>};
+    {gga_helper<double,0>,gga_helper<double,1>,gga_helper<double,2>,
+     gga_helper<double,3>,gga_helper<double,4>,gga_helper<double,5>};
   assert(order>=0);
   assert(order<6);
   f[order](result,densvars);
@@ -158,6 +139,24 @@ void printpoly(ostream &dst, const polynomial<num,Nvar,Ndeg> &p)
     }
 }
 
+template<class num, int Nvar, int Ndeg>
+void print_rms_diff(const polynomial<num,Nvar,Ndeg> &p1, 
+		    const polynomial<num,Nvar,Ndeg> &p2)
+{
+  cout << "Order \tRMS \t\tRMS_Error\tRelative_Error" << endl;
+  for (int n=0;n<=Ndeg;n++)
+    {
+      num rms = 0.0, avg = 0.0;
+      for (int i=polylen(Nvar,n-1);i<polylen(Nvar,n);i++)
+	{
+	  rms += pow(p1[i] - p2[i],2);
+	  avg += p1[i]*p1[i] + p2[i]*p2[i];
+	}
+      avg = sqrt(avg/(2*polylen(Nvar-1,n)));
+      rms = sqrt(rms/polylen(Nvar-1,n));
+      cout << n << " \t" << avg << " \t" << rms <<  " \t" << rms/avg << endl;
+    }
+}
 
 #define TEST_ORDER 6
 
@@ -165,22 +164,21 @@ int main(void)
 {
   unsigned int cw;
   fpu_fix_start(&cw);
-  taylor<float, 2, TEST_ORDER> R_lda_f(1.0,0), S_lda_f(0.0,1), res_f;
-  taylor<double, 2, TEST_ORDER> R_lda_d(1.0,0), S_lda_d(0.0,1), res_d;
-  taylor<qd_real, 2, TEST_ORDER> R_lda_ld(1.0,0), S_lda_ld(0.0,1), res_ld, cmp;
-  polynomial<qd_real, 2, TEST_ORDER> pqd;
-  res_ld = qd_real(0);
-  pqd = 0;
-  res_ld = 0;
-  res_f = vwn_correlation(R_lda_f,S_lda_f);
-  res_d = vwn_correlation(R_lda_d,S_lda_d);
-  res_ld = vwn_correlation(R_lda_ld,S_lda_ld);
-  cout << "float:" << endl;
-  res_f.convert_to(cmp);
-  printpoly(cout,cmp-res_ld);
-  cout << "double:" << endl;
+  qd_real xxx;
+  xxx = 0;
+  taylor<double, 5, TEST_ORDER> res_d;  
+  taylor<qd_real, 5, TEST_ORDER> res_qd, cmp;
+  double dd[5] =   {0.2,0.1,0.1,0.0,0.1};
+  qd_real dqd[5] = {0.2,0.1,0.1,0.0,0.1};
+  double fun[XC_PARAMS_LEN] = {0};
+  /*  fun[XC_SLATER_EXCHANGE] = 1;
+      fun[XC_VWN_CORRELATION] = 1; */
+  fun[XC_PBE_EXCHANGE] = 1;
+  xc_set_functional(fun);
+  gga_helper<double,TEST_ORDER>(res_d.c,dd);
+  gga_helper<qd_real,TEST_ORDER>(res_qd.c,dqd);
   res_d.convert_to(cmp);
-  printpoly(cout,cmp-res_ld);
+  print_rms_diff(cmp,res_qd);
   fpu_fix_end(&cw);
   return 0;
 }
