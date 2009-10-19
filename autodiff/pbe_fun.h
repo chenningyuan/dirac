@@ -143,7 +143,7 @@ static num H(const num &d, const num &a, const num &b)
 {
   num d2 = d*d;
   num d2A = d2*A(a,b);
-  return 0.5*pow(u(a,b),3)*lambda*lambda/iota*
+  return 0.5*pow(u(zeta(a,b)),3)*lambda*lambda/iota*
     log(1+2*(iota*d2*(1 + d2A))/
 	(lambda*(1+d2A*(1+d2A))));
 }
@@ -155,9 +155,9 @@ static num pbe_correlation_new(const num &R,
 			       const num &rhoa,
 			       const num &rhob)
 {
-  num &sigma = Z;
+  const num &sigma = Z;
   num d = 1.0/12*(sqrt(sigma)*pow(3,5.0/6))/
-    (u(rhoa,rhob)*pow(M_PI,-1.0/6)*pow(R,7.0/6));
+    (u(zeta(rhoa,rhob))*pow(M_PI,-1.0/6)*pow(R,7.0/6));
   return R*(epsilon(rhoa,rhob) + H(d,rhoa,rhob));
 }
 
