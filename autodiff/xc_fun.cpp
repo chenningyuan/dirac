@@ -71,7 +71,7 @@ static void gga_helper(num *result, const num d[5])
 
   if (xc_params[XC_PBE_CORRELATION] != 0)
     res += xc_params[XC_PBE_CORRELATION]*
-      pbe_correlation_new(R,S,Z,rhoa,rhob);
+      pbe_correlation(R,S,Z,rhoa,rhob);
 
   if (xc_params[XC_BECKE_EXCHANGE] != 0)
     res += xc_params[XC_BECKE_EXCHANGE]*
