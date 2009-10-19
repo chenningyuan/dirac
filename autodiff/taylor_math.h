@@ -11,7 +11,7 @@ void inv_taylor(taylor<T,1,N>& t, const T &a)
   for (int i=1;i<=N;i++)
     t[i] = -t[i-1]/a;
 }
-
+#if 0
 template<class T,int Nvar, int Ndeg>
 taylor<T,Nvar, Ndeg> operator/(const T &x, const taylor<T,Nvar,Ndeg>& t)
 {
@@ -22,9 +22,9 @@ taylor<T,Nvar, Ndeg> operator/(const T &x, const taylor<T,Nvar,Ndeg>& t)
   t.compose(res,tmp);
   return res;
 }
-
-template<class T,int Nvar, int Ndeg>
-taylor<T,Nvar, Ndeg> operator/(int x, const taylor<T,Nvar,Ndeg>& t)
+#endif
+template<class T,int Nvar, int Ndeg, class S>
+taylor<T,Nvar, Ndeg> operator/(const S &x, const taylor<T,Nvar,Ndeg>& t)
 {
   taylor<T,1,Ndeg> tmp;
   inv_taylor(tmp,t[0]);
@@ -42,8 +42,8 @@ taylor<T,Nvar, Ndeg> operator/(const taylor<T,Nvar,Ndeg>& t, const T &x)
   return tmp;
 }
 
-template<class T,int Nvar, int Ndeg>
-taylor<T,Nvar, Ndeg> operator/(const taylor<T,Nvar,Ndeg>& t, int x)
+template<class T,int Nvar, int Ndeg, class S>
+taylor<T,Nvar, Ndeg> operator/(const taylor<T,Nvar,Ndeg>& t, const S &x)
 {
   taylor<T,Nvar,Ndeg> tmp = t;
   tmp *= 1/T(x);
@@ -120,11 +120,11 @@ void pow_taylor(taylor<T,1,N>& t, const T &x0, const T &a)
     t[i] = t[i-1]*(a-i+1)/(x0*i);
 }
 
-template<class T,int Nvar, int Ndeg>
-taylor<T,Nvar,Ndeg> pow(const taylor<T,Nvar,Ndeg> &t, const T &a)
+template<class T,int Nvar, int Ndeg, class S>
+taylor<T,Nvar,Ndeg> pow(const taylor<T,Nvar,Ndeg> &t, const S &a)
 {
   taylor<T,1,Ndeg> tmp;
-  pow_taylor(tmp,t[0],a);
+  pow_taylor(tmp,t[0],T(a));
 
   taylor<T,Nvar,Ndeg> res;
   t.compose(res,tmp);
@@ -143,7 +143,9 @@ taylor<T,Nvar,Ndeg> sqrt(const taylor<T,Nvar,Ndeg> &t)
 }
 
 //Integer exponent version is analytical at t[0] = 0
-// TODO: speed this up a bit by using compose
+// This function gets priority over the normal pow 
+// when the exponent is an integer, but does not force
+// conversion to integer.
 template<class T,int Nvar, int Ndeg>
 taylor<T,Nvar,Ndeg> pow(const taylor<T,Nvar,Ndeg> &t, int n)
 {

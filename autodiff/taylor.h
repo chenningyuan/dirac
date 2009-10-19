@@ -162,32 +162,41 @@ public:
 // <> comparisons are taken to mean comparing the constant
 // coefficient. This makes the transition from numbers to
 // taylor objects easier.
-template<class T, int Nvar, int Ndeg>
-bool operator<(const T &x, const taylor<T, Nvar,Ndeg> &t)
+template<class S, class T, int Nvar, int Ndeg>
+bool operator<(const S &x, const taylor<T, Nvar,Ndeg> &t)
 {
   return x < t[0];
 }
 
-template<class T, int Nvar, int Ndeg>
-bool operator>(const T &x, const taylor<T, Nvar,Ndeg> &t)
+template<class S, class T, int Nvar, int Ndeg>
+bool operator>(const S &x, const taylor<T, Nvar,Ndeg> &t)
 {
   return x > t[0];
 }
 
-template<class T, int Nvar, int Ndeg>
-bool operator<(const taylor<T, Nvar,Ndeg> &t, const T &x)
+template<class S, class T, int Nvar, int Ndeg>
+bool operator<(const taylor<T, Nvar,Ndeg> &t, const S &x)
 {
   return t[0] < x;
 }
 
-template<class T, int Nvar, int Ndeg>
-bool operator>(const taylor<T, Nvar,Ndeg> &t, const T &x)
+template<class S, class T, int Nvar, int Ndeg>
+bool operator>(const taylor<T, Nvar,Ndeg> &t, const S &x)
 {
   return t[0] > x;
 }
 
-template<class T, int Nvar, int Ndeg>
-taylor<T, Nvar, Ndeg> operator*(const T &x, const taylor<T, Nvar,Ndeg>& t)
+template<class T, int Nvar, int Ndeg, class S>
+taylor<T, Nvar, Ndeg> operator*(const S& x, const taylor<T, Nvar,Ndeg>& t)
+{
+  taylor<T, Nvar,Ndeg> tmp;
+  for (int i=0;i<tmp.size;i++)
+    tmp[i] = x*t[i];
+  return tmp;
+}
+
+template<class T, int Nvar, int Ndeg, class S>
+taylor<T, Nvar, Ndeg> operator*(const taylor<T, Nvar,Ndeg>& t, const S& x)
 {
   taylor<T, Nvar,Ndeg> tmp;
   for (int i=0;i<tmp.size;i++)
@@ -196,68 +205,24 @@ taylor<T, Nvar, Ndeg> operator*(const T &x, const taylor<T, Nvar,Ndeg>& t)
 }
 
 template<class T, int Nvar, int Ndeg>
-taylor<T, Nvar, Ndeg> operator*(const taylor<T, Nvar,Ndeg>& t, const T &x)
-{
-  taylor<T, Nvar,Ndeg> tmp;
-  for (int i=0;i<tmp.size;i++)
-    tmp[i] = x*t[i];
-  return tmp;
-}
-
-template<class T, int Nvar, int Ndeg>
-taylor<T, Nvar, Ndeg> operator*(int x, const taylor<T, Nvar,Ndeg>& t)
-{
-  taylor<T, Nvar,Ndeg> tmp;
-  for (int i=0;i<tmp.size;i++)
-    tmp[i] = x*t[i];
-  return tmp;
-}
-
-template<class T, int Nvar, int Ndeg>
-taylor<T, Nvar, Ndeg> operator*(const taylor<T, Nvar,Ndeg>& t, int x)
-{
-  taylor<T, Nvar,Ndeg> tmp;
-  for (int i=0;i<tmp.size;i++)
-    tmp[i] = x*t[i];
-  return tmp;
-}
-
-template<class T, int Nvar, int Ndeg>
-taylor<T, Nvar, Ndeg> operator*(const taylor<T, Nvar,Ndeg>& t1, const taylor<T, Nvar,Ndeg>& t2)
+taylor<T, Nvar, Ndeg> operator*(const taylor<T, Nvar,Ndeg>& t1, 
+				const taylor<T, Nvar,Ndeg>& t2)
 {
   taylor<T, Nvar,Ndeg> tmp;
   taylormul(tmp,t1,t2);
   return tmp;
 }
 
-
-
-template<class T, int Nvar, int Ndeg>
-taylor<T, Nvar, Ndeg> operator+(const T &x, const taylor<T, Nvar,Ndeg>& t)
+template<class T, int Nvar, int Ndeg, class S>
+taylor<T, Nvar, Ndeg> operator+(const S& x, const taylor<T, Nvar,Ndeg>& t)
 {
   taylor<T, Nvar,Ndeg> tmp = t;
   tmp[0] += x;
   return tmp;
 }
 
-template<class T, int Nvar, int Ndeg>
-taylor<T, Nvar, Ndeg> operator+(const taylor<T, Nvar,Ndeg>& t, const T &x)
-{
-  taylor<T, Nvar,Ndeg> tmp = t;
-  tmp[0] += x;
-  return tmp;
-}
-
-template<class T, int Nvar, int Ndeg>
-taylor<T, Nvar, Ndeg> operator+(int x, const taylor<T, Nvar,Ndeg>& t)
-{
-  taylor<T, Nvar,Ndeg> tmp = t;
-  tmp[0] += x;
-  return tmp;
-}
-
-template<class T, int Nvar, int Ndeg>
-taylor<T, Nvar, Ndeg> operator+(const taylor<T, Nvar,Ndeg>& t, int x)
+template<class T, int Nvar, int Ndeg, class S>
+taylor<T, Nvar, Ndeg> operator+(const taylor<T, Nvar,Ndeg>& t, const S& x)
 {
   taylor<T, Nvar,Ndeg> tmp = t;
   tmp[0] += x;
@@ -273,24 +238,16 @@ taylor<T, Nvar, Ndeg> operator+(const taylor<T, Nvar,Ndeg>& t1, const taylor<T, 
   return tmp;
 }
 
-template<class T, int Nvar, int Ndeg>
-taylor<T, Nvar, Ndeg> operator-(const T &x, const taylor<T, Nvar,Ndeg>& t)
+template<class T, int Nvar, int Ndeg, class S>
+taylor<T, Nvar, Ndeg> operator-(const S& x, const taylor<T, Nvar,Ndeg>& t)
 {
   taylor<T, Nvar,Ndeg> tmp = -t;
   tmp[0] += x;
   return tmp;
 }
 
-template<class T, int Nvar, int Ndeg>
-taylor<T, Nvar, Ndeg> operator-(int x, const taylor<T, Nvar,Ndeg>& t)
-{
-  taylor<T, Nvar,Ndeg> tmp = -t;
-  tmp[0] += x;
-  return tmp;
-}
-
-template<class T, int Nvar, int Ndeg>
-taylor<T, Nvar, Ndeg> operator-(const taylor<T, Nvar,Ndeg>& t, const T &x)
+template<class T, int Nvar, int Ndeg, class S>
+taylor<T, Nvar, Ndeg> operator-(const taylor<T, Nvar,Ndeg>& t, const S &x)
 {
   taylor<T, Nvar,Ndeg> tmp = t;
   tmp[0] -= x;
@@ -298,15 +255,8 @@ taylor<T, Nvar, Ndeg> operator-(const taylor<T, Nvar,Ndeg>& t, const T &x)
 }
 
 template<class T, int Nvar, int Ndeg>
-taylor<T, Nvar, Ndeg> operator-(const taylor<T, Nvar,Ndeg>& t, int x)
-{
-  taylor<T, Nvar,Ndeg> tmp = t;
-  tmp[0] -= x;
-  return tmp;
-}
-
-template<class T, int Nvar, int Ndeg>
-taylor<T, Nvar, Ndeg> operator-(const taylor<T, Nvar,Ndeg>& t1, const taylor<T, Nvar,Ndeg>& t2)
+taylor<T, Nvar, Ndeg> operator-(const taylor<T, Nvar,Ndeg>& t1, 
+				const taylor<T, Nvar,Ndeg>& t2)
 {
   taylor<T, Nvar,Ndeg> tmp;
   for (int i=0;i<tmp.size;i++)
