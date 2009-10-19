@@ -164,8 +164,6 @@ int main(void)
 {
   unsigned int cw;
   fpu_fix_start(&cw);
-  qd_real xxx;
-  xxx = 0;
   taylor<double, 5, TEST_ORDER> res_d;  
   taylor<qd_real, 5, TEST_ORDER> res_qd, cmp;
   double dd[5] =   {0.2,0.1,0.1,0.0,0.1};
