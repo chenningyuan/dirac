@@ -2613,8 +2613,17 @@ c  one electron
       iii1=i1234
 !     iiv=j1234
       iiv1=j1234
+
+
 !410   call kcopy(nij+1,nij,igen(nstrt(1,num-1)+1))
-410   call kcopy(nij1+1,nij1,igen(nstrt(1,num-1)+1))
+410    continue
+       ! call kcopy(nij1+1,nij1,igen(nstrt(1,num-1)+1))
+       ! miro: proper substitution due to replacement of common blocks by F90 allocatable arrays
+       igen(nstrt(1,num-1)+1)=nij1
+       do k=1,nij1
+         igen(nstrt(1,num-1)+1+k)=ij1(k)
+       enddo
+
 !     call kcopy(nij+1,ije(0),igen(nstrt(1,num-1)+nij+2))
       call kcopy(nij1+1,ije1(0),igen(nstrt(1,num-1)+nij1+2))
 
