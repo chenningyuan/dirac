@@ -73,6 +73,10 @@ static void gga_helper(num *result, const num d[5])
     res += xc_params[XC_PBE_CORRELATION]*
       pbe_correlation(R,S,Z,rhoa,rhob);
 
+ if (xc_params[XC_OLD_PBE_CORRELATION] != 0)
+    res += xc_params[XC_OLD_PBE_CORRELATION]*
+      pbe_correlation_unpolarized(R,Z);
+
   if (xc_params[XC_BECKE_EXCHANGE] != 0)
     res += xc_params[XC_BECKE_EXCHANGE]*
       becke_exchange(rhoa,rhob,grada2,gradb2);
@@ -122,7 +126,9 @@ void xc_eval_gga_(double *result, int *order, const double *densvars)
 
 #ifdef XC_FUN_NUMTEST
 
+#ifdef WITH_QD
 #include <qd/qd_real.h>
+#endif
 #include <iostream>
 using namespace std;
 
@@ -158,26 +164,39 @@ void print_rms_diff(const polynomial<num,Nvar,Ndeg> &p1,
     }
 }
 
-#define TEST_ORDER 6
+#define TEST_ORDER 1
 
 int main(void)
 {
+#ifdef WITH_QD
   unsigned int cw;
   fpu_fix_start(&cw);
-  taylor<double, 5, TEST_ORDER> res_d;  
   taylor<qd_real, 5, TEST_ORDER> res_qd, cmp;
-  double dd[5] =   {0.2,0.1,0.1,0.0,0.1};
-  qd_real dqd[5] = {0.2,0.1,0.1,0.0,0.1};
+  qd_real dqd[5] = {0.2,0.0,0.1,0.0,0.0};
+#endif
+  taylor<double, 5, TEST_ORDER> res_d;  
+  double dd[5] =   {0.2,0.0,0.1,0.0,0.0};
   double fun[XC_PARAMS_LEN] = {0};
-  /*  fun[XC_SLATER_EXCHANGE] = 1;
-      fun[XC_VWN_CORRELATION] = 1; */
-  fun[XC_PBE_EXCHANGE] = 1;
+
+  fun[XC_PBE_CORRELATION] = 1;
   xc_set_functional(fun);
   gga_helper<double,TEST_ORDER>(res_d.c,dd);
+  cout << "New PBE:" << endl;
+  printpoly(cout,res_d);
+
+  fun[XC_PBE_CORRELATION] = 0;
+  fun[XC_OLD_PBE_CORRELATION] = 1;
+  xc_set_functional(fun);
+  gga_helper<double,TEST_ORDER>(res_d.c,dd);
+  cout << "Old PBE:" << endl;
+  printpoly(cout,res_d);
+
+#ifdef WITH_QD
   gga_helper<qd_real,TEST_ORDER>(res_qd.c,dqd);
   res_d.convert_to(cmp);
   print_rms_diff(cmp,res_qd);
   fpu_fix_end(&cw);
+#endif
   return 0;
 }
 
