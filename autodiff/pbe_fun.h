@@ -20,8 +20,8 @@ static num pbe_exchange(const num &rhoa,
 
 
 template<class num>
-static num pbe_correlation(const num &R,
-			   const num &Z)
+static num pbe_correlation_unpolarized(const num &R,
+				       const num &Z)
 {
   num t1, t2, t3, t4, t5, t6, t7, t8, t9, t10;
 
@@ -122,22 +122,22 @@ namespace PBEc_internal
     // The T..P parameters, but transposed for easier use with the e function
     const double TUVWXYP[3][7] = {{0.031091,0.21370,7.5957 ,3.5876,1.6382 ,0.49294,1},
 				  {0.01554 ,0.20548,14.1189,6.1977,3.3662 ,0.62517,1},
-			  {0.016887,0.11125,10.357 ,3.6231,0.88026,0.49671,1}};
+				  {0.016887,0.11125,10.357 ,3.6231,0.88026,0.49671,1}};
     const double c = 1.709921;
     num rval = r(a,b);
     num zetaval = zeta(a,b);
     num zeta4 = pow(zetaval,4);
     num omegaval = omega(zetaval);
-    return e(rval,TUVWXYP[0])
-      -e(rval,TUVWXYP[2])*omegaval*(1-zeta4)/c
-      +(e(rval,TUVWXYP[1]) - e(rval,TUVWXYP[0]))*omegaval*zeta4;
+    return e(rval,TUVWXYP[0]);
+    /*      -e(rval,TUVWXYP[2])*omegaval*(1-zeta4)/c
+	    +(e(rval,TUVWXYP[1]) - e(rval,TUVWXYP[0]))*omegaval*zeta4;*/
   }
   
   template<class num>
   static num A(const num &a, const num &b)
   {
     return 2*iota/(lambda*(exp(-2*iota*epsilon(a,b)/
-			     (lambda*lambda)) - 1));
+			       (lambda*lambda*pow(u(zeta(a,b)),3))) - 1));
   }
 
   template<class num>
@@ -145,9 +145,8 @@ namespace PBEc_internal
   {
   num d2 = d*d;
   num d2A = d2*A(a,b);
-  return 0.5*pow(u(zeta(a,b)),3)*lambda*lambda/iota*
-    log(1+2*(iota*d2*(1 + d2A))/
-	(lambda*(1+d2A*(1+d2A))));
+  return 0.5*lambda*lambda/iota*pow(u(zeta(a,b)),3)*
+    log(1+2*(iota*d2*(1 + d2A))/(lambda*(1+d2A*(1+d2A))));
   }
 
   template<class num>
