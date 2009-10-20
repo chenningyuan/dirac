@@ -27,25 +27,20 @@ factor = float(str(options.factor))
 #-------------------------------------------------------------------------------
 
 f = open(file1, 'r')
-file1_s = f.readlines()
+file1_s = f.read()
+file1_s = string.split(file1_s, '\n')
 f.close()
 
 f = open(file2, 'r')
-file2_s = f.readlines()
+file2_s = f.read()
+file2_s = string.split(file2_s, '\n')
 f.close()
 
 #-------------------------------------------------------------------------------
 
 for i in range(len(file1_s)):
-
-    if (file1_s[i] == '') or ('plane' in file1_s[i]):
-
-       print file1_s[i]
-
-    else:
-
+    if len(file1_s[i].split()) == 7:
        l = []
-
        l.append(float(file1_s[i].split()[0]))
        l.append(float(file1_s[i].split()[1]))
        l.append(float(file1_s[i].split()[2]))
@@ -53,5 +48,6 @@ for i in range(len(file1_s)):
        l.append(float(file1_s[i].split()[4]) + factor*float(file2_s[i].split()[4]))
        l.append(float(file1_s[i].split()[5]) + factor*float(file2_s[i].split()[5]))
        l.append(float(file1_s[i].split()[6]) + factor*float(file2_s[i].split()[6]))
-
        print '%18.10e%18.10e%18.10e%18.10e%18.10e%18.10e%18.10e' % tuple(l)
+    else:
+       print file1_s[i]
