@@ -28,6 +28,7 @@ enum xc_funparams
     XC_LYP_CORRELATION,
     XC_PBE_EXCHANGE,
     XC_PBE_CORRELATION,
+    XC_OLD_PBE_CORRELATION,
     XC_RPBE_EXCHANGE,
     XC_PARAMS_LEN // This has to be last!
   };

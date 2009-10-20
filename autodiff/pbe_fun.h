@@ -73,9 +73,9 @@ namespace PBEc_internal
   }
 
   template<class num>
-  static num omega(const num &zeta)
+  static num omega(const num &z)
   {
-    return 0.5*(pow(1+zeta,2.0/3)+(pow(1-zeta,2.0/3)));
+    return (pow(1+z,4.0/3)+pow(1-z,4.0/3)-2)/(2*pow(2,1.0/3)-2);
   }
   
   
@@ -128,9 +128,9 @@ namespace PBEc_internal
     num zetaval = zeta(a,b);
     num zeta4 = pow(zetaval,4);
     num omegaval = omega(zetaval);
-    return e(rval,TUVWXYP[0]);
-    /*      -e(rval,TUVWXYP[2])*omegaval*(1-zeta4)/c
-	    +(e(rval,TUVWXYP[1]) - e(rval,TUVWXYP[0]))*omegaval*zeta4;*/
+    return e(rval,TUVWXYP[0])
+      - e(rval,TUVWXYP[2])*omegaval*(1-zeta4)/c 
+      + (e(rval,TUVWXYP[1]) - e(rval,TUVWXYP[0]))*omegaval*zeta4;
   }
   
   template<class num>
