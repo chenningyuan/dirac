@@ -1217,7 +1217,7 @@ class polynomial
     {
       c[0] = numtype(c0);
       for (int i=1;i<size;i++)
-	c[i] = numtype();
+	c[i] = 0;
       return *this;
     }
   const numtype &operator[](int i) const

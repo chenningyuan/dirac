@@ -52,7 +52,7 @@ public:
   taylor(T c0) : polynomial<T, Nvar,Ndeg>(c0) {} 
   // Set the constant term to c0 and the first order term of
   // variable var to var_value.
-  taylor(T c0, int var, T var_value = 1.0) : polynomial<T, Nvar,Ndeg>(c0) 
+  taylor(T c0, int var, T var_value = 1) : polynomial<T, Nvar,Ndeg>(c0) 
   {
     assert(var>=0);
     assert(var<Nvar);

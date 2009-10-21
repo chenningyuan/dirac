@@ -1,4 +1,19 @@
+#include <iostream>
+using namespace std;
 #include "taylor.h"
+template<class num, int Nvar, int Ndeg>
+void printpoly(ostream &dst, const polynomial<num,Nvar,Ndeg> &p)
+{
+  int exps[Nvar] = {0};
+  for (int i=0;i<p.size;i++)
+    {
+      p.exponents(i,exps);
+      for (int j=0;j<Nvar;j++)
+	cout << exps[j] << " ";
+      cout << " " << p[i] << endl;
+    }
+}
+
 #include "xc_fun.h"
 #include "lda_fun.h"
 #include "blyp_fun.h"
@@ -132,18 +147,6 @@ void xc_eval_gga_(double *result, int *order, const double *densvars)
 #include <iostream>
 using namespace std;
 
-template<class num, int Nvar, int Ndeg>
-void printpoly(ostream &dst, const polynomial<num,Nvar,Ndeg> &p)
-{
-  int exps[Nvar] = {0};
-  for (int i=0;i<p.size;i++)
-    {
-      p.exponents(i,exps);
-      for (int j=0;j<Nvar;j++)
-	cout << exps[j] << " ";
-      cout << " " << p[i] << endl;
-    }
-}
 
 template<class num, int Nvar, int Ndeg>
 void print_rms_diff(const polynomial<num,Nvar,Ndeg> &p1, 
@@ -172,27 +175,30 @@ int main(void)
   unsigned int cw;
   fpu_fix_start(&cw);
   taylor<qd_real, 5, TEST_ORDER> res_qd, cmp;
-  qd_real dqd[5] = {0.2,0.0,0.1,0.0,0.0};
+  qd_real dqd[5] = {2.0,2.0-1e-8,1.0,0.0,0.0};
 #endif
   taylor<double, 5, TEST_ORDER> res_d;  
-  double dd[5] =   {0.2,0.0,0.1,0.0,0.0};
+  double dd[5] =   {2.0,2.0-1e-8,1.0,0.0,0.0};
   double fun[XC_PARAMS_LEN] = {0};
 
-  fun[XC_PBE_CORRELATION] = 1;
-  xc_set_functional(fun);
-  gga_helper<double,TEST_ORDER>(res_d.c,dd);
-  cout << "New PBE:" << endl;
-  printpoly(cout,res_d);
-
-  fun[XC_PBE_CORRELATION] = 0;
+  fun[XC_PBE_EXCHANGE] = 1;
   fun[XC_OLD_PBE_CORRELATION] = 1;
   xc_set_functional(fun);
   gga_helper<double,TEST_ORDER>(res_d.c,dd);
   cout << "Old PBE:" << endl;
   printpoly(cout,res_d);
 
+  fun[XC_OLD_PBE_CORRELATION] = 0;
+  fun[XC_PBE_CORRELATION] = 1;
+  xc_set_functional(fun);
+  gga_helper<double,TEST_ORDER>(res_d.c,dd);
+  cout << "New PBE:" << endl;
+  printpoly(cout,res_d);
+
+
 #ifdef WITH_QD
   gga_helper<qd_real,TEST_ORDER>(res_qd.c,dqd);
+  printpoly(cout,res_qd);
   res_d.convert_to(cmp);
   print_rms_diff(cmp,res_qd);
   fpu_fix_end(&cw);
