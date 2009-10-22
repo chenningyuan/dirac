@@ -5590,8 +5590,8 @@ C
 
    11 MLINE(NMLINE)='        '
 C     JHS Remove the next line?
-      WRITE(LUPRI,*) 'ERROR(READIN): Error in reading molecule.MOL. 
-     &     NODE=',MYTID
+      WRITE(LUPRI,*) 'ERROR(READIN): Error in reading molecule.MOL. '
+     &     //'NODE=',MYTID
       IF (NMLINE>1) THEN
         WRITE(LUPRI,*) 'Line=', NMLINE, 'Prev line:',
      &        MLINE(NMLINE-1)
