@@ -106,6 +106,8 @@ K(rhoa,grada,rhob,gradb,gradab):=  (1/2) * ldax(rhoa,rhob) * rho(rhoa,rhob) * (F
 #define __CVERSION__
  
 #include "functionals.h"
+#include "dcbham.h" 
+#define MU dcrham_.hfxmu
  
 /* INTERFACE PART */
 static int hjsx_isgga(void) { return 1; } /* FIXME: detect! */
@@ -127,9 +129,6 @@ Functional HjsxFunctional = {
 };
  
 /* IMPLEMENTATION PART */
- /* We  define  MU  localy at the moment to be =0.4
-    but later should be changed to a global on */
-#define MU    0.4
 static int
 hjsx_read(const char *conf_line)
 {
