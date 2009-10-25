@@ -100,6 +100,19 @@ def get_variable_combinations(variable_l, order):
         l.append(s)
     return l
 
+def _get_partition_l(n, l):
+    if not n:
+       yield []
+    for i in range(min(n, l), 0, -1):
+        for p in _get_partition_l(n - i, i):
+            yield [i] + p
+
+def get_partition_l(n):
+    l = []
+    for partition in _get_partition_l(n, n):
+        l.append(partition)
+    return l
+
 #-------------------------------------------------------------------------------
 
 index_s = '12345678'
@@ -107,85 +120,10 @@ variable_l = ['n', 'Z']
 
 #-------------------------------------------------------------------------------
 
-# a partition of an integer n is an unordered collection
-# of positive integers (not necessarily distinct) which add up to n
-
 partition_ll = []
 
-partition_ll.append([[0]])
-partition_ll.append([[1]])
-partition_ll.append([[2],
-                     [1, 1]])
-partition_ll.append([[3],
-                     [2, 1],
-                     [1, 1, 1]])
-partition_ll.append([[4],
-                     [3, 1],
-                     [2, 2],
-                     [2, 1, 1],
-                     [1, 1, 1, 1]])
-partition_ll.append([[5],
-                     [4, 1],
-                     [3, 2],
-                     [3, 1, 1],
-                     [2, 2, 1],
-                     [2, 1, 1, 1],
-                     [1, 1, 1, 1, 1]])
-partition_ll.append([[6],
-                     [5, 1],
-                     [4, 2],
-                     [4, 1, 1],
-                     [3, 3],
-                     [3, 2, 1],
-                     [3, 1, 1, 1],
-                     [2, 2, 2],
-                     [2, 2, 1, 1],
-                     [2, 1, 1, 1, 1],
-                     [1, 1, 1, 1, 1, 1]])
-partition_ll.append([[7],
-                     [6, 1],
-                     [5, 2],
-                     [5, 1, 1],
-                     [4, 3],
-                     [4, 2, 1],
-                     [4, 1, 1, 1],
-                     [3, 3, 1],
-                     [3, 2, 2],
-                     [3, 2, 1, 1],
-                     [3, 1, 1, 1, 1],
-                     [2, 2, 2, 1],
-                     [2, 2, 1, 1, 1],
-                     [2, 1, 1, 1, 1, 1],
-                     [1, 1, 1, 1, 1, 1, 1]])
-partition_ll.append([[8],
-                     [7, 1],
-                     [6, 2],
-                     [6, 1, 1],
-                     [5, 3],
-                     [5, 2, 1],
-                     [5, 1, 1, 1],
-                     [4, 4],
-                     [4, 3, 1],
-                     [4, 2, 2],
-                     [4, 2, 1, 1],
-                     [4, 1, 1, 1, 1],
-                     [3, 3, 2],
-                     [3, 3, 1, 1],
-                     [3, 2, 2, 1],
-                     [3, 2, 1, 1, 1],
-                     [3, 1, 1, 1, 1, 1],
-                     [2, 2, 2, 2],
-                     [2, 2, 2, 1, 1],
-                     [2, 2, 1, 1, 1, 1],
-                     [2, 1, 1, 1, 1, 1, 1],
-                     [1, 1, 1, 1, 1, 1, 1, 1]])
-
-# check that partitions sum up to n
-# it does not check whether some partitions are missing
-for i in range(len(partition_ll)):
-    for j in range(len(partition_ll[i])):
-        if (i != sum(partition_ll[i][j])):
-           sys.exit('partition %i is wrong' % i)
+for i in range(7):
+    partition_ll.append(get_partition_l(i))
 
 #-------------------------------------------------------------------------------
 
@@ -204,7 +142,7 @@ def get_nr_terms(order):
                        term_index_l.append(get_partitions_scalar_product(selection))
                     else:
                        term_index_l.append(selection)
-    
+
            #    print term_variable_l, term_index_l
                 t = 1
                 for i in range(len(term_variable_l)):
@@ -220,5 +158,3 @@ get_nr_terms(3)
 get_nr_terms(4)
 get_nr_terms(5)
 get_nr_terms(6)
-get_nr_terms(7)
-get_nr_terms(8)
