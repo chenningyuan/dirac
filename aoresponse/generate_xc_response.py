@@ -102,36 +102,123 @@ def get_variable_combinations(variable_l, order):
 
 #-------------------------------------------------------------------------------
 
-index_s = 'ijk'
+index_s = '12345678'
 variable_l = ['n', 'Z']
 
-order = 3
+#-------------------------------------------------------------------------------
 
-partition_d = {}
-partition_d[1] = [[1]]
-partition_d[2] = [[2], 
-                  [1, 1]]
-partition_d[3] = [[3], 
-                  [2, 1], 
-                  [1, 1, 1]]
-partition_d[4] = [[4], 
-                  [3, 1], 
-                  [2, 2], 
-                  [2, 1, 1], 
-                  [1, 1, 1, 1]]
+# a partition of an integer n is an unordered collection
+# of positive integers (not necessarily distinct) which add up to n
 
-for partition_l in partition_d[order]:
-    variable_combination_ll = get_variable_combinations(variable_l, len(partition_l))
-    for variable_combination_l in variable_combination_ll:
-        for partition in get_partitions(index_s, partition_l):
-            term_variable_l = []
-            term_index_l    = []
-            for i in range(len(partition)):
-                selection = partition[i]
-                term_variable_l.append(variable_combination_l[i])
-                if variable_combination_l[i] == 'Z':
-                   term_index_l.append(get_partitions_scalar_product(selection))
-                else:
-                   term_index_l.append(selection)
+partition_ll = []
 
-            print term_variable_l, term_index_l
+partition_ll.append([[0]])
+partition_ll.append([[1]])
+partition_ll.append([[2],
+                     [1, 1]])
+partition_ll.append([[3],
+                     [2, 1],
+                     [1, 1, 1]])
+partition_ll.append([[4],
+                     [3, 1],
+                     [2, 2],
+                     [2, 1, 1],
+                     [1, 1, 1, 1]])
+partition_ll.append([[5],
+                     [4, 1],
+                     [3, 2],
+                     [3, 1, 1],
+                     [2, 2, 1],
+                     [2, 1, 1, 1],
+                     [1, 1, 1, 1, 1]])
+partition_ll.append([[6],
+                     [5, 1],
+                     [4, 2],
+                     [4, 1, 1],
+                     [3, 3],
+                     [3, 2, 1],
+                     [3, 1, 1, 1],
+                     [2, 2, 2],
+                     [2, 2, 1, 1],
+                     [2, 1, 1, 1, 1],
+                     [1, 1, 1, 1, 1, 1]])
+partition_ll.append([[7],
+                     [6, 1],
+                     [5, 2],
+                     [5, 1, 1],
+                     [4, 3],
+                     [4, 2, 1],
+                     [4, 1, 1, 1],
+                     [3, 3, 1],
+                     [3, 2, 2],
+                     [3, 2, 1, 1],
+                     [3, 1, 1, 1, 1],
+                     [2, 2, 2, 1],
+                     [2, 2, 1, 1, 1],
+                     [2, 1, 1, 1, 1, 1],
+                     [1, 1, 1, 1, 1, 1, 1]])
+partition_ll.append([[8],
+                     [7, 1],
+                     [6, 2],
+                     [6, 1, 1],
+                     [5, 3],
+                     [5, 2, 1],
+                     [5, 1, 1, 1],
+                     [4, 4],
+                     [4, 3, 1],
+                     [4, 2, 2],
+                     [4, 2, 1, 1],
+                     [4, 1, 1, 1, 1],
+                     [3, 3, 2],
+                     [3, 3, 1, 1],
+                     [3, 2, 2, 1],
+                     [3, 2, 1, 1, 1],
+                     [3, 1, 1, 1, 1, 1],
+                     [2, 2, 2, 2],
+                     [2, 2, 2, 1, 1],
+                     [2, 2, 1, 1, 1, 1],
+                     [2, 1, 1, 1, 1, 1, 1],
+                     [1, 1, 1, 1, 1, 1, 1, 1]])
+
+# check that partitions sum up to n
+# it does not check whether some partitions are missing
+for i in range(len(partition_ll)):
+    for j in range(len(partition_ll[i])):
+        if (i != sum(partition_ll[i][j])):
+           sys.exit('partition %i is wrong' % i)
+
+#-------------------------------------------------------------------------------
+
+def get_nr_terms(order):
+    nr_terms = 0
+    for partition_l in partition_ll[order]:
+        variable_combination_ll = get_variable_combinations(variable_l, len(partition_l))
+        for variable_combination_l in variable_combination_ll:
+            for partition in get_partitions(index_s[:order], partition_l):
+                term_variable_l = []
+                term_index_l    = []
+                for i in range(len(partition)):
+                    selection = partition[i]
+                    term_variable_l.append(variable_combination_l[i])
+                    if variable_combination_l[i] == 'Z':
+                       term_index_l.append(get_partitions_scalar_product(selection))
+                    else:
+                       term_index_l.append(selection)
+    
+           #    print term_variable_l, term_index_l
+                t = 1
+                for i in range(len(term_variable_l)):
+                    if term_variable_l[i] == 'Z':
+                       t *= len(term_index_l[i])
+           #    print t
+                nr_terms += t
+    print order, nr_terms
+
+get_nr_terms(1)
+get_nr_terms(2)
+get_nr_terms(3)
+get_nr_terms(4)
+get_nr_terms(5)
+get_nr_terms(6)
+get_nr_terms(7)
+get_nr_terms(8)
