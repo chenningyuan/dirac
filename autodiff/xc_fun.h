@@ -30,6 +30,7 @@ enum xc_funparams
     XC_PBE_CORRELATION,
     XC_OLD_PBE_CORRELATION,
     XC_RPBE_EXCHANGE,
+    XC_PW92_CORRELATION,
     XC_PARAMS_LEN // This has to be last!
   };
 
@@ -45,5 +46,8 @@ void xc_set_functional(const double params[XC_PARAMS_LEN]);
 // version.
 void xc_eval_lda(double result[], int order, const double densvars[2]);
 void xc_eval_gga(double result[], int order, const double densvars[5]);
+
+// Return a string describing the functional and its implementation.
+const char *xc_fun_reference(enum xc_funparams functions);
 
 #endif

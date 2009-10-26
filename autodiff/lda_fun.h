@@ -41,30 +41,32 @@ static num vwn_z(const num& s,const double p[])
 template<class num>
 static num vwn_f(const num& s,const double p[])
 {
-  return 0.5*p[1]*(2*log(s) + vwn_a(p)*log(vwn_x(s, p)) - vwn_b(p)*log(vwn_y(s, p)) + 
+  return 0.5*p[1]*(2*log(s) + vwn_a(p)*log(vwn_x(s, p)) - 
+		   vwn_b(p)*log(vwn_y(s, p)) + 
 		   vwn_c(p)*atan(vwn_z(s, p)));
 }
 
 template<class num>
 static num vwn_correlation(const num &R,
-			   const num &S)
+			   const num &S,
+			   const num &zeta)
 {
-  static const double  para[] = {-0.10498,   0.0621814,  3.72744, 12.9352};
-  static const double ferro[] = {-0.325,     0.0310907,  7.06042, 18.0578};
-  static const double inter[] = {-0.0047584, -0.0337737, 1.13107, 13.0045};
+  static const double  para[] = {-0.10498,   0.0621814, 3.72744, 12.9352};
+  static const double ferro[] = {-0.325,     0.0310907, 7.06042, 18.0578};
+  static const double inter[] = {-0.0047584,-0.0337737, 1.13107, 13.0045};
   assert(R > 1e-20);
   num t,g,dd,s = pow(3/(4*M_PI),1.0/6)/pow(R,1.0/6);
-  t = S/R;
-  g = 1.92366105093154*(pow(1 + t,4.0/3) + pow(1 - t,4.0/3) - 2);
-  dd = g*((vwn_f(s, ferro) - vwn_f(s, para))*pow(t,4) +
-	  vwn_f(s, inter)*(1 - pow(t,4))*0.584822305543806);
+  g = 1.92366105093154*(pow(1 + zeta,4.0/3) + pow(1 - zeta,4.0/3) - 2);
+  num zeta4 = pow(zeta,4);
+  dd = g*((vwn_f(s, ferro) - vwn_f(s, para))*zeta4 +
+	  vwn_f(s, inter)*(1 - zeta4)*0.584822305543806);
   return R*(vwn_f(s, para) + dd);
 }
 
 template<class num>
-static num slater_exchange(const num &R,
-			   const num &S)
+static num slater_exchange(const num &rhoa,
+			   const num &rhob)
 {
-  const double prefactor = -3.0/4.0*pow(6/M_PI, 1.0/3.0);
-  return prefactor*(pow((R+S)/2,4.0/3) + pow((R-S)/2,4.0/3));
+  return -3.0/4.0*pow(6/M_PI, 1.0/3.0)*
+    (pow(rhoa,4.0/3) + pow(rhob,4.0/3));
 }

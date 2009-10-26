@@ -1,6 +1,8 @@
+#include "pw92_fun.h"
 /*
   PBE Exchange
   Imported from Dalton fun-pbex.c, originally by Pawel Salek(?).
+  TODO: delete these dalton functions
  */
 
 template<class num>
@@ -10,6 +12,7 @@ static num pbe_exchange(const num &rhoa,
 			const num &gradb2)
 {
   double t1 = pow(2.0,0.33333333333333);
+  // TODO: test if rhoa or rhob are too small
   return  0.5*(-1.477117532764045*t1*pow(rhob,1.333333333333333)*
              (1.804-0.804/(0.00449279948023*gradb2/pow(rhob,2.666666666666667)+
 			   1.0))
@@ -53,31 +56,16 @@ namespace PBEc_internal
   const double kappa = 0.004235;
   const double nu = 16*pow(3*M_PI*M_PI,1.0/3)/M_PI;
   const double lambda = nu*kappa;
-  
-  template<class num>
-  static num zeta(const num &a, const num &b)
-  {
-    return (a-b)/(a+b);
-  }
 
-  template<class num>
-  static num r(const num &a, const num &b)
-  {
-    return 0.25*pow(3,1.0/3)*pow(4,2.0/3)*pow(1/(M_PI*(a+b)),1.0/3);
-  }
   
   template<class num>
   static num u(const num &zeta)
   {
+    // TODO: check if |zeta| ~= 1 
     return 0.5*(pow(1+zeta,2.0/3)+(pow(1-zeta,2.0/3)));
   }
 
-  template<class num>
-  static num omega(const num &z)
-  {
-    return (pow(1+z,4.0/3)+pow(1-z,4.0/3)-2)/(2*pow(2,1.0/3)-2);
-  }
-  
+#if 0  //What are these used for? They come from the molpro manual.
   
   template<class num>
   static num M(const num &d, const num &a, const num &b,
@@ -98,12 +86,6 @@ namespace PBEc_internal
   }
   
   
-  template<class num>
-  static num e(const num &r, const double t[7])
-  {
-    return -2*t[0]*(1+t[1]*r)*log(1+0.5/
-				  (t[0]*(t[2]*sqrt(r)+t[3]*r+t[4]*pow(r,3.0/2)+t[5]*pow(r,t[6]+1))));
-  }
 
   template<class num>
   static num phi(const num &r)
@@ -115,37 +97,21 @@ namespace PBEc_internal
       Upsilon = 0.472;
     return 1.0/1000*(2.568+r*(Xi+Phi*r))/(1+r*(Lambda+r*(Upsilon+10*Phi*r)));
   }
-
-  template<class num>
-  static num epsilon(const num &a, const num &b)
-  {
-    // The T..P parameters, but transposed for easier use with the e function
-    const double TUVWXYP[3][7] = {{0.031091,0.21370,7.5957 ,3.5876,1.6382 ,0.49294,1},
-				  {0.01554 ,0.20548,14.1189,6.1977,3.3662 ,0.62517,1},
-				  {0.016887,0.11125,10.357 ,3.6231,0.88026,0.49671,1}};
-    const double c = 1.709921;
-    num rval = r(a,b);
-    num zetaval = zeta(a,b);
-    num zeta4 = pow(zetaval,4);
-    num omegaval = omega(zetaval);
-    return e(rval,TUVWXYP[0])
-      - e(rval,TUVWXYP[2])*omegaval*(1-zeta4)/c 
-      + (e(rval,TUVWXYP[1]) - e(rval,TUVWXYP[0]))*omegaval*zeta4;
-  }
+#endif
   
   template<class num>
-  static num A(const num &a, const num &b)
+  static num A(const num &eps, const num &zeta)
   {
-    return 2*iota/(lambda*(exp(-2*iota*epsilon(a,b)/
-			       (lambda*lambda*pow(u(zeta(a,b)),3))) - 1));
+    return 2*iota/(lambda*(exp(-2*iota*eps/
+			       (lambda*lambda*pow(u(zeta),3))) - 1));
   }
 
   template<class num>
-  static num H(const num &d, const num &a, const num &b)
+  static num H(const num &d, const num &eps, const num &zeta)
   {
   num d2 = d*d;
-  num d2A = d2*A(a,b);
-  return 0.5*lambda*lambda/iota*pow(u(zeta(a,b)),3)*
+  num d2A = d2*A(eps,zeta);
+  return 0.5*lambda*lambda/iota*pow(u(zeta),3)*
     log(1+2*(iota*d2*(1 + d2A))/(lambda*(1+d2A*(1+d2A))));
   }
 
@@ -154,12 +120,14 @@ namespace PBEc_internal
 			     const num &S,
 			     const num &Z,
 			     const num &rhoa,
-			     const num &rhob)
+			     const num &rhob,
+			     const num &zeta)
   {
     const num &sigma = Z;
     num d = 1.0/12*(sqrt(sigma)*pow(3,5.0/6))/
-      (u(zeta(rhoa,rhob))*pow(M_PI,-1.0/6)*pow(R,7.0/6));
-    return R*(epsilon(rhoa,rhob) + H(d,rhoa,rhob));
+      (u(zeta)*pow(M_PI,-1.0/6)*pow(R,7.0/6));
+    num eps = pw92_correlation(R,zeta);
+    return R*(eps + H(d,eps,zeta));
   }
 
 }

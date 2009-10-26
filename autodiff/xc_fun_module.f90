@@ -1,6 +1,6 @@
 module xc_fun
   implicit none
-  integer, parameter ::  XC_PARAMS_LEN = 7
+  integer, parameter ::  XC_PARAMS_LEN = 8
   integer, parameter ::  XC_MAX_ORDER = 5 
 
 ! Index of each functional parameter in the argument
@@ -11,6 +11,8 @@ module xc_fun
   integer, parameter ::  XC_LYP_CORRELATION = 4
   integer, parameter ::  XC_PBE_EXCHANGE    = 5
   integer, parameter ::  XC_PBE_CORRELATION = 6
+  integer, parameter ::  XC_OLD_PBE_CORRELATION = 7
+  integer, parameter ::  XC_PW92_CORRELATION = 8
 
 ! Indices into the densvars array (lda_eval and gga_eval)
   integer, parameter :: XC_R = 1
