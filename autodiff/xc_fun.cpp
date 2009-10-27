@@ -99,11 +99,19 @@ static void gga_helper(num *result, const num d[5])
 {
   taylor<num,5,N> &res = *reinterpret_cast<taylor<num,5,N> *>(result);
   const taylor<num,5,N>
+#ifndef NEW_SCALING
     R(d[0],0,XC_FUNCTIONAL_SCALING),
     S(d[1],1,XC_FUNCTIONAL_SCALING),
     Z(d[2],2,XC_FUNCTIONAL_SCALING),
     X(d[3],3,XC_FUNCTIONAL_SCALING),
     Y(d[4],4,XC_FUNCTIONAL_SCALING),
+#else
+    R(d[0],0,d[0]),
+    S(d[1],1,d[0]),
+    Z(d[2],2,d[2]),
+    X(d[3],3,d[2]),
+    Y(d[4],4,d[2]),
+#endif
     // Some functionals are easier described in terms of alpha and beta
     // quantities, prepare those here:
     rhoa = 0.5*(R+S),
@@ -196,7 +204,7 @@ void print_rms_diff(const polynomial<num,Nvar,Ndeg> &p1,
 
 #define TEST_ORDER 5
 
-int main_gga(void)
+int main(void)
 {
 #ifdef WITH_QD
   unsigned int cw;
@@ -225,7 +233,7 @@ int main_gga(void)
   */
 
   fun[XC_VWN5_CORRELATION] = 1;
-  fun[XC_SLATER_EXCHANGE] = 1;
+  //  fun[XC_SLATER_EXCHANGE] = 1;
   xc_set_functional(fun);
   gga_helper<double,TEST_ORDER>(res_d.c,dd);
   //  cout << "New PBE:" << endl;
@@ -234,53 +242,7 @@ int main_gga(void)
 
 #ifdef WITH_QD
   gga_helper<qd_real,TEST_ORDER>(res_qd.c,dqd);
-  printpoly(cout,res_qd);
-  res_d.convert_to(cmp);
-  print_rms_diff(cmp,res_qd);
-  fpu_fix_end(&cw);
-#endif
-  return 0;
-}
-
-int main(void)
-{
-#ifdef WITH_QD
-  unsigned int cw;
-  fpu_fix_start(&cw);
-  taylor<qd_real, 2, TEST_ORDER> res_qd, cmp;
-  qd_real dqd[5] = {1.0,0.0,1.0,0.0,0.0};
-#endif
-  double dd[5] =   {1.0,0.0,1.0,0.0,0.0};
-  taylor<double, 2, TEST_ORDER> res_d;  
-  double fun[XC_PARAMS_LEN] = {0};
-
-  cout << "Input 5 density variables: ";
-  cin >> dd[0] >> dd[1] >> dd[2] >> dd[3] >> dd[4];
-#ifdef WITH_QD
-  for (int i=0;i<5;i++)
-    dqd[i] = dd[i];
-#endif
-  /*
-  fun[XC_PBE_EXCHANGE] = 0;
-  fun[XC_OLD_PBE_CORRELATION] = 1;
-  xc_set_functional(fun);
-  gga_helper<double,TEST_ORDER>(res_d.c,dd);
-  cout << "Old PBE:" << endl;
-  printpoly(cout,res_d);
-  fun[XC_OLD_PBE_CORRELATION] = 0;
-  */
-
-  fun[XC_VWN5_CORRELATION] = 1;
-  fun[XC_SLATER_EXCHANGE] = 1;
-  xc_set_functional(fun);
-  lda_helper<double,TEST_ORDER>(res_d.c,dd);
-  //  cout << "New PBE:" << endl;
-  cout << "Double:" << endl;
-  printpoly(cout,res_d);
-
-
-#ifdef WITH_QD
-  lda_helper<qd_real,TEST_ORDER>(res_qd.c,dqd);
+  cout.precision(20);
   printpoly(cout,res_qd);
   res_d.convert_to(cmp);
   print_rms_diff(cmp,res_qd);
