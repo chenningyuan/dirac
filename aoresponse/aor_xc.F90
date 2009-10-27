@@ -10,6 +10,7 @@ module aor_xc
   implicit none
 
   public aor_xc_new
+  public aor_xc_new_save_old
   public init_xc_contributions
 
   private
@@ -408,16 +409,9 @@ contains
     real(8)                :: v(3)
 
     real(8)                :: derv(0:max_order, 0:max_order)
-    real(8)                :: derv_i(999, 3)
-!#define CHECK_DERV
-#ifdef CHECK_DERV
-    real(8)                :: f, ff
-    real(8)                :: derv_ip(999, 3)
-    real(8)                :: derv_im(999, 3)
-    real(8)                :: derv_p(0:max_order, 0:max_order)
-    real(8)                :: derv_m(0:max_order, 0:max_order)
-#endif
-    real(8)                :: p, taylor_deriv
+    real(8)                :: derv_i(999)
+    real(8)                :: p
+    integer                :: taylor_index
 
     real(8)                :: r(0:max_order)
     real(8)                :: gr(3, 0:max_order)
@@ -431,9 +425,6 @@ contains
 !   get perturbed densities
 
     r(0) = r_0
-#ifdef CHECK_DERV
-    f = r(0)/1.0d5
-#endif
 
     do i = 1, nr_dmat
       call get_n(r(i),             &
@@ -476,11 +467,11 @@ contains
 !   get derivatives and put them in derv_i (intermediate)
 
     derv_i = 0.0d0
-#ifdef CHECK_DERV
-    derv_ip = 0.0d0
-    derv_im = 0.0d0
-#endif
 
+    call eval_gga(derv_i, order, (/r(0), 0.0d0, z(0, 0), 0.0d0, 0.0d0/))
+     write(*, *) 'blub derv me', taylor_index(5, (/1, 0, 1, 0, 0/)), &
+       derv_i(taylor_index(5, (/1, 0, 1, 0, 0/))), r_0, z(0, 0)
+ 
 !fixme
 !   if (use_gga) then
 
@@ -492,26 +483,16 @@ contains
 
 !     call lda_eval(LDA_SLATER, order, r(0), derv_i(1, 1))
 !     call lda_eval(LDA_VWN,    order, r(0), derv_i(1, 2))
-!ifdef CHECK_DERV
-!     call lda_eval(LDA_SLATER, order, r(0)+f, derv_ip(1, 1))
-!     call lda_eval(LDA_VWN,    order, r(0)+f, derv_ip(1, 2))
-!     call lda_eval(LDA_SLATER, order, r(0)-f, derv_im(1, 1))
-!     call lda_eval(LDA_VWN,    order, r(0)-f, derv_im(1, 2))
-!endif
 
 !   end if
 
 !   multiply by the weight
 
     derv_i = derv_i*w
-#ifdef CHECK_DERV
-    derv_ip = derv_ip*w
-    derv_im = derv_im*w
-#endif
 
 !   distribute derivatives into d
 
-    if (use_gga) then
+!   if (use_gga) then
 
       do on = 0, order
         do oz = 0, order
@@ -519,41 +500,25 @@ contains
           if ((sum_on_oz > 0) .and. (sum_on_oz <= order)) then
 
 !           this order zeroes them out
-            derv(on, oz) = taylor_deriv(derv_i(1, 2), 5, (/on, 0, oz, 0, 0/)) &
-                         + taylor_deriv(derv_i(1, 3), 5, (/on, 0, oz, 0, 0/))
+            derv(on, oz) = derv_i(taylor_index(5, (/on, 0, oz, 0, 0/)))
 
-            if (oz == 0) then
-              derv(on, oz) = derv(on, oz) &
-                           + taylor_deriv(derv_i(1, 1), 2, (/on, 0/))
-            end if
+!           if (oz == 0) then
+!             derv(on, oz) = derv(on, oz) &
+!                          + taylor_index(derv_i(1, 1), 2, (/on, 0/))
+!           end if
 
           end if
         end do
       end do
 
-    else
+!   else
 
-      do on = 1, order
-        derv(on, 0) = taylor_deriv(derv_i(1, 1), 2, (/on, 0/)) &
-                    + taylor_deriv(derv_i(1, 2), 2, (/on, 0/))
-#ifdef CHECK_DERV
-        derv_p(on, 0) = taylor_deriv(derv_ip(1, 1), 2, (/on, 0/)) &
-                      + taylor_deriv(derv_ip(1, 2), 2, (/on, 0/))
-        derv_m(on, 0) = taylor_deriv(derv_im(1, 1), 2, (/on, 0/)) &
-                      + taylor_deriv(derv_im(1, 2), 2, (/on, 0/))
+!     do on = 1, order
+!       derv(on, 0) = taylor_index(derv_i(1, 1), 2, (/on, 0/)) &
+!                   + taylor_index(derv_i(1, 2), 2, (/on, 0/))
+!     end do
 
-        if (on > 1) then
-          ff = (derv_p(on-1, 0) - derv_m(on-1, 0))/(2.0d0*f)
-          write(*, '(a7, i2, 3e14.6)') 'compare',   &
-                                       on,          &
-                                       r(0),        &
-                                       derv(on, 0), &
-                                       ff
-        end if
-#endif
-      end do
-
-    end if
+!   end if
 
     s = 0.0d0
     v = 0.0d0
