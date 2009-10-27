@@ -40,6 +40,7 @@ use hsfs_parameters
 use gen_mod
 use sym_mod
 use cint_mod
+use det_mod
 use dat_mod
 use fock_mod
 use cij1_mod
@@ -63,6 +64,7 @@ use crle_mod
  call init_gen_mod
  call init_sym_mod
  call init_cint_mod
+ call init_det_mod
  call init_dat_mod
  call init_fock_mod
  call init_cij1_mod

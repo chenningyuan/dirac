@@ -356,6 +356,7 @@ module det_mod
 integer :: nvlspo, ndets,isplit
 integer, allocatable  :: lstvso(:),lstdet(:)
 contains
+
 subroutine init_det_mod
  use hsfs_parameters
 #include "priunit.h"

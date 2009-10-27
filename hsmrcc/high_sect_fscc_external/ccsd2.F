@@ -555,7 +555,9 @@ c     order and print collected energies.
         do 10 i=1,norb
           if (icv(i).eq.1) then
             if (ic(i).eq.ihp) then
+!mi          ... watch up possible index leak of lstvso !!!            
               nvlspo=nvlspo+2
+              !write(LUPRI,*) 'nvlspo=',nvlspo
               lstvso(nvlspo-1)=2*i-1
               lstvso(nvlspo)=2*i
             end if
