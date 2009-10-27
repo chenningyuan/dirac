@@ -722,6 +722,9 @@ contains
 
       if (r_0(1) > dft_cfg_dfthr0) then
 
+!       set it to zero, otherwise it is undefined with lda
+        z_0 = 0.0d0
+
 !       density gradient
         if (need_ao_order(1, 0)) then
           call get_gn(rhg, 0, dmat, buffer, ao_p, ao_p(ao_start(1, 0):ao_end(1, 0)))
