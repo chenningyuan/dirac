@@ -47,9 +47,9 @@ static num vwn_f(const num& s,const double p[])
 }
 
 template<class num>
-static num vwn_correlation(const num &R,
-			   const num &S,
-			   const num &zeta)
+static num vwn5_correlation(const num &R,
+			    const num &S,
+			    const num &zeta)
 {
   static const double  para[] = {-0.10498,   0.0621814, 3.72744, 12.9352};
   static const double ferro[] = {-0.325,     0.0310907, 7.06042, 18.0578};

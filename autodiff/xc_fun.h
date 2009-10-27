@@ -23,7 +23,7 @@ enum xc_vars
 enum xc_funparams
   {
     XC_SLATER_EXCHANGE = 0,
-    XC_VWN_CORRELATION,
+    XC_VWN5_CORRELATION,
     XC_BECKE_EXCHANGE,
     XC_LYP_CORRELATION,
     XC_PBE_EXCHANGE,

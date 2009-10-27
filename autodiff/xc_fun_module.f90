@@ -6,7 +6,7 @@ module xc_fun
 ! Index of each functional parameter in the argument
 ! of set_functional
   integer, parameter ::  XC_SLATER_EXCHANGE = 1
-  integer, parameter ::  XC_VWN_CORRELATION = 2
+  integer, parameter ::  XC_VWN5_CORRELATION = 2
   integer, parameter ::  XC_BECKE_EXCHANGE  = 3
   integer, parameter ::  XC_LYP_CORRELATION = 4
   integer, parameter ::  XC_PBE_EXCHANGE    = 5

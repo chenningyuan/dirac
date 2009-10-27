@@ -120,14 +120,14 @@ contains
       w = get_weight(word_array(i), 'lda')
       if (dabs(w) > tiny) then
         w_array(XC_SLATER_EXCHANGE) = w_array(XC_SLATER_EXCHANGE) + w
-        w_array(XC_VWN_CORRELATION) = w_array(XC_VWN_CORRELATION) + w
+        w_array(XC_VWN5_CORRELATION) = w_array(XC_VWN5_CORRELATION) + w
       end if
 
 !     svwn = lda
       w = get_weight(word_array(i), 'svwn')
       if (dabs(w) > tiny) then
         w_array(XC_SLATER_EXCHANGE) = w_array(XC_SLATER_EXCHANGE) + w
-        w_array(XC_VWN_CORRELATION) = w_array(XC_VWN_CORRELATION) + w
+        w_array(XC_VWN5_CORRELATION) = w_array(XC_VWN5_CORRELATION) + w
       end if
 
 !     blyp
@@ -142,7 +142,7 @@ contains
       w = get_weight(word_array(i), 'b3lyp')
       if (dabs(w) > tiny) then
         w_array(XC_SLATER_EXCHANGE) = w_array(XC_SLATER_EXCHANGE) + 0.80d0*w
-        w_array(XC_VWN_CORRELATION) = w_array(XC_VWN_CORRELATION) + 0.19d0*w
+        w_array(XC_VWN5_CORRELATION) = w_array(XC_VWN5_CORRELATION) + 0.19d0*w
         w_array(XC_BECKE_EXCHANGE)  = w_array(XC_BECKE_EXCHANGE)  + 0.72d0*w
         w_array(XC_LYP_CORRELATION) = w_array(XC_LYP_CORRELATION) + 0.81d0*w
         call add_hfx(0.20d0*w)
@@ -174,7 +174,7 @@ contains
 
       w = get_weight(word_array(i), 'vwn')
       if (dabs(w) > tiny) then
-        w_array(XC_VWN_CORRELATION) = w_array(XC_VWN_CORRELATION) + w
+        w_array(XC_VWN5_CORRELATION) = w_array(XC_VWN5_CORRELATION) + w
       end if
 
       w = get_weight(word_array(i), 'becke')

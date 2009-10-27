@@ -36,7 +36,7 @@ static num pbe_correlation_unpolarized(const num &R,
         0.80042863499936/sqrt(t1))+1.0);
   t5 = Z;
   t6 = 1/pow(t1,2.333333333333334);
-  t7 = pow(t5,2.0);
+  t7 = t5*t5;
   t8 = 1/pow(t1,4.666666666666667);
   t9 = exp(1.999923215200099*t3*t4)-1.0;
   t10 = 1/t9;
