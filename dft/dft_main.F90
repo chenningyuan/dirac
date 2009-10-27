@@ -81,10 +81,6 @@ contains
 
       call init_dft_cb()
 
-#ifdef MOD_AUTODIFF
-      call init_xc_contributions(dft_options%aor_xc_order)
-#endif
-
 !     start timer
       time_start = second()
 
@@ -824,6 +820,9 @@ contains
 
 !       linear response
         if(dft_options%lr) then
+
+!#define DEBUG_XC_RESPONSE
+#ifndef DEBUG_XC_RESPONSE
           call lr(block_length,    &
                   nxcmat,          &
                   dtrmat,          &
@@ -839,6 +838,20 @@ contains
                   dft_temp_gga_hs, &
                   dft_temp_gga_ha, &
                   buffer)
+#else
+            call xc_response(2,  &
+     &                      nxcmat,  &
+     &                      dft_temp_gga_hs, &
+     &                      dtrmat,  &
+     &                      excmat, &
+     &                      isymop, &
+     &                      ao_p(ao_start(0, 0):ao_end(0, 0)), &
+     &                      ao_p(ao_start(1, 0):ao_end(1, 0)), &
+     &                      r_0(1), &
+     &                      rhg, &
+     &                      w(1), &
+     &                      buffer)
+#endif
         endif
 
 
@@ -885,7 +898,7 @@ contains
 #ifdef MOD_AUTODIFF
 #ifdef MOD_AORESPONSE
           if (dft_options%aor_xc_order > 0) then
-            call aor_xc_new(dft_options%aor_xc_order,  &
+            call xc_response(dft_options%aor_xc_order,  &
      &                      nxcmat,  &
      &                      dft_temp_gga_hs, &
      &                      dtrmat,  &
