@@ -31,8 +31,9 @@ void xc_set_functional(const double params[XC_PARAMS_LEN])
 }
 
 extern "C"
-void xc_set_functional_(const double *params)
+void xc_set_functional_(const double *params, int *len)
 {
+  assert(*len == XC_PARAMS_LEN && "C++/Fortran headers out of sync");
   xc_set_functional(params);
 }
 

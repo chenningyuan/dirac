@@ -58,7 +58,7 @@ module xc_fun
 contains
   subroutine set_functional(params)
     double precision, intent(in) :: params(XC_PARAMS_LEN)
-    call xc_set_functional(params)
+    call xc_set_functional(params,XC_PARAMS_LEN)
   end subroutine set_functional
 
   subroutine eval_lda(res, order, densvars)
