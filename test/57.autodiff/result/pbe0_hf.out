@@ -2,194 +2,194 @@
  =========================================================================
  Version           : Dirac 8.0 (patchlevel 0) 
  Hostname          : larry
- Operating system  : Linux 2.6.28-15-generic
+ Operating system  : Linux 2.6.27-15-generic
  Machine           : i686
  Run               : Sequential
- Last compilation  : 10:19:27 Oct 16 2009 (by bast@larry:/home/bast/dirac/rHEAD_gfortran_gcc_a_autodiff_linked_xc)
- FORTRAN compiler  : /usr/bin/gfortran -g -fno-range-check -O3 -ffast-math -funroll-loops -Iinclude -Jmodules -DARCH32BIT -DGFORTRAN 433 -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM 64000000 -DVAR_MFDS -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS -DMOD_AUTODIFF -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON 
+ Last compilation  : 13:23:22 Oct 28 2009 (by bast@larry:/home/bast/dirac/gfortran_gcc_a_autodiff)
+ FORTRAN compiler  : /usr/bin/gfortran -g -fno-range-check -O3 -ffast-math -funroll-loops -Iinclude -Jmodules -DARCH32BIT -DGFORTRAN 432 -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM 64000000 -DVAR_MFDS -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS -DMOD_AUTODIFF -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON 
 $ERROR 1.0e-4
 $SIGNCHECK
  ZZSECMOM
 $ERROR 1.E-7
 $SIGNCHECK
-   DFT exchange-correlation energy:                    -8.8143199701669577
+   DFT exchange-correlation energy:                    -8.8143199701669896
 $ERROR 1.0e-4
 $SIGNCHECK
    number of electrons from numerical integration:     10.0004166665710468
 $ERROR 1.E-7
 $SIGNCHECK
-   DFT exchange-correlation energy:                    -7.0383741866308176
+   DFT exchange-correlation energy:                    -7.0383741866308958
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0009316111349094
+   number of electrons from numerical integration:     10.0009316111348951
 $ERROR 1.E-7
 $SIGNCHECK
-   DFT exchange-correlation energy:                    -8.4778693392058440
+   DFT exchange-correlation energy:                    -8.4778693392059576
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0004283083105125
+   number of electrons from numerical integration:     10.0004283083105072
 $ERROR 1.E-7
 $SIGNCHECK
-   DFT exchange-correlation energy:                    -8.1415447816886530
+   DFT exchange-correlation energy:                    -8.1415447816886442
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006172516694729
+   number of electrons from numerical integration:     10.0006172516694889
 $ERROR 1.E-7
 $SIGNCHECK
-   DFT exchange-correlation energy:                    -8.1288061112578962
+   DFT exchange-correlation energy:                    -8.1288061112581254
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006068839526243
+   number of electrons from numerical integration:     10.0006068839526314
 $ERROR 1.E-7
 $SIGNCHECK
-   DFT exchange-correlation energy:                    -8.1298443047354727
+   DFT exchange-correlation energy:                    -8.1298443047355970
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006096180702322
+   number of electrons from numerical integration:     10.0006096180702304
 $ERROR 1.E-7
 $SIGNCHECK
-   DFT exchange-correlation energy:                    -8.1302265849729718
+   DFT exchange-correlation energy:                    -8.1302265849731636
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006092346079800
+   number of electrons from numerical integration:     10.0006092346079978
 $ERROR 1.E-7
 $SIGNCHECK
-   DFT exchange-correlation energy:                    -8.1302664126531710
+   DFT exchange-correlation energy:                    -8.1302664126530608
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006092392753079
+   number of electrons from numerical integration:     10.0006092392753025
 $ERROR 1.0e-4
 $SIGNCHECK
    Electronic energy                        :    -105.65892877092611
 $ERROR 1.0e-4
 $SIGNCHECK
-    ZZSECMOM         :     5.364157104558 a.u.      F   F
+    ZZSECMOM         :     5.364157104557 a.u.      F   F
 $ERROR 1.E-7
 $SIGNCHECK
-   DFT exchange-correlation energy:                    -8.1302664126531710
+   DFT exchange-correlation energy:                    -8.1302664126530608
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006092392753079
+   number of electrons from numerical integration:     10.0006092392753025
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006092392753079
+   number of electrons from numerical integration:     10.0006092392753025
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006092392753079
+   number of electrons from numerical integration:     10.0006092392753025
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006092392753079
+   number of electrons from numerical integration:     10.0006092392753025
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006092392753079
+   number of electrons from numerical integration:     10.0006092392753025
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006092392753079
+   number of electrons from numerical integration:     10.0006092392753025
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006092392753079
+   number of electrons from numerical integration:     10.0006092392753025
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006092392753079
+   number of electrons from numerical integration:     10.0006092392753025
 $ERROR 1.E-4
 $SIGNCHECK
- Nonrel. sym.:   TxB2                         9.4324 eV
+ Nonrel. sym.:   TxB2                         9.4627 eV
 $ERROR 1.E-4
 $SIGNCHECK
- Nonrel. sym.:   TyB1                         9.4324 eV
+ Nonrel. sym.:   TyB1                         9.4627 eV
 $ERROR 1.E-4
 $SIGNCHECK
- Nonrel. sym.:   TxB2                        11.5827 eV
+ Nonrel. sym.:   TxB2                        11.5874 eV
 $ERROR 1.E-4
 $SIGNCHECK
- Nonrel. sym.:   TxB2                         9.4324 eV
+ Nonrel. sym.:   TxB2                         9.4627 eV
 $ERROR 1.E-4
 $SIGNCHECK
- Nonrel. sym.:   TyB1                         9.4324 eV
+ Nonrel. sym.:   TyB1                         9.4627 eV
 $ERROR 1.E-4
 $SIGNCHECK
- Nonrel. sym.:   TxB2                        11.5827 eV
+ Nonrel. sym.:   TxB2                        11.5874 eV
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006092392753079
+   number of electrons from numerical integration:     10.0006092392753025
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006092392753079
+   number of electrons from numerical integration:     10.0006092392753025
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006092392753079
+   number of electrons from numerical integration:     10.0006092392753025
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006092392753079
+   number of electrons from numerical integration:     10.0006092392753025
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006092392753079
+   number of electrons from numerical integration:     10.0006092392753025
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006092392753079
+   number of electrons from numerical integration:     10.0006092392753025
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006092392753079
+   number of electrons from numerical integration:     10.0006092392753025
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006092392753079
+   number of electrons from numerical integration:     10.0006092392753025
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006092392753079
+   number of electrons from numerical integration:     10.0006092392753025
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006092392753079
+   number of electrons from numerical integration:     10.0006092392753025
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006092392753079
+   number of electrons from numerical integration:     10.0006092392753025
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006092392753079
-$ERROR 1.E-7
+   number of electrons from numerical integration:     10.0006092392753025
+$ERROR 1.E-6
 $SIGNCHECK
- Value of total response :      -6.278844154904
-$ERROR 1.E-7
+ Value of total response :      -6.278844154902
+$ERROR 1.E-6
 $SIGNCHECK
- Value of total response :      -6.233493845319
-$ERROR 1.E-7
+ Value of total response :      -6.233493845318
+$ERROR 1.E-6
 $SIGNCHECK
- Value of total response :      -5.373234009920
-$ERROR 1.E-7
+ Value of total response :      -5.373234009919
+$ERROR 1.E-6
 $SIGNCHECK
  Value of total response :      -5.323578007430
-$ERROR 1.E-7
+$ERROR 1.E-6
 $SIGNCHECK
- Value of total response :      -5.373234009920
-$ERROR 1.E-7
+ Value of total response :      -5.373234009919
+$ERROR 1.E-6
 $SIGNCHECK
  Value of total response :      -5.323578007430
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006092392753079
-$ERROR 1.E-7
+   number of electrons from numerical integration:     10.0006092392753025
+$ERROR 1.E-6
 $SIGNCHECK
- Value of total response :      0.261885060069
+ Value of total response :      0.261885060074
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006092392753079
-$ERROR 1.E-7
+   number of electrons from numerical integration:     10.0006092392753025
+$ERROR 1.E-6
 $SIGNCHECK
- Value of total response :      0.261885060069
+ Value of total response :      0.261885060074
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006092392753079
-$ERROR 1.E-7
+   number of electrons from numerical integration:     10.0006092392753025
+$ERROR 1.E-6
 $SIGNCHECK
- Value of total response :      0.324183714967
+ Value of total response :      0.324183714971
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006092392753079
-$ERROR 1.E-7
+   number of electrons from numerical integration:     10.0006092392753025
+$ERROR 1.E-6
 $SIGNCHECK
- Value of total response :      0.324183714967
+ Value of total response :      0.324183714971
 $ERROR 1.0e-4
 $SIGNCHECK
-   number of electrons from numerical integration:     10.0006092392753079
-$ERROR 1.E-7
+   number of electrons from numerical integration:     10.0006092392753025
+$ERROR 1.E-6
 $SIGNCHECK
- Value of total response :      7.646580602250
+ Value of total response :      7.646580602281
