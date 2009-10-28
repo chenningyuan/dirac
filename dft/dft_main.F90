@@ -14,7 +14,7 @@ module dft_main
   use xc_fun
 #endif
 #ifdef MOD_AORESPONSE
-  use aor_xc
+  use xc_response
 #endif
 #ifdef VAR_MPI
   use dirac_mpi
@@ -842,7 +842,7 @@ contains
                   dft_temp_gga_ha, &
                   buffer)
 #else
-            call xc_response(2,  &
+            call xc_response_contribution(2,  &
      &                      nxcmat,  &
      &                      dft_temp_gga_hs, &
      &                      dtrmat,  &
@@ -901,7 +901,7 @@ contains
 #ifdef MOD_AUTODIFF
 #ifdef MOD_AORESPONSE
           if (dft_options%aor_xc_order > 0) then
-            call xc_response(dft_options%aor_xc_order,  &
+            call xc_response_contribution(dft_options%aor_xc_order,  &
      &                      nxcmat,  &
      &                      dft_temp_gga_hs, &
      &                      dtrmat,  &
