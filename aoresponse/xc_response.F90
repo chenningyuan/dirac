@@ -63,7 +63,6 @@ contains
 
 #include "dgroup.h"
 #include "dcbbas.h"
-!#include "../dft/functionals.h"
 
 !   ----------------------------------------------------------------------------
     integer, intent(in)    :: order
@@ -140,29 +139,15 @@ contains
     u = 0.0d0
     v = 0.0d0
 
-    if (calculate_blocks_n) then
-      select case (order)
+    select case (order)
     
-        case (2)
-          call xc_response_1r_n(u, derv, n)
+      case (2)
+        call xc_response_1(u, v, derv, n, gn, z)
     
-        case default
-          call quit('xc_response_contribution: order not implemented')
+      case default
+        call quit('xc_response_contribution: order not implemented')
     
-      end select
-    end if
-
-    if (calculate_blocks_nz) then
-      select case (order)
-    
-        case (2)
-          call xc_response_1r_nz(u, v, derv, n, gn, z)
-    
-        case default
-          call quit('xc_response_contribution: order not implemented')
-    
-      end select
-    end if
+    end select
 
     if (dabs(maxval(v)) > 0.0d0) then
       call gga_distribute(u, 2.0d0*v, 0, fmat, ao_g0_m0, ao_g1_m0)
@@ -172,39 +157,30 @@ contains
 
   end subroutine
 
-  subroutine xc_response_1r_n(u, derv, n)
-
-!   ----------------------------------------------------------------------------
-    real(8), intent(inout) :: u
-    real(8), intent(in)  :: derv(*)
-    real(8), intent(in)  :: n(0:max_order)
-!   ----------------------------------------------------------------------------
-    integer, external    :: taylor_index
-!   ----------------------------------------------------------------------------
-
-    u = u + derv(taylor_index(5, (/2, 0, 0, 0, 0/)))*n(1)
-
-  end subroutine
-
-  subroutine xc_response_1r_nz(u, v, derv, n, gn, z)
-
+  subroutine xc_response_1(u, v, derv, n, gn, z) 
+    
 !   ----------------------------------------------------------------------------
     real(8), intent(inout) :: u
     real(8), intent(inout) :: v(3)
-    real(8), intent(in)  :: derv(*)
-    real(8), intent(in)  :: n(0:max_order)
-    real(8), intent(in)  :: gn(3, 0:max_order)
-    real(8), intent(in)  :: z(0:max_order, 0:max_order)
+    real(8), intent(in)    :: derv(*)
+    real(8), intent(in)    :: n(0:max_order)
+    real(8), intent(in)    :: gn(3, 0:max_order)
+    real(8), intent(in)    :: z(0:max_order, 0:max_order)
 !   ----------------------------------------------------------------------------
-    integer, external    :: taylor_index
+    integer, external      :: taylor_index
+    real(8)                :: tu
+    real(8)                :: tv(3)
 !   ----------------------------------------------------------------------------
 
-    u = u + derv(taylor_index(5, (/1, 0, 1, 0, 0/)))*z(0, 1)
-
-    v = v + derv(taylor_index(5, (/0, 0, 2, 0, 0/)))*gn(:, 0)*z(0, 1)
-    v = v + derv(taylor_index(5, (/1, 0, 1, 0, 0/)))*gn(:, 0)*n(1)
-    v = v + derv(taylor_index(5, (/0, 0, 1, 0, 0/)))*gn(:, 1)
-
+    tu = n(1)
+    v  = v + derv(taylor_index(5, (/1, 0, 1, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(taylor_index(5, (/2, 0, 0, 0, 0/)))*tu
+    tu = z(0, 1)
+    v  = v + derv(taylor_index(5, (/0, 0, 2, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(taylor_index(5, (/1, 0, 1, 0, 0/)))*tu
+    tv = gn(:, 1)
+    v  = v + derv(taylor_index(5, (/0, 0, 1, 0, 0/)))*tv(:)
+    
   end subroutine
 
 #endif /* ifdef MOD_AUTODIFF */

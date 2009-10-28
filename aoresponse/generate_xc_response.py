@@ -2,6 +2,11 @@
 
 from __future__ import generators
 import sys
+import string
+
+#-------------------------------------------------------------------------------
+
+variable_l = ['n', 'z']
 
 #-------------------------------------------------------------------------------
 
@@ -91,7 +96,7 @@ def get_partitions_scalar_product(index_s):
     half_len = len(l)/2
     return l[0:half_len]
 
-def get_variable_combinations(variable_l, order):
+def get_variable_combinations(order):
     l = []
     for s in xselections(variable_l, order):
         l.append(s)
@@ -113,10 +118,18 @@ def get_partition_l(n):
         l.append(partition)
     return l
 
+def count_variables(l_ref, s):
+    l = []
+    for i in range(len(l_ref)):
+        l.append(0)
+        for x in s:
+            if x == l_ref[i]:
+               l[i] += 1
+    return tuple(l)
+
 #-------------------------------------------------------------------------------
 
 index_s = '12345678'
-variable_l = ['n', 'Z']
 
 #-------------------------------------------------------------------------------
 
@@ -127,10 +140,21 @@ for i in range(7):
 
 #-------------------------------------------------------------------------------
 
-def get_nr_terms(order):
+    
+def generate_code(order):
+
+    term_d = {}
+
+    i = 0
+    index_to_matrix = {}
+    for perturbation in get_perturbation_l(index_s, order):
+        i += 1
+        index_to_matrix[perturbation] = str(i)
+    index_to_matrix['0'] = '0'
+
     nr_terms = 0
     for partition_l in partition_ll[order]:
-        variable_combination_ll = get_variable_combinations(variable_l, len(partition_l))
+        variable_combination_ll = get_variable_combinations(len(partition_l))
         for variable_combination_l in variable_combination_ll:
             for partition in get_partitions(index_s[:order], partition_l):
                 term_variable_l = []
@@ -138,23 +162,66 @@ def get_nr_terms(order):
                 for i in range(len(partition)):
                     selection = partition[i]
                     term_variable_l.append(variable_combination_l[i])
-                    if variable_combination_l[i] == 'Z':
+                    if variable_combination_l[i] == 'z':
                        term_index_l.append(get_partitions_scalar_product(selection))
                     else:
                        term_index_l.append(selection)
 
-           #    print term_variable_l, term_index_l
+#               print term_variable_l, term_index_l
+                s = ''
                 t = 1
                 for i in range(len(term_variable_l)):
-                    if term_variable_l[i] == 'Z':
+                    if term_variable_l[i] == 'z':
                        t *= len(term_index_l[i])
-           #    print t
+                       for x in term_index_l[i]:
+                           s += '*%s(%s, %s)' % (term_variable_l[i], index_to_matrix[x[0]], index_to_matrix[x[1]])
+                    elif term_variable_l[i] == 'g':
+                       s += '*gr(:, %s)' % index_to_matrix[term_index_l[i]]
+                    else:
+                       s += '*%s(%s)' % (term_variable_l[i], index_to_matrix[term_index_l[i]])
                 nr_terms += t
-    print order, nr_terms
+                tuple = count_variables(['n', 'z', 'gr'], s)
+                if tuple in term_d.keys():
+                   term_d[tuple] += '\n      + ' + s[1:]
+                else:
+                   term_d[tuple]  = s[1:]
 
-get_nr_terms(1)
-get_nr_terms(2)
-get_nr_terms(3)
-get_nr_terms(4)
-get_nr_terms(5)
-get_nr_terms(6)
+    s = ''
+    for term in term_d:
+
+        if 'gr' in term_d[term]:
+          s += '\n    tv = ' + term_d[term]
+        else:
+          s += '\n    tu = ' + term_d[term]
+
+        nr_n = term[0]
+        nr_z = term[1]
+
+        if 'gr' in term_d[term]:
+           s += '\n    v  = v + derv(taylor_index(5, (/%i, 0, %i, 0, 0/)))*tv(:)'       % (nr_n,     nr_z + 1)
+        else:
+           s += '\n    v  = v + derv(taylor_index(5, (/%i, 0, %i, 0, 0/)))*tu*gn(:, 0)' % (nr_n,     nr_z + 1)
+           s += '\n    u  = u + derv(taylor_index(5, (/%i, 0, %i, 0, 0/)))*tu'          % (nr_n + 1, nr_z)
+
+    s = string.replace(s, 'gr', 'gn')
+
+    print '''  subroutine xc_response_%i(u, v, derv, n, gn, z) 
+    
+!   ----------------------------------------------------------------------------
+    real(8), intent(inout) :: u
+    real(8), intent(inout) :: v(3)
+    real(8), intent(in)    :: derv(*)
+    real(8), intent(in)    :: n(0:max_order)
+    real(8), intent(in)    :: gn(3, 0:max_order)
+    real(8), intent(in)    :: z(0:max_order, 0:max_order)
+!   ----------------------------------------------------------------------------
+    integer, external      :: taylor_index
+    real(8)                :: tu
+    real(8)                :: tv(3)
+!   ----------------------------------------------------------------------------
+%s
+    
+  end subroutine
+''' % (order, s)
+
+generate_code(1)
