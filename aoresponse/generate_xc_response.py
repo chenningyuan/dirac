@@ -6,7 +6,7 @@ import string
 
 #-------------------------------------------------------------------------------
 
-variable_l = ['n', 'z']
+variable_l = ['n', 'z', 'g']
 
 #-------------------------------------------------------------------------------
 
@@ -100,9 +100,9 @@ def get_variable_combinations(order):
     l = []
     for s in xselections(variable_l, order):
         l.append(s)
-    for s in xselections(variable_l, order - 1):
-        s.append('g')
-        l.append(s)
+#   for s in xselections(variable_l, order - 1):
+#       s.append('g')
+#       l.append(s)
     return l
 
 def _get_partition_l(n, l):
@@ -167,29 +167,41 @@ def generate_code(order):
                     else:
                        term_index_l.append(selection)
 
-#               print term_variable_l, term_index_l
+               #print term_variable_l, term_index_l
                 s = ''
                 t = 1
                 for i in range(len(term_variable_l)):
                     if term_variable_l[i] == 'z':
                        t *= len(term_index_l[i])
+                       s += '*'
+                       if len(term_index_l[i]) > 1:
+                          s += '('
+                       j = 0
                        for x in term_index_l[i]:
-                           s += '*%s(%s, %s)' % (term_variable_l[i], index_to_matrix[x[0]], index_to_matrix[x[1]])
+                           j += 1
+                           if j > 1:
+                              s += ' + '
+                           s += '%s(%s, %s)' % (term_variable_l[i], index_to_matrix[x[0]], index_to_matrix[x[1]])
+                       if len(term_index_l[i]) > 1:
+                          s += ')'
                     elif term_variable_l[i] == 'g':
-                       s += '*gr(:, %s)' % index_to_matrix[term_index_l[i]]
+                       s += '*g(:, %s)' % index_to_matrix[term_index_l[i]]
                     else:
                        s += '*%s(%s)' % (term_variable_l[i], index_to_matrix[term_index_l[i]])
                 nr_terms += t
-                tuple = count_variables(['n', 'z', 'gr'], s)
+                tuple = count_variables(['n', 'z', 'g'], s)
+               #print s, tuple
                 if tuple in term_d.keys():
-                   term_d[tuple] += '\n      + ' + s[1:]
+                   term_d[tuple] += ' &\n       + ' + s[1:]
                 else:
                    term_d[tuple]  = s[1:]
 
     s = ''
     for term in term_d:
 
-        if 'gr' in term_d[term]:
+       #s = ''
+       #print term
+        if 'g' in term_d[term]:
           s += '\n    tv = ' + term_d[term]
         else:
           s += '\n    tu = ' + term_d[term]
@@ -197,13 +209,14 @@ def generate_code(order):
         nr_n = term[0]
         nr_z = term[1]
 
-        if 'gr' in term_d[term]:
-           s += '\n    v  = v + derv(taylor_index(5, (/%i, 0, %i, 0, 0/)))*tv(:)'       % (nr_n,     nr_z + 1)
+        if 'g' in term_d[term]:
+           s += '\n    v  = v + derv(taylor_index(5, (/%i, 0, %i, 0, 0/)))*tv(:)'      % (nr_n,     nr_z + 1)
         else:
-           s += '\n    v  = v + derv(taylor_index(5, (/%i, 0, %i, 0, 0/)))*tu*gn(:, 0)' % (nr_n,     nr_z + 1)
-           s += '\n    u  = u + derv(taylor_index(5, (/%i, 0, %i, 0, 0/)))*tu'          % (nr_n + 1, nr_z)
+           s += '\n    v  = v + derv(taylor_index(5, (/%i, 0, %i, 0, 0/)))*tu*g(:, 0)' % (nr_n,     nr_z + 1)
+           s += '\n    u  = u + derv(taylor_index(5, (/%i, 0, %i, 0, 0/)))*tu'         % (nr_n + 1, nr_z)
+       #print s
 
-    s = string.replace(s, 'gr', 'gn')
+    s = string.replace(s, 'g', 'gn')
 
     print '''  subroutine xc_response_%i(u, v, derv, n, gn, z) 
     
@@ -225,3 +238,4 @@ def generate_code(order):
 ''' % (order, s)
 
 generate_code(1)
+generate_code(2)
