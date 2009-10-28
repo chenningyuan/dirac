@@ -12,6 +12,7 @@ module aor_xc
   public xc_response
 
   private
+    integer, parameter     :: max_order = 10
 
 contains
 
@@ -46,7 +47,6 @@ contains
     real(8), intent(in)    :: w
     real(8), intent(in)    :: buf(*)
 !   ----------------------------------------------------------------------------
-    integer, parameter     :: max_order = 10
 
     real(8)                :: s
     real(8)                :: s_aux(max_order)
@@ -144,15 +144,16 @@ contains
 
       if      (order == 2) then
 
-        s = s + derv(1, 1)*z(0, 1)
+!       s = s + derv(1, 1)*z(0, 1)
 
-        v = v + gr(:, 0)*(                   &
-                          derv(0, 2)*z(0, 1) &
-                        + derv(1, 1)*r(1)    &
-                         )
-        v = v + gr(:, 1)*(           &
-                          derv(0, 1) &
-                         )
+!       v = v + gr(:, 0)*(                   &
+!                         derv(0, 2)*z(0, 1) &
+!                       + derv(1, 1)*r(1)    &
+!                        )
+!       v = v + gr(:, 1)*(           &
+!                         derv(0, 1) &
+!                        )
+        call xc_response_1r_nz(s, v, derv_i, r, gr, z)
 
       else if (order == 3) then
 
@@ -272,6 +273,30 @@ contains
     end if
 
   end subroutine
+
+  subroutine xc_response_1r_nz(u, v, derv, n, gn, z)
+
+!   ----------------------------------------------------------------------------
+    real(8), intent(out) :: u
+    real(8), intent(out) :: v(3)
+    real(8), intent(in)  :: derv(*)
+    real(8), intent(in)  :: n(0:max_order)
+    real(8), intent(in)  :: gn(3, 0:max_order)
+    real(8), intent(in)  :: z(0:max_order, 0:max_order)
+!   ----------------------------------------------------------------------------
+    integer, external    :: taylor_index
+!   ----------------------------------------------------------------------------
+
+    u = derv(taylor_index(5, (/1, 0, 1, 0, 0/)))*z(0, 1)
+
+    v = 0.0d0
+
+    v = v + derv(taylor_index(5, (/0, 0, 2, 0, 0/)))*gn(:, 0)*z(0, 1)
+    v = v + derv(taylor_index(5, (/1, 0, 1, 0, 0/)))*gn(:, 0)*n(1)
+    v = v + derv(taylor_index(5, (/0, 0, 1, 0, 0/)))*gn(:, 1)
+
+  end subroutine
+
 #endif /* ifdef MOD_AUTODIFF */
 
 end module
