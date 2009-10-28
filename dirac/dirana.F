@@ -2313,6 +2313,128 @@ c
       CALL QUIT('GT1RHO: Coefficients not found !')
 C
       END
+      SUBROUTINE WRITE_ORB_CUBES(N1,N2,ORBS,WORK,LWORK)
+c     Write cube files for gerade orbitals orbs(1,1)..orbs(N1,1) 
+c     and ungerade orbitals orbs(1,2)..orbs(N2,2). 
+c     orbital indices are defined so that 1 is first occupied.
+c     Based on GT3RHO, this one by ulfek.
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+C
+      integer n1,n2,orbs
+      PARAMETER(D0=0.0D0,D1=1.0D0)
+      LOGICAL TOBE,LBIT
+      DIMENSION WORK(LWORK),CUBE(3,0:4),LUCUBE(2),orbs(1000,2)
+      character*16 filename
+#include "dcbgen.h"
+#include "dcbrho.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "nuclei.h"
+C
+      CALL QENTER('GT3RHO')
+c
+c     Start timer
+c
+      TIMSTR = SECOND()
+#include "memint.h"
+C
+      CALL TITLER('3-dimensional density plot','*',122)
+C
+      IF(LEVYLE) ILSCUB = 1
+      CALL MEMGET('REAL',KATOM,4*NUCDEP,WORK,KFREE,LFREE)
+C
+C     Check if coefficients are on file
+C
+      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+      IF(.NOT.TOBE) GOTO 1000
+C     Memory allocation
+CTROND: Consider open shell ! (NFMAT...)
+      CALL MEMGET('REAL',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGAOS ,NTBAS(0),WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KBUF  ,NTBAS(0),WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
+C
+C     Read coefficients + give restart info
+C
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),TEMP,TEMP,
+     &            TOTERG,3,WORK,KFREE,LFREE)
+      CLOSE(LUCOEF,STATUS='KEEP')
+
+C     Get cube parameters
+      CALL CUBPAR(CUBE,WORK(KATOM))
+
+      CALL MEMGET('REAL',KRHO,NCUBE(3)*2,WORK,KFREE,LFREE)
+
+      do i=1,N1+N2
+      IF(LBIT(ILSCUB,1)) THEN
+         if (i.le.n1) then
+            write(filename,'(A,I4.4,A)') 'rhoL',i,'g.cube'
+         else
+            write(filename,'(A,I4.4,A)') 'rhoL',i-N1,'u.cube'
+         endif
+         WRITE(LUPRI,'(A)') 
+     &   ' GT3RHO : Gaussian cube file generated for large component.'
+         LUCUBE(1) = 11
+         OPEN(LUCUBE(1),FILE=filename,STATUS='NEW',
+     &        ACCESS='SEQUENTIAL',FORM='FORMATTED')   
+      ENDIF
+      IF (LBIT(ILSCUB,2)) THEN
+         if (i.le.n1) then
+            write(filename,'(A,I4.4,A)') 'rhoS',i,'g.cube'
+         else
+            write(filename,'(A,I4.4,A)') 'rhoS',i-N1,'u.cube'
+         endif
+         WRITE(LUPRI,'(A)') 
+     &   ' GT3RHO : Gaussian cube file generated for small component.'
+         LUCUBE(2) = 12
+         OPEN(LUCUBE(2),FILE=filename,STATUS='NEW',
+     &        ACCESS='SEQUENTIAL',FORM='FORMATTED')   
+      ENDIF
+C     Write header for cube file
+      DO IC = 1,2
+        IF(LBIT(ILSCUB,IC)) CALL CUBHED(LUCUBE(IC),CUBE,WORK(KATOM))
+      ENDDO
+
+C     Generate density matrix
+      if (i.gt.n1) then
+         ifrp = 2
+         iorb = i - n1
+      else
+         ifrp = 1
+         iorb = i
+      endif
+C     Be aware: Both density matrices are normed to 1
+      call denorb(work(kdmat),orbs(iorb,ifrp),1,ifrp,work(kcmo),IPRRHO)
+      CALL GT3RH1(LUCUBE,CUBE,WORK(KRHO),
+     &            WORK(KDMAT),WORK(KGAOS),WORK(KBUF),
+     &            WORK,KFREE,LFREE)
+C
+      DO IC = 1,2
+        IF(LBIT(ILSCUB,IC)) CLOSE(LUCUBE(IC),STATUS='KEEP')
+      ENDDO
+      enddo
+C     Coeffients may now be deallocated.....
+      CALL MEMREL('GT3RHO.cmo',WORK,KCMO,KCMO,KFREE,LFREE)
+C     Memory deallocation
+      CALL MEMREL('GT3RHO',WORK,KWORK,KWORK,KFREE,LFREE)
+C
+c    
+c     Stop timer
+c           
+      TIMEND = SECOND()
+      TIME   = TIMEND - TIMSTR
+      CALL TIMTXT('>>> Time used in GT3RHO is',TIME,LUPRI)
+      CALL QEXIT('GT3RHO')
+      RETURN
+ 1000 CONTINUE
+      WRITE(LUPRI,'(A)') 'GT3RHO: Coefficient file not found !'
+      CALL QUIT('GT1RHO: Coefficients not found !')
+C
+      END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck Gt3rh1 */
       SUBROUTINE GT3RH1(LUCUBE,CUBE,RHO,DMAT,GAO,BUF,
