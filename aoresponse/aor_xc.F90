@@ -14,6 +14,43 @@ module aor_xc
   private
     integer, parameter     :: max_order = 10
 
+
+
+!     we have five density variables:
+!       n
+!       s
+!       z = \nabla n \cdot nabla n
+!       y = \nabla n \cdot nabla s
+!       x = \nabla s \cdot nabla s
+!
+!     response contribution blocks:
+!         n    s    z    y    x
+!        _________________________
+!     n | n    ns   nz   rest rest
+!     s | ns   ns   sz   rest rest
+!     z | nz   sz   nz   rest rest
+!     y | rest rest rest rest rest
+!     x | rest rest rest rest rest
+!
+!     \nabla n contribution | s contribution | \nabla s contribution | blocks
+!     -----------------------------------------------------------------------
+!     no                    | no             | no                    | n
+!     no                    | yes            | no                    | n + ns
+!     yes                   | no             | no                    | n + nz
+!     yes                   | yes            | no                    | n + nz + ns + sz
+!     yes                   | yes            | yes                   | n + nz + ns + sz + rest
+
+
+
+
+
+
+
+
+
+
+
+
 contains
 
   subroutine xc_response(order,   &
@@ -48,8 +85,8 @@ contains
     real(8), intent(in)    :: buf(*)
 !   ----------------------------------------------------------------------------
 
-    real(8)                :: s
-    real(8)                :: s_aux(max_order)
+    real(8)                :: u
+!   real(8)                :: s_aux(max_order)
     real(8)                :: v(3)
 
     real(8)                :: derv(0:max_order, 0:max_order)
@@ -133,7 +170,7 @@ contains
         end do
       end do
 
-    s = 0.0d0
+    u = 0.0d0
     v = 0.0d0
 
 
@@ -153,33 +190,35 @@ contains
 !       v = v + gr(:, 1)*(           &
 !                         derv(0, 1) &
 !                        )
-        call xc_response_1r_nz(s, v, derv_i, r, gr, z)
+
+        call xc_response_1r_n (u,    derv_i, r)
+        call xc_response_1r_nz(u, v, derv_i, r, gr, z)
 
       else if (order == 3) then
 
-        s = s + 2.0d0*derv(2, 1)*r(1)*z(0, 2)    &
-              + 2.0d0*derv(2, 1)*r(2)*z(0, 1)    &
-              + 2.0d0*derv(1, 2)*z(0, 1)*z(0, 2) &
-              + 2.0d0*derv(1, 1)*z(1, 2)
+!       s = s + 2.0d0*derv(2, 1)*r(1)*z(0, 2)    &
+!             + 2.0d0*derv(2, 1)*r(2)*z(0, 1)    &
+!             + 2.0d0*derv(1, 2)*z(0, 1)*z(0, 2) &
+!             + 2.0d0*derv(1, 1)*z(1, 2)
 
-        v = v + gr(:, 0)*(                           &
-                          derv(0, 3)*z(0, 1)*z(0, 2) &
-                        + derv(1, 2)*r(1)*z(0, 2)    &
-                        + derv(1, 2)*r(2)*z(0, 1)    &
-                        + derv(2, 1)*r(1)*r(2)       &
-                        + derv(0, 2)*z(1, 2)         &
-                         )
-        v = v + gr(:, 1)*(                   &
-                          derv(1, 1)*r(2)    &
-                        + derv(0, 2)*z(0, 2) &
-                         )
-        v = v + gr(:, 2)*(                   &
-                          derv(1, 1)*r(1)    &
-                        + derv(0, 2)*z(0, 1) &
-                         )
+!       v = v + gr(:, 0)*(                           &
+!                         derv(0, 3)*z(0, 1)*z(0, 2) &
+!                       + derv(1, 2)*r(1)*z(0, 2)    &
+!                       + derv(1, 2)*r(2)*z(0, 1)    &
+!                       + derv(2, 1)*r(1)*r(2)       &
+!                       + derv(0, 2)*z(1, 2)         &
+!                        )
+!       v = v + gr(:, 1)*(                   &
+!                         derv(1, 1)*r(2)    &
+!                       + derv(0, 2)*z(0, 2) &
+!                        )
+!       v = v + gr(:, 2)*(                   &
+!                         derv(1, 1)*r(1)    &
+!                       + derv(0, 2)*z(0, 1) &
+!                        )
 
 !       p (1, 2)
-        v = 2.0d0*v
+!       v = 2.0d0*v
 
       else if (order == 4) then
 
@@ -211,74 +250,88 @@ contains
 !   pure density contribution
 !   =========================
 
-    s_aux = 0.0d0
+!   s_aux = 0.0d0
 
-    if      (order == 5) then
+!   if      (order == 5) then
 
-      s_aux(3) = 3.0d0*r(2)*r(2)
+!     s_aux(3) = 3.0d0*r(2)*r(2)
 
-    else if (order == 6) then
+!   else if (order == 6) then
 
-      s_aux(4) = 15.0d0*r(1)*r(2)*r(2)
-      s_aux(3) = 10.0d0*r(2)*r(3)
+!     s_aux(4) = 15.0d0*r(1)*r(2)*r(2)
+!     s_aux(3) = 10.0d0*r(2)*r(3)
 
-    else if (order == 7) then
+!   else if (order == 7) then
 
-      s_aux(5) = 45.0d0*r(1)*r(1)*r(2)*r(2)
-      s_aux(4) = 60.0d0*r(1)*r(2)*r(3) &
-               + 15.0d0*r(2)*r(2)*r(2)
-      s_aux(3) = 15.0d0*r(2)*r(4) &
-               + 10.0d0*r(3)*r(3)
+!     s_aux(5) = 45.0d0*r(1)*r(1)*r(2)*r(2)
+!     s_aux(4) = 60.0d0*r(1)*r(2)*r(3) &
+!              + 15.0d0*r(2)*r(2)*r(2)
+!     s_aux(3) = 15.0d0*r(2)*r(4) &
+!              + 10.0d0*r(3)*r(3)
 
-    else if (order == 8) then
+!   else if (order == 8) then
 
-      s_aux(6) = get_binomial(7, 2)*get_binomial(5, 2)*r(1)*r(1)*r(1)*r(2)*r(2)/2.0d0
-      s_aux(5) = get_binomial(7, 2)*get_binomial(5, 2)*get_binomial(3, 2)*r(1)*r(2)*r(2)*r(2)/6.0d0 &
-               + get_binomial(7, 2)*get_binomial(5, 3)*r(1)*r(1)*r(2)*r(3)
-      s_aux(4) = get_binomial(7, 3)*get_binomial(4, 3)*r(1)*r(3)*r(3)/2.0d0 &
-               + get_binomial(7, 4)*get_binomial(3, 2)*r(1)*r(2)*r(4)       &
-               + get_binomial(7, 2)*get_binomial(5, 2)*r(2)*r(2)*r(3)/2.0d0
-      s_aux(3) = get_binomial(7, 4)*r(3)*r(4) &
-               + get_binomial(7, 5)*r(2)*r(5)
+!     s_aux(6) = get_binomial(7, 2)*get_binomial(5, 2)*r(1)*r(1)*r(1)*r(2)*r(2)/2.0d0
+!     s_aux(5) = get_binomial(7, 2)*get_binomial(5, 2)*get_binomial(3, 2)*r(1)*r(2)*r(2)*r(2)/6.0d0 &
+!              + get_binomial(7, 2)*get_binomial(5, 3)*r(1)*r(1)*r(2)*r(3)
+!     s_aux(4) = get_binomial(7, 3)*get_binomial(4, 3)*r(1)*r(3)*r(3)/2.0d0 &
+!              + get_binomial(7, 4)*get_binomial(3, 2)*r(1)*r(2)*r(4)       &
+!              + get_binomial(7, 2)*get_binomial(5, 2)*r(2)*r(2)*r(3)/2.0d0
+!     s_aux(3) = get_binomial(7, 4)*r(3)*r(4) &
+!              + get_binomial(7, 5)*r(2)*r(5)
 
-    end if
+!   end if
 
 !   highest order terms
-    s_aux(order) = r(1)**(order - 1)
+!   s_aux(order) = r(1)**(order - 1)
 
 !   terms that contain r(1)**(n)*r(i)**1
-    do i = 2, order - 2
-      k = order - 1
-      n = k - i
-      s_aux(n + 2) = s_aux(n + 2) + get_binomial(k, n)*r(1)**(n)*r(i)
-    end do
+!   do i = 2, order - 2
+!     k = order - 1
+!     n = k - i
+!     s_aux(n + 2) = s_aux(n + 2) + get_binomial(k, n)*r(1)**(n)*r(i)
+!   end do
 
-    do i = 3, order
-      s_aux(i) = s_aux(i)*2.0d0**(i - 2)
-    end do
+!   do i = 3, order
+!     s_aux(i) = s_aux(i)*2.0d0**(i - 2)
+!   end do
 
 !   compensate AUTO_FUNCTIONAL_SCALING
 !   do i = 1, order
 !     s_aux(i) = s_aux(i)/(0.0001d0**(i))
 !   end do
 
-    do i = 1, order
-      s = s + s_aux(i)*derv(i, 0)
-    end do
+!   do i = 1, order
+!     s = s + s_aux(i)*derv(i, 0)
+!   end do
 
     if (use_gga) then
-      call gga_distribute(s, 2.0d0*v, 0, fmat, gao, gao1)
+      call gga_distribute(u, 2.0d0*v, 0, fmat, gao, gao1)
     else
-      call lda_distribute(s,          0, fmat, gao)
+      call lda_distribute(u,          0, fmat, gao)
     end if
+
+  end subroutine
+
+  subroutine xc_response_1r_n(u, derv, n)
+
+!   ----------------------------------------------------------------------------
+    real(8), intent(inout) :: u
+    real(8), intent(in)  :: derv(*)
+    real(8), intent(in)  :: n(0:max_order)
+!   ----------------------------------------------------------------------------
+    integer, external    :: taylor_index
+!   ----------------------------------------------------------------------------
+
+    u = u + derv(taylor_index(5, (/2, 0, 0, 0, 0/)))*n(1)
 
   end subroutine
 
   subroutine xc_response_1r_nz(u, v, derv, n, gn, z)
 
 !   ----------------------------------------------------------------------------
-    real(8), intent(out) :: u
-    real(8), intent(out) :: v(3)
+    real(8), intent(inout) :: u
+    real(8), intent(inout) :: v(3)
     real(8), intent(in)  :: derv(*)
     real(8), intent(in)  :: n(0:max_order)
     real(8), intent(in)  :: gn(3, 0:max_order)
@@ -287,9 +340,7 @@ contains
     integer, external    :: taylor_index
 !   ----------------------------------------------------------------------------
 
-    u = derv(taylor_index(5, (/1, 0, 1, 0, 0/)))*z(0, 1)
-
-    v = 0.0d0
+    u = u + derv(taylor_index(5, (/1, 0, 1, 0, 0/)))*z(0, 1)
 
     v = v + derv(taylor_index(5, (/0, 0, 2, 0, 0/)))*gn(:, 0)*z(0, 1)
     v = v + derv(taylor_index(5, (/1, 0, 1, 0, 0/)))*gn(:, 0)*n(1)
