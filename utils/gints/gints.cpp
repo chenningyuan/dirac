@@ -477,8 +477,8 @@ public:
   shell_basis(const shell_basis &b1, const shell_basis &b2) 
     : matrix<double>(shell_size[b1.order+b2.order],b1.cols*b2.cols)
   {
-    assert(order <= 2*MAX_L);
     order = b1.order+b2.order;
+    assert(order <= 2*MAX_L);
     shell_product_tab[b1.order][b2.order](*this,s,b1,b1.s,b2,b2.s);
   }
   int nr_functions(void) const
@@ -525,8 +525,8 @@ public:
   }
   void overlap(matrix<double> &S, const basis &b2)
   {
-    assert(S.rows = nr_functions);
-    assert(S.cols = b2.nr_functions);
+    assert(S.rows == nr_functions);
+    assert(S.cols == b2.nr_functions);
     int ic = 0;
     for (unsigned int i=0;i<shells.size();i++)
       {
@@ -543,8 +543,8 @@ public:
   }
   void kinetic(matrix<double> &S, const basis &b2)
   {
-    assert(S.rows = nr_functions);
-    assert(S.cols = b2.nr_functions);
+    assert(S.rows == nr_functions);
+    assert(S.cols == b2.nr_functions);
     int ic = 0;
     for (unsigned int i=0;i<shells.size();i++)
       {
@@ -658,16 +658,18 @@ public:
   // b2 is the basis the density matrix lives on.
   void coulomb(matrix<double> &J, const basis &b2)
   {
-    assert(J.rows = nr_functions);
-    assert(J.cols = b2.nr_functions);
+    assert(J.rows == nr_functions);
+    assert(J.cols == b2.nr_functions);
     int ic = 0;
     for (unsigned int i=0;i<shells.size();i++)
       {
 	int jc = 0;
 	unsigned int j;
+#if 0 //skip this optimization for now
 	if (&b2 == this)
 	  j = i;
 	else
+#endif
 	  j = 0;
 	for (;j<b2.shells.size();j++)
 	  {
@@ -705,6 +707,10 @@ public:
 	ic += shells[i]->cols;
       }
   }
+  pair<int,int> get_origin(int i)
+  {
+    return origin.at(i);
+  }
   //protected:
   // For each function, tell where the product came from
   vector< pair<int,int> > origin;
@@ -720,8 +726,12 @@ void print_usage(ostream &dst)
   dst << " -k    Kinetic energy\n";
   dst << " -n    Nuclear attraction (point charges)\n";
   dst << "       Charges are read from CHARGES, in format Q X Y Z\n";
+  dst << " -c    Two electron Coulomb (and exchange) integrals\n";
   dst << "If a second basis set file is give use this as\n";
   dst << "the bra ('right') basis.\n";
+  dst << "The basis set file has a format\n";
+  dst << "L X Y Z EXP\n";
+  dst << "for each shell. L is the angular momentum nr.\n";
 }
 
 int main(int argc, char *argv[])
@@ -742,6 +752,8 @@ int main(int argc, char *argv[])
 	type = "overlap";
       else if (argv[i] == string("-k"))
 	type = "kinetic";
+      else if (argv[i] == string("-c"))
+	type = "coulomb";
       else if (argv[i] == string("-n"))
 	{
 	  type = "pointcharge";
@@ -883,6 +895,21 @@ int main(int argc, char *argv[])
       if (&b == &bb)
 	F.symmetrize_from_lower();
       F.print(cout);
+    }
+  else if (type == "coulomb")
+    {
+      product_basis pbas(b,bb);
+      matrix<double> J(pbas.nr_funs(),pbas.nr_funs());
+      pbas.coulomb(J,pbas);
+      for (int i=0;i<J.rows;i++)
+	for (int j=0;j<J.cols;j++)
+	  {
+	    pair<int,int> ij1 = pbas.get_origin(i), ij2 = pbas.get_origin(j);
+	    // 1-based indexing in the output.
+	    cout << ij1.first+1 << " " << ij1.second+1 << " "
+		 << ij2.first +1<< " " << ij2.second+1 << " "
+		 << J(i,j) << endl;
+	  }
     }
   return EXIT_SUCCESS;
 }
