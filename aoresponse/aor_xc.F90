@@ -3,7 +3,9 @@ module xc_response
   use dft_cfg
   use dft_density
   use aor_binomial
+#ifdef MOD_AUTODIFF
   use xc_fun
+#endif
 
   implicit none
 
