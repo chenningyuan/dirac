@@ -76,6 +76,7 @@
 
          interface allocp
             module procedure alloc_preal
+            module procedure alloc_preal_2d
             module procedure alloc_pint
          end interface allocp
 
@@ -93,6 +94,7 @@
 
          interface deallocp
             module procedure dealloc_preal
+            module procedure dealloc_preal_2d
             module procedure dealloc_pint_0d
             module procedure dealloc_pint_1d
          end interface deallocp
@@ -626,6 +628,31 @@
                endif
             end subroutine alloc_preal
 
+            subroutine alloc_preal_2d(data,size1,size2,id)
+               integer                        :: size1,size2, status
+               character(len=*), optional     :: id
+               character(len=charArrayLength) :: local_id
+               real(kind=kreal), pointer      :: data(:,:)
+
+               if (present(id)) then
+                  write (local_id,'(a)') id
+               else
+                  write (local_id,'(a)') 'None'
+               endif
+
+               if (.not.associated(data)) then
+                  allocate(data(size1,size2),stat=status)
+
+                  if ( status.ne.0 ) then
+                     call allocErrorHandler(allocateFailure,size1*size2,kind(data),var_id=local_id)
+                  else
+                     call initData(data,size1,size2)
+                  endif
+               else
+                  call allocErrorHandler(alreadyAllocated,var_id=local_id)
+               endif
+            end subroutine alloc_preal_2d
+
             subroutine alloc_pint(data,size,id)
                integer                        :: size, status
                character(len=*), optional     :: id
@@ -809,7 +836,7 @@
 
                if (associated(data)) then
                   deallocate(data,stat=status)
-                  
+
                   if ( status.ne.0 ) then
                      call allocErrorHandler(deallocateFailure,var_id=local_id)
                   endif
@@ -817,6 +844,30 @@
                   call allocErrorHandler(alreadyDeallocated,var_id=local_id)
                endif
             end subroutine dealloc_preal
+
+
+            subroutine dealloc_preal_2d(data, id)
+               integer                        :: status
+               character(len=*), optional     :: id
+               character(len=charArrayLength) :: local_id
+               real(kind=kreal), pointer      :: data(:,:)
+
+               if (present(id)) then
+                  write (local_id,'(a)') id
+               else
+                  write (local_id,'(a)') 'None'
+               endif
+
+               if (associated(data)) then
+                  deallocate(data,stat=status)
+                  
+                  if ( status.ne.0 ) then
+                     call allocErrorHandler(deallocateFailure,var_id=local_id)
+                  endif
+               else
+                  call allocErrorHandler(alreadyDeallocated,var_id=local_id)
+               endif
+            end subroutine dealloc_preal_2d
 
             subroutine dealloc_int(data, id)
                integer                        :: status

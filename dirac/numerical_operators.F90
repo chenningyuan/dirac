@@ -189,8 +189,8 @@ module numoper_integrals
 !        write (*,*) 'after looping over grids etc'
 !        CALL OUTPAK(oneint,ndim,1,6)
 
-         call dealloc(grid)
-         call dealloc(operator)
+         call deallocp(grid)
+         call deallocp(operator)
          call dealloc(ao)
 
       end subroutine NumOper_OneElOp_SetMatrix_PS
