@@ -153,7 +153,7 @@ contains
         call xc_response_1(u, v, derv, n, gn, z)
     
       case (3)
-!       call xc_response_2(u, v, derv, n, gn, z)
+        call xc_response_2(u, v, derv, n, gn, z)
     
       case default
         call quit('xc_response_contribution: order not implemented')
@@ -194,6 +194,44 @@ contains
     
   end subroutine
 
+  subroutine xc_response_2(u, v, derv, n, gn, z) 
+    
+!   ----------------------------------------------------------------------------
+    real(8), intent(inout) :: u
+    real(8), intent(inout) :: v(3)
+    real(8), intent(in)    :: derv(*)
+    real(8), intent(in)    :: n(0:max_order)
+    real(8), intent(in)    :: gn(3, 0:max_order)
+    real(8), intent(in)    :: z(0:max_order, 0:max_order)
+!   ----------------------------------------------------------------------------
+    integer, external      :: taylor_index
+    real(8)                :: tu
+    real(8)                :: tv(3)
+!   ----------------------------------------------------------------------------
+
+    tu = z(0, 1)*z(0, 2)
+    v  = v + derv(taylor_index(5, (/0, 0, 3, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(taylor_index(5, (/1, 0, 2, 0, 0/)))*tu
+    tu = z(1, 2)
+    v  = v + derv(taylor_index(5, (/0, 0, 2, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(taylor_index(5, (/1, 0, 1, 0, 0/)))*tu
+    tu = n(1)*z(0, 2) &
+       + z(0, 1)*n(2)
+    v  = v + derv(taylor_index(5, (/1, 0, 2, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(taylor_index(5, (/2, 0, 1, 0, 0/)))*tu
+    tv = n(1)*gn(:, 2) &
+       + gn(:, 1)*n(2)
+    v  = v + derv(taylor_index(5, (/1, 0, 1, 0, 0/)))*tv(:)
+    tv = z(0, 1)*gn(:, 2) &
+       + gn(:, 1)*z(0, 2)
+    v  = v + derv(taylor_index(5, (/0, 0, 2, 0, 0/)))*tv(:)
+    tu = n(1)*n(2)
+    v  = v + derv(taylor_index(5, (/2, 0, 1, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(taylor_index(5, (/3, 0, 0, 0, 0/)))*tu
+  
+    u = 2.0d0*u 
+    v = 2.0d0*v 
+  end subroutine
 #endif /* ifdef MOD_AUTODIFF */
 
 end module
