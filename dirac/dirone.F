@@ -3511,21 +3511,18 @@ C
 C     Diagonalize overlap matrix
 C
       IF (.NOT.DOQJACO) THEN
-#ifdef FASTLOW
-      IF (LOWJACO) THEN
-#endif
-         CALL RSJACO(LDM,NS,NS,SMAT,EIG,1,-1,0,VMAT,WORK,LWORK)
-#ifdef FASTLOW
-      ELSE
-         CALL QDIAG(1,NS,SMAT,LDM,NS,EIG,1,VMAT,LDM,NS,WORK,LWORK,IERR)
+         IF (LOWJACO) THEN
+            CALL RSJACO(LDM,NS,NS,SMAT,EIG,1,-1,0,VMAT,WORK,LWORK)
+         ELSE
+            CALL QDIAG(1,NS,SMAT,LDM,NS,EIG,1,VMAT,LDM,NS,WORK,LWORK
+     $           ,IERR)
 c    QDIAG gives the reverse value ordering from RSJACO, so fix that here.
 c    It would be better to rewrite the code below instead.. 
-         CALL ORDER3(VMAT,EIG,LDM,NS,NS,-1)
-         IF (IERR.NE.0) THEN
-            CALL QUIT('Diagonalization of overlap matrix failed')
+            CALL ORDER3(VMAT,EIG,LDM,NS,NS,-1)
+            IF (IERR.NE.0) THEN
+               CALL QUIT('Diagonalization of overlap matrix failed')
+            ENDIF
          ENDIF
-      ENDIF
-#endif
       ELSE
 CMI   ... (quaternion) Jacobi diagonalization routine
         NSS=NS*NS
