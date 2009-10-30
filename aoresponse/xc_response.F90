@@ -101,6 +101,10 @@ contains
                  dmat(1, 1, 1, i), &
                  buffer,           &
                  ao_g0_m0)
+
+!     perturbed matrices are scaled by 2 in dftexc
+!     correct for it here
+      n(i) = 0.5d0*n(i)
     end do
 
 !   get perturbed densitiy gradients and gradient norms
@@ -115,6 +119,10 @@ contains
                     buffer,           &
                     ao_g0_m0,         &
                     ao_g1_m0)
+
+!       perturbed matrices are scaled by 2 in dftexc
+!       correct for it here
+        gn(:, i) = 0.5d0*gn(:, i)
       end do
 
       do i = 0, nr_dmat
@@ -143,6 +151,9 @@ contains
     
       case (2)
         call xc_response_1(u, v, derv, n, gn, z)
+    
+      case (3)
+!       call xc_response_2(u, v, derv, n, gn, z)
     
       case default
         call quit('xc_response_contribution: order not implemented')
