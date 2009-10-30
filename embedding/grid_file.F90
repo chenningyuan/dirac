@@ -50,7 +50,11 @@ CONTAINS
     REWIND(file)
     READ(file,*) npoints
     
+#ifdef NEW_VEMB 
     ALLOCATE(points(4,1:npoints))
+#else
+    ALLOCATE(points(3,1:npoints))
+#endif
     
     if (present(vc)) then
        ALLOCATE(vc(1:npoints))

@@ -41,6 +41,8 @@ C
 C     Written by T.Saue - May 1996
 C
 C*****************************************************************************
+      use FDE_ImportPotentials
+
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -90,6 +92,11 @@ C    &     'No SS-nuclear attraction integrals'//
 C    &     '(MOLFLD), adapted COMB=',COMB
         END IF
         CALL NUCATT(WORK,LWORK,COMB,IPRONE)
+C
+C     Contribution from (static) embedding potential
+C
+      ELSEIF (CLSINT(i).EQ.'FDEVEMB') THEN 
+         CALL FDE_SaveAOPROPER_StaticEmbPot(COMB,IPRONE)
 C
 C     Contribution from beta-matrix
 C
@@ -627,6 +634,8 @@ C     Last revision: May 19 1996
 C                  MI / Febr.2006
 C
 C*****************************************************************************
+      use fde_mod
+
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -668,6 +677,18 @@ CMI     ... dcbham.h is needed
       IF (SMLV1C) THEN
          CALL CATCORR(FTRI,DUMMY,DUMMY,WORK,LFREE,IPRHAM)
          CALL PR1CEX1 (FTRI,FIRST,FOCK,WORK,KFREE,LFREE,IPRHAM)
+      ENDIF
+C
+C     Embedding potential integrals, if FDE is requested
+C     ==================================================
+C
+C aspg: i wonder whether or not there should be more control to allow 
+C       for the possibility of not including the static potential to
+C       the one-electron matrix prior to the scf...
+      IF (DO_FDE) THEN
+         IOP = IPVEMB0
+         CALL PRPMAO(LU1INT,IOP,NNBBASX,FTRI,
+     &          OP1INT,FIRST,IPRHAM)
       ENDIF
 
 C

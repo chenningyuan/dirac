@@ -97,7 +97,7 @@
       INTEGER IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD, IPKINERG, IPANGMOM, &
      &        IPSPNMOM, N1OPER, IPR1OP(MAX1OPER), LSOLMX, IPRSOL,       &
      &        ICTLV1C(2), IBSS, MC, I1_HAM, I2_HAM, IMFCH, I2CHAM,      &
-     &        INI2C, I2COFK, IPSOPP,I1_DCLHAM,I2_DCLHAM                                     
+     &        INI2C, I2COFK, IPSOPP, IPVEMB0, I1_DCLHAM,I2_DCLHAM                                     
 !
 !     IMPORTANT !!!
 !     =============
@@ -108,8 +108,8 @@
       COMMON /DCIHAM/ I1_HAM, IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD,     &
      &                IPKINERG, IPANGMOM, IPSPNMOM, N1OPER, IPR1OP,     &
      &                LSOLMX, IPRSOL, ICTLV1C, IBSS, MC,                &
-     &                IMFCH, I2CHAM, INI2C, I2COFK,                     &
-     &                I2_HAM, IPSOPP                                    
+     &                IMFCH, I2CHAM, INI2C, I2COFK, IPVEMB0, IPSOPP,    &
+     &                I2_HAM
 
       INTEGER INTV1C
       EQUIVALENCE (INTV1C, ICTLV1C (1))

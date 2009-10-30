@@ -808,7 +808,6 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "fde.h"
 C
       SAVE SET
       DATA TABLE /'.PROJEC','.PRINT ','.MAXITR','.ERGCNV','.EVCCNV',
@@ -3936,10 +3935,8 @@ C     Written by T.Saue - May 1996
 C
 C***********************************************************************
       use dirac_cfg
-#ifdef MOD_EMB
-      USE FDE_MOD, ONLY: FDEINI, FDEINP
-#endif
 #ifdef MOD_DFT
+      USE FDE_MOD, ONLY: FDEINI, FDEINP
       use dft_cfg
       use dft_input
 #endif
@@ -4497,12 +4494,9 @@ C&&& POSVAC: Use positronic vacuum polarisation
 !         .FDE
 !         frozen density embedding
   142     continue
-#ifdef MOD_FDE
-          do_fde = .true.
+          DO_FDE = .true.
           call fdeini()
-#else
-          call quit('FDE is not included in this version')
-#endif /* ifdef MOD_FDE */
+!endif /* ifdef MOD_FDE */
           go to 100
 
   143     CONTINUE
@@ -5585,6 +5579,23 @@ C
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRHAM)
       IPMOLFLD         = INDXPR
+
+C
+C     (static) embedding pontential
+C     =============================
+C
+C aspg: do_fde is coming from dcbham.h
+C 
+      IF (DO_FDE) THEN 
+         PNAME            = 'static emb. potential '
+         IPTYP            = 1
+         NPCOMP           = 1
+         PFAC(1)          = D1
+         PLABEL(1)        = 'FDEVEMB '
+         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRHAM)
+         IPVEMB0          = INDXPR
+      ENDIF
 
 
       IF (TWOCOMP.AND..NOT.BSS) THEN

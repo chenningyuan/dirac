@@ -1364,11 +1364,13 @@ CMI ... check first if PLABEL(1) is not operator from
 CMI ... pilot Dirac bare nucleus (from subroutine OP1INI)
         IF (LEVYLE.AND.PLABEL(1).NE.'OVERLAP '
      &       .AND.PLABEL(1).NE.'MOLFIELD'.AND.
-     &       PLABEL(1).NE.'BETAMAT ' ) PCOMB(4:4) = '0'
+     &       PLABEL(1).NE.'BETAMAT '
+     &       .and.PLABEL(1).NE.'FDEVEMB ' ) PCOMB(4:4) = '0'
 CLV ... same thing for ZORA!
         IF ((ZORA.AND..NOT.ZORA4).AND.PLABEL(1).NE.'OVERLAP '
      &       .AND.PLABEL(1).NE.'MOLFIELD'.AND.
-     &       PLABEL(1).NE.'BETAMAT ' ) PCOMB(4:4) = '0'
+     &       PLABEL(1).NE.'BETAMAT '
+     &       .and.PLABEL(1).NE.'FDEVEMB ' ) PCOMB(4:4) = '0'
       END IF
 
 CMI ... inform about the assigned PCOMB
@@ -1472,6 +1474,9 @@ C
       IF(PLABEL.EQ.'MOLFIELD') THEN
         CLASSLB = 'MOLFLD '
         IORDER  = 0
+      ELSEIF(PLABEL(1:7).EQ.'FDEVEMB') THEN
+        CLASSLB = 'FDEVEMB'
+        IORDER   = 0
       ELSEIF(PLABEL(1:7).EQ.'BETAMAT') THEN
         CLASSLB = 'BETAMAT'
         IORDER   = 0
@@ -1953,6 +1958,16 @@ C
       IF    (CLASSLB.EQ.'MOLFLD ') THEN
         NOPTYP    = 1
         LABINT(1) = 'MOLFIELD'
+        INTREP(1) = 0
+        SQUARE    = .FALSE.
+        ANTI      = .FALSE.
+        IORDER    = 0
+        DO I = 1,NUCIND
+          DOATOM(I) = .TRUE.
+        ENDDO
+      ELSEIF(CLASSLB.EQ.'FDEVEMB') THEN
+        NOPTYP    = 1
+        LABINT(1) = 'FDEVEMB '
         INTREP(1) = 0
         SQUARE    = .FALSE.
         ANTI      = .FALSE.

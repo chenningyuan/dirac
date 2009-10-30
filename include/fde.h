@@ -1,7 +1,0 @@
-       INTEGER LUDFEPOT,LUTESTING
-       INTEGER IPRFDE
-       CHARACTER*60 FDEPOT
-
-       PARAMETER (LUFDEPOT = 45, LUTESTING = 46)
-       COMMON /FDE/ IPRFDE,FDEPOT
-CLV: todo remove this common block
