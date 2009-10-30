@@ -728,7 +728,7 @@ contains
             dft_options%aor_xc_order = m + 1
 
             if (m == 1) then
-              call dftexc(2.0d0*D(1)%elms, &
+              call dftexc(D(1)%elms, &
                           (/               &
                             D(2)%elms      &
                            /),             &
@@ -742,7 +742,7 @@ contains
             end if
 
             if (m == 2) then
-              call dftexc(2.0d0*D(1)%elms, &
+              call dftexc(D(1)%elms, &
                           (/               &
                             D(2)%elms,     &
                             D(3)%elms,     &
@@ -761,7 +761,7 @@ contains
 !             restriction: 
 !             all perturbation operators are same
 !             so i pass only the representative density matrices
-              call dftexc(2.0d0*D(1)%elms,   &
+              call dftexc(D(1)%elms,   &
                           (/                 &
                             D(3+1)%elms,     &
                             D(6+1)%elms      &
@@ -779,7 +779,7 @@ contains
 !             restriction: 
 !             all perturbation operators are same
 !             so i pass only the representative density matrices
-              call dftexc(2.0d0*D(1)%elms,   &
+              call dftexc(D(1)%elms,   &
                           (/                 &
                             D( 4+1)%elms,    &
                             D(10+1)%elms,    &
@@ -798,7 +798,7 @@ contains
 !             restriction: 
 !             all perturbation operators are same
 !             so i pass only the representative density matrices
-              call dftexc(2.0d0*D(1)%elms,   &
+              call dftexc(D(1)%elms,   &
                           (/                 &
                             D( 5+1)%elms,    &
                             D(15+1)%elms,    &
@@ -818,7 +818,7 @@ contains
 !             restriction: 
 !             all perturbation operators are same
 !             so i pass only the representative density matrices
-              call dftexc(2.0d0*D(1)%elms,   &
+              call dftexc(D(1)%elms,   &
                           (/                 &
                             D( 6+1)%elms,    &
                             D(21+1)%elms,    &
@@ -839,7 +839,7 @@ contains
 !             restriction: 
 !             all perturbation operators are same
 !             so i pass only the representative density matrices
-              call dftexc(2.0d0*D(1)%elms,   &
+              call dftexc(D(1)%elms,   &
                           (/                 &
                             D( 7+1)%elms,    &
                             D(28+1)%elms,    &
@@ -858,7 +858,7 @@ contains
             end if
 
               A(1) = tiny(0.0d0)*D(1)
-              call daxpy(ntbas(0)*ntbas(0)*nz, 4.0d0, z, 1, A(1)%elms, 1)
+              call daxpy(ntbas(0)*ntbas(0)*nz, 2.0d0, z, 1, A(1)%elms, 1)
               F(1) = F(1) + A(1)
 
             end if

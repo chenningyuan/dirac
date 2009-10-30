@@ -87,6 +87,11 @@ contains
                  gao)
     end do
 
+    do i = 1, nr_dmat
+      r(i) = 0.5d0*r(i)
+    end do
+
+
 !   get perturbed densitiy gradients and gradient norms
 
     if (use_gga) then
@@ -101,6 +106,9 @@ contains
                     buf,              &
                     gao,              &
                     gao1)
+      end do
+      do i = 1, nr_dmat
+        gr(:, i) = 0.5d0*gr(:, i)
       end do
 
       do i = 0, nr_dmat
@@ -126,6 +134,7 @@ contains
 #endif
 
     call eval_gga(t, order, (/r(0), 0.0d0, z(0, 0), 0.0d0, 0.0d0/))
+    t = t*w
 
 !   multiply by the weight
 
@@ -139,6 +148,7 @@ contains
 
 !   if (use_gga) then
 
+    derv = 0.0d0
       do on = 0, order
         do oz = 0, order
           sum_on_oz = on + oz

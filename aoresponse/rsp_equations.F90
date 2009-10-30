@@ -81,7 +81,8 @@ contains
       integer      :: n, cc(2*size(p)), b(size(p)), op(size(p)), ne
       integer      :: i, j, k, i0, j0, k0, ij, ik, jk, ij0, ik0, jk0, ijk, ijk0, ji, jj
       complex(8)   :: ww(size(p)+1)
-      type(matrix) :: Sp(3), Tp(3)
+      type(matrix) :: Sp(3), Tp(3), SDF(1), X
+      integer      :: imax
       call prop_check('pert_scf_eq', S0, p, c=c, w=w, np=n, op=op, cc=cc, ww=ww, ne=ne)
       ww(n+1) = 0
       if (any( op /= (/ (i,i=1,n) /) )) &
