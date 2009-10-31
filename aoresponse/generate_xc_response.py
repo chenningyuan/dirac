@@ -7,6 +7,13 @@ import string
 #-------------------------------------------------------------------------------
 
 variable_l = ['n', 'z', 'g']
+max_order = 2
+
+is_scalar_product = {}
+
+is_scalar_product['n'] = 0
+is_scalar_product['z'] = 1
+is_scalar_product['g'] = 0
 
 #-------------------------------------------------------------------------------
 
@@ -96,13 +103,23 @@ def get_partitions_scalar_product(index_s):
     half_len = len(l)/2
     return l[0:half_len]
 
+def count_variables(l_ref, s):
+    l = []
+    for i in range(len(l_ref)):
+        l.append(0)
+        for x in s:
+            if x == l_ref[i]:
+               l[i] += 1
+    return tuple(l)
+
 def get_variable_combinations(order):
     l = []
-    for s in xselections(variable_l, order):
-        l.append(s)
-#   for s in xselections(variable_l, order - 1):
-#       s.append('g')
-#       l.append(s)
+    for x in xselections(variable_l, order):
+        l.append(x)
+#   remove selections which contain more than one gradient
+    for x in l:
+        if count_variables(['g'], x)[0] > 1:
+           l.remove(x)           
     return l
 
 def _get_partition_l(n, l):
@@ -118,83 +135,9 @@ def get_partition_l(n):
         l.append(partition)
     return l
 
-def count_variables(l_ref, s):
-    l = []
-    for i in range(len(l_ref)):
-        l.append(0)
-        for x in s:
-            if x == l_ref[i]:
-               l[i] += 1
-    return tuple(l)
-
 #-------------------------------------------------------------------------------
 
-index_s = '12345678'
-
-#-------------------------------------------------------------------------------
-
-partition_ll = []
-
-for i in range(7):
-    partition_ll.append(get_partition_l(i))
-
-#-------------------------------------------------------------------------------
-
-    
-def generate_code(order):
-
-    term_d = {}
-
-    i = 0
-    index_to_matrix = {}
-    for perturbation in get_perturbation_l(index_s, order):
-        i += 1
-        index_to_matrix[perturbation] = str(i)
-    index_to_matrix['0'] = '0'
-
-    nr_terms = 0
-    for partition_l in partition_ll[order]:
-        variable_combination_ll = get_variable_combinations(len(partition_l))
-        for variable_combination_l in variable_combination_ll:
-            for partition in get_partitions(index_s[:order], partition_l):
-                term_variable_l = []
-                term_index_l    = []
-                for i in range(len(partition)):
-                    selection = partition[i]
-                    term_variable_l.append(variable_combination_l[i])
-                    if variable_combination_l[i] == 'z':
-                       term_index_l.append(get_partitions_scalar_product(selection))
-                    else:
-                       term_index_l.append(selection)
-
-               #print term_variable_l, term_index_l
-                s = ''
-                t = 1
-                for i in range(len(term_variable_l)):
-                    if term_variable_l[i] == 'z':
-                       t *= len(term_index_l[i])
-                       s += '*'
-                       if len(term_index_l[i]) > 1:
-                          s += '('
-                       j = 0
-                       for x in term_index_l[i]:
-                           j += 1
-                           if j > 1:
-                              s += ' + '
-                           s += '%s(%s, %s)' % (term_variable_l[i], index_to_matrix[x[0]], index_to_matrix[x[1]])
-                       if len(term_index_l[i]) > 1:
-                          s += ')'
-                    elif term_variable_l[i] == 'g':
-                       s += '*g(:, %s)' % index_to_matrix[term_index_l[i]]
-                    else:
-                       s += '*%s(%s)' % (term_variable_l[i], index_to_matrix[term_index_l[i]])
-                nr_terms += t
-                tuple = count_variables(['n', 'z', 'g'], s)
-               #print s, tuple
-                if tuple in term_d.keys():
-                   term_d[tuple] += ' &\n       + ' + s[1:]
-                else:
-                   term_d[tuple]  = s[1:]
+def print_f90_code(term_d, order):
 
     s = ''
     for term in term_d:
@@ -237,5 +180,87 @@ def generate_code(order):
   end subroutine
 ''' % (order, s)
 
-generate_code(1)
-generate_code(2)
+def collect_terms(term_d, term_variable_l, term_index_l, index_to_matrix):
+
+    s = ''
+    for i in range(len(term_variable_l)):
+        if term_variable_l[i] == 'z':
+           s += '*'
+           if len(term_index_l[i]) > 1:
+              s += '('
+           j = 0
+           for x in term_index_l[i]:
+               j += 1
+               if j > 1:
+                  s += ' + '
+               s += '%s(%s, %s)' % (term_variable_l[i], index_to_matrix[x[0]], index_to_matrix[x[1]])
+           if len(term_index_l[i]) > 1:
+              s += ')'
+        elif term_variable_l[i] == 'g':
+           s += '*g(:, %s)' % index_to_matrix[term_index_l[i]]
+        else:
+           s += '*%s(%s)' % (term_variable_l[i], index_to_matrix[term_index_l[i]])
+    tuple = count_variables(variable_l, s)
+  # print s, tuple
+    if tuple in term_d.keys():
+       term_d[tuple] += ' &\n       + ' + s[1:]
+    else:
+       term_d[tuple]  = s[1:]
+    return term_d
+
+#-------------------------------------------------------------------------------
+
+def generate_code(order):
+
+    index_s = '12345678'
+    assert (order <= len(index_s))
+
+#   index_to_matrix dictionary is used to find where a specific matrix is
+#   there are 2^order matrices
+#   example: order           3
+#            index           0 1 2 3 12 13 23 123
+#            index_to_matrix 0 1 2 3 4  5  6  7
+    i = 0
+    index_to_matrix = {}
+    matrix_to_index = {}
+    for perturbation in get_perturbation_l(index_s, order):
+        i += 1
+        index_to_matrix[perturbation] = str(i)
+        matrix_to_index[i] = perturbation
+    index_to_matrix['0'] = '0'
+    matrix_to_index[0]   = '0'
+
+    term_d = {}
+
+    for partition_l in get_partition_l(order):
+        variable_combination_ll = get_variable_combinations(len(partition_l))
+        for variable_combination_l in variable_combination_ll:
+            for partition in get_partitions(index_s[:order], partition_l):
+                term_variable_l = []
+                term_index_l    = []
+                for i in range(len(partition)):
+                    selection = partition[i]
+                    if is_scalar_product[variable_combination_l[i]]:
+                       term_variable_l.append(variable_combination_l[i])
+                       temp_l = []
+                       for x in get_partitions_scalar_product(selection):
+#                         except linear response highest order terms do not contribute
+                          if (order < 2) or (x != ['0', str(matrix_to_index[2**order - 1])]):
+                             temp_l.append(x)
+                       term_index_l.append(temp_l)
+                    else:
+                       if (order < 2) or (len(variable_combination_l) > 1):
+#                         except linear response highest order terms do not contribute
+                          term_variable_l.append(variable_combination_l[i])
+                          term_index_l.append(selection)
+#               print term_variable_l, term_index_l
+                if len(term_variable_l) > 0:
+                   term_d = collect_terms(term_d, term_variable_l, term_index_l, index_to_matrix)
+
+    print_f90_code(term_d, order)
+
+#-------------------------------------------------------------------------------
+
+# generate code up to max_order
+for i in range(1, max_order + 1):
+    generate_code(i)
