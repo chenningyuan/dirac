@@ -687,7 +687,7 @@ contains
 
 #ifdef PRG_DIRAC
       real(8) :: z(ntbas(0)*ntbas(0)*nz)
-      integer :: ones(50)     
+      integer :: ones(200)     
       integer :: nr_dmat
       type(dft_options_t) :: dft_options
       ones = 1
@@ -715,156 +715,33 @@ contains
 
             if (do_dft()) then !DFT contribution
 
-            z       = 0.0d0
-            nr_dmat = size(D)
+              z       = 0.0d0
+              nr_dmat = size(D)
+             
+              do i = 1, nr_dmat
+                if (iszero(D(i))) then
+                  D(i) = tiny(0.0d0)*D(1)
+                end if
+              end do
+             
+              call reset_dft_options(dft_options)
+              dft_options%aor_xc_order = m + 1
 
-            do i = 1, nr_dmat
-              if (iszero(D(i))) then
-                D(i) = tiny(0.0d0)*D(1)
-              end if
-            end do
-
-            call reset_dft_options(dft_options)
-            dft_options%aor_xc_order = m + 1
-
-            if (m == 1) then
-              call dftexc(D(1)%elms, &
-                          (/               &
-                            D(2)%elms      &
-                           /),             &
-                          z,               &
-                          1,               &
-                          1,               &
-                          (/ones(1:1)/),   &
-                          (/ones(1:1)/),   &
-                          dft_options,     &
+              call dftexc(D(1)%elms,                    &
+                       (/(D(i)%elms, i = 2, nr_dmat)/), &
+                          z,                            &
+                          nr_dmat - 1,                  &
+                          1,                            &
+                          (/ones(1:nr_dmat - 1)/),      &
+                          (/ones(1:nr_dmat - 1)/),      &
+                          dft_options,                  &
                           0)
-            end if
-
-            if (m == 2) then
-              call dftexc(D(1)%elms, &
-                          (/               &
-                            D(2)%elms,     &
-                            D(3)%elms,     &
-                            D(4)%elms      &
-                           /),             &
-                          z,               &
-                          3,               &
-                          1,               &
-                          (/ones(1:3)/),   &
-                          (/ones(1:3)/),   &
-                          dft_options,     &
-                          0)
-            end if
-
-            if (m == 3) then
-!             restriction: 
-!             all perturbation operators are same
-!             so i pass only the representative density matrices
-              call dftexc(D(1)%elms,   &
-                          (/                 &
-                            D(3+1)%elms,     &
-                            D(6+1)%elms      &
-                           /),               &
-                          z,                 &
-                          m - 1,             &
-                          1,                 &
-                          (/ones(1:m - 1)/), &
-                          (/ones(1:m - 1)/), &
-                          dft_options,       &
-                          0)
-            end if
-
-            if (m == 4) then
-!             restriction: 
-!             all perturbation operators are same
-!             so i pass only the representative density matrices
-              call dftexc(D(1)%elms,   &
-                          (/                 &
-                            D( 4+1)%elms,    &
-                            D(10+1)%elms,    &
-                            D(14+1)%elms     &
-                           /),               &
-                          z,                 &
-                          m - 1,             &
-                          1,                 &
-                          (/ones(1:m - 1)/), &
-                          (/ones(1:m - 1)/), &
-                          dft_options,       &
-                          0)
-            end if
-
-            if (m == 5) then
-!             restriction: 
-!             all perturbation operators are same
-!             so i pass only the representative density matrices
-              call dftexc(D(1)%elms,   &
-                          (/                 &
-                            D( 5+1)%elms,    &
-                            D(15+1)%elms,    &
-                            D(25+1)%elms,    &
-                            D(30+1)%elms     &
-                           /),               &
-                          z,                 &
-                          m - 1,             &
-                          1,                 &
-                          (/ones(1:m - 1)/), &
-                          (/ones(1:m - 1)/), &
-                          dft_options,       &
-                          0)
-            end if
-
-            if (m == 6) then
-!             restriction: 
-!             all perturbation operators are same
-!             so i pass only the representative density matrices
-              call dftexc(D(1)%elms,   &
-                          (/                 &
-                            D( 6+1)%elms,    &
-                            D(21+1)%elms,    &
-                            D(41+1)%elms,    &
-                            D(56+1)%elms,    &
-                            D(62+1)%elms     &
-                           /),               &
-                          z,                 &
-                          m - 1,             &
-                          1,                 &
-                          (/ones(1:m - 1)/), &
-                          (/ones(1:m - 1)/), &
-                          dft_options,       &
-                          0)
-            end if
-
-            if (m == 7) then
-!             restriction: 
-!             all perturbation operators are same
-!             so i pass only the representative density matrices
-              call dftexc(D(1)%elms,   &
-                          (/                 &
-                            D( 7+1)%elms,    &
-                            D(28+1)%elms,    &
-                            D(63+1)%elms,    &
-                            D(98+1)%elms,    &
-                            D(119+1)%elms,   &
-                            D(126+1)%elms    &
-                           /),               &
-                          z,                 &
-                          m - 1,             &
-                          1,                 &
-                          (/ones(1:m - 1)/), &
-                          (/ones(1:m - 1)/), &
-                          dft_options,       &
-                          0)
-            end if
 
               A(1) = tiny(0.0d0)*D(1)
               call daxpy(ntbas(0)*ntbas(0)*nz, 2.0d0, z, 1, A(1)%elms, 1)
               F(1) = F(1) + A(1)
 
             end if
-
-
-
 
 #else /* ifdef PRG_DIRAC */
             call twofck('', D(ii:ii), A(1:1))

@@ -7,7 +7,7 @@ import string
 #-------------------------------------------------------------------------------
 
 variable_l = ['n', 'z', 'g']
-max_order = 2
+max_order = 3
 
 is_scalar_product = {}
 
@@ -113,14 +113,15 @@ def count_variables(l_ref, s):
     return tuple(l)
 
 def get_variable_combinations(order):
-    l = []
+    l1 = []
     for x in xselections(variable_l, order):
-        l.append(x)
+        l1.append(x)
 #   remove selections which contain more than one gradient
-    for x in l:
-        if count_variables(['g'], x)[0] > 1:
-           l.remove(x)           
-    return l
+    l2 = []
+    for x in l1:
+        if count_variables(['g'], x)[0] < 2:
+           l2.append(x)
+    return l2
 
 def _get_partition_l(n, l):
     if not n:
