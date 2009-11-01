@@ -606,6 +606,10 @@ contains
       call kw_read(word, aor_cfg_zzz_order)
     end if
 
+    if (kw_matches(word, '.ALDA  ')) then
+      call kw_read(word, aor_cfg_alda_order)
+    end if
+
     call check_whether_kw_found(word, kw_section)
 #endif /* ifndef MOD_AORESPONSE */
 

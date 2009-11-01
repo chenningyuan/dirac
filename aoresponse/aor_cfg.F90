@@ -34,6 +34,7 @@ module aor_cfg
 
   logical, public :: aor_cfg_zzz                = .false.
   integer, public :: aor_cfg_zzz_order          = 0
+  integer, public :: aor_cfg_alda_order         = 99
 
   private
 
