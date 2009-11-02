@@ -77,22 +77,21 @@ module FDE_ImportPotentials
 #include "dcbbas.h"
 #include "mxcent.h"
 #include "nuclei.h"
-#include "dgroup.h"
 
-            integer :: fde_gridfile_unit, iprint, i
+            integer :: fde_gridfile_unit, iprint, i, irrep_vemb
             real(kind=8), allocatable :: a_oneint(:)
  
             label = 'FDEVEMB '
+            irrep_vemb = 0  ! embedding potential is totally symmetric
 
             read(comb,'(4L1)',err=1000) (doint(i),i=1,4)
 
             call FDE_ImportStaticPotential_FileOpen(fde_gridfile_unit)
 
             call alloc(a_oneint,nnbbasx)  
-            call NumOper_OneElOpMatrix(a_oneint,fde_gridfile_unit,doint,nbsym,nbbas,nlarge,nsmall)
+            call NumOper_OneElOpMatrix(a_oneint,fde_gridfile_unit,doint,irrep_vemb)
 
             IF(IPRINT.GE.4) THEN
-!           IF(.true.) then
               write (string,*) 'Integrals over (numerical) operator: '//label
               call HEADER(string,-1)
               call OUTPAK(a_oneint,NTBAS(0),1,6)

@@ -66,7 +66,132 @@ module numoper_integrals
       module procedure NumOper_OneElOp_SetMatrix_PS
    end interface
 
+   integer, parameter :: max_boson_irreps = 8
+   integer, save      :: n_boson_irreps = 1
+   logical, save      :: numoper_cb_initialized = .false.
+   logical, save      :: debug = .false.
+
+   type, private :: symmetry_basis_offsets
+      integer  :: large_start(0:max_boson_irreps-1) 
+      integer  :: small_start(0:max_boson_irreps-1) 
+      integer  ::   large_end(0:max_boson_irreps-1) 
+      integer  ::   small_end(0:max_boson_irreps-1)
+   end type symmetry_basis_offsets 
+
+   type(symmetry_basis_offsets), save :: basis_bs_offt, basis_bu_offt
+
    contains
+
+      subroutine NumOper_BasisOffsetTables_print(offt)
+         implicit none
+         integer :: i
+         type(symmetry_basis_offsets) :: offt
+
+         do i = 0, n_boson_irreps-1
+            write (*,*) 'For boson irrep',(i+1)
+            write (*,*) '    Large cmp. basis starts at',offt%large_start(i),  &
+                        ', ends at',offt%large_end(i),  &
+                        '(',offt%large_end(i)-offt%large_start(i)+1,'elements)'
+            write (*,*) '    Smale cmp. basis starts at',offt%small_start(i),  &
+                        ', ends at',offt%small_end(i),  &
+                        '(',offt%small_end(i)-offt%small_start(i)+1,'elements)'
+         enddo
+
+      end subroutine NumOper_BasisOffsetTables_print
+
+      subroutine NumOper_BasisOffsetTables_init(offt)
+         implicit none
+         integer :: i
+         type(symmetry_basis_offsets) :: offt
+
+         do i = 0,(max_boson_irreps-1)
+           offt%large_start(i) = 0
+           offt%small_start(i) = 0
+
+           offt%large_end(i) = 0
+           offt%small_end(i) = 0
+         enddo 
+
+      end subroutine NumOper_BasisOffsetTables_init
+
+      subroutine NumOper_CB_init
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbbas.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "nuclei.h"
+#include "dgroup.h"
+#include "symmet.h"
+
+          integer :: i
+
+          if (numoper_cb_initialized) return
+
+          call NumOper_BasisOffsetTables_init(basis_bs_offt)
+          call NumOper_BasisOffsetTables_init(basis_bu_offt)
+
+          n_boson_irreps = nbsym
+
+! first collecting the boson unsorted (ie LS(irrep1) LS(irrep2) etc
+
+          i = 0 
+          basis_bu_offt%large_start(i) = 1
+          basis_bu_offt%large_end(i)   = nbbas(0,1)
+
+          basis_bu_offt%small_start(i) = nbbas(0,1) + 1
+          basis_bu_offt%small_end(i)   = nbbas(0,1) + nbbas(0,2)
+  
+          do i = 1, n_boson_irreps-1
+               basis_bu_offt%large_start(i) = basis_bu_offt%small_end(i-1) + 1
+               basis_bu_offt%large_end(i)   = basis_bu_offt%small_end(i-1) + nbbas(i,1)
+
+               basis_bu_offt%small_start(i) = basis_bu_offt%large_end(i) + 1 
+               basis_bu_offt%small_end(i)   = basis_bu_offt%large_end(i) + nbbas(i,2) 
+          enddo
+
+          if (debug) then
+             write (*,*) ' '
+             write (*,*) '=============================='
+             write (*,*) 'Boson-unsorted (DIRAC) offsets' 
+             write (*,*) '=============================='
+             write (*,*) ' '
+             call NumOper_BasisOffsetTables_print(basis_bu_offt)
+          endif
+
+! and now the boson_sorted (ie: L(irrep1)...L(irrepN)S(irrep1)...S(irrepN)
+
+          i = 0 
+          basis_bs_offt%large_start(i) = 1
+          basis_bs_offt%large_end(i)   = nbbas(0,1)
+
+          do i = 1, n_boson_irreps-1
+               basis_bs_offt%large_start(i) =  basis_bs_offt%large_end(i-1) + 1
+               basis_bs_offt%large_end(i)   =  basis_bs_offt%large_end(i-1) + nbbas(i,1)
+          enddo
+
+          i = 0 
+          basis_bs_offt%small_start(i) = basis_bs_offt%large_end(n_boson_irreps-1) + 1 
+          basis_bs_offt%small_end(i)   = nbbas(0,2)
+
+          do i = 1, n_boson_irreps-1
+               basis_bs_offt%small_start(i) =  basis_bu_offt%small_end(i) + 1
+               basis_bs_offt%small_end(i)   =  basis_bu_offt%small_end(i) + nbbas(i,2)
+          enddo
+
+          if (debug) then
+             write (*,*) ' '
+             write (*,*) '============================='
+             write (*,*) 'Boson-sorted (HERMIT) offsets' 
+             write (*,*) '============================='
+             write (*,*) ' '
+             call NumOper_BasisOffsetTables_print(basis_bs_offt)
+          endif
+!
+          numoper_cb_initialized = .true.
+
+      end subroutine NumOper_CB_init
 
 !
 ! NumOper_OneElOp_SetMatrix_PS
@@ -78,39 +203,42 @@ module numoper_integrals
 ! operates on a packed storage (_PS_) matrix
 !
 
-      subroutine NumOper_OneElOp_SetMatrix_PS(oneint,from_file,doint,nbsym,nbbas,nlarge,nsmall)
+      subroutine NumOper_OneElOp_SetMatrix_PS(oneint,from_file,doint,irrep_oper)
          use memory_allocator
          use grid_file
+         use dft_cb_interface 
          use dft_ao
 
          implicit none
+         integer :: st1, st2, nr1, nr2
          logical :: doint(4)
-         integer :: nbas, nlarge, nsmall  
          integer :: from_file, ipoint, npoint, ndim, intclass
-         integer :: a_start, a_end, b_shift, b_end
+         integer :: a_start, a_end, b_start, b_shift, b_end
+         integer :: irrep_oper       ! the boson irrep of the original operator
          real(kind=8) :: oneint(*)
          real(kind=8), allocatable :: ao(:), buffer(:)
          real(kind=8), pointer     :: grid(:,:), operator(:)
          real(kind=8) :: wt_oper
-         integer :: NBBAS(0:7, 0:2), nbsym, irrep, offset_irrep
+         integer :: irrep, irrep1, irrep2
+
+         if (.not.numoper_cb_initialized) call NumOper_CB_init() 
 
          call read_grid(from_file,grid,operator)
          npoint = size(grid,2)
-      
-         nbas = nlarge+nsmall
-         ndim = nbas
-
-         call alloc(ao,ndim)
-         call alloc(buffer,ndim)
-
+ 
          call dft_ao_init(.false.,  & 
                           0,        &
                           0,        &
                           .false.,  & 
                           0.0D0)
+         call init_dft_cb()
 
-!        write (*,*) 'before looping over grids etc'
-!        CALL OUTPAK(oneint,ndim,1,6)
+         ndim = nr_ao_total
+         call alloc(ao,ndim)
+         call alloc(buffer,ndim)
+ 
+
+! start numerical integration...
 
          do ipoint = 1, npoint
             call get_so(grid(1,ipoint), &
@@ -128,66 +256,60 @@ module numoper_integrals
             wt_oper = operator(ipoint)
 #endif
 
-!!!         offset_irrep = 0
+            do irrep1 = 0,n_boson_irreps-1  ! irrep of the bra 
 
-!!!         do irrep = 0,nbsym-1
+               irrep2 = ieor(irrep_oper,irrep1) ! symmetry of the product bra * operator gives ket
 
                do intclass = 1, 4
                   if (doint(intclass)) then 
 
                      if (intclass.eq.1) then ! LL block
-!!!                      a_start = offset_irrep + 1                  ! 1
-!!!                      a_end   = offset_irrep + nbbas(irrep,0)     ! nlarge
-!!!                      b_shift = 0
-!!!                      b_end   = offset_irrep + nbbas(irrep,0)     ! nlarge
- 
-                         a_start = 1
-                         a_end   = nlarge
-                         b_shift = 0
-                         b_end   = nlarge
+                        a_start = basis_bu_offt%large_start(irrep1)
+                        a_end   = basis_bu_offt%large_end(irrep1)
+
+                        b_shift = 0
+                        b_start = basis_bu_offt%large_start(irrep2)
+                        b_end   = basis_bu_offt%large_end(irrep2)
+
+! aspg, debugging...
+!                       if ((ipoint.eq.1).or.(ipoint.eq.npoint)) then
+!                       write (*,*) 'debug LL: a_start, a_end, b_shift,b_end',a_start,a_end,b_shift,b_end,(ndim*(ndim+1)/2)
+!                       endif
 
                      elseif (intclass.eq.2) then ! SL block
 
-                         write (*,*) 'Construction of numerical 1e-operators for '//  &
-                                     'the SL block (packed storage) not implemented.'
-                         call quit('Numerical 1e-operator cannot be created.')  
+                        write (*,*) 'Construction of numerical 1e-operators for '//  &
+                                    'the SL block (packed storage) not implemented.'
+                        call quit('Numerical 1e-operator cannot be created.')  
 
                      elseif (intclass.eq.3) then ! LS block
-!!!                     a_start = offset_irrep + 1                             ! 1 
-!!!                     a_end   = offset_irrep + nbbas(irrep,0)                ! nlarge 
-!!!                     b_shift = offset_irrep + nbbas(irrep,0)                ! nlarge 
-!!!                     b_end   = offset_irrep + nbbas(irrep,0)+nbbas(irrep,1) ! nbas
+                        a_start = basis_bu_offt%small_start(irrep1)
+                        a_end   = basis_bu_offt%small_end(irrep1) 
 
-                        a_start = 1 
-                        a_end   = nlarge 
-                        b_shift = nlarge 
-                        b_end   = nbas
+                        b_shift = basis_bu_offt%large_end(irrep2)
+                        b_end   = basis_bu_offt%small_end(irrep2)
 
                      elseif (intclass.eq.4) then ! SS block
-!!!                     a_start = offset_irrep + nbbas(irrep,0) + 1              ! nlarge+1
-!!!                     a_end   = offset_irrep + nbbas(irrep,0) + nbbas(irrep,1) ! nbas
-!!!                     b_shift = 0
-!!!                     b_end   = offset_irrep + nbbas(irrep,0) + nbbas(irrep,1) ! nbas
+                        a_start = basis_bu_offt%small_start(irrep1)
+                        a_end   = basis_bu_offt%small_end(irrep1)
 
-                        a_start = nlarge+1
-                        a_end   = nbas
                         b_shift = 0
-                        b_end   = nbas
+                        b_start = basis_bu_offt%small_start(irrep2) 
+                        b_end   = basis_bu_offt%small_end(irrep2) 
+
+! aspg, debugging
+!                       if ((ipoint.eq.1).or.(ipoint.eq.npoint)) then
+!                       write (*,*) 'debug SS: a_start, a_end, b_shift,b_end',a_start,a_end,b_shift,b_end,(ndim*(ndim+1)/2)
+!                       endif
 
                      endif
 
-                     call NumOper_OneElOp_PS_MatrixUpdateAtGridPoint(oneint,ao,wt_oper,ndim, a_start,a_end,b_shift,b_end)
+                     call NumOper_OneElOp_PS_MatrixUpdateAtGridPoint(oneint,ao,wt_oper,a_start,a_end,b_shift,b_end)
 
                   endif ! do this class of integrals?
                enddo ! intclass
-
-!!!            offset_irrep = nbbas(irrep,0)+nbbas(irrep,1)
-
-!!!         enddo ! irrep
+            enddo ! irrep1
          enddo ! gridpoints
-
-!        write (*,*) 'after looping over grids etc'
-!        CALL OUTPAK(oneint,ndim,1,6)
 
          call deallocp(grid)
          call deallocp(operator)
@@ -210,23 +332,33 @@ module numoper_integrals
       subroutine NumOper_OneElOp_PS_MatrixUpdateAtGridPoint(oneint,   &
                                                             ao,       & 
                                                             operator, & 
-                                                            ndim,     &
                                                             a_start,  &
                                                             a_end,    &
                                                             b_shift,  &
                                                             b_end)
 
-         integer, intent(in) :: ndim, a_start, a_end, b_shift,b_end
-         integer :: a, b, ab
+         integer, intent(in) :: a_start, a_end, b_shift,b_end
+         integer :: a, b, ab, irrep
          real(kind=8), intent(in) :: ao(*), operator
          real(kind=8) :: oneint(*)
 
          do a = a_start, a_end
             do b = a+b_shift, b_end
-               ab = a + b*(b-1)/2
+               ab =  a + b*(b-1)/2
                oneint(ab) = oneint(ab) + ao(a)*ao(b)*operator 
             enddo 
          enddo 
+
+! aspg, debug
+!        do a = a_start, a_end
+!           do b = a+b_shift, b_end
+!              if ((a.eq.b).and.((a.eq.5).or.(a.eq.53))) then
+!                 ab =  a + b*(b-1)/2
+!                 write (*,*) 'M(',a,',',b,')[=',ab,'] :',oneint(ab)
+!              endif
+!           enddo 
+!        enddo 
+
       end subroutine NumOper_OneElOp_PS_MatrixUpdateAtGridPoint
 
 end module numoper_integrals
