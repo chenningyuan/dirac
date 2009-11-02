@@ -1912,6 +1912,8 @@ C
      &                      N1DIAINT
         write(LUWRT,*) '    Number of diagonal 2-el. integrals: ',
      &                      N2DIAINT
+        write(LUWRT,*) '    sorted integrals: '
+        CALL WRTMATMN8(T,1,NALLINT,1,NALLINT,LUWRT)
       end if
 *
       end
@@ -3159,14 +3161,19 @@ C     dimension DMFC(*),H2AC(*)
         I = KR(INVREO(INDEX_LOC(ICSAVE(1))))
         J = KR(INVREO(INDEX_LOC(ICSAVE(2))))
 * Compute input address
-CSKor   IIN =  (IRI-1)*NASHT*NASHT +
-CSKor&          (J-1) *NASHT +
-CSKor&           I
         IIN =  (IRI-1)*NASHT*NASHT +
-     &          (J-1) *NASHT + ISCAL_T*(NASHT*NASHT)/2 +
+     &          (J-1) *NASHT +
      &           I
+C       IIN =  (IRI-1)*NASHT*NASHT +
+C    &          (J-1) *NASHT + 0*ISCAL_T*NASHT/2 +
+C    &           I
         if (NTEST.ge.1) then
           write(6,*) 'Index pair ',I,J,' address :',IIN
+          IF(ISCAL_T.gt.0) 
+     & write(6,*) 'orig add',(IRI-1)*NASHT*NASHT +(J-1) *NASHT+I
+          IF(ISCAL_T.gt.0) 
+     & write(6,*) 'add. scaled by ISCAL_T*NASHT/2',
+     &                            ISCAL_T*NASHT/2
         end if
         YINT = DMFC(IIN)
 *

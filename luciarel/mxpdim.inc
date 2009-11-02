@@ -22,7 +22,7 @@
       PARAMETER (MXPL   = 20  )
       PARAMETER (MXPXT  = 25  )
       PARAMETER (MXPICI = 10  )
-      parameter (MXROOT = 30  )
+      parameter (MXROOT = 64  )
 !     MXPSTT == max. number of symmetry type-types
 #if defined (LARGE_MOLECULES)
       PARAMETER (MXPSTT = 80000)

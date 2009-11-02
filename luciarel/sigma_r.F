@@ -4108,18 +4108,18 @@ C?          WRITE(6,*) 'Do memory check ...before dmk0one'
             if (NTEST.ge.100) call rmemchk
             IUB = 2
             IPM1 = 0
-            call dmk0one(IBSM,IBTP,JBSM,JBTP,
-     &           IBGRP,NIA,
-     &           NGAS,IBOC,JBOC,
-     &           SB,CB,
-     &           ADSXA,STSTSX,
-     &           NOBPTS2,IOBPTS2,
-     &           MAXI,MAXK,
-     &           SSCR,CSCR,I1,XI1S,I2,XI2S,XINT,
-     &           NSMOB,NSMST,MOCAA,
-     &           SCLFAC,
-     &           ONEINTS,INTSPACE,
-     &           IRI,IRICO,IPM1,IUB,ISMDST,NSMST)
+CSKold      call dmk0one(IBSM,IBTP,JBSM,JBTP,
+CSKold           IBGRP,NIA,
+CSKold           NGAS,IBOC,JBOC,
+CSKold           SB,CB,
+CSKold           ADSXA,STSTSX,
+CSKold           NOBPTS2,IOBPTS2,
+CSKold           MAXI,MAXK,
+CSKold           SSCR,CSCR,I1,XI1S,I2,XI2S,XINT,
+CSKold           NSMOB,NSMST,MOCAA,
+CSKold           SCLFAC,
+CSKold           ONEINTS,INTSPACE,
+CSKold           IRI,IRICO,IPM1,IUB,ISMDST,NSMST)
 *
             IF(NTEST.GE.500) THEN
                WRITE(6,*) ' SB after dmk0one'
@@ -4314,7 +4314,8 @@ C?          call memchk
      &           SSCR,CSCR,I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
      &           XINT,NSMOB,NSMST,NSMSX,NSMDX,
      &           IUSEAB,ICJKAIB,CJRES,SIRES,C2,SCLFAC,NTEST,
-     &           NSEL2E,ISEL2E,IRI_INT,SOMESCR,ISMDST)
+     &           NSEL2E,ISEL2E,IRI_INT,SOMESCR)
+CSK old          NSEL2E,ISEL2E,IRI_INT,SOMESCR,ISMDST)
          end if
       END IF
 *     ^End of delta_mk2 = 0 part
@@ -4356,16 +4357,16 @@ C?          call memchk
 C?       WRITE(6,*) 'Do memory check ...before dmk1one'
 C?       call memchk
 *
-         call dmk1one(IASM,IBSM,IATP,IBTP,JASM,JBSM,
-     &        JATP,JBTP,IAGRP,IBGRP,JAGRP,JBGRP,NIA,NIB,
-     &        NJA,NJB,NGAS,IAOC,IBOC,JAOC,JBOC,
-     &        SB,CB,
-     &        ADSXA,STSTSX,NOBPTS,NOBPTS2,
-     &        IOBPTS,IOBPTS2,MAXI,MAXK,
-     &        SSCR,CSCR,I1,XI1S,I2,XI2S,
-     &        XINT,NSMOB,NSMST,
-     &        ONEINTS,INTSPACE,SCLFAC,
-     &        IRI,IRICO,IPM1,IUB,ISMDST,NTEST)
+CSKold   call dmk1one(IASM,IBSM,IATP,IBTP,JASM,JBSM,
+CSKold        JATP,JBTP,IAGRP,IBGRP,JAGRP,JBGRP,NIA,NIB,
+CSKold        NJA,NJB,NGAS,IAOC,IBOC,JAOC,JBOC,
+CSKold        SB,CB,
+CSKold        ADSXA,STSTSX,NOBPTS,NOBPTS2,
+CSKold        IOBPTS,IOBPTS2,MAXI,MAXK,
+CSKold        SSCR,CSCR,I1,XI1S,I2,XI2S,
+CSKold        XINT,NSMOB,NSMST,
+CSKold        ONEINTS,INTSPACE,SCLFAC,
+CSKold        IRI,IRICO,IPM1,IUB,ISMDST,NTEST)
 *
 C?       WRITE(6,*) 'Do memory check ...after dmk1one'
 C?       call memchk
@@ -5853,7 +5854,7 @@ C    &             ,KNDMAP(MXPSTT),KNUMAP(MXPSTT)
 *
       ITPAR(1) = IOBTP
       ITPAR(2) = JOBTP
-      CALL NEWTYP_REL(ISTRGP,ISTRTP,IACAR,ITPAR,2,KSTRGP,KSTRTP)
+CSKoldCALL NEWTYP_REL(ISTRGP,ISTRTP,IACAR,ITPAR,2,KSTRGP,KSTRTP)
 *. Symmetry of output strings
       CALL SYMCOM_REL(3,0,IOBSM,JOBSM,IJSXSM)
       CALL SYMCOM_REL(3,0,ISTRSM,IJSXSM,KSTRSM)

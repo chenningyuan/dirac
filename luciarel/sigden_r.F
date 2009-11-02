@@ -681,6 +681,13 @@ C
 C     set proper sign for one-electron matrix elements
 C     operator symmetry under time reversal (+1,-1)
       TRSYM = ITIM_SYM * ONE
+C     test IFERM_SYM_T
+      IF( IFERM_SYM_T .eq. 1 )THEN
+        DFERM_SIGN = 1.0D0
+      ELSE IF (IFERM_SYM_T .eq. 2 )THEN
+        DFERM_SIGN = - 1.0D0
+      END IF
+C
 C
       NHX = 0
 C
@@ -757,7 +764,9 @@ C                 WRITE(LUWRT,*) ' alpha alpha type ',NHX
                   IHINDX(2,NHX) = 2
                   IHINDX(3,NHX) = 0
                   IHINDX(4,NHX) = 0
-                  SIGN_NHX(NHX) = ONE
+                  SIGN_NHX(NHX) = ONE * DFERM_SIGN
+C                 WRITE(LUWRT,*) ' beta beta: NHX, SIGN_NHX = ',
+C    &                             NHX,SIGN_NHX(NHX)
                   LABEL(IHINDX(1,NHX),NHX) = -1
                   LABEL(IHINDX(2,NHX),NHX) = -1
                   LABEL(3,NHX) = 0

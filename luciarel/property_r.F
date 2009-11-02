@@ -450,6 +450,11 @@ C       ... no two-electron terms
      &                    PRPNAM(INDXPR)
         WRITE(LUWRT,*) '  ISCAL_T is ',ISCAL_T, 'for ',
      &                    PRPNAM(INDXPR)
+        IF( ISCAL_T .gt. 0 ) THEN
+          ISCAL_T = IFERM_SYM_T
+        END IF
+        WRITE(LUWRT,*) '  NEW ISCAL_T is :',ISCAL_T, 'for ',
+     &                    PRPNAM(INDXPR)
         CALL SET_HOP_DBG(IHTYPE,NO_TTWO,ISYM_T,ITIM_SYM,IPRHAM_CI)
 C
 C       generate symmetry info for PICASSO
@@ -591,9 +596,10 @@ C
 C
 C     determine max. dimension of T and VECx( x = 1-3)
 C     ------------------------------------------------
-      IL_KTCC         = 1
-      L_COMBI_MAX     = 0
-      L_COMBI_MAX_SCR = 0
+      IL_KTCC          = 1
+      L_COMBI_MAX      = 0
+      L_COMBI_MAX_SCR  = 0
+      L_COMBI_MAX_SCRX = 0
 C
       DO I = 1, NPROP_KRCI
         IL_KTCC  = MAX(IL_KTCC,IN1ELPRP_KRCI(I))
@@ -616,8 +622,9 @@ C
               ILC_S  = XISPSM(JSSM,ISSPC)
 C             mark "active" C/sigma symmetry irreps
               IXSYMLIST(ISYMEIG_KRCI(I)) = ISYMEIG_KRCI(I)
-              IXSYMLIST(JSSM) = JSSM
-              L_COMBI_MAX_SCR = MAX(ILC_C,ILC_S)
+              IXSYMLIST(JSSM)  = JSSM
+              L_COMBI_MAX_SCRX = MAX(ILC_C,ILC_S)
+              L_COMBI_MAX_SCR  = MAX(L_COMBI_MAX_SCR,L_COMBI_MAX_SCRX)
            END DO
          END IF
       END DO
@@ -769,8 +776,9 @@ C           only zero elements in property operator matrix
             IF( ISYM_T .le. 0 ) GOTO 200
 C
 C           symmetry under time reversal (+1,-1)
-            INDXPR    = LPROP_KRCI(IPROP_X)
-            ITIM_SYM  = IPRPTIM(INDXPR)
+            INDXPR      = LPROP_KRCI(IPROP_X)
+            ITIM_SYM    = IPRPTIM(INDXPR)
+            IFERM_SYM_T = IFERM_XTSYM(IPROP_X)
 C
 C           reset operator specific common blocks
             CALL SET_HOP_DBG(IHTYPE,NO_TTWO,ISYM_T,ITIM_SYM,IPRHAM_CI)
@@ -784,6 +792,13 @@ C           read new property integrals from disk
             CALL MPI_FILE_READ_AT(ILPRP_X,IOFFSET_SCRATCH,WORK(KT_CC),
      &                            LENGTH_BLK,MPI_REAL8,ISTAT,IERR)
             IOFFSET_SCRATCH = IOFFSET_SCRATCH + LENGTH_BLK
+C
+#ifdef MOD_DEBUG
+C
+C           debug print
+            WRITE(LUWRT,*) ' matrix of property:',PRPNAM(INDXPR)
+            CALL WRTMATMN(WORK(KT_CC),1,LENGTH_BLK,1,LENGTH_BLK,LUWRT)
+#endif
 #else
             WRITE(FILELAB_REOD,'(A6,A2)') PRPNAM(INDXPR)(1:6),RODLAB
             CALL KRCI_PRPFILE(LUPROP_MAT,FILELAB_REOD,WORK(KT_CC),

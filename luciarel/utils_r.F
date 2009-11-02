@@ -493,6 +493,7 @@ C**********************************************************************
 #include "infpar.h"
 #endif
 #include "parluci.h"
+#include "ipoist8.inc"
 #include "ctcc.inc"
       DIMENSION IT_TTPL(*)
       INTEGER*8 J_COUNT_LEN, IILENGTH
@@ -970,6 +971,7 @@ C***********************************************************************
 #include "parluci.h"
 #include "integrals_off.inc"
 #include "typesz_mpi2.h"
+#include "ipoist8.inc"
 #include "ctcc.inc"
       DIMENSION T_BUFF(*), T(*), MDIASV(*)
       INTEGER*8 NINT_TP_I8, I_START, I_END, I_OUT
@@ -1147,6 +1149,7 @@ C***********************************************************************
 #endif
 #include "parluci.h"
 #include "mxpdim.inc"
+#include "ipoist8.inc"
 #include "ctcc.inc"
 #include "integrals_off.inc"
 #include "orbinp.inc"

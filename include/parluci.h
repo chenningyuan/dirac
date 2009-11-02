@@ -24,7 +24,7 @@ C
      &        NVEC_SAVE, L_COMBI, ISHARE_DENSM, IPARALLELIO,
      &        LF2_ZERO, ISMEMFAC, IIJKL_ROD_LL, LEVEL_SM,IT_SHL,IC_SHL,
      &        ICOUNTABLK_C, ISI_CALC_BL,IBI_MULT_BL,L_COMBI_S,
-     &        L_COMBI_MAX, I_NZERO_LEN_S,I_NZERO_LEN_C
+     &        L_COMBI_MAX, I_NZERO_LEN_S,I_NZERO_LEN_C, IFERM_SYM_T
 C
       PARAMETER (MSLVOUT_REL = 7)
 C
@@ -45,7 +45,7 @@ C
      &                LF2_ZERO, ISMEMFAC, IIJKL_ROD_LL, LEVEL_SM, 
      &                IT_SHL, IC_SHL, ICOUNTABLK_C, ISI_CALC_BL,
      &                IBI_MULT_BL,L_COMBI_S,L_COMBI_MAX,I_NZERO_LEN_S,
-     &                I_NZERO_LEN_C,
+     &                I_NZERO_LEN_C, IFERM_SYM_T,
      &                LU_INFO,LMEMFREE_PTR
 C
 C     MPI file lists and MPI file handles
