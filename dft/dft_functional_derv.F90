@@ -62,7 +62,9 @@ contains
 !   ----------------------------------------------------------------------------
     real(8)              :: t(max_dim, mxbllen)
     integer              :: k, l
+#ifdef MOD_AUTODIFF
     integer, external    :: taylor_index
+#endif
     real(8), external    :: dftenergy
 !   ----------------------------------------------------------------------------
 
