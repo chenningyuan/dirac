@@ -173,11 +173,11 @@ module numoper_integrals
 
           i = 0 
           basis_bs_offt%small_start(i) = basis_bs_offt%large_end(n_boson_irreps-1) + 1 
-          basis_bs_offt%small_end(i)   = nbbas(0,2)
+          basis_bs_offt%small_end(i)   = basis_bs_offt%large_end(n_boson_irreps-1) + nbbas(0,2)
 
           do i = 1, n_boson_irreps-1
-               basis_bs_offt%small_start(i) =  basis_bu_offt%small_end(i) + 1
-               basis_bs_offt%small_end(i)   =  basis_bu_offt%small_end(i) + nbbas(i,2)
+               basis_bs_offt%small_start(i) =  basis_bs_offt%small_end(i-1) + 1
+               basis_bs_offt%small_end(i)   =  basis_bs_offt%small_end(i-1) + nbbas(i,2)
           enddo
 
           if (debug) then
@@ -210,7 +210,6 @@ module numoper_integrals
          use dft_ao
 
          implicit none
-         integer :: st1, st2, nr1, nr2
          logical :: doint(4)
          integer :: from_file, ipoint, npoint, ndim, intclass
          integer :: a_start, a_end, b_start, b_shift, b_end
@@ -219,7 +218,8 @@ module numoper_integrals
          real(kind=8), allocatable :: ao(:), buffer(:)
          real(kind=8), pointer     :: grid(:,:), operator(:)
          real(kind=8) :: wt_oper
-         integer :: irrep, irrep1, irrep2
+         integer :: irrep, irrep1, irrep2, k
+         integer, allocatable :: offt_bu(:)
 
          if (.not.numoper_cb_initialized) call NumOper_CB_init() 
 
@@ -235,8 +235,10 @@ module numoper_integrals
 
          ndim = nr_ao_total
          call alloc(ao,ndim)
+         call alloc(offt_bu,ndim)
          call alloc(buffer,ndim)
  
+         call resort_so(offt_bu)
 
 ! start numerical integration...
 
@@ -245,6 +247,13 @@ module numoper_integrals
                         grid(2,ipoint), &
                         grid(3,ipoint), &
                         ao, buffer)
+
+! aspg debug
+!            if (ipoint.eq.1) then
+!               do k = 1,ndim
+!                  write (*,*) 'ao(',k,') =',ao(k),' resorted ',ao(offt_bu(k))
+!               enddo
+!            endif
 
 ! aspg, reminder while debugging:
 ! with the old embedding potentials, the operator is contracted with integration weight,
@@ -304,7 +313,7 @@ module numoper_integrals
 
                      endif
 
-                     call NumOper_OneElOp_PS_MatrixUpdateAtGridPoint(oneint,ao,wt_oper,a_start,a_end,b_shift,b_end)
+                     call NumOper_OneElOp_PS_MatrixUpdateAtGridPoint(oneint,ao,wt_oper,a_start,a_end,b_shift,b_end,offt_bu)
 
                   endif ! do this class of integrals?
                enddo ! intclass
@@ -314,6 +323,7 @@ module numoper_integrals
          call deallocp(grid)
          call deallocp(operator)
          call dealloc(ao)
+         call dealloc(offt_bu)
 
       end subroutine NumOper_OneElOp_SetMatrix_PS
 
@@ -335,9 +345,10 @@ module numoper_integrals
                                                             a_start,  &
                                                             a_end,    &
                                                             b_shift,  &
-                                                            b_end)
+                                                            b_end,    & 
+                                                            offt_bu)
 
-         integer, intent(in) :: a_start, a_end, b_shift,b_end
+         integer, intent(in) :: a_start, a_end, b_shift,b_end, offt_bu(:)
          integer :: a, b, ab, irrep
          real(kind=8), intent(in) :: ao(*), operator
          real(kind=8) :: oneint(*)
@@ -345,7 +356,7 @@ module numoper_integrals
          do a = a_start, a_end
             do b = a+b_shift, b_end
                ab =  a + b*(b-1)/2
-               oneint(ab) = oneint(ab) + ao(a)*ao(b)*operator 
+               oneint(ab) = oneint(ab) + ao(offt_bu(a))*ao(offt_bu(b))*operator 
             enddo 
          enddo 
 
@@ -360,5 +371,39 @@ module numoper_integrals
 !        enddo 
 
       end subroutine NumOper_OneElOp_PS_MatrixUpdateAtGridPoint
+
+      subroutine resort_so(offset_bs_to_bu)
+         integer :: i, j, l, delta, offset_bs_to_bu(:)
+
+         do l = 0, n_boson_irreps-1 
+            j = basis_bu_offt%large_start(l)
+            delta = basis_bu_offt%large_end(l) - basis_bu_offt%large_start(l) + 1
+            if (delta.gt.0) then
+               do i = basis_bs_offt%large_start(l), basis_bs_offt%large_end(l) 
+                  offset_bs_to_bu(j) = i  
+!                 write (*,*) 'large cmp. sort ',i,j
+                  j = j + 1
+               enddo
+            endif
+
+            j = basis_bu_offt%small_start(l)
+            delta = basis_bu_offt%small_end(l) - basis_bu_offt%small_start(l) + 1
+            if (delta.gt.0) then
+               do i = basis_bs_offt%small_start(l), basis_bs_offt%small_end(l) 
+                  offset_bs_to_bu(j) = i  
+!                 write (*,*) 'small cmp. sort ',i,j
+                  j = j + 1
+               enddo
+            endif
+
+         enddo
+
+! debug
+!         do i=1,size(list)
+!           write (*,*) 'translation is: ',i,'goes to',list(i)
+!        enddo 
+!        call quit('list')
+
+      end subroutine resort_so
 
 end module numoper_integrals
