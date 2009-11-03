@@ -1006,7 +1006,7 @@ compiler_fortran(){
 comp_list='ifort ifc g95 g90 gfortran gfortran-4.2 gfortran-4.3 pgf90 lfc f90 xlf_r xlf efc cf90 pathf90'
 # Prefer "parallel" compilers if mpi
 if [ "$mesp" = "mpi" ]; then
-  comp_list="mpfort_r mpfort mpxlf_r mpxlf openmpif90 mpif90 mpif77 $comp_list"
+  comp_list="mpfort_r mpfort mpxlf_r mpxlf mpiifort openmpif90 mpif90 mpif77 $comp_list"
 fi
 find_compiler "Fortran" $F90_COMP_NAME
 F90_COMP_NAME=$comp_found
@@ -1172,7 +1172,7 @@ fi
 
 case "$F90_COMP_NAME" in
 
-*/openmpif*|*/mpif*|openmpif*|mpif*) # must consider a full path !
+*/openmpif*|*/mpif*|openmpif*|mpif*|*/mpii*) # must consider a full path !
    if    "$F90_COMP" -show   > /dev/null; then
       # MPICH, OpenMPI
       mpishowopt="-show"
@@ -1235,7 +1235,7 @@ if [ $IPRINT -ge "8" ]; then
 fi
 
 case "$CC_COMP_NAME" in
-openmpicc|mpicc|*/openmpicc|*/mpicc) # must consider a full path !
+openmpicc|mpicc|*/openmpicc|*/mpicc|*/mpii*) # must consider a full path !
    if    "$CC_COMP"  -show   > /dev/null; then
       # MPICH etc
       mpishowopt="-show"
