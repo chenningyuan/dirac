@@ -1030,7 +1030,7 @@ compiler_c(){
 # (Almost) all supported C compilers; gcc-*.* serie has to be continuosly updated
 comp_list='icc gcc gcc-3.3 gcc-4.3 pgcc pathcc cc ecc xlc_r xlc xlc'
 if [ "$mesp" = "mpi" ]; then
-  comp_list="mpcc_r mpcc openmpicc mpicc $comp_list" 
+  comp_list="mpcc_r mpcc openmpicc mpicc mpiicc $comp_list" 
 fi
 find_compiler "C" $CC_COMP_NAME
 CC_COMP_NAME=$comp_found
@@ -1172,7 +1172,7 @@ fi
 
 case "$F90_COMP_NAME" in
 
-*/openmpif*|*/mpif*|openmpif*|mpif*|*/mpii*) # must consider a full path !
+*/openmpif*|*/mpif*|*/mpii*|openmpif*|mpif*|mpii*) # must consider a full path !
    if    "$F90_COMP" -show   > /dev/null; then
       # MPICH, OpenMPI
       mpishowopt="-show"
@@ -1235,7 +1235,7 @@ if [ $IPRINT -ge "8" ]; then
 fi
 
 case "$CC_COMP_NAME" in
-openmpicc|mpicc|*/openmpicc|*/mpicc|*/mpii*) # must consider a full path !
+openmpicc|mpicc|mpii*|*/openmpicc|*/mpicc|*/mpii*) # must consider a full path !
    if    "$CC_COMP"  -show   > /dev/null; then
       # MPICH etc
       mpishowopt="-show"
