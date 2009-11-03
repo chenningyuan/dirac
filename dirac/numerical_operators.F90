@@ -248,13 +248,6 @@ module numoper_integrals
                         grid(3,ipoint), &
                         ao, buffer)
 
-! aspg debug
-!            if (ipoint.eq.1) then
-!               do k = 1,ndim
-!                  write (*,*) 'ao(',k,') =',ao(k),' resorted ',ao(offt_bu(k))
-!               enddo
-!            endif
-
 ! aspg, reminder while debugging:
 ! with the old embedding potentials, the operator is contracted with integration weight,
 ! for the current case, we have to contract it like the line below
@@ -280,11 +273,6 @@ module numoper_integrals
                         b_start = basis_bu_offt%large_start(irrep2)
                         b_end   = basis_bu_offt%large_end(irrep2)
 
-! aspg, debugging...
-!                       if ((ipoint.eq.1).or.(ipoint.eq.npoint)) then
-!                       write (*,*) 'debug LL: a_start, a_end, b_shift,b_end',a_start,a_end,b_shift,b_end,(ndim*(ndim+1)/2)
-!                       endif
-
                      elseif (intclass.eq.2) then ! SL block
 
                         write (*,*) 'Construction of numerical 1e-operators for '//  &
@@ -305,11 +293,6 @@ module numoper_integrals
                         b_shift = 0
                         b_start = basis_bu_offt%small_start(irrep2) 
                         b_end   = basis_bu_offt%small_end(irrep2) 
-
-! aspg, debugging
-!                       if ((ipoint.eq.1).or.(ipoint.eq.npoint)) then
-!                       write (*,*) 'debug SS: a_start, a_end, b_shift,b_end',a_start,a_end,b_shift,b_end,(ndim*(ndim+1)/2)
-!                       endif
 
                      endif
 
@@ -360,16 +343,6 @@ module numoper_integrals
             enddo 
          enddo 
 
-! aspg, debug
-!        do a = a_start, a_end
-!           do b = a+b_shift, b_end
-!              if ((a.eq.b).and.((a.eq.5).or.(a.eq.53))) then
-!                 ab =  a + b*(b-1)/2
-!                 write (*,*) 'M(',a,',',b,')[=',ab,'] :',oneint(ab)
-!              endif
-!           enddo 
-!        enddo 
-
       end subroutine NumOper_OneElOp_PS_MatrixUpdateAtGridPoint
 
       subroutine resort_so(offset_bs_to_bu)
@@ -381,7 +354,6 @@ module numoper_integrals
             if (delta.gt.0) then
                do i = basis_bs_offt%large_start(l), basis_bs_offt%large_end(l) 
                   offset_bs_to_bu(j) = i  
-!                 write (*,*) 'large cmp. sort ',i,j
                   j = j + 1
                enddo
             endif
@@ -391,18 +363,11 @@ module numoper_integrals
             if (delta.gt.0) then
                do i = basis_bs_offt%small_start(l), basis_bs_offt%small_end(l) 
                   offset_bs_to_bu(j) = i  
-!                 write (*,*) 'small cmp. sort ',i,j
                   j = j + 1
                enddo
             endif
 
          enddo
-
-! debug
-!         do i=1,size(list)
-!           write (*,*) 'translation is: ',i,'goes to',list(i)
-!        enddo 
-!        call quit('list')
 
       end subroutine resort_so
 
