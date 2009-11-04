@@ -20,4 +20,4 @@ fi
 MOL=H2O;
 export MENU;
 export MOL;
-../run.sh
+../run.sh -mw 120
