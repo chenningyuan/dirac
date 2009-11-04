@@ -14,14 +14,15 @@ contains
 
   subroutine print_matrix_stat()
 
-#if !defined VAR_IFC
-    print '("@ " i10 a)', matrix_stat_allocations,      ' matrix allocations (total)'
-    print '("@ " i10 a)', matrix_stat_allocations_peak, ' matrix allocations (peak)'
-    print '("@ " i10 a)', matrix_stat_deallocations,    ' matrix deallocations'
-    print '("@ " i10 a)', matrix_stat_multiplications,  ' matrix multiplications'
-#else
-    print *,'ifort does not handle this printout'
-#endif
+!radovan: the following printout fails - i will debug this later, not vital at this moment
+!#if !defined VAR_IFC
+!    print '("@ " i10 a)', matrix_stat_allocations,      ' matrix allocations (total)'
+!    print '("@ " i10 a)', matrix_stat_allocations_peak, ' matrix allocations (peak)'
+!    print '("@ " i10 a)', matrix_stat_deallocations,    ' matrix deallocations'
+!    print '("@ " i10 a)', matrix_stat_multiplications,  ' matrix multiplications'
+!#else
+!    print *,'ifort does not handle this printout'
+!#endif
 
   end subroutine
 
