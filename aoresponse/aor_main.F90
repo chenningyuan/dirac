@@ -275,7 +275,8 @@ contains
     D = 0
     F = 0
 
-    call print_matrix_stat()
+!radovan: debug this later
+!   call print_matrix_stat()
 
   end subroutine
 
