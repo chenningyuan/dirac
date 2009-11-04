@@ -52,3 +52,4 @@ autodiff/unittest_taylor.*
 autodiff/funtest.*
 dft/dft_num_test.F90
 srdft/.*
+xc_fun/.*
