@@ -1521,7 +1521,7 @@ C
 C        ***** Total partition function *****
 C
          QTOT   = QTRANS * QROT * QVIB
-         WRITE (LUPRI,'(1X,F8.2,1P,D15.4,0PF15.2,F15.4,1P,D15.6)')
+         WRITE (LUPRI,'(1X,F8.2,1P,D15.4,1P,F15.2,F15.4,1P,D15.6)')
      &          TEMPI, QTRANS, QROT, QVIB, QTOT
   100 CONTINUE
 C
