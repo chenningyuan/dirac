@@ -6409,14 +6409,16 @@ C
 #include "dcbgen.h"
 #include "dcbana.h"
 #include "dcbrho.h"
+#include "dgroup.h"
 C
       LOGICAL SET, NEWDEF, RESET
-      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,
+     &     CTEMP*90
       DIMENSION WORK(LWORK)
 C
       SAVE SET
       DATA TABLE /'.NCUBE ','.PRINT ','.CUBADJ','.DOCUBE',
-     &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &            '.ORBITA','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -6440,6 +6442,8 @@ C
       NCUBE(3) = 80
       CUBADJ(1) = 4.0D0
       CUBADJ(2) = 8.0D0
+      NCUBORB(1) = 0
+      NCUBORB(2) = 0
 C
 C     Process input from DCBRHO
 C     =========================
@@ -6488,6 +6492,13 @@ C&&&  DOCUBE: Specify generation of cube-file for L- and S-comp.
                ILSCUB = ILC + 2*ISC
                GO TO 100
     5          CONTINUE
+C&&& ORBITAL: Read orbitals to make cubes from
+               DO I = 1,NFSYM
+                  READ(LUCMD,'(A90)') CTEMP
+                  NCUBORB(I) = -1
+                  CALL NUMLST(CTEMP,ICUBORB(1,I),1000,1,1000,
+     &                 I,NCUBORB(I))
+               END DO
                GO TO 100
     6          CONTINUE
                GO TO 100

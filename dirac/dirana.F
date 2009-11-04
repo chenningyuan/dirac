@@ -46,6 +46,7 @@ C
 #include "dcbgen.h"
 #include "dcbana.h"
 #include "dcbbas.h"
+#include "dcbrho.h"
 C Used from COMMON blocks:
 C  CBIANA: DOPOP,DOANA,DOEXP
 C  DCBBAS: N2BBASX
@@ -76,7 +77,16 @@ C***********************************************************************
 C*****  P L O T   3 - D I M E N S I O N A L     D E N S I T Y   ********
 C***********************************************************************
 C
-      IF(DO3RHO) CALL GT3RHO(WORK,LWORK)
+      IF (DO3RHO) THEN
+         IF (NCUBORB(1).EQ.0.AND.NCUBORB(2).EQ.0) THEN
+C     Total density
+            CALL GT3RHO(WORK,LWORK)
+         ELSE      
+C     Density of individual orbitals
+            CALL WRITE_ORB_CUBES(NCUBORB(1),NCUBORB(2),
+     &           ICUBORB,WORK,LWORK)
+         ENDIF
+      ENDIF
 C
 C***********************************************************************
 C*****  P R O J E C T I O N   O N T O    A N O T H E R   S O L U T I O N
@@ -2371,9 +2381,9 @@ C     Get cube parameters
       do i=1,N1+N2
       IF(LBIT(ILSCUB,1)) THEN
          if (i.le.n1) then
-            write(filename,'(A,I4.4,A)') 'rhoL',i,'g.cube'
+            write(filename,'(A,I4.4,A)') 'rhoL',orbs(i,1),'g.cube'
          else
-            write(filename,'(A,I4.4,A)') 'rhoL',i-N1,'u.cube'
+            write(filename,'(A,I4.4,A)') 'rhoL',orbs(i-N1,2),'u.cube'
          endif
          WRITE(LUPRI,'(A)') 
      &   ' GT3RHO : Gaussian cube file generated for large component.'
@@ -2383,11 +2393,11 @@ C     Get cube parameters
       ENDIF
       IF (LBIT(ILSCUB,2)) THEN
          if (i.le.n1) then
-            write(filename,'(A,I4.4,A)') 'rhoS',i,'g.cube'
+            write(filename,'(A,I4.4,A)') 'rhoS',orbs(i,1),'g.cube'
          else
-            write(filename,'(A,I4.4,A)') 'rhoS',i-N1,'u.cube'
+            write(filename,'(A,I4.4,A)') 'rhoS',orbs(i-N1,2),'u.cube'
          endif
-         WRITE(LUPRI,'(A)') 
+         WRITE(LUPRI,'(A)')
      &   ' GT3RHO : Gaussian cube file generated for small component.'
          LUCUBE(2) = 12
          OPEN(LUCUBE(2),FILE=filename,STATUS='NEW',
