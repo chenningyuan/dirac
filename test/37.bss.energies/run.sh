@@ -10,7 +10,7 @@ FILTER=filter
 MENU=HF.bss.cc;
 export FILTER;
 export MENU;
-../run.sh
+../run.sh -mw 80
 ###############################
 echo "bss_sfb.ccsd-ci run"
 FILTER=filter_cc+ci
