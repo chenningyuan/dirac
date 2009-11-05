@@ -12,7 +12,7 @@ module xc_response
   public xc_response_contribution
 
   private
-    integer, parameter     :: max_order = 10
+    integer, parameter     :: max_nr_dmat = 20
 
 
 
@@ -83,9 +83,9 @@ contains
 
     real(8)                :: derv(999)
 
-    real(8)                :: n(0:max_order)
-    real(8)                :: gn(3, 0:max_order)
-    real(8)                :: z(0:max_order, 0:max_order)
+    real(8)                :: n(0:max_nr_dmat)
+    real(8)                :: gn(3, 0:max_nr_dmat)
+    real(8)                :: z(0:max_nr_dmat, 0:max_nr_dmat)
 
     integer                :: i, j
 
@@ -159,13 +159,20 @@ contains
  
       case (3)
         call xc_response_2(u, v, derv, n, gn, z)
-        u = 2.0d0*u
-        v = 2.0d0*v
+ 
+      case (4)
+        call xc_response_3(u, v, derv, n, gn, z)
+ 
+!     case (5)
+!       call xc_response_4(u, v, derv, n, gn, z)
     
       case default
         call quit('xc_response_contribution: order not implemented')
     
     end select
+
+    u = u*2.0d0**(order - 2)
+    v = v*2.0d0**(order - 2)
 
     if (maxval((/dabs(v(1)), dabs(v(2)), dabs(v(3))/)) > 0.0d0) then
       call gga_distribute(u, 2.0d0*v, 0, fmat, ao_g0_m0, ao_g1_m0)
@@ -181,9 +188,9 @@ contains
     real(8), intent(inout) :: u
     real(8), intent(inout) :: v(3)
     real(8), intent(in)    :: derv(*)
-    real(8), intent(in)    :: n(0:max_order)
-    real(8), intent(in)    :: gn(3, 0:max_order)
-    real(8), intent(in)    :: z(0:max_order, 0:max_order)
+    real(8), intent(in)    :: n(0:max_nr_dmat)
+    real(8), intent(in)    :: gn(3, 0:max_nr_dmat)
+    real(8), intent(in)    :: z(0:max_nr_dmat, 0:max_nr_dmat)
 !   ----------------------------------------------------------------------------
     integer, external      :: taylor_index
     real(8)                :: tu
@@ -207,9 +214,9 @@ contains
     real(8), intent(inout) :: u
     real(8), intent(inout) :: v(3)
     real(8), intent(in)    :: derv(*)
-    real(8), intent(in)    :: n(0:max_order)
-    real(8), intent(in)    :: gn(3, 0:max_order)
-    real(8), intent(in)    :: z(0:max_order, 0:max_order)
+    real(8), intent(in)    :: n(0:max_nr_dmat)
+    real(8), intent(in)    :: gn(3, 0:max_nr_dmat)
+    real(8), intent(in)    :: z(0:max_nr_dmat, 0:max_nr_dmat)
 !   ----------------------------------------------------------------------------
     integer, external      :: taylor_index
     real(8)                :: tu
@@ -233,6 +240,90 @@ contains
     v  = v + derv(taylor_index(5, (/0, 0, 2, 0, 0/)))*tu*gn(:, 0)
     u  = u + derv(taylor_index(5, (/1, 0, 1, 0, 0/)))*tu
     tu = n(1)*n(2)
+    v  = v + derv(taylor_index(5, (/2, 0, 1, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(taylor_index(5, (/3, 0, 0, 0, 0/)))*tu
+    
+  end subroutine
+
+  subroutine xc_response_3(u, v, derv, n, gn, z) 
+    
+!   ----------------------------------------------------------------------------
+    real(8), intent(inout) :: u
+    real(8), intent(inout) :: v(3)
+    real(8), intent(in)    :: derv(*)
+    real(8), intent(in)    :: n(0:max_nr_dmat)
+    real(8), intent(in)    :: gn(3, 0:max_nr_dmat)
+    real(8), intent(in)    :: z(0:max_nr_dmat, 0:max_nr_dmat)
+!   ----------------------------------------------------------------------------
+    integer, external      :: taylor_index
+    real(8)                :: tu
+    real(8)                :: tv(3)
+!   ----------------------------------------------------------------------------
+
+    tv = (z(0, 4) + z(1, 2))*gn(:, 3) &
+       + (z(0, 5) + z(1, 3))*gn(:, 2) &
+       + (z(0, 6) + z(2, 3))*gn(:, 1) &
+       + gn(:, 4)*z(0, 3) &
+       + gn(:, 5)*z(0, 2) &
+       + gn(:, 6)*z(0, 1)
+    v  = v + derv(taylor_index(5, (/0, 0, 2, 0, 0/)))*tv(:)
+    tu = n(1)*n(2)*z(0, 3) &
+       + n(1)*z(0, 2)*n(3) &
+       + z(0, 1)*n(2)*n(3)
+    v  = v + derv(taylor_index(5, (/2, 0, 2, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(taylor_index(5, (/3, 0, 1, 0, 0/)))*tu
+    tu = n(4)*z(0, 3) &
+       + n(5)*z(0, 2) &
+       + n(6)*z(0, 1) &
+       + (z(0, 4) + z(1, 2))*n(3) &
+       + (z(0, 5) + z(1, 3))*n(2) &
+       + (z(0, 6) + z(2, 3))*n(1)
+    v  = v + derv(taylor_index(5, (/1, 0, 2, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(taylor_index(5, (/2, 0, 1, 0, 0/)))*tu
+    tu = z(0, 1)*z(0, 2)*z(0, 3)
+    v  = v + derv(taylor_index(5, (/0, 0, 4, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(taylor_index(5, (/1, 0, 3, 0, 0/)))*tu
+    tu = (z(0, 4) + z(1, 2))*z(0, 3) &
+       + (z(0, 5) + z(1, 3))*z(0, 2) &
+       + (z(0, 6) + z(2, 3))*z(0, 1)
+    v  = v + derv(taylor_index(5, (/0, 0, 3, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(taylor_index(5, (/1, 0, 2, 0, 0/)))*tu
+    tv = n(4)*gn(:, 3) &
+       + n(5)*gn(:, 2) &
+       + n(6)*gn(:, 1) &
+       + gn(:, 4)*n(3) &
+       + gn(:, 5)*n(2) &
+       + gn(:, 6)*n(1)
+    v  = v + derv(taylor_index(5, (/1, 0, 1, 0, 0/)))*tv(:)
+    tv = n(1)*z(0, 2)*gn(:, 3) &
+       + n(1)*gn(:, 2)*z(0, 3) &
+       + z(0, 1)*n(2)*gn(:, 3) &
+       + z(0, 1)*gn(:, 2)*n(3) &
+       + gn(:, 1)*n(2)*z(0, 3) &
+       + gn(:, 1)*z(0, 2)*n(3)
+    v  = v + derv(taylor_index(5, (/1, 0, 2, 0, 0/)))*tv(:)
+    tu = n(1)*n(2)*n(3)
+    v  = v + derv(taylor_index(5, (/3, 0, 1, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(taylor_index(5, (/4, 0, 0, 0, 0/)))*tu
+    tu = n(1)*z(0, 2)*z(0, 3) &
+       + z(0, 1)*n(2)*z(0, 3) &
+       + z(0, 1)*z(0, 2)*n(3)
+    v  = v + derv(taylor_index(5, (/1, 0, 3, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(taylor_index(5, (/2, 0, 2, 0, 0/)))*tu
+    tv = n(1)*n(2)*gn(:, 3) &
+       + n(1)*gn(:, 2)*n(3) &
+       + gn(:, 1)*n(2)*n(3)
+    v  = v + derv(taylor_index(5, (/2, 0, 1, 0, 0/)))*tv(:)
+    tu = (z(1, 6) + z(2, 5) + z(3, 4))
+    v  = v + derv(taylor_index(5, (/0, 0, 2, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(taylor_index(5, (/1, 0, 1, 0, 0/)))*tu
+    tv = z(0, 1)*z(0, 2)*gn(:, 3) &
+       + z(0, 1)*gn(:, 2)*z(0, 3) &
+       + gn(:, 1)*z(0, 2)*z(0, 3)
+    v  = v + derv(taylor_index(5, (/0, 0, 3, 0, 0/)))*tv(:)
+    tu = n(4)*n(3) &
+       + n(5)*n(2) &
+       + n(6)*n(1)
     v  = v + derv(taylor_index(5, (/2, 0, 1, 0, 0/)))*tu*gn(:, 0)
     u  = u + derv(taylor_index(5, (/3, 0, 0, 0, 0/)))*tu
     

@@ -7,7 +7,7 @@ import string
 #-------------------------------------------------------------------------------
 
 variable_l = ['n', 'z', 'g']
-max_order = 3
+max_order = 4
 
 is_scalar_product = {}
 
@@ -168,9 +168,9 @@ def print_f90_code(term_d, order):
     real(8), intent(inout) :: u
     real(8), intent(inout) :: v(3)
     real(8), intent(in)    :: derv(*)
-    real(8), intent(in)    :: n(0:max_order)
-    real(8), intent(in)    :: gn(3, 0:max_order)
-    real(8), intent(in)    :: z(0:max_order, 0:max_order)
+    real(8), intent(in)    :: n(0:max_nr_dmat)
+    real(8), intent(in)    :: gn(3, 0:max_nr_dmat)
+    real(8), intent(in)    :: z(0:max_nr_dmat, 0:max_nr_dmat)
 !   ----------------------------------------------------------------------------
     integer, external      :: taylor_index
     real(8)                :: tu
@@ -184,8 +184,14 @@ def print_f90_code(term_d, order):
 def collect_terms(term_d, term_variable_l, term_index_l, index_to_matrix):
 
     s = ''
+
+    nr_n = 0
+    nr_z = 0
+    nr_g = 0
+
     for i in range(len(term_variable_l)):
         if term_variable_l[i] == 'z':
+           nr_z += 1
            s += '*'
            if len(term_index_l[i]) > 1:
               s += '('
@@ -198,15 +204,16 @@ def collect_terms(term_d, term_variable_l, term_index_l, index_to_matrix):
            if len(term_index_l[i]) > 1:
               s += ')'
         elif term_variable_l[i] == 'g':
+           nr_g += 1
            s += '*g(:, %s)' % index_to_matrix[term_index_l[i]]
         else:
+           nr_n += 1
            s += '*%s(%s)' % (term_variable_l[i], index_to_matrix[term_index_l[i]])
-    tuple = count_variables(variable_l, s)
-  # print s, tuple
-    if tuple in term_d.keys():
-       term_d[tuple] += ' &\n       + ' + s[1:]
+    t = tuple([nr_n, nr_z, nr_g])
+    if t in term_d.keys():
+       term_d[t] += ' &\n       + ' + s[1:]
     else:
-       term_d[tuple]  = s[1:]
+       term_d[t]  = s[1:]
     return term_d
 
 #-------------------------------------------------------------------------------
