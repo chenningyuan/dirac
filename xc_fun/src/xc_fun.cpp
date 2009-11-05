@@ -272,3 +272,51 @@ void xc_eval_gga_qd(qd_real *result, int order, const qd_real densvars[5])
 }
 
 #endif
+
+// radovan: i copy-pasted the rest of this file from
+//          autodiff/taylor.cpp
+//          to have the taylor index available
+//          in fortran unit tests
+//          not sure this is how you planned it Ulf
+//          and maybe it is already available under taylor
+//          so feel free to undo this
+static int taylor_len(int nvar, int ndeg)
+  {
+    int len = 1;
+    for (int k=1;k<=nvar;k++)
+      {
+        len *= ndeg + k;
+        len /= k;
+      }
+    return len;
+  }
+
+// Fortran interface to taylor_len
+extern "C"
+int taylor_len_(int *nvar, int *ndeg)
+{
+  return taylor_len(*nvar,*ndeg);
+}
+
+int taylor_index(int nvar, const int exponents[])
+{
+  int N = 0;
+  for (int i=0;i<nvar;i++)
+    N += exponents[i];
+  int i = 0, idx = 0;
+  N--;
+  while (N >= 0)
+    {
+      idx += taylor_len(nvar-i,N);
+      N -= exponents[i];
+      i++;
+    }
+  return idx;
+}
+
+// Fortran version
+extern "C"
+int taylor_index_(const int *nvar, const int exponents[])
+{
+  return 1+taylor_index(*nvar,exponents);
+}
