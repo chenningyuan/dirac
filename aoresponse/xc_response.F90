@@ -102,9 +102,12 @@ contains
                  buffer,           &
                  ao_g0_m0)
 
+#define SCALE_DENSITIES
+#ifdef SCALE_DENSITIES
 !     perturbed matrices are scaled by 2 in dftexc
 !     correct for it here
       n(i) = 0.5d0*n(i)
+#endif
     end do
 
 !   get perturbed densitiy gradients and gradient norms
@@ -120,9 +123,11 @@ contains
                     ao_g0_m0,         &
                     ao_g1_m0)
 
+#ifdef SCALE_DENSITIES
 !       perturbed matrices are scaled by 2 in dftexc
 !       correct for it here
         gn(:, i) = 0.5d0*gn(:, i)
+#endif
       end do
 
       do i = 0, nr_dmat
@@ -151,7 +156,7 @@ contains
     
       case (2)
         call xc_response_1(u, v, derv, n, gn, z)
-    
+ 
       case (3)
         call xc_response_2(u, v, derv, n, gn, z)
         u = 2.0d0*u
@@ -162,7 +167,7 @@ contains
     
     end select
 
-    if (dabs(maxval(v)) > 0.0d0) then
+    if (maxval((/dabs(v(1)), dabs(v(2)), dabs(v(3))/)) > 0.0d0) then
       call gga_distribute(u, 2.0d0*v, 0, fmat, ao_g0_m0, ao_g1_m0)
     else
       call lda_distribute(u,          0, fmat, ao_g0_m0)
