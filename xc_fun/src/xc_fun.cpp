@@ -138,9 +138,32 @@ static void lda_helper(num *result, const num d[2])
 void xc_eval_lda(double *result, int order, const double densvars[2])
 {
   static void (*f[])(double *, const double *) = 
-    {lda_helper<double,0>,lda_helper<double,1>,
-     lda_helper<double,2>,lda_helper<double,3>,
-     lda_helper<double,4>,lda_helper<double,5>};
+    { lda_helper<double,0>,lda_helper<double,1>,
+#if XC_MAX_ORDER>=2
+      lda_helper<double,2>,
+#if XC_MAX_ORDER>=3
+      lda_helper<double,3>,
+#if XC_MAX_ORDER>=4
+      lda_helper<double,4>,
+#if XC_MAX_ORDER>=5
+      lda_helper<double,5>,
+#if XC_MAX_ORDER>=6
+      lda_helper<double,6>,
+#if XC_MAX_ORDER>=7
+      lda_helper<double,7>,
+#if XC_MAX_ORDER>=8
+      lda_helper<double,8>
+#if XC_MAX_ORDER>=9
+#error Derivative order too large, update xc_fun.cpp
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+};
   assert(order>=0);
   assert(order<6);
   f[order](result,densvars);
@@ -202,91 +225,50 @@ void xc_eval_gga_(double *result, int *order, const double *densvars)
   xc_eval_gga(result,*order,densvars);
 }
 
-#ifdef XC_FUN_NUMTEST
-
 #ifdef WITH_QD
-#include <qd/qd_real.h>
-#endif
 
-template<class num, int Nvar, int Ndeg>
-void printpoly(ostream &dst, const polynomial<num,Nvar,Ndeg> &p)
+void xc_eval_gga_qd(qd_real *result, int order, const qd_real densvars[5])
 {
-  int exps[Nvar] = {0};
-  for (int i=0;i<p.size;i++)
+  static void (*f[])(qd_real *, const qd_real *) = 
+    { gga_helper<qd_real,0>,gga_helper<qd_real,1>,
+#if XC_MAX_ORDER>=2
+      gga_helper<qd_real,2>,
+#if XC_MAX_ORDER>=3
+      gga_helper<qd_real,3>,
+#if XC_MAX_ORDER>=4
+      gga_helper<qd_real,4>,
+#if XC_MAX_ORDER>=5
+      gga_helper<qd_real,5>,
+#if XC_MAX_ORDER>=6
+      gga_helper<qd_real,6>,
+#if XC_MAX_ORDER>=7
+      gga_helper<qd_real,7>,
+#if XC_MAX_ORDER>=8
+      gga_helper<qd_real,8>
+#if XC_MAX_ORDER>=9
+#error Derivative order too large, update xc_fun.cpp
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+#endif
+};
+  assert(order>=0);
+#ifndef NO_STDCXX
+  if (order>XC_MAX_ORDER)
     {
-      p.exponents(i,exps);
-      for (int j=0;j<Nvar;j++)
-	cout << exps[j] << " ";
-      cout << " " << p[i] << endl;
+      cerr << "ERROR in xc_gga_eval(), order " << order << " greater than "
+	   << "XC_MAX_ORDER (" << XC_MAX_ORDER << "), please reconfigure " 
+	   << "libxc_fun." << endl;
+      exit(EXIT_FAILURE);
     }
-}
-
-template<class num, int Nvar, int Ndeg>
-void print_rms_diff(const polynomial<num,Nvar,Ndeg> &p1, 
-		    const polynomial<num,Nvar,Ndeg> &p2)
-{
-  cout << "Order \tRMS \t\tRMS_Error\tRelative_Error" << endl;
-  for (int n=0;n<=Ndeg;n++)
-    {
-      num rms = 0.0, avg = 0.0;
-      for (int i=polylen(Nvar,n-1);i<polylen(Nvar,n);i++)
-	{
-	  rms += pow(p1[i] - p2[i],2);
-	  avg += p1[i]*p1[i] + p2[i]*p2[i];
-	}
-      avg = sqrt(avg/(2*polylen(Nvar-1,n)));
-      rms = sqrt(rms/polylen(Nvar-1,n));
-      cout << n << " \t" << avg << " \t" << rms <<  " \t" << rms/avg << endl;
-    }
-}
-
-#define TEST_ORDER 5
-
-int main(void)
-{
-#ifdef WITH_QD
-  unsigned int cw;
-  fpu_fix_start(&cw);
-  taylor<qd_real, 5, TEST_ORDER> res_qd, cmp;
-  qd_real dqd[5] = {1.0,0.0,1.0,0.0,0.0};
+#else
+  assert(order<=XC_MAX_ORDER);
 #endif
-  double dd[5] =   {1.0,0.0,1.0,0.0,0.0};
-  taylor<double, 5, TEST_ORDER> res_d;  
-  double fun[XC_PARAMS_LEN] = {0};
-
-  cout << "Input 5 density variables: ";
-  cin >> dd[0] >> dd[1] >> dd[2] >> dd[3] >> dd[4];
-#ifdef WITH_QD
-  for (int i=0;i<5;i++)
-    dqd[i] = dd[i];
-#endif
-  /*
-  fun[XC_PBE_EXCHANGE] = 0;
-  fun[XC_OLD_PBE_CORRELATION] = 1;
-  xc_set_functional(fun);
-  gga_helper<double,TEST_ORDER>(res_d.c,dd);
-  cout << "Old PBE:" << endl;
-  printpoly(cout,res_d);
-  fun[XC_OLD_PBE_CORRELATION] = 0;
-  */
-
-  fun[XC_VWN5_CORRELATION] = 1;
-  //  fun[XC_SLATER_EXCHANGE] = 1;
-  xc_set_functional(fun);
-  gga_helper<double,TEST_ORDER>(res_d.c,dd);
-  //  cout << "New PBE:" << endl;
-  //printpoly(cout,res_d);
-
-
-#ifdef WITH_QD
-  gga_helper<qd_real,TEST_ORDER>(res_qd.c,dqd);
-  cout.precision(20);
-  printpoly(cout,res_qd);
-  res_d.convert_to(cmp);
-  print_rms_diff(cmp,res_qd);
-  fpu_fix_end(&cw);
-#endif
-  return 0;
+  f[order](result,densvars);
 }
 
 #endif

@@ -50,4 +50,9 @@ void xc_eval_gga(double result[], int order, const double densvars[5]);
 // Return a string describing the functional and its implementation.
 const char *xc_fun_reference(enum xc_funparams functions);
 
+#ifdef WITH_QD
+#include <qd/qd_real.h>
+void xc_eval_gga_qd(qd_real *result, int order, const qd_real densvars[5]);
+#endif
+
 #endif

@@ -9,10 +9,11 @@ class taylor : public polynomial<T, Nvar, Ndeg>
 {
 public:
   taylor(void) {}
-  taylor(T c0) : polynomial<T, Nvar,Ndeg>(c0) {} 
+  taylor(int c0) : polynomial<T, Nvar,Ndeg>(T(c0)) {} 
+  taylor(const T &c0) : polynomial<T, Nvar,Ndeg>(c0) {} 
   // Set the constant term to c0 and the first order term of
   // variable var to var_value.
-  taylor(T c0, int var, T var_value = 1) : polynomial<T, Nvar,Ndeg>(c0) 
+  taylor(const T &c0, int var, T var_value = 1) : polynomial<T, Nvar,Ndeg>(c0) 
   {
     assert(var>=0);
     assert(var<Nvar);

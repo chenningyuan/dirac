@@ -5,13 +5,15 @@
 # -DNDEBUG Turn off run time checks to gain speed
 # -DNO_STDCXX Do not use any part of the C++ standard 
 #             library, to allow linking without it.
-#  XC_MAX_ORDER (in include/xc_fun.h) Maximal derivative order.
+# -DWITH_QD Enable quad double precision functions. This requires
+#           a _patched_ version of the QD library
 
+# C++ compiler and flags
 CXX ?= g++
-CXXFLAGS ?= -Wall -O3 -DNDEBUG -DNO_STDCXX
+CXXFLAGS ?= -Wall -O3 -DNDEBUG -DNO_STDCXX -DWITH_QD
 CXXFLAGS+=-Iinclude -Isrc/taylor -Isrc/functionals -Llib -fno-rtti -fno-exceptions
 
-# F90 compiler and flags
+# F90 compiler and flags, used for example code
 FC=gfortran
 FFLAGS=-Wall -Llib -J fortran
 
@@ -24,17 +26,19 @@ stripped: lib/libxc_fun.a
 benchmark: test/benchmark.cpp lib/libxc_fun.a
 	$(CXX) $(CXXFLAGS) $< -o $@ -lxc_fun
 
+testxc: test/testxc.cpp lib/libxc_fun.a
+	$(CXX) $(CXXFLAGS) -Isrc/taylor $< -o $@ -lxc_fun -lqd
+
 fortran/example.o: fortran/xc_fun_module.o
 
 fortran_example: fortran/example.o fortran/xc_fun_module.o lib/libxc_fun.a
 	$(FC) $(FFLAGS) -o $@ $^ -lxc_fun
 
 clean:
-	rm -f `find . -name '*.o' -o -name '*~' -o -name '*.a'`
+	rm -f `find . -name '*.o' -o -name '*~' -o -name '*.a'` fortran_example benchmark testxc
 
 
 .SUFFIXES: .F90
-#.SUFFIXES : .F .cpp
 
 .F90.o:
-	$(FC) $(FFFLAGS) -c -o $*.o $*.F90
+	$(FC) $(FFLAGS) -c -o $*.o $*.F90
