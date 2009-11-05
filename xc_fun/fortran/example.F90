@@ -13,8 +13,8 @@ program xc_example
   d(XC_R) = 1.0 !Total density
   d(XC_S) = 0.0 !rho_a - rho_b
   d(XC_Z) = 2.0 !|grad R|^2
-  d(XC_X) = 1.0 !(grad R).(grad S)
-  d(XC_Y) = 1.0 !|grad S|^2
+  d(XC_X) = 1.0 !|grad S|^2
+  d(XC_Y) = 1.0 !(grad R).(grad S)
   call eval_gga(res,2,d)
   print *,'XC energy:',res(1)
   print *,'dE_xc/dZZ:',res(GGA_ZZ)
