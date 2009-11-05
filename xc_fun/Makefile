@@ -15,7 +15,7 @@ CXXFLAGS+=-Iinclude -Isrc/taylor -Isrc/functionals -Llib -fno-rtti -fno-exceptio
 
 # F90 compiler and flags, used for example code
 FC=gfortran
-FFLAGS=-Wall -Llib -J fortran
+FFLAGS=-Wall -Llib -Jfortran
 
 lib/libxc_fun.a: src/xc_fun.o
 	ar r $@ $< 
