@@ -11,13 +11,37 @@
 #define XC_MAX_ORDER 5 // Update xc_eval* if this changes
 #define XC_FUNCTIONAL_SCALING 1.0 // Scale derivatives by this factor
 
-enum xc_vars
+enum xc_mode
+  {
+    XC_ORDER_AB = 0, //Using variables in xc_vars_ab
+    XC_ORDER_RS      //Using variables in xc_vars_rs
+  };
+
+enum xc_fun_type
+  {
+    XC_LDA = 0, // 2 variables
+    XC_GGA      // 5 variables
+                // May add unpolarized versions here, with 1 and 2 variables.
+  };
+
+// Variables in the total density/spin polarization representation
+enum xc_vars_rs
   {
     XC_R = 0, // R = \rho_\alpha + \rho_\beta
     XC_S,     // S = \rho_\alpha - \rho_\beta
     XC_Z,     // Z = \nabla R \cdot \nabla R
     XC_X,     // X = \nabla S \cdot \nabla S
     XC_Y      // Y = \nabla R \cdot \nabla S
+  };
+
+// Variables in the alpha/beta representation
+enum xc_vars_ab
+  {
+    XC_A = 0, // \rho_\alpha
+    XC_B,     // \rho_\beta
+    XC_GAA,   // \nabla rho_a \cdot \nabla rho_a
+    XC_GBB,   // \nabla rho_b \cdot \nabla rho_b
+    XC_GAB    // \nabla rho_a \cdot \nabla rho_b
   };
 
 enum xc_funparams
@@ -36,7 +60,14 @@ enum xc_funparams
 
 // Set the functional as defined by the parameters in the
 // params array. This function also has a fortran version.
-void xc_set_functional(const double params[XC_PARAMS_LEN]);
+void xc_set_functional(enum xc_fun_type funtype, 
+		       const double params[XC_PARAMS_LEN]);
+
+// Use alpha/beta or R/S variables
+void xc_set_mode(enum xc_mode mode);
+
+//Return the total number of terms calculated by xc_eval
+int xc_len(enum xc_fun_type funtype, int order); 
 
 // Evaluate the exchange-correlation functional defined by
 // a previous call to xc_set_functional() with the density
@@ -44,15 +75,19 @@ void xc_set_functional(const double params[XC_PARAMS_LEN]);
 // order. The result is put in the result array, in graded
 // lexicographical ordering. This function also has a fortran 
 // version.
-void xc_eval_lda(double result[], int order, const double densvars[2]);
-void xc_eval_gga(double result[], int order, const double densvars[5]);
+// The _rs functions calculate derivatives with respect to R,S,..
+// while the _ab versions uses rho_a, rho_b, etc
+void xc_eval(double result[], int order, const double densvars[]);
+
+
+
 
 // Return a string describing the functional and its implementation.
 const char *xc_fun_reference(enum xc_funparams functions);
 
 #ifdef WITH_QD
 #include <qd/qd_real.h>
-void xc_eval_gga_qd(qd_real *result, int order, const qd_real densvars[5]);
+void xc_eval_gga_qd_rs(qd_real *result, int order, const qd_real densvars[5]);
 #endif
 
 #endif

@@ -10,7 +10,7 @@
 
 # C++ compiler and flags
 CXX ?= g++
-CXXFLAGS ?= -Wall -O3 -DNDEBUG -DNO_STDCXX -DWITH_QD
+CXXFLAGS ?= -Wall -O3 -DNDEBUG -DNO_STDCXX -DWITH_QD -DNEW_SCALING
 CXXFLAGS+=-Iinclude -Isrc/taylor -Isrc/functionals -Llib -fno-rtti -fno-exceptions
 
 # F90 compiler and flags, used for example code
@@ -26,7 +26,7 @@ stripped: lib/libxc_fun.a
 benchmark: test/benchmark.cpp lib/libxc_fun.a
 	$(CXX) $(CXXFLAGS) $< -o $@ -lxc_fun
 
-testxc: test/testxc.cpp lib/libxc_fun.a
+funtest: test/funtest.cpp lib/libxc_fun.a
 	$(CXX) $(CXXFLAGS) -Isrc/taylor $< -o $@ -lxc_fun -lqd
 
 fortran/example.o: fortran/xc_fun_module.o
