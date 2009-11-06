@@ -311,10 +311,7 @@ c     ENDIF
 C
 C     Initialize MOLFDIR integral file
 C
-      CALL MEMGET('INTE',KIKRA,NORBT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIKRB,NORBT,WORK,KFREE,LFREE)
-      CALL MDINTI(NSTR,WORK(KIKRA),WORK(KIKRB),IPRINT)
-      CALL MEMREL('TRDRV1',WORK,1,KIKRA,KFREE,LFREE)
+      CALL MDINTI(NSTR,IPRINT)
 C
 C     Number of boson symmetry for each fermion irrep (parity)
 C

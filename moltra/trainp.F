@@ -446,7 +446,7 @@ C
      &            '.NO2IND','.NO4IND','.2INDEX','.INTFL2','.INTFL4',
      &            '.PRPTRA','.SCREEN','.RCORBS','.NOMDCI','.NOSCAT',
      &            '.PAR4BS','.SCATTE','.MDCINT','.HSCC  ','.HTSORT',
-     &            '.XXXXXX'/
+     &            '.ASCII '/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -503,6 +503,7 @@ c
 C     TRA_MSOUT  = .FALSE.
       TRA_MSOUT  = .TRUE.
 C     aug 2001 hjaaj TODO : disabled this option because only true implemented
+      TRA_ASCII = .FALSE.
       NO2IND = .FALSE.
       NO4IND = .FALSE.
       NOPAIR = .TRUE.
@@ -809,7 +810,8 @@ C&&&& MDCINT - Force writing of the MDCINT file in MOLFDIR format
 #endif
                GO TO 100
    26          CONTINUE
-!&&&& XXXXXXXXXXXXXXXXXXX
+!&&&& Write ASCII file with transformed MO integrals
+                  TRA_ASCII = .TRUE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300

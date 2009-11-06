@@ -153,10 +153,7 @@ C
 C
 C     Initialize MOLFDIR integral file
 C
-      CALL MEMGET('INTE',KIKRA,NORBT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIKRB,NORBT,WORK,KFREE,LFREE)
-      CALL MDINTI(NSTR,WORK(KIKRA),WORK(KIKRB),IPRINT)
-      CALL MEMREL('TRDRV1',WORK,1,KIKRA,KFREE,LFREE)
+      CALL MDINTI(NSTR,IPRINT)
 C
 C     Make index arrays to translate pair index to individual indices
 C
