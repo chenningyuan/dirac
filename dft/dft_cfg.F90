@@ -32,7 +32,7 @@ module dft_cfg
   logical, public :: dft_cfg_estimate_radii          = .false.
   logical, public :: dft_cfg_import_grid             = .false.
   logical, public :: dft_cfg_export_grid             = .false.
-  logical, public :: dft_cfg_nozip                   = .false.
+  logical, public :: dft_cfg_zipgrid                 = .false.
   logical, public :: dft_cfg_alda_hs                 = .false.
   logical, public :: dft_cfg_alda_ha                 = .false.
   logical, public :: dft_cfg_xalda                   = .false.
@@ -84,7 +84,7 @@ contains
     call dirac_mpi_bcast(dft_cfg_estimate_radii             )
     call dirac_mpi_bcast(dft_cfg_import_grid                )
     call dirac_mpi_bcast(dft_cfg_export_grid                )
-    call dirac_mpi_bcast(dft_cfg_nozip                      )
+    call dirac_mpi_bcast(dft_cfg_zipgrid                    )
     call dirac_mpi_bcast(dft_cfg_alda_hs                    )
     call dirac_mpi_bcast(dft_cfg_alda_ha                    )
     call dirac_mpi_bcast(dft_cfg_xalda                      )

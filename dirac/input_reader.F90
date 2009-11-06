@@ -262,13 +262,7 @@ contains
     end if
 
     if (kw_matches(word, '.ZIPGRI')) then
-!     do nothing: default option
-!     kw kept so that old inputs still work
-    end if
-
-    if (kw_matches(word, '.NOZIP ')) then
-!     deactivate zipgrid
-      dft_cfg_nozip = .true.
+      dft_cfg_zipgrid = .true.
     end if
 
     if (kw_matches(word, '.GAUTSC')) then
