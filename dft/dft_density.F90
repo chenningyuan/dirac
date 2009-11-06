@@ -1,8 +1,5 @@
 module dft_density
 
-!gosia:
-!!!!!#define debug_me
-
   use dft_cb_interface
 
   implicit none
@@ -14,8 +11,8 @@ module dft_density
   public get_gs
   public get_gs_nonhermitian
   public lda_distribute
-  public lda_london_distribute !added
   public gga_distribute
+  public gga_distribute_left_right
   public lda_distribute_qi
   public gga_distribute_qi
   public gga_sym
@@ -420,10 +417,6 @@ contains
     integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz
     real(8)                :: f
 !   ----------------------------------------------------------------------------
-#ifdef debug_me
-   write(*, *) 'debug lda_distribute: nr1, st1, nr2, st2, &
-  &             ii, ao(ii), f, fmat: '      
-#endif
 
     do jxyz = 0, 0
       do iblock = 1, nr_density_blocks(jxyz, irep)
@@ -445,10 +438,45 @@ contains
                      1,                       &
                      fmat(st1, ii, iq(jxyz)), &
                      1)
-#ifdef debug_me
-          write(*, *) nr1, st1, nr2, st2, ii, ao(ii), &
-                      f, fmat(st1, ii, iq(jxyz))
-#endif
+        end do
+      end do
+    end do
+
+  end subroutine
+
+  subroutine lda_distribute_left_right(s, irep, fmat, ao_left, ao_right)
+
+!   ----------------------------------------------------------------------------
+    real(8), intent(in)    :: s
+    integer, intent(in)    :: irep
+    real(8), intent(inout) :: fmat(nr_ao_total, nr_ao_total, *)
+    real(8), intent(in)    :: ao_left(nr_ao_total)
+    real(8), intent(in)    :: ao_right(nr_ao_total)
+!   ----------------------------------------------------------------------------
+    integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz
+    real(8)                :: f
+!   ----------------------------------------------------------------------------
+
+    do jxyz = 0, 0
+      do iblock = 1, nr_density_blocks(jxyz, irep)
+
+        nr1 = nr_ao(1, iblock, jxyz, irep)
+        st1 = st_ao(1, iblock, jxyz, irep)
+        nr2 = nr_ao(2, iblock, jxyz, irep)
+        st2 = st_ao(2, iblock, jxyz, irep)
+
+        do i = 1, nr2
+
+          ii = st2 + i - 1
+
+          f = s*ao_left(ii)
+
+          call daxpy(nr1,                     &
+                     f,                       &
+                     ao_right(st1),           &
+                     1,                       &
+                     fmat(st1, ii, iq(jxyz)), &
+                     1)
         end do
       end do
     end do
@@ -616,6 +644,34 @@ contains
         end do
       end do
     end do
+
+  end subroutine
+
+  subroutine gga_distribute_left_right(s, v, irep, fmat, ao, ao1)
+
+!   radovan: this is a "stupid" way to do gga_distribute
+!            but it avoids gga_sym
+!            useful for debugging
+
+!   ----------------------------------------------------------------------------
+    real(8), intent(in)    :: s
+    real(8), intent(in)    :: v(3)
+    integer, intent(in)    :: irep
+    real(8), intent(inout) :: fmat(nr_ao_total, nr_ao_total, *)
+    real(8), intent(in)    :: ao(nr_ao_total)
+    real(8), intent(in)    :: ao1(nr_ao_total, 3)
+!   ----------------------------------------------------------------------------
+    integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz
+    real(8)                :: f
+!   ----------------------------------------------------------------------------
+
+    call lda_distribute(s, irep, fmat, ao)
+    call lda_distribute_left_right(v(1), irep, fmat, ao, ao1(1, 1))
+    call lda_distribute_left_right(v(1), irep, fmat, ao1(1, 1), ao)
+    call lda_distribute_left_right(v(2), irep, fmat, ao, ao1(1, 2))
+    call lda_distribute_left_right(v(2), irep, fmat, ao1(1, 2), ao)
+    call lda_distribute_left_right(v(3), irep, fmat, ao, ao1(1, 3))
+    call lda_distribute_left_right(v(3), irep, fmat, ao1(1, 3), ao)
 
   end subroutine
 
