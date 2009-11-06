@@ -29,6 +29,39 @@ module dft_ao
 ! - ao to so transformation using dgemv: possible, but much slower than present scheme
 ! - derivatives of aos by numerical differentiation: again, turned out to be much slower
 
+!   FAQ
+!   ===
+!
+!   1. how is the ao array sorted on output of get_so?
+!      - it is sorted according to ibbas and nbbas
+!        a convenient way to see the sorting of (symmetry adapted) aos
+!        in the output is to search for 'Generating Lowdin matrix'
+!        as an example, with a d2h calculation i got:
+!
+!                                 Generating Lowdin matrix:
+!                                 -------------------------
+!        
+!        L   Ag    * Deleted:          2(Proj:          2, Lindep:          0)
+!        L   B1g   * Deleted:          0(Proj:          0, Lindep:          0)
+!        L   B2g   * Deleted:          0(Proj:          0, Lindep:          0)
+!        L   B3g   * Deleted:          0(Proj:          0, Lindep:          0)
+!        S   B3u   * Deleted:          2(Proj:          2, Lindep:          0)
+!        S   B2u   * Deleted:          2(Proj:          2, Lindep:          0)
+!        S   B1u   * Deleted:          6(Proj:          6, Lindep:          0)
+!        S   Au    * Deleted:          0(Proj:          0, Lindep:          0)
+!        L   B3u   * Deleted:          0(Proj:          0, Lindep:          0)
+!        L   B2u   * Deleted:          0(Proj:          0, Lindep:          0)
+!        L   B1u   * Deleted:          1(Proj:          1, Lindep:          0)
+!        L   Au    * Deleted:          0(Proj:          0, Lindep:          0)
+!        S   Ag    * Deleted:          9(Proj:          9, Lindep:          0)
+!        S   B1g   * Deleted:          0(Proj:          0, Lindep:          0)
+!        S   B2g   * Deleted:          1(Proj:          1, Lindep:          0)
+!        S   B3g   * Deleted:          1(Proj:          1, Lindep:          0)
+!
+!        so the order is:
+!        | L Ag | L B1g | L B2g | L B3g | S B3u | ... | S B3g | and then the derivatives
+
+
   use memory_allocator
 #ifdef VAR_MPI
   use dirac_mpi
