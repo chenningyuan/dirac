@@ -346,27 +346,24 @@ module numoper_integrals
       end subroutine NumOper_OneElOp_PS_MatrixUpdateAtGridPoint
 
       subroutine resort_so(offset_bs_to_bu)
-         integer :: i, j, l, delta, offset_bs_to_bu(:)
+         integer :: i, j, l, k, offset_bs_to_bu(:)
 
          do l = 0, n_boson_irreps-1 
-            j = basis_bu_offt%large_start(l)
-            delta = basis_bu_offt%large_end(l) - basis_bu_offt%large_start(l) + 1
-            if (delta.gt.0) then
-               do i = basis_bs_offt%large_start(l), basis_bs_offt%large_end(l) 
-                  offset_bs_to_bu(j) = i  
-                  j = j + 1
-               enddo
-            endif
+            k = 0
+            do i = basis_bs_offt%large_start(l), basis_bs_offt%large_end(l)
+               j = basis_bu_offt%large_start(l) + k
+               offset_bs_to_bu(j) = i
+               k = k + 1
+            enddo
+         enddo
 
-            j = basis_bu_offt%small_start(l)
-            delta = basis_bu_offt%small_end(l) - basis_bu_offt%small_start(l) + 1
-            if (delta.gt.0) then
-               do i = basis_bs_offt%small_start(l), basis_bs_offt%small_end(l) 
-                  offset_bs_to_bu(j) = i  
-                  j = j + 1
-               enddo
-            endif
-
+         do l = 0, n_boson_irreps-1 
+            k = 0
+            do i = basis_bs_offt%small_start(l), basis_bs_offt%small_end(l)
+               j = basis_bu_offt%small_start(l) + k
+               offset_bs_to_bu(j) = i
+               k = k + 1
+            enddo
          enddo
 
       end subroutine resort_so
