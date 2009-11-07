@@ -34,7 +34,9 @@ static enum xc_fun_type current_type = XC_GGA;
 static double xc_params[XC_PARAMS_LEN];
 //Dispatch table for different orders, set by setup()
 static void (*helper_tab[XC_MAX_ORDER+1])(double *, const double *);
-
+#ifdef WITH_QD
+static void (*helper_tab_qd[XC_MAX_ORDER+1])(qd_real *, const qd_real *);
+#endif
 static void setup(void);
 
 void xc_set_functional(enum xc_fun_type funtype, 
@@ -199,12 +201,21 @@ static void fun_helper(num *result, const num d[5])
     }
 }
 
-void xc_eval(double *result, int order, const double densvars[2])
+void xc_eval(double *result, int order, const double densvars[])
 {
   assert(order>=0);
   assert(order<=XC_MAX_ORDER);
   helper_tab[order](result,densvars);
 }
+
+#ifdef WITH_QD
+void xc_eval_qd(qd_real *result, int order, const qd_real densvars[])
+{
+  assert(order>=0);
+  assert(order<=XC_MAX_ORDER);
+  helper_tab_qd[order](result,densvars);
+}
+#endif
 
 extern "C"
 void xc_eval_(double *result, int *order, const double *densvars)
@@ -258,10 +269,24 @@ int xc_index_(const int *funtype, const int exponents[])
 }
 
 
+void xc_set_mode(enum xc_mode mode)
+{
+  current_mode = mode;
+}
+
+void xc_set_mode_(const int *mode)
+{
+  xc_set_mode((enum xc_mode)*mode);
+}
+
+
 template<int N>
 void setup_order(void)
 {
   helper_tab[N] = fun_helper<double,N>;
+#ifdef WITH_QD
+  helper_tab_qd[N] = fun_helper<qd_real,N>;
+#endif
   setup_order<N-1>();
 }
 

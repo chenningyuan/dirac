@@ -51,15 +51,19 @@ static num vwn5_correlation(const num &R,
 			    const num &S,
 			    const num &zeta)
 {
+  //ulfek: second elements are multiplied by 2 wrt molpro manual
   static const double  para[] = {-0.10498,   0.0621814, 3.72744, 12.9352};
   static const double ferro[] = {-0.325,     0.0310907, 7.06042, 18.0578};
-  static const double inter[] = {-0.0047584,-0.0337737, 1.13107, 13.0045};
+  static const double inter[] = {-0.0047584,-pow(3*M_PI*M_PI,-1.0), 1.13107, 13.0045};
+  // ulfek: in Dalton and Dirac inter[1] has too few decimals, should be -1/(3pi^2)
   assert(R > 1e-20);
-  num t,g,dd,s = pow(3/(4*M_PI),1.0/6)/pow(R,1.0/6);
+  num t,g,dd,s = pow(3/(4*M_PI),1.0/6)*pow(R,-1.0/6);
+  // (2^1/3-1)^-1/2
   g = 1.92366105093154*(pow(1 + zeta,4.0/3) + pow(1 - zeta,4.0/3) - 2);
   num zeta4 = pow(zeta,4);
   dd = g*((vwn_f(s, ferro) - vwn_f(s, para))*zeta4 +
 	  vwn_f(s, inter)*(1 - zeta4)*0.584822305543806);
+  // What is the 0.58 constant about?
   return R*(vwn_f(s, para) + dd);
 }
 

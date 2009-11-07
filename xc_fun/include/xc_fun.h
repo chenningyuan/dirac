@@ -59,7 +59,7 @@ enum xc_funparams
   };
 
 // Set the functional as defined by the parameters in the
-// params array. This function also has a fortran version.
+// params array. 
 void xc_set_functional(enum xc_fun_type funtype, 
 		       const double params[XC_PARAMS_LEN]);
 
@@ -79,15 +79,16 @@ int xc_len(enum xc_fun_type funtype, int order);
 // while the _ab versions uses rho_a, rho_b, etc
 void xc_eval(double result[], int order, const double densvars[]);
 
-
-
+//Return the index (into result) for a given derivative, i.e.
+//{0,2,1,0} gives the d^3/dS^2dZ term index.
+int xc_index(enum xc_fun_type funtype, const int derivative[]);
 
 // Return a string describing the functional and its implementation.
 const char *xc_fun_reference(enum xc_funparams functions);
 
 #ifdef WITH_QD
 #include <qd/qd_real.h>
-void xc_eval_gga_qd_rs(qd_real *result, int order, const qd_real densvars[5]);
+void xc_eval_qd(qd_real *result, int order, const qd_real densvars[]);
 #endif
 
 #endif

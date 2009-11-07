@@ -51,53 +51,17 @@ static num pbe_correlation_unpolarized(const num &R,
 // PBEc implementation from MOLPRO manual, by ulfek.
 namespace PBEc_internal
 {
-
   const double iota = 0.0716;
   const double kappa = 0.004235;
   const double nu = 16*pow(3*M_PI*M_PI,1.0/3)/M_PI;
   const double lambda = nu*kappa;
 
-  
   template<class num>
   static num u(const num &zeta)
   {
     // TODO: check if |zeta| ~= 1 
     return 0.5*(pow(1+zeta,2.0/3)+(pow(1-zeta,2.0/3)));
   }
-
-#if 0  //What are these used for? They come from the molpro manual.
-  
-  template<class num>
-  static num M(const num &d, const num &a, const num &b,
-	       const num &rho)
-  {
-    const double Z = -0.001667;
-    return 0.5*nu*(phi(r(a,b))-kappa-3.0/7*Z)*d*d*
-      exp(-335.9789467*pow(9/(pow(M_PI,5)*rho),1.0/3)*d*d);
-  }
-  
-  template<class num>
-  static num K(const num &d, const num &a, const num &b)
-  {
-    0.25*lambda*lambda/iota*
-      log(1+2*iota*
-	  (d*d+N(a,b)*pow(d,4))/
-	  (lambda*(1+N(a,b)*d*d+pow(N(a,b),2)*pow(d,4))));
-  }
-  
-  
-
-  template<class num>
-  static num phi(const num &r)
-  {
-    const double 
-      Xi = 23.266,
-      Phi = 0.007389,
-      Lambda = 8.723,
-      Upsilon = 0.472;
-    return 1.0/1000*(2.568+r*(Xi+Phi*r))/(1+r*(Lambda+r*(Upsilon+10*Phi*r)));
-  }
-#endif
   
   template<class num>
   static num A(const num &eps, const num &zeta)
@@ -126,10 +90,9 @@ namespace PBEc_internal
     const num &sigma = Z;
     num d = 1.0/12*(sqrt(sigma)*pow(3,5.0/6))/
       (u(zeta)*pow(M_PI,-1.0/6)*pow(R,7.0/6));
-    num eps = pw92_correlation(R,zeta);
+    num eps = pw92_eps(R,zeta);
     return R*(eps + H(d,eps,zeta));
   }
-
 }
 
 using PBEc_internal::pbe_correlation;

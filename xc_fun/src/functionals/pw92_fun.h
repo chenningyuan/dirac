@@ -23,7 +23,7 @@ namespace pw92_internal
   }
 
   template<class num>
-  static num pw92_correlation(const num &R, const num &zeta)
+  static num pw92_eps(const num &R, const num &zeta)
   {
     // The T..P parameters, but transposed for easier use with the e function
     const double TUVWXYP[3][7] = 
@@ -40,6 +40,13 @@ namespace pw92_internal
   }
 }
 
-using pw92_internal::pw92_correlation;
+
+template<class num>
+static num pw92_correlation(const num &R, const num &zeta)
+{
+  return R*pw92_eps(R,zeta);
+}
+
+using pw92_internal::pw92_eps;
 
 #endif
