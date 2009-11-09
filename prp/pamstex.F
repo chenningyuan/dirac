@@ -1809,15 +1809,15 @@ C*****************************************************************************
 #include "dgroup.h"
 #include "dcbxrs.h"
 #include "dcbstex.h"
-C
+
       PARAMETER ( D0 = 0.0D0 )
-C
+
       CHARACTER T*1
-C
+
       DIMENSION FAO(N2BBASXQ),FMO(STEX_N2VIRXQ)
       DIMENSION T(-1:1),CMO(*),WORK(LWRK)
       INTEGER   JCMO(2)
-C
+
       CALL QENTER('STEXFAOMO')
       IF (IPRINT.GE.10) THEN
          CALL HEADER('STEXFAOMO: Fock matrix in AO-basis',-1)
@@ -1825,15 +1825,14 @@ C
      &        IPQTOQ(1,ISYM-1),LUPRI)
       ENDIF
 
-C
       KFREE = 1 
       LFREE = LWRK
-C
+
       JCMO(1) = ICMOQ(1) + NFBAS(1,0)*(NPSH(1)+NISH(1)) + 1
       JCMO(2) = ICMOQ(2) + NFBAS(2,0)*(NPSH(2)+NISH(2)) + 1      
-C
+
       CALL DZERO(FMO,STEX_N2VIRXQ)
-C
+      IPRINT=0
       DO I1=1,NFSYM
          I2 = MOD(I1+IFER,2) + 1
          IF(STEX_NVIR(I1).GT.0 .AND. STEX_NVIR(I2).GT.0) THEN
