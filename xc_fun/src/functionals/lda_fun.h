@@ -62,8 +62,9 @@ static num vwn5_correlation(const num &R,
   g = 1.92366105093154*(pow(1 + zeta,4.0/3) + pow(1 - zeta,4.0/3) - 2);
   num zeta4 = pow(zeta,4);
   dd = g*((vwn_f(s, ferro) - vwn_f(s, para))*zeta4 +
-	  vwn_f(s, inter)*(1 - zeta4)*0.584822305543806);
-  // What is the 0.58 constant about?
+	  vwn_f(s, inter)*(1 - zeta4)*(9.0/4.0*(pow(2,1.0/3.0)-1)));
+  // Dalton (for some reason??) uses a value: 0.584822305543806
+  // The real value should be 9/4 (2^(1/3) -1)
   return R*(vwn_f(s, para) + dd);
 }
 

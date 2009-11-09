@@ -34,7 +34,7 @@ int main(void)
 
   fun[XC_VWN5_CORRELATION] = 1;
   //fun[XC_BECKE_EXCHANGE] = 1;
-  xc_set_functional(XC_RSZXY,fun);
+  xc_set_functional(XC_ABFGH,fun);
   cout.precision(20);
   cin >> dd[0] >> dd[1] >> dd[2] >> dd[3] >> dd[4];
 #ifdef WITH_QD

@@ -12,6 +12,7 @@
 CXX ?= g++
 CXXFLAGS ?= -Wall -Os -DNO_STDCXX
 CXXFLAGS+=-Iinclude -Isrc/taylor -Isrc/functionals -Llib -fno-rtti -fno-exceptions
+LIBS=-lxc_fun
 
 # F90 compiler and flags, used for example code
 FC=gfortran
@@ -26,18 +27,18 @@ stripped: lib/libxc_fun.a
 	strip --strip-unneeded $<
 
 benchmark: test/benchmark.cpp lib/libxc_fun.a
-	$(CXX) $(CXXFLAGS) $< -o $@ -lxc_fun
+	$(CXX) $(CXXFLAGS) $< -o $@ $(LIBS)
 
 funtest: test/funtest.cpp lib/libxc_fun.a
-	$(CXX) $(CXXFLAGS) -Isrc/taylor $< -o $@ -lxc_fun -lqd
+	$(CXX) $(CXXFLAGS) $< -o $@ $(LIBS)
 
 funeval: test/funeval.cpp lib/libxc_fun.a
-	$(CXX) $(CXXFLAGS) -Isrc/taylor $< -o $@ -lxc_fun -lqd
+	$(CXX) $(CXXFLAGS) $< -o $@ $(LIBS)
 
 fortran/example.o: fortran/xc_fun_module.o
 
 fortran_example: fortran/example.o fortran/xc_fun_module.o lib/libxc_fun.a
-	$(FC) $(FFLAGS) -o $@ $^ -lxc_fun
+	$(FC) $(FFLAGS) -o $@ $^ $(LIBS)
 
 clean:
 	rm -f `find . -name '*.o' -o -name '*~' -o -name '*.a'` fortran_example benchmark testxc

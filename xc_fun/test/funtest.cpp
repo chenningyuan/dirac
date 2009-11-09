@@ -58,9 +58,9 @@ int main(void)
   taylor<double, 5, TEST_ORDER> res_d; 
   double fun[XC_PARAMS_LEN] = {0};
 
-  fun[XC_LYP_CORRELATION] = 1;
-  fun[XC_BECKE_EXCHANGE] = 1;
-  xc_set_functional(fun);
+  fun[XC_VWN5_CORRELATION] = 1;
+  //  fun[XC_BECKE_EXCHANGE] = 1;
+  xc_set_functional(XC_ABFGH,fun);
   while (1)
     {
       cin >> dd[0] >> dd[1] >> dd[2] >> dd[3] >> dd[4];
@@ -68,9 +68,9 @@ int main(void)
       for (int i=0;i<5;i++)
 	dqd[i] = dd[i];
 #endif
-      xc_eval_gga(res_d.c,TEST_ORDER,dd);
+      xc_eval(res_d.c,TEST_ORDER,dd);
 #ifdef WITH_QD
-      xc_eval_gga_qd(res_qd.c,TEST_ORDER,dqd);
+      xc_eval(res_qd.c,TEST_ORDER,dqd);
       cout.precision(20);
       res_d.convert_to(cmp);
       print_rms_diff_compact(cmp,res_qd);
