@@ -17,17 +17,20 @@ electric properties for frozen density embedding
 .4CGRID !here only to reproduce the reference outputs
 *FDE
 .EMBPOT
-grid.out.full
+vemb.grid
 **INTEGRALS
 .NUCMOD
 1
+#*ONEINT
+#.PRINT
+# 4
 *TWOINT
 .AOFOCK
 **WAVE FUNCTIONS
 .DHF
 *DHFCAL
 .PRINT
-2
+ 1
 **PROPERTIES
 .DIPOLE
 .POLARIZABILITY
