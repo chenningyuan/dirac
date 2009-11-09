@@ -78,7 +78,7 @@ C     JHS DMAT is in MO basis. Transformations needed.
 #include "ccom.h"
 
 C     PASSED variables
-      real(kind=8),POINTER :: points(:,:),vc(:)
+      real(kind=8) :: points(:,:),vc(:)
       INTEGER :: IPRINT
       REAL(KIND=8) :: DMAT(*)
       REAL(KIND=8) :: WORK(*)
@@ -120,7 +120,7 @@ C     calls VC_PRIM.
 #include "dgroup.h"
 
 C     PASSED variables
-      real(kind=8),POINTER :: points(:,:),vc(:)
+      real(kind=8) :: points(:,:),vc(:)
       INTEGER :: IPRINT
       REAL(KIND=8) :: DMAT(NTBAS(0),NTBAS(0),NZ)
       REAL(KIND=8) :: WORK(*)
@@ -381,7 +381,7 @@ C     Calculates the contribution for one primitive orbital set.
 #endif
 C     PASSED variables
       INTEGER :: IPRINT
-      real(kind=8),pointer :: points(:,:)
+      real(kind=8) :: points(:,:)
       REAL(KIND=8) :: ADER(KCKTA,KCKTB,SIZE(points,2))
       REAL(KIND=8) :: WORK(*)
       REAL(KIND=8) :: TOLOG, TOLS,FACTOR=1.0
