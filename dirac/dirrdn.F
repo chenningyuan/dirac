@@ -4498,7 +4498,7 @@ C&&& POSVAC: Use positronic vacuum polarisation
   142     continue
           DO_FDE = .true.
           call fdeini()
-!endif /* ifdef MOD_FDE */
+!endif /* ifdef MOD_EMB */
           go to 100
 
   143     CONTINUE
@@ -5467,9 +5467,9 @@ C       if *CAP in input but MOD_CAP is not defined !!!
 !     .FDE
 !     frozen density embedding
     5 CONTINUE
-#ifdef MOD_FDE
+#ifdef MOD_EMB
       call fdeinp(word, .true.)
-#endif /* ifdef MOD_FDE */
+#endif /* ifdef MOD_EMB */
       GO TO 200
 
     6 CONTINUE
