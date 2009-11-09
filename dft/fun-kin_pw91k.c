@@ -34,6 +34,11 @@
 #define ASINH asinh
 #define SQRT sqrt
 
+#ifndef M_PI // M_PI is not standard for some reason
+#define M_PI 3.14159265358979323846
+#endif
+
+
 /* INTERFACE PART */
 static int pw91k_read(const char* conf_line);
 static real pw91k_energy(const FunDensProp* dp);
