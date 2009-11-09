@@ -4005,7 +4005,7 @@ C
 !                   49        50        51        52
      &            '.NOAMFI','.QDOTS ','.X2C   ','.X2C4  ',
 !                   53        54        55        56
-     &            '.NOSFMU','.DFTAUT','.MMF   ','xXXXXXX'/
+     &            '.NOSFMU','.DFTAUT','.MMF   ','.MO4C2C'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4068,6 +4068,8 @@ C     ... trasfer 2c-> 4c and 4c->2c
       START2C = .FALSE.
       INI2C   = -1
       DO4C2C  = .FALSE.
+C     .... flag for 4cMO -> 2cMO transform.
+      TRMO4C2C = .FALSE.
 
       TWOCOMP_SAVE    = TWOCOMP
       TWOCOMPBSS_SAVE = TWOCOMPBSS
@@ -4593,6 +4595,8 @@ C&&& Activate : molecular mean field approximation for correlated calculations
           MOLMF = .TRUE.
           GOTO 100
   156     CONTINUE
+CMI&& activate 4c-2c MO transformation 
+          TRMO4C2C=.TRUE.
           GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
         GO TO 300

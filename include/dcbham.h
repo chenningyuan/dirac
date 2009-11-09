@@ -65,17 +65,19 @@
 !     USEDF      - if true, use the (converged) Dirac-Fock operator to be block-diagonalized
 !                  (instead of 1 electron Dirac operator)
 !     CONT2C     - continue with 2-component (inf.order) SCF after DC-SCF
-!     I2CHAM     - integer number (1,2...) specifynig post-DC-SCF 2component Hamiltonian type
+!     I2CHAM     - integer number (1,2...) specifynig the type of post-DC-SCF 2component Hamiltonian
 !
 !     RESTFCK    - flag to denote restarting DC-SCF from BSS-SCF, or vice versa, from 2c/4c Fock matrix in MO basis
 !
 !     I2COFK     - integer number specifying which 2comp. Hamiltonian (in AO basis) is to be read in the ONEFCK routine
 !
-!     ALLAMFA    - flag about if all atoms are present for the AMFI contributions.
-!     CMPEIG     - for IOTC: compare eigenvalues of 2c and 4c Hamiltonian
+!     TRMO4C2C   - flag meaning transformation of 4c MO into 2c form using the picture change transformation matrix
 !
-!     DKH1       - own flag for 1st order DKH - very rough ...
-!     DKH2       - own flag for second order DKH 
+!     ALLAMFA    - flag about if all atoms are present for the AMFI contributions.
+!     CMPEIG     - for IOTC/BSS: compare eigenvalues of 2c and 4c Hamiltonian
+!
+!     DKH1       - own flag for the 1st order DKH,  very rough approximation
+!     DKH2       - own flag for the second order DKH, classic
 !
 !     GAUNT      - Include Gaunt interaction in the 2-e operator
 !
@@ -121,7 +123,7 @@
      &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
      &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP, CMPEIG,  &
      &        DKH1, DKH2, NOAMFI, QDOTS,LSCALE_DFT_GAUNT,NOSFMU,MOLMF,  &
-     &        DO_FDE
+     &        DO_FDE, TRMO4C2C
 
       COMMON /DCLHAM/ I1_DCLHAM,                                        &
      &                QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL,      &
@@ -132,7 +134,7 @@
      &                RESTFCK, CONT2C, START2C, GAUNT, ALLAMFA, VACPOL, &
      &                RDSUSLLMOD,MIXVAC,VACREF,POSVAC,CAP,CMPEIG,       &
      &                DKH1, DKH2, NOAMFI, QDOTS, LSCALE_DFT_GAUNT,      &
-     &                NOSFMU,MOLMF,DO_FDE,                              &
+     &                NOSFMU,MOLMF,DO_FDE, TRMO4C2C,                    &
      &                I2_DCLHAM
 
 !    Do NOT add any variables after the end tag !!!

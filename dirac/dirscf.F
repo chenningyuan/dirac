@@ -272,7 +272,7 @@ CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
         START2C = .FALSE.
         CALL GMOTRA(.FALSE.,WORK(KFREE),LFREE)
 
-CMI      ... DO NOT continue in SCF iterations !!!
+CMI      ... DO NOT continue with SCF iterations !!!
         IF (.NOT.CONT2C) THEN
 C        ... only one iteration 
            MAXITR = 1

@@ -87,7 +87,7 @@ C       ... in this case we block-diagonalize the Fock-Dirac operator
         ELSE
          write(LUPRI,'(4X,A/)')
      &   '... the picture change transformation matrix comes from the'//
-     &   ' block-diagonalizations of DIRAC bare-nucleus operator.'
+     &   ' block-diagonalizations of Dirac BARE-NUCLEUS operator.'
         ENDIF
        ENDIF
 
@@ -95,6 +95,7 @@ C       ... in this case we block-diagonalize the Fock-Dirac operator
        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)   
        CALL MEMGET('REAL',KIBEIG,ISIZE,WORK,KFREE,LFREE)
        CALL FDTR2C(VMAT,WORK(KIBEIG),WORK(KFREE),LFREE)
+       IF (TRMO4C2C) CALL CMOTR2C(VMAT,WORK(KFREE),LFREE)
        CALL MEMREL('MAKE_H2C.FDTR2C',WORK,KWORK,KIBEIG,KFREE,LFREE)
 
       ENDIF
@@ -6131,24 +6132,23 @@ C         .... accumulate (and skip) L(isym) blocks
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
-C  /* Deck fdtr2c */
       SUBROUTINE FDTR2C(VMAT,IBEIG,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C  PURPOSE:
 C ----------
-C    Do the BSS transformation of the Fock-Dirac AO matrixes to the
+C    Do the BSS transformation of 4comp Fock-Dirac AO matrixes to the
 C  two-component form.
 C
 C   Fock-Dirac AO matrixes are read from the DFFCK1,
 C  DFFCK2 files and in the latter case (2el.Fock matrixes) are written back.
 C
-C  All other necessary stuff (picture change transformation matrixes etc) 
-C is read from the BSSMAT file and was prepared before.
+C   All other necessary stuff (picture change transformation matrixes etc) 
+C  is read from the BSSMAT file and was prepared before.
 C
-C  On input : only arrays
+C  On input : only arrays (VMAT serves only as an array)
 C
-C  VMAT serves only as an array
+C  Called from MAKE_H2C
 C
 C  Written by Miro Ilias, July, Strasbourg, 2005
 C
@@ -6192,7 +6192,7 @@ C ... print out symmetry blocked picture change transformation matrix
       IPCTM1 = 1
       WRITE(LUPRI,'(/A)')                                          
      &'FDTR2C: SYMMETRY BLOCKED picture change transformation'//
-     &' matrix, VMAT:'
+     &' matrix(4c SA AO-2c SA AO), VMAT:'
       DO I1 = 1, NFSYM                
         WRITE(LUPRI,'(/,3X,A,I1,A,I1)')                                 
      &  '*** Fermion corep ',I1,'/',NFSYM                         
@@ -6296,7 +6296,7 @@ C         ... do the picture chnage transf; WORK(KFOCK2) -> WORK(KF2C2EL)
 C       ... offset for pict.change transf.matrix 4c AO "xhi" -> 2c  AO "xhi"
          IPCTM1 = IPCTM1 + NFBAS(I,0)*NFBAS(I,1)*NZ
         ENDDO
-C        ... do copy the picture change transformed matrix back into array...
+C        ... copy the picture change transformed 2el Fock matrix back into array...
          CALL DCOPY(N2BBASXQ,WORK(KF1),1,WORK(IF2),1)
         ENDDO
 C       ... after the picture change transformation write all 2-electron
@@ -6389,7 +6389,7 @@ C ==============================================================================
       ENDIF
 
 C ===============================================================
-C     ... do transform 1-el Dirac operator into the "k" basis
+C   ... transform  the 1-el Dirac operator into the "k" basis
 C ===============================================================
        IMAT = 1
       IFDK  = KFDK
@@ -6505,7 +6505,7 @@ CMI      .. DM1 give surprisingly results for B 3s1p atom ...
       ENDIF
 
 C  =======================================================================
-C  ... do transform F1(=H1+U1_SO) from 4c "k" to 2c SA-AO basis "xhi" ...
+C  ... transform F1(=H1+U1_SO) from 4c "k" to 2c SA-AO basis "xhi" ...
 C  =======================================================================
 C   ... read the picture change transformation matrix 4c "k" -> 2c AO "xhi"
       ISIZE =  NORB(1)*NFBAS(1,1)*NZ                             
@@ -7605,7 +7605,44 @@ C     ... this flag must be deactivated for BSS2DC calculations
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
-C  /* Deck cmotr4c */
+      SUBROUTINE CMOTR2C(VMAT,WORK,LWORK)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C  PURPOSE:
+C  Generate 2c MO from 4c MO (read from DFCOEF) using picture change transformation matrix  
+C
+C           C(2c) = U{^+}(4c-2c) * C(4c)
+C
+C  Resulting 2c MO's are written back into DFCOEF.
+C
+C  On entry:
+C
+C Called from:
+C
+C   Written by Miro ILIAS, Prievidza, 2009
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1=1.00D00,D0=0.00D00,DM1=-1.00D00)
+#include "dcbgen.h" 
+#include "dgroup.h" 
+#include "dcbdhf.h" 
+#include "dcbham.h" 
+#include "dcbbas.h" 
+#include "dcborb.h" 
+
+      DIMENSION VMAT(*),WORK(LWORK)
+      LOGICAL FNDLAB,EX
+      CHARACTER*8 LBL
+#include "memint.h"
+
+
+
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
       SUBROUTINE CMOTR4C(TBUF,TMAT,CMO,EIG,IBEIG,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
@@ -7619,7 +7656,7 @@ C  On input : only arrays
 C
 C  On output:  the initial 4c MO are written into BSSMAT
 C
-C  Call from PSIDHF (dirscf.F)
+C  Called from PSIDHF (dirscf.F)
 C
 C  Written by Miro Ilias, Sept 2005, Strasbourg
 C
@@ -7647,7 +7684,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       IF (INI2C.EQ.3) THEN
 C ================================================================
-C               ... get 2c MO into CMO
+C         ... get 2c MO from the "DFCOEF" file into CMO
 C ================================================================
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOTR4C')
       IF(IPRINT.GE.1) THEN
