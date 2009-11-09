@@ -238,15 +238,7 @@ module numoper_integrals
                         grid(3,ipoint), &
                         ao, buffer)
 
-! aspg, reminder while debugging:
-! with the old embedding potentials, the operator is contracted with integration weight,
-! for the current case, we have to contract it like the line below
-#ifdef NEW_VEMB
             wt_oper = operator(ipoint)*grid(4,ipoint)            
-#else
-! and then remove the following one
-            wt_oper = operator(ipoint)
-#endif
 
             do irrep1 = 0,n_boson_irreps-1  ! irrep of the bra 
 
