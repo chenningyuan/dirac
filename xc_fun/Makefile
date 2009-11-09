@@ -10,15 +10,17 @@
 
 # C++ compiler and flags
 CXX ?= g++
-CXXFLAGS ?= -Wall -O3 -DNDEBUG -DNO_STDCXX -DWITH_QD
+CXXFLAGS ?= -Wall -Os -DNO_STDCXX
 CXXFLAGS+=-Iinclude -Isrc/taylor -Isrc/functionals -Llib -fno-rtti -fno-exceptions
 
 # F90 compiler and flags, used for example code
 FC=gfortran
 FFLAGS=-Wall -Llib -Jfortran
 
+src/xc_fun.o: $(wildcard src/functionals/*.h) src/taylor/taylor.h
+
 lib/libxc_fun.a: src/xc_fun.o
-	ar r $@ $< 
+	ar r $@ $<
 
 stripped: lib/libxc_fun.a
 	strip --strip-unneeded $<

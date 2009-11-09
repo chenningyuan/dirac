@@ -28,9 +28,8 @@ struct densvars
 //Did we already set up tables?
 static int is_setup = 0;
 //Which primary variables will we use?
-static enum xc_mode current_mode = XC_ORDER_RS;
-//Current density functional type and parameters
-static enum xc_fun_type current_type = XC_GGA;
+static enum xc_mode current_mode = XC_A;
+// Functional parameters
 static double xc_params[XC_PARAMS_LEN];
 //Dispatch table for different orders, set by setup()
 static void (*helper_tab[XC_MAX_ORDER+1])(double *, const double *);
@@ -39,36 +38,40 @@ static void (*helper_tab_qd[XC_MAX_ORDER+1])(qd_real *, const qd_real *);
 #endif
 static void setup(void);
 
-void xc_set_functional(enum xc_fun_type funtype, 
+void xc_set_functional(enum xc_mode mode, 
 		       const double params[XC_PARAMS_LEN])
 {
   if (!is_setup)
     setup();
-  assert(funtype == XC_LGA or funtype == XC_GGA);
-  current_type = funtype;
+  current_mode = mode;
   for (int i=0;i<XC_PARAMS_LEN;i++)
     xc_params[i] = params[i];
-  //TODO: for LDA, check that the user is not asking for
-  //GGA functionals.
 }
 
 extern "C"
-void xc_set_functional_(const int *funtype, const double *params, int *len)
+void xc_set_functional_fortran_(const int *mode, const double *params, int *len)
 {
   assert(*len == XC_PARAMS_LEN && "C++/Fortran headers out of sync");
-  xc_set_functional((enum xc_fun_type)(*funtype),params);
+  xc_set_functional((enum xc_mode)(*mode),params);
 }
 
-static int fun_nvars(enum xc_fun_type funtype)
+static int fun_nvars(enum xc_mode mode)
 {
-  switch(funtype)
+  switch(mode)
     {
-    case XC_LDA:
+    case XC_A:
+    case XC_R:
+      return 1;
+    case XC_AB:
+    case XC_RS:
+    case XC_AF:
+    case XC_RZ:
       return 2;
-    case XC_GGA:
+    case XC_ABFGH:
+    case XC_RSZXY:
       return 5;
     default:
-      assert(0 && "Invalid funtype");
+      assert(0 && "Invalid xc_mode");
       return -1;
     }
 }
@@ -121,7 +124,7 @@ static void sum_functionals(num &res,
 }
 			    
 template<class num, int N>
-static void gga_setdens_rs(densvars<taylor<num,5,N> >&d, const num dd[5])
+static void setdens_rszxy(densvars<taylor<num,5,N> >&d, const num dd[5])
 {
   d.R = taylor<num,5,N>(dd[0],0);
   d.S = taylor<num,5,N>(dd[1],1);
@@ -137,7 +140,7 @@ static void gga_setdens_rs(densvars<taylor<num,5,N> >&d, const num dd[5])
 }
 
 template<class num, int N>
-static void gga_setdens_ab(densvars<taylor<num,5,N> >&d, const num dd[5])
+static void setdens_abfgh(densvars<taylor<num,5,N> >&d, const num dd[5])
 {
   d.rhoa = taylor<num,5,N>(dd[0],0);
   d.rhob = taylor<num,5,N>(dd[1],1);
@@ -153,7 +156,39 @@ static void gga_setdens_ab(densvars<taylor<num,5,N> >&d, const num dd[5])
 }
 
 template<class num, int N>
-static void lda_setdens_rs(densvars<taylor<num,2,N> >&d, const num dd[2])
+static void setdens_rz(densvars<taylor<num,2,N> >&d, const num dd[2])
+{
+  d.R = taylor<num,2,N>(dd[0],0);
+  d.S = 0;
+  d.Z = taylor<num,2,N>(dd[2],1);
+  d.X = 0;
+  d.Y = 0;
+  d.rhoa = 0.5*d.R;
+  d.rhob = d.rhoa;
+  d.grada2 = 0.25*d.Z;
+  d.gradab = d.grada2;
+  d.gradb2 = d.grada2;
+  d.zeta = 0;
+}
+
+template<class num, int N>
+static void setdens_af(densvars<taylor<num,2,N> >&d, const num dd[2])
+{
+  d.rhoa = taylor<num,2,N>(dd[0],0);
+  d.rhob = 0;
+  d.grada2 = taylor<num,2,N>(dd[2],1);
+  d.gradb2 = 0;
+  d.gradab = 0;
+  d.R = d.rhoa;
+  d.S = d.rhoa;
+  d.Z = d.grada2; 
+  d.X = d.grada2; 
+  d.Y = d.grada2;
+  d.zeta = 1;
+}
+
+template<class num, int N>
+static void setdens_rs(densvars<taylor<num,2,N> >&d, const num dd[2])
 {
   d.R = taylor<num,2,N>(dd[0],0);
   d.S = taylor<num,2,N>(dd[1],1);
@@ -163,7 +198,7 @@ static void lda_setdens_rs(densvars<taylor<num,2,N> >&d, const num dd[2])
 }
 
 template<class num, int N>
-static void lda_setdens_ab(densvars<taylor<num,2,N> >&d, const num dd[5])
+static void setdens_ab(densvars<taylor<num,2,N> >&d, const num dd[2])
 {
   d.rhoa = taylor<num,2,N>(dd[0],0);
   d.rhob = taylor<num,2,N>(dd[1],1);
@@ -173,26 +208,61 @@ static void lda_setdens_ab(densvars<taylor<num,2,N> >&d, const num dd[5])
 }
 
 template<class num, int N>
+static void setdens_a(densvars<taylor<num,1,N> >&d, const num dd[1])
+{
+  d.rhoa = taylor<num,1,N>(dd[0],0);
+  d.rhob = 0;
+  d.R = d.rhoa;
+  d.S = d.rhoa;
+  d.zeta = 1;
+}
+
+template<class num, int N>
+static void setdens_r(densvars<taylor<num,1,N> >&d, const num dd[1])
+{
+  d.R = taylor<num,1,N>(dd[0],0);
+  d.S = 0;
+  d.rhoa = 0.5*d.R;
+  d.rhob = 0.5*d.R;
+  d.zeta = 0;
+}
+
+template<class num, int N>
 static void fun_helper(num *result, const num d[5])
 {
-  if (current_type == XC_LDA)
+  if (fun_nvars(current_mode) == 1)
+    {
+      taylor<num,1,N> &res = *reinterpret_cast<taylor<num,1,N> *>(result);
+      densvars<taylor<num,1,N> > dv;
+      if (current_mode == XC_R)
+	setdens_r(dv,d);
+      else
+	setdens_a(dv,d);
+      sum_functionals(res,dv);
+    }
+  else if (fun_nvars(current_mode) == 2)
     {
       taylor<num,2,N> &res = *reinterpret_cast<taylor<num,2,N> *>(result);
       densvars<taylor<num,2,N> > dv;
-      if (current_mode == XC_ORDER_RS)
-	lda_setdens_rs(dv,d);
-      else
-	lda_setdens_ab(dv,d);
+      switch(current_mode)
+	{
+	case XC_RS: setdens_rs(dv,d); break;
+	case XC_AB: setdens_ab(dv,d); break;
+	case XC_RZ: setdens_rz(dv,d); break;
+	case XC_AF: setdens_af(dv,d); break;
+	default:
+	  break;
+	}
       sum_functionals(res,dv);
     }
-  else if (current_type == XC_GGA)
+  else if (fun_nvars(current_mode) == 5)
     {
       taylor<num,5,N> &res = *reinterpret_cast<taylor<num,5,N> *>(result);
       densvars<taylor<num,5,N> > dv;
-      if (current_mode == XC_ORDER_RS)
-	gga_setdens_rs(dv,d);
+      if (current_mode == XC_RSZXY)
+	setdens_rszxy(dv,d);
       else
-	gga_setdens_ab(dv,d);
+	setdens_abfgh(dv,d);
       sum_functionals(res,dv);
     }
   else
@@ -218,7 +288,7 @@ void xc_eval_qd(qd_real *result, int order, const qd_real densvars[])
 #endif
 
 extern "C"
-void xc_eval_(double *result, int *order, const double *densvars)
+void xc_eval_fortran_(double *result, int *order, const double *densvars)
 {
   xc_eval(result,*order,densvars);
 }
@@ -234,19 +304,20 @@ static int taylor_len(int nvar, int ndeg)
   return len;
 }
 
-int xc_len(enum xc_fun_type funtype, int order)
+int xc_len(enum xc_mode mode, int order)
 {
-  return taylor_len(fun_nvars(funtype),order);
+  return taylor_len(fun_nvars(mode),order);
 }
 
-int xc_len_(int *funtype, int *order)
+extern "C"
+int xc_len_fortran_(int *mode, int *order)
 {
-  return xc_len((enum xc_fun_type)*funtype,*order);
+  return xc_len((enum xc_mode)*mode,*order);
 }
 
-int xc_index(enum xc_fun_type funtype, const int exponents[])
+int xc_index(enum xc_mode mode, const int exponents[])
 {
-  int nvar = fun_nvars(funtype);
+  int nvar = fun_nvars(mode);
   int N = 0;
   for (int i=0;i<nvar;i++)
     N += exponents[i];
@@ -263,22 +334,10 @@ int xc_index(enum xc_fun_type funtype, const int exponents[])
 
 // Fortran version
 extern "C"
-int xc_index_(const int *funtype, const int exponents[])
+int xc_index_fortran_(const int *mode, const int exponents[])
 {
-  return 1+xc_index((enum xc_fun_type)*funtype,exponents);
+  return 1+xc_index((enum xc_mode)*mode,exponents);
 }
-
-
-void xc_set_mode(enum xc_mode mode)
-{
-  current_mode = mode;
-}
-
-void xc_set_mode_(const int *mode)
-{
-  xc_set_mode((enum xc_mode)*mode);
-}
-
 
 template<int N>
 void setup_order(void)
