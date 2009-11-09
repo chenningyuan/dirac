@@ -142,7 +142,7 @@ module numoper_integrals
 
           basis_bu_offt%small_start(i) = nbbas(0,1) + 1
           basis_bu_offt%small_end(i)   = nbbas(0,1) + nbbas(0,2)
-  
+           
           do i = 1, n_boson_irreps-1
                basis_bu_offt%large_start(i) = basis_bu_offt%small_end(i-1) + 1
                basis_bu_offt%large_end(i)   = basis_bu_offt%small_end(i-1) + nbbas(i,1)
@@ -162,22 +162,12 @@ module numoper_integrals
 
 ! and now the boson_sorted (ie: L(irrep1)...L(irrepN)S(irrep1)...S(irrepN)
 
-          i = 0 
-          basis_bs_offt%large_start(i) = 1
-          basis_bs_offt%large_end(i)   = nbbas(0,1)
+          do i = 0, n_boson_irreps-1
+               basis_bs_offt%large_start(i) =  ibbas(i,1) + 1
+               basis_bs_offt%large_end(i)   =  ibbas(i,1) + nbbas(i,1)
 
-          do i = 1, n_boson_irreps-1
-               basis_bs_offt%large_start(i) =  basis_bs_offt%large_end(i-1) + 1
-               basis_bs_offt%large_end(i)   =  basis_bs_offt%large_end(i-1) + nbbas(i,1)
-          enddo
-
-          i = 0 
-          basis_bs_offt%small_start(i) = basis_bs_offt%large_end(n_boson_irreps-1) + 1 
-          basis_bs_offt%small_end(i)   = basis_bs_offt%large_end(n_boson_irreps-1) + nbbas(0,2)
-
-          do i = 1, n_boson_irreps-1
-               basis_bs_offt%small_start(i) =  basis_bs_offt%small_end(i-1) + 1
-               basis_bs_offt%small_end(i)   =  basis_bs_offt%small_end(i-1) + nbbas(i,2)
+               basis_bs_offt%small_start(i) =  ibbas(i,2) + 1
+               basis_bs_offt%small_end(i)   =  ibbas(i,2) + nbbas(i,2)
           enddo
 
           if (debug) then
