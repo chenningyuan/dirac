@@ -235,6 +235,7 @@ extern Functional EmbInteractionFunctional;
 /* kinetic energy functionals */
 extern Functional TF_KinFunctional;     /* Thomas-Fermi */
 extern Functional VW_KinFunctional;     /* TF + Von Weizaecker */
+extern Functional PW91_KinFunctional;   /* PW91k, a reparametrization of PW91x */
 
 /* range-separated functionals */
 extern Functional SRVWN5Functional;
