@@ -137,7 +137,8 @@ C     Output section
 C
       CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
      &            LFREE,IPRINT)
-C     ....  
+
+CMI  ....  after 2cIOTC-SCF prepare starting data for subsequent 4c SCF
       IF (DO2C4C.AND.(INI2C.EQ.3.OR.INI2C.EQ.4)) THEN
         CALL MEMGET('REAL',K1,N2BBASXQ,      WORK,KFREE,LFREE)
         CALL MEMGET('REAL',K2,N2BBASXQ,      WORK,KFREE,LFREE)
@@ -274,6 +275,7 @@ CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
 
 CMI      ... DO NOT continue with SCF iterations !!!
         IF (.NOT.CONT2C) THEN
+CMI ... consider TRMO4C2C ...
 C        ... only one iteration 
            MAXITR = 1
            IF (.NOT.ONESYS) THEN

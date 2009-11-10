@@ -95,7 +95,19 @@ C       ... in this case we block-diagonalize the Fock-Dirac operator
        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)   
        CALL MEMGET('REAL',KIBEIG,ISIZE,WORK,KFREE,LFREE)
        CALL FDTR2C(VMAT,WORK(KIBEIG),WORK(KFREE),LFREE)
-       IF (TRMO4C2C) CALL CMOTR2C(VMAT,WORK(KFREE),LFREE)
+
+       IF (TRMO4C2C) THEN 
+!mi    ... transform 4c MO -> 2c MO
+          CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KBUF,N2BBASXQ,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KEIG ,NTBAS(0),      WORK,KFREE,LFREE)
+          CALL CMOTR2C(VMAT,WORK(KBUF),WORK(KCMO),WORK(KEIG),
+     &                 WORK(KIBEIG),WORK(KFREE),LFREE)
+          CALL MEMREL('MAKE_H2C.CMOTR2C',WORK,KWORK,KEIG,KFREE,LFREE) 
+          CALL MEMREL('MAKE_H2C.CMOTR2C',WORK,KWORK,KBUF,KFREE,LFREE) 
+          CALL MEMREL('MAKE_H2C.CMOTR2C',WORK,KWORK,KCMO,KFREE,LFREE) 
+       ENDIF
+
        CALL MEMREL('MAKE_H2C.FDTR2C',WORK,KWORK,KIBEIG,KFREE,LFREE)
 
       ENDIF
@@ -7605,13 +7617,13 @@ C     ... this flag must be deactivated for BSS2DC calculations
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
-      SUBROUTINE CMOTR2C(VMAT,WORK,LWORK)
+      SUBROUTINE CMOTR2C(VMAT,CMO,TBUF,EIG,IBEIG,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C  PURPOSE:
-C  Generate 2c MO from 4c MO (read from DFCOEF) using picture change transformation matrix  
+C  Generate 2c MO from converged 4c MO (read from DFCOEF) using the picture change transformation matrix  
 C
-C           C(2c) = U{^+}(4c-2c) * C(4c)
+C           CMO(2c) = U^{+}(4c->2c) * CMO(4c)
 C
 C  Resulting 2c MO's are written back to DFCOEF.
 C
@@ -7632,7 +7644,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbbas.h" 
 #include "dcborb.h" 
 
-      DIMENSION VMAT(*),WORK(LWORK)
+      DIMENSION VMAT(*),CMO(*),EIG(*),TBUF(*),WORK(LWORK)
+      DIMENSION IBEIG(*)
       LOGICAL FNDLAB,EX
       CHARACTER*8 LBL
 #include "memint.h"
@@ -7643,9 +7656,85 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
         CALL HEADER('Output from CMOTR2C',-1)
       ENDIF
 
+C ================================================================
+C         ... get 4c MO from the "DFCOEF" file into CMO
+C ================================================================
+      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOTR2C')
+      IF(IPRINT.GE.1) THEN
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,15,
+     &              WORK,KFREE,LFREE)
+      ELSE
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
+     &             WORK,KFREE,LFREE)
+      ENDIF
+      CLOSE(LUCOEF,STATUS='KEEP')
 
+C   ... first get the picture change transf.matrix into VMAT
+      ISIZE = (NFBAS(1,0)*NFBAS(1,1)*NZ)
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + (NFBAS(2,0)*NFBAS(2,1)*NZ)
+      CALL RFBSSMAT('U_PICTRM',.TRUE.,'CMOTR4C',VMAT,
+     &               ISIZE,LUBSS,IPRINT)
+      IF (IPRINT.GE.2) THEN
+        WRITE(LUPRI,'(/2X,A)')
+     &  'CMOTR2C: Picture change transformation'//
+     &  ' matrix was read into VMAT.'
+      ENDIF
 
+C .. do own picture change transformation TBUF=VMAT^{+} * CMO
+      IPCTM = 1
+      IMO = 1
+      DO I=1,NFSYM
+      IF (NESH(I).GT.0) THEN
 
+       IF (IPRINT.GE.5) THEN
+        CALL HEADER(
+     &  'CMOTR2C: U pict.change transf.matrix 4c AO-> 2c AO',-1)
+        WRITE(LUPRI,'(A,I1,A,I1)')
+     &  '* Fermion ircop no.',I,'/',NFSYM                          
+        CALL PRQMAT(VMAT(IPCTM),NFBAS(I,0),NFBAS(I,1),              
+     &    NFBAS(I,0),NFBAS(I,1),NZ,IPQTOQ(1,0),LUPRI)
+
+        CALL HEADER(
+     &  'CMOTR2C: 4c MO coefficients, CMO',-1)
+        WRITE(LUPRI,'(A,I1,A,I1)')
+     &  '* Fermion ircop no.',I,'/',NFSYM                          
+!       CALL PRQMAT(CMO(IMO),NFBAS(I,0),NESH(I),              
+        CALL PRQMAT(CMO(IMO),NFBAS(I,0),NORB(I),              
+!    &    NFBAS(I,0),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
+     &    NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+       ENDIF
+
+C ===============================================================
+C     ... do the matrix multiplication...VMAT^{+} * CMO = TBUF
+C ===============================================================
+        CALL QGEMM(NFBAS(I,0),NESH(I),NFBAS(I,1),D1,
+     &  'H','N',IPQTOQ(1,0),VMAT(IPCTM),
+     &   NFBAS(I,0),NFBAS(I,1),NZ,
+     &  'N','N',IPQTOQ(1,0),
+     &   CMO(IMO),NFBAS(I,0),NESH(I),NZ,
+     &   D0,IPQTOQ(1,0),TBUF(IMO),
+     &   NFBAS(I,0),NESH(I),NZ)
+
+       IF (IPRINT.GE.5) THEN
+        CALL HEADER(
+     &  'CMOTR2C: From U^{+}.CMO_4C = 2c MOs(L,e), TBUF',-1)
+        WRITE(LUPRI,'(A,I1,A,I1)')
+     &  '* Fermion ircop no.',I,'/',NFSYM                          
+!       CALL PRQMAT(TBUF(IMO),NFBAS(I,0),NESH(I),              
+        CALL PRQMAT(TBUF(IMO),NFBAS(I,0),NORB(I), 
+!    &    NFBAS(I,0),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
+     &    NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+       ENDIF
+
+        ! IMO =   IMO + (NFBAS(I,0)*NESH(I)*NZ)
+          IMO =   IMO + (NFBAS(I,0)*NORB(I)*NZ)
+       IPCTM  = IPCTM + (NFBAS(I,0)*NFBAS(I,1)*NZ) 
+
+      ENDIF
+      ENDDO
+
+C     ... check the orthonormality of generated starting MO's
+      CALL NRMSTMO(TBUF,VMAT,CMO,WORK,LWORK,IPRINT)
 
       call quit('.... stop ....')
       RETURN
@@ -7706,7 +7795,7 @@ C ================================================================
       CLOSE(LUCOEF,STATUS='KEEP')
 
 CMI .... do the picture change transformation ...
-CMI   ... open LUBSS, get the picture change transf.matrix
+CMI   ... first get the picture change transf.matrix
       ISIZE = (NFBAS(1,0)*NFBAS(1,1)*NZ)
       IF (NFSYM.EQ.2) ISIZE = ISIZE + (NFBAS(2,0)*NFBAS(2,1)*NZ)
       CALL RFBSSMAT('U_PICTRM',.TRUE.,'CMOTR4C',TMAT,
@@ -7826,10 +7915,11 @@ C#include "dcbham.h"
       CALL QENTER('NRMSTMO')
 #include "memint.h"
 
-C ... get full S matrix
-      CALL GTOVLT(TMAT,D1)
+C ... get full S matrix into TMAT
+!     CALL GTOVLT(TMAT,D1)
+      CALL GTOVLT(TMAT,D0)
 
-C ...  transform S to the MO's:   TBUF^+(e,LS) . TMAT(LS,LS) . TBUF(LS,e) = CMO(e,e)
+C ...  transform S to the MO's:   TBUF^+(e,LS) . TMAT(LS,LS) . TBUF(LS,e) = CMO(e,e) = 1
       IMAT = 1
       IBUF = 1
       IMO = 1
