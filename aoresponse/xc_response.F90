@@ -3,7 +3,7 @@ module xc_response
 #ifdef MOD_AUTODIFF
   use dft_cfg
   use dft_density
-  use aor_binomial
+! use aor_binomial
   use dft_cb_interface
   use xc_fun
 
@@ -144,7 +144,7 @@ contains
     end if
 
     derv = 0.0d0
-    call eval_gga(derv, order, (/n(0), 0.0d0, z(0, 0), 0.0d0, 0.0d0/))
+    call xc_eval(derv, order, (/n(0), 0.0d0, z(0, 0), 0.0d0, 0.0d0/))
  
 !   multiply by the weight
     derv = derv*w
@@ -192,19 +192,18 @@ contains
     real(8), intent(in)    :: gn(3, 0:max_nr_dmat)
     real(8), intent(in)    :: z(0:max_nr_dmat, 0:max_nr_dmat)
 !   ----------------------------------------------------------------------------
-    integer, external      :: taylor_index
     real(8)                :: tu
     real(8)                :: tv(3)
 !   ----------------------------------------------------------------------------
 
     tu = n(1)
-    v  = v + derv(taylor_index(5, (/1, 0, 1, 0, 0/)))*tu*gn(:, 0)
-    u  = u + derv(taylor_index(5, (/2, 0, 0, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/2, 0, 0, 0, 0/)))*tu
     tu = z(0, 1)
-    v  = v + derv(taylor_index(5, (/0, 0, 2, 0, 0/)))*tu*gn(:, 0)
-    u  = u + derv(taylor_index(5, (/1, 0, 1, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)))*tu
     tv = gn(:, 1)
-    v  = v + derv(taylor_index(5, (/0, 0, 1, 0, 0/)))*tv(:)
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 1, 0, 0/)))*tv(:)
     
   end subroutine
 
@@ -218,30 +217,29 @@ contains
     real(8), intent(in)    :: gn(3, 0:max_nr_dmat)
     real(8), intent(in)    :: z(0:max_nr_dmat, 0:max_nr_dmat)
 !   ----------------------------------------------------------------------------
-    integer, external      :: taylor_index
     real(8)                :: tu
     real(8)                :: tv(3)
 !   ----------------------------------------------------------------------------
 
     tv = z(0, 1)*gn(:, 2) &
        + gn(:, 1)*z(0, 2)
-    v  = v + derv(taylor_index(5, (/0, 0, 2, 0, 0/)))*tv(:)
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)))*tv(:)
     tu = n(1)*z(0, 2) &
        + z(0, 1)*n(2)
-    v  = v + derv(taylor_index(5, (/1, 0, 2, 0, 0/)))*tu*gn(:, 0)
-    u  = u + derv(taylor_index(5, (/2, 0, 1, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tu
     tu = z(0, 1)*z(0, 2)
-    v  = v + derv(taylor_index(5, (/0, 0, 3, 0, 0/)))*tu*gn(:, 0)
-    u  = u + derv(taylor_index(5, (/1, 0, 2, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 3, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tu
     tv = n(1)*gn(:, 2) &
        + gn(:, 1)*n(2)
-    v  = v + derv(taylor_index(5, (/1, 0, 1, 0, 0/)))*tv(:)
+    v  = v + derv(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)))*tv(:)
     tu = z(1, 2)
-    v  = v + derv(taylor_index(5, (/0, 0, 2, 0, 0/)))*tu*gn(:, 0)
-    u  = u + derv(taylor_index(5, (/1, 0, 1, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)))*tu
     tu = n(1)*n(2)
-    v  = v + derv(taylor_index(5, (/2, 0, 1, 0, 0/)))*tu*gn(:, 0)
-    u  = u + derv(taylor_index(5, (/3, 0, 0, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/3, 0, 0, 0, 0/)))*tu
     
   end subroutine
 
@@ -255,7 +253,6 @@ contains
     real(8), intent(in)    :: gn(3, 0:max_nr_dmat)
     real(8), intent(in)    :: z(0:max_nr_dmat, 0:max_nr_dmat)
 !   ----------------------------------------------------------------------------
-    integer, external      :: taylor_index
     real(8)                :: tu
     real(8)                :: tv(3)
 !   ----------------------------------------------------------------------------
@@ -266,66 +263,66 @@ contains
        + gn(:, 4)*z(0, 3) &
        + gn(:, 5)*z(0, 2) &
        + gn(:, 6)*z(0, 1)
-    v  = v + 0.5d0*derv(taylor_index(5, (/0, 0, 2, 0, 0/)))*tv(:)
+    v  = v + 0.5d0*derv(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)))*tv(:)
     tu = n(1)*n(2)*z(0, 3) &
        + n(1)*z(0, 2)*n(3) &
        + z(0, 1)*n(2)*n(3)
-    v  = v + derv(taylor_index(5, (/2, 0, 2, 0, 0/)))*tu*gn(:, 0)
-    u  = u + derv(taylor_index(5, (/3, 0, 1, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/2, 0, 2, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/3, 0, 1, 0, 0/)))*tu
     tu = n(4)*z(0, 3) &
        + n(5)*z(0, 2) &
        + n(6)*z(0, 1) &
        + (z(0, 4) + 2.0d0*z(1, 2))*n(3) &
        + (z(0, 5) + 2.0d0*z(1, 3))*n(2) &
        + (z(0, 6) + 2.0d0*z(2, 3))*n(1)
-    v  = v + 0.5d0*derv(taylor_index(5, (/1, 0, 2, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 0.5d0*derv(taylor_index(5, (/2, 0, 1, 0, 0/)))*tu
+    v  = v + 0.5d0*derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tu*gn(:, 0)
+    u  = u + 0.5d0*derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tu
     tu = z(0, 1)*z(0, 2)*z(0, 3)
-    v  = v + derv(taylor_index(5, (/0, 0, 4, 0, 0/)))*tu*gn(:, 0)
-    u  = u + derv(taylor_index(5, (/1, 0, 3, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 4, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/1, 0, 3, 0, 0/)))*tu
     tu = (z(0, 4) + 2.0d0*z(1, 2))*z(0, 3) &
        + (z(0, 5) + 2.0d0*z(1, 3))*z(0, 2) &
        + (z(0, 6) + 2.0d0*z(2, 3))*z(0, 1)
-    v  = v + 0.5d0*derv(taylor_index(5, (/0, 0, 3, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 0.5d0*derv(taylor_index(5, (/1, 0, 2, 0, 0/)))*tu
+    v  = v + 0.5d0*derv(xc_index(XC_RSZXY, (/0, 0, 3, 0, 0/)))*tu*gn(:, 0)
+    u  = u + 0.5d0*derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tu
     tv = n(4)*gn(:, 3) &
        + n(5)*gn(:, 2) &
        + n(6)*gn(:, 1) &
        + gn(:, 4)*n(3) &
        + gn(:, 5)*n(2) &
        + gn(:, 6)*n(1)
-    v  = v + 0.5d0*derv(taylor_index(5, (/1, 0, 1, 0, 0/)))*tv(:)
+    v  = v + 0.5d0*derv(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)))*tv(:)
     tv = n(1)*z(0, 2)*gn(:, 3) &
        + n(1)*gn(:, 2)*z(0, 3) &
        + z(0, 1)*n(2)*gn(:, 3) &
        + z(0, 1)*gn(:, 2)*n(3) &
        + gn(:, 1)*n(2)*z(0, 3) &
        + gn(:, 1)*z(0, 2)*n(3)
-    v  = v + derv(taylor_index(5, (/1, 0, 2, 0, 0/)))*tv(:)
+    v  = v + derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tv(:)
     tu = n(1)*n(2)*n(3)
-    v  = v + derv(taylor_index(5, (/3, 0, 1, 0, 0/)))*tu*gn(:, 0)
-    u  = u + derv(taylor_index(5, (/4, 0, 0, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/3, 0, 1, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/4, 0, 0, 0, 0/)))*tu
     tu = n(1)*z(0, 2)*z(0, 3) &
        + z(0, 1)*n(2)*z(0, 3) &
        + z(0, 1)*z(0, 2)*n(3)
-    v  = v + derv(taylor_index(5, (/1, 0, 3, 0, 0/)))*tu*gn(:, 0)
-    u  = u + derv(taylor_index(5, (/2, 0, 2, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/1, 0, 3, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/2, 0, 2, 0, 0/)))*tu
     tv = n(1)*n(2)*gn(:, 3) &
        + n(1)*gn(:, 2)*n(3) &
        + gn(:, 1)*n(2)*n(3)
-    v  = v + derv(taylor_index(5, (/2, 0, 1, 0, 0/)))*tv(:)
+    v  = v + derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tv(:)
     tu = (z(1, 6) + z(2, 5) + z(3, 4))
-    v  = v + 0.5d0*derv(taylor_index(5, (/0, 0, 2, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 0.5d0*derv(taylor_index(5, (/1, 0, 1, 0, 0/)))*tu
+    v  = v + 0.5d0*derv(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)))*tu*gn(:, 0)
+    u  = u + 0.5d0*derv(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)))*tu
     tv = z(0, 1)*z(0, 2)*gn(:, 3) &
        + z(0, 1)*gn(:, 2)*z(0, 3) &
        + gn(:, 1)*z(0, 2)*z(0, 3)
-    v  = v + derv(taylor_index(5, (/0, 0, 3, 0, 0/)))*tv(:)
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 3, 0, 0/)))*tv(:)
     tu = n(4)*n(3) &
        + n(5)*n(2) &
        + n(6)*n(1)
-    v  = v + 0.5d0*derv(taylor_index(5, (/2, 0, 1, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 0.5d0*derv(taylor_index(5, (/3, 0, 0, 0, 0/)))*tu
+    v  = v + 0.5d0*derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tu*gn(:, 0)
+    u  = u + 0.5d0*derv(xc_index(XC_RSZXY, (/3, 0, 0, 0, 0/)))*tu
     
   end subroutine
 #endif /* ifdef MOD_AUTODIFF */

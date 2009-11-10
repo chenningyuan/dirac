@@ -212,7 +212,7 @@ contains
       end if
     end do
 
-    call set_functional(w_array)
+    call xc_set_functional(XC_RSZXY, w_array)
 
   end subroutine
 #endif /* ifdef MOD_AUTODIFF */

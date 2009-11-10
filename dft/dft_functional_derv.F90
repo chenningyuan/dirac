@@ -62,9 +62,6 @@ contains
 !   ----------------------------------------------------------------------------
     real(8)              :: t(max_dim, mxbllen)
     integer              :: k, l
-#ifdef MOD_AUTODIFF
-    integer, external    :: taylor_index
-#endif
     real(8), external    :: dftenergy
 !   ----------------------------------------------------------------------------
 
@@ -74,7 +71,7 @@ contains
     if (dft_cfg_autodiff) then
 
       do k = 1, block_length
-        call eval_gga(t(1, k), order, (/r_0(k), 0.0d0, z_0(k), 0.0d0, 0.0d0/))
+        call xc_eval(t(1, k), order, (/r_0(k), 0.0d0, z_0(k), 0.0d0, 0.0d0/))
       end do
 
       select case (order)
@@ -86,40 +83,40 @@ contains
 
         case (1)
           do k = 1, block_length
-            derv(k, d_r) = t(taylor_index(5, (/1, 0, 0, 0, 0/)), k)
-            derv(k, d_z) = t(taylor_index(5, (/0, 0, 1, 0, 0/)), k)
+            derv(k, d_r) = t(xc_index(XC_RSZXY, (/1, 0, 0, 0, 0/)), k)
+            derv(k, d_z) = t(xc_index(XC_RSZXY, (/0, 0, 1, 0, 0/)), k)
           end do
 
         case (2)
           do k = 1, block_length
-            derv(k, d_rr) = t(taylor_index(5, (/2, 0, 0, 0, 0/)), k)
-            derv(k, d_ss) = t(taylor_index(5, (/0, 2, 0, 0, 0/)), k)
-            derv(k, d_rz) = t(taylor_index(5, (/1, 0, 1, 0, 0/)), k)
-            derv(k, d_zz) = t(taylor_index(5, (/0, 0, 2, 0, 0/)), k)
-            derv(k, d_sy) = t(taylor_index(5, (/0, 1, 0, 0, 1/)), k)
-            derv(k, d_yy) = t(taylor_index(5, (/0, 0, 0, 0, 2/)), k)
-            derv(k, d_z ) = t(taylor_index(5, (/0, 0, 1, 0, 0/)), k)
-            derv(k, d_x ) = t(taylor_index(5, (/0, 0, 0, 1, 0/)), k)
+            derv(k, d_rr) = t(xc_index(XC_RSZXY, (/2, 0, 0, 0, 0/)), k)
+            derv(k, d_ss) = t(xc_index(XC_RSZXY, (/0, 2, 0, 0, 0/)), k)
+            derv(k, d_rz) = t(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)), k)
+            derv(k, d_zz) = t(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)), k)
+            derv(k, d_sy) = t(xc_index(XC_RSZXY, (/0, 1, 0, 0, 1/)), k)
+            derv(k, d_yy) = t(xc_index(XC_RSZXY, (/0, 0, 0, 0, 2/)), k)
+            derv(k, d_z ) = t(xc_index(XC_RSZXY, (/0, 0, 1, 0, 0/)), k)
+            derv(k, d_x ) = t(xc_index(XC_RSZXY, (/0, 0, 0, 1, 0/)), k)
           end do
 
         case (3)
           do k = 1, block_length
-            derv(k, d_rrr) = t(taylor_index(5, (/3, 0, 0, 0, 0/)), k)
-            derv(k, d_rss) = t(taylor_index(5, (/1, 2, 0, 0, 0/)), k)
-            derv(k, d_rrz) = t(taylor_index(5, (/2, 0, 1, 0, 0/)), k)
-            derv(k, d_rsy) = t(taylor_index(5, (/1, 1, 0, 0, 1/)), k)
-            derv(k, d_rx ) = t(taylor_index(5, (/1, 0, 0, 1, 0/)), k)
-            derv(k, d_ryy) = t(taylor_index(5, (/1, 0, 0, 0, 2/)), k)
-            derv(k, d_rz ) = t(taylor_index(5, (/1, 0, 1, 0, 0/)), k)
-            derv(k, d_rzz) = t(taylor_index(5, (/1, 0, 2, 0, 0/)), k)
-            derv(k, d_ssz) = t(taylor_index(5, (/0, 2, 1, 0, 0/)), k)
-            derv(k, d_sy ) = t(taylor_index(5, (/0, 1, 0, 0, 1/)), k)
-            derv(k, d_szy) = t(taylor_index(5, (/0, 1, 1, 0, 1/)), k)
-            derv(k, d_yy ) = t(taylor_index(5, (/0, 0, 0, 0, 2/)), k)
-            derv(k, d_zx ) = t(taylor_index(5, (/0, 0, 1, 1, 0/)), k)
-            derv(k, d_zyy) = t(taylor_index(5, (/0, 0, 1, 0, 2/)), k)
-            derv(k, d_zz ) = t(taylor_index(5, (/0, 0, 2, 0, 0/)), k)
-            derv(k, d_zzz) = t(taylor_index(5, (/0, 0, 3, 0, 0/)), k)
+            derv(k, d_rrr) = t(xc_index(XC_RSZXY, (/3, 0, 0, 0, 0/)), k)
+            derv(k, d_rss) = t(xc_index(XC_RSZXY, (/1, 2, 0, 0, 0/)), k)
+            derv(k, d_rrz) = t(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)), k)
+            derv(k, d_rsy) = t(xc_index(XC_RSZXY, (/1, 1, 0, 0, 1/)), k)
+            derv(k, d_rx ) = t(xc_index(XC_RSZXY, (/1, 0, 0, 1, 0/)), k)
+            derv(k, d_ryy) = t(xc_index(XC_RSZXY, (/1, 0, 0, 0, 2/)), k)
+            derv(k, d_rz ) = t(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)), k)
+            derv(k, d_rzz) = t(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)), k)
+            derv(k, d_ssz) = t(xc_index(XC_RSZXY, (/0, 2, 1, 0, 0/)), k)
+            derv(k, d_sy ) = t(xc_index(XC_RSZXY, (/0, 1, 0, 0, 1/)), k)
+            derv(k, d_szy) = t(xc_index(XC_RSZXY, (/0, 1, 1, 0, 1/)), k)
+            derv(k, d_yy ) = t(xc_index(XC_RSZXY, (/0, 0, 0, 0, 2/)), k)
+            derv(k, d_zx ) = t(xc_index(XC_RSZXY, (/0, 0, 1, 1, 0/)), k)
+            derv(k, d_zyy) = t(xc_index(XC_RSZXY, (/0, 0, 1, 0, 2/)), k)
+            derv(k, d_zz ) = t(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)), k)
+            derv(k, d_zzz) = t(xc_index(XC_RSZXY, (/0, 0, 3, 0, 0/)), k)
           end do
 
         case default

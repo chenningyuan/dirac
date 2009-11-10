@@ -620,7 +620,7 @@ contains
       type(dft_options_t) :: dft_options
 
       integer :: ipoint, need_limit
-      real(8) :: ddot, taylor_deriv, f
+      real(8) :: ddot, f
 
       integer :: itest, jtest
 
