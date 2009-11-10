@@ -236,6 +236,7 @@
       REAL(kind=8), pointer :: points(:,:)
       REAL(kind=8), allocatable, target :: grad_rho(:,:)
       REAL(kind=8), allocatable, target :: hes_rho(:,:),vc(:),rho(:,:)
+
       INTEGER ::i,ierr
       INTEGER :: NDIMENSION
 !     JHS THROW AWAY IN THE END?
@@ -342,7 +343,7 @@
                     BUF,NDIMENSION,2,DOLND,print_fde)
 !     JHS calculate the SCF density and its derivatives. 
         CALL GETRHO(rho(1,i),0,GAO,DMAT,BUF)
-        CALL GETGRHO(grad_rho(3,i),0,GAO,GAO1,DMAT,BUF)
+        CALL GETGRHO(grad_rho(1:3,i),0,GAO,GAO1,DMAT,BUF)
         CALL GETLRHO(hes_rho(1,i),hes_rho(2,i),hes_rho(3,i), &
              hes_rho(4,i),hes_rho(5,i),hes_rho(6,i), &
              GAO,GAO1,GAO2,DMAT,BUF)
@@ -357,7 +358,6 @@
 
       WRITE(LUPRI,*) & 
           'Calculating the coulomb potential and its derivatives.'
-!      FLUSH(LUPRI)
       CALL EMB_VC(DMAT,points,vc,print_fde, WORK,LWORK)
 
       WRITE(LUPRI,*) 'Writing data to xml_file:', GRIDOUT_NAME
@@ -379,7 +379,7 @@
 
           tag=>xml_tag_open(tag,'dataset','density')
             call xml_attribute(tag,'size',  csizept2)
-            call xml_attribute(tag,'width', csizept1)
+            call xml_attribute(tag,'width', '1')
             call xml_add_data(tag,rho)
           tag=>xml_tag_close(tag)
 
@@ -407,7 +407,6 @@
         write(*,*) 'CLOSING:'
       tag=>xml_close(GRIDOUT_NAME)
       write(*,*) 'CLOSED!'
-      
 
       call dealloc(rho)
       call dealloc(grad_rho)
