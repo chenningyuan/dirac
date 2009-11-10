@@ -39,7 +39,7 @@ module xc_fun
    integer, parameter ::   XC_RZ = 5 !Unpolarized GGA
    integer, parameter ::   XC_ABFGH = 6 !Generic GGA alpha,beta variables 
    integer, parameter ::   XC_RSZXY = 7 !Generic GGA R,S variables
-  
+   integer, parameter ::   XC_R_ZI_ZJ_ZK = 8 !Generic GGA R,S variables	
 
 contains
 ! Set up the functional used by xc_eval. The mode is one of 

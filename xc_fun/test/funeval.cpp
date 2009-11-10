@@ -32,7 +32,7 @@ int main(void)
   taylor<double, 5, TEST_ORDER> res_d; 
   double fun[XC_PARAMS_LEN] = {0};
 
-  fun[XC_VWN5_CORRELATION] = 1;
+  fun[XC_PBE_CORRELATION] = 1;
   //fun[XC_BECKE_EXCHANGE] = 1;
   xc_set_functional(XC_ABFGH,fun);
   cout.precision(20);

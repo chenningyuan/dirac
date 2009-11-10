@@ -39,6 +39,7 @@ enum xc_mode
     XC_RZ, // Unpolarized GGA
     XC_ABFGH, // Generic GGA alpha,beta variables 
     XC_RSZXY, // Generic GGA R,S variables
+    XC_R_ZI_ZJ_ZK, // R and the individual gradient elements
   };
 
 enum xc_funparams

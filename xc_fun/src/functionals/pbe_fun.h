@@ -51,10 +51,20 @@ static num pbe_correlation_unpolarized(const num &R,
 // PBEc implementation from MOLPRO manual, by ulfek.
 namespace PBEc_internal
 {
-  const double iota = 0.0716;
-  const double kappa = 0.004235;
-  const double nu = 16*pow(3*M_PI*M_PI,1.0/3)/M_PI;
-  const double lambda = nu*kappa;
+  //ulfek: I cannot find these constants directly in the PBE
+  //paper
+  //  const double iota = 0.0716;
+  //MOLPRO value: const double kappa = 0.004235;
+  //const double kappa = 0.00423488752945734;
+  //const double nu = 16*pow(3*M_PI*M_PI,1.0/3)/M_PI;
+  //const double lambda = nu*kappa;
+  const double param_gamma = (1-log(2.0))/(M_PI*M_PI);
+  //ulfek: beta comes from the slowly varying limit, see PBE paper
+  const double param_beta_pbe_paper = 0.066725;
+  const double param_beta_accurate  = 0.06672455060314922;
+  //  const double param_omega = 0.046644;
+  const double param_beta_gamma = param_beta_pbe_paper/param_gamma;
+  
 
   template<class num>
   static num u(const num &zeta)
@@ -66,8 +76,7 @@ namespace PBEc_internal
   template<class num>
   static num A(const num &eps, const num &zeta)
   {
-    return 2*iota/(lambda*(exp(-2*iota*eps/
-			       (lambda*lambda*pow(u(zeta),3))) - 1));
+    return param_beta_gamma/(exp(-eps/(param_gamma*pow(u(zeta),3))) - 1);
   }
 
   template<class num>
@@ -75,8 +84,8 @@ namespace PBEc_internal
   {
   num d2 = d*d;
   num d2A = d2*A(eps,zeta);
-  return 0.5*lambda*lambda/iota*pow(u(zeta),3)*
-    log(1+2*(iota*d2*(1 + d2A))/(lambda*(1+d2A*(1+d2A))));
+  return param_gamma*pow(u(zeta),3)*
+    log(1+param_beta_gamma*d2*(1 + d2A)/(1+d2A*(1+d2A)));
   }
 
   template<class num>

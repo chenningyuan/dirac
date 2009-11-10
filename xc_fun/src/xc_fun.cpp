@@ -67,6 +67,8 @@ static int fun_nvars(enum xc_mode mode)
     case XC_AF:
     case XC_RZ:
       return 2;
+    case XC_R_ZI_ZJ_ZK:
+      return 4;
     case XC_ABFGH:
     case XC_RSZXY:
       return 5;
@@ -228,6 +230,24 @@ static void setdens_r(densvars<taylor<num,1,N> >&d, const num dd[1])
 }
 
 template<class num, int N>
+static void setdens_r_ri_rj_rk(densvars<taylor<num,4,N> >&d, const num dd[4])
+{
+  d.R = taylor<num,4,N>(dd[0],0);
+  d.S = 0;
+  taylor<num,4,N> zi(dd[1],1),zj(dd[2],2),zk(dd[3],3);
+  d.Z = zi*zi + zj*zj + zk*zk;
+  d.X = 0;
+  d.Y = 0;
+  d.rhoa = 0.5*(d.R+d.S);
+  d.rhob = 0.5*(d.R-d.S);
+  d.grada2 = 0.25*(d.Z+d.X+2*d.Y);
+  d.gradab = 0.25*(d.Z-d.X);
+  d.gradb2 = 0.25*(d.Z+d.X-2*d.Y);
+  d.zeta = d.S/d.R;
+}
+
+
+template<class num, int N>
 static void fun_helper(num *result, const num d[5])
 {
   if (fun_nvars(current_mode) == 1)
@@ -253,6 +273,13 @@ static void fun_helper(num *result, const num d[5])
 	default:
 	  break;
 	}
+      sum_functionals(res,dv);
+    }
+  else if (fun_nvars(current_mode) == 4)
+    {
+      taylor<num,4,N> &res = *reinterpret_cast<taylor<num,4,N> *>(result);
+      densvars<taylor<num,4,N> > dv;
+      setdens_r_ri_rj_rk(dv,d);
       sum_functionals(res,dv);
     }
   else if (fun_nvars(current_mode) == 5)
