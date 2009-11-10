@@ -61,4 +61,24 @@ module codata
 
   private
 
+  contains
+
+! miro: when we have this nice F90 module, why not insert in some usefull methods ?
+
+  subroutine print_codata_header
+! could be printed at the beginning of the DIRAC run
+#include "priunit.h"
+   write(LUPRI,*)   "CODATA Recommended Values of the Fundamental Physical Constants: 1998"
+   write(LUPRI,*)   "               Peter J. Mohr and Barry N. Taylor"
+   write(LUPRI,*)   "  Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999"
+  end subroutine print_codata_header
+
+  subroutine print_codata
+! control print out of some important constants...
+#include "priunit.h"
+    call print_codata_header
+    write(LUPRI,'(2x,a,f18.12,a)') '1 debye = ',debye,' a.u,'
+    write(LUPRI,'(2x,a,f18.12,a)') 'Speed of light = ',cvel,' a.u,'
+  end subroutine print_codata
+
 end module
