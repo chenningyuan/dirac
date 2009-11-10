@@ -179,7 +179,8 @@ module numoper_integrals
              call NumOper_BasisOffsetTables_print(basis_bs_offt)
           endif
 !
-          numoper_cb_initialized = .true.
+! aspg, debugging X2C runs... perhapes it needs to be initialized again and again...
+!         numoper_cb_initialized = .true.
 
       end subroutine NumOper_CB_init
 
