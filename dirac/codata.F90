@@ -13,6 +13,10 @@ module codata
 !
 ! -- Fundamental constants, atomic units, Avogadro's constant
 
+! TODO(miro): It would be good to have newer set of constants together with previous older sets of data.
+! I'd prefer to have a keyword in DIRAC to switch between different CODATA sets. For this one would have to 'sacrifice' the parameter status
+! of constants, however. Other choice is to use the preprocessor flag to compile DIRAC with chosen set of constants.
+
   real(8), parameter, public :: xtang    = 0.5291772083d0
   real(8), parameter, public :: xfamu    = 1822.88848d0
   real(8), parameter, public :: echarge  = 1.602176462d-19
