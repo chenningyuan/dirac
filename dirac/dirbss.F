@@ -7613,13 +7613,13 @@ C  Generate 2c MO from 4c MO (read from DFCOEF) using picture change transformat
 C
 C           C(2c) = U{^+}(4c-2c) * C(4c)
 C
-C  Resulting 2c MO's are written back into DFCOEF.
+C  Resulting 2c MO's are written back to DFCOEF.
 C
 C  On entry:
 C
-C Called from:
+C  Called from:
 C
-C   Written by Miro ILIAS, Prievidza, 2009
+C  Written by Miro ILIAS, Prievidza, 2009
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -7637,8 +7637,17 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       CHARACTER*8 LBL
 #include "memint.h"
 
+      IPRINT = MAX(IPRHAM,IPRSCF)
+
+      IF (IPRINT.GE.5) THEN
+        CALL HEADER('Output from CMOTR2C',-1)
+      ENDIF
 
 
+
+
+
+      call quit('.... stop ....')
       RETURN
       END
 
@@ -7682,7 +7691,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
         CALL HEADER('Output from CMOTR4C',-1)
       ENDIF
 
-      IF (INI2C.EQ.3) THEN
+      IF (INI2C.EQ.3) THEN ! restart code INI2C described in dirrdn.F
 C ================================================================
 C         ... get 2c MO from the "DFCOEF" file into CMO
 C ================================================================

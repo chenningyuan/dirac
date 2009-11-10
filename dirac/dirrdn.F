@@ -1964,8 +1964,8 @@ CMI =====================================================================
       IF (DO2C4C.AND.START2C) THEN
        WRITE(LUPRI,'(A)')
      &  ' ***** Restarting four-component DC-SCF'//
-     &  ' from two-component BSS-SCF *****'
-       WRITE(LUPRI,*) '...restaring code INI2C=',INI2C,
+     &  ' from the previous two-component IOTC/BSS-SCF *****'
+       WRITE(LUPRI,*) '...restaring code, INI2C=',INI2C,
      &  ' This means restart from:'
        IF (INI2C.EQ.1) THEN
          write(lupri,*)
@@ -4711,12 +4711,12 @@ CMI  ... check not combining .IOTC, .DKH1, .DKH2
 CMI  ... todo: more precise specification needed
         IF (.NOT.(DO4C2C.AND.CONT2C)) CONT2C=.FALSE.
 
-CMI ... set up the default value of I2CHAM, when BSS-postDC-SCF is on
+CMI ... set up the default value of I2CHAM, when the BSS-postDC-SCF is on
         IF (DO4C2C.AND.I2CHAM.EQ.-1.AND..NOT.CONT2C) THEN
          IF (USEDF) THEN
            I2CHAM = 3 ! use Fock-Dirac matrix for 2c transformation
          ELSE
-           I2CHAM = 4 ! use Dirac bare nuclesu for 2c transformation
+           I2CHAM = 4 ! use Dirac bare nucleus for 2c transformation
          ENDIF
         ENDIF
 
@@ -4844,10 +4844,21 @@ C         .... two-step method of Barysz
         ENDIF
 
         IF (DO4C2C) THEN 
-          WRITE(LUPRI,'(1X,A,I3)')
-     & '* after finishing four-component SCF procedure '//
-     & ' perform BSS transformation of Dirac-Fock operator'//
-     & ' and continue at the 2comp. level ! Code I2CHAM= ',I2CHAM
+         IF (CONT2C) THEN
+           WRITE(LUPRI,'(1X,A,I3)')
+     & '* after 4comp. SCF procedure '//
+     & ' perform BSS/IOTC transformation of the 4c Fock operator'//
+     & ' and continue SCF at the 2comp. level;  code I2CHAM= ',I2CHAM
+         ELSE
+           WRITE(LUPRI,'(1X,A,I3)')
+     & '* after 4comp. SCF procedure '//
+     & ' perform BSS/IOTC transformation of the 4c Fock operator'//
+     & ' DO NOT continue SCF at the 2comp. level; code I2CHAM= ',I2CHAM
+         ENDIF
+         IF (TRMO4C2C) THEN
+           WRITE(LUPRI,'(1X,A)')
+     &     '* transforming 4c MO to 2c form, no extra 2c SCF iteration.'
+           ENDIF
         ENDIF
 
         IF (DO2C4C) THEN
