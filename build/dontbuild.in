@@ -53,8 +53,5 @@ autodiff/xc_fun.cpp
 autodiff/xc_fun_module.f90
 dft/dft_num_test.F90
 srdft/.*
-xc_fun/fortran/example.F90
-xc_fun/src/taylor/unittest_taylor.cpp
-xc_fun/src/xc_fun.cpp
-xc_fun/fortran/xc_fun_module.F90
+xc_fun/.*
 aoresponse/aor_binomial.F90
