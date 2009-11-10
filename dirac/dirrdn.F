@@ -422,9 +422,7 @@ C     =============
 C
       CALL TITLER('General DIRAC set-up','*',126)
 C
-      !write(LUPRI,*) 'TWOCOMP=',TWOCOMP
-      !write(LUPRI,*) 'TWOCOMPBSS=',TWOCOMPBSS
-      
+      call print_codata_source
       WRITE(LUPRI,'(1X,A,F18.7)')
      +   '* The speed of light : ',CVEL
       IF(CVAL.NE.CVEL) THEN
