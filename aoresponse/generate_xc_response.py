@@ -154,10 +154,10 @@ def print_f90_code(term_d, order):
         nr_z = term[1]
 
         if 'g' in term_d[term]:
-           s += '\n    v  = v + derv(taylor_index(5, (/%i, 0, %i, 0, 0/)))*tv(:)'      % (nr_n,     nr_z + 1)
+           s += '\n    v  = v + derv(xc_index(XC_RSZXY, (/%i, 0, %i, 0, 0/)))*tv(:)'      % (nr_n,     nr_z + 1)
         else:
-           s += '\n    v  = v + derv(taylor_index(5, (/%i, 0, %i, 0, 0/)))*tu*g(:, 0)' % (nr_n,     nr_z + 1)
-           s += '\n    u  = u + derv(taylor_index(5, (/%i, 0, %i, 0, 0/)))*tu'         % (nr_n + 1, nr_z)
+           s += '\n    v  = v + derv(xc_index(XC_RSZXY, (/%i, 0, %i, 0, 0/)))*tu*g(:, 0)' % (nr_n,     nr_z + 1)
+           s += '\n    u  = u + derv(xc_index(XC_RSZXY, (/%i, 0, %i, 0, 0/)))*tu'         % (nr_n + 1, nr_z)
        #print s
 
     s = string.replace(s, 'g', 'gn')
@@ -172,7 +172,6 @@ def print_f90_code(term_d, order):
     real(8), intent(in)    :: gn(3, 0:max_nr_dmat)
     real(8), intent(in)    :: z(0:max_nr_dmat, 0:max_nr_dmat)
 !   ----------------------------------------------------------------------------
-    integer, external      :: taylor_index
     real(8)                :: tu
     real(8)                :: tv(3)
 !   ----------------------------------------------------------------------------
