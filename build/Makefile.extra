@@ -1,5 +1,24 @@
 # Extra targets that are rarely used.
 
+#############################################
+#########  CODATA sets of constants  ########
+#############################################
+codata86: dirac/codata.F90 
+	@echo -e "\n\t **** Set CODATA-1986 ****"
+	$(F77) -DCODATA86 $(F77FLAGS_SAFE) -c dirac/codata.F90
+
+codata98: dirac/codata.F90 
+	@echo -e "\n\t **** Set CODATA-1998 ****"
+	$(F77) -DCODATA98 $(F77FLAGS_SAFE) -c dirac/codata.F90
+
+codata02: dirac/codata.F90 
+	@echo -e "\n\t **** Set CODATA-2002 ****"
+	$(F77) -DCODATA02 $(F77FLAGS_SAFE) -c dirac/codata.F90
+
+codata06: dirac/codata.F90 
+	@echo -e "\n\t **** Set CODATA-2006 ****"
+	$(F77) -DCODATA06 $(F77FLAGS_SAFE) -c dirac/codata.F90
+
 #  Conditional include to check whether we have the (optional) HSMRCC module active
 hscc_make = hsmrcc/hsmrcc_external/Makefile.hsmrcc
 is_hscc = $(wildcard $(hscc_make))
