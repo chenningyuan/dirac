@@ -24,6 +24,33 @@ class term_c:
 
 #-------------------------------------------------------------------------------
 
+def flatten(l_in):
+
+    l = []
+    for x in l_in:
+        if hasattr(x, "__iter__") and not isinstance(x, basestring):
+           l.extend(flatten(x))
+        else:
+           l.append(x)
+    return l
+
+def multiply_list(l):
+
+    l_old = [[]]
+
+    for i in range(len(l)):
+        l_new = []
+        for j in range(len(l_old)):
+            for k in range(len(l[i])):
+                l_new.append([l_old[j], l[i][k]])
+        l_old = l_new[:]
+
+    l_out = []
+    for l in l_old:
+        l_out.append(flatten(l))
+
+    return l_out
+
 def xcombinations(items, n):
     if n==0: yield []
     else:
@@ -90,6 +117,12 @@ def get_partitions(index_s, partition_l):
     return l
 
 def get_partitions_scalar_product(index_s):
+#   example: 
+#   index_s = '234' 
+#   returns list ['0-234', '2-34', '3-24', '4-23']
+#   note that the "other" combinations are missing on purpose:
+#                 '234-0', '34-2', ...
+#   this is compensated by the factor 2 in front of all z variables
     l = []
     for i in range(len(index_s) + 1):
         for c in xuniqueCombinations(index_s, i):
@@ -99,7 +132,7 @@ def get_partitions_scalar_product(index_s):
             right = remove_from_s(index_s, ''.join(c))
             if right == '':
                right = '0'
-            l.append([left, right])
+            l.append(left + '-' + right)
     half_len = len(l)/2
     return l[0:half_len]
 
@@ -143,22 +176,20 @@ def print_f90_code(term_d, order):
     s = ''
     for term in term_d:
 
-       #s = ''
-       #print term
         if 'g' in term_d[term]:
           s += '\n    tv = ' + term_d[term]
         else:
           s += '\n    tu = ' + term_d[term]
 
-        nr_n = term[0]
-        nr_z = term[1]
+        f    = term[0]
+        nr_n = term[1]
+        nr_z = term[2]
 
         if 'g' in term_d[term]:
-           s += '\n    v  = v + derv(xc_index(XC_RSZXY, (/%i, 0, %i, 0, 0/)))*tv(:)'      % (nr_n,     nr_z + 1)
+           s += '\n    v  = v + %i.0d0*derv(xc_index(XC_RSZXY, (/%i, 0, %i, 0, 0/)))*tv(:)'      % (f, nr_n,     nr_z + 1)
         else:
-           s += '\n    v  = v + derv(xc_index(XC_RSZXY, (/%i, 0, %i, 0, 0/)))*tu*g(:, 0)' % (nr_n,     nr_z + 1)
-           s += '\n    u  = u + derv(xc_index(XC_RSZXY, (/%i, 0, %i, 0, 0/)))*tu'         % (nr_n + 1, nr_z)
-       #print s
+           s += '\n    v  = v + %i.0d0*derv(xc_index(XC_RSZXY, (/%i, 0, %i, 0, 0/)))*tu*g(:, 0)' % (f, nr_n,     nr_z + 1)
+           s += '\n    u  = u + %i.0d0*derv(xc_index(XC_RSZXY, (/%i, 0, %i, 0, 0/)))*tu'         % (f, nr_n + 1, nr_z)
 
     s = string.replace(s, 'g', 'gn')
 
@@ -182,6 +213,8 @@ def print_f90_code(term_d, order):
 
 def collect_terms(term_d, term_variable_l, term_index_l, index_to_matrix):
 
+#   print term_variable_l, term_index_l
+
     s = ''
 
     nr_n = 0
@@ -191,24 +224,26 @@ def collect_terms(term_d, term_variable_l, term_index_l, index_to_matrix):
     for i in range(len(term_variable_l)):
         if term_variable_l[i] == 'z':
            nr_z += 1
-           s += '*'
-           if len(term_index_l[i]) > 1:
-              s += '('
-           j = 0
-           for x in term_index_l[i]:
-               j += 1
-               if j > 1:
-                  s += ' + '
-               s += '%s(%s, %s)' % (term_variable_l[i], index_to_matrix[x[0]], index_to_matrix[x[1]])
-           if len(term_index_l[i]) > 1:
-              s += ')'
+           left  = string.split(term_index_l[i], '-')[0]
+           right = string.split(term_index_l[i], '-')[1]
+           s += '*%s(%s, %s)' % (term_variable_l[i], index_to_matrix[left], index_to_matrix[right])
         elif term_variable_l[i] == 'g':
            nr_g += 1
            s += '*g(:, %s)' % index_to_matrix[term_index_l[i]]
         else:
            nr_n += 1
            s += '*%s(%s)' % (term_variable_l[i], index_to_matrix[term_index_l[i]])
-    t = tuple([nr_n, nr_z, nr_g])
+
+#   determine prefactor
+    nr_zeros = 0
+    for term_index in term_index_l:
+        if '0' in term_index:
+           nr_zeros += 1
+    nr_density_matrices = nr_n + nr_g + nr_z*2 - nr_zeros
+    prefactor = 2**(nr_density_matrices - 1)
+
+    t = tuple([prefactor, nr_n, nr_z, nr_g])
+
     if t in term_d.keys():
        term_d[t] += ' &\n       + ' + s[1:]
     else:
@@ -252,17 +287,18 @@ def generate_code(order):
                        temp_l = []
                        for x in get_partitions_scalar_product(selection):
 #                         except linear response highest order terms do not contribute
-                          if (order < 2) or (x != ['0', str(matrix_to_index[2**order - 1])]):
+                          if (order < 2) or (x != '0' + '-' + str(matrix_to_index[2**order - 1])):
                              temp_l.append(x)
                        term_index_l.append(temp_l)
                     else:
                        if (order < 2) or (len(variable_combination_l) > 1):
 #                         except linear response highest order terms do not contribute
                           term_variable_l.append(variable_combination_l[i])
-                          term_index_l.append(selection)
-#               print term_variable_l, term_index_l
+                          term_index_l.append([selection])
+
                 if len(term_variable_l) > 0:
-                   term_d = collect_terms(term_d, term_variable_l, term_index_l, index_to_matrix)
+                   for l in multiply_list(term_index_l):
+                       term_d = collect_terms(term_d, term_variable_l, l, index_to_matrix)
 
     print_f90_code(term_d, order)
 
