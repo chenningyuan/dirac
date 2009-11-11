@@ -288,7 +288,7 @@ C        ... only one iteration
            DODIIS = .FALSE.
            DODSCF = .FALSE.
            BNCRON = .FALSE.
-        ELSE
+        ELSE ! continue with 2c-SCF iterations
            BNCRON = .FALSE.
 C         ... need to reset them...
            DHFCONV(1)=.FALSE.
@@ -1010,6 +1010,18 @@ C
      &                WORK(KEBF),WORK(KIBF),IPRSCF)
           CALL MEMREL('DFSOLV.froz',WORK,KIND,KIND,KFREE,LFREE)
         ENDIF
+
+CMI     ... Control printout ...
+        IF (IPRSCF.GE.6) THEN
+          WRITE(LUPRI,'(/,2X,A)') 
+     &    'DFSOLV: Eigenvalues, eigenvectors - MO coefficients'
+          WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &     '*** Fermion corep ',I,'/',NFSYM
+          WRITE(LUPRI,'(I5,F25.10)') (J,EIG(IORB(I)+J),J=1,NTMO(I))
+          CALL PRQMAT(FMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),
+     &           NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+        ENDIF
+
  40   CONTINUE
       IF(NFROT.GT.0) CLOSE(LUTMAT,STATUS='KEEP')
 C
@@ -1017,15 +1029,7 @@ C     Print eigenvalues
 C     (after backtransformation in case of frozen orbitals)
 C
       IF (IPRSCF.GE.2) THEN
-         IF (IPRSCF.GE.7) THEN
-           write(lupri,*) 'DFSOLV: Eigenvalues'
-           DO I=1,NFSYM
-            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &     '*** Fermion corep ',I,'/',NFSYM
-          WRITE(LUPRI,'(I5,F25.10)') (J,EIG(IORB(I)+J),J=1,NTMO(I))
-           ENDDO
-         ENDIF
-         CALL PREIGN(EIG,IBEIG,(IPRSCF .GE. 4),WORK(KFREE),LFREE)
+        CALL PREIGN(EIG,IBEIG,(IPRSCF .GE. 4),WORK(KFREE),LFREE)
       ENDIF
 C
 C     Write coefficients to file
@@ -3307,7 +3311,7 @@ C
 C     * TRIVEC: Looking for old coefficients
 C     --------------------------------------
 C
-CMI/May05 Do not use old DFCOEF when DO4CT2C=.TRUE. !
+CMI/May05 Do not use old DFCOEF when DO4C2C=.TRUE. !
       IF(TRIVEC.AND..NOT.RESTFCK) THEN
         INQUIRE(FILE='DFCOEF',EXIST=TOBE)
         IF(TOBE) THEN
