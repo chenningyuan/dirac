@@ -275,7 +275,14 @@ int rot_fit_rms(int argc, char *argv[], ostream &dst)
     }
     // Move both molecules to have their center of mass at the origin
     vec<double,3> ref_cm = center_of_mass(refsym,refr), 
-	rot_cm = center_of_mass(rotsym,rotr);
+	          rot_cm = center_of_mass(rotsym,rotr);
+    if (verbosity > 0)
+      {
+	cerr << "Molecule 1 center of mass: " 
+	     << ref_cm[0] << " " << ref_cm[1] << " " << ref_cm[2] << endl;
+	cerr << "Molecule 2 center of mass: " 
+	     << rot_cm[0] << " " << rot_cm[1] << " " << rot_cm[2] << endl;
+      }  
     for (int i=0;i<refr.size();i++)
     {
 	refr[i] -= ref_cm;
@@ -322,6 +329,13 @@ int rot_fit_rms(int argc, char *argv[], ostream &dst)
 	cerr << "Translate " << -rot_cm[0] << " " << -rot_cm[1] << " " << -rot_cm[2] << endl;
 	cerr << "Rotation axis: " << Rtot[1] << " " << Rtot[2] << " " << Rtot[3] << endl;
 	cerr << "Translate " << ref_cm[0] << " " << ref_cm[1] << " " << ref_cm[2] << endl;
+	cerr << "Repeat rotation by:" << endl;
+	cerr << "moltool -t - " 
+	     << -rot_cm[0] << " " << -rot_cm[1] << " " << -rot_cm[2] 
+	     << " | moltool -r - " 
+	     << Rtot[1] << " " << Rtot[2] << " " << Rtot[3]
+	     << " | moltool -t - "
+	     << ref_cm[0] << " " << ref_cm[1] << " " << ref_cm[2] << endl;
     }
     // Move MOLECULE2 to the original position of MOLECULE1
     for (int i=0;i<refr.size();i++)
