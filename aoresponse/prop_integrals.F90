@@ -738,7 +738,7 @@ contains
                           0)
 
               A(1) = tiny(0.0d0)*D(1)
-              call daxpy(ntbas(0)*ntbas(0)*nz, 2.0d0, z, 1, A(1)%elms, 1)
+              call daxpy(ntbas(0)*ntbas(0)*nz, 1.0d0, z, 1, A(1)%elms, 1)
               F(1) = F(1) + A(1)
 
             end if

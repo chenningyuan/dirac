@@ -103,13 +103,6 @@ contains
                  dmat(1, 1, 1, i), &
                  buffer,           &
                  ao_g0_m0)
-
-#define SCALE_DENSITIES
-#ifdef SCALE_DENSITIES
-!     perturbed matrices are scaled by 2 in dftexc
-!     correct for it here
-      n(i) = 0.5d0*n(i)
-#endif
     end do
 
 !   get perturbed densitiy gradients and gradient norms
@@ -124,12 +117,6 @@ contains
                     buffer,           &
                     ao_g0_m0,         &
                     ao_g1_m0)
-
-#ifdef SCALE_DENSITIES
-!       perturbed matrices are scaled by 2 in dftexc
-!       correct for it here
-        gn(:, i) = 0.5d0*gn(:, i)
-#endif
       end do
 
       do i = 0, nr_dmat
@@ -196,13 +183,13 @@ contains
 !   ----------------------------------------------------------------------------
 
     tu = n(1)
-    v  = v + 1.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 1.0d0*derv(xc_index(XC_RSZXY, (/2, 0, 0, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/2, 0, 0, 0, 0/)))*tu
     tv = gn(:, 1)
-    v  = v + 1.0d0*derv(xc_index(XC_RSZXY, (/0, 0, 1, 0, 0/)))*tv(:)
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 1, 0, 0/)))*tv(:)
     tu = z(0, 1)
-    v  = v + 1.0d0*derv(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 1.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)))*tu
     
   end subroutine
 
@@ -221,24 +208,24 @@ contains
 !   ----------------------------------------------------------------------------
 
     tu = z(1, 2)
-    v  = v + 2.0d0*derv(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 2.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)))*tu
     tu = n(1)*z(0, 2) &
        + z(0, 1)*n(2)
-    v  = v + 2.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 2.0d0*derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tu
     tv = z(0, 1)*gn(:, 2) &
        + gn(:, 1)*z(0, 2)
-    v  = v + 2.0d0*derv(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)))*tv(:)
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)))*tv(:)
     tv = n(1)*gn(:, 2) &
        + gn(:, 1)*n(2)
-    v  = v + 2.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)))*tv(:)
+    v  = v + derv(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)))*tv(:)
     tu = n(1)*n(2)
-    v  = v + 2.0d0*derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 2.0d0*derv(xc_index(XC_RSZXY, (/3, 0, 0, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/3, 0, 0, 0, 0/)))*tu
     tu = z(0, 1)*z(0, 2)
-    v  = v + 2.0d0*derv(xc_index(XC_RSZXY, (/0, 0, 3, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 2.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 3, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tu
     
   end subroutine
 
@@ -257,87 +244,87 @@ contains
 !   ----------------------------------------------------------------------------
 
     tu = z(0, 1)*z(0, 2)*z(0, 3)
-    v  = v + 4.0d0*derv(xc_index(XC_RSZXY, (/0, 0, 4, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 4.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 3, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 4, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/1, 0, 3, 0, 0/)))*tu
     tv = z(1, 2)*gn(:, 3) &
        + z(1, 3)*gn(:, 2) &
        + z(2, 3)*gn(:, 1)
-    v  = v + 4.0d0*derv(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)))*tv(:)
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)))*tv(:)
     tv = n(1)*n(2)*gn(:, 3) &
        + n(1)*gn(:, 2)*n(3) &
        + gn(:, 1)*n(2)*n(3)
-    v  = v + 4.0d0*derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tv(:)
+    v  = v + derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tv(:)
     tu = n(1)*z(0, 2)*z(0, 3) &
        + z(0, 1)*n(2)*z(0, 3) &
        + z(0, 1)*z(0, 2)*n(3)
-    v  = v + 4.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 3, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 4.0d0*derv(xc_index(XC_RSZXY, (/2, 0, 2, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/1, 0, 3, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/2, 0, 2, 0, 0/)))*tu
     tu = n(1)*n(2)*n(3)
-    v  = v + 4.0d0*derv(xc_index(XC_RSZXY, (/3, 0, 1, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 4.0d0*derv(xc_index(XC_RSZXY, (/4, 0, 0, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/3, 0, 1, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/4, 0, 0, 0, 0/)))*tu
     tv = z(0, 1)*z(0, 2)*gn(:, 3) &
        + z(0, 1)*gn(:, 2)*z(0, 3) &
        + gn(:, 1)*z(0, 2)*z(0, 3)
-    v  = v + 4.0d0*derv(xc_index(XC_RSZXY, (/0, 0, 3, 0, 0/)))*tv(:)
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 3, 0, 0/)))*tv(:)
     tu = z(1, 2)*z(0, 3) &
        + z(1, 3)*z(0, 2) &
        + z(2, 3)*z(0, 1)
-    v  = v + 4.0d0*derv(xc_index(XC_RSZXY, (/0, 0, 3, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 4.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 3, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tu
     tv = n(1)*z(0, 2)*gn(:, 3) &
        + n(1)*gn(:, 2)*z(0, 3) &
        + z(0, 1)*n(2)*gn(:, 3) &
        + z(0, 1)*gn(:, 2)*n(3) &
        + gn(:, 1)*n(2)*z(0, 3) &
        + gn(:, 1)*z(0, 2)*n(3)
-    v  = v + 4.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tv(:)
+    v  = v + derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tv(:)
     tu = z(1, 6) &
        + z(2, 5) &
        + z(3, 4)
-    v  = v + 2.0d0*derv(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 2.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)))*tu
     tu = n(1)*n(2)*z(0, 3) &
        + n(1)*z(0, 2)*n(3) &
        + z(0, 1)*n(2)*n(3)
-    v  = v + 4.0d0*derv(xc_index(XC_RSZXY, (/2, 0, 2, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 4.0d0*derv(xc_index(XC_RSZXY, (/3, 0, 1, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/2, 0, 2, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/3, 0, 1, 0, 0/)))*tu
     tu = n(4)*z(0, 3) &
        + n(5)*z(0, 2) &
        + n(6)*z(0, 1) &
        + z(0, 4)*n(3) &
        + z(0, 5)*n(2) &
        + z(0, 6)*n(1)
-    v  = v + 2.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 2.0d0*derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tu
     tu = z(1, 2)*n(3) &
        + z(1, 3)*n(2) &
        + z(2, 3)*n(1)
-    v  = v + 4.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 4.0d0*derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tu
     tv = n(4)*gn(:, 3) &
        + n(5)*gn(:, 2) &
        + n(6)*gn(:, 1) &
        + gn(:, 4)*n(3) &
        + gn(:, 5)*n(2) &
        + gn(:, 6)*n(1)
-    v  = v + 2.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)))*tv(:)
+    v  = v + derv(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)))*tv(:)
     tu = n(4)*n(3) &
        + n(5)*n(2) &
        + n(6)*n(1)
-    v  = v + 2.0d0*derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 2.0d0*derv(xc_index(XC_RSZXY, (/3, 0, 0, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/3, 0, 0, 0, 0/)))*tu
     tv = z(0, 4)*gn(:, 3) &
        + z(0, 5)*gn(:, 2) &
        + z(0, 6)*gn(:, 1) &
        + gn(:, 4)*z(0, 3) &
        + gn(:, 5)*z(0, 2) &
        + gn(:, 6)*z(0, 1)
-    v  = v + 2.0d0*derv(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)))*tv(:)
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)))*tv(:)
     tu = z(0, 4)*z(0, 3) &
        + z(0, 5)*z(0, 2) &
        + z(0, 6)*z(0, 1)
-    v  = v + 2.0d0*derv(xc_index(XC_RSZXY, (/0, 0, 3, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 2.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 3, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tu
     
   end subroutine
 
@@ -359,8 +346,8 @@ contains
        + n(1)*n(2)*z(0, 3)*n(4) &
        + n(1)*z(0, 2)*n(3)*n(4) &
        + z(0, 1)*n(2)*n(3)*n(4)
-    v  = v + 8.0d0*derv(xc_index(XC_RSZXY, (/3, 0, 2, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 8.0d0*derv(xc_index(XC_RSZXY, (/4, 0, 1, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/3, 0, 2, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/4, 0, 1, 0, 0/)))*tu
     tv = z(0, 5)*z(0, 3)*gn(:, 4) &
        + z(0, 6)*z(0, 2)*gn(:, 4) &
        + z(0, 7)*z(0, 2)*gn(:, 3) &
@@ -379,12 +366,12 @@ contains
        + gn(:, 8)*z(0, 1)*z(0, 4) &
        + gn(:, 9)*z(0, 1)*z(0, 3) &
        + gn(:, 10)*z(0, 1)*z(0, 2)
-    v  = v + 4.0d0*derv(xc_index(XC_RSZXY, (/0, 0, 3, 0, 0/)))*tv(:)
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 3, 0, 0/)))*tv(:)
     tv = z(0, 1)*z(0, 2)*z(0, 3)*gn(:, 4) &
        + z(0, 1)*z(0, 2)*gn(:, 3)*z(0, 4) &
        + z(0, 1)*gn(:, 2)*z(0, 3)*z(0, 4) &
        + gn(:, 1)*z(0, 2)*z(0, 3)*z(0, 4)
-    v  = v + 8.0d0*derv(xc_index(XC_RSZXY, (/0, 0, 4, 0, 0/)))*tv(:)
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 4, 0, 0/)))*tv(:)
     tu = n(5)*z(0, 3)*z(0, 4) &
        + n(6)*z(0, 2)*z(0, 4) &
        + n(7)*z(0, 2)*z(0, 3) &
@@ -403,11 +390,11 @@ contains
        + z(0, 8)*z(0, 1)*n(4) &
        + z(0, 9)*z(0, 1)*n(3) &
        + z(0, 10)*z(0, 1)*n(2)
-    v  = v + 4.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 3, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 4.0d0*derv(xc_index(XC_RSZXY, (/2, 0, 2, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/1, 0, 3, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/2, 0, 2, 0, 0/)))*tu
     tu = z(0, 1)*z(0, 2)*z(0, 3)*z(0, 4)
-    v  = v + 8.0d0*derv(xc_index(XC_RSZXY, (/0, 0, 5, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 8.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 4, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 5, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/1, 0, 4, 0, 0/)))*tu
     tu = z(1, 14) &
        + z(2, 13) &
        + z(3, 12) &
@@ -415,8 +402,8 @@ contains
        + z(5, 10) &
        + z(6, 9) &
        + z(7, 8)
-    v  = v + 2.0d0*derv(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 2.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)))*tu
     tu = z(1, 8)*n(4) &
        + z(2, 6)*n(4) &
        + z(3, 5)*n(4) &
@@ -435,8 +422,8 @@ contains
        + n(8)*z(1, 4) &
        + n(9)*z(1, 3) &
        + n(10)*z(1, 2)
-    v  = v + 4.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 4.0d0*derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tu
     tv = n(11)*gn(:, 4) &
        + n(12)*gn(:, 3) &
        + n(13)*gn(:, 2) &
@@ -451,15 +438,15 @@ contains
        + n(8)*gn(:, 7) &
        + n(9)*gn(:, 6) &
        + n(10)*gn(:, 5)
-    v  = v + 2.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)))*tv(:)
+    v  = v + derv(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)))*tv(:)
     tu = z(1, 2)*n(3)*n(4) &
        + z(1, 3)*n(2)*n(4) &
        + z(1, 4)*n(2)*n(3) &
        + z(2, 3)*n(1)*n(4) &
        + z(2, 4)*n(1)*n(3) &
        + z(3, 4)*n(1)*n(2)
-    v  = v + 8.0d0*derv(xc_index(XC_RSZXY, (/2, 0, 2, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 8.0d0*derv(xc_index(XC_RSZXY, (/3, 0, 1, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/2, 0, 2, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/3, 0, 1, 0, 0/)))*tu
     tu = z(0, 11)*z(0, 4) &
        + z(0, 12)*z(0, 3) &
        + z(0, 13)*z(0, 2) &
@@ -467,8 +454,8 @@ contains
        + z(0, 5)*z(0, 10) &
        + z(0, 6)*z(0, 9) &
        + z(0, 7)*z(0, 8)
-    v  = v + 2.0d0*derv(xc_index(XC_RSZXY, (/0, 0, 3, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 2.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 3, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tu
     tv = z(1, 2)*n(3)*gn(:, 4) &
        + z(1, 3)*n(2)*gn(:, 4) &
        + z(1, 4)*n(2)*gn(:, 3) &
@@ -481,28 +468,28 @@ contains
        + z(2, 3)*gn(:, 1)*n(4) &
        + z(2, 4)*gn(:, 1)*n(3) &
        + z(3, 4)*gn(:, 1)*n(2)
-    v  = v + 8.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tv(:)
+    v  = v + derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tv(:)
     tv = n(1)*n(2)*n(3)*gn(:, 4) &
        + n(1)*n(2)*gn(:, 3)*n(4) &
        + n(1)*gn(:, 2)*n(3)*n(4) &
        + gn(:, 1)*n(2)*n(3)*n(4)
-    v  = v + 8.0d0*derv(xc_index(XC_RSZXY, (/3, 0, 1, 0, 0/)))*tv(:)
+    v  = v + derv(xc_index(XC_RSZXY, (/3, 0, 1, 0, 0/)))*tv(:)
     tu = z(0, 5)*z(0, 3)*z(0, 4) &
        + z(0, 6)*z(0, 2)*z(0, 4) &
        + z(0, 7)*z(0, 2)*z(0, 3) &
        + z(0, 8)*z(0, 1)*z(0, 4) &
        + z(0, 9)*z(0, 1)*z(0, 3) &
        + z(0, 10)*z(0, 1)*z(0, 2)
-    v  = v + 4.0d0*derv(xc_index(XC_RSZXY, (/0, 0, 4, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 4.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 3, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 4, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/1, 0, 3, 0, 0/)))*tu
     tu = n(1)*n(2)*z(0, 3)*z(0, 4) &
        + n(1)*z(0, 2)*n(3)*z(0, 4) &
        + n(1)*z(0, 2)*z(0, 3)*n(4) &
        + z(0, 1)*n(2)*n(3)*z(0, 4) &
        + z(0, 1)*n(2)*z(0, 3)*n(4) &
        + z(0, 1)*z(0, 2)*n(3)*n(4)
-    v  = v + 8.0d0*derv(xc_index(XC_RSZXY, (/2, 0, 3, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 8.0d0*derv(xc_index(XC_RSZXY, (/3, 0, 2, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/2, 0, 3, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/3, 0, 2, 0, 0/)))*tu
     tu = z(1, 8)*z(0, 4) &
        + z(2, 6)*z(0, 4) &
        + z(3, 5)*z(0, 4) &
@@ -521,8 +508,8 @@ contains
        + z(1, 3)*z(0, 9) &
        + z(0, 7)*z(2, 3) &
        + z(1, 4)*z(0, 8)
-    v  = v + 4.0d0*derv(xc_index(XC_RSZXY, (/0, 0, 3, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 4.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 3, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tu
     tv = z(1, 2)*z(0, 3)*gn(:, 4) &
        + z(1, 3)*z(0, 2)*gn(:, 4) &
        + z(1, 4)*z(0, 2)*gn(:, 3) &
@@ -535,7 +522,7 @@ contains
        + z(2, 3)*gn(:, 1)*z(0, 4) &
        + z(2, 4)*gn(:, 1)*z(0, 3) &
        + z(3, 4)*gn(:, 1)*z(0, 2)
-    v  = v + 8.0d0*derv(xc_index(XC_RSZXY, (/0, 0, 3, 0, 0/)))*tv(:)
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 3, 0, 0/)))*tv(:)
     tv = z(0, 11)*gn(:, 4) &
        + z(0, 12)*gn(:, 3) &
        + z(0, 13)*gn(:, 2) &
@@ -550,7 +537,7 @@ contains
        + z(0, 8)*gn(:, 7) &
        + z(0, 9)*gn(:, 6) &
        + z(0, 10)*gn(:, 5)
-    v  = v + 2.0d0*derv(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)))*tv(:)
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)))*tv(:)
     tu = z(1, 2)*n(3)*z(0, 4) &
        + z(1, 3)*n(2)*z(0, 4) &
        + z(1, 4)*n(2)*z(0, 3) &
@@ -563,14 +550,14 @@ contains
        + z(2, 3)*z(0, 1)*n(4) &
        + z(2, 4)*z(0, 1)*n(3) &
        + z(3, 4)*z(0, 1)*n(2)
-    v  = v + 8.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 3, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 8.0d0*derv(xc_index(XC_RSZXY, (/2, 0, 2, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/1, 0, 3, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/2, 0, 2, 0, 0/)))*tu
     tu = n(1)*z(0, 2)*z(0, 3)*z(0, 4) &
        + z(0, 1)*n(2)*z(0, 3)*z(0, 4) &
        + z(0, 1)*z(0, 2)*n(3)*z(0, 4) &
        + z(0, 1)*z(0, 2)*z(0, 3)*n(4)
-    v  = v + 8.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 4, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 8.0d0*derv(xc_index(XC_RSZXY, (/2, 0, 3, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/1, 0, 4, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/2, 0, 3, 0, 0/)))*tu
     tv = n(5)*n(3)*gn(:, 4) &
        + n(6)*n(2)*gn(:, 4) &
        + n(7)*n(2)*gn(:, 3) &
@@ -589,7 +576,7 @@ contains
        + gn(:, 8)*n(1)*n(4) &
        + gn(:, 9)*n(1)*n(3) &
        + gn(:, 10)*n(1)*n(2)
-    v  = v + 4.0d0*derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tv(:)
+    v  = v + derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tv(:)
     tv = n(1)*n(2)*z(0, 3)*gn(:, 4) &
        + n(1)*n(2)*gn(:, 3)*z(0, 4) &
        + n(1)*z(0, 2)*n(3)*gn(:, 4) &
@@ -602,18 +589,18 @@ contains
        + gn(:, 1)*n(2)*n(3)*z(0, 4) &
        + gn(:, 1)*n(2)*z(0, 3)*n(4) &
        + gn(:, 1)*z(0, 2)*n(3)*n(4)
-    v  = v + 8.0d0*derv(xc_index(XC_RSZXY, (/2, 0, 2, 0, 0/)))*tv(:)
+    v  = v + derv(xc_index(XC_RSZXY, (/2, 0, 2, 0, 0/)))*tv(:)
     tu = n(5)*n(3)*n(4) &
        + n(6)*n(2)*n(4) &
        + n(7)*n(2)*n(3) &
        + n(8)*n(1)*n(4) &
        + n(9)*n(1)*n(3) &
        + n(10)*n(1)*n(2)
-    v  = v + 4.0d0*derv(xc_index(XC_RSZXY, (/3, 0, 1, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 4.0d0*derv(xc_index(XC_RSZXY, (/4, 0, 0, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/3, 0, 1, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/4, 0, 0, 0, 0/)))*tu
     tu = n(1)*n(2)*n(3)*n(4)
-    v  = v + 8.0d0*derv(xc_index(XC_RSZXY, (/4, 0, 1, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 8.0d0*derv(xc_index(XC_RSZXY, (/5, 0, 0, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/4, 0, 1, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/5, 0, 0, 0, 0/)))*tu
     tv = z(1, 8)*gn(:, 4) &
        + z(2, 6)*gn(:, 4) &
        + z(3, 5)*gn(:, 4) &
@@ -632,15 +619,15 @@ contains
        + z(2, 3)*gn(:, 7) &
        + z(2, 4)*gn(:, 6) &
        + z(3, 4)*gn(:, 5)
-    v  = v + 4.0d0*derv(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)))*tv(:)
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)))*tv(:)
     tu = z(1, 2)*z(0, 3)*z(0, 4) &
        + z(1, 3)*z(0, 2)*z(0, 4) &
        + z(1, 4)*z(0, 2)*z(0, 3) &
        + z(2, 3)*z(0, 1)*z(0, 4) &
        + z(2, 4)*z(0, 1)*z(0, 3) &
        + z(3, 4)*z(0, 1)*z(0, 2)
-    v  = v + 8.0d0*derv(xc_index(XC_RSZXY, (/0, 0, 4, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 8.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 3, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 4, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/1, 0, 3, 0, 0/)))*tu
     tu = n(11)*n(4) &
        + n(12)*n(3) &
        + n(13)*n(2) &
@@ -648,13 +635,13 @@ contains
        + n(5)*n(10) &
        + n(6)*n(9) &
        + n(7)*n(8)
-    v  = v + 2.0d0*derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 2.0d0*derv(xc_index(XC_RSZXY, (/3, 0, 0, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/3, 0, 0, 0, 0/)))*tu
     tu = z(1, 2)*z(3, 4) &
        + z(1, 3)*z(2, 4) &
        + z(1, 4)*z(2, 3)
-    v  = v + 8.0d0*derv(xc_index(XC_RSZXY, (/0, 0, 3, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 8.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 3, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tu
     tv = n(1)*z(0, 2)*z(0, 3)*gn(:, 4) &
        + n(1)*z(0, 2)*gn(:, 3)*z(0, 4) &
        + n(1)*gn(:, 2)*z(0, 3)*z(0, 4) &
@@ -667,7 +654,7 @@ contains
        + gn(:, 1)*n(2)*z(0, 3)*z(0, 4) &
        + gn(:, 1)*z(0, 2)*n(3)*z(0, 4) &
        + gn(:, 1)*z(0, 2)*z(0, 3)*n(4)
-    v  = v + 8.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 3, 0, 0/)))*tv(:)
+    v  = v + derv(xc_index(XC_RSZXY, (/1, 0, 3, 0, 0/)))*tv(:)
     tu = n(5)*n(3)*z(0, 4) &
        + n(6)*n(2)*z(0, 4) &
        + n(7)*n(2)*z(0, 3) &
@@ -686,8 +673,8 @@ contains
        + z(0, 8)*n(1)*n(4) &
        + z(0, 9)*n(1)*n(3) &
        + z(0, 10)*n(1)*n(2)
-    v  = v + 4.0d0*derv(xc_index(XC_RSZXY, (/2, 0, 2, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 4.0d0*derv(xc_index(XC_RSZXY, (/3, 0, 1, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/2, 0, 2, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/3, 0, 1, 0, 0/)))*tu
     tv = n(5)*z(0, 3)*gn(:, 4) &
        + n(6)*z(0, 2)*gn(:, 4) &
        + n(7)*z(0, 2)*gn(:, 3) &
@@ -724,7 +711,7 @@ contains
        + gn(:, 8)*z(0, 1)*n(4) &
        + gn(:, 9)*z(0, 1)*n(3) &
        + gn(:, 10)*z(0, 1)*n(2)
-    v  = v + 4.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tv(:)
+    v  = v + derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tv(:)
     tu = n(11)*z(0, 4) &
        + n(12)*z(0, 3) &
        + n(13)*z(0, 2) &
@@ -739,8 +726,8 @@ contains
        + n(8)*z(0, 7) &
        + n(9)*z(0, 6) &
        + n(10)*z(0, 5)
-    v  = v + 2.0d0*derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tu*gn(:, 0)
-    u  = u + 2.0d0*derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tu
+    v  = v + derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tu*gn(:, 0)
+    u  = u + derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tu
     
   end subroutine
 #endif /* ifdef MOD_AUTODIFF */
