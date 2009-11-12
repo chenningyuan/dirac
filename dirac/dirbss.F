@@ -7682,7 +7682,8 @@ C   ... first get the picture change transf.matrix into VMAT
 
 C .. do own picture change transformation TBUF=VMAT^{+} * CMO
       IPCTM = 1
-      IMO = 1
+      IMO  = 1
+      IMOe = 1
       DO I=1,NFSYM
       IF (NESH(I).GT.0) THEN
 
@@ -7698,9 +7699,14 @@ C .. do own picture change transformation TBUF=VMAT^{+} * CMO
      &  'CMOTR2C: 4c MO coefficients, CMO',-1)
         WRITE(LUPRI,'(A,I1,A,I1)')
      &  '* Fermion ircop no.',I,'/',NFSYM                          
-!       CALL PRQMAT(CMO(IMO),NFBAS(I,0),NESH(I),              
         CALL PRQMAT(CMO(IMO),NFBAS(I,0),NORB(I),              
-!    &    NFBAS(I,0),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
+     &    NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+
+        CALL HEADER(
+     &  'CMOTR2C: 4c MO coefficients, e-part only, CMO',-1)
+        WRITE(LUPRI,'(A,I1,A,I1)')
+     &  '* Fermion ircop no.',I,'/',NFSYM                          
+        CALL PRQMAT(CMO(IMO+NFBAS(I,0)*NESH(I)*NZ),NFBAS(I,0),NESH(I),
      &    NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
        ENDIF
 
@@ -7711,30 +7717,30 @@ C ===============================================================
      &  'H','N',IPQTOQ(1,0),VMAT(IPCTM),
      &   NFBAS(I,0),NFBAS(I,1),NZ,
      &  'N','N',IPQTOQ(1,0),
-     &   CMO(IMO),NFBAS(I,0),NESH(I),NZ,
-     &   D0,IPQTOQ(1,0),TBUF(IMO),
+     &   CMO(IMO+(NFBAS(I,0)*NESH(I)*NZ)),NFBAS(I,0),NORB(I),NZ,
+     &   D0,IPQTOQ(1,0),TBUF(IMOe),
      &   NFBAS(I,0),NESH(I),NZ)
 
        IF (IPRINT.GE.5) THEN
         CALL HEADER(
-     &  'CMOTR2C: From U^{+}.CMO_4C = 2c MOs(L,e), TBUF',-1)
+     &  'CMOTR2C: MO_2c(LS,e) = U^{+}.MO_4c(LS,e), TBUF',-1)
         WRITE(LUPRI,'(A,I1,A,I1)')
      &  '* Fermion ircop no.',I,'/',NFSYM                          
-!       CALL PRQMAT(TBUF(IMO),NFBAS(I,0),NESH(I),              
-        CALL PRQMAT(TBUF(IMO),NFBAS(I,0),NORB(I), 
-!    &    NFBAS(I,0),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
-     &    NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+        CALL PRQMAT(TBUF(IMOe),NFBAS(I,0),NESH(I),              
+!       CALL PRQMAT(TBUF(IMO),NFBAS(I,0),NORB(I), 
+     &    NFBAS(I,0),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
+!    &    NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
        ENDIF
 
-        ! IMO =   IMO + (NFBAS(I,0)*NESH(I)*NZ)
-          IMO =   IMO + (NFBAS(I,0)*NORB(I)*NZ)
-       IPCTM  = IPCTM + (NFBAS(I,0)*NFBAS(I,1)*NZ) 
+          IMOe =  IMOe + (NFBAS(I,0)*NESH(I)*NZ)
+          IMO  =   IMO + (NFBAS(I,0)*NORB(I)*NZ)
+       IPCTM  =  IPCTM + (NFBAS(I,0)*NFBAS(I,1)*NZ) 
 
       ENDIF
       ENDDO
 
 C     ... check the orthonormality of generated starting MO's
-      CALL NRMSTMO(TBUF,VMAT,CMO,WORK,LWORK,IPRINT)
+!     CALL NRMSTMO(TBUF,VMAT,CMO,WORK,LWORK,IPRINT)
 
       call quit('.... stop ....')
       RETURN
