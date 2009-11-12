@@ -181,15 +181,14 @@ def print_f90_code(term_d, order):
         else:
           s += '\n    tu = ' + term_d[term]
 
-        f    = term[0]
-        nr_n = term[1]
-        nr_z = term[2]
+        nr_n = term[0]
+        nr_z = term[1]
 
         if 'g' in term_d[term]:
-           s += '\n    v  = v + %i.0d0*derv(xc_index(XC_RSZXY, (/%i, 0, %i, 0, 0/)))*tv(:)'      % (f, nr_n,     nr_z + 1)
+           s += '\n    v  = v + derv(xc_index(XC_RSZXY, (/%i, 0, %i, 0, 0/)))*tv(:)'      % (nr_n,     nr_z + 1)
         else:
-           s += '\n    v  = v + %i.0d0*derv(xc_index(XC_RSZXY, (/%i, 0, %i, 0, 0/)))*tu*g(:, 0)' % (f, nr_n,     nr_z + 1)
-           s += '\n    u  = u + %i.0d0*derv(xc_index(XC_RSZXY, (/%i, 0, %i, 0, 0/)))*tu'         % (f, nr_n + 1, nr_z)
+           s += '\n    v  = v + derv(xc_index(XC_RSZXY, (/%i, 0, %i, 0, 0/)))*tu*g(:, 0)' % (nr_n,     nr_z + 1)
+           s += '\n    u  = u + derv(xc_index(XC_RSZXY, (/%i, 0, %i, 0, 0/)))*tu'         % (nr_n + 1, nr_z)
 
     s = string.replace(s, 'g', 'gn')
 
@@ -234,14 +233,6 @@ def collect_terms(term_d, double_d, term_variable_l, term_index_l, index_to_matr
            nr_n += 1
            s += '*%s(%s)' % (term_variable_l[i], index_to_matrix[term_index_l[i]])
 
-#   determine prefactor
-    nr_zeros = 0
-    for term_index in term_index_l:
-        if '0' in term_index:
-           nr_zeros += 1
-    nr_density_matrices = nr_n + nr_g + nr_z*2 - nr_zeros
-    prefactor = 2**(nr_density_matrices - 1)
-
 #   avoid double counting:
     accept_term = 1
     for i in range(len(term_variable_l)):
@@ -253,15 +244,15 @@ def collect_terms(term_d, double_d, term_variable_l, term_index_l, index_to_matr
             term_index_l_swap       = term_index_l[:]
             term_index_l_swap[i]    = term_index_l[j]
             term_index_l_swap[j]    = term_index_l[i]
-            t_swap = tuple([prefactor, nr_n, nr_z, nr_g] + term_variable_l_swap + term_index_l_swap)
+            t_swap = tuple([nr_n, nr_z, nr_g] + term_variable_l_swap + term_index_l_swap)
             if t_swap in double_d.keys():
                accept_term = 0
 
     if accept_term:
-       t = tuple([prefactor, nr_n, nr_z, nr_g] + term_variable_l + term_index_l)
+       t = tuple([nr_n, nr_z, nr_g] + term_variable_l + term_index_l)
        double_d[t] = 1
 
-       t = tuple([prefactor, nr_n, nr_z, nr_g])
+       t = tuple([nr_n, nr_z, nr_g])
        if t in term_d.keys():
           term_d[t] += ' &\n       + ' + s[1:]
        else:
@@ -327,3 +318,7 @@ def generate_code(order):
 # generate code up to max_order
 for i in range(1, max_order + 1):
     generate_code(i)
+
+print '''#endif /* ifdef MOD_AUTODIFF */
+
+end module'''
