@@ -10,7 +10,7 @@
 template<class T,int N>
 void inv_taylor(taylor<T,1,N>& t, const T &a)
 {
-  assert(a != T(0) && "1/(a+x) not analytic at a = 0");
+  assert(a != 0 && "1/(a+x) not analytic at a = 0");
   t[0] = 1/a;
   for (int i=1;i<=N;i++)
     t[i] = -t[i-1]*t[0];
@@ -82,7 +82,7 @@ taylor<T,Nvar,Ndeg> exp(const taylor<T,Nvar,Ndeg> &t)
 template<class T,int N>
 void log_taylor(taylor<T,1,N> &t, const T &x0)
 {
-  assert(x0 != T(0) && "log(x) not analytic at x = 0");
+  assert(x0 != 0 && "log(x) not analytic at x = 0");
   t[0] = log(x0);
   T xn = x0;
   for (int i=1;i<=N;i++)
@@ -107,7 +107,7 @@ taylor<T,Nvar,Ndeg> log(const taylor<T,Nvar,Ndeg> &t)
 template<class S,class T,int N>
 void pow_taylor(taylor<T,1,N>& t, const T &x0, const S &a)
 {
-  assert(x0 != T(0) && "pow(x,a) not analytic at x = 0");
+  assert(x0 != 0 && "pow(x,a) not analytic at x = 0");
   t[0] = pow(x0,a);
   for (int i=1;i<=N;i++)
     t[i] = t[i-1]*(a-i+1)/(x0*i);
@@ -159,7 +159,7 @@ void atan_taylor(taylor<T,1,Ndeg>& t, const T &a)
   taylor<T,1,Ndeg> invt,x;
   inv_taylor(invt,1+a*a);
   //insert x = 2*a*x + x^2
-  x = taylor<T,1,Ndeg>(0);
+  x = 0;
   if (Ndeg > 0)
     x[1] = 2*a;
   if (Ndeg > 1)

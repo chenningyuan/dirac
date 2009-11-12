@@ -163,6 +163,12 @@ bool operator>(const taylor<T, Nvar,Ndeg> &t, const S &x)
   return t[0] > x;
 }
 
+template<class S, class T, int Nvar, int Ndeg>
+bool operator!=(const taylor<T, Nvar,Ndeg> &t, const S &x)
+{
+  return t[0] != x;
+}
+
 template<class T, int Nvar, int Ndeg, class S>
 taylor<T, Nvar, Ndeg> operator*(const S& x, const taylor<T, Nvar,Ndeg>& t)
 {

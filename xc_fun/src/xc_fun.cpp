@@ -248,7 +248,7 @@ static void setdens_r_ri_rj_rk(densvars<taylor<num,4,N> >&d, const num dd[4])
 
 
 template<class num, int N>
-static void fun_helper(num *result, const num d[5])
+static void fun_helper(num *result, const num d[])
 {
   if (fun_nvars(current_mode) == 1)
     {
@@ -386,3 +386,28 @@ void setup()
   is_setup = 1;
 }
 
+#ifdef NEW_CONTRACTION
+
+// Calculates a taylor expansion of the gradient (wrt density
+// variable) element grad_var, in the Npt variables given by d.
+// The idea is to call this with lower order perturbed densities
+// as functions of perturbation strengths (Npt perturbations). 
+// The highest order coefficients of the output are then the
+// right hand side of a response equation.
+// TODO: remove or fix asserts in taylor.h that don't work
+// with the nested form of seed.
+template<class num, int Npt, int Nvar, int Ndeg>
+void xc_contract_gradient(taylor<num,Nvar,Npt> &res, int grad_var,
+			  const taylor<num,Nvar,Npt> &d[])
+{
+  taylor<taylor<num,Nvar,Ndeg>,1,1> seed[Nvar], out;
+  for (i=0;i<Nvar;i++)
+    {
+      seed[i][0] = d[i];
+      seed[i][1] = grad_var == i ? 1 : 0;
+    }
+  sum_functionals(out, seed);
+  res = out[1];
+}
+
+#endif
