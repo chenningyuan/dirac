@@ -11,7 +11,7 @@
 
 // Highest order of derivatives. Note that the generated code
 // becomes huge if this is too large
-#define XC_MAX_ORDER 4
+#define XC_MAX_ORDER 5
 
 /*
   The following variables are used in the code:

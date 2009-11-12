@@ -13,7 +13,7 @@
 
 module xc_fun
   implicit none
-  integer, parameter ::  XC_MAX_ORDER = 4 
+  integer, parameter ::  XC_MAX_ORDER = 5
 
 ! Index of each functional parameter in the argument
 ! of set_functional
