@@ -396,9 +396,10 @@ void setup()
 // right hand side of a response equation.
 // TODO: remove or fix asserts in taylor.h that don't work
 // with the nested form of seed.
+// Ndeg is the order of the _output_, the input is one degree lower.
 template<class num, int Npt, int Nvar, int Ndeg>
-void xc_contract_gradient(taylor<num,Nvar,Npt> &res, int grad_var,
-			  const taylor<num,Nvar,Npt> &d[])
+void xc_contract_gradient(taylor<num,Npt,Ndeg> &res, int grad_var,
+			  const taylor<num,Npt,Ndeg-1> &d[])
 {
   // Use the "trick" that 
   // f(a+x) = f(a) + f'(a)x
@@ -409,7 +410,7 @@ void xc_contract_gradient(taylor<num,Nvar,Npt> &res, int grad_var,
   taylor<taylor<num,Npt,Ndeg>,1,1> seed[Nvar], out;
   for (i=0;i<Nvar;i++)
     {
-      seed[i][0] = d[i];
+      d[i].convert_to(seed[i][0]); //pad with zeros at highest order
       seed[i][1] = grad_var == i ? 1 : 0;
     }
   sum_functionals(out, seed);
