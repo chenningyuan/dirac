@@ -400,7 +400,13 @@ template<class num, int Npt, int Nvar, int Ndeg>
 void xc_contract_gradient(taylor<num,Nvar,Npt> &res, int grad_var,
 			  const taylor<num,Nvar,Npt> &d[])
 {
-  taylor<taylor<num,Nvar,Ndeg>,1,1> seed[Nvar], out;
+  // Use the "trick" that 
+  // f(a+x) = f(a) + f'(a)x
+  // We want to taylor expand f'(a), so we can just
+  // pick out the term linear in x. We avoid calculating
+  // higher derivatives of x by defining a linear
+  // polynomial in x with polynomial coefficients a and 1.
+  taylor<taylor<num,Npt,Ndeg>,1,1> seed[Nvar], out;
   for (i=0;i<Nvar;i++)
     {
       seed[i][0] = d[i];
