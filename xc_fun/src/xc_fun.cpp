@@ -416,10 +416,13 @@ void xc_contract_gradient(taylor<num,Npt-1,Ndeg> &res, int grad_var,
 {
   // Use the "trick" that 
   // f(a+x) = f(a) + f'(a)x
-  // We want to taylor expand f'(a), so we can just
-  // pick out the term linear in x. We avoid calculating
-  // higher derivatives of x by defining a linear
-  // polynomial in x with polynomial coefficients a and 1.
+  // We want to taylor expand f'(a), so we can just pick out the term
+  // linear in x. We avoid calculating higher derivatives of x by
+  // defining a linear polynomial in x with polynomial coefficients a
+  // and 1.  This actually gives us what we want, from the magic of
+  // taylor expansions. Note that we cannot insert a as a polynomial
+  // after expanding in x, we have to insert both at the same time.
+  // (cf. differentiating after putting in the variable value).
   taylor<taylor<num,Npt,Ndeg>,1,1> seed[Nvar], out;
   for (int i=0;i<Nvar;i++)
     {
@@ -432,13 +435,50 @@ void xc_contract_gradient(taylor<num,Npt-1,Ndeg> &res, int grad_var,
   out[1].pick_order(res);
 }
 
-void xc_contract_gradient_1var_2deg(double *res, const double d[])
+
+// Use this from fortran like (p stands for perturbation strength
+// double precision d_of_p(2) ! linear polynomial 
+// d_of_p(1) = constant term (probably 0)
+// d_of_p(2) = linear term (something here)
+// double precision res(1)
+// call xc_contract_gradient_1var_2deg(res,d_of_p)
+// This works _only_ in combination with XC_R as the type
+// of functional, this is hard-coded for now. Also it's coded
+// for only one perturbation operator (but you can go to high order)
+extern "C"
+void xc_contract_gradient_1var_2deg_(double *res, const double d[])
 {
   taylor<double,0,2> *res_t;
   as_taylor(res_t,res);
   const taylor<double,1,1> *d_t;
   as_taylor(d_t,d);
-  xc_contract_gradient<double,1,1,2>(*res_t,0,&*d_t);
+  xc_contract_gradient<double,1,1,2>(*res_t,0,d_t);
+}
+
+//Here it would be
+// double precision d_of_p(3) ! quadratic polynomial
+// d_of_p(1) = constant term (probably 0)
+// d_of_p(2) = linear term (something here)
+// d_of_p(3) = quadratic term
+// double precision res(1) ! third order output
+extern "C"
+void xc_contract_gradient_1var_3deg_(double *res, const double d[])
+{
+  taylor<double,0,3> *res_t;
+  as_taylor(res_t,res);
+  const taylor<double,1,2> *d_t;
+  as_taylor(d_t,d);
+  xc_contract_gradient<double,1,1,3>(*res_t,0,d_t);
+}
+
+extern "C"
+void xc_contract_gradient_1var_4deg_(double *res, const double d[])
+{
+  taylor<double,0,4> *res_t;
+  as_taylor(res_t,res);
+  const taylor<double,1,3> *d_t;
+  as_taylor(d_t,d);
+  xc_contract_gradient<double,1,1,4>(*res_t,0,d_t);
 }
 
 #endif
