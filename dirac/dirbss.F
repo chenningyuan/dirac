@@ -7616,9 +7616,9 @@ C     ... this flag must be deactivated for BSS2DC calculations
       RETURN
       END
 
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CMOTR2C(VMAT,CMO,TBUF,EIG,IBEIG,WORK,LWORK)
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C  PURPOSE:
 C  Generate 2c MO from converged 4c MO (read from DFCOEF) using the picture change transformation matrix  
@@ -7633,7 +7633,7 @@ C  Called from:
 C
 C  Written by Miro ILIAS, Prievidza, 2009
 C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.00D00,D0=0.00D00,DM1=-1.00D00)
@@ -7728,11 +7728,12 @@ C ===============================================================
      &  '* Fermion ircop no.',I,'/',NFSYM                          
         CALL PRQMAT(TBUF(IMOe),NFBAS(I,0),NESH(I),              
 !       CALL PRQMAT(TBUF(IMO),NFBAS(I,0),NORB(I), 
-     &    NFBAS(I,0),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
+     &    NFBAS(I,1),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
 !    &    NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
        ENDIF
 
           IMOe =  IMOe + (NFBAS(I,0)*NESH(I)*NZ)
+         ! IMOe =  IMOe + (NFBAS(I,1)*NESH(I)*NZ)
           IMO  =   IMO + (NFBAS(I,0)*NORB(I)*NZ)
        IPCTM  =  IPCTM + (NFBAS(I,0)*NFBAS(I,1)*NZ) 
 
@@ -7740,9 +7741,10 @@ C ===============================================================
       ENDDO
 
 C     ... check the orthonormality of generated starting MO's
-!     CALL NRMSTMO(TBUF,VMAT,CMO,WORK,LWORK,IPRINT)
+!     CALL NRMSTMO(TBUF,VMAT,CMO,WORK,LWORK,IPRINT,.TRUE.)
+!     CALL NRMSTMO(TBUF,VMAT,CMO,WORK,LWORK,IPRINT,.FALSE.)
 
-      call quit('.... stop ....')
+      call quit('.... stop in CMOTR2C ....')
       RETURN
       END
 
@@ -7860,7 +7862,7 @@ C ===============================================================
       ENDDO
 
 C     ... check the orthonormality of generated starting MO's
-      CALL NRMSTMO(TBUF,TMAT,CMO,WORK,LWORK,IPRINT)
+      CALL NRMSTMO(TBUF,TMAT,CMO,WORK,LWORK,IPRINT,.FALSE.)
 
 C ********************************************************
 C *
@@ -7896,12 +7898,12 @@ C =========================================
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck cmoini4c */
-      SUBROUTINE NRMSTMO(TBUF,TMAT,CMO,WORK,LWORK,IPRINT)
+      SUBROUTINE NRMSTMO(TBUF,TMAT,CMO,WORK,LWORK,IPRINT,Le)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C  Purpose: CHECK the normalization of pseudo-4c(LS,e) CMO.
+C  Purpose: CHECK the normalization of pseudo-4c(LS,e)/2c (L,e) CMO.
 C
-C  On input/output: TBUF - normalized MO (LS,e) pseudo-4comp coefficients
+C  On input/output: TBUF - normalized MO (LS,e)/(L,e) pseudo-4comp coefficients
 C
 C  Written by Miro ILIAS, February 2007, Tel Aviv
 C
@@ -7917,20 +7919,43 @@ C#include "dcbham.h"
 #include "dcborb.h" 
 
       DIMENSION TBUF(*),CMO(*),TMAT(*),WORK(LWORK)
+      LOGICAL Le
 
       CALL QENTER('NRMSTMO')
 #include "memint.h"
 
 C ... get full S matrix into TMAT
-!     CALL GTOVLT(TMAT,D1)
-      CALL GTOVLT(TMAT,D0)
+      IF (.NOT.Le) THEN
+        CALL GTOVLT(TMAT,D0)
+        !CALL GTOVLT(TMAT,D1)
+      ELSE
+        CALL GTOVLT(TMAT,D0)
+      ENDIF
 
-C ...  transform S to the MO's:   TBUF^+(e,LS) . TMAT(LS,LS) . TBUF(LS,e) = CMO(e,e) = 1
+C ...  transform S to the MO's          :   TBUF^+(e,LS) . TMAT(LS,LS) . TBUF(LS,e) = CMO(e,e) = 1
+C ...  transform S to the MO's (Le=true):   TBUF^+(e,L) . TMAT(LS,LS) . TBUF(L,e) = CMO(e,e) = 1
       IMAT = 1
+      IMAT_L = 1
       IBUF = 1
+      IBUF_Le = 1
       IMO = 1
       DO I = 1, NFSYM
       IF (NESH(I).GT.0) THEN
+
+       IF (Le) THEN
+
+        CALL QTRANS('AOMO','S',D0,NFBAS(I,1),NFBAS(I,1),
+     &       NESH(I),NESH(I),
+     &       TMAT(IMAT),NFBAS(I,0),NFBAS(I,0),1,IPQTOQ(1,0),
+     &       CMO(IMO),NESH(I),NESH(I),NZ,IPQTOQ(1,0),
+     &       TBUF(IBUF),
+     &       NFBAS(I,1),NESH(I),NZ,IPQTOQ(1,0),
+     &       TBUF(IBUF_Le),
+     &       NFBAS(I,1),NESH(I),NZ,IPQTOQ(1,0),
+     &       WORK(KFREE),LFREE,IPRINT)
+
+
+       ELSE
 
         CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
      &       NESH(I),NESH(I),
@@ -7942,23 +7967,41 @@ C ...  transform S to the MO's:   TBUF^+(e,LS) . TMAT(LS,LS) . TBUF(LS,e) = CMO(
      &       NFBAS(I,0),NESH(I),NZ,IPQTOQ(1,0),
      &       WORK(KFREE),LFREE,IPRINT)
 
+       ENDIF
+
+       IF (.NOT.Le) THEN
          IF (IPRINT.GE.5) THEN
           CALL HEADER(
      &    'NRMSTMO: Full Sovlp(LL+SS) matrix (from GTOVLT)'//
      &    ' in SA-AO basis "xhi"',-1)
+       ELSE
+          CALL HEADER(
+     &    'NRMSTMO: Full Sovlp(LL+SS=0) matrix (from GTOVLT)'//
+     &    ' in SA-AO basis "xhi"',-1)
+       ENDIF
           WRITE(LUPRI,'(A,I1,A,I1)')'* Fermion irp no.',I,'/',NFSYM
           CALL PRQMAT(TMAT(IMAT),NFBAS(I,0),NFBAS(I,0),
      &        NFBAS(I,0),NFBAS(I,0),1,IPQTOQ(1,0),LUPRI)
 
-          CALL HEADER(
-     &   'NRMSTMO: Normalized U.CMO_2C starting MOs(LS,e), TBUF',-1)
-          WRITE(LUPRI,'(A,I1,A,I1)')
-     &   '* Fermion ircop no.',I,'/',NFSYM                          
-          CALL PRQMAT(TBUF(IBUF),NFBAS(I,0),NESH(I),              
-     &      NFBAS(I,0),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
+          IF (.NOT.Le) THEN
+            CALL HEADER(
+     &     'NRMSTMO: Normalized U.CMO_2C starting MOs(LS,e), TBUF',-1)
+            WRITE(LUPRI,'(A,I1,A,I1)')
+     &      '* Fermion ircop no.',I,'/',NFSYM                          
+            CALL PRQMAT(TBUF(IBUF),NFBAS(I,0),NESH(I),              
+     &         NFBAS(I,0),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
+          ELSE
+            CALL HEADER(
+     &     'NRMSTMO: Normalized U+.CMO_4C starting MOs(L,e), TBUF',-1)
+            WRITE(LUPRI,'(A,I1,A,I1)')
+     &      '* Fermion ircop no.',I,'/',NFSYM                          
+            CALL PRQMAT(TBUF(IBUF_Le),NFBAS(I,1),NESH(I),              
+     &           NFBAS(I,1),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
+          ENDIF
 
           CALL HEADER(
-     &   'NRMSTMO: Sovlp(ee) in pseudo4c MO - must be unit matrix',-1)
+     &   'NRMSTMO: Resulting Sovlp(ee) in pseudo4c MO -'//
+     &   ' must be unit matrix',-1)
           WRITE(LUPRI,'(A,I1,A,I1)')
      &   '* Fermion ircop no.',I,'/',NFSYM                          
           CALL PRQMAT(CMO(IMO),NESH(I),NESH(I),              
@@ -7973,7 +8016,9 @@ CMI    ... check the unit matrix !!!
       ENDIF
 
        IMAT = IMAT + NFBAS(I,0)*NFBAS(I,0)
+       IMAT_L = IMAT_L + NFBAS(I,1)*NFBAS(I,1)
        IBUF = IBUF + (NFBAS(I,0)*NESH(I)*NZ)
+       IBUF_Le = IBUF_Le + (NFBAS(I,1)*NESH(I)*NZ)
        IMO = IMO + NESH(I)*NESH(I)*NZ
 
       ENDDO
