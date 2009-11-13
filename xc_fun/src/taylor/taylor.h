@@ -26,6 +26,27 @@ public:
     polynomial<T,Nvar,Ndeg>::operator=(c0);
     return *this;
   }
+  template<int N>
+  taylor<T,Nvar-1,N> &pick_order(void)
+  {
+    assert(N<=Ndeg);
+    return *reinterpret_cast<taylor<T,Nvar-1,N> *>
+      (this->c+polymul_internal::polylen<Nvar,N-1>::len);
+  }
+  template<int N>
+  const taylor<T,Nvar-1,N> &pick_order(void) const
+  {
+    assert(N<=Ndeg);
+    return *reinterpret_cast<const taylor<T,Nvar-1,N> *>
+      (this->c+polymul_internal::polylen<Nvar,N-1>::len);
+  }
+  template<int N>
+  void pick_order(taylor<T,Nvar-1,N> &p) const
+  {
+    p = *reinterpret_cast<const taylor<T,Nvar-1,N> *>
+      (this->c+polymul_internal::polylen<Nvar,N-1>::len);
+  }
+  
   // Multiply each term with the correct factorials to get 
   // derivatives, i.e. x^2y^3 is multiplied by 2!3!
   void deriv_facs(void)
@@ -135,6 +156,18 @@ public:
     return sum;
   }
 };
+
+template<class T, int Nvar, int Ndeg>
+void as_taylor(taylor<T,Nvar,Ndeg> *&ptr, T *data)
+{
+  ptr = reinterpret_cast<taylor<T,Nvar,Ndeg> *>(data);
+}
+
+template<class T, int Nvar, int Ndeg>
+void as_taylor(const taylor<T,Nvar,Ndeg> *&ptr, const T *data)
+{
+  ptr = reinterpret_cast<const taylor<T,Nvar,Ndeg> *>(data);
+}
 
 // <> comparisons are taken to mean comparing the constant
 // coefficient. This makes the transition from numbers to

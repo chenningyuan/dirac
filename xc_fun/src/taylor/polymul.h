@@ -1237,7 +1237,7 @@ class polynomial
   // polynomial has higher degree than this.
   // TODO: Allow also change of Nvar
   template<class numtype2, int Ndeg2>
-  void convert_to(polynomial<numtype2, Nvar, Ndeg2> &dst)
+  void convert_to(polynomial<numtype2, Nvar, Ndeg2> &dst) const
   {
     if (size < int(dst.size)) 
       {
@@ -1251,6 +1251,20 @@ class polynomial
 	for (int i=0;i<dst.size;i++)
 	  dst.c[i] = c[i];
       }
+  }
+  template<int N>
+  polynomial<numtype,Nvar-1,N> &pick_order(void)
+  {
+    assert(N<=Ndeg);
+    return *reinterpret_cast<polynomial<numtype,Nvar-1,N> *>
+      (c+polymul_internal::polylen<Nvar,N-1>::len);
+  }
+  template<int N>
+  const polynomial<numtype,Nvar-1,N> &pick_order(void) const
+  {
+    assert(N<=Ndeg);
+    return *reinterpret_cast<const polynomial<numtype,Nvar-1,N> *>
+      (c+polymul_internal::polylen<Nvar,N-1>::len);
   }
 
   // This is a _very slow_ function to get the exponents

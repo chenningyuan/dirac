@@ -230,6 +230,16 @@ static void setdens_r(densvars<taylor<num,1,N> >&d, const num dd[1])
 }
 
 template<class num, int N>
+static void setdens_r(densvars<taylor<num,1,N> >&d, const taylor<num,1,N> dd[1])
+{
+  d.R = dd[0];
+  d.S = 0;
+  d.rhoa = 0.5*d.R;
+  d.rhob = 0.5*d.R;
+  d.zeta = 0;
+}
+
+template<class num, int N>
 static void setdens_r_ri_rj_rk(densvars<taylor<num,4,N> >&d, const num dd[4])
 {
   d.R = taylor<num,4,N>(dd[0],0);
@@ -397,9 +407,12 @@ void setup()
 // TODO: remove or fix asserts in taylor.h that don't work
 // with the nested form of seed.
 // Ndeg is the order of the _output_, the input is one degree lower.
+// Only the highest order terms of the expansion are returned,
+// these can be though of as forming a Ndeg degree polynomial in
+// Npt-1 variables.
 template<class num, int Npt, int Nvar, int Ndeg>
-void xc_contract_gradient(taylor<num,Npt,Ndeg> &res, int grad_var,
-			  const taylor<num,Npt,Ndeg-1> &d[])
+void xc_contract_gradient(taylor<num,Npt-1,Ndeg> &res, int grad_var,
+			  const taylor<num,Npt,Ndeg-1> d[])
 {
   // Use the "trick" that 
   // f(a+x) = f(a) + f'(a)x
@@ -408,13 +421,24 @@ void xc_contract_gradient(taylor<num,Npt,Ndeg> &res, int grad_var,
   // higher derivatives of x by defining a linear
   // polynomial in x with polynomial coefficients a and 1.
   taylor<taylor<num,Npt,Ndeg>,1,1> seed[Nvar], out;
-  for (i=0;i<Nvar;i++)
+  for (int i=0;i<Nvar;i++)
     {
       d[i].convert_to(seed[i][0]); //pad with zeros at highest order
       seed[i][1] = grad_var == i ? 1 : 0;
     }
-  sum_functionals(out, seed);
-  res = out[1];
+  densvars<taylor<taylor<num,Npt,Ndeg>,1,1> > dv;
+  setdens_r(dv,seed);
+  sum_functionals(out, dv);
+  out[1].pick_order(res);
+}
+
+void xc_contract_gradient_1var_2deg(double *res, const double d[])
+{
+  taylor<double,0,2> *res_t;
+  as_taylor(res_t,res);
+  const taylor<double,1,1> *d_t;
+  as_taylor(d_t,d);
+  xc_contract_gradient<double,1,1,2>(*res_t,0,&*d_t);
 }
 
 #endif
