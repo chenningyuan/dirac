@@ -38,6 +38,9 @@ C
 C     Called from main/dirac.F if DOTRA=.true.
 C
 C***********************************************************************
+
+      Use moltra_labeling
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -104,6 +107,9 @@ C
         ENDDO
       ENDDO
 C
+C
+      CALL Make_Kramer_to_SpinorIndex (NFSYM,NSTR)
+
       KFRSAV = KFREE
 C
 C     Print section
@@ -3585,6 +3591,8 @@ C     Based on PAMTRA
 C     Written by T.Saue Jan 18 1999
 C
 C***********************************************************************
+      Use moltra_labeling
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -3711,6 +3719,8 @@ C
         ENDDO
       ENDDO
 C
+      CALL Make_Kramer_to_SpinorIndex (NFSYM,NSTR)
+
       KTEMP = KFREE
       IF(.NOT.SKPONE) THEN
 C

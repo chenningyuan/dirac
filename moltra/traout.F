@@ -62,8 +62,6 @@ C
       CALL GETDAT (CDATE,TIMEX)
       DATEX = ' '//CDATE//' '
 C
-      CALL Make_Kramer_to_SpinorIndex (NFSYM,NSTR)
-C
       OPEN (LUMLF2,FILE=FNODE,FORM='UNFORMATTED')
       WRITE (LUMLF2) DATEX,TIMEX,
      & moltra_nkr,(moltra_isp(i),moltra_isp(-i),i=1,moltra_nkr)
