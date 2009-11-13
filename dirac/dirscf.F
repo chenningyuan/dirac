@@ -1603,8 +1603,13 @@ C
      &          DMAT(N2BBASX,NZ,NFMAT),
      &          E(4,2,0:MXOPEN),WORK(LWORK)
       DATA M/'AR','AI','BR','BI'/
+c     besterg is the lowest energy we encountered so far
       DATA INUM /0/
       SAVE INUM
+#ifdef SAVE_BEST
+      data besterg /1.0D100/
+      save besterg
+#endif
 C
       CALL QENTER('ERGCAL')
       INUM = INUM + 1
@@ -1764,7 +1769,15 @@ CMI      ... print out matrixes ...
 #endif
          END IF
       ENDIF
-C
+#ifdef SAVE_BEST
+c     Check if this is the lowest energy so far, in that case
+c     save the DFCOEF file as DFCOEF.BEST
+      if (dhferg.lt.besterg) then
+         write(LUPRI,*) 'cp DFCOEF DFCOEF.BEST'
+         call system('cp DFCOEF DFCOEF.BEST')
+         besterg = dhferg
+      endif
+#endif
       CALL QEXIT('ERGCAL')
       RETURN
 C
