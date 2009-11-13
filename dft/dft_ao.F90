@@ -137,7 +137,9 @@ module dft_ao
   real(8), parameter   :: g(10) = (/1.0d0, 1.3333d0, 1.6d0, 1.83d0, 2.03d0, 2.22d0, 2.39d0, 2.55d0, 2.70d0, 2.84d0/)
 
   real(8), parameter   :: cell_size          = 2.25d0
-  real(8), parameter   :: half_cell_diagonal = cell_size*0.5d0*sqrt(3.0d0)
+! real(8), parameter   :: half_cell_diagonal = cell_size*0.5d0*sqrt(3.0d0)
+! compiler complains about intrinsic in a parameter declaration
+  real(8), parameter   :: half_cell_diagonal = cell_size*0.866025404d0
 
   logical :: dft_basis_info_allocated = .false.
   logical :: dft_basis_info_set       = .false.
