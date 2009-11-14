@@ -1680,7 +1680,9 @@ C     ===========================
 C
 C     PURPOSE:
 C        Construction of the transformation matrix for Lowdin's
-C        canonical ortonormalization
+C        canonical orthonormalization
+C        NB! Not the symmetrical orthonormalization, which
+C            often has been called the "Lowdin orthonormalization"
 C
 C     METHOD:
 C        In this subroutine V+ is computed.  As the basis set is
@@ -1721,8 +1723,8 @@ C.....generate IRKB array if needed
         KIRKB = KFREE
       ENDIF
 C
-C     Make Lowdin matrix
-C     ==================
+C     Make Lowdin canonical matrix
+C     ============================
 C
       CALL LOWDI1(VMAT,WORK(KSMAT),WORK(KEIG),WORK(KIRKB),
      &            WORK(KFREE),LFREE,IPRINT)
@@ -1776,14 +1778,14 @@ C
         CALL RKBREL(IRKB,IPRINT)
       ENDIF
 C
-C     Initialize Lowdin matrix
+C     Initialize Lowdin canonical matrix
 C     ========================
 C
       CALL DZERO(VMAT,N2BBASX)
       NBRP = 4/NZ
       ISOFF = 1
       IVOFF = 1
-      CALL HEADER('Generating Lowdin matrix:',-1)
+      CALL HEADER('Generating Lowdin canonical matrix:',-1)
       DO IFRP = 1,NFSYM
         JSOFF = ISOFF
         JVOFF = IVOFF
@@ -1812,7 +1814,7 @@ C
      &          COMP(IC),REP(IREP),'* Deleted: ',NDEL
             ENDIF
 C
-C           Zero columns of Lowdin matrix that are to be deleted
+C           Zero columns of Lowdin canonical matrix that are to be deleted
 C
             IF(NDEL.GT.0) THEN
               J = JVOFF + NFBAS(IFRP,0)*NEFF 
@@ -1852,7 +1854,7 @@ C
      &           COMP(IC),REP(IREP),'* Deleted: ',NDEL
             ENDIF
 C
-C           Zero columns of Lowdin matrix that are to be deleted
+C           Zero columns of Lowdin canonical matrix that are to be deleted
 C
             IF(NDEL.GT.0) THEN
               J = JVOFF + NFBAS(IFRP,0)*NEFF 
@@ -1871,7 +1873,7 @@ C
         NFORB(IFRP,0) = NFORB(IFRP,1) + NFORB(IFRP,2)
         IF (IPRINT.GE.5) THEN
           CALL HEADER(
-     &    'LOWDI1: Lowdin matrix (in ferm.symm.blocks) ',-1)
+     &    'LOWDI1: Lowdin canonical matrix (in ferm.symm.blocks) ',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &    '*** fermion corep ',IFRP,'/',NFSYM
            CALL PRQMAT(VMAT(IVOFF),NFBAS(IFRP,0),NFORB(IFRP,0),
@@ -1944,7 +1946,7 @@ C  /* Deck vfsort */
       SUBROUTINE VFSORT(NLEFF,NSEFF,VMAT,VBUF,WORK,LWORK)
 C*****************************************************************************
 C
-C     Sort Lowdin matrix on fermion symmetries
+C     Sort Lowdin canonical matrix on fermion symmetries
 C
 C     Written by T.Saue Sep 12 1995
 C     Last revision: Sep 12 1995
@@ -1973,7 +1975,7 @@ C  /* Deck vfsor1 */
       SUBROUTINE VFSOR1(NLEFF,NSEFF,VMAT,VBUF,ISORT)
 C*****************************************************************************
 C
-C     Sort Lowdin matrix on fermion symmetries
+C     Sort Lowdin canonical matrix on fermion symmetries
 C
 C     Written by T.Saue Sep 12 1995
 C     Last revision: Sep 12 1995
@@ -2207,8 +2209,8 @@ C
 C PURPOSE:
 C     This matrix provides initial transformation matrix from
 C     SO- to MO-basis. With no restrictions on kinetic balance
-C     the Lowdin matrix is used. With restricted balance, the
-C     Lowdin matrix is used to diagonalize the free-particle
+C     the Lowdin canonical matrix is used. With restricted balance, the
+C     Lowdin canonical matrix is used to diagonalize the free-particle
 C     matrix. Unphysical solutions are then deleted from the set
 C     of vectors and the remaining vectors used as transformation matrix.
 C
@@ -2221,7 +2223,7 @@ C     transformation matrix as well.
 C MI/2006
 C     For the two-component nonrelativistic 
 C     calculations run the "URKBAL" branch as only
-C     Lowdin matrix is needed. It's assumed that small
+C     Lowdin canonical matrix is needed. It's assumed that small
 C     components were eliminated in HERINP.
 C
 C     Called from: PSIDHF (when BSS2DC or DC2BSS mode is activated)
@@ -2268,8 +2270,8 @@ C
       IF (ONECAP.AND.(INTV1C.EQ.1.AND.ICTLV1C(2).EQ.1)) 
      &    CALL MK1CEX (WORK,KFREE,LFREE,IPRGEN)
 C
-C     Get Lowdin matrix
-C     =================
+C     Get Lowdin canonical orthonormalization matrix
+C     ==============================================
 C
 C aspg, timing
       CALL TIMER('START ',TIMSTR,TIMEND)
@@ -2280,8 +2282,8 @@ C.....we use N2BBASXQ instead of N2BBASX for BSS...to be checked
       CALL TIMER('Lwdn_a',TIMSTR,TIMEND)
 C aspg, timing
 C
-C     Unrestricted kinetic balance; use Lowdin matrix
-C     ===============================================
+C     Unrestricted kinetic balance; use Lowdin canonical matrix
+C     =========================================================
 C
 C     LV : The unrestricted procedure should be revised so that
 C     the large components are also sorted on boson irreps !!!
@@ -2354,7 +2356,7 @@ C         2) do picture change transformation of integrals on AOPROPER
         ENDIF
         CALL TIMER('mk_h2c',TIMSTR,TIMEND)
 CMI    ... transformation matrix is the Large-electronic part of
-C          the adapted Lowdin matrix VMAT
+C          the adapted Lowdin canonical matrix VMAT
 
         IF(TWOCOMPBSS) THEN
 C
@@ -2610,10 +2612,12 @@ CMI      ... transform to the Lowdin basis "Theta"
         IF (IPRHAM.GE.6) THEN
            IF(VEXTPJ) THEN
              CALL HEADER('MODHAM: '//
-     &       'Bare nucleus Dirac matrix in orthonormal Lowdin basis',-1)
+     &'Bare nucleus Dirac matrix in orthonormal canonical Lowdin basis'
+     &,-1)
            ELSE
              CALL HEADER('MODHAM: '//
-     &      'Free particle Dirac matrix in orthonormal Lowdin basis',-1)
+     &'Free particle Dirac matrix in orthonormal canonical Lowdin basis'
+     &,-1)
            ENDIF
            WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
            CALL PRQMAT(TMAT(IOFT),NFORB(I,0),NFORB(I,0),NFORB(I,0),
@@ -3327,8 +3331,8 @@ C
      &            DONRM,IPRINT,WORK,LWORK)
 C
 C*********************************************************
-C***  Transform overlap matrix to spherical basis and  ***
-C***  generate Lowdin matrix                           ***
+C***  Transform overlap matrix to spherical basis and
+C***  generate Lowdin canonical orthonromalization matrix
 C*********************************************************
 C
       CALL QTRANS('AOMO','S',D0,NCAR,NCAR,NSPH,NSPH,
@@ -3436,8 +3440,8 @@ C
      &            DONRM,IRKB,IPRINT,WORK,LWORK)
 C
 C*********************************************************
-C***  Transform overlap matrix to spherical basis and  ***
-C***  generate Lowdin matrix                           ***
+C***  Transform overlap matrix to spherical basis and
+C***  generate Lowdin canonical orthonormalization matrix
 C*********************************************************
 C
       CALL QTRANS('AOMO','S',D0,NCAR,NCAR,NSPH,NSPH,
@@ -3574,7 +3578,7 @@ C
 C
       IF(IPRINT.GE.6) THEN
         CALL HEADER(
-     &  'LOWGEN: Canonical Lowdin matrix(ie eigenvectors):',-1)
+     &  'LOWGEN: Canonical Lowdin matrix (i.e. eigenvectors):',-1)
         CALL OUTPUT(VMAT,1,NS,1,NV,LDM,NS,1,LUPRI)
       ENDIF
 
@@ -3765,17 +3769,15 @@ C
       IF (NOSMLV.OR.BSS) THEN
 C     IF (NOSMLV) THEN
          DOINT(2,2) = .FALSE.
-         IF (IPRINT.GE.2) THEN
-          WRITE(LUPRI,'(2X,/,A)')
-     & 'BNCORR: SS contribution to the bare nuclei omitted !'
-         ENDIF
+         IF (IPRINT.GE.1) WRITE(LUPRI,'(/A)')
+     &     '  BNCORR: SS contribution to the bare nuclei omitted !'
       ELSE
          DOINT(2,2) = .TRUE.
       END IF
       DOINT(1,2) = .FALSE.
       DOINT(2,1) = .FALSE.
 c
-c   ... find number of occupied shells
+c   ... find max number of occupied shells
 c
       Z = D0
       DO I = 1,NUCIND
@@ -3788,6 +3790,13 @@ c       in the first shell (N=1) we only place one electron to avoid
 c       self-interaction. This electron is delocalized (to some degree)
 c       in the zeroth run (N=0) by using a diffuse Gaussian (see BNCOR1)
 c
+      IF (IPRINT .GE. 1) THEN
+         WRITE(LUPRI,'(/4X,A/4X,A//14X,A/14X,A)')
+     &' *** BNCORR for < X_A | (-Zeff*G(a,r_C))/r_C | X_B > ***',
+     &'     X=L,S ; G(a,r_C)=exp(-a*r_C^2)',
+     &      ' Nucleus    Charge=(-Zeff)   Exponent(a)',
+     &      '-----------------------------------------'
+      ENDIF
       DO N = 0,NSHELL
 c     ... In Slater's rules we write the electron configuration as
 c         [1s] [2s2p] [3s3p][3d] [4s4p][4d][4f]... so for each shell we have
@@ -3799,38 +3808,37 @@ c          1     1        2            3           loops
          ENDIF
 c        ... we will not go beyond f-orbitals
          NSLOOP = MIN(NSLOOP,3)
-         DO J = 1,NSLOOP
+         DO L = 1,NSLOOP
+c
          ZTEST = D0
          DO I = 1,NUCIND
 c      ... Get charges and exponents for the electrons in this group
-           CALL BNCOR1(GNU,ZEFF,N,CHARGE(I),J,I,WORK(KESHEL),
+           CALL BNCOR1(GNU,ZEFF,N,CHARGE(I),L,I,WORK(KESHEL),
      &          NUCIND,.FALSE.)
            ZTEST = MAX(ZTEST,ZEFF)
            WORK(KXGEXP-1+I) =  GNU
            WORK(KCHRG -1+I) = -ZEFF
          ENDDO
-         IF(ZTEST.EQ.D0) GOTO 20
 c
-         IF(IPRINT .GE. 3) THEN
-            IF(N.EQ.0) THEN
-            WRITE(LUPRI,5) 
-     &' *** Entering BNCORR  for <X_A|(-Z*G(a,r_C))/r_C|X_B> terms ***',
-     &'     X=L,S ; G(a,r)=exp(-a*r^2)'
-            WRITE(LUPRI,'(14X,A)')
-     &      ' Nuclei      Charge(-Z)       Exponent(a)',
-     &      '-----------------------------------------'
-            ENDIF
-            WRITE(LUPRI,'(14X,A,I2,A)')'(Loop over ',N,' . shell)'
+         IF(IPRINT .GE. 1) THEN
+            IF (NSLOOP .GT. 1) THEN
+               WRITE(LUPRI,'(14X,A,I2,A,I2)')
+     &         '-- Subshell n =',N,', l =',L
+            ELSE IF (N .LE. 1) THEN
+               WRITE(LUPRI,'(14X,A,I2,A)')
+     &         '-- Subshell n =',N,', l = 0'
+            ELSE
+               WRITE(LUPRI,'(14X,A,I2,A)')
+     &         '-- Subshell n =',N,', l = 0,1'
+            END IF
             DO I = 1,NUCIND
-               IF(WORK(KCHRG-1+I).LT.D0)
+               IF (WORK(KCHRG-1+I) .NE. D0)
      &         WRITE(LUPRI,'(15X,A5,F15.2,F15.2)')
      &         NAMN(I),WORK(KCHRG-1+I),WORK(KXGEXP-1+I)
             ENDDO
-            IF (N.EQ.NSHELL)
-     &      WRITE(LUPRI,'(14X,A/)')
-     &      '-----------------------------------------'
-5        FORMAT(/,2(/,4X,A))
          ENDIF
+c
+         IF (ZTEST .NE. D0) THEN
 C
 C     Omit selected terms depending on OMITVNUC (See CATNUC for details)
 C     In this version one-center terms are calculated with the same
@@ -3850,11 +3858,14 @@ c
      &            WORK(KCOORC),WORK(KSIGNC),WORK(KJSYMC),
      &            WORK(KJCENT),WORK(KGEXP),WORK(KFREE),LWRK,IPRONE,
      &            .FALSE.,0,NNBBASX,DOINT)
+c
+         END IF ! if (ztest .ne. d0)
 c  ... end loop within shells
-20    CONTINUE
          ENDDO
 c  ... end loop over shells
       ENDDO
+      IF (IPRINT .GE. 1) WRITE(LUPRI,'(14X,A/)')
+     &      '-----------------------------------------'
 C
 C     Symmetry unpack integrals
 C
@@ -3896,10 +3907,10 @@ c
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck bncor1 */
-      SUBROUTINE BNCOR1(GNU,ZEFF,N,Z,J,INUC,SHELE,NNUC,MAXSHELL)
+      SUBROUTINE BNCOR1(GNU,ZEFF,N,Z,L,INUC,SHELE,NNUC,MAXSHELL)
 C*****************************************************************************
 C
-C     BNCOR1 :  Find effektive charges and Gaussian exponent 
+C     BNCOR1 :  Find effective charges and Gaussian exponent 
 C               (from Slater rules) for a given shell (N) for
 C               a given atom (Z)
 C
@@ -3929,100 +3940,59 @@ C     (from which the electron-configuration can be deduced)
       SAVE NOCC
       DATA NOCC 
 C     Periode 1
-     &          / 1, 0, 0, 0,
-     &            2, 0, 0, 0,
+     &          / 1, 0, 0, 0, 2, 0, 0, 0,
 C     Periode 2
-     &            3, 0, 0, 0,
-     &            4, 0, 0, 0,
-     &            4, 1, 0, 0,
-     &            4, 2, 0, 0,
-     &            4, 3, 0, 0,
-     &            4, 4, 0, 0,
-     &            4, 5, 0, 0,
-     &            4, 6, 0, 0,
+     &            3, 0, 0, 0, 4, 0, 0, 0,
+     &            4, 1, 0, 0, 4, 2, 0, 0, 4, 3, 0, 0,
+     &            4, 4, 0, 0, 4, 5, 0, 0, 4, 6, 0, 0,
 C     Periode 3
-     &            5, 6, 0, 0,
-     &            6, 6, 0, 0,
-     &            6, 7, 0, 0,
-     &            6, 8, 0, 0,
-     &            6, 9, 0, 0,
-     &            6,10, 0, 0,
-     &            6,11, 0, 0,
-     &            6,12, 0, 0,
+     &            5, 6, 0, 0, 6, 6, 0, 0,
+     &            6, 7, 0, 0, 6, 8, 0, 0, 6, 9, 0, 0,
+     &            6,10, 0, 0, 6,11, 0, 0, 6,12, 0, 0,
 C     Periode 4
-     &            7,12, 0, 0,
-     &            8,12, 0, 0,
-     &            8,12, 1, 0,
-     &            8,12, 2, 0,
-     &            8,12, 3, 0,
-     &            8,12, 4, 0,
-     &            8,12, 5, 0,
-     &            8,12, 6, 0,
-     &            8,12, 7, 0,
-     &            8,12, 8, 0,
-     &            8,12, 9, 0,
+     &            7,12, 0, 0, 8,12, 0, 0,
+     &            8,12, 1, 0, 8,12, 2, 0, 8,12, 3, 0,
+     &            8,12, 4, 0, 8,12, 5, 0, 8,12, 6, 0,
+     &            8,12, 7, 0, 8,12, 8, 0, 8,12, 9, 0,
      &            8,12,10, 0,
-     &            8,13,10, 0,
-     &            8,14,10, 0,
-     &            8,15,10, 0,
-     &            8,16,10, 0,
-     &            8,17,10, 0,
-     &            8,18,10, 0,
-C     Periode 5
-     &            9,18,10, 0,
-     &           10,18,10, 0,
-     &           10,18,11, 0,
-     &           10,18,12, 0,
-     &           10,18,13, 0,
-     &           10,18,14, 0,
-     &           10,18,15, 0,
-     &           10,18,16, 0,
-     &           10,18,17, 0,
-     &           10,18,18, 0,
-     &           10,18,19, 0,
+     &            8,13,10, 0, 8,14,10, 0, 8,15,10, 0,
+     &            8,16,10, 0, 8,17,10, 0, 8,18,10, 0,
+C     Periode 5 (5s block)
+     &            9,18,10, 0, 10,18,10, 0,
+C     (4d block)
+     &           10,18,11, 0, 10,18,12, 0, 10,18,13, 0,
+     &           10,18,14, 0, 10,18,15, 0, 10,18,16, 0,
+     &           10,18,17, 0, 10,18,18, 0, 10,18,19, 0,
      &           10,18,20, 0,
-     &           10,19,20, 0,
-     &           10,20,20, 0,
-     &           10,21,20, 0,
-     &           10,22,20, 0,
-     &           10,23,20, 0,
-     &           10,24,20, 0,
-C     Periode 6
-     &           11,24,20, 0,
-     &           12,24,20, 0,
-     &           12,24,21, 0,
-C    --> Lanthanides & actinides
-     &           12,24,21, 1,
-     &           12,24,20, 3,
-     &           12,24,20, 4,
-     &           12,24,20, 5,
-     &           12,24,20, 6,
-     &           12,24,20, 7,
-     &           12,24,20, 8,
-     &           12,24,20, 9,
-     &           12,24,20,10,
-     &           12,24,20,11,
-     &           12,24,20,12,
-     &           12,24,20,13,
-     &           12,24,20,14,
-     &           12,24,21,14,
-C    <-- Lanthanides & actinides
+C     (5p block)
+     &           10,19,20, 0, 10,20,20, 0, 10,21,20, 0,
+     &           10,22,20, 0, 10,23,20, 0, 10,24,20, 0,
+C     Periode 6 (6s block)
+     &           11,24,20, 0, 12,24,20, 0, 12,24,21, 0,
+C    --> Lanthanides (4f block)
+     &           12,24,21, 1, 12,24,20, 3, 12,24,20, 4,
+     &           12,24,20, 5, 12,24,20, 6, 12,24,20, 7,
+     &           12,24,20, 8, 12,24,20, 9, 12,24,20,10,
+     &           12,24,20,11, 12,24,20,12, 12,24,20,13,
+     &           12,24,20,14, 12,24,21,14,
+C    <-- Lanthanides; Hf -> Hg (5d block)
      &           12,24,22,14, 12,24,23,14, 12,24,24,14,
      &           12,24,25,14, 12,24,26,14, 12,24,27,14,
      &           12,24,28,14, 12,24,29,14, 12,24,30,14,
+C     Tl -> Rn (6p block)
      &           12,25,30,14, 12,26,30,14, 12,27,30,14,
      &           12,28,30,14, 12,29,30,14, 12,30,30,14,
-C     Periode 7
+C     Periode 7 (7s block)
      &           13,30,30,14,
      &           14,30,30,14,
      &           14,30,31,14,
-C    --> Lanthanides & actinides
+C    --> Actinides
      &           14,30,32,14, 14,30,31,16, 14,30,31,17,
      &           14,30,31,18, 14,30,30,20, 14,30,30,21,
      &           14,30,31,21, 14,30,30,23, 14,30,30,24,
      &           14,30,30,25, 14,30,30,26, 14,30,30,27,
      &           14,30,30,28, 14,30,31,28,
-C    <-- Lanthanides & actinides
+C    <-- Actinides; (6d block and 7p block)
      &           14,30,32,28, 14,30,33,28, 14,30,34,28,
      &           14,30,35,28, 14,30,36,28, 14,30,37,28,
      &           13,30,39,28, 13,30,40,28, 14,30,40,28,
@@ -4039,10 +4009,10 @@ c
       ENDIF
       IF (MAXSHELL) THEN
 c    ... just find maximum number of shells we need to run over 
-c        and return number in J-variable (used in BNCORR)
+c        and return number in L-variable (used in BNCORR)
          NST = NOCC((NINT(Z)-1)*4 + 1)
-         J = NST/2
-         IF(MOD(NST,2).NE.0) J = J + 1
+         L = NST/2
+         IF(MOD(NST,2).NE.0) L = L + 1
          GOTO 10
       ENDIF
 C
@@ -4068,8 +4038,8 @@ c     ... special case for the (2-1) 1s electron
          GOTO 20
       ENDIF
 c     ... Generel case. We are past H and He and have thus accounted 
-c         for two electron.
-c     ... Find number of s-electrons for element (Z)
+c         for two electrons.
+c     ... Find numbers of s,p,d,f-electrons for element (Z)
       NST = NOCC((NINT(Z)-1)*4 + 1)
       NPT = NOCC((NINT(Z)-1)*4 + 2)
       NDT = NOCC((NINT(Z)-1)*4 + 3)
@@ -4125,19 +4095,16 @@ c
       ELSEIF (NF.GE.14) THEN
          NF = 14
       ENDIF
-      IF (J.EQ.1) ZEFF = NS + NP
-      IF (J.EQ.2) ZEFF = ND
-      IF (J.EQ.3) ZEFF = NF
+      IF (L.EQ.1) ZEFF = NS + NP
+      IF (L.EQ.2) ZEFF = ND
+      IF (L.EQ.3) ZEFF = NF
       SHELE(INUC,N) = SHELE(INUC,N) + ZEFF
-      IF (ZEFF.EQ.D0) THEN
-         GNU  = D0
-         GOTO 10
-      ENDIF
+      IF (ZEFF.EQ.D0) GO TO 10
 C
 C     ... Finally use Slater's rules to estimate screening 
 C         (and orbital exponent)
 C
-      IF (J.EQ.1) THEN
+      IF (L.EQ.1) THEN
 c        [nsnp]
          EMN = D0
          DO I = 1,N-2
@@ -4160,6 +4127,7 @@ C     ... Make sure we dont get more delocalized than the first
 C         1s electron.
 C      GNU = MAX(GNU,0.50D0)
 10    CONTINUE
+      IF (ZEFF .EQ. D0) GNU  = D0
       CALL QEXIT ('BNCOR1')
       RETURN
       END
@@ -4829,7 +4797,7 @@ C
       CALL LOWGEN(SLOC,NLOC,V,NV,LDM,STOL,IPRINT,EIG,WORK(KFREE),LFREE)
 C
       IF(IPRINT.GE.7) THEN
-        CALL HEADER('Local Lowdin matrix',-1)
+        CALL HEADER('Local Lowdin canonical matrix',-1)
         CALL OUTPUT(V,1,NLOC,1,NV,LDM,NLOC,1,LUPRI)
       ENDIF
 C
@@ -5917,7 +5885,8 @@ C       VEXTPJ - bare nucleus matrix
 C
 C     On input:
 C       TMAT(NFORB,NFORB,IFRP) 
-C            - free particle/bare nucleus matrix in orthon. Lowdin basis
+C            - free particle/bare nucleus matrix
+C              in orthonormal canonical Lowdin basis
 C       TMOD(NFORB,NORB,IFRP) 
 C            - transformation matrix with modified Dirac equation
 C              embedded, in orthonormal basis
@@ -6032,7 +6001,7 @@ C       the quaternion modified Dirac equation"
 C
 C     On input:
 C       TMAT - free particle matrix in Lowdin orthonormal basis     
-C       VMAT - Lowdin transformation matrix
+C       VMAT - Lowdin canonical transformation matrix
 C
 C     On output:
 C       TMAT - transformation matrix with Levy-Leblond equation embedded
@@ -6139,13 +6108,13 @@ C       the quaternion modified Dirac equation"
 C
 C     On input:
 C       TMAT - free particle matrix in Lowdin orthonormal basis     
-C       VMAT - Lowdin transformation matrix
+C       VMAT - Lowdin canonical transformation matrix
 C
 C     On output:
 C       TMAT - transformation matrix with modified Dirac equation embedded
 C
 C     Note that there is a difference in boson irrep ordering 
-C     between TMAT and the Lowdin transformation matrix VMAT:
+C     between TMAT and the Lowdin canonical transformation matrix VMAT:
 C     After transformation with VMAT the boson irrep ordering
 C     in a given fermion ircop is:
 C       L1 - L2 - L3 .. S1 - S2 - S3 - ..
