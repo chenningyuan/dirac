@@ -22,10 +22,10 @@ class term_c:
           self.index_partition   = l[:]
           self.available_indices = s
 
-#-------------------------------------------------------------------------------
-
 def flatten(l_in):
-
+#   example:
+#   l_in = [[[1], 2], 3, [[4]]]
+#   returns [1, 2, 3, 4]
     l = []
     for x in l_in:
         if hasattr(x, "__iter__") and not isinstance(x, basestring):
@@ -35,20 +35,19 @@ def flatten(l_in):
     return l
 
 def multiply_list(l):
-
+#   example:
+#   l = [[1, 2], [3, 4, 5]]
+#   returns [[1, 3], [1, 4], [1, 5], [2, 3], [2, 4], [2, 5]]
     l_old = [[]]
-
     for i in range(len(l)):
         l_new = []
         for j in range(len(l_old)):
             for k in range(len(l[i])):
                 l_new.append([l_old[j], l[i][k]])
         l_old = l_new[:]
-
     l_out = []
     for l in l_old:
         l_out.append(flatten(l))
-
     return l_out
 
 def xcombinations(items, n):
@@ -119,7 +118,7 @@ def get_partitions(index_s, partition_l):
 def get_partitions_scalar_product(index_s):
 #   example: 
 #   index_s = '234' 
-#   returns list ['0-234', '2-34', '3-24', '4-23']
+#   returns ['0-234', '2-34', '3-24', '4-23']
 #   note that the "other" combinations are missing on purpose:
 #                 '234-0', '34-2', ...
 #   this is compensated by the factor 2 in front of all z variables
@@ -169,28 +168,73 @@ def get_partition_l(n):
         l.append(partition)
     return l
 
-#-------------------------------------------------------------------------------
+def collect_terms(term_d, term_d_swap, term_variable_l, term_index_l):
 
-def print_f90_code(term_d, order):
+    t = count_variables(variable_l, term_variable_l)
+
+#   avoid double counting:
+    accept_term = 1
+    for i in range(len(term_variable_l)):
+        for j in range(i + 1, len(term_variable_l)):
+            term_variable_l_swap    = term_variable_l[:]
+            term_variable_l_swap[i] = term_variable_l[j]
+            term_variable_l_swap[j] = term_variable_l[i]
+            term_index_l_swap       = term_index_l[:]
+            term_index_l_swap[i]    = term_index_l[j]
+            term_index_l_swap[j]    = term_index_l[i]
+            if t + tuple(term_variable_l_swap + term_index_l_swap) in term_d_swap.keys():
+               accept_term = 0
+
+    if accept_term:
+       term_d_swap[t + tuple(term_variable_l + term_index_l)] = 1
+       l = []
+       for i in range(len(term_variable_l)):
+           l.append([term_variable_l[i], term_index_l[i]])
+       if t in term_d.keys():
+          term_d[t].append(l)
+       else:
+          term_d[t] = [l]
+
+    return term_d, term_d_swap
+
+def print_f90_code(term_d, order, index_to_matrix):
 
     s = ''
     for term in term_d:
+        if term_d[term] != []:
 
-        if 'g' in term_d[term]:
-          s += '\n    tv = ' + term_d[term]
-        else:
-          s += '\n    tu = ' + term_d[term]
-
-        nr_n = term[0]
-        nr_z = term[1]
-
-        if 'g' in term_d[term]:
-           s += '\n    v  = v + derv(xc_index(XC_RSZXY, (/%i, 0, %i, 0, 0/)))*tv(:)'      % (nr_n,     nr_z + 1)
-        else:
-           s += '\n    v  = v + derv(xc_index(XC_RSZXY, (/%i, 0, %i, 0, 0/)))*tu*g(:, 0)' % (nr_n,     nr_z + 1)
-           s += '\n    u  = u + derv(xc_index(XC_RSZXY, (/%i, 0, %i, 0, 0/)))*tu'         % (nr_n + 1, nr_z)
+           nr_n = term[0]
+           nr_z = term[1]
+           nr_g = term[2]
+          
+           if nr_g == 1:
+             s += '\n    tv = '
+           else:
+             s += '\n    tu = '
+          
+           for i in range(len(term_d[term])):
+               for j in range(len(term_d[term][i])):
+                   if i > 0 and j == 0:
+                      s += ' &\n       + '
+                   if j > 0:
+                      s += '*'
+                   if term_d[term][i][j][0] == 'z':
+                      left  = string.split(term_d[term][i][j][1], '-')[0]
+                      right = string.split(term_d[term][i][j][1], '-')[1]
+                      s += 'z(%s, %s)' % (index_to_matrix[left], index_to_matrix[right])
+                   elif term_d[term][i][j][0] == 'g':
+                      s += 'g(:, %s)' % index_to_matrix[term_d[term][i][j][1]]
+                   else:
+                      s += 'n(%s)' % index_to_matrix[term_d[term][i][j][1]]
+          
+           if nr_g == 1:
+              s += '\n    v  = v + derv(xc_index(XC_RSZXY, (/%i, 0, %i, 0, 0/)))*tv(:)'      % (nr_n,     nr_z + 1)
+           else:
+              s += '\n    v  = v + derv(xc_index(XC_RSZXY, (/%i, 0, %i, 0, 0/)))*tu*g(:, 0)' % (nr_n,     nr_z + 1)
+              s += '\n    u  = u + derv(xc_index(XC_RSZXY, (/%i, 0, %i, 0, 0/)))*tu'         % (nr_n + 1, nr_z)
 
     s = string.replace(s, 'g', 'gn')
+
 
     print '''  subroutine xc_response_%i(u, v, derv, n, gn, z) 
     
@@ -210,59 +254,9 @@ def print_f90_code(term_d, order):
   end subroutine
 ''' % (order, s)
 
-def collect_terms(term_d, double_d, term_variable_l, term_index_l, index_to_matrix):
-
-#   print term_variable_l, term_index_l
-
-    s = ''
-
-    nr_n = 0
-    nr_z = 0
-    nr_g = 0
-
-    for i in range(len(term_variable_l)):
-        if term_variable_l[i] == 'z':
-           nr_z += 1
-           left  = string.split(term_index_l[i], '-')[0]
-           right = string.split(term_index_l[i], '-')[1]
-           s += '*%s(%s, %s)' % (term_variable_l[i], index_to_matrix[left], index_to_matrix[right])
-        elif term_variable_l[i] == 'g':
-           nr_g += 1
-           s += '*g(:, %s)' % index_to_matrix[term_index_l[i]]
-        else:
-           nr_n += 1
-           s += '*%s(%s)' % (term_variable_l[i], index_to_matrix[term_index_l[i]])
-
-#   avoid double counting:
-    accept_term = 1
-    for i in range(len(term_variable_l)):
-        for j in range(i + 1, len(term_variable_l)):
-          # if term_variable_l[i] == term_variable_l[j]:
-            term_variable_l_swap    = term_variable_l[:]
-            term_variable_l_swap[i] = term_variable_l[j]
-            term_variable_l_swap[j] = term_variable_l[i]
-            term_index_l_swap       = term_index_l[:]
-            term_index_l_swap[i]    = term_index_l[j]
-            term_index_l_swap[j]    = term_index_l[i]
-            t_swap = tuple([nr_n, nr_z, nr_g] + term_variable_l_swap + term_index_l_swap)
-            if t_swap in double_d.keys():
-               accept_term = 0
-
-    if accept_term:
-       t = tuple([nr_n, nr_z, nr_g] + term_variable_l + term_index_l)
-       double_d[t] = 1
-
-       t = tuple([nr_n, nr_z, nr_g])
-       if t in term_d.keys():
-          term_d[t] += ' &\n       + ' + s[1:]
-       else:
-          term_d[t]  = s[1:]
-
-    return term_d, double_d
-
 #-------------------------------------------------------------------------------
 
-def generate_code(order):
+def generate_contributions(order):
 
     index_s = '12345678'
     assert (order <= len(index_s))
@@ -282,8 +276,8 @@ def generate_code(order):
     index_to_matrix['0'] = '0'
     matrix_to_index[0]   = '0'
 
-    term_d   = {}
-    double_d = {}
+    term_d = {}
+    term_d_swap = {}
 
     for partition_l in get_partition_l(order):
         variable_combination_ll = get_variable_combinations(len(partition_l))
@@ -309,16 +303,12 @@ def generate_code(order):
 
                 if len(term_variable_l) > 0:
                    for l in multiply_list(term_index_l):
-                       term_d, double_d = collect_terms(term_d, double_d, term_variable_l, l, index_to_matrix)
+                       term_d, term_d_swap = collect_terms(term_d, term_d_swap, term_variable_l, l)
 
-    print_f90_code(term_d, order)
+    print_f90_code(term_d, order, index_to_matrix)
 
 #-------------------------------------------------------------------------------
 
-# generate code up to max_order
+# generate contributions up to max_order
 for i in range(1, max_order + 1):
-    generate_code(i)
-
-print '''#endif /* ifdef MOD_AUTODIFF */
-
-end module'''
+    generate_contributions(i)
