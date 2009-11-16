@@ -431,7 +431,7 @@ use DIRAC_HSFS
 
    read(luhsfs,iostat=ios) (irreps(i),i=1,nirp)
    if (ios.ne.0) call quit('error in luhsfs reading 2!')
-   write(LUPRI,'(2x,a,8i2)') 'read irreps:',(irreps(i),i=1,nirp)
+   write(LUPRI,'(2x,a,8i4)') 'read irreps:',(irreps(i),i=1,nirp)
 
    write(LUPRI,'(2x,a,i5)') 'going to read orbital energies, nort=',nort
 
