@@ -2578,7 +2578,7 @@ C
         GO TO 200
 C
    14 CONTINUE
-#ifdef MOD_HSFS
+#ifdef MOD_HSFS || HSFS_DYN_ALLOC
       IF (DOHSFS) THEN
         CALL HSFSINP(WORD)
       ELSE
