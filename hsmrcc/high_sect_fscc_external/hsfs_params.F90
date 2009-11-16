@@ -21,18 +21,17 @@ contains
 subroutine assign_hsfs_parametersXXX
 #include "priunit.h"
 #include "param_ccsd.h"
-
 write(LUPRI,*) 'HSFS parameters from param_ccsd.h...'
  call print_hsfs_parameters
-
 end subroutine assign_hsfs_parametersXXX
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 subroutine assign_hsfs_parameters
-!-----------------------------------------------------------------------------------
+!---------------------------------------------------------------------------------------------
 ! very important - assign dimensions of arrays for various allocations
 !
 ! MUST be the first calling 
-!------------------------------------------------------------------------------------
+!---------------------------------------------------------------------------------------------
 #include "priunit.h"
 
 write(LUPRI,*) 'assigning HSFS parameters...according to priunit.h file'
@@ -42,7 +41,9 @@ write(LUPRI,*) 'assigning HSFS parameters...according to priunit.h file'
  nbig = 90000000
 
  ndij = 960000
- ndint =150000
+
+! ndint =150000
+  ndint =15000000
 
  ndt1 =1000
  ndt2 =500000

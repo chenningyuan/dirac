@@ -398,12 +398,18 @@ subroutine get_dirac_ints(nort,eps,nn,ind,v,nint)
 !  
 !  nint - number of 2-el.integrals
 !  
-!  called from readv(ccsd3.F) -  HighSectFS method
+!  called from readv(ccsd3.F) -  HighSectFSCC method
 !
 !------------------------------------------------------------------------------
-#if defined MOD_HSFS
+#if defined MOD_HSFS || HSFS_DYN_ALLOC
 use print_level
 use DIRAC_HSFS
+
+#if defined HSFS_DYN_ALLOC
+use hsfs_parameters
+#else
+#include "param_ccsd.h"
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -456,9 +462,14 @@ use DIRAC_HSFS
    unread_file=.true.
    do while (unread_file) 
     nintx = nintx + 1
+    if (nintx > ndint) then
+      write(LUPRI,*) 'nintx,ndint:',nintx,ndint
+      call quit('get_dirac_ints: number of integrals exceeds allocated arrays !')
+    endif
+
     read(luhsfs,iostat=ios) i1,i2,i3,i4,v(nintx)
     if (ios.ne.0) call quit('error in luhsfs i1,i2,i3,i4,v(i) reading !')
-    ind(nintx)=ipack(i1,i2,i3,i4)
+    ind(nintx)=ipack(i1,i2,i3,i4) ! possible source of overflow !
     
     unread_file=.not.( (i1.eq.0).and.(i2.eq.0)) 
     if (iprint_hsfs >= 8) then

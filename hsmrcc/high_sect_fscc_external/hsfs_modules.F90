@@ -43,7 +43,7 @@ integer :: istat
  call alloc_stat_check("iint(ndint)",istat)
  allocate(vint(ndint),stat=istat)
  call alloc_stat_check("vint(ndint)",istat)
- write(LUPRI,*) 'cint_mod initialized'
+ write(LUPRI,*) 'cint_mod initialized with the parameter ndint=',ndint
 end subroutine init_cint_mod
 
 subroutine dealloc_cint_mod
