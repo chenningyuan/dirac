@@ -169,11 +169,11 @@ program dirprg
  endif
 #endif
 
-#ifdef MOD_HSFS
+#ifdef MOD_HSFS || HSFS_DYN_ALLOC
  if (DOHSFS) then
-   print '(/a)','*****************************************************'
+   print '(/,a)','*****************************************************'
    print '(2x,a)','Continuing with the external HighSect-FSCC code.'
-   print '(/a)','*****************************************************'
+   print '(/,a)','*****************************************************'
    call HIGH_SECTOR_FSCC_METHODS
  endif
 #endif
