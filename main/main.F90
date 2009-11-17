@@ -170,6 +170,9 @@ program dirprg
 #endif
 
 #ifdef MOD_HSFS || HSFS_DYN_ALLOC
+!radovan: gfortran does not understand the above
+!         is the following meant?
+!#if defined (MOD_HSFS) && defined (HSFS_DYN_ALLOC)
  if (DOHSFS) then
    print '(/,a)','*****************************************************'
    print '(2x,a)','Continuing with the external HighSect-FSCC code.'

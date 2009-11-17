@@ -2579,6 +2579,9 @@ C
 C
    14 CONTINUE
 #ifdef MOD_HSFS || HSFS_DYN_ALLOC
+!radovan: gfortran does not understand the above
+!         is the following meant?
+!#if defined (MOD_HSFS) && defined (HSFS_DYN_ALLOC)
       IF (DOHSFS) THEN
         CALL HSFSINP(WORD)
       ELSE
