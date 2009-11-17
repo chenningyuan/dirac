@@ -1210,7 +1210,7 @@ class polynomial
     { 
       c[0] = c0;
       for (int i=1;i<size;i++)
-	c[i] = numtype(0);
+	c[i] = 0;
     }
   template<class T>
   polynomial<numtype, Nvar, Ndeg> &operator=(const T &c0)

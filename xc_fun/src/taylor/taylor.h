@@ -9,6 +9,8 @@ class taylor : public polynomial<T, Nvar, Ndeg>
 {
 public:
   taylor(void) {}
+  // This does not work when T is a int. One ugly solution is to
+  // specialize taylor for int T's, but perhaps not so useful?
   taylor(int c0) : polynomial<T, Nvar,Ndeg>(T(c0)) {} 
   taylor(const T &c0) : polynomial<T, Nvar,Ndeg>(c0) {} 
   // Set the constant term to c0 and the first order term of
@@ -156,6 +158,21 @@ public:
     return sum;
   }
 };
+
+// Define a taylor polynomial with taylor polynomial coefficients,
+// i.e. a tensoring of polynomial spaces.
+template<int Ndim, class T, int Nvar, int Ndeg>
+struct tensored_taylor
+{
+  typedef taylor<typename tensored_taylor<Ndim-1,T,Nvar,Ndeg>::type,Nvar,Ndeg> type;
+};
+
+template<class T, int Nvar, int Ndeg>
+struct tensored_taylor<1,T,Nvar,Ndeg>
+{
+  typedef taylor<T,Nvar,Ndeg> type;
+};
+
 
 template<class T, int Nvar, int Ndeg>
 void as_taylor(taylor<T,Nvar,Ndeg> *&ptr, T *data)

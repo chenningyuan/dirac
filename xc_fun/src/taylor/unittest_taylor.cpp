@@ -63,6 +63,12 @@ int taylor_check(const char *label,
   return nfail;
 }
 
+template<class T>
+T error_measure(const T &x1, const T &x2)
+{
+  return 2*fabs(x1 - x2)/(1 + 0.5*fabs(x1+x2));
+}
+
 template<class T, int Nvar, int Ndeg>
 int taylor_compare(const taylor<T,Nvar,Ndeg>& t1,
 		   const taylor<T,Nvar,Ndeg>& t2,
@@ -225,7 +231,31 @@ int main(void)
   num_t dx = 1e-3;
   shift_sint.shift(shifted,&dx);
   res += taylor_compare(sint,shifted,1e-15);
-
+  // Tensoring
+  tensored_taylor<3,double,1,2>::type tens_t = 0, tens_res;
+  taylor<double,3,6> tens_cover = 0, tens_cover_out;
+  for (int i=0;i<3;i++)
+    for (int j=0;j<3;j++)
+      for (int k=0;k<3;k++)
+	{
+	  tens_t[i][j][k] = 1 + i + 13*j + 23*k;
+	  int ijk[3] = {i,j,k};
+	  tens_cover[tens_cover.term_index(ijk)] = tens_t[i][j][k];
+	}
+  tens_res = exp(1/log(tens_t+1));
+  tens_cover_out = exp(1/log(tens_cover+1));
+  for (int i=0;i<3;i++)
+    for (int j=0;j<3;j++)
+      for (int k=0;k<3;k++)
+	{
+	  int ijk[3] = {i,j,k};
+	  if (error_measure(tens_res[i][j][k],tens_cover_out[tens_cover_out.term_index(ijk)])>1e-14)
+	    {
+	      cout << "tensoring error: " <<
+		tens_res[i][j][k] << " vs " << tens_cover_out[tens_cover_out.term_index(ijk)] << endl;
+	      res++;
+	    }
+	}
 /*
   // sinc
   cout << scientific;
