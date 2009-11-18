@@ -8,7 +8,26 @@ template<class T, int Nvar, int Ndeg>
 class taylor : public polynomial<T, Nvar, Ndeg>
 {
 public:
+  using polynomial<T, Nvar, Ndeg>::size;
+  using polynomial<T, Nvar, Ndeg>::c;
+
   taylor(void) {}
+  template<int Ndeg2>
+  taylor(const taylor<T,Nvar,Ndeg2> &ref)
+  {
+    if (ref.size < int(size)) 
+      {
+	for (int i=0;i<size;i++)
+	  c[i] = ref.c[i];
+	for (int i=ref.size;i<size;i++)
+	  c[i] = 0;
+      }
+    else
+      {
+	for (int i=0;i<size;i++)
+	  c[i] = ref.c[i];
+      }
+  }
   // This does not work when T is a int. One ugly solution is to
   // specialize taylor for int T's, but perhaps not so useful?
   taylor(int c0) : polynomial<T, Nvar,Ndeg>(T(c0)) {} 
@@ -20,10 +39,31 @@ public:
     assert(var>=0);
     assert(var<Nvar);
     if (Ndeg>0)
-      this->c[var+1] = var_value;
+      c[var+1] = var_value;
   }
-  template<class S>
-  taylor<T,Nvar,Ndeg> &operator=(const S& c0)
+  template<class S, int Ndeg2>
+  taylor<T,Nvar,Ndeg> &operator=(const taylor<S,Nvar,Ndeg2> &ref)
+  {
+    if (ref.size < int(size)) 
+      {
+	for (int i=0;i<size;i++)
+	  c[i] = ref.c[i];
+	for (int i=ref.size;i<size;i++)
+	  c[i] = 0;
+      }
+    else
+      {
+	for (int i=0;i<size;i++)
+	  c[i] = ref.c[i];
+      }
+    return *this;
+  }
+  taylor<T,Nvar,Ndeg> &operator=(const T& c0)
+  {
+    polynomial<T,Nvar,Ndeg>::operator=(c0);
+    return *this;
+  }
+  taylor<T,Nvar,Ndeg> &operator=(int c0)
   {
     polynomial<T,Nvar,Ndeg>::operator=(c0);
     return *this;
@@ -33,20 +73,20 @@ public:
   {
     assert(N<=Ndeg);
     return *reinterpret_cast<taylor<T,Nvar-1,N> *>
-      (this->c+polymul_internal::polylen<Nvar,N-1>::len);
+      (c+polymul_internal::polylen<Nvar,N-1>::len);
   }
   template<int N>
   const taylor<T,Nvar-1,N> &pick_order(void) const
   {
     assert(N<=Ndeg);
     return *reinterpret_cast<const taylor<T,Nvar-1,N> *>
-      (this->c+polymul_internal::polylen<Nvar,N-1>::len);
+      (c+polymul_internal::polylen<Nvar,N-1>::len);
   }
   template<int N>
   void pick_order(taylor<T,Nvar-1,N> &p) const
   {
     p = *reinterpret_cast<const taylor<T,Nvar-1,N> *>
-      (this->c+polymul_internal::polylen<Nvar,N-1>::len);
+      (c+polymul_internal::polylen<Nvar,N-1>::len);
   }
   
   // Multiply each term with the correct factorials to get 
@@ -59,8 +99,8 @@ public:
   {
     assert(Nvar == 1 && "Implement this..");
     for (int i=Ndeg;i>0;i--)
-      this->c[i] = this->c[i-1]/i;
-    this->c[0] = 0.0;
+      c[i] = c[i-1]/i;
+    c[0] = 0;
   }
   // Set x := alpha*x, y = :alpha*y etc
   void stretch(T alpha)
@@ -70,7 +110,7 @@ public:
     for (int i=1;i<=Ndeg;i++)
       {
 	for (;k<polylen(Nvar,i);k++)
-	  this->c[k] *= an;
+	  c[k] *= an;
 	an *= alpha;
       }
   }
@@ -106,28 +146,28 @@ public:
     }
   void operator-=(const taylor<T, Nvar,Ndeg>& t)
     {
-      for (int i=0;i<this->size;i++)
-	this->c[i] -= t.c[i];
+      for (int i=0;i<size;i++)
+	c[i] -= t.c[i];
     }
   void operator+=(const taylor<T, Nvar,Ndeg>& t)
     {
-      for (int i=0;i<this->size;i++)
-	this->c[i] += t.c[i];
+      for (int i=0;i<size;i++)
+	c[i] += t.c[i];
     }
   template<class S>
   void operator-=(const S& x)
     {
-      this->c[0] -= x;
+      c[0] -= x;
     }
   template<class S>
   void operator+=(const S& x)
     {
-      this->c[0] += x;
+      c[0] += x;
     }
   void operator*=(const T& scale)
     {
-      for (int i=0;i<this->size;i++)
-	this->c[i] *= scale;
+      for (int i=0;i<size;i++)
+	c[i] *= scale;
     }
   template<int Ndeg2>
   void operator*=(const taylor<T, Nvar,Ndeg2>& t)
@@ -153,9 +193,21 @@ public:
   T dot(const taylor<T, Nvar, Ndeg> &t) const
   {
     T sum = 0;
-    for (int i=0;i<this->size;i++)
-      sum += this->c[i]*t.c[i];
+    for (int i=0;i<size;i++)
+      sum += c[i]*t.c[i];
     return sum;
+  }
+  const T &operator[](int i) const
+  {
+    assert(i>=0);
+    assert(i<this->size);
+    return c[i];
+  }
+  T &operator[](int i)
+  {
+    assert(i>=0);
+    assert(i<this->size);
+    return c[i];
   }
 };
 
@@ -164,7 +216,8 @@ public:
 template<int Ndim, class T, int Nvar, int Ndeg>
 struct tensored_taylor
 {
-  typedef taylor<typename tensored_taylor<Ndim-1,T,Nvar,Ndeg>::type,Nvar,Ndeg> type;
+  typedef taylor<typename 
+    tensored_taylor<Ndim-1,T,Nvar,Ndeg>::type,Nvar,Ndeg> type;
 };
 
 template<class T, int Nvar, int Ndeg>
@@ -172,6 +225,7 @@ struct tensored_taylor<1,T,Nvar,Ndeg>
 {
   typedef taylor<T,Nvar,Ndeg> type;
 };
+
 
 
 template<class T, int Nvar, int Ndeg>

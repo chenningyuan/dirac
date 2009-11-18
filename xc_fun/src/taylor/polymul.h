@@ -1215,11 +1215,29 @@ class polynomial
   template<class T>
   polynomial<numtype, Nvar, Ndeg> &operator=(const T &c0)
     {
-      c[0] = numtype(c0);
+      c[0] = c0;
       for (int i=1;i<size;i++)
-	c[i] = numtype(0);
+	c[i] = 0;
       return *this;
     }
+  template<int Ndeg2>
+  polynomial<numtype, Nvar, Ndeg> &
+  operator=(const polynomial<numtype, Nvar, Ndeg2> &ref)
+  {
+    if (ref.size < int(size)) 
+      {
+	for (int i=0;i<size;i++)
+	  c[i] = ref.c[i];
+	for (int i=ref.size;i<size;i++)
+	  c[i] = 0;
+      }
+    else
+      {
+	for (int i=0;i<size;i++)
+	  c[i] = ref.c[i];
+      }
+    return *this;
+  }
   const numtype &operator[](int i) const
   {
     assert(i>=0);

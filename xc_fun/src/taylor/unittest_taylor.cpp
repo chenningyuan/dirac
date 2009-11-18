@@ -256,6 +256,11 @@ int main(void)
 	      res++;
 	    }
 	}
+
+  // Assignment with conversion for tensors.
+  tensored_taylor<3,double,1,3>::type tens_conv;
+  tens_conv = tens_res;
+
 /*
   // sinc
   cout << scientific;

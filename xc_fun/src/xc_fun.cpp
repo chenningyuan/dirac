@@ -410,9 +410,9 @@ void setup()
 // Only the highest order terms of the expansion are returned,
 // these can be though of as forming a Ndeg degree polynomial in
 // Npt-1 variables.
-template<class num, int Npt, int Nvar, int Ndeg>
-void xc_contract_gradient(taylor<num,Npt-1,Ndeg> &res, int grad_var,
-			  const taylor<num,Npt,Ndeg-1> d[])
+template<class num, int Npt, int Nvar>
+void xc_contract_gradient(int grad_var,
+			  const typename tensored_taylor<Npt,num,1,1>::type d[Nvar])
 {
   // Use the "trick" that 
   // f(a+x) = f(a) + f'(a)x
@@ -423,62 +423,27 @@ void xc_contract_gradient(taylor<num,Npt-1,Ndeg> &res, int grad_var,
   // taylor expansions. Note that we cannot insert a as a polynomial
   // after expanding in x, we have to insert both at the same time.
   // (cf. differentiating after putting in the variable value).
-  taylor<taylor<num,Npt,Ndeg>,1,1> seed[Nvar], out;
+  taylor<typename tensored_taylor<Npt,num,1,2>::type,1,1> seed[Nvar],out;
+  typename tensored_taylor<Npt,num,1,2>::type knas;
+  knas = 1;
   for (int i=0;i<Nvar;i++)
     {
-      d[i].convert_to(seed[i][0]); //pad with zeros at highest order
-      seed[i][1] = grad_var == i ? 1 : 0;
+      seed[i][0] = d[i];
+      if (grad_var == i)
+	seed[i][1] = 1;
+      else
+	seed[i][1] = 0;
     }
-  densvars<taylor<taylor<num,Npt,Ndeg>,1,1> > dv;
+  densvars<taylor<typename tensored_taylor<Npt,num,1,2>::type,1,1> > dv;
   setdens_r(dv,seed);
   sum_functionals(out, dv);
-  out[1].pick_order(res);
+  //  out[1].pick_order(res);
 }
 
-
-// Use this from fortran like (p stands for perturbation strength
-// double precision d_of_p(2) ! linear polynomial 
-// d_of_p(1) = constant term (probably 0)
-// d_of_p(2) = linear term (something here)
-// double precision res(1)
-// call xc_contract_gradient_1var_2deg(res,d_of_p)
-// This works _only_ in combination with XC_R as the type
-// of functional, this is hard-coded for now. Also it's coded
-// for only one perturbation operator (but you can go to high order)
-extern "C"
-void xc_contract_gradient_1var_2deg_(double *res, const double d[])
+void test_contractions(void)
 {
-  taylor<double,0,2> *res_t;
-  as_taylor(res_t,res);
-  const taylor<double,1,1> *d_t;
-  as_taylor(d_t,d);
-  xc_contract_gradient<double,1,1,2>(*res_t,0,d_t);
-}
-
-//Here it would be
-// double precision d_of_p(3) ! quadratic polynomial
-// d_of_p(1) = constant term (probably 0)
-// d_of_p(2) = linear term (something here)
-// d_of_p(3) = quadratic term
-// double precision res(1) ! third order output
-extern "C"
-void xc_contract_gradient_1var_3deg_(double *res, const double d[])
-{
-  taylor<double,0,3> *res_t;
-  as_taylor(res_t,res);
-  const taylor<double,1,2> *d_t;
-  as_taylor(d_t,d);
-  xc_contract_gradient<double,1,1,3>(*res_t,0,d_t);
-}
-
-extern "C"
-void xc_contract_gradient_1var_4deg_(double *res, const double d[])
-{
-  taylor<double,0,4> *res_t;
-  as_taylor(res_t,res);
-  const taylor<double,1,3> *d_t;
-  as_taylor(d_t,d);
-  xc_contract_gradient<double,1,1,4>(*res_t,0,d_t);
+  tensored_taylor<2,double,1,1>::type rho_of_eps[1];
+  xc_contract_gradient<double,2,1>(0, rho_of_eps);
 }
 
 #endif
