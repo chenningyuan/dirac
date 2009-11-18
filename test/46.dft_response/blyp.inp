@@ -6,6 +6,7 @@
 .DFT
  BLYP
 *DFT
+.ZIPGRID
 .DEBUG          !very coarse grid
 .INTCHK
  1
