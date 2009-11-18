@@ -4,6 +4,7 @@ module xc_response
   use dft_cfg
   use dft_density
   use dft_cb_interface
+  use aor_cfg
   use xc_fun
 
   implicit none
@@ -11,6 +12,7 @@ module xc_response
   public xc_response_contribution
 
   private
+    real(8), parameter     :: tiny = 1.0d-30
     integer, parameter     :: max_nr_dmat = 20
 
 !    "the universe works on a math equation
@@ -90,6 +92,9 @@ contains
     real(8)                :: z(0:max_nr_dmat, 0:max_nr_dmat)
 
     integer                :: i, j
+    logical                :: use_alda
+    logical                :: u_above_threshold
+    logical                :: v_above_threshold
 
     real(8), external      :: ddot
 !   ----------------------------------------------------------------------------
@@ -132,6 +137,15 @@ contains
 
     end if
 
+    use_alda = .false.
+    if (order >= aor_cfg_alda_order) then
+      use_alda = .true.
+    end if
+
+    if (.not. use_gga) then
+      use_alda = .true.
+    end if
+
     derv = 0.0d0
     call xc_eval(derv, order, (/n(0), 0.0d0, z(0, 0), 0.0d0, 0.0d0/))
  
@@ -144,31 +158,43 @@ contains
     select case (order)
     
       case (2)
-        call xc_response_1(u, v, derv, n, gn, z)
- 
+        call xc_response_2(u, v, derv, n, gn, z, use_alda)
+    
       case (3)
-        call xc_response_2(u, v, derv, n, gn, z)
- 
+        call xc_response_3(u, v, derv, n, gn, z, use_alda)
+    
       case (4)
-        call xc_response_3(u, v, derv, n, gn, z)
- 
+        call xc_response_4(u, v, derv, n, gn, z, use_alda)
+    
       case (5)
-        call xc_response_4(u, v, derv, n, gn, z)
+        call xc_response_5(u, v, derv, n, gn, z, use_alda)
     
       case default
         call quit('xc_response_contribution: order not implemented')
     
     end select
 
-    if (maxval((/dabs(v(1)), dabs(v(2)), dabs(v(3))/)) > 0.0d0) then
+    u_above_threshold = .false.
+    if (dabs(u) > tiny) then
+      u_above_threshold = .true.
+    end if
+
+    v_above_threshold = .false.
+    if (maxval((/dabs(v(1)), dabs(v(2)), dabs(v(3))/)) > tiny) then
+      v_above_threshold = .true.
+    end if
+
+    if (v_above_threshold) then
       call gga_distribute(u, 2.0d0*v, 0, fmat, ao_g0_m0, ao_g1_m0)
     else
-      call lda_distribute(u,          0, fmat, ao_g0_m0)
+      if (u_above_threshold) then
+        call lda_distribute(u, 0, fmat, ao_g0_m0)
+      end if
     end if
 
   end subroutine
 
-  subroutine xc_response_1(u, v, derv, n, gn, z) 
+  subroutine xc_response_2(u, v, derv, n, gn, z, use_alda) 
     
 !   ----------------------------------------------------------------------------
     real(8), intent(inout) :: u
@@ -177,23 +203,26 @@ contains
     real(8), intent(in)    :: n(0:max_nr_dmat)
     real(8), intent(in)    :: gn(3, 0:max_nr_dmat)
     real(8), intent(in)    :: z(0:max_nr_dmat, 0:max_nr_dmat)
+    logical, intent(in)    :: use_alda
 !   ----------------------------------------------------------------------------
     real(8)                :: tu
     real(8)                :: tv(3)
 !   ----------------------------------------------------------------------------
 
     tu = n(1)
-    v  = v + derv(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)))*tu*gn(:, 0)
     u  = u + derv(xc_index(XC_RSZXY, (/2, 0, 0, 0, 0/)))*tu
+    if (.not. use_alda) then
+    v  = v + derv(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)))*tu*gn(:, 0)
     tu = z(0, 1)
     v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)))*tu*gn(:, 0)
     u  = u + derv(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)))*tu
     tv = gn(:, 1)
     v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 1, 0, 0/)))*tv(:)
+    end if
     
   end subroutine
 
-  subroutine xc_response_2(u, v, derv, n, gn, z) 
+  subroutine xc_response_3(u, v, derv, n, gn, z, use_alda) 
     
 !   ----------------------------------------------------------------------------
     real(8), intent(inout) :: u
@@ -202,11 +231,16 @@ contains
     real(8), intent(in)    :: n(0:max_nr_dmat)
     real(8), intent(in)    :: gn(3, 0:max_nr_dmat)
     real(8), intent(in)    :: z(0:max_nr_dmat, 0:max_nr_dmat)
+    logical, intent(in)    :: use_alda
 !   ----------------------------------------------------------------------------
     real(8)                :: tu
     real(8)                :: tv(3)
 !   ----------------------------------------------------------------------------
 
+    tu = n(1)*n(2)
+    u  = u + derv(xc_index(XC_RSZXY, (/3, 0, 0, 0, 0/)))*tu
+    if (.not. use_alda) then
+    v  = v + derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tu*gn(:, 0)
     tv = z(0, 1)*gn(:, 2) &
        + gn(:, 1)*z(0, 2)
     v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)))*tv(:)
@@ -223,13 +257,11 @@ contains
     tu = z(1, 2)
     v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)))*tu*gn(:, 0)
     u  = u + derv(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)))*tu
-    tu = n(1)*n(2)
-    v  = v + derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tu*gn(:, 0)
-    u  = u + derv(xc_index(XC_RSZXY, (/3, 0, 0, 0, 0/)))*tu
+    end if
     
   end subroutine
 
-  subroutine xc_response_3(u, v, derv, n, gn, z) 
+  subroutine xc_response_4(u, v, derv, n, gn, z, use_alda) 
     
 !   ----------------------------------------------------------------------------
     real(8), intent(inout) :: u
@@ -238,11 +270,23 @@ contains
     real(8), intent(in)    :: n(0:max_nr_dmat)
     real(8), intent(in)    :: gn(3, 0:max_nr_dmat)
     real(8), intent(in)    :: z(0:max_nr_dmat, 0:max_nr_dmat)
+    logical, intent(in)    :: use_alda
 !   ----------------------------------------------------------------------------
     real(8)                :: tu
     real(8)                :: tv(3)
 !   ----------------------------------------------------------------------------
 
+    tu = n(1)*n(2)*n(3)
+    u  = u + derv(xc_index(XC_RSZXY, (/4, 0, 0, 0, 0/)))*tu
+    if (.not. use_alda) then
+    v  = v + derv(xc_index(XC_RSZXY, (/3, 0, 1, 0, 0/)))*tu*gn(:, 0)
+    end if
+    tu = n(4)*n(3) &
+       + n(5)*n(2) &
+       + n(6)*n(1)
+    u  = u + derv(xc_index(XC_RSZXY, (/3, 0, 0, 0, 0/)))*tu
+    if (.not. use_alda) then
+    v  = v + derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tu*gn(:, 0)
     tv = z(0, 4)*gn(:, 3) &
        + z(1, 2)*gn(:, 3) &
        + z(0, 5)*gn(:, 2) &
@@ -294,9 +338,6 @@ contains
        + gn(:, 1)*n(2)*z(0, 3) &
        + gn(:, 1)*z(0, 2)*n(3)
     v  = v + derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tv(:)
-    tu = n(1)*n(2)*n(3)
-    v  = v + derv(xc_index(XC_RSZXY, (/3, 0, 1, 0, 0/)))*tu*gn(:, 0)
-    u  = u + derv(xc_index(XC_RSZXY, (/4, 0, 0, 0, 0/)))*tu
     tu = n(1)*z(0, 2)*z(0, 3) &
        + z(0, 1)*n(2)*z(0, 3) &
        + z(0, 1)*z(0, 2)*n(3)
@@ -315,15 +356,11 @@ contains
        + z(0, 1)*gn(:, 2)*z(0, 3) &
        + gn(:, 1)*z(0, 2)*z(0, 3)
     v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 3, 0, 0/)))*tv(:)
-    tu = n(4)*n(3) &
-       + n(5)*n(2) &
-       + n(6)*n(1)
-    v  = v + derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tu*gn(:, 0)
-    u  = u + derv(xc_index(XC_RSZXY, (/3, 0, 0, 0, 0/)))*tu
+    end if
     
   end subroutine
 
-  subroutine xc_response_4(u, v, derv, n, gn, z) 
+  subroutine xc_response_5(u, v, derv, n, gn, z, use_alda) 
     
 !   ----------------------------------------------------------------------------
     real(8), intent(inout) :: u
@@ -332,11 +369,37 @@ contains
     real(8), intent(in)    :: n(0:max_nr_dmat)
     real(8), intent(in)    :: gn(3, 0:max_nr_dmat)
     real(8), intent(in)    :: z(0:max_nr_dmat, 0:max_nr_dmat)
+    logical, intent(in)    :: use_alda
 !   ----------------------------------------------------------------------------
     real(8)                :: tu
     real(8)                :: tv(3)
 !   ----------------------------------------------------------------------------
 
+    tu = n(1)*n(2)*n(3)*n(4)
+    u  = u + derv(xc_index(XC_RSZXY, (/5, 0, 0, 0, 0/)))*tu
+    if (.not. use_alda) then
+    v  = v + derv(xc_index(XC_RSZXY, (/4, 0, 1, 0, 0/)))*tu*gn(:, 0)
+    end if
+    tu = n(11)*n(4) &
+       + n(12)*n(3) &
+       + n(13)*n(2) &
+       + n(14)*n(1) &
+       + n(5)*n(10) &
+       + n(6)*n(9) &
+       + n(7)*n(8)
+    u  = u + derv(xc_index(XC_RSZXY, (/3, 0, 0, 0, 0/)))*tu
+    if (.not. use_alda) then
+    v  = v + derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tu*gn(:, 0)
+    end if
+    tu = n(5)*n(3)*n(4) &
+       + n(6)*n(2)*n(4) &
+       + n(7)*n(2)*n(3) &
+       + n(8)*n(1)*n(4) &
+       + n(9)*n(1)*n(3) &
+       + n(10)*n(1)*n(2)
+    u  = u + derv(xc_index(XC_RSZXY, (/4, 0, 0, 0, 0/)))*tu
+    if (.not. use_alda) then
+    v  = v + derv(xc_index(XC_RSZXY, (/3, 0, 1, 0, 0/)))*tu*gn(:, 0)
     tv = z(0, 11)*gn(:, 4) &
        + z(1, 8)*gn(:, 4) &
        + z(2, 6)*gn(:, 4) &
@@ -455,9 +518,6 @@ contains
        + z(1, 4)*z(2, 3)
     v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 3, 0, 0/)))*tu*gn(:, 0)
     u  = u + derv(xc_index(XC_RSZXY, (/1, 0, 2, 0, 0/)))*tu
-    tu = n(1)*n(2)*n(3)*n(4)
-    v  = v + derv(xc_index(XC_RSZXY, (/4, 0, 1, 0, 0/)))*tu*gn(:, 0)
-    u  = u + derv(xc_index(XC_RSZXY, (/5, 0, 0, 0, 0/)))*tu
     tv = n(5)*n(3)*gn(:, 4) &
        + n(6)*n(2)*gn(:, 4) &
        + n(7)*n(2)*gn(:, 3) &
@@ -509,15 +569,6 @@ contains
        + z(3, 4)*z(0, 1)*n(2)
     v  = v + derv(xc_index(XC_RSZXY, (/1, 0, 3, 0, 0/)))*tu*gn(:, 0)
     u  = u + derv(xc_index(XC_RSZXY, (/2, 0, 2, 0, 0/)))*tu
-    tu = n(11)*n(4) &
-       + n(12)*n(3) &
-       + n(13)*n(2) &
-       + n(14)*n(1) &
-       + n(5)*n(10) &
-       + n(6)*n(9) &
-       + n(7)*n(8)
-    v  = v + derv(xc_index(XC_RSZXY, (/2, 0, 1, 0, 0/)))*tu*gn(:, 0)
-    u  = u + derv(xc_index(XC_RSZXY, (/3, 0, 0, 0, 0/)))*tu
     tv = n(1)*z(0, 2)*z(0, 3)*gn(:, 4) &
        + n(1)*z(0, 2)*gn(:, 3)*z(0, 4) &
        + n(1)*gn(:, 2)*z(0, 3)*z(0, 4) &
@@ -686,14 +737,6 @@ contains
        + z(0, 1)*z(0, 2)*n(3)*n(4)
     v  = v + derv(xc_index(XC_RSZXY, (/2, 0, 3, 0, 0/)))*tu*gn(:, 0)
     u  = u + derv(xc_index(XC_RSZXY, (/3, 0, 2, 0, 0/)))*tu
-    tu = n(5)*n(3)*n(4) &
-       + n(6)*n(2)*n(4) &
-       + n(7)*n(2)*n(3) &
-       + n(8)*n(1)*n(4) &
-       + n(9)*n(1)*n(3) &
-       + n(10)*n(1)*n(2)
-    v  = v + derv(xc_index(XC_RSZXY, (/3, 0, 1, 0, 0/)))*tu*gn(:, 0)
-    u  = u + derv(xc_index(XC_RSZXY, (/4, 0, 0, 0, 0/)))*tu
     tv = n(1)*n(2)*n(3)*gn(:, 4) &
        + n(1)*n(2)*gn(:, 3)*n(4) &
        + n(1)*gn(:, 2)*n(3)*n(4) &
@@ -708,9 +751,9 @@ contains
        + z(7, 8)
     v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)))*tu*gn(:, 0)
     u  = u + derv(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)))*tu
+    end if
     
   end subroutine
-
 #endif /* ifdef MOD_AUTODIFF */
 
 end module

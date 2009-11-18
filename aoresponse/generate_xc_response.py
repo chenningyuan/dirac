@@ -236,7 +236,7 @@ def print_f90_code(term_d, order, index_to_matrix):
     s = string.replace(s, 'g', 'gn')
 
 
-    print '''  subroutine xc_response_%i(u, v, derv, n, gn, z) 
+    print '''  subroutine xc_response_%i(u, v, derv, n, gn, z, use_alda) 
     
 !   ----------------------------------------------------------------------------
     real(8), intent(inout) :: u
@@ -245,6 +245,7 @@ def print_f90_code(term_d, order, index_to_matrix):
     real(8), intent(in)    :: n(0:max_nr_dmat)
     real(8), intent(in)    :: gn(3, 0:max_nr_dmat)
     real(8), intent(in)    :: z(0:max_nr_dmat, 0:max_nr_dmat)
+    logical, intent(in)    :: use_alda
 !   ----------------------------------------------------------------------------
     real(8)                :: tu
     real(8)                :: tv(3)
@@ -252,7 +253,7 @@ def print_f90_code(term_d, order, index_to_matrix):
 %s
     
   end subroutine
-''' % (order, s)
+''' % (order + 1, s)
 
 #-------------------------------------------------------------------------------
 
