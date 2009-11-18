@@ -2901,6 +2901,8 @@ C/* Deck pr4scr */
 C***********************************************************************
 C
 C     Prepare for 4-index screening
+C     NSYMBL
+C      - set in PAOVE2, called by PAOVEC
 C
 C     Written by T.Saue Sep 8 1998
 C
@@ -2918,6 +2920,8 @@ C
 C
 C     Initialize
 C
+C     NSYMBL is the total number of blocks, 
+C     degeneracy of centers into account
       N2GAB   = NSYMBL*NSYMBL
       NDRIJ   = N2GAB*NFSYM
       CALL DZERO(DINTSKP,8)
