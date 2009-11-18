@@ -3575,12 +3575,12 @@ C
       IFSTSHAUX = 0
       ICENT  = 0
       IBLOCK = 0
-      DO 10 I = 1,NONTYP
-         DO 20 N = 1,NONT(I)
+      DO 10 I = 1,NONTYP ! atomic type
+         DO 20 N = 1,NONT(I) ! symmetry-independent center
             ICENT = ICENT + 1
             KBCH = IBLOCK
             NDEG = NUCDEG(ICENT)
-            DO 30 J = 1,IQM(I)
+            DO 30 J = 1,IQM(I) ! angular momentum value
 #if defined (DIRAC_DENSFIT_DEBUG)
       write (*,*) 'lcomp',lcomp,'iqm(',i,',',lcomp,'):',iqm(i)
 #endif
@@ -3588,12 +3588,12 @@ C
                NCOMP = KHK(J)
                NCCMP = KCK(J)
                SPHER = SPH(J)
-               DO 40 K = 1, JCO(J,I)
+               DO 40 K = 1, JCO(J,I) ! blocks of given atom and L-value
                   KBCH = KBCH + 1
                   NCONT = NRC(KBCH)
                   IF(NCONT.GT.MXCONT) GOTO 5000
 C                 ...  dimension PRICCF(MXPRIM,MXCONT)
-                  DO 50 KK = 1, NCONT
+                  DO 50 KK = 1, NCONT ! contracted shells
                      KKK = KKK + 1
                      ISHELL = ISHELL + 1
                      !set the pointer to the first shell for density-fitting
