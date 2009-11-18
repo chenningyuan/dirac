@@ -1,6 +1,6 @@
       subroutine sdft_qr(block_length,
      &                   add_grad,
-     &                   add_spin,
+     &                   no_sdft,
      &                   dtrmat,
      &                   excmat,
      &                   isymop,
@@ -39,7 +39,7 @@ c=======================================================================
 
       integer, intent(in) :: block_length
       logical   add_grad,
-     &          add_spin
+     &          no_sdft
       dimension dtrmat(nbast,nbast,nz,3),
      &          excmat(nbast,nbast,nz,3),
      &          isymop(3),
@@ -112,7 +112,7 @@ c=======================================================================
      &           buf,
      &           gao)
 
-      if (add_spin) then
+      if (.not. no_sdft) then
         call get_s(s_b,
      &             isymop(1) - 1,
      &             dtrmat(1, 1, 1, 1),
@@ -145,7 +145,7 @@ c=======================================================================
         Z_bc = d2*ddot(3,gr_b,1,gr_c,1)
       end if
 
-      if(add_grad .and. add_spin) then
+      if(add_grad .and. .not. no_sdft) then
         call get_gs_nonhermitian(gs_b,
      &                           isymop(1) - 1,
      &                           dtrmat(1, 1, 1, 1),
@@ -194,7 +194,7 @@ c=======================================================================
      &                  + derv(1, d_RZ)*Z_bc
       endif
 
-      if(add_spin) then
+      if(.not. no_sdft) then
         do k = k_start,3
           s_bc_h = s_bc_h + derv(1, d_RSS)*(s_b(k)*s_c(k))
 
@@ -211,7 +211,7 @@ c=======================================================================
 
       s_bc_ah = 0.0d0
 
-      if(add_spin) then
+      if(.not. no_sdft) then
         do k = k_start,3
        s_bc_ah(k) = s_bc_ah(k)
      &            + derv(1, d_RSS)*(r_b*s_c(k) + s_b(k)*r_c)
@@ -252,7 +252,7 @@ c=======================================================================
      &             + derv(1, d_RZ)*r_b
      &             + derv(1, d_ZZ)*Z_b
 
-        if(add_spin) then
+        if(.not. no_sdft) then
 
           v_bc_h_Y_0 = 0.0d0
           v_bc_h_Y_b = 0.0d0
@@ -295,7 +295,7 @@ c=======================================================================
           v_bc_h(j) = v_bc_h(j) + v_bc_h_Z_0*gr_0(j)*d2
      &                          + v_bc_h_Z_b*gr_b(j)*d2
      &                          + v_bc_h_Z_c*gr_c(j)*d2
-          if(add_spin) then
+          if(.not. no_sdft) then
             do k = k_start,3
               v_bc_ah(j,k) = v_bc_ah(j,k) + v_bc_h_Y_0(k)*gr_0(j)
      &                                    + v_bc_h_Y_b(k)*gr_b(j)
@@ -338,7 +338,7 @@ c=======================================================================
         end if
       endif
 
-      if (add_spin) then
+      if (.not. no_sdft) then
 
         s_bc_ah = 2.0d0*s_bc_ah
         v_bc_ah = 2.0d0*v_bc_ah

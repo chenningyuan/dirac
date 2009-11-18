@@ -7,7 +7,6 @@
  LDA
 *DFT
 .DEBUG          !very coarse grid
-.SDFT
 .INTCHK
  1
 **INTEGRALS

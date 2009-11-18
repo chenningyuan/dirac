@@ -243,8 +243,8 @@ contains
       call quit('LBalpha = LB94 = .true.')
     end if
 
-    if (dft_cfg_sdft_collinear .and. .not. dft_cfg_sdft) then
-      call quit('please use .COLLINEAR together with .SDFT')
+    if (dft_cfg_sdft_collinear .and. dft_cfg_no_sdft) then
+      call quit('.COLLINEAR cannot be used together with .NOSDFT')
     end if
 
   end subroutine
@@ -341,7 +341,11 @@ contains
 
 !   sdft
 
-    if (dft_cfg_sdft) then
+    if (dft_cfg_no_sdft) then
+
+      write(u, '(a)')        ' * No spin density contribution in response calculations.'
+
+    else
 
       write(u, '(a)')        ' * Spin density contribution in response calculations:'
 
@@ -353,12 +357,7 @@ contains
                              'a definition of the spin density (noncollinear definition)'
       end if
 
-    else
-
-      write(u, '(a)')        ' * No spin density contribution in response calculations.'
-      write(u, '(a)')        '     (if you want the spin density contribution, use .SDFT)'
-
-    end if !if (sdft) then
+    end if !if (dft_cfg_no_sdft) then
 
 !   alda
 

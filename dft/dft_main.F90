@@ -862,10 +862,10 @@ contains
         if(dft_options%qr) then
 
           gga_qr = dft_temp_gga_hs .or. dft_temp_gga_ha
-          call sdft_qr(block_length, &
-                       gga_qr,       &
-                       dft_cfg_sdft, &
-                       dtrmat,excmat, &
+          call sdft_qr(block_length,    &
+                       gga_qr,          &
+                       dft_cfg_no_sdft, &
+                       dtrmat,excmat,   &
                        isymop,ihrmop,ao_p,ao_p(ao_start(1, 0)), &
                        r_0(1),z_0(1),rhg,w(1),buffer)
 
@@ -1231,6 +1231,10 @@ contains
       if (ih(im) == 0 .and. allow_nonhermitian) then
         calculate_qr = .true.
         calculate_qi = .true.
+      end if
+
+      if (dft_cfg_no_sdft) then
+        calculate_qi = .false.
       end if
 
       im_off = nr_ao_total*nr_ao_total*nr_qu*(im - 1)

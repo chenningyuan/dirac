@@ -38,7 +38,7 @@ module dft_cfg
   logical, public :: dft_cfg_xalda                   = .false.
   logical, public :: dft_cfg_force_4c_grid           = .false.
   logical, public :: dft_cfg_old_dft                 = .false.
-  logical, public :: dft_cfg_sdft                    = .false.
+  logical, public :: dft_cfg_no_sdft                 = .false.
   logical, public :: dft_cfg_sdft_collinear          = .false.
   logical, public :: dft_cfg_cdft_vrg                = .false.
   logical, public :: dft_cfg_autodiff                = .false.
@@ -89,7 +89,7 @@ contains
     call dirac_mpi_bcast(dft_cfg_xalda                      )
     call dirac_mpi_bcast(dft_cfg_force_4c_grid              )
     call dirac_mpi_bcast(dft_cfg_old_dft                    )
-    call dirac_mpi_bcast(dft_cfg_sdft                       )
+    call dirac_mpi_bcast(dft_cfg_no_sdft                    )
     call dirac_mpi_bcast(dft_cfg_sdft_collinear             )
     call dirac_mpi_bcast(dft_cfg_cdft_vrg                   )
     call dirac_mpi_bcast(dft_cfg_autodiff                   )

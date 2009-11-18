@@ -32,8 +32,8 @@ export MENU=lda_sdft.inp
 
 export MOL=hcl
 export MENU=blyp_qr_sdft.inp
-#../run.sh
+../run.sh
 export MENU=lda_qr_sdft.inp
-#../run.sh
+../run.sh
 
 exit 0

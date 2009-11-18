@@ -245,8 +245,8 @@ contains
       call setaldaha(.true.) !activate alda for the h- part
     end if
 
-    if (kw_matches(word, '.SDFT  ')) then
-      dft_cfg_sdft = .true.
+    if (kw_matches(word, '.NOSDFT')) then
+      dft_cfg_no_sdft = .true.
     end if
 
     if (kw_matches(word, '.COLLIN')) then
