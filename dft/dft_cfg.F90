@@ -40,7 +40,6 @@ module dft_cfg
   logical, public :: dft_cfg_old_dft                 = .false.
   logical, public :: dft_cfg_sdft                    = .false.
   logical, public :: dft_cfg_sdft_collinear          = .false.
-  logical, public :: dft_cfg_sdft_beta               = .false.
   logical, public :: dft_cfg_cdft_vrg                = .false.
   logical, public :: dft_cfg_autodiff                = .false.
   logical, public :: dft_cfg_grac                    = .false.
@@ -92,7 +91,6 @@ contains
     call dirac_mpi_bcast(dft_cfg_old_dft                    )
     call dirac_mpi_bcast(dft_cfg_sdft                       )
     call dirac_mpi_bcast(dft_cfg_sdft_collinear             )
-    call dirac_mpi_bcast(dft_cfg_sdft_beta                  )
     call dirac_mpi_bcast(dft_cfg_cdft_vrg                   )
     call dirac_mpi_bcast(dft_cfg_autodiff                   )
     call dirac_mpi_bcast(dft_cfg_grac                       )

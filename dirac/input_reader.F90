@@ -253,10 +253,6 @@ contains
       dft_cfg_sdft_collinear = .true.
     end if
 
-    if (kw_matches(word, '.BETA  ')) then
-      dft_cfg_sdft_beta = .true.
-    end if
-
     if (kw_matches(word, '.VRG   ')) then
       dft_cfg_cdft_vrg = .true.
     end if
