@@ -148,9 +148,6 @@ contains
 
     derv = 0.0d0
     call xc_eval(derv, order, (/n(0), 0.0d0, z(0, 0), 0.0d0, 0.0d0/))
- 
-!   multiply by the weight
-    derv = derv*w
 
     u = 0.0d0
     v = 0.0d0
@@ -173,6 +170,10 @@ contains
         call quit('xc_response_contribution: order not implemented')
     
     end select
+
+!   multiply by the weight
+    u = u*w
+    v = v*w
 
     u_above_threshold = .false.
     if (dabs(u) > tiny) then
