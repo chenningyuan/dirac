@@ -1220,6 +1220,7 @@ class polynomial
 	c[i] = 0;
       return *this;
     }
+#if 0
   template<int Ndeg2>
   polynomial<numtype, Nvar, Ndeg> &
   operator=(const polynomial<numtype, Nvar, Ndeg2> &ref)
@@ -1238,6 +1239,7 @@ class polynomial
       }
     return *this;
   }
+#endif
   const numtype &operator[](int i) const
   {
     assert(i>=0);
@@ -1268,6 +1270,53 @@ class polynomial
       {
 	for (int i=0;i<dst.size;i++)
 	  dst.c[i] = c[i];
+      }
+  }
+  // tensor is pointer to a closed packed array
+  // T a[Ntens][Ntens] ..[Ntens] (Nvar dimensions)
+  // Note that the degree of each dimension in the tensor
+  // is Ntens-1, not Ntens.
+  template<int Ntens>
+  void from_tensor(const numtype *tensor)
+  {
+    int exponents[Nvar] = {0};
+    for (int term=0;term<size;term++)
+      {
+	int base = 1;
+	int it = 0;
+	for (int i=Nvar-1;i>=0;i--)
+	  {
+	    if (exponents[i] >= Ntens)
+	      {
+		c[term] = 0;
+		goto skip;
+	      }
+	    it += exponents[i]*base;
+	    base *= Ntens;
+	  }
+	c[term] = tensor[it];
+      skip:
+	polynomial<numtype,Nvar,Ndeg>::next_exponents(Nvar,exponents);    
+      }
+  }
+  template<int Ntens>
+  void to_tensor(numtype *tensor) const
+  {
+    int exponents[Nvar] = {0};
+    for (int term=0;term<size;term++)
+      {
+	int base = 1;
+	int it = 0;
+	for (int i=Nvar-1;i>=0;i--)
+	  {
+	    if (exponents[i] >= Ntens)
+	      goto skip;
+	    it += exponents[i]*base;
+	    base *= Ntens;
+	  }
+	tensor[it] = c[term];
+      skip:
+	polynomial<numtype,Nvar,Ndeg>::next_exponents(Nvar,exponents);    
       }
   }
   template<int N>

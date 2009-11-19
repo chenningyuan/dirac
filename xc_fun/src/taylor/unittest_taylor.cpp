@@ -40,6 +40,21 @@ const num_t composed_good[] = { 1.49182469764127,
 				 4.812029744711682, //xy
 				 5.614034702163628}; //y^2
 
+template<class num, int Nvar, int Ndeg>
+void printpoly(ostream &dst, const polynomial<num,Nvar,Ndeg> &p)
+{
+  int exps[Nvar] = {0};
+  for (int i=0;i<p.size;i++)
+    {
+      p.exponents(i,exps);
+      for (int j=0;j<Nvar;j++)
+	cout << exps[j] << " ";
+      cout << " " << p[i] << endl;
+      assert(i == p.term_index(exps));
+    }
+}
+
+
 #define NR_COEFF_CHECK 6
 
 template<class T, int Nvar, int Ndeg>
@@ -231,7 +246,9 @@ int main(void)
   num_t dx = 1e-3;
   shift_sint.shift(shifted,&dx);
   res += taylor_compare(sint,shifted,1e-15);
-  // Tensoring
+  // Tensoring.
+  // Test with a normal taylor series that completely contains
+  // the tensor terms. 
   tensored_taylor<3,double,1,2>::type tens_t = 0, tens_res;
   taylor<double,3,6> tens_cover = 0, tens_cover_out;
   for (int i=0;i<3;i++)
@@ -242,8 +259,8 @@ int main(void)
 	  int ijk[3] = {i,j,k};
 	  tens_cover[tens_cover.term_index(ijk)] = tens_t[i][j][k];
 	}
-  tens_res = exp(1/log(tens_t+1));
-  tens_cover_out = exp(1/log(tens_cover+1));
+  tens_res = 2*exp(1/log(tens_t+1))+atan(tens_t);
+  tens_cover_out = 2*exp(1/log(tens_cover+1))+atan(tens_cover);
   for (int i=0;i<3;i++)
     for (int j=0;j<3;j++)
       for (int k=0;k<3;k++)
@@ -256,11 +273,46 @@ int main(void)
 	      res++;
 	    }
 	}
-
+#if 0
   // Assignment with conversion for tensors.
   tensored_taylor<3,double,1,3>::type tens_conv;
   tens_conv = tens_res;
 
+  // Conversion from tensor
+  int tnsr[3][3][3],tnsr2[3][3][3];
+  int val=0, sumtens=0;
+  for (int i=0;i<3;i++)
+    for (int j=0;j<3;j++)
+      for (int k=0;k<3;k++)
+	{
+	  tnsr[i][j][k] = ++val;
+	  sumtens += tnsr[i][j][k];
+	  //	  cout << i << " " << j << " " << k << " " << tnsr[i][j][k] << endl;
+	}
+  taylor<int,3,7> from_tensor;
+  int sumfrom = 0;
+  from_tensor.from_tensor<3>((int *)tnsr);
+  for (int i=0;i<from_tensor.size;i++)
+    sumfrom += from_tensor[i];
+  if (sumfrom != sumtens)
+    {
+      cout << "from_tensor checksum error" << endl;
+      res++;
+    }
+  from_tensor.to_tensor<3>((int *)tnsr2);
+  for (int i=0;i<3;i++)
+    for (int j=0;j<3;j++)
+      for (int k=0;k<3;k++)
+	{
+	  if (tnsr[i][j][k] != tnsr2[i][j][k])
+	    {
+	      cout << "from/to tensor error" << endl;
+	      res++;
+	    }
+	}
+#endif
+  //  cout << "From tensor:" << endl;
+  //printpoly(cout,from_tensor);
 /*
   // sinc
   cout << scientific;

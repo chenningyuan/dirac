@@ -32,9 +32,10 @@ int main(void)
   taylor<double, 5, TEST_ORDER> res_d; 
   double fun[XC_PARAMS_LEN] = {0};
 
-  fun[XC_PBE_CORRELATION] = 1;
+  fun[XC_SLATER_EXCHANGE] = 1;
+  fun[XC_VWN5_CORRELATION] = 1;
   //fun[XC_BECKE_EXCHANGE] = 1;
-  xc_set_functional(XC_ABFGH,fun);
+  xc_set_functional(XC_RSZXY,fun);
   cout.precision(20);
   cin >> dd[0] >> dd[1] >> dd[2] >> dd[3] >> dd[4];
 #ifdef WITH_QD

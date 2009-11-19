@@ -109,10 +109,25 @@ void pow_taylor(taylor<T,1,N>& t, const T &x0, const S &a)
 {
   assert(x0 > 0 && "pow(x,a) not real analytic at x <= 0");
   t[0] = pow(x0,a);
+  T x0inv = 1/x0;
   for (int i=1;i<=N;i++)
-    t[i] = t[i-1]*(a-i+1)/(x0*i);
+    t[i] = t[i-1]*x0inv*(a-i+1)/i;
 }
 
+// We need this version with double a argument to prevent truncation
+// to int.
+template<class T,int Nvar, int Ndeg>
+taylor<T,Nvar,Ndeg> pow(const taylor<T,Nvar,Ndeg> &t, const double &a)
+{
+  taylor<T,1,Ndeg> tmp;
+  pow_taylor(tmp,t[0],a);
+
+  taylor<T,Nvar,Ndeg> res;
+  t.compose(res,tmp);
+  return res;
+}
+
+#if 0
 template<class T,int Nvar, int Ndeg, class S>
 taylor<T,Nvar,Ndeg> pow(const taylor<T,Nvar,Ndeg> &t, const S &a)
 {
@@ -123,7 +138,11 @@ taylor<T,Nvar,Ndeg> pow(const taylor<T,Nvar,Ndeg> &t, const S &a)
   t.compose(res,tmp);
   return res;
 }
+#endif
 
+#if 0
+// This might be slightly dangerous to enable this, since
+// we can construct and a from an int.
 // when the exponent is also a taylor expansion use
 // t^a = exp(a*log(t))
 template<class T,int Nvar, int Ndeg>
@@ -132,6 +151,7 @@ taylor<T,Nvar,Ndeg> pow(const taylor<T,Nvar,Ndeg> &t,
 {
   return exp(a*log(t));
 }
+#endif
 
 template<class T,int Nvar, int Ndeg>
 taylor<T,Nvar,Ndeg> sqrt(const taylor<T,Nvar,Ndeg> &t)
@@ -152,7 +172,7 @@ template<class T,int Nvar, int Ndeg>
 taylor<T,Nvar,Ndeg> pow(const taylor<T,Nvar,Ndeg> &t, int n)
 {
   if (n < 1)
-    return pow(t,T(n));
+    return pow(t,double(n));
   taylor<T,Nvar,Ndeg> res = t;
   while (n-- > 1)
       res *= t;

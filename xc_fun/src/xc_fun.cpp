@@ -398,6 +398,24 @@ void setup()
 
 #ifdef NEW_CONTRACTION
 
+#include <iostream>
+using namespace std;
+
+template<class num, int Nvar, int Ndeg>
+void printpoly(ostream &dst, const polynomial<num,Nvar,Ndeg> &p)
+{
+  int exps[Nvar] = {0};
+  for (int i=0;i<p.size;i++)
+    {
+      p.exponents(i,exps);
+      for (int j=0;j<Nvar;j++)
+	cout << exps[j] << " ";
+      cout << " " << p[i] << endl;
+      assert(i == p.term_index(exps));
+    }
+}
+
+
 // Calculates a taylor expansion of the gradient (wrt density
 // variable) element grad_var, in the Npt variables given by d.
 // The idea is to call this with lower order perturbed densities
@@ -410,40 +428,113 @@ void setup()
 // Only the highest order terms of the expansion are returned,
 // these can be though of as forming a Ndeg degree polynomial in
 // Npt-1 variables.
+
+// This function is a bit cryptic, but I could not find a better
+// way of coding it.
 template<class num, int Npt, int Nvar>
-void xc_contract_gradient(int grad_var,
-			  const typename tensored_taylor<Npt,num,1,1>::type d[Nvar])
+struct contractor
 {
-  // Use the "trick" that 
-  // f(a+x) = f(a) + f'(a)x
-  // We want to taylor expand f'(a), so we can just pick out the term
-  // linear in x. We avoid calculating higher derivatives of x by
-  // defining a linear polynomial in x with polynomial coefficients a
-  // and 1.  This actually gives us what we want, from the magic of
-  // taylor expansions. Note that we cannot insert a as a polynomial
-  // after expanding in x, we have to insert both at the same time.
-  // (cf. differentiating after putting in the variable value).
-  taylor<typename tensored_taylor<Npt,num,1,2>::type,1,1> seed[Nvar],out;
-  typename tensored_taylor<Npt,num,1,2>::type knas;
-  knas = 1;
-  for (int i=0;i<Nvar;i++)
+  typedef typename tensored_taylor<Npt,num,1,1>::type vartype;
+  typedef typename tensored_taylor<Npt+1,num,1,1>::type gradtype;
+
+  static void contract(vartype &res,
+		       int grad_var, 
+		       const vartype d[Nvar])
+  {
+    // Use the "trick" that 
+    // f(a+x) = f(a) + f'(a)x
+    // We want to taylor expand f'(a), so we can just pick out the term
+    // linear in x. We avoid calculating higher derivatives of x by
+    // defining a linear polynomial in x with polynomial coefficients a
+    // and 1.  This actually gives us what we want, from the magic of
+    // taylor expansions. Note that we cannot insert a as a polynomial
+    // after expanding in x, we have to insert both at the same time.
+    // (cf. differentiating after putting in the variable value).
+    gradtype seed[Nvar];
+
+    for (int i=0;i<Nvar;i++)
+      {
+	seed[i][0] = d[i];
+	if (grad_var == i)
+	  seed[i][1] = 1;
+	else
+	  seed[i][1] = 0;
+      }
+
+    //    cout << "seed[0]:" << endl << seed[0] << endl;
+
+    densvars< gradtype > dv;
+    setdens_r(dv,seed);
+
+    gradtype out;
+    /*
+    cout << "dv.R:" << endl;
+    cout << dv.R << endl;
+    cout << "dv.S:" << endl;
+    cout << dv.S << endl;*/
+    sum_functionals(out, dv);
+    /*    cout << "out:" << endl;
+	  cout << out << endl;
+
     {
-      seed[i][0] = d[i];
-      if (grad_var == i)
-	seed[i][1] = 1;
-      else
-	seed[i][1] = 0;
+      gradtype gtmp;
+      vartype test_out, test_seed = seed[0][0], test_tmp;
+      densvars< vartype > test_dv;
+      setdens_r(test_dv,&test_seed);
+      sum_functionals(test_out,test_dv);
+      cout << "test_out:" << endl;
+      cout << test_out << endl;
+      gtmp = pow(seed[0],4.0/3);
+      test_tmp = pow(test_seed,4.0/3);
+      cout << "exp(seed): " <<  gtmp<< endl;
+      cout << "exp(test): " <<  test_tmp << endl;
+      gtmp = seed[0]/2;
+      test_tmp = seed[0][0]/2;
+      cout << "slater(seed): " << test_slater(gtmp) << endl;
+      cout << "slater(test): " << test_slater(test_tmp) << endl;
+      
     }
-  densvars<taylor<typename tensored_taylor<Npt,num,1,2>::type,1,1> > dv;
-  setdens_r(dv,seed);
-  sum_functionals(out, dv);
-  //  out[1].pick_order(res);
-}
+    */
+    res = out[1];
+  }
+};
+
 
 void test_contractions(void)
 {
-  tensored_taylor<2,double,1,1>::type rho_of_eps[1];
-  xc_contract_gradient<double,2,1>(0, rho_of_eps);
+  contractor<double,3,1>::vartype dtens, res;
+  /*
+  dtens[0][0] = 0.11674990442211888;
+  dtens[1][0] = 0.22749437146691445;
+  dtens[0][1] = 0.22749437146691445;
+  dtens[1][1] = 2.59777160312870728E-309;
+  */
+  dtens[0][0][0] = 0.11674990442211888;
+  dtens[1][0][0] = 0.22749437146691445;
+  dtens[0][1][0] = 0.22749437146691445;
+  dtens[0][0][1] = 0.22749437146691445;
+  dtens[1][1][0] = -0.17598515826151354;
+  dtens[1][0][1] = -0.17598515826151354;
+  dtens[0][1][1] = -0.17598515826151354;
+  dtens[1][1][1] = 2.59777160312870728E-309;
+
+  cout << "dtens:" << endl << dtens[0] << endl; 
+
+  contractor<double,3,1>::contract(res,0,&dtens);
+
+  cout << "results:" << res << endl;
+
+}
+
+int main(void)
+{
+  cout.precision(15);
+  double parm[XC_PARAMS_LEN] = {0};
+  parm[XC_VWN5_CORRELATION] = 1;
+  parm[XC_SLATER_EXCHANGE] = 1;
+  xc_set_functional(XC_R,parm);
+  test_contractions();
+  return 0;
 }
 
 #endif

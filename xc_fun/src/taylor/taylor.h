@@ -8,10 +8,12 @@ template<class T, int Nvar, int Ndeg>
 class taylor : public polynomial<T, Nvar, Ndeg>
 {
 public:
+  typedef taylor<T,Nvar,Ndeg> type;
   using polynomial<T, Nvar, Ndeg>::size;
   using polynomial<T, Nvar, Ndeg>::c;
 
   taylor(void) {}
+#if 0
   template<int Ndeg2>
   taylor(const taylor<T,Nvar,Ndeg2> &ref)
   {
@@ -28,6 +30,7 @@ public:
 	  c[i] = ref.c[i];
       }
   }
+#endif
   // This does not work when T is a int. One ugly solution is to
   // specialize taylor for int T's, but perhaps not so useful?
   taylor(int c0) : polynomial<T, Nvar,Ndeg>(T(c0)) {} 
@@ -41,6 +44,7 @@ public:
     if (Ndeg>0)
       c[var+1] = var_value;
   }
+#if 0
   template<class S, int Ndeg2>
   taylor<T,Nvar,Ndeg> &operator=(const taylor<S,Nvar,Ndeg2> &ref)
   {
@@ -58,6 +62,7 @@ public:
       }
     return *this;
   }
+#endif
   taylor<T,Nvar,Ndeg> &operator=(const T& c0)
   {
     polynomial<T,Nvar,Ndeg>::operator=(c0);
@@ -352,5 +357,21 @@ taylor<T, Nvar, Ndeg> operator-(const taylor<T, Nvar,Ndeg>& t1,
 }
 
 #include "taylor_math.h"
+
+#ifndef NO_STDCXX
+
+#include <iostream>
+
+template<class num, int Nvar, int Ndeg>
+std::ostream &operator<<(std::ostream& stream, const taylor<num,Nvar,Ndeg> &t)
+{
+  stream << "{" << t[0];
+  for (int i=1;i<t.size;i++)
+    stream << ", " << t[i];
+  stream << "}";
+  return stream;
+} 
+
+#endif
 
 #endif
