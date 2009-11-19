@@ -153,23 +153,57 @@ contains
     v = 0.0d0
 
     select case (order)
-    
+
       case (2)
         call xc_response_2(u, v, derv, n, gn, z, use_alda)
-    
+
       case (3)
         call xc_response_3(u, v, derv, n, gn, z, use_alda)
-    
+
       case (4)
         call xc_response_4(u, v, derv, n, gn, z, use_alda)
-    
+
       case (5)
         call xc_response_5(u, v, derv, n, gn, z, use_alda)
-    
+
       case default
         call quit('xc_response_contribution: order not implemented')
-    
+
     end select
+
+!#define WRITE_PERTURBED_DENSITIES
+#ifdef WRITE_PERTURBED_DENSITIES
+    if (n(0) > 0.1d0) then
+      do i = 0, nr_dmat
+        write(*, *) 'debug n', i, n(i)
+      end do
+      select case (order)
+
+! - | 1 2 3  4  5  6  7   8  9  10 11  12  13  14  15
+! 2 | i
+! 3 | i j ij
+! 4 | i j k  ij ik jk ijk
+! 5 | i j k  l  ij ik il  jk jl kl ijk ijl ikl jkl ijkl
+
+        case (2)
+          write(*, *) 'debug z(1)', z(0, 1)
+
+        case (3)
+          write(*, *) 'debug z(1)', z(0, 1)
+
+        case (4)
+          write(*, *) 'debug z(1)', z(0, 1)
+          write(*, *) 'debug z(2)', z(0, 4) + z(1, 2)
+
+        case (5)
+          write(*, *) 'debug z(1)', z(0, 1)
+          write(*, *) 'debug z(2)', z(0, 4)  + z(1, 2)
+          write(*, *) 'debug z(3)', z(0, 11) + z(1, 8)
+
+      end select
+      write(*, *) 'debug u', order, u
+    end if
+#endif
 
 !   multiply by the weight
     u = u*w
@@ -195,8 +229,8 @@ contains
 
   end subroutine
 
-  subroutine xc_response_2(u, v, derv, n, gn, z, use_alda) 
-    
+  subroutine xc_response_2(u, v, derv, n, gn, z, use_alda)
+
 !   ----------------------------------------------------------------------------
     real(8), intent(inout) :: u
     real(8), intent(inout) :: v(3)
@@ -220,11 +254,11 @@ contains
     tv = gn(:, 1)
     v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 1, 0, 0/)))*tv(:)
     end if
-    
+
   end subroutine
 
-  subroutine xc_response_3(u, v, derv, n, gn, z, use_alda) 
-    
+  subroutine xc_response_3(u, v, derv, n, gn, z, use_alda)
+
 !   ----------------------------------------------------------------------------
     real(8), intent(inout) :: u
     real(8), intent(inout) :: v(3)
@@ -259,11 +293,11 @@ contains
     v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)))*tu*gn(:, 0)
     u  = u + derv(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)))*tu
     end if
-    
+
   end subroutine
 
-  subroutine xc_response_4(u, v, derv, n, gn, z, use_alda) 
-    
+  subroutine xc_response_4(u, v, derv, n, gn, z, use_alda)
+
 !   ----------------------------------------------------------------------------
     real(8), intent(inout) :: u
     real(8), intent(inout) :: v(3)
@@ -358,11 +392,11 @@ contains
        + gn(:, 1)*z(0, 2)*z(0, 3)
     v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 3, 0, 0/)))*tv(:)
     end if
-    
+
   end subroutine
 
-  subroutine xc_response_5(u, v, derv, n, gn, z, use_alda) 
-    
+  subroutine xc_response_5(u, v, derv, n, gn, z, use_alda)
+
 !   ----------------------------------------------------------------------------
     real(8), intent(inout) :: u
     real(8), intent(inout) :: v(3)
@@ -753,7 +787,7 @@ contains
     v  = v + derv(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)))*tu*gn(:, 0)
     u  = u + derv(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)))*tu
     end if
-    
+
   end subroutine
 #endif /* ifdef MOD_AUTODIFF */
 
