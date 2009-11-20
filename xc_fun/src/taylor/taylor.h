@@ -4,6 +4,8 @@
 #include <cmath>
 #include "polymul.h"
 
+static int taylor_logging = 0;
+
 template<class T, int Nvar, int Ndeg>
 class taylor : public polynomial<T, Nvar, Ndeg>
 {
@@ -169,7 +171,13 @@ public:
     {
       c[0] += x;
     }
-  void operator*=(const T& scale)
+  template<class S>
+  void operator*=(const S& scale)
+    {
+      for (int i=0;i<size;i++)
+	c[i] *= scale;
+    }
+  void operator*=(int scale)
     {
       for (int i=0;i<size;i++)
 	c[i] *= scale;
@@ -230,8 +238,6 @@ struct tensored_taylor<1,T,Nvar,Ndeg>
 {
   typedef taylor<T,Nvar,Ndeg> type;
 };
-
-
 
 template<class T, int Nvar, int Ndeg>
 void as_taylor(taylor<T,Nvar,Ndeg> *&ptr, T *data)

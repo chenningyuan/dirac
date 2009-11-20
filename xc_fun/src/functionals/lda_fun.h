@@ -76,9 +76,3 @@ static num slater_exchange(const num &rhoa,
   return -3.0/4.0*pow(6/M_PI, 1.0/3.0)*
     (pow(rhoa,4.0/3) + pow(rhob,4.0/3));
 }
-
-template<class num>
-static num test_slater(const num &rhoa)
-{
-  return /*-3.0/4.0*pow(6/M_PI, 1.0/3.0)**/pow(rhoa,4.0/3);
-}

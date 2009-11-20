@@ -18,7 +18,7 @@ void printpoly(ostream &dst, const polynomial<num,Nvar,Ndeg> &p)
     }
 }
 
-#define TEST_ORDER 2
+#define TEST_ORDER 3
 
 int main(void)
 {

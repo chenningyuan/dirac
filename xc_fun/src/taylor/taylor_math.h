@@ -19,6 +19,8 @@ void inv_taylor(taylor<T,1,N>& t, const T &a)
 template<class T,int Nvar, int Ndeg, class S>
 taylor<T,Nvar, Ndeg> operator/(const S &x, const taylor<T,Nvar,Ndeg>& t)
 {
+  if (taylor_logging)
+    cout << "operator/ S templated. x = " << x << endl;
   taylor<T,1,Ndeg> tmp;
   inv_taylor(tmp,t[0]);
   tmp*=x;
@@ -30,6 +32,8 @@ taylor<T,Nvar, Ndeg> operator/(const S &x, const taylor<T,Nvar,Ndeg>& t)
 template<class T,int Nvar, int Ndeg>
 taylor<T,Nvar, Ndeg> operator/(const taylor<T,Nvar,Ndeg>& t, const T &x)
 {
+  if (taylor_logging)
+    cout << "operator/ by scalar. x = " << x << endl;
   taylor<T,Nvar,Ndeg> tmp = t;
   tmp *= 1/x;
   return tmp;
@@ -38,6 +42,8 @@ taylor<T,Nvar, Ndeg> operator/(const taylor<T,Nvar,Ndeg>& t, const T &x)
 template<class T,int Nvar, int Ndeg, class S>
 taylor<T,Nvar, Ndeg> operator/(const taylor<T,Nvar,Ndeg>& t, const S &x)
 {
+  if (taylor_logging)
+    cout << "operator/ by scalar templated. x = " << x << endl;
   taylor<T,Nvar,Ndeg> tmp = t;
   tmp *= 1/T(x);
   return tmp;
@@ -80,15 +86,31 @@ taylor<T,Nvar,Ndeg> exp(const taylor<T,Nvar,Ndeg> &t)
 
 // Log series log(a+x) = log(1+x/a) + log(a)
 template<class T,int N>
-void log_taylor(taylor<T,1,N> &t, const T &x0)
+void log_taylor_old(taylor<T,1,N> &t, const T &x0)
 {
-  assert(x0 > 0 && "log(x) not real analytic at x <= 0");
+  //  assert(x0 != T(0) && "log(x) not analytic at x = 0");
   t[0] = log(x0);
   T xn = x0;
   for (int i=1;i<=N;i++)
     {
       t[i] = (2*(i & 1)-1)/(i*xn);
       xn *= x0;
+    }
+}
+
+
+// Log series log(a+x) = log(1+x/a) + log(a)
+template<class T,int N>
+void log_taylor(taylor<T,1,N> &t, const T &x0)
+{
+  assert(x0 > 0 && "log(x) not real analytic at x <= 0");
+  t[0] = log(x0);
+  T x0inv = 1/x0;
+  T xn = x0inv;
+  for (int i=1;i<=N;i++)
+    {
+      t[i] = (xn/double(i))*(2*(i & 1)-1);
+      xn *= x0inv;
     }
 }
 

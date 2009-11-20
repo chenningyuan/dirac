@@ -229,8 +229,8 @@ static void setdens_r(densvars<taylor<num,1,N> >&d, const num dd[1])
   d.zeta = 0;
 }
 
-template<class num, int N>
-static void setdens_r(densvars<taylor<num,1,N> >&d, const taylor<num,1,N> dd[1])
+template<class num, int Nvar, int N>
+static void setdens_r(densvars<taylor<num,Nvar,N> >&d, const taylor<num,Nvar,N> dd[1])
 {
   d.R = dd[0];
   d.S = 0;
@@ -401,45 +401,20 @@ void setup()
 #include <iostream>
 using namespace std;
 
-template<class num, int Nvar, int Ndeg>
-void printpoly(ostream &dst, const polynomial<num,Nvar,Ndeg> &p)
-{
-  int exps[Nvar] = {0};
-  for (int i=0;i<p.size;i++)
-    {
-      p.exponents(i,exps);
-      for (int j=0;j<Nvar;j++)
-	cout << exps[j] << " ";
-      cout << " " << p[i] << endl;
-      assert(i == p.term_index(exps));
-    }
-}
-
-
 // Calculates a taylor expansion of the gradient (wrt density
 // variable) element grad_var, in the Npt variables given by d.
 // The idea is to call this with lower order perturbed densities
 // as functions of perturbation strengths (Npt perturbations). 
 // The highest order coefficients of the output are then the
 // right hand side of a response equation.
-// TODO: remove or fix asserts in taylor.h that don't work
-// with the nested form of seed.
-// Ndeg is the order of the _output_, the input is one degree lower.
-// Only the highest order terms of the expansion are returned,
-// these can be though of as forming a Ndeg degree polynomial in
-// Npt-1 variables.
-
-// This function is a bit cryptic, but I could not find a better
-// way of coding it.
 template<class num, int Npt, int Nvar>
 struct contractor
 {
   typedef typename tensored_taylor<Npt,num,1,1>::type vartype;
   typedef typename tensored_taylor<Npt+1,num,1,1>::type gradtype;
 
-  static void contract(vartype &res,
-		       int grad_var, 
-		       const vartype d[Nvar])
+  static num contract(int grad_var, 
+		      const vartype d[Nvar])
   {
     // Use the "trick" that 
     // f(a+x) = f(a) + f'(a)x
@@ -461,54 +436,67 @@ struct contractor
 	  seed[i][1] = 0;
       }
 
-    //    cout << "seed[0]:" << endl << seed[0] << endl;
-
-    densvars< gradtype > dv;
+    densvars<gradtype> dv;
     setdens_r(dv,seed);
 
     gradtype out;
-    /*
-    cout << "dv.R:" << endl;
-    cout << dv.R << endl;
-    cout << "dv.S:" << endl;
-    cout << dv.S << endl;*/
     sum_functionals(out, dv);
-    /*    cout << "out:" << endl;
-	  cout << out << endl;
-
-    {
-      gradtype gtmp;
-      vartype test_out, test_seed = seed[0][0], test_tmp;
-      densvars< vartype > test_dv;
-      setdens_r(test_dv,&test_seed);
-      sum_functionals(test_out,test_dv);
-      cout << "test_out:" << endl;
-      cout << test_out << endl;
-      gtmp = pow(seed[0],4.0/3);
-      test_tmp = pow(test_seed,4.0/3);
-      cout << "exp(seed): " <<  gtmp<< endl;
-      cout << "exp(test): " <<  test_tmp << endl;
-      gtmp = seed[0]/2;
-      test_tmp = seed[0][0]/2;
-      cout << "slater(seed): " << test_slater(gtmp) << endl;
-      cout << "slater(test): " << test_slater(test_tmp) << endl;
-      
-    }
-    */
-    res = out[1];
+    //Return the 1,1,1,1 .. element of the out tensor
+    //This relies on no padding, have to check if this is true
+    return *((1 << (Npt+1)) - 1 + (num *)&out);
   }
 };
 
 
+void test_contractions1(void)
+{
+  contractor<double,1,1>::vartype dtens;
+  double res;
+  dtens[0] = 0.11674990442211888;
+  dtens[1] = -212.56672116407702;
+
+  cout << "dtens:" << endl << dtens[0] << endl; 
+
+  res = contractor<double,1,1>::contract(0,&dtens);
+
+  cout << "results:" << res << endl;
+
+}
+
+void test_contractions2(void)
+{
+  contractor<qd_real,2,1>::vartype dtens;
+  qd_real res;
+
+  dtens[0][0] = 0.11674990442211888;
+  dtens[1][0] = 0.22749437146691445;
+  dtens[0][1] = 0.22749437146691445;
+  dtens[1][1] = 0;
+
+  cout << "dtens:" << endl << dtens[0] << endl; 
+
+  res = contractor<qd_real,2,1>::contract(0,&dtens);
+
+  cout << "results:" << res << endl;
+
+}
+
 void test_contractions(void)
 {
-  contractor<double,3,1>::vartype dtens, res;
+  contractor<double,4,1>::vartype dtens;
+  double res;
   /*
+  dtens[0] = 0.11674990442211888;
+  dtens[1] = -212.56672116407702;
+
   dtens[0][0] = 0.11674990442211888;
   dtens[1][0] = 0.22749437146691445;
   dtens[0][1] = 0.22749437146691445;
   dtens[1][1] = 2.59777160312870728E-309;
   */
+
+  /*
+
   dtens[0][0][0] = 0.11674990442211888;
   dtens[1][0][0] = 0.22749437146691445;
   dtens[0][1][0] = 0.22749437146691445;
@@ -518,13 +506,59 @@ void test_contractions(void)
   dtens[0][1][1] = -0.17598515826151354;
   dtens[1][1][1] = 2.59777160312870728E-309;
 
+  */
+  
+  dtens[0][0][0][0] =  0.37882449907529653;
+  dtens[1][0][0][0] = 0.43004801440036577;
+  dtens[0][1][0][0] = 0.43004801440036577;
+  dtens[0][0][1][0] = 0.43004801440036577;
+  dtens[0][0][0][1] =0.43004801440036577;
+  dtens[1][1][0][0] = -1.4828765260421009;
+  dtens[1][0][1][0] = -1.4828765260421009;
+  dtens[1][0][0][1] = -1.4828765260421009;
+  dtens[0][1][1][0] = -1.4828765260421009;
+  dtens[0][1][0][1] = -1.4828765260421009;
+  dtens[0][0][1][1] = -1.4828765260421009;
+  dtens[1][1][1][0] = -14.478289246428245 ;
+  dtens[1][1][0][1] = -14.478289246428245 ;
+  dtens[1][0][1][1] = -14.478289246428245 ;
+  dtens[0][1][1][1] = -14.478289246428245;;
+  dtens[1][1][1][1] = 0;
+
   cout << "dtens:" << endl << dtens[0] << endl; 
 
-  contractor<double,3,1>::contract(res,0,&dtens);
+  res = contractor<double,4,1>::contract(0,&dtens);
 
   cout << "results:" << res << endl;
 
 }
+
+/*
+  LDA at 0.11674990442211888;
+  F0 = -0.048511992653775315443
+  F1 = -0.54332943414639678359
+  F2 = -1.4421463186103429255
+  F3 = 8.3994751200719974804
+ */
+
+void test_contractions_cover(void)
+{
+  taylor<qd_real,3,3> in[1],out;
+  in[0] = 0;
+  in[0][0] = 0.11674990442211888;
+  in[0][1] = 0.22749437146691445;
+  in[0][2] = 0.22749437146691445;
+  in[0][3] = 1;
+
+  densvars<taylor<qd_real,3,3> > dv;
+  setdens_r(dv,in);
+  sum_functionals(out, dv);
+  int exponents[] = {1,1,1};
+
+  cout << "cover out:" << out[out.term_index(exponents)] << endl;
+
+}
+
 
 int main(void)
 {
@@ -533,6 +567,7 @@ int main(void)
   parm[XC_VWN5_CORRELATION] = 1;
   parm[XC_SLATER_EXCHANGE] = 1;
   xc_set_functional(XC_R,parm);
+  //  test_contractions_cover();
   test_contractions();
   return 0;
 }
