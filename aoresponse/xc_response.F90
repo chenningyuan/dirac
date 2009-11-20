@@ -177,6 +177,7 @@ contains
       do i = 0, nr_dmat
         write(*, *) 'debug n', i, n(i)
       end do
+      write(*, *) 'debug z(0)', z(0, 0)
       select case (order)
 
 ! - | 1 2 3  4  5  6  7   8  9  10 11  12  13  14  15
