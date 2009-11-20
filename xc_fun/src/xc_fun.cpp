@@ -162,7 +162,23 @@ static void setdens_rz(densvars<taylor<num,2,N> >&d, const num dd[2])
 {
   d.R = taylor<num,2,N>(dd[0],0);
   d.S = 0;
-  d.Z = taylor<num,2,N>(dd[2],1);
+  d.Z = taylor<num,2,N>(dd[1],1);
+  d.X = 0;
+  d.Y = 0;
+  d.rhoa = 0.5*d.R;
+  d.rhob = d.rhoa;
+  d.grada2 = 0.25*d.Z;
+  d.gradab = d.grada2;
+  d.gradb2 = d.grada2;
+  d.zeta = 0;
+}
+
+template<class num, int Nvar, int N>
+static void setdens_rz(densvars<taylor<num,Nvar,N> >&d, const taylor<num,Nvar,N> dd[2])
+{
+  d.R = dd[0];
+  d.S = 0;
+  d.Z = dd[1];
   d.X = 0;
   d.Y = 0;
   d.rhoa = 0.5*d.R;
@@ -178,7 +194,7 @@ static void setdens_af(densvars<taylor<num,2,N> >&d, const num dd[2])
 {
   d.rhoa = taylor<num,2,N>(dd[0],0);
   d.rhob = 0;
-  d.grada2 = taylor<num,2,N>(dd[2],1);
+  d.grada2 = taylor<num,2,N>(dd[1],1);
   d.gradb2 = 0;
   d.gradab = 0;
   d.R = d.rhoa;
@@ -230,7 +246,8 @@ static void setdens_r(densvars<taylor<num,1,N> >&d, const num dd[1])
 }
 
 template<class num, int Nvar, int N>
-static void setdens_r(densvars<taylor<num,Nvar,N> >&d, const taylor<num,Nvar,N> dd[1])
+static void setdens_r(densvars<taylor<num,Nvar,N> >&d, 
+		      const taylor<num,Nvar,N> dd[1])
 {
   d.R = dd[0];
   d.S = 0;
@@ -413,8 +430,8 @@ struct contractor
   typedef typename tensored_taylor<Npt,num,1,1>::type vartype;
   typedef typename tensored_taylor<Npt+1,num,1,1>::type gradtype;
 
-  static num contract(int grad_var, 
-		      const vartype d[Nvar])
+  static void contract(num res[Nvar], 
+		       const vartype d[Nvar])
   {
     // Use the "trick" that 
     // f(a+x) = f(a) + f'(a)x
@@ -430,20 +447,22 @@ struct contractor
     for (int i=0;i<Nvar;i++)
       {
 	seed[i][0] = d[i];
-	if (grad_var == i)
-	  seed[i][1] = 1;
-	else
-	  seed[i][1] = 0;
+	seed[i][1] = 0;
       }
 
-    densvars<gradtype> dv;
-    setdens_r(dv,seed);
+    for (int i=0;i<Nvar;i++)
+      {
+	seed[i][1] = 1;
+	densvars<gradtype> dv;
+	setdens_rz(dv,seed);
 
-    gradtype out;
-    sum_functionals(out, dv);
-    //Return the 1,1,1,1 .. element of the out tensor
-    //This relies on no padding, have to check if this is true
-    return *((1 << (Npt+1)) - 1 + (num *)&out);
+	gradtype out;
+	sum_functionals(out, dv);
+	//Return the 1,1,1,1 .. element of the out tensor
+	//This relies on no padding, have to check if this is true
+	res[i] = *((1 << (Npt+1)) - 1 + (num *)&out);
+	seed[i][1] = 0;
+      }
   }
 };
 
@@ -457,7 +476,7 @@ void test_contractions1(void)
 
   cout << "dtens:" << endl << dtens[0] << endl; 
 
-  res = contractor<double,1,1>::contract(0,&dtens);
+  contractor<double,1,1>::contract(&res,&dtens);
 
   cout << "results:" << res << endl;
 
@@ -475,7 +494,7 @@ void test_contractions2(void)
 
   cout << "dtens:" << endl << dtens[0] << endl; 
 
-  res = contractor<qd_real,2,1>::contract(0,&dtens);
+  contractor<qd_real,2,1>::contract(&res,&dtens);
 
   cout << "results:" << res << endl;
 
@@ -527,9 +546,30 @@ void test_contractions(void)
 
   cout << "dtens:" << endl << dtens[0] << endl; 
 
-  res = contractor<double,4,1>::contract(0,&dtens);
+  contractor<double,4,1>::contract(&res,&dtens);
 
   cout << "results:" << res << endl;
+
+}
+
+void test_contractions_rz(void)
+{
+  contractor<double,2,2>::vartype d[2];
+  double res[2];
+
+  d[0][0][0] = 0.39823175667066241;
+  d[0][1][0] = 0.46570334454063117;
+  d[0][0][1] = 0.46570334454063117;
+  d[0][1][1] = 0;
+
+  d[1][0][0] = 0.14893941181678338;
+  d[1][1][0] = -0.17835326257152995;
+  d[1][0][1] = -0.17835326257152995;
+  d[1][1][1] = 0;
+
+  contractor<double,2,2>::contract(res,d);
+
+  cout << "results:" << res[0] << " " << res[1] << endl;
 
 }
 
@@ -564,11 +604,11 @@ int main(void)
 {
   cout.precision(15);
   double parm[XC_PARAMS_LEN] = {0};
-  parm[XC_VWN5_CORRELATION] = 1;
-  parm[XC_SLATER_EXCHANGE] = 1;
-  xc_set_functional(XC_R,parm);
+  parm[XC_LYP_CORRELATION] = 1;
+  parm[XC_BECKE_EXCHANGE] = 1;
+  xc_set_functional(XC_RZ,parm);
   //  test_contractions_cover();
-  test_contractions();
+  test_contractions_rz();
   return 0;
 }
 
