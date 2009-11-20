@@ -177,7 +177,15 @@ contains
       do i = 0, nr_dmat
         write(*, *) 'debug n', i, n(i)
       end do
-      write(*, *) 'debug z(0)', z(0, 0)
+      if (use_gga) then
+        write(*, *) 'debug z(0)', z(0, 0)
+      end if
+
+      do i = 0, order
+        write(*, *) 'debug derv', i, derv(xc_index(XC_RSZXY, (/i, 0, 0, 0, 0/)))
+      end do
+
+      if (use_gga) then
       select case (order)
 
 ! - | 1 2 3  4  5  6  7   8  9  10 11  12  13  14  15
@@ -202,11 +210,13 @@ contains
           write(*, *) 'debug z(3)', z(0, 11) + z(1, 8)
 
       end select
+      end if
+
       write(*, *) 'debug u', order, u
     end if
 #endif
 
-!   multiply by the weight
+!   multiply by the integration weight
     u = u*w
     v = v*w
 
