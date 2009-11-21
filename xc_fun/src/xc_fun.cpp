@@ -274,6 +274,23 @@ static void setdens_r_ri_rj_rk(densvars<taylor<num,4,N> >&d, const num dd[4])
 }
 
 
+template<class num, int Nvar, int N>
+static void setdens_r_ri_rj_rk(densvars<taylor<num,Nvar,N> >&d, const taylor<num,Nvar,N> dd[4])
+{
+  d.R = dd[0];
+  d.S = 0;
+  d.Z = dd[1]*dd[1] + dd[2]*dd[2] + dd[3]*dd[3];
+  d.X = 0;
+  d.Y = 0;
+  d.rhoa = 0.5*(d.R+d.S);
+  d.rhob = 0.5*(d.R-d.S);
+  d.grada2 = 0.25*(d.Z+d.X+2*d.Y);
+  d.gradab = 0.25*(d.Z-d.X);
+  d.gradb2 = 0.25*(d.Z+d.X-2*d.Y);
+  d.zeta = d.S/d.R;
+}
+
+
 template<class num, int N>
 static void fun_helper(num *result, const num d[])
 {
@@ -409,6 +426,13 @@ void setup_order<-1>(void) {}
 
 void setup()
 {
+  {
+    // Test if taylor structures have padding. If they do then the
+    // contraction code won't work, because it relies on that the
+    // 1,1,1,1.. element of the tensor has a predictable address.
+    tensored_taylor<3,double,1,1>::type t;
+    assert(&t[1][1][1] - &t[0][0][0] == 7 && "taylor objects have padding, nesting them will be confusing.");
+  }
   setup_order<XC_MAX_ORDER>();
   is_setup = 1;
 }
@@ -468,91 +492,6 @@ struct contractor
   }
 };
 
-/*
-void test_contractions1(void)
-{
-  contractor<double,1,1>::vartype dtens;
-  double res;
-  dtens[0] = 0.11674990442211888;
-  dtens[1] = -212.56672116407702;
-
-  cout << "dtens:" << endl << dtens[0] << endl; 
-
-  contractor<double,1,1>::contract(&res,&dtens);
-
-  cout << "results:" << res << endl;
-
-}
-
-void test_contractions2(void)
-{
-  contractor<qd_real,2,1>::vartype dtens;
-  qd_real res;
-
-  dtens[0][0] = 0.11674990442211888;
-  dtens[1][0] = 0.22749437146691445;
-  dtens[0][1] = 0.22749437146691445;
-  dtens[1][1] = 0;
-
-  cout << "dtens:" << endl << dtens[0] << endl; 
-
-  contractor<qd_real,2,1>::contract(&res,&dtens);
-
-  cout << "results:" << res << endl;
-
-}
-*/
-void test_contractions(void)
-{
-  contractor<double,4,1>::vartype dtens;
-  double res;
-  /*
-  dtens[0] = 0.11674990442211888;
-  dtens[1] = -212.56672116407702;
-
-  dtens[0][0] = 0.11674990442211888;
-  dtens[1][0] = 0.22749437146691445;
-  dtens[0][1] = 0.22749437146691445;
-  dtens[1][1] = 2.59777160312870728E-309;
-  */
-
-  /*
-
-  dtens[0][0][0] = 0.11674990442211888;
-  dtens[1][0][0] = 0.22749437146691445;
-  dtens[0][1][0] = 0.22749437146691445;
-  dtens[0][0][1] = 0.22749437146691445;
-  dtens[1][1][0] = -0.17598515826151354;
-  dtens[1][0][1] = -0.17598515826151354;
-  dtens[0][1][1] = -0.17598515826151354;
-  dtens[1][1][1] = 2.59777160312870728E-309;
-
-  */
-  
-  dtens[0][0][0][0] =  0.37882449907529653;
-  dtens[1][0][0][0] = 0.43004801440036577;
-  dtens[0][1][0][0] = 0.43004801440036577;
-  dtens[0][0][1][0] = 0.43004801440036577;
-  dtens[0][0][0][1] =0.43004801440036577;
-  dtens[1][1][0][0] = -1.4828765260421009;
-  dtens[1][0][1][0] = -1.4828765260421009;
-  dtens[1][0][0][1] = -1.4828765260421009;
-  dtens[0][1][1][0] = -1.4828765260421009;
-  dtens[0][1][0][1] = -1.4828765260421009;
-  dtens[0][0][1][1] = -1.4828765260421009;
-  dtens[1][1][1][0] = -14.478289246428245 ;
-  dtens[1][1][0][1] = -14.478289246428245 ;
-  dtens[1][0][1][1] = -14.478289246428245 ;
-  dtens[0][1][1][1] = -14.478289246428245;;
-  dtens[1][1][1][1] = 0;
-
-  cout << "dtens:" << endl << dtens[0] << endl; 
-
-  contractor<double,4,1>::contract(&res,&dtens);
-
-  cout << "results:" << res << endl;
-
-}
 
 void test_contractions_rz(void)
 {
@@ -575,32 +514,7 @@ void test_contractions_rz(void)
 
 }
 
-/*
-  LDA at 0.11674990442211888;
-  F0 = -0.048511992653775315443
-  F1 = -0.54332943414639678359
-  F2 = -1.4421463186103429255
-  F3 = 8.3994751200719974804
- */
-/*
-void test_contractions_cover(void)
-{
-  taylor<qd_real,3,3> in[1],out;
-  in[0] = 0;
-  in[0][0] = 0.11674990442211888;
-  in[0][1] = 0.22749437146691445;
-  in[0][2] = 0.22749437146691445;
-  in[0][3] = 1;
 
-  densvars<taylor<qd_real,3,3> > dv;
-  setdens_r(dv,in);
-  sum_functionals(out, dv);
-  int exponents[] = {1,1,1};
-
-  cout << "cover out:" << out[out.term_index(exponents)] << endl;
-
-}
-*/
 
 int main(void)
 {
