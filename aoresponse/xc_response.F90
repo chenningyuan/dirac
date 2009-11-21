@@ -174,19 +174,25 @@ contains
 !#define WRITE_PERTURBED_DENSITIES
 #ifdef WRITE_PERTURBED_DENSITIES
     if (n(0) > 0.1d0) then
+
       do i = 0, nr_dmat
         write(*, *) 'debug n', i, n(i)
       end do
       if (use_gga) then
-        write(*, *) 'debug z(0)', z(0, 0)
+        write(*, *) 'debug z^0', z(0, 0)
       end if
 
       do i = 0, order
         write(*, *) 'debug derv', i, derv(xc_index(XC_RSZXY, (/i, 0, 0, 0, 0/)))
+        if (use_gga) then
+          do j = 0, nr_dmat
+            write(*, *) 'debug derv', i, j, derv(xc_index(XC_RSZXY, (/i, 0, j, 0, 0/)))
+          end do
+        end if
       end do
 
       if (use_gga) then
-      select case (order)
+        if (order == 3) then
 
 ! - | 1 2 3  4  5  6  7   8  9  10 11  12  13  14  15
 ! 2 | i
@@ -194,25 +200,25 @@ contains
 ! 4 | i j k  ij ik jk ijk
 ! 5 | i j k  l  ij ik il  jk jl kl ijk ijl ikl jkl ijkl
 
-        case (2)
-          write(*, *) 'debug z(1)', z(0, 1)
+          write(*, *) 'debug z^i = z^j', z(0, 1)
+          write(*, *) 'debug z^ij     ', z(1, 2)
 
-        case (3)
-          write(*, *) 'debug z(1)', z(0, 1)
+          write(*, *) 'debug (z_x)^0',        gn(1, 0)*gn(1, 0)
+          write(*, *) 'debug (z_y)^0',        gn(2, 0)*gn(2, 0)
+          write(*, *) 'debug (z_z)^0',        gn(3, 0)*gn(3, 0)
 
-        case (4)
-          write(*, *) 'debug z(1)', z(0, 1)
-          write(*, *) 'debug z(2)', z(0, 4) + z(1, 2)
+          write(*, *) 'debug (z_x)^i',  2.0d0*gn(1, 0)*gn(1, 1)
+          write(*, *) 'debug (z_y)^i',  2.0d0*gn(2, 0)*gn(2, 1)
+          write(*, *) 'debug (z_z)^i',  2.0d0*gn(3, 0)*gn(3, 1)
 
-        case (5)
-          write(*, *) 'debug z(1)', z(0, 1)
-          write(*, *) 'debug z(2)', z(0, 4)  + z(1, 2)
-          write(*, *) 'debug z(3)', z(0, 11) + z(1, 8)
+          write(*, *) 'debug (z_x)^ij', 2.0d0*gn(1, 1)*gn(1, 2)
+          write(*, *) 'debug (z_y)^ij', 2.0d0*gn(2, 1)*gn(2, 2)
+          write(*, *) 'debug (z_z)^ij', 2.0d0*gn(3, 1)*gn(3, 2)
 
-      end select
+        end if
       end if
+      write(*, *) 'debug u, v_x, v_y, v_z', order, u, v(1), v(2), v(3)
 
-      write(*, *) 'debug u', order, u
     end if
 #endif
 
