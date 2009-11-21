@@ -10,7 +10,7 @@
 
 # C++ compiler and flags
 CXX ?= g++
-CXXFLAGS ?= -g -Wall -Os -DWITH_QD -DNEW_CONTRACTION 
+CXXFLAGS ?= -g -Wall -Os -DNEW_CONTRACTION 
 CXXFLAGS+=-Iinclude -Isrc/taylor -Isrc/functionals -Llib -fno-rtti -fno-exceptions
 LIBS=-lxc_fun
 

@@ -428,7 +428,7 @@ template<class num, int Npt, int Nvar>
 struct contractor
 {
   typedef typename tensored_taylor<Npt,num,1,1>::type vartype;
-  typedef typename tensored_taylor<Npt+1,num,1,1>::type gradtype;
+  typedef taylor<typename tensored_taylor<Npt,num,1,1>::type,Nvar,1> gradtype;
 
   static void contract(num res[Nvar], 
 		       const vartype d[Nvar])
@@ -447,26 +447,28 @@ struct contractor
     for (int i=0;i<Nvar;i++)
       {
 	seed[i][0] = d[i];
-	seed[i][1] = 0;
+	for (int j=0;j<Nvar;j++)
+	  if (j == i)
+	    seed[i][j+1] = 1;
+	  else
+	    seed[i][j+1] = 0;
       }
 
+
+    densvars<gradtype> dv;
+    setdens_rz(dv,seed);
+
+    gradtype out;
+    sum_functionals(out, dv);
+    //Return the 1,1,1,1 .. element of the out tensor
+    //This relies on no padding, have to check if this is true
     for (int i=0;i<Nvar;i++)
-      {
-	seed[i][1] = 1;
-	densvars<gradtype> dv;
-	setdens_rz(dv,seed);
+      res[i] = *((1 << Npt) - 1 + (num *)&out[i+1]);
 
-	gradtype out;
-	sum_functionals(out, dv);
-	//Return the 1,1,1,1 .. element of the out tensor
-	//This relies on no padding, have to check if this is true
-	res[i] = *((1 << (Npt+1)) - 1 + (num *)&out);
-	seed[i][1] = 0;
-      }
   }
 };
 
-
+/*
 void test_contractions1(void)
 {
   contractor<double,1,1>::vartype dtens;
@@ -499,7 +501,7 @@ void test_contractions2(void)
   cout << "results:" << res << endl;
 
 }
-
+*/
 void test_contractions(void)
 {
   contractor<double,4,1>::vartype dtens;
@@ -565,7 +567,7 @@ void test_contractions_rz(void)
   d[1][0][0] = 0.14893941181678338;
   d[1][1][0] = -0.17835326257152995;
   d[1][0][1] = -0.17835326257152995;
-  d[1][1][1] = 0;
+  d[1][1][1] = 0.10678806018517961;
 
   contractor<double,2,2>::contract(res,d);
 
@@ -580,7 +582,7 @@ void test_contractions_rz(void)
   F2 = -1.4421463186103429255
   F3 = 8.3994751200719974804
  */
-
+/*
 void test_contractions_cover(void)
 {
   taylor<qd_real,3,3> in[1],out;
@@ -598,13 +600,14 @@ void test_contractions_cover(void)
   cout << "cover out:" << out[out.term_index(exponents)] << endl;
 
 }
-
+*/
 
 int main(void)
 {
   cout.precision(15);
   double parm[XC_PARAMS_LEN] = {0};
   parm[XC_LYP_CORRELATION] = 1;
+  parm[XC_SLATER_EXCHANGE] = 1;
   parm[XC_BECKE_EXCHANGE] = 1;
   xc_set_functional(XC_RZ,parm);
   //  test_contractions_cover();

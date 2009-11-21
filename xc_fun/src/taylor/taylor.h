@@ -4,7 +4,9 @@
 #include <cmath>
 #include "polymul.h"
 
+#ifdef TAYLOR_LOGGING
 static int taylor_logging = 0;
+#endif
 
 template<class T, int Nvar, int Ndeg>
 class taylor : public polynomial<T, Nvar, Ndeg>

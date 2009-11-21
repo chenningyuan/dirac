@@ -19,8 +19,10 @@ void inv_taylor(taylor<T,1,N>& t, const T &a)
 template<class T,int Nvar, int Ndeg, class S>
 taylor<T,Nvar, Ndeg> operator/(const S &x, const taylor<T,Nvar,Ndeg>& t)
 {
+#ifdef TAYLOR_LOGGING
   if (taylor_logging)
     cout << "operator/ S templated. x = " << x << endl;
+#endif
   taylor<T,1,Ndeg> tmp;
   inv_taylor(tmp,t[0]);
   tmp*=x;
@@ -32,8 +34,10 @@ taylor<T,Nvar, Ndeg> operator/(const S &x, const taylor<T,Nvar,Ndeg>& t)
 template<class T,int Nvar, int Ndeg>
 taylor<T,Nvar, Ndeg> operator/(const taylor<T,Nvar,Ndeg>& t, const T &x)
 {
+#ifdef TAYLOR_LOGGING
   if (taylor_logging)
     cout << "operator/ by scalar. x = " << x << endl;
+#endif
   taylor<T,Nvar,Ndeg> tmp = t;
   tmp *= 1/x;
   return tmp;
@@ -42,8 +46,10 @@ taylor<T,Nvar, Ndeg> operator/(const taylor<T,Nvar,Ndeg>& t, const T &x)
 template<class T,int Nvar, int Ndeg, class S>
 taylor<T,Nvar, Ndeg> operator/(const taylor<T,Nvar,Ndeg>& t, const S &x)
 {
+#ifdef TAYLOR_LOGGING
   if (taylor_logging)
     cout << "operator/ by scalar templated. x = " << x << endl;
+#endif
   taylor<T,Nvar,Ndeg> tmp = t;
   tmp *= 1/T(x);
   return tmp;
