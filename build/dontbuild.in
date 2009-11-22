@@ -47,11 +47,9 @@ krmc/.*
 amfi/.*
 prp/xpp/.*
 prp/esr/.*
-autodiff/taylor.cpp
-autodiff/unittest_taylor.cpp
-autodiff/xc_fun.cpp
-autodiff/xc_fun_module.f90
 dft/dft_num_test.F90
 srdft/.*
 xc_fun/.*
+xc_fun/src/taylor/unittest_taylor.cpp
+xc_fun/fortran/example.F90
 aoresponse/aor_binomial.F90

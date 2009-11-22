@@ -719,8 +719,8 @@ if [ -n "$MATRIX_OPERATIONS_FLG" ]; then
 fi
 
 if [ -n "$AUTODIFFFLG" ]; then
-   dirs="$dirs autodiff"
-   rmline build/dontbuild "autodiff/\.\*"
+   dirs="$dirs xc_fun"
+   rmline build/dontbuild "xc_fun/\.\*"
 fi
 
 if [ -n "$CAPFLG" ]; then
