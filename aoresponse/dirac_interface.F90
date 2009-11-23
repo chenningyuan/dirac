@@ -1647,6 +1647,8 @@ contains
 
 !                               for the electric field
     call request_1el_integrals('DIPLEN ', '+00'//ss)
+#define ONLY_DIPLEN
+#ifndef ONLY_DIPLEN
     call request_1el_integrals('DPLGRA ', '+00'//ss)
     call request_1el_integrals('QUAGRA ', '+00'//ss)
 !                               for the magnetic field
@@ -1661,6 +1663,7 @@ contains
     call request_1el_integrals('G1KX   ', '0++0')
     call request_1el_integrals('G1KY   ', '0++0')
     call request_1el_integrals('G1KZ   ', '0++0')
+#endif /* ifndef ONLY_DIPLEN */
 
 !   add to dcbxpr and dcbprl
 
@@ -1688,6 +1691,7 @@ contains
                 (/f/),              &
                 (/'ZDIPLEN '/))
 
+#ifndef ONLY_DIPLEN
     f = 1.0d0
     blocks = '+00'//ss
     do icomponent = 1, size(ij_iterator)
@@ -1871,6 +1875,7 @@ contains
                   (/f/),              &
                   (/s/))
     end do
+#endif /* ifndef ONLY_DIPLEN */
 
   end subroutine
 
