@@ -107,14 +107,19 @@ contains
 
           imax = size(D)
 
-          DSD(1) = -D(imax)
-          FDS(1) = X*D(imax)
-          SDF(1) = D(imax)*X
+!radovan: this has to be done in this order
+!         otherwise gamma is always zero in d2h
+!         no idea why
+          DSD(1) = D(imax)*S0*D(1) + D(1)*S0*D(imax) - D(imax)
+          do i = 2, imax - 1
+            j = imax - i + 1
+            DSD(1) = DSD(1) + D(j)*S0*D(i)
+          end do
 
+          FDS(1) = (F(1) - X)*D(imax)
+          SDF(1) =            D(imax)*(F(1) + X)
           do i = 1, imax
             j = imax - i + 1
-
-            DSD(1) = DSD(1) + D(i)*S0*D(j)
             FDS(1) = FDS(1) + F(i)*D(j)
             SDF(1) = SDF(1) + D(i)*F(j)
           end do
