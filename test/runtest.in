@@ -20,7 +20,7 @@
 short_partest="1.energy+dipole 3.geomopt.dhf 4.levy-leblond.nmr 5.cisd.energy 6.cosci.energy 7.directmp2.energy 8.spinfree.cosci.energy 9.contraction 11.methods.cosci 13.hf_dynamic_polarizability 14.basis.set.input 22.lucita_short 30.linear 31.symmetry_recognition 37.bss.energies 38.london.magn_prop 39.gaunt 40.dft_ac 46.dft_response 49.xyzinput"
 short_test="$short_partest 18.nmr_LinK_df-Jengine"
 
-medium_partest="2.nmrspinspin 10.efg 12.zora 17.scf_energy 19.fockspace 32.prjana 33.frozen 34.rhonuc 36.mp2_properties 25.qrpa 043.visual 058.aoresponse_roa"
+medium_partest="2.nmrspinspin 10.efg 12.zora 17.scf_energy 19.fockspace 32.prjana 33.frozen 34.rhonuc 36.mp2_properties 25.qrpa 043.visual"
 # blocking KRMC/KRCI tests for now - debug mode is turned on... - SK - # 27.11.2008 
 #medium_test="$short_test $medium_partest 27.krmc_luciarel 54.stex"
 medium_test="$short_test $medium_partest 54.stex"
