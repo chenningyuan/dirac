@@ -2060,7 +2060,7 @@ get_f90_flags(){
       cpp_cc="$cpp_cc -DVAR_IFC"
       mod="-module $MODULE_DIR"
       if [ "$par" = "yes" ]; then
-       ldflag="-i_dynamic -static-libcxa" # activate it only for ifort-parallel 
+       ldflag="-i_dynamic" # activate it only for ifort-parallel 
       fi
       ldflag="$ldflag -cxxlib -lstdc++"
       noformain="-nofor_main"
@@ -2187,8 +2187,12 @@ set_compile_flags(){
     $echo "\n in set_compile_flags \n"
   fi
 
+# radovan: uncomment next line for a not very elegant workaround to get -autodiff
+# INCLUDE_DIR='include -Ixc_fun/include -Ixc_fun/src/functionals -Ixc_fun/src/taylor'
+
 f90_inc="-I$INCLUDE_DIR"
 cc_inc="-I$INCLUDE_DIR"
+
 find_real_f90
 get_f90_flags
 cpp_cc="\$(MODS)"
