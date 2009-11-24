@@ -33,3 +33,16 @@ NOTE: Due to the way C++ deals with templates all the functionals are
 defined in src/functional/xxx_fun.h files. These are included and
 instantiated from xc_fun.cpp, which is the only object file generated
 by the library.
+
+
+References and accuracy:
+VWN5, PBE and PW92 have been verified against
+
+http://www.cse.scitech.ac.uk/ccg/dft/data_pt_c_pbe.html
+
+The parameters used are those in this database, which
+may be different from the ones in the original articles. 
+In particular some parameters have higher accuracy.
+When comparing to other implementation it's important
+to have the same parameters, including any approximation
+in constants such as pi. 
