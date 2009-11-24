@@ -121,3 +121,56 @@ static num rpbe_exchange(const num &rhoa,
         (1.0-1.0/exp(.004492799480231091*pow(grada,
         2.0)/pow(rhoa,2.666666666666667)))+1.0)*t1*pow(rhoa,1.333333333333333));
 }
+
+
+// PBEc implementation from MOLPRO manual, by ulfek.
+namespace PBEc_internal_molpro
+{
+
+  const double iota = 0.0716;
+  const double kappa = 0.004235;
+  const double nu = 16*pow(3*M_PI*M_PI,1.0/3)/M_PI;
+  const double lambda = nu*kappa;
+
+  
+  template<class num>
+  static num u(const num &zeta)
+  {
+    // TODO: check if |zeta| ~= 1 
+    return 0.5*(pow(1+zeta,2.0/3)+(pow(1-zeta,2.0/3)));
+  }
+ 
+  template<class num>
+  static num A(const num &eps, const num &zeta)
+  {
+    return 2*iota/(lambda*(exp(-2*iota*eps/
+			       (lambda*lambda*pow(u(zeta),3))) - 1));
+  }
+
+  template<class num>
+  static num H(const num &d, const num &eps, const num &zeta)
+  {
+  num d2 = d*d;
+  num d2A = d2*A(eps,zeta);
+  return 0.5*lambda*lambda/iota*pow(u(zeta),3)*
+    log(1+2*(iota*d2*(1 + d2A))/(lambda*(1+d2A*(1+d2A))));
+  }
+
+  template<class num>
+  static num pbe_correlation_molpro(const num &R,
+			     const num &S,
+			     const num &Z,
+			     const num &rhoa,
+			     const num &rhob,
+			     const num &zeta)
+  {
+    const num &sigma = Z;
+    num d = 1.0/12*(sqrt(sigma)*pow(3,5.0/6))/
+      (u(zeta)*pow(M_PI,-1.0/6)*pow(R,7.0/6));
+    num eps = pw92_correlation(R,zeta);
+    return R*(eps + H(d,eps,zeta));
+  }
+
+}
+
+using PBEc_internal_molpro::pbe_correlation_molpro;

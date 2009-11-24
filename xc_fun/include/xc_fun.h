@@ -51,10 +51,13 @@ enum xc_funparams
     XC_PBE_EXCHANGE,
     XC_PBE_CORRELATION,
     XC_OLD_PBE_CORRELATION,
+    XC_PBE_CORRELATION_MOLPRO,
     XC_RPBE_EXCHANGE,
     XC_PW92_CORRELATION,
     XC_PARAMS_LEN // This has to be last!
   };
+
+int xc_parse_functional(const char *functional_name);
 
 // Set the functional as defined by the parameters in the
 // params array. 

@@ -1,5 +1,7 @@
 #include <iostream>
 #include <qd/qd_real.h>
+#include <cstdlib>
+#include <cstdio>
 #include "taylor.h"
 #include "xc_fun.h"
 
@@ -20,7 +22,7 @@ void printpoly(ostream &dst, const polynomial<num,Nvar,Ndeg> &p)
 
 #define TEST_ORDER 3
 
-int main(void)
+int main(int argc, char *argv[])
 {
 #ifdef WITH_QD
   unsigned int cw;
@@ -32,10 +34,23 @@ int main(void)
   taylor<double, 5, TEST_ORDER> res_d; 
   double fun[XC_PARAMS_LEN] = {0};
 
-  fun[XC_SLATER_EXCHANGE] = 1;
-  fun[XC_LYP_CORRELATION] = 1;
-  fun[XC_BECKE_EXCHANGE] = 1;
-  xc_set_functional(XC_RSZXY,fun);
+  for (int i=1;i+1<argc;i+=2)
+    {
+      int p = xc_parse_functional(argv[i]);
+      if (p<0)
+	{
+	  cerr << "Unknown functional " << argv[i] << ", quitting." << endl;
+	  return EXIT_FAILURE;
+	}
+      double w;
+      if (sscanf(argv[i+1],"%lf",&w) != 1)
+	{
+	  cerr << argv[i+1] << " is not a float, quitting." << endl;
+	  return EXIT_FAILURE;
+	}
+      cerr << "Setting " << argv[i] << " to " << w << endl;
+      fun[p] = w;
+    }
   cout.precision(20);
   cin >> dd[0] >> dd[1] >> dd[2] >> dd[3] >> dd[4];
 #ifdef WITH_QD

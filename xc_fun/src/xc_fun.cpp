@@ -1,5 +1,5 @@
 #include <cstdlib>
-
+#include <cstring>
 #ifndef NO_STDCXX
 #include <iostream>
 using namespace std;
@@ -37,6 +37,31 @@ static void (*helper_tab[XC_MAX_ORDER+1])(double *, const double *);
 static void (*helper_tab_qd[XC_MAX_ORDER+1])(qd_real *, const qd_real *);
 #endif
 static void setup(void);
+
+/* This must match the order of enum xc_funparams! */
+static char *functional_names[] =
+  {
+    "slaterx",
+    "vwn5c",
+    "beckex",
+    "lypc",
+    "pbex",
+    "pbec",
+    "pbec_dalton",
+    "pbec_molpro",
+    "rpbex",
+    "pw92c",
+  };
+ //Allocated and set up by setup()
+
+// Use strcmp to not depend on c++ standard library
+int xc_parse_functional(const char *functional_name)
+{
+  for (int i=0;i<XC_PARAMS_LEN;i++)
+    if (strcmp(functional_name,functional_names[i]) == 0)
+      return i;
+  return -1;
+}
 
 void xc_set_functional(enum xc_mode mode, 
 		       const double params[XC_PARAMS_LEN])
@@ -105,6 +130,10 @@ static void sum_functionals(num &res,
  if (xc_params[XC_OLD_PBE_CORRELATION] != 0)
     res += xc_params[XC_OLD_PBE_CORRELATION]*
       pbe_correlation_unpolarized(d.R,d.Z);
+
+  if (xc_params[XC_PBE_CORRELATION_MOLPRO] != 0)
+    res += xc_params[XC_PBE_CORRELATION_MOLPRO]*
+      pbe_correlation_molpro(d.R,d.S,d.Z,d.rhoa,d.rhob,d.zeta);
 
   if (xc_params[XC_BECKE_EXCHANGE] != 0)
     res += xc_params[XC_BECKE_EXCHANGE]*
