@@ -686,10 +686,10 @@ contains
       type(matrix) :: A(9)
 
 #ifdef PRG_DIRAC
-      real(8) :: z(ntbas(0)*ntbas(0)*nz)
       integer :: ones(200)     
       integer :: nr_dmat
       type(dft_options_t) :: dft_options
+      type(matrix) :: XC
       ones = 1
 #endif /* PRG_DIRAC */
 
@@ -715,31 +715,35 @@ contains
 
             if (do_dft()) then !DFT contribution
 
-              z       = 0.0d0
               nr_dmat = size(D)
-             
-              do i = 1, nr_dmat
+              do i = 2, nr_dmat
                 if (iszero(D(i))) then
                   D(i) = tiny(0.0d0)*D(1)
                 end if
               end do
-             
+
+              if (iszero(F(1))) then
+                F(1) = tiny(0.0d0)*D(1)
+              end if
+              
               call reset_dft_options(dft_options)
               dft_options%aor_xc_order = m + 1
-
+              
+              call init_mat(XC, ntbas(0), ntbas(0))
+              XC%elms = 0.0d0
+              
               call dftexc(D(1)%elms,                    &
                        (/(D(i)%elms, i = 2, nr_dmat)/), &
-                          z,                            &
+                          XC%elms,                      &
                           nr_dmat - 1,                  &
                           1,                            &
                           (/ones(1:nr_dmat - 1)/),      &
                           (/ones(1:nr_dmat - 1)/),      &
                           dft_options,                  &
                           0)
-
-              A(1) = tiny(0.0d0)*D(1)
-              call daxpy(ntbas(0)*ntbas(0)*nz, 1.0d0, z, 1, A(1)%elms, 1)
-              F(1) = F(1) + A(1)
+               
+              call daxpy(ntbas(0)*ntbas(0)*nz, 1.0d0, XC%elms, 1, F(1)%elms, 1)
+              XC = 0
 
             end if
 
