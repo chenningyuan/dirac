@@ -138,13 +138,12 @@ contains
     end if
 
     use_alda = .false.
-    if (order >= aor_cfg_alda_order) then
-      use_alda = .true.
-    end if
-
-    if (.not. use_gga) then
-      use_alda = .true.
-    end if
+!   if (order >= aor_cfg_alda_order) then
+!     use_alda = .true.
+!   end if
+!   if (.not. use_gga) then
+!     use_alda = .true.
+!   end if
 
     derv = 0.0d0
     call xc_eval(derv, order, (/n(0), 0.0d0, z(0, 0), 0.0d0, 0.0d0/))
