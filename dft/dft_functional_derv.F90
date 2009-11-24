@@ -8,6 +8,9 @@ module dft_functional_derv
   implicit none
 
   public get_functional_derv
+#ifdef MOD_AUTODIFF
+  public xc_fun_set_functional
+#endif
 
   integer, parameter, public :: d_0   =  0
   integer, parameter, public :: d_r   =  1
@@ -42,6 +45,28 @@ module dft_functional_derv
   integer, parameter :: max_dim = 99
 
 contains
+
+#ifdef MOD_AUTODIFF
+  subroutine xc_fun_set_functional()
+
+!   ----------------------------------------------------------------------------
+    integer :: i
+    integer :: gga_functionals(4) = (/XC_BECKE_EXCHANGE,  &
+                                      XC_LYP_CORRELATION, &
+                                      XC_PBE_EXCHANGE,    &
+                                      XC_PBE_CORRELATION/)
+!   ----------------------------------------------------------------------------
+
+    do i = 1, size(gga_functionals)
+      if (dabs(dft_cfg_functional_w(gga_functionals(i))) > tiny) then
+        dft_cfg_is_gga_autodiff = .true.
+      end if
+    end do
+
+    call xc_set_functional(XC_RSZXY, dft_cfg_functional_w)
+
+  end subroutine
+#endif /* ifdef MOD_AUTODIFF */
 
   subroutine get_functional_derv(order,        &
                                  block_length, &

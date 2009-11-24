@@ -92,14 +92,9 @@ contains
     character(80), allocatable :: word_array(:)
     integer                    :: i, nr_words
     real(8)                    :: w
-    real(8)                    :: w_array(XC_PARAMS_LEN)
-    integer                    :: gga_functionals(4) = (/XC_BECKE_EXCHANGE,  &
-                                                         XC_LYP_CORRELATION, &
-                                                         XC_PBE_EXCHANGE,    &
-                                                         XC_PBE_CORRELATION/)
 !   ----------------------------------------------------------------------------
 
-    w_array = 0.0d0
+    dft_cfg_functional_w = 0.0d0
 
     call reset_hfx()
 
@@ -119,47 +114,47 @@ contains
 !     lda
       w = get_weight(word_array(i), 'lda')
       if (dabs(w) > tiny) then
-        w_array(XC_SLATER_EXCHANGE) = w_array(XC_SLATER_EXCHANGE) + w
-        w_array(XC_VWN5_CORRELATION) = w_array(XC_VWN5_CORRELATION) + w
+        dft_cfg_functional_w(XC_SLATER_EXCHANGE) = dft_cfg_functional_w(XC_SLATER_EXCHANGE) + w
+        dft_cfg_functional_w(XC_VWN5_CORRELATION) = dft_cfg_functional_w(XC_VWN5_CORRELATION) + w
       end if
 
 !     svwn = lda
       w = get_weight(word_array(i), 'svwn')
       if (dabs(w) > tiny) then
-        w_array(XC_SLATER_EXCHANGE) = w_array(XC_SLATER_EXCHANGE) + w
-        w_array(XC_VWN5_CORRELATION) = w_array(XC_VWN5_CORRELATION) + w
+        dft_cfg_functional_w(XC_SLATER_EXCHANGE) = dft_cfg_functional_w(XC_SLATER_EXCHANGE) + w
+        dft_cfg_functional_w(XC_VWN5_CORRELATION) = dft_cfg_functional_w(XC_VWN5_CORRELATION) + w
       end if
 
 !     blyp
       w = get_weight(word_array(i), 'blyp')
       if (dabs(w) > tiny) then
-        w_array(XC_SLATER_EXCHANGE) = w_array(XC_SLATER_EXCHANGE) + w
-        w_array(XC_BECKE_EXCHANGE)  = w_array(XC_BECKE_EXCHANGE)  + w
-        w_array(XC_LYP_CORRELATION) = w_array(XC_LYP_CORRELATION) + w
+        dft_cfg_functional_w(XC_SLATER_EXCHANGE) = dft_cfg_functional_w(XC_SLATER_EXCHANGE) + w
+        dft_cfg_functional_w(XC_BECKE_EXCHANGE)  = dft_cfg_functional_w(XC_BECKE_EXCHANGE)  + w
+        dft_cfg_functional_w(XC_LYP_CORRELATION) = dft_cfg_functional_w(XC_LYP_CORRELATION) + w
       end if
 
 !     b3lyp
       w = get_weight(word_array(i), 'b3lyp')
       if (dabs(w) > tiny) then
-        w_array(XC_SLATER_EXCHANGE) = w_array(XC_SLATER_EXCHANGE) + 0.80d0*w
-        w_array(XC_VWN5_CORRELATION) = w_array(XC_VWN5_CORRELATION) + 0.19d0*w
-        w_array(XC_BECKE_EXCHANGE)  = w_array(XC_BECKE_EXCHANGE)  + 0.72d0*w
-        w_array(XC_LYP_CORRELATION) = w_array(XC_LYP_CORRELATION) + 0.81d0*w
+        dft_cfg_functional_w(XC_SLATER_EXCHANGE) = dft_cfg_functional_w(XC_SLATER_EXCHANGE) + 0.80d0*w
+        dft_cfg_functional_w(XC_VWN5_CORRELATION) = dft_cfg_functional_w(XC_VWN5_CORRELATION) + 0.19d0*w
+        dft_cfg_functional_w(XC_BECKE_EXCHANGE)  = dft_cfg_functional_w(XC_BECKE_EXCHANGE)  + 0.72d0*w
+        dft_cfg_functional_w(XC_LYP_CORRELATION) = dft_cfg_functional_w(XC_LYP_CORRELATION) + 0.81d0*w
         call add_hfx(0.20d0*w)
       end if
 
 !     pbe
       w = get_weight(word_array(i), 'pbe')
       if (dabs(w) > tiny) then
-        w_array(XC_PBE_EXCHANGE)    = w_array(XC_PBE_EXCHANGE)    + w
-        w_array(XC_PBE_CORRELATION) = w_array(XC_PBE_CORRELATION) + w
+        dft_cfg_functional_w(XC_PBE_EXCHANGE)    = dft_cfg_functional_w(XC_PBE_EXCHANGE)    + w
+        dft_cfg_functional_w(XC_PBE_CORRELATION) = dft_cfg_functional_w(XC_PBE_CORRELATION) + w
       end if
 
 !     pbe0
       w = get_weight(word_array(i), 'pbe0')
       if (dabs(w) > tiny) then
-        w_array(XC_PBE_EXCHANGE)    = w_array(XC_PBE_EXCHANGE)    + 0.75d0*w
-        w_array(XC_PBE_CORRELATION) = w_array(XC_PBE_CORRELATION) +        w
+        dft_cfg_functional_w(XC_PBE_EXCHANGE)    = dft_cfg_functional_w(XC_PBE_EXCHANGE)    + 0.75d0*w
+        dft_cfg_functional_w(XC_PBE_CORRELATION) = dft_cfg_functional_w(XC_PBE_CORRELATION) +        w
         call add_hfx(0.25d0*w)
       end if
 
@@ -169,32 +164,32 @@ contains
 
       w = get_weight(word_array(i), 'slater')
       if (dabs(w) > tiny) then
-        w_array(XC_SLATER_EXCHANGE) = w_array(XC_SLATER_EXCHANGE) + w
+        dft_cfg_functional_w(XC_SLATER_EXCHANGE) = dft_cfg_functional_w(XC_SLATER_EXCHANGE) + w
       end if
 
       w = get_weight(word_array(i), 'vwn')
       if (dabs(w) > tiny) then
-        w_array(XC_VWN5_CORRELATION) = w_array(XC_VWN5_CORRELATION) + w
+        dft_cfg_functional_w(XC_VWN5_CORRELATION) = dft_cfg_functional_w(XC_VWN5_CORRELATION) + w
       end if
 
       w = get_weight(word_array(i), 'becke')
       if (dabs(w) > tiny) then
-        w_array(XC_BECKE_EXCHANGE) = w_array(XC_BECKE_EXCHANGE) + w
+        dft_cfg_functional_w(XC_BECKE_EXCHANGE) = dft_cfg_functional_w(XC_BECKE_EXCHANGE) + w
       end if
 
       w = get_weight(word_array(i), 'lyp')
       if (dabs(w) > tiny) then
-        w_array(XC_LYP_CORRELATION) = w_array(XC_LYP_CORRELATION) + w
+        dft_cfg_functional_w(XC_LYP_CORRELATION) = dft_cfg_functional_w(XC_LYP_CORRELATION) + w
       end if
 
       w = get_weight(word_array(i), 'pbex')
       if (dabs(w) > tiny) then
-        w_array(XC_PBE_EXCHANGE) = w_array(XC_PBE_EXCHANGE) + w
+        dft_cfg_functional_w(XC_PBE_EXCHANGE) = dft_cfg_functional_w(XC_PBE_EXCHANGE) + w
       end if
 
       w = get_weight(word_array(i), 'pbec')
       if (dabs(w) > tiny) then
-        w_array(XC_PBE_CORRELATION) = w_array(XC_PBE_CORRELATION) + w
+        dft_cfg_functional_w(XC_PBE_CORRELATION) = dft_cfg_functional_w(XC_PBE_CORRELATION) + w
       end if
 
       w = get_weight(word_array(i), 'hfx')
@@ -205,14 +200,6 @@ contains
     end do
 
     deallocate(word_array)
-
-    do i = 1, size(gga_functionals)
-      if (dabs(w_array(gga_functionals(i))) > tiny) then
-        dft_cfg_is_gga_autodiff = .true.
-      end if
-    end do
-
-    call xc_set_functional(XC_RSZXY, w_array)
 
   end subroutine
 #endif /* ifdef MOD_AUTODIFF */

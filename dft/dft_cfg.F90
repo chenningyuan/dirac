@@ -12,6 +12,9 @@ module dft_cfg
 #ifdef VAR_MPI
   use dirac_mpi
 #endif
+#ifdef MOD_AUTODIFF
+  use xc_fun
+#endif
 
   implicit none
 
@@ -61,6 +64,10 @@ module dft_cfg
   real(8), public :: dft_cfg_homo_eigenvalue = 0.0d0
   real(8), public :: dft_cfg_grac_alpha      = 0.0d0
   real(8), public :: dft_cfg_grac_beta       = 0.0d0
+#ifdef MOD_AUTODIFF
+  real(8), public :: dft_cfg_functional_w(XC_PARAMS_LEN)
+  real(8), public :: dft_cfg_functional_w_alda(XC_PARAMS_LEN)
+#endif
 
   integer, public :: dft_cfg_angmin                  = 15
   integer, public :: dft_cfg_angint                  = 41
@@ -76,47 +83,51 @@ contains
 
   subroutine sync_dft_cfg()
 
-    call dirac_mpi_bcast(dft_cfg_screening                  )
-    call dirac_mpi_bcast(dft_cfg_keep_ao                    )
-    call dirac_mpi_bcast(dft_cfg_explicit_potential         )
-    call dirac_mpi_bcast(dft_cfg_no_pruning                 )
-    call dirac_mpi_bcast(dft_cfg_estimate_radii             )
-    call dirac_mpi_bcast(dft_cfg_import_grid                )
-    call dirac_mpi_bcast(dft_cfg_export_grid                )
-    call dirac_mpi_bcast(dft_cfg_zipgrid                    )
-    call dirac_mpi_bcast(dft_cfg_alda_hs                    )
-    call dirac_mpi_bcast(dft_cfg_alda_ha                    )
-    call dirac_mpi_bcast(dft_cfg_xalda                      )
-    call dirac_mpi_bcast(dft_cfg_force_4c_grid              )
-    call dirac_mpi_bcast(dft_cfg_old_dft                    )
-    call dirac_mpi_bcast(dft_cfg_no_sdft                    )
-    call dirac_mpi_bcast(dft_cfg_sdft_collinear             )
-    call dirac_mpi_bcast(dft_cfg_cdft_vrg                   )
-    call dirac_mpi_bcast(dft_cfg_autodiff                   )
-    call dirac_mpi_bcast(dft_cfg_grac                       )
-    call dirac_mpi_bcast(dft_cfg_grac_is_active             )
-    call dirac_mpi_bcast(dft_cfg_saop                       )
-    call dirac_mpi_bcast(dft_cfg_saop_is_active             )
-    call dirac_mpi_bcast(dft_cfg_saop_with_response_part    )
-    call dirac_mpi_bcast(dft_cfg_asymptote_is_lb94          )
-    call dirac_mpi_bcast(dft_cfg_asymptote_is_lbalpha       )
-    call dirac_mpi_bcast(dft_cfg_is_gga_autodiff            )
-    call dirac_mpi_bcast(dft_cfg_radint                     )
-    call dirac_mpi_bcast(dft_cfg_accepted_error             )
-    call dirac_mpi_bcast(dft_cfg_dfthr0                     )
-    call dirac_mpi_bcast(dft_cfg_dfthrl                     )
-    call dirac_mpi_bcast(dft_cfg_dfthri                     )
-    call dirac_mpi_bcast(dft_cfg_ac_ip                      )
-    call dirac_mpi_bcast(dft_cfg_ac_threshold               )
-    call dirac_mpi_bcast(dft_cfg_homo_eigenvalue            )
-    call dirac_mpi_bcast(dft_cfg_grac_alpha                 )
-    call dirac_mpi_bcast(dft_cfg_grac_beta                  )
-    call dirac_mpi_bcast(dft_cfg_angmin                     )
-    call dirac_mpi_bcast(dft_cfg_angint                     )
-    call dirac_mpi_bcast(dft_cfg_ao_mem_limit               )
-    call dirac_mpi_bcast(dft_cfg_print_level                )
-    call dirac_mpi_bcast(dft_cfg_debug_level                )
-    call dirac_mpi_bcast(dft_cfg_integration_check_level    )
+    call dirac_mpi_bcast(dft_cfg_screening              )
+    call dirac_mpi_bcast(dft_cfg_keep_ao                )
+    call dirac_mpi_bcast(dft_cfg_explicit_potential     )
+    call dirac_mpi_bcast(dft_cfg_no_pruning             )
+    call dirac_mpi_bcast(dft_cfg_estimate_radii         )
+    call dirac_mpi_bcast(dft_cfg_import_grid            )
+    call dirac_mpi_bcast(dft_cfg_export_grid            )
+    call dirac_mpi_bcast(dft_cfg_zipgrid                )
+    call dirac_mpi_bcast(dft_cfg_alda_hs                )
+    call dirac_mpi_bcast(dft_cfg_alda_ha                )
+    call dirac_mpi_bcast(dft_cfg_xalda                  )
+    call dirac_mpi_bcast(dft_cfg_force_4c_grid          )
+    call dirac_mpi_bcast(dft_cfg_old_dft                )
+    call dirac_mpi_bcast(dft_cfg_no_sdft                )
+    call dirac_mpi_bcast(dft_cfg_sdft_collinear         )
+    call dirac_mpi_bcast(dft_cfg_cdft_vrg               )
+    call dirac_mpi_bcast(dft_cfg_autodiff               )
+    call dirac_mpi_bcast(dft_cfg_grac                   )
+    call dirac_mpi_bcast(dft_cfg_grac_is_active         )
+    call dirac_mpi_bcast(dft_cfg_saop                   )
+    call dirac_mpi_bcast(dft_cfg_saop_is_active         )
+    call dirac_mpi_bcast(dft_cfg_saop_with_response_part)
+    call dirac_mpi_bcast(dft_cfg_asymptote_is_lb94      )
+    call dirac_mpi_bcast(dft_cfg_asymptote_is_lbalpha   )
+    call dirac_mpi_bcast(dft_cfg_is_gga_autodiff        )
+    call dirac_mpi_bcast(dft_cfg_radint                 )
+    call dirac_mpi_bcast(dft_cfg_accepted_error         )
+    call dirac_mpi_bcast(dft_cfg_dfthr0                 )
+    call dirac_mpi_bcast(dft_cfg_dfthrl                 )
+    call dirac_mpi_bcast(dft_cfg_dfthri                 )
+    call dirac_mpi_bcast(dft_cfg_ac_ip                  )
+    call dirac_mpi_bcast(dft_cfg_ac_threshold           )
+    call dirac_mpi_bcast(dft_cfg_homo_eigenvalue        )
+    call dirac_mpi_bcast(dft_cfg_grac_alpha             )
+    call dirac_mpi_bcast(dft_cfg_grac_beta              )
+#ifdef MOD_AUTODIFF
+    call dirac_mpi_bcast(dft_cfg_functional_w           )
+    call dirac_mpi_bcast(dft_cfg_functional_w_alda      )
+#endif
+    call dirac_mpi_bcast(dft_cfg_angmin                 )
+    call dirac_mpi_bcast(dft_cfg_angint                 )
+    call dirac_mpi_bcast(dft_cfg_ao_mem_limit           )
+    call dirac_mpi_bcast(dft_cfg_print_level            )
+    call dirac_mpi_bcast(dft_cfg_debug_level            )
+    call dirac_mpi_bcast(dft_cfg_integration_check_level)
 
   end subroutine
 #endif /* ifdef VAR_MPI */

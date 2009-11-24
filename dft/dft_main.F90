@@ -146,6 +146,9 @@ contains
 
 #ifdef MOD_AUTODIFF
       if (dft_cfg_autodiff) then
+!       xc_fun_set_functional is called several times
+!       this is because gga query is not ideally structured
+        call xc_fun_set_functional()
         dft_temp_gga_hs = dft_cfg_is_gga_autodiff
         dft_temp_gga_ha = dft_cfg_is_gga_autodiff
       end if
@@ -320,6 +323,11 @@ contains
       integer :: npnts, npoint, nrest, IDISP_REST
       logical :: i_am_the_master
 
+#ifdef MOD_AUTODIFF
+    if (dft_cfg_autodiff) then
+      call xc_fun_set_functional()
+    end if
+#endif
 
     dft_temp_nr_electrons = 0.0d0
     dft_temp_xc_energy    = 0.0d0
@@ -633,10 +641,6 @@ contains
 
     call alloc(ao,     total_ao_vector_length)
     call alloc(buffer, total_ao_vector_length)
-
-#ifdef MOD_AUTODIFF
-    call init_factorial_common_block()
-#endif
 
     if (dft_cfg_keep_ao) then
       if (dft_cfg_ao_mem_limit < 1) then
