@@ -743,9 +743,10 @@ contains
                           0)
 
 !radovan:     in many situations one could pass F directly
-!             to dftexc but the gga symmetrization can make problem             
-!             with hypbrid functionals and anti-hermitian contributions
-!             so in other words while XC is always symmetric, F non necessarily
+!             to dftexc but the gga symmetrization can make problems
+!             with hybrid functionals and anti-hermitian contributions (nonzero frequencies)
+!             so in other words while XC is always symmetric, F is non necessarily so
+!             and it would get symmetrized inside dftexc
               call daxpy(ntbas(0)*ntbas(0)*nz, 1.0d0, XC%elms, 1, F(1)%elms, 1)
               XC = 0
 
