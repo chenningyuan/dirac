@@ -51,6 +51,8 @@ int main(int argc, char *argv[])
       cerr << "Setting " << argv[i] << " to " << w << endl;
       fun[p] = w;
     }
+  xc_set_functional(XC_ABFGH,fun);
+  cerr << "Input density: " << endl;
   cout.precision(20);
   cin >> dd[0] >> dd[1] >> dd[2] >> dd[3] >> dd[4];
 #ifdef WITH_QD
@@ -58,7 +60,7 @@ int main(int argc, char *argv[])
     dqd[i] = dd[i];
 #endif
   xc_eval(res_d.c,TEST_ORDER,dd);
-  cout << "XC (double):" << endl;
+  //  cout << "XC (double):" << endl;
   printpoly(cout,res_d);
 #ifdef WITH_QD
   xc_eval_qd(res_qd.c,TEST_ORDER,dqd);

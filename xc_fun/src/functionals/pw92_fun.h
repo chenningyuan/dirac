@@ -38,6 +38,24 @@ namespace pw92_internal
       -  e(rval,TUVWXYP[2])*omegaval*(1-zeta4)/c 
       + (e(rval,TUVWXYP[1]) - e(rval,TUVWXYP[0]))*omegaval*zeta4;
   }
+  // This is with the Daresbury parameters for PBEc
+  template<class num>
+  static num pw92_eps_pbe(const num &R, const num &zeta)
+  {
+    // The T..P parameters, but transposed for easier use with the e function
+    const double TUVWXYP[3][7] = 
+      {{0.0310907, 0.21370, 7.5957 , 3.5876, 1.6382 ,0.49294,1},
+       {0.01554535 , 0.20548, 14.1189, 6.1977, 3.3662 ,0.62517,1},
+       {0.0168869, 0.11125, 10.357 , 3.6231, 0.88026,0.49671,1}};
+    //    const double c = 1.709921;
+    const double c = 8.0/(9.0*(2*pow(2,1.0/3.0)-2));
+    num rval = 0.25*pow(3,1.0/3)*pow(4,2.0/3)*pow(M_PI*R,-1.0/3);
+    num zeta4 = pow(zeta,4);
+    num omegaval = omega(zeta);
+    return e(rval,TUVWXYP[0])
+      -  e(rval,TUVWXYP[2])*omegaval*(1-zeta4)/c 
+      + (e(rval,TUVWXYP[1]) - e(rval,TUVWXYP[0]))*omegaval*zeta4;
+  }
 }
 
 
@@ -48,5 +66,6 @@ static num pw92_correlation(const num &R, const num &zeta)
 }
 
 using pw92_internal::pw92_eps;
+using pw92_internal::pw92_eps_pbe;
 
 #endif

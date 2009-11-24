@@ -23,8 +23,8 @@ module xc_fun
   integer, parameter ::  XC_LYP_CORRELATION = 4
   integer, parameter ::  XC_PBE_EXCHANGE    = 5
   integer, parameter ::  XC_PBE_CORRELATION = 6
-  integer, parameter ::  XC_RPBE_EXCHANGE    = 7
-  integer, parameter ::  XC_OLD_PBE_CORRELATION = 8
+  integer, parameter ::  XC_OLD_PBE_CORRELATION = 7
+  integer, parameter ::  XC_RPBE_EXCHANGE    = 8
   integer, parameter ::  XC_PW92_CORRELATION = 9
 ! Make sure XC_PARAMS_LEN matches the number of parameters above
   integer, parameter ::  XC_PARAMS_LEN = 9

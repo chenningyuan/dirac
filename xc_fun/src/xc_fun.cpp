@@ -48,7 +48,6 @@ static char *functional_names[] =
     "pbex",
     "pbec",
     "pbec_dalton",
-    "pbec_molpro",
     "rpbex",
     "pw92c",
   };
@@ -130,10 +129,6 @@ static void sum_functionals(num &res,
  if (xc_params[XC_OLD_PBE_CORRELATION] != 0)
     res += xc_params[XC_OLD_PBE_CORRELATION]*
       pbe_correlation_unpolarized(d.R,d.Z);
-
-  if (xc_params[XC_PBE_CORRELATION_MOLPRO] != 0)
-    res += xc_params[XC_PBE_CORRELATION_MOLPRO]*
-      pbe_correlation_molpro(d.R,d.S,d.Z,d.rhoa,d.rhob,d.zeta);
 
   if (xc_params[XC_BECKE_EXCHANGE] != 0)
     res += xc_params[XC_BECKE_EXCHANGE]*
