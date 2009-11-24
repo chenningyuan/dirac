@@ -741,7 +741,11 @@ contains
                           (/ones(1:nr_dmat - 1)/),      &
                           dft_options,                  &
                           0)
-               
+
+!radovan:     in many situations one could pass F directly
+!             to dftexc but the gga symmetrization can make problem             
+!             with hypbrid functionals and anti-hermitian contributions
+!             so in other words while XC is always symmetric, F non necessarily
               call daxpy(ntbas(0)*ntbas(0)*nz, 1.0d0, XC%elms, 1, F(1)%elms, 1)
               XC = 0
 
