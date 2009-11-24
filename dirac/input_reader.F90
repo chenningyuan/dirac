@@ -265,6 +265,10 @@ contains
       call set_lscale_dft_gaunt()
     end if
 
+    if (kw_matches(word, '.ALDAOR')) then
+      call kw_read(word, dft_cfg_alda_order)
+    end if
+
     if (kw_matches(word, '.ALDA  ')) then
       dft_cfg_alda_hs = .true.
       dft_cfg_alda_ha = .true.
@@ -594,10 +598,6 @@ contains
 !     of given order
       aor_cfg_zzz = .true.
       call kw_read(word, aor_cfg_zzz_order)
-    end if
-
-    if (kw_matches(word, '.ALDA  ')) then
-      call kw_read(word, aor_cfg_alda_order)
     end if
 
     call check_whether_kw_found(word, kw_section)

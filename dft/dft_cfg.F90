@@ -75,6 +75,7 @@ module dft_cfg
   integer, public :: dft_cfg_print_level             = 2
   integer, public :: dft_cfg_debug_level             = 0
   integer, public :: dft_cfg_integration_check_level = 0
+  integer, public :: dft_cfg_alda_order              = 99
 
   private
 
@@ -128,6 +129,7 @@ contains
     call dirac_mpi_bcast(dft_cfg_print_level            )
     call dirac_mpi_bcast(dft_cfg_debug_level            )
     call dirac_mpi_bcast(dft_cfg_integration_check_level)
+    call dirac_mpi_bcast(dft_cfg_alda_order             )
 
   end subroutine
 #endif /* ifdef VAR_MPI */
