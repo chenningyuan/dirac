@@ -79,6 +79,16 @@ void xc_set_functional_fortran_(const int *mode, const double *params, int *len)
   xc_set_functional((enum xc_mode)(*mode),params);
 }
 
+extern "C"
+void fortran_report_xc_functional_()
+{
+  // this is useful for debugging mpi
+  // it will report the set functional mix
+  // which may not be set on a mpi worker
+  for (int i = 0; i < XC_PARAMS_LEN; i++)
+    cout << "functional portion:" << i << " weight:" << xc_params[i] << endl;
+}
+
 static int fun_nvars(enum xc_mode mode)
 {
   switch(mode)
