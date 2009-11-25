@@ -189,7 +189,7 @@ contains
 
         timing = .false.
         call sync_dft_cb()
-        call dftpar_init1(dft_options, nr_dmat_perturbed)
+        call dftpar_init1(dft_options, nr_dmat_perturbed, nr_fmat)
         call dftpar_init2(dft_options, nr_dmat_perturbed, isymop, ihrmop, &
      &                    dmat, dmat_perturbed, dmat_saop_resp, dmat_saop_outer)
       end if
@@ -227,6 +227,7 @@ contains
                   dmat_perturbed,    &
                   fmat,              &
                   nr_dmat_perturbed, &
+                  nr_fmat,           &
                   isymop,            &
                   ihrmop,            &
                   dft_options,       &
@@ -296,8 +297,9 @@ contains
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DFTDRV(DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
-     &                  DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP,dft_options, &
-     &                  IPRINT)
+                        DTRMAT,EXCMAT,nr_dmat_perturbed, nr_fmat, &
+                        ISYMOP,IHRMOP,dft_options, &
+                        IPRINT)
 !
 !     T. Helgaker sep 99
 !
@@ -305,8 +307,8 @@ contains
       real(8) :: EXCMAT(*)
       real(8) :: DMAT(*),DMAT_RESP_AO(*),DMAT_OUTER_AO(*), &
      &          DTRMAT(*)
-      integer    ::ISYMOP(NXCMAT),IHRMOP(NXCMAT)
-      integer    ::iprint, nxcmat, ibatch
+      integer    ::ISYMOP(nr_dmat_perturbed),IHRMOP(nr_dmat_perturbed)
+      integer    ::iprint, nr_dmat_perturbed, nr_fmat, ibatch
       type(dft_options_t) :: dft_options
 
       real(8), allocatable :: kx(:)
@@ -526,10 +528,11 @@ contains
         
         call dftdr1(kx, ky, kz, kw, &
                     mynpoint, ibatch, &
-     &              DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
-     &              DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP, &
-     &              dft_options, &
-     &              IPRINT)
+                    DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
+                    DTRMAT,EXCMAT,nr_dmat_perturbed,nr_fmat,&
+                    ISYMOP,IHRMOP, &
+                    dft_options, &
+                    IPRINT)
 
         call dealloc(kx)
         call dealloc(ky)
@@ -544,8 +547,9 @@ contains
 
 
 #if defined (VAR_MPI)
-      IF(is_parallel_calculation) CALL DFTRES(EXCMAT,NXCMAT,dft_options, &
-     &                       IPRINT)
+      if (is_parallel_calculation) then
+        call dftres(excmat, nr_fmat, dft_options, iprint)
+      end if
 #endif
 
 
@@ -594,7 +598,8 @@ contains
      &                  WEIGHT, &
                         NPOINT, ibatch, &
      &                  DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
-     &                  DTRMAT,EXCMAT,NXCMAT,ISYMOP,IHRMOP, &
+     &                  DTRMAT,EXCMAT,nr_dmat_perturbed, nr_fmat, &
+                        ISYMOP,IHRMOP, &
      &                  dft_options, &
      &                  IPRINT)
 !***********************************************************************
@@ -604,7 +609,7 @@ contains
 !***********************************************************************
 
 
-      integer :: npoint, iprint, nxcmat, ibatch, ioff, i
+      integer :: npoint, iprint, nr_dmat_perturbed, nr_fmat, ibatch, ioff, i
       logical :: gga_qr
       real(8) :: corx(*)
       real(8) :: cory(*)
@@ -615,8 +620,8 @@ contains
       real(8) :: dmat_outer_ao(*)
       real(8) :: dtrmat(*)
       real(8) :: excmat(*)
-      integer :: isymop(nxcmat)
-      integer :: ihrmop(nxcmat)
+      integer :: isymop(nr_dmat_perturbed)
+      integer :: ihrmop(nr_dmat_perturbed)
       real(8) :: energy_density
 
       real(8) :: RHG(3),VT(3)
@@ -831,7 +836,7 @@ contains
 !#define DEBUG_XC_RESPONSE
 #ifndef DEBUG_XC_RESPONSE
           call lr(block_length,    &
-                  nxcmat,          &
+                  nr_dmat_perturbed,          &
                   dtrmat,          &
                   excmat,          &
                   isymop,          &
@@ -847,7 +852,7 @@ contains
                   buffer)
 #else
             call xc_response_contribution(2,  &
-     &                      nxcmat,  &
+     &                      nr_dmat_perturbed,  &
      &                      dft_temp_gga_hs, &
      &                      dtrmat,  &
      &                      excmat, &
@@ -884,7 +889,7 @@ contains
 !         only the remaining part is done in sdft_qr (above)
 !         
           call lr(block_length,    &
-                  nxcmat,          &
+                  nr_dmat_perturbed,          &
                   dtrmat,          &
                   excmat,          &
                   isymop,          &
@@ -906,7 +911,7 @@ contains
 #ifdef MOD_AORESPONSE
           if (dft_options%aor_xc_order > 0) then
             call xc_response_contribution(dft_options%aor_xc_order,  &
-     &                      nxcmat,  &
+     &                      nr_dmat_perturbed,  &
      &                      dft_temp_gga_hs, &
      &                      dtrmat,  &
      &                      excmat, &
@@ -936,7 +941,7 @@ contains
 
 #ifdef VAR_MPI
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DFTRES(EXCMAT,NXCMAT,dft_options, &
+      SUBROUTINE DFTRES(EXCMAT,nr_fmat,dft_options, &
      &                  IPRINT)
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
@@ -945,7 +950,7 @@ contains
 !
 !***********************************************************************
 
-      integer :: nxcmat, iprint
+      integer :: nr_fmat, iprint
       real(8) :: EXCMAT(*)
       type(dft_options_t) :: dft_options
       real(8), allocatable :: kfbuffer(:)
@@ -980,7 +985,7 @@ contains
         end if
       ENDIF
 
-      LFMAT = nr_ao_total*nr_ao_total*NXCMAT*nr_qu
+      LFMAT = nr_ao_total*nr_ao_total*nr_fmat*nr_qu
       IF(MYTID.EQ.MPARID) THEN
         call alloc(kfbuffer, lfmat)
         kfbuffer = 0.0d0
@@ -1019,9 +1024,8 @@ contains
       real(8), allocatable :: kdtr(:)
       real(8), allocatable :: KDMAT_OUTER_AO(:)
       real(8), allocatable :: KDMAT_RESP_AO(:)
-      integer              :: nxcmat
+      integer              :: nr_dmat_perturbed, nr_fmat
       real(8)              :: wall1, cpu1
-      integer              :: lmat
       integer              :: iprint
       integer              :: max_ao_g_order, max_ao_m_order
 !
@@ -1040,16 +1044,14 @@ contains
 !     Receive initialization data from master 1
 !     =========================================
       call sync_dft_cb()
-      CALL DFTPAR_INIT1(dft_options,NXCMAT)
-!.....Memory allocation
-      lmat = nr_ao_total*nr_ao_total*nr_qu*nxcmat
-      call alloc(KEXC,LMAT)
+      call dftpar_init1(dft_options, nr_dmat_perturbed, nr_fmat)
+      call alloc(kexc, nr_ao_total*nr_ao_total*nr_qu*nr_fmat)
       kexc = 0.0d0
-      call alloc(ksym, nxcmat)
-      call alloc(khrm, nxcmat)
+      call alloc(ksym, nr_dmat_perturbed)
+      call alloc(khrm, nr_dmat_perturbed)
       call alloc(kden,nr_ao_total*nr_ao_total)
       if (dft_options%lr .or. dft_options%qr .or. (dft_options%aor_xc_order > 0)) then
-        call alloc(kdtr,LMAT)
+        call alloc(kdtr, nr_ao_total*nr_ao_total*nr_qu*nr_dmat_perturbed)
       ENDIF
 !.....Allocate density matrices for SAOP
       if (dft_cfg_saop_is_active) then
@@ -1061,7 +1063,7 @@ contains
  
 !     Receive initialization data from master 2
 !     =========================================
-      CALL DFTPAR_INIT2(dft_options,NXCMAT, ksym, khrm, &
+      CALL DFTPAR_INIT2(dft_options,nr_dmat_perturbed, ksym, khrm, &
      &                  KDEN,KDTR, &
      &                  KDMAT_RESP_AO,KDMAT_OUTER_AO)
 
@@ -1077,7 +1079,7 @@ contains
       IPRINT = 0
 !.....Integrate
       CALL DFTDRV(KDEN,KDMAT_RESP_AO,KDMAT_OUTER_AO, &
-     &            KDTR,KEXC,NXCMAT, ksym, khrm, &
+     &            KDTR,KEXC,nr_dmat_perturbed, nr_fmat, ksym, khrm, &
      &            dft_options,IPRINT)
 
       call dealloc(KEXC)
@@ -1097,14 +1099,14 @@ contains
       end subroutine
 
 
-      subroutine dftpar_init1(dft_options, nxcmat)
+      subroutine dftpar_init1(dft_options, nr_dmat_perturbed, nr_fmat)
 
 !     written by T. Saue april 7 2009
 
 
 !     --------------------------------------------------------------------------
       type(dft_options_t)                :: dft_options
-      integer                            :: nxcmat
+      integer                            :: nr_dmat_perturbed, nr_fmat
 !     --------------------------------------------------------------------------
       logical                            :: i_am_the_master
       integer                            :: ierr
@@ -1116,8 +1118,9 @@ contains
         i_am_the_master = .false.
       end if
 
-!     sync nxcmat
-      call dirac_mpi_bcast(nxcmat)
+!     sync nr_dmat_perturbed, nr_fmat
+      call dirac_mpi_bcast(nr_dmat_perturbed)
+      call dirac_mpi_bcast(nr_fmat)
 
 !     sync various parameters
       call sync_dft_cfg()
@@ -1130,7 +1133,7 @@ contains
       end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DFTPAR_INIT2(dft_options,NXCMAT,ISYMOP,IHRMOP, &
+      SUBROUTINE DFTPAR_INIT2(dft_options,nr_dmat_perturbed,ISYMOP,IHRMOP, &
      &                       DMAT,DTRMAT,DMAT_RESP_AO,DMAT_OUTER_AO)
 !***********************************************************************
 !
@@ -1142,14 +1145,14 @@ contains
       real(8) :: DMAT(nr_ao_total, nr_ao_total),DTRMAT(*), &
      &          DMAT_RESP_AO(nr_ao_total, nr_ao_total), &
      &          DMAT_outer_AO(nr_ao_total, nr_ao_total)
-      integer ::          ISYMOP(NXCMAT),IHRMOP(NXCMAT)
+      integer ::          ISYMOP(nr_dmat_perturbed),IHRMOP(nr_dmat_perturbed)
       type(dft_options_t) :: dft_options
-      integer :: nxcmat, lmat, ierr
+      integer :: nr_dmat_perturbed, lmat, ierr
       call dirac_mpi_bcast(isymop)
       call dirac_mpi_bcast(ihrmop)
       call dirac_mpi_bcast(dmat)
       if (dft_options%lr .or. dft_options%qr .or. (dft_options%aor_xc_order > 0)) then
-        lmat = nr_ao_total*nr_ao_total*nr_qu*nxcmat
+        lmat = nr_ao_total*nr_ao_total*nr_qu*nr_dmat_perturbed
         CALL MPI_BCAST(DTRMAT,LMAT,MPI_DOUBLE_PRECISION,MPARID, &
      &                   MPI_COMM_WORLD,IERR)
       ENDIF
