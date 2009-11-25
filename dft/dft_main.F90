@@ -146,18 +146,30 @@ contains
 
 #ifdef MOD_AUTODIFF
       if (dft_cfg_autodiff) then
+
 !       xc_fun_set_functional is called several times
 !       this is because gga query is not ideally structured
-        call xc_fun_set_functional(dft_options%aor_xc_order)
+        call xc_fun_set_functional(dft_options)
+
         dft_temp_gga_hs = dft_cfg_is_gga_autodiff
         dft_temp_gga_ha = dft_cfg_is_gga_autodiff
+
+        if (dft_cfg_alda_hs .and. (.not. dft_cfg_alda_ha)) then
+          call quit('.DFTAUTO and partial ALDA is not implemented')
+        end if
+        if (dft_cfg_alda_ha .and. (.not. dft_cfg_alda_hs)) then
+          call quit('.DFTAUTO and partial ALDA is not implemented')
+        end if
+
+      else
+#endif
+        if (dft_options%lr .or. dft_options%qr) then
+          if (dft_cfg_alda_hs) dft_temp_gga_hs = .false.
+          if (dft_cfg_alda_ha) dft_temp_gga_ha = .false.
+        end if
+#ifdef MOD_AUTODIFF
       end if
 #endif
-
-      if (dft_options%lr .or. dft_options%qr) then
-        if (dft_cfg_alda_hs) dft_temp_gga_hs = .false.
-        if (dft_cfg_alda_ha) dft_temp_gga_ha = .false.
-      end if
 
 !     in QR it is not so easy to separate H+ and H-
 !     contributions since they may mix
@@ -327,7 +339,7 @@ contains
 
 #ifdef MOD_AUTODIFF
     if (dft_cfg_autodiff) then
-      call xc_fun_set_functional(dft_options%aor_xc_order)
+      call xc_fun_set_functional(dft_options)
     end if
 #endif
 

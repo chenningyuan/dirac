@@ -1,6 +1,7 @@
 module dft_functional_derv
 
   use dft_cfg
+  use dft_temp
 #ifdef MOD_AUTODIFF
   use xc_fun
 #endif
@@ -47,25 +48,42 @@ module dft_functional_derv
 contains
 
 #ifdef MOD_AUTODIFF
-  subroutine xc_fun_set_functional(order)
+  subroutine xc_fun_set_functional(dft_options)
 
 !   ----------------------------------------------------------------------------
-    integer, intent(in) :: order
+    type(dft_options_t), intent(in) :: dft_options
 !   ----------------------------------------------------------------------------
-    integer :: i
+    integer :: i, response_order, alda_order
     integer :: gga_functionals(4) = (/XC_BECKE_EXCHANGE,  &
                                       XC_LYP_CORRELATION, &
                                       XC_PBE_EXCHANGE,    &
                                       XC_PBE_CORRELATION/)
 !   ----------------------------------------------------------------------------
 
-    do i = 1, size(gga_functionals)
-      if (dabs(dft_cfg_functional_w(gga_functionals(i))) > tiny) then
-        dft_cfg_is_gga_autodiff = .true.
-      end if
-    end do
+    response_order = dft_options%aor_xc_order
+    if (dft_options%lr) then
+      response_order = 1
+    end if
+    if (dft_options%qr) then
+      response_order = 2
+    end if
 
-    call xc_set_functional(XC_RSZXY, dft_cfg_functional_w)
+    alda_order = dft_cfg_alda_order
+    if (dft_cfg_alda_hs .and. dft_cfg_alda_ha) then
+      alda_order = 1
+    end if
+
+    if (alda_order <= response_order) then
+      call xc_set_functional(XC_RSZXY, dft_cfg_functional_w_alda)
+      dft_cfg_is_gga_autodiff = .false.
+    else
+      call xc_set_functional(XC_RSZXY, dft_cfg_functional_w)
+      do i = 1, size(gga_functionals)
+        if (dabs(dft_cfg_functional_w(gga_functionals(i))) > tiny) then
+          dft_cfg_is_gga_autodiff = .true.
+        end if
+      end do
+    end if
 
   end subroutine
 #endif /* ifdef MOD_AUTODIFF */
