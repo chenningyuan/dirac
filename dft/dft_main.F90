@@ -1086,7 +1086,7 @@ contains
       call dealloc(ksym)
       call dealloc(khrm)
       call dealloc(kden)
-      IF(dft_options%lr.OR.dft_options%qr) THEN
+      if (dft_options%lr .or. dft_options%qr .or. (dft_options%aor_xc_order > 0)) then
         call dealloc(kdtr)
       ENDIF
       if (dft_cfg_saop_is_active) then
