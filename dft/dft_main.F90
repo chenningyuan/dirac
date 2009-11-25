@@ -148,7 +148,7 @@ contains
       if (dft_cfg_autodiff) then
 !       xc_fun_set_functional is called several times
 !       this is because gga query is not ideally structured
-        call xc_fun_set_functional()
+        call xc_fun_set_functional(dft_options%aor_xc_order)
         dft_temp_gga_hs = dft_cfg_is_gga_autodiff
         dft_temp_gga_ha = dft_cfg_is_gga_autodiff
       end if
@@ -325,7 +325,7 @@ contains
 
 #ifdef MOD_AUTODIFF
     if (dft_cfg_autodiff) then
-      call xc_fun_set_functional()
+      call xc_fun_set_functional(dft_options%aor_xc_order)
     end if
 #endif
 
@@ -1048,7 +1048,7 @@ contains
       call alloc(ksym, nxcmat)
       call alloc(khrm, nxcmat)
       call alloc(kden,nr_ao_total*nr_ao_total)
-      IF(dft_options%lr.OR.dft_options%qr) THEN
+      if (dft_options%lr .or. dft_options%qr .or. (dft_options%aor_xc_order > 0)) then
         call alloc(kdtr,LMAT)
       ENDIF
 !.....Allocate density matrices for SAOP
@@ -1148,7 +1148,7 @@ contains
       call dirac_mpi_bcast(isymop)
       call dirac_mpi_bcast(ihrmop)
       call dirac_mpi_bcast(dmat)
-      IF(dft_options%lr.OR.dft_options%qr) THEN
+      if (dft_options%lr .or. dft_options%qr .or. (dft_options%aor_xc_order > 0)) then
         lmat = nr_ao_total*nr_ao_total*nr_qu*nxcmat
         CALL MPI_BCAST(DTRMAT,LMAT,MPI_DOUBLE_PRECISION,MPARID, &
      &                   MPI_COMM_WORLD,IERR)

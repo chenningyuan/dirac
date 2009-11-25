@@ -47,8 +47,10 @@ module dft_functional_derv
 contains
 
 #ifdef MOD_AUTODIFF
-  subroutine xc_fun_set_functional()
+  subroutine xc_fun_set_functional(order)
 
+!   ----------------------------------------------------------------------------
+    integer, intent(in) :: order
 !   ----------------------------------------------------------------------------
     integer :: i
     integer :: gga_functionals(4) = (/XC_BECKE_EXCHANGE,  &

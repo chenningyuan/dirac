@@ -201,6 +201,11 @@ contains
 
     deallocate(word_array)
 
+!fixme later adjust for hfx
+    dft_cfg_functional_w_alda                      = 0.0d0
+    dft_cfg_functional_w_alda(XC_SLATER_EXCHANGE)  = 1.0d0
+    dft_cfg_functional_w_alda(XC_VWN5_CORRELATION) = 1.0d0
+
   end subroutine
 #endif /* ifdef MOD_AUTODIFF */
 
