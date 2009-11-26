@@ -309,6 +309,7 @@ CMI  ... remove some file from previous SCF cycle ...
         CALL MEMGET('INTE',KIBRP,NTBAS(0),      WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KFOCK,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
 
+!       IF (.NOT.TRMO4C2C) RESTFCK = .TRUE.
         RESTFCK = .TRUE.
         CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFOCK),
      &        WORK(KFREE),LFREE)
@@ -407,7 +408,7 @@ C     ****************************************************
 C
       CALL DHFTST(BARNUC,DSCFON,ICHKCNV,BMAT,IPRINT)
 
-C     IF (FD2CMO) BARNUC=.FALSE.
+CMI    no bare nucleus screening when 2c-4c/4c-2c SCF switch     
       IF (RESTFCK) BARNUC=.FALSE.
 
       IF(.NOT.ONESYS) THEN
@@ -440,7 +441,6 @@ C
       CALL FLSHFO(LUPRI)
       CALL GETTIM(CTIDSTR,WTIDSTR)
 
-CMI  ... skip the generation of 2-el.Fock matrix when RESTFCK=.true. (dcbham.h)
 C
 C     Get 2-electron Fock matrix (save in CMO)
 C     ========================================
@@ -450,6 +450,7 @@ C     -------------------------
 C
       DOSEL = .FALSE.
       TOBE  = .TRUE.
+CMI  ... skip the generation of 2-el.Fock matrix when RESTFCK=.true. 
       IF (.NOT.RESTFCK) THEN
 
       IF(TRIVEC) THEN
@@ -846,7 +847,7 @@ C
 CMI   ... read AO2MO transformation matrixe into WORK(KTMAT)...
       CALL READT(LUTMAT,N2TMT,WORK(KTMAT))
 
-CMI ... perform all this only if we do note restart BSS from DC or vice versa
+CMI ... perform all this only if we do not restart BSS from DC-SCF or DC-SCF from BSS-SCF
       IF (.NOT.RESTFCK) THEN
         IF ((NASHT.GT.0.AND.AOC).OR.DIISAO) THEN
           CALL MEMGET('REAL',KDTEMP,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
@@ -881,18 +882,18 @@ C         NZT is the NZ value for the transformation matrix
       CLOSE(LUTMAT,STATUS='KEEP')
 
 CMI ==================================================================
-CMI  ... do read the 2comp. Fock-Dirac matrix in Lowdin
+CMI  ... read the 2comp. Fock-Dirac matrix in Lowdin
 CMI        MO basis (from pctra DC-SCF) to START 2c BSS-SCF ...
 CMI  ... or the 4comp STARTING Fock-Dirac matrix (from rev.pctra BSS-SCF+H2cPP)
 CMI     in RKB_MO basis to restart DC-SCF
 CMI ==================================================================
       IF (RESTFCK) THEN
-        CALL OPNFIL(LUBSS,'BSSMAT','OLD','DFSOLV')
-        IF (DO4C2C) THEN
+       CALL OPNFIL(LUBSS,'BSSMAT','OLD','DFSOLV')
+       IF (DO4C2C) THEN
 C ...    read the FD_2c in Lowdin MO basis from the BSSMAT to 
 C       provide starting for the postDHF-BSS-SCF procedure
         REWIND LUBSS   
-        IF (FNDLAB('FD2C_LMO',LUBSS)) THEN                     
+        IF (FNDLAB('FD2C_LMO',LUBSS)) THEN 
           ISIZE = (NESH(1)*NESH(1)*NZ) 
           IF (NFSYM.EQ.2) ISIZE=ISIZE+(NESH(2)*NESH(2)*NZ)
           CALL READT(LUBSS,ISIZE,FMO)
@@ -903,17 +904,17 @@ C       provide starting for the postDHF-BSS-SCF procedure
            CALL QUIT('DFSOLV: FD2C_LMO label in BSSMAT not found !') 
          END IF         
       ELSE  ! RESTFCK=.false., continuing with four-component DC-SCF
-        IF (FNDLAB('FD4C_RKB',LUBSS)) THEN
+         IF (FNDLAB('FD4C_RKB',LUBSS)) THEN
           ISIZE = (NORB(1)*NORB(1)*NZ) 
           IF (NFSYM.EQ.2) ISIZE=ISIZE+(NORB(2)*NORB(2)*NZ)
           CALL READT(LUBSS,ISIZE,FMO)
           IF (IPRHAM.GE.2) WRITE(LUPRI,'(/2X,A)')                  
      &    'DFSOLV: FD_4c elements in RKB MO basis were read'// 
      &    ' from the BSSMAT file(FD4C_RKB)-starting guess for DC-SCF.'
-          ELSE                                                       
-            CALL QUIT('DFSOLV: FD4C_RKB  not found in BSSMAT !') 
-          END IF         
-        END IF         
+         ELSE                                                       
+           CALL QUIT('DFSOLV: FD4C_RKB  not found in BSSMAT !') 
+         END IF         
+       END IF         
         CLOSE(LUBSS,STATUS='KEEP')
         RESTFCK = .FALSE.
       ENDIF 
@@ -1014,10 +1015,14 @@ C
 CMI     ... Control printout ...
         IF (IPRSCF.GE.6) THEN
           WRITE(LUPRI,'(/,2X,A)') 
-     &    'DFSOLV: Eigenvalues, eigenvectors - MO coefficients'
+     &    'DFSOLV: Eigenvalues:'
           WRITE(LUPRI,'(3X,A,I1,A,I1/)')
      &     '*** Fermion corep ',I,'/',NFSYM
           WRITE(LUPRI,'(I5,F25.10)') (J,EIG(IORB(I)+J),J=1,NTMO(I))
+          WRITE(LUPRI,'(/,2X,A)') 
+     &    'DFSOLV: Eigenvectors - MO coefficients'
+          WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &     '*** Fermion corep ',I,'/',NFSYM
           CALL PRQMAT(FMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),
      &           NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
         ENDIF
@@ -1363,9 +1368,6 @@ C        Write current two-electron Fock matrix to file
 C        ==============================================
 C
          CALL WRIFCK(LUFCK2,FOCK,NFMAT)
-
-
-
 
 
 #ifdef MOD_DFT

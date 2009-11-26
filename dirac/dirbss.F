@@ -97,7 +97,7 @@ C       ... in this case we block-diagonalize the Fock-Dirac operator
        CALL FDTR2C(VMAT,WORK(KIBEIG),WORK(KFREE),LFREE)
 
        IF (TRMO4C2C) THEN 
-!mi    ... transform 4c MO -> 2c MO
+!mi    ... transform 4c MO coeff -> 2c MO coeff using the picture change tranf.matrix
           CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
           CALL MEMGET('REAL',KBUF,N2BBASXQ,WORK,KFREE,LFREE)
           CALL MEMGET('REAL',KEIG ,NTBAS(0),      WORK,KFREE,LFREE)
@@ -7627,7 +7627,11 @@ C           CMO(2c) = U^{+}(4c->2c) * CMO(4c)
 C
 C  Resulting 2c MO's are written back to DFCOEF.
 C
-C  On entry:
+C  On entry: VMAT
+C            CMO
+C            TBUF
+C            EIG
+C            IBEIG
 C
 C  Called from:
 C
@@ -7728,8 +7732,8 @@ C ===============================================================
      &  '* Fermion ircop no.',I,'/',NFSYM                          
         CALL PRQMAT(TBUF(IMOe),NFBAS(I,0),NESH(I),              
 !       CALL PRQMAT(TBUF(IMO),NFBAS(I,0),NORB(I), 
-     &    NFBAS(I,1),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
-!    &    NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+!    &    NFBAS(I,1),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
+     &    NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
        ENDIF
 
           IMOe =  IMOe + (NFBAS(I,0)*NESH(I)*NZ)
@@ -7744,7 +7748,13 @@ C     ... check the orthonormality of generated starting MO's
 !     CALL NRMSTMO(TBUF,VMAT,CMO,WORK,LWORK,IPRINT,.TRUE.)
 !     CALL NRMSTMO(TBUF,VMAT,CMO,WORK,LWORK,IPRINT,.FALSE.)
 
-      call quit('.... stop in CMOTR2C ....')
+
+!     Save MO coeff into DFPCMO 
+
+
+!      call quit('.... stop in CMOTR2C ....')
+      WRITE(LUPRI,*) 'Leaving CMOTR2C '    
+
       RETURN
       END
 
