@@ -46,3 +46,8 @@ In particular some parameters have higher accuracy.
 When comparing to other implementation it's important
 to have the same parameters, including any approximation
 in constants such as pi. 
+
+When running in high precision (more than double), note
+that some constants are given in double precision so the
+result will be affected by that. This is mainly M_PI and
+exponents to pow(), for example 1.0/3.0.

@@ -58,7 +58,7 @@ static num vwn5_correlation(const num &R,
   // ulfek: in Dalton and Dirac inter[1] has too few decimals, should
   // be -1/(3pi^2)
   assert(R > 1e-20);
-  num t,g,dd,s = pow(3/(4*M_PI),1.0/6)*pow(R,-1.0/6);
+  num g,dd,s = pow(3/(4*M_PI),1.0/6)*pow(R,-1.0/6);
   // Constant is (2^1/3-1)^-1/2
   g = 1.92366105093154*(pow(1 + zeta,4.0/3) + pow(1 - zeta,4.0/3) - 2);
   num zeta4 = pow(zeta,4);
