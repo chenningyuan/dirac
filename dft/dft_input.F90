@@ -37,6 +37,18 @@ contains
 
   end subroutine
 
+  function get_hfx()
+
+#include "dcbham.h"
+
+!   ----------------------------------------------------------------------------
+    real(8)                   :: get_hfx
+!   ----------------------------------------------------------------------------
+
+    get_hfx = hfxfac
+
+  end function
+
   function get_weight(word, functional)
 
 !   ----------------------------------------------------------------------------
@@ -201,10 +213,13 @@ contains
 
     deallocate(word_array)
 
-!fixme later adjust for hfx
     dft_cfg_functional_w_alda                      = 0.0d0
     dft_cfg_functional_w_alda(XC_SLATER_EXCHANGE)  = 1.0d0
     dft_cfg_functional_w_alda(XC_VWN5_CORRELATION) = 1.0d0
+
+    dft_cfg_functional_w_xalda = dft_cfg_functional_w_alda
+    dft_cfg_functional_w_xalda(XC_SLATER_EXCHANGE) &
+      = dft_cfg_functional_w_xalda(XC_SLATER_EXCHANGE) - get_hfx()
 
   end subroutine
 #endif /* ifdef MOD_AUTODIFF */

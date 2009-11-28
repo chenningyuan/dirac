@@ -67,6 +67,7 @@ module dft_cfg
 #ifdef MOD_AUTODIFF
   real(8), public :: dft_cfg_functional_w(XC_PARAMS_LEN)
   real(8), public :: dft_cfg_functional_w_alda(XC_PARAMS_LEN)
+  real(8), public :: dft_cfg_functional_w_xalda(XC_PARAMS_LEN)
 #endif
 
   integer, public :: dft_cfg_angmin                  = 15
@@ -122,6 +123,7 @@ contains
 #ifdef MOD_AUTODIFF
     call dirac_mpi_bcast(dft_cfg_functional_w           )
     call dirac_mpi_bcast(dft_cfg_functional_w_alda      )
+    call dirac_mpi_bcast(dft_cfg_functional_w_xalda     )
 #endif
     call dirac_mpi_bcast(dft_cfg_angmin                 )
     call dirac_mpi_bcast(dft_cfg_angint                 )

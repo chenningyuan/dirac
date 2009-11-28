@@ -74,7 +74,11 @@ contains
     end if
 
     if (alda_order <= response_order) then
-      call xc_set_functional(XC_RSZXY, dft_cfg_functional_w_alda)
+      if (dft_cfg_xalda) then
+        call xc_set_functional(XC_RSZXY, dft_cfg_functional_w_xalda)
+      else
+        call xc_set_functional(XC_RSZXY, dft_cfg_functional_w_alda)
+      end if
       dft_cfg_is_gga_autodiff = .false.
     else
       call xc_set_functional(XC_RSZXY, dft_cfg_functional_w)
