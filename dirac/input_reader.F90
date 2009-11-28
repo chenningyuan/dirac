@@ -421,6 +421,10 @@ contains
       visual_cfg_integrate = .true.
     end if
 
+    if (kw_matches(word, '.RADIAL')) then
+      visual_cfg_radial = .true.
+    end if
+
     if (kw_matches(word, '.ORBSTR')) then
       visual_cfg_use_orbital_string = .true.
       call kw_read(word, visual_cfg_orbital_string(1))

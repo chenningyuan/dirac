@@ -569,10 +569,12 @@ contains
       real(8) :: RSQ
       real(8) :: rxx, rxy, rxz, ryy, ryz, rzz
       real(8) :: px, py, pz, ddot, scalar
-      real(8) :: rx, ry, rz, TF_KIN, BOSON_KIN
+      real(8) :: rx, ry, rz, TF_KIN, BOSON_KIN, distance_to_origin
       integer :: ic, iq, IXVECTOR, ixyz, imat
 
       call get_so(px, py, pz, ao, buffer)
+
+      distance_to_origin = dsqrt(px*px + py*py + pz*pz)
 
       CALL DZERO(QUANTITY_ADDMEUP,4)
 
@@ -912,8 +914,12 @@ contains
      &      CALL DAXPY(1,FACTOR,VECTOR_B(3),1,QUANTITY(0),1)
         ENDIF
 
-        CALL DAXPY(4,visual_cfg_COMMON_FACTOR, &
-     &       QUANTITY(0),1,QUANTITY_ADDMEUP(0),1)
+        factor = visual_cfg_common_factor
+        if (visual_cfg_radial) then
+          factor = factor*(distance_to_origin**2.0d0)
+        end if
+        call daxpy(4, factor, quantity(0), 1, quantity_addmeup(0), 1)
+
       ENDDO
 
       RETURN
