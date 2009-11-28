@@ -561,9 +561,6 @@ CTOBS: Note the use of dhfcal ! Should be generalized !!!
       LOGICAL TOBE, SAVEFLAGS(4)
       DIMENSION FMO(*),FAO(*),CMO(*),IBEIG(*),WORK(*)
 
-#ifdef MOD_DFT
-      type(dft_options_t) :: dft_options
-#endif
 
 C
 #include "ibtfun.h"
@@ -668,18 +665,19 @@ C          Hermitian operator
 
           call genden(fao, cmo, 1, iprint)
 
-          call reset_dft_options(dft_options)
-          dft_options%energy = .true.
-
-          call dftexc(fao,
-     &                (/0.0d0/),
+          call dftexc(ntbas(0),
+     &                nz,
+     &                1,
      &                fmo,
+     &                fao,
      &                1,
-     &                1,
+     &                (/0.0d0/),
      &                (/1/),
      &                (/1/),
-     &                dft_options,
-     &                iprint)
+     &                0,
+     &                0,
+     &                0,
+     &                0)
 
         end if
 #endif /* ifdef MOD_DFT */

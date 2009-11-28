@@ -688,7 +688,6 @@ contains
 #ifdef PRG_DIRAC
       integer :: ones(200)     
       integer :: nr_dmat
-      type(dft_options_t) :: dft_options
       type(matrix) :: XC
       ones = 1
 #endif /* PRG_DIRAC */
@@ -706,7 +705,6 @@ contains
             if (iszero(D(ii))) cycle
 
 #ifdef PRG_DIRAC
-!radovan: these many dftexc calls will be simplified soon to only one
             call di_GET_GbDs(D(ii), A(1))
 
             F(i) = F(i) + A(1)
@@ -726,20 +724,21 @@ contains
                 F(1) = tiny(0.0d0)*D(1)
               end if
               
-              call reset_dft_options(dft_options)
-              dft_options%aor_xc_order = m + 1
-              
               call init_mat(XC, ntbas(0), ntbas(0))
               XC%elms = 0.0d0
               
-              call dftexc(D(1)%elms,                    &
-                       (/(D(i)%elms, i = 2, nr_dmat)/), &
-                          XC%elms,                      &
-                          nr_dmat - 1,                  &
-                          1,                            &
-                          (/ones(1:nr_dmat - 1)/),      &
-                          (/ones(1:nr_dmat - 1)/),      &
-                          dft_options,                  &
+              call dftexc(ntbas(0),                        &
+                          nz,                              &
+                          1,                               &
+                          XC%elms,                         &
+                          D(1)%elms,                       &
+                          nr_dmat - 1,                     &
+                          (/(D(i)%elms, i = 2, nr_dmat)/), &
+                          (/ones(1:nr_dmat - 1)/),         &
+                          (/ones(1:nr_dmat - 1)/),         &
+                          0,                               &
+                          m + 1,                           &
+                          0,                               &
                           0)
 
 !radovan:     in many situations one could pass F directly

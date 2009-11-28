@@ -3540,9 +3540,6 @@ C
       DIMENSION IBCVC(*), IBEVC(*), IBPVC(*), IBTYP(*), NPOS(*)
       DIMENSION ISYMOP(*), IHRMOP(*), IFCKOP(*)
       DIMENSION WORK(*)
-#ifdef MOD_DFT
-      type(dft_options_t) :: dft_options
-#endif
 
 C
 C
@@ -3605,21 +3602,22 @@ C
           call memget('REAL', kbuf, n2bbasxq, work, kfree, lfree)
           call genden(work(kbuf), cmo, 1, iprxrs)
 
-          call reset_dft_options(dft_options)
-          dft_options%lr = .true.
-
 !                           buf holds the unperturbed density matrix
-          call dftexc(work(kbuf),
 !                     fmo is actually the perturbed ao density matrix
-     &                fmo,
 !                     fao is really fao (confusing naming reuses memory)
+          call dftexc(ntbas(0),
+     &                nz,
+     &                ndmat,
      &                fao,
-     &                nosim,
-     &                nosim,
+     &                work(kbuf),
+     &                ndmat,
+     &                fmo,
      &                isymop,
      &                ihrmop,
-     &                dft_options,
-     &                iprxrs)
+     &                1,
+     &                0,
+     &                0,
+     &                0)
 
           call memrel('gmoli1.dft', work, 1, kbuf, kfree, lfree)
 

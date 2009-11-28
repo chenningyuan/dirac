@@ -2314,9 +2314,6 @@ C
       DIMENSION ISYMOP(3),IHRMOP(3),IFCKOP(3)
       DIMENSION RESULT(3),CMO(*),WORK(LWRK)
 
-#ifdef MOD_DFT
-      type(dft_options_t) :: dft_options
-#endif
 
 C
       CALL QENTER('E3DRV')
@@ -2396,18 +2393,21 @@ C
         call memget('REAL', kxc, 3*n2bbasxq, work, kfree, lfree)
         call dzero(work(kxc), 3*n2bbasxq)
 
-        call reset_dft_options(dft_options)
-        dft_options%qr = .true.
-
-        call dftexc(work(kdmat),
-     &              work(kd1ao),
+        call dftexc(ntbas(0),
+     &              nz,
+     &              3,
      &              work(kxc),
+     &              work(kdmat),
      &              3,
-     &              3,
+     &              work(kd1ao),
      &              isymop,
      &              ihrmop,
-     &              dft_options,
-     &              iprxqr)
+     &              2,
+     &              0,
+     &              0,
+     &              0)
+
+
 
 !       add the (symmetrized) XC contribution on top of work(kf1ao)
         call daxpy(3*n2bbasxq, 1.0d0, work(kxc), 1, work(kf1ao), 1)

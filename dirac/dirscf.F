@@ -394,9 +394,6 @@ C
      &          NPOS(*),WORK(LWORK),
      &          DVOVLP(MXOPEN)
 
-#ifdef MOD_DFT
-      type(dft_options_t) :: dft_options
-#endif
 C
       CALL QENTER('PREDHF')
 C
@@ -565,18 +562,19 @@ C
         if (.not. df_fitvxc) then
 #endif
 
-          call reset_dft_options(dft_options)
-          dft_options%energy = .true.
-
-          call dftexc(dmat,
-     &                (/0.0d0/),
+          call dftexc(ntbas(0),
+     &                nz,
+     &                1,
      &                fock,
+     &                dmat,
      &                1,
-     &                1,
+     &                (/0.0d0/),
      &                (/1/),
      &                (/1/),
-     &                dft_options,
-     &                iprscf)
+     &                0,
+     &                0,
+     &                0,
+     &                0)
 
            tdxc = second() - tdxc
 
@@ -1208,9 +1206,6 @@ C
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),DMAT(*),
      &          BMAT(*),NPOS(*),WORK(LWORK)
       DIMENSION DVOVLP(MXOPEN)
-#ifdef MOD_DFT
-      type(dft_options_t) :: dft_options
-#endif
       CALL QENTER('SCFCY1')
 #include "memint.h"
 C
@@ -1380,18 +1375,19 @@ C
         if (.not. df_fitvxc) then
 #endif
 
-          call reset_dft_options(dft_options)
-          dft_options%energy = .true.
-
-          call dftexc(dmat,
-     &                (/0.0d0/),
+          call dftexc(ntbas(0),
+     &                nz,
+     &                1,
      &                fock,
+     &                dmat,
      &                1,
-     &                1,
+     &                (/0.0d0/),
      &                (/1/),
      &                (/1/),
-     &                dft_options,
-     &                iprscf)
+     &                0,
+     &                0,
+     &                0,
+     &                0)
 
 #ifdef MOD_DNF
         end if

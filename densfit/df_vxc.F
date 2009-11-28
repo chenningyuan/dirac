@@ -82,12 +82,13 @@ C
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #include "dcbham.h"
+#include "dcbbas.h"
 #else
 #include "gnrinf.h"
 #endif
 #include "densfit.h"
       DOUBLE PRECISION CFIT(*), DMAT(*), WORK(*)
-      type(dft_options_t) :: dft_options
+      integer :: response_order
 #include "memint.h"
 C
 C first step is to numerically integrate <V_{XC}[\rho_{fit}]|\alpha>
@@ -99,22 +100,24 @@ C
        call quit('unsupported option')
       endif
 
-      call reset_dft_options(dft_options)
+      response_order = 0
       if (dodflr) then
-        dft_options%lr = .true.
-      else
-        dft_options%energy = .true.
+        response_order = 1
       end if
 
-      call dftexc(dmat,
-     &            (/0.0d0/),
-     &            (/0.0d0/),
+      call dftexc(ntbas(0),
+     &            nz,
      &            1,
+     &            (/0.0d0/),
+     &            dmat,
      &            1,
+     &            (/0.0d0/),
      &            (/1/),
      &            (/1/),
-     &            dft_options,
-     &            iprscf)
+     &            response_order,
+     &            0,
+     &            0,
+     &            0)
 
 #endif /* ifdef PRG_DIRAC */
 

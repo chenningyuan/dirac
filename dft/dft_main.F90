@@ -45,39 +45,61 @@ module dft_main
 
 contains
 
-      subroutine dftexc(dmat, &
-                        dmat_perturbed, &
-                        fmat, &
-                        nr_dmat_perturbed, &
-                        nr_fmat, &
-                        isymop, &
-                        ihrmop, &
-                        dft_options, &
-                        iprint)
+  subroutine dftexc(mat_dim,           &
+                    nz,                &
+                    nr_fmat,           &
+                    fmat,              &
+                    dmat_0,            &
+                    nr_dmat_p,         &
+                    dmat_p,            &
+                    isymop,            &
+                    ihrmop,            &
+                    response_order,    &
+                    response_order_ao, &
+                    g_order,           &
+                    m_order)
 
-!     written by T. Helgaker
-!     DIRAC adaption by T. Saue
+!   written by T. Helgaker
+!   DIRAC adaption by T. Saue
 
-!     --------------------------------------------------------------------------
-      real(8), intent(in) :: dmat(nr_ao_total, nr_ao_total, nr_qu, *)
-      real(8)             :: dmat_perturbed(nr_ao_total, nr_ao_total, nr_qu, *)
-      real(8)             :: fmat(nr_ao_total, nr_ao_total, nr_qu, *)
-      integer, intent(in) :: nr_dmat_perturbed
-      integer, intent(in) :: nr_fmat
-      integer, intent(in) :: isymop(nr_dmat_perturbed)
-      integer, intent(in) :: ihrmop(nr_dmat_perturbed)
-      type(dft_options_t) :: dft_options
-      integer, intent(in) :: iprint
-!     --------------------------------------------------------------------------
-      integer             :: iz, im, iq, g_order, m_order
-      real(8)             :: time_start, time_in_xc, second
-      real(8)             :: ddot
+!   ----------------------------------------------------------------------------
+    integer, intent(in)    :: mat_dim
+    integer, intent(in)    :: nz
+    integer, intent(in)    :: nr_fmat
+    real(8)                :: fmat(mat_dim, mat_dim, nz, nr_fmat)
+    real(8), intent(in)    :: dmat_0(mat_dim, mat_dim, nz)
+    integer, intent(in)    :: nr_dmat_p
+    real(8), intent(in)    :: dmat_p(mat_dim, mat_dim, nz, nr_dmat_p)
+    integer, intent(in)    :: isymop(nr_dmat_p)
+    integer, intent(in)    :: ihrmop(nr_dmat_p)
+    integer, intent(in)    :: response_order
+    integer, intent(in)    :: response_order_ao
+    integer, intent(in)    :: g_order
+    integer, intent(in)    :: m_order
+!   ----------------------------------------------------------------------------
+    type(dft_options_t) :: dft_options
+    integer             :: iz, im, iq
+    real(8)             :: time_start, time_in_xc, second
+    real(8)             :: ddot
 
-      real(8), allocatable :: dmat_saop_outer(:)
-      real(8), allocatable :: dmat_saop_resp(:)
+    real(8), allocatable :: dmat_saop_outer(:)
+    real(8), allocatable :: dmat_saop_resp(:)
 
-      integer              :: max_ao_g_order, max_ao_m_order
-!     --------------------------------------------------------------------------
+    integer              :: max_ao_g_order, max_ao_m_order
+!   ----------------------------------------------------------------------------
+
+      call reset_dft_options(dft_options)
+      if      (response_order == 0) then
+        dft_options%energy = .true.
+      else if (response_order == 1) then
+        dft_options%lr = .true.
+      else if (response_order == 2) then
+        dft_options%qr = .true.
+      end if
+      dft_options%aor_xc_order = response_order_ao
+
+      if (g_order == 1) dft_options%gradient = .true.
+      if (m_order == 1) dft_options%london   = .true.
 
       call init_dft_cb()
 
@@ -86,14 +108,14 @@ contains
 
 !     initial expectation value of the two-electron matrix
       if (dft_options%energy) then
-        dft_temp_xc_mat_energy = ddot(nr_ao_total*nr_ao_total, dmat, 1, fmat, 1)
+        dft_temp_xc_mat_energy = ddot(nr_ao_total*nr_ao_total, dmat_0, 1, fmat, 1)
       end if
 
 !     get average density from open shells
-      if (nr_open_shells > 0) call gtdoav(dmat, 1)
+      if (nr_open_shells > 0) call gtdoav(dmat_0, 1)
 
 !     scale
-      call dscal(nr_ao_total*nr_ao_total, 2.0d0, dmat, 1)
+      call dscal(nr_ao_total*nr_ao_total, 2.0d0, dmat_0, 1)
 
 
 !     scale and insert half-phases
@@ -102,14 +124,14 @@ contains
      &    .or. dft_options%qr &
      &    .or. (dft_options%aor_xc_order > 0)) then
 
-        call dscal(nr_ao_total*nr_ao_total*nr_qu*nr_dmat_perturbed, &
-     &             2.0d0, dmat_perturbed, 1)
+        call dscal(nr_ao_total*nr_ao_total*nr_qu*nr_dmat_p, &
+     &             2.0d0, dmat_p, 1)
 
         if (nr_qu < 4) then
           do iz = 1, nr_qu
-            do im = 1, nr_dmat_perturbed
+            do im = 1, nr_dmat_p
               iq = dft_cb_pq_to_uq(iz, isymop(im) - 1)
-              call q2bphase('D', iq, 1, dmat_perturbed(1, 1, iz, im))
+              call q2bphase('D', iq, 1, dmat_p(1, 1, iz, im))
             end do
             do im = 1, nr_fmat
               iq = dft_cb_pq_to_uq(iz, isymop(im) - 1)
@@ -122,7 +144,7 @@ contains
 
 !     calculate grid
       if (.not. dft_temp_grid_is_done) then
-        call dftgrd(dmat, 1)
+        call dftgrd(dmat_0, 1)
         dft_temp_grid_is_done = .true.
         if (dft_cfg_keep_ao .and. ao_mem_allocated) dft_temp_reload_batches = .true.
       end if
@@ -201,9 +223,9 @@ contains
 
         timing = .false.
         call sync_dft_cb()
-        call dftpar_init1(dft_options, nr_dmat_perturbed, nr_fmat)
-        call dftpar_init2(dft_options, nr_dmat_perturbed, isymop, ihrmop, &
-     &                    dmat, dmat_perturbed, dmat_saop_resp, dmat_saop_outer)
+        call dftpar_init1(dft_options, nr_dmat_p, nr_fmat)
+        call dftpar_init2(dft_options, nr_dmat_p, isymop, ihrmop, &
+     &                    dmat_0, dmat_p, dmat_saop_resp, dmat_saop_outer)
       end if
 #endif /* ifdef VAR_MPI */
 
@@ -233,12 +255,12 @@ contains
                      dft_cfg_dfthri)
       
 !     integrate
-      call dftdrv(dmat,              &
+      call dftdrv(dmat_0,            &
                   dmat_saop_resp,    &
                   dmat_saop_outer,   &
-                  dmat_perturbed,    &
+                  dmat_p,    &
                   fmat,              &
-                  nr_dmat_perturbed, &
+                  nr_dmat_p, &
                   nr_fmat,           &
                   isymop,            &
                   ihrmop,            &
@@ -254,10 +276,10 @@ contains
       end if
 
 !     rescale
-      call dscal(nr_ao_total*nr_ao_total, 0.5d0, dmat, 1)
+      call dscal(nr_ao_total*nr_ao_total, 0.5d0, dmat_0, 1)
 
 !     get average density from open shells
-      if (nr_open_shells > 0) call gtdoav(dmat, -1)
+      if (nr_open_shells > 0) call gtdoav(dmat_0, -1)
 
 !     in case of gga symmetrize matrices
       if (dft_temp_gga_hs .or. dft_temp_gga_ha) then
@@ -272,9 +294,9 @@ contains
 
         if (nr_qu < 4) then
           do iz = 1, nr_qu
-            do im = 1, nr_dmat_perturbed
+            do im = 1, nr_dmat_p
               iq = dft_cb_pq_to_uq(iz, isymop(im) - 1)
-              call q2bphase('D', iq, 1, dmat_perturbed(1, 1, iz, im))
+              call q2bphase('D', iq, 1, dmat_p(1, 1, iz, im))
             end do
             do im = 1, nr_fmat
               iq = dft_cb_pq_to_uq(iz, isymop(im) - 1)
@@ -283,15 +305,15 @@ contains
           end do
         end if
 
-        call dscal(nr_ao_total*nr_ao_total*nr_qu*nr_dmat_perturbed, &
-     &             0.5d0, dmat_perturbed, 1)
+        call dscal(nr_ao_total*nr_ao_total*nr_qu*nr_dmat_p, &
+     &             0.5d0, dmat_p, 1)
 
       end if
 
 !     calculate final expectation value of two-electron matrix
       if (dft_options%energy) then
 !       the xc contribution can then be subtracted 
-        dft_temp_xc_mat_energy = ddot(nr_ao_total*nr_ao_total, dmat, 1, fmat, 1) &
+        dft_temp_xc_mat_energy = ddot(nr_ao_total*nr_ao_total, dmat_0, 1, fmat, 1) &
                                - dft_temp_xc_mat_energy
       end if 
 
