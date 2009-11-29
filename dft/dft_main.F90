@@ -241,7 +241,13 @@ contains
 
     end if
 #endif /* ifdef VAR_MPI */
-      
+
+!   at this stage all the variables of the next call
+!   should be synced between nodes      
+!   and all arrays should be allocated at each node
+!   and synced between nodes
+!   but do not broadcast any other variables that can be synced
+!   more compactly deeper down in dftdrv
     call dftdrv(mat_dim,           &
                 nz,                &
                 nr_fmat,           &
