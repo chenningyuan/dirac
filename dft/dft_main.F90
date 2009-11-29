@@ -215,53 +215,32 @@ contains
         timing = .false.
           call sync_dft_cb()
           call sync_dft_cfg()
-         !call sync_dft_temp()
-         !call dftsyncfunc(mytid == mparid)
     
-        call dirac_mpi_bcast(mat_dim)
-        call dirac_mpi_bcast(nz)
-        call dirac_mpi_bcast(nr_fmat)
-        call dirac_mpi_bcast(nr_dmat_p)
-        call dirac_mpi_bcast(response_order)
-        call dirac_mpi_bcast(response_order_ao)
-        call dirac_mpi_bcast(g_order)
-        call dirac_mpi_bcast(m_order)
+      call dirac_mpi_bcast(mat_dim)
+      call dirac_mpi_bcast(nz)
+      call dirac_mpi_bcast(nr_fmat)
+      call dirac_mpi_bcast(nr_dmat_p)
 
-        call sync_dmat_0(mat_dim, nz, dmat_0)
+      call sync_dmat_0(mat_dim, nz, dmat_0)
 
-        if (dft_cfg_saop_is_active) then
-          call sync_dmat_0(mat_dim, nz, dmat_saop_outer)
-          if (dft_cfg_saop_with_response_part) then
-            call sync_dmat_0(mat_dim, nz, dmat_saop_resp)
-          end if
+      if (dft_cfg_saop_is_active) then
+        call sync_dmat_0(mat_dim, nz, dmat_saop_outer)
+        if (dft_cfg_saop_with_response_part) then
+          call sync_dmat_0(mat_dim, nz, dmat_saop_resp)
         end if
-
-        if (nr_dmat_p > 0) then
-          call sync_dmat_p(mat_dim, nz, nr_dmat_p, dmat_p, isymop, ihrmop)
-        end if
-
       end if
+
+      if (nr_dmat_p > 0) then
+        call sync_dmat_p(mat_dim, nz, nr_dmat_p, dmat_p, isymop, ihrmop)
+      end if
+
+      call dirac_mpi_bcast(response_order)
+      call dirac_mpi_bcast(response_order_ao)
+      call dirac_mpi_bcast(g_order)
+      call dirac_mpi_bcast(m_order)
+
+    end if
 #endif /* ifdef VAR_MPI */
-
-    max_ao_g_order = 0
-    if (use_gga_qr) then
-      max_ao_g_order = 1
-    end if
-
-    max_ao_m_order = m_order
-
-#ifdef VAR_MPI
-    if (is_parallel_calculation) then
-      call dirac_mpi_bcast(max_ao_g_order)
-      call dirac_mpi_bcast(max_ao_m_order)
-    end if
-#endif
-
-    call dft_ao_init(is_parallel_calculation, &
-                     max_ao_g_order,          &
-                     max_ao_m_order,          &
-                     dft_cfg_screening,       &
-                     dft_cfg_dfthri)
       
     call dftdrv(mat_dim,           &
                 nz,                &
@@ -392,11 +371,6 @@ contains
       integer :: npnts, npoint, nrest, IDISP_REST
       logical :: i_am_the_master
 
-#ifdef MOD_AUTODIFF
-    if (dft_cfg_autodiff) then
-      call xc_fun_set_functional(response_order, response_order_ao)
-    end if
-#endif
 
     dft_temp_nr_electrons = 0.0d0
     dft_temp_xc_energy    = 0.0d0
@@ -598,9 +572,10 @@ contains
                     dmat_0,dmat_saop_resp,dmat_saop_outer, &
                     dmat_p,fmat,nr_dmat_p,nr_fmat,&
                     ISYMOP,IHRMOP, &
-                    response_order, &
+                    response_order,    &
                     response_order_ao, &
-                    0)
+                    g_order,           &
+                    m_order)
 
         call dealloc(kx)
         call dealloc(ky)
@@ -675,9 +650,10 @@ contains
      &                  DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
      &                  DTRMAT,EXCMAT,nr_dmat_p, nr_fmat, &
                         ISYMOP,IHRMOP, &
-                    response_order, &
-                    response_order_ao, &
-     &                  IPRINT)
+                        response_order,    &
+                        response_order_ao, &
+                        g_order,           &
+                        m_order)
 !***********************************************************************
 !
 !     Written by Trond Saue and T.Helgaker
@@ -685,7 +661,7 @@ contains
 !***********************************************************************
 
 
-      integer :: npoint, iprint, nr_dmat_p, nr_fmat, ibatch, ioff, i
+      integer :: npoint, nr_dmat_p, nr_fmat, ibatch, ioff, i
       real(8) :: corx(*)
       real(8) :: cory(*)
       real(8) :: corz(*)
@@ -710,7 +686,12 @@ contains
       real(8) :: ddot, f
 
       integer :: itest, jtest
-      integer :: response_order, response_order_ao
+    integer, intent(in) :: response_order
+    integer, intent(in) :: response_order_ao
+    integer, intent(in) :: g_order
+    integer, intent(in) :: m_order
+    integer             :: max_ao_g_order
+    integer             :: max_ao_m_order
 
 !   this pointer is useful for .KEEPAO, then it can point to memory
 !   otherwise it points to ao
@@ -726,6 +707,25 @@ contains
       call dirac_mpi_bcast(use_gga_qi)
       call dirac_mpi_bcast(use_gga)
       call dftsyncfunc(mytid == mparid)
+    end if
+#endif
+
+    max_ao_g_order = 0
+    if (use_gga_qr) then
+      max_ao_g_order = 1
+    end if
+
+    max_ao_m_order = m_order
+
+    call dft_ao_init(is_parallel_calculation, &
+                     max_ao_g_order,          &
+                     max_ao_m_order,          &
+                     dft_cfg_screening,       &
+                     dft_cfg_dfthri)
+
+#ifdef MOD_AUTODIFF
+    if (dft_cfg_autodiff) then
+      call xc_fun_set_functional(response_order, response_order_ao)
     end if
 #endif
 
@@ -1130,17 +1130,11 @@ contains
 !     =========================================
       call sync_dft_cb()
       call sync_dft_cfg()
-     !call sync_dft_temp()
-     !call dftsyncfunc(mytid == mparid)
 
     call dirac_mpi_bcast(mat_dim)
     call dirac_mpi_bcast(nz)
     call dirac_mpi_bcast(nr_fmat)
     call dirac_mpi_bcast(nr_dmat_p)
-    call dirac_mpi_bcast(response_order)
-    call dirac_mpi_bcast(response_order_ao)
-    call dirac_mpi_bcast(g_order)
-    call dirac_mpi_bcast(m_order)
        
     call alloc(dmat_0, mat_dim*mat_dim*nz)
     call sync_dmat_0(mat_dim, nz, dmat_0)
@@ -1161,19 +1155,14 @@ contains
       call sync_dmat_p(mat_dim, nz, nr_dmat_p, dmat_p, isymop, ihrmop)
     end if
 
-
-
-    call dirac_mpi_bcast(max_ao_g_order)
-    call dirac_mpi_bcast(max_ao_m_order)
-    call dft_ao_init(.true.,            &
-                     max_ao_g_order,    &
-                     max_ao_m_order,    &
-                     dft_cfg_screening, &
-                     dft_cfg_dfthri)
-
+    call dirac_mpi_bcast(response_order)
+    call dirac_mpi_bcast(response_order_ao)
+    call dirac_mpi_bcast(g_order)
+    call dirac_mpi_bcast(m_order)
 
     call alloc(fmat, nr_ao_total*nr_ao_total*nr_qu*nr_fmat)
     fmat = 0.0d0
+
     call dftdrv(mat_dim,           &
                 nz,                &
                 nr_fmat,           &
@@ -1189,8 +1178,8 @@ contains
                 response_order_ao, &
                 g_order,           &
                 m_order)
-    call dealloc(fmat)
 
+    call dealloc(fmat)
     call dealloc(dmat_0)
 
     if (dft_cfg_saop_is_active) then
