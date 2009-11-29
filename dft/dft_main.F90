@@ -66,12 +66,12 @@ contains
     integer, intent(in)    :: mat_dim
     integer, intent(in)    :: nz
     integer, intent(in)    :: nr_fmat
-    real(8)                :: fmat(mat_dim, mat_dim, nz, nr_fmat)
+    real(8)                :: fmat(*)
     real(8), intent(in)    :: dmat_0(mat_dim, mat_dim, nz)
     integer, intent(in)    :: nr_dmat_p
-    real(8), intent(in)    :: dmat_p(mat_dim, mat_dim, nz, nr_dmat_p)
-    integer, intent(in)    :: isymop(nr_dmat_p)
-    integer, intent(in)    :: ihrmop(nr_dmat_p)
+    real(8), intent(in)    :: dmat_p(*)
+    integer, intent(in)    :: isymop(*)
+    integer, intent(in)    :: ihrmop(*)
     integer, intent(in)    :: response_order
     integer, intent(in)    :: response_order_ao
     integer, intent(in)    :: g_order
@@ -85,7 +85,7 @@ contains
     real(8), allocatable :: dmat_saop_outer(:)
     real(8), allocatable :: dmat_saop_resp(:)
 
-    integer              :: max_ao_g_order, max_ao_m_order
+    integer              :: max_ao_g_order, max_ao_m_order, ioff
 !   ----------------------------------------------------------------------------
 
       call reset_dft_options(dft_options)
@@ -119,27 +119,22 @@ contains
 
 
 !     scale and insert half-phases
-
-      if (dft_options%lr  &
-     &    .or. dft_options%qr &
-     &    .or. (dft_options%aor_xc_order > 0)) then
-
-        call dscal(nr_ao_total*nr_ao_total*nr_qu*nr_dmat_p, &
-     &             2.0d0, dmat_p, 1)
-
+      if (nr_dmat_p > 0) then
+        call dscal(nr_ao_total*nr_ao_total*nr_qu*nr_dmat_p, 2.0d0, dmat_p, 1)
         if (nr_qu < 4) then
           do iz = 1, nr_qu
             do im = 1, nr_dmat_p
               iq = dft_cb_pq_to_uq(iz, isymop(im) - 1)
-              call q2bphase('D', iq, 1, dmat_p(1, 1, iz, im))
+              ioff = mat_dim*mat_dim*nz*(im - 1) + mat_dim*mat_dim*(iz - 1) + 1
+              call q2bphase('D', iq, 1, dmat_p(ioff))
             end do
             do im = 1, nr_fmat
               iq = dft_cb_pq_to_uq(iz, isymop(im) - 1)
-              call q2bphase('F', iq, 1, fmat(1, 1, iz, im))
+              ioff = mat_dim*mat_dim*nz*(im - 1) + mat_dim*mat_dim*(iz - 1) + 1
+              call q2bphase('F', iq, 1, fmat(ioff))
             end do
           end do
         end if
-
       end if
 
 !     calculate grid
@@ -223,9 +218,21 @@ contains
 
         timing = .false.
         call sync_dft_cb()
-        call dftpar_init1(dft_options, nr_dmat_p, nr_fmat)
-        call dftpar_init2(dft_options, nr_dmat_p, isymop, ihrmop, &
-     &                    dmat_0, dmat_p, dmat_saop_resp, dmat_saop_outer)
+        call dftpar_init1(dft_options, nr_dmat_p, nr_fmat, mat_dim, nz)
+
+        call sync_dmat_0(mat_dim, nz, dmat_0)
+
+        if (dft_cfg_saop_is_active) then
+          call sync_dmat_0(mat_dim, nz, dmat_saop_outer)
+          if (dft_cfg_saop_with_response_part) then
+            call sync_dmat_0(mat_dim, nz, dmat_saop_resp)
+          end if
+        end if
+
+        if (nr_dmat_p > 0) then
+          call sync_dmat_p(mat_dim, nz, nr_dmat_p, dmat_p, isymop, ihrmop)
+        end if
+
       end if
 #endif /* ifdef VAR_MPI */
 
@@ -283,31 +290,30 @@ contains
 
 !     in case of gga symmetrize matrices
       if (dft_temp_gga_hs .or. dft_temp_gga_ha) then
-        call gga_sym(nr_fmat, fmat, isymop, ihrmop)
+        if (nr_dmat_p > 0) then
+          call gga_sym(nr_fmat, fmat, isymop, ihrmop)
+        else
+          call gga_sym(1, fmat, (/1/), (/1/))
+        end if
       end if
 
-!     rescale and insert half-phases
-
-      if (dft_options%lr  &
-     &    .or. dft_options%qr &
-     &    .or. (dft_options%aor_xc_order > 0)) then
-
+!     scale and insert half-phases
+      if (nr_dmat_p > 0) then
+        call dscal(nr_ao_total*nr_ao_total*nr_qu*nr_dmat_p, 0.5d0, dmat_p, 1)
         if (nr_qu < 4) then
           do iz = 1, nr_qu
             do im = 1, nr_dmat_p
               iq = dft_cb_pq_to_uq(iz, isymop(im) - 1)
-              call q2bphase('D', iq, 1, dmat_p(1, 1, iz, im))
+              ioff = mat_dim*mat_dim*nz*(im - 1) + mat_dim*mat_dim*(iz - 1) + 1
+              call q2bphase('D', iq, 1, dmat_p(ioff))
             end do
             do im = 1, nr_fmat
               iq = dft_cb_pq_to_uq(iz, isymop(im) - 1)
-              call q2bphase('F', iq, 1, fmat(1, 1, iz, im))
+              ioff = mat_dim*mat_dim*nz*(im - 1) + mat_dim*mat_dim*(iz - 1) + 1
+              call q2bphase('F', iq, 1, fmat(ioff))
             end do
           end do
         end if
-
-        call dscal(nr_ao_total*nr_ao_total*nr_qu*nr_dmat_p, &
-     &             0.5d0, dmat_p, 1)
-
       end if
 
 !     calculate final expectation value of two-electron matrix
@@ -331,7 +337,7 @@ contains
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DFTDRV(DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
-                        DTRMAT,EXCMAT,nr_dmat_perturbed, nr_fmat, &
+                        DTRMAT,EXCMAT,nr_dmat_p, nr_fmat, &
                         ISYMOP,IHRMOP,dft_options, &
                         IPRINT)
 !
@@ -341,8 +347,8 @@ contains
       real(8) :: EXCMAT(*)
       real(8) :: DMAT(*),DMAT_RESP_AO(*),DMAT_OUTER_AO(*), &
      &          DTRMAT(*)
-      integer    ::ISYMOP(nr_dmat_perturbed),IHRMOP(nr_dmat_perturbed)
-      integer    ::iprint, nr_dmat_perturbed, nr_fmat, ibatch
+      integer    ::ISYMOP(*),IHRMOP(*)
+      integer    ::iprint, nr_dmat_p, nr_fmat, ibatch
       type(dft_options_t) :: dft_options
 
       real(8), allocatable :: kx(:)
@@ -563,7 +569,7 @@ contains
         call dftdr1(kx, ky, kz, kw, &
                     mynpoint, ibatch, &
                     DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
-                    DTRMAT,EXCMAT,nr_dmat_perturbed,nr_fmat,&
+                    DTRMAT,EXCMAT,nr_dmat_p,nr_fmat,&
                     ISYMOP,IHRMOP, &
                     dft_options, &
                     IPRINT)
@@ -632,7 +638,7 @@ contains
      &                  WEIGHT, &
                         NPOINT, ibatch, &
      &                  DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
-     &                  DTRMAT,EXCMAT,nr_dmat_perturbed, nr_fmat, &
+     &                  DTRMAT,EXCMAT,nr_dmat_p, nr_fmat, &
                         ISYMOP,IHRMOP, &
      &                  dft_options, &
      &                  IPRINT)
@@ -643,7 +649,7 @@ contains
 !***********************************************************************
 
 
-      integer :: npoint, iprint, nr_dmat_perturbed, nr_fmat, ibatch, ioff, i
+      integer :: npoint, iprint, nr_dmat_p, nr_fmat, ibatch, ioff, i
       logical :: gga_qr
       real(8) :: corx(*)
       real(8) :: cory(*)
@@ -654,8 +660,8 @@ contains
       real(8) :: dmat_outer_ao(*)
       real(8) :: dtrmat(*)
       real(8) :: excmat(*)
-      integer :: isymop(nr_dmat_perturbed)
-      integer :: ihrmop(nr_dmat_perturbed)
+      integer :: isymop(*)
+      integer :: ihrmop(*)
       real(8) :: energy_density
 
       real(8) :: RHG(3),VT(3)
@@ -870,7 +876,7 @@ contains
 !#define DEBUG_XC_RESPONSE
 #ifndef DEBUG_XC_RESPONSE
           call lr(block_length,    &
-                  nr_dmat_perturbed,          &
+                  nr_dmat_p,          &
                   dtrmat,          &
                   excmat,          &
                   isymop,          &
@@ -886,7 +892,7 @@ contains
                   buffer)
 #else
             call xc_response_contribution(2,  &
-     &                      nr_dmat_perturbed,  &
+     &                      nr_dmat_p,  &
      &                      dft_temp_gga_hs, &
      &                      dtrmat,  &
      &                      excmat, &
@@ -923,7 +929,7 @@ contains
 !         only the remaining part is done in sdft_qr (above)
 !         
           call lr(block_length,    &
-                  nr_dmat_perturbed,          &
+                  nr_dmat_p,          &
                   dtrmat,          &
                   excmat,          &
                   isymop,          &
@@ -945,7 +951,7 @@ contains
 #ifdef MOD_AORESPONSE
           if (dft_options%aor_xc_order > 0) then
             call xc_response_contribution(dft_options%aor_xc_order,  &
-     &                      nr_dmat_perturbed,  &
+     &                      nr_dmat_p,  &
      &                      dft_temp_gga_hs, &
      &                      dtrmat,  &
      &                      excmat, &
@@ -1049,22 +1055,25 @@ contains
 !***********************************************************************
 
 
+
+
+
 !
       type(dft_options_t) :: dft_options
-      integer, allocatable :: ksym(:)
-      integer, allocatable :: khrm(:)
-      real(8), allocatable :: kexc(:)
-      real(8), allocatable :: kden(:)
-      real(8), allocatable :: kdtr(:)
-      real(8), allocatable :: KDMAT_OUTER_AO(:)
-      real(8), allocatable :: KDMAT_RESP_AO(:)
-      integer              :: nr_dmat_perturbed, nr_fmat
+      integer, allocatable :: isymop(:)
+      integer, allocatable :: ihrmop(:)
+      real(8), allocatable :: fmat(:)
+      real(8), allocatable :: dmat_0(:)
+      real(8), allocatable :: dmat_p(:)
+      real(8), allocatable :: dmat_saop_outer(:)
+      real(8), allocatable :: dmat_saop_resp(:)
+      integer              :: nr_dmat_p, nr_fmat
       real(8)              :: wall1, cpu1
       integer              :: iprint
       integer              :: max_ao_g_order, max_ao_m_order
+      integer              :: mat_dim, nz
 !
 !
-      PARHER = .TRUE.
 !
 !     Start timing.
 !
@@ -1072,34 +1081,35 @@ contains
 !
 !     This is a slave in a parallel run
 !
-      SLAVE = .TRUE.
-      DEBUG  = .FALSE.
+      parher = .true.
+      slave  = .true.
+      debug  = .false.
 !
 !     Receive initialization data from master 1
 !     =========================================
       call sync_dft_cb()
-      call dftpar_init1(dft_options, nr_dmat_perturbed, nr_fmat)
-      call alloc(kexc, nr_ao_total*nr_ao_total*nr_qu*nr_fmat)
-      kexc = 0.0d0
-      call alloc(ksym, nr_dmat_perturbed)
-      call alloc(khrm, nr_dmat_perturbed)
-      call alloc(kden,nr_ao_total*nr_ao_total)
-      if (dft_options%lr .or. dft_options%qr .or. (dft_options%aor_xc_order > 0)) then
-        call alloc(kdtr, nr_ao_total*nr_ao_total*nr_qu*nr_dmat_perturbed)
-      ENDIF
-!.....Allocate density matrices for SAOP
-      if (dft_cfg_saop_is_active) then
-        call alloc(KDMAT_OUTER_AO,nr_ao_total*nr_ao_total)
-        if (dft_cfg_saop_with_response_part) then
-          call alloc(KDMAT_RESP_AO,nr_ao_total*nr_ao_total)
-        ENDIF
-      ENDIF
- 
-!     Receive initialization data from master 2
-!     =========================================
-      CALL DFTPAR_INIT2(dft_options,nr_dmat_perturbed, ksym, khrm, &
-     &                  KDEN,KDTR, &
-     &                  KDMAT_RESP_AO,KDMAT_OUTER_AO)
+      call dftpar_init1(dft_options, nr_dmat_p, nr_fmat, mat_dim, nz)
+       
+    call alloc(dmat_0, mat_dim*mat_dim*nz)
+    call sync_dmat_0(mat_dim, nz, dmat_0)
+
+    if (dft_cfg_saop_is_active) then
+      call alloc(dmat_saop_outer, mat_dim*mat_dim*nz)
+      call sync_dmat_0(mat_dim, nz, dmat_saop_outer)
+      if (dft_cfg_saop_with_response_part) then
+        call alloc(dmat_saop_resp, mat_dim*mat_dim*nz)
+        call sync_dmat_0(mat_dim, nz, dmat_saop_resp)
+      end if
+    end if
+
+    if (nr_dmat_p > 0) then
+      call alloc(dmat_p, mat_dim*mat_dim*nz*nr_dmat_p)
+      call alloc(isymop, nr_dmat_p)
+      call alloc(ihrmop, nr_dmat_p)
+      call sync_dmat_p(mat_dim, nz, nr_dmat_p, dmat_p, isymop, ihrmop)
+    end if
+
+
 
     call dirac_mpi_bcast(max_ao_g_order)
     call dirac_mpi_bcast(max_ao_m_order)
@@ -1109,95 +1119,94 @@ contains
                      dft_cfg_screening, &
                      dft_cfg_dfthri)
 
-!.....Initialization
-      IPRINT = 0
-!.....Integrate
-      CALL DFTDRV(KDEN,KDMAT_RESP_AO,KDMAT_OUTER_AO, &
-     &            KDTR,KEXC,nr_dmat_perturbed, nr_fmat, ksym, khrm, &
-     &            dft_options,IPRINT)
-
-      call dealloc(KEXC)
-      call dealloc(ksym)
-      call dealloc(khrm)
-      call dealloc(kden)
-      if (dft_options%lr .or. dft_options%qr .or. (dft_options%aor_xc_order > 0)) then
-        call dealloc(kdtr)
-      ENDIF
-      if (dft_cfg_saop_is_active) then
-        call dealloc(KDMAT_OUTER_AO)
-        if (dft_cfg_saop_with_response_part) then
-          call dealloc(KDMAT_RESP_AO)
-        ENDIF
-      ENDIF
-
-      end subroutine
+      call alloc(fmat, nr_ao_total*nr_ao_total*nr_qu*nr_fmat)
+      fmat = 0.0d0
+      CALL DFTDRV(dmat_0,dmat_saop_resp,dmat_saop_outer, &
+     &            dmat_p,fmat,nr_dmat_p, nr_fmat, isymop, ihrmop, &
+     &            dft_options,0)
+      call dealloc(fmat)
 
 
-      subroutine dftpar_init1(dft_options, nr_dmat_perturbed, nr_fmat)
+
+    call dealloc(dmat_0)
+
+    if (dft_cfg_saop_is_active) then
+      call dealloc(dmat_saop_outer)
+      if (dft_cfg_saop_with_response_part) then
+        call dealloc(dmat_saop_resp)
+      end if
+    end if
+
+    if (nr_dmat_p > 0) then
+      call dealloc(dmat_p)
+      call dealloc(isymop)
+      call dealloc(ihrmop)
+    end if
+
+  end subroutine
+
+
+  subroutine dftpar_init1(dft_options, nr_dmat_p, nr_fmat, mat_dim, nz)
 
 !     written by T. Saue april 7 2009
 
 
 !     --------------------------------------------------------------------------
       type(dft_options_t)                :: dft_options
-      integer                            :: nr_dmat_perturbed, nr_fmat
+      integer                            :: nr_dmat_p, nr_fmat, mat_dim, nz
 !     --------------------------------------------------------------------------
-      logical                            :: i_am_the_master
       integer                            :: ierr
 !     --------------------------------------------------------------------------
 
-      if (mytid == mparid) then
-        i_am_the_master = .true.
-      else
-        i_am_the_master = .false.
-      end if
-
-!     sync nr_dmat_perturbed, nr_fmat
-      call dirac_mpi_bcast(nr_dmat_perturbed)
+      call dirac_mpi_bcast(nr_dmat_p)
       call dirac_mpi_bcast(nr_fmat)
-
-!     sync various parameters
+      call dirac_mpi_bcast(mat_dim)
+      call dirac_mpi_bcast(nz)
       call sync_dft_cfg()
       call sync_dft_temp()
       call sync_dft_options(dft_options)
-
-!     sync functionals
-      call dftsyncfunc(i_am_the_master)
+      call dftsyncfunc(mytid == mparid)
  
       end subroutine
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DFTPAR_INIT2(dft_options,nr_dmat_perturbed,ISYMOP,IHRMOP, &
-     &                       DMAT,DTRMAT,DMAT_RESP_AO,DMAT_OUTER_AO)
-!***********************************************************************
-!
-!     Initialize parallel DFT run
-!
-!     Written by T. Saue April 7 2009
-! 
-!***********************************************************************
-      real(8) :: DMAT(nr_ao_total, nr_ao_total),DTRMAT(*), &
-     &          DMAT_RESP_AO(nr_ao_total, nr_ao_total), &
-     &          DMAT_outer_AO(nr_ao_total, nr_ao_total)
-      integer ::          ISYMOP(nr_dmat_perturbed),IHRMOP(nr_dmat_perturbed)
-      type(dft_options_t) :: dft_options
-      integer :: nr_dmat_perturbed, lmat, ierr
-      call dirac_mpi_bcast(isymop)
-      call dirac_mpi_bcast(ihrmop)
-      call dirac_mpi_bcast(dmat)
-      if (dft_options%lr .or. dft_options%qr .or. (dft_options%aor_xc_order > 0)) then
-        lmat = nr_ao_total*nr_ao_total*nr_qu*nr_dmat_perturbed
-        CALL MPI_BCAST(DTRMAT,LMAT,MPI_DOUBLE_PRECISION,MPARID, &
-     &                   MPI_COMM_WORLD,IERR)
-      ENDIF
 
-      if (dft_cfg_saop_is_active) then
-        call dirac_mpi_bcast(dmat_outer_ao)
-        if (dft_cfg_saop_with_response_part) then
-          call dirac_mpi_bcast(dmat_resp_ao)
-        ENDIF
-      ENDIF
-      end subroutine
+
+
+  subroutine sync_dmat_0(mat_dim, &
+                         nz,      &
+                         dmat_0)
+
+!   ----------------------------------------------------------------------------
+    integer, intent(in) :: mat_dim
+    integer, intent(in) :: nz
+    real(8)             :: dmat_0(mat_dim, mat_dim, nz)
+!   ----------------------------------------------------------------------------
+
+    call dirac_mpi_bcast(dmat_0)
+
+  end subroutine
+
+  subroutine sync_dmat_p(mat_dim,   &
+                         nz,        &
+                         nr_dmat_p, &
+                         dmat_p,    &
+                         isymop,    &
+                         ihrmop)
+
+!   ----------------------------------------------------------------------------
+    integer, intent(in) :: mat_dim
+    integer, intent(in) :: nz
+    integer, intent(in) :: nr_dmat_p
+    real(8)             :: dmat_p(mat_dim, mat_dim, nz, nr_dmat_p)
+    integer             :: isymop(nr_dmat_p)
+    integer             :: ihrmop(nr_dmat_p)
+!   ----------------------------------------------------------------------------
+
+    call dirac_mpi_bcast(dmat_p)
+    call dirac_mpi_bcast(isymop)
+    call dirac_mpi_bcast(ihrmop)
+
+  end subroutine
 #endif /* ifdef VAR_MPI */
 
 

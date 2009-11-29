@@ -17,6 +17,7 @@ module dirac_mpi
     module procedure dirac_mpi_bcast_r1
     module procedure dirac_mpi_bcast_r2
     module procedure dirac_mpi_bcast_r3
+    module procedure dirac_mpi_bcast_r4
     module procedure dirac_mpi_bcast_l0
     module procedure dirac_mpi_bcast_l1
     module procedure dirac_mpi_bcast_l2
@@ -113,6 +114,16 @@ contains
 
 !   ----------------------------------------------------------------------------
     real(8) :: x(:, :, :)
+!   ----------------------------------------------------------------------------
+
+    call mpi_bcast(x, size(x), mpi_double_precision, mparid, mpi_comm_world, ierr)
+
+  end subroutine
+
+  subroutine dirac_mpi_bcast_r4(x)
+
+!   ----------------------------------------------------------------------------
+    real(8) :: x(:, :, :, :)
 !   ----------------------------------------------------------------------------
 
     call mpi_bcast(x, size(x), mpi_double_precision, mparid, mpi_comm_world, ierr)
