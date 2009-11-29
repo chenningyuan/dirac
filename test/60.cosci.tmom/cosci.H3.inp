@@ -12,7 +12,7 @@ H3+
 **HAMILTONIAN
 .LVCORR
 **WAVE FUNCTIONS
-#.DHF
+.DHF
 .COSCI
 ######################################################################
 *DHFCAL
