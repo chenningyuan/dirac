@@ -48,25 +48,32 @@ module dft_functional_derv
 contains
 
 #ifdef MOD_AUTODIFF
-  subroutine xc_fun_set_functional(response_order, response_order_ao)
+  subroutine xc_fun_set_functional(dft_options)
 
 !   ----------------------------------------------------------------------------
-    integer, intent(in) :: response_order
-    integer, intent(in) :: response_order_ao
+    type(dft_options_t), intent(in) :: dft_options
 !   ----------------------------------------------------------------------------
-    integer             :: i, alda_order
-    integer             :: gga_functionals(4) = (/XC_BECKE_EXCHANGE,  &
-                                                  XC_LYP_CORRELATION, &
-                                                  XC_PBE_EXCHANGE,    &
-                                                  XC_PBE_CORRELATION/)
+    integer :: i, response_order, alda_order
+    integer :: gga_functionals(4) = (/XC_BECKE_EXCHANGE,  &
+                                      XC_LYP_CORRELATION, &
+                                      XC_PBE_EXCHANGE,    &
+                                      XC_PBE_CORRELATION/)
 !   ----------------------------------------------------------------------------
+
+    response_order = dft_options%aor_xc_order
+    if (dft_options%lr) then
+      response_order = 1
+    end if
+    if (dft_options%qr) then
+      response_order = 2
+    end if
 
     alda_order = dft_cfg_alda_order
     if (dft_cfg_alda_hs .and. dft_cfg_alda_ha) then
       alda_order = 1
     end if
 
-    if ((alda_order <= response_order) .or. (alda_order <= response_order_ao)) then
+    if (alda_order <= response_order) then
       if (dft_cfg_xalda) then
         call xc_set_functional(XC_RSZXY, dft_cfg_functional_w_xalda)
       else
