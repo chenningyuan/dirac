@@ -1,5 +1,8 @@
 module dft_main
 
+!   written by T. Helgaker
+!   DIRAC adaption by T. Saue
+
   use memory_allocator
   use dft_cfg
   use dft_temp
@@ -43,6 +46,12 @@ module dft_main
 
   integer, parameter :: block_length = 1 !later more, now slowdft
 
+  save
+
+  logical :: use_gga_qr = .false. !quaternion real
+  logical :: use_gga_qi = .false. !quaternion imaginary
+  logical :: use_gga    = .false.
+
 contains
 
   subroutine dftexc(mat_dim,           &
@@ -59,25 +68,21 @@ contains
                     g_order,           &
                     m_order)
 
-!   written by T. Helgaker
-!   DIRAC adaption by T. Saue
-
 !   ----------------------------------------------------------------------------
-    integer, intent(in)    :: mat_dim
-    integer, intent(in)    :: nz
-    integer, intent(in)    :: nr_fmat
-    real(8)                :: fmat(*)
-    real(8), intent(in)    :: dmat_0(mat_dim, mat_dim, nz)
-    integer, intent(in)    :: nr_dmat_p
-    real(8), intent(in)    :: dmat_p(*)
-    integer, intent(in)    :: isymop(*)
-    integer, intent(in)    :: ihrmop(*)
-    integer, intent(in)    :: response_order
-    integer, intent(in)    :: response_order_ao
-    integer, intent(in)    :: g_order
-    integer, intent(in)    :: m_order
+    integer, intent(in) :: mat_dim
+    integer, intent(in) :: nz
+    integer, intent(in) :: nr_fmat
+    real(8)             :: fmat(*)
+    real(8), intent(in) :: dmat_0(mat_dim, mat_dim, nz)
+    integer, intent(in) :: nr_dmat_p
+    real(8), intent(in) :: dmat_p(*)
+    integer, intent(in) :: isymop(*)
+    integer, intent(in) :: ihrmop(*)
+    integer, intent(in) :: response_order
+    integer, intent(in) :: response_order_ao
+    integer, intent(in) :: g_order
+    integer, intent(in) :: m_order
 !   ----------------------------------------------------------------------------
-    type(dft_options_t) :: dft_options
     integer             :: iz, im, iq
     real(8)             :: time_start, time_in_xc, second
     real(8)             :: ddot
@@ -88,26 +93,13 @@ contains
     integer              :: max_ao_g_order, max_ao_m_order, ioff
 !   ----------------------------------------------------------------------------
 
-      call reset_dft_options(dft_options)
-      if      (response_order == 0) then
-        dft_options%energy = .true.
-      else if (response_order == 1) then
-        dft_options%lr = .true.
-      else if (response_order == 2) then
-        dft_options%qr = .true.
-      end if
-      dft_options%aor_xc_order = response_order_ao
-
-      if (g_order == 1) dft_options%gradient = .true.
-      if (m_order == 1) dft_options%london   = .true.
-
       call init_dft_cb()
 
 !     start timer
       time_start = second()
 
 !     initial expectation value of the two-electron matrix
-      if (dft_options%energy) then
+      if (response_order == 0) then
         dft_temp_xc_mat_energy = ddot(nr_ao_total*nr_ao_total, dmat_0, 1, fmat, 1)
       end if
 
@@ -158,18 +150,18 @@ contains
 
 !     check whether gga code structure will be used
 
-      dft_temp_gga_hs = is_gga_functional
-      dft_temp_gga_ha = is_gga_functional
+      use_gga_qr = is_gga_functional
+      use_gga_qi = is_gga_functional
 
 #ifdef MOD_AUTODIFF
       if (dft_cfg_autodiff) then
 
 !       xc_fun_set_functional is called several times
 !       this is because gga query is not ideally structured
-        call xc_fun_set_functional(dft_options)
+        call xc_fun_set_functional(response_order, response_order_ao)
 
-        dft_temp_gga_hs = dft_cfg_is_gga_autodiff
-        dft_temp_gga_ha = dft_cfg_is_gga_autodiff
+        use_gga_qr = dft_cfg_is_gga_autodiff
+        use_gga_qi = dft_cfg_is_gga_autodiff
 
         if (dft_cfg_alda_hs .and. (.not. dft_cfg_alda_ha)) then
           call quit('.DFTAUTO and partial ALDA is not implemented')
@@ -180,13 +172,17 @@ contains
 
       else
 #endif
-        if (dft_options%lr .or. dft_options%qr) then
-          if (dft_cfg_alda_hs) dft_temp_gga_hs = .false.
-          if (dft_cfg_alda_ha) dft_temp_gga_ha = .false.
+        if (response_order > 0) then
+          if (dft_cfg_alda_hs) use_gga_qr = .false.
+          if (dft_cfg_alda_ha) use_gga_qi = .false.
         end if
 #ifdef MOD_AUTODIFF
       end if
 #endif
+
+      if (use_gga_qr .or. use_gga_qi) then
+        use_gga = .true.
+      end if
 
 !     in QR it is not so easy to separate H+ and H-
 !     contributions since they may mix
@@ -195,7 +191,7 @@ contains
 !     it is really unfair to quit as late as here
 !     this can be checked earlier
 !     but this is anyway an exotic option
-      if (dft_options%qr) then
+      if (response_order > 1) then
         if (dft_cfg_alda_hs .and. (.not. dft_cfg_alda_ha)) then
           call quit('QR and partial ALDA is not implemented')
         end if
@@ -217,8 +213,19 @@ contains
                           'number of nodes in parallel DFT:', nodes
 
         timing = .false.
-        call sync_dft_cb()
-        call dftpar_init1(dft_options, nr_dmat_p, nr_fmat, mat_dim, nz)
+          call sync_dft_cb()
+          call sync_dft_cfg()
+         !call sync_dft_temp()
+         !call dftsyncfunc(mytid == mparid)
+    
+        call dirac_mpi_bcast(mat_dim)
+        call dirac_mpi_bcast(nz)
+        call dirac_mpi_bcast(nr_fmat)
+        call dirac_mpi_bcast(nr_dmat_p)
+        call dirac_mpi_bcast(response_order)
+        call dirac_mpi_bcast(response_order_ao)
+        call dirac_mpi_bcast(g_order)
+        call dirac_mpi_bcast(m_order)
 
         call sync_dmat_0(mat_dim, nz, dmat_0)
 
@@ -237,16 +244,11 @@ contains
 #endif /* ifdef VAR_MPI */
 
     max_ao_g_order = 0
-!radovan: need to test vrg first
-!   if (dft_temp_gga_hs .or. dft_temp_gga_ha .or. dft_cfg_cdft_vrg) then
-    if (dft_temp_gga_hs .or. dft_temp_gga_ha) then
+    if (use_gga_qr) then
       max_ao_g_order = 1
     end if
 
-    max_ao_m_order = 0
-    if (dft_options%london) then
-      max_ao_m_order = 1
-    end if
+    max_ao_m_order = m_order
 
 #ifdef VAR_MPI
     if (is_parallel_calculation) then
@@ -261,18 +263,21 @@ contains
                      dft_cfg_screening,       &
                      dft_cfg_dfthri)
       
-!     integrate
-      call dftdrv(dmat_0,            &
-                  dmat_saop_resp,    &
-                  dmat_saop_outer,   &
-                  dmat_p,    &
-                  fmat,              &
-                  nr_dmat_p, &
-                  nr_fmat,           &
-                  isymop,            &
-                  ihrmop,            &
-                  dft_options,       &
-                  dft_cfg_print_level)
+    call dftdrv(mat_dim,           &
+                nz,                &
+                nr_fmat,           &
+                fmat,              &
+                dmat_0,            &
+                dmat_saop_outer,   &
+                dmat_saop_resp,    &
+                nr_dmat_p,         &
+                dmat_p,            &
+                isymop,            &
+                ihrmop,            &
+                response_order,    &
+                response_order_ao, &
+                g_order,           &
+                m_order)
 
 !     deallocate saop density matrices
       if (dft_cfg_saop) then
@@ -289,7 +294,7 @@ contains
       if (nr_open_shells > 0) call gtdoav(dmat_0, -1)
 
 !     in case of gga symmetrize matrices
-      if (dft_temp_gga_hs .or. dft_temp_gga_ha) then
+      if (use_gga) then
         if (nr_dmat_p > 0) then
           call gga_sym(nr_fmat, fmat, isymop, ihrmop)
         else
@@ -317,7 +322,7 @@ contains
       end if
 
 !     calculate final expectation value of two-electron matrix
-      if (dft_options%energy) then
+      if (response_order == 0) then
 !       the xc contribution can then be subtracted 
         dft_temp_xc_mat_energy = ddot(nr_ao_total*nr_ao_total, dmat_0, 1, fmat, 1) &
                                - dft_temp_xc_mat_energy
@@ -332,24 +337,46 @@ contains
       end subroutine
 
 
+  subroutine dftdrv(mat_dim,           &
+                    nz,                &
+                    nr_fmat,           &
+                    fmat,              &
+                    dmat_0,            &
+                    dmat_saop_outer,   &
+                    dmat_saop_resp,    &
+                    nr_dmat_p,         &
+                    dmat_p,            &
+                    isymop,            &
+                    ihrmop,            &
+                    response_order,    &
+                    response_order_ao, &
+                    g_order,           &
+                    m_order)
+
+!   ----------------------------------------------------------------------------
+    integer, intent(in) :: mat_dim
+    integer, intent(in) :: nz
+    integer, intent(in) :: nr_fmat
+    real(8)             :: fmat(*)
+    real(8), intent(in) :: dmat_0(*)
+    real(8), intent(in) :: dmat_saop_outer(*)
+    real(8), intent(in) :: dmat_saop_resp(*)
+    integer, intent(in) :: nr_dmat_p
+    real(8), intent(in) :: dmat_p(*)
+    integer, intent(in) :: isymop(*)
+    integer, intent(in) :: ihrmop(*)
+    integer, intent(in) :: response_order
+    integer, intent(in) :: response_order_ao
+    integer, intent(in) :: g_order
+    integer, intent(in) :: m_order
+!   ----------------------------------------------------------------------------
+    integer             :: ibatch
 
 
 
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DFTDRV(DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
-                        DTRMAT,EXCMAT,nr_dmat_p, nr_fmat, &
-                        ISYMOP,IHRMOP,dft_options, &
-                        IPRINT)
-!
-!     T. Helgaker sep 99
-!
 
-      real(8) :: EXCMAT(*)
-      real(8) :: DMAT(*),DMAT_RESP_AO(*),DMAT_OUTER_AO(*), &
-     &          DTRMAT(*)
-      integer    ::ISYMOP(*),IHRMOP(*)
-      integer    ::iprint, nr_dmat_p, nr_fmat, ibatch
-      type(dft_options_t) :: dft_options
+
+
 
       real(8), allocatable :: kx(:)
       real(8), allocatable :: ky(:)
@@ -367,7 +394,7 @@ contains
 
 #ifdef MOD_AUTODIFF
     if (dft_cfg_autodiff) then
-      call xc_fun_set_functional(dft_options)
+      call xc_fun_set_functional(response_order, response_order_ao)
     end if
 #endif
 
@@ -568,11 +595,12 @@ contains
         
         call dftdr1(kx, ky, kz, kw, &
                     mynpoint, ibatch, &
-                    DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
-                    DTRMAT,EXCMAT,nr_dmat_p,nr_fmat,&
+                    dmat_0,dmat_saop_resp,dmat_saop_outer, &
+                    dmat_p,fmat,nr_dmat_p,nr_fmat,&
                     ISYMOP,IHRMOP, &
-                    dft_options, &
-                    IPRINT)
+                    response_order, &
+                    response_order_ao, &
+                    0)
 
         call dealloc(kx)
         call dealloc(ky)
@@ -586,10 +614,17 @@ contains
 
 
 
+
+
+
 #if defined (VAR_MPI)
-      if (is_parallel_calculation) then
-        call dftres(excmat, nr_fmat, dft_options, iprint)
-      end if
+    if (is_parallel_calculation) then
+      call dft_collect(mat_dim, &
+                       nz,      &
+                       nr_fmat, &
+                       fmat,    &
+                       response_order)
+    end if
 #endif
 
 
@@ -604,7 +639,7 @@ contains
       write(print_unit, '(3x, a, i24)')                          &
               'number of quadrature points:  ',                  &
               npnts
-      if (dft_options%energy) then
+      if (response_order == 0) then
         write(print_unit, '(3x, a, f24.16)')                     &
               'DFT exchange-correlation energy:               ', &
               dft_temp_xc_energy
@@ -640,7 +675,8 @@ contains
      &                  DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
      &                  DTRMAT,EXCMAT,nr_dmat_p, nr_fmat, &
                         ISYMOP,IHRMOP, &
-     &                  dft_options, &
+                    response_order, &
+                    response_order_ao, &
      &                  IPRINT)
 !***********************************************************************
 !
@@ -650,7 +686,6 @@ contains
 
 
       integer :: npoint, iprint, nr_dmat_p, nr_fmat, ibatch, ioff, i
-      logical :: gga_qr
       real(8) :: corx(*)
       real(8) :: cory(*)
       real(8) :: corz(*)
@@ -670,12 +705,12 @@ contains
       real(8) :: z_0(mxbllen)
       real(8) :: w(mxbllen)
       real(8) :: rho13, rho_outer, rho_resp
-      type(dft_options_t) :: dft_options
 
       integer :: ipoint, need_limit
       real(8) :: ddot, f
 
       integer :: itest, jtest
+      integer :: response_order, response_order_ao
 
 !   this pointer is useful for .KEEPAO, then it can point to memory
 !   otherwise it points to ao
@@ -683,6 +718,16 @@ contains
 
     real(8), allocatable, target :: ao(:)
     real(8), allocatable         :: buffer(:)
+
+
+#if defined (VAR_MPI)
+    if (is_parallel_calculation) then
+      call dirac_mpi_bcast(use_gga_qr)
+      call dirac_mpi_bcast(use_gga_qi)
+      call dirac_mpi_bcast(use_gga)
+      call dftsyncfunc(mytid == mparid)
+    end if
+#endif
 
     call alloc(ao,     total_ao_vector_length)
     call alloc(buffer, total_ao_vector_length)
@@ -786,7 +831,7 @@ contains
         dft_temp_nr_electrons = dft_temp_nr_electrons + w(1)*r_0(1)
 
 !       energy density
-        if (dft_options%energy) then
+        if (response_order == 0) then
 
           call get_functional_derv(0,            &
                                    block_length, &
@@ -804,9 +849,7 @@ contains
 !       exchange-correlation potential 
 !       ==============================
 
-        if (dft_options%energy &
-     &      .or. dft_options%gradient &
-     &      .or. dft_options%london) then
+        if (response_order == 0) then
 
           call get_functional_derv(1,                  &
                                    block_length,       &
@@ -816,7 +859,7 @@ contains
                                    nr_nonzero_derv(1), &
                                    derv)
 
-          if (dft_temp_gga_hs) then
+          if (use_gga) then
 !           this factor has nothing to do
 !           with symmetrization later
 !           it comes from the fact that derivative of z
@@ -851,9 +894,9 @@ contains
 
 
 !       exchange-correlation contribution to kohn-sham matrix
-        if (dft_options%energy) then
+        if (response_order == 0) then
 !       here we will add LAO contribution to KS matrix
-          if (dft_temp_gga_hs) then
+          if (use_gga) then
             vt = derv(1, d_z)*rhg
 
 #ifdef TEST_GAO1_SYMMETRY
@@ -871,7 +914,7 @@ contains
 
 
 !       linear response
-        if(dft_options%lr) then
+        if (response_order == 1) then
 
 !#define DEBUG_XC_RESPONSE
 #ifndef DEBUG_XC_RESPONSE
@@ -887,13 +930,13 @@ contains
                   rhg,             &
                   z_0,             &
                   w,               &
-                  dft_temp_gga_hs, &
-                  dft_temp_gga_ha, &
+                  use_gga_qr, &
+                  use_gga_qi, &
                   buffer)
 #else
             call xc_response_contribution(2,  &
      &                      nr_dmat_p,  &
-     &                      dft_temp_gga_hs, &
+     &                      use_gga, &
      &                      dtrmat,  &
      &                      excmat, &
      &                      isymop, &
@@ -908,11 +951,10 @@ contains
 
 
 !       quadratic response
-        if(dft_options%qr) then
+        if (response_order == 2) then
 
-          gga_qr = dft_temp_gga_hs .or. dft_temp_gga_ha
           call sdft_qr(block_length,    &
-                       gga_qr,          &
+                       use_gga,          &
                        dft_cfg_no_sdft, &
                        dtrmat,excmat,   &
                        isymop,ihrmop,ao_p,ao_p(ao_start(1, 0)), &
@@ -940,19 +982,18 @@ contains
                   rhg,             &
                   z_0,             &
                   w,               &
-                  dft_temp_gga_hs, &
-                  dft_temp_gga_ha, &
+                  use_gga_qr, &
+                  use_gga_qi, &
                   buffer)
 
         endif
 
 
-#ifdef MOD_AUTODIFF
-#ifdef MOD_AORESPONSE
-          if (dft_options%aor_xc_order > 0) then
-            call xc_response_contribution(dft_options%aor_xc_order,  &
+#if defined MOD_AUTODIFF && MOD_AORESPONSE
+          if (response_order_ao > 0) then
+            call xc_response_contribution(response_order_ao,  &
      &                      nr_dmat_p,  &
-     &                      dft_temp_gga_hs, &
+     &                      use_gga, &
      &                      dtrmat,  &
      &                      excmat, &
      &                      isymop, &
@@ -963,8 +1004,7 @@ contains
      &                      w(1), &
      &                      buffer)
           end if
-#endif /* ifdef MOD_AORESPONSE */
-#endif /* ifdef MOD_AUTODIFF */
+#endif
 
 
       end if !if (r_0(1) > dft_cfg_dfthr0) then
@@ -974,76 +1014,77 @@ contains
 
     call dealloc(ao)
     call dealloc(buffer)
-
-    end subroutine
       
 
+  end subroutine
 
 #ifdef VAR_MPI
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DFTRES(EXCMAT,nr_fmat,dft_options, &
-     &                  IPRINT)
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!
-!     Send receive DFTresults
-!     Written by T.Saue and T.helgaker
-!
-!***********************************************************************
+  subroutine dft_collect(mat_dim, &
+                         nz,      &
+                         nr_fmat, &
+                         fmat,    &
+                         response_order)
 
-      integer :: nr_fmat, iprint
-      real(8) :: EXCMAT(*)
-      type(dft_options_t) :: dft_options
-      real(8), allocatable :: kfbuffer(:)
-      integer :: ierr, LFMAT
-      real(8) :: sum_nr_electrons
-      real(8) :: sum_xc_energy
-!
-!
+!   ----------------------------------------------------------------------------
+    integer, intent(in)  :: mat_dim
+    integer, intent(in)  :: nz
+    integer, intent(in)  :: nr_fmat
+    real(8)              :: fmat(*)
+    integer, intent(in)  :: response_order
+!   ----------------------------------------------------------------------------
+    integer              :: ierr
+    integer              :: length_fmat
+    real(8)              :: sum_nr_electrons
+    real(8)              :: sum_xc_energy
+    real(8), allocatable :: sum_fmat(:)
+!   ----------------------------------------------------------------------------
 
-      call mpi_reduce(dft_temp_nr_electrons, &
-                      sum_nr_electrons,      &
-                      1,                     &
-                      mpi_double_precision,  &
-                      mpi_sum,               &
-                      0,                     &
-                      mpi_comm_world,        &
+    call mpi_reduce(dft_temp_nr_electrons, &
+                    sum_nr_electrons,      &
+                    1,                     &
+                    mpi_double_precision,  &
+                    mpi_sum,               &
+                    0,                     &
+                    mpi_comm_world,        &
+                    ierr) 
+
+    if (response_order == 0) then
+      call mpi_reduce(dft_temp_xc_energy,   &
+                      sum_xc_energy,        &
+                      1,                    &
+                      mpi_double_precision, &
+                      mpi_sum,              &
+                      0,                    &
+                      mpi_comm_world,       &
                       ierr) 
-      if (dft_options%energy) then
-        call mpi_reduce(dft_temp_xc_energy,   &
-                        sum_xc_energy,        &
-                        1,                    &
-                        mpi_double_precision, &
-                        mpi_sum,              &
-                        0,                    &
-                        mpi_comm_world,       &
-                        ierr) 
-      end if
-      IF(MYTID.EQ.MPARID) THEN
-        dft_temp_nr_electrons = sum_nr_electrons
-        if (dft_options%energy) then
-          dft_temp_xc_energy = sum_xc_energy
-        end if
-      ENDIF
+    end if
 
-      LFMAT = nr_ao_total*nr_ao_total*nr_fmat*nr_qu
-      IF(MYTID.EQ.MPARID) THEN
-        call alloc(kfbuffer, lfmat)
-        kfbuffer = 0.0d0
-      end if
-      call mpi_reduce(excmat,                &
-                      kfbuffer,                 &
-                      lfmat,                 &
-                      mpi_double_precision,  &
-                      mpi_sum,               &
-                      0,                     &
-                      mpi_comm_world,        &
-                      ierr) 
-      IF(MYTID.EQ.MPARID) THEN
-        CALL DCOPY(LFMAT,KFbuffer,1,EXCMAT,1)     
-        call dealloc(kfbuffer)
-      ENDIF
+    length_fmat = mat_dim*mat_dim*nz*nr_fmat
 
-      end subroutine
+    if (mytid == mparid) then
+      call alloc(sum_fmat, length_fmat)
+      sum_fmat = 0.0d0
+    end if
+
+    call mpi_reduce(fmat,                 &
+                    sum_fmat,             &
+                    length_fmat,          &
+                    mpi_double_precision, &
+                    mpi_sum,              &
+                    0,                    &
+                    mpi_comm_world,       &
+                    ierr) 
+
+    if (mytid == mparid) then
+      dft_temp_nr_electrons = sum_nr_electrons
+      if (response_order == 0) then
+        dft_temp_xc_energy = sum_xc_energy
+      end if
+      call dcopy(length_fmat, sum_fmat, 1, fmat, 1)     
+      call dealloc(sum_fmat)
+    end if
+
+  end subroutine
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DFTNOD()
@@ -1056,10 +1097,6 @@ contains
 
 
 
-
-
-!
-      type(dft_options_t) :: dft_options
       integer, allocatable :: isymop(:)
       integer, allocatable :: ihrmop(:)
       real(8), allocatable :: fmat(:)
@@ -1072,6 +1109,10 @@ contains
       integer              :: iprint
       integer              :: max_ao_g_order, max_ao_m_order
       integer              :: mat_dim, nz
+      integer              :: response_order
+      integer              :: response_order_ao
+      integer              :: g_order
+      integer              :: m_order
 !
 !
 !
@@ -1088,7 +1129,18 @@ contains
 !     Receive initialization data from master 1
 !     =========================================
       call sync_dft_cb()
-      call dftpar_init1(dft_options, nr_dmat_p, nr_fmat, mat_dim, nz)
+      call sync_dft_cfg()
+     !call sync_dft_temp()
+     !call dftsyncfunc(mytid == mparid)
+
+    call dirac_mpi_bcast(mat_dim)
+    call dirac_mpi_bcast(nz)
+    call dirac_mpi_bcast(nr_fmat)
+    call dirac_mpi_bcast(nr_dmat_p)
+    call dirac_mpi_bcast(response_order)
+    call dirac_mpi_bcast(response_order_ao)
+    call dirac_mpi_bcast(g_order)
+    call dirac_mpi_bcast(m_order)
        
     call alloc(dmat_0, mat_dim*mat_dim*nz)
     call sync_dmat_0(mat_dim, nz, dmat_0)
@@ -1119,14 +1171,25 @@ contains
                      dft_cfg_screening, &
                      dft_cfg_dfthri)
 
-      call alloc(fmat, nr_ao_total*nr_ao_total*nr_qu*nr_fmat)
-      fmat = 0.0d0
-      CALL DFTDRV(dmat_0,dmat_saop_resp,dmat_saop_outer, &
-     &            dmat_p,fmat,nr_dmat_p, nr_fmat, isymop, ihrmop, &
-     &            dft_options,0)
-      call dealloc(fmat)
 
-
+    call alloc(fmat, nr_ao_total*nr_ao_total*nr_qu*nr_fmat)
+    fmat = 0.0d0
+    call dftdrv(mat_dim,           &
+                nz,                &
+                nr_fmat,           &
+                fmat,              &
+                dmat_0,            &
+                dmat_saop_outer,   &
+                dmat_saop_resp,    &
+                nr_dmat_p,         &
+                dmat_p,            &
+                isymop,            &
+                ihrmop,            &
+                response_order,    &
+                response_order_ao, &
+                g_order,           &
+                m_order)
+    call dealloc(fmat)
 
     call dealloc(dmat_0)
 
@@ -1144,33 +1207,6 @@ contains
     end if
 
   end subroutine
-
-
-  subroutine dftpar_init1(dft_options, nr_dmat_p, nr_fmat, mat_dim, nz)
-
-!     written by T. Saue april 7 2009
-
-
-!     --------------------------------------------------------------------------
-      type(dft_options_t)                :: dft_options
-      integer                            :: nr_dmat_p, nr_fmat, mat_dim, nz
-!     --------------------------------------------------------------------------
-      integer                            :: ierr
-!     --------------------------------------------------------------------------
-
-      call dirac_mpi_bcast(nr_dmat_p)
-      call dirac_mpi_bcast(nr_fmat)
-      call dirac_mpi_bcast(mat_dim)
-      call dirac_mpi_bcast(nz)
-      call sync_dft_cfg()
-      call sync_dft_temp()
-      call sync_dft_options(dft_options)
-      call dftsyncfunc(mytid == mparid)
- 
-      end subroutine
-
-
-
 
   subroutine sync_dmat_0(mat_dim, &
                          nz,      &

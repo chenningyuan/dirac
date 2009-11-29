@@ -11,24 +11,9 @@ module dft_temp
 
   implicit none
 
-  public reset_dft_options
 #ifdef VAR_MPI
-  public sync_dft_options
   public sync_dft_temp
 #endif
-
-  public dft_options_t
-
-  type dft_options_t
-!   see also routine reset_dft_options
-!   and sync routine(s) for parallel dft
-    logical :: energy       = .false.
-    logical :: gradient     = .false.
-    logical :: london       = .false.
-    logical :: lr           = .false.
-    logical :: qr           = .false.
-    integer :: aor_xc_order = 0
-  end type
 
   save
 
@@ -36,8 +21,6 @@ module dft_temp
   integer, public :: dft_temp_file_unit = 0
 
   logical, public :: dft_temp_grid_is_done   = .false.
-  logical, public :: dft_temp_gga_hs         = .false.
-  logical, public :: dft_temp_gga_ha         = .false.
   logical, public :: dft_temp_reload_batches = .false.
 
 ! these are not broadcast, only mpi_reduced
@@ -49,42 +32,11 @@ module dft_temp
 
 contains
 
-  subroutine reset_dft_options(dft_options)
-
-!   ----------------------------------------------------------------------------
-    type(dft_options_t) :: dft_options
-!   ----------------------------------------------------------------------------
-
-    dft_options%energy       = .false.
-    dft_options%gradient     = .false.
-    dft_options%london       = .false.
-    dft_options%lr           = .false.
-    dft_options%qr           = .false.
-    dft_options%aor_xc_order = 0
-  end subroutine
-
 #ifdef VAR_MPI
   subroutine sync_dft_temp()
 
     call dirac_mpi_bcast(dft_temp_grid_is_done  )
-    call dirac_mpi_bcast(dft_temp_gga_hs        )
-    call dirac_mpi_bcast(dft_temp_gga_ha        )
     call dirac_mpi_bcast(dft_temp_reload_batches)
-
-  end subroutine
-
-  subroutine sync_dft_options(dft_options)
-
-!   ----------------------------------------------------------------------------
-    type(dft_options_t), intent(inout) :: dft_options
-!   ----------------------------------------------------------------------------
-
-    call dirac_mpi_bcast(dft_options%energy      )
-    call dirac_mpi_bcast(dft_options%gradient    )
-    call dirac_mpi_bcast(dft_options%london      )
-    call dirac_mpi_bcast(dft_options%lr          )
-    call dirac_mpi_bcast(dft_options%qr          )
-    call dirac_mpi_bcast(dft_options%aor_xc_order)
 
   end subroutine
 #endif /* ifdef VAR_MPI */
