@@ -417,6 +417,14 @@ contains
       visual_cfg_ioption_xvector(1) = 0
     end if
 
+    if (kw_matches(word, '.ELF   ')) then
+      visual_cfg_nr_xvectors        = 1
+      visual_cfg_xvector_file(1)    = 'ZORDER'
+      visual_cfg_iwhich_xvector(1)  = 1
+      visual_cfg_iq_xvector(1)      = 12
+      visual_cfg_ioption_xvector(1) = 0
+    end if
+
     if (kw_matches(word, '.INTEGR')) then
       visual_cfg_integrate = .true.
     end if
