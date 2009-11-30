@@ -240,7 +240,12 @@ C     ===========================================================
      &                 TWOINR,TWOINI,MAXINT)
 C     ===========================================================
       IMPLICIT REAL*8 (A-H,O-Z)
-C
+
+!radovan: norb is not defined (commented out in goscom.h)
+!         compilation stops
+!         here i set it to something
+      integer, parameter :: norb = 1
+
       DIMENSION TWOINR(0:MAXINT),TWOINI(0:MAXINT)
       DIMENSION INDTWR(NORB,NORB,NORB,NORB),INDTWI(NORB,NORB,NORB,NORB)
       DIMENSION INDGAR(NORB,NORB,NORB,NORB),INDGAI(NORB,NORB,NORB,NORB)
@@ -499,7 +504,12 @@ C     ================
      &                 TWOINI,MAXINT)
 C     ================
       IMPLICIT REAL*8 (A-H, O-Z)
-C
+
+!radovan: norb is not defined (commented out in goscom.h)
+!         compilation stops
+!         here i set it to something
+      integer, parameter :: norb = 1
+
       DIMENSION HR(NDET,NDET),HI(NDET,NDET)
       DIMENSION TWOINR(0:MAXINT),TWOINI(0:MAXINT)
       DIMENSION INDTWR(NORB,NORB,NORB,NORB),INDTWI(NORB,NORB,NORB,NORB)
@@ -715,7 +725,12 @@ C     ===========================================================
      &                 MAXINT)
 C     ==========================================================
       IMPLICIT REAL*8 (A-H, O-Z)
-C
+
+!radovan: norb is not defined (commented out in goscom.h)
+!         compilation stops
+!         here i set it to something
+      integer, parameter :: norb = 1
+
 #include "goscom.h"
 C
       PARAMETER(D0 = 0.0D0)
