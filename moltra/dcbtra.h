@@ -6,11 +6,6 @@ C     Length of common block : keep up to date !!
 c aspg, 20090424, for fine-sort of 1HT
       logical do_finesort,set_auto_finesort
 c
-!.s/sya,2007.0907,add/
-      LOGICAL PRPSYA
-	      CHARACTER*72 TRA2_INDPRP
-		!.q
-
       CHARACTER*72 TRA_INDSTR,TRA2_INDSTR,TRA4_INDSTR,TRA_CORSTR,
      &             TRA2_INDPRP
       PARAMETER (NDCBTRI=267,NDCBTRR=258,NDCBTRL=12)
