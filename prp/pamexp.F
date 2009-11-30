@@ -295,7 +295,7 @@ C.........generate property matrix in SA-AO-basis into PMAT ...
 CMI ... extended parameter list by the OP1INT array for square matrixes
           CALL PRPEX2(INDXPR,EXPVAL(I),.true.,LEXPST(1,I),IDIMENS,
      &                WORK(KPTRI),PMAT,WORK(KOP1INT),FIRST,
-     &                WORK,KFREE,LFREE,IPREXP,0)
+     &                WORK,KFREE,LFREE,IPREXP)
 
           IF(LEXPST(1,I).OR.LEXPST(2,I)) GOTO 30
 
@@ -378,7 +378,7 @@ C
 C.........generate property matrix in SO-basis
             CALL PRPEX2(INDXPR,EXPBUF,.true.,LEXPST(1,I),IDIMENS,
      &                  WORK(KPTRI),PMAT,WORK(KOP1INT),FIRST,
-     &                  WORK,KFREE,LFREE,IPREXP,0)
+     &                  WORK,KFREE,LFREE,IPREXP)
 
             IF(LEXPST(1,I).OR.LEXPST(2,I)) GOTO 20
 
@@ -452,7 +452,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpex2 */
       SUBROUTINE PRPEX2(INDXPR,EXPVAL,ONLY_TS,LEXPST,IDIMENS,
      &                  PTRI,PMAT,OP1INT,FIRST,WORK,KFREE,LFREE,
-     &                  IPRINT,ISYMOP)
+     &                  IPRINT)
 C***********************************************************************
 C
 C     if ONLY_TS = .true.
@@ -523,13 +523,7 @@ CMI ... control output...
 C
 C     If not totally symmetric, return with zero value
 C
-!.s/sya,2007.06.27 - SK - 30-11-2009
-      IF( ISYMOP .EQ. -1 ) GOTO 109
-!.q 
-      
       IF (ONLY_TS .AND. LEXPST(1).AND.(.NOT.PRJANA)) GOTO 90 
-
-!.s/sya,2007.06.27 - SK - 30-11-2009
   109 CONTINUE
 !.q 
 C
