@@ -1,6 +1,2 @@
-$ERROR 0.000000001
-Nlines 8:Electronic energy
-
-$ERROR 1.E-5
-From:Eigenvalues
-ToRE:HOMO - LUMO
+$ERROR 1.E-9
+Nlines 11:TOTAL ENERGY
