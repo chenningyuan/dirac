@@ -405,14 +405,25 @@ C
 C     ===========================
       SUBROUTINE DIAGH(IRP,HR,HI)
 C     ===========================
+      use memory_allocator
       IMPLICIT REAL*8 (A-H, O-Z)
 C
 #include "goscom.h"
       DIMENSION HR(NDET,NDET),HI(NDET,NDET)
+      real*8, allocatable :: ee(:,:)
+      real*8, allocatable :: e(:)
 C
-      REAL*8 E(N2),EE(N2*N2,2)
+CSK   REAL*8 E(N2),EE(N2*N2,2)
 C
+CSK
+      call alloc(e, n2)
+      call alloc(ee,n2*n2,2)
+CSK
       CALL CRDIAG (NDET,NDET,HR,HI,D(1,IRP),EE(1,1),EE(1,2),E,E,EE,IERR)
+CSK
+      call dealloc(ee)
+      call dealloc(e)
+CSK
       RETURN
       END
 
