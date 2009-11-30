@@ -4974,8 +4974,20 @@ CMI    ... quantum dots
       END IF
 
 #ifdef MOD_DFT
-      IF(dirac_cfg_dft_calculation) THEN
-         CALL DFTREPORT()
+      if (dirac_cfg_dft_calculation) then
+
+#ifdef MOD_AUTODIFF
+        if (.not. dft_cfg_autodiff) then
+#endif
+!         this will report chosen functional
+!         if nothing is chosen it will report lda
+!         and if .dftauto functional is chosen
+!         it would report lda
+!         so let's not call it in this case
+          call dftreport()
+#ifdef MOD_AUTODIFF
+        end if
+#endif
 
 #ifdef MOD_ERI
 C aspg, 20070909
