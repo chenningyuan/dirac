@@ -45,6 +45,8 @@ H3+
 3
 ######################################################################
 **MOLTRA
+.SCHEME
+ 4
 ## specify open shell for each Fermion irrep in MO numbering
 .ACTIVE
 1..2

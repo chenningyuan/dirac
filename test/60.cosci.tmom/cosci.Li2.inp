@@ -48,6 +48,8 @@ Li2
  3
 ######################################################################
 **MOLTRA
+.SCHEME
+ 4
 ## specify open shell for each Fermion irrep in MO numbering
 .ACTIVE
 2..2
