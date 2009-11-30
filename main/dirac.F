@@ -218,6 +218,9 @@ C
 #include "dcbpsi.h"
 #include "dcbdhf.h"
 C
+C.s/sya,2007.02.07 - SK - 30-11-2009
+#include "dcbgos2.h"
+C.q
       CALL QENTER('PAMPSI')
 C
 C HJAaJ Nov. 2002 TODO: PAMANA only works for closed shell SCF now
@@ -395,8 +398,7 @@ C           ... and recalculate DCBORB.
 !@d         CALL TDHFORB
 !@d         CALL SETDC2(0)
 !@d      END IF
-CMI  ... this routine is not defined !
-CMI      CALL SY_COSCI(WORK,LWORK)
+         CALL SY_COSCI(WORK,LWORK)
       END IF
 C
 C***********************************************************************

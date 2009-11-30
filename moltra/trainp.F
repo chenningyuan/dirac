@@ -511,6 +511,9 @@ C     aug 2001 hjaaj TODO : disabled this option because only true implemented
       RCORBS = .FALSE.
       NOMDCINT = .FALSE.
       MDCSCAT = .FALSE.
+!.s/sya,2007.0907/ SK - 30-11-2009
+      PRPSYA = .FALSE.
+!.q
       THROUT = 1.0D-14
       SCRTRA = 1.0D-14
 C
@@ -1130,7 +1133,7 @@ C
       DIMENSION WORK(LWORK)
 C
       SAVE SET
-      DATA TABLE /'.PRINT ','.OPERAT','.XXXXXX','.XXXXXX',
+      DATA TABLE /'.PRINT ','.OPERAT','.MORANG','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
@@ -1194,6 +1197,13 @@ C&&&& OPERATOR: Define operator
                   ICHANG = ICHANG + 1
                GO TO 100
     3          CONTINUE
+!.s/sya,2007.0907,add/ SK - 30-11-2009
+!&&&& MORANG - Range of MOs in property integral transformation
+                  PRPSYA = .TRUE.
+                  DO I = 1, NFSYM
+                    READ(LUCMD,'(A)') TRA2_INDPRP(I)
+                  END DO
+!.q
                GO TO 100
     4          CONTINUE
                GO TO 100

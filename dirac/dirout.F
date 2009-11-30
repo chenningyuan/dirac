@@ -1425,6 +1425,9 @@ C***********************************************************************
 C
       DIMENSION EIG(*),IFIRST(*),NMULT(*)
       CHARACTER FMT*6
+C.s/sya,2006.12.02 - SK - 30-11-2009
+      CHARACTER*26 FMT5
+C.q
 C
 C     Find degeneracies
 C
@@ -1432,9 +1435,15 @@ C
 C
 C     Print section
 C
-      WRITE(LUPRI,'(5('//FMT//',2X,A1,I2,A1,3X))')
+C.s/sya,2006.11.30 - SK - 30-11-2009
+C#    WRITE(LUPRI,'(5('//FMT//',2X,A1,I2,A1,3X))')
+C#   &   (EIG(IFIRST(I)),'(',
+C#   &   2*NMULT(I),')',I=1,NDEG)
+      FMT5 = '(5(' // FMT // ',2X,A1,I2,A1,3X))'
+      WRITE(LUPRI,FMT5)
      &   (EIG(IFIRST(I)),'(',
      &   2*NMULT(I),')',I=1,NDEG)
+C.q
 C
       RETURN
       END

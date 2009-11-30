@@ -477,6 +477,12 @@ C     Construct density matrix for fermion corep IFRP
 C
 C     Written by T.Saue Mar 3 1995
 C
+!------------------------------------------------------------------------
+!  N.B. (sya, 2007.05.04)
+!     This routine makes AO-basis density matrix assuming the
+!     occupation is constant.  For closed-shell DHF, the occupation
+!     is 1, which is a half of 2.  This halving is compensated in
+!     subroutine PRPEX2.
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"

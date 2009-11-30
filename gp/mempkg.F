@@ -75,6 +75,27 @@ C to get fewer logical tests and fewer jumps after logical tests.
 C
 C     Memory allocation
 C
+!-----------------------------------------------------------------------
+!  N.B. (sya, 2007.05.08)
+!     The length of array is counted by REAL*8.
+!
+!     INTENT(IN)    :: TYPE, LENGTH
+!     INTENT(OUT)   :: KBASE
+!     INTENT(INOUT) :: KFREE, LFREE
+!
+!     Before call
+!       1                 KFREE[old]                     SIZE(WORK)
+!       +-----------------+------------------------------+
+!                          <------------LFREE----------->
+!                          <--LENGTH/IRAT-->
+!
+!     After call
+!       1                 KBASE             KFREE[new]   SIZE(WORK)
+!       +-----------------+-----------------+------------+
+!                                            <---LFREE-->
+!                         KBASE=KFREE[old]+1
+!
+!-----------------------------------------------------------------------
 #include "implicit.h"
       CHARACTER*(*) DATA_TYPE
       DIMENSION     WORK(*)
@@ -228,6 +249,26 @@ C
 C Check memory allocation from WORK(KFIRST)
 C then free memory from WORK(KREL)
 C
+!-----------------------------------------------------------------------
+!  N.B. (sya, 2007.05.08)
+!     Usually, KFIRST is set to equal to KFREE.  However, another value
+!     is possible.
+!
+!     INTENT(IN)    :: TEXT, KFIRST, KREL
+!     INTENT(OUT)   ::
+!     INTENT(INOUT) :: KFREE, LFREE
+!
+!     Before call
+!       1                 KREL              KFREE        SIZE(WORK)
+!       +-----------------+-----------------+------------+
+!                                            <---LFREE-->
+!
+!     After call
+!       1                 KFREE                          SIZE(WORK)
+!       +-----------------+------------------------------+
+!                          <------------LFREE----------->
+!
+!-----------------------------------------------------------------------
 #include "implicit.h"
       DIMENSION     WORK(*)
       CHARACTER*(*) TEXT

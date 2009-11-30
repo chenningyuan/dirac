@@ -81,6 +81,17 @@ C
           IR(2,I) =  NESH(I)
         ENDDO
       ENDIF
+!
+!.s/sya,2007.0907,add/ - SK - 30-11-2009
+      IF( PRPSYA ) THEN
+        WRITE(LUPRI,"(
+     &    '* Setting MO range in property integral transformation')")
+        DO IFRP = 1, NFSYM
+          TRA2_INDSTR(1,IFRP) = TRA2_INDPRP(IFRP)
+          TRA2_INDSTR(2,IFRP) = TRA2_INDPRP(IFRP)
+        END DO
+      END IF
+!.q
 C
       DO I = 1,2
         NSTRT(I) = 0

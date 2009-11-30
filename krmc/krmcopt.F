@@ -1702,6 +1702,9 @@ C
 #include "dcbbos.h"
 #include "dcbnrt.h"
 #include "dcbidx.h"
+C.s/sya,2006.02.07 - SK - 30-11-2009
+#include "dcbgos2.h"
+C.q
 C
       DIMENSION WORK(*), ILIST(MAXORB)
       LOGICAL   GASWF

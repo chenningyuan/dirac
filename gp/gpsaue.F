@@ -3708,7 +3708,7 @@ C     This routine solves the NSIM simultaneous equations
 C         A(n,n,nz)*x(n,nsim,nz) = b(n,nsim,nz)
 C     where A and D is output from the Cholesky decomposition
 C     routine QCHOLD. The upper triagonal of A contains the 
-C     upper triangular Cholesky matrix and the the diagonal
+C     upper triangular Cholesky matrix and the diagonal
 C     and lower triangle is the original matrix A
 C         * a real symmetric matrix                     NZ = 1
 C         * a complex Hermitian matrix                  NZ = 2
