@@ -30,9 +30,9 @@ module dft_temp
 
   private
 
+#ifdef VAR_MPI
 contains
 
-#ifdef VAR_MPI
   subroutine sync_dft_temp()
 
     call dirac_mpi_bcast(dft_temp_grid_is_done  )
