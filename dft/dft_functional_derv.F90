@@ -130,6 +130,38 @@ contains
           end do
 
         case (2)
+#define PARTIAL_ALDA_WITH_AUTODIFF
+#ifdef PARTIAL_ALDA_WITH_AUTODIFF
+          if      (dft_cfg_alda_hs .and. .not. dft_cfg_alda_ha) then
+            call xc_set_functional(XC_RSZXY, dft_cfg_functional_w_alda)
+            do k = 1, block_length
+              call xc_eval(t(1, k), order, (/r_0(k), 0.0d0, z_0(k), 0.0d0, 0.0d0/))
+              derv(k, d_rr) = t(xc_index(XC_RSZXY, (/2, 0, 0, 0, 0/)), k)
+            end do
+            call xc_set_functional(XC_RSZXY, dft_cfg_functional_w)
+            do k = 1, block_length
+              call xc_eval(t(1, k), order, (/r_0(k), 0.0d0, z_0(k), 0.0d0, 0.0d0/))
+              derv(k, d_ss) = t(xc_index(XC_RSZXY, (/0, 2, 0, 0, 0/)), k)
+              derv(k, d_sy) = t(xc_index(XC_RSZXY, (/0, 1, 0, 0, 1/)), k)
+              derv(k, d_yy) = t(xc_index(XC_RSZXY, (/0, 0, 0, 0, 2/)), k)
+              derv(k, d_x ) = t(xc_index(XC_RSZXY, (/0, 0, 0, 1, 0/)), k)
+            end do
+          else if (dft_cfg_alda_ha .and. .not. dft_cfg_alda_hs) then
+            call xc_set_functional(XC_RSZXY, dft_cfg_functional_w_alda)
+            do k = 1, block_length
+              call xc_eval(t(1, k), order, (/r_0(k), 0.0d0, z_0(k), 0.0d0, 0.0d0/))
+              derv(k, d_ss) = t(xc_index(XC_RSZXY, (/0, 2, 0, 0, 0/)), k)
+            end do
+            call xc_set_functional(XC_RSZXY, dft_cfg_functional_w)
+            do k = 1, block_length
+              call xc_eval(t(1, k), order, (/r_0(k), 0.0d0, z_0(k), 0.0d0, 0.0d0/))
+              derv(k, d_rr) = t(xc_index(XC_RSZXY, (/2, 0, 0, 0, 0/)), k)
+              derv(k, d_rz) = t(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)), k)
+              derv(k, d_zz) = t(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)), k)
+              derv(k, d_z ) = t(xc_index(XC_RSZXY, (/0, 0, 1, 0, 0/)), k)
+            end do
+          else
+#endif /* ifdef PARTIAL_ALDA_WITH_AUTODIFF */
           do k = 1, block_length
             derv(k, d_rr) = t(xc_index(XC_RSZXY, (/2, 0, 0, 0, 0/)), k)
             derv(k, d_ss) = t(xc_index(XC_RSZXY, (/0, 2, 0, 0, 0/)), k)
@@ -140,6 +172,9 @@ contains
             derv(k, d_z ) = t(xc_index(XC_RSZXY, (/0, 0, 1, 0, 0/)), k)
             derv(k, d_x ) = t(xc_index(XC_RSZXY, (/0, 0, 0, 1, 0/)), k)
           end do
+#ifdef PARTIAL_ALDA_WITH_AUTODIFF
+          end if
+#endif /* ifdef PARTIAL_ALDA_WITH_AUTODIFF */
 
         case (3)
           do k = 1, block_length

@@ -12,3 +12,6 @@ TyB3u 6.5601 6.5601    6.6810    eV
 TzB1u 3.8293 3.8293    4.0828    eV
 TzB1u 6.5601 6.5601    6.6810    eV
 TzB3u 3.8293 3.8293    4.0828    eV
+
+pbe_alda-: singlet energies identical with pbe
+pbe_alda+: triplet energies identical with pbe

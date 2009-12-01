@@ -163,22 +163,13 @@ contains
         use_gga_qr = dft_cfg_is_gga_autodiff
         use_gga_qi = dft_cfg_is_gga_autodiff
 
-        if (dft_cfg_alda_hs .and. (.not. dft_cfg_alda_ha)) then
-          call quit('.DFTAUTO and partial ALDA is not implemented')
-        end if
-        if (dft_cfg_alda_ha .and. (.not. dft_cfg_alda_hs)) then
-          call quit('.DFTAUTO and partial ALDA is not implemented')
-        end if
-
-      else
-#endif
-        if (response_order > 0) then
-          if (dft_cfg_alda_hs) use_gga_qr = .false.
-          if (dft_cfg_alda_ha) use_gga_qi = .false.
-        end if
-#ifdef MOD_AUTODIFF
       end if
 #endif
+
+      if (response_order > 0) then
+        if (dft_cfg_alda_hs) use_gga_qr = .false.
+        if (dft_cfg_alda_ha) use_gga_qi = .false.
+      end if
 
       if (use_gga_qr .or. use_gga_qi) then
         use_gga = .true.
