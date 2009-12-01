@@ -1479,7 +1479,9 @@ C
 !
 !.s/sya,2007.08.29
       DATA NRIVEC/2/
-      DATA K4BYTE/4/, K1WORD/1/, K4WORD/4/
+!SK   DATA K4BYTE/4/, K1WORD/1/, K4WORD/4/
+      DATA K1WORD/1/, K4WORD/4/
+      INTEGER KXBYTE
 !.q
       DATA LUCIVC/10/
 !----------------------------------------------------------------------
@@ -1494,6 +1496,7 @@ C
 !#    IF (NVEC.GT.NDET) NVEC = NDET
       NVEC = NDET
       IF (NVEC .GT. NDETMX) STOP 999
+      KXBYTE = SIZEOF(NDET)
 !.q
 C
 C     DETERMINE RECORD LENGTH
@@ -1503,8 +1506,8 @@ C
 !#    LENREC = 2 * LEN * 8
       LENW   = NDETMX
       LENR0  = LENW * NRIVEC * K8BYTE 
-      LENR2  = (K1WORD + NDETMX) * K4BYTE
-      LENR1  = K4WORD * K4BYTE + NDETMX * K8BYTE
+      LENR2  = (K1WORD + NDETMX) * KXBYTE
+      LENR1  = K4WORD * KXBYTE + NDETMX * K8BYTE
       LENREC = MAX(LENR0,LENR2,LENR1)
 !.q
       VECFIL = 'MDTRIV_'//REPNA(IRRP)
@@ -2004,17 +2007,19 @@ C
       DIMENSION IXDET(NDETMX)
       CHARACTER*11 VECFIL
       DATA K8BYTE/8/
-      DATA K4BYTE/4/, K1WORD/1/, K4WORD/4/
+!SK   DATA K4BYTE/4/, K1WORD/1/, K4WORD/4/
+      INTEGER KXBYTE
       DATA LUCIVC/10/
 !----------------------------------------------------------------------
       KST = 1
+      KXBYTE = SIZEOF(KST)
 !.s/sya,2007.08.29
 !#    LEN = MAX0(NDET,2)
 !#    LENREC = LEN * 2 * 8
       LENW   = NDETMX
       LENR0  = LENW * NRIVEC * K8BYTE 
-      LENR2  = (K1WORD + NDETMX) * K4BYTE
-      LENR1  = K4WORD * K4BYTE + NDETMX * K8BYTE
+      LENR2  = (K1WORD + NDETMX) * KXBYTE
+      LENR1  = K4WORD * KXBYTE + NDETMX * K8BYTE
       LENREC = MAX(LENR0,LENR2,LENR1)
 !.q
       VECFIL = 'MDTRIV_'//REPNA(IREP)
