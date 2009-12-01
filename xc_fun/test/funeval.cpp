@@ -1,5 +1,7 @@
 #include <iostream>
+#ifdef WITH_WD
 #include <qd/qd_real.h>
+#endif
 #include <cstdlib>
 #include <cstdio>
 #include "taylor.h"
@@ -20,7 +22,7 @@ void printpoly(ostream &dst, const polynomial<num,Nvar,Ndeg> &p)
     }
 }
 
-#define TEST_ORDER 3
+#define TEST_ORDER 2
 
 int main(int argc, char *argv[])
 {
