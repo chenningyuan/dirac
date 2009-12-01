@@ -717,7 +717,7 @@ contains
 #endif
 
     max_ao_g_order = 0
-    if (use_gga_qr) then
+    if (use_gga) then
       max_ao_g_order = 1
     end if
 
