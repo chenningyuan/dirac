@@ -13,7 +13,7 @@ static num lyp_correlation(const num &R,
 			   const num &gradb2)
 {
     const double A = 0.04918, B = 0.132, C = 0.2533, D = 0.349;
-    const double CF = 0.3*pow(3*M_PI*M_PI,2.0/3.0);
+    using xc_constants::CF;
 
     num rho2 = R*R;
     num rhom13 = pow(R,-1.0/3.0);

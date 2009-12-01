@@ -7,9 +7,11 @@ using namespace std;
 
 #include "taylor.h"
 
-#ifndef M_PI // M_PI is not standard for some reason
-#define M_PI 3.14159265358979323846
-#endif
+#include "constants.h"
+
+
+
+
 #include "xc_fun.h"
 #include "lda_fun.h"
 #include "blyp_fun.h"
@@ -38,7 +40,11 @@ static void (*helper_tab_qd[XC_MAX_ORDER+1])(qd_real *, const qd_real *);
 #endif
 static void setup(void);
 
-/* This must match the order of enum xc_funparams! */
+/* This must match the order of enum xc_funparams! 
+   This is defined as an array of char* to avoid relying
+   on the C++ runtime (although the C++ string class
+   would be better to use).
+*/
 static char *functional_names[] =
   {
     "slaterx",
@@ -51,7 +57,6 @@ static char *functional_names[] =
     "rpbex",
     "pw92c",
   };
- //Allocated and set up by setup()
 
 // Use strcmp to not depend on c++ standard library
 int xc_parse_functional(const char *functional_name)
