@@ -26,8 +26,10 @@ module xc_fun
   integer, parameter ::  XC_OLD_PBE_CORRELATION = 7
   integer, parameter ::  XC_RPBE_EXCHANGE    = 8
   integer, parameter ::  XC_PW92_CORRELATION = 9
+  integer, parameter ::  KIN_TF    = 10
+  integer, parameter ::  KIN_PW91  = 11
 ! Make sure XC_PARAMS_LEN matches the number of parameters above
-  integer, parameter ::  XC_PARAMS_LEN = 9
+  integer, parameter ::  XC_PARAMS_LEN = 11 
 
 ! The different modes (density variables) xc_fun can work with,
 ! these are passed as the first argument to set_functional()

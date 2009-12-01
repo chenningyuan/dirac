@@ -16,6 +16,9 @@ using namespace std;
 #include "lda_fun.h"
 #include "blyp_fun.h"
 #include "pbe_fun.h"
+#include "tf_kin_fun.h"
+// this is coming soon
+// #include "pw91_kin_fun.h"
 
 template<class T> 
 struct densvars
@@ -56,6 +59,8 @@ static char *functional_names[] =
     "pbec_dalton",
     "rpbex",
     "pw92c",
+    "tfk",
+    "pw91k",
   };
 
 // Use strcmp to not depend on c++ standard library
@@ -160,6 +165,15 @@ static void sum_functionals(num &res,
   if (xc_params[XC_PW92_CORRELATION] != 0)
     res += xc_params[XC_PW92_CORRELATION]*
       pw92_correlation(d.R,d.zeta);
+
+  if (xc_params[KIN_TF] != 0)
+    res += xc_params[KIN_TF]*
+      thomasfermi_kinetic(d.rhoa,d.rhob);
+
+// this is coming soon
+//  if (xc_params[KIN_PW91] != 0)
+//    res += xc_params[KIN_PW91]*
+//      pw91_kinetic(d.rhoa,d.rhob,d.grada2,d.gradb2);
 
   res.deriv_facs();
 }

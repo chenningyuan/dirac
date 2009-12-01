@@ -53,6 +53,8 @@ enum xc_funparams
     XC_OLD_PBE_CORRELATION,
     XC_RPBE_EXCHANGE,
     XC_PW92_CORRELATION,
+    KIN_TF,       // (orbital-free?) kinetic energy functionals
+    KIN_PW91,
     XC_PARAMS_LEN // This has to be last!
   };
 
