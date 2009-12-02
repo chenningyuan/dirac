@@ -72,7 +72,7 @@ namespace pw91_like_x_internal
   {
     using xc_constants::CF;
 
-    return -CF*pow(2.0,2.0/3.0)*pow(rho,5.0/3.0);
+    return CF*pow(2.0,2.0/3.0)*pow(rho,5.0/3.0);
   }
 
 }
