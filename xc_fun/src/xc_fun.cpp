@@ -17,8 +17,7 @@ using namespace std;
 #include "blyp_fun.h"
 #include "pbe_fun.h"
 #include "tf_kin_fun.h"
-// this is coming soon
-// #include "pw91_kin_fun.h"
+#include "pw91_fun.h"
 
 template<class T> 
 struct densvars
@@ -50,14 +49,17 @@ static void setup(void);
 */
 static char *functional_names[] =
   {
-    "slaterx",
     "vwn5c",
-    "beckex",
+    "slaterx",
     "lypc",
-    "pbex",
+    "pw91x",
     "pbec",
     "pbec_dalton",
-    "rpbex",
+    "beckex",
+    "pbex_dalton",
+    "rpbex_dalton",
+    "pbex",
+    "revpbex",
     "pw92c",
     "tfk",
     "pw91k",
@@ -142,6 +144,10 @@ static void sum_functionals(num &res,
     res += xc_params[XC_LYP_CORRELATION]*
       lyp_correlation(d.R,d.rhoa,d.rhob,d.Z,d.grada2,d.gradb2);
 
+  if (xc_params[XC_PW91_EXCHANGE] != 0)
+    res += xc_params[XC_PW91_EXCHANGE]*
+      pw91_exchange(d.rhoa,d.rhob,d.grada2,d.gradb2);
+
   if (xc_params[XC_PBE_CORRELATION] != 0)
     res += xc_params[XC_PBE_CORRELATION]*
       pbe_correlation(d.R,d.S,d.Z,d.rhoa,d.rhob,d.zeta);
@@ -154,13 +160,21 @@ static void sum_functionals(num &res,
     res += xc_params[XC_BECKE_EXCHANGE]*
       becke_exchange(d.rhoa,d.rhob,d.grada2,d.gradb2);
 
+  if (xc_params[XC_OLD_PBE_EXCHANGE] != 0)
+    res += xc_params[XC_OLD_PBE_EXCHANGE]*
+      pbe_exchange_dalton(d.rhoa,d.rhob,d.grada2,d.gradb2);
+
+  if (xc_params[XC_OLD_RPBE_EXCHANGE] != 0)
+    res += xc_params[XC_OLD_RPBE_EXCHANGE]*
+      rpbe_exchange_dalton(d.rhoa,d.rhob,d.grada2,d.gradab,d.gradb2);
+
   if (xc_params[XC_PBE_EXCHANGE] != 0)
     res += xc_params[XC_PBE_EXCHANGE]*
       pbe_exchange(d.rhoa,d.rhob,d.grada2,d.gradb2);
 
-  if (xc_params[XC_RPBE_EXCHANGE] != 0)
-    res += xc_params[XC_RPBE_EXCHANGE]*
-      rpbe_exchange(d.rhoa,d.rhob,d.grada2,d.gradab,d.gradb2);
+  if (xc_params[XC_REVPBE_EXCHANGE] != 0)
+    res += xc_params[XC_REVPBE_EXCHANGE]*
+      revpbe_exchange(d.rhoa,d.rhob,d.grada2,d.gradb2);
 
   if (xc_params[XC_PW92_CORRELATION] != 0)
     res += xc_params[XC_PW92_CORRELATION]*
@@ -170,10 +184,9 @@ static void sum_functionals(num &res,
     res += xc_params[KIN_TF]*
       thomasfermi_kinetic(d.rhoa,d.rhob);
 
-// this is coming soon
-//  if (xc_params[KIN_PW91] != 0)
-//    res += xc_params[KIN_PW91]*
-//      pw91_kinetic(d.rhoa,d.rhob,d.grada2,d.gradb2);
+  if (xc_params[KIN_PW91] != 0)
+    res += xc_params[KIN_PW91]*
+      pw91_kinetic(d.rhoa,d.rhob,d.grada2,d.gradb2);
 
   res.deriv_facs();
 }

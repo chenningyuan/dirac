@@ -1,26 +1,90 @@
 #include "pw92_fun.h"
-/*
-  PBE Exchange
-  Imported from Dalton fun-pbex.c, originally by Pawel Salek(?).
-  TODO: delete these dalton functions
- */
+#include "pw9xx_fun.h"
 
 template<class num>
-static num pbe_exchange(const num &rhoa,
-			const num &rhob,
-			const num &grada2,
-			const num &gradb2)
+static num rpbe_exchange_dalton(const num &rhoa,
+                         const num &rhob,
+                         const num &grada,
+                         const num &gradab,
+                         const num &gradb)
+{
+  double t1 = pow(2.0,.3333333333333333);
+
+   /* code */
+  return 0.5*(-1.477117532764045*(0.804*(1.0-1.0/exp(.004492799480231091*pow(gradb,2.0)/pow(rhob,2.666666666666667)))+
+        1.0)*t1*pow(rhob,1.333333333333333)-1.477117532764045*(0.804*
+        (1.0-1.0/exp(.004492799480231091*pow(grada,
+        2.0)/pow(rhoa,2.666666666666667)))+1.0)*t1*pow(rhoa,1.333333333333333));
+}
+
+template<class num>
+static num pbe_exchange_dalton(const num &rhoa,
+                            const num &rhob,
+                            const num &grada2,
+                            const num &gradb2)
 {
   double t1 = pow(2.0,0.33333333333333);
   // TODO: test if rhoa or rhob are too small
   return  0.5*(-1.477117532764045*t1*pow(rhob,1.333333333333333)*
              (1.804-0.804/(0.00449279948023*gradb2/pow(rhob,2.666666666666667)+
-			   1.0))
-	       -1.477117532764045*t1*pow(rhoa,1.333333333333333)*
-	     (1.804-0.804/(0.00449279948023*grada2/pow(rhoa,2.666666666666667)+
-	     1.0)));
+                           1.0))
+               -1.477117532764045*t1*pow(rhoa,1.333333333333333)*
+             (1.804-0.804/(0.00449279948023*grada2/pow(rhoa,2.666666666666667)+
+             1.0)));
 }
 
+namespace PBEx_internal
+{
+   using pw91_like_x_internal::prefactor;
+
+   // enhancement factor F(S), common to PBEx and REVPBEx
+   template<class num>
+   static num pbex_enhancement(const num &R, 
+                               const num &rho,
+                               const num &grad)
+   {
+      using pw91_like_x_internal::S;
+
+      num mu = 0.066725*M_PI*M_PI/3.0;
+      num st = S(rho,grad);
+      num t1 = 1.0 + (mu*st*st/R);
+   
+      // TODO: veryfy 1/t1 does not overflow/underflow
+
+      return (1.0 + R - (R/t1)); 
+   }
+
+   // original PBE exchange functional
+
+   template<class num>
+   static num pbe_exchange(const num &rhoa,
+			   const num &rhob,
+			   const num &grada,
+			   const num &gradb)
+   {
+     static num R = 0.804;
+
+     return (  prefactor(rhoa,grada)*pbex_enhancement(R,rhoa,grada) 
+             + prefactor(rhob,gradb)*pbex_enhancement(R,rhob,gradb) );
+   }
+
+   // REVPBE exchange functional
+
+   template<class num>
+   static num revpbe_exchange(const num &rhoa,
+   	    	     	      const num &rhob,
+			      const num &grada,
+			      const num &gradb)
+   {
+     static num R = 1.245;
+
+     return (  prefactor(rhoa,grada)*pbex_enhancement(R,rhoa,grada) 
+             + prefactor(rhob,gradb)*pbex_enhancement(R,rhob,gradb) );
+   }
+}
+
+
+// PBE correlation
 
 template<class num>
 static num pbe_correlation_unpolarized(const num &R,
@@ -105,21 +169,7 @@ namespace PBEc_internal
 }
 
 using PBEc_internal::pbe_correlation;
-
-template<class num>
-static num rpbe_exchange(const num &rhoa,
-			 const num &rhob,
-			 const num &grada,
-			 const num &gradab,
-			 const num &gradb)
-{
-  double t1 = pow(2.0,.3333333333333333);
-
-   /* code */
-  return 0.5*(-1.477117532764045*(0.804*(1.0-1.0/exp(.004492799480231091*pow(gradb,2.0)/pow(rhob,2.666666666666667)))+
-        1.0)*t1*pow(rhob,1.333333333333333)-1.477117532764045*(0.804*
-        (1.0-1.0/exp(.004492799480231091*pow(grada,
-        2.0)/pow(rhoa,2.666666666666667)))+1.0)*t1*pow(rhoa,1.333333333333333));
-}
+using PBEx_internal::pbe_exchange;
+using PBEx_internal::revpbe_exchange;
 
 

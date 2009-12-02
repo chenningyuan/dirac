@@ -6,7 +6,7 @@
 // related to PW91x - like PW91x (and PW91k, which is a reparametrization 
 // of PW91x to describe T_s), PBEx, PBEREVx and so on 
 
-namespace pw91-like-x_internal
+namespace pw91_like_x_internal
 {
 
   const char *pw91x_reference = 
@@ -14,6 +14,11 @@ namespace pw91-like-x_internal
       "J. P. Perdew, J. A. Chevary, S. H. Vosko, "
       "K. A. Jackson, M. R. Pederson, and C. Fiolhais, "
       "Phys. Rev. B 46, 6671 (1992)\n"; 
+
+  const char *pw91k_reference = 
+    "PW91 GGA Kinetic Energy Functional\n"
+      "A. Lembarki, H. Chermette, "
+      "Phys. Rev. A 50, 5328 (1994)\n"; 
 
   const char *pbex_reference = 
     "PBE Exchange Functional\n"
@@ -34,15 +39,9 @@ namespace pw91-like-x_internal
 //
 
   template<class num>
-  static num Chi(const num &rho, const num &grad)
+  static num chi(const num &rho, const num &grad)
   {
     return (sqrt(grad)/pow(rho,4.0/3.0));
-  }
-
-  template<class num>
-  static num S(const num &rho, const num &grad)
-  {
-    return chi(rho,grad)*pow(6.0,2.0/3.0)/(12*pow(M_PI,2.0/3.0)); 
   }
 
   template<class num>
@@ -57,13 +56,16 @@ namespace pw91-like-x_internal
   template<class num>
   static num prefactor(const num &rho, const num &grad)
   {
-    return -0.75*pow(3*M_PI*M_PI*rho*rho*rho*rho,1.0/3.0)/M_PI;
+// aspg: the 2^.333 factor here i can't see in the molpro formula, will have to 
+// double-check this - but as it is it matches the results for the database
+// e.g
+//   http://www.cse.scitech.ac.uk/ccg/dft/data_pt_x_pw91.html
+//   http://www.cse.scitech.ac.uk/ccg/dft/data_pt_x_pbe.html
+// and for pbe, it is close to the dalton code..(trunncation of variables
+// there make things deviate?)
+    return -0.75*pow(2.0,1.0/3.0)*pow(3*M_PI*M_PI*rho*rho*rho*rho,1.0/3.0)/M_PI;
   }
 
 }
-
-
-using pw91-like-x_internal::S;
-using pw91-like-x_internal::prefactor;
 
 #endif

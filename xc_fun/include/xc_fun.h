@@ -44,16 +44,19 @@ enum xc_mode
 
 enum xc_funparams
   {
-    XC_SLATER_EXCHANGE = 0,
-    XC_VWN5_CORRELATION,
-    XC_BECKE_EXCHANGE,
+    XC_VWN5_CORRELATION = 0,
+    XC_SLATER_EXCHANGE,
     XC_LYP_CORRELATION,
-    XC_PBE_EXCHANGE,
+    XC_PW91_EXCHANGE,
     XC_PBE_CORRELATION,
     XC_OLD_PBE_CORRELATION,
-    XC_RPBE_EXCHANGE,
+    XC_BECKE_EXCHANGE,
+    XC_OLD_PBE_EXCHANGE,
+    XC_OLD_RPBE_EXCHANGE,
+    XC_PBE_EXCHANGE,
+    XC_REVPBE_EXCHANGE,
     XC_PW92_CORRELATION,
-    KIN_TF,       // (orbital-free?) kinetic energy functionals
+    KIN_TF,       // (orbital-free) kinetic energy functionals next
     KIN_PW91,
     XC_PARAMS_LEN // This has to be last!
   };
