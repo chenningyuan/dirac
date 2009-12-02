@@ -94,6 +94,7 @@ extrausage ()
    echo "                              $BIN_DIR/dirac.x"
    echo '     -no-exe-copy           : Do not copy dirac.x to the working directory (default), run it in place.'
    echo '     -run name              : File suffix for output; default "'$RUN'"'
+   echo '     -revision              : Append svn revision number to output file suffix'
    echo '     -nice                  : execute Dirac with nice/npri'
    echo '     -full-restart          : All files from ARCHIVE.tgz are unpacked, not just DFCOEF.'
    echo '                              This allows you to omit the molecule and input files.'
@@ -825,9 +826,9 @@ copy_files()
 save_old_output()
 {
    if [ "$MOL" = "$MENU" ]; then
-      OUTPUT_FILE=${LOC}/${MOL}.${RUN}
+      OUTPUT_FILE=${LOC}/${MOL}.${RUN}${SUFFIX2}
    else
-      OUTPUT_FILE=${LOC}/${MENU}_${MOL}.${RUN}
+      OUTPUT_FILE=${LOC}/${MENU}_${MOL}.${RUN}${SUFFIX2}
    fi
    #
    # Save old output file
@@ -905,6 +906,7 @@ initialize()
    MAX_DFT_AO_MEMORY=
 
    RUN='out'
+   SUFFIX2=''
 
 # ... SCR_DEFAULT is set and copied into pam by configure
    if [ "$LOGNAME" = "" ]; then
@@ -1049,6 +1051,9 @@ while [ -n "$1" ]; do
          ;;
       -rmwrk)  # for backwards compatibility
          RMWRK=1
+         ;;
+      -revision)
+         SUFFIX2=_`svn info $SRC_DIR | grep 'Revision' | awk '{ print $2 }'`
          ;;
       -run)
          shift
