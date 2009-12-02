@@ -3,6 +3,7 @@
 namespace PW91xk_internal
 {
    using pw91_like_x_internal::prefactor;
+   using pw91_like_x_internal::pw91k_prefactor;
 
    // enhancement factor F(S), common to PW91x and PW91k 
    template<class num>
@@ -47,8 +48,8 @@ namespace PW91xk_internal
    {
      static num param_AB[6] = { 0.093907, 76.320, 0.26608, 0.0809615, 100.0, 0.57767e-4};
 
-     return (  prefactor(rhoa,grada)*pw91xk_enhancement(param_AB,rhoa,grada)
-             + prefactor(rhob,gradb)*pw91xk_enhancement(param_AB,rhob,gradb) );
+     return (  pw91k_prefactor(rhoa,grada)*pw91xk_enhancement(param_AB,rhoa,grada)
+             + pw91k_prefactor(rhob,gradb)*pw91xk_enhancement(param_AB,rhob,gradb) );
    }
 }
 

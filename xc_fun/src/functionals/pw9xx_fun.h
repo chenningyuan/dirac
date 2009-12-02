@@ -66,6 +66,15 @@ namespace pw91_like_x_internal
     return -0.75*pow(2.0,1.0/3.0)*pow(3*M_PI*M_PI*rho*rho*rho*rho,1.0/3.0)/M_PI;
   }
 
+// prefactor for the pw91k functional
+  template<class num>
+  static num pw91k_prefactor(const num &rho, const num &grad)
+  {
+    using xc_constants::CF;
+
+    return -CF*pow(2.0,2.0/3.0)*pow(rho,5.0/3.0);
+  }
+
 }
 
 #endif
