@@ -1045,9 +1045,12 @@ C
 C     Last revision :
 C
 C***********************************************************************
+      use codata
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER ( XTHRESH = 1.0D-7 )
+      PARAMETER ( DEGEN   = 1.0D-10 )
 C
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -1057,12 +1060,12 @@ C
 #include "krciprop.h"
 #include "dcbkrci.h"
 #include "dcbxpr.h"
-#include "debye.h"
       DOUBLE COMPLEX XMOM
       REAL*8 OSCL
       DIMENSION XPROPMAT(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,NPROP_KRCI,*)
       DIMENSION WORK(*), OSCL(3), EVECS(*), EPROP_CORE(*)
       INTEGER IND_DIP(3)
+      integer, allocatable :: indx(:)
       CHARACTER XLABEL*16
 C
 #include "memint.h"
@@ -1070,13 +1073,66 @@ C
 C
       MZ = MIN(NZ,2)
 C
+C     get energies from file KRCI_CVECS.INFO
+      CALL GET_KRCICVECS_E(EVECS,NKRCI_CIROOTS,XSYMFLAB,NKRCI_MAX_SYM)
+C
+C     print list of eigenstates and energies
+      WRITE(LUPRI,'(/,1X,A,F14.10,A,F17.9,A)')
+     & '( 1 au =',XTEV,' eV  / ',XTKAYS,' cm-1)'
+
+      WRITE(LUPRI,'(/A/A)') 
+     & '  List of eigenstates in property calculation',
+     & '  ___________________________________________'
+          WRITE(LUPRI,'(A)') 
+     & '   # eigenstate    irrep      energy (a.u.)'
+      DO IVEC=1, NPROP_ROOTS_KRCI
+          WRITE(LUPRI,'(I11,7X,A4,5X,1F16.10)') 
+     &          IVEC,XREPEIG(ISYMEIG_KRCI(IVEC)),EVECS(IVEC)
+      END DO
+      WRITE(LUPRI,'(A/)') 
+     & '  ___________________________________________'
+C
+C     sort
+      call alloc(INDX,NPROP_ROOTS_KRCI)
+      INDX = 0
+      CALL INDEXX(NPROP_ROOTS_KRCI,EVECS,INDX)
+
+C
+C     relative ordering
+      WRITE(LUPRI,'(/A/A)') 
+     & '  List of eigenstates in property calculation (sorted)',
+     & '  ___________________________________________________________'//
+     & '_____________________________________________'
+      WRITE (LUPRI,'(A)') 
+     &         '  Level | abs. eigenvalue | rel. eigenvalue (a.u.) |'//
+     &         ' rel. eigenvalue (eV) | rel. eigenvalue (cm-1) |'// 
+     &         ' irrep '
+      ILEVEL=0
+      EW=0.0D0
+      EWF=EVECS(INDX(1))
+      NEW=0
+      DO I=1,NPROP_ROOTS_KRCI
+        E = EVECS(INDX(I))
+        IF ( .TRUE. ) THEN
+            WRITE(LUPRI,1010) ILEVEL,E,E-EWF,XTEV*(E-EWF),
+     &      XTKAYS*(E-EWF),XREPEIG(ISYMEIG_KRCI(INDX(I)))
+          ILEVEL=ILEVEL+1
+          NEW=1
+          EW=E
+        ENDIF
+      ENDDO
+      WRITE(LUPRI,'(A/)') 
+     & '  ___________________________________________________________'//
+     & '_____________________________________________'
+C
+C     *****************************************************************
+C     ************************** PROPERTIES ***************************
+C     *****************************************************************
+C
 C     1. (transition dipole moments) and oscillator strengths
 C     =======================================================
 C
       IF( DOOSCILLST )THEN
-C
-C       get energies from file KRCI_CVECS.INFO
-        CALL GET_KRCICVECS_E(EVECS,NKRCI_CIROOTS,XSYMFLAB,NKRCI_MAX_SYM)
 C
 C       calculate and print oscillator strength - length gauge
 C       ------------------------------------------------------
@@ -1091,20 +1147,75 @@ C       determine index for (x,y,z)
         XREAL = 0.0D0
         XCOMP = 0.0D0
 C
-C       Check sum rule for oscillator strength
-        SUML = 0.0D0
+C       print oscillator strength
+        IF(IPROPPRINT .gt. 100 )THEN
+C
+C         Check sum rule for oscillator strength
+          SUML = 0.0D0
+          WRITE(LUPRI,'(/A/A)')
+     &   '    initial state             final state   '//
+     &   '      oscillator strength (length gauge)',
+     &   '  __________________       _________________'//
+     &   '      ____________________________________'
+          DO 200 IVEC=1,NPROP_ROOTS_KRCI
+            DO 100 JVEC= IVEC+1, NPROP_ROOTS_KRCI
+              IF( EVECS(IVEC) .lt. EVECS(JVEC) )THEN
+                INIST = IVEC
+                JFLST = JVEC
+              ELSE IF( EVECS(IVEC) .eq. EVECS(JVEC) )THEN
+                GOTO 100
+              ELSE IF( EVECS(IVEC) .gt. EVECS(JVEC) )THEN
+                INIST = JVEC
+                JFLST = IVEC
+              END IF
+              DEIG  = EVECS(JFLST) - EVECS(INIST)
+C             WRITE(LUPRI,*) ' INIST, JFLST, DEIG',INIST, JFLST, DEIG
+              DO IPRP=1,3
+C               length gauge
+                XREAL = XPROPMAT(INIST,JFLST,IND_DIP(IPRP),1)
+                IF( MZ .eq. 2 ) 
+     &          XCOMP = XPROPMAT(INIST,JFLST,IND_DIP(IPRP),2)
+                XMOM = DCMPLX(XREAL,XCOMP)
+C               WRITE(LUPRI,*) ' XREAL,XCOMP, ABS(XMOM)**2 ',
+C    &                           XREAL,XCOMP, ABS(XMOM)**2
+C               f_(x,y,z)  = 2.0D0*|<inist|(x,y,z)|jflst>|**2 * (E_fl - E_ini)
+                OSCL(IPRP) = 2.0D0*ABS(XMOM)**2*(DEIG)
+              END DO
+              SUML = SUML + (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0
+              ISYMST_IN = ISYMEIG_KRCI(INIST)
+              ISYMST_FL = ISYMEIG_KRCI(JFLST)
+C
+C             print only values above a given threshold - 1.0D-7
+              IF( (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0 .lt. XTHRESH ) 
+     &            GOTO 100
+              WRITE(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F10.6)')
+     &    '   * state',INIST,'(',XREPEIG(ISYMST_IN),')        * state',
+     &        JFLST,'(',XREPEIG(ISYMST_FL),')                   ',
+     &        (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0 
+              WRITE(LUPRI,'(A,1F16.8,A,1F16.8)')
+     &    '  E(au)',EVECS(INIST),'    E(au)',EVECS(JFLST)
+ 100        CONTINUE
+ 200      CONTINUE
+          WRITE(LUPRI,*) 
+     & ' -----------------------------------------------------------'//
+     &   '----------'
+          WRITE(LUPRI,'(1A,1F10.6)')
+     $       '   Sum of oscillator strength : ',SUML
+        ENDIF ! IPROPPRINT .gt. 100 
+C
+C       print TDM
         WRITE(LUPRI,'(/A/A)')
-     & '    initial state             final state   '//
-     & '      oscillator strength (length gauge)',
+     & '   <initial state   |x,y,z|   final state>  '//
+     & '            TDM [a.u.] (x, y, z)',
      & '  __________________       _________________'//
-     & '      __________________________________'
-        DO 200 IVEC=1,NPROP_ROOTS_KRCI
-          DO 100 JVEC= IVEC+1, NPROP_ROOTS_KRCI
+     & '    ____________________________________'
+        DO 201 IVEC=1,NPROP_ROOTS_KRCI
+          DO 101 JVEC= IVEC+1, NPROP_ROOTS_KRCI
             IF( EVECS(IVEC) .lt. EVECS(JVEC) )THEN
               INIST = IVEC
               JFLST = JVEC
             ELSE IF( EVECS(IVEC) .eq. EVECS(JVEC) )THEN
-              GOTO 100
+              GOTO 101
             ELSE IF( EVECS(IVEC) .gt. EVECS(JVEC) )THEN
               INIST = JVEC
               JFLST = IVEC
@@ -1117,30 +1228,21 @@ C             length gauge
               IF( MZ .eq. 2 ) 
      &        XCOMP = XPROPMAT(INIST,JFLST,IND_DIP(IPRP),2)
               XMOM = DCMPLX(XREAL,XCOMP)
-C             WRITE(LUPRI,*) ' XREAL,XCOMP, ABS(XMOM)**2 ',
-C    &                         XREAL,XCOMP, ABS(XMOM)**2
-C             f_(x,y,z)  = 2.0D0*|<inist|(x,y,z)|jflst>|**2 * (E_fl - E_ini)
-              OSCL(IPRP) = 2.0D0*ABS(XMOM)**2*(DEIG)
+              OSCL(IPRP) = ABS(XMOM)
             END DO
-            SUML = SUML + (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0
             ISYMST_IN = ISYMEIG_KRCI(INIST)
             ISYMST_FL = ISYMEIG_KRCI(JFLST)
 C
 C           print only values above a given threshold - 1.0D-7
-            IF( (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0 .lt. XTHRESH ) GOTO 100
-            WRITE(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F10.6)')
-     &  '   * state',INIST,'(',XREPEIG(ISYMST_IN),')        * state',
-     &      JFLST,'(',XREPEIG(ISYMST_FL),')                   ',
-     &      (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0 
-            WRITE(LUPRI,'(A,1F16.8,A,1F16.8)')
-     &  '  E(au)',EVECS(INIST),'    E(au)',EVECS(JFLST)
- 100      CONTINUE
- 200    CONTINUE
-        WRITE(LUPRI,*) 
-     & ' -----------------------------------------------------------'//
-     & '----------'
-        WRITE(LUPRI,'(1A,1F10.6)')
-     $     '   Sum of oscillator strength : ',SUML
+            WRITE(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,3F12.8)')
+     &  '   * state',INIST,'(',XREPEIG(ISYMST_IN),')         * state',
+     &      JFLST,'(',XREPEIG(ISYMST_FL),')   ',
+     &      OSCL(1),OSCL(2),OSCL(3)
+ 101      CONTINUE
+ 201    CONTINUE
+        WRITE(LUPRI,'(A)')
+     & '  __________________________________________'//
+     & '    ____________________________________  '
 C
 #ifdef CODE_NOT_WORKING
 C
@@ -1187,8 +1289,8 @@ C             f_(dx,dy,dz)  = 2.0D0*|<inist|(x,y,z)|jflst>|**2 * (E_fl - E_ini)
             ISYMST_IN = ISYMEIG_KRCI(INIST)
             ISYMST_FL = ISYMEIG_KRCI(JFLST)
         WRITE(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F10.6)')
-     & '   * state',INIST,'(',XREPEIG(ISYMST_IN),')        * state',
-     &       JFLST,'(',XREPEIG(ISYMST_FL),')                     ',
+     & '   * state',INIST,'(',XREPEIG(ISYMST_IN),')         * state',
+     &       JFLST,'(',XREPEIG(ISYMST_FL),')                    ',
      &       (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0 
         WRITE(LUPRI,'(A,1F16.8,A,1F16.8)')
      & '  E(au)',EVECS(INIST),'    E(au)',EVECS(JFLST)
@@ -1223,8 +1325,10 @@ C       get and diagonalize omega expectation value matrix
 C       release memory        
         CALL MEMREL('XKRCIPRPANA',WORK,KWORK,KWORK,KFREE,LFREE)
       END IF
+      call dealloc(INDX)
 C 
       CALL QEXIT('XKRCIPRPANA')
+ 1010 FORMAT(1X,I5,F19.12,F19.12,F26.12,F28.12,'  (',A4,')')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck GET_OMEGA_EXP */
