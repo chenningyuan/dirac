@@ -214,7 +214,7 @@ contains
 
     if (aor_cfg_gamma_lin_static) then
 
-      w    =  0.0d0
+      w = 0.0d0
 
       sum_up =           8.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 1, 1, 1)
       sum_up = sum_up + 12.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 1, 3, 3)
@@ -228,6 +228,13 @@ contains
             real(w(2)),                       &
             real(w(3)),                       &
             sum_up
+
+    end if
+
+    if (aor_cfg_test_delta) then
+
+      w = 0.0d0
+      sum_up = delta_element(S, D, F, (/w(1:4)/), 3, 3, 3, 3, 3)
 
     end if
 

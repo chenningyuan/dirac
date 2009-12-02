@@ -659,7 +659,7 @@ contains
     type(matrix)                :: F_jk(3, 3)
     type(matrix)                :: F_ijk(3, 3, 3)
     complex(8)                  :: e(3, 3, 3, 3)
-    integer                     :: c1, c2, c3, c4
+    integer                     :: c1, c2, c3
 !   ----------------------------------------------------------------------------
 
     S = 1.0d0*S
@@ -785,16 +785,16 @@ contains
     D_i   = 0
     D_j   = 0
     D_k   = 0
-    F_i   = 0
-    F_j   = 0
-    F_k   = 0
     D_ij  = 0
     D_ik  = 0
     D_jk  = 0
+    D_ijk = 0
+    F_i   = 0
+    F_j   = 0
+    F_k   = 0
     F_ij  = 0
     F_ik  = 0
     F_jk  = 0
-    D_ijk = 0
     F_ijk = 0
 
     gamma_element = -e(i, j, k, m)
@@ -807,6 +807,413 @@ contains
                                                            fc(j),         &
                                                            fc(k),         &
                                                            gamma_element
+
+  end function
+
+  function delta_element(S, D, F, w, m, i, j, k, l)
+
+!   ----------------------------------------------------------------------------
+    real(8)                     :: delta_element
+    type(matrix), intent(inout) :: S, D, F
+    integer,      intent(in)    :: m, i, j, k, l
+    complex(8),   intent(in)    :: w(4)
+!   ----------------------------------------------------------------------------
+!   pascal triangle: 1 0th order matrix
+!                    4 1st order matrices
+!                    6 2nd
+!                    4 3rd
+!                    1 4th
+    type(matrix)                :: D_i(3)
+    type(matrix)                :: D_j(3)
+    type(matrix)                :: D_k(3)
+    type(matrix)                :: D_l(3)
+    type(matrix)                :: D_ij(3, 3)
+    type(matrix)                :: D_ik(3, 3)
+    type(matrix)                :: D_il(3, 3)
+    type(matrix)                :: D_jk(3, 3)
+    type(matrix)                :: D_jl(3, 3)
+    type(matrix)                :: D_kl(3, 3)
+    type(matrix)                :: D_ijk(3, 3, 3)
+    type(matrix)                :: D_ijl(3, 3, 3)
+    type(matrix)                :: D_ikl(3, 3, 3)
+    type(matrix)                :: D_jkl(3, 3, 3)
+    type(matrix)                :: D_ijkl(3, 3, 3, 3)
+    type(matrix)                :: F_i(3)
+    type(matrix)                :: F_j(3)
+    type(matrix)                :: F_k(3)
+    type(matrix)                :: F_l(3)
+    type(matrix)                :: F_ij(3, 3)
+    type(matrix)                :: F_ik(3, 3)
+    type(matrix)                :: F_il(3, 3)
+    type(matrix)                :: F_jk(3, 3)
+    type(matrix)                :: F_jl(3, 3)
+    type(matrix)                :: F_kl(3, 3)
+    type(matrix)                :: F_ijk(3, 3, 3)
+    type(matrix)                :: F_ijl(3, 3, 3)
+    type(matrix)                :: F_ikl(3, 3, 3)
+    type(matrix)                :: F_jkl(3, 3, 3)
+    type(matrix)                :: F_ijkl(3, 3, 3, 3)
+    complex(8)                  :: e(3, 3, 3, 3, 3)
+    integer                     :: c1, c2, c3, c4
+!   ----------------------------------------------------------------------------
+
+    S = 1.0d0*S
+    D = 1.0d0*D
+    F = 1.0d0*F
+
+    do c1 = 1, 3
+      D_i(c1) = tiny(0.0d0)*D
+      D_j(c1) = tiny(0.0d0)*D
+      D_k(c1) = tiny(0.0d0)*D
+      D_l(c1) = tiny(0.0d0)*D
+      F_i(c1) = tiny(0.0d0)*D
+      F_j(c1) = tiny(0.0d0)*D
+      F_k(c1) = tiny(0.0d0)*D
+      F_l(c1) = tiny(0.0d0)*D
+      do c2 = 1, 3
+        D_ij(c1, c2) = tiny(0.0d0)*D
+        D_ik(c1, c2) = tiny(0.0d0)*D
+        D_il(c1, c2) = tiny(0.0d0)*D
+        D_jk(c1, c2) = tiny(0.0d0)*D
+        D_jl(c1, c2) = tiny(0.0d0)*D
+        D_kl(c1, c2) = tiny(0.0d0)*D
+        F_ij(c1, c2) = tiny(0.0d0)*D
+        F_ik(c1, c2) = tiny(0.0d0)*D
+        F_il(c1, c2) = tiny(0.0d0)*D
+        F_jk(c1, c2) = tiny(0.0d0)*D
+        F_jl(c1, c2) = tiny(0.0d0)*D
+        F_kl(c1, c2) = tiny(0.0d0)*D
+        do c3 = 1, 3
+          D_ijk(c1, c2, c3) = tiny(0.0d0)*D
+          D_ijl(c1, c2, c3) = tiny(0.0d0)*D
+          D_ikl(c1, c2, c3) = tiny(0.0d0)*D
+          D_jkl(c1, c2, c3) = tiny(0.0d0)*D
+          F_ijk(c1, c2, c3) = tiny(0.0d0)*D
+          F_ijl(c1, c2, c3) = tiny(0.0d0)*D
+          F_ikl(c1, c2, c3) = tiny(0.0d0)*D
+          F_jkl(c1, c2, c3) = tiny(0.0d0)*D
+          do c4 = 1, 3
+            D_ijkl(c1, c2, c3, c4) = tiny(0.0d0)*D
+            F_ijkl(c1, c2, c3, c4) = tiny(0.0d0)*D
+          end do
+        end do
+      end do
+    end do
+
+    call pert_dens((/'EL'/), S, (/D/), (/F/), D_i(i), F_i(i), w=(/w(1)/), c=(/i/))
+    call pert_dens((/'EL'/), S, (/D/), (/F/), D_j(j), F_j(j), w=(/w(2)/), c=(/j/))
+    call pert_dens((/'EL'/), S, (/D/), (/F/), D_k(k), F_k(k), w=(/w(3)/), c=(/k/))
+    call pert_dens((/'EL'/), S, (/D/), (/F/), D_l(l), F_l(l), w=(/w(4)/), c=(/l/))
+
+    call pert_dens((/'EL', 'EL'/),           &
+                     S,                      &
+                   (/                        &
+                     D,                      &
+                     D_i(i),                 &
+                     D_j(j)                  &
+                    /),                      &
+                   (/                        &
+                     F,                      &
+                     F_i(i),                 &
+                     F_j(j)                  &
+                    /),                      &
+                     D_ij(i, j),             &
+                     F_ij(i, j),             &
+                     w=(/w(1), w(2)/),       &
+                     c=(/i, j/))
+
+    call pert_dens((/'EL', 'EL'/),           &
+                     S,                      &
+                   (/                        &
+                     D,                      &
+                     D_i(i),                 &
+                     D_k(k)                  &
+                    /),                      &
+                   (/                        &
+                     F,                      &
+                     F_i(i),                 &
+                     F_k(k)                  &
+                    /),                      &
+                     D_ik(i, k),             &
+                     F_ik(i, k),             &
+                     w=(/w(1), w(3)/),       &
+                     c=(/i, k/))
+
+    call pert_dens((/'EL', 'EL'/),           &
+                     S,                      &
+                   (/                        &
+                     D,                      &
+                     D_i(i),                 &
+                     D_l(l)                  &
+                    /),                      &
+                   (/                        &
+                     F,                      &
+                     F_i(i),                 &
+                     F_l(l)                  &
+                    /),                      &
+                     D_il(i, l),             &
+                     F_il(i, l),             &
+                     w=(/w(1), w(4)/),       &
+                     c=(/i, l/))
+
+    call pert_dens((/'EL', 'EL'/),           &
+                     S,                      &
+                   (/                        &
+                     D,                      &
+                     D_j(j),                 &
+                     D_k(k)                  &
+                    /),                      &
+                   (/                        &
+                     F,                      &
+                     F_j(j),                 &
+                     F_k(k)                  &
+                    /),                      &
+                     D_jk(j, k),             &
+                     F_jk(j, k),             &
+                     w=(/w(2), w(3)/),       &
+                     c=(/j, k/))
+
+    call pert_dens((/'EL', 'EL'/),           &
+                     S,                      &
+                   (/                        &
+                     D,                      &
+                     D_j(j),                 &
+                     D_l(l)                  &
+                    /),                      &
+                   (/                        &
+                     F,                      &
+                     F_j(j),                 &
+                     F_l(l)                  &
+                    /),                      &
+                     D_jl(j, l),             &
+                     F_jl(j, l),             &
+                     w=(/w(2), w(4)/),       &
+                     c=(/j, l/))
+
+    call pert_dens((/'EL', 'EL'/),           &
+                     S,                      &
+                   (/                        &
+                     D,                      &
+                     D_k(k),                 &
+                     D_l(l)                  &
+                    /),                      &
+                   (/                        &
+                     F,                      &
+                     F_k(k),                 &
+                     F_l(l)                  &
+                    /),                      &
+                     D_kl(k, l),             &
+                     F_kl(k, l),             &
+                     w=(/w(3), w(4)/),       &
+                     c=(/k, l/))
+
+    call pert_dens((/'EL', 'EL', 'EL'/),     &
+                     S,                      &
+                   (/                        &
+                     D,                      &
+                     D_i(i),                 &
+                     D_j(j),                 &
+                     D_k(k),                 &
+                     D_ij(i, j),             &
+                     D_ik(i, k),             &
+                     D_jk(j, k)              &
+                    /),                      &
+                   (/                        &
+                     F,                      &
+                     F_i(i),                 &
+                     F_j(j),                 &
+                     F_k(k),                 &
+                     F_ij(i, j),             &
+                     F_ik(i, k),             &
+                     F_jk(j, k)              &
+                    /),                      &
+                     D_ijk(i, j, k),         &
+                     F_ijk(i, j, k),         &
+                     w=(/w(1), w(2), w(3)/), &
+                     c=(/i, j, k/))
+
+    call pert_dens((/'EL', 'EL', 'EL'/),     &
+                     S,                      &
+                   (/                        &
+                     D,                      &
+                     D_i(i),                 &
+                     D_j(j),                 &
+                     D_l(l),                 &
+                     D_ij(i, j),             &
+                     D_il(i, l),             &
+                     D_jl(j, l)              &
+                    /),                      &
+                   (/                        &
+                     F,                      &
+                     F_i(i),                 &
+                     F_j(j),                 &
+                     F_l(l),                 &
+                     F_ij(i, j),             &
+                     F_il(i, l),             &
+                     F_jl(j, l)              &
+                    /),                      &
+                     D_ijl(i, j, l),         &
+                     F_ijl(i, j, l),         &
+                     w=(/w(1), w(2), w(4)/), &
+                     c=(/i, j, l/))
+
+    call pert_dens((/'EL', 'EL', 'EL'/),     &
+                     S,                      &
+                   (/                        &
+                     D,                      &
+                     D_i(i),                 &
+                     D_k(k),                 &
+                     D_l(l),                 &
+                     D_ik(i, k),             &
+                     D_il(i, l),             &
+                     D_kl(k, l)              &
+                    /),                      &
+                   (/                        &
+                     F,                      &
+                     F_i(i),                 &
+                     F_k(k),                 &
+                     F_l(l),                 &
+                     F_ik(i, k),             &
+                     F_il(i, l),             &
+                     F_kl(k, l)              &
+                    /),                      &
+                     D_ikl(i, k, l),         &
+                     F_ikl(i, k, l),         &
+                     w=(/w(1), w(3), w(4)/), &
+                     c=(/i, k, l/))
+
+    call pert_dens((/'EL', 'EL', 'EL'/),     &
+                     S,                      &
+                   (/                        &
+                     D,                      &
+                     D_j(j),                 &
+                     D_k(k),                 &
+                     D_l(l),                 &
+                     D_jk(j, k),             &
+                     D_jl(j, l),             &
+                     D_kl(k, l)              &
+                    /),                      &
+                   (/                        &
+                     F,                      &
+                     F_j(j),                 &
+                     F_k(k),                 &
+                     F_l(l),                 &
+                     F_jk(j, k),             &
+                     F_jl(j, l),             &
+                     F_kl(k, l)              &
+                    /),                      &
+                     D_jkl(j, k, l),         &
+                     F_jkl(j, k, l),         &
+                     w=(/w(2), w(3), w(4)/), &
+                     c=(/j, k, l/))
+
+    call pert_dens((/'EL', 'EL', 'EL', 'EL'/),     &
+                     S,                            &
+                   (/                              &
+                     D,                            &
+                     D_i(i),                       &        
+                     D_j(j),                       &        
+                     D_k(k),                       &        
+                     D_l(l),                       &        
+                     D_ij(i, j),                   &           
+                     D_ik(i, k),                   &           
+                     D_il(i, l),                   &           
+                     D_jk(j, k),                   &           
+                     D_jl(j, l),                   &           
+                     D_kl(k, l),                   &
+                     D_ijk(i, j, k),               &   
+                     D_ijl(i, j, l),               &   
+                     D_ikl(i, k, l),               &   
+                     D_jkl(j, k, l)                &   
+                    /),                            &
+                   (/                              &
+                     F,                            &
+                     F_i(i),                       &        
+                     F_j(j),                       &        
+                     F_k(k),                       &        
+                     F_l(l),                       &        
+                     F_ij(i, j),                   &           
+                     F_ik(i, k),                   &           
+                     F_il(i, l),                   &           
+                     F_jk(j, k),                   &           
+                     F_jl(j, l),                   &           
+                     F_kl(k, l),                   &
+                     F_ijk(i, j, k),               &   
+                     F_ijl(i, j, l),               &   
+                     F_ikl(i, k, l),               &   
+                     F_jkl(j, k, l)                &   
+                    /),                            &
+                     D_ijkl(i, j, k, l),           &
+                     F_ijkl(i, j, k, l),           &
+                     w=(/w(1), w(2), w(3), w(4)/), &
+                     c=(/i, j, k, l/))
+
+    e = 0.0d0
+    call prop_energy((/'EL'/), &
+                     (/        &
+                       D,      &
+                       D_i,    &
+                       D_j,    &
+                       D_k,    &
+                       D_l,    &
+                       D_ij,   &
+                       D_ik,   &
+                       D_il,   &
+                       D_jk,   &
+                       D_jl,   &
+                       D_kl,   &
+                       D_ijk,  &
+                       D_ijl,  &
+                       D_ikl,  &
+                       D_jkl,  &
+                       D_ijkl  &
+                      /),      &
+                       e,      &
+                       b=(/3, 3, 3, 3/))
+
+    D_i    = 0
+    D_j    = 0
+    D_k    = 0
+    D_l    = 0
+    D_ij   = 0
+    D_ik   = 0
+    D_il   = 0
+    D_jk   = 0
+    D_jl   = 0
+    D_kl   = 0
+    D_ijk  = 0
+    D_ijl  = 0
+    D_ikl  = 0
+    D_jkl  = 0
+    D_ijkl = 0
+    F_i    = 0
+    F_j    = 0
+    F_k    = 0
+    F_l    = 0
+    F_ij   = 0
+    F_ik   = 0
+    F_il   = 0
+    F_jk   = 0
+    F_jl   = 0
+    F_kl   = 0
+    F_ijk  = 0
+    F_ijl  = 0
+    F_ikl  = 0
+    F_jkl  = 0
+    F_ijkl = 0
+
+    delta_element = -e(i, j, k, l, m)
+    print '("@ delta (w = "5f9.4")" a10 a2 a2 a2 a2 f26.10)', real(-sum(w)), &
+                                                              real(w(1)),    &
+                                                              real(w(2)),    &
+                                                              real(w(3)),    &
+                                                              real(w(4)),    &
+                                                              fc(m),         &
+                                                              fc(i),         &
+                                                              fc(j),         &
+                                                              fc(k),         &
+                                                              fc(l),         &
+                                                              delta_element
 
   end function
 

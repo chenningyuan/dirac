@@ -28,6 +28,7 @@ module aor_cfg
   logical, public :: aor_cfg_roa                = .false.
   logical, public :: aor_cfg_cars               = .false.
   logical, public :: aor_cfg_dg_energy          = .false.
+  logical, public :: aor_cfg_test_delta         = .false.
 
   logical, public :: aor_cfg_integrate          = .false.
   logical, public :: aor_cfg_visual             = .false.

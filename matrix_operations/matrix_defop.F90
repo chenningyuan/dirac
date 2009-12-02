@@ -114,6 +114,7 @@ module matrix_defop
       module procedure mat_eq_zero_1D
       module procedure mat_eq_zero_2D
       module procedure mat_eq_zero_3D
+      module procedure mat_eq_zero_4D
    end interface
 
    interface isdef
@@ -791,6 +792,21 @@ contains
          do j = 1, size(A,2)
             do i = 1, size(A,1)
                A(i,j,k) = 0
+            end do
+         end do
+      end do
+   end subroutine
+
+   subroutine mat_eq_zero_4D(A,zero)
+      type(matrix),intent(inout) :: A(:,:,:,:)
+      integer,intent(in)         :: zero
+      integer                    :: i,j,k,l
+      do l = 1, size(A,4)
+         do k = 1, size(A,3)
+            do j = 1, size(A,2)
+               do i = 1, size(A,1)
+                  A(i,j,k,l) = 0
+               end do
             end do
          end do
       end do

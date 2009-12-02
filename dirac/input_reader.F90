@@ -612,6 +612,10 @@ contains
       call kw_read(word, aor_cfg_zzz_order)
     end if
 
+    if (kw_matches(word, '.DELTA ')) then
+      aor_cfg_test_delta = .true.
+    end if
+
     call check_whether_kw_found(word, kw_section)
 #endif /* ifndef MOD_AORESPONSE */
 
