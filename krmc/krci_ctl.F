@@ -1054,7 +1054,6 @@ C
      &              KFREE,LFREE)
   100 CONTINUE
 C     ^-- end loop IOPT_SYMMETRY over CI state symmetries
-  101 CONTINUE
 C
 C     ***************************************************
 C     *** KR-CI property calculation ********************
