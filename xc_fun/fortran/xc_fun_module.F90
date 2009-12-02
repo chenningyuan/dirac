@@ -17,22 +17,22 @@ module xc_fun
 
 ! Index of each functional parameter in the argument
 ! of set_functional
-  integer, parameter ::  XC_VWN5_CORRELATION = 0
-  integer, parameter ::  XC_SLATER_EXCHANGE  = 1
-  integer, parameter ::  XC_LYP_CORRELATION  = 2
-  integer, parameter ::  XC_PW91_EXCHANGE    = 3
-  integer, parameter ::  XC_PBE_CORRELATION  = 4
-  integer, parameter ::  XC_OLD_PBE_CORRELATION = 5
-  integer, parameter ::  XC_BECKE_EXCHANGE   = 6
-  integer, parameter ::  XC_OLD_PBE_EXCHANGE = 7
-  integer, parameter ::  XC_OLD_RPBE_EXCHANGE= 8 
-  integer, parameter ::  XC_PBE_EXCHANGE     = 9
-  integer, parameter ::  XC_REVPBE_EXCHANGE  = 10
-  integer, parameter ::  XC_PW92_CORRELATION = 11
-  integer, parameter ::  KIN_TF              = 12
-  integer, parameter ::  KIN_PW91            = 13
+  integer, parameter ::  XC_VWN5_CORRELATION = 1
+  integer, parameter ::  XC_SLATER_EXCHANGE  = 2
+  integer, parameter ::  XC_LYP_CORRELATION  = 3
+  integer, parameter ::  XC_PW91_EXCHANGE    = 4
+  integer, parameter ::  XC_PBE_CORRELATION  = 5
+  integer, parameter ::  XC_OLD_PBE_CORRELATION = 6
+  integer, parameter ::  XC_BECKE_EXCHANGE   = 7
+  integer, parameter ::  XC_OLD_PBE_EXCHANGE = 8
+  integer, parameter ::  XC_OLD_RPBE_EXCHANGE= 9 
+  integer, parameter ::  XC_PBE_EXCHANGE     = 10
+  integer, parameter ::  XC_REVPBE_EXCHANGE  = 11
+  integer, parameter ::  XC_PW92_CORRELATION = 12
+  integer, parameter ::  KIN_TF              = 13
+  integer, parameter ::  KIN_PW91            = 14
 ! Make sure XC_PARAMS_LEN matches the number of parameters above
-  integer, parameter ::  XC_PARAMS_LEN = 13 
+  integer, parameter ::  XC_PARAMS_LEN = 14 
 
 ! The different modes (density variables) xc_fun can work with,
 ! these are passed as the first argument to set_functional()
