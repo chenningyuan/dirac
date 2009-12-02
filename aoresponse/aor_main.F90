@@ -24,7 +24,8 @@ contains
 
     type(matrix)  :: S, C_i, D, F
     complex(8) :: freq(4)
-    real(kind_dp) :: add_to
+    complex(8) :: w(10)
+    real(kind_dp) :: sum_up
     integer       :: i, j
     integer, intent(in)    :: lwork
     real(8), intent(inout) :: work(lwork)
@@ -118,154 +119,139 @@ contains
 
     if (aor_cfg_gamma_lin_dc_kerr) then
 
-      add_to = 0.0d0
+      w    = 0.0d0
+      w(1) = aor_cfg_freq_process
+      w(2) = 0.0d0
+      w(3) = 0.0d0
 
-      freq(1) = -aor_cfg_freq_process
-      freq(2) =  aor_cfg_freq_process
-      freq(3) =  0.0d0
-      freq(4) =  0.0d0
-
-      call gamma_element(8.0d0, add_to, 1, 1, 1, 1, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-      call gamma_element(8.0d0, add_to, 1, 3, 3, 1, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-      call gamma_element(2.0d0, add_to, 1, 1, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-      call gamma_element(2.0d0, add_to, 3, 3, 1, 1, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-      call gamma_element(3.0d0, add_to, 3, 3, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-
-      add_to = add_to/15.0d0
+      sum_up =          8.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 1, 1, 1)
+      sum_up = sum_up + 8.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 3, 3, 1)
+      sum_up = sum_up + 2.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 1, 3, 3)
+      sum_up = sum_up + 2.0d0*gamma_element(S, D, F, (/w(1:3)/), 3, 3, 1, 1)
+      sum_up = sum_up + 3.0d0*gamma_element(S, D, F, (/w(1:3)/), 3, 3, 3, 3)
+      sum_up = sum_up/15.0d0
 
       print '(a30 " (w = "4f9.4"):" f26.10)', &
             '@ averaged gamma dc Kerr',       &
-            real(freq(1)),                    &
-            real(freq(2)),                    &
-            real(freq(3)),                    &
-            real(freq(4)),                    &
-            add_to
+            real(-sum(w)),                    &
+            real(w(1)),                       &
+            real(w(2)),                       &
+            real(w(3)),                       &
+            sum_up
 
     end if
 
     if (aor_cfg_gamma_lin_dc_shg) then
 
-      add_to = 0.0d0
+      w    = 0.0d0
+      w(1) = aor_cfg_freq_process
+      w(2) = aor_cfg_freq_process
+      w(3) = 0.0d0
 
-      freq(1) = -aor_cfg_freq_process*2.0d0
-      freq(2) =  aor_cfg_freq_process
-      freq(3) =  aor_cfg_freq_process
-      freq(4) =  0.0d0
-
-      call gamma_element(8.0d0, add_to, 1, 1, 1, 1, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-      call gamma_element(2.0d0, add_to, 1, 3, 3, 1, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-      call gamma_element(2.0d0, add_to, 3, 1, 1, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-      call gamma_element(4.0d0, add_to, 1, 1, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-      call gamma_element(4.0d0, add_to, 3, 3, 1, 1, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-      call gamma_element(3.0d0, add_to, 3, 3, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-
-      add_to = add_to/15.0d0
+      sum_up =          8.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 1, 1, 1)
+      sum_up = sum_up + 2.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 3, 3, 1)
+      sum_up = sum_up + 2.0d0*gamma_element(S, D, F, (/w(1:3)/), 3, 1, 1, 3)
+      sum_up = sum_up + 4.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 1, 3, 3)
+      sum_up = sum_up + 4.0d0*gamma_element(S, D, F, (/w(1:3)/), 3, 3, 1, 1)
+      sum_up = sum_up + 3.0d0*gamma_element(S, D, F, (/w(1:3)/), 3, 3, 3, 3)
+      sum_up = sum_up/15.0d0
 
       print '(a30 " (w = "4f9.4"):" f26.10)', &
             '@ averaged gamma dc SHG',        &
-            real(freq(1)),                    &
-            real(freq(2)),                    &
-            real(freq(3)),                    &
-            real(freq(4)),                    &
-            add_to
+            real(-sum(w)),                    &
+            real(w(1)),                       &
+            real(w(2)),                       &
+            real(w(3)),                       &
+            sum_up
 
     end if
 
     if (aor_cfg_gamma_lin_thg) then
 
-      add_to = 0.0d0
+      w    = 0.0d0
+      w(1) = aor_cfg_freq_process
+      w(2) = aor_cfg_freq_process
+      w(3) = aor_cfg_freq_process
 
-      freq(1) = -aor_cfg_freq_process*3.0d0
-      freq(2) =  aor_cfg_freq_process
-      freq(3) =  aor_cfg_freq_process
-      freq(4) =  aor_cfg_freq_process
-
-      call gamma_element(8.0d0, add_to, 1, 1, 1, 1, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-      call gamma_element(6.0d0, add_to, 1, 1, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-      call gamma_element(6.0d0, add_to, 3, 3, 1, 1, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-      call gamma_element(3.0d0, add_to, 3, 3, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-
-      add_to = add_to/15.0d0
+      sum_up =          8.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 1, 1, 1)
+      sum_up = sum_up + 6.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 1, 3, 3)
+      sum_up = sum_up + 6.0d0*gamma_element(S, D, F, (/w(1:3)/), 3, 3, 1, 1)
+      sum_up = sum_up + 3.0d0*gamma_element(S, D, F, (/w(1:3)/), 3, 3, 3, 3)
+      sum_up = sum_up/15.0d0
 
       print '(a30 " (w = "4f9.4"):" f26.10)', &
             '@ averaged gamma dc THG',        &
-            real(freq(1)),                    &
-            real(freq(2)),                    &
-            real(freq(3)),                    &
-            real(freq(4)),                    &
-            add_to
+            real(-sum(w)),                    &
+            real(w(1)),                       &
+            real(w(2)),                       &
+            real(w(3)),                       &
+            sum_up
 
     end if
-
-    if (aor_cfg_zzz) call aor_zzz(aor_cfg_zzz_order, S, D, F)
 
     if (aor_cfg_gamma_lin_idri) then
 
-      add_to = 0.0d0
+      w    =  0.0d0
+      w(1) =  aor_cfg_freq_process
+      w(2) = -aor_cfg_freq_process
+      w(3) =  aor_cfg_freq_process
 
-      freq(1) = -aor_cfg_freq_process
-      freq(2) =  aor_cfg_freq_process
-      freq(3) = -aor_cfg_freq_process
-      freq(4) =  aor_cfg_freq_process
-
-      call gamma_element(8.0d0, add_to, 1, 1, 1, 1, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-      call gamma_element(8.0d0, add_to, 1, 1, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-      call gamma_element(4.0d0, add_to, 1, 3, 1, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-      call gamma_element(3.0d0, add_to, 3, 3, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-
-      add_to = add_to/15.0d0
+      sum_up =          8.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 1, 1, 1)
+      sum_up = sum_up + 8.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 1, 3, 3)
+      sum_up = sum_up + 4.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 3, 1, 3)
+      sum_up = sum_up + 3.0d0*gamma_element(S, D, F, (/w(1:3)/), 3, 3, 3, 3)
+      sum_up = sum_up/15.0d0
 
       print '(a30 " (w = "4f9.4"):" f26.10)', &
             '@ averaged gamma dc IDRI',       &
-            real(freq(1)),                    &
-            real(freq(2)),                    &
-            real(freq(3)),                    &
-            real(freq(4)),                    &
-            add_to
-
-    end if
-
-
-
-    if (aor_cfg_beta_lin_static) then
-
-      add_to = 0.0d0
-      freq   = 0.0d0
-
-      call beta_element(2.0d0, add_to, 1, 1, 3, S, D, F, (/freq(1:2), -sum(freq(1:2))/))
-      call beta_element(1.0d0, add_to, 3, 3, 3, S, D, F, (/freq(1:2), -sum(freq(1:2))/))
-
-      add_to = 3.0d0*add_to/5.0d0
-
-      print '(a30 " (w = "3f9.4"):" f26.10)', &
-            '@ averaged static beta',         &
-            real(freq(1)),                          &
-            real(freq(2)),                          &
-            real(freq(3)),                          &
-            add_to
+            real(-sum(w)),                    &
+            real(w(1)),                       &
+            real(w(2)),                       &
+            real(w(3)),                       &
+            sum_up
 
     end if
 
     if (aor_cfg_gamma_lin_static) then
 
-      add_to = 0.0d0
-      freq   = 0.0d0
+      w    =  0.0d0
 
-      call gamma_element( 8.0d0, add_to, 1, 1, 1, 1, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-      call gamma_element(12.0d0, add_to, 1, 1, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-      call gamma_element( 3.0d0, add_to, 3, 3, 3, 3, S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-
-      add_to = add_to/15.0d0
+      sum_up =           8.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 1, 1, 1)
+      sum_up = sum_up + 12.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 1, 3, 3)
+      sum_up = sum_up +  3.0d0*gamma_element(S, D, F, (/w(1:3)/), 3, 3, 3, 3)
+      sum_up = sum_up/15.0d0
 
       print '(a30 " (w = "4f9.4"):" f26.10)', &
             '@ averaged static gamma',        &
-            real(freq(1)),                          &
-            real(freq(2)),                          &
-            real(freq(3)),                          &
-            real(freq(4)),                          &
-            add_to
+            real(-sum(w)),                    &
+            real(w(1)),                       &
+            real(w(2)),                       &
+            real(w(3)),                       &
+            sum_up
 
     end if
+
+!   if (aor_cfg_beta_lin_static) then
+
+!     add_to = 0.0d0
+!     freq   = 0.0d0
+
+!     call beta_element(2.0d0, add_to, 1, 1, 3, S, D, F, (/freq(1:2), -sum(freq(1:2))/))
+!     call beta_element(1.0d0, add_to, 3, 3, 3, S, D, F, (/freq(1:2), -sum(freq(1:2))/))
+
+!     add_to = 3.0d0*add_to/5.0d0
+
+!     print '(a30 " (w = "3f9.4"):" f26.10)', &
+!           '@ averaged static beta',         &
+!           real(freq(1)),                          &
+!           real(freq(2)),                          &
+!           real(freq(3)),                          &
+!           add_to
+
+!   end if
+
+
+    if (aor_cfg_zzz) call aor_zzz(aor_cfg_zzz_order, S, D, F)
 
     S = 0
     D = 0

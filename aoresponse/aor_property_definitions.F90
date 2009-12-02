@@ -11,7 +11,7 @@ module aor_property_definitions
     implicit none
 
     character(1)  :: fc(3) = (/'x', 'y', 'z'/)
-    real(8) :: tiny = 1.0d-10
+    real(8) :: small_number = 1.0d-10
 
 contains
 
@@ -316,7 +316,7 @@ contains
     integer                     :: i, j
 !   ----------------------------------------------------------------------------
 
-    if (abs(sum(w)) > tiny) call quit('alpha: frequencies do not sum up to zero')
+    if (abs(sum(w)) > small_number) call quit('alpha: frequencies do not sum up to zero')
 
     S = 1.0d0*S
     D = 1.0d0*D
@@ -344,7 +344,7 @@ contains
       F_i(i) = 0
 
       do j = 1, 3
-        if (abs(e_ij(i, j)) > tiny) then
+        if (abs(e_ij(i, j)) > small_number) then
           print '("@" a10 a2 f26.10)', fc(i), fc(j), -real(e_ij(i, j))
         end if
       end do
@@ -372,7 +372,7 @@ contains
     complex(8)               :: e_ijk(3, 3, 3)
     integer                     :: i, j, k
 
-    if (abs(sum(w)) > tiny) call quit('beta: frequencies do not sum up to zero')
+    if (abs(sum(w)) > small_number) call quit('beta: frequencies do not sum up to zero')
 
     S = 1.0d0*S
     D = 1.0d0*D
@@ -405,7 +405,7 @@ contains
         F_ij(i, j) = 0
 
         do k = 1, 3
-          if (abs(e_ijk(i, j, k)) > tiny) then
+          if (abs(e_ijk(i, j, k)) > small_number) then
             print '("@" a10 a2 a2 f26.10)', fc(i), fc(j), fc(k), -real(e_ijk(i, j, k))
           end if
         end do
@@ -426,7 +426,7 @@ contains
     integer                     :: i, j, k
     character(4)                :: nop(0)
 
-    if (abs(sum(w)) > tiny) call quit('beta: frequencies do not sum up to zero')
+    if (abs(sum(w)) > small_number) call quit('beta: frequencies do not sum up to zero')
 
     S = 1.0d0*S
     D = 1.0d0*D
@@ -527,7 +527,7 @@ contains
 
       do j = 1, 3
         do k = 1, 3
-          if (abs(e_ijk(i, j, k)) > tiny) then
+          if (abs(e_ijk(i, j, k)) > small_number) then
             print '("@" a10 a2 a2 f26.10)', fc(i), fc(j), fc(k), -real(e_ijk(i, j, k))
           end if
         end do
@@ -549,7 +549,7 @@ contains
     complex(8)                :: e_ijk(3, 3, 3)
     integer                      :: i, j, k
 
-    if (abs(sum(w)) > tiny) call quit('beta: frequencies do not sum up to zero')
+    if (abs(sum(w)) > small_number) call quit('beta: frequencies do not sum up to zero')
 
     S = 1.0d0*S
     D = 1.0d0*D
@@ -620,7 +620,7 @@ contains
 
         do k = 1, 3
 
-          if (abs(e_ijk(i, j, k)) > tiny) then
+          if (abs(e_ijk(i, j, k)) > small_number) then
             print '("@ beta (w = "3f8.4")" a10 a2 a2 f26.10)', real(w(1)),  &
                                                                real(w(2)),  &
                                                                real(w(3)),  &
@@ -636,178 +636,179 @@ contains
 
   end subroutine
 
-  subroutine gamma_element(scale_by, add_to, ui, uj, uk, ul, S, D, F, w)
+  function gamma_element(S, D, F, w, m, i, j, k)
 
-    real(8), intent(in)    :: scale_by
-    real(8), intent(inout) :: add_to
-    integer,       intent(in)    :: ui, uj, uk, ul
-    type(matrix),  intent(inout) :: S, D, F
-    complex(8), intent(in)    :: w(4)
 !   ----------------------------------------------------------------------------
-    type(matrix)                 :: D_i(3), D_j(3), D_k(3), D_ij(3, 3), D_ik(3, 3), D_jk(3, 3), D_ijk(3, 3, 3)
-    type(matrix)                 :: F_i(3), F_j(3), F_k(3), F_ij(3, 3), F_ik(3, 3), F_jk(3, 3), F_ijk(3, 3, 3)
-    complex(8)                :: e_ijkl(3, 3, 3, 3)
-    integer                      :: i, j, k, l
-
-    if (abs(sum(w)) > tiny) call quit('gamma: frequencies do not sum up to zero')
+    real(8)                     :: gamma_element
+    type(matrix), intent(inout) :: S, D, F
+    integer,      intent(in)    :: m, i, j, k
+    complex(8),   intent(in)    :: w(3)
+!   ----------------------------------------------------------------------------
+    type(matrix)                :: D_i(3)
+    type(matrix)                :: D_j(3)
+    type(matrix)                :: D_k(3)
+    type(matrix)                :: D_ij(3, 3)
+    type(matrix)                :: D_ik(3, 3)
+    type(matrix)                :: D_jk(3, 3)
+    type(matrix)                :: D_ijk(3, 3, 3)
+    type(matrix)                :: F_i(3)
+    type(matrix)                :: F_j(3)
+    type(matrix)                :: F_k(3)
+    type(matrix)                :: F_ij(3, 3)
+    type(matrix)                :: F_ik(3, 3)
+    type(matrix)                :: F_jk(3, 3)
+    type(matrix)                :: F_ijk(3, 3, 3)
+    complex(8)                  :: e(3, 3, 3, 3)
+    integer                     :: c1, c2, c3, c4
+!   ----------------------------------------------------------------------------
 
     S = 1.0d0*S
     D = 1.0d0*D
     F = 1.0d0*F
 
-    do i = 1, 3
-
-      D_i(i) = 1.0d-100*D; D_j(i) = 1.0d-100*D; D_k(i) = 1.0d-100*D
-      F_i(i) = 1.0d-100*D; F_j(i) = 1.0d-100*D; F_k(i) = 1.0d-100*D
-
-      do j = 1, 3
-
-        D_ij(i, j) = 1.0d-100*D; D_ik(i, j) = 1.0d-100*D; D_jk(i, j) = 1.0d-100*D
-        F_ij(i, j) = 1.0d-100*D; F_ik(i, j) = 1.0d-100*D; F_jk(i, j) = 1.0d-100*D
-
-        do k = 1, 3
-
-          D_ijk(i, j, k) = 1.0d-100*D
-          F_ijk(i, j, k) = 1.0d-100*D
-
+    do c1 = 1, 3
+      D_i(c1) = tiny(0.0d0)*D
+      D_j(c1) = tiny(0.0d0)*D
+      D_k(c1) = tiny(0.0d0)*D
+      F_i(c1) = tiny(0.0d0)*D
+      F_j(c1) = tiny(0.0d0)*D
+      F_k(c1) = tiny(0.0d0)*D
+      do c2 = 1, 3
+        D_ij(c1, c2) = tiny(0.0d0)*D
+        D_ik(c1, c2) = tiny(0.0d0)*D
+        D_jk(c1, c2) = tiny(0.0d0)*D
+        F_ij(c1, c2) = tiny(0.0d0)*D
+        F_ik(c1, c2) = tiny(0.0d0)*D
+        F_jk(c1, c2) = tiny(0.0d0)*D
+        do c3 = 1, 3
+          D_ijk(c1, c2, c3) = tiny(0.0d0)*D
+          F_ijk(c1, c2, c3) = tiny(0.0d0)*D
         end do
       end do
     end do
 
-    call pert_dens((/'EL'/),   &
-                        S,        &
-                      (/D/),      &
-                      (/F/),      &
-                        D_i(ui),  &
-                        F_i(ui),  &
-                        w=w(1:1), &
-                        c=(/ui/))
+    call pert_dens((/'EL'/), S, (/D/), (/F/), D_i(i), F_i(i), w=(/w(1)/), c=(/i/))
+    call pert_dens((/'EL'/), S, (/D/), (/F/), D_j(j), F_j(j), w=(/w(2)/), c=(/j/))
+    call pert_dens((/'EL'/), S, (/D/), (/F/), D_k(k), F_k(k), w=(/w(3)/), c=(/k/))
 
-    call pert_dens((/'EL'/),   &
-                        S,        &
-                      (/D/),      &
-                      (/F/),      &
-                        D_j(uj),  &
-                        F_j(uj),  &
-                        w=w(2:2), &
-                        c=(/uj/))
+    call pert_dens((/'EL', 'EL'/),           &
+                     S,                      &
+                   (/                        &
+                     D,                      &
+                     D_i(i),                 &
+                     D_j(j)                  &
+                    /),                      &
+                   (/                        &
+                     F,                      &
+                     F_i(i),                 &
+                     F_j(j)                  &
+                    /),                      &
+                     D_ij(i, j),             &
+                     F_ij(i, j),             &
+                     w=(/w(1), w(2)/),       &
+                     c=(/i, j/))
 
-    call pert_dens((/'EL'/),   &
-                        S,        &
-                      (/D/),      &
-                      (/F/),      &
-                        D_k(uk),  &
-                        F_k(uk),  &
-                        w=w(3:3), &
-                        c=(/uk/))
+    call pert_dens((/'EL', 'EL'/),           &
+                     S,                      &
+                   (/                        &
+                     D,                      &
+                     D_i(i),                 &
+                     D_k(k)                  &
+                    /),                      &
+                   (/                        &
+                     F,                      &
+                     F_i(i),                 &
+                     F_k(k)                  &
+                    /),                      &
+                     D_ik(i, k),             &
+                     F_ik(i, k),             &
+                     w=(/w(1), w(3)/),       &
+                     c=(/i, k/))
 
-    call pert_dens((/'EL', 'EL'/),     &
-                        S,                &
-                      (/D,                &
-                        D_i(ui),          &
-                        D_j(uj)/),        &
-                      (/F,                &
-                        F_i(ui),          &
-                        F_j(uj)/),        &
-                        D_ij(ui, uj),     &
-                        F_ij(ui, uj),     &
-                        w=(/w(1), w(2)/), &
-                        c=(/ui, uj/))
-
-    call pert_dens((/'EL', 'EL'/),     &
-                        S,                &
-                      (/D,                &
-                        D_i(ui),          &
-                        D_k(uk)/),        &
-                      (/F,                &
-                        F_i(ui),          &
-                        F_k(uk)/),        &
-                        D_ik(ui, uk),     &
-                        F_ik(ui, uk),     &
-                        w=(/w(1), w(3)/), &
-                        c=(/ui, uk/))
-
-    call pert_dens((/'EL', 'EL'/),     &
-                        S,                &
-                      (/D,                &
-                        D_j(uj),          &
-                        D_k(uk)/),        &
-                      (/F,                &
-                        F_j(uj),          &
-                        F_k(uk)/),        &
-                        D_jk(uj, uk),     &
-                        F_jk(uj, uk),     &
-                        w=(/w(2), w(3)/), &
-                        c=(/uj, uk/))
+    call pert_dens((/'EL', 'EL'/),           &
+                     S,                      &
+                   (/                        &
+                     D,                      &
+                     D_j(j),                 &
+                     D_k(k)                  &
+                    /),                      &
+                   (/                        &
+                     F,                      &
+                     F_j(j),                 &
+                     F_k(k)                  &
+                    /),                      &
+                     D_jk(j, k),             &
+                     F_jk(j, k),             &
+                     w=(/w(2), w(3)/),       &
+                     c=(/j, k/))
 
     call pert_dens((/'EL', 'EL', 'EL'/),     &
-                        S,                      &
-                      (/D,                      &
-                        D_i(ui),                &
-                        D_j(uj),                &
-                        D_k(uk),                &
-                        D_ij(ui, uj),           &
-                        D_ik(ui, uk),           &
-                        D_jk(uj, uk)/),         &
-                      (/F,                      &
-                        F_i(ui),                &
-                        F_j(uj),                &
-                        F_k(uk),                &
-                        F_ij(ui, uj),           &
-                        F_ik(ui, uk),           &
-                        F_jk(uj, uk)/),         &
-                        D_ijk(ui, uj, uk),      &
-                        F_ijk(ui, uj, uk),      &
-                        w=(/w(1), w(2), w(3)/), &
-                        c=(/ui, uj, uk/))
+                     S,                      &
+                   (/                        &
+                     D,                      &
+                     D_i(i),                 &
+                     D_j(j),                 &
+                     D_k(k),                 &
+                     D_ij(i, j),             &
+                     D_ik(i, k),             &
+                     D_jk(j, k)              &
+                    /),                      &
+                   (/                        &
+                     F,                      &
+                     F_i(i),                 &
+                     F_j(j),                 &
+                     F_k(k),                 &
+                     F_ij(i, j),             &
+                     F_ik(i, k),             &
+                     F_jk(j, k)              &
+                    /),                      &
+                     D_ijk(i, j, k),         &
+                     F_ijk(i, j, k),         &
+                     w=(/w(1), w(2), w(3)/), &
+                     c=(/i, j, k/))
 
-    e_ijkl = 0.0d0
-    call prop_energy((/'EL'/),  &
-                    (/D,       &
-                      D_i,     &
-                      D_j,     &
-                      D_k,     &
-                      D_ij,    &
-                      D_ik,    &
-                      D_jk,    &
-                      D_ijk/), &
-                      e_ijkl,  &
-                      b=(/3, 3, 3/))
+    e = 0.0d0
+    call prop_energy((/'EL'/), &
+                     (/        &
+                       D,      &
+                       D_i,    &
+                       D_j,    &
+                       D_k,    &
+                       D_ij,   &
+                       D_ik,   &
+                       D_jk,   &
+                       D_ijk   &
+                      /),      &
+                       e,      &
+                       b=(/3, 3, 3/))
 
-    do i = 1, 3
+    D_i   = 0
+    D_j   = 0
+    D_k   = 0
+    F_i   = 0
+    F_j   = 0
+    F_k   = 0
+    D_ij  = 0
+    D_ik  = 0
+    D_jk  = 0
+    F_ij  = 0
+    F_ik  = 0
+    F_jk  = 0
+    D_ijk = 0
+    F_ijk = 0
 
-      D_i(i) = 0; D_j(i) = 0; D_k(i) = 0
-      F_i(i) = 0; F_j(i) = 0; F_k(i) = 0
+    gamma_element = -e(i, j, k, m)
+    print '("@ gamma (w = "4f9.4")" a10 a2 a2 a2 f26.10)', real(-sum(w)), &
+                                                           real(w(1)),    &
+                                                           real(w(2)),    &
+                                                           real(w(3)),    &
+                                                           fc(m),         &
+                                                           fc(i),         &
+                                                           fc(j),         &
+                                                           fc(k),         &
+                                                           gamma_element
 
-      do j = 1, 3
-
-        D_ij(i, j) = 0; D_ik(i, j) = 0; D_jk(i, j) = 0
-        F_ij(i, j) = 0; F_ik(i, j) = 0; F_jk(i, j) = 0
-
-        do k = 1, 3
-
-          D_ijk(i, j, k) = 0
-          F_ijk(i, j, k) = 0
-
-          do l = 1, 3
-            if (abs(e_ijkl(i, j, k, l)) > tiny) then
-              print '("@ gamma (w = "4f9.4")" a10 a2 a2 a2 f26.10)', real(w(1)),  &
-                                                                     real(w(2)),  &
-                                                                     real(w(3)),  &
-                                                                     real(w(4)),  &
-                                                                     fc(i), &
-                                                                     fc(j), &
-                                                                     fc(k), &
-                                                                     fc(l), &
-                                                                    -real(e_ijkl(i, j, k, l))
-              add_to = add_to - scale_by*real(e_ijkl(i, j, k, l))
-            end if
-          end do
-        end do
-      end do
-    end do
-
-  end subroutine
+  end function
 
   subroutine gamma(S, D, F, w)
 
@@ -819,7 +820,7 @@ contains
     complex(8)                   :: e_ijkl(3, 3, 3, 3)
     integer                      :: i, j, k, l
 
-    if (abs(sum(w)) > tiny) call quit('gamma: frequencies do not sum up to zero')
+    if (abs(sum(w)) > small_number) call quit('gamma: frequencies do not sum up to zero')
 
     S = 1.0d0*S
     D = 1.0d0*D
@@ -866,7 +867,7 @@ contains
           F_ijk(i, j, k) = 0
 
           do l = 1, 3
-            if (abs(e_ijkl(i, j, k, l)) > tiny) then
+            if (abs(e_ijkl(i, j, k, l)) > small_number) then
               print '("@" a10 a2 a2 a2 f26.10)', fc(i), fc(j), fc(k), fc(l), -real(e_ijkl(i, j, k, l))
             end if
           end do
