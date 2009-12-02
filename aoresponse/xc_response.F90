@@ -111,6 +111,9 @@ contains
 
 !   get perturbed densitiy gradients and gradient norms
 
+!   otherwise undefined with (a)lda
+    z(0, 0) = 0.0d0
+
     if (use_gga) then
 
       gn(:, 0) = gn_0

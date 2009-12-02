@@ -99,7 +99,7 @@ contains
       time_start = second()
 
 !     initial expectation value of the two-electron matrix
-      if (response_order == 0) then
+      if ((response_order == 0) .and. (response_order_ao == 0)) then
         dft_temp_xc_mat_energy = ddot(nr_ao_total*nr_ao_total, dmat_0, 1, fmat, 1)
       end if
 
@@ -298,7 +298,7 @@ contains
       end if
 
 !     calculate final expectation value of two-electron matrix
-      if (response_order == 0) then
+      if ((response_order == 0) .and. (response_order_ao == 0)) then
 !       the xc contribution can then be subtracted 
         dft_temp_xc_mat_energy = ddot(nr_ao_total*nr_ao_total, dmat_0, 1, fmat, 1) &
                                - dft_temp_xc_mat_energy
@@ -591,11 +591,12 @@ contains
 
 #if defined (VAR_MPI)
     if (is_parallel_calculation) then
-      call dft_collect(mat_dim, &
-                       nz,      &
-                       nr_fmat, &
-                       fmat,    &
-                       response_order)
+      call dft_collect(mat_dim,        &
+                       nz,             &
+                       nr_fmat,        &
+                       fmat,           &
+                       response_order, &
+                       response_order_ao)
     end if
 #endif
 
@@ -611,7 +612,7 @@ contains
       write(print_unit, '(3x, a, i24)')                          &
               'number of quadrature points:  ',                  &
               npnts
-      if (response_order == 0) then
+      if ((response_order == 0) .and. (response_order_ao == 0)) then
         write(print_unit, '(3x, a, f24.16)')                     &
               'DFT exchange-correlation energy:               ', &
               dft_temp_xc_energy
@@ -828,7 +829,7 @@ contains
         dft_temp_nr_electrons = dft_temp_nr_electrons + w(1)*r_0(1)
 
 !       energy density
-        if (response_order == 0) then
+        if ((response_order == 0) .and. (response_order_ao == 0)) then
 
           call get_functional_derv(0,            &
                                    block_length, &
@@ -846,7 +847,7 @@ contains
 !       exchange-correlation potential 
 !       ==============================
 
-        if (response_order == 0) then
+        if ((response_order == 0) .and. (response_order_ao == 0)) then
 
           call get_functional_derv(1,                  &
                                    block_length,       &
@@ -891,7 +892,7 @@ contains
 
 
 !       exchange-correlation contribution to kohn-sham matrix
-        if (response_order == 0) then
+        if ((response_order == 0) .and. (response_order_ao == 0)) then
 !       here we will add LAO contribution to KS matrix
           if (use_gga) then
             vt = derv(1, d_z)*rhg
@@ -1016,11 +1017,12 @@ contains
   end subroutine
 
 #ifdef VAR_MPI
-  subroutine dft_collect(mat_dim, &
-                         nz,      &
-                         nr_fmat, &
-                         fmat,    &
-                         response_order)
+  subroutine dft_collect(mat_dim,        &
+                         nz,             &
+                         nr_fmat,        &
+                         fmat,           &
+                         response_order, &
+                         response_order_ao)
 
 !   ----------------------------------------------------------------------------
     integer, intent(in)  :: mat_dim
@@ -1028,6 +1030,7 @@ contains
     integer, intent(in)  :: nr_fmat
     real(8)              :: fmat(*)
     integer, intent(in)  :: response_order
+    integer, intent(in)  :: response_order_ao
 !   ----------------------------------------------------------------------------
     integer              :: ierr
     integer              :: length_fmat
@@ -1045,7 +1048,7 @@ contains
                     mpi_comm_world,        &
                     ierr) 
 
-    if (response_order == 0) then
+    if ((response_order == 0) .and. (response_order_ao == 0)) then
       call mpi_reduce(dft_temp_xc_energy,   &
                       sum_xc_energy,        &
                       1,                    &
@@ -1074,7 +1077,7 @@ contains
 
     if (mytid == mparid) then
       dft_temp_nr_electrons = sum_nr_electrons
-      if (response_order == 0) then
+      if ((response_order == 0) .and. (response_order_ao == 0)) then
         dft_temp_xc_energy = sum_xc_energy
       end if
       call dcopy(length_fmat, sum_fmat, 1, fmat, 1)     
