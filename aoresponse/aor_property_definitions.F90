@@ -636,12 +636,12 @@ contains
 
   end subroutine
 
-  function gamma_element(S, D, F, w, m, i, j, k)
+  function gamma_element(S, D, F, w, h, i, j, k)
 
 !   ----------------------------------------------------------------------------
     real(8)                     :: gamma_element
     type(matrix), intent(inout) :: S, D, F
-    integer,      intent(in)    :: m, i, j, k
+    integer,      intent(in)    :: h, i, j, k
     complex(8),   intent(in)    :: w(3)
 !   ----------------------------------------------------------------------------
     type(matrix)                :: D_i(3)
@@ -797,12 +797,12 @@ contains
     F_jk  = 0
     F_ijk = 0
 
-    gamma_element = -e(i, j, k, m)
+    gamma_element = -e(i, j, k, h)
     print '("@ gamma (w = "4f9.4")" a10 a2 a2 a2 f26.10)', real(-sum(w)), &
                                                            real(w(1)),    &
                                                            real(w(2)),    &
                                                            real(w(3)),    &
-                                                           fc(m),         &
+                                                           fc(h),         &
                                                            fc(i),         &
                                                            fc(j),         &
                                                            fc(k),         &
@@ -810,12 +810,12 @@ contains
 
   end function
 
-  function delta_element(S, D, F, w, m, i, j, k, l)
+  function delta_element(S, D, F, w, h, i, j, k, l)
 
 !   ----------------------------------------------------------------------------
     real(8)                     :: delta_element
     type(matrix), intent(inout) :: S, D, F
-    integer,      intent(in)    :: m, i, j, k, l
+    integer,      intent(in)    :: h, i, j, k, l
     complex(8),   intent(in)    :: w(4)
 !   ----------------------------------------------------------------------------
 !   pascal triangle: 1 0th order matrix
@@ -1202,13 +1202,13 @@ contains
     F_jkl  = 0
     F_ijkl = 0
 
-    delta_element = -e(i, j, k, l, m)
+    delta_element = -e(i, j, k, l, h)
     print '("@ delta (w = "5f9.4")" a10 a2 a2 a2 a2 f26.10)', real(-sum(w)), &
                                                               real(w(1)),    &
                                                               real(w(2)),    &
                                                               real(w(3)),    &
                                                               real(w(4)),    &
-                                                              fc(m),         &
+                                                              fc(h),         &
                                                               fc(i),         &
                                                               fc(j),         &
                                                               fc(k),         &
