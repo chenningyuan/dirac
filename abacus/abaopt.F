@@ -2254,7 +2254,10 @@ C     Retreives the energy of the current geometry
 C     (by running HERMIT and SIRIUS).
 C
       use dirac_cfg
+#ifdef MOD_DFT
       use dft_cfg
+      use dft_main
+#endif /* ifdef MOD_DFT */
 
 #include "implicit.h"
 #include "priunit.h"

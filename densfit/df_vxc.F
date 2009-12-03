@@ -74,7 +74,6 @@ C much change to the current function calls.
 C 
         use dft_cfg
         use dft_main
-        use dft_temp
 
 #include "implicit.h"
 #include "mxcent.h"

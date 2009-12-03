@@ -31,7 +31,7 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
         use dft_cfg
-        use dft_temp
+        use dft_cb_interface
         use memory_allocator
 
 #include "implicit.h"
@@ -225,7 +225,7 @@ C      Adapted for DIRAC by T.Saue                                     C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
        use dft_cfg
-       use dft_temp
+       use dft_cb_interface
 
 #include "implicit.h" 
 #include "priunit.h" 
@@ -772,7 +772,7 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
        use dft_cfg
-       use dft_temp
+       use dft_cb_interface
 
 #include "implicit.h" 
 #include "priunit.h" 

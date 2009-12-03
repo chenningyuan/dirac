@@ -1,7 +1,6 @@
 module dft_functional_derv
 
   use dft_cfg
-  use dft_temp
 #ifdef MOD_AUTODIFF
   use xc_fun
 #endif

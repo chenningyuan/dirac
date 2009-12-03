@@ -23,7 +23,6 @@ module prop_integrals
 #else
     use dirac_interface
     use dft_cfg
-    use dft_temp
 #endif /* PRG_DIRAC */
 
    implicit none

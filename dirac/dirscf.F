@@ -365,7 +365,6 @@ C*****************************************************************************
 #ifdef MOD_DFT
       use dft_main
       use dft_cfg
-      use dft_temp
 #endif
 
 #include "implicit.h"
@@ -1181,7 +1180,6 @@ C*****************************************************************************
 #ifdef MOD_DFT
       use dft_cfg
       use dft_main
-      use dft_temp
 #endif
 
 #include "implicit.h"
@@ -1574,7 +1572,7 @@ C*****************************************************************************
 
       use dirac_cfg
 #ifdef MOD_DFT
-      use dft_temp
+      use dft_main
 #endif
 
 #include "implicit.h"

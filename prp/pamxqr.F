@@ -2294,7 +2294,6 @@ C*****************************************************************************
 #ifdef MOD_DFT
       use dft_cfg
       use dft_main
-      use dft_temp
 #endif
 
 

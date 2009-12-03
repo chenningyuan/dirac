@@ -18,6 +18,8 @@ module dft_cb_interface
 
   save
 
+  integer, public :: dft_temp_file_unit = 0
+
   integer, parameter, public :: max_nr_shells = 750
 
   integer, public :: nr_qu

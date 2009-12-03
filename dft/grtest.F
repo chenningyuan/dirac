@@ -31,7 +31,7 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       use dft_cfg
-      use dft_temp
+      use dft_cb_interface
       use memory_allocator
 
 #include "implicit.h"
@@ -98,7 +98,7 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
          use dft_cfg
-         use dft_temp
+         use dft_cb_interface
       use memory_allocator
 
 #include "implicit.h"
@@ -477,7 +477,7 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       use dft_cfg
-      use dft_temp
+      use dft_cb_interface
       use dft_ao
 
 #include "implicit.h"

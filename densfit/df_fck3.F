@@ -2265,7 +2265,7 @@ C matrix and the ddot(cfit,j_alpha) matrix. my understanding of
 C a suggestion from simen... 
       SUBROUTINE DF_CAL_ApproxERRKS(DMAT,FMAT,CFIT,NDMT,ISYMDM,
      &                              IFCTYP,GABAL,WORK,LWORK,IPRINT)
-      use dft_temp
+      use dft_main
 
 #include "implicit.h"
 #include "mxcent.h"

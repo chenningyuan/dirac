@@ -3,11 +3,6 @@ module dft_cfg
 ! radovan: (1) if you modify this module (add new stuff)
 !              don't forget to update
 !              sync_dft_cfg (below)
-!          (2) this module should contain things set by the user
-!              or in principle accessible by the user
-!              temporary parameters used by the program
-!              (like integrated electron count etc.)
-!              should not be here, put them in dft_temp
 
 #ifdef VAR_MPI
   use dirac_mpi

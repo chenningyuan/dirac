@@ -5,7 +5,6 @@ module dft_main
 
   use memory_allocator
   use dft_cfg
-  use dft_temp
   use dft_functional_derv
   use dft_ao_in_mem
   use dft_ao
@@ -47,6 +46,13 @@ module dft_main
   integer, parameter :: block_length = 1 !later more, now slowdft
 
   save
+
+  logical, public :: dft_temp_grid_is_done   = .false.
+  logical, public :: dft_temp_reload_batches = .false.
+
+  real(8), public :: dft_temp_xc_energy     = 0.0d0
+  real(8), public :: dft_temp_xc_mat_energy = 0.0d0
+  real(8), public :: dft_temp_nr_electrons  = 0.0d0
 
   logical :: use_gga_qr = .false. !quaternion real
   logical :: use_gga_qi = .false. !quaternion imaginary
