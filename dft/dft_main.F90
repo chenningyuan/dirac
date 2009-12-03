@@ -100,21 +100,21 @@ contains
 
 !     initial expectation value of the two-electron matrix
       if ((response_order == 0) .and. (response_order_ao == 0)) then
-        dft_temp_xc_mat_energy = ddot(nr_ao_total*nr_ao_total, dmat_0, 1, fmat, 1)
+        dft_temp_xc_mat_energy = ddot(mat_dim*mat_dim, dmat_0, 1, fmat, 1)
       end if
 
 !     get average density from open shells
       if (nr_open_shells > 0) call gtdoav(dmat_0, 1)
 
 !     scale
-      call dscal(nr_ao_total*nr_ao_total, 2.0d0, dmat_0, 1)
+      call dscal(mat_dim*mat_dim, 2.0d0, dmat_0, 1)
 
 
 !     scale and insert half-phases
       if (nr_dmat_p > 0) then
-        call dscal(nr_ao_total*nr_ao_total*nr_qu*nr_dmat_p, 2.0d0, dmat_p, 1)
-        if (nr_qu < 4) then
-          do iz = 1, nr_qu
+        call dscal(mat_dim*mat_dim*nz*nr_dmat_p, 2.0d0, dmat_p, 1)
+        if (nz < 4) then
+          do iz = 1, nz
             do im = 1, nr_dmat_p
               iq = dft_cb_pq_to_uq(iz, isymop(im) - 1)
               ioff = mat_dim*mat_dim*nz*(im - 1) + mat_dim*mat_dim*(iz - 1) + 1
@@ -139,9 +139,9 @@ contains
 !     allocate and get saop density matrices
       if (dft_cfg_saop) then
         dft_cfg_saop_is_active = .true.
-        call alloc(dmat_saop_outer, nr_ao_total*nr_ao_total)
+        call alloc(dmat_saop_outer, mat_dim*mat_dim)
         if (dft_cfg_saop_with_response_part) then
-          call alloc(dmat_saop_resp, nr_ao_total*nr_ao_total)
+          call alloc(dmat_saop_resp, mat_dim*mat_dim)
         end if
         call dftac_saop_get_dmats(dmat_saop_outer, &
                                   dmat_saop_resp)
@@ -264,7 +264,7 @@ contains
       end if
 
 !     rescale
-      call dscal(nr_ao_total*nr_ao_total, 0.5d0, dmat_0, 1)
+      call dscal(mat_dim*mat_dim, 0.5d0, dmat_0, 1)
 
 !     get average density from open shells
       if (nr_open_shells > 0) call gtdoav(dmat_0, -1)
@@ -272,17 +272,17 @@ contains
 !     in case of gga symmetrize matrices
       if (use_gga) then
         if (nr_dmat_p > 0) then
-          call gga_sym(nr_fmat, fmat, isymop, ihrmop)
+          call gga_sym(mat_dim, nz, nr_fmat, fmat, isymop, ihrmop)
         else
-          call gga_sym(1, fmat, (/1/), (/1/))
+          call gga_sym(mat_dim, nz, 1, fmat, (/1/), (/1/))
         end if
       end if
 
 !     scale and insert half-phases
       if (nr_dmat_p > 0) then
-        call dscal(nr_ao_total*nr_ao_total*nr_qu*nr_dmat_p, 0.5d0, dmat_p, 1)
-        if (nr_qu < 4) then
-          do iz = 1, nr_qu
+        call dscal(mat_dim*mat_dim*nz*nr_dmat_p, 0.5d0, dmat_p, 1)
+        if (nz < 4) then
+          do iz = 1, nz
             do im = 1, nr_dmat_p
               iq = dft_cb_pq_to_uq(iz, isymop(im) - 1)
               ioff = mat_dim*mat_dim*nz*(im - 1) + mat_dim*mat_dim*(iz - 1) + 1
@@ -300,7 +300,7 @@ contains
 !     calculate final expectation value of two-electron matrix
       if ((response_order == 0) .and. (response_order_ao == 0)) then
 !       the xc contribution can then be subtracted 
-        dft_temp_xc_mat_energy = ddot(nr_ao_total*nr_ao_total, dmat_0, 1, fmat, 1) &
+        dft_temp_xc_mat_energy = ddot(mat_dim*mat_dim, dmat_0, 1, fmat, 1) &
                                - dft_temp_xc_mat_energy
       end if 
 
@@ -564,15 +564,27 @@ contains
         end if !IF(is_parallel_calculation) THEN
 #endif
         
-        call dftdr1(kx, ky, kz, kw, &
-                    mynpoint, ibatch, &
-                    dmat_0,dmat_saop_resp,dmat_saop_outer, &
-                    dmat_p,fmat,nr_dmat_p,nr_fmat,&
-                    ISYMOP,IHRMOP, &
+        call dftdr1(mat_dim,           &
+                    nz,                &
+                    nr_fmat,           &
+                    fmat,              &
+                    dmat_0,            &
+                    dmat_saop_outer,   &
+                    dmat_saop_resp,    &
+                    nr_dmat_p,         &
+                    dmat_p,            &
+                    isymop,            &
+                    ihrmop,            &
                     response_order,    &
                     response_order_ao, &
                     g_order,           &
-                    m_order)
+                    m_order,           &
+                    kx,                &
+                    ky,                &
+                    kz,                &
+                    kw,                &
+                    mynpoint,          &
+                    ibatch)
 
         call dealloc(kx)
         call dealloc(ky)
@@ -641,37 +653,54 @@ contains
       write(print_unit, *)
       
       end subroutine
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DFTDR1(CORX,CORY,CORZ, &
-     &                  WEIGHT, &
-                        NPOINT, ibatch, &
-     &                  DMAT,DMAT_RESP_AO,DMAT_OUTER_AO, &
-     &                  DTRMAT,EXCMAT,nr_dmat_p, nr_fmat, &
-                        ISYMOP,IHRMOP, &
-                        response_order,    &
-                        response_order_ao, &
-                        g_order,           &
-                        m_order)
-!***********************************************************************
-!
-!     Written by Trond Saue and T.Helgaker
-!
-!***********************************************************************
 
+    subroutine dftdr1(mat_dim,           &
+                      nz,                &
+                      nr_fmat,           &
+                      fmat,              &
+                      dmat_0,            &
+                      dmat_saop_outer,   &
+                      dmat_saop_resp,    &
+                      nr_dmat_p,         &
+                      dmat_p,            &
+                      isymop,            &
+                      ihrmop,            &
+                      response_order,    &
+                      response_order_ao, &
+                      g_order,           &
+                      m_order,           &
+                      corx,              &
+                      cory,              &
+                      corz,              &
+                      weight,            &
+                      npoint,            &
+                      ibatch)
 
-      integer :: npoint, nr_dmat_p, nr_fmat, ibatch, ioff, i
-      real(8) :: corx(*)
-      real(8) :: cory(*)
-      real(8) :: corz(*)
-      real(8) :: weight(*)
-      real(8) :: dmat(*)
-      real(8) :: dmat_resp_ao(*)
-      real(8) :: dmat_outer_ao(*)
-      real(8) :: dtrmat(*)
-      real(8) :: excmat(*)
-      integer :: isymop(*)
-      integer :: ihrmop(*)
-      real(8) :: energy_density
+!   ----------------------------------------------------------------------------
+    integer, intent(in) :: mat_dim
+    integer, intent(in) :: nz
+    integer, intent(in) :: nr_fmat
+    real(8)             :: fmat(*)
+    real(8), intent(in) :: dmat_0(*)
+    real(8), intent(in) :: dmat_saop_outer(*)
+    real(8), intent(in) :: dmat_saop_resp(*)
+    integer, intent(in) :: nr_dmat_p
+    real(8), intent(in) :: dmat_p(*)
+    integer, intent(in) :: isymop(*)
+    integer, intent(in) :: ihrmop(*)
+    integer, intent(in) :: response_order
+    integer, intent(in) :: response_order_ao
+    integer, intent(in) :: g_order
+    integer, intent(in) :: m_order
+    real(8), intent(in) :: corx(*)
+    real(8), intent(in) :: cory(*)
+    real(8), intent(in) :: corz(*)
+    real(8), intent(in) :: weight(*)
+    integer, intent(in) :: npoint
+    integer, intent(in) :: ibatch
+!   ----------------------------------------------------------------------------
+    integer             :: ioff, i
+
 
       real(8) :: RHG(3),VT(3)
       real(8) :: derv(mxbllen, 0:99)
@@ -684,10 +713,6 @@ contains
       real(8) :: ddot, f
 
       integer :: itest, jtest
-    integer, intent(in) :: response_order
-    integer, intent(in) :: response_order_ao
-    integer, intent(in) :: g_order
-    integer, intent(in) :: m_order
     integer             :: max_ao_g_order
     integer             :: max_ao_m_order
 
@@ -720,6 +745,8 @@ contains
                      max_ao_m_order,          &
                      dft_cfg_screening,       &
                      dft_cfg_dfthri)
+
+    call dft_density_init(is_parallel_calculation)
 
 #ifdef MOD_AUTODIFF
     if (dft_cfg_autodiff) then
@@ -810,7 +837,7 @@ contains
       end if
 
 !     density
-      call get_n(r_0(1), 0, dmat, buffer, ao_p)
+      call get_n(r_0(1), 0, mat_dim, dmat_0, buffer, ao_p)
 
       if (r_0(1) > dft_cfg_dfthr0) then
 
@@ -819,7 +846,7 @@ contains
 
 !       density gradient
         if (need_ao_order(1, 0)) then
-          call get_gn(rhg, 0, dmat, buffer, ao_p, ao_p(ao_start(1, 0):ao_end(1, 0)))
+          call get_gn(rhg, 0, mat_dim, dmat_0, buffer, ao_p, ao_p(ao_start(1, 0):ao_end(1, 0)))
           z_0(1) = ddot(3, rhg, 1, rhg, 1)
         end if
 
@@ -867,16 +894,18 @@ contains
 
 !         asymptotic correction
           if (dft_cfg_saop_is_active) then
-            call get_n(rho_outer,     &
-                       0,             &
-                       dmat_outer_ao, &
-                       buffer,           &
+            call get_n(rho_outer,       &
+                       0,               &
+                       mat_dim,         &
+                       dmat_saop_outer, &
+                       buffer,          &
                        ao_p)
             if (dft_cfg_saop_with_response_part) then
-              call get_n(rho_resp,     &
-                         0,            &
-                         dmat_resp_ao, &
-                         buffer,          &
+              call get_n(rho_resp,       &
+                         0,              &
+                         mat_dim,        &
+                         dmat_saop_resp, &
+                         buffer,         &
                          ao_p)
             end if
           end if
@@ -904,9 +933,19 @@ contains
             end if
 #endif
 
-            call gga_distribute(derv(1, d_r), vt, 0, excmat, ao_p, ao_p(ao_start(1, 0):ao_end(1, 0)))
+            call gga_distribute_r(derv(1, d_r), &
+                                  vt,           &
+                                  0,            &
+                                  mat_dim,      &
+                                  fmat,         &
+                                  ao_p,         &
+                                  ao_p(ao_start(1, 0):ao_end(1, 0)))
           else
-            call lda_distribute(derv(1, d_r),     0, excmat, ao_p)
+            call lda_distribute_r(derv(1, d_r), &
+                                  0,            &
+                                  mat_dim,      &
+                                  fmat,         &
+                                  ao_p)
           end if
         end if
 
@@ -914,12 +953,12 @@ contains
 !       linear response
         if (response_order == 1) then
 
-!#define DEBUG_XC_RESPONSE
-#ifndef DEBUG_XC_RESPONSE
           call lr(block_length,    &
+                  mat_dim,          &
+                  nz,          &
                   nr_dmat_p,          &
-                  dtrmat,          &
-                  excmat,          &
+                  dmat_p,          &
+                  fmat,          &
                   isymop,          &
                   ihrmop,          &
                   .false.,         &
@@ -931,20 +970,6 @@ contains
                   use_gga_qr, &
                   use_gga_qi, &
                   buffer)
-#else
-            call xc_response_contribution(2,  &
-     &                      nr_dmat_p,  &
-     &                      use_gga, &
-     &                      dtrmat,  &
-     &                      excmat, &
-     &                      isymop, &
-     &                      ao_p(ao_start(0, 0):ao_end(0, 0)), &
-     &                      ao_p(ao_start(1, 0):ao_end(1, 0)), &
-     &                      r_0(1), &
-     &                      rhg, &
-     &                      w(1), &
-     &                      buffer)
-#endif
         endif
 
 
@@ -954,7 +979,7 @@ contains
           call sdft_qr(block_length,    &
                        use_gga,          &
                        dft_cfg_no_sdft, &
-                       dtrmat,excmat,   &
+                       mat_dim, dmat_p,fmat,   &
                        isymop,ihrmop,ao_p,ao_p(ao_start(1, 0)), &
                        r_0(1),z_0(1),rhg,w(1),buffer)
 
@@ -969,9 +994,11 @@ contains
 !         only the remaining part is done in sdft_qr (above)
 !         
           call lr(block_length,    &
+                  mat_dim,          &
+                  nz,          &
                   nr_dmat_p,          &
-                  dtrmat,          &
-                  excmat,          &
+                  dmat_p,          &
+                  fmat,          &
                   isymop,          &
                   ihrmop,          &
                   .true.,          &
@@ -989,18 +1016,21 @@ contains
 
 #if defined MOD_AUTODIFF && MOD_AORESPONSE
           if (response_order_ao > 0) then
-            call xc_response_contribution(response_order_ao,  &
-     &                      nr_dmat_p,  &
-     &                      use_gga, &
-     &                      dtrmat,  &
-     &                      excmat, &
-     &                      isymop, &
-     &                      ao_p(ao_start(0, 0):ao_end(0, 0)), &
-     &                      ao_p(ao_start(1, 0):ao_end(1, 0)), &
-     &                      r_0(1), &
-     &                      rhg, &
-     &                      w(1), &
-     &                      buffer)
+            call xc_response_contribution(response_order_ao,                 &
+                                          mat_dim,   &
+                                          nz,        &
+                                          nr_fmat,   &
+                                          fmat,      &
+                                          nr_dmat_p, &
+                                          dmat_p,    &
+                                          isymop,      &
+                                          use_gga,                           &
+                                          ao_p(ao_start(0, 0):ao_end(0, 0)), &
+                                          ao_p(ao_start(1, 0):ao_end(1, 0)), &
+                                          r_0(1),                            &
+                                          rhg,                               &
+                                          w(1),                              &
+                                          buffer)
           end if
 #endif
 
@@ -1160,7 +1190,7 @@ contains
     call dirac_mpi_bcast(g_order)
     call dirac_mpi_bcast(m_order)
 
-    call alloc(fmat, nr_ao_total*nr_ao_total*nr_qu*nr_fmat)
+    call alloc(fmat, mat_dim*mat_dim*nz*nr_fmat)
     fmat = 0.0d0
 
     call dftdrv(mat_dim,           &
@@ -1236,6 +1266,8 @@ contains
 
 
   subroutine lr(block_length,       &
+                mat_dim,            &
+                nz,             &
                 nr_mat,             &
                 dmat_perturbed,     &
                 fmat,               &
@@ -1253,6 +1285,8 @@ contains
 
 !   ----------------------------------------------------------------------------
     integer, intent(in)    :: block_length
+    integer, intent(in)    :: mat_dim
+    integer, intent(in)    :: nz
     integer, intent(in)    :: nr_mat
     real(8), intent(in)    :: dmat_perturbed(*)
     real(8), intent(inout) :: fmat(*)
@@ -1312,13 +1346,14 @@ contains
         calculate_qi = .false.
       end if
 
-      im_off = nr_ao_total*nr_ao_total*nr_qu*(im - 1)
+      im_off = mat_dim*mat_dim*nz*(im - 1)
 
 !     hermitian contribution (qr = quaternion real)
       if (calculate_qr) then
 
         call get_n(r_b,                        &
                    isym(im) - 1,               &
+                   mat_dim,                    &
                    dmat_perturbed(1 + im_off), &
                    buffer,                     &
                    ao_p)
@@ -1327,6 +1362,7 @@ contains
           if (allow_nonhermitian) then
             call get_gn_nonhermitian(gr_b,                       &
                                      isym(im) - 1,               &
+                                     mat_dim,                    &
                                      dmat_perturbed(1 + im_off), &
                                      buffer,                     &
                                      ao_p,                       &
@@ -1334,6 +1370,7 @@ contains
           else
             call get_gn(gr_b,                       &
                         isym(im) - 1,               &
+                        mat_dim,                    &
                         dmat_perturbed(1 + im_off), &
                         buffer,                     &
                         ao_p,                       &
@@ -1358,17 +1395,19 @@ contains
         end if
 
         if (is_gga_qr) then
-          call gga_distribute(u_qr,             &
-                              v_qr,             &
-                              isym(im) - 1,     &
-                              fmat(1 + im_off), &
-                              ao_p,             &
-                              ao_p(ao_start(1, 0)))
+          call gga_distribute_r(u_qr,             &
+                                v_qr,             &
+                                isym(im) - 1,     &
+                                mat_dim,          &
+                                fmat(1 + im_off), &
+                                ao_p,             &
+                                ao_p(ao_start(1, 0)))
         else
-          call lda_distribute(u_qr,             &
-                              isym(im) - 1,     &
-                              fmat(1 + im_off), &
-                              ao_p)
+          call lda_distribute_r(u_qr,             &
+                                isym(im) - 1,     &
+                                mat_dim,          &
+                                fmat(1 + im_off), &
+                                ao_p)
         end if
 
       end if !end of qr contribution
@@ -1378,6 +1417,7 @@ contains
 
         call get_s(s_b,                        &
                    isym(im) - 1,               &
+                   mat_dim,                    &
                    dmat_perturbed(1 + im_off), &
                    buffer,                     &
                    ao_p)
@@ -1386,6 +1426,7 @@ contains
           if (allow_nonhermitian) then
             call get_gs_nonhermitian(gs_b,                       &
                                      isym(im) - 1,               &
+                                     mat_dim,                    &
                                      dmat_perturbed(1 + im_off), &
                                      buffer,                     &
                                      ao_p,                       &
@@ -1393,6 +1434,7 @@ contains
           else
             call get_gs(gs_b,                       &
                         isym(im) - 1,               &
+                        mat_dim,                    &
                         dmat_perturbed(1 + im_off), &
                         buffer,                     &
                         ao_p,                       &
@@ -1419,17 +1461,19 @@ contains
         end do
 
         if (is_gga_qi) then
-          call gga_distribute_qi(u_qi,             &
-                                 v_qi,             &
-                                 isym(im) - 1,     &
-                                 fmat(1 + im_off), &
-                                 ao_p,             &
-                                 ao_p(ao_start(1, 0)))
+          call gga_distribute_i(u_qi,             &
+                                v_qi,             &
+                                isym(im) - 1,     &
+                                mat_dim,          &
+                                fmat(1 + im_off), &
+                                ao_p,             &
+                                ao_p(ao_start(1, 0)))
         else
-          call lda_distribute_qi(u_qi,             &
-                                 isym(im) - 1,     &
-                                 fmat(1 + im_off), &
-                                 ao_p)
+          call lda_distribute_i(u_qi,             &
+                                isym(im) - 1,     &
+                                mat_dim,          &
+                                fmat(1 + im_off), &
+                                ao_p)
         end if
 
       end if !end of qi contribution

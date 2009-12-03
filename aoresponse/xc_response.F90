@@ -52,29 +52,32 @@ module xc_response
 
 contains
 
-  subroutine xc_response_contribution(order,   &
-                         nr_dmat, &
-                         use_gga, &
-                         dmat,    &
-                         fmat,    &
-                         isymop,  &
-                         ao_g0_m0,     &
-                         ao_g1_m0,    &
-                         n_0,     &
-                         gn_0,    &
-                         w,       &
-                         buffer)
-
-#include "dgroup.h"
-#include "dcbbas.h"
+  subroutine xc_response_contribution(order,     &
+                                      mat_dim,   &
+                                      nz,        &
+                                      nr_fmat,   &
+                                      fmat,      &
+                                      nr_dmat_p, &
+                                      dmat_p,    &
+                                      isym,      &
+                                      use_gga,   &
+                                      ao_g0_m0,  &
+                                      ao_g1_m0,  &
+                                      n_0,       &
+                                      gn_0,      &
+                                      w,         &
+                                      buffer)
 
 !   ----------------------------------------------------------------------------
     integer, intent(in)    :: order
-    integer, intent(in)    :: nr_dmat
+    integer, intent(in)    :: mat_dim
+    integer, intent(in)    :: nz
+    integer, intent(in)    :: nr_fmat
+    real(8), intent(inout) :: fmat(mat_dim, mat_dim, nz, nr_fmat)
+    integer, intent(in)    :: nr_dmat_p
+    real(8), intent(in)    :: dmat_p(mat_dim, mat_dim, nz, nr_dmat_p)
+    integer, intent(in)    :: isym(nr_dmat_p)
     logical, intent(in)    :: use_gga
-    real(8), intent(in)    :: dmat(ntbas(0), ntbas(0), nz, nr_dmat)
-    real(8), intent(inout) :: fmat(ntbas(0), ntbas(0), nz)
-    integer, intent(in)    :: isymop(nr_dmat)
     real(8), intent(in)    :: ao_g0_m0(*)
     real(8), intent(in)    :: ao_g1_m0(*)
     real(8), intent(in)    :: n_0
@@ -101,11 +104,12 @@ contains
 !   get perturbed densities
 
     n(0) = n_0
-    do i = 1, nr_dmat
-      call get_n(n(i),             &
-                 isymop(i) - 1,    &
-                 dmat(1, 1, 1, i), &
-                 buffer,           &
+    do i = 1, nr_dmat_p
+      call get_n(n(i),               &
+                 isym(i) - 1,        &
+                 mat_dim,            &
+                 dmat_p(1, 1, 1, i), &
+                 buffer,             &
                  ao_g0_m0)
     end do
 
@@ -117,17 +121,18 @@ contains
     if (use_gga) then
 
       gn(:, 0) = gn_0
-      do i = 1, nr_dmat
-        call get_gn(gn(1, i),         &
-                    isymop(i) - 1,    &
-                    dmat(1, 1, 1, i), &
-                    buffer,           &
-                    ao_g0_m0,         &
+      do i = 1, nr_dmat_p
+        call get_gn(gn(1, i),           &
+                    isym(i) - 1,        &
+                    mat_dim,            &
+                    dmat_p(1, 1, 1, i), &
+                    buffer,             &
+                    ao_g0_m0,           &
                     ao_g1_m0)
       end do
 
-      do i = 0, nr_dmat
-        do j = i, nr_dmat
+      do i = 0, nr_dmat_p
+        do j = i, nr_dmat_p
 !         the perturbed z carries factor 2
 !         because derivative of z gives 2 identical terms
 !         (one "left", one "right")
@@ -179,10 +184,20 @@ contains
     end if
 
     if (v_above_threshold) then
-      call gga_distribute(u, 2.0d0*v, 0, fmat, ao_g0_m0, ao_g1_m0)
+      call gga_distribute_r(u,        &
+                            2.0d0*v,  &
+                            0,        &
+                            mat_dim,  &
+                            fmat,     &
+                            ao_g0_m0, &
+                            ao_g1_m0)
     else
       if (u_above_threshold) then
-        call lda_distribute(u, 0, fmat, ao_g0_m0)
+        call lda_distribute_r(u,        &
+                              0,        &
+                              mat_dim,  &
+                              fmat,     &
+                              ao_g0_m0)
       end if
     end if
 

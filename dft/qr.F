@@ -1,6 +1,7 @@
       subroutine sdft_qr(block_length,
      &                   add_grad,
      &                   no_sdft,
+     &                   mat_dim, 
      &                   dtrmat,
      &                   excmat,
      &                   isymop,
@@ -103,11 +104,13 @@ c=======================================================================
 
       call get_n(r_b,
      &           isymop(1) - 1,
+     &           mat_dim,           
      &           dtrmat(1, 1, 1, 1),
      &           buf,
      &           gao)
       call get_n(r_c,
      &           isymop(2) - 1,
+     &           mat_dim,           
      &           dtrmat(1, 1, 1, 2),
      &           buf,
      &           gao)
@@ -115,11 +118,13 @@ c=======================================================================
       if (.not. no_sdft) then
         call get_s(s_b,
      &             isymop(1) - 1,
+     &             mat_dim,           
      &             dtrmat(1, 1, 1, 1),
      &             buf,
      &             gao)
         call get_s(s_c,
      &             isymop(2) - 1,
+     &             mat_dim,           
      &             dtrmat(1, 1, 1, 2),
      &             buf,
      &             gao)
@@ -128,12 +133,14 @@ c=======================================================================
       if (add_grad) then
         call get_gn_nonhermitian(gr_b,
      &                           isymop(1) - 1,
+     &                           mat_dim,           
      &                           dtrmat(1, 1, 1, 1),
      &                           buf,
      &                           gao,
      &                           gao1)
         call get_gn_nonhermitian(gr_c,
      &                           isymop(2) - 1,
+     &                           mat_dim,           
      &                           dtrmat(1, 1, 1, 2),
      &                           buf,
      &                           gao,
@@ -148,12 +155,14 @@ c=======================================================================
       if(add_grad .and. .not. no_sdft) then
         call get_gs_nonhermitian(gs_b,
      &                           isymop(1) - 1,
+     &                           mat_dim,           
      &                           dtrmat(1, 1, 1, 1),
      &                           buf,
      &                           gao,
      &                           gao1)
         call get_gs_nonhermitian(gs_c,
      &                           isymop(2) - 1,
+     &                           mat_dim,           
      &                           dtrmat(1, 1, 1, 2),
      &                           buf,
      &                           gao,
@@ -324,17 +333,19 @@ c=======================================================================
      &              )
       if(worth_it .gt. dft_cfg_dfthrl) then
         if (add_grad) then
-          call gga_distribute(s_bc_h,
-     &                        v_bc_h,
-     &                        isymop(3) - 1,
-     &                        excmat(1, 1, 1, 3),
-     &                        gao,
-     &                        gao1)
+          call gga_distribute_r(s_bc_h,
+     &                          v_bc_h,
+     &                          isymop(3) - 1,
+     &                          mat_dim, 
+     &                          excmat(1, 1, 1, 3),
+     &                          gao,
+     &                          gao1)
         else
-          call lda_distribute(s_bc_h,
-     &                        isymop(3) - 1,
-     &                        excmat(1, 1, 1, 3),
-     &                        gao)
+          call lda_distribute_r(s_bc_h,
+     &                          isymop(3) - 1,
+     &                          mat_dim, 
+     &                          excmat(1, 1, 1, 3),
+     &                          gao)
         end if
       endif
 
@@ -344,17 +355,19 @@ c=======================================================================
         v_bc_ah = 2.0d0*v_bc_ah
 
         if (add_grad) then
-          call gga_distribute_qi(s_bc_ah,
-     &                           v_bc_ah,
-     &                           isymop(3) - 1,
-     &                           excmat(1, 1, 1, 3),
-     &                           gao,
-     &                           gao1)
+          call gga_distribute_i(s_bc_ah,
+     &                          v_bc_ah,
+     &                          isymop(3) - 1,
+     &                          mat_dim, 
+     &                          excmat(1, 1, 1, 3),
+     &                          gao,
+     &                          gao1)
         else
-          call lda_distribute_qi(s_bc_ah,
-     &                           isymop(3) - 1,
-     &                           excmat(1, 1, 1, 3),
-     &                           gao)
+          call lda_distribute_i(s_bc_ah,
+     &                          isymop(3) - 1,
+     &                          mat_dim, 
+     &                          excmat(1, 1, 1, 3),
+     &                          gao)
         end if
       end if
 
