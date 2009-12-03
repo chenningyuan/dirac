@@ -53,5 +53,5 @@ Fluorine atom.
 4
 *END OF
 
- &GOSCIP NELEC=5 &END
+ &GOSCIP NELACT=5 &END
 
