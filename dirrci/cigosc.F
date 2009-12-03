@@ -1287,6 +1287,9 @@ C
       READ(5,GOSCIP,END=200)
   200 CONTINUE
       NELACT = MAX(NELACT,NELECT)
+!     SK - during the merge of the COSCI-TDM this variable renaming 
+!     on the NAMELIST slipped my attention.
+      NELECT = NELACT
       IREF=REFDET
 !.s/sya,2007.01.30
 !#    IF (IREFE.LE.0) IREFE = NBITS(IREF)
