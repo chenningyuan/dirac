@@ -1234,6 +1234,9 @@ C             length gauge
             ISYMST_FL = ISYMEIG_KRCI(JFLST)
 C
 C           print only values above a given threshold - 1.0D-7
+            IF( (OSCL(1)+OSCL(2)+OSCL(3)) .lt. XTHRESH )
+     &         GOTO 101
+          
             WRITE(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,3F12.8)')
      &  '   * state',INIST,'(',XREPEIG(ISYMST_IN),')         * state',
      &      JFLST,'(',XREPEIG(ISYMST_FL),')   ',
