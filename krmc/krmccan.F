@@ -1065,8 +1065,9 @@ C
       DIMENSION XPROPMAT(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,NPROP_KRCI,*)
       DIMENSION WORK(*), OSCL(3), EVECS(*), EPROP_CORE(*)
       INTEGER IND_DIP(3)
-      integer, allocatable :: indx(:)
       CHARACTER XLABEL*16
+!     dynamic memory allocation
+      integer, allocatable :: indx(:)
 C
 #include "memint.h"
       CALL QENTER('XKRCIPRPANA')
@@ -1096,7 +1097,6 @@ C     sort
       call alloc(INDX,NPROP_ROOTS_KRCI)
       INDX = 0
       CALL INDEXX(NPROP_ROOTS_KRCI,EVECS,INDX)
-
 C
 C     relative ordering
       WRITE(LUPRI,'(/A/A)') 
@@ -1107,20 +1107,16 @@ C     relative ordering
      &         '  Level | abs. eigenvalue | rel. eigenvalue (a.u.) |'//
      &         ' rel. eigenvalue (eV) | rel. eigenvalue (cm-1) |'// 
      &         ' irrep '
+!
       ILEVEL=0
-      EW=0.0D0
       EWF=EVECS(INDX(1))
-      NEW=0
       DO I=1,NPROP_ROOTS_KRCI
         E = EVECS(INDX(I))
-        IF ( .TRUE. ) THEN
-            WRITE(LUPRI,1010) ILEVEL,E,E-EWF,XTEV*(E-EWF),
-     &      XTKAYS*(E-EWF),XREPEIG(ISYMEIG_KRCI(INDX(I)))
-          ILEVEL=ILEVEL+1
-          NEW=1
-          EW=E
-        ENDIF
+        WRITE(LUPRI,1010) ILEVEL,E,E-EWF,XTEV*(E-EWF),XTKAYS*(E-EWF),
+     &                    XREPEIG(ISYMEIG_KRCI(INDX(I)))
+        ILEVEL=ILEVEL+1
       ENDDO
+!
       WRITE(LUPRI,'(A/)') 
      & '  ___________________________________________________________'//
      & '_____________________________________________'
