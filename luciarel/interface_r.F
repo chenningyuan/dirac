@@ -1270,7 +1270,7 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 *
       NTESTL = 0000
       NTEST = max(NTESTL,IPRNT)
-      NTEST = 0
+      NTEST = 100
 *
 * Constants
       IZERO = 0
@@ -1450,7 +1450,7 @@ C          WRITE(LUWRT,*) ' TRSYM_SIGN for IXTP',TRSYM_SIGN(IXTP)
               ISM_CB = IDBGMULT(ISM_C,INVELM(ISM_CA))
               do ISM_AA=1,NIRR_DG,1
                 ISM_AB = IDBGMULT(ISM_A,INVELM(ISM_AA))
-                if (NTEST.ge.20.and.IRI.eq.1) then
+                if (NTEST.ge.2000.and.IRI.eq.1) then
                   write(LUWRT,*)
                   write(LUWRT,*)
                   write(LUWRT,*) 'Printing symmetries:'
@@ -1915,6 +1915,7 @@ C
         write(LUWRT,*) '    sorted integrals: '
         CALL WRTMATMN8(T,1,NALLINT,1,NALLINT,LUWRT)
       end if
+      NTEST = 0
 *
       end
 ***********************************************************************
@@ -3171,10 +3172,16 @@ C    &           I
           write(6,*) 'Index pair ',I,J,' address :',IIN
           IF(ISCAL_T.gt.0) 
      & write(6,*) 'orig add',(IRI-1)*NASHT*NASHT +(J-1) *NASHT+I
-          IF(ISCAL_T.gt.0) 
-     & write(6,*) 'add. scaled by ISCAL_T*NASHT/2',
-     &                            ISCAL_T*NASHT/2
+          IF(ISCAL_T.gt.0) then
+            write(6,*) 'add. scaled by ISCAL_T*NASHT/2',
+     &                                 ISCAL_T*NASHT/2
+            write(6,*) ' ISCAL_T, NASHT/2', ISCAL_T, NASHT/2
+          END IF
+        DO LLLL = 1, (NASHT)**2
+          WRITE(6,*) ' element ',LLLL,'in matrix DMFC is = ',DMFC(LLLL)
+        END DO
         end if
+        IF(ISCAL_T.gt.0) IIN = IIN + ISCAL_T*NASHT/2
         YINT = DMFC(IIN)
 *
 * Sign for imaginary 1-electron integrals:
@@ -4717,13 +4724,19 @@ C
 * DIRAC (NZ,3) format
           call kkr_set(WORK(KKR),ITOTDIM,SYDI,NIRR_PN,INVSYM)
           NNASHX = ((NASHT/2) * ((NASHT/2)+1)) / 2
-          call getind_nz3(YINT,INDEX,IRI,ITOTDIM,WORK(KINVREO),
-     &                    WORK(KKR),NASHT,NNASHX,F1,F2,ISCAL_T,
-     &                    IPRNT)
+!
+!SK       case 1: ISCAL_T = 0: Hamiltonian is     totally symmetric
+!SK       case 2: ISCAL_T > 0: Hamiltonian is not totally symmetric
+          if(ISCAL_T .eq. 0)then
+            call getind_nz3(YINT,INDEX,IRI,ITOTDIM,WORK(KINVREO),
+     &                      WORK(KKR),NASHT,NNASHX,F1,F2,ISCAL_T,IPRNT)
+          else
+            call getint_nts(YINT,INDEX,IRI,ITOTDIM,WORK(KINVREO),
+     &                      WORK(KKR),NASHT,NNASHX,F1,ISCAL_T,IPRNT)
+          end if
         end if
       end if
 *
-      return
       end
 ***********************************************************************
 *                                                                     *

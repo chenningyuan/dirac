@@ -37,6 +37,91 @@ C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GETINT_NTS(YINT,INDEX,IRI,IDIM,INVREO,KR,NASHT,NNASHX,
+     &                      DMFC,ISCAL_T,IPRNT)
+C***********************************************************************
+C
+C     fetch integral to YINT for non-totally symmetric operators 
+C     from Molfdir-type array DMFC.  
+C
+C     order in DIRAC (Molfdir format) matrix DMFC:
+C                                 _
+C           p spinors followed by p
+C                                                 _     _
+C           if NFSYM = 2 (inversion symmetry): p, p, q, q
+C
+C     Written by S. Knecht - Dec 2009
+C     Based on GETINT_NZ3 written by T. Fleig.
+C
+C     Last revision :
+C
+C***********************************************************************
+#include "implicit.h"
+#include "dgroup.h"
+!
+      DIMENSION DMFC(*), ICSAVE(4), INDEX(4), INVREO(-IDIM:IDIM)
+      DIMENSION KR(-IDIM:IDIM), INDEX_LOC(4)
+!
+      NTESTL = 0
+      NTEST = MAX(NTESTL,IPRNT)
+!
+      IF(NTEST .ge. 5)THEN
+        WRITE(6,*) ' GETIND_NTS : '
+        WRITE(6,*) '  No. of active orbitals : ',NASHT/2
+        WRITE(6,*) '  Compound index dimension: ',NNASHX
+        WRITE(6,'(A,6X,4I3)') '  INDEX array: ',(INDEX(I),I=1,4,1)
+        WRITE(6,*) '1-el. integral array in GETIND_NTS:'
+        CALL WRTMAT(DMFC,IDIM*2,IDIM*2,IDIM*2,IDIM*2)
+      END IF
+!
+      NCT = 0
+      DO IC=1,4,1
+        INDEX_LOC(IC) = INDEX(IC)
+        IF( INDEX(IC).ne. 0)THEN
+          NCT = NCT + 1
+          ICSAVE(NCT) = IC
+        END IF
+      END DO
+!
+!     NCT = 2: pick out one-electron integral identified by two indices
+      IF(NCT .eq. 2) THEN
+!
+        I = KR(INVREO(INDEX_LOC(ICSAVE(1))))
+        J = KR(INVREO(INDEX_LOC(ICSAVE(2))))
+!
+!       compute input address on array DMFC
+!
+!       THIS IS WRONG! NEED TO THINK! SK - 04-12-2009
+        IIN =  (IRI-1)*NASHT*NASHT +
+     &          (J-1) *NASHT +
+     &           I
+        if (NTEST.ge.1) then
+          write(6,*) 'Index pair ',I,J,' address :',IIN
+          IF(ISCAL_T.gt.0)
+     & write(6,*) 'orig add',(IRI-1)*NASHT*NASHT +(J-1) *NASHT+I
+          IF(ISCAL_T.gt.0) then
+            write(6,*) 'add. scaled by ISCAL_T*NASHT/2',
+     &                                 ISCAL_T*NASHT/2
+            write(6,*) ' ISCAL_T, NASHT/2', ISCAL_T, NASHT/2
+          END IF
+        DO LLLL = 1, (NASHT)**2
+          WRITE(6,*) ' element ',LLLL,'in matrix DMFC is = ',DMFC(LLLL)
+        END DO
+        end if
+        IF(ISCAL_T.gt.0) IIN = IIN + ISCAL_T*NASHT/2
+        YINT = DMFC(IIN)
+!
+      ELSE
+        write(6,*) 'How could you have possibly ended up here? '
+        write(6,*) 'No QFT implemented YET in LUCIAREL.'
+        write(6,*) 'No 2e-properties implemented YET in LUCIAREL.'
+        write(6,*) 'You specified ',NCT,' indices.'
+        CALL QUIT(' *** ERROR in GETINT_NTS *** wrong number of 
+     & integral indices. ')
+      END IF
+!
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GET_IAIB_DIRAC(IASP_KRCI_SYM,IBSP_KRCI_SYM,ELM_ABSMAX,
      &                          AMAT,NROW,NCOL,LRQ,LCQ,JZ,IQP,NTEST)
 C***********************************************************************
@@ -328,6 +413,7 @@ C
 C     Last revision :
 C
 C***********************************************************************
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 * boson symmetry info
@@ -360,6 +446,7 @@ C information for property run
       CHARACTER CIRUN*6, FILELAB*8, FILELAB_REOD*8, RODLAB*2
       LOGICAL MCSCF, RUN_SHMEM_T
       DIMENSION WRK(LWRK)
+      real*8, allocatable :: XXXM(:)
 C
       CALL QENTER('GET_XPROP_REOD_KRCI')
 C
@@ -467,25 +554,57 @@ C       read property matrix from file
      &                    4*N2ASHX*MZ,1)
 C       ... reorder always at this point: RUN_SHMEM_T = .FALSE.
         RUN_SHMEM_T = .FALSE.
-C       WRITE(LUWRT,'(/A,A8/)') '  Reorder step for property matrix: ',
-C    &                             FILELAB
-C       CALL WRTMATMN(WORK(KXPROPM),1,4*N2ASHX*MZ,1,4*N2ASHX*MZ,LUWRT)
+        WRITE(LUWRT,'(/A,A8/)') '  Reorder step for property matrix: ',
+     &                             FILELAB
+        CALL WRTMATMN(WORK(KXPROPM),1,4*N2ASHX*MZ,1,4*N2ASHX*MZ,LUWRT)
         CALL PICASSO(INTSPACE,ISO1,IPRTRA,MCSCF,NL2D,IUB2D,ISM2D,
      &               WORK(KXPROPM),DUMMY,DUMMY,DUMMY,IDUMMY,IBOSYM,
      &               CIRUN,RUN_SHMEM_T)
 C
 C       write sorted property matrix back to file
         WRITE(FILELAB_REOD,'(A6,A2)') PRPNAM(INDXPR)(1:6),RODLAB
-C       WRITE(LUWRT,'(/A,A8/)') '  Final matrix on file with label: ',
-C    &                             FILELAB_REOD
-C       WRITE(LUWRT,'(A,I18/)') '  total number of integrals on KT_CC ',
-C    &                             NALLINT
+        WRITE(LUWRT,'(/A,A8/)') '  Final matrix on file with label: ',
+     &                             FILELAB_REOD
+        WRITE(LUWRT,'(A,I18/)') '  total number of integrals on KT_CC ',
+     &                             NALLINT
+!SK DEBUG
+        IF( FILELAB_REOD .eq. 'Y dipoRO')THEN
+          WRITE(LUWRT,'(/A)') '  DEBUG READING DUMMY Y-OPERATOR MATRIX'
+          call alloc(XXXM,NALLINT)
+          open(unit=19,file='y_int_test', 
+     &         status='UNKNOWN',form='FORMATTED')
+          rewind(19)
+          READ(19,'(1D22.14)') (XXXM(I),I=1,NALLINT)
+          close(19)
+          LINT_WRITE = NALLINT
+          WRITE(LUWRT,'(/A)') '  DEBUG WRITING DUMMY Y-OPERATOR MATRIX'
+          CALL WRTMATMN(XXXM,1,LINT_WRITE,1,LINT_WRITE,LUWRT)
+          CALL DCOPY(LINT_WRITE,XXXM,1,WORK(KT_CC),1)
+          WRITE(LUWRT,'(/A/)') '  USING DEBUG DUMMY Y-OPERATOR MATRIX'
+          call dealloc(XXXM)
+        END IF
+        IF( FILELAB_REOD .eq. 'X dipoRO')THEN
+          WRITE(LUWRT,'(/A)') '  DEBUG READING DUMMY X-OPERATOR MATRIX'
+          call alloc(XXXM,NALLINT)
+          open(unit=19,file='x_int_test', 
+     &         status='UNKNOWN',form='FORMATTED')
+          rewind(19)
+          READ(19,'(1D22.14)') (XXXM(I),I=1,NALLINT)
+          close(19)
+          LINT_WRITE = NALLINT
+          WRITE(LUWRT,'(/A)') '  DEBUG WRITING DUMMY X-OPERATOR MATRIX'
+          CALL WRTMATMN(XXXM,1,LINT_WRITE,1,LINT_WRITE,LUWRT)
+          CALL DCOPY(LINT_WRITE,XXXM,1,WORK(KT_CC),1)
+          WRITE(LUWRT,'(/A/)') '  USING DEBUG DUMMY X-OPERATOR MATRIX'
+          call dealloc(XXXM)
+        END IF
+!SK DEBUG
 C
 C       store number of non-zero integrals for this operator
         IN1ELPRP_KRCI(II) = 0
         LINT_WRITE        = NALLINT
         IN1ELPRP_KRCI(II) = LINT_WRITE
-C       CALL WRTMATMN(WORK(KT_CC),1,LINT_WRITE,1,LINT_WRITE,LUWRT)
+        CALL WRTMATMN(WORK(KT_CC),1,LINT_WRITE,1,LINT_WRITE,LUWRT)
         CALL KRCI_PRPFILE(LUF1MAT,FILELAB_REOD,WORK(KT_CC),
      &                    LINT_WRITE,0)
         XT_TEST = 0.0D0
@@ -588,6 +707,8 @@ C     real or complex eigenvectors
       IRC = 2
       IF( NZ .eq. 1 ) IRC = 1
       IRC_SAVE = IRC
+C     scratch
+      NBATXS = 0
 C
 C     property calculation setup section
 C     __________________________________
@@ -722,11 +843,16 @@ C     initialize start codes for ICSM_OLD and NVC_LUC (# of vec per irrep)
       ICSM_OLD  = -1
       NVC_LUC   = -3
 #if defined (VAR_MPI2)
-C     ... batches of blocks 
+C     ... C batches of blocks 
       CALL MEMMAR(KPCLBXX,MXNTTS,  'ADDL  ',1,'CLBTX ')
       CALL MEMMAR(KPCLEXX,MXNTTS,  'ADDL  ',1,'CLEBTX')
       CALL MEMMAR(KPCI1XX,MXNTTS,  'ADDL  ',1,'CI1BTX')
       CALL MEMMAR(KPCIBXX,8*MXNTTS,'ADDL  ',1,'CIBTX ')
+C     ... sigma batches of blocks
+      CALL MEMMAR(KPCLBXXS,MXNTTS,  'ADDL  ',1,'CLBTXY')
+      CALL MEMMAR(KPCLEXXS,MXNTTS,  'ADDL  ',1,'CLEBTY')
+      CALL MEMMAR(KPCI1XXS,MXNTTS,  'ADDL  ',1,'CI1BTY')
+      CALL MEMMAR(KPCIBXXS,8*MXNTTS,'ADDL  ',1,'CIBTXY')
 #endif
       WRITE(LUWRT,'(/A/)') 
      & '  ********* start of property matrix calculation *********'
@@ -828,21 +954,26 @@ C
 C           inner loop over all eigenstates
 #if defined (VAR_MPI2)
 C 
-#ifdef MOD_DEBUG
+C#ifdef MOD_DEBUG
             WRITE(LUWRT,*) '<S_ISSM|prop|C_ICSM> for C_# and IPROP_X',
      &                         ISSM,PRPNAM(INDXPR),ICSM,ISTATE_X,IPROP_X
-#endif
+C#endif
+           CALL Z_BLKFO_XPRP_PAR(IDC,NMS2VAL,ISSPC,ISSM,WORK(KPCLBXXS),
+     &                           WORK(KPCLEXXS),WORK(KPCI1XXS),
+     &                           WORK(KPCIBXXS),NBATXS,WORK(KNODELIST),
+     &                           IX_ST)
+
             CALL INPRDD_REAL_CPLX_XPRP(ILU2,ILU1,WORK(KVEC1),WORK(KVEC2)
-     &                                ,WORK(KXR),WORK(KXI),NBATX,
-     &                                 WORK(KPCLBXX),WORK(KPCLEXX),
-     &                                 WORK(KPCI1XX),WORK(KPCIBXX),
+     &                                ,WORK(KXR),WORK(KXI),NBATXS,
+     &                                 WORK(KPCLBXXS),WORK(KPCLEXXS),
+     &                                 WORK(KPCI1XXS),WORK(KPCIBXXS),
      &                                 MY_LU2_OFF,MY_LU1_OFF,
      &                                 WORK(KILU2LIST),WORK(KILU1LIST),
      &                                 NPROP_ROOTS_KRCI,ISSM,
      &                                 ISYMEIG_KRCI,MZ,1,ISTATE_X)
 C
 C           debug printing
-#ifdef MOD_DEBUG
+C#ifdef MOD_DEBUG
 C
             WRITE(LUWRT,*) ' WORK(KXR) '
             CALL WRTMATMN(WORK(KXR),1,NPROP_ROOTS_KRCI,1,
@@ -852,7 +983,7 @@ C
               CALL WRTMATMN(WORK(KXI),1,NPROP_ROOTS_KRCI,1,
      &                      NPROP_ROOTS_KRCI,LUWRT)
             END IF
-#endif
+C#endif
 C
 C           lz is pure imaginary operator - scale with -1.0
 C           FIXME: introduce proper scaling for each imaginary 

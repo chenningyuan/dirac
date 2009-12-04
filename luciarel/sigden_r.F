@@ -681,6 +681,7 @@ C
 C     set proper sign for one-electron matrix elements
 C     operator symmetry under time reversal (+1,-1)
       TRSYM = ITIM_SYM * ONE
+      WRITE(LUWRT,*) 'GET_HX_RELA: IHTYPE is',IHTYPE
 C     test IFERM_SYM_T
       IF( IFERM_SYM_T .eq. 1 )THEN
         DFERM_SIGN = 1.0D0
@@ -1080,7 +1081,7 @@ C     ... skip next set of two-electron terms
                   IOP_REO(4,NHX) = 0
                   SIGN_OPREO(NHX) = ONE
                   SIGN_ITIM_SYM(NHX) = ONE
-C                 WRITE(LUWRT,*) ' alpha beta spin flip type ',NHX
+                  WRITE(LUWRT,*) ' alpha beta spin flip type ',NHX
                 end if
               END IF
             END IF
@@ -1122,7 +1123,7 @@ CSK               FIXME: check if that is correct - at least I found it
 CSK                      in the above mentioned book.
 C                 SIGN_ITIM_SYM(NHX) = ONE * TRSYM * DMONE
                   SIGN_ITIM_SYM(NHX) = ONE * TRSYM
-C                 WRITE(LUWRT,*) ' beta alpha spin flip type ',NHX
+                  WRITE(LUWRT,*) ' beta alpha spin flip type ',NHX
                 end if
               END IF
             END IF
@@ -3379,7 +3380,7 @@ C***********************************************************************
      &                     IPROCLIST,IRILP,BLOCKTIME)
 *
 *     debug printing
-      NPTESTVAR = 00
+      NPTESTVAR = 20
       IF( NPTESTVAR .ge. 20 ) THEN
       IOFFSET_SCRATCH = 0
       WRITE(LUWRT,*) 'left vector = C-vector'
@@ -3718,9 +3719,9 @@ CSK             END IF
 C                 mark block as nonzero
                   LUHCLIST(INT_IOFF1) = IONE
 C                 transfer block to disc
-C                 WRITE(LUWRT,*) 'I transfer to file block ISBLK',
-C    &                            ISBLK
-C                 CALL WRTMATMN(HC(IOFF),1,LEN_T,1,LEN_T,LUWRT)
+                  WRITE(LUWRT,*) 'I transfer to file block ISBLK',
+     &                            ISBLK
+                  CALL WRTMATMN(HC(IOFF),1,LEN_T,1,LEN_T,LUWRT)
 C                 WRITE(LUWRT,*) 'offset,length, IRIS',
 C    &                            IOFF_SCR1,LEN_T,IRIS
                   CALL MPI_FILE_WRITE_AT(LLUHC,IOFF_SCR1,HC(IOFF),LEN_T,
