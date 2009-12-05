@@ -613,8 +613,7 @@ contains
     end if
 
     if (kw_matches(word, '.DELTA ')) then
-!mi: Error: Symbol 'aor_cfg_test_delta' at (1) has no IMPLICIT type....
-     !!! aor_cfg_test_delta = .true.
+      aor_cfg_test_delta = .true.
     end if
 
     call check_whether_kw_found(word, kw_section)
