@@ -1130,6 +1130,12 @@ C     =======================================================
 C
       IF( DOOSCILLST )THEN
 C
+C       write title
+        WRITE(LUPRI,'(/28X,A/28X,A/28X,A)') 
+     & ' ********************************************************',
+     & ' ********* printing transition dipole moment(s) *********',
+     & ' ********************************************************'
+C
 C       calculate and print oscillator strength - length gauge
 C       ------------------------------------------------------
 C
@@ -1202,9 +1208,11 @@ C
 C       print TDM
         WRITE(LUPRI,'(/A/A)')
      & '   <initial state   |x,y,z|   final state>  '//
-     & '            TDM [a.u.] (x, y, z)',
+     & '            TDM [a.u.] (x, y, z)           Norm [a.u.]'//
+     & '  Norm [Debye]',
      & '  __________________       _________________'//
-     & '    ____________________________________'
+     & '    ________________________________________________________'//
+     & '_______'
         DO 201 IVEC=1,NPROP_ROOTS_KRCI
           DO 101 JVEC= IVEC+1, NPROP_ROOTS_KRCI
             IF( EVECS(IVEC) .lt. EVECS(JVEC) )THEN
@@ -1233,15 +1241,18 @@ C           print only values above a given threshold - 1.0D-7
             IF( (OSCL(1)+OSCL(2)+OSCL(3)) .lt. XTHRESH )
      &         GOTO 101
           
-            WRITE(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,3F12.8)')
+       WRITE(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,3F12.8,2X,1F12.8,2X 1F12.8)')
      &  '   * state',INIST,'(',XREPEIG(ISYMST_IN),')         * state',
      &      JFLST,'(',XREPEIG(ISYMST_FL),')   ',
-     &      OSCL(1),OSCL(2),OSCL(3)
+     &      OSCL(1),OSCL(2),OSCL(3),
+     &      SQRT((OSCL(1)**2)+(OSCL(2)**2)+(OSCL(3)**2)),
+     &      SQRT((OSCL(1)**2)+(OSCL(2)**2)+(OSCL(3)**2))*debye
  101      CONTINUE
  201    CONTINUE
         WRITE(LUPRI,'(A)')
      & '  __________________________________________'//
-     & '    ____________________________________  '
+     & '    ________________________________________________________'//
+     & '_______'
 C
 #ifdef CODE_NOT_WORKING
 C
