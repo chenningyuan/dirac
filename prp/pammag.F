@@ -656,7 +656,6 @@ C***********************************************************************
 #ifdef MOD_DFT
       use dft_main
       use dft_cfg
-      use dft_temp
 #endif
 
 #include "implicit.h"
@@ -689,9 +688,6 @@ C
       DIMENSION ISYMOP(3),IHRMOP(3),IFCKOP(3),MTOTTK(3)
       LOGICAL LBIT,NODV,NOPV,NOCONT,RETUR,
      &         FCKDDR,DDFOCK,LONDON,FIRST,PARCAL_SAVE
-#ifdef MOD_DFT
-      type(dft_options_t) :: dft_options
-#endif
 
       CALL QENTER('TWOLO1')
 #include "memint.h"
@@ -1185,7 +1181,6 @@ C***********************************************************************
 #ifdef MOD_DFT
       use dft_main
       use dft_cfg
-      use dft_temp
 #endif
 
 #include "implicit.h"
@@ -1214,9 +1209,6 @@ C***********************************************************************
 
       LOGICAL EPMIX,HERM,AH,DOPCTRA_SAVE
 
-#ifdef MOD_DFT
-      type(dft_options_t) :: dft_options
-#endif
 
       CALL QENTER('RNTLON')
       KFRSAV = KFREE

@@ -695,7 +695,9 @@ contains
 ! based on lda_distribute
 ! it calculates the exchange-correlation contribution to KS matrix
 ! differentiated wrt magnetic field
-  subroutine lda_london_distribute(s, irep, mat_dim, fmat, ao, ao_b1, cx, cy, cz))
+  subroutine lda_london_distribute(s, irep, mat_dim, fmat, ao, ao_b1, cx, cy, cz)
+
+    use dft_cb_interface
 
 !   ----------------------------------------------------------------------------
     real(8), intent(in)    :: s
@@ -703,7 +705,7 @@ contains
     integer, intent(in)    :: mat_dim
     real(8), intent(inout) :: fmat(mat_dim, mat_dim, *)
     real(8), intent(in)    :: ao(mat_dim)
-    real(8), intent(in)    :: ao_b1(mat_dim, 3)
+    real(8), intent(in)    :: ao_b1(mat_dim*3)
     real(8), intent(in)    :: cx, cy, cz
 !   ----------------------------------------------------------------------------
     integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz, jj, j
@@ -714,12 +716,12 @@ contains
     real(8)                :: f_right
 #endif /*loop2*/    
 #ifdef loop1
-    real(8)                :: f_left(nr_ao_total, nr_ao_total, 4)
-    real(8)                :: f_right(nr_ao_total, nr_ao_total, 4)
+    real(8)                :: f_left(mat_dim, mat_dim, 4)
+    real(8)                :: f_right(mat_dim, mat_dim, 4)
     real(8)                :: f1, f2, f
 #endif /*loop1*/
     real(8)                :: r_current(3), r_origin(3), r_co(3)
-    real(8)                :: aob1(nr_ao_total, 3)
+    real(8)                :: aob1(mat_dim, 3)
     integer                :: itest, jtest
 !   ----------------------------------------------------------------------------
 
@@ -727,13 +729,13 @@ contains
     r_current(1) = cx
     r_current(2) = cy
     r_current(3) = cz
-    aob1(:,   1) = ao_b1(1:nr_ao_total)                 !d/dBx
-    aob1(:,   2) = ao_b1(nr_ao_total+1:2*nr_ao_total)   !d/dBy
-    aob1(:,   3) = ao_b1(2*nr_ao_total+1:3*nr_ao_total) !d/dBz 
+    aob1(:,   1) = ao_b1(1:mat_dim)                 !d/dBx
+    aob1(:,   2) = ao_b1(mat_dim+1:2*mat_dim)   !d/dBy
+    aob1(:,   3) = ao_b1(2*mat_dim+1:3*mat_dim) !d/dBz 
     !
     !aob1(:,   1) = ao(ao_start(0, 1))                 !d/dBx
-    !aob1(:,   2) = ao(ao_start(0, 1) + nr_ao_total)   !d/dBy
-    !aob1(:,   3) = ao(ao_start(0, 1) + 2*nr_ao_total) !d/dBz 
+    !aob1(:,   2) = ao(ao_start(0, 1) + mat_dim)   !d/dBy
+    !aob1(:,   3) = ao(ao_start(0, 1) + 2*mat_dim) !d/dBz 
     r_co(     1) = r_current(1) - dft_gagorg(1) 
     r_co(     2) = r_current(2) - dft_gagorg(2)
     r_co(     3) = r_current(3) - dft_gagorg(3)
@@ -840,8 +842,8 @@ contains
       end do
 
 !!!#ifdef debug_me_xc
-!        call prqmat(fmat, nr_ao_total, nr_ao_total, nr_ao_total,    &
-!       &            nr_ao_total, 4, dft_cb_pq_to_uq(1,0), 85)
+!        call prqmat(fmat, mat_dim, mat_dim, mat_dim,    &
+!       &            mat_dim, 4, dft_cb_pq_to_uq(1,0), 85)
 !!!#endif /*ifdef debug_me_xc*/        
 
     end do

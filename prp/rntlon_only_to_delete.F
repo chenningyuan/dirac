@@ -110,7 +110,6 @@
 #ifdef MOD_DFT
       use dft_cfg
       use dft_main
-      use dft_temp
 #endif /* MOD_DFT */
 !we don't need all common blocks, but anyway this is temporary:
 #include "implicit.h"
@@ -140,9 +139,6 @@
 
       LOGICAL EPMIX,HERM,AH,DOPCTRA_SAVE
 
-#ifdef MOD_DFT
-      type(dft_options_t) :: dft_options
-#endif
 !-----------------------------------------------------------------------
       KFRSAV = KFREE
       IPRINT = IPRPRP
