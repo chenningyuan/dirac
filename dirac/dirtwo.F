@@ -231,12 +231,14 @@ C
             CALL FULMAT('A',NTBAS(0),NTBAS(0),FMAT(1,IZ,I))
           ENDIF
         ENDDO
-        IF(IPRINT.GE.5) THEN
+        !IF(IPRINT.GE.5) THEN
           CALL HEADER('Sorted FMAT matrix',-1)
           WRITE(LUPRI,'(A,I5,A,I5)') '*** Matrix no.',I,' of',NFMAT
           CALL PRQMAT(FMAT(1,1,I),NTBAS(0),NTBAS(0),NTBAS(0),
      &                NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
-        ENDIF
+        !ENDIF
+        !gosia: 
+        !only for a moment i print above always
       ENDDO
       CALL QEXIT('TWOFCK')
       RETURN
