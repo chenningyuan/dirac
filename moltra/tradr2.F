@@ -963,8 +963,8 @@ C ----------------------------------------------------------------------
          CALL FLSHFO(LUPRI)
          IF (IDSLST(1,ISHLND) .EQ. 0) GOTO 100
          CALL SHLTRA(IDSLST(1,ISHLND),WORK,KFREE,LFREE,IPRINT,KQ,
-     &        INDX,INTFLG,NSTR,NSTRT,DINTSKP,GABRAO,NDMOQR,ICMOQR,
-     &        ITQMT,NTQMT,KTQMAT,TIM1)
+     &        INDX,INTFLG,NSTR,NSTRT,DINTSKP,GABRAO,WORK(KDRIJ),
+     &        NDMOQR,ICMOQR,ITQMT,NTQMT,KTQMAT,TIM1)
 C
 C     Print integrals if requested (above threshold TPRI34):
 C
@@ -1176,8 +1176,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck SHLTRA */
       SUBROUTINE SHLTRA(IDSNFO,WORK,KFREE,LFREE,IPRINT,KQ,
-     &     INDX,INTFLG,NSTR,NSTRT,DINTSKP,GABRAO,NDMOQR,ICMOQR,
-     &     ITQMT,NTQMT,KTQMAT,TIM1)
+     &     INDX,INTFLG,NSTR,NSTRT,DINTSKP,GABRAO,DRIJ,
+     &     NDMOQR,ICMOQR,ITQMT,NTQMT,KTQMAT,TIM1)
 C
 C     Calculate contribution to 3/4-transformed matrix from _one_
 C     R shell as specified in IDSNFO
@@ -1195,27 +1195,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dgroup.h"
       DIMENSION IDSNFO(6), KQ(2,4), KE(2,2), INDX(3,*),
      &     NSTR(2,0:2,4), NSTRT(4), DINTSKP(*), GABRAO(*), WORK(*),
-     &     NDMOQR(2,2,4), ICMOQR(2,4), TIM1(7),
+     &     NDMOQR(2,2,4), ICMOQR(2,4), TIM1(7), DRIJ(*),
      &     ITQMT(0:7,0:7,2), IJP12(0:7), IHM(0:7), ISAMEIJ(4)
       CHARACTER*(24) TMSTMP
       LOGICAL NODV, NOPV, L2TYP(0:3)
 C
       CALL QENTER('SHLTRA')
       KFRSV1 = KFREE
-C
-C     Get screening matrices
-C
-      IF(SCRTRA.GT.0) THEN
-         DO I = 1, 4
-            ISAMEIJ(I) = I
-         ENDDO
-         CALL PR4SC1(KDRIJ,WORK,KFREE,LFREE,DINTSKP,GABRAO,
-     &        WORK(KQ(1,1)),WORK(KQ(1,2)),
-     &        WORK(KQ(1,3)),WORK(KQ(1,4)),
-     &        NDMOQR,ICMOQR,NSTR,ISAMEIJ,IPRINT)
-      ELSE 
-         KDRIJ = KFREE
-      ENDIF
 C
 C     Do a specific R shell (for all requested integral types)
 C
@@ -1346,7 +1332,7 @@ C
          NOPV = NASHT.LT.2
          CALL TIMEC('START ',TIMSTR,TIMEND)
          CALL CALDIS(I2TYP,WORK(KGMAT),INDX,WORK(KDXAB),NODV,NOPV,
-     &        GABRAO,WORK(KDRIJ),DINTSKP,SCRTRA,
+     &        GABRAO,DRIJ,DINTSKP,SCRTRA,
      &        WORK(KFREE),LFREE,IPRINT)
          CALL TIMEC('CALDIS',TIMSTR,TIMEND) 
          TIM1(1) = TIM1(1) + TIMEND - TIMSTR
@@ -2416,13 +2402,13 @@ C
      &         (NOCC(IND2).GT.LSTIR1)) THEN
           NSTRIJ(1,0,IND1) = LSTIR1-NOCC(IND1)+1
           NSTRIJ(2,0,IND1) = NOCC(IND2)-LSTIR1
-          NSTRS(1,IND1)   = NOCC(IND1)
-          NSTRS(2,IND1)   = 1
+          NSTRS(1,IND1)    = NOCC(IND1)
+          NSTRS(2,IND1)    = 1
 C     
 C       Whole batch in irrep 2
 C         
         ELSE
-          NSTRS(2,IND1)   = NOCC(IND1) - LSTIR1
+          NSTRS(2,IND1)    = NOCC(IND1) - LSTIR1
           NSTRIJ(2,0,IND1) = NOCC(IND2) - NOCC(IND1) + 1
         ENDIF
         NSTRIJ(1,1,IND1) = NSTRIJ(1,0,IND1)
@@ -2452,7 +2438,10 @@ C
       IF(IPRINT.GE.1) THEN
         WRITE(LUPRI,'(/A)') 'Task-info 2'
         WRITE(LUPRI,'(A,3I5)') 'I, J, LENTSK: ',ISPNR,JSPNR,LENTSK
-        WRITE(LUPRI,'(A,4I5/)') 'NOCC(1:4)   : ', (NOCC(I),I=1,4)
+        WRITE(LUPRI,'(A,2I5)') 'Occupied index I (first/last) :',
+     &        NOCC(1),NOCC(2)
+        WRITE(LUPRI,'(A,2I5)') 'Occupied index J (first/last) :',
+     &        NOCC(3),NOCC(4)
         DO IFRP = 1,NFSYM
           WRITE(LUPRI,'(A,A3)') '** Fermion ircop ',FREP(IFRP)
           DO K = 1,4
@@ -2977,7 +2966,7 @@ C
          DO I = 1, 4
             ISAMEIJ(I) = I
          ENDDO
-         CALL PR4SC1(DRIJ,WORK,KFREE,LFREE,DINTSKP,GABRAO,
+         CALL PR4SC1(KDRIJ,WORK,KFREE,LFREE,DINTSKP,GABRAO,
      &        WORK(KQ(1,1)),WORK(KQ(1,2)),
      &        WORK(KQ(1,3)),WORK(KQ(1,4)),
      &        NDMOQR,ICMOIJ,NSTRIJ,ISAMEIJ,IPRINT)
@@ -3033,7 +3022,7 @@ C
 #endif
       CALL SHLTRA(IDSNFO,WORK,KFREE,LFREE,IPRINT,KQ,
      &        WORK(KINDX),INTFLG,NSTRIJ,NSTTIJ,DINTSKP,GABRAO,
-     &        NDMOQR,ICMOIJ,ITQMT,NTQMT,KTQMAT,TIM1)
+     &        WORK(KDRIJ),NDMOQR,ICMOIJ,ITQMT,NTQMT,KTQMAT,TIM1)
       INTGTH = INTGTH + 1
 C
 C     Print integrals if requested (above threshold TPRI34):

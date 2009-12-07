@@ -2744,7 +2744,7 @@ C
 C
 C     Print section
 C
-      IF(IPRINT.GE.5) THEN
+      IF(IPRINT.GE.3) THEN
         DO I = 1,NFSYM
           WRITE(LUPRI,'(A,A3)') '*MKDRIJ: Screening matrix ',FREP(I)
           CALL OUTPUT(DRIJ(1,1,I),1,NSYMBL,1,NSYMBL,
@@ -2803,20 +2803,28 @@ C
           ENDDO
           CALL CFSORT(CAO,WORK(KCBF),NSEL,IFRP,NFBAS(IFRP,0))
         ELSE
-          IOFF = ISEL+1
+          IOFF = ISEL
           JOFF = 1
           DO IZ = 1,NZ
             CALL DCOPY(NDSEL,Q(IOFF),1,CAO(JOFF),1)
             IOFF = IOFF + NDVEC
             JOFF = JOFF + NDSEL
           ENDDO
+C.........expand coefficients to quaternion format
           CALL CFSORT(WORK(KCBF),CAO,NSEL,IFRP,NFBAS(IFRP,0))
+C.........transform to AO-basis
           CALL WTSOAO(WORK(KCBF),CAO,IFRP,NFBAS(IFRP,0),NTBAS(0),
      &                NSEL*4,IPRINT)
         ENDIF
         CALL MEMREL('GETCAO.AO',WORK,KCBF,KCBF,KFREE,LFREE)
       ENDIF
 C
+      IF(IPRINT.GE.6) THEN
+        WRITE(LUPRI,'(A,I5)')
+     &   '* GETCAO: Coefficients in AO-basis. Fermion ircop: ',IFRP
+            CALL PRQMAT(CAO,NFBAS(IFRP,0),NSEL,NFBAS(IFRP,0),NSEL,
+     &                  4,IQDEF,LUPRI)
+      ENDIF
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2977,7 +2985,7 @@ C
       N2GAB   = NSYMBL*NSYMBL
       NDRIJ   = N2GAB*NFSYM
 C      CALL DZERO(DINTSKP,8)
-      IF(IPRINT.GE.5) THEN
+      IF(IPRINT.GE.3) THEN
         DO I = 1,NFSYM
           WRITE(LUPRI,'(A,A3)') '*MKDRIJ: GAB-matrix ',FREP(I)
           CALL OUTPUT(GABAO,1,NSYMBL,1,NSYMBL,
