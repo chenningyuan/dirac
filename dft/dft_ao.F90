@@ -1,5 +1,8 @@
 module dft_ao
 
+!gosia:
+!!!!#define debug_me
+
 !   this is based on DIRAC and Dalton
 !   routines written by T. Helgaker, P. Salek, T. Saue, and others
 

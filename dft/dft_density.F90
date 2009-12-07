@@ -1,5 +1,12 @@
 module dft_density
 
+!gosia:
+!!!#define debug_me
+!!!#define debug_me_xc
+! gosia: for debugging lda_london_distribute, later on remove one :)
+#define loop1
+!!#define loop2
+
   implicit none
 
   public dft_density_init
@@ -14,6 +21,7 @@ module dft_density
   public gga_distribute_r
   public lda_distribute_i
   public gga_distribute_i
+  public lda_london_distribute
 
   private
 
@@ -681,6 +689,168 @@ contains
       dft_density_synced = .true.
     end if
 #endif
+
+  end subroutine
+
+! based on lda_distribute
+! it calculates the exchange-correlation contribution to KS matrix
+! differentiated wrt magnetic field
+  subroutine lda_london_distribute(s, irep, mat_dim, fmat, ao, ao_b1, cx, cy, cz))
+
+!   ----------------------------------------------------------------------------
+    real(8), intent(in)    :: s
+    integer, intent(in)    :: irep
+    integer, intent(in)    :: mat_dim
+    real(8), intent(inout) :: fmat(mat_dim, mat_dim, *)
+    real(8), intent(in)    :: ao(mat_dim)
+    real(8), intent(in)    :: ao_b1(mat_dim, 3)
+    real(8), intent(in)    :: cx, cy, cz
+!   ----------------------------------------------------------------------------
+    integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz, jj, j
+    integer                :: a, b, c
+#ifdef loop2    
+    real(8)                :: f
+    real(8)                :: f_left
+    real(8)                :: f_right
+#endif /*loop2*/    
+#ifdef loop1
+    real(8)                :: f_left(nr_ao_total, nr_ao_total, 4)
+    real(8)                :: f_right(nr_ao_total, nr_ao_total, 4)
+    real(8)                :: f1, f2, f
+#endif /*loop1*/
+    real(8)                :: r_current(3), r_origin(3), r_co(3)
+    real(8)                :: aob1(nr_ao_total, 3)
+    integer                :: itest, jtest
+!   ----------------------------------------------------------------------------
+
+! rename:
+    r_current(1) = cx
+    r_current(2) = cy
+    r_current(3) = cz
+    aob1(:,   1) = ao_b1(1:nr_ao_total)                 !d/dBx
+    aob1(:,   2) = ao_b1(nr_ao_total+1:2*nr_ao_total)   !d/dBy
+    aob1(:,   3) = ao_b1(2*nr_ao_total+1:3*nr_ao_total) !d/dBz 
+    !
+    !aob1(:,   1) = ao(ao_start(0, 1))                 !d/dBx
+    !aob1(:,   2) = ao(ao_start(0, 1) + nr_ao_total)   !d/dBy
+    !aob1(:,   3) = ao(ao_start(0, 1) + 2*nr_ao_total) !d/dBz 
+    r_co(     1) = r_current(1) - dft_gagorg(1) 
+    r_co(     2) = r_current(2) - dft_gagorg(2)
+    r_co(     3) = r_current(3) - dft_gagorg(3)
+
+!!#ifdef debug_me_xc
+!    open(85, file='excmat_lda_london_dist.test', access='append')
+!!#endif /*ifdef debug_me_xc*/        
+
+    do jxyz = 0, 0
+      do iblock = 1, nr_density_blocks(jxyz, irep)
+
+        nr1 = nr_ao(1, iblock, jxyz, irep)
+        st1 = st_ao(1, iblock, jxyz, irep)
+        nr2 = nr_ao(2, iblock, jxyz, irep)
+        st2 = st_ao(2, iblock, jxyz, irep)
+
+#ifdef loop1        
+        ! do it with daxpy:
+        ! finish me... 
+
+        do i = 1, nr2
+
+          ii = st2 + i - 1
+
+          do a = 1, 3
+            select case (a)
+              case (1)
+                b = 2; c = 3
+              case (2)
+                b = 3; c = 1
+              case (3)
+                b = 1; c = 2
+            end select
+
+            ! r* s*(ao_lambda)
+            f1 = r_co(b)*s*ao(ii)
+            ! r* s*(ao_lambda)^B
+            f2 = r_co(b)*s*aob1(ii, c)
+
+            ! calculate f_left, (ao_kappa)^B s ao_lambda
+            call daxpy(nr1,                        & 
+                       f1,                         &
+                       aob1(st1, c),               &
+                       1,                          &
+                       f_left(st1, ii, iq(jxyz)),  &
+                       1)
+
+            ! calculate f_right, ao_kappa s (ao_lambda)^B
+            call daxpy(nr1,                        & 
+                       f2,                         &
+                       ao(st1),                    &
+                       1,                          &
+                       f_right(st1, ii, iq(jxyz)), &
+                       1)
+
+            ! add:
+            ! now in f_left and f_right are of 1*st1 dimension
+            ! we want to add them to get one column of fmat:
+           
+            call daxpy(nr1,                &
+                       1,                  &
+                       (f_left - f_right), &
+                       1,                  &
+                       fmat,               &
+                       1)
+
+
+          end do 
+        end do
+#endif /*ifdef loop1*/
+
+#ifdef loop2
+        ! do it in two loops:
+        do i = 1, nr2
+          do j = 1, nr1
+
+            ii = st2 + i - 1
+            jj = st1 + j - 1
+
+! if we want to do it in similar way to DALTON (dft/magnetic_derivs.c), then:
+
+            do a = 1, 3
+              select case (a)
+                case (1)
+                  b = 2; c = 3
+                case (2)
+                  b = 3; c = 1
+                case (3)
+                  b = 1; c = 2
+              end select
+
+              f_left  = (r_co(b)*aob1(ii, c) - r_co(c)*aob1(ii, b))*ao(jj)
+              f_right = (r_co(b)*aob1(jj, c) - r_co(c)*aob1(jj, b))*ao(ii)
+              f = (f_left - f_right)
+
+              fmat(ii, jj, iq(jxyz)) = fmat(ii, jj, iq(jxyz)) + s*f
+
+            end do !a = 1, 3
+
+          end do
+        end do
+#endif /*ifdef loop2*/        
+
+      end do
+
+!!!#ifdef debug_me_xc
+!        call prqmat(fmat, nr_ao_total, nr_ao_total, nr_ao_total,    &
+!       &            nr_ao_total, 4, dft_cb_pq_to_uq(1,0), 85)
+!!!#endif /*ifdef debug_me_xc*/        
+
+    end do
+
+
+!!#ifdef debug_me_xc
+!    close(85) 
+!!#endif /*ifdef debug_me_xc*/        
+
 
   end subroutine
 

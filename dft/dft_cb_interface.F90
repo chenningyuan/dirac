@@ -44,6 +44,10 @@ module dft_cb_interface
 ! gosia - let's try to add here info about user-defined gauge origin
 ! hope that gagorg from include/orgcom.h is the one we need:
   real(8), public :: dft_gagorg(3)
+  !gosia: added for lda_london_dist_debug:
+  ! (hardcoded for diatomics)
+  integer, parameter, public :: dft_mxcent = 2 
+  real(8), public :: dft_nuc_cord(3, dft_mxcent)
 
   private
 
@@ -87,7 +91,12 @@ contains
 
     dft_cb_cent(1:max_nr_shells, 1:3, 1:2) = cent(1:max_nr_shells, 1:3, 1:2)
 
-    dft_gagorg(3) = gagorg(3) ! added
+    dft_gagorg(3) = gagorg(3) ! added, gauge origin
+
+    !gosia: added for a moment for lda_london_dist_debug:
+    ! the coords of nuclei (nuclei.h)
+    dft_nuc_cord(3, dft_mxcent) = cord(3, dft_mxcent)
+    !
 
     dft_cb_pq_to_uq = 0
     dft_cb_uq_to_pq = 0
@@ -139,24 +148,27 @@ contains
 #ifdef VAR_MPI
   subroutine sync_dft_cb()
 
-    call dirac_mpi_bcast(nr_qu                      )
-    call dirac_mpi_bcast(nr_ao_total                )
-    call dirac_mpi_bcast(nr_ao_large                )
-    call dirac_mpi_bcast(nr_ao_small                )
-    call dirac_mpi_bcast(nr_open_shells             )
-    call dirac_mpi_bcast(nr_electrons_orbital       )
-    call dirac_mpi_bcast(nr_electrons_orbital_active)
-    call dirac_mpi_bcast(print_unit                 )
-    call dirac_mpi_bcast(nr_density_blocks          )
-    call dirac_mpi_bcast(nr_ao                      )
-    call dirac_mpi_bcast(st_ao                      )
-    call dirac_mpi_bcast(iq                         )
-    call dirac_mpi_bcast(dft_cb_pq_to_uq            )
-    call dirac_mpi_bcast(dft_cb_uq_to_pq            )
-    call dirac_mpi_bcast(is_gga_functional          )
-    call dirac_mpi_bcast(is_parallel_calculation    )
-    call dirac_mpi_bcast(dft_cb_cent                )
-    call dirac_mpi_bcast(dft_gagorg                 )!added
+    call dft_mpi_bcast(nr_qu                      )
+    call dft_mpi_bcast(nr_ao_total                )
+    call dft_mpi_bcast(nr_ao_large                )
+    call dft_mpi_bcast(nr_ao_small                )
+    call dft_mpi_bcast(nr_boson_sym               )
+    call dft_mpi_bcast(nr_ls_components           )
+    call dft_mpi_bcast(nr_open_shells             )
+    call dft_mpi_bcast(nr_electrons_orbital       )
+    call dft_mpi_bcast(nr_electrons_orbital_active)
+    call dft_mpi_bcast(print_unit                 )
+    call dft_mpi_bcast(nr_density_blocks          )
+    call dft_mpi_bcast(nr_ao                      )
+    call dft_mpi_bcast(st_ao                      )
+    call dft_mpi_bcast(iq                         )
+    call dft_mpi_bcast(dft_cb_pq_to_uq            )
+    call dft_mpi_bcast(dft_cb_uq_to_pq            )
+    call dft_mpi_bcast(is_gga_functional          )
+    call dft_mpi_bcast(is_parallel_calculation    )
+    call dft_mpi_bcast(dft_cb_cent                )
+    call dft_mpi_bcast(dft_gagorg                 )
+    call dft_mpi_bcast(dft_nuc_cord               )
 
   end subroutine
 #endif /* ifdef VAR_MPI */
