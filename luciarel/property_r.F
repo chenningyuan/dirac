@@ -570,7 +570,7 @@ C       write sorted property matrix back to file
 !SK DEBUG
         IF( FILELAB_REOD .eq. 'Y dipoRO')THEN
           WRITE(LUWRT,'(/A)') '  DEBUG READING DUMMY Y-OPERATOR MATRIX'
-!radovan: presently alloc cannot handle integer(8) size
+!radovan: presently alloc cannot handle integer(8) size with ILP32
 !         call alloc(XXXM,NALLINT)
           allocate(XXXM(NALLINT))
           open(unit=19,file='y_int_test', 
@@ -583,13 +583,13 @@ C       write sorted property matrix back to file
           CALL WRTMATMN(XXXM,1,LINT_WRITE,1,LINT_WRITE,LUWRT)
           CALL DCOPY(LINT_WRITE,XXXM,1,WORK(KT_CC),1)
           WRITE(LUWRT,'(/A/)') '  USING DEBUG DUMMY Y-OPERATOR MATRIX'
-!radovan: presently alloc cannot handle integer(8) size
+!radovan: presently alloc cannot handle integer(8) size with ILP32
 !         call dealloc(XXXM)
           deallocate(XXXM)
         END IF
         IF( FILELAB_REOD .eq. 'X dipoRO')THEN
           WRITE(LUWRT,'(/A)') '  DEBUG READING DUMMY X-OPERATOR MATRIX'
-!radovan: presently alloc cannot handle integer(8) size
+!radovan: presently alloc cannot handle integer(8) size with ILP32
 !         call alloc(XXXM,NALLINT)
           allocate(XXXM(NALLINT))
           open(unit=19,file='x_int_test', 
@@ -602,7 +602,7 @@ C       write sorted property matrix back to file
           CALL WRTMATMN(XXXM,1,LINT_WRITE,1,LINT_WRITE,LUWRT)
           CALL DCOPY(LINT_WRITE,XXXM,1,WORK(KT_CC),1)
           WRITE(LUWRT,'(/A/)') '  USING DEBUG DUMMY X-OPERATOR MATRIX'
-!radovan: presently alloc cannot handle integer(8) size
+!radovan: presently alloc cannot handle integer(8) size with ILP32
 !         call dealloc(XXXM)
           deallocate(XXXM)
         END IF
