@@ -3010,6 +3010,23 @@ C
 C
 C     Fill spin-spin matrices
 C
+      IF (XLR_SKIPEE) THEN
+         IF (XLR_SKIPEP) THEN
+           IABLRF_EE = -999999999
+           IABLRF_EP = -999999999
+         ELSE
+           IABLRF_EE = -999999999
+           IABLRF_EP = 2
+         END IF
+      ELSE
+         IF (XLR_SKIPEP) THEN
+           IABLRF_EE = 2
+           IABLRF_EP = -999999999
+         ELSE
+           IABLRF_EE = 2
+           IABLRF_EP = 3
+         END IF
+      END IF
 #if defined (XH4)
       WRITE(LUPRI,'(A)') '*** WARNING *** Using code for XH4 !'
 #endif
