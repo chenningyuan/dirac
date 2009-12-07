@@ -199,6 +199,7 @@ C   ... calculate two-electron contribution
 C   ... calculate reorthonormalization contribution
         IF (.NOT.NOONEI)
      &     CALL RNTLON(WORK(KCMO),WORK(KBEIG),WORK,KFREE,LFREE)
+        CALL MEMREL('PRPXL1.LONDON',WORK,1,KCMO,KFREE,LFREE)
       ENDIF
 #endif /* MOD_LONDON */
 C
