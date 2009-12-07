@@ -570,7 +570,9 @@ C       write sorted property matrix back to file
 !SK DEBUG
         IF( FILELAB_REOD .eq. 'Y dipoRO')THEN
           WRITE(LUWRT,'(/A)') '  DEBUG READING DUMMY Y-OPERATOR MATRIX'
-          call alloc(XXXM,NALLINT)
+!radovan: presently alloc cannot handle integer(8) size
+!         call alloc(XXXM,NALLINT)
+          allocate(XXXM(NALLINT))
           open(unit=19,file='y_int_test', 
      &         status='UNKNOWN',form='FORMATTED')
           rewind(19)
@@ -581,11 +583,15 @@ C       write sorted property matrix back to file
           CALL WRTMATMN(XXXM,1,LINT_WRITE,1,LINT_WRITE,LUWRT)
           CALL DCOPY(LINT_WRITE,XXXM,1,WORK(KT_CC),1)
           WRITE(LUWRT,'(/A/)') '  USING DEBUG DUMMY Y-OPERATOR MATRIX'
-          call dealloc(XXXM)
+!radovan: presently alloc cannot handle integer(8) size
+!         call dealloc(XXXM)
+          deallocate(XXXM)
         END IF
         IF( FILELAB_REOD .eq. 'X dipoRO')THEN
           WRITE(LUWRT,'(/A)') '  DEBUG READING DUMMY X-OPERATOR MATRIX'
-          call alloc(XXXM,NALLINT)
+!radovan: presently alloc cannot handle integer(8) size
+!         call alloc(XXXM,NALLINT)
+          allocate(XXXM(NALLINT))
           open(unit=19,file='x_int_test', 
      &         status='UNKNOWN',form='FORMATTED')
           rewind(19)
@@ -596,7 +602,9 @@ C       write sorted property matrix back to file
           CALL WRTMATMN(XXXM,1,LINT_WRITE,1,LINT_WRITE,LUWRT)
           CALL DCOPY(LINT_WRITE,XXXM,1,WORK(KT_CC),1)
           WRITE(LUWRT,'(/A/)') '  USING DEBUG DUMMY X-OPERATOR MATRIX'
-          call dealloc(XXXM)
+!radovan: presently alloc cannot handle integer(8) size
+!         call dealloc(XXXM)
+          deallocate(XXXM)
         END IF
 !SK DEBUG
 C
