@@ -1,13 +1,13 @@
 #! /usr/bin/python
 
-# radovan (2009--09--28):
+# radovan (2009-12-08):
 # - i use this script to quickly run many tests, really in parallel
 #   (all submitted at the same time)
 #   i use it to quickly check whether a fresh compilation on the cluster is ok for production
 #   maybe it can be useful for you too (but please change email_recipient)
 # - it can be used in the following way (example):
 #   rm -f test/run.sh
-#   ln -s ~/bin/parallel_test.py test/run.sh
+#   ln -s ../utils/radovan/parallel_test.py test/run.sh
 #   cd test
 #   for dir in 46* 05*; do
 #       cd $dir
@@ -31,16 +31,14 @@ import sys
 script = '''#!/bin/bash
 
 #PBS -S /bin/bash
-#PBS -A uit-ctcc-001
-#PBS -l nodes=nr_cores:gige
+#PBS -A nn4654k
+#PBS -l nodes=nr_cores:ib
 #PBS -l walltime=00:10:00
 #PBS -l pvmem=2000mb
 
-module load openmpi/1.3.2
-export LD_LIBRARY_PATH=/global/apps/intel/mkl/10.1.0.015/lib/em64t:$LD_LIBRARY_PATH
-export OMP_NUM_THREADS=1
+export LD_LIBRARY_PATH=/global/apps/intel/mkl/10.2.0.013/lib/em64t:$LD_LIBRARY_PATH
 
-pam=/home/bast/dirac/r9723_ifort_icc_mkl_i4_a/pam
+pam=/home/bast/dirac/pam_test
 
 scratch=/global/work/$USER/$PBS_JOBID
 mkdir -p $scratch
