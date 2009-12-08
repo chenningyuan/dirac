@@ -233,7 +233,20 @@ contains
 
     if (aor_cfg_test_delta) then
 
-      w = 0.0d0
+!     this is 4hg (fourth harmonic generation)
+      w    =  0.0d0
+      w(1) =  aor_cfg_freq_process
+      w(2) =  aor_cfg_freq_process
+      w(3) =  aor_cfg_freq_process
+      w(4) =  aor_cfg_freq_process
+
+!     for the moment do not sum up
+!     until i have the final isotropic average formula
+!     just print tensor elements
+      sum_up = delta_element(S, D, F, (/w(1:4)/), 3, 1, 1, 1, 1)
+      sum_up = delta_element(S, D, F, (/w(1:4)/), 3, 3, 1, 1, 1)
+      sum_up = delta_element(S, D, F, (/w(1:4)/), 3, 3, 3, 1, 1)
+      sum_up = delta_element(S, D, F, (/w(1:4)/), 3, 3, 3, 3, 1)
       sum_up = delta_element(S, D, F, (/w(1:4)/), 3, 3, 3, 3, 3)
 
     end if
