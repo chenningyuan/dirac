@@ -325,29 +325,21 @@ c=======================================================================
       s_bc_h =     d2*s_bc_h
       call dscal(3,d2,v_bc_h,1)
 
-      worth_it = max(
-     &               dabs(s_bc_h),
-     &               dabs(v_bc_h(1)),
-     &               dabs(v_bc_h(2)),
-     &               dabs(v_bc_h(3))
-     &              )
-      if(worth_it .gt. dft_cfg_dfthrl) then
-        if (add_grad) then
-          call gga_distribute_r(s_bc_h,
-     &                          v_bc_h,
-     &                          isymop(3) - 1,
-     &                          mat_dim, 
-     &                          excmat(1, 1, 1, 3),
-     &                          gao,
-     &                          gao1)
-        else
-          call lda_distribute_r(s_bc_h,
-     &                          isymop(3) - 1,
-     &                          mat_dim, 
-     &                          excmat(1, 1, 1, 3),
-     &                          gao)
-        end if
-      endif
+      if (add_grad) then
+        call gga_distribute_r(s_bc_h,
+     &                        v_bc_h,
+     &                        isymop(3) - 1,
+     &                        mat_dim, 
+     &                        excmat(1, 1, 1, 3),
+     &                        gao,
+     &                        gao1)
+      else
+        call lda_distribute_r(s_bc_h,
+     &                        isymop(3) - 1,
+     &                        mat_dim, 
+     &                        excmat(1, 1, 1, 3),
+     &                        gao)
+      end if
 
       if (.not. no_sdft) then
 
