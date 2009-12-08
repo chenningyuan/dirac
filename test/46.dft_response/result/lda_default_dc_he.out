@@ -1,8 +1,8 @@
-DIRAC launched (pam script) by bast@larry at Wed Nov 18 08:38:31 CET 2009
-in : /home/bast/dirac/gfortran_gcc_a/test/46.dft_response
+DIRAC launched (pam script) by bast@larry at Tue Dec  8 19:05:43 CET 2009
+in : /home/bast/dirac/gfortran_gcc_a_autodiff_mpi/test/46.dft_response
 ===========================================================================================
-Size of all static allocations (pam script) : 72.2637 MB
-DIRAC serial allocating 64000000 words (488 MB) of memory
+Size of all static allocations (pam script) : 73.2847 MB
+DIRAC master    (larry) allocating 64000000 words (488 MB) of memory
  ******************************************************************************
  *                                                                            *
  *                                O U T P U T                                 *
@@ -135,18 +135,18 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
  Hostname          : larry
  Operating system  : Linux 2.6.27-15-generic
  Machine           : i686
- Run               : Sequential
- Last compilation  : 01:25:26 Nov 18 2009 (by bast@larry:/home/bast/dirac/gfortran_gcc_a)
- FORTRAN compiler  : /usr/bin/gfortran -g -fno-range-check -O3 -ffast-math -funroll-loops -Iinclude -Jmodules -DARCH32BIT -DGFORTRAN=432 -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MFDS -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON 
- C compiler        : /usr/bin/gcc -g -O3 -ffast-math -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DSYS_FLAVOR=LINUX 
+ Run               : Parallel
+ Last compilation  : 19:04:18 Dec  8 2009 (by bast@larry:/home/bast/dirac/gfortran_gcc_a_autodiff_mpi)
+ FORTRAN compiler  : /home/bast/openmpi-1.3.3/bin/mpif90 -g -fno-range-check -O3 -ffast-math -funroll-loops -fcray-pointer -Iinclude -Ixc_fun/include -Ixc_fun/src/functionals -Ixc_fun/src/taylor -Jmodules -DARCH32BIT -DGFORTRAN=432 -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MPI -DVAR_MFDS -DVAR_MPI2 -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS -DMOD_AUTODIFF -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON 
+ C compiler        : /home/bast/openmpi-1.3.3/bin/mpicc -g -O3 -ffast-math -Iinclude -Ixc_fun/include -Ixc_fun/src/functionals -Ixc_fun/src/taylor -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS -DMOD_AUTODIFF -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MPI -DVAR_MPI2 -DSYS_FLAVOR=LINUX 
  External libraries: -L/usr/lib -lblas -L/usr/lib -llapack -lcblas -lf77blas -latlas -L/usr/lib -llapack 
  Internal libraries: DIRAC_BLAS=NO  DIRAC_LAPACK=NO 
  ILP data model    : ILP32 
  SVN URL:          : 'http://dirac.chem.sdu.dk/svnDirac/Dirac/trunk' 
- SVN Changeset     : '9925' 
+ SVN Changeset     : '10064' 
 
  
-     Date and time (Linux)  : Wed Nov 18 08:38:31 2009 
+     Date and time (Linux)  : Tue Dec  8 19:05:44 2009 
      Host name              :                                         
 
 
@@ -655,7 +655,7 @@ Total no. of orbitals      (NORB):     6      12      18
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Wed Nov 18 08:38:32 2009
+########## START ITERATION NO.   1 ##########   Tue Dec  8 19:05:45 2009
 
 
 * AUTOCC( 0) : Initial occupation:
@@ -663,15 +663,15 @@ Total no. of orbitals      (NORB):     6      12      18
  * Closed shell SCF calculation with    2 electrons in
        1 orbitals in Fermion irrep 1
        0 orbitals in Fermion irrep 2
-It.   1    -1.188992125016      1.00D+20  0.00D+00  0.00D+00               0.00400102s   Scr. nuclei    Wed Nov 18
+It.   1    -1.188992125016      1.00D+20  0.00D+00  0.00D+00               0.00400096s   Scr. nuclei    Tue Dec  8
 
-########## START ITERATION NO.   2##########   Wed Nov 18 08:38:32 2009
+########## START ITERATION NO.   2##########   Tue Dec  8 19:05:45 2009
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12   83.33%   10.96%    0.00%    0.00%   0.00000000s
-SOfock:SL  1.00D-12   55.50%   14.86%    0.00%    0.00%   0.00400001s
+SOfock:SL  1.00D-12   55.50%   14.86%    0.00%    0.00%   0.00400102s
 
 
  ********************************************************************************
@@ -696,7 +696,7 @@ He      1   0.998E-05   0.157E+02   0.123E+00      99   30258
    Number of grid points in quadrature:     30258 (100.0%)
 
 
- >>>> Time used in DFTGRD:   0.08 seconds
+ >>>> Time used in DFTGRD:   0.07 seconds
 
 
    number of quadrature points:                     30258
@@ -704,98 +704,98 @@ He      1   0.998E-05   0.157E+02   0.123E+00      99   30258
    number of electrons from numerical integration:      1.9999997921133073
 
 
- >>>> time used in dftexc:   0.45 seconds
+ >>>> time used in dftexc:   0.40 seconds
 
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.47602904s
+>>> Total CPU-time : 0.43202597s
 
-########## END ITERATION NO.   2 ##########   Wed Nov 18 08:38:32 2009
+########## END ITERATION NO.   2 ##########   Tue Dec  8 19:05:45 2009
 
-It.   2    -2.825244379252      1.64D+00  1.03D-01  1.32D-01               0.47602904s   LL SL          Wed Nov 18
+It.   2    -2.825244379252      1.64D+00  1.03D-01  1.32D-01               0.43202597s   LL SL          Tue Dec  8
 
-########## START ITERATION NO.   3##########   Wed Nov 18 08:38:32 2009
+########## START ITERATION NO.   3##########   Tue Dec  8 19:05:45 2009
 
     3 *** Differential density matrix. DCOVLP     = 0.8508
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12   83.33%   10.96%    0.00%    0.00%   0.00000000s
-SOfock:SL  1.00D-12   55.50%   14.86%    0.00%    0.00%   0.00800097s
+SOfock:SL  1.00D-12   55.50%   14.86%    0.00%    0.00%   0.00000000s
 
    number of quadrature points:                     30258
    DFT exchange-correlation energy:                    -0.9553241846315046
    number of electrons from numerical integration:      1.9999994638314826
 
 
- >>>> time used in dftexc:   0.36 seconds
+ >>>> time used in dftexc:   0.33 seconds
 
 >>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.36802304s
+>>> Total CPU-time : 0.33202100s
 
-########## END ITERATION NO.   3 ##########   Wed Nov 18 08:38:32 2009
+########## END ITERATION NO.   3 ##########   Tue Dec  8 19:05:45 2009
 
-It.   3    -2.828545496873      3.30D-03 -6.63D-02  5.42D-02   DIIS   2    0.36802304s   LL SL          Wed Nov 18
+It.   3    -2.828545496873      3.30D-03 -6.63D-02  5.42D-02   DIIS   2    0.33202100s   LL SL          Tue Dec  8
 
-########## START ITERATION NO.   4##########   Wed Nov 18 08:38:33 2009
+########## START ITERATION NO.   4##########   Tue Dec  8 19:05:46 2009
 
     4 *** Differential density matrix. DCOVLP     = 1.0460
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12   83.33%   10.96%    0.00%    0.00%   0.00000000s
-SOfock:SL  1.00D-12   55.50%   15.28%    0.00%    0.00%   0.00400090s
+SOfock:SL  1.00D-12   55.50%   15.28%    0.00%    0.00%   0.00400007s
 
    number of quadrature points:                     30258
    DFT exchange-correlation energy:                    -0.9713886609727393
    number of electrons from numerical integration:      1.9999996130107549
 
 
- >>>> time used in dftexc:   0.41 seconds
+ >>>> time used in dftexc:   0.36 seconds
 
 >>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.41602588s
+>>> Total CPU-time : 0.36402309s
 
-########## END ITERATION NO.   4 ##########   Wed Nov 18 08:38:33 2009
+########## END ITERATION NO.   4 ##########   Tue Dec  8 19:05:46 2009
 
-It.   4    -2.829270602890      7.25D-04  2.04D-02  8.40D-04   DIIS   3    0.41602588s   LL SL          Wed Nov 18
+It.   4    -2.829270602890      7.25D-04  2.04D-02  8.40D-04   DIIS   3    0.36402309s   LL SL          Tue Dec  8
 
-########## START ITERATION NO.   5##########   Wed Nov 18 08:38:34 2009
+########## START ITERATION NO.   5##########   Tue Dec  8 19:05:47 2009
 
     5 *** Differential density matrix. DCOVLP     = 0.9993
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12   83.33%   10.96%    0.00%    0.00%   0.00000000s
-SOfock:SL  1.00D-12   55.50%   17.00%    0.00%    0.00%   0.00400090s
+SOfock:SL  1.00D-12   55.50%   17.00%    0.00%    0.00%   0.00399995s
 
    number of quadrature points:                     30258
    DFT exchange-correlation energy:                    -0.9711440318431208
    number of electrons from numerical integration:      1.9999996109748999
 
 
- >>>> time used in dftexc:   0.38 seconds
+ >>>> time used in dftexc:   0.40 seconds
 
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.38402414s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.40802598s
 
-########## END ITERATION NO.   5 ##########   Wed Nov 18 08:38:34 2009
+########## END ITERATION NO.   5 ##########   Tue Dec  8 19:05:47 2009
 
-It.   5    -2.829270776220      1.73D-07 -3.10D-04  3.58D-07   DIIS   4    0.38402414s   LL SL          Wed Nov 18
+It.   5    -2.829270776220      1.73D-07 -3.10D-04  3.58D-07   DIIS   4    0.40802598s   LL SL          Tue Dec  8
 
-########## START ITERATION NO.   6##########   Wed Nov 18 08:38:35 2009
+########## START ITERATION NO.   6##########   Tue Dec  8 19:05:47 2009
 
     6 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12   83.33%   10.96%    0.00%    0.00%   0.00000000s
-SOfock:SL  1.00D-12   55.50%   31.14%    0.00%    0.00%   0.00400090s
+SOfock:SL  1.00D-12   55.50%   31.14%    0.00%    0.00%   0.00399995s
 
    number of quadrature points:                     30258
    DFT exchange-correlation energy:                    -0.9711439963572034
    number of electrons from numerical integration:      1.9999996109710776
 
 
- >>>> time used in dftexc:   0.40 seconds
+ >>>> time used in dftexc:   0.35 seconds
 
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.40002489s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.35602188s
 
-########## END ITERATION NO.   6 ##########   Wed Nov 18 08:38:35 2009
+########## END ITERATION NO.   6 ##########   Tue Dec  8 19:05:47 2009
 
-It.   6    -2.829270776220      5.02D-14 -4.89D-08  7.33D-09   DIIS   4    0.40002489s   LL SL          Wed Nov 18
+It.   6    -2.829270776220      5.02D-14 -4.89D-08  7.33D-09   DIIS   4    0.35602188s   LL SL          Tue Dec  8
 
 
                                    SCF - CYCLE
@@ -811,12 +811,12 @@ It.   6    -2.829270776220      5.02D-14 -4.89D-08  7.33D-09   DIIS   4    0.400
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.   1    -1.188992125016      1.00D+20  0.00D+00  0.00D+00               0.00400102s   Scr. nuclei    Wed Nov 18
-It.   2    -2.825244379252      1.64D+00  1.03D-01  1.32D-01               0.47602904s   LL SL          Wed Nov 18
-It.   3    -2.828545496873      3.30D-03 -6.63D-02  5.42D-02   DIIS   2    0.36802304s   LL SL          Wed Nov 18
-It.   4    -2.829270602890      7.25D-04  2.04D-02  8.40D-04   DIIS   3    0.41602588s   LL SL          Wed Nov 18
-It.   5    -2.829270776220      1.73D-07 -3.10D-04  3.58D-07   DIIS   4    0.38402414s   LL SL          Wed Nov 18
-It.   6    -2.829270776220      5.02D-14 -4.89D-08  7.33D-09   DIIS   4    0.40002489s   LL SL          Wed Nov 18
+It.   1    -1.188992125016      1.00D+20  0.00D+00  0.00D+00               0.00400096s   Scr. nuclei    Tue Dec  8
+It.   2    -2.825244379252      1.64D+00  1.03D-01  1.32D-01               0.43202597s   LL SL          Tue Dec  8
+It.   3    -2.828545496873      3.30D-03 -6.63D-02  5.42D-02   DIIS   2    0.33202100s   LL SL          Tue Dec  8
+It.   4    -2.829270602890      7.25D-04  2.04D-02  8.40D-04   DIIS   3    0.36402309s   LL SL          Tue Dec  8
+It.   5    -2.829270776220      1.73D-07 -3.10D-04  3.58D-07   DIIS   4    0.40802598s   LL SL          Tue Dec  8
+It.   6    -2.829270776220      5.02D-14 -4.89D-08  7.33D-09   DIIS   4    0.35602188s   LL SL          Tue Dec  8
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    6 iterations.
 * Average elapsed time per iteration: 
@@ -885,11 +885,11 @@ tot.num. of pos.erg shells:    4    2
 
 
  
-     Date and time (Linux)  : Wed Nov 18 08:38:35 2009 
+     Date and time (Linux)  : Tue Dec  8 19:05:48 2009 
      Host name              :                                         
->>>> Node 0, utime: 2, stime: 0, minflt: 135578, majflt: 0, nvcsw: 95, nivcsw: 284
->>>> Total WALL time used in DIRAC: 4s
 *****************************************************
+>>>> Node 0, utime: 1, stime: 0, minflt: 136420, majflt: 0, nvcsw: 100, nivcsw: 345
+>>>> Total WALL time used in DIRAC: 5s
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 
