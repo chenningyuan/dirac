@@ -3008,6 +3008,10 @@ C
      &          BBUF(*),WORK(*)
 C
       CALL QENTER('XBVGEN')
+Csebastien: the diagonal of S[2] is introduced in the preconditioning
+      SDIAG = 2.0D0
+      SDIAG2 = SDIAG**2
+C
       TEST = DIAGHE.AND.(.NOT.USEXVC)
       FFAC = D1
       IF(IMFREQ) FFAC = DM1
@@ -3082,9 +3086,9 @@ C             For MCSCF optimizations FREQ (EVALR) is the
 C             level shift. For LR it's zero.
 C
                 IF ( ABS(BVEC(IVAR,IZ,IP)) .GT. THRBVEC ) THEN
-                  IF ( ABS(HDIAG(IVAR)-FREQ) .GT. DLIM) THEN
+                  IF ( ABS(HDIAG(IVAR)-FREQ*SDIAG) .GT. DLIM) THEN
                        BVEC(IVAR,IZ,IP) =
-     &                -BVEC(IVAR,IZ,IP) / (HDIAG(IVAR)-FREQ)
+     &                -BVEC(IVAR,IZ,IP) / (HDIAG(IVAR)-FREQ*SDIAG)
                   ELSE
                     BVEC(IVAR,IZ,IP) = -BVEC(IVAR,IZ,IP)
                   END IF
@@ -3117,20 +3121,20 @@ C           hj-nov99
 C           Preconditioning: 
 C           For REAL frequencies multiply with minus the elements of
 C
-C           / hdiag  -freq \ -1      / hdiag*fac   freq*fac \
-C           |                |     = |                        |
-C           \ -freq  hdiag /         \  freq*fac  hdiag*fac /
+C           /    hdiag  -freq*sdiag \ -1      /    hdiag*fac   freq*sdiag*fac \
+C           |                       |     =   |                               |
+C           \ -freq*sdiag   hdiag   /         \  freq*sdiag*fac     hdiag*fac /
 C
-C           where fac = (hdiag**2 - freq**2)**(-1)
+C           where fac = (hdiag**2 - freq**2*sdiag2)**(-1)
 C           for the res(ip), res(im) pair
 C
 C           For IMAGINARY frequencies multiply with minus the elements of
 C
-C           / hdiag  +freq \ -1      / hdiag*fac  -freq*fac \
-C           |                |     = |                        |
-C           \ -freq  hdiag /         \ +freq*fac  hdiag*fac /
+C           /    hdiag  +freq*sdiag \ -1      /    hdiag*fac  -freq*sdiag*fac \
+C           |                       |     =   |                               |
+C           \ -freq*sdiag   hdiag   /         \ +freq*sdiag*fac     hdiag*fac /
 C
-C           where fac = (hdiag**2 + freq**2)**(-1)
+C           where fac = (hdiag**2 + freq**2*sdiag2)**(-1)
 C           for the res(ip), res(im) pair
             FREQ2 = FREQ**2
 C           Both res(ip) and res(im) present:
@@ -3139,11 +3143,11 @@ C           Both res(ip) and res(im) present:
               BNRMM = DNRM2(NVARQ,BVEC(1,1,IM),1)
               DO IZ = 1,MZ
                 DO IVAR = 1,NVAR
-                  FAC = D1/(FREQ2-FFAC*HDIAG(IVAR)**2)
-                  BP = HDIAG(IVAR)*FAC * BVEC(IVAR,IZ,IP)
-     &               + FFAC * FREQ * FAC * BVEC(IVAR,IZ,IM)
-                  BM = HDIAG(IVAR)*FAC * BVEC(IVAR,IZ,IM)
-     &               + FREQ * FAC * BVEC(IVAR,IZ,IP)
+                  FAC = D1/(FFAC*SDIAG2*FREQ2-HDIAG(IVAR)**2)
+                  BP = HDIAG(IVAR)* FAC * BVEC(IVAR,IZ,IP)
+     &               + FFAC * FREQ * SDIAG * FAC * BVEC(IVAR,IZ,IM)
+                  BM = HDIAG(IVAR)* FAC * BVEC(IVAR,IZ,IM)
+     &               + FREQ * SDIAG * FAC * BVEC(IVAR,IZ,IP)
                   BVEC(IVAR,IZ,IP) = BP
                   BVEC(IVAR,IZ,IM) = BM
                 ENDDO
@@ -3158,7 +3162,7 @@ C...        Only res(ip) present
               BNRMP = DNRM2(NVARQ,BVEC(1,1,IP),1)
               DO IZ = 1,MZ
                 DO IVAR = 1,NVAR
-                  FAC = HDIAG(IVAR)/(FREQ2-FFAC*HDIAG(IVAR)**2)
+                  FAC = HDIAG(IVAR)/(FFAC*SDIAG2*FREQ2-HDIAG(IVAR)**2)
                   BVEC(IVAR,IZ,IP) = FAC * BVEC(IVAR,IZ,IP)
 C                 hj:    Here bvec(ivar,iz,im) should be negligible
                 ENDDO
@@ -3171,7 +3175,7 @@ C...        Only res(im) present
               BNRMM = DNRM2(NVARQ,BVEC(1,1,IM),1)
               DO IZ = 1,MZ
                 DO IVAR = 1,NVAR
-                  FAC = HDIAG(IVAR)/(FREQ2-FFAC*HDIAG(IVAR)**2)
+                  FAC = HDIAG(IVAR)/(FFAC*SDIAG2*FREQ2-HDIAG(IVAR)**2)
                   BVEC(IVAR,IZ,IM) = FAC * BVEC(IVAR,IZ,IM)
 C                 hj:    Here bvec(ivar,iz,ip) should be negligible
                 ENDDO

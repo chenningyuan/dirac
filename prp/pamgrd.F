@@ -906,7 +906,7 @@ C
 C
       IF (IH .EQ. 1) THEN
          DS = D1
-      ELSE IF (IH. EQ. 2) THEN
+      ELSE IF (IH .EQ. 2) THEN
          DS = DM1
       END IF
 C

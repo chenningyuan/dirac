@@ -754,11 +754,19 @@ C
       ENDIF
       IF(NZXOPE.GT.0) THEN
         CLOSE(LUBOE,STATUS = 'KEEP')
-        CLOSE(LUSOE,STATUS = 'DELETE')
+        IF (E2CHEK) THEN
+           CLOSE(LUSOE,STATUS = 'KEEP')
+        ELSE
+           CLOSE(LUSOE,STATUS = 'DELETE')
+        END IF
       ENDIF
       IF(NZXOPP.GT.0) THEN
         CLOSE(LUBOP,STATUS = 'KEEP')
-        CLOSE(LUSOP,STATUS = 'DELETE')
+        IF (E2CHEK) THEN
+           CLOSE(LUSOP,STATUS = 'KEEP')
+        ELSE
+           CLOSE(LUSOP,STATUS = 'DELETE')
+        END IF
       ENDIF
       CLOSE(LUCYCL,STATUS='DELETE')
       CALL MEMREL('XRSCT1',WORK,1,KFRSAV,KFREE,LFREE)
@@ -1977,8 +1985,13 @@ C
           JH = IBTYP(2,J)
           IF(IH*JH.EQ.IPAR) THEN
             REA = D4*DDOT(NZXOPEQ,BVBUF,1,SEVEC(1,JN),1)
-            REDMAT(I,J) = FFAC*REA  
-            REDMAT(J,I) = REA
+            IF(JH .EQ. -1) THEN
+               REDMAT(I,J) = FFAC * REA  
+               REDMAT(J,I) = REA
+            ELSE
+               REDMAT(I,J) = REA  
+               REDMAT(J,I) = FFAC * REA
+            ENDIF
           ENDIF
         ENDDO          
       ENDDO
@@ -1994,8 +2007,13 @@ C
           JH = IBTYP(2,J)
           IF(IH*JH.EQ.IPAR) THEN
             REA = D4*DDOT(NZXOPEQ,BEVEC(1,IN),1,SEVEC(1,JN),1)
-            REDMAT(I,J) = FFAC*REA  
-            REDMAT(J,I) = REA
+            IF(JH .EQ. -1) THEN
+               REDMAT(I,J) = FFAC * REA  
+               REDMAT(J,I) = REA
+            ELSE
+               REDMAT(I,J) = REA  
+               REDMAT(J,I) = FFAC * REA
+            ENDIF
           ENDIF
         ENDDO
       ENDDO
@@ -2016,8 +2034,13 @@ C
           JH = IBTYP(2,J)
           IF(IH*JH.EQ.IPAR) THEN
             REA = D4*DDOT(NZXOPPQ,BVBUF,1,SPVEC(1,JN),1)
-            REDMAT(I,J) = FFAC*REA  
-            REDMAT(J,I) = REA
+            IF(JH .EQ. -1) THEN
+               REDMAT(I,J) = FFAC * REA  
+               REDMAT(J,I) = REA
+            ELSE
+               REDMAT(I,J) = REA  
+               REDMAT(J,I) = FFAC * REA
+            ENDIF
           ENDIF
         ENDDO          
       ENDDO
@@ -2033,8 +2056,13 @@ C
           JH = IBTYP(2,J)
           IF(IH*JH.EQ.IPAR) THEN
             REA = D4*DDOT(NZXOPPQ,BPVEC(1,IN),1,SPVEC(1,JN),1)
-            REDMAT(I,J) = FFAC*REA  
-            REDMAT(J,I) = REA
+            IF(JH .EQ. -1) THEN
+               REDMAT(I,J) = FFAC * REA  
+               REDMAT(J,I) = REA
+            ELSE
+               REDMAT(I,J) = REA  
+               REDMAT(J,I) = FFAC * REA
+            ENDIF
           ENDIF
         ENDDO
       ENDDO
@@ -3544,11 +3572,13 @@ C               tsaue:         retain norm for numerical stability !
                 IVEC(IM) = 0
               ELSE
                 FREQ2 = FREQ**2
+Csebastien: introduce the diagonal of S[2] in preconditioning 
                 DO IZ = 1,NZ
                   DO IVAR = 1,NVAR
-                    FAC = GP(IVAR,IZ)/(FREQ2-FFAC*HDIAG(IVAR)**2)
+                    FAC = GP(IVAR,IZ)/
+     &               (FFAC*FREQ2*SDIAG(IVAR)**2-HDIAG(IVAR)**2)
                     BVEC(IVAR,IZ,IP) = HDIAG(IVAR)*FAC
-                    BVEC(IVAR,IZ,IM) = FREQ*FAC
+                    BVEC(IVAR,IZ,IM) = FREQ*SDIAG(IVAR)*FAC
                   ENDDO
                 ENDDO
 C               tsaue:         retain norm for numerical stability !
