@@ -3,6 +3,7 @@ module aor_property_definitions
     use matrix_defop
     use matrix_genop
     use aoresponse_visual_m
+    use aoresponse_output
     use dirac_interface
     use prop_integrals
     use rsp_equations
@@ -838,6 +839,7 @@ contains
     type(matrix)                :: D_ikl(3, 3, 3)
     type(matrix)                :: D_jkl(3, 3, 3)
     type(matrix)                :: D_ijkl(3, 3, 3, 3)
+
     type(matrix)                :: F_i(3)
     type(matrix)                :: F_j(3)
     type(matrix)                :: F_k(3)
@@ -853,7 +855,13 @@ contains
     type(matrix)                :: F_ikl(3, 3, 3)
     type(matrix)                :: F_jkl(3, 3, 3)
     type(matrix)                :: F_ijkl(3, 3, 3, 3)
-    complex(8)                  :: e(3, 3, 3, 3, 3)
+
+    complex(8)                  :: e1(            3)
+    complex(8)                  :: e2(         3, 3)
+    complex(8)                  :: e3(      3, 3, 3)
+    complex(8)                  :: e4(   3, 3, 3, 3)
+    complex(8)                  :: e5(3, 3, 3, 3, 3)
+
     integer                     :: c1, c2, c3, c4
 !   ----------------------------------------------------------------------------
 
@@ -901,9 +909,24 @@ contains
     end do
 
     call pert_dens((/'EL'/), S, (/D/), (/F/), D_i(i), F_i(i), w=(/w(1)/), c=(/i/))
+    e2 = 0.0d0
+    call prop_energy((/'EL'/), (/D, D_i/), e2, b=(/3/))
+    call print_polarizability(e2, (/w(1)/), i)
+
     call pert_dens((/'EL'/), S, (/D/), (/F/), D_j(j), F_j(j), w=(/w(2)/), c=(/j/))
+    e2 = 0.0d0
+    call prop_energy((/'EL'/), (/D, D_j/), e2, b=(/3/))
+    call print_polarizability(e2, (/w(2)/), j)
+
     call pert_dens((/'EL'/), S, (/D/), (/F/), D_k(k), F_k(k), w=(/w(3)/), c=(/k/))
+    e2 = 0.0d0
+    call prop_energy((/'EL'/), (/D, D_k/), e2, b=(/3/))
+    call print_polarizability(e2, (/w(3)/), k)
+
     call pert_dens((/'EL'/), S, (/D/), (/F/), D_l(l), F_l(l), w=(/w(4)/), c=(/l/))
+    e2 = 0.0d0
+    call prop_energy((/'EL'/), (/D, D_l/), e2, b=(/3/))
+    call print_polarizability(e2, (/w(4)/), l)
 
     call pert_dens((/'EL', 'EL'/),           &
                      S,                      &
@@ -921,6 +944,17 @@ contains
                      F_ij(i, j),             &
                      w=(/w(1), w(2)/),       &
                      c=(/i, j/))
+    e3 = 0.0d0
+    call prop_energy((/'EL'/), &
+                     (/        &
+                       D,      &
+                       D_i,    &
+                       D_j,    &
+                       D_ij    &
+                      /),      &
+                       e3,     &
+                       b=(/3, 3/))
+    call print_polarizability(e3, (/w(1), w(2)/), i, j)
 
     call pert_dens((/'EL', 'EL'/),           &
                      S,                      &
@@ -938,6 +972,17 @@ contains
                      F_ik(i, k),             &
                      w=(/w(1), w(3)/),       &
                      c=(/i, k/))
+    e3 = 0.0d0
+    call prop_energy((/'EL'/), &
+                     (/        &
+                       D,      &
+                       D_i,    &
+                       D_k,    &
+                       D_ik    &
+                      /),      &
+                       e3,     &
+                       b=(/3, 3/))
+    call print_polarizability(e3, (/w(1), w(3)/), i, k)
 
     call pert_dens((/'EL', 'EL'/),           &
                      S,                      &
@@ -955,6 +1000,17 @@ contains
                      F_il(i, l),             &
                      w=(/w(1), w(4)/),       &
                      c=(/i, l/))
+    e3 = 0.0d0
+    call prop_energy((/'EL'/), &
+                     (/        &
+                       D,      &
+                       D_i,    &
+                       D_l,    &
+                       D_il    &
+                      /),      &
+                       e3,     &
+                       b=(/3, 3/))
+    call print_polarizability(e3, (/w(1), w(4)/), i, l)
 
     call pert_dens((/'EL', 'EL'/),           &
                      S,                      &
@@ -972,6 +1028,17 @@ contains
                      F_jk(j, k),             &
                      w=(/w(2), w(3)/),       &
                      c=(/j, k/))
+    e3 = 0.0d0
+    call prop_energy((/'EL'/), &
+                     (/        &
+                       D,      &
+                       D_j,    &
+                       D_k,    &
+                       D_jk    &
+                      /),      &
+                       e3,     &
+                       b=(/3, 3/))
+    call print_polarizability(e3, (/w(2), w(3)/), j, k)
 
     call pert_dens((/'EL', 'EL'/),           &
                      S,                      &
@@ -989,6 +1056,17 @@ contains
                      F_jl(j, l),             &
                      w=(/w(2), w(4)/),       &
                      c=(/j, l/))
+    e3 = 0.0d0
+    call prop_energy((/'EL'/), &
+                     (/        &
+                       D,      &
+                       D_j,    &
+                       D_l,    &
+                       D_jl    &
+                      /),      &
+                       e3,     &
+                       b=(/3, 3/))
+    call print_polarizability(e3, (/w(2), w(4)/), j, l)
 
     call pert_dens((/'EL', 'EL'/),           &
                      S,                      &
@@ -1006,6 +1084,17 @@ contains
                      F_kl(k, l),             &
                      w=(/w(3), w(4)/),       &
                      c=(/k, l/))
+    e3 = 0.0d0
+    call prop_energy((/'EL'/), &
+                     (/        &
+                       D,      &
+                       D_k,    &
+                       D_l,    &
+                       D_kl    &
+                      /),      &
+                       e3,     &
+                       b=(/3, 3/))
+    call print_polarizability(e3, (/w(3), w(4)/), k, l)
 
     call pert_dens((/'EL', 'EL', 'EL'/),     &
                      S,                      &
@@ -1031,6 +1120,21 @@ contains
                      F_ijk(i, j, k),         &
                      w=(/w(1), w(2), w(3)/), &
                      c=(/i, j, k/))
+    e4 = 0.0d0
+    call prop_energy((/'EL'/), &
+                     (/        &
+                       D,      &
+                       D_i,    &
+                       D_j,    &
+                       D_k,    &
+                       D_ij,   &
+                       D_ik,   &
+                       D_jk,   &
+                       D_ijk   &
+                      /),      &
+                       e4,     &
+                       b=(/3, 3, 3/))
+    call print_polarizability(e4, (/w(1), w(2), w(3)/), i, j, k)
 
     call pert_dens((/'EL', 'EL', 'EL'/),     &
                      S,                      &
@@ -1056,6 +1160,21 @@ contains
                      F_ijl(i, j, l),         &
                      w=(/w(1), w(2), w(4)/), &
                      c=(/i, j, l/))
+    e4 = 0.0d0
+    call prop_energy((/'EL'/), &
+                     (/        &
+                       D,      &
+                       D_i,    &
+                       D_j,    &
+                       D_l,    &
+                       D_ij,   &
+                       D_il,   &
+                       D_jl,   &
+                       D_ijl   &
+                      /),      &
+                       e4,     &
+                       b=(/3, 3, 3/))
+    call print_polarizability(e4, (/w(1), w(2), w(4)/), i, j, l)
 
     call pert_dens((/'EL', 'EL', 'EL'/),     &
                      S,                      &
@@ -1081,6 +1200,21 @@ contains
                      F_ikl(i, k, l),         &
                      w=(/w(1), w(3), w(4)/), &
                      c=(/i, k, l/))
+    e4 = 0.0d0
+    call prop_energy((/'EL'/), &
+                     (/        &
+                       D,      &
+                       D_i,    &
+                       D_k,    &
+                       D_l,    &
+                       D_ik,   &
+                       D_il,   &
+                       D_kl,   &
+                       D_ikl   &
+                      /),      &
+                       e4,     &
+                       b=(/3, 3, 3/))
+    call print_polarizability(e4, (/w(1), w(3), w(4)/), i, k, l)
 
     call pert_dens((/'EL', 'EL', 'EL'/),     &
                      S,                      &
@@ -1106,6 +1240,21 @@ contains
                      F_jkl(j, k, l),         &
                      w=(/w(2), w(3), w(4)/), &
                      c=(/j, k, l/))
+    e4 = 0.0d0
+    call prop_energy((/'EL'/), &
+                     (/        &
+                       D,      &
+                       D_j,    &
+                       D_k,    &
+                       D_l,    &
+                       D_jk,   &
+                       D_jl,   &
+                       D_kl,   &
+                       D_jkl   &
+                      /),      &
+                       e4,     &
+                       b=(/3, 3, 3/))
+    call print_polarizability(e4, (/w(2), w(3), w(4)/), j, k, l)
 
     call pert_dens((/'EL', 'EL', 'EL', 'EL'/),     &
                      S,                            &
@@ -1147,8 +1296,7 @@ contains
                      F_ijkl(i, j, k, l),           &
                      w=(/w(1), w(2), w(3), w(4)/), &
                      c=(/i, j, k, l/))
-
-    e = 0.0d0
+    e5 = 0.0d0
     call prop_energy((/'EL'/), &
                      (/        &
                        D,      &
@@ -1168,8 +1316,11 @@ contains
                        D_jkl,  &
                        D_ijkl  &
                       /),      &
-                       e,      &
+                       e5,     &
                        b=(/3, 3, 3, 3/))
+    call print_polarizability(e5, (/w(1), w(2), w(3), w(4)/), i, j, k, l)
+
+    delta_element = -e5(i, j, k, l, h)
 
     D_i    = 0
     D_j    = 0
@@ -1186,6 +1337,7 @@ contains
     D_ikl  = 0
     D_jkl  = 0
     D_ijkl = 0
+
     F_i    = 0
     F_j    = 0
     F_k    = 0
@@ -1201,19 +1353,6 @@ contains
     F_ikl  = 0
     F_jkl  = 0
     F_ijkl = 0
-
-    delta_element = -e(i, j, k, l, h)
-    print '("@ delta (w = "5f9.4")" a10 a2 a2 a2 a2 f26.10)', real(-sum(w)), &
-                                                              real(w(1)),    &
-                                                              real(w(2)),    &
-                                                              real(w(3)),    &
-                                                              real(w(4)),    &
-                                                              fc(h),         &
-                                                              fc(i),         &
-                                                              fc(j),         &
-                                                              fc(k),         &
-                                                              fc(l),         &
-                                                              delta_element
 
   end function
 
