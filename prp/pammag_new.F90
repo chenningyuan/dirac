@@ -4,6 +4,12 @@ module london_response
   use pammag_info
   use memory_allocator 
 
+  use dirac_cfg
+#ifdef MOD_DFT
+  use dft_cfg
+  use dft_main
+#endif
+
   implicit none
 
   public rntlon_new
@@ -214,7 +220,8 @@ contains
 
     integer, allocatable   :: npos_array(:)
     integer                :: npos
-
+    
+    real(8), allocatable :: dmat(:)
     integer :: isym(nr_fock), iopsy(nr_fock), irep(nr_fock)
     integer :: isymop(nr_fock), ihrmop(nr_fock), ifckop(nr_fock)
     integer :: indxpr
@@ -259,41 +266,37 @@ contains
       call dealloc(npos_array)
     end if
 
-! add dft here:
 #ifdef MOD_DFT
-!
-!    if (dirac_cfg_dft_calculation) then
-!
-!      call alloc(dmat, n2bbasxq)
-!      call genden(dmat, cmo, 1, iprint)
-!
-!      call reset_dft_options(dft_options)
-!      dft_options%lr = .true.
-!
-!      off = n2bbasxq
-!
-!      call dftexc(dmat,
-!  &               (/
-!  &                gtb(1),
-!  &                gtb(1+off),
-!  &                gtb(1+2*off)
-!  &               /),
-!  &               (/
-!  &                fao(1),
-!  &                fao(1+off),
-!  &                fao(1+2*off)
-!  &               /),
-!  &               nr_fock,
-!  &               nr_fock,
-!  &               isymop,
-!  &               ihrmop,
-!  &               dft_options,
-!  &               print_prp_level)
-!
-!      call dealloc(dmat)
-!    end if
-!
+!       construct kohn-sham contribution
+!       ================================
+! (stolen from pamrvc.F)
+
+    if (dirac_cfg_dft_calculation) then
+
+!generate standard density matrix
+!need some more memory...
+      call alloc(dmat, t_n2bbasxq)
+      call genden(dmat, cmo, 1, print_prp_level)
+
+      call dftexc(nr_ao_total,   &
+                  nr_qu,         &
+                  nr_fock,       &
+                  mat1,          & !fmat
+                  dmat,          & !dmat_0
+                  nr_fock,       & !nr_dmat_p
+                  mat2,          & !dmat_p
+                  isymop,        &
+                  ihrmop,        &
+                  1,             & !response_order
+                  0,             & !response_order_ao
+                  0,             & !g_order
+                  0)               !m_order
+
+      call dealloc(dmat)
+
+    end if
 #endif /* MOD_DFT */
+
 
 ! do AO-to-MO transformation (and store in mat2):
 

@@ -651,7 +651,6 @@ C     Last modif: Dec 2005, MI - extended for .SPINFREE case
 C                 March 2006,MI
 C
 C***********************************************************************
-!gosia: add dft+lao here
       use dirac_cfg
 #ifdef MOD_DFT
       use dft_main
@@ -719,11 +718,6 @@ C anti hermitisk
 C ...  routine in 'dirac/dirtwo.F'
 C      Set up IFCTYP and IREPDM
       CALL SETFCK(IFCTYP,IREPDM,NCOMP,4,ISYMOP,IHRMOP,IFCKOP,IPRINT)
-!gosia:
-!      write(*,*) 'gosia: check in pammag, ifctyp', ifctyp
-!      write(*,*) 'gosia: check in pammag, irepdm', irepdm
-!gosia: irepdm = 0, ifctyp = 13 (symmetric, coulomb+exchange)
-! or 22 (antisymmetric, exchange)
 C
 C     Get contravariant density matrix, no folding
 C  --------------------------------------------------
@@ -772,6 +766,31 @@ CMI   - Cauchy-Schwarz inequality does not hold for dg(1,2)/dB integrals !
      &        ,TKTIME,IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,IDUMMY
      &        ,I2TYP,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,RELCAL,.false.
      &        ,IDUMMY,DUMMY)
+
+! here add dft contribution:
+#ifdef MOD_DFT
+!
+!          call memget('REAL', kdmat0, n2bbasxq, work, kfree, lfree)
+!          call genden(work(kdmat0), cmo, 1, iprint)
+!
+!          call dftexc(ntbas(0),  ! mat_dim
+!     &                nz,        ! nz
+!     &                ndmat,     ! nr_fmat
+!     &                fmat,      ! fmat
+!     &                work(kdmat0),    ! dmat_0
+!     &                ndmat,     !nr_dmat_p
+!     &                dmat,      !dmat_p
+!     &                isymop,    !isymop
+!     &                ihrmop,    !ihrmop
+!     &                1,         !response_order
+!     &                0,         !response_order_ao
+!     &                0,         !g_order
+!     &                1)         !m_order
+!
+!          call memrel('twolon.dft', work, 1, kdmat0, kfree, lfree)
+
+#endif /*ifdef MOD_DFT*/
+
 #if defined (VAR_MPI) || defined (VAR_PVM)
          ENDIF
 #endif
@@ -925,41 +944,6 @@ C .... write the two-electron London contribution to the file...
        CALL WRTDAC(LUTWOL,N2ORBXQ,WORK(KGBMO),I)
 
       ENDDO ! Of I = x,y,z
-
-!gosia:
-!add dft+lao contribution
-!it has to be done outside the do i=x, y, z loop
-!as in lda_london_distribute we calculate 
-!dF/dBx, dF/dBy and dF/dBz at once
-!and we add them on the top of each other
-!but then we'll have to repeat AO-to-MO transformation after this.
-!...but even if it should be in TWOLON, the user
-!may want to turn off twolon, so then one would not
-!have any dft+lao contribution to H^B...
-!on the other hand it's not that obvious how to add this
-!contribution in onelon so maybe we need a separate subroutine? 
-!so fixme
-!#ifdef MOD_DFT
-!      if (dirac_cfg_dft_calculation) then
-!
-!        call genden(dmat, cmo, 1, iprint)
-!        call reset_dft_options(dft_options)
-!        dft_options%lr = .true.
-!        if (dft_cfg_use_lao) then
-!            dft_options%london = .true.
-!        end if
-!        call dftexc(dmat,
-!     &              (/0.0d0/),
-!     &              work(kgbmo),
-!     &              0,
-!     &              1,
-!     &              isymop,
-!     &              ihrmop,
-!     &              dft_options,
-!     &              1)
-!      end if
-!
-!#endif /*ifdef MOD_DFT*/
 
       CLOSE(LUTWOL,STATUS='KEEP')
 
