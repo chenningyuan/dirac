@@ -47,7 +47,7 @@ static void setup(void);
    on the C++ runtime (although the C++ string class
    would be better to use).
 */
-static char *functional_names[] =
+static const char *functional_names[] =
   {
     "vwn5c",
     "slaterx",

@@ -48,8 +48,8 @@ namespace PW91xk_internal
    {
      static num param_AB[6] = { 0.093907, 76.320, 0.26608, 0.0809615, 100.0, 0.57767e-4};
 
-     return (  pw91k_prefactor(rhoa,grada)*pw91xk_enhancement(param_AB,rhoa,grada)
-             + pw91k_prefactor(rhob,gradb)*pw91xk_enhancement(param_AB,rhob,gradb) );
+     return (  pw91k_prefactor(rhoa)*pw91xk_enhancement(param_AB,rhoa,grada)
+             + pw91k_prefactor(rhob)*pw91xk_enhancement(param_AB,rhob,gradb) );
    }
 }
 

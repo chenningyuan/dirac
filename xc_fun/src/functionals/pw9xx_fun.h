@@ -63,12 +63,15 @@ namespace pw91_like_x_internal
 //   http://www.cse.scitech.ac.uk/ccg/dft/data_pt_x_pbe.html
 // and for pbe, it is close to the dalton code..(trunncation of variables
 // there make things deviate?)
-    return -0.75*pow(2.0,1.0/3.0)*pow(3*M_PI*M_PI*rho*rho*rho*rho,1.0/3.0)/M_PI;
+// ue: More likely the parameters, Dalton has some strange choice of
+// precision in its constants.
+    return -0.75*pow(2.0,1.0/3.0)*pow(3*M_PI*M_PI,1.0/3.0)
+      *pow(rho,4.0/3.0)/M_PI;
   }
 
 // prefactor for the pw91k functional
   template<class num>
-  static num pw91k_prefactor(const num &rho, const num &grad)
+  static num pw91k_prefactor(const num &rho)
   {
     using xc_constants::CF;
 

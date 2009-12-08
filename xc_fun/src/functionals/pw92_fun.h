@@ -38,7 +38,8 @@ namespace pw92_internal
       -  e(rval,TUVWXYP[2])*omegaval*(1-zeta4)/c 
       + (e(rval,TUVWXYP[1]) - e(rval,TUVWXYP[0]))*omegaval*zeta4;
   }
-  // This is with the Daresbury parameters for PBEc
+  // This is with the Daresbury parameters for PBEc, not exactly
+  // the same as for Daresbury pw92. 
   template<class num>
   static num pw92_eps_pbe(const num &R, const num &zeta)
   {
