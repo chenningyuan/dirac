@@ -59,10 +59,10 @@ static const char *functional_names[] =
     "pbex_dalton",
     "rpbex_dalton",
     "pbex",
-    "revpbex",
-    "pw92c",
-    "tfk",
-    "pw91k",
+    "revpbex_untested",
+    "pw92c_untested",
+    "tfk_untested",
+    "pw91k_untested",
   };
 
 // Use strcmp to not depend on c++ standard library
@@ -172,20 +172,20 @@ static void sum_functionals(num &res,
     res += xc_params[XC_PBE_EXCHANGE]*
       pbe_exchange(d.rhoa,d.rhob,d.grada2,d.gradb2);
 
-  if (xc_params[XC_REVPBE_EXCHANGE] != 0)
-    res += xc_params[XC_REVPBE_EXCHANGE]*
+  if (xc_params[XC_REVPBE_EXCHANGE_UNTESTED] != 0)
+    res += xc_params[XC_REVPBE_EXCHANGE_UNTESTED]*
       revpbe_exchange(d.rhoa,d.rhob,d.grada2,d.gradb2);
 
   if (xc_params[XC_PW92_CORRELATION] != 0)
     res += xc_params[XC_PW92_CORRELATION]*
       pw92_correlation(d.R,d.zeta);
 
-  if (xc_params[KIN_TF] != 0)
-    res += xc_params[KIN_TF]*
+  if (xc_params[KIN_TF_UNTESTED] != 0)
+    res += xc_params[KIN_TF_UNTESTED]*
       thomasfermi_kinetic(d.rhoa,d.rhob);
 
-  if (xc_params[KIN_PW91] != 0)
-    res += xc_params[KIN_PW91]*
+  if (xc_params[KIN_PW91_UNTESTED] != 0)
+    res += xc_params[KIN_PW91_UNTESTED]*
       pw91_kinetic(d.rhoa,d.rhob,d.grada2,d.gradb2);
 
   res.deriv_facs();
