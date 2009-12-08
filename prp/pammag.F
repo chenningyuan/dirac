@@ -608,6 +608,7 @@ C
 #include "mxcent.h"
 #include "shells.h"
 #include "dcbprp.h"
+#include "dcborb.h"
 #include "dcbbas.h"
 #include "iratdef.h"
 #include "ccom.h"
@@ -643,11 +644,15 @@ C.....Get full AO-Fock matrix with two-electron London integrals
       CALL RSKLOND(WORK(KFMAT),WORK(KSKLTN),WORK(KFAC),WORK(KINDEX),
      &             WORK(KPOINT),NDMAT,WORK(KIREP),IPRPRP)
       CALL MEMREL('TWOLON.RSKLOND',WORK,KWORK,KSKLTN,KFREE,LFREE)
-      CALL MEMGET('REAL',KGBMO,N2ORBXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KFOCK,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL TWOLO1B(WORK(KGBMO),WORK(KFMAT),WORK(KFOCK),CMO,NCOMP,
+      CALL TWOLO1B(WORK(KFMAT),WORK(KFOCK),NCOMP,
      &             WORK(KFREE),LFREE,IPRPRP)
-      CALL MEMREL('TWOLON.TWOLO1B',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('TWOLON.TWOLO1B',WORK,KWORK,KFOCK,KFREE,LFREE)
+CTROND: DFT contributions can be inserted here
+      CALL MEMGET('REAL',KGBMO,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL TWOLO1C(WORK(KGBMO),WORK(KFMAT),CMO,NCOMP,
+     &             WORK(KFREE),LFREE,IPRPRP)
+      CALL MEMREL('TWOLON.TWOLO1C',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('TWOLON')
 
       RETURN
@@ -830,7 +835,7 @@ C
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TWOLO1B */
-      SUBROUTINE TWOLO1B(GBMO,FMAT,FOCK,CMO,NCOMP,WORK,LWORK,IPRINT)
+      SUBROUTINE TWOLO1B(FMAT,FOCK,NCOMP,WORK,LWORK,IPRINT)
 C***********************************************************************
 C
 C     Construct two electron part of differentiated Hamiltonian
@@ -873,15 +878,10 @@ C
 #include "dcbnmr.h"
 #include "dcbfir.h"
 C
-      DIMENSION GBMO(N2ORBXQ),FMAT(N2BBASX,4,NCOMP),
-     &          FOCK(N2BBASX,NZ),CMO(*),WORK(*)
+      DIMENSION FMAT(N2BBASX,4,NCOMP),
+     &          FOCK(N2BBASX,NZ),WORK(*)
       CALL QENTER('TWOLO1B')
 #include "memint.h"
-C----------------------------------------------------------------
-C   Open new file for MO-transformed g(B) x,y,z matrixes
-C----------------------------------------------------------------
-      OPEN(LUTWOL,FILE='TWOLON',FORM='UNFORMATTED',
-     &     ACCESS='DIRECT',RECL=8*N2ORBXQ,STATUS='UNKNOWN')
 C----------------------------------------------------------------
 C       Transform Fock matrix from AO to QO
 C       ===================================
@@ -946,13 +946,76 @@ C ... unpack to the full AO - form
 
 C     ...sort AO to SO-AO, so somehow ...
          CALL BUTOBS(FOCK,NZ,WORK(KFREE),LFREE)
+C ...    
+         CALL DCOPY(N2BBASXQ,FOCK,1,FMAT(1,1,I),1)
          IF(IPRINT.GE.5) THEN
            CALL HEADER(
      & 'TWOLO1:Total SA-AO two-electron London contribution',-1)
            WRITE(LUPRI,'(2X,A,I2)') '** component: ',I
-           CALL PRQMAT(FOCK(1,1),NTBAS(0),NTBAS(0),
+           CALL PRQMAT(FMAT(1,1,I),NTBAS(0),NTBAS(0),
      &            NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
          ENDIF
+      ENDDO ! Of I = x,y,z
+      CALL QEXIT('TWOLO1B')
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck TWOLO1C */
+      SUBROUTINE TWOLO1C(GBMO,FMAT,CMO,NCOMP,WORK,LWORK,IPRINT)
+C***********************************************************************
+C
+C     Construct two electron part of differentiated Hamiltonian
+C     when using London Orbitals, dg(B)/dB(p,q,r,s)_X/Y/Z|B=0
+C
+C     Written by T. Enevoldsen Feb 4 1998
+C
+C     Added by MI&HJAaJ, 2002
+C
+C     Last modif: Dec 2005, MI - extended for .SPINFREE case
+C                 March 2006,MI
+C
+C***********************************************************************
+      use dirac_cfg
+#ifdef MOD_DFT
+      use dft_main
+      use dft_cfg
+#endif
+
+#include "implicit.h"
+#include "priunit.h"  
+#include "dummy.h"   
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "shells.h"
+#include "ccom.h"
+#include "cbihr2.h"
+#include "symmet.h"
+#include "dgroup.h"
+#include "dcbqal.h"
+#include "iratdef.h"
+C
+#include "aovec.h"
+#include "blocks.h"
+#include "dcbgen.h"
+#include "dcbnmr.h"
+#include "dcbfir.h"
+C
+      DIMENSION GBMO(N2ORBXQ),FMAT(N2BBASX,4,NCOMP),
+     &          CMO(*),WORK(*)
+      CALL QENTER('TWOLO1C')
+#include "memint.h"
+C----------------------------------------------------------------
+C   Open new file for MO-transformed g(B) x,y,z matrixes
+C----------------------------------------------------------------
+      OPEN(LUTWOL,FILE='TWOLON',FORM='UNFORMATTED',
+     &     ACCESS='DIRECT',RECL=8*N2ORBXQ,STATUS='UNKNOWN')
+      DO I = 1, NCOMP  ! x,y,z components
+         IREP = ISYMAX(I,2)       ! irep of x,y and z
 C
 C     Transform to MO-basis only the blocks of correct fermion symmetry
 C     =================================================================
@@ -966,7 +1029,7 @@ C   ....  it would be good to add also QBTRANS for spin-free case
          CALL QTRANS('AOMO','S',D0,
      &      NFBAS(I1,0),NFBAS(I2,0),
      &      NORB(I1),NORB(I2),
-     &     FOCK(I2BASX(I1,I2)+1,1),
+     &     FMAT(I2BASX(I1,I2)+1,1,I),
      &      NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),
      &     GBMO(1+I2ORBX(I1,I2)),
      &      NORBT,NORBT,NZ,IPQTOQ(1,IREP),
@@ -991,7 +1054,7 @@ C .... write the two-electron London contribution to the file...
       ENDDO ! Of I = x,y,z
 
       CLOSE(LUTWOL,STATUS='KEEP')
-      CALL QEXIT('TWOLO1B')
+      CALL QEXIT('TWOLO1C')
       RETURN
       END
 
