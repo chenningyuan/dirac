@@ -37,8 +37,7 @@ C...   For information on how to get a licence see:
 C...      http://dirac.chem.sdu.dk
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE GETINT_NTS(YINT,INDEX,IRI,IDIM,INVREO,KR,NASHT,NNASHX,
-     &                      DMFC,ISCAL_T,IPRNT)
+      SUBROUTINE GETINT_NTS(YINT,INDEX,IRI,IDIM,DMFC,IPRNT)
 C***********************************************************************
 C
 C     fetch integral to YINT for non-totally symmetric operators 
@@ -50,76 +49,116 @@ C           p spinors followed by p
 C                                                 _     _
 C           if NFSYM = 2 (inversion symmetry): p, p, q, q
 C
+C    *********************************************************
+C    * NOTE: the ordering is GA space independent, e.g.      *
+C    *                                                       *
+C    * .GASSH   yields the very same DMFC matrix as   .GASSH *
+C    * 3                                              2      *
+C    * 1 1                                            1 1    *
+C    * 0 2                                            1 2    *
+C    * 1 0                                                   *
+C    *********************************************************
+C
+C     The present routine exhibits a new and more general offset 
+C     calculation for accessing the integral matrix DMFC compared to 
+C     GETIND_NZ3. The old offset calculation in GETIND_NZ3 is *NOT* valid 
+C     for general one-elctron operators.
+C     The new one looks a little more complicated though...
+C
 C     Written by S. Knecht - Dec 2009
-C     Based on GETINT_NZ3 written by T. Fleig.
 C
 C     Last revision :
 C
 C***********************************************************************
+!     use memory_allocator
 #include "implicit.h"
 #include "dgroup.h"
+#include "dcborb.h"
 !
-      DIMENSION DMFC(*), ICSAVE(4), INDEX(4), INVREO(-IDIM:IDIM)
-      DIMENSION KR(-IDIM:IDIM), INDEX_LOC(4)
+      DIMENSION DMFC(*), ICSAVE(4), INDEX(4)
+      integer jc_fsym, ja_fsym, nasht2, n2ashx2
 !
       NTESTL = 0
       NTEST = MAX(NTESTL,IPRNT)
 !
-      IF(NTEST .ge. 5)THEN
-        WRITE(6,*) ' GETIND_NTS : '
-        WRITE(6,*) '  No. of active orbitals : ',NASHT/2
-        WRITE(6,*) '  Compound index dimension: ',NNASHX
-        WRITE(6,'(A,6X,4I3)') '  INDEX array: ',(INDEX(I),I=1,4,1)
-        WRITE(6,*) '1-el. integral array in GETIND_NTS:'
-        CALL WRTMAT(DMFC,IDIM*2,IDIM*2,IDIM*2,IDIM*2)
-      END IF
+!     set dimensions for DMFC matrix. Note that we here access the
+!                         _   _
+!     matrix in spinor (p,p,q,q) and NOT quaternion-packed Kramers-paired 
+!     basis.
+!     E.g. IASH(2) refers in the usual Dirac notation to the 
+!     offset in fermion symmetry 2 wrt to the Kramers-paired basis. 
+!     This means that we must multiply the offset by 2 to get the 
+!     correct spinor offset.
+!
+      nasht2  = NASHT  * 2
+      n2ashx2 = nasht2 * nasht2
+!
+!     input print
+c     IF(NTEST .ge. 5)THEN
+c       WRITE(6,*) ' GETIND_NTS : '
+c       WRITE(6,*) '  No. of active orbitals : ',NASHT
+c       WRITE(6,*) '  Compound index dimension: ',NNASHX
+c       WRITE(6,'(A,6X,4I3)') '  INDEX array: ',(INDEX(I),I=1,4,1)
+c       WRITE(6,*) '1-el. integral array in GETIND_NTS:'
+c       CALL WRTMAT(DMFC,IDIM*2,IDIM*2,IDIM*2,IDIM*2)
+c     END IF
 !
       NCT = 0
       DO IC=1,4,1
-        INDEX_LOC(IC) = INDEX(IC)
         IF( INDEX(IC).ne. 0)THEN
           NCT = NCT + 1
           ICSAVE(NCT) = IC
         END IF
       END DO
 !
-!     NCT = 2: pick out one-electron integral identified by two indices
-      IF(NCT .eq. 2) THEN
+!     NCT = 2: pick out one-electron integral identified by 
+!     two indices IORI (creator index) and JORI (annihilator index)
+      IORI = INDEX(ICSAVE(1))
+      JORI = INDEX(ICSAVE(2))
 !
-        I = KR(INVREO(INDEX_LOC(ICSAVE(1))))
-        J = KR(INVREO(INDEX_LOC(ICSAVE(2))))
+!     get fermion symmetry of creator and annihilator 
+      jc_fsym = 1
+      ja_fsym = 1
+      IF( INDEX(ICSAVE(1)) .gt. NASH(1)) jc_fsym = 2
+      IF( INDEX(ICSAVE(2)) .gt. NASH(1)) ja_fsym = 2
 !
-!       compute input address on array DMFC
+!     compute input address on array DMFC:
+!     compute a relative creator and annihilator spinor 
+!     (not Kramers pair) index
 !
-!       THIS IS WRONG! NEED TO THINK! SK - 04-12-2009
-        IIN =  (IRI-1)*NASHT*NASHT +
-     &          (J-1) *NASHT +
-     &           I
-        if (NTEST.ge.1) then
-          write(6,*) 'Index pair ',I,J,' address :',IIN
-          IF(ISCAL_T.gt.0)
-     & write(6,*) 'orig add',(IRI-1)*NASHT*NASHT +(J-1) *NASHT+I
-          IF(ISCAL_T.gt.0) then
-            write(6,*) 'add. scaled by ISCAL_T*NASHT/2',
-     &                                 ISCAL_T*NASHT/2
-            write(6,*) ' ISCAL_T, NASHT/2', ISCAL_T, NASHT/2
-          END IF
-        DO LLLL = 1, (NASHT)**2
-          WRITE(6,*) ' element ',LLLL,'in matrix DMFC is = ',DMFC(LLLL)
-        END DO
-        end if
-        IF(ISCAL_T.gt.0) IIN = IIN + ISCAL_T*NASHT/2
-        YINT = DMFC(IIN)
+!     1. creator index
+      I_REL = IORI + ((ICSAVE(1)-1)*NASH(jc_fsym))+IASH(jc_fsym)
 !
-      ELSE
-        write(6,*) 'How could you have possibly ended up here? '
-        write(6,*) 'No QFT implemented YET in LUCIAREL.'
-        write(6,*) 'No 2e-properties implemented YET in LUCIAREL.'
-        write(6,*) 'You specified ',NCT,' indices.'
-        CALL QUIT(' *** ERROR in GETINT_NTS *** wrong number of 
-     & integral indices. ')
-      END IF
+!     2. annihilator index
+      J_REL = JORI + ((ICSAVE(2)-3)*NASH(ja_fsym))+IASH(ja_fsym)
 !
+!     combine I_REL and J_REL to compute the address IIN
+!     --------------------------------------------------
+!     first  line: offset wrt real/imaginary
+!     second line: offset wrt annihilator index
+!     third  line: offset wrt the creator index
+      IIN =  ((IRI-1)  * n2ashx2) +
+     &       ((J_REL-1)* nasht2)  +
+     &         I_REL
+!
+!     print section
+c     if (NTEST.ge.1) then
+c       write(6,*) 'orig. index pair ',IORI,JORI,' address :',IIN
+c       write(6,'(A,I5)') ' I_REL = ',I_REL
+c       write(6,'(A,I5)') ' J_REL = ',J_REL
+c       DO LLLL = 1, (n2ashx2 * NZ)
+c         WRITE(6,*) ' element ',LLLL,'in matrix DMFC is = ',DMFC(LLLL)
+c       END DO
+c     end if
+!
+!     fetch integral
+      YINT = DMFC(IIN)
+!
+!     sign for imaginary 1-electron integrals:
+!     (according to h_(IJ) = -h_(I_J_), reference are the 
+!     unbarred spinors.)
+      if (IRI.eq.2.and.INDEX(1).eq.0) YINT = - YINT
+
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GET_IAIB_DIRAC(IASP_KRCI_SYM,IBSP_KRCI_SYM,ELM_ABSMAX,
@@ -528,21 +567,10 @@ C       ... no two-electron terms
         NO_TTWO         = 1
         IPRHAM_CI       = 0
         INDXPR          = LPROP_KRCI(II)
-        ITIM_SYM        = IPRPTIM(INDXPR) 
         ISYM_XXX        = IPRPSYM(INDXPR)
-        IFERM_SYM_T     = JBTOF(ISYM_XXX-1,1)
-        IFERM_XTSYM(II) = IFERM_SYM_T
-        ISCAL_T         = ISCAL_TA(II)
-        WRITE(LUWRT,*) '  IFERM_SYM_T is ',IFERM_SYM_T, 'for ',
-     &                    PRPNAM(INDXPR)
-        WRITE(LUWRT,*) '  ISCAL_T is ',ISCAL_T, 'for ',
-     &                    PRPNAM(INDXPR)
-        IF( ISCAL_T .gt. 0 ) THEN
-          ISCAL_T = IFERM_SYM_T
-        END IF
-        WRITE(LUWRT,*) '  NEW ISCAL_T is :',ISCAL_T, 'for ',
-     &                    PRPNAM(INDXPR)
-        CALL SET_HOP_DBG(IHTYPE,NO_TTWO,ISYM_T,ITIM_SYM,IPRHAM_CI)
+C
+C
+        CALL SET_HOP_DBG(IHTYPE,NO_TTWO,ISYM_T,IPRHAM_CI)
 C
 C       generate symmetry info for PICASSO
         CALL LUC2PIC(ISO1,IPRTRA)
@@ -554,20 +582,23 @@ C       read property matrix from file
      &                    4*N2ASHX*MZ,1)
 C       ... reorder always at this point: RUN_SHMEM_T = .FALSE.
         RUN_SHMEM_T = .FALSE.
+#if defined DEBUG_LUCIPROP
         WRITE(LUWRT,'(/A,A8/)') '  Reorder step for property matrix: ',
      &                             FILELAB
         CALL WRTMATMN(WORK(KXPROPM),1,4*N2ASHX*MZ,1,4*N2ASHX*MZ,LUWRT)
+#endif
         CALL PICASSO(INTSPACE,ISO1,IPRTRA,MCSCF,NL2D,IUB2D,ISM2D,
      &               WORK(KXPROPM),DUMMY,DUMMY,DUMMY,IDUMMY,IBOSYM,
      &               CIRUN,RUN_SHMEM_T)
 C
 C       write sorted property matrix back to file
         WRITE(FILELAB_REOD,'(A6,A2)') PRPNAM(INDXPR)(1:6),RODLAB
+#if defined DEBUG_LUCIPROP
+!SK DEBUG
         WRITE(LUWRT,'(/A,A8/)') '  Final matrix on file with label: ',
      &                             FILELAB_REOD
         WRITE(LUWRT,'(A,I18/)') '  total number of integrals on KT_CC ',
      &                             NALLINT
-!SK DEBUG
         IF( FILELAB_REOD .eq. 'Y dipoRO')THEN
           WRITE(LUWRT,'(/A)') '  DEBUG READING DUMMY Y-OPERATOR MATRIX'
 !radovan: presently alloc cannot handle integer(8) size with ILP32
@@ -607,12 +638,15 @@ C       write sorted property matrix back to file
           deallocate(XXXM)
         END IF
 !SK DEBUG
+#endif
 C
 C       store number of non-zero integrals for this operator
         IN1ELPRP_KRCI(II) = 0
         LINT_WRITE        = NALLINT
         IN1ELPRP_KRCI(II) = LINT_WRITE
+#if defined DEBUG_LUCIPROP
         CALL WRTMATMN(WORK(KT_CC),1,LINT_WRITE,1,LINT_WRITE,LUWRT)
+#endif
         CALL KRCI_PRPFILE(LUF1MAT,FILELAB_REOD,WORK(KT_CC),
      &                    LINT_WRITE,0)
         XT_TEST = 0.0D0
@@ -909,13 +943,11 @@ C
 C           only zero elements in property operator matrix
             IF( ISYM_T .le. 0 ) GOTO 200
 C
-C           symmetry under time reversal (+1,-1)
+C           property pointer
             INDXPR      = LPROP_KRCI(IPROP_X)
-            ITIM_SYM    = IPRPTIM(INDXPR)
-            IFERM_SYM_T = IFERM_XTSYM(IPROP_X)
 C
 C           reset operator specific common blocks
-            CALL SET_HOP_DBG(IHTYPE,NO_TTWO,ISYM_T,ITIM_SYM,IPRHAM_CI)
+            CALL SET_HOP_DBG(IHTYPE,NO_TTWO,ISYM_T,IPRHAM_CI)
 C
             LENGTH_BLK = IN1ELPRP_KRCI(IPROP_X)
 C           erase old property integrals
@@ -962,10 +994,10 @@ C
 C           inner loop over all eigenstates
 #if defined (VAR_MPI2)
 C 
-C#ifdef MOD_DEBUG
+#ifdef MOD_DEBUG
             WRITE(LUWRT,*) '<S_ISSM|prop|C_ICSM> for C_# and IPROP_X',
      &                         ISSM,PRPNAM(INDXPR),ICSM,ISTATE_X,IPROP_X
-C#endif
+#endif
            CALL Z_BLKFO_XPRP_PAR(IDC,NMS2VAL,ISSPC,ISSM,WORK(KPCLBXXS),
      &                           WORK(KPCLEXXS),WORK(KPCI1XXS),
      &                           WORK(KPCIBXXS),NBATXS,WORK(KNODELIST),
@@ -981,7 +1013,7 @@ C#endif
      &                                 ISYMEIG_KRCI,MZ,1,ISTATE_X)
 C
 C           debug printing
-C#ifdef MOD_DEBUG
+#ifdef MOD_DEBUG
 C
             WRITE(LUWRT,*) ' WORK(KXR) '
             CALL WRTMATMN(WORK(KXR),1,NPROP_ROOTS_KRCI,1,
@@ -991,7 +1023,7 @@ C
               CALL WRTMATMN(WORK(KXI),1,NPROP_ROOTS_KRCI,1,
      &                      NPROP_ROOTS_KRCI,LUWRT)
             END IF
-C#endif
+#endif
 C
 C           lz is pure imaginary operator - scale with -1.0
 C           FIXME: introduce proper scaling for each imaginary 

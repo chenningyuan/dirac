@@ -1223,10 +1223,10 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 * 
 *
       subroutine dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,ISOBEX,T,
-     &                            T_BUFF,TRSYM_SIGN,
+     &                            T_BUFF,
      &                            ISTR_CA,ISTR_CB,ISTR_AA,ISTR_AB,
      &                            NASHT,F1,F2,MDIASV,IBOSYM,
-     &                            LABEL,CIRUN,ISCAL_T,IPRNT)
+     &                            LABEL,CIRUN,IPRNT)
 *
 #include "implicit.h"
 #include "ipoist8.inc"
@@ -1260,7 +1260,7 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 * Group notation of the strings:
       dimension IGRP_CA(MXPNGAS),IGRP_CB(MXPNGAS),
      &          IGRP_AA(MXPNGAS),IGRP_AB(MXPNGAS)
-      dimension T(NALLINT), T_BUFF(*), TRSYM_SIGN(NSPOBEX_TP)
+      dimension T(NALLINT), T_BUFF(*)
 *
 * Space for the construction of SUBSTRINGS
 * dimensioned outside as integers MX_ST_TSOSO_BLK_MX
@@ -1270,7 +1270,7 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 *
       NTESTL = 0000
       NTEST = max(NTESTL,IPRNT)
-      NTEST = 100
+      NTEST = 000
 *
 * Constants
       IZERO = 0
@@ -1364,7 +1364,6 @@ C
 * Loop over excitation types
         do IXTP=1,NSPOBEX_TP,1
 *
-C          WRITE(LUWRT,*) ' TRSYM_SIGN for IXTP',TRSYM_SIGN(IXTP)
 * Check for correct pointers to type blocks
           if (IRI.eq.1.and.ICOUNT_I8.ne.IBTSOSO_TP(IXTP)) then
             write(LUWRT,*) 'Pointers to types do not match numbers'
@@ -1734,8 +1733,7 @@ C          WRITE(LUWRT,*) ' TRSYM_SIGN for IXTP',TRSYM_SIGN(IXTP)
                               if (CIRUN.ne.'DENS1 '
      &                            .and.CIRUN.ne.'DENS2 ')
      &                          call getint_sigden(YXINT,I_ADD,IRI,
-     &                                    NDIM_TOT,NASHT,F1,F2,
-     &                                    ISCAL_T,NTEST)
+     &                                    NDIM_TOT,NASHT,F1,F2,NTEST)
                             end if
                           end if
 *
@@ -1833,17 +1831,8 @@ C    &             ' at ',ICOUNT_I8
 *
                             if (IRI.eq.1.or.(IRI.eq.2.and.NZ.ne.1)) then
                               call getint_sigden(YINT,INDEX(1),
-     &                                  IRI,NDIM_TOT,NASHT,F1,F2,
-     &                                  ISCAL_T,NTEST)
+     &                                  IRI,NDIM_TOT,NASHT,F1,F2,NTEST)
                             end if
-C
-C                           keep track of correct sign for matrix
-C                           elements of anti-symmetric (wrt
-C                           time-reversal symmetry) hermitian 
-C                           one-electron operators
-C                           WRITE(LUWRT,*)'YINT, TRSYM_SIGN(IXTP),IXTP',
-C    &                                     YINT, TRSYM_SIGN(IXTP),IXTP
-                            YINT = YINT * TRSYM_SIGN(IXTP)
 C
                             T(ICOUNT_I8) = YINT - YXINT
 C FIXME !! Uncommented sign here!!
@@ -3094,7 +3083,7 @@ c       stop
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
 *                                                                     *
 ***********************************************************************
-* Determine 1- or 2- particle integral
+* Determine 2- particle integral
 * Fetch integral.
 *
 *=========================
@@ -3102,14 +3091,13 @@ c       stop
 *=========================
 *
       subroutine getind_nz3(YINT,INDEX,IRI,IDIM,INVREO,
-     &                      KR,NASHT,NNASHX,DMFC,H2AC,ISCAL_T,IPRNT)
+     &                      KR,NASHT,NNASHX,H2AC,IPRNT)
 *
 #include "implicit.h"
 #include "ipoist8.inc"
 #include "dgroup.h"
 *
-C     dimension DMFC(*),H2AC(*)
-      dimension DMFC(*),H2AC(NASHT/2,NASHT/2,NNASHX,NZ,*)
+      dimension H2AC(NASHT/2,NASHT/2,NNASHX,NZ,*)
       dimension ICSAVE(4),INDEX(4),INVREO(-IDIM:IDIM),KR(-IDIM:IDIM),
      &          INDEX_LOC(4)
 *
@@ -3131,22 +3119,17 @@ C     dimension DMFC(*),H2AC(*)
         write(6,'(A,6X,4I3)') '  INDEX array: ',(INDEX(I),I=1,4,1)
       end if
       if (NTEST.ge.5) then
-        write(6,*) 
+        write(6,*) '  '
         write(6,*) ' GETIND_NZ3 : '
         write(6,*) '  NZ,MZ : ',NZ,MZ
         write(6,*) '  No. of active orbitals : ',NASHT/2
         write(6,*) '  Compound index dimension: ',NNASHX
       end if
 *
-      if (NTEST.ge.1) then
-        write(6,*)
-        write(6,*) '1-el. integral array in getind_nz3:'
-        call wrtmat(DMFC,IDIM*2,IDIM*2,IDIM*2,IDIM*2)
-        if (NTEST.ge.200) then
-          write(6,*)
-          write(6,*) '2-el. integrals in getind_nz3, (NZ,3) format:'
-          call prdnz3(H2AC(1,1,1,1,1),NASHT/2,NNASHX,NZ,IPQTOQ(1,0),6)
-        end if
+      if (NTEST.ge.200) then
+        write(6,*) '  '
+        write(6,*) '2-el. integrals in getind_nz3, (NZ,3) format:'
+        call prdnz3(H2AC(1,1,1,1,1),NASHT/2,NNASHX,NZ,IPQTOQ(1,0),6)
       end if
 *
       NCT = 0
@@ -3157,45 +3140,7 @@ C     dimension DMFC(*),H2AC(*)
         end if
       end do
 *
-      if (NCT.eq.2) then
-        if (NTEST.ge.1) write(6,*) '1-electron integral.'
-        I = KR(INVREO(INDEX_LOC(ICSAVE(1))))
-        J = KR(INVREO(INDEX_LOC(ICSAVE(2))))
-* Compute input address
-        IIN =  (IRI-1)*NASHT*NASHT +
-     &          (J-1) *NASHT +
-     &           I
-C       IIN =  (IRI-1)*NASHT*NASHT +
-C    &          (J-1) *NASHT + 0*ISCAL_T*NASHT/2 +
-C    &           I
-        if (NTEST.ge.1) then
-          write(6,*) 'Index pair ',I,J,' address :',IIN
-          IF(ISCAL_T.gt.0) 
-     & write(6,*) 'orig add',(IRI-1)*NASHT*NASHT +(J-1) *NASHT+I
-          IF(ISCAL_T.gt.0) then
-            write(6,*) 'add. scaled by ISCAL_T*NASHT/2',
-     &                                 ISCAL_T*NASHT/2
-            write(6,*) ' ISCAL_T, NASHT/2', ISCAL_T, NASHT/2
-          END IF
-        DO LLLL = 1, (NASHT)**2
-          WRITE(6,*) ' element ',LLLL,'in matrix DMFC is = ',DMFC(LLLL)
-        END DO
-        end if
-        IF(ISCAL_T.gt.0) IIN = IIN + ISCAL_T*NASHT/2
-        YINT = DMFC(IIN)
-*
-* Sign for imaginary 1-electron integrals:
-* (According to h_(IJ) = -h_(I_J_). 
-*  Reference are the unbarred spinors.)
-        if (IRI.eq.2.and.INDEX_LOC(1).eq.0) YINT = - YINT
-        if (IRI.eq.2.and.INDEX_LOC(1).eq.0.and. NTEST.ge.1) then
-          write(6,*) ' sign change for YINT'
-        end if
-*
-        if (NTEST.ge.1) write(6,'(2I3,2X,1E14.8)') 
-     &                        I,J,YINT
-*
-      else if (NCT.eq.4) then
+      if (NCT.eq.4) then
 *
 * Interface to (NZ,3) format for 2-electron integrals
 *
@@ -4676,7 +4621,7 @@ C     STOP ' Jeppe forced me to stop in GETINT '
 * excitation class formalism - driver routine
 *
       subroutine getint_sigden(YINT,INDEX,IRI,ITOTDIM,
-     &                         NASHT,F1,F2,ISCAL_T,IPRNT)
+     &                         NASHT,F1,F2,IPRNT)
 *
 #include "implicit.h"
 #include "ipoist8.inc"
@@ -4720,19 +4665,23 @@ C
      &                     WORK(KKR),NASHT,F1,F2,IPRNT)
 *
         else if (NZ3FORM) then
-*
-* DIRAC (NZ,3) format
-          call kkr_set(WORK(KKR),ITOTDIM,SYDI,NIRR_PN,INVSYM)
-          NNASHX = ((NASHT/2) * ((NASHT/2)+1)) / 2
 !
-!SK       case 1: ISCAL_T = 0: Hamiltonian is     totally symmetric
-!SK       case 2: ISCAL_T > 0: Hamiltonian is not totally symmetric
-          if(ISCAL_T .eq. 0)then
+!         this is the default integral scheme of today's LUCIAREL.
+          nct = 0
+          do ic = 1,4,1
+            if(INDEX(ic).ne.0) nct = nct + 1
+          end do
+          if(nct .eq. 4)then
+!
+!           2e- ints in DIRAC (NZ,3) format
+            call kkr_set(WORK(KKR),ITOTDIM,SYDI,NIRR_PN,INVSYM)
+            NNASHX = ((NASHT/2) * ((NASHT/2)+1)) / 2
             call getind_nz3(YINT,INDEX,IRI,ITOTDIM,WORK(KINVREO),
-     &                      WORK(KKR),NASHT,NNASHX,F1,F2,ISCAL_T,IPRNT)
+     &                      WORK(KKR),NASHT,NNASHX,F2,IPRNT)
           else
-            call getint_nts(YINT,INDEX,IRI,ITOTDIM,WORK(KINVREO),
-     &                      WORK(KKR),NASHT,NNASHX,F1,ISCAL_T,IPRNT)
+!
+!           1e- ints
+            call getint_nts(YINT,INDEX,IRI,ITOTDIM,F1,IPRNT)
           end if
         end if
       end if
@@ -4981,8 +4930,6 @@ C            ZDIPLEN             B1u                     Au
            END IF
            WRITE(LUPRI,'(A11,A15,A21)') 
      &           PRPNAM(INDXPR)(1:8), REP(ISYMVOP-1), REPVOP_KRCI
-           ISCAL_TA(I) = 0
-           IF( REPVOP_KRCI(1:1) .eq. 'B' ) ISCAL_TA(I) = 1
          END DO
       END IF
 C

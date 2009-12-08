@@ -2147,36 +2147,36 @@ C             distribute to WORK(KT_CC) resp. T_BUFF!
 C
               call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
      &                              WORK(KLSOBEX),WORK(KT_CC),
-     &                              T_BUFF,WORK(KITIMSIGN),
+     &                              T_BUFF,
      &                              WORK(KISTR_CA),WORK(KISTR_CB),
      &                              WORK(KISTR_AA),WORK(KISTR_AB),
      &                              NDIM_TOT2,F1,WORK(KINTI12),
      &                              WORK(KMDIASV),IBOSYM,
-     &                              WORK(KLABEXTP),CIRUN,0,
+     &                              WORK(KLABEXTP),CIRUN,
      &                              NTEST)
             ELSE IF( CIRUN .eq. 'PROP1 ') THEN
               IF( DOPROPREOD )THEN
 CSK           NTEST = 20
               call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
      &                              WORK(KLSOBEX),WORK(KT_CC),
-     &                              T_BUFF,WORK(KITIMSIGN),
+     &                              T_BUFF,
      &                              WORK(KISTR_CA),WORK(KISTR_CB),
      &                              WORK(KISTR_AA),WORK(KISTR_AB),
      &                              NDIM_TOT2,F1,DUMMY,
      &                              WORK(KMDIASV),IBOSYM,
-     &                              WORK(KLABEXTP),CIRUN,ISCAL_T,
+     &                              WORK(KLABEXTP),CIRUN,
      &                              NTEST)
 CSK           NTEST = 00
               END IF
             ELSE
               call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
      &                              WORK(KLSOBEX),WORK(KT_CC),
-     &                              T_BUFF,WORK(KITIMSIGN),
+     &                              T_BUFF,
      &                              WORK(KISTR_CA),WORK(KISTR_CB),
      &                              WORK(KISTR_AA),WORK(KISTR_AB),
      &                              NDIM_TOT2,F1,F2,
      &                              WORK(KMDIASV),IBOSYM,
-     &                              WORK(KLABEXTP),CIRUN,0,
+     &                              WORK(KLABEXTP),CIRUN,
      &                              NTEST)
 C
             END IF

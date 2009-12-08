@@ -1522,8 +1522,7 @@ C FIXME !!!
         end if
         ISYM_T = 1
         NO_TTWO = 0
-        ITIM_SYM = 1
-        CALL SET_HOP_DBG(IHTYPE,NO_TTWO,ISYM_T,ITIM_SYM,IPRHAM_CI)
+        CALL SET_HOP_DBG(IHTYPE,NO_TTWO,ISYM_T,IPRHAM_CI)
       END IF
 *. Symmetry of reference
       IF(PNTGRP.GT.1.and.PNTGRP.lt.5)

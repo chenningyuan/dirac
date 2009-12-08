@@ -444,17 +444,13 @@ C       set operator symmetry (Hamiltonian will be called 'T'
 C       throughout the KR-CI module)
 C       default: totally symmetric operator
         ISYM_T      = 1
-        IFERM_SYM_T = 1
-        ISCAL_T     = 0
 C
 C       ... no two-electron excitations
         NO_TTWO = 0
         IF( CIRUN .eq. 'DENS1 ') NO_TTWO = 1
 C
-C       default Hamiltonian - symmetric wrt time-reversal symmetry
-        ITIM_SYM = 1
 C
-        CALL SET_HOP_DBG(IHTYPE,NO_TTWO,ISYM_T,ITIM_SYM,IPRHAM_CI)
+        CALL SET_HOP_DBG(IHTYPE,NO_TTWO,ISYM_T,IPRHAM_CI)
 C
 C       no integrals - return to main routine 
         IF( NOINT .eq. 1 ) GO TO 8888

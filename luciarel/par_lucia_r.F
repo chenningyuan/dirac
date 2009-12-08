@@ -5861,8 +5861,8 @@ C
 C
         IF( ISYM_CTRL(JOFF) .ne. ISSM ) GOTO 500
 C
-        WRITE(LUWRT,'(/A,I4,A,I4)') ' dot product for sigma vector', 
-     &        ISTATE_X,' and C vector ',JOFF
+C       WRITE(LUWRT,'(/A,I4,A,I4)') ' dot product for sigma vector', 
+C    &        ISTATE_X,' and C vector ',JOFF
 C
         IOFFSET_SCRATCH  = 0
         NUM_BLK          = 0
@@ -5893,8 +5893,8 @@ C
      &                       IOFFSET_IN_LUIN1,IOFFSET_INT_IN1,
      &                       LUIN1LIST,NUM_ACTIVE_BATCH)
 C
-        WRITE(LUWRT,*) 'initial VEC2 (real) of ISTATE_X'
-        CALL WRTMATMN(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
+C       WRITE(LUWRT,*) 'initial VEC2 (real) of ISTATE_X'
+C       CALL WRTMATMN(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
 C
 C       set new offset and zero read-in vector
         CALL DZERO(VEC1,LEBATCH(ISBATCH))
@@ -5912,8 +5912,8 @@ C       read in batch ISBATCH from LUIN1 to VEC1
      &                        IOFFSET_IN_LUIN2,IOFFSET_INT_IN2,
      &                        LUIN2LIST,NUM_ACTIVE_BATCH)
 C
-        WRITE(LUWRT,*) 'initial VEC1 (real) of JOFF'
-        CALL WRTMATMN(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
+C       WRITE(LUWRT,*) 'initial VEC1 (real) of JOFF'
+C       CALL WRTMATMN(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
         XR(JOFF) = XR(JOFF) + DDOT(LEBATCH(ISBATCH),VEC2,1,VEC1,1)
 C
   100   CONTINUE

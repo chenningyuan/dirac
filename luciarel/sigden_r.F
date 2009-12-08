@@ -566,7 +566,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                       IFTONE,IFTTWO,ILTTWO,IFSFLT1,ILSFLT1,
      &                       IHX_LOC,IHX,IHINDX,
      &                       SIGN_NHX,I2DIATP,LABEL,IOP_REO,SIGN_OPREO,
-     &                       SIGN_ITIM_SYM,ITIM_SYM,IPRNT)
+     &                       IPRNT)
 C***********************************************************************
 C
 C     General purpose: obtain number (IFLAG = 1) or number and types (IFLAG.NE.1) 
@@ -579,36 +579,13 @@ C
 C     Stefan Knecht Nov 2008 - fix one-electron operator matrix elements for 
 C                              correct behavior under time-reversal
 C                              symmetry. 
+C
+C     Stefan Knecht Dec 2009 - removed introduced "time-reversal
+C                              correction". With my new and proper
+C                              one-electron integral fetching we get the 
+C                              correct integrals.
 C============================================================================
 C  
-C     ITIM_SYM == 1 for one-electron operators that are symmetric under
-C     time reversal symmetry
-C     ITIM_SYM == -1 for one-electron that are anti-symmetric under
-C     time reversal symmetry
-C
-C     according to K. Dyall and K. Faegri Jr, "Introduction to Relativistic 
-C     Quantum Chemistry", the following relations for matrix elements of 
-C     a hermitian one-electron operator are valid:
-C       __                        _             _
-C     f_pq = t x f*_pq   and    f_pq = -t x f*_pq 
-C
-C     where t = ITIM_SYM.
-C
-C     The integral fetching in GET_INTS_SIGDEN is based on the
-C     assumption that the operator is symmetric under time reversal symmetry, 
-C     that is 
-C       __                   _         _
-C     f_pq = f*_pq   and   f_pq = -f*_pq
-C             
-C     This might, however, not be the case for a general hermitian one-electron
-C     operator. We therefore have to multiply the operator matrix
-C     elements with the proper factor TRSYM. 
-C
-C     TODO: proper handling of two-electron operators (two-electron
-C     properties!) that are anti-symmetric wrt time reversal symmetry 
-C     S. Knecht Nov 2008
-C============================================================================
-C
 C     Hans Joergen Aa. Jensen and Stefan Knecht Mar 2008
 C       NO_TTWO.gt.0 for only one-electron terms
 C
@@ -643,7 +620,6 @@ C SIGN_OPREO : Sign for this operator reordering
 C          1.0 or -1.0 : Non-redundant density and sign
 C          0.0         : Redundant density type
 C
-C SIGN_ITIM_SYM: sign for symmetry under time reversal (+1,-1)
 C
 C An excitation is stored as : 
 C (alpha creation, beta creation, alpha annihilation, beta annihilation)
@@ -666,7 +642,7 @@ C     -----
 C     OUTPUT
 C     ------
       INTEGER IHX(NGAS,4,*),IHINDX(4,*),LABEL(4,*),IOP_REO(4,*)
-      DIMENSION SIGN_NHX(*), SIGN_OPREO(*), SIGN_ITIM_SYM(*)
+      DIMENSION SIGN_NHX(*), SIGN_OPREO(*)
 C     local scratch
       INTEGER IHX_LOC(4*NGAS)
 C
@@ -678,16 +654,7 @@ C
       ONE = 1.0D0
       DMONE = -1.0D0
 C
-C     set proper sign for one-electron matrix elements
-C     operator symmetry under time reversal (+1,-1)
-      TRSYM = ITIM_SYM * ONE
-      WRITE(LUWRT,*) 'GET_HX_RELA: IHTYPE is',IHTYPE
-C     test IFERM_SYM_T
-      IF( IFERM_SYM_T .eq. 1 )THEN
-        DFERM_SIGN = 1.0D0
-      ELSE IF (IFERM_SYM_T .eq. 2 )THEN
-        DFERM_SIGN = - 1.0D0
-      END IF
+C     WRITE(LUWRT,*) 'GET_HX_RELA: IHTYPE is',IHTYPE
 C
 C
       NHX = 0
@@ -735,7 +702,6 @@ C           where i belongs to IGAS and j belongs to JGAS
                   IOP_REO(3,NHX) = 0
                   IOP_REO(4,NHX) = 0
                   SIGN_OPREO(NHX) = ONE
-                  SIGN_ITIM_SYM(NHX) = ONE
 C                 WRITE(LUWRT,*) ' alpha alpha type ',NHX
                 end if
               END IF
@@ -765,7 +731,7 @@ C                 WRITE(LUWRT,*) ' alpha alpha type ',NHX
                   IHINDX(2,NHX) = 2
                   IHINDX(3,NHX) = 0
                   IHINDX(4,NHX) = 0
-                  SIGN_NHX(NHX) = ONE * DFERM_SIGN
+                  SIGN_NHX(NHX) = ONE
 C                 WRITE(LUWRT,*) ' beta beta: NHX, SIGN_NHX = ',
 C    &                             NHX,SIGN_NHX(NHX)
                   LABEL(IHINDX(1,NHX),NHX) = -1
@@ -777,7 +743,6 @@ C    &                             NHX,SIGN_NHX(NHX)
                   IOP_REO(3,NHX) = 0
                   IOP_REO(4,NHX) = 0
                   SIGN_OPREO(NHX) = ONE
-                  SIGN_ITIM_SYM(NHX) = ONE * TRSYM
 C                 WRITE(LUWRT,*) ' beta beta type ',NHX
                 end if
               END IF
@@ -858,7 +823,6 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                     IOP_REO(3,NHX) = 3
                     IOP_REO(4,NHX) = 2
                     SIGN_OPREO(NHX) = -ONE
-                    SIGN_ITIM_SYM(NHX) = ONE
                   end if
                 END IF
               END IF
@@ -923,7 +887,6 @@ C               IHX(LGAS,3,NHX) = IHX(LGAS,3,NHX)+1
                     IOP_REO(3,NHX) = 3
                     IOP_REO(4,NHX) = 2
                     SIGN_OPREO(NHX) = -ONE
-                    SIGN_ITIM_SYM(NHX) = ONE
                   end if
                 END IF
               END IF
@@ -977,7 +940,6 @@ C     ... skip next set of two-electron terms
                     IOP_REO(3,NHX) = 2
                     IOP_REO(4,NHX) = 3
                     SIGN_OPREO(NHX) = -1.D0 * ONE
-                    SIGN_ITIM_SYM(NHX) = ONE
                   end if
                 END IF
               END IF
@@ -1030,7 +992,6 @@ C     ... skip next set of two-electron terms
                       IOP_REO(3,NHX) = 2
                       IOP_REO(4,NHX) = 3
                       SIGN_OPREO(NHX) = ZERO
-                      SIGN_ITIM_SYM(NHX) = ONE
                     end if
                   end if
                 end if
@@ -1080,8 +1041,7 @@ C     ... skip next set of two-electron terms
                   IOP_REO(3,NHX) = 0
                   IOP_REO(4,NHX) = 0
                   SIGN_OPREO(NHX) = ONE
-                  SIGN_ITIM_SYM(NHX) = ONE
-                  WRITE(LUWRT,*) ' alpha beta spin flip type ',NHX
+C                 WRITE(LUWRT,*) ' alpha beta spin flip type ',NHX
                 end if
               END IF
             END IF
@@ -1119,11 +1079,7 @@ C     ... skip next set of two-electron terms
                   IOP_REO(3,NHX) = 0
                   IOP_REO(4,NHX) = 0
                   SIGN_OPREO(NHX) = ONE
-CSK               FIXME: check if that is correct - at least I found it 
-CSK                      in the above mentioned book.
-C                 SIGN_ITIM_SYM(NHX) = ONE * TRSYM * DMONE
-                  SIGN_ITIM_SYM(NHX) = ONE * TRSYM
-                  WRITE(LUWRT,*) ' beta alpha spin flip type ',NHX
+C                 WRITE(LUWRT,*) ' beta alpha spin flip type ',NHX
                 end if
               END IF
             END IF
@@ -1190,7 +1146,6 @@ C                 SIGN_ITIM_SYM(NHX) = ONE * TRSYM * DMONE
                       IOP_REO(3,NHX) = 2
                       IOP_REO(4,NHX) = 4
                       SIGN_OPREO(NHX) = -1.D0 * ONE
-                      SIGN_ITIM_SYM(NHX) = ONE
                     end if
                   END IF
                 END IF
@@ -1244,7 +1199,6 @@ C                 SIGN_ITIM_SYM(NHX) = ONE * TRSYM * DMONE
                       IOP_REO(3,NHX) = 2
                       IOP_REO(4,NHX) = 4
                       SIGN_OPREO(NHX) = ONE
-                      SIGN_ITIM_SYM(NHX) = ONE
                     end if
                   END IF
                 END IF
@@ -1299,7 +1253,6 @@ C  ???                SIGN_NHX(NHX) = -1 * ONE
                       IOP_REO(3,NHX) = 2
                       IOP_REO(4,NHX) = 4
                       SIGN_OPREO(NHX) = ZERO
-                      SIGN_ITIM_SYM(NHX) = ONE
                     end if
                   END IF
                 END IF
@@ -1353,7 +1306,6 @@ C  ???                SIGN_NHX(NHX) = -1 * ONE
                       IOP_REO(3,NHX) = 2
                       IOP_REO(4,NHX) = 4
                       SIGN_OPREO(NHX) = ZERO
-                      SIGN_ITIM_SYM(NHX) = ONE
                     end if
                   END IF
                 END IF
@@ -1428,7 +1380,6 @@ C  ???                SIGN_NHX(NHX) = -1 * ONE
                       IOP_REO(3,NHX) = 3
                       IOP_REO(4,NHX) = 2
                       SIGN_OPREO(NHX) = -ONE
-                      SIGN_ITIM_SYM(NHX) = ONE
                     end if
                   END IF
                 END IF
@@ -1493,7 +1444,6 @@ C  ???                SIGN_NHX(NHX) = -1 * ONE
                       IOP_REO(3,NHX) = 3
                       IOP_REO(4,NHX) = 2
                       SIGN_OPREO(NHX) = -ONE
-                      SIGN_ITIM_SYM(NHX) = ONE
                     end if
                   END IF
                 END IF
@@ -1515,8 +1465,6 @@ C     if(IFLAG.ne.1)then
         do I=1,NHX
           write(LUWRT,*) '  excitation type and sign SIGN_NHX ',
      &                     I,SIGN_NHX(I)
-          write(LUWRT,*) '  excitation type and sign SIGN_ITIM_SYM ',
-     &                     I,SIGN_ITIM_SYM(I)
         end do
       end if
 #endif
@@ -3006,7 +2954,7 @@ C     INTEGER JGRP(MXPNGAS)
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE SET_HOP_DBG(IHTYPE,NO_TTWO,ISYM_T,ITIM_SYM,IPRNT)
+      SUBROUTINE SET_HOP_DBG(IHTYPE,NO_TTWO,ISYM_T,IPRNT)
 *
 *     Construct orbital excitation types for different choices
 *     of Hamiltonian operator, double group version
@@ -3049,7 +2997,7 @@ C
      &                 IFTONE,IFTTWO,ILTTWO,IFSFLT1,ILSFLT1,
      &                 WORK(KLSOBEX_TEMP),
      &                 DUMMY,DUMMY,DUMMY,I2DIATP,DUMMY,DUMMY,DUMMY,
-     &                 DUMMY,ITIM_SYM,IPRNT)
+     &                 IPRNT)
       NSPOBEX_TP = NHX
 C
 C     actual spin-orbital excitations
@@ -3060,14 +3008,13 @@ C
       call memmar(KLABEXTP,    4*NSPOBEX_TP,'ADDS  ',1,'LABXTP')
       call memmar(KLOP_REO,    4*NSPOBEX_TP,'ADDS  ',1,'OP_REO')
       call memmar(KSIOPREO,      NSPOBEX_TP,'ADDS  ',2,'SIOPRE')
-      call memmar(KITIMSIGN,     NSPOBEX_TP,'ADDS  ',2,'TRSIGN')
       IFLAG = 0
       CALL GET_HX_RELA(IFLAG,IHTYPE,NO_TTWO,NOBPT,NHX,
      &                 IFTONE,IFTTWO,ILTTWO,IFSFLT1,ILSFLT1,
      &                 WORK(KLSOBEX_TEMP),
      &                 WORK(KLSOBEX),WORK(KLIHIND),WORK(KSIGNNHX),
      &                 I2DIATP,WORK(KLABEXTP),WORK(KLOP_REO),
-     &                 WORK(KSIOPREO),WORK(KITIMSIGN),ITIM_SYM,IPRNT)
+     &                 WORK(KSIOPREO),IPRNT)
 C
 C     Space for info in the different parts of Hamiltonian
 C
@@ -3380,7 +3327,7 @@ C***********************************************************************
      &                     IPROCLIST,IRILP,BLOCKTIME)
 *
 *     debug printing
-      NPTESTVAR = 20
+      NPTESTVAR = 00
       IF( NPTESTVAR .ge. 20 ) THEN
       IOFFSET_SCRATCH = 0
       WRITE(LUWRT,*) 'left vector = C-vector'
@@ -3719,9 +3666,9 @@ CSK             END IF
 C                 mark block as nonzero
                   LUHCLIST(INT_IOFF1) = IONE
 C                 transfer block to disc
-                  WRITE(LUWRT,*) 'I transfer to file block ISBLK',
-     &                            ISBLK
-                  CALL WRTMATMN(HC(IOFF),1,LEN_T,1,LEN_T,LUWRT)
+C                 WRITE(LUWRT,*) 'I transfer to file block ISBLK',
+C    &                            ISBLK
+C                 CALL WRTMATMN(HC(IOFF),1,LEN_T,1,LEN_T,LUWRT)
 C                 WRITE(LUWRT,*) 'offset,length, IRIS',
 C    &                            IOFF_SCR1,LEN_T,IRIS
                   CALL MPI_FILE_WRITE_AT(LLUHC,IOFF_SCR1,HC(IOFF),LEN_T,

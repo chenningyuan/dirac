@@ -887,20 +887,20 @@ C     WRITE(LUWRT,*) 'NALLINT is',NALLINT
       CALL DZERO8(T_BUFFX,NALLINT)
 C
       call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
-     &                      ISOBEX,T_BUFFX,T_BUFF,WORK(KITIMSIGN),
+     &                      ISOBEX,T_BUFFX,T_BUFF,
      &                      ISTR_CA,ISTR_CB,ISTR_AA,
      &                      ISTR_AB,NASHT,F1,WORK(KINTI12),
-     &                      MDIASV,IBOSYM,LABEL,CIRUN,0,IPRNT)
+     &                      MDIASV,IBOSYM,LABEL,CIRUN,IPRNT)
 C     WRITE(LUWRT,*) 'N1DIAINT and N2DIAINT are',N1DIAINT,N2DIAINT
 C     DO I = 1, NALLINT
 C      WRITE(LUWRT,*) 'I, T_BUFFX(I) is',I, T_BUFFX(I)
 C     END DO
 #else
       call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
-     &                      ISOBEX,T,T_BUFF,WORK(KITIMSIGN),
+     &                      ISOBEX,T,T_BUFF,
      &                      ISTR_CA,ISTR_CB,ISTR_AA,
      &                      ISTR_AB,NASHT,F1,WORK(KINTI12),
-     &                      MDIASV,IBOSYM,LABEL,CIRUN,0,IPRNT)
+     &                      MDIASV,IBOSYM,LABEL,CIRUN,IPRNT)
 #endif
 C
       WRITE(LUWRT,'(/A)')
