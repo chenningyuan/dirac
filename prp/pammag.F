@@ -631,8 +631,6 @@ C.....Get skeleton AO-Fock matrix with two-electron London integrals
       CALL TWOLO1A(WORK(KFMAT),WORK(KDMAT),CMO,
      &             IBEIG,NCOMP,WORK(KIREP),WORK(KIFCT),
      &             WORK(KFREE),LFREE,IPRPRP)
-CTROND
-      WRITE(0,*) '*After TWOLO1A'
       CALL MEMREL('TWOLON.TWOLON1A',WORK,KWORK,KDMAT,KFREE,LFREE)
 C
       CALL MEMGET('REAL',KSKLTN,NDMAT*N2BBASX,WORK,KFREE,LFREE)
@@ -644,15 +642,11 @@ C
 C.....Get full AO-Fock matrix with two-electron London integrals
       CALL RSKLOND(WORK(KFMAT),WORK(KSKLTN),WORK(KFAC),WORK(KINDEX),
      &             WORK(KPOINT),NDMAT,WORK(KIREP),IPRPRP)
-CTROND
-      WRITE(0,*) '*After RSKLOND'
       CALL MEMREL('TWOLON.RSKLOND',WORK,KWORK,KSKLTN,KFREE,LFREE)
       CALL MEMGET('REAL',KGBMO,N2ORBXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KFOCK,N2BBASXQ,WORK,KFREE,LFREE)
       CALL TWOLO1B(WORK(KGBMO),WORK(KFMAT),WORK(KFOCK),CMO,NCOMP,
      &             WORK(KFREE),LFREE,IPRPRP)
-CTROND
-      WRITE(0,*) '*After TWOLO1B'
       CALL MEMREL('TWOLON.TWOLO1B',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('TWOLON')
 
@@ -952,7 +946,6 @@ C ... unpack to the full AO - form
 
 C     ...sort AO to SO-AO, so somehow ...
          CALL BUTOBS(FOCK,NZ,WORK(KFREE),LFREE)
-
          IF(IPRINT.GE.5) THEN
            CALL HEADER(
      & 'TWOLO1:Total SA-AO two-electron London contribution',-1)
