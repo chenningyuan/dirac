@@ -51,9 +51,15 @@ module dft_cfg
 
   real(8), public :: dft_cfg_radint          = 1.0d-13
   real(8), public :: dft_cfg_accepted_error  = 1.0d-3
+
+!                    for high accuracy high order response this is not tight enough
   real(8), public :: dft_cfg_dfthr0          = 1.0d-9
-  real(8), public :: dft_cfg_dfthrl          = 1.0d-10
+
+!                    this threshold is not used in default dft calculations
+!                    only when screening is on
+!                    currently not read by input
   real(8), public :: dft_cfg_dfthri          = 2.0d-12
+
   real(8), public :: dft_cfg_ac_ip           = 0.0d0
   real(8), public :: dft_cfg_ac_threshold    = 0.0d0
   real(8), public :: dft_cfg_homo_eigenvalue = 0.0d0
@@ -108,7 +114,6 @@ contains
     call dirac_mpi_bcast(dft_cfg_radint                 )
     call dirac_mpi_bcast(dft_cfg_accepted_error         )
     call dirac_mpi_bcast(dft_cfg_dfthr0                 )
-    call dirac_mpi_bcast(dft_cfg_dfthrl                 )
     call dirac_mpi_bcast(dft_cfg_dfthri                 )
     call dirac_mpi_bcast(dft_cfg_ac_ip                  )
     call dirac_mpi_bcast(dft_cfg_ac_threshold           )

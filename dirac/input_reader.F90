@@ -315,11 +315,8 @@ contains
       call setaldaha(.true.) !activate alda for the h- part
     end if
 
-    if (kw_matches(word, '.THRESH')) then
-      call kw_read(word,           &
-                   dft_cfg_dfthr0, &
-                   dft_cfg_dfthrl, &
-                   dft_cfg_dfthri)
+    if (kw_matches(word, '.SMALLD')) then
+      call kw_read(word, dft_cfg_dfthr0)
     end if
 
     if (kw_matches(word, '.4CGRID')) then
