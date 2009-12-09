@@ -2949,7 +2949,7 @@ C
 C
 C     Get screening matrices
 C
-      CALL PR4SC1(KDRIJ,WORK,KFREE,LFREE,DINTSKP,WORK(KGAB),
+      CALL PR4SC1(KDRIJ,WORK,KFREE,LFREE,WORK(KGAB),
      &                  Q1,Q2,Q3,Q4,NDMOQR,ICMOQR,NSTR,
      &                  ISAME,IPRINT)
 C
@@ -2957,7 +2957,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck pr4sc1 */
-      SUBROUTINE PR4SC1(KDRIJ,WORK,KFREE,LFREE,DINTSKP,GABAO,
+      SUBROUTINE PR4SC1(KDRIJ,WORK,KFREE,LFREE,GABAO,
      &                  Q1,Q2,Q3,Q4,NDMOQR,ICMOQR,NSTR,
      &                  ISAME,IPRINT)
 C***********************************************************************
@@ -2977,14 +2977,13 @@ C
 C
       LOGICAL SAME
       DIMENSION NDMOQR(2,2,4),ICMOQR(2,4),NSTR(2,0:2,4),ISAME(4),
-     &          Q1(*),Q2(*),Q3(*),Q4(*),WORK(*),DINTSKP(2,4)
+     &          Q1(*),Q2(*),Q3(*),Q4(*),WORK(*)
       DIMENSION GABAO(*)
 C
 C     Initialize
 C
       N2GAB   = NSYMBL*NSYMBL
       NDRIJ   = N2GAB*NFSYM
-C      CALL DZERO(DINTSKP,8)
       IF(IPRINT.GE.3) THEN
         DO I = 1,NFSYM
           WRITE(LUPRI,'(A,A3)') '*MKDRIJ: GAB-matrix ',FREP(I)
@@ -3571,7 +3570,6 @@ C
      &              IPQTOQ(1,0),LUPRI)
       ENDIF
 
-CTROND      CALL DZERO(FMO,N2ORBXQ)
       DO 10 I = 1,NFSYM
         N2FMO = NFMO(1,I)*NFMO(2,I)
         IF(N2FMO.EQ.0) GOTO 10
@@ -4796,6 +4794,7 @@ C
       CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
      &             KINDX,KGAB,KDRIJ,
      &             INTFLG,NSTR,ANTIS,LMP2)
+      CALL DZERO(DINTSKP,8)
 C
       IF (ISTRAT.EQ.1) THEN
          WRITE(LUPRI,'(A)')
