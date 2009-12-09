@@ -649,6 +649,14 @@ C.....Get full AO-Fock matrix with two-electron London integrals
      &             WORK(KFREE),LFREE,IPRPRP)
       CALL MEMREL('TWOLON.TWOLO1B',WORK,KWORK,KFOCK,KFREE,LFREE)
 CTROND: DFT contributions can be inserted here
+!
+#ifdef MOD_DFT
+      call memget('REAL',kdmat0,n2bbasxq,work,kfree,lfree)
+      call add_dft_to_twolon(work(kfmat),work(kdmat0),cmo,
+     &                       work(kfree),lfree,iprprp)
+      call memrel('twolon.dft',work,kwork,kdmat0,kfree,lfree)
+#endif /* MOD_DFT */
+!
       CALL MEMGET('REAL',KGBMO,N2ORBXQ,WORK,KFREE,LFREE)
       CALL TWOLO1C(WORK(KGBMO),WORK(KFMAT),CMO,NCOMP,
      &             WORK(KFREE),LFREE,IPRPRP)
@@ -657,6 +665,69 @@ CTROND: DFT contributions can be inserted here
 
       RETURN
       END
+!-----------------------------------------------------------------------
+      subroutine add_dft_to_twolon(fmat,dmat0,cmo,work,lwork,iprint)
+!
+      use dirac_cfg
+#ifdef MOD_DFT
+      use dft_main
+      use dft_cfg
+#endif
+!
+#include "implicit.h"
+#include "priunit.h"  
+#include "dummy.h"   
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dcbham.h"
+#include "shells.h"
+#include "ccom.h"
+#include "cbihr2.h"
+#include "symmet.h"
+#include "dgroup.h"
+#include "dcbqal.h"
+#include "iratdef.h"
+C
+#include "aovec.h"
+#include "blocks.h"
+#include "dcbgen.h"
+#include "dcbnmr.h"
+#include "dcbfir.h"
+C
+      DIMENSION FMAT(N2BBASX,4,*),
+     &          DMAT0(*),CMO(*),WORK(*)
+      DIMENSION ISYMOP(3),IHRMOP(3)
+
+      CALL QENTER('add_dft_to_twolon')
+
+      nr_fmat = 3
+
+      call genden(dmat0, cmo, 1, iprint)
+!fixme 
+! we have two direct-LAO contributions: eqs. 44 and 46
+
+      call dftexc(ntbas(0),  ! mat_dim
+     &            nz,        ! nz
+     &            nr_fmat,     ! nr_fmat
+     &            fmat,      ! fmat
+     &            dmat0,    ! dmat_0
+     &            0,              !nr_dmat_p
+     &            (/0.0d0/),      !dmat_p
+     &            isymop,    !isymop
+     &            ihrmop,    !ihrmop
+     &            0,         !response_order
+     &            0,         !response_order_ao
+     &            0,         !g_order
+     &            1)         !m_order
+
+
+      call qexit('add_dft_to_twolon')
+
+      return
+      end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TWOLO1A */
       SUBROUTINE TWOLO1A(FMAT,DMAT,CMO,IBEIG,NCOMP,IREPDM,IFCTYP,
@@ -789,29 +860,6 @@ CMI   - Cauchy-Schwarz inequality does not hold for dg(1,2)/dB integrals !
      &        ,I2TYP,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,RELCAL,.false.
      &        ,IDUMMY,DUMMY)
 
-! here add dft contribution:
-#ifdef MOD_DFT
-!
-!          call memget('REAL', kdmat0, n2bbasxq, work, kfree, lfree)
-!          call genden(work(kdmat0), cmo, 1, iprint)
-!
-!          call dftexc(ntbas(0),  ! mat_dim
-!     &                nz,        ! nz
-!     &                ndmat,     ! nr_fmat
-!     &                fmat,      ! fmat
-!     &                work(kdmat0),    ! dmat_0
-!     &                ndmat,     !nr_dmat_p
-!     &                dmat,      !dmat_p
-!     &                isymop,    !isymop
-!     &                ihrmop,    !ihrmop
-!     &                1,         !response_order
-!     &                0,         !response_order_ao
-!     &                0,         !g_order
-!     &                1)         !m_order
-!
-!          call memrel('twolon.dft', work, 1, kdmat0, kfree, lfree)
-
-#endif /*ifdef MOD_DFT*/
 
 #if defined (VAR_MPI) || defined (VAR_PVM)
          ENDIF
