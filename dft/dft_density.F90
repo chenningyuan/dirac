@@ -720,8 +720,9 @@ contains
 ! (i'll put them in our working notes to make it more clear)
 ! ao_b1(i) = 0.5*ao(i)*(r - R_M)
 ! should be:
-! (ao_b1(r_M)+) *s* ao(r_N)   =  0.5*(R_M \times r)*(ao(r_M)+)*s*ao(r_N) =  0.5*(R_M \times r_M)(ao+)*s*ao
-! (ao(r_M)+) *s* (ao_b1(r_N)) = -0.5*(R_N \times r)*(ao(r_M)+)*s*ao(r_N) = -0.5*(R_N \times r_N)(ao+)*s*ao
+! (ao_b1(r_M)+) *s* ao(r_N)   =  0.5i*(R_M \times r)*(ao(r_M)+)*s*ao(r_N) =  0.5i*(R_M \times r_M)(ao+)*s*ao
+! (ao(r_M)+) *s* (ao_b1(r_N)) = -0.5i*(R_N \times r)*(ao(r_M)+)*s*ao(r_N) = -0.5i*(R_N \times r_N)(ao+)*s*ao
+!
 ! so now we do:
 ! (fmat_1)_a = + (R_M)_b*(ao_b1+)_c*s*ao   - (R_M)_c(ao_b1+)_b*s*ao    = (ao_b1+)_c*(f_1)_b - (ao_b1+)_b*(f_1)_c
 ! (fmat_2)_a = + (ao+)*s*(R_N)_b*(ao_b1)_c - (ao+)*s*(R_N)_c*(ao_b1)_b = (ao+)*(f_2)_bc - (ao+)(f_2)_cb
