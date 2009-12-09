@@ -1499,7 +1499,11 @@ C
 !#    IF (NVEC.GT.NDET) NVEC = NDET
       NVEC = NDET
       IF (NVEC .GT. NDETMX) STOP 999
-      KXBYTE = SIZEOF(NDET)
+#if defined INT_STAR8
+      KXBYTE = 8
+#else
+      KXBYTE = 4
+#endif
 !.q
 C
 C     DETERMINE RECORD LENGTH
@@ -2015,7 +2019,11 @@ C
       DATA LUCIVC/10/
 !----------------------------------------------------------------------
       KST = 1
-      KXBYTE = SIZEOF(KST)
+#if defined INT_STAR8
+      KXBYTE = 8
+#else
+      KXBYTE = 4
+#endif
 !.s/sya,2007.08.29
 !#    LEN = MAX0(NDET,2)
 !#    LENREC = LEN * 2 * 8
