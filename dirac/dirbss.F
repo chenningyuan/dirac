@@ -7621,11 +7621,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C  PURPOSE:
-C  Generate 2c MO from converged 4c MO (read from DFCOEF) using the picture change transformation matrix  
+C  Generate 2c MO from previous convergedx) 4c MO (read from DFCOEF) by using 
+C  the 4c-2c picture change transformation matrix  :
 C
 C           CMO(2c) = U^{+}(4c->2c) * CMO(4c)
 C
-C  Resulting 2c MO's are written back to DFCOEF.
+C  Resulting 2c MO's are ....
 C
 C  On entry: VMAT
 C            CMO
@@ -7727,10 +7728,10 @@ C ===============================================================
 
        IF (IPRINT.GE.5) THEN
         CALL HEADER(
-     &  'CMOTR2C: MO_2c(LS,e) = U^{+}.MO_4c(LS,e), TBUF',-1)
+     &  'CMOTR2C: MO_2c(LS,e) = U^{+}(LS,L).MO_4c(LS,e), TBUF',-1)
         WRITE(LUPRI,'(A,I1,A,I1)')
      &  '* Fermion ircop no.',I,'/',NFSYM                          
-        CALL PRQMAT(TBUF(IMOe),NFBAS(I,0),NESH(I),              
+        CALL PRQMAT(TBUF(IMOe),NFBAS(I,0),NESH(I), 
 !       CALL PRQMAT(TBUF(IMO),NFBAS(I,0),NORB(I), 
 !    &    NFBAS(I,1),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
      &    NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
@@ -7749,8 +7750,26 @@ C     ... check the orthonormality of generated starting MO's
 !     CALL NRMSTMO(TBUF,VMAT,CMO,WORK,LWORK,IPRINT,.FALSE.)
 
 
-!     Save MO coeff into DFPCMO 
+!---------------------------------------------------------------------------------
+!     We have some '2c' MO, construct 2c Fock matrix to be diagonalized later
+!---------------------------------------------------------------------------------
 
+       NORB1_SAVE=NORB(1)
+       NORB2_SAVE=NORB(2)
+       NPSH1_SAVE = NPSH(1)
+       NPSH2_SAVE = NPSH(2)
+
+      NORB(1) = NESH(1)
+      NORB(2) = NESH(2)
+      NPSH(1) = 0
+      NPSH(2) = 0
+!      ... generate density matrix(-es) into TBUF
+      CALL DENMAT(TBUF,CMO,IPRINT)
+
+      NORB(1) = NORB1_SAVE
+      NORB(2) = NORB2_SAVE
+      NPSH(1) = NPSH1_SAVE
+      NPSH(2) = NPSH2_SAVE
 
 !      call quit('.... stop in CMOTR2C ....')
       WRITE(LUPRI,*) 'Leaving CMOTR2C '    
