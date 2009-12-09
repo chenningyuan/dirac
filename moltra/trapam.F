@@ -4895,10 +4895,12 @@ C     **************************
 C
         IF(LMP2) EBUF = D0
         CALL MEMGET('REAL',KBUF,8,WORK,KFREE,LFREE)
-C       For historical reasons we need to set the third variable in the buf to -1 to
-C       signal the slave to stop computing & transforming integrals.
-        CALL IZERO (IBUFMPI,5)
-        IBUFMPI(3) = -1
+        IF(ISTRAT.EQ.4) THEN
+C         For historical reasons we need to set the third variable in the buf to -1 to
+C         signal the slave to stop computing & transforming integrals.
+          CALL IZERO (IBUFMPI,5)
+          IBUFMPI(3) = -1
+        ENDIF
         DO I = 1,NODES
  100      CONTINUE
 #if defined (MPE)
@@ -4923,8 +4925,17 @@ C         ... this node sends the wrong message, abort
      &           '- Process ',NWHO,
      &           ' finished at ',WALLST-WALLBEF,' seconds after start'
           CALL FLSHFO(LUPRI)
-          CALL MPI_SEND(IBUFMPI,5,my_MPI_INTEGER,NWHO,30,
+          IF(ISTRAT.EQ.4) THEN
+            CALL MPI_SEND(IBUFMPI,5,my_MPI_INTEGER,NWHO,30,
      &                    MPI_COMM_WORLD,IERR)
+          ELSEIF(ISTRAT.EQ.2) THEN
+            ITEST = -1
+            CALL MPI_SEND(ITEST,1,my_MPI_INTEGER,NWHO,30,
+     &                    MPI_COMM_WORLD,IERR)
+          ELSE
+            WRITE(6,*) 'Inside TRARES in scheme ..',ISTRAT
+            CALL QUIT('TRARES not adapted for this strategy !')
+          ENDIF
           CALL MPI_RECV(WORK(KBUF),8,MPI_DOUBLE_PRECISION,
      &          NWHO,40,MPI_COMM_WORLD,ISTAT,IERR)
           CALL DAXPY(8,D1,WORK(KBUF),1,DINTSKP,1)
