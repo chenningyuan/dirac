@@ -22,6 +22,7 @@ module dft_density
   public lda_distribute_i
   public gga_distribute_i
   public lda_london_distribute
+  public lda_london_distribute_r
 
   private
 
@@ -692,9 +693,136 @@ contains
 
   end subroutine
 
-! based on lda_distribute
-! it calculates the exchange-correlation contribution to KS matrix
-! differentiated wrt magnetic field
+
+  subroutine lda_london_distribute_r(s, irep, mat_dim, fmat, ao, ao_b1)
+
+    use dft_cb_interface
+    use memory_allocator
+
+!   ----------------------------------------------------------------------------
+    real(8), intent(in)    :: s
+    integer, intent(in)    :: irep
+    integer, intent(in)    :: mat_dim
+    real(8), intent(inout) :: fmat(mat_dim, mat_dim, *)
+    real(8), intent(in)    :: ao(mat_dim)
+    real(8), intent(in)    :: ao_b1(mat_dim, *)
+    !real(8), intent(in)    :: cx, cy, cz
+!   ----------------------------------------------------------------------------
+    integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz
+    integer                :: a, b, c
+    real(8)                :: f_1, f_2
+    real(8), allocatable   :: fmat_1(:), fmat_2(:)
+!    real(8)                :: r_co(3)
+!   ----------------------------------------------------------------------------
+
+!---------------------------------------------------------------------------------------------------------
+!gosia todo: check carefully and remove this comment
+! (i'll put them in our working notes to make it more clear)
+! ao_b1(i) = 0.5*ao(i)*(r - R_M)
+! should be:
+! (ao_b1(r_M)+) *s* ao(r_N)   =  0.5*(R_M \times r)*(ao(r_M)+)*s*ao(r_N) =  0.5*(R_M \times r_M)(ao+)*s*ao
+! (ao(r_M)+) *s* (ao_b1(r_N)) = -0.5*(R_N \times r)*(ao(r_M)+)*s*ao(r_N) = -0.5*(R_N \times r_N)(ao+)*s*ao
+! so now we do:
+! (fmat_1)_a = + (R_M)_b*(ao_b1+)_c*s*ao   - (R_M)_c(ao_b1+)_b*s*ao    = (ao_b1+)_c*(f_1)_b - (ao_b1+)_b*(f_1)_c
+! (fmat_2)_a = + (ao+)*s*(R_N)_b*(ao_b1)_c - (ao+)*s*(R_N)_c*(ao_b1)_b = (ao+)*(f_2)_bc - (ao+)(f_2)_cb
+! fmat_a = (fmat_1)_a - (fmat_2)_a
+! and:
+! (f_1)_b  = (R_M)_b*s*ao,            (f_1)_c  = (R_M)_c*s*ao
+! (f_2)_bc = s*(R_N)_b*(ao_b1)_c,     (f_2)_cb = s*(R_N)_c*(ao_b1)_b
+!---------------------------------------------------------------------------------------------------------
+
+    !r_co(1) = cx - dft_gagorg(1)
+    !r_co(2) = cx - dft_gagorg(2)
+    !r_co(3) = cx - dft_gagorg(3)
+
+!gosia: the beginning stolen from lda_distribute_r
+!do we need a loop 'do jxyz = 0, 0' here?
+!now we have imaginary part calculated in separate subroutine
+
+!todo: check in dft_main if we can reuse memory instead of allocating new
+    call alloc(fmat_1, mat_dim*mat_dim)
+    call alloc(fmat_2, mat_dim*mat_dim)
+
+    do jxyz = 0, 0
+      do iblock = 1, nr_density_blocks(jxyz, irep)
+
+        nr1 = nr_ao(1, iblock, jxyz, irep)
+        st1 = st_ao(1, iblock, jxyz, irep)
+        nr2 = nr_ao(2, iblock, jxyz, irep)
+        st2 = st_ao(2, iblock, jxyz, irep)
+
+        do i = 1, nr2
+
+          ii = st2 + i - 1
+
+          do a = 1, 3
+
+            f_1 = 0.0d0
+            f_2 = 0.0d0
+            call dzero(fmat_1, mat_dim*mat_dim)
+            call dzero(fmat_2, mat_dim*mat_dim)
+
+            select case (a)
+              case (1)
+                b = 2; c = 3
+              case (2)
+                b = 3; c = 1
+              case (3)
+                b = 1; c = 2
+            end select
+
+            f_1 = dft_gagorg(b)*s*ao(ii)
+            f_2 = dft_gagorg(b)*s*ao_b1(ii, c)
+!fixme...make it more efficient
+
+            call daxpy(nr1,                       &
+                       f_1,                       &
+                       ao_b1(st1, c),             &
+                       1,                         &
+                       fmat_1, &
+                       1)
+
+            call daxpy(nr1,                       &
+                       f_2,                       &
+                       ao(st1),                   &
+                       1,                         &
+                       fmat_2, &
+                       1)
+
+            call daxpy(nr1,                       &
+                       - 1.0d0,                   &
+                       fmat_1, &
+                       1,                         &
+                       fmat_2, &
+                       1)
+
+            call daxpy(nr1,                       &
+                       1.0d0,                     &
+                       fmat_2, &
+                       1,                         &
+                       fmat(st1, ii, iq(jxyz)),   &
+                       1)
+
+          end do
+        end do
+      end do
+    end do
+
+    call dealloc(fmat_1)
+    call dealloc(fmat_2)
+
+  end subroutine
+
+
+
+!  subroutine lda_london_distribute_i()
+!  end subroutine
+
+
+
+
+
+
   subroutine lda_london_distribute(s, irep, mat_dim, fmat, ao, ao_b1, cx, cy, cz)
 
     use dft_cb_interface

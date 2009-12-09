@@ -947,17 +947,30 @@ contains
                                   ao_p,         &
                                   ao_p(ao_start(1, 0):ao_end(1, 0)))
           else
-            call lda_distribute_r(derv(1, d_r), &
-                                  0,            &
-                                  mat_dim,      &
-                                  fmat,         &
-                                  ao_p)
+!here: add eq. (46) in our notes todo: check carefully
+            if (max_ao_m_order == 1) then
+              call lda_london_distribute_r(derv(1, d_r),                      &
+                                           0,                                 &
+                                           mat_dim,                           &
+                                           fmat,                              &
+                                           ao_p,                              &
+                                           ao_p(ao_start(0, 1):ao_end(0, 1)))
+            else if (max_ao_m_order == 0) then
+              call lda_distribute_r(derv(1, d_r), &
+                                    0,            &
+                                    mat_dim,      &
+                                    fmat,         &
+                                    ao_p)
+            end if
           end if
         end if
 
 
 !       linear response
         if (response_order == 1) then
+
+! gosia: we don't pass info about max_m_order into lr subroutine
+! todo: find a good place to call lda_london_subroutine_r/i (eq. 44) 
 
           call lr(block_length,    &
                   mat_dim,          &
@@ -1409,6 +1422,7 @@ contains
                                 ao_p,             &
                                 ao_p(ao_start(1, 0)))
         else
+!gosia todo: here do eq. (44) from our notes?
           call lda_distribute_r(u_qr,             &
                                 isym(im) - 1,     &
                                 mat_dim,          &
@@ -1475,6 +1489,7 @@ contains
                                 ao_p,             &
                                 ao_p(ao_start(1, 0)))
         else
+!gosia todo: add lda_london_distribute_i here (eq. 44)?
           call lda_distribute_i(u_qi,             &
                                 isym(im) - 1,     &
                                 mat_dim,          &

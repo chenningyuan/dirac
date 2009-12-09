@@ -91,12 +91,7 @@ contains
 
     dft_cb_cent(1:max_nr_shells, 1:3, 1:2) = cent(1:max_nr_shells, 1:3, 1:2)
 
-    dft_gagorg(3) = gagorg(3) ! added, gauge origin
-
-    !gosia: added for a moment for lda_london_dist_debug:
-    ! the coords of nuclei (nuclei.h)
-    dft_nuc_cord(3, dft_mxcent) = cord(3, dft_mxcent)
-    !
+    dft_gagorg(3) = gagorg(3)
 
     dft_cb_pq_to_uq = 0
     dft_cb_uq_to_pq = 0
