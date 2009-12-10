@@ -129,7 +129,7 @@ C
          CALL MEMGET('REAL',KTIMDS,MAXSHL,WORK,KFREE,LFREE)
          CALL TR2MST(EMP2,WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
      &        KINDX,KGAB,KDRIJ,INTFLG,ICMOIJ,NSTR,NSTRT,NSTRIJ,NSTTIJ,
-     &        ANTIS,LMP2,MAXSHL,WORK(KDSLST),WORK(KTIMDS))
+     &        ANTIS,LMP2,MAXSHL,WORK(KDSLST),WORK(KTIMDS),DINTSKP)
       ELSE IF (PARCAL .AND. MP2ORG) THEN
 C
 C     *** Original parallel MP2 algorithm ***
@@ -2562,7 +2562,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TR2MST */
       SUBROUTINE TR2MST(ERGMP2,WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
      &     KINDX,KGAB,KDRIJ,INTFLG,ICMOIJ,NSTR,NSTRT,NSTRIJ,NSTTIJ,
-     &     ANTIS,LMP2,NDSLST,IDSLST,TIMDIS)
+     &     ANTIS,LMP2,NDSLST,IDSLST,TIMDIS,DINTSKP)
 C***********************************************************************
 C
 C     Master driver for new parallel MP2 scheme.
@@ -2572,7 +2572,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0=0.0D0)
+      PARAMETER(D0=0.0D0,D1=1.0D0)
 C
 #include "maxorb.h"
       INCLUDE 'mpif.h'
@@ -2587,7 +2587,7 @@ C
 #include "dgroup.h"
       DIMENSION KQ(2,4), KE(2,2), KIBE(2,4), ICMOIJ(2,4),
      &     NSTR(2,0:2,4), NSTRT(4), NSTRIJ(2,0:2,4), NSTTIJ(4),
-     &     WORK(*), IDSLST(6,NDSLST), TIMDIS(NDSLST),
+     &     WORK(*), IDSLST(6,NDSLST), TIMDIS(NDSLST),DINTSKP(8),
      &     ITQMT(0:7,0:7,2), IDSNFO(6), IRELEA(6), IBTNFO(2)
       CHARACTER*(24) TMSTMP
       DATA IRELEA /-1, 0, 0, 0, 0, 0/
@@ -2839,11 +2839,16 @@ C
       NTIM = 7*(NODES+1)
       CALL MEMGET('REAL',KTIM,NTIM,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KTIM),NTIM)
+        CALL MEMGET('REAL',KBUF,8,WORK,KFREE,LFREE)
       DO INOD = 1,NODES
          CALL MPI_RECV(WORK(KTIM+INOD*7),7,MPI_DOUBLE_PRECISION,
      &        INOD,96,MPI_COMM_WORLD,ISTAT,IERR)
          IF (CMMNFO) WRITE(LUPRI,*) '<COMMINFO> Master received '//
      &        'timing information from node #', INOD
+          NWHO = ISTAT(MPI_SOURCE)
+          CALL MPI_RECV(WORK(KBUF),8,MPI_DOUBLE_PRECISION,
+     &          NWHO,40,MPI_COMM_WORLD,ISTAT,IERR)
+          CALL DAXPY(8,D1,WORK(KBUF),1,DINTSKP,1)
       END DO
       CALL DIRAC_PARCTL( -1 )
 #if defined (VAR_PFS)
@@ -3093,6 +3098,10 @@ C
      &     '<COMMINFO> Sending timing information from node #', MYTID
       CALL MPI_SEND(TIM1,7,MPI_DOUBLE_PRECISION,
      &     MPARID,96,MPI_COMM_WORLD,IERR)
+      CALL MPI_SEND(DINTSKP,8,MPI_DOUBLE_PRECISION,
+     &          MPARID,40,MPI_COMM_WORLD,IERR)
+CTROND
+      WRITE(0,*) 'Screen:',MYTID,(DINTSKP(I),I=1,8)
       RETURN
 C     
  1002 FORMAT (/'Node #', I4, 
