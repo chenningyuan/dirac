@@ -1,12 +1,5 @@
 module dft_density
 
-!gosia:
-!!!#define debug_me
-!!!#define debug_me_xc
-! gosia: for debugging lda_london_distribute, later on remove one :)
-#define loop1
-!!#define loop2
-
   implicit none
 
   public dft_density_init
@@ -694,10 +687,12 @@ contains
   end subroutine
 
 
-  subroutine lda_london_distribute_r(s, irep, mat_dim, fmat, ao, ao_b1)
+  subroutine lda_london_distribute_r(s, irep, mat_dim, fmat, ao, ao_b1, &
+                                     cx, cy, cz)
 
     use dft_cb_interface
-    use memory_allocator
+
+#define debug_me_lao
 
 !   ----------------------------------------------------------------------------
     real(8), intent(in)    :: s
@@ -706,43 +701,27 @@ contains
     real(8), intent(inout) :: fmat(mat_dim, mat_dim, *)
     real(8), intent(in)    :: ao(mat_dim)
     real(8), intent(in)    :: ao_b1(mat_dim, *)
-    !real(8), intent(in)    :: cx, cy, cz
+    !real(8), intent(in)    :: ao_b1(*)
+    real(8), intent(in)    :: cx, cy, cz
 !   ----------------------------------------------------------------------------
-    integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz
+    integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz, j, jj
     integer                :: a, b, c
+    real(8)                :: aob1(mat_dim,3)
+    real(8)                :: cor(3)
     real(8)                :: f_1, f_2
-    real(8), allocatable   :: fmat_1(:), fmat_2(:)
-!    real(8)                :: r_co(3)
+    real(8)                :: fmat_1(mat_dim*mat_dim), fmat_2(mat_dim*mat_dim)
 !   ----------------------------------------------------------------------------
 
-!---------------------------------------------------------------------------------------------------------
-!gosia todo: check carefully and remove this comment
-! (i'll put them in our working notes to make it more clear)
-! ao_b1(i) = 0.5*ao(i)*(r - R_M)
-! should be:
-! (ao_b1(r_M)+) *s* ao(r_N)   =  0.5i*(R_M \times r)*(ao(r_M)+)*s*ao(r_N) =  0.5i*(R_M \times r_M)(ao+)*s*ao
-! (ao(r_M)+) *s* (ao_b1(r_N)) = -0.5i*(R_N \times r)*(ao(r_M)+)*s*ao(r_N) = -0.5i*(R_N \times r_N)(ao+)*s*ao
-!
-! so now we do:
-! (fmat_1)_a = + (R_M)_b*(ao_b1+)_c*s*ao   - (R_M)_c(ao_b1+)_b*s*ao    = (ao_b1+)_c*(f_1)_b - (ao_b1+)_b*(f_1)_c
-! (fmat_2)_a = + (ao+)*s*(R_N)_b*(ao_b1)_c - (ao+)*s*(R_N)_c*(ao_b1)_b = (ao+)*(f_2)_bc - (ao+)(f_2)_cb
-! fmat_a = (fmat_1)_a - (fmat_2)_a
-! and:
-! (f_1)_b  = (R_M)_b*s*ao,            (f_1)_c  = (R_M)_c*s*ao
-! (f_2)_bc = s*(R_N)_b*(ao_b1)_c,     (f_2)_cb = s*(R_N)_c*(ao_b1)_b
-!---------------------------------------------------------------------------------------------------------
-
-    !r_co(1) = cx - dft_gagorg(1)
-    !r_co(2) = cx - dft_gagorg(2)
-    !r_co(3) = cx - dft_gagorg(3)
+    cor(1) = cx - dft_gagorg(1)
+    cor(2) = cy - dft_gagorg(2)
+    cor(3) = cz - dft_gagorg(3)
+!    aob1(:, 1) = ao_b1(          1:  mat_dim)
+!    aob1(:, 2) = ao_b1(  mat_dim+1:2*mat_dim)
+!    aob1(:, 3) = ao_b1(2*mat_dim+1:3*mat_dim)
 
 !gosia: the beginning stolen from lda_distribute_r
 !do we need a loop 'do jxyz = 0, 0' here?
 !now we have imaginary part calculated in separate subroutine
-
-!todo: check in dft_main if we can reuse memory instead of allocating new
-    call alloc(fmat_1, mat_dim*mat_dim)
-    call alloc(fmat_2, mat_dim*mat_dim)
 
     do jxyz = 0, 0
       do iblock = 1, nr_density_blocks(jxyz, irep)
@@ -755,13 +734,13 @@ contains
         do i = 1, nr2
 
           ii = st2 + i - 1
+          !do j = 1, st1
+          !jj = st1 + j - 1
 
           do a = 1, 3
 
             f_1 = 0.0d0
             f_2 = 0.0d0
-            call dzero(fmat_1, mat_dim*mat_dim)
-            call dzero(fmat_2, mat_dim*mat_dim)
 
             select case (a)
               case (1)
@@ -772,45 +751,33 @@ contains
                 b = 1; c = 2
             end select
 
-            f_1 = dft_gagorg(b)*s*ao(ii)
-            f_2 = dft_gagorg(b)*s*ao_b1(ii, c)
-!fixme...make it more efficient
+            f_1 = (ao_b1(ii, b)*cor(c) - ao_b1(ii, c)*cor(b))*s
+            f_2 = (ao_b1(st1, b)*cor(c) - ao_b1(st1, c)*cor(b))*s
+            !f_1 = (aob1(ii, b)*cor(c) - aob1(ii, c)*cor(b))*ao(jj)
+            !f_2 = (aob1(jj, b)*cor(c) - aob1(jj, c)*cor(b))*ao(ii)
+            !fmat(jj, ii, iq(jxyz)) = (f_1 - f_2)*s
+
 
             call daxpy(nr1,                       &
                        f_1,                       &
-                       ao_b1(st1, c),             &
-                       1,                         &
-                       fmat_1, &
-                       1)
-
-            call daxpy(nr1,                       &
-                       f_2,                       &
                        ao(st1),                   &
                        1,                         &
-                       fmat_2, &
+                       fmat(st1, ii, iq(jxyz)), &
                        1)
 
             call daxpy(nr1,                       &
-                       - 1.0d0,                   &
-                       fmat_1, &
+                       - ao(ii),                       &
+                       f_2,                   &
                        1,                         &
-                       fmat_2, &
+                       fmat(st1, ii, iq(jxyz)), &
                        1)
 
-            call daxpy(nr1,                       &
-                       1.0d0,                     &
-                       fmat_2, &
-                       1,                         &
-                       fmat(st1, ii, iq(jxyz)),   &
-                       1)
 
+          !end do
           end do
         end do
       end do
     end do
-
-    call dealloc(fmat_1)
-    call dealloc(fmat_2)
 
   end subroutine
 
@@ -839,35 +806,21 @@ contains
 !   ----------------------------------------------------------------------------
     integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz, jj, j
     integer                :: a, b, c
-#ifdef loop2    
     real(8)                :: f
     real(8)                :: f_left
     real(8)                :: f_right
-#endif /*loop2*/    
-#ifdef loop1
-    real(8)                :: f_left(mat_dim, mat_dim, 4)
-    real(8)                :: f_right(mat_dim, mat_dim, 4)
-    real(8)                :: f1, f2, f
-#endif /*loop1*/
-    real(8)                :: r_current(3), r_origin(3), r_co(3)
+    real(8)                :: r_co(3)
     real(8)                :: aob1(mat_dim, 3)
     integer                :: itest, jtest
 !   ----------------------------------------------------------------------------
 
 ! rename:
-    r_current(1) = cx
-    r_current(2) = cy
-    r_current(3) = cz
-    aob1(:,   1) = ao_b1(1:mat_dim)                 !d/dBx
+    aob1(:,   1) = ao_b1(1:mat_dim)             !d/dBx
     aob1(:,   2) = ao_b1(mat_dim+1:2*mat_dim)   !d/dBy
     aob1(:,   3) = ao_b1(2*mat_dim+1:3*mat_dim) !d/dBz 
-    !
-    !aob1(:,   1) = ao(ao_start(0, 1))                 !d/dBx
-    !aob1(:,   2) = ao(ao_start(0, 1) + mat_dim)   !d/dBy
-    !aob1(:,   3) = ao(ao_start(0, 1) + 2*mat_dim) !d/dBz 
-    r_co(     1) = r_current(1) - dft_gagorg(1) 
-    r_co(     2) = r_current(2) - dft_gagorg(2)
-    r_co(     3) = r_current(3) - dft_gagorg(3)
+    r_co(     1) = cx - dft_gagorg(1) 
+    r_co(     2) = cy - dft_gagorg(2)
+    r_co(     3) = cz - dft_gagorg(3)
 
 !!#ifdef debug_me_xc
 !    open(85, file='excmat_lda_london_dist.test', access='append')
@@ -881,70 +834,12 @@ contains
         nr2 = nr_ao(2, iblock, jxyz, irep)
         st2 = st_ao(2, iblock, jxyz, irep)
 
-#ifdef loop1        
-        ! do it with daxpy:
-        ! finish me... 
 
-        do i = 1, nr2
-
-          ii = st2 + i - 1
-
-          do a = 1, 3
-            select case (a)
-              case (1)
-                b = 2; c = 3
-              case (2)
-                b = 3; c = 1
-              case (3)
-                b = 1; c = 2
-            end select
-
-            ! r* s*(ao_lambda)
-            f1 = r_co(b)*s*ao(ii)
-            ! r* s*(ao_lambda)^B
-            f2 = r_co(b)*s*aob1(ii, c)
-
-            ! calculate f_left, (ao_kappa)^B s ao_lambda
-            call daxpy(nr1,                        & 
-                       f1,                         &
-                       aob1(st1, c),               &
-                       1,                          &
-                       f_left(st1, ii, iq(jxyz)),  &
-                       1)
-
-            ! calculate f_right, ao_kappa s (ao_lambda)^B
-            call daxpy(nr1,                        & 
-                       f2,                         &
-                       ao(st1),                    &
-                       1,                          &
-                       f_right(st1, ii, iq(jxyz)), &
-                       1)
-
-            ! add:
-            ! now in f_left and f_right are of 1*st1 dimension
-            ! we want to add them to get one column of fmat:
-           
-            call daxpy(nr1,                &
-                       1,                  &
-                       (f_left - f_right), &
-                       1,                  &
-                       fmat,               &
-                       1)
-
-
-          end do 
-        end do
-#endif /*ifdef loop1*/
-
-#ifdef loop2
-        ! do it in two loops:
         do i = 1, nr2
           do j = 1, nr1
 
             ii = st2 + i - 1
             jj = st1 + j - 1
-
-! if we want to do it in similar way to DALTON (dft/magnetic_derivs.c), then:
 
             do a = 1, 3
               select case (a)
@@ -966,7 +861,6 @@ contains
 
           end do
         end do
-#endif /*ifdef loop2*/        
 
       end do
 

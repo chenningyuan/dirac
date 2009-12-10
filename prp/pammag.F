@@ -718,7 +718,7 @@ C
      &            (/0.0d0/),      !dmat_p
      &            isymop,    !isymop
      &            ihrmop,    !ihrmop
-     &            0,         !response_order
+     &            1,         !response_order
      &            0,         !response_order_ao
      &            0,         !g_order
      &            1)         !m_order
