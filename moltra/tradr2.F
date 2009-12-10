@@ -151,7 +151,7 @@ C
 C     Divide index transformation in tasks with different batches
 C     of spinors. First find number of tasks.
 C     
-         CALL TSKCHK(MAXTSK,LENTSK,NSTR,LFREE,NODES,NSTRT,IPRINT)
+         CALL TSKCHK(MAXTSK,LENTSK,LFREE,NODES,NSTRT(1),IPRINT)
 C     
 C     Start loop over tasks
 C     
@@ -218,7 +218,7 @@ C
 C       Divide index transformation in tasks with different batches
 C       of spinors. First find number of tasks.
 C
-        CALL TSKCHK(MAXTSK,LENTSK,NSTR,LFREE,1,NSTRT,IPRINT)
+        CALL TSKCHK(MAXTSK,LENTSK,LFREE,1,NSTRT(1),IPRINT)
 C
 C       Start loop over tasks
 C
@@ -1896,7 +1896,7 @@ C        CALL TIMTXT(' Time used in '//TEXT//' is',TIME, LUPRI)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TSKCHK */
-      SUBROUTINE TSKCHK(MAXTSK,LENTSK,NSTR,LWORK,NODES,NSTRT,IPRINT)
+      SUBROUTINE TSKCHK(MAXTSK,LENTSK,LWORK,NODES,NOCC,IPRINT)
 C
 C     Written by Jon Laerdahl, June 1997
 C     Parallel polish by T.Saue Sep 18 1998
@@ -1904,11 +1904,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D8=8.0D0,D1=1.0D0,D2=2.0D0)
-#include "dgroup.h"
 #include "dcbmpt.h"
-      DIMENSION NSTRT(4),NSTR(2,0:2,4)
-#include "sdpre.h"
 C
 C     Maximum number of active occupied spinors in each
 C     task is either set in input (IJTSK) or
@@ -1918,7 +1914,7 @@ C
      &     'Memory available for Direct MP2 is (Words):',
      &     LWORK
       IF (IJTSK.GT.0) THEN
-        LENTSK = MIN(IJTSK,NSTRT(1))
+        LENTSK = MIN(IJTSK,NOCC)
         IF (IPRINT.GE.0) THEN
            WRITE(LUPRI,'(A,/A,I10/)') 
      &          'Maximum number of occupied spinors I and J in batch',
@@ -1927,11 +1923,11 @@ C
       ELSE
         IF(NODES.GT.1) THEN
 C....total number of tasks divided by number of nodes
-           MAXTSK = NSTRT(1)*(NSTRT(1)+1)/2
+           MAXTSK = NOCC*(NOCC+1)/2
            LENTSK = 1
-           DO IJTSK = 1,NSTRT(1)
-             NUM = INT(NSTRT(1)/IJTSK)
-             IF(MOD(NSTRT(1),IJTSK).NE.0) NUM = NUM + 1
+           DO IJTSK = 1,NOCC
+             NUM = INT(NOCC/IJTSK)
+             IF(MOD(NOCC,IJTSK).NE.0) NUM = NUM + 1
              NTSK = NUM*(NUM+1)/2
              IF(NTSK.LT.NODES) GOTO 10
              IF(NTSK.NE.MAXTSK) THEN
@@ -1945,12 +1941,12 @@ C....total number of tasks divided by number of nodes
      &        '** WARNING: More nodes than tasks !'
            ENDIF
         ELSE
-          LENTSK = NSTRT(1)
+          LENTSK = NOCC
         ENDIF 
         WRITE(LUPRI,'(A,/A,I6,A/)') 
      &     'Maximum number of occupied spinors in batch not set'//
      &     ' in input.', 
-     &     'Testing ALL spinors :',NSTRT(1),' in batch.'
+     &     'Testing ALL spinors :',NOCC,' in batch.'
         IF (IPRINT.GE.1) THEN
           WRITE(LUPRI,'(A/A/A/A/A/)')
      &          '==========================================',
@@ -1960,24 +1956,12 @@ C....total number of tasks divided by number of nodes
      &          '=========================================='
         ENDIF
       ENDIF
-      IOLD = LENTSK
-C
-C     Reduce LENTSK until we have enough space...
-C     May be done automatically when memory requirements are known.
-C
-c      IF (LENTSK.NE.IOLD) THEN
-c         IF (IPRINT.GE.1) THEN
-c            WRITE(LUPRI,'(/A,I5)') 'Batch Size Shrinked To:', LENTSK
-c            WRITE(LUPRI,'(A,I10)') 'Memory Needed In Transformation:',
-c     &           INEED
-c         ENDIF
-c      ENDIF
-      IF ((MOD(NSTRT(1),LENTSK)).EQ.0) THEN
-         NUM = NSTRT(1)/LENTSK
+      IF ((MOD(NOCC,LENTSK)).EQ.0) THEN
+         NUM = NOCC/LENTSK
          IF (IPRINT.GE.1) 
      &        WRITE(LUPRI,'(/A)') 'All Batches have same Size.'
       ELSE
-         NUM = NSTRT(1)/LENTSK + 1
+         NUM = NOCC/LENTSK + 1
          IF (IPRINT.GE.1) 
      &        WRITE(LUPRI,'(/A)') 'Last Batch has reduced Size.'
       ENDIF
@@ -2627,7 +2611,7 @@ C        Set up tasks with different batches of spinors if requested.
 C        In this parallel scheme the number of tasks is not related
 C        to the number of nodes in any way.
 C     
-      CALL TSKCHK(MAXTSK,LENTSK,NSTR,LFREE,1,NSTRT,IPRINT)
+      CALL TSKCHK(MAXTSK,LENTSK,LFREE,1,NSTRT(1),IPRINT)
 C ======================================================================
 C     Outer loop over batches of occupied spinors
 C ======================================================================
@@ -2640,7 +2624,7 @@ C
 C     Allocation
 C        Determine and allocate memory for 4/4 transformed matrix,
 C        WORK(K4QMAT), and accumulation matrix, WORK(K4QACC). The former
-C        will be used to recieve integrals from the slaves, the latter
+C        will be used to receive integrals from the slaves, the latter
 C        to accumulate them.
 C
          CALL PCKINI(NSTRIJ,ITQMT,NTQMT,N4QMT,IPRINT)
