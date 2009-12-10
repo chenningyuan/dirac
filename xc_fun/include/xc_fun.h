@@ -78,7 +78,9 @@ int xc_len(enum xc_mode mode, int order);
 // lexicographical ordering. This function also has a fortran 
 // version.
 void xc_eval(double result[], int order, const double densvars[]);
-
+#ifdef WITH_SINGLE
+void xc_eval_single(float *result, int order, const float densvars[]);
+#endif
 //Return the index (into result) for a given derivative, i.e.
 //{0,2,1,0} gives the d^3/dS^2dZ term index.
 int xc_index(enum xc_mode mode, const int derivative[]);

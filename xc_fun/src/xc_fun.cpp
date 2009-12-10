@@ -415,6 +415,15 @@ void xc_eval(double *result, int order, const double densvars[])
   helper_tab[order](result,densvars);
 }
 
+#ifdef WITH_SINGLE
+void xc_eval_single(float *result, int order, const float densvars[])
+{
+  assert(order>=0);
+  assert(order<=XC_MAX_ORDER);
+  helper_tab_single[order](result,densvars);
+}
+#endif
+
 #ifdef WITH_QD
 void xc_eval_qd(qd_real *result, int order, const qd_real densvars[])
 {

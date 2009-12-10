@@ -7,10 +7,12 @@
 #             library, to allow linking without it.
 # -DWITH_QD Enable quad double precision functions. This requires
 #           a _patched_ version of the QD library
+# -DWITH_SINGLE Enable single precision interface. This doubles the
+#               size of the binary, so be careful.
 
 # C++ compiler and flags
 CXX ?= g++
-CXXFLAGS ?= -g -Wall -Os #-DNEW_CONTRACTION 
+CXXFLAGS ?= -g -Wall -Os -DWITH_SINGLE#-DNEW_CONTRACTION 
 CXXFLAGS+=-Iinclude -Isrc/taylor -Isrc/functionals -Llib -fno-rtti -fno-exceptions
 LIBS=-lxc_fun
 

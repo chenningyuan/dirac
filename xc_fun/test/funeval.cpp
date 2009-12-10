@@ -32,9 +32,15 @@ int main(int argc, char *argv[])
   taylor<qd_real, 5, TEST_ORDER> res_qd, cmp;
   qd_real dqd[5] = {1.0,0.0,1.0,0.0,0.0};
 #endif
+
   double dd[5] =   {1.0,0.0,1.0,0.0,0.0};
   taylor<double, 5, TEST_ORDER> res_d; 
   double fun[XC_PARAMS_LEN] = {0};
+
+#ifdef WITH_SINGLE
+  float fd[5] =   {1.0,0.0,1.0,0.0,0.0};
+  taylor<float, 5, TEST_ORDER> res_f; 
+#endif
 
   for (int i=1;i+1<argc;i+=2)
     {
@@ -61,9 +67,18 @@ int main(int argc, char *argv[])
   for (int i=0;i<2;i++)
     dqd[i] = dd[i];
 #endif
+#ifdef WITH_SINGLE
+  for (int i=0;i<2;i++)
+    fd[i] = dd[i];
+#endif
   xc_eval(res_d.c,TEST_ORDER,dd);
-  //  cout << "XC (double):" << endl;
+  cout << "XC (double):" << endl;
   printpoly(cout,res_d);
+#ifdef WITH_SINGLE
+  xc_eval_single(res_f.c,TEST_ORDER,fd);
+  cout << "XC (single):" << endl;
+  printpoly(cout,res_f);
+#endif
 #ifdef WITH_QD
   xc_eval_qd(res_qd.c,TEST_ORDER,dqd);
   cout << "XC (quad double):" << endl;
