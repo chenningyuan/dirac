@@ -731,16 +731,16 @@ contains
         nr2 = nr_ao(2, iblock, jxyz, irep)
         st2 = st_ao(2, iblock, jxyz, irep)
 
+        f_2 = (ao_b1(st1, b)*cor(c) - ao_b1(st1, c)*cor(b))*s
+
         do i = 1, nr2
 
           ii = st2 + i - 1
-          !do j = 1, st1
-          !jj = st1 + j - 1
 
           do a = 1, 3
 
             f_1 = 0.0d0
-            f_2 = 0.0d0
+            !f_2 = 0.0d0
 
             select case (a)
               case (1)
@@ -752,7 +752,7 @@ contains
             end select
 
             f_1 = (ao_b1(ii, b)*cor(c) - ao_b1(ii, c)*cor(b))*s
-            f_2 = (ao_b1(st1, b)*cor(c) - ao_b1(st1, c)*cor(b))*s
+!            f_2 = (ao_b1(st1, b)*cor(c) - ao_b1(st1, c)*cor(b))*s
             !f_1 = (aob1(ii, b)*cor(c) - aob1(ii, c)*cor(b))*ao(jj)
             !f_2 = (aob1(jj, b)*cor(c) - aob1(jj, c)*cor(b))*ao(ii)
             !fmat(jj, ii, iq(jxyz)) = (f_1 - f_2)*s
@@ -825,7 +825,6 @@ contains
 !!#ifdef debug_me_xc
 !    open(85, file='excmat_lda_london_dist.test', access='append')
 !!#endif /*ifdef debug_me_xc*/        
-
     do jxyz = 0, 0
       do iblock = 1, nr_density_blocks(jxyz, irep)
 
@@ -834,12 +833,10 @@ contains
         nr2 = nr_ao(2, iblock, jxyz, irep)
         st2 = st_ao(2, iblock, jxyz, irep)
 
-
-        do i = 1, nr2
-          do j = 1, nr1
-
-            ii = st2 + i - 1
-            jj = st1 + j - 1
+        do j = 1, nr2
+          jj = st2 + j -1
+          do i = 1, nr1
+            ii = st1 + i - 1
 
             do a = 1, 3
               select case (a)
@@ -853,7 +850,7 @@ contains
 
               f_left  = (r_co(b)*aob1(ii, c) - r_co(c)*aob1(ii, b))*ao(jj)
               f_right = (r_co(b)*aob1(jj, c) - r_co(c)*aob1(jj, b))*ao(ii)
-              f = (f_left - f_right)
+              f =  (f_left - f_right)
 
               fmat(ii, jj, iq(jxyz)) = fmat(ii, jj, iq(jxyz)) + s*f
 
@@ -861,15 +858,14 @@ contains
 
           end do
         end do
-
       end do
+    end do
 
 !!!#ifdef debug_me_xc
 !        call prqmat(fmat, mat_dim, mat_dim, mat_dim,    &
 !       &            mat_dim, 4, dft_cb_pq_to_uq(1,0), 85)
 !!!#endif /*ifdef debug_me_xc*/        
 
-    end do
 
 
 !!#ifdef debug_me_xc

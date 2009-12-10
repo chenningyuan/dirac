@@ -708,6 +708,7 @@ C
       call genden(dmat0, cmo, 1, iprint)
 !fixme 
 ! we have two direct-LAO contributions: eqs. 44 and 46
+!should be response_order=1
 
       call dftexc(ntbas(0),  ! mat_dim
      &            nz,        ! nz
@@ -718,7 +719,7 @@ C
      &            (/0.0d0/),      !dmat_p
      &            isymop,    !isymop
      &            ihrmop,    !ihrmop
-     &            1,         !response_order
+     &            0,         !response_order
      &            0,         !response_order_ao
      &            0,         !g_order
      &            1)         !m_order

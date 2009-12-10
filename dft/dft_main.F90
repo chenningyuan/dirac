@@ -956,13 +956,13 @@ contains
 !                                           ao_p,                              &
 !                                           ao_p(ao_start(0, 1):ao_end(0, 1)), &
 !                                           corx(ipoint), cory(ipoint), corz(ipoint))
-!              call lda_london_distribute(derv(1, d_r),                      &
-!                                         0,                                 &
-!                                         mat_dim,                           &
-!                                         fmat,                              &
-!                                         ao_p,                              &
-!                                         ao_p(ao_start(0, 1):ao_end(0, 1)), &
-!                                         corx(ipoint), cory(ipoint), corz(ipoint))
+              call lda_london_distribute(derv(1, d_r),                      &
+                                         0,                                 &
+                                         mat_dim,                           &
+                                         fmat,                              &
+                                         ao_p,                              &
+                                         ao_p(ao_start(0, 1):ao_end(0, 1)), &
+                                         corx(ipoint), cory(ipoint), corz(ipoint))
             else if (max_ao_m_order == 0) then
               call lda_distribute_r(derv(1, d_r), &
                                     0,            &

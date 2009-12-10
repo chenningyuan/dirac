@@ -277,6 +277,7 @@ contains
 !need some more memory...
       call alloc(dmat, t_n2bbasxq)
       call genden(dmat, cmo, 1, print_prp_level)
+!fixme should be response_order=1
 
       call dftexc(nr_ao_total,   &
                   nr_qu,         &
@@ -287,10 +288,10 @@ contains
                   mat2,          & !dmat_p
                   isymop,        &
                   ihrmop,        &
-                  1,             & !response_order
+                  0,             & !response_order
                   0,             & !response_order_ao
                   0,             & !g_order
-                  0)               !m_order
+                  1)               !m_order
 
       call dealloc(dmat)
 
