@@ -701,27 +701,18 @@ contains
     real(8), intent(inout) :: fmat(mat_dim, mat_dim, *)
     real(8), intent(in)    :: ao(mat_dim)
     real(8), intent(in)    :: ao_b1(mat_dim, *)
-    !real(8), intent(in)    :: ao_b1(*)
     real(8), intent(in)    :: cx, cy, cz
 !   ----------------------------------------------------------------------------
-    integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz, j, jj
+    integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz, j
     integer                :: a, b, c
-    real(8)                :: aob1(mat_dim,3)
     real(8)                :: cor(3)
-    real(8)                :: f_1, f_2
-    real(8)                :: fmat_1(mat_dim*mat_dim), fmat_2(mat_dim*mat_dim)
+    real(8)                :: f_1(mat_dim), f_2
+    real(8)                :: fmat_1(mat_dim,mat_dim,1), fmat_2(mat_dim,mat_dim,1)
 !   ----------------------------------------------------------------------------
 
     cor(1) = cx - dft_gagorg(1)
     cor(2) = cy - dft_gagorg(2)
     cor(3) = cz - dft_gagorg(3)
-!    aob1(:, 1) = ao_b1(          1:  mat_dim)
-!    aob1(:, 2) = ao_b1(  mat_dim+1:2*mat_dim)
-!    aob1(:, 3) = ao_b1(2*mat_dim+1:3*mat_dim)
-
-!gosia: the beginning stolen from lda_distribute_r
-!do we need a loop 'do jxyz = 0, 0' here?
-!now we have imaginary part calculated in separate subroutine
 
     do jxyz = 0, 0
       do iblock = 1, nr_density_blocks(jxyz, irep)
@@ -731,16 +722,11 @@ contains
         nr2 = nr_ao(2, iblock, jxyz, irep)
         st2 = st_ao(2, iblock, jxyz, irep)
 
-        f_2 = (ao_b1(st1, b)*cor(c) - ao_b1(st1, c)*cor(b))*s
-
         do i = 1, nr2
 
           ii = st2 + i - 1
 
           do a = 1, 3
-
-            f_1 = 0.0d0
-            !f_2 = 0.0d0
 
             select case (a)
               case (1)
@@ -751,29 +737,29 @@ contains
                 b = 1; c = 2
             end select
 
-            f_1 = (ao_b1(ii, b)*cor(c) - ao_b1(ii, c)*cor(b))*s
-!            f_2 = (ao_b1(st1, b)*cor(c) - ao_b1(st1, c)*cor(b))*s
-            !f_1 = (aob1(ii, b)*cor(c) - aob1(ii, c)*cor(b))*ao(jj)
-            !f_2 = (aob1(jj, b)*cor(c) - aob1(jj, c)*cor(b))*ao(ii)
-            !fmat(jj, ii, iq(jxyz)) = (f_1 - f_2)*s
+! (*) f_1(st1) =   (cor(b)*ao_b1(st1, c) - cor(c)*ao_b1(st1, b))*s
+            do j = st1, mat_dim
+              f_1(j) =   (cor(b)*ao_b1(j, c) - cor(c)*ao_b1(j, b))*s
+            end do
 
+! (*) f_2      = - (cor(b)*ao_b1(ii,  c) - cor(c)*ao_b1(ii,  b))*s
+            f_2      = - (cor(b)*ao_b1(ii,  c) - cor(c)*ao_b1(ii,  b))*s
 
+! (*) ao(ii) * f_1(st1)
             call daxpy(nr1,                       &
-                       f_1,                       &
+                       ao(ii),                    &
+                       f_1(st1),                  &
+                       1,                         &
+                       fmat(st1, ii, iq(jxyz)),   &
+                       1)
+! (*) f_2 * ao(st1)
+            call daxpy(nr1,                       &
+                       f_2,                       &
                        ao(st1),                   &
                        1,                         &
-                       fmat(st1, ii, iq(jxyz)), &
+                       fmat(st1, ii, iq(jxyz)),   &
                        1)
 
-            call daxpy(nr1,                       &
-                       - ao(ii),                       &
-                       f_2,                   &
-                       1,                         &
-                       fmat(st1, ii, iq(jxyz)), &
-                       1)
-
-
-          !end do
           end do
         end do
       end do
@@ -801,7 +787,7 @@ contains
     integer, intent(in)    :: mat_dim
     real(8), intent(inout) :: fmat(mat_dim, mat_dim, *)
     real(8), intent(in)    :: ao(mat_dim)
-    real(8), intent(in)    :: ao_b1(mat_dim*3)
+    real(8), intent(in)    :: ao_b1(mat_dim,*)
     real(8), intent(in)    :: cx, cy, cz
 !   ----------------------------------------------------------------------------
     integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz, jj, j
@@ -815,9 +801,6 @@ contains
 !   ----------------------------------------------------------------------------
 
 ! rename:
-    aob1(:,   1) = ao_b1(1:mat_dim)             !d/dBx
-    aob1(:,   2) = ao_b1(mat_dim+1:2*mat_dim)   !d/dBy
-    aob1(:,   3) = ao_b1(2*mat_dim+1:3*mat_dim) !d/dBz 
     r_co(     1) = cx - dft_gagorg(1) 
     r_co(     2) = cy - dft_gagorg(2)
     r_co(     3) = cz - dft_gagorg(3)
@@ -848,8 +831,8 @@ contains
                   b = 1; c = 2
               end select
 
-              f_left  = (r_co(b)*aob1(ii, c) - r_co(c)*aob1(ii, b))*ao(jj)
-              f_right = (r_co(b)*aob1(jj, c) - r_co(c)*aob1(jj, b))*ao(ii)
+              f_left  = (r_co(b)*ao_b1(ii, c) - r_co(c)*ao_b1(ii, b))*ao(jj)
+              f_right = (r_co(b)*ao_b1(jj, c) - r_co(c)*ao_b1(jj, b))*ao(ii)
               f =  (f_left - f_right)
 
               fmat(ii, jj, iq(jxyz)) = fmat(ii, jj, iq(jxyz)) + s*f
