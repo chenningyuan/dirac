@@ -17,64 +17,34 @@ public:
   using polynomial<T, Nvar, Ndeg>::c;
 
   taylor(void) {}
-#if 0
-  template<int Ndeg2>
-  taylor(const taylor<T,Nvar,Ndeg2> &ref)
-  {
-    if (ref.size < int(size)) 
-      {
-	for (int i=0;i<size;i++)
-	  c[i] = ref.c[i];
-	for (int i=ref.size;i<size;i++)
-	  c[i] = 0;
-      }
-    else
-      {
-	for (int i=0;i<size;i++)
-	  c[i] = ref.c[i];
-      }
-  }
-#endif
   // This does not work when T is a int. One ugly solution is to
   // specialize taylor for int T's, but perhaps not so useful?
-  taylor(int c0) : polynomial<T, Nvar,Ndeg>(T(c0)) {} 
-  taylor(const T &c0) : polynomial<T, Nvar,Ndeg>(c0) {} 
+  template<typename S>
+  taylor(const S &c0) : polynomial<T, Nvar,Ndeg>(T(c0)) {} 
+  //  taylor(double c0) : polynomial<T, Nvar,Ndeg>(T(c0)) {} 
+  //  taylor(const T &c0) : polynomial<T, Nvar,Ndeg>(c0) {} 
   // Set the constant term to c0 and the first order term of
   // variable var to var_value.
-  taylor(const T &c0, int var, T var_value = 1) : polynomial<T, Nvar,Ndeg>(c0) 
+  template<typename S>
+  taylor(const S &c0, int var) : polynomial<T, Nvar,Ndeg>(T(c0)) 
+  {
+    assert(var>=0);
+    assert(var<Nvar);
+    if (Ndeg>0)
+      c[var+1] = 1;
+  }
+  template<typename S, typename U>
+  taylor(const S &c0, int var, const U &var_value) : polynomial<T, Nvar,Ndeg>(T(c0)) 
   {
     assert(var>=0);
     assert(var<Nvar);
     if (Ndeg>0)
       c[var+1] = var_value;
   }
-#if 0
-  template<class S, int Ndeg2>
-  taylor<T,Nvar,Ndeg> &operator=(const taylor<S,Nvar,Ndeg2> &ref)
+  template<typename S>
+  taylor<T,Nvar,Ndeg> &operator=(const S& c0)
   {
-    if (ref.size < int(size)) 
-      {
-	for (int i=0;i<size;i++)
-	  c[i] = ref.c[i];
-	for (int i=ref.size;i<size;i++)
-	  c[i] = 0;
-      }
-    else
-      {
-	for (int i=0;i<size;i++)
-	  c[i] = ref.c[i];
-      }
-    return *this;
-  }
-#endif
-  taylor<T,Nvar,Ndeg> &operator=(const T& c0)
-  {
-    polynomial<T,Nvar,Ndeg>::operator=(c0);
-    return *this;
-  }
-  taylor<T,Nvar,Ndeg> &operator=(int c0)
-  {
-    polynomial<T,Nvar,Ndeg>::operator=(c0);
+    polynomial<T,Nvar,Ndeg>::operator=(T(c0));
     return *this;
   }
   template<int N>
