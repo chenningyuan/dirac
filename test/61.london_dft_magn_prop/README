@@ -1,0 +1,39 @@
+!   
+!     NMR shieldings* of the HeHe and XeXe molecules.
+! *results the same as in old dalton, except sdft
+! 
+!                  He  in He_2          
+!
+!  dft:                                                     total      dia     para   
+!  ====================================================================================== 
+!  nosdft, LAO      GGAKEY HF=1.0 Slater=1.0 VWN=1.0       68.0982   80.9677   -12.8695
+!
+!
+!
+!
+!
+!
+!
+!
+! not related, but to see how much comes from sdft:
+!
+!  dft:                                                     total      dia     para   
+!  ====================================================================================== 
+!  nosdft, NO LAO   GGAKEY HF=1.0 Slater=1.0 VWN=1.0       70.6695   80.3280   -9.6585
+!  sdft, NO LAO   GGAKEY HF=1.0 Slater=1.0 VWN=1.0         70.6695   80.3280   -9.6585
+!
+!  ok, a bad example...
+!
+!
+!
+!
+!
+!                  Xe  in Xe_2  - soon, now it takes ages on my laptop... 
+!
+!  dft:                                                     total      dia     para   
+!  ====================================================================================== 
+!  nosdft, LAO      GGAKEY HF=1.0 Slater=1.0 VWN=1.0       
+!
+!  nosdft, NO LAO   GGAKEY HF=1.0 Slater=1.0 VWN=1.0        
+!  sdft, NO LAO   GGAKEY HF=1.0 Slater=1.0 VWN=1.0         
+
