@@ -96,7 +96,7 @@ contains
                    // ' wrong number of Fock matrices')
       !ajt fixme: This should be written optimized an for general orders
 
-#define AOR_ONLY_INDIVIDUAL_COMPONENTS
+!#define AOR_ONLY_INDIVIDUAL_COMPONENTS
 #ifdef AOR_ONLY_INDIVIDUAL_COMPONENTS
 !radovan: this is useful for high order rsp functions where the combinatorics
 !         becomes painful

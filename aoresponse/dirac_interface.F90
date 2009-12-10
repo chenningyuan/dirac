@@ -1647,7 +1647,7 @@ contains
 
 !                               for the electric field
     call request_1el_integrals('DIPLEN ', '+00'//ss)
-#define ONLY_DIPLEN
+!#define ONLY_DIPLEN
 #ifndef ONLY_DIPLEN
     call request_1el_integrals('DPLGRA ', '+00'//ss)
     call request_1el_integrals('QUAGRA ', '+00'//ss)
