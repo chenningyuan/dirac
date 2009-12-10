@@ -9,9 +9,6 @@ using namespace std;
 
 #include "constants.h"
 
-
-
-
 #include "xc_fun.h"
 #include "lda_fun.h"
 #include "blyp_fun.h"
@@ -39,6 +36,9 @@ static double xc_params[XC_PARAMS_LEN];
 static void (*helper_tab[XC_MAX_ORDER+1])(double *, const double *);
 #ifdef WITH_QD
 static void (*helper_tab_qd[XC_MAX_ORDER+1])(qd_real *, const qd_real *);
+#endif
+#ifdef WITH_SINGLE
+static void (*helper_tab_single[XC_MAX_ORDER+1])(float *, const float *);
 #endif
 static void setup(void);
 
@@ -482,6 +482,9 @@ void setup_order(void)
   helper_tab[N] = fun_helper<double,N>;
 #ifdef WITH_QD
   helper_tab_qd[N] = fun_helper<qd_real,N>;
+#endif
+#ifdef WITH_SINGLE
+  helper_tab_single[N] = fun_helper<float,N>;
 #endif
   setup_order<N-1>();
 }
