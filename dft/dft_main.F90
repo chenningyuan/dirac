@@ -978,6 +978,17 @@ contains
           end if
         end if
 
+!gosia fixme: but also put separately is not good..
+!g            if (max_ao_m_order == 1) then
+!g              call lda_london_distribute_r(derv(1, d_r),                      &
+!g                                           0,                                 &
+!g                                           mat_dim,                           &
+!g                                           fmat,                              &
+!g                                           ao_p,                              &
+!g                                           ao_p(ao_start(0, 1):ao_end(0, 1)), &
+!g                                           corx(ipoint), cory(ipoint), corz(ipoint))
+!g            end if
+
 
 !       linear response
         if (response_order == 1) then
@@ -1435,7 +1446,7 @@ contains
                                 ao_p,             &
                                 ao_p(ao_start(1, 0)))
         else
-!gosia todo: here do eq. (44) from our notes?
+!gosia fixme
 !              call lda_london_distribute_r(derv(1, d_r),                      &
 !                                         0,                                 &
 !                                         mat_dim,                           &
@@ -1508,7 +1519,7 @@ contains
                                 ao_p,             &
                                 ao_p(ao_start(1, 0)))
         else
-!gosia todo: add lda_london_distribute_i here (eq. 44)?
+!gosia fixme: add lda_london_distribute_i here?
           call lda_distribute_i(u_qi,             &
                                 isym(im) - 1,     &
                                 mat_dim,          &
