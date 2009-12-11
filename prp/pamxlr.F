@@ -137,12 +137,12 @@ C     calculation of magnetic properties
 C
 C***********************************************************************
 !gosia: temporarily for testing so fixme
-#define new_rntlon
-#define memory_problems
-#if defined new_rntlon && defined memory_problems
+!#define new_rntlon
+!#define memory_problems
+!#if defined new_rntlon && defined memory_problems
       use london_response
       use memory_allocator
-#endif /* new_rntlon && memory_problems */
+!#endif /* new_rntlon && memory_problems */
 
 #include "implicit.h"
 #include "priunit.h"
@@ -164,11 +164,10 @@ C
 C
       LOGICAL   LBUF
       CHARACTER TTYP(-1:1)*2
-!gosia: fixme 
-#if defined new_rntlon && defined memory_problems
+
       integer, allocatable :: ibeig(:)
-#endif /* new_rntlon && memory_problems */
-!
+      real(8), allocatable :: cmo(:)
+
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(NBFREQ,NLRBPT),
      &          WORK(*)
       SAVE TTYP
@@ -196,6 +195,24 @@ C     ***                                                    ***
 C     *** L I N E A R   R E S P O N S E   F U N C T I O N S  ***
 C     ***                                                    ***
 C     **********************************************************
+!gosia: do not take memory for ibeig twice:
+#ifdef MOD_LONDON
+      IF (LONDON) THEN
+        call alloc(cmo,   ncmotq)
+        call alloc(ibeig, ntbas(0))
+        call onelon(cmo, ibeig, work, kfree, lfree)
+        IF (.NOT.NOTWOL)
+     &     CALL TWOLON(cmo,ibeig,WORK(KFREE),LFREE)
+        IF (.NOT.NOONEI)
+     &     call rntlon_new(cmo,ibeig,work(kfree),lfree)
+        call dealloc(cmo)
+        call dealloc(ibeig)
+      ENDIF
+#endif /* MOD_LONDON */
+!
+!gosia: todo: cleaning later
+!#define use_old_call_london
+#ifdef use_old_call_london
 #ifdef MOD_LONDON
 C   ... When London atomic orbitals are in use...
       IF (LONDON) THEN
@@ -222,7 +239,6 @@ C   ... calculate reorthonormalization contribution
             IBEIG(I) = INT(WORK(KBEIG+I), 8)
           ENDDO
           CALL RNTLON_NEW(WORK(KCMO),IBEIG,WORK(KFREE),LFREE)
-!          CALL RNTLON_NEW(WORK(KCMO),WORK(KBEIG),WORK(KFREE),LFREE)
           CALL DEALLOC(IBEIG)
         ENDIF
 #else /*ifndef memory_problems*/
@@ -240,6 +256,7 @@ C   ... calculate reorthonormalization contribution
         CALL MEMREL('PRPXL1.LONDON',WORK,1,KCMO,KFREE,LFREE)
       ENDIF
 #endif /* MOD_LONDON */
+#endif /* use_old_call_london */
 C
 C     Memory allocation
 C     =================
