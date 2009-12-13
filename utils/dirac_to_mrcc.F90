@@ -4,6 +4,7 @@ module dirac_to_mrcc
   integer, parameter     :: filenumber_1e = 21
   integer, parameter     :: filenumber_2e = 22
   integer, parameter     :: filenumber_55 = 55
+  logical, parameter     :: generate_full_list = .true.
 
   type SpinorInformation
 
@@ -23,7 +24,7 @@ module dirac_to_mrcc
   type(SpinorInformation), allocatable :: spinor(:)
 
   public initialize, write_fort55
-  private process_1e, process_2e, spinor_reordered, irrep_reordered
+  private process_1e, process_2e, irrep_reordered
 
 contains
 
@@ -120,8 +121,8 @@ contains
      do i = 1, number_of_spinors
         do j = 1, number_of_spinors
            write (filenumber_55,'(E28.20,4i4)') integral(i,j,1), &
-                 i,                                            &
-                 j,                                            &
+                 spinor(i)%index,                              &
+                 spinor(j)%index,                              &
                  0,                                            &
                  0                                              
         end do
@@ -147,10 +148,18 @@ contains
         if (ikr == 0) exit
         do inz = 1, nonzero
            write (filenumber_55,'(E28.20,4i4)') integral(inz), &
-                 kramer_to_spinor(ikr),                        &
-                 kramer_to_spinor(jkr),                        &
-                 kramer_to_spinor(indk(inz)),                  &
-                 kramer_to_spinor(indl(inz))                    
+                 spinor(kramer_to_spinor(ikr))%index,                 &
+                 spinor(kramer_to_spinor(jkr))%index,                 &
+                 spinor(kramer_to_spinor(indk(inz)))%index,           &
+                 spinor(kramer_to_spinor(indl(inz)))%index             
+!          make also kramers-related integral if desired
+!          note that we assume real integrals, in which case the kr integral is identical
+           if (generate_full_list) &
+              write (filenumber_55,'(E28.20,4i4)') integral(inz), &
+                    spinor(kramer_to_spinor(-ikr))%index,                 &
+                    spinor(kramer_to_spinor(-jkr))%index,                 &
+                    spinor(kramer_to_spinor(-indk(inz)))%index,           &
+                    spinor(kramer_to_spinor(-indl(inz)))%index             
        end do
     end do
   
@@ -174,18 +183,6 @@ contains
      else
         irrep_reordered = irrep + number_of_abelian_irreps
      end if 
-  
-  end function
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-  integer function spinor_reordered (spinor)
-
-     integer, intent(in) :: spinor
-
-! Reorder the spinors such that all occupied spinors are given first
-
-     spinor_reordered = spinor
   
   end function
 
