@@ -1,4 +1,7 @@
 module dirac_to_mrcc
+
+! Written by Lucas Visscher, VU University Amsterdam, December 2009
+
   implicit none
 
   integer, parameter     :: filenumber_1e = 21
@@ -192,8 +195,15 @@ contains
 
   integer               :: i, j
   integer, allocatable  :: reordered_multiplication_table(:,:)
+  type(SpinorInformation), allocatable :: reordered_spinor(:)
 
+  allocate (reordered_spinor(number_of_spinors))
   allocate (reordered_multiplication_table(2*number_of_abelian_irreps,2*number_of_abelian_irreps))
+
+! Reorder to place occupied orbitals first
+  do i = 1, number_of_spinors
+     reordered_spinor(spinor(i)%index) = spinor(i)
+  end do
 
 ! Reorder to list the boson irreps first
   do j = 1, 2 * number_of_abelian_irreps
@@ -205,7 +215,7 @@ contains
 
   open (filenumber_55, file='fort.55', Form='FORMATTED')
   write (filenumber_55,'(2i6)') number_of_spinors, number_of_electrons
-  write (filenumber_55,'(8i6)') (spinor(i)%abelian_irrep,i=1,number_of_spinors)
+  write (filenumber_55,'(8i6)') (reordered_spinor(i)%abelian_irrep,i=1,number_of_spinors)
   write (filenumber_55,'(2i6)') -3
   write (filenumber_55,'(2i6)') 2 * number_of_abelian_irreps
   do j = 1, 2 * number_of_abelian_irreps
@@ -217,6 +227,7 @@ contains
 
   deallocate (multiplication_table)
   deallocate (reordered_multiplication_table)
+  deallocate (reordered_spinor)
 
   end subroutine
 
