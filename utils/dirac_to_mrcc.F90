@@ -52,7 +52,7 @@ contains
         number_of_electrons = number_of_electrons + irrep_occupation(i)
      end do
 
-     allocate (multiplication_table(2*number_of_irreps,2*number_of_irreps))
+     allocate (multiplication_table(2*number_of_abelian_irreps,2*number_of_abelian_irreps))
      allocate (spinor(number_of_spinors))
      allocate (kramer_to_spinor(-number_of_spinors/2:number_of_spinors/2))
 
@@ -193,7 +193,7 @@ contains
   integer               :: i, j
   integer, allocatable  :: reordered_multiplication_table(:,:)
 
-  allocate (reordered_multiplication_table(2*number_of_irreps,2*number_of_irreps))
+  allocate (reordered_multiplication_table(2*number_of_abelian_irreps,2*number_of_abelian_irreps))
 
 ! Reorder to list the boson irreps first
   do j = 1, 2 * number_of_abelian_irreps
