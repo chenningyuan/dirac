@@ -200,9 +200,11 @@ C     **********************************************************
       IF (LONDON) THEN
         call alloc(cmo,   ncmotq)
         call alloc(ibeig, ntbas(0))
+C.......direct contribution
         call onelon(cmo, ibeig, work, kfree, lfree)
         IF (.NOT.NOTWOL)
      &     CALL TWOLON(cmo,ibeig,WORK(KFREE),LFREE)
+C.......reorthonormalization contribution
         IF (.NOT.NOONEI)
      &     call rntlon_new(cmo,ibeig,work(kfree),lfree)
         call dealloc(cmo)
