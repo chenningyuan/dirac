@@ -18,12 +18,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.sdu.dk
 !
-C
-C "For Zion's sake will I not hold my peace, and for Jerusalem's sake I will not rest,
-C  until her righteousness go forth as brightness, and her salvation as a lamp that burneth."
-C                                       (Is 62:1)
-C
-
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck NMRINP */
       SUBROUTINE NMRINP(WORD,RESET,WORK,LWORK)
@@ -648,9 +642,9 @@ C.....Get full AO-Fock matrix with two-electron London integrals
       CALL TWOLO1B(WORK(KFMAT),WORK(KFOCK),NCOMP,
      &             WORK(KFREE),LFREE,IPRPRP)
       CALL MEMREL('TWOLON.TWOLO1B',WORK,KWORK,KFOCK,KFREE,LFREE)
-CTROND: DFT contributions can be inserted here
 !
 #ifdef MOD_DFT
+! tsaue+gosia: This contribution is done correctly, but there is a factor two missing somewhere
       call memget('REAL',kdmat0,n2bbasxq,work,kfree,lfree)
       call add_dft_to_twolon(work(kfmat),work(kdmat0),cmo,
      &                       work(kfree),lfree,iprprp)

@@ -278,7 +278,7 @@ contains
       call alloc(dmat, t_n2bbasxq)
       call genden(dmat, cmo, 1, print_prp_level)
 !fixme should be response_order=1
-
+! tsaue+gosia: This contribution is wrong, in fact we get half the direct contribution !!!
       call dftexc(nr_ao_total,   &
                   nr_qu,         &
                   nr_fock,       &
