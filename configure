@@ -2187,9 +2187,6 @@ set_compile_flags(){
     $echo "\n in set_compile_flags \n"
   fi
 
-# radovan: uncomment next line for a not very elegant workaround to get -autodiff
-# INCLUDE_DIR='include -Ixc_fun/include -Ixc_fun/src/functionals -Ixc_fun/src/taylor'
-
 f90_inc="-I$INCLUDE_DIR"
 cc_inc="-I$INCLUDE_DIR"
 

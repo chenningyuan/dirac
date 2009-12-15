@@ -49,7 +49,8 @@ prp/xpp/.*
 prp/esr/.*
 dft/dft_num_test.F90
 srdft/.*
-xc_fun/.*
-xc_fun/src/taylor/unittest_taylor.cpp
 xc_fun/fortran/example.F90
+xc_fun/src/.*
+xc_fun/test/.*
+xc_fun/.*
 aoresponse/aor_binomial.F90
