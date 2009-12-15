@@ -1,21 +1,61 @@
-
-! Show how to set up the PBE functional and calculate it at a point
 program xc_example
+
   use xc_fun
-  ! There are 21 (=bin(2+5,2)) 0:th, 1:st and 2:nd order coefficients
-  double precision fun(XC_PARAMS_LEN), d(5), res(21)
-  fun = 0
-  fun(XC_PBE_CORRELATION) = 1.0
-!  fun(XC_PBE_EXCHANGE) = 1.0
-  call xc_set_functional(XC_ABFGH,fun)
-  d(1) = 1.7 !rho_a
-  d(2) = 1.7 !rho_b
-  d(3) = 1.7 !|grad rho_a|^2
-  d(4) = 1.7 !|grad rho_b|^2
-  d(5) = 1.7 !(grad rho_a).(grad rho_b)
-  call xc_eval(res,2,d)
-  print *,'Calculated',xc_len(XC_ABFGH,2),'terms, for example:'
-  print *,'XC energy:',res(1)
-  print *,'d^2/drhoa^2:',res(xc_index(XC_ABFGH,(/2,0,0,0,0/)))
-  print *,'d^2/drhoa drhob:',res(xc_index(XC_ABFGH,(/1,1,0,0,0/)))
-end program xc_example
+
+  real(8)              :: fun(XC_PARAMS_LEN)
+  real(8), allocatable :: derv(:)
+  integer              :: max_order
+  real(8)              :: n_a, n_b
+
+  max_order = 2
+
+! reset functional
+  fun = 0.0d0
+
+! set functional to pbe = pbex + pbec
+  fun(XC_PBE_EXCHANGE)    = 1.0d0
+  fun(XC_PBE_CORRELATION) = 1.0d0
+
+! use ABFGH mode
+  call xc_set_functional(XC_ABFGH, fun)
+
+! there are bin(2+5, 2) = 21 derivatives up to order 2
+  allocate(derv(xc_len(XC_ABFGH, 2)))
+
+!                         n_a
+!                         |      n_b
+!                         |      |      \nabla n_a \cdot \nabla n_b
+!                         |      |      |      \nabla n_b \cdot \nabla n_b
+!                         |      |      |      |      \nabla n_a \cdot \nabla n_b
+!                         |      |      |      |      |
+  call xc_eval(derv, 2, (/1.7d0, 1.7d0, 1.7d0, 1.7d0, 1.7d0/))
+
+  print *, 'calculated', size(derv), 'PBE derivatives, for example:'
+  print *, 'XC energy density: e = ', derv(1)
+  print *, '(d/dn_a)^2 e         = ', derv(xc_index(XC_ABFGH, (/2, 0, 0, 0, 0/)))
+  print *, 'd/dn_a d/dn_b e      = ', derv(xc_index(XC_ABFGH, (/1, 1, 0, 0, 0/)))
+
+  n_a = 0.11273116096929683d0
+  n_b = n_a
+
+! reset functional to Slater
+  fun = 0.0d0
+  fun(XC_SLATER_EXCHANGE) = 1.0d0
+  call xc_set_functional(XC_ABFGH, fun)
+  call xc_eval(derv, 2, (/n_a, n_b, 0.0d0, 0.0d0, 0.0d0/))
+
+  print *, 'some Slater derivatives:'
+  print *, '(d/dn_a)^2 e         = ', derv(xc_index(XC_ABFGH, (/2, 0, 0, 0, 0/)))
+
+! reset functional to VWN5
+  fun = 0.0d0
+  fun(XC_VWN5_CORRELATION) = 1.0d0
+  call xc_set_functional(XC_ABFGH, fun)
+  call xc_eval(derv, 2, (/n_a, n_b, 0.0d0, 0.0d0, 0.0d0/))
+
+  print *, 'some VWN5 derivatives:'
+  print *, '(d/dn_a)^2 e         = ', derv(xc_index(XC_ABFGH, (/2, 0, 0, 0, 0/)))
+
+  deallocate(derv)
+
+end program
