@@ -1,5 +1,11 @@
 program xc_example
 
+! this will calculate some functional derivatives
+! for example densities
+
+! this example contains all f90 interface toutines
+! that are needed to "talk to" the xc_fun library
+
   use xc_fun
 
   real(8)              :: fun(XC_PARAMS_LEN)
@@ -9,7 +15,7 @@ program xc_example
 
   max_order = 2
 
-! reset functional
+! unset functional
   fun = 0.0d0
 
 ! set functional to pbe = pbex + pbec
@@ -20,6 +26,7 @@ program xc_example
   call xc_set_functional(XC_ABFGH, fun)
 
 ! there are bin(2+5, 2) = 21 derivatives up to order 2
+! allocate derv array to hold them
   allocate(derv(xc_len(XC_ABFGH, 2)))
 
 !                         n_a
