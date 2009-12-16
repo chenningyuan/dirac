@@ -22,10 +22,10 @@ program xc_example
   fun(XC_PBE_EXCHANGE)    = 1.0d0
   fun(XC_PBE_CORRELATION) = 1.0d0
 
-! use ABFGH mode
+! use ABFGH variable set
   call xc_set_functional(XC_ABFGH, fun)
 
-! there are bin(2+5, 2) = 21 derivatives up to order 2
+! there are bin(2+5, 2) = 21 derivatives (including 0th) up to order 2
 ! allocate derv array to hold them
   allocate(derv(xc_len(XC_ABFGH, 2)))
 
