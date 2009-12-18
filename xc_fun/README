@@ -17,9 +17,6 @@ Configuration:
 Check that XC_MAX_ORDER is defined to the highest order derivatives
 you need (and not higher) in include/xc_fun.h and that it matches
 XC_MAX_ORDER in fortran/xc_fun_module.F90.
-If you make it larger than the default
-you also need to update the function array in xc_fun_lda() and
-xc_fun_gga() functions (in src/xc_fun.cpp).
 Using a too large value for XC_MAX_ORDER makes compilation slow
 and the generated code huge.
 
