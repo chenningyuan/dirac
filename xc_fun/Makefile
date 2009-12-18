@@ -2,7 +2,7 @@
 #convertible to regular Make format.
 
 # Compile time options:
-# -DNDEBUG Turn off run time checks to gain speed
+# -DNDEBUG Turn off run time checks in production calculations to gain speed
 # -DNO_STDCXX Do not use any part of the C++ standard 
 #             library, to allow linking without it.
 # -DWITH_QD Enable quad double precision functions. This requires
