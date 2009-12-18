@@ -7,7 +7,7 @@ module dirac_to_mrcc
   integer, parameter     :: filenumber_1e = 21
   integer, parameter     :: filenumber_2e = 22
   integer, parameter     :: filenumber_55 = 55
-  logical, parameter     :: generate_full_list = .true.
+  logical, parameter     :: generate_full_list = .false.
 
   type SpinorInformation
 
@@ -123,10 +123,11 @@ contains
 
      do i = 1, number_of_spinors
         do j = 1, number_of_spinors
+           if (abs(integral(i,j,1)) > 1.E-16 )                   &
            write (filenumber_55,'(E28.20,4i4)') integral(i,j,1), &
-                 spinor(i)%index,                              &
-                 spinor(j)%index,                              &
-                 0,                                            &
+                 i,                                              &
+                 j,                                              &
+                 0,                                              &
                  0                                              
         end do
      end do
@@ -151,18 +152,18 @@ contains
         if (ikr == 0) exit
         do inz = 1, nonzero
            write (filenumber_55,'(E28.20,4i4)') integral(inz), &
-                 spinor(kramer_to_spinor(ikr))%index,                 &
-                 spinor(kramer_to_spinor(jkr))%index,                 &
-                 spinor(kramer_to_spinor(indk(inz)))%index,           &
-                 spinor(kramer_to_spinor(indl(inz)))%index             
+                 kramer_to_spinor(ikr),                        &
+                 kramer_to_spinor(jkr),                        &
+                 kramer_to_spinor(indk(inz)),                  &
+                 kramer_to_spinor(indl(inz))             
 !          make also kramers-related integral if desired
 !          note that we assume real integrals, in which case the kr integral is identical
            if (generate_full_list) &
               write (filenumber_55,'(E28.20,4i4)') integral(inz), &
-                    spinor(kramer_to_spinor(-ikr))%index,                 &
-                    spinor(kramer_to_spinor(-jkr))%index,                 &
-                    spinor(kramer_to_spinor(-indk(inz)))%index,           &
-                    spinor(kramer_to_spinor(-indl(inz)))%index             
+                    kramer_to_spinor(-ikr),                        &
+                    kramer_to_spinor(-jkr),                        &
+                    kramer_to_spinor(-indk(inz)),                  &
+                    kramer_to_spinor(-indl(inz))             
        end do
     end do
   
@@ -194,15 +195,18 @@ contains
   subroutine write_fort55
 
   integer               :: i, j
+  integer, allocatable  :: number_of_spinors_in_irrep(:)
   integer, allocatable  :: reordered_multiplication_table(:,:)
   type(SpinorInformation), allocatable :: reordered_spinor(:)
 
+  allocate (number_of_spinors_in_irrep(number_of_abelian_irreps))
   allocate (reordered_spinor(number_of_spinors))
   allocate (reordered_multiplication_table(2*number_of_abelian_irreps,2*number_of_abelian_irreps))
 
-! Reorder to place occupied orbitals first
+! Count the number of spinors in each irrep
+  number_of_spinors_in_irrep(:) = 0
   do i = 1, number_of_spinors
-     reordered_spinor(spinor(i)%index) = spinor(i)
+     number_of_spinors_in_irrep(spinor(i)%abelian_irrep) = number_of_spinors_in_irrep(spinor(i)%abelian_irrep) + 1
   end do
 
 ! Reorder to list the boson irreps first
@@ -213,14 +217,21 @@ contains
   end do
   spinor(:)%abelian_irrep = spinor(:)%abelian_irrep + number_of_abelian_irreps
 
+! Reorder to place occupied orbitals first
+!  do i = 1, number_of_spinors
+!     reordered_spinor(spinor(i)%index) = spinor(i)
+!  end do
+
   open (filenumber_55, file='fort.55', Form='FORMATTED')
   write (filenumber_55,'(2i6)') number_of_spinors, number_of_electrons
-  write (filenumber_55,'(8i6)') (reordered_spinor(i)%abelian_irrep,i=1,number_of_spinors)
+!  write (filenumber_55,'(8i6)') (reordered_spinor(i)%abelian_irrep,i=1,number_of_spinors)
+  write (filenumber_55,'(8i6)') (spinor(i)%abelian_irrep,i=1,number_of_spinors)
   write (filenumber_55,'(2i6)') -3
   write (filenumber_55,'(2i6)') 2 * number_of_abelian_irreps
   do j = 1, 2 * number_of_abelian_irreps
      write (filenumber_55,'(8i6)') (reordered_multiplication_table(i,j),i=1,2*number_of_abelian_irreps)
   end do 
+  write (filenumber_55,'(8i6)') (number_of_spinors_in_irrep(i),i=1,number_of_abelian_irreps)
   call process_2e
   call process_1e
   write (filenumber_55,'(E28.20,4i4)') core_energy,0,0,0,0
