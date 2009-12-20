@@ -1259,6 +1259,11 @@ C     Set up symmetry packing information.
 C
       CALL MEMGET('INTE',KINDX,3*NTBAS(0),WORK,KFREE,LFREE)
       CALL GISPCK(NSPCK,ISPCK,0,0,0,IDUM,IDUM,IDUM,IDUM,IDUM,IDUM)
+C.....Create pointer array INDX:
+C     INDX(1,INDA) : Position of function in shell
+C     INDX(2,INDA) : Irreducible representation of function
+C     INDX(3,INDA) : Position of function within this particular irrep
+C.....MAXINSH is the maximum numbers of functions in a shell
       MXINSH = NINSH(0,-1,WORK(KINDX),IPRINT)
 C
 C     Define the MS integral types that we are going to make
