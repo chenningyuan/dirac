@@ -1741,6 +1741,7 @@ C
       ILU1_IOFFX = 0
       MULTX      = 0
       NVEC_TOT   = 0
+      NVEC       = 0
 C
 C     update slaves of #roots per irrep
       CALL MPI_BCAST(NKRCI_CIROOTS,MAX_NKRCI_MAX_SYM,my_MPI_INTEGER,
@@ -1749,8 +1750,9 @@ C
 c     loop over active irreps
       DO IXA = 1, IXSYMACT
         IXSYM = IXSYMLIST(IXA)
-        IF( MYPROC .eq. MASTER ) CALL GET_LUC_FILE(LUC,IXSYM,EX)
-        NVEC     = NKRCI_CIROOTS(IXSYM)
+        NVEC  = NKRCI_CIROOTS(IXSYM)
+        IF( MYPROC .eq. MASTER .and. NVEC .gt. 0)
+     &  CALL GET_LUC_FILE(LUC,IXSYM,EX)
         MULTX    = NVEC_TOT
 C       offset for ILU1 and LU1LIST
         ILU1_IOFFX     = MY_LU1_OFF + MULTX * MY_VEC2_IOFF

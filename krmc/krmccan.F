@@ -1083,15 +1083,15 @@ C     print list of eigenstates and energies
 
       WRITE(LUPRI,'(/A/A)') 
      & '  List of eigenstates in property calculation',
-     & '  ___________________________________________'
+     & '  ___________________________________________________'
           WRITE(LUPRI,'(A)') 
-     & '   # eigenstate    irrep      energy (a.u.)'
+     & '   # eigenstate    irrep           energy (a.u.)'
       DO IVEC=1, NPROP_ROOTS_KRCI
-          WRITE(LUPRI,'(I11,7X,A4,5X,1F16.10)') 
+          WRITE(LUPRI,'(I11,7X,A4,5X,1F22.10)') 
      &          IVEC,XREPEIG(ISYMEIG_KRCI(IVEC)),EVECS(IVEC)
       END DO
       WRITE(LUPRI,'(A/)') 
-     & '  ___________________________________________'
+     & '  ___________________________________________________'
 C
 C     sort
       call alloc(INDX,NPROP_ROOTS_KRCI)
@@ -1102,10 +1102,11 @@ C     relative ordering
       WRITE(LUPRI,'(/A/A)') 
      & '  List of eigenstates in property calculation (sorted)',
      & '  ___________________________________________________________'//
-     & '_____________________________________________'
-      WRITE (LUPRI,'(A)') 
-     &         '  Level | abs. eigenvalue | rel. eigenvalue (a.u.) |'//
-     &         ' rel. eigenvalue (eV) | rel. eigenvalue (cm-1) |'// 
+     & '_________________________________________________________'
+      WRITE (LUPRI,'(A)')
+     &         '  Level | abs. eigenvalue     |'//
+     &         ' rel. eigenvalue (a.u.) |'//
+     &         ' rel. eigenvalue (eV) | rel. eigenvalue (cm-1) |'//
      &         ' irrep '
 !
       ILEVEL=0
@@ -1338,7 +1339,7 @@ C       release memory
       call dealloc(INDX)
 C 
       CALL QEXIT('XKRCIPRPANA')
- 1010 FORMAT(1X,I5,F19.12,F19.12,F26.12,F28.12,'  (',A4,')')
+ 1010 FORMAT(1X,I5,2X,F22.10,F16.12,F26.12,F28.12,'      (',A4,')')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck GET_OMEGA_EXP */
