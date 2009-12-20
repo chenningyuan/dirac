@@ -2638,7 +2638,8 @@ C        Set up the shells to be calculated and send out
 C        batch information (batch number and length of batch)
 C
          CALL DZERO(TIMDIS,NDSLST)
-         CALL SHLLST(NDSLST,IDSLST,INTFLG,INDX,LFREE,IPRINT,SRTSHL)
+         CALL SHLLST(NDSLST,IDSLST,INTFLG,WORK(KINDX),
+     &               LFREE,IPRINT,SRTSHL)
          IF ((IPRINT .EQ. 0) .AND. (IJBTCH .EQ. 1))
      &        CALL MP2HDR(LUPRI,MAXTSK,NDSLST,NODES)
          IBTNFO(1) = IJBTCH
@@ -2724,6 +2725,7 @@ C
             IF (CMMNFO) WRITE(LUPRI,'(2A,I4)')
      &           ' <COMMINFO> Master received ',
      &           'fully transformed integrals from node #', NODE
+Csknecht: see if this can be replaced by MPI_REDUCE and MPI_IN_PLACE
             DO I = 1, N4QMT
                WORK(K4QACC+I-1) = WORK(K4QACC+I-1) + WORK(K4QMAT+I-1)
             END DO
@@ -3100,8 +3102,6 @@ C
      &     MPARID,96,MPI_COMM_WORLD,IERR)
       CALL MPI_SEND(DINTSKP,8,MPI_DOUBLE_PRECISION,
      &          MPARID,40,MPI_COMM_WORLD,IERR)
-CTROND
-      WRITE(0,*) 'Screen:',MYTID,(DINTSKP(I),I=1,8)
       RETURN
 C     
  1002 FORMAT (/'Node #', I4, 
