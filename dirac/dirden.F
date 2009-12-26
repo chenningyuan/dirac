@@ -270,6 +270,23 @@ C
             ILOOP  = NORB(IFRP)
           ENDIF
           IF (ITEST.EQ.0) GOTO 20
+CMI ... inserted control print-out of variables
+          IF (IPRINT.GE.10) THEN
+           WRITE(LUPRI,'(/,8X,A,/)')
+     &     '* Output from GENDEN:  before calling DENST1'
+           WRITE(LUPRI,*) 'IFRP,I2BASX(IFRP,IFRP):',
+     &     IFRP,I2BASX(IFRP,IFRP)
+           WRITE(LUPRI,*) 'FAC,NTBAS(0),NFBAS(IFRP,0),NORB(IFRP):',
+     &      FAC,NTBAS(0),NFBAS(IFRP,0),NORB(IFRP)
+           WRITE(LUPRI,*) 'ISTART,ILOOP:',ISTART,ILOOP
+           WRITE(LUPRI,'(/,3X,A)')
+     &     'GENDEN - entering molecular orbitals (CMO):'
+           WRITE(LUPRI,'(/A,I1,A,I1)')
+     &     '* Fermion irrep ',IFRP,'/',NFSYM
+           CALL PRQMAT(CMO(1+ICMOQ(IFRP)),NFBAS(IFRP,0),NORB(IFRP),
+     &            NFBAS(IFRP,0),NORB(IFRP),NZ,IPQTOQ(1,0),LUPRI)
+          ENDIF
+
           CALL DENST1(DMAT(I2BASX(IFRP,IFRP)+1),NTBAS(0),NTBAS(0),
      &              D1,FAC,CMO(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NORB(IFRP),
      &              ISTART,ILOOP,NFBAS(IFRP,0))
@@ -374,7 +391,7 @@ C***********************************************************************
 C
 C     Generate density matrix for SCF calculations
 C
-C     Entering CMO - MO coefficients
+C     Entering CMO - MO coefficients, on output - DMAT, density matrix
 C
 C     Written by T. Saue Nov 23 2004
 C

@@ -7621,7 +7621,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C  PURPOSE:
-C  Generate 2c MO from previous convergedx) 4c MO (read from DFCOEF) by using 
+C  Generate 2c MO from previous converged 4c MO (read from DFCOEF) by using 
 C  the 4c-2c picture change transformation matrix  :
 C
 C           CMO(2c) = U^{+}(4c->2c) * CMO(4c)
@@ -7750,9 +7750,9 @@ C     ... check the orthonormality of generated starting MO's
 !     CALL NRMSTMO(TBUF,VMAT,CMO,WORK,LWORK,IPRINT,.FALSE.)
 
 
-!---------------------------------------------------------------------------------
-!     We have some '2c' MO, construct 2c Fock matrix to be diagonalized later
-!---------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------------
+!     We have some '2c' MO, construct the 2c Fock matrix to be diagonalized later
+!--------------------------------------------------------------------------------------
 
        NORB1_SAVE=NORB(1)
        NORB2_SAVE=NORB(2)
@@ -7763,8 +7763,25 @@ C     ... check the orthonormality of generated starting MO's
       NORB(2) = NESH(2)
       NPSH(1) = 0
       NPSH(2) = 0
-!      ... generate density matrix(-es) into TBUF
-      CALL DENMAT(TBUF,CMO,IPRINT)
+
+      NSYM = 4/NZ
+      DO I=1,NFSYM
+       NPSH(I) = 0
+       NORB(I) = NESH(I) + NPSH(I)
+C  ... new variable ....
+       NTMO(I) = NORB(I)
+       DO ISYM = 1, NSYM
+         NBORB(ISYM,I,2) = 0
+         NBORB(ISYM,I,0) = NBORB(ISYM,I,1) + NBORB(ISYM,I,2)
+       ENDDO
+      ENDDO
+C     ... recalculate necessary off-sets
+      CALL SETDC2(0)
+      CALL SETDC1(0)
+
+!      ... generate density matrix(-es) into VMAT
+      !CALL DENMAT(VMAT,TBUF,IPRINT)
+      CALL DENMAT(CMO,TBUF,IPRINT)
 
       NORB(1) = NORB1_SAVE
       NORB(2) = NORB2_SAVE
