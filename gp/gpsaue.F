@@ -7241,7 +7241,7 @@ C***********************************************************************
 #include "priunit.h"
 C
       PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
-      PARAMETER(XTM = XTANG*ANGM,XTCM=2.19474625D+05)
+      PARAMETER(XTM = XTANG*ANGM)
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
       DIMENSION C(NP)
 C
@@ -7254,10 +7254,10 @@ C
      &   '* Force constant  :',TEMP, ' N/m'
       WRITE(LUPRI,'(A,1P,E12.5,A)') 
      &   '* Frequency       :',OMEGA*XTHZ,' Hz',
-     &   '                   ',OMEGA*XTCM,' cm-1'
+     &   '                   ',OMEGA*XTKAYS,' cm-1'
       WRITE(ILOGG,'(A,1P,E12.5,A)') 
      &   '* Frequency       :',OMEGA*XTHZ,' Hz',
-     &   '                   ',OMEGA*XTCM,' cm-1'
+     &   '                   ',OMEGA*XTKAYS,' cm-1'
 C
       RETURN
       END
@@ -7275,7 +7275,7 @@ C***********************************************************************
 #include "priunit.h"
 C
       PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
-      PARAMETER(XTM = XTANG*ANGM,XTCM=2.19474625D+05)
+      PARAMETER(XTM = XTANG*ANGM)
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0,D4=4.0D0)
 C
       DIMENSION C(NP)
@@ -7294,9 +7294,9 @@ C
       T2   = TEMP*TEMP
       WXE = (5.0D0*TEMP*T2*V3*V3/48.0D0/OMEGA)-(V4*T2/16.0D0)
       WRITE(LUPRI,'(A,1P,E12.5,A)') 
-     &   '* Omega*x_e       :',WXE*XTCM,' cm-1'
+     &   '* Omega*x_e       :',WXE*XTKAYS,' cm-1'
       WRITE(ILOGG,'(A,1P,E12.5,A)') 
-     &   '* Omega*x_e       :',WXE*XTCM,' cm-1'
+     &   '* Omega*x_e       :',WXE*XTKAYS,' cm-1'
 C
       RETURN
       END
@@ -7362,14 +7362,17 @@ C***********************************************************************
 C
       PARAMETER(D2=2.0D0,D4=4.0D0)
       DE = OMEGA*OMEGA/WXE/D4
-      WRITE(LUPRI,'(A,F8.4,A)') '* Estimated D_e:',DE*XTEV, 'eV'
-      WRITE(LUPRI,'(A,F8.4,A)') '* Estimated D_e:',DE*XKJMOL, 'kJ/mol'
-      WRITE(ILOGG,'(A,F8.4,A)') '* Estimated D_e:',DE*XTEV, 'eV'
+      WRITE(LUPRI,'(A,F8.4,A)') '* Estimated D_e:',DE*XTEV,   ' eV'
+      WRITE(LUPRI,'(A,F8.4,A)') '* Estimated D_e:',DE*XKJMOL, ' kJ/mol'
+      WRITE(LUPRI,'(A,F8.2,A)') '* Estimated D_e:',DE*XTKAYS, ' cm-1'
+      WRITE(ILOGG,'(A,F8.4,A)') '* Estimated D_e:',DE*XTEV, ' eV'
       D0 = DE-(OMEGA/D2)+WXE/D4
       WRITE(LUPRI,'(A,F8.4,A)') '* Estimated dissociation energy:',
-     &       D0*XTEV, 'eV'
+     &       D0*XTEV, ' eV'
       WRITE(LUPRI,'(A,F8.4,A)') '* Estimated dissociation energy:',
-     &       D0*XKJMOL, 'kJ/mol'
+     &       D0*XKJMOL, ' kJ/mol'
+      WRITE(LUPRI,'(A,F8.2,A)') '* Estimated dissociation energy:',
+     &       D0*XTKAYS  , ' cm-1'
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -7415,9 +7418,6 @@ C* Estimate fit:
       WRITE(LUPRI,'(3X,A)') '* Coefficients:'
       WRITE(LUPRI,'(3X,A,I3,A,1P,E14.6)') ('c(',(I-1),'):  ',
      &      C(I),I=1,NDIM)  
-      WRITE(LUPRI,'(3X,A,E9.4)') '* Chi square :  ',CHISQ
-      WRITE(LUPRI,'(3X,A,E9.4)') '* Chi square per point:  ',CHISQ/NP
-      WRITE(LUPRI,'(3X,A,I3)') '* Number of singularities(SVD): ',ISKIP
 C
       WRITE(ILOGG,'(72A1)') ('=',I=1,72)
       WRITE(ILOGG,'(3X,A,I3)') '* Polynomial fit of order:',NORDER
@@ -7429,8 +7429,11 @@ C
       DO I = 1,NP
         YP = POLVAL(NORDER,C,X(I))
         DEV = (YP-Y(I))/Y(I)
-        WRITE(LUPRI,'(3X,F6.3,4X,2E12.4)') XTANG*X(I),YP,DEV
+        WRITE(LUPRI,'(3X,F6.3,4X,1P,E20.12,E12.4)') XTANG*X(I),YP,DEV
       ENDDO
+      WRITE(LUPRI,'(3X,A,E9.4)') '* Chi square :  ',CHISQ
+      WRITE(LUPRI,'(3X,A,E9.4)') '* Chi square per point:  ',CHISQ/NP
+      WRITE(LUPRI,'(3X,A,I3)') '* Number of singularities(SVD): ',ISKIP
       WRITE(ILOGG,'(3X,A,E9.4)') '* Chi square :  ',CHISQ
       WRITE(ILOGG,'(3X,A,E9.4)') '* Chi square per point:  ',CHISQ/NP
       WRITE(ILOGG,'(3X,A,I3)') '* Number of singularities(SVD): ',ISKIP
@@ -7465,8 +7468,8 @@ C* for Newton-Raphsons method
       ELSE
         YOPT = POLVAL(NORDER,C,XOPT)
         TEMP = XOPT*XTANG
-        WRITE(LUPRI,'(A,F18.5,A)') 
-     &    '* Local minimum   :',TEMP,' Angstroms'
+        WRITE(LUPRI,'(A,F18.5,A,F18.5,A)') 
+     &    '* Local minimum   :',TEMP,' Angstroms = ',XOPT,' Bohrs'
         WRITE(ILOGG,'(A,F18.5,A)') 
      &    '* Local minimum   :',TEMP,' Angstroms'
         WRITE(LUPRI,'(A,1P,E18.10,A)') 
