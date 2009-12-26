@@ -69,12 +69,13 @@ C
       READ(LUCMD,*) I
       IF(I.EQ.1) THEN
         WRITE(LUPRI,'(A)') 
-     &    'Name input file with potential curve (A16)'
+     &    'Name of input file with potential curve with '//
+     &    '" R E(R)" values (A40)'
         READ(LUCMD,'(A)') POTFIL
         NPRP = 0
       ELSEIF(I.EQ.2) THEN
         WRITE(LUPRI,'(A)') 
-     &    'Name input file with potential/property curve (A16)'
+     &    'Name of input file with potential/property curve (A40)'
         READ(LUCMD,'(A)') POTFIL
         WRITE(LUPRI,'(A)') 
      &    'Give number of property curves'
@@ -88,9 +89,12 @@ C
       ELSE
         STOP 'Unknown option !'
       ENDIF
-      WRITE(LUPRI,'(A)') 
-     &  'Note that bond lengths should be given in Angstroms',
-     &  ' and all other quantities in atomic units !'
+      WRITE(LUPRI,'(A)')
+     &  'Select one of the following:',
+     &  '  1. Bond lengths in Angstroms.',
+     &  '  2. Bond lengths in atomic units.',
+     &  ' (Note that all other quantities only in atomic units !)'
+      READ(LUCMD,*) IANG
       i=LNBLNK(POTFIL)
       OPEN(IUNIT,FILE=POTFIL,STATUS='OLD',FORM='FORMATTED',
      &     ACCESS='SEQUENTIAL',ERR=20)
@@ -117,9 +121,13 @@ C
       WRITE(ILOGG,'(A,A40)') '* Points read from ',POTFIL
       WRITE(ILOGG,'(3X,F6.3,4X,F20.10)') (X(I),Y(I),I=1,NP)
 C     Convert x-values to atomic units
-      DO I = 1,NP
-       X(I) = X(I)/XTANG
-      ENDDO
+      IF (IANG .EQ. 1) THEN
+        DO I = 1,NP
+         X(I) = X(I)/XTANG
+        ENDDO
+      ELSE IF (IANG .NE. 2) THEN
+        STOP 'Unknown bond length unit option!'
+      END IF
 C
 C     Polynomial fit
 C     ==============
@@ -203,6 +211,16 @@ C
       CALL MODEANHARM(WXE,OMEGA,XOPT,UM,C,NP,NORDER,ILOGG)
       CALL MODEDISS(OMEGA,WXE,ILOGG)
       WRITE(ILOGG,'(72A1)') ('-',I=1,72)
+C
+      WRITE(LUPRI,*) 'Do you want to calculate spectroscopic constants',
+     &   ' with other isotope(s) (y/n)?'
+      READ(LUCMD,*) REPLY
+      IF(REPLY.EQ.'y') GO TO 10
+C
+      WRITE(LUPRI,*) 'Do you want to calculate spectroscopic constants',
+     &   ' with another polynomial order (y/n)?'
+      READ(LUCMD,*) REPLY
+      IF(REPLY.EQ.'y') GO TO 60
 C
 C     Anharmonic constant at non-stationary geometry
 C     ==============================================
