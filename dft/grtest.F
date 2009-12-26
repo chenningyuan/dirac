@@ -1004,7 +1004,7 @@ C
                COORD(1,2)=PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENTB)
                COORD(2,2)=PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENTB)
                COORD(3,2)=PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENTB)
-               WRITE(FILNAM,'(A2,2(A3,I1)))') 
+               WRITE(FILNAM,'(A2,2(A3,I1))') 
      &           'WT',NAMN(ICENTA),IDEGA,NAMN(ICENTB),IDEGB
                DO I = 1,10
                  IF(FILNAM(I:I).EQ.' ') FILNAM(I:I)='_'
@@ -1024,7 +1024,7 @@ C
                COORD(1,2)=PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENTA)
                COORD(2,2)=PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENTA)
                COORD(3,2)=PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENTA)
-               WRITE(FILNAM,'(A2,2(A3,I1)))') 
+               WRITE(FILNAM,'(A2,2(A3,I1))') 
      &           'WT',NAMN(ICENTA),IDEGA,NAMN(ICENTA),IDEGB
                DO I = 1,10
                  IF(FILNAM(I:I).EQ.' ') FILNAM(I:I)='_'
