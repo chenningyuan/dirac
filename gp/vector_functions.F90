@@ -18,7 +18,7 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.sdu.dk
 !
-! Contains a module for elementairy vector operations.
+! Contains a module for elementary 3-vector operations.
 ! 
 ! JHS, 17-04-2008
 !      
