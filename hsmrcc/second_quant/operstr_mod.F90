@@ -402,9 +402,9 @@ if (.not.associated(this_string%head)) then
 !  ... catch error if there is some
  if (associated(this_string%rear) .or. (this_string%n > 0) ) then
    write(LUPRI,'(/,2x,a)') 'Some error in the empty entering string :'
-   write(LUPRI,'(2x,a,l)')        &
+   write(LUPRI,'(2x,a,l1)')        &
    '...associated(this_string%head)=',associated(this_string%head)
-   write(LUPRI,'(2x,a,l)')        &
+   write(LUPRI,'(2x,a,l1)')        &
    '...associated(this_string%rear)=',associated(this_string%rear)
    write(LUPRI,'(2x,a,i3)') 'number of string elements, this_string%n=',this_string%n
    call Quit('Some error in the empty entering string !')
@@ -467,7 +467,7 @@ if (.not.associated(this_string%head)) then
 
  if (associated(this_string%rear) .or. (this_string%n > 0) ) then
    write(LUPRI,'(2x,a)') 'Some error in the empty entering string !'
-   write(LUPRI,'(2x,a,l)')        &
+   write(LUPRI,'(2x,a,l1)')        &
    '...associated(this_string%rear)=',associated(this_string%rear)
    write(LUPRI,'(2x,a,i3)') 'this_string%n=',this_string%n
    call Quit('Some error in the empty entering string !')
@@ -523,7 +523,7 @@ if (.not.associated(this_string%head)) then
 
  if (associated(this_string%rear) .or. (this_string%n > 0) ) then
    write(LUPRI,'(2x,a)') 'Some error in the empty entering string !'
-   write(LUPRI,'(2x,a,l)')        &
+   write(LUPRI,'(2x,a,l1)')        &
    '...associated(this_string%rear)=',associated(this_string%rear)
    write(LUPRI,'(2x,a,i3)') 'this_string%n=',this_string%n
    call Quit('Some error in the empty entering string !')
@@ -744,11 +744,11 @@ else if (associated(this%member%pIndxTerm)) then
    call print_it(this%member%pIndxTerm)
 else
    write(LUPRI,'(/,2x,a)') '*** print_one_member dead branch output ***'
-   write(LUPRI,'(2x,a,l)')   &
+   write(LUPRI,'(2x,a,l1)')   &
    'associated(this%member%pSQOper):',associated(this%member%pSQOper)
-   write(LUPRI,'(2x,a,l)')   &
+   write(LUPRI,'(2x,a,l1)')   &
    'associated(this%member%pKronDelta):',associated(this%member%pKronDelta)
-   write(LUPRI,'(2x,a,l)')   &
+   write(LUPRI,'(2x,a,l1)')   &
    'associated(this%member%pIndxTerm):',associated(this%member%pIndxTerm)
    call Quit('print_one_member: not SQOp, not Kron.delta, not indexed term !')
 endif

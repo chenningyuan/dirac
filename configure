@@ -2003,6 +2003,7 @@ get_f90_flags(){
   check_array_bounds=""
   case "$F90real" in
     g95)
+      cpp_f90="$cpp_f90 -DVAR_G95"
       opt="-g -O3 -ffast-math -Wno=155 -fsloppy-char"
       safe="-g -Wno=155 -fsloppy-char"
       mod="-fmod=$MODULE_DIR"
@@ -2014,7 +2015,7 @@ get_f90_flags(){
     gfortran*)
      # to determine version you need the compiler with its full path 
       gfver=`$F90_COMP -v 2>&1 | awk '/^gcc version/{gsub("[^0-9]","", $3);print $3}'`
-      cpp_f90="$cpp_f90 -DGFORTRAN=$gfver"
+      cpp_f90="$cpp_f90 -DVAR_GFOTRAN -DGFORTRAN=$gfver"
       case $prc in
       i[0-9]86) grep -qw sse2 /proc/cpuinfo 2> /dev/null && prc=pentium4
                 march="-march=$prc -malign-double";;
@@ -2038,6 +2039,7 @@ get_f90_flags(){
     pgf90)
       opt="-g -fastsse"
       safe="-g"
+      cpp_f90="$cpp_f90 -DVAR_PGF90"
       cpp_cc="$cpp_cc -DVAR_PGCC"
       mod="-module $MODULE_DIR"
       noformain="-Mnomain"
@@ -2047,6 +2049,7 @@ get_f90_flags(){
     lfc)
       opt="-g --fast"
       safe="-g"
+      cpp_f90="$cpp_f90 -DVAR_LFC"
       cpp_cc="$cpp_cc"
       mod="-M $MODULE_DIR"
       noformain="" # please add
@@ -2068,6 +2071,7 @@ get_f90_flags(){
       F_profile="-p" 
       ;;
     xlf|xlf_r)
+      cpp_f90="$cpp_f90 -DVAR_XLF"
       opt="-qsuppress=cmpmsg"
       safe="-qsuppress=cmpmsg"
       mod="-qmoddir=$MODULE_DIR -I$MODULE_DIR"
@@ -2079,6 +2083,7 @@ get_f90_flags(){
       ;;
     pathf90)
       ldflag="-g -O2 -m64 -march=athlon64 -mcpu=athlon64 -msse -msse2 -mtune=athlon64 -mcmodel=medium"
+      cpp_f90="$cpp_f90 -DVAR_PATHF90"
       cpp_cc="$cpp_cc -DVAR_EKO"
       mod="-module $MODULE_DIR"
       noformain="" # please add

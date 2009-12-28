@@ -305,7 +305,15 @@ MODS_MESSAGE=
       fi
       cp hsmrcc/hsmrcc_external/Makefile.hsmrcc.in  hsmrcc/hsmrcc_external/Makefile.hsmrcc || \
       (echo "Error exit: hsmrcc/hsmrcc_external/Makefile.hsmrcc not activated !"; exit 1)
-      THIS_MOD_MESSAGE=" - HSMRCC interface module, plus own HSMRCC routines, active Makefile.hsmrcc."
+
+      # take care of the second quantization module
+      if [ -f hsmrcc/second_quant/Makefile.secquant ]; then
+	   /bin/rm -r hsmrcc/second_quant/Makefile.secquant
+      fi
+      cp hsmrcc/second_quant/Makefile.secquant.in  hsmrcc/second_quant/Makefile.secquant || \
+      (echo "Error exit: hsmrcc/second_quant/Makefile.secquant not activated !"; exit 1)
+
+      THIS_MOD_MESSAGE=" - HSMRCC interface module, plus own HSMRCC+sec.quantiz. routines, active Makefile.hsmrcc."
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
@@ -732,7 +740,7 @@ if [ -n "$AMFIFLG" ]; then
 fi
 if [ -n "$HSCCFLG" ]; then
    dirs="$dirs hsmrcc/interface"
- #  dirs="$dirs hsmrcc/second_quant"
+   dirs="$dirs hsmrcc/second_quant"
 
 # miro: added Sham's HSMRCC modules 
    dirs="$dirs hsmrcc/hsmrcc_external"
@@ -741,7 +749,7 @@ if [ -n "$HSCCFLG" ]; then
    rmline build/dontbuild "hsmrcc/\.\*"
    rmline build/dontbuild "hsmrcc/interface/\.\*"
   # miro: this line is causing strange ifort problem(file hsmrcc/second_quant/operstr_mod.F90): 
-  # rmline build/dontbuild "hsmrcc/second_quant/\.\*" 
+   rmline build/dontbuild "hsmrcc/second_quant/\.\*" 
    rmline build/dontbuild "hsmrcc/hsmrcc_external/\.\*"
    rmline build/dontbuild "hsmrcc/hsmrcc_external/modules/\.\*"
    rmline build/dontbuild "hsmrcc/hsmrcc_external/source/\.\*"

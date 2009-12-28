@@ -25,7 +25,7 @@ subroutine set_evaluate(log_value)
 logical :: log_value
 evaluate = log_value
 if (get_iprint() >= 8) then
-  write(LUPRI,'(2x,a,l)') 'set_evaluate: "evaluate" set to:',evaluate 
+  write(LUPRI,'(2x,a,l1)') 'set_evaluate: "evaluate" set to:',evaluate 
 endif
 end subroutine set_evaluate
 

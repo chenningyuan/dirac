@@ -32,11 +32,11 @@ call QEnter('make_sqo')
 
 if (get_iprint() > 70) then
 !if (get_iprint() > 7) then
- write(LUPRI,'(2x,a,i3,a,l)')   &
+ write(LUPRI,'(2x,a,i3,a,l1)')   &
  'make_sqo: entering i=',i,' entering is_creat=',is_creat
 
  if ( present(is_occup) ) then
-   write(LUPRI,'(2x,a,i3,a,l)')   &
+   write(LUPRI,'(2x,a,i3,a,l1)')   &
    'make_sqo: also entering is_occup=',is_occup
  endif
 

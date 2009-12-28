@@ -96,6 +96,9 @@ allclean:
 hs:
 	@make -C$(BACK) hs
 
+sq:
+	@make -C$(BACK) sq
+
 hs_clean:
 	@make -C$(BACK) hs_clean
 
