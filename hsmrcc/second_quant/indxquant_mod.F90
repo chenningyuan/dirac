@@ -1,3 +1,4 @@
+#if !defined (VAR_IFC)
 Module Indexed_Quantities
 !----------------------------------------------------------------------------
 !
@@ -382,3 +383,4 @@ call QExit('equal_IndxTerms')
 end function equal_IndxTerms
 
 End Module Indexed_Quantities
+#endif

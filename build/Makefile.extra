@@ -19,6 +19,10 @@ codata06: dirac/codata.F90
 	@echo -e "\n\t **** Set CODATA-2006 ****"
 	$(F77) -DCODATA06 $(F77FLAGS_SAFE) -c dirac/codata.F90
 
+### compile main program as SUBROUTINE ###
+main_as_subr:
+	$(F90) -DFORTRAN_MAIN_AS_SUBROUTINE $(F90FLAGS) -c -o main/main.o  main/main.F90
+        
 #  Conditional include to check whether we have the (optional) HSMRCC module active
 hscc_make = hsmrcc/hsmrcc_external/Makefile.hsmrcc
 is_hscc = $(wildcard $(hscc_make))

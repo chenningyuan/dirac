@@ -1,3 +1,5 @@
+#if !defined (VAR_IFC)
+
 Module Operators_string
 !
 ! ... string of operators ... 
@@ -2198,3 +2200,4 @@ end function equal_elements
 
 End Module Operators_string
 
+#endif

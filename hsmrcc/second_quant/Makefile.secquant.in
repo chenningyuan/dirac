@@ -16,8 +16,8 @@
 sq_dir=hsmrcc/second_quant
 sq_exec=$(sq_dir)/SecQuant.x
 
-main_as_subr:
-	$(F90) -DFORTRAN_MAIN_AS_SUBROUTINE $(F90FLAGS) -c -o main/main.o  main/main.F90
+#main_as_subr:
+#	$(F90) -DFORTRAN_MAIN_AS_SUBROUTINE $(F90FLAGS) -c -o main/main.o  main/main.F90
 
 sq: $(sq_exec) 
 	@echo -e "\nIndependent executable file "$(INSTALL_DIR)/$(sq_exec)" is ready."
