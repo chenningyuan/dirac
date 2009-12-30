@@ -945,7 +945,7 @@ C        ... extract diagonal FMO elements to EIG
          DO IFSYM = 1,NFSYM
 C        ... before extracting of EIG print the Fock matrix
            CALL HEADER(
-     &    'DFSOLV: The converged Fock matrix, FMO ',-1)
+     &    'DFSOLV: The converged Fock matrix, FMO, in MO basis ',-1)
            WRITE(LUPRI,'(2X,A,I1,A,I1)')
      &    'fermion symmetry: ',IFSYM,'/',NFSYM
            CALL PRQMAT(FMO(I2TMOT(IFSYM)+1),NTMO(IFSYM),NTMO(IFSYM),

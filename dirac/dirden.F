@@ -420,7 +420,10 @@ C
         ENDDO
       ENDIF
 
+CMI ... entering DMAT must be allocated with N2BBASXQ*NFMAT !
+      IF (NFMAT.GT.1) WRITE(LUPRI,*) 'DENMAT: DMAT with NFMAT=',NFMAT
       CALL DZERO(DMAT,N2BBASXQ*NFMAT)
+
       IDEN = 1
       IF(VACPOL.AND..NOT.MIXVAC) THEN
         IF(POSVAC) THEN

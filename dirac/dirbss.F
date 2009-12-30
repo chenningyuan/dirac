@@ -99,9 +99,12 @@ C       ... in this case we block-diagonalize the Fock-Dirac operator
 
        IF (TRMO4C2C) THEN 
 !mi    ... transform 4c MO coeff -> 2c MO coeff using the picture change tranf.matrix
+CMI        .... consider NFMAT for KBUF array allocation !!!
           CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
           CALL MEMGET('REAL',KBUF,N2BBASXQ,WORK,KFREE,LFREE)
           CALL MEMGET('REAL',KEIG ,NTBAS(0),      WORK,KFREE,LFREE)
+          IF (NFMAT.GT.1) 
+     &       CALL QUIT('TRMO4C2C: open-shell not yet implemented')
           CALL CMOTR2C(VMAT,WORK(KBUF),WORK(KCMO),WORK(KEIG),
      &                 WORK(KIBEIG),WORK(KFREE),LFREE)
           CALL MEMCHK('MAKE_H2C.CMOTR2C ',WORK,1)
@@ -4406,6 +4409,10 @@ C ... TEST: Do U+.U into TMAT
         NREF = NESH(I)
         NREF2 = 2*NESH(I)
 
+!-----------------------------------------------------------------------
+!     U^{+}(M,K)*U(K,N) =  U^+(NREF,2*NREF)*U(2*NREF,NREF)
+!-----------------------------------------------------------------------
+!                 M     N      K
        CALL QGEMM(NREF,NREF,2*NREF,D1, 
      &    'H','N',IPQTOQ(1,0),
      &     VMAT(IBUF2E),2*NREF,NREF,NZ,
@@ -7687,6 +7694,9 @@ C   ... first get the picture change transf.matrix into VMAT
      &  ' matrix was read into VMAT.'
       ENDIF
 
+      !CALL MEMCHK('CMOTR2C 0.1',WORK,1)
+
+      CALL DZERO(TBUF,N2BBASXQ)
 C .. do own picture change transformation TBUF=VMAT^{+} * CMO
       IPCTM = 1
       IMO  = 1
@@ -7696,21 +7706,21 @@ C .. do own picture change transformation TBUF=VMAT^{+} * CMO
 
        IF (IPRINT.GE.5) THEN
         CALL HEADER(
-     &  'CMOTR2C: U pict.change transf.matrix 4c AO-> 2c AO',-1)
+     &  'CMOTR2C: U pict.change transf.matrix 4c AO-> 2c AO,VMAT',-1)
         WRITE(LUPRI,'(A,I1,A,I1)')
      &  '* Fermion ircop no.',I,'/',NFSYM                          
         CALL PRQMAT(VMAT(IPCTM),NFBAS(I,0),NFBAS(I,1),              
      &    NFBAS(I,0),NFBAS(I,1),NZ,IPQTOQ(1,0),LUPRI)
 
         CALL HEADER(
-     &  'CMOTR2C: 4c MO coefficients, CMO',-1)
+     &  'CMOTR2C: 4c MO coefficients, CMO(LS,e-p)',-1)
         WRITE(LUPRI,'(A,I1,A,I1)')
      &  '* Fermion ircop no.',I,'/',NFSYM                          
         CALL PRQMAT(CMO(IMO),NFBAS(I,0),NORB(I),              
      &    NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
 
         CALL HEADER(
-     &  'CMOTR2C: 4c MO coefficients, e-part only, CMO',-1)
+     &  'CMOTR2C: 4c MO coefficients, e-part only, CMO(LS,e)',-1)
         WRITE(LUPRI,'(A,I1,A,I1)')
      &  '* Fermion ircop no.',I,'/',NFSYM                          
         CALL PRQMAT(CMO(IMO+NFBAS(I,0)*NESH(I)*NZ),NFBAS(I,0),NESH(I),
@@ -7719,56 +7729,57 @@ C .. do own picture change transformation TBUF=VMAT^{+} * CMO
 
 C ===============================================================
 C     ... do the matrix multiplication...VMAT^{+} * CMO = TBUF
+C
+C             [U^+](L,LS) * CMO_4c(LS,p-e) = CMO_2c(L,e)
+C             [U^+](M,K)  * CMO_4c(K ,  N) = CMO_2c(M,N)
 C ===============================================================
-        CALL QGEMM(NFBAS(I,0),NESH(I),NFBAS(I,1),D1,
+!                      M          N        K
+        CALL QGEMM(NFBAS(I,1),NESH(I),NFBAS(I,0),D1,
      &  'H','N',IPQTOQ(1,0),VMAT(IPCTM),
      &   NFBAS(I,0),NFBAS(I,1),NZ,
      &  'N','N',IPQTOQ(1,0),
-     &   CMO(IMO+(NFBAS(I,0)*NESH(I)*NZ)),NFBAS(I,0),NORB(I),NZ,
+     &   CMO(IMO+(NFBAS(I,0)*NPSH(I)*NZ)),NFBAS(I,0),NORB(I),NZ,
      &   D0,IPQTOQ(1,0),TBUF(IMOe),
      &   NFBAS(I,0),NESH(I),NZ)
 
        IF (IPRINT.GE.5) THEN
         CALL HEADER(
-     &  'CMOTR2C: MO_2c(LS,e) = U^{+}(LS,L).MO_4c(LS,e), TBUF',-1)
+     &  'CMOTR2C: MO_2c(L(of LS),e) = [U^+](L,LS).MO_4c(LS,e), TBUF',-1)
         WRITE(LUPRI,'(A,I1,A,I1)')
-     &  '* Fermion ircop no.',I,'/',NFSYM                          
+     &  '* Fermion ircop no.',I,'/',NFSYM  
         CALL PRQMAT(TBUF(IMOe),NFBAS(I,0),NESH(I), 
-!       CALL PRQMAT(TBUF(IMO),NFBAS(I,0),NORB(I), 
-!    &    NFBAS(I,1),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
-     &    NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+     &    NFBAS(I,0),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
        ENDIF
 
 ! zero CMO_2c, NZ=1 !!! (fix later)
-         DO II=1,NESH(I)
-          CALL DZERO(
-     &     TBUF(IMOe+((II-1)*NFBAS(I,0))+NFBAS(I,1)),NFBAS(I,2) )
-         ENDDO
+!        DO II=1,NESH(I)
+!         CALL DZERO(
+!    &     TBUF(IMOe+((II-1)*NFBAS(I,0))+NFBAS(I,1)),NFBAS(I,2) )
+!        ENDDO
 
-       IF (IPRINT.GE.5) THEN
-        CALL HEADER(
-     &  'CMOTR2C: MO_2c(LS,e) with zeroed S-fu, TBUF',-1)
-        WRITE(LUPRI,'(A,I1,A,I1)')
-     &  '* Fermion ircop no.',I,'/',NFSYM                          
-        CALL PRQMAT(TBUF(IMOe),NFBAS(I,0),NESH(I), 
+!      IF (IPRINT.GE.5) THEN
+!       CALL HEADER(
+!    &  'CMOTR2C: MO_2c(LS,e) with zeroed S-fu, TBUF',-1)
+!       WRITE(LUPRI,'(A,I1,A,I1)')
+!    &  '* Fermion ircop no.',I,'/',NFSYM                          
+!       CALL PRQMAT(TBUF(IMOe),NFBAS(I,0),NESH(I), 
 !       CALL PRQMAT(TBUF(IMO),NFBAS(I,0),NORB(I), 
 !    &    NFBAS(I,1),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
-     &    NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-       ENDIF
-
+!    &    NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+!      ENDIF
 
 
           IMOe =  IMOe + (NFBAS(I,0)*NESH(I)*NZ)
-         ! IMOe =  IMOe + (NFBAS(I,1)*NESH(I)*NZ)
           IMO  =   IMO + (NFBAS(I,0)*NORB(I)*NZ)
        IPCTM  =  IPCTM + (NFBAS(I,0)*NFBAS(I,1)*NZ) 
 
       ENDIF
       ENDDO
 
-C     ... check the orthonormality of generated starting MO's
-!     CALL NRMSTMO(TBUF,VMAT,CMO,WORK,LWORK,IPRINT,.TRUE.)
-!     CALL NRMSTMO(TBUF,VMAT,CMO,WORK,LWORK,IPRINT,.FALSE.)
+      !CALL MEMCHK('CMOTR2C 0.11',WORK,1)
+
+C     ... check the orthonormality of generated 2c MO's
+      CALL NRMSTMO(TBUF,VMAT,CMO,WORK,LWORK,IPRINT,.FALSE.)
 
 
 !-------------------------------------------------------------------------------------
@@ -7805,15 +7816,27 @@ C     ... recalculate necessary off-sets
       CALL SETDC1(0)
       ENDIF
 
-!      ... generate density matrix(-es) into VMAT
+
+
+!       we are now in 2c mode...
+      !CALL MEMCHK('CMOTR2C 0.2',WORK,1)
+!      ... generate 2c density matrix(-es) into CMO (inside)
       CALL DENMAT(CMO,TBUF,IPRINT)
 
-      IF (SET_2C) THEN
-      NORB(1) = NORB1_SAVE
-      NORB(2) = NORB2_SAVE
-      NPSH(1) = NPSH1_SAVE
-      NPSH(2) = NPSH2_SAVE
-      ENDIF
+!     IF (SET_2C) THEN
+!     NORB(1) = NORB1_SAVE
+!     NORB(2) = NORB2_SAVE
+!     NPSH(1) = NPSH1_SAVE
+!     NPSH(2) = NPSH2_SAVE
+!     ENDIF
+
+!     construct Fock matrix
+!        CALL MKMOFK(FMO,FAO,DMAT,WORK(KTMAT),WORK(KCMOSAV),
+!    &                WORK(KSAOMO),WORK(KDTEMP),WORK(KDEVEC),
+!    &                WORK(KFREE),LFREE)
+
+
+
 
       !CALL MEMCHK('CMOTR2C',WORK,1)
 !      call quit('.... stop in CMOTR2C ....')
@@ -7979,7 +8002,15 @@ C  Purpose: CHECK the normalization of pseudo-4c(LS,e)/2c (L,e) CMO.
 C
 C  On input/output: TBUF - normalized MO (LS,e)/(L,e) pseudo-4comp coefficients
 C
+C  TMAT,CMO - temporary arrays (content modified)
+C
+C   Le 
+C
+C  Called from : CMOTR4C
+C                CMOTR2C
+C
 C  Written by Miro ILIAS, February 2007, Tel Aviv
+C                         Dec. 2009, Prievidza
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -7995,13 +8026,11 @@ C#include "dcbham.h"
       DIMENSION TBUF(*),CMO(*),TMAT(*),WORK(LWORK)
       LOGICAL Le
 
-      CALL QENTER('NRMSTMO')
 #include "memint.h"
 
 C ... get full S matrix into TMAT
       IF (.NOT.Le) THEN
-        CALL GTOVLT(TMAT,D0)
-        !CALL GTOVLT(TMAT,D1)
+        CALL GTOVLT(TMAT,D1)
       ELSE
         CALL GTOVLT(TMAT,D0)
       ENDIF
@@ -8028,7 +8057,6 @@ C ...  transform S to the MO's (Le=true):   TBUF^+(e,L) . TMAT(LS,LS) . TBUF(L,e
      &       NFBAS(I,1),NESH(I),NZ,IPQTOQ(1,0),
      &       WORK(KFREE),LFREE,IPRINT)
 
-
        ELSE
 
         CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
@@ -8050,7 +8078,7 @@ C ...  transform S to the MO's (Le=true):   TBUF^+(e,L) . TMAT(LS,LS) . TBUF(L,e
      &    ' in SA-AO basis "xhi"',-1)
        ELSE
           CALL HEADER(
-     &    'NRMSTMO: Full Sovlp(LL+SS=0) matrix (from GTOVLT)'//
+     &    'NRMSTMO: Full Sovlp(LL,SS=0) matrix (from GTOVLT)'//
      &    ' in SA-AO basis "xhi"',-1)
        ENDIF
           WRITE(LUPRI,'(A,I1,A,I1)')'* Fermion irp no.',I,'/',NFSYM
@@ -8097,7 +8125,6 @@ CMI    ... check the unit matrix !!!
 
       ENDDO
 
-      CALL QEXIT('NRMSTMO')
       RETURN
       END
 
