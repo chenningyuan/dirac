@@ -95,6 +95,7 @@ C       ... in this case we block-diagonalize the Fock-Dirac operator
        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)   
        CALL MEMGET('REAL',KIBEIG,ISIZE,WORK,KFREE,LFREE)
        CALL FDTR2C(VMAT,WORK(KIBEIG),WORK(KFREE),LFREE)
+       CALL MEMCHK('MAKE_H2C.FDTR2C ',WORK,1)
 
        IF (TRMO4C2C) THEN 
 !mi    ... transform 4c MO coeff -> 2c MO coeff using the picture change tranf.matrix
@@ -103,9 +104,10 @@ C       ... in this case we block-diagonalize the Fock-Dirac operator
           CALL MEMGET('REAL',KEIG ,NTBAS(0),      WORK,KFREE,LFREE)
           CALL CMOTR2C(VMAT,WORK(KBUF),WORK(KCMO),WORK(KEIG),
      &                 WORK(KIBEIG),WORK(KFREE),LFREE)
-          CALL MEMREL('MAKE_H2C.CMOTR2C',WORK,KWORK,KEIG,KFREE,LFREE) 
-          CALL MEMREL('MAKE_H2C.CMOTR2C',WORK,KWORK,KBUF,KFREE,LFREE) 
-          CALL MEMREL('MAKE_H2C.CMOTR2C',WORK,KWORK,KCMO,KFREE,LFREE) 
+          CALL MEMCHK('MAKE_H2C.CMOTR2C ',WORK,1)
+          CALL MEMREL('MAKE_H2C.CMOTR2C 1',WORK,KWORK,KEIG,KFREE,LFREE) 
+          CALL MEMREL('MAKE_H2C.CMOTR2C 2',WORK,KWORK,KBUF,KFREE,LFREE) 
+          CALL MEMREL('MAKE_H2C.CMOTR2C 3',WORK,KWORK,KCMO,KFREE,LFREE) 
        ENDIF
 
        CALL MEMREL('MAKE_H2C.FDTR2C',WORK,KWORK,KIBEIG,KFREE,LFREE)
@@ -7617,7 +7619,7 @@ C     ... this flag must be deactivated for BSS2DC calculations
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CMOTR2C(VMAT,CMO,TBUF,EIG,IBEIG,WORK,LWORK)
+      SUBROUTINE CMOTR2C(VMAT,TBUF,CMO,EIG,IBEIG,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C  PURPOSE:
@@ -7651,7 +7653,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       DIMENSION VMAT(*),CMO(*),EIG(*),TBUF(*),WORK(LWORK)
       DIMENSION IBEIG(*)
-      LOGICAL FNDLAB,EX
+      LOGICAL FNDLAB,EX,SET_2C
       CHARACTER*8 LBL
 #include "memint.h"
 
@@ -7737,6 +7739,25 @@ C ===============================================================
      &    NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
        ENDIF
 
+! zero CMO_2c, NZ=1 !!! (fix later)
+         DO II=1,NESH(I)
+          CALL DZERO(
+     &     TBUF(IMOe+((II-1)*NFBAS(I,0))+NFBAS(I,1)),NFBAS(I,2) )
+         ENDDO
+
+       IF (IPRINT.GE.5) THEN
+        CALL HEADER(
+     &  'CMOTR2C: MO_2c(LS,e) with zeroed S-fu, TBUF',-1)
+        WRITE(LUPRI,'(A,I1,A,I1)')
+     &  '* Fermion ircop no.',I,'/',NFSYM                          
+        CALL PRQMAT(TBUF(IMOe),NFBAS(I,0),NESH(I), 
+!       CALL PRQMAT(TBUF(IMO),NFBAS(I,0),NORB(I), 
+!    &    NFBAS(I,1),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
+     &    NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+       ENDIF
+
+
+
           IMOe =  IMOe + (NFBAS(I,0)*NESH(I)*NZ)
          ! IMOe =  IMOe + (NFBAS(I,1)*NESH(I)*NZ)
           IMO  =   IMO + (NFBAS(I,0)*NORB(I)*NZ)
@@ -7754,15 +7775,19 @@ C     ... check the orthonormality of generated starting MO's
 !     We have some '2c' MO, construct the 2c Fock matrix to be diagonalized later
 !--------------------------------------------------------------------------------------
 
+       !SET_2C=.FALSE.
+       SET_2C=.TRUE.
+
+       IF (SET_2C) THEN
        NORB1_SAVE=NORB(1)
        NORB2_SAVE=NORB(2)
        NPSH1_SAVE = NPSH(1)
        NPSH2_SAVE = NPSH(2)
 
-      NORB(1) = NESH(1)
-      NORB(2) = NESH(2)
-      NPSH(1) = 0
-      NPSH(2) = 0
+       NORB(1) = NESH(1)
+       NORB(2) = NESH(2)
+       NPSH(1) = 0
+       NPSH(2) = 0
 
       NSYM = 4/NZ
       DO I=1,NFSYM
@@ -7778,16 +7803,19 @@ C  ... new variable ....
 C     ... recalculate necessary off-sets
       CALL SETDC2(0)
       CALL SETDC1(0)
+      ENDIF
 
 !      ... generate density matrix(-es) into VMAT
-      !CALL DENMAT(VMAT,TBUF,IPRINT)
       CALL DENMAT(CMO,TBUF,IPRINT)
 
+      IF (SET_2C) THEN
       NORB(1) = NORB1_SAVE
       NORB(2) = NORB2_SAVE
       NPSH(1) = NPSH1_SAVE
       NPSH(2) = NPSH2_SAVE
+      ENDIF
 
+      !CALL MEMCHK('CMOTR2C',WORK,1)
 !      call quit('.... stop in CMOTR2C ....')
       WRITE(LUPRI,*) 'Leaving CMOTR2C '    
 
