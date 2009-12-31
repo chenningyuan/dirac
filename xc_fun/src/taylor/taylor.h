@@ -167,13 +167,7 @@ public:
       assert(Nres >= Ndeg);
       taylor<T, Nvar,Ndeg> tmp = *this;
       tmp[0] = 0;
-      res = 0;
-      for (int i=Nres;i>0;i--)
-	{
-	  res[0] += coeff[i];
-	  res *= tmp;
-	}
-      res[0] += coeff[0];
+      taylorcompose0(res,tmp,coeff.c);
     }
   T dot(const taylor<T, Nvar, Ndeg> &t) const
   {
