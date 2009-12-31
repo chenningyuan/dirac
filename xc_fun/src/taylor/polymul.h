@@ -1180,6 +1180,33 @@ struct differentiator<numtype, 1, Ndeg, 0>
   }
 };
 
+template<class numtype, int Nvar, int Ndeg,int Ndegp>
+struct composer
+{
+  // P must have p[0] = 0, in that case compute
+  // sum_n=0..Ndeg c[n]p^n = c[0] + p*R, R a lower
+  // degree composition.
+  static void compose0(numtype dst[], const numtype p[], const numtype c[])
+  {
+    composer<numtype,Nvar,Ndeg-1,Ndegp>::compose0(dst,p,c+1);
+    //Zero top of dst
+    for (int i=polylen<Nvar,Ndeg-1>::len;i<polylen<Nvar,Ndeg>::len;i++)
+      dst[i] = 0;
+    // We now have R in dst, multiply by p and add c[0]
+    taylor_inplace_multiplier<numtype,Nvar,Ndeg,Ndeg<Ndegp?Ndeg:Ndegp,0>::mul(dst,p);
+    dst[0] = c[0];
+  }
+};
+
+template<class numtype, int Nvar, int Ndegp>
+struct composer<numtype,Nvar,0,Ndegp>
+{
+  static void compose0(numtype dst[], const numtype p[], const numtype c[])
+  {
+    dst[0] = c[0];
+  }
+};
+
 #ifdef POLYMUL_TAB
 #include "polymul_tab.h"
 #endif
@@ -1439,10 +1466,10 @@ inline void taylormul(polynomial<numtype, Nvar,Ndeg> & POLYMUL_RESTRICT dst,
 
 template<class numtype, int Nvar, int Ndeg, int Ndeg2>
 inline void taylormul(polynomial<numtype, Nvar,Ndeg> & POLYMUL_RESTRICT p1,
-	       const polynomial<numtype, Nvar,Ndeg2> &p2)
+		      const polynomial<numtype, Nvar,Ndeg2> &p2)
 {
-  assert(Ndeg2 <= Ndeg);
-  polymul_internal::taylor_inplace_multiplier<numtype,Nvar,Ndeg,Ndeg2,0>
+  polymul_internal
+    ::taylor_inplace_multiplier<numtype,Nvar,Ndeg,Ndeg2<Ndeg ? Ndeg2 : Ndeg,0>
     ::mul(p1.c,p2.c);
 }
 
@@ -1508,6 +1535,32 @@ void polytrans(polynomial<numtype, Nvar_dst,Ndeg> &dst,
     ::trans(tmp.c,dst.c,src.c,T);
 }
 
+
+// dst = sum_n=0..Ndeg c[n]p^n, result is truncated at degree Ndeg.
+template<class numtype, int Nvar, int Ndeg, int Ndegp>
+inline void taylorcompose0(polynomial<numtype, Nvar,Ndeg> &dst,
+			  const polynomial<numtype, Nvar,Ndegp> &p,
+			  const numtype c[Ndeg+1])
+{
+  polymul_internal::composer<numtype,Nvar,Ndeg,Ndegp>
+    ::compose0(dst.c,p.c,c);
+}
+
+template<class numtype, int Nvar, int Ndeg, int Ndegp>
+inline void taylorcompose(polynomial<numtype, Nvar,Ndeg> &dst,
+			  const polynomial<numtype, Nvar,Ndegp> &p,
+			  const numtype c[Ndeg+1])
+{
+  for (int i=0;i<dst.size;i++)
+    dst[i] = 0;
+  for (int i=Ndeg;i>0;i--)
+    {
+      dst[0] += c[i];
+      taylormul(dst,p);
+    }
+  dst[0] += c[0];
+  //  cout << "Now dst[0] is: " << dst[0] << endl;
+}
 
 #endif
 
