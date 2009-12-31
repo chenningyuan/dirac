@@ -321,5 +321,20 @@ int main(void)
   for (int i=0;i<sincout.size;i++)
       cout << i << " " << sincout[i] << endl;
 */
+  
+// Test fast functions
+  taylor<double,2,12> xin(2,0),yin(1,1),tslow,tfast;
+  xin = xin + 3*pow(xin,2)+2*yin+pow(yin,3);
+  tslow = 1/xin;
+  taylor_reciprocal(tfast,xin);
+  if (taylor_compare(tfast,tslow,1e-16))
+    {
+      cerr << "Fast reciprocal error." << endl;
+      cout << "tslow: " << tslow << endl;
+      cout << "tfast: " << tfast << endl;
+      res++;
+    }
+
+
   return res;
 }

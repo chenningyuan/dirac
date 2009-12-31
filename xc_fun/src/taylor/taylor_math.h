@@ -16,6 +16,34 @@ void inv_taylor(taylor<T,1,N>& t, const T &a)
     t[i] = -t[i-1]*t[0];
 }
 
+// Reciprocal taylor series by the Newton method.
+// a/t = 1 + O(x^Ndeg+1)
+// t0 = 1/a[0]
+// t1 = 1/a[0]*(2-a/a[0])
+// tn+1 = -tn*(a*tn-2)
+template<class T,int Nvar, int Ndeg>
+void taylor_reciprocal(taylor<T,Nvar,Ndeg>& t, const taylor<T,Nvar,Ndeg> &a)
+{
+  assert(a != 0 && "1/(a+x) not analytic at a = 0");
+  t[0] = 1/a[0];
+  if (Ndeg == 0)
+    return;
+  T c = -t[0]*t[0];
+  for (int i=1;i<t.size;i++)
+    t[i] = c*a[i];
+
+  // need only log2(Ndeg) number of terms
+  for (int i=1;i<=(int)log2(Ndeg+1);i++)
+    {
+      taylor<T,Nvar,Ndeg> tmp = a;
+      tmp *= t;
+      tmp[0] -= 2;
+      tmp *= t;
+      for (int j=0;j<t.size;j++)
+	t[j] = -tmp[j];
+    }
+}
+
 template<class T,int Nvar, int Ndeg, class S>
 taylor<T,Nvar, Ndeg> operator/(const S &x, const taylor<T,Nvar,Ndeg>& t)
 {
