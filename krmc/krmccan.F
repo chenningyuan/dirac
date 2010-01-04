@@ -1075,15 +1075,14 @@ C
 C
       MZ = MIN(NZ,2)
 C
-C     check for file containing the individual energies for each root
-C     print the list of states if the file is available otherwise skip
-C     it
+C     print the list of states if available otherwise skip it.
       PRINT_EV = .FALSE.
-      INQUIRE(FILE='KRCI_CVECS.INFO',EXIST=PRINT_EV)
-      IF( PRINT_EV )THEN
 C
-C       get energies from file KRCI_CVECS.INFO
-        CALL GET_KRCICVECS_E(EVECS,NKRCI_CIROOTS,XSYMFLAB,NKRCI_MAX_SYM)
+C     search and possibly get energies from file KRCI_CVECS.INFO
+      CALL GET_KRCICVECS_E(EVECS,NKRCI_CIROOTS,XSYMFLAB,
+     &                     NKRCI_MAX_SYM,PRINT_EV)
+C
+      IF( PRINT_EV )THEN
 C
 C       print list of eigenstates and energies
         WRITE(LUPRI,'(/,1X,A,F14.10,A,F17.9,A)')

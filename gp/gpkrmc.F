@@ -255,7 +255,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck GET_KRCICVECS_E */
       SUBROUTINE GET_KRCICVECS_E(EVEC,NKRCI_CIROOTS,XSYMFLAB,
-     &                           NKRCI_MAX_SYM)
+     &                           NKRCI_MAX_SYM,PRINT_EV)
 C***********************************************************************
 C
 C     read eigenstate energies from file KRCI_CVECS.INFO
@@ -266,9 +266,12 @@ C        XSYMFLAB       - array containing file labels for each symmetry
 C        NKRCI_CIROOTS  - # eigenstates per symmetry irrep
 C
 C     Output:
-C        EVEC    - vector containing energies for all eigenstates
+C        EVEC     - vector containing eigenvalues for all eigenstates
+C        PRINT_EV - flag for printing eigenvalues in calling routine
 C
 C     Written by S. Knecht - Nov 2008
+C
+C     Last revision: S. Knecht - Jan 2010
 C
 C***********************************************************************
 #include "implicit.h"
@@ -277,7 +280,7 @@ C
       DIMENSION EVEC(*), NKRCI_CIROOTS(*)
       CHARACTER*1 XSYMFLAB(*) 
       CHARACTER*8 FILELAB
-      LOGICAL EX
+      LOGICAL EX, PRINT_EV, FNDLAB
 C
 C     read final energies from file KRCI_CVECS.INFO
       INQUIRE(FILE = 'KRCI_CVECS.INFO',EXIST=EX)
@@ -293,6 +296,8 @@ C     read final energies from file KRCI_CVECS.INFO
       DO I = 1, NKRCI_MAX_SYM
         IF(NKRCI_CIROOTS(I) .gt. 0 )THEN
           WRITE(FILELAB,'(A7,A1)') "eroots.",XSYMFLAB(I)
+          REWIND LU_INFO
+          PRINT_EV = FNDLAB(FILELAB,LU_INFO)
           CALL KRCI_PRPFILE(LU_INFO,FILELAB,EVEC(NXSCR),
      &                      NKRCI_CIROOTS(I),1)
         END IF
