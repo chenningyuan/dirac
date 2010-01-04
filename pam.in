@@ -66,7 +66,7 @@ usage ()
    echo '                              (and slave nodes if "-nw mem" not specified)'
    echo '     -nw n                  : Set memory (in megawords) for the slave nodes in parallel run; default: '$WRKMEM_DEFAULT
 
-   let MEM_IN_MB_DEFAULT=$WRKMEM_DEFAULT/8
+   let MEM_IN_MB_DEFAULT=$WRKMEM_DEFAULT*8
 
    echo '     -mem n                 : Set memory (in Mb) for master; default: '$MEM_IN_MB_DEFAULT' Mb'
    echo '                              (and slave nodes if "-mem" not specified)'
@@ -1098,7 +1098,7 @@ while [ -n "$1" ]; do
       -no-exe-copy)
 	 NO_EXE_COPY=1
          ;;
-      -help)
+      -help|--help)
 #Restore the code below when manpage is up to date.
 #         if [ -z "$PAGER" ]; then
 #            PAGER=more
