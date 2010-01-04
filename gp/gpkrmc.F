@@ -298,8 +298,8 @@ C     read final energies from file KRCI_CVECS.INFO
           WRITE(FILELAB,'(A7,A1)') "eroots.",XSYMFLAB(I)
           REWIND LU_INFO
           PRINT_EV = FNDLAB(FILELAB,LU_INFO)
-          CALL KRCI_PRPFILE(LU_INFO,FILELAB,EVEC(NXSCR),
-     &                      NKRCI_CIROOTS(I),1)
+          IF(PRINT_EV) CALL KRCI_PRPFILE(LU_INFO,FILELAB,EVEC(NXSCR),
+     &                                   NKRCI_CIROOTS(I),1)
         END IF
         NXSCR = NXSCR + NKRCI_CIROOTS(I)
       END DO
