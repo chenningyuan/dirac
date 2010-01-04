@@ -1119,7 +1119,6 @@ C         size of C(Ka,Jb,j),C(Ka,KB,ij)  resolution matrices
      &                    NELFSPGP,MXCJ,MXCIJA,MXCIJB,MXCIJAB,MXSXBL,
      &                    MXADKBLK)
           LSCR2 = MAX(LSCR2,MXCJ,MXCIJA,MXCIJB)
-CSK       WRITE(LUWRT,*) ' LSCR2 for IJSYM',LSCR2,IJSYM
         END DO
 C       ^ end loop over MK2 values
       END DO
@@ -1136,13 +1135,11 @@ CSK...6-jul-07      LSCR12 = MAX(LBLOCK,2*LSCR2)
       LCJRES_SAVE = LSCR12
 C     
 #if defined LUCI_DEBUG
-      IF( NTEST .gt. 5 )THEN
-        write(luwrt,*) 'L3BLOCK is',L3BLOCK
-        write(luwrt,*) 'LBLOCK is',LBLOCK
-        write(luwrt,*) 'LSCR2 is',LSCR2
-        write(luwrt,*) 'LSCR12 is',LSCR12
-        write(luwrt,*) 'LCJRES_SAVE is',LCJRES_SAVE
-      END IF
+      write(luwrt,*) 'L3BLOCK is',L3BLOCK
+      write(luwrt,*) 'LBLOCK is',LBLOCK
+      write(luwrt,*) 'LSCR2 is',LSCR2
+      write(luwrt,*) 'LSCR12 is',LSCR12
+      write(luwrt,*) 'LCJRES_SAVE is',LCJRES_SAVE
 #endif
 C
       IDUM = 0
@@ -5382,36 +5379,33 @@ csk     &                    L0BLOCK,L2BLOCK,LCSBLK
 *     test if L2BLOCK has become too large...
       LTEST_BLOCK = L_COMBI_MAX
       IF( I_USE_PC .ne. 0)THEN
-C       LTEST_BLOCK = MIN(L2BLOCK,L_COMBI)
-C       WRITE(LUWRT,*) ' LTEST_BLOCK, L2BLOCK, L_COMBI',
-C    &                   LTEST_BLOCK, L2BLOCK, L_COMBI
+CSK     WRITE(LUWRT,*) ' LTEST_BLOCK, L2BLOCK, L_COMBI',
+CSK  &                   LTEST_BLOCK, L2BLOCK, L_COMBI
 *
         IF( L2BLOCK .gt. LTEST_BLOCK )THEN
 *         reset to L_COMBI because that is already enough
-C         WRITE(LUWRT,*) ' reset to: L2BLOCK = LTEST_BLOCK',
-C    &                     L2BLOCK, LTEST_BLOCK
+          WRITE(LUWRT,*) ' *** restricting memory usage ***'
+          WRITE(LUWRT,*) ' reset L2BLOCK =',L2BLOCK,' to LTEST_BLOCK =',
+     &                     LTEST_BLOCK
+          WRITE(LUWRT,*) ' *** restricting memory usage ***'
           L2BLOCK = LTEST_BLOCK
 *
         END IF
+        LTEST_BLOCK = MIN(L2BLOCK,L_COMBI_MAX)
       END IF
 *
 *     ... set LBLOCK value
       LBLOCK  = MAX(L0BLOCK,L2BLOCK,LTEST_BLOCK)
-C     WRITE(LUWRT,*) ' LBLOCK, L0BLOCK, L2BLOCK',
-C    &                 LBLOCK, L0BLOCK, L2BLOCK
       IF( I_SET_L2BLOCK .gt. 1 .or. I_USE_PC .eq. 0 ) THEN
        LBLOCK = MAX(LBLOCK,LCSBLK)
       END IF
       IF( I_SET_L2BLOCK .ge. 1 )
      &  WRITE(LUWRT,*) '  LBLOCK set to:',LBLOCK
-*
-CACTU      LBLOCK  = MAX(L0BLOCK,L2BLOCK)
-CTEST      LBLOCK  = MIN(L0BLOCK,L2BLOCK)
-*          old versions works without L0BLOCK and L2BLOCK
-CVOLD     LBLOCK = MAX(LBLOCK,LCSBLK)
-*
-CSK      IF(NTEST.GE.1000) THEN
-CSK      END IF
+#if defined LUCI_DEBUG
+      WRITE(LUWRT,*) ' inside Z_BLKFO_REL: reset LBLOCK to',LBLOCK
+      WRITE(LUWRT,*) ' LBLOCK, L0BLOCK, L2BLOCK, LCSBLK, LTEST_BLOCK',
+     &                 LBLOCK, L0BLOCK, L2BLOCK, LCSBLK, LTEST_BLOCK
+#endif
 C
 C     loop over MS2 spaces
       DO IMS2 = 1, NMS2VAL
@@ -6246,10 +6240,9 @@ C
       NBLOCK_MAX = 0
       IXSYMACT   = 0
 C
+C     WRITE(LUWRT,*) ' ... before IJSYM loop: LBLOCK = ', LBLOCK
       DO 100 IJSYM = 1, MXPROPKRCI_SYM
 C
-C       WRITE(LUWRT,*) ' IXSYMLIST(IJSYM), IJSYM, LBLOCK',
-C    &                   IXSYMLIST(IJSYM), IJSYM, LBLOCK
         IF( IXSYMLIST(IJSYM) .eq. 0 ) GOTO 100
 C       loop over MS2 spaces for "active" symmetry irrep
         DO IMS2 = 1, NMS2VAL
@@ -6306,6 +6299,7 @@ C       ^ End of loop over MS2 values
         IXSYMLIST(IXSYMACT) = IJSYM
  100  CONTINUE
 C     ^ End of loop over different symmetries
+C     WRITE(LUWRT,*) ' ... after IJSYM loop: LBLOCK = ', LBLOCK
 
       IDUM = 0
       CALL MEMMAR(KDUM,IDUM,'FLUSM ',IDUM,'ZBXPRP')
@@ -6344,6 +6338,7 @@ C
       CALL MEMMAR(KPCLEBT,  MXNTTS,'ADDL  ',1,'CLEBX2')
       CALL MEMMAR(KPCI1BT,  MXNTTS,'ADDL  ',1,'CI1BX2')
 C
+C     WRITE(LUWRT,*) ' ... before IXSYMACT loop: LBLOCK = ', LBLOCK
       DO 200 I = 1, IXSYMACT
 C
         IJSYM = IXSYMLIST(I)
@@ -6404,14 +6399,17 @@ C       initialize symmetry irrep block array
      &                      NBLOCK,WORK(KPCIBT))
  200  CONTINUE
 C     ^ End of loop over different symmetries
+C     WRITE(LUWRT,*) ' ... after IXSYMACT loop: LBLOCK = ', LBLOCK
 
       IDUM = 0
       CALL MEMMAR(KDUM,IDUM,'FLUSM ',IDUM,'ZBXPR2')
 C
 #if defined (VAR_MPI2)
+C     WRITE(LUWRT,*) ' ... before BLOCK_DISTR_PROP: LBLOCK = ', LBLOCK
       CALL BLOCK_DISTR_PROP(WORK(KNODELIST),WORK(KBLOCKLIST),
      &                      WORK(KRCCTOS),IXSYMPAIRS,
      &                      WORK(KXSYMDISTR),IGROUPLIST)
+C     WRITE(LUWRT,*) ' ... after BLOCK_DISTR_PROP: LBLOCK = ', LBLOCK
 #endif
       END
 #if defined (VAR_MPI2)
@@ -6472,45 +6470,22 @@ C            ---------------------------------------
 C            set correct symmetry for C and sigma
              ICSM = IISYM
              ISSM = IJSYM
-C     WRITE(LUWRT,*) ' active: ICSM and ISSM are IXPAIR #: ',
-C    &                         ICSM,ISSM,IXPAIR
-C     WRITE(LUWRT,*) ' IXSYMPAIRS(ICSM,ISSM)=',IXSYMPAIRS(ICSM,ISSM)
-C     WRITE(LUWRT,*) ' NPARBLOCK_X(1,J) before'
-C     CALL IWRTMAMN(NPARBLOCK_X(1,J),1,NUM_BLOCKS,1,NUM_BLOCKS,LUWRT)
-C     WRITE(LUWRT,*) ' IBLOCKL_X(1,J) before'
-C     CALL IWRTMAMN(IBLOCKL_X(1,J),1,NUM_BLOCKS,1,NUM_BLOCKS,LUWRT)
-C     WRITE(LUWRT,*) ' IBLOCKL_X(1,I) before'
-C     CALL IWRTMAMN(IBLOCKL_X(1,I),1,NUM_BLOCKS,1,NUM_BLOCKS,LUWRT)
-C     WRITE(LUWRT,*) ' RCCTOS_X(1,IXPAIR) before'
-C     CALL IWRTMAMN(RCCTOS_X(1,IXPAIR),1,NUM_BLOCKS2,1,
-C    &              NUM_BLOCKS2,LUWRT)
 C
 C            set T operator arrays
              ISYM_T    = IDBGMULT(INVELM(ICSM),ISSM)
              IPRHAM_CI = 0
              NO_TTWO   = 1
+C	 WRITE(LUWRT,*) ' inside loop I,J (1): LBLOCK',I,J,LBLOCK
              CALL SET_HOP_DBG(IHTYPE_X,NO_TTWO,ISYM_T,IPRHAM_CI)
+C	 WRITE(LUWRT,*) ' inside loop I,J (2): LBLOCK',I,J,LBLOCK
 C
              CALL BLOCK_DISTR_DRV_REL(NPARBLOCK_X(1,J),IBLOCKL_X(1,J),
      &                                IBLOCKL_X(1,I),RCCTOS_X(1,IXPAIR),
      &                                IDUMMY,IGROUPLIST)
-C     WRITE(LUWRT,*) ' I (C),J (S),IXPAIR: ',I,J,IXPAIR
-C     WRITE(LUWRT,*) ' NPARBLOCK_X(1,J) after'
-C     CALL IWRTMAMN(NPARBLOCK_X(1,J),1,NUM_BLOCKS,1,NUM_BLOCKS,LUWRT)
-C     WRITE(LUWRT,*) ' IBLOCKL_X(1,J) after'
-C     CALL IWRTMAMN(IBLOCKL_X(1,J),1,NUM_BLOCKS,1,NUM_BLOCKS,LUWRT)
-C     WRITE(LUWRT,*) ' ICSM,ISSM, RCCTOS_X(1,IXPAIR),IXPAIR',
-C    &                 ICSM,ISSM,IXPAIR
-C     CALL IWRTMAMN(RCCTOS_X(1,IXPAIR),1,NUM_BLOCKS2,1,
-C    &              NUM_BLOCKS2,LUWRT)
+C	 WRITE(LUWRT,*) ' inside loop I,J (3): LBLOCK',I,J,LBLOCK
            END IF
         END DO
       END DO
-C     WRITE(LUWRT,*) ' final RCCTOS_X lists of NXSYMPAIRS',NXSYMPAIRS
-C     DO I = 1, NXSYMPAIRS
-C       WRITE(LUWRT,*) ' RCCTOS_X(1,I) ,I',I
-C       CALL IWRTMAMN(RCCTOS_X(1,I),1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
-C     END DO
       END
 #endif
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
