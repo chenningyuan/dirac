@@ -1066,6 +1066,7 @@ C
       DIMENSION WORK(*), OSCL(3), EVECS(*), EPROP_CORE(*)
       INTEGER IND_DIP(3)
       CHARACTER XLABEL*16
+      LOGICAL PRINT_EV
 !     dynamic memory allocation
       integer, allocatable :: indx(:)
 C
@@ -1074,53 +1075,63 @@ C
 C
       MZ = MIN(NZ,2)
 C
-C     get energies from file KRCI_CVECS.INFO
-      CALL GET_KRCICVECS_E(EVECS,NKRCI_CIROOTS,XSYMFLAB,NKRCI_MAX_SYM)
+C     check for file containing the individual energies for each root
+C     print the list of states if the file is available otherwise skip
+C     it
+      PRINT_EV = .FALSE.
+      INQUIRE(FILE='KRCI_CVECS.INFO',EXIST=PRINT_EV)
+      IF( PRINT_EV )THEN
 C
-C     print list of eigenstates and energies
-      WRITE(LUPRI,'(/,1X,A,F14.10,A,F17.9,A)')
-     & '( 1 au =',XTEV,' eV  / ',XTKAYS,' cm-1)'
+C       get energies from file KRCI_CVECS.INFO
+        CALL GET_KRCICVECS_E(EVECS,NKRCI_CIROOTS,XSYMFLAB,NKRCI_MAX_SYM)
+C
+C       print list of eigenstates and energies
+        WRITE(LUPRI,'(/,1X,A,F14.10,A,F17.9,A)')
+     &   '( 1 au =',XTEV,' eV  / ',XTKAYS,' cm-1)'
 
-      WRITE(LUPRI,'(/A/A)') 
-     & '  List of eigenstates in property calculation',
-     & '  ___________________________________________________'
-          WRITE(LUPRI,'(A)') 
-     & '   # eigenstate    irrep           energy (a.u.)'
-      DO IVEC=1, NPROP_ROOTS_KRCI
-          WRITE(LUPRI,'(I11,7X,A4,5X,1F22.10)') 
-     &          IVEC,XREPEIG(ISYMEIG_KRCI(IVEC)),EVECS(IVEC)
-      END DO
-      WRITE(LUPRI,'(A/)') 
-     & '  ___________________________________________________'
+        WRITE(LUPRI,'(/A/A)') 
+     &   '  List of eigenstates in property calculation',
+     &   '  ___________________________________________________'
+            WRITE(LUPRI,'(A)') 
+     &   '   # eigenstate    irrep           energy (a.u.)'
+        DO IVEC=1, NPROP_ROOTS_KRCI
+            WRITE(LUPRI,'(I11,7X,A4,5X,1F22.10)') 
+     &            IVEC,XREPEIG(ISYMEIG_KRCI(IVEC)),EVECS(IVEC)
+        END DO
+        WRITE(LUPRI,'(A/)') 
+     &   '  ___________________________________________________'
 C
-C     sort
-      call alloc(INDX,NPROP_ROOTS_KRCI)
-      INDX = 0
-      CALL INDEXX(NPROP_ROOTS_KRCI,EVECS,INDX)
+C       sort
+        call alloc(INDX,NPROP_ROOTS_KRCI)
+        INDX = 0
+        CALL INDEXX(NPROP_ROOTS_KRCI,EVECS,INDX)
 C
-C     relative ordering
-      WRITE(LUPRI,'(/A/A)') 
-     & '  List of eigenstates in property calculation (sorted)',
+C       relative ordering
+        WRITE(LUPRI,'(/A/A)') 
+     &   '  List of eigenstates in property calculation (sorted)',
      & '  ___________________________________________________________'//
-     & '_________________________________________________________'
-      WRITE (LUPRI,'(A)')
-     &         '  Level | abs. eigenvalue     |'//
-     &         ' rel. eigenvalue (a.u.) |'//
-     &         ' rel. eigenvalue (eV) | rel. eigenvalue (cm-1) |'//
-     &         ' irrep '
+     &   '_________________________________________________________'
+        WRITE (LUPRI,'(A)')
+     &           '  Level | abs. eigenvalue     |'//
+     &           ' rel. eigenvalue (a.u.) |'//
+     &           ' rel. eigenvalue (eV) | rel. eigenvalue (cm-1) |'//
+     &           ' irrep '
 !
-      ILEVEL=0
-      EWF=EVECS(INDX(1))
-      DO I=1,NPROP_ROOTS_KRCI
-        E = EVECS(INDX(I))
-        WRITE(LUPRI,1010) ILEVEL,E,E-EWF,XTEV*(E-EWF),XTKAYS*(E-EWF),
-     &                    XREPEIG(ISYMEIG_KRCI(INDX(I)))
-        ILEVEL=ILEVEL+1
-      ENDDO
+        ILEVEL=0
+        EWF=EVECS(INDX(1))
+        DO I=1,NPROP_ROOTS_KRCI
+          E = EVECS(INDX(I))
+          WRITE(LUPRI,1010) ILEVEL,E,E-EWF,XTEV*(E-EWF),XTKAYS*(E-EWF),
+     &                      XREPEIG(ISYMEIG_KRCI(INDX(I)))
+          ILEVEL=ILEVEL+1
+        ENDDO
 !
-      WRITE(LUPRI,'(A/)') 
+        WRITE(LUPRI,'(A/)') 
      & '  ___________________________________________________________'//
-     & '_____________________________________________'
+     &   '_____________________________________________'
+C
+C
+      END IF
 C
 C     *****************************************************************
 C     ************************** PROPERTIES ***************************
@@ -1206,7 +1217,20 @@ C             print only values above a given threshold - 1.0D-7
      $       '   Sum of oscillator strength : ',SUML
         ENDIF ! IPROPPRINT .gt. 100 
 C
+C       ---------
 C       print TDM
+C       ---------
+C
+        IF( .NOT. PRINT_EV ) THEN
+          WRITE(LUPRI,'(/A)') 
+     &    '  *** Warning: energies for roots are not available.'//
+     &    ' Applying a simple order per symmetry. DO NOT RELY ON ANY'//
+     &    ' ORDERING! DEGENERACIES MAY NOT BE DETECTED... ***'
+          DO IVEC = 1, NPROP_ROOTS_KRCI
+            EVECS(IVEC) = IVEC * 1.0D0
+          END DO
+        END IF
+C
         WRITE(LUPRI,'(/A/A)')
      & '   <initial state   |x,y,z|   final state>  '//
      & '            TDM [a.u.] (x, y, z)           Norm [a.u.]'//
