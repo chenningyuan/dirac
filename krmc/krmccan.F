@@ -1219,17 +1219,6 @@ C
 C       ---------
 C       print TDM
 C       ---------
-C
-        IF( .NOT. PRINT_EV ) THEN
-          WRITE(LUPRI,'(/A)') 
-     &    '  *** Warning: energies for roots are not available.'//
-     &    ' Applying a simple order per symmetry. DO NOT RELY ON ANY'//
-     &    ' ORDERING! DEGENERACIES MAY NOT BE DETECTED... ***'
-          DO IVEC = 1, NPROP_ROOTS_KRCI
-            EVECS(IVEC) = IVEC * 1.0D0
-          END DO
-        END IF
-C
         WRITE(LUPRI,'(/A/A)')
      & '   <initial state   |x,y,z|   final state>  '//
      & '            TDM [a.u.] (x, y, z)           Norm [a.u.]'//
@@ -1359,7 +1348,9 @@ C       get and diagonalize omega expectation value matrix
 C       release memory        
         CALL MEMREL('XKRCIPRPANA',WORK,KWORK,KWORK,KFREE,LFREE)
       END IF
-      call dealloc(INDX)
+C
+C     release dynamically allocated memory
+      if(print_ev) call dealloc(INDX)
 C 
       CALL QEXIT('XKRCIPRPANA')
  1010 FORMAT(1X,I5,2X,F22.10,F16.12,F26.12,F28.12,'      (',A4,')')

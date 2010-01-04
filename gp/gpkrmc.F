@@ -298,8 +298,19 @@ C     read final energies from file KRCI_CVECS.INFO
           WRITE(FILELAB,'(A7,A1)') "eroots.",XSYMFLAB(I)
           REWIND LU_INFO
           PRINT_EV = FNDLAB(FILELAB,LU_INFO)
-          IF(PRINT_EV) CALL KRCI_PRPFILE(LU_INFO,FILELAB,EVEC(NXSCR),
-     &                                   NKRCI_CIROOTS(I),1)
+          IF(PRINT_EV) THEN 
+            CALL KRCI_PRPFILE(LU_INFO,FILELAB,EVEC(NXSCR),
+     &                        NKRCI_CIROOTS(I),1)
+          ELSE
+            WRITE(LUPRI,'(/A,/A)')
+     &      ' *** Warning: energies for requested eigenstates are not'//
+     &      ' available. Applying a simple order per symmetry. ***',
+     &      ' *** DO NOT RELY ON ANY ORDERING!'//
+     &      ' DEGENERACIES MAY NOT BE DETECTED... ***'
+            DO IVEC = 1,NKRCI_CIROOTS(I)
+              EVEC(IVEC+NXSCR-1) = (IVEC+NXSCR-1) * 1.0D0
+            END DO
+          END IF
         END IF
         NXSCR = NXSCR + NKRCI_CIROOTS(I)
       END DO
