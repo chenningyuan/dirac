@@ -12,7 +12,7 @@
 
 # C++ compiler and flags
 CXX ?= g++
-CXXFLAGS ?= -g -Wall -Os -DWITH_SINGLE#-DNEW_CONTRACTION 
+CXXFLAGS ?= -g -Wall -O3 -DNDEBUG
 CXXFLAGS+=-Iinclude -Isrc/taylor -Isrc/functionals -Llib -fno-rtti -fno-exceptions
 LIBS=-lxc_fun
 
@@ -20,10 +20,10 @@ LIBS=-lxc_fun
 FC=gfortran
 FFLAGS=-Wall -Llib -Jfortran
 
-src/xc_fun.o: $(wildcard src/functionals/*.h) src/taylor/taylor.h
-
 lib/libxc_fun.a: src/xc_fun.o
 	ar r $@ $<
+
+src/xc_fun.o: $(wildcard src/functionals/*.h) src/taylor/taylor.h
 
 stripped: lib/libxc_fun.a
 	strip --strip-unneeded $<

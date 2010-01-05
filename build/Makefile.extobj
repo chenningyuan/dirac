@@ -1,0 +1,2 @@
+# Extra (externally compiled) objects to use with Dirac
+EXT_OBJ+=xc_fun/lib/libxc_fun.a

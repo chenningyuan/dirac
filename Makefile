@@ -99,9 +99,10 @@ include/fortran_interface.h: build/gen_fortran_interface_h
 
 include build/Makefile.obj
 include build/Makefile.dep
+include build/Makefile.extobj
 
-$(TARGET): $(OBJ)
-	$(LD) $(LDFLAGS) -o $@ $(OBJ) $(LIBS)
+$(TARGET): $(OBJ) $(EXT_OBJ)
+	$(LD) $(LDFLAGS) -o $@ $(OBJ) $(EXT_OBJ) $(LIBS)
 	@echo
 	@echo "Executable $(TARGET) is ready."
 

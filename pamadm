@@ -668,6 +668,7 @@ do
 done
 
 cp build/dontbuild.in build/dontbuild
+echo "# Extra (externally compiled) objects to use with Dirac" > build/Makefile.extobj
 # Some makes cannot cope with nonexisting include files,
 # we therefore make dummy includes so that make depend can
 # run properly.
@@ -727,7 +728,9 @@ if [ -n "$MATRIX_OPERATIONS_FLG" ]; then
 fi
 
 if [ -n "$AUTODIFFFLG" ]; then
+    # Compile the fortran interface with Dirac make system.
    rmline build/dontbuild "xc_fun/\.\*"
+   echo "EXT_OBJ+=xc_fun/lib/libxc_fun.a" >> build/Makefile.extobj
 fi
 
 if [ -n "$CAPFLG" ]; then

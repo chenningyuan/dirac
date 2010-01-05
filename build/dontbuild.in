@@ -6,7 +6,8 @@ oof/.*
 utils/.*
 aoresponse/.*
 matrix_operations/.*
-autodiff/.*
+autodiff/.*F90
+autodiff/.*cpp
 visual/.*
 hsmrcc/.*
 hsmrcc/interface/.*
