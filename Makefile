@@ -100,6 +100,7 @@ include/fortran_interface.h: build/gen_fortran_interface_h
 include build/Makefile.obj
 include build/Makefile.dep
 include build/Makefile.extobj
+include build/Makefile.lib
 
 $(TARGET): $(OBJ) $(EXT_OBJ)
 	$(LD) $(LDFLAGS) -o $@ $(OBJ) $(EXT_OBJ) $(LIBS)
