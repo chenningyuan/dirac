@@ -24,6 +24,8 @@ export MENU=response_1z_bz.inp
 ../run.sh -outcmo -get  PAMXVC
 export MENU=visual_1z_bz.inp
 ../run.sh -incmo  -copy PAMXVC
+export MENU=visual_1z_bz_only_para.inp
+../run.sh -incmo  -copy PAMXVC
 
 export MENU=response_1z_2z.inp
 ../run.sh -outcmo -get  PAMXVC
