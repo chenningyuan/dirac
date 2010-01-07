@@ -4021,9 +4021,9 @@ c     ... If this is a ghost-atom (f.ex for Counter-Poise
 c         correction) we return (charge is zero in BNCORR)
       IF (Z .EQ. D0) GOTO 10
       IF (N.EQ.0) THEN
-c     ...Always make 1 electron delocalized
+c     ...Always make 1 electron semi-delocalized
          ZEFF = D1
-         GNU  = 0.1D0
+         GNU  = 0.4D0
          SHELE(INUC,1) = SHELE(INUC,1) + D1
          GOTO 10
       ENDIF
