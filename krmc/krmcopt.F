@@ -1919,6 +1919,17 @@ C
       LZXOPE = 2*NZHOPE
       LZXOPP = 2*NZXOPP
 C
+C     remove potentially symmetry-breaking orbital rotations - 
+C     this will hopefully (!) solve the problem in MCSCF calculations 
+C     with active spaces that contain orbitals of different mj-values.
+C     Note that linear symmetry is not implemented for KR-MCSCF/KR-CI 
+C     and we run instead in D2h*/C2h*. SK+HJAaJ/Jan 2010
+C
+C     CALL RESETXOP_MJ(OPT_INDSTR,OPT_SKIPEE,OPT_SKIPEP,GASWF,JOPSY,
+C    &                 NOROT,NZXOPE,NZHOPE,KZXOPE, NZXOPP,KZXOPP,
+C    &                 WORK,KFREE,LFREE, IPROPT)
+C
+C
 C     From now on NOROT is used for the orbitals that should not
 C     be included in the 4-index transformation.
 C     Reset active indices to 0:
@@ -4755,6 +4766,8 @@ C     for which the corresponding gradient element is
 C     below threshold THRCOM
 C
 C     Written by J. Thyssen - Tue Mar 13 14:52:12 "MET 2001
+C
+C     NOTE: This routine is not active - S. Knecht/Jan 2010
 C
 C***********************************************************************
 #include "implicit.h"
