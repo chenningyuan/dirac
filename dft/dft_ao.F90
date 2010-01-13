@@ -124,6 +124,7 @@ module dft_ao
   integer, allocatable :: n_exp(:)
   real(8), allocatable :: sbuffer(:)
 
+  integer, parameter   :: max_nr_so_ao = 10000
   integer              :: nr_so_ao
   integer, allocatable :: i_so_ao(:, :)
   real(8), allocatable :: f_so_ao(:)
@@ -680,11 +681,8 @@ contains
       call alloc(n_exp,   nr_cartesian_ao)
       call alloc(sbuffer, nr_cartesian_ao)
 
-!fixme cartesian only convenience here
-      call alloc(i_so_ao, 2, nr_cartesian_ao*8)
-      call alloc(f_so_ao, nr_cartesian_ao*8)
-!     call alloc(i_so_ao, 2, ntbas(0)*8)
-!     call alloc(f_so_ao, ntbas(0)*8)
+      call alloc(i_so_ao, 2, max_nr_so_ao*8)
+      call alloc(f_so_ao, max_nr_so_ao*8)
       i_so_ao = 0
       f_so_ao = 0.0d0
 
@@ -826,6 +824,10 @@ contains
                 f = dft_pt(iand(isym, ieor(irep, dft_isymao(n, nshell))))
            
                 nr_so_ao = nr_so_ao + 1
+
+                if (nr_so_ao > max_nr_so_ao) then
+                  call quit('increase max_nr_so_ao')
+                end if
            
                 i_so_ao(1, nr_so_ao) = iso_bs
                 i_so_ao(2, nr_so_ao) = iao
