@@ -598,7 +598,8 @@ contains
                          max_ao_g_order,          &
                          max_ao_m_order,          &
                          use_screening,           &
-                         ao_threshold)
+                         ao_threshold,            &
+                         force_small_ao)
 
 #include "mxcent.h"
 #include "maxorb.h"
@@ -619,6 +620,7 @@ contains
     integer, intent(in) :: max_ao_m_order
     logical, intent(in) :: use_screening
     real(8), intent(in) :: ao_threshold
+    logical, intent(in) :: force_small_ao
 !   ----------------------------------------------------------------------------
     integer             :: g_order
     integer             :: m_order
@@ -717,6 +719,7 @@ contains
       dft_isymax = isymax
       nr_boson_sym                = nbsym
       if (mc == 1) only_large = .true.
+      if (only_large .and. force_small_ao) only_large = .false.
       nr_ao = ntbas(0)
 
       dft_csp    = csp

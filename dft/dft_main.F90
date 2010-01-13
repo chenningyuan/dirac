@@ -750,7 +750,8 @@ contains
                      max_ao_g_order,          &
                      max_ao_m_order,          &
                      dft_cfg_screening,       &
-                     dft_cfg_dfthri)
+                     dft_cfg_dfthri,          &
+                     .false.)
 
     call dft_density_init(is_parallel_calculation)
 

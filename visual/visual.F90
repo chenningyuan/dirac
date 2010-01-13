@@ -241,7 +241,8 @@ contains
                      max_ao_g_order, &
                      max_ao_m_order, &
                      .false.,        &
-                     1.0d-15)
+                     1.0d-15,        &
+                     visual_cfg_force_small_ao)
 
     call alloc(ao,     total_ao_vector_length)
     call alloc(buffer, total_ao_vector_length)

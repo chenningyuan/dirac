@@ -221,7 +221,8 @@ module numoper_integrals
                           0,        &
                           0,        &
                           .false.,  & 
-                          0.0D0)
+                          0.0D0,    &
+                          .false.)
          call init_dft_cb()
 
          ndim = nr_ao_total

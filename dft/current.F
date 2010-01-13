@@ -294,12 +294,6 @@ C        iq = iqtopq(5-ixyz,isymax(ixyz,2))
       endif
       if(joff .gt. joff_max) call quit('joff .gt. joff_max')
 
-      ICHECK = K + L
-
-!     skip this if for levy-leblond and relativistic current density
-!     could be removed permanently but haven't tested it
-      IF((MC .EQ. 1) .AND. (ICHECK .GT. 2)) GOTO 1
-
       CALL GET_DENSITY_SUBSUB(LGET,
      &                        DENSITY,
      &                        A,K,L,
@@ -308,13 +302,6 @@ C        iq = iqtopq(5-ixyz,isymax(ixyz,2))
      &                        GAO_RIGHT,
      &                        DMAT(1+JOFF),
      &                        BUF)
-
-1     CONTINUE
-
-      ICHECK = M + N
-!     skip this if for levy-leblond and relativistic current density
-!     could be removed permanently but haven't tested it
-      IF((MC .EQ. 1) .AND. (ICHECK .GT. 2)) GOTO 2
 
       CALL GET_DENSITY_SUBSUB(LGET,
      &                        DENSITY,
@@ -325,9 +312,6 @@ C        iq = iqtopq(5-ixyz,isymax(ixyz,2))
      &                        DMAT(1+JOFF),
      &                        BUF)
 
-2     CONTINUE
-
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* GET_DENSITY_SUBSUB */

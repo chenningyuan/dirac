@@ -18,6 +18,7 @@ module visual_cfg
   logical,       public :: visual_cfg_use_orbital_string = .false.
   logical,       public :: visual_cfg_integrate          = .false.
   logical,       public :: visual_cfg_radial             = .false.
+  logical,       public :: visual_cfg_force_small_ao     = .false.
 
   integer,       public :: visual_cfg_ncube(0:3)                       = 80
   integer,       public :: visual_cfg_nr_points_in_list                = 0
