@@ -96,40 +96,6 @@ contains
                    // ' wrong number of Fock matrices')
       !ajt fixme: This should be written optimized an for general orders
 
-!#define AOR_ONLY_INDIVIDUAL_COMPONENTS
-#ifdef AOR_ONLY_INDIVIDUAL_COMPONENTS
-!radovan: this is useful for high order rsp functions where the combinatorics
-!         becomes painful
-
-        if (all(p == 'EL' .or. p == 'MAGO')) then
-
-          X = -sum(ww/2.0d0)*S0
-
-          imax = size(D)
-
-!radovan: this has to be done in this order
-!         otherwise gamma is always zero in d2h
-!         no idea why
-          DSD(1) = D(imax)*S0*D(1) + D(1)*S0*D(imax) - D(imax)
-          do i = 2, imax - 1
-            j = imax - i + 1
-            DSD(1) = DSD(1) + D(j)*S0*D(i)
-          end do
-
-          FDS(1) = (F(1) - X)*D(imax)
-          SDF(1) =            D(imax)*(F(1) + X)
-          do i = 1, imax
-            j = imax - i + 1
-            FDS(1) = FDS(1) + F(i)*D(j)
-            SDF(1) = SDF(1) + D(i)*F(j)
-          end do
-
-          FDS(1) = FDS(1)*S0 - S0*SDF(1)
-
-          SDF(1) = 0
-          X      = 0
-#else
-
       if (n==1 .and. all( p=='EL' .or. p=='MAGO' )) then
          do i = 1, b(1)
             DSD(i) = D(1+i)*S0*D(1) + D(1)*S0*D(1+i) - D(1+i)
@@ -176,7 +142,34 @@ contains
                end do
             end do
          end do
-#endif /* AOR_ONLY_INDIVIDUAL_COMPONENTS */
+#ifdef PRG_DIRAC
+      else if (n > 3 .and. all(p == 'EL' .or. p == 'MAGO')) then
+          X = -sum(ww/2.0d0)*S0
+
+          imax = size(D)
+
+!radovan: this has to be done in this order
+!         otherwise gamma is always zero in d2h
+!         no idea why
+          DSD(1) = D(imax)*S0*D(1) + D(1)*S0*D(imax) - D(imax)
+          do i = 2, imax - 1
+            j = imax - i + 1
+            DSD(1) = DSD(1) + D(j)*S0*D(i)
+          end do
+
+          FDS(1) = (F(1) - X)*D(imax)
+          SDF(1) =            D(imax)*(F(1) + X)
+          do i = 1, imax
+            j = imax - i + 1
+            FDS(1) = FDS(1) + F(i)*D(j)
+            SDF(1) = SDF(1) + D(i)*F(j)
+          end do
+
+          FDS(1) = FDS(1)*S0 - S0*SDF(1)
+
+          SDF(1) = 0
+          X      = 0
+#endif /* ifdef PRG_DIRAC */
       elseif (n==1) then
          do i = 1, b(1)
             call prop_overlap(p, S0, Sp, c=(/cc(1)+i-1/) )
