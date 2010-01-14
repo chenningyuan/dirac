@@ -733,6 +733,7 @@ contains
                           D(1)%elms,                       &
                           nr_dmat - 1,                     &
                           (/(D(i)%elms, i = 2, nr_dmat)/), &
+!fixme: this is wrong, works only for totally symmetric perturbations
                           (/ones(1:nr_dmat - 1)/),         &
                           (/ones(1:nr_dmat - 1)/),         &
                           0,                               &
