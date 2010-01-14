@@ -325,7 +325,7 @@ contains
       else if (RHS(1)%complex .or. cfg_rsp_complex .or. imag(w) /= 0) then
           hasimag = RHS(1)%complex
           if (.not.hasimag) then
-              call init_mat(RHS(2), RHS(1), alias=.true.)
+              call init_mat(RHS(2), RHS(1), alias='FF')
               call init_mat(RHS(1), reset=.true.)
               RHS(1) = (1d0 + tiny(1d0)*(0d0,1d0)) * RHS(2)
               RHS(2) = 0 !free
@@ -333,10 +333,10 @@ contains
               call init_mat(SOL(1), RHS(1))
           end if
           !create aliases for the real and imaginary parts of RHS and SOL
-          call init_mat(RHS(2), re(RHS(1)), alias=.true.)
-          call init_mat(RHS(3), im(RHS(1)), alias=.true.)
-          call init_mat(SOL(2), re(SOL(1)), alias=.true.)
-          call init_mat(SOL(3), im(SOL(1)), alias=.true.)
+          call init_mat(RHS(2), re(RHS(1)), alias='FF')
+          call init_mat(RHS(3), im(RHS(1)), alias='FF')
+          call init_mat(SOL(2), re(SOL(1)), alias='FF')
+          call init_mat(SOL(3), im(SOL(1)), alias='FF')
           !on the first run, initialize the solvers
           if (firstcplx) then
               call rsp2_init(2, 2, 2, 1, 2)
@@ -363,8 +363,8 @@ contains
           !imaginary part of RHS must be solved for separately
           if (hasimag) then
               call init_mat(SOL(4), SOL(1))
-              call init_mat(SOL(2), re(SOL(4)), alias=.true.)
-              call init_mat(SOL(3), im(SOL(4)), alias=.true.)
+              call init_mat(SOL(2), re(SOL(4)), alias='FF')
+              call init_mat(SOL(3), im(SOL(4)), alias='FF')
               call rsp_complex_solver(F, D, S, 1, RHS(3:3), ww(1:1), 1, &
                                       SOL(2:2), SOL(3:3), .false.)
               SOL(1) = SOL(1) + (0d0,1d0)*SOL(4)
@@ -430,9 +430,9 @@ contains
 
       !add contribution G(Dp) to Fp. Since prop_fock takes
       !array argument, move to RHS(1) before calling, and then back
-      call init_mat(RHS(1), Fp, alias=.true.)
+      call init_mat(RHS(1), Fp, alias='FF')
       call prop_fock(nop, (/D, Dp/), RHS(1:1))
-      call init_mat(Fp, RHS(1), alias=.true.)
+      call init_mat(Fp, RHS(1), alias='FF')
       call init_mat(RHS(1), reset=.true.)
 
    end subroutine

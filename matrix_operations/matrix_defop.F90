@@ -45,7 +45,7 @@ module matrix_defop
 !     call init_mat(A,B,'T',C,'N')     rows and columns from diff. mats.
 !     call init_mat(A,B,zero=.true.)   non-allocated zero of same shape
 !     call init_mat(A,reset=.true.)    reset to defaults, nullifying pointers
-!     call init_mat(A,B,alias=.true.)  copy pointers, no new allocation
+!     call init_mat(A,B,alias='FF')    copy pointers, no new allocation
 !
 ! Comparison of the shapes (and content) of matrices is done with mat_same
 !
@@ -283,9 +283,8 @@ contains
       type(tmp_mat),intent(inout) :: T
       logical             :: Azero, complex, fits
       type(matrix),target :: dupA
-!radovan: xlf complains here
-!     if (matrix_defop_debug) print *,'eval_tmp',loc(T%A),' =',loc(T%X) &
-!                                          ,' *',loc(T%Z),' +',loc(T%Y)
+      !if (matrix_defop_debug) print *,'eval_tmp',loc(T%A),' =',loc(T%X) &
+      !                                     ,' *',loc(T%Z),' +',loc(T%Y)
       !if (matrix_defop_debug) print *, 'fx=', T%fx, ' tx=', T%tx, ' tz=', T%tz, &
       !                                ' dx=', T%dx, ' dz=', T%dz, ' dy=', T%dy 
       !hack: remove the T-reference from A%ncol
@@ -294,9 +293,9 @@ contains
       Azero = .not.isdef(T%A)             !two steps, to prevent
       if (.not.Azero) Azero = iszero(T%A) !iszero(undef) error
       !if A is among the operands X, Z, Y, move to dupA and clear A
-      if ( associated(T%A,T%X) .or. associated(T%A,T%Z) &
-                               .or. associated(T%A,T%Y) ) then
-         call init_mat(dupA, T%A, alias=.true.)
+      if (associated(T%A,T%X) .or. associated(T%A,T%Z) &
+                              .or. associated(T%A,T%Y)) then
+         call init_mat(dupA, T%A, alias='FF')
          call init_mat(T%A, reset=.true.) !clear A
          if (associated(T%A,T%X)) T%dx = .true.
          if (associated(T%A,T%X)) T%X => dupA
@@ -306,52 +305,52 @@ contains
          if (associated(T%A,T%Y)) T%Y => dupA
       end if
       !decide whether the result should be complex or not
-      complex = (imag(T%fx)/=0 .or. T%X%complex)
+      complex = (dimag(T%fx)/=0 .or. T%X%complex)
       if (associated(T%Z)) complex = (complex .or. T%Z%complex)
       if (associated(T%Y)) complex = (complex .or. T%Y%complex)
       !see whether the result can be placed in Y
       fits = .false.
       if (associated(T%Y)) &
-         fits = ( T%dy .and. (T%Y%complex .eqv. complex) &
-                       .and. .not.associated(T%X,T%Y)    &
-                       .and. .not.associated(T%Z,T%Y) )
+         fits = (T%dy .and. (T%Y%complex .eqv. complex) &
+                      .and. .not.associated(T%X,T%Y)    &
+                      .and. .not.associated(T%Z,T%Y))
       !if it doesn't fit in Y, see whether the result can be placed in X
       if (.not.fits .and. .not.T%tx .and. .not.associated(T%Z)) then
-         fits = ( T%dx .and. (T%X%complex .eqv. complex) &
-                  .and. imag(T%fx)==0 )
+         fits = (T%dx .and. (T%X%complex .eqv. complex) &
+                 .and. dimag(T%fx)==0)
          if (fits) then !if result fits in X, swap X and Y
-            !apply any scale factor to X before swapping
+            ! apply any scale factor to X before swapping
             if (T%fx/=1) call mat_axtpy(T%fx, T%X, .false., .false., T%X)
-            T%Z => T%X;   T%dz = T%dx
-            T%X => T%Y;   T%dx = T%dy  !swap X and Y using Z as temporary
-            T%Y => T%Z;   T%dy = T%dz
+            ! swap X and Y using Z as temporary
+            T%Z => T%X;   T%X => T%Y;   T%Y => T%Z
+            T%dz = T%dx;  T%dx = T%dy;  T%dy = T%dz
             nullify(T%Z); T%dz = .false.; T%fx = 1
          end if
       end if
       !if needed, reallocate A
       if (fits) then
          if (.not.Azero) call mat_free(T%A)
-         call init_mat(T%A, T%Y, alias=.true.)
+         call init_mat(T%A, T%Y, alias='FF')
          if (T%dy) call init_mat(T%Y, reset=.true.)
          T%dy = .false.
       else if (associated(T%Y)) then
-         if (.not.Azero) fits = ( (T%A%complex .eqv. complex)   &
-                                  .and. mat_same(T%A, T%Y, 'N') )
+         if (.not.Azero) fits = ((T%A%complex .eqv. complex)  &
+                                 .and. mat_same(T%A, T%Y, 'N'))
          if (.not.Azero .and. .not.fits) call mat_free(T%A)
          if (.not.fits) call init_mat(T%A, T%Y, 'N', complex=complex)
          !copy Y to the newly allocated A
          call mat_axtpy((1d0,0d0), T%Y, .false., .false., T%A)
       else if (associated(T%Z)) then
-         if (.not.Azero) fits = ( (T%A%complex .eqv. complex)      &
+         if (.not.Azero) fits = ((T%A%complex .eqv. complex)       &
                 .and. mat_same(T%A, T%X, 'R', merge('C','R',T%tx)) &
-                .and. mat_same(T%A, T%Z, 'C', merge('R','C',T%tz)) )
+                .and. mat_same(T%A, T%Z, 'C', merge('R','C',T%tz)))
          if (.not.Azero .and. .not.fits) call mat_free(T%A)
          if (.not.fits) call init_mat( T%A, T%X, merge('T','N',T%tx), &
                                             T%Z, merge('T','N',T%tz), &
                                                  complex=complex )
       else !associated(T%X)
-         if (.not.Azero) fits = ( (T%A%complex .eqv. complex) .and. &
-                            mat_same(T%A, T%X, merge('T','N',T%tx)) )
+         if (.not.Azero) fits = ((T%A%complex .eqv. complex) .and. &
+                            mat_same(T%A, T%X, merge('T','N',T%tx)))
          if (.not.Azero .and. .not.fits) call mat_free(T%A)
          if (.not.fits) call init_mat( T%A, T%X, merge('T','N',T%tx), &
                                                  complex=complex )
@@ -363,8 +362,8 @@ contains
          call mat_axtpy(T%fx, T%X, T%tx, associated(T%Y), T%A)
       end if
       !delete X and/or Z, as specified. Y is never deleted
-      if ( T%dx .and. .not.associated(T%X,T%Z)   &
-                .and. .not.associated(T%X,T%Y) ) &
+      if (T%dx .and. .not.associated(T%X,T%Z)  &
+               .and. .not.associated(T%X,T%Y)) &
          call mat_free(T%X)
       if (T%dz .and. .not.associated(T%Z,T%Y)) &
          call mat_free(T%Z)
@@ -379,9 +378,8 @@ contains
       type(matrix),       intent(in)    :: B
       type(tmp_mat),pointer             :: T
       logical                           :: defB
-!radovan: xlf complains here
-!     if (matrix_defop_debug) print *, 'mat_eq_mat', loc(A), ' =', &
-!                       loc(B), B%nrow, B%ncol, associated(B%elms)
+      !if (matrix_defop_debug) print *, 'mat_eq_mat', loc(A), ' =', &
+      !                  loc(B), B%nrow, B%ncol, associated(B%elms)
       T => find_tmp(B, 'matrix A = B : B undefined')
       if (associated(T)) then
          T%A => A
@@ -408,13 +406,12 @@ contains
       type(matrix), target             :: C
       type(tmp_mat), pointer           :: TA, TB, TC
       logical                          :: zeroA, zeroB, swap, ltmp, plus
-!radovan: xlf complains here
-!     if (matrix_defop_debug) print *, 'mat_plus_minus_mat', loc(A), &
-!                                      merge(' + ',' - ',plus), loc(B), ' => ', loc(C)
-      if (matrix_defop_debug) print *, 'A%nrow=', A%nrow, ' A%ncol=', A%ncol, &
-                                       ' A%elms=', associated(A%elms)
-      if (matrix_defop_debug) print *, 'B%nrow=', B%nrow, ' B%ncol=', B%ncol, &
-                                       ' B%elms=', associated(B%elms)
+      !if (matrix_defop_debug) print *, 'mat_plus_minus_mat', loc(A), &
+      !                                 merge(' + ',' - ',plus), loc(B), ' => ', loc(C)
+      !if (matrix_defop_debug) print *, 'A%nrow=', A%nrow, ' A%ncol=', A%ncol, &
+      !                                 ' A%elms=', associated(A%elms)
+      !if (matrix_defop_debug) print *, 'B%nrow=', B%nrow, ' B%ncol=', B%ncol, &
+      !                                 ' B%elms=', associated(B%elms)
       TA => find_tmp(A, 'matrix A + B : A undefined')
       TB => find_tmp(B, 'matrix A + B : B undefined')
       zeroA = .false.; zeroB = .false.
@@ -423,10 +420,10 @@ contains
       !below, the matrix C will be created as C = 1*B^N + A.
       !Decide here whether some operation can be saved by swapping A and B first
       if (associated(TA) .and. associated(TB)) then
-         swap = ( TB%fx==merge(1,-1,plus) .and. .not.TB%tx &
-                               .and. .not.associated(TB%Z) &
-                               .and. .not.associated(TB%Y) &
-                               .and. .not.associated(TA%Y) )
+         swap = (TB%fx==merge(1,-1,plus) .and. .not.TB%tx &
+                              .and. .not.associated(TB%Z) &
+                              .and. .not.associated(TB%Y) &
+                              .and. .not.associated(TA%Y))
       else if (associated(TA)) then
          swap = (zeroB .or. .not.associated(TA%Y))
       else
@@ -436,18 +433,18 @@ contains
       if (swap) then
          ltmp = zeroA; zeroA = zeroB; zeroB = ltmp
          TC  => TA;    TA   => TB;    TB   => TC
-         TC => new_tmp( C, fx=(1d0,0d0), X=A, dx=associated(TB), &
-                                         Y=B, dy=associated(TA)  )
+         TC => new_tmp(C, fx=(1d0,0d0), X=A, dx=associated(TB), &
+                                        Y=B, dy=associated(TA))
       else
-         TC => new_tmp( C, fx=merge(1,-1,plus)*(1d0,0d0), &
-                                  X=B, dx=associated(TB), &
-                                  Y=A, dy=associated(TA)  )
+         TC => new_tmp(C, fx=merge(1,-1,plus)*(1d0,0d0), &
+                                 X=B, dx=associated(TB), &
+                                 Y=A, dy=associated(TA))
 
       end if
-       !if A = 1*X^N (simple temporary) promote into C%Y, otherwise evaluate A
+      ! if A = 1*X^N (simple temporary) promote into C%Y, otherwise evaluate A
       if (associated(TA)) then
-         if ( .not.TA%tx     .and. .not.associated(TA%Z) &
-              .and. TA%fx==1 .and. .not.associated(TA%Y) ) then
+         if (.not.TA%tx     .and. .not.associated(TA%Z) &
+             .and. TA%fx==1 .and. .not.associated(TA%Y)) then
             TC%dy = TA%dx
             TC%Y => TA%X
             call del_tmp(TA)
@@ -470,8 +467,8 @@ contains
       end if
       !verify that shapes do indeed match
       if (associated(TC%Z)) then
-         if ( .not.mat_same(TC%X, TC%Y, 'R',merge('C','R',TC%tx)) .or. &
-              .not.mat_same(TC%Z, TC%Y, 'C',merge('R','C',TC%tz)) )    &
+         if (.not.mat_same(TC%X, TC%Y, 'R',merge('C','R',TC%tx)) .or. &
+             .not.mat_same(TC%Z, TC%Y, 'C',merge('R','C',TC%tz)))    &
             call quit('matrix A +/- B : different shapes')
       else
          if (.not.mat_same(TC%X, TC%Y, merge('T','N',TC%tx))) &
@@ -519,9 +516,8 @@ contains
       type(matrix), target             :: C
       type(tmp_mat), pointer           :: TA, TB, TC
       logical                          :: zeroA, zeroB
-!radovan: xlf complains here
-!     if (matrix_defop_debug) print *, 'mat_times_mat', loc(A), &
-!                                 ' *', loc(B), ' => ', loc(C)
+      !if (matrix_defop_debug) print *, 'mat_times_mat', loc(A), &
+      !                            ' *', loc(B), ' => ', loc(C)
       TA => find_tmp(A, 'matrix A * B : A undefined')
       zeroA = .false.
       if (.not.associated(TA)) zeroA = iszero(A)
@@ -580,15 +576,15 @@ contains
       TA => find_tmp(A, 'matrix r * A : A undefined')
       if (associated(TA)) then
          if (.not.associated(TA%Y)) then
-            TB => new_tmp( B, fx=r*TA%fx, X=TA%X, tx=TA%tx, dx=TA%dx, &
-                                          Z=TA%Z, tz=TA%tz, dz=TA%dz  )
+            TB => new_tmp(B, fx=r*TA%fx, X=TA%X, tx=TA%tx, dx=TA%dx, &
+                                         Z=TA%Z, tz=TA%tz, dz=TA%dz)
             call del_tmp(TA)
             if (r==0) call zero_tmp(TB)
             return
          end if
          call eval_tmp(TA)
       end if
-      TB => new_tmp(B, X=A, fx=r)
+      TB => new_tmp(B, X=A, fx=r, dx=associated(TA))
       if (r==0 .or. iszero(A)) call zero_tmp(TB)
 
    end subroutine
@@ -636,7 +632,7 @@ contains
          TB => new_tmp(B, X=A, tx=.true., dx=.true.)
       else if (associated(TA%Z)) then
          TB => new_tmp(B, fx=TA%fx, X=TA%Z, tx=.not.TA%tz, dx=TA%dz, &
-                      &             Z=TA%X, tz=.not.TA%tx, dz=TA%dx)
+                                    Z=TA%X, tz=.not.TA%tx, dz=TA%dx)
          call del_tmp(TA)
       else
          TB => new_tmp(B, fx=TA%fx, X=TA%X, tx=.not.TA%tx, dx=TA%dx)
@@ -652,7 +648,7 @@ contains
 
    function gen_mat_dot(A, B, trps) result(r)
    !back-end for mat_dot and mat_trab (dot(A,B) and tr(A,B), resp.)
-      type(matrix),target,intent(inout) :: A, B
+      type(matrix),target,intent(in) :: A, B
       complex(8)                        :: r
       type(tmp_mat),pointer             :: TA, TB
       logical                           :: zeroA, zeroB, trps, delA, delB
@@ -668,11 +664,11 @@ contains
       delA = associated(TA)
       delB = associated(TB)
       if (associated(TA)) then
-         if ( .not.associated(TA%Z) .and. &
-            & .not.associated(TA%Y) ) then
+         if (.not.associated(TA%Z) .and. &
+             .not.associated(TA%Y)) then
             r = r * TA%fx
             trps = (trps.neqv.TA%tx)
-            call init_mat(A, TA%X, alias=.true.)
+            call init_mat(TA%A, TA%X, alias='FF')
             call init_mat(TA%X, reset=.true.)
             delA = TA%dx
             call del_tmp(TA)
@@ -681,11 +677,11 @@ contains
          end if
       end if
       if (associated(TB)) then
-         if ( .not.associated(TB%Z) .and. &
-            & .not.associated(TB%Y)) then
+         if (.not.associated(TB%Z) .and. &
+             .not.associated(TB%Y)) then
             r = r * TB%fx
             trps = (trps.neqv.TB%tx)
-            call init_mat(B, TB%X, alias=.true.)
+            call init_mat(TB%A, TB%X, alias='FF')
             call init_mat(TB%X, reset=.true.)
             delB = TB%dx
             call del_tmp(TB)
@@ -699,8 +695,8 @@ contains
       !calculate only if prefactor nonzero. "* 2" is due to identical
       if (r/=0) r = r * mat_dot(A, B, trps) * 2 !alpha and beta blocks
       !release any temporary operands
-      if (delA) call mat_free(A)
-      if (delB) call mat_free(B)
+      if (delA) call mat_free(TA%A)
+      if (delB) call mat_free(TB%A)
    end function
 
 
@@ -712,7 +708,7 @@ contains
    end function
 
    function mat_prod_trace(A, B) result(r)
-      type(matrix),target,intent(inout) :: A, B
+      type(matrix),target,intent(in) :: A, B
       complex(8)                        :: r
       !print *,'mat_prod_trace',loc(A),loc(B)
       r = gen_mat_dot(A, B, (.true.))
@@ -759,7 +755,7 @@ contains
       !if (matrix_defop_debug) print *,'mat_eq_zero A=',loc(A),' elms=',loc(A%elms)
       if (zero/=0) call quit('matrix A = z: z must be 0')
       if (.not.isdef(A)) call quit('A = 0: A undefined')
-      call init_mat(B, A, alias=.true.)
+      call init_mat(B, A, alias='FF')
       call init_mat(A, B, zero=.true.)
       call mat_free(B)
    end subroutine
@@ -852,7 +848,7 @@ contains
          call quit('mat_fix_result(A) : A undefined')
       if (isdef(fixA)) &
          call quit('mat_fix_result(A) : another fixed result already exists')
-      call init_mat(fixA, A, alias=.true.) !diplicate A in fixA
+      call init_mat(fixA, A, alias='FF') !diplicate A in fixA
       call init_mat(A, reset=.true.)      !reset/clear/undefine A
       T => new_tmp(A, X=fixA, dx=.true.)   !temporary A = 1*fixA, fixA to be deleted
    end subroutine

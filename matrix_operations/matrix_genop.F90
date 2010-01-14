@@ -1,4 +1,5 @@
 ! written by Andreas J. Thorvaldsen
+! radovan.bast@uit.no (2009-02-18): generalized for DIRAC
 
 ! module contains slightly generalized versions of the
 ! operations in matrix_operations (Dalton)
@@ -66,43 +67,40 @@ contains
       type(matrix),           intent(inout) :: C
       type(matrix), optional, intent(in)    :: A, B
       character*1,  optional, intent(in)    :: ta, tb
-      logical,      optional, intent(in)    :: complex, zero, alias, reset
-      logical :: taa, tbb, zer, ali, res, cplx
+      logical,      optional, intent(in)    :: complex, zero, reset
+      character*2,  optional, intent(in)    :: alias
+      logical :: taa, tbb, zer, res, cplx
       integer :: nrow, ncol
-
-
       if (present(ta) .and. .not.present(A)) &
-         call quit('mat_init input error : ta present without A')
+         call quit('mat_init input error: ta cannot be present without A')
       if (present(B) .and. .not.present(ta)) &
-         call quit('mat_init input error : B present without A')
+         call quit('mat_init input error: B cannot be present without A')
       if (present(tb) .and. .not.present(B)) &
-         call quit('mat_init input error : tb present without B')
+         call quit('mat_init input error: tb cannot be present without B')
       if (present(reset) .and. present(A)) &
-         call quit('mat_init input error : reset present with A')
+         call quit('mat_init input error: reset cannot be present with A')
       if (present(zero) .and. .not.present(A)) &
-         call quit('mat_init input error : zero present without A')
+         call quit('mat_init input error: zero cannot be present without A')
       if (present(alias) .and. .not.present(A)) &
-         call quit('mat_init input error : alias present without A')
+         call quit('mat_init input error: alias cannot be present without A')
       if (present(alias) .and. present(ta)) &
-         call quit('mat_init input error : alias present with ta')
+         call quit('mat_init input error: alias cannot be present with ta')
       taa = .false.
       if (present(ta)) then
          if (ta/='N' .and. ta/='T') &
-             call quit("mat_init input error : ta is not 'N' or 'T'")
+             call quit("mat_init input error: ta is not 'N' or 'T'")
          taa = (ta=='T')
       end if
       tbb = .false.
       if (present(tb)) then
          if (tb/='N' .and. tb/='T') &
-             call quit("mat_init input error : tb is not 'N' or 'T'")
+             call quit("mat_init input error: tb is not 'N' or 'T'")
          tbb = (tb=='T')
       end if
       res = .false.
       if (present(reset)) res = reset
       zer = .false.
       if (present(zero)) zer = zero
-      ali = .false.
-      if (present(alias)) ali = alias
       cplx = .false.
       if (present(A)) cplx = A%complex
       if (present(B)) cplx = (cplx .or. B%complex)
@@ -122,8 +120,21 @@ contains
          C%tr_sym = 1
          C%irep   = 0
 #endif
-      else if (ali) then
+      else if (present(alias)) then
          C = A !copies all fields
+         if (alias=='RF') then !real full (alpha and beta)
+            if (associated(A%elms)) C%elms => A%elms(1:nrow*ncol)
+            C%complex = .false.
+         else if (alias=='IF') then !imaginary full (alpha and beta)
+            if (associated(A%elms) .and. A%complex) then
+                C%elms => A%elms( nrow*ncol+1 : 2*nrow*ncol ) !ajt fixme
+            else
+                nullify(C%elms)
+            end if
+            C%complex = .false.
+         else if (alias/='FF') then
+             call quit("mat_init input error: alias cannot be '" // alias // "'")
+         end if
       else
          !print *,'mat_init',loc(C)
          call mat_init_full(C, nrow, ncol)
@@ -154,7 +165,7 @@ contains
       type(matrix), intent(in) :: A
       logical                  :: mat_iszero
       if (A%nrow==-1 .and. A%ncol==-1) &
-          call quit('mat_iszero(A) : matrix A undefined')
+         call quit('mat_iszero(A): matrix A undefined')
       mat_iszero = .not.associated(A%elms)
    end function
 
@@ -189,7 +200,7 @@ contains
    end function
 
    subroutine blk_axtpy(a, ix, X, tx, py, iy, Y)
-   ! private 'driving' routine for mat_axtpy and mat_gemm
+   ! private 'driving' routine for mat_axtpy
    ! add/put block ix from X to block iy in Y
       real(8),      intent(in) :: a      !scale factor for X
       integer,      intent(in) :: ix, iy !block indices
@@ -200,24 +211,22 @@ contains
       real(8), pointer :: Yelms(:)
       logical          :: Ycomplex, Xis0, XisY
       integer          :: siz
-      Xis0 = ( ix/=1 .and. .not.X%complex )
+      Xis0 = (ix/=1 .and. .not.X%complex)
+      XisY = (associated(X%elms, Y%elms) .and. ix==iy)
       if (Xis0) then
          !nothing
       else if (X%complex) then
-         dupX = X !copy all fields
+         dupX = X !copy all fields/pointers, not data
          dupX%complex = .false.
          siz = size(X%elms)/2
-         dupX%elms => X%elms( 1 + (ix-1)*siz : ix*siz )
-         XisY = associated(dupX%elms, Y%elms)
-      else
-         XisY = associated(X%elms, Y%elms)
+         dupX%elms => X%elms(1 + (ix-1)*siz : ix*siz)
       end if
       Ycomplex = Y%complex
       if (Ycomplex) then
          Y%complex = .false.
          Yelms => Y%elms
          siz = size(Yelms)/2
-         Y%elms => Yelms( 1 + (iy-1)*siz : iy*siz )
+         Y%elms => Yelms(1 + (iy-1)*siz : iy*siz)
       else if (iy==2) then
          return
       end if
@@ -249,34 +258,34 @@ contains
       logical, parameter :: trps=.true., norm=.false., &
                             plus=.true., eqls=.false.
       XisY = associated(X%elms,Y%elms)
-      useZ = ( ((XisY .or. (tx .and. X%complex))    &
-               .and. imag(a)/=0) .or. (tx .and. py) )
+      useZ = (((XisY .or. (tx .and. X%complex)) &
+              .and. dimag(a) /= 0) .or. (tx .and. py))
       if (useZ) call mat_init(Z, Y, complex=.false.)
       if (tx .and. py) then
-         call blk_axtpy(     1d0, 1, X, trps, eqls, 1, Z) !Z  = X^T
-         call blk_axtpy( imag(a), 1, Z, norm, plus, 2, Y) !Y´+= a´* Z
-         call blk_axtpy( real(a), 1, Z, norm, plus, 1, Y) !Y += a * Z
-         call blk_axtpy(     1d0, 2, X, trps, eqls, 1, Z) !Z  = X´^T
-         call blk_axtpy( imag(a), 1, Z, norm, plus, 1, Y) !Y += a´* Z
-         call blk_axtpy(-real(a), 1, Z, norm, plus, 2, Y) !Y´-= a * Z
+         call blk_axtpy(      1d0, 1, X, trps, eqls, 1, Z) !Z  = X^T
+         call blk_axtpy( dimag(a), 1, Z, norm, plus, 2, Y) !Y´+= a´* Z
+         call blk_axtpy( dreal(a), 1, Z, norm, plus, 1, Y) !Y += a * Z
+         call blk_axtpy(      1d0, 2, X, trps, eqls, 1, Z) !Z  = X´^T
+         call blk_axtpy( dimag(a), 1, Z, norm, plus, 1, Y) !Y += a´* Z
+         call blk_axtpy(-dreal(a), 1, Z, norm, plus, 2, Y) !Y´-= a * Z
       else if (tx .or. XisY) then
          if (tx) &
             call blk_axtpy(1d0, 1, X, trps, eqls, 1, Y)
          if (tx .and. X%complex) &
             call blk_axtpy(1d0, 2, X, trps, eqls, 2, Y)
-         if (imag(a)/=0) &
+         if (dimag(a) /= 0) &
             call blk_axtpy(1d0, 2, Y, norm, eqls, 1, Z) !Z = Y´
-         !Y´ = -a * X´^T (or a * Y´)
-         call blk_axtpy(real(a)*merge(-1,1,tx), 2, Y, norm, eqls, 2, Y)
-         call blk_axtpy(imag(a), 1, Y, norm, plus, 2, Y) !Y´+= a´* X^T (or a´* Y)
-         call blk_axtpy(real(a), 1, Y, norm, eqls, 1, Y) !Y += a * X^T (or a * Y)
-         !Y += a´* X´T (or -a´* Y)
-         call blk_axtpy(imag(a)*merge(1,-1,tx), 1, Z, norm, plus, 1, Y)
+                                                       !Y´ = -a * X´^T (or a * Y´)
+         call blk_axtpy(dreal(a)*merge(-1,1,tx), 2, Y, norm, eqls, 2, Y)
+         call blk_axtpy(dimag(a), 1, Y, norm, plus, 2, Y) !Y´+= a´* X^T (or a´* Y)
+         call blk_axtpy(dreal(a), 1, Y, norm, eqls, 1, Y) !Y += a * X^T (or a * Y)
+                                                         !Y += a´* X´T (or -a´* Y)
+         call blk_axtpy(dimag(a)*merge(1,-1,tx), 1, Z, norm, plus, 1, Y)
       else
-         call blk_axtpy( real(a), 2, X, norm, py  , 2, Y) !Y´+= a * X´
-         call blk_axtpy( imag(a), 1, X, norm, plus, 2, Y) !Y´+= a´* X
-         call blk_axtpy( real(a), 1, X, norm, py  , 1, Y) !Y += a * X
-         call blk_axtpy(-imag(a), 2, X, norm, plus, 1, Y) !Y -= a´* X´
+         call blk_axtpy( dreal(a), 2, X, norm, py  , 2, Y) !Y´+= a * X´
+         call blk_axtpy( dimag(a), 1, X, norm, plus, 2, Y) !Y´+= a´* X
+         call blk_axtpy( dreal(a), 1, X, norm, py  , 1, Y) !Y += a * X
+         call blk_axtpy(-dimag(a), 2, X, norm, plus, 1, Y) !Y -= a´* X´
       end if
       if (useZ) call mat_free(Z)
    end subroutine
@@ -341,25 +350,25 @@ contains
       logical,         intent(in) :: ta, tb, pc
       type(matrix), intent(inout) :: C
       type(matrix)       :: X, Y !temporary matrices
-      logical, parameter ::              norm=.false., &
+      logical, parameter :: trps=.true., norm=.false., &
                             plus=.true., eqls=.false.
       !print *,'dgemm ta=',ta,' tb=',tb,' ',C%nrow,C%ncol,A%ncol,A%nrow,B%ncol,B%nrow
-      !call mat_mul(A, B, ta, tb, real(fab), real(fc), C)
+      !call mat_mul(A, B, ta, tb, dreal(fab), dreal(fc), C)
       call mat_init(X, A, complex=.false.)
-      call blk_axtpy( real(fab), 1, A, norm, eqls, 1, X)
-      call blk_axtpy(-imag(fab), 2, A, norm, plus, 1, X)
+      call blk_axtpy( dreal(fab), 1, A, norm, eqls, 1, X)
+      call blk_axtpy(-dimag(fab), 2, A, norm, plus, 1, X)
       call mat_init(Y, C, complex=.false.)
       call blk_gemm(1d0, 1, X, ta, 2, B, tb, eqls, 1, Y)
       call blk_axtpy( 1d0, 1, Y, norm, pc, 1, C)
       call blk_axtpy( 1d0, 1, Y, norm, pc, 2, C)
-      call blk_axtpy( real(fab), 2, A, norm, eqls, 1, X)
-      call blk_axtpy( imag(fab), 1, A, norm, plus, 1, X)
+      call blk_axtpy( dreal(fab), 2, A, norm, eqls, 1, X)
+      call blk_axtpy( dimag(fab), 1, A, norm, plus, 1, X)
       call blk_gemm(1d0, 1, X, ta, 1, B, tb, eqls, 1, Y)
       call blk_axtpy( 1d0, 1, Y, norm, plus, 2, C)
       call blk_axtpy(-1d0, 1, Y, norm, plus, 1, C)
       call mat_free(Y)
-      call blk_axtpy( real(fab) + imag(fab), 1, A, norm, eqls, 1, X)
-      call blk_axtpy( real(fab) - imag(fab), 2, A, norm, plus, 1, X)
+      call blk_axtpy( dreal(fab) + dimag(fab), 1, A, norm, eqls, 1, X)
+      call blk_axtpy( dreal(fab) - dimag(fab), 2, A, norm, plus, 1, X)
       call mat_init(Y, B, complex=.false.)
       call blk_axtpy( 1d0, 1, B, norm, eqls, 1, Y)
       call blk_axtpy(-1d0, 2, B, norm, plus, 1, Y)
@@ -429,11 +438,9 @@ contains
       type(matrix),           intent(in) :: A
       integer,      optional, intent(in) :: unit, colwidth
       character(*), optional, intent(in) :: label, braces
-      integer                            :: uni, colw, dec, i, j, siz, iz, n
+      integer                            :: uni, colw, dec, i, j, siz
       character*8                        :: fmt
       character*4                        :: brac
-      real(8), external                  :: ddot
-
 #ifndef PRG_DIRAC
       uni = 6 !process optional argument unit, which defaults to stdout
       if (present(unit)) uni = unit
@@ -480,13 +487,6 @@ contains
       write(*, *) 'ih_sym = ', A%ih_sym
       write(*, *) 'tr_sym = ', A%tr_sym
       write(*, *) 'irep   = ', A%irep
-
-!     do iz = 1, nz
-!       n = A%nrow*A%ncol
-!       write(*, *) 'norm(iz) ', iz, sqrt(ddot(n, A%elms((iz - 1)*n + 1), 1, &
-!                                                 A%elms((iz - 1)*n + 1), 1))
-!       write(*, *) 'sum(iz)  ', iz, sum(A%elms((iz - 1)*n + 1:(iz - 1)*n + n))
-!     end do
 
       if (associated(A%elms)) then
         call prqmat(A%elms,            &

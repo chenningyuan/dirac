@@ -1013,9 +1013,9 @@ contains
          if (D(1)%complex) then
             if (.not.iszero(F(1)) .and. .not.F(1)%complex) F(1) = 0
             if (iszero(F(1))) call init_mat(F(1), F(1), complex=.true.)
-            call init_mat(dupF, re(F(1)), alias=.true.)
+            call init_mat(dupF, re(F(1)), alias='FF')
             call di_GET_GbDs(re(D(1)), dupF)
-            call init_mat(dupF, im(F(1)), alias=.true.)
+            call init_mat(dupF, im(F(1)), alias='FF')
             call di_GET_GbDs(im(D(1)), dupF)
          else
             if (iszero(F(1))) call init_mat(F(1), F(1))
