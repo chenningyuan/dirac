@@ -2,13 +2,15 @@
  =========================================================================
  Version           : Dirac 8.0 (patchlevel 0) 
  Hostname          : larry
- Operating system  : Linux 2.6.28-14-generic
+ Operating system  : Linux 2.6.31-17-generic
  Machine           : i686
  Run               : Sequential
- Last compilation  : 20:42:18 Aug  7 2009 (by bast@larry:/home/bast/dirac/latest_gfortran_gcc_a)
- FORTRAN compiler  : /usr/bin/gfortran -g -fno-range-check -Iinclude -Jmodules -DARCH32BIT -DGFORTRAN 433 -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM 64000000 -DVAR_MFDS -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON 
+ Last compilation  : 17:46:51 Jan 14 2010 (by bast@larry:/home/bast/dirac/rHEAD_gfortran_gcc_a_autodiff)
+ FORTRAN compiler  : /usr/bin/gfortran -g -fno-range-check -O3 -ffast-math -funroll-loops -Iinclude -Jmodules -DARCH32BIT -DVAR_GFORTRAN -DGFORTRAN 441 -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM 64000000 -DVAR_MFDS -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON 
 
  =========================================================================
+$ERROR 1.E-7
+$SIGNCHECK
 d/dg polari     w:-0.072 0.072 0.000
   -0.96218094858   1.71755560293  -1.83292995963
    1.71755560293  -0.84651475561  -0.37904176172
@@ -47,6 +49,11 @@ d/dg polari     w:-0.072 0.072 0.000
    0.64624854583   1.49603877511  -2.20927051774
   -1.39595655106  -2.20927051774   3.93420722088
 
+ successful restart from record fb      
+
+ =========================================================================
+$ERROR 1.E-7
+$SIGNCHECK
 d/dg G-prime    w:-0.072 0.072 0.000
  -0.052529269856 -0.006173882399 -0.044454331624
  -0.046068785144 -0.095236537322 -0.092305730622
@@ -85,6 +92,11 @@ d/dg G-prime    w:-0.072 0.072 0.000
  -0.038556866608 -0.012739173956 -0.008407804627
   0.016348718072  0.011615399221 -0.077050741293
 
+ successful restart from record fq      
+
+ =========================================================================
+$ERROR 1.E-7
+$SIGNCHECK
 d/dg A-tensor   w:-0.072 0.072 0.000
    1.54795911158   0.40268466237   0.70676049305
   -2.96872132322   4.04607469115  -4.03074960299
@@ -105,7 +117,7 @@ d/dg A-tensor   w:-0.072 0.072 0.000
   -2.95889243407   0.54232198365 -10.05960637215
    0.15684228920  -0.64497996200  -1.14347732639
    1.54795911158   0.40268466237  -0.70676049305
-  -2.96872132322   4.04607469115   4.03074960299
+  -2.96872132321   4.04607469115   4.03074960299
    0.28901237513  -0.08124666684   0.35083784423
    0.89929655607   0.83021287712   0.28414812674
    4.01337901172   1.98137868117  -1.20517308482
@@ -159,8 +171,13 @@ d/dg A-tensor   w:-0.072 0.072 0.000
    4.30022537106   7.16263673526 -12.60055860322
   -2.94958302559  -4.56880638154   6.80334932245
 
-ABACUS - ROTATIONAL AND VIBRATIONAL ANALYSIS
 
+
+   ****************************************************************************
+
+ =========================================================================
+$ERROR 1.E-7
+$SIGNCHECK
      Raman related properties for freq.  0.072000 au      632.82 nm
      ---------------------------------------------------------------
 
@@ -276,4 +293,4 @@ ABACUS - ROTATIONAL AND VIBRATIONAL ANALYSIS
                    0.00           74.09           74.09    kJ/mol
                    0.00           17.71           17.71    kcal/mol
 
-Molecular Partition Functions
+
