@@ -1466,6 +1466,11 @@ contains
           end if
         end if
 
+!       initialize otherwise there can be numerical dirt
+!       and then collinear numbers are wrong
+        u_qi = 0.0d0
+        v_qi = 0.0d0
+
         do k = k_start, 3
 
           u_qi(k) = derv(1, d_ss)*s_b(k)
