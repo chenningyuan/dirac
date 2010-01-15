@@ -685,7 +685,7 @@ contains
       type(matrix) :: A(9)
 
 #ifdef PRG_DIRAC
-      integer :: ones(200)     
+      integer :: ones(200), my_irep
       integer :: nr_dmat
       type(matrix) :: XC
       ones = 1
@@ -725,7 +725,12 @@ contains
               
               call init_mat(XC, ntbas(0), ntbas(0))
               XC%elms = 0.0d0
-              
+             
+              my_irep = 0
+              do i = 2, nr_dmat
+                my_irep = ieor(my_irep, D(i)%irep)
+              end do
+ 
               call dftexc(ntbas(0),                        &
                           nz,                              &
                           1,                               &
@@ -733,8 +738,8 @@ contains
                           D(1)%elms,                       &
                           nr_dmat - 1,                     &
                           (/(D(i)%elms, i = 2, nr_dmat)/), &
-!fixme: this is wrong, works only for totally symmetric perturbations
-                          (/ones(1:nr_dmat - 1)/),         &
+                          (/(D(i)%irep + 1, i = 2, nr_dmat)/), &
+                          (/my_irep + 1/), &
                           (/ones(1:nr_dmat - 1)/),         &
                           0,                               &
                           m + 1,                           &

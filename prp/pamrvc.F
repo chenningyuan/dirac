@@ -3616,6 +3616,7 @@ C
      &                ndmat,
      &                fmo,
      &                isymop,
+     &                isymop,
      &                ihrmop,
      &                1,
      &                0,

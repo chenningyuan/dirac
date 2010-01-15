@@ -2400,6 +2400,7 @@ C
      &              3,
      &              work(kd1ao),
      &              isymop,
+     &              isymop,
      &              ihrmop,
      &              2,
      &              0,

@@ -55,11 +55,11 @@ contains
   subroutine xc_response_contribution(order,     &
                                       mat_dim,   &
                                       nz,        &
-                                      nr_fmat,   &
                                       fmat,      &
                                       nr_dmat_p, &
                                       dmat_p,    &
-                                      isym,      &
+                                      isym_d,    &
+                                      isym_f,    &
                                       use_gga,   &
                                       ao_g0_m0,  &
                                       ao_g1_m0,  &
@@ -72,11 +72,11 @@ contains
     integer, intent(in)    :: order
     integer, intent(in)    :: mat_dim
     integer, intent(in)    :: nz
-    integer, intent(in)    :: nr_fmat
-    real(8), intent(inout) :: fmat(mat_dim, mat_dim, nz, nr_fmat)
+    real(8), intent(inout) :: fmat(mat_dim, mat_dim, nz, *)
     integer, intent(in)    :: nr_dmat_p
     real(8), intent(in)    :: dmat_p(mat_dim, mat_dim, nz, nr_dmat_p)
-    integer, intent(in)    :: isym(nr_dmat_p)
+    integer, intent(in)    :: isym_d(nr_dmat_p)
+    integer, intent(in)    :: isym_f(*)
     logical, intent(in)    :: use_gga
     real(8), intent(in)    :: ao_g0_m0(*)
     real(8), intent(in)    :: ao_g1_m0(*)
@@ -106,7 +106,7 @@ contains
     n(0) = n_0
     do i = 1, nr_dmat_p
       call get_n(n(i),               &
-                 isym(i) - 1,        &
+                 isym_d(i) - 1,        &
                  mat_dim,            &
                  dmat_p(1, 1, 1, i), &
                  buffer,             &
@@ -123,7 +123,7 @@ contains
       gn(:, 0) = gn_0
       do i = 1, nr_dmat_p
         call get_gn(gn(1, i),           &
-                    isym(i) - 1,        &
+                    isym_d(i) - 1,        &
                     mat_dim,            &
                     dmat_p(1, 1, 1, i), &
                     buffer,             &
@@ -186,7 +186,7 @@ contains
     if (v_above_threshold) then
       call gga_distribute_r(u,        &
                             2.0d0*v,  &
-                            0,        &
+                            isym_f(1) - 1,        &
                             mat_dim,  &
                             fmat,     &
                             ao_g0_m0, &
@@ -194,7 +194,7 @@ contains
     else
       if (u_above_threshold) then
         call lda_distribute_r(u,        &
-                              0,        &
+                              isym_f(1) - 1,  &
                               mat_dim,  &
                               fmat,     &
                               ao_g0_m0)

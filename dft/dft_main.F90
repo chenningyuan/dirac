@@ -67,7 +67,8 @@ contains
                     dmat_0,            &
                     nr_dmat_p,         &
                     dmat_p,            &
-                    isymop,            &
+                    isymop_dmat,       &
+                    isymop_fmat,       &
                     ihrmop,            &
                     response_order,    &
                     response_order_ao, &
@@ -82,7 +83,8 @@ contains
     real(8), intent(in) :: dmat_0(mat_dim, mat_dim, nz)
     integer, intent(in) :: nr_dmat_p
     real(8), intent(in) :: dmat_p(*)
-    integer, intent(in) :: isymop(*)
+    integer, intent(in) :: isymop_dmat(*)
+    integer, intent(in) :: isymop_fmat(*)
     integer, intent(in) :: ihrmop(*)
     integer, intent(in) :: response_order
     integer, intent(in) :: response_order_ao
@@ -122,12 +124,12 @@ contains
         if (nz < 4) then
           do iz = 1, nz
             do im = 1, nr_dmat_p
-              iq = dft_cb_pq_to_uq(iz, isymop(im) - 1)
+              iq = dft_cb_pq_to_uq(iz, isymop_dmat(im) - 1)
               ioff = mat_dim*mat_dim*nz*(im - 1) + mat_dim*mat_dim*(iz - 1) + 1
               call q2bphase('D', iq, 1, dmat_p(ioff))
             end do
             do im = 1, nr_fmat
-              iq = dft_cb_pq_to_uq(iz, isymop(im) - 1)
+              iq = dft_cb_pq_to_uq(iz, isymop_fmat(im) - 1)
               ioff = mat_dim*mat_dim*nz*(im - 1) + mat_dim*mat_dim*(iz - 1) + 1
               call q2bphase('F', iq, 1, fmat(ioff))
             end do
@@ -228,7 +230,7 @@ contains
       end if
 
       if (nr_dmat_p > 0) then
-        call sync_dmat_p(mat_dim, nz, nr_dmat_p, dmat_p, isymop, ihrmop)
+        call sync_dmat_p(mat_dim, nz, nr_dmat_p, dmat_p, isymop_dmat, nr_fmat, isymop_fmat, ihrmop)
       end if
 
       call dirac_mpi_bcast(response_order)
@@ -254,7 +256,8 @@ contains
                 dmat_saop_resp,    &
                 nr_dmat_p,         &
                 dmat_p,            &
-                isymop,            &
+                isymop_dmat,            &
+                isymop_fmat,            &
                 ihrmop,            &
                 response_order,    &
                 response_order_ao, &
@@ -278,7 +281,7 @@ contains
 !     in case of gga symmetrize matrices
       if (use_gga) then
         if (nr_dmat_p > 0) then
-          call gga_sym(mat_dim, nz, nr_fmat, fmat, isymop, ihrmop)
+          call gga_sym(mat_dim, nz, nr_fmat, fmat, isymop_fmat, ihrmop)
         else
           call gga_sym(mat_dim, nz, 1, fmat, (/1/), (/1/))
         end if
@@ -290,12 +293,12 @@ contains
         if (nz < 4) then
           do iz = 1, nz
             do im = 1, nr_dmat_p
-              iq = dft_cb_pq_to_uq(iz, isymop(im) - 1)
+              iq = dft_cb_pq_to_uq(iz, isymop_dmat(im) - 1)
               ioff = mat_dim*mat_dim*nz*(im - 1) + mat_dim*mat_dim*(iz - 1) + 1
               call q2bphase('D', iq, 1, dmat_p(ioff))
             end do
             do im = 1, nr_fmat
-              iq = dft_cb_pq_to_uq(iz, isymop(im) - 1)
+              iq = dft_cb_pq_to_uq(iz, isymop_fmat(im) - 1)
               ioff = mat_dim*mat_dim*nz*(im - 1) + mat_dim*mat_dim*(iz - 1) + 1
               call q2bphase('F', iq, 1, fmat(ioff))
             end do
@@ -328,7 +331,8 @@ contains
                     dmat_saop_resp,    &
                     nr_dmat_p,         &
                     dmat_p,            &
-                    isymop,            &
+                    isymop_dmat,       &
+                    isymop_fmat,       &
                     ihrmop,            &
                     response_order,    &
                     response_order_ao, &
@@ -345,7 +349,8 @@ contains
     real(8), intent(in) :: dmat_saop_resp(*)
     integer, intent(in) :: nr_dmat_p
     real(8), intent(in) :: dmat_p(*)
-    integer, intent(in) :: isymop(*)
+    integer, intent(in) :: isymop_dmat(*)
+    integer, intent(in) :: isymop_fmat(*)
     integer, intent(in) :: ihrmop(*)
     integer, intent(in) :: response_order
     integer, intent(in) :: response_order_ao
@@ -579,7 +584,8 @@ contains
                     dmat_saop_resp,    &
                     nr_dmat_p,         &
                     dmat_p,            &
-                    isymop,            &
+                    isymop_dmat,       &
+                    isymop_fmat,       &
                     ihrmop,            &
                     response_order,    &
                     response_order_ao, &
@@ -669,7 +675,8 @@ contains
                       dmat_saop_resp,    &
                       nr_dmat_p,         &
                       dmat_p,            &
-                      isymop,            &
+                      isymop_dmat,       &
+                      isymop_fmat,       &
                       ihrmop,            &
                       response_order,    &
                       response_order_ao, &
@@ -692,7 +699,8 @@ contains
     real(8), intent(in) :: dmat_saop_resp(*)
     integer, intent(in) :: nr_dmat_p
     real(8), intent(in) :: dmat_p(*)
-    integer, intent(in) :: isymop(*)
+    integer, intent(in) :: isymop_dmat(*)
+    integer, intent(in) :: isymop_fmat(*)
     integer, intent(in) :: ihrmop(*)
     integer, intent(in) :: response_order
     integer, intent(in) :: response_order_ao
@@ -966,7 +974,7 @@ contains
                   nr_dmat_p,          &
                   dmat_p,          &
                   fmat,          &
-                  isymop,          &
+                  isymop_dmat,     &
                   ihrmop,          &
                   .false.,         &
                   ao_p,            &
@@ -987,7 +995,7 @@ contains
                        use_gga,          &
                        dft_cfg_no_sdft, &
                        mat_dim, dmat_p,fmat,   &
-                       isymop,ihrmop,ao_p,ao_p(ao_start(1, 0)), &
+                       isymop_dmat,ihrmop,ao_p,ao_p(ao_start(1, 0)), &
                        r_0(1),z_0(1),rhg,w(1),buffer)
 
 !         the idea here is that   r^[B]               \omega_{ia}^[C]
@@ -1006,7 +1014,7 @@ contains
                   nr_dmat_p,          &
                   dmat_p,          &
                   fmat,          &
-                  isymop,          &
+                  isymop_dmat,          &
                   ihrmop,          &
                   .true.,          &
                   ao_p,            &
@@ -1026,11 +1034,11 @@ contains
             call xc_response_contribution(response_order_ao,                 &
                                           mat_dim,   &
                                           nz,        &
-                                          nr_fmat,   &
                                           fmat,      &
                                           nr_dmat_p, &
                                           dmat_p,    &
-                                          isymop,      &
+                                          isymop_dmat,      &
+                                          isymop_fmat,      &
                                           use_gga,                           &
                                           ao_p(ao_start(0, 0):ao_end(0, 0)), &
                                           ao_p(ao_start(1, 0):ao_end(1, 0)), &
@@ -1134,7 +1142,8 @@ contains
 
 
 
-      integer, allocatable :: isymop(:)
+      integer, allocatable :: isymop_dmat(:)
+      integer, allocatable :: isymop_fmat(:)
       integer, allocatable :: ihrmop(:)
       real(8), allocatable :: fmat(:)
       real(8), allocatable :: dmat_0(:)
@@ -1187,9 +1196,10 @@ contains
 
     if (nr_dmat_p > 0) then
       call alloc(dmat_p, mat_dim*mat_dim*nz*nr_dmat_p)
-      call alloc(isymop, nr_dmat_p)
+      call alloc(isymop_dmat, nr_dmat_p)
+      call alloc(isymop_fmat, nr_fmat)
       call alloc(ihrmop, nr_dmat_p)
-      call sync_dmat_p(mat_dim, nz, nr_dmat_p, dmat_p, isymop, ihrmop)
+      call sync_dmat_p(mat_dim, nz, nr_dmat_p, dmat_p, isymop_dmat, nr_fmat, isymop_fmat, ihrmop)
     end if
 
     call dirac_mpi_bcast(response_order)
@@ -1209,7 +1219,8 @@ contains
                 dmat_saop_resp,    &
                 nr_dmat_p,         &
                 dmat_p,            &
-                isymop,            &
+                isymop_dmat,       &
+                isymop_fmat,       &
                 ihrmop,            &
                 response_order,    &
                 response_order_ao, &
@@ -1228,7 +1239,8 @@ contains
 
     if (nr_dmat_p > 0) then
       call dealloc(dmat_p)
-      call dealloc(isymop)
+      call dealloc(isymop_dmat)
+      call dealloc(isymop_fmat)
       call dealloc(ihrmop)
     end if
 
@@ -1248,24 +1260,29 @@ contains
 
   end subroutine
 
-  subroutine sync_dmat_p(mat_dim,   &
-                         nz,        &
-                         nr_dmat_p, &
-                         dmat_p,    &
-                         isymop,    &
+  subroutine sync_dmat_p(mat_dim,     &
+                         nz,          &
+                         nr_dmat_p,   &
+                         dmat_p,      &
+                         isymop_dmat, &
+                         nr_fmat,     &
+                         isymop_fmat, &
                          ihrmop)
 
 !   ----------------------------------------------------------------------------
     integer, intent(in) :: mat_dim
     integer, intent(in) :: nz
     integer, intent(in) :: nr_dmat_p
+    integer, intent(in) :: nr_fmat
     real(8)             :: dmat_p(mat_dim, mat_dim, nz, nr_dmat_p)
-    integer             :: isymop(nr_dmat_p)
+    integer             :: isymop_dmat(nr_dmat_p)
+    integer             :: isymop_fmat(nr_fmat)
     integer             :: ihrmop(nr_dmat_p)
 !   ----------------------------------------------------------------------------
 
     call dirac_mpi_bcast(dmat_p)
-    call dirac_mpi_bcast(isymop)
+    call dirac_mpi_bcast(isymop_dmat)
+    call dirac_mpi_bcast(isymop_fmat)
     call dirac_mpi_bcast(ihrmop)
 
   end subroutine
