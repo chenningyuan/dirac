@@ -1,3 +1,7 @@
+DIRAC launched (pam script) by bast@larry at Sun Jan 17 21:29:23 CET 2010
+in : /home/bast/dirac/rHEAD_g95_gcc_a/test/54.stex
+===========================================================================================
+Size of all static allocations (pam script) : 43.1028 MB
 DIRAC serial allocating 64000000 words (488 MB) of memory
  ******************************************************************************
  *                                                                            *
@@ -90,7 +94,7 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
  *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *
  *    Ulf Ekstrom              VU University Amsterdam           Netherlands  *
  *    Ephraim Eliav            University of Tel Aviv            Israel       *
- *    Timo Fleig               University of Duesseldorf         Germany      *
+ *    Timo Fleig               Université P. Sabatier, Toulouse  France       *
  *    Andre S. P. Gomes        VU University Amsterdam           Netherlands  *
  *    Trygve U. Helgaker       University of Oslo                Norway       *
  *    Johan Henriksson         Linkoeping University             Sweden       *
@@ -128,17 +132,21 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
  *                                                                            *
  ******************************************************************************
  Version           : Dirac 8.0 (patchlevel 0) 
- Hostname          : ulfek-laptop
- Operating system  : Linux 2.6.27-3-generic
+ Hostname          : larry
+ Operating system  : Linux 2.6.31-17-generic
  Machine           : i686
  Run               : Sequential
- Last compilation  : 14:07:43 Sep 18 2008 (by ulfek@)
- FORTRAN compiler  : /usr/bin/gfortran -g -O3 -ffast-math -funroll-loops -ftree-vectorize -Iinclude -Jmodules -DUSE_DIRAC_BLAS -DUSE_DIRAC_DLAMCH -DUSE_DIRAC_DLAPACK -DUSE_DIRAC_ZLAPACK -DGFORTRAN=432 -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MFDS -DMOD_ERI -DMOD_DFT -DMOD_XPP -DMOD_STEX 
- C compiler        : /usr/bin/gcc -g -O3 -ffast-math -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DMOD_ERI -DMOD_DFT -DMOD_XPP -DMOD_STEX -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DSYS_FLAVOR=LINUX 
- Changeset         : 'exported' 
+ Last compilation  : 21:23:11 Jan 17 2010 (by bast@larry:/home/bast/dirac/rHEAD_g95_gcc_a)
+ FORTRAN compiler  : /usr/bin/g95 -g -O3 -ffast-math -Wno=155 -fsloppy-char -fno-second-underscore -Iinclude -fmod=modules -DARCH32BIT -DVAR_G95 -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MFDS -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON 
+ C compiler        : /usr/bin/gcc -g -O3 -ffast-math -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DSYS_FLAVOR=LINUX 
+ External libraries: -L/usr/lib -lblas -L/usr/lib -llapack -lcblas -lf77blas -latlas -L/usr/lib -llapack 
+ Internal libraries: DIRAC_BLAS=NO  DIRAC_LAPACK=NO 
+ ILP data model    : ILP32 
+ SVN URL:          : 'http://dirac.chem.sdu.dk/svnDirac/Dirac/trunk' 
+ SVN Changeset     : '10183' 
 
  
-     Data and time (Linux)  : Thu Sep 18 14:30:34 2008 
+     Date and time (Linux)  : Sun Jan 17 21:29:24 2010
      Host name              :                                         
 
 
@@ -171,14 +179,19 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
  Jobs in this run:
    * Wave function
    * Properties
+   * If crash, end with the segment.fault. Worth for debugging.
 
 
     **************************************************************************
     ************************** General DIRAC set-up **************************
     **************************************************************************
 
+   CODATA Recommended Values of the Fundamental Physical Constants: 1998  
+                Peter J. Mohr and Barry N. Taylor                         
+   Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
  * The speed of light :        137.0359998
    * The speed of light scaled by  7.30D-03 to :  1.00000000000
+ * Running in the four-component mode
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
    - SL-integrals
@@ -191,6 +204,7 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
  * Thresholds for linear dependence:
    Large components:   1.00D-06
    Small components:   1.00D-08
+ DFPCMO: IBEIG read in I2 format.
  * General print level   :   0
 
 
@@ -215,7 +229,7 @@ Dynamical threshold is not (yet) implemented in DIRAC
   Title Cards
   -----------
 
-  H2 added to break C_oo symmetry.                                        
+                                                                          
                                                                           
 
   Nuclear Gaussian exponent for atom of charge   3.000 :    8.9266848806D+08
@@ -491,7 +505,7 @@ Point group: C1
    *************************** Hamiltonian defined ***************************
    ***************************************************************************
 
- * Print level :    0
+ * Print level:    0
  * Dirac-Coulomb Hamiltonian
  * SS integrals neglected:
    Interatomic Coulombic SS-contributions modelled by
@@ -561,6 +575,7 @@ Point group: C1
  * Damping of Fock matrix when DIIS is not activated. 
    Weight of old matrix    : 0.250
  * Maximum number of SCF iterations  :   50
+ * No quadratic convergent Hartree-Fock
  * Contributions from 2-electron integrals to Fock matrix:
    LL-integrals.
    SL-integrals from iteration    1
@@ -577,16 +592,16 @@ Point group: C1
  * Properties calculated for the following wave functions: 
      1: DHF 
  These initial settings of center and origins might be changed later:
- * Operator center:      0.0000000000      0.0000000000      0.0000000000
- * Gauge origin   :      0.0000000000      0.0000000000      0.0000000000
- * Dipole origin  :      0.0000000000      0.0000000000      0.0000000000
+ * Operator center (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * Gauge origin    (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * Dipole origin   (a.u.):      0.0000000000      0.0000000000      0.0000000000
  * do NOT perform the picture change transformation of the four-component property operators
  STEX input section
- STEX CUTOFF:  100.000000000000000     
- STEX SCRFCK: -1.00000000000000000     
- STEX NHOLES:           1
+ STEX CUTOFF: 100.
+ STEX SCRFCK: -1.
+ STEX NHOLES: 1
  Hole orbital   Fermion symmetry
-           2           1
+ 2 1
  End of STEX input section
 
 
@@ -602,14 +617,11 @@ Point group: C1
 
 
 
-                            Generating Lowdin matrix:
-                            -------------------------
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
 
    L   A     * Deleted:          2(Proj:          2, Lindep:          0)
    S   A     * Deleted:         17(Proj:         17, Lindep:          0)
-
- >>> Time used in Lwdn_a is   0.22 seconds
-
 
 
                                 Output from MODHAM
@@ -624,9 +636,9 @@ Point group: C1
 
 No. of positive energy orbitals (NESH):    50
 No. of negative energy orbitals (NPSH):    50
-Total no. of orbitals      (NORB):   100
+Total no. of orbitals           (NORB):   100
 
- >>> Time used in PAMSET is   0.38 seconds
+ >>> Time used in PAMSET is   0.26 seconds
 
 
 
@@ -635,14 +647,17 @@ Total no. of orbitals      (NORB):   100
    ****************************************************************************
 
 
-########## START ITERATION NO.   1 ##########   Thu Sep 18 14:30:35 2008
+########## START ITERATION NO.   1 ##########   Sun Jan 17 21:29:24 2010
 
+
+* REACMO: Coefficients read from file DFCOEF - Total energy: -8.36894905671995915
+* Heading :DIRAC: No title specified !!!                     Sun Jan 17 21:25:39 2010
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   22.45%    0.00%    0.00%   0.28801799s
-SOfock:SL  1.00D-12    0.00%   24.77%    0.00%    0.00%   3.35220993s
-It.   1    -8.368949056708      8.37D+00  0.00D+00  7.23D-08               4.00425065s   LL SL          Thu Sep 18
+SOfock:LL  1.00D-12    0.00%   22.45%    0.00%    0.00%   0.36402297s
+SOfock:SL  1.00D-12    0.00%   24.77%    0.00%    0.00%   4.00024998s
+It.   1    -8.368949056707      8.37D+00  0.00D+00  5.33D-08               4.86830515s   LL SL          Sun Jan 17
 
 
                                    SCF - CYCLE
@@ -658,24 +673,24 @@ It.   1    -8.368949056708      8.37D+00  0.00D+00  7.23D-08               4.004
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.   1    -8.368949056708      8.37D+00  0.00D+00  7.23D-08               4.00425065s   LL SL          Thu Sep 18
+It.   1    -8.368949056707      8.37D+00  0.00D+00  5.33D-08               4.86830515s   LL SL          Sun Jan 17
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    1 iterations.
 * Average elapsed time per iteration: 
-      LL SL        :    4.00000000s
+      LL SL        :    5.00000000s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -13.470156101527834
+   Electronic energy                        :    -13.470156101526182
 
    Other contributions to the total energy
-   Nuclear repulsion energy                 :      5.101207041685354
+   Nuclear repulsion energy                 :      5.101207041685355
    SS Coulombic correction                  :      0.000000003134222
 
    Sum of all contributions to the energy
-   Total energy                             :     -8.368949056708257
+   Total energy                             :     -8.368949056706604
 
 
                                    Eigenvalues
@@ -684,24 +699,24 @@ It.   1    -8.368949056708      8.37D+00  0.00D+00  7.23D-08               4.004
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
--2.179808271329324  ( 2)   -1.744606357081960  ( 2)   -1.410082698405791  ( 2)
+-2.179808271995317  ( 2)   -1.744606355484719  ( 2)   -1.410082704029187  ( 2)
   * Virtual eigenvalues, f = 0.0000
--1.101968024440757  ( 2)   -0.602765938553434  ( 2)   -0.480703359020851  ( 2)   -0.392544735710917  ( 2)   -0.367889631461226  ( 2)
--0.306146745237117  ( 2)   -0.254274441665620  ( 2)   -0.214932858115622  ( 2)   -0.192235455915606  ( 2)   -0.175677090378649  ( 2)
--0.166320398319824  ( 2)   -0.141685872006798  ( 2)   -0.133503227882584  ( 2)   -0.125515544112110  ( 2)   -0.116083089028722  ( 2)
--0.106099320036659  ( 2)   -0.071783676615663  ( 2)   -0.059702040408080  ( 2)   -0.052700545505972  ( 2)   -0.042780349864474  ( 2)
--0.039122430046041  ( 2)   -0.032883685290064  ( 2)   -0.024828452481132  ( 2)   -0.016536735973350  ( 2)   -0.011679328251880  ( 2)
--0.007774867554383  ( 2)   -0.003781034219229  ( 2)    0.001828100405755  ( 2)    0.012532571322303  ( 2)    0.019398357802371  ( 2)
- 0.033050153157465  ( 2)    0.037520046735457  ( 2)    0.049309348025977  ( 2)    0.071054421825258  ( 2)    0.082678934009558  ( 2)
- 0.097219586080389  ( 2)    0.125369468706720  ( 2)    0.162982250956689  ( 2)    0.217029275020093  ( 2)    0.243620273477879  ( 2)
- 0.261509043727297  ( 2)    0.301525729498683  ( 2)    0.385847970139472  ( 2)    0.562143673989971  ( 2)    0.710498927168154  ( 2)
- 0.731192642972676  ( 2)    0.928232537554931  ( 2)
+-1.101968026960507  ( 2)   -0.602765939112279  ( 2)   -0.480703359131999  ( 2)   -0.392544734112920  ( 2)   -0.367889631020556  ( 2)
+-0.306146750346062  ( 2)   -0.254274441975986  ( 2)   -0.214932857680427  ( 2)   -0.192235456317044  ( 2)   -0.175677092614757  ( 2)
+-0.166320399399149  ( 2)   -0.141685871874111  ( 2)   -0.133503229383720  ( 2)   -0.125515543583440  ( 2)   -0.116083089672459  ( 2)
+-0.106099320654054  ( 2)   -0.071783676318038  ( 2)   -0.059702040908254  ( 2)   -0.052700546207111  ( 2)   -0.042780350635612  ( 2)
+-0.039122430593468  ( 2)   -0.032883685646021  ( 2)   -0.024828452456361  ( 2)   -0.016536736094662  ( 2)   -0.011679328245375  ( 2)
+-0.007774867388820  ( 2)   -0.003781034443747  ( 2)    0.001828100294313  ( 2)    0.012532570058834  ( 2)    0.019398356267305  ( 2)
+ 0.033050151309416  ( 2)    0.037520045465318  ( 2)    0.049309347360050  ( 2)    0.071054420838209  ( 2)    0.082678932383246  ( 2)
+ 0.097219585115991  ( 2)    0.125369466921488  ( 2)    0.162982252162299  ( 2)    0.217029276454285  ( 2)    0.243620270888566  ( 2)
+ 0.261509041466854  ( 2)    0.301525722570426  ( 2)    0.385847962740458  ( 2)    0.562143665314433  ( 2)    0.710498918733757  ( 2)
+ 0.731192634501360  ( 2)    0.928232528159682  ( 2)
 * HOMO - LUMO gap:
 
-    E(LUMO) :    -1.10196802 au (symmetry E1 )
+    E(LUMO) :    -1.10196803 au (symmetry E1 )
   - E(HOMO) :    -1.41008270 au (symmetry E1 )
   ------------------------------------------
-    gap     :     0.30811467 au
+    gap     :     0.30811468 au
 
 
 
@@ -744,33 +759,33 @@ It.   1    -8.368949056708      8.37D+00  0.00D+00  7.23D-08               4.004
  Start of STEX
  DFCOEF.ION found, using it as reference state
  for STEX calculation
- Virtual cutoff   3.6749325968136937       Hartree
- STEX Nr virtuals:          47
+ Virtual cutoff 3.6749325968136937  Hartree
+ STEX Nr virtuals: 47
  STEX holes in orbitals (total orbital index)
-          52
- STEX: Nr of variational parameters is          188
+ 52
+ STEX: Nr of variational parameters is  188
  Calculating property gradient by cofactors
- Nuclear dipole moment:   8.6999999999999993       1.00000000000000000        1.1000000000000001     
- STEX needs           4  Fock matrices that will be computed in batches of at most           4
+ Nuclear dipole moment: 8.7 1. 1.1
+ STEX needs 4  Fock matrices that will be computed in batches of at most 4
  Calculating STEX 2e integrals
- Integral batch, i, j, herm.            1           1           1          -1
+ Integral batch, i, j, herm.  1 1 1 -1
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   22.45%    0.00%    0.00%   0.46402884s
-SOfock:SL  1.00D-12    0.00%   25.07%    0.00%    0.00%   7.23645210s
+SOfock:LL  1.00D-12    0.00%   22.45%    0.00%    0.00%   0.53603411s
+SOfock:SL  1.00D-12    0.00%   25.07%    0.00%    0.00%   7.64447689s
  Integrals done
  Calculating reference Fock matrix
- SCRFCK:  9.99999999999999980E-013
+ SCRFCK: 1.E-12
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   22.45%    0.00%    0.00%   0.28801823s
-SOfock:SL  1.00D-12    0.00%   24.71%    0.00%    0.00%   3.34820938s
- SCRFCK:  9.99999999999999980E-013
+SOfock:LL  1.00D-12    0.00%   22.45%    0.00%    0.00%   0.36802292s
+SOfock:SL  1.00D-12    0.00%   24.71%    0.00%    0.00%   3.97624779s
+ SCRFCK: 1.E-12
 
  --------------- STEX Final Output --------------
 
- STEX reference state energy (au)        :  -7.7420398387430245     
- Ground state energy (au)                :  -8.3689490567082565     
- Ground/reference state overlap (abs val):  6.38525777018138369E-002
- DSCF Ionization potential (eV)          :   175.42810772310645     
+ STEX reference state energy (au)        : -7.742039838738997
+ Ground state energy (au)                : -8.368949056706604
+ Ground/reference state overlap (abs val): 0.06385257626702698
+ DSCF Ionization potential (eV)          : 175.4281077230616
 
 Excitation energies and oscillator strengths
  State    Energy (Ev)  <f_l>/3   <f_v>/3     f_lx      f_ly      f_lz      f_vx      f_vy      f_vz
@@ -908,7 +923,7 @@ Excitation energies and oscillator strengths
   131     75.94528691  0.000001  0.000000  0.000000  0.000002  0.000000  0.000000  0.000000  0.000000
   132     75.94534264  0.000012  0.000000  0.000006  0.000001  0.000029  0.000000  0.000000  0.000000
   133     76.54776216  0.000001  0.000000  0.000001  0.000000  0.000003  0.000000  0.000000  0.000000
-  134     76.54776918  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000
+  134     76.54776917  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000  0.000000
   135     76.54781419  0.000004  0.000000  0.000001  0.000010  0.000001  0.000000  0.000000  0.000000
   136     76.54808997  0.000008  0.000000  0.000005  0.000010  0.000008  0.000000  0.000000  0.000000
   137     76.77473801  0.000009  0.000000  0.000013  0.000006  0.000007  0.000000  0.000000  0.000000
@@ -1159,11 +1174,11 @@ Excitation energies and oscillator strengths
  STEX End
 
  
-     Data and time (Linux)  : Thu Sep 18 14:30:51 2008 
+     Date and time (Linux)  : Sun Jan 17 21:29:42 2010
      Host name              :                                         
->>>> Node 0, utime: 17, stime: 0, minflt: 132978, majflt: 0, nvcsw: 4, nivcsw: 536
->>>> Total WALL time used in DIRAC: 17s
 *****************************************************
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 
+>>>> Node 0, utime: 18, stime: 0, minflt: 185636, majflt: 0, nvcsw: 4, nivcsw: 1611
+>>>> Total WALL time used in DIRAC: 19s
