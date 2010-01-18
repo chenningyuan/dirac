@@ -231,15 +231,17 @@ C
           JSYMOP  = JFSYM(IS,JOPSY)
           NOPB    = NLRBP(JSYMOP)
           JOPB    = JLRBP(JSYMOP)
-C
-C
-C         Initialize configurational and orbital parameters
-C         =================================================
-C
-          CALL XRSPAR(XLR_INDSTR,XLR_SKIPEE,XLR_SKIPEP,
-     &                WORK,KFREE,LFREE,IPRXLR)
-C
           DO 30 IOPB = 1,NOPB
+C
+C
+C           Initialize configurational and orbital parameters
+C           =================================================
+C           (Note that this routine can also be shifted one 
+C            loop up, but by placing it here local restrictions
+C            are possible, see e.g. REDPAR below....)
+C
+            CALL XRSPAR(XLR_INDSTR,XLR_SKIPEE,XLR_SKIPEP,
+     &                  WORK,KFREE,LFREE,IPRXLR)
             INDBP  = LLBPSU(JOPB+IOPB)
             INDPRB = LLRBPU(INDBP)
             JTIMOP = IPRPTIM(INDPRB)
