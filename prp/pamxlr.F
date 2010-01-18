@@ -232,6 +232,13 @@ C
           NOPB    = NLRBP(JSYMOP)
           JOPB    = JLRBP(JSYMOP)
 C
+C
+C         Initialize configurational and orbital parameters
+C         =================================================
+C
+          CALL XRSPAR(XLR_INDSTR,XLR_SKIPEE,XLR_SKIPEP,
+     &                WORK,KFREE,LFREE,IPRXLR)
+C
           DO 30 IOPB = 1,NOPB
             INDBP  = LLBPSU(JOPB+IOPB)
             INDPRB = LLRBPU(INDBP)
@@ -241,12 +248,6 @@ C
      &        'FOR LINEAR RESPONSE PROPERTY >>>',
      &        PRPNAM(INDPRB),
      &        ' - Symmetry: ',REP(JSYMOP-1),TTYP(JTIMOP)
-C
-C           Initialize configurational and orbital parameters
-C           =================================================
-C
-            CALL XRSPAR(XLR_INDSTR,XLR_SKIPEE,XLR_SKIPEP,
-     &                  WORK,KFREE,LFREE,IPRXLR)
 C
 C           ******************************************
 C           *** P R O P E R T Y    G R A D I E N T ***
@@ -1030,25 +1031,25 @@ C       A,B operators at the beginning of the run (after the XLRINP)
 
 CMI   ... print out on what couples are going into the linear response...
       IF (IPRXLR.GE.7) THEN
-       CALL PRSYMB(LUPRI,'-',75,0)
-       WRITE(LUPRI,'(A)') ' ** SETXLR: List of all A operators **'
-       CALL PRSYMB(LUPRI,'-',75,0)
-       DO I = 1,NLRAPT
-        INDXPR = LLRAPU(I)
-        CALL WRIXPR(I,INDXPR)
-       ENDDO
+        CALL PRSYMB(LUPRI,'-',75,0)
+        WRITE(LUPRI,'(A)') ' ** SETXLR: List of all A operators **'
+        CALL PRSYMB(LUPRI,'-',75,0)
+        DO I = 1,NLRAPT
+          INDXPR = LLRAPU(I)
+          CALL WRIXPR(I,INDXPR)
+        ENDDO
 
-       CALL PRSYMB(LUPRI,'-',75,0)
-       WRITE(LUPRI,'(A)') ' ** SETXLR: List of all B operators **'
-       CALL PRSYMB(LUPRI,'-',75,0)
-       DO I = 1,NLRBPT
-        INDXPR = LLRBPU(I)
-        CALL WRIXPR(I,INDXPR)
-       ENDDO
+        CALL PRSYMB(LUPRI,'-',75,0)
+        WRITE(LUPRI,'(A)') ' ** SETXLR: List of all B operators **'
+        CALL PRSYMB(LUPRI,'-',75,0)
+        DO I = 1,NLRBPT
+          INDXPR = LLRBPU(I)
+          CALL WRIXPR(I,INDXPR)
+        ENDDO
       
-       WRITE(LUPRI,'(A)')
-     & ' ** SETXLR: Sorted couples of A,B operators'//
-     & ' for linear response calculations **'
+        WRITE(LUPRI,'(A)')
+     &  ' ** SETXLR: Sorted couples of A,B operators'//
+     &  ' for linear response calculations **'
 
         DO IOPSY = 1,NFSYM
           NBF = NBSYM/NFSYM
@@ -1083,10 +1084,10 @@ CMI   ... print out on what couples are going into the linear response...
      &             'A - ',PRPNAM(INDPRA),REP(IREPA),TTYP(ITIMA),
      &             'B - ',PRPNAM(INDPRB),REP(IREPB),TTYP(ITIMB)
                 CALL PRSYMB(LUPRI,'-',95,0)
-             ENDDO
-             ENDDO
-             ENDDO
-             ENDDO
+              ENDDO
+            ENDDO
+          ENDDO
+        ENDDO
       ENDIF
 
 C
