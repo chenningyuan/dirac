@@ -17,7 +17,8 @@
 !           has been specified manually (used for SMLV1C)
 !  BNCRON - Improved screening of nucleus for bare nucleus starting 
 !           guess
-!
+!  TWOCOMP = T means that the program is currently running in 2c modus
+!  TWOCOMPBSS = T means that this is a 2-component relativistic calculation
 !  TWOCOMP, TWOCOMPBSS - related to the pure two-component mode
 !  SKIP2E - Skip all two electron steps.
 !
