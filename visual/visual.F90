@@ -1108,7 +1108,6 @@ contains
 
 !   allocate and read response vector
     call alloc(response_vector, length, nz)
-    response_vector = 0.0d0
     call readt(lunit_xvector, length*nz, response_vector)
 !   allocate and read orbital rotation array
     call alloc(orbital_rotation_indices, 2, length)
