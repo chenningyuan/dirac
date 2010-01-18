@@ -42,10 +42,18 @@ C
      &                     IPRNT,EREF,ECORE_KRMC,CIRUN,IPROCLIST,
      &                     IGROUPLIST)
 *
+CSK   use memory_allocator
+*
 * CI optimization in GAS space number ISPC for symmetry ISM
 *
 * Jeppe Olsen, Winter of 1995
 *              Winter of 1998 : Modified for relativistic calculations
+*
+* Stefan Knecht, Jan 2010: FIXME: introduce use of alloc routines if 
+*                                 they can handle int*8 allocations 
+*                                 within the ilp32 model.
+*                                 For now, we are using the generic 
+*                                 allocate/deallocate routines
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #if defined (VAR_MPI2)
@@ -105,6 +113,7 @@ C     memory pointer for C2 vector block
 #include "krmc_shmem.h"
 #include "mxdim_mpi2.h"
       INTEGER(KIND=MPI_OFFSET_KIND) ITEST_OFF
+#if defined VAR_SHMEM
       INTEGER(KIND=MPI_OFFSET_KIND) IT_TTOL
       POINTER (MY_TTPL_PTR, IT_TTPL(IDUMMY_BUFF_SZ))
       POINTER (MY_TTOL_PTR, IT_TTOL(IDUMMY_BUFF_SZ))
@@ -114,7 +123,14 @@ C     memory pointer for C2 vector block
       POINTER (MY_VEC1_PTR, VEC1_BUFF(IDUMMY_BUFF_SZ))
       POINTER (MY_VEC2_PTR, VEC2_BUFF(IDUMMY_BUFF_SZ))
       POINTER (MY_DL_PTR  , IT_DLIST_TMP(IDUMMY_BUFF_SZ))
-#endif
+#else
+      integer,   allocatable :: IT_TTPL(:)
+      integer,   allocatable :: IT_DLIST_TMP(:)
+      integer*8, allocatable :: IT_TTOL(:)
+      real*8,    allocatable :: T_BUFF(:)
+      real*8,    allocatable :: T_BUFF_D(:)
+#endif /* VAR_SHMEM */
+#endif /* VAR_MPI2 */
 C
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'GASCI ')
 C
@@ -205,15 +221,22 @@ C
 #if defined (VAR_MPI2)
       IF( IT_SHL .ge. 0 .or. SPLIT_IJKL )THEN
 C
-C       allocate T-block list
+C       allocate T-block processor and offset list
         MY_TTPL_LEN = NSPOBEX_TP * IRC
+        MY_TTOL_LEN = NMPROC
+#if defined VAR_SHMEM
+        MY_TTOL_LEN = NSPOBEX_TP * IRC
         CALL MPIXMEM_ALLOC( MY_TTPL_PTR, 2, MY_TTPL_LEN,
      &                      MPI_INFO_NULL, .FALSE.)
-        MY_TTOL_LEN = NMPROC
-        IF( IT_SHL .ge. 0 ) MY_TTOL_LEN = NSPOBEX_TP * IRC
         CALL MPIXMEM_ALLOC( MY_TTOL_PTR, 3, MY_TTOL_LEN,
      &                      MPI_INFO_NULL, .FALSE.)
         CALL IMINO8(IT_TTOL,MY_TTOL_LEN)
+#else
+        allocate(IT_TTPL(MY_TTPL_LEN))
+        allocate(IT_TTOL(MY_TTOL_LEN))
+        IT_TTPL =  0
+        IT_TTOL = -1
+#endif
       END IF
 #endif
 C
@@ -253,14 +276,18 @@ C
         IS_DUMMY = 0
 C
 C       allocate T_BUFF array (replaces use of WORK(KT_CC))
-C
+#if defined VAR_SHMEM
         CALL GET_MEM_T( IS_DUMMY )
         CALL GET_MEM_T_D( IS_DUMMY )
-C
 C       zero arrays
-C
         CALL DZERO8(T_BUFF,MY_T_LEN)
         CALL DZERO8(T_BUFF_D,MY_T_LEN_D)
+#else
+        allocate(T_BUFF(MY_T_LEN))
+        allocate(T_BUFF_D(MY_T_LEN_D))
+        T_BUFF   =  0
+        T_BUFF_D =  0
+#endif
 C
         IF( SPLIT_IJKL ) THEN
           CALL MPI_GATHER(MY_T_LEN,1,MPI_INTEGER8,IT_TTOL,1,
@@ -279,7 +306,7 @@ C
         WRITE(LUWRT,'(2X,A/)')
      & '=============================================================='
 
-        IF(SPLIT_IJKL) CALL MPIXMEM_FREE( IT_TTOL )
+        IF(SPLIT_IJKL) deallocate(IT_TTOL)
 C
 C       read in all (active) blocked integrals (T blocks)
 C       ==> integrals required for diagonal H on T_BUFF_D
@@ -295,6 +322,7 @@ C
 csk     CALL WRTMATMN8(T_BUFF,1,MY_T_LEN,1,MY_T_LEN,LUWRT)
 csk     CALL WRTMATMN8(T_BUFF_D,1,MY_T_LEN_D,1,MY_T_LEN_D,LUWRT)
 C
+#if defined VAR_SHMEM
         IF( IT_SHL .ge. 0 )THEN
 C
 C         open memory window (collective call for communicator
@@ -307,6 +335,7 @@ C
 csk        WRITE(LUWRT,*) ' printing offset array IT_TTOL'
 csk        CALL IWRTMAMN8(IT_TTOL,1,MY_TTOL_LEN,1,MY_TTOL_LEN,LUWRT)
         END IF
+#endif
 C
 C       transfer IS_LENGHT_TT to common block LUCIPAR_I8
 C       == max. T block length
@@ -320,9 +349,9 @@ C     ... read-in reordered integrals for the old-school way.
 C
          LEN_T_D_BUFF = (3*(NTOOB**2)) + (2*NTOOB)
          MY_T_LEN_D   = LEN_T_D_BUFF
-         CALL GET_MEM_T_D(0)
+         allocate(T_BUFF_D(MY_T_LEN_D))
 C
-         CALL DZERO8(T_BUFF,MY_T_LEN)
+CSK      CALL DZERO8(T_BUFF,MY_T_LEN)
 C
          IF (CIRUN .ne. 'ANALYZ' ) THEN
            call picasso(INTSPACE,ISO1,IPRNT, .TRUE. ,
@@ -1143,6 +1172,7 @@ C
 C           ^ NO run?
 C         MPI one-sided based T split
           ELSE 
+#if defined VAR_SHMEM
 C
 C           make sure each CPU gets here before starting T block 
 C           collection
@@ -1164,6 +1194,7 @@ C
 C
 C           parallel MCSCF: provide WORK(KINDEX) to all CPU's
 C
+#endif /* VAR_SHMEM */
           END IF
 C         ^ IT_SHL .lt. 0
 C
@@ -1205,9 +1236,8 @@ C           That is, why we already use MPI_ALLGATHER!
 C
             MY_DL_TMP_LEN = NSPOBEX_TP*NMPROC*IRC_SAVE
 C
-            CALL MPIXMEM_ALLOC(MY_DL_PTR,2,MY_DL_TMP_LEN,
-     &                         MPI_INFO_NULL,.FALSE.)
-            CALL IZERO(IT_DLIST_TMP,NSPOBEX_TP*NMPROC*IRC_SAVE)
+            allocate(IT_DLIST_TMP(MY_DL_TMP_LEN))
+            IT_DLIST_TMP = 0
             CALL MPI_ALLGATHER(IT_TTPL,NSPOBEX_TP*IRC_SAVE,
      &                         my_MPI_INTEGER,IT_DLIST_TMP,
      &                         NSPOBEX_TP*IRC_SAVE,my_MPI_INTEGER,
@@ -1220,7 +1250,7 @@ csk         CALL IWRTMAMN(IT_TTPL,1,NSPOBEX_TP*IRC,1,
 csk  &                    NSPOBEX_TP*IRC,LUWRT)
 C
 C           release scratch memory
-            CALL MPIXMEM_FREE(IT_DLIST_TMP)
+            deallocate(IT_DLIST_TMP)
           ELSE
             IF( MYPROC .ne. MASTER ) GOTO 919
           END IF
@@ -1334,17 +1364,21 @@ C
 C
 #if defined (VAR_MPI2)
       IF( IT_SHL .ge. 0 ) THEN
+#if defined VAR_SHMEM
 C
 C       de-allocate T array and destroy T memory window
-C
         CALL MPIXMEM_FREE(IT_TTPL)
         CALL MPIXMEM_FREE(IT_TTOL)
         CALL REL_MEM_T_WIN(T_BUFF)
+        IF ( CPIC_PASS_D ) MPIXMEM_FREE(T_BUFF_D)
+#endif
       ELSE IF (SPLIT_IJKL ) THEN
-        CALL MPIXMEM_FREE(IT_TTPL)
-        CALL MPIXMEM_FREE(T_BUFF)
+        deallocate(IT_TTPL)
+        deallocate(T_BUFF)
       END IF
-      IF( CPIC_PASS_D ) CALL MPIXMEM_FREE(T_BUFF_D)
+#if !defined VAR_SHMEM
+      IF ( CPIC_PASS_D ) deallocate(T_BUFF_D)
+#endif
 C
 C     reset partitioning of CI vector to 'sequential' fashion
 C     (*_MS2 arrays are in CSTATE )

@@ -51,6 +51,7 @@ nooptim=0 # otherwise 1 if "--noopt" parameter is in the list
 checkbounds=0 # or 1 if "--check" parameter is in the list
 doprofile=0 # or 1 if "--profile" is in the parameter list
 testlibs=1 # always include libraries testing on I*4/I*8 problem
+shmem_par=0 # include shared-memory parallelization routines (KR-MCSCF,KR-CI,more to come at one day...)
 dirac_blas=0   # do not use dirac blas builtin, 1 if "--dir_blas" parameter in the list
 is_dirac_blas="NO"
 dirac_lapack=0 # do not use dirac lapack builtin, 1 if "--dir_lapack" parameter is in the list
@@ -514,6 +515,7 @@ usage ()  {
    echo '   --check                      : Add compilers flags for run-time checking array boundaries & other '
    echo '   --profile                    : Add compilers/linker flags for code profiling'
    echo '   --nolibtest                  : Do not include testing of libraries on integer*4/8 problem at DIRAC start' 
+   echo '   --sharedmem_par              : Include the shared-memory-like parallelization routines in KR-MCSCF/KR-CI' 
    echo '   --system=SYSTEM-ID           : Set system to SYSTEM-id'
    echo '   --f90=F90                    : Set fortran compiler to F90 (with full path)'
    echo '   --cc=CC                      : Set C compiler to CC (with full path)'
@@ -1684,6 +1686,19 @@ else
   $echo " Hit return to continue.."
   $read
   cpp_f90="-DNO_SELFTEST $cpp_f90"
+fi
+echo
+}
+
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+deal_testlib () {
+#
+#  deal with shared-memory parallelization routines of DIRAC
+#
+
+if [ $shmem_par = 1 ]; then
+  $echo "\nIncluding the shared-memory parallelization routines in KR-MCSCF/KR-CI, .... \c"
+  cpp_f90="-DVAR_SHMEM $cpp_f90"
 fi
 echo
 }
@@ -3026,6 +3041,9 @@ while [ $# != 0 ]; do
       "i"  )
          IPRINT=$val
          ;;
+      "sharedmem_par"  )
+         shmem_par=1
+         ;;
       *)
          echo  'Unknown option: '$opt''
          usage
@@ -3051,6 +3069,7 @@ if [ "$mesp" = "mpi" ]; then
 fi
 find_mathlib
 deal_testlib
+deal_sharedmemory
 set_memsize
 set_installdir
 set_scratchdir

@@ -369,12 +369,16 @@ C&&& .WRTFCK: write fock matrix in CI start guess module
 C&&& .SHMEMO: run parallel CI/(KRMC) in MPI 'shared memory' mode  
                   CSHMEMO_KRCI = .TRUE.
                   READ(LUCMD,*) ISHMEM_TYPE
-#if !defined (VAR_MPI2)
+#if !defined (VAR_MPI2) && !defined (VAR_SHMEM)
                IF( CSHMEMO_KRCI ) THEN
-                  WRITE(LUPRI,'(//3A)')
-     &                  '*** ERROR in KRCI_INP *** ',
-     &                  ' shared memory calculations in sequential',
-     &                  ' mode are not permitted '
+                  WRITE(LUPRI,'(//4A)')
+     &               '*** ERROR in KRCI_INP *** ',
+     &               ' shared memory calculations in sequential',
+     &               ' mode and/or without enabling the shared-memory',
+     &               ' parallelization are not permitted '
+                  WRITE(LUPRI,'(/A)')
+     &               ' re-configure with --sharedmem_par and'//
+     &               ' a parallel Dirac.'
                   CSHMEMO_KRCI = .FALSE.
                   WRITE(LUPRI,'(/A)') '  User input will be ignored.'
                END IF

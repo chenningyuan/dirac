@@ -1965,7 +1965,6 @@ C
 #endif
 C
 C       diagonal integrals
-C
         NDIAMINT = (2*NDIM_TOT + 3*((2*NDIM_TOT)**2)) * IRIMLT/2
         IF( NDIAMINT .gt. MXINT_DIA ) THEN
           WRITE(LUWRT,*) ' STOP in subroutine itrctl !!!'

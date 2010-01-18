@@ -2686,12 +2686,12 @@ C     NEWTYP(INSPGP,IACOP,ITPOP,NOP,OUTSPGP)
 * Jeppe Olsen, Sept 97
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
 *. Input
       DIMENSION MINVAL(NGAS),MAXVAL(NGAS)
 *. Input and output
       DIMENSION ISYM(NGAS)
 *. Symmetry of first NGAS -1 spaces
+C     write(6,*) ' next_sym...:nonew,ifirst',nonew,ifirst
       IF(IFIRST.EQ.1) THEN
         DO IGAS = 1, NGAS-1
           ISYM(IGAS) = MINVAL(IGAS)
@@ -2702,9 +2702,11 @@ C     NEWTYP(INSPGP,IACOP,ITPOP,NOP,OUTSPGP)
 C            NXTNUM2(INUM,NELMNT,MINVAL,MAXVAL,NONEW)
         CALL NXTNUM3(ISYM,NGAS-1,MINVAL,MAXVAL,NONEW)
       END IF
+      KSYM = -1
 *. Symmetry of last space
       IF(NONEW.EQ.0) THEN
         JSYM = 1
+CSK     write(6,*)'before SYMCOM_REL #1: NGAS-1 is',NGAS-1
         DO IGAS = 1, NGAS-1
           CALL SYMCOM_REL(3,0,JSYM,ISYM(IGAS),KSYM)
           JSYM = KSYM
@@ -5077,7 +5079,7 @@ C            SYMCOM_REL(ITASK,IOBJ,I1,I2,I12)
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE SYMCMDG(ITASK,IOBJ,I1,I2,I12)
+      SUBROUTINE SYMCMDG(ITASK,I1,I2,I12)
 *
 * Symmetries I1,I2,I12 are related as
 * I1*I2 = 12
@@ -5144,13 +5146,12 @@ C    &              MXR4TP, MXHR0,MXER4,
 C    &              NINASH(MXPIRR),
 C    &              INTXCI,NDELSH(MXPIRR),MNRS10,MXRS30
 #include "implicit.inc"
-#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "lucinp.inc"
 *
-      NTEST = 0000
 *
 #if defined LUCI_DEBUG
+      NTEST = 0000
       if (NTEST.ge.2000) then
         write(6,*)
         write(6,*) 'symcom test:'
@@ -5167,7 +5168,7 @@ C    &              INTXCI,NDELSH(MXPIRR),MNRS10,MXRS30
       ELSE IF(PNTGRP.GE.2.AND.PNTGRP.LE.4) THEN
         CALL SYMCM2(ITASK,IOBJ,I1,I2,I12)
       ELSE IF(PNTGRP.GE.5.AND.PNTGRP.LE.9) THEN
-        CALL SYMCMDG(ITASK,IOBJ,I1,I2,I12)
+        CALL SYMCMDG(ITASK,I1,I2,I12)
       ELSE
         WRITE(6,*) ' PNTGRP parameter out of bounds ', PNTGRP
         WRITE(6,*) ' Enforced stop in SYMCOM '
