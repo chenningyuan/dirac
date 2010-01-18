@@ -1027,6 +1027,9 @@ contains
         GOTO 2
       ELSE
         NR_VECTORS = NR_VECTORS + 1
+!       skip solution vector
+        READ(LUNIT_XVECTOR)
+!       skip orbital rotations
         READ(LUNIT_XVECTOR)
         GOTO 1
       ENDIF
@@ -1063,6 +1066,7 @@ contains
         BACKSPACE(LUNIT_XVECTOR)
         GOTO 4
       ELSE
+        READ(LUNIT_XVECTOR)
         READ(LUNIT_XVECTOR)
         GOTO 3
       ENDIF
@@ -1101,31 +1105,15 @@ contains
         call quit('unexpected typ1(2:2)')
     end select
 
-    call alloc(orbital_rotation_indices, 2, length)
 
-    select case (vector_type)
-      case ('pp')
-        call set_orbital_rotation_indices(D_mo%irep, &
-                                          length,    &
-                                          2,         &
-                                          3,         &
-                                          orbital_rotation_indices)
-      case ('pn')
-        call set_orbital_rotation_indices(D_mo%irep, &
-                                          length,    &
-                                          2,         &
-                                          1,         &
-                                          orbital_rotation_indices)
-      case default
-        call quit('unexpected vector_type')
-    end select
-
-!   allocate response vector
+!   allocate and read response vector
     call alloc(response_vector, length, nz)
     response_vector = 0.0d0
-
-!   read response vector
     call readt(lunit_xvector, length*nz, response_vector)
+!   allocate and read orbital rotation array
+    call alloc(orbital_rotation_indices, 2, length)
+    call readi(lunit_xvector, length*2, orbital_rotation_indices)
+!   close file of solution vectors
     close(lunit_xvector, status = 'keep')
 
 !fixme: this is a good place to zero elements according to occupation

@@ -1590,7 +1590,7 @@ C
       DO IFREQ = 1,NFREQ
         FREQ = EVALR(IFREQ)
         IF (IROUND.EQ.1 .OR. FREQ.NE.D0) THEN
-          CALL WRTRSP(LUXVC,XPO(1,1,IFREQ),
+          CALL WRTRSP(LUXVC,XPO(1,1,IFREQ),JXOP,
      &         RSPLAB,BVTYP(ITYP),FREQ,JSYMOP,JTIMOP,
      &         BLANK16,BLANK2,D0,0,0,RCNV(IFREQ),INTXRS,NBDIM)
         END IF
@@ -1847,6 +1847,9 @@ C           be preserved!!!
 C
           LBUF = LAB1
         ENDIF
+C.......skip solution vector
+        READ(LUINP,END=3,ERR=2)
+C.......skip orbital rotations
         READ(LUINP,END=3,ERR=2)
         IREC = IREC + 1
       GO TO 1

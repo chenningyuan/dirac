@@ -3766,7 +3766,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Wrtrsp*/
-      SUBROUTINE WRTRSP(LU,RSPVEC,
+      SUBROUTINE WRTRSP(LU,RSPVEC,JXOP,
      &                  LAB1,TYP1,FREQ1,JSYMOP1,JTIMOP1,
      &                  LAB2,TYP2,FREQ2,JSYMOP2,JTIMOP2,
      &                     RNORM,INTFLG,LEN)
@@ -3783,7 +3783,7 @@ C
 #include "dcborb.h"
       LOGICAL FNDLAB16
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2
-      DIMENSION RSPVEC(LEN)
+      DIMENSION RSPVEC(LEN),JXOP(2,LEN)
       REWIND LU
       IF(FNDLAB16('END_OF_THIS_FILE',LU)) THEN
         BACKSPACE LU
@@ -3794,6 +3794,7 @@ CHJ TODO: note that ERGRSP was not defined, what is the idea ????
      &          JTIMOP1,JTIMOP2,RNORM,LEN,INTFLG,
      &          ERGRSP,NTBAS(0),NORBT
         CALL WRITT(LU,LEN,RSPVEC)
+        CALL WRITI(LU,2*LEN,JXOP)
         WRITE(LU) 'END_OF_THIS_FILE'
       ELSE
         WRITE(LUPRI,'(A)') 'WRTRSP: EOF flag not found !'

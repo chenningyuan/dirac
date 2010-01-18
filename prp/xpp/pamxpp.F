@@ -1147,7 +1147,7 @@ C     Write solution vectors to unformatted file for restart
 C
       DO IEXC = 1,NEXCNV
         FREQ = EVALR(IEXC)
-        CALL WRTRSP(LUXVC,XPO(1,1,IEXC),
+        CALL WRTRSP(LUXVC,XPO(1,1,IEXC),JXOP,
      &       RSPLAB,BVTYP(ITYP),FREQ,JSYMOP,JTIMOP,
      &       BLANK16,BLANK2,D0,0,0,RCNV(IEXC),INTXRS,NBDIM)
       ENDDO
