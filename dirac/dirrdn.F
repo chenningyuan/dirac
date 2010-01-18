@@ -6950,7 +6950,9 @@ C        Look for 2-component Hamiltonians
 C
          IF (WORD.EQ.'.IOTC  '.OR.WORD.EQ.'.BSS   '.OR.
      &       WORD.EQ.'.X2C   ') THEN
+C..........active 2-component modus
            TWOCOMP=.TRUE. 
+C..........variable telling that this is a 2-component relativistic calculation
            TWOCOMPBSS=.TRUE.
            CNTMAT=.TRUE.
            ! write(LUPRI,*) "HAMSCAN detected BSS..."
