@@ -1,3 +1,4 @@
-$ERROR 1.E-6
+$ERROR 1.E-7
 Nlines 1:@ static
+$ERROR 1.E-7
 Nlines 1:@ <<
