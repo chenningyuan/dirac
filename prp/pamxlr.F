@@ -1972,6 +1972,7 @@ C
       DO I = 1,NVEC
         BACKSPACE LUINP
         BACKSPACE LUINP
+        BACKSPACE LUINP
       ENDDO
 C     Read vectors
       READ (LUINP) LAB1,LAB2,TYP1,TYP2,
@@ -2003,6 +2004,8 @@ C     Read vectors
           CALL PRQMAT(BVEC(1,1,I),NBDIM,1,NBDIM,1,
      &                NZ,IPQTOQ(1,IREP),LUPRI)
         ENDIF
+C...    skip orbital rotations
+        READ(LUINP)
       ENDDO
 C     Analyze major excitations
       CALL LSET(NVEC,.TRUE.,LFLAG)
