@@ -1691,7 +1691,7 @@ echo
 }
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-deal_testlib () {
+deal_sharedmemory () {
 #
 #  deal with shared-memory parallelization routines of DIRAC
 #
