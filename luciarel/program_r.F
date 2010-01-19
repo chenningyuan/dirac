@@ -38,11 +38,10 @@ C
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE GASCI_REL(F1,F2,INTSPACE,ISM,ISPC,
-     &                     IPRNT,EREF,ECORE_KRMC,CIRUN,IPROCLIST,
-     &                     IGROUPLIST)
+      SUBROUTINE GASCI_REL(F1,F2,INTSPACE,ISM,ISPC,IPRNT,EREF,
+     &                     ECORE_KRMC,CIRUN,IPROCLIST,IGROUPLIST)
 *
-CSK   use memory_allocator
+      use memory_allocator
 *
 * CI optimization in GAS space number ISPC for symmetry ISM
 *
@@ -102,7 +101,12 @@ CSK   use memory_allocator
       COMMON/CECORER/ECORE
       DIMENSION F1(*), F2(*), IPROCLIST(*), IGROUPLIST(*)
       INTEGER*8 L_MAX_DENS_BLK
-      LOGICAL CPIC_PASS_D
+      LOGICAL CPIC_PASS_D, DIAGONAL_ALLOC
+C 
+C     some local scratch
+      real*8,    allocatable :: scratch_dav1(:)
+      real*8,    allocatable :: scratch_dav2(:)
+      integer,   allocatable :: iscratch_dav1(:)
 C     memory pointer for TT-block distribution among CPU's
 C     memory pointer for TT-block offsets
 C     memory pointer for T coefficients
@@ -140,8 +144,11 @@ C     set some variables ...
       MIN2  = - 2
       NZERO =   0
       IIONE =   1
-C     controls whether the T_DIAG part is stored on T_BUFF_D or not
-      CPIC_PASS_D = .FALSE.
+C     CPIC_PASS_D controls whether the T_DIAG part is 
+C     stored on T_BUFF_D or not
+C     DIAGONAL_ALLOC keeps track of allocation of T_BUFF_D
+      CPIC_PASS_D    = .FALSE.
+      DIAGONAL_ALLOC = .FALSE.
 C
 CSK   NTEST = 3
       IF(NTEST.GE.3) THEN
@@ -248,6 +255,11 @@ C     partition CI vector - for all MS2 spaces into batches
      &                   IGROUPLIST)
 C
 #if defined (VAR_MPI2)
+C
+C     define length of T_DIAG block and store on common block 
+C     variable MY_T_LEN_D
+      LEN_T_D_BUFF = (3*(NTOOB**2)) + (2*NTOOB)
+      MY_T_LEN_D   = LEN_T_D_BUFF
 C     
 C     INFO about T block distribution on IT_TTPL
 C     ==> if (shared memory route active) then
@@ -265,8 +277,6 @@ C       calculate length of T_BUFF
 C         real part of T array
           LEN_T_BUFF = MY_T_LEN/IRC
         END IF
-        LEN_T_D_BUFF = (3*(NTOOB**2)) + (2*NTOOB)
-        MY_T_LEN_D   = LEN_T_D_BUFF
 csk     write(luwrt,*) ' LEN_T_BUFF, MY_T_LEN, MY_T_LEN_D',
 csk  &                   LEN_T_BUFF, MY_T_LEN, MY_T_LEN_D
 csk     CALL IWRTMAMN(IT_TTPL,1,NSPOBEX_TP,1,NSPOBEX_TP,LUWRT)
@@ -285,6 +295,7 @@ C       zero arrays
 #else
         allocate(T_BUFF(MY_T_LEN))
         allocate(T_BUFF_D(MY_T_LEN_D))
+        DIAGONAL_ALLOC = .TRUE.
         T_BUFF   =  0
         T_BUFF_D =  0
 #endif
@@ -347,12 +358,10 @@ C
 C     ... read-in reordered integrals for the old-school way.
       IF( .NOT. CPIC_PASS_D .and. REORD_IJKL ) THEN
 C
-         LEN_T_D_BUFF = (3*(NTOOB**2)) + (2*NTOOB)
-         MY_T_LEN_D   = LEN_T_D_BUFF
-         allocate(T_BUFF_D(MY_T_LEN_D))
+         IF( .NOT. DIAGONAL_ALLOC ) allocate(T_BUFF_D(MY_T_LEN_D))
+         DIAGONAL_ALLOC = .TRUE. 
 C
 CSK      CALL DZERO8(T_BUFF,MY_T_LEN)
-C
          IF (CIRUN .ne. 'ANALYZ' ) THEN
            call picasso(INTSPACE,ISO1,IPRNT, .TRUE. ,
      &                  NL2D,IBU2D,ISM2D,F1,F2,T_BUFF,
@@ -688,94 +697,94 @@ C           ^ CIRUN .eq. SIGMAD
 C
 #endif
           else
+ 
+            if (NROOT.gt.MXROOT) then
+              WRITE(LUWRT,'(A,I4)') ' Too many roots. MXROOT is ',MXROOT
+              WRITE(LUWRT,'(A,I4)') ' Increase MXROOT to ',NROOT
+              CALL QUIT(' *** ERROR in GASCI_REL: too many roots ***')
+            end if
 C
-C     allocate some scratch space
-      NFINDM = min(NVAR,4*NROOT)
-      call memmar(KFINDMR,4*NFINDM+1,'ADDL  ',2,'FINDMR')
-CSK   for some reason (?) allocation with 4*NFINDM+1 does not 
-CSK   work with INTEGER*8
-#if defined (INT_STAR8)
-      call memmar(KFINDMI,5*NFINDM,'ADDL  ',1,'FINDMI')
-#else
-      call memmar(KFINDMI,4*NFINDM+1,'ADDL  ',1,'FINDMI')
-#endif
-      if (NROOT.gt.MXROOT) then
-        WRITE(LUWRT,*) ' Too many roots. '
-        WRITE(LUWRT,*) ' Increase MXROOT to ',NROOT
-        CALL QUIT(' *** ERROR in GASCI_REL: too many roots ***')
-      end if
-      call memmar(KSCR2,NROOT,'ADDL  ',2,'SCR2S ')
+C           allocate some scratch space
+            NFINDM = min(NVAR,4*NROOT)
+            call alloc(scratch_dav1, 4*NFINDM+1)
+            call alloc(iscratch_dav1,5*NFINDM)
+            call alloc(scratch_dav2, NROOT)
 C
-      CALL CIEIG5_REL(MV7_REL,INICI,EROOT,WORK(KVEC1),WORK(KVEC2),
-     &     MINST,LUDIA,LUC,LUHC,LUSC1,LUSC2,LUSC3,LUSC34,LUSC35,
-     &     NVAR,NBLK,NROOT,MXCIV_CI,MAXIT,MXROOT,
-     &     LUCIVI,IPRNT,WORK(KSBEVC),
-     &     NPRDET,WORK(KSBIDT),
-     &     MXP1,MXP2,MXQ,
-     &     WORK(KFINDMR),WORK(KFINDMI),WORK(KSCR2),
-     &     WORK(KT_CC),T_BUFF,
-     &     ECORE,ICISTR,LBLK,
-     &     IDIAG,THRES_E,
-     &     NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
-     &     WORK(KPCIBT),INIDEG,E_THRE,C_THRE,
-     &     E_CONV,C_CONV,ICLSSEL,
-     &     NOCCLS,
-     &     IRC,IDCOMH,IHAM12,SIGDEN_ROUTE,
-     &     WORK(KBLOCKLIST),WORK(KNODELIST),IPROCLIST,IGROUPLIST
+            CALL CIEIG5_REL(MV7_REL,INICI,EROOT,WORK(KVEC1),WORK(KVEC2),
+     &                      MINST,LUDIA,LUC,LUHC,LUSC1,LUSC2,LUSC3,
+     &                      LUSC34,LUSC35,NVAR,NBLK,NROOT,MXCIV_CI,
+     &                      MAXIT,MXROOT,LUCIVI,IPRNT,WORK(KSBEVC),
+     &                      NPRDET,WORK(KSBIDT),MXP1,MXP2,MXQ,
+     &                      scratch_dav1,iscratch_dav1,scratch_dav2,
+     &                      WORK(KT_CC),T_BUFF,ECORE,ICISTR,LBLK,
+     &                      IDIAG,THRES_E,NBATCH,WORK(KPCLBT),
+     &                      WORK(KPCLEBT),WORK(KPCIBT),INIDEG,
+     &                      E_THRE,C_THRE,E_CONV,C_CONV,ICLSSEL,NOCCLS,
+     &                      IRC,IDCOMH,IHAM12,SIGDEN_ROUTE,
+     &                      WORK(KBLOCKLIST),WORK(KNODELIST),
+     &                      IPROCLIST,IGROUPLIST
 #if defined (VAR_MPI2)
-     &    ,WORK(KILU1LIST),WORK(KILU2LIST),WORK(KILU3LIST),
-     &     WORK(KILU4LIST),WORK(KILU5LIST),WORK(KILUCLIST),
-     &     WORK(KRCCTOS),IT_TTPL,IT_TTOL
+     &                      ,WORK(KILU1LIST),WORK(KILU2LIST),
+     &                      WORK(KILU3LIST),WORK(KILU4LIST),
+     &                      WORK(KILU5LIST),WORK(KILUCLIST),
+     &                      WORK(KRCCTOS),IT_TTPL,IT_TTOL
 #endif
-     &     )
+     &                      )
 C
-      EREF = EROOT(IRFROOT)
+C           save energy of the lowest eigenstate
+            EREF = EROOT(IRFROOT)
+C
+C           release local scratch memory
+            call dealloc(scratch_dav2)
+            call dealloc(iscratch_dav1)
+            call dealloc(scratch_dav1)
 C
 #if defined (VAR_MPI2)
 C
-C     delete big scratch files when doing large-scale CI run
-C     (CIRUN .eq. KR-CI) before collecting all vectors
-      CALL SETUNITS_PAR_CLOSE_REL(CIRUN,1)
+C           delete big scratch files when doing large-scale CI run
+C           (CIRUN .eq. KR-CI) before collecting all vectors
+            CALL SETUNITS_PAR_CLOSE_REL(CIRUN,1)
 C
-      IF( IAM_NOT_INV .eq. 0 ) GOTO 505
+            IF( IAM_NOT_INV .eq. 0 ) GOTO 505
 C
-      LBLK = -1
-C     copy c-vectors from nodes and master back to the master
-C     purpose: master does the ana-stuff
+            LBLK = -1
+C           copy c-vectors from nodes and master back to the master
+C           purpose: master does the ana-stuff
 C
-C     NOTE: only C-vectors will be saved.
+C           NOTE: only C-vectors will be saved.
 C
-      IF( MYPROC .eq. MASTER ) CALL REWINE(LUC,-1)
-      CALL REWINE(LUSC41,-1)
-      DO JROOT = 1, NROOT
-        CALL COPVCD_PAR_BDRIV_REL(ILU1,LUSC41,WORK(KVEC1),
-     &                            WORK(KNODELIST),NUM_BLOCKS,
-     &                            WORK(KBLOCKLIST),
-     &                            MPI_COMM_WORLD,LBLK,JROOT,
-     &                            WORK(KILU1LIST),MY_LU1_OFF,IRC)
-      END DO
-      CALL SETUNITS_PAR_CLOSE_REL(CIRUN,2)
-      IF(MYPROC.EQ.MASTER) THEN
-        CALL REWINE(LUSC41,-1)
-        CALL REWINE(LUC,-1)
-        DO JROOT = 1, NROOT
-          CALL copvcdc(LUSC41,LUC,WORK(KVEC1),0,IRC,LBLK)
-        ENDDO
-        CALL REWINE(LUC,-1)
-      END IF
-      NPTESTVAR = 00
-      IF( NPTESTVAR .ge. 10 )THEN
-        IF(MYPROC.EQ.MASTER) THEN
-          DO IVEC = 1, NROOT
-            WRITE(LUWRT,*) '  final new C vector',IVEC
-            CALL WRTVCDC(WORK(KVEC1),LUC,0,IRC,LBLK)
-          END DO
-        END IF
-      END IF
-      NPTESTVAR = 00
+            IF( MYPROC .eq. MASTER ) CALL REWINE(LUC,-1)
+            CALL REWINE(LUSC41,-1)
+            DO JROOT = 1, NROOT
+              CALL COPVCD_PAR_BDRIV_REL(ILU1,LUSC41,WORK(KVEC1),
+     &                                  WORK(KNODELIST),NUM_BLOCKS,
+     &                                  WORK(KBLOCKLIST),
+     &                                  MPI_COMM_WORLD,LBLK,JROOT,
+     &                                  WORK(KILU1LIST),MY_LU1_OFF,IRC)
+            END DO
+            CALL SETUNITS_PAR_CLOSE_REL(CIRUN,2)
+            IF(MYPROC.EQ.MASTER) THEN
+              CALL REWINE(LUSC41,-1)
+              CALL REWINE(LUC,-1)
+              DO JROOT = 1, NROOT
+                CALL copvcdc(LUSC41,LUC,WORK(KVEC1),0,IRC,LBLK)
+              ENDDO
+              CALL REWINE(LUC,-1)
+            END IF
+            NPTESTVAR = 00
+            IF( NPTESTVAR .ge. 10 )THEN
+              IF(MYPROC.EQ.MASTER) THEN
+                DO IVEC = 1, NROOT
+                  WRITE(LUWRT,*) '  final new C vector',IVEC
+                  CALL WRTVCDC(WORK(KVEC1),LUC,0,IRC,LBLK)
+                END DO
+              END IF
+            END IF
+            NPTESTVAR = 00
 C
- 505  CONTINUE
-      IF( IAM_NOT_INV .eq. 0 ) CALL SETUNITS_PAR_CLOSE_REL(CIRUN,2)
+ 505        CONTINUE
+            IF( IAM_NOT_INV .eq. 0 ) 
+     &      CALL SETUNITS_PAR_CLOSE_REL(CIRUN,2)
 #endif
 C
 *+++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1377,7 +1386,7 @@ C       de-allocate T array and destroy T memory window
         deallocate(T_BUFF)
       END IF
 #if !defined VAR_SHMEM
-      IF ( CPIC_PASS_D ) deallocate(T_BUFF_D)
+      IF( DIAGONAL_ALLOC ) deallocate(T_BUFF_D)
 #endif
 C
 C     reset partitioning of CI vector to 'sequential' fashion

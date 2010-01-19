@@ -1285,7 +1285,7 @@ C
      &    20X,'   J Chem Phys, 119,6 (2003) 2963',/,
      &     4X,'PARALLEL LUCIAREL:',/,
      &     4X,'                S. Knecht, H J Aa Jensen, and T Fleig',/,
-     &    20X,'   J Chem Phys, 132,1 (2010) XXXX', //,
+     &    20X,'   J Chem Phys, 132,1 (2010) 014108', //,
      &     1X,79('*'),/)
 C
       RETURN

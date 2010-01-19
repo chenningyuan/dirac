@@ -4542,7 +4542,7 @@ C
      &    20X,'   J Chem Phys, 124 (2006) 104106',/,
      &     4X,'PARALLEL KRMC-LUCIAREL:',/,
      &     4X,'                S. Knecht, H J Aa Jensen, and T Fleig',/,
-     &    20X,'   manuscript in preparation (2008).',//,
+     &    20X,'   J Chem Phys, 132,1 (2010) 014108.',//,
      &     1X,79('*'),//)
 C
       RETURN
