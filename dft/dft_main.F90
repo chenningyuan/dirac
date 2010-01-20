@@ -870,21 +870,6 @@ contains
 !       number of electrons
         dft_temp_nr_electrons = dft_temp_nr_electrons + w(1)*r_0(1)
 
-!       energy density
-        if ((response_order == 0) .and. (response_order_ao == 0)) then
-
-          call get_functional_derv(0,            &
-                                   block_length, &
-                                   w,            &
-                                   r_0,          &
-                                   z_0,          &
-                                   0,            &
-                                   derv)
-
-          dft_temp_xc_energy = dft_temp_xc_energy + derv(1, d_0)
-
-        end if
-
 
 !       exchange-correlation potential 
 !       ==============================
@@ -898,6 +883,9 @@ contains
                                    z_0,                &
                                    nr_nonzero_derv(1), &
                                    derv)
+
+!         energy density
+          dft_temp_xc_energy = dft_temp_xc_energy + derv(1, d_0)
 
           if (use_gga) then
 !           this factor has nothing to do

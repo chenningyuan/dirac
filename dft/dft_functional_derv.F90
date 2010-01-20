@@ -124,6 +124,7 @@ contains
 
         case (1)
           do k = 1, block_length
+            derv(k, d_0) = t(1, k)
             derv(k, d_r) = t(xc_index(XC_RSZXY, (/1, 0, 0, 0, 0/)), k)
             derv(k, d_z) = t(xc_index(XC_RSZXY, (/0, 0, 1, 0, 0/)), k)
           end do
@@ -212,6 +213,7 @@ contains
 
         case (1)
           do k = 1, block_length
+            derv(k, d_0) = dftenergy(r_0(k), dsqrt(z_0(k)))
             call dftpot0(t(1, k), 1.0d0, r_0(k), dsqrt(z_0(k)))
           end do
 
