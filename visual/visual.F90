@@ -528,6 +528,11 @@ contains
      &                          + (JCUBE-1)*STEP_3D(3,2) &
      &                          + (KCUBE-1)*STEP_3D(3,3)
 
+!             write even grid so that it can be fed into XC integrator
+!             for subsequent experiments
+!             zero weight is so that it does not mess up results
+!             write(lunit_3d, '(4d20.12)') px, py, pz, 0.0d0
+
               CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &
      &                                   ao, &
      &                                   PX,PY,PZ, &
