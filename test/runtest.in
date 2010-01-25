@@ -82,6 +82,8 @@ usage () {
    $echo '\tRun test in parallell under MPI'
    $echo '--nice'
    $echo '\texecute Dirac with nice/npri'
+   $echo '--timeout="TIME"'
+   $echo '\tset the time limit for Dirac run'
    $echo
 }
 
@@ -93,6 +95,7 @@ arg_dirac=$BIN_DIR/dirac.x
 arg_tag=runtest
 arg_mpi=
 arg_nice=
+arg_timeout=
 RUNTYPE=undefined
 
 while [ $# != 0 ]; do
@@ -168,6 +171,9 @@ while [ $# != 0 ]; do
          ;;
       "nice")
          arg_nice="-nice"
+         ;;
+      "timeout")
+         arg_timeout="$val"
          ;;
       "pampath")
          if [ "${valomitted}" = "yes" ]; then
@@ -340,11 +346,13 @@ for tt in $tests; do
    fi
    echo
    ( cd $tt; \
-     PAM_PATH=$arg_pampath; export PAM_PATH; \
-     MPIARG=$arg_mpi; export MPIARG; \
-     DIRAC=$arg_dirac; export DIRAC; \
-     TAG=$arg_tag; export TAG; \
-     NICE=$arg_nice; export NICE; \
+#                            ... export variables for run.sh in each test subdirectory
+     PAM_PATH=$arg_pampath;      export PAM_PATH; \
+     MPIARG=$arg_mpi;            export MPIARG;   \
+     DIRAC=$arg_dirac;           export DIRAC;    \
+     TAG=$arg_tag;               export TAG;      \
+     NICE=$arg_nice;             export NICE;     \
+     TIME=$arg_timeout;          export TIME;     \
      ./run.sh; \
      cd .. )  
 done

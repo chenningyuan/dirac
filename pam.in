@@ -330,9 +330,9 @@ setup_command()
    TIMEOUT=`which timeout 2>/dev/null`
    if [ -n $TIMEOUT_LIMIT ] || [ -n $TIMEOUT ]; then
      TIMEOUT_CMD="$TIMEOUT --signal=9 $TIMEOUT_LIMIT"
-#    update timeout ...
+#    update dirac command if timeout is present
      DIRAC_CMD="$TIMEOUT_CMD $DIRAC_CMD"
-   fi 
+   fi
 
 }
 #
@@ -384,6 +384,9 @@ execute_dirac()
 
    if [ -n $TIMEOUT_LIMIT ] || [ -n $TIMEOUT ]; then
      $echo "   Killing of all processes ensured (timeout command) after $TIMEOUT_LIMIT\n"
+   fi
+   if [ -n $TIMEOUT_LIMIT ] || [ -z $TIMEOUT ]; then
+     $echo "   No killing of all processes after $TIMEOUT_LIMIT, timeout command not present!\n"
    fi
 
    if [ -n "$DEBUG"  ]; then

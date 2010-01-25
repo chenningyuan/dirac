@@ -25,7 +25,7 @@ fi
 # Run calculation (pass on additional arguments for pam that are supplied by the caller)
 #
 EXIT=0 
-$PAM_PATH/pam -dirac $DIRAC $NICE -run $TAG -rmwrk -clean $MPIARG $* $MOL $MENU || EXIT=1
+$PAM_PATH/pam -dirac $DIRAC $NICE -run $TAG -timeout $TIME -rmwrk -clean $MPIARG $* $MOL $MENU || EXIT=1
 #
 # Finished : either regular or with a crash. Make two branches.
 #

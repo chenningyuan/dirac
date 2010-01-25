@@ -83,6 +83,8 @@ usage='Usage: '$0'\n'\
 '\tNumber of nodes to be used (default: run serial job)\n'\
 '--time=TIME\n'\
 "\tRuntime (for the queueing system) (default: $time)\n"\
+'--timeout=TIMEOUT\n'\
+'\ttime for allowing dirac run (killed afterwards) \n'\
 '--q=QUEUE\n'\
 '\tQueue to be used in qsub (default: -q=none meaning run interactively)\n'
 
@@ -152,6 +154,11 @@ while [ $# != 0 ]; do
       "time")
          if [ "${valomitted}" = "no" ]; then
             time="$val"
+         fi
+         ;;
+      "timeout")
+         if [ "${valomitted}" = "no" ]; then
+            TIMEOUT="$val"
          fi
          ;;
       *)
@@ -266,7 +273,7 @@ cat <<EOF >job_testlast.sh
 #
 echo " Starting test at \`date\`"
 cd ${testdir};
-./runtest --tests="$tests" --runtype="$RUNTYPE" $pampath $mpi $diracexe --run=$run > ./logs/$runlog 2>&1 || \
+./runtest --tests="$tests" --runtype="$RUNTYPE" $pampath $mpi $diracexe --run=$run --timeout=$TIMEOUT > ./logs/$runlog 2>&1 || \
 { echo " runtest failed" ; \
   echo " Here is the logfile ${testdir}/logs/$runlog" ; \
   cat ${testdir}/logs/$runlog ; \
@@ -292,6 +299,11 @@ if [ -z $mpi ]; then
  echo ' Tests in serial mode '
 else
  echo ' Tests in parallel mode (mpi='$nodes')'
+fi
+
+# ... printout on "timeout"
+if [ -n $TIMEOUT ]; then
+ echo ' Forced stop of all test processes after time of '$TIMEOUT''
 fi
 
 # >>-*-*-*-*> Run job script interactively or batch, depending on $queue
