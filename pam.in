@@ -106,6 +106,7 @@ extrausage ()
    echo '     -keepwrk               : Keep work area after calculation (default: remove)'
    echo '     -aw n                  : Set maximum memory (in megawords) that can be allocated dynamically (per allocation)'
    echo '     -dftmem n              : Set maximum memory (in Mb) for storing AOs in DFT numerical integration'
+   echo '     -timeout|-to <TIME>    : Set time limit for dirac processes; kill them if time exceeded.'
    echo '     -debug                 : Run dirac in debugger:"'$DEBUGGER'"'
    echo '     -vg1 "valgrind_params" : Run dirac in valgrind (http://valgrind.org) with parameters :"'$VALGRIND'"'
    echo '     -vg                    : Run dirac in valgrind (http://valgrind.org), no parameters'
@@ -323,6 +324,16 @@ setup_command()
 
    fi
 
+########################################################
+### take care of timeout, TIMEOUT_LIMIT, TIMEOUT_CMD ###
+########################################################
+   TIMEOUT=`which timeout 2>/dev/null`
+   if [ -n $TIMEOUT_LIMIT ] || [ -n $TIMEOUT ]; then
+     TIMEOUT_CMD="$TIMEOUT --signal=9 $TIMEOUT_LIMIT"
+#    update timeout ...
+     DIRAC_CMD="$TIMEOUT_CMD $DIRAC_CMD"
+   fi 
+
 }
 #
 #
@@ -361,21 +372,26 @@ execute_dirac()
    done
       
       # attach useful info into output file
-      echo -e "DIRAC launched (pam script) by `whoami`@`hostname -f` at `date`" > $OUTPUT_FILE
-      echo -e "in : $OLDPWD"  >> $OUTPUT_FILE
-      echo -e "==========================================================================================="  >> $OUTPUT_FILE
-      echo -e "Size of all static allocations (pam script) : \c" >> $OUTPUT_FILE
+      $echo  "DIRAC launched (pam script) by `whoami`@`hostname -f` at `date`" > $OUTPUT_FILE
+      $echo  "in : $OLDPWD"  >> $OUTPUT_FILE
+      $echo  "==========================================================================================="  >> $OUTPUT_FILE
+      $echo  "Size of all static allocations (pam script) : \c" >> $OUTPUT_FILE
       size $BIN_DIR/$DIRAC 2> /dev/null | grep $BIN_DIR/$DIRAC 2> /dev/null \
       | awk '{printf $3/(1024*1024)} ' 2> /dev/null >> $OUTPUT_FILE; echo ' MB' >> $OUTPUT_FILE \
       || echo 'can not be determined' >> $OUTPUT_FILE
 
    $echo "      $BDIR \n"
+
+   if [ -n $TIMEOUT_LIMIT ] || [ -n $TIMEOUT ]; then
+     $echo "   Killing of all processes ensured (timeout command) after $TIMEOUT_LIMIT\n"
+   fi
+
    if [ -n "$DEBUG"  ]; then
       # ... dirac run in serial debugging mode - append to pam generated output
-      $NICE_CMD $DIRAC_CMD | tee -a $OUTPUT_FILE
+       $NICE_CMD $DIRAC_CMD | tee -a $OUTPUT_FILE
    else
       # ... standard serial run 
-      $NICE_CMD $DIRAC_CMD >> $OUTPUT_FILE || \
+       $NICE_CMD $DIRAC_CMD >> $OUTPUT_FILE || \
          ( \
             $echo "\n   $DIRAC returned non-zero exit code" ; \
             $CLEANUP ; EXIT=1 ; export EXIT \
@@ -949,6 +965,11 @@ initialize()
 
    RESTART_ARCHIVE=
    RESTART_ONLY=DFCOEF
+
+#timeout limit
+   TIMEOUT_LIMIT= 
+   TIMEOUT=
+   TIMEOUT_CMD=
 }
 #
 #
@@ -1066,6 +1087,10 @@ while [ -n "$1" ]; do
       -wrkpath|-workpath)
          shift
          SCR_PATH=$1
+         ;;
+      -timeout|-to)
+         shift
+         TIMEOUT_LIMIT=$1
          ;;
       -machinefile|-mf)
          shift
