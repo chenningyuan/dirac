@@ -327,9 +327,9 @@ setup_command()
 ########################################################
 ### take care of timeout, TIMEOUT_LIMIT, TIMEOUT_CMD ###
 ########################################################
-   TIMEOUT=`which timeout 2>/dev/null`
-   if [ -n $TIMEOUT_LIMIT ] || [ -n $TIMEOUT ]; then
-     TIMEOUT_CMD="$TIMEOUT --signal=9 $TIMEOUT_LIMIT"
+   TIMEOUT_EXEC=`which timeout 2>/dev/null` # check of timeout command exists
+   if [ -n $TIMEOUT_LIMIT -a -n $TIMEOUT_EXEC ]; then
+     TIMEOUT_CMD="$TIMEOUT_EXEC --signal=9 $TIMEOUT_LIMIT"
 #    update dirac command if timeout is present
      DIRAC_CMD="$TIMEOUT_CMD $DIRAC_CMD"
    fi
@@ -382,10 +382,10 @@ execute_dirac()
 
    $echo "      $BDIR \n"
 
-   if [ -n $TIMEOUT_LIMIT ] || [ -n $TIMEOUT ]; then
+   if [ -n $TIMEOUT_LIMIT -a -n $TIMEOUT_EXEC ]; then
      $echo "   Killing of all processes ensured (timeout command) after $TIMEOUT_LIMIT\n"
    fi
-   if [ -n $TIMEOUT_LIMIT ] || [ -z $TIMEOUT ]; then
+   if [ -n $TIMEOUT_LIMIT -a -z $TIMEOUT_EXEC ]; then
      $echo "   No killing of all processes after $TIMEOUT_LIMIT, timeout command not present!\n"
    fi
 
@@ -969,10 +969,10 @@ initialize()
    RESTART_ARCHIVE=
    RESTART_ONLY=DFCOEF
 
-#timeout limit
-   TIMEOUT_LIMIT= 
-   TIMEOUT=
-   TIMEOUT_CMD=
+# --- timeout limit
+   TIMEOUT_LIMIT=''
+   TIMEOUT_EXEC=''
+   TIMEOUT_CMD=''
 }
 #
 #
