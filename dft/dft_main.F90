@@ -826,7 +826,6 @@ contains
       end if
       
       if (.not. (dft_cfg_keep_ao .and. batch_is_in_mem(ibatch))) then
-!       here get magnetic dervs of aos
         call get_so(corx(ipoint), cory(ipoint), corz(ipoint), &
                     ao_p, buffer)
       end if
