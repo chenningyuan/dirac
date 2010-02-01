@@ -328,7 +328,7 @@ setup_command()
 ### take care of timeout, TIMEOUT_LIMIT, TIMEOUT_CMD ###
 ########################################################
    TIMEOUT_EXEC=`which timeout 2>/dev/null` # check of timeout command exists
-   if [ -n $TIMEOUT_LIMIT -a -n $TIMEOUT_EXEC ]; then
+   if [ -n "$TIMEOUT_LIMIT" -a -n "$TIMEOUT_EXEC" ]; then
      TIMEOUT_CMD="$TIMEOUT_EXEC --signal=9 $TIMEOUT_LIMIT"
 #    update dirac command if timeout is present
      DIRAC_CMD="$TIMEOUT_CMD $DIRAC_CMD"
