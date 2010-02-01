@@ -232,6 +232,12 @@ contains
 
     deallocate(word_array)
 
+    w = 0.0d0
+    do i = 1, size(dft_cfg_functional_w)
+      w = w + dabs(dft_cfg_functional_w(i))
+    end do
+    if (w < tiny) call quit('DFTAUTO: unknown functional or functional zero')
+
     dft_cfg_functional_w_alda                      = 0.0d0
     dft_cfg_functional_w_alda(XC_SLATER_EXCHANGE)  = 1.0d0
     dft_cfg_functional_w_alda(XC_VWN5_CORRELATION) = 1.0d0
