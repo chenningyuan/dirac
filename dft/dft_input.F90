@@ -186,6 +186,18 @@ contains
 !     "atomic" functionals
 !     ====================
 
+      w = get_weight(word_array(i), 'kin_pw91')
+      if (dabs(w) > tiny) then
+        write(u, '(f10.6, a)') w, ': kin_pw91'
+        dft_cfg_functional_w(KIN_PW91) = dft_cfg_functional_w(KIN_PW91) + w
+      end if
+
+      w = get_weight(word_array(i), 'kin_tf')
+      if (dabs(w) > tiny) then
+        write(u, '(f10.6, a)') w, ': kin_tf'
+        dft_cfg_functional_w(KIN_TF) = dft_cfg_functional_w(KIN_TF) + w
+      end if
+
       w = get_weight(word_array(i), 'slater')
       if (dabs(w) > tiny) then
         write(u, '(f10.6, a)') w, ': slater'
