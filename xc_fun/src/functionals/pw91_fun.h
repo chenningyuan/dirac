@@ -39,6 +39,7 @@ namespace PW91xk_internal
    }
 
    // PW91 kinetic energy functional
+   // reduces to TF kinetic energy functional for zero gradient
 
    template<class num>
    static num pw91_kinetic(const num &rhoa,
