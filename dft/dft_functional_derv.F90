@@ -54,10 +54,12 @@ contains
     integer, intent(in) :: response_order_ao
 !   ----------------------------------------------------------------------------
     integer             :: i, alda_order
-    integer             :: gga_functionals(4) = (/XC_BECKE_EXCHANGE,  &
+!fixme: this gga info should be somewhere else
+    integer             :: gga_functionals(5) = (/XC_BECKE_EXCHANGE,  &
                                                   XC_LYP_CORRELATION, &
                                                   XC_PBE_EXCHANGE,    &
-                                                  XC_PBE_CORRELATION/)
+                                                  XC_PBE_CORRELATION, &
+                                                  KIN_PW91/)
 !   ----------------------------------------------------------------------------
 
     alda_order = dft_cfg_alda_order
