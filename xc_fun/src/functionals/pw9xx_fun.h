@@ -41,7 +41,7 @@ namespace pw91_like_x_internal
   template<class num>
   static num chi(const num &rho, const num &grad)
   {
-    return (sqrt(grad)/pow(rho,4.0/3.0));
+    return sqrt(grad)/pow(rho,4.0/3.0);
   }
 
   template<class num>
