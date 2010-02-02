@@ -863,7 +863,13 @@ contains
       end do
     end do
 
-    total_ao_vector_length = nr_ao_slices*nr_ao
+!   total_ao_vector_length = nr_ao_slices*nr_ao
+!   radovan: the above can lead to "plus one" or "plus few" out-of-bounds
+!            error if spherical gaussians are used
+!            it is safe to do instead
+    total_ao_vector_length = nr_ao_slices*nr_cartesian_ao
+!            although it consumes more memory than needed
+!            the allocation could be refined
 
 #ifdef VAR_MPI
     end if !if (i_am_the_master) then
