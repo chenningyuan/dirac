@@ -8,6 +8,24 @@
 static int taylor_logging = 0;
 #endif
 
+// taylor_seed is used for convenient initialization of 
+// taylor objects, but the same effect can always be obtained
+// from constructing a taylor<T,Nvar,Ndeg>(c0,var);
+template<int N>
+struct taylor_seed 
+{
+  taylor_seed(void) {};
+};
+
+static const taylor_seed<0> eps1;
+static const taylor_seed<1> eps2;
+static const taylor_seed<2> eps3;
+static const taylor_seed<3> eps4;
+static const taylor_seed<4> eps5;
+static const taylor_seed<5> eps6;
+static const taylor_seed<6> eps7;
+static const taylor_seed<7> eps8;
+
 template<class T, int Nvar, int Ndeg>
 class taylor : public polynomial<T, Nvar, Ndeg>
 {
@@ -41,12 +59,36 @@ public:
     if (Ndeg>0)
       c[var+1] = var_value;
   }
+  template<int N>
+  taylor(const taylor_seed<N> &s) : polynomial<T, Nvar,Ndeg>(0) 
+  {
+    assert(N>=0);
+    assert(N<Nvar);
+    if (Ndeg>0)
+      c[N+1] = 1;
+  }
   template<typename S>
   taylor<T,Nvar,Ndeg> &operator=(const S& c0)
   {
     polynomial<T,Nvar,Ndeg>::operator=(T(c0));
     return *this;
   }
+
+  template<int N>
+  const T &operator[](const taylor_seed<N> &s) const
+  {
+    assert(N>=0);
+    assert(N<Nvar);
+    return c[1+N];
+  }
+  template<int N>
+  T &operator[](const taylor_seed<N> &s)
+  {
+    assert(N>=0);
+    assert(N<Nvar);
+    return c[1+N];
+  }
+
   template<int N>
   taylor<T,Nvar-1,N> &pick_order(void)
   {
@@ -190,6 +232,8 @@ public:
     return c[i];
   }
 };
+
+
 
 // Define a taylor polynomial with taylor polynomial coefficients,
 // i.e. a tensoring of polynomial spaces.
