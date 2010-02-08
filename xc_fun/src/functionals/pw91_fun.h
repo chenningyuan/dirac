@@ -7,7 +7,7 @@ namespace PW91xk_internal
 
    // enhancement factor F(S), common to PW91x and PW91k 
    template<class num>
-   static num pw91xk_enhancement(const num param_AB[6],
+   static num pw91xk_enhancement(const double param_AB[6],
                                  const num &rho,
                                  const num &grad)
    {

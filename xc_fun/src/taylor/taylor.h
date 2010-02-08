@@ -149,6 +149,12 @@ public:
       for (int i=0;i<size;i++)
 	c[i] *= scale;
     }
+  template<class S>
+  void operator/=(const S& scale)
+    {
+      for (int i=0;i<size;i++)
+	c[i] *= scale;
+    }
   void operator*=(int scale)
     {
       for (int i=0;i<size;i++)
