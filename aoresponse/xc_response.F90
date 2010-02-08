@@ -65,6 +65,9 @@ contains
                                       ao_g1_m0,  &
                                       n_0,       &
                                       gn_0,      &
+                                      px,        &
+                                      py,        &
+                                      pz,        &
                                       w,         &
                                       buffer)
 
@@ -82,6 +85,9 @@ contains
     real(8), intent(in)    :: ao_g1_m0(*)
     real(8), intent(in)    :: n_0
     real(8), intent(in)    :: gn_0(3)
+    real(8), intent(in)    :: px
+    real(8), intent(in)    :: py
+    real(8), intent(in)    :: pz
     real(8), intent(in)    :: w
     real(8), intent(in)    :: buffer(*)
 !   ----------------------------------------------------------------------------

@@ -21,6 +21,7 @@ module dft_main
 #ifdef VAR_MPI
   use dirac_mpi
 #endif
+  use even_xc_grid
 
   implicit none
 
@@ -359,6 +360,7 @@ contains
 !   ----------------------------------------------------------------------------
     integer             :: ibatch
 
+    logical             :: use_even_xc_grid = .false.
 
 
 
@@ -379,6 +381,9 @@ contains
       integer :: npnts, npoint, nrest, IDISP_REST
       logical :: i_am_the_master
 
+    if (use_even_xc_grid) then
+      call init_even_xc_grid(20, 0, 20, 5.0d0, 5.0d0, 5.0d0)
+    end if
 
     dft_temp_nr_electrons = 0.0d0
     dft_temp_xc_energy    = 0.0d0
@@ -405,6 +410,9 @@ contains
           read(dft_temp_file_unit, *) npoint
         else
           read(dft_temp_file_unit)    npoint
+          if (use_even_xc_grid) then
+            npoint = even_xc_grid_nr_points
+          end if
         end if
       end if
 
@@ -431,7 +439,11 @@ contains
           if (dft_cfg_import_grid) then
             call import_dft_grid(kx, ky, kz, kw, dft_temp_file_unit, npoint)
           else
-            call reaqua(kx, ky, kz, kw, dft_temp_file_unit, npoint)
+            if (use_even_xc_grid) then
+              call set_even_xc_grid(npoint, kx, ky, kz, kw)
+            else
+              call reaqua(kx, ky, kz, kw, dft_temp_file_unit, npoint)
+            end if
           end if
         end if
 
@@ -1031,6 +1043,9 @@ contains
                                           ao_p(ao_start(1, 0):ao_end(1, 0)), &
                                           r_0(1),                            &
                                           rhg,                               &
+                                          corx(ipoint),                      &
+                                          cory(ipoint),                      &
+                                          corz(ipoint),                      &
                                           w(1),                              &
                                           buffer)
           end if
