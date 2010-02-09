@@ -3990,7 +3990,7 @@ C
 !                   21        22        23        24
      &            '.ONECAP','.SPINF2','.NOSPIN','.USE_DF',
 !                   25        26        27        28
-     &            '.INTFLG','.BSS   ','xXXXXXX','.YREQ1 ',
+     &            '.INTFLG','.BSS   ','.HFXMU ','.YREQ1 ',
 !                   29        30        31        32
      &            '.ONESTE','.BLOCKD','.DO2C4C','.DO4C2C',
 !                   33        34        35        36
@@ -4400,6 +4400,9 @@ C      as they need to be modified within BSS transformations
              ENDIF
             GO TO 100
   127     CONTINUE
+C&&& HFXMU: range separation
+             READ(LUCMD,*) HFXMU
+            GO TO 100
 !#ifdef MOD_AMFI 
 !C&&&&&  AMFI_CHARGE: Get the total charge of the molecule
 !C     for mean-field summations of each atom in the system
