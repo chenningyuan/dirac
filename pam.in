@@ -382,10 +382,10 @@ execute_dirac()
 
    $echo "      $BDIR \n"
 
-   if [ -n $TIMEOUT_LIMIT -a -n $TIMEOUT_EXEC ]; then
+   if [ -n "$TIMEOUT_LIMIT" -a -n "$TIMEOUT_EXEC" ]; then
      $echo "   Killing of all processes ensured (timeout command) after $TIMEOUT_LIMIT\n"
    fi
-   if [ -n $TIMEOUT_LIMIT -a -z $TIMEOUT_EXEC ]; then
+   if [ -n "$TIMEOUT_LIMIT" -a -z "$TIMEOUT_EXEC" ]; then
      $echo "   No killing of all processes after $TIMEOUT_LIMIT, timeout command not present!\n"
    fi
 
