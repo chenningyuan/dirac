@@ -1,40 +1,75 @@
 module interface_for_pammag
 
+! interface for common blocks variables used in old pammag.F
+
   implicit none
 
   public common_blocks_vars
 
   save
 
-  integer, public :: int1_unit
-  integer, public :: fcklon_unit = 70
-  integer, public :: print_prp_level
+! parameters:
+  integer, parameter, public :: idummy = -9999999
+  real(8), parameter, public :: dummy  = 1.0D20
+  integer, parameter, public :: fcklon_unit = 70
+  integer, parameter, public :: twolon_unit = 69
+  integer, parameter, public :: p_lupri = 6
+  integer, parameter, public :: max_prp_operators = 400
+  integer, parameter, public :: mxqn = 10
+  integer, parameter, public :: mxaqn = mxqn*(mxqn+1)/2 
+#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (INT_STAR8)
+  integer, parameter, public :: p_irat = 1
+#else
+  integer, parameter, public :: p_irat = 2
+#endif
+
+  integer, public :: int1_unit !should also be a parameter
+  integer, public :: prp_iprint
   integer, public :: nr_ao_total
   integer, public :: nr_ao_large
   integer, public :: nr_ao_small
-  integer, public :: t_n2bbasxq
+  integer, public :: p_n2bbasxq
+  integer, public :: p_n2bbasx
   integer, public :: nr_qu
-  integer, public :: t_norb(1:2)
-  integer, public :: t_norbt
-  integer, public :: t_n2orbxq
-  integer, public :: nr_fermion_irr
-  integer, public :: nr_boson_irr
-  integer, public :: nfbas_fi(1:2, 0:2)
-  integer, public :: cmoq_off(1:2)
-  integer, public :: basx_off(1:2, 1:2)
-  integer, public :: orbx_off(1:2, 1:2)
-  integer, public :: prp_cb_pq_to_uq(1:4, 0:7)
-  integer, public :: prp_cb_uq_to_pq(1:4, 0:7)
-  integer, public :: t_jbtof(0:7, 1:2)
+  integer, public :: p_norb(1:2)
+  integer, public :: p_norbt
+  integer, public :: p_n2orbxq
+  integer, public :: p_nfsym 
+  integer, public :: p_nbsym
+  integer, public :: p_nfbas(1:2, 0:2)
+  integer, public :: p_icmoq(1:2)
+  integer, public :: p_i2basx(1:2, 1:2)
+  integer, public :: p_i2orbx(1:2, 1:2)
+  integer, public :: p_ipqtoq(1:4, 0:7)
+  integer, public :: p_iqtopq(1:4, 0:7)
+  integer, public :: p_jbtof(0:7, 1:2)
   integer, public :: ip_conmat(1:3)
   integer, public :: nmr_int
-
-  integer, parameter, public :: max_prp_operators = 400
-  integer, public :: prp_time_sym(1:max_prp_operators)
-  integer, public :: prp_boson_sym(1:max_prp_operators) 
-
+  integer, public :: p_iprptim(1:max_prp_operators)
+  integer, public :: p_iprpsym(1:max_prp_operators) 
   logical, public :: dopct_rntlon = .false.
   logical, public :: sum_ep_rn
+  integer, public :: p_maxrep
+  integer, public :: p_kmax
+  integer, public :: p_khk(mxqn)
+  integer, public :: p_nhtyp
+  integer, public :: p_nlrgbl
+  integer, public :: p_nsmlbl
+  logical, public :: p_first1
+  logical, public :: p_first2
+  logical, public :: p_first3
+  logical, public :: p_parcal
+  integer, public :: p_iprnta
+  integer, public :: p_iprntb
+  integer, public :: p_iprntc
+  integer, public :: p_iprntd
+  logical, public :: p_tktime
+  integer, public :: p_isymax(3, 2)
+  integer, public :: p_irqmat(4, 0:7)
+  integer, public :: p_iqmult(4, 4, 4)
+  integer, public :: p_jqbas(0:7, 2)
+  integer, public :: p_ihqmat(4, -1:1)
+
 
   private
 
@@ -54,70 +89,73 @@ contains
 #include "maxorb.h"
 #include "aovec.h"
 #include "blocks.h"
-#include "dummy.h"
 #include "dcbfir.h"
 #include "dcbham.h"
+#include "ccom.h"
+#include "iratdef.h"
+#include "shells.h"
+#include "symmet.h"
+#include "cbihr2.h"
+#include "dcbqal.h"
+!#include "dummy.h"
+!#include "maxaqn.h"
 !-----------------------------------------------------------------------
-    integer :: i, j
+    integer :: i, j, k
 !-----------------------------------------------------------------------
 
     int1_unit          = lu1int
-    fcklon_unit        = lufckl
     dopct_rntlon       = dopct
     sum_ep_rn          = doeprn
-
-    print_prp_level    = iprprp 
+    prp_iprint         = iprprp 
 
 ! atomic orbitals:
     nr_ao_total        = ntbas(0)
     nr_ao_large        = ntbas(1)
     nr_ao_small        = ntbas(2)
-    t_n2bbasxq         = n2bbasxq  ! = nr_ao_total*nr_ao_total*nr_qu
+
+    p_n2bbasxq         = n2bbasxq  ! = nr_ao_total*nr_ao_total*nr_qu
+    p_n2bbasx          = n2bbasx   ! = nr_ao_total*nr_ao_total
 
     nr_qu              = nz
 
 ! molecular orbitals:
-    t_norb(1:2)        = norb(1:2)
-    t_norbt            = norbt
-    t_n2orbxq          = n2orbxq
+    p_norb(1:2)        = norb(1:2)
+    p_norbt            = norbt
+    p_n2orbxq          = n2orbxq
 
-!
-    nr_fermion_irr     = nfsym
-    nr_boson_irr       = nbsym
+    p_nfsym            = nfsym
+    p_nbsym            = nbsym
     
 !
-    nfbas_fi = 0
+    p_nfbas = 0
     do i = 1, 2
       do j = 0, 2
-        nfbas_fi(i, j)  = nfbas(i, j)
+        p_nfbas(i, j)  = nfbas(i, j)
       end do
     end do
 
-    !nr_boson_irr(2, 0:2)    = nbbas(2, 0:2)
-    
 !icmoq(2):
-    cmoq_off(1:2) = icmoq(1:2)
+    p_icmoq(1:2) = icmoq(1:2)
 
 !i2basx(2, 2) & i2orbx(2, 2)
-    basx_off(1:2, 1:2) = i2basx(1:2, 1:2)
-    orbx_off(1:2, 1:2) = i2orbx(1:2, 1:2)
-
+    p_i2basx(1:2, 1:2) = i2basx(1:2, 1:2)
+    p_i2orbx(1:2, 1:2) = i2orbx(1:2, 1:2)
 
 ! ipqtoq & iqtopq
-    prp_cb_pq_to_uq = 0
-    prp_cb_uq_to_pq = 0
+    p_ipqtoq = 0
+    p_iqtopq = 0
     do i = 1, 4
       do j = 0, 7 
-        prp_cb_pq_to_uq(i, j) = ipqtoq(i, j)
-        prp_cb_uq_to_pq(i, j) = iqtopq(i, j)
+        p_ipqtoq(i, j) = ipqtoq(i, j)
+        p_iqtopq(i, j) = iqtopq(i, j)
       end do
     end do
 
 ! jbtof(0:7, 2)
-    t_jbtof = 0
+    p_jbtof = 0
     do j = 1, 2
       do i = 0, 7 
-        t_jbtof(i, j) = jbtof(i, j)
+        p_jbtof(i, j) = jbtof(i, j)
       end do
     end do
 
@@ -131,14 +169,73 @@ contains
     nmr_int            = intnmr
 
 !iprptim, iprpsym:
-    prp_time_sym = 0
-    prp_boson_sym = 0
+    p_iprptim = 0
+    p_iprpsym = 0
     do i = 1, max_prp_operators
-    !do i = 1, maxprps
-      prp_time_sym(i)  = iprptim(i) !(+1,-1)
-      prp_boson_sym(i) = iprpsym(i) !(1 - 8)
+      p_iprptim(i)  = iprptim(i)     !(+1,-1)
+      p_iprpsym(i) = iprpsym(i)      !(1 - 8)
     end do
 
-  end subroutine
+    p_maxrep = maxrep
+    p_kmax   = kmax
+    p_nhtyp  = nhtyp
+    do i = 1, mxqn
+      p_khk(i) = khk(i)
+    end do
+
+    p_nlrgbl = nlrgbl
+    p_nsmlbl = nsmlbl
+
+    p_first1 = first1
+    p_first2 = first2
+    p_first3 = first3
+ 
+    p_parcal = parcal
+
+    p_iprnta = iprnta
+    p_iprntb = iprntb
+    p_iprntc = iprntc
+    p_iprntd = iprntd
+  
+    p_tktime = tktime
+
+    p_isymax = 0
+    do i = 1, 3
+      do j = 1, 2
+        p_isymax(i, j) = isymax(i, j)
+      end do
+    end do
+
+    p_irqmat = 0
+    do i = 1, 4
+      do j = 0, 7
+        p_irqmat(i, j) = irqmat(i, j)
+      end do
+    end do
+
+    p_iqmult = 0
+    do i = 1, 4
+      do j = 1, 4
+        do k = 1, 4
+          p_iqmult(i, j, k) = iqmult(i, j, k)
+        end do
+      end do
+    end do 
+
+    p_jqbas = 0
+    do i = 0, 7
+      do j = 1, 2
+        p_jqbas(i, j) = jqbas(i, j)
+      end do
+    end do
+
+    p_ihqmat = 0
+    do i = 1, 4
+      do j = -1, 1
+        p_ihqmat(i, j) = ihqmat(i, j)
+      end do
+    end do
+
+  end subroutine common_blocks_vars
 
 end module

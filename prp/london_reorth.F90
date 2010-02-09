@@ -1,4 +1,4 @@
-module london_response
+module london_reorth_hb
 
   use interface_for_pammag
   use pammag_info
@@ -10,22 +10,34 @@ module london_response
   use dft_main
 #endif
 
+
   implicit none
 
-  public rntlon_new
+  public london_reort_hb
 
   save
- 
-! copied from aoresponse
+
   private
   real(8), pointer :: f77_work(:)       ! Fortran 77 work array pointer
   integer          :: len_f77_work  = 0 ! Length of the work array
   integer          :: memory_usage  = 0 ! Amount of work array used
   integer          :: mem_wrk_count = 0 ! Counts
- 
+
+!  integer, allocatable :: irepdm(:)
+!  integer, allocatable :: ifctyp(:)
+
 contains
 
-  subroutine rntlon_new(cmo, ibeig, work, lwork)
+
+  subroutine london_reort_hb(cmo, ibeig, work, lwork)
+
+! it calculates the reorthonormalization contribution to dH(0)/dB|B=0
+! when London atomic orbitals are used:
+! {T^B, H(0)} = {T^B, h(0)} + {T^B, L}
+! please see two last terms in eq. (31) in JCP 131, 124119 (2009)
+
+! it is called only in prp/pamxlr.F
+! but (for getdhb subroutine) we need FCKLON file that is created here
 !-----------------------------------------------------------------------
     real(8), intent(in)    :: cmo(*)
     integer, intent(in)    :: ibeig(*)
@@ -68,18 +80,18 @@ contains
     call common_blocks_vars()
 
 ! allocate memory:
-    call alloc(mat1, 3*t_n2bbasxq)
-    call alloc(mat2, 3*t_n2bbasxq)
+    call alloc(mat1, 3*p_n2bbasxq)
+    call alloc(mat2, 3*p_n2bbasxq)
 
 
 ! get (C+)(T^B)C into mat2 (use mat1 for T^B):
     call get_tb_dmat(mat1, mat2, cmo, ibeig)
 
-! calculate "G" 
+! calculate "G" part 
     call get_gtb(mat1, mat2, cmo, ibeig)
 
-! calculate "F"
-    call dzero(mat1, 3*t_n2bbasxq)
+! calculate "F" part
+    call dzero(mat1, 3*p_n2bbasxq)
     call get_ftb(mat1, mat2, cmo, ibeig)
 
 ! dealloc:
@@ -91,9 +103,8 @@ contains
 
   subroutine get_ftb(mat1, mat2, cmo, ibeig)
 !-----------------------------------------------------------------------
-    real(8) :: mat1(*)
-    !real(8), intent(inout) :: mat1(*)
     real(8), intent(inout) :: mat2(*)
+    real(8)                :: mat1(*)
 
     real(8), intent(in)    :: cmo(*)
     integer, intent(in)    :: ibeig(*)
@@ -122,7 +133,7 @@ contains
     call select_wrk(work, lwork)
 
     call getfck(mat1,             & !fmo (t_n2bbasxq)
-                print_prp_level,  &
+                prp_iprint,  &
                 work,             &
                 kfree,            &
                 lwork)
@@ -130,24 +141,26 @@ contains
     call deselect_wrk(work, lwork)
 
 ! allocate some more memory...
-    call alloc(tb,  t_n2orbxq)
-    call alloc(buf, t_n2orbxq)
+    call alloc(tb,  p_n2orbxq)
+    call alloc(buf, p_n2orbxq)
 
 ! we need AOPROPER and FCKLON files:
 
     call opnfil(int1_unit, 'AOPROPER', 'OLD', 'get_ftb')
 
+!maybe fixme: i copied 'recl' from old rntlon subroutine
+!i don't see why we need 8*t_n2orbxq and not 3*t_n2orbxq
     open(fcklon_unit, file='FCKLON', form='unformatted',   &
-         access='direct',recl=8*t_n2orbxq,                 &
+         access='direct',recl=8*p_n2orbxq,                 &
          status='unknown')
 
     do icomp = 1, 3
 ! get T^B to tb
       indxpr       = ip_conmat(icomp)
-      isym(icomp)  = prp_boson_sym(indxpr)
-      iopsy(icomp) = t_jbtof(isym(icomp)-1, 1)
+      isym(icomp)  = p_iprpsym(indxpr)
+      iopsy(icomp) = p_jbtof(isym(icomp)-1, 1)
 
-      call dzero(tb, t_n2orbxq)
+      call dzero(tb, p_n2orbxq)
 
       lwork = len_f77_work
       kfree = 1
@@ -158,12 +171,12 @@ contains
                   tb,              & ! T^B matrix
                   cmo,             &
                   ibeig,           &
-                  cmoq_off,        &
-                  t_norb,          &
+                  p_icmoq,        &
+                  p_norb,          &
                   work,            &
                   kfree,           &
                   lwork,           &
-                  print_prp_level)
+                  prp_iprint)
 
       call deselect_wrk(work, lwork)
 
@@ -172,29 +185,30 @@ contains
       ah = .true.
       isymh = 1
 
-      call dzero(buf, t_n2orbxq)
+      call dzero(buf, p_n2orbxq)
 
       call ttra(sum_ep_rn,          & !epmix
                 ah,                 & !ah
                 isym(icomp),        & !isymt
                 isymh,              & !isymh
                 tb,                 & !tmat,  n2orbxq
-                mat1(1:t_n2bbasxq),               & !hmat,  n2bbasxq
+                mat1(1:p_n2bbasxq),               & !hmat,  n2bbasxq
                 buf,                & !thmat, n2orbxq (for 1 icomp)
-                print_prp_level)
+                prp_iprint)
 
 ! add buf to mat2 and store in mat2
-      call daxpy(t_n2orbxq,         &
+      call daxpy(p_n2orbxq,         &
                  1.0d0,             &
                  buf,               &
                  1,                 & 
-                 mat2(1 + (icomp - 1)*t_n2orbxq),    & 
+                 mat2(1 + (icomp - 1)*p_n2orbxq),    & 
                  1)
 
 ! finally write to file:
 
-      call wrtdac(fcklon_unit, t_n2orbxq,   &
-                  mat2(1 + (icomp - 1)*t_n2orbxq), icomp)
+      call wrtdac(fcklon_unit, p_n2orbxq,   &
+                  mat2(1 + (icomp - 1)*p_n2orbxq), icomp)
+!gosia test      call wrtdac(fcklon_unit, p_n2orbxq,(/0.0d0/), icomp)
 
     end do ! do i = 1, 3
 
@@ -231,19 +245,19 @@ contains
 ! set for twofck:
     do i = 1, 3
       indxpr    = ip_conmat(i)
-      isym(i)   = prp_boson_sym(indxpr)
-      iopsy(i)  = t_jbtof(isym(i) - 1, 1)
+      isym(i)   = p_iprpsym(indxpr)
+      iopsy(i)  = p_jbtof(isym(i) - 1, 1)
       irep(i)   = isym(i) - 1
       isymop(i) = isym(i)
       ihrmop(i) = -1
-      ifckop(i) = t_jbtof(isym(i) - 1, 1)
+      ifckop(i) = p_jbtof(isym(i) - 1, 1)
     end do
 
 ! get Fock matrix in AO basis to mat1
     call stex_get_npos(npos)
     call alloc(npos_array, npos)
 
-    call dzero(mat1, 3*t_n2bbasxq)
+    call dzero(mat1, 3*p_n2bbasxq)
 
     lwork = len_f77_work
     call select_wrk(work, lwork)
@@ -256,7 +270,7 @@ contains
                 nr_fock,             & ! = 3
                 npos_array,          &
                 nmr_int,             &
-                print_prp_level,     &
+                prp_iprint,     &
                 work,                &
                 lwork)
 
@@ -269,16 +283,17 @@ contains
 #ifdef MOD_DFT
 !       construct kohn-sham contribution
 !       ================================
-! (stolen from pamrvc.F)
 
     if (dirac_cfg_dft_calculation) then
 
-!generate standard density matrix
-!need some more memory...
-      call alloc(dmat, t_n2bbasxq)
-      call genden(dmat, cmo, 1, print_prp_level)
-!fixme should be response_order=1
+!generate 'standard' density matrix
+      call alloc(dmat, p_n2bbasxq)
+      call genden(dmat, cmo, 1, prp_iprint)
+
 ! tsaue+gosia: This contribution is wrong, in fact we get half the direct contribution !!!
+!fixme should be: response_order=1 and m_order=0
+! but it works with response_order=0 an m_order=1
+
       call dftexc(nr_ao_total,   &
                   nr_qu,         &
                   nr_fock,       &
@@ -288,10 +303,10 @@ contains
                   mat2,          & !dmat_p
                   isymop,        &
                   ihrmop,        &
-                  0,             & !response_order
+                  1,             & !response_order
                   0,             & !response_order_ao
                   0,             & !g_order
-                  1)               !m_order
+                  0)               !m_order
 
       call dealloc(dmat)
 
@@ -301,7 +316,7 @@ contains
 
 ! do AO-to-MO transformation (and store in mat2):
 
-    call dzero(mat2, 3*t_n2bbasxq)
+    call dzero(mat2, 3*p_n2bbasxq)
 
     call do_ao_to_mo(mat2,        & ! result in MO basis (3*t_n2orbxq)
                      mat1,        & ! result in AO basis 
@@ -337,8 +352,8 @@ contains
       lwork = len_f77_work
       call select_wrk(work, lwork)
 
-      call gmolitx2(fmo(1+(i-1)*t_n2orbxq),  &
-                    fao(1+(i-1)*t_n2bbasxq),  &
+      call gmolitx2(fmo(1+(i-1)*p_n2orbxq),  &
+                    fao(1+(i-1)*p_n2bbasxq),  &
                     cmo,        &
                     ibeig,      &
                     work,       &
@@ -353,11 +368,11 @@ contains
     do icomp = 1, 3
 
       indxpr        = ip_conmat(icomp)
-      isym(icomp)   = prp_boson_sym(indxpr)
-      iopsy(icomp)  = t_jbtof(isym(icomp) - 1, 1)
+      isym(icomp)   = p_iprpsym(indxpr)
+      iopsy(icomp)  = p_jbtof(isym(icomp) - 1, 1)
       irep(icomp)   = isym(icomp) - 1
 
-      do i = 1, nr_fermion_irr
+      do i = 1, p_nfsym 
         j = mod(i + iopsy(icomp), 2) + 1
 
 !fixme: len_f77_work is too much, maybe try to evaluate: lwork=n2bbasxq*some_number?
@@ -368,33 +383,33 @@ contains
         call qtrans('AOMO',                               &
                     'S',                                  &
                     0.0d0,                                &
-                    nfbas_fi(i, 0),                       &
-                    nfbas_fi(j, 0),                       &
-                    t_norb(i),                            &
-                    t_norb(j),                            &
-                    fao(1 + basx_off(i, j) + (icomp-1)*t_n2bbasxq), &
+                    p_nfbas(i, 0),                       &
+                    p_nfbas(j, 0),                       &
+                    p_norb(i),                            &
+                    p_norb(j),                            &
+                    fao(1 + p_i2basx(i, j) + (icomp-1)*p_n2bbasxq), &
                     nr_ao_total,                           &
                     nr_ao_total,                           &
                     nr_qu,                                 &
-                    prp_cb_pq_to_uq(1, irep(icomp)),       &
-                    fmo(1 + orbx_off(i, j) + (icomp-1)*t_n2orbxq),  &
-                    t_norbt,                               &
-                    t_norbt,                               &
+                    p_ipqtoq(1, irep(icomp)),       &
+                    fmo(1 + p_i2orbx(i, j) + (icomp-1)*p_n2orbxq),  &
+                    p_norbt,                               &
+                    p_norbt,                               &
                     nr_qu,                                 &
-                    prp_cb_pq_to_uq(1, irep(icomp)),       &
-                    cmo(1 + cmoq_off(i)),                  &
-                    nfbas_fi(i, 0),                        &
-                    t_norb(i),                             &
+                    p_ipqtoq(1, irep(icomp)),       &
+                    cmo(1 + p_icmoq(i)),                  &
+                    p_nfbas(i, 0),                        &
+                    p_norb(i),                             &
                     nr_qu,                                 &
-                    prp_cb_pq_to_uq(1, 0),                 &
-                    cmo(1 + cmoq_off(j)),                  &
-                    nfbas_fi(j, 0),                        & 
-                    t_norb(j),                             &
+                    p_ipqtoq(1, 0),                 &
+                    cmo(1 + p_icmoq(j)),                  &
+                    p_nfbas(j, 0),                        & 
+                    p_norb(j),                             &
                     nr_qu,                                 &
-                    prp_cb_pq_to_uq(1, 0),                 &
+                    p_ipqtoq(1, 0),                 &
                     work,                                  &
                     lwork,                                 &
-                    print_prp_level)
+                    prp_iprint)
 
         call deselect_wrk(work, lwork)
 
@@ -411,7 +426,7 @@ contains
     real(8), intent(out)   :: tb_dmat(*)
     real(8), intent(in)    :: cmo(*)
     integer, intent(in)    :: ibeig(*)
-    real(8), intent(in)    :: tb(t_n2orbxq)
+    real(8), intent(in)    :: tb(p_n2orbxq)
 
     real(8), pointer       :: work(:)
     integer                :: lwork
@@ -425,10 +440,10 @@ contains
 
     do icomp = 1, 3
       indxpr       = ip_conmat(icomp)
-      isym(icomp)  = prp_boson_sym(indxpr)
-      iopsy(icomp) = t_jbtof(isym(icomp)-1, 1)
+      isym(icomp)  = p_iprpsym(indxpr)
+      iopsy(icomp) = p_jbtof(isym(icomp)-1, 1)
 
-      call dzero(tb, t_n2orbxq)
+      call dzero(tb, p_n2orbxq)
 
       lwork = len_f77_work
       kfree = 1
@@ -439,12 +454,12 @@ contains
                   tb,               &
                   cmo,              &
                   ibeig,            &
-                  cmoq_off,         &
-                  t_norb,           &
+                  p_icmoq,         &
+                  p_norb,           &
                   work,             &
                   kfree,            &
                   lwork,            &
-                  print_prp_level)
+                  prp_iprint)
 
       call deselect_wrk(work, lwork)
 
@@ -454,14 +469,14 @@ contains
 
       call getmdm(sum_ep_rn,        &
                   isym(icomp),      &
-                  tb_dmat(1+(icomp-1)*t_n2bbasxq),  &
+                  tb_dmat(1+(icomp-1)*p_n2bbasxq),  &
                   cmo,              &
                   ibeig,            &
                   tb,               &
                   work,             &
                   kfree,            &
                   lwork,            &
-                  print_prp_level)
+                  prp_iprint)
 
       call deselect_wrk(work, lwork)
 
@@ -472,11 +487,8 @@ contains
   end subroutine
 
 
-
 !-----------------------------------------------------------------------
 ! three subroutines from aoresponse/dirac_interface.F90
-! i put them here as for testing 
-! it's simpler then 'use dirac_interface'...
 
   SUBROUTINE set_f77_work(wrk,lwork)
      real(8),target :: wrk(:)
@@ -484,43 +496,25 @@ contains
      logical            :: ldummy1,ldummy2
      len_f77_work = lwork
      f77_work     => wrk
-!    call get_linsca_work(ldummy1,ldummy2,ltempwork,lwork)
-!    call di_set_coulomb_mem_req(ltempwork)
-!    ! Simen: Refine!
-!    call di_set_dft_mem_req(ltempwork)
   END SUBROUTINE set_f77_work
 
   SUBROUTINE select_wrk(wrk, mem_req)
      real(8),pointer :: wrk(:)
      integer, intent(in) :: mem_req
-!     if (mem_req .GT. len_f77_work - memory_usage) then
-!    if (mem_req .GT. len_f77_work) then
-!       call quit('code di_create_wrk first')
-!       call di_create_wrk(wrk,mem_req)
-!    else
-!        wrk => f77_work((memory_usage+1):len_f77_work)
-!        memory_usage = memory_usage + mem_req
 
         wrk => f77_work
 
         memory_usage  = mem_req
         mem_wrk_count = mem_wrk_count + 1
         if (mem_wrk_count > 1) call quit('counter > 1 not implemented')
-!    endif
   end subroutine
 
   SUBROUTINE deselect_wrk(wrk, mem_req)
      real(8),pointer :: wrk(:)
      integer, intent(in) :: mem_req
-!    if (mem_req .GT. len_f77_work) then
-!       call di_delete_wrk(wrk)
-!       call quit('code di_delete_wrk first')
-!    else
         nullify(wrk)
-!        memory_usage = memory_usage - mem_req
         memory_usage  = 0
         mem_wrk_count = mem_wrk_count - 1
-!    endif
   end subroutine
 
 end module

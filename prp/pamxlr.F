@@ -136,13 +136,11 @@ C     2002/2003, MI & HJAaj(&TEC) added changes for LAO based
 C     calculation of magnetic properties
 C
 C***********************************************************************
-!gosia: temporarily for testing so fixme
-!#define new_rntlon
-!#define memory_problems
-!#if defined new_rntlon && defined memory_problems
-      use london_response
+!gosia: use new rntlon and new twolon subroutines
+!      use london_response
+      use london_direct_hb
+      use london_reorth_hb
       use memory_allocator
-!#endif /* new_rntlon && memory_problems */
 
 #include "implicit.h"
 #include "priunit.h"
@@ -195,70 +193,30 @@ C     ***                                                    ***
 C     *** L I N E A R   R E S P O N S E   F U N C T I O N S  ***
 C     ***                                                    ***
 C     **********************************************************
-!gosia: do not take memory for ibeig twice:
 #ifdef MOD_LONDON
-      IF (LONDON) THEN
+      if (london) then
         call alloc(cmo,   ncmotq)
         call alloc(ibeig, ntbas(0))
-C.......direct contribution
+
+c.......direct contribution
         call onelon(cmo, ibeig, work, kfree, lfree)
-        IF (.NOT.NOTWOL)
-     &     CALL TWOLON(cmo,ibeig,WORK(KFREE),LFREE)
-C.......reorthonormalization contribution
-        IF (.NOT.NOONEI)
-     &     call rntlon_new(cmo,ibeig,work(kfree),lfree)
+
+        if (.not.notwol) then
+!new          call london_twoel_hb(cmo, ibeig, work(kfree), lfree)
+          CALL TWOLON(cmo, ibeig, WORK(KFREE), LFREE)
+        end if
+
+c.......reorthonormalization contribution
+        if (.not.noonei) then
+          call london_reort_hb(cmo, ibeig, work(kfree), lfree)
+!old          call RNTLON(cmo, ibeig, WORK, KFREE, LFREE)
+        end if
+
         call dealloc(cmo)
         call dealloc(ibeig)
-      ENDIF
+      endif
 #endif /* MOD_LONDON */
-!
-!gosia: todo: cleaning later
-!#define use_old_call_london
-#ifdef use_old_call_london
-#ifdef MOD_LONDON
-C   ... When London atomic orbitals are in use...
-      IF (LONDON) THEN
-C   ... allocate memmory for MO coefficients and boson irreps info
-C       (needed dcborb.h, dcbbas.h common blocks)
-        CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
-C   ... accumulate 1-el. contrubution; get MO coeff+boson irreps info
-        CALL ONELON(WORK(KCMO),WORK(KBEIG),WORK,KFREE,LFREE)
-C   ... calculate two-electron contribution
-        IF (.NOT.NOTWOL)
-     &     CALL TWOLON(WORK(KCMO),WORK(KBEIG),WORK(KFREE),LFREE)
-C   ... calculate reorthonormalization contribution
-#ifdef new_rntlon
-#ifdef memory_problems
-!gosia fixme
-! work(kbeig) is integer, but (probably due to implicit typing here)
-! is read by f90 rntlon_new subroutine as real!
-! part below is stupid, but anyway it is for testing...
-        IF (.NOT.NOONEI) THEN
-          write(*, *) 'we call new f90 rntlon'
-          CALL ALLOC(IBEIG, NTBAS(0))
-          DO I = 1, NTBAS(0)
-            IBEIG(I) = INT(WORK(KBEIG+I), 8)
-          ENDDO
-          CALL RNTLON_NEW(WORK(KCMO),IBEIG,WORK(KFREE),LFREE)
-          CALL DEALLOC(IBEIG)
-        ENDIF
-#else /*ifndef memory_problems*/
-        IF (.NOT. NOONEI) THEN
-          write(*, *) 'we call new f77 rntlon'
-          CALL RNTLONNEW(WORK(KCMO),WORK(KBEIG),WORK,KFREE,LFREE)
-        ENDIF
-#endif /* memory_problems */
-#else /* ifndef new_rntlon */
-        IF (.NOT.NOONEI) THEN
-          write(*, *) 'we call old rntlon'
-          CALL RNTLON(WORK(KCMO),WORK(KBEIG),WORK,KFREE,LFREE)
-        ENDIF
-#endif /* new_rntlon */
-        CALL MEMREL('PRPXL1.LONDON',WORK,1,KCMO,KFREE,LFREE)
-      ENDIF
-#endif /* MOD_LONDON */
-#endif /* use_old_call_london */
+
 C
 C     Memory allocation
 C     =================
