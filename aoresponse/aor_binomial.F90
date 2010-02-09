@@ -1,5 +1,7 @@
 module aor_binomial
 
+! comment
+
   implicit none
 
 #ifdef MOD_AUTODIFF
