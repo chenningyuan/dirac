@@ -381,7 +381,7 @@ contains
       logical :: i_am_the_master
 
 
-!   if (response_order_ao > 0) then
+!   if (response_order_ao > 3) then
 !     plot_even_xc_grid    = .true.
 !     plot_regular_xc_grid = .true.
 !     dft_cfg_dfthr0       = -1.0d0

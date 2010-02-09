@@ -154,15 +154,6 @@ contains
     derv = 0.0d0
     call xc_eval(derv, order, (/n(0), 0.0d0, z(0, 0), 0.0d0, 0.0d0/))
 
-    if (plot_regular_xc_grid) then
-      if (dabs(py) < 0.001d0) then
-        write(*, *) 'plot_regular', px, py, pz
-      end if
-    end if
-    if (plot_even_xc_grid) then
-      write(*, *) 'plot_even', px, py, pz, derv(1)
-    end if
-
     u = 0.0d0
     v = 0.0d0
 
@@ -184,6 +175,15 @@ contains
         call quit('xc_response_contribution: order not implemented')
 
     end select
+
+    if (plot_regular_xc_grid) then
+      if (dabs(py) < 0.001d0) then
+        write(*, *) 'plot_regular', px, py, pz
+      end if
+    end if
+    if (plot_even_xc_grid) then
+      write(*, *) 'plot_even', px, py, pz, u, ddot(3, v, 1, v, 1)
+    end if
 
 !   multiply by the integration weight
     u = u*w
