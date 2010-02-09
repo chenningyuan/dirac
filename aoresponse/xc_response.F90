@@ -6,6 +6,7 @@ module xc_response
   use dft_cb_interface
   use aor_cfg
   use xc_fun
+  use even_xc_grid
 
   implicit none
 
@@ -152,6 +153,15 @@ contains
 
     derv = 0.0d0
     call xc_eval(derv, order, (/n(0), 0.0d0, z(0, 0), 0.0d0, 0.0d0/))
+
+    if (plot_regular_xc_grid) then
+      if (dabs(py) < 0.001d0) then
+        write(*, *) 'plot_regular', px, py, pz
+      end if
+    end if
+    if (plot_even_xc_grid) then
+      write(*, *) 'plot_even', px, py, pz, derv(1)
+    end if
 
     u = 0.0d0
     v = 0.0d0

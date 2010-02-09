@@ -9,6 +9,9 @@ module even_xc_grid
 
   integer, public :: even_xc_grid_nr_points
 
+  logical, public :: plot_even_xc_grid    = .false.
+  logical, public :: plot_regular_xc_grid = .false.
+
   private
 
   real(8) :: d(3), l(3)

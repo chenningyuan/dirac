@@ -360,7 +360,6 @@ contains
 !   ----------------------------------------------------------------------------
     integer             :: ibatch
 
-    logical             :: use_even_xc_grid = .false.
 
 
 
@@ -381,8 +380,15 @@ contains
       integer :: npnts, npoint, nrest, IDISP_REST
       logical :: i_am_the_master
 
-    if (use_even_xc_grid) then
-      call init_even_xc_grid(20, 0, 20, 5.0d0, 5.0d0, 5.0d0)
+
+!   if (response_order_ao > 0) then
+!     plot_even_xc_grid    = .true.
+!     plot_regular_xc_grid = .true.
+!     dft_cfg_dfthr0       = -1.0d0
+!   end if
+
+    if (plot_even_xc_grid) then
+      call init_even_xc_grid(200, 0, 200, 10.0d0, 10.0d0, 10.0d0)
     end if
 
     dft_temp_nr_electrons = 0.0d0
@@ -410,7 +416,7 @@ contains
           read(dft_temp_file_unit, *) npoint
         else
           read(dft_temp_file_unit)    npoint
-          if (use_even_xc_grid) then
+          if (plot_even_xc_grid) then
             npoint = even_xc_grid_nr_points
           end if
         end if
@@ -439,7 +445,7 @@ contains
           if (dft_cfg_import_grid) then
             call import_dft_grid(kx, ky, kz, kw, dft_temp_file_unit, npoint)
           else
-            if (use_even_xc_grid) then
+            if (plot_even_xc_grid) then
               call set_even_xc_grid(npoint, kx, ky, kz, kw)
             else
               call reaqua(kx, ky, kz, kw, dft_temp_file_unit, npoint)
@@ -610,6 +616,10 @@ contains
                     mynpoint,          &
                     ibatch)
 
+        if (plot_even_xc_grid) then
+          call quit('quit after plot of XC grid')
+        end if
+
         call dealloc(kx)
         call dealloc(ky)
         call dealloc(kz)
@@ -619,9 +629,9 @@ contains
         end if !IF( NPOINT .lt. 0 ) THEN
  200    CONTINUE
 
-
-
-
+        if (plot_regular_xc_grid) then
+          call quit('quit after plot of XC grid')
+        end if
 
 
 
