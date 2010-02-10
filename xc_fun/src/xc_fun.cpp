@@ -6,7 +6,6 @@ using namespace std;
 #endif
 
 #include "taylor.h"
-#include "mathextra.h"
 #include "constants.h"
 
 template<class T> 
