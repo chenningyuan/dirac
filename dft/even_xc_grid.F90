@@ -9,11 +9,11 @@ module even_xc_grid
 
   integer, public :: even_xc_grid_nr_points
 
-  logical, public :: plot_even_xc_grid    = .false.
-  logical, public :: plot_regular_xc_grid = .false.
+  logical, public :: use_even_xc_grid = .false.
 
   private
 
+  real(8) :: even_xc_grid_weight
   real(8) :: d(3), l(3)
   integer :: n(3)
 
@@ -31,17 +31,17 @@ contains
     integer                :: ipoint, ix, iy, iz
 !   ----------------------------------------------------------------------------
 
-    w = 1.0d0
+    w = even_xc_grid_weight
 
     ipoint = 0
-    do ix = 1, 2*n(1) + 1
-      do iy = 1, 2*n(2) + 1
-        do iz = 1, 2*n(3) + 1
+    do ix = 0, 2*n(1)
+      do iy = 0, 2*n(2)
+        do iz = 0, 2*n(3)
           ipoint = ipoint + 1
 
-          x(ipoint) = -l(1) + (ix - 1)*d(1)
-          y(ipoint) = -l(2) + (iy - 1)*d(2)
-          z(ipoint) = -l(3) + (iz - 1)*d(3)
+          x(ipoint) = -l(1) + ix*d(1)
+          y(ipoint) = -l(2) + iy*d(2)
+          z(ipoint) = -l(3) + iz*d(3)
         end do
       end do
     end do
@@ -79,6 +79,7 @@ contains
     end do
 
     even_xc_grid_nr_points = (2*n(1) + 1)*(2*n(2) + 1)*(2*n(3) + 1)
+    even_xc_grid_weight    = d(1)*d(2)*d(3)
 
   end subroutine
 

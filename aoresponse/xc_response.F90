@@ -176,15 +176,6 @@ contains
 
     end select
 
-    if (plot_regular_xc_grid) then
-      if (dabs(py) < 0.001d0) then
-        write(*, *) 'plot_regular', px, py, pz
-      end if
-    end if
-    if (plot_even_xc_grid) then
-      write(*, *) 'plot_even', px, py, pz, u, ddot(3, v, 1, v, 1)
-    end if
-
 !   multiply by the integration weight
     u = u*w
     v = v*w

@@ -382,13 +382,12 @@ contains
 
 
 !   if (response_order_ao > 3) then
-!     plot_even_xc_grid    = .true.
-!     plot_regular_xc_grid = .true.
-!     dft_cfg_dfthr0       = -1.0d0
+!     use_even_xc_grid = .true.
+!     dft_cfg_dfthr0   = -1.0d0
 !   end if
 
-    if (plot_even_xc_grid) then
-      call init_even_xc_grid(200, 0, 200, 10.0d0, 10.0d0, 10.0d0)
+    if (use_even_xc_grid) then
+      call init_even_xc_grid(50, 50, 50, 10.0d0, 10.0d0, 10.0d0)
     end if
 
     dft_temp_nr_electrons = 0.0d0
@@ -416,7 +415,7 @@ contains
           read(dft_temp_file_unit, *) npoint
         else
           read(dft_temp_file_unit)    npoint
-          if (plot_even_xc_grid) then
+          if (use_even_xc_grid) then
             npoint = even_xc_grid_nr_points
           end if
         end if
@@ -445,7 +444,7 @@ contains
           if (dft_cfg_import_grid) then
             call import_dft_grid(kx, ky, kz, kw, dft_temp_file_unit, npoint)
           else
-            if (plot_even_xc_grid) then
+            if (use_even_xc_grid) then
               call set_even_xc_grid(npoint, kx, ky, kz, kw)
             else
               call reaqua(kx, ky, kz, kw, dft_temp_file_unit, npoint)
@@ -616,22 +615,14 @@ contains
                     mynpoint,          &
                     ibatch)
 
-        if (plot_even_xc_grid) then
-          call quit('quit after plot of XC grid')
-        end if
-
         call dealloc(kx)
         call dealloc(ky)
         call dealloc(kz)
         call dealloc(kw)
 
-        GO TO 100
+        if (.not. use_even_xc_grid) goto 100
         end if !IF( NPOINT .lt. 0 ) THEN
  200    CONTINUE
-
-        if (plot_regular_xc_grid) then
-          call quit('quit after plot of XC grid')
-        end if
 
 
 
@@ -685,6 +676,12 @@ contains
               'grid is inappropriate'
       end if
       write(print_unit, *)
+
+      if (use_even_xc_grid) then
+        use_even_xc_grid = .false.
+!       call quit('quit after plot of XC grid')
+      end if
+
       
       end subroutine
 
