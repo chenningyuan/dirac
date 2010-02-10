@@ -41,6 +41,16 @@ program xc_example
   print *, 'XC energy density: e = ', derv(1)
   print *, '(d/dn_a)^2 e         = ', derv(xc_index(XC_ABFGH, (/2, 0, 0, 0, 0/)))
   print *, 'd/dn_a d/dn_b e      = ', derv(xc_index(XC_ABFGH, (/1, 1, 0, 0, 0/)))
+  print *, 'd/dn_a d/dg_a e      = ', derv(xc_index(XC_ABFGH, (/1, 0, 1, 0, 0/)))
+#ifdef WITH_QD
+  call xc_eval_qd(derv, 2, (/1.7d0, 1.7d0, 1.7d0, 1.7d0, 1.7d0/))
+  print *, 'Using high precision internally:'
+  print *, 'calculated', size(derv), 'PBE derivatives, for example:'
+  print *, 'XC energy density: e = ', derv(1)
+  print *, '(d/dn_a)^2 e         = ', derv(xc_index(XC_ABFGH, (/2, 0, 0, 0, 0/)))
+  print *, 'd/dn_a d/dn_b e      = ', derv(xc_index(XC_ABFGH, (/1, 1, 0, 0, 0/)))
+  print *, 'd/dn_a d/dg_a e      = ', derv(xc_index(XC_ABFGH, (/1, 0, 1, 0, 0/)))
+#endif
 
   n_a = 0.11273116096929683d0
   n_b = n_a

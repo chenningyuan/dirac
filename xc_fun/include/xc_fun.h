@@ -11,7 +11,12 @@
 
 // Highest order of derivatives. Note that the generated code
 // becomes huge if this is too large
-#define XC_MAX_ORDER 6
+#define XC_MAX_ORDER 5
+
+// If XC_PRECONDITION is defined then the seed polynomials
+// will be scaled by the density variables, and then scaled
+// back at the end of the calculation. This feature is experimental!
+// #define XC_PRECONDITION
 
 /*
   The following variables are used in the code:

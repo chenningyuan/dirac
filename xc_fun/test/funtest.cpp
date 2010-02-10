@@ -38,13 +38,27 @@ void print_rms_diff_compact(const polynomial<num,Nvar,Ndeg> &p1,
         }
       avg = sqrt(avg/(2*polylen(Nvar-1,n)));
       rms = sqrt(rms/polylen(Nvar-1,n));
-      cout << rms/avg << " ";
+      cout << rms/avg << " "; 
+    }
+  cout << endl;
+}
+
+template<class num, int Nvar, int Ndeg>
+void print_rel_errors(const polynomial<num,Nvar,Ndeg> &p1,
+		      const polynomial<num,Nvar,Ndeg> &p2) //p2 is the reference
+{
+  for (int n=0;n<=Ndeg;n++)
+    {
+      num sum = 0.0;
+      for (int i=polylen(Nvar,n-1);i<polylen(Nvar,n);i++)
+	sum += abs(p1[i]-p2[i]);
+      cout << "sum;;; " << sum/polylen(Nvar-1,n) << " " << endl;
     }
   cout << endl;
 }
 
 
-#define TEST_ORDER 4
+#define TEST_ORDER XC_MAX_ORDER
 
 int main(void)
 {
@@ -58,10 +72,10 @@ int main(void)
   taylor<double, 5, TEST_ORDER> res_d; 
   double fun[XC_PARAMS_LEN] = {0};
 
-  fun[XC_VWN5_CORRELATION] = 1;
-  //  fun[XC_BECKE_EXCHANGE] = 1;
-  xc_set_functional(XC_ABFGH,fun);
-  while (1)
+  fun[XC_LYP_CORRELATION] = 1;
+  fun[XC_BECKE_EXCHANGE] = 1;
+  xc_set_functional(XC_RSZXY,fun);
+  while (!cin.fail())
     {
       cin >> dd[0] >> dd[1] >> dd[2] >> dd[3] >> dd[4];
 #ifdef WITH_QD
@@ -70,12 +84,12 @@ int main(void)
 #endif
       xc_eval(res_d.c,TEST_ORDER,dd);
 #ifdef WITH_QD
-      xc_eval(res_qd.c,TEST_ORDER,dqd);
+      xc_eval_qd(res_qd.c,TEST_ORDER,dqd);
       cout.precision(20);
       res_d.convert_to(cmp);
       print_rms_diff_compact(cmp,res_qd);
-      fpu_fix_end(&cw);
 #endif
     }
+  fpu_fix_end(&cw);
   return 0;
 }

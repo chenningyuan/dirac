@@ -12,13 +12,13 @@
 
 # C++ compiler and flags
 CXX ?= g++
-CXXFLAGS ?= -g -Wall -O3 -DNDEBUG
+CXXFLAGS ?= -g -Wall -O3 -DNDEBUG #-DWITH_QD
 CXXFLAGS+=-Iinclude -Isrc/taylor -Isrc/functionals -Llib -fno-rtti -fno-exceptions
-LIBS=-lxc_fun
+LIBS=-lxc_fun #-lqd
 
 # F90 compiler and flags, used for example code
 FC=gfortran
-FFLAGS=-Wall -Llib -Jfortran
+FFLAGS=-Wall -Llib -Jfortran # -DWITH_QD
 
 lib/libxc_fun.a: src/xc_fun.o
 	ar r $@ $<
@@ -40,7 +40,7 @@ funeval: test/funeval.cpp lib/libxc_fun.a
 fortran/example.o: fortran/xc_fun_module.o
 
 fortran_example: fortran/example.o fortran/xc_fun_module.o lib/libxc_fun.a
-	$(FC) $(FFLAGS) -o $@ $^ $(LIBS)
+	$(FC) $(FFLAGS) -o $@ $^ $(LIBS) -lstdc++
 
 clean:
 	rm -f `find . -name '*.o' -o -name '*~' -o -name '*.a'` fortran_example benchmark testxc

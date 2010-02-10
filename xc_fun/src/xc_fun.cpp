@@ -196,11 +196,19 @@ static void sum_functionals(num &res,
 template<class num, int N>
 static void setdens_rszxy(densvars<taylor<num,5,N> >&d, const num dd[5])
 {
+#ifndef XC_PRECONDITION
   d.R = taylor<num,5,N>(dd[0],0);
   d.S = taylor<num,5,N>(dd[1],1);
   d.Z = taylor<num,5,N>(dd[2],2);
   d.X = taylor<num,5,N>(dd[3],3);
   d.Y = taylor<num,5,N>(dd[4],4);
+#else
+  d.R = taylor<num,5,N>(dd[0],0,dd[0]);
+  d.S = taylor<num,5,N>(dd[1],1,dd[0]);
+  d.Z = taylor<num,5,N>(dd[2],2,dd[2]);
+  d.X = taylor<num,5,N>(dd[3],3,dd[2]);
+  d.Y = taylor<num,5,N>(dd[4],4,dd[2]);
+#endif
   d.rhoa = 0.5*(d.R+d.S);
   d.rhob = 0.5*(d.R-d.S);
   d.grada2 = 0.25*(d.Z+d.X+2*d.Y);
@@ -212,11 +220,19 @@ static void setdens_rszxy(densvars<taylor<num,5,N> >&d, const num dd[5])
 template<class num, int N>
 static void setdens_abfgh(densvars<taylor<num,5,N> >&d, const num dd[5])
 {
+#ifndef XC_PRECONDITION
   d.rhoa = taylor<num,5,N>(dd[0],0);
   d.rhob = taylor<num,5,N>(dd[1],1);
   d.grada2 = taylor<num,5,N>(dd[2],2);
   d.gradb2 = taylor<num,5,N>(dd[3],3);
   d.gradab = taylor<num,5,N>(dd[4],4);
+#else
+  d.rhoa = taylor<num,5,N>(dd[0],0,dd[0]);
+  d.rhob = taylor<num,5,N>(dd[1],1,dd[1]);
+  d.grada2 = taylor<num,5,N>(dd[2],2,dd[2]);
+  d.gradb2 = taylor<num,5,N>(dd[3],3,dd[3]);
+  d.gradab = taylor<num,5,N>(dd[4],4,0.5*(dd[2]+dd[3]));
+#endif
   d.R = d.rhoa + d.rhob;
   d.S = d.rhoa - d.rhob;
   d.Z = d.grada2+2*d.gradab+d.gradb2; 
@@ -403,6 +419,30 @@ static void fun_helper(num *result, const num d[])
       else
 	setdens_abfgh(dv,d);
       sum_functionals(res,dv);
+#ifdef XC_PRECONDITION
+      // Reciprocal scaling factors
+      taylor<num,5,N> rscale;
+      num scales[5];
+      if (current_mode == XC_RSZXY)
+	{
+	  scales[0] = 1/d[0];
+	  scales[1] = 1/d[0];
+	  scales[2] = 1/d[2];
+	  scales[3] = 1/d[2];
+	  scales[4] = 1/d[2];
+	}
+      else if (current_mode == XC_ABFGH)
+	{
+	  scales[0] = 1/d[0];
+	  scales[1] = 1/d[1];
+	  scales[2] = 1/d[2];
+	  scales[3] = 1/d[3];
+	  scales[4] = 2/(d[2]+d[3]);
+	}
+      polyterms(rscale,scales);
+      for (int i=0;i<res.size;i++)
+	res[i] *= rscale[i];
+#endif
     }
   else
     {
@@ -413,7 +453,12 @@ static void fun_helper(num *result, const num d[])
 void xc_eval(double *result, int order, const double densvars[])
 {
   assert(order>=0);
-  assert(order<=XC_MAX_ORDER);
+  if (order > XC_MAX_ORDER)
+    {
+      cerr << "Error, xc_eval called with order > XC_MAX_ORDER" << endl;
+      cerr << "Edit xc_fun.h and recompile." << endl;
+      return;
+    }
   helper_tab[order](result,densvars);
 }
 
@@ -440,6 +485,21 @@ void xc_eval_fortran_(double *result, int *order, const double *densvars)
 {
   xc_eval(result,*order,densvars);
 }
+
+#ifdef WITH_QD
+extern "C"
+void xc_eval_fortran_qd_(double *result, int *order, const double *densvars)
+{
+  qd_real qd_result[xc_len(current_mode,*order)];
+  qd_real qd_densvars[fun_nvars(current_mode)];
+  for (int i=0;i<fun_nvars(current_mode);i++)
+    qd_densvars[i] = densvars[i];
+  xc_eval_qd(qd_result,*order,qd_densvars);
+  for (int i=0;i<xc_len(current_mode,*order);i++)
+    result[i] = to_double(qd_result[i]);
+}
+#endif
+
 
 static int taylor_len(int nvar, int ndeg)
 {

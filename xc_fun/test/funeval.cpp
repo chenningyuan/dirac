@@ -22,7 +22,7 @@ void printpoly(ostream &dst, const polynomial<num,Nvar,Ndeg> &p)
     }
 }
 
-#define TEST_ORDER 2
+#define TEST_ORDER XC_MAX_ORDER
 
 int main(int argc, char *argv[])
 {
@@ -41,7 +41,11 @@ int main(int argc, char *argv[])
   float fd[5] =   {1.0,0.0,1.0,0.0,0.0};
   taylor<float, 5, TEST_ORDER> res_f; 
 #endif
-
+  if (argc < 3)
+    {
+      cerr << "Usage: funeval FUNCTIONAL WEIGHT [FUNCTIONAL WEIGHT].." << endl;
+      return -1;
+    }
   for (int i=1;i+1<argc;i+=2)
     {
       int p = xc_parse_functional(argv[i]);
@@ -59,7 +63,7 @@ int main(int argc, char *argv[])
       cerr << "Setting " << argv[i] << " to " << w << endl;
       fun[p] = w;
     }
-  xc_set_functional(XC_ABFGH,fun);
+  xc_set_functional(XC_RSZXY,fun);
   cerr << "Input density: " << endl;
   cout.precision(20);
   cin >> dd[0] >> dd[1] >> dd[2] >> dd[3] >> dd[4];

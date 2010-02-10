@@ -69,6 +69,15 @@ contains
     call xc_eval_fortran(res,order,densvars)
   end subroutine xc_eval
 
+#ifdef WITH_QD
+! Use quad-double internally but round the output to double.
+  subroutine xc_eval_qd(res, order, densvars)
+    integer order
+    double precision, intent(out) :: res(*)
+    double precision, intent(in) :: densvars(*)
+    call xc_eval_fortran_qd(res,order,densvars)
+  end subroutine xc_eval_qd
+#endif
   function xc_index(mode, exponents)
     integer, intent(in) :: mode
     integer, intent(in) :: exponents(*)
