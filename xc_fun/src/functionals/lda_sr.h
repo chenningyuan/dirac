@@ -105,40 +105,38 @@ T ecorrlr(const densvars<num> &d, double mu)
   num d2anti=(q1a*d.r_s+q2a*rs2)*exp(-q3a*d.r_s)/rs2;
   num d3anti=(t1a*d.r_s+t2a*rs2)*exp(-t3a*d.r_s)/rs3;
 
-  num coe2=-3.0/8.0/rs3*(1.0-pow(d.zeta,2))*(g0f(rs)-0.5);
+  num z2 = d.zeta*d.zeta;
+  num coe2=-3.0/8.0/rs3*(1.0-z2)*(g0f(rs)-0.5);
 
-  num coe3=-(1.0-pow(d.zeta,2))*g0f(d.r_s)/(sqrt(2.0*M_PI)*rs3);
+  num coe3=-(1.0-z2)*g0f(d.r_s)/(sqrt(2.0*M_PI)*rs3);
 
-      if(abs(z).eq.1.0) then
+  num coe4=-9.0/64.0/rs3*(pow((1.0+d.zeta)/2.0,2)*
+			  dpol(d.r_s*pow(2/(1.0+z),1.0/3.0))+
+			  pow((1.0-z)/2.0,2)*
+			  dpol(d.r_s*pow(2.0/(1.0-z),1.0/3.0))+
+			  (1.-z**2)*d2anti-
+			  pow(cf,2)/10.0*(pow(1.0+z,8.0/3.0)
+					  +pow(1-z,8.0/3.0))/rs2);
 
-        coe4=-9.0/64.0/rs**3*(dpol(d.r_s)
-     $        -cf**2*2**(5.0/3.0)/5.0/rs**2)
-        coe5=-9.0/40.0/(sqrt(2.0*M_PI)*rs**3)*dpol(d.r_s)
+  num coe5=-9.0/40.0/(sqrt(2.0*M_PI)*rs3)*
+    (pow((1.0+z)/2.0,2)*
+     dpol(d.r_s*pow(2.0/(1.0+z),1.0/3.0))+
+     ((1.0-z)/2.0)**2*
+     dpol(d.r_s*pow(2.0/(1.0-d.zeta),1.0/3.0))+(1.0-z2)*
+     d3anti);
+    
+  num ec = pw92_eps(d);
+  //call ecPW(d.r_s,z,ec,ecd,ecz)
+  
+  num b06 = pow(b0,6);
+  num b08 = pow(b0,8);
+  num a1 = 4*b06*coe3 + b08*coe5;
+  num a2 = 4*b06*coe2 + b08*coe4 + 6*pow(b0,4)*ec;
+  num a3 = b08*coe3;
+  num a4 = b06*(pow(b0,2)*coe2 + 4*ec);
+    
+  return (phi**3*Qrpa(mu*sqrt(d.r_s)/phi)+a1*mu**3+a2*mu**4+a3*mu**5+
+          a4*mu**6+b0**8*mu**8*ec)/((1.0+b0**2*mu**2)**4);
 
-      else
-
-         coe4=-9.0/64.0/rs**3*(((1.0+z)/2.0)**2*
-     $        dpol(d.r_s*(2/(1.0+z))**(1.0/3.0))+((1.0-z)/2.0)**2
-     $        *dpol(d.r_s*(2.0/(1.0-z))**(1.0/3.0))+
-     $        (1.-z**2)*d2anti-cf**2/10.0*((1.0+z)**(8.0/3.0)
-     $        +(1.-z)**(8.0/3.0))/rs**2)
-
-         coe5=-9.0/40.0/(sqrt(2.0*M_PI)*rs**3)*(((1.0+z)/2.0)**2
-     $        *dpol(d.r_s*(2.0/(1.0+z))**(1.0/3.0))+((1.0-z)/2.0)**2
-     $        *dpol(d.r_s*(2.0/(1.0-z))**(1.0/3.0))+(1.0-z**2)*
-     $        d3anti)
-      end if
-
-      call ecPW(d.r_s,z,ec,ecd,ecz)
-
-      a1=4.0*b0**6*coe3+b0**8*coe5
-      a2=4.0*b0**6*coe2+b0**8*coe4+6.0*b0**4*ec
-      a3=b0**8*coe3
-      a4=b0**6*(b0**2*coe2+4.0*ec)
-
-      eclr=(phi**3*Qrpa(mu*sqrt(d.r_s)/phi)+a1*mu**3+a2*mu**4+a3*mu**5+
-     $     a4*mu**6+b0**8*mu**8*ec)/((1.0+b0**2*mu**2)**4)
-
-      return
-      end
+}
 

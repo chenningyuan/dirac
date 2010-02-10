@@ -17,7 +17,9 @@ struct densvars
   /* na+nb, na-nb, (grad n)^2, (grad n).(grad s), (grad s)^2 */
   T n, s, gnn, gns, gss; 
   T a, b, gaa, gab, gbb;
-
+#ifdef METAGGA
+  T tau, taua, taub;
+#endif
   T zeta; //s/n
   T r_s; // (3/4pi)^1/3*n^(-1/3)
 };
