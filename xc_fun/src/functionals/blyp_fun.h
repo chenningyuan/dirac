@@ -5,56 +5,49 @@
     Z. Rinkevicius modification for open-shell, general 5 variables formalism.
     autodiff version by Ulf Ekstrom 2009 */
 template<class num>
-static num lyp_correlation(const num &R,
-			   const num &rhoa,
-			   const num &rhob,
-			   const num &Z,
-			   const num &grada2,
-			   const num &gradb2)
+static num lyp_correlation(const densvars<num> &d)
 {
     const double A = 0.04918, B = 0.132, C = 0.2533, D = 0.349;
     using xc_constants::CF;
 
-    num rho2 = R*R;
-    num rhom13 = pow(R,-1.0/3.0);
+    num rho2 = d.n*d.n;
+    num rhom13 = pow(d.n,-1.0/3.0);
     num denom = 1+D*rhom13;
-    num omega = exp(-C*rhom13)/denom*pow(R,-11.0/3.0);
+    num omega = exp(-C*rhom13)/denom*pow(d.n,-11.0/3.0);
     num delta = rhom13*(C + D/denom);
 
-    num t1 = pow(2.0,11.0/3.0)*CF*(pow(rhoa,8.0/3.0) +
-				   pow(rhob,8.0/3.0));
-    t1 +=  ((47.0 - 7.0*delta)/18.0)*Z;
-    t1 += -(2.5 -delta/18.0)*(grada2+gradb2);
-    t1 +=  (11.0-delta)/9.0*(rhoa*grada2 + rhob*gradb2)/R;
-    num t5 = -2.0/3.0*rho2*Z;
-    t5 += ((2.0/3.0*rho2-rhoa*rhoa)*gradb2 +
-	   (2.0/3.0*rho2-rhob*rhob)*grada2);
-    return -A*(4*rhoa*rhob/(denom*R)
-	      +B*omega*(rhoa*rhob*t1+t5));
+    num t1 = pow(2.0,11.0/3.0)*CF*(pow(d.a,8.0/3.0) +
+				   pow(d.b,8.0/3.0));
+    t1 +=  ((47.0 - 7.0*delta)/18.0)*d.gnn;
+    t1 += -(2.5 -delta/18.0)*(d.gaa+d.gbb);
+    t1 +=  (11.0-delta)/9.0*(d.a*d.gaa + d.b*d.gbb)/d.n;
+    num t5 = -2.0/3.0*rho2*d.gnn + 
+      ((2.0/3.0*rho2-d.a*d.a)*d.gbb +
+       (2.0/3.0*rho2-d.b*d.b)*d.gaa);
+    return -A*(4*d.a*d.b/(denom*d.n)
+	      +B*omega*(d.a*d.b*t1+t5));
 }
 
 
 template<class num>
-static num becke_exchange(const num &rhoa,
-			  const num &rhob,
-			  const num &grada2,
-			  const num &gradb2)
+static num becke_exchange(const densvars<num> &d)
 {
-  static const double BECKE_THRESHOLD = 1e-14;
-  static const double BETA = 0.0042;  
+  cout << "!!!" << endl;
+  const double BECKE_THRESHOLD = 1e-14;
+  const double BETA = 0.0042;  
   num ea = 0, eb = 0;
 
-  if (rhob>BECKE_THRESHOLD)
+  if (d.b>BECKE_THRESHOLD)
     {
-      num xb = sqrt(gradb2)*pow(rhob,-4.0/3.0);
-      num rb = pow(rhob,4.0/3.0);
+      num xb = sqrt(d.gbb)*pow(d.b,-4.0/3.0);
+      num rb = pow(d.b,4.0/3.0);
       num denomb = 1.0 +6.0*xb*BETA*asinh(xb);
       eb = rb*xb*xb/denomb; 
     } 
-  if (rhoa>BECKE_THRESHOLD) 
+  if (d.a>BECKE_THRESHOLD) 
     {
-      num xa = sqrt(grada2)*pow(rhoa,-4.0/3.0);
-      num ra = pow(rhoa,4.0/3.0);
+      num xa = sqrt(d.gaa)*pow(d.a,-4.0/3.0);
+      num ra = pow(d.a,4.0/3.0);
       num denoma = 1.0 +6.0*BETA*xa*asinh(xa);
       ea = ra*xa*xa/denoma;
     }

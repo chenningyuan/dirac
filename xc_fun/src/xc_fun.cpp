@@ -6,8 +6,22 @@ using namespace std;
 #endif
 
 #include "taylor.h"
-
+#include "mathextra.h"
 #include "constants.h"
+
+template<class T> 
+struct densvars
+{
+  // Variables for expressing functionals, these are redundant because
+  // different functionals have different needs.
+
+  /* na+nb, na-nb, (grad n)^2, (grad n).(grad s), (grad s)^2 */
+  T n, s, gnn, gns, gss; 
+  T a, b, gaa, gab, gbb;
+
+  T zeta; //s/n
+  T r_s; // (3/4pi)^1/3*n^(-1/3)
+};
 
 #include "xc_fun.h"
 #include "lda_fun.h"
@@ -16,15 +30,6 @@ using namespace std;
 #include "tf_kin_fun.h"
 #include "pw91_fun.h"
 
-template<class T> 
-struct densvars
-{
-  // Variables for expressing functionals, these are redundant because
-  // different functionals have different needs.
-  T R, S, Z, X, Y;
-  T rhoa, rhob, grada2, gradab, gradb2;
-  T zeta; //S/R
-};
 
 //Did we already set up tables?
 static int is_setup = 0;
@@ -54,10 +59,7 @@ static const char *functional_names[] =
     "lypc",
     "pw91x",
     "pbec",
-    "pbec_dalton",
     "beckex",
-    "pbex_dalton",
-    "rpbex_dalton",
     "pbex",
     "revpbex_untested",
     "pw92c_untested",
@@ -115,8 +117,6 @@ static int fun_nvars(enum xc_mode mode)
     case XC_AF:
     case XC_RZ:
       return 2;
-    case XC_R_ZI_ZJ_ZK:
-      return 4;
     case XC_ABFGH:
     case XC_RSZXY:
       return 5;
@@ -136,59 +136,47 @@ static void sum_functionals(num &res,
 
   if (xc_params[XC_VWN5_CORRELATION] != 0)
     res += xc_params[XC_VWN5_CORRELATION]*
-      vwn5_correlation(d.R,d.S,d.zeta);
+      vwn5_correlation(d);
 
   if (xc_params[XC_SLATER_EXCHANGE] != 0)
     res += xc_params[XC_SLATER_EXCHANGE]*
-      slater_exchange(d.rhoa,d.rhob); 
+      slater_exchange(d);
 
   if (xc_params[XC_LYP_CORRELATION] != 0)
     res += xc_params[XC_LYP_CORRELATION]*
-      lyp_correlation(d.R,d.rhoa,d.rhob,d.Z,d.grada2,d.gradb2);
+      lyp_correlation(d);
 
   if (xc_params[XC_PW91_EXCHANGE] != 0)
     res += xc_params[XC_PW91_EXCHANGE]*
-      pw91_exchange(d.rhoa,d.rhob,d.grada2,d.gradb2);
+      pw91_exchange(d);
 
   if (xc_params[XC_PBE_CORRELATION] != 0)
     res += xc_params[XC_PBE_CORRELATION]*
-      pbe_correlation(d.R,d.S,d.Z,d.rhoa,d.rhob,d.zeta);
-
- if (xc_params[XC_OLD_PBE_CORRELATION] != 0)
-    res += xc_params[XC_OLD_PBE_CORRELATION]*
-      pbe_correlation_unpolarized(d.R,d.Z);
+      pbe_correlation(d);
 
   if (xc_params[XC_BECKE_EXCHANGE] != 0)
     res += xc_params[XC_BECKE_EXCHANGE]*
-      becke_exchange(d.rhoa,d.rhob,d.grada2,d.gradb2);
-
-  if (xc_params[XC_OLD_PBE_EXCHANGE] != 0)
-    res += xc_params[XC_OLD_PBE_EXCHANGE]*
-      pbe_exchange_dalton(d.rhoa,d.rhob,d.grada2,d.gradb2);
-
-  if (xc_params[XC_OLD_RPBE_EXCHANGE] != 0)
-    res += xc_params[XC_OLD_RPBE_EXCHANGE]*
-      rpbe_exchange_dalton(d.rhoa,d.rhob,d.grada2,d.gradab,d.gradb2);
+      becke_exchange(d);
 
   if (xc_params[XC_PBE_EXCHANGE] != 0)
     res += xc_params[XC_PBE_EXCHANGE]*
-      pbe_exchange(d.rhoa,d.rhob,d.grada2,d.gradb2);
+      pbe_exchange(d);
 
   if (xc_params[XC_REVPBE_EXCHANGE_UNTESTED] != 0)
     res += xc_params[XC_REVPBE_EXCHANGE_UNTESTED]*
-      revpbe_exchange(d.rhoa,d.rhob,d.grada2,d.gradb2);
+      revpbe_exchange(d);
 
   if (xc_params[XC_PW92_CORRELATION] != 0)
     res += xc_params[XC_PW92_CORRELATION]*
-      pw92_correlation(d.R,d.zeta);
+      pw92_correlation(d);
 
   if (xc_params[KIN_TF_UNTESTED] != 0)
     res += xc_params[KIN_TF_UNTESTED]*
-      thomasfermi_kinetic(d.rhoa,d.rhob);
+      thomasfermi_kinetic(d);
 
   if (xc_params[KIN_PW91_UNTESTED] != 0)
     res += xc_params[KIN_PW91_UNTESTED]*
-      pw91_kinetic(d.rhoa,d.rhob,d.grada2,d.gradb2);
+      pw91_kinetic(d);
 
   res.deriv_facs();
 }
@@ -197,183 +185,102 @@ template<class num, int N>
 static void setdens_rszxy(densvars<taylor<num,5,N> >&d, const num dd[5])
 {
 #ifndef XC_PRECONDITION
-  d.R = taylor<num,5,N>(dd[0],0);
-  d.S = taylor<num,5,N>(dd[1],1);
-  d.Z = taylor<num,5,N>(dd[2],2);
-  d.X = taylor<num,5,N>(dd[3],3);
-  d.Y = taylor<num,5,N>(dd[4],4);
+  d.n = taylor<num,5,N>(dd[0],0);
+  d.s = taylor<num,5,N>(dd[1],1);
+  d.gnn = taylor<num,5,N>(dd[2],2);
+  d.gns = taylor<num,5,N>(dd[3],3);
+  d.gss = taylor<num,5,N>(dd[4],4);
 #else
-  d.R = taylor<num,5,N>(dd[0],0,dd[0]);
-  d.S = taylor<num,5,N>(dd[1],1,dd[0]);
-  d.Z = taylor<num,5,N>(dd[2],2,dd[2]);
-  d.X = taylor<num,5,N>(dd[3],3,dd[2]);
-  d.Y = taylor<num,5,N>(dd[4],4,dd[2]);
+  d.n = taylor<num,5,N>(dd[0],0,dd[0]);
+  d.s = taylor<num,5,N>(dd[1],1,dd[0]);
+  d.gnn = taylor<num,5,N>(dd[2],2,dd[2]);
+  d.gns = taylor<num,5,N>(dd[3],3,dd[2]);
+  d.gss = taylor<num,5,N>(dd[4],4,dd[2]);
 #endif
-  d.rhoa = 0.5*(d.R+d.S);
-  d.rhob = 0.5*(d.R-d.S);
-  d.grada2 = 0.25*(d.Z+d.X+2*d.Y);
-  d.gradab = 0.25*(d.Z-d.X);
-  d.gradb2 = 0.25*(d.Z+d.X-2*d.Y);
-  d.zeta = d.S/d.R;
+  d.a = 0.5*(d.n+d.s);
+  d.b = 0.5*(d.n-d.s);
+  d.gaa = 0.25*(d.gnn+d.gns+2*d.gss);
+  d.gab = 0.25*(d.gnn-d.gns);
+  d.gbb = 0.25*(d.gnn+d.gns-2*d.gss);
+  d.zeta = d.s/d.n;
+  d.r_s = pow(3/(4*M_PI),1.0/3.0)*pow(d.n,-1.0/3.0);
 }
 
 template<class num, int N>
 static void setdens_abfgh(densvars<taylor<num,5,N> >&d, const num dd[5])
 {
 #ifndef XC_PRECONDITION
-  d.rhoa = taylor<num,5,N>(dd[0],0);
-  d.rhob = taylor<num,5,N>(dd[1],1);
-  d.grada2 = taylor<num,5,N>(dd[2],2);
-  d.gradb2 = taylor<num,5,N>(dd[3],3);
-  d.gradab = taylor<num,5,N>(dd[4],4);
+  d.a = taylor<num,5,N>(dd[0],0);
+  d.b = taylor<num,5,N>(dd[1],1);
+  d.gaa = taylor<num,5,N>(dd[2],2);
+  d.gbb = taylor<num,5,N>(dd[3],3);
+  d.gab = taylor<num,5,N>(dd[4],4);
 #else
-  d.rhoa = taylor<num,5,N>(dd[0],0,dd[0]);
-  d.rhob = taylor<num,5,N>(dd[1],1,dd[1]);
-  d.grada2 = taylor<num,5,N>(dd[2],2,dd[2]);
-  d.gradb2 = taylor<num,5,N>(dd[3],3,dd[3]);
-  d.gradab = taylor<num,5,N>(dd[4],4,0.5*(dd[2]+dd[3]));
+  d.a = taylor<num,5,N>(dd[0],0,dd[0]);
+  d.b = taylor<num,5,N>(dd[1],1,dd[1]);
+  d.gaa = taylor<num,5,N>(dd[2],2,dd[2]);
+  d.gbb = taylor<num,5,N>(dd[3],3,dd[3]);
+  d.gab = taylor<num,5,N>(dd[4],4,0.5*(dd[2]+dd[3]));
 #endif
-  d.R = d.rhoa + d.rhob;
-  d.S = d.rhoa - d.rhob;
-  d.Z = d.grada2+2*d.gradab+d.gradb2; 
-  d.X = d.grada2-2*d.gradab+d.gradb2; 
-  d.Y = d.grada2-d.gradb2;
-  d.zeta = d.S/d.R;
+  d.n = d.a + d.b;
+  d.s = d.a - d.b;
+  d.gnn = d.gaa+2*d.gab+d.gbb; 
+  d.gns = d.gaa-2*d.gab+d.gbb;
+  d.gss = d.gaa-d.gbb;
+  d.zeta = d.s/d.n;
+  d.r_s = pow(3/(4*M_PI),1.0/3.0)*pow(d.n,-1.0/3.0);
 }
 
 template<class num, int N>
 static void setdens_rz(densvars<taylor<num,2,N> >&d, const num dd[2])
 {
-  d.R = taylor<num,2,N>(dd[0],0);
-  d.S = 0;
-  d.Z = taylor<num,2,N>(dd[1],1);
-  d.X = 0;
-  d.Y = 0;
-  d.rhoa = 0.5*d.R;
-  d.rhob = d.rhoa;
-  d.grada2 = 0.25*d.Z;
-  d.gradab = d.grada2;
-  d.gradb2 = d.grada2;
-  d.zeta = 0;
-}
+  d.n = taylor<num,2,N>(dd[0],0);
+  d.s = 0;
+  d.gnn = taylor<num,2,N>(dd[1],1);
+  d.gns = 0;
+  d.gss = 0;
 
-template<class num, int Nvar, int N>
-static void setdens_rz(densvars<taylor<num,Nvar,N> >&d, const taylor<num,Nvar,N> dd[2])
-{
-  d.R = dd[0];
-  d.S = 0;
-  d.Z = dd[1];
-  d.X = 0;
-  d.Y = 0;
-  d.rhoa = 0.5*d.R;
-  d.rhob = d.rhoa;
-  d.grada2 = 0.25*d.Z;
-  d.gradab = d.grada2;
-  d.gradb2 = d.grada2;
+  d.a = 0.5*d.n;
+  d.b = 0.5*d.n;
+  d.gaa = 0.25*d.gnn;
+  d.gab = 0.25*d.gnn;
+  d.gbb = 0.25*d.gnn;
   d.zeta = 0;
-}
-
-template<class num, int N>
-static void setdens_af(densvars<taylor<num,2,N> >&d, const num dd[2])
-{
-  d.rhoa = taylor<num,2,N>(dd[0],0);
-  d.rhob = 0;
-  d.grada2 = taylor<num,2,N>(dd[1],1);
-  d.gradb2 = 0;
-  d.gradab = 0;
-  d.R = d.rhoa;
-  d.S = d.rhoa;
-  d.Z = d.grada2; 
-  d.X = d.grada2; 
-  d.Y = d.grada2;
-  d.zeta = 1;
+  d.r_s = pow(3/(4*M_PI),1.0/3.0)*pow(d.n,-1.0/3.0);
 }
 
 template<class num, int N>
 static void setdens_rs(densvars<taylor<num,2,N> >&d, const num dd[2])
 {
-  d.R = taylor<num,2,N>(dd[0],0);
-  d.S = taylor<num,2,N>(dd[1],1);
-  d.rhoa = 0.5*(d.R+d.S);
-  d.rhob = 0.5*(d.R-d.S);
-  d.zeta = d.S/d.R;
+  d.n = taylor<num,2,N>(dd[0],0);
+  d.s = taylor<num,2,N>(dd[1],1);
+  d.a = 0.5*(d.n+d.s);
+  d.b = 0.5*(d.n-d.s);
+  d.zeta = d.s/d.n;
+  d.r_s = pow(3/(4*M_PI),1.0/3.0)*pow(d.n,-1.0/3.0);
 }
 
 template<class num, int N>
 static void setdens_ab(densvars<taylor<num,2,N> >&d, const num dd[2])
 {
-  d.rhoa = taylor<num,2,N>(dd[0],0);
-  d.rhob = taylor<num,2,N>(dd[1],1);
-  d.R = d.rhoa + d.rhob;
-  d.S = d.rhoa - d.rhob;
-  d.zeta = d.S/d.R;
-}
-
-template<class num, int N>
-static void setdens_a(densvars<taylor<num,1,N> >&d, const num dd[1])
-{
-  d.rhoa = taylor<num,1,N>(dd[0],0);
-  d.rhob = 0;
-  d.R = d.rhoa;
-  d.S = d.rhoa;
-  d.zeta = 1;
+  d.a = taylor<num,2,N>(dd[0],0);
+  d.b = taylor<num,2,N>(dd[1],1);
+  d.n = d.a + d.b;
+  d.s = d.a - d.b;
+  d.zeta = d.s/d.n;
+  d.r_s = pow(3/(4*M_PI),1.0/3.0)*pow(d.n,-1.0/3.0);
 }
 
 template<class num, int N>
 static void setdens_r(densvars<taylor<num,1,N> >&d, const num dd[1])
 {
-  d.R = taylor<num,1,N>(dd[0],0);
-  d.S = 0;
-  d.rhoa = 0.5*d.R;
-  d.rhob = 0.5*d.R;
+  d.n = taylor<num,1,N>(dd[0],0);
+  d.s = 0;
+  d.a = 0.5*d.n;
+  d.b = 0.5*d.n;
   d.zeta = 0;
+  d.r_s = pow(3/(4*M_PI),1.0/3.0)*pow(d.n,-1.0/3.0);
 }
-
-template<class num, int Nvar, int N>
-static void setdens_r(densvars<taylor<num,Nvar,N> >&d, 
-		      const taylor<num,Nvar,N> dd[1])
-{
-  d.R = dd[0];
-  d.S = 0;
-  d.rhoa = 0.5*d.R;
-  d.rhob = 0.5*d.R;
-  d.zeta = 0;
-}
-
-template<class num, int N>
-static void setdens_r_ri_rj_rk(densvars<taylor<num,4,N> >&d, const num dd[4])
-{
-  d.R = taylor<num,4,N>(dd[0],0);
-  d.S = 0;
-  taylor<num,4,N> zi(dd[1],1),zj(dd[2],2),zk(dd[3],3);
-  d.Z = zi*zi + zj*zj + zk*zk;
-  d.X = 0;
-  d.Y = 0;
-  d.rhoa = 0.5*(d.R+d.S);
-  d.rhob = 0.5*(d.R-d.S);
-  d.grada2 = 0.25*(d.Z+d.X+2*d.Y);
-  d.gradab = 0.25*(d.Z-d.X);
-  d.gradb2 = 0.25*(d.Z+d.X-2*d.Y);
-  d.zeta = d.S/d.R;
-}
-
-
-template<class num, int Nvar, int N>
-static void setdens_r_ri_rj_rk(densvars<taylor<num,Nvar,N> >&d, const taylor<num,Nvar,N> dd[4])
-{
-  d.R = dd[0];
-  d.S = 0;
-  d.Z = dd[1]*dd[1] + dd[2]*dd[2] + dd[3]*dd[3];
-  d.X = 0;
-  d.Y = 0;
-  d.rhoa = 0.5*(d.R+d.S);
-  d.rhob = 0.5*(d.R-d.S);
-  d.grada2 = 0.25*(d.Z+d.X+2*d.Y);
-  d.gradab = 0.25*(d.Z-d.X);
-  d.gradb2 = 0.25*(d.Z+d.X-2*d.Y);
-  d.zeta = d.S/d.R;
-}
-
 
 template<class num, int N>
 static void fun_helper(num *result, const num d[])
@@ -384,8 +291,6 @@ static void fun_helper(num *result, const num d[])
       densvars<taylor<num,1,N> > dv;
       if (current_mode == XC_R)
 	setdens_r(dv,d);
-      else
-	setdens_a(dv,d);
       sum_functionals(res,dv);
     }
   else if (fun_nvars(current_mode) == 2)
@@ -397,17 +302,9 @@ static void fun_helper(num *result, const num d[])
 	case XC_RS: setdens_rs(dv,d); break;
 	case XC_AB: setdens_ab(dv,d); break;
 	case XC_RZ: setdens_rz(dv,d); break;
-	case XC_AF: setdens_af(dv,d); break;
 	default:
 	  break;
 	}
-      sum_functionals(res,dv);
-    }
-  else if (fun_nvars(current_mode) == 4)
-    {
-      taylor<num,4,N> &res = *reinterpret_cast<taylor<num,4,N> *>(result);
-      densvars<taylor<num,4,N> > dv;
-      setdens_r_ri_rj_rk(dv,d);
       sum_functionals(res,dv);
     }
   else if (fun_nvars(current_mode) == 5)

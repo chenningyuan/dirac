@@ -22,10 +22,7 @@ module xc_fun
   integer, parameter ::  XC_LYP_CORRELATION  = 3
   integer, parameter ::  XC_PW91_EXCHANGE    = 4
   integer, parameter ::  XC_PBE_CORRELATION  = 5
-  integer, parameter ::  XC_OLD_PBE_CORRELATION = 6
   integer, parameter ::  XC_BECKE_EXCHANGE   = 7
-  integer, parameter ::  XC_OLD_PBE_EXCHANGE = 8
-  integer, parameter ::  XC_OLD_RPBE_EXCHANGE= 9 
   integer, parameter ::  XC_PBE_EXCHANGE     = 10
   integer, parameter ::  XC_REVPBE_EXCHANGE  = 11
   integer, parameter ::  XC_PW92_CORRELATION = 12

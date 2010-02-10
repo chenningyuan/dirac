@@ -22,6 +22,42 @@ void printpoly(ostream &dst, const polynomial<num,Nvar,Ndeg> &p)
     }
 }
 
+template<class num, int Ndeg>
+void print_ref(ostream &dst, num d[5], const polynomial<num,5,Ndeg> &p)
+{
+  cout << "rhoa= " << d[0] << " rhob= " << d[1] << " sigmaaa= " << d[2] << " sigmaab= " << d[4] << " sigmabb= " << d[3] << endl;
+  cout << " zk            = " << p[0] << endl;
+  if (Ndeg==0)
+    return;
+  cout << " vrhoa         = " << p[1] << endl;
+  cout << " vrhob         = " << p[2] << endl;
+  cout << " vsigmaaa      = " << p[3] << endl;
+  cout << " vsigmaab      = " << p[5] << endl;
+  cout << " vsigmabb      = " << p[4] << endl;
+  if (Ndeg == 1)
+    return;
+  cout << endl;
+  cout << " v2rhoa2       = " << p[6] << endl;
+  cout << " v2rhoab       = " << p[7] << endl;
+  cout << " v2rhob2       = " << p[11] << endl;
+  cout << endl;
+  cout << " v2rhoasigmaaa = " << p[8] << endl;
+  cout << " v2rhoasigmaab = " << p[10] << endl;
+  cout << " v2rhoasigmabb = " << p[9] << endl;
+  cout << " v2rhobsigmaaa = " << p[12] << endl;
+  cout << " v2rhobsigmaab = " << p[14] << endl;
+  cout << " v2rhobsigmabb = " << p[13] << endl;
+  cout << endl;
+  cout << " v2sigmaaa2    = " << p[15] << endl;
+  cout << " v2sigmaaaab   = " << p[17] << endl;
+  cout << " v2sigmaaabb   = " << p[16] << endl;
+  cout << " v2sigmaab2    = " << p[20] << endl;
+  cout << " v2sigmaabbb   = " << p[19] << endl;
+  cout << " v2sigmabb2    = " << p[18] << endl;
+
+
+}
+
 #define TEST_ORDER XC_MAX_ORDER
 
 int main(int argc, char *argv[])
@@ -63,7 +99,7 @@ int main(int argc, char *argv[])
       cerr << "Setting " << argv[i] << " to " << w << endl;
       fun[p] = w;
     }
-  xc_set_functional(XC_RSZXY,fun);
+  xc_set_functional(XC_ABFGH,fun);
   cerr << "Input density: " << endl;
   cout.precision(20);
   cin >> dd[0] >> dd[1] >> dd[2] >> dd[3] >> dd[4];
@@ -77,7 +113,7 @@ int main(int argc, char *argv[])
 #endif
   xc_eval(res_d.c,TEST_ORDER,dd);
   cout << "XC (double):" << endl;
-  printpoly(cout,res_d);
+  print_ref(cout,dd,res_d);
 #ifdef WITH_SINGLE
   xc_eval_single(res_f.c,TEST_ORDER,fd);
   cout << "XC (single):" << endl;

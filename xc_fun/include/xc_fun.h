@@ -11,7 +11,7 @@
 
 // Highest order of derivatives. Note that the generated code
 // becomes huge if this is too large
-#define XC_MAX_ORDER 5
+#define XC_MAX_ORDER 2
 
 // If XC_PRECONDITION is defined then the seed polynomials
 // will be scaled by the density variables, and then scaled
@@ -44,7 +44,6 @@ enum xc_mode
     XC_RZ, // Unpolarized GGA
     XC_ABFGH, // Generic GGA alpha,beta variables 
     XC_RSZXY, // Generic GGA R,S variables
-    XC_R_ZI_ZJ_ZK, // R and the individual gradient elements
   };
 
 enum xc_funparams
@@ -54,10 +53,7 @@ enum xc_funparams
     XC_LYP_CORRELATION,
     XC_PW91_EXCHANGE,
     XC_PBE_CORRELATION,
-    XC_OLD_PBE_CORRELATION,
     XC_BECKE_EXCHANGE,
-    XC_OLD_PBE_EXCHANGE,
-    XC_OLD_RPBE_EXCHANGE,
     XC_PBE_EXCHANGE,
     XC_REVPBE_EXCHANGE_UNTESTED,
     XC_PW92_CORRELATION,

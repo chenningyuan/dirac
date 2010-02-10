@@ -12,7 +12,11 @@
 
 # C++ compiler and flags
 CXX ?= g++
+<<<<<<< .mine
+CXXFLAGS ?= -g -Wall -O -DNDEBUG #-DWITH_QD
+=======
 CXXFLAGS ?= -g -Wall -O3 -DNDEBUG #-DWITH_QD
+>>>>>>> .r10240
 CXXFLAGS+=-Iinclude -Isrc/taylor -Isrc/functionals -Llib -fno-rtti -fno-exceptions
 LIBS=-lxc_fun #-lqd
 
