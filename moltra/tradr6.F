@@ -123,8 +123,8 @@ C
       CALL DEFINE_SORT (NSTR,NSTR1T,NSTR2T,TRIAN,MEM,KL_IN_BUF,
      &                  WORK(KLDIST),WORK(KLSORT),IPRINT)
       CALL MEMREL('TR6T',WORK,KLDIST,KLDIST,KFREE,LFREE)
-      CALL MEMGET('REAL',KRGBUF,MEM,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIGBUF,2*MEM,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KRMBUF,MEM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIMBUF,2*MEM,WORK,KFREE,LFREE)
 C
 C     Initialize the buffer files for the halftransformed integrals
 C
@@ -139,16 +139,16 @@ C
          CALL FIRST_HALFTR_SERIAL (WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                     NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP,
      &                     KGAB,KDRIJ,
-     &                     WORK(KRGBUF),WORK(KIGBUF),WORK(KLSORT))
+     &                     WORK(KRMBUF),WORK(KIMBUF),WORK(KLSORT))
 #if defined (VAR_MPI)
       ELSE
          CALL FIRST_HALFTR_PARALLEL (WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                     NSTR,ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP,
      &                     KGAB,KDRIJ,
-     &                     WORK(KRGBUF),WORK(KIGBUF),WORK(KLSORT))
+     &                     WORK(KRMBUF),WORK(KIMBUF),WORK(KLSORT))
       ENDIF
 #endif
-      CALL MEMREL('TRDR6T',WORK,KRGBUF,KRGBUF,KFREE,LFREE)
+      CALL MEMREL('TRDR6T',WORK,KRMBUF,KRMBUF,KFREE,LFREE)
       CALL XTIME(5,2,' First halftransformation      ')
 C
 C     Initialize MOLFDIR integral file
