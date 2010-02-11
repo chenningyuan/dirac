@@ -529,6 +529,7 @@ usage ()  {
    echo '   --install-directory=INST-DIR : Set install directory to INST-DIR'
    echo '   --scratch-directory=SCR-DIR  : Set work directory to SCR-DIR'
    echo '   --i=PRINT-LEVEL              : Set the print (verbose) level for the script to PRINT-LEVEL (default 0)'
+   echo '   --pamq                       : Prepares only the pamq.py script for launching batch jobs'
 }
 
 guess_system ()  {
@@ -1778,11 +1779,14 @@ else
    fi
 fi
 
+if [ $IPRINT -ge "2" ];  then
 #-------------------------------------------------------------------
 #     ... finally print-out the verified installation directory
 #-------------------------------------------------------------------
 $echo 'Install directory for DIRAC executable and script: '
 $echo "$INSTALL_DIR\n"
+fi
+
 }
 
 set_install_directory () {
@@ -2874,6 +2878,8 @@ EOF
 
 cat ./pamq.py.in  >>  $INSTALL_DIR/pamq.py
 chmod a+rx  $INSTALL_DIR/pamq.py
+
+$echo "$INSTALL_DIR/pamq.py script for launching queuing job ready.\n"
 }
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2952,6 +2958,11 @@ while [ $# != 0 ]; do
          ;;
       "check")
 	 checkbounds=1
+         ;;
+      "pamq")
+         set_installdir
+	 make_pamq
+         exit
          ;;
       "profile")
 	 doprofile=1
