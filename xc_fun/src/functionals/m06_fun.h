@@ -29,6 +29,27 @@ namespace M06_x_internal
             );
    } 
 
+   // M06-HF exchange functional. Uses full HF exchange. 
+
+   template<class num>
+   static num m06_hf_exchange(const densvars<num> &d)
+   {
+     const static double param_a[12] = 
+       {  1.179732e-01, -1.066708e+00, -1.462405e-01,  7.481848e+00,  3.776679e+00, 
+         -4.436118e+01, -1.830962e+01,  1.003903e+02,  3.864360e+01, -9.806018e+01,
+          2.557716e+01,  3.590404e+01 }; 
+     const static double param_d[5] = 
+       { -1.179732e-01, -2.500000e-03, -1.180056e-02,  0.000000e+00,  0.000000e+00,
+          0.000000e+00 }; 
+
+     return (  (  pbe_exchange(d.a, d.gaa)*fw(param_a, d.a, d.taua) 
+                + lsda_x(d.a)*h(param_d, chi(d.a, d.gaa), zet(d.a, d.taua)))
+              +
+               (  pbe_exchange(d.b, d.gbb)*fw(param_a, d.b, d.taub) 
+                + lsda_x(d.b)*h(param_d, chi(d.b, d.gbb), zet(d.b, d.taub)))
+            );
+   } 
+
    // M06 exchange functional. to be used with HF exchange factor of .27 
 
    template<class num>
@@ -69,6 +90,7 @@ namespace M06_x_internal
 }
 
 using M06_x_internal::m06_l_exchange;
+using M06_x_internal::m06_hf_exchange;
 using M06_x_internal::m06_exchange;
 using M06_x_internal::m06_2x_exchange;
 
