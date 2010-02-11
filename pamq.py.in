@@ -122,11 +122,13 @@ class PamQVariables:
 
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def create_configure_file(self):
+  #-----------------------------------------------------------------------------------------------
   #
   #      class method: create configure file with important parameters as DEFAULTS
   #
-  #  we are inside class method definition, so we are to use 'self.' specification
+  # since we are inside class method definition, so we are to use 'self.' specification
   #
+  #-----------------------------------------------------------------------------------------------
     if self.iprint >= 12:
       print 'preparing PAMQ_DEFAULTS file'
     
@@ -140,12 +142,13 @@ class PamQVariables:
     f.write('###  SOME IMPORTANT DEFAULT VARIABLES FOR THE "pamq.py" SCRIPT ###\n')
     f.write('###  \n')
 
-    if (len(self.queue_system)>0) :
+    if ( (len(self.queue_system)>0) and  (self.queue_system in self.implemented_queue_systems)) :
       f.write('# ... default queue system \n')
       f.write('QUEUE_SYSTEM='+self.queue_system+'\n')
       print 'saved QUEUE_SYSTEM='+self.queue_system
     else :
       print '\ncreate_configure_file: YOU MUST SPECIFY QUEUE SYSTEM!\n'
+      print 'Implemented queue systems=',self.implemented_queue_systems
       error_exit=True 
 
     if (len(self.queue_name)>0) :
@@ -187,6 +190,9 @@ class PamQVariables:
     if (error_exit) :
       print('script error exit !')
       sys.exit()
+    else :
+      print(self.pamq_defaults_file+' file with default ready.')
+
 
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def read_configure_file(self):
@@ -252,6 +258,7 @@ class PamQVariables:
     if (qsys_in not in self.implemented_queue_systems) :
       print '\nsave_queue_system: entering queue system, qsys_in=',qsys_in
       print 'self.implemented_queue_systems=',self.implemented_queue_systems
+      print 'This queue system is not implemented ! error exit !'
       sys.exit()
     else :
       #print 'save_queue_system: entering queue system VERYFIED!'
