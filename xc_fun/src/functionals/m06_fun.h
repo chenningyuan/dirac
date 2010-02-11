@@ -8,67 +8,62 @@ namespace M06_x_internal
    using m0xy_metagga_xc_internal::h;
    using PBEx_internal::pbe_exchange;
 
-   // M06-L exchange functional. 
+   // M06-L exchange functional. Does not use HF exchange. 
 
    template<class num>
-   static num m06_l_exchange(const num &rhoa,
-                             const num &rhob,
-                             const num &grada,
-                             const num &gradb,
-                             const num &taua,
-                             const num &taub)
+   static num m06_l_exchange(const densvars<num> &d)
    {
      const static double param_a[12] = 
-       {  ?.?77943e-1, -1.371776e-1,  2.682367e-1, -2.515898e+0, -2.978892e+0, 
-          ?.?10679e+0,  1.688195e+1, -4.489724e+0, -3.299983e+1,  1.449050e+1,
-          ?.?43747e+1,  1.256504e+1 }; 
+       {  3.987756e-01,  2.548219e-01,  2.923994e-01, -2.103655e+00, -6.302147e+00, 
+          1.097615e+01,  3.097273e+01, -2.318489e+01, -5.673480e+01,  2.160364e+01,
+          3.421814e+01, -9.049762e+00 }; 
+     const static double param_d[5] = 
+       {  6.012244e-01,  4.748822e-03, -8.635108e-04, -9.308062e-06,  4.482811e-05,
+          0.000000e+00 }; 
 
-     return (  pbe_exchange(rhoa,grada)*fw(param_a, rhoa, taua) 
-             + pbe_exchange(rhob,gradb)*fw(param_a, rhob, taub) );
+     return (  (  pbe_exchange(d.a, d.gaa)*fw(param_a, d.a, d.taua) 
+                + lsda_x(d.a)*h(param_d, chi(d.a, d.gaa), zet(d.a, d.taua)))
+              +
+               (  pbe_exchange(d.b, d.gbb)*fw(param_a, d.b, d.taub) 
+                + lsda_x(d.b)*h(param_d, chi(d.b, d.gbb), zet(d.b, d.taub)))
+            );
    } 
 
    // M06 exchange functional. to be used with HF exchange factor of .27 
 
    template<class num>
-   static num m06_exchange(const num &rhoa,
-                           const num &rhob,
-                           const num &grada,
-                           const num &gradb,
-                           const num &taua,
-                           const num &taub)
+   static num m06_exchange(const densvars<num> &d)
    {
      const static double param_a[12] = 
-       {  5.877943e-1, -1.371776e-1,  2.682367e-1, -2.515898e+0, -2.978892e+0, 
-          8.710679e+0,  1.688195e+1, -4.489724e+0, -3.299983e+1,  1.449050e+1,
-          2.043747e+1,  1.256504e+1 }; 
-     const static double param_d[3] = 
-       {  1.422057e-1,  7.370319e-4, -1.601373e-2}; 
+       {  5.877943e-01, -1.371776e-01,  2.682367e-01, -2.515898e+00, -2.978892e+00, 
+          8.710679e+00,  1.688195e+01, -4.489724e+00, -3.299983e+01, -1.449050e+01,
+          2.043747e+01,  1.256504e+01 }; 
+     const static double param_d[5] = 
+       {  1.422057e-01,  7.370319e-04, -1.601373e-02,  0.000000e+00,  0.000000e+00,
+          0.000000e+00 }; 
 
-     return (  (  pbe_exchange(rhoa,grada)*fw(param_a, rhoa, taua) 
-                + lsda_x(rhoa)*h(param_d, chi(rhoa,grada), zet(rhoa,taua)))
+     return (  (  pbe_exchange(d.a, d.gaa)*fw(param_a, d.a, d.taua) 
+                + lsda_x(d.a)*h(param_d, chi(d.a, d.gaa), zet(d.a, d.taua)))
               +
-               (  pbe_exchange(rhob,gradb)*fw(param_a, rhob, taub) 
-                + lsda_x(rhob)*h(param_d, chi(rhob,gradb), zet(rhob,taub)))
+               (  pbe_exchange(d.b, d.gbb)*fw(param_a, d.b, d.taub) 
+                + lsda_x(d.b)*h(param_d, chi(d.b, d.gbb), zet(d.b, d.taub)))
             );
    }
 
    // M06-2X exchange functional. to be used with HF exchange factor of .54 
+   // because the param_d[5] array is all zero, it is not included here, and
+   // therefore the lsda_x() * h() terms (see above) drop out, as h()=0
 
    template<class num>
-   static num m06_2x_exchange(const num &rhoa,
-                              const num &rhob,
-                              const num &grada,
-                              const num &gradb,
-                              const num &taua,
-                              const num &taub)
+   static num m06_2x_exchange(const densvars<num> &d)
    {
      const static double param_a[12] = 
-       {  ?.?77943e-1, -1.371776e-1,  2.682367e-1, -2.515898e+0, -2.978892e+0, 
-          ?.?10679e+0,  1.688195e+1, -4.489724e+0, -3.299983e+1,  1.449050e+1,
-          ?.?43747e+1,  1.256504e+1 }; 
+       {  4.600000e-01, -2.206052e-01, -9.431788e-02,  2.164494e+00, -2.556466e+00, 
+         -1.422133e+01,  1.555044e+01,  3.598078e+01, -2.722754e+01, -3.924093e+01,
+          1.522808e+01,  1.522227e+01 }; 
 
-     return (  pbe_exchange(rhoa,grada)*fw(param_a, rhoa, taua) 
-             + pbe_exchange(rhob,gradb)*fw(param_a, rhob, taub) );
+     return (  pbe_exchange(d.a, d.gaa)*fw(param_a, d.a, d.taua) 
+             + pbe_exchange(d.b, d.gbb)*fw(param_a, d.b, d.taub) );
    } 
 
 }

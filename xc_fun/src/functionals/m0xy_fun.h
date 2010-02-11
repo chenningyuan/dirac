@@ -7,15 +7,56 @@
 namespace m0xy_metagga_xc_internal
 {
 
-  const char *m06x_reference = 
+  const char *m05_2x_x_reference = 
+    "M05-2X Meta-GGA Exchange Functional\n"
+      "Y Zhao, N. E. Schultz and D. G. Truhlar, "
+      "J. Chem. Theory Comput. 2, 364 (2006)\n"; 
+ 
+  const char *m05_x_reference = 
+    "M05 Meta-GGA Exchange Functional\n"
+      "Y Zhao, N. E. Schultz and D. G. Truhlar, "
+      "J. Chem. Theory Comput. 2, 364 (2006)\n"; 
+ 
+  const char *m06_l_x_reference = 
+    "M06-L Meta-GGA Exchange Functional\n"
+      "Y Zhao and D. G. Truhlar, "
+      "J. Chem. Phys. 125, 194101 (2006)\n"; 
+
+  const char *m06_2x_x_reference = 
+    "M06-2X Meta-GGA Exchange Functional\n"
+      "Y Zhao and D. G. Truhlar, "
+      "Theor. Chem. Account 120, 215 (2008)\n"; 
+
+  const char *m06_x_reference = 
     "M06 Meta-GGA Exchange Functional\n"
       "Y Zhao and D. G. Truhlar, "
-      "Theor. Chem. Account 120, 215-241 (2008)\n"; 
+      "Theor. Chem. Account 120, 215 (2008)\n"; 
 
-  const char *m06c_reference = 
+
+  const char *m05_2x_c_reference = 
+    "M05-2X Meta-GGA Correlation Functional\n"
+      "Y Zhao, N. E. Schultz and D. G. Truhlar, "
+      "J. Chem. Theory Comput. 2, 364 (2006)\n"; 
+ 
+  const char *m05_c_reference = 
+    "M05 Meta-GGA Correlation Functional\n"
+      "Y Zhao, N. E. Schultz and D. G. Truhlar, "
+      "J. Chem. Theory Comput. 2, 364 (2006)\n"; 
+ 
+  const char *m06_l_c_reference = 
+    "M06-L Meta-GGA Correlation Functional\n"
+      "Y Zhao and D. G. Truhlar, "
+      "J. Chem. Phys. 125, 194101 (2006)\n"; 
+
+  const char *m06_2x_c_reference = 
+    "M06-2X Meta-GGA Correlation Functional\n"
+      "Y Zhao and D. G. Truhlar, "
+      "Theor. Chem. Account 120, 215 (2008)\n"; 
+
+  const char *m06_c_reference = 
     "M06 Meta-GGA Correlation Functional\n"
       "Y Zhao and D. G. Truhlar, "
-      "Theor. Chem. Account 120, 215-241 (2008)\n"; 
+      "Theor. Chem. Account 120, 215 (2008)\n"; 
 
 
 // additional information from the authors, and reference implementations 
@@ -68,7 +109,7 @@ namespace m0xy_metagga_xc_internal
     num  w = (t - 1)/(t + 1); 
     num fw = 0.0;
 
-    for (int i = 0; i <= dim(a); i++)
+    for (int i = 0; i <= 11; i++)
        fw += a[i] * pow(w,i);
 
     return fw;
