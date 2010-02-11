@@ -1,69 +1,8 @@
 
-/*
 
-     subroutine ESRC_LDAERFSPIN (rhot,rhos,mu,dospin,e)
-C*****************************************************************************
-C     Short-range spin-dependent LDA correlation functional from 
-C       Paziani, Moroni, Gori-Giorgi and Bachelet, PRB 73, 155111 (2006)
-C
-C     subroutine adapted from Molpro
-C
-C     Input: rhot   : total density
-C            rhos   : spin density
-C            mu     : Interation parameter
-C            dospin : use spin density
-C
-C     Ouput: e      : energy
-C
-C     Created: 18-08-09, J. Toulouse
-C*****************************************************************************
-      implicit none
-
-      double precision rhot, rhos, mu
-      logical dospin
-      double precision e
-
-      double precision f13, pi, rsfac
-      double precision rs
-      double precision ec,ecd,ecz,eclr
-
-      double precision rhoa, rhob, z
-      double precision ea, eb
-
-      parameter(f13 = 0.333333333333333d0)
-      parameter(pi = 3.141592653589793d0)
-      parameter(rsfac = 0.620350490899400d0)
-
-C     Spin-unpolarized case
-      if (dospin) then
-
-        rs = rsfac/(rhot**f13)
-
-        call ecPW(rs,0.0d0,ec,ecd,ecz)
-        call ecorrlr(rs,0.0d0,mu,eclr)
-        e=(ec-eclr)*rhot
-
-C     Spin-polarized case
-      else
-
-        rs=rsfac/(rhot**f13)
-        rhoa=max((rhot+rhos)*.5d0,1.0d-15)
-        rhob=max((rhot-rhos)*.5d0,1.0d-15)
-        z=(rhoa-rhob)/(rhoa+rhob)
-
-        call ecPW(rs,z,ec,ecd,ecz)
-        call ecorrlr(rs,z,mu,eclr)
-        e=(ec-eclr)*rhot
-
-      endif
-
-      return
-      end
-
-*/
 
 template<class num>
-T esrc_ldaerfspin(const densvars<num> &d, double mu)
+num esrc_ldaerfspin(const densvars<num> &d, double mu)
 {
 /*
 C     Short-range spin-dependent LDA correlation functional from 
@@ -74,20 +13,33 @@ C     subroutine adapted from Molpro
   return d.n*(pw92_eps(d) - ecorrlr(d,mu));
 }
 
+template<class num>
+num Qrpa(const num &x)
+{
+  const double Acoul = 2.0*(log(2.0)-1.0)/(M_PI*M_PI);
+  const double a2    = 5.84605;
+  const double c2    = 3.91744;
+  const double d2    = 3.44851;
+  const double b2 = d2 - 3.0/(2*M_PI*Acoul)*pow(4.0/(9.0*M_PI),1.0/3.0);
+  return Acoul*log( (1+x*(a2+x*(b2+c2*x)))/(1+x*(a2+d2*x)) );
+}
 
 template<class num>
-T ecorrlr(const densvars<num> &d, double mu)
+num dpol(const num &rs)
 {
-  /*
-  double precision rs,z,mu,eclr,ec,ecd,ecz
-    double precision alpha,cf,phi
-    double precision g0f,dpol,d2anti,d3anti,Qrpa
-    double precision coe2,coe3,coe4,coe5
-    double precision a1,a2,a3,a4,b0
-    double precision q1a,q2a,q3a,t1a,t2a,t3a,adib
-  */
+  const double cf  = pow(9.0*M_PI/4.0,1.0/3.0);
+  const double p2p = 0.04;
+  const double p3p = 0.4319;
+  num rs2 = rs*rs;
+  return pow(2.0,5.0/3.0)/5.0*pow(cf,2)/rs2*
+    (1.0 + (p3p - 0.454555)*rs)/(1.0 + p3p*rs + p2p*rs2);
+}
+
+template<class num>
+num ecorrlr(const densvars<num> &d, double mu)
+{
   const double alpha=pow(4.0/9.0/M_PI,1.0/3.0);
-  double cf=1.d0/alpha; //TODO: The normal CF?
+  double cf=1/alpha; //TODO: The normal CF?
   num phi=(pow(1.0+d.zeta,2.0/3.0)+pow(1.0-d.zeta,2.0/3.0))/2.0;
   // cc parameters from the fit
   const double adib = 0.784949;
@@ -105,24 +57,25 @@ T ecorrlr(const densvars<num> &d, double mu)
   num d2anti=(q1a*d.r_s+q2a*rs2)*exp(-q3a*d.r_s)/rs2;
   num d3anti=(t1a*d.r_s+t2a*rs2)*exp(-t3a*d.r_s)/rs3;
 
+  const num &z = d.zeta;
   num z2 = d.zeta*d.zeta;
-  num coe2=-3.0/8.0/rs3*(1.0-z2)*(g0f(rs)-0.5);
+  num coe2 = -3.0/8.0/rs3*(1.0-z2)*(g0f(d.r_s)-0.5);
 
-  num coe3=-(1.0-z2)*g0f(d.r_s)/(sqrt(2.0*M_PI)*rs3);
+  num coe3 = -(1.0-z2)*g0f(d.r_s)/(sqrt(2.0*M_PI)*rs3);
 
-  num coe4=-9.0/64.0/rs3*(pow((1.0+d.zeta)/2.0,2)*
-			  dpol(d.r_s*pow(2/(1.0+z),1.0/3.0))+
-			  pow((1.0-z)/2.0,2)*
-			  dpol(d.r_s*pow(2.0/(1.0-z),1.0/3.0))+
-			  (1.-z**2)*d2anti-
-			  pow(cf,2)/10.0*(pow(1.0+z,8.0/3.0)
-					  +pow(1-z,8.0/3.0))/rs2);
+  num coe4 = -9.0/64.0/rs3*(pow((1.0+z)/2.0,2)*
+			    dpol(d.r_s*pow(2/(1.0+z),1.0/3.0))+
+			    pow((1.0-z)/2.0,2)*
+			    dpol(d.r_s*pow(2.0/(1.0-z),1.0/3.0))+
+			    (1-z*z)*d2anti-
+			    pow(cf,2)/10.0*(pow(1.0+z,8.0/3.0)
+					    +pow(1-z,8.0/3.0))/rs2);
 
-  num coe5=-9.0/40.0/(sqrt(2.0*M_PI)*rs3)*
+  num coe5 = -9.0/40.0/(sqrt(2.0*M_PI)*rs3)*
     (pow((1.0+z)/2.0,2)*
      dpol(d.r_s*pow(2.0/(1.0+z),1.0/3.0))+
-     ((1.0-z)/2.0)**2*
-     dpol(d.r_s*pow(2.0/(1.0-d.zeta),1.0/3.0))+(1.0-z2)*
+     pow((1.0-z)/2.0,2)*
+     dpol(d.r_s*pow(2.0/(1.0-z),1.0/3.0))+(1.0-z2)*
      d3anti);
     
   num ec = pw92_eps(d);
@@ -135,8 +88,6 @@ T ecorrlr(const densvars<num> &d, double mu)
   num a3 = b08*coe3;
   num a4 = b06*(pow(b0,2)*coe2 + 4*ec);
     
-  return (phi**3*Qrpa(mu*sqrt(d.r_s)/phi)+a1*mu**3+a2*mu**4+a3*mu**5+
-          a4*mu**6+b0**8*mu**8*ec)/((1.0+b0**2*mu**2)**4);
-
+  return (pow(phi,3)*Qrpa(mu*sqrt(d.r_s)/phi)+a1*pow(mu,3)+a2*pow(mu,4)+a3*pow(mu,5)+
+          a4*pow(mu,6)+pow(b0*mu,8)*ec)/pow(1.0+pow(b0,2)*pow(mu,2),4);
 }
-

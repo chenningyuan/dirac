@@ -30,7 +30,7 @@ struct densvars
 #include "pbe_fun.h"
 #include "tf_kin_fun.h"
 #include "pw91_fun.h"
-
+#include "lda_sr.h"
 
 //Did we already set up tables?
 static int is_setup = 0;

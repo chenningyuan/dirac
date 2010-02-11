@@ -1435,9 +1435,16 @@ class polynomial
       }
   }
   template<int var>
-  void diff(polynomial<numtype, Nvar, Ndeg-1> &dp)
+  void diff(polynomial<numtype, Nvar, Ndeg-1> &dp) const
   {
     polymul_internal::differentiator<numtype,Nvar,Ndeg,var>::diff(dp.c,c);
+  }
+  template<int var>
+  void diff(polynomial<numtype, Nvar, Ndeg> &dp) const
+  {
+    polymul_internal::differentiator<numtype,Nvar,Ndeg,var>::diff(dp.c,c);
+    for (int i=polynomial<numtype,Nvar,Ndeg-1>::size;i<size;i++)
+      dp.c[i] = 0;
   }
   numtype c[size];
 };

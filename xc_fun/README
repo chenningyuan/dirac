@@ -1,6 +1,7 @@
 ** Arbitrary order Exchange-Correlation functional library **
 
-Copyright Ulf Ekstrom <uekstrom@gmail.com> and Radovan Bast 2009. 
+Copyright Ulf Ekstrom <uekstrom@gmail.com> and Radovan Bast 2009-2010,
+Andre Gomes 2010.
 
 The main interface is in include/xc_fun.h
 (or fortran/xc_fun_module.F90 for Fortran bindings).
