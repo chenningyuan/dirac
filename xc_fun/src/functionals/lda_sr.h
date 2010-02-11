@@ -91,3 +91,46 @@ num ecorrlr(const densvars<num> &d, double mu)
   return (pow(phi,3)*Qrpa(mu*sqrt(d.r_s)/phi)+a1*pow(mu,3)+a2*pow(mu,4)+a3*pow(mu,5)+
           a4*pow(mu,6)+pow(b0*mu,8)*ec)/pow(1.0+pow(b0,2)*pow(mu,2),4);
 }
+
+
+template<class num>
+num esrx_ldaerfspin(const num &na, double mu)
+{
+/*
+C     Short-range spin-dependent LDA exchange functional
+C       obtained by spin-scaling Ex[na,nb] = 1/2 (Ex[na]+Ex[nb])
+C       where Ex[n] is from Toulouse, Savin, Flad, IJQC 100, 1047 (2004)
+C
+C     subroutine adapted from Molpro
+C     Created: 17-08-09, J. Toulouse, C++ by Ulf Ekstrom
+*/
+  const double ckf = 3.093667726280136;
+  const num &rhoa = 2*na; // spin-scaling
+  num akf = ckf*pow(rhoa,1.0/3.0);
+  num a = mu/(2*akf);
+  num a2 = a*a;
+  num a3 = a2*a;
+
+  // Test on the value of a. NB: These tests are not inifinitely differentiable
+  if (a < 1e-9)
+    // Limit for small a (expansion not so important as for large a)
+    return -3.0/8.0*rhoa*pow(24.0*rhoa/M_PI,1.0/3.0);
+  else if (a < 100)
+    // Intermediate values of a
+    return -(rhoa*pow(24.0*rhoa/M_PI,1.0/3.0))*
+      (3.0/8.0 - a*(sqrt(M_PI)*erf(0.5/a) +
+		    (2*a - 4*a3)*exp(-0.25/a2)-3.0*a + 4*a3));
+  else if (a < 1e9)
+    // Expansion for large a
+    return - (rhoa*pow(24.0*rhoa/M_PI,1.0/3.0))/(96.0*a2);
+  else
+    // Limit for large a
+    return 0;
+}
+
+template<class num>
+num ldaerfspin_exchange(const densvars<num> &d, double mu)
+{
+  return 0.5*(esrx_ldaerfspin(d.na,mu) + esrx_ldaerfspin(d.nb,mu)); 
+}
+
