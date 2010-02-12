@@ -144,3 +144,69 @@ Anisotropy in polarizability at frequency     1.8375     =      1.1437
   19:     0.49497     13.46880   0.6602E-01  A
   20:     0.50171     13.65236   0.1464E-02  A
 
+
+
+
+"active" water, isolated:
+
+
+ =============
+ Dipole Moment  ***  (Debye)  ***
+ =============
+
+ Vector   :         0.00000000      0.00000001      1.65371325
+ Magnitude:         1.65371325
+
+ This molecular dipole moment is calculated with analytic integration
+
+SUMMARY OF RESULTS FOR DIPOLE POLARIZABILITIES:
+
+THE DIPOLE-DIPOLE POLARIZABILITY TENSOR:
+
+FREQUENCY CYCLE NR.:  1 AT    1.8374662250 HARTREES
+        Y          Z          X
+     -1.155714     0.000000     0.000000
+      0.000000    -0.831481     0.000000
+      0.000000     0.000000    -0.001643
+
+
+Average polarizability at frequency           1.8375     =    -0.66295
+Anisotropy in polarizability at frequency     1.8375     =      1.0309
+
+
+ The anisotopy is calculated according to Eq.(A14.7.31) on page 493 of
+ Derek A. Long, The Raman Effect, Wiley, Chichester, 2002
+
+
+ All SINGLET-TRIPLET excitation energies
+
+ no.     E/a.u.        E/eV      f           Symmetry
+ -----------------------------------------------------
+   1:     0.33114      9.01090    0.000      A
+   2:     0.42244     11.49508    0.000      A
+   3:     0.43552     11.85104    0.000      A
+   4:     0.51765     14.08595    0.000      A
+   5:     0.62594     17.03275    0.000      A
+   6:     0.70510     19.18664    0.000      A
+   7:     1.08058     29.40416    0.000      A
+   8:     1.19217     32.44063    0.000      A
+   9:    18.99515    516.88446    0.000      A
+  10:    19.10009    519.73989    0.000      A
+
+
+
+ All SINGLET-SINGLET excitation energies
+
+ no.     E/a.u.        E/eV      f           Symmetry
+ -----------------------------------------------------
+   1:     0.39669     10.79450   0.1763E-02  A
+   2:     0.47931     13.04282   0.4774E-17  A
+   3:     0.50784     13.81911   0.6567E-01  A
+   4:     0.62389     16.97704   0.4600E-01  A
+   5:     0.76838     20.90863   0.9163      A
+   6:     0.94244     25.64510   0.3983      A
+   7:     1.30131     35.41057   0.6922E-01  A
+   8:     1.31596     35.80911   0.1581      A
+   9:    19.05950    518.63538   0.5036E-01  A
+  10:    19.14130    520.86132   0.7883E-01  A
+
