@@ -340,6 +340,7 @@ contains
                     g_order,           &
                     m_order)
 
+    use fde_mod
 !   ----------------------------------------------------------------------------
     integer, intent(in) :: mat_dim
     integer, intent(in) :: nz
@@ -406,6 +407,13 @@ contains
       ao_mem_allocated        = .false.
       dft_temp_reload_batches = .false.
     end if
+
+
+! aspg, toying with having the frozen density and adfgrid available
+! for the respose calcs or otherwise...
+    if (have_frozen_density) then
+       call FDE_testFrozenDensity()
+    endif
 
 !*    Loop over batches of grid points
   100 CONTINUE
