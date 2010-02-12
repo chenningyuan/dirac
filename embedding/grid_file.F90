@@ -24,13 +24,18 @@
 !
 ! VERSION : $Revision$
 ! DATE    : $Date$
-! FILE    : dirone.F
+! FILE    : grid_file.F90
 !
 
 MODULE GRID_FILE
   IMPLICIT NONE
   PRIVATE
   public read_grid  
+
+  interface read_grid
+     module procedure read_grid_onecol
+     module procedure read_grid_manycol
+  end interface read_grid
 
 CONTAINS 
   
@@ -43,21 +48,17 @@ CONTAINS
 !               line        one : number of grid point
 !               lines to to n-1 : quadruplet of numbers, where the
 !                                 first three are the (x,y,z) coords
-!                                 and the last is the value of the
-!                                 embedding potential at that point
-!                                 times the weight of the quadrature
-!                                 [= v(i)*w(i)]
-!               line          n : a non-negative integer, like  -42 =)
-!
+!                                 and the last the quadrature weight;
+!                                 optionally, the value of the operator/property 
+!                                 (the 5th column) is also read in
 !
 
-  SUBROUTINE READ_GRID(file,points,vc)
+  SUBROUTINE READ_GRID_onecol(file,points,vc)
 #include "priunit.h"
     REAL(kind=8),POINTER :: points(:,:)
     REAL(kind=8),pointer,optional :: vc(:)
     INTEGER                 :: file
     INTEGER                 :: i,npoints
-    
 
     REWIND(file)
     READ(file,*) npoints
@@ -74,12 +75,41 @@ CONTAINS
           READ(file,*) points(:,i)
        END DO
     end if
-  END SUBROUTINE READ_GRID
-  
+  END SUBROUTINE READ_GRID_onecol
+
+! description : this subroutine will read one or more operators/properties (i.e. an embedding
+!               potential, a density) from file.
+!
+!               the routine expects that the grid file has the following
+!               format:
+!
+!               line        one : number of grid point, number of properties on file
+!               lines to to n-1 : quadruplet of numbers, where the
+!                                 first three are the (x,y,z) coords
+!                                 and the fourth the quadrature weight.
+!                                 these are followed by whatever properties we
+!                                 have in file
+!
+  SUBROUTINE READ_GRID_manycol(file,points,properties)
+#include "priunit.h"
+    REAL(kind=8),POINTER :: points(:,:)
+    REAL(kind=8),pointer :: properties(:,:)
+    INTEGER              :: file
+    INTEGER              :: i,npoints, nprop
+   
+
+    REWIND(file)
+    READ(file,*) npoints, nprop
+   
+    ALLOCATE(points(4,1:npoints))
+    ALLOCATE(properties(nprop,1:npoints))
+
+    DO i=1,npoints
+       READ(file,*) points(:,i),properties(:,i)
+    END DO
+
+  END SUBROUTINE READ_GRID_manycol
   
 END MODULE GRID_FILE
-
-
-
 
 

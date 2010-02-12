@@ -31,17 +31,20 @@
       PRIVATE
 !     PUBLIC GetFDEPotential_FromFile, FDEINI,FDEINP,FDE_GRIDOUT
       PUBLIC FDE_ImportStaticPotential_FileOpen, FDE_ImportStaticPotential_FileClose
-      public FDEINI,FDEINP,FDE_GRIDOUT
+      public FDE_setupFDEgrid, FDE_testFrozendensity, FDE_cleanupFDEgrid
+      public FDEINI,FDEINP,FDE_GRIDOUT,have_frozen_density
       PUBLIC DO_GRID_OUT
+      public fde_grid, fde_frozen_prp, fde_grid_np
 
       LOGICAL,SAVE :: DO_GRID_OUT=.FALSE.
-      INTEGER,SAVE :: LUFDEPOT=45,LUTESTING=46,LUGRIDOUT=47
-      INTEGER,SAVE :: print_fde=0
-      CHARACTER(LEN=60),SAVE :: FDEPOT='EMBPOT',GRIDOUT_NAME=''
+      logical,save :: have_frozen_density = .false.
+      INTEGER,SAVE :: LUFDEPOT=45,LUTESTING=46,LUGRIDOUT=47, LUFDEFRZDNS=48
+      INTEGER,SAVE :: print_fde=0, fde_grid_np=0
+      CHARACTER(LEN=60),SAVE :: FDEPOT='EMBPOT',FDEDNS='FRZDNS',GRIDOUT_NAME=''
       CHARACTER(LEN=60),SAVE :: out_level='HF'
+      real(kind=8), pointer :: fde_grid(:,:), fde_frozen_prp(:,:) 
       
       CONTAINS
-
 
          subroutine FDE_ImportStaticPotential_FileOpen(embpot_unit)
             integer, intent(out) :: embpot_unit
@@ -66,6 +69,57 @@
             close(lufdepot) 
          end subroutine FDE_ImportStaticPotential_FileClose
 
+
+         subroutine FDE_ImportFrozenDensity_FileOpen(frozdens_unit)
+            integer, intent(out) :: frozdens_unit
+            logical              :: frozdens_found
+
+            inquire(FILE=FDEDNS,EXIST=frozdens_found)
+
+            if (frozdens_found) then
+                open(lufdefrzdns,               &
+                     FORM   = 'FORMATTED',   &
+                     STATUS = 'UNKNOWN',     &
+                     ACCESS = 'SEQUENTIAL',  &
+                     FILE   =  FDEDNS)
+                frozdens_unit = lufdefrzdns
+             else
+                call quit("File with Frozen Density(+gradient) not found!")
+             endif
+
+         end subroutine FDE_ImportFrozenDensity_FileOpen
+
+         subroutine FDE_ImportFrozenDensity_FileClose()
+            close(lufdefrzdns) 
+         end subroutine FDE_ImportFrozenDensity_FileClose
+
+
+         subroutine FDE_setupFDEgrid()
+            integer :: frozdens_unit
+
+            call FDE_ImportFrozenDensity_FileOpen(frozdens_unit)
+            call read_grid(frozdens_unit,fde_grid,fde_frozen_prp)
+            call FDE_ImportFrozenDensity_FileClose()
+         end subroutine FDE_setupFDEgrid
+
+         subroutine FDE_testFrozenDensity()
+            integer      :: point = 0
+            real(kind=8) :: frozen_particle_number = 0.0
+
+            do point = 1, size(fde_frozen_prp,2)  
+               frozen_particle_number = frozen_particle_number + fde_grid(4,point)*fde_frozen_prp(1,point) 
+            end do
+            
+            write (*,*) '  Test: imported frozen density integrates to ',frozen_particle_number
+            write (*,*) '  Test: grid points processed ',point
+            frozen_particle_number = 0.0
+
+         end subroutine FDE_testFrozenDensity
+
+         subroutine FDE_cleanupFDEgrid()
+            deallocate(fde_grid)
+            deallocate(fde_frozen_prp) 
+         end subroutine FDE_cleanupFDEgrid
 
       SUBROUTINE FDEINI()
 
@@ -101,12 +155,17 @@
               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
               CYCLE
             CASE ('.EMBPOT')
-! read filename for the embedding potential
-              write(*,*) 'fdepot is ',fdepot
+!             read filename for the embedding potential
               READ(LUCMD,'(A60)') FDEPOT 
-              write(*,*) 'fdepot is ',fdepot
+              write(*,*) 'File with embedding potentia (=fdepot) is ',fdepot
+            CASE ('.FRDENS')
+!             read filename for the frozen density and density gradient
+              READ(LUCMD,'(A60)') FDEDNS
+              write(*,*) 'File with frozen density (+gradient etc) (=fdedns) is ',fdedns
+              have_frozen_density = .true.
+
             CASE ('.PRINT')
-! set printlevel 
+!             set printlevel 
               READ(LUCMD,*) print_fde 
             CASE ('.LEVEL')
               READ(LUCMD,'(A60)') out_level
@@ -156,10 +215,20 @@
         CALL PRSYMB(LUPRI,'-',44,2)
         WRITE(LUPRI,*)
         WRITE(LUPRI,'(A,I5)')  ' * Print level: ',print_fde
-         write(LUPRI,'(A,A60)')  ' * FDE Potential read from file: ', &
-         FDEPOT
-         IF (DO_GRID_OUT) write(LUPRI,'(2A)') &
-         ' * FDE Gridfile with updated density written to:',GRIDOUT_NAME
+
+        write(LUPRI,'(A,A60)')  ' * FDE Potential read from file: ',FDEPOT
+
+        if (have_frozen_density) then
+           write(LUPRI,'(A,A60)') &
+           ' * Density (and gradient) from frozen subsystems read from file: ',FDEDNS
+           call FDE_setupFDEgrid()
+        endif
+
+        IF (DO_GRID_OUT) then
+           write(LUPRI,'(2A)') &
+           ' * FDE Gridfile with updated density written to:',GRIDOUT_NAME
+        endif
+
       END IF
 
       END SUBROUTINE
