@@ -150,14 +150,15 @@ C
 
       if (dft_cfg_multigrid) then
         iunit = dft_temp_file_unit
-        do i = 0, size(dft_cfg_multigrid_file_unit - 1)
+        do i = 0, dft_cfg_multigrid_max
+          iunit = iunit + 1
           dft_cfg_multigrid_file_unit(i) = iunit
           open(dft_cfg_multigrid_file_unit(i),
      &         form   = 'formatted',
      &         status = 'unknown',
      &         access = 'sequential',
      &         file   =  dft_cfg_multigrid_file(i))
-          iunit = iunit + 1
+          rewind dft_cfg_multigrid_file_unit(i)
         end do
       end if
 

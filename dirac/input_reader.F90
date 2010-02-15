@@ -152,6 +152,7 @@ contains
     if (kw_matches(word, '.MULTIG')) then
       dft_cfg_multigrid = .true.
       call kw_read(word, n)
+      dft_cfg_multigrid_max = n
       allocate(dft_cfg_multigrid_file(0:n))
       allocate(dft_cfg_multigrid_file_unit(0:n))
       do i = 0, n

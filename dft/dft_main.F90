@@ -388,6 +388,9 @@ contains
 
     if (i_am_the_master) then
       rewind dft_temp_file_unit
+      if (dft_cfg_multigrid) then
+        rewind dft_cfg_multigrid_file_unit(response_order_ao)
+      end if
       npnts  = 0
       ibatch = 0
     end if

@@ -25,6 +25,7 @@ module dft_cfg
 
   character(30), public, allocatable :: dft_cfg_multigrid_file(:)
   integer,       public, allocatable :: dft_cfg_multigrid_file_unit(:)
+  integer,       public              :: dft_cfg_multigrid_max
 
   logical, public :: dft_cfg_screening               = .false.
   logical, public :: dft_cfg_keep_ao                 = .false.
