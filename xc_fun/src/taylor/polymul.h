@@ -247,7 +247,7 @@ struct deriv_fac<1,0>
   enum { fac = 1 };
 };
 
-
+/*
 template<class numtype, int Nvar, int term>
 struct deriv_fac_multiplier
 {
@@ -263,6 +263,26 @@ struct deriv_fac_multiplier<numtype,Nvar,0>
 {
   static void mul_fac(numtype c[]) {}
 };
+
+
+*/
+template<class numtype, int Nvar, int first_term, int last_term>
+struct deriv_fac_multiplier
+{
+  static void mul_fac(numtype c[])
+  {
+    deriv_fac_multiplier<numtype,Nvar,first_term,(first_term+last_term)/2>::mul_fac(c);
+    deriv_fac_multiplier<numtype,Nvar,(first_term+last_term)/2+1,last_term>::mul_fac(c);
+  }
+};
+
+template<class numtype, int Nvar, int term>
+  struct deriv_fac_multiplier<numtype,Nvar,term,term>
+{
+  static void mul_fac(numtype c[]) {c[term] *= deriv_fac<Nvar,term>::fac;}
+};
+
+
 
 
 // Recursive template classes for multiplication.
@@ -1524,7 +1544,7 @@ template<class numtype, int Nvar, int Ndeg>
 void polydfac(polynomial<numtype, Nvar, Ndeg> &p)
 {
   polymul_internal
-    ::deriv_fac_multiplier<numtype,Nvar,
+    ::deriv_fac_multiplier<numtype,Nvar,0,
        polymul_internal::polylen<Nvar,Ndeg>::len-1>::mul_fac(p.c);   
 }
 
