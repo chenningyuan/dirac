@@ -111,6 +111,7 @@ extrausage ()
    echo '     -vg1 "valgrind_params" : Run dirac in valgrind (http://valgrind.org) with parameters :"'$VALGRIND'"'
    echo '     -vg                    : Run dirac in valgrind (http://valgrind.org), no parameters'
    echo '     -prof                  : After finishing dirac executable perform profiling with:"'$PROFILER'"'
+   echo '     -nobackup              : Do not backup output files, simply overwrite them'
 }
 #
 #
@@ -694,7 +695,9 @@ save_files()
    if [ -n "$GET_FILES" ]; then
       for file in $GET_FILES; do
          if [ -a $WRK/$file ]; then
-            backup -v $LOC/$file
+            if [ $BACKUP_FILES -eq 1 ]; then
+              backup -v $LOC/$file
+            fi
             $echo "   Saving $WRK/$file : \c"
             cp $WRK/$file $LOC || $echo "not \c"
             echo "ok"
@@ -853,9 +856,11 @@ save_old_output()
    # Save old output file
    #
    if [ -f $OUTPUT_FILE ]; then
-     echo "   Backing up old output files"
-     backup $OUTPUT_FILE
-     # backup -v $OUTPUT_FILE # for verbose output
+     if [ $BACKUP_FILES -eq 1 ]; then
+       echo "   Backing up old output files"
+       backup $OUTPUT_FILE
+       # backup -v $OUTPUT_FILE # for verbose output
+     fi
    fi
 }
 #
@@ -916,6 +921,8 @@ initialize()
    DEBUG=
    PROFILE=
    VALGRIND_CHECK=
+
+   BACKUP_FILES=1
 
    GET_FILES=
 
@@ -1035,6 +1042,9 @@ while [ -n "$1" ]; do
          ;;
       -outcmo|-utcmo)
          GET_FILES="$GET_FILES DFCOEF"
+         ;;
+      -nobackup)
+         BACKUP_FILES=0
          ;;
       -noarch)
          DO_ARCHIVE=
