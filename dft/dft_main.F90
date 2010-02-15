@@ -21,7 +21,6 @@ module dft_main
 #ifdef VAR_MPI
   use dirac_mpi
 #endif
-  use even_xc_grid
 
   implicit none
 
@@ -382,15 +381,6 @@ contains
       logical :: i_am_the_master
 
 
-!   if (response_order_ao > 3) then
-!     use_even_xc_grid = .true.
-!     dft_cfg_dfthr0   = -1.0d0
-!   end if
-
-    if (use_even_xc_grid) then
-      call init_even_xc_grid(50, 50, 50, 10.0d0, 10.0d0, 10.0d0)
-    end if
-
     dft_temp_nr_electrons = 0.0d0
     dft_temp_xc_energy    = 0.0d0
     i_am_the_master = .false.
@@ -425,9 +415,6 @@ contains
           read(dft_cfg_multigrid_file_unit(response_order_ao), *) npoint
         else
           read(dft_temp_file_unit) npoint
-          if (use_even_xc_grid) then
-            npoint = even_xc_grid_nr_points
-          end if
         end if
       end if
 
@@ -456,11 +443,7 @@ contains
           elseif (dft_cfg_multigrid) then
             call import_dft_grid(kx, ky, kz, kw, dft_cfg_multigrid_file_unit(response_order_ao), npoint)
           else
-            if (use_even_xc_grid) then
-              call set_even_xc_grid(npoint, kx, ky, kz, kw)
-            else
-              call reaqua(kx, ky, kz, kw, dft_temp_file_unit, npoint)
-            end if
+            call reaqua(kx, ky, kz, kw, dft_temp_file_unit, npoint)
           end if
         end if
 
@@ -632,7 +615,7 @@ contains
         call dealloc(kz)
         call dealloc(kw)
 
-        if (.not. use_even_xc_grid) goto 100
+        goto 100
         end if !IF( NPOINT .lt. 0 ) THEN
  200    CONTINUE
 
@@ -689,12 +672,6 @@ contains
       end if
       write(print_unit, *)
 
-      if (use_even_xc_grid) then
-        use_even_xc_grid = .false.
-!       call quit('quit after plot of XC grid')
-      end if
-
-      
       end subroutine
 
     subroutine dftdr1(mat_dim,           &

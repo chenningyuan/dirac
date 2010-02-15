@@ -6,7 +6,6 @@ module xc_response
   use dft_cb_interface
   use aor_cfg
   use xc_fun
-  use even_xc_grid
 
   implicit none
 
