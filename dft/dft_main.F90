@@ -421,8 +421,10 @@ contains
       if (i_am_the_master) then
         if (dft_cfg_import_grid) then
           read(dft_temp_file_unit, *) npoint
+        elseif (dft_cfg_multigrid) then
+          read(dft_cfg_multigrid_file_unit(response_order_ao), *) npoint
         else
-          read(dft_temp_file_unit)    npoint
+          read(dft_temp_file_unit) npoint
           if (use_even_xc_grid) then
             npoint = even_xc_grid_nr_points
           end if
@@ -451,6 +453,8 @@ contains
 
           if (dft_cfg_import_grid) then
             call import_dft_grid(kx, ky, kz, kw, dft_temp_file_unit, npoint)
+          elseif (dft_cfg_multigrid) then
+            call import_dft_grid(kx, ky, kz, kw, dft_cfg_multigrid_file_unit(response_order_ao), npoint)
           else
             if (use_even_xc_grid) then
               call set_even_xc_grid(npoint, kx, ky, kz, kw)

@@ -128,6 +128,7 @@ contains
 !   ----------------------------------------------------------------------------
     character(80)                    :: line
     character(4)                     :: first_4
+    integer                          :: i, n
 !   ----------------------------------------------------------------------------
 
 #ifndef MOD_DFT
@@ -146,6 +147,16 @@ contains
     if (kw_matches(word, '.EXPORT')) then
       dft_cfg_export_grid = .true.
       call kw_read(word, dft_cfg_gridfile)
+    end if
+
+    if (kw_matches(word, '.MULTIG')) then
+      dft_cfg_multigrid = .true.
+      call kw_read(word, n)
+      allocate(dft_cfg_multigrid_file(0:n))
+      allocate(dft_cfg_multigrid_file_unit(0:n))
+      do i = 0, n
+        call kw_read(word, dft_cfg_multigrid_file(i))
+      end do
     end if
 
     if (kw_matches(word, '.FROMVX')) then

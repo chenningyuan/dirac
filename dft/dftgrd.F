@@ -148,7 +148,20 @@ C
       ENDIF
       REWIND dft_temp_file_unit
 
-      if (dft_cfg_import_grid) go to 999
+      if (dft_cfg_multigrid) then
+        iunit = dft_temp_file_unit
+        do i = 0, size(dft_cfg_multigrid_file_unit - 1)
+          dft_cfg_multigrid_file_unit(i) = iunit
+          open(dft_cfg_multigrid_file_unit(i),
+     &         form   = 'formatted',
+     &         status = 'unknown',
+     &         access = 'sequential',
+     &         file   =  dft_cfg_multigrid_file(i))
+          iunit = iunit + 1
+        end do
+      end if
+
+      if (dft_cfg_import_grid .or. dft_cfg_multigrid) go to 999
 
       if (dft_cfg_export_grid) then
         OPEN(dft_temp_file_unit+1,

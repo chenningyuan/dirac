@@ -19,9 +19,12 @@ module dft_cfg
 
   save
 
-  integer, parameter, public   :: mxbllen = 160
+  integer, parameter, public :: mxbllen = 160
 
   character(30), public :: dft_cfg_gridfile
+
+  character(30), public, allocatable :: dft_cfg_multigrid_file(:)
+  integer,       public, allocatable :: dft_cfg_multigrid_file_unit(:)
 
   logical, public :: dft_cfg_screening               = .false.
   logical, public :: dft_cfg_keep_ao                 = .false.
@@ -30,6 +33,7 @@ module dft_cfg
   logical, public :: dft_cfg_estimate_radii          = .false.
   logical, public :: dft_cfg_import_grid             = .false.
   logical, public :: dft_cfg_export_grid             = .false.
+  logical, public :: dft_cfg_multigrid               = .false.
   logical, public :: dft_cfg_zipgrid                 = .false.
   logical, public :: dft_cfg_alda_hs                 = .false.
   logical, public :: dft_cfg_alda_ha                 = .false.
@@ -91,8 +95,9 @@ contains
     call dirac_mpi_bcast(dft_cfg_explicit_potential     )
     call dirac_mpi_bcast(dft_cfg_no_pruning             )
     call dirac_mpi_bcast(dft_cfg_estimate_radii         )
-    call dirac_mpi_bcast(dft_cfg_import_grid            )
-    call dirac_mpi_bcast(dft_cfg_export_grid            )
+!radovan: not needed
+!   call dirac_mpi_bcast(dft_cfg_import_grid            )
+!   call dirac_mpi_bcast(dft_cfg_export_grid            )
     call dirac_mpi_bcast(dft_cfg_zipgrid                )
     call dirac_mpi_bcast(dft_cfg_alda_hs                )
     call dirac_mpi_bcast(dft_cfg_alda_ha                )
