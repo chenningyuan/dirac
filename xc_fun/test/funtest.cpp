@@ -1,5 +1,7 @@
 #include <iostream>
+#ifdef WITH_QD
 #include <qd/qd_real.h>
+#endif
 #include "taylor.h"
 #include "xc_fun.h"
 
@@ -90,6 +92,8 @@ int main(void)
       print_rms_diff_compact(cmp,res_qd);
 #endif
     }
+#ifdef WITH_QD
   fpu_fix_end(&cw);
+#endif
   return 0;
 }
