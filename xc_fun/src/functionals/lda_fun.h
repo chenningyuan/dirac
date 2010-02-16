@@ -73,10 +73,3 @@ static num slater_exchange(const densvars<num> &d)
     (pow(d.a,4.0/3) + pow(d.b,4.0/3));
 }
 
-// local spin density approximation for the exchange
-template<class num>
-static num lsda_x(const num &rho) 
-{
-  return -(3.0/2.0)*pow(3.0/(4.0*M_PI), 1.0/3.0)*pow(rho, 4.0/3.0);
-}
-}
