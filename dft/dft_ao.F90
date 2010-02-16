@@ -658,10 +658,19 @@ contains
       call alloc(dft_kstrt, mxshel)
       call alloc(dft_cent, mxshel, 3, 2)
 
+!fixme: this is reset later but i need it here for nr_cartesian_ao
+      dft_istbao = istbao
+      dft_maxopr = maxopr
+
       nr_cartesian_ao = 0
       do ishell = 1, mxshel
-        nr_cartesian_ao = nr_cartesian_ao + kckt(ishell)
+        do isym = 0, dft_maxopr
+          if (iand(isym, dft_istbao(ishell)) == 0) then
+            nr_cartesian_ao = nr_cartesian_ao + kckt(ishell)
+          end if
+        end do
       end do
+
       dft_nr_shells       = kmax
       dft_nr_large_shells = nlrgsh
 
