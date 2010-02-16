@@ -2,7 +2,6 @@
 #define M0xy_H
 
 // common functions for MO5 and M06 family of (hybrid) meta-gga functionals
-//
 
 namespace m0xy_metagga_xc_internal
 {
@@ -59,19 +58,24 @@ namespace m0xy_metagga_xc_internal
       "Theor. Chem. Account 120, 215 (2008)\n"; 
 
 
-// additional information from the authors, and reference implementations 
-// in F77, can be found at
-//
-//    http://comp.chem.umn.edu/mfm/
-//
+  // additional information from the authors, and reference implementations 
+  // in F77, can be found at
+  //
+  //    http://comp.chem.umn.edu/mfm/
+
+  // values for alpha are taken from
+  //   T. Van Voorhis and G. E. Scuseria, J. Chem. Phys. 129, 219901 (2008)
+  //   DOI: 10.1063/1.3005348
+
+  const static double alpha_x = 0.00186726;
+  const static double alpha_c_parallel = 0.00515088;
+  const static double alpha_c_antiparallel = 0.00304966;
 
 
-// the alpha below is defined at: 
+  // zet calculates one of the working variables
+  // see see TCA (2008) 120:215 eq 3
+  // rho is the density, tau the kinetic energy density
 
-   static num alpha_m0xc = 1.0;
-
-// rho is the density, tau the kinetic energy density, see TCA 120 215 (2008), page 219 
-// zet : eq (3) of paper above
   template<class num>
   static num zet(const num &rho, const num &tau)
   {
@@ -80,26 +84,38 @@ namespace m0xy_metagga_xc_internal
     return ((2.0*tau/pow(rho,5.0/3.0)) - CF);
   }
 
+  // gamma calculates the quantity of TCA (2008) 120:215 eq 4, but we supply it with chi^2 as parameter
+
   template<class num>
-  static num gamma(const num &chi, const num &zet)
+  static num gamma(const static double alpha, const num &chi2, const num &zet)
   {
-    return 1 + alpha_m0xc*(chi*chi + zet); 
+    return 1 + alpha*(chi2 + zet); 
   }
 
+  // h calculates the quantity of TCA (2008) 120:215 eq 5
+
   template<class num>
-  static num h(const static double d, const num &chi, const num &zet)
+  static num h(const static double d[], const static double alpha, const num &chi2, const num &zet)
   {
-    num gam1 = gamma(chi,zet);
+    num gam1 = gamma(alpha,chi2,zet);
 
     num t1 =  d[0]/gam1;
-    num t2 = (d[1]*pow(chi,2.0) + d[2]*zet)/pow(gam1, 2.0);
-    num t3 = (d[3]*pow(chi,4.0) + d[4]*pow(chi,2.0)+ d[5]*pow(zet, 2.0))/pow(gam1, 3.0);
+    num t2 = (d[1]*chi2 + d[2]*zet)/pow(gam1, 2.0);
+    num t3 = (d[3]*pow(chi2,2.0) + d[4]*chi2*zet + d[5]*pow(zet, 2.0))/pow(gam1, 3.0);
 
     return t1+t2+t3;
   }
 
+
+  // functions specific to the exchange functinals
+
+  // fw is the spin kinetic enrgy density enhancement factor, see e.g.
+  // TCA 2008 120:215 eq 8
+  // here the number of parameters is hardcoded since all M05/M06 functionals
+  // described at the time of coding (feb 2010) use 12 of them.
+
   template<class num>
-  static num fw(const static double a, const num &rho, const num &tau)
+  static num fw(const static double a[12], const num &rho, const num &tau)
   {
     using pw91_like_x_internal::pw91k_prefactor;
 
@@ -109,10 +125,83 @@ namespace m0xy_metagga_xc_internal
     num  w = (t - 1)/(t + 1); 
     num fw = 0.0;
 
-    for (int i = 0; i <= 11; i++)
+    for (int i = 0; i < 12; i++)
        fw += a[i] * pow(w,i);
 
     return fw;
+  }
+
+
+  // functions specific to the correlation functionals
+
+  // Dsigma is the self-interaction correction factor, for parallel spins, used in M06 and M06-2X 
+  // see for instance TCA 2008 120:215 eq 16
+  // obviously, chi and zet are to have same spin: Dsigma(x_\alpha, z_\alpha) or Dsigma(x_\beta, z_\beta)
+  // chi2 is chi*chi
+
+  template<class num>
+  static num Dsigma(const num &chi2, const num &zet)
+  {
+    using xc_constants::CF;
+
+    return (1.0 - 0.25*chi2/(zet + CF)); 
+  }
+
+  // g is an auxiliary function that can be used in connection to both
+  // parallel and antiparallel spins, provided in the latter that the variable
+  // passed on is not chi_\sigmai^2 but (chi_a^2 + chi_b^2). 
+  //
+  // see also TCA 2008 120:215 eqs 13 and 15
+  //
+  // passing the square of a chi variable, or the sum of the squares of chi_a 
+  // and chi_b, multiplied by the corresponding gamma, allows for a compact routine...
+  // 
+  // here the number of parameters is hardcoded since all M05/M06 functionals
+  // described at the time of coding (feb 2010) use 5 of them.
+
+  template<class num>
+  static num g(const static double param_c[5], const num &gamma_chi_squared)
+  {
+     num g = 0.0;
+     num b   = gamma_chi_squared / (1.0 + gamma_chi_squared); 
+  
+     for (int i = 0; i < 5; i++)
+       g += param_c[i] * pow(b,i);
+
+    return g;
+  }
+
+
+  // m0y_c_antiparallel calculates the  (g + h) part of the integrand, for the M05/M06 correlationg
+  // functionals
+
+  template<class num>
+  static num m0y_c_antiparallel(const static double param_c[5], 
+                                const static double param_d[5], 
+                                const num &chi_a, const num &zet_a, 
+                                const num &chi_b, const num &zet_b) 
+  {
+    const num gamma_c_anti = 0.0031;  // this is an "universal" constant for all M05/M06 functionals 
+
+    const num zet_ab  = zet_a + zet_b;
+    const num chi_ab2 = chi_a*chi_a + chi_b*chi_b;
+
+    return g(param_c,gamma_c_anti*chi_ab2) + h(param_d,alpha_c_antiparallel,chi_ab2,zet_ab);
+  }
+
+  // m0y_c_parallel calculates the  (g + h)D part of the integrand, for the M05/M06 correlationg
+  // functionals
+
+  template<class num>
+  static num m0y_c_parallel(const static double param_c[5], 
+                            const static double param_d[5], 
+                            const num &chi, const num &zet) 
+  {
+    const num gamma_c_parallel = 0.06;  // this is an "universal" constant for all M05/M06 functionals 
+
+    const num chi2 = chi*chi;
+
+    return (g(param_c,gamma_c_parallel*chi2) + h(param_d,alpha_c_parallel,chi,zet))*Dsigma(chi2,zet);
   }
 
 }
