@@ -72,6 +72,7 @@ C
      &     IVEC, ' Type : ',TYP1,' Freq.: ',FREQ1,
      &     ' Rnorm: ',RNORM,' Length:', LEN
          READ(LUINP,END=3,ERR=2)
+         READ(LUINP,END=3,ERR=2)
          IREC = IREC + 1
          GO TO 1
 C
