@@ -1,8 +1,8 @@
-DIRAC launched (pam script) by gomes@fpcmtaspg.univ-lille1.fr at Mon Feb 15 12:04:57 CET 2010
-in : /Users/gomes/devel/svn/Dirac/test/48.fde_response_autodiff
+DIRAC launched (pam script) by foo@bar at Mon Feb 15 12:04:57 CET 2010
+in : /Users/foo/devel/svn/Dirac/test/48.fde_response_autodiff
 ===========================================================================================
 Size of all static allocations (pam script) :  MB
-DIRAC master    (fpcmtaspg.univ-lille1.fr) allocating 64000000 words (488 MB) of memory
+DIRAC master    (bar) allocating 64000000 words (488 MB) of memory
  ******************************************************************************
  *                                                                            *
  *                                O U T P U T                                 *
@@ -132,11 +132,11 @@ DIRAC master    (fpcmtaspg.univ-lille1.fr) allocating 64000000 words (488 MB) of
  *                                                                            *
  ******************************************************************************
  Version           : Dirac 8.0 (patchlevel 0) 
- Hostname          : fpcmtaspg.univ-lille1.fr
+ Hostname          : bar
  Operating system  : Darwin 10.2.0
  Machine           : i386
  Run               : Parallel
- Last compilation  : 14:25:31 Feb 12 2010 (by gomes@fpcmtaspg.univ-lille1.fr:/Users/gomes/devel/svn/Dirac)
+ Last compilation  : 14:25:31 Feb 12 2010 (by foo@bar:/Users/foo/devel/svn/Dirac)
  FORTRAN compiler  : /opt/local/lib/openmpi/bin/mpif90 -DNEW_VEMB -g -O3 -ffast-math -Wno=155 -fno-second-underscore -Iinclude -fmod=modules -DARCH32BIT -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MPI -DSYS_LOCALDISKS -DVAR_MFDS -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS  -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON 
  C compiler        : /opt/local/lib/openmpi/bin/mpicc  -Ixc_fun/include -Ixc_fun/src -Ixc_fun/src/taylor -Ixc_fun/src/functionals  -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS  -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MPI -DSYS_LOCALDISKS -DSYS_FLAVOR=DARWIN 
  External libraries: -framework vecLib  

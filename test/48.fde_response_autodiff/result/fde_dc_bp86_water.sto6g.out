@@ -1,8 +1,8 @@
-DIRAC launched (pam script) by gomes@fpcmtaspg.univ-lille1.fr at Mon Feb 15 12:13:20 CET 2010
-in : /Users/gomes/devel/svn/Dirac/test/48.fde_response_autodiff
+DIRAC launched (pam script) by foo@bar at Tue Feb 16 17:16:03 CET 2010
+in : /Users/foo/devel/svn/Dirac/test/48.fde_response_autodiff
 ===========================================================================================
 Size of all static allocations (pam script) :  MB
-DIRAC master    (fpcmtaspg.univ-lille1.fr) allocating 64000000 words (488 MB) of memory
+DIRAC master    (bar) allocating 64000000 words (488 MB) of memory
  ******************************************************************************
  *                                                                            *
  *                                O U T P U T                                 *
@@ -132,11 +132,11 @@ DIRAC master    (fpcmtaspg.univ-lille1.fr) allocating 64000000 words (488 MB) of
  *                                                                            *
  ******************************************************************************
  Version           : Dirac 8.0 (patchlevel 0) 
- Hostname          : fpcmtaspg.univ-lille1.fr
+ Hostname          : bar
  Operating system  : Darwin 10.2.0
  Machine           : i386
  Run               : Parallel
- Last compilation  : 14:25:31 Feb 12 2010 (by gomes@fpcmtaspg.univ-lille1.fr:/Users/gomes/devel/svn/Dirac)
+ Last compilation  : 16:19:59 Feb 16 2010 (by foo@bar:/Users/foo/devel/svn/Dirac)
  FORTRAN compiler  : /opt/local/lib/openmpi/bin/mpif90 -DNEW_VEMB -g -O3 -ffast-math -Wno=155 -fno-second-underscore -Iinclude -fmod=modules -DARCH32BIT -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MPI -DSYS_LOCALDISKS -DVAR_MFDS -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS  -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON 
  C compiler        : /opt/local/lib/openmpi/bin/mpicc  -Ixc_fun/include -Ixc_fun/src -Ixc_fun/src/taylor -Ixc_fun/src/functionals  -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS  -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MPI -DSYS_LOCALDISKS -DSYS_FLAVOR=DARWIN 
  External libraries: -framework vecLib  
@@ -146,7 +146,7 @@ DIRAC master    (fpcmtaspg.univ-lille1.fr) allocating 64000000 words (488 MB) of
  SVN Changeset     : '10210' 
 
  
-     Date and time (Linux)  : Mon Feb 15 12:13:21 2010
+     Date and time (Linux)  : Tue Feb 16 17:16:03 2010
      Host name              :                                         
 
 
@@ -643,7 +643,7 @@ No. of positive energy orbitals (NESH):     7
 No. of negative energy orbitals (NPSH):     7
 Total no. of orbitals           (NORB):    14
 
- >>> Time used in PAMSET is   2.67 seconds
+ >>> Time used in PAMSET is   2.68 seconds
 
 
 
@@ -656,7 +656,7 @@ Total no. of orbitals           (NORB):    14
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Mon Feb 15 12:13:24 2010
+########## START ITERATION NO.   1 ##########   Tue Feb 16 17:16:06 2010
 
 
      *** BNCORR for < X_A | (-Zeff*G(a,r_C))/r_C | X_B > ***
@@ -685,15 +685,15 @@ Total energy              :   -32.126402833936275
    * Quaternion diagonalization(CPU): 0.00013709s
    * Two-electron Fock matrix  (CPU): 0.00000000s
    * DFT xc matrix             (CPU): 0.00000000s
-It.   1    -32.12640283394      1.00D+20  0.00D+00  0.00D+00               0.01957583s   Scr. nuclei    Mon Feb 15
+It.   1    -32.12640283394      1.00D+20  0.00D+00  0.00D+00               0.01957512s   Scr. nuclei    Tue Feb 16
 
-########## START ITERATION NO.   2##########   Mon Feb 15 12:13:24 2010
+########## START ITERATION NO.   2##########   Tue Feb 16 17:16:06 2010
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    0.00%   0.01312613s
-SOfock:SL  1.00D-12    0.00%   50.69%    0.00%    0.00%   0.10768509s
+SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    0.00%   0.01311183s
+SOfock:SL  1.00D-12    0.00%   50.69%    0.00%    0.00%   0.10686707s
 
 
  ********************************************************************************
@@ -732,7 +732,7 @@ H       1   0.104E-04   0.133E+02   0.131E+00      92   27808
    number of electrons from numerical integration:      9.9999991328120572
 
 
- >>>> time used in dftexc:   6.48 seconds
+ >>>> time used in dftexc:   6.49 seconds
 
 
 
@@ -761,21 +761,21 @@ Total energy                       :    -75.69268308241072
 * DIIS iteration no.:         1
 * B matrix dimension:         2
 * B matrix condition: 0.000D+00
-   * Two-electron Fock matrix  (CPU): 0.16330385s
-   * Quaternion diagonalization(CPU): 0.00012493s
+   * Two-electron Fock matrix  (CPU): 0.16176295s
+   * Quaternion diagonalization(CPU): 0.00012589s
 >>> Total wall time: 7.00000000s
->>> Total CPU-time : 6.69967484s
+>>> Total CPU-time : 6.70925927s
 
-########## END ITERATION NO.   2 ##########   Mon Feb 15 12:13:24 2010
+########## END ITERATION NO.   2 ##########   Tue Feb 16 17:16:06 2010
 
-It.   2    -75.69268308241      4.36D+01  1.52D+00  4.82D-01               6.69967484s   LL SL          Mon Feb 15
+It.   2    -75.69268308241      4.36D+01  1.52D+00  4.82D-01               6.70925927s   LL SL          Tue Feb 16
 
-########## START ITERATION NO.   3##########   Mon Feb 15 12:13:31 2010
+########## START ITERATION NO.   3##########   Tue Feb 16 17:16:13 2010
 
     3 *** Differential density matrix. DCOVLP     = 0.9988
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    0.00%   0.01318169s
-SOfock:SL  1.00D-12    0.00%   50.77%    0.00%    0.00%   0.10799694s
+SOfock:SL  1.00D-12    0.00%   50.77%    0.00%    0.00%   0.10797405s
    Test: imported frozen density integrates to  20.000207376445132
    Test: grid points processed  43265
 
@@ -784,7 +784,7 @@ SOfock:SL  1.00D-12    0.00%   50.77%    0.00%    0.00%   0.10799694s
    number of electrons from numerical integration:      9.9999992292526390
 
 
- >>>> time used in dftexc:   6.51 seconds
+ >>>> time used in dftexc:   6.50 seconds
 
 
 
@@ -819,21 +819,21 @@ Total energy                       :    -75.68241346620803
      lambda     5.674D-03
          2      5.065D-01
          3      4.935D-01
-   * Two-electron Fock matrix  (CPU): 0.13005447s
+   * Two-electron Fock matrix  (CPU): 0.13028145s
    * Quaternion diagonalization(CPU): 0.00012970s
 >>> Total wall time: 7.00000000s
->>> Total CPU-time : 6.67257023s
+>>> Total CPU-time : 6.65736961s
 
-########## END ITERATION NO.   3 ##########   Mon Feb 15 12:13:31 2010
+########## END ITERATION NO.   3 ##########   Tue Feb 16 17:16:13 2010
 
-It.   3    -75.68241346621     -1.03D-02 -6.33D-01  4.94D-01   DIIS   2    6.67257023s   LL SL          Mon Feb 15
+It.   3    -75.68241346621     -1.03D-02 -6.33D-01  4.94D-01   DIIS   2    6.65736961s   LL SL          Tue Feb 16
 
-########## START ITERATION NO.   4##########   Mon Feb 15 12:13:38 2010
+########## START ITERATION NO.   4##########   Tue Feb 16 17:16:20 2010
 
     4 *** Differential density matrix. DCOVLP     = 0.9509
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    0.00%   0.01319695s
-SOfock:SL  1.00D-12    0.00%   50.91%    0.00%    0.00%   0.10721207s
+SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    0.00%   0.01316071s
+SOfock:SL  1.00D-12    0.00%   50.91%    0.00%    0.00%   0.10747910s
    Test: imported frozen density integrates to  20.000207376445132
    Test: grid points processed  43265
 
@@ -842,7 +842,7 @@ SOfock:SL  1.00D-12    0.00%   50.91%    0.00%    0.00%   0.10721207s
    number of electrons from numerical integration:      9.9999994066312912
 
 
- >>>> time used in dftexc:   6.52 seconds
+ >>>> time used in dftexc:   6.50 seconds
 
 
 
@@ -878,21 +878,21 @@ Total energy                       :    -75.76496438627311
          2      1.274D-03
          3      4.238D-02
          4      9.564D-01
-   * Two-electron Fock matrix  (CPU): 0.12932968s
-   * Quaternion diagonalization(CPU): 0.00015640s
->>> Total wall time: 6.00000000s
->>> Total CPU-time : 6.67141151s
+   * Two-electron Fock matrix  (CPU): 0.12955093s
+   * Quaternion diagonalization(CPU): 0.00012589s
+>>> Total wall time: 7.00000000s
+>>> Total CPU-time : 6.66221809s
 
-########## END ITERATION NO.   4 ##########   Mon Feb 15 12:13:38 2010
+########## END ITERATION NO.   4 ##########   Tue Feb 16 17:16:20 2010
 
-It.   4    -75.76496438627      8.26D-02  3.37D-01  2.13D-02   DIIS   3    6.67141151s   LL SL          Mon Feb 15
+It.   4    -75.76496438627      8.26D-02  3.37D-01  2.13D-02   DIIS   3    6.66221809s   LL SL          Tue Feb 16
 
-########## START ITERATION NO.   5##########   Mon Feb 15 12:13:44 2010
+########## START ITERATION NO.   5##########   Tue Feb 16 17:16:27 2010
 
     5 *** Differential density matrix. DCOVLP     = 1.0015
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    0.00%   0.01356888s
-SOfock:SL  1.00D-12    0.00%   51.40%    0.00%    0.00%   0.10780334s
+SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    0.00%   0.01333809s
+SOfock:SL  1.00D-12    0.00%   51.40%    0.00%    0.00%   0.11115837s
    Test: imported frozen density integrates to  20.000207376445132
    Test: grid points processed  43265
 
@@ -901,7 +901,7 @@ SOfock:SL  1.00D-12    0.00%   51.40%    0.00%    0.00%   0.10780334s
    number of electrons from numerical integration:      9.9999993967475511
 
 
- >>>> time used in dftexc:   6.52 seconds
+ >>>> time used in dftexc:   6.51 seconds
 
 
 
@@ -938,21 +938,21 @@ Total energy                       :    -75.76512696222389
          3      2.211D-03
          4      5.073D-02
          5      9.470D-01
-   * Two-electron Fock matrix  (CPU): 0.13081741s
+   * Two-electron Fock matrix  (CPU): 0.13391495s
    * Quaternion diagonalization(CPU): 0.00012779s
 >>> Total wall time: 7.00000000s
->>> Total CPU-time : 6.68105316s
+>>> Total CPU-time : 6.67552948s
 
-########## END ITERATION NO.   5 ##########   Mon Feb 15 12:13:44 2010
+########## END ITERATION NO.   5 ##########   Tue Feb 16 17:16:27 2010
 
-It.   5    -75.76512696222      1.63D-04 -1.40D-02  9.60D-05   DIIS   4    6.68105316s   LL SL          Mon Feb 15
+It.   5    -75.76512696222      1.63D-04 -1.40D-02  9.60D-05   DIIS   4    6.67552948s   LL SL          Tue Feb 16
 
-########## START ITERATION NO.   6##########   Mon Feb 15 12:13:51 2010
+########## START ITERATION NO.   6##########   Tue Feb 16 17:16:34 2010
 
     6 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    0.00%   0.01328468s
-SOfock:SL  1.00D-12    0.00%   52.62%    0.00%    0.00%   0.10833931s
+SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    0.00%   0.01311111s
+SOfock:SL  1.00D-12    0.00%   52.62%    0.00%    0.00%   0.10629654s
    Test: imported frozen density integrates to  20.000207376445132
    Test: grid points processed  43265
 
@@ -961,7 +961,7 @@ SOfock:SL  1.00D-12    0.00%   52.62%    0.00%    0.00%   0.10833931s
    number of electrons from numerical integration:      9.9999993967693594
 
 
- >>>> time used in dftexc:   6.50 seconds
+ >>>> time used in dftexc:   6.48 seconds
 
 
 
@@ -999,21 +999,21 @@ Total energy                       :    -75.76512696654038
          4     -8.466D-04
          5      4.973D-02
          6      9.511D-01
-   * Two-electron Fock matrix  (CPU): 0.13062668s
-   * Quaternion diagonalization(CPU): 0.00012970s
->>> Total wall time: 7.00000000s
->>> Total CPU-time : 6.65781212s
+   * Two-electron Fock matrix  (CPU): 0.12829208s
+   * Quaternion diagonalization(CPU): 0.00013351s
+>>> Total wall time: 6.00000000s
+>>> Total CPU-time : 6.64106750s
 
-########## END ITERATION NO.   6 ##########   Mon Feb 15 12:13:51 2010
+########## END ITERATION NO.   6 ##########   Tue Feb 16 17:16:34 2010
 
-It.   6    -75.76512696654      4.32D-09  1.74D-05  1.65D-05   DIIS   5    6.65781212s   LL SL          Mon Feb 15
+It.   6    -75.76512696654      4.32D-09  1.74D-05  1.65D-05   DIIS   5    6.64106750s   LL SL          Tue Feb 16
 
-########## START ITERATION NO.   7##########   Mon Feb 15 12:13:58 2010
+########## START ITERATION NO.   7##########   Tue Feb 16 17:16:40 2010
 
     7 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    0.00%   0.01321030s
-SOfock:SL  1.00D-12    0.00%   53.81%    0.00%    0.00%   0.10696030s
+SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    0.00%   0.01311493s
+SOfock:SL  1.00D-12    0.00%   53.81%    0.00%    0.00%   0.10676575s
    Test: imported frozen density integrates to  20.000207376445132
    Test: grid points processed  43265
 
@@ -1022,7 +1022,7 @@ SOfock:SL  1.00D-12    0.00%   53.81%    0.00%    0.00%   0.10696030s
    number of electrons from numerical integration:      9.9999993967621919
 
 
- >>>> time used in dftexc:   6.53 seconds
+ >>>> time used in dftexc:   6.50 seconds
 
 
 
@@ -1061,21 +1061,21 @@ Total energy                       :    -75.76512696664938
          5      1.612D-03
          6      4.414D-02
          7      9.543D-01
-   * Two-electron Fock matrix  (CPU): 0.12908554s
+   * Two-electron Fock matrix  (CPU): 0.12898254s
    * Quaternion diagonalization(CPU): 0.00012589s
 >>> Total wall time: 7.00000000s
->>> Total CPU-time : 6.68383789s
+>>> Total CPU-time : 6.66272354s
 
-########## END ITERATION NO.   7 ##########   Mon Feb 15 12:13:58 2010
+########## END ITERATION NO.   7 ##########   Tue Feb 16 17:16:40 2010
 
-It.   7    -75.76512696665      1.09D-10 -9.66D-06  2.59D-07   DIIS   6    6.68383789s   LL SL          Mon Feb 15
+It.   7    -75.76512696665      1.09D-10 -9.66D-06  2.59D-07   DIIS   6    6.66272354s   LL SL          Tue Feb 16
 
-########## START ITERATION NO.   8##########   Mon Feb 15 12:14:05 2010
+########## START ITERATION NO.   8##########   Tue Feb 16 17:16:47 2010
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    0.00%   0.01333237s
-SOfock:SL  1.00D-12    0.00%   57.34%    0.00%    0.00%   0.10742569s
+SOfock:LL  1.00D-12    0.00%   35.23%    0.00%    0.00%   0.01314545s
+SOfock:SL  1.00D-12    0.00%   57.34%    0.00%    0.00%   0.10677719s
    Test: imported frozen density integrates to  20.000207376445132
    Test: grid points processed  43265
 
@@ -1084,7 +1084,7 @@ SOfock:SL  1.00D-12    0.00%   57.34%    0.00%    0.00%   0.10742569s
    number of electrons from numerical integration:      9.9999993967623499
 
 
- >>>> time used in dftexc:   6.50 seconds
+ >>>> time used in dftexc:   6.51 seconds
 
 
 
@@ -1105,14 +1105,14 @@ Total electronic energy            :    -84.74549722427687
 Nuclear potential energy           :      8.98037022950017
 SS Coulombic correction            :      0.00000002812974
 Total energy                       :    -75.76512696664696
-   * Two-electron Fock matrix  (CPU): 0.12973785s
+   * Two-electron Fock matrix  (CPU): 0.12907410s
    * Quaternion diagonalization(CPU): 0.00012589s
 >>> Total wall time: 7.00000000s
->>> Total CPU-time : 6.65832901s
+>>> Total CPU-time : 6.66136169s
 
-########## END ITERATION NO.   8 ##########   Mon Feb 15 12:14:05 2010
+########## END ITERATION NO.   8 ##########   Tue Feb 16 17:16:47 2010
 
-It.   8    -75.76512696665     -2.42D-12 -1.53D-07  1.61D-09   DIIS   6    6.65832901s   LL SL          Mon Feb 15
+It.   8    -75.76512696665     -2.42D-12 -1.53D-07  1.61D-09   DIIS   6    6.66136169s   LL SL          Tue Feb 16
 
 
                                    SCF - CYCLE
@@ -1128,14 +1128,14 @@ It.   8    -75.76512696665     -2.42D-12 -1.53D-07  1.61D-09   DIIS   6    6.658
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.   1    -32.12640283394      1.00D+20  0.00D+00  0.00D+00               0.01957583s   Scr. nuclei    Mon Feb 15
-It.   2    -75.69268308241      4.36D+01  1.52D+00  4.82D-01               6.69967484s   LL SL          Mon Feb 15
-It.   3    -75.68241346621     -1.03D-02 -6.33D-01  4.94D-01   DIIS   2    6.67257023s   LL SL          Mon Feb 15
-It.   4    -75.76496438627      8.26D-02  3.37D-01  2.13D-02   DIIS   3    6.67141151s   LL SL          Mon Feb 15
-It.   5    -75.76512696222      1.63D-04 -1.40D-02  9.60D-05   DIIS   4    6.68105316s   LL SL          Mon Feb 15
-It.   6    -75.76512696654      4.32D-09  1.74D-05  1.65D-05   DIIS   5    6.65781212s   LL SL          Mon Feb 15
-It.   7    -75.76512696665      1.09D-10 -9.66D-06  2.59D-07   DIIS   6    6.68383789s   LL SL          Mon Feb 15
-It.   8    -75.76512696665     -2.42D-12 -1.53D-07  1.61D-09   DIIS   6    6.65832901s   LL SL          Mon Feb 15
+It.   1    -32.12640283394      1.00D+20  0.00D+00  0.00D+00               0.01957512s   Scr. nuclei    Tue Feb 16
+It.   2    -75.69268308241      4.36D+01  1.52D+00  4.82D-01               6.70925927s   LL SL          Tue Feb 16
+It.   3    -75.68241346621     -1.03D-02 -6.33D-01  4.94D-01   DIIS   2    6.65736961s   LL SL          Tue Feb 16
+It.   4    -75.76496438627      8.26D-02  3.37D-01  2.13D-02   DIIS   3    6.66221809s   LL SL          Tue Feb 16
+It.   5    -75.76512696222      1.63D-04 -1.40D-02  9.60D-05   DIIS   4    6.67552948s   LL SL          Tue Feb 16
+It.   6    -75.76512696654      4.32D-09  1.74D-05  1.65D-05   DIIS   5    6.64106750s   LL SL          Tue Feb 16
+It.   7    -75.76512696665      1.09D-10 -9.66D-06  2.59D-07   DIIS   6    6.66272354s   LL SL          Tue Feb 16
+It.   8    -75.76512696665     -2.42D-12 -1.53D-07  1.61D-09   DIIS   6    6.66136169s   LL SL          Tue Feb 16
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    8 iterations.
 * Average elapsed time per iteration: 
@@ -1232,7 +1232,7 @@ It.   8    -75.76512696665     -2.42D-12 -1.53D-07  1.61D-09   DIIS   6    6.658
     - Secondary orbitals :     -7..-1,     6..     7                               
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -75.7651269666493761
-* Heading :electric properties for frozen density embedding  Mon Feb 15 12:14:05 2010
+* Heading :electric properties for frozen density embedding  Tue Feb 16 17:16:47 2010
 
 
 
@@ -1243,7 +1243,7 @@ X-Dipole length  - Symmetry: A    T+
 * GETFCK: reading old two-electron Fock matrix
 
 * REAFCK: Fock matrix read from file DFFCK2                                                      
-* Heading :electric properties for frozen density embedding  Mon Feb 15 12:14:05 2010
+* Heading :electric properties for frozen density embedding  Tue Feb 16 17:16:47 2010
    Test: imported frozen density integrates to  20.000207376445132
    Test: grid points processed  43265
 
@@ -1252,24 +1252,24 @@ X-Dipole length  - Symmetry: A    T+
    number of electrons from numerical integration:      9.9999993967623499
 
 
- >>>> time used in dftexc:   6.56 seconds
+ >>>> time used in dftexc:   6.51 seconds
 
 
 * GETFCK: reading old one-electron Fock matrix
 
 * REAFCK: Fock matrix read from file DFFCK1                                                      
-* Heading :electric properties for frozen density embedding  Mon Feb 15 12:13:24 2010
+* Heading :electric properties for frozen density embedding  Tue Feb 16 17:16:06 2010
 
 * XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  8.26D-09
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 1.21D+03
 * Screening threshold in LR solver scaled with norm of property vector:  1.2393D-01
   and changed to:  1.0243D-09
 
-########## START MICROITERATION NO.   1 ##########   Mon Feb 15 12:14:19 2010
+########## START MICROITERATION NO.   1 ##########   Tue Feb 16 17:17:01 2010
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.02D-09   13.42%   36.32%    0.00%    0.00%   0.00972366s
-SOfock:SL  1.02D-09   12.59%   46.89%    0.37%    0.00%   0.09692383s
+SOfock:LL  1.02D-09   13.42%   36.32%    0.00%    0.00%   0.00924301s
+SOfock:SL  1.02D-09   12.59%   46.89%    0.37%    0.00%   0.08597183s
    Test: imported frozen density integrates to  20.000207376445132
    Test: grid points processed  43265
 
@@ -1277,7 +1277,7 @@ SOfock:SL  1.02D-09   12.59%   46.89%    0.37%    0.00%   0.09692383s
    number of electrons from numerical integration:      9.9999993967623499
 
 
- >>>> time used in dftexc:   9.65 seconds
+ >>>> time used in dftexc:   9.60 seconds
 
 * Trial vectors in this micro iteration:  E+:  1  P+:  0
 
@@ -1285,11 +1285,11 @@ SOfock:SL  1.02D-09   12.59%   46.89%    0.37%    0.00%   0.09692383s
   Frequency      Threshold Total     E+ part   P+ part 
      0.00000000  1.00E-05  1.19E-02  1.59E-04  1.19E-02
 
-########## START MICROITERATION NO.   2 ##########   Mon Feb 15 12:14:29 2010
+########## START MICROITERATION NO.   2 ##########   Tue Feb 16 17:17:11 2010
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.02D-09   13.42%   36.32%    0.00%    0.00%   0.00927734s
-SOfock:SL  1.02D-09    2.39%   53.44%    9.08%    0.00%   0.10413361s
+SOfock:LL  1.02D-09   13.42%   36.32%    0.00%    0.00%   0.00923920s
+SOfock:SL  1.02D-09    2.39%   53.44%    9.08%    0.00%   0.10291290s
    Test: imported frozen density integrates to  20.000207376445132
    Test: grid points processed  43265
 
@@ -1297,7 +1297,7 @@ SOfock:SL  1.02D-09    2.39%   53.44%    9.08%    0.00%   0.10413361s
    number of electrons from numerical integration:      9.9999993967623499
 
 
- >>>> time used in dftexc:  14.87 seconds
+ >>>> time used in dftexc:  14.74 seconds
 
 * Trial vectors in this micro iteration:  E+:  1  P+:  1
 
@@ -1314,11 +1314,11 @@ SOfock:SL  1.02D-09    2.39%   53.44%    9.08%    0.00%   0.10413361s
 
             Freq.(au)   Total norm    E+ norm   P+ norm 
 ========================================================
-* It.  1   9.76516724s  (LL SL    )     [  1]     [  0]
+* It.  1   9.70137024s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
             0.000000 :   1.19D-02 |   1.59D-04  1.19D-02
 ========================================================
-* It.  2  14.99543762s  (LL SL    )     [  1]     [  1]
+* It.  2  14.86707306s  (LL SL    )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   1.90D-09 |   1.73D-11  1.90D-09
 ========================================================
@@ -1334,11 +1334,11 @@ Y-Dipole length  - Symmetry: A    T+
 * Screening threshold in LR solver scaled with norm of property vector:  2.1942D+00
   and changed to:  1.8134D-08
 
-########## START MICROITERATION NO.   1 ##########   Mon Feb 15 12:14:44 2010
+########## START MICROITERATION NO.   1 ##########   Tue Feb 16 17:17:26 2010
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.81D-08    2.91%   35.20%    0.00%    0.00%   0.01268005s
-SOfock:SL  1.81D-08    2.49%   51.40%    0.25%    0.00%   0.10404205s
+SOfock:LL  1.81D-08    2.91%   35.20%    0.00%    0.00%   0.01251221s
+SOfock:SL  1.81D-08    2.49%   51.40%    0.25%    0.00%   0.10319519s
    Test: imported frozen density integrates to  20.000207376445132
    Test: grid points processed  43265
 
@@ -1346,7 +1346,7 @@ SOfock:SL  1.81D-08    2.49%   51.40%    0.25%    0.00%   0.10404205s
    number of electrons from numerical integration:      9.9999993967623499
 
 
- >>>> time used in dftexc:   9.62 seconds
+ >>>> time used in dftexc:   9.56 seconds
 
 * Trial vectors in this micro iteration:  E+:  1  P+:  0
 
@@ -1354,11 +1354,11 @@ SOfock:SL  1.81D-08    2.49%   51.40%    0.25%    0.00%   0.10404205s
   Frequency      Threshold Total     E+ part   P+ part 
      0.00000000  1.00E-05  1.16E-01  1.16E-01  7.15E-03
 
-########## START MICROITERATION NO.   2 ##########   Mon Feb 15 12:14:54 2010
+########## START MICROITERATION NO.   2 ##########   Tue Feb 16 17:17:35 2010
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.81D-08    2.91%   35.20%    0.00%    0.00%   0.01280212s
-SOfock:SL  1.81D-08    0.67%   53.58%    2.01%    0.00%   0.11006165s
+SOfock:LL  1.81D-08    2.91%   35.20%    0.00%    0.00%   0.01263428s
+SOfock:SL  1.81D-08    0.67%   53.58%    2.01%    0.00%   0.10707855s
    Test: imported frozen density integrates to  20.000207376445132
    Test: grid points processed  43265
 
@@ -1366,7 +1366,7 @@ SOfock:SL  1.81D-08    0.67%   53.58%    2.01%    0.00%   0.11006165s
    number of electrons from numerical integration:      9.9999993967623499
 
 
- >>>> time used in dftexc:  14.80 seconds
+ >>>> time used in dftexc:  14.69 seconds
 
 * Trial vectors in this micro iteration:  E+:  1  P+:  1
 
@@ -1374,11 +1374,11 @@ SOfock:SL  1.81D-08    0.67%   53.58%    2.01%    0.00%   0.11006165s
   Frequency      Threshold Total     E+ part   P+ part 
      0.00000000  1.00E-05  7.46E-03  7.44E-03  4.74E-04
 
-########## START MICROITERATION NO.   3 ##########   Mon Feb 15 12:15:09 2010
+########## START MICROITERATION NO.   3 ##########   Tue Feb 16 17:17:50 2010
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.81D-08    0.89%   35.31%    4.72%    0.00%   0.01290894s
-SOfock:SL  1.81D-08    4.64%   53.89%    7.14%    0.00%   0.10098267s
+SOfock:LL  1.81D-08    0.89%   35.31%    4.72%    0.00%   0.01278687s
+SOfock:SL  1.81D-08    4.64%   53.89%    7.14%    0.00%   0.10054779s
    Test: imported frozen density integrates to  20.000207376445132
    Test: grid points processed  43265
 
@@ -1386,7 +1386,7 @@ SOfock:SL  1.81D-08    4.64%   53.89%    7.14%    0.00%   0.10098267s
    number of electrons from numerical integration:      9.9999993967623499
 
 
- >>>> time used in dftexc:  14.81 seconds
+ >>>> time used in dftexc:  14.68 seconds
 
 * Trial vectors in this micro iteration:  E+:  1  P+:  1
 
@@ -1403,15 +1403,15 @@ SOfock:SL  1.81D-08    4.64%   53.89%    7.14%    0.00%   0.10098267s
 
             Freq.(au)   Total norm    E+ norm   P+ norm 
 ========================================================
-* It.  1   9.74104309s  (LL SL    )     [  1]     [  0]
+* It.  1   9.68273163s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
             0.000000 :   1.16D-01 |   1.16D-01  7.15D-03
 ========================================================
-* It.  2  14.93850708s  (LL SL    )     [  1]     [  1]
+* It.  2  14.81513214s  (LL SL    )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   7.46D-03 |   7.44D-03  4.74D-04
 ========================================================
-* It.  3  14.93444061s  (LL SL    )     [  1]     [  1]
+* It.  3  14.80294800s  (LL SL    )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   1.02D-05 |   1.01D-05  1.07D-06
 ========================================================
@@ -1427,11 +1427,11 @@ Z-Dipole length  - Symmetry: A    T+
 * Screening threshold in LR solver scaled with norm of property vector:  1.6800D+00
   and changed to:  1.3884D-08
 
-########## START MICROITERATION NO.   1 ##########   Mon Feb 15 12:15:24 2010
+########## START MICROITERATION NO.   1 ##########   Tue Feb 16 17:18:06 2010
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.39D-08    0.00%   35.23%    0.00%    0.00%   0.01313019s
-SOfock:SL  1.39D-08    0.00%   52.38%    0.00%    0.00%   0.10760498s
+SOfock:LL  1.39D-08    0.00%   35.23%    0.00%    0.00%   0.01309967s
+SOfock:SL  1.39D-08    0.00%   52.38%    0.00%    0.00%   0.10649109s
    Test: imported frozen density integrates to  20.000207376445132
    Test: grid points processed  43265
 
@@ -1439,7 +1439,7 @@ SOfock:SL  1.39D-08    0.00%   52.38%    0.00%    0.00%   0.10760498s
    number of electrons from numerical integration:      9.9999993967623499
 
 
- >>>> time used in dftexc:   9.67 seconds
+ >>>> time used in dftexc:   9.54 seconds
 
 * Trial vectors in this micro iteration:  E+:  1  P+:  0
 
@@ -1447,11 +1447,11 @@ SOfock:SL  1.39D-08    0.00%   52.38%    0.00%    0.00%   0.10760498s
   Frequency      Threshold Total     E+ part   P+ part 
      0.00000000  1.00E-05  3.12E-01  3.12E-01  1.42E-02
 
-########## START MICROITERATION NO.   2 ##########   Mon Feb 15 12:15:36 2010
+########## START MICROITERATION NO.   2 ##########   Tue Feb 16 17:18:15 2010
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.39D-08    0.00%   35.23%    0.00%    0.00%   0.01380920s
-SOfock:SL  1.39D-08    0.00%   53.05%    0.00%    0.00%   0.10966492s
+SOfock:LL  1.39D-08    0.00%   35.23%    0.00%    0.00%   0.01315308s
+SOfock:SL  1.39D-08    0.00%   53.05%    0.00%    0.00%   0.10742188s
    Test: imported frozen density integrates to  20.000207376445132
    Test: grid points processed  43265
 
@@ -1459,7 +1459,7 @@ SOfock:SL  1.39D-08    0.00%   53.05%    0.00%    0.00%   0.10966492s
    number of electrons from numerical integration:      9.9999993967623499
 
 
- >>>> time used in dftexc:  14.82 seconds
+ >>>> time used in dftexc:  14.68 seconds
 
 * Trial vectors in this micro iteration:  E+:  1  P+:  1
 
@@ -1467,11 +1467,11 @@ SOfock:SL  1.39D-08    0.00%   53.05%    0.00%    0.00%   0.10966492s
   Frequency      Threshold Total     E+ part   P+ part 
      0.00000000  1.00E-05  9.89E-03  9.87E-03  6.12E-04
 
-########## START MICROITERATION NO.   3 ##########   Mon Feb 15 12:15:51 2010
+########## START MICROITERATION NO.   3 ##########   Tue Feb 16 17:18:30 2010
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.39D-08    0.00%   35.23%    0.71%    0.00%   0.01318359s
-SOfock:SL  1.39D-08    0.00%   55.69%    2.72%    0.00%   0.10836792s
+SOfock:LL  1.39D-08    0.00%   35.23%    0.71%    0.00%   0.01313782s
+SOfock:SL  1.39D-08    0.00%   55.69%    2.72%    0.00%   0.10801697s
    Test: imported frozen density integrates to  20.000207376445132
    Test: grid points processed  43265
 
@@ -1479,7 +1479,7 @@ SOfock:SL  1.39D-08    0.00%   55.69%    2.72%    0.00%   0.10836792s
    number of electrons from numerical integration:      9.9999993967623499
 
 
- >>>> time used in dftexc:  14.86 seconds
+ >>>> time used in dftexc:  14.73 seconds
 
 * Trial vectors in this micro iteration:  E+:  1  P+:  1
 
@@ -1487,11 +1487,11 @@ SOfock:SL  1.39D-08    0.00%   55.69%    2.72%    0.00%   0.10836792s
   Frequency      Threshold Total     E+ part   P+ part 
      0.00000000  1.00E-05  2.12E-04  2.12E-04  1.28E-05
 
-########## START MICROITERATION NO.   4 ##########   Mon Feb 15 12:16:06 2010
+########## START MICROITERATION NO.   4 ##########   Tue Feb 16 17:18:45 2010
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.39D-08    0.00%   35.23%   22.73%    0.00%   0.01324463s
-SOfock:SL  1.39D-08    0.00%   64.64%   15.34%    0.00%   0.10887146s
+SOfock:LL  1.39D-08    0.00%   35.23%   22.73%    0.00%   0.01306152s
+SOfock:SL  1.39D-08    0.00%   64.64%   15.34%    0.00%   0.10736084s
    Test: imported frozen density integrates to  20.000207376445132
    Test: grid points processed  43265
 
@@ -1499,7 +1499,7 @@ SOfock:SL  1.39D-08    0.00%   64.64%   15.34%    0.00%   0.10887146s
    number of electrons from numerical integration:      9.9999993967623499
 
 
- >>>> time used in dftexc:  14.95 seconds
+ >>>> time used in dftexc:  14.78 seconds
 
 * Trial vectors in this micro iteration:  E+:  1  P+:  1
 
@@ -1516,19 +1516,19 @@ SOfock:SL  1.39D-08    0.00%   64.64%   15.34%    0.00%   0.10887146s
 
             Freq.(au)   Total norm    E+ norm   P+ norm 
 ========================================================
-* It.  1   9.80098724s  (LL SL    )     [  1]     [  0]
+* It.  1   9.66248322s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
             0.000000 :   3.12D-01 |   3.12D-01  1.42D-02
 ========================================================
-* It.  2  14.95852661s  (LL SL    )     [  1]     [  1]
+* It.  2  14.80833435s  (LL SL    )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   9.89D-03 |   9.87D-03  6.12D-04
 ========================================================
-* It.  3  14.99684143s  (LL SL    )     [  1]     [  1]
+* It.  3  14.86228943s  (LL SL    )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   2.12D-04 |   2.12D-04  1.28D-05
 ========================================================
-* It.  4  15.07769775s  (LL SL    )     [  1]     [  1]
+* It.  4  14.91127014s  (LL SL    )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   1.24D-07 |   5.35D-09  1.24D-07
 ========================================================
@@ -1651,10 +1651,10 @@ z         8.50789143 Debye        -6.77337478 Debye         1.73451665 Debye
 ----------------------------------------------
 
  
-     Date and time (Linux)  : Mon Feb 15 12:16:23 2010
+     Date and time (Linux)  : Tue Feb 16 17:19:01 2010
      Host name              :                                         
 *****************************************************
->>>> Node 0, utime: 175, stime: 1, minflt: 140810, majflt: 1, nvcsw: 9, nivcsw: 58461
->>>> Total WALL time used in DIRAC: 3min3s
+>>>> Node 0, utime: 174, stime: 1, minflt: 140807, majflt: 0, nvcsw: 12, nivcsw: 59237
+>>>> Total WALL time used in DIRAC: 2min58s
 ********** E N D   of   D I R A C  output  **********
 *****************************************************

@@ -1,0 +1,2622 @@
+DIRAC launched (pam script) by foo@bar at Tue Feb 16 17:24:58 CET 2010
+in : /Users/foo/devel/svn/Dirac/test/48.fde_response_autodiff
+===========================================================================================
+Size of all static allocations (pam script) :  MB
+DIRAC master    (bar) allocating 64000000 words (488 MB) of memory
+ ******************************************************************************
+ *                                                                            *
+ *                                O U T P U T                                 *
+ *                                   from                                     *
+ *                                                                            *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                   *
+ *                   @@  @@        @@  @@   @@  @@   @@                       *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                       *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                       *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                   *
+ *                                                                            *
+ *                                                                            *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:i
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii|
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////|
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<S
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$S
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SF
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]Zk
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&F
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969k
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9Z
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][F
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
+ ******************************************************************************
+ *                                                                            *
+ *         =======================================================            *
+ *                     Program for Atomic and Molecular                       *
+ *          Direct Iterative Relativistic Allelectron Calculations            *
+ *         =======================================================            *
+ *                                                                            *
+ *                        VERSION 08.00  17 September 2008                    *
+ *                                                                            *
+ ******************************************************************************
+ *                                                                            *
+ *    Written by:                                                             *
+ *                                                                            *
+ *    Lucas Visscher           VU University Amsterdam           Netherlands  *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *
+ *    Trond Saue               CNRS/ULP Strasbourg               France       *
+ *                                                                            *
+ *    with new contributions to DIRAC08 from:                                 *
+ *                                                                            *
+ *    Radovan Bast             University of Tromsoe             Norway       *
+ *    Sebastien Dubillard      CNRS/ULP Strasbourg               France       *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *
+ *    Ulf Ekstrom              VU University Amsterdam           Netherlands  *
+ *    Ephraim Eliav            University of Tel Aviv            Israel       *
+ *    Timo Fleig               Université P. Sabatier, Toulouse  France       *
+ *    Andre S. P. Gomes        VU University Amsterdam           Netherlands  *
+ *    Trygve U. Helgaker       University of Oslo                Norway       *
+ *    Johan Henriksson         Linkoeping University             Sweden       *
+ *    Miroslav Ilias           University of Zilina              Slovakia     *
+ *    Christoph R. Jacob       ETH Zurich                        Switzerland  *
+ *    Stefan Knecht            University of Duesseldorf         Germany      *
+ *    Patrick Norman           Linkoeping University             Sweden       *
+ *    Jeppe Olsen              Aarhus University                 Denmark      *
+ *    Markus Pernpointner      University of Heidelberg          Germany      *
+ *    Kenneth Ruud             University of Tromsoe             Norway       *
+ *    Pawel Salek              Stockholm Inst. of Technology     Sweden       *
+ *    Jetze Sikkema            VU University Amsterdam           Netherlands  *
+ *                                                                            *
+ *    For the complete list of contributors to the DIRAC code see our         *
+ *    website http://dirac.chem.sdu.dk                                        *
+ *                                                                            *
+ *    This is an experimental code. The authors accept no responsibility      *
+ *    for the performance of the code or for the correctness of the results.  *
+ *                                                                            *
+ *    The code (in whole or part) is not to be reproduced for further         *
+ *    distribution without the written permission of the authors or           *
+ *    their representatives.                                                  *
+ *                                                                            *
+ *    If results obtained with this code are published, an                    *
+ *    appropriate citation would be:                                          *
+ *                                                                            *
+ *    DIRAC, a relativistic ab initio electronic structure program,           *
+ *    Release DIRAC08 (2008),                                                 *
+ *    written by L. Visscher, H. J. Aa. Jensen, and T. Saue,                  *
+ *    with new contributions from R. Bast, S. Dubillard, K. G. Dyall,         *
+ *    U. Ekstrom, E. Eliav, T. Fleig, A. S. P. Gomes, T. U. Helgaker,         *
+ *    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, P. Norman,            *
+ *    J. Olsen, M. Pernpointner, K. Ruud, P. Salek, and J. Sikkema            *
+ *    (see http://dirac.chem.sdu.dk).                                         *
+ *                                                                            *
+ ******************************************************************************
+ Version           : Dirac 8.0 (patchlevel 0) 
+ Hostname          : bar
+ Operating system  : Darwin 10.2.0
+ Machine           : i386
+ Run               : Parallel
+ Last compilation  : 16:19:59 Feb 16 2010 (by foo@bar:/Users/foo/devel/svn/Dirac)
+ FORTRAN compiler  : /opt/local/lib/openmpi/bin/mpif90 -DNEW_VEMB -g -O3 -ffast-math -Wno=155 -fno-second-underscore -Iinclude -fmod=modules -DARCH32BIT -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MPI -DSYS_LOCALDISKS -DVAR_MFDS -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS  -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON 
+ C compiler        : /opt/local/lib/openmpi/bin/mpicc  -Ixc_fun/include -Ixc_fun/src -Ixc_fun/src/taylor -Ixc_fun/src/functionals  -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS  -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MPI -DSYS_LOCALDISKS -DSYS_FLAVOR=DARWIN 
+ External libraries: -framework vecLib  
+ Internal libraries: DIRAC_BLAS=NO  DIRAC_LAPACK=NO 
+ ILP data model    : ILP32 
+ SVN URL:          : 'http://dirac.chem.sdu.dk/svnDirac/Dirac/trunk' 
+ SVN Changeset     : '10210' 
+
+ 
+     Date and time (Linux)  : Tue Feb 16 17:24:59 2010
+     Host name              :                                         
+
+
+ *******************************************************************************
+ ************************** Input read from DIRAC.INP **************************
+ *******************************************************************************
+
+**DIRAC
+.TITLE
+electric properties for frozen density embedding
+.WAVE F
+.PROPERTIES
+**HAMILTONIAN
+.X2C
+.DFT
+ BP86
+*DFT
+.4CGRID !here only to reproduce the reference outputs
+**INTEGRALS
+.NUCMOD
+1
+*READIN
+.UNCONTRACTED
+**WAVE FUNCTIONS
+.DHF
+*DHFCAL
+.PRINT
+2
+**PROPERTIES
+.DIPOLE
+.POLARIZABILITY
+*END OF
+
+
+
+    **************************************************************************
+    ************ electric properties for frozen density embedding ************
+    **************************************************************************
+
+ Jobs in this run:
+   * Wave function
+   * Properties
+   * If crash, end with the segment.fault. Worth for debugging.
+
+
+    **************************************************************************
+    ************************** General DIRAC set-up **************************
+    **************************************************************************
+
+   CODATA Recommended Values of the Fundamental Physical Constants: 1998  
+                Peter J. Mohr and Barry N. Taylor                         
+   Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
+ * The speed of light :        137.0359998
+ * Running in pure two-component mode (with LL integrals only)
+ * Direct evaluation of the following two-electron integrals:
+   - LL-integrals
+ * Spherical transformation embedded in MO-transformation
+   for large components
+ * Transformation to scalar RKB basis embedded in
+   MO-transformation for small components
+ * Thresholds for linear dependence:
+   Large components:   1.00D-06
+   Small components:   1.00D-08
+ DFPCMO: IBEIG read in I2 format.
+ * General print level   :   0
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+ Default print level:        1
+ Nuclear model: Point charge.
+
+ Two-electron integrals not calculated.
+
+
+ Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
+
+
+
+ Changes of defaults for READIN:
+ -------------------------------
+
+
+ Uncontracted basis forced, irrespective of basis input file.
+
+
+
+ Settings for FCK3 calculation:
+ ------------------------------
+
+Dynamical threshold is not (yet) implemented in DIRAC
+
+
+    *************************************************************************
+    ****************** Output from READIN input processing ******************
+    *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  Water                                                                   
+  sto basis, geometry as in Christophs ADF run                            
+
+  Coordinates are entered in Angstroms and converted to atomic units.
+          - Conversion factor : 1 bohr = 0.52917721 A
+
+WARNING!!! Cartesian Gaussians must be specified
+           in molecule input file.
+           DIRAC proceeds with readin assuming            Cartesian Gaussians.
+
+
+
+                          SYMGRP:Point group information
+                          ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                            **************************
+                            *** Output from DBLGRP ***
+                            **************************
+
+   * One fermion irrep:   E1 
+   * Quaternionic group. NZ = 4
+   * Direct product decomposition:
+          E1  x E1  : A   + A   + A   + A  
+
+
+                                 Spinor structure
+                                 ----------------
+
+
+   * Fermion irrep no.: 1
+      La  |  A  (1)  A  (1)  |
+      Sa  |  A  (1)  A  (1)  |
+      Lb  |  A  (1)  A  (1)  |
+      Sb  |  A  (1)  A  (1)  |
+
+
+                              Quaternion symmetries
+                              ---------------------
+
+    Rep  T(+)
+    -----------------------------
+    A    1  i  j  k
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    3
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  O           1       8      30      30      L  - [12s6p|12s6p]                                                  
+                              0       0      S  - No small component basis functions attached                    
+  H           1       1       6       6      L  - [6s|6s]                                                        
+                              0       0      S  - No small component basis functions attached                    
+  H           1       1       6       6      L  - [6s|6s]                                                        
+                              0       0      S  - No small component basis functions attached                    
+  ----------------------------------------------------------------------
+                             42      42      L  - large components
+                              0       0      S  - small components
+  ----------------------------------------------------------------------
+  total:      3      10      42      42
+
+  Threshold for integrals (to be written to file):  1.00D-15
+
+  MNF.INP input file (for the AMFI stuff) is ready.
+
+
+  References for the basis sets
+  -----------------------------
+
+  Atom type   1   2
+   Elements                             References                                
+   --------                             ----------                                
+   H - Ne :  W.J. Hehre, R.F. Stewart and J.A. Pople,                             
+             J. Chem. Phys. 51, 2657 (1969).                                      
+   Na - Ar:  W.J. Hehre, R. Ditchfield, R.F. Stewart and J.A. Pople,              
+             J. Chem. Phys. 52, 2769 (1970).                                      
+  ***********************************************************************         
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  9
+
+
+   1   O        x      0.0000000000
+   2            y      0.0000000000
+   3            z     -0.4949660002
+
+   4   H        x      0.0000000000
+   5            y      1.4581650009
+   6            z      0.6474510004
+
+   7   H        x      0.0000000000
+   8            y     -1.4581650009
+   9            z      0.6474510004
+
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           H           H   
+
+   O       0.000000
+   H       0.980244    0.000000
+   H       0.980244    1.543255    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H          O                              0.980244
+  bond distance:    H          O                              0.980244
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3                   angle
+                  ------     ------     ------                   -----
+  bond angle:       H          O          H                    103.845
+
+
+  Nuclear repulsion energy :    8.980370229500
+
+
+                                GETLAB: AO-labels
+                                -----------------
+
+   * Large components:    6
+     1  L O     s        2  L O     px       3  L O     py       4  L O     pz       5  L H     s        6  L H     s   
+   * Small components:    0
+
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:           42
+  Number of large orbitals in each symmetry:     42
+  Number of small orbitals in each symmetry:      0
+
+* Large component functions
+
+  Symmetry  A  ( 1)
+
+       12 functions:    O  s   
+        6 functions:    O  px  
+        6 functions:    O  py  
+        6 functions:    O  pz  
+        6 functions:    H  s   
+        6 functions:    H  s   
+
+
+   ***************************************************************************
+   *************************** Hamiltonian defined ***************************
+   ***************************************************************************
+
+  - BSS with properties !
+ * Print level:    0
+ * One-step Infinite-Order Two-component Hamiltonian
+   Reference: 
+    M. Ilias and T. Saue:
+    "Implementation of an infinite-order two-component relativistic Hamiltonian 
+    by a simple one-step transformation." 
+    J. Chem. Phys., 126 (2007) 064102. 
+   - running in 2-component modus
+ * Spin-orbit corrections to the instantaneous Coulomb 
+   interaction provided by the AMFI code. 
+   References: 
+     1) B. Schimmelpfennig, program AMFI, 
+        Stockholm University, Sweden
+     2) B. A. Hess, C. M. Marian, U. Wahlgren and O. Gropen
+        Chem. Phys. Lett. 251, 365 (1996)
+     3)  M Ilias, V Kello, L Visscher and B Schimmelpfennig
+        J. Chem. Phys. Vol. 115 (2001) p.9667.
+     Adding :
+       some AMFI contribution (see output from EXTR_BSS_INFO below)
+ * Kohn-Sham calculation using the xc functional: BP86
+   Weighted mixed functional:
+                        PZ81:    1.00000
+                        P86c:    1.00000
+                       Becke:    1.00000
+                      Slater:    1.00000
+ * Default integral flags passed to all modules
+   - LL-integrals:     1
+   - LS-integrals:     0
+   - SS-integrals:     0
+   - GT-integrals:     0
+ * Basis set:
+   - uncontracted large component basis set
+===========================================================================
+    Set-up for AMFI/RELSCF calculations
+===========================================================================
+  ...no reading under *AMFI, thus default settings
+   *AMFI code print level:     0
+ *RELSCF code print level:     0
+ *RELSCF maximum number of iterations:   50
+ * All AMFI mean-field summations are on neutral individual atoms.
+
+
+   Kohn-Sham calculation set-up
+   ----------------------------
+
+ * Print level:     2
+ * Numerical integration grid:
+   - radial quadrature according to R. Lindh, P.-Aa. Malmqvist, and L. Gagliardi
+     precision of radial quadrature set to:  0.10000E-12
+   - angular quadrature using the Lebedev scheme, exact up to order L = 41
+   - accepted error in integrated number of electrons:  0.10000E-02
+ * DFT thresholds:
+   - dfthr0 =  0.10000E-08
+   - dfthri =  0.20000E-11
+ * Spin density contribution in response calculations:
+   - use the norm of the spin magnetization vector as a definition of the spin density (noncollinear definition)
+
+
+ *******************************************************************************
+ ************************** Memory required by HERMIT **************************
+ *******************************************************************************
+
+===========================================================================
+ Maximum memory load for two-electron integral processing:
+===========================================================================
+ * LL-integrals:
+   2(O    Lp)   2(O    Lp)   2(O    Lp)   2(O    Lp)              334475
+
+
+    **************************************************************************
+    ************************** Wave function module **************************
+    **************************************************************************
+
+ Jobs in this run (in execution order):
+ * Density functional calculation (Kohn-Sham method)
+
+ * Initial Automatic occupation based on:
+   Total charge of atoms =  10
+   Charge of molecule    =   0
+   i.e. no. of electrons =  10
+===========================================================================
+ DHFINP: Set-up for Kohn-Sham calculation:
+===========================================================================
+ * Number of fermion irreps: 1
+ * Closed shell SCF calculation with   10 electrons in
+       5 orbitals in Fermion irrep 1
+ * Bare nucleus screening correction used for start guess
+ * General print level   :   2
+ ***** TRIAL FUNCTION *****
+ * Trial vectors read from file DFCOEF
+ ***** CONVERGENCE CRITERIA *****
+ * Convergence on norm of error vector (gradient).
+   Desired convergence:1.000D-07
+   Allowed convergence:1.000D-06
+
+ ***** CONVERGENCE CONTROL *****
+ * Fock matrix constructed using differential density matrix
+    with optimal parameter.
+ * DIIS (in MO basis)
+ * DIIS will be activated when convergence reaches : 1.00D+20
+   - Maximum size of B-matrix:   10
+ * Damping of Fock matrix when DIIS is not activated. 
+   Weight of old matrix    : 0.250
+ * Maximum number of SCF iterations  :   50
+ * No quadratic convergent Hartree-Fock
+ * Contributions from 2-electron integrals to Fock matrix:
+   LL-integrals.
+ ***** OUTPUT CONTROL *****
+ * Only electron eigenvalues written out.
+
+   PRPINP: Picture change transformation of properties activated !
+
+
+
+   ***************************************************************************
+   ***************************** Property module *****************************
+   ***************************************************************************
+
+ * Print level:  0
+ * Input label:**PROPE
+ * Properties calculated for the following wave functions: 
+     1: DHF 
+ These initial settings of center and origins might be changed later:
+ * Operator center (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * Gauge origin    (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * Dipole origin   (a.u.):      0.0000000000      0.0000000000      0.0000000000
+  ...perform the picture change transformation of the four-comp. property operators
+===========================================================================
+ XLRINP: Electronic linear reponse properties
+===========================================================================
+ * Print level                 :    0
+ * e-e rotations are allowed in the linear response function.
+ * No rotations between electrons and positrons, which are expelled.
+ * You are running in the 2-component BSS relativistic mode.
+   with activated picture change transformation of four-component property operators.
+ * Maximum number of iterations:   50
+ * Threshold for convergence   :1.000000D-05
+ * Max. size of reduced matrix :  200
+ * Include contributions from the following two-electron integrals:
+   - LL-integrals
+ * Initial trial vectors will be preconditioned.
+ * Linear response functions evaluated at the following REAL frequencies:
+       0.00000D+00 a.u.
+===========================================================================
+ Dipole moment
+===========================================================================
+===========================================================================
+ Electric dipole polarizabilities
+===========================================================================
+
+
+ ********************************************************************************
+ *************************** Input consistency checks ***************************
+ ********************************************************************************
+
+
+
+    *************************************************************************
+    ************************ End of input processing ************************
+    *************************************************************************
+
+
+  Coordinates are entered in Angstroms and converted to atomic units.
+          - Conversion factor : 1 bohr = 0.52917721 A
+
+  MNF.INP input file (for the AMFI stuff) is ready.
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+   L   A     * Deleted:          0(Proj:          0, Lindep:          0)
+   S   A     * Deleted:          6(Proj:          6, Lindep:          0)
+
+
+                  *** Output from the EXTR_BSS_INFO routine ***
+                  ---------------------------------------------
+
+  * Transforming the one-electron DIRAC bare nucleus operator.
+  * Order of the Douglas-Kroll-Hess/BSS transformation :...infinite  !
+  * Only the RKB basis (one-step method). No preliminary free-particle basis transformation according to Barysz.
+  * R-equation solving applied : YR-equation 2 (Trond) 
+  * spin-orbit terms are included
+
+  * AMFI: MFSSO2 terms (spin-same orbit only) added.
+  * Prepare the picture-change transformation matrixes
+  * I2COFK parameter for H2c specification set to:2
+
+
+                                Output from MODHAM
+                                ------------------
+
+* Applied strict kinetic balance !
+
+  *** MNF.INP - read number of unique nuclei: 2
+
+  >>> AMFI is going to calculate  1. unique nucleus of charge     8
+
+      *** AMFIIN: corresponding DIRAC nuclei : 1
+      *** AMFIIN: The file name with AMFI integrals: AOPROPER_MNF.8  
+
+
+                         ATOMIC NO-PAIR SO-MF CODE starts
+                         --------------------------------
+
+   Douglas-Kroll type operators 
+  charge on the calculated atom:  0
+  Mean-field summation for electrons #:   8
+    ...electronic occupation of  O: [He]2s^2 2p^4             
+ ****  Written to the file TOSCF for "relscf" ****
+        charge:  8.000
+      nprimit:  12  6  0  0
+   closed sh.:   2  0  0  0
+     open sh.:   0  4  0  0
+
+
+                       *** PROGRAM AT34 - ALLIANT - @V ***
+                       -----------------------------------
+
+
+      SYMMETRY SPECIES            S       P       D       F
+      NUMBER OF BASIS FUNCTIONS: 12       6
+      NUMBER OF CLOSED SHELLS  :  2       0
+      OPEN SHELL OCCUPATION    :  0       4
+    1. iteration,  total energy:             0.000000000000
+    2. iteration,  total energy:           -68.236321938305
+    3. iteration,  total energy:           -74.112440001664
+    4. iteration,  total energy:           -74.719594792808
+    5. iteration,  total energy:           -74.770744922682
+    6. iteration,  total energy:           -74.778351883340
+    7. iteration,  total energy:           -74.778884491059
+    8. iteration,  total energy:           -74.778922455601
+    9. iteration,  total energy:           -74.778925014668
+   10. iteration,  total energy:           -74.778925385117
+   11. iteration,  total energy:           -74.778925411925
+   12. iteration,  total energy:           -74.778925413872
+   13. iteration,  total energy:           -74.778925414600
+   13. iteration,  total energy:           -74.778925414024
+  ### NON-RELATIVISTIC APPROX. ###
+        13      -0.7477892541D+02      -0.1495302956D+03       0.7475137014D+02      -0.2000368626D+01
+    1. iteration,  total energy:           -74.827928130119
+    2. iteration,  total energy:           -74.829750790779
+    3. iteration,  total energy:           -74.829751932020
+    4. iteration,  total energy:           -74.829752005485
+    5. iteration,  total energy:           -74.829752010704
+    6. iteration,  total energy:           -74.829752011170
+    7. iteration,  total energy:           -74.829752011248
+    8. iteration,  total energy:           -74.829752011253
+    9. iteration,  total energy:           -74.829752011840
+    9. iteration,  total energy:           -74.829752011254
+  ### EV  OPERATOR RESULT      ###
+         9      -0.7482975201D+02      -0.1497336435D+03       0.7490389150D+02      -0.1999010205D+01
+      *** AMFIIN: ADDING nucleus    1 with charge   8 to the BSSn Hamiltonian.
+
+  >>> AMFI is going to calculate  2. unique nucleus of charge     1
+
+      *** AMFIIN: corresponding DIRAC nuclei : 2 3
+      *** AMFIIN: The file name with AMFI integrals: AOPROPER_MNF.1  
+
+
+                         ATOMIC NO-PAIR SO-MF CODE starts
+                         --------------------------------
+
+   Douglas-Kroll type operators 
+  charge on the calculated atom:  0
+  Mean-field summation for electrons #:   1
+    ...electronic occupation of  H: 1s^1                      
+ ****  Written to the file TOSCF for "relscf" ****
+        charge:  1.000
+      nprimit:   6  0  0  0
+   closed sh.:   0  0  0  0
+     open sh.:   1  0  0  0
+
+
+                       *** PROGRAM AT34 - ALLIANT - @V ***
+                       -----------------------------------
+
+
+      SYMMETRY SPECIES            S       P       D       F
+      NUMBER OF BASIS FUNCTIONS:  6
+      NUMBER OF CLOSED SHELLS  :  0
+      OPEN SHELL OCCUPATION    :  1
+    1. iteration,  total energy:        -13595.191509113522
+    2. iteration,  total energy:            -0.499859669388
+    2. iteration,  total energy:            -0.499859669388
+  ### NON-RELATIVISTIC APPROX. ###
+         2      -0.4998596694D+00      -0.1000382041D+01       0.5005223719D+00      -0.1998675978D+01
+    1. iteration,  total energy:            -0.499866210431
+    2. iteration,  total energy:            -0.499866215593
+    3. iteration,  total energy:            -0.499866215659
+    4. iteration,  total energy:            -0.499866215666
+    5. iteration,  total energy:            -0.499866215663
+    6. iteration,  total energy:            -0.499866215667
+    7. iteration,  total energy:            -0.499866215667
+    7. iteration,  total energy:            -0.499866215667
+  ### EV  OPERATOR RESULT      ###
+         7      -0.4998662157D+00      -0.1000407854D+01       0.5005416386D+00      -0.1998650616D+01
+      *** AMFIIN: ADDING nucleus    2 with charge   1 to the BSSn Hamiltonian.
+      *** AMFIIN: ADDING nucleus    3 with charge   1 to the BSSn Hamiltonian.
+
+ >>> Time used in mk_bss is   0.29 seconds
+
+
+  MAKE_H2C: Two-component BSS mode - positronic shells deleted !
+
+ >>> Time used in mk_h2c is   0.47 seconds
+
+
+  Coordinates are entered in Angstroms and converted to atomic units.
+          - Conversion factor : 1 bohr = 0.52917721 A
+
+  MNF.INP input file (for the AMFI stuff) is ready.
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+   L   A     * Deleted:          0(Proj:          0, Lindep:          0)
+
+
+      **********************************************************************
+      ************************* Orbital dimensions *************************
+      **********************************************************************
+
+No. of positive energy orbitals (NESH):    42
+No. of negative energy orbitals (NPSH):     0
+Total no. of orbitals           (NORB):    42
+
+ >>> Time used in PAMSET is   0.53 seconds
+
+
+
+ *******************************************************************************
+ ***************** Two-component BSS/DKH Kohn-Sham calculation *****************
+ *******************************************************************************
+
+
+  GETH2CAO: asked for 2c Hamiltonian (param.I2COFK=7):H2CAO_LL
+
+*** INFO *** No trial vectors found. Using bare nucleus approximation for initial trial vectors.
+             Improved by an estimate of the electronic screening (Slater's rules).
+
+
+########## START ITERATION NO.   1 ##########   Tue Feb 16 17:25:00 2010
+
+ >>> Time used in BNCORR is   0.00 seconds
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Fermion symmetry E1 
+  * Closed shell, f = 1.0000
+  -19.955790440935  ( 2)      -0.667459792126  ( 2)      -0.234436149925  ( 2)      -0.128606010121  ( 2)      -0.066769299649  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+    0.138845645553  ( 2)       0.198796781811  ( 2)       0.484279063237  ( 2)       0.486832533699  ( 2)       0.657732159824  ( 2)
+    0.666904537136  ( 2)       0.799898196177  ( 2)       0.895551277989  ( 2)       1.304794588255  ( 2)       1.336893874597  ( 2)
+    2.426685892612  ( 2)       2.507671965742  ( 2)       2.594126333058  ( 2)       2.987470633262  ( 2)       4.174134917593  ( 2)
+    4.339944852797  ( 2)       7.059899989525  ( 2)       7.102844597379  ( 2)       7.153627293498  ( 2)       8.209452376297  ( 2)
+   14.924556772398  ( 2)      15.060781284090  ( 2)      19.402319869527  ( 2)      22.660951485977  ( 2)      22.746010105702  ( 2)
+   22.803082196103  ( 2)      40.898304614530  ( 2)      71.712711206566  ( 2)      71.827765060629  ( 2)      81.115019520178  ( 2)
+  112.418675977601  ( 2)     112.662035183642  ( 2)     112.717588913586  ( 2)     161.981763438726  ( 2)     326.992697092634  ( 2)
+  742.390003323608  ( 2)    2625.548033935488  ( 2)
+
+
+                                Output from ONEERG
+                                ------------------
+
+Inactive energy           :   -42.106123385511623
+Electronic energy         :   -42.106123385511623
+Nuclear potential energy  :     8.980370229500169
+Total energy              :   -33.125753156011456
+   * Quaternion diagonalization(CPU): 0.00178099s
+   * Two-electron Fock matrix  (CPU): 0.00000000s
+   * DFT xc matrix             (CPU): 0.00000000s
+It.   1    -33.12575315601      1.00D+20  0.00D+00  0.00D+00               0.01414788s   Scr. nuclei    Tue Feb 16
+
+########## START ITERATION NO.   2##########   Tue Feb 16 17:25:00 2010
+
+
+* GETGAB: label "GABAO1XX" not found; calling GABGEN.
+
+
+                                Output from SETFCK
+                                ------------------
+
+* Exchange factor:  0.0000
+* Mu- factor:  0.0000 0.0000
+* Fock matrix no.    1    -    Operator irrep: A  
+Matrix symmetry:  A    A    A    A  
+    Mat.  IFC  SYM  Coulomb Exchange Irrep
+    1(1)   11   S      1       0      A  
+    2(i)   20   A      0       0      A  
+    3(j)   20   A      0       0      A  
+    4(k)   20   A      0       0      A  
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   41.99%    0.00%    0.00%   0.02197897s
+
+
+ ********************************************************************************
+ ********************** Slater-Bragg atomic size estimates **********************
+ ********************************************************************************
+
+
+
+                        Slater-Bragg relative atomic sizes
+                        ----------------------------------
+
+
+               Column   1     Column   2     Column   3
+       1       1.00000000     1.71428571     1.71428571
+       2       0.58333333     1.00000000     1.00000000
+       3       0.58333333     1.00000000     1.00000000
+
+DFTGRD: ATSIZE not requested or no trial vectors found. Slater-Bragg radii will be used.
+
+Atom  Deg   Rmin        Rmax        Step size     #rp     #tp
+=============================================================
+O       1   0.168E-05   0.851E+01   0.131E+00     103   25226
+H       1   0.104E-04   0.126E+02   0.142E+00      85   25394
+H       1   0.104E-04   0.126E+02   0.142E+00      85   25394
+
+   Number of grid points in quadrature:     76014 (100.0%)
+
+
+ >>>> Time used in DFTGRD:   0.05 seconds
+
+
+   number of quadrature points:                     76014
+   DFT exchange-correlation energy:                    -9.9621318721211853
+   number of electrons from numerical integration:     10.0000002465199085
+
+
+ >>>> time used in dftexc:   1.56 seconds
+
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -84.97501913030889
+Nuclear potential energy           :      8.98037022950017
+Total energy                       :    -75.99464890080873
+      * 1-electron energy          :   -126.57910476418040
+                  from AR(Shell  0):   -126.57908793935340
+                  from AI(Shell  0):     -0.00000580422968
+                  from BR(Shell  0):     -0.00000576079714
+                  from BI(Shell  0):     -0.00000525980017
+      * 2-electron energy          :     51.56621750599270
+                  from AR(Shell  0):     51.56621750599270
+                  from AI(Shell  0):      0.00000000000000
+                  from BR(Shell  0):      0.00000000000000
+                  from BI(Shell  0):      0.00000000000000
+      * DFT xc energy              :     -9.96213187212119
+
+
+                 DIISER DIISMO: Error matrix in current MO-basis
+                 -----------------------------------------------
+
+   *** Fermion ircop  1
+Occ. orb.     1  largest gradient partner:    25  0.2209E+00
+Occ. orb.     2  largest gradient partner:    25  0.2791E+00
+Occ. orb.     3  largest gradient partner:    24  0.3107E+00
+Occ. orb.     4  largest gradient partner:    23  0.3306E+00
+Occ. orb.     5  largest gradient partner:    22  0.3685E+00
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         1
+* B matrix dimension:         2
+* B matrix condition: 0.000D+00
+* Current B matrix:
+
+               Column   1     Column   2
+       1   0.00000000D+00-1.00000000D+00
+       2                  6.24417371D+00
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Fermion symmetry E1 
+  * Closed shell, f = 1.0000
+  -17.653762905746  ( 2)      -0.678788324803  ( 2)      -0.318819902473  ( 2)      -0.063790129927  ( 2)       0.028712949470  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+    0.064078913975  ( 2)       0.144514579594  ( 2)       0.352399643111  ( 2)       0.354715770395  ( 2)       0.713950256556  ( 2)
+    0.716590535757  ( 2)       0.784272152647  ( 2)       0.804684579334  ( 2)       1.112449383789  ( 2)       1.133595651809  ( 2)
+    2.579086345237  ( 2)       2.652494752137  ( 2)       2.706964122284  ( 2)       3.015840156266  ( 2)       3.847600663226  ( 2)
+    4.006837059421  ( 2)       7.564474825902  ( 2)       7.599489258142  ( 2)       7.641200518930  ( 2)       8.493171223553  ( 2)
+   14.492655640180  ( 2)      14.628847385473  ( 2)      19.996164775665  ( 2)      23.944425852945  ( 2)      24.017087127937  ( 2)
+   24.068920119919  ( 2)      41.859474085315  ( 2)      71.100467917903  ( 2)      71.215391845392  ( 2)      82.511656562053  ( 2)
+  114.785377498909  ( 2)     115.018971198073  ( 2)     115.070028877711  ( 2)     163.828315730758  ( 2)     329.191128936951  ( 2)
+  744.761300191216  ( 2)    2627.121908510443  ( 2)
+   * Two-electron Fock matrix  (CPU): 0.03015798s
+   * Quaternion diagonalization(CPU): 0.00177312s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 1.64052987s
+
+########## END ITERATION NO.   2 ##########   Tue Feb 16 17:25:00 2010
+
+It.   2    -75.99464890081      4.29D+01  1.72D+00  2.50D+00               1.64052987s   LL             Tue Feb 16
+
+########## START ITERATION NO.   3##########   Tue Feb 16 17:25:01 2010
+
+    3 *** Differential density matrix. DCOVLP     = 1.6181
+
+
+                                Output from SETFCK
+                                ------------------
+
+* Exchange factor:  0.0000
+* Mu- factor:  0.0000 0.0000
+* Fock matrix no.    1    -    Operator irrep: A  
+Matrix symmetry:  A    A    A    A  
+    Mat.  IFC  SYM  Coulomb Exchange Irrep
+    1(1)   11   S      1       0      A  
+    2(i)   20   A      0       0      A  
+    3(j)   20   A      0       0      A  
+    4(k)   20   A      0       0      A  
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   41.55%    0.00%    0.00%   0.02222300s
+
+   number of quadrature points:                     76014
+   DFT exchange-correlation energy:                    -8.3588454445439258
+   number of electrons from numerical integration:      9.9999999950423444
+
+
+ >>>> time used in dftexc:   1.48 seconds
+
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -84.18582801274312
+Nuclear potential energy           :      8.98037022950017
+Total energy                       :    -75.20545778324295
+      * 1-electron energy          :   -113.96975558639676
+                  from AR(Shell  0):   -113.96975092221246
+                  from AI(Shell  0):     -0.00000144881133
+                  from BR(Shell  0):     -0.00000237108079
+                  from BI(Shell  0):     -0.00000084429217
+      * 2-electron energy          :     38.14277301819757
+                  from AR(Shell  0):     38.14277301819757
+                  from AI(Shell  0):      0.00000000000000
+                  from BR(Shell  0):      0.00000000000000
+                  from BI(Shell  0):      0.00000000000000
+      * DFT xc energy              :     -8.35884544454393
+
+
+                 DIISER DIISMO: Error matrix in current MO-basis
+                 -----------------------------------------------
+
+   *** Fermion ircop  1
+Occ. orb.     1  largest gradient partner:    25  0.1401E+00
+Occ. orb.     2  largest gradient partner:    12  0.3253E+00
+Occ. orb.     3  largest gradient partner:    13  0.3052E+00
+Occ. orb.     4  largest gradient partner:    11  0.4247E+00
+Occ. orb.     5  largest gradient partner:    10  0.5345E+00
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         2
+* B matrix dimension:         3
+* B matrix condition: 6.050D-02
+* Current B matrix:
+
+               Column   1     Column   2     Column   3
+       1   0.00000000D+00-1.00000000D+00-1.00000000D+00
+       2                  6.24417371D+00-4.30377055D+00
+       3                                 6.03367694D+00
+
+* DIIS coefficients. Sum:1.000D+00
+
+     lambda     9.170D-01
+         2      4.950D-01
+         3      5.050D-01
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Fermion symmetry E1 
+  * Closed shell, f = 1.0000
+  -19.118802256098  ( 2)      -1.143069345456  ( 2)      -0.659227258230  ( 2)      -0.539880126757  ( 2)      -0.470850284759  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+   -0.053700003369  ( 2)       0.016844725033  ( 2)       0.231744438691  ( 2)       0.249725682429  ( 2)       0.421774883714  ( 2)
+    0.433354932966  ( 2)       0.568417187313  ( 2)       0.622423016478  ( 2)       1.016373093646  ( 2)       1.038681623563  ( 2)
+    2.121512444417  ( 2)       2.199029651909  ( 2)       2.279811955367  ( 2)       2.641549014173  ( 2)       3.778710099160  ( 2)
+    3.935854038880  ( 2)       6.820099677853  ( 2)       6.859596361662  ( 2)       6.910395820163  ( 2)       7.880377790576  ( 2)
+   14.423000672184  ( 2)      14.562241422867  ( 2)      19.177814710282  ( 2)      22.815406381304  ( 2)      22.893320330540  ( 2)
+   22.949444488209  ( 2)      40.857176308202  ( 2)      71.061883797204  ( 2)      71.177254223010  ( 2)      81.348357352035  ( 2)
+  113.323865252390  ( 2)     113.556930131804  ( 2)     113.609248526583  ( 2)     162.497130098505  ( 2)     327.739359616960  ( 2)
+  743.216358039556  ( 2)    2625.509137964724  ( 2)
+   * Two-electron Fock matrix  (CPU): 0.02344203s
+   * Quaternion diagonalization(CPU): 0.00177312s
+>>> Total wall time: 2.00000000s
+>>> Total CPU-time : 1.51959991s
+
+########## END ITERATION NO.   3 ##########   Tue Feb 16 17:25:01 2010
+
+It.   3    -75.20545778324     -7.89D-01 -2.50D+00  2.46D+00   DIIS   2    1.51959991s   LL             Tue Feb 16
+
+########## START ITERATION NO.   4##########   Tue Feb 16 17:25:03 2010
+
+    4 *** Differential density matrix. DCOVLP     = 0.1106
+
+
+                                Output from SETFCK
+                                ------------------
+
+* Exchange factor:  0.0000
+* Mu- factor:  0.0000 0.0000
+* Fock matrix no.    1    -    Operator irrep: A  
+Matrix symmetry:  A    A    A    A  
+    Mat.  IFC  SYM  Coulomb Exchange Irrep
+    1(1)   11   S      1       0      A  
+    2(i)   20   A      0       0      A  
+    3(j)   20   A      0       0      A  
+    4(k)   20   A      0       0      A  
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   42.05%    0.00%    0.00%   0.02204490s
+
+   number of quadrature points:                     76014
+   DFT exchange-correlation energy:                    -9.8128788864172041
+   number of electrons from numerical integration:     10.0000000049751616
+
+
+ >>>> time used in dftexc:   1.45 seconds
+
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -85.20386458293034
+Nuclear potential energy           :      8.98037022950017
+Total energy                       :    -76.22349435343017
+      * 1-electron energy          :   -126.01366732858253
+                  from AR(Shell  0):   -126.01365786611596
+                  from AI(Shell  0):     -0.00000321761771
+                  from BR(Shell  0):     -0.00000330138958
+                  from BI(Shell  0):     -0.00000294345928
+      * 2-electron energy          :     50.62268163206940
+                  from AR(Shell  0):     50.62268163206940
+                  from AI(Shell  0):      0.00000000000000
+                  from BR(Shell  0):      0.00000000000000
+                  from BI(Shell  0):      0.00000000000000
+      * DFT xc energy              :     -9.81287888641720
+
+
+                 DIISER DIISMO: Error matrix in current MO-basis
+                 -----------------------------------------------
+
+   *** Fermion ircop  1
+Occ. orb.     1  largest gradient partner:    25  0.2614E-01
+Occ. orb.     2  largest gradient partner:     6  0.1409E+00
+Occ. orb.     3  largest gradient partner:     7  0.2044E+00
+Occ. orb.     4  largest gradient partner:    11  0.1736E+00
+Occ. orb.     5  largest gradient partner:    10  0.2115E+00
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         3
+* B matrix dimension:         4
+* B matrix condition: 8.443D-02
+* Current B matrix:
+
+               Column   1     Column   2     Column   3     Column   4
+       1   0.00000000D+00-1.00000000D+00-1.00000000D+00-1.00000000D+00
+       2                  6.24417371D+00-4.30377055D+00 2.24241711D+00
+       3                                 6.03367694D+00-2.56265618D+00
+       4                                                1.31211171D+00
+
+* DIIS coefficients. Sum:1.000D+00
+
+     lambda     1.042D-01
+         2     -4.013D-02
+         3      3.021D-01
+         4      7.380D-01
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Fermion symmetry E1 
+  * Closed shell, f = 1.0000
+  -18.786621163018  ( 2)      -0.945497909513  ( 2)      -0.489980593243  ( 2)      -0.332116879074  ( 2)      -0.258428258999  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+   -0.002195287730  ( 2)       0.077629508663  ( 2)       0.277969531180  ( 2)       0.294722781341  ( 2)       0.525553435975  ( 2)
+    0.540819842247  ( 2)       0.660757273090  ( 2)       0.692569611101  ( 2)       1.063580303921  ( 2)       1.086996598264  ( 2)
+    2.283178049036  ( 2)       2.362111666255  ( 2)       2.433102565029  ( 2)       2.780678453055  ( 2)       3.827459467943  ( 2)
+    3.985786471734  ( 2)       7.062376123390  ( 2)       7.101638842035  ( 2)       7.149200549784  ( 2)       8.092538502819  ( 2)
+   14.474696185315  ( 2)      14.612692980570  ( 2)      19.441110313425  ( 2)      23.124893341665  ( 2)      23.201817294954  ( 2)
+   23.256864165773  ( 2)      41.154162358748  ( 2)      71.103482095728  ( 2)      71.218696379311  ( 2)      81.664316937754  ( 2)
+  113.651059503045  ( 2)     113.884185701148  ( 2)     113.936512537250  ( 2)     162.825604721886  ( 2)     328.065666276868  ( 2)
+  743.531830444370  ( 2)    2625.808043710292  ( 2)
+   * Two-electron Fock matrix  (CPU): 0.02325606s
+   * Quaternion diagonalization(CPU): 0.00177622s
+>>> Total wall time: 2.00000000s
+>>> Total CPU-time : 1.48327780s
+
+########## END ITERATION NO.   4 ##########   Tue Feb 16 17:25:03 2010
+
+It.   4    -76.22349435343      1.02D+00  2.24D+00  1.15D+00   DIIS   3    1.48327780s   LL             Tue Feb 16
+
+########## START ITERATION NO.   5##########   Tue Feb 16 17:25:05 2010
+
+    5 *** Differential density matrix. DCOVLP     = 1.0067
+
+
+                                Output from SETFCK
+                                ------------------
+
+* Exchange factor:  0.0000
+* Mu- factor:  0.0000 0.0000
+* Fock matrix no.    1    -    Operator irrep: A  
+Matrix symmetry:  A    A    A    A  
+    Mat.  IFC  SYM  Coulomb Exchange Irrep
+    1(1)   11   S      1       0      A  
+    2(i)   20   A      0       0      A  
+    3(j)   20   A      0       0      A  
+    4(k)   20   A      0       0      A  
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   42.18%    0.00%    0.00%   0.02242422s
+
+   number of quadrature points:                     76014
+   DFT exchange-correlation energy:                    -9.3721967387537060
+   number of electrons from numerical integration:     10.0000003996079023
+
+
+ >>>> time used in dftexc:   1.47 seconds
+
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -85.42990787661208
+Nuclear potential energy           :      8.98037022950017
+Total energy                       :    -76.44953764711191
+      * 1-electron energy          :   -122.94190298865868
+                  from AR(Shell  0):   -122.94189476264610
+                  from AI(Shell  0):     -0.00000283936773
+                  from BR(Shell  0):     -0.00000295737411
+                  from BI(Shell  0):     -0.00000242927075
+      * 2-electron energy          :     46.88419185080030
+                  from AR(Shell  0):     46.88419185080030
+                  from AI(Shell  0):      0.00000000000000
+                  from BR(Shell  0):      0.00000000000000
+                  from BI(Shell  0):      0.00000000000000
+      * DFT xc energy              :     -9.37219673875371
+
+
+                 DIISER DIISMO: Error matrix in current MO-basis
+                 -----------------------------------------------
+
+   *** Fermion ircop  1
+Occ. orb.     1  largest gradient partner:    30  0.4241E-02
+Occ. orb.     2  largest gradient partner:     6  0.7005E-02
+Occ. orb.     3  largest gradient partner:     7  0.1405E-01
+Occ. orb.     4  largest gradient partner:    11  0.1220E-01
+Occ. orb.     5  largest gradient partner:    10  0.1367E-01
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         4
+* B matrix dimension:         5
+* B matrix condition: 4.624D-03
+* Current B matrix:
+
+               Column   1     Column   2     Column   3     Column   4
+       1   0.00000000D+00-1.00000000D+00-1.00000000D+00-1.00000000D+00
+       2                  6.24417371D+00-4.30377055D+00 2.24241711D+00
+       3                                 6.03367694D+00-2.56265618D+00
+       4                                                1.31211171D+00
+
+               Column   5
+       1  -1.00000000D+00
+       2   8.44015356D-02
+       3  -1.40239520D-01
+       4   5.85951712D-02
+       5   4.45195774D-03
+
+* DIIS coefficients. Sum:1.000D+00
+
+     lambda     1.047D-03
+         2      5.155D-03
+         3      2.687D-02
+         4      1.296D-03
+         5      9.667D-01
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Fermion symmetry E1 
+  * Closed shell, f = 1.0000
+  -18.761677083736  ( 2)      -0.929172347866  ( 2)      -0.475438628391  ( 2)      -0.308845177492  ( 2)      -0.239538309877  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+   -0.000942700239  ( 2)       0.080399214382  ( 2)       0.283636352347  ( 2)       0.297461664142  ( 2)       0.533147622181  ( 2)
+    0.553901256418  ( 2)       0.669793746284  ( 2)       0.695959807992  ( 2)       1.065711923850  ( 2)       1.089572842445  ( 2)
+    2.298510162790  ( 2)       2.380664861129  ( 2)       2.448447224034  ( 2)       2.793241300233  ( 2)       3.833760900677  ( 2)
+    3.992564719267  ( 2)       7.082095292074  ( 2)       7.122524216977  ( 2)       7.168446617912  ( 2)       8.111998432388  ( 2)
+   14.486364607121  ( 2)      14.624201881716  ( 2)      19.462728386980  ( 2)      23.145308813085  ( 2)      23.221543617501  ( 2)
+   23.275418992954  ( 2)      41.174657815643  ( 2)      71.119706744771  ( 2)      71.234904668056  ( 2)      81.683424439869  ( 2)
+  113.677200619023  ( 2)     113.910478268061  ( 2)     113.962181512939  ( 2)     162.848433587974  ( 2)     328.091645537329  ( 2)
+  743.562385885378  ( 2)    2625.844335680107  ( 2)
+   * Two-electron Fock matrix  (CPU): 0.02364683s
+   * Quaternion diagonalization(CPU): 0.00177908s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 1.51212502s
+
+########## END ITERATION NO.   5 ##########   Tue Feb 16 17:25:05 2010
+
+It.   5    -76.44953764711      2.26D-01 -6.26D-01  6.67D-02   DIIS   4    1.51212502s   LL             Tue Feb 16
+
+########## START ITERATION NO.   6##########   Tue Feb 16 17:25:06 2010
+
+    6 *** Differential density matrix. DCOVLP     = 1.0228
+
+
+                                Output from SETFCK
+                                ------------------
+
+* Exchange factor:  0.0000
+* Mu- factor:  0.0000 0.0000
+* Fock matrix no.    1    -    Operator irrep: A  
+Matrix symmetry:  A    A    A    A  
+    Mat.  IFC  SYM  Coulomb Exchange Irrep
+    1(1)   11   S      1       0      A  
+    2(i)   20   A      0       0      A  
+    3(j)   20   A      0       0      A  
+    4(k)   20   A      0       0      A  
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   42.95%    0.00%    0.00%   0.02180099s
+
+   number of quadrature points:                     76014
+   DFT exchange-correlation energy:                    -9.3423017277549718
+   number of electrons from numerical integration:     10.0000004180020365
+
+
+ >>>> time used in dftexc:   1.47 seconds
+
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -85.43105697394623
+Nuclear potential energy           :      8.98037022950017
+Total energy                       :    -76.45068674444606
+      * 1-electron energy          :   -122.71281739457160
+                  from AR(Shell  0):   -122.71280914350541
+                  from AI(Shell  0):     -0.00000285080370
+                  from BR(Shell  0):     -0.00000298108383
+                  from BI(Shell  0):     -0.00000241917866
+      * 2-electron energy          :     46.62406214838034
+                  from AR(Shell  0):     46.62406214838034
+                  from AI(Shell  0):      0.00000000000000
+                  from BR(Shell  0):      0.00000000000000
+                  from BI(Shell  0):      0.00000000000000
+      * DFT xc energy              :     -9.34230172775497
+
+
+                 DIISER DIISMO: Error matrix in current MO-basis
+                 -----------------------------------------------
+
+   *** Fermion ircop  1
+Occ. orb.     1  largest gradient partner:    39  0.2889E-03
+Occ. orb.     2  largest gradient partner:    19  0.7747E-03
+Occ. orb.     3  largest gradient partner:     7  0.1041E-02
+Occ. orb.     4  largest gradient partner:    11  0.8480E-03
+Occ. orb.     5  largest gradient partner:    10  0.8625E-03
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         5
+* B matrix dimension:         6
+* B matrix condition: 3.764D-05
+* Current B matrix:
+
+               Column   1     Column   2     Column   3     Column   4
+       1   0.00000000D+00-1.00000000D+00-1.00000000D+00-1.00000000D+00
+       2                  6.24417371D+00-4.30377055D+00 2.24241711D+00
+       3                                 6.03367694D+00-2.56265618D+00
+       4                                                1.31211171D+00
+
+               Column   5     Column   6
+       1  -1.00000000D+00-1.00000000D+00
+       2   8.44015356D-02-7.04439154D-03
+       3  -1.40239520D-01 1.23446623D-02
+       4   5.85951712D-02-6.29147114D-03
+       5   4.45195774D-03-2.86776905D-04
+       6                  4.30182935D-05
+
+* DIIS coefficients. Sum:1.000D+00
+
+     lambda     6.977D-06
+         2     -1.597D-03
+         3     -1.397D-04
+         4      7.666D-03
+         5     -8.850D-03
+         6      1.003D+00
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Fermion symmetry E1 
+  * Closed shell, f = 1.0000
+  -18.760845593012  ( 2)      -0.930023260088  ( 2)      -0.476276897172  ( 2)      -0.310572851923  ( 2)      -0.240754080297  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+   -0.001611484003  ( 2)       0.079572537124  ( 2)       0.283239682352  ( 2)       0.297230010871  ( 2)       0.531955695098  ( 2)
+    0.552218522043  ( 2)       0.668726043873  ( 2)       0.695228316443  ( 2)       1.065080092118  ( 2)       1.089212322957  ( 2)
+    2.297483865558  ( 2)       2.379340986274  ( 2)       2.447281798219  ( 2)       2.792325050792  ( 2)       3.833894244396  ( 2)
+    3.992754854664  ( 2)       7.081208934536  ( 2)       7.121428900550  ( 2)       7.167388285013  ( 2)       8.110815309379  ( 2)
+   14.487287464743  ( 2)      14.625113122198  ( 2)      19.461643941327  ( 2)      23.145087894151  ( 2)      23.220975042920  ( 2)
+   23.274810030174  ( 2)      41.173771209665  ( 2)      71.121264261365  ( 2)      71.236460311359  ( 2)      81.682880524494  ( 2)
+  113.678095788916  ( 2)     113.911383105208  ( 2)     113.962986089286  ( 2)     162.848756307809  ( 2)     328.092467855619  ( 2)
+  743.563635967384  ( 2)    2625.845953141594  ( 2)
+   * Two-electron Fock matrix  (CPU): 0.02301502s
+   * Quaternion diagonalization(CPU): 0.00177479s
+>>> Total wall time: 2.00000000s
+>>> Total CPU-time : 1.51219177s
+
+########## END ITERATION NO.   6 ##########   Tue Feb 16 17:25:06 2010
+
+It.   6    -76.45068674445      1.15D-03 -4.12D-02  6.56D-03   DIIS   5    1.51219177s   LL             Tue Feb 16
+
+########## START ITERATION NO.   7##########   Tue Feb 16 17:25:08 2010
+
+    7 *** Differential density matrix. DCOVLP     = 0.9996
+
+
+                                Output from SETFCK
+                                ------------------
+
+* Exchange factor:  0.0000
+* Mu- factor:  0.0000 0.0000
+* Fock matrix no.    1    -    Operator irrep: A  
+Matrix symmetry:  A    A    A    A  
+    Mat.  IFC  SYM  Coulomb Exchange Irrep
+    1(1)   11   S      1       0      A  
+    2(i)   20   A      0       0      A  
+    3(j)   20   A      0       0      A  
+    4(k)   20   A      0       0      A  
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   44.40%    0.00%    0.00%   0.02174282s
+
+   number of quadrature points:                     76014
+   DFT exchange-correlation energy:                    -9.3438018127686160
+   number of electrons from numerical integration:     10.0000004158581568
+
+
+ >>>> time used in dftexc:   1.47 seconds
+
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -85.43106487494879
+Nuclear potential energy           :      8.98037022950017
+Total energy                       :    -76.45069464544862
+      * 1-electron energy          :   -122.72757008000457
+                  from AR(Shell  0):   -122.72756182899992
+                  from AI(Shell  0):     -0.00000285029266
+                  from BR(Shell  0):     -0.00000297967040
+                  from BI(Shell  0):     -0.00000242104159
+      * 2-electron energy          :     46.64030701782441
+                  from AR(Shell  0):     46.64030701782441
+                  from AI(Shell  0):      0.00000000000000
+                  from BR(Shell  0):      0.00000000000000
+                  from BI(Shell  0):      0.00000000000000
+      * DFT xc energy              :     -9.34380181276862
+
+
+                 DIISER DIISMO: Error matrix in current MO-basis
+                 -----------------------------------------------
+
+   *** Fermion ircop  1
+Occ. orb.     1  largest gradient partner:    23  0.2281E-04
+Occ. orb.     2  largest gradient partner:     6  0.8484E-04
+Occ. orb.     3  largest gradient partner:    12  0.8614E-04
+Occ. orb.     4  largest gradient partner:    17  0.1102E-03
+Occ. orb.     5  largest gradient partner:    10  0.1216E-03
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         6
+* B matrix dimension:         7
+* B matrix condition: 3.199D-07
+* Current B matrix:
+
+               Column   1     Column   2     Column   3     Column   4
+       1   0.00000000D+00-1.00000000D+00-1.00000000D+00-1.00000000D+00
+       2                  6.24417371D+00-4.30377055D+00 2.24241711D+00
+       3                                 6.03367694D+00-2.56265618D+00
+       4                                                1.31211171D+00
+
+               Column   5     Column   6     Column   7
+       1  -1.00000000D+00-1.00000000D+00-1.00000000D+00
+       2   8.44015356D-02-7.04439154D-03-1.04755510D-03
+       3  -1.40239520D-01 1.23446623D-02 1.04814366D-03
+       4   5.85951712D-02-6.29147114D-03-5.35236868D-04
+       5   4.45195774D-03-2.86776905D-04-1.81020882D-05
+       6                  4.30182935D-05 1.49685556D-06
+       7                                 4.60786966D-07
+
+* DIIS coefficients. Sum:1.000D+00
+
+     lambda     6.394D-08
+         2     -1.844D-04
+         3     -1.448D-04
+         4      1.274D-03
+         5     -5.942D-03
+         6      1.291D-01
+         7      8.759D-01
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Fermion symmetry E1 
+  * Closed shell, f = 1.0000
+  -18.761213444358  ( 2)      -0.930360836486  ( 2)      -0.476585847509  ( 2)      -0.310719315399  ( 2)      -0.240967224123  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+   -0.001822490242  ( 2)       0.079389705293  ( 2)       0.283065271055  ( 2)       0.297017672516  ( 2)       0.531788274856  ( 2)
+    0.552149612910  ( 2)       0.668589947255  ( 2)       0.695001556726  ( 2)       1.064796085632  ( 2)       1.088908164840  ( 2)
+    2.297304126629  ( 2)       2.379199668870  ( 2)       2.447102200977  ( 2)       2.792091351488  ( 2)       3.833517165978  ( 2)
+    3.992370039899  ( 2)       7.080960673933  ( 2)       7.121177960593  ( 2)       7.167122438192  ( 2)       8.110572069791  ( 2)
+   14.486782743412  ( 2)      14.624612083213  ( 2)      19.461372425151  ( 2)      23.144756530557  ( 2)      23.220655457926  ( 2)
+   23.274493664357  ( 2)      41.173463059230  ( 2)      71.120648954472  ( 2)      71.235845448747  ( 2)      81.682545014398  ( 2)
+  113.677725822931  ( 2)     113.911012467093  ( 2)     113.962623949489  ( 2)     162.848404784486  ( 2)     328.092101062538  ( 2)
+  743.563251721599  ( 2)    2625.845557818631  ( 2)
+   * Two-electron Fock matrix  (CPU): 0.02295303s
+   * Quaternion diagonalization(CPU): 0.00177765s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 1.50908852s
+
+########## END ITERATION NO.   7 ##########   Tue Feb 16 17:25:08 2010
+
+It.   7    -76.45069464545      7.90D-06  2.84D-03  6.79D-04   DIIS   6    1.50908852s   LL             Tue Feb 16
+
+########## START ITERATION NO.   8##########   Tue Feb 16 17:25:09 2010
+
+    8 *** Differential density matrix. DCOVLP     = 1.0000
+
+
+                                Output from SETFCK
+                                ------------------
+
+* Exchange factor:  0.0000
+* Mu- factor:  0.0000 0.0000
+* Fock matrix no.    1    -    Operator irrep: A  
+Matrix symmetry:  A    A    A    A  
+    Mat.  IFC  SYM  Coulomb Exchange Irrep
+    1(1)   11   S      1       0      A  
+    2(i)   20   A      0       0      A  
+    3(j)   20   A      0       0      A  
+    4(k)   20   A      0       0      A  
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   45.27%    0.00%    0.00%   0.02210331s
+
+   number of quadrature points:                     76014
+   DFT exchange-correlation energy:                    -9.3439894427728234
+   number of electrons from numerical integration:     10.0000004160810576
+
+
+ >>>> time used in dftexc:   1.47 seconds
+
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -85.43106496570698
+Nuclear potential energy           :      8.98037022950017
+Total energy                       :    -76.45069473620681
+      * 1-electron energy          :   -122.72838944412651
+                  from AR(Shell  0):   -122.72838119184159
+                  from AI(Shell  0):     -0.00000285077403
+                  from BR(Shell  0):     -0.00000298030324
+                  from BI(Shell  0):     -0.00000242120766
+      * 2-electron energy          :     46.64131392119235
+                  from AR(Shell  0):     46.64131392119235
+                  from AI(Shell  0):      0.00000000000000
+                  from BR(Shell  0):      0.00000000000000
+                  from BI(Shell  0):      0.00000000000000
+      * DFT xc energy              :     -9.34398944277282
+
+
+                 DIISER DIISMO: Error matrix in current MO-basis
+                 -----------------------------------------------
+
+   *** Fermion ircop  1
+Occ. orb.     1  largest gradient partner:    25  0.4296E-05
+Occ. orb.     2  largest gradient partner:    19  0.2003E-04
+Occ. orb.     3  largest gradient partner:     7  0.3060E-04
+Occ. orb.     4  largest gradient partner:    11  0.2606E-04
+Occ. orb.     5  largest gradient partner:    10  0.3102E-04
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         7
+* B matrix dimension:         8
+* B matrix condition: 2.870D-09
+* Current B matrix:
+
+               Column   1     Column   2     Column   3     Column   4
+       1   0.00000000D+00-1.00000000D+00-1.00000000D+00-1.00000000D+00
+       2                  6.24417371D+00-4.30377055D+00 2.24241711D+00
+       3                                 6.03367694D+00-2.56265618D+00
+       4                                                1.31211171D+00
+
+               Column   5     Column   6     Column   7     Column   8
+       1  -1.00000000D+00-1.00000000D+00-1.00000000D+00-1.00000000D+00
+       2   8.44015356D-02-7.04439154D-03-1.04755510D-03-3.21019835D-04
+       3  -1.40239520D-01 1.23446623D-02 1.04814366D-03 4.04754773D-04
+       4   5.85951712D-02-6.29147114D-03-5.35236868D-04-1.98324757D-04
+       5   4.45195774D-03-2.86776905D-04-1.81020882D-05-9.53577886D-06
+       6                  4.30182935D-05 1.49685556D-06 1.04628622D-06
+       7                                 4.60786966D-07 6.48783988D-08
+       8                                                3.16209740D-08
+
+* DIIS coefficients. Sum:1.000D+00
+
+     lambda     1.874D-10
+         2     -1.063D-06
+         3     -1.867D-05
+         4      1.271D-04
+         5     -1.081D-04
+         6     -1.910D-03
+         7      5.701D-02
+         8      9.449D-01
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Fermion symmetry E1 
+  * Closed shell, f = 1.0000
+  -18.761251044037  ( 2)      -0.930373955925  ( 2)      -0.476594636596  ( 2)      -0.310744157820  ( 2)      -0.240990180756  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+   -0.001823348598  ( 2)       0.079386665940  ( 2)       0.283063858062  ( 2)       0.297017937100  ( 2)       0.531773973439  ( 2)
+    0.552130954960  ( 2)       0.668579492781  ( 2)       0.694997949430  ( 2)       1.064797285125  ( 2)       1.088911530440  ( 2)
+    2.297285534140  ( 2)       2.379179479083  ( 2)       2.447085928843  ( 2)       2.792079325156  ( 2)       3.833527878983  ( 2)
+    3.992381263204  ( 2)       7.080933868295  ( 2)       7.121151981876  ( 2)       7.167097951587  ( 2)       8.110549898874  ( 2)
+   14.486802070233  ( 2)      14.624631376769  ( 2)      19.461344160377  ( 2)      23.144722273137  ( 2)      23.220621590521  ( 2)
+   23.274459353806  ( 2)      41.173431005441  ( 2)      71.120675462427  ( 2)      71.235871954150  ( 2)      81.682510803232  ( 2)
+  113.677688689640  ( 2)     113.910975396771  ( 2)     113.962586525791  ( 2)     162.848368870774  ( 2)     328.092064589954  ( 2)
+  743.563217108192  ( 2)    2625.845527683936  ( 2)
+   * Two-electron Fock matrix  (CPU): 0.02337742s
+   * Quaternion diagonalization(CPU): 0.00177670s
+>>> Total wall time: 2.00000000s
+>>> Total CPU-time : 1.51425076s
+
+########## END ITERATION NO.   8 ##########   Tue Feb 16 17:25:09 2010
+
+It.   8    -76.45069473621      9.08D-08  1.80D-04  1.78D-04   DIIS   7    1.51425076s   LL             Tue Feb 16
+
+########## START ITERATION NO.   9##########   Tue Feb 16 17:25:11 2010
+
+    9 *** Differential density matrix. DCOVLP     = 1.0000
+
+
+                                Output from SETFCK
+                                ------------------
+
+* Exchange factor:  0.0000
+* Mu- factor:  0.0000 0.0000
+* Fock matrix no.    1    -    Operator irrep: A  
+Matrix symmetry:  A    A    A    A  
+    Mat.  IFC  SYM  Coulomb Exchange Irrep
+    1(1)   11   S      1       0      A  
+    2(i)   20   A      0       0      A  
+    3(j)   20   A      0       0      A  
+    4(k)   20   A      0       0      A  
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   46.55%    0.00%    0.00%   0.02193737s
+
+   number of quadrature points:                     76014
+   DFT exchange-correlation energy:                    -9.3440465332420857
+   number of electrons from numerical integration:     10.0000004161018374
+
+
+ >>>> time used in dftexc:   1.47 seconds
+
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -85.43106497169148
+Nuclear potential energy           :      8.98037022950017
+Total energy                       :    -76.45069474219132
+      * 1-electron energy          :   -122.72886246091743
+                  from AR(Shell  0):   -122.72885420849234
+                  from AI(Shell  0):     -0.00000285081192
+                  from BR(Shell  0):     -0.00000298032076
+                  from BI(Shell  0):     -0.00000242129241
+      * 2-electron energy          :     46.64184402246801
+                  from AR(Shell  0):     46.64184402246801
+                  from AI(Shell  0):      0.00000000000000
+                  from BR(Shell  0):      0.00000000000000
+                  from BI(Shell  0):      0.00000000000000
+      * DFT xc energy              :     -9.34404653324209
+
+
+                 DIISER DIISMO: Error matrix in current MO-basis
+                 -----------------------------------------------
+
+   *** Fermion ircop  1
+Occ. orb.     1  largest gradient partner:    30  0.4913E-06
+Occ. orb.     2  largest gradient partner:    19  0.1672E-05
+Occ. orb.     3  largest gradient partner:     7  0.2210E-05
+Occ. orb.     4  largest gradient partner:    11  0.2412E-05
+Occ. orb.     5  largest gradient partner:    10  0.2682E-05
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         8
+* B matrix dimension:         9
+* B matrix condition: 7.707D-12
+* Current B matrix:
+
+               Column   1     Column   2     Column   3     Column   4
+       1   0.00000000D+00-1.00000000D+00-1.00000000D+00-1.00000000D+00
+       2                  6.24417371D+00-4.30377055D+00 2.24241711D+00
+       3                                 6.03367694D+00-2.56265618D+00
+       4                                                1.31211171D+00
+
+               Column   5     Column   6     Column   7     Column   8
+       1  -1.00000000D+00-1.00000000D+00-1.00000000D+00-1.00000000D+00
+       2   8.44015356D-02-7.04439154D-03-1.04755510D-03-3.21019835D-04
+       3  -1.40239520D-01 1.23446623D-02 1.04814366D-03 4.04754773D-04
+       4   5.85951712D-02-6.29147114D-03-5.35236868D-04-1.98324757D-04
+       5   4.45195774D-03-2.86776905D-04-1.81020882D-05-9.53577886D-06
+       6                  4.30182935D-05 1.49685556D-06 1.04628622D-06
+       7                                 4.60786966D-07 6.48783988D-08
+       8                                                3.16209740D-08
+
+               Column   9
+       1  -1.00000000D+00
+       2  -2.81887930D-05
+       3   3.27550434D-05
+       4  -1.60571473D-05
+       5  -7.59347609D-07
+       6   7.64294155D-08
+       7   6.59177151D-09
+       8   2.43712584D-09
+       9   2.01466283D-10
+
+* DIIS coefficients. Sum:1.000D+00
+
+     lambda     1.698D-12
+         2      9.233D-07
+         3     -1.633D-06
+         4      1.119D-05
+         5      2.019D-05
+         6     -4.885D-04
+         7      8.775D-04
+         8      4.763D-02
+         9      9.519D-01
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Fermion symmetry E1 
+  * Closed shell, f = 1.0000
+  -18.761255725653  ( 2)      -0.930375771601  ( 2)      -0.476596357250  ( 2)      -0.310746541598  ( 2)      -0.240992326859  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+   -0.001823913541  ( 2)       0.079385954711  ( 2)       0.283063080636  ( 2)       0.297017220532  ( 2)       0.531772664091  ( 2)
+    0.552129507924  ( 2)       0.668578360194  ( 2)       0.694997183135  ( 2)       1.064796484716  ( 2)       1.088910760528  ( 2)
+    2.297283769654  ( 2)       2.379177600813  ( 2)       2.447084161852  ( 2)       2.792077832842  ( 2)       3.833527147922  ( 2)
+    3.992380532995  ( 2)       7.080931135094  ( 2)       7.121149231598  ( 2)       7.167095178375  ( 2)       8.110547556945  ( 2)
+   14.486801236729  ( 2)      14.624630543975  ( 2)      19.461341132029  ( 2)      23.144718434490  ( 2)      23.220617792067  ( 2)
+   23.274455475261  ( 2)      41.173427467398  ( 2)      71.120674639034  ( 2)      71.235871131412  ( 2)      81.682506808179  ( 2)
+  113.677684050322  ( 2)     113.910970760390  ( 2)     113.962581877526  ( 2)     162.848364496957  ( 2)     328.092059968118  ( 2)
+  743.563212379419  ( 2)    2625.845522934687  ( 2)
+   * Two-electron Fock matrix  (CPU): 0.02315426s
+   * Quaternion diagonalization(CPU): 0.00177574s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 1.51006699s
+
+########## END ITERATION NO.   9 ##########   Tue Feb 16 17:25:11 2010
+
+It.   9    -76.45069474219      5.98D-09  9.20D-05  1.42D-05   DIIS   8    1.51006699s   LL             Tue Feb 16
+
+########## START ITERATION NO.  10##########   Tue Feb 16 17:25:12 2010
+
+   10 *** Differential density matrix. DCOVLP     = 1.0000
+
+
+                                Output from SETFCK
+                                ------------------
+
+* Exchange factor:  0.0000
+* Mu- factor:  0.0000 0.0000
+* Fock matrix no.    1    -    Operator irrep: A  
+Matrix symmetry:  A    A    A    A  
+    Mat.  IFC  SYM  Coulomb Exchange Irrep
+    1(1)   11   S      1       0      A  
+    2(i)   20   A      0       0      A  
+    3(j)   20   A      0       0      A  
+    4(k)   20   A      0       0      A  
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   49.18%    0.00%    0.00%   0.02173233s
+
+   number of quadrature points:                     76014
+   DFT exchange-correlation energy:                    -9.3440514329431998
+   number of electrons from numerical integration:     10.0000004161033687
+
+
+ >>>> time used in dftexc:   1.47 seconds
+
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -85.43106497172330
+Nuclear potential energy           :      8.98037022950017
+Total energy                       :    -76.45069474222313
+      * 1-electron energy          :   -122.72889892053135
+                  from AR(Shell  0):   -122.72889066808862
+                  from AI(Shell  0):     -0.00000285081780
+                  from BR(Shell  0):     -0.00000298032553
+                  from BI(Shell  0):     -0.00000242129940
+      * 2-electron energy          :     46.64188538175124
+                  from AR(Shell  0):     46.64188538175124
+                  from AI(Shell  0):      0.00000000000000
+                  from BR(Shell  0):      0.00000000000000
+                  from BI(Shell  0):      0.00000000000000
+      * DFT xc energy              :     -9.34405143294320
+
+
+                 DIISER DIISMO: Error matrix in current MO-basis
+                 -----------------------------------------------
+
+   *** Fermion ircop  1
+Occ. orb.     1  largest gradient partner:    25  0.4581E-07
+Occ. orb.     2  largest gradient partner:     6  0.1858E-06
+Occ. orb.     3  largest gradient partner:     7  0.2508E-06
+Occ. orb.     4  largest gradient partner:    11  0.2367E-06
+Occ. orb.     5  largest gradient partner:    10  0.2924E-06
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         9
+* B matrix dimension:        10
+* B matrix condition: 6.633D-14
+* Current B matrix:
+
+               Column   1     Column   2     Column   3     Column   4
+       1   0.00000000D+00-1.00000000D+00-1.00000000D+00-1.00000000D+00
+       2                  6.24417371D+00-4.30377055D+00 2.24241711D+00
+       3                                 6.03367694D+00-2.56265618D+00
+       4                                                1.31211171D+00
+
+               Column   5     Column   6     Column   7     Column   8
+       1  -1.00000000D+00-1.00000000D+00-1.00000000D+00-1.00000000D+00
+       2   8.44015356D-02-7.04439154D-03-1.04755510D-03-3.21019835D-04
+       3  -1.40239520D-01 1.23446623D-02 1.04814366D-03 4.04754773D-04
+       4   5.85951712D-02-6.29147114D-03-5.35236868D-04-1.98324757D-04
+       5   4.45195774D-03-2.86776905D-04-1.81020882D-05-9.53577886D-06
+       6                  4.30182935D-05 1.49685556D-06 1.04628622D-06
+       7                                 4.60786966D-07 6.48783988D-08
+       8                                                3.16209740D-08
+
+               Column   9     Column  10
+       1  -1.00000000D+00-1.00000000D+00
+       2  -2.81887930D-05-3.00591421D-06
+       3   3.27550434D-05 3.58540377D-06
+       4  -1.60571473D-05-1.76211522D-06
+       5  -7.59347609D-07-8.07107126D-08
+       6   7.64294155D-08 8.52701388D-09
+       7   6.59177151D-09 7.11596171D-10
+       8   2.43712584D-09 2.71474122D-10
+       9   2.01466283D-10 2.16074015D-11
+      10                  2.41502110D-12
+
+* DIIS coefficients. Sum:1.000D+00
+
+     lambda     5.660D-15
+         2      2.187D-08
+         3     -5.273D-08
+         4      2.394D-07
+         5     -3.686D-07
+         6      1.263D-05
+         7     -4.195D-04
+         8     -7.882D-03
+         9      2.855D-02
+        10      9.797D-01
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Fermion symmetry E1 
+  * Closed shell, f = 1.0000
+  -18.761256221054  ( 2)      -0.930376012376  ( 2)      -0.476596543025  ( 2)      -0.310746775293  ( 2)      -0.240992579572  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+   -0.001823972483  ( 2)       0.079385897924  ( 2)       0.283063013769  ( 2)       0.297017152467  ( 2)       0.531772515037  ( 2)
+    0.552129358568  ( 2)       0.668578236481  ( 2)       0.694997092755  ( 2)       1.064796423979  ( 2)       1.088910697715  ( 2)
+    2.297283561945  ( 2)       2.379177392485  ( 2)       2.447083967568  ( 2)       2.792077653581  ( 2)       3.833527095796  ( 2)
+    3.992380480924  ( 2)       7.080930823827  ( 2)       7.121148917578  ( 2)       7.167094870232  ( 2)       8.110547285137  ( 2)
+   14.486801189441  ( 2)      14.624630498495  ( 2)      19.461340790110  ( 2)      23.144718020546  ( 2)      23.220617372164  ( 2)
+   23.274455056398  ( 2)      41.173427071534  ( 2)      71.120674625404  ( 2)      71.235871118090  ( 2)      81.682506361913  ( 2)
+  113.677683559968  ( 2)     113.910970270029  ( 2)     113.962581385198  ( 2)     162.848364024014  ( 2)     328.092059472865  ( 2)
+  743.563211869264  ( 2)    2625.845522406953  ( 2)
+   * Two-electron Fock matrix  (CPU): 0.02297211s
+   * Quaternion diagonalization(CPU): 0.00177670s
+>>> Total wall time: 2.00000000s
+>>> Total CPU-time : 1.51000690s
+
+########## END ITERATION NO.  10 ##########   Tue Feb 16 17:25:12 2010
+
+It.  10    -76.45069474222      3.18D-11  7.18D-06  1.55D-06   DIIS   9    1.51000690s   LL             Tue Feb 16
+
+########## START ITERATION NO.  11##########   Tue Feb 16 17:25:14 2010
+
+   11 *** Differential density matrix. DCOVLP     = 1.0000
+
+
+                                Output from SETFCK
+                                ------------------
+
+* Exchange factor:  0.0000
+* Mu- factor:  0.0000 0.0000
+* Fock matrix no.    1    -    Operator irrep: A  
+Matrix symmetry:  A    A    A    A  
+    Mat.  IFC  SYM  Coulomb Exchange Irrep
+    1(1)   11   S      1       0      A  
+    2(i)   20   A      0       0      A  
+    3(j)   20   A      0       0      A  
+    4(k)   20   A      0       0      A  
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   52.91%    0.00%    0.00%   0.02149677s
+
+   number of quadrature points:                     76014
+   DFT exchange-correlation energy:                    -9.3440520233493540
+   number of electrons from numerical integration:     10.0000004161042568
+
+
+ >>>> time used in dftexc:   1.47 seconds
+
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -85.43106497172360
+Nuclear potential energy           :      8.98037022950017
+Total energy                       :    -76.45069474222343
+      * 1-electron energy          :   -122.72890345544297
+                  from AR(Shell  0):   -122.72889520299833
+                  from AI(Shell  0):     -0.00000285081838
+                  from BR(Shell  0):     -0.00000298032601
+                  from BI(Shell  0):     -0.00000242130025
+      * 2-electron energy          :     46.64189050706872
+                  from AR(Shell  0):     46.64189050706872
+                  from AI(Shell  0):      0.00000000000000
+                  from BR(Shell  0):      0.00000000000000
+                  from BI(Shell  0):      0.00000000000000
+      * DFT xc energy              :     -9.34405202334935
+
+
+                 DIISER DIISMO: Error matrix in current MO-basis
+                 -----------------------------------------------
+
+   *** Fermion ircop  1
+Occ. orb.     1  largest gradient partner:    30  0.1697E-08
+Occ. orb.     2  largest gradient partner:    19  0.1958E-08
+Occ. orb.     3  largest gradient partner:     7  0.2165E-08
+Occ. orb.     4  largest gradient partner:    11  0.2700E-08
+Occ. orb.     5  largest gradient partner:    10  0.2672E-08
+   * Two-electron Fock matrix  (CPU): 0.02270794s
+   * Quaternion diagonalization(CPU): 0.00177670s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 1.50238037s
+
+########## END ITERATION NO.  11 ##########   Tue Feb 16 17:25:14 2010
+
+It.  11    -76.45069474222      2.98D-13  8.85D-07  1.68D-08   DIIS   9    1.50238037s   LL             Tue Feb 16
+
+
+                                   SCF - CYCLE
+                                   -----------
+
+* Convergence on norm of error vector (gradient).
+  Desired convergence:1.000D-07
+  Allowed convergence:1.000D-06
+
+* ERGVAL - convergence in total energy
+* FCKVAL - convergence in maximum change in total Fock matrix
+* EVCVAL - convergence in error vector (gradient)
+--------------------------------------------------------------------------------------------------------------------------------
+           Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
+--------------------------------------------------------------------------------------------------------------------------------
+It.   1    -33.12575315601      1.00D+20  0.00D+00  0.00D+00               0.01414788s   Scr. nuclei    Tue Feb 16
+It.   2    -75.99464890081      4.29D+01  1.72D+00  2.50D+00               1.64052987s   LL             Tue Feb 16
+It.   3    -75.20545778324     -7.89D-01 -2.50D+00  2.46D+00   DIIS   2    1.51959991s   LL             Tue Feb 16
+It.   4    -76.22349435343      1.02D+00  2.24D+00  1.15D+00   DIIS   3    1.48327780s   LL             Tue Feb 16
+It.   5    -76.44953764711      2.26D-01 -6.26D-01  6.67D-02   DIIS   4    1.51212502s   LL             Tue Feb 16
+It.   6    -76.45068674445      1.15D-03 -4.12D-02  6.56D-03   DIIS   5    1.51219177s   LL             Tue Feb 16
+It.   7    -76.45069464545      7.90D-06  2.84D-03  6.79D-04   DIIS   6    1.50908852s   LL             Tue Feb 16
+It.   8    -76.45069473621      9.08D-08  1.80D-04  1.78D-04   DIIS   7    1.51425076s   LL             Tue Feb 16
+It.   9    -76.45069474219      5.98D-09  9.20D-05  1.42D-05   DIIS   8    1.51006699s   LL             Tue Feb 16
+It.  10    -76.45069474222      3.18D-11  7.18D-06  1.55D-06   DIIS   9    1.51000690s   LL             Tue Feb 16
+It.  11    -76.45069474222      2.98D-13  8.85D-07  1.68D-08   DIIS   9    1.50238037s   LL             Tue Feb 16
+--------------------------------------------------------------------------------------------------------------------------------
+* Convergence after   11 iterations.
+* Average elapsed time per iteration: 
+      No 2-ints    :    0.00000000s
+      LL           :    1.50000000s
+
+
+                                   TOTAL ENERGY
+                                   ------------
+
+   Electronic energy                        :    -85.431064971723600
+
+   Other contributions to the total energy
+   Nuclear repulsion energy                 :      8.980370229500169
+
+   Sum of all contributions to the energy
+   Total energy                             :    -76.450694742223433
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Fermion symmetry E1 
+  * Closed shell, f = 1.0000
+  -18.761256221054  ( 2)      -0.930376012376  ( 2)      -0.476596543025  ( 2)      -0.310746775293  ( 2)      -0.240992579572  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+   -0.001823972483  ( 2)       0.079385897924  ( 2)       0.283063013769  ( 2)       0.297017152467  ( 2)       0.531772515037  ( 2)
+    0.552129358568  ( 2)       0.668578236481  ( 2)       0.694997092755  ( 2)       1.064796423979  ( 2)       1.088910697715  ( 2)
+    2.297283561945  ( 2)       2.379177392485  ( 2)       2.447083967568  ( 2)       2.792077653581  ( 2)       3.833527095796  ( 2)
+    3.992380480924  ( 2)       7.080930823827  ( 2)       7.121148917578  ( 2)       7.167094870232  ( 2)       8.110547285137  ( 2)
+   14.486801189441  ( 2)      14.624630498495  ( 2)      19.461340790110  ( 2)      23.144718020546  ( 2)      23.220617372164  ( 2)
+   23.274455056398  ( 2)      41.173427071534  ( 2)      71.120674625404  ( 2)      71.235871118090  ( 2)      81.682506361913  ( 2)
+  113.677683559968  ( 2)     113.910970270029  ( 2)     113.962581385198  ( 2)     162.848364024014  ( 2)     328.092059472865  ( 2)
+  743.563211869264  ( 2)    2625.845522406953  ( 2)
+* HOMO - LUMO gap:
+
+    E(LUMO) :    -0.00182397 au (symmetry E1 )
+  - E(HOMO) :    -0.24099258 au (symmetry E1 )
+  ------------------------------------------
+    gap     :     0.23916861 au
+
+
+
+       *******************************************************************
+       ************************* Property module *************************
+       *******************************************************************
+
+
+
+   This is output from the Dirac property module:
+
+   HF & DFT first order properties
+   Trond Saue
+
+   First-order ESR properties
+   Hans Joergen Aa. Jensen and Anette Noerager
+
+   MP2 first order properties:
+   J. N. P. van Stralen, L. Visscher, C. V. Larsen and H. J. Aa Jensen, Chem. Phys. 311 (2005) 81.
+
+   KR-RPA second-order properties
+   Hans Joergen Aa. Jensen and Trond Saue
+
+   KR-QR third order properties
+   Patrick Norman and Hans Joergen Aa. Jensen
+
+   Molecular gradient
+   Joern Thyssen
+
+   Additional contributions from:
+   Thomas Enevoldsen
+
+
+
+
+             *******************************************************
+             ********** Properties for DHF  wave function **********
+             *******************************************************
+
+
+
+    **************************************************************************
+    *************************** Expectation values ***************************
+    **************************************************************************
+
+                                                   s0 t0
+----------------------------------------------------------------------------
+    Dipole length: X :     0.16070758D-13 a.u.      F   F
+    Dipole length: Y :    -0.63685148D-13 a.u.      F   F
+    Dipole length: Z :     3.638296952497 a.u.      F   F
+----------------------------------------------------------------------------
+    s0 = T : Expectation value zero by point group symmetry.
+    t0 = T : Expectation value zero by time reversal symmetry.
+
+    * Orbital classes:
+    Fermion ircop:E1 
+    - Inactive orbitals  :      1..     5                                          
+    - Active orbitals    : No electrons
+    - Secondary orbitals :      6..    42                                          
+
+* REACMO: Coefficients read from file DFCOEF - Total energy: -76.4506947422231349
+* Heading :electric properties for frozen density embedding  Tue Feb 16 17:25:14 2010
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTY >>>
+X-Dipole length  - Symmetry: A    T+
+
+
+* GETFCK: reading old two-electron Fock matrix
+
+* REAFCK: Fock matrix read from file DFFCK2                                                      
+* Heading :electric properties for frozen density embedding  Tue Feb 16 17:25:14 2010
+
+   number of quadrature points:                     76014
+   DFT exchange-correlation energy:                    -9.3440520233493540
+   number of electrons from numerical integration:     10.0000004161042568
+
+
+ >>>> time used in dftexc:   1.52 seconds
+
+
+* GETFCK: reading old one-electron Fock matrix
+
+* REAFCK: Fock matrix read from file DFFCK1                                                      
+* Heading :electric properties for frozen density embedding  Tue Feb 16 17:25:00 2010
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  2.38D-08
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 4.20D+02
+* Screening threshold in LR solver scaled with norm of property vector:  1.5916D+00
+  and changed to:  3.7896D-08
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 16 17:25:17 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  3.79D-08    9.99%   45.16%    0.00%    0.00%   0.01786232s
+
+   number of quadrature points:                     76014
+   number of electrons from numerical integration:     10.0000004161042568
+
+
+ >>>> time used in dftexc:   2.13 seconds
+
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  2.54E-01  2.54E-01
+
+########## START MICROITERATION NO.   2 ##########   Tue Feb 16 17:25:19 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  3.79D-08    9.99%   46.09%    0.00%    0.00%   0.01717567s
+
+   number of quadrature points:                     76014
+   number of electrons from numerical integration:     10.0000004161042568
+
+
+ >>>> time used in dftexc:   2.07 seconds
+
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  1.97E-02  1.97E-02
+
+########## START MICROITERATION NO.   3 ##########   Tue Feb 16 17:25:21 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  3.79D-08    9.99%   49.28%    0.00%    0.00%   0.01723099s
+
+   number of quadrature points:                     76014
+   number of electrons from numerical integration:     10.0000004161042568
+
+
+ >>>> time used in dftexc:   2.07 seconds
+
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  1.57E-03  1.57E-03
+
+########## START MICROITERATION NO.   4 ##########   Tue Feb 16 17:25:24 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  3.79D-08    9.99%   51.33%    0.00%    0.00%   0.01711464s
+
+   number of quadrature points:                     76014
+   number of electrons from numerical integration:     10.0000004161042568
+
+
+ >>>> time used in dftexc:   2.08 seconds
+
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  4.47E-05  4.47E-05
+
+########## START MICROITERATION NO.   5 ##########   Tue Feb 16 17:25:26 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  3.79D-08    9.99%   60.33%    0.00%    0.00%   0.01707268s
+
+   number of quadrature points:                     76014
+   number of electrons from numerical integration:     10.0000004161042568
+
+
+ >>>> time used in dftexc:   2.08 seconds
+
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  4.34E-07  4.34E-07
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  5 microiterations
+
+            Freq.(au)   Total norm    E+ norm 
+==============================================
+* It.  1   2.14614105s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   2.54D-01 |   2.54D-01
+==============================================
+* It.  2   2.09439659s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   1.97D-02 |   1.97D-02
+==============================================
+* It.  3   2.09503365s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   1.57D-03 |   1.57D-03
+==============================================
+* It.  4   2.09579659s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   4.47D-05 |   4.47D-05
+==============================================
+* It.  5   2.10160065s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   4.34D-07 |   4.34D-07
+==============================================
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTY >>>
+Y-Dipole length  - Symmetry: A    T+
+
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  2.38D-08
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 4.20D+02
+* Screening threshold in LR solver scaled with norm of property vector:  2.5083D+00
+  and changed to:  5.9722D-08
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 16 17:25:28 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  5.97D-08    1.22%   46.05%    0.00%    0.00%   0.02159309s
+
+   number of quadrature points:                     76014
+   number of electrons from numerical integration:     10.0000004161042568
+
+
+ >>>> time used in dftexc:   2.08 seconds
+
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  6.09E-01  6.09E-01
+
+########## START MICROITERATION NO.   2 ##########   Tue Feb 16 17:25:30 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  5.97D-08    1.22%   47.13%    0.00%    0.00%   0.02183151s
+
+   number of quadrature points:                     76014
+   number of electrons from numerical integration:     10.0000004161042568
+
+
+ >>>> time used in dftexc:   2.10 seconds
+
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  5.76E-02  5.76E-02
+
+########## START MICROITERATION NO.   3 ##########   Tue Feb 16 17:25:32 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  5.97D-08    1.22%   49.75%    0.00%    0.00%   0.02133560s
+
+   number of quadrature points:                     76014
+   number of electrons from numerical integration:     10.0000004161042568
+
+
+ >>>> time used in dftexc:   2.09 seconds
+
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  7.05E-03  7.05E-03
+
+########## START MICROITERATION NO.   4 ##########   Tue Feb 16 17:25:35 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  5.97D-08    0.00%   53.18%    0.00%    0.00%   0.02167511s
+
+   number of quadrature points:                     76014
+   number of electrons from numerical integration:     10.0000004161042568
+
+
+ >>>> time used in dftexc:   2.10 seconds
+
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  2.70E-04  2.70E-04
+
+########## START MICROITERATION NO.   5 ##########   Tue Feb 16 17:25:37 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  5.97D-08    1.22%   62.84%    0.00%    0.00%   0.02085495s
+
+   number of quadrature points:                     76014
+   number of electrons from numerical integration:     10.0000004161042568
+
+
+ >>>> time used in dftexc:   2.09 seconds
+
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  1.42E-05  1.42E-05
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  5 microiterations
+
+            Freq.(au)   Total norm    E+ norm 
+==============================================
+* It.  1   2.10700798s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   6.09D-01 |   6.09D-01
+==============================================
+* It.  2   2.12072945s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   5.76D-02 |   5.76D-02
+==============================================
+* It.  3   2.11373138s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   7.05D-03 |   7.05D-03
+==============================================
+* It.  4   2.12974548s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   2.70D-04 |   2.70D-04
+==============================================
+* It.  5   2.11785889s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   1.42D-05 |   1.42D-05
+==============================================
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTY >>>
+Z-Dipole length  - Symmetry: A    T+
+
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  2.38D-08
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 4.20D+02
+* Screening threshold in LR solver scaled with norm of property vector:  2.0702D+00
+  and changed to:  4.9291D-08
+
+########## START MICROITERATION NO.   1 ##########   Tue Feb 16 17:25:39 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  4.93D-08    0.00%   46.47%    0.00%    0.00%   0.02182388s
+
+   number of quadrature points:                     76014
+   number of electrons from numerical integration:     10.0000004161042568
+
+
+ >>>> time used in dftexc:   2.06 seconds
+
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  1.46E+00  1.46E+00
+
+########## START MICROITERATION NO.   2 ##########   Tue Feb 16 17:25:41 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  4.93D-08    0.00%   46.21%    0.00%    0.00%   0.02199554s
+
+   number of quadrature points:                     76014
+   number of electrons from numerical integration:     10.0000004161042568
+
+
+ >>>> time used in dftexc:   2.08 seconds
+
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  2.84E-01  2.84E-01
+
+########## START MICROITERATION NO.   3 ##########   Tue Feb 16 17:25:44 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  4.93D-08    0.00%   47.76%    0.00%    0.00%   0.02295303s
+
+   number of quadrature points:                     76014
+   number of electrons from numerical integration:     10.0000004161042568
+
+
+ >>>> time used in dftexc:   2.07 seconds
+
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  1.82E-02  1.82E-02
+
+########## START MICROITERATION NO.   4 ##########   Tue Feb 16 17:25:46 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  4.93D-08    0.00%   50.29%    0.00%    0.00%   0.02154922s
+
+   number of quadrature points:                     76014
+   number of electrons from numerical integration:     10.0000004161042568
+
+
+ >>>> time used in dftexc:   2.07 seconds
+
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  1.23E-03  1.23E-03
+
+########## START MICROITERATION NO.   5 ##########   Tue Feb 16 17:25:48 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  4.93D-08    0.00%   57.44%    0.00%    0.00%   0.02121735s
+
+   number of quadrature points:                     76014
+   number of electrons from numerical integration:     10.0000004161042568
+
+
+ >>>> time used in dftexc:   2.07 seconds
+
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  9.75E-05  9.75E-05
+
+########## START MICROITERATION NO.   6 ##########   Tue Feb 16 17:25:50 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  4.93D-08    0.00%   66.77%    0.00%    0.00%   0.02161026s
+
+   number of quadrature points:                     76014
+   number of electrons from numerical integration:     10.0000004161042568
+
+
+ >>>> time used in dftexc:   2.09 seconds
+
+* Trial vectors in this micro iteration:  E+:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part 
+     0.00000000  1.00E-05  1.09E-05  1.09E-05
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  6 microiterations
+
+            Freq.(au)   Total norm    E+ norm 
+==============================================
+* It.  1   2.08256912s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   1.46D+00 |   1.46D+00
+==============================================
+* It.  2   2.10189819s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   2.84D-01 |   2.84D-01
+==============================================
+* It.  3   2.09439468s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   1.82D-02 |   1.82D-02
+==============================================
+* It.  4   2.09518814s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   1.23D-03 |   1.23D-03
+==============================================
+* It.  5   2.09503555s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   9.75D-05 |   9.75D-05
+==============================================
+* It.  6   2.11589050s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   1.09D-05 |   1.09D-05
+==============================================
+
+
+                          Linear response; final output
+                          -----------------------------
+
+
+<<A( 1),B( 1)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - X-Dipole length      A    T+
+   B - X-Dipole length      A    T+
+-----------------------------------------------------------------------------------------------
+   -3.399200933026 a.u. at frequency      0.00000000 a.u.    2.73E-07   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 1),B( 2)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - X-Dipole length      A    T+
+   B - Y-Dipole length      A    T+
+-----------------------------------------------------------------------------------------------
+    0.30098182D-13 a.u. at frequency      0.00000000 a.u.    5.65E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 1),B( 3)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - X-Dipole length      A    T+
+   B - Z-Dipole length      A    T+
+-----------------------------------------------------------------------------------------------
+   -0.18215592D-12 a.u. at frequency      0.00000000 a.u.    5.24E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 2),B( 1)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - Y-Dipole length      A    T+
+   B - X-Dipole length      A    T+
+-----------------------------------------------------------------------------------------------
+    0.42580473D-13 a.u. at frequency      0.00000000 a.u.    2.73E-07   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 2),B( 2)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - Y-Dipole length      A    T+
+   B - Y-Dipole length      A    T+
+-----------------------------------------------------------------------------------------------
+   -8.115434330146 a.u. at frequency      0.00000000 a.u.    5.65E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 2),B( 3)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - Y-Dipole length      A    T+
+   B - Z-Dipole length      A    T+
+-----------------------------------------------------------------------------------------------
+   -0.48441260D-12 a.u. at frequency      0.00000000 a.u.    5.24E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 3),B( 1)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - Z-Dipole length      A    T+
+   B - X-Dipole length      A    T+
+-----------------------------------------------------------------------------------------------
+   -0.34598061D-12 a.u. at frequency      0.00000000 a.u.    2.73E-07   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 3),B( 2)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - Z-Dipole length      A    T+
+   B - Y-Dipole length      A    T+
+-----------------------------------------------------------------------------------------------
+   -0.31205972D-09 a.u. at frequency      0.00000000 a.u.    5.65E-06   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 3),B( 3)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - Z-Dipole length      A    T+
+   B - Z-Dipole length      A    T+
+-----------------------------------------------------------------------------------------------
+   -5.897034794249 a.u. at frequency      0.00000000 a.u.    5.24E-06   (converged)
+-----------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------
+* Dipole moment:
+
+          Electronic               Nuclear                  Total       
+          contribution             contribution             contribution
+----------------------------------------------------------------------------
+x         0.00000000 Debye         0.00000000 Debye         0.00000000 Debye
+y        -0.00000000 Debye         0.00000000 Debye        -0.00000000 Debye
+z         9.24771404 Debye        -6.77337478 Debye         2.47433926 Debye
+----------------------------------------------------------------------------
+
+ 1 a.u =   2.54177000 Debye
+
+
+                         +--------------------------------+
+                         ! Electric dipole polarizability !
+                         +--------------------------------+
+
+
+
+@
+@   Elements of the electric dipole
+@   polarizability tensor
+@
+
+@   xx            3.39920093 a.u.   (converged)      
+@   yy            8.11543433 a.u.   (converged)      
+@   zz            5.89703479 a.u.   (converged)      
+
+@   average       5.80389002 a.u.
+@   anisotropy    4.087      a.u.
+
+@   xx            0.50370960 angstrom**3
+@   yy            1.20258328 angstrom**3
+@   zz            0.87385039 angstrom**3
+
+@   average       0.86004776 angstrom**3
+@
+
+----------------------------------------------
+
+ 
+     Date and time (Linux)  : Tue Feb 16 17:25:53 2010
+     Host name              :                                         
+*****************************************************
+>>>> Node 0, utime: 51, stime: 0, minflt: 142856, majflt: 0, nvcsw: 9, nivcsw: 21223
+>>>> Total WALL time used in DIRAC: 54s
+********** E N D   of   D I R A C  output  **********
+*****************************************************
