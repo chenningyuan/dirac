@@ -842,6 +842,36 @@ copy_files()
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 #
+# COPY FILES TO WORKING DIRECTORY ON MASTER NODE
+#
+#
+copy_files_master()
+{
+   #
+   # COPY REQUESTED FILES TO WORKING DIRECTORY
+   #
+   if [ -n "$PUT_FILES_MASTER" ]; then
+      for file in $PUT_FILES_MASTER; do
+         $echo "   Copying $LOC/$file to working directory on the master node: \c"
+         if [ -a $LOC/$file ]; then
+            cp $LOC/$file . || \
+               ( \
+                  echo "   Error copying $LOC/$file" ; \
+                  EXIT=1 ; \
+                  exitfunc \
+               )
+            echo "ok"
+         else
+            echo "not found"
+         fi
+      done
+   fi
+}
+#
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#
 # SAVE OLD OUTPUT FILE
 #
 #
@@ -917,6 +947,7 @@ initialize()
    RMSCR=
 
    PUT_FILES=
+   PUT_FILES_MASTER=
 
    DEBUG=
    PROFILE=
@@ -1007,6 +1038,10 @@ while [ -n "$1" ]; do
       -basdir)
          shift
          BASDIR="$1:${BASDIR}"
+         ;;
+      -putmaster|-copymaster)
+         shift
+         PUT_FILES_MASTER="$PUT_FILES_MASTER $1"
          ;;
       -put|-copy)
          shift
@@ -1191,6 +1226,7 @@ setup_command
 if [ "$DIRPAR" = "1" -a "$LOCALDISKS" = "yes" ]; then
   distribute_work_dir 
 fi
+copy_files_master
 execute_dirac
 if [ "$PROFILE" = "1" ]; then
   profile_dirac
