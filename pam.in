@@ -81,7 +81,10 @@ usage ()
    echo '     -wrkdir  directory     : Full directory path for work area; default "'$SCR/$MOL.'$$"'
    echo '     -wrkpath directory     : Directory path (without user login name) for work area; default "'$SCR'"'
    echo '     -put "file1 file2 .."  : Put specified files from job directory to work area'
+   echo '     -copy                  : same function as -put'
+   echo '     -copymaster "file1 .." : Put specified files from job directory to work area on the master node'
    echo '     -get "file1 file2 .."  : Get specified files to job directory from work area'
+   echo '     -save                  : same function as -get'
    echo '     -noarch                : Do not create a .tgz archive of the calculation'
 }
 extrausage ()
