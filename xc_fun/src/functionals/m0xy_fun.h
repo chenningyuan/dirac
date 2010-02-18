@@ -173,11 +173,14 @@ namespace m0xy_metagga_xc_internal
   }
 
 
-  // m0x_c_anti calculates the  (g + h) part of the integrand, for the M05/M06 correlationg
+  // m06_c_anti calculates the  (g + h) part of the integrand, for the M06y correlationg
   // functionals, for the antiparallel spins
+  //
+  // m06_c_para calculates the  (g + h)D part of the integrand, for the M06y correlationg
+  // functionals, for parallel spins
 
   template<class num>
-  static num m0x_c_anti(const static double param_c[5], 
+  static num m06_c_anti(const static double param_c[5], 
                         const static double param_d[5], 
                         const num &chi_a, const num &zet_a, 
                         const num &chi_b, const num &zet_b) 
@@ -190,11 +193,8 @@ namespace m0xy_metagga_xc_internal
     return g(param_c,gamma_c_anti*chi_ab2) + h(param_d,alpha_c_antiparallel,chi_ab2,zet_ab);
   }
 
-  // m0x_c_para calculates the  (g + h)D part of the integrand, for the M05/M06 correlationg
-  // functionals, for parallel spins
-
   template<class num>
-  static num m0x_c_para(const static double param_c[5], 
+  static num m06_c_para(const static double param_c[5], 
                         const static double param_d[5], 
                         const num &chi, const num &zet) 
   {
@@ -203,6 +203,33 @@ namespace m0xy_metagga_xc_internal
     const num chi2 = chi*chi;
 
     return (g(param_c,gamma_c_parallel*chi2) + h(param_d,alpha_c_parallel,chi,zet))*Dsigma(chi2,zet);
+  }
+
+
+  // m05_c_anti calculates the  g part of the integrand, for the M05y correlationg
+  // functionals, for the antiparallel spins
+  //
+  // m05_c_para calculates the  gD part of the integrand, for the M05y correlationg
+  // functionals, for parallel spins
+
+  template<class num>
+  static num m05_c_anti(const static double param_c[5], const num &chi_a, const num &chi_b) 
+  {
+    const num gamma_c_anti = 0.0031;  // this is an "universal" constant for all M05/M06 functionals 
+
+    const num chi_ab2 = chi_a*chi_a + chi_b*chi_b;
+
+    return g(param_c,gamma_c_anti*chi_ab2);
+  }
+
+  template<class num>
+  static num m05_c_para(const static double param_c[5], const num &chi) 
+  {
+    const num gamma_c_parallel = 0.06;  // this is an "universal" constant for all M05/M06 functionals 
+
+    const num chi2 = chi*chi;
+
+    return g(param_c,gamma_c_parallel*chi2)*Dsigma(chi2,zet);
   }
 
 

@@ -106,9 +106,9 @@ namespace M06_c_internal
 {
    using pw91_like_x_internal::chi;
    using m0xy_metagga_xc_internal::zet;
-   using m0xy_metagga_xc_internal::m0x_c_anti;
+   using m0xy_metagga_xc_internal::m06_c_anti;
    using m0xy_metagga_xc_internal::ueg_c_anti;
-   using m0xy_metagga_xc_internal::m0x_c_para;
+   using m0xy_metagga_xc_internal::m06_c_para;
    using m0xy_metagga_xc_internal::ueg_c_para;
 
    // M06 correlation functional. 
@@ -133,9 +133,9 @@ namespace M06_c_internal
      num zet_a = zet(d.a, d.taua);
      num zet_b = zet(d.b, d.taub);
 
-     num Ec_ab = ueg_c_anti(d)*m0x_c_anti(param_c_anti[5],param_d_anti[5],chi_a,chi_b,zet_a,zet_b); 
-     num Ec_aa = ueg_c_para(d.a)*m0x_c_para(param_c_para[5],param_d_para[5],chi_a,zet_a);
-     num Ec_bb = ueg_c_para(d.b)*m0x_c_para(param_c_para[5],param_d_para[5],chi_b,zet_b);
+     num Ec_ab = ueg_c_anti(d)*m06_c_anti(param_c_anti[5],param_d_anti[5],chi_a,chi_b,zet_a,zet_b); 
+     num Ec_aa = ueg_c_para(d.a)*m06_c_para(param_c_para[5],param_d_para[5],chi_a,zet_a);
+     num Ec_bb = ueg_c_para(d.b)*m06_c_para(param_c_para[5],param_d_para[5],chi_b,zet_b);
 
      return Ec_ab + Ec_aa + Ec_bb;
    }
