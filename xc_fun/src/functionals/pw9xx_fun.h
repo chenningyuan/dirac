@@ -25,11 +25,16 @@ namespace pw91_like_x_internal
       "J. P. Perdew, K. Burke, and M. Ernzerhof, "
       "Phys. Rev. Lett 77, 3865 (1996)\n"; 
 
-
   const char *pberevx_reference = 
     "Revised PBE Exchange Functional\n"
       "Y. Zhang and W., "
       "Phys. Rev. Lett 80, 890 (1998)\n";
+
+  const char *rpbex_reference = 
+    "Improved adsorption energies within density functional theory \n"
+    "using Revised Perdew-Burke-Ernzerhof functional\n"
+      "B. Hammer, L. B. Hansen and J. K. Norskov, "
+      "Phys. Rev. B 59, 7413 (1999)\n";
 
 
 // formulas for the auxiliary quantities below can be found, for

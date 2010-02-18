@@ -25,6 +25,23 @@ namespace PBEx_internal
       return 1 + R - R/t1; 
    }
 
+  // enhancement factor F(S) for RPBE, see Hammer, Hansen and Norskov, PRB 1999, 59, 7413
+  template<class num>
+  static num rpbex_enhancement(const double &R, 
+			       const num &rho,
+			       const num &grad)
+   {
+      using pw91_like_x_internal::S;
+
+      // double mu = 0.066725*M_PI*M_PI/3.0;
+      // ulfek: mu from Daresbury implementation
+      double mu = 0.2195149727645171;
+      num st = S(rho,grad);
+
+      return R*(1 - exp(-mu*st*st/R)); 
+   }
+
+
    // original PBE exchange functional
 
    template<class num>
@@ -46,6 +63,18 @@ namespace PBEx_internal
      return (  prefactor(d.a,d.gaa)*pbex_enhancement(R,d.a,d.gaa) 
              + prefactor(d.b,d.gbb)*pbex_enhancement(R,d.b,d.gbb) );
    }
+
+   // RPBE exchange functional
+
+   template<class num>
+   static num rpbe_exchange(const densvars<num> &d)
+   {
+     const double R = 0.804;
+
+     return (  prefactor(d.a,d.gaa)*rpbex_enhancement(R,d.a,d.gaa) 
+             + prefactor(d.b,d.gbb)*rpbex_enhancement(R,d.b,d.gbb) );
+   }
+
 }
 
 
@@ -103,5 +132,6 @@ namespace PBEc_internal
 using PBEc_internal::pbe_correlation;
 using PBEx_internal::pbe_exchange;
 using PBEx_internal::revpbe_exchange;
+using PBEx_internal::rpbe_exchange;
 
 
