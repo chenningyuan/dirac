@@ -66,10 +66,12 @@ namespace M05_c_internal
 
      num chi_a = chi(d.a, d.gaa);
      num chi_b = chi(d.b, d.gbb);
+     num zet_a = zet(d.a, d.taua);
+     num zet_b = zet(d.b, d.taub);
 
      num Ec_ab = ueg_c_anti(d)  *m05_c_anti(param_c_anti[5],chi_a,chi_b); 
-     num Ec_aa = ueg_c_para(d.a)*m05_c_para(param_c_para[5],chi_a);
-     num Ec_bb = ueg_c_para(d.b)*m05_c_para(param_c_para[5],chi_b);
+     num Ec_aa = ueg_c_para(d.a)*m05_c_para(param_c_para[5],chi_a,zet_a);
+     num Ec_bb = ueg_c_para(d.b)*m05_c_para(param_c_para[5],chi_b,zet_b);
 
      return Ec_ab + Ec_aa + Ec_bb;
    }
@@ -89,10 +91,12 @@ namespace M05_c_internal
 
      num chi_a = chi(d.a, d.gaa);
      num chi_b = chi(d.b, d.gbb);
+     num zet_a = zet(d.a, d.taua);
+     num zet_b = zet(d.b, d.taub);
 
      num Ec_ab = ueg_c_anti(d)  *m05_c_anti(param_c_anti[5],chi_a,chi_b); 
-     num Ec_aa = ueg_c_para(d.a)*m05_c_para(param_c_para[5],chi_a);
-     num Ec_bb = ueg_c_para(d.b)*m05_c_para(param_c_para[5],chi_b);
+     num Ec_aa = ueg_c_para(d.a)*m05_c_para(param_c_para[5],chi_a,zet_a);
+     num Ec_bb = ueg_c_para(d.b)*m05_c_para(param_c_para[5],chi_b,zet_b);
 
      return Ec_ab + Ec_aa + Ec_bb;
    }

@@ -223,7 +223,7 @@ namespace m0xy_metagga_xc_internal
   }
 
   template<class num>
-  static num m05_c_para(const static double param_c[5], const num &chi) 
+  static num m05_c_para(const static double param_c[5], const num &chi, const num &zet) 
   {
     const num gamma_c_parallel = 0.06;  // this is an "universal" constant for all M05/M06 functionals 
 
