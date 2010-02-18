@@ -92,7 +92,8 @@ namespace m0xy_metagga_xc_internal
     return 1 + alpha*(chi2 + zet); 
   }
 
-  // h calculates the quantity of TCA (2008) 120:215 eq 5
+  // h calculates the quantity of TCA (2008) 120:215 eq 5, but here we provide it with the square of the x_\sigma
+  // variable, since that is used always in terms of x^2
 
   template<class num>
   static num h(const static double d[], const static double alpha, const num &chi2, const num &zet)
@@ -148,14 +149,14 @@ namespace m0xy_metagga_xc_internal
   }
 
   // g is an auxiliary function that can be used in connection to both
-  // parallel and antiparallel spins, provided in the latter that the variable
-  // passed on is not chi_\sigmai^2 but (chi_a^2 + chi_b^2). 
+  // parallel and antiparallel spins (provided in the latter that the variable
+  // passed on is not chi_\sigma^2 but (chi_a^2 + chi_b^2)). 
   //
-  // see also TCA 2008 120:215 eqs 13 and 15
+  // for compactness, we also pass (chi_\sigma^2 or (chi_a^2 + chi_b^2)) multiplied
+  // by the corresponding gamma factor, since the two are always multiplied together.
   //
-  // passing the square of a chi variable, or the sum of the squares of chi_a 
-  // and chi_b, multiplied by the corresponding gamma, allows for a compact routine...
-  // 
+  // see TCA 2008 120:215 eqs 13 and 15 for the actual formulas
+  //
   // here the number of parameters is hardcoded since all M05/M06 functionals
   // described at the time of coding (feb 2010) use 5 of them.
 
@@ -172,14 +173,14 @@ namespace m0xy_metagga_xc_internal
   }
 
 
-  // m0y_c_antiparallel calculates the  (g + h) part of the integrand, for the M05/M06 correlationg
-  // functionals
+  // m0x_c_anti calculates the  (g + h) part of the integrand, for the M05/M06 correlationg
+  // functionals, for the antiparallel spins
 
   template<class num>
-  static num m0y_c_antiparallel(const static double param_c[5], 
-                                const static double param_d[5], 
-                                const num &chi_a, const num &zet_a, 
-                                const num &chi_b, const num &zet_b) 
+  static num m0x_c_anti(const static double param_c[5], 
+                        const static double param_d[5], 
+                        const num &chi_a, const num &zet_a, 
+                        const num &chi_b, const num &zet_b) 
   {
     const num gamma_c_anti = 0.0031;  // this is an "universal" constant for all M05/M06 functionals 
 
@@ -189,13 +190,13 @@ namespace m0xy_metagga_xc_internal
     return g(param_c,gamma_c_anti*chi_ab2) + h(param_d,alpha_c_antiparallel,chi_ab2,zet_ab);
   }
 
-  // m0y_c_parallel calculates the  (g + h)D part of the integrand, for the M05/M06 correlationg
-  // functionals
+  // m0x_c_para calculates the  (g + h)D part of the integrand, for the M05/M06 correlationg
+  // functionals, for parallel spins
 
   template<class num>
-  static num m0y_c_parallel(const static double param_c[5], 
-                            const static double param_d[5], 
-                            const num &chi, const num &zet) 
+  static num m0x_c_para(const static double param_c[5], 
+                        const static double param_d[5], 
+                        const num &chi, const num &zet) 
   {
     const num gamma_c_parallel = 0.06;  // this is an "universal" constant for all M05/M06 functionals 
 
@@ -203,6 +204,29 @@ namespace m0xy_metagga_xc_internal
 
     return (g(param_c,gamma_c_parallel*chi2) + h(param_d,alpha_c_parallel,chi,zet))*Dsigma(chi2,zet);
   }
+
+
+  // functions to calculate the \epsilon^{UEC}^{[\alpha\beta,\sigma\sigma]} factor in the
+  // M05/M06 (and VSXC) functionals. The definitions of those can be found in 
+  // 
+  // Zhao, Schultz, Truhlar, J. Chem. Theory Comput. 2006, 2, 264   equations 7,8
+  //  
+
+  using pw92_internal::pw92_eps;
+  using pw92_internal::pw92_eps_polarized;
+
+  template<class num>
+  static num ueg_c_anti(const densvars<num> &d)
+  {
+    return pw92_eps(d) - pw92_eps_polarized(d.a) - pw92_eps_polarized(d.b);
+  }
+
+  template<class num>
+  static num ueg_c_para(const num &rho)
+  {
+     return pw92_eps_polarized(rho);
+  }
+
 
 }
 

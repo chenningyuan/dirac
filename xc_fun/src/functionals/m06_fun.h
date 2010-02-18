@@ -21,8 +21,8 @@ namespace M06_x_internal
      const static double param_d[5] = 
        {  6.012244e-01,  4.748822e-03, -8.635108e-04, -9.308062e-06,  4.482811e-05 }; 
 
-     const num chia2 = chi(d.a, d.gaa);
-     const num chib2 = chi(d.b, d.gbb);
+     num chia2 = pow(chi(d.a, d.gaa), 2.0);
+     num chib2 = pow(chi(d.b, d.gbb), 2.0);
 
      return (  (  pbe_exchange(d.a, d.gaa)*fw(param_a, d.a, d.taua) 
                 + lsda_x(d.a)*h(param_d, alpha_x, chia2, zet(d.a, d.taua)))
@@ -44,8 +44,8 @@ namespace M06_x_internal
      const static double param_d[5] = 
        { -1.179732e-01, -2.500000e-03, -1.180056e-02,  0.000000e+00,  0.000000e+00 }; 
 
-     const num chia2 = chi(d.a, d.gaa);
-     const num chib2 = chi(d.b, d.gbb);
+     num chia2 = pow(chi(d.a, d.gaa), 2.0);
+     num chib2 = pow(chi(d.b, d.gbb), 2.0);
 
      return (  (  pbe_exchange(d.a, d.gaa)*fw(param_a, d.a, d.taua) 
                 + lsda_x(d.a)*h(param_d, alpha_x, chia2, zet(d.a, d.taua)))
@@ -67,8 +67,8 @@ namespace M06_x_internal
      const static double param_d[5] = 
        {  1.422057e-01,  7.370319e-04, -1.601373e-02,  0.000000e+00,  0.000000e+00 }; 
 
-     const num chia2 = chi(d.a, d.gaa);
-     const num chib2 = chi(d.b, d.gbb);
+     num chia2 = pow(chi(d.a, d.gaa), 2.0);
+     num chib2 = pow(chi(d.b, d.gbb), 2.0);
 
      return (  (  pbe_exchange(d.a, d.gaa)*fw(param_a, d.a, d.taua) 
                 + lsda_x(d.a)*h(param_d, alpha_x, chia2, zet(d.a, d.taua)))
@@ -106,37 +106,36 @@ namespace M06_c_internal
 {
    using pw91_like_x_internal::chi;
    using m0xy_metagga_xc_internal::zet;
-   using m0xy_metagga_xc_internal::m0y_c_antiparallel;
-   using m0xy_metagga_xc_internal::m0y_c_parallel;
+   using m0xy_metagga_xc_internal::m0x_c_anti;
+   using m0xy_metagga_xc_internal::ueg_c_anti;
+   using m0xy_metagga_xc_internal::m0x_c_para;
+   using m0xy_metagga_xc_internal::ueg_c_para;
 
    // M06 correlation functional. 
 
    template<class num>
    static num m06_correlation(const densvars<num> &d)
    {
+     // parameters for anti-parallel spin contributions
      const static double param_c_anti[5] =
        {  3.741539e+00,  2.187098e+02, -4.531252e+02,  2.936479e+02, -6.287470e+01 };
      const static double param_d_anti[5] =
        { -2.741539e+00, -6.720113e-01, -7.932688e-02,  1.918681e-03, -2.032902e-03 };
 
+     // parameters for parallel spin contributions
      const static double param_c_para[5] =
        {  5.094055e-01, -1.491085e+00,  1.723922e+01, -3.859018e+01,  2.845044e+01 };
      const static double param_d_para[5] =
        {  4.905945e-01, -1.437348e-01,  2.357824e-01,  1.871015e-03, -3.788963e-03 };
 
+     num chi_a = chi(d.a, d.gaa);
+     num chi_b = chi(d.b, d.gbb);
+     num zet_a = zet(d.a, d.taua);
+     num zet_b = zet(d.b, d.taub);
 
-     const num chi_a = chi(d.a, d.gaa);
-     const num chi_b = chi(d.b, d.gbb);
-     const num zet_a = zet(d.a, d.taua);
-     const num zet_b = zet(d.b, d.taub);
-
-     const num gh_ab = m06_c_anti(param_c_anti[5],param_d_anti[5],chi_a,chi_b,zet_a,zet_b);
-     const num ghd_a = m06_c_para(param_c_para[5],param_d_para[5]*chi_a,zet_a);
-     const num ghd_b = m06_c_para(param_c_para[5],param_d_para[5]*chi_b,zet_b);
- 
-     const num Ec_ab = ueg_anti_corr(d.a,d.b)*gh_ab;
-     const num Ec_aa = ueg_para_corr(d.a)*ghd_a;
-     const num Ec_bb = ueg_para_corr(d.b)*ghd_b;
+     num Ec_ab = ueg_c_anti(d)*m0x_c_anti(param_c_anti[5],param_d_anti[5],chi_a,chi_b,zet_a,zet_b); 
+     num Ec_aa = ueg_c_para(d.a)*m0x_c_para(param_c_para[5],param_d_para[5],chi_a,zet_a);
+     num Ec_bb = ueg_c_para(d.b)*m0x_c_para(param_c_para[5],param_d_para[5],chi_b,zet_b);
 
      return Ec_ab + Ec_aa + Ec_bb;
    }

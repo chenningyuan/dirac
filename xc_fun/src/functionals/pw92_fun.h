@@ -37,6 +37,21 @@ namespace pw92_internal
       -  e(d.r_s,TUVWXYP[2])*omegaval*(1-zeta4)/c 
       + (e(d.r_s,TUVWXYP[1]) - e(d.r_s,TUVWXYP[0]))*omegaval*zeta4;
   }
+
+  // specialized routine based on the above, to calculate epsilon(a,0) 
+  // or epsilon(0,b), used for instance in the M05/M06 functionals
+ 
+  template<class num>
+  static num pw92_eps_polarized(const num &rho)
+  {
+    // The T..P2 parameters are exactly those of TUVWXYP[1] from pw92_eps
+    const double TUVWXYP2[7] = {0.01554 , 0.20548, 14.1189, 6.1977, 3.3662 ,0.62517,1};
+
+    num rrho = pow(3.0/(4.0*M_PI*rho), 1.0/3.0);
+ 
+    return e(rrho,TUVWXYP2);
+  }
+
   // This is with the Daresbury parameters for PBEc, not exactly
   // the same as for Daresbury pw92. 
   template<class num>
