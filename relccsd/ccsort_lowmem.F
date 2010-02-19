@@ -249,10 +249,10 @@ C
       END
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE RDINTS_LM(IPRNT,NSP,INDEX,KR,INDK,INDL,CBUF,IBUF,NVT,
-     &                     BUF1,BUF2,IREPSP,IREPSPI,
-     &                     EPS,FOO,FVO,FVV,INTS,INTSA,BREIT,SRTALL,
-     &                     INTERFACE)
+      SUBROUTINE RDINTS_LM(IPRNT_LOC,NSP,INDEX,KR,INDK,INDL,CBUF,IBUF,
+     &                     NVT,BUF1,BUF2,IREPSP,IREPSPI,
+     &                     EPS,FOO,FVO,FVV,INTS,INTSA,BREIT_LOC,SRTALL,
+     &                     INTERFACE_LOC)
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -278,6 +278,9 @@ C
 #include "files.inc"
 #include "ccpar.inc"
 #include "waio.h"
+#include "inpt.inc"
+#include "dcbgen.h"
+#include "dcbham.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -294,14 +297,14 @@ C
       REAL*8 BUF1(*),BUF2(*),CBUF(RCW,*)
       REAL*8 EPS(*)
       REAL*8 INTS(RCW,*),INTSA(RCW,*)
-      LOGICAL BREIT,SRTALL
-      CHARACTER*10 INTERFACE
+      LOGICAL BREIT_LOC,SRTALL
+      CHARACTER*10 INTERFACE_LOC
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8 E0,E1
+      REAL*8 E0,E1,ORIG_TOTSCF
       CHARACTER*10 DATEX,TIMEX*8
-      LOGICAL FOCKSP
+      LOGICAL FOCKSP,TOBE
       INTEGER*8 NF,NL,IND,ICOUNT,ITRSGN
       CHARACTER*10 FNODE,LFNAM
 C
@@ -347,7 +350,7 @@ C
       ENDIF
       OPEN(MDINT,FILE=FNODE,FORM='UNFORMATTED')
       REWIND(MDINT)
-      IF (INTERFACE(1:7).EQ.'MOLFDIR') THEN
+      IF (INTERFACE_LOC(1:7).EQ.'MOLFDIR') THEN
          IF (MYPROC.EQ.MASTER) THEN
 C           The oldest MOLFDIR file format
             READ (MDINT,ERR=10000,END=10) DATEX,TIMEX,NKR,
@@ -358,14 +361,15 @@ C           The newer MOLFDIR file format = identical to older DIRAC
      &       (KR(I),KR(-I),I=1,NKR)
    11       CONTINUE
          ENDIF
-      ELSEIF (INTERFACE(1:5).EQ.'DIRAC') THEN
-         IF (MYPROC.EQ.MASTER.OR.INTERFACE(6:6).EQ.'6') THEN
+      ELSEIF (INTERFACE_LOC(1:5).EQ.'DIRAC') THEN
+         IF (MYPROC.EQ.MASTER.OR.INTERFACE_LOC(6:6).EQ.'6') THEN
          READ (MDINT,ERR=10000,END=10000) DATEX,TIMEX,NKR,
      &                                    (KR(I),KR(-I),I=1,NKR)
          ENDIF
          MREADER = MASTER
       ELSE
-         WRITE (IW,'(//1X,3A)') 'Interface ',INTERFACE,' not defined'
+         WRITE (IW,'(//1X,3A)') 'Interface ',INTERFACE_LOC,
+     & ' not defined'
          CALL QUIT('Adapt RDINTS')
       ENDIF
 c     write (*,*) 'debug: fnode ',fnode,'  mreader',mreader
@@ -403,25 +407,25 @@ C
 C     GET THE OOOO, VOOO, VVOO AND VOVO INTEGRALS, one at a time...
 C
 C     first the oooo, symmetric and antisymmetric parts
-      call integral_pass(interface,'OOOO',ints,intsa,nvt,nv1,1,1,
+      call integral_pass(interface_loc,'OOOO',ints,intsa,nvt,nv1,1,1,
      &                   icount,kr,nsp,index,itrsgn,indk,indl,
      &                             cbuf,ibuf,mreader,fnode)
 C
 C     then the vooo, symmetric and antisymmetric parts
     2 ICOUNT = 0
-      call integral_pass(interface,'VOOO',ints,intsa,nvt,nv2,2,2,
+      call integral_pass(interface_loc,'VOOO',ints,intsa,nvt,nv2,2,2,
      &                   icount,kr,nsp,index,itrsgn,indk,indl,
      &                             cbuf,ibuf,mreader,fnode)
 C
 C     then the vvoo, symmetric and antisymmetric parts
     3 ICOUNT = 0
-      call integral_pass(interface,'VVOO',ints,intsa,nvt,nv3,4,3,
+      call integral_pass(interface_loc,'VVOO',ints,intsa,nvt,nv3,4,3,
      &                   icount,kr,nsp,index,itrsgn,indk,indl,
      &                             cbuf,ibuf,mreader,fnode)
 C
 C     then the vovo, symmetric and antisymmetric parts
     4 ICOUNT = 0
-      call integral_pass(interface,'VOVO',ints,intsa,nvt,nv4,6,4,
+      call integral_pass(interface_loc,'VOVO',ints,intsa,nvt,nv4,6,4,
      &                   icount,kr,nsp,index,itrsgn,indk,indl,
      &                             cbuf,ibuf,mreader,fnode)
 C
@@ -445,14 +449,14 @@ C
 C
 C     then the vovv, symmetric and antisymmetric parts
     5 ICOUNT = 0
-      call integral_pass(interface,'VOVV',ints,intsa,nvt,nv5par,14,5,
-     &                   icount,kr,nsp,index,itrsgn,indk,indl,
+      call integral_pass(interface_loc,'VOVV',ints,intsa,nvt,nv5par,14,
+     &                   5,icount,kr,nsp,index,itrsgn,indk,indl,
      &                             cbuf,ibuf,mreader,fnode)
 C
 C     then the vovv, symmetric and antisymmetric parts
     6 ICOUNT = 0
-      call integral_pass(interface,'VVVV',ints,intsa,nvt,nv6par,16,6,
-     &                   icount,kr,nsp,index,itrsgn,indk,indl,
+      call integral_pass(interface_loc,'VVVV',ints,intsa,nvt,nv6par,16,
+     &                   6,icount,kr,nsp,index,itrsgn,indk,indl,
      &                             cbuf,ibuf,mreader,fnode)
 
 C
@@ -461,7 +465,7 @@ C
 C  NOW PASS THE BREIT INTEGRAL FILE IF DESIRED
 C  Breit is only used with MOLFDIR in this version
 C
-      IF (BREIT.AND.ITRSGN.EQ.1) THEN
+      IF (BREIT_LOC.AND.ITRSGN.EQ.1) THEN
          WRITE (IW,1000) 'Coulomb',DATEX,TIMEX,ICOUNT
          OPEN(MDINT,FILE='MDBINT',FORM='UNFORMATTED')
          REWIND(MDINT)
@@ -471,7 +475,7 @@ C
          ENDIF
          ITRSGN = -1
          GOTO 1
-      ELSEIF (BREIT) THEN
+      ELSEIF (BREIT_LOC) THEN
          WRITE (IW,1000) 'Breit',DATEX,TIMEX,ICOUNT
       ELSE
          WRITE (IW,1000) 'Coulomb',DATEX,TIMEX,ICOUNT
@@ -495,8 +499,39 @@ C
       IF(EQNS.NE.'RELADC') CALL CCDUMP
 C
       ESCF = E0 + E1 
-      WRITE(IW,1003) ECORE,E0,E1,ESCF,ESCF+ECORE
-      ESCF = ESCF + ECORE
+C
+C     SK - a first step towards a consistent treatment of 
+C     NORECMP == .TRUE. + USEOE == .TRUE. 
+C     when we run with the MOLMF(3) hamiltonian
+      IF(NORECMP .and. USEOE) THEN
+        WRITE(IW,'(/A,/A,/A,/A)') 
+     & ' ***********************************************************',
+     & ' * Info from RDINTS: No recomputation of SCF energy.       *',
+     & ' * Value is taken from the file DFCOEF instead.            *',
+     & ' ***********************************************************'
+        ORIG_TOTSCF = 0.0D0
+        IF( MYPROC .eq. MASTER )THEN
+          INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+          IF(.NOT.TOBE) THEN
+              WRITE(IW,'(A)')
+     &          'RDINTS: Coefficient file DFCOEF not found !'
+              CALL QUIT('RDINTS: Coefficient file DFCOEF not found !')
+          ENDIF
+          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RDINTS')
+          CALL REACMO_no_work(LUCOEF,'DFCOEF',DUMMY,DUMMY,IDUMMY,
+     &                        ORIG_TOTSCF,1)
+          CLOSE(LUCOEF,STATUS='KEEP')
+        ENDIF
+#if defined VAR_MPI
+        CALL MPI_BCAST(ORIG_TOTSCF,1,MPI_REAL8,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+#endif
+        ESCF = ORIG_TOTSCF
+        WRITE(IW,1013) ESCF
+      ELSE 
+        WRITE(IW,1003) ECORE,E0,E1,ESCF,ESCF+ECORE
+        ESCF = ESCF + ECORE
+      END IF
       ETOT = ESCF
 C
  1000 FORMAT (/' Reading ',A7,' integrals :'/' File date :',T18,A10
@@ -513,6 +548,7 @@ C
  1010 FORMAT (/' Skipping integral sorting step 1')
  1011 FORMAT (/' Skipping integral sorting step 2')
  1012 FORMAT (/' Skipping Fock-matrix build')
+ 1013 FORMAT (//' SCF energy :',T40,F25.15)
       RETURN
 10000 CALL QUIT('ERROR READING HEADER MDCINT')
 10001 CALL QUIT('ERROR READING HEADER MDBINT')
