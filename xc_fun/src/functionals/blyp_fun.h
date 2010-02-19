@@ -32,7 +32,6 @@ static num lyp_correlation(const densvars<num> &d)
 template<class num>
 static num becke_exchange(const densvars<num> &d)
 {
-  cout << "!!!" << endl;
   const double BECKE_THRESHOLD = 1e-14;
   const double BETA = 0.0042;  
   num ea = 0, eb = 0;
