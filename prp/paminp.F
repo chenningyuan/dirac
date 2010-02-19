@@ -1447,7 +1447,7 @@ C     Last revision: May 15 1996 - tsaue
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      CHARACTER PLABEL*8, PCOMB*4,CLASSLB*7
+      CHARACTER PLABEL*8, PCOMB*4,CLASLB*7
 C
 C Used from common blocks:
 C   XCBPRL : PRPFILE
@@ -1472,17 +1472,17 @@ C
 C     Class label not yet defined; first check for class label
 C
       IF(PLABEL.EQ.'MOLFIELD') THEN
-        CLASSLB = 'MOLFLD '
+        CLASLB = 'MOLFLD '
         IORDER  = 0
       ELSEIF(PLABEL(1:7).EQ.'FDEVEMB') THEN
-        CLASSLB = 'FDEVEMB'
+        CLASLB = 'FDEVEMB'
         IORDER   = 0
       ELSEIF(PLABEL(1:7).EQ.'BETAMAT') THEN
-        CLASSLB = 'BETAMAT'
+        CLASLB = 'BETAMAT'
         IORDER   = 0
       ELSE
-        CALL GETCLS(PLABEL,CLASSLB,IORDER,IPRINT)
-        IF(CLASSLB.EQ.'Unknown') THEN
+        CALL GETCLS(PLABEL,CLASLB,IORDER,IPRINT)
+        IF(CLASLB.EQ.'Unknown') THEN
           WRITE(LUPRI,'(A,A8)')
      &    '***** INDXPL ERROR ***** No class label found for ',
      &    PLABEL
@@ -1497,11 +1497,11 @@ C
      &      PLABEL, PCOMB
          CALL QUIT('INDPXL: MAXCLS in dcbcls.h too small')
       END IF
-      CLSINT(NPRPCLS) = CLASSLB
+      CLSINT(NPRPCLS) = CLASLB
       CLSCMB(NPRPCLS) = PCOMB
       CLSCAL(NPRPCLS) = .TRUE.
       IORDCL(NPRPCLS) = IORDER
-      CALL XPLDEF(PLABEL,CLASSLB,IORDER,PCOMB,INDX,
+      CALL XPLDEF(PLABEL,CLASLB,IORDER,PCOMB,INDX,
      &                WORK,LWORK,IPRINT)
       INDXPL = INDX
  9999 CONTINUE
@@ -1519,7 +1519,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck getcls */
-      SUBROUTINE GETCLS(LABINT,CLASSLB,IORDER,IPRINT)
+      SUBROUTINE GETCLS(LABINT,CLASLB,IORDER,IPRINT)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Given a file label for a given integral, this subroutine
@@ -1535,7 +1535,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
-      CHARACTER LABINT*8,CLASSLB*7
+      CHARACTER LABINT*8,CLASLB*7
 
       CALL QENTER('GETCLS')
 
@@ -1545,65 +1545,65 @@ C
 C     Overlap integral
 C
       IF(LABINT.EQ.'OVERLAP') THEN
-        CLASSLB = 'OVERLAP'
+        CLASLB = 'OVERLAP'
 C
 C     Dipole length/velocity integrals
 C
       ELSE IF(LABINT(2:4).EQ.'DIP') THEN
         IF(LABINT(5:7).EQ.'VEL') THEN
-          CLASSLB = 'DIPVEL '
+          CLASLB = 'DIPVEL '
         ELSE
-          CLASSLB = 'DIPLEN '
+          CLASLB = 'DIPLEN '
         ENDIF
 C
 C     Quadrupole moments integrals
 C
       ELSE IF(LABINT(3:8).EQ.'QUADRU') THEN
-        CLASSLB = 'QUADRUP'
+        CLASLB = 'QUADRUP'
 C
 C     Spin-orbit integrals
 C
       ELSE IF(LABINT(3:8).EQ.'SPNORB') THEN
-        CLASSLB = 'SPNORB '
+        CLASLB = 'SPNORB '
 C          
 C     SOPP integrals for ECP
 C          
       ELSE IF(LABINT(3:6) .EQ.'SOPP') THEN
-        CLASSLB = 'SOPPINT'
+        CLASLB = 'SOPPINT'
 C
 C     Second moments integrals
 C
       ELSE IF(LABINT(3:8).EQ.'SECMOM') THEN
-        CLASSLB = 'SECMOM '
+        CLASLB = 'SECMOM '
 C
 C     Traceless theta quadrupole integrals
 C
       ELSE IF(LABINT(3:7).EQ.'THETA') THEN
-        CLASSLB = 'THETA  '
+        CLASLB = 'THETA  '
 C
 C     Cartesian/spherical/electronic solvent moments integrals
 C
       ELSE IF(LABINT(2:2).EQ.'M') THEN
         IF(LABINT(1:1).EQ.'C') THEN
-          CLASSLB = 'CARMOM '    
+          CLASLB = 'CARMOM '    
           READ(LABINT(3:4),'(I2)') NX
           READ(LABINT(5:6),'(I2)') NY
           READ(LABINT(7:8),'(I2)') NZ
           IORDER = NX + NY + NZ
         ELSE
-          CLASSLB = 'SPHMOM '
+          CLASLB = 'SPHMOM '
           READ(LABINT(3:4),'(I2)') IORDER
         ENDIF
 C
 C     One-electron Fermi contact integrals
 C
       ELSE IF(LABINT(1:2).EQ.'FC') THEN
-        CLASSLB = 'FERMI C'
+        CLASLB = 'FERMI C'
 C
 C     Paramagnetic spin-orbit integrals
 C
       ELSE IF(LABINT(1:3).EQ.'PSO') THEN
-        CLASSLB = 'PSO    '
+        CLASLB = 'PSO    '
 C     
 C     Spin-dipole integrals
 C
@@ -1612,23 +1612,23 @@ C
 C     Spin-dipole + Fermi contact integrals
 C
         IF(LABINT(3:3).EQ.'C') THEN
-          CLASSLB = 'SDFC   '
+          CLASLB = 'SDFC   '
         ELSE
 C     
 C     Spin-dipole integrals
 C
-          CLASSLB = 'SPIN-DI'
+          CLASLB = 'SPIN-DI'
         ENDIF
 C
 C     Diamagnetic spin-orbit integrals
 C
       ELSE IF(LABINT(1:3).EQ.'DSO') THEN
-        CLASSLB = 'DSO    '
+        CLASLB = 'DSO    '
 C
 C     Half-derivative overlap integrals
 C
       ELSE IF(LABINT(1:3).EQ.'HDO') THEN
-        CLASSLB = 'HDO   '
+        CLASLB = 'HDO   '
 C
 C     Contribution from overlap matrix to magnetic properties
 C
@@ -1637,39 +1637,39 @@ C
 C
 C       Contribution from overlap matrix to magnetic properties
 C
-          CLASSLB = 'S2MAG  '
+          CLASLB = 'S2MAG  '
         ELSE
 C
 C       Second order contribution from overlap matrix to 
 C       magnetic properties
 C
-          CLASSLB = 'S1MAG  '
+          CLASLB = 'S1MAG  '
         ENDIF
 C
 C     Angular momentum around the nuclei
 C
       ELSE IF(LABINT(2:7).EQ.'ANGLON') THEN
-        CLASSLB = 'ANGLON '
+        CLASLB = 'ANGLON '
 C
 C     Electronic angular momentum around origin
 C
       ELSE IF(LABINT(2:7).EQ.'ANGMOM') THEN
-        CLASSLB = 'ANGMOM '
+        CLASLB = 'ANGMOM '
 C
 C     London orbital contribution to angular momentum
 C
       ELSE IF(LABINT(2:7).EQ.'LONMOM') THEN
-        CLASSLB = 'LONMOM '
+        CLASLB = 'LONMOM '
 C
 C     One-electron contributions to magnetic moment
 C
       ELSE IF(LABINT(1:5).EQ.'dh/dB') THEN
-        CLASSLB = 'MAGMOM '
+        CLASLB = 'MAGMOM '
 C
 C     Electronic kinetic energy
 C
       ELSE IF(LABINT(1:7).EQ.'KINENER') THEN   
-        CLASSLB = 'KINENER'
+        CLASLB = 'KINENER'
 C
 C     Diamagnetic susceptibility
 C
@@ -1678,191 +1678,191 @@ C
 C
 C         Diamagnetic susceptibility without London contribution
 C
-          CLASSLB = 'DSUSNOL'
+          CLASLB = 'DSUSNOL'
         ELSEIF(LABINT(7:8).EQ.'LL') THEN
 C
 C         Angular London orbital contribution to diamagnetic
 C         susceptibility
 C
-          CLASSLB = 'DSUSLAN'
+          CLASLB = 'DSUSLAN'
         ELSE
 C
 C       Angular London orbital contribution to diamagnetic 
 C       susceptibility
 C
-          CLASSLB = 'DSUSLH'
+          CLASLB = 'DSUSLH'
         ENDIF
 C
 C     Angular London orbital contribution to diamagnetic susceptibility
 C
       ELSE IF(LABINT(3:8).EQ.'dh/dB2') THEN
-        CLASSLB = 'DIASUS '
+        CLASLB = 'DIASUS '
 C
 C     Nuclear shielding integrals without London orbital contribution
 C
       ELSE IF(LABINT(4:7).EQ.'NSNL') THEN
-        CLASSLB = 'NUCSNLO'
+        CLASLB = 'NUCSNLO'
 C
 C     London orbital contribution to nuclear shielding tensor integrals
 C
       ELSE IF(LABINT(4:7).EQ.'NSLO') THEN
-        CLASSLB = 'NUCSLO '
+        CLASLB = 'NUCSLO '
 C
 C     Nuclear shielding tensor integrals
 CMI ... use this rather than 'NST'
       ELSE IF(LABINT(4:7).EQ.' NST') THEN
-        CLASSLB = 'NUCSHI '
+        CLASLB = 'NUCSHI '
 C
 C     Electric field at the individual nuclei
 C
       ELSE IF(LABINT(1:3).EQ.'NEF') THEN
-        CLASSLB = 'NEFIELD'
+        CLASLB = 'NEFIELD'
 C
 C     traceless electric field third derivatives
 C
       ELSE IF(LABINT(5:5).EQ.'V') THEN
-        CLASSLB = 'EFT    '
+        CLASLB = 'EFT    '
 C
 C     Parity violation - chirality operator
 C
       ELSE IF(LABINT(1:3).EQ.'PVC') THEN
-        CLASSLB = 'PVC    '
+        CLASLB = 'PVC    '
 C
 C     Electric field gradient at the individual nuclei, spherical
 C
       ELSE IF(LABINT(3:5).EQ.'FGS') THEN
-        CLASSLB = 'ELFGRDS'
+        CLASLB = 'ELFGRDS'
 C
 C     Bra-differentiation of overlap matrix with respect to magnetic 
 C     field
 C
       ELSEIF(LABINT(1:7).EQ.'d<S|/dB') THEN
-        CLASSLB = 'S1MAGL'
+        CLASLB = 'S1MAGL'
 C
 C     Ket-differentiation of overlap matrix with respect to 
 C     magnetic field
 C
       ELSE IF(LABINT(1:7).EQ.'d|S>/dB') THEN
-        CLASSLB = 'S1MAGR'
+        CLASLB = 'S1MAGR'
 C
 C     Ket-differentation of HDO-integrals with respect to magnetic field
 C
       ELSE IF(LABINT(4:6).EQ.'HDB') THEN
-        CLASSLB = 'HDOBR  '
+        CLASLB = 'HDOBR  '
 C
 C     Potential energy at the nuclei
 C
       ELSE IF(LABINT(1:5).EQ.'POT.E') THEN
-        CLASSLB = 'NUCPOT '
+        CLASLB = 'NUCPOT '
 C
 C     Half B-differentiated overlap matrix
 C
       ELSE IF(LABINT(2:5).EQ.'HBDO') THEN
-        CLASSLB = 'HBDO   '
+        CLASLB = 'HBDO   '
 C
 C     Half-derivative overlap integrals not to be antisymmetrized
 C
       ELSE IF(LABINT(1:5).EQ.'SQHDO') THEN
-        CLASSLB = 'SQHDO  '
+        CLASLB = 'SQHDO  '
 C
 C     Diamagnetic susceptibility with common gauge origin
 C
       ELSE IF(LABINT(3:8).EQ.'SUSCGO') THEN
-        CLASSLB = 'DSUSCGO'
+        CLASLB = 'DSUSCGO'
 C
 C     Nuclear shielding integrals with common gauge origin
 C
       ELSE IF(LABINT(4:7).EQ.'NSCO') THEN
-        CLASSLB='NSTCGO '
+        CLASLB='NSTCGO '
 C
 C     Cosine and sine integrals
 C
       ELSE IF(LABINT(2:7).EQ.'COSINE'.OR.LABINT(2:5).EQ.'SINE') THEN
-        CLASSLB = 'EXPIKR '
+        CLASLB = 'EXPIKR '
 C
 C     Mass velocity integrals
 C
       ELSE IF(LABINT.EQ.'MASSVELO') THEN
-        CLASSLB = 'MASSVEL'
+        CLASLB = 'MASSVEL'
 C
 C     Darwin type integrals
 C
       ELSE IF(LABINT(1:6).EQ.'DARWIN') THEN
-        CLASSLB = 'DARWIN '
+        CLASLB = 'DARWIN '
 C
 C     First order magnetic field derivatives of electric field
 C
       ELSE IF(LABINT(3:5).EQ.'CM1') THEN
-        CLASSLB = 'CM1    '
+        CLASLB = 'CM1    '
 C
 C     Second order magnetic field derivatives of electric field
 C
       ELSE IF(LABINT(3:5).EQ.'CM2') THEN
-        CLASSLB = 'CM2    '
+        CLASLB = 'CM2    '
 C
 C     Half-derivative overlap integrals not to be anti-symmetrized
 C
       ELSE IF(LABINT(1:6).EQ.'SQHDOR') THEN
-        CLASSLB = 'SQHDOR '
+        CLASLB = 'SQHDOR '
 C
 C
 C
       ELSE IF(LABINT.EQ.'SQOVLAP') THEN
-        CLASSLB = 'SQOVLAP'
+        CLASLB = 'SQOVLAP'
 C
 C     non-traceless electric field third derivatives
 C
       ELSE IF(LABINT(5:5).EQ.'v') THEN
-        CLASSLB = 'EFTNTL '
+        CLASLB = 'EFTNTL '
 C
 C     Electric field gradient at the individual nuclei, cartesian
 C
       ELSE IF(LABINT(3:5).EQ.'EFG') THEN
-        CLASSLB = 'ELFGRDC'
+        CLASLB = 'ELFGRDC'
 CMI
       ELSE IF(LABINT(2:6).EQ.'RM1H2') THEN
-        CLASSLB = 'RM1H2'
+        CLASLB = 'RM1H2'
 CMI
       ELSE IF(LABINT(3:7).EQ.'RM2H2') THEN
-        CLASSLB = 'RM2H2'
+        CLASLB = 'RM2H2'
 CMI
       ELSE IF(LABINT(2:6).EQ.'RM1H3') THEN
-        CLASSLB = 'RM1H3'
+        CLASLB = 'RM1H3'
 CMI
       ELSE IF(LABINT(3:7).EQ.'RM2H3') THEN
-        CLASSLB = 'RM2H3'
+        CLASLB = 'RM2H3'
 
 CMI ...contributions from RDSUSLL term
       ELSE IF(LABINT(3:7).EQ.'RDSUL') THEN
-        CLASSLB = 'RDSUSLL'
+        CLASLB = 'RDSUSLL'
 CMI
       ELSE IF(LABINT(2:6).EQ.'RM1RN') THEN
-        CLASSLB = 'RM1RN'
+        CLASLB = 'RM1RN'
 
 CMI  London orbital contribution to exp.value of nuclear shielding tensor integrals
       ELSE IF(LABINT(4:7).EQ.'RNST') THEN
-        CLASSLB = 'RM1N1H '
+        CLASLB = 'RM1N1H '
 
 CMI  CAP integrals/labels to be used in the MOLTRA/PRPTRA input
       ELSE IF(LABINT(1:6).EQ.'CAP_RE') THEN
-        CLASSLB = 'CAP_RE  '
+        CLASLB = 'CAP_RE  '
       ELSE IF(LABINT(1:6).EQ.'CAP_IM') THEN
-        CLASSLB = 'CAP_IM  '
+        CLASLB = 'CAP_IM  '
       ELSE IF(LABINT(1:6).EQ.'CAP_OV') THEN
-        CLASSLB = 'CAP_OVL '
+        CLASLB = 'CAP_OVL '
       ELSE IF(LABINT(2:7).EQ.'CAPD1R') THEN
-        CLASSLB = 'CAPD1R' 
+        CLASLB = 'CAPD1R' 
       ELSE IF(LABINT(2:7).EQ.'CAPD1I') THEN
-        CLASSLB = 'CAPD1I' 
+        CLASLB = 'CAPD1I' 
       ELSE IF(LABINT(2:7).EQ.'CAPDVE') THEN
-        CLASSLB = 'CAPDVE' 
+        CLASLB = 'CAPDVE' 
       ELSE IF(LABINT(1:6).EQ.'CAPD_V') THEN
-        CLASSLB = 'CAPD_VD' 
+        CLASLB = 'CAPD_VD' 
 C
 C     Unknown LABINT
 C   
       ELSE
-       CLASSLB = 'Unknown'
+       CLASLB = 'Unknown'
       ENDIF
 
 C  Control print out
@@ -1870,7 +1870,7 @@ C  Control print out
        WRITE(LUPRI,'(2A)')
      & 'GETCLS called for LABINT=',LABINT
        WRITE(LUPRI,'(7X,2A)')
-     & '     assigned  CLASSLB=',CLASSLB
+     & '     assigned  CLASLB=',CLASSLB
       ENDIF
 C
       CALL QEXIT('GETCLS')
@@ -1878,7 +1878,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xpldef */
-      SUBROUTINE XPLDEF(PLABEL,CLASSLB,IORDER,PCOMB,INDX,
+      SUBROUTINE XPLDEF(PLABEL,CLASLB,IORDER,PCOMB,INDX,
      &                  WORK,LWORK,IPRINT)
 C***********************************************************************
 C
@@ -1898,14 +1898,14 @@ C
 #include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
-      CHARACTER PLABEL*8,CLASSLB*7,PCOMB*4,LABINT(15*MXCENT)*8
+      CHARACTER PLABEL*8,CLASLB*7,PCOMB*4,LABINT(15*MXCENT)*8
       DIMENSION WORK(LWORK)
 C
       CALL QENTER('XPLDEF')
 #include "memint.h"
 C
       MAXTYP = 15*MXCENT
-      IF ((CLASSLB.EQ.'ELFGRDC').OR.(CLASSLB.EQ.'ELFGRDS')) THEN
+      IF ((CLASLB.EQ.'ELFGRDC').OR.(CLASSLB.EQ.'ELFGRDS')) THEN
          NINTAD = 9*NUCIND*(MAXREP+1)
       ELSE
          NINTAD = MAXTYP
@@ -1915,7 +1915,7 @@ C     Memory allocation
       CALL MEMGET('INTE',KINTAD,NINTAD,WORK,KFREE,LFREE)
       CALL MEMGET('LOGI',KATOM ,NUCIND,WORK,KFREE,LFREE)
 C
-      CALL XPLDE1(PLABEL,CLASSLB,PCOMB,IORDER,WORK(KINTRP),
+      CALL XPLDE1(PLABEL,CLASLB,PCOMB,IORDER,WORK(KINTRP),
      &            WORK(KINTAD),LABINT,INDX,WORK(KATOM),
      &            WORK(KFREE),LFREE,IPRINT)
 C     Memory deallocation
@@ -1926,7 +1926,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xplde1 */
-      SUBROUTINE XPLDE1(PLABEL,CLASSLB,PCOMB,IORDER,INTREP,INTADR,
+      SUBROUTINE XPLDE1(PLABEL,CLASLB,PCOMB,IORDER,INTREP,INTADR,
      &           LABINT,INDX,DOATOM,WORK,LWORK,IPRINT)
 C***********************************************************************
 C
@@ -1948,14 +1948,14 @@ C#include "symmet.h"
 
       LOGICAL ANTI, TRASPH, SOLVNT, SQUARE,LABERR,
      &        DOATOM(*)
-      CHARACTER PLABEL*8,CLASSLB*7,LABINT*8,PCOMB*4
+      CHARACTER PLABEL*8,CLASLB*7,LABINT*8,PCOMB*4
       DIMENSION INTREP(*),INTADR(*),LABINT(*),WORK(LWORK)
       CALL QENTER('XPLDE1')
 C
 C
 C     Get information on this class of integrals
 C
-      IF    (CLASSLB.EQ.'MOLFLD ') THEN
+      IF    (CLASLB.EQ.'MOLFLD ') THEN
         NOPTYP    = 1
         LABINT(1) = 'MOLFIELD'
         INTREP(1) = 0
@@ -1965,7 +1965,7 @@ C
         DO I = 1,NUCIND
           DOATOM(I) = .TRUE.
         ENDDO
-      ELSEIF(CLASSLB.EQ.'FDEVEMB') THEN
+      ELSEIF(CLASLB.EQ.'FDEVEMB') THEN
         NOPTYP    = 1
         LABINT(1) = 'FDEVEMB '
         INTREP(1) = 0
@@ -1975,7 +1975,7 @@ C
         DO I = 1,NUCIND
           DOATOM(I) = .TRUE.
         ENDDO
-      ELSEIF(CLASSLB.EQ.'BETAMAT') THEN
+      ELSEIF(CLASLB.EQ.'BETAMAT') THEN
         NOPTYP    = 1
         LABINT(1) = 'BETAMAT '
         INTREP(1) = 0
@@ -1985,7 +1985,7 @@ C
         DO I = 1,NUCIND
           DOATOM(I) = .TRUE.
         ENDDO
-      ELSEIF(CLASSLB .EQ. 'SPHMOM ') THEN
+      ELSEIF(CLASLB .EQ. 'SPHMOM ') THEN
         SQUARE    = .FALSE.
         ANTI      = .FALSE.
         CALL SMTYP(IORDER,NOPTYP,INTREP,LABINT)
@@ -1997,9 +1997,9 @@ C
 C       WRITE(LUPRI,'(2X,A)') 'XPLDE1 before PR1DIR calling'
 C       WRITE(LUPRI,'(2X,A,I3)') 'INTTYP=',INTTYP
 C       WRITE(LUPRI,'(2X,A,I3)') 'IPRINT=',IPRINT
-C       WRITE(LUPRI,*) 'CLASSLB=',CLASSLB
+C       WRITE(LUPRI,*) 'CLASLB=',CLASSLB
 
-        CALL PR1DIR(WORK,LWORK,CLASSLB,INTTYP,NOPTYP,INTREP,
+        CALL PR1DIR(WORK,LWORK,CLASLB,INTTYP,NOPTYP,INTREP,
      &            ANTI,SQUARE,INTADR,LABINT,TRIANG,TRASPH,
      &            SOLVNT,IORDER,DOATOM,NATOM,NBAST,NELMNT,IPRINT)
 C       IF (IPRINT.GE.5) THEN
@@ -2047,7 +2047,7 @@ C
       IF(LABERR) THEN
         WRITE(LUPRI,'(A,A8,A)') '*** XPLDE1 ERROR: Property label ',
      &        PLABEL,' not found ! *****'
-        WRITE(LUPRI,'(A,A7)') 'Class label      : ',CLASSLB
+        WRITE(LUPRI,'(A,A7)') 'Class label      : ',CLASLB
         WRITE(LUPRI,'(A,A8)') '  Property labels: ',LABINT(1)
         WRITE(LUPRI,'(19X,A8)') (LABINT(I),I=2,NOPTYP)
         CALL QUIT('XPLDE1: Label error')
