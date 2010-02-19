@@ -87,6 +87,8 @@ contains
     max_ao_g_order = 0
     max_ao_m_order = 0
 
+    write(LUPRI,'(/,2x,a)') '*** Visualisation module ***'
+
     do ivector = 1, visual_cfg_nr_xvectors
 
       if (visual_cfg_iq_xvector(ivector) == iq_divm     ) max_ao_g_order = 1
@@ -120,6 +122,7 @@ contains
     call opnfil(file_unit, 'DFCOEF', 'OLD', 'visual.F90')
     call reacmo_no_work(file_unit, 'DFCOEF', (/0.0d0/), eigenvalues, (/0/), energy, 4)
     close(file_unit, status = 'keep')
+    write(LUPRI,'(2x,a)') 'Visualisation : DFCOEF file read'
 
     call fndocc(eigenvalues)
     call dealloc(eigenvalues)
