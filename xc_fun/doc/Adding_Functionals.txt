@@ -6,13 +6,16 @@ the functional is called "myfunctional".
 2) Implemented your functional as a function accepting density
    variables and returning the exchange correlation energy. The
    type of the input and return parameters should be a template
-   typename. Example
+   typename. The functional should accept a "densvars" structure
+   as argument. This structure contains all density variables
+   at a single grid point.
+   Example:
 
    template<typename T>
-   T myfunctional(const T &rhoa, const T &rhob)
+   T myfunctional(const densvars<T> &d)
    {
       //Return some function of rhoa and rhob
-      returb pow(rhoa + rhob,4.0/3.0);
+      returb pow(d.na + d.nb,4.0/3.0);
    }
 
    The arguments to your function should be some of the variables
