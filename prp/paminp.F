@@ -1905,7 +1905,7 @@ C
 #include "memint.h"
 C
       MAXTYP = 15*MXCENT
-      IF ((CLASLB.EQ.'ELFGRDC').OR.(CLASSLB.EQ.'ELFGRDS')) THEN
+      IF ((CLASLB.EQ.'ELFGRDC').OR.(CLASLB.EQ.'ELFGRDS')) THEN
          NINTAD = 9*NUCIND*(MAXREP+1)
       ELSE
          NINTAD = MAXTYP
