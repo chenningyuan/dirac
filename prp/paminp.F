@@ -1870,7 +1870,7 @@ C  Control print out
        WRITE(LUPRI,'(2A)')
      & 'GETCLS called for LABINT=',LABINT
        WRITE(LUPRI,'(7X,2A)')
-     & '     assigned  CLASLB=',CLASSLB
+     & '     assigned  CLASSLB=',CLASLB
       ENDIF
 C
       CALL QEXIT('GETCLS')
@@ -1997,7 +1997,7 @@ C
 C       WRITE(LUPRI,'(2X,A)') 'XPLDE1 before PR1DIR calling'
 C       WRITE(LUPRI,'(2X,A,I3)') 'INTTYP=',INTTYP
 C       WRITE(LUPRI,'(2X,A,I3)') 'IPRINT=',IPRINT
-C       WRITE(LUPRI,*) 'CLASLB=',CLASSLB
+C       WRITE(LUPRI,*) 'CLASSLB=',CLASLB
 
         CALL PR1DIR(WORK,LWORK,CLASLB,INTTYP,NOPTYP,INTREP,
      &            ANTI,SQUARE,INTADR,LABINT,TRIANG,TRASPH,
