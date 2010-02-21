@@ -200,6 +200,11 @@ static void setdens_rszxy(densvars<taylor<num,5,N> >&d, const num dd[5])
 #endif
   d.a = 0.5*(d.n+d.s);
   d.b = 0.5*(d.n-d.s);
+//radovan: this should be:
+//d.gaa = 0.25*(d.gnn+d.gss+2*d.gns);
+//d.gab = 0.25*(d.gnn-d.gss);
+//d.gbb = 0.25*(d.gnn+d.gss-2*d.gns);
+//         but there is more mixed up, we can fix this later
   d.gaa = 0.25*(d.gnn+d.gns+2*d.gss);
   d.gab = 0.25*(d.gnn-d.gns);
   d.gbb = 0.25*(d.gnn+d.gns-2*d.gss);
