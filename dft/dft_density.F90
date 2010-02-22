@@ -881,9 +881,13 @@ contains
     integer                :: itest, jtest
 !   ----------------------------------------------------------------------------
 
-    r_co(     1) = cx - dft_gagorg(1) 
-    r_co(     2) = cy - dft_gagorg(2)
-    r_co(     3) = cz - dft_gagorg(3)
+!   fixme should be minus operator origin, not gagorg
+!   r_co(     1) = cx - dft_gagorg(1) 
+!   r_co(     2) = cy - dft_gagorg(2)
+!   r_co(     3) = cz - dft_gagorg(3)
+    r_co(     1) = cx
+    r_co(     2) = cy
+    r_co(     3) = cz
 
 !    do jxyz = 0, 0
 !      do iblock = 1, nr_density_blocks(jxyz, irep)
@@ -908,10 +912,16 @@ contains
             do i = 1, mat_dim
               ii = i
 
-              f_left  = (r_co(b)*ao_b1(ii, c) - r_co(c)*ao_b1(ii, b))*ao(jj)
-              f_right = (r_co(b)*ao_b1(jj, c) - r_co(c)*ao_b1(jj, b))*ao(ii)
-              f =  - (f_left - f_right)
-              f = 2.0d0*f
+            ! f_left  = (r_co(b)*ao_b1(ii, c) - r_co(c)*ao_b1(ii, b))*ao(jj)
+!             f_left  = 0.0d0
+              f = (r_co(c)*ao_b1(jj, b) - r_co(b)*ao_b1(jj, c))*ao(ii)
+!             f =  - (f_left - f_right)
+!             f = 2.0d0*f
+!             if ((ii == 4) .and. (jj == 4)) then
+!             write(*, *) 'blub fmat', ii, ao(ii), ao_b1(ii, 1), ao_b1(ii, 2), ao_b1(ii, 3), s*f
+!             write(*, *) 'blub rco', r_co(1), r_co(2), r_co(3)
+!             write(*, *) 'blub origin', dft_gagorg(1), dft_gagorg(2), dft_gagorg(3)
+!             end if
 
               fmat(ii, jj, (a-1)*4 + 1) = fmat(ii, jj, (a-1)*4 + 1) + s*f
             end do
