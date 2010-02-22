@@ -1591,31 +1591,9 @@ contains
                              nr_nonzero_derv(2), &
                              derv)
 
-    k_start = 1
-    if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
-
     do im = 1, nr_mat
 
-      calculate_qr = .false.
-      calculate_qi = .false.
-
-      if (ih(im) == +1) calculate_qr = .true.
-      if (ih(im) == -1) calculate_qi = .true.
-
-      if (ih(im) == 0 .and. allow_nonhermitian) then
-        calculate_qr = .true.
-        calculate_qi = .true.
-      end if
-
-      if (dft_cfg_no_sdft) then
-        calculate_qi = .false.
-      end if
-
       im_off = mat_dim*mat_dim*nz*(im - 1)
-
-
-!     hermitian contribution (qr = quaternion real)
-      if (calculate_qr) then
 
         call get_n(r_b,                        &
                    isym(im) - 1,               &
@@ -1631,27 +1609,6 @@ contains
                                 mat_dim,          &
                                 fmat(1 + im_off), &
                                 ao_p)
-
-      end if !end of qr contribution
-
-!     antihermitian contribution (qi = quaternion imaginary)
-      if (calculate_qi) then
-
-        call get_s(s_b,                        &
-                   isym(im) - 1,               &
-                   mat_dim,                    &
-                   dmat_perturbed(1 + im_off), &
-                   buffer,                     &
-                   ao_p)
-        
-
-          call lda_distribute_i(u_qi,             &
-                                isym(im) - 1,     &
-                                mat_dim,          &
-                                fmat(1 + im_off), &
-                                ao_p)
-
-      end if !end of qi contribution
 
     end do
 

@@ -704,6 +704,11 @@ C
 ! we have two direct-LAO contributions: eqs. 44 and 46
 !should be response_order=1
 
+!     CALL DZERO(FMAT,NTBAS(0)*NTBAS(0)*NZ)
+      write(*, *) 'debug fmat_x before direct'
+      CALL PRQMAT(fmat,NTBAS(0),NTBAS(0),NTBAS(0),
+     &             NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
+
       call dftexc(ntbas(0),  ! mat_dim
      &            nz,        ! nz
      &            nr_fmat,     ! nr_fmat
@@ -718,6 +723,9 @@ C
      &            0,         !g_order
      &            1)         !m_order
 
+      write(*, *) 'debug fmat_x after direct'
+      CALL PRQMAT(fmat,NTBAS(0),NTBAS(0),NTBAS(0),
+     &             NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
 
       call qexit('add_dft_to_twolon')
 

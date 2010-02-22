@@ -207,7 +207,7 @@ c.......direct contribution
         end if
 
 c.......reorthonormalization contribution
-        if (.not.noonei) then
+        if ((.not. noonei) .or. (.not. noorth)) then
           call london_reort_hb(cmo, ibeig, work(kfree), lfree)
 !old          call RNTLON(cmo, ibeig, WORK, KFREE, LFREE)
         end if
