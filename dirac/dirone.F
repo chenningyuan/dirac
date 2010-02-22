@@ -5754,6 +5754,8 @@ C
 C     Get index array for frozen orbitals;
 C
       NTOT=1
+      NESH(IFRP) = NESH(IFRP) + NDEL(1)
+      NPSH(IFRP) = NPSH(IFRP) + NDEL(2)
       CALL NUMLS3(VCFROZ(IFRP),IVEC,NFBAS(IFRP,0),
      &            -NPSH(IFRP),NESH(IFRP),NTOT,NZERO)
 C
@@ -6384,6 +6386,8 @@ C       Do projection
      &     '       - negative energy solutions: ',NQ(2)
  11     CONTINUE
         NTMO(IFRP)  = NORB(IFRP)-NDEL
+        NESH(IFRP)  = NESH(IFRP)-NQ(1)
+        NPSH(IFRP)  = NPSH(IFRP)-NQ(2)
         IEFF        = I2TMT(IFRP)+1
         I2TMT(IFRP) = N2TMT
         N2TMT = N2TMT + NFBAS(IFRP,0)*NTMO(IFRP)*NZT
