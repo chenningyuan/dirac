@@ -911,6 +911,7 @@ contains
               f_left  = (r_co(b)*ao_b1(ii, c) - r_co(c)*ao_b1(ii, b))*ao(jj)
               f_right = (r_co(b)*ao_b1(jj, c) - r_co(c)*ao_b1(jj, b))*ao(ii)
               f =  - (f_left - f_right)
+              f = 2.0d0*f
 
               fmat(ii, jj, (a-1)*4 + 1) = fmat(ii, jj, (a-1)*4 + 1) + s*f
             end do
