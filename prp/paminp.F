@@ -77,7 +77,7 @@ C
      &             '.WAVE F','.RHONUC','.FIRST ','.TWO-PH',
      &             '.VERDET','.ROTG  ','.MSTDIA','.PVCSPN',
      &             '.NOPCTR','.EXCDIP','.MAGOUT','.OPTROT', 
-     &             '.C6    ','.XXXXXX','.XXXXXX','.XXXXXX' /
+     &             '.C6    ','.RKBIMP','.XXXXXX','.XXXXXX' /
 C
       CALL QENTER('PRPINP')
 #include "memint.h"
@@ -127,6 +127,7 @@ C
       ESRANISO     = .FALSE.
       NPRPWF       = 1
       PRPWF(1)     = 'DHF'
+      DORKBIMP     = .FALSE.
 
 CMI Activate the  picture change transformations
 C   of four-component property matrixes 
@@ -379,7 +380,8 @@ C&&&& .C6 - evaluate C6 dispersion coefficients
             DOVDW  = .TRUE.
             GO TO 100
   134    CONTINUE 
-C&&&& XXXXXX
+C&&&& RKBIMPort; read RKB coefficients and add complementary UKB space
+            DORKBIMP = .TRUE.
             GO TO 100
   135    CONTINUE 
 C&&&& XXXXXX
@@ -435,6 +437,17 @@ CMI   g_tensors operator centers might be changed
         WRITE (LUPRI,'(1X,A)')
      &  '* do NOT perform the picture change transformation of the'//
      &  ' four-component property operators'
+      ENDIF
+      IF(DORKBIMP) THEN
+        IF(URKBAL) THEN
+          WRITE(LUPRI,'(1X,A,A)')
+     &    '* Read RKB coefficients ',
+     &    'and extended with complementary UKB space'
+        ELSE
+          DORKBIMP = .FALSE.
+          WRITE(LUPRI,'(1X,A)') 
+     &      '*** WARNING! RKBIMPort ignored since no URKBAL'
+        ENDIF
       ENDIF
 C
 C     Process input for various program sections

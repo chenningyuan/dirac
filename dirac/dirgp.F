@@ -148,9 +148,9 @@ C       0010 - read coefficients
 C       0100 - read eigenvalues
 C       1000 - read boson irrep identification
 C
-C     IDIM(1,J) - number of positronic solutions
-C     IDIM(2,J) - number of electronic solutions
-C     IDIM(3,J) - number of AO-basis functions
+C     IDIM(1,IFRP) - number of positronic solutions
+C     IDIM(2,IFRP) - number of electronic solutions
+C     IDIM(3,IFRP) - number of AO-basis functions
 C
 C     Written by T.Saue Sept 1 1995
 C
@@ -260,6 +260,8 @@ C     Read eigenvalues
 C     ================
 C
       IF(LBIT(IOPT,3)) THEN
+CTROND
+        WRITE(6,*) 'readeig..',NORBT,NO,TEST
         IF(TEST) THEN
           call alloc(ko, no)
           CALL READT(IUNIT,NO,ko)
@@ -336,9 +338,9 @@ C       0010 - read coefficients
 C       0100 - read eigenvalues
 C       1000 - read boson irrep identification
 C
-C     IDIM(1,J) - number of positronic solutions
-C     IDIM(2,J) - number of electronic solutions
-C     IDIM(3,J) - number of AO-basis functions
+C     IDIM(1,IFRP) - number of positronic solutions
+C     IDIM(2,IFRP) - number of electronic solutions
+C     IDIM(3,IFRP) - number of AO-basis functions
 C
 C     Written by T.Saue Sept 1 1995
 C
@@ -430,7 +432,6 @@ C
             JC = JC + IDIM(3,IFRP)*NFBAS(IFRP,0)*NZ
           ENDDO
           CALL MEMREL('REACMO.cf',WORK,KC,KC,KFREE,LFREE)
-        TEST = .FALSE.
         ELSE
           READ (IUNIT,END=30,ERR=40) CMO
         ENDIF
@@ -442,6 +443,8 @@ C
 C     Read eigenvalues
 C     ================
 C
+CTROND
+        WRITE(6,*) 'readeig..',NORBT,NO,TEST
       IF(LBIT(IOPT,3)) THEN
         IF(TEST) THEN
           CALL MEMGET('REAL',KO,NO,WORK,KFREE,LFREE)
@@ -3774,4 +3777,86 @@ C
       ENDDO
 C
       RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck rkbimp */
+      SUBROUTINE RKBIMP(WORK,LWORK)
+C***********************************************************************
+C
+C     Import RKB coefficients and add complementary UKB space
+C
+C     Written by T. Saue Feb 22 2010
+C
+C***********************************************************************
+      use memory_allocator
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+      LOGICAL TOBE
+      CHARACTER TEXT*74,CMOFIL*6
+      DIMENSION WORK(LWORK)
+      DIMENSION IDIM(3,2)
+#include "memint.h"
+C     Check for the presence of coefficient file
+      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+      CMOFIL='DFCOEF'
+      IF(TOBE) THEN
+        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RKBIMP')
+C       IDIM(1,IFRP) - number of positronic solutions
+C       IDIM(2,IFRP) - number of electronic solutions
+C       IDIM(3,IFRP) - number of AO-basis functions
+        READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
+     &       ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
+C.......Check that the number of negative energy solutions is smaller than UKB
+C.......and calculate space needed to store UKB complement in orthonormal basis
+        NBUF = 0
+        DO IFRP = 1,NFSYM
+          NR = NPSH(IFRP)-IDIM(1,IFRP)
+          IF(NR.GT.0) TOBE = .TRUE.
+          NBUF = NBUF + NFBAS(IFRP,0)*NR
+        ENDDO
+        IF(TOBE) THEN
+C.........Read coefficients, eigenvalues and boson irreps
+          IOPT=14
+          REWIND LUCOEF
+          CALL MEMGET('REAL',KCMO ,NCMOTQ,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KEIG ,NORBT ,WORK,KFREE,LFREE)
+          CALL MEMGET('INTE',KBEIG,NORBT ,WORK,KFREE,LFREE)
+          CALL MEMGET('REAL',KBUF ,NBUF  ,WORK,KFREE,LFREE)
+          CALL REACMO(LUCOEF,CMOFIL,WORK(KCMO),WORK(KEIG),
+     &                WORK(KIBEIG),TOTERG,IOPT,WORK,KFREE,LFREE)
+C.........At this point the first columns of the negative energy solutions
+C         corresponding to the UKB complement has been zeroed out by REACMO
+C.........Read AO-to-MO-transformation matrix
+          CALL MEMGET('REAL',KTMAT,N2TMT,WORK,KFREE,LFREE)
+          CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','RKBIMP')
+          READ(LUTMAT)
+          CALL READT(LUTMAT,N2TMT,WORK(KTMAT))
+          DO IFRP = 1,NFSYM
+            NR=NPSH(IFRP)-IDIM(1,IFRP)
+            IF(NR.GT.0) THEN
+            ENDIF   
+          ENDDO
+          CALL MEMREL('RKBIMP',WORK,KWORK,KWORK,KFREE,LFREE)
+          CLOSE(LUTMAT,STATUS='KEEP')
+          CLOSE(LUCOEF,STATUS='KEEP')
+        ELSE
+          CLOSE(LUCOEF,STATUS='KEEP')          
+          WRITE(LUPRI,'(A)')
+     &      '*** WARNING! RKBIMP: No need for UKB extension. Ignored.'
+          RETURN
+        ENDIF
+      ELSE
+        CALL QUIT('RKBIMP: Coefficient file not found !')
+      ENDIF
+
+      RETURN
+ 10   CONTINUE
+      CALL QUIT('RKBIMP: END OF FILE reading TEXT')
+ 20   CONTINUE
+      CALL QUIT('RKBIMP: ERROR reading TEXT')
       END
