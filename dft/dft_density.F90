@@ -903,14 +903,14 @@ contains
               b = 1; c = 2
           end select
 
-          do j = 1, 121
+          do j = 1, mat_dim
             jj = j
-            do i = 1, 121
+            do i = 1, mat_dim
               ii = i
 
               f_left  = (r_co(b)*ao_b1(ii, c) - r_co(c)*ao_b1(ii, b))*ao(jj)
               f_right = (r_co(b)*ao_b1(jj, c) - r_co(c)*ao_b1(jj, b))*ao(ii)
-              f =  + (f_left - f_right)
+              f =  - (f_left - f_right)
 
               fmat(ii, jj, (a-1)*4 + 1) = fmat(ii, jj, (a-1)*4 + 1) + s*f
             end do

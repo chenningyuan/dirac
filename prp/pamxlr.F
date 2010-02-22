@@ -138,7 +138,7 @@ C
 C***********************************************************************
 !gosia: use new rntlon and new twolon subroutines
 !      use london_response
-      use london_direct_hb
+!     use london_direct_hb
       use london_reorth_hb
       use memory_allocator
 

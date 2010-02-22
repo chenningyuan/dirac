@@ -564,13 +564,9 @@ contains
 
       f = 0.5d0*ao(ic)
 
-!      ao_bx(ic) = f*px
-!      ao_by(ic) = f*py
-!      ao_bz(ic) = f*pz
-!
-      ao_bx(ic) = 0.0d0
-      ao_by(ic) = 0.0d0
-      ao_bz(ic) = 0.0d0
+       ao_bx(ic) = f*px
+       ao_by(ic) = f*py
+       ao_bz(ic) = f*pz
     end do
     
   end subroutine
