@@ -260,8 +260,6 @@ C     Read eigenvalues
 C     ================
 C
       IF(LBIT(IOPT,3)) THEN
-CTROND
-        WRITE(6,*) 'readeig..',NORBT,NO,TEST
         IF(TEST) THEN
           call alloc(ko, no)
           CALL READT(IUNIT,NO,ko)
@@ -443,8 +441,6 @@ C
 C     Read eigenvalues
 C     ================
 C
-CTROND
-        WRITE(6,*) 'readeig..',NORBT,NO,TEST
       IF(LBIT(IOPT,3)) THEN
         IF(TEST) THEN
           CALL MEMGET('REAL',KO,NO,WORK,KFREE,LFREE)
