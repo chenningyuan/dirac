@@ -1,8 +1,5 @@
 module dft_ao
 
-!gosia:
-!!!!#define debug_me
-
 !   this is based on DIRAC and Dalton
 !   routines written by T. Helgaker, P. Salek, T. Saue, and others
 
@@ -567,10 +564,13 @@ contains
 
       f = 0.5d0*ao(ic)
 
-      ao_bx(ic) = f*px
-      ao_by(ic) = f*py
-      ao_bz(ic) = f*pz
-
+!      ao_bx(ic) = f*px
+!      ao_by(ic) = f*py
+!      ao_bz(ic) = f*pz
+!
+      ao_bx(ic) = 0.0d0
+      ao_by(ic) = 0.0d0
+      ao_bz(ic) = 0.0d0
     end do
     
   end subroutine

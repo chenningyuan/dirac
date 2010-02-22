@@ -47,6 +47,7 @@ module dft_main
 
   save
 
+  logical, public :: london_g_term   = .false.
   logical, public :: dft_temp_grid_is_done   = .false.
   logical, public :: dft_temp_reload_batches = .false.
 
@@ -929,6 +930,20 @@ contains
 !       exchange-correlation contribution to kohn-sham matrix
         if ((response_order == 0) .and. (response_order_ao == 0)) then
 !       here we will add LAO contribution to KS matrix
+
+! if london: 
+          if (max_ao_m_order == 1) then
+            call lda_london_distribute_test(derv(1, d_r),                      &
+                                         0,                                 &
+                                         mat_dim,                           &
+                                         fmat,                              &
+                                         ao_p,                              &
+                                         ao_p(ao_start(0, 1):ao_end(0, 1)), &
+                                         corx(ipoint), cory(ipoint), corz(ipoint))
+
+          else if (max_ao_m_order == 0) then
+! if not london:
+
           if (use_gga) then
             vt = derv(1, d_z)*rhg
 
@@ -947,54 +962,40 @@ contains
                                   ao_p,         &
                                   ao_p(ao_start(1, 0):ao_end(1, 0)))
           else
-!gosia temporary fix here
-!comment: we do it if (response_order == 0) and not if (response_order >= 0)
-!so in pammag.F in twolon we cannot call dftexc with response_order=1 as we should
-!so fixme 
-            if (max_ao_m_order == 1) then
-              call lda_london_distribute_r(derv(1, d_r),                      &
-                                           0,                                 &
-                                           mat_dim,                           &
-                                           fmat,                              &
-                                           ao_p,                              &
-                                           ao_p(ao_start(0, 1):ao_end(0, 1)), &
-                                           corx(ipoint), cory(ipoint), corz(ipoint))
-!please leave for a moment for debugging:
-! lda_london_distribute_r uses daxpy, lda_london_distribute uses nested loops
-!              call lda_london_distribute(derv(1, d_r),                      &
-!                                         0,                                 &
-!                                         mat_dim,                           &
-!                                         fmat,                              &
-!                                         ao_p,                              &
-!                                         ao_p(ao_start(0, 1):ao_end(0, 1)), &
-!                                         corx(ipoint), cory(ipoint), corz(ipoint))
-            else if (max_ao_m_order == 0) then
-              call lda_distribute_r(derv(1, d_r), &
-                                    0,            &
-                                    mat_dim,      &
-                                    fmat,         &
-                                    ao_p)
-            end if
+            call lda_distribute_r(derv(1, d_r), &
+                                  0,            &
+                                  mat_dim,      &
+                                  fmat,         &
+                                  ao_p)
           end if
+        end if ! max_ao_m_order==1
         end if
-
-!gosia fixme: but also put separately is not good..
-!g            if (max_ao_m_order == 1) then
-!g              call lda_london_distribute_r(derv(1, d_r),                      &
-!g                                           0,                                 &
-!g                                           mat_dim,                           &
-!g                                           fmat,                              &
-!g                                           ao_p,                              &
-!g                                           ao_p(ao_start(0, 1):ao_end(0, 1)), &
-!g                                           corx(ipoint), cory(ipoint), corz(ipoint))
-!g            end if
 
 
 !       linear response
         if (response_order == 1) then
 
-! gosia: we don't pass info about max_m_order into lr subroutine
-! todo: find a good place to call lda_london_subroutine_r/i (eq. 44) 
+          if (max_ao_m_order == 1) then
+! gosia: temporary fix for london
+            call g_lao_contrib(block_length,    &
+                               mat_dim,          &
+                               nz,          &
+                               nr_dmat_p,          &
+                               dmat_p,          &
+                               fmat,          &
+                               isymop,          &
+                               ihrmop,          &
+                               .false.,         &
+                               ao_p,            &
+                               r_0,             &
+                               rhg,             &
+                               z_0,             &
+                               w,               &
+                               use_gga_qr, &
+                               use_gga_qi, &
+                               buffer)
+!no london:
+          else if (max_ao_m_order == 0) then
 
           call lr(block_length,    &
                   mat_dim,          &
@@ -1013,6 +1014,8 @@ contains
                   use_gga_qr, &
                   use_gga_qi, &
                   buffer)
+
+        endif
         endif
 
 
@@ -1446,13 +1449,6 @@ contains
                                 ao_p,             &
                                 ao_p(ao_start(1, 0)))
         else
-!gosia fixme
-!              call lda_london_distribute_r(derv(1, d_r),                      &
-!                                         0,                                 &
-!                                         mat_dim,                           &
-!                                         fmat,                              &
-!                                         ao_p,                              &
-!                                         ao_p(ao_start(0, 1):ao_end(0, 1)))
           call lda_distribute_r(u_qr,             &
                                 isym(im) - 1,     &
                                 mat_dim,          &
@@ -1519,7 +1515,6 @@ contains
                                 ao_p,             &
                                 ao_p(ao_start(1, 0)))
         else
-!gosia fixme: add lda_london_distribute_i here?
           call lda_distribute_i(u_qi,             &
                                 isym(im) - 1,     &
                                 mat_dim,          &
@@ -1532,5 +1527,136 @@ contains
     end do
 
   end subroutine
+
+
+! gosia: temporary fix:
+  subroutine g_lao_contrib(block_length,       &
+                mat_dim,            &
+                nz,             &
+                nr_mat,             &
+                dmat_perturbed,     &
+                fmat,               &
+                isym,               &
+                ih,                 &
+                allow_nonhermitian, &
+                ao_p,               &
+                r_0,                &
+                gr_0,               &
+                z_0,                &
+                w,                  &
+                is_gga_qr,          &
+                is_gga_qi,          &
+                buffer)
+
+!   ----------------------------------------------------------------------------
+    integer, intent(in)    :: block_length
+    integer, intent(in)    :: mat_dim
+    integer, intent(in)    :: nz
+    integer, intent(in)    :: nr_mat
+    real(8), intent(in)    :: dmat_perturbed(*)
+    real(8), intent(inout) :: fmat(*)
+    integer, intent(in)    :: isym(nr_mat)
+    integer, intent(in)    :: ih(nr_mat)
+    logical, intent(in)    :: allow_nonhermitian
+    real(8), intent(in)    :: ao_p(*)
+    real(8), intent(in)    :: r_0(*)
+    real(8), intent(in)    :: gr_0(*)
+    real(8), intent(in)    :: z_0(*)
+    real(8), intent(in)    :: w(*)
+    logical, intent(in)    :: is_gga_qr
+    logical, intent(in)    :: is_gga_qi
+    real(8), intent(in)    :: buffer(*)
+!   ----------------------------------------------------------------------------
+    logical                :: calculate_qr, calculate_qi
+
+    real(8)                :: u_qr,    u_qi(3)
+    real(8)                :: v_qr(3), v_qi(3, 3)
+
+    real(8)                ::  r_b,     s_b(3)
+    real(8)                :: gr_b(3), gs_b(3, 3)
+
+    real(8)                :: z_b
+    real(8)                :: y_b(3)
+
+    real(8)                :: derv(mxbllen, 0:99)
+    real(8)                :: ddot
+    integer                :: k_start, k, im, im_off, j, off_mag
+!   ----------------------------------------------------------------------------
+
+    call get_functional_derv(2,                  &
+                             block_length,       &           
+                             w,                  &
+                             r_0,                &
+                             z_0,                &  
+                             nr_nonzero_derv(2), &
+                             derv)
+
+    k_start = 1
+    if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
+
+    do im = 1, nr_mat
+
+      calculate_qr = .false.
+      calculate_qi = .false.
+
+      if (ih(im) == +1) calculate_qr = .true.
+      if (ih(im) == -1) calculate_qi = .true.
+
+      if (ih(im) == 0 .and. allow_nonhermitian) then
+        calculate_qr = .true.
+        calculate_qi = .true.
+      end if
+
+      if (dft_cfg_no_sdft) then
+        calculate_qi = .false.
+      end if
+
+      im_off = mat_dim*mat_dim*nz*(im - 1)
+
+
+!     hermitian contribution (qr = quaternion real)
+      if (calculate_qr) then
+
+        call get_n(r_b,                        &
+                   isym(im) - 1,               &
+                   mat_dim,                    &
+                   dmat_perturbed(1 + im_off), &
+                   buffer,                     &
+                   ao_p)
+        
+        u_qr = derv(1, d_rr)*r_b
+        
+          call lda_distribute_r(u_qr,             &
+                                isym(im) - 1,     &
+                                mat_dim,          &
+                                fmat(1 + im_off), &
+                                ao_p)
+
+      end if !end of qr contribution
+
+!     antihermitian contribution (qi = quaternion imaginary)
+      if (calculate_qi) then
+
+        call get_s(s_b,                        &
+                   isym(im) - 1,               &
+                   mat_dim,                    &
+                   dmat_perturbed(1 + im_off), &
+                   buffer,                     &
+                   ao_p)
+        
+
+          call lda_distribute_i(u_qi,             &
+                                isym(im) - 1,     &
+                                mat_dim,          &
+                                fmat(1 + im_off), &
+                                ao_p)
+
+      end if !end of qi contribution
+
+    end do
+
+  end subroutine
+
+
 
 end module
