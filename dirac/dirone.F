@@ -4424,6 +4424,7 @@ C
      &        ' Bsym: ',IBVEC(IVEC)
           ENDIF
 C         Store information about irrep and neg/pos solution
+C         of deleted vector
           IBVEC(IVEC) = -(IP*1000+IBVEC(IVEC))
           NDEL = NDEL + 1
           GOTO 200
