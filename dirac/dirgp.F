@@ -477,6 +477,7 @@ C
       ELSE
         READ(IUNIT)
       ENDIF
+      
 C
       RETURN
 C
@@ -3812,19 +3813,22 @@ C.......and calculate space needed to store UKB complement in orthonormal basis
         NBUF = 0
         DO IFRP = 1,NFSYM
           NR = NPSH(IFRP)-IDIM(1,IFRP)
-          IF(NR.GT.0) TOBE = .TRUE.
-          NBUF = NBUF + NFBAS(IFRP,0)*NR
+          IF(NR.GT.0) THEN
+            TOBE = .TRUE.
+            NBUF = NBUF + NORB(IFRP)*NORB(IFRP)*NZ
+          ENDIF
         ENDDO
         IF(TOBE) THEN
 C.........Read coefficients, eigenvalues and boson irreps
           IOPT=14
           REWIND LUCOEF
+          CALL MEMGET('REAL',KCBUF,NBUF  ,WORK,KFREE,LFREE)
           CALL MEMGET('REAL',KCMO ,NCMOTQ,WORK,KFREE,LFREE)
           CALL MEMGET('REAL',KEIG ,NORBT ,WORK,KFREE,LFREE)
           CALL MEMGET('INTE',KBEIG,NORBT ,WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KBUF ,NBUF  ,WORK,KFREE,LFREE)
+          CALL MEMGET('INTE',KIBOS,NORBT ,WORK,KFREE,LFREE)
           CALL REACMO(LUCOEF,CMOFIL,WORK(KCMO),WORK(KEIG),
-     &                WORK(KIBEIG),TOTERG,IOPT,WORK,KFREE,LFREE)
+     &                WORK(KBEIG),TOTERG,IOPT,WORK,KFREE,LFREE)
 C.........At this point the first columns of the negative energy solutions
 C         corresponding to the UKB complement has been zeroed out by REACMO
 C.........Read AO-to-MO-transformation matrix
@@ -3832,11 +3836,37 @@ C.........Read AO-to-MO-transformation matrix
           CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','RKBIMP')
           READ(LUTMAT)
           CALL READT(LUTMAT,N2TMT,WORK(KTMAT))
+          IOFF = 0
           DO IFRP = 1,NFSYM
             NR=NPSH(IFRP)-IDIM(1,IFRP)
             IF(NR.GT.0) THEN
-            ENDIF   
+              IADR=IORB(IFRP)
+              CALL RKBIMP_1(IFRP,NFBAS(IFRP,0),NORB(IFRP),
+     &                      IDIM(1,IFRP),IDIM(2,IFRP),NR,
+     &                      WORK(KCMO+ICMOQ(IFRP)),WORK(KBEIG),
+     &                      WORK(KIBOS),IADR,
+     &                      WORK(KCBUF+IOFF),WORK(KTMAT+I2TMT(IFRP)),
+     &                      NZT,WORK,KFREE,LFREE)
+              IOFF = IOFF + NORB(IFRP)*NORB(IFRP)*NZ
+            ENDIF
           ENDDO
+C.........Backtransform UKB complement
+          REWIND LUTMAT
+          CALL READT(LUTMAT,N2TMT,WORK(KTMAT))
+          DO IFRP = 1,NFSYM
+            NR=NPSH(IFRP)-IDIM(1,IFRP)
+            IF(NR.GT.0) THEN
+              IADR=IORB(IFRP)
+              CALL RKBIMP_2(IFRP,NFBAS(IFRP,0),NORB(IFRP),
+     &                      WORK(KCMO+ICMOQ(IFRP)),WORK(KBEIG),
+     &                      WORK(KIBOS),IADR,
+     &                      WORK(KCBUF+IOFF),WORK(KTMAT+I2TMT(IFRP)),
+     &                      NZT,WORK,KFREE,LFREE)
+              IOFF = IOFF + NORB(IFRP)*NORB(IFRP)*NZ
+            ENDIF
+          ENDDO
+          CALL WRICMO(LUCOEF,WORK(KCMO),WORK(KEIG),
+     &                WORK(KBEIG),DHFERG)
           CALL MEMREL('RKBIMP',WORK,KWORK,KWORK,KFREE,LFREE)
           CLOSE(LUTMAT,STATUS='KEEP')
           CLOSE(LUCOEF,STATUS='KEEP')
@@ -3849,10 +3879,125 @@ C.........Read AO-to-MO-transformation matrix
       ELSE
         CALL QUIT('RKBIMP: Coefficient file not found !')
       ENDIF
-
+C
       RETURN
  10   CONTINUE
       CALL QUIT('RKBIMP: END OF FILE reading TEXT')
  20   CONTINUE
       CALL QUIT('RKBIMP: ERROR reading TEXT')
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck rkbimp_1 */
+      SUBROUTINE RKBIMP_1(IFRP,NBAS,NORB,NPRKB,NERKB,NR,
+     &                    CMO,IBEIG,IBOS,IADR,CBUF,TINV,NZT,
+     &                    WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Extend RKB coefficients of fermion ircop IFRP by UKB complement
+C
+C     Written by T. Saue Feb 23 2010
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,D1=1.0D0)
+C
+#include "dcbham.h"
+#include "dgroup.h"
+      DIMENSION CMO(NBAS,NORB,NZ),IBEIG(NORB),IBOS(NORB),
+     &          TINV(NBAS,NORB,NZ),CBUF(NORB,NORB,NZ),
+     &          WORK(*)
+      DIMENSION NQ(2)
+      KFRSAV = KFREE
+      IPRINT = 10
+      PRJTHR  = 1.0D-10
+C     Initialize unit matrix (transformation matrix in MO-basis)
+      CALL DUNIT2(CBUF,NORB,NORB,NORB,NZ)
+      IF(SUB_BL) THEN
+C       Spin-free or linear case: Fill array with subblock info
+        CALL INIBOS(IBOS(IADR+1),IFRP,.FALSE.,0)
+      ELSE
+C       Spin-orbit coupling: Fill array with zeros..
+        CALL ICOPY (NORB,0,0,IBOS(IADR+1),1) 
+C.......also set IBEIG to zero since APPBOS is called from DFDIAG
+        CALL ICOPY (NORB,0,0,IBEIG(IADR+1),1) 
+      ENDIF
+C
+C.....Transform negative energy coefficients to orthonormal basis
+      IV = IADR + 1 + NR
+      NDIM = NORB*NPRKB*NZ
+      CALL MEMGET('REAL',KCF,NDIM,WORK,KFREE,LFREE)
+      CALL QGEMM(NORB,NPRKB,NBAS,D1,
+     &            'H','N',IPQTOQ(1,0),TINV,NBAS,NORB,NZT,
+     &            'N','N',IPQTOQ(1,0),CMO(1,IV,1),NBAS,NPRKB,NZ,
+     &            D0,IPQTOQ(1,0),WORK(KCF),NORB,NPRKB,NZ)
+      CALL MEMGET('INTE',KIBOS,NORB,WORK,KFREE,LFREE)
+C.....Project out negative energy solutions
+      IP = 2
+      CALL PRJORT(CBUF,IBOS(IADR+1),
+     &            WORK(KCF),IBEIG(IV),1,NPRKB,
+     &            PRJTHR,THRMAX,NORB,NORB,
+     &            NPRKB,NQ(IP),IP,IPRINT)
+      CALL MEMREL('RKBIMP_1.neg',WORK,1,KCF,KFREE,LFREE)
+C.....Transform positive energy coefficients to orthonormal basis
+      IV = IADR + 1 + NR + NPRKB
+      NDIM = NORB*NERKB*NZ
+      CALL MEMGET('REAL',KCF,NDIM,WORK,KFREE,LFREE)
+      CALL QGEMM(NORB,NERKB,NBAS,D1,
+     &            'H','N',IPQTOQ(1,0),TINV,NBAS,NORB,NZT,
+     &            'N','N',IPQTOQ(1,0),CMO(1,IV,1),NBAS,NERKB,NZ,
+     &            D0,IPQTOQ(1,0),WORK(KCF),NORB,NERKB,NZ)
+C.....Project out positive energy solutions
+      IP = 1
+      CALL PRJORT(CBUF,IBOS(IADR+1),
+     &            WORK(KCF),IBEIG(IV),1,NERKB,
+     &            PRJTHR,THRMAX,NORB,NORB,
+     &            NERKB,NQ(IP),IP,IPRINT)
+      CALL MEMREL('RKBIMP_1',WORK,1,KCF,KFREE,LFREE)
+C.....
+      NDEL = NQ(1)+NQ(2)
+      WRITE(6,*) '*RKBIMP : solutions deleted:',NDEL
+      CALL MEMREL('RKBIMP_1.pos',WORK,1,KFRSAV,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck rkbimp_2 */
+      SUBROUTINE RKBIMP_2(IFRP,NBAS,NORB,CMO,IBEIG,IBOS,IADR,
+     &                    CBUF,TMAT,NZT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Extend RKB coefficients of fermion ircop IFRP by UKB complement
+C
+C     Written by T. Saue Feb 23 2010
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,D1=1.0D0)
+C
+#include "dcbham.h"
+#include "dgroup.h"
+      DIMENSION CMO(NBAS,NORB,NZ),IBEIG(NORB),IBOS(NORB),
+     &          TMAT(NBAS,NORB,NZ),CBUF(NORB,NORB,NZ),
+     &          WORK(*)
+      DIMENSION NQ(2)
+      KFRSAV = KFREE
+      IPRINT = 10
+      II = 0
+      DO I = 1,NORB
+      IF(IBOS(IADR+I).GE.-100) THEN
+        II = II + 1
+        CALL QGEMM(NBAS,1,NORB,D1,
+     &          'N','N',IPQTOQ(1,0),TMAT,NBAS,NORB,NZT,
+     &          'N','N',IPQTOQ(1,0),CBUF(1,I,1), NORB,NORB,NZ,
+     &          D0,IPQTOQ(1,0),CMO(1,II,1),NBAS,NORB,NZ)
+        IF(SUB_BL) IBEIG(IADR+II)= -MOD(IBOS(IADR+I),1000)
+      ENDIF
+      ENDDO
+      WRITE(6,*) 'RKBIMP2: transformed :',II
+      RETURN
+      END
+      
+
+
+
