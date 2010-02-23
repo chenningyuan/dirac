@@ -697,12 +697,10 @@ C
 
       CALL QENTER('add_dft_to_twolon')
 
+      if (dirac_cfg_dft_calculation) then
       nr_fmat = 3
 
       call genden(dmat0, cmo, 1, iprint)
-!fixme 
-! we have two direct-LAO contributions: eqs. 44 and 46
-!should be response_order=1
 
 !     CALL DZERO(FMAT,NTBAS(0)*NTBAS(0)*NZ)
       write(*, *) 'debug fmat_x before direct'
@@ -726,7 +724,7 @@ C
       write(*, *) 'debug fmat_x after direct'
       CALL PRQMAT(fmat,NTBAS(0),NTBAS(0),NTBAS(0),
      &             NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
-
+      endif
       call qexit('add_dft_to_twolon')
 
       return
@@ -3651,8 +3649,6 @@ C                GRDOR1
 C
 C   Written by Miro Ilias, August 2003, Odense
 C 
-!gosia: this is called in grdor1 routine in pamgrd.F which calculates property
-! gradient, however here - all is read from files written in routines above 
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -3706,7 +3702,6 @@ C   ... 1. accumulate ONELON into WORK(KPRPMOLO) if 1.bit is ON
          CALL READAC(LUONELO,N2ORBXQ,WORK(KPRPMOLO),ICOMP)
          CLOSE(LUONELO,STATUS = 'KEEP')
          IF (IBTAND(IB,8).NE.8) THEN
-!gosia: work(kprpmolo)+prpmo
           CALL DAXPY(N2ORBXQ,D1,WORK(KPRPMOLO),1,PRPMO,1)
          ELSE
            WRITE(LUPRI,'(2X,A,D12.7)')
@@ -3714,9 +3709,9 @@ C   ... 1. accumulate ONELON into WORK(KPRPMOLO) if 1.bit is ON
           CALL DAXPY(N2ORBXQ,FAC2LO,WORK(KPRPMOLO),1,PRPMO,1)
          ENDIF
          CALL DZERO(WORK(KPRPMOLO),N2ORBXQ)
-         IF (IPRINT.GE.5) THEN
+!gosia         IF (IPRINT.GE.5) THEN
           WRITE(LUPRI,'(2X,A)')'GETDHBLO: Added ONELON'
-         ENDIF
+!gosia         ENDIF
       ENDIF
 
 C   ... 2. accumulate TWOLON into WORK(KPRPMOLO) if 2.bit is ON
@@ -3732,13 +3727,13 @@ C   ...   if 4.bit is ON, acc TWOLON with some factor FAC2LO
          ENDIF
          CLOSE(LUTWOL,STATUS = 'KEEP')
          CALL DZERO(WORK(KPRPMOLO),N2ORBXQ)
-         IF (IPRINT.GE.5) THEN
+!gosia         IF (IPRINT.GE.5) THEN
           WRITE(LUPRI,'(2X,A)')'GETDHBLO: Added TWOLON'
           IF (IBTAND(IB,8).EQ.8) THEN
            WRITE(LUPRI,'(2X,A,D12.7)')
      &    'GETDHBLO: Added TWOLON with FAC2LO=',FAC2LO
           ENDIF
-         ENDIF
+!gosia         ENDIF
       ENDIF
 
 C   ... 3. accumulate FCKLON into WORK(KPRPMOLO) if 3.bit is ON
@@ -3749,21 +3744,21 @@ C   ... 3. accumulate FCKLON into WORK(KPRPMOLO) if 3.bit is ON
          CALL DAXPY(N2ORBXQ,D1,WORK(KPRPMOLO),1,PRPMO,1)
          CLOSE(LUFCKL,STATUS = 'KEEP')
          CALL DZERO(WORK(KPRPMOLO),N2ORBXQ)
-         IF (IPRINT.GE.5) THEN
+!gosia         IF (IPRINT.GE.5) THEN
           WRITE(LUPRI,'(2X,A)')'GETDHBLO: Added FCKLON'
-         ENDIF
+!gosia         ENDIF
       ENDIF
 
 C ... print the total matrix and CHECK if it is anti-symmetric !
 
-        IF (IPRINT.GE.5) THEN
+!gosia        IF (IPRINT.GE.5) THEN
           WRITE(LUPRI,'(/A,A,A,I3)')
      & 'GETDHBLO: For *** LAO-PDBS ***'
      &//' the total accumulated MO-matrix of property ',
      &  PRPNAM(INDXPR), 'with flag',IB
         CALL PRQMAT(PRPMO,NORBT,NORBT,NORBT,NORBT,NZ,
      &              IPQTOQ(1,IREP),LUPRI)
-        ENDIF
+!gosia        ENDIF
 
 C ... check the symmetry of the total property
 C      gradient matrix, PRPMO for LAO-PDBS
@@ -3780,12 +3775,12 @@ C   ... accumulate sum of differences
        ENDDO
        DSX = DSX/DFLOAT( ((NORBT*NORBT-NORBT)/2)*NZ)
 
-       IF (IPRINT.GE.3) THEN
+!gosia       IF (IPRINT.GE.3) THEN
         WRITE(LUPRI,'(4X,A,/,A,A,A,1X,D12.5)')
      &'*** GETDHB: The average symmetry of the final dH/dB',
      &' MO-property matrix ',PRPNAM(INDXPR),
      &' with LAO is: ',DSX
-       ENDIF
+!gosia       ENDIF
 
       IF (DABS(DSX).GE.THRS) THEN
         WRITE(LUPRI,'(4X,A,/,A,A,A,1X,D12.5)')
