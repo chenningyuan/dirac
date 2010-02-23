@@ -914,8 +914,6 @@ contains
 
               f = (r_co(c)*ao_b1(jj, b) - r_co(b)*ao_b1(jj, c))*ao(ii) &
                 - (r_co(c)*ao_b1(ii, b) - r_co(b)*ao_b1(ii, c))*ao(jj)
-             !f = 2.0d0*(r_co(c)*ao_b1(jj, b) - r_co(b)*ao_b1(jj, c))*ao(ii)
-              f = -0.5d0*f
 
               fmat(ii, jj, (a-1)*4 + 1) = fmat(ii, jj, (a-1)*4 + 1) + s*f
             end do
