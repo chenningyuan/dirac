@@ -4016,8 +4016,6 @@ C       Spin-free or linear case: Fill array with subblock info
       ELSE
 C       Spin-orbit coupling: Fill array with zeros..
         CALL ICOPY (NORB,0,0,IBOS(IADR+1),1) 
-C.......also set IBEIG to zero since APPBOS is called from DFDIAG
-        CALL ICOPY (NORB,0,0,IBEIG(IADR+1),1) 
       ENDIF
 C
 C.....Transform negative energy coefficients to orthonormal basis

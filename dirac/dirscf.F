@@ -3821,26 +3821,6 @@ C       Check if any positronic eigenvalues are below -2mc^2
 C
         IF(IPRSCF.GE.2) CALL EIGCHK(EIG(IORB(I)+1),NPSH(I))
 C
-C       Do an approximate identification of the spinors by their
-C       boson character for use in the CI.
-        IF (.NOT.SPINFR .AND. .NOT.SUB_BL .AND. NFROT.EQ.0) THEN
-           CALL MEMGET('INTE',KINDX,NORB(I),WORK,KFREE,LFREE)
-           CALL MEMGET('REAL',KRDUM,4*NORB(I),WORK,KFREE,LFREE)
-           CALL APPBOS (I,NTMO(I),WORK(KINDX),
-     &                  IBEIG(IORB(I)+1),FAO(I2TMOT(I)+1),
-     &                  WORK(KRDUM))
-           CALL MEMREL('DFDIAG',WORK,KINDX,KINDX,KFREE,LFREE)
-
-        IF (DODBG.AND.IPRHAM.GE.7) THEN
-          write(lupri,*)
-          write(lupri,*) 'After APPBOS, IBEIG for ifsym=',I,':',
-     &     (IBEIG(K+IORB(I)),K=1,NTMO(I))
-          write(lupri,*) 'EIG for ifsym=',I,':',
-     &     (EIG(K+IORB(I)),K=1,NTMO(I))
-        ENDIF
-
-        END IF
-C
  30   CONTINUE
 C
       CALL QEXIT('DFDIAG')
