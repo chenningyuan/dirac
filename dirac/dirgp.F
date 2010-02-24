@@ -4006,7 +4006,7 @@ C
      &          WORK(*)
       DIMENSION NQ(2)
       KFRSAV = KFREE
-      IPRINT = 10
+      IPRINT = 0
       PRJTHR  = 1.0D-10
 C     Initialize unit matrix (transformation matrix in MO-basis)
       CALL DUNIT2(CBUF,NORB,NORB,NORB,NZ)
@@ -4079,15 +4079,10 @@ C
      &          TMAT(NBAS,NORB,NZ),CBUF(NORB,NORB,NZ),WORK(*)
       DIMENSION NQ(2)
       KFRSAV = KFREE
-      IPRINT = 10
+      IPRINT = 0
 C.....Approximate eigenvalue of UKB complement
       FAC=-D2*CVAL*CVAL
       II = 0
-CTROND
-      WRITE(6,*) '*RKBIMP: IBOS array:',IADR
-      DO I = 1,NORB
-        WRITE(6,*) I,IBOS(IADR+I)
-      ENDDO
       IF(IPRINT.GE.5) THEN
           WRITE(6,*) '* RKBIMP: CBUF on input',I
           CALL PRQMAT(CBUF(1,1,1),NORB,NORB,NORB,NORB,
