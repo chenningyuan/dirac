@@ -833,6 +833,13 @@ C
       FIRST3 = .TRUE.
 #endif
 
+! here if dft, then scale HF exchange
+!      do i = 1, 3
+!      do j = 1, 4
+!        write(*, *) 'ifctyp(j, i)=', j, i, ifctyp(j, i)
+!      enddo
+!      enddo
+
 CMI   ... fix the parallel run...
 C     PARCAL_SAVE = PARCAL
 C     PARCAL = .FALSE.
@@ -1314,13 +1321,6 @@ C
 C   Last revisons: 
 C
 C***********************************************************************
-!gosia: add dft
-      use dirac_cfg
-#ifdef MOD_DFT
-      use dft_main
-      use dft_cfg
-#endif
-
 #include "implicit.h"
 #include "priunit.h"  
 #include "dcbgen.h"
@@ -3709,9 +3709,9 @@ C   ... 1. accumulate ONELON into WORK(KPRPMOLO) if 1.bit is ON
           CALL DAXPY(N2ORBXQ,FAC2LO,WORK(KPRPMOLO),1,PRPMO,1)
          ENDIF
          CALL DZERO(WORK(KPRPMOLO),N2ORBXQ)
-!gosia         IF (IPRINT.GE.5) THEN
+         IF (IPRINT.GE.5) THEN
           WRITE(LUPRI,'(2X,A)')'GETDHBLO: Added ONELON'
-!gosia         ENDIF
+         ENDIF
       ENDIF
 
 C   ... 2. accumulate TWOLON into WORK(KPRPMOLO) if 2.bit is ON
@@ -3727,13 +3727,13 @@ C   ...   if 4.bit is ON, acc TWOLON with some factor FAC2LO
          ENDIF
          CLOSE(LUTWOL,STATUS = 'KEEP')
          CALL DZERO(WORK(KPRPMOLO),N2ORBXQ)
-!gosia         IF (IPRINT.GE.5) THEN
+         IF (IPRINT.GE.5) THEN
           WRITE(LUPRI,'(2X,A)')'GETDHBLO: Added TWOLON'
           IF (IBTAND(IB,8).EQ.8) THEN
            WRITE(LUPRI,'(2X,A,D12.7)')
      &    'GETDHBLO: Added TWOLON with FAC2LO=',FAC2LO
           ENDIF
-!gosia         ENDIF
+         ENDIF
       ENDIF
 
 C   ... 3. accumulate FCKLON into WORK(KPRPMOLO) if 3.bit is ON
@@ -3744,21 +3744,21 @@ C   ... 3. accumulate FCKLON into WORK(KPRPMOLO) if 3.bit is ON
          CALL DAXPY(N2ORBXQ,D1,WORK(KPRPMOLO),1,PRPMO,1)
          CLOSE(LUFCKL,STATUS = 'KEEP')
          CALL DZERO(WORK(KPRPMOLO),N2ORBXQ)
-!gosia         IF (IPRINT.GE.5) THEN
+         IF (IPRINT.GE.5) THEN
           WRITE(LUPRI,'(2X,A)')'GETDHBLO: Added FCKLON'
-!gosia         ENDIF
+         ENDIF
       ENDIF
 
 C ... print the total matrix and CHECK if it is anti-symmetric !
 
-!gosia        IF (IPRINT.GE.5) THEN
+        IF (IPRINT.GE.5) THEN
           WRITE(LUPRI,'(/A,A,A,I3)')
      & 'GETDHBLO: For *** LAO-PDBS ***'
      &//' the total accumulated MO-matrix of property ',
      &  PRPNAM(INDXPR), 'with flag',IB
         CALL PRQMAT(PRPMO,NORBT,NORBT,NORBT,NORBT,NZ,
      &              IPQTOQ(1,IREP),LUPRI)
-!gosia        ENDIF
+        ENDIF
 
 C ... check the symmetry of the total property
 C      gradient matrix, PRPMO for LAO-PDBS
@@ -3775,12 +3775,12 @@ C   ... accumulate sum of differences
        ENDDO
        DSX = DSX/DFLOAT( ((NORBT*NORBT-NORBT)/2)*NZ)
 
-!gosia       IF (IPRINT.GE.3) THEN
+       IF (IPRINT.GE.3) THEN
         WRITE(LUPRI,'(4X,A,/,A,A,A,1X,D12.5)')
      &'*** GETDHB: The average symmetry of the final dH/dB',
      &' MO-property matrix ',PRPNAM(INDXPR),
      &' with LAO is: ',DSX
-!gosia       ENDIF
+       ENDIF
 
       IF (DABS(DSX).GE.THRS) THEN
         WRITE(LUPRI,'(4X,A,/,A,A,A,1X,D12.5)')
@@ -3832,22 +3832,3 @@ C       write(lupri,*) 'ICONVXYZ: C=',C,' ICONVXYZ=',ICONVXYZ
       RETURN
       END
 
-!!gosia: for testing
-!#define memory_problems
-!#ifdef memory_problems
-!      SUBROUTINE BLE(A, WORK, KFREE, LFREE)
-!#include "implicit.h"
-!#include "dcbbas.h"
-!       DIMENSION A(NTBAS(0))
-!!
-!        KFRSAV = KFREE
-!        write(*, *) 'before memget'
-!        CALL MEMGET('REAL',KB,NTBAS(0),WORK,KFREE,LFREE)
-!        write(*, *) 'after memget'
-!        CALL DZERO(WORK(KB), NTBAS(0))
-!        CALL DCOPY(NTBAS(0), (/2.D0/), 1, WORK(KB), 1) 
-!        CALL DCOPY(NTBAS(0), WORK(KB), 1, A, 1)
-!        CALL MEMREL('BLE',WORK,1,KFRSAV,KFREE,LFREE)
-!        RETURN
-!      END SUBROUTINE
-!#endif /* memory_problems */
