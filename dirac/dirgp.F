@@ -3949,13 +3949,14 @@ C.........Read AO-to-MO-transformation matrix
 C.........Backtransform UKB complement
           REWIND LUTMAT
           CALL READT(LUTMAT,N2TMT,WORK(KTMAT))
+          IOFF = 0
           DO IFRP = 1,NFSYM
             NR=NPSH(IFRP)-IDIM(1,IFRP)
             IF(NR.GT.0) THEN
               IADR=IORB(IFRP)
               CALL RKBIMP_2(IFRP,NFBAS(IFRP,0),NORB(IFRP),
      &                      WORK(KCMO+ICMOQ(IFRP)),WORK(KBEIG),
-     &                      WORK(KIBOS),IADR,
+     &                      WORK(KEIG),WORK(KIBOS),IADR,
      &                      WORK(KCBUF+IOFF),WORK(KTMAT+I2TMT(IFRP)),
      &                      NZT,WORK,KFREE,LFREE)
               IOFF = IOFF + NORB(IFRP)*NORB(IFRP)*NZ
@@ -4058,7 +4059,7 @@ C.....
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck rkbimp_2 */
-      SUBROUTINE RKBIMP_2(IFRP,NBAS,NORB,CMO,IBEIG,IBOS,IADR,
+      SUBROUTINE RKBIMP_2(IFRP,NBAS,NORB,CMO,IBEIG,EIG,IBOS,IADR,
      &                    CBUF,TMAT,NZT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -4069,17 +4070,29 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0=0.0D0,D1=1.0D0)
+      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
 C
+#include "dcbgen.h"
 #include "dcbham.h"
 #include "dgroup.h"
-      DIMENSION CMO(NBAS,NORB,NZ),IBEIG(NORB),IBOS(NORB),
-     &          TMAT(NBAS,NORB,NZ),CBUF(NORB,NORB,NZ),
-     &          WORK(*)
+      DIMENSION CMO(NBAS,NORB,NZ),IBEIG(NORB),EIG(NORB),IBOS(NORB),
+     &          TMAT(NBAS,NORB,NZ),CBUF(NORB,NORB,NZ),WORK(*)
       DIMENSION NQ(2)
       KFRSAV = KFREE
       IPRINT = 10
+C.....Approximate eigenvalue of UKB complement
+      FAC=-D2*CVAL*CVAL
       II = 0
+CTROND
+      WRITE(6,*) '*RKBIMP: IBOS array:',IADR
+      DO I = 1,NORB
+        WRITE(6,*) I,IBOS(IADR+I)
+      ENDDO
+      IF(IPRINT.GE.5) THEN
+          WRITE(6,*) '* RKBIMP: CBUF on input',I
+          CALL PRQMAT(CBUF(1,1,1),NORB,NORB,NORB,NORB,
+     &              NZ,IPQTOQ(1,0),LUPRI)
+      ENDIF
       DO I = 1,NORB
       IF(IBOS(IADR+I).GE.-100) THEN
         II = II + 1
@@ -4088,8 +4101,20 @@ C
      &          'N','N',IPQTOQ(1,0),CBUF(1,I,1), NORB,NORB,NZ,
      &          D0,IPQTOQ(1,0),CMO(1,II,1),NBAS,NORB,NZ)
         IF(SUB_BL) IBEIG(IADR+II)= -MOD(IBOS(IADR+I),1000)
+        IF(IPRINT.GE.5) THEN
+          WRITE(6,*) '* RKBIMP: UKB complement..untrans',I
+          CALL PRQMAT(CBUF(1,I,1),NORB,1,NORB,NORB,
+     &              NZ,IPQTOQ(1,0),LUPRI)
+        ENDIF
+
       ENDIF
       ENDDO
+      CALL DCOPY(II,FAC,0,EIG(IADR+1),1)
+      IF(IPRINT.GE.5) THEN
+        WRITE(6,*) '* RKBIMP: UKB complement..'
+        CALL PRQMAT(CMO(1,1,1),NBAS,II,NBAS,NORB,
+     &              NZ,IPQTOQ(1,0),LUPRI)
+      ENDIF
       WRITE(6,*) 'RKBIMP2: transformed :',II
       RETURN
       END
