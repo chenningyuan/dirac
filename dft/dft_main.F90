@@ -933,7 +933,7 @@ contains
 
 ! if london: 
           if (max_ao_m_order == 1) then
-            call lda_london_distribute_test(derv(1, d_r),                      &
+            call lda_london_distribute_r(derv(1, d_r),                      &
                                          0,                                 &
                                          mat_dim,                           &
                                          fmat,                              &
