@@ -714,13 +714,13 @@ contains
    r_co(     2) = cy - dft_origin(2)
    r_co(     3) = cz - dft_origin(3)
 
-!    do jxyz = 0, 0
-!      do iblock = 1, nr_density_blocks(jxyz, irep)
-!
-!        nr1 = nr_ao(1, iblock, jxyz, irep)
-!        st1 = st_ao(1, iblock, jxyz, irep)
-!        nr2 = nr_ao(2, iblock, jxyz, irep)
-!        st2 = st_ao(2, iblock, jxyz, irep)
+    do jxyz = 0, 0
+      do iblock = 1, nr_density_blocks(jxyz, irep)
+
+        nr1 = nr_ao(1, iblock, jxyz, irep)
+        st1 = st_ao(1, iblock, jxyz, irep)
+        nr2 = nr_ao(2, iblock, jxyz, irep)
+        st2 = st_ao(2, iblock, jxyz, irep)
 
         do a = 1, 3
           select case (a)
@@ -732,24 +732,19 @@ contains
               b = 1; c = 2
           end select
 
-          do j = 1, mat_dim
-            jj = j
-            do i = 1, mat_dim
-              ii = i
+          do ii = st1, st1 + nr1 - 1
+            do jj = st2, st2 + nr2 - 1
 
               f = (r_co(c)*ao_b1(jj, b) - r_co(b)*ao_b1(jj, c))*ao(ii) &
                 - (r_co(c)*ao_b1(ii, b) - r_co(b)*ao_b1(ii, c))*ao(jj)
 
               fmat(ii, jj, (a-1)*4 + 1) = fmat(ii, jj, (a-1)*4 + 1) + s*f
+
             end do
           end do
-
-
         end do
-
-!      end do
-!    end do
-
+      end do
+    end do
 
   end subroutine
 

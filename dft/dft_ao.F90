@@ -270,6 +270,32 @@ contains
                              ao(ofm),         &
                              ao(ofm + nr_ao),  &
                              ao(ofm + 2*nr_ao))
+              if (need_ao_order(1, 1)) then
+                ofm = ao_start(1, 1) + i - 1
+                ofg = ao_start(1, 0) + i - 1
+                call get_ao_b1(px, py, pz,         &
+                               ishell,                 &
+                               ao(ofg),           &
+                               ao(ofm),         &
+                               ao(ofm + nr_ao),  &
+                               ao(ofm + 2*nr_ao))
+                ofm = ofm + nr_ao*3
+                ofg = ofg + nr_ao
+                call get_ao_b1(px, py, pz,         &
+                               ishell,                 &
+                               ao(ofg),           &
+                               ao(ofm),         &
+                               ao(ofm + nr_ao),  &
+                               ao(ofm + 2*nr_ao))
+                ofm = ofm + nr_ao*3
+                ofg = ofg + nr_ao
+                call get_ao_b1(px, py, pz,         &
+                               ishell,                 &
+                               ao(ofg),           &
+                               ao(ofm),         &
+                               ao(ofm + nr_ao),  &
+                               ao(ofm + 2*nr_ao))
+              end if
             end if
 
           end if
