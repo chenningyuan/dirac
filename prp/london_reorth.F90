@@ -1,7 +1,6 @@
 module london_reorth_hb
 
   use interface_for_pammag
-  use pammag_info
   use memory_allocator 
 
   use dirac_cfg
@@ -23,8 +22,7 @@ module london_reorth_hb
   integer          :: memory_usage  = 0 ! Amount of work array used
   integer          :: mem_wrk_count = 0 ! Counts
 
-!  integer, allocatable :: irepdm(:)
-!  integer, allocatable :: ifctyp(:)
+  integer          :: nr_fock       = 3
 
 contains
 
@@ -123,10 +121,6 @@ contains
 !-----------------------------------------------------------------------
 
 !get unperturbed Fock matrix in MO basis:
-!todo: reduce memory and get it from DFFCK1 and DFFCK2 files:
-! (but there we have Fock in AO basis...)
-
-    !call dzero(mat1, 3*t_n2bbasxq)
 
     lwork = len_f77_work
     kfree = 1
@@ -208,7 +202,6 @@ contains
 
       call wrtdac(fcklon_unit, p_n2orbxq,   &
                   mat2(1 + (icomp - 1)*p_n2orbxq), icomp)
-!gosia test      call wrtdac(fcklon_unit, p_n2orbxq,(/0.0d0/), icomp)
 
     end do ! do i = 1, 3
 
@@ -290,10 +283,6 @@ contains
       call alloc(dmat, p_n2bbasxq)
       call genden(dmat, cmo, 1, prp_iprint)
 
-! tsaue+gosia: This contribution is wrong, in fact we get half the direct contribution !!!
-!fixme should be: response_order=1 and m_order=0
-! but it works with response_order=0 an m_order=1
-
       call dftexc(nr_ao_total,   &
                   nr_qu,         &
                   nr_fock,       &
@@ -343,28 +332,6 @@ contains
     integer :: indxpr
     integer :: icomp, i, j
 !-----------------------------------------------------------------------
-
-!#define test_gmolitx2
-!remove this - it gives wrong result...
-#ifdef test_gmolitx2
-
-    do i = 1, 3
-
-      lwork = len_f77_work
-      call select_wrk(work, lwork)
-
-      call gmolitx2(fmo(1+(i-1)*p_n2orbxq),  &
-                    fao(1+(i-1)*p_n2bbasxq),  &
-                    cmo,        &
-                    ibeig,      &
-                    work,       &
-                    lwork)
-
-      call deselect_wrk(work, lwork)
-
-    end do
-
-#else 
 
     do icomp = 1, 3
 
@@ -416,8 +383,6 @@ contains
 
       end do
     end do
-
-#endif /* test_gmolitx2 */
 
   end subroutine
 

@@ -136,8 +136,6 @@ C     2002/2003, MI & HJAaj(&TEC) added changes for LAO based
 C     calculation of magnetic properties
 C
 C***********************************************************************
-!gosia: use new rntlon and new twolon subroutines
-!      use london_response
 !     use london_direct_hb
       use london_reorth_hb
       use memory_allocator
@@ -209,7 +207,7 @@ c.......direct contribution
 c.......reorthonormalization contribution
         if ((.not. noonei) .or. (.not. noorth)) then
           call london_reort_hb(cmo, ibeig, work(kfree), lfree)
-!old          call RNTLON(cmo, ibeig, WORK, KFREE, LFREE)
+!old code         call RNTLON(cmo, ibeig, WORK, KFREE, LFREE)
         end if
 
         call dealloc(cmo)
