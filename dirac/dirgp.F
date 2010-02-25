@@ -3881,7 +3881,6 @@ C
 C     Written by T. Saue Feb 22 2010
 C
 C***********************************************************************
-      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -4019,31 +4018,38 @@ C       Spin-orbit coupling: Fill array with zeros..
       ENDIF
 C
 C.....Transform negative energy coefficients to orthonormal basis
-      IV = IADR + 1 + NR
+      IP = 2
+      ICOL = 1 + NR
+      IV = IADR + ICOL
       NDIM = NORB*NPRKB*NZ
       CALL MEMGET('REAL',KCF,NDIM,WORK,KFREE,LFREE)
       CALL QGEMM(NORB,NPRKB,NBAS,D1,
      &            'H','N',IPQTOQ(1,0),TINV,NBAS,NORB,NZT,
-     &            'N','N',IPQTOQ(1,0),CMO(1,IV,1),NBAS,NPRKB,NZ,
+     &            'N','N',IPQTOQ(1,0),CMO(1,ICOL,1),NBAS,NPRKB,NZ,
      &            D0,IPQTOQ(1,0),WORK(KCF),NORB,NPRKB,NZ)
-      CALL MEMGET('INTE',KIBOS,NORB,WORK,KFREE,LFREE)
+          WRITE(6,*) '* RKBIMP: negCMO in orth',IFRP
+          CALL PRQMAT(WORK(KCF),NORB,NPRKB,NORB,NPRKB,
+     &              NZ,IPQTOQ(1,0),LUPRI)
 C.....Project out negative energy solutions
-      IP = 2
       CALL PRJORT(CBUF,IBOS(IADR+1),
      &            WORK(KCF),IBEIG(IV),1,NPRKB,
      &            PRJTHR,THRMAX,NORB,NORB,
      &            NPRKB,NQ(IP),IP,IPRINT)
       CALL MEMREL('RKBIMP_1.neg',WORK,1,KCF,KFREE,LFREE)
 C.....Transform positive energy coefficients to orthonormal basis
-      IV = IADR + 1 + NR + NPRKB
+      IP = 1
+      ICOL = 1 + NR + NPRKB
+      IV = IADR + ICOL
       NDIM = NORB*NERKB*NZ
       CALL MEMGET('REAL',KCF,NDIM,WORK,KFREE,LFREE)
       CALL QGEMM(NORB,NERKB,NBAS,D1,
      &            'H','N',IPQTOQ(1,0),TINV,NBAS,NORB,NZT,
-     &            'N','N',IPQTOQ(1,0),CMO(1,IV,1),NBAS,NERKB,NZ,
+     &            'N','N',IPQTOQ(1,0),CMO(1,ICOL,1),NBAS,NERKB,NZ,
      &            D0,IPQTOQ(1,0),WORK(KCF),NORB,NERKB,NZ)
+          WRITE(6,*) '* RKBIMP: posCMO in orth',IFRP
+          CALL PRQMAT(WORK(KCF),NORB,NPRKB,NORB,NPRKB,
+     &              NZ,IPQTOQ(1,0),LUPRI)
 C.....Project out positive energy solutions
-      IP = 1
       CALL PRJORT(CBUF,IBOS(IADR+1),
      &            WORK(KCF),IBEIG(IV),1,NERKB,
      &            PRJTHR,THRMAX,NORB,NORB,
@@ -4051,7 +4057,7 @@ C.....Project out positive energy solutions
       CALL MEMREL('RKBIMP_1',WORK,1,KCF,KFREE,LFREE)
 C.....
       NDEL = NQ(1)+NQ(2)
-      WRITE(6,*) '*RKBIMP : solutions deleted:',NDEL
+      WRITE(6,*) '*RKBIMP : solutions deleted:',NDEL,NQ(1),NQ(2)
       CALL MEMREL('RKBIMP_1.pos',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
       END
