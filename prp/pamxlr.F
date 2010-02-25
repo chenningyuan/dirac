@@ -136,6 +136,12 @@ C     2002/2003, MI & HJAaj(&TEC) added changes for LAO based
 C     calculation of magnetic properties
 C
 C***********************************************************************
+!gosia: use new rntlon and new twolon subroutines
+!      use london_response
+!     use london_direct_hb
+      use london_reorth_hb
+      use memory_allocator
+
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(GPTHRS = 1.0D-9,D0 = 0.0D0,D2=2.0D0)
@@ -156,6 +162,10 @@ C
 C
       LOGICAL   LBUF
       CHARACTER TTYP(-1:1)*2
+
+      integer, allocatable :: ibeig(:)
+      real(8), allocatable :: cmo(:)
+
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(NBFREQ,NLRBPT),
      &          WORK(*)
       SAVE TTYP
@@ -183,25 +193,30 @@ C     ***                                                    ***
 C     *** L I N E A R   R E S P O N S E   F U N C T I O N S  ***
 C     ***                                                    ***
 C     **********************************************************
-
 #ifdef MOD_LONDON
-C   ... When London atomic orbitals are in use...
-      IF (LONDON) THEN
-C   ... allocate memmory for MO coefficients and boson irreps info
-C       (needed dcborb.h, dcbbas.h common blocks)
-        CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
-C   ... accumulate 1-el. contrubution; get MO coeff+boson irreps info
-        CALL ONELON(WORK(KCMO),WORK(KBEIG),WORK,KFREE,LFREE)
-C   ... calculate two-electron contribution
-        IF (.NOT.NOTWOL)
-     &     CALL TWOLON(WORK(KCMO),WORK(KBEIG),WORK(KFREE),LFREE)
-C   ... calculate reorthonormalization contribution
-        IF (.NOT.NOONEI)
-     &     CALL RNTLON(WORK(KCMO),WORK(KBEIG),WORK,KFREE,LFREE)
-        CALL MEMREL('PRPXL1.LONDON',WORK,1,KCMO,KFREE,LFREE)
-      ENDIF
+      if (london) then
+        call alloc(cmo,   ncmotq)
+        call alloc(ibeig, ntbas(0))
+
+c.......direct contribution
+        call onelon(cmo, ibeig, work, kfree, lfree)
+
+        if (.not.notwol) then
+!new          call london_twoel_hb(cmo, ibeig, work(kfree), lfree)
+          CALL TWOLON(cmo, ibeig, WORK(KFREE), LFREE)
+        end if
+
+c.......reorthonormalization contribution
+        if ((.not. noonei) .or. (.not. noorth)) then
+          call london_reort_hb(cmo, ibeig, work(kfree), lfree)
+!old          call RNTLON(cmo, ibeig, WORK, KFREE, LFREE)
+        end if
+
+        call dealloc(cmo)
+        call dealloc(ibeig)
+      endif
 #endif /* MOD_LONDON */
+
 C
 C     Memory allocation
 C     =================

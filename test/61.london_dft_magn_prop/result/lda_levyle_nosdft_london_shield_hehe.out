@@ -1,0 +1,2834 @@
+DIRAC launched (pam script) by gosia@ibm at śro, 24 lut 2010, 13:35:24 CET
+in : /home/gosia/jobs_dirac/dft_lao
+===========================================================================================
+Size of all static allocations (pam script) : 72.6843 MB
+DIRAC serial allocating 12000000 words (91 MB) of memory
+ ******************************************************************************
+ *                                                                            *
+ *                                O U T P U T                                 *
+ *                                   from                                     *
+ *                                                                            *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                   *
+ *                   @@  @@        @@  @@   @@  @@   @@                       *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                       *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                       *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                   *
+ *                                                                            *
+ *                                                                            *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:i
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii|
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////|
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<S
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$S
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SF
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]Zk
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&F
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969k
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9Z
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][F
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
+ ******************************************************************************
+ *                                                                            *
+ *         =======================================================            *
+ *                     Program for Atomic and Molecular                       *
+ *          Direct Iterative Relativistic Allelectron Calculations            *
+ *         =======================================================            *
+ *                                                                            *
+ *                        VERSION 08.00  17 September 2008                    *
+ *                                                                            *
+ ******************************************************************************
+ *                                                                            *
+ *    Written by:                                                             *
+ *                                                                            *
+ *    Lucas Visscher           VU University Amsterdam           Netherlands  *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *
+ *    Trond Saue               CNRS/ULP Strasbourg               France       *
+ *                                                                            *
+ *    with new contributions to DIRAC08 from:                                 *
+ *                                                                            *
+ *    Radovan Bast             University of Tromsoe             Norway       *
+ *    Sebastien Dubillard      CNRS/ULP Strasbourg               France       *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *
+ *    Ulf Ekstrom              VU University Amsterdam           Netherlands  *
+ *    Ephraim Eliav            University of Tel Aviv            Israel       *
+ *    Timo Fleig               Université P. Sabatier, Toulouse  France       *
+ *    Andre S. P. Gomes        VU University Amsterdam           Netherlands  *
+ *    Trygve U. Helgaker       University of Oslo                Norway       *
+ *    Johan Henriksson         Linkoeping University             Sweden       *
+ *    Miroslav Ilias           University of Zilina              Slovakia     *
+ *    Christoph R. Jacob       ETH Zurich                        Switzerland  *
+ *    Stefan Knecht            University of Duesseldorf         Germany      *
+ *    Patrick Norman           Linkoeping University             Sweden       *
+ *    Jeppe Olsen              Aarhus University                 Denmark      *
+ *    Markus Pernpointner      University of Heidelberg          Germany      *
+ *    Kenneth Ruud             University of Tromsoe             Norway       *
+ *    Pawel Salek              Stockholm Inst. of Technology     Sweden       *
+ *    Jetze Sikkema            VU University Amsterdam           Netherlands  *
+ *                                                                            *
+ *    For the complete list of contributors to the DIRAC code see our         *
+ *    website http://dirac.chem.sdu.dk                                        *
+ *                                                                            *
+ *    This is an experimental code. The authors accept no responsibility      *
+ *    for the performance of the code or for the correctness of the results.  *
+ *                                                                            *
+ *    The code (in whole or part) is not to be reproduced for further         *
+ *    distribution without the written permission of the authors or           *
+ *    their representatives.                                                  *
+ *                                                                            *
+ *    If results obtained with this code are published, an                    *
+ *    appropriate citation would be:                                          *
+ *                                                                            *
+ *    DIRAC, a relativistic ab initio electronic structure program,           *
+ *    Release DIRAC08 (2008),                                                 *
+ *    written by L. Visscher, H. J. Aa. Jensen, and T. Saue,                  *
+ *    with new contributions from R. Bast, S. Dubillard, K. G. Dyall,         *
+ *    U. Ekstrom, E. Eliav, T. Fleig, A. S. P. Gomes, T. U. Helgaker,         *
+ *    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, P. Norman,            *
+ *    J. Olsen, M. Pernpointner, K. Ruud, P. Salek, and J. Sikkema            *
+ *    (see http://dirac.chem.sdu.dk).                                         *
+ *                                                                            *
+ ******************************************************************************
+ Version           : Dirac 8.0 (patchlevel 0) 
+ Hostname          : ibm
+ Operating system  : Linux 2.6.28-17-generic
+ Machine           : i686
+ Run               : Sequential
+ Last compilation  : 13:21:46 Feb 24 2010 (by gosia@ibm:/home/gosia/dirac/lao/prp)
+ FORTRAN compiler  : /usr/bin/gfortran -g -fno-range-check -O3 -ffast-math -funroll-loops -Iinclude -Jmodules -DARCH32BIT -DUSE_DIRAC_BLAS -DUSE_DIRAC_DLAMCH -DUSE_DIRAC_DLAPACK -DUSE_DIRAC_ZLAPACK -DGFORTRAN=433 -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MFDS -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON 
+ C compiler        : /usr/bin/gcc -g -O3 -ffast-math -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DSYS_FLAVOR=LINUX 
+ External libraries:  
+ Internal libraries: DIRAC_BLAS=YES  DIRAC_LAPACK=YES 
+ ILP data model    : ILP32 
+ SVN URL:          : 'http://dirac.chem.sdu.dk/svnDirac/Dirac/branches/dft_lao' 
+ SVN Changeset     : '' 
+
+ 
+     Date and time (Linux)  : Wed Feb 24 13:35:24 2010 
+     Host name              :                                         
+
+
+ *******************************************************************************
+ ************************** Input read from DIRAC.INP **************************
+ *******************************************************************************
+
+**DIRAC
+.WAVE FUNCTION
+.PROPERTIES
+**HAMILTONIAN
+.LEVY-LEBLOND
+.DFT
+ LDA
+*DFT
+.NOSDFT
+**INTEGRALS
+.NUCMOD
+ 1
+*TWOINT
+.SCREEN
+1.0D-16
+*READIN
+.UNCONTRACT
+**WAVE FUNCTIONS
+.DHF
+*DHFCAL
+.ITRINT
+0 0
+.EVCCNV
+1.0D-9 1.0D8
+**PROPERTIES
+.SHIELDING
+.NSTDIA
+.PRINT
+ 1
+*NMR
+.LONDON
+.USECM
+*EXPECTATION VALUE
+.PRINT
+ 1
+*END OF INPUT
+
+
+    *************************************************************************
+    ********************* DIRAC: No title specified !!! *********************
+    *************************************************************************
+
+ Jobs in this run:
+   * Wave function
+   * Properties
+   * If crash, end with the segment.fault. Worth for debugging.
+
+
+    **************************************************************************
+    ************************** General DIRAC set-up **************************
+    **************************************************************************
+
+   CODATA Recommended Values of the Fundamental Physical Constants: 1998  
+                Peter J. Mohr and Barry N. Taylor                         
+   Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
+ * The speed of light :        137.0359998
+ * Running in the four-component mode
+ * Direct evaluation of the following two-electron integrals:
+   - LL-integrals
+   - SL-integrals
+   - SS-integrals
+   - GT-integrals
+ * Spherical transformation embedded in MO-transformation
+   for large components
+ * Transformation to scalar RKB basis embedded in
+   MO-transformation for small components
+ * Thresholds for linear dependence:
+   Large components:   1.00D-06
+   Small components:   1.00D-08
+ DFPCMO: IBEIG read in I2 format.
+ * General print level   :   0
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+ Default print level:        1
+ Nuclear model: Point charge.
+
+ Two-electron integrals not calculated.
+
+
+ Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
+
+
+
+  Set-up from HR2INP:
+  -------------------
+
+ Print level in TWOINT:    1
+ Extra output for the following shells:  0  0  0  0
+ * Direct calculation of Fock matrices in SO-basis.
+ * User specified screening threshold in direct Fock matrix construction: 1.00E-16
+ * Separate density screening of Coulomb integral batches
+ * Separate density screening of exchange integral batches
+
+
+ Changes of defaults for READIN:
+ -------------------------------
+
+
+ Uncontracted basis forced, irrespective of basis input file.
+
+
+
+ Settings for FCK3 calculation:
+ ------------------------------
+
+Dynamical threshold is not (yet) implemented in DIRAC
+
+
+    *************************************************************************
+    ****************** Output from READIN input processing ******************
+    *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  .                                                                       
+  .                                                                       
+
+
+                          SYMGRP:Point group information
+                          ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                            **************************
+                            *** Output from DBLGRP ***
+                            **************************
+
+   * One fermion irrep:   E1 
+   * Quaternionic group. NZ = 4
+   * Direct product decomposition:
+          E1  x E1  : A   + A   + A   + A  
+
+
+                                 Spinor structure
+                                 ----------------
+
+
+   * Fermion irrep no.: 1
+      La  |  A  (1)  A  (1)  |
+      Sa  |  A  (1)  A  (1)  |
+      Lb  |  A  (1)  A  (1)  |
+      Sb  |  A  (1)  A  (1)  |
+
+
+                              Quaternion symmetries
+                              ---------------------
+
+    Rep  T(+)
+    -----------------------------
+    A    1  i  j  k
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     1
+  Total number of atoms:    2
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  He          1       2       7       7      L  - [4s1p|4s1p]                                                    
+                             19      19      S  - [1s4p1d|1s4p1d]                                                
+  He          1       2       7       7      L  - [4s1p|4s1p]                                                    
+                             19      19      S  - [1s4p1d|1s4p1d]                                                
+  ----------------------------------------------------------------------
+                             14      14      L  - large components
+                             38      38      S  - small components
+  ----------------------------------------------------------------------
+  total:      2       4      52      52
+
+  Cartesian basis used.
+  Threshold for integrals (to be written to file):  1.00D-15
+
+  MNF.INP input file (for the AMFI stuff) is ready.
+
+
+  References for the basis sets
+  -----------------------------
+
+  Atom type   1
+   Elements                             References                                
+   --------                             ----------                                
+   H      : T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
+   He     : D.E. Woon and T.H. Dunning, Jr. J. Chem. Phys. 100, 2975 (1994).      
+   Li - Ne: T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
+   Na - Mg: D.E. Woon and T.H. Dunning, Jr.  (to be published)                    
+   Al - Ar: D.E. Woon and T.H. Dunning, Jr.  J. Chem. Phys. 98, 1358 (1993).      
+   Ca     : J. Koput and K.A. Peterson, J. Phys. Chem. A, 106, 9595 (2002).       
+   Ga - Kr: A.K. Wilson, D.E. Woon, K.A. Peterson, T.H. Dunning, Jr.,             
+            J. Chem. Phys., 110, 7667 (1999)                                      
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  6
+
+
+   1   He       x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.0000000000
+
+   4   He       x      0.0000000000
+   5            y      0.0000000000
+   6            z      2.0000000000
+
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            He          He  
+
+   He      0.000000
+   He      1.058354    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    He         He                             1.058354
+
+
+  Nuclear repulsion energy :    2.000000000000
+
+
+                                GETLAB: AO-labels
+                                -----------------
+
+   * Large components:    8
+     1  L He    s        2  L He    px       3  L He    py       4  L He    pz       5  L He    s        6  L He    px  
+     7  L He    py       8  L He    pz  
+   * Small components:   20
+     9  S He    s       10  S He    px      11  S He    py      12  S He    pz      13  S He    dxx     14  S He    dxy 
+    15  S He    dxz     16  S He    dyy     17  S He    dyz     18  S He    dzz     19  S He    s       20  S He    px  
+    21  S He    py      22  S He    pz      23  S He    dxx     24  S He    dxy     25  S He    dxz     26  S He    dyy 
+    27  S He    dyz     28  S He    dzz 
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:           52
+  Number of large orbitals in each symmetry:     14
+  Number of small orbitals in each symmetry:     38
+
+* Large component functions
+
+  Symmetry  A  ( 1)
+
+        4 functions:    He s   
+        1 functions:    He px  
+        1 functions:    He py  
+        1 functions:    He pz  
+        4 functions:    He s   
+        1 functions:    He px  
+        1 functions:    He py  
+        1 functions:    He pz  
+
+* Small component functions
+
+  Symmetry  A  ( 1)
+
+        1 functions:    He s   
+        4 functions:    He px  
+        4 functions:    He py  
+        4 functions:    He pz  
+        1 functions:    He dxx 
+        1 functions:    He dxy 
+        1 functions:    He dxz 
+        1 functions:    He dyy 
+        1 functions:    He dyz 
+        1 functions:    He dzz 
+        1 functions:    He s   
+        4 functions:    He px  
+        4 functions:    He py  
+        4 functions:    He pz  
+        1 functions:    He dxx 
+        1 functions:    He dxy 
+        1 functions:    He dxz 
+        1 functions:    He dyy 
+        1 functions:    He dyz 
+        1 functions:    He dzz 
+
+
+   ***************************************************************************
+   *************************** Hamiltonian defined ***************************
+   ***************************************************************************
+
+ * Print level:    0
+ * Levy-Leblond Hamiltonian
+   - Spin-orbit interactions neglected
+ * Kohn-Sham calculation using the xc functional: LDA
+ * Default integral flags passed to all modules
+   - LL-integrals:     1
+   - LS-integrals:     0
+   - SS-integrals:     0
+   - GT-integrals:     0
+ * Basis set:
+   - uncontracted large component basis set
+   - uncontracted small component basis set
+
+
+ Information about the restricted kinetic balance scheme:
+ * Default RKB projection:
+   1: Pre-projection in scalar basis
+   2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
+
+
+   Kohn-Sham calculation set-up
+   ----------------------------
+
+ * Print level:     2
+ * Numerical integration grid:
+   - radial quadrature according to R. Lindh, P.-Aa. Malmqvist, and L. Gagliardi
+     precision of radial quadrature set to:  0.10000E-12
+   - angular quadrature using the Lebedev scheme, exact up to order L = 41
+   - accepted error in integrated number of electrons:  0.10000E-02
+ * DFT thresholds:
+   - dfthr0 =  0.10000E-08
+   - dfthrl =  0.10000E-09
+   - dfthri =  0.20000E-11
+ * No spin density contribution in response calculations.
+
+
+ *******************************************************************************
+ ************************** Memory required by HERMIT **************************
+ *******************************************************************************
+
+===========================================================================
+ Maximum memory load for two-electron integral processing:
+===========================================================================
+ * LL-integrals:
+   3(He   Ls)   1(He   Ls)   3(He   Ls)   1(He   Ls)                4468
+
+
+    **************************************************************************
+    ************************** Wave function module **************************
+    **************************************************************************
+
+ Jobs in this run (in execution order):
+ * Density functional calculation (Kohn-Sham method)
+
+ * Initial Automatic occupation based on:
+   Total charge of atoms =   4
+   Charge of molecule    =   0
+   i.e. no. of electrons =   4
+===========================================================================
+ DHFINP: Set-up for Kohn-Sham calculation:
+===========================================================================
+ * Number of fermion irreps: 1
+ * Closed shell SCF calculation with    4 electrons in
+       2 orbitals in Fermion irrep 1
+ * Bare nucleus screening correction used for start guess
+ * General print level   :   0
+ ***** TRIAL FUNCTION *****
+ * Trial vectors read from file DFCOEF
+ ***** CONVERGENCE CRITERIA *****
+ * Convergence on norm of error vector (gradient).
+   Desired convergence:1.000D-09
+   Allowed convergence:1.000D+08
+
+ ***** CONVERGENCE CONTROL *****
+ * Fock matrix constructed using differential density matrix
+    with optimal parameter.
+ * DIIS (in MO basis)
+ * DIIS will be activated when convergence reaches : 1.00D+20
+   - Maximum size of B-matrix:   10
+ * Damping of Fock matrix when DIIS is not activated. 
+   Weight of old matrix    : 0.250
+ * Maximum number of SCF iterations  :   50
+ * No quadratic convergent Hartree-Fock
+ * Contributions from 2-electron integrals to Fock matrix:
+   LL-integrals.
+ ***** OUTPUT CONTROL *****
+ * Only electron eigenvalues written out.
+
+
+   ***************************************************************************
+   ***************************** Property module *****************************
+   ***************************************************************************
+
+ * Print level:  1
+ * Input label:**PROPE
+ * Properties calculated for the following wave functions: 
+     1: DHF 
+ These initial settings of center and origins might be changed later:
+ * Operator center (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * Gauge origin    (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * Dipole origin   (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * do NOT perform the picture change transformation of the four-component property operators
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           He          4.002603
+                           He          4.002603
+
+                       Total mass:     8.005206 amu
+                       Natural abundance: 100.000 %
+
+ * Center of mass used for the gauge & dipole origin (a.u.) :    0.000000    0.000000    1.000000
+  : For the LevyLe/BSS Hamiltonian include only LL integrals for the dg(1,2)/dB terms!
+
+ : Reorthonormalization terms only over electronic shells (recommended default for RSKINB,LevyLe,BSS) !
+ : Natural connection used for LAO-PDBS.
+ : Include London magnet.prop.grad.contributions from the following two-electron integrals:
+      - LL-integrals
+===========================================================================
+ EXPINP: Expectation values
+===========================================================================
+ * The following expectation values will be calculated:
+---------------------------------------------------------------------------
+===========================================================================
+ XLRINP: Electronic linear reponse properties
+===========================================================================
+ * Print level                 :    0
+ * e-e rotations are allowed in the linear response function.
+ * No rotations between electrons and positrons, which are expelled.
+ * You are running in the nonrelativistic (Levy-Leblond) mode.
+ * Maximum number of iterations:   50
+ * Threshold for convergence   :1.000000D-05
+ * Max. size of reduced matrix :  200
+ * Include contributions from the following two-electron integrals:
+   - LL-integrals
+ * Initial trial vectors will be preconditioned.
+ * Linear response functions evaluated at the following REAL frequencies:
+       0.00000D+00 a.u.
+    1  RNSTHe  001X         A       T0
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : 001RNSTZ 0++0    -137.03599980944 (complex)  
+                               001RNSTY 0++0    -137.03599980944 (complex)  
+...........................................................................
+    2  RNSTHe  001Y         A       T0
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : 001RNSTX 0++0    -137.03599980944 (complex)  
+                               001RNSTZ 0++0    -137.03599980944 (complex)  
+...........................................................................
+    3  RNSTHe  001Z         A       T0
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : 001RNSTY 0++0    -137.03599980944 (complex)  
+                               001RNSTX 0++0    -137.03599980944 (complex)  
+...........................................................................
+    4  RNSTHe  002X         A       T0
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : 002RNSTZ 0++0    -137.03599980944 (complex)  
+                               002RNSTY 0++0    -137.03599980944 (complex)  
+...........................................................................
+    5  RNSTHe  002Y         A       T0
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : 002RNSTX 0++0    -137.03599980944 (complex)  
+                               002RNSTZ 0++0    -137.03599980944 (complex)  
+...........................................................................
+    6  RNSTHe  002Z         A       T0
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : 002RNSTY 0++0    -137.03599980944 (complex)  
+                               002RNSTX 0++0    -137.03599980944 (complex)  
+...........................................................................
+    7  RNSTHe  003X         A       T0
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : 003RNSTZ 0++0    -137.03599980944 (complex)  
+                               003RNSTY 0++0    -137.03599980944 (complex)  
+...........................................................................
+    8  RNSTHe  003Y         A       T0
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : 003RNSTX 0++0    -137.03599980944 (complex)  
+                               003RNSTZ 0++0    -137.03599980944 (complex)  
+...........................................................................
+    9  RNSTHe  003Z         A       T0
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : 003RNSTY 0++0    -137.03599980944 (complex)  
+                               003RNSTX 0++0    -137.03599980944 (complex)  
+...........................................................................
+   10  RNSTHe  004X         A       T0
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : 004RNSTZ 0++0    -137.03599980944 (complex)  
+                               004RNSTY 0++0    -137.03599980944 (complex)  
+...........................................................................
+   11  RNSTHe  004Y         A       T0
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : 004RNSTX 0++0    -137.03599980944 (complex)  
+                               004RNSTZ 0++0    -137.03599980944 (complex)  
+...........................................................................
+   12  RNSTHe  004Z         A       T0
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : 004RNSTY 0++0    -137.03599980944 (complex)  
+                               004RNSTX 0++0    -137.03599980944 (complex)  
+...........................................................................
+   13  RNSTHe  005X         A       T0
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : 005RNSTZ 0++0    -137.03599980944 (complex)  
+                               005RNSTY 0++0    -137.03599980944 (complex)  
+...........................................................................
+   14  RNSTHe  005Y         A       T0
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : 005RNSTX 0++0    -137.03599980944 (complex)  
+                               005RNSTZ 0++0    -137.03599980944 (complex)  
+...........................................................................
+   15  RNSTHe  005Z         A       T0
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : 005RNSTY 0++0    -137.03599980944 (complex)  
+                               005RNSTX 0++0    -137.03599980944 (complex)  
+...........................................................................
+   16  RNSTHe  006X         A       T0
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : 006RNSTZ 0++0    -137.03599980944 (complex)  
+                               006RNSTY 0++0    -137.03599980944 (complex)  
+...........................................................................
+   17  RNSTHe  006Y         A       T0
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : 006RNSTX 0++0    -137.03599980944 (complex)  
+                               006RNSTZ 0++0    -137.03599980944 (complex)  
+...........................................................................
+   18  RNSTHe  006Z         A       T0
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : 006RNSTY 0++0    -137.03599980944 (complex)  
+                               006RNSTX 0++0    -137.03599980944 (complex)  
+...........................................................................
+
+
+               DEF_D1HBLOND: Operators for NMR shieldings with LAO!
+               ----------------------------------------------------
+
+===========================================================================
+ NMR shieldings:
+===========================================================================
+ Shieldings printed for atoms with abundance greater than   1.0000 %
+---------------------------------------------------------------------------
+ ** A operators for shielding **
+---------------------------------------------------------------------------
+    1  NUCSP001He  A  X     A       T-
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : NEF 003  0++0    -137.03599980944 (real)     
+                               NEF 002  0++0    -137.03599980944 (real)     
+...........................................................................
+    2  NUCSP002He  A  Y     A       T-
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : NEF 001  0++0    -137.03599980944 (real)     
+                               NEF 003  0++0    -137.03599980944 (real)     
+...........................................................................
+    3  NUCSP003He  A  Z     A       T-
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : NEF 002  0++0    -137.03599980944 (real)     
+                               NEF 001  0++0    -137.03599980944 (real)     
+...........................................................................
+    4  NUCSP004He  A  X     A       T-
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : NEF 006  0++0    -137.03599980944 (real)     
+                               NEF 005  0++0    -137.03599980944 (real)     
+...........................................................................
+    5  NUCSP005He  A  Y     A       T-
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : NEF 004  0++0    -137.03599980944 (real)     
+                               NEF 006  0++0    -137.03599980944 (real)     
+...........................................................................
+    6  NUCSP006He  A  Z     A       T-
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : NEF 005  0++0    -137.03599980944 (real)     
+                               NEF 004  0++0    -137.03599980944 (real)     
+...........................................................................
+---------------------------------------------------------------------------
+ ** B operators for shielding or ESR **
+---------------------------------------------------------------------------
+    1  LAO-XRM1H1           A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dBX   000+    -37557.730487547 (imaginary)
+...........................................................................
+    2  LAO-YRM1H1           A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dBY   000+    -37557.730487547 (imaginary)
+...........................................................................
+    3  LAO-ZRM1H1           A       T-
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : dS/dBZ   000+    -37557.730487547 (imaginary)
+...........................................................................
+---------------------------------------------------------------------------
+ ** NMR shieldings expectation values (London) **
+---------------------------------------------------------------------------
+    1  RNSTHe  001X         A       T0
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : 001RNSTZ 0++0    -137.03599980944 (complex)  
+                               001RNSTY 0++0    -137.03599980944 (complex)  
+...........................................................................
+    2  RNSTHe  001Y         A       T0
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : 001RNSTX 0++0    -137.03599980944 (complex)  
+                               001RNSTZ 0++0    -137.03599980944 (complex)  
+...........................................................................
+    3  RNSTHe  001Z         A       T0
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : 001RNSTY 0++0    -137.03599980944 (complex)  
+                               001RNSTX 0++0    -137.03599980944 (complex)  
+...........................................................................
+    4  RNSTHe  002X         A       T0
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : 002RNSTZ 0++0    -137.03599980944 (complex)  
+                               002RNSTY 0++0    -137.03599980944 (complex)  
+...........................................................................
+    5  RNSTHe  002Y         A       T0
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : 002RNSTX 0++0    -137.03599980944 (complex)  
+                               002RNSTZ 0++0    -137.03599980944 (complex)  
+...........................................................................
+    6  RNSTHe  002Z         A       T0
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : 002RNSTY 0++0    -137.03599980944 (complex)  
+                               002RNSTX 0++0    -137.03599980944 (complex)  
+...........................................................................
+    7  RNSTHe  003X         A       T0
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : 003RNSTZ 0++0    -137.03599980944 (complex)  
+                               003RNSTY 0++0    -137.03599980944 (complex)  
+...........................................................................
+    8  RNSTHe  003Y         A       T0
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : 003RNSTX 0++0    -137.03599980944 (complex)  
+                               003RNSTZ 0++0    -137.03599980944 (complex)  
+...........................................................................
+    9  RNSTHe  003Z         A       T0
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : 003RNSTY 0++0    -137.03599980944 (complex)  
+                               003RNSTX 0++0    -137.03599980944 (complex)  
+...........................................................................
+   10  RNSTHe  004X         A       T0
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : 004RNSTZ 0++0    -137.03599980944 (complex)  
+                               004RNSTY 0++0    -137.03599980944 (complex)  
+...........................................................................
+   11  RNSTHe  004Y         A       T0
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : 004RNSTX 0++0    -137.03599980944 (complex)  
+                               004RNSTZ 0++0    -137.03599980944 (complex)  
+...........................................................................
+   12  RNSTHe  004Z         A       T0
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : 004RNSTY 0++0    -137.03599980944 (complex)  
+                               004RNSTX 0++0    -137.03599980944 (complex)  
+...........................................................................
+   13  RNSTHe  005X         A       T0
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : 005RNSTZ 0++0    -137.03599980944 (complex)  
+                               005RNSTY 0++0    -137.03599980944 (complex)  
+...........................................................................
+   14  RNSTHe  005Y         A       T0
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : 005RNSTX 0++0    -137.03599980944 (complex)  
+                               005RNSTZ 0++0    -137.03599980944 (complex)  
+...........................................................................
+   15  RNSTHe  005Z         A       T0
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : 005RNSTY 0++0    -137.03599980944 (complex)  
+                               005RNSTX 0++0    -137.03599980944 (complex)  
+...........................................................................
+   16  RNSTHe  006X         A       T0
+...........................................................................
+      Operator type XAVECTOR : [alpha x P]_x
+      Labels and factors     : 006RNSTZ 0++0    -137.03599980944 (complex)  
+                               006RNSTY 0++0    -137.03599980944 (complex)  
+...........................................................................
+   17  RNSTHe  006Y         A       T0
+...........................................................................
+      Operator type YAVECTOR : [alpha x P]_y
+      Labels and factors     : 006RNSTX 0++0    -137.03599980944 (complex)  
+                               006RNSTZ 0++0    -137.03599980944 (complex)  
+...........................................................................
+   18  RNSTHe  006Z         A       T0
+...........................................................................
+      Operator type ZAVECTOR : [alpha x P]_z
+      Labels and factors     : 006RNSTY 0++0    -137.03599980944 (complex)  
+                               006RNSTX 0++0    -137.03599980944 (complex)  
+...........................................................................
+===========================================================================
+ NMR diamagnetic shielding contributions  (Aucar et al, JCP 110 (1999) 6208)
+  - for London atomic orbitals (invariant gauge origin)
+===========================================================================
+    1  NSNLHe  001X         A       T0
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : 001NSNLX +000     1.0000000000000 (complex)  
+...........................................................................
+    2  NSNLHe  001Y         A       T0
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : 001NSNLY +000     1.0000000000000 (complex)  
+...........................................................................
+    3  NSNLHe  001Z         A       T0
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : 001NSNLZ +000     1.0000000000000 (complex)  
+...........................................................................
+    4  NSNLHe  002X         A       T0
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : 002NSNLX +000     1.0000000000000 (complex)  
+...........................................................................
+    5  NSNLHe  002Y         A       T0
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : 002NSNLY +000     1.0000000000000 (complex)  
+...........................................................................
+    6  NSNLHe  002Z         A       T0
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : 002NSNLZ +000     1.0000000000000 (complex)  
+...........................................................................
+    7  NSNLHe  003X         A       T0
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : 003NSNLX +000     1.0000000000000 (complex)  
+...........................................................................
+    8  NSNLHe  003Y         A       T0
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : 003NSNLY +000     1.0000000000000 (complex)  
+...........................................................................
+    9  NSNLHe  003Z         A       T0
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : 003NSNLZ +000     1.0000000000000 (complex)  
+...........................................................................
+   10  NSNLHe  004X         A       T0
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : 004NSNLX +000     1.0000000000000 (complex)  
+...........................................................................
+   11  NSNLHe  004Y         A       T0
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : 004NSNLY +000     1.0000000000000 (complex)  
+...........................................................................
+   12  NSNLHe  004Z         A       T0
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : 004NSNLZ +000     1.0000000000000 (complex)  
+...........................................................................
+   13  NSNLHe  005X         A       T0
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : 005NSNLX +000     1.0000000000000 (complex)  
+...........................................................................
+   14  NSNLHe  005Y         A       T0
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : 005NSNLY +000     1.0000000000000 (complex)  
+...........................................................................
+   15  NSNLHe  005Z         A       T0
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : 005NSNLZ +000     1.0000000000000 (complex)  
+...........................................................................
+   16  NSNLHe  006X         A       T0
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : 006NSNLX +000     1.0000000000000 (complex)  
+...........................................................................
+   17  NSNLHe  006Y         A       T0
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : 006NSNLY +000     1.0000000000000 (complex)  
+...........................................................................
+   18  NSNLHe  006Z         A       T0
+...........................................................................
+      Operator type DIAGONAL : scalar operator
+      Labels and factors     : 006NSNLZ +000     1.0000000000000 (complex)  
+...........................................................................
+ * Operator center:      0.0000000000      0.0000000000      0.0000000000
+ * Gauge origin   :      0.0000000000      0.0000000000      1.0000000000
+ * Dipole origin  :      0.0000000000      0.0000000000      1.0000000000
+
+
+ ********************************************************************************
+ *************************** Input consistency checks ***************************
+ ********************************************************************************
+
+
+ **** WARNING **** Spinfree properties not tested.
+
+
+    *************************************************************************
+    ************************ End of input processing ************************
+    *************************************************************************
+
+  No SS-nuclear attraction integrals(MOLFLD), adapted PDOINT=+000
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+   L   A     * Deleted:          0(Proj:          0, Lindep:          0)
+   S   A     * Deleted:          2(Proj:          2, Lindep:          0)
+
+
+                                Output from MODHAM
+                                ------------------
+
+* All positronic solutions deleted !
+
+
+      **********************************************************************
+      ************************* Orbital dimensions *************************
+      **********************************************************************
+
+No. of positive energy orbitals (NESH):    14
+No. of negative energy orbitals (NPSH):     0
+Total no. of orbitals           (NORB):    14
+
+
+    *************************************************************************
+    ************************* Kohn-Sham calculation *************************
+    *************************************************************************
+
+
+*** INFO *** No trial vectors found. Using bare nucleus approximation for initial trial vectors.
+             Improved by an estimate of the electronic screening (Slater's rules).
+
+
+########## START ITERATION NO.   1 ##########   Wed Feb 24 13:35:24 2010
+
+It.   1   -0.9800196035212      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Wed Feb 24
+
+########## START ITERATION NO.   2##########   Wed Feb 24 13:35:24 2010
+
+
+* GETGAB: label "GABAO1XX" not found; calling GABGEN.
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-16    0.00%   57.90%    0.00%    0.00%   0.00399999s
+
+
+                                Sorted FMAT matrix
+                                ------------------
+
+*** Matrix no.    1 of    1
+
+*** A real part ***;    NROW,NCOL:  52  52
+
+
+               Column   1     Column   2     Column   3     Column   4
+       1       4.45636337     2.42821410     0.89804569     0.31896519
+       2       2.42821410     4.05682641     2.57366776     1.07744266
+       3       0.89804569     2.57366776     3.32183010     2.12932267
+       4       0.31896519     1.07744266     2.12932267     2.42144527
+       5       0.00000000     0.00000000     0.00000000     0.00000000
+       6       0.00000000     0.00000000     0.00000000     0.00000000
+       7       0.00294232     0.05135386     0.20302447     0.21542787
+       8       0.00000000     0.00000000     0.00738067     0.09803814
+       9       0.00000000     0.00003485     0.04302841     0.35014739
+      10       0.00738067     0.04302841     0.27965817     0.84315562
+      11       0.09803814     0.35014739     0.84315562     1.42522263
+      12       0.00000000     0.00000000     0.00000000    -0.00000000
+      13       0.00000000     0.00000000    -0.00000000    -0.00000000
+      14      -0.02885568    -0.14757863    -0.60206669    -0.73432981
+
+               Column   5     Column   6     Column   7     Column   8
+       1       0.00000000     0.00000000     0.00294232     0.00000000
+       2       0.00000000     0.00000000     0.05135386     0.00000000
+       3       0.00000000     0.00000000     0.20302447     0.00738067
+       4       0.00000000     0.00000000     0.21542787     0.09803814
+       5       2.90921353     0.00000000    -0.00000000     0.00000000
+       6       0.00000000     2.90921353    -0.00000000    -0.00000000
+       7      -0.00000000    -0.00000000     3.02838358     0.02885568
+       8       0.00000000    -0.00000000     0.02885568     4.45636337
+       9      -0.00000000    -0.00000000     0.14757863     2.42821410
+      10       0.00000000    -0.00000000     0.60206669     0.89804569
+      11       0.00000000     0.00000000     0.73432981     0.31896519
+      12       0.23300789     0.00000000    -0.00000000     0.00000000
+      13       0.00000000     0.23300789    -0.00000000    -0.00000000
+      14      -0.00000000     0.00000000    -1.06289504    -0.00294232
+
+               Column   9     Column  10     Column  11     Column  12
+       1       0.00000000     0.00738067     0.09803814     0.00000000
+       2       0.00003485     0.04302841     0.35014739     0.00000000
+       3       0.04302841     0.27965817     0.84315562     0.00000000
+       4       0.35014739     0.84315562     1.42522263    -0.00000000
+       5      -0.00000000     0.00000000     0.00000000     0.23300789
+       6      -0.00000000    -0.00000000     0.00000000     0.00000000
+       7       0.14757863     0.60206669     0.73432981    -0.00000000
+       8       2.42821410     0.89804569     0.31896519     0.00000000
+       9       4.05682641     2.57366776     1.07744266     0.00000000
+      10       2.57366776     3.32183010     2.12932267    -0.00000000
+      11       1.07744266     2.12932267     2.42144527     0.00000000
+      12       0.00000000    -0.00000000     0.00000000     2.90921353
+      13      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      14      -0.05135386    -0.20302447    -0.21542787     0.00000000
+
+               Column  13     Column  14     Column  15     Column  16
+       1       0.00000000    -0.02885568     0.00000000     0.00000000
+       2       0.00000000    -0.14757863     0.00000000     0.00000000
+       3      -0.00000000    -0.60206669     0.00000000     0.00000000
+       4      -0.00000000    -0.73432981     0.00000000     0.00000000
+       5       0.00000000    -0.00000000     0.00000000     0.00000000
+       6       0.23300789     0.00000000     0.00000000     0.00000000
+       7      -0.00000000    -1.06289504     0.00000000     0.00000000
+       8      -0.00000000    -0.00294232     0.00000000     0.00000000
+       9      -0.00000000    -0.05135386     0.00000000     0.00000000
+      10      -0.00000000    -0.20302447     0.00000000     0.00000000
+      11      -0.00000000    -0.21542787     0.00000000     0.00000000
+      12       0.00000000     0.00000000     0.00000000     0.00000000
+      13       2.90921353     0.00000000     0.00000000     0.00000000
+      14       0.00000000     3.02838358     0.00000000     0.00000000
+
+               Column  17     Column  18     Column  19     Column  20
+
+               Column  21     Column  22     Column  23     Column  24
+
+               Column  25     Column  26     Column  27     Column  28
+
+               Column  29     Column  30     Column  31     Column  32
+
+               Column  33     Column  34     Column  35     Column  36
+
+               Column  37     Column  38     Column  39     Column  40
+
+               Column  41     Column  42     Column  43     Column  44
+
+               Column  45     Column  46     Column  47     Column  48
+
+               Column  49     Column  50     Column  51     Column  52
+
+*** A imag part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** B real part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** B imag part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+
+ ********************************************************************************
+ ********************** Slater-Bragg atomic size estimates **********************
+ ********************************************************************************
+
+
+
+                        Slater-Bragg relative atomic sizes
+                        ----------------------------------
+
+
+               Column   1     Column   2
+       1       1.00000000     1.00000000
+       2       1.00000000     1.00000000
+
+DFTGRD: ATSIZE not requested or no trial vectors found. Slater-Bragg radii will be used.
+
+Atom  Deg   Rmin        Rmax        Step size     #rp     #tp
+=============================================================
+He      1   0.998E-05   0.728E+01   0.131E+00      88   25256
+He      1   0.998E-05   0.728E+01   0.131E+00      88   25256
+
+   Number of grid points in quadrature:     50512 (100.0%)
+
+
+ >>>> Time used in DFTGRD:   0.04 seconds
+
+
+   number of quadrature points:                     50512
+   DFT exchange-correlation energy:                    -2.1674756525054750
+   number of electrons from numerical integration:      4.0000001039177970
+
+
+ >>>> time used in dftexc:   0.32 seconds
+
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.34002203s
+
+########## END ITERATION NO.   2 ##########   Wed Feb 24 13:35:24 2010
+
+It.   2    -5.514530745087      4.53D+00  3.91D-01  4.05D-01               0.34002203s   LL             Wed Feb 24
+
+########## START ITERATION NO.   3##########   Wed Feb 24 13:35:25 2010
+
+    3 *** Differential density matrix. DCOVLP     = 1.0989
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-16    0.00%   57.90%    0.00%    0.00%   0.00799999s
+
+
+                                Sorted FMAT matrix
+                                ------------------
+
+*** Matrix no.    1 of    1
+
+*** A real part ***;    NROW,NCOL:  52  52
+
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.74422448    -0.40200385    -0.14835197    -0.05266434
+       2      -0.40200385    -0.64327980    -0.39699740    -0.16464548
+       3      -0.14835197    -0.39699740    -0.47252339    -0.28950660
+       4      -0.05266434    -0.16464548    -0.28950660    -0.30026451
+       5      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       6      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       7      -0.00116712    -0.01734026    -0.05641058    -0.05382328
+       8       0.00000000    -0.00000000    -0.00122867    -0.01622432
+       9      -0.00000000    -0.00000532    -0.00675393    -0.05412393
+      10      -0.00122867    -0.00675393    -0.04101439    -0.11836479
+      11      -0.01622432    -0.05412393    -0.11836479    -0.18421103
+      12      -0.00000000    -0.00000000    -0.00000000     0.00000000
+      13      -0.00000000    -0.00000000     0.00000000     0.00000000
+      14       0.00480173     0.02319871     0.08835268     0.10758668
+
+               Column   5     Column   6     Column   7     Column   8
+       1      -0.00000000    -0.00000000    -0.00116712     0.00000000
+       2      -0.00000000    -0.00000000    -0.01734026    -0.00000000
+       3      -0.00000000    -0.00000000    -0.05641058    -0.00122867
+       4      -0.00000000    -0.00000000    -0.05382328    -0.01622432
+       5      -0.38376141     0.00000000     0.00000000     0.00000000
+       6       0.00000000    -0.38376141     0.00000000     0.00000000
+       7       0.00000000     0.00000000    -0.40791056    -0.00480173
+       8       0.00000000     0.00000000    -0.00480173    -0.74422448
+       9       0.00000000     0.00000000    -0.02319871    -0.40200385
+      10      -0.00000000     0.00000000    -0.08835268    -0.14835197
+      11      -0.00000000    -0.00000000    -0.10758668    -0.05266434
+      12      -0.03206131     0.00000000     0.00000000     0.00000000
+      13       0.00000000    -0.03206131     0.00000000     0.00000000
+      14       0.00000000     0.00000000     0.15574366     0.00116712
+
+               Column   9     Column  10     Column  11     Column  12
+       1      -0.00000000    -0.00122867    -0.01622432    -0.00000000
+       2      -0.00000532    -0.00675393    -0.05412393    -0.00000000
+       3      -0.00675393    -0.04101439    -0.11836479    -0.00000000
+       4      -0.05412393    -0.11836479    -0.18421103     0.00000000
+       5       0.00000000    -0.00000000    -0.00000000    -0.03206131
+       6       0.00000000     0.00000000    -0.00000000     0.00000000
+       7      -0.02319871    -0.08835268    -0.10758668     0.00000000
+       8      -0.40200385    -0.14835197    -0.05266434     0.00000000
+       9      -0.64327980    -0.39699740    -0.16464548     0.00000000
+      10      -0.39699740    -0.47252339    -0.28950660     0.00000000
+      11      -0.16464548    -0.28950660    -0.30026451     0.00000000
+      12       0.00000000     0.00000000     0.00000000    -0.38376141
+      13       0.00000000     0.00000000     0.00000000    -0.00000000
+      14       0.01734026     0.05641058     0.05382328     0.00000000
+
+               Column  13     Column  14     Column  15     Column  16
+       1      -0.00000000     0.00480173     0.00000000     0.00000000
+       2      -0.00000000     0.02319871     0.00000000     0.00000000
+       3       0.00000000     0.08835268     0.00000000     0.00000000
+       4       0.00000000     0.10758668     0.00000000     0.00000000
+       5       0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.03206131     0.00000000     0.00000000     0.00000000
+       7       0.00000000     0.15574366     0.00000000     0.00000000
+       8       0.00000000     0.00116712     0.00000000     0.00000000
+       9       0.00000000     0.01734026     0.00000000     0.00000000
+      10       0.00000000     0.05641058     0.00000000     0.00000000
+      11       0.00000000     0.05382328     0.00000000     0.00000000
+      12      -0.00000000     0.00000000     0.00000000     0.00000000
+      13      -0.38376141     0.00000000     0.00000000     0.00000000
+      14       0.00000000    -0.40791056     0.00000000     0.00000000
+
+               Column  17     Column  18     Column  19     Column  20
+
+               Column  21     Column  22     Column  23     Column  24
+
+               Column  25     Column  26     Column  27     Column  28
+
+               Column  29     Column  30     Column  31     Column  32
+
+               Column  33     Column  34     Column  35     Column  36
+
+               Column  37     Column  38     Column  39     Column  40
+
+               Column  41     Column  42     Column  43     Column  44
+
+               Column  45     Column  46     Column  47     Column  48
+
+               Column  49     Column  50     Column  51     Column  52
+
+*** A imag part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** B real part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** B imag part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+   number of quadrature points:                     50512
+   DFT exchange-correlation energy:                    -1.9895268533543358
+   number of electrons from numerical integration:      4.0000000295044531
+
+
+ >>>> time used in dftexc:   0.27 seconds
+
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.27601701s
+
+########## END ITERATION NO.   3 ##########   Wed Feb 24 13:35:25 2010
+
+It.   3    -5.541727791246      2.72D-02 -1.72D-01  1.69D-01   DIIS   2    0.27601701s   LL             Wed Feb 24
+
+########## START ITERATION NO.   4##########   Wed Feb 24 13:35:25 2010
+
+    4 *** Differential density matrix. DCOVLP     = 0.9528
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-16    0.00%   57.90%    0.00%    0.00%   0.00400102s
+
+
+                                Sorted FMAT matrix
+                                ------------------
+
+*** Matrix no.    1 of    1
+
+*** A real part ***;    NROW,NCOL:  52  52
+
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.28655529     0.15524323     0.05733231     0.02035629
+       2       0.15524323     0.25219738     0.15720319     0.06542129
+       3       0.05733231     0.15720319     0.19287977     0.12026808
+       4       0.02035629     0.06542129     0.12026808     0.12948464
+       5       0.00000000     0.00000000     0.00000000     0.00000000
+       6       0.00000000     0.00000000     0.00000000     0.00000000
+       7       0.00032978     0.00514478     0.01784234     0.01766873
+       8       0.00000000     0.00000000     0.00047303     0.00626444
+       9       0.00000000     0.00000210     0.00264517     0.02138755
+      10       0.00047303     0.00264517     0.01644313     0.04842601
+      11       0.00626444     0.02138755     0.04842601     0.07793969
+      12       0.00000000     0.00000000     0.00000000    -0.00000000
+      13       0.00000000     0.00000000    -0.00000000    -0.00000000
+      14      -0.00184906    -0.00908454    -0.03541040    -0.04308440
+
+               Column   5     Column   6     Column   7     Column   8
+       1       0.00000000     0.00000000     0.00032978     0.00000000
+       2       0.00000000     0.00000000     0.00514478     0.00000000
+       3       0.00000000     0.00000000     0.01784234     0.00047303
+       4       0.00000000     0.00000000     0.01766873     0.00626444
+       5       0.16142258    -0.00000000    -0.00000000    -0.00000000
+       6      -0.00000000     0.16142258    -0.00000000    -0.00000000
+       7      -0.00000000    -0.00000000     0.16995895     0.00184906
+       8      -0.00000000    -0.00000000     0.00184906     0.28655529
+       9      -0.00000000    -0.00000000     0.00908454     0.15524323
+      10       0.00000000    -0.00000000     0.03541040     0.05733231
+      11       0.00000000     0.00000000     0.04308440     0.02035629
+      12       0.01319030    -0.00000000     0.00000000    -0.00000000
+      13      -0.00000000     0.01319030    -0.00000000    -0.00000000
+      14      -0.00000000    -0.00000000    -0.06240554    -0.00032978
+
+               Column   9     Column  10     Column  11     Column  12
+       1       0.00000000     0.00047303     0.00626444     0.00000000
+       2       0.00000210     0.00264517     0.02138755     0.00000000
+       3       0.00264517     0.01644313     0.04842601     0.00000000
+       4       0.02138755     0.04842601     0.07793969    -0.00000000
+       5      -0.00000000     0.00000000     0.00000000     0.01319030
+       6      -0.00000000    -0.00000000     0.00000000    -0.00000000
+       7       0.00908454     0.03541040     0.04308440     0.00000000
+       8       0.15524323     0.05733231     0.02035629    -0.00000000
+       9       0.25219738     0.15720319     0.06542129    -0.00000000
+      10       0.15720319     0.19287977     0.12026808    -0.00000000
+      11       0.06542129     0.12026808     0.12948464    -0.00000000
+      12      -0.00000000    -0.00000000    -0.00000000     0.16142258
+      13      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      14      -0.00514478    -0.01784234    -0.01766873    -0.00000000
+
+               Column  13     Column  14     Column  15     Column  16
+       1       0.00000000    -0.00184906     0.00000000     0.00000000
+       2       0.00000000    -0.00908454     0.00000000     0.00000000
+       3      -0.00000000    -0.03541040     0.00000000     0.00000000
+       4      -0.00000000    -0.04308440     0.00000000     0.00000000
+       5      -0.00000000    -0.00000000     0.00000000     0.00000000
+       6       0.01319030    -0.00000000     0.00000000     0.00000000
+       7      -0.00000000    -0.06240554     0.00000000     0.00000000
+       8      -0.00000000    -0.00032978     0.00000000     0.00000000
+       9      -0.00000000    -0.00514478     0.00000000     0.00000000
+      10      -0.00000000    -0.01784234     0.00000000     0.00000000
+      11      -0.00000000    -0.01766873     0.00000000     0.00000000
+      12      -0.00000000    -0.00000000     0.00000000     0.00000000
+      13       0.16142258    -0.00000000     0.00000000     0.00000000
+      14      -0.00000000     0.16995895     0.00000000     0.00000000
+
+               Column  17     Column  18     Column  19     Column  20
+
+               Column  21     Column  22     Column  23     Column  24
+
+               Column  25     Column  26     Column  27     Column  28
+
+               Column  29     Column  30     Column  31     Column  32
+
+               Column  33     Column  34     Column  35     Column  36
+
+               Column  37     Column  38     Column  39     Column  40
+
+               Column  41     Column  42     Column  43     Column  44
+
+               Column  45     Column  46     Column  47     Column  48
+
+               Column  49     Column  50     Column  51     Column  52
+
+*** A imag part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** B real part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** B imag part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+   number of quadrature points:                     50512
+   DFT exchange-correlation energy:                    -2.0409466976466919
+   number of electrons from numerical integration:      4.0000000501727655
+
+
+ >>>> time used in dftexc:   0.26 seconds
+
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.26801699s
+
+########## END ITERATION NO.   4 ##########   Wed Feb 24 13:35:25 2010
+
+It.   4    -5.547213089312      5.49D-03  5.06D-02  1.16D-03   DIIS   3    0.26801699s   LL             Wed Feb 24
+
+########## START ITERATION NO.   5##########   Wed Feb 24 13:35:25 2010
+
+    5 *** Differential density matrix. DCOVLP     = 1.0003
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-16    0.00%   57.94%    0.00%    0.00%   0.00400102s
+
+
+                                Sorted FMAT matrix
+                                ------------------
+
+*** Matrix no.    1 of    1
+
+*** A real part ***;    NROW,NCOL:  52  52
+
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.00130862    -0.00071128    -0.00026289    -0.00009336
+       2      -0.00071128    -0.00117149    -0.00073528    -0.00030662
+       3      -0.00026289    -0.00073528    -0.00091495    -0.00057383
+       4      -0.00009336    -0.00030662    -0.00057383    -0.00062881
+       5      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       6       0.00000000     0.00000000     0.00000000     0.00000000
+       7       0.00000268     0.00002913     0.00004862     0.00002096
+       8       0.00000000    -0.00000000    -0.00000210    -0.00002849
+       9      -0.00000000    -0.00000001    -0.00001068    -0.00009613
+      10      -0.00000210    -0.00001068    -0.00006311    -0.00021065
+      11      -0.00002849    -0.00009613    -0.00021065    -0.00035260
+      12      -0.00000000    -0.00000000     0.00000000     0.00000000
+      13       0.00000000     0.00000000     0.00000000     0.00000000
+      14       0.00000822     0.00003713     0.00013550     0.00015516
+
+               Column   5     Column   6     Column   7     Column   8
+       1      -0.00000000     0.00000000     0.00000268     0.00000000
+       2      -0.00000000     0.00000000     0.00002913    -0.00000000
+       3      -0.00000000     0.00000000     0.00004862    -0.00000210
+       4      -0.00000000     0.00000000     0.00002096    -0.00002849
+       5      -0.00077815     0.00000000     0.00000000     0.00000000
+       6       0.00000000    -0.00077815     0.00000000     0.00000000
+       7       0.00000000     0.00000000    -0.00080328    -0.00000822
+       8       0.00000000     0.00000000    -0.00000822    -0.00130862
+       9       0.00000000     0.00000000    -0.00003713    -0.00071128
+      10       0.00000000     0.00000000    -0.00013550    -0.00026289
+      11      -0.00000000     0.00000000    -0.00015516    -0.00009336
+      12      -0.00005313     0.00000000     0.00000000     0.00000000
+      13       0.00000000    -0.00005313     0.00000000     0.00000000
+      14       0.00000000    -0.00000000     0.00023224    -0.00000268
+
+               Column   9     Column  10     Column  11     Column  12
+       1      -0.00000000    -0.00000210    -0.00002849    -0.00000000
+       2      -0.00000001    -0.00001068    -0.00009613    -0.00000000
+       3      -0.00001068    -0.00006311    -0.00021065     0.00000000
+       4      -0.00009613    -0.00021065    -0.00035260     0.00000000
+       5       0.00000000     0.00000000    -0.00000000    -0.00005313
+       6       0.00000000     0.00000000     0.00000000     0.00000000
+       7      -0.00003713    -0.00013550    -0.00015516     0.00000000
+       8      -0.00071128    -0.00026289    -0.00009336     0.00000000
+       9      -0.00117149    -0.00073528    -0.00030662     0.00000000
+      10      -0.00073528    -0.00091495    -0.00057383     0.00000000
+      11      -0.00030662    -0.00057383    -0.00062881     0.00000000
+      12       0.00000000     0.00000000     0.00000000    -0.00077815
+      13       0.00000000     0.00000000     0.00000000     0.00000000
+      14      -0.00002913    -0.00004862    -0.00002096     0.00000000
+
+               Column  13     Column  14     Column  15     Column  16
+       1       0.00000000     0.00000822     0.00000000     0.00000000
+       2       0.00000000     0.00003713     0.00000000     0.00000000
+       3       0.00000000     0.00013550     0.00000000     0.00000000
+       4       0.00000000     0.00015516     0.00000000     0.00000000
+       5       0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00005313    -0.00000000     0.00000000     0.00000000
+       7       0.00000000     0.00023224     0.00000000     0.00000000
+       8       0.00000000    -0.00000268     0.00000000     0.00000000
+       9       0.00000000    -0.00002913     0.00000000     0.00000000
+      10       0.00000000    -0.00004862     0.00000000     0.00000000
+      11       0.00000000    -0.00002096     0.00000000     0.00000000
+      12       0.00000000     0.00000000     0.00000000     0.00000000
+      13      -0.00077815    -0.00000000     0.00000000     0.00000000
+      14      -0.00000000    -0.00080328     0.00000000     0.00000000
+
+               Column  17     Column  18     Column  19     Column  20
+
+               Column  21     Column  22     Column  23     Column  24
+
+               Column  25     Column  26     Column  27     Column  28
+
+               Column  29     Column  30     Column  31     Column  32
+
+               Column  33     Column  34     Column  35     Column  36
+
+               Column  37     Column  38     Column  39     Column  40
+
+               Column  41     Column  42     Column  43     Column  44
+
+               Column  45     Column  46     Column  47     Column  48
+
+               Column  49     Column  50     Column  51     Column  52
+
+*** A imag part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** B real part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** B imag part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+   number of quadrature points:                     50512
+   DFT exchange-correlation energy:                    -2.0407679959203477
+   number of electrons from numerical integration:      4.0000000501054958
+
+
+ >>>> time used in dftexc:   0.26 seconds
+
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.26401699s
+
+########## END ITERATION NO.   5 ##########   Wed Feb 24 13:35:25 2010
+
+It.   5    -5.547213290739      2.01D-07 -1.38D-04  1.83D-04   DIIS   4    0.26401699s   LL             Wed Feb 24
+
+########## START ITERATION NO.   6##########   Wed Feb 24 13:35:26 2010
+
+    6 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-16    0.00%   58.06%    0.00%    0.00%   0.00800002s
+
+
+                                Sorted FMAT matrix
+                                ------------------
+
+*** Matrix no.    1 of    1
+
+*** A real part ***;    NROW,NCOL:  52  52
+
+
+               Column   1     Column   2     Column   3     Column   4
+       1     2.210706D-04   1.193634D-04   4.404471D-05   1.563537D-05
+       2     1.193634D-04   1.908768D-04   1.179028D-04   4.892282D-05
+       3     4.404471D-05   1.179028D-04   1.414294D-04   8.732265D-05
+       4     1.563537D-05   4.892282D-05   8.732265D-05   9.311348D-05
+       5    -1.259890D-18  -1.610938D-17  -4.096699D-17  -3.311223D-17
+       6    -1.501114D-19  -1.829818D-18  -4.283443D-18  -3.253380D-18
+       7    -1.164289D-07  -7.930153D-07   1.569846D-06   3.851049D-06
+       8     0.000000D+00   2.055992D-13   3.565867D-07   4.790042D-06
+       9     2.055992D-13   1.272346D-09   1.807219D-06   1.561714D-05
+      10     3.565867D-07   1.807219D-06   1.054341D-05   3.331557D-05
+      11     4.790042D-06   1.561714D-05   3.331557D-05   5.389232D-05
+      12    -9.142798D-21  -2.465481D-19  -3.312270D-18  -1.298757D-17
+      13    -1.067621D-21  -2.343775D-20  -1.440788D-19  -3.279755D-19
+      14    -1.396005D-06  -6.264415D-06  -2.266437D-05  -2.656470D-05
+
+               Column   5     Column   6     Column   7     Column   8
+       1    -1.259890D-18  -1.501114D-19  -1.164289D-07   0.000000D+00
+       2    -1.610938D-17  -1.829818D-18  -7.930153D-07   2.055992D-13
+       3    -4.096699D-17  -4.283443D-18   1.569846D-06   3.565867D-07
+       4    -3.311223D-17  -3.253380D-18   3.851049D-06   4.790042D-06
+       5     1.167890D-04   6.801387D-34  -5.066436D-18  -8.590520D-21
+       6     6.801387D-34   1.167890D-04   1.327609D-19  -1.276282D-22
+       7    -5.066436D-18   1.327609D-19   1.216877D-04   1.396005D-06
+       8    -8.590520D-21  -1.276282D-22   1.396005D-06   2.210706D-04
+       9    -2.328962D-19  -2.711570D-21   6.264415D-06   1.193634D-04
+      10    -3.316498D-18  -1.503268D-19   2.266437D-05   4.404471D-05
+      11    -1.346810D-17  -1.105311D-18   2.656470D-05   1.563537D-05
+      12     8.548684D-06   6.297611D-36  -7.105521D-18  -1.185365D-18
+      13     6.297611D-36   8.548684D-06  -2.219026D-19  -1.955866D-20
+      14     7.235311D-18   4.134465D-19  -3.917193D-05   1.164289D-07
+
+               Column   9     Column  10     Column  11     Column  12
+       1     2.055992D-13   3.565867D-07   4.790042D-06  -9.142798D-21
+       2     1.272346D-09   1.807219D-06   1.561714D-05  -2.465481D-19
+       3     1.807219D-06   1.054341D-05   3.331557D-05  -3.312270D-18
+       4     1.561714D-05   3.331557D-05   5.389232D-05  -1.298757D-17
+       5    -2.328962D-19  -3.316498D-18  -1.346810D-17   8.548684D-06
+       6    -2.711570D-21  -1.503268D-19  -1.105311D-18   6.297611D-36
+       7     6.264415D-06   2.266437D-05   2.656470D-05  -7.105521D-18
+       8     1.193634D-04   4.404471D-05   1.563537D-05  -1.185365D-18
+       9     1.908768D-04   1.179028D-04   4.892282D-05  -1.519145D-17
+      10     1.179028D-04   1.414294D-04   8.732265D-05  -3.889219D-17
+      11     4.892282D-05   8.732265D-05   9.311348D-05  -3.162842D-17
+      12    -1.519145D-17  -3.889219D-17  -3.162842D-17   1.167890D-04
+      13    -2.501288D-19  -7.331487D-19  -6.964707D-19  -3.842857D-34
+      14     7.930153D-07  -1.569846D-06  -3.851049D-06   4.876409D-18
+
+               Column  13     Column  14     Column  15     Column  16
+       1    -1.067621D-21  -1.396005D-06   0.000000D+00   0.000000D+00
+       2    -2.343775D-20  -6.264415D-06   0.000000D+00   0.000000D+00
+       3    -1.440788D-19  -2.266437D-05   0.000000D+00   0.000000D+00
+       4    -3.279755D-19  -2.656470D-05   0.000000D+00   0.000000D+00
+       5     6.297611D-36   7.235311D-18   0.000000D+00   0.000000D+00
+       6     8.548684D-06   4.134465D-19   0.000000D+00   0.000000D+00
+       7    -2.219026D-19  -3.917193D-05   0.000000D+00   0.000000D+00
+       8    -1.955866D-20   1.164289D-07   0.000000D+00   0.000000D+00
+       9    -2.501288D-19   7.930153D-07   0.000000D+00   0.000000D+00
+      10    -7.331487D-19  -1.569846D-06   0.000000D+00   0.000000D+00
+      11    -6.964707D-19  -3.851049D-06   0.000000D+00   0.000000D+00
+      12    -3.842857D-34   4.876409D-18   0.000000D+00   0.000000D+00
+      13     1.167890D-04  -3.324670D-20   0.000000D+00   0.000000D+00
+      14    -3.324670D-20   1.216877D-04   0.000000D+00   0.000000D+00
+
+               Column  17     Column  18     Column  19     Column  20
+
+               Column  21     Column  22     Column  23     Column  24
+
+               Column  25     Column  26     Column  27     Column  28
+
+               Column  29     Column  30     Column  31     Column  32
+
+               Column  33     Column  34     Column  35     Column  36
+
+               Column  37     Column  38     Column  39     Column  40
+
+               Column  41     Column  42     Column  43     Column  44
+
+               Column  45     Column  46     Column  47     Column  48
+
+               Column  49     Column  50     Column  51     Column  52
+
+*** A imag part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** B real part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** B imag part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+   number of quadrature points:                     50512
+   DFT exchange-correlation energy:                    -2.0408103965985505
+   number of electrons from numerical integration:      4.0000000501228472
+
+
+ >>>> time used in dftexc:   0.26 seconds
+
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.26401603s
+
+########## END ITERATION NO.   6 ##########   Wed Feb 24 13:35:26 2010
+
+It.   6    -5.547213295483      4.74D-09  3.69D-05  1.08D-05   DIIS   5    0.26401603s   LL             Wed Feb 24
+
+########## START ITERATION NO.   7##########   Wed Feb 24 13:35:26 2010
+
+    7 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-16    0.00%   58.33%    0.00%    0.00%   0.00399995s
+
+
+                                Sorted FMAT matrix
+                                ------------------
+
+*** Matrix no.    1 of    1
+
+*** A real part ***;    NROW,NCOL:  52  52
+
+
+               Column   1     Column   2     Column   3     Column   4
+       1     1.867217D-05   1.012599D-05   3.740504D-06   1.328170D-06
+       2     1.012599D-05   1.651777D-05   1.031557D-05   4.295161D-06
+       3     3.740504D-06   1.031557D-05   1.269348D-05   7.916806D-06
+       4     1.328170D-06   4.295161D-06   7.916806D-06   8.503776D-06
+       5     2.642684D-18   3.241641D-17   7.601284D-17   5.733647D-17
+       6     4.785305D-19   5.119078D-18   8.237631D-18   3.565131D-18
+       7     2.607603D-08   3.962656D-07   1.327581D-06   1.288099D-06
+       8     0.000000D+00   1.933454D-14   3.095001D-08   4.090001D-07
+       9     1.933454D-14   1.416014D-10   1.759339D-07   1.409020D-06
+      10     3.095001D-08   1.759339D-07   1.102122D-06   3.212810D-06
+      11     4.090001D-07   1.409020D-06   3.212810D-06   5.151832D-06
+      12     1.893155D-20   4.342974D-19   2.215941D-18  -9.219433D-19
+      13     3.310881D-21   3.462275D-20  -2.285897D-18  -1.640302D-17
+      14    -1.209532D-07  -6.034213D-07  -2.374025D-06  -2.899640D-06
+
+               Column   5     Column   6     Column   7     Column   8
+       1     2.642684D-18   4.785305D-19   2.607603D-08   0.000000D+00
+       2     3.241641D-17   5.119078D-18   3.962656D-07   1.933454D-14
+       3     7.601284D-17   8.237631D-18   1.327581D-06   3.095001D-08
+       4     5.733647D-17   3.565131D-18   1.288099D-06   4.090001D-07
+       5     1.062503D-05  -1.296480D-33  -1.590217D-19  -6.229690D-21
+       6    -1.296480D-33   1.062503D-05  -5.777875D-18  -1.520912D-20
+       7    -1.590217D-19  -5.777875D-18   1.121853D-05   1.209532D-07
+       8    -6.229690D-21  -1.520912D-20   1.209532D-07   1.867217D-05
+       9    -9.726449D-20  -3.566138D-19   6.034213D-07   1.012599D-05
+      10     2.374407D-18  -2.169266D-18   2.374025D-06   3.740504D-06
+      11     1.950936D-17  -1.364849D-18   2.899640D-06   1.328170D-06
+      12     8.812419D-07  -5.560519D-35   2.536923D-18  -8.861956D-19
+      13    -5.560519D-35   8.812419D-07  -6.606030D-18  -2.118942D-18
+      14    -7.392313D-18   3.032453D-18  -4.194163D-06  -2.607603D-08
+
+               Column   9     Column  10     Column  11     Column  12
+       1     1.933454D-14   3.095001D-08   4.090001D-07   1.893155D-20
+       2     1.416014D-10   1.759339D-07   1.409020D-06   4.342974D-19
+       3     1.759339D-07   1.102122D-06   3.212810D-06   2.215941D-18
+       4     1.409020D-06   3.212810D-06   5.151832D-06  -9.219433D-19
+       5    -9.726449D-20   2.374407D-18   1.950936D-17   8.812419D-07
+       6    -3.566138D-19  -2.169266D-18  -1.364849D-18  -5.560519D-35
+       7     6.034213D-07   2.374025D-06   2.899640D-06   2.536923D-18
+       8     1.012599D-05   3.740504D-06   1.328170D-06  -8.861956D-19
+       9     1.651777D-05   1.031557D-05   4.295161D-06  -1.002739D-17
+      10     1.031557D-05   1.269348D-05   7.916806D-06  -1.919094D-17
+      11     4.295161D-06   7.916806D-06   8.503776D-06  -1.139290D-17
+      12    -1.002739D-17  -1.919094D-17  -1.139290D-17   1.062503D-05
+      13    -2.612194D-17  -6.183750D-17  -4.702354D-17  -8.611118D-34
+      14    -3.962656D-07  -1.327581D-06  -1.288099D-06  -6.415851D-18
+
+               Column  13     Column  14     Column  15     Column  16
+       1     3.310881D-21  -1.209532D-07   0.000000D+00   0.000000D+00
+       2     3.462275D-20  -6.034213D-07   0.000000D+00   0.000000D+00
+       3    -2.285897D-18  -2.374025D-06   0.000000D+00   0.000000D+00
+       4    -1.640302D-17  -2.899640D-06   0.000000D+00   0.000000D+00
+       5    -5.560519D-35  -7.392313D-18   0.000000D+00   0.000000D+00
+       6     8.812419D-07   3.032453D-18   0.000000D+00   0.000000D+00
+       7    -6.606030D-18  -4.194163D-06   0.000000D+00   0.000000D+00
+       8    -2.118942D-18  -2.607603D-08   0.000000D+00   0.000000D+00
+       9    -2.612194D-17  -3.962656D-07   0.000000D+00   0.000000D+00
+      10    -6.183750D-17  -1.327581D-06   0.000000D+00   0.000000D+00
+      11    -4.702354D-17  -1.288099D-06   0.000000D+00   0.000000D+00
+      12    -8.611118D-34  -6.415851D-18   0.000000D+00   0.000000D+00
+      13     1.062503D-05   9.348945D-19   0.000000D+00   0.000000D+00
+      14     9.348945D-19   1.121853D-05   0.000000D+00   0.000000D+00
+
+               Column  17     Column  18     Column  19     Column  20
+
+               Column  21     Column  22     Column  23     Column  24
+
+               Column  25     Column  26     Column  27     Column  28
+
+               Column  29     Column  30     Column  31     Column  32
+
+               Column  33     Column  34     Column  35     Column  36
+
+               Column  37     Column  38     Column  39     Column  40
+
+               Column  41     Column  42     Column  43     Column  44
+
+               Column  45     Column  46     Column  47     Column  48
+
+               Column  49     Column  50     Column  51     Column  52
+
+*** A imag part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** B real part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** B imag part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+   number of quadrature points:                     50512
+   DFT exchange-correlation energy:                    -2.0408137638419470
+   number of electrons from numerical integration:      4.0000000501243402
+
+
+ >>>> time used in dftexc:   0.26 seconds
+
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.27201688s
+
+########## END ITERATION NO.   7 ##########   Wed Feb 24 13:35:26 2010
+
+It.   7    -5.547213295508      2.54D-11  3.34D-06  2.50D-09   DIIS   6    0.27201688s   LL             Wed Feb 24
+
+########## START ITERATION NO.   8##########   Wed Feb 24 13:35:26 2010
+
+    8 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-16    0.00%   60.84%    0.00%    0.00%   0.00400007s
+
+
+                                Sorted FMAT matrix
+                                ------------------
+
+*** Matrix no.    1 of    1
+
+*** A real part ***;    NROW,NCOL:  52  52
+
+
+               Column   1     Column   2     Column   3     Column   4
+       1     2.477969D-09   1.345799D-09   4.973049D-10   1.765959D-10
+       2     1.345799D-09   2.205422D-09   1.377947D-09   5.735958D-10
+       3     4.973049D-10   1.377947D-09   1.681435D-09   1.038084D-09
+       4     1.765959D-10   5.735958D-10   1.038084D-09   1.079536D-09
+       5    -5.965162D-19  -7.192042D-18  -1.632412D-17  -1.196599D-17
+       6    -8.543853D-20  -9.655998D-19  -1.825945D-18  -1.048667D-18
+       7     6.077110D-12   8.635207D-11   2.618879D-10   2.386462D-10
+       8     0.000000D+00   0.000000D+00   4.162594D-12   5.453302D-11
+       9     0.000000D+00   2.083754D-14   2.467460D-11   1.908124D-10
+      10     4.162627D-12   2.467473D-11   1.556716D-10   4.344912D-10
+      11     5.453347D-11   1.908137D-10   4.344927D-10   6.721914D-10
+      12    -4.250200D-21  -8.967772D-20  -1.362036D-19   2.203714D-18
+      13    -6.055912D-22  -9.455013D-21   2.613932D-19   2.298734D-18
+      14    -1.625289D-11  -8.428445D-11  -3.356582D-10  -4.126866D-10
+
+               Column   5     Column   6     Column   7     Column   8
+       1    -5.965162D-19  -8.543853D-20   6.077110D-12   0.000000D+00
+       2    -7.192042D-18  -9.655998D-19   8.635207D-11   0.000000D+00
+       3    -1.632412D-17  -1.825945D-18   2.618879D-10   4.162594D-12
+       4    -1.196599D-17  -1.048667D-18   2.386462D-10   5.453302D-11
+       5     1.380491D-09   2.059360D-35   1.108860D-18   3.060917D-21
+       6     2.059360D-35   1.380491D-09   6.439316D-19   2.327499D-21
+       7     1.108860D-18   6.439316D-19   1.487155D-09   1.625276D-11
+       8     3.060917D-21   2.327499D-21   1.625276D-11   2.477948D-09
+       9     6.263644D-20   5.044030D-20   8.428398D-11   1.345787D-09
+      10    -1.814771D-19   2.436909D-19   3.356577D-10   4.973007D-10
+      11    -3.687768D-18  -4.602687D-20   4.126865D-10   1.765944D-10
+      12     1.206794D-10  -6.987157D-36   3.505065D-19   4.282138D-19
+      13    -6.987157D-36   1.206794D-10   8.167138D-19   3.277704D-19
+      14     1.036466D-18  -2.745526D-19  -5.973915D-10  -6.077159D-12
+
+               Column   9     Column  10     Column  11     Column  12
+       1     0.000000D+00   4.162627D-12   5.453347D-11  -4.250200D-21
+       2     2.083754D-14   2.467473D-11   1.908137D-10  -8.967772D-20
+       3     2.467460D-11   1.556716D-10   4.344927D-10  -1.362036D-19
+       4     1.908124D-10   4.344912D-10   6.721914D-10   2.203714D-18
+       5     6.263644D-20  -1.814771D-19  -3.687768D-18   1.206794D-10
+       6     5.044030D-20   2.436909D-19  -4.602687D-20  -6.987157D-36
+       7     8.428398D-11   3.356577D-10   4.126865D-10   3.505065D-19
+       8     1.345787D-09   4.973007D-10   1.765944D-10   4.282138D-19
+       9     2.205405D-09   1.377936D-09   5.735914D-10   5.114638D-18
+      10     1.377936D-09   1.681424D-09   1.038078D-09   1.126678D-17
+      11     5.735914D-10   1.038078D-09   1.079532D-09   7.964050D-18
+      12     5.114638D-18   1.126678D-17   7.964050D-18   1.380484D-09
+      13     3.983250D-18   9.258900D-18   6.967098D-18  -2.890186D-34
+      14    -8.635273D-11  -2.618897D-10  -2.386477D-10   1.076843D-18
+
+               Column  13     Column  14     Column  15     Column  16
+       1    -6.055912D-22  -1.625289D-11   0.000000D+00   0.000000D+00
+       2    -9.455013D-21  -8.428445D-11   0.000000D+00   0.000000D+00
+       3     2.613932D-19  -3.356582D-10   0.000000D+00   0.000000D+00
+       4     2.298734D-18  -4.126866D-10   0.000000D+00   0.000000D+00
+       5    -6.987157D-36   1.036466D-18   0.000000D+00   0.000000D+00
+       6     1.206794D-10  -2.745526D-19   0.000000D+00   0.000000D+00
+       7     8.167138D-19  -5.973915D-10   0.000000D+00   0.000000D+00
+       8     3.277704D-19  -6.077159D-12   0.000000D+00   0.000000D+00
+       9     3.983250D-18  -8.635273D-11   0.000000D+00   0.000000D+00
+      10     9.258900D-18  -2.618897D-10   0.000000D+00   0.000000D+00
+      11     6.967098D-18  -2.386477D-10   0.000000D+00   0.000000D+00
+      12    -2.890186D-34   1.076843D-18   0.000000D+00   0.000000D+00
+      13     1.380484D-09   4.435901D-19   0.000000D+00   0.000000D+00
+      14     4.435901D-19   1.487149D-09   0.000000D+00   0.000000D+00
+
+               Column  17     Column  18     Column  19     Column  20
+
+               Column  21     Column  22     Column  23     Column  24
+
+               Column  25     Column  26     Column  27     Column  28
+
+               Column  29     Column  30     Column  31     Column  32
+
+               Column  33     Column  34     Column  35     Column  36
+
+               Column  37     Column  38     Column  39     Column  40
+
+               Column  41     Column  42     Column  43     Column  44
+
+               Column  45     Column  46     Column  47     Column  48
+
+               Column  49     Column  50     Column  51     Column  52
+
+*** A imag part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** B real part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** B imag part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+   number of quadrature points:                     50512
+   DFT exchange-correlation energy:                    -2.0408137644718307
+   number of electrons from numerical integration:      4.0000000501242656
+
+
+ >>>> time used in dftexc:   0.25 seconds
+
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.26401603s
+
+########## END ITERATION NO.   8 ##########   Wed Feb 24 13:35:26 2010
+
+It.   8    -5.547213295508      7.11D-15  6.43D-10  1.05D-11   DIIS   6    0.26401603s   LL             Wed Feb 24
+
+
+                                   SCF - CYCLE
+                                   -----------
+
+* Convergence on norm of error vector (gradient).
+  Desired convergence:1.000D-09
+  Allowed convergence:1.000D+08
+
+* ERGVAL - convergence in total energy
+* FCKVAL - convergence in maximum change in total Fock matrix
+* EVCVAL - convergence in error vector (gradient)
+--------------------------------------------------------------------------------------------------------------------------------
+           Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
+--------------------------------------------------------------------------------------------------------------------------------
+It.   1   -0.9800196035212      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Wed Feb 24
+It.   2    -5.514530745087      4.53D+00  3.91D-01  4.05D-01               0.34002203s   LL             Wed Feb 24
+It.   3    -5.541727791246      2.72D-02 -1.72D-01  1.69D-01   DIIS   2    0.27601701s   LL             Wed Feb 24
+It.   4    -5.547213089312      5.49D-03  5.06D-02  1.16D-03   DIIS   3    0.26801699s   LL             Wed Feb 24
+It.   5    -5.547213290739      2.01D-07 -1.38D-04  1.83D-04   DIIS   4    0.26401699s   LL             Wed Feb 24
+It.   6    -5.547213295483      4.74D-09  3.69D-05  1.08D-05   DIIS   5    0.26401603s   LL             Wed Feb 24
+It.   7    -5.547213295508      2.54D-11  3.34D-06  2.50D-09   DIIS   6    0.27201688s   LL             Wed Feb 24
+It.   8    -5.547213295508      7.11D-15  6.43D-10  1.05D-11   DIIS   6    0.26401603s   LL             Wed Feb 24
+--------------------------------------------------------------------------------------------------------------------------------
+* Convergence after    8 iterations.
+* Average elapsed time per iteration: 
+      No 2-ints    :    0.00000000s
+      LL           :    0.28571429s
+
+
+                                   TOTAL ENERGY
+                                   ------------
+
+   Electronic energy                        :    -7.5472132955079507
+
+   Other contributions to the total energy
+   Nuclear repulsion energy                 :     2.0000000000000000
+
+   Sum of all contributions to the energy
+   Total energy                             :    -5.5472132955079507
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Boson symmetry A  
+  * Closed shell, f = 1.0000
+ -0.72893512539022  ( 2)    -0.37837561473045  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+  0.90013860507883  ( 2)     0.93170753668659  ( 2)     1.75612459912257  ( 2)     1.87144567829793  ( 4)     2.34412647677323  ( 4)
+  3.34284045374622  ( 2)     7.69669299807647  ( 2)     8.21511941190852  ( 2)    60.97694699686052  ( 2)    61.36712044822747  ( 2)
+
+* Occupation of subblocks
+                       E1 :  A                                                                              
+  closed shells (f=1.0000):    2
+ virtual shells (f=0.0000):   12
+tot.num. of pos.erg shells:   14
+
+
+* HOMO - LUMO gap:
+
+    E(LUMO) :     0.90013861 au (symmetry A  )
+  - E(HOMO) :    -0.37837561 au (symmetry A  )
+  ------------------------------------------
+    gap     :     1.27851422 au
+
+
+
+       *******************************************************************
+       ************************* Property module *************************
+       *******************************************************************
+
+
+
+   This is output from the Dirac property module:
+
+   HF & DFT first order properties
+   Trond Saue
+
+   First-order ESR properties
+   Hans Joergen Aa. Jensen and Anette Noerager
+
+   MP2 first order properties:
+   J. N. P. van Stralen, L. Visscher, C. V. Larsen and H. J. Aa Jensen, Chem. Phys. 311 (2005) 81.
+
+   KR-RPA second-order properties
+   Hans Joergen Aa. Jensen and Trond Saue
+
+   KR-QR third order properties
+   Patrick Norman and Hans Joergen Aa. Jensen
+
+   Molecular gradient
+   Joern Thyssen
+
+   Additional contributions from:
+   Thomas Enevoldsen
+
+
+
+
+             *******************************************************
+             ********** Properties for DHF  wave function **********
+             *******************************************************
+
+
+
+    **************************************************************************
+    *************************** Expectation values ***************************
+    **************************************************************************
+
+                                                   s0 t0
+----------------------------------------------------------------------------
+    RNSTHe  001X     :     0.105107254622 a.u.      F   F
+    RNSTHe  001Y     :    -0.19051233D-17 a.u.      F   F
+    RNSTHe  001Z     :     0.12238843D-16 a.u.      F   F
+    RNSTHe  002X     :     0.17057430D-16 a.u.      F   F
+    RNSTHe  002Y     :     0.105107254622 a.u.      F   F
+    RNSTHe  002Z     :    -0.42064519D-16 a.u.      F   F
+    RNSTHe  003X     :     0.00000000D+00 a.u.      F   F
+    RNSTHe  003Y     :     0.00000000D+00 a.u.      F   F
+    RNSTHe  003Z     :     0.00000000D+00 a.u.      F   F
+    RNSTHe  004X     :     0.105107254622 a.u.      F   F
+    RNSTHe  004Y     :    -0.24122332D-18 a.u.      F   F
+    RNSTHe  004Z     :     0.37508221D-16 a.u.      F   F
+    RNSTHe  005X     :    -0.21273357D-16 a.u.      F   F
+    RNSTHe  005Y     :     0.105107254622 a.u.      F   F
+    RNSTHe  005Z     :    -0.89222499D-17 a.u.      F   F
+    RNSTHe  006X     :     0.00000000D+00 a.u.      F   F
+    RNSTHe  006Y     :     0.00000000D+00 a.u.      F   F
+    RNSTHe  006Z     :     0.00000000D+00 a.u.      F   F
+    NSNLHe  001X     :     1.118681252028 a.u.      F   F
+    NSNLHe  001Y     :    -0.48150212D-34 a.u.      F   F
+    NSNLHe  001Z     :    -0.48579327D-17 a.u.      F   F
+    NSNLHe  002X     :    -0.48150212D-34 a.u.      F   F
+    NSNLHe  002Y     :     1.118681252028 a.u.      F   F
+    NSNLHe  002Z     :     0.86185902D-17 a.u.      F   F
+    NSNLHe  003X     :    -0.46144872D-17 a.u.      F   F
+    NSNLHe  003Y     :    -0.26573883D-17 a.u.      F   F
+    NSNLHe  003Z     :     1.204602287832 a.u.      F   F
+    NSNLHe  004X     :     1.118681252027 a.u.      F   F
+    NSNLHe  004Y     :     0.67369616D-33 a.u.      F   F
+    NSNLHe  004Z     :    -0.70051740D-17 a.u.      F   F
+    NSNLHe  005X     :     0.67369616D-33 a.u.      F   F
+    NSNLHe  005Y     :     1.118681252027 a.u.      F   F
+    NSNLHe  005Z     :    -0.41339394D-17 a.u.      F   F
+    NSNLHe  006X     :     0.28764857D-17 a.u.      F   F
+    NSNLHe  006Y     :     0.11732969D-16 a.u.      F   F
+    NSNLHe  006Z     :     1.204602287832 a.u.      F   F
+----------------------------------------------------------------------------
+    s0 = T : Expectation value zero by point group symmetry.
+    t0 = T : Expectation value zero by time reversal symmetry.
+
+    * Orbital classes:
+    Fermion ircop:E1 
+    - Inactive orbitals  :      1..     2                                          
+    - Active orbitals    : No electrons
+    - Secondary orbitals :      3..    14                                          
+
+* REACMO: Coefficients read from file DFCOEF - Total energy: -5.54721329550794362
+* Heading :DIRAC: No title specified !!!                     Wed Feb 24 13:35:26 2010
+
+Cpu time:       0.0080 Wall time:       0.0000 used in call to TWOINT(in TWOLO1).
+
+ debug fmat_x before direct
+
+*** A real part ***;    NROW,NCOL:  52  52
+
+
+               Column   1     Column   2     Column   3     Column   4
+       8       0.00000000     0.00000000     0.00000000     0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10       0.00000000     0.00000000     0.00000000     0.00000000
+      11       0.00000000     0.00000000     0.00000000     0.00000000
+      12      -0.00000000    -0.00000000     0.00000000     0.00000000
+      13      -0.00017482    -0.00570078    -0.10516198    -0.49475340
+      14      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+       2      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       3      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       4      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       5       0.00000000    -0.00000000    -0.00000000    -0.00000000
+       6       0.00000000     0.00000000    -0.00000000     0.00017482
+       7       0.00000000     0.00000000     0.00000000    -0.00000000
+       8       0.00000000    -0.00017482     0.00000000     0.00000000
+       9       0.00000000    -0.00570078     0.00000000     0.00000000
+      10       0.00000000    -0.10516198     0.00000000     0.00000000
+      11      -0.00000000    -0.49475340     0.00000000     0.00000000
+      12       0.00000000    -0.00000000     0.00000000     0.00000000
+      13      -0.00000000     0.00000000    -0.22661411     0.00000000
+      14      -0.00000000     0.22661411    -0.00000000     0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       1      -0.00000000    -0.00000000    -0.00000000     0.00000000
+       2      -0.00000000    -0.00000000    -0.00000000     0.00000000
+       3      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       4      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       5      -0.00000000    -0.00000000     0.00000000    -0.00000000
+       6       0.00570078     0.10516198     0.49475340     0.00000000
+       7      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+
+               Column  13     Column  14     Column  15     Column  16
+       1       0.00017482     0.00000000    -0.00000000    -0.00000000
+       2       0.00570078     0.00000000    -0.00000000    -0.00000000
+       3       0.10516198     0.00000000    -0.00000000    -0.00000000
+       4       0.49475340     0.00000000    -0.00000000    -0.00000000
+       5       0.00000000     0.00000000    -0.00000000    -0.00000000
+       6      -0.00000000    -0.22661411    -0.00000000    -0.00000000
+       7       0.22661411     0.00000000    -0.00000000    -0.00000000
+
+               Column  17     Column  18     Column  19     Column  20
+
+               Column  21     Column  22     Column  23     Column  24
+
+               Column  25     Column  26     Column  27     Column  28
+
+               Column  29     Column  30     Column  31     Column  32
+
+               Column  33     Column  34     Column  35     Column  36
+
+               Column  37     Column  38     Column  39     Column  40
+
+               Column  41     Column  42     Column  43     Column  44
+
+               Column  45     Column  46     Column  47     Column  48
+
+               Column  49     Column  50     Column  51     Column  52
+
+*** A imag part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** B real part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** B imag part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+   number of quadrature points:                     50512
+   DFT exchange-correlation energy:                    -2.0408137644718307
+   number of electrons from numerical integration:      4.0000000501242656
+
+
+ >>>> time used in dftexc:   2.39 seconds
+
+ debug fmat_x after direct
+
+*** A real part ***;    NROW,NCOL:  52  52
+
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.00000000    -0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.00000000    -0.00000000    -0.00000000
+       3      -0.00000000     0.00000000     0.00000000    -0.00000000
+       4      -0.00000000     0.00000000     0.00000000     0.00000000
+       5       0.00000000    -0.00000000    -0.00000000     0.00000000
+       6      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       7      -0.00000000    -0.00000000     0.00000000     0.00000000
+       8      -0.00000000     0.00000000     0.00000000     0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10       0.00000000     0.00000000     0.00000000     0.00000000
+      11       0.00000000     0.00000000     0.00000000     0.00000000
+      12       0.00000000    -0.00000000    -0.00000000     0.00000000
+      13      -0.00012386    -0.00443814    -0.08675320    -0.40676934
+      14      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+       1      -0.00000000     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.00000000     0.00000000    -0.00000000
+       3       0.00000000     0.00000000    -0.00000000    -0.00000000
+       4      -0.00000000     0.00000000    -0.00000000    -0.00000000
+       5       0.00000000     0.00000000     0.00000000     0.00000000
+       6      -0.00000000     0.00000000     0.00000000     0.00012386
+       7      -0.00000000    -0.00000000     0.00000000    -0.00000000
+       8      -0.00000000    -0.00012386     0.00000000     0.00000000
+       9       0.00000000    -0.00443814     0.00000000     0.00000000
+      10      -0.00000000    -0.08675320     0.00000000     0.00000000
+      11      -0.00000000    -0.40676934     0.00000000     0.00000000
+      12       0.00000000     0.00000000    -0.00000000     0.00000000
+      13      -0.00000000     0.00000000    -0.18691160    -0.00000000
+      14       0.00000000     0.18691160    -0.00000000    -0.00000000
+
+               Column   9     Column  10     Column  11     Column  12
+       1      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       2      -0.00000000    -0.00000000    -0.00000000     0.00000000
+       3      -0.00000000    -0.00000000    -0.00000000     0.00000000
+       4      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       5      -0.00000000     0.00000000     0.00000000    -0.00000000
+       6       0.00443814     0.08675320     0.40676934    -0.00000000
+       7      -0.00000000    -0.00000000    -0.00000000     0.00000000
+       8      -0.00000000    -0.00000000    -0.00000000    -0.00000000
+       9       0.00000000     0.00000000     0.00000000    -0.00000000
+      10      -0.00000000     0.00000000    -0.00000000    -0.00000000
+      11      -0.00000000     0.00000000     0.00000000     0.00000000
+      12       0.00000000     0.00000000    -0.00000000     0.00000000
+      13       0.00000000     0.00000000     0.00000000     0.00000000
+      14       0.00000000     0.00000000     0.00000000    -0.00000000
+
+               Column  13     Column  14     Column  15     Column  16
+       1       0.00012386     0.00000000     0.00000000     0.00000000
+       2       0.00443814     0.00000000     0.00000000     0.00000000
+       3       0.08675320     0.00000000     0.00000000     0.00000000
+       4       0.40676934     0.00000000     0.00000000     0.00000000
+       5       0.00000000    -0.00000000     0.00000000     0.00000000
+       6      -0.00000000    -0.18691160     0.00000000     0.00000000
+       7       0.18691160     0.00000000     0.00000000     0.00000000
+       8       0.00000000     0.00000000     0.00000000     0.00000000
+       9      -0.00000000    -0.00000000     0.00000000     0.00000000
+      10      -0.00000000    -0.00000000     0.00000000     0.00000000
+      11      -0.00000000    -0.00000000     0.00000000     0.00000000
+      12      -0.00000000     0.00000000     0.00000000     0.00000000
+      13       0.00000000     0.00000000     0.00000000     0.00000000
+      14      -0.00000000     0.00000000     0.00000000     0.00000000
+
+               Column  17     Column  18     Column  19     Column  20
+
+               Column  21     Column  22     Column  23     Column  24
+
+               Column  25     Column  26     Column  27     Column  28
+
+               Column  29     Column  30     Column  31     Column  32
+
+               Column  33     Column  34     Column  35     Column  36
+
+               Column  37     Column  38     Column  39     Column  40
+
+               Column  41     Column  42     Column  43     Column  44
+
+               Column  45     Column  46     Column  47     Column  48
+
+               Column  49     Column  50     Column  51     Column  52
+
+*** A imag part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** B real part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** B imag part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-16  100.00%    0.00%    0.00%    0.00%   0.00400019s
+
+
+                                Sorted FMAT matrix
+                                ------------------
+
+*** Matrix no.    1 of    3
+
+*** A real part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** A imag part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** B real part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** B imag part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+
+                                Sorted FMAT matrix
+                                ------------------
+
+*** Matrix no.    2 of    3
+
+*** A real part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** A imag part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** B real part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** B imag part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+
+                                Sorted FMAT matrix
+                                ------------------
+
+*** Matrix no.    3 of    3
+
+*** A real part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** A imag part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** B real part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** B imag part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+   number of quadrature points:                     50512
+   number of electrons from numerical integration:      4.0000000501242656
+
+
+ >>>> time used in dftexc:   0.51 seconds
+
+
+* GETFCK: reading old two-electron Fock matrix
+
+* REAFCK: Fock matrix read from file DFFCK2                                                      
+* Heading :DIRAC: No title specified !!!                     Wed Feb 24 13:35:26 2010
+
+   number of quadrature points:                     50512
+   DFT exchange-correlation energy:                    -2.0408137644718307
+   number of electrons from numerical integration:      4.0000000501242656
+
+
+ >>>> time used in dftexc:   0.26 seconds
+
+
+* GETFCK: reading old one-electron Fock matrix
+
+* REAFCK: Fock matrix read from file DFFCK1                                                      
+* Heading :DIRAC: No title specified !!!                     Wed Feb 24 13:35:24 2010
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTY >>>
+LAO-XRM1H1       - Symmetry: A    T-
+
+* Screening threshold in LR solver scaled with norm of property vector:  2.0751D+00
+  and changed to:  2.0751D-16
+
+########## START MICROITERATION NO.   1 ##########   Wed Feb 24 13:35:30 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.08D-16  100.00%    0.00%    0.00%    0.00%   0.00400019s
+
+
+                                Sorted FMAT matrix
+                                ------------------
+
+*** Matrix no.    1 of    1
+
+*** A real part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** A imag part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** B real part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** B imag part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+   number of quadrature points:                     50512
+   number of electrons from numerical integration:      4.0000000501242656
+
+
+ >>>> time used in dftexc:   0.51 seconds
+
+* Trial vectors in this micro iteration:  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part 
+     0.00000000  1.00E-05  6.22E-15  6.22E-15
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E- norm 
+==============================================
+* It.  1   0.51203203s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   6.22D-15 |   6.22D-15
+==============================================
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTY >>>
+LAO-YRM1H1       - Symmetry: A    T-
+
+* Screening threshold in LR solver scaled with norm of property vector:  2.0751D+00
+  and changed to:  2.0751D-16
+
+########## START MICROITERATION NO.   1 ##########   Wed Feb 24 13:35:30 2010
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  2.08D-16  100.00%    0.00%    0.00%    0.00%   0.00000000s
+
+
+                                Sorted FMAT matrix
+                                ------------------
+
+*** Matrix no.    1 of    1
+
+*** A real part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** A imag part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** B real part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+*** B imag part ***;    NROW,NCOL:  52  52
+
+
+     Zero matrix.
+
+   number of quadrature points:                     50512
+   number of electrons from numerical integration:      4.0000000501242656
+
+
+ >>>> time used in dftexc:   0.51 seconds
+
+* Trial vectors in this micro iteration:  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E- part 
+     0.00000000  1.00E-05  6.27E-15  6.27E-15
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  1 microiterations
+
+            Freq.(au)   Total norm    E- norm 
+==============================================
+* It.  1   0.51603222s  (LL       )     [  1]
+----------------------------------------------
+            0.000000 :   6.27D-15 |   6.27D-15
+==============================================
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTY >>>
+LAO-ZRM1H1       - Symmetry: A    T-
+
+WARNING: Skipping B property LAO-ZRM1H1      
+         Norm of gradient  : 6.7D-15
+         is below threshold: 1.0D-09
+
+
+                          Linear response; final output
+                          -----------------------------
+
+
+<<A( 1),B( 1)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - NUCSP001He  A  X     A    T-
+   B - LAO-XRM1H1           A    T-
+-----------------------------------------------------------------------------------------------
+    0.439988885303 a.u. at frequency      0.00000000 a.u.    3.00E-15   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 1),B( 2)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - NUCSP001He  A  X     A    T-
+   B - LAO-YRM1H1           A    T-
+-----------------------------------------------------------------------------------------------
+    0.18536035D-14 a.u. at frequency      0.00000000 a.u.    3.02E-15   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 1),B( 3)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - NUCSP001He  A  X     A    T-
+   B - LAO-ZRM1H1           A    T-
+-----------------------------------------------------------------------------------------------
+    0.00000000D+00 a.u. at frequency      0.00000000 a.u.    0.00E+00   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 2),B( 1)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - NUCSP002He  A  Y     A    T-
+   B - LAO-XRM1H1           A    T-
+-----------------------------------------------------------------------------------------------
+    0.26701878D-15 a.u. at frequency      0.00000000 a.u.    3.00E-15   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 2),B( 2)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - NUCSP002He  A  Y     A    T-
+   B - LAO-YRM1H1           A    T-
+-----------------------------------------------------------------------------------------------
+    0.439988885303 a.u. at frequency      0.00000000 a.u.    3.02E-15   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 2),B( 3)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - NUCSP002He  A  Y     A    T-
+   B - LAO-ZRM1H1           A    T-
+-----------------------------------------------------------------------------------------------
+    0.00000000D+00 a.u. at frequency      0.00000000 a.u.    0.00E+00   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 3),B( 1)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - NUCSP003He  A  Z     A    T-
+   B - LAO-XRM1H1           A    T-
+-----------------------------------------------------------------------------------------------
+    0.26176304D-15 a.u. at frequency      0.00000000 a.u.    3.00E-15   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 3),B( 2)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - NUCSP003He  A  Z     A    T-
+   B - LAO-YRM1H1           A    T-
+-----------------------------------------------------------------------------------------------
+   -0.59690997D-15 a.u. at frequency      0.00000000 a.u.    3.02E-15   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 3),B( 3)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - NUCSP003He  A  Z     A    T-
+   B - LAO-ZRM1H1           A    T-
+-----------------------------------------------------------------------------------------------
+    0.00000000D+00 a.u. at frequency      0.00000000 a.u.    0.00E+00   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 4),B( 1)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - NUCSP004He  A  X     A    T-
+   B - LAO-XRM1H1           A    T-
+-----------------------------------------------------------------------------------------------
+    0.439988885303 a.u. at frequency      0.00000000 a.u.    3.00E-15   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 4),B( 2)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - NUCSP004He  A  X     A    T-
+   B - LAO-YRM1H1           A    T-
+-----------------------------------------------------------------------------------------------
+   -0.24406629D-14 a.u. at frequency      0.00000000 a.u.    3.02E-15   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 4),B( 3)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - NUCSP004He  A  X     A    T-
+   B - LAO-ZRM1H1           A    T-
+-----------------------------------------------------------------------------------------------
+    0.00000000D+00 a.u. at frequency      0.00000000 a.u.    0.00E+00   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 5),B( 1)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - NUCSP005He  A  Y     A    T-
+   B - LAO-XRM1H1           A    T-
+-----------------------------------------------------------------------------------------------
+    0.41479498D-15 a.u. at frequency      0.00000000 a.u.    3.00E-15   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 5),B( 2)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - NUCSP005He  A  Y     A    T-
+   B - LAO-YRM1H1           A    T-
+-----------------------------------------------------------------------------------------------
+    0.439988885303 a.u. at frequency      0.00000000 a.u.    3.02E-15   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 5),B( 3)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - NUCSP005He  A  Y     A    T-
+   B - LAO-ZRM1H1           A    T-
+-----------------------------------------------------------------------------------------------
+    0.00000000D+00 a.u. at frequency      0.00000000 a.u.    0.00E+00   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 6),B( 1)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - NUCSP006He  A  Z     A    T-
+   B - LAO-XRM1H1           A    T-
+-----------------------------------------------------------------------------------------------
+   -0.59624887D-15 a.u. at frequency      0.00000000 a.u.    3.00E-15   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 6),B( 2)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - NUCSP006He  A  Z     A    T-
+   B - LAO-YRM1H1           A    T-
+-----------------------------------------------------------------------------------------------
+    0.54145393D-15 a.u. at frequency      0.00000000 a.u.    3.02E-15   (converged)
+-----------------------------------------------------------------------------------------------
+
+<<A( 6),B( 3)>> - linear response function (real):
+-----------------------------------------------------------------------------------------------
+   A - NUCSP006He  A  Z     A    T-
+   B - LAO-ZRM1H1           A    T-
+-----------------------------------------------------------------------------------------------
+    0.00000000D+00 a.u. at frequency      0.00000000 a.u.    0.00E+00   (converged)
+-----------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------
+
+
+            *********************************************************
+            **************** DIRAC  - NMR SHIELDINGS ****************
+            *********************************************************
+
+  ------------------------------------------------------------------------
+
+
+  Chemical shielding for He    :
+  ==============================
+
+
+  Shielding constant:     55.5991 ppm
+  Anisotropy:             12.8214 ppm
+  Span:                   12.8214 ppm
+  Asymmetry:               0.0000    
+  Skew:                    1.0000    
+
+
+  Total shielding tensor (ppm):
+  -----------------------------
+
+                  Bx             By             Bz
+
+  He   x    51.32525520    -0.00000000    -0.00000000
+  He   y    -0.00000000    51.32525520     0.00000000
+  He   z    -0.00000000     0.00000000    64.14670281
+
+
+  Diamagnetic and paramagnetic contributions (ppm):
+  -------------------------------------------------
+
+               Bx         By         Bz             Bx         By         Bz
+
+  He   x    74.7553     0.0000    -0.0000       -23.4300    -0.0000    -0.0000
+  He   y    -0.0000    74.7553     0.0000        -0.0000   -23.4300    -0.0000
+  He   z     0.0000    -0.0000    64.1467        -0.0000     0.0000     0.0000
+
+ Diamagnetic contribution:     71.219074         Paramagnetic:     -15.620003
+
+
+  Antisymmetric and traceless symmetric parts (ppm):
+  --------------------------------------------------
+
+               Bx         By         Bz             Bx         By         Bz
+
+  He   x     0.0000    -0.0000     0.0000        51.3253    -0.0000    -0.0000
+  He   y     0.0000     0.0000    -0.0000        -0.0000    51.3253     0.0000
+  He   z    -0.0000     0.0000     0.0000        -0.0000     0.0000    64.1467
+
+
+  Principal values and axes:
+  --------------------------
+
+  He    1    106.924326  =   55.60  +  51.33:     0.987538 -0.157379  0.000000
+  He    2    106.924326  =   55.60  +  51.33:     0.157379  0.987538  0.000000
+  He    3    119.745774  =   55.60  +  64.15:     0.000000  0.000000  1.000000
+
+
+  Chemical shielding for He    :
+  ==============================
+
+
+  Shielding constant:     55.5991 ppm
+  Anisotropy:             12.8214 ppm
+  Span:                   12.8214 ppm
+  Asymmetry:               0.0000    
+  Skew:                    1.0000    
+
+
+  Total shielding tensor (ppm):
+  -----------------------------
+
+                  Bx             By             Bz
+
+  He   x    51.32525520     0.00000000    -0.00000000
+  He   y    -0.00000000    51.32525520     0.00000000
+  He   z     0.00000000    -0.00000000    64.14670281
+
+
+  Diamagnetic and paramagnetic contributions (ppm):
+  -------------------------------------------------
+
+               Bx         By         Bz             Bx         By         Bz
+
+  He   x    74.7553    -0.0000    -0.0000       -23.4300     0.0000     0.0000
+  He   y    -0.0000    74.7553     0.0000        -0.0000   -23.4300    -0.0000
+  He   z    -0.0000     0.0000    64.1467         0.0000    -0.0000     0.0000
+
+ Diamagnetic contribution:     71.219074         Paramagnetic:     -15.620003
+
+
+  Antisymmetric and traceless symmetric parts (ppm):
+  --------------------------------------------------
+
+               Bx         By         Bz             Bx         By         Bz
+
+  He   x     0.0000     0.0000    -0.0000        51.3253     0.0000     0.0000
+  He   y    -0.0000     0.0000     0.0000         0.0000    51.3253    -0.0000
+  He   z     0.0000    -0.0000     0.0000         0.0000    -0.0000    64.1467
+
+
+  Principal values and axes:
+  --------------------------
+
+  He    1    106.924326  =   55.60  +  51.33:     0.935860 -0.352371 -0.000000
+  He    2    106.924326  =   55.60  +  51.33:     0.352371  0.935860  0.000000
+  He    3    119.745774  =   55.60  +  64.15:     0.000000 -0.000000  1.000000
+
+
+                         +--------------------------------+
+                         ! Summary of chemical shieldings !
+                         +--------------------------------+
+
+ Definitions from J.Mason, Solid state Nuc.Magn.Res. 2 (1993), 285
+
+@            isotropic shielding
+@        ----------------------------
+@atom       total       dia      para      skew      span      anis      asym
+@----------------------------------------------------------------------------
+@He       55.5991   71.2191  -15.6200    1.0000   12.8214   12.8214    0.0000
+@He       55.5991   71.2191  -15.6200    1.0000   12.8214   12.8214    0.0000
+@----------------------------------------------------------------------------
+
+
+ 
+     Date and time (Linux)  : Wed Feb 24 13:35:31 2010 
+     Host name              :                                         
+>>>> Node 0, utime: 6, stime: 0, minflt: 37111, majflt: 0, nvcsw: 0, nivcsw: 477
+>>>> Total WALL time used in DIRAC: 7s
+*****************************************************
+********** E N D   of   D I R A C  output  **********
+*****************************************************
+

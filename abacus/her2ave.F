@@ -2173,6 +2173,7 @@ C     DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
 #include "dcbgrd.h"
 #include "doxyz.h"
 #include "ibtfun.h"
+#include "dcbham.h"
 C
 C     jth
 C     
@@ -2297,7 +2298,8 @@ C
                         DFAC = -DP125*FAB*FCD*FCABCD
 CMI DALTON COUNTERPART  DFAC =  DP125*FAB*FCD*FCABCD
 
-                        EFAC = DP5*DFAC
+!                        EFAC = DP5*DFAC
+                        EFAC = HFXFAC*DP5*DFAC
 C     
 C     Total Fock matrix
 C     
