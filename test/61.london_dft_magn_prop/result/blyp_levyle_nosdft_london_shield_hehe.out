@@ -1,0 +1,20 @@
+
+ =========================================================================
+ Version           : Dirac 8.0 (patchlevel 0) 
+ Hostname          : ibm
+ Operating system  : Linux 2.6.28-17-generic
+ Machine           : i686
+ Run               : Sequential
+ Last compilation  : 13:21:46 Feb 24 2010 (by gosia@ibm:/home/gosia/dirac/lao/prp)
+ FORTRAN compiler  : /usr/bin/gfortran -g -fno-range-check -O3 -ffast-math -funroll-loops -Iinclude -Jmodules -DARCH32BIT -DUSE_DIRAC_BLAS -DUSE_DIRAC_DLAMCH -DUSE_DIRAC_DLAPACK -DUSE_DIRAC_ZLAPACK -DGFORTRAN 433 -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM 64000000 -DVAR_MFDS -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON 
+
+ =========================================================================
+$ERROR 0.00002
+$SIGNCHECK
+@            isotropic shielding
+@        ----------------------------
+@atom       total       dia      para      skew      span      anis      asym
+@----------------------------------------------------------------------------
+@He       57.0110   79.2125  -22.2015   12.2788    0.0000   12.2788    0.0000
+@He       57.0110   65.6828   -8.6718   12.2788    0.0000   12.2788    0.0000
+@----------------------------------------------------------------------------
