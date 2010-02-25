@@ -3885,6 +3885,7 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -3924,6 +3925,9 @@ C.........Read coefficients, eigenvalues and boson irreps
           CALL MEMGET('INTE',KIBOS,NORBT ,WORK,KFREE,LFREE)
           CALL REACMO(LUCOEF,CMOFIL,WORK(KCMO),WORK(KEIG),
      &                WORK(KBEIG),TOTERG,IOPT,WORK,KFREE,LFREE)
+C.........Zero IBEIG is no subblovks; this allows to treat linear systems
+C         that are presently not handled in URKBAL
+          IF(.NOT.SUB_BL) CALL ICOPY(NORBT,0,0,WORK(KBEIG),1)
 C.........At this point the first columns of the negative energy solutions
 C         corresponding to the UKB complement has been zeroed out by REACMO
 C.........Read AO-to-MO-transformation matrix
@@ -4027,9 +4031,6 @@ C.....Transform negative energy coefficients to orthonormal basis
      &            'H','N',IPQTOQ(1,0),TINV,NBAS,NORB,NZT,
      &            'N','N',IPQTOQ(1,0),CMO(1,ICOL,1),NBAS,NPRKB,NZ,
      &            D0,IPQTOQ(1,0),WORK(KCF),NORB,NPRKB,NZ)
-          WRITE(6,*) '* RKBIMP: negCMO in orth',IFRP
-          CALL PRQMAT(WORK(KCF),NORB,NPRKB,NORB,NPRKB,
-     &              NZ,IPQTOQ(1,0),LUPRI)
 C.....Project out negative energy solutions
       CALL PRJORT(CBUF,IBOS(IADR+1),
      &            WORK(KCF),IBEIG(IV),1,NPRKB,
@@ -4046,9 +4047,6 @@ C.....Transform positive energy coefficients to orthonormal basis
      &            'H','N',IPQTOQ(1,0),TINV,NBAS,NORB,NZT,
      &            'N','N',IPQTOQ(1,0),CMO(1,ICOL,1),NBAS,NERKB,NZ,
      &            D0,IPQTOQ(1,0),WORK(KCF),NORB,NERKB,NZ)
-          WRITE(6,*) '* RKBIMP: posCMO in orth',IFRP
-          CALL PRQMAT(WORK(KCF),NORB,NPRKB,NORB,NPRKB,
-     &              NZ,IPQTOQ(1,0),LUPRI)
 C.....Project out positive energy solutions
       CALL PRJORT(CBUF,IBOS(IADR+1),
      &            WORK(KCF),IBEIG(IV),1,NERKB,
