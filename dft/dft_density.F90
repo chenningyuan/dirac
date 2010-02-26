@@ -685,8 +685,6 @@ contains
 
   end subroutine
 
-
-
   subroutine lda_london_distribute_r(s, irep, mat_dim, fmat, ao, ao_b1, cx, cy, cz)
 
     use dft_cb_interface
@@ -737,6 +735,82 @@ contains
 
               f = (r_co(c)*ao_b1(jj, b) - r_co(b)*ao_b1(jj, c))*ao(ii) &
                 - (r_co(c)*ao_b1(ii, b) - r_co(b)*ao_b1(ii, c))*ao(jj)
+
+              !radovan: later replace 4 by nz, otherwise real and complex algebra will not work
+              fmat(ii, jj, (a-1)*4 + 1) = fmat(ii, jj, (a-1)*4 + 1) + s*f
+
+            end do
+          end do
+        end do
+      end do
+    end do
+
+  end subroutine
+
+  subroutine gga_london_distribute_r(s,        &
+                                     v,        &
+                                     irep,     &
+                                     mat_dim,  &
+                                     fmat,     &
+                                     ao_g0_b0, &
+                                     ao_g0_b1, &
+                                     ao_g1_b0, &
+                                     ao_g1_b1, &
+                                     cx,       &
+                                     cy,       &
+                                     cz)
+
+    use dft_cb_interface
+
+!   ----------------------------------------------------------------------------
+    real(8), intent(in)    :: s
+    real(8), intent(in)    :: v(3)
+    integer, intent(in)    :: irep
+    integer, intent(in)    :: mat_dim
+    real(8), intent(inout) :: fmat(mat_dim, mat_dim, *)
+    real(8), intent(in)    :: ao_g0_b0(mat_dim)
+    real(8), intent(in)    :: ao_g0_b1(mat_dim, 3)
+    real(8), intent(in)    :: ao_g1_b0(mat_dim, 3)
+    real(8), intent(in)    :: ao_g1_b1(mat_dim, 3, 3)
+    real(8), intent(in)    :: cx, cy, cz
+!   ----------------------------------------------------------------------------
+    integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz, jj, j
+    integer                :: a, b, c
+    real(8)                :: f
+    real(8)                :: f_left
+    real(8)                :: f_right
+    real(8)                :: r_co(3)
+    real(8)                :: aob1(mat_dim, 3)
+    integer                :: itest, jtest
+!   ----------------------------------------------------------------------------
+
+   r_co(     1) = cx - dft_origin(1) 
+   r_co(     2) = cy - dft_origin(2)
+   r_co(     3) = cz - dft_origin(3)
+
+    do jxyz = 0, 0
+      do iblock = 1, nr_density_blocks(jxyz, irep)
+
+        nr1 = nr_ao(1, iblock, jxyz, irep)
+        st1 = st_ao(1, iblock, jxyz, irep)
+        nr2 = nr_ao(2, iblock, jxyz, irep)
+        st2 = st_ao(2, iblock, jxyz, irep)
+
+        do a = 1, 3
+          select case (a)
+            case (1)
+              b = 2; c = 3
+            case (2)
+              b = 3; c = 1
+            case (3)
+              b = 1; c = 2
+          end select
+
+          do ii = st1, st1 + nr1 - 1
+            do jj = st2, st2 + nr2 - 1
+
+              f = (r_co(c)*ao_g0_b1(jj, b) - r_co(b)*ao_g0_b1(jj, c))*ao_g0_b0(ii) &
+                - (r_co(c)*ao_g0_b1(ii, b) - r_co(b)*ao_g0_b1(ii, c))*ao_g0_b0(jj)
 
               fmat(ii, jj, (a-1)*4 + 1) = fmat(ii, jj, (a-1)*4 + 1) + s*f
 
