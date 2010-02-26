@@ -15,6 +15,7 @@ module dft_density
   public lda_distribute_i
   public gga_distribute_i
   public lda_london_distribute_r
+  public gga_london_distribute_r
 
   private
 
@@ -774,19 +775,15 @@ contains
     real(8), intent(in)    :: ao_g1_b1(mat_dim, 3, 3)
     real(8), intent(in)    :: cx, cy, cz
 !   ----------------------------------------------------------------------------
-    integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz, jj, j
-    integer                :: a, b, c
-    real(8)                :: f
-    real(8)                :: f_left
-    real(8)                :: f_right
-    real(8)                :: r_co(3)
-    real(8)                :: aob1(mat_dim, 3)
-    integer                :: itest, jtest
+    integer                :: nr1, nr2, st1, st2, iblock, jxyz, i, j
+    integer                :: a, b, c, ixyz
+    real(8)                :: f, fs, fv(3)
+    real(8)                :: r(3)
 !   ----------------------------------------------------------------------------
 
-   r_co(     1) = cx - dft_origin(1) 
-   r_co(     2) = cy - dft_origin(2)
-   r_co(     3) = cz - dft_origin(3)
+    r(1) = cx - dft_origin(1) 
+    r(2) = cy - dft_origin(2)
+    r(3) = cz - dft_origin(3)
 
     do jxyz = 0, 0
       do iblock = 1, nr_density_blocks(jxyz, irep)
@@ -806,13 +803,25 @@ contains
               b = 1; c = 2
           end select
 
-          do ii = st1, st1 + nr1 - 1
-            do jj = st2, st2 + nr2 - 1
+          do i = st1, st1 + nr1 - 1
+            do j = st2, st2 + nr2 - 1
 
-              f = (r_co(c)*ao_g0_b1(jj, b) - r_co(b)*ao_g0_b1(jj, c))*ao_g0_b0(ii) &
-                - (r_co(c)*ao_g0_b1(ii, b) - r_co(b)*ao_g0_b1(ii, c))*ao_g0_b0(jj)
+              fs = (r(c)*ao_g0_b1(j, b) - r(b)*ao_g0_b1(j, c))*ao_g0_b0(i) &
+                 - (r(c)*ao_g0_b1(i, b) - r(b)*ao_g0_b1(i, c))*ao_g0_b0(j)
 
-              fmat(ii, jj, (a-1)*4 + 1) = fmat(ii, jj, (a-1)*4 + 1) + s*f
+              f = s*fs
+
+              do ixyz = 1, 3
+                fv(ixyz) = (r(c)*ao_g1_b1(j, b, ixyz) - r(b)*ao_g1_b1(j, c, ixyz))*ao_g0_b0(i      ) &
+                         - (r(c)*ao_g0_b1(i, b      ) - r(b)*ao_g0_b1(i, c      ))*ao_g1_b0(j, ixyz) &
+                         + (r(c)*ao_g0_b1(j, b      ) - r(b)*ao_g0_b1(j, c      ))*ao_g1_b0(i, ixyz) &
+                         - (r(c)*ao_g1_b1(i, b, ixyz) - r(b)*ao_g1_b1(i, c, ixyz))*ao_g0_b0(j      )
+
+                f = f + v(ixyz)*fv(ixyz)
+              end do
+
+              !radovan: later replace 4 by nz, otherwise real and complex algebra will not work
+              fmat(i, j, (a-1)*4 + 1) = fmat(i, j, (a-1)*4 + 1) + f
 
             end do
           end do

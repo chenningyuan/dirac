@@ -964,66 +964,26 @@ contains
           end if
 
           if (max_ao_m_order == 1) then
-            call lda_london_distribute_r(derv(1, d_r),                      &
-                                         0,                                 &
-                                         mat_dim,                           &
-                                         fmat,                              &
-                                         ao_p,                              &
-                                         ao_p(ao_start(0, 1):ao_end(0, 1)), &
-                                         corx(ipoint), cory(ipoint), corz(ipoint))
-           if (use_gga) then
-             vt = derv(1, d_z)*rhg*2.0d0
-
-             off2 = ao_start(1, 1)
-             call lda_london_distribute_r(vt(1),      &
-                                          0,          &
-                                          mat_dim,    &
-                                          fmat,       &
-                                          ao_p, &
-                                          ao_p(off2:off2+mat_dim*3), &
-                                          corx(ipoint), cory(ipoint), corz(ipoint))
-             off2 = off2 + mat_dim*3
-             call lda_london_distribute_r(vt(2),      &
-                                          0,          &
-                                          mat_dim,    &
-                                          fmat,       &
-                                          ao_p, &
-                                          ao_p(off2:off2+mat_dim*3), &
-                                          corx(ipoint), cory(ipoint), corz(ipoint))
-             off2 = off2 + mat_dim*3
-             call lda_london_distribute_r(vt(3),      &
-                                          0,          &
-                                          mat_dim,    &
-                                          fmat,       &
-                                          ao_p, &
-                                          ao_p(off2:off2+mat_dim*3), &
-                                          corx(ipoint), cory(ipoint), corz(ipoint))
-
-             off1 = ao_start(1, 0)
-             call lda_london_distribute_r(vt(1),      &
-                                          0,          &
-                                          mat_dim,    &
-                                          fmat,       &
-                                          ao_p(off1:off1+mat_dim), &
-                                          ao_p(ao_start(0, 1):ao_end(0, 1)), &
-                                          corx(ipoint), cory(ipoint), corz(ipoint))
-             off1 = off1 + mat_dim
-             call lda_london_distribute_r(vt(2),      &
-                                          0,          &
-                                          mat_dim,    &
-                                          fmat,       &
-                                          ao_p(off1:off1+mat_dim), &
-                                          ao_p(ao_start(0, 1):ao_end(0, 1)), &
-                                          corx(ipoint), cory(ipoint), corz(ipoint))
-             off1 = off1 + mat_dim
-             call lda_london_distribute_r(vt(3),      &
-                                          0,          &
-                                          mat_dim,    &
-                                          fmat,       &
-                                          ao_p(off1:off1+mat_dim), &
-                                          ao_p(ao_start(0, 1):ao_end(0, 1)), &
-                                          corx(ipoint), cory(ipoint), corz(ipoint))
-
+            if (use_gga) then
+              vt = derv(1, d_z)*rhg*2.0d0
+              call gga_london_distribute_r(derv(1, d_r),                      &
+                                           vt,                                &
+                                           0,                                 &
+                                           mat_dim,                           &
+                                           fmat,                              &
+                                           ao_p(ao_start(0, 0):ao_end(0, 0)), &
+                                           ao_p(ao_start(0, 1):ao_end(0, 1)), &
+                                           ao_p(ao_start(1, 0):ao_end(1, 0)), &
+                                           ao_p(ao_start(1, 1):ao_end(1, 1)), &
+                                           corx(ipoint), cory(ipoint), corz(ipoint))
+            else
+              call lda_london_distribute_r(derv(1, d_r),                      &
+                                           0,                                 &
+                                           mat_dim,                           &
+                                           fmat,                              &
+                                           ao_p,                              &
+                                           ao_p(ao_start(0, 1):ao_end(0, 1)), &
+                                           corx(ipoint), cory(ipoint), corz(ipoint))
             end if
           end if
         end if
