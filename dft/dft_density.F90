@@ -748,8 +748,9 @@ contains
 
   end subroutine
 
-  subroutine gga_london_distribute_r(s,        &
-                                     v,        &
+  subroutine gga_london_distribute_r(d_r,      &
+                                     d_z,      &
+                                     n_g1,     &
                                      irep,     &
                                      mat_dim,  &
                                      fmat,     &
@@ -764,8 +765,9 @@ contains
     use dft_cb_interface
 
 !   ----------------------------------------------------------------------------
-    real(8), intent(in)    :: s
-    real(8), intent(in)    :: v(3)
+    real(8), intent(in)    :: d_r
+    real(8), intent(in)    :: d_z
+    real(8), intent(in)    :: n_g1(3)
     integer, intent(in)    :: irep
     integer, intent(in)    :: mat_dim
     real(8), intent(inout) :: fmat(mat_dim, mat_dim, *)
@@ -777,7 +779,7 @@ contains
 !   ----------------------------------------------------------------------------
     integer                :: nr1, nr2, st1, st2, iblock, jxyz, i, j
     integer                :: a, b, c, ixyz
-    real(8)                :: f, fs, fv(3)
+    real(8)                :: f, f_temp
     real(8)                :: r(3)
 !   ----------------------------------------------------------------------------
 
@@ -806,18 +808,31 @@ contains
           do i = st1, st1 + nr1 - 1
             do j = st2, st2 + nr2 - 1
 
-              fs = (r(c)*ao_g0_b1(j, b) - r(b)*ao_g0_b1(j, c))*ao_g0_b0(i) &
-                 - (r(c)*ao_g0_b1(i, b) - r(b)*ao_g0_b1(i, c))*ao_g0_b0(j)
+              f_temp = (r(c)*ao_g0_b1(j, b) - r(b)*ao_g0_b1(j, c))*ao_g0_b0(i) &
+                     - (r(c)*ao_g0_b1(i, b) - r(b)*ao_g0_b1(i, c))*ao_g0_b0(j)
 
-              f = s*fs
+              f = f_temp*d_r
+
+!             so far it's lda type contribution, rest are gradient terms
+
+              f_temp = (n_g1(c)*ao_g0_b1(j, b) - n_g1(b)*ao_g0_b1(j, c))*ao_g0_b0(i) &
+                     - (n_g1(c)*ao_g0_b1(i, b) - n_g1(b)*ao_g0_b1(i, c))*ao_g0_b0(j)
+
+              f_temp = f_temp                                                               &
+                     + (n_g1(1)*ao_g1_b0(j, 1)                                              &
+                     +  n_g1(2)*ao_g1_b0(j, 2)                                              &
+                     +  n_g1(3)*ao_g1_b0(j, 3))*(r(b)*ao_g0_b1(i, c) - r(c)*ao_g0_b1(i, b)) &
+                     - (n_g1(1)*ao_g1_b0(i, 1)                                              &
+                     +  n_g1(2)*ao_g1_b0(i, 2)                                              &
+                     +  n_g1(3)*ao_g1_b0(i, 3))*(r(b)*ao_g0_b1(j, c) - r(c)*ao_g0_b1(j, b))
+
+              f = f + f_temp*d_z
 
               do ixyz = 1, 3
-                fv(ixyz) = (r(c)*ao_g1_b1(j, b, ixyz) - r(b)*ao_g1_b1(j, c, ixyz))*ao_g0_b0(i      ) &
-                         - (r(c)*ao_g0_b1(i, b      ) - r(b)*ao_g0_b1(i, c      ))*ao_g1_b0(j, ixyz) &
-                         + (r(c)*ao_g0_b1(j, b      ) - r(b)*ao_g0_b1(j, c      ))*ao_g1_b0(i, ixyz) &
-                         - (r(c)*ao_g1_b1(i, b, ixyz) - r(b)*ao_g1_b1(i, c, ixyz))*ao_g0_b0(j      )
+                f_temp = (r(c)*ao_g1_b1(j, b, ixyz) - r(b)*ao_g1_b1(j, c, ixyz))*ao_g0_b0(i) &
+                       - (r(c)*ao_g1_b1(i, b, ixyz) - r(b)*ao_g1_b1(i, c, ixyz))*ao_g0_b0(j)
 
-                f = f + v(ixyz)*fv(ixyz)
+                f = f + f_temp*d_z*n_g1(ixyz)
               end do
 
               !radovan: later replace 4 by nz, otherwise real and complex algebra will not work

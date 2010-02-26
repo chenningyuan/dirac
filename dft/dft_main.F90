@@ -967,7 +967,8 @@ contains
             if (use_gga) then
               vt = derv(1, d_z)*rhg*2.0d0
               call gga_london_distribute_r(derv(1, d_r),                      &
-                                           vt,                                &
+                                           derv(1, d_z),                      &
+                                           rhg,                               &
                                            0,                                 &
                                            mat_dim,                           &
                                            fmat,                              &
