@@ -108,7 +108,9 @@ C     note TODO: MSOUT is not implemented!
       DMP2_VIRTHR = DUMMY
       IJTSK = 0
       MAXSCL = 0
-      SCRMP2 = 1.D-14
+Ctsaue      SCRMP2 = 1.D-14
+Ctsaue: turning of default screening for now since further testing is needed
+      SCRMP2 = -1.0D0
       SRTSHL = .TRUE.
       CMMNFO = .FALSE.
       TPRI34 = -1.D0
