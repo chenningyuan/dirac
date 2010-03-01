@@ -938,6 +938,7 @@ contains
         if ((response_order == 0) .and. (response_order_ao == 0)) then
 !       here we will add LAO contribution to KS matrix
 
+          if (max_ao_m_order == 0) then
           if (use_gga) then
             vt = derv(1, d_z)*rhg
 
@@ -963,7 +964,7 @@ contains
                                   ao_p)
           end if
 
-          if (max_ao_m_order == 1) then
+          else
             if (use_gga) then
               vt = derv(1, d_z)*rhg*2.0d0
               call gga_london_distribute_r(derv(1, d_r),                      &

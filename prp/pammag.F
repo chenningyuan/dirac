@@ -806,6 +806,7 @@ C
       DO I=1,3
          ISYMOP(I) = 1
 C anti hermitisk
+!radovan: ??? but it's hermitian
          IHRMOP(I) = 1
          IFCKOP(I) = 1
       END DO
