@@ -76,6 +76,48 @@ contains
                     g_order,           &
                     m_order)
 
+!radovan: some working notes
+! subroutine dftexc(mat_dim,           &
+!                   nz,                &
+
+!                   nr_fmat,           &
+!                   fmat,              &
+
+!                   dmat_0,            &
+
+!                   nr_dmat_p,         &
+!                   dmat_p,            &
+
+!                   isymop_dmat,       &
+!                   isymop_fmat,       & !this will later go away
+!                   ihrmop,            &
+
+!change:
+!                   response_order,    &
+!                   0 ks
+!                   1 ks lr
+!                   2 ks qr (old code)
+!to:
+!                   response_order_mo,    &
+!                   0 do nothing
+!                   1 ks lr
+!                   2 ks qr (old code)
+
+!                   xc_potential
+
+!                   response_order_ao, &
+!                   0 do nothing
+!                   1 ks lr (ao response code)
+!                   2 ks qr (ao response code)
+!                   3 ...
+
+!                   london_rhs_direct
+!                   london_rhs_ro
+
+
+
+
+
 !   ----------------------------------------------------------------------------
     integer, intent(in) :: mat_dim
     integer, intent(in) :: nz
