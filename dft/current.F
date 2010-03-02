@@ -47,7 +47,7 @@ C
 C     IOPTION is a four digit integer:
 C
 C     1 get   1 "nothing"     1 "nothing"   1 1_{4x4}
-C     2 put   2 \nabla        2 \cdot       2 c \alpha
+C     2 put   2 \nabla        2 \cdot       2 -c \alpha
 C             3 some vector   3 \times      3 \Sigma
 C                                           4 \beta\Sigma
 C                                           5 \gamma_5
