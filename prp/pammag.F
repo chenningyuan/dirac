@@ -638,11 +638,7 @@ C.....Get full AO-Fock matrix with two-electron London integrals
       CALL RSKLOND(WORK(KFMAT),WORK(KSKLTN),WORK(KFAC),WORK(KINDEX),
      &             WORK(KPOINT),NDMAT,WORK(KIREP),IPRPRP)
       CALL MEMREL('TWOLON.RSKLOND',WORK,KWORK,KSKLTN,KFREE,LFREE)
-      CALL MEMGET('REAL',KFOCK,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL TWOLO1B(WORK(KFMAT),WORK(KFOCK),NCOMP,
-     &             WORK(KFREE),LFREE,IPRPRP)
-      CALL MEMREL('TWOLON.TWOLO1B',WORK,KWORK,KFOCK,KFREE,LFREE)
-!
+!gosia-temp
 #ifdef MOD_DFT
 ! tsaue+gosia: This contribution is done correctly, but there is a factor two missing somewhere
       call memget('REAL',kdmat0,n2bbasxq,work,kfree,lfree)
@@ -650,6 +646,19 @@ C.....Get full AO-Fock matrix with two-electron London integrals
      &                       work(kfree),lfree,iprprp)
       call memrel('twolon.dft',work,kwork,kdmat0,kfree,lfree)
 #endif /* MOD_DFT */
+
+      CALL MEMGET('REAL',KFOCK,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL TWOLO1B(WORK(KFMAT),WORK(KFOCK),NCOMP,
+     &             WORK(KFREE),LFREE,IPRPRP)
+      CALL MEMREL('TWOLON.TWOLO1B',WORK,KWORK,KFOCK,KFREE,LFREE)
+!
+!#ifdef MOD_DFT
+!! tsaue+gosia: This contribution is done correctly, but there is a factor two missing somewhere
+!      call memget('REAL',kdmat0,n2bbasxq,work,kfree,lfree)
+!      call add_dft_to_twolon(work(kfmat),work(kdmat0),cmo,
+!     &                       work(kfree),lfree,iprprp)
+!      call memrel('twolon.dft',work,kwork,kdmat0,kfree,lfree)
+!#endif /* MOD_DFT */
 !
       CALL MEMGET('REAL',KGBMO,N2ORBXQ,WORK,KFREE,LFREE)
       CALL TWOLO1C(WORK(KGBMO),WORK(KFMAT),CMO,NCOMP,
@@ -707,6 +716,15 @@ C
       CALL PRQMAT(fmat,NTBAS(0),NTBAS(0),NTBAS(0),
      &             NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
 
+
+      DO I=1,3
+         ISYMOP(I) = 1
+C anti hermitisk
+         IHRMOP(I) = -1
+      END DO
+
+      if (dft_cfg_no_sdft) then
+
       call dftexc(ntbas(0),  ! mat_dim
      &            nz,        ! nz
      &            nr_fmat,     ! nr_fmat
@@ -718,9 +736,28 @@ C
      &            isymop,    !isymop
      &            ihrmop,    !ihrmop
      &            0,         !response_order
+     &            .false.,   !xc_potential
      &            0,         !response_order_ao
-     &            0,         !g_order
-     &            1)         !m_order
+     &            .true.,    !london_rhs_direct
+     &            .false.)   !london_rhs_ro
+      else
+      call dftexc(ntbas(0),  ! mat_dim
+     &            nz,        ! nz
+     &            nr_fmat,     ! nr_fmat
+     &            fmat,      ! fmat
+     &            dmat0,    ! dmat_0
+     &            0,              !nr_dmat_p
+     &            (/0.0d0/),      !dmat_p
+     &            isymop,    !isymop
+     &            isymop,    !isymop
+     &            ihrmop,    !ihrmop
+     &            1,         !response_order
+     &            .false.,   !xc_potential
+     &            0,         !response_order_ao
+     &            .true.,    !london_rhs_direct
+     &            .false.)   !london_rhs_ro
+
+      end if
 
       write(*, *) 'debug fmat_x after direct'
       CALL PRQMAT(fmat,NTBAS(0),NTBAS(0),NTBAS(0),

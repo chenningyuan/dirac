@@ -3619,9 +3619,10 @@ C
      &                isymop,
      &                ihrmop,
      &                1,
+     &                .false.,
      &                0,
-     &                0,
-     &                0)
+     &                .false.,
+     &                .false.)
 
           call memrel('gmoli1.dft', work, 1, kbuf, kfree, lfree)
 

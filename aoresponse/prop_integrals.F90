@@ -742,9 +742,10 @@ contains
                           (/my_irep + 1/), &
                           (/ones(1:nr_dmat - 1)/),         &
                           0,                               &
+                          .false.,                         &
                           m + 1,                           &
-                          0,                               &
-                          0)
+                          .false.,                         &
+                          .false.)
 
 !radovan:     in many situations one could pass F directly
 !             to dftexc but the gga symmetrization can make problems

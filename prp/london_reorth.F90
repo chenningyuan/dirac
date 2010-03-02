@@ -267,26 +267,10 @@ contains
                   isymop,      &
                   ihrmop,      &
                   1,           &
+                  .false.,     &
                   0,           &
-                  0,           &
-                  0)            
-
-!      call dftexc(nr_ao_total, &
-!                  nr_qu,       &
-!                  nr_fock,     &
-!                  fao,         &
-!                  dmat,        &
-!                  nr_fock,     &
-!                  tb_dmat,     &
-!                  isymop,      &
-!                  isymop,      &
-!                  ihrmop,      &
-!                  1,           & !response_order_mo
-!                  .false.,     & ! xc_potential
-!                  0,           & !response_order_ao
-!                  0,           & !london_rhs_direct
-!                  .true.)        !london_rhs_ro
-!
+                  .false.,     &
+                  .true.)       
 
       call dealloc(dmat)
 

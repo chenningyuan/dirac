@@ -675,9 +675,10 @@ C          Hermitian operator
      &                (/0/),
      &                (/0/),
      &                0,
+     &                .true.,
      &                0,
-     &                0,
-     &                0)
+     &                .false.,
+     &                .false.)
 
         end if
 #endif /* ifdef MOD_DFT */

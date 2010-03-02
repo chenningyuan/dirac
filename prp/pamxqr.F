@@ -2403,9 +2403,10 @@ C
      &              isymop,
      &              ihrmop,
      &              2,
+     &              .false.,
      &              0,
-     &              0,
-     &              0)
+     &              .false.,
+     &              .false.)
 
 
 
