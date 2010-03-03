@@ -160,15 +160,19 @@ contains
       call dscal(mat_dim*mat_dim, 2.0d0, dmat_0, 1)
 
 !     scale and insert half-phases
-      if (nr_dmat_p > 0) then
-        call dscal(mat_dim*mat_dim*nz*nr_dmat_p, 2.0d0, dmat_p, 1)
-        if (nz < 4) then
+      if (nz < 4) then
+        if (nr_dmat_p > 0) then
+          call dscal(mat_dim*mat_dim*nz*nr_dmat_p, 2.0d0, dmat_p, 1)
           do iz = 1, nz
             do im = 1, nr_dmat_p
               iq = dft_cb_pq_to_uq(iz, isymop_dmat(im) - 1)
               ioff = mat_dim*mat_dim*nz*(im - 1) + mat_dim*mat_dim*(iz - 1) + 1
               call q2bphase('D', iq, 1, dmat_p(ioff))
             end do
+          end do
+        end if
+        if (nr_fmat > 0) then
+          do iz = 1, nz
             do im = 1, nr_fmat
               iq = dft_cb_pq_to_uq(iz, isymop_fmat(im) - 1)
               ioff = mat_dim*mat_dim*nz*(im - 1) + mat_dim*mat_dim*(iz - 1) + 1
@@ -334,15 +338,19 @@ contains
 #endif /* ifdef do_daxpy */
 
 !     scale and insert half-phases
-      if (nr_dmat_p > 0) then
-        call dscal(mat_dim*mat_dim*nz*nr_dmat_p, 0.5d0, dmat_p, 1)
-        if (nz < 4) then
+      if (nz < 4) then
+        if (nr_dmat_p > 0) then
+          call dscal(mat_dim*mat_dim*nz*nr_dmat_p, 2.0d0, dmat_p, 1)
           do iz = 1, nz
             do im = 1, nr_dmat_p
               iq = dft_cb_pq_to_uq(iz, isymop_dmat(im) - 1)
               ioff = mat_dim*mat_dim*nz*(im - 1) + mat_dim*mat_dim*(iz - 1) + 1
               call q2bphase('D', iq, 1, dmat_p(ioff))
             end do
+          end do
+        end if
+        if (nr_fmat > 0) then
+          do iz = 1, nz
             do im = 1, nr_fmat
               iq = dft_cb_pq_to_uq(iz, isymop_fmat(im) - 1)
               ioff = mat_dim*mat_dim*nz*(im - 1) + mat_dim*mat_dim*(iz - 1) + 1
@@ -1005,36 +1013,28 @@ contains
 !       direct-lao contribution to differentiated kohn-sham matrix
 !       ==========================================================
 
-        if (london_rhs_direct) then 
-          if (dft_cfg_no_sdft) then
-!           only terms with 1st functional dervs
-            if (use_gga) then
-              derv(1, d_z) = 2.0d0*derv(1, d_z)
-              call gga_london_distribute_r(derv(1, d_r),                      &
-                                           derv(1, d_z),                      &
-                                           rhg,                               &
-                                           0,                                 &
-                                           mat_dim,                           &
-                                           nz,                                &
-                                           fmat,                              &
-                                           ao_p(ao_start(0, 0):ao_end(0, 0)), &
-                                           ao_p(ao_start(0, 1):ao_end(0, 1)), &
-                                           ao_p(ao_start(1, 0):ao_end(1, 0)), &
-                                           ao_p(ao_start(1, 1):ao_end(1, 1)), &
-                                           corx(ipoint), cory(ipoint), corz(ipoint))
-            else
-              call lda_london_distribute_r(derv(1, d_r),                      &
-                                           0,                                 &
-                                           mat_dim,                           &
-                                           nz,                                &
-                                           fmat,                              &
-                                           ao_p,                              &
-                                           ao_p(ao_start(0, 1):ao_end(0, 1)), &
-                                           corx(ipoint), cory(ipoint), corz(ipoint))
-            end if
-          !if (.not. dft_cfg_no_sdft) then
-          !  call lr
-          !end if
+        if (london_rhs_direct .and. response_order_mo == 0) then 
+          if (use_gga) then
+            call gga_london_distribute_r(derv(1, d_r),                      &
+                                         2.0d0*derv(1, d_z),                      &
+                                         rhg,                               &
+                                         0,                                 &
+                                         mat_dim,                           &
+                                         nz,                                &
+                                         fmat,                              &
+                                         ao_p(ao_start(0, 0):ao_end(0, 0)), &
+                                         ao_p(ao_start(0, 1):ao_end(0, 1)), &
+                                         ao_p(ao_start(1, 0):ao_end(1, 0)), &
+                                         ao_p(ao_start(1, 1):ao_end(1, 1)), &
+                                         corx(ipoint), cory(ipoint), corz(ipoint))
+          else
+            call lda_london_distribute_r(derv(1, d_r),                      &
+                                         isymop_fmat,                       &
+                                         mat_dim,                           &
+                                         fmat,                              &
+                                         ao_p,                              &
+                                         ao_p(ao_start(0, 1):ao_end(0, 1)), &
+                                         corx(ipoint), cory(ipoint), corz(ipoint))
           end if
         end if
 

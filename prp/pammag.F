@@ -638,28 +638,21 @@ C.....Get full AO-Fock matrix with two-electron London integrals
       CALL RSKLOND(WORK(KFMAT),WORK(KSKLTN),WORK(KFAC),WORK(KINDEX),
      &             WORK(KPOINT),NDMAT,WORK(KIREP),IPRPRP)
       CALL MEMREL('TWOLON.RSKLOND',WORK,KWORK,KSKLTN,KFREE,LFREE)
-!gosia-temp
+
+      CALL MEMGET('REAL',KFOCK,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL TWOLO1B(WORK(KFMAT),WORK(KFOCK),NCOMP,
+     &             WORK(KFREE),LFREE,IPRPRP)
+      CALL MEMREL('TWOLON.TWOLO1B',WORK,KWORK,KFOCK,KFREE,LFREE)
+
 #ifdef MOD_DFT
-! tsaue+gosia: This contribution is done correctly, but there is a factor two missing somewhere
+!     it has to happen after TWOLO1B
+!     because XC is done in SA-AO basis
       call memget('REAL',kdmat0,n2bbasxq,work,kfree,lfree)
       call add_dft_to_twolon(work(kfmat),work(kdmat0),cmo,
      &                       work(kfree),lfree,iprprp)
       call memrel('twolon.dft',work,kwork,kdmat0,kfree,lfree)
 #endif /* MOD_DFT */
 
-      CALL MEMGET('REAL',KFOCK,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL TWOLO1B(WORK(KFMAT),WORK(KFOCK),NCOMP,
-     &             WORK(KFREE),LFREE,IPRPRP)
-      CALL MEMREL('TWOLON.TWOLO1B',WORK,KWORK,KFOCK,KFREE,LFREE)
-!
-!#ifdef MOD_DFT
-!! tsaue+gosia: This contribution is done correctly, but there is a factor two missing somewhere
-!      call memget('REAL',kdmat0,n2bbasxq,work,kfree,lfree)
-!      call add_dft_to_twolon(work(kfmat),work(kdmat0),cmo,
-!     &                       work(kfree),lfree,iprprp)
-!      call memrel('twolon.dft',work,kwork,kdmat0,kfree,lfree)
-!#endif /* MOD_DFT */
-!
       CALL MEMGET('REAL',KGBMO,N2ORBXQ,WORK,KFREE,LFREE)
       CALL TWOLO1C(WORK(KGBMO),WORK(KFMAT),CMO,NCOMP,
      &             WORK(KFREE),LFREE,IPRPRP)
@@ -676,8 +669,9 @@ C.....Get full AO-Fock matrix with two-electron London integrals
       use dft_main
       use dft_cfg
 #endif
+
+      implicit none
 !
-#include "implicit.h"
 #include "priunit.h"  
 #include "dummy.h"   
 #include "maxorb.h"
@@ -700,9 +694,8 @@ C
 #include "dcbnmr.h"
 #include "dcbfir.h"
 C
-      DIMENSION FMAT(*),
-     &          DMAT0(*),CMO(*),WORK(*)
-      DIMENSION ISYMOP(3),IHRMOP(3)
+      real(8) :: fmat(*), dmat0(*), cmo(*), work(*)
+      integer :: isymop(3), ihrmop(3), lwork, iprint, nr_fmat, i
 
       CALL QENTER('add_dft_to_twolon')
 
@@ -711,16 +704,15 @@ C
 
       call genden(dmat0, cmo, 1, iprint)
 
-!     CALL DZERO(FMAT,NTBAS(0)*NTBAS(0)*NZ)
-!     write(*, *) 'debug fmat_x before direct'
-!     CALL PRQMAT(fmat,NTBAS(0),NTBAS(0),NTBAS(0),
-!    &             NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
-
-
+!     CALL DZERO(FMAT,NTBAS(0)*NTBAS(0)*NZ*3)
       DO I=1,3
-         ISYMOP(I) = 1
+!        isymop(i) = 1
+         isymop(i) = isymax(i, 2) + 1
 !        anti hermitian
          IHRMOP(I) = -1
+!     write(*, *) 'debug before direct', i
+!     CALL PRQMAT(fmat,NTBAS(0),NTBAS(0),NTBAS(0),
+!    &             NTBAS(0),NZ,IPQTOQ(1,isymax(i, 2)),LUPRI)
       END DO
 
       if (dft_cfg_no_sdft) then
@@ -759,9 +751,12 @@ C
 
       end if
 
-!     write(*, *) 'debug fmat_x after direct'
+!     DO I=1,3
+!     write(*, *) 'debug after direct', i
 !     CALL PRQMAT(fmat,NTBAS(0),NTBAS(0),NTBAS(0),
-!    &             NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
+!    &             NTBAS(0),NZ,IPQTOQ(1,isymax(i, 2)),LUPRI)
+!     END DO
+
       endif
       call qexit('add_dft_to_twolon')
 
