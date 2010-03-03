@@ -651,6 +651,14 @@ C.....Get full AO-Fock matrix with two-electron London integrals
       call add_dft_to_twolon(work(kfmat),work(kdmat0),cmo,
      &                       work(kfree),lfree,iprprp)
       call memrel('twolon.dft',work,kwork,kdmat0,kfree,lfree)
+!fixme: radovan:
+!     XC contribution with nz < 4 does not work
+!     i think this is because twolon works with unpacked AO matrices
+!     and XC with packed
+!     i don't know why we don't work with packed AO matrices here
+!     and at the moment don't feel like unpacking the dft contribution
+!     because i would have to allocate extra space
+!     (dft adds on top), boson unsort, unpack, boson resort, etc
 #endif /* MOD_DFT */
 
       CALL MEMGET('REAL',KGBMO,N2ORBXQ,WORK,KFREE,LFREE)
