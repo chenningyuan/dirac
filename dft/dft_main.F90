@@ -88,13 +88,13 @@ contains
 ! response_order_mo/_ao:  0 - do nothing (no response)
 !                         1 - ks lr
 !                         2 - ks qr
-!              *_mo - old code, *_ao - aoresponse code
+!                         *_mo - old code, *_ao - aoresponse code
 !
-! xc_potential         = .true.  - do energy and xc potential
+! xc_potential            = .true.  - do energy and xc potential
 !
 ! contributions to differentiated kohn-sham matrix:
-! london_rhs_direct    = .true.  - xc contributions that require mag dervs of ao-s, "direct" (if london)
-! london_rhs_ro        = .true.  - xc contributions to reotrhonormalization terms (if london)
+! london_rhs_direct       = .true.  - xc contributions that require mag dervs of ao-s, "direct" (if london)
+! london_rhs_ro           = .true.  - xc contributions to reotrhonormalization terms (if london)
 
 !   ----------------------------------------------------------------------------
     integer, intent(in) :: mat_dim
@@ -107,6 +107,13 @@ contains
     integer, intent(in) :: isymop_dmat(*)
     integer, intent(in) :: isymop_fmat(*)
     integer, intent(in) :: ihrmop(*)
+
+!    integer, optional, intent(in) :: response_order_mo_r
+!    logical, optional, intent(in) :: xc_potential_r
+!    integer, optional, intent(in) :: response_order_ao_r
+!    logical, optional, intent(in) :: london_rhs_direct_r
+!    logical, optional, intent(in) :: london_rhs_ro_r
+
     integer, intent(in) :: response_order_mo_r
     logical, intent(in) :: xc_potential_r
     integer, intent(in) :: response_order_ao_r
@@ -129,11 +136,17 @@ contains
       time_start = second()
 
 !     change defaults
-      london_rhs_ro       = london_rhs_ro_r
-      london_rhs_direct   = london_rhs_direct_r
-      response_order_ao   = response_order_ao_r
-      xc_potential        = xc_potential_r
-      response_order_mo   = response_order_mo_r
+!      if(present(response_order_mo_r)) london_rhs_ro     = london_rhs_ro_r
+!      if(present(xc_potential       )) xc_potential      = xc_potential_r
+!      if(present(response_order_ao  )) response_order_ao = response_order_ao_r
+!      if(present(london_rhs_direct  )) london_rhs_direct = london_rhs_direct_r
+!      if(present(response_order_mo  )) response_order_mo = response_order_mo_r
+      london_rhs_ro     = london_rhs_ro_r
+      xc_potential      = xc_potential_r
+      response_order_ao = response_order_ao_r
+      london_rhs_direct = london_rhs_direct_r
+      response_order_mo = response_order_mo_r
+
 
 !     initial expectation value of the two-electron matrix
       if (xc_potential) then
@@ -743,7 +756,7 @@ contains
     integer :: max_ao_g_order
     integer :: max_ao_m_order
     integer :: off1, off2
-    integer :: max_functional_derv
+    integer :: max_fun_derv, fun_derv
 
 !   this pointer is useful for .KEEPAO, then it can point to memory
 !   otherwise it points to ao
@@ -891,22 +904,31 @@ contains
 !       check what functional derivatives do we need
 !       ============================================
 
-        max_functional_derv = 0
-        if (xc_potential .or. (london_rhs_direct .and. response_order_mo == 0)) then
-          max_functional_derv = 1
-        else if (response_order_mo == 1 .or. (london_rhs_direct .and. response_order_mo == 1)) then
-          max_functional_derv = 2
+        max_fun_derv = 0
+
+        if (xc_potential) then
+          max_fun_derv = 1
+        end if
+        if (response_order_mo == 1) then
+          max_fun_derv = 2
+        end if
+        if (london_rhs_direct) then
+          if (dft_cfg_no_sdft) then
+            max_fun_derv = 1
+          else
+            max_fun_derv = 2
+          end if
         end if
 
-        if (max_functional_derv >  0) then
-          call get_functional_derv(max_functional_derv,  &
+        do fun_derv = 1, max_fun_derv
+          call get_functional_derv(fun_derv,  &
                                    block_length,         &
                                    w,                    &
                                    r_0,                  &
                                    z_0,                  &
-                                   nr_nonzero_derv(max_functional_derv), &
+                                   nr_nonzero_derv(fun_derv), &
                                    derv)
-        end if
+        end do
 
 !       exchange-correlation potential 
 !       ==============================
@@ -983,29 +1005,36 @@ contains
 !       direct-lao contribution to differentiated kohn-sham matrix
 !       ==========================================================
 
-        if (london_rhs_direct .and. response_order_mo == 0) then 
-          if (use_gga) then
-            call gga_london_distribute_r(derv(1, d_r),                      &
-                                         derv(1, d_z),                      &
-                                         rhg,                               &
-                                         0,                                 &
-                                         mat_dim,                           &
-                                         nz,                                &
-                                         fmat,                              &
-                                         ao_p(ao_start(0, 0):ao_end(0, 0)), &
-                                         ao_p(ao_start(0, 1):ao_end(0, 1)), &
-                                         ao_p(ao_start(1, 0):ao_end(1, 0)), &
-                                         ao_p(ao_start(1, 1):ao_end(1, 1)), &
-                                         corx(ipoint), cory(ipoint), corz(ipoint))
-          else
-            call lda_london_distribute_r(derv(1, d_r),                      &
-                                         0,                                 &
-                                         mat_dim,                           &
-                                         nz,                                &
-                                         fmat,                              &
-                                         ao_p,                              &
-                                         ao_p(ao_start(0, 1):ao_end(0, 1)), &
-                                         corx(ipoint), cory(ipoint), corz(ipoint))
+        if (london_rhs_direct) then 
+          if (dft_cfg_no_sdft) then
+!           only terms with 1st functional dervs
+            if (use_gga) then
+              derv(1, d_z) = 2.0d0*derv(1, d_z)
+              call gga_london_distribute_r(derv(1, d_r),                      &
+                                           derv(1, d_z),                      &
+                                           rhg,                               &
+                                           0,                                 &
+                                           mat_dim,                           &
+                                           nz,                                &
+                                           fmat,                              &
+                                           ao_p(ao_start(0, 0):ao_end(0, 0)), &
+                                           ao_p(ao_start(0, 1):ao_end(0, 1)), &
+                                           ao_p(ao_start(1, 0):ao_end(1, 0)), &
+                                           ao_p(ao_start(1, 1):ao_end(1, 1)), &
+                                           corx(ipoint), cory(ipoint), corz(ipoint))
+            else
+              call lda_london_distribute_r(derv(1, d_r),                      &
+                                           0,                                 &
+                                           mat_dim,                           &
+                                           nz,                                &
+                                           fmat,                              &
+                                           ao_p,                              &
+                                           ao_p(ao_start(0, 1):ao_end(0, 1)), &
+                                           corx(ipoint), cory(ipoint), corz(ipoint))
+            end if
+          !if (.not. dft_cfg_no_sdft) then
+          !  call lr
+          !end if
           end if
         end if
 
@@ -1013,6 +1042,7 @@ contains
 
 ! reorthonormalization-lao contribution to differentiated kohn-sham matrix
 !       if (london_rhs_ro) then
+!       end if
 
 
 !       linear response
