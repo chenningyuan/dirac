@@ -2421,9 +2421,12 @@ CSK   NTEST = 5
       IONE = 1
       IMONE = -1
       DO ICA = 1, 2
+       print*,'ICA ',ICA
       DO JSPGRP = 1, NSPGRP
+       print*,'JSPGRP ',JSPGRP
 *. ICREA/IANNI(dag)*!KSTR> = !ISTR>
        DO JGENOP = 1, NGENOP
+C?      print*,'JGENOP ',JGENOP
 *. Occupation of KSPGRP
          IF(ICA.EQ.1) THEN
            CALL IVCSUM(KSPGRP,ISPGRP(1,JSPGRP),IGENOP(1,JGENOP),
@@ -2449,12 +2452,14 @@ C  REF_OP(IOPGAS,IOP,NOP,NGAS,IWAY)
      &                  NGAS,1,MXPLCCOP)
           END IF
           DO IOP = 1, NOP
+C?         print*,'IOP ',IOP
             IOPTP = IGENOP_EXP(IOP)
 *. Number of Kstrings
 C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
             NSTR = NST_FOR_OCC(KSPGRP,NOBPT,NGAS)
             NORB = NOBPT(IOPTP)
             LEN = LEN + NSTR*NORB 
+       if(LEN.gt.100000000) print*,'NSTR,NORB ',NSTR,NORB
 *. Update KSPGRP 
             KSPGRP(IOPTP) = KSPGRP(IOPTP) + 1
           END DO
@@ -4150,7 +4155,8 @@ C     &     WORK(KNSTSO2(IBCTP)),NOCTPA_C,NOCTPB_C,NSMST,L0BLOCK,
      &     WORK(KLLEBT),WORK(KLI1BT),WORK(KLIBT),0,ITTSS_ORD)
 #endif
 C
-      CALL MEMMAR(KLISMDST,MAX_NSYMDIST,  'ADDL  ',1,'ISMDST')
+ctf   CALL MEMMAR(KLISMDST,MAX_NSYMDIST,  'ADDL  ',1,'ISMDST')
+      CALL MEMMAR(KLISMDST,MAX_NSYMDIST+1,  'ADDL  ',1,'ISMDST')
 C
       LSIRES = MXINKA**4
       LCJRES = LCJRES_SAVE
