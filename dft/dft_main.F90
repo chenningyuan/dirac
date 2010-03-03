@@ -1031,6 +1031,7 @@ contains
             call lda_london_distribute_r(derv(1, d_r),                      &
                                          isymop_fmat,                       &
                                          mat_dim,                           &
+                                         nz,                           &
                                          fmat,                              &
                                          ao_p,                              &
                                          ao_p(ao_start(0, 1):ao_end(0, 1)), &

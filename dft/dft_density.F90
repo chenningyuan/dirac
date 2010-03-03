@@ -686,7 +686,7 @@ contains
 
   end subroutine
 
-  subroutine lda_london_distribute_r(s, isym, mat_dim, fmat, ao, ao_b1, cx, cy, cz)
+  subroutine lda_london_distribute_r(s, isym, mat_dim, nz, fmat, ao, ao_b1, cx, cy, cz)
 
     use dft_cb_interface
 
@@ -694,6 +694,7 @@ contains
     real(8), intent(in)    :: s
     integer, intent(in)    :: isym(*)
     integer, intent(in)    :: mat_dim
+    integer, intent(in)    :: nz
     real(8), intent(inout) :: fmat(mat_dim, mat_dim, *)
     real(8), intent(in)    :: ao(mat_dim)
     real(8), intent(in)    :: ao_b1(mat_dim, *)
@@ -702,25 +703,12 @@ contains
     integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz, jj, j
     integer                :: a, b, c
     real(8)                :: f
-    real(8)                :: f_left
-    real(8)                :: f_right
     real(8)                :: r_co(3)
-    real(8)                :: aob1(mat_dim, 3)
-    integer                :: itest, jtest
-    integer                :: irp1, irp2
 !   ----------------------------------------------------------------------------
 
-#include "dcbbas.h"
-#include "dcbham.h"
-#include "dgroup.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "symmet.h"
-
-    r_co(     1) = cx - dft_origin(1) 
-    r_co(     2) = cy - dft_origin(2)
-    r_co(     3) = cz - dft_origin(3)
+    r_co(1) = cx - dft_origin(1) 
+    r_co(2) = cy - dft_origin(2)
+    r_co(3) = cz - dft_origin(3)
 
     do a = 1, 3
       select case (a)
@@ -732,57 +720,27 @@ contains
           b = 1; c = 2
       end select
 
-      do irp1 = 0, nbsym - 1
-!       irp2 = ieor(irp1, isymax(a, 2))
-        irp2 = ieor(irp1, isym(a) - 1)
-        nr1 = nbbas(irp1, 1)
-        if (nr1 > 0) then
-          st1 = ibbas(irp1, 1) + 1
-          nr2 = nbbas(irp2, 1)
-          if (nr2 > 0) then
-            st2 = ibbas(irp2, 1) + 1
+      do jxyz = 0, 0
+        do iblock = 1, nr_density_blocks(jxyz, isym(a) - 1)
+  
+          nr1 = nr_ao(1, iblock, jxyz, isym(a) - 1)
+          st1 = st_ao(1, iblock, jxyz, isym(a) - 1)
+          nr2 = nr_ao(2, iblock, jxyz, isym(a) - 1)
+          st2 = st_ao(2, iblock, jxyz, isym(a) - 1)
 
-            do ii = st1, st1 + nr1 - 1
-              do jj = st2, st2 + nr2 - 1
- 
-                f = (r_co(c)*ao_b1(jj, b) - r_co(b)*ao_b1(jj, c))*ao(ii) &
-                  - (r_co(c)*ao_b1(ii, b) - r_co(b)*ao_b1(ii, c))*ao(jj)
-  
-                fmat(ii, jj, (a-1)*nz + 1) = fmat(ii, jj, (a-1)*nz + 1) + s*f
-  
-              end do
+          do ii = st1, st1 + nr1 - 1
+            do jj = st2, st2 + nr2 - 1
+
+              f = (r_co(c)*ao_b1(jj, b) - r_co(b)*ao_b1(jj, c))*ao(ii) &
+                - (r_co(c)*ao_b1(ii, b) - r_co(b)*ao_b1(ii, c))*ao(jj)
+
+              fmat(ii, jj, (a-1)*nz + 1) = fmat(ii, jj, (a-1)*nz + 1) + s*f
+
             end do
-          end if
-        end if
+          end do
+        end do
       end do
     end do
-
-!     do jxyz = 0, 0
-!       do iblock = 1, nr_density_blocks(jxyz, isym(a) - 1)
-!     ! do iblock = 1, nr_density_blocks(a, isym - 1)
-! 
-!         nr1 = nr_ao(1, iblock, jxyz, isym(a) - 1)
-!         st1 = st_ao(1, iblock, jxyz, isym(a) - 1)
-!         nr2 = nr_ao(2, iblock, jxyz, isym(a) - 1)
-!         st2 = st_ao(2, iblock, jxyz, isym(a) - 1)
-!        !nr1 = nr_ao(1, iblock, a,    isym - 1)
-!        !st1 = st_ao(1, iblock, a,    isym - 1)
-!        !nr2 = nr_ao(2, iblock, a,    isym - 1)
-!        !st2 = st_ao(2, iblock, a,    isym - 1)
-
-!         do ii = st1, st1 + nr1 - 1
-!           do jj = st2, st2 + nr2 - 1
-
-!             f = (r_co(c)*ao_b1(jj, b) - r_co(b)*ao_b1(jj, c))*ao(ii) &
-!               - (r_co(c)*ao_b1(ii, b) - r_co(b)*ao_b1(ii, c))*ao(jj)
-
-!             fmat(ii, jj, (a-1)*nz + 1) = fmat(ii, jj, (a-1)*nz + 1) + s*f
-
-!           end do
-!         end do
-!       end do
-!     end do
-!   end do
 
   end subroutine
 
