@@ -985,12 +985,12 @@ contains
 
         if (london_rhs_direct .and. response_order_mo == 0) then 
           if (use_gga) then
-            vt = derv(1, d_z)*rhg*2.0d0
             call gga_london_distribute_r(derv(1, d_r),                      &
                                          derv(1, d_z),                      &
                                          rhg,                               &
                                          0,                                 &
                                          mat_dim,                           &
+                                         nz,                                &
                                          fmat,                              &
                                          ao_p(ao_start(0, 0):ao_end(0, 0)), &
                                          ao_p(ao_start(0, 1):ao_end(0, 1)), &
@@ -1001,6 +1001,7 @@ contains
             call lda_london_distribute_r(derv(1, d_r),                      &
                                          0,                                 &
                                          mat_dim,                           &
+                                         nz,                                &
                                          fmat,                              &
                                          ao_p,                              &
                                          ao_p(ao_start(0, 1):ao_end(0, 1)), &

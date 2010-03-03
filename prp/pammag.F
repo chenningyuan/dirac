@@ -700,7 +700,7 @@ C
 #include "dcbnmr.h"
 #include "dcbfir.h"
 C
-      DIMENSION FMAT(N2BBASX,4,*),
+      DIMENSION FMAT(*),
      &          DMAT0(*),CMO(*),WORK(*)
       DIMENSION ISYMOP(3),IHRMOP(3)
 
@@ -712,14 +712,14 @@ C
       call genden(dmat0, cmo, 1, iprint)
 
 !     CALL DZERO(FMAT,NTBAS(0)*NTBAS(0)*NZ)
-      write(*, *) 'debug fmat_x before direct'
-      CALL PRQMAT(fmat,NTBAS(0),NTBAS(0),NTBAS(0),
-     &             NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
+!     write(*, *) 'debug fmat_x before direct'
+!     CALL PRQMAT(fmat,NTBAS(0),NTBAS(0),NTBAS(0),
+!    &             NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
 
 
       DO I=1,3
          ISYMOP(I) = 1
-C anti hermitisk
+!        anti hermitian
          IHRMOP(I) = -1
       END DO
 
@@ -759,9 +759,9 @@ C anti hermitisk
 
       end if
 
-      write(*, *) 'debug fmat_x after direct'
-      CALL PRQMAT(fmat,NTBAS(0),NTBAS(0),NTBAS(0),
-     &             NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
+!     write(*, *) 'debug fmat_x after direct'
+!     CALL PRQMAT(fmat,NTBAS(0),NTBAS(0),NTBAS(0),
+!    &             NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
       endif
       call qexit('add_dft_to_twolon')
 

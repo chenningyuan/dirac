@@ -686,7 +686,7 @@ contains
 
   end subroutine
 
-  subroutine lda_london_distribute_r(s, irep, mat_dim, fmat, ao, ao_b1, cx, cy, cz)
+  subroutine lda_london_distribute_r(s, irep, mat_dim, nz, fmat, ao, ao_b1, cx, cy, cz)
 
     use dft_cb_interface
 
@@ -694,9 +694,10 @@ contains
     real(8), intent(in)    :: s
     integer, intent(in)    :: irep
     integer, intent(in)    :: mat_dim
-    real(8), intent(inout) :: fmat(mat_dim, mat_dim, 12)
+    integer, intent(in)    :: nz
+    real(8), intent(inout) :: fmat(mat_dim, mat_dim, *)
     real(8), intent(in)    :: ao(mat_dim)
-    real(8), intent(in)    :: ao_b1(mat_dim,*)
+    real(8), intent(in)    :: ao_b1(mat_dim, *)
     real(8), intent(in)    :: cx, cy, cz
 !   ----------------------------------------------------------------------------
     integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz, jj, j
@@ -709,27 +710,27 @@ contains
     integer                :: itest, jtest
 !   ----------------------------------------------------------------------------
 
-   r_co(     1) = cx - dft_origin(1) 
-   r_co(     2) = cy - dft_origin(2)
-   r_co(     3) = cz - dft_origin(3)
+    r_co(     1) = cx - dft_origin(1) 
+    r_co(     2) = cy - dft_origin(2)
+    r_co(     3) = cz - dft_origin(3)
 
-    do jxyz = 0, 0
-      do iblock = 1, nr_density_blocks(jxyz, irep)
+    do a = 1, 3
+      select case (a)
+        case (1)
+          b = 2; c = 3
+        case (2)
+          b = 3; c = 1
+        case (3)
+          b = 1; c = 2
+      end select
 
-        nr1 = nr_ao(1, iblock, jxyz, irep)
-        st1 = st_ao(1, iblock, jxyz, irep)
-        nr2 = nr_ao(2, iblock, jxyz, irep)
-        st2 = st_ao(2, iblock, jxyz, irep)
-
-        do a = 1, 3
-          select case (a)
-            case (1)
-              b = 2; c = 3
-            case (2)
-              b = 3; c = 1
-            case (3)
-              b = 1; c = 2
-          end select
+      do jxyz = 0, 0
+        do iblock = 1, nr_density_blocks(jxyz, irep)
+  
+          nr1 = nr_ao(1, iblock, jxyz, irep)
+          st1 = st_ao(1, iblock, jxyz, irep)
+          nr2 = nr_ao(2, iblock, jxyz, irep)
+          st2 = st_ao(2, iblock, jxyz, irep)
 
           do ii = st1, st1 + nr1 - 1
             do jj = st2, st2 + nr2 - 1
@@ -737,8 +738,7 @@ contains
               f = (r_co(c)*ao_b1(jj, b) - r_co(b)*ao_b1(jj, c))*ao(ii) &
                 - (r_co(c)*ao_b1(ii, b) - r_co(b)*ao_b1(ii, c))*ao(jj)
 
-              !radovan: later replace 4 by nz, otherwise real and complex algebra will not work
-              fmat(ii, jj, (a-1)*4 + 1) = fmat(ii, jj, (a-1)*4 + 1) + s*f
+              fmat(ii, jj, (a-1)*nz + 1) = fmat(ii, jj, (a-1)*nz + 1) + s*f
 
             end do
           end do
@@ -753,6 +753,7 @@ contains
                                      n_g1,     &
                                      irep,     &
                                      mat_dim,  &
+                                     nz,       &
                                      fmat,     &
                                      ao_g0_b0, &
                                      ao_g0_b1, &
@@ -770,6 +771,7 @@ contains
     real(8), intent(in)    :: n_g1(3)
     integer, intent(in)    :: irep
     integer, intent(in)    :: mat_dim
+    integer, intent(in)    :: nz
     real(8), intent(inout) :: fmat(mat_dim, mat_dim, *)
     real(8), intent(in)    :: ao_g0_b0(mat_dim)
     real(8), intent(in)    :: ao_g0_b1(mat_dim, 3)
@@ -787,23 +789,24 @@ contains
     r(2) = cy - dft_origin(2)
     r(3) = cz - dft_origin(3)
 
-    do jxyz = 0, 0
-      do iblock = 1, nr_density_blocks(jxyz, irep)
+    do a = 1, 3
 
-        nr1 = nr_ao(1, iblock, jxyz, irep)
-        st1 = st_ao(1, iblock, jxyz, irep)
-        nr2 = nr_ao(2, iblock, jxyz, irep)
-        st2 = st_ao(2, iblock, jxyz, irep)
+      select case (a)
+        case (1)
+          b = 2; c = 3
+        case (2)
+          b = 3; c = 1
+        case (3)
+          b = 1; c = 2
+      end select
 
-        do a = 1, 3
-          select case (a)
-            case (1)
-              b = 2; c = 3
-            case (2)
-              b = 3; c = 1
-            case (3)
-              b = 1; c = 2
-          end select
+      do jxyz = 0, 0
+        do iblock = 1, nr_density_blocks(jxyz, irep)
+  
+          nr1 = nr_ao(1, iblock, jxyz, irep)
+          st1 = st_ao(1, iblock, jxyz, irep)
+          nr2 = nr_ao(2, iblock, jxyz, irep)
+          st2 = st_ao(2, iblock, jxyz, irep)
 
           do i = st1, st1 + nr1 - 1
             do j = st2, st2 + nr2 - 1
@@ -835,8 +838,7 @@ contains
                 f = f + f_temp*d_z*n_g1(ixyz)
               end do
 
-              !radovan: later replace 4 by nz, otherwise real and complex algebra will not work
-              fmat(i, j, (a-1)*4 + 1) = fmat(i, j, (a-1)*4 + 1) + f
+              fmat(i, j, (a-1)*nz + 1) = fmat(i, j, (a-1)*nz + 1) + f
 
             end do
           end do
