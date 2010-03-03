@@ -2421,9 +2421,9 @@ CSK   NTEST = 5
       IONE = 1
       IMONE = -1
       DO ICA = 1, 2
-       print*,'ICA ',ICA
+C?     print*,'ICA ',ICA
       DO JSPGRP = 1, NSPGRP
-       print*,'JSPGRP ',JSPGRP
+C?     print*,'JSPGRP ',JSPGRP
 *. ICREA/IANNI(dag)*!KSTR> = !ISTR>
        DO JGENOP = 1, NGENOP
 C?      print*,'JGENOP ',JGENOP

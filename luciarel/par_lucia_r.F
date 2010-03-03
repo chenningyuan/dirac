@@ -3800,6 +3800,8 @@ C               keep track of correct offset
 C?    WRITE(6,*) ' MAXLEN_I1 = ', MAXLEN_I1
 *
       LSCR3 = MAXLEN_I1
+C?    print*,'MAXLENAC,MAXLENBC,MAXLENAS,MAXLENBS ',
+C?   &        MAXLENAC,MAXLENBC,MAXLENAS,MAXLENBS
       call memmar(KI1  ,LSCR3,'ADDL  ',1,'I1    ')
       call memmar(KXI1S,LSCR3,'ADDL  ',2,'XI1S  ')
 *
