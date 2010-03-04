@@ -7,6 +7,7 @@ module xc_london_c1
 !      (+) i think it should be very easy to do higher order LAO
 !          contributions to KS matrix and to KS response
 !          using this approach
+!          it should boil down to additional factorization of what we already have
 !      (-) it does not work in symmetry adapted (SA) AO basis
 !          because we cannot calculate SA AOs and "SA" R_kl in an uncoupled way
 !          one could still use R_kl but introduce additional loops
@@ -22,6 +23,7 @@ module xc_london_c1
 
   public xc_london_c1_init
   public xc_london_c1_lda
+  public xc_london_c1_gga
 
   private
 
@@ -67,22 +69,22 @@ contains
       do ishell = 1, kmax
         do isym = 0, maxopr
           if (iand(isym, istbao(ishell)) == 0) then
-  
+
             px = pt(iand(isymax(1, 1), isym))*cent(ishell, 1, 1)
             py = pt(iand(isymax(2, 1), isym))*cent(ishell, 2, 1)
             pz = pt(iand(isymax(3, 1), isym))*cent(ishell, 3, 1)
- 
-            do j = i, i + spherical_deg(ishell) - 1 
-              p(j, 1) = px            
-              p(j, 2) = py            
-              p(j, 3) = pz            
+
+            do j = i, i + spherical_deg(ishell) - 1
+              p(j, 1) = px
+              p(j, 2) = py
+              p(j, 3) = pz
             end do
 
             i = i + spherical_deg(ishell)
           end if
         end do
       end do
- 
+
       do ixyz = 1, 3
         do k = 1, mat_dim
           do l = 1, mat_dim
@@ -98,40 +100,97 @@ contains
 
   end subroutine
 
-  subroutine xc_london_c1_lda(s, mat_dim, nz, fmat, ao, cx, cy, cz)
-
-    use dft_cb_interface
+  subroutine xc_london_c1_lda(d_r,     &
+                              mat_dim, &
+                              nz,      &
+                              fmat,    &
+                              ao,      &
+                              r)
 
 !   ----------------------------------------------------------------------------
-    real(8), intent(in)    :: s
+    real(8), intent(in)    :: d_r
     integer, intent(in)    :: mat_dim
     integer, intent(in)    :: nz
     real(8), intent(inout) :: fmat(mat_dim, mat_dim, *)
     real(8), intent(in)    :: ao(mat_dim)
-    real(8), intent(in)    :: cx, cy, cz
+    real(8), intent(in)    :: r(3)
 !   ----------------------------------------------------------------------------
     integer                :: k, l, ixyz
-    real(8)                :: f, r(3)
+    real(8)                :: f, rkl_cross_r, omega
 !   ----------------------------------------------------------------------------
-
-    r(1) = cx
-    r(2) = cy
-    r(3) = cz
 
     do ixyz = 1, 3
       do k = 1, mat_dim
 !       work only on the triangle without diagonal elements
         do l = 1, k - 1
-          f = (R_kl(k, l, b(ixyz))*r(c(ixyz)) &
-             - R_kl(k, l, c(ixyz))*r(b(ixyz)))
 
-          f = 0.5d0*s*f*ao(k)*ao(l)
+          omega = ao(k)*ao(l)
+
+          rkl_cross_r = r_kl(k, l, b(ixyz))*r(c(ixyz)) &
+                      - r_kl(k, l, c(ixyz))*r(b(ixyz))
+
+          f = 0.5d0*d_r*omega*rkl_cross_r
 
           fmat(k, l, (ixyz-1)*nz + 1) = fmat(k, l, (ixyz-1)*nz + 1) + f
           fmat(l, k, (ixyz-1)*nz + 1) = fmat(l, k, (ixyz-1)*nz + 1) - f
         end do
       end do
+    end do
 
+  end subroutine
+
+  subroutine xc_london_c1_gga(d_r,     &
+                              d_z,     &
+                              n_g1,    &
+                              mat_dim, &
+                              nz,      &
+                              fmat,    &
+                              ao,      &
+                              ao_g1,   &
+                              r)
+
+!   ----------------------------------------------------------------------------
+    real(8), intent(in)    :: d_r
+    real(8), intent(in)    :: d_z
+    real(8), intent(in)    :: n_g1(3)
+    integer, intent(in)    :: mat_dim
+    integer, intent(in)    :: nz
+    real(8), intent(inout) :: fmat(mat_dim, mat_dim, *)
+    real(8), intent(in)    :: ao(mat_dim)
+    real(8), intent(in)    :: ao_g1(mat_dim, 3)
+    real(8), intent(in)    :: r(3)
+!   ----------------------------------------------------------------------------
+    integer                :: k, l, ixyz, gxyz
+    real(8)                :: f, rkl_cross_r, rkl_cross_n_g1, omega
+!   ----------------------------------------------------------------------------
+
+    do ixyz = 1, 3
+      do k = 1, mat_dim
+!       work only on the triangle without diagonal elements
+        do l = 1, k - 1
+
+          omega = ao(k)*ao(l)
+
+          rkl_cross_r    = r_kl(k, l, b(ixyz))*r(c(ixyz)) &
+                         - r_kl(k, l, c(ixyz))*r(b(ixyz))
+          rkl_cross_n_g1 = r_kl(k, l, b(ixyz))*n_g1(c(ixyz)) &
+                         - r_kl(k, l, c(ixyz))*n_g1(b(ixyz))
+
+          f =       d_r*omega*rkl_cross_r &
+            + 2.0d0*d_z*omega*rkl_cross_n_g1
+
+          do gxyz = 1, 3
+!           actually it is \nabla omega
+            omega = ao(k)*ao_g1(l, gxyz) + ao_g1(k, gxyz)*ao(l)
+            f = f + 2.0d0*d_z*omega*n_g1(gxyz)*rkl_cross_r
+          end do
+
+          f = 0.5d0*f
+
+          fmat(k, l, (ixyz-1)*nz + 1) = fmat(k, l, (ixyz-1)*nz + 1) + f
+          fmat(l, k, (ixyz-1)*nz + 1) = fmat(l, k, (ixyz-1)*nz + 1) - f
+        end do
+      end do
     end do
 
   end subroutine
