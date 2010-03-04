@@ -4,6 +4,7 @@ module xc_london_c1
 !
 !      (+) the code is very close to equations
 !      (+) code does not need "magnetic derivatives" of AOs
+!          and works with undifferentiated pointwise AO overlap
 !      (+) i think it should be very easy to do higher order LAO
 !          contributions to KS matrix and to KS response
 !          using this approach
@@ -27,6 +28,8 @@ module xc_london_c1
 
   private
 
+!radovan: these common blocks will go away
+!         p array should be set up in dft_ao
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
