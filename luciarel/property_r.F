@@ -157,12 +157,14 @@ c     end if
 !     sign for imaginary 1-electron integrals:
 !     (according to h_(IJ) = -h_(I_J_), reference are the 
 !     unbarred spinors.)
-C     if (IRI.eq.2.and.INDEX(1).eq.0) YINT = - YINT
+!
+!     stefan: the comment above does not apply anymore to the new 
+!     sorting scheme. here, we pick out the proper integral h_(I_J_) 
+!     by default.
+!     if (IRI.eq.2.and.INDEX(1).eq.0) YINT = - YINT
 
-C     write(6,*) '1-electron integral.'
-C     write(6,'(3I4,2X,1E14.8)') I_REL,J_REL,IIN,YINT
-
-
+!     write(6,*) '1-electron integral.'
+!     write(6,'(3I4,2X,1E14.8)') I_REL,J_REL,IIN,YINT
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GET_IAIB_DIRAC(IASP_KRCI_SYM,IBSP_KRCI_SYM,ELM_ABSMAX,
