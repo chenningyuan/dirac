@@ -17,6 +17,9 @@ module xc_london_c1
 !          but i think this would be very expensive
 !          anyway this code can be useful for development in C1
 
+! todo (*) work only on matrix blocks that couple AOs of different centers
+!      (*) figure out centers of AOs in dft_ao
+
   use memory_allocator
   use dft_ao
 
@@ -46,7 +49,7 @@ module xc_london_c1
 !                         ideally calculated only once
   real(8), allocatable :: p(:, :)
 !                         ideally calculated only once
-  real(8), allocatable :: R_kl(:, :, :)
+  real(8), allocatable :: r_kl(:, :, :)
   logical              :: all_set = .false.
 
   integer              :: b(3) = (/2, 3, 1/)
@@ -65,7 +68,7 @@ contains
 
     if (.not. all_set) then
 
-      call alloc(R_kl, mat_dim, mat_dim, 3)
+      call alloc(r_kl, mat_dim, mat_dim, 3)
       call alloc(p, mat_dim, 3)
 
       i = 1
@@ -91,7 +94,7 @@ contains
       do ixyz = 1, 3
         do k = 1, mat_dim
           do l = 1, mat_dim
-            R_kl(k, l, ixyz) = p(k, ixyz) - p(l, ixyz)
+            r_kl(k, l, ixyz) = p(k, ixyz) - p(l, ixyz)
           end do
         end do
       end do
