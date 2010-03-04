@@ -115,24 +115,26 @@ contains
     real(8), intent(in)    :: ao(mat_dim)
     real(8), intent(in)    :: r(3)
 !   ----------------------------------------------------------------------------
-    integer                :: k, l, ixyz
-    real(8)                :: f, rkl_cross_r, omega
+    integer                :: k, l, bxyz
+    real(8)                :: f
+    real(8)                :: rkl_cross_r
+    real(8)                :: omega
 !   ----------------------------------------------------------------------------
 
-    do ixyz = 1, 3
-      do k = 1, mat_dim
-!       work only on the triangle without diagonal elements
-        do l = 1, k - 1
+    do k = 1, mat_dim
+!     work only on the triangle without diagonal elements
+      do l = 1, k - 1
 
-          omega = ao(k)*ao(l)
+        omega = ao(k)*ao(l)
 
-          rkl_cross_r = r_kl(k, l, b(ixyz))*r(c(ixyz)) &
-                      - r_kl(k, l, c(ixyz))*r(b(ixyz))
-
-          f = 0.5d0*d_r*omega*rkl_cross_r
-
-          fmat(k, l, (ixyz-1)*nz + 1) = fmat(k, l, (ixyz-1)*nz + 1) + f
-          fmat(l, k, (ixyz-1)*nz + 1) = fmat(l, k, (ixyz-1)*nz + 1) - f
+        do bxyz = 1, 3
+          rkl_cross_r = r_kl(k, l, b(bxyz))*r(c(bxyz)) &
+                      - r_kl(k, l, c(bxyz))*r(b(bxyz))
+         
+          f = 0.5d0*d_r*rkl_cross_r*omega
+         
+          fmat(k, l, (bxyz-1)*nz + 1) = fmat(k, l, (bxyz-1)*nz + 1) + f
+          fmat(l, k, (bxyz-1)*nz + 1) = fmat(l, k, (bxyz-1)*nz + 1) - f
         end do
       end do
     end do
@@ -141,7 +143,7 @@ contains
 
   subroutine xc_london_c1_gga(d_r,     &
                               d_z,     &
-                              n_g1,    &
+                              g,       &
                               mat_dim, &
                               nz,      &
                               fmat,    &
@@ -152,7 +154,7 @@ contains
 !   ----------------------------------------------------------------------------
     real(8), intent(in)    :: d_r
     real(8), intent(in)    :: d_z
-    real(8), intent(in)    :: n_g1(3)
+    real(8), intent(in)    :: g(3)
     integer, intent(in)    :: mat_dim
     integer, intent(in)    :: nz
     real(8), intent(inout) :: fmat(mat_dim, mat_dim, *)
@@ -160,35 +162,34 @@ contains
     real(8), intent(in)    :: ao_g1(mat_dim, 3)
     real(8), intent(in)    :: r(3)
 !   ----------------------------------------------------------------------------
-    integer                :: k, l, ixyz, gxyz
-    real(8)                :: f, rkl_cross_r, rkl_cross_n_g1, omega
+    integer                :: k, l, bxyz, gxyz
+    real(8)                :: f
+    real(8)                :: rkl_cross_r, rkl_cross_g
+    real(8)                :: omega, nabla_omega(3)
+    real(8), external      :: ddot
 !   ----------------------------------------------------------------------------
 
-    do ixyz = 1, 3
-      do k = 1, mat_dim
-!       work only on the triangle without diagonal elements
-        do l = 1, k - 1
+    do k = 1, mat_dim
+!     work only on the triangle without diagonal elements
+      do l = 1, k - 1
 
-          omega = ao(k)*ao(l)
+        omega = ao(k)*ao(l)
+        do gxyz = 1, 3
+          nabla_omega(gxyz) = ao(k)*ao_g1(l, gxyz) + ao_g1(k, gxyz)*ao(l)
+        end do
 
-          rkl_cross_r    = r_kl(k, l, b(ixyz))*r(c(ixyz)) &
-                         - r_kl(k, l, c(ixyz))*r(b(ixyz))
-          rkl_cross_n_g1 = r_kl(k, l, b(ixyz))*n_g1(c(ixyz)) &
-                         - r_kl(k, l, c(ixyz))*n_g1(b(ixyz))
-
-          f =       d_r*omega*rkl_cross_r &
-            + 2.0d0*d_z*omega*rkl_cross_n_g1
-
-          do gxyz = 1, 3
-!           actually it is \nabla omega
-            omega = ao(k)*ao_g1(l, gxyz) + ao_g1(k, gxyz)*ao(l)
-            f = f + 2.0d0*d_z*omega*n_g1(gxyz)*rkl_cross_r
-          end do
-
-          f = 0.5d0*f
-
-          fmat(k, l, (ixyz-1)*nz + 1) = fmat(k, l, (ixyz-1)*nz + 1) + f
-          fmat(l, k, (ixyz-1)*nz + 1) = fmat(l, k, (ixyz-1)*nz + 1) - f
+        do bxyz = 1, 3
+          rkl_cross_r = r_kl(k, l, b(bxyz))*r(c(bxyz)) &
+                      - r_kl(k, l, c(bxyz))*r(b(bxyz))
+          rkl_cross_g = r_kl(k, l, b(bxyz))*g(c(bxyz)) &
+                      - r_kl(k, l, c(bxyz))*g(b(bxyz))
+         
+          f = 0.5d0*d_r*rkl_cross_r*omega &
+            +       d_z*rkl_cross_g*omega &
+            +       d_z*rkl_cross_r*ddot(3, g, 1, nabla_omega, 1)
+         
+          fmat(k, l, (bxyz-1)*nz + 1) = fmat(k, l, (bxyz-1)*nz + 1) + f
+          fmat(l, k, (bxyz-1)*nz + 1) = fmat(l, k, (bxyz-1)*nz + 1) - f
         end do
       end do
     end do
