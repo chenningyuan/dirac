@@ -8451,6 +8451,7 @@ C     communicate some CIRUN specific variables, arrays ...
 C
 C     note: ISYM_KRMC == IOPT_SYMMETRY
 C
+C
       IF( CIRUN .eq. 'NDET  ' .or. CIRUN .eq. 'ANALYZ' ) THEN
 C
         CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,MASTER,
@@ -8460,6 +8461,8 @@ C
 C
       ELSE IF( CIRUN .eq. 'CIINII' .or. CIRUN .eq. 'KR-CI ' ) THEN
 C
+        CALL MPI_BCAST(NFSYM,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(ISYM_KRMC,1,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(ECORE_KRMC,1,MPI_REAL8,MASTER,
@@ -8470,9 +8473,13 @@ C
      &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(NNASHX,1,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(IASH,NFSYM,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
 C
       ELSE IF( CIRUN .eq. 'SIGMA ' .or. CIRUN .eq. 'SIGMAD' ) THEN
 C
+        CALL MPI_BCAST(NFSYM,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(ISYM_KRMC,1,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,MASTER,
@@ -8480,10 +8487,14 @@ C
         CALL MPI_BCAST(NASHT,1,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(NNASHX,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(IASH,NFSYM,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
 C
       ELSE IF( CIRUN .eq. 'DENS1 ' .or. CIRUN .eq. 'DENS2 ') THEN
 C
+        CALL MPI_BCAST(NFSYM,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(ISYM_KRMC,1,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,MASTER,
@@ -8491,9 +8502,13 @@ C
         CALL MPI_BCAST(NASHT,1,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(NNASHX,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(IASH,NFSYM,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
 C
       ELSE IF( CIRUN .eq. 'IJKLRO' .or. CIRUN .eq. 'PROP1 ' ) THEN
+        CALL MPI_BCAST(NFSYM,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(ISYM_KRMC,1,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(NZ,1,my_MPI_INTEGER,MASTER,
@@ -8501,6 +8516,8 @@ C
         CALL MPI_BCAST(NASHT,1,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(NNASHX,1,my_MPI_INTEGER,MASTER,
+     &                 MPI_COMM_WORLD,IERR)
+        CALL MPI_BCAST(IASH,NFSYM,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
       END IF
 C
