@@ -100,7 +100,7 @@ module dft_ao
   integer, allocatable :: nr_nonzero_contraction_coefs(:)
   integer, allocatable :: cartesian_deg(:)
   integer, allocatable :: cartesian_off(:)
-  integer, allocatable :: spherical_deg(:)
+  integer, allocatable, public :: spherical_deg(:)
   integer, allocatable :: spherical_off(:)
   integer, allocatable :: n_quantum_nr(:)
   logical, allocatable :: is_spherical(:)
@@ -125,9 +125,9 @@ module dft_ao
   real(8), allocatable :: sbuffer(:)
 
   integer, parameter   :: max_nr_so_ao = 10000
-  integer              :: nr_so_ao
-  integer, allocatable :: i_so_ao(:, :)
-  real(8), allocatable :: f_so_ao(:)
+  integer             , public :: nr_so_ao
+  integer, allocatable, public :: i_so_ao(:, :)
+  real(8), allocatable, public :: f_so_ao(:)
 
   logical              :: use_ao_screening = .false.
   logical              :: only_large       = .false.
