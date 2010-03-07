@@ -339,7 +339,7 @@ C
 !                  77         78         79         80
      &            'G1B    ', 'G1KX   ', 'G1KY   ', 'G1KZ   ', 
 !                  81         82         83         84
-     &            'DPLGRA ', 'QUAGRA ', 'xxxxxxx', 'xxxxxxx', 
+     &            'DPLGRA ', 'QUAGRA ', 'EDM    ', 'xxxxxxx', 
 !                  85         86         87         88
      &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 
 !                  89         90         91         92
@@ -380,7 +380,7 @@ C
      &              69, 70, 71, 72,
      &              73, 74, 75, 76,
      &              77, 78, 79, 80,
-     &              81, 82
+     &              81, 82, 83
      &            ), I
          END IF
   100 CONTINUE
@@ -2020,14 +2020,21 @@ C
          ANTI = .FALSE.
          SQUARE = .FALSE.
       GOTO 200
-
-
-
-
-
-
-
-
+CMI
+C
+C         EDM integrals
+C
+ 83   CONTINUE
+      IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &   ' Calculation of EDM integrals'
+         INTTYP = 54
+         NOPTYP = 1
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         LABINT(1) = 'KINENERG'
+         INTREP(1) = 0
+         ANTI = .FALSE.
+      GOTO 200
 
   200 CONTINUE
 C

@@ -18,6 +18,7 @@ diracexe=' '
 # --------------------------------------
 testdir=`pwd`/test
 RUNTYPE="undefined"
+TIMEOUT=''
 svn="no"
 mpi=" "
 parallel=" "
@@ -273,12 +274,25 @@ cat <<EOF >job_testlast.sh
 #
 echo " Starting test at \`date\`"
 cd ${testdir};
+
+if [ -n "$TIMEOUT" ]; then
+#  ... include TIMEOUT flag
 ./runtest --tests="$tests" --runtype="$RUNTYPE" $pampath $mpi $diracexe --run=$run --timeout=$TIMEOUT > ./logs/$runlog 2>&1 || \
 { echo " runtest failed" ; \
   echo " Here is the logfile ${testdir}/logs/$runlog" ; \
   cat ${testdir}/logs/$runlog ; \
   exit 1 ;\
 }
+else
+# no TIMEOUT flag ...
+./runtest --tests="$tests" --runtype="$RUNTYPE" $pampath $mpi $diracexe --run=$run > ./logs/$runlog 2>&1 || \
+{ echo " runtest failed" ; \
+  echo " Here is the logfile ${testdir}/logs/$runlog" ; \
+  cat ${testdir}/logs/$runlog ; \
+  exit 1 ;\
+}
+fi
+
 if [ -f logs/$txtlog ]; then
    if [ -s logs/$txtlog ]; then
       echo " Calculations completed at \`date\` with one or more errors"
@@ -302,7 +316,7 @@ else
 fi
 
 # ... printout on "timeout"
-if [ -n $TIMEOUT ]; then
+if [ -n "$TIMEOUT" ]; then
  echo ' Forced stop of all test processes after time of '$TIMEOUT''
 fi
 

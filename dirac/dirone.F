@@ -67,7 +67,7 @@ C
       DO 10 I = 1,NPRPCLS
       IF(.NOT.CLSCAL(I)) GOTO 10
         IF(IPRONE.GE.2) THEN
-          WRITE(LUPRI,'(A,A7)') '* ONEGEN: ',CLSINT(I)
+          WRITE(LUPRI,'(A,A7)') '* ONEGEN: operator ',CLSINT(I)
         ENDIF
 Chj     CLSCMB and PDOINT is now '+', '-', or '0',
 Chj     corresponding to a factor of +1, -1, or 0 on that block.
@@ -107,9 +107,13 @@ C     Contribution from CAP integrals
 C
       ELSEIF(CLSINT(I).EQ.'CAP_RE '.OR.CLSINT(I).EQ.'CAP_IM ' .OR.
      &       CLSINT(I).EQ.'CAP_OVL'.OR.CLSINT(I).EQ.'CAPD1R ') THEN
-C     ... this serves only for 'catching' CAP_.. labels when 
-C     these integrals are added as the perturbation to the Hamiltonian
+CMI     ... this serves only for 'catching' CAP_.. labels when 
+CMI     these integrals are added as the perturbation to the Hamiltonian
        CONTINUE
+
+CMI  Contribution from Heff_EDM integrals
+      ELSEIF (CLSINT(I).EQ.'EDM') THEN
+        CALL EDM_EFF_OPER(WORK,LWORK,IPRONE)
       ELSE
 C
 C Process all other integrals, which are coded in the abacus part !
@@ -196,17 +200,17 @@ C  /* Deck op1gen */
 C*****************************************************************************
 C
 C     Driver for the generation of one-electron integrals
-C     to be placed on the file AOPROPER.
+C    to be placed on the file AOPROPER.
 C
 C     On input:  WORD     ... 
 C                COMB     ... integral characteritics
 C                IORDER   ...
 C
-C     Called from ONEGEN.
+C     Called from ONEGEN/dirone.F
 C
 C     Written by Trond Saue - May 1996
 C     Last revisions:  May 19 1996
-C         MI(+TEC): minor changes for LAO based RPA, dec.2002
+C                  MI(+TEC): minor changes for LAO based RPA, dec.2002
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -480,6 +484,24 @@ C
       CALL QEXIT('NUCAT1')
       RETURN
 C
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE EDM_EFF_OPER(WORK,LWORK,IPRINT)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C
+C
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION WORK(LWORK)
+
+       
+      CALL QUIT('EDM end')        
+      
+      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck onefck */

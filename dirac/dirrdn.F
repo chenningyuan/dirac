@@ -4171,7 +4171,7 @@ C&&&& ONESYS: Ignore two-electron operator
            ICHANG = ICHANG + 1
            GO TO 100
   103    CONTINUE
-C&&&& OPERATOR: Read in operator
+C&&&& OPERATOR: Read in additional  operator, the print level is IPRGEN from the section **GENERAL 
            CALL XPRINP(LUCMD,WORD,INPERR,INDXPR,ISYXPR,ITRXPR,
      &                 WORK,LWORK,IPRGEN)
            N1OPER = N1OPER + 1

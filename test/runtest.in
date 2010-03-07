@@ -82,7 +82,7 @@ usage () {
    $echo '\tRun test in parallell under MPI'
    $echo '--nice'
    $echo '\texecute Dirac with nice/npri'
-   $echo '--timeout="TIME"'
+   $echo '--timeout="TIMEOUT"'
    $echo '\tset the time limit for Dirac run'
    $echo
 }
@@ -352,7 +352,7 @@ for tt in $tests; do
      DIRAC=$arg_dirac;           export DIRAC;    \
      TAG=$arg_tag;               export TAG;      \
      NICE=$arg_nice;             export NICE;     \
-     TIME=$arg_timeout;          export TIME;     \
+     TIMEOUT=$arg_timeout;       export TIMEOUT;  \
      ./run.sh; \
      cd .. )  
 done
