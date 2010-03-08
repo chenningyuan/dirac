@@ -3,6 +3,10 @@
 #ifndef XC_FUN_INTERFACE /* trap */
 #define XC_FUN_INTERFACE
 
+// IMPORTANT:
+// If you change parameters in this file please make sure
+// they are in sync in all interface definitions (C++ and Fortran versions)
+
 // The following variables are used in the code:
 // A = \rho_\alpha
 // B = \rho_\beta
@@ -16,9 +20,6 @@
 // Z = \nabla R \cdot \nabla R  sometimes called \sigma
 // X = \nabla S \cdot \nabla S
 // Y = \nabla R \cdot \nabla S
-
-// If you change parameters in this file please make sure
-// they are in sync in all interface definitions (C++ and Fortran versions)
 
 // Highest order of derivatives - 
 // note that the generated code becomes huge if this is too large
