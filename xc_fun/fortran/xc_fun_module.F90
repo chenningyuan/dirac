@@ -17,19 +17,19 @@ module xc_fun
 
 ! Index of each functional parameter in the argument
 ! of set_functional
-  integer, parameter ::  XC_VWN5_CORRELATION = 1
-  integer, parameter ::  XC_SLATER_EXCHANGE  = 2
-  integer, parameter ::  XC_LYP_CORRELATION  = 3
-  integer, parameter ::  XC_PW91_EXCHANGE    = 4
-  integer, parameter ::  XC_PBE_CORRELATION  = 5
-  integer, parameter ::  XC_BECKE_EXCHANGE   = 7
-  integer, parameter ::  XC_PBE_EXCHANGE     = 10
-  integer, parameter ::  XC_REVPBE_EXCHANGE  = 11
-  integer, parameter ::  XC_PW92_CORRELATION = 12
-  integer, parameter ::  KIN_TF              = 13
-  integer, parameter ::  KIN_PW91            = 14
+  integer, parameter :: XC_VWN5_CORRELATION         =  1
+  integer, parameter :: XC_SLATER_EXCHANGE          =  2
+  integer, parameter :: XC_LYP_CORRELATION          =  3
+  integer, parameter :: XC_PW91_EXCHANGE            =  4
+  integer, parameter :: XC_PBE_CORRELATION          =  5
+  integer, parameter :: XC_BECKE_EXCHANGE           =  6
+  integer, parameter :: XC_PBE_EXCHANGE             =  7
+  integer, parameter :: XC_REVPBE_EXCHANGE_UNTESTED =  8
+  integer, parameter :: XC_PW92_CORRELATION         =  9
+  integer, parameter :: KIN_TF_UNTESTED             = 10
+  integer, parameter :: KIN_PW91_UNTESTED           = 11
 ! Make sure XC_PARAMS_LEN matches the number of parameters above
-  integer, parameter ::  XC_PARAMS_LEN = 14 
+  integer, parameter ::  XC_PARAMS_LEN = 11
 
 ! The different modes (density variables) xc_fun can work with,
 ! these are passed as the first argument to set_functional()
@@ -41,7 +41,6 @@ module xc_fun
    integer, parameter ::   XC_RZ = 5 !Unpolarized GGA
    integer, parameter ::   XC_ABFGH = 6 !Generic GGA alpha,beta variables 
    integer, parameter ::   XC_RSZXY = 7 !Generic GGA R,S variables
-   integer, parameter ::   XC_R_ZI_ZJ_ZK = 8 !Generic GGA R,S variables	
 
 contains
 ! Set up the functional used by xc_eval. The mode is one of 

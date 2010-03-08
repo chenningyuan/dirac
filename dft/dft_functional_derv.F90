@@ -59,7 +59,7 @@ contains
                                                   XC_LYP_CORRELATION, &
                                                   XC_PBE_EXCHANGE,    &
                                                   XC_PBE_CORRELATION, &
-                                                  KIN_PW91/)
+                                                  KIN_PW91_UNTESTED/)
 !   ----------------------------------------------------------------------------
 
     alda_order = dft_cfg_alda_order

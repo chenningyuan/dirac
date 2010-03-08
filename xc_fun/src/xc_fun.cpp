@@ -189,25 +189,25 @@ static void setdens_rszxy(densvars<taylor<num,5,N> >&d, const num dd[5])
   d.n = taylor<num,5,N>(dd[0],0);
   d.s = taylor<num,5,N>(dd[1],1);
   d.gnn = taylor<num,5,N>(dd[2],2);
-  d.gns = taylor<num,5,N>(dd[3],3);
-  d.gss = taylor<num,5,N>(dd[4],4);
+  d.gss = taylor<num,5,N>(dd[3],3);
+  d.gns = taylor<num,5,N>(dd[4],4);
 #else
   d.n = taylor<num,5,N>(dd[0],0,dd[0]);
   d.s = taylor<num,5,N>(dd[1],1,dd[0]);
   d.gnn = taylor<num,5,N>(dd[2],2,dd[2]);
-  d.gns = taylor<num,5,N>(dd[3],3,dd[2]);
-  d.gss = taylor<num,5,N>(dd[4],4,dd[2]);
+  d.gss = taylor<num,5,N>(dd[3],3,dd[2]);
+  d.gns = taylor<num,5,N>(dd[4],4,dd[2]);
 #endif
   d.a = 0.5*(d.n+d.s);
   d.b = 0.5*(d.n-d.s);
 //radovan: this should be:
-//d.gaa = 0.25*(d.gnn+d.gss+2*d.gns);
-//d.gab = 0.25*(d.gnn-d.gss);
-//d.gbb = 0.25*(d.gnn+d.gss-2*d.gns);
+  d.gaa = 0.25*(d.gnn+d.gss+2*d.gns);
+  d.gab = 0.25*(d.gnn-d.gss);
+  d.gbb = 0.25*(d.gnn+d.gss-2*d.gns);
 //         but there is more mixed up, we can fix this later
-  d.gaa = 0.25*(d.gnn+d.gns+2*d.gss);
-  d.gab = 0.25*(d.gnn-d.gns);
-  d.gbb = 0.25*(d.gnn+d.gns-2*d.gss);
+//d.gaa = 0.25*(d.gnn+d.gns+2*d.gss);
+//d.gab = 0.25*(d.gnn-d.gns);
+//d.gbb = 0.25*(d.gnn+d.gns-2*d.gss);
   d.zeta = d.s/d.n;
   d.r_s = pow(3/(4*M_PI),1.0/3.0)*pow(d.n,-1.0/3.0);
 }
