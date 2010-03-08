@@ -264,6 +264,12 @@ contains
         call dirac_mpi_bcast(nz)
         call dirac_mpi_bcast(nr_fmat)
         call dirac_mpi_bcast(nr_dmat_p)
+
+        call dirac_mpi_bcast(response_order_mo)
+        call dirac_mpi_bcast(response_order_ao)
+        call dirac_mpi_bcast(london_rhs_direct)
+        call dirac_mpi_bcast(london_rhs_ro)
+        call dirac_mpi_bcast(xc_potential)
         
         call sync_dmat_0(mat_dim, nz, dmat_0)
         
@@ -277,12 +283,6 @@ contains
         if (nr_dmat_p > 0) then
           call sync_dmat_p(mat_dim, nz, nr_dmat_p, dmat_p, isymop_dmat, nr_fmat, isymop_fmat, ihrmop)
         end if
-        
-        call dirac_mpi_bcast(response_order_mo)
-        call dirac_mpi_bcast(response_order_ao)
-        call dirac_mpi_bcast(london_rhs_direct)
-        call dirac_mpi_bcast(london_rhs_ro)
-        call dirac_mpi_bcast(xc_potential)
 
       end if
 #endif /* ifdef VAR_MPI */
@@ -1237,11 +1237,6 @@ contains
       integer              :: iprint
       integer              :: max_ao_g_order, max_ao_m_order
       integer              :: mat_dim, nz
-      integer              :: response_order_mo
-      integer              :: response_order_ao
-      logical              :: xc_potential
-      logical              :: london_rhs_direct
-      logical              :: london_rhs_ro
 !
 !
 !
@@ -1264,6 +1259,12 @@ contains
     call dirac_mpi_bcast(nz)
     call dirac_mpi_bcast(nr_fmat)
     call dirac_mpi_bcast(nr_dmat_p)
+
+    call dirac_mpi_bcast(response_order_mo)
+    call dirac_mpi_bcast(response_order_ao)
+    call dirac_mpi_bcast(london_rhs_direct)
+    call dirac_mpi_bcast(london_rhs_ro)
+    call dirac_mpi_bcast(xc_potential)
        
     call alloc(dmat_0, mat_dim*mat_dim*nz)
     call sync_dmat_0(mat_dim, nz, dmat_0)
@@ -1284,12 +1285,6 @@ contains
       call alloc(ihrmop, nr_dmat_p)
       call sync_dmat_p(mat_dim, nz, nr_dmat_p, dmat_p, isymop_dmat, nr_fmat, isymop_fmat, ihrmop)
     end if
-
-    call dirac_mpi_bcast(response_order_mo)
-    call dirac_mpi_bcast(response_order_ao)
-    call dirac_mpi_bcast(xc_potential)
-    call dirac_mpi_bcast(london_rhs_direct)
-    call dirac_mpi_bcast(london_rhs_ro)
 
     call alloc(fmat, mat_dim*mat_dim*nz*nr_fmat)
     fmat = 0.0d0
