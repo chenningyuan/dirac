@@ -44,9 +44,10 @@ by the library.
 
 References and accuracy:
 
-VWN5, PBE and PW92 have been verified against
-
-http://www.cse.scitech.ac.uk/ccg/dft/data_pt_c_pbe.html
+VWN5, PBE and PW92 have been verified against pointwise reference data
+published by the Quantum Chemistry Group, 
+CCLRC Daresbury Laboratory, Daresbury, Cheshire, WA4 4AD United Kingdom:
+http://www.cse.scitech.ac.uk/ccg/dft/contents.html
 
 The parameters used are those in this database, which
 may be different from the ones in the original articles. 
