@@ -154,6 +154,24 @@ contains
         dft_cfg_functional_w(XC_LYP_CORRELATION) = dft_cfg_functional_w(XC_LYP_CORRELATION) + w
       end if
 
+!     kt1
+      w = get_weight(word_array(i), 'kt1')
+      if (dabs(w) > tiny) then
+        write(u, '(f10.6, a)') w, ': kt1'
+        dft_cfg_functional_w(XC_SLATER_EXCHANGE)  = dft_cfg_functional_w(XC_SLATER_EXCHANGE)  + 1.0d0*w
+        dft_cfg_functional_w(XC_KT_EXCHANGE)      = dft_cfg_functional_w(XC_BECKE_EXCHANGE)   - 0.006d0*w
+        dft_cfg_functional_w(XC_VWN5_CORRELATION) = dft_cfg_functional_w(XC_VWN5_CORRELATION) + 1.0d0*w
+      end if
+
+!     kt2
+      w = get_weight(word_array(i), 'kt2')
+      if (dabs(w) > tiny) then
+        write(u, '(f10.6, a)') w, ': kt2'
+        dft_cfg_functional_w(XC_SLATER_EXCHANGE)  = dft_cfg_functional_w(XC_SLATER_EXCHANGE)  + 1.07173d0*w
+        dft_cfg_functional_w(XC_KT_EXCHANGE)      = dft_cfg_functional_w(XC_BECKE_EXCHANGE)   - 0.006d0*w
+        dft_cfg_functional_w(XC_VWN5_CORRELATION) = dft_cfg_functional_w(XC_VWN5_CORRELATION) + 0.576727d0*w
+      end if
+
 !     b3lyp
       w = get_weight(word_array(i), 'b3lyp')
       if (dabs(w) > tiny) then
@@ -208,6 +226,12 @@ contains
       if (dabs(w) > tiny) then
         write(u, '(f10.6, a)') w, ': vwn5'
         dft_cfg_functional_w(XC_VWN5_CORRELATION) = dft_cfg_functional_w(XC_VWN5_CORRELATION) + w
+      end if
+
+      w = get_weight(word_array(i), 'ktx')
+      if (dabs(w) > tiny) then
+        write(u, '(f10.6, a)') w, ': ktx'
+        dft_cfg_functional_w(XC_KT_EXCHANGE) = dft_cfg_functional_w(XC_KT_EXCHANGE) + w
       end if
 
       w = get_weight(word_array(i), 'becke')

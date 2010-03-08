@@ -31,6 +31,7 @@ struct densvars
 #include "tf_kin_fun.h"
 #include "pw91_fun.h"
 #include "lda_sr.h"
+#include "kt_fun.h"
 
 //Did we already set up tables?
 static int is_setup = 0;
@@ -52,7 +53,6 @@ static void setup(void);
    This is defined as an array of char* to avoid relying
    on the C++ runtime (although the C++ string class
    would be better to use).
-*/
 static const char *functional_names[] =
   {
     "vwn5c",
@@ -67,6 +67,7 @@ static const char *functional_names[] =
     "tfk_untested",
     "pw91k_untested",
   };
+*/
 
 // Use strcmp to not depend on c++ standard library
 int xc_parse_functional(const char *functional_name)
@@ -178,6 +179,10 @@ static void sum_functionals(num &res,
   if (xc_params[KIN_PW91_UNTESTED] != 0)
     res += xc_params[KIN_PW91_UNTESTED]*
       pw91_kinetic(d);
+
+  if (xc_params[XC_KT_EXCHANGE] != 0)
+    res += xc_params[XC_KT_EXCHANGE]*
+      kt_exchange(d);
 
   res.deriv_facs();
 }

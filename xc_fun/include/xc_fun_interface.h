@@ -50,7 +50,29 @@ enum xc_funparams
     XC_PW92_CORRELATION,
     KIN_TF_UNTESTED,             // (orbital-free) kinetic energy functionals next
     KIN_PW91_UNTESTED,
+    XC_KT_EXCHANGE,
     XC_PARAMS_LEN                // This has to be last!
+  };
+
+// This must match the order of enum xc_funparams! 
+// This is defined as an array of char* to avoid relying
+// on the C++ runtime (although the C++ string class
+// would be better to use).
+
+static const char *functional_names[] =
+  {
+    "vwn5c",
+    "slaterx",
+    "lypc",
+    "pw91x",
+    "pbec",
+    "beckex",
+    "pbex",
+    "revpbex_untested",
+    "pw92c_untested",
+    "tfk_untested",
+    "pw91k_untested",
+    "ktx",
   };
 
 #endif /* trap */
@@ -72,19 +94,30 @@ enum xc_funparams
   integer, parameter :: XC_PW92_CORRELATION         =  9
   integer, parameter :: KIN_TF_UNTESTED             = 10
   integer, parameter :: KIN_PW91_UNTESTED           = 11
+  integer, parameter :: XC_KT_EXCHANGE              = 12
 
 ! make sure xc_params_len matches the number of parameters above
-  integer, parameter :: XC_PARAMS_LEN = 11
+  integer, parameter :: XC_PARAMS_LEN = 12
   
 ! make sure the order matches the order above
 ! definitions are the same
-  integer, parameter ::   XC_A     = 0
-  integer, parameter ::   XC_R     = 1
-  integer, parameter ::   XC_AB    = 2
-  integer, parameter ::   XC_RS    = 3
-  integer, parameter ::   XC_AF    = 4
-  integer, parameter ::   XC_RZ    = 5
-  integer, parameter ::   XC_ABFGH = 6
-  integer, parameter ::   XC_RSZXY = 7
+  integer, parameter :: XC_A     = 0
+  integer, parameter :: XC_R     = 1
+  integer, parameter :: XC_AB    = 2
+  integer, parameter :: XC_RS    = 3
+  integer, parameter :: XC_AF    = 4
+  integer, parameter :: XC_RZ    = 5
+  integer, parameter :: XC_ABFGH = 6
+  integer, parameter :: XC_RSZXY = 7
+
+! list of gga functionals
+  integer            :: gga_functionals(6) = (/                    &
+                                               XC_BECKE_EXCHANGE,  &
+                                               XC_LYP_CORRELATION, &
+                                               XC_PBE_EXCHANGE,    &
+                                               XC_PBE_CORRELATION, &
+                                               KIN_PW91_UNTESTED,  &
+                                               XC_KT_EXCHANGE      &
+                                              /)
 
 #endif /* ifndef XC_FUN_INTERFACE_F90 */
