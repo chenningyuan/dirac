@@ -49,26 +49,6 @@ static void (*helper_tab_single[XC_MAX_ORDER+1])(float *, const float *);
 #endif
 static void setup(void);
 
-/* This must match the order of enum xc_funparams! 
-   This is defined as an array of char* to avoid relying
-   on the C++ runtime (although the C++ string class
-   would be better to use).
-static const char *functional_names[] =
-  {
-    "vwn5c",
-    "slaterx",
-    "lypc",
-    "pw91x",
-    "pbec",
-    "beckex",
-    "pbex",
-    "revpbex_untested",
-    "pw92c_untested",
-    "tfk_untested",
-    "pw91k_untested",
-  };
-*/
-
 // Use strcmp to not depend on c++ standard library
 int xc_parse_functional(const char *functional_name)
 {
