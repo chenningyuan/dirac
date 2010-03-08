@@ -1,3 +1,8 @@
+#ifndef XC_FUN_INTERFACE_CPP
+#define XC_FUN_INTERFACE_CPP
+#endif
+#include <xc_fun_interface.h>
+
 #ifndef XC_FUN
 #define XC_FUN
 
@@ -6,61 +11,10 @@
    by ulfek 2009 
 */
 
-// Note that these parameters have be in sync with those in
-// xc_fun_module.f90 (Fortran version)
-
-// Highest order of derivatives. Note that the generated code
-// becomes huge if this is too large
-#define XC_MAX_ORDER 5
-
 // If XC_PRECONDITION is defined then the seed polynomials
 // will be scaled by the density variables, and then scaled
 // back at the end of the calculation. This feature is experimental!
 // #define XC_PRECONDITION
-
-/*
-  The following variables are used in the code:
-  A = \rho_\alpha
-  B = \rho_\beta
-  F = \nabla A \cdot \nabla A (sometimes called \sigma_\alpha\alpha)
-  G = \nabla B \cdot \nabla B (\sigma_\beta\beta)
-  H = \nabla A \cdot \nabla B (\sigma_\alpha\beta)
-
-  Alternatively you can use;
-  R = \rho_\alpha + \rho_\beta
-  S = \rho_\alpha - \rho_\beta
-  Z = \nabla R \cdot \nabla R (sometimes called \sigma)
-  X = \nabla S \cdot \nabla S
-  Y = \nabla R \cdot \nabla S
-*/
-
-enum xc_mode
-  {
-    XC_A = 0, // Fully spin polarized LDA
-    XC_R, // Unpolarized LDA
-    XC_AB, // LDA with alpha/beta densities
-    XC_RS, // LDA with total density/polarization density
-    XC_AF, // Fully spin polarized GGA
-    XC_RZ, // Unpolarized GGA
-    XC_ABFGH, // Generic GGA alpha,beta variables 
-    XC_RSZXY, // Generic GGA R,S variables
-  };
-
-enum xc_funparams
-  {
-    XC_VWN5_CORRELATION = 0,
-    XC_SLATER_EXCHANGE,
-    XC_LYP_CORRELATION,
-    XC_PW91_EXCHANGE,
-    XC_PBE_CORRELATION,
-    XC_BECKE_EXCHANGE, //Not including the Slater part.
-    XC_PBE_EXCHANGE,
-    XC_REVPBE_EXCHANGE_UNTESTED,
-    XC_PW92_CORRELATION,
-    KIN_TF_UNTESTED,       // (orbital-free) kinetic energy functionals next
-    KIN_PW91_UNTESTED,
-    XC_PARAMS_LEN // This has to be last!
-  };
 
 int xc_parse_functional(const char *functional_name);
 
