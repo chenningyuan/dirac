@@ -1011,7 +1011,7 @@ check_mpirun(){
 #
 #  checks whether mpi assigned binaries have the same path
 #
-#  called when in parallel mode
+#  This 'routine' is called solely in parallel mode
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
@@ -1035,6 +1035,24 @@ else
         $echo "MPI launcher NOT found! Assuming 'mpirun', correct this manually."
    fi
 fi 
+
+# extract directories of mpi-compilers/mpi-launcher
+F90_COMP_DIR=`dirname $F90_COMP 2>/dev/null`
+CC_COMP_DIR=`dirname $CC_COMP 2>/dev/null`
+MPIRUN_DIR=`dirname $mpirun 2>/dev/null`
+
+if [ "$MPIRUN_DIR" != "$F90_COMP_DIR" -a "$MPIRUN_DIR" != "$CC_COMP_DIR" ]; then
+ #$echo "WARNING: mpirun sits in different directory than mpif90/mpicc. Is it correct ?"
+ if ask_yesno y "WARNING: mpirun sits in different directory than mpif90/mpicc. Is it correct ?" ; then
+   $echo "Good. "
+ else
+   $echo "Specify it through the mpirun flag. TODO: implement mpirun choice as for compilers.."
+   $echo "Error exit 1"
+   exit 1
+ fi
+else
+ $echo "FYI: mpirun is in the same directory as mpif90. OK."
+fi
 
 if [ $IPRINT -ge "7" ];  then
  echo
