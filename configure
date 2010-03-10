@@ -520,6 +520,7 @@ usage ()  {
    echo '   --f90=F90                    : Set fortran compiler to F90 (with full path)'
    echo '   --cc=CC                      : Set C compiler to CC (with full path)'
    echo '   --parallel(par)[=(yes|no)]   : Parallel version of Dirac'
+   echo '   --mpirun=MPIRUN              : Set mpi-launcher for parallel runs (with full path)'
    echo '   --libdir=DIR                 : Add directory DIR to the search list for mathematical libraries'
    echo '   --math_lib=MATH_LIB          : Choose the mathematical library MATH_LIB'
    echo '   --dir_blas                   : Employ Dirac BLAS builtin library'
@@ -708,12 +709,13 @@ if [ "$par" = "yes" ]; then
             ;;
       esac
 
-      # printout of MPI launcher
-      if [ -n "$mpirun" ]; then
-        $echo "\nAssigned MPI launcher (check it in pam script!): $mpirun"
-#ulfek: why? It just has to be correct. $echo "The MPI launcher must come from the same directory as assigned mpi-compilers (mpif90, mpicc...)!\n"
-      else
-        $echo "MPI launcher NOT found! Assuming 'mpirun', correct this manually."
+      ### control  printout of the found (default) MPI launcher ###
+      if [ $IPRINT -ge "7" ];  then
+        if [ -n "$mpirun" ]; then
+          $echo "control print: Found MPI launcher (check it in pam script!): $mpirun"
+        else
+          $echo "control print: MPI launcher NOT found! Assuming 'mpirun', correct this manually."
+        fi
       fi
    fi
 #
@@ -996,6 +998,51 @@ echo
 
 compiler_fortran
 compiler_c
+
+# check the assigned mpirun against parallel compilers
+if [ "$mesp" = "mpi" ]; then
+  check_mpirun
+fi
+
+}
+
+check_mpirun(){
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#  checks whether mpi assigned binaries have the same path
+#
+#  called when in parallel mode
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+if [ -n "$MPIRUN_NAME" ] ; then
+ if [ -e "$MPIRUN_NAME" ] ; then
+  if [ "$MPIRUN_NAME" != "$mpirun" ]; then
+    $echo 'Assigned mpirun ' $MPIRUN_NAME ' instead of the default ' $mpirun
+  else
+    $echo 'Assigned mpirun from the configure flag :' $MPIRUN_NAME 
+  fi
+  mpirun=$MPIRUN_NAME
+ else
+   echo 'assigned ' $MPIRUN_NAME ' is not proper file !'
+   echo 'instead using the default ' $mpirun
+ fi
+else
+   if [ -n "$mpirun" ]; then
+        $echo "\nAssigned MPI launcher (check it in pam script!): $mpirun"
+#ulfek: why? It just has to be correct. $echo "The MPI launcher must come from the same directory as assigned mpi-compilers (mpif90, mpicc...)!\n"
+   else
+        $echo "MPI launcher NOT found! Assuming 'mpirun', correct this manually."
+   fi
+fi 
+
+if [ $IPRINT -ge "7" ];  then
+ echo
+ echo 'check_mpirun: assigned F90 compiler: ' $F90_COMP
+ echo 'check_mpirun: assigned  CC compiler: ' $CC_COMP
+ echo '          ... assigned     mpirun  : ' $mpirun
+ echo
+fi
 
 }
 
@@ -3048,6 +3095,14 @@ while [ $# != 0 ]; do
             exit 1
          fi
          F90_COMP_NAME="$val"
+         ;;
+      "mpirun" )
+         if [ "${valomitted}" = "yes" ]; then
+            echo  'Syntax error: Option "'${optname}'" is not allowed' \
+                  'without an argument'
+            exit 1
+         fi
+         MPIRUN_NAME="$val"
          ;;
       "i"  )
          IPRINT=$val
