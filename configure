@@ -1029,7 +1029,7 @@ if [ -n "$MPIRUN_NAME" ] ; then
  fi
 else
    if [ -n "$mpirun" ]; then
-        $echo "\nAssigned MPI launcher (check it in pam script!): $mpirun"
+        $echo "\nFound MPI launcher : $mpirun"
 #ulfek: why? It just has to be correct. $echo "The MPI launcher must come from the same directory as assigned mpi-compilers (mpif90, mpicc...)!\n"
    else
         $echo "MPI launcher NOT found! Assuming 'mpirun', correct this manually."
@@ -1046,9 +1046,10 @@ if [ "$MPIRUN_DIR" != "$F90_COMP_DIR" -a "$MPIRUN_DIR" != "$CC_COMP_DIR" ]; then
  if ask_yesno y "WARNING: mpirun sits in different directory than mpif90/mpicc. Is it correct ?" ; then
    $echo "Good. "
  else
-   $echo "Specify it through the mpirun flag. TODO: implement mpirun choice as for compilers.."
-   $echo "Error exit 1"
-   exit 1
+   comp_list="mpirun poe dmpirun" # list of all possible mpi-launchers
+   find_compiler "MPIRUN" $MPI_NAME
+   mpirun=${comp_pwd}${comp_found}
+   $echo "Assigned MPI launcher (also placed into \"pam\" script) : $mpirun"
  fi
 else
  $echo "FYI: mpirun is in the same directory as mpif90. OK."
@@ -1124,6 +1125,8 @@ case "$2" in
     old_comp=`./config.status "F90"` ;;
   "C")
     old_comp=`./config.status "CC"` ;;
+  "MPIRUN")
+    old_comp=`./config.status "MPIRUN"` ;;
 esac
 
 if [ $IPRINT -ge "7" ];  then
