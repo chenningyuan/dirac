@@ -1226,7 +1226,7 @@ if [ ! -z "$comp_pwd" ]; then
     comp_pwd="$comp_pwd/"
   fi
 fi
-$echo "Compiler for $to_find: $comp_found\n"
+$echo "Compiler for $to_find: $comp_pwd$comp_found\n"
 }
 
 find_real_f90(){
@@ -2686,12 +2686,6 @@ cat <<EOF >> Makefile.config
 F77=$F90_COMP
 F90=$F90_COMP
 CC =$CC_COMP
-
-# Flag mainly for separate no-Fortran-main function executables build of DIRAC generated objects
-NO_FORTRAN_MAIN=$noformain
-
-# Fortran flag for the medium memory model (needed for some x86_64)
-MCMODEL_MEDIUM=$mcmodel_medium
 EOF
 
 if [ "$par" = "yes" ]; then
@@ -2705,6 +2699,12 @@ EOF
 fi
 
 cat <<EOF >> Makefile.config
+
+# Flag mainly for separate no-Fortran-main function executables build of DIRAC generated objects
+NO_FORTRAN_MAIN=$noformain
+
+# Fortran flag for the medium memory model (needed for some x86_64)
+MCMODEL_MEDIUM=$mcmodel_medium
 
 # Libraries - check them according to your server equipment !
 # You may need blas and lapack (if not using the builtin) and
