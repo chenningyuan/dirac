@@ -1031,6 +1031,7 @@ else
    if [ -n "$mpirun" ]; then
         $echo "\nFound MPI launcher : $mpirun"
 #ulfek: why? It just has to be correct. $echo "The MPI launcher must come from the same directory as assigned mpi-compilers (mpif90, mpicc...)!\n"
+#miro: ulf, you're right.
    else
         $echo "MPI launcher NOT found! Assuming 'mpirun', correct this manually."
    fi
@@ -1045,14 +1046,14 @@ if [ "$MPIRUN_DIR" != "$F90_COMP_DIR" -a "$MPIRUN_DIR" != "$CC_COMP_DIR" ]; then
  #$echo "WARNING: mpirun sits in different directory than mpif90/mpicc. Is it correct ?"
  if ask_yesno y "WARNING: mpirun sits in different directory than mpif90/mpicc. Is it correct ?" ; then
    $echo "Good. "
- else
+ else # find the mpi-launcher as is looking for compilers
    comp_list="mpirun poe dmpirun" # list of all possible mpi-launchers
    find_compiler "MPIRUN" $MPI_NAME
    mpirun=${comp_pwd}${comp_found}
    $echo "Assigned MPI launcher (also placed into \"pam\" script) : $mpirun"
  fi
 else
- $echo "FYI: mpirun is in the same directory as mpif90. OK."
+ $echo "(Note: mpirun is in the same directory as mpif90/mpicc. Good.)"
 fi
 
 if [ $IPRINT -ge "7" ];  then
@@ -2863,10 +2864,12 @@ CLEANUP=
 # ILPdata type model
 #
 ILP_DATATYPE=$ilp_datatype
+#
 EOF
-cat ./pam.in >> $INSTALL_DIR/pam
 
+cat ./pam.in >> $INSTALL_DIR/pam
 chmod a+rx $INSTALL_DIR/pam
+
 if [ $IPRINT -ge 1 ]; then
     echo "ok"
     echo
@@ -2876,6 +2879,7 @@ cat <<EOF>> $SRC_DIR/test/runtest
 #
 BIN_DIR=$INSTALL_DIR
 EOF
+
 cat $SRC_DIR/test/runtest.in >> $SRC_DIR/test/runtest
 chmod a+rx $SRC_DIR/test/runtest
 if [ $IPRINT -ge 1 ]; then

@@ -1,4 +1,3 @@
-C 
 !
 !      Copyright (c) 2008 by the authors of DIRAC.
 !      All Rights Reserved.
@@ -964,12 +963,8 @@ C
          END IF
       END IF
 C
-      IF (IPRINT .NE. IPDEF) THEN
-         WRITE(LUPRI,'(A,I10)') ' Print level in OPTIMI  :',IPRINT
-      END IF
-      IF (ITRMAX .NE. ITRMX) THEN
-         WRITE(LUPRI,'(A,I10)') ' Maximum # of iterations:',ITRMAX
-      END IF
+      WRITE(LUPRI,'(A,I10)') ' Print level in OPTIMI  :',IPRINT
+      WRITE(LUPRI,'(A,I10)') ' Maximum # of iterations:',ITRMAX
       IF (MAXREJ .NE. MXREJ) THEN
          WRITE(LUPRI,'(A,I10)') ' Max # of rejected steps:',MAXREJ
       END IF
@@ -1214,7 +1209,8 @@ C
       IF ( LBIT( IGRD_INTFLG, 2 ) ) THEN
          IF ( DOTRCK ) THEN
             WRITE(LUPRI,'(3X,A)')
-     &           '- LS-integrals (skipped if estimated to be small).'
+     &'- LS-integrals (skipped if estimated to be small, or in'//
+     &' two-component calculations ).'
          ELSE
             WRITE(LUPRI,'(3X,A)') '- LS-integrals.'
          END IF
@@ -1222,7 +1218,8 @@ C
       IF ( LBIT( IGRD_INTFLG, 3 ) ) THEN
          IF ( DOTRCK ) THEN
             WRITE(LUPRI,'(3X,A)')
-     &           '- SS-integrals (skipped if estimated to be small).'
+     &'- SS-integrals (skipped if estimated to be small, or in'//
+     &' two-component calculations ).'
          ELSE
             WRITE(LUPRI,'(3X,A)') '- SS-integrals.'
          END IF

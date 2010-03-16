@@ -70,11 +70,14 @@ class PamQVariables:
     # ... what is going to be in script
     self.batch_script_command=''
 
-    # ... default from currecnt directory
+    # ... default pam from the current directory
     self.pam_script=self.dirac_home+'/pam' 
 
-    # ... home directory from where pamq.py is run...
+    # ... set home directory from where pamq.py is run...
     self.home_dir=os.getenv("PWD")
+
+    # ... default: script uses own -oe stdout+stderr log file
+    self.is_own_queue_stdout=True
 
     # ... configuration file with selected defaults ...
     self.prepare_config_file=False
@@ -397,16 +400,20 @@ def process_pbs_script():
 # ...continue ...
   s += '''\
 #
-# unite stdout with stderr
+# unite log outputs stdout with stderr
 #
 #PBS -j oe
 #
-#   queue job standard output - stdout
+'''
+  if GlobalVars.is_own_queue_stdout:
+    s += '''\
+#
+#   specify queue job standard output - stdout
 #
 #PBS -o %s
-''' % GlobalVars.job_out
+    ''' % GlobalVars.job_out
+
   s += '''\
-#
 #
 # ... print out important PBS variables into standard output
 #
@@ -798,9 +805,14 @@ def process_pamq_arguments():
   parser.add_option("-s","--serial", action="store_true",default=GlobalVars.is_serial,
                      dest="dest_is_serial", help=serial_label) 
 
+  # ... no concrete stdout, use the stdout+stderr system default ... #
+  queue_stdout_label='Use a queue system default stdout+stderr log file,not the own file '+GlobalVars.job_out
+  parser.add_option("--nso",action="store_false",default=GlobalVars.is_own_queue_stdout,
+                      dest="dest_is_own_queue_stdout",help=queue_stdout_label)
+
   # ... get number of nodes
   if (int(GlobalVars.nnodes) <=0) :
-    nodes_label='number of reserved nodes, default:'+str(GlobalVars.nnodes)+'=> YOU MUST SET IT!'
+    nodes_label='number of reserved nodes, default:'+str(GlobalVars.nnodes)+'=> YOU MUST SET THE NUMBER !'
   else :
     nodes_label='number of reserved nodes, default:'+str(GlobalVars.nnodes)
   parser.add_option("-n", "--nodes", type="int",  nargs=1,
@@ -809,12 +821,12 @@ def process_pamq_arguments():
 
   # ... GlobalVars.queue_system
   if (len(GlobalVars.queue_system)>0) :
-    queue_system_label='specify the queue system, default :'+"'"+GlobalVars.queue_system+"'"
+    queue_system_label='specify the queuing system, default :'+"'"+GlobalVars.queue_system+"'"
     parser.add_option("--qsys", type="string", nargs=1,
                   action="store",dest="dest_queue_system", default=GlobalVars.queue_system, 
                   help=queue_system_label, metavar="STRING")
   else :
-    queue_system_label='no default queue system, YOU MUST SPECIFY IT !'
+    queue_system_label='no default queuing system, YOU MUST SPECIFY IT !'
     parser.add_option("--qsys",type="string",nargs=1,action="store",dest="dest_queue_system",help=queue_system_label,metavar="STRING")
 
   # ... GlobalVars.job_name
@@ -825,12 +837,12 @@ def process_pamq_arguments():
 
   # ... GlobalVars.queue_name
   if (GlobalVars.queue_name_specified) :
-    queue_label='specify the queue, default :'+GlobalVars.queue_name
+    queue_label='specify the queue name, default :'+GlobalVars.queue_name
     parser.add_option("-q", "--queue", type="string", nargs=1,
                   action="store", dest="dest_queue_name",default=GlobalVars.queue_name,
                   help=queue_label,metavar="STRING")
   else :
-    queue_label='specify the queue (no default)'
+    queue_label='specify the queue (otherwise uses system default)'
     parser.add_option("-q", "--queue", type="string", nargs=1,
                   action="store", dest="dest_queue_name", 
                   help=queue_label,metavar="STRING")
@@ -897,11 +909,21 @@ def process_pamq_arguments():
     if GlobalVars.iprint > 7:
       print 'assigned GlobalVars.submit_job=',GlobalVars.submit_job
 
-  #  bout no mpi stuff for pam 
+  #  .... no mpi stuff for pam 
   if (options.dest_is_serial is not None) :
     GlobalVars.is_serial=options.dest_is_serial
     if GlobalVars.iprint > 7:
       print 'assigned GlobalVars.is_serial=',GlobalVars.is_serial
+
+  #  ... take care of your own stdout+stderr log file ...
+  if (options.dest_is_own_queue_stdout is not None) :
+    GlobalVars.is_own_queue_stdout=options.dest_is_own_queue_stdout
+    if GlobalVars.iprint > 7:
+      print 'assigned GlobalVars.is_own_queue_stdout=',GlobalVars.is_own_queue_stdout
+  else :
+    GlobalVars.is_own_queue_stdout=True
+    if GlobalVars.iprint >= 7:
+      print 'assigned boolean GlobalVars.is_own_queue_stdout=',GlobalVars.is_own_queue_stdout
 
   # ... save the pam directory
   if (options.dest_pam is not None) :
@@ -926,7 +948,6 @@ def process_pamq_arguments():
     GlobalVars.dirac_tests_run=True
   else :
     GlobalVars.dirac_tests_run=False
-
 
   # ... deal with queue_name
   if (options.dest_queue_name is not None) :
