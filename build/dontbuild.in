@@ -54,5 +54,6 @@ xc_fun/fortran/example.F90
 xc_fun/src/.*
 xc_fun/test/.*
 xc_fun/.*
+xcfun/.*
 aoresponse/aor_binomial.F90
 prp/rntlon_only_to_delete.F
