@@ -26,11 +26,10 @@ FUN_OBJ:=$(patsubst %.cpp,%.o,$(wildcard src/functionals/*.cpp))
 xcfun_test: src/xcfun.o src/functional.o src/settings.o src/evaluators.o $(FUN_OBJ)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
 
-lib: lib/libxcfun.a
+lib: lib/libxcfun.so
 
-lib/libxcfun.a: src/xcfun.cpp src/evaluators.h $(wildcard src/functionals/*.h) include/xcfun.h src/taylor/taylor.h
-	$(CXX) $(CXXFLAGS) -c src/xcfun.cpp -o src/xcfun_lib.o $(LIBS) -DXCFUN_LIB	
-	ar r $@ src/xcfun_lib.o
+lib/libxcfun.so: src/functional.o src/settings.o src/evaluators.o $(FUN_OBJ)
+	$(CXX) $(CXXFLAGS) -fPIC -shared src/xcfun.cpp -o lib/libxcfun.so $(LIBS) $^ -DXCFUN_LIB	
 
 
 stripped: lib/libxc_fun.a
@@ -39,7 +38,7 @@ stripped: lib/libxc_fun.a
 funeval: test/funeval.cpp lib/libxcfun.a
 	$(CXX) $(CXXFLAGS) $< -o $@ $(LIBS) -lxcfun
 
-example: test/example.cpp lib/libxcfun.a
+example: test/example.cpp lib/libxcfun.so
 	$(CXX) $(CXXFLAGS) $< -o $@ $(LIBS) -lxcfun
 
 fortran/example.o: fortran/xc_fun_module.o
