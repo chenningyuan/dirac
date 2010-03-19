@@ -326,6 +326,9 @@ if [ "${queue}" = "none" ]; then
   echo ' Starting test calculations interactively ... '
   chmod u+x job_testlast.sh
   ./job_testlast.sh
+  RT=$? 
+  echo job_testlash.sh finished with code $RT
+  exit $RT
 else
   echo " Submitting test calculations to queue $queue ... "
   echo " When they are done please check the results in the directory ${testdir}/logs. "
