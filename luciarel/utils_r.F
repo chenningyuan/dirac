@@ -830,15 +830,23 @@ C
 C
 C***********************************************************************
       IMPLICIT REAL*8 (A-H,O-Z)
-#include "ipoist8.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER(KIND=MPI_OFFSET_KIND) IDISP, IOFFSET
+      INTEGER(KIND=MPI_OFFSET_KIND) IS_BYTE8 
+      INTEGER(KIND=MPI_OFFSET_KIND) IWRITE_MAX,IMOD_WRITE
+      INTEGER(KIND=MPI_OFFSET_KIND) IT_TOFFW,IWRITE_ELM
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFF_ADD
+#if defined (INT_STAR8)
+      INTEGER(KIND=MPI_OFFSET_KIND) IWRITE_BYTE
+#else
+      INTEGER IWRITE_BYTE
+#endif
 #endif
 #include "parluci.h"
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "symm.inc"
 #include "glbbas.inc"
 #include "input.inc"
@@ -847,24 +855,25 @@ C***********************************************************************
 #include "ctcc.inc"
 #include "integrals_off.inc"
 *
+#include "dgroup.h"
+      CHARACTER*6 CIRUN
+      DIMENSION   T_BUFF(*), T(*), F1(*)
 #if defined (VAR_MPI2)
 #include "krmc_shmem.h"
 #include "mxdim_mpi2.h"
-      POINTER (MY_T_PTRXXX, T_BUFFX(IDUMMY_BUFF_SZ))
+#include "typesz_mpi2.h"
+      real*8,  allocatable :: t_buffx(:)
 #endif
-#include "dgroup.h"
-      CHARACTER*6 CIRUN
-      DIMENSION   T_BUFF(*), T(NALLINT), F1(*)
+!     scratch memory
+      real*8,  allocatable :: t_unsort(:)
+      real*8,  allocatable :: t_buff_lowsort(:)
 C
-      IDUM = 0
-      call memmar(KDUM,IDUM,'MARK  ',IDUM,'IJKLRO')
-C
-      CALL MEMMAR_I8(KINTI12,LEN_ALL_INT,'ADDL  ',2,'XTIT12')
+      allocate(t_unsort(len_all_int))
 C
       IF( IIOMOD_REL .eq. 1 .or. MYPROC .eq. MASTER )THEN
 C
         CALL RGETH21_LUCIAREL(.FALSE.,.TRUE.,DUMMY,DUMMY,
-     &                         WORK(KINTI12),IPRNT)
+     &                         t_unsort,IPRNT)
       END IF
 C     ^ IIOMOD_REL == 1 or MYPROC ==. MASTER
       IF( IIOMOD_REL .eq. 0 )THEN
@@ -874,35 +883,107 @@ C       every MPI implementation (IBM?); anyway bcast should
 C       NOT be our first choice...
 C
 #if defined (VAR_MPI2)
-        CALL MPI_BCAST(WORK(KINTI12),LEN_ALL_INT,MPI_REAL8,
-     &                 MASTER,IXCOMM,IERR)
+        CALL MPI_BCAST(t_unsort,LEN_ALL_INT,MPI_REAL8,MASTER,
+     &                 IXCOMM,IERR)
 #endif
-C
       END IF
-C
-#if defined (ARCH32BIT) && defined (SYS_AIX) && defined (VAR_MPI2)
-C     WRITE(LUWRT,*) 'NALLINT is',NALLINT
-      CALL MPIXMEM_ALLOC( MY_T_PTRXXX, 1, NALLINT,
-     &                          MPI_INFO_NULL, .FALSE. )
-      CALL DZERO8(T_BUFFX,NALLINT)
-C
-      call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
-     &                      ISOBEX,T_BUFFX,T_BUFF,
-     &                      ISTR_CA,ISTR_CB,ISTR_AA,
-     &                      ISTR_AB,NASHT,F1,WORK(KINTI12),
-     &                      MDIASV,IBOSYM,LABEL,CIRUN,IPRNT)
-C     WRITE(LUWRT,*) 'N1DIAINT and N2DIAINT are',N1DIAINT,N2DIAINT
-C     DO I = 1, NALLINT
-C      WRITE(LUWRT,*) 'I, T_BUFFX(I) is',I, T_BUFFX(I)
-C     END DO
+!
+!     write back to disk pre-sorted integrals
+      if( lowsrt_ijkl )then
+#if defined (VAR_MPI2)
+        CALL MPI_FILE_OPEN(MPI_COMM_SELF,"IJKL_PRESORT",
+     &       MPI_MODE_CREATE + MPI_MODE_WRONLY,MPI_INFO_NULL,
+     &                     IJKL_PRE,IERR)
+        IDISP = 0
+        CALL MPI_FILE_SET_VIEW(IJKL_PRE,IDISP,MPI_BYTE,MPI_BYTE,
+     &                         "native",MPI_INFO_NULL,IERR)
+!
+!       check for total number of elements - do not write more than 
+!       1.0*10^8 elements at each cycle
+        IWRITE_MAX  = 100 000 000
+        ILOOP_WRITE = 1
+        IMOD_WRITE  = 0
+        IT_TOFFW    = 1
+        IS_BYTE8    = ISIZE_dp
+        IWRITE_ELM  = LEN_ALL_INT
+        IOFFSET     = 0
+!       more integrals than max per cycle
+        IF( IWRITE_ELM .gt. IWRITE_MAX )THEN
+          ILOOP_WRITE = IWRITE_ELM / IWRITE_MAX
+          IMOD_WRITE  = MOD( IWRITE_ELM, IWRITE_MAX )
+          IWRITE_ELM  = IWRITE_MAX
+        END IF
+#if defined (INT_STAR8)
+        IWRITE_BYTE = IWRITE_ELM * IS_BYTE8
 #else
-      call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
-     &                      ISOBEX,T,T_BUFF,
-     &                      ISTR_CA,ISTR_CB,ISTR_AA,
-     &                      ISTR_AB,NASHT,F1,WORK(KINTI12),
-     &                      MDIASV,IBOSYM,LABEL,CIRUN,IPRNT)
+        XLENALL = REAL(IWRITE_ELM)
+        IWRITE_ELM4 = IGIVE_I_B(XLENALL)
+        IWRITE_BYTE = IWRITE_ELM4 * ISIZE_dp
 #endif
+!       bytes to add in each cycle
+        IOFF_ADD      = IWRITE_ELM * IS_BYTE8
+!
+!
+        DO IJ = 1, ILOOP_WRITE
+           CALL MPI_FILE_WRITE_AT(IJKL_PRE,IOFFSET,t_unsort(IT_TOFFW),
+     &                            IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+!          new offsets
+           IT_TOFFW    = IT_TOFFW + IWRITE_ELM
+           IOFFSET     = IOFFSET  + IOFF_ADD
+        ENDDO
+!
+!       ... remaining elements
+        IF( IMOD_WRITE .gt. 0) THEN
+!          bytes to add in remaining step
+           IOFF_ADD      = IMOD_WRITE * IS_BYTE8
+#if defined (INT_STAR8)
+           IWRITE_BYTE   = IMOD_WRITE * IS_BYTE8
+#else
+           XLENALL = REAL(IMOD_WRITE)
+           IWRITE_ELM4 = IGIVE_I_B(XLENALL)
+           IWRITE_BYTE = IWRITE_ELM4 * ISIZE_dp
+#endif
+           CALL MPI_FILE_WRITE_AT(IJKL_PRE,IOFFSET,t_unsort(IT_TOFFW),
+     &                            IWRITE_BYTE,MPI_BYTE,ISTAT,IERR)
+           IOFFSET     = IOFFSET  + IOFF_ADD
+        END IF
+#endif
+!       debug print
+!       write(6,*) ' unsorted pre-fetched array of integrals'
+!       call wrtmatmn8(t_unsort,1,LEN_ALL_INT,1,LEN_ALL_INT,6)
+!
+!       free memory and close scratch file
+        deallocate(t_unsort)
+        call mpi_file_close(ijkl_pre,ierr)
+      end if ! low-memory sorting branch
 C
+      if( lowsrt_ijkl )then
+! 
+!       allocate new array for all sorted integrals
+        allocate(t_buff_lowsort(nallint))
+        t_buff_lowsort  = 0
+        call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,
+     &                        ISOBEX,t_buff_lowsort,T_BUFF,
+     &                        ISTR_CA,ISTR_CB,ISTR_AA,
+     &                        ISTR_AB,NASHT,F1,dummy,
+     &                        MDIASV,IBOSYM,LABEL,CIRUN,IPRNT)
+      else
+#if defined (ARCH32BIT) && defined (SYS_AIX) && defined (VAR_MPI2)
+        allocate(t_buffx(nallint))
+        t_buffx = 0
+#endif
+!
+        call dist_ints_sigden(INTIMP,ISPINFREE,ISYM_T,ISOBEX,
+#if defined (ARCH32BIT) && defined (SYS_AIX) && defined (VAR_MPI2)
+     &                        t_buffx,
+#else
+     &                        T,
+#endif
+     &                        T_BUFF,ISTR_CA,ISTR_CB,ISTR_AA,
+     &                        ISTR_AB,NASHT,F1,t_unsort,
+     &                        MDIASV,IBOSYM,LABEL,CIRUN,IPRNT)
+      end if
+!
       WRITE(LUWRT,'(/A)')
      & '  =========================================='
       WRITE(LUWRT,'(A)')
@@ -910,25 +991,34 @@ C
       WRITE(LUWRT,'(A/)')
      & '  =========================================='
 
-C
+!
+!     WRITE(LUWRT,*) 'N1DIAINT and N2DIAINT are (2)',
+!    &                N1DIAINT,N2DIAINT
+      if( lowsrt_ijkl )then
+        CALL IJKL_OUTPUT( t_buff_lowsort,T_BUFF,MDIASV,
+     &                    NDIAMINT,ENVIRO,SIGDEN_ROUTE,ISPINFREE, 
+     &                    INTSPACE, IPRNT,N1DIAINT )
+      else
+        CALL IJKL_OUTPUT( 
 #if defined (ARCH32BIT) && defined (SYS_AIX) && defined (VAR_MPI2)
-C     WRITE(LUWRT,*) 'N1DIAINT and N2DIAINT are (2)',
-C    &                N1DIAINT,N2DIAINT
-      CALL IJKL_OUTPUT( T_BUFFX, T_BUFF, MDIASV, NDIAMINT, ENVIRO, 
-     &                  SIGDEN_ROUTE, ISPINFREE, INTSPACE, IPRNT,
-     &                  N1DIAINT )
+     &                    t_buffx, 
 #else
-      CALL IJKL_OUTPUT( T, T_BUFF, MDIASV, NDIAMINT, ENVIRO, 
-     &                  SIGDEN_ROUTE, ISPINFREE, INTSPACE, IPRNT,
-     &                  N1DIAINT )
+     &                    T,
 #endif
-C
-C     flush local memory
-C
+     &                    T_BUFF, MDIASV, NDIAMINT, ENVIRO, 
+     &                    SIGDEN_ROUTE, ISPINFREE, INTSPACE, IPRNT,
+     &                    N1DIAINT )
+      end if
+!
+!     flush local memory
+      if( lowsrt_ijkl )then
+        deallocate(t_buff_lowsort)
+      else 
+        deallocate(t_unsort)
 #if defined (ARCH32BIT) && defined (SYS_AIX) && defined (VAR_MPI2)
-      CALL MPIXMEM_FREE( T_BUFFX )
+        deallocate(t_buffx)
 #endif
-      call memmar(KDUM,IDUM,'FLUSM ',IDUM,'IJKLRO')
+      end if
 C
       END
 ***********************************************************************

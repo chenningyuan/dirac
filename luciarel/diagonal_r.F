@@ -1211,7 +1211,11 @@ C           XOUT(ICT) = XINT(INT)
 C           write(LUWRT,*) ' fetch integral from pos',IPOSDIA(INT)
             XOUT(ICT) = T_BUFF(IPOSDIA(INT))
 #else
-            XOUT(ICT) = XINT(IPOSDIA(INT))
+            if( lowsrt_ijkl )then
+              XOUT(ICT) = T_BUFF(IPOSDIA(INT))
+            else
+              XOUT(ICT) = XINT(IPOSDIA(INT))
+            end if
 #endif
             ICT = ICT + 1
             goto 10
@@ -1219,7 +1223,7 @@ C           write(LUWRT,*) ' fetch integral from pos',IPOSDIA(INT)
         end do
         write(LUWRT,*) 'No integral found in geth1dia_sigden.'
         write(LUWRT,*) 'Index pair ',ISEA_REO,ISEA_REO
-        CALL Abend2( 'Quitting in geth1dia_sigden.')
+        CALL QUIT( '*** Error in geth1dia_sigden.No integral found ***')
   10    continue
       end do
       if ((ICT-1).ne.NUMINT) then
@@ -1330,7 +1334,11 @@ C         XOUT = XINT(INT)
 C         write(6,*) ' fetch integral (2e) from pos',IPOSDIA(INT)
           XOUT = T_BUFF(IPOSDIA(INT))
 #else
-          XOUT = XINT(IPOSDIA(INT))
+          if( lowsrt_ijkl )then 
+            XOUT = T_BUFF(IPOSDIA(INT))
+          else
+            XOUT = XINT(IPOSDIA(INT))
+          end if
 #endif
           IERROR = 0
 * and exit.

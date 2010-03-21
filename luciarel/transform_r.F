@@ -1815,8 +1815,20 @@ C
       end if
 *
       if (SIGDEN_ROUTE.eq.'SIGDEN') then
-C
+!
+!       calculate # of diagonal integrals
         IRIMLT = MIN(NZ,2)
+        NDIAMINT = (2*NDIM_TOT + 3*((2*NDIM_TOT)**2)) * IRIMLT/2
+!
+        IF( NDIAMINT .gt. MXINT_DIA ) THEN
+          WRITE(LUWRT,*) ' STOP in subroutine itrctl !!!'
+          WRITE(LUWRT,*) ' Number of diagonal integrals larger'
+          WRITE(LUWRT,*) ' than MXINT_DIA: ', NDIAMINT, MXINT_DIA
+          WRITE(LUWRT,*) ' increase MXINT_DIA (mxpdim.inc): to', 
+     &                     NDIAMINT
+          CALL QUIT(
+     &    ' *** Error in itrctl *** too low value of MXINT_DIA')
+        END IF
 C
 C       ... property run. This subroutine is called twice. 
 C       1st time: do reordering - no slaves enter this routine
@@ -1951,6 +1963,30 @@ C
           ALLOC_INT     = .FALSE.
         END IF
 #endif
+        IF( CIRUN .eq. 'IJKLRO' )THEN
+!         using low-memory sorting scheme (disk-I/O driven)
+          IF(LOWSRT_IJKL) THEN 
+            CALL MEMMAR(KT_CC,           0,'ADDS  ',2,'KT_CCX')
+            CALL MEMMAR(KMDIASV,4*NDIAMINT,'ADDS  ',1,'MDIAXX')
+            CALL IZERO(WORK(KMDIASV),4*NDIAMINT)
+            CALL IZERO(IPOSDIA,NDIAMINT)
+            GOTO 200
+          END IF
+        END IF
+!
+!       allocate array for diagonal integrals
+        IF( ALLOC_INT )THEN
+          call memmar(KMDIASV,4*NDIAMINT,'ADDS  ',1,'MDIASV')
+          CALL IZERO(IPOSDIA,NDIAMINT)
+          CALL IZERO(WORK(KMDIASV),4*NDIAMINT)
+          IF(CIRUN .ne. 'PROP1 ' ) WRITE(LUWRT,'(A,I16,A/)') 
+     &         '  Allocating for ',NDIAMINT,' diagonal integrals.'
+        ELSE
+          call memmar(KMDIASV, 0,'ADDS  ',1,'MDIASV')
+          CALL IZERO(IPOSDIA,NDIAMINT)
+        END IF
+!
+!       allocate full integral array
         IF( ALLOC_INT ) THEN
           IF(CIRUN .ne. 'PROP1 ' ) WRITE(LUWRT,'(/A,I16,A)') 
      &         '  Allocating for ',NALLINT,' integrals.'
@@ -1963,27 +1999,7 @@ C
 #if defined (ARCH32BIT) && defined (SYS_AIX) && defined (VAR_MPI2)
         IF( CIRUN .eq. 'IJKLRO' ) ALLOC_INT = ALLOC_INT_SCR
 #endif
-C
-C       diagonal integrals
-        NDIAMINT = (2*NDIM_TOT + 3*((2*NDIM_TOT)**2)) * IRIMLT/2
-        IF( NDIAMINT .gt. MXINT_DIA ) THEN
-          WRITE(LUWRT,*) ' STOP in subroutine itrctl !!!'
-          WRITE(LUWRT,*) ' Number of diagonal integrals larger'
-          WRITE(LUWRT,*) ' than MXINT_DIA: ', NDIAMINT, MXINT_DIA
-          WRITE(LUWRT,*) ' increase MXINT_DIA (mxpdim.inc): to', 
-     &                     NDIAMINT
-          stop ' Quitting in subroutine itrctl'
-        END IF
-        IF( ALLOC_INT )THEN
-          call memmar(KMDIASV,4*NDIAMINT,'ADDS  ',1,'MDIASV')
-          CALL IZERO(IPOSDIA,NDIAMINT)
-          CALL IZERO(WORK(KMDIASV),4*NDIAMINT)
-          IF(CIRUN .ne. 'PROP1 ' ) WRITE(LUWRT,'(A,I16,A/)') 
-     &         '  Allocating for ',NDIAMINT,' diagonal integrals.'
-        ELSE
-          call memmar(KMDIASV, 0,'ADDS  ',1,'MDIASV')
-          CALL IZERO(IPOSDIA,NDIAMINT)
-        END IF
+ 200    CONTINUE
       end if
 C     ^ SIGDEN route
 *
@@ -2113,7 +2129,8 @@ C
                 WRITE(LUWRT,*) ' the integral file IJKL_REOD.          '
                 WRITE(LUWRT,*) ' Programm will abort now.              '
                 WRITE(LUWRT,*) ' Restart job with option .IJKLRO !     '
-                CALL Abend2('option .IJKLRO required. ')
+                CALL QUIT(
+     &          '*** Error in itrctl *** Option .IJKLRO required. ')
               END IF
 C
               CALL MEMMAR_I8(KINTI12,LEN_ALL_INT,'ADDL  ',2,'XTIT12')

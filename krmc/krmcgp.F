@@ -2251,17 +2251,26 @@ C     using revised integral allocation scheme
      &                  MPI_COMM_WORLD,IERR)
 #endif
       SPLIT_IJKL = CINT_SPLIT
+C     using low-memory scheme for integral resorting
+      LOWSRT_IJKL = .FALSE.
+#if defined (VAR_MPI)
+      IF( ISYNC_NODES .eq. 1 )
+     &   CALL MPI_BCAST(CINT_LOWSRT,1,MPI_LOGICAL,MASTER,
+     &                  MPI_COMM_WORLD,IERR)
+#endif
+      LOWSRT_IJKL = CINT_LOWSRT
 C
 C     if (CIRUN .eq. PROP1) disable all 'shared memory' stuff
 C                           --> implement C-sharing (IC_SHL) !?!
       IF( CIRUN .eq. 'PROP1 ')THEN
 C        disable shared memory usage for now
-         IT_SHL     = - 1
-         IC_SHL     = - 1
-         SHARED_M   = .FALSE.
-         LEVEL_SM   = - 1
-         REORD_IJKL = .FALSE.
-         SPLIT_IJKL = .FALSE.
+         IT_SHL      = - 1
+         IC_SHL      = - 1
+         SHARED_M    = .FALSE.
+         LEVEL_SM    = - 1
+         REORD_IJKL  = .FALSE.
+         SPLIT_IJKL  = .FALSE.
+         LOWSRT_IJKL = .FALSE.
       END IF
 C     sigma calculation in property run 
       DOSIGPROP = .FALSE.

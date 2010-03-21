@@ -1242,6 +1242,7 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER(KIND=MPI_OFFSET_KIND) IDISP
 #endif
 #include "parluci.h"
 #include "files_r.inc"
@@ -1275,8 +1276,11 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 * Constants
       IZERO = 0
       ZERO = 0.D0
+!
+!     control writing of file INDICES.x (x =0,... last slave tag)
       NOINT_FILE = .FALSE.
 C     NOINT_FILE = .TRUE.
+      if( lowsrt_ijkl .or. reord_ijkl ) NOINT_FILE = .TRUE.
 *
 * Double group type
       if (NZ.eq.1) then
@@ -1317,10 +1321,9 @@ C     NOINT_FILE = .TRUE.
           IRILP = 2
         end if
       end if
-*
-*     open ASCII file for checking integral sorting information
-*
-C     ntest = 1
+!
+!     open ASCII file for checking integral sorting information
+!     ntest = 1
       if (NTEST.ge.1) then
         if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
           LUINGR = LUSC94
@@ -1329,23 +1332,33 @@ C     ntest = 1
           rewind(LUINGR)
         end if
       end if
-*
-*    open file for saving index sequence
-*
+!
+!     open file for saving index sequence
       LUINSV = LUSC95
       open(unit=LUINSV,file=NLUSC95_MPI(1:LUSC95_MPIL),
      &     status='UNKNOWN',form='FORMATTED')
       rewind(LUINSV)
-C
-C     set counter to start value and initialize
-C
+!
+!     open file with pre-fetched integrals
+      if( lowsrt_ijkl ) then
+#if defined (VAR_MPI2)
+        call mpi_file_open(mpi_comm_self,"IJKL_PRESORT",
+     &                     mpi_mode_rdonly + mpi_mode_delete_on_close,
+     &                     mpi_info_null,ijkl_pre,ierr)
+        idisp = 0
+        call mpi_file_set_view(ijkl_pre,idisp,mpi_real8,mpi_real8,
+     &                         "native",mpi_info_null,ierr)
+#endif
+      end if
+!
+!     set counter to start value and initialize
       ICOUNT_I8 = 1
-      NDIAINT = 0
-      N1DIAINT = 0
-      N2DIAINT = 0
-*
-*     Loop over real/imaginary part
-*
+      NDIAINT   = 0
+      N1DIAINT  = 0
+      N2DIAINT  = 0
+!
+!     Loop over real/imaginary part
+!
       do IRI=1,IRILP,1
         if (NTEST.ge.1) then
           if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
@@ -1905,6 +1918,13 @@ C
         CALL WRTMATMN8(T,1,NALLINT,1,NALLINT,LUWRT)
       end if
       NTEST = 0
+!
+!     close (and destroy) file with pre-fetched integrals
+      if( lowsrt_ijkl ) then
+#if defined (VAR_MPI2)
+        call mpi_file_close(ijkl_pre,ierr)
+#endif
+      end if
 *
       end
 ***********************************************************************
@@ -3094,8 +3114,14 @@ c       stop
      &                      KR,NASHT,NNASHX,H2AC,IPRNT)
 *
 #include "implicit.h"
-#include "ipoist8.inc"
 #include "dgroup.h"
+#if defined (VAR_MPI2)
+#include "infpar.h"
+#include "mpif.h"
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET
+#endif
+#include "parluci.h"
 *
       dimension H2AC(NASHT/2,NASHT/2,NNASHX,NZ,*)
       dimension ICSAVE(4),INDEX(4),INVREO(-IDIM:IDIM),KR(-IDIM:IDIM),
@@ -3115,21 +3141,20 @@ c       stop
       end if
 *
       if (NTEST.ge.2) then
-        write(6,*)
-        write(6,'(A,6X,4I3)') '  INDEX array: ',(INDEX(I),I=1,4,1)
+        write(6,'(/A,6X,4I3)') '  INDEX array: ',(INDEX(I),I=1,4,1)
       end if
       if (NTEST.ge.5) then
-        write(6,*) '  '
-        write(6,*) ' GETIND_NZ3 : '
+        write(6,'(/A)') ' GETIND_NZ3 : '
         write(6,*) '  NZ,MZ : ',NZ,MZ
         write(6,*) '  No. of active orbitals : ',NASHT/2
         write(6,*) '  Compound index dimension: ',NNASHX
       end if
 *
       if (NTEST.ge.200) then
-        write(6,*) '  '
-        write(6,*) '2-el. integrals in getind_nz3, (NZ,3) format:'
-        call prdnz3(H2AC(1,1,1,1,1),NASHT/2,NNASHX,NZ,IPQTOQ(1,0),6)
+        if( .not. lowsrt_ijkl ) then
+          write(6,'(/A)')'2-el. integrals in getind_nz3, (NZ,3) format:'
+          call prdnz3(H2AC(1,1,1,1,1),NASHT/2,NNASHX,NZ,IPQTOQ(1,0),6)
+        end if
       end if
 *
       NCT = 0
@@ -3243,16 +3268,30 @@ c       stop
           IIN = (NZ3TP-1)        *MZ*NNASHX*NASHTH*NASHTH +
      &          (MZ-1)           *NNASHX*NASHTH*NASHTH +
      &          (NDIM2-1)        *NASHTH*NASHTH +
-     &          (INDEX_LOC(1)-1) *NASHTH +
-     &           INDEX_LOC(2)
+     &          (INDEX_LOC(2)-1) *NASHTH +
+     &           INDEX_LOC(1)
 *
 C         YINT = H2AC(IIN) * IRIFAC * IRIFAC2
-          YINT = H2AC(INDEX_LOC(1),INDEX_LOC(2),NDIM2,MZ,NZ3TP) 
-     &                * IRIFAC * IRIFAC2
-          if (NTEST.ge.2) write(6,'(A,4I3,2X,4I3,2X,1F18.10)') 
-     &                    'MZ,NZ3TP,IRIFAC,IRIFAC2  integral',
-     &                     MZ,NZ3TP,IRIFAC,IRIFAC2,
-     &                    (INDEX_LOC(ID),ID=1,4,1),YINT
+          if( lowsrt_ijkl ) then
+#if defined (VAR_MPI2)
+            yint4 = 0.0D0
+!           file offset is 0!
+            ioffset = iin - 1
+            call mpi_file_read_at(ijkl_pre,ioffset,yint4,
+     &                            1,mpi_real8,istat,ierr)
+!           write(6,*) 'iin ,ioffset, yint4',iin ,ioffset, yint4
+            yint = yint4 * irifac * irifac2
+#endif
+          else
+            YINT = H2AC(INDEX_LOC(1),INDEX_LOC(2),NDIM2,MZ,NZ3TP) 
+     &                  * IRIFAC * IRIFAC2
+          end if
+!         ntest = 2
+          if (NTEST.ge.2) write(6,'(A,5I3,2X,4I3,2X,1F18.10)') 
+     &                          'MZ,NZ3TP,IRIFAC,IRIFAC2,IIN  integral',
+     &                           MZ,NZ3TP,IRIFAC,IRIFAC2,IIN,
+     &                           (INDEX_LOC(ID),ID=1,4,1),YINT
+!         ntest = 0
 *
       else
         write(6,*) 'No QFT implemented YET in LUCIAREL.'

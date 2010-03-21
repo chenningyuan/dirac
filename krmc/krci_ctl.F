@@ -110,7 +110,7 @@ C
      &            '.THRPCI','.NR SYM','.MIN MK','.MAX MK','.GASSH ',
      &            '.GASSPC','.MK2REF','.MK2DEL','.CI PRO','.INACTI',
      &            '.CASSCF','.TRDM  ','.OMEGAQ','.RELSYM','.CHECKP',
-     &            '.USE PB','.GENFOC','.TRA NO','-------','-------'/
+     &            '.USE PB','.GENFOC','.TRA NO','.LOWSRT','-------'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -143,6 +143,7 @@ C
       CUSE_PBLFL_KRCI = .FALSE.
       GENFOCK_KRCI    = .FALSE.
       TRANATO_KRCI    = .FALSE.
+      LOWSORT_KRCI    = .FALSE.
 C
 C     Initialize /CBIKRCI/
 C     ===================
@@ -571,6 +572,9 @@ C&&&  TRA NO:  transform to natural CI spinors
                TRANATO_KRCI = .TRUE.
                GO TO 100
    39          CONTINUE
+C&&&  LOWSRT:  use memory-saving path in the integral sorting step 
+C              can only be used in combination with .IJKLRO
+               LOWSORT_KRCI = .TRUE.
                GO TO 100
    40          CONTINUE
                GO TO 100
@@ -930,6 +934,16 @@ C
       IF( GENFOCK_KRCI ) THEN
         WRITE(LUPRI,'(/A)') ' * Transform positronic/inactive/virtual'//
      &                      ' spinors to Fock-type spinors'
+      END IF
+      IF( (.NOT. CINT_REORD_KRCI) .and. LOWSORT_KRCI ) THEN
+        WRITE(LUPRI,'(/A)') ' *** Warning *** low-memory sorting'//
+     &                      ' scheme only available in connection'//
+     &                      ' with .IJKLRO'
+        LOWSORT_KRCI = .FALSE.
+      END IF
+      IF( LOWSORT_KRCI ) THEN
+        WRITE(LUPRI,'(/A)') ' * Use memory-saving integral reordering'//
+     &                      ' scheme'
       END IF
 C
   400 RETURN
