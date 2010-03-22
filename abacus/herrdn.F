@@ -5574,8 +5574,13 @@ C
          CALL QUIT('*** ERROR reading basis')
       ENDIF
 
-      IF (NMLINE .GT. NMLN_LASTREAD)
-     $     READ (LUINFO,'(A)',END=12,ERR=11) MLINE(NMLINE)
+      IF (NMLINE .GT. NMLN_LASTREAD) THEN
+CMI     ... to prevent ERR jump, add an extra space after the last exponent
+         READ (LUINFO,'(A)',END=12,ERR=11) MLINE(NMLINE)
+CMI      write(LUPRI,*) 'RDLINE: read NMLINE,MLINE(NMLINE)=',
+CMI  &     NMLINE,MLINE(NMLINE)
+      ENDIF
+
       IF (NMLINE.GT.KMLINE) THEN
          WRITE (LUPRI,'(//A,/A,I5)')
      &        ' READIN ERROR: Too many lines in input -,',
@@ -5589,10 +5594,14 @@ C
 
       RETURN
 
-   11 MLINE(NMLINE)='        '
+   11 CONTINUE 
+CMI   MLINE(NMLINE)='        '
 C     JHS Remove the next line?
-      WRITE(LUPRI,*) 'ERROR(READIN): Error in reading molecule.MOL. '
+      WRITE(LUPRI,*) 
+     & 'ERROR(subrout RDLINE): Error in reading molecule.MOL. '
      &     //'NODE=',MYTID
+      WRITE(LUPRI,*) 'MLINE(NMLINE)=',MLINE(NMLINE)
+      MLINE(NMLINE)='        '
       IF (NMLINE>1) THEN
         WRITE(LUPRI,*) 'Line=', NMLINE, 'Prev line:',
      &        MLINE(NMLINE-1)
