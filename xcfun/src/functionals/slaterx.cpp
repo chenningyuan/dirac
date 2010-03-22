@@ -12,7 +12,7 @@ SETUP_FUNCTIONAL(functional &f)
 	     "Implemented by Ulf Ekstrom\n"
 	     "Test case from http://www.cse.scitech.ac.uk/ccg/dft/data_pt_x_lda.html\n");
 
-  SET_LDA_ENERGY_FUNCTION(f,slater::energy);
+  SET_LDA_ENERGY_FUNCTION(f,slaterx);
   /*
   SET_GGA_ENERGY_FUNCTION(f,energy);
   SET_MGGA_ENERGY_FUNCTION(f,energy);

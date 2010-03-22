@@ -38,6 +38,7 @@ public:
   double get(const char *name) const;
   double get(int n) const; // Fast lookup, unsafe
   double get(const setting &s) const; // Fast lookup, safe
+  setting lookup(const char *name) const; // For use with get(setting &)
   //Functions for enumeration of possible settings
   int nr_settings(void) const;
   bool is_set(const char *name) const;
@@ -62,9 +63,9 @@ public:
   settings_database();
   ~settings_database();
   user_settings *new_user_settings(void);
-  setting new_setting(const char *name_, double default_value_,
-		      const char *short_description_,
-		      const char *long_description_);
+  setting new_setting(const char *name, double default_value,
+		      const char *short_description,
+		      const char *long_description);
 protected:
   bool is_frozen;
   array<const setting_data *> data;

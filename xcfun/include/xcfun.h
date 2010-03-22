@@ -21,6 +21,7 @@
 
 double xcfun_version(void);
 const char *xcfun_splash(void);
+int xcfun_test(void);
 
 class xc_functional
 {

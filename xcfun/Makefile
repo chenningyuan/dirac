@@ -22,14 +22,12 @@ FFLAGS=-Wall -Llib -Jfortran # -DWITH_QD
 
 FUN_OBJ:=$(patsubst %.cpp,%.o,$(wildcard src/functionals/*.cpp))
 
-
-xcfun_test: src/xcfun.o src/functional.o src/settings.o src/evaluators.o $(FUN_OBJ)
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS)
+testall:
 
 lib: lib/libxcfun.so
 
-lib/libxcfun.so: src/functional.o src/settings.o src/evaluators.o $(FUN_OBJ)
-	$(CXX) $(CXXFLAGS) -fPIC -shared src/xcfun.cpp -o lib/libxcfun.so $(LIBS) $^ -DXCFUN_LIB	
+lib/libxcfun.so: src/xcfun.o src/functional.o src/settings.o src/evaluators.o $(FUN_OBJ)
+	$(CXX) $(CXXFLAGS) -fPIC -shared -o lib/libxcfun.so $(LIBS) $^	
 
 
 stripped: lib/libxc_fun.a
@@ -39,6 +37,9 @@ funeval: test/funeval.cpp lib/libxcfun.a
 	$(CXX) $(CXXFLAGS) $< -o $@ $(LIBS) -lxcfun
 
 example: test/example.cpp lib/libxcfun.so
+	$(CXX) $(CXXFLAGS) $< -o $@ $(LIBS) -lxcfun
+
+testall: test/testall.cpp lib/libxcfun.so
 	$(CXX) $(CXXFLAGS) $< -o $@ $(LIBS) -lxcfun
 
 fortran/example.o: fortran/xc_fun_module.o

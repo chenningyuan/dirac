@@ -48,6 +48,19 @@ settings_database &xc_get_settings()
   return b;
 }
 
+setting xc_param_lookup(const xc_functional::xc_functional_data *params, 
+			const char *name)
+{
+  return params->settings->lookup(name);
+}
+
+double xc_param_get(const xc_functional::xc_functional_data *params,
+		    const setting &s)
+{
+  return params->settings->get(s);
+}
+
+
 xc_functional::xc_functional_data::xc_functional_data(void)
 {
   mode = XC_VARS_AB; //Use alpha/beta as default
@@ -251,7 +264,7 @@ const char *xc_functional::setting_long_description(const char *name) const
    
 */
 
-int run_tests(functional *fun)
+static int run_tests(functional *fun)
 {
   if (fun->test_mode != -1)
     {
@@ -295,20 +308,15 @@ int run_tests(functional *fun)
     }
 }
 
-
-#ifndef XCFUN_LIB
-
-int main(void)
+int xcfun_test(void)
 {
-  const array<functional *> &funs = xc_get_functional_array();
-  cout << "Functionals:" << endl;
-  for (int i=0;i<funs.size();i++)
+  int nr_failed = 0;
+  array<functional *> &a = xc_get_functional_array();
+  for (int i=0;i<a.size();i++)
     {
-      cout << funs[i]->m_name << "    \t" << funs[i]->m_oneliner 
-	   << " " << run_tests(funs[i])
-	   << endl;
+      int res = run_tests(a[i]);
+      if (res != 0 and res != -1)
+	nr_failed++;
     }
+  return nr_failed;
 }
-
-#endif
-

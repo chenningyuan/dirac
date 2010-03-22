@@ -32,6 +32,18 @@ user_settings::~user_settings()
   delete[] val_is_set;
 }
 
+void xc_die(const char *message, int mode);
+
+setting user_settings::lookup(const char *name) const
+{
+  for (int i=0;i<db.data.size();i++)
+    if (strcmp(db.data[i]->name,name) == 0)
+      return setting(db.data[i]);
+  xc_die("No such setting",-1);
+  return setting(db.data[0]);
+}
+
+
 double user_settings::get(const setting &s) const
 {
   return values[s.id];
@@ -131,6 +143,7 @@ settings_database::new_setting(const char *name, double default_value,
   data.push_back(d);
   return setting(d);
 }
+
 
 user_settings *settings_database::new_user_settings(void)
 {

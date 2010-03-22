@@ -100,9 +100,9 @@ static num ecorrlr(const densvars<num> &d, double mu, const num &ec)
 template<class num>
 static num energy(const densvars<num> &d)
 {
-  double mu = 0.4; //FIXME: get param from d
+  static setting mu = d.lookup("ldaerf:mu");
   num eps = pw92eps::eps(d);
-  return d.n*(eps - ecorrlr(d,mu,eps));
+  return d.n*(eps - ecorrlr(d,d.get(mu),eps));
 }
 
 SETUP_FUNCTIONAL(functional &f)
@@ -114,7 +114,9 @@ SETUP_FUNCTIONAL(functional &f)
 	     "Adapted from Gori-Giorgi and MOLPRO by Ulf Ekstrom\n"
 	     "Test case from Gori-Giorgi (personal communication)\n"
 	     "Range separation parameter is 'ldaerf:mu'\n");
-
+  f.parameter("ldaerf:mu",
+	      "Range separation parameter [a0] using by ldaerf{c,x}",
+	      0.4);
   SET_LDA_ENERGY_FUNCTION(f,energy);
   /*
   SET_GGA_ENERGY_FUNCTION(f,energy);

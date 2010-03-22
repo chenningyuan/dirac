@@ -41,7 +41,7 @@ public:
   array<double> weights;
 };
 
-void xc_die(const char *message, int mode);
+void xc_die(const char *message, int code);
 int xc_input_length(int mode, int type);
 int xc_output_length(int mode, int type, int order);
 

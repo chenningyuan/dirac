@@ -34,6 +34,22 @@ namespace pw92eps
       -  e(d.r_s,TUVWXYP[2])*omegaval*(1-zeta4)/c 
       + (e(d.r_s,TUVWXYP[1]) - e(d.r_s,TUVWXYP[0]))*omegaval*zeta4;
   }
+
+  template<class num>
+  static num eps_polarized(const num &a)
+  {
+    // The T..P parameters, but transposed for easier use with the e function
+    const double TUVWXYP[3][7] = 
+      {{0.031091, 0.21370, 7.5957 , 3.5876, 1.6382 ,0.49294,1},
+       {0.015545 , 0.20548, 14.1189, 6.1977, 3.3662 ,0.62517,1},
+       {0.016887, 0.11125, 10.357 , 3.6231, 0.88026,0.49671,1}};
+    const double c = 1.709921;
+    num r_s = pow(3/(4*M_PI*a),1.0/3.0);
+    num omegaval = omega(num(0));
+    return e(r_s,TUVWXYP[0])
+      -  e(r_s,TUVWXYP[2])*omegaval/c;
+  }
+
   // This is with the Daresbury parameters for PBEc, not exactly
   // the same as for Daresbury pw92. 
   template<class num>

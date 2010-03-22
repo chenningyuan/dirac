@@ -1,5 +1,4 @@
 #include "functional.h"
-#include "slater.h"
 
 template<class num>
 static num becke_alpha(const num &na, const num &gaa)

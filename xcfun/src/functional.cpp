@@ -28,6 +28,8 @@ functional::~functional()
     }
 }
 
+
+
 void functional::describe(const char *name, int type, const char *oneliner,
 			  const char *reference)
 {
@@ -41,7 +43,7 @@ void functional::describe(const char *name, int type, const char *oneliner,
 void functional::parameter(const char *name, const char *description, 
 			   double default_value)
 {
-  //FIXME: Create parameter
+  xc_get_settings().new_setting(name,default_value,description,description);
 }
 
 void functional::add_test(int mode, int order,

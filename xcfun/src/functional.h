@@ -6,9 +6,17 @@
 #include "xcfun.h"
 #include "config.h"
 #include "array.h"
+#include "settings.h"
 
 // MGGA's have 7 variables (GGA+tau)
 #define XC_MAX_NVAR 7
+
+
+setting xc_param_lookup(const xc_functional::xc_functional_data *params, 
+			const char *name);
+double xc_param_get(const xc_functional::xc_functional_data *params, 
+		    const setting &s);
+
 
 // Variables for expressing functionals, these are redundant because
 // different functionals have different needs.
@@ -18,7 +26,15 @@ struct densvars
   densvars(const xc_functional::xc_functional_data *p) : params(p) {}
   //For getting user defined parameters
   const xc_functional::xc_functional_data *params; 
-
+  setting lookup(const char *name) const
+  {
+    return xc_param_lookup(params,name);
+  }
+  double get(const setting &s) const
+  {
+    return xc_param_get(params,s);
+  }
+  
   T a, b, gaa, gab, gbb;
   /* na+nb, na-nb, (grad n)^2, (grad n).(grad s), (grad s)^2 */
   T n, s, gnn, gns, gss; 
@@ -123,8 +139,8 @@ static void setup_functional
 #define SETNQ(N,TYPE,F,ERG) SETN ## N (TYPE,F,ERG)
 #define SETN(N,TYPE,F,ERG) SETNQ(N,TYPE,F,ERG)
 
-#define SET_LDA_ENERGY_FUNCTION(FUNOBJ,FUNCTION) SETN(XC_LDA_MAX_ORDER,LDA,FUNOBJ,FUNCTION)
-#define SET_GGA_ENERGY_FUNCTION(FUNOBJ,FUNCTION) SETN(XC_GGA_MAX_ORDER,GGA,FUNOBJ,FUNCTION)
-#define SET_MGGA_ENERGY_FUNCTION(FUNOBJ,FUNCTION) SETN(XC_MGGA_MAX_ORDER,MGGA,FUNOBJ,FUNCTION)
+#define SET_LDA_ENERGY_FUNCTION(FUNOBJ,FUNCTION) assert(FUNOBJ.m_type <= XC_LDA); SETN(XC_LDA_MAX_ORDER,LDA,FUNOBJ,FUNCTION)
+#define SET_GGA_ENERGY_FUNCTION(FUNOBJ,FUNCTION) assert(FUNOBJ.m_type <= XC_GGA); SETN(XC_GGA_MAX_ORDER,GGA,FUNOBJ,FUNCTION)
+#define SET_MGGA_ENERGY_FUNCTION(FUNOBJ,FUNCTION) assert(FUNOBJ.m_type <= XC_MGGA); SETN(XC_MGGA_MAX_ORDER,MGGA,FUNOBJ,FUNCTION)
 
 #endif
