@@ -954,7 +954,9 @@ C
 !
 !       free memory and close scratch file
         deallocate(t_unsort)
+#if defined (VAR_MPI2)
         call mpi_file_close(ijkl_pre,ierr)
+#endif
       end if ! low-memory sorting branch
 C
       if( lowsrt_ijkl )then
