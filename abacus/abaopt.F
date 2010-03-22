@@ -2025,13 +2025,13 @@ C
          END IF
          ENERGY = GEINFO(ITRNMR,1)
          WRITE(LUPRI,*)
-         WRITE(LUPRI,'(A,F14.6,A)')
+         WRITE(LUPRI,'(A,F20.12,A)')
      &          ' Energy at final geometry is       : ',ENERGY,' a.u.'
          ERGDIF = ENERGY - GEINFO (0,1)
-         WRITE(LUPRI,'(A,F14.6,A)')
+         WRITE(LUPRI,'(A,F20.12,A)')
      &          ' Energy change during minimization : ',ERGDIF,' a.u.'
          ERGDIF = ERGDIF * XKJMOL
-         WRITE(LUPRI,'(A,F14.3,A)')
+         WRITE(LUPRI,'(A,F20.6,A)')
      &        '                                     ',ERGDIF,' kJ/mol'
          WRITE(LUPRI,*)
          IF (DOPRE) THEN
