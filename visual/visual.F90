@@ -291,6 +291,7 @@ contains
       real(8) ::          STEP_3D(3,0:3)
       real(8) ::          ATOM_XYZ(4,NUCDEP)
 
+      character(2) :: grid_orientation(1:3) = (/'xy', 'xz', 'yz'/)
       real(8) :: r(3), v(3), px, py, pz
       integer :: ICUBE, jCUBE, kCUBE, IORIENTATION, IPOINT_IN_LIST
       integer :: istep, i, j, k, l, m, ni, nj, nk, nr_steps, IXVECTOR
@@ -405,13 +406,13 @@ contains
           NJ = NR_STEPS
           NK = NR_STEPS
 
-          IF(visual_cfg_ORIENTATION(IORIENTATION) .EQ. 'xy') NK = 1
-          IF(visual_cfg_ORIENTATION(IORIENTATION) .EQ. 'xz') NJ = 1
-          IF(visual_cfg_ORIENTATION(IORIENTATION) .EQ. 'yz') NI = 1
+          IF(IORIENTATION .EQ. 1) NK = 1   ! 'xy'
+          IF(IORIENTATION .EQ. 2) NJ = 1   ! 'xz'
+          IF(IORIENTATION .EQ. 3) NI = 1   ! 'yz'
 
           WRITE(LUNIT_2D,'(A)')
           WRITE(LUNIT_2D,'(A)')  &
-     &             'plane: ' // visual_cfg_ORIENTATION(IORIENTATION)
+     &             'plane: ' // grid_orientation(IORIENTATION)
 
           DO I = 1,NI
             DO J = 1,NJ
@@ -424,11 +425,11 @@ contains
         PZ = visual_cfg_ORIGIN_2D(3) - visual_cfg_ADD_2D &
      &          + (k-1)*visual_cfg_STEP_2D
 
-                IF(visual_cfg_ORIENTATION(IORIENTATION) .EQ. 'xy') &
+                IF(IORIENTATION .EQ. 1) &                        ! 'xy'
      &                     PZ = visual_cfg_ORIGIN_2D(3)
-                IF(visual_cfg_ORIENTATION(IORIENTATION) .EQ. 'xz') &
+                IF(IORIENTATION .EQ. 2) &                        ! 'xz'
      &                     PY = visual_cfg_ORIGIN_2D(2)
-                IF(visual_cfg_ORIENTATION(IORIENTATION) .EQ. 'yz') &
+                IF(IORIENTATION .EQ. 3) &                        ! 'yz'
      &                     PX = visual_cfg_ORIGIN_2D(1)
 
                 CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &

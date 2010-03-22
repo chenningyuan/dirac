@@ -22,6 +22,7 @@
       real(8), allocatable :: y(:)
       real(8), allocatable :: z(:)
       real(8), allocatable :: w(:)
+      character(2) :: grid_orientation(3) = (/'xy', 'xz', 'yz'/)
 
       CALL DZERO(QUANTITY_INTEGRAL,4)
       if (visual_cfg_3d) then
@@ -88,7 +89,7 @@
 
         CALL AROUND('2D Gauss-Lobatto numerical integration')
 
-        DO IORIENTATION = 2,2
+        DO IORIENTATION = visual_cfg_orientation,visual_cfg_orientation
 !radovan: this means that i want xz plane
 !         1 = xy
 !         2 = xz
@@ -99,7 +100,7 @@
 
           WRITE(LUPRI,'(A)')
           WRITE(LUPRI,'(A12,A3)') 'orientation:', &
-     &                   visual_cfg_orientation(IORIENTATION)
+     &                   grid_orientation(IORIENTATION)
           WRITE(LUPRI,'(A)')
           WRITE(LUPRI,'(A)')
           WRITE(LUPRI,'(A12,A25,2A20,A14,2A13)') 'scalar', &
@@ -123,7 +124,7 @@
 
           DO WHILE(.TRUE.)
 
-            CALL LOBATTO_2D_GRID(visual_cfg_orientation(IORIENTATION), &
+            CALL LOBATTO_2D_GRID(IORIENTATION, &
      &                           NR_PIECES,N,DIMI,DIMJ,LUNIT)
 
             REWIND LUNIT
@@ -399,7 +400,7 @@
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !     /* LOBATTO_2D_GRID */
-      SUBROUTINE LOBATTO_2D_GRID(GRID_ORIENTATION, &
+      SUBROUTINE LOBATTO_2D_GRID(IORIENTATION, &
      &                           NR_PIECES,N,DIMI,DIMJ,LUNIT)
 !=======================================================================
 !     description in here ...
@@ -416,7 +417,7 @@
       PARAMETER (NMAX = 1000)
 
       CHARACTER*30 FILE_NAME
-      CHARACTER*2  GRID_ORIENTATION
+      INTEGER      IORIENTATION
       DIMENSION X(NMAX), W(NMAX)
       real(8), allocatable :: px(:), py(:), pz(:), weight(:)
 
@@ -444,20 +445,20 @@
           DO I = 1,N
             DO J = 1,N
               IPOINT = IPOINT + 1
-
-              IF(GRID_ORIENTATION .EQ. 'xy') THEN
+! 'xy'
+              IF(IORIENTATION .EQ. 1) THEN
                 PX(IPOINT) = OFFI + (X(I)+D1)*DIMI/(D2*NR_PIECES)
                 PY(IPOINT) = OFFJ + (X(J)+D1)*DIMJ/(D2*NR_PIECES)
                 PZ(IPOINT) = visual_cfg_origin_2d(3)
               ENDIF
-
-              IF(GRID_ORIENTATION .EQ. 'xz') THEN
+! 'xz'
+              IF(IORIENTATION .EQ. 2) THEN
                 PX(IPOINT) = OFFI + (X(I)+D1)*DIMI/(D2*NR_PIECES)
                 PZ(IPOINT) = OFFJ + (X(J)+D1)*DIMJ/(D2*NR_PIECES)
                 PY(IPOINT) = visual_cfg_origin_2d(2)
               ENDIF
-
-              IF(GRID_ORIENTATION .EQ. 'yz') THEN
+! 'yz'
+              IF(IORIENTATION .EQ. 3) THEN
                 PY(IPOINT) = OFFI + (X(I)+D1)*DIMI/(D2*NR_PIECES)
                 PZ(IPOINT) = OFFJ + (X(J)+D1)*DIMJ/(D2*NR_PIECES)
                 PX(IPOINT) = visual_cfg_origin_2d(1)

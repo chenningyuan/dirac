@@ -9,7 +9,6 @@ module visual_cfg
 
   character(6),  public :: visual_cfg_xvector_file(max_nr_xvectors)
   character(72), public :: visual_cfg_orbital_string(2)
-  character(2),  public :: visual_cfg_orientation(3) = (/'xy', 'xz', 'yz'/)
 
   logical,       public :: visual_cfg_list               = .false.
   logical,       public :: visual_cfg_line               = .false.
@@ -28,6 +27,7 @@ module visual_cfg
   integer,       public :: visual_cfg_iwhich_xvector(max_nr_xvectors)  = 1
   integer,       public :: visual_cfg_ioption_xvector(max_nr_xvectors) = 0
   integer,       public :: visual_cfg_line_nr_steps                    = 0
+  integer,       public :: visual_cfg_orientation                      = 1
 
   real(8),       public :: visual_cfg_add_3d                             = 4.0d0
   real(8),       public :: visual_cfg_common_factor                      = 1.0d0
