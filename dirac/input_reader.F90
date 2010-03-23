@@ -369,6 +369,7 @@ contains
     character(kw_length), intent(in) :: kw_section
 !   ----------------------------------------------------------------------------
     integer                          :: i
+    character(2)                     :: plan2d
 !   ----------------------------------------------------------------------------
 
 #ifndef MOD_VISUAL
@@ -470,6 +471,17 @@ contains
       call kw_read(word, visual_cfg_ncube(1), &
                          visual_cfg_ncube(2), &
                          visual_cfg_ncube(3))
+    end if
+
+    if (kw_matches(word, '.2DORIE')) then
+      call kw_read(word, plan2d)
+      if(plan2d .EQ. 'XY') then
+        visual_cfg_orientation = 1
+      elseif(plan2d .EQ. 'XZ') then
+        visual_cfg_orientation = 2
+      elseif(plan2d .EQ. 'YZ') then
+        visual_cfg_orientation = 3
+      endif
     end if
 
     if (kw_matches(word, '.2DORIG')) then
