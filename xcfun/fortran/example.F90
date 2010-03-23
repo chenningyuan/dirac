@@ -4,10 +4,20 @@ program xc_example
 ! for example densities
 
 ! this example contains all f90 interface toutines
-! that are needed to "talk to" the xc_fun library
+! that are needed to "talk to" the xcfun library
 
-  use xc_fun
+  use xcfun
+  integer funid,n
+  character*1000 descr
 
+  call xcfun_splash(descr)
+  print *, descr(1:len_trim(descr))
+  funid = xc_new_functional()
+
+  n = 0
+  
+
+#if 0
   real(8)              :: fun(XC_PARAMS_LEN)
   real(8), allocatable :: derv(:)
   integer              :: max_order
@@ -64,5 +74,5 @@ program xc_example
   print *, '(d/dn_a)^2 e         = ', derv(xc_index(XC_ABFGH, (/2, 0, 0, 0, 0/)))
 
   deallocate(derv)
-
+#endif
 end program

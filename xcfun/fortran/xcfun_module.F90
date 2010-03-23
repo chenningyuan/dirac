@@ -1,5 +1,5 @@
 
-module xc_fun
+module xcfun
   implicit none
 ! These parameters should mirror those in xcfun.h
   integer, parameter ::  XC_VARS_A  = 0
@@ -39,8 +39,8 @@ contains
 
 
   function xcfun_version()
-    double precision xcfun_version, xcfunversionfortran
-    xcfun_version = xcfunversionfortran()
+    double precision xcfun_version, xcfuve
+    xcfun_version = xcfuve()
   end function xcfun_version
 
   subroutine xcfun_splash(text)
@@ -48,8 +48,7 @@ contains
     integer :: ibuf(len(text)+1)
     integer le
     le = len(text)
-    allocate(ibuf(le+1))
-    call xcsplashfortran(ibuf,le)
+    call xcspla(ibuf,le)
     call ints2str(ibuf,text)
   end subroutine xcfun_splash
 
@@ -64,28 +63,28 @@ contains
     integer, intent(out) :: stat
     double precision, intent(in) :: val
     character, intent(in) :: setting*(*)
-    integer :: ibuf(len(setting)+1)
-    str2ints(setting,ibuf)
-    call xcsets(funid,ibuf,val)
+    integer :: ibuf(len(setting)+1),xcsets
+    call str2ints(setting,ibuf)
+    stat = xcsets(funid,ibuf,val)
   end subroutine xc_set_setting
-
+  
   function xc_get_setting(funid,setting)
     integer, intent(in) :: funid
-    double precision, intent(out) :: xc_get_setting
+    double precision :: xc_get_setting
     double precision xcgets
     character, intent(in) :: setting*(*)
     integer :: ibuf(len(setting)+1)
-    str2ints(setting,ibuf)
+    call str2ints(setting,ibuf)
     xc_get_setting = xcgets(funid,ibuf)
   end function xc_get_setting
 
   function xc_is_set(funid,setting)
     integer, intent(in) :: funid
-    logical, intent(out) :: xc_is_set
+    logical :: xc_is_set
     character, intent(in) :: setting*(*)
     integer :: ibuf(len(setting)+1)
     integer xcisse,res
-    str2ints(setting,ibuf)
+    call str2ints(setting,ibuf)
     res = xcisse(funid,ibuf)
     if (res.eq.0) then
        xc_is_set = .true.
@@ -95,12 +94,12 @@ contains
   end function
 
   function xc_is_functional(funid,setting)
+    logical :: xc_is_functional
     integer, intent(in) :: funid
-    logical, intent(out) :: xc_is_functional
     character, intent(in) :: setting*(*)
     integer :: ibuf(len(setting)+1)
     integer xcisfu,res
-    str2ints(setting,ibuf)
+    call str2ints(setting,ibuf)
     res = xcisfu(funid,ibuf)
     if (res.eq.0) then
        xc_is_functional = .true.
@@ -115,26 +114,35 @@ contains
     character, intent(in) :: setting*(*)
     integer :: ibuf(len(setting)+1)
     integer :: idescr(len(description)+1)
-    str2ints(setting,ibuf)
-    
+    integer :: le
+    call str2ints(setting,ibuf)
+    le = len(description)+1
+    call xcssho(funid,idescr,le,ibuf)
+    call ints2str(idescr,description)
   end subroutine
 
   subroutine xc_long_description(funid,setting,description)
     integer, intent(in) :: funid
     character, intent(out) :: description*(*)
     character, intent(in) :: setting*(*)
-    !FIXME
+    integer :: ibuf(len(setting)+1)
+    integer :: idescr(len(description)+1)
+    integer :: le
+    call str2ints(setting,ibuf)
+    le = len(description)+1
+    call xcslon(funid,idescr,le,ibuf)
+    call ints2str(idescr,description)
   end subroutine
 
   subroutine xc_set_mode(funid, mode)
     integer, intent(in) :: funid, mode
-    !FIXME
+    call xcsmod(funid,mode)
   end subroutine xc_set_mode
 
   function xc_get_type(funid)
     integer, intent(in) :: funid
-    integer xc_get_type
-    !FIXME
+    integer xc_get_type, xcgett
+    xc_get_type = xcgett(funid)
   end function xc_get_type
 
   subroutine xc_eval(funid, res, order, densvars)
@@ -142,24 +150,24 @@ contains
     integer order
     double precision, intent(out) :: res(*)
     double precision, intent(in) :: densvars(*)
-    !FIXME
+    call xceval(funid,res,order,densvars)
   end subroutine xc_eval
 
   function xc_index(funid, exponents)
     integer, intent(in) :: exponents(*)
-    integer xc_index, xc_index_fortran
-    xc_index = xcindexfortran(mode,exponents)
+    integer funid,xc_index, xcdind
+    xc_index = xcdind(funid,exponents)
   end function xc_index
 
   function xc_input_length(funid)
     integer, intent(in) :: funid
-    integer xc_input_length, xcinlenfortran
-    xc_input_length = xcinlenfortran(funid)
+    integer xc_input_length, xcinle
+    xc_input_length = xcinle(funid)
   end function xc_input_length
 
   function xc_output_length(funid, order)
     integer, intent(in) :: funid, order
-    integer xc_output_length, xcinlenfortran
-    xc_input_length = xcinlenfortran(funid,order)
+    integer xc_output_length, xcoule
+    xc_output_length = xcoule(funid,order)
   end function xc_output_length
 end module

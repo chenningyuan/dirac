@@ -26,7 +26,7 @@ testall:
 
 lib: lib/libxcfun.so
 
-lib/libxcfun.so: src/xcfun.o src/functional.o src/settings.o src/evaluators.o $(FUN_OBJ)
+lib/libxcfun.so: src/xcfun.o src/functional.o src/settings.o src/evaluators.o src/fortran.o $(FUN_OBJ)
 	$(CXX) $(CXXFLAGS) -fPIC -shared -o lib/libxcfun.so $(LIBS) $^	
 
 

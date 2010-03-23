@@ -22,7 +22,7 @@ double xcfun_version(void)
 const char *xcfun_splash(void)
 {
   return "XCFun DFT library, Copyright 2009-2010 Ulf Ekstrom\n"
-    " and contributors. See http://admol.org/xcfun for more information.\n"
+    "and contributors. See http://admol.org/xcfun for more information.\n"
     "This is free software; see the source code for copying conditions.\n"
     "There is ABSOLUTELY NO WARRANTY; not even for MERCHANTABILITY or\n"
     "FITNESS FOR A PARTICULAR PURPOSE. For details see the documentation.\n";
@@ -73,6 +73,11 @@ xc_functional::xc_functional_data::xc_functional_data(void)
 xc_functional::xc_functional_data::~xc_functional_data(void)
 {
   delete settings;
+}
+
+void xc_functional::xc_functional_data::regularize_density(double *density)
+{
+  //TODO: Actually do something here.
 }
 
 int xc_functional::xc_functional_data::get_type(void) const
@@ -139,6 +144,11 @@ xc_functional::xc_functional(void)
 xc_functional::~xc_functional(void)
 {
   delete d;
+}
+
+void xc_functional::regularize_density(double *density)
+{
+  d->regularize_density(density);
 }
 
 void xc_functional::eval(double *result, int order, const double *density)
