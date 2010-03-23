@@ -44,7 +44,7 @@ testall: test/testall.cpp lib/libxcfun.so
 
 fortran/example.o: fortran/xcfun_module.o
 
-fortran_example: fortran/example.o fortran/xc_fun_module.o lib/libxc_fun.a
+fortran_example: fortran/example.o fortran/xcfun_module.o lib/libxcfun.so
 	$(FC) $(FFLAGS) -o $@ $^ $(LIBS) -lstdc++
 
 clean:
