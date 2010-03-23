@@ -42,7 +42,7 @@ example: test/example.cpp lib/libxcfun.so
 testall: test/testall.cpp lib/libxcfun.so
 	$(CXX) $(CXXFLAGS) $< -o $@ $(LIBS) -lxcfun
 
-fortran/example.o: fortran/xc_fun_module.o
+fortran/example.o: fortran/xcfun_module.o
 
 fortran_example: fortran/example.o fortran/xc_fun_module.o lib/libxc_fun.a
 	$(FC) $(FFLAGS) -o $@ $^ $(LIBS) -lstdc++
