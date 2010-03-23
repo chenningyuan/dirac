@@ -7,9 +7,37 @@ module xc_fun
   integer, parameter ::  XC_VARS_AB = 2
   integer, parameter ::  XC_VARS_RS = 3
   integer, parameter ::  XC_LDA  = 0
-  integer, parameter ::  XC_GGA  = 0
-  integer, parameter ::  XC_MGGA = 0
+  integer, parameter ::  XC_GGA  = 1
+  integer, parameter ::  XC_MGGA = 2
 contains
+  ! We pass strings as null terminated integer arrays to C, this
+  ! should be portable if C and Fortran uses the same character set.
+  subroutine str2ints(str,ints)
+! ints must have length at least len(str)+1
+    character, intent(in) :: str*(*)
+    integer, intent(out) :: ints(*)
+    integer i
+    do i=1,len(str)
+       ints(i) = ichar(str(i:i))
+    enddo
+    ints(len(str)+1) = 0
+  end subroutine str2ints
+
+  subroutine ints2str(ints,str)
+    character, intent(out) :: str*(*)
+    integer, intent(in) :: ints(*)
+    integer i,j
+    i = 1
+    do while (ints(i).ne.0)
+       str(i:i) = char(ints(i))
+       i = i + 1
+    enddo
+    do j=i,len(str)
+       str(j:j) = ' '
+    enddo
+  end subroutine ints2str
+
+
   function xcfun_version()
     double precision xcfun_version, xcfunversionfortran
     xcfun_version = xcfunversionfortran()
@@ -17,48 +45,84 @@ contains
 
   subroutine xcfun_splash(text)
     character, intent(out) :: text*(*)
-    ! FIXME
+    integer :: ibuf(len(text)+1)
+    integer le
+    le = len(text)
+    allocate(ibuf(le+1))
+    call xcsplashfortran(ibuf,le)
+    call ints2str(ibuf,text)
   end subroutine xcfun_splash
 
   ! Create a new, "empty" functional and return its id
   function xc_new_functional()
-    integer xc_new_functional, xcnewfunctionalfortran
-    xc_new_functional = xcnewfunctionalfortran()
+    integer xc_new_functional, xcnewf
+    xc_new_functional = xcnewf()
   end function xc_new_functional
 
   subroutine xc_set_setting(funid, setting, val, stat)
     integer, intent(in) :: funid
     integer, intent(out) :: stat
     double precision, intent(in) :: val
-    character, intent in :: setting*(*)
-    !FIXME
+    character, intent(in) :: setting*(*)
+    integer :: ibuf(len(setting)+1)
+    str2ints(setting,ibuf)
+    call xcsets(funid,ibuf,val)
   end subroutine xc_set_setting
 
   function xc_get_setting(funid,setting)
     integer, intent(in) :: funid
     double precision, intent(out) :: xc_get_setting
-    character, intent in :: setting*(*)
-    !FIXME
+    double precision xcgets
+    character, intent(in) :: setting*(*)
+    integer :: ibuf(len(setting)+1)
+    str2ints(setting,ibuf)
+    xc_get_setting = xcgets(funid,ibuf)
   end function xc_get_setting
 
   function xc_is_set(funid,setting)
     integer, intent(in) :: funid
-    logical, intent(out) :: xc_get_setting
-    character, intent in :: setting*(*)
-    !FIXME
+    logical, intent(out) :: xc_is_set
+    character, intent(in) :: setting*(*)
+    integer :: ibuf(len(setting)+1)
+    integer xcisse,res
+    str2ints(setting,ibuf)
+    res = xcisse(funid,ibuf)
+    if (res.eq.0) then
+       xc_is_set = .true.
+    else
+       xc_is_set = .false.
+    endif
+  end function
+
+  function xc_is_functional(funid,setting)
+    integer, intent(in) :: funid
+    logical, intent(out) :: xc_is_functional
+    character, intent(in) :: setting*(*)
+    integer :: ibuf(len(setting)+1)
+    integer xcisfu,res
+    str2ints(setting,ibuf)
+    res = xcisfu(funid,ibuf)
+    if (res.eq.0) then
+       xc_is_functional = .true.
+    else
+       xc_is_functional = .false.
+    endif
   end function
 
   subroutine xc_short_description(funid,setting,description)
     integer, intent(in) :: funid
     character, intent(out) :: description*(*)
-    character, intent in :: setting*(*)
-    !FIXME
+    character, intent(in) :: setting*(*)
+    integer :: ibuf(len(setting)+1)
+    integer :: idescr(len(description)+1)
+    str2ints(setting,ibuf)
+    
   end subroutine
 
   subroutine xc_long_description(funid,setting,description)
     integer, intent(in) :: funid
     character, intent(out) :: description*(*)
-    character, intent in :: setting*(*)
+    character, intent(in) :: setting*(*)
     !FIXME
   end subroutine
 
@@ -71,7 +135,7 @@ contains
     integer, intent(in) :: funid
     integer xc_get_type
     !FIXME
-  end subroutine xc_get_type
+  end function xc_get_type
 
   subroutine xc_eval(funid, res, order, densvars)
     integer, intent(in) :: funid
@@ -81,7 +145,7 @@ contains
     !FIXME
   end subroutine xc_eval
 
-  function xc_index(funid, exponents)    integer, intent(in) :: 
+  function xc_index(funid, exponents)
     integer, intent(in) :: exponents(*)
     integer xc_index, xc_index_fortran
     xc_index = xcindexfortran(mode,exponents)

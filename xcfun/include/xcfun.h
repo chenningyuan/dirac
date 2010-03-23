@@ -17,8 +17,6 @@
 //#define XC_M2GGA    3 // Local density, gradient, laplacian and kinetic energy density
 #define XC_NR_TYPES 3
 
-#ifndef INCLUDED_FROM_FORTRAN
-
 double xcfun_version(void);
 const char *xcfun_splash(void);
 int xcfun_test(void);
@@ -75,5 +73,4 @@ class xc_functional
   xc_functional_data *d;
 };
 
-#endif
 #endif
