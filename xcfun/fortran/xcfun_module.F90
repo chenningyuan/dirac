@@ -17,7 +17,7 @@ contains
     character, intent(in) :: str*(*)
     integer, intent(out) :: ints(*)
     integer i
-    do i=1,len(str)
+    do i=1,len_trim(str)
        ints(i) = ichar(str(i:i))
     enddo
     ints(len(str)+1) = 0
@@ -87,9 +87,9 @@ contains
     call str2ints(setting,ibuf)
     res = xcisse(funid,ibuf)
     if (res.eq.0) then
-       xc_is_set = .true.
-    else
        xc_is_set = .false.
+    else
+       xc_is_set = .true.
     endif
   end function
 
@@ -170,4 +170,14 @@ contains
     integer xc_output_length, xcoule
     xc_output_length = xcoule(funid,order)
   end function xc_output_length
+
+  subroutine xc_setting_name(funid, setting_nr, name)
+    integer, intent(in) :: funid, setting_nr
+    character, intent(out) :: name*(*)
+    integer :: ibuf(len(name)+1)
+    integer :: le
+    le = len(name)+1
+    call xcsnam(funid,ibuf,le,setting_nr)
+    call ints2str(ibuf,name)
+  end subroutine xc_setting_name
 end module

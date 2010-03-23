@@ -98,7 +98,10 @@ extern "C"
 void xcsnam_(int *fun, int *dst, int *dstlen, int *n)
 {
   const char *s = fortran_functionals[*fun]->setting_name(*n);
-  str2ints(dst,*dstlen,s);
+  if (s)
+    str2ints(dst,*dstlen,s);
+  else
+    dst[0] = 0;
 }
 
 extern "C"
