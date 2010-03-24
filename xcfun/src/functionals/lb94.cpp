@@ -19,15 +19,13 @@ static taylor<T,Nvar,Ndeg> lb94(const densvars<taylor<T,Nvar,Ndeg> > &d)
       // Use the chain rule to calculate contributions to
       // each dE/dx for the unknown x. 
       for (int i=0;i<Nvar;i++)
-	if (d.a[1+i] != 0)
-	  res[1+i] += v/d.a[1+i];
+	res[1+i] += v*d.a[1+i];
 
       // Beta potential
       x = d.gbb[0]*pow(d.b[0],-4.0/3.0);
       v = -beta*pow(d.b[0],1.0/3.0)*x*x/(1+3*beta*x*asinh(x)); 
       for (int i=0;i<Nvar;i++)
-	if (d.b[1+i] != 0)
-	  res[1+i] += v/d.b[1+i];
+	res[1+i] += v*d.b[1+i];
     }
   return res;
 }
