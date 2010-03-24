@@ -1,9 +1,8 @@
-#include <iostream>
-using namespace std;
-
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
+extern "C" {
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+}
 #include "xcfun_internal.h"
 
 void xc_die(const char *message, int code)
@@ -199,7 +198,6 @@ int xc_functional::set_setting(const char *name, double value)
       int i = d->active_functionals.find(fun);
       if (i>=0)
 	{
-	  cout << "already there." << endl;
 	  d->weights[i] = value;
 	}
       else
@@ -256,28 +254,10 @@ const char *xc_functional::setting_long_description(const char *name) const
     return 0;
 }
 
-/* Run a second order calculation of functional fun_id,
-   compare to the reference values. Return the number
-   of values in error. Note that the density
-   values should be in order
-
-   density: na nb saa sbb sab
-   reference: e de/dna de/dnb de/dsaa de/dsbb de/dsab
-              na.na na.nb na.saa na.sbb na.sab
-	      nb.nb nb.saa nb.sbb nb.sab
-	      saa.saa saa.sbb saa.sab 
-	      sbb.sbb sbb.sab sab.sab
-
-
-   calc - ref + x*eref*ref = 0 => (ref - calc) = x*ref*eref
-   x is in [-1:1] if fabs(ref - calc) < fabs(ref*eref)
-   
-*/
-
 static int run_tests(functional *fun)
 {
-  if (fun->test_mode != -1)
-    {
+  if (fun->test_mode == -1)
+    return -1;
   int n = xc_output_length(fun->test_mode,fun->m_type,fun->test_order);
   double *out = new double[n];
   double *reference = fun->test_output;
@@ -287,35 +267,25 @@ static int run_tests(functional *fun)
   xf.eval(out,fun->test_order,fun->test_input);
   int nerr = 0;
   for (int i=0;i<n;i++)
-    if (fabs(out[i] - fun->test_output[i]) > fabs(fun->test_output[i]*fun->test_threshold))
+    if (fabs(out[i] - fun->test_output[i]) > 
+	fabs(fun->test_output[i]*fun->test_threshold))
       nerr++;
 
-#ifndef NO_STDCXX
-  cout << scientific;
-  cout.precision(16);
   if (nerr > 0)
     {
-      cout << "Error detected in functional " << fun->m_name << endl;
-      cout << "Abs.Error \tComputed              Reference" << endl;
+      fprintf(stderr,"Error detected in functional %s\n",fun->m_name);
+      fprintf(stderr,"Abs.Error \tComputed              Reference\n");
       for (int i=0;i<n;i++)
 	{
-	  cout.precision(3);
-	  cout << fabs(out[i]-reference[i]);
-	  cout.precision(16);
-	  cout << "\t " << out[i] << " " << reference[i];
-	  if (fabs(out[i] - reference[i]) > fabs(reference[i]*fun->test_threshold))
-	    cout << " *" << endl;
-	  else
-	    cout << endl;
+	  fprintf(stderr,"%3f",fabs(out[i]-reference[i]));
+	  fprintf(stderr," \t %.16f %.16f\n",out[i],reference[i]);
+	  if (fabs(out[i] - reference[i]) > 
+	      fabs(reference[i]*fun->test_threshold))
+	     fprintf(stderr," *");
+	  fprintf(stderr,"\n");
 	}
     }
-#endif
   return nerr;
-    }
-  else
-    {
-      return -1;
-    }
 }
 
 int xcfun_test(void)

@@ -1,9 +1,6 @@
 #ifndef XCFUN_INTERNAL_H
 #define XCFUN_INTERNAL_H
 
-#include <iostream>
-using namespace std;
-
 #include "xcfun.h"
 #include "functional.h"
 #include "array.h"

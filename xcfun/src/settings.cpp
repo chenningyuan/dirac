@@ -1,7 +1,5 @@
 #include "settings.h"
 #include <cstring>
-#include <iostream>
-using namespace std;
 
 settings_database::settings_database(void)
 {
@@ -144,35 +142,8 @@ settings_database::new_setting(const char *name, double default_value,
   return setting(d);
 }
 
-
 user_settings *settings_database::new_user_settings(void)
 {
   is_frozen = true;
   return new user_settings(*this);
 }
-
-#if 0
-#include <iostream>
-using namespace std;
-
-int main(void)
-{
-  settings_database db;
-  setting banan = db.new_setting("banan",17,"shorta","long");
-  setting knsa = db.new_setting("pepple",5,"shortb","long");
-  user_settings *env = db.new_user_settings();
-  env->set("banan",666);
-  env->set("bann",667);
-  cout << "getting " << env->get(banan) << endl;;
-  cout << "getting " << env->get("banan") << endl;;
-  cout << env->is_set("pepple") << endl;
-  cout << env->is_set("banan") << endl;
-  for (int i=0;i<env->nr_settings();i++)
-    {
-      cout << i << " " << env->setting_name(i) << 
-	" " << env->setting_short_description(i) <<
-	endl;
-    }
-  delete env;
-}
-#endif

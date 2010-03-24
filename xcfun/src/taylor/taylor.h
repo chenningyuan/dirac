@@ -341,7 +341,7 @@ taylor<T, Nvar, Ndeg> operator-(const taylor<T, Nvar,Ndeg>& t1,
 
 #include "taylor_math.h"
 
-#ifndef NO_STDCXX
+#ifdef TAYLOR_CXXIO
 
 #include <iostream>
 

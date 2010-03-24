@@ -1,11 +1,7 @@
 #include "functional.h"
 #include "xcfun_internal.h"
 #include <cstring>
-
-#ifndef NO_STDCXX
-#include <iostream>
-using namespace std;
-#endif
+#include <cstdio>
 
 
 functional::functional()
@@ -70,26 +66,20 @@ int functional::validate()
 {
   if (!m_name)
     {
-#ifndef NO_STDCXX
-      cerr << "WARNING: Functional not given a name" << endl;
-#endif      
+      fprintf(stderr,"WARNING: Functional not given a name\n");
       return -1;
     }
   //TODO: Check that the oneliner has no \n
   if (test_mode == -1)
     {
-#ifndef NO_STDCXX
-      cerr << "WARNING: Functional " << m_name << " has no test." << endl;
-#endif      
+      fprintf(stderr,"WARNING: Functional %s has no test\n",m_name);
       return -1;
     }
   for (int i=0;i<=XC_MAX_NVAR;i++)
     for (int j=0;j<=XC_MAX_ORDER;j++)
       if (ftab[i][j])
 	return 0;
-#ifndef NO_STDCXX
-  cerr << "WARNING: Functional " << m_name << " has no implementation." << endl;
-#endif      
+  fprintf(stderr,"WARNING: Functional %s has no implementation\n",m_name);
   return -1;
 }
 

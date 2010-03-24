@@ -3,37 +3,34 @@
 
 # Compile time options:
 # -DNDEBUG Turn off run time checks in production calculations to gain speed
-# -DNO_STDCXX Do not use any part of the C++ standard 
-#             library, to allow linking without it.
-# -DWITH_QD Enable quad double precision functions. This requires
-#           a _patched_ version of the QD library
-# -DWITH_SINGLE Enable single precision interface. This doubles the
-#               size of the binary, so be careful.
+# To compile without -lstdc++ needed use (g++) -fno-rtti -fno-exceptions 
+# -fno-threadsafe-statics. Note the last option.
 
 # C++ compiler and flags
 CXX ?= g++
 CXXFLAGS ?= -g -Wall -O #-DWITH_QD
-CXXFLAGS+=-Iinclude -Isrc -Isrc/taylor -Isrc/functionals -Llib -fno-rtti -fno-exceptions
-LIBS= #-lqd
+CXXFLAGS+=-Iinclude -Isrc -Isrc/taylor -Isrc/functionals -Llib -fno-rtti -fno-exceptions -fno-threadsafe-statics
+LIBS=
 
 # F90 compiler and flags, used for example code
 FC=gfortran
-FFLAGS=-Wall -Llib -Jfortran # -DWITH_QD
+FFLAGS=-Wall -Llib -Jfortran
 
+BASE_OBJ:=src/xcfun.o src/functional.o src/settings.o src/evaluators.o src/fortran.o
 FUN_OBJ:=$(patsubst %.cpp,%.o,$(wildcard src/functionals/*.cpp))
 
 testall:
 
 lib: lib/libxcfun.so
 
-lib/libxcfun.so: src/xcfun.o src/functional.o src/settings.o src/evaluators.o src/fortran.o $(FUN_OBJ)
+lib/libxcfun.so: $(BASE_OBJ) $(FUN_OBJ)
 	$(CXX) $(CXXFLAGS) -fPIC -shared -o lib/libxcfun.so $(LIBS) $^	
 
 
 stripped: lib/libxc_fun.a
 	strip --strip-unneeded $<
 
-funeval: test/funeval.cpp lib/libxcfun.a
+funeval: test/funeval.cpp lib/libxcfun.so
 	$(CXX) $(CXXFLAGS) $< -o $@ $(LIBS) -lxcfun
 
 example: test/example.cpp lib/libxcfun.so
