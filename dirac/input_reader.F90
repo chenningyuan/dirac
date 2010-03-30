@@ -500,6 +500,15 @@ contains
                          visual_cfg_gauge_origin(3))
     end if
 
+!gosia:
+! *) temporarily added LONDON keyword. 
+! *) specify connection={'symmetric', 'natural', 'none'}
+    if (kw_matches(word, '.LONDON')) then
+      visual_cfg_london = .true.
+      call kw_read(word, visual_cfg_connection)
+    end if
+
+
     call check_whether_kw_found(word, kw_section)
 #endif /* ifndef MOD_VISUAL */
 
