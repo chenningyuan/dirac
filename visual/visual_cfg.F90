@@ -9,7 +9,6 @@ module visual_cfg
 
   character(6),  public :: visual_cfg_xvector_file(max_nr_xvectors)
   character(72), public :: visual_cfg_orbital_string(2)
-  character(6),  public :: visual_cfg_xvector_file(max_nr_xvectors)
 
   logical,       public :: visual_cfg_list               = .false.
   logical,       public :: visual_cfg_line               = .false.
