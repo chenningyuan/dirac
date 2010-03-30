@@ -474,7 +474,7 @@ contains
     end if
 
     if (kw_matches(word, '.2DORIE')) then
-      call kw_read(word, plan2d)
+      call kw_read(word, reply)
       if(reply(1:2) .EQ. 'XY') then
         visual_cfg_orientation = 1
       elseif(reply(1:2) .EQ. 'XZ') then
