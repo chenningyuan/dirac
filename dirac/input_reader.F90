@@ -369,7 +369,7 @@ contains
     character(kw_length), intent(in) :: kw_section
 !   ----------------------------------------------------------------------------
     integer                          :: i
-    character(2)                     :: plan2d
+    character(6)                     :: reply
 !   ----------------------------------------------------------------------------
 
 #ifndef MOD_VISUAL
@@ -475,11 +475,11 @@ contains
 
     if (kw_matches(word, '.2DORIE')) then
       call kw_read(word, plan2d)
-      if(plan2d .EQ. 'XY') then
+      if(reply(1:2) .EQ. 'XY') then
         visual_cfg_orientation = 1
-      elseif(plan2d .EQ. 'XZ') then
+      elseif(reply(1:2) .EQ. 'XZ') then
         visual_cfg_orientation = 2
-      elseif(plan2d .EQ. 'YZ') then
+      elseif(reply(1:2) .EQ. 'YZ') then
         visual_cfg_orientation = 3
       endif
     end if
@@ -503,9 +503,15 @@ contains
 !gosia:
 ! *) temporarily added LONDON keyword. 
 ! *) specify connection={'symmetric', 'natural', 'none'}
+! default connection is none
     if (kw_matches(word, '.LONDON')) then
       visual_cfg_london = .true.
-      call kw_read(word, visual_cfg_connection)
+      call kw_read(word, reply)
+      if(reply.eq.'symmet') then
+         visual_cfg_connection=1
+      elseif(reply.eq.'natura') then
+         visual_cfg_connection=0
+      endif
     end if
 
 
