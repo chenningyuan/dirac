@@ -54,5 +54,7 @@
 !     JCOM  - coefficient of component
 !
       INTEGER MCMP(NOPTYP), JM4(3,NOPTYP), JCOM(3,NOPTYP),              &
-     &         JM4REP(0:7),   JM4POS(0:7),     JM4FAS(0:7)
+     &        JM4REP(0:7),JM4POS(0:7),JM4FAS(0:7)
+      CHARACTER*4 M4COMB(0:7)
       COMMON /ONEOPS/ MCMP, JM4, JCOM, JM4REP, JM4POS, JM4FAS
+      COMMON /ONECMB/ M4COMB

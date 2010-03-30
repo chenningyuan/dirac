@@ -699,12 +699,156 @@ C
       IQPH(3,2) = -1
       IQPH(4,2) = -1
 C
+C     Matrix symmetry
+C     ===============
+C
+C     The matrix of an operator that is symmetric or
+C     antisymmetric under time reversal has the following
+C     structure:
+C
+C       A   B          A^{dagger} =   hA
+C     -tB* tA*         B^T        = -thB
+C
+C     The matrix symmetry of matrices A and B
+C     can be summarized as follows:
+C
+C     IH   ITIM   AR  AI  BR  BI
+C      1     1     1   2   2   2
+C     -1     1     2   1   1   1
+C      1    -1     1   2   1   1
+C     -1    -1     2   1   2   2
+C
+C     Only ITIM=1 is used (ITIM=-1 is transferred to IH=-1
+C     by extracting an imaginary i), and the matrix symmetry
+C     of matrices A and B is stored in IHQMAT(4,IH):
+C
+C     H-
+      IHQMAT(1,-1) = 2
+      IHQMAT(2,-1) = 1
+      IHQMAT(3,-1) = 1
+      IHQMAT(4,-1) = 1
+C     H0
+      IHQMAT(1, 0) = 0
+      IHQMAT(2, 0) = 0
+      IHQMAT(3, 0) = 0
+      IHQMAT(4, 0) = 0
+C     H+
+      IHQMAT(1, 1) = 1
+      IHQMAT(2, 1) = 2
+      IHQMAT(3, 1) = 2
+      IHQMAT(4, 1) = 2
+C
+C     IRQMAT gives the irrep of a given component of
+C     quaternion matrix:
+C
+      DO IZ = 1,4
+        DO IBRP = 0,MAXREP
+          IRQMAT(IZ,IBRP) = IBTXOR(IFDIRP(IZ,1),IBRP)
+        ENDDO
+      ENDDO
+C
+C     Define generic 4-component operators
+C
+      CALL MOPDEF(IXYZ,IXQ,IYQ,IZQ)
+C
+C     Output section
+C     ==============
+C
+      IF(IPREAD.GE.1) THEN
+        CALL TITLER('Output from DBLGRP','*',103)
+        IF    (NFSYM.EQ.1) THEN
+          WRITE(LUPRI,'(3X,A,2X,A3)')
+     &      '* One fermion irrep: ',FREP(1)
+        ELSEIF(NFSYM.EQ.2) THEN
+          WRITE(LUPRI,'(3X,A,2(2X,A3))')
+     &      '* Two fermion irreps:',FREP(1),FREP(2)
+        ENDIF
+        IF    (NZ.EQ.4) THEN
+          WRITE(LUPRI,'(3X,A)') '* Quaternionic group. NZ = 4'
+        ELSEIF(NZ.EQ.2) THEN
+          WRITE(LUPRI,'(3X,A)') '* Complex group. NZ = 2'
+        ELSEIF(NZ.EQ.1) THEN
+          WRITE(LUPRI,'(3X,A)') '* Real group. NZ = 1'
+        ENDIF
+        WRITE(LUPRI,'(3X,A)') '* Direct product decomposition:'
+        IND = 1
+        DO 110 I1 = 1,NFSYM
+          DO 120 I2 = I1,NFSYM
+            IND = IND + 1
+            J = MOD(IND,2)+1
+            WRITE(LUPRI,'(10X,2(A3,A),3(A3,A),A3)')
+     &        FREP(I2),' x ',FREP(I1),' : ',
+     &        REP(IFDIRP(1,J)),' + ',
+     &        REP(IFDIRP(2,J)),' + ',
+     &        REP(IFDIRP(3,J)),' + ',
+     &        REP(IFDIRP(4,J))
+  120     CONTINUE
+  110   CONTINUE
+        CALL HEADER('Spinor structure',-1)
+        WRITE(LUPRI,'(/2(3X,A,I2,9X)/)')
+     &     ('* Fermion irrep no.:',I,I=1,NFSYM)
+        WRITE(LUPRI,'(2(6X,A2,2X,A1,2(2X,A3,A1,I1,A1),2X,A1,10X))')
+     &     ('La','|',REP(JSPINR(1,1,I)),
+     &            '(',JQBAS(JSPINR(1,1,I),1),')',
+     &               REP(JSPINR(2,1,I)),
+     &            '(',JQBAS(JSPINR(2,1,I),1),')',
+     &            '|',I=1,NFSYM)
+        WRITE(LUPRI,'(2(6X,A2,2X,A1,2(2X,A3,A1,I1,A1),2X,A1,10X))')
+     &     ('Sa','|',REP(JSPINR(1,2,I)),
+     &            '(',JQBAS(JSPINR(1,2,I),2),')',
+     &               REP(JSPINR(2,2,I)),
+     &            '(',JQBAS(JSPINR(2,2,I),2),')',
+     &           '|',I=1,NFSYM)
+        WRITE(LUPRI,'(2(6X,A2,2X,A1,2(2X,A3,A1,I1,A1),2X,A1,10X))')
+C        WRITE(LUPRI,'(2(6X,A2,2X,A1,2(2X,A3),2X,A1,10X))')
+     &     ('Lb','|',REP(JSPINR(3,1,I)),
+     &            '(',JQBAS(JSPINR(3,1,I),1),')',
+     &               REP(JSPINR(4,1,I)),
+     &            '(',JQBAS(JSPINR(4,1,I),1),')',
+     &           '|',I=1,NFSYM)
+        WRITE(LUPRI,'(2(6X,A2,2X,A1,2(2X,A3,A1,I1,A1),2X,A1,10X))')
+     &   ('Sb','|',REP(JSPINR(3,2,I)),
+     &            '(',JQBAS(JSPINR(3,2,I),2),')',
+     &             REP(JSPINR(4,2,I)),
+     &            '(',JQBAS(JSPINR(4,2,I),2),')',
+     &         '|',I=1,NFSYM)
+        CALL HEADER('Quaternion symmetries',-1)
+        WRITE(LUPRI,'(4X,A3,2X,A4)') 'Rep','T(+)'
+        CALL PRSYMB(LUPRI,'-',29,4)
+        DO IBRP = 0,NBSYM-1
+          WRITE(LUPRI,'(4X,A3,4(2X,A1))')
+     &       REP(IBRP),(QUNIT(IPQTOQ(IZ,IBRP)),IZ=1,NZ)
+        ENDDO
+      ENDIF
+      RETURN
+C
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck mopdef */
+      SUBROUTINE MOPDEF(IXYZ,IXQ,IYQ,IZQ)
+C***********************************************************************
+C
+C     Define generic one-electron operators
+C
+C***********************************************************************
+#include "implicit.h"
+C
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "mxcent.h"
+C
+#include "symmet.h"
+#include "dgroup.h"
+C
 C     ********************************************
-C     *****   Define 4-component operators   *****
+C     *****   Define 4-component matrices   ******
 C     ********************************************
 C
-C     M = I_4,A_Z,A_Y,A_X, G_5,S_Z,S_Y,S_X
+C     An imaginary phase is inserted if necessary to make all
+C     matrices time symmetric
 C
+C     beta commutes with Sigma_i and anticommutes with gamma_5
+C     Sigma_i commutes with gamma_5, alpha_i = gamma_5 x Sigma_i
 C
 C     I_4       -->  I_2
 C     ==================
@@ -712,6 +856,7 @@ C
       JM4REP(0) =  0
       JM4POS(0) =  1
       JM4FAS(0) =  1
+      M4COMB(0) =  '+00+'
 C
 C     i(alpha_z)   --> i(sigma_x)
 C     ===========================
@@ -719,6 +864,7 @@ C
       JM4REP(1) =  ISYMAX(3,1)
       JM4POS(1) =  IZQ
       JM4FAS(1) =  1
+      M4COMB(1) =  '0++0'
 C
 C     i(alpha_y)   --> j(sigma_x)
 C     ===========================
@@ -726,6 +872,7 @@ C
       JM4REP(2) =  ISYMAX(2,1)
       JM4POS(2) =  IYQ
       JM4FAS(2) =  1
+      M4COMB(2) =  '0++0'
 C
 C     i(alpha_x)   --> k(sigma_x)
 C     ===========================
@@ -733,6 +880,7 @@ C
       JM4REP(3) =  ISYMAX(1,1)
       JM4POS(3) =  IXQ
       JM4FAS(3) =  1
+      M4COMB(3) =  '0++0'
 C
 C     | 0 I |       | 0 1 |
 C     | I 0 |  -->  | 1 0 |
@@ -741,27 +889,31 @@ C
       JM4REP(4) =  IXYZ
       JM4POS(4) =  1
       JM4FAS(4) =  1
+      M4COMB(4) =  '0++0'
 C
-C     i(sigma_z)   --> i(I_2)
+C     i(Sigma_z)   --> i(I_2)
 C     =======================
 C
       JM4REP(5) =  ISYMAX(3,2)
       JM4POS(5) =  IZQ
       JM4FAS(5) =  1
+      M4COMB(5) =  '+00+'
 C
-C     i(sigma_y)   --> j(I_2)
+C     i(Sigma_y)   --> j(I_2)
 C     =======================
 C
       JM4REP(6) =  ISYMAX(2,2)
       JM4POS(6) =  IYQ
       JM4FAS(6) =  1
+      M4COMB(6) =  '+00+'
 C
-C     i(sigma_x)   --> k(I_2)
+C     i(Sigma_x)   --> k(I_2)
 C     =======================
 C
       JM4REP(7) =  ISYMAX(1,2)
       JM4POS(7) =  IXQ
       JM4FAS(7) =  1
+      M4COMB(7) =  '+00+'
 C
 C     ***************************************
 C     ***** Definition of full operator *****
@@ -927,124 +1079,6 @@ C
       JCOM(2,20) =  1
       JCOM(3,20) =  1
 C
-C     Matrix symmetry
-C     ===============
-C
-C     The matrix of an operator that is symmetric or
-C     antisymmetric under time reversal has the following
-C     structure:
-C
-C       A   B          A^{dagger} =   hA
-C     -tB* tA*         B^T        = -thB
-C
-C     The matrix symmetry of matrices A and B
-C     can be summarized as follows:
-C
-C     IH   ITIM   AR  AI  BR  BI
-C      1     1     1   2   2   2
-C     -1     1     2   1   1   1
-C      1    -1     1   2   1   1
-C     -1    -1     2   1   2   2
-C
-C     Only ITIM=1 is used (ITIM=-1 is transferred to IH=-1
-C     by extracting an imaginary i), and the matrix symmetry
-C     of matrices A and B is stored in IHQMAT(4,IH):
-C
-C     H-
-      IHQMAT(1,-1) = 2
-      IHQMAT(2,-1) = 1
-      IHQMAT(3,-1) = 1
-      IHQMAT(4,-1) = 1
-C     H0
-      IHQMAT(1, 0) = 0
-      IHQMAT(2, 0) = 0
-      IHQMAT(3, 0) = 0
-      IHQMAT(4, 0) = 0
-C     H+
-      IHQMAT(1, 1) = 1
-      IHQMAT(2, 1) = 2
-      IHQMAT(3, 1) = 2
-      IHQMAT(4, 1) = 2
-C
-C     IRQMAT gives the irrep of a given component of
-C     quaternion matrix:
-C
-      DO IZ = 1,4
-        DO IBRP = 0,MAXREP
-          IRQMAT(IZ,IBRP) = IBTXOR(IFDIRP(IZ,1),IBRP)
-        ENDDO
-      ENDDO
-C
-C     Output section
-C     ==============
-C
-      IF(IPREAD.GE.1) THEN
-        CALL TITLER('Output from DBLGRP','*',103)
-        IF    (NFSYM.EQ.1) THEN
-          WRITE(LUPRI,'(3X,A,2X,A3)')
-     &      '* One fermion irrep: ',FREP(1)
-        ELSEIF(NFSYM.EQ.2) THEN
-          WRITE(LUPRI,'(3X,A,2(2X,A3))')
-     &      '* Two fermion irreps:',FREP(1),FREP(2)
-        ENDIF
-        IF    (NZ.EQ.4) THEN
-          WRITE(LUPRI,'(3X,A)') '* Quaternionic group. NZ = 4'
-        ELSEIF(NZ.EQ.2) THEN
-          WRITE(LUPRI,'(3X,A)') '* Complex group. NZ = 2'
-        ELSEIF(NZ.EQ.1) THEN
-          WRITE(LUPRI,'(3X,A)') '* Real group. NZ = 1'
-        ENDIF
-        WRITE(LUPRI,'(3X,A)') '* Direct product decomposition:'
-        IND = 1
-        DO 110 I1 = 1,NFSYM
-          DO 120 I2 = I1,NFSYM
-            IND = IND + 1
-            J = MOD(IND,2)+1
-            WRITE(LUPRI,'(10X,2(A3,A),3(A3,A),A3)')
-     &        FREP(I2),' x ',FREP(I1),' : ',
-     &        REP(IFDIRP(1,J)),' + ',
-     &        REP(IFDIRP(2,J)),' + ',
-     &        REP(IFDIRP(3,J)),' + ',
-     &        REP(IFDIRP(4,J))
-  120     CONTINUE
-  110   CONTINUE
-        CALL HEADER('Spinor structure',-1)
-        WRITE(LUPRI,'(/2(3X,A,I2,9X)/)')
-     &     ('* Fermion irrep no.:',I,I=1,NFSYM)
-        WRITE(LUPRI,'(2(6X,A2,2X,A1,2(2X,A3,A1,I1,A1),2X,A1,10X))')
-     &     ('La','|',REP(JSPINR(1,1,I)),
-     &            '(',JQBAS(JSPINR(1,1,I),1),')',
-     &               REP(JSPINR(2,1,I)),
-     &            '(',JQBAS(JSPINR(2,1,I),1),')',
-     &            '|',I=1,NFSYM)
-        WRITE(LUPRI,'(2(6X,A2,2X,A1,2(2X,A3,A1,I1,A1),2X,A1,10X))')
-     &     ('Sa','|',REP(JSPINR(1,2,I)),
-     &            '(',JQBAS(JSPINR(1,2,I),2),')',
-     &               REP(JSPINR(2,2,I)),
-     &            '(',JQBAS(JSPINR(2,2,I),2),')',
-     &           '|',I=1,NFSYM)
-        WRITE(LUPRI,'(2(6X,A2,2X,A1,2(2X,A3,A1,I1,A1),2X,A1,10X))')
-C        WRITE(LUPRI,'(2(6X,A2,2X,A1,2(2X,A3),2X,A1,10X))')
-     &     ('Lb','|',REP(JSPINR(3,1,I)),
-     &            '(',JQBAS(JSPINR(3,1,I),1),')',
-     &               REP(JSPINR(4,1,I)),
-     &            '(',JQBAS(JSPINR(4,1,I),1),')',
-     &           '|',I=1,NFSYM)
-        WRITE(LUPRI,'(2(6X,A2,2X,A1,2(2X,A3,A1,I1,A1),2X,A1,10X))')
-     &   ('Sb','|',REP(JSPINR(3,2,I)),
-     &            '(',JQBAS(JSPINR(3,2,I),2),')',
-     &             REP(JSPINR(4,2,I)),
-     &            '(',JQBAS(JSPINR(4,2,I),2),')',
-     &         '|',I=1,NFSYM)
-        CALL HEADER('Quaternion symmetries',-1)
-        WRITE(LUPRI,'(4X,A3,2X,A4)') 'Rep','T(+)'
-        CALL PRSYMB(LUPRI,'-',29,4)
-        DO IBRP = 0,NBSYM-1
-          WRITE(LUPRI,'(4X,A3,4(2X,A1))')
-     &       REP(IBRP),(QUNIT(IPQTOQ(IZ,IBRP)),IZ=1,NZ)
-        ENDDO
-      ENDIF
       RETURN
-C
       END
 C --- end of hergroup.F ---
