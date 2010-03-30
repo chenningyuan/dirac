@@ -1,9 +1,7 @@
-!TSAUE Modififed 240996
-!LVisscher Split in real and integer part
-
-!     Keep parameters with length of common block up to date !
-      INTEGER NSYMMTI
-      PARAMETER (NSYMMTI = 513+MXQN*MXAQN+62*MXCENT+9*MXCORB)
+!     Inclusion of this common block requires also
+!        maxaqn.h
+!        maxorb.h
+!        mxcent.h
 
       INTEGER I1_SYMMTI, MAXREP, MAXOPR, MULT(0:7), ISYMAX(3, 2),       &
      &        ISYMAO(MXQN, MXAQN), NPARSU(8), NAOS(8), NPARNU(8, 8),    &
