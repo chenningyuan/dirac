@@ -104,7 +104,7 @@ MODS_MESSAGE=
    if [ -n "$DFTMOD" ]; then
       DFTFLG='-DMOD_DFT'
       DFTTAR=1
-      THIS_MOD_MESSAGE=" - DFT module (DFT)"
+      THIS_MOD_MESSAGE=" - DFT module (DFT), $DFTFLG"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
@@ -114,7 +114,7 @@ MODS_MESSAGE=
    if [ -n "$ESRMOD" ]; then
       ESRFLG='-DMOD_ESR'
       ESRTAR=1
-      THIS_MOD_MESSAGE=" - ESR property module (ESR)"
+      THIS_MOD_MESSAGE=" - ESR property module (ESR), $ESRFLG"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
@@ -124,7 +124,7 @@ MODS_MESSAGE=
    if [ -n "$XPPMOD" ]; then
       XPPFLG='-DMOD_XPP -DMOD_STEX'
       XPPTAR=1
-      THIS_MOD_MESSAGE=" - Excitation energy module (XPP and STEX)"
+      THIS_MOD_MESSAGE=" - Excitation energy module (XPP and STEX), $XPPFLG"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
@@ -134,7 +134,7 @@ MODS_MESSAGE=
    if [ -n "$KRMCMOD" ]; then
       KRMCFLG='-DMOD_KRMC'
       KRMCTAR=1
-      THIS_MOD_MESSAGE=" - KR-MCSCF and LUCIAREL modules (KRMC)"
+      THIS_MOD_MESSAGE=" - KR-MCSCF and LUCIAREL modules (KRMC), $KRMCFLG"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
@@ -143,7 +143,7 @@ MODS_MESSAGE=
    #
    if [ -n "$LARGEMOL" ]; then
       LRGMOLFLG='-DLARGE_MOLECULES'
-      THIS_MOD_MESSAGE=" - Increasing common block sizes to handle larger systems"
+      THIS_MOD_MESSAGE=" - Increasing common block sizes to handle larger systems, $LRGMOLFLG"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
@@ -153,7 +153,7 @@ MODS_MESSAGE=
    if [ -n "$ERIMOD" ]; then
       ERIFLG='-DMOD_ERI'
       ERITAR=1
-      THIS_MOD_MESSAGE=" - ERI two-electron integral module"
+      THIS_MOD_MESSAGE=" - ERI two-electron integral module, $ERIFLG"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
@@ -163,7 +163,7 @@ MODS_MESSAGE=
    if [ -n "$DNFMOD" ]; then
       DNFFLG='-DMOD_DNF'
       DNFTAR=1
-      THIS_MOD_MESSAGE=" - DNF density fitting module"
+      THIS_MOD_MESSAGE=" - DNF density fitting module, $DNFFLG"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
@@ -173,7 +173,7 @@ MODS_MESSAGE=
    if [ -n "$FMMMOD" ]; then
       FMMFLG='-DMOD_FMM'
       FMMTAR=1
-      THIS_MOD_MESSAGE=" - Fast Multipole Method (fmm) module"
+      THIS_MOD_MESSAGE=" - Fast Multipole Method (fmm) module, $FMMFLG"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
@@ -183,7 +183,7 @@ MODS_MESSAGE=
    if [ -n "$EMBMOD" ]; then
       EMBFLG='-DMOD_EMB'
       EMBTAR=1
-      THIS_MOD_MESSAGE=" - ab initio/DFT embedding module"
+      THIS_MOD_MESSAGE=" - ab initio/DFT embedding module, $EMBFLG"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
@@ -193,7 +193,7 @@ MODS_MESSAGE=
    if [ -n "$XMLMOD" ]; then
       XMLFLG='-DMOD_XML'
       XMLTAR=1
-      THIS_MOD_MESSAGE=" - XML input/output module"
+      THIS_MOD_MESSAGE=" - XML input/output module, $XMLFLG"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
@@ -203,7 +203,7 @@ MODS_MESSAGE=
    if [ -n "$ADCMOD" ]; then
       ADCFLG='-DMOD_ADC'
       ADCTAR=1
-      THIS_MOD_MESSAGE=" - ADC electron propagator module"
+      THIS_MOD_MESSAGE=" - ADC electron propagator module, $ADCFLG"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
@@ -213,7 +213,7 @@ MODS_MESSAGE=
    if [ -n "$ECPMOD" ]; then
       ECPFLG='-DMOD_ECP'
       ECPTAR=1
-      THIS_MOD_MESSAGE=" - ECP argos module"
+      THIS_MOD_MESSAGE=" - ECP argos module, $ECPFLG"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
@@ -223,7 +223,7 @@ MODS_MESSAGE=
    if [ -n "$VISUALMOD" ]; then
       VISUALFLG='-DMOD_VISUAL'
       VISUALTAR=1
-      THIS_MOD_MESSAGE=" - visualization module"
+      THIS_MOD_MESSAGE=" - visualization module, $VISUALFLG"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
@@ -233,7 +233,7 @@ MODS_MESSAGE=
    if [ -n "$AORESPONSEMOD" ]; then
       AORESPONSEFLG='-DMOD_AORESPONSE'
       AORESPONSETAR=1
-      THIS_MOD_MESSAGE=" - AO response module"
+      THIS_MOD_MESSAGE=" - AO response module, $AORESPONSEFLG"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
@@ -242,7 +242,7 @@ MODS_MESSAGE=
    if [ -n "$MATRIX_OPERATIONS_MOD" ]; then
       MATRIX_OPERATIONS_FLG='-DMOD_MATRIX_OPERATIONS'
       MATRIX_OPERATIONS_TAR=1
-      THIS_MOD_MESSAGE=" - matrix operations module"
+      THIS_MOD_MESSAGE=" - matrix operations module, $MATRIX_OPERATIONS_FLG"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
@@ -250,7 +250,7 @@ MODS_MESSAGE=
 #  autodiff
    if [ -n "$AUTODIFFMOD" ]; then
       AUTODIFFFLG='-DMOD_AUTODIFF'
-      THIS_MOD_MESSAGE=" - autodiff module"
+      THIS_MOD_MESSAGE=" - autodiff module, $AUTODIFFFLG"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
@@ -261,7 +261,7 @@ MODS_MESSAGE=
    if [ -n "$CAPMOD" ]; then
       CAPFLG='-DMOD_CAP'
       CAPTAR=1
-      THIS_MOD_MESSAGE=" - CAP module"
+      THIS_MOD_MESSAGE=" - CAP module, $CAPFLG"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
     fi
@@ -270,7 +270,7 @@ MODS_MESSAGE=
    #
    if [ -n "$IHFSCCMOD" ]; then
       IHFSCCFLG='-DMOD_IHFSCC'
-      THIS_MOD_MESSAGE=" - IHFSCC code enabled"
+      THIS_MOD_MESSAGE=" - IHFSCC code enabled, $IHFSCCFLG"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
     fi
@@ -280,7 +280,7 @@ MODS_MESSAGE=
    #
    if [ -n "$AMFIMOD" ]; then
       AMFIFLG='-DMOD_AMFI'
-      THIS_MOD_MESSAGE=" - AMFI functionality enabled"
+      THIS_MOD_MESSAGE=" - AMFI functionality enabled, $AMFIFLG"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
@@ -289,7 +289,7 @@ MODS_MESSAGE=
    #
    if [ -n "$LONDONMOD" ]; then
       LONDONFLG='-DMOD_LONDON'
-      THIS_MOD_MESSAGE=" - London atomic orbitals enabled"
+      THIS_MOD_MESSAGE=" - London atomic orbitals enabled, $LONDONFLG"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
@@ -313,7 +313,7 @@ MODS_MESSAGE=
       cp hsmrcc/second_quant/Makefile.secquant.in  hsmrcc/second_quant/Makefile.secquant || \
       (echo "Error exit: hsmrcc/second_quant/Makefile.secquant not activated !"; exit 1)
 
-      THIS_MOD_MESSAGE=" - HSMRCC interface module, plus own HSMRCC+sec.quantiz. routines, active Makefile.hsmrcc."
+      THIS_MOD_MESSAGE=" - HSMRCC interface module, plus own HSMRCC+sec.quantiz. routines, active Makefile.hsmrcc, $HSCCFLG "
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
@@ -335,11 +335,11 @@ MODS_MESSAGE=
          (echo "Error exit: hsmrcc/high_sect_fscc/Makefile.hsfs not activated !"; exit 1)
 
          if [ -n "$HSFSDYNMOD" ]; then
-           THIS_MOD_MESSAGE=" - HS FS CC mode with dynamic allocations active, actived Makefile.hsfs."
+           THIS_MOD_MESSAGE=" - HS FS CC mode with dynamic allocations active, actived Makefile.hsfs, $HSFSFLG "
            echo $THIS_MOD_MESSAGE
            MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
          else
-           THIS_MOD_MESSAGE=" - HS FS CC mode with static allocations active, actived Makefile.hsfs."
+           THIS_MOD_MESSAGE=" - HS FS CC mode with static allocations active, actived Makefile.hsfs, $HSFSFLG"
            echo $THIS_MOD_MESSAGE
            MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
          fi
@@ -375,14 +375,14 @@ MODS_MESSAGE=
       DFTTAR=1
       KRMCFLG='-DMOD_KRMC'
       KRMCTAR=1
-      THIS_MOD_MESSAGE=" - srDFT module (implies DFT and KRMC)"
+      THIS_MOD_MESSAGE=" - srDFT module (implies DFT and KRMC),$SRDFT_FLG, $DFTFLG, $KRMCFLG"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
 
    if [ -n "$LOGMOD" ]; then
       LOG_FLG=-DMOD_LOG
-      THIS_MOD_MESSAGE=' - Will log interesting matrices in matlab format (very verbose!)'
+      THIS_MOD_MESSAGE=' - Will log interesting matrices in matlab format (very verbose!), $LOG_FLG '
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
