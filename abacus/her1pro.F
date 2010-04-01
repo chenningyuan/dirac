@@ -380,7 +380,7 @@ C
      &              69, 70, 71, 72,
      &              73, 74, 75, 76,
      &              77, 78, 79, 80,
-     &              81, 82, 83
+     &              81, 82
      &            ), I
          END IF
   100 CONTINUE
@@ -2019,21 +2019,6 @@ C
          CALL QUGTYP(NOPTYP,INTREP,INTADR,LABINT,doatom,NATOM)
          ANTI = .FALSE.
          SQUARE = .FALSE.
-      GOTO 200
-CMI
-C
-C         EDM integrals
-C
- 83   CONTINUE
-      IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     &   ' Calculation of EDM integrals'
-         INTTYP = 54
-         NOPTYP = 1
-         CALL NTYPTS(NOPTYP)
-         CALL SETATM(DOATOM,NATOM,INTTYP)
-         LABINT(1) = 'KINENERG'
-         INTREP(1) = 0
-         ANTI = .FALSE.
       GOTO 200
 
   200 CONTINUE
