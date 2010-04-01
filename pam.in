@@ -111,7 +111,7 @@ extrausage ()
    echo '     -dftmem n              : Set maximum memory (in Mb) for storing AOs in DFT numerical integration'
    echo '     -timeout|-to <TIME>    : Set time limit for dirac processes; kill them if time exceeded.'
    echo '     -debug                 : Run dirac in debugger:"'$DEBUGGER'"'
-   echo '     -vg1 "valgrind_params" : Run dirac in valgrind (http://valgrind.org) with parameters :"'$VALGRIND'"'
+   echo '     -vg1 "valgrind_params" : Run dirac in valgrind (http://valgrind.org) with parameters of :"'$VALGRIND'"'
    echo '     -vg                    : Run dirac in valgrind (http://valgrind.org), no parameters'
    echo '     -prof                  : After finishing dirac executable perform profiling with:"'$PROFILER'"'
    echo '     -nobackup              : Do not backup output files, simply overwrite them'
@@ -274,16 +274,23 @@ setup_command()
    # Valgrid check (will ignore any MPIRUN)
    #
    if [ -n "$VALGRIND_CHECK" ]; then
-      if [ -n "$DIRAC_CMD" ]; then
-         echo "WARNING. VALGRID check requested, thus these options are ignored: $DIRAC_CMD"
-      fi
+
+      #if [ -n "$DIRAC_CMD" ]; then
+      #   echo "WARNING. VALGRID check requested, thus these options are ignored: $DIRAC_CMD"
+     # fi
+
       if [ -n "$VALGRIND" ]; then
-        # DIRAC_CMD="$VALGRIND_TOOL"
-        # DIRAC_CMD="$VALGRIND_TOOL --log-file=$OUTPUT_FILE.valgrind_log" # provide with the default DIRAC output file
-         DIRAC_CMD="$VALGRIND_TOOL --log-fd=1" # flush all Valgrind messages to stdout = DIRAC output file
+        # parallel 
+        if [ -n "$MPIRUN" ]; then
+          echo "   * VALGRID check in the parallel mode."
+          DIRAC_CMD="$DIRAC_CMD $VALGRIND_TOOL --log-fd=1"
+        # serial 
+        else 
+          echo "   * VALGRID check in the serial mode."
+          DIRAC_CMD="$VALGRIND_TOOL --log-fd=1" # flush all Valgrind messages to stdout = DIRAC output file
+        fi
       else
-        echo 'VALGRIND check requested, but "valgrind" not assigned ! Check your architecture/script.'
-        echo 'error exit'
+        echo 'VALGRIND check requested, but "valgrind" not assigned ! Check your architecture/script.Exit.'
         EXIT=1; exitfunc
       fi
    fi
