@@ -249,18 +249,25 @@ setup_command()
 # --------------------
       DIRAC_CMD=
    fi
+
+   ############################################################
    #
    # Debug (will ignore any MPIRUN)
    #
+   # TODO: Adapt debugging for the parallel run !
+   #
+   ############################################################
    if [ -n "$DEBUG" ]; then
       if [ -n "$DIRAC_CMD" ]; then
          echo "WARNING. DEBUG requested, thus these options ignored: $DIRAC_CMD"
       fi
+
       if [ -n "$DEBUGGER" ]; then
         DIRAC_CMD="$DEBUGGER"
       else
         echo "WARNING. DEBUG requested, but no debugger assigned ! Check your architecture/script."
       fi
+
    fi
 
    #
@@ -289,6 +296,7 @@ setup_command()
    else
       DIRAC_CMD="$DIRAC_CMD $BIN_DIR/$DIRAC"
    fi
+
    #
    # Delete $WRK/$DIRAC if the executable is older than the
    # executable in $BIN_DIR. This is useful when you've compiled
