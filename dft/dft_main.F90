@@ -156,7 +156,7 @@ contains
 !     get average density from open shells
       if (nr_open_shells > 0) call gtdoav(dmat_0, 1)
 
-!     scale
+!     scale density matrices
       call dscal(mat_dim*mat_dim, 2.0d0, dmat_0, 1)
       if (nr_dmat_p > 0) then
         call dscal(mat_dim*mat_dim*nz*nr_dmat_p, 2.0d0, dmat_p, 1)
@@ -316,7 +316,7 @@ contains
         end if
       end if
 
-!     scale back
+!     scale density matrices back
       call dscal(mat_dim*mat_dim, 0.5d0, dmat_0, 1)
       if (nr_dmat_p > 0) then
         call dscal(mat_dim*mat_dim*nz*nr_dmat_p, 0.5d0, dmat_p, 1)
