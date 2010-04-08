@@ -50,7 +50,6 @@ srdft/.*
 xcfun/fortran/example.F90
 xcfun/.*[^0]$
 xcfun/.*
-xc_fun/.*
 aoresponse/aoresponse_visual.F90
 aoresponse/aor_binomial.F90
 aoresponse/grid.F90
