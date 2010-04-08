@@ -4,9 +4,9 @@
 **HAMILTONIAN
 .LEVY-LEBLOND
 .DFTAUTO
- lda vwn=-1.0 becke=1.0 lyp
+ BLYP
+!lda vwn=-1.0 becke=1.0 lyp
 !just to test the functional read-in, complicated way to say "blyp"
-!BLYP
 *DFT
 .DEBUG          !very coarse grid
 .ZIPGRID
