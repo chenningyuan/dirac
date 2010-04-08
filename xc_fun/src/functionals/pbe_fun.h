@@ -14,9 +14,9 @@ namespace PBEx_internal
    {
       using pw91_like_x_internal::S;
 
-      double mu = 0.066725*M_PI*M_PI/3.0;
+    //double mu = 0.066725*M_PI*M_PI/3.0;
       // ulfek: mu from Daresbury implementation
-    //double mu = 0.2195149727645171;
+      double mu = 0.2195149727645171;
     //radovan: commented out above line because
     //  should be 0.21951645...
       num st = S(rho,grad);
