@@ -2253,7 +2253,6 @@ C
       use dirac_cfg
 #ifdef MOD_DFT
       use dft_cfg
-      use dft_main
 #endif /* ifdef MOD_DFT */
 
 #include "implicit.h"

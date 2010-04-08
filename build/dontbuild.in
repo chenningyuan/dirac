@@ -4,10 +4,7 @@ This file should therefore list _everything_ that is not for release.
 build/.*
 oof/.*
 utils/.*
-aoresponse/.*
 matrix_operations/.*
-autodiff/.*F90
-autodiff/.*cpp
 visual/.*
 hsmrcc/.*
 hsmrcc/interface/.*
@@ -50,10 +47,12 @@ prp/xpp/.*
 prp/esr/.*
 dft/dft_num_test.F90
 srdft/.*
-xc_fun/fortran/example.F90
-xc_fun/src/.*
-xc_fun/test/.*
-xc_fun/.*
+xcfun/fortran/example.F90
+xcfun/.*[^0]$
 xcfun/.*
+xc_fun/.*
+aoresponse/aoresponse_visual.F90
 aoresponse/aor_binomial.F90
+aoresponse/grid.F90
+aoresponse/.*
 prp/rntlon_only_to_delete.F

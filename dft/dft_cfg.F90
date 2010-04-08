@@ -7,9 +7,6 @@ module dft_cfg
 #ifdef VAR_MPI
   use dirac_mpi
 #endif
-#ifdef MOD_AUTODIFF
-  use xc_fun
-#endif
 
   implicit none
 
@@ -52,7 +49,6 @@ module dft_cfg
   logical, public :: dft_cfg_saop_with_response_part = .false.
   logical, public :: dft_cfg_asymptote_is_lb94       = .false.
   logical, public :: dft_cfg_asymptote_is_lbalpha    = .false.
-  logical, public :: dft_cfg_is_gga_autodiff         = .false.
 
   real(8), public :: dft_cfg_radint          = 1.0d-13
   real(8), public :: dft_cfg_accepted_error  = 1.0d-3
@@ -70,11 +66,6 @@ module dft_cfg
   real(8), public :: dft_cfg_homo_eigenvalue = 0.0d0
   real(8), public :: dft_cfg_grac_alpha      = 0.0d0
   real(8), public :: dft_cfg_grac_beta       = 0.0d0
-#ifdef MOD_AUTODIFF
-  real(8), public :: dft_cfg_functional_w(XC_PARAMS_LEN)
-  real(8), public :: dft_cfg_functional_w_alda(XC_PARAMS_LEN)
-  real(8), public :: dft_cfg_functional_w_xalda(XC_PARAMS_LEN)
-#endif
 
   integer, public :: dft_cfg_angmin                  = 15
   integer, public :: dft_cfg_angint                  = 41
@@ -83,6 +74,11 @@ module dft_cfg
   integer, public :: dft_cfg_debug_level             = 0
   integer, public :: dft_cfg_integration_check_level = 0
   integer, public :: dft_cfg_alda_order              = 99
+#ifdef MOD_AUTODIFF
+  integer, public :: dft_cfg_fun_id
+  integer, public :: dft_cfg_fun_id_alda
+  integer, public :: dft_cfg_fun_id_xalda
+#endif
 
   private
 
@@ -97,6 +93,7 @@ contains
     call dirac_mpi_bcast(dft_cfg_no_pruning             )
     call dirac_mpi_bcast(dft_cfg_estimate_radii         )
 !radovan: not needed
+!         only master imports and exports
 !   call dirac_mpi_bcast(dft_cfg_import_grid            )
 !   call dirac_mpi_bcast(dft_cfg_export_grid            )
     call dirac_mpi_bcast(dft_cfg_zipgrid                )
@@ -116,7 +113,6 @@ contains
     call dirac_mpi_bcast(dft_cfg_saop_with_response_part)
     call dirac_mpi_bcast(dft_cfg_asymptote_is_lb94      )
     call dirac_mpi_bcast(dft_cfg_asymptote_is_lbalpha   )
-    call dirac_mpi_bcast(dft_cfg_is_gga_autodiff        )
     call dirac_mpi_bcast(dft_cfg_radint                 )
     call dirac_mpi_bcast(dft_cfg_accepted_error         )
     call dirac_mpi_bcast(dft_cfg_dfthr0                 )
@@ -126,11 +122,6 @@ contains
     call dirac_mpi_bcast(dft_cfg_homo_eigenvalue        )
     call dirac_mpi_bcast(dft_cfg_grac_alpha             )
     call dirac_mpi_bcast(dft_cfg_grac_beta              )
-#ifdef MOD_AUTODIFF
-    call dirac_mpi_bcast(dft_cfg_functional_w           )
-    call dirac_mpi_bcast(dft_cfg_functional_w_alda      )
-    call dirac_mpi_bcast(dft_cfg_functional_w_xalda     )
-#endif
     call dirac_mpi_bcast(dft_cfg_angmin                 )
     call dirac_mpi_bcast(dft_cfg_angint                 )
     call dirac_mpi_bcast(dft_cfg_ao_mem_limit           )
@@ -138,6 +129,11 @@ contains
     call dirac_mpi_bcast(dft_cfg_debug_level            )
     call dirac_mpi_bcast(dft_cfg_integration_check_level)
     call dirac_mpi_bcast(dft_cfg_alda_order             )
+#ifdef MOD_AUTODIFF
+    call dirac_mpi_bcast(dft_cfg_fun_id                 )
+    call dirac_mpi_bcast(dft_cfg_fun_id_alda            )
+    call dirac_mpi_bcast(dft_cfg_fun_id_xalda           )
+#endif
 
   end subroutine
 #endif /* ifdef VAR_MPI */

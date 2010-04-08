@@ -1,6 +1,5 @@
       subroutine visual_integration(nr_dmat, D, ao, buffer)
 
-       use dft_main
        use visual_cfg
        use memory_allocator
   use matrix_defop

@@ -82,7 +82,7 @@ contains
 #ifdef MOD_AUTODIFF
   subroutine parse_functional(line)
 
-    use xc_fun
+    use xcfun
 
 !   radovan: line is made lowercase, then cut into words
 !            if word contains "=" the weight is read
@@ -105,6 +105,7 @@ contains
     integer                    :: i, nr_words
     real(8)                    :: w
     integer                    :: u
+    integer                    :: istat
 !   ----------------------------------------------------------------------------
 
     u = get_lupri()
@@ -112,7 +113,13 @@ contains
     write(u, '(a)') '* Kohn-Sham calculation using the automatic differentiation xc functional:'
     write(u, '(a)') '   (weight: functional)'
 
-    dft_cfg_functional_w = 0.0d0
+    dft_cfg_fun_id       = xc_new_functional()
+    dft_cfg_fun_id_alda  = xc_new_functional()
+    dft_cfg_fun_id_xalda = xc_new_functional()
+
+    call xc_set_mode(dft_cfg_fun_id,       XC_VARS_RS)
+    call xc_set_mode(dft_cfg_fun_id_alda,  XC_VARS_RS)
+    call xc_set_mode(dft_cfg_fun_id_xalda, XC_VARS_RS)
 
     call reset_hfx()
 
@@ -129,138 +136,79 @@ contains
 !     composite functionals
 !     =====================
 
-!     lda
       w = get_weight(word_array(i), 'lda')
       if (dabs(w) > tiny) then
-        write(u, '(f10.6, a)') w, ': svwn5'
-        dft_cfg_functional_w(XC_SLATER_EXCHANGE) = dft_cfg_functional_w(XC_SLATER_EXCHANGE) + w
-        dft_cfg_functional_w(XC_VWN5_CORRELATION) = dft_cfg_functional_w(XC_VWN5_CORRELATION) + w
+        call xc_set_setting(dft_cfg_fun_id, 'slaterx', w, istat)
+        call xc_set_setting(dft_cfg_fun_id, 'vwn5c',   w, istat)
       end if
 
-!     svwn = lda
-      w = get_weight(word_array(i), 'svwn')
-      if (dabs(w) > tiny) then
-        write(u, '(f10.6, a)') w, ': svwn5'
-        dft_cfg_functional_w(XC_SLATER_EXCHANGE) = dft_cfg_functional_w(XC_SLATER_EXCHANGE) + w
-        dft_cfg_functional_w(XC_VWN5_CORRELATION) = dft_cfg_functional_w(XC_VWN5_CORRELATION) + w
-      end if
-
-!     blyp
       w = get_weight(word_array(i), 'blyp')
       if (dabs(w) > tiny) then
-        write(u, '(f10.6, a)') w, ': blyp'
-        dft_cfg_functional_w(XC_SLATER_EXCHANGE) = dft_cfg_functional_w(XC_SLATER_EXCHANGE) + w
-        dft_cfg_functional_w(XC_BECKE_EXCHANGE)  = dft_cfg_functional_w(XC_BECKE_EXCHANGE)  + w
-        dft_cfg_functional_w(XC_LYP_CORRELATION) = dft_cfg_functional_w(XC_LYP_CORRELATION) + w
+        call xc_set_setting(dft_cfg_fun_id, 'beckex',     w, istat)
+!       or:
+!       call xc_set_setting(dft_cfg_fun_id, 'slaterx',    w, istat)
+!       call xc_set_setting(dft_cfg_fun_id, 'beckexcorr', w, istat)
+
+        call xc_set_setting(dft_cfg_fun_id, 'lypc',       w, istat)
       end if
 
-!     kt1
-      w = get_weight(word_array(i), 'kt1')
-      if (dabs(w) > tiny) then
-        write(u, '(f10.6, a)') w, ': kt1'
-        dft_cfg_functional_w(XC_SLATER_EXCHANGE)  = dft_cfg_functional_w(XC_SLATER_EXCHANGE)  + 1.0d0*w
-        dft_cfg_functional_w(XC_KT_EXCHANGE)      = dft_cfg_functional_w(XC_BECKE_EXCHANGE)   - 0.006d0*w
-        dft_cfg_functional_w(XC_VWN5_CORRELATION) = dft_cfg_functional_w(XC_VWN5_CORRELATION) + 1.0d0*w
-      end if
-
-!     kt2
-      w = get_weight(word_array(i), 'kt2')
-      if (dabs(w) > tiny) then
-        write(u, '(f10.6, a)') w, ': kt2'
-        dft_cfg_functional_w(XC_SLATER_EXCHANGE)  = dft_cfg_functional_w(XC_SLATER_EXCHANGE)  + 1.07173d0*w
-        dft_cfg_functional_w(XC_KT_EXCHANGE)      = dft_cfg_functional_w(XC_BECKE_EXCHANGE)   - 0.006d0*w
-        dft_cfg_functional_w(XC_VWN5_CORRELATION) = dft_cfg_functional_w(XC_VWN5_CORRELATION) + 0.576727d0*w
-      end if
-
-!     b3lyp
       w = get_weight(word_array(i), 'b3lyp')
       if (dabs(w) > tiny) then
-        write(u, '(f10.6, a)') w, ': b3lyp'
-        dft_cfg_functional_w(XC_SLATER_EXCHANGE) = dft_cfg_functional_w(XC_SLATER_EXCHANGE) + 0.80d0*w
-        dft_cfg_functional_w(XC_VWN5_CORRELATION) = dft_cfg_functional_w(XC_VWN5_CORRELATION) + 0.19d0*w
-        dft_cfg_functional_w(XC_BECKE_EXCHANGE)  = dft_cfg_functional_w(XC_BECKE_EXCHANGE)  + 0.72d0*w
-        dft_cfg_functional_w(XC_LYP_CORRELATION) = dft_cfg_functional_w(XC_LYP_CORRELATION) + 0.81d0*w
-        call add_hfx(0.20d0*w)
+        call xc_set_setting(dft_cfg_fun_id, 'slaterx',    0.80d0*w, istat)
+        call xc_set_setting(dft_cfg_fun_id, 'beckexcorr', 0.72d0*w, istat)
+        call xc_set_setting(dft_cfg_fun_id, 'vwn5c',      0.19d0*w, istat)
+        call xc_set_setting(dft_cfg_fun_id, 'lypc',       0.81d0*w, istat)
+        call add_hfx(0.2d0*w)
       end if
 
-!     pbe
       w = get_weight(word_array(i), 'pbe')
       if (dabs(w) > tiny) then
-        write(u, '(f10.6, a)') w, ': pbe'
-        dft_cfg_functional_w(XC_PBE_EXCHANGE)    = dft_cfg_functional_w(XC_PBE_EXCHANGE)    + w
-        dft_cfg_functional_w(XC_PBE_CORRELATION) = dft_cfg_functional_w(XC_PBE_CORRELATION) + w
+        call xc_set_setting(dft_cfg_fun_id, 'pbex', w, istat)
+        call xc_set_setting(dft_cfg_fun_id, 'pbec', w, istat)
       end if
 
-!     pbe0
       w = get_weight(word_array(i), 'pbe0')
       if (dabs(w) > tiny) then
-        write(u, '(f10.6, a)') w, ': pbe0'
-        dft_cfg_functional_w(XC_PBE_EXCHANGE)    = dft_cfg_functional_w(XC_PBE_EXCHANGE)    + 0.75d0*w
-        dft_cfg_functional_w(XC_PBE_CORRELATION) = dft_cfg_functional_w(XC_PBE_CORRELATION) +        w
+        call xc_set_setting(dft_cfg_fun_id, 'pbex', 0.75d0*w, istat)
+        call xc_set_setting(dft_cfg_fun_id, 'pbec',        w, istat)
         call add_hfx(0.25d0*w)
+      end if
+
+      w = get_weight(word_array(i), 'kt1')
+      if (dabs(w) > tiny) then
+        call xc_set_setting(dft_cfg_fun_id, 'slaterx',           w, istat)
+        call xc_set_setting(dft_cfg_fun_id, 'ktx',      -0.006d0*w, istat)
+        call xc_set_setting(dft_cfg_fun_id, 'vwn5c',             w, istat)
+      end if
+
+      w = get_weight(word_array(i), 'kt2')
+      if (dabs(w) > tiny) then
+        call xc_set_setting(dft_cfg_fun_id, 'slaterx', 1.07173d0*w, istat)
+        call xc_set_setting(dft_cfg_fun_id, 'ktx',      -0.006d0*w, istat)
+        call xc_set_setting(dft_cfg_fun_id, 'vwn5c',  0.576727d0*w, istat)
       end if
 
 
 !     "atomic" functionals
 !     ====================
 
-      w = get_weight(word_array(i), 'kin_pw91')
-      if (dabs(w) > tiny) then
-        write(u, '(f10.6, a)') w, ': kin_pw91'
-        dft_cfg_functional_w(KIN_PW91_UNTESTED) = dft_cfg_functional_w(KIN_PW91_UNTESTED) + w
-      end if
-
-      w = get_weight(word_array(i), 'kin_tf')
-      if (dabs(w) > tiny) then
-        write(u, '(f10.6, a)') w, ': kin_tf'
-        dft_cfg_functional_w(KIN_TF_UNTESTED) = dft_cfg_functional_w(KIN_TF_UNTESTED) + w
-      end if
-
-      w = get_weight(word_array(i), 'slater')
-      if (dabs(w) > tiny) then
-        write(u, '(f10.6, a)') w, ': slater'
-        dft_cfg_functional_w(XC_SLATER_EXCHANGE) = dft_cfg_functional_w(XC_SLATER_EXCHANGE) + w
-      end if
-
-      w = get_weight(word_array(i), 'vwn')
-      if (dabs(w) > tiny) then
-        write(u, '(f10.6, a)') w, ': vwn5'
-        dft_cfg_functional_w(XC_VWN5_CORRELATION) = dft_cfg_functional_w(XC_VWN5_CORRELATION) + w
-      end if
-
       w = get_weight(word_array(i), 'ktx')
       if (dabs(w) > tiny) then
-        write(u, '(f10.6, a)') w, ': ktx'
-        dft_cfg_functional_w(XC_KT_EXCHANGE) = dft_cfg_functional_w(XC_KT_EXCHANGE) + w
-      end if
-
-      w = get_weight(word_array(i), 'becke')
-      if (dabs(w) > tiny) then
-        write(u, '(f10.6, a)') w, ': becke'
-        dft_cfg_functional_w(XC_BECKE_EXCHANGE) = dft_cfg_functional_w(XC_BECKE_EXCHANGE) + w
-      end if
-
-      w = get_weight(word_array(i), 'lyp')
-      if (dabs(w) > tiny) then
-        write(u, '(f10.6, a)') w, ': lyp'
-        dft_cfg_functional_w(XC_LYP_CORRELATION) = dft_cfg_functional_w(XC_LYP_CORRELATION) + w
+        call xc_set_setting(dft_cfg_fun_id, 'ktx', w, istat)
       end if
 
       w = get_weight(word_array(i), 'pbex')
       if (dabs(w) > tiny) then
-        write(u, '(f10.6, a)') w, ': pbex'
-        dft_cfg_functional_w(XC_PBE_EXCHANGE) = dft_cfg_functional_w(XC_PBE_EXCHANGE) + w
+        call xc_set_setting(dft_cfg_fun_id, 'pbex', w, istat)
       end if
 
       w = get_weight(word_array(i), 'pbec')
       if (dabs(w) > tiny) then
-        write(u, '(f10.6, a)') w, ': pbec'
-        dft_cfg_functional_w(XC_PBE_CORRELATION) = dft_cfg_functional_w(XC_PBE_CORRELATION) + w
+        call xc_set_setting(dft_cfg_fun_id, 'pbec', w, istat)
       end if
 
       w = get_weight(word_array(i), 'hfx')
       if (dabs(w) > tiny) then
-        write(u, '(f10.6, a)') w, ': hfx'
         call add_hfx(w)
       end if
 
@@ -268,19 +216,19 @@ contains
 
     deallocate(word_array)
 
-    w = 0.0d0
-    do i = 1, size(dft_cfg_functional_w)
-      w = w + dabs(dft_cfg_functional_w(i))
-    end do
-    if (w < tiny) call quit('DFTAUTO: unknown functional or functional zero')
+!   w = 0.0d0
+!   do i = 1, size(dft_cfg_functional_w)
+!     w = w + dabs(dft_cfg_functional_w(i))
+!   end do
+!   if (w < tiny) call quit('DFTAUTO: unknown functional or functional zero')
 
-    dft_cfg_functional_w_alda                      = 0.0d0
-    dft_cfg_functional_w_alda(XC_SLATER_EXCHANGE)  = 1.0d0
-    dft_cfg_functional_w_alda(XC_VWN5_CORRELATION) = 1.0d0
+!   dft_cfg_functional_w_alda                      = 0.0d0
+!   dft_cfg_functional_w_alda(XC_SLATER_EXCHANGE)  = 1.0d0
+!   dft_cfg_functional_w_alda(XC_VWN5_CORRELATION) = 1.0d0
 
-    dft_cfg_functional_w_xalda = dft_cfg_functional_w_alda
-    dft_cfg_functional_w_xalda(XC_SLATER_EXCHANGE) &
-      = dft_cfg_functional_w_xalda(XC_SLATER_EXCHANGE) - get_hfx()
+!   dft_cfg_functional_w_xalda = dft_cfg_functional_w_alda
+!   dft_cfg_functional_w_xalda(XC_SLATER_EXCHANGE) &
+!     = dft_cfg_functional_w_xalda(XC_SLATER_EXCHANGE) - get_hfx()
 
     write(u, '(a)')
 

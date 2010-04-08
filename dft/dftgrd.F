@@ -1716,15 +1716,13 @@ C=======================================================================
 #include "maxorb.h"
 #include "symmet.h"
 
-      logical :: lsymop(7)
+      logical :: lsymop(0:7)
       DIMENSION X(*),
      &          Y(*),
      &          Z(*),
      &          W(*)
 
-      do i = 1, maxrep
-        lsymop(i) = .false.
-      end do
+      lsymop = .false.
 
       do i = 1, maxrep
         lsymop(jsop(i)) = .true.

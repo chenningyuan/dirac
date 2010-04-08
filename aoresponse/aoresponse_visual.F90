@@ -2,7 +2,7 @@ module aoresponse_visual_m
 
   use kinds_m
   use scf_density_m
-  use grid_m
+! use grid_m
 ! use memory_allocator
 ! use matrix_oper
   use matrix_defop

@@ -4035,6 +4035,7 @@ c        and return number in L-variable (used in BNCORR)
          NST = NOCC((NINT(Z)-1)*4 + 1)
          L = NST/2
          IF(MOD(NST,2).NE.0) L = L + 1
+!radovan: now we jump to 10 with zeff undefined!
          GOTO 10
       ENDIF
 C

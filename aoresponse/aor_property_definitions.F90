@@ -2,7 +2,7 @@ module aor_property_definitions
 
     use matrix_defop
     use matrix_genop
-    use aoresponse_visual_m
+!   use aoresponse_visual_m
     use aoresponse_output
     use dirac_interface
     use prop_integrals
@@ -333,9 +333,9 @@ contains
     e_ij = 0.0d0
     call prop_energy((/'EL'/), (/D, D_i/), e_ij)
 
-    if (aor_cfg_visual .or. aor_cfg_integrate) then
-      call aoresponse_visual_driver((/D, D_i/))
-    end if
+!   if (aor_cfg_visual .or. aor_cfg_integrate) then
+!     call aoresponse_visual_driver((/D, D_i/))
+!   end if
 
     print '("@ alpha (w = "2f7.3")")', real(w(1)), real(w(2))
 
@@ -384,9 +384,9 @@ contains
 
     call pert_dens((/'EL', 'EL'/), S, (/D, D_i, D_j/), (/F, F_i, F_j/), D_ij, F_ij, w=w(1:2))
 
-    if (aor_cfg_visual .or. aor_cfg_integrate) then
-      call aoresponse_visual_driver((/D, D_i, D_ij/))
-    end if
+!   if (aor_cfg_visual .or. aor_cfg_integrate) then
+!     call aoresponse_visual_driver((/D, D_i, D_ij/))
+!   end if
 
     e_ijk = 0.0d0
     call prop_energy((/'EL'/), (/D, D_i, D_j, D_ij/), e_ijk, b=(/3, 3/))

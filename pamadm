@@ -64,6 +64,10 @@ usage()
 #
 setup()
 {
+
+#set $install_dir
+install_dir=`pwd`
+
 #
 #  Administrator needs everything.....
 #
@@ -623,8 +627,9 @@ fi
 
 if [ -n "$AUTODIFFFLG" ]; then
     # Compile the fortran interface with Dirac make system.
-   rmline build/dontbuild "xc_fun/\.\*"
-   echo "EXT_OBJ+=xc_fun/lib/libxc_fun.a" >> build/Makefile.extobj
+   rmline build/dontbuild "xcfun/\.\*$"
+   echo "Please use (in Makefile.config)"
+   echo "LIBS=... -Lxcfun/lib -lxcfun -Wl,-rpath $install_dir/xcfun/lib"
 fi
 
 if [ -n "$CAPFLG" ]; then
@@ -715,7 +720,6 @@ if [ -r build/Makefile.obj -a -n "$GENTAR" ]; then
 fi
 
 ## create and distribute Makefile over active directories
-install_dir=`pwd`
 echo "Linking build/Makefile.dirs as Makefile over local directories."
 
 # create links of Makefile(s) over directories

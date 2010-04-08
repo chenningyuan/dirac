@@ -11,15 +11,6 @@ export MENU=blyp.inp
 export MENU=lda.inp
 ../run.sh
 
-export MENU=ktx.inp
-../run.sh
-
-export MENU=kt1.inp
-../run.sh
-
-export MENU=kt2.inp
-../run.sh
-
 export MENU=pbex.inp
 ../run.sh
 

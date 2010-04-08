@@ -5,7 +5,7 @@ module xc_response
   use dft_density
   use dft_cb_interface
   use aor_cfg
-  use xc_fun
+  use xcfun
 
   implicit none
 
@@ -151,11 +151,13 @@ contains
     end if
 
     derv = 0.0d0
-    call xc_eval(derv, order, (/n(0), 0.0d0, z(0, 0), 0.0d0, 0.0d0/))
+!radovan: fix later
+!   call xc_eval(derv, order, (/n(0), 0.0d0, z(0, 0), 0.0d0, 0.0d0/))
 
     u = 0.0d0
     v = 0.0d0
 
+#ifdef fix_me_later
     select case (order)
 
       case (2)
@@ -174,6 +176,7 @@ contains
         call quit('xc_response_contribution: order not implemented')
 
     end select
+#endif
 
 !   multiply by the integration weight
     u = u*w
@@ -209,6 +212,7 @@ contains
 
   end subroutine
 
+#ifdef fix_me_later
   subroutine xc_response_2(u, v, derv, n, gn, z, use_gga)
 
 !   ----------------------------------------------------------------------------
@@ -769,6 +773,7 @@ contains
     end if
 
   end subroutine
+#endif
 #endif /* ifdef MOD_AUTODIFF */
 
 end module

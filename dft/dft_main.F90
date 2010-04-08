@@ -12,9 +12,6 @@ module dft_main
 ! if you really have to use common blocks, then
 ! please put them in dft_cb_interface
   use dft_cb_interface
-#ifdef MOD_AUTODIFF
-  use xc_fun
-#endif
 #ifdef MOD_AORESPONSE
   use xc_response
 #endif
@@ -213,10 +210,10 @@ contains
 
 !       xc_fun_set_functional is called several times
 !       this is because gga query is not ideally structured
-        call xc_fun_set_functional(response_order_mo, response_order_ao)
+        call xcfun_set_functional(response_order_mo, response_order_ao)
 
-        use_gga_qr = dft_cfg_is_gga_autodiff
-        use_gga_qi = dft_cfg_is_gga_autodiff
+        use_gga_qr = xcfun_is_gga()
+        use_gga_qi = xcfun_is_gga()
 
       end if
 #endif
@@ -808,7 +805,7 @@ contains
 
 #ifdef MOD_AUTODIFF
     if (dft_cfg_autodiff) then
-      call xc_fun_set_functional(response_order_mo, response_order_ao)
+      call xcfun_set_functional(response_order_mo, response_order_ao)
     end if
 #endif
 
