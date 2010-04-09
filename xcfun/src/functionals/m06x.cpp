@@ -26,7 +26,7 @@ static num energy (const densvars<num> &d)
    return (  (  pbex::energy_pbe_ab(pbex::R_pbe,d.a,d.gaa)*fw(param_a, d.a, d.taua) 
               + lsda_x(d.a)*h(param_d, alpha_x, chia2, zet(d.a, d.taua)))
             +
-             (  pbex::energy_pbe_ab(pbex::R_pbe,d.a,d.gaa)*fw(param_a, d.b, d.taub) 
+             (  pbex::energy_pbe_ab(pbex::R_pbe,d.b,d.gbb)*fw(param_a, d.b, d.taub) 
               + lsda_x(d.b)*h(param_d, alpha_x, chib2, zet(d.b, d.taub)))
           );
 }

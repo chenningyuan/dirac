@@ -15,7 +15,7 @@ static num energy (const densvars<num> &d)
         3.648020e+00,  3.402248e+01 };
 
    return (  pbex::energy_pbe_ab(pbex::R_pbe,d.a,d.gaa)*fw(param_a, d.a, d.taua)
-           + pbex::energy_pbe_ab(pbex::R_pbe,d.a,d.gaa)*fw(param_a, d.b, d.taub) );
+           + pbex::energy_pbe_ab(pbex::R_pbe,d.b,d.gbb)*fw(param_a, d.b, d.taub) );
 }
 
 SETUP_FUNCTIONAL(functional &f)
