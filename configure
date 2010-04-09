@@ -2812,14 +2812,14 @@ if [ -f $pam_file ]; then
    echo 'pam exists. I will take a backup.'
    backup  $pam_file
 fi
-runtest_file=$SRC_DIR/test/runtest
-if [ -f $runtest_file ]; then
-   echo 'runtest exists. I will take a backup.'
-   backup  $runtest_file
-fi
+#runtest_file=$SRC_DIR/test/runtest
+#if [ -f $runtest_file ]; then
+#   echo 'runtest exists. I will take a backup.'
+#   backup  $runtest_file
+#fi
 #
 echo '#!/bin/bash' > $pam_file
-echo '#!/bin/bash' > $SRC_DIR/test/runtest
+#echo '#!/bin/bash' > $SRC_DIR/test/runtest
 let wrkmem_reduced=$memsiz/1000000
 if [ $IPRINT -ge 1 ]; then
     $echo 'Copying pam shell script to '$INSTALL_DIR' : \c'
@@ -2870,21 +2870,26 @@ EOF
 cat ./pam.in >> $INSTALL_DIR/pam
 chmod a+rx $INSTALL_DIR/pam
 
-if [ $IPRINT -ge 1 ]; then
-    echo "ok"
-    echo
-    $echo 'Preparing runtest shell script  : \c'
-fi
-cat <<EOF>> $SRC_DIR/test/runtest
+#if [ $IPRINT -ge 1 ]; then
+#    echo "ok"
+#    echo
+#    $echo 'Preparing runtest shell script  : \c'
+#fi
+#cat <<EOF>> $SRC_DIR/test/runtest
 #
-BIN_DIR=$INSTALL_DIR
-EOF
+#BIN_DIR=$INSTALL_DIR
+#EOF
 
-cat $SRC_DIR/test/runtest.in >> $SRC_DIR/test/runtest
-chmod a+rx $SRC_DIR/test/runtest
-if [ $IPRINT -ge 1 ]; then
-    echo "ok"
-fi
+# set BIN_DIR in run.sh
+replace_by="BIN_DIR=$INSTALL_DIR"
+sed "s-^BIN_DIR=.*-$replace_by-" $SRC_DIR/test/run.sh.in > $SRC_DIR/test/run.sh
+chmod 700 $SRC_DIR/test/run.sh
+
+#cat $SRC_DIR/test/runtest.in >> $SRC_DIR/test/runtest
+#chmod a+rx $SRC_DIR/test/runtest
+#if [ $IPRINT -ge 1 ]; then
+#    echo "ok"
+#fi
 if [ $IPRINT -ge "5" ]; then
   echo 'make_pam_runtest: done'
 fi

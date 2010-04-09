@@ -90,8 +90,8 @@ usage () {
 # next line defines default test series
 #
 arg_tests=short
-arg_pampath=$BIN_DIR
-arg_dirac=$BIN_DIR/dirac.x
+arg_pampath=
+arg_dirac=
 arg_tag=runtest
 arg_mpi=
 arg_nice=

@@ -1,5 +1,19 @@
 #!/bin/sh
-#
+
+# directory that holds the binary
+# is set by configure
+BIN_DIR=
+
+# this was previously done in runtest
+# but i wonder why we check further below whether $PAM_PATH and $DIRAC are set
+# since they are always set
+if [ -z "$PAM_PATH" ]; then
+   PAM_PATH=$BIN_DIR
+fi
+if [ -z "$DIRAC" ]; then
+   DIRAC=$BIN_DIR/dirac.x
+fi
+
 # Generic place for the log-file
 #
 LOG=../logs
