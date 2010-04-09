@@ -253,25 +253,34 @@ if [ ! -z "$arg_tests" ]; then
          tests=$all_test;
          ;;
       *)
-#        hjaaj: extract and test users list of tests
+#        extract and test users list of tests
          tests=
-         for ff in ${arg_tests}; do
-            if test -d $ff; then
-#              hjaaj: OK, user has specified a test directory
-               tests=$tests' '$ff
-            else
-#              hjaaj: check if test is specified just by number ?
-               for ff2 in ${ff}\.*; do
-                  if test -d $ff2; then
-#                    hjaaj: yes, so OK
-                     tests=$tests' '$ff2
-                  else
-                     echo "ERROR: test '$ff' not recognized"
-                     exit 1
-                  fi
-               done
-            fi
-         done
+#        the following solution is a bit clumsy
+#        could be more compact if we would not allow calling tests by number
+         if [ "${arg_tests}" != "${arg_tests/\*/}" ]; then
+#           ${arg_tests} contains one or more "*"
+#           expand it with find
+            tests=`find . -type d -name "${arg_tests}"`
+         else
+#           ${arg_tests} contains no "*"
+            for ff in ${arg_tests}; do
+                if test -d $ff; then
+#                  hjaaj: OK, user has specified a test directory
+                   tests=$tests' '$ff
+                else
+#                  hjaaj: check if test is specified just by number ?
+                   for ff2 in ${ff}\.*; do
+                       if test -d $ff2; then
+#                         hjaaj: yes, so OK
+                          tests=$tests' '$ff2
+                       else
+                          echo "ERROR: test '$ff' not recognized"
+                          exit 1
+                       fi
+                   done
+                fi
+            done
+         fi
          ;;
    esac
 else
