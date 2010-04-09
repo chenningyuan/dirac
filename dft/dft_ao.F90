@@ -92,10 +92,8 @@ module dft_ao
   integer              :: dft_maxopr          = 0
   integer              :: nr_boson_sym        = 0
 
-  real(8), allocatable :: primitive_exp1(:)
-  real(8), allocatable :: primitive_exp2(:, :)
-  real(8), allocatable :: contraction_coef1(:)
-  real(8), allocatable :: contraction_coef2(:, :)
+  real(8), allocatable :: primitive_exp(:, :)
+  real(8), allocatable :: contraction_coef(:, :)
   real(8), allocatable :: shell_extent(:)
   integer, allocatable :: nr_nonzero_contraction_coefs(:)
   integer, allocatable :: cartesian_deg(:)
@@ -330,7 +328,7 @@ contains
     end do
 
     do i = 1, nr_nonzero_contraction_coefs(ishell)
-      f2 = contraction_coef2(ishell, i)*dexp(-primitive_exp2(ishell, i)*p2)
+      f2 = contraction_coef(ishell, i)*dexp(-primitive_exp(ishell, i)*p2)
       do ic = 1, cartesian_deg(ishell)
         gao(ic) = gao(ic) + f2
       end do
@@ -404,10 +402,10 @@ contains
     if (cartesian_deg(ishell) < 4) then
 
       do i = 1, nr_nonzero_contraction_coefs(ishell)
-        f2 = contraction_coef2(ishell, i)*dexp(-primitive_exp2(ishell, i)*p2)
+        f2 = contraction_coef(ishell, i)*dexp(-primitive_exp(ishell, i)*p2)
         do ic = 1, cartesian_deg(ishell)
           gao (ic) = gao (ic) + f2
-          gaox(ic) = gaox(ic) + primitive_exp2(ishell, i)*f2
+          gaox(ic) = gaox(ic) + primitive_exp(ishell, i)*f2
         end do
       end do
      
@@ -438,11 +436,8 @@ contains
     gaoz(2) = py*gaoz(2)
     gaoz(3) = pz*gaoz(3)
 
-!   gaox(1) = gaox(1) + f1
-!   gaoy(2) = gaoy(2) + f1
-!   gaoz(3) = gaoz(3) + f1
     do i = 1, nr_nonzero_contraction_coefs(ishell)
-      f2 = contraction_coef2(ishell, i)*dexp(-primitive_exp2(ishell, i)*p2)
+      f2 = contraction_coef(ishell, i)*dexp(-primitive_exp(ishell, i)*p2)
       gaox(1) = gaox(1) + f2
       gaoy(2) = gaoy(2) + f2
       gaoz(3) = gaoz(3) + f2
@@ -470,20 +465,10 @@ contains
 
         p0 = (px**l)*(py**m)*(pz**n)
 
-!       p0t = -2.0d0*primitive_exp1(ishell)*p0
-!       ux  = px*p0t + tx
-!       uy  = py*p0t + ty
-!       uz  = pz*p0t + tz
-
-!       gao (ic) = p0*f1
-!       gaox(ic) = ux*f1
-!       gaoy(ic) = uy*f1
-!       gaoz(ic) = uz*f1
-
         do i = 1, nr_nonzero_contraction_coefs(ishell)
-          f2 = contraction_coef2(ishell, i)*dexp(-primitive_exp2(ishell, i)*p2)
+          f2 = contraction_coef(ishell, i)*dexp(-primitive_exp(ishell, i)*p2)
 
-          p0t = -2.0d0*primitive_exp2(ishell, i)*p0
+          p0t = -2.0d0*primitive_exp(ishell, i)*p0
           ux  = px*p0t + tx
           uy  = py*p0t + ty
           uz  = pz*p0t + tz
@@ -657,10 +642,8 @@ contains
 
     if (.not. dft_basis_info_allocated) then
 
-      call alloc(primitive_exp1, mxshel)
-      call alloc(primitive_exp2, mxshel, mxcont)
-      call alloc(contraction_coef1, mxshel)
-      call alloc(contraction_coef2, mxshel, mxcont)
+      call alloc(primitive_exp, mxshel, mxcont)
+      call alloc(contraction_coef, mxshel, mxcont)
       call alloc(shell_extent, mxshel)
       call alloc(nr_nonzero_contraction_coefs, mxshel)
       call alloc(cartesian_deg, mxshel)
@@ -784,21 +767,16 @@ contains
         i = jstrt(ishell) + 1
         j = jstrt(ishell) + nuco(ishell)
 
-        contraction_coef1(ishell) = priccf(i, contracted_shell_nr)
-        primitive_exp1(ishell)    = priexp(i)
-
 !       get shell extents
         shell_extent(ishell) = 0.0d0
 
         icount = 0
         do iprim = i, j
           if (dabs(priccf(iprim, contracted_shell_nr)) > 1.0d-30) then
-!           if (iprim > i) then
-              icount = icount + 1
-              nr_nonzero_contraction_coefs(ishell) = icount
-              contraction_coef2(ishell, icount)    = priccf(iprim, contracted_shell_nr)
-              primitive_exp2(ishell, icount)       = priexp(iprim)
-!           end if
+            icount = icount + 1
+            nr_nonzero_contraction_coefs(ishell) = icount
+            contraction_coef(ishell, icount)    = priccf(iprim, contracted_shell_nr)
+            primitive_exp(ishell, icount)       = priexp(iprim)
 
 !           get shell extents
             r = (log(abs(priccf(iprim, contracted_shell_nr))) &
@@ -914,10 +892,8 @@ contains
       call dirac_mpi_bcast(nr_boson_sym                )
       call dirac_mpi_bcast(nr_ao                       )
 
-      call dirac_mpi_bcast(primitive_exp1              )
-      call dirac_mpi_bcast(primitive_exp2              )
-      call dirac_mpi_bcast(contraction_coef1           )
-      call dirac_mpi_bcast(contraction_coef2           )
+      call dirac_mpi_bcast(primitive_exp               )
+      call dirac_mpi_bcast(contraction_coef            )
       call dirac_mpi_bcast(shell_extent                )
       call dirac_mpi_bcast(nr_nonzero_contraction_coefs)
       call dirac_mpi_bcast(cartesian_deg               )
