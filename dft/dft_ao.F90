@@ -325,13 +325,8 @@ contains
     real(8)                :: f1, f2
 !   ----------------------------------------------------------------------------
 
-    f1 = 0.0d0
-    if (dabs(contraction_coef1(ishell)) > tiny) then
-      f1 = contraction_coef1(ishell)*dexp(-primitive_exp1(ishell)*p2)
-    end if
-
     do ic = 1, cartesian_deg(ishell)
-      gao(ic) = f1
+      gao(ic) = 0.0d0
     end do
 
     do i = 1, nr_nonzero_contraction_coefs(ishell)
@@ -399,35 +394,32 @@ contains
     real(8)                :: p0, p0t
 !   ----------------------------------------------------------------------------
 
-    f1 = 0.0d0
-    if (dabs(contraction_coef1(ishell)) > tiny) then
-      f1 = contraction_coef1(ishell)*dexp(-primitive_exp1(ishell)*p2)
-    end if
+    do ic = 1, cartesian_deg(ishell)
+      gao (ic) = 0.0d0
+      gaox(ic) = 0.0d0
+      gaoy(ic) = 0.0d0
+      gaoz(ic) = 0.0d0
+    end do
 
     if (cartesian_deg(ishell) < 4) then
 
-    do ic = 1, cartesian_deg(ishell)
-      gao (ic) = f1
-      gaox(ic) = primitive_exp1(ishell)*f1
-    end do
-
-    do i = 1, nr_nonzero_contraction_coefs(ishell)
-      f2 = contraction_coef2(ishell, i)*dexp(-primitive_exp2(ishell, i)*p2)
-      do ic = 1, cartesian_deg(ishell)
-        gao (ic) = gao (ic) + f2
-        gaox(ic) = gaox(ic) + primitive_exp2(ishell, i)*f2
+      do i = 1, nr_nonzero_contraction_coefs(ishell)
+        f2 = contraction_coef2(ishell, i)*dexp(-primitive_exp2(ishell, i)*p2)
+        do ic = 1, cartesian_deg(ishell)
+          gao (ic) = gao (ic) + f2
+          gaox(ic) = gaox(ic) + primitive_exp2(ishell, i)*f2
+        end do
       end do
-    end do
-
-    do ic = 1, cartesian_deg(ishell)
-!     gaox(ic) = -2.0d0*px*gaox(ic)
-!     gaoy(ic) = -2.0d0*py*gaoy(ic)
-!     gaoz(ic) = -2.0d0*pz*gaoz(ic)
-!     use symmetry
-      gaoz(ic) = -2.0d0*pz*gaox(ic)
-      gaoy(ic) = -2.0d0*py*gaox(ic)
-      gaox(ic) = -2.0d0*px*gaox(ic)
-    end do
+     
+      do ic = 1, cartesian_deg(ishell)
+!       gaox(ic) = -2.0d0*px*gaox(ic)
+!       gaoy(ic) = -2.0d0*py*gaoy(ic)
+!       gaoz(ic) = -2.0d0*pz*gaoz(ic)
+!       use symmetry
+        gaoz(ic) = -2.0d0*pz*gaox(ic)
+        gaoy(ic) = -2.0d0*py*gaox(ic)
+        gaox(ic) = -2.0d0*px*gaox(ic)
+      end do
 
     end if
 
@@ -446,9 +438,9 @@ contains
     gaoz(2) = py*gaoz(2)
     gaoz(3) = pz*gaoz(3)
 
-    gaox(1) = gaox(1) + f1
-    gaoy(2) = gaoy(2) + f1
-    gaoz(3) = gaoz(3) + f1
+!   gaox(1) = gaox(1) + f1
+!   gaoy(2) = gaoy(2) + f1
+!   gaoz(3) = gaoz(3) + f1
     do i = 1, nr_nonzero_contraction_coefs(ishell)
       f2 = contraction_coef2(ishell, i)*dexp(-primitive_exp2(ishell, i)*p2)
       gaox(1) = gaox(1) + f2
@@ -478,15 +470,15 @@ contains
 
         p0 = (px**l)*(py**m)*(pz**n)
 
-        p0t = -2.0d0*primitive_exp1(ishell)*p0
-        ux  = px*p0t + tx
-        uy  = py*p0t + ty
-        uz  = pz*p0t + tz
+!       p0t = -2.0d0*primitive_exp1(ishell)*p0
+!       ux  = px*p0t + tx
+!       uy  = py*p0t + ty
+!       uz  = pz*p0t + tz
 
-        gao (ic) = p0*f1
-        gaox(ic) = ux*f1
-        gaoy(ic) = uy*f1
-        gaoz(ic) = uz*f1
+!       gao (ic) = p0*f1
+!       gaox(ic) = ux*f1
+!       gaoy(ic) = uy*f1
+!       gaoz(ic) = uz*f1
 
         do i = 1, nr_nonzero_contraction_coefs(ishell)
           f2 = contraction_coef2(ishell, i)*dexp(-primitive_exp2(ishell, i)*p2)
@@ -801,12 +793,12 @@ contains
         icount = 0
         do iprim = i, j
           if (dabs(priccf(iprim, contracted_shell_nr)) > 1.0d-30) then
-            if (iprim > i) then
+!           if (iprim > i) then
               icount = icount + 1
               nr_nonzero_contraction_coefs(ishell) = icount
               contraction_coef2(ishell, icount)    = priccf(iprim, contracted_shell_nr)
               primitive_exp2(ishell, icount)       = priexp(iprim)
-            end if
+!           end if
 
 !           get shell extents
             r = (log(abs(priccf(iprim, contracted_shell_nr))) &
