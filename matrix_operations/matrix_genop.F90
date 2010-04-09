@@ -10,6 +10,19 @@
 
 module matrix_genop
 
+#ifdef DALTON_AO_RSP
+  use xmatrix,                               &
+    only: matrix,                            &
+          mat_init_full    => xmatrix_set,   &
+          mat_free_nonzero => xmatrix_clean, &
+          mat_mul          => xmatrix_gemm,  &
+          mat_zero         => xmatrix_zero,  &
+          mat_daxpy        => xmatrix_axpy,  &
+          mat_scal         => xmatrix_scal,  &
+          mat_trans        => xmatrix_trans, &
+          mat_trab         => xmatrix_trdot, &
+          mat_dotproduct   => xmatrix_dot
+#else
   use matrix_operations,                  &
       only: matrix,                       &
             mat_init_full    => mat_init, &
@@ -21,6 +34,7 @@ module matrix_genop
             mat_trans,                    &
             mat_trab,                     &
             mat_dotproduct
+#endif
 
    implicit none
 

@@ -576,8 +576,13 @@ contains
       TA => find_tmp(A, 'matrix r * A : A undefined')
       if (associated(TA)) then
          if (.not.associated(TA%Y)) then
-            TB => new_tmp(B, fx=r*TA%fx, X=TA%X, tx=TA%tx, dx=TA%dx, &
-                                         Z=TA%Z, tz=TA%tz, dz=TA%dz)
+            !KK&AJT: Quick fix for AIX...
+            if(associated(TA%Z)) then
+               TB => new_tmp(B, fx=r*TA%fx, X=TA%X, tx=TA%tx, dx=TA%dx, &
+                     Z=TA%Z, tz=TA%tz, dz=TA%dz)
+            else
+               TB => new_tmp(B, fx=r*TA%fx, X=TA%X, tx=TA%tx, dx=TA%dx)
+            endif
             call del_tmp(TA)
             if (r==0) call zero_tmp(TB)
             return
