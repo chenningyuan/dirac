@@ -28,6 +28,14 @@ namespace m0xy_metagga_xc_internal
          const double alpha_c_antiparallel = 0.00304966;
 
 
+  // superduperfactor is here because in the m05/m06/m08 papers
+  // C_F is not your usual thomas-fermi constant, (3/10)*(3 pi^2)^(2/3)
+  // but rather (3/5)*(6 pi^2)^(2/3) so a factor of (2^(5/2))^(2/3) = 3.174802 
+  // is needed to multiply C_F
+ 
+    const double superduperfactor = 3.174802;
+
+
   // zet calculates one of the working variables
   // see see TCA (2008) 120:215 eq 3
   // rho is the density, tau the kinetic energy density
@@ -37,7 +45,7 @@ namespace m0xy_metagga_xc_internal
   {
     using xc_constants::CF;
 
-    return ((2.0*tau/pow(rho,5.0/3.0)) - CF);
+    return ((2.0*tau/pow(rho,5.0/3.0)) - CF*superduperfactor);
   }
 
   // gamma calculates the quantity of TCA (2008) 120:215 eq 4, but we supply it with chi^2 as parameter
@@ -57,8 +65,8 @@ namespace m0xy_metagga_xc_internal
     num gam1 = gamma(alpha,chi2,zet);
 
     num t1 =  d[0]/gam1;
-    num t2 = (d[1]*chi2 + d[2]*zet)/pow(gam1, 2.0);
-    num t3 = (d[3]*pow(chi2,2.0) + d[4]*chi2*zet + d[5]*pow(zet, 2.0))/pow(gam1, 3.0);
+    num t2 = (d[1]*chi2 + d[2]*zet)/(gam1 * gam1);
+    num t3 = (d[3]*chi2*chi2 + d[4]*chi2*zet + d[5]*zet*zet)/(gam1 * gam1 * gam1);
 
     return t1+t2+t3;
   }
@@ -101,7 +109,7 @@ namespace m0xy_metagga_xc_internal
   {
     using xc_constants::CF;
 
-    return (1.0 - 0.25*chi2/(zet + CF)); 
+    return (1.0 - 0.25*chi2/(zet + CF*superduperfactor)); 
   }
 
   // g is an auxiliary function that can be used in connection to both
