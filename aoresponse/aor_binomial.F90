@@ -2,7 +2,7 @@ module aor_binomial
 
   implicit none
 
-#ifdef MOD_AUTODIFF
+#ifdef MOD_XCFUN
   public init_binomial
   public get_binomial
 
@@ -43,5 +43,5 @@ contains
 
   end function
 
-#endif /* ifdef MOD_AUTODIFF */
+#endif /* ifdef MOD_XCFUN */
 end module

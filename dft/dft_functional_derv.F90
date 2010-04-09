@@ -1,14 +1,14 @@
 module dft_functional_derv
 
   use dft_cfg
-#ifdef MOD_AUTODIFF
+#ifdef MOD_XCFUN
   use xcfun
 #endif
 
   implicit none
 
   public get_functional_derv
-#ifdef MOD_AUTODIFF
+#ifdef MOD_XCFUN
   public xcfun_set_functional
   public xcfun_is_gga
 #endif
@@ -52,7 +52,7 @@ module dft_functional_derv
 
 contains
 
-#ifdef MOD_AUTODIFF
+#ifdef MOD_XCFUN
 
   function xcfun_is_gga()
 
@@ -109,19 +109,19 @@ contains
 !     else
 !       call xc_set_functional(XC_RSZXY, dft_cfg_functional_w_alda)
 !     end if
-!     dft_cfg_is_gga_autodiff = .false.
+!     dft_cfg_is_gga_xcfun = .false.
 !   else
 !     call xc_set_functional(XC_RSZXY, dft_cfg_functional_w)
 !radovan: fix later
 !     do i = 1, size(gga_functionals)
 !       if (dabs(dft_cfg_functional_w(gga_functionals(i))) > tiny) then
-!         dft_cfg_is_gga_autodiff = .true.
+!         dft_cfg_is_gga_xcfun = .true.
 !       end if
 !     end do
 !   end if
 
   end subroutine
-#endif /* ifdef MOD_AUTODIFF */
+#endif /* ifdef MOD_XCFUN */
 
   subroutine get_functional_derv(order,        &
                                  block_length, &
@@ -147,8 +147,8 @@ contains
 
     derv = 0.0d0
 
-#ifdef MOD_AUTODIFF
-    if (dft_cfg_autodiff) then
+#ifdef MOD_XCFUN
+    if (dft_cfg_xcfun) then
 
       do k = 1, block_length
         xcfun_in = 0.0d0
@@ -175,8 +175,8 @@ contains
 
         case (2)
 !fixme
-!#define PARTIAL_ALDA_WITH_AUTODIFF
-#ifdef PARTIAL_ALDA_WITH_AUTODIFF
+!#define PARTIAL_ALDA_WITH_XCFUN
+#ifdef PARTIAL_ALDA_WITH_XCFUN
           if      (dft_cfg_alda_hs .and. .not. dft_cfg_alda_ha) then
             call xc_set_functional(XC_RSZXY, dft_cfg_functional_w_alda)
             do k = 1, block_length
@@ -206,7 +206,7 @@ contains
               derv(k, d_z ) = t(xc_index(XC_RSZXY, (/0, 0, 1, 0, 0/)), k)
             end do
           else
-#endif /* ifdef PARTIAL_ALDA_WITH_AUTODIFF */
+#endif /* ifdef PARTIAL_ALDA_WITH_XCFUN */
           do k = 1, block_length
             derv(k, d_rr) = xcfun_out(xc_index(dft_cfg_fun_id, (/2, 0, 0, 0, 0/)), k)
             derv(k, d_ss) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 2, 0, 0, 0/)), k)
@@ -217,9 +217,9 @@ contains
             derv(k, d_z ) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 0, 1, 0, 0/)), k)
             derv(k, d_x ) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 0, 0, 1, 0/)), k)
           end do
-#ifdef PARTIAL_ALDA_WITH_AUTODIFF
+#ifdef PARTIAL_ALDA_WITH_XCFUN
           end if
-#endif /* ifdef PARTIAL_ALDA_WITH_AUTODIFF */
+#endif /* ifdef PARTIAL_ALDA_WITH_XCFUN */
 
         case (3)
           do k = 1, block_length
@@ -247,7 +247,7 @@ contains
       end select
 
     else
-#endif /* ifdef MOD_AUTODIFF */
+#endif /* ifdef MOD_XCFUN */
 
       select case (order)
 
@@ -283,7 +283,7 @@ contains
         end do
       end do
 
-#ifdef MOD_AUTODIFF
+#ifdef MOD_XCFUN
     end if
 #endif
 

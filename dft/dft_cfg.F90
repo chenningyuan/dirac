@@ -41,7 +41,7 @@ module dft_cfg
   logical, public :: dft_cfg_no_sdft                 = .false.
   logical, public :: dft_cfg_sdft_collinear          = .false.
   logical, public :: dft_cfg_cdft_vrg                = .false.
-  logical, public :: dft_cfg_autodiff                = .false.
+  logical, public :: dft_cfg_xcfun                = .false.
   logical, public :: dft_cfg_grac                    = .false.
   logical, public :: dft_cfg_grac_is_active          = .false.
   logical, public :: dft_cfg_saop                    = .false.
@@ -74,7 +74,7 @@ module dft_cfg
   integer, public :: dft_cfg_debug_level             = 0
   integer, public :: dft_cfg_integration_check_level = 0
   integer, public :: dft_cfg_alda_order              = 99
-#ifdef MOD_AUTODIFF
+#ifdef MOD_XCFUN
   integer, public :: dft_cfg_fun_id
   integer, public :: dft_cfg_fun_id_alda
   integer, public :: dft_cfg_fun_id_xalda
@@ -105,7 +105,7 @@ contains
     call dirac_mpi_bcast(dft_cfg_no_sdft                )
     call dirac_mpi_bcast(dft_cfg_sdft_collinear         )
     call dirac_mpi_bcast(dft_cfg_cdft_vrg               )
-    call dirac_mpi_bcast(dft_cfg_autodiff               )
+    call dirac_mpi_bcast(dft_cfg_xcfun               )
     call dirac_mpi_bcast(dft_cfg_grac                   )
     call dirac_mpi_bcast(dft_cfg_grac_is_active         )
     call dirac_mpi_bcast(dft_cfg_saop                   )
@@ -129,7 +129,7 @@ contains
     call dirac_mpi_bcast(dft_cfg_debug_level            )
     call dirac_mpi_bcast(dft_cfg_integration_check_level)
     call dirac_mpi_bcast(dft_cfg_alda_order             )
-#ifdef MOD_AUTODIFF
+#ifdef MOD_XCFUN
     call dirac_mpi_bcast(dft_cfg_fun_id                 )
     call dirac_mpi_bcast(dft_cfg_fun_id_alda            )
     call dirac_mpi_bcast(dft_cfg_fun_id_xalda           )

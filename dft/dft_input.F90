@@ -5,7 +5,7 @@ module dft_input
 
   implicit none
 
-#ifdef MOD_AUTODIFF
+#ifdef MOD_XCFUN
   public parse_functional
 #endif
   public consistency_after_dft_input
@@ -79,7 +79,7 @@ contains
 
   end function
 
-#ifdef MOD_AUTODIFF
+#ifdef MOD_XCFUN
   subroutine parse_functional(line)
 
     use xcfun
@@ -233,7 +233,7 @@ contains
     write(u, '(a)')
 
   end subroutine
-#endif /* ifdef MOD_AUTODIFF */
+#endif /* ifdef MOD_XCFUN */
 
   function get_lupri() result(u)
 

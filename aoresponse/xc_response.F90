@@ -1,6 +1,6 @@
 module xc_response
 
-#ifdef MOD_AUTODIFF
+#ifdef MOD_XCFUN
   use dft_cfg
   use dft_density
   use dft_cb_interface
@@ -774,6 +774,6 @@ contains
 
   end subroutine
 #endif
-#endif /* ifdef MOD_AUTODIFF */
+#endif /* ifdef MOD_XCFUN */
 
 end module

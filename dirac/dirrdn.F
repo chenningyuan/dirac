@@ -4580,15 +4580,15 @@ C    (see MRCON1 of the MOLTRA module)
 !         .DFTAUTO (dft with automatic differentiation)
   154     continue
 #ifdef MOD_DFT
-#ifdef MOD_AUTODIFF
+#ifdef MOD_XCFUN
           read(lucmd, '(a80)') line
           call parse_functional(line)
 !         CALL DFTINPUT(LINE, INPERR)
 !fixme    reporting and consistency in here ...
-          dft_cfg_autodiff          = .true.
+          dft_cfg_xcfun          = .true.
           dirac_cfg_dft_calculation = .true.
           dirac_cfg_scf_calculation = .true.
-#endif /* ifdef MOD_AUTODIFF */
+#endif /* ifdef MOD_XCFUN */
 #endif /* ifdef MOD_DFT */
           go to 100
 
@@ -4979,8 +4979,8 @@ CMI    ... quantum dots
 #ifdef MOD_DFT
       if (dirac_cfg_dft_calculation) then
 
-#ifdef MOD_AUTODIFF
-        if (.not. dft_cfg_autodiff) then
+#ifdef MOD_XCFUN
+        if (.not. dft_cfg_xcfun) then
 #endif
 !         this will report chosen functional
 !         if nothing is chosen it will report lda
@@ -4988,7 +4988,7 @@ CMI    ... quantum dots
 !         it would report lda
 !         so let's not call it in this case
           call dftreport()
-#ifdef MOD_AUTODIFF
+#ifdef MOD_XCFUN
         end if
 #endif
 

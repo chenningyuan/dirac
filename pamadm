@@ -37,7 +37,7 @@ usage()
    echo '     -visual          : Include visualization module'
    echo '     -aoresponse      : Include AO response module'
    echo '     -matrixop        : Include matrix operations module'
-   echo '     -autodiff        : Include autodiff module'
+   echo '     -xcfun           : Include xcfun module'
    echo '     -cap             : Include CAP module'
    echo '     -hscc            : Include interface for the (external) HSMRCC code together with its objects'
    echo '     -hsfs            : Include higher external Higher sector FSCC code'
@@ -251,10 +251,10 @@ MODS_MESSAGE=
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
 
-#  autodiff
-   if [ -n "$AUTODIFFMOD" ]; then
-      AUTODIFFFLG='-DMOD_AUTODIFF'
-      THIS_MOD_MESSAGE=" - autodiff module, $AUTODIFFFLG"
+#  xcfun
+   if [ -n "$XCFUN_MOD" ]; then
+      XCFUN_FLG='-DMOD_XCFUN'
+      THIS_MOD_MESSAGE=" - xcfun module, $XCFUN_FLG"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
@@ -554,7 +554,7 @@ rmline()
 which_modules()
 {
 for mod in $ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG \
-$ADCFLG $VISUALFLG $AORESPONSEFLG $MATRIX_OPERATIONS_FLG $AUTODIFFFLG \
+$ADCFLG $VISUALFLG $AORESPONSEFLG $MATRIX_OPERATIONS_FLG $XCFUN_FLG \
 $CAPFLG $HSCCFLG $HSFSFLG $QDOTSFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG \
 $AMFIFLG $LONDONFLG $SRDFT_FLG $LOG_FLG
 do
@@ -625,7 +625,7 @@ if [ -n "$MATRIX_OPERATIONS_FLG" ]; then
    rmline build/dontbuild "matrix_operations/\.\*"
 fi
 
-if [ -n "$AUTODIFFFLG" ]; then
+if [ -n "$XCFUN_FLG" ]; then
     # Compile the fortran interface with Dirac make system.
    rmline build/dontbuild "xcfun/\.\*$"
    echo "Please use (in Makefile.config)"
@@ -820,8 +820,8 @@ while [ -n "$1" ]; do
       -matrixop|-matop)
          MATRIX_OPERATIONS_MOD=1
          ;;
-      -autodiff)
-         AUTODIFFMOD=1
+      -xcfun)
+         XCFUN_MOD=1
          ;;
       -cap)
          CAPMOD=1

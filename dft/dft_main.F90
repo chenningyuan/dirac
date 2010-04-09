@@ -205,8 +205,8 @@ contains
       use_gga_qr = is_gga_functional
       use_gga_qi = is_gga_functional
 
-#ifdef MOD_AUTODIFF
-      if (dft_cfg_autodiff) then
+#ifdef MOD_XCFUN
+      if (dft_cfg_xcfun) then
 
 !       xc_fun_set_functional is called several times
 !       this is because gga query is not ideally structured
@@ -803,8 +803,8 @@ contains
 
     call dft_density_init(is_parallel_calculation)
 
-#ifdef MOD_AUTODIFF
-    if (dft_cfg_autodiff) then
+#ifdef MOD_XCFUN
+    if (dft_cfg_xcfun) then
       call xcfun_set_functional(response_order_mo, response_order_ao)
     end if
 #endif
@@ -1113,7 +1113,7 @@ contains
         endif
 
 
-#if defined MOD_AUTODIFF && MOD_AORESPONSE
+#if defined MOD_XCFUN && MOD_AORESPONSE
           if (response_order_ao > 0) then
             call xc_response_contribution(response_order_ao,                 &
                                           mat_dim,   &
