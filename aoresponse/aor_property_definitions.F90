@@ -5,7 +5,7 @@ module aor_property_definitions
 !   use aoresponse_visual_m
     use aoresponse_output
     use dirac_interface
-    use prop_integrals
+    use prop_contribs
     use rsp_equations
     use aor_cfg
 

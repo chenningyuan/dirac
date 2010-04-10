@@ -2,7 +2,7 @@
 ! This file is made available under the terms of the
 ! GNU Lesser General Public License.
 
-module prop_integrals
+module prop_contribs
 ! routines for property contractions and matrices
 
    use matrix_defop
@@ -33,7 +33,7 @@ module prop_integrals
    public prop_shape
    public prop_imag
    public prop_check
-   public prop_integrals_debug
+   public prop_contribs_debug
 
    private
 
@@ -65,7 +65,7 @@ module prop_integrals
   logical, external :: do_dft
 #endif /* PRG_DIRAC */
 
-   logical :: prop_integrals_debug = .false.
+   logical :: prop_contribs_debug = .false.
 
 contains
 
@@ -1079,7 +1079,7 @@ contains
 !         DIRAC: nbas*nbas*4
       nr_qu = 4 !nr of quaternion units
 #endif /* ifdef PRG_DIRAC */
-      if (nbas==0) stop 'prop_integrals/twoctr: nbas not initialized'
+      if (nbas==0) stop 'prop_contribs/twoctr: nbas not initialized'
       !ajt MagSus contraction doesn't work, so I disabled this. Use twofck instead
       if (what=='MM' .or. what=='MM') &
          call quit("prop_integ-twoctr: 'M' or 'MM' not yet implemented")
@@ -1092,7 +1092,7 @@ contains
       else if (what=='MM' .and. size(e)==3*3) then
          lwrk = 50*nr_qu*nbas**2+10000*nr_qu*nbas+5000000
       else
-          call quit('prop_integrals/twoctr: wrong size(E) for what=' // what)
+          call quit('prop_contribs/twoctr: wrong size(E) for what=' // what)
       end if
 
 #ifdef PRG_DIRAC

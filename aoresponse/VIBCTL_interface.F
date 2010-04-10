@@ -82,7 +82,7 @@ C      DIPDER = .true.
 
 
       subroutine NUCLEI_ifc(n,Z,IS,G)
-      !ajt Used in prop_integrals.f90
+      !ajt Used in prop_contribs.f90
 #include <mxcent.h>
 #include <nuclei.h>
       integer n,IS(n); real*8 Z(n),G(3,n)
@@ -101,7 +101,7 @@ C      DIPDER = .true.
 
 #ifndef PRG_DIRAC
       subroutine DIPNUC_ifc(n,F,FG)
-      !ajt Used in prop_integrals.f90
+      !ajt Used in prop_contribs.f90
 #include <mxcent.h>
 #include <dipole.h>
       integer n; real*8 F(3),FG(3,3*n)
@@ -112,7 +112,7 @@ C      DIPDER = .true.
 
 
       subroutine QDRNUC_ifc(Q)
-      !ajt Used in prop_integrals.f90
+      !ajt Used in prop_contribs.f90
 #include <mxcent.h>
 #include <nuclei.h>
 #include <quadru.h>
@@ -124,7 +124,7 @@ C      DIPDER = .true.
 
 
       subroutine GRADNN_ifc(n,G)
-      !ajt Used in prop_integrals.f90
+      !ajt Used in prop_contribs.f90
 #include <mxcent.h>
 #include <cbinuc.h>
 #include <energy.h>

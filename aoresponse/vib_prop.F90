@@ -3,7 +3,7 @@ module vib_prop
 !This file is currently common to Dalton and Dirac
 
    use matrix_defop
-   use prop_integrals
+   use prop_contribs
    use rsp_equations
 #ifdef PRG_DIRAC
    use dirac_interface

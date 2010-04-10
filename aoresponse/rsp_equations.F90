@@ -4,12 +4,12 @@
 
 module rsp_equations
 ! calculates response densities / perturbed densities,
-! using integrals from module prop_integrals
+! using integrals from module prop_contribs
 !
 ! ajt Detailed description of contents to be added here ;-)
 
    use matrix_defop
-   use prop_integrals
+   use prop_contribs
 
    implicit none
 
