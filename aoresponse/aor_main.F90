@@ -1,5 +1,6 @@
 module aor_main
 
+  use matrix_module
   use kinds_m
   use memory_allocator
   use matrix_defop
@@ -8,8 +9,8 @@ module aor_main
   use vib_prop
   use aor_cfg
 ! use aor_binomial
-  use aor_property_definitions
-  use aor_property_definitions_zzz
+! use aor_property_definitions
+! use aor_property_definitions_zzz
 
   implicit none
 
@@ -30,6 +31,8 @@ contains
     integer, intent(in)    :: lwork
     real(8), intent(inout) :: work(lwork)
     complex(8),allocatable:: tsr(:) !ajt: scratch for property tensors
+
+#ifdef MERGE_WITH_LINSCA
 
 !   initialize fortran 77 work memory interface
     call di_set_f77_work(work, lwork)
@@ -276,6 +279,7 @@ contains
     S = 0
     D = 0
     F = 0
+#endif /* ifdef MERGE_WITH_LINSCA */
 
 !radovan: debug this later
 !   call print_matrix_stat()

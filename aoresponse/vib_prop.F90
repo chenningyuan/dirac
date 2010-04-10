@@ -2,28 +2,25 @@ module vib_prop
 !Calculation and outputting of vibrational (optical) properties.
 !This file is currently common to Dalton and Dirac
 
+   use decompMod, only: DecompItem
    use matrix_defop
-   use prop_contribs
    use rsp_equations
-#ifdef PRG_DIRAC
-   use dirac_interface
-#endif
-   use aor_restart
-
+   use prop_contribs
    implicit none
 
-   public roa_pol_gpri_aten_gra,cars_shyp_polgra
-   public vib_ana_polari,print_shypol
-   public dg_energy
+   public roa_pol_Gpri_Aten_grads, cars_pol_shyp_polgra
+   public vib_ana_polari, print_shypol, vibhyp_hyp_dipgra_polgra
 
    private
 
-   !wavenumber, velocity of light, and nanometer (in au), pi
-   real(8),parameter:: cm1=1/219474.631371d0,cvl=137.03599907d0, &
-                       nm=10/0.52917706d0,pi=3.1415926535897931d0
+   !physical constants for conversion to non-atomic units
+   real(8), parameter :: cm1 = 1/219474.631371d0, & !1 centimeter-to-minus-one in au
+                         cvl = 137.03599907d0,    & !c-the-velocity-of-light in au
+                         nm  = 10/0.52917706d0,   & !1 nanometer in au
+                         pi  = 3.14159265358979323846D0 !acos(-1d0)
 
    !field component lables for printing
-   character*2:: fc(3)=(/'Fx','Fy','Fz'/)
+   character(2) :: fc(3) = (/'Fx','Fy','Fz'/)
 
 contains
 
@@ -44,7 +41,7 @@ contains
          if (present(freqs)) then
             fmt = '(a,nf6.3)'
             write (fmt(4:4),'(i1)') size(freqs)
-            write (uni,fmt) title//' w:',real(freqs)
+            write (uni,fmt) title // ' w:', dreal(freqs)
          else
             write (uni,'(a)') title
          end if
@@ -57,11 +54,11 @@ contains
       dec = cwid - dec - 1
       fmt = '(fww.dd)'
       write (fmt(3:7),'(i2,a1,i2)') cwid, '.', dec
-      if (any( imag(tensor(1:siz))/=0 )) write (uni,'(a)') '    (real part)'
-      call subr(dims, real(tensor(1:siz)), uni, cwid, fmt)
-      if (any( imag(tensor(1:siz))/=0 )) then
+      if (any(dimag(tensor(1:siz)) /= 0)) write (uni,'(a)') '    (real part)'
+      call subr(dims, dreal(tensor(1:siz)), uni, cwid, fmt)
+      if (any(dimag(tensor(1:siz)) /= 0)) then
          write (uni,'(a)') '    (imaginary part)'
-         call subr(dims, imag(tensor(1:siz)), uni, cwid, fmt)
+         call subr(dims, dimag(tensor(1:siz)), uni, cwid, fmt)
       end if
       write (uni,'()') !final blank line
    contains
@@ -85,55 +82,37 @@ contains
 
 
    subroutine load_vib_modes(nc,nq,w,Q)
+#if defined(DALTON_AO_RSP)
+       use dalton_ifc
+#endif
    !load Hessian form DALTON.HES, mass-weight, diagonalize
    !and sqrt eigenvalues for frequencies (w<0 means imaginary)
       integer,intent(in)  :: nc !number of coordinates
       integer,intent(out) :: nq !number of vib. modes
       real(8),intent(out) :: w(nc),Q(nc,nc) !frequencies, normal modes Q(:,k)
       real(8)      :: M(nc/3),Mtot,Z(nc/3),G(nc),Rc(nc),H(nc,nc),orig(3)=0
-! Bin Gao: change unit to -1 for Dalton main branch
-      integer      :: IS(nc/3),internal=0,negative=0,unit=-1
+      integer      :: IS(nc/3),i,internal=0,negative=0,unit=-1
       logical      :: ex
       character*22 :: fmt
-      integer      :: ic, jc, io, nc_read
       call NUCLEI_ifc(nc/3,Z,IS,G)
       call GPINQ('DALTON.HES','EXIST',ex)
       if (.not.ex) call quit('load_vib_modes: Hessian file DALTON.HES not found')
       call GPOPEN(unit,'DALTON.HES','OLD',' ','FORMATTED',0,.false.)
-
-      read (unit, *) nc_read
-      if (nc_read /= nc) call quit('load_vib_modes: DALTON.HES inconsistent with MOLECULE.INP')
-
-      do ic = 1, nc
-        read (unit, *)
-        do jc = 1, nc
-          read (unit, *) H(ic, jc)
-        end do
-      end do
-
-      read (unit, *)
-      do ic = 1, nc
-        read (unit, *, iostat = io) Rc(ic)
-      end do
-
-!     Rc read from DALTON.HES (io is 0), check whether geometry matches
-      if (io == 0) then
-        do ic = 1, nc
-!         be tolerant with digits
-          if (dabs(G(ic) - Rc(ic)) > 1.0d-6) then
-            call quit('load_vib_modes: Different geometry in DALTON.HES and MOLECULE.INP')
-          end if
-        end do
-      end if
-
+      read (unit,'(i12)') i
+      if (i/=nc) call quit('load_vib_modes: DALTON.HES inconsistent with MOLECULE.INP')
+      write (fmt,'(a,i4,a,i4,a)') '(',nc,'(/',nc,'(g24.17/)))'
+      read (unit,fmt) H
+      write (fmt(1:15),'(a,i3,a)') '(',nc,'(/g24.17))'
+      read (unit,fmt,iostat=i) Rc !if no geometry at the end, reads EOF
+      if (i==0.and..not.all(G==Rc)) & !if Rc read, compare
+         call quit('load_vib_modes: Different geometry in DALTON.HES and MOLECULE.INP')
       call GPCLOSE(unit,'KEEP')
-      call VIBHES(1,nc,G,nq,(/(0d0,ic=1,nc)/),H,(/(0d0,ic=1,6*nc)/) &
-                 ,nint(Z),(/(0d0,ic=1,2*nc*nc)/)); nq=nc-nq
+      call VIBHES(1,nc,G,nq,(/(0d0,i=1,nc)/),H,(/(0d0,i=1,6*nc)/) &
+                 ,nint(Z),(/(0d0,i=1,2*nc*nc)/)); nq=nc-nq
       call VIBMAS(M,Mtot,IS,nint(Z),nc/3,G,orig,1)
-      call VIBNOR(H,M,(/(0d0,ic=1,nc)/),(/(0d0,ic=1,nc*(nc+1)/2)/) &
-                 ,w,Q,(/(0d0,ic=1,nc*nc)/),(/(0d0,ic=1,30*nc*nc+1)/) &
+      call VIBNOR(H,M,(/(0d0,i=1,nc)/),(/(0d0,i=1,nc*(nc+1)/2)/) &
+                 ,w,Q,(/(0d0,i=1,nc*nc)/),(/(0d0,i=1,30*nc*nc+1)/) &
                  ,30*nc*nc+1,nc,internal,negative,.false.,1)
-      call NUCLEI_ifc(nc/3,Z,IS,G)
       w = sign(sqrt(abs(w)),w)
    end subroutine
 
@@ -164,7 +143,7 @@ contains
       l = 0
       do j=1,nc
          if (w(j)==0) cycle !skip column
-         write (p(l+1:),'(a)') lab(j)(1:w(j))
+         write (p(l+1:),'(a)') lab(j) !lab(j)(1:w(j))
          l = l+w(j)
       end do
       write (o,'(a)') trim(p(:l))
@@ -225,7 +204,7 @@ contains
       write (o,'(//26x,a/26x,a/)') 'Polarizability (au)' &
                                   ,'-------------------'
       write (o,'(4x,a/)') 'Optical frequencies and wavelengths:'
-      write (o,'(2(8x,a,i1,a,f6.3,a,i7,a,i4,a/))') &
+      write (o,'(2(8x,a,i1,a,f6.3,a,i7,a,i5,a/))') &
                'w',0,' = ', w,' au =', nint(w/cm1),' cm-1 ~ ', &
                                   nint((2*pi*cvl/w)/nm),' nm', &
                'w',1,' = ',-w,' au =',-nint(w/cm1),' cm-1 ~ ', &
@@ -269,7 +248,7 @@ contains
          write (o,'(//24x,a/24x,a/)') 'Hyperpolarizability (au)' &
                                      ,'------------------------'
          write (o,'(4x,a/)') 'Optical frequencies and wavelengths:'
-         write (o,'(3(8x,a,i1,a,f6.3,a,i7,a,i4,a/))') &
+         write (o,'(3(8x,a,i1,a,f6.3,a,i7,a,i5,a/))') &
                   'w',0,' = ',   a,' au =', nint(     a/cm1),' cm-1 ~ ', &
                                       nint((2*pi*cvl/a     )/nm),' nm',  &
                   'w',1,' = ',   b,' au =', nint(     b/cm1),' cm-1 ~ ', &
@@ -289,7 +268,7 @@ contains
       write (o,'(//22x,a/22x,a/)') 'Second hyperpolarizability (au)', &
                                    '-------------------------------'
       write (o,'(4x,a/)') 'Optical frequencies and wavelengths:'
-      write (o,'(4(8x,a,i1,a,f6.3,a,i7,a,i4,a/))')                   &
+      write (o,'(4(8x,a,i1,a,f6.3,a,i7,a,i5,a/))')                   &
               ('w',i-1,' = ',w(i),' au =',nint(w(i)/cm1),' cm-1 ~ ', &
                              nint((2*pi*cvl/w(i))/nm),' nm',i=1,4)
       write (o,'(a,13x,a2,18x,a2,18x,a2)') ' w0w1w2 w3',fc
@@ -314,7 +293,7 @@ contains
    end subroutine
 
 
-   subroutine vib_ana_polari(w,dip,nc,dipg,polg,hypg,o)
+   subroutine vib_ana_polari(w, dip, nc, dipg, polg, hypg, o)
       real(8) :: dipg(3,nc,4),polg(3,3,nc,6),hypg(3,3,3,nc,4),w(4),dip(3)
       integer :: nc,o,nq,i,j,k,l,m,n,ij,ik,jk
       real(8) :: dax(3),dipq(3,nc*4),polq(3,3,nc*6),hypq(3,3,3,nc*4),wq(nc),Q(nc,nc)
@@ -350,8 +329,12 @@ contains
                    polq(:,:,1+nq*(jk-1):nq*jk)/),o)
          exit !only one
       end do
-      call print_vib_gamma(dax,w,nq,wq(1:nq),dipq(:,1:nq*4),    &
-                           polq(:,:,1:nq*6),hypq(:,:,:,1:nq*4),o)
+      if ((any(dipq(:,1:nq*4) /= 0) .and. &
+           any(hypq(:,:,:,1:nq*4) /= 0)) .or. &
+          (any(polq(:,:,1:nq*3) /= 0) .and. &
+           any(polq(:,:,nq*3+1:nq*6) /= 0))) &
+         call print_vib_gamma(dax,w,nq,wq(1:nq),dipq(:,1:nq*4),    &
+                              polq(:,:,1:nq*6),hypq(:,:,:,1:nq*4),o)
    end subroutine
 
 
@@ -362,7 +345,7 @@ contains
       write (o,'(//21x,a/21x,a/)') 'Vibrational polarizability (au)', &
                                    '-------------------------------'
       write (o,'(4x,a/)') 'Optical frequencies and wavelengths:'
-      write (o,'(2(8x,a,i1,a,f6.3,a,i7,a,i4,a/))')             &
+      write (o,'(2(8x,a,i1,a,f6.3,a,i7,a,i5,a/))')             &
                'w',0,' = ', w,' au =', nint(w/cm1),' cm-1 ~ ', &
                                   nint((2*pi*cvl/w)/nm),' nm', &
                'w',1,' = ',-w,' au =',-nint(w/cm1),' cm-1 ~ ', &
@@ -384,9 +367,10 @@ contains
       write (o,'(4x,a/)') 'Table of mode contributions and dominant residues (au):'
       write (o,'(8x,a)') 'mm   :  dmu/dQ x dmu/dQ contribution (isotropic)'
       if (abs(w)<=0.03) write (o,'(8x,a)') 'm1   :  <<Q;F>>_w1 induced gradient with freq -w1 =w0'
-      call print_vib_table(nq,5,1,(/'         ','freq/cm-1', &
-               '  freq/au','    mm   ','    m0m1 '/),        &
-               (/3,9,10,11,11/),(/4,5/),t,o)
+      write (o,*)
+      call print_vib_table(nq,5,1,(/'         ','freq/cm-1',   &
+                        '  freq/au','    mm   ','    m0m1 '/), &
+                        (/3,9,10,11,11/),(/4,5/),t,o)
    end subroutine
 
 
@@ -397,7 +381,7 @@ contains
       write (o,'(//20x,a/20x,a/)') 'Vibrational hyperpolarizability (au)', &
                                    '------------------------------------'
       write (o,'(4x,a/)') 'Optical frequencies and wavelengths:'
-      write (o,'(3(8x,a,i1,a,f6.3,a,i7,a,i4,a/))')                   &
+      write (o,'(3(8x,a,i1,a,f6.3,a,i7,a,i5,a/))')                   &
               ('w',i-1,' = ',w(i),' au =',nint(w(i)/cm1),' cm-1 ~ ', &
                              nint((2*pi*cvl/w(i))/nm),' nm',i=1,3)
       write (o,'(4x,a,3f8.4/)') 'Normalized dipole axis: ',dax
@@ -411,9 +395,16 @@ contains
                    + R(:,:,:,3)/(wq(q)**2-w(2)**2) &
                    + R(:,:,:,4)/(wq(q)**2-w(1)**2)
          hyp = hyp + R(:,:,:,1)
-         t(1: 4,q) = (/(sum((/(((R(i,i,j,k)+R(i,j,i,k)+R(j,i,i,k))*dax(j),i=1,3),j=1,3)/))/5,k=1,4)/)
-         t(5: 8,q) = (/(sum((/(((R(i,i,j,k)-R(i,j,i,k))*dax(j),i=1,3),j=1,3)/))/5,k=1,4)/)
-         t(9:12,q) = (/(sum((/(((R(i,i,j,k)-R(j,i,i,k))*dax(j),i=1,3),j=1,3)/))/5,k=1,4)/)
+         !ajt gfortran seems to compiles this wrongly, ending up going
+         !    out of range in k. So use explicit loop over k instead
+         !t(1: 4,q) = (/(sum((/(((R(i,i,j,k)+R(i,j,i,k)+R(j,i,i,k))*dax(j),i=1,3),j=1,3)/))/5,k=1,4)/)
+         !t(5: 8,q) = (/(sum((/(((R(i,i,j,k)-R(i,j,i,k))*dax(j),i=1,3),j=1,3)/))/5,k=1,4)/)
+         !t(9:12,q) = (/(sum((/(((R(i,i,j,k)-R(j,i,i,k))*dax(j),i=1,3),j=1,3)/))/5,k=1,4)/)
+         do k = 1, 4
+            t(0+k,q) = sum((/(((R(i,i,j,k)+R(i,j,i,k)+R(j,i,i,k))*dax(j),i=1,3),j=1,3)/))/5
+            t(4+k,q) = sum((/(((R(i,i,j,k)-R(i,j,i,k))*dax(j),i=1,3),j=1,3)/))/5
+            t(8+k,q) = sum((/(((R(i,i,j,k)-R(j,i,i,k))*dax(j),i=1,3),j=1,3)/))/5
+         end do
          t(:,q) = (/1d0*q,wq(q)/cm1,wq(q),t(1,q),t(5,q),t(9,q),t(2:4,q),t(6:8,q),t(10:12,q)/)
       end do
       write (o,'(a,13x,a2,18x,a2,18x,a2)') ' w0w1 w2',Fc
@@ -451,7 +442,7 @@ contains
       write (o,'(//19x,a/19x,a/)') 'Vibrational second hyperpolarizability (au)', &
                                    '-------------------------------------------'
       write (o,'(4x,a/)') 'Optical frequencies and wavelengths:'
-      write (o,'(4(8x,a,i1,a,f6.3,a,i7,a,i4,a/))')                   &
+      write (o,'(4(8x,a,i1,a,f6.3,a,i7,a,i5,a/))')                   &
               ('w',i-1,' = ',w(i),' au =',nint(w(i)/cm1),' cm-1 ~ ', &
                              nint((2*pi*cvl/w(i))/nm),' nm',i=1,4)
       write (o,'(4x,a,3f8.4/)') 'Normalized dipole axis: ',dax
@@ -530,521 +521,441 @@ contains
    end subroutine
 
 
-   subroutine roa_pol_gpri_aten_gra(S,D,F,nc,w,Eff,Efb,Efq,Effg,Efbg,Efqg)
-   !For frequency w, Eff returns polarizability, Efb G-prime, Efq A-tensor,
-   !Effg polarizability gradient, Efbg G-prime gradient, Efqg A-tensor gradient
-
-     type(matrix), intent(in)  :: S, D, F
-     integer,      intent(in)  :: nc
-     complex(8),   intent(in)  :: w
-     complex(8),   intent(out) :: Eff (3, 3)
-     complex(8),   intent(out) :: Efb (3, 3)
-     complex(8),   intent(out) :: Efq (3, 6)
-     complex(8),   intent(out) :: Effg(3, 3, nc)
-     complex(8),   intent(out) :: Efbg(3, 3, nc)
-     complex(8),   intent(out) :: Efqg(3, 6, nc)
-
-     character(4)              :: perturbation
-     character(8)              :: restart_label
-     character(10)             :: perturbation_print
-
-!    tensor printout needs exact ranks
-!    which are not known here
-     complex(8),   allocatable :: Ef_j (:, :)
-     complex(8),   allocatable :: Ef_jg(:, :, :)
-                   
-     integer                   :: r_i
-     integer                   :: r_j
-     integer,      parameter   :: r_f = 3
-     integer,      parameter   :: r_e = 3
-     integer,      parameter   :: r_b = 3
-     integer,      parameter   :: r_q = 6
-
-     integer                   :: i, j, k
-                               
-     type(matrix)              :: Sg(1), DFD3(3, 3), DFD6(3, 6), Df(3), Ff(3)
-                               
-     type(matrix)              :: D_j3(3), D_j6(6), Df_j3(3, 3), Df_j6(3, 6)
-     type(matrix)              :: F_j3(3), F_j6(6), Ff_j3(3, 3), Ff_j6(3, 6)
-
-!    this is for g95 -i8
-     integer                   :: isize
-
-!    open restart file
-     call open_restart_file()
-
-     r_i = r_f
-
-     call pert_dens((/'EL'/), S, (/D/), (/F/), Df, Ff, w=(/-w/))
-
-
-!    'EL'--'EL' equations
-!    ====================
-
-     r_j = r_e
-     perturbation       = 'EL  '
-     perturbation_print = 'polari    '
-
-     allocate(Ef_j (r_i, r_j    ))
-     allocate(Ef_jg(r_i, r_j, nc))
-
-     Ef_j  = 0.0d0
-     Ef_jg = 0.0d0
-
-     restart_label = 'ff      '
-     isize = size(Ef_j)
-     if (.not. find_restart_tensor(restart_label, (/-w, w/), isize)) then
-
-       call prop_energy((/perturbation/), (/D, Df/), Ef_j)
-       call write_restart_tensor(restart_label, (/-w, w/), Ef_j)
-
-     else
-
-       call read_restart_tensor(Ef_j)
-       write(*, *) 'successful restart from record '//restart_label
-
-     end if
-
-     call print_tensor((/r_i, r_j/), -Ef_j, perturbation_print, (/-w, w/))
-
-     restart_label = 'ffg     '
-     isize = size(Ef_jg)
-     if (.not. find_restart_tensor(restart_label, (/-w, w, 0*w/), isize)) then
-!      calculate, don't read from restart file
-
-!      could be done like that:
-!      call pert_dens((/perturbation/), S, (/D/), (/F/), D_j3, F_j3, w=(/w/))
-!      call pert_dens((/'EL  ', perturbation/), &
-!                       S,                      &
-!                     (/D, Df, D_j3/),          &
-!                     (/F, Ff, F_j3/),          &
-!                       Df_j3,                  &
-!                       Ff_j3,                  &
-!                       w=(/-w, w/))
-
-!      but here we save some time
-       do j = 1, r_j
-         D_j3(j) = dag(Df(j))
-         F_j3(j) = dag(Ff(j))
-      
-         call pert_dens((/'EL  ', perturbation/), &
-                          S,                      &
-                        (/D, Df(1:j), D_j3(j)/),  &
-                        (/F, Ff(1:j), F_j3(j)/),  &
-                          Df_j3(1, j),            &
-                          Ff_j3(1, j),            &
-                          w=(/-w, w/),            &
-                          c=(/1, j, j, j/))
-      
-         do i = 1, j - 1
-           Df_j3(j, i) = dag(Df_j3(i, j))
-           Ff_j3(j, i) = dag(Ff_j3(i, j))
+   subroutine roa_pol_Gpri_Aten_grads(decomp, S, D, F, ng, freq, Eff, Ebf, Eqf, &
+                                      Egff, Egbf, Egqf)
+   ! For frequency w=freq calculate polarizability -Eff, G-prime Ebf(w,-w),
+   ! A-tensor -Eqf, pol. gradient Egff, G-prime gradient Egbf(0,w,-w),
+   ! A-tensor gradient Egqf
+      !> Contains matrices from OAO decomposition of overlap matrix
+      type(decompItem),intent(in) :: decomp
+      type(matrix),intent(in)  :: S, D, F
+      integer,     intent(in)  :: ng
+      complex(8),  intent(in)  :: freq
+      complex(8),  intent(out) :: Eff(3,3), Ebf(3,3), Eqf(6,3), &
+                                  Egff(ng,3,3),Egbf(ng,3,3),Egqf(ng,6,3)
+      type(matrix) :: De(3), Df(3), Db(3), Dq(6), Def(3,3), Dbf(3,3), Dqf(6,3), &
+                      Fe(3), Ff(3), Fb(3), Fq(6), Fef(3,3), Fbf(3,3), Fqf(6,3), &
+                      DFDef(3,3), DFDbf(3,3), DFDqf(6,3)
+      integer      :: i, j, k
+      ! electric equations, polarizability, G-prime, A-tensor
+      call pert_dens(decomp, S, (/'EL'/), (/3/), (/D/), (/F/), Df, Ff, freq=(/-freq/))
+      Eff=0; Ebf=0; Eqf=0
+      call prop_oneave(S, (/'EL'/), (/Df/), shape(Eff), Eff)
+      call prop_oneave(S, (/'MAGO'/),(/Df/), shape(Ebf), Ebf)
+      call prop_oneave(S, (/'ELGR'/), (/Df/), shape(Eqf), Eqf)
+      call print_tensor(shape(Eff), -Eff, 'Alpha = -Eff', (/freq,-freq/))
+      call print_tensor(shape(Ebf),  Ebf, 'G-prime = Ebf', (/freq,-freq/))
+      call print_tensor(shape(Eqf), -Eqf, 'A-tensor = -Eqf', (/freq,-freq/))
+      !--------------------------------------------------
+      ! electric-electric equations, solve 6 eqs, not 3x3
+      do k = 1, 3;
+         De(k) = dag(Df(k))
+         Fe(k) = dag(Ff(k))
+         call pert_dens(decomp, S, (/'EL','EL'/), (/k,1/), &
+                        (/D,De(1:k),Df(k)/), (/F,Fe(1:k),Ff(k)/), &
+                        Def(1:k,k), Fef(1:k,k), freq=(/freq,-freq/), comp=(/1,k/))
+         do j = 1, k-1
+            Def(k,j) = dag(Def(j,k))
+            Fef(k,j) = dag(Fef(j,k))
          end do
-       end do
-       
-       call prop_energy((/perturbation, 'GEO '/), (/D, Df/), Ef_jg)
-       call prop_energy((/'EL ', 'GEO'/), (/D, D_j3/), Ef_jg, o=(/2/))
-       call prop_energy((/'GEO'/), (/D, Df, D_j3, Df_j3/), Ef_jg, b=(/r_i, r_j/))
-       
-       do j = 1, r_j
-         do i = 1, r_i
-           DFD3(i, j) = Df_j3(i, j)*F*D         &
-                      + D*F*Df_j3(i,j)          &
-                      + D_j3(j)*Ff(i)*D         &
-                      + D*Ff(i)*D_j3(j)         &
-                      + Df(i)*F_j3(j)*D         &
-                      + D*F_j3(j)*Df(i)         &
-                      + D*Ff_j3(i, j)*D         &
-                      + D_j3(j)*(F + w*S)*Df(i) &
-                      + Df(i)*(F - w*S)*D_j3(j)
+      end do
+      !------------------------
+      ! polarizability gradient
+      Egff = 0
+      call prop_oneave(S, (/'GEO','EL '/), (/Df/), shape(Egff), Egff)
+      ! call print_tensor(Egff, shape(Egff), 'E1geDf'); Egff=0
+      call prop_oneave(S, (/'GEO','EL '/), (/De/), shape(Egff), Egff, perm=(/1,3,2/))
+      ! call print_tensor(Egff, shape(Egff), 'E1gfDe'); Egff=0
+      call prop_twoave((/'GEO'/), (/D,De,Df,Def/), shape(Egff), Egff)
+      do k = 1, 3
+         do j = 1, 3
+            DFDef(j,k) = De(j)*Ff(k)*D + De(j)*(F+freq*S)*Df(k) + D*Fe(j)*Df(k) &
+                       + Df(k)*Fe(j)*D + Df(k)*(F-freq*S)*De(j) + D*Ff(k)*De(j) &
+                       + Def(j,k)*F*D + D*Fef(j,k)*D + D*F*Def(j,k)
          end do
-       end do
-       
-!      deallocate matrices
-       D_j3  = 0
-       Df_j3 = 0
-       F_j3  = 0
-       Ff_j3 = 0
-       
-       do k = 1, nc
-         call prop_overlap((/'GEO'/), S, Sg, c=(/k/))
-         do j = 1, r_j
-           do i = 1, r_i
-             Ef_jg(i, j, k) = Ef_jg(i, j, k) - tr(Sg(1), DFD3(i, j))
-           end do
+      end do
+      call prop_oneave(S, (/'GEO'/), (/Def/), shape(Egff), Egff, DFD=(/DFDef/))
+      DFDef = 0
+      ! call print_tensor(Egff, shape(Egff), 'E1gDef+E2gDeDf-SgDFDef'); Egff=0
+      call print_tensor(shape(Egff), -Egff, 'd/dg Polari = -Egff', &
+                        (/0*freq,freq,-freq/))
+      DFDef=0; De=0; Fe=0; Def=0; Fef=0
+      !----------------------------------------
+      ! magetic and electric-magnetic equations
+      call pert_dens(decomp, S, (/'MAGO'/), (/3/), (/D/), (/F/), Db, Fb, freq=(/freq/))
+      call pert_dens(decomp, S, (/'MAGO','EL  '/), (/3,3/), (/D,Db,Df/), (/F,Fb,Ff/), &
+                     Dbf, Fbf, freq=(/freq,-freq/))
+      !-----------------
+      ! G-prime gradient
+      Egbf = 0
+      call prop_oneave(S, (/'GEO ','MAGO'/), (/Df/), shape(Egbf), Egbf)
+      ! call print_tensor(Egbf, shape(Egbf), 'E1gbDf'); Egbf=0
+      call prop_oneave(S, (/'GEO','EL '/), (/Db/), shape(Egbf), Egbf, perm=(/1,3,2/))
+      ! call print_tensor(Egbf, shape(Egbf), 'E1gfDb'); Egbf=0
+      call prop_twoave((/'GEO'/), (/D,Db,Df,Dbf/), shape(Egbf), Egbf)
+      do k = 1, 3
+         do j = 1, 3
+            DFDbf(j,k) = Db(j)*Ff(k)*D + Db(j)*(F+freq*S)*Df(k) + D*Fb(j)*Df(k) &
+                       + Df(k)*Fb(j)*D + Df(k)*(F-freq*S)*Db(j) + D*Ff(k)*Db(j) &
+                       + Dbf(j,k)*F*D + D*Fbf(j,k)*D + D*F*Dbf(j,k)
          end do
-       end do
-       Sg   = 0
-       DFD3 = 0
-       
-       call write_restart_tensor(restart_label, (/-w, w, 0*w/), Ef_jg)
-
-     else
-!      don't calculate, read from restart file
-
-       call read_restart_tensor(Ef_jg)
-       write(*, *) 'successful restart from record '//restart_label
-
-     end if
-
-     call print_tensor((/r_i, r_j, nc/), -Ef_jg, 'd/dg '//perturbation_print, (/-w, w, 0*w/))
-
-!    reverse signs of results
-!    from quasi-energy derivative to property derivative
-     Eff (1:r_i, 1:r_j   ) = -Ef_j (1:r_i, 1:r_j   )
-     Effg(1:r_i, 1:r_j, :) = -Ef_jg(1:r_i, 1:r_j, :)
-
-     deallocate(Ef_j)
-     deallocate(Ef_jg)
-
-
-!    'EL'--'MAGO' equations
-!    ======================
-
-     r_j = r_b
-     perturbation       = 'MAGO'
-     perturbation_print = 'G-prime   '
-
-     allocate(Ef_j (r_i, r_j    ))
-     allocate(Ef_jg(r_i, r_j, nc))
-
-     Ef_j  = 0.0d0
-     Ef_jg = 0.0d0
-
-     restart_label = 'fb      '
-     isize = size(Ef_j)
-     if (.not. find_restart_tensor(restart_label, (/-w, w/), isize)) then
-
-       call prop_energy((/perturbation/), (/D, Df/), Ef_j)
-       call write_restart_tensor(restart_label, (/-w, w/), Ef_j)
-
-     else
-
-       call read_restart_tensor(Ef_j)
-       write(*, *) 'successful restart from record '//restart_label
-
-     end if
-
-     call print_tensor((/r_i, r_j/), -Ef_j, perturbation_print, (/-w, w/))
-
-     restart_label = 'fbg     '
-     isize = size(Ef_jg)
-     if (.not. find_restart_tensor(restart_label, (/-w, w, 0*w/), isize)) then
-!      calculate, don't read from restart file
-
-       call pert_dens((/perturbation/), S, (/D/), (/F/), D_j3, F_j3, w=(/w/))
-       call pert_dens((/'EL  ', perturbation/), &
-                        S,                      &
-                      (/D, Df, D_j3/),          &
-                      (/F, Ff, F_j3/),          &
-                        Df_j3,                  &
-                        Ff_j3,                  &
-                        w=(/-w, w/))
-       
-       call prop_energy((/perturbation, 'GEO '/), (/D, Df/), Ef_jg)
-       call prop_energy((/'EL ', 'GEO'/), (/D, D_j3/), Ef_jg, o=(/2/))
-       call prop_energy((/'GEO'/), (/D, Df, D_j3, Df_j3/), Ef_jg, b=(/r_i, r_j/))
-       
-       do j = 1, r_j
-         do i = 1, r_i
-           DFD3(i, j) = Df_j3(i, j)*F*D         &
-                      + D*F*Df_j3(i,j)          &
-                      + D_j3(j)*Ff(i)*D         &
-                      + D*Ff(i)*D_j3(j)         &
-                      + Df(i)*F_j3(j)*D         &
-                      + D*F_j3(j)*Df(i)         &
-                      + D*Ff_j3(i, j)*D         &
-                      + D_j3(j)*(F + w*S)*Df(i) &
-                      + Df(i)*(F - w*S)*D_j3(j)
+      end do
+      call prop_oneave(S, (/'GEO'/), (/Dbf/), shape(Egbf), Egbf, DFD=(/DFDbf/))
+      ! call print_tensor(Egbf, shape(Egbf), 'E2gDbDf + E1gDfb - SgDFDbf'); Egbf=0
+      call print_tensor(shape(Egbf), Egbf, 'd/dg G-prime = Egbf', &
+                        (/0*freq,freq,-freq/))
+      DFDbf=0; Db=0; Fb=0; Dbf=0; Fbf=0
+      !---------------------------------------------
+      ! quadrupole and quadrupole-electric equations
+      call pert_dens(decomp, S, (/'ELGR'/), (/6/), (/D/), (/F/), Dq, Fq, freq=(/freq/))
+      call pert_dens(decomp, S, (/'ELGR','EL  '/), (/6,3/), (/D,Dq,Df/), (/F,Fq,Ff/), &
+                     Dqf, Fqf, freq=(/freq,-freq/))
+      !------------------
+      ! A-tensor gradient
+      Egqf = 0
+      call prop_oneave(S, (/'GEO ','ELGR'/), (/Df/), shape(Egqf), Egqf)
+      ! call print_tensor(shape(Egqf), Egqf, 'E1gqDf'); Egqf=0
+      call prop_oneave(S, (/'GEO','EL '/), (/Dq/), shape(Egqf), Egqf, perm=(/1,3,2/))
+      ! call print_tensor(shape(Egqf), Egqf, 'E1gfDq'); Egqf=0
+      call prop_twoave((/'GEO'/), (/D,Dq,Df,Dqf/), shape(Egqf), Egqf)
+      do k = 1, 3
+         do j = 1, 6
+            DFDqf(j,k) = Dq(j)*Ff(k)*D + Dq(j)*(F+freq*S)*Df(k) + D*Fq(j)*Df(k) &
+                       + Df(k)*Fq(j)*D + Df(k)*(F-freq*S)*Dq(j) + D*Ff(k)*Dq(j) &
+                       + Dqf(j,k)*F*D + D*Fqf(j,k)*D + D*F*Dqf(j,k)
          end do
-       end do
-       
-!      deallocate matrices
-       D_j3  = 0
-       Df_j3 = 0
-       F_j3  = 0
-       Ff_j3 = 0
-       
-       do k = 1, nc
-         call prop_overlap((/'GEO'/), S, Sg, c=(/k/))
-         do j = 1, r_j
-           do i = 1, r_i
-             Ef_jg(i, j, k) = Ef_jg(i, j, k) - tr(Sg(1), DFD3(i, j))
-           end do
-         end do
-       end do
-       Sg   = 0
-       DFD3 = 0
-       
-       call write_restart_tensor(restart_label, (/-w, w, 0*w/), Ef_jg)
-
-     else
-!      don't calculate, read from restart file
-
-       call read_restart_tensor(Ef_jg)
-       write(*, *) 'successful restart from record '//restart_label
-
-     end if
-
-     call print_tensor((/r_i, r_j, nc/), -Ef_jg, 'd/dg '//perturbation_print, (/-w, w, 0*w/))
-
-!    reverse signs of results
-!    from quasi-energy derivative to property derivative
-     Efb (1:r_i, 1:r_j   ) = -Ef_j (1:r_i, 1:r_j   )
-     Efbg(1:r_i, 1:r_j, :) = -Ef_jg(1:r_i, 1:r_j, :)
-
-     deallocate(Ef_j)
-     deallocate(Ef_jg)
-
-
-!    'EL'--'ELGR' equations
-!    ======================
-
-     r_j = r_q
-     perturbation       = 'ELGR'
-     perturbation_print = 'A-tensor  '
-
-     allocate(Ef_j (r_i, r_j    ))
-     allocate(Ef_jg(r_i, r_j, nc))
-
-     Ef_j  = 0.0d0
-     Ef_jg = 0.0d0
-
-     restart_label = 'fq      '
-     isize = size(Ef_j)
-     if (.not. find_restart_tensor(restart_label, (/-w, w/), isize)) then
-
-       call prop_energy((/perturbation/), (/D, Df/), Ef_j)
-       call write_restart_tensor(restart_label, (/-w, w/), Ef_j)
-
-     else
-
-       call read_restart_tensor(Ef_j)
-       write(*, *) 'successful restart from record '//restart_label
-
-     end if
-
-     call print_tensor((/r_i, r_j/), -Ef_j, perturbation_print, (/-w, w/))
-
-     restart_label = 'fqg     '
-     isize = size(Ef_jg)
-     if (.not. find_restart_tensor(restart_label, (/-w, w, 0*w/), isize)) then
-!      calculate, don't read from restart file
-
-       call pert_dens((/perturbation/), S, (/D/), (/F/), D_j6, F_j6, w=(/w/))
-       call pert_dens((/'EL  ', perturbation/), &
-                        S,                      &
-                      (/D, Df, D_j6/),          &
-                      (/F, Ff, F_j6/),          &
-                        Df_j6,                  &
-                        Ff_j6,                  &
-                        w=(/-w, w/))
-       
-       call prop_energy((/perturbation, 'GEO '/), (/D, Df/), Ef_jg)
-       call prop_energy((/'EL ', 'GEO'/), (/D, D_j6/), Ef_jg, o=(/2/))
-       call prop_energy((/'GEO'/), (/D, Df, D_j6, Df_j6/), Ef_jg, b=(/r_i, r_j/))
-       
-       do j = 1, r_j
-         do i = 1, r_i
-           DFD6(i, j) = Df_j6(i, j)*F*D         &
-                      + D*F*Df_j6(i,j)          &
-                      + D_j6(j)*Ff(i)*D         &
-                      + D*Ff(i)*D_j6(j)         &
-                      + Df(i)*F_j6(j)*D         &
-                      + D*F_j6(j)*Df(i)         &
-                      + D*Ff_j6(i, j)*D         &
-                      + D_j6(j)*(F + w*S)*Df(i) &
-                      + Df(i)*(F - w*S)*D_j6(j)
-         end do
-       end do
-       
-!      deallocate matrices
-       D_j6  = 0
-       Df_j6 = 0
-       F_j6  = 0
-       Ff_j6 = 0
-       
-       do k = 1, nc
-         call prop_overlap((/'GEO'/), S, Sg, c=(/k/))
-         do j = 1, r_j
-           do i = 1, r_i
-             Ef_jg(i, j, k) = Ef_jg(i, j, k) - tr(Sg(1), DFD6(i, j))
-           end do
-         end do
-       end do
-       Sg   = 0
-       DFD6 = 0
-       
-       call write_restart_tensor(restart_label, (/-w, w, 0*w/), Ef_jg)
-
-     else
-!      don't calculate, read from restart file
-
-       call read_restart_tensor(Ef_jg)
-       write(*, *) 'successful restart from record '//restart_label
-
-     end if
-
-     call print_tensor((/r_i, r_j, nc/), -Ef_jg, 'd/dg '//perturbation_print, (/-w, w, 0*w/))
-
-!    reverse signs of results
-!    from quasi-energy derivative to property derivative
-     Efq (1:r_i, 1:r_j   ) = -Ef_j (1:r_i, 1:r_j   )
-     Efqg(1:r_i, 1:r_j, :) = -Ef_jg(1:r_i, 1:r_j, :)
-
-     deallocate(Ef_j)
-     deallocate(Ef_jg)
-
-
-!    finally deallocate rest
-     Df  = 0
-     Ff  = 0
-
-!    close restart file
-     call close_restart_file()
-
+      end do
+      call prop_oneave(S, (/'GEO'/), (/Dqf/), shape(Egqf), Egqf, DFD=(/DFDqf/))
+      ! call print_tensor(shape(Egqf), Egqf, 'E2gDqDf + E1gDqf - SgDFDqf'); Egqf=0
+      call print_tensor(shape(Egqf), -Egqf, 'd/dg A-tensor = -Egqf', &
+                        (/0*freq,freq,-freq/))
+      DFDqf=0; Dq=0; Fq=0; Df=0; Ff=0; Dqf=0; Fqf=0
+      ! change sign on quasi-energy derivatives to get properties
+      Eff=-Eff; Eqf=-Eqf; Egff=-Egff; Egqf=-Egqf
    end subroutine
 
-   subroutine cars_shyp_polgra(S,D,F,nc,w,Ef,Eff,Effff,Effg)
-   !For frequency w, Eff returns polarizability alpha(-w,w), Effg polarizability
-   !gradient d/dR alpha(-w,w), and Effff hyperpolarizability gamma(-w,w,-w,w)
-      type(matrix),intent(in)  :: S,D,F
-      integer,     intent(in)  :: nc
-      complex(8),  intent(in)  :: w
-      complex(8),  intent(out) ::Ef(3),Eff(3,3),Effff(3,3,3,3),Effg(3,3,nc)
-      type(matrix) :: De(3),Df(3),Def(3,3),Dee(3,3),Lf(3),Sg(1),A
-      type(matrix) :: Fe(3),Ff(3),Fef(3,3),Fee(3,3),Xf(3),DFD(3,3)
-      integer      :: i,j,k,l
+
+   subroutine cars_pol_shyp_polgra(decomp, S, D, F, ng, freq, Ef, Eff, Effff, Egff)
+   ! For frequency freq (w), calculates polarizability the alpha(-w,w) in Eff,
+   ! polarizability gradient d/dg alpha(-w,w) in Eff, and 2nd hyperpolarizability
+   ! gamma(-w,w,-w,w) in Effff
+      type(decompItem),intent(in) :: decomp
+      type(matrix),intent(in)  :: S, D, F
+      integer,     intent(in)  :: ng
+      complex(8),  intent(in)  :: freq
+      complex(8),  intent(out) :: Ef(3), Eff(3,3), Effff(3,3,3,3), Egff(ng,3,3)
+      type(matrix) :: De(3), Df(3), Def(3,3), Dff(3,3), FeDS(3), FDSfef, DSDfef
+      type(matrix) :: Fe(3), Ff(3), Fef(3,3), Fff(3,3), DeSD(3), DFDef(3,3)
+      integer      :: i, j, k, l
       !dipole moment Ef=-mu
-      Ef=0; call prop_energy((/'EL'/),(/D/),Ef)
-      call print_tensor((/3/),-Ef,'Mu = -Ef')
+      Ef = 0
+      call prop_oneave(S, (/'EL'/), (/D/), (/3/), Ef)
+      call print_tensor((/3/), -Ef, 'dipmom = -Ef')
       !electric equations, Eff=-alpha
-      call pert_dens((/'EL'/),S,(/D/),(/F/),Df,Ff,w=(/w/))
-      do i=1,3; De(i)=dag(Df(i)); Fe(i)=dag(Ff(i)); end do
-      Eff=0; call prop_energy((/'EL'/),(/D,De/),Eff)
-      call print_tensor((/3,3/),-Eff,'Alpha = -Eff',(/-w,w/))
-      !---------------------------------
-      !electric-electric equations Def, e_-w, f_+w
-      do j=1,3
-         call pert_dens((/'EL','EL'/),S,(/D,De(1:j),Df(j)/),(/F,Fe(1:j),Ff(j)/), &
-                          Def(1,j),Fef(1,j),w=(/-w,w/),c=(/1,j,j,j/))
-         do i=1,j-1; Def(j,i)=dag(Def(i,j)); Fef(j,i)=dag(Fef(i,j)); end do
+      call pert_dens(decomp, S, (/'EL'/), (/3/), (/D/), (/F/), Df, Ff, freq=(/freq/))
+      do i = 1, 3
+         De(i) = dag(Df(i))
+         Fe(i) = dag(Ff(i))
       end do
-      !polarizability gradient
-      Effg=0; call prop_energy((/'EL ','GEO'/),(/D,De/),Effg)
-      call prop_energy((/'EL ','GEO'/),(/D,Df/),Effg,o=(/2/))
-      call prop_energy((/'GEO'/),(/D,De,Df,Def/),Effg,b=(/3,3/))
-      do j=1,3; do i=1,3
-         DFD(i,j) = Def(i,j)*F*D +Df(j)*Fe(i)*D+Df(j)*(F+w*S)*De(i) &
-                  + De(i)*Ff(j)*D+D*Fef(i,j)*D +D*Ff(j)*De(i)       &
-                  + De(i)*(F-w*S)*Df(j)+D*Fe(i)*Df(j)+D*F*Def(i,j)
-      end do; end do
-      do k=1,nc
-         call prop_overlap((/'GEO'/),S,Sg,c=(/k/))
-         do j=1,3; do i=1,3
-            Effg(i,j,k) = Effg(i,j,k) - tr(Sg(1),DFD(i,j))
-         end do; end do; Sg(1)=0
+      Eff = 0
+      call prop_oneave(S, (/'EL'/), (/De/), (/3,3/), Eff)
+      call print_tensor((/3,3/), -Eff, 'Alpha = -Eff', (/-freq,freq/))
+      !---------------------------------------------------------------------
+      ! electric-electric equations De(-w)f(+w), solve 6 instead of 3x3 eqs.
+      do k = 1, 3;
+         De(k) = dag(Df(k))
+         Fe(k) = dag(Ff(k))
+         call pert_dens(decomp, S, (/'EL','EL'/), (/k,1/), &
+                        (/D,De(:k),Df(k)/), (/F,Fe(:k),Ff(k)/), &
+                        Def(:k,k), Fef(:k,k), freq=(/-freq,freq/), comp=(/1,k/))
+         do j = 1, k-1
+            Def(k,j) = dag(Def(j,k))
+            Fef(k,j) = dag(Fef(j,k))
+         end do
       end do
-      DFD = 0
-      call print_tensor((/3,3,nc/),-Effg,'d/dg Alpha = -Effg',(/-w,w,0*w/))
-      !---------------------------------
-      !electric-electric equations Dee, e_-w
-      do k=1,3
-         call pert_dens((/'EL','EL'/),S,(/D,De(1:k),De(k)/),(/F,Fe(1:k),Fe(k)/), &
-                          Dee(1,k),Fee(1,k),w=(/-w,-w/),c=(/1,k,k,k/))
-         do i=1,k-1; Dee(k,i)=Dee(i,k); Fee(k,i)=Fee(i,k); end do
+      !------------------------
+      ! polarizability gradient
+      Egff = 0
+      call prop_oneave(S, (/'GEO','EL '/), (/Df/), shape(Egff), Egff)
+      ! call print_tensor(Egff, shape(Egff), 'E1geDf'); Egff=0
+      call prop_oneave(S, (/'GEO','EL '/), (/De/), shape(Egff), Egff, perm=(/1,3,2/))
+      ! call print_tensor(Egff, shape(Egff), 'E1gfDe'); Egff=0
+      call prop_twoave((/'GEO'/), (/D,De,Df,Def/), shape(Egff), Egff)
+      do k = 1, 3
+         do j = 1, 3
+            DFDef(j,k) = De(j)*Ff(k)*D + De(j)*(F-freq*S)*Df(k) + D*Fe(j)*Df(k) &
+                       + Df(k)*Fe(j)*D + Df(k)*(F+freq*S)*De(j) + D*Ff(k)*De(j) &
+                       + Def(j,k)*F*D + D*Fef(j,k)*D + D*F*Def(j,k)
+         end do
       end do
-      !second hyperpolarizability
-      Effff=0 !no energy or reorth contributions
-      !stationarity multiplier contribution
-      do l=1,3; Xf(l) = Df(l)*S*D-D*S*Df(l); end do
-      do k=1,3; do j=1,3; do i=1,3
-         A = (Fef(i,j)*De(k)+Fee(i,k)*Df(j)+Fef(k,j)*De(i)    &
-             +Fe(k)*Def(i,j)+Ff(j)*Dee(i,k)+Fe(i)*Def(k,j))*S &
-           - S*(Def(i,j)*Fe(k)+Dee(i,k)*Ff(j)+Def(k,j)*Fe(i)  &
-               +De(k)*Fef(i,j)+Df(j)*Fee(i,k)+De(i)*Fef(k,j))
-         do l=1,3; Effff(i,j,k,l) = Effff(i,j,k,l)-tr(Xf(l),A); end do; A=0
-      end do; end do; end do
-      Xf = 0
-      !idempotency multiplier contribution
-      do l=1,3; Lf(l) = Ff(l)*D*S+S*D*Ff(l)-Ff(l); end do
-      do k=1,3; do j=1,3; do i=1,3
-         A = Def(k,j)*S*De(i)+Dee(i,k)*S*Df(j)+Def(i,j)*S*De(k) &
-           + De(i)*S*Def(k,j)+Df(j)*S*Dee(i,k)+De(k)*S*Def(i,j)
-         do l=1,3; Effff(i,j,k,l) = Effff(i,j,k,l)-tr(Lf(l),A); end do; A=0
-      end do; end do; end do; Lf=0
-      call print_tensor((/3,3,3,3/),-Effff,'Gamma = -Effff',(/-w,w,-w,w/))
-      !------------------------------
-      !delete matrices, reverse signs (from quasi-energy- to property-derivatives)
-      De=0; Fe=0; Df=0; Ff=0; Def=0; Fef=0; Dee=0; Fee=0
-      Ef=-Ef; Eff=-Eff; Effff=-Effff; Effg=-Effg
+      call prop_oneave(S, (/'GEO'/), (/Def/), shape(Egff), Egff, DFD=(/DFDef/))
+      DFDef = 0
+      ! call print_tensor(Egff, shape(Egff), 'E1gDef+E2gDeDf-SgDFDef'); Egff=0
+      call print_tensor(shape(Egff), -Egff, 'd/dg Alpha = -Egff', &
+                        (/0*freq,-freq,freq/))
+      DFDef=0
+      !------------------------------------------------------------------
+      ! electric-electric equations Df(w)f(w), solve 6 instead of 3x3 eqs.
+      do l = 1, 3;
+         call pert_dens(decomp, S, (/'EL','EL'/), (/l,1/), &
+                        (/D,Df(:l),Df(l)/), (/F,Ff(:l),Ff(l)/), &
+                        Dff(:l,l), Fff(:l,l), freq=(/freq,freq/), comp=(/1,l/))
+         do j = 1, l-1
+            Dff(l,j) = Dff(j,l)
+            Fff(l,j) = Fff(j,l)
+         end do
+      end do
+      !---------------------------
+      ! second hyperpolarizability
+      Effff = 0 !no energy (oneave/twoave) contributions
+      ! gradient multiplier contribution -tr (DeSD-) (FDS-)fef
+      do i = 1, 3
+         DeSD(i) = De(i)*S*D - D*S*De(i)
+      end do
+      do l = 1, 3
+         do k = 1, 3
+            do j = 1, 3
+               FDSfef = (Ff(j)*Def(k,l) + Fe(k)*Dff(j,l) + Ff(l)*Def(k,j)      &
+                      +  Fef(k,l)*Df(j) + Fff(j,l)*De(k) + Fef(k,j)*Df(l)) * S &
+                  - S * (Df(j)*Fef(k,l) + De(k)*Fff(j,l) + Df(l)*Fef(k,j)      &
+                      +  Def(k,l)*Ff(j) + Dff(j,l)*Fe(k) + Def(k,j)*Ff(l))
+               do i = 1, 3
+                  Effff(i,j,k,l) = Effff(i,j,k,l) - tr(DeSD(i),FDSfef)
+               end do; FDSfef=0
+            end do
+         end do
+      end do
+      DeSD = 0
+      ! idempotency multiplier contribution -tr (FeDS+) (DSD)fef
+      do i = 1, 3
+         FeDS(i) = Fe(i)*D*S + S*D*Fe(i) - Fe(i)
+      end do
+      do l = 1, 3
+         do k = 1, 3
+            do j = 1, 3
+               DSDfef = Df(j)*S*Def(k,l) + De(k)*S*Dff(j,l) + Df(l)*S*Def(k,j) &
+                      + Def(k,l)*S*Df(j) + Dff(j,l)*S*De(k) + Def(k,j)*S*Df(l)
+               do i = 1, 3
+                  Effff(i,j,k,l) = Effff(i,j,k,l) - tr(FeDS(i),DSDfef)
+               end do; DSDfef=0
+            end do
+         end do
+      end do
+      FeDS = 0
+      call print_tensor((/3,3,3,3/), -Effff, 'Gamma = -Effff', (/-freq,freq,-freq,freq/))
+      ! delete matrices, reverse signs (from quasi-energy- to property-derivatives)
+      De=0; Fe=0; Df=0; Ff=0; Def=0; Fef=0; Dff=0; Fff=0
+      Ef=-Ef; Eff=-Eff; Effff=-Effff; Egff=-Egff
    end subroutine
 
 
-  subroutine dg_energy(S, D, F, n)
-
-!   ----------------------------------------------------------------------------
-    type(matrix)        :: S, D, F
-    integer, intent(in) :: n
-!   ----------------------------------------------------------------------------
-    type(matrix)        :: W, Sg(1)
-    integer             :: i, iatom, ix, iy, iz
-    complex(8)          :: g(n)
-!   ----------------------------------------------------------------------------
-
-    g = 0.0d0
-
-    call prop_energy((/'GEO'/), (/D/), g)
-
-    W = D*F*D
-
-    do i = 1, n
-
-      call prop_overlap((/'GEO'/), S, Sg, c=(/i/))
-      g(i) = g(i) - dot(W, Sg(1))
-      Sg(1) = 0
-
-    end do
-
-    W = 0
-
-    call header('molecular gradient', -1)
-
-    do iatom = 1, nr_atoms
-      ix = 3*(iatom - 1) + 1
-      iy = 3*(iatom - 1) + 2
-      iz = 3*(iatom - 1) + 3
-      write(*, '(a6, 3e26.16)') sym_dep_nuc_name(iatom), real(g(ix)), real(g(iy)), real(g(iz))
-    end do
-
-    call prsymb(unit_output, '-', 46, 0)
-
-  end subroutine
-
-
-
-! subroutine DipGradi(S,D,F,nc)
-!     type(matrix):: S,D,F,Df(3),Ff(3),DFD(3),Sg(1)
-!     real(8):: Efg(3,nc); integer:: nc,i,j
-!     !dipole moment
-!     Efg(:,1)=0; call prop_energy((/'EL'/),(/D/),Efg)
-!     i = max(1,ceiling(log10(maxval(abs(Efg(:,1))))))
-!     print '("Dipole = -Ef"/3f19.<16-i>/)',-Efg(:,1)
-!     !first order equations
-!     call pert_dens((/'EL'/),S,(/D/),(/F/),Df,Ff,w=(/0d0/))
-!     Efg=0; call prop_energy((/'EL','GEO'/),(/D/),Efg)
-!     call prop_energy((/'GEO'/),(/D,Df/),Efg)
-!     do i=1,3; DFD(i) = Df(i)*F*D+D*Ff(i)*D+D*F*Df(i); end do
-!     do j=1,nc
-!         call prop_overlap((/'GEO'/),S,Sg,c=(/j/))
-!         do i=1,3
-!             Efg(i,j) = Efg(i,j) - dot(DFD(i),Sg(1))
-!         end do; Sg(1)=0
-!     end do; do i=1,3; DFD(i)=0; end do
-!     i = max(1,ceiling(log10(maxval(abs(Efg)))))
-!     print '("d/dg Dipole = -Efg w:"2f6.3/<nc>(3f19.<16-i>/))',0d0,0d0,-Efg
-!     do i=1,3; Df(i)=0; Ff(i)=0; end do
-! end subroutine
+   subroutine vibhyp_hyp_dipgra_polgra(decomp, S, D, F, ng, freq, &
+                                       dip, Eff, Efff, Egf, Egff)
+      !> Contains matrices from OAO decomposition of overlap matrix
+      type(decompItem),intent(in) :: decomp
+      type(matrix), intent(in)  :: S, D, F
+      integer,      intent(in)  :: ng
+      complex(8),   intent(in)  :: freq(3)
+      complex(8),   intent(out) :: dip(3), Eff(3,3,3), Efff(3,3,3), &
+                                   Egf(ng,3,3), Egff(ng,3,3,3)
+      type(matrix) :: Df(3,3), Dff(3,3,3), DFDf(3), &
+                      Ff(3,3), Fff(3,3,3), DFDff(3,3)
+      integer      :: i, j, k, m, n, nj, nk, mj, mk
+      logical      :: exists
+      ! verify that frequencies sum to zero
+      if (abs(sum(freq)) > 1d-15) &
+         call quit('vibhyp_hyp_dipgra_polgra: sum(freq) should be zero!')
+      ! verify that DALTON.HES exists before doing anything
+      call GPINQ('DALTON.HES', 'EXIST', exists)
+      if (.not.exists) call quit('vibhyp_hyp_dipgra_polgra: Hessian file', &
+                                 ' DALTON.HES not found, but will be needed')
+      ! dipole moment
+      dip = 0
+      call prop_oneave(S, (/'EL'/), (/D/), (/3/), dip)
+      dip = -dip
+      call print_tensor((/3/), dip, 'dipmom = -Ef')
+      !----------------------
+      ! first order equations
+      do n = 1, 3
+         ! if frequency previously solved for, copy and skip
+         do m = 1, n
+            if (freq(m)==freq(n) .or. freq(m)==-freq(n)) exit
+         end do
+         if (m /= n) then
+            do i=1,3
+               if (freq(m)==freq(n)) Df(i,n) = Df(i,m)
+               if (freq(m)==freq(n)) Ff(i,n) = Ff(i,m)
+               if (freq(m)/=freq(n)) Df(i,n) = dag(Df(i,m))
+               if (freq(m)/=freq(n)) Ff(i,n) = dag(Ff(i,m))
+            end do
+            cycle
+         end if
+         ! new frequency, so solve
+         call pert_dens(decomp, S, (/'EL'/), (/3/), (/D/), (/F/), &
+                        Df(:,n), Ff(:,n), freq=(/freq(n)/))
+      end do
+      !-------------------
+      ! 3 polarizabilities
+      do n = 1, 3
+         ! if frequency already calculated, copy and skip
+         do m = 1, n
+            if (freq(m)==freq(n) .or. freq(m)==-freq(n)) exit
+         end do
+         if (m /= n) then
+            Eff(:,:,n) = Eff(:,:,m)
+            cycle
+         end if
+         ! not previously calculated, so contract
+         Eff(:,:,n) = 0
+         call prop_oneave(S, (/'EL'/), (/Df(:,n)/), (/3,3/), Eff(:,:,n))
+         call print_tensor((/3,3/), -Eff(:,:,n), 'Alpha = -Eff', (/-freq(n),freq(n)/) )
+      enddo
+      !--------------------------
+      ! 3 dipole moment gradients
+      do n = 1, 3
+         ! if frequency already calculated, copy and skip
+         do m = 1, n
+            if (freq(m)==freq(n) .or. freq(m)==-freq(n)) exit
+         end do
+         if (m /= n) then
+            Egf(:,:,n) = Egf(:,:,m)
+            cycle
+         end if
+         ! not previously calculated, so contract
+         Egf(:,:,n) = 0
+         call prop_oneave(S, (/'GEO','EL '/), (/D/), (/ng,3/), Egf(:,:,n))
+         ! call print_tensor((/ng,3/), Egf(:,:,n), 'E0gf'); Egf(:,:,n)=0
+         call prop_twoave((/'GEO'/), (/D,Df(:,n)/), (/ng,3/), Egf(:,:,n))
+         ! call print_tensor( (/3,ng/), Efg(:,:,n), 'E1gDf'); Efg(:,:,n)=0
+         do i = 1, 3
+            DFDf(i) = Df(i,n)*(F+freq(n)/2*S)*D + D*Ff(i,n)*D &
+                          + D*(F-freq(n)/2*S)*Df(i,n)
+         end do
+         call prop_oneave(S, (/'GEO'/), (/Df(:,n)/), (/ng,3/), Egf(:,:,n), &
+                          DFD=(/DFDf/), freq=(/-freq(n)/))
+         DFDf = 0
+         ! call print_tensor((/ng,3/), Egf(:,:,n), 'E1gDf - i/2TgDf - Sg(DFD)f'); Egf(:,:,n)=0
+         call print_tensor((/ng,3/), -Egf(:,:,n), 'd/dg dipmom = -Egf', &
+                           (/-freq(n),freq(n)/))
+      end do
+      !-----------------------
+      ! second order equations
+      do n = 1, 3
+         nj = max(1,n-1) !first electric frequency
+         nk = min(3,n+1) !second electric frequency
+         ! if these equations have been solved previously, copy and skip
+         do m = 1, n
+            mj = max(1,m-1)
+            mk = min(3,m+1)
+            if (freq(mj)== freq(nj) .and. freq(mk)== freq(nk) .or. &
+                freq(mj)== freq(nk) .and. freq(mk)== freq(nj) .or. &
+                freq(mj)==-freq(nj) .and. freq(mk)==-freq(nk) .or. &
+                freq(mj)==-freq(nk) .and. freq(mk)==-freq(nj)) exit
+         end do
+         if (m /= n) then
+            do k = 1, 3
+               do j = 1, 3
+                  if (freq(mj)==freq(nj)) then
+                     Dff(j,k,n) = Dff(j,k,m)
+                     Fff(j,k,n) = Fff(j,k,m)
+                  else if (freq(mj)==freq(nk)) then
+                     Dff(j,k,n) = Dff(k,j,m)
+                     Fff(j,k,n) = Fff(k,j,m)
+                  else if (freq(mj)==-freq(nj)) then
+                     Dff(j,k,n) = dag(Dff(j,k,m))
+                     Fff(j,k,n) = dag(Fff(j,k,m))
+                  else !freq(mj)==-freq(nk)
+                     Dff(j,k,n) = dag(Dff(k,j,m))
+                     Fff(j,k,n) = dag(Fff(k,j,m))
+                  end if
+               end do
+            end do
+            cycle
+         end if
+         ! new pair of frequencies, so must solve
+         if (freq(nj)==freq(nk) .or. freq(nj)==-freq(nk)) then
+            do k = 1, 3
+               call pert_dens(decomp, S, (/'EL','EL'/), (/k,1/),  &
+                              (/D,Df(1:k,nj),Df(k,nk)/),  &
+                              (/F,Ff(1:k,nj),Ff(k,nk)/),  &
+                              Dff(1:k,k,n), Fff(1:k,k,n), &
+                              freq=(/freq(nj),freq(nk)/), comp=(/1,k/))
+               do j = 1, k-1
+                  if (freq(nj)==freq(nk)) Dff(k,j,n) = Dff(j,k,n)
+                  if (freq(nj)==freq(nk)) Fff(k,j,n) = Fff(j,k,n)
+                  if (freq(nj)/=freq(nk)) Dff(k,j,n) = dag(Dff(j,k,n))
+                  if (freq(nj)/=freq(nk)) Fff(k,j,n) = dag(Fff(j,k,n))
+               end do
+            end do
+         else
+            call pert_dens(decomp, S, (/'EL','EL'/), (/3,3/),                        &
+                           (/D,Df(:,nj),Df(:,nk)/), (/F,Ff(:,nj),Ff(:,nk)/), &
+                           Dff(:,:,n), Fff(:,:,n), freq=(/freq(nj),freq(nk)/))
+         end if
+      end do
+      !-----------------------------
+      ! 1 first hyperpolarizabilitiy
+      Efff = 0
+      call prop_oneave(S, (/'EL'/), (/Dff(:,:,3)/), (/3,3,3/), Efff)
+      call print_tensor((/3,3,3/), -Efff, 'Beta = -Efff', &
+                        (/freq(1),freq(2),freq(3)/))
+      !---------------------------
+      ! 3 polarizability gradients
+      do n = 1, 3
+         nj = max(1,n-1) !first electric frequency
+         nk = min(3,n+1) !second electric frequency
+         ! if already calculated for these frequencies, copy and skip
+         do m = 1, n
+            mj = max(1,m-1)
+            mk = min(3,m+1)
+            if (freq(mj)== freq(nj) .and. freq(mk)== freq(nk) .or. &
+                freq(mj)== freq(nk) .and. freq(mk)== freq(nj) .or. &
+                freq(mj)==-freq(nj) .and. freq(mk)==-freq(nk) .or. &
+                freq(mj)==-freq(nk) .and. freq(mk)==-freq(nj)) exit
+         end do
+         if (m /= n) then
+            if (freq(mj)==freq(nj) .or. freq(mj)==-freq(nj)) then
+               Egff(:,:,:,n) = Egff(:,:,:,m)
+            else
+               do k = 1, 3
+                  do j = 1, 3
+                  Egff(:,j,k,n) = Egff(:,k,j,m)
+               end do
+               end do
+            end if
+            cycle
+         end if
+         ! not calculated before, so calculate
+         Egff(:,:,:,n) = 0
+         call prop_oneave(S, (/'GEO','EL '/), (/Df(:,nk)/), (/ng,3,3/), Egff(:,:,:,n))
+         ! call print_tensor((/ng,3,3/), Egff(:,:,:,n), 'E1geDf'); Egff(:,:,:,n)=0
+         call prop_oneave(S, (/'GEO','EL '/), (/Df(:,nj)/), (/ng,3,3/), Egff(:,:,:,n), perm=(/1,3,2/))
+         ! call print_tensor((/ng,3,3/), Egff(:,:,:,n), 'E1gfDe'); Egff(:,:,:,n)=0
+         call prop_twoave((/'GEO'/), (/D,Df(:,nj),Df(:,nk),Dff(:,:,n)/), &
+                          (/ng,3,3/), Egff(:,:,:,n))
+         do k = 1, 3
+            do j = 1, 3
+               DFDff(j,k) = Df(j,nj)*Ff(k,nk)*D + D*Ff(k,nk)*Df(j,nj)     &
+                          + Df(k,nk)*Ff(j,nj)*D + D*Ff(j,nj)*Df(k,nk)     &
+                          + Df(k,nk)*(F+(freq(nk)-freq(nj))/2*S)*Df(j,nj) &
+                          + Df(j,nj)*(F+(freq(nj)-freq(nk))/2*S)*Df(k,nk) &
+                          + D*(F-(freq(nj)+freq(nk))/2*S)*Dff(j,k,n)      &
+                          + Dff(j,k,n)*(F+(freq(nj)+freq(nk))/2*S)*D + D*Fff(j,k,n)*D
+            end do
+         end do
+         call prop_oneave(S, (/'GEO'/), (/Dff(:,:,n)/), (/ng,3,3/), Egff(:,:,:,n), &
+                          DFD=(/DFDff/), freq=(/-freq(nj)-freq(nk)/))
+         DFDff = 0
+         ! call print_tensor((/ng,3,3/), Egff(:,:,:,n), &
+         !                   'E1gDef + E2gDeDf - i/2TgDef - Sg(DFD)ef'); Egff(:,:,:,n)=0
+         call print_tensor((/ng,3,3/), -Egff(:,:,:,n), 'd/dg Alpha = -Egff', &
+                           (/-freq(nj)-freq(nk),freq(nj),freq(nk)/))
+      end do
+      ! delete/free perturbed matrices
+      Df=0; Dff=0; Ff=0; Fff=0
+      ! reverse signs on quasi-energy derivatives to get dipole, alpha and beta
+      Eff=-Eff; Efff=-Efff; Egf=-Egf; Egff=-Egff
+   end subroutine
 
 
 end module
