@@ -1,9 +1,19 @@
-extern "C" {
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-}
+
+#include <cstdlib>
+#include <cstdio>
+#include <cstring>
 #include "xcfun_internal.h"
+
+static bool xcfun_is_setup = false;
+
+static void xcint_assure_setup()
+{
+  if (!xcfun_is_setup)
+    {
+      xcint_setup_functionals();
+      xcfun_is_setup = true;
+    }
+}
 
 void xc_die(const char *message, int code)
 {
@@ -62,6 +72,7 @@ double xc_param_get(const xc_functional::xc_functional_data *params,
 
 xc_functional::xc_functional_data::xc_functional_data(void)
 {
+  xcint_assure_setup();
   mode = XC_VARS_AB; //Use alpha/beta as default
   type = XC_LDA; // LDA is smallest type, so assume this initially
   max_order = -1;

@@ -7,7 +7,7 @@ static num energy(const densvars<num> &d)
   return pw92eps::eps(d)*d.n;
 }  
 
-SETUP_FUNCTIONAL(functional &f)
+void setup_pw92c(functional &f)
 {
   f.describe("pw92c",XC_LDA,
 	     "PW92 LDA correlation",

@@ -18,7 +18,7 @@ static num energy (const densvars<num> &d)
            + pbex::energy_pbe_ab(pbex::R_pbe,d.b,d.gbb)*fw(param_a, d.b, d.taub) );
 }
 
-SETUP_FUNCTIONAL(functional &f)
+void setup_m05x2x(functional &f)
 {
   f.describe("m05x2x",XC_MGGA,
 	     "M05-2X exchange",

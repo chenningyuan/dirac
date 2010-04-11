@@ -30,7 +30,7 @@ static taylor<T,Nvar,Ndeg> lb94(const densvars<taylor<T,Nvar,Ndeg> > &d)
   return res;
 }
 
-SETUP_FUNCTIONAL(functional &f)
+void setup_lb94(functional &f)
 {
   f.describe("lb94",XC_GGA,
 	     "LB94 Exchange-correlation functional",

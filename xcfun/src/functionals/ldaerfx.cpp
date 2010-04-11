@@ -41,7 +41,7 @@ static num energy(const densvars<num> &d)
   return 0.5*(esrx_ldaerfspin(d.a,mu) + esrx_ldaerfspin(d.b,mu)); 
 }
 
-SETUP_FUNCTIONAL(functional &f)
+void setup_ldaerfx(functional &f)
 {
   f.describe("ldaerfx",XC_LDA,	     
 	     "Short-range spin-dependent LDA exchange functional",

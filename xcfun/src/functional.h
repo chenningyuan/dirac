@@ -101,19 +101,6 @@ functional *xc_get_functional_by_name(const char *name);
 // Create a functional object and run f to fill it with data
 int xc_run_functional_setup(void (*f)(functional &));
 
-// Save functional implementor from headaches
-#define SETUP_FUNCTIONAL static void setup_functional(functional &);\
-  static int setup_res = xc_run_functional_setup(setup_functional);\
-static void setup_functional
-
-#define SETUP_FUNCTIONAL2 static void setup_functional2(functional &);\
-  static int setup_res2 = xc_run_functional_setup(setup_functional2);\
-static void setup_functional2
-
-#define SETUP_FUNCTIONAL3 static void setup_functional3(functional &);\
-  static int setup_res3 = xc_run_functional_setup(setup_functional3);\
-static void setup_functional3
-
 //  Macros to help set up functionals to the order defined in config.h
 
 #define SET_LDA_N(FUNOBJ,ENERGY,ORDER)\

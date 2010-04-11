@@ -46,5 +46,6 @@ settings_database &xc_get_settings();
 typedef void (*evaluator)(const xc_functional::xc_functional_data &fun, double *, const double *);
 evaluator xc_evaluator_lookup(int mode, int type, int order);
 
+void xcint_setup_functionals();
 
 #endif

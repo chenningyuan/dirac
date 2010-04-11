@@ -15,7 +15,7 @@ static num energy(const densvars<num> &d)
     + pw91k_prefactor(d.b)*pw91xk_enhancement(param_AB,d.b,d.gbb);
 }
 
-SETUP_FUNCTIONAL(functional &f)
+void setup_pw91k(functional &f)
 {
   f.describe("pw91k",XC_LDA,
 	     "PW91 GGA Kinetic Energy Functional",

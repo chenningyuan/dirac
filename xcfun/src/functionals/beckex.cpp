@@ -33,7 +33,7 @@ static num energy_corr(const densvars<num> &d)
   return becke_corr(d.a,d.gaa) + becke_corr(d.b,d.gbb);
 }
 
-SETUP_FUNCTIONAL(functional &f)
+void setup_beckex(functional &f)
 {
   f.describe("beckex",XC_GGA,
 	     "Becke 88 exchange",
@@ -74,7 +74,7 @@ SETUP_FUNCTIONAL(functional &f)
   f.add_test(XC_VARS_AB,2,d,ref,1e-11);
 }
 
-SETUP_FUNCTIONAL2(functional &f)
+void setup_beckexcorr(functional &f)
 {
   f.describe("beckexcorr",XC_GGA,
 	     "Becke 88 exchange correction",

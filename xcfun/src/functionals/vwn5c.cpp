@@ -1,7 +1,7 @@
 #include "functional.h"
 #include "vwn.h"
 
-SETUP_FUNCTIONAL(functional &f)
+void setup_vwn5(functional &f)
 {
   f.describe("vwn5c",XC_LDA,
 	     "VWN5 LDA Correlation functional",

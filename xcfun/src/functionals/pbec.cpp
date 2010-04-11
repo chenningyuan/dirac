@@ -46,7 +46,7 @@ static num energy(const densvars<num> &d)
 };
 #endif
 
-SETUP_FUNCTIONAL(functional &f)
+void setup_pbec(functional &f)
 {
   f.describe("pbec",XC_GGA,
 	     "PBE correlation functional",

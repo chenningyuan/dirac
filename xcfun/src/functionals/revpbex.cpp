@@ -9,7 +9,7 @@ static num energy(const densvars<num> &d)
 }
 
 
-SETUP_FUNCTIONAL(functional &f)
+void setup_revpbex(functional &f)
 {
   f.describe("revpbex",XC_GGA,
 	     "Revised PBE Exchange Functional",

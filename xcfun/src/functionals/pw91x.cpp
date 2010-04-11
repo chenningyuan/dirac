@@ -12,7 +12,7 @@ static num energy(const densvars<num> &d)
     + prefactor(d.b)*pw91xk_enhancement(param_AB,d.b,d.gbb);
 }
 
-SETUP_FUNCTIONAL(functional &f)
+void setup_pw91x(functional &f)
 {
   f.describe("pw91x",XC_GGA,
 	     "Perdew-Wang 1991 GGA Exchange Functional",

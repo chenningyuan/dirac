@@ -1,7 +1,7 @@
 #include "functional.h"
 #include "slater.h"
 
-SETUP_FUNCTIONAL(functional &f)
+void setup_slaterx(functional &f)
 {
   f.describe("slaterx",XC_LDA,
 	     "Slater LDA exchange",

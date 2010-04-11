@@ -10,7 +10,7 @@ static num energy(const densvars<num> &d)
     + pbex::energy_pbe_ab(pbex::R_pbe,d.b,d.gbb);
 }
 
-SETUP_FUNCTIONAL(functional &f)
+void setup_pbex(functional &f)
 {
   f.describe("pbex",XC_GGA,
 	     "PBE Exchange Functional",

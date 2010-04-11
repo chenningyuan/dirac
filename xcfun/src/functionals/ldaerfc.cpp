@@ -105,7 +105,7 @@ static num energy(const densvars<num> &d)
   return d.n*(eps - ecorrlr(d,d.get(mu),eps));
 }
 
-SETUP_FUNCTIONAL(functional &f)
+void setup_ldaerfc(functional &f)
 {
   f.describe("ldaerfc",XC_LDA,
 	     "Short-range spin-dependent LDA correlation functional",

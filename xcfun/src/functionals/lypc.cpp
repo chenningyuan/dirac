@@ -25,7 +25,7 @@ static num new_energy(const densvars<num> &d)
 		 + (2.0/3.0*n2 - d.b*d.b)*d.gaa));
 }
 
-SETUP_FUNCTIONAL(functional &f)
+void setup_lypc(functional &f)
 {
   f.describe("lypc",XC_GGA,
 	     "LYP correlation",

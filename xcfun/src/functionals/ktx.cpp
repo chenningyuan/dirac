@@ -22,7 +22,7 @@ static num new_energy(const densvars<num> &d)
   return (ea + eb);
 }
 
-SETUP_FUNCTIONAL(functional &f)
+void setup_ktx(functional &f)
 {
   f.describe("ktx", XC_GGA,
 	     "KT exchange GGA correction",

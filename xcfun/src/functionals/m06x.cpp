@@ -31,7 +31,7 @@ static num energy (const densvars<num> &d)
           );
 }
 
-SETUP_FUNCTIONAL(functional &f)
+void setup_m06x(functional &f)
 {
   f.describe("m06x",XC_MGGA,
 	     "M06 exchange",
