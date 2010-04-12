@@ -11,10 +11,76 @@ module aor_property_definitions
 
     implicit none
 
+    public aoresponse_nr_electrons
+!   public aoresponse_hf_energy
+
+    private
+
     character(1)  :: fc(3) = (/'x', 'y', 'z'/)
     real(8) :: small_number = 1.0d-10
 
 contains
+
+  subroutine aoresponse_nr_electrons(S, D)
+
+!   ----------------------------------------------------------------------------
+    type(matrix), intent(inout) :: S, D
+!   ----------------------------------------------------------------------------
+
+    S = 1.0d0*S
+    D = 1.0d0*D
+
+    write(*, *) 'electron count from S**D:', dot(S, D)
+
+  end subroutine
+
+#ifdef MERGE_WITH_LINSCA
+  subroutine aoresponse_hf_energy(D, F)
+
+!   ----------------------------------------------------------------------------
+    type(matrix), intent(inout) :: D, F
+!   ----------------------------------------------------------------------------
+    type(matrix)                :: G(1)
+    character(4)                :: nop(0)
+!   ----------------------------------------------------------------------------
+
+    D = 1.0d0*D
+    F = 1.0d0*F
+
+    G(1) = tiny(1.0d0)*D
+
+    call prop_fock(nop, (/D, D/), G)
+    write(*, *) 'electronic energy from dot(F, D) - 0.5d0*dot(G(1), D):', dot(F, D) - 0.5d0*dot(G(1), D)
+
+    G(1) = 0
+
+  end subroutine
+
+  subroutine mu(S, D, F)
+
+    type(matrix), intent(inout) :: S, D, F
+!   ----------------------------------------------------------------------------
+    complex(8)               :: e_i(3)
+    integer                     :: i, j
+
+    S = 1.0d0*S
+    D = 1.0d0*D
+    F = 1.0d0*F
+
+    e_i = 0.0d0
+    call prop_energy((/'EL'/), (/D/), e_i)
+
+    do i = 1, 3
+      print '("@ -< "a1" > = " f26.10)', fc(i), -real(e_i(i))
+    end do
+
+  end subroutine
+
+
+
+
+
+
 
    subroutine aor_magnetizability(S, D, F, w)
    !no-Lon and London magnetizability
@@ -172,41 +238,6 @@ contains
 
   end subroutine
 
-  subroutine nr_electrons(S, D)
-
-    type(matrix), intent(inout) :: S, D
-
-    S = 1.0d0*S
-    D = 1.0d0*D
-
-    write(*, *) 'electron count from S**D:', dot(S, D)
-
-  end subroutine
-
-  subroutine energy(D, F)
-
-    type(matrix), intent(inout) :: D, F
-!   ----------------------------------------------------------------------------
-    type(matrix)                :: G(1)
-    real(8)               :: xc_energy
-    character(4)                :: nop(0)
-
-    D = 1.0d0*D
-    F = 1.0d0*F
-
-    G(1) = 1.0d-100*D
-
-    call prop_fock(nop, (/D, D/), G)
-    write(*, *) 'electronic energy from F**D - 0.5d0*G(1)**D:', dot(F, D) - 0.5d0*dot(G(1), D)
-
-    G(1) = 0
-
-    xc_energy = 0.0d0
-!   call xc_contribution(0, (/D/), (/F/), xc_energy)
-    write(*, *) 'xc energy:', xc_energy
-
-  end subroutine
-
   subroutine test_matrix_defop(S, D, F, C_i)
 
 !   ----------------------------------------------------------------------------
@@ -283,26 +314,6 @@ contains
     do i = 1, 6
       write(*, *) 'blub', i, e_ij(i)
 !     print '("@ -< "a1" > = " f26.10)', fc(i), -real(e_i(i))
-    end do
-
-  end subroutine
-
-  subroutine mu(S, D, F)
-
-    type(matrix), intent(inout) :: S, D, F
-!   ----------------------------------------------------------------------------
-    complex(8)               :: e_i(3)
-    integer                     :: i, j
-
-    S = 1.0d0*S
-    D = 1.0d0*D
-    F = 1.0d0*F
-
-    e_i = 0.0d0
-    call prop_energy((/'EL'/), (/D/), e_i)
-
-    do i = 1, 3
-      print '("@ -< "a1" > = " f26.10)', fc(i), -real(e_i(i))
     end do
 
   end subroutine
@@ -1430,5 +1441,6 @@ contains
     end do
 
   end subroutine
+#endif /* ifdef MERGE_WITH_LINSCA */
 
 end module

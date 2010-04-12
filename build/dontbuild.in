@@ -51,7 +51,7 @@ xcfun/fortran/example.F90
 xcfun/.*[^0]$
 xcfun/.*
 aoresponse/aoresponse_visual.F90
-aoresponse/aor_property_definitions.*
+aoresponse/aor_property_definitions_zzz.F90
 aoresponse/aor_binomial.F90
 aoresponse/grid.F90
 aoresponse/.*

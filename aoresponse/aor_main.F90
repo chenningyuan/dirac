@@ -1,5 +1,6 @@
 module aor_main
 
+  use prop_test
   use matrix_module
   use kinds_m
   use memory_allocator
@@ -9,7 +10,7 @@ module aor_main
   use vib_prop
   use aor_cfg
 ! use aor_binomial
-! use aor_property_definitions
+  use aor_property_definitions
 ! use aor_property_definitions_zzz
 
   implicit none
@@ -30,9 +31,7 @@ contains
     integer       :: i, j
     integer, intent(in)    :: lwork
     real(8), intent(inout) :: work(lwork)
-    complex(8),allocatable:: tsr(:) !ajt: scratch for property tensors
-
-#ifdef MERGE_WITH_LINSCA
+    complex(8),allocatable:: tensor(:) !ajt: scratch for property tensors
 
 !   initialize fortran 77 work memory interface
     call di_set_f77_work(work, lwork)
@@ -55,10 +54,23 @@ contains
 !   call test_matrix_defop(S, D, F, C_i)
     C_i = 0
 
-    call nr_electrons(S, D)
-    call energy(D, F)
-    call mu(S, D, F)
+!   call aoresponse_nr_electrons(S, D)
 
+
+
+
+!   call aoresponse_hf_energy(D, F)
+!   call aoresponse_mu(S, D, F)
+
+!       if (cfg_rsp_polariz) then
+           allocate(tensor(3))
+           call elec_dipmom(S, D, F, tensor)
+           deallocate(tensor)
+!       endif
+
+
+
+#ifdef MERGE_WITH_LINSCA
     if (aor_cfg_quadrupole) then
       call aor_quadrupole(S, D, F)
     end if
