@@ -19,6 +19,8 @@ void xcint_setup_functionals()
   SETUP(setup_m05x2x);
   SETUP(setup_m06x);
   SETUP(setup_m06x2x);
+  SETUP(setup_m06lx);
+  SETUP(setup_m06hfx);
   SETUP(setup_pw91k);
   SETUP(setup_pw91x);
 }

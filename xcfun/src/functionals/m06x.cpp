@@ -35,10 +35,21 @@ void setup_m06x(functional &f)
 {
   f.describe("m06x",XC_MGGA,
 	     "M06 exchange",
-             "M06 Meta-GGA Exchange Functional\n"
+             "M06 Meta-Hybrid Exchange Functional\n"
              "Y Zhao and D. G. Truhlar, Theor. Chem. Account 120, 215 (2008)\n"
              "Implemented by Andre Gomes\n");
 
   SET_MGGA_ENERGY_FUNCTION(f,energy);
-
+  static const double d[] =
+    {1., .8, 1., 1., 1., .33, .21};
+  static const double ref[] =
+    { -0.62847646, 
+      -0.21390022, 
+      -0.32616945, 
+      -0.00031483, 
+      -0.00036575,  
+       0.00000000, 
+      -0.49338183, 
+      -0.25702272 };
+  f.add_test(XC_VARS_AB,1,d,ref,1e-5);
 }

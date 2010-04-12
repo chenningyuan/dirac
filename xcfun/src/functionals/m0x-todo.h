@@ -66,67 +66,6 @@ using M05_c_internal::m05_2x_correlation;
 
 #include "m0xy_fun.h"
 
-namespace M06_x_internal
-{
-   using pw91_like_x_internal::chi;
-   using m0xy_metagga_xc_internal::zet;
-   using m0xy_metagga_xc_internal::fw;
-   using m0xy_metagga_xc_internal::h;
-   using PBEx_internal::pbe_exchange;
-   using m0xy_metagga_xc_internal::alpha_x;
-
-   // M06-L exchange functional. Does not use HF exchange. 
-
-   template<class num>
-   static num m06_l_exchange(const densvars<num> &d)
-   {
-     const static double param_a[12] = 
-       {  3.987756e-01,  2.548219e-01,  2.923994e-01, -2.103655e+00, -6.302147e+00, 
-          1.097615e+01,  3.097273e+01, -2.318489e+01, -5.673480e+01,  2.160364e+01,
-          3.421814e+01, -9.049762e+00 }; 
-     const static double param_d[5] = 
-       {  6.012244e-01,  4.748822e-03, -8.635108e-04, -9.308062e-06,  4.482811e-05 }; 
-
-     num chia2 = pow(chi(d.a, d.gaa), 2);
-     num chib2 = pow(chi(d.b, d.gbb), 2);
-
-     return (  (  pbe_exchange(d.a, d.gaa)*fw(param_a, d.a, d.taua) 
-                + lsda_x(d.a)*h(param_d, alpha_x, chia2, zet(d.a, d.taua)))
-              +
-               (  pbe_exchange(d.b, d.gbb)*fw(param_a, d.b, d.taub) 
-                + lsda_x(d.b)*h(param_d, alpha_x, chib2, zet(d.b, d.taub)))
-            );
-   } 
-
-   // M06-HF exchange functional. Uses full HF exchange. 
-
-   template<class num>
-   static num m06_hf_exchange(const densvars<num> &d)
-   {
-     const static double param_a[12] = 
-       {  1.179732e-01, -1.066708e+00, -1.462405e-01,  7.481848e+00,  3.776679e+00, 
-         -4.436118e+01, -1.830962e+01,  1.003903e+02,  3.864360e+01, -9.806018e+01,
-          2.557716e+01,  3.590404e+01 }; 
-     const static double param_d[5] = 
-       { -1.179732e-01, -2.500000e-03, -1.180056e-02,  0.000000e+00,  0.000000e+00 }; 
-
-     num chia2 = pow(chi(d.a, d.gaa), 2);
-     num chib2 = pow(chi(d.b, d.gbb), 2);
-
-     return (  (  pbe_exchange(d.a, d.gaa)*fw(param_a, d.a, d.taua) 
-                + lsda_x(d.a)*h(param_d, alpha_x, chia2, zet(d.a, d.taua)))
-              +
-               (  pbe_exchange(d.b, d.gbb)*fw(param_a, d.b, d.taub) 
-                + lsda_x(d.b)*h(param_d, alpha_x, chib2, zet(d.b, d.taub)))
-            );
-   } 
-
-}
-
-using M06_x_internal::m06_l_exchange;
-using M06_x_internal::m06_hf_exchange;
-
-
 namespace M06_c_internal
 {
    using pw91_like_x_internal::chi;
@@ -186,21 +125,6 @@ namespace m0xy_metagga_xc_internal
       "Y Zhao, N. E. Schultz and D. G. Truhlar, "
       "J. Chem. Theory Comput. 2, 364 (2006)\n"; 
  
-  const char *m06_l_x_reference = 
-    "M06-L Meta-GGA Exchange Functional\n"
-      "Y Zhao and D. G. Truhlar, "
-      "J. Chem. Phys. 125, 194101 (2006)\n"; 
-
-  const char *m06_2x_x_reference = 
-    "M06-2X Meta-GGA Exchange Functional\n"
-      "Y Zhao and D. G. Truhlar, "
-      "Theor. Chem. Account 120, 215 (2008)\n"; 
-
-  const char *m06_x_reference = 
-    "M06 Meta-GGA Exchange Functional\n"
-      "Y Zhao and D. G. Truhlar, "
-      "Theor. Chem. Account 120, 215 (2008)\n"; 
-
 
   const char *m05_2x_c_reference = 
     "M05-2X Meta-GGA Correlation Functional\n"
