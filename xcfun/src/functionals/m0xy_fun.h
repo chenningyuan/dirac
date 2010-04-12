@@ -51,7 +51,7 @@ namespace m0xy_metagga_xc_internal
   // gamma calculates the quantity of TCA (2008) 120:215 eq 4, but we supply it with chi^2 as parameter
 
   template<class num>
-  static num gamma(       const double alpha, const num &chi2, const num &zet)
+  static num gamma(double alpha, const num &chi2, const num &zet)
   {
     return 1 + alpha*(chi2 + zet); 
   }
@@ -60,7 +60,7 @@ namespace m0xy_metagga_xc_internal
   // variable, since that is used always in terms of x^2
 
   template<class num>
-  static num h(       const double d[],        const double alpha, const num &chi2, const num &zet)
+  static num h(const double d[], double alpha, const num &chi2, const num &zet)
   {
     num gam1 = gamma(alpha,chi2,zet);
 
@@ -80,7 +80,7 @@ namespace m0xy_metagga_xc_internal
   // described at the time of coding (feb 2010) use 12 of them.
 
   template<class num>
-  static num fw(       const double a[12], const num &rho, const num &tau)
+  static num fw(const double a[12], const num &rho, const num &tau)
   {
     using pw91_like_x_internal::pw91k_prefactor;
 
@@ -125,7 +125,7 @@ namespace m0xy_metagga_xc_internal
   // described at the time of coding (feb 2010) use 5 of them.
 
   template<class num>
-  static num g(       const double param_c[5], const num &gamma_chi_squared)
+  static num g(const double param_c[5], const num &gamma_chi_squared)
   {
      num g = 0.0;
      num b   = gamma_chi_squared / (1.0 + gamma_chi_squared); 
@@ -144,8 +144,8 @@ namespace m0xy_metagga_xc_internal
   // functionals, for parallel spins
 
   template<class num>
-  static num m06_c_anti(       const double param_c[5], 
-                               const double param_d[5], 
+  static num m06_c_anti(const double param_c[5], 
+                        const double param_d[5], 
                         const num &chi_a, const num &zet_a, 
                         const num &chi_b, const num &zet_b) 
   {
