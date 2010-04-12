@@ -12,6 +12,7 @@ module aor_main
 ! use aor_binomial
   use aor_property_definitions
 ! use aor_property_definitions_zzz
+  use decompmod
 
   implicit none
 
@@ -32,6 +33,7 @@ contains
     integer, intent(in)    :: lwork
     real(8), intent(inout) :: work(lwork)
     complex(8),allocatable:: tensor(:) !ajt: scratch for property tensors
+   type(decompItem) :: decomp
 
 !   initialize fortran 77 work memory interface
     call di_set_f77_work(work, lwork)
@@ -67,6 +69,16 @@ contains
            call elec_dipmom(S, D, F, tensor)
            deallocate(tensor)
 !       endif
+
+
+    if (aor_cfg_alpha) then
+  !   call alpha(S, D, F, (/freq(1), -freq(1)/))
+           allocate(tensor(3*3))
+           call elec_polariz(decomp,S,D,F,freq(1) &
+                             +(0d0,1d0)*0.0d0,tensor)
+           deallocate(tensor)
+    end if
+
 
 
 

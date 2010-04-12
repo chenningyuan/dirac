@@ -12,7 +12,7 @@ module prop_test
    implicit none
 
    public elec_dipmom
-!  public elec_polariz
+   public elec_polariz
 !  public elec_hypolar
 !  public alt_elec_hypol
 !  public elec_sechyp
@@ -70,6 +70,7 @@ contains
       DFD = 0
    end subroutine
 
+#endif
 
    subroutine prop_test_polariz(decomp, S, D, F, idum, freq) !polarizability
       type(decompItem), intent(inout) :: decomp
@@ -89,6 +90,7 @@ contains
    end subroutine
 
 
+#ifdef BLUB
    subroutine prop_test_Gprime_Df(decomp, S, D, F, idum, freq) !Gprime_Df(-freq)
       type(decompItem), intent(inout) :: decomp
       type(matrix), intent(in) :: S, D, F
@@ -151,7 +153,6 @@ contains
    end subroutine
 
 
-#ifdef BLUB
    subroutine elec_polariz(decomp, S, D, F, freq, Eff)
       type(decompItem), intent(inout) :: decomp
       type(matrix),      intent(in)  :: S, D, F
@@ -169,6 +170,7 @@ contains
       Eff = -Eff
    end subroutine
 
+#ifdef BLUB
 
    subroutine elec_hypolar(decomp, S, D, F, freq, Efff)
       type(decompItem), intent(inout) :: decomp
