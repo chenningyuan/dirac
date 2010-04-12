@@ -27,5 +27,16 @@ void setup_m05x(functional &f)
              "Implemented by Andre Gomes\n");
 
   SET_MGGA_ENERGY_FUNCTION(f,energy);
-
+  static const double d[] = 
+    {1., .8, 1., 1., 1., .33, .21};
+  static const double ref[] =
+    { -1.27084478,
+      -0.37817260,
+      -0.61111195, 
+      -0.00261438,
+      -0.00344385,
+      0.00000000,
+      -0.53826566,
+      -0.31307152};
+  f.add_test(XC_VARS_AB,1,d,ref,1e-5);
 }
