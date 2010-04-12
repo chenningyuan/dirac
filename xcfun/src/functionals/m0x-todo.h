@@ -87,8 +87,8 @@ namespace M06_x_internal
      const static double param_d[5] = 
        {  6.012244e-01,  4.748822e-03, -8.635108e-04, -9.308062e-06,  4.482811e-05 }; 
 
-     num chia2 = pow(chi(d.a, d.gaa), 2.0);
-     num chib2 = pow(chi(d.b, d.gbb), 2.0);
+     num chia2 = pow(chi(d.a, d.gaa), 2);
+     num chib2 = pow(chi(d.b, d.gbb), 2);
 
      return (  (  pbe_exchange(d.a, d.gaa)*fw(param_a, d.a, d.taua) 
                 + lsda_x(d.a)*h(param_d, alpha_x, chia2, zet(d.a, d.taua)))
@@ -110,8 +110,8 @@ namespace M06_x_internal
      const static double param_d[5] = 
        { -1.179732e-01, -2.500000e-03, -1.180056e-02,  0.000000e+00,  0.000000e+00 }; 
 
-     num chia2 = pow(chi(d.a, d.gaa), 2.0);
-     num chib2 = pow(chi(d.b, d.gbb), 2.0);
+     num chia2 = pow(chi(d.a, d.gaa), 2);
+     num chib2 = pow(chi(d.b, d.gbb), 2);
 
      return (  (  pbe_exchange(d.a, d.gaa)*fw(param_a, d.a, d.taua) 
                 + lsda_x(d.a)*h(param_d, alpha_x, chia2, zet(d.a, d.taua)))
@@ -271,8 +271,8 @@ namespace m0xy_metagga_xc_internal
     num gam1 = gamma(alpha,chi2,zet);
 
     num t1 =  d[0]/gam1;
-    num t2 = (d[1]*chi2 + d[2]*zet)/pow(gam1, 2.0);
-    num t3 = (d[3]*pow(chi2,2.0) + d[4]*chi2*zet + d[5]*pow(zet, 2.0))/pow(gam1, 3.0);
+    num t2 = (d[1]*chi2 + d[2]*zet)/pow(gam1, 2);
+    num t3 = (d[3]*pow(chi2,2) + d[4]*chi2*zet + d[5]*pow(zet, 2))/pow(gam1, 3);
 
     return t1+t2+t3;
   }

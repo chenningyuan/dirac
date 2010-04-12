@@ -20,8 +20,8 @@ static num energy (const densvars<num> &d)
    const static double param_d[5] = 
        {  1.422057e-01,  7.370319e-04, -1.601373e-02,  0.000000e+00,  0.000000e+00 }; 
 
-   num chia2 = pow(chi(d.a, d.gaa), 2.0);
-   num chib2 = pow(chi(d.b, d.gbb), 2.0);
+   num chia2 = pow(chi(d.a, d.gaa), 2);
+   num chib2 = pow(chi(d.b, d.gbb), 2);
 
    return (  (  pbex::energy_pbe_ab(pbex::R_pbe,d.a,d.gaa)*fw(param_a, d.a, d.taua) 
               + lsda_x(d.a)*h(param_d, alpha_x, chia2, zet(d.a, d.taua)))
