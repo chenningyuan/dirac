@@ -1,18 +1,12 @@
 module aor_main
 
   use prop_test
-  use matrix_module
-  use kinds_m
-  use memory_allocator
   use matrix_defop
-  use matrix_stat
   use dirac_interface
-  use vib_prop
   use aor_cfg
-! use aor_binomial
-  use aor_property_definitions
-! use aor_property_definitions_zzz
   use decompmod
+! use aor_property_definitions
+! use aor_property_definitions_zzz
 
   implicit none
 
@@ -28,7 +22,7 @@ contains
     type(matrix)  :: S, C_i, D, F
     complex(8) :: freq(4)
     complex(8) :: w(10)
-    real(kind_dp) :: sum_up
+    real(8) :: sum_up
     integer       :: i, j
     integer, intent(in)    :: lwork
     real(8), intent(inout) :: work(lwork)
