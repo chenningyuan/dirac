@@ -1,13 +1,9 @@
 #ifndef M0xy_H
 #define M0xy_H
 
-#ifndef PW92EPS_H 
 #include "pw92eps.h"
-#endif
-
-#ifndef PW9xx_H
 #include "pw9xx.h"
-#endif
+
 
 // common functions for MO5 and M06 family of (hybrid) meta-gga functionals
 
@@ -149,7 +145,7 @@ namespace m0xy_metagga_xc_internal
                         const num &chi_a, const num &zet_a, 
                         const num &chi_b, const num &zet_b) 
   {
-    const num gamma_c_anti = 0.0031;  // this is an "universal" constant for all M05/M06 functionals 
+    const double gamma_c_anti = 0.0031;  // this is an "universal" constant for all M05/M06 functionals 
 
     const num zet_ab  = zet_a + zet_b;
     const num chi_ab2 = chi_a*chi_a + chi_b*chi_b;
@@ -158,11 +154,11 @@ namespace m0xy_metagga_xc_internal
   }
 
   template<class num>
-  static num m06_c_para(       const double param_c[5], 
-                               const double param_d[5], 
+  static num m06_c_para(const double param_c[5], 
+                        const double param_d[5], 
                         const num &chi, const num &zet) 
   {
-    const num gamma_c_parallel = 0.06;  // this is an "universal" constant for all M05/M06 functionals 
+    const double gamma_c_parallel = 0.06;  // this is an "universal" constant for all M05/M06 functionals 
 
     const num chi2 = chi*chi;
 
@@ -177,9 +173,9 @@ namespace m0xy_metagga_xc_internal
   // functionals, for parallel spins
 
   template<class num>
-  static num m05_c_anti(       const double param_c[5], const num &chi_a, const num &chi_b) 
+  static num m05_c_anti(const double param_c[5], const num &chi_a, const num &chi_b) 
   {
-    const num gamma_c_anti = 0.0031;  // this is an "universal" constant for all M05/M06 functionals 
+    const double gamma_c_anti = 0.0031;  // this is an "universal" constant for all M05/M06 functionals 
 
     const num chi_ab2 = chi_a*chi_a + chi_b*chi_b;
 
@@ -187,9 +183,9 @@ namespace m0xy_metagga_xc_internal
   }
 
   template<class num>
-  static num m05_c_para(       const double param_c[5], const num &chi, const num &zet) 
+  static num m05_c_para(const double param_c[5], const num &chi, const num &zet) 
   {
-    const num gamma_c_parallel = 0.06;  // this is an "universal" constant for all M05/M06 functionals 
+    const double gamma_c_parallel = 0.06;  // this is an "universal" constant for all M05/M06 functionals 
 
     const num chi2 = chi*chi;
 
