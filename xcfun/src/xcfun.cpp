@@ -290,7 +290,8 @@ static int run_tests(functional *fun)
 
   if (nerr > 0)
     {
-      fprintf(stderr,"Error detected in functional %s\n",fun->m_name);
+      fprintf(stderr,"Error detected in functional %s with tolerance %g:\n",
+	      fun->m_name,fun->test_threshold);
       fprintf(stderr,"Abs.Error \tComputed              Reference\n");
       for (int i=0;i<n;i++)
 	{
