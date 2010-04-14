@@ -207,8 +207,8 @@ contains
          do j = 1, 3
             FDSfg = De(k)*S*Df(j) + Df(j)*S*De(k)
             do i = 1, 3
-               Efff(i,j,k) = Efff(i,j,k) - tr(FeDS(i),DSDfg)
-            end do; DSDfg=0
+               Efff(i,j,k) = Efff(i,j,k) - tr(FeDS(i),FDSfg)
+            end do; FDSfg=0
          end do
       end do; FeDS=0
       !print
