@@ -13,8 +13,8 @@ module prop_test
 
    public elec_dipmom
    public elec_polariz
-!  public elec_hypolar
-!  public alt_elec_hypol
+   public elec_hypolar
+   public alt_elec_hypol
 !  public elec_sechyp
 !  public alt_elec_sechyp
 !  public alt2_elec_sechyp
@@ -163,14 +163,13 @@ contains
       Eff = 0 !zero, as prop_oneave works incrementally
       call prop_oneave(S, (/'EL'/), (/Df/), (/3,3/), Eff)
       call print_tensor((/3,3/), -Eff, 'alpha = -Eff')
-      call print_tensor((/3,3/), -Eff, 'alpha = -Eff', unit=decomp%lupri)
+!     call print_tensor((/3,3/), -Eff, 'alpha = -Eff', unit=decomp%lupri)
       !delete response matrices
       Df = 0; Ff = 0
       !change sign, since polarizability is minus quasi-energy derivative
       Eff = -Eff
    end subroutine
 
-#ifdef BLUB
 
    subroutine elec_hypolar(decomp, S, D, F, freq, Efff)
       type(decompItem), intent(inout) :: decomp
@@ -192,7 +191,7 @@ contains
       call prop_oneave(S, (/'EL'/), (/Dfe/), (/3,3,3/), Efff)
       !print
       call print_tensor((/3,3,3/), -Efff, 'beta = -Efff', freq)
-      call print_tensor((/3,3,3/), -Efff, 'beta = -Efff', freq, unit=decomp%lupri)
+!     call print_tensor((/3,3,3/), -Efff, 'beta = -Efff', freq, unit=decomp%lupri)
       !free
       Df=0; Ff=0; De=0; Fe=0; Dfe=0; Ffe=0
       !change sign to get beta
@@ -245,7 +244,7 @@ contains
       end do; FeDS=0
       !print
       call print_tensor((/3,3,3/), -Efff, 'beta = -Efff', freq)
-      call print_tensor((/3,3,3/), -Efff, 'beta = -Efff', freq, unit=decomp%lupri)
+!     call print_tensor((/3,3,3/), -Efff, 'beta = -Efff', freq, unit=decomp%lupri)
       !free
       De=0; Fe=0; Df=0; Ff=0; Dg=0; Fg=0
       !change sign for beta
@@ -253,6 +252,7 @@ contains
    end subroutine
 
 
+#ifdef BLUB
    subroutine elec_sechyp(decomp, S, D, F, freq, Effff)
       type(decompItem), intent(inout) :: decomp
       type(matrix), intent(in)  :: S, D, F
@@ -283,7 +283,7 @@ contains
       call prop_oneave(S, (/'EL'/), (/Defg/), (/3,3,3,3/), Effff)
       !print
       call print_tensor((/3,3,3,3/), -Effff, 'gamma = -Effff', freq)
-      call print_tensor((/3,3,3,3/), -Effff, 'gamma = -Effff', freq, unit=decomp%lupri)
+!     call print_tensor((/3,3,3,3/), -Effff, 'gamma = -Effff', freq, unit=decomp%lupri)
       !free
       De=0; Df=0; Dg=0; Def=0; Deg=0; Dfg=0; Defg=0
       Fe=0; Ff=0; Fg=0; Fef=0; Feg=0; Ffg=0; Fefg=0
@@ -358,7 +358,7 @@ contains
       end do; FeDS=0
       ! print
       call print_tensor((/3,3,3,3/), -Effff, 'gamma = -Effff', freq)
-      call print_tensor((/3,3,3,3/), -Effff, 'gamma = -Effff', freq, unit=decomp%lupri)
+!     call print_tensor((/3,3,3,3/), -Effff, 'gamma = -Effff', freq, unit=decomp%lupri)
       !free
       De=0; Df=0; Dg=0; Dh=0; Dfg=0; Dfh=0; Dgh=0
       Fe=0; Ff=0; Fg=0; Fh=0; Ffg=0; Ffh=0; Fgh=0
@@ -503,7 +503,7 @@ contains
       end do; FeDSh=0
       !print
       call print_tensor((/3,3,3,3/), -Effff, 'gamma = -Effff', freq)
-      call print_tensor((/3,3,3,3/), -Effff, 'gamma = -Effff', freq, unit=decomp%lupri)
+!     call print_tensor((/3,3,3,3/), -Effff, 'gamma = -Effff', freq, unit=decomp%lupri)
       !free
       De=0; Df=0; Dg=0; Dh=0; Def=0; Deg=0; Deh=0
       Fe=0; Ff=0; Fg=0; Dh=0; Fef=0; Feg=0; Feh=0

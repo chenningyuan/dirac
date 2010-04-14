@@ -641,8 +641,8 @@ contains
                 // 'excitation densities saved in rsp_equations')
       ! zero highest-order D and F for RHS calculation
       do i = 1, pd
-write(decomp%lupri,*) 'Dp(i), nrow, ncol, i:', Dp(i)%nrow, Dp(i)%ncol, i
-write(decomp%lupri,*) 'D(1), nrow, ncol, i:', D(1)%nrow, D(1)%ncol, i
+write(*,*) 'Dp(i), nrow, ncol, i:', Dp(i)%nrow, Dp(i)%ncol, i
+write(*,*) 'D(1), nrow, ncol, i:', D(1)%nrow, D(1)%ncol, i
          Dp(i) = 0d0*D(1)
          Fp(i) = 0d0*F(1)
       end do
@@ -857,7 +857,7 @@ write(decomp%lupri,*) 'D(1), nrow, ncol, i:', D(1)%nrow, D(1)%ncol, i
             call init_mat(reXph(1), Xph(1), alias='RF')
             call init_mat(imXph(1), Xph(1), alias='IF')
             ! solve for the real and imaginary part of the FDSp simlultaneously
-write(decomp%lupri,*) 'call rsp_complex_solver'
+write(*,*) 'call rsp_complex_solver'
             call rsp_complex_solver(decomp, F0, D0, S0, 1, reFDSp(1:1), freq1, 1, &
                                     reXph(1:1), imXph(1:1), .true., gdi=imFDSp(1:1))
             !clear re and im aliases of FDSp and Xph
