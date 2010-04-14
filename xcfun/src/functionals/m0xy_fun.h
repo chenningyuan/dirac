@@ -80,7 +80,15 @@ namespace m0xy_metagga_xc_internal
   {
     using pw91_like_x_internal::pw91k_prefactor;
 
-    num tau_lsda = pw91k_prefactor(rho);
+    // andre gomes, 2010-04-14: 
+    // one here must be aware that the factor of two is *not* in the
+    // actual formulae in the paper - eq 11 - but is due to the use of 
+    // a definition of tau that is twice the value of spin kinetic energy
+    // densities. for further information one should consult the documentation 
+    // of the minnesota functional module 1.2 (MFM1.2) and the actual MFM code,
+    // which was used as benchmark here for energy and first derivatives.
+ 
+    num tau_lsda = 2*pw91k_prefactor(rho);
 
     num  t = tau_lsda/tau;
     num  w = (t - 1)/(t + 1); 
