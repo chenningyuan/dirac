@@ -295,8 +295,8 @@ static int run_tests(functional *fun)
       fprintf(stderr,"Abs.Error \tComputed              Reference\n");
       for (int i=0;i<n;i++)
 	{
-	  fprintf(stderr,"%3f",fabs(out[i]-reference[i]));
-	  fprintf(stderr," \t %.16f %.16f",out[i],reference[i]);
+	  fprintf(stderr,"%.1e",fabs(out[i]-reference[i]));
+	  fprintf(stderr,"    %+.16f \t%+.16f",out[i],reference[i]);
 	  if (fabs(out[i] - reference[i]) > 
 	      fabs(reference[i]*fun->test_threshold))
 	     fprintf(stderr," *");
