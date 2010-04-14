@@ -40,19 +40,6 @@ module prop_test
 contains
 
 #ifdef BLUB
-
-   subroutine prop_test_dipmom(S, D, F, idum, fdum) !dipole moment
-      type(matrix), intent(in) :: S, D, F !input overlap, density, Fock
-      integer,      intent(in) :: idum    !not used
-      complex(8),   intent(in) :: fdum(:) !not used
-      complex(8)   :: Ef(3) = 0 !zero first
-      ! contract -dipole integrals with unperturbed density
-      call prop_oneave(S, (/'EL'/), (/D/), (/3/), Ef)
-      ! same as print '(a/3f16.12)', 'dipmom = -E0f', -Ef
-      call print_tensor((/3/), -Ef, 'dipmom = -Ef = -E0f')
-   end subroutine
-
-
    subroutine prop_test_gradient(S, D, F, ng, fdum) !gradient
       type(matrix), intent(in) :: S, D, F
       integer,      intent(in) :: ng !number of geometrical coordinates
@@ -71,24 +58,6 @@ contains
    end subroutine
 
 #endif
-
-   subroutine prop_test_polariz(decomp, S, D, F, idum, freq) !polarizability
-      type(decompItem), intent(inout) :: decomp
-      type(matrix), intent(in) :: S, D, F
-      integer,      intent(in) :: idum    !not used
-      complex(8),   intent(in) :: freq(:) !frequency
-      complex(8)   :: Eff(3,3) = 0
-      type(matrix) :: Df(3), Ff(3)
-      ! solve 1st-order response equation for perturbation 'EL'
-      call pert_dens(decomp, S, (/'EL'/), (/3/), (/D/), (/F/), Df, Ff, freq=freq(1:1))
-      ! contract 1st-order perturbed densities with -dipole integrals
-      call prop_oneave(S, (/'EL'/), (/Df/), shape(Eff), Eff)
-      ! print to stdout
-      call print_tensor((/3,3/), Eff, 'polarizability = -Eff = -E0f Df')
-      ! free Df(:) Ff(:)
-      Df = 0;  Ff = 0
-   end subroutine
-
 
 #ifdef BLUB
    subroutine prop_test_Gprime_Df(decomp, S, D, F, idum, freq) !Gprime_Df(-freq)
@@ -706,32 +675,5 @@ contains
          end do
       end subroutine
    end subroutine
-
-
-!         function RandomReal() result(r)
-!         !Random real numbers with Gaussian distribution
-!         !The generator is seeded on the first call
-!         !Two reals are generated each time, and returned in consecutive calls
-!         !Random_Seed and Random_Number are provided by Intel and GNU compilers
-!         !To get different numbers, change seed.
-!             real(8),parameter :: pi=3.14159265358979323846d00
-!             real(8) :: r,a,x,y
-!             real(8),save:: rnext
-!             logical,save:: first=.true.,flip=.true.
-!             if (first) then !reset fortran's random generator
-!                 call Random_Seed(put=(/628468422,281827387/))
-!                 first = .false.
-!             end if
-!             r = rnext
-!             flip = .not.flip
-!             if (flip) return !return sav
-!             call Random_Number(x)
-!             a = 2*Pi*x !angle in [0,2pi]
-!             call Random_Number(x)
-!             y = sqrt(-log(x))
-!             rnext = cos(a)*y
-!             r = sin(a)*y
-!         end function
-
 
 end module

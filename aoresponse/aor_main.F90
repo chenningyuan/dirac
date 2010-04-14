@@ -75,13 +75,17 @@ contains
 
 
     if (aor_cfg_beta) then
-!     call beta(S, D, F, (/freq(1:2), -sum(freq(1:2))/))
            allocate(tensor(3*3*3))
       call elec_hypolar(decomp, S, D, F, (/freq(1:2), -sum(freq(1:2))/), tensor)
-      call alt_elec_hypol(decomp, S, D, F, (/freq(1:2), -sum(freq(1:2))/), tensor)
            deallocate(tensor)
     end if
 
+
+    if (aor_cfg_beta_2np1) then
+           allocate(tensor(3*3*3))
+      call alt_elec_hypol(decomp, S, D, F, (/freq(1:2), -sum(freq(1:2))/), tensor)
+           deallocate(tensor)
+    end if
 
 
 
@@ -136,10 +140,6 @@ contains
 
     if (aor_cfg_magnetizability) then
       call aor_magnetizability(S, D, F, freq(1))
-    end if
-
-    if (aor_cfg_beta_2np1) then
-      call beta_2np1(S, D, F, (/freq(1:2), -sum(freq(1:2))/))
     end if
 
     if (aor_cfg_gamma) then
