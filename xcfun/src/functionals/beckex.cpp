@@ -24,6 +24,8 @@ static num becke_corr(const num &na, const num &gaa)
 }
 
 // Short range becke exchange as used in camb3lyp
+// If mu=0 this reduces to the standard beckex for
+// which must be used instead.
 template<class num>
 static num becke_sr(double mu, const num &na, const num &gaa)
 {
@@ -33,7 +35,6 @@ static num becke_sr(double mu, const num &na, const num &gaa)
   num chi = sqrt(gaa)/na43;
   num K = 2*(cparam + (d*chi*chi)/(1+6*d*chi*asinh(chi)));
   num a = mu*sqrt(K)/(6*M_PI*pow(na,1.0/3.0));
-  cout << "hier a = " << a[0] << endl;
   num b = exp(-1/(4*a*a));
   num c = 2*a*a*b+0.5;
   return -0.5*na43*K*(1-8.0/3.0*a*(sqrt(M_PI)*erf(1/(2*a))+2*a*(b-c)));
