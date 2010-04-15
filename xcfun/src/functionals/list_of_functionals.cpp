@@ -8,6 +8,7 @@ void xcint_setup_functionals()
   SETUP(setup_vwn5);
   SETUP(setup_beckex);
   SETUP(setup_beckexcorr);
+  SETUP(setup_beckexsr);
   SETUP(setup_lb94);
   SETUP(setup_lypc);
   SETUP(setup_pbex);
