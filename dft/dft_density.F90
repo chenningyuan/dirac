@@ -6,6 +6,7 @@ module dft_density
   public gga_sym
   public get_n
   public get_s
+  public get_t
   public get_gn
   public get_gn_nonhermitian
   public get_gs
@@ -40,6 +41,8 @@ module dft_density
 
   logical :: dft_density_set    = .false.
   logical :: dft_density_synced = .false.
+
+  real(8) :: speed_of_light
 
 contains
 
@@ -245,6 +248,73 @@ contains
     end do
 
     gn = 2.0d0*gn
+
+  end subroutine
+
+  subroutine get_t(t,       &
+                   irep,    &
+                   mat_dim, &
+                   dmat,    &
+                   buffer,  &
+                   ao_g0,   &
+                   ao_g1)
+
+!   ----------------------------------------------------------------------------
+!   radovan bast 2010-04-15
+!                this routine calculates the kinetic energy density
+!                c \psi(r) \alpha \cdot \nabla \psi(r)
+!                you can call it as you would call for instance get_gn
+!
+!   caveat: (1)  it needs ao_g1 and they may not be
+!                there in the naive lda case
+!           (2)  it needs small components and by default
+!                small components are not calculated for levy-leblond
+!                this has to be reactivated in the ao evaluation
+!                nonrel and x2c(4) fail for this reason
+!                (will add nonrelativistic get_t soon)
+!           (2)  with the default dft grid it can be very difficult to
+!                integrate it up to the analytic kinetic energy
+!   ----------------------------------------------------------------------------
+    real(8), intent(out) :: t
+    integer, intent(in)  :: irep
+    integer, intent(in)  :: mat_dim
+    real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
+    real(8), intent(in)  :: buffer(mat_dim)
+    real(8), intent(in)  :: ao_g0(mat_dim)
+    real(8), intent(in)  :: ao_g1(mat_dim, 3)
+!   ----------------------------------------------------------------------------
+    integer              :: nr1, nr2, st1, st2, iblock, jxyz
+    real(8), external    :: ddot
+!   ----------------------------------------------------------------------------
+
+    t = 0.0d0
+
+    do jxyz = 1, 3
+      do iblock = 1, lssl_nr_density_blocks(jxyz, irep)
+
+        nr1 = lssl_nr_ao(1, iblock, jxyz, irep)
+        st1 = lssl_st_ao(1, iblock, jxyz, irep)
+        nr2 = lssl_nr_ao(2, iblock, jxyz, irep)
+        st2 = lssl_st_ao(2, iblock, jxyz, irep)
+
+        call dgemv('N',                           &
+                   nr1,                           &
+                   nr2,                           &
+                   1.0d0,                         &
+                   dmat(st1, st2, lssl_iq(jxyz)), &
+                   mat_dim,                       &
+                   ao_g0(st2),                    &
+                   1,                             &
+                   0.0d0,                         &
+                   buffer,                        &
+                   1)
+
+        t = t + ddot(nr1, ao_g1(st1, jxyz), 1, buffer, 1)
+
+      end do
+    end do
+
+    t = t*speed_of_light
 
   end subroutine
 
@@ -620,11 +690,14 @@ contains
     logical, intent(in) :: is_parallel_calculation
 !   ----------------------------------------------------------------------------
     integer             :: i, ic, irep, irep1, irep2, nr1, nr2, jxyz
+    integer             :: llss_ic(2) = (/1, 2/)
+    integer             :: lssl_ic(2) = (/2, 1/)
     integer             :: inter_irep(0:3)
 !   ----------------------------------------------------------------------------
 
 #include "dcbbas.h"
 #include "dcbham.h"
+#include "dcbgen.h"
 #include "dgroup.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -637,6 +710,8 @@ contains
 #endif
 
     if (.not. dft_density_set) then
+
+      speed_of_light = cval
 
       llss_iq(0) = 1
       lssl_iq(0) = 1
@@ -667,14 +742,14 @@ contains
               irep2 = ieor(irep1, ieor(inter_irep(jxyz), irep))
 
               nr1 = nbbas(irep1, ic)
-              nr2 = nbbas(irep2, ic)
+              nr2 = nbbas(irep2, llss_ic(ic))
 
               if ((nr1 > 0) .and. (nr2 > 0)) then
                 i = i + 1
                 llss_nr_ao(1, i, jxyz, irep) = nr1
                 llss_st_ao(1, i, jxyz, irep) = ibbas(irep1, ic) + 1
                 llss_nr_ao(2, i, jxyz, irep) = nr2
-                llss_st_ao(2, i, jxyz, irep) = ibbas(irep2, ic) + 1
+                llss_st_ao(2, i, jxyz, irep) = ibbas(irep2, llss_ic(ic)) + 1
               end if
 
             end do
@@ -701,14 +776,14 @@ contains
               irep2 = ieor(irep1, ieor(inter_irep(jxyz), irep))
 
               nr1 = nbbas(irep1, ic)
-              nr2 = nbbas(irep2, ic)
+              nr2 = nbbas(irep2, lssl_ic(ic))
 
               if ((nr1 > 0) .and. (nr2 > 0)) then
                 i = i + 1
                 lssl_nr_ao(1, i, jxyz, irep) = nr1
                 lssl_st_ao(1, i, jxyz, irep) = ibbas(irep1, ic) + 1
                 lssl_nr_ao(2, i, jxyz, irep) = nr2
-                lssl_st_ao(2, i, jxyz, irep) = ibbas(irep2, ic) + 1
+                lssl_st_ao(2, i, jxyz, irep) = ibbas(irep2, lssl_ic(ic)) + 1
               end if
 
             end do
@@ -735,6 +810,7 @@ contains
       call dirac_mpi_bcast(lssl_nr_ao)
       call dirac_mpi_bcast(lssl_st_ao)
       call dirac_mpi_bcast(lssl_iq)
+      call dirac_mpi_bcast(speed_of_light)
 
       dft_density_synced = .true.
     end if
