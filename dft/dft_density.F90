@@ -7,6 +7,7 @@ module dft_density
   public get_n
   public get_s
   public get_t
+  public get_t_nr
   public get_gn
   public get_gn_nonhermitian
   public get_gs
@@ -251,6 +252,66 @@ contains
 
   end subroutine
 
+  subroutine get_t_nr(t,       &
+                      irep,    &
+                      mat_dim, &
+                      dmat,    &
+                      buffer,  &
+                      ao_g1)
+
+!   ----------------------------------------------------------------------------
+!   radovan bast 2010-04-15
+!                this routine calculates the "normal", nonrelativistic
+!                kinetic energy density = \tau = psi+(r) \nabla^2 psi(r)
+!
+!                needs ao_g1
+!                integral approaches the kinetic energy as c -> oo
+!   ----------------------------------------------------------------------------
+    real(8), intent(out) :: t
+    integer, intent(in)  :: irep
+    integer, intent(in)  :: mat_dim
+    real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
+    real(8), intent(in)  :: buffer(mat_dim)
+    real(8), intent(in)  :: ao_g1(mat_dim, 3)
+!   ----------------------------------------------------------------------------
+    integer              :: nr1, nr2, st1, st2, iblock, ixyz, jxyz
+    real(8), external    :: ddot
+!   ----------------------------------------------------------------------------
+
+    t = 0.0d0
+
+    do jxyz = 0, 0
+      do iblock = 1, llss_nr_density_blocks(jxyz, irep)
+
+        nr1 = llss_nr_ao(1, iblock, jxyz, irep)
+        st1 = llss_st_ao(1, iblock, jxyz, irep)
+        nr2 = llss_nr_ao(2, iblock, jxyz, irep)
+        st2 = llss_st_ao(2, iblock, jxyz, irep)
+
+        do ixyz = 1, 3
+
+          call dgemv('N',                           &
+                     nr1,                           &
+                     nr2,                           &
+                     1.0d0,                         &
+                     dmat(st1, st2, llss_iq(jxyz)), &
+                     mat_dim,                       &
+                     ao_g1(st2, ixyz),              &
+                     1,                             &
+                     0.0d0,                         &
+                     buffer,                        &
+                     1)
+        
+          t = t + ddot(nr1, ao_g1(st1, ixyz), 1, buffer, 1)
+
+        end do
+      end do
+    end do
+
+    t = 0.5d0*t
+
+  end subroutine
+
   subroutine get_t(t,       &
                    irep,    &
                    mat_dim, &
@@ -262,7 +323,7 @@ contains
 !   ----------------------------------------------------------------------------
 !   radovan bast 2010-04-15
 !                this routine calculates the kinetic energy density
-!                c \psi(r) \alpha \cdot \nabla \psi(r)
+!                c \psi+(r) \alpha \cdot p \psi(r)
 !                you can call it as you would call for instance get_gn
 !
 !   caveat: (1)  it needs ao_g1 and they may not be
