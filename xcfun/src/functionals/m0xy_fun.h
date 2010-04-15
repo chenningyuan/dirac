@@ -29,19 +29,29 @@ namespace m0xy_metagga_xc_internal
   // but rather (3/5)*(6 pi^2)^(2/3) so a factor of (2^(5/2))^(2/3) = 3.174802 
   // is needed to multiply C_F
  
-    const double superduperfactor = 3.174802;
-
+  const double superduperfactor = 3.174802;
 
   // zet calculates one of the working variables
   // see see TCA (2008) 120:215 eq 3
   // rho is the density, tau the kinetic energy density
+  // 
+  // andre gomes, 2010-04-14:
+  //
+  // one here must be aware that the factor of two is *not* in the
+  // actual formulae in the paper - eq 3 - but is due to the use of
+  // a definition of tau that is twice the value of spin kinetic energy
+  // densities, so that tau -> tau/2 and therefore 2tau/rho53 -> tau/rho53.
+  //
+  // for further information one should consult the documentation
+  // of the minnesota functional module 1.2 (MFM1.2) and the actual MFM code,
+  // which was used as benchmark here for energy and first derivatives.
 
   template<class num>
   static num zet(const num &rho, const num &tau)
   {
     using xc_constants::CF;
 
-    return ((2.0*tau/pow(rho,5.0/3.0)) - CF*superduperfactor);
+    return ((tau/pow(rho,5.0/3.0)) - CF*superduperfactor);
   }
 
   // gamma calculates the quantity of TCA (2008) 120:215 eq 4, but we supply it with chi^2 as parameter
@@ -81,10 +91,13 @@ namespace m0xy_metagga_xc_internal
     using pw91_like_x_internal::pw91k_prefactor;
 
     // andre gomes, 2010-04-14: 
+    //
     // one here must be aware that the factor of two is *not* in the
     // actual formulae in the paper - eq 11 - but is due to the use of 
     // a definition of tau that is twice the value of spin kinetic energy
-    // densities. for further information one should consult the documentation 
+    // densities, so that tau -> tau/2 . 
+    //
+    // for further information one should consult the documentation 
     // of the minnesota functional module 1.2 (MFM1.2) and the actual MFM code,
     // which was used as benchmark here for energy and first derivatives.
  
