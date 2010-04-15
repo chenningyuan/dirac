@@ -774,7 +774,7 @@ write(*,*) 'D(1), nrow, ncol, i:', D(1)%nrow, D(1)%ncol, i
       do i = 1, neq
          real_freq = dreal(freq)
          R = (FDSp(i) - dag(FDSp(i)))
-         R = -0.5d0*R
+         R = 0.5d0*R
          if (dreal(dot(R,R)) > aor_cfg_threshold_rhs) then
             R%tr_sym = 1
             call response_solver(real_freq, R, Xph(1))
@@ -782,7 +782,7 @@ write(*,*) 'D(1), nrow, ncol, i:', D(1)%nrow, D(1)%ncol, i
          end if
 
          R = (FDSp(i) + dag(FDSp(i)))
-         R = -0.5d0*R
+         R = 0.5d0*R
          FDSp(i) = 0
          if (dreal(dot(R,R)) > aor_cfg_threshold_rhs) then
             R%tr_sym = -1
