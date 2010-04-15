@@ -24,10 +24,19 @@ module dft_density
 
   save
 
+!            for (number) density and spin density
+!            and similar (diagonal operators)
   integer :: llss_nr_density_blocks(0:3, 0:7)
   integer :: llss_nr_ao(2, 16, 0:3, 0:7)
   integer :: llss_st_ao(2, 16, 0:3, 0:7)
   integer :: llss_iq(0:3)
+
+!            for kinetic energy density and current density
+!            and similar (offdiagonal operators)
+  integer :: lssl_nr_density_blocks(0:3, 0:7)
+  integer :: lssl_nr_ao(2, 16, 0:3, 0:7)
+  integer :: lssl_st_ao(2, 16, 0:3, 0:7)
+  integer :: lssl_iq(0:3)
 
   logical :: dft_density_set    = .false.
   logical :: dft_density_synced = .false.
@@ -630,10 +639,19 @@ contains
     if (.not. dft_density_set) then
 
       llss_iq(0) = 1
+      lssl_iq(0) = 1
       do jxyz = 1, 3
         llss_iq(jxyz) = jm4pos(4 - jxyz)
+        lssl_iq(jxyz) = jm4pos(4 - jxyz)
+!                                                          rotation
         llss_iq(jxyz) = iqtopq(llss_iq(jxyz), isymax(jxyz, 2))
+!                                                          translation
+        lssl_iq(jxyz) = iqtopq(lssl_iq(jxyz), isymax(jxyz, 1))
       end do
+
+
+!     set up llss, transform as rotation
+!     ==================================
 
       inter_irep(0) = 0
       do jxyz = 1, 3
@@ -665,6 +683,40 @@ contains
         end do
       end do
 
+
+!     set up lssl, transform as trasnlation
+!     =====================================
+
+      inter_irep(0) = 0
+      do jxyz = 1, 3
+        inter_irep(jxyz) = isymax(jxyz, 1)
+      end do
+
+      lssl_nr_density_blocks = 0
+      do irep = 0, nbsym - 1
+        do jxyz = 0, 3
+          i = 0
+          do ic = 1, mc
+            do irep1 = 0, nbsym - 1
+              irep2 = ieor(irep1, ieor(inter_irep(jxyz), irep))
+
+              nr1 = nbbas(irep1, ic)
+              nr2 = nbbas(irep2, ic)
+
+              if ((nr1 > 0) .and. (nr2 > 0)) then
+                i = i + 1
+                lssl_nr_ao(1, i, jxyz, irep) = nr1
+                lssl_st_ao(1, i, jxyz, irep) = ibbas(irep1, ic) + 1
+                lssl_nr_ao(2, i, jxyz, irep) = nr2
+                lssl_st_ao(2, i, jxyz, irep) = ibbas(irep2, ic) + 1
+              end if
+
+            end do
+          end do
+          lssl_nr_density_blocks(jxyz, irep) = i
+        end do
+      end do
+
       dft_density_set = .true.
     end if
 
@@ -679,6 +731,10 @@ contains
       call dirac_mpi_bcast(llss_nr_ao)
       call dirac_mpi_bcast(llss_st_ao)
       call dirac_mpi_bcast(llss_iq)
+      call dirac_mpi_bcast(lssl_nr_density_blocks)
+      call dirac_mpi_bcast(lssl_nr_ao)
+      call dirac_mpi_bcast(lssl_st_ao)
+      call dirac_mpi_bcast(lssl_iq)
 
       dft_density_synced = .true.
     end if
