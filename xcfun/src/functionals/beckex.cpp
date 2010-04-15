@@ -25,11 +25,12 @@ static num becke_corr(const num &na, const num &gaa)
 
 // Short range becke exchange as used in camb3lyp If mu=0 this reduces
 // to the standard beckex for which must be used instead.
-// NOTE: exp(-1/(4*a*a)) is differentiable but not analytic at a=0. In
-// fact the radius of convergence is zero, even though all derivatives
-// are well defined (to be zero).
+// FIXME: The erf + something is basically the erf minus
+// its asymptotic expansion. This is horribel for numerics,
+// will have to code a special function. 
 // As coded here the code will fail if mu = 0, in which case the
-// regular beckex should be used.
+// regular beckex should be used
+.
 template<class num>
 static num becke_sr(parameter mu, const num &na, const num &gaa)
 {
