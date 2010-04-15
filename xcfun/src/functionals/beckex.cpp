@@ -5,8 +5,8 @@ using namespace std;
 template<class num>
 static num becke_alpha(const num &na, const num &gaa)
 {
-  static const double c = pow(81/(4*M_PI),1.0/3.0)/2;
-  static const double d = 0.0042;
+  static const parameter c = pow(81/(4*M_PI),1.0/3.0)/2;
+  static const parameter d = 0.0042;
   num na43 = pow(na,4.0/3.0);
   num lda = -c*na43;
   num chi = sqrt(gaa)/na43;
@@ -17,7 +17,7 @@ static num becke_alpha(const num &na, const num &gaa)
 template<class num>
 static num becke_corr(const num &na, const num &gaa)
 {
-  static const double d = 0.0042;
+  static const parameter d = 0.0042;
   num na43 = pow(na,4.0/3.0);
   num chi = sqrt(gaa)/na43;
   return -(d*na43*chi*chi)/(1+6*d*chi*asinh(chi));
@@ -27,10 +27,10 @@ static num becke_corr(const num &na, const num &gaa)
 // If mu=0 this reduces to the standard beckex for
 // which must be used instead.
 template<class num>
-static num becke_sr(double mu, const num &na, const num &gaa)
+static num becke_sr(parameter mu, const num &na, const num &gaa)
 {
-  static const double cparam = pow(81/(4*M_PI),1.0/3.0)/2;
-  static const double d = 0.0042;
+  static const parameter cparam = pow(81/(4*M_PI),1.0/3.0)/2;
+  static const parameter d = 0.0042;
   num na43 = pow(na,4.0/3.0);
   num chi = sqrt(gaa)/na43;
   num K = 2*(cparam + (d*chi*chi)/(1+6*d*chi*asinh(chi)));
@@ -55,7 +55,7 @@ static num energy_corr(const densvars<num> &d)
 template<class num>
 static num energy_sr(const densvars<num> &d)
 {
-  double mu = 1e-10;
+  parameter mu = 1e-10;
   return becke_sr(mu,d.a,d.gaa) + becke_sr(mu,d.b,d.gbb);
 }
 

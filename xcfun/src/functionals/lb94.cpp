@@ -8,7 +8,7 @@
 template<class T, int Nvar, int Ndeg>
 static taylor<T,Nvar,Ndeg> lb94(const densvars<taylor<T,Nvar,Ndeg> > &d)
 {
-  static const double beta = 0.05;
+  static const parameter beta = 0.05;
   taylor<T,Nvar,Ndeg> res = vwn::vwn5c(d) + slaterx(d);
   // LB94 is basically LDA with a GGA modification _for the potential_
   if (Ndeg >= 1)

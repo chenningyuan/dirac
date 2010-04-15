@@ -8,10 +8,10 @@
      Created: 17-08-09, J. Toulouse, C++ by Ulf Ekstrom */
 
 template<class num>
-static num esrx_ldaerfspin(const num &na, double mu)
+static num esrx_ldaerfspin(const num &na, parameter mu)
 {
 
-  static const double ckf = 3.093667726280136;
+  static const parameter ckf = 3.093667726280136;
   const num &rhoa = 2*na; // spin-scaling
   num akf = ckf*pow(rhoa,1.0/3.0);
   num a = mu/(2*akf);
@@ -37,7 +37,7 @@ static num esrx_ldaerfspin(const num &na, double mu)
 template<class num>
 static num energy(const densvars<num> &d)
 {
-  double mu = 0.4; //FIXME
+  parameter mu = 0.4; //FIXME
   return 0.5*(esrx_ldaerfspin(d.a,mu) + esrx_ldaerfspin(d.b,mu)); 
 }
 
@@ -52,10 +52,6 @@ void setup_ldaerfx(functional &f)
 	     "Test case from Gori-Giorgi (personal communication)\n"
 	     "Range separation parameter is 'ldaerf:mu'\n");
   SET_LDA_ENERGY_FUNCTION(f,energy);
-  /*
-  SET_GGA_ENERGY_FUNCTION(f,energy);
-  SET_MGGA_ENERGY_FUNCTION(f,energy);
-  */
   static const double d[] = {1.1, 1.0};
   static const double ref[] = 
     {

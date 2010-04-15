@@ -11,6 +11,10 @@
 // MGGA's have 7 variables (GGA+tau)
 #define XC_MAX_NVAR 7
 
+// Use this type to make it clear what is a hard-coded parameter
+// (for example for grepping for parameters in functionals)
+
+typedef double parameter;
 
 setting xc_param_lookup(const xc_functional::xc_functional_data *params, 
 			const char *name);

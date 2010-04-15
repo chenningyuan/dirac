@@ -1,9 +1,8 @@
 #ifndef PW9xx_H
 #define PW9xx_H
-
-#ifndef CONSTANTS_H
+#include "functional.h"
 #include "constants.h"
-#endif
+
 
 // common functions for exchange (and kinetic energy) functionals
 //
@@ -61,7 +60,7 @@ namespace pw91_like_x_internal
 
    // enhancement factor F(S), common to PW91x and PW91k 
   template<class num>
-  static num pw91xk_enhancement(const double param_AB[6],
+  static num pw91xk_enhancement(const parameter param_AB[6],
 				const num &rho,
 				const num &grad)
   {

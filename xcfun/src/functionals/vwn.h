@@ -1,20 +1,22 @@
 #ifndef VWN_H
 #define VWN_H
 
+#include "functional.h"
+
 namespace vwn
 {
 
-  static double vwn_a(const double p[])
+  static parameter vwn_a(const parameter p[])
   {
     return p[0]*p[2]/(p[0]*p[0] + p[0]*p[2] + p[3]) - 1;
   }
   
-  static double vwn_b(const double p[])
+  static parameter vwn_b(const parameter p[])
   {
     return 2*(p[0]*p[2]/(p[0]*p[0] + p[0]*p[2] + p[3]) - 1) + 2;
   }
   
-  static double vwn_c(const double p[])
+  static parameter vwn_c(const parameter p[])
   {
     return 2*p[2]*(1/sqrt(4*p[3] - p[2]*p[2]) - p[0]/
 		   ((p[0]*p[0] + p[0]*p[2] + p[3])*
@@ -22,25 +24,25 @@ namespace vwn
   }
   
   template<class num>
-  static num vwn_x(const num& s,const double p[])
+  static num vwn_x(const num& s,const parameter p[])
   {
     return s*s + p[2]*s + p[3];
   }
   
   template<class num>
-  static num vwn_y(const num& s,const double p[])
+  static num vwn_y(const num& s,const parameter p[])
   {
     return s - p[0];
   }
   
   template<class num>
-  static num vwn_z(const num& s,const double p[])
+  static num vwn_z(const num& s,const parameter p[])
   {
     return sqrt(4*p[3] - p[2]*p[2])/(2*s + p[2]);
   }
   
   template<class num>
-  static num vwn_f(const num& s,const double p[])
+  static num vwn_f(const num& s,const parameter p[])
   {
     return 0.5*p[1]*(2*log(s) + vwn_a(p)*log(vwn_x(s, p)) - 
 		     vwn_b(p)*log(vwn_y(s, p)) + 
@@ -51,9 +53,9 @@ namespace vwn
   static num vwn5c(const densvars<num> &d)
   {
     //ulfek: second elements are multiplied by 2 wrt molpro manual
-    static const double  para[] = {-0.10498,   0.0621814, 3.72744, 12.9352};
-    static const double ferro[] = {-0.325,     0.0310907, 7.06042, 18.0578};
-    static const double inter[] = {-0.0047584,-pow(3*M_PI*M_PI,-1.0), 1.13107, 13.0045};
+    static const parameter  para[] = {-0.10498,   0.0621814, 3.72744, 12.9352};
+    static const parameter ferro[] = {-0.325,     0.0310907, 7.06042, 18.0578};
+    static const parameter inter[] = {-0.0047584,-pow(3*M_PI*M_PI,-1.0), 1.13107, 13.0045};
   // ulfek: in Dalton and Dirac inter[1] has too few decimals, should
   // be -1/(3pi^2)
     num s = sqrt(d.r_s);

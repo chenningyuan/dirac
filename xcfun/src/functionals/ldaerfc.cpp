@@ -9,11 +9,11 @@
 template<class num>
 static num Qrpa(const num &x)
 {
-  static const double Acoul = 2.0*(log(2.0)-1.0)/(M_PI*M_PI);
-  static const double a2    = 5.84605;
-  static const double c2    = 3.91744;
-  static const double d2    = 3.44851;
-  static const double b2    = d2 - 3.0/(2*M_PI*Acoul)
+  static const parameter Acoul = 2.0*(log(2.0)-1.0)/(M_PI*M_PI);
+  static const parameter a2    = 5.84605;
+  static const parameter c2    = 3.91744;
+  static const parameter d2    = 3.44851;
+  static const parameter b2    = d2 - 3.0/(2*M_PI*Acoul)
     *pow(4.0/(9.0*M_PI),1.0/3.0);
   return Acoul*log( (1+x*(a2+x*(b2+c2*x)))/(1+x*(a2+d2*x)) );
 }
@@ -21,9 +21,9 @@ static num Qrpa(const num &x)
 template<class num>
 static num dpol(const num &rs)
 {
-  static const double cf  = pow(9.0*M_PI/4.0,1.0/3.0);
-  static const double p2p = 0.04;
-  static const double p3p = 0.4319;
+  static const parameter cf  = pow(9.0*M_PI/4.0,1.0/3.0);
+  static const parameter p2p = 0.04;
+  static const parameter p3p = 0.4319;
   num rs2 = rs*rs;
   return pow(2.0,5.0/3.0)/5.0*pow(cf,2)/rs2*
     (1.0 + (p3p - 0.454555)*rs)/(1.0 + p3p*rs + p2p*rs2);
@@ -36,28 +36,28 @@ static num dpol(const num &rs)
 template<class num>
 static num g0f(const num &x)
 {
-  const double C0f = 0.0819306;
-  const double D0f = 0.752411;
-  const double E0f = -0.0127713;
-  const double F0f = 0.00185898;
+  const parameter C0f = 0.0819306;
+  const parameter D0f = 0.752411;
+  const parameter E0f = -0.0127713;
+  const parameter F0f = 0.00185898;
   return (1+ x*(D0f-0.7317 + x*(C0f + x*(E0f + F0f*x))))
     *exp(-D0f*x)/2.0;
 }
 
 template<class num>
-static num ecorrlr(const densvars<num> &d, double mu, const num &ec)
+static num ecorrlr(const densvars<num> &d, parameter mu, const num &ec)
 {
-  static const double alpha = pow(4.0/9.0/M_PI,1.0/3.0);
-  static const double cf=1/alpha; //TODO: The normal CF?
+  static const parameter alpha = pow(4.0/9.0/M_PI,1.0/3.0);
+  static const parameter cf=1/alpha; //TODO: The normal CF?
   num phi=(pow(1.0+d.zeta,2.0/3.0)+pow(1.0-d.zeta,2.0/3.0))/2.0;
   // cc parameters from the fit
-  static const double adib = 0.784949;
-  static const double q1a = -0.388;
-  static const double q2a = 0.676;
-  static const double q3a = 0.547;
-  static const double t1a = -4.95;
-  static const double t2a = 1.0;
-  static const double t3a = 0.31;
+  static const parameter adib = 0.784949;
+  static const parameter q1a = -0.388;
+  static const parameter q2a = 0.676;
+  static const parameter q3a = 0.547;
+  static const parameter t1a = -4.95;
+  static const parameter t2a = 1.0;
+  static const parameter t3a = 0.31;
   
   num b0 = adib*d.r_s;
   num rs2 = d.r_s*d.r_s;
@@ -118,10 +118,6 @@ void setup_ldaerfc(functional &f)
 	      "Range separation parameter [a0] using by ldaerf{c,x}",
 	      0.4);
   SET_LDA_ENERGY_FUNCTION(f,energy);
-  /*
-  SET_GGA_ENERGY_FUNCTION(f,energy);
-  SET_MGGA_ENERGY_FUNCTION(f,energy);
-  */
 
   static const double d[] = {1.1, 1.0};
   static const double ref[] = 

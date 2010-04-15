@@ -4,10 +4,10 @@
 template<class num>
 static num new_energy(const densvars<num> &d) 
 {
-  static const double A = 0.04918;
-  static const double B = 0.132;
-  static const double C = 0.2533;
-  static const double Dd = 0.349;
+  static const parameter A = 0.04918;
+  static const parameter B = 0.132;
+  static const parameter C = 0.2533;
+  static const parameter Dd = 0.349;
   using xc_constants::CF;
   num icbrtn = pow(d.n,-1.0/3.0);
   num P = 1/(1+Dd*icbrtn);

@@ -4,22 +4,11 @@
 template<class num>
 static num new_energy(const densvars<num> &d)
 {
-  const double KT_THRESHOLD = 1e-14;
-  const double DELTA        = 0.1;
+  static const parameter DELTA = 0.1;
 
-  num ea = 0.0;
-  if (d.a > KT_THRESHOLD)
-  {
-    ea = d.gaa/(DELTA + pow(d.a, 4.0/3.0));
-  }
-
-  num eb = 0.0;
-  if (d.b > KT_THRESHOLD)
-  {
-    eb = d.gbb/(DELTA + pow(d.b, 4.0/3.0));
-  }
-
-  return (ea + eb);
+  num ea = d.gaa/(DELTA + pow(d.a, 4.0/3.0));
+  num eb = d.gbb/(DELTA + pow(d.b, 4.0/3.0));
+  return ea + eb;
 }
 
 void setup_ktx(functional &f)
