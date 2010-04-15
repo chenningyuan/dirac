@@ -274,6 +274,7 @@ contains
 !                (will add nonrelativistic get_t soon)
 !           (2)  with the default dft grid it can be very difficult to
 !                integrate it up to the analytic kinetic energy
+!                (with atoms i got it 99.8% right)
 !   ----------------------------------------------------------------------------
     real(8), intent(out) :: t
     integer, intent(in)  :: irep
