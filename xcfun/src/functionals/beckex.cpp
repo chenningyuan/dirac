@@ -29,8 +29,8 @@ static num becke_corr(const num &na, const num &gaa)
 // its asymptotic expansion. This is horribel for numerics,
 // will have to code a special function. 
 // As coded here the code will fail if mu = 0, in which case the
-// regular beckex should be used
-.
+// regular beckex should be used.
+
 template<class num>
 static num becke_sr(parameter mu, const num &na, const num &gaa)
 {
