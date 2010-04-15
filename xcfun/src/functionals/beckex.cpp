@@ -23,9 +23,13 @@ static num becke_corr(const num &na, const num &gaa)
   return -(d*na43*chi*chi)/(1+6*d*chi*asinh(chi));
 }
 
-// Short range becke exchange as used in camb3lyp
-// If mu=0 this reduces to the standard beckex for
-// which must be used instead.
+// Short range becke exchange as used in camb3lyp If mu=0 this reduces
+// to the standard beckex for which must be used instead.
+// NOTE: exp(-1/(4*a*a)) is differentiable but not analytic at a=0. In
+// fact the radius of convergence is zero, even though all derivatives
+// are well defined (to be zero).
+// As coded here the code will fail if mu = 0, in which case the
+// regular beckex should be used.
 template<class num>
 static num becke_sr(parameter mu, const num &na, const num &gaa)
 {
@@ -35,8 +39,8 @@ static num becke_sr(parameter mu, const num &na, const num &gaa)
   num chi = sqrt(gaa)/na43;
   num K = 2*(cparam + (d*chi*chi)/(1+6*d*chi*asinh(chi)));
   num a = mu*sqrt(K)/(6*M_PI*pow(na,1.0/3.0));
-  num b = exp(-1/(4*a*a));
-  num c = 2*a*a*b+0.5;
+  num b = exp(-1/(4*a*a))-1;
+  num c = 2*a*a*b + 0.5;
   return -0.5*na43*K*(1-8.0/3.0*a*(sqrt(M_PI)*erf(1/(2*a))+2*a*(b-c)));
 }
 
@@ -121,31 +125,5 @@ void setup_beckexsr(functional &f)
 	     "Test case from http://www.cse.scitech.ac.uk/ccg/dft/data_pt_x_lda.html\n");
 
   SET_GGA_ENERGY_FUNCTION(f,energy_sr);
-  // Test case from http://www.cse.scitech.ac.uk/ccg/dft/data_pt_x_b88.html
-  static const double d[5] = 
-    {0.39E+02, 0.38E+02, 0.81E+06, 0.82E+06,0.82E+06};
-  static const double ref[21] =
-    {	-0.277987329958E+03,
-	-0.385951846654E+01,
-	-0.381309494319E+01,
-	-0.172434478018E-04,
-	-0.173712338362E-04,
-	0.000000000000E+00,
-	-0.441426807406E-01,
-	0.000000000000E+00,
-	0.201415922856E-06,
-	0.000000000000E+00,
-	0.000000000000E+00,
-	-0.447245742260E-01,
-	0.000000000000E+00,
-	0.195961359539E-06,
-	0.000000000000E+00,
-	0.700742719647E-11,
-	0.000000000000E+00,
-	0.000000000000E+00,
-	0.718678968862E-11,
-	0.000000000000E+00,
-	0.000000000000E+00
-    };
-  f.add_test(XC_VARS_AB,2,d,ref,1e-11);
+
 }
