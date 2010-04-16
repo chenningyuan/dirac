@@ -225,15 +225,13 @@ namespace m0xy_metagga_xc_internal
   static num ueg_c_anti(const densvars<num> &d)
   {
     using pw92eps::eps;
-    using pw92eps::eps_polarized;
-    return eps(d) - eps_polarized(d.a) - eps_polarized(d.b);
+    return (eps(d)*d.n) - ueg_c_para(d.a) - ueg_c_para(d.b);
   }
 
   template<class num>
   static num ueg_c_para(const num &rho)
   {
-    using pw92eps::eps_polarized;
-    return eps_polarized(rho);
+    return pw92eps::eps_polarized_m0y(rho)*rho;
   }
 
 

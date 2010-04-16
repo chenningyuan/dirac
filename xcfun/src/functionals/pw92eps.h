@@ -38,6 +38,18 @@ namespace pw92eps
   }
 
   template<class num>
+  static num eps_polarized_m0y(const num &a)
+  {
+    // The T..P parameters, but transposed for easier use with the e function
+    const parameter TUVWXYP[3][7] = 
+      {{0.031091, 0.21370, 7.5957 , 3.5876, 1.6382 ,0.49294,1},
+       {0.015545 , 0.20548, 14.1189, 6.1977, 3.3662 ,0.62517,1},
+       {0.016887, 0.11125, 10.357 , 3.6231, 0.88026,0.49671,1}};
+    num r_s = pow(3/(4*M_PI*a),1.0/3.0);
+    return e(r_s,TUVWXYP[1]);
+  }
+
+  template<class num>
   static num eps_polarized(const num &a)
   {
     // The T..P parameters, but transposed for easier use with the e function

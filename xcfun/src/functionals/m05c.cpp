@@ -15,7 +15,7 @@ static num energy (const densvars<num> &d)
 
    // parameters for anti-parallel spin contributions
    static const parameter param_c_anti[5] =
-     {  1.000000e+00,  3.785690e+00, -1.415261e+01, -7.465890e+00,  1.794491e+00 };
+     {  1.000000e+00,  3.785690e+00, -1.415261e+01, -7.465890e+00,  1.794491e+01 };
 
    // parameters for parallel spin contributions
    static const parameter param_c_para[5] =
@@ -45,6 +45,6 @@ void setup_m05c(functional &f)
   static const double d[] = 
     {1., .8, 1., 1., 1., .33, .21};
   static const double ref[] =
-    { -1.57876583, -2.12127045, -2.11264351, -0.00315462, -0.00444560,  0.00000000,  1.72820116,  2.21748787 };
+    { -0.06599246, -0.15418438,  0.02729798,  0.03090769,  0.04788146,  0.00000000, -0.09757618, -0.23742358 };
   f.add_test(XC_VARS_AB,1,d,ref,1e-5);
 }
