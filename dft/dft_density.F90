@@ -7,7 +7,7 @@ module dft_density
   public get_n
   public get_s
   public get_t
-  public get_t_nr
+  public get_tau
   public get_gn
   public get_gn_nonhermitian
   public get_gs
@@ -252,17 +252,16 @@ contains
 
   end subroutine
 
-  subroutine get_t_nr(t,       &
-                      irep,    &
-                      mat_dim, &
-                      dmat,    &
-                      buffer,  &
-                      ao_g1)
+  subroutine get_tau(t,       &
+                     irep,    &
+                     mat_dim, &
+                     dmat,    &
+                     buffer,  &
+                     ao_g1)
 
 !   ----------------------------------------------------------------------------
 !   radovan bast 2010-04-15
-!                this routine calculates the "normal", nonrelativistic
-!                kinetic energy density = \tau = psi+(r) \nabla^2 psi(r)
+!                this routine calculates the \tau = \nabla_i \phi_k \nabla_i \phi_k
 !
 !                needs ao_g1
 !                integral approaches the kinetic energy as c -> oo
