@@ -9,7 +9,7 @@ static num energy (const densvars<num> &d)
 {
    using m0xy_metagga_xc_internal::fw;
 
-   const static double param_a[12] =
+   static const parameter param_a[12] =
      {  1.000000e+00, -5.683300e-01, -1.300570e+00,  5.500700e+00,  9.064020e+00,
        -3.221075e+01, -2.373298e+01,  7.022996e+01,  2.988614e+01, -6.025778e+01,
        -1.322205e+01,  1.523694e+01 };

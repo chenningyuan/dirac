@@ -13,11 +13,11 @@ static num energy (const densvars<num> &d)
    using m0xy_metagga_xc_internal::h;
    using m0xy_metagga_xc_internal::alpha_x;
 
-     const static double param_a[12] =
+     static const parameter param_a[12] =
        {  1.179732e-01, -1.066708e+00, -1.462405e-01,  7.481848e+00,  3.776679e+00,
          -4.436118e+01, -1.830962e+01,  1.003903e+02,  3.864360e+01, -9.806018e+01,
          -2.557716e+01,  3.590404e+01 };
-     const static double param_d[5] =
+     static const parameter param_d[5] =
        { -1.179732e-01, -2.500000e-03, -1.180056e-02,  0.000000e+00,  0.000000e+00 };
 
    num chia2 = pow(chi(d.a, d.gaa), 2);

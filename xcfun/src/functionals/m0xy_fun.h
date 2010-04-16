@@ -19,17 +19,17 @@ namespace m0xy_metagga_xc_internal
   //   T. Van Voorhis and G. E. Scuseria, J. Chem. Phys. 129, 219901 (2008)
   //   DOI: 10.1063/1.3005348
 
-         const double alpha_x = 0.00186726;
-         const double alpha_c_parallel = 0.00515088;
-         const double alpha_c_antiparallel = 0.00304966;
+  static const parameter alpha_x = 0.00186726;
+  static const parameter alpha_c_parallel = 0.00515088;
+  static const parameter alpha_c_antiparallel = 0.00304966;
 
 
-  // superduperfactor is here because in the m05/m06/m08 papers
+  // scalefactorTFconst is here because in the m05/m06/m08 papers
   // C_F is not your usual thomas-fermi constant, (3/10)*(3 pi^2)^(2/3)
   // but rather (3/5)*(6 pi^2)^(2/3) so a factor of (2^(5/2))^(2/3) = 3.174802 
   // is needed to multiply C_F
  
-  const double superduperfactor = 3.174802;
+  static const parameter scalefactorTFconst = 3.174802;
 
   // zet calculates one of the working variables
   // see see TCA (2008) 120:215 eq 3
@@ -51,13 +51,13 @@ namespace m0xy_metagga_xc_internal
   {
     using xc_constants::CF;
 
-    return ((tau/pow(rho,5.0/3.0)) - CF*superduperfactor);
+    return ((tau/pow(rho,5.0/3.0)) - CF*scalefactorTFconst);
   }
 
   // gamma calculates the quantity of TCA (2008) 120:215 eq 4, but we supply it with chi^2 as parameter
 
   template<class num>
-  static num gamma(double alpha, const num &chi2, const num &zet)
+  static num gamma(const parameter alpha, const num &chi2, const num &zet)
   {
     return 1 + alpha*(chi2 + zet); 
   }
@@ -66,7 +66,7 @@ namespace m0xy_metagga_xc_internal
   // variable, since that is used always in terms of x^2
 
   template<class num>
-  static num h(const double d[], double alpha, const num &chi2, const num &zet)
+  static num h(const parameter d[], const parameter alpha, const num &chi2, const num &zet)
   {
     num gam1 = gamma(alpha,chi2,zet);
 
@@ -86,7 +86,7 @@ namespace m0xy_metagga_xc_internal
   // described at the time of coding (feb 2010) use 12 of them.
 
   template<class num>
-  static num fw(const double a[12], const num &rho, const num &tau)
+  static num fw(const parameter a[12], const num &rho, const num &tau)
   {
     using pw91_like_x_internal::pw91k_prefactor;
 
@@ -120,13 +120,31 @@ namespace m0xy_metagga_xc_internal
   // see for instance TCA 2008 120:215 eq 16
   // obviously, chi and zet are to have same spin: Dsigma(x_\alpha, z_\alpha) or Dsigma(x_\beta, z_\beta)
   // chi2 is chi*chi
+  //
+  // andre gomes, 2010-04-14:
+  //
+  // one here must be aware that because of the definition of tau, the 
+  // actual formulae in the paper - eq 16 - has here been changed to 
+  // accomodate the fact that tau -> tau/2. this means that the formula
+  // will go from 
+  // 
+  // D = 1 - x^2/[4(z + cf)] 
+  //
+  // to 
+  // 
+  // D = 1 - x^2/[4(z/2 + 2cf/2)] = 1 - x^2 / [2(z + 2cf)] 
+  //
+  // for further information one should consult the documentation
+  // of the minnesota functional module 1.2 (MFM1.2) and the actual MFM code,
+  // which was used as benchmark here for energy and first derivatives.
+
 
   template<class num>
   static num Dsigma(const num &chi2, const num &zet)
   {
     using xc_constants::CF;
 
-    return (1.0 - 0.25*chi2/(zet + CF*superduperfactor)); 
+    return (1.0 - 0.5*chi2/(zet + 2*CF*scalefactorTFconst)); 
   }
 
   // g is an auxiliary function that can be used in connection to both
@@ -142,7 +160,7 @@ namespace m0xy_metagga_xc_internal
   // described at the time of coding (feb 2010) use 5 of them.
 
   template<class num>
-  static num g(const double param_c[5], const num &gamma_chi_squared)
+  static num g(const parameter param_c[5], const num &gamma_chi_squared)
   {
      num g = 0.0;
      num b   = gamma_chi_squared / (1.0 + gamma_chi_squared); 
@@ -161,12 +179,12 @@ namespace m0xy_metagga_xc_internal
   // functionals, for parallel spins
 
   template<class num>
-  static num m06_c_anti(const double param_c[5], 
-                        const double param_d[5], 
+  static num m06_c_anti(const parameter param_c[5], 
+                        const parameter param_d[5], 
                         const num &chi_a, const num &zet_a, 
                         const num &chi_b, const num &zet_b) 
   {
-    const double gamma_c_anti = 0.0031;  // this is an "universal" constant for all M05/M06 functionals 
+    const parameter gamma_c_anti = 0.0031;  // this is an "universal" constant for all M05/M06 functionals 
 
     const num zet_ab  = zet_a + zet_b;
     const num chi_ab2 = chi_a*chi_a + chi_b*chi_b;
@@ -175,11 +193,11 @@ namespace m0xy_metagga_xc_internal
   }
 
   template<class num>
-  static num m06_c_para(const double param_c[5], 
-                        const double param_d[5], 
+  static num m06_c_para(const parameter param_c[5], 
+                        const parameter param_d[5], 
                         const num &chi, const num &zet) 
   {
-    const double gamma_c_parallel = 0.06;  // this is an "universal" constant for all M05/M06 functionals 
+    const parameter gamma_c_parallel = 0.06;  // this is an "universal" constant for all M05/M06 functionals 
 
     const num chi2 = chi*chi;
 
@@ -194,9 +212,9 @@ namespace m0xy_metagga_xc_internal
   // functionals, for parallel spins
 
   template<class num>
-  static num m05_c_anti(const double param_c[5], const num &chi_a, const num &chi_b) 
+  static num m05_c_anti(const parameter param_c[5], const num &chi_a, const num &chi_b) 
   {
-    const double gamma_c_anti = 0.0031;  // this is an "universal" constant for all M05/M06 functionals 
+    const parameter gamma_c_anti = 0.0031;  // this is an "universal" constant for all M05/M06 functionals 
 
     const num chi_ab2 = chi_a*chi_a + chi_b*chi_b;
 
@@ -204,9 +222,9 @@ namespace m0xy_metagga_xc_internal
   }
 
   template<class num>
-  static num m05_c_para(const double param_c[5], const num &chi, const num &zet) 
+  static num m05_c_para(const parameter param_c[5], const num &chi, const num &zet) 
   {
-    const double gamma_c_parallel = 0.06;  // this is an "universal" constant for all M05/M06 functionals 
+    const parameter gamma_c_parallel = 0.06;  // this is an "universal" constant for all M05/M06 functionals 
 
     const num chi2 = chi*chi;
 

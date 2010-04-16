@@ -23,5 +23,6 @@ void xcint_setup_functionals()
   SETUP(setup_m06lx);
   SETUP(setup_m06hfx);
   SETUP(setup_pw91k);
+  SETUP(setup_tfk);
   SETUP(setup_pw91x);
 }
