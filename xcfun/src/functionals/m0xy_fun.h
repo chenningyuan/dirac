@@ -121,30 +121,13 @@ namespace m0xy_metagga_xc_internal
   // obviously, chi and zet are to have same spin: Dsigma(x_\alpha, z_\alpha) or Dsigma(x_\beta, z_\beta)
   // chi2 is chi*chi
   //
-  // andre gomes, 2010-04-14:
-  //
-  // one here must be aware that because of the definition of tau, the 
-  // actual formulae in the paper - eq 16 - has here been changed to 
-  // accomodate the fact that tau -> tau/2. this means that the formula
-  // will go from 
-  // 
-  // D = 1 - x^2/[4(z + cf)] 
-  //
-  // to 
-  // 
-  // D = 1 - x^2/[4(z/2 + 2cf/2)] = 1 - x^2 / [2(z + 2cf)] 
-  //
-  // for further information one should consult the documentation
-  // of the minnesota functional module 1.2 (MFM1.2) and the actual MFM code,
-  // which was used as benchmark here for energy and first derivatives.
-
 
   template<class num>
   static num Dsigma(const num &chi2, const num &zet)
   {
     using xc_constants::CF;
 
-    return (1.0 - 0.5*chi2/(zet + 2*CF*scalefactorTFconst)); 
+    return (1.0 - 0.25*chi2/(zet + CF*scalefactorTFconst)); 
   }
 
   // g is an auxiliary function that can be used in connection to both

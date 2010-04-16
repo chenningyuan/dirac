@@ -17,6 +17,7 @@ void xcint_setup_functionals()
   SETUP(setup_ldaerfc);
   SETUP(setup_ktx);
   SETUP(setup_m05x);
+  SETUP(setup_m05c);
   SETUP(setup_m05x2x);
   SETUP(setup_m06x);
   SETUP(setup_m06x2x);
