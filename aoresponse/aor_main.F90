@@ -5,7 +5,7 @@ module aor_main
   use dirac_interface
   use aor_cfg
   use decompmod
-! use aor_property_definitions
+  use aor_property_definitions
 ! use aor_property_definitions_zzz
 
   implicit none
@@ -23,7 +23,7 @@ contains
     complex(8) :: freq(4)
     complex(8) :: w(10)
     real(8) :: sum_up
-    integer       :: i, j
+    integer       :: i, j, n
     integer, intent(in)    :: lwork
     real(8), intent(inout) :: work(lwork)
     complex(8),allocatable:: tensor(:) !ajt: scratch for property tensors
@@ -87,10 +87,12 @@ contains
            deallocate(tensor)
     end if
 
-
-
-
-
+    if (aor_cfg_gamma) then
+      n = 4
+      allocate(tensor(3**n))
+      call elec_sechyp(decomp, S, D, F, (/freq(1:n-1), -sum(freq(1:n-1))/), tensor)
+      deallocate(tensor)
+    end if
 
 #ifdef MERGE_WITH_LINSCA
     if (aor_cfg_quadrupole) then
@@ -142,9 +144,7 @@ contains
       call aor_magnetizability(S, D, F, freq(1))
     end if
 
-    if (aor_cfg_gamma) then
-      call gamma(S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-    end if
+#endif
 
     if (aor_cfg_gamma_lin_dc_kerr) then
 
@@ -260,6 +260,7 @@ contains
 
     end if
 
+#ifdef MERGE_WITH_LINSCA
     if (aor_cfg_test_delta) then
 
 !     this is 4hg (fourth harmonic generation)

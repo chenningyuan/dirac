@@ -15,7 +15,7 @@ module prop_test
    public elec_polariz
    public elec_hypolar
    public alt_elec_hypol
-!  public elec_sechyp
+   public elec_sechyp
 !  public alt_elec_sechyp
 !  public alt2_elec_sechyp
 !  public magnetiz
@@ -221,7 +221,6 @@ contains
    end subroutine
 
 
-#ifdef BLUB
    subroutine elec_sechyp(decomp, S, D, F, freq, Effff)
       type(decompItem), intent(inout) :: decomp
       type(matrix), intent(in)  :: S, D, F
@@ -260,6 +259,7 @@ contains
       Effff = -Effff
    end subroutine
 
+#ifdef BLUB
    subroutine alt_elec_sechyp(decomp, S, D, F, freq, Effff)
       type(decompItem), intent(inout) :: decomp
       type(matrix), intent(in)  :: S, D, F

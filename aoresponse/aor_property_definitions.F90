@@ -13,6 +13,7 @@ module aor_property_definitions
 
     public aoresponse_nr_electrons
 !   public aoresponse_hf_energy
+    public gamma_element
 
     private
 
@@ -20,6 +21,190 @@ module aor_property_definitions
     real(8) :: small_number = 1.0d-10
 
 contains
+
+  function gamma_element(S, D, F, w, h, i, j, k)
+
+!   ----------------------------------------------------------------------------
+    real(8)                     :: gamma_element
+    type(matrix), intent(inout) :: S, D, F
+    integer,      intent(in)    :: h, i, j, k
+    complex(8),   intent(in)    :: w(3)
+!   ----------------------------------------------------------------------------
+    type(matrix)                :: D_i(3)
+    type(matrix)                :: D_j(3)
+    type(matrix)                :: D_k(3)
+    type(matrix)                :: D_ij(3, 3)
+    type(matrix)                :: D_ik(3, 3)
+    type(matrix)                :: D_jk(3, 3)
+    type(matrix)                :: D_ijk(3, 3, 3)
+    type(matrix)                :: F_i(3)
+    type(matrix)                :: F_j(3)
+    type(matrix)                :: F_k(3)
+    type(matrix)                :: F_ij(3, 3)
+    type(matrix)                :: F_ik(3, 3)
+    type(matrix)                :: F_jk(3, 3)
+    type(matrix)                :: F_ijk(3, 3, 3)
+    complex(8)                  :: e(3, 3, 3, 3)
+    integer                     :: c1, c2, c3
+      type(decompItem)          :: decomp
+!   ----------------------------------------------------------------------------
+
+    S = 1.0d0*S
+    D = 1.0d0*D
+    F = 1.0d0*F
+
+    do c1 = 1, 3
+      D_i(c1) = tiny(0.0d0)*D
+      D_j(c1) = tiny(0.0d0)*D
+      D_k(c1) = tiny(0.0d0)*D
+      F_i(c1) = tiny(0.0d0)*D
+      F_j(c1) = tiny(0.0d0)*D
+      F_k(c1) = tiny(0.0d0)*D
+      do c2 = 1, 3
+        D_ij(c1, c2) = tiny(0.0d0)*D
+        D_ik(c1, c2) = tiny(0.0d0)*D
+        D_jk(c1, c2) = tiny(0.0d0)*D
+        F_ij(c1, c2) = tiny(0.0d0)*D
+        F_ik(c1, c2) = tiny(0.0d0)*D
+        F_jk(c1, c2) = tiny(0.0d0)*D
+        do c3 = 1, 3
+          D_ijk(c1, c2, c3) = tiny(0.0d0)*D
+          F_ijk(c1, c2, c3) = tiny(0.0d0)*D
+        end do
+      end do
+    end do
+
+    call pert_dens(decomp, S, (/'EL'/), (/1/), (/D/), (/F/), D_i(i), F_i(i), comp=(/i/), freq=(/w(1)/))
+    call pert_dens(decomp, S, (/'EL'/), (/1/), (/D/), (/F/), D_j(j), F_j(j), comp=(/j/), freq=(/w(2)/))
+    call pert_dens(decomp, S, (/'EL'/), (/1/), (/D/), (/F/), D_k(k), F_k(k), comp=(/k/), freq=(/w(3)/))
+
+    call pert_dens(decomp,             &
+                   S,                  &
+                 (/'EL', 'EL'/),       &
+                 (/1, 1/),             &
+                 (/                    &
+                   D,                  &
+                   D_i(i),             &
+                   D_j(j)              &
+                  /),                  &
+                 (/                    &
+                   F,                  &
+                   F_i(i),             &
+                   F_j(j)              &
+                  /),                  &
+                   D_ij(i, j),         &
+                   F_ij(i, j),         &
+                   comp=(/i, j/),      &
+                   freq=(/w(1), w(2)/))
+
+    call pert_dens(decomp,             &
+                   S,                  &
+                 (/'EL', 'EL'/),       &
+                 (/1, 1/),             &
+                 (/                    &
+                   D,                  &
+                   D_i(i),             &
+                   D_k(k)              &
+                  /),                  &
+                 (/                    &
+                   F,                  &
+                   F_i(i),             &
+                   F_k(k)              &
+                  /),                  &
+                   D_ik(i, k),         &
+                   F_ik(i, k),         &
+                   comp=(/i, k/),      &
+                   freq=(/w(1), w(3)/))
+
+    call pert_dens(decomp,             &
+                   S,                  &
+                 (/'EL', 'EL'/),       &
+                 (/1, 1/),             &
+                 (/                    &
+                   D,                  &
+                   D_j(j),             &
+                   D_k(k)              &
+                  /),                  &
+                 (/                    &
+                   F,                  &
+                   F_j(j),             &
+                   F_k(k)              &
+                  /),                  &
+                   D_jk(j, k),         &
+                   F_jk(j, k),         &
+                   comp=(/j, k/),      &
+                   freq=(/w(2), w(3)/))
+
+    call pert_dens(decomp,             &
+                   S,                  &
+                 (/'EL', 'EL', 'EL'/), &
+                 (/1, 1, 1/),          &
+                 (/                    &
+                   D,                  &
+                   D_i(i),             &
+                   D_j(j),             &
+                   D_k(k),             &
+                   D_ij(i, j),         &
+                   D_ik(i, k),         &
+                   D_jk(j, k)          &
+                  /),                  &
+                 (/                    &
+                   F,                  &
+                   F_i(i),             &
+                   F_j(j),             &
+                   F_k(k),             &
+                   F_ij(i, j),         &
+                   F_ik(i, k),         &
+                   F_jk(j, k)          &
+                  /),                  &
+                   D_ijk(i, j, k),     &
+                   F_ijk(i, j, k),     &
+                   comp=(/i, j, k/),   &
+                   freq=(/w(1), w(2), w(3)/))
+
+    e = 0.0d0
+    call prop_oneave(S, (/'EL'/), (/D_ijk/), (/3, 3, 3, 3/), e)
+!   call prop_energy((/'EL'/), &
+!                    (/        &
+!                      D,      &
+!                      D_i,    &
+!                      D_j,    &
+!                      D_k,    &
+!                      D_ij,   &
+!                      D_ik,   &
+!                      D_jk,   &
+!                      D_ijk   &
+!                     /),      &
+!                      e,      &
+!                      b=(/3, 3, 3/))
+
+    D_i   = 0
+    D_j   = 0
+    D_k   = 0
+    D_ij  = 0
+    D_ik  = 0
+    D_jk  = 0
+    D_ijk = 0
+    F_i   = 0
+    F_j   = 0
+    F_k   = 0
+    F_ij  = 0
+    F_ik  = 0
+    F_jk  = 0
+    F_ijk = 0
+
+    gamma_element = -e(i, j, k, h)
+    print '("@ gamma (w = "4f9.4")" a10 a2 a2 a2 f26.10)', real(-sum(w)), &
+                                                           real(w(1)),    &
+                                                           real(w(2)),    &
+                                                           real(w(3)),    &
+                                                           fc(h),         &
+                                                           fc(i),         &
+                                                           fc(j),         &
+                                                           fc(k),         &
+                                                           gamma_element
+
+  end function
 
   subroutine aoresponse_nr_electrons(S, D)
 
@@ -652,181 +837,6 @@ contains
     end do
 
   end subroutine
-
-  function gamma_element(S, D, F, w, h, i, j, k)
-
-!   ----------------------------------------------------------------------------
-    real(8)                     :: gamma_element
-    type(matrix), intent(inout) :: S, D, F
-    integer,      intent(in)    :: h, i, j, k
-    complex(8),   intent(in)    :: w(3)
-!   ----------------------------------------------------------------------------
-    type(matrix)                :: D_i(3)
-    type(matrix)                :: D_j(3)
-    type(matrix)                :: D_k(3)
-    type(matrix)                :: D_ij(3, 3)
-    type(matrix)                :: D_ik(3, 3)
-    type(matrix)                :: D_jk(3, 3)
-    type(matrix)                :: D_ijk(3, 3, 3)
-    type(matrix)                :: F_i(3)
-    type(matrix)                :: F_j(3)
-    type(matrix)                :: F_k(3)
-    type(matrix)                :: F_ij(3, 3)
-    type(matrix)                :: F_ik(3, 3)
-    type(matrix)                :: F_jk(3, 3)
-    type(matrix)                :: F_ijk(3, 3, 3)
-    complex(8)                  :: e(3, 3, 3, 3)
-    integer                     :: c1, c2, c3
-      type(decompItem)          :: decomp
-!   ----------------------------------------------------------------------------
-
-    S = 1.0d0*S
-    D = 1.0d0*D
-    F = 1.0d0*F
-
-    do c1 = 1, 3
-      D_i(c1) = tiny(0.0d0)*D
-      D_j(c1) = tiny(0.0d0)*D
-      D_k(c1) = tiny(0.0d0)*D
-      F_i(c1) = tiny(0.0d0)*D
-      F_j(c1) = tiny(0.0d0)*D
-      F_k(c1) = tiny(0.0d0)*D
-      do c2 = 1, 3
-        D_ij(c1, c2) = tiny(0.0d0)*D
-        D_ik(c1, c2) = tiny(0.0d0)*D
-        D_jk(c1, c2) = tiny(0.0d0)*D
-        F_ij(c1, c2) = tiny(0.0d0)*D
-        F_ik(c1, c2) = tiny(0.0d0)*D
-        F_jk(c1, c2) = tiny(0.0d0)*D
-        do c3 = 1, 3
-          D_ijk(c1, c2, c3) = tiny(0.0d0)*D
-          F_ijk(c1, c2, c3) = tiny(0.0d0)*D
-        end do
-      end do
-    end do
-
-    call pert_dens(decomp, (/'EL'/), S, (/D/), (/F/), D_i(i), F_i(i), freq=(/w(1)/), comp=(/i/))
-    call pert_dens(decomp, (/'EL'/), S, (/D/), (/F/), D_j(j), F_j(j), freq=(/w(2)/), comp=(/j/))
-    call pert_dens(decomp, (/'EL'/), S, (/D/), (/F/), D_k(k), F_k(k), freq=(/w(3)/), comp=(/k/))
-
-    call pert_dens(decomp, (/'EL', 'EL'/),           &
-                     S,                      &
-                   (/                        &
-                     D,                      &
-                     D_i(i),                 &
-                     D_j(j)                  &
-                    /),                      &
-                   (/                        &
-                     F,                      &
-                     F_i(i),                 &
-                     F_j(j)                  &
-                    /),                      &
-                     D_ij(i, j),             &
-                     F_ij(i, j),             &
-                     freq=(/w(1), w(2)/),       &
-                     comp=(/i, j/))
-
-    call pert_dens(decomp, (/'EL', 'EL'/),           &
-                     S,                      &
-                   (/                        &
-                     D,                      &
-                     D_i(i),                 &
-                     D_k(k)                  &
-                    /),                      &
-                   (/                        &
-                     F,                      &
-                     F_i(i),                 &
-                     F_k(k)                  &
-                    /),                      &
-                     D_ik(i, k),             &
-                     F_ik(i, k),             &
-                     freq=(/w(1), w(3)/),       &
-                     comp=(/i, k/))
-
-    call pert_dens(decomp, (/'EL', 'EL'/),           &
-                     S,                      &
-                   (/                        &
-                     D,                      &
-                     D_j(j),                 &
-                     D_k(k)                  &
-                    /),                      &
-                   (/                        &
-                     F,                      &
-                     F_j(j),                 &
-                     F_k(k)                  &
-                    /),                      &
-                     D_jk(j, k),             &
-                     F_jk(j, k),             &
-                     freq=(/w(2), w(3)/),       &
-                     comp=(/j, k/))
-
-    call pert_dens(decomp, (/'EL', 'EL', 'EL'/),     &
-                     S,                      &
-                   (/                        &
-                     D,                      &
-                     D_i(i),                 &
-                     D_j(j),                 &
-                     D_k(k),                 &
-                     D_ij(i, j),             &
-                     D_ik(i, k),             &
-                     D_jk(j, k)              &
-                    /),                      &
-                   (/                        &
-                     F,                      &
-                     F_i(i),                 &
-                     F_j(j),                 &
-                     F_k(k),                 &
-                     F_ij(i, j),             &
-                     F_ik(i, k),             &
-                     F_jk(j, k)              &
-                    /),                      &
-                     D_ijk(i, j, k),         &
-                     F_ijk(i, j, k),         &
-                     freq=(/w(1), w(2), w(3)/), &
-                     comp=(/i, j, k/))
-
-    e = 0.0d0
-    call prop_energy((/'EL'/), &
-                     (/        &
-                       D,      &
-                       D_i,    &
-                       D_j,    &
-                       D_k,    &
-                       D_ij,   &
-                       D_ik,   &
-                       D_jk,   &
-                       D_ijk   &
-                      /),      &
-                       e,      &
-                       b=(/3, 3, 3/))
-
-    D_i   = 0
-    D_j   = 0
-    D_k   = 0
-    D_ij  = 0
-    D_ik  = 0
-    D_jk  = 0
-    D_ijk = 0
-    F_i   = 0
-    F_j   = 0
-    F_k   = 0
-    F_ij  = 0
-    F_ik  = 0
-    F_jk  = 0
-    F_ijk = 0
-
-    gamma_element = -e(i, j, k, h)
-    print '("@ gamma (w = "4f9.4")" a10 a2 a2 a2 f26.10)', real(-sum(w)), &
-                                                           real(w(1)),    &
-                                                           real(w(2)),    &
-                                                           real(w(3)),    &
-                                                           fc(h),         &
-                                                           fc(i),         &
-                                                           fc(j),         &
-                                                           fc(k),         &
-                                                           gamma_element
-
-  end function
 
   function delta_element(S, D, F, w, h, i, j, k, l)
 
