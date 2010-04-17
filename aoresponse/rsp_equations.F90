@@ -248,6 +248,10 @@ contains
       !> Deferred shape (*) to permit any rank, size(DSDp) = product(dimp)
       type(matrix), intent(inout) :: DSDp(*)
       !-------------------------------------
+#ifdef PRG_DIRAC
+      type(matrix) :: SDFp(1), X
+#endif
+      !-------------------------------------
       !> starting indices for each p, default 1
       integer,    optional, intent(in) :: comp(:)
       !> frequency of each p, default 0
@@ -315,10 +319,10 @@ contains
 !                                    this was previously  - S0*D(1+i)*F(1) 
                FDSp(i0) = FDSp(i0) - S0 * Dp(i) * (Fp(1) + w(1)/2 * S0)
 
-!                                    previously  + D(1)*S0*D(1+i) 
 !                                    previously  - D(1+i)
                DSDp(i0) =            Dp(1) * Sp(i) * Dp(1) - Dp(i)
 
+!                                    previously  + D(1)*S0*D(1+i) 
                DSDp(i0) = DSDp(i0) + Dp(i)*dag(DSp(1))
 
 !                                    previously  + D(1+i)*S0*D(1) 
@@ -388,8 +392,51 @@ contains
             end do
             Sp(2:1+dimp(1)) = 0
          end if
+#ifdef PRG_DIRAC
+      else
+!        this implements arbitrary order pert_scf_eq under two conditions:
+!        1. S is perturbation independent
+!        2. there is only one component/perturbation
+         do i = 1, size(p)
+!           check that S is perturbation independent
+            if (bas(i)) then
+               call quit('pert_scf_eq: size(p) > 2 and perturbation dependent S not implemented')
+            end if
+!           check that there is only one component/perturbation
+            if (dimp(i) > 1) then
+               call quit('pert_scf_eq: size(p) > 2 and more than one component/perturbation not implemented')
+            end if
+         end do
+
+!radovan:
+!        this has to be done in this order
+!        otherwise gamma is always zero in d2h
+!        no idea why
+         DSDp(1) = Dp(nd)*S0*Dp(1) + Dp(1)*S0*Dp(nd) - Dp(nd)
+         do i = 2, nd - 1
+            j = nd - i + 1
+            DSDp(1) = DSDp(1) + Dp(j)*S0*Dp(i)
+         end do
+
+         X = -sum(w/2.0d0)*S0
+
+         FDSp(1) = (Fp(1) - X)*Dp(nd)
+         SDFp(1) =             Dp(nd)*(Fp(1) + X)
+         do i = 1, nd
+            j = nd - i + 1
+            FDSp(1) = FDSp(1) + Fp(i)*Dp(j)
+            SDFp(1) = SDFp(1) + Dp(i)*Fp(j)
+         end do
+
+         FDSp(1) = FDSp(1)*S0 - S0*SDFp(1)
+
+         SDFp(1) = 0
+         X       = 0
+
+#else
       else
          call quit('pert_scf_eq error: Too high order, size(p) > 2 not implemented')
+#endif /* ifdef PRG_DIRAC */
       end if
    end subroutine
 
