@@ -164,19 +164,6 @@ contains
 
     e = 0.0d0
     call prop_oneave(S, (/'EL'/), (/D_ijk/), (/3, 3, 3, 3/), e)
-!   call prop_energy((/'EL'/), &
-!                    (/        &
-!                      D,      &
-!                      D_i,    &
-!                      D_j,    &
-!                      D_k,    &
-!                      D_ij,   &
-!                      D_ik,   &
-!                      D_jk,   &
-!                      D_ijk   &
-!                     /),      &
-!                      e,      &
-!                      b=(/3, 3, 3/))
 
     D_i   = 0
     D_j   = 0
@@ -193,7 +180,7 @@ contains
     F_jk  = 0
     F_ijk = 0
 
-    gamma_element = -e(i, j, k, h)
+    gamma_element = -e(h, i, j, k)
     print '("@ gamma (w = "4f9.4")" a10 a2 a2 a2 f26.10)', real(-sum(w)), &
                                                            real(w(1)),    &
                                                            real(w(2)),    &
