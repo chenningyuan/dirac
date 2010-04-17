@@ -300,14 +300,30 @@ contains
             if (bas(1)) call prop_oneint(S0, p, dimp, S=Sp(2:1+dimp(1)), comp=c)
             do i0 = 1, dimp(1)
                i = 1+i0
+!                                    this was previously  + F(1+i)*D(1)*S0 
                FDSp(i0) =            (Fp(i) - w(1)/2 * Sp(i)) * DSp(1)
+
+!                                    this was previously  - S0*D(1)*F(1+i)
                FDSp(i0) = FDSp(i0) - dag(DSp(1)) * (Fp(i) + w(1)/2 * Sp(i))
+
                FDSp(i0) = FDSp(i0) + FDp(1) * Sp(i) - Sp(i) * dag(FDp(1))
+
+!                                    this was previously  + F(1)*D(1+i)*S0 
+!                                                         - ww(1)*S0*D(1+i)*S0
                FDSp(i0) = FDSp(i0) + (Fp(1) - w(1)/2 * S0) * Dp(i) * S0
+
+!                                    this was previously  - S0*D(1+i)*F(1) 
                FDSp(i0) = FDSp(i0) - S0 * Dp(i) * (Fp(1) + w(1)/2 * S0)
+
+!                                    previously  + D(1)*S0*D(1+i) 
+!                                    previously  - D(1+i)
                DSDp(i0) =            Dp(1) * Sp(i) * Dp(1) - Dp(i)
+
                DSDp(i0) = DSDp(i0) + Dp(i)*dag(DSp(1))
+
+!                                    previously  + D(1+i)*S0*D(1) 
                DSDp(i0) = DSDp(i0) + DSp(1)*Dp(i)
+
                Sp(i)=0
             end do
             DSp(1)=0; FDp(1)=0
