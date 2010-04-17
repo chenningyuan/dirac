@@ -346,7 +346,7 @@ contains
                FDSp(i0) = FDSp(i0) - dag(DSp(1)) * (Fp(i) + (w(1)+w(2))/2 * Sp(i))
                FDSp(i0) = FDSp(i0) + FDp(1) * Sp(i) - Sp(i) * dag(FDp(1))
                FDSp(i0) = FDSp(i0) + (Fp(1) - (w(1)+w(2))/2 * S0) * Dp(i) * S0
-               FDSp(i0) = FDSp(i0) - S0 * Dp(i) * (Fp(1) + (w(1)+w(1))/2 * S0)
+               FDSp(i0) = FDSp(i0) - S0 * Dp(i) * (Fp(1) + (w(1)+w(2))/2 * S0)
                DSDp(i0) =            Dp(1) * Sp(i) * Dp(1) - Dp(i)
                DSDp(i0) = DSDp(i0) + Dp(i)*dag(DSp(1))
                DSDp(i0) = DSDp(i0) + DSp(1)*Dp(i)
