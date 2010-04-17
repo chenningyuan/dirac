@@ -392,8 +392,8 @@ contains
             end do
             Sp(2:1+dimp(1)) = 0
          end if
-#ifdef PRG_DIRAC
       else
+#ifdef PRG_DIRAC
 !        this implements arbitrary order pert_scf_eq under two conditions:
 !        1. S is perturbation independent
 !        2. there is only one component/perturbation
@@ -434,7 +434,6 @@ contains
          X       = 0
 
 #else
-      else
          call quit('pert_scf_eq error: Too high order, size(p) > 2 not implemented')
 #endif /* ifdef PRG_DIRAC */
       end if
