@@ -8,6 +8,9 @@ module prop_test
 #ifdef VAR_LINSCA
    use scf_config, only: lupri
 #endif
+#ifdef PRG_DIRAC
+   use dirac_interface
+#endif
 
    implicit none
 
@@ -16,9 +19,9 @@ module prop_test
    public elec_hypolar
    public alt_elec_hypol
    public elec_sechyp
-!  public alt_elec_sechyp
-!  public alt2_elec_sechyp
-!  public magnetiz
+   public alt_elec_sechyp
+   public alt2_elec_sechyp
+   public magnetiz
 
    private
 
@@ -39,7 +42,6 @@ module prop_test
 
 contains
 
-#ifdef BLUB
    subroutine prop_test_gradient(S, D, F, ng, fdum) !gradient
       type(matrix), intent(in) :: S, D, F
       integer,      intent(in) :: ng !number of geometrical coordinates
@@ -57,9 +59,6 @@ contains
       DFD = 0
    end subroutine
 
-#endif
-
-#ifdef BLUB
    subroutine prop_test_Gprime_Df(decomp, S, D, F, idum, freq) !Gprime_Df(-freq)
       type(decompItem), intent(inout) :: decomp
       type(matrix), intent(in) :: S, D, F
@@ -110,7 +109,6 @@ contains
       ! free
       Db = 0;  Fb = 0
    end subroutine
-#endif /* ifdef BLUB */
 
    subroutine elec_dipmom(S, D, F, Ef)
       type(matrix), intent(in)  :: S, D, F
@@ -259,7 +257,6 @@ contains
       Effff = -Effff
    end subroutine
 
-#ifdef BLUB
    subroutine alt_elec_sechyp(decomp, S, D, F, freq, Effff)
       type(decompItem), intent(inout) :: decomp
       type(matrix), intent(in)  :: S, D, F
@@ -619,7 +616,6 @@ contains
     deallocate(work)
 
   end subroutine
-#endif /* BLUB */
 
    subroutine print_tensor(dims, tensor, title, freqs, colwidth, unit)
    !ajt This is used for printing response function tensors
