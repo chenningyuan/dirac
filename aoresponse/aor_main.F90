@@ -59,32 +59,42 @@ contains
 !   call aoresponse_mu(S, D, F)
 
 !       if (cfg_rsp_polariz) then
-           allocate(tensor(3))
-           call elec_dipmom(S, D, F, tensor)
-           deallocate(tensor)
+!          allocate(tensor(3))
+!          call elec_dipmom(S, D, F, tensor)
+!          deallocate(tensor)
 !       endif
 
 
-    if (aor_cfg_alpha) then
-  !   call alpha(S, D, F, (/freq(1), -freq(1)/))
-           allocate(tensor(3*3))
-           call elec_polariz(decomp,S,D,F,freq(1) &
-                             +(0d0,1d0)*0.0d0,tensor)
-           deallocate(tensor)
-    end if
+!   if (aor_cfg_alpha) then
+! !   call alpha(S, D, F, (/freq(1), -freq(1)/))
+!          allocate(tensor(3*3))
+!          call elec_polariz(decomp,S,D,F,freq(1) &
+!                            +(0d0,1d0)*0.0d0,tensor)
+!          deallocate(tensor)
+!   end if
+    allocate(tensor(3))
+    call elec_dipmom(S, D, F, tensor)
+    deallocate(tensor)
 
+    if (aor_cfg_alpha) then
+      n = 2
+      allocate(tensor(3**n))
+      call elec_polariz(decomp, S, D, F, freq(1), tensor)
+      deallocate(tensor)
+    end if
 
     if (aor_cfg_beta) then
-           allocate(tensor(3*3*3))
-      call elec_hypolar(decomp, S, D, F, (/freq(1:2), -sum(freq(1:2))/), tensor)
-           deallocate(tensor)
+      n = 3
+      allocate(tensor(3**n))
+      call elec_hypolar(decomp, S, D, F, (/freq(1:n-1), -sum(freq(1:n-1))/), tensor)
+      deallocate(tensor)
     end if
 
-
     if (aor_cfg_beta_2np1) then
-           allocate(tensor(3*3*3))
-      call alt_elec_hypol(decomp, S, D, F, (/freq(1:2), -sum(freq(1:2))/), tensor)
-           deallocate(tensor)
+      n = 3
+      allocate(tensor(3**n))
+      call alt_elec_hypol(decomp, S, D, F, (/freq(1:n-1), -sum(freq(1:n-1))/), tensor)
+      deallocate(tensor)
     end if
 
     if (aor_cfg_gamma) then
