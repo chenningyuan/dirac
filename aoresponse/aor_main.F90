@@ -5,8 +5,6 @@ module aor_main
   use dirac_interface
   use aor_cfg
   use decompmod
-  use aor_property_definitions
-! use aor_property_definitions_zzz
 
   implicit none
 
