@@ -3727,12 +3727,18 @@ C
 C     e-p FCX- and FVX- Fock matrices
 C     -------------------------------
 C
+      JZ    = -1
+      IBOFF =  1
       DO I = 1, NPSIM
+         IF(SPINFR .AND. (JTIMOP .EQ. 1)) THEN
+           CALL SPFEXC(BPVEC(IBOFF),WORK(KZXOPP),NZXOPP,IBEIG,JZ,JREP)
+           IBOFF = IBOFF + NZXOPPQ
+         ENDIF
          IMOMAT = IMOMAT + 1
          CALL DZERO(FMO(1,IMOMAT),N2ORBXQ)
          IF (NISHT .GT. 0) THEN
             IAOMAT = IAOMAT + 1
-            CALL GMOLITX2(-1,JREP,FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,IBEIG,
+            CALL GMOLITX2(JZ,JREP,FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,IBEIG,
      &           WORK(KFREE),LFREE)
             IF ( IPRXRS .GE. 8) THEN
                WRITE(LUPRI,9011) 'e-p inactive QCX', I
