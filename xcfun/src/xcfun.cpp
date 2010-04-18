@@ -48,7 +48,7 @@ int xc_input_length(int mode, int type)
 
 int xc_output_length(int mode, int type, int order)
 {
-  return polylen(xc_input_length(mode,type),order);
+  return taylorlen(xc_input_length(mode,type),order);
 }
 
 settings_database &xc_get_settings()
@@ -122,7 +122,7 @@ int xc_functional::xc_functional_data::input_length(void) const
 
 int xc_functional::xc_functional_data::output_length(int order) const
 {
-  return polylen(input_length(),order);
+  return taylorlen(input_length(),order);
 }
 
 int xc_functional::xc_functional_data::
@@ -136,7 +136,7 @@ derivative_index(const int exponents[]) const
   N--;
   while (N >= 0)
     {
-      idx += polylen(nvar-i,N);
+      idx += taylorlen(nvar-i,N);
       N -= exponents[i];
       i++;
     }
