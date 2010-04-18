@@ -29,6 +29,9 @@ contains
     complex(8),allocatable:: tensor(:) !ajt: scratch for property tensors
    type(decompItem) :: decomp
 
+    decomp%lupri = 0
+
+
 !   initialize fortran 77 work memory interface
     call di_set_f77_work(work, lwork)
     

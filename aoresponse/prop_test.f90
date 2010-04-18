@@ -110,6 +110,7 @@ contains
       Db = 0;  Fb = 0
    end subroutine
 
+
    subroutine elec_dipmom(S, D, F, Ef)
       type(matrix), intent(in)  :: S, D, F
       complex(8),   intent(out) :: Ef(3)
@@ -130,7 +131,7 @@ contains
       Eff = 0 !zero, as prop_oneave works incrementally
       call prop_oneave(S, (/'EL'/), (/Df/), (/3,3/), Eff)
       call print_tensor((/3,3/), -Eff, 'alpha = -Eff')
-!     call print_tensor((/3,3/), -Eff, 'alpha = -Eff', unit=decomp%lupri)
+      call print_tensor((/3,3/), -Eff, 'alpha = -Eff', unit=decomp%lupri)
       !delete response matrices
       Df = 0; Ff = 0
       !change sign, since polarizability is minus quasi-energy derivative
@@ -158,7 +159,7 @@ contains
       call prop_oneave(S, (/'EL'/), (/Dfe/), (/3,3,3/), Efff)
       !print
       call print_tensor((/3,3,3/), -Efff, 'beta = -Efff', freq)
-!     call print_tensor((/3,3,3/), -Efff, 'beta = -Efff', freq, unit=decomp%lupri)
+      call print_tensor((/3,3,3/), -Efff, 'beta = -Efff', freq, unit=decomp%lupri)
       !free
       Df=0; Ff=0; De=0; Fe=0; Dfe=0; Ffe=0
       !change sign to get beta
@@ -203,15 +204,15 @@ contains
       end do
       do k = 1, 3
          do j = 1, 3
-            FDSfg = De(k)*S*Df(j) + Df(j)*S*De(k)
+            DSDfg = De(k)*S*Df(j) + Df(j)*S*De(k)
             do i = 1, 3
-               Efff(i,j,k) = Efff(i,j,k) - tr(FeDS(i),FDSfg)
-            end do; FDSfg=0
+               Efff(i,j,k) = Efff(i,j,k) - tr(FeDS(i),DSDfg)
+            end do; DSDfg=0
          end do
       end do; FeDS=0
       !print
       call print_tensor((/3,3,3/), -Efff, 'beta = -Efff', freq)
-!     call print_tensor((/3,3,3/), -Efff, 'beta = -Efff', freq, unit=decomp%lupri)
+      call print_tensor((/3,3,3/), -Efff, 'beta = -Efff', freq, unit=decomp%lupri)
       !free
       De=0; Fe=0; Df=0; Ff=0; Dg=0; Fg=0
       !change sign for beta
@@ -249,7 +250,7 @@ contains
       call prop_oneave(S, (/'EL'/), (/Defg/), (/3,3,3,3/), Effff)
       !print
       call print_tensor((/3,3,3,3/), -Effff, 'gamma = -Effff', freq)
-!     call print_tensor((/3,3,3,3/), -Effff, 'gamma = -Effff', freq, unit=decomp%lupri)
+      call print_tensor((/3,3,3,3/), -Effff, 'gamma = -Effff', freq, unit=decomp%lupri)
       !free
       De=0; Df=0; Dg=0; Def=0; Deg=0; Dfg=0; Defg=0
       Fe=0; Ff=0; Fg=0; Fef=0; Feg=0; Ffg=0; Fefg=0
@@ -324,7 +325,7 @@ contains
       end do; FeDS=0
       ! print
       call print_tensor((/3,3,3,3/), -Effff, 'gamma = -Effff', freq)
-!     call print_tensor((/3,3,3,3/), -Effff, 'gamma = -Effff', freq, unit=decomp%lupri)
+      call print_tensor((/3,3,3,3/), -Effff, 'gamma = -Effff', freq, unit=decomp%lupri)
       !free
       De=0; Df=0; Dg=0; Dh=0; Dfg=0; Dfh=0; Dgh=0
       Fe=0; Ff=0; Fg=0; Fh=0; Ffg=0; Ffh=0; Fgh=0
@@ -469,7 +470,7 @@ contains
       end do; FeDSh=0
       !print
       call print_tensor((/3,3,3,3/), -Effff, 'gamma = -Effff', freq)
-!     call print_tensor((/3,3,3,3/), -Effff, 'gamma = -Effff', freq, unit=decomp%lupri)
+      call print_tensor((/3,3,3,3/), -Effff, 'gamma = -Effff', freq, unit=decomp%lupri)
       !free
       De=0; Df=0; Dg=0; Dh=0; Def=0; Deg=0; Deh=0
       Fe=0; Ff=0; Fg=0; Dh=0; Fef=0; Feg=0; Feh=0
@@ -617,6 +618,7 @@ contains
 
   end subroutine
 
+
    subroutine print_tensor(dims, tensor, title, freqs, colwidth, unit)
    !ajt This is used for printing response function tensors
    !TODO: Add comp. lables argument. Make space between blocks of rows
@@ -671,5 +673,36 @@ contains
          end do
       end subroutine
    end subroutine
+
+
+!radovan: please do not leave commented-out code
+!         (without describing the reason why it is commented out)
+!         in the repository
+
+!         function RandomReal() result(r)
+!         !Random real numbers with Gaussian distribution
+!         !The generator is seeded on the first call
+!         !Two reals are generated each time, and returned in consecutive calls
+!         !Random_Seed and Random_Number are provided by Intel and GNU compilers
+!         !To get different numbers, change seed.
+!             real(8),parameter :: pi=3.14159265358979323846d00
+!             real(8) :: r,a,x,y
+!             real(8),save:: rnext
+!             logical,save:: first=.true.,flip=.true.
+!             if (first) then !reset fortran's random generator
+!                 call Random_Seed(put=(/628468422,281827387/))
+!                 first = .false.
+!             end if
+!             r = rnext
+!             flip = .not.flip
+!             if (flip) return !return sav
+!             call Random_Number(x)
+!             a = 2*Pi*x !angle in [0,2pi]
+!             call Random_Number(x)
+!             y = sqrt(-log(x))
+!             rnext = cos(a)*y
+!             r = sin(a)*y
+!         end function
+
 
 end module
