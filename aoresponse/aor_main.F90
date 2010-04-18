@@ -100,6 +100,14 @@ contains
       deallocate(tensor2)
     end if
 
+    if (aor_cfg_dg_energy) then
+!     call test_grcont(D%nrow, natoms_ifc(), .false., .true.)
+!     call debug_1grad(D, F, natoms_ifc())
+!     call debug_2grad(D,    natoms_ifc())
+
+!     call dg_energy(S, D, F, 3*nr_atoms)
+      call prop_test_gradient(S, D, F, 3*nr_atoms)
+    end if
 
 
 #ifdef MERGE_WITH_LINSCA
@@ -131,13 +139,6 @@ contains
                                real(tsr(94:93+9*j)),(0d0,i=1,9*j),real(tsr(94:93+9*j))/), &
                                (/(0d0,i=1,27*j*4)/),lupri)
            deallocate(tsr)
-    end if
-
-    if (aor_cfg_dg_energy) then
-!     call test_grcont(D%nrow, natoms_ifc(), .false., .true.)
-!     call debug_1grad(D, F, natoms_ifc())
-!     call debug_2grad(D,    natoms_ifc())
-      call dg_energy(S, D, F, 3*nr_atoms)
     end if
 #endif
 

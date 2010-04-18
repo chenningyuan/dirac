@@ -310,6 +310,10 @@ contains
       real(8)      :: R(6) !scratch
       integer      :: i, j, k, l, ii, jj, kk, ll
       type(matrix) :: A(6) !scratch matrices
+#ifdef PRG_DIRAC
+      !> temporary matrix
+      type(matrix) :: T
+#endif
       A(:) = (/(0d0*S0, i=1,size(A))/) !scratch matrices
       if (np==0) then
          call quit('prop_oneave error: unperturbed one-electron contribution requested')
@@ -402,10 +406,27 @@ contains
          !one-electron integral contribution
          do i = 0, dp(1)-1
             ! perturbed one-electron Hamiltonian integrals
-            call load_oneint('1DHAM' // prefix_zeros(c(1)+i,3), A(1))
+#ifdef PRG_DIRAC
+            call load_oneint('G1N' // prefix_zeros(c(1)+i, 3), A(1))
+            T = 1.0d0*A(1)
+            call load_oneint('G1B' // prefix_zeros(c(1)+i, 3), T)
+            A(1) = A(1) + T
+            call load_oneint('G1KX' // prefix_zeros(c(1)+i, 3), T)
+            call daxpy_iz_jz(1.0d0, T, 1, A(1), 4)
+            call load_oneint('G1KY' // prefix_zeros(c(1)+i, 3), T)
+            call daxpy_iz_jz(1.0d0, T, 1, A(1), 3)
+            call load_oneint('G1KZ' // prefix_zeros(c(1)+i, 3), T)
+            call daxpy_iz_jz(1.0d0, T, 1, A(1), 2)
+#else
+            call load_oneint('1DHAM' // prefix_zeros(c(1)+i, 3), A(1))
+#endif
             ! (half-) perturbed overlap -i/2 Tg added to A(1), Sg in A(2)
             if (w(1)==0) then !w=0 means no -i/2 Tg contribution
+#ifdef PRG_DIRAC
+               call load_oneint('G1O' // prefix_zeros(c(1)+i,3), A(2))
+#else
                call load_oneint('1DOVL' // prefix_zeros(c(1)+i,3), A(2))
+#endif
                A(2) = -A(2) !1DOVL is really -dS/dg
             else
                call load_oneint('SQHDR' // prefix_zeros(c(1)+i,3), A(2))
@@ -1214,7 +1235,11 @@ contains
          end do
       else if (np==1 .and. p(1)=='GEO') then
          do i = 0, dp(1)-1
+#ifdef PRG_DIRAC
+            call quit('implement 1dham')
+#else
             call load_oneint('1DHAM' // prefix_zeros(c(1)+i,3), F(i+1), S0)
+#endif
             if (w(1)==0) then !no -i/2 Tb contribution
                call load_oneint('1DOVL' // prefix_zeros(c(1)+i,3), S(i+1), S0)
                S(i+1) = -S(i+1) !1DOVL is really -dS/dg
@@ -1666,7 +1691,9 @@ contains
 #endif
 
    subroutine load_oneint(lab, A, S0)
-      character*8,            intent(in)    :: lab
+!radovan: please don't use fixed size, size can vary in DIRAC
+!     character*8,            intent(in)    :: lab
+      character(*),           intent(in)    :: lab
       type(matrix),           intent(inout) :: A
       type(matrix), optional, intent(in)    :: S0
       ! if S0 present, initialize to that
