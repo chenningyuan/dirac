@@ -67,11 +67,14 @@ MODULE Matrix_module
       !> marker for complex elements
       logical :: complex = .false.  
 
-!   DIRAC specific
-    integer             :: ih_sym = 1
-    integer             :: tr_sym = 1
-    integer             :: irep   = 0
-
+#ifdef PRG_DIRAC
+      !> hermiticity
+      integer :: ih_sym = 1
+      !> time-reversal symmetry
+      integer :: tr_sym = 1
+      !> irep
+      integer :: irep   = 0
+#endif
 
    END TYPE Matrix
 
