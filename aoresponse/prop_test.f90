@@ -22,6 +22,7 @@ module prop_test
    public alt_elec_sechyp
    public alt2_elec_sechyp
    public magnetiz
+   public elec_quadrupole
 
    private
 
@@ -118,6 +119,15 @@ contains
       call prop_oneave(S, (/'EL'/), (/D/), (/3/), Ef)
       call print_tensor((/3/), -Ef, 'mu = -Ef')
       call print_tensor((/3/), -Ef, 'mu = -Ef', unit=lupri)
+   end subroutine
+
+
+   subroutine elec_quadrupole(S, D, F, t)
+      type(matrix), intent(in)  :: S, D, F
+      complex(8),   intent(out) :: t(6)
+      t = 0.0d0
+      call prop_oneave(S, (/'ELGR'/), (/D/), (/6/), t)
+      call print_tensor((/6/), -t, 'quadrupole = -t')
    end subroutine
 
 
@@ -496,6 +506,7 @@ contains
       !call print_tensor( (/3,3/), Eoo, 'E1oDo'); Eoo=0
       call print_tensor((/3,3/), Eoo, 'no-London Magnetizability = Eoo', (/-freq,freq/))
       Db=0; Fb=0
+#ifndef PRG_DIRAC
       !London diamag
       call pert_dens(decomp, S, (/'MAG'/), (/3/), (/D/), (/F/), Db, Fb, freq=(/freq/))
       Ebb = 0
@@ -516,6 +527,7 @@ contains
       Db=0; Fb=0; DFDb=0
       !call print_tensor( (/3,3/), Ebb, 'E1bDb-i/2TbDb-SbDFDb'); Ebb=0
       call print_tensor((/3,3/), Ebb, 'London Magnetizability = Ebb', (/-freq,freq/))
+#endif /* ifndef PRG_DIRAC */
    end subroutine
 
 

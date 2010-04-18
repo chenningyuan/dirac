@@ -1093,7 +1093,7 @@ contains
     integer                     :: iz, k, i, s, off
     integer                     :: nr_freq
 
-    logical                     :: debug_me = .true.
+    logical                     :: debug_me = .false.
 !   ----------------------------------------------------------------------------
 
 !   fixme: nssh not always properly set, change to nesh minus nish

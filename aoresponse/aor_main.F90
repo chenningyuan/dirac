@@ -26,7 +26,8 @@ contains
     integer       :: i, j, n
     integer, intent(in)    :: lwork
     real(8), intent(inout) :: work(lwork)
-    complex(8),allocatable:: tensor(:) !ajt: scratch for property tensors
+    complex(8), allocatable :: tensor(:)
+    complex(8), allocatable :: tensor2(:)
    type(decompItem) :: decomp
 
     decomp%lupri = 0
@@ -53,28 +54,14 @@ contains
 !   call test_matrix_defop(S, D, F, C_i)
     C_i = 0
 
-!   call aoresponse_nr_electrons(S, D)
+    write(*, *) 'electron count from S**D:', dot(S, D)
 
+    if (aor_cfg_quadrupole) then
+      allocate(tensor(6))
+      call elec_quadrupole(S, D, F, tensor)
+      deallocate(tensor)
+    end if
 
-
-
-!   call aoresponse_hf_energy(D, F)
-!   call aoresponse_mu(S, D, F)
-
-!       if (cfg_rsp_polariz) then
-!          allocate(tensor(3))
-!          call elec_dipmom(S, D, F, tensor)
-!          deallocate(tensor)
-!       endif
-
-
-!   if (aor_cfg_alpha) then
-! !   call alpha(S, D, F, (/freq(1), -freq(1)/))
-!          allocate(tensor(3*3))
-!          call elec_polariz(decomp,S,D,F,freq(1) &
-!                            +(0d0,1d0)*0.0d0,tensor)
-!          deallocate(tensor)
-!   end if
     allocate(tensor(3))
     call elec_dipmom(S, D, F, tensor)
     deallocate(tensor)
@@ -107,11 +94,17 @@ contains
       deallocate(tensor)
     end if
 
-#ifdef MERGE_WITH_LINSCA
-    if (aor_cfg_quadrupole) then
-      call aor_quadrupole(S, D, F)
+    if (aor_cfg_magnetizability) then
+      allocate(tensor(3*3))
+      allocate(tensor2(3*3))
+      call magnetiz(decomp, S, D, F, freq(1), tensor, tensor2)
+      deallocate(tensor)
+      deallocate(tensor2)
     end if
 
+
+
+#ifdef MERGE_WITH_LINSCA
     if (aor_cfg_roa) then
            print '(//a,f11.8/)','linscf calls roa_pol_gpri_aten_gra w=',aor_cfg_freq(1)
            call get_natoms(j); j=3*j
@@ -148,15 +141,6 @@ contains
 !     call debug_2grad(D,    natoms_ifc())
       call dg_energy(S, D, F, 3*nr_atoms)
     end if
-
-    if (aor_cfg_alpha) then
-      call alpha(S, D, F, (/freq(1), -freq(1)/))
-    end if
-
-    if (aor_cfg_magnetizability) then
-      call aor_magnetizability(S, D, F, freq(1))
-    end if
-
 #endif
 
     if (aor_cfg_gamma_lin_dc_kerr) then
@@ -273,7 +257,6 @@ contains
 
     end if
 
-#ifdef MERGE_WITH_LINSCA
     if (aor_cfg_test_delta) then
 
 !     this is 4hg (fourth harmonic generation)
@@ -294,35 +277,13 @@ contains
 
     end if
 
-!   if (aor_cfg_beta_lin_static) then
-
-!     add_to = 0.0d0
-!     freq   = 0.0d0
-
-!     call beta_element(2.0d0, add_to, 1, 1, 3, S, D, F, (/freq(1:2), -sum(freq(1:2))/))
-!     call beta_element(1.0d0, add_to, 3, 3, 3, S, D, F, (/freq(1:2), -sum(freq(1:2))/))
-
-!     add_to = 3.0d0*add_to/5.0d0
-
-!     print '(a30 " (w = "3f9.4"):" f26.10)', &
-!           '@ averaged static beta',         &
-!           real(freq(1)),                          &
-!           real(freq(2)),                          &
-!           real(freq(3)),                          &
-!           add_to
-
-!   end if
-
-
+#ifdef MERGE_WITH_LINSCA
     if (aor_cfg_zzz) call aor_zzz(aor_cfg_zzz_order, S, D, F)
+#endif /* ifdef MERGE_WITH_LINSCA */
 
     S = 0
     D = 0
     F = 0
-#endif /* ifdef MERGE_WITH_LINSCA */
-
-!radovan: debug this later
-!   call print_matrix_stat()
 
   end subroutine
 

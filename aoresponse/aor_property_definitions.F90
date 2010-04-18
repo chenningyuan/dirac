@@ -11,9 +11,8 @@ module aor_property_definitions
 
     implicit none
 
-    public aoresponse_nr_electrons
-!   public aoresponse_hf_energy
     public gamma_element
+    public delta_element
 
     private
 
@@ -46,7 +45,7 @@ contains
     type(matrix)                :: F_ijk(3, 3, 3)
     complex(8)                  :: e(3, 3, 3, 3)
     integer                     :: c1, c2, c3
-      type(decompItem)          :: decomp
+    type(decompitem)            :: decomp
 !   ----------------------------------------------------------------------------
 
     S = 1.0d0*S
@@ -193,98 +192,459 @@ contains
 
   end function
 
-  subroutine aoresponse_nr_electrons(S, D)
+  function delta_element(S, D, F, w, h, i, j, k, l)
 
 !   ----------------------------------------------------------------------------
-    type(matrix), intent(inout) :: S, D
+    real(8)                     :: delta_element
+    type(matrix), intent(inout) :: S, D, F
+    integer,      intent(in)    :: h, i, j, k, l
+    complex(8),   intent(in)    :: w(4)
+!   ----------------------------------------------------------------------------
+!   pascal triangle: 1 0th order matrix
+!                    4 1st order matrices
+!                    6 2nd
+!                    4 3rd
+!                    1 4th
+    type(matrix)                :: D_i(3)
+    type(matrix)                :: D_j(3)
+    type(matrix)                :: D_k(3)
+    type(matrix)                :: D_l(3)
+    type(matrix)                :: D_ij(3, 3)
+    type(matrix)                :: D_ik(3, 3)
+    type(matrix)                :: D_il(3, 3)
+    type(matrix)                :: D_jk(3, 3)
+    type(matrix)                :: D_jl(3, 3)
+    type(matrix)                :: D_kl(3, 3)
+    type(matrix)                :: D_ijk(3, 3, 3)
+    type(matrix)                :: D_ijl(3, 3, 3)
+    type(matrix)                :: D_ikl(3, 3, 3)
+    type(matrix)                :: D_jkl(3, 3, 3)
+    type(matrix)                :: D_ijkl(3, 3, 3, 3)
+
+    type(matrix)                :: F_i(3)
+    type(matrix)                :: F_j(3)
+    type(matrix)                :: F_k(3)
+    type(matrix)                :: F_l(3)
+    type(matrix)                :: F_ij(3, 3)
+    type(matrix)                :: F_ik(3, 3)
+    type(matrix)                :: F_il(3, 3)
+    type(matrix)                :: F_jk(3, 3)
+    type(matrix)                :: F_jl(3, 3)
+    type(matrix)                :: F_kl(3, 3)
+    type(matrix)                :: F_ijk(3, 3, 3)
+    type(matrix)                :: F_ijl(3, 3, 3)
+    type(matrix)                :: F_ikl(3, 3, 3)
+    type(matrix)                :: F_jkl(3, 3, 3)
+    type(matrix)                :: F_ijkl(3, 3, 3, 3)
+
+    complex(8)                  :: e1(            3)
+    complex(8)                  :: e2(         3, 3)
+    complex(8)                  :: e3(      3, 3, 3)
+    complex(8)                  :: e4(   3, 3, 3, 3)
+    complex(8)                  :: e5(3, 3, 3, 3, 3)
+
+    integer                     :: c1, c2, c3, c4
+    type(decompitem)            :: decomp
 !   ----------------------------------------------------------------------------
 
     S = 1.0d0*S
     D = 1.0d0*D
-
-    write(*, *) 'electron count from S**D:', dot(S, D)
-
-  end subroutine
-
-#ifdef MERGE_WITH_LINSCA
-  subroutine aoresponse_hf_energy(D, F)
-
-!   ----------------------------------------------------------------------------
-    type(matrix), intent(inout) :: D, F
-!   ----------------------------------------------------------------------------
-    type(matrix)                :: G(1)
-    character(4)                :: nop(0)
-!   ----------------------------------------------------------------------------
-
-    D = 1.0d0*D
     F = 1.0d0*F
 
-    G(1) = tiny(1.0d0)*D
+    do c1 = 1, 3
+      D_i(c1) = tiny(0.0d0)*D
+      D_j(c1) = tiny(0.0d0)*D
+      D_k(c1) = tiny(0.0d0)*D
+      D_l(c1) = tiny(0.0d0)*D
+      F_i(c1) = tiny(0.0d0)*D
+      F_j(c1) = tiny(0.0d0)*D
+      F_k(c1) = tiny(0.0d0)*D
+      F_l(c1) = tiny(0.0d0)*D
+      do c2 = 1, 3
+        D_ij(c1, c2) = tiny(0.0d0)*D
+        D_ik(c1, c2) = tiny(0.0d0)*D
+        D_il(c1, c2) = tiny(0.0d0)*D
+        D_jk(c1, c2) = tiny(0.0d0)*D
+        D_jl(c1, c2) = tiny(0.0d0)*D
+        D_kl(c1, c2) = tiny(0.0d0)*D
+        F_ij(c1, c2) = tiny(0.0d0)*D
+        F_ik(c1, c2) = tiny(0.0d0)*D
+        F_il(c1, c2) = tiny(0.0d0)*D
+        F_jk(c1, c2) = tiny(0.0d0)*D
+        F_jl(c1, c2) = tiny(0.0d0)*D
+        F_kl(c1, c2) = tiny(0.0d0)*D
+        do c3 = 1, 3
+          D_ijk(c1, c2, c3) = tiny(0.0d0)*D
+          D_ijl(c1, c2, c3) = tiny(0.0d0)*D
+          D_ikl(c1, c2, c3) = tiny(0.0d0)*D
+          D_jkl(c1, c2, c3) = tiny(0.0d0)*D
+          F_ijk(c1, c2, c3) = tiny(0.0d0)*D
+          F_ijl(c1, c2, c3) = tiny(0.0d0)*D
+          F_ikl(c1, c2, c3) = tiny(0.0d0)*D
+          F_jkl(c1, c2, c3) = tiny(0.0d0)*D
+          do c4 = 1, 3
+            D_ijkl(c1, c2, c3, c4) = tiny(0.0d0)*D
+            F_ijkl(c1, c2, c3, c4) = tiny(0.0d0)*D
+          end do
+        end do
+      end do
+    end do
 
-    call prop_fock(nop, (/D, D/), G)
-    write(*, *) 'electronic energy from dot(F, D) - 0.5d0*dot(G(1), D):', dot(F, D) - 0.5d0*dot(G(1), D)
+    call pert_dens(decomp, S, (/'EL'/), (/1/), (/D/), (/F/), D_i(i), F_i(i), comp=(/i/), freq=(/w(1)/))
+    e2 = 0.0d0
+    call prop_oneave(S, (/'EL'/), (/D_i/), shape(e2), e2)
+    call print_polarizability(e2, (/w(1)/), i)
 
-    G(1) = 0
+    call pert_dens(decomp, S, (/'EL'/), (/1/), (/D/), (/F/), D_j(j), F_j(j), comp=(/j/), freq=(/w(2)/))
+    e2 = 0.0d0
+    call prop_oneave(S, (/'EL'/), (/D_j/), shape(e2), e2)
+    call print_polarizability(e2, (/w(2)/), j)
 
-  end subroutine
+    call pert_dens(decomp, S, (/'EL'/), (/1/), (/D/), (/F/), D_k(k), F_k(k), comp=(/k/), freq=(/w(3)/))
+    e2 = 0.0d0
+    call prop_oneave(S, (/'EL'/), (/D_k/), shape(e2), e2)
+    call print_polarizability(e2, (/w(3)/), k)
 
-   subroutine aor_magnetizability(S, D, F, w)
-   !no-Lon and London magnetizability
-      type(matrix), intent(in)  :: S, D, F
-      type(decompItem)          :: decomp
-      complex(8),   intent(in)  :: w
-      complex(8)                :: Eoo(3,3), Ebb(3,3)
-      type(matrix) :: Db(3), Fb(3), DFD, ihTb(3), Sb(3), Sbb(3,3)
-      integer      :: i,j
+    call pert_dens(decomp, S, (/'EL'/), (/1/), (/D/), (/F/), D_l(l), F_l(l), comp=(/l/), freq=(/w(4)/))
+    e2 = 0.0d0
+    call prop_oneave(S, (/'EL'/), (/D_l/), shape(e2), e2)
+    call print_polarizability(e2, (/w(4)/), l)
 
-      !no-London
-      call pert_dens(decomp, (/'MAGO'/), (/3/), S, (/D/), (/F/), Db, Fb, freq=(/w/) )
-      Eoo = 0
-      call prop_energy( (/'MAGO','MAGO'/), (/D/), Eoo); Eoo=-Eoo !sign change
-      print '(a/3(3f18.13/)/)', 'E0oo', Eoo; Eoo=0
-      call prop_energy( (/'MAGO'/), (/D,Db/), Eoo)
-      print '(a/3(3f18.13/)/)', 'E1oDo', Eoo; Eoo=0
-      Db=0; Fb=0
+    call pert_dens(decomp,             &
+                   S,                  &
+                 (/'EL', 'EL'/),       &
+                 (/1, 1/),             &
+                 (/                    &
+                   D,                  &
+                   D_i(i),             &
+                   D_j(j)              &
+                  /),                  &
+                 (/                    &
+                   F,                  &
+                   F_i(i),             &
+                   F_j(j)              &
+                  /),                  &
+                   D_ij(i, j),         &
+                   F_ij(i, j),         &
+                   comp=(/i, j/),      &
+                   freq=(/w(1), w(2)/))
+    e3 = 0.0d0
+    call prop_oneave(S, (/'EL'/), (/D_ij/), shape(e3), e3)
+    call print_polarizability(e3, (/w(1), w(2)/), i, j)
 
-!     !London diamag
-!     call pert_dens( (/'MAG'/), S, (/D/), (/F/), Db, Fb, freq=(/w/) )
-!     Ebb = 0
-!     call prop_energy( (/'MAG','MAG'/), (/D/), Ebb); Ebb=-Ebb !sign change
-!     print '(a/3(3f18.13/)/)', 'E0bb', Ebb; Ebb=0
-!     !here, the term -i/2TbbD is missing, which is zero
-!     DFD = D*F*D
-!     call prop_overlap( (/'MAG','MAG'/), S, Sbb)
-!     do j = 1, 3
-!        do i = 1, 3
-!           Ebb(i,j) = Ebb(i,j) + tr(Sbb(i,j),DFD) !sign change
-!        end do
-!     end do; DFD=0; Sbb=0
-!     print '(a/3(3f18.13/)/)', '-SbbW', Ebb; Ebb=0
+    call pert_dens(decomp,             &
+                   S,                  &
+                 (/'EL', 'EL'/),       &
+                 (/1, 1/),             &
+                 (/                    &
+                   D,                  &
+                   D_i(i),             &
+                   D_k(k)              &
+                  /),                  &
+                 (/                    &
+                   F,                  &
+                   F_i(i),             &
+                   F_k(k)              &
+                  /),                  &
+                   D_ik(i, k),         &
+                   F_ik(i, k),         &
+                   comp=(/i, k/),      &
+                   freq=(/w(1), w(3)/))
+    e3 = 0.0d0
+    call prop_oneave(S, (/'EL'/), (/D_ik/), shape(e3), e3)
+    call print_polarizability(e3, (/w(1), w(3)/), i, k)
 
-!     !London paramag
-!     call prop_energy( (/'MAG'/), (/D,Db/), Ebb, o=(/2/))
-!     print '(a/3(3f18.13/)/)', 'E1bDb', Ebb; Ebb=0
+    call pert_dens(decomp,             &
+                   S,                  &
+                 (/'EL', 'EL'/),       &
+                 (/1, 1/),             &
+                 (/                    &
+                   D,                  &
+                   D_i(i),             &
+                   D_l(l)              &
+                  /),                  &
+                 (/                    &
+                   F,                  &
+                   F_i(i),             &
+                   F_l(l)              &
+                  /),                  &
+                   D_il(i, l),         &
+                   F_il(i, l),         &
+                   comp=(/i, l/),      &
+                   freq=(/w(1), w(4)/))
+    e3 = 0.0d0
+    call prop_oneave(S, (/'EL'/), (/D_il/), shape(e3), e3)
+    call print_polarizability(e3, (/w(1), w(4)/), i, l)
 
-!     call prop_overlap( (/'MAG'/), S, ihTb, freq=(/-w/2,0*w/) )
-!     do j = 1, 3
-!        do i = 1, 3
-!           Ebb(i,j) = Ebb(i,j) - tr(Sb(i),Db(j))
-!        end do
-!     end do
-!     print '(a/3(3f18.13/)/)', '-i/2TbDb', Ebb; Ebb=0
+    call pert_dens(decomp,             &
+                   S,                  &
+                 (/'EL', 'EL'/),       &
+                 (/1, 1/),             &
+                 (/                    &
+                   D,                  &
+                   D_j(j),             &
+                   D_k(k)              &
+                  /),                  &
+                 (/                    &
+                   F,                  &
+                   F_j(j),             &
+                   F_k(k)              &
+                  /),                  &
+                   D_jk(j, k),         &
+                   F_jk(j, k),         &
+                   comp=(/j, k/),      &
+                   freq=(/w(2), w(3)/))
+    e3 = 0.0d0
+    call prop_oneave(S, (/'EL'/), (/D_jk/), shape(e3), e3)
+    call print_polarizability(e3, (/w(2), w(3)/), j, k)
 
-!     call prop_overlap( (/'MAG'/), S, ihTb, freq=(/+w/2,0*w/) )
-!     do j = 1, 3
-!        DFD = Db(j)*(F+(w/2)*S)*D + D*(Fb(j)-ihTb(j))*D + D*(F-(w/2)*S)*Db(j)
-!        do i = 1, 3
-!           Ebb(i,j) = Ebb(i,j) - tr(Sb(i),DFD)
-!        end do
-!     end do; DFD=0; Sb=0; ihTb=0; Db=0; Fb=0
-!     print '(a/3(3f18.13/)/)', '-SbWb', Ebb; Ebb=0
+    call pert_dens(decomp,             &
+                   S,                  &
+                 (/'EL', 'EL'/),       &
+                 (/1, 1/),             &
+                 (/                    &
+                   D,                  &
+                   D_j(j),             &
+                   D_l(l)              &
+                  /),                  &
+                 (/                    &
+                   F,                  &
+                   F_j(j),             &
+                   F_l(l)              &
+                  /),                  &
+                   D_jl(j, l),         &
+                   F_jl(j, l),         &
+                   comp=(/j, l/),      &
+                   freq=(/w(2), w(4)/))
+    e3 = 0.0d0
+    call prop_oneave(S, (/'EL'/), (/D_jl/), shape(e3), e3)
+    call print_polarizability(e3, (/w(2), w(4)/), j, l)
 
-!     print '(a,2f6.3/3(3f18.13/)/)', 'London Magnetizability = Ebb', -w, w, Ebb
-   end subroutine
+    call pert_dens(decomp,             &
+                   S,                  &
+                 (/'EL', 'EL'/),       &
+                 (/1, 1/),             &
+                 (/                    &
+                   D,                  &
+                   D_k(k),             &
+                   D_l(l)              &
+                  /),                  &
+                 (/                    &
+                   F,                  &
+                   F_k(k),             &
+                   F_l(l)              &
+                  /),                  &
+                   D_kl(k, l),         &
+                   F_kl(k, l),         &
+                   comp=(/k, l/),      &
+                   freq=(/w(3), w(4)/))
+    e3 = 0.0d0
+    call prop_oneave(S, (/'EL'/), (/D_kl/), shape(e3), e3)
+    call print_polarizability(e3, (/w(3), w(4)/), k, l)
 
+    call pert_dens(decomp,             &
+                   S,                  &
+                 (/'EL', 'EL', 'EL'/), &
+                 (/1, 1, 1/),          &
+                 (/                    &
+                   D,                  &
+                   D_i(i),             &
+                   D_j(j),             &
+                   D_k(k),             &
+                   D_ij(i, j),         &
+                   D_ik(i, k),         &
+                   D_jk(j, k)          &
+                  /),                  &
+                 (/                    &
+                   F,                  &
+                   F_i(i),             &
+                   F_j(j),             &
+                   F_k(k),             &
+                   F_ij(i, j),         &
+                   F_ik(i, k),         &
+                   F_jk(j, k)          &
+                  /),                  &
+                   D_ijk(i, j, k),     &
+                   F_ijk(i, j, k),     &
+                   comp=(/i, j, k/),   &
+                   freq=(/w(1), w(2), w(3)/))
+    e4 = 0.0d0
+    call prop_oneave(S, (/'EL'/), (/D_ijk/), shape(e4), e4)
+    call print_polarizability(e4, (/w(1), w(2), w(3)/), i, j, k)
+
+    call pert_dens(decomp,             &
+                   S,                  &
+                 (/'EL', 'EL', 'EL'/), &
+                 (/1, 1, 1/),          &
+                 (/                    &
+                   D,                  &
+                   D_i(i),             &
+                   D_j(j),             &
+                   D_l(l),             &
+                   D_ij(i, j),         &
+                   D_il(i, l),         &
+                   D_jl(j, l)          &
+                  /),                  &
+                 (/                    &
+                   F,                  &
+                   F_i(i),             &
+                   F_j(j),             &
+                   F_l(l),             &
+                   F_ij(i, j),         &
+                   F_il(i, l),         &
+                   F_jl(j, l)          &
+                  /),                  &
+                   D_ijl(i, j, l),     &
+                   F_ijl(i, j, l),     &
+                   comp=(/i, j, l/),   &
+                   freq=(/w(1), w(2), w(4)/))
+    e4 = 0.0d0
+    call prop_oneave(S, (/'EL'/), (/D_ijl/), shape(e4), e4)
+    call print_polarizability(e4, (/w(1), w(2), w(4)/), i, j, l)
+
+    call pert_dens(decomp,             &
+                   S,                  &
+                 (/'EL', 'EL', 'EL'/), &
+                 (/1, 1, 1/),          &
+                 (/                    &
+                   D,                  &
+                   D_i(i),             &
+                   D_k(k),             &
+                   D_l(l),             &
+                   D_ik(i, k),         &
+                   D_il(i, l),         &
+                   D_kl(k, l)          &
+                  /),                  &
+                 (/                    &
+                   F,                  &
+                   F_i(i),             &
+                   F_k(k),             &
+                   F_l(l),             &
+                   F_ik(i, k),         &
+                   F_il(i, l),         &
+                   F_kl(k, l)          &
+                  /),                  &
+                   D_ikl(i, k, l),     &
+                   F_ikl(i, k, l),     &
+                   comp=(/i, k, l/),   &
+                   freq=(/w(1), w(3), w(4)/))
+    e4 = 0.0d0
+    call prop_oneave(S, (/'EL'/), (/D_ikl/), shape(e4), e4)
+    call print_polarizability(e4, (/w(1), w(3), w(4)/), i, k, l)
+
+    call pert_dens(decomp,             &
+                   S,                  &
+                 (/'EL', 'EL', 'EL'/), &
+                 (/1, 1, 1/),          &
+                 (/                    &
+                   D,                  &
+                   D_j(j),             &
+                   D_k(k),             &
+                   D_l(l),             &
+                   D_jk(j, k),         &
+                   D_jl(j, l),         &
+                   D_kl(k, l)          &
+                  /),                  &
+                 (/                    &
+                   F,                  &
+                   F_j(j),             &
+                   F_k(k),             &
+                   F_l(l),             &
+                   F_jk(j, k),         &
+                   F_jl(j, l),         &
+                   F_kl(k, l)          &
+                  /),                  &
+                   D_jkl(j, k, l),     &
+                   F_jkl(j, k, l),     &
+                   comp=(/j, k, l/),   &
+                   freq=(/w(2), w(3), w(4)/))
+    e4 = 0.0d0
+    call prop_oneave(S, (/'EL'/), (/D_jkl/), shape(e4), e4)
+    call print_polarizability(e4, (/w(2), w(3), w(4)/), j, k, l)
+
+    call pert_dens(decomp,                   &
+                   S,                        &
+                 (/'EL', 'EL', 'EL', 'EL'/), &
+                 (/1, 1, 1, 1/),             &
+                 (/                          &
+                   D,                        &
+                   D_i(i),                   &        
+                   D_j(j),                   &        
+                   D_k(k),                   &        
+                   D_l(l),                   &        
+                   D_ij(i, j),               &           
+                   D_ik(i, k),               &           
+                   D_il(i, l),               &           
+                   D_jk(j, k),               &           
+                   D_jl(j, l),               &           
+                   D_kl(k, l),               &
+                   D_ijk(i, j, k),           &   
+                   D_ijl(i, j, l),           &   
+                   D_ikl(i, k, l),           &   
+                   D_jkl(j, k, l)            &   
+                  /),                        &
+                 (/                          &
+                   F,                        &
+                   F_i(i),                   &        
+                   F_j(j),                   &        
+                   F_k(k),                   &        
+                   F_l(l),                   &        
+                   F_ij(i, j),               &           
+                   F_ik(i, k),               &           
+                   F_il(i, l),               &           
+                   F_jk(j, k),               &           
+                   F_jl(j, l),               &           
+                   F_kl(k, l),               &
+                   F_ijk(i, j, k),           &   
+                   F_ijl(i, j, l),           &   
+                   F_ikl(i, k, l),           &   
+                   F_jkl(j, k, l)            &   
+                  /),                        &
+                   D_ijkl(i, j, k, l),       &
+                   F_ijkl(i, j, k, l),       &
+                   comp=(/i, j, k, l/),      &
+                   freq=(/w(1), w(2), w(3), w(4)/))
+    e5 = 0.0d0
+    call prop_oneave(S, (/'EL'/), (/D_ijkl/), shape(e5), e5)
+    call print_polarizability(e5, (/w(1), w(2), w(3), w(4)/), i, j, k, l)
+
+    delta_element = -e5(h, i, j, k, l)
+
+    D_i    = 0
+    D_j    = 0
+    D_k    = 0
+    D_l    = 0
+    D_ij   = 0
+    D_ik   = 0
+    D_il   = 0
+    D_jk   = 0
+    D_jl   = 0
+    D_kl   = 0
+    D_ijk  = 0
+    D_ijl  = 0
+    D_ikl  = 0
+    D_jkl  = 0
+    D_ijkl = 0
+
+    F_i    = 0
+    F_j    = 0
+    F_k    = 0
+    F_l    = 0
+    F_ij   = 0
+    F_ik   = 0
+    F_il   = 0
+    F_jk   = 0
+    F_jl   = 0
+    F_kl   = 0
+    F_ijk  = 0
+    F_ijl  = 0
+    F_ikl  = 0
+    F_jkl  = 0
+    F_ijkl = 0
+
+  end function
+
+#ifdef MERGE_WITH_LINSCA
   subroutine test_grcont(n, nr_atoms, test_london, test_geo)
 
     integer             :: n, nr_atoms
@@ -442,573 +802,6 @@ contains
     write(*, *) 'test_matrix_defop: sqrt(dot(F, F))', sqrt(dot(F, F))
 
   end subroutine
-
-  subroutine aor_quadrupole(S, D, F)
-
-    type(matrix), intent(inout) :: S, D, F
-!   ----------------------------------------------------------------------------
-    complex(8)                  :: e_ij(6) = 0.0d0
-    integer                     :: i, j
-
-    S = 1.0d0*S
-    D = 1.0d0*D
-    F = 1.0d0*F
-
-!   e_i = 0.0d0
-    call prop_energy((/'ELGR'/), (/D/), e_ij)
-
-    do i = 1, 6
-      write(*, *) 'blub', i, e_ij(i)
-!     print '("@ -< "a1" > = " f26.10)', fc(i), -real(e_i(i))
-    end do
-
-  end subroutine
-
-  function delta_element(S, D, F, w, h, i, j, k, l)
-
-!   ----------------------------------------------------------------------------
-    real(8)                     :: delta_element
-    type(matrix), intent(inout) :: S, D, F
-    integer,      intent(in)    :: h, i, j, k, l
-    complex(8),   intent(in)    :: w(4)
-!   ----------------------------------------------------------------------------
-!   pascal triangle: 1 0th order matrix
-!                    4 1st order matrices
-!                    6 2nd
-!                    4 3rd
-!                    1 4th
-    type(matrix)                :: D_i(3)
-    type(matrix)                :: D_j(3)
-    type(matrix)                :: D_k(3)
-    type(matrix)                :: D_l(3)
-    type(matrix)                :: D_ij(3, 3)
-    type(matrix)                :: D_ik(3, 3)
-    type(matrix)                :: D_il(3, 3)
-    type(matrix)                :: D_jk(3, 3)
-    type(matrix)                :: D_jl(3, 3)
-    type(matrix)                :: D_kl(3, 3)
-    type(matrix)                :: D_ijk(3, 3, 3)
-    type(matrix)                :: D_ijl(3, 3, 3)
-    type(matrix)                :: D_ikl(3, 3, 3)
-    type(matrix)                :: D_jkl(3, 3, 3)
-    type(matrix)                :: D_ijkl(3, 3, 3, 3)
-
-    type(matrix)                :: F_i(3)
-    type(matrix)                :: F_j(3)
-    type(matrix)                :: F_k(3)
-    type(matrix)                :: F_l(3)
-    type(matrix)                :: F_ij(3, 3)
-    type(matrix)                :: F_ik(3, 3)
-    type(matrix)                :: F_il(3, 3)
-    type(matrix)                :: F_jk(3, 3)
-    type(matrix)                :: F_jl(3, 3)
-    type(matrix)                :: F_kl(3, 3)
-    type(matrix)                :: F_ijk(3, 3, 3)
-    type(matrix)                :: F_ijl(3, 3, 3)
-    type(matrix)                :: F_ikl(3, 3, 3)
-    type(matrix)                :: F_jkl(3, 3, 3)
-    type(matrix)                :: F_ijkl(3, 3, 3, 3)
-
-    complex(8)                  :: e1(            3)
-    complex(8)                  :: e2(         3, 3)
-    complex(8)                  :: e3(      3, 3, 3)
-    complex(8)                  :: e4(   3, 3, 3, 3)
-    complex(8)                  :: e5(3, 3, 3, 3, 3)
-
-    integer                     :: c1, c2, c3, c4
-      type(decompItem)          :: decomp
-!   ----------------------------------------------------------------------------
-
-    S = 1.0d0*S
-    D = 1.0d0*D
-    F = 1.0d0*F
-
-    do c1 = 1, 3
-      D_i(c1) = tiny(0.0d0)*D
-      D_j(c1) = tiny(0.0d0)*D
-      D_k(c1) = tiny(0.0d0)*D
-      D_l(c1) = tiny(0.0d0)*D
-      F_i(c1) = tiny(0.0d0)*D
-      F_j(c1) = tiny(0.0d0)*D
-      F_k(c1) = tiny(0.0d0)*D
-      F_l(c1) = tiny(0.0d0)*D
-      do c2 = 1, 3
-        D_ij(c1, c2) = tiny(0.0d0)*D
-        D_ik(c1, c2) = tiny(0.0d0)*D
-        D_il(c1, c2) = tiny(0.0d0)*D
-        D_jk(c1, c2) = tiny(0.0d0)*D
-        D_jl(c1, c2) = tiny(0.0d0)*D
-        D_kl(c1, c2) = tiny(0.0d0)*D
-        F_ij(c1, c2) = tiny(0.0d0)*D
-        F_ik(c1, c2) = tiny(0.0d0)*D
-        F_il(c1, c2) = tiny(0.0d0)*D
-        F_jk(c1, c2) = tiny(0.0d0)*D
-        F_jl(c1, c2) = tiny(0.0d0)*D
-        F_kl(c1, c2) = tiny(0.0d0)*D
-        do c3 = 1, 3
-          D_ijk(c1, c2, c3) = tiny(0.0d0)*D
-          D_ijl(c1, c2, c3) = tiny(0.0d0)*D
-          D_ikl(c1, c2, c3) = tiny(0.0d0)*D
-          D_jkl(c1, c2, c3) = tiny(0.0d0)*D
-          F_ijk(c1, c2, c3) = tiny(0.0d0)*D
-          F_ijl(c1, c2, c3) = tiny(0.0d0)*D
-          F_ikl(c1, c2, c3) = tiny(0.0d0)*D
-          F_jkl(c1, c2, c3) = tiny(0.0d0)*D
-          do c4 = 1, 3
-            D_ijkl(c1, c2, c3, c4) = tiny(0.0d0)*D
-            F_ijkl(c1, c2, c3, c4) = tiny(0.0d0)*D
-          end do
-        end do
-      end do
-    end do
-
-    call pert_dens(decomp,(/'EL'/), S, (/D/), (/F/), D_i(i), F_i(i), freq=(/w(1)/), comp=(/i/))
-    e2 = 0.0d0
-    call prop_energy((/'EL'/), (/D, D_i/), e2, b=(/3/))
-    call print_polarizability(e2, (/w(1)/), i)
-
-    call pert_dens(decomp,(/'EL'/), S, (/D/), (/F/), D_j(j), F_j(j), freq=(/w(2)/), comp=(/j/))
-    e2 = 0.0d0
-    call prop_energy((/'EL'/), (/D, D_j/), e2, b=(/3/))
-    call print_polarizability(e2, (/w(2)/), j)
-
-    call pert_dens(decomp,(/'EL'/), S, (/D/), (/F/), D_k(k), F_k(k), freq=(/w(3)/), comp=(/k/))
-    e2 = 0.0d0
-    call prop_energy((/'EL'/), (/D, D_k/), e2, b=(/3/))
-    call print_polarizability(e2, (/w(3)/), k)
-
-    call pert_dens(decomp,(/'EL'/), S, (/D/), (/F/), D_l(l), F_l(l), freq=(/w(4)/), comp=(/l/))
-    e2 = 0.0d0
-    call prop_energy((/'EL'/), (/D, D_l/), e2, b=(/3/))
-    call print_polarizability(e2, (/w(4)/), l)
-
-    call pert_dens(decomp,(/'EL', 'EL'/),           &
-                     S,                      &
-                   (/                        &
-                     D,                      &
-                     D_i(i),                 &
-                     D_j(j)                  &
-                    /),                      &
-                   (/                        &
-                     F,                      &
-                     F_i(i),                 &
-                     F_j(j)                  &
-                    /),                      &
-                     D_ij(i, j),             &
-                     F_ij(i, j),             &
-                     freq=(/w(1), w(2)/),       &
-                     comp=(/i, j/))
-    e3 = 0.0d0
-    call prop_energy((/'EL'/), &
-                     (/        &
-                       D,      &
-                       D_i,    &
-                       D_j,    &
-                       D_ij    &
-                      /),      &
-                       e3,     &
-                       b=(/3, 3/))
-    call print_polarizability(e3, (/w(1), w(2)/), i, j)
-
-    call pert_dens(decomp, (/'EL', 'EL'/),           &
-                     S,                      &
-                   (/                        &
-                     D,                      &
-                     D_i(i),                 &
-                     D_k(k)                  &
-                    /),                      &
-                   (/                        &
-                     F,                      &
-                     F_i(i),                 &
-                     F_k(k)                  &
-                    /),                      &
-                     D_ik(i, k),             &
-                     F_ik(i, k),             &
-                     freq=(/w(1), w(3)/),       &
-                     comp=(/i, k/))
-    e3 = 0.0d0
-    call prop_energy((/'EL'/), &
-                     (/        &
-                       D,      &
-                       D_i,    &
-                       D_k,    &
-                       D_ik    &
-                      /),      &
-                       e3,     &
-                       b=(/3, 3/))
-    call print_polarizability(e3, (/w(1), w(3)/), i, k)
-
-    call pert_dens(decomp, S, (/'EL', 'EL'/),           &
-                     (/3, 3/),                      &
-                   (/                        &
-                     D,                      &
-                     D_i(i),                 &
-                     D_l(l)                  &
-                    /),                      &
-                   (/                        &
-                     F,                      &
-                     F_i(i),                 &
-                     F_l(l)                  &
-                    /),                      &
-                     D_il(i, l),             &
-                     F_il(i, l),             &
-                     freq=(/w(1), w(4)/),       &
-                     comp=(/i, l/))
-    e3 = 0.0d0
-    call prop_energy((/'EL'/), &
-                     (/        &
-                       D,      &
-                       D_i,    &
-                       D_l,    &
-                       D_il    &
-                      /),      &
-                       e3,     &
-                       b=(/3, 3/))
-    call print_polarizability(e3, (/w(1), w(4)/), i, l)
-
-    call pert_dens(decomp, S, (/'EL', 'EL'/),           &
-                     (/3, 3/),                      &
-                   (/                        &
-                     D,                      &
-                     D_j(j),                 &
-                     D_k(k)                  &
-                    /),                      &
-                   (/                        &
-                     F,                      &
-                     F_j(j),                 &
-                     F_k(k)                  &
-                    /),                      &
-                     D_jk(j, k),             &
-                     F_jk(j, k),             &
-                     freq=(/w(2), w(3)/),       &
-                     comp=(/j, k/))
-    e3 = 0.0d0
-    call prop_energy((/'EL'/), &
-                     (/        &
-                       D,      &
-                       D_j,    &
-                       D_k,    &
-                       D_jk    &
-                      /),      &
-                       e3,     &
-                       b=(/3, 3/))
-    call print_polarizability(e3, (/w(2), w(3)/), j, k)
-
-    call pert_dens(decomp, S, (/'EL', 'EL'/),           &
-                   (/3, 3/), &
-                   (/                        &
-                     D,                      &
-                     D_j(j),                 &
-                     D_l(l)                  &
-                    /),                      &
-                   (/                        &
-                     F,                      &
-                     F_j(j),                 &
-                     F_l(l)                  &
-                    /),                      &
-                     D_jl(j, l),             &
-                     F_jl(j, l),             &
-                     freq=(/w(2), w(4)/),       &
-                     comp=(/j, l/))
-    e3 = 0.0d0
-    call prop_energy((/'EL'/), &
-                     (/        &
-                       D,      &
-                       D_j,    &
-                       D_l,    &
-                       D_jl    &
-                      /),      &
-                       e3,     &
-                       b=(/3, 3/))
-    call print_polarizability(e3, (/w(2), w(4)/), j, l)
-
-    call pert_dens(decomp, S, (/'EL', 'EL'/),           &
-                     (/3, 3/),                      &
-                   (/                        &
-                     D,                      &
-                     D_k(k),                 &
-                     D_l(l)                  &
-                    /),                      &
-                   (/                        &
-                     F,                      &
-                     F_k(k),                 &
-                     F_l(l)                  &
-                    /),                      &
-                     D_kl(k, l),             &
-                     F_kl(k, l),             &
-                     freq=(/w(3), w(4)/),       &
-                     comp=(/k, l/))
-    e3 = 0.0d0
-    call prop_energy((/'EL'/), &
-                     (/        &
-                       D,      &
-                       D_k,    &
-                       D_l,    &
-                       D_kl    &
-                      /),      &
-                       e3,     &
-                       b=(/3, 3/))
-    call print_polarizability(e3, (/w(3), w(4)/), k, l)
-
-    call pert_dens(decomp, (/'EL', 'EL', 'EL'/),     &
-                     S,                      &
-                   (/                        &
-                     D,                      &
-                     D_i(i),                 &
-                     D_j(j),                 &
-                     D_k(k),                 &
-                     D_ij(i, j),             &
-                     D_ik(i, k),             &
-                     D_jk(j, k)              &
-                    /),                      &
-                   (/                        &
-                     F,                      &
-                     F_i(i),                 &
-                     F_j(j),                 &
-                     F_k(k),                 &
-                     F_ij(i, j),             &
-                     F_ik(i, k),             &
-                     F_jk(j, k)              &
-                    /),                      &
-                     D_ijk(i, j, k),         &
-                     F_ijk(i, j, k),         &
-                     freq=(/w(1), w(2), w(3)/), &
-                     comp=(/i, j, k/))
-    e4 = 0.0d0
-    call prop_energy((/'EL'/), &
-                     (/        &
-                       D,      &
-                       D_i,    &
-                       D_j,    &
-                       D_k,    &
-                       D_ij,   &
-                       D_ik,   &
-                       D_jk,   &
-                       D_ijk   &
-                      /),      &
-                       e4,     &
-                       b=(/3, 3, 3/))
-    call print_polarizability(e4, (/w(1), w(2), w(3)/), i, j, k)
-
-    call pert_dens(decomp, (/'EL', 'EL', 'EL'/),     &
-                     S,                      &
-                   (/                        &
-                     D,                      &
-                     D_i(i),                 &
-                     D_j(j),                 &
-                     D_l(l),                 &
-                     D_ij(i, j),             &
-                     D_il(i, l),             &
-                     D_jl(j, l)              &
-                    /),                      &
-                   (/                        &
-                     F,                      &
-                     F_i(i),                 &
-                     F_j(j),                 &
-                     F_l(l),                 &
-                     F_ij(i, j),             &
-                     F_il(i, l),             &
-                     F_jl(j, l)              &
-                    /),                      &
-                     D_ijl(i, j, l),         &
-                     F_ijl(i, j, l),         &
-                     freq=(/w(1), w(2), w(4)/), &
-                     comp=(/i, j, l/))
-    e4 = 0.0d0
-    call prop_energy((/'EL'/), &
-                     (/        &
-                       D,      &
-                       D_i,    &
-                       D_j,    &
-                       D_l,    &
-                       D_ij,   &
-                       D_il,   &
-                       D_jl,   &
-                       D_ijl   &
-                      /),      &
-                       e4,     &
-                       b=(/3, 3, 3/))
-    call print_polarizability(e4, (/w(1), w(2), w(4)/), i, j, l)
-
-    call pert_dens(decomp, (/'EL', 'EL', 'EL'/),     &
-                     S,                      &
-                   (/                        &
-                     D,                      &
-                     D_i(i),                 &
-                     D_k(k),                 &
-                     D_l(l),                 &
-                     D_ik(i, k),             &
-                     D_il(i, l),             &
-                     D_kl(k, l)              &
-                    /),                      &
-                   (/                        &
-                     F,                      &
-                     F_i(i),                 &
-                     F_k(k),                 &
-                     F_l(l),                 &
-                     F_ik(i, k),             &
-                     F_il(i, l),             &
-                     F_kl(k, l)              &
-                    /),                      &
-                     D_ikl(i, k, l),         &
-                     F_ikl(i, k, l),         &
-                     freq=(/w(1), w(3), w(4)/), &
-                     comp=(/i, k, l/))
-    e4 = 0.0d0
-    call prop_energy((/'EL'/), &
-                     (/        &
-                       D,      &
-                       D_i,    &
-                       D_k,    &
-                       D_l,    &
-                       D_ik,   &
-                       D_il,   &
-                       D_kl,   &
-                       D_ikl   &
-                      /),      &
-                       e4,     &
-                       b=(/3, 3, 3/))
-    call print_polarizability(e4, (/w(1), w(3), w(4)/), i, k, l)
-
-    call pert_dens(decomp, (/'EL', 'EL', 'EL'/),     &
-                     S,                      &
-                   (/                        &
-                     D,                      &
-                     D_j(j),                 &
-                     D_k(k),                 &
-                     D_l(l),                 &
-                     D_jk(j, k),             &
-                     D_jl(j, l),             &
-                     D_kl(k, l)              &
-                    /),                      &
-                   (/                        &
-                     F,                      &
-                     F_j(j),                 &
-                     F_k(k),                 &
-                     F_l(l),                 &
-                     F_jk(j, k),             &
-                     F_jl(j, l),             &
-                     F_kl(k, l)              &
-                    /),                      &
-                     D_jkl(j, k, l),         &
-                     F_jkl(j, k, l),         &
-                     freq=(/w(2), w(3), w(4)/), &
-                     comp=(/j, k, l/))
-    e4 = 0.0d0
-    call prop_energy((/'EL'/), &
-                     (/        &
-                       D,      &
-                       D_j,    &
-                       D_k,    &
-                       D_l,    &
-                       D_jk,   &
-                       D_jl,   &
-                       D_kl,   &
-                       D_jkl   &
-                      /),      &
-                       e4,     &
-                       b=(/3, 3, 3/))
-    call print_polarizability(e4, (/w(2), w(3), w(4)/), j, k, l)
-
-    call pert_dens(decomp, (/'EL', 'EL', 'EL', 'EL'/),     &
-                     S,                            &
-                   (/                              &
-                     D,                            &
-                     D_i(i),                       &        
-                     D_j(j),                       &        
-                     D_k(k),                       &        
-                     D_l(l),                       &        
-                     D_ij(i, j),                   &           
-                     D_ik(i, k),                   &           
-                     D_il(i, l),                   &           
-                     D_jk(j, k),                   &           
-                     D_jl(j, l),                   &           
-                     D_kl(k, l),                   &
-                     D_ijk(i, j, k),               &   
-                     D_ijl(i, j, l),               &   
-                     D_ikl(i, k, l),               &   
-                     D_jkl(j, k, l)                &   
-                    /),                            &
-                   (/                              &
-                     F,                            &
-                     F_i(i),                       &        
-                     F_j(j),                       &        
-                     F_k(k),                       &        
-                     F_l(l),                       &        
-                     F_ij(i, j),                   &           
-                     F_ik(i, k),                   &           
-                     F_il(i, l),                   &           
-                     F_jk(j, k),                   &           
-                     F_jl(j, l),                   &           
-                     F_kl(k, l),                   &
-                     F_ijk(i, j, k),               &   
-                     F_ijl(i, j, l),               &   
-                     F_ikl(i, k, l),               &   
-                     F_jkl(j, k, l)                &   
-                    /),                            &
-                     D_ijkl(i, j, k, l),           &
-                     F_ijkl(i, j, k, l),           &
-                     freq=(/w(1), w(2), w(3), w(4)/), &
-                     comp=(/i, j, k, l/))
-    e5 = 0.0d0
-    call prop_energy((/'EL'/), &
-                     (/        &
-                       D,      &
-                       D_i,    &
-                       D_j,    &
-                       D_k,    &
-                       D_l,    &
-                       D_ij,   &
-                       D_ik,   &
-                       D_il,   &
-                       D_jk,   &
-                       D_jl,   &
-                       D_kl,   &
-                       D_ijk,  &
-                       D_ijl,  &
-                       D_ikl,  &
-                       D_jkl,  &
-                       D_ijkl  &
-                      /),      &
-                       e5,     &
-                       b=(/3, 3, 3, 3/))
-    call print_polarizability(e5, (/w(1), w(2), w(3), w(4)/), i, j, k, l)
-
-    delta_element = -e5(i, j, k, l, h)
-
-    D_i    = 0
-    D_j    = 0
-    D_k    = 0
-    D_l    = 0
-    D_ij   = 0
-    D_ik   = 0
-    D_il   = 0
-    D_jk   = 0
-    D_jl   = 0
-    D_kl   = 0
-    D_ijk  = 0
-    D_ijl  = 0
-    D_ikl  = 0
-    D_jkl  = 0
-    D_ijkl = 0
-
-    F_i    = 0
-    F_j    = 0
-    F_k    = 0
-    F_l    = 0
-    F_ij   = 0
-    F_ik   = 0
-    F_il   = 0
-    F_jk   = 0
-    F_jl   = 0
-    F_kl   = 0
-    F_ijk  = 0
-    F_ijl  = 0
-    F_ikl  = 0
-    F_jkl  = 0
-    F_ijkl = 0
-
-  end function
 #endif /* ifdef MERGE_WITH_LINSCA */
 
 end module
