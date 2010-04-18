@@ -7,6 +7,7 @@
 #include "config.h"
 #include "array.h"
 #include "settings.h"
+#include "specmath.h"
 
 // MGGA's have 7 variables (GGA+tau)
 #define XC_MAX_NVAR 7
@@ -16,6 +17,9 @@
 
 typedef double parameter;
 
+
+// Functions for _user definable parameters_, for example the range
+// separation parameter mu.
 setting xc_param_lookup(const xc_functional::xc_functional_data *params, 
 			const char *name);
 double xc_param_get(const xc_functional::xc_functional_data *params, 

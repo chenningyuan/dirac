@@ -5,46 +5,37 @@ template<class num>
 static num u(const num &zeta)
 {
   // TODO: check if |zeta| ~= 1 
-  return 0.5*(pow(1+zeta,2.0/3)+(pow(1-zeta,2.0/3)));
+  return 0.5*(pow(1+zeta,2.0/3.0)+(pow(1-zeta,2.0/3.0)));
 }
 
 template<class num>
-static num A(const num &eps, const num &zeta)
+static num A(const num &eps, const num &u3)
 {
   using xc_constants::param_beta_gamma;
   using xc_constants::param_gamma;
-  return param_beta_gamma/(exp(-eps/(param_gamma*pow(u(zeta),3))) - 1);
+  return param_beta_gamma/(exp(-eps/(param_gamma*u3)) - 1);
 }
 
 template<class num>
-static num H(const num &d, const num &eps, const num &zeta)
+static num H(const num &d, const num &eps, const num &u3)
 {
   num d2 = d*d;
-  num d2A = d2*A(eps,zeta);
+  num d2A = d2*A(eps,u3);
   using xc_constants::param_gamma;
   using xc_constants::param_beta_gamma;
-  return param_gamma*pow(u(zeta),3)*
+  return param_gamma*u3*
     log(1+param_beta_gamma*d2*(1 + d2A)/(1+d2A*(1+d2A)));
 }
 
 template<class num>
 static num energy(const densvars<num> &d)
 {
-  const num &sigma = d.gnn;
-  num dd = 1.0/12*(sqrt(sigma)*pow(3,5.0/6))/
-    (u(d.zeta)*pow(M_PI,-1.0/6)*pow(d.n,7.0/6));
+  num u1 = preexpand(u,d.zeta);
+  num dd = 1.0/12*(sqrt(d.gnn)*pow(3,5.0/6.0))/
+    (u1*pow(M_PI,-1.0/6)*pow(d.n,7.0/6.0));
   num eps = pw92eps::eps_pbe(d);
-  return d.n*(eps + H(dd,eps,d.zeta));
+  return d.n*(eps + H(dd,eps,pow3(u1)));
 }
-
-#if 0
-  static int test(void) 
-  { 
-
-    return standard_abgga_test(energy,d,ref,1e-11);
-  }
-};
-#endif
 
 void setup_pbec(functional &f)
 {
