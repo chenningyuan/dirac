@@ -527,7 +527,7 @@ contains
    ! A-tensor -Eqf, pol. gradient Egff, G-prime gradient Egbf(0,w,-w),
    ! A-tensor gradient Egqf
       !> Contains matrices from OAO decomposition of overlap matrix
-      type(decompItem),intent(in) :: decomp
+      type(decompItem),intent(inout) :: decomp
       type(matrix),intent(in)  :: S, D, F
       integer,     intent(in)  :: ng
       complex(8),  intent(in)  :: freq
@@ -639,7 +639,7 @@ contains
    ! For frequency freq (w), calculates polarizability the alpha(-w,w) in Eff,
    ! polarizability gradient d/dg alpha(-w,w) in Eff, and 2nd hyperpolarizability
    ! gamma(-w,w,-w,w) in Effff
-      type(decompItem),intent(in) :: decomp
+      type(decompItem),intent(inout) :: decomp
       type(matrix),intent(in)  :: S, D, F
       integer,     intent(in)  :: ng
       complex(8),  intent(in)  :: freq
@@ -752,7 +752,7 @@ contains
    subroutine vibhyp_hyp_dipgra_polgra(decomp, S, D, F, ng, freq, &
                                        dip, Eff, Efff, Egf, Egff)
       !> Contains matrices from OAO decomposition of overlap matrix
-      type(decompItem),intent(in) :: decomp
+      type(decompItem),intent(inout) :: decomp
       type(matrix), intent(in)  :: S, D, F
       integer,      intent(in)  :: ng
       complex(8),   intent(in)  :: freq(3)

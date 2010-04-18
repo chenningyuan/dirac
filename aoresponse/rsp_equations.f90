@@ -144,6 +144,10 @@ contains
    end subroutine
 
 
+!radovan: please do not leave commented-out code
+!         (without describing the reason why it is commented out)
+!         in the repository
+
 ! old arbitrary-order routine:
 !
 !     subroutine prtfck(n,m,p,c,b,o,D,F)
@@ -304,30 +308,14 @@ contains
             if (bas(1)) call prop_oneint(S0, p, dimp, S=Sp(2:1+dimp(1)), comp=c)
             do i0 = 1, dimp(1)
                i = 1+i0
-!                                    this was previously  + F(1+i)*D(1)*S0 
                FDSp(i0) =            (Fp(i) - w(1)/2 * Sp(i)) * DSp(1)
-
-!                                    this was previously  - S0*D(1)*F(1+i)
                FDSp(i0) = FDSp(i0) - dag(DSp(1)) * (Fp(i) + w(1)/2 * Sp(i))
-
                FDSp(i0) = FDSp(i0) + FDp(1) * Sp(i) - Sp(i) * dag(FDp(1))
-
-!                                    this was previously  + F(1)*D(1+i)*S0 
-!                                                         - ww(1)*S0*D(1+i)*S0
                FDSp(i0) = FDSp(i0) + (Fp(1) - w(1)/2 * S0) * Dp(i) * S0
-
-!                                    this was previously  - S0*D(1+i)*F(1) 
                FDSp(i0) = FDSp(i0) - S0 * Dp(i) * (Fp(1) + w(1)/2 * S0)
-
-!                                    previously  - D(1+i)
                DSDp(i0) =            Dp(1) * Sp(i) * Dp(1) - Dp(i)
-
-!                                    previously  + D(1)*S0*D(1+i) 
                DSDp(i0) = DSDp(i0) + Dp(i)*dag(DSp(1))
-
-!                                    previously  + D(1+i)*S0*D(1) 
                DSDp(i0) = DSDp(i0) + DSp(1)*Dp(i)
-
                Sp(i)=0
             end do
             DSp(1)=0; FDp(1)=0
@@ -439,6 +427,10 @@ contains
       end if
    end subroutine
 
+
+!radovan: please do not leave commented-out code
+!         (without describing the reason why it is commented out)
+!         in the repository
 
 !    subroutine pert_scf_eq(p, dp, S0, D, F, DSD, FDS, comp, freq)
 !    !p'th derivative of idempotency DSD-D and SCF equation FDS-SDF
@@ -626,7 +618,7 @@ contains
    subroutine pert_dens(decomp, S0, p, dimp, D, F, Dp, Fp, comp, freq)
    use decompMod, only: DecompItem
       !> Contains matrices from OAO decomposition of overlap matrix
-      type(decompItem),intent(in) :: decomp
+      type(decompItem),intent(inout) :: decomp
       !> unperturbed overlap matrix
       type(matrix), intent(in) :: S0
       !> perturbation lables
@@ -703,8 +695,6 @@ contains
                 // 'excitation densities saved in rsp_equations')
       ! zero highest-order D and F for RHS calculation
       do i = 1, pd
-write(*,*) 'Dp(i), nrow, ncol, i:', Dp(i)%nrow, Dp(i)%ncol, i
-write(*,*) 'D(1), nrow, ncol, i:', D(1)%nrow, D(1)%ncol, i
          Dp(i) = 0d0*D(1)
          Fp(i) = 0d0*F(1)
       end do
@@ -751,15 +741,17 @@ write(*,*) 'D(1), nrow, ncol, i:', D(1)%nrow, D(1)%ncol, i
 #ifdef PRG_DIRAC
       use dirac_interface
       use aor_cfg
-#elif defined(DALTON_AO_RSP)
+#endif
+#ifdef DALTON_AO_RSP
       use dalton_ifc
-#else
+#endif
+#ifdef VAR_LINSCA
       use RSPsolver, only: rsp_init, rsp_solver
       use complexsolver, only: rsp_complex_init, rsp_complex_solver
       use scf_config, only: cfg_rsp_complex, cfg_rsp_gamma
-#endif /* PRG_DIRAC */
+#endif
       !> Contains matrices from OAO decomposition of overlap matrix
-      type(decompItem),intent(in) :: decomp
+      type(decompItem),intent(inout) :: decomp
       !> unperturbed overlap matrix
       type(matrix), intent(in)    :: S0
       !> unperturbed density matrix
@@ -919,7 +911,6 @@ write(*,*) 'D(1), nrow, ncol, i:', D(1)%nrow, D(1)%ncol, i
             call init_mat(reXph(1), Xph(1), alias='RF')
             call init_mat(imXph(1), Xph(1), alias='IF')
             ! solve for the real and imaginary part of the FDSp simlultaneously
-write(*,*) 'call rsp_complex_solver'
             call rsp_complex_solver(decomp, F0, D0, S0, 1, reFDSp(1:1), freq1, 1, &
                                     reXph(1:1), imXph(1:1), .true., gdi=imFDSp(1:1))
             !clear re and im aliases of FDSp and Xph

@@ -13,6 +13,7 @@ module prop_contribs
    use matrix_defop
 #if defined(PRG_DIRAC)
    use dirac_interface
+   use character_processing
 #elif defined(DALTON_AO_RSP)
    use dalton_ifc,    &
      di_GET_GbDs => di_get_gmat
@@ -39,8 +40,6 @@ module prop_contribs
 #ifdef DALTON_AO_RSP
    use xcharacter, only: &
      prefix_zeros => xchar_from_num
-#else
-   use character_processing
 #endif
 
    implicit none
@@ -101,22 +100,22 @@ module prop_contribs
 contains
 
 
-! #ifdef VAR_LINSCA
-!    function prefix_zeros(n, l)
-!       integer, intent(in) :: n, l !number, length
-!       character(l)        :: prefix_zeros !resulting n in ascii
-!       character(1), parameter :: char0to9(0:9) &
-!             = (/'0','1','2','3','4','5','6','7','8','9'/)
-!       integer :: i, k
-!       k = n
-!       do i = l, 1, -1
-!          prefix_zeros(i:i) = char0to9(mod(k,10))
-!          k = k / 10
-!       end do
-!       if (k /= 0) call quit('prefix_zeros error: Argument integer does not fit ' &
-!                             // 'in the specified number of ASCII caracters')
-!    end function
-! #endif /* VAR_LINSCA */
+#ifdef VAR_LINSCA
+   function prefix_zeros(n, l)
+      integer, intent(in) :: n, l !number, length
+      character(l)        :: prefix_zeros !resulting n in ascii
+      character(1), parameter :: char0to9(0:9) &
+            = (/'0','1','2','3','4','5','6','7','8','9'/)
+      integer :: i, k
+      k = n
+      do i = l, 1, -1
+         prefix_zeros(i:i) = char0to9(mod(k,10))
+         k = k / 10
+      end do
+      if (k /= 0) call quit('prefix_zeros error: Argument integer does not fit ' &
+                            // 'in the specified number of ASCII caracters')
+   end function
+#endif /* VAR_LINSCA */
 
 
    subroutine prop_oneave(S0, p, D, dime, E, perm, comp, freq, DFD)
@@ -167,6 +166,7 @@ contains
       ! linear perturbation (like 'EL') or more than two quadratic (like 'MAGO')
       zero = .false.
       j = 0
+      k = 0
       do i = 1, size(p)
          if (.not.pert_table(idxp(i))%lin .and. &
              .not.pert_table(idxp(i))%quad) cycle
@@ -174,13 +174,16 @@ contains
          if (pert_table(idxp(i))%lin .and. &
              pert_table(idxp(i))%quad) zero = .true.
          if (j /= 0) then !if second lin or quad perturbation
-            if (pert_table(idxp(j))%lin) zero = .true. !two linear
+            ! if j was EL, then i is second EL (or first MAGO)
+            if (pert_table(idxp(j))%lin) zero = .true.
+            ! if j was MAGO, and different from i, also zero
             if (pert_table(idxp(j))%quad .and. &
                idxp(i) /= idxp(j)) zero = .true. !two different quadratic
+            !third linear or quadratic perturbation
+            if (k /= 0) zero = .true.
+            k = j
          end if
-         k = j; j = i
-         !third linear or quadratic perturbation
-         if (k /= 0) zero = .true.
+         j = i
       end do
       ! if unperturbed density and anti-symmetric integral, also zero
       j = count((/(pert_table(idxp(i))%anti, i=1,size(p))/))
@@ -602,6 +605,7 @@ contains
          end do
          ! for zero-order density, add nuclear contribution to Hessian
          if (nd==0) then
+!radovan fixme:
 !           call HESSNN_ifc(natom, RR)
             do j = 0, dp(2)-1
                do i = 0, dp(1)-1
@@ -919,7 +923,7 @@ contains
       else if (np==2 .and. all(p==(/'MAG','MAG'/))) then
          ! highest-order contribution
          if (nd /= 0 .and. all((/(iszero(D(i)), i=pd1-pd+1,pd1)/))) then
-            E(:pd) = 0
+            E(:de(1)*de(2)*pd) = 0
          else
             ! Coulomb-exchange
             call twofck('MM', D(1:1), A(1:6))
@@ -1060,20 +1064,24 @@ contains
       ! linear perturbation (like 'EL') or more than two quadratic (like 'MAGO')
       zero = .false.
       j = 0
+      k = 0
       do i = 1, size(p)
          if (.not.pert_table(idxp(i))%lin .and. &
              .not.pert_table(idxp(i))%quad) cycle
          ! if both linear and quadratic, interpret as ZERO (like EXCI)
          if (pert_table(idxp(i))%lin .and. &
-            pert_table(idxp(i))%quad) zero = .true.
+             pert_table(idxp(i))%quad) zero = .true.
          if (j /= 0) then !if second lin or quad perturbation
-            if (pert_table(idxp(j))%lin) zero = .true. !two linear
+            ! if j was EL, then i is second EL (or first MAGO)
+            if (pert_table(idxp(j))%lin) zero = .true.
+            ! if j was MAGO, and different from i, also zero
             if (pert_table(idxp(j))%quad .and. &
                idxp(i) /= idxp(j)) zero = .true. !two different quadratic
+            !third linear or quadratic perturbation
+            if (k /= 0) zero = .true.
+            k = j
          end if
-         k = j; j = i
-         !third linear or quadratic perturbation
-         if (k /= 0) zero = .true.
+         j = i
       end do
       ! check dimensions argument dimp, verify that dimensions are positive
       if (size(dimp) /= size(p)) call quit('prop_oneint argument error: ' &
@@ -1250,21 +1258,22 @@ contains
                   !only load >> XX XY YY XZ YZ ZZ, use dag(..) for <<
                   call load_oneint('>>S/B2' // xyz(min(c(1)+i,c(2)+j))  &
                                             // xyz(max(c(1)+i,c(2)+j)), S(ii), S0)
-                  F(ii) = F(ii) - (w(2)+w(2))/2 * S(ii)
-                  F(ii) = F(ii) + (w(2)+w(2))/2 * dag(S(ii))
+                  F(ii) = F(ii) - (w(1)+w(2))/2 * S(ii)
+                  F(ii) = F(ii) + (w(1)+w(2))/2 * dag(S(ii))
                   S(ii) = S(ii) + dag(S(ii))
                   !only load <> XX XY YY XZ YZ ZZ, use dag(..) for the others
                   call load_oneint('<>S/B2' // xyz(min(c(1)+i,c(2)+j)) &
                                             // xyz(max(c(1)+i,c(2)+j)), A(1), S0)
-                  F(ii) = F(ii) - merge(1, -1, c(1)+i < c(2)+j) &
+                  !ajt&kk 0410 Changed sign on these two: (think it's correct)
+                  F(ii) = F(ii) - merge(-1, 1, c(1)+i < c(2)+j) &
                                          * (w(1)-w(2))/2 * A(1)
-                  F(ii) = F(ii) + merge(1, -1, c(1)+i < c(2)+j) &
+                  F(ii) = F(ii) + merge(-1, 1, c(1)+i < c(2)+j) &
                                          * (w(1)-w(2))/2 * dag(A(1))
                   S(ii) = S(ii) + A(1)
                   S(ii) = S(ii) + dag(A(1))
                   A(1) = 0 !free
                end if
-               !ajt Since MAGO is imaginary/anti-symmetric, we get a minus sign here
+               !ajt Since MAG is imaginary/anti-symmetric, we get a minus sign here
                F(ii) = -F(ii)
                S(ii) = -S(ii)
             end do
@@ -1808,7 +1817,7 @@ contains
       type(matrix), intent(in)    :: Da, Db
       real(8),      intent(inout) :: E(:)
       real(8), pointer :: wrk(:)
-      integer          :: lwrk, ilen, isize
+      integer          :: lwrk
       if (natom==0) call quit('prop_contribs/twoctr error: Module not initialized')
       !ajt MagSus contraction doesn't work, so I disabled this. Use twofck instead
       if (what=='M' .or. what=='MM') &
@@ -1825,17 +1834,17 @@ contains
           call quit('prop_contribs/twoctr: wrong size(E) for what=' // what)
       end if
       call di_select_wrk(wrk, lwrk)
-
-      e = 0.0d0
-
-!     this is for g95 -i8
-      isize = size(e)
-      ilen  = len(what)
-
-      call grcont(wrk, lwrk, &
-                  e, isize, what(1:1)=='G', what(1:1)=='M', ilen, &
-                  0, .true., .false., (/Da%elms, Db%elms/), 2)
-
+      wrk(           1 :   Da%nrow**2) = Da%elms !call mat_to_full(D ,1d0,A(:,:,1))
+      wrk(Da%nrow**2+1 : 2*Da%nrow**2) = Db%elms !call mat_to_full(DD,1d0,A(:,:,2))
+      e = 0
+      !ajt For some reason putting array ranges gives segfault with ifort
+      !call GRCONT(wrk( 2*nbas**2+1 : lwrk ), (size(wrk)-2*nbas**2),      &
+      !            E, size(E), what(1:1)=='G', what(1:1)=='M', len(what), &
+      !            0, .true., .false., wrk(1:2*nbas**2), 2)
+!radovan fixme:
+!     call GRCONT(wrk(2*Da%nrow**2+1), lwrk-2*Da%nrow**2,      &
+!                 E, size(E), what(1:1)=='G', what(1:1)=='M', len(what), &
+!                 0, .true., .false., wrk(1), 2)
       call di_deselect_wrk(wrk, lwrk)
    end subroutine
 
@@ -1909,7 +1918,7 @@ contains
 #if defined(DALTON_AO_RSP)
       use xmatrix, only: mat_to_full => xmatrix_get_full
 #else
-      use matrix_operations
+      use matrix_operations, only: mat_to_full
 #endif
       logical,      intent(in) :: anti !whether the integrals D and DFD
          ! are to be contracted with are symmetric or anti-symmetric
@@ -1934,6 +1943,7 @@ contains
          if (     anti) call DGETAP(D%nrow, Full, DFDtri)
       end if
       ! write fo files
+!radovan fixme:
 !     call write_dsofso(Dtri,DFDtri)
    end subroutine
 
