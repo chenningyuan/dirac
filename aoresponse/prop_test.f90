@@ -56,6 +56,10 @@ contains
       integer,      intent(in) :: ng !number of geometrical coordinates
       complex(8)   :: Eg(ng) !NB: zero first
       type(matrix) :: DFD
+#ifdef PRG_DIRAC
+      integer :: iatom, ix, iy, iz
+#endif
+
       ! contract first-order geometry-differentiated integrals
       ! with unperturbed density D and energy-weighted density DFD
       DFD = D*F*D
@@ -66,6 +70,21 @@ contains
       call print_tensor((/ng/), Eg, 'gradient = Eg = E0g - Sg DFD')
       ! free DFD
       DFD = 0
+
+#ifdef PRG_DIRAC
+!     this is needed in DIRAC tests
+      call header('molecular gradient', -1)
+  
+      do iatom = 1, nr_atoms
+        ix = 3*(iatom - 1) + 1
+        iy = 3*(iatom - 1) + 2
+        iz = 3*(iatom - 1) + 3
+        write(*, '(a6, 3e26.16)') sym_dep_nuc_name(iatom), real(Eg(ix)), real(Eg(iy)), real(Eg(iz))
+      end do
+  
+      call prsymb(unit_output, '-', 46, 0)
+#endif
+
    end subroutine
 
    subroutine prop_test_Gprime_Df(decomp, S, D, F, idum, freq) !Gprime_Df(-freq)
@@ -1347,51 +1366,6 @@ contains
     F_ijkl = 0
 
   end function
-
-#ifdef BLUB
-  subroutine dg_energy(S, D, F, n)
-
-!   ----------------------------------------------------------------------------
-    type(matrix)        :: S, D, F
-    integer, intent(in) :: n
-!   ----------------------------------------------------------------------------
-    type(matrix)        :: W, Sg(1)
-    integer             :: i, iatom, ix, iy, iz
-    complex(8)          :: g(n)
-!   ----------------------------------------------------------------------------
-
-    g = 0.0d0
-
-call prop_oneave(S, (/'GEO','EL '/), (/Df/), shape(Egff), Egff)
-
-    call prop_energy((/'GEO'/), (/D/), g)
-
-    W = D*F*D
-
-!   do i = 1, n
-
-!     call prop_overlap(p(1:1), S0, Sp(1), c=(/cc(1)+i-1/) )
-!     call prop_overlap((/'GEO'/), S, Sg(1), c=(/i/))
-!     g(i) = g(i) - dot(W, Sg(1))
-!     Sg(1) = 0
-
-!   end do
-
-    W = 0
-
-    call header('molecular gradient', -1)
-
-    do iatom = 1, nr_atoms
-      ix = 3*(iatom - 1) + 1
-      iy = 3*(iatom - 1) + 2
-      iz = 3*(iatom - 1) + 3
-      write(*, '(a6, 3e26.16)') sym_dep_nuc_name(iatom), real(g(ix)), real(g(iy)), real(g(iz))
-    end do
-
-    call prsymb(unit_output, '-', 46, 0)
-
-  end subroutine
-#endif /* ifdef BLUB */
 #endif
 
 end module
