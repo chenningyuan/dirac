@@ -16,14 +16,16 @@ static num energy (const densvars<num> &d)
    // parameters for anti-parallel spin contributions
    static const parameter param_c_anti[5] =
      {  3.741539e+00,  2.187098e+02, -4.531252e+02,  2.936479e+02, -6.287470e+01 };
-   static const parameter param_d_anti[5] =
-     { -2.741539e+00, -6.720113e-01, -7.932688e-02,  1.918681e-03, -2.032902e-03 };
+   static const parameter param_d_anti[6] =
+     { -2.741539e+00, -6.720113e-01, -7.932688e-02,  1.918681e-03, -2.032902e-03, 
+        0.000000e+00 };
 
    // parameters for parallel spin contributions
    static const parameter param_c_para[5] =
      {  5.094055e-01, -1.491085e+00,  1.723922e+01, -3.859018e+01,  2.845044e+01 };
-   static const parameter param_d_para[5] =
-     {  4.905945e-01, -1.437348e-01,  2.357824e-01,  1.871015e-03, -3.788963e-03 };
+   static const parameter param_d_para[6] =
+     {  4.905945e-01, -1.437348e-01,  2.357824e-01,  1.871015e-03, -3.788963e-03,
+        0.000000e+00 }; 
 
    num chi_a = chi(d.a, d.gaa);
    num chi_b = chi(d.b, d.gbb);

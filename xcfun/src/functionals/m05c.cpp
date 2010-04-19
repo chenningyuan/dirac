@@ -46,5 +46,5 @@ void setup_m05c(functional &f)
     {1., .8, 1., 1., 1., .33, .21};
   static const double ref[] =
     { -0.06599246, -0.15418438,  0.02729798,  0.03090769,  0.04788146,  0.00000000, -0.09757618, -0.23742358 };
-  f.add_test(XC_VARS_AB,1,d,ref,1e-5);
+  f.add_test(XC_VARS_AB,1,d,ref,2e-5);
 }

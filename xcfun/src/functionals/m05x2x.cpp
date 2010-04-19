@@ -31,5 +31,5 @@ void setup_m05x2x(functional &f)
     {1., .8, 1., 1., 1., .33, .21};
   static const double ref[] =
     { -1.38233309, -0.19638222, -0.08614105, -0.00289174, -0.00365982,  0.00000000, -1.59421158, -1.95293869 }; 
-  f.add_test(XC_VARS_AB,.44,d,ref,1e-5);
+  f.add_test(XC_VARS_AB,1,d,ref,3e-5);
 }

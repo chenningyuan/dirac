@@ -63,7 +63,8 @@ namespace m0xy_metagga_xc_internal
   }
 
   // h calculates the quantity of TCA (2008) 120:215 eq 5, but here we provide it with the square of the x_\sigma
-  // variable, since that is used always in terms of x^2
+  // variable, since that is used always in terms of x^2. the d[] parameter array should be 
+  // of dimension 6..
 
   template<class num>
   static num h(const parameter d[], const parameter alpha, const num &chi2, const num &zet)

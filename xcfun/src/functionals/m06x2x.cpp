@@ -33,5 +33,5 @@ void setup_m06x2x(functional &f)
     {1., .8, 1., 1., 1., .33, .21};
   static const double ref[] =
     { -0.63803890, -0.81863653, -0.81208750, -0.00127795, -0.00179117,  0.00000000,  0.62610498,  0.80404158 }; 
-  f.add_test(XC_VARS_AB,1,d,ref,1e-5);
+  f.add_test(XC_VARS_AB,1,d,ref,3e-5);
 }
