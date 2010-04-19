@@ -17,7 +17,7 @@
 C Apr. 22, 2009, Bin Gao
 C * change lunit to -1
       lunit = -1
-      call GPOPEN(lunit,'DALTON.WLK',' ',' ',
+      call GPOPEN(lunit,'DALTON.WLK',' ','NEW',
      &                  'UNFORMATTED',(0),.false.)
       write (lunit)
       write (lunit) !three blank records
@@ -55,7 +55,7 @@ C * change lunit to -1
       call VIBCTL(wrk,(lwrk)) !(lwrk) makes a local copy
       end
 
-#ifndef PRG_DIRAC
+
       subroutine HBTinterface(nc,DIPGRAD,wrk,lwrk)
 #include <implicit.h>
 #include <mxcent.h>
@@ -78,7 +78,6 @@ C      DIPDER = .true.
       IPRINT = 6
       i=lwrk; call VIBCTL(wrk,i)
       end
-#endif /* ifndef PRG_DIRAC */
 
 
       subroutine NUCLEI_ifc(n,Z,IS,G)
@@ -99,40 +98,66 @@ C      DIPDER = .true.
       end
 
 
-#ifndef PRG_DIRAC
       subroutine DIPNUC_ifc(n,F,FG)
       !ajt Used in prop_contribs.f90
 #include <mxcent.h>
 #include <dipole.h>
-      integer n; real*8 F(3),FG(3,3*n)
+      integer :: n
+      real(8) :: F(3),FG(3,3*n)
       call DIPNUC((/0d0/),(/0d0/),0,.true.)
       F = DIPMN
       FG = DDIPN(:,1:3*n)
       end
 
 
+#ifndef PRG_DIRAC
       subroutine QDRNUC_ifc(Q)
       !ajt Used in prop_contribs.f90
 #include <mxcent.h>
 #include <nuclei.h>
 #include <quadru.h>
 #include <priunit.h>
-      real*8:: Q(6)
+      real(8) :: Q(6)
       call NUCQDR(CORD(:,1:NUCDEP),(/0d0,0d0,0d0/),LUPRI,0)
       Q = (/QDRNUC(1,1),QDRNUC(1:2,2),QDRNUC(1:3,3)/)
       end subroutine
+#endif /* ifndef PRG_DIRAC */
 
 
       subroutine GRADNN_ifc(n,G)
       !ajt Used in prop_contribs.f90
 #include <mxcent.h>
+#ifndef PRG_DIRAC
 #include <cbinuc.h>
+#endif /* ifndef PRG_DIRAC */
 #include <energy.h>
 #include <priunit.h>
-      integer n; real*8 G(3*n)
+      integer n
+      real(8) G(3*n)
       IPRINT = 0; MAXDIF = 1
       call NUCREP((0d0),(0d0),(0d0))
       G(1:3*n) = GRADNN(1:3*n)
+      end subroutine
+
+
+      subroutine HESSNN_ifc(na,H)
+C     ajt aug09 Used in prop_integrals.f90
+#include <mxcent.h>
+#include <cbinuc.h>
+#include <energy.h>
+#include <priunit.h>
+      integer na, i, j
+      real(8) H(3*na,3*na),HESSNN(MXCOOR,MXCOOR)
+      IPRINT = 0
+      MAXDIF = 2
+C     second and third arg only used when IPRINT > 1
+      call NUCREP(HESSNN,(0d0),(0d0))
+C     ajt This might come out with halved diagonal
+      do j = 1, 3*na
+         do i = 1, 3*na
+            H(i,j) = HESSNN(max(i,j),min(i,j))
+         end do
+      end do
       end subroutine
 
 
@@ -252,4 +277,3 @@ C      DIPDER = .true.
 !      WRITE(IHOTFC,'(3F15.10)') X, Y, Z
       WRITE(IHOTFC,'(3F15.10)') 0.D0, 0.D0, 0.D0
       END SUBROUTINE
-#endif /* ifndef PRG_DIRAC */

@@ -626,11 +626,7 @@ contains
          end do
          ! for zero-order density, add nuclear contribution to Hessian
          if (nd==0) then
-#ifdef PRG_DIRAC
-            call quit('dirac: implement hessnn_ifc')
-#else
             call HESSNN_ifc(natom, RR)
-#endif
             do j = 0, dp(2)-1
                do i = 0, dp(1)-1
                   E(1+i+dp(1)*j) = E(1+i+dp(1)*j) + RR(c(1)+i + 3*natom*(c(2)+j-1))
