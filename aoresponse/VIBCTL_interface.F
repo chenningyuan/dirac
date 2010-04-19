@@ -143,7 +143,9 @@ C      DIPDER = .true.
       subroutine HESSNN_ifc(na,H)
 C     ajt aug09 Used in prop_integrals.f90
 #include <mxcent.h>
+#ifndef PRG_DIRAC
 #include <cbinuc.h>
+#endif /* ifndef PRG_DIRAC */
 #include <energy.h>
 #include <priunit.h>
       integer na, i, j
