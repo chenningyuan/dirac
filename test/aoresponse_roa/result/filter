@@ -1,14 +1,14 @@
 $ERROR 1.E-7
-FromRE:dg polari
-ToRE:G-prime
+FromRE:d/dg Polari
+ToRE:^$
 
 $ERROR 1.E-7
 FromRE:dg G-prime
-ToRE:A-tensor
+ToRE:^$
 
 $ERROR 1.E-7
 FromRE:dg A-tensor
-ToRE:ABACUS - ROTATIONAL AND VIBRATIONAL ANALYSIS
+ToRE:^$
 
 $ERROR 1.E-7
 FromRE:Raman related properties for freq

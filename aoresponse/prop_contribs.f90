@@ -362,7 +362,11 @@ contains
          do i = 0, dp(1)-1
             call load_oneint(xyz(c(1)+i) // 'ANGMOM ', A(1))
             do j = 0, nd-1
+#ifndef PRG_DIRAC
                E(1+i+dp(1)*j) = tr(A(1), D(j+1)) / 2 !factor 1/2
+#else
+               E(1+i+dp(1)*j) = tr(A(1), D(j+1))
+#endif
             end do
          end do
       ! London magnetic, Since anti-symmetric, no unperturbed (nd==0)
@@ -449,6 +453,11 @@ contains
             deallocate(RR)
          end if
       else if (np==2 .and. all(p==(/'MAGO','MAGO'/))) then
+#ifdef PRG_DIRAC
+!        if diamagnetic contribution comes from positive-negative
+!        response, then do not add it here
+         if (.not. diamagnetic_via_pn) then
+#endif
          do j = 0, dp(2)-1
             do i = 0, dp(1)-1
                call load_oneint(xyz(min(c(1)+i,c(2)+j)) &
@@ -459,6 +468,9 @@ contains
                end do
             end do
          end do
+#ifdef PRG_DIRAC
+         endif
+#endif
       ! EL MAG has no nd==0 because MAG anti-symmetric
       else if (np==2 .and. all(p==(/'MAG','EL '/)) .and. nd /= 0) then
          do j = 0, dp(2)-1 !EL indices
@@ -1206,7 +1218,9 @@ contains
       else if (np==1 .and. p(1)=='MAGO') then
          do i = 0, dp(1)-1
             call load_oneint(xyz(c(1)+i) // 'ANGMOM ', F(i+1), S0)
+#ifndef PRG_DIRAC
             F(i+1) = (1/2d0) * F(1+i) !factor 1/2 here
+#endif
          end do
       else if (np==1 .and. p(1)=='MAG') then
          do i = 0, dp(1)-1
@@ -1252,6 +1266,11 @@ contains
             end do
          end do
       else if (np==2 .and. all(p==(/'MAGO','MAGO'/))) then
+#ifdef PRG_DIRAC
+!        if diamagnetic contribution comes from positive-negative
+!        response, then do not add it here
+         if (.not. diamagnetic_via_pn) then
+#endif
          do j = 0, dp(2)-1
             do i = 0, dp(1)-1
                call load_oneint(xyz(min(c(1)+i,c(2)+j))              &
@@ -1261,6 +1280,9 @@ contains
                F(1+i+dp(1)*j) = -F(1+i+dp(1)*j)
             end do
          end do
+#ifdef PRG_DIRAC
+         endif
+#endif
       else if (np==2 .and. all(p==(/'MAG','MAG'/))) then
          do j = 0, dp(2)-1
             do i = 0, dp(1)-1
