@@ -8,8 +8,11 @@ module vib_prop
    use prop_contribs
    implicit none
 
-   public roa_pol_Gpri_Aten_grads, cars_pol_shyp_polgra
-   public vib_ana_polari, print_shypol, vibhyp_hyp_dipgra_polgra
+   public roa_pol_Gpri_Aten_grads
+   public cars_pol_shyp_polgra
+   public vib_ana_polari
+   public print_shypol
+   public vibhyp_hyp_dipgra_polgra
 
    private
 
