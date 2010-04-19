@@ -1842,6 +1842,7 @@ contains
       real(8),      intent(inout) :: E(:)
       real(8), pointer :: wrk(:)
       integer          :: lwrk
+
       if (natom==0) call quit('prop_contribs/twoctr error: Module not initialized')
       !ajt MagSus contraction doesn't work, so I disabled this. Use twofck instead
       if (what=='M' .or. what=='MM') &
@@ -1857,35 +1858,52 @@ contains
       else
           call quit('prop_contribs/twoctr: wrong size(E) for what=' // what)
       end if
-      call di_select_wrk(wrk, lwrk)
-      wrk(           1 :   Da%nrow**2) = Da%elms !call mat_to_full(D ,1d0,A(:,:,1))
-      wrk(Da%nrow**2+1 : 2*Da%nrow**2) = Db%elms !call mat_to_full(DD,1d0,A(:,:,2))
-      e = 0
 
 #ifdef PRG_DIRAC
-!     this apparently segfaults in Dalton with ifort
-      call grcont(wrk(2*Da%nrow**2+1:lwrk), &
+!radovan: for DIRAC the above lwrk allocation is too much (and more than needed)
+!         so rather use the whole work array and hope for the best
+      lwrk = len_f77_work
+#endif
+
+      call di_select_wrk(wrk, lwrk)
+
+#ifndef PRG_DIRAC
+!radovan: is this necessary?
+      wrk(             1:  Da%nrow**2) = Da%elms !call mat_to_full(D ,1d0,A(:,:,1))
+      wrk(Da%nrow**2 + 1:2*Da%nrow**2) = Db%elms !call mat_to_full(DD,1d0,A(:,:,2))
+#endif
+
+      E = 0.0d0
+
+#ifdef PRG_DIRAC
+      call grcont(wrk,                      &
+                  lwrk,                     &
 #else
 !     this does not compile in DIRAC
-      call grcont(wrk(2*Da%nrow**2+1),      &
+!     besides matrices have larger size in DIRAC: 4*Da%nrow**2
+      call grcont(wrk(2*Da%nrow**2 + 1),    &
+                  lwrk - 2*Da%nrow**2,      &
 #endif
-                  lwrk-2*Da%nrow**2,        &
                   E,                        &
                   size(E),                  &
-                  what(1:1)=='G',           &
-                  what(1:1)=='M',           &
+                  what(1:1) == 'G',         &
+                  what(1:1) == 'M',         &
                   len(what),                &
                   0,                        &
                   .true.,                   &
                   .false.,                  &
 #ifdef PRG_DIRAC
-!     this apparently segfaults in Dalton with ifort
-                  wrk(1:2*Da%nrow**2),      &
+                  (/Da%elms, Db%elms/),     &
 #else
-!     this does not compile in DIRAC
                   wrk(1),                   &
 #endif
                   2)
+
+#ifdef PRG_DIRAC
+!radovan: there is a factor 8 missing in DIRAC
+!         will fix it later so that it's taken care of inside grcont
+      E = 8.0d0*E
+#endif
 
       call di_deselect_wrk(wrk, lwrk)
 
