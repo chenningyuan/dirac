@@ -63,6 +63,22 @@ taylor<T,Nvar,Ndeg> preexpand(taylor<T,1,Ndeg> (*f)(const taylor<T,1,Ndeg> &,
   return t.compose(f(taylor<T,1,Ndeg>(t[0],0),param));
 }
 
+// Function of two independent variables. This is not very optimized,
+// seems like a small but significant improvement for Nvar = 5, Ndeg = 2.
+template<class T, int Nvar, int Ndeg>
+taylor<T,Nvar,Ndeg> preexpand(taylor<T,2,Ndeg> (*f)(const taylor<T,2,Ndeg> &,
+						    const taylor<T,2,Ndeg> &),
+			      const taylor<T,Nvar,Ndeg> &x,
+			      const taylor<T,Nvar,Ndeg> &y) 
+{
+  taylor<T,2,Ndeg> ft = f(taylor<T,2,Ndeg>(x[0],0),taylor<T,2,Ndeg>(y[0],1));
+  taylor<T,Nvar,Ndeg> top[2];
+  top[0] = x;
+  top[0][0] = 0;
+  top[1] = y;
+  top[1][0] = 0;
+  return ft.eval(top);
+}
 
 
 #endif
