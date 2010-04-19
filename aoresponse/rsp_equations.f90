@@ -849,8 +849,6 @@ contains
 #endif /* not PRG_DIRAC */
       ! call solver
 #ifdef PRG_DIRAC
-      !ajt to radovan: I changed sign on RHS (now called FDSp)
-      !                Hope I have adapted this block correctly
       do i = 1, neq
          real_freq = dreal(freq)
          R = (FDSp(i) - dag(FDSp(i)))
