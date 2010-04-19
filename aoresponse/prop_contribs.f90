@@ -11,15 +11,19 @@
 module prop_contribs
 
    use matrix_defop
-#if defined(PRG_DIRAC)
+#ifdef PRG_DIRAC
    use dirac_interface
    use character_processing
-#elif defined(DALTON_AO_RSP)
+#endif
+#ifdef DALTON_AO_RSP
    use dalton_ifc,    &
      di_GET_GbDs => di_get_gmat
    use xmatrix, only: &
      mat_to_full => xmatrix_get_full
-#else
+   use xcharacter, only: &
+     prefix_zeros => xchar_from_num
+#endif
+#ifdef VAR_LINSCA
    use dal_interface, only:              &
            di_read_operator_int,         &
            di_GET_GbDs,                  &
@@ -36,10 +40,6 @@ module prop_contribs
    use matrix_operations, only: &
            mat_to_full,         &
            mat_set_from_full
-#endif /* PRG_DIRAC */
-#ifdef DALTON_AO_RSP
-   use xcharacter, only: &
-     prefix_zeros => xchar_from_num
 #endif
 
    implicit none
@@ -626,8 +626,11 @@ contains
          end do
          ! for zero-order density, add nuclear contribution to Hessian
          if (nd==0) then
-!radovan fixme:
-!           call HESSNN_ifc(natom, RR)
+#ifdef PRG_DIRAC
+            call quit('dirac: implement hessnn_ifc')
+#else
+            call HESSNN_ifc(natom, RR)
+#endif
             do j = 0, dp(2)-1
                do i = 0, dp(1)-1
                   E(1+i+dp(1)*j) = E(1+i+dp(1)*j) + RR(c(1)+i + 3*natom*(c(2)+j-1))
@@ -812,12 +815,6 @@ contains
                !call di_GET_GbDs(D(2+i), A(1))
                call twofck('  ', D(2+i), A(1:1))
                ! Kohn-Sham exchange-correlation
-               !if (do_dft()) then
-               !   ! radovan please leave:
-               !   ! call xc_contribution(2, D(1), (/D(1+b(1)+1+j)/), (/A(1)/))
-               !   call di_get_sigma_xc_cont(D(2+i), D(1), D(1), A(2))
-               !   A(1) = A(1) + A(2)
-               !end if
                call twofck_ks(1, (/D(1),D(2+i)/), A(1))
                ! trace with first density matrix
                do j = 0, de(2)-1
@@ -1864,15 +1861,34 @@ contains
       wrk(           1 :   Da%nrow**2) = Da%elms !call mat_to_full(D ,1d0,A(:,:,1))
       wrk(Da%nrow**2+1 : 2*Da%nrow**2) = Db%elms !call mat_to_full(DD,1d0,A(:,:,2))
       e = 0
-      !ajt For some reason putting array ranges gives segfault with ifort
-      !call GRCONT(wrk( 2*nbas**2+1 : lwrk ), (size(wrk)-2*nbas**2),      &
-      !            E, size(E), what(1:1)=='G', what(1:1)=='M', len(what), &
-      !            0, .true., .false., wrk(1:2*nbas**2), 2)
-!radovan fixme:
-!     call GRCONT(wrk(2*Da%nrow**2+1), lwrk-2*Da%nrow**2,      &
-!                 E, size(E), what(1:1)=='G', what(1:1)=='M', len(what), &
-!                 0, .true., .false., wrk(1), 2)
+
+#ifdef PRG_DIRAC
+!     this apparently segfaults in Dalton with ifort
+      call grcont(wrk(2*Da%nrow**2+1:lwrk), &
+#else
+!     this does not compile in DIRAC
+      call grcont(wrk(2*Da%nrow**2+1),      &
+#endif
+                  lwrk-2*Da%nrow**2,        &
+                  E,                        &
+                  size(E),                  &
+                  what(1:1)=='G',           &
+                  what(1:1)=='M',           &
+                  len(what),                &
+                  0,                        &
+                  .true.,                   &
+                  .false.,                  &
+#ifdef PRG_DIRAC
+!     this apparently segfaults in Dalton with ifort
+                  wrk(1:2*Da%nrow**2),      &
+#else
+!     this does not compile in DIRAC
+                  wrk(1),                   &
+#endif
+                  2)
+
       call di_deselect_wrk(wrk, lwrk)
+
    end subroutine
 
 
@@ -1970,8 +1986,11 @@ contains
          if (     anti) call DGETAP(D%nrow, Full, DFDtri)
       end if
       ! write fo files
-!radovan fixme:
-!     call write_dsofso(Dtri,DFDtri)
+#ifdef PRG_DIRAC
+      call quit('dirac: implement write_dsofso')
+#else
+      call write_dsofso(Dtri,DFDtri)
+#endif
    end subroutine
 
 
