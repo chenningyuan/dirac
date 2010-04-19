@@ -308,6 +308,11 @@ contains
             if (bas(1)) call prop_oneint(S0, p, dimp, S=Sp(2:1+dimp(1)), comp=c)
             do i0 = 1, dimp(1)
                i = 1+i0
+#ifdef PRG_DIRAC
+!radovan: this is necessary otherwise matrices inherit wrong irep from Sp
+!         which breaks point group symmetry in DIRAC
+               Sp(i)%irep = Fp(i)%irep
+#endif
                FDSp(i0) =            (Fp(i) - w(1)/2 * Sp(i)) * DSp(1)
                FDSp(i0) = FDSp(i0) - dag(DSp(1)) * (Fp(i) + w(1)/2 * Sp(i))
                FDSp(i0) = FDSp(i0) + FDp(1) * Sp(i) - Sp(i) * dag(FDp(1))
@@ -330,6 +335,11 @@ contains
                                           (dimp(1)+1)*(dimp(2)+1)), comp=c)
             do i0 = 1, dimp(1)*dimp(2)
                i = 1+dimp(1)+dimp(2)+i0
+#ifdef PRG_DIRAC
+!radovan: this is necessary otherwise matrices inherit wrong irep from Sp
+!         which breaks point group symmetry in DIRAC
+               Sp(i)%irep = Fp(i)%irep
+#endif
                FDSp(i0) =            (Fp(i) - (w(1)+w(2))/2 * Sp(i)) * DSp(1)
                FDSp(i0) = FDSp(i0) - dag(DSp(1)) * (Fp(i) + (w(1)+w(2))/2 * Sp(i))
                FDSp(i0) = FDSp(i0) + FDp(1) * Sp(i) - Sp(i) * dag(FDp(1))
@@ -351,6 +361,11 @@ contains
                                          1+dimp(1)+dimp(2)), comp=c(2:2))
             do j0 = 0, dimp(2)-1
                j = 2+dimp(1)+j0
+#ifdef PRG_DIRAC
+!radovan: this is necessary otherwise matrices inherit wrong irep from Sp
+!         which breaks point group symmetry in DIRAC
+               Sp(j)%irep = Fp(j)%irep
+#endif
                DSp(j) = Dp(j)*S0 + Dp(1)*Sp(j)
                SDp(j) = S0*Dp(j) + Sp(j)*Dp(1)
                if (bas(1)) FDp(j) = (Fp(j) - w(2)/2 * Sp(j)) * Dp(1) &
@@ -359,6 +374,11 @@ contains
                                   + Dp(j) * (Fp(1) + w(2) * S0)
                do i0 = 0, dimp(1)-1
                   i = 2+i0
+#ifdef PRG_DIRAC
+!radovan: this is necessary otherwise matrices inherit wrong irep from Sp
+!         which breaks point group symmetry in DIRAC
+                  Sp(i)%irep = Fp(i)%irep
+#endif
                   ij = 1+i0+dimp(1)*j0
                   !               (Fa - i/2 Sat) D S - S D (Fa + i/2 Sat)
                   ! +     (F D - i/2 St D - i S Dt) Sa - Sa (D F + i/2 D St + i Dt S)
@@ -706,8 +726,14 @@ contains
       ! matrices, as well as the p-perturbed overlap matrices
       call pert_fock(p, dimp, (/D,Dp(:pd)/), Fp(:pd), Sp, &
                      comp=ccomp, freq=ffreq)
+
       ! top DSDp off with DSpD and FDSp with (F-w/2S)DSp-SpD(F+w/2S)
       do i = 1, pd
+#ifdef PRG_DIRAC
+!radovan: this is necessary otherwise matrices inherit wrong irep from Sp
+!         which breaks point group symmetry in DIRAC
+          Sp(i)%irep = DSDp(i)%irep
+#endif
          !ajt fixme This will not result in completely (anti-)symmetric
          !          DSDp and FDSp. Use +=sym*dag(..) to achieve this
          DSDp(i) = DSDp(i) + D(1)*Sp(i)*D(1)
