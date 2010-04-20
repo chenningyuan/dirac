@@ -2001,12 +2001,6 @@ contains
 #ifdef PRG_DIRAC
       call grcont(wrk,                      &
                   lwrk,                     &
-#else
-!     this does not compile in DIRAC
-!     besides matrices have larger size in DIRAC: 4*Da%nrow**2
-      call grcont(wrk(2*Da%nrow**2 + 1),    &
-                  lwrk - 2*Da%nrow**2,      &
-#endif
                   E,                        &
                   size(E),                  &
                   what(1:1) == 'G',         &
@@ -2015,12 +2009,24 @@ contains
                   0,                        &
                   .true.,                   &
                   .false.,                  &
-#ifdef PRG_DIRAC
                   (/Da%elms, Db%elms/),     &
-#else
-                  wrk(1),                   &
-#endif
                   2)
+#else
+!     this does not compile in DIRAC
+!     besides matrices have larger size in DIRAC: 4*Da%nrow**2
+      call grcont(wrk(2*Da%nrow**2 + 1),    &
+                  lwrk - 2*Da%nrow**2,      &
+                  E,                        &
+                  size(E),                  &
+                  what(1:1) == 'G',         &
+                  what(1:1) == 'M',         &
+                  len(what),                &
+                  0,                        &
+                  .true.,                   &
+                  .false.,                  &
+                  wrk(1),                   &
+                  2)
+#endif
 
 #ifdef PRG_DIRAC
 !radovan: there is a factor 8 missing in DIRAC
