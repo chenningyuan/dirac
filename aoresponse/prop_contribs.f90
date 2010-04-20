@@ -14,6 +14,7 @@ module prop_contribs
 #ifdef PRG_DIRAC
    use dirac_interface
    use character_processing
+   use dft_main
 #endif
 #ifdef DALTON_AO_RSP
    use dalton_ifc,    &
@@ -1171,6 +1172,8 @@ contains
       idxf = 0
       do j = 1, product(dimp)
          i = 1 + sum(idxf * stepf)
+         if (.not.present(F)) Ftmp(j) = 0
+         if (.not.present(S)) Stmp(j) = 0
          if (present(F)) &
             call init_mat(F(i), Ftmp(j), alias='FF')
          if (present(S) .and. bas) &
@@ -1575,7 +1578,11 @@ contains
                end do
             end do
          else
+#ifdef PRG_DIRAC
+            call twofck_ks(pd1 - 1, D, F(1))
+#else
             call quit('prop_twoint: nd > 2 not implemented with DFT')
+#endif
          end if
          A(1) = 0 !free
       else if (np==1 .and. p(1)=='MAG') then
@@ -1807,12 +1814,23 @@ contains
       type(matrix), intent(inout) :: F
       type(matrix) :: A
       integer      :: i
-      if (.not.do_dft() .or. any((/(iszero(D(i)), i=2,n+1)/))) &
-         return !contribution is zero
+#ifdef PRG_DIRAC
+      integer :: ones(200), nr_dmat, nz
+#endif /* PRG_DIRAC */
+
+      if (.not. do_dft() .or. any((/(iszero(D(i)), i = 2, n+1)/))) then
+!        either we want no xc
+!        or one of the density matrices is zero
+!        so the xc contribution is zero
+         return
+      end if
+
       call init_mat(A, D(1))
+
       if (n==0) then
          call quit('prop_contribs/twofck_ks error: Kohn-Sham contribution ' &
                 // 'to unperturbed Fock matrix requested, but not implemented')
+#ifndef PRG_DIRAC
       else if (n==1) then
          if (D(2)%complex) &
             call di_get_sigma_xc_cont(re(D(2)), D(1), D(1), A)
@@ -1848,7 +1866,48 @@ contains
       else
          call quit('prop_contribs/twofck_ks error: n > 2 not implemented')
       end if
+#else
+      else
+
+         ones    = 1
+         nz      = size(A%elms)/(A%nrow*A%ncol)
+         nr_dmat = size(D)
+
+         A%elms = 0.0d0
+         A%irep = 0
+         do i = 2, nr_dmat
+            A%irep = ieor(A%irep, D(i)%irep)
+         end do
+
+!radovan:
+!        in many situations one could pass F directly
+!        to dftexc but the gga symmetrization can make problems
+!        with hybrid functionals and anti-hermitian contributions (nonzero frequencies)
+!        so in other words while A is always symmetric, F is non necessarily so
+!        and it would get symmetrized inside dftexc
+         call dftexc(A%nrow,                              &
+                     nz,                                  &
+                     1,                                   &
+                     A%elms,                              &
+                     D(1)%elms,                           &
+                     nr_dmat - 1,                         &
+                     (/(D(i)%elms, i = 2, nr_dmat)/),     &
+                     (/(D(i)%irep + 1, i = 2, nr_dmat)/), &
+                     (/A%irep + 1/),                      &
+                     (/ones(1:nr_dmat - 1)/),             &
+                     0,                                   &
+                     .false.,                             &
+                     n + 1,                               &
+                     .false.,                             &
+                     .false.)
+
+         F = F + A
+
+      end if
+#endif /* ifndef PRG_DIRAC */
+
       A = 0
+
    end subroutine
 
 
