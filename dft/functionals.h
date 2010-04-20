@@ -198,6 +198,7 @@ extern Functional PZ81Functional;
 extern Functional PbecFunctional;
 extern Functional PbexFunctional;
 extern Functional RpbexFunctional;
+extern Functional RevpbexFunctional;
 extern Functional SlaterFunctional;
 extern Functional VWN3Functional;
 extern Functional VWN5Functional;

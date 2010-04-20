@@ -55,6 +55,7 @@ Functional* available_functionals[] = {
     &PbecFunctional,
     &PbexFunctional,
     &RpbexFunctional,
+    &RevpbexFunctional,
     &SlaterFunctional,
     &VWN3Functional,
     &VWN5Functional,
