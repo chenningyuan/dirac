@@ -880,10 +880,17 @@ contains
     end if
 
 
-!   derv_length = xc_output_length(dft_cfg_fun_id, max_fun_derv)
-    derv_length = nr_nonzero_derv(max_fun_derv)
-
-    allocate(derv(mxbllen, 0:derv_length))
+#if defined MOD_XCFUN && MOD_AORESPONSE
+    if (response_order_ao > 0) then
+      derv_length = xc_output_length(dft_cfg_fun_id, response_order_ao)
+      allocate(derv(derv_length, mxbllen))
+    else
+#endif
+      derv_length = nr_nonzero_derv(max_fun_derv)
+      allocate(derv(mxbllen, 0:derv_length))
+#if defined MOD_XCFUN && MOD_AORESPONSE
+    end if
+#endif
 
 
 !   HERE STARTS THE EXPENSIVE LOOP OVER POINTS
@@ -943,6 +950,11 @@ contains
 !       number of electrons
         dft_temp_nr_electrons = dft_temp_nr_electrons + w(1)*r_0(1)
 
+#if defined MOD_XCFUN && MOD_AORESPONSE
+!       if we run aoresponse with xcfun we evaluate derivatives
+!       somewhere else
+        if (response_order_ao == 0) then
+#endif
         call get_functional_derv(max_fun_derv, &
                                  block_length, &
                                  w,            &
@@ -950,6 +962,10 @@ contains
                                  z_0,          &
                                  derv_length,  &
                                  derv)
+#if defined MOD_XCFUN && MOD_AORESPONSE
+        end if
+#endif
+
 
 !       exchange-correlation potential 
 !       ==============================
@@ -1151,7 +1167,9 @@ contains
                                           cory(ipoint),                      &
                                           corz(ipoint),                      &
                                           w(1),                              &
-                                          buffer)
+                                          buffer, &
+                                          derv_length,  &
+                                          derv)
           end if
 #endif
 
