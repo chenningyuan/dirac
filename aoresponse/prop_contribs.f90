@@ -1810,20 +1810,32 @@ contains
 
    subroutine twofck_ks(n, D, F)
       integer,      intent(in)    :: n
+#ifdef PRG_DIRAC
+      type(matrix)                :: D(n+1)
+#else
       type(matrix), intent(in)    :: D(n+1)
+#endif
       type(matrix), intent(inout) :: F
       type(matrix) :: A
       integer      :: i
 #ifdef PRG_DIRAC
-      integer :: ones(200), nr_dmat, nz
-#endif /* PRG_DIRAC */
+      integer :: ones(200), nr_dmat, nz, order
+#endif
 
-      if (.not. do_dft() .or. any((/(iszero(D(i)), i = 2, n+1)/))) then
-!        either we want no xc
-!        or one of the density matrices is zero
-!        so the xc contribution is zero
+      if (.not. do_dft()) then
+!        we want no xc
          return
       end if
+
+#ifndef PRG_DIRAC
+!radovan: this is not correct for CR and higher
+!         there you can have nonzero integral with one or more
+!         density matrices zero
+      if (any((/(iszero(D(i)), i = 2, n+1)/))) then
+!        at least one of the density matrices is zero
+         return
+      end if
+#endif
 
       call init_mat(A, D(1))
 
@@ -1872,12 +1884,46 @@ contains
          ones    = 1
          nz      = size(A%elms)/(A%nrow*A%ncol)
          nr_dmat = size(D)
+         do i = 2, nr_dmat
+            if (iszero(D(i))) then
+               D(i) = tiny(0.0d0)*D(1)
+            end if
+         end do
 
          A%elms = 0.0d0
          A%irep = 0
          do i = 2, nr_dmat
             A%irep = ieor(A%irep, D(i)%irep)
          end do
+
+!        that's really ugly here - will make it better later
+!        for the moment i'm just happy that it works
+         order = 0
+         if (nr_dmat > (0)) then
+            order = 1
+         end if
+         if (nr_dmat > (1)) then
+            order = 2
+         end if
+         if (nr_dmat > (1+1)) then
+            order = 3
+         end if
+         if (nr_dmat > (1+2+1)) then
+            order = 4
+         end if
+         if (nr_dmat > (1+3+3+1)) then
+            order = 5
+         end if
+         if (nr_dmat > (1+4+6+4+1)) then
+            order = 6
+         end if
+         if (nr_dmat > (1+5+10+10+5+1)) then
+            call quit('fix twofck_ks order pascal triangle')
+         end if
+         
+         if (order < 2) then
+            return
+         end if
 
 !radovan:
 !        in many situations one could pass F directly
@@ -1897,7 +1943,7 @@ contains
                      (/ones(1:nr_dmat - 1)/),             &
                      0,                                   &
                      .false.,                             &
-                     n + 1,                               &
+                     order,                               &
                      .false.,                             &
                      .false.)
 
