@@ -39,7 +39,7 @@ static num energy (const densvars<num> &d)
    return Ec_ab + Ec_aa + Ec_bb;
 }
 
-void setup_m06c(functional &f)
+void setup_m06x2c(functional &f)
 {
   f.describe("m06x2c",XC_MGGA,
 	     "M06-2X Correlation",
