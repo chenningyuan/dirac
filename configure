@@ -2144,8 +2144,8 @@ get_f90_flags(){
       F_profile="" # please add
       ;;
     ifort)
-      opt="-g -O3 -ip -w -assume byterecl -vec-report0"
-      safe="-g -w -assume byterecl"
+      opt="-g -fpp1 -O3 -ip -w -assume byterecl -vec-report0"
+      safe="-g -fpp1 -w -assume byterecl"
       cpp_f90="$cpp_f90 -DVAR_IFC"
       cpp_cc="$cpp_cc -DVAR_IFC"
       mod="-module $MODULE_DIR"
