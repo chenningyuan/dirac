@@ -12,7 +12,9 @@
      &                   z_0,
      &                   gr_0,
      &                   w,
-     &                   buf)
+     &                   buf,
+     &                   derv_len,
+     &                   derv)
 c=======================================================================
 c     describe me ...
 c-----------------------------------------------------------------------
@@ -39,6 +41,8 @@ c=======================================================================
 #include "inforb.h"
 
       integer, intent(in) :: block_length
+      integer, intent(in)    :: derv_len
+      real(8), intent(in)    :: derv(mxbllen, 0:derv_len)
       logical   add_grad,
      &          no_sdft
       dimension dtrmat(nbast,nbast,nz,3),
@@ -90,9 +94,7 @@ c=======================================================================
 !               scalar h- part: r_k^[BC]    with k = x,y,z
      &          s_bc_ah(  3),
 !               vector h- part: q_{kj}^[BC] with k = x,y,z and j = x,y,z
-     &          v_bc_ah(3,3),
-!
-     &          derv(mxbllen, 0:nr_nonzero_derv(3))
+     &          v_bc_ah(3,3)
       real(8), parameter :: tiny = 1.0d-20
       real(8) :: f
       integer :: i
@@ -181,14 +183,6 @@ c=======================================================================
           X_bc(k) = d2*ddot(3,gs_b(1,k),1,gs_c(1,k),1)
         enddo
       endif
-
-      call get_functional_derv(3,
-     &                         block_length,
-     &                         w,
-     &                         r_0,
-     &                         z_0,
-     &                         nr_nonzero_derv(3),
-     &                         derv)
 
 !-------------------------------------------------------------------------------
 !     collect s_bc_h
