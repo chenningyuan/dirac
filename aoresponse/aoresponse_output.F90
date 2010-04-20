@@ -29,13 +29,13 @@ contains
 !   ----------------------------------------------------------------------------
 
     do h = 1, 3
-      if (dabs(real(e(i, h))) > small_number) then
+      if (dabs(real(e(h, i))) > small_number) then
         print '("@ << "a1"; "a1" >>          (w ="2f8.4")" f50.10)', &
                fc(h),                                                &
                fc(i),                                                &
                real(-sum(w)),                                        &
                real(w(1)),                                           &
-              -real(e(i, h))
+              -real(e(h, i))
       end if
     end do
 
@@ -52,7 +52,7 @@ contains
 !   ----------------------------------------------------------------------------
 
     do h = 1, 3
-      if (dabs(real(e(i, j, h))) > small_number) then
+      if (dabs(real(e(h, i, j))) > small_number) then
         print '("@ << "a1"; "a1", "a1" >>       (w ="3f8.4")" f42.10)', &
                fc(h),                                                   &
                fc(i),                                                   &
@@ -60,7 +60,7 @@ contains
                real(-sum(w)),                                           &
                real(w(1)),                                              &
                real(w(2)),                                              &
-              -real(e(i, j, h))
+              -real(e(h, i, j))
       end if
     end do
 
@@ -77,7 +77,7 @@ contains
 !   ----------------------------------------------------------------------------
 
     do h = 1, 3
-      if (dabs(real(e(i, j, k, h))) > small_number) then
+      if (dabs(real(e(h, i, j, k))) > small_number) then
         print '("@ << "a1"; "a1", "a1", "a1" >>    (w ="4f8.4")" f34.10)', &
                fc(h),                                                      &
                fc(i),                                                      &
@@ -87,7 +87,7 @@ contains
                real(w(1)),                                                 &
                real(w(2)),                                                 &
                real(w(3)),                                                 &
-              -real(e(i, j, k, h))
+              -real(e(h, i, j, k))
       end if
     end do
 
@@ -104,7 +104,7 @@ contains
 !   ----------------------------------------------------------------------------
 
     do h = 1, 3
-      if (dabs(real(e(i, j, k, l, h))) > small_number) then
+      if (dabs(real(e(h, i, j, k, l))) > small_number) then
         print '("@ << "a1"; "a1", "a1", "a1", "a1" >> (w ="5f8.4")" f26.10)', &
                fc(h),                                                         &
                fc(i),                                                         &
@@ -116,7 +116,7 @@ contains
                real(w(2)),                                                    &
                real(w(3)),                                                    &
                real(w(4)),                                                    &
-              -real(e(i, j, k, l, h))
+              -real(e(h, i, j, k, l))
       end if
     end do
 

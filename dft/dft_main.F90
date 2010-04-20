@@ -18,6 +18,9 @@ module dft_main
 #ifdef VAR_MPI
   use dirac_mpi
 #endif
+#ifdef MOD_XCFUN
+  use xcfun
+#endif
 
   implicit none
 
@@ -752,7 +755,7 @@ contains
 !   ----------------------------------------------------------------------------
     integer :: ioff, i
     real(8) :: RHG(3),VT(3)
-    real(8) :: derv(mxbllen, 0:99)
+    real(8), allocatable :: derv(:, :)
     real(8) :: r_0(mxbllen)
     real(8) :: z_0(mxbllen)
     real(8) :: w(mxbllen)
@@ -765,7 +768,8 @@ contains
     integer :: max_ao_g_order
     integer :: max_ao_m_order
     integer :: off1, off2
-    integer :: max_fun_derv, fun_derv
+    integer :: max_fun_derv
+    integer :: derv_length
 
 !   this pointer is useful for .KEEPAO, then it can point to memory
 !   otherwise it points to ao
@@ -855,6 +859,43 @@ contains
       ao_p => ao
     end if    
 
+
+!   check what functional derivatives do we need
+!   ============================================
+
+    max_fun_derv = 0
+
+    if (xc_potential) then
+      max_fun_derv = 1
+    end if
+    if (response_order_mo > 0) then
+      max_fun_derv = response_order_mo + 1
+    end if
+    if (london_rhs_direct) then
+      if (dft_cfg_no_sdft) then
+        max_fun_derv = 1
+      else
+        max_fun_derv = 2
+      end if
+    end if
+
+
+#if defined MOD_XCFUN && MOD_AORESPONSE
+    if (response_order_ao > 0) then
+      derv_length = xc_output_length(dft_cfg_fun_id, response_order_ao)
+      allocate(derv(derv_length, mxbllen))
+    else
+#endif
+      derv_length = nr_nonzero_derv(max_fun_derv)
+      allocate(derv(mxbllen, 0:derv_length))
+#if defined MOD_XCFUN && MOD_AORESPONSE
+    end if
+#endif
+
+
+!   HERE STARTS THE EXPENSIVE LOOP OVER POINTS
+!   DO NOT EVALUATE ANYTHING INSIDE THIS LOOP
+!   THAT DOES NOT CHANGE FROM POINT TO POINT
     do ipoint = 1, npoint
 
       if (ipoint == 1) then
@@ -909,35 +950,22 @@ contains
 !       number of electrons
         dft_temp_nr_electrons = dft_temp_nr_electrons + w(1)*r_0(1)
 
-
-!       check what functional derivatives do we need
-!       ============================================
-
-        max_fun_derv = 0
-
-        if (xc_potential) then
-          max_fun_derv = 1
+#if defined MOD_XCFUN && MOD_AORESPONSE
+!       if we run aoresponse with xcfun we evaluate derivatives
+!       somewhere else
+        if (response_order_ao == 0) then
+#endif
+        call get_functional_derv(max_fun_derv, &
+                                 block_length, &
+                                 w,            &
+                                 r_0,          &
+                                 z_0,          &
+                                 derv_length,  &
+                                 derv)
+#if defined MOD_XCFUN && MOD_AORESPONSE
         end if
-        if (response_order_mo == 1) then
-          max_fun_derv = 2
-        end if
-        if (london_rhs_direct) then
-          if (dft_cfg_no_sdft) then
-            max_fun_derv = 1
-          else
-            max_fun_derv = 2
-          end if
-        end if
+#endif
 
-        do fun_derv = 1, max_fun_derv
-          call get_functional_derv(fun_derv,  &
-                                   block_length,         &
-                                   w,                    &
-                                   r_0,                  &
-                                   z_0,                  &
-                                   nr_nonzero_derv(fun_derv), &
-                                   derv)
-        end do
 
 !       exchange-correlation potential 
 !       ==============================
@@ -1067,7 +1095,9 @@ contains
                   w,              &
                   use_gga_qr,     &
                   use_gga_qi,     &
-                  buffer)
+                  buffer,         &
+                  derv_length,    &
+                  derv)
 
         endif
 
@@ -1080,7 +1110,10 @@ contains
                        dft_cfg_no_sdft,        &
                        mat_dim, dmat_p,fmat,   &
                        isymop_dmat,ihrmop,ao_p,ao_p(ao_start(1, 0)), &
-                       r_0(1),z_0(1),rhg,w(1),buffer)
+                       r_0(1),z_0(1),rhg,w(1), &
+                       buffer,             &
+                  derv_length,    &
+                  derv)
 
 !         the idea here is that   r^[B]               \omega_{ia}^[C]
 !                                 r^[C]               \omega_{ia}^[B]
@@ -1108,7 +1141,9 @@ contains
                   w,               &
                   use_gga_qr,      &
                   use_gga_qi,      &
-                  buffer)
+                  buffer,          &
+                  derv_length,     &
+                  derv)
 
         endif
 
@@ -1132,7 +1167,9 @@ contains
                                           cory(ipoint),                      &
                                           corz(ipoint),                      &
                                           w(1),                              &
-                                          buffer)
+                                          buffer, &
+                                          derv_length,  &
+                                          derv)
           end if
 #endif
 
@@ -1144,6 +1181,7 @@ contains
 
     call dealloc(ao)
     call dealloc(buffer)
+    deallocate(derv)
 
   end subroutine
 
@@ -1367,7 +1405,7 @@ contains
 
   subroutine lr(block_length,       &
                 mat_dim,            &
-                nz,             &
+                nz,                 &
                 nr_mat,             &
                 dmat_perturbed,     &
                 fmat,               &
@@ -1381,7 +1419,9 @@ contains
                 w,                  &
                 is_gga_qr,          &
                 is_gga_qi,          &
-                buffer)
+                buffer,             &
+                n,                  &
+                derv)
 
 !   ----------------------------------------------------------------------------
     integer, intent(in)    :: block_length
@@ -1401,6 +1441,8 @@ contains
     logical, intent(in)    :: is_gga_qr
     logical, intent(in)    :: is_gga_qi
     real(8), intent(in)    :: buffer(*)
+    integer, intent(in)    :: n
+    real(8), intent(in)    :: derv(mxbllen, 0:n)
 !   ----------------------------------------------------------------------------
     logical                :: calculate_qr, calculate_qi
 
@@ -1413,18 +1455,9 @@ contains
     real(8)                :: z_b
     real(8)                :: y_b(3)
 
-    real(8)                :: derv(mxbllen, 0:99)
     real(8)                :: ddot
     integer                :: k_start, k, im, im_off, j
 !   ----------------------------------------------------------------------------
-
-    call get_functional_derv(2,                  &
-                             block_length,       &           
-                             w,                  &
-                             r_0,                &
-                             z_0,                &  
-                             nr_nonzero_derv(2), &
-                             derv)
 
     k_start = 1
     if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
@@ -1605,7 +1638,9 @@ contains
                 w,                  &
                 is_gga_qr,          &
                 is_gga_qi,          &
-                buffer)
+                buffer,             &
+                n,                  &
+                derv)
 
 !   ----------------------------------------------------------------------------
     integer, intent(in)    :: block_length
@@ -1625,6 +1660,8 @@ contains
     logical, intent(in)    :: is_gga_qr
     logical, intent(in)    :: is_gga_qi
     real(8), intent(in)    :: buffer(*)
+    integer, intent(in)    :: n
+    real(8), intent(in)    :: derv(mxbllen, 0:n)
 !   ----------------------------------------------------------------------------
     logical                :: calculate_qr, calculate_qi
 
@@ -1637,18 +1674,9 @@ contains
     real(8)                :: z_b
     real(8)                :: y_b(3)
 
-    real(8)                :: derv(mxbllen, 0:99)
     real(8)                :: ddot
     integer                :: k_start, k, im, im_off, j, off_mag
 !   ----------------------------------------------------------------------------
-
-    call get_functional_derv(2,                  &
-                             block_length,       &           
-                             w,                  &
-                             r_0,                &
-                             z_0,                &  
-                             nr_nonzero_derv(2), &
-                             derv)
 
     do im = 1, nr_mat
 

@@ -1,15 +1,11 @@
 module aor_main
 
-  use kinds_m
-  use memory_allocator
+  use prop_test
   use matrix_defop
-  use matrix_stat
   use dirac_interface
-  use vib_prop
   use aor_cfg
-! use aor_binomial
-  use aor_property_definitions
-  use aor_property_definitions_zzz
+  use decompmod
+  use vib_prop
 
   implicit none
 
@@ -23,13 +19,18 @@ contains
 #include "dgroup.h"
 
     type(matrix)  :: S, C_i, D, F
-    complex(8) :: freq(4)
+    complex(8) :: cfg_rsp_freq(4)
     complex(8) :: w(10)
-    real(kind_dp) :: sum_up
-    integer       :: i, j
+    real(8) :: sum_up
+    integer       :: i, j, n, k, l, number_atoms
     integer, intent(in)    :: lwork
     real(8), intent(inout) :: work(lwork)
-    complex(8),allocatable:: tsr(:) !ajt: scratch for property tensors
+    complex(8), allocatable :: tsr(:)
+    complex(8), allocatable :: tsr2(:)
+   type(decompItem) :: decomp
+
+    decomp%lupri = 0
+
 
 !   initialize fortran 77 work memory interface
     call di_set_f77_work(work, lwork)
@@ -37,10 +38,10 @@ contains
 !   for debugging, remove later
 !   call print_prp_common_blocks()
 
-    freq(1) = aor_cfg_freq(1)
-    freq(2) = aor_cfg_freq(2)
-    freq(3) = aor_cfg_freq(3)
-    freq(4) = aor_cfg_freq(4)
+    cfg_rsp_freq(1) = aor_cfg_freq(1)
+    cfg_rsp_freq(2) = aor_cfg_freq(2)
+    cfg_rsp_freq(3) = aor_cfg_freq(3)
+    cfg_rsp_freq(4) = aor_cfg_freq(4)
 
     call get_S(S)
 
@@ -52,70 +53,100 @@ contains
 !   call test_matrix_defop(S, D, F, C_i)
     C_i = 0
 
-    call nr_electrons(S, D)
-    call energy(D, F)
-    call mu(S, D, F)
+    write(*, *) 'electron count from S**D:', dot(S, D)
 
     if (aor_cfg_quadrupole) then
-      call aor_quadrupole(S, D, F)
+      allocate(tsr(6))
+      call elec_quadrupole(S, D, F, tsr)
+      deallocate(tsr)
     end if
 
-    if (aor_cfg_roa) then
-           print '(//a,f11.8/)','linscf calls roa_pol_gpri_aten_gra w=',aor_cfg_freq(1)
-           call get_natoms(j); j=3*j
-           allocate(tsr(3*3+3*3+3*6+3*3*j+3*3*j+3*6*j)) !ajt: hack
-           call roa_pol_gpri_aten_gra(S,D,F,j,aor_cfg_freq(1)*(1d0,0d0),tsr(1:9),tsr(10:18),tsr(19:36), &
-                                      tsr(37:36+9*j),tsr(37+9*j:36+18*j),tsr(37+18*j:36+36*j))
-           !ajt VIBCTL seems to want g-prime = <<mu,mag>>(w;-w) (opposite sign) (maybe I'm wrong)
-           tsr(10:18) = -tsr(10:18)
-           tsr(37+9*j:36+18*j) = -tsr(37+9*j:36+18*j)
-           call VIBCTL_ifc(j,aor_cfg_freq(1),real(tsr(1:9)),real(tsr(10:18)),real(tsr(19:36)),     &
-                           (/((0d0,0d0),i=1,3*j)/),real(tsr(37:36+9*j)),real(tsr(37+9*j:36+18*j)), &
-                           real(tsr(37+18*j:36+36*j)),work,lwork)
-           deallocate(tsr)
+    allocate(tsr(3))
+    call elec_dipmom(S, D, F, tsr)
+    deallocate(tsr)
+
+    if (aor_cfg_alpha) then
+      n = 2
+      allocate(tsr(3**n))
+      call elec_polariz(decomp, S, D, F, cfg_rsp_freq(1), tsr)
+      deallocate(tsr)
     end if
 
-    if (aor_cfg_cars) then
-           print '(//a,f11.8/)','linscf calls cars_shyp_polgra w=',aor_cfg_freq(1)
-           call get_natoms(j); j=3*j
-           allocate(tsr(3+3*3+3*3*3*3+3*3*j)) !ajt: hack
-           call cars_shyp_polgra(S,D,F,j,aor_cfg_freq(1)*(1d0,0d0),tsr(1:3),tsr(4:12), &
-                                 tsr(13:93),tsr(94:93+9*j))
-           call print_shypol(aor_cfg_freq(1)*(/-1,1,-1,1/),real(tsr(1:3)), &
-                             (/real(tsr(4:12)),(0d0,i=1,9*3)/),(/(0d0,i=1,27*6)/),real(tsr(13:93)),lupri)
-           call vib_ana_polari(aor_cfg_freq(1)*(/-1,1,-1,1/),real(tsr(1:3)),j,(/(0d0,i=1,3*j*4)/), &
-                               (/real(tsr(94:93+9*j)),(0d0,i=1,9*j),real(tsr(94:93+9*j)), &
-                               real(tsr(94:93+9*j)),(0d0,i=1,9*j),real(tsr(94:93+9*j))/), &
-                               (/(0d0,i=1,27*j*4)/),lupri)
-           deallocate(tsr)
+    if (aor_cfg_beta) then
+      n = 3
+      allocate(tsr(3**n))
+      call elec_hypolar(decomp, S, D, F, (/cfg_rsp_freq(1:n-1), -sum(cfg_rsp_freq(1:n-1))/), tsr)
+      deallocate(tsr)
+    end if
+
+    if (aor_cfg_beta_2np1) then
+      n = 3
+      allocate(tsr(3**n))
+      call alt_elec_hypol(decomp, S, D, F, (/cfg_rsp_freq(1:n-1), -sum(cfg_rsp_freq(1:n-1))/), tsr)
+      deallocate(tsr)
+    end if
+
+    if (aor_cfg_gamma) then
+      n = 4
+      allocate(tsr(3**n))
+      call elec_sechyp(decomp, S, D, F, (/cfg_rsp_freq(1:n-1), -sum(cfg_rsp_freq(1:n-1))/), tsr)
+      deallocate(tsr)
+    end if
+
+    if (aor_cfg_magnetizability) then
+      allocate(tsr(3*3))
+      allocate(tsr2(3*3))
+      call magnetiz(decomp, S, D, F, cfg_rsp_freq(1), tsr, tsr2)
+      deallocate(tsr)
+      deallocate(tsr2)
     end if
 
     if (aor_cfg_dg_energy) then
 !     call test_grcont(D%nrow, natoms_ifc(), .false., .true.)
 !     call debug_1grad(D, F, natoms_ifc())
 !     call debug_2grad(D,    natoms_ifc())
-      call dg_energy(S, D, F, 3*nr_atoms)
+
+!     call dg_energy(S, D, F, 3*nr_atoms)
+      call prop_test_gradient(S, D, F, 3*nr_atoms)
     end if
 
-    if (aor_cfg_alpha) then
-      call alpha(S, D, F, (/freq(1), -freq(1)/))
-    end if
-
-    if (aor_cfg_magnetizability) then
-      call aor_magnetizability(S, D, F, freq(1))
-    end if
-
-    if (aor_cfg_beta) then
-      call beta(S, D, F, (/freq(1:2), -sum(freq(1:2))/))
-    end if
-
-    if (aor_cfg_beta_2np1) then
-      call beta_2np1(S, D, F, (/freq(1:2), -sum(freq(1:2))/))
-    end if
-
-    if (aor_cfg_gamma) then
-      call gamma(S, D, F, (/freq(1:3), -sum(freq(1:3))/))
-    end if
+        if (aor_cfg_roa) then
+           print '(//a,f11.8/)','linscf calls roa_pol_Gpri_Aten_grads, freq =',cfg_rsp_freq(1)
+           call get_natoms(number_atoms)
+           l = 3*number_atoms
+           allocate(tsr(3*3+3*3+6*3+l*3*3+l*3*3+l*6*3)) !ajt: hack
+           call roa_pol_Gpri_Aten_grads(decomp,S,D,F,l,cfg_rsp_freq(1)*(1d0,0d0),tsr(1:9), &
+                                        tsr(10:18),tsr(19:36),tsr(37:36+9*l), &
+                                        tsr(37+9*l:36+18*l),tsr(37+18*l:36+36*l))
+           call VIBCTL_ifc(l,cfg_rsp_freq(1), &
+                           (/((dreal(tsr(1 +i+3*j)),j=0,2),i=0,2)/), &
+                           (/((dreal(tsr(10+i+3*j)),j=0,2),i=0,2)/), &
+                           (/((dreal(tsr(19+i+6*j)),j=0,5),i=0,2)/), &
+                           (/(0d0,i=1,3*l)/), &
+                           (/(((dreal(tsr(37+     i+l*j+l*3*k)),k=0,2),j=0,2),i=0,l-1)/), &
+                           (/(((dreal(tsr(37+ 9*l+i+l*j+l*3*k)),k=0,2),j=0,2),i=0,l-1)/), &
+                           (/(((dreal(tsr(37+18*l+i+l*j+l*6*k)),k=0,2),j=0,5),i=0,l-1)/), &
+                           work,lwork)
+           deallocate(tsr)
+        endif
+        if (aor_cfg_cars) then
+           print '(//a,f11.8/)','linscf calls cars_pol_shyp_polgra, freq =',cfg_rsp_freq(1)
+           call get_natoms(number_atoms)
+           l = 3*number_atoms
+           allocate(tsr(3+3*3+3*3*3*3+l*3*3)) !ajt: hack
+           call cars_pol_shyp_polgra(decomp,S,D,F,l,cfg_rsp_freq(1)*(1d0,0d0),tsr(1:3),tsr(4:12), &
+                                     tsr(13:93),tsr(94:93+9*l))
+           call print_shypol(dreal(cfg_rsp_freq(1))*(/-1,1,-1,1/),dreal(tsr(1:3)), &
+                             (/dreal(tsr(4:12)),(0d0,i=1,9*3)/),(/(0d0,i=1,27*6)/), &
+                             dreal(tsr(13:93)),lupri)
+           call vib_ana_polari(dreal(cfg_rsp_freq(1))*(/-1,1,-1,1/),dreal(tsr(1:3)),l,(/(0d0,i=1,3*l*4)/), &
+                               (/((dreal(tsr(94+i+l*j)),j=0,8),i=0,l-1), (0d0,i=1,9*l), &
+                                 ((dreal(tsr(94+i+l*j)),j=0,8),i=0,l-1), &
+                                 ((dreal(tsr(94+i+l*j)),j=0,8),i=0,l-1), (0d0,i=1,9*l), &
+                                 ((dreal(tsr(94+i+l*j)),j=0,8),i=0,l-1)/), &
+                                (/(0d0,i=1,27*l*4)/),lupri)
+           deallocate(tsr)
+        endif
 
     if (aor_cfg_gamma_lin_dc_kerr) then
 
@@ -251,34 +282,13 @@ contains
 
     end if
 
-!   if (aor_cfg_beta_lin_static) then
-
-!     add_to = 0.0d0
-!     freq   = 0.0d0
-
-!     call beta_element(2.0d0, add_to, 1, 1, 3, S, D, F, (/freq(1:2), -sum(freq(1:2))/))
-!     call beta_element(1.0d0, add_to, 3, 3, 3, S, D, F, (/freq(1:2), -sum(freq(1:2))/))
-
-!     add_to = 3.0d0*add_to/5.0d0
-
-!     print '(a30 " (w = "3f9.4"):" f26.10)', &
-!           '@ averaged static beta',         &
-!           real(freq(1)),                          &
-!           real(freq(2)),                          &
-!           real(freq(3)),                          &
-!           add_to
-
-!   end if
-
-
+#ifdef MERGE_WITH_LINSCA
     if (aor_cfg_zzz) call aor_zzz(aor_cfg_zzz_order, S, D, F)
+#endif /* ifdef MERGE_WITH_LINSCA */
 
     S = 0
     D = 0
     F = 0
-
-!radovan: debug this later
-!   call print_matrix_stat()
 
   end subroutine
 

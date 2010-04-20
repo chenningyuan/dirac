@@ -7,6 +7,7 @@
 module matrix_operations
 
   use matrix_stat
+  use matrix_module
 
   implicit none
 
@@ -20,36 +21,106 @@ module matrix_operations
   public mat_dotproduct
   public mat_trab
   public mat_daxpy
+  public mat_assign
+  public mat_to_full
+  public mat_set_from_full
+  public mat_add
+  public mat_copy
 
   private
-
-  type matrix
-!   mark uninitialized matrices with nrow = ncol = -1
-    integer             :: nrow = -1
-    integer             :: ncol = -1
-
-    real(8),    pointer :: elms(:)
-    real(8),    pointer :: elmsb(:)          !not used in DIRAC
-    complex(8), pointer :: celms(:)          !not used in DIRAC
-    complex(8), pointer :: celmsb(:)         !not used in DIRAC
-
-!   to mark complex elements
-    logical             :: complex = .false. !not used in DIRAC
-
-    integer,    pointer :: iaux(:)
-    real(8),    pointer :: raux(:)
-
-!   DIRAC specific
-    integer             :: ih_sym = 1
-    integer             :: tr_sym = 1
-    integer             :: irep   = 0
-  end type
 
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 
 contains
+
+  subroutine mat_copy(alpha,a,b)
+     implicit none
+     REAL(REALK),  INTENT(IN)    :: alpha
+     TYPE(Matrix), INTENT(IN)    :: a
+     TYPE(Matrix), INTENT(INOUT) :: b
+     integer                     :: i
+
+!    do i = 1,a%nrow*a%ncol
+!      b%elms(i) = alpha*a%elms(i)
+!    enddo
+
+     call mat_assign(b,a)
+     if (alpha.ne.1.0d0) call mat_scal(alpha,b)
+
+  end subroutine
+
+  subroutine mat_add(alpha,a,beta,b,c)
+     implicit none
+     TYPE(Matrix), intent(IN) :: a, b
+     REAL(realk), INTENT(IN)  :: alpha, beta
+     TYPE(Matrix)             :: c
+     integer                  :: i
+
+!    do i = 1,a%nrow*a%ncol
+!      c%elms(i) = alpha*a%elms(i) + beta*b%elms(i)
+!    enddo
+
+     call mat_copy(alpha,a,c)
+     call mat_daxpy(beta,b,c)
+
+  end subroutine
+
+  subroutine mat_set_from_full(afull,alpha,a, mat_label,unres3)
+     implicit none
+     real(realk), INTENT(IN) :: afull(*)
+     real(realk), intent(in) :: alpha
+     TYPE(Matrix)            :: a
+     integer                 :: i
+         character(*), INTENT(IN), OPTIONAL :: mat_label
+         logical,intent(in) , OPTIONAL :: unres3
+
+!    do i = 1,a%nrow*a%ncol
+!      a%elms(i) = alpha*afull(i)
+!    enddo
+
+     i = a%nrow*a%ncol
+     call dcopy (i,afull,1,a%elms,1)
+     if (alpha.ne.1.0d0) call mat_scal(alpha,a)
+
+  end subroutine
+
+  subroutine mat_to_full(a, alpha, afull, mat_label)
+
+
+     implicit none
+     TYPE(Matrix), intent(in):: a
+     real(realk), intent(in) :: alpha
+     real(realk), intent(out):: afull(*)
+     integer                 :: i
+         character(*), INTENT(IN), OPTIONAL :: mat_label
+
+!    do i = 1,a%nrow*a%ncol
+!      afull(i) = alpha*a%elms(i)
+!    enddo
+
+     i = a%nrow*a%ncol*nz
+     call dcopy (i,a%elms,1,afull,1)
+     if (alpha.ne.1.0d0) call dscal(i,alpha,afull,1)
+
+  end subroutine
+
+
+  subroutine mat_assign(a,b)
+     implicit none
+     TYPE(Matrix), INTENT(INOUT) :: a
+     TYPE(Matrix), INTENT(IN)    :: b
+     integer                     :: i
+
+!    do i = 1,a%nrow*a%ncol
+!      a%elms(i) = b%elms(i)
+!    enddo
+
+     i = a%nrow*a%ncol*nz
+     call dcopy (i,b%elms,1,a%elms,1)
+
+  end subroutine
 
   subroutine mat_init(A, nrow, ncol)
 
