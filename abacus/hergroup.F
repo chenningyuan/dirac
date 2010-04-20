@@ -1078,7 +1078,14 @@ C
       JCOM(1,20) =  1
       JCOM(2,20) =  1
       JCOM(3,20) =  1
-C
+
+C      21.   iBETAGAMMA5
+C     ==============================================
+      MCMP(21)  = 1
+      JM4 (1,21)= 0
+      JCOM(1,21)= 1
+
+
       RETURN
       END
 C --- end of hergroup.F ---

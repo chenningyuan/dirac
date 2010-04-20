@@ -776,12 +776,16 @@ C  XPRINP recognizes eighteen different kinds of operators:
 C
 C    1. DIAGONAL
 C       P             * scalar operator
+C
 C    2. XALPHA
 C       [alpha_x]P    * x-component of alpha times scalar operator
+C
 C    3. YALPHA
 C       [alpha_y]P    * y-component of alpha times scalar operator
+C
 C    4. ZALPHA
 C       [alpha_z]P    * z-component of alpha times scalar operator
+C
 C    5. XAVECTOR
 C       [Alpha x P]_x * vector product of alpha and vector operator,
 C                       x-component    
@@ -828,6 +832,12 @@ C
 C   19. BETA   
 C       [beta]P * beta times scalar operator
 C
+C   20 .is occupied - iS.P         * dot-product of sigma and vector operator
+C
+C   21. iBETAGAM
+C       i[beta*gamma5] P           * i beta*gamma5 times scalar operator
+C   
+C
 C  Operator types 5,6 and 7 form the components of a vectorproduct 
 C  of the alpha matrices and some scalar operator.
 C
@@ -846,7 +856,7 @@ C
 #include "dcbgen.h"
       CHARACTER*7 WORD
 C
-      PARAMETER (NTABKW = 24)
+      PARAMETER (NTABKW = 28)
       CHARACTER*8 TABKW(NTABKW)
       CHARACTER   LINE*80, KEYWD*8, TOKEN16*16, BLANK8*8, BLANK16*16
       DIMENSION PFAC(3),WORK(LWORK)
@@ -861,7 +871,9 @@ C
      &           'ZALPHA  ', 'XAVECTOR', 'YAVECTOR', 'ZAVECTOR',
      &           'ALPHADOT', 'GAMMA5  ', 'XSIGMA  ', 'YSIGMA  ',
      &           'ZSIGMA  ', 'XBETASIG', 'YBETASIG', 'ZBETASIG',
-     &           'XiBETAAL', 'YiBETAAL', 'ZiBETAAL', 'BETA    '/
+     &           'XiBETAAL', 'YiBETAAL', 'ZiBETAAL', 'BETA    ',
+CMI  &           'iBETAGAM', 'XXXXXXXX', 'XXXXXXXX', 'XXXXXXXX'/
+     &           'XXXXXXXX', 'iBETAGAM', 'XXXXXXXX', 'XXXXXXXX'/
 C
       CALL QENTER('XPRINP')
 C
@@ -969,6 +981,7 @@ C          =================================================
 C
            IF (I .GT. 5) THEN
 C             (the first five entries in TABKW are not operator types)
+CMI      ---- assignement of IPTYP -----
               IPTYP = I - 5
               NLABEL= 0
               NFAC  = 0
@@ -989,7 +1002,7 @@ C
               ITRXPR = 1
            END IF
            GO TO (4,5,6,7,1,1,1,1,1,2,2,2,3,
-     &            1,1,1,1,1,1,1,1,1,1,1), I
+     &            1,1,1,1,1,1,1,1,1,1,1,1), I
          END IF
          END DO
          INPERR = INPERR + 1
@@ -998,7 +1011,7 @@ C
      &     ' Keyword "'//KEYWD(1:LKW)//'" not recognized.'
          GO TO 300
 C&&&&    One component: DIAGONAL, [XYZ]ALPHA, GAMMA5, [XYZ]SIGMA,
-C&&&&                   [XYZ]BETASIG, [XYZ]iBETAAL, BETA, FOCKMAT
+C&&&&                   [XYZ]BETASIG, [XYZ]iBETAAL, BETA, FOCKMAT,iBETAGAMMA5
     1    CONTINUE
            NPCOMP = 1
          GO TO 300
@@ -1105,8 +1118,30 @@ CHJMAERKE: implement interpretation of class keyword
      &      ' XPRINP: INPUT ERROR following '//WORD,
      &      ' Keyword "'//KEYWD(1:LKW)//'" not implemented yet.'
       ELSE
+         IF (IPRINT.GE.15) THEN
+           WRITE(LUPRI,'(/,6x,a)') '*** Output from XPRINP ***'
+           WRITE(LUPRI,'(2x,a,a16)') 'PNAME=',PNAME
+           WRITE(LUPRI,'(2x,a,i2,a,i2)') 
+     &     'IPTYP=',IPTYP,' NPCOMP=',NPCOMP
+           WRITE(LUPRI,'(2x,a,3a8)') 
+     &     'PLABEL(1-NPCOMP)=',(PLABEL(I),I=1,NPCOMP)
+           WRITE(LUPRI,'(2x,a,3f10.6)') 
+     &     'PFAC(1-NPCOMP)=',(PFAC(I),I=1,NPCOMP)
+           WRITE(LUPRI,'(2x,a,i2,a,i2,a,i2)') 
+     &     'INDXPR=',INDXPR,' ISYXPR=',ISYXPR,' ITRXPR=',ITRXPR
+         ENDIF
+CMI      ... assign remaining parameters
          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
+         IF (IPRINT.GE.20) THEN
+           WRITE(LUPRI,'(/,6x,a)')
+     &      '*** Output from XPRINP after XPRIND ***'
+           WRITE(LUPRI,'(2x,a,i2,a,i2,a,i2)') 
+     &     'INDXPR=',INDXPR,' ISYXPR=',ISYXPR,' ITRXPR=',ITRXPR
+           WRITE(LUPRI,'(2x,a,i2,a,i2)') 
+     &     'IPTYP=',IPTYP,' NPCOMP=',NPCOMP
+           WRITE(LUPRI,*)
+         ENDIF
       END IF
       GO TO 9999
 C
@@ -1179,12 +1214,12 @@ C
 C  Given a 4-component operator this routine returns an index
 C  INDXPR to the list of operators in COMMON block XCBPRP and
 C  returns its symmetry under time reversal(ITRXPR) and its
-C  spatial symmetry(ISYXPR)
+C  spatial symmetry(ISYXPR).
+C
+C  This routine is called from many places 
 C
 C  Copyright (c) 27-Jan-1995 Hans Joergen Aa. Jensen
 C  Revised May 14 1996 - tsaue
-C
-CMI This routine is called from many places !
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1203,13 +1238,16 @@ C
 !     CALL QENTER('XPRIND')
       INDXPR = -1
 
-      IF (IPRINT.GE.18) THEN
-        WRITE(LUPRI,*) 'Output from XPRIND'
-        WRITE(LUPRI,*) 'Entering PNAME=',PNAME
-        WRITE(LUPRI,*) 'Entering NPCOMP=',NPCOMP
-        WRITE(LUPRI,*) 'Entering IPTYP=',IPTYP,' INDXPR=',INDXPR
-        WRITE(LUPRI,*) 'Entering PLABEL=',(PLABEL(I),I=1,NPCOMP)
-        WRITE(LUPRI,*) 'Entering PFAC=',(PFAC(I),I=1,NPCOMP)
+      IF (IPRINT.GE.15) THEN
+        WRITE(LUPRI,'(/,4x,a)') '***** Output from XPRIND *****'
+        WRITE(LUPRI,'(2x,a,a16)') 'Entering PNAME=',PNAME
+        WRITE(LUPRI,'(2x,a,i2)') 'Entering NPCOMP=',NPCOMP
+        WRITE(LUPRI,'(2x,a,6a8)')
+     &   'Entering PLABEL=',(PLABEL(I),I=1,NPCOMP)
+        WRITE(LUPRI,'(2x,a,6f12.6)') 
+     &    'Entering PFAC=',(PFAC(I),I=1,NPCOMP)
+        WRITE(LUPRI,'(2x,a,i2,a,i3)') 
+     &   'Entering IPTYP=',IPTYP,' INDXPR=',INDXPR
       ENDIF
 
 C================================================================
@@ -1265,6 +1303,10 @@ C
 C  Add property to list of properties in COMMON block XCBPRP
 C  Copyright (c) 6-Feb-1995 Hans Joergen Aa. Jensen
 C
+C  Entering: PNAME
+C            IPTYP
+C            NPCOMP
+C
 C  Routine is called only from XPRIND.
 C
 C  MI (&HAaaJ), 2003,2004: Extended for LAO integral types
@@ -1291,15 +1333,14 @@ C     ... the four characters in PCOMB define inclusion of the
 C         LL, SL, LS, and SS blocks of one-electron operators.
 C
       CALL QENTER('XPRADD')
-
 C
 C     This property operator has not been defined previously.
 C     Append the new property operator to /XCBPRP/ list.
 
 
       IF (IPRINT .GE. 6) THEN
-         WRITE (LUPRI,'(/A/2A/A,I5/A,I5/A,1P,3(D20.10))')
-     &   'XPRADD called for specifying PCOMB;',
+         WRITE (LUPRI,'(/,4X,A/2A/A,I5/A,I5/A,1P,3(D20.10))')
+     &   '*** XPRADD called for specifying PCOMB ***',
      &   '  PNAME   =',PNAME,
      &   '  IPTYP   =',IPTYP,
      &   '  NPCOMP  =',NPCOMP,
@@ -1333,11 +1374,11 @@ C ... fix the LS block for the LevyLe option
 C          ... for FOCKMAT
            PCOMB = 'xxxx'
            GOTO 200           
-         ELSEIF (IPTYP.LT.0 .OR. IPTYP.GT.20) THEN
+         ELSEIF (IPTYP.LT.0 .OR. IPTYP.GT.21) THEN
            CALL QUIT('XPRADD: Illegal IPTYP (not 1-20)!')
          ENDIF
          GO TO (1,2,2,2,2,2,2,2,2,
-     &          1,1,1,3,3,3,4,4,4,3,2),IPTYP
+     &          1,1,1,3,3,3,4,4,4,3,4,4),IPTYP
 C
 C
 C        DIAGONAL and SIGMA:
@@ -1359,13 +1400,13 @@ C
 Chj      PCOMB = 'FTTF'
          GO TO 100
 C
-C        BETA and BETA SIGMA:
+C        "BETA" and "BETA SIGMA":
 C
     3    PCOMB = '+00-'
          IF (LEVYLE) PCOMB = '+000'
          GO TO 100
 C
-C        i BETA ALPHA and i BETA GAMMA5:
+C        "i BETA ALPHA" and "i BETA GAMMA5" :
 C
     4    PCOMB = '0+-0'
          GO TO 100
@@ -1400,6 +1441,7 @@ C
      &   ' ** ERROR in XPRADD **  Redimension MAXPRPS to ',NPRPS
         CALL QUIT('XPRADD: Too may properties !')
       ENDIF
+CMI   ... assign key variables ...
       INDXPR = NPRPS
 C     Property name
       PRPNAM(NPRPS)  = PNAME
@@ -1493,6 +1535,9 @@ C
       ELSEIF(PLABEL(1:7).EQ.'BETAMAT') THEN
         CLASLB = 'BETAMAT'
         IORDER   = 0
+      ELSEIF(PLABEL(1:3).EQ.'EDM') THEN
+        CLASLB = 'EDM    '
+        IORDER   = 0
       ELSE
         CALL GETCLS(PLABEL,CLASLB,IORDER,IPRINT)
         IF(CLASLB.EQ.'Unknown') THEN
@@ -1552,9 +1597,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       CALL QENTER('GETCLS')
 
-C     write(lupri,*) 'GETCLS: IPRINT=',IPRINT
-C     write(lupri,*) 'GETCLS: LABINT=',LABINT
-C
 C     Overlap integral
 C
       IF(LABINT.EQ.'OVERLAP') THEN
@@ -1871,6 +1913,9 @@ CMI  CAP integrals/labels to be used in the MOLTRA/PRPTRA input
         CLASLB = 'CAPDVE' 
       ELSE IF(LABINT(1:6).EQ.'CAPD_V') THEN
         CLASLB = 'CAPD_VD' 
+CMI  EDM operator
+      ELSE IF(LABINT(1:3).EQ.'EDM') THEN
+        CLASLB = 'EDM    '
 C
 C     Unknown LABINT
 C   
@@ -1880,10 +1925,10 @@ C
 
 C  Control print out
       IF (IPRINT.GE.5) THEN
-       WRITE(LUPRI,'(2A)')
-     & 'GETCLS called for LABINT=',LABINT
-       WRITE(LUPRI,'(7X,2A)')
-     & '     assigned  CLASSLB=',CLASLB
+        WRITE(LUPRI,'(/,2A)')
+     &  'GETCLS called for LABINT=',LABINT
+        WRITE(LUPRI,'(7X,2A)')
+     &  ' assigned  CLASLB=',CLASLB
       ENDIF
 C
       CALL QEXIT('GETCLS')
@@ -1942,6 +1987,9 @@ C  /* Deck xplde1 */
 C***********************************************************************
 C
 C     Define property label: symmetries etc..
+C
+C    Entering: PLABEL
+C
 C
 C     Written by T.Saue May 14 1996
 C     Last revision: May 14 1996 - tsaue
@@ -2005,32 +2053,54 @@ C
           DOATOM(I) = .TRUE.
         ENDDO
 
-C       WRITE(LUPRI,'(2X,A)') 'XPLDE1 before PR1DIR calling'
-C       WRITE(LUPRI,'(2X,A,I3)') 'INTTYP=',INTTYP
-C       WRITE(LUPRI,'(2X,A,I3)') 'IPRINT=',IPRINT
-C       WRITE(LUPRI,*) 'CLASSLB=',CLASLB
+        IF (IPRINT.GE.5) THEN
+          WRITE(LUPRI,'(/,2X,A)') '** XPLDE1 before PR1DIR calling'
+          WRITE(LUPRI,'(2X,A,I3)') 'INTTYP=',INTTYP
+          WRITE(LUPRI,*) 'CLASLB=',CLASLB
+          WRITE(LUPRI,*) 'PLABEL=',PLABEL
+          WRITE(LUPRI,*) 'ANTI=',ANTI
+          WRITE(LUPRI,*) 'SQUARE=',SQUARE
+          WRITE(LUPRI,*) 'TRIANG=',TRIANG
+        ENDIF
 
         CALL PR1DIR(WORK,LWORK,CLASLB,INTTYP,NOPTYP,INTREP,
      &            ANTI,SQUARE,INTADR,LABINT,TRIANG,TRASPH,
      &            SOLVNT,IORDER,DOATOM,NATOM,NBAST,NELMNT,IPRINT)
-C       IF (IPRINT.GE.5) THEN
-C         WRITE(LUPRI,'(2X,A)') 'XPLDE1 after PR1DIR calling'
-C         WRITE(LUPRI,'(2X,A,I3)') 'INTTYP=',INTTYP
-C       ENDIF
+
+        IF (IPRINT.GE.5) THEN
+           WRITE(LUPRI,'(/,2X,A)') 'XPLDE1 after PR1DIR calling'
+           WRITE(LUPRI,'(2X,A,I3)') 'INTTYP=',INTTYP
+           WRITE(LUPRI,*) 'CLASLB=',CLASLB
+           WRITE(LUPRI,*) 'PLABEL=',PLABEL
+           WRITE(LUPRI,*) 'ANTI=',ANTI
+           WRITE(LUPRI,*) 'SQUARE=',SQUARE
+           WRITE(LUPRI,*) 'TRIANG=',TRIANG
+           WRITE(LUPRI,*) 'NOPTYP=',NOPTYP
+           DO ICMP = 1,NOPTYP
+             WRITE(LUPRI,*) 'LABINT(1-NOPTYP):',ICMP,LABINT(ICMP)
+           ENDDO
+        ENDIF
       ENDIF
 C
 C     Loop over components of operator class
 C     ======================================   
 C
       LABERR = .TRUE.
-      DO ICMP = 1,NOPTYP
+      DO ICMP = 1, NOPTYP
         NPRPLBL = NPRPLBL + 1
         IF(NPRPLBL.GT.MAXPRPLBL) THEN
-          CALL QUIT('XPLDEF:Redimension MAXPRPLBL !!')
+          CALL QUIT('XPLDEF:Redimension MAXPRPLBL !')
         ENDIF
         IF(PLABEL.EQ.LABINT(ICMP)) THEN
+        !mi: the only place to reset LABERR, more printout needed for "else" branch
           LABERR = .FALSE.
           INDX   = NPRPLBL
+        ELSE
+          IF (IPRINT.GE.7) THEN
+            WRITE(LUPRI,*) 'PLABEL.NE.LABINT(ICMP), ICMP=',ICMP
+            WRITE(LUPRI,*)
+     &      'PLABEL=',PLABEL,' LABINT(ICMP)=',LABINT(ICMP)
+          ENDIF
         ENDIF
         PRPLBL (NPRPLBL) = LABINT(ICMP)
         PDOINT (NPRPLBL) = PCOMB
@@ -2056,15 +2126,14 @@ C
 C     Property label is not among the listed labels
 C
       IF(LABERR) THEN
-        WRITE(LUPRI,'(A,A8,A)') '*** XPLDE1 ERROR: Property label ',
+        WRITE(LUPRI,'(/,A,A8,A)') '*** XPLDE1 ERROR: Property label ',
      &        PLABEL,' not found ! *****'
         WRITE(LUPRI,'(A,A7)') 'Class label      : ',CLASLB
         WRITE(LUPRI,'(A,A8)') '  Property labels: ',LABINT(1)
         WRITE(LUPRI,'(19X,A8)') (LABINT(I),I=2,NOPTYP)
-        CALL QUIT('XPLDE1: Label error')
+        CALL QUIT('XPLDE1:  error - operator label not found')
       ENDIF
 
-CMi ... some control print out would be useful....
 C
       CALL QEXIT('XPLDE1')
       RETURN
@@ -2137,13 +2206,13 @@ C
 C     Time reversal symmetry
 C     ======================
 C
-C     Matrix operator 
+C     Matrix operator :
 C - assign IATIM according to the IAIND = JM4(1,ITYP) = 
 C            = JM4(1,IPRPTYP(INDXPR)) = JM4(1,1-20)
 C
-      IF(IAIND.EQ.0 .OR. IAIND.EQ.4 .OR.
-     &   (IAIND.GE.16 .AND.IAIND.LE.18) ) THEN
-C       DIAGONAL, GAMMA5, i*BETA*[XYZ]ALPHA:
+      IF (IAIND.EQ. 0 .OR. IAIND.EQ.4 .OR.
+     &   (IAIND.GE.16 .AND.IAIND.LE.18)) THEN
+C       DIAGONAL, GAMMA5, i*BETA*[XYZ]ALPHA
         IATIM = 1
       ELSE
 C       [XYZ]SIGMA, [XYZ]ALPHA:
@@ -2193,22 +2262,18 @@ C
         CALL QUIT('PRPSYM: Components of different symmetry !!!')
       ENDIF
 
-CMI   ... assigned symmetries
+CMI   ... assign symmetries
       IPRPSYM(INDXPR) = ICREP(1)+1
       IPRPTIM(INDXPR) = ICTIM(1)
 
-CMI ... control print out
-      IF (IPRINT.GE.20) THEN
-C     IF (IPRINT.GE.0) THEN
+CMI ... control printout is always worth 
+      IF (IPRINT.GE.15) THEN
         CALL HEADER('Output from PRPSYM',-1)
 
         WRITE(LUPRI,'(2X,A,I3,A,I2)')
      &  'Operator index, INDXPR =',INDXPR,
-     &  ' operator type (1-20), IPRPTYP() =',IPRPTYP(INDXPR)
-
-C       WRITE(LUPRI,'(2X,A,I1)')
-C    &  'boson irrep of scalar operator (0-7), IPRLREP() =',
-C    &  IPRLREP(INDXPR)
+     &  ' and operator type (1-',NOPTYP,
+     &  '), IPRPTYP(INDXPR) =',IPRPTYP(INDXPR)
 
         WRITE(LUPRI,'(2X,A,I2)')
      & 'symmetry of scalar operator under matrix transpose(-1,0,1),'//
