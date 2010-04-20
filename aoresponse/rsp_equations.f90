@@ -22,6 +22,12 @@
 !> Right-hand-sides are contracted here, and solutions are obtained
 !> by invoking one of several response solvers, configured at compile
 !> time by #define statements.
+
+!  version history (response code, not just this file):
+!  2010-04-21 identical (shared) files: dalton/branches/linsca-ng revision  7878
+!                                       dirac/trunk               revision 10659
+
+
 module rsp_equations
 
    use matrix_defop  !matrix type and operators
