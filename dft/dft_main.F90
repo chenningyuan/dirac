@@ -765,7 +765,7 @@ contains
     integer :: max_ao_g_order
     integer :: max_ao_m_order
     integer :: off1, off2
-    integer :: max_fun_derv, fun_derv
+    integer :: max_fun_derv
 
 !   this pointer is useful for .KEEPAO, then it can point to memory
 !   otherwise it points to ao
@@ -929,15 +929,13 @@ contains
           end if
         end if
 
-        do fun_derv = 1, max_fun_derv
-          call get_functional_derv(fun_derv,  &
+          call get_functional_derv(max_fun_derv,  &
                                    block_length,         &
                                    w,                    &
                                    r_0,                  &
                                    z_0,                  &
-                                   nr_nonzero_derv(fun_derv), &
+                                   nr_nonzero_derv(max_fun_derv), &
                                    derv)
-        end do
 
 !       exchange-correlation potential 
 !       ==============================
