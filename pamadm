@@ -628,8 +628,13 @@ fi
 if [ -n "$XCFUN_FLG" ]; then
     # Compile the fortran interface with Dirac make system.
    rmline build/dontbuild "xcfun/\.\*$"
-   echo "Please use (in Makefile.config)"
-   echo "LIBS=... -Lxcfun/lib -lxcfun -Wl,-rpath $install_dir/xcfun/lib"
+   echo "*****************************************************************"
+   echo "* PLEASE NOTE !!! "
+   echo "* "
+   echo "* Please use (in Makefile.config)"
+   echo "* LIBS=... -Lxcfun/lib -lxcfun -Wl,-rpath $install_dir/xcfun/lib"
+   echo "* "
+   echo "*****************************************************************"
 fi
 
 if [ -n "$CAPFLG" ]; then
