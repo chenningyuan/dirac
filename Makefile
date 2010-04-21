@@ -77,6 +77,7 @@ dontbuild:dontbuild.in
 Makefile.config:configure
 	@echo
 	@echo "Configure is newer than Makefile.config, please rerun configure"
+	@echo "Run touch Makefile to compile anyway"
 	@echo
 	false
 
