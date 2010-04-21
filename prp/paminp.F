@@ -1002,7 +1002,7 @@ C
               ITRXPR = 1
            END IF
            GO TO (4,5,6,7,1,1,1,1,1,2,2,2,3,
-     &            1,1,1,1,1,1,1,1,1,1,1,1), I
+     &            1,1,1,1,1,1,1,1,1,1,1,1,1), I
          END IF
          END DO
          INPERR = INPERR + 1
@@ -2270,7 +2270,7 @@ CMI ... control printout is always worth
       IF (IPRINT.GE.15) THEN
         CALL HEADER('Output from PRPSYM',-1)
 
-        WRITE(LUPRI,'(2X,A,I3,A,I2)')
+        WRITE(LUPRI,'(2X,A,I3,A,I2,A,I2)')
      &  'Operator index, INDXPR =',INDXPR,
      &  ' and operator type (1-',NOPTYP,
      &  '), IPRPTYP(INDXPR) =',IPRPTYP(INDXPR)
@@ -2355,7 +2355,8 @@ C
      &      'Factor     : ',FACPRP(1,INDXPR)
       GOTO 30
       ENDIF
-      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), ITYP
+      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,
+     &       13,14,15,16,17,18,19,20,21), ITYP
         WRITE(LUPRI,'(6X,A,I5)')
      &  'Program error: unknown operator type:',ITYP
         CALL QUIT('WRIXPR: unknown operator type')
@@ -2438,6 +2439,10 @@ C
    20 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
      &   'SIGMADOT : [sigma.P]'
+      GOTO 200
+   21 CONTINUE
+        WRITE(LUPRI,'(6X,A,A)') 'Operator type ',
+     &   'BETAGAMMA5 : i[beta gamma5]P'
       GOTO 200
 C
   200 CONTINUE
