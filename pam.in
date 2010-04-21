@@ -1053,6 +1053,9 @@ fi
 
 while [ -n "$1" ]; do
    case $1 in
+      -force-serial)
+         MPIRUN=
+         ;;
       -basdir)
          shift
          BASDIR="$1:${BASDIR}"
