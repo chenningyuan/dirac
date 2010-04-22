@@ -10,6 +10,13 @@ TARGET=$(INSTALL_DIR)/dirac.x
 
 $(TARGET):
 
+Makefile.config:configure
+	@echo
+	@echo "Configure is newer than Makefile.config, please rerun configure"
+	@echo "Run 'touch Makefile.config' to compile anyway"
+	@echo
+	false
+
 depend:
 	@echo Forcing a rebuild of Makefile.obj and Makefile.dep
 	@rm -f Makefile.obj
@@ -73,13 +80,6 @@ build/Makefile.dep: build/Makefile.obj build/Makefile.moddef
 
 dontbuild:dontbuild.in
 	@echo "The file 'dontbuild.in' is newer than 'dontbuild'. Run pamadm to correct this."; false
-
-Makefile.config:configure
-	@echo
-	@echo "Configure is newer than Makefile.config, please rerun configure"
-	@echo "Run touch Makefile to compile anyway"
-	@echo
-	false
 
 .PHONY:gp/compinfo.h
 gp/compinfo.h:
