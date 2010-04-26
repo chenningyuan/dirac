@@ -48,7 +48,7 @@ contains
     call get_C(C_i, i=1.0d0, s=0.0d0, g=1.0d0, u=1.0d0)
     D = C_i*dag(C_i)
 
-    call get_F(F)
+    call get_F(D, F)
 
 !   call test_matrix_defop(S, D, F, C_i)
     C_i = 0

@@ -159,92 +159,79 @@ contains
         call xc_eval(dft_cfg_fun_id, xcfun_out(1, k), order, xcfun_in)
       end do
 
-      select case (order)
+      do k = 1, block_length
 
-        case (0)
-          do k = 1, block_length
-            derv(k, d_0) = xcfun_out(1, k)
-          end do
+        derv(k, d_0) = xcfun_out(1, k)
+        if (order < 1) exit
 
-        case (1)
-          do k = 1, block_length
-            derv(k, d_0) = xcfun_out(1, k)
-            derv(k, d_r) = xcfun_out(xc_index(dft_cfg_fun_id, (/1, 0, 0, 0, 0/)), k)
-            derv(k, d_z) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 0, 1, 0, 0/)), k)
-          end do
+        derv(k, d_r) = xcfun_out(xc_index(dft_cfg_fun_id, (/1, 0, 0, 0, 0/)), k)
+        derv(k, d_z) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 0, 1, 0, 0/)), k)
+        if (order < 2) exit
 
-        case (2)
+        derv(k, d_rr) = xcfun_out(xc_index(dft_cfg_fun_id, (/2, 0, 0, 0, 0/)), k)
+        derv(k, d_ss) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 2, 0, 0, 0/)), k)
+        derv(k, d_rz) = xcfun_out(xc_index(dft_cfg_fun_id, (/1, 0, 1, 0, 0/)), k)
+        derv(k, d_zz) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 0, 2, 0, 0/)), k)
+        derv(k, d_sy) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 1, 0, 0, 1/)), k)
+        derv(k, d_yy) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 0, 0, 0, 2/)), k)
+        derv(k, d_z ) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 0, 1, 0, 0/)), k)
+        derv(k, d_x ) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 0, 0, 1, 0/)), k)
+        if (order < 3) exit
+
+        derv(k, d_rrr) = xcfun_out(xc_index(dft_cfg_fun_id, (/3, 0, 0, 0, 0/)), k)
+        derv(k, d_rss) = xcfun_out(xc_index(dft_cfg_fun_id, (/1, 2, 0, 0, 0/)), k)
+        derv(k, d_rrz) = xcfun_out(xc_index(dft_cfg_fun_id, (/2, 0, 1, 0, 0/)), k)
+        derv(k, d_rsy) = xcfun_out(xc_index(dft_cfg_fun_id, (/1, 1, 0, 0, 1/)), k)
+        derv(k, d_rx ) = xcfun_out(xc_index(dft_cfg_fun_id, (/1, 0, 0, 1, 0/)), k)
+        derv(k, d_ryy) = xcfun_out(xc_index(dft_cfg_fun_id, (/1, 0, 0, 0, 2/)), k)
+        derv(k, d_rz ) = xcfun_out(xc_index(dft_cfg_fun_id, (/1, 0, 1, 0, 0/)), k)
+        derv(k, d_rzz) = xcfun_out(xc_index(dft_cfg_fun_id, (/1, 0, 2, 0, 0/)), k)
+        derv(k, d_ssz) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 2, 1, 0, 0/)), k)
+        derv(k, d_sy ) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 1, 0, 0, 1/)), k)
+        derv(k, d_szy) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 1, 1, 0, 1/)), k)
+        derv(k, d_yy ) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 0, 0, 0, 2/)), k)
+        derv(k, d_zx ) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 0, 1, 1, 0/)), k)
+        derv(k, d_zyy) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 0, 1, 0, 2/)), k)
+        derv(k, d_zz ) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 0, 2, 0, 0/)), k)
+        derv(k, d_zzz) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 0, 3, 0, 0/)), k)
+        if (order < 4) exit
+
+        call quit('get_functional_derv: order too high')
+
+      end do
 !fixme
 !#define PARTIAL_ALDA_WITH_XCFUN
 #ifdef PARTIAL_ALDA_WITH_XCFUN
-          if      (dft_cfg_alda_hs .and. .not. dft_cfg_alda_ha) then
-            call xc_set_functional(XC_RSZXY, dft_cfg_functional_w_alda)
-            do k = 1, block_length
-              call xc_eval(t(1, k), order, (/r_0(k), 0.0d0, z_0(k), 0.0d0, 0.0d0/))
-              derv(k, d_rr) = t(xc_index(XC_RSZXY, (/2, 0, 0, 0, 0/)), k)
-            end do
-            call xc_set_functional(XC_RSZXY, dft_cfg_functional_w)
-            do k = 1, block_length
-              call xc_eval(t(1, k), order, (/r_0(k), 0.0d0, z_0(k), 0.0d0, 0.0d0/))
-              derv(k, d_ss) = t(xc_index(XC_RSZXY, (/0, 2, 0, 0, 0/)), k)
-              derv(k, d_sy) = t(xc_index(XC_RSZXY, (/0, 1, 0, 0, 1/)), k)
-              derv(k, d_yy) = t(xc_index(XC_RSZXY, (/0, 0, 0, 0, 2/)), k)
-              derv(k, d_x ) = t(xc_index(XC_RSZXY, (/0, 0, 0, 1, 0/)), k)
-            end do
-          else if (dft_cfg_alda_ha .and. .not. dft_cfg_alda_hs) then
-            call xc_set_functional(XC_RSZXY, dft_cfg_functional_w_alda)
-            do k = 1, block_length
-              call xc_eval(t(1, k), order, (/r_0(k), 0.0d0, z_0(k), 0.0d0, 0.0d0/))
-              derv(k, d_ss) = t(xc_index(XC_RSZXY, (/0, 2, 0, 0, 0/)), k)
-            end do
-            call xc_set_functional(XC_RSZXY, dft_cfg_functional_w)
-            do k = 1, block_length
-              call xc_eval(t(1, k), order, (/r_0(k), 0.0d0, z_0(k), 0.0d0, 0.0d0/))
-              derv(k, d_rr) = t(xc_index(XC_RSZXY, (/2, 0, 0, 0, 0/)), k)
-              derv(k, d_rz) = t(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)), k)
-              derv(k, d_zz) = t(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)), k)
-              derv(k, d_z ) = t(xc_index(XC_RSZXY, (/0, 0, 1, 0, 0/)), k)
-            end do
-          else
+!         if      (dft_cfg_alda_hs .and. .not. dft_cfg_alda_ha) then
+!           call xc_set_functional(XC_RSZXY, dft_cfg_functional_w_alda)
+!           do k = 1, block_length
+!             call xc_eval(t(1, k), order, (/r_0(k), 0.0d0, z_0(k), 0.0d0, 0.0d0/))
+!             derv(k, d_rr) = t(xc_index(XC_RSZXY, (/2, 0, 0, 0, 0/)), k)
+!           end do
+!           call xc_set_functional(XC_RSZXY, dft_cfg_functional_w)
+!           do k = 1, block_length
+!             call xc_eval(t(1, k), order, (/r_0(k), 0.0d0, z_0(k), 0.0d0, 0.0d0/))
+!             derv(k, d_ss) = t(xc_index(XC_RSZXY, (/0, 2, 0, 0, 0/)), k)
+!             derv(k, d_sy) = t(xc_index(XC_RSZXY, (/0, 1, 0, 0, 1/)), k)
+!             derv(k, d_yy) = t(xc_index(XC_RSZXY, (/0, 0, 0, 0, 2/)), k)
+!             derv(k, d_x ) = t(xc_index(XC_RSZXY, (/0, 0, 0, 1, 0/)), k)
+!           end do
+!         else if (dft_cfg_alda_ha .and. .not. dft_cfg_alda_hs) then
+!           call xc_set_functional(XC_RSZXY, dft_cfg_functional_w_alda)
+!           do k = 1, block_length
+!             call xc_eval(t(1, k), order, (/r_0(k), 0.0d0, z_0(k), 0.0d0, 0.0d0/))
+!             derv(k, d_ss) = t(xc_index(XC_RSZXY, (/0, 2, 0, 0, 0/)), k)
+!           end do
+!           call xc_set_functional(XC_RSZXY, dft_cfg_functional_w)
+!           do k = 1, block_length
+!             call xc_eval(t(1, k), order, (/r_0(k), 0.0d0, z_0(k), 0.0d0, 0.0d0/))
+!             derv(k, d_rr) = t(xc_index(XC_RSZXY, (/2, 0, 0, 0, 0/)), k)
+!             derv(k, d_rz) = t(xc_index(XC_RSZXY, (/1, 0, 1, 0, 0/)), k)
+!             derv(k, d_zz) = t(xc_index(XC_RSZXY, (/0, 0, 2, 0, 0/)), k)
+!             derv(k, d_z ) = t(xc_index(XC_RSZXY, (/0, 0, 1, 0, 0/)), k)
+!           end do
+!         else
 #endif /* ifdef PARTIAL_ALDA_WITH_XCFUN */
-          do k = 1, block_length
-            derv(k, d_rr) = xcfun_out(xc_index(dft_cfg_fun_id, (/2, 0, 0, 0, 0/)), k)
-            derv(k, d_ss) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 2, 0, 0, 0/)), k)
-            derv(k, d_rz) = xcfun_out(xc_index(dft_cfg_fun_id, (/1, 0, 1, 0, 0/)), k)
-            derv(k, d_zz) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 0, 2, 0, 0/)), k)
-            derv(k, d_sy) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 1, 0, 0, 1/)), k)
-            derv(k, d_yy) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 0, 0, 0, 2/)), k)
-            derv(k, d_z ) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 0, 1, 0, 0/)), k)
-            derv(k, d_x ) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 0, 0, 1, 0/)), k)
-          end do
-#ifdef PARTIAL_ALDA_WITH_XCFUN
-          end if
-#endif /* ifdef PARTIAL_ALDA_WITH_XCFUN */
-
-        case (3)
-          do k = 1, block_length
-            derv(k, d_rrr) = xcfun_out(xc_index(dft_cfg_fun_id, (/3, 0, 0, 0, 0/)), k)
-            derv(k, d_rss) = xcfun_out(xc_index(dft_cfg_fun_id, (/1, 2, 0, 0, 0/)), k)
-            derv(k, d_rrz) = xcfun_out(xc_index(dft_cfg_fun_id, (/2, 0, 1, 0, 0/)), k)
-            derv(k, d_rsy) = xcfun_out(xc_index(dft_cfg_fun_id, (/1, 1, 0, 0, 1/)), k)
-            derv(k, d_rx ) = xcfun_out(xc_index(dft_cfg_fun_id, (/1, 0, 0, 1, 0/)), k)
-            derv(k, d_ryy) = xcfun_out(xc_index(dft_cfg_fun_id, (/1, 0, 0, 0, 2/)), k)
-            derv(k, d_rz ) = xcfun_out(xc_index(dft_cfg_fun_id, (/1, 0, 1, 0, 0/)), k)
-            derv(k, d_rzz) = xcfun_out(xc_index(dft_cfg_fun_id, (/1, 0, 2, 0, 0/)), k)
-            derv(k, d_ssz) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 2, 1, 0, 0/)), k)
-            derv(k, d_sy ) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 1, 0, 0, 1/)), k)
-            derv(k, d_szy) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 1, 1, 0, 1/)), k)
-            derv(k, d_yy ) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 0, 0, 0, 2/)), k)
-            derv(k, d_zx ) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 0, 1, 1, 0/)), k)
-            derv(k, d_zyy) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 0, 1, 0, 2/)), k)
-            derv(k, d_zz ) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 0, 2, 0, 0/)), k)
-            derv(k, d_zzz) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 0, 3, 0, 0/)), k)
-          end do
-
-        case default
-          call quit('get_functional_derv: order too high')
-
-      end select
 
     else
 #endif /* ifdef MOD_XCFUN */

@@ -73,7 +73,7 @@ C files "FITXCG" and "FITVXC", respectively, in order to avoid
 C much change to the current function calls.
 C 
         use dft_cfg
-        use dft_main
+        use xc_driver
 
 #include "implicit.h"
 #include "mxcent.h"
@@ -104,21 +104,7 @@ C
         response_order = 1
       end if
 
-      call dftexc(ntbas(0),
-     &            nz,
-     &            1,
-     &            (/0.0d0/),
-     &            dmat,
-     &            0,
-     &            (/0.0d0/),
-     &            (/0/),
-     &            (/0/),
-     &            (/0/),
-     &            response_order,
-     &            .false.,
-     &            0,
-     &            .false.,
-     &            .false.)
+!fixme call XC integrator
 
 #endif /* ifdef PRG_DIRAC */
 

@@ -156,10 +156,6 @@
         call quit('di_get_t_xc_cont not there')
       end
 
-      subroutine di_get_geomderiv_molgrad_dft()
-        call quit('di_get_geomderiv_molgrad_dft not there')
-      end
-
       subroutine di_get_geomderiv_gxd_dft()
         call quit('di_get_geomderiv_gxd_dft not there')
       end

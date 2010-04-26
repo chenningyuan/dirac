@@ -539,7 +539,7 @@ C***********************************************************************
        use dirac_cfg
 #ifdef MOD_DFT
        use dft_cfg
-       use dft_main
+       use xc_driver
 #endif
 #include "implicit.h"
 #include "priunit.h"
@@ -664,34 +664,18 @@ C          Hermitian operator
 
           call genden(fao, cmo, 1, iprint)
 
-          call dftexc(ntbas(0),
-     &                nz,
-     &                1,
-     &                fmo,
-     &                fao,
-     &                0,
-     &                (/0.0d0/),
-     &                (/0/),
-     &                (/0/),
-     &                (/0/),
-     &                0,
-     &                .true.,
-     &                0,
-     &                .false.,
-     &                .false.)
+         call xc_mpi_wake_up_coworkers()
+         call xc_integrator(xc_mat_dim      = ntbas(0),
+     &                      xc_nz           = nz,
+     &                      xc_dmat_0       = fao,
+     &                      xc_nr_dmat      = 0,
+     &			    xc_nr_fmat      = 1,
+     &                      xc_fmat         = fmo,
+     &                      xc_do_potential = .true.)
+         call xc_mpi_release_coworkers()
 
         end if
 #endif /* ifdef MOD_DFT */
-
-
-
-#ifdef MOD_DFT
-C
-C     Construct Kohn-Sham contribution
-C     ================================
-      IF(dirac_cfg_dft_calculation) THEN
-      ENDIF
-#endif
 
 
 

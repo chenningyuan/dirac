@@ -674,7 +674,7 @@ C.....Get full AO-Fock matrix with two-electron London integrals
 !
       use dirac_cfg
 #ifdef MOD_DFT
-      use dft_main
+      use xc_driver
       use dft_cfg
 #endif
 
@@ -723,41 +723,28 @@ C
 !    &             NTBAS(0),NZ,IPQTOQ(1,isymax(i, 2)),LUPRI)
       END DO
 
+      call xc_mpi_wake_up_coworkers()
       if (dft_cfg_no_sdft) then
-
-      call dftexc(ntbas(0),  ! mat_dim
-     &            nz,        ! nz
-     &            nr_fmat,     ! nr_fmat
-     &            fmat,      ! fmat
-     &            dmat0,    ! dmat_0
-     &            0,              !nr_dmat_p
-     &            (/0.0d0/),      !dmat_p
-     &            isymop,    !isymop
-     &            isymop,    !isymop
-     &            ihrmop,    !ihrmop
-     &            0,         !response_order
-     &            .false.,   !xc_potential
-     &            0,         !response_order_ao
-     &            .true.,    !london_rhs_direct
-     &            .false.)   !london_rhs_ro
+         call xc_integrator(xc_mat_dim           = ntbas(0),
+     &                      xc_nz                = nz,
+     &                      xc_dmat_0            = dmat0,
+     &                      xc_nr_dmat           = 0,
+     &                      xc_nr_fmat           = nr_fmat,
+     &                      xc_fmat              = fmat,
+     &                      xc_fmat_pg_sym       = isymop,
+     &            xc_do_london_rhs_direct = .true.)
       else
-      call dftexc(ntbas(0),  ! mat_dim
-     &            nz,        ! nz
-     &            nr_fmat,     ! nr_fmat
-     &            fmat,      ! fmat
-     &            dmat0,    ! dmat_0
-     &            0,              !nr_dmat_p
-     &            (/0.0d0/),      !dmat_p
-     &            isymop,    !isymop
-     &            isymop,    !isymop
-     &            ihrmop,    !ihrmop
-     &            1,         !response_order
-     &            .false.,   !xc_potential
-     &            0,         !response_order_ao
-     &            .true.,    !london_rhs_direct
-     &            .false.)   !london_rhs_ro
-
+         call xc_integrator(xc_mat_dim           = ntbas(0),
+     &                      xc_nz                = nz,
+     &                      xc_dmat_0            = dmat0,
+     &                      xc_nr_dmat           = 0,
+     &                      xc_nr_fmat           = nr_fmat,
+     &                      xc_fmat              = fmat,
+     &                      xc_fmat_pg_sym       = isymop,
+     &            xc_response_order_mo = 1,
+     &            xc_do_london_rhs_direct = .true.)
       end if
+      call xc_mpi_release_coworkers()
 
 !     DO I=1,3
 !     write(*, *) 'debug after direct', i
@@ -789,7 +776,7 @@ C
 C***********************************************************************
       use dirac_cfg
 #ifdef MOD_DFT
-      use dft_main
+      use xc_driver
       use dft_cfg
 #endif
 
@@ -949,7 +936,7 @@ C
 C***********************************************************************
       use dirac_cfg
 #ifdef MOD_DFT
-      use dft_main
+      use xc_driver
       use dft_cfg
 #endif
 
@@ -1076,7 +1063,7 @@ C
 C***********************************************************************
       use dirac_cfg
 #ifdef MOD_DFT
-      use dft_main
+      use xc_driver
       use dft_cfg
 #endif
 

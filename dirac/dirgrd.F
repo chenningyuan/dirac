@@ -81,14 +81,6 @@ C        If calculation of gradient requested without
 C        calculating the wavefunction SETDHF must be called -
 C        so we call it anyway.
 C
-         IF (.NOT. dirac_cfg_hf_calculation) THEN
-!radovan: this will never happen ...
-            WRITE(LUPRI,'(/A)')
-     &         'RMOLGRD WARNING: Assuming DHF wave function!'
-         END IF
-C
-C        Test for DHF wave functions not implemented in RMOLGRD
-C
 C        HJAAJ July 2001: I have discovered that some of these
 C        dirgrd.F routines (e.g. CONMAT_DHF) assume
 C        NOPEN = 1 and DF(1) = 0.5 if NASHT .gt. 0 !!!!

@@ -2287,7 +2287,7 @@ C
 #ifdef MOD_DFT
       if (dirac_cfg_dft_calculation) then
 !       get a new grid at new geometry
-        dft_temp_grid_is_done = .false.
+        call reset_grid()
       end if
 #endif /* ifdef MOD_DFT */
 

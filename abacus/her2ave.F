@@ -398,9 +398,7 @@ C                          Expectation values
 C                          ==================
 C
                            IF (EXPECT) THEN
-#ifndef PRG_DIRAC
-Coehm
-#else
+#ifdef PRG_DIRAC
 C
 C                             For DMAT(1) include both coulombic and 
 C                             exchange contributions
@@ -503,12 +501,14 @@ C                             ... subtract the act-act part, treated with PAO
 
                               end if !if (gencnt)
 
-                              PVAL = PVAL - DP25*XVAL
+!TODO:                        lots of work above can be skipped if hfxfac is zero
+!                             at the moment the zero is painfully calculated
+                              PVAL = PVAL - DP25*XVAL*hfxfac
                               IF (.NOT. NOPMAT) THEN
                                  PAOVAL = PAO(IORBA,IORBB,IORBC,IORBD)
                                  PVAL = PVAL + PAOVAL
                               END IF
-#endif
+#endif /* ifdef PRG_DIRAC */
                               PVAL = DP5*FAB*FCD*FCABCD*PVAL
                               IF (ABS(PVAL) .GT. THRSH) THEN
                                  NODER = .FALSE.

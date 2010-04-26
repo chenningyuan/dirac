@@ -6,7 +6,7 @@ module london_reorth_hb
   use dirac_cfg
 #ifdef MOD_DFT
   use dft_cfg
-  use dft_main
+  use xc_driver
 #endif
 
 
@@ -256,21 +256,20 @@ contains
       call alloc(dmat, p_n2bbasxq)
       call genden(dmat, cmo, 1, prp_iprint)
 
-      call dftexc(nr_ao_total, &
-                  nr_qu,       &
-                  nr_fock,     &
-                  fao,         &
-                  dmat,        &
-                  nr_fock,     &
-                  tb_dmat,     &
-                  isymop,      &
-                  isymop,      &
-                  ihrmop,      &
-                  1,           &
-                  .false.,     &
-                  0,           &
-                  .false.,     &
-                  .true.)       
+         call xc_mpi_wake_up_coworkers()
+         call xc_integrator(xc_mat_dim           = nr_ao_total,   &
+                            xc_nz                = nr_qu,         &
+                            xc_dmat_0            = dmat,          &
+                            xc_nr_dmat           = nr_fock,       &
+                            xc_nr_fmat           = nr_fock,       &
+                            xc_dmat              = tb_dmat,       &
+                            xc_fmat              = fao,           &
+                            xc_fmat_pg_sym       = isymop,        &
+                            xc_dmat_pg_sym       = isymop,        &
+                            xc_dmat_ih_sym       = ihrmop,        &
+                            xc_response_order_mo = 1,             &
+                            xc_do_london_rhs_ro  = .true.)       
+         call xc_mpi_release_coworkers()
 
       call dealloc(dmat)
 

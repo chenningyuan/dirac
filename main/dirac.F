@@ -815,7 +815,7 @@ C     Last revision: July 29 1996
 C
 C***********************************************************************
 
-      use dft_main
+      use xc_driver
 #include "implicit.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -906,7 +906,11 @@ C
 C
 C        Enter the DFT module
 C
-         CALL DFTNOD()
+         call xc_integrator(xc_mat_dim = 1,
+     &                      xc_nz      = 1,
+     &                      xc_dmat_0  = (/0.0d0/),
+     &                      xc_nr_dmat = 0,
+     &                      xc_nr_fmat = 0)
 #if defined (VAR_MPI2)
       ELSE IF (ITASK .EQ. 5) THEN
 C
@@ -963,7 +967,7 @@ C     other like in RELCCSD when doing the AO Lagrangian).
 C
 C***********************************************************************
 
-         use dft_main
+         use xc_driver
 #include "implicit.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -1034,7 +1038,11 @@ C
 C
 C        Enter the DFT module
 C
-         CALL DFTNOD()
+         call xc_integrator(xc_mat_dim = 1,
+     &                      xc_nz      = 1,
+     &                      xc_dmat_0  = (/0.0d0/),
+     &                      xc_nr_dmat = 0,
+     &                      xc_nr_fmat = 0)
 #if defined (VAR_MPI2)
       ELSE IF (ITASK .EQ. 5) THEN
 C

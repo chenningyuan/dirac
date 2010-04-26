@@ -2293,7 +2293,7 @@ C*****************************************************************************
       use dirac_cfg
 #ifdef MOD_DFT
       use dft_cfg
-      use dft_main
+      use xc_driver
 #endif
 
 
@@ -2386,29 +2386,25 @@ C
 !       radovan:
 !       this is necessary iff
 !       (hybrid functional .and. gradient dependence .and. nonzero frequency)
-!       otherwise the symmetrization inside dftexc messes up the KS matrix
+!       otherwise the symmetrization inside xc_integrator messes up the KS matrix
 !       we could check here whether we have this situation and not allocate
 !       otherwise but now we just play it safe and simply allocate it
         call memget('REAL', kxc, 3*n2bbasxq, work, kfree, lfree)
         call dzero(work(kxc), 3*n2bbasxq)
 
-        call dftexc(ntbas(0),
-     &              nz,
-     &              3,
-     &              work(kxc),
-     &              work(kdmat),
-     &              3,
-     &              work(kd1ao),
-     &              isymop,
-     &              isymop,
-     &              ihrmop,
-     &              2,
-     &              .false.,
-     &              0,
-     &              .false.,
-     &              .false.)
-
-
+         call xc_mpi_wake_up_coworkers()
+         call xc_integrator(xc_mat_dim           = ntbas(0),
+     &                      xc_nz                = nz,
+     &                      xc_dmat_0            = work(kdmat),
+     &                      xc_nr_dmat           = 3,
+     &                      xc_nr_fmat           = 3,
+     &                      xc_dmat              = work(kd1ao),
+     &                      xc_fmat              = work(kxc),
+     &                      xc_fmat_pg_sym       = isymop,
+     &                      xc_dmat_pg_sym       = isymop,
+     &                      xc_dmat_ih_sym       = ihrmop,
+     &                      xc_response_order_mo = 2)
+         call xc_mpi_release_coworkers()
 
 !       add the (symmetrized) XC contribution on top of work(kf1ao)
         call daxpy(3*n2bbasxq, 1.0d0, work(kxc), 1, work(kf1ao), 1)

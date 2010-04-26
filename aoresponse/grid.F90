@@ -4,7 +4,7 @@ module grid_m
   use memory_allocator
   use matrix_genop
   use matrix_defop
-  use dft_main
+  use xc_driver
 
   implicit none
 

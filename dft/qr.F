@@ -22,7 +22,7 @@ c                                                           radovan bast
 c                                               last revision: june 2007
 c=======================================================================
 
-      use dft_main
+      use xc_driver
       use dft_cfg
       use dft_density
       use dft_functional_derv

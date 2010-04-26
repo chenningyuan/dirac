@@ -14,7 +14,7 @@ module prop_contribs
 #ifdef PRG_DIRAC
    use dirac_interface
    use character_processing
-   use dft_main
+   use xc_driver
 #endif
 #ifdef DALTON_AO_RSP
    use dalton_ifc,    &
@@ -1927,25 +1927,21 @@ contains
 
 !radovan:
 !        in many situations one could pass F directly
-!        to dftexc but the gga symmetrization can make problems
+!        to xc_integrator but the gga symmetrization can make problems
 !        with hybrid functionals and anti-hermitian contributions (nonzero frequencies)
 !        so in other words while A is always symmetric, F is non necessarily so
-!        and it would get symmetrized inside dftexc
-         call dftexc(A%nrow,                              &
-                     nz,                                  &
-                     1,                                   &
-                     A%elms,                              &
-                     D(1)%elms,                           &
-                     nr_dmat - 1,                         &
-                     (/(D(i)%elms, i = 2, nr_dmat)/),     &
-                     (/(D(i)%irep + 1, i = 2, nr_dmat)/), &
-                     (/A%irep + 1/),                      &
-                     (/ones(1:nr_dmat - 1)/),             &
-                     0,                                   &
-                     .false.,                             &
-                     order,                               &
-                     .false.,                             &
-                     .false.)
+!        and it would get symmetrized inside xc_integrator
+
+         call xc_integrator(xc_mat_dim      = A%nrow,                              &
+                            xc_nz           = nz,                                  &
+                            xc_dmat_0       = D(1)%elms,                           &
+                            xc_nr_dmat      = nr_dmat - 1,                         &
+                            xc_nr_fmat      = 1,                                   &
+                            xc_dmat         = (/(D(i)%elms, i = 2, nr_dmat)/),     &
+                            xc_fmat         = A%elms,                              &
+                            xc_dmat_pg_sym  = (/(D(i)%irep + 1, i = 2, nr_dmat)/), &
+                            xc_fmat_pg_sym  = (/A%irep + 1/),                      &
+                            xc_response_order_ao = order)
 
          F = F + A
 

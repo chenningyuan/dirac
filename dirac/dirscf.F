@@ -22,9 +22,6 @@ C
 C 
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : dirscf.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck psidhf */
@@ -363,7 +360,7 @@ C*****************************************************************************
 
       use dirac_cfg
 #ifdef MOD_DFT
-      use dft_main
+      use xc_driver
       use dft_cfg
 #endif
 
@@ -552,37 +549,19 @@ C
 
 
 #ifdef MOD_DFT
-!       construct kohn-sham contribution
-!       ================================
-
+!       xc contribution
         if (dirac_cfg_dft_calculation) then
-
-#ifdef MOD_DNF
-        if (.not. df_fitvxc) then
-#endif
-
-          call dftexc(ntbas(0),
-     &                nz,
-     &                1,
-     &                fock,
-     &                dmat,
-     &                0,
-     &                (/0.0d0/),
-     &                (/0/),
-     &                (/0/),
-     &                (/0/),
-     &                0,
-     &                .true.,
-     &                0,
-     &                .false.,
-     &                .false.)
-
+           call xc_mpi_wake_up_coworkers()
+           call xc_integrator(xc_mat_dim      = ntbas(0),
+     &                        xc_nz           = nz,
+     &                        xc_dmat_0       = dmat,
+     &                        xc_nr_dmat      = 0,
+     &                        xc_nr_fmat      = 1,
+     &                        xc_fmat         = fock,
+     &                        xc_do_potential = .true.)
+           call xc_mpi_release_coworkers()
+           
            tdxc = second() - tdxc
-
-#ifdef MOD_DNF
-        end if
-#endif
-
         end if
 #endif /* ifdef MOD_DFT */
 
@@ -1181,7 +1160,7 @@ C*****************************************************************************
       use dirac_cfg
 #ifdef MOD_DFT
       use dft_cfg
-      use dft_main
+      use xc_driver
 #endif
 
 #include "implicit.h"
@@ -1366,35 +1345,19 @@ C
 
 
 #ifdef MOD_DFT
-!       construct kohn-sham contribution
-!       ================================
-
+!       xc contribution
         if (dirac_cfg_dft_calculation) then
-
-#ifdef MOD_DNF
-        if (.not. df_fitvxc) then
-#endif
-
-          call dftexc(ntbas(0),
-     &                nz,
-     &                1,
-     &                fock,
-     &                dmat,
-     &                0,
-     &                (/0.0d0/),
-     &                (/0/),
-     &                (/0/),
-     &                (/0/),
-     &                0,
-     &                .true.,
-     &                0,
-     &                .false.,
-     &                .false.)
-
-#ifdef MOD_DNF
-        end if
-#endif
-
+           call xc_mpi_wake_up_coworkers()
+           call xc_integrator(xc_mat_dim      = ntbas(0),
+     &                        xc_nz           = nz,
+     &                        xc_dmat_0       = dmat,
+     &                        xc_nr_dmat      = 0,
+     &                        xc_nr_fmat      = 1,
+     &                        xc_fmat         = fock,
+     &                        xc_do_potential = .true.)
+           call xc_mpi_release_coworkers()
+           
+           tdxc = second() - tdxc
         end if
 #endif /* ifdef MOD_DFT */
 
@@ -1576,7 +1539,7 @@ C*****************************************************************************
 
       use dirac_cfg
 #ifdef MOD_DFT
-      use dft_main
+      use xc_driver
 #endif
 
 #include "implicit.h"
@@ -1667,7 +1630,7 @@ C
 #ifdef MOD_DFT
 !     correct for contribution from ks potential to two-electron energy
       if (dirac_cfg_dft_calculation) then
-        e(1, 2, 0) = e(1, 2, 0) - dft_temp_xc_mat_energy
+        e(1, 2, 0) = e(1, 2, 0) - get_xc_mat_energy()
       end if
 #endif
 
@@ -1697,7 +1660,7 @@ C
 
 #ifdef MOD_DFT
       if (dirac_cfg_dft_calculation) then
-        elergy = elergy + dft_temp_xc_energy
+        elergy = elergy + get_xc_energy()
       end if
 #endif
 
@@ -1762,10 +1725,12 @@ CMI      ... print out matrixes ...
    30          CONTINUE
             ENDIF
 #ifdef MOD_DFT
-            IF (dirac_cfg_dft_calculation) 
-     &         WRITE(LUPRI,'(6X,A,'//FMT//')')
+            IF (dirac_cfg_dft_calculation) then
+               xc_energy = get_xc_energy()
+               WRITE(LUPRI,'(6X,A,'//FMT//')')
      &         '* DFT xc energy              :  ',
-     &         dft_temp_xc_energy
+     &         xc_energy
+            end IF
 #endif
          END IF
       ENDIF

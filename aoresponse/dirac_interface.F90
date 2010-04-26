@@ -1,16 +1,18 @@
 module dirac_interface
 
-  use memory_allocator
-  use matrix_defop
-  use matrix_genop
-  use aor_cfg
-  use character_processing
+   use memory_allocator
+   use matrix_defop
+   use aor_cfg
+   use character_processing
+   use dirac_cfg
+   use xc_driver
 
   implicit none
 
   public print_q_vector
   public di_get_gbds
   public di_read_operator_int
+  public di_get_geomderiv_molgrad_dft
   public do_dft
   public get_s
   public get_f
@@ -108,6 +110,24 @@ module dirac_interface
   integer            :: mem_wrk_count = 0 ! Counts
 
 contains
+
+   subroutine di_get_geomDeriv_molgrad_DFT(g, nr_atoms, D)
+
+!     --------------------------------------------------------------------------
+      real(8),      intent(inout) :: g(*)
+      integer,      intent(in)    :: nr_atoms
+      type(matrix), intent(in)    :: D
+!     --------------------------------------------------------------------------
+
+      call xc_integrator(xc_mat_dim            = ntbas(0), &
+                         xc_nz                 = nz,       &
+                         xc_dmat_0             = D%elms,   &
+                         xc_nr_dmat            = 0,        &
+                         xc_nr_fmat            = 0,        &
+                         xc_nr_atoms           = nr_atoms, &
+                         xc_molecular_gradient = g)
+
+   end subroutine
 
   subroutine init_dirac_interface()
 
@@ -649,8 +669,9 @@ contains
 
   end function
 
-  subroutine get_F(F)
+  subroutine get_F(D, F)
 
+    type(matrix), intent(in)    :: D
     type(matrix), intent(inout) :: F
 !   ----------------------------------------------------------------------------
     type(matrix)                :: F1, F2
@@ -670,12 +691,23 @@ contains
     call reafck(file_unit, F2%elms, .true., 1)
     close(file_unit, status = 'keep')
 
-    if (.not. mat_isdef(F)) call init_mat(F, ntbas(0), ntbas(0))
+    if (.not. isdef(F)) call init_mat(F, ntbas(0), ntbas(0))
 
     F = F1 + F2
 
     F1 = 0
     F2 = 0
+
+!   xc contribution to ks matrix
+    if (dirac_cfg_dft_calculation) then
+         call xc_integrator(xc_mat_dim      = ntbas(0), &
+                            xc_nz           = nz,       &
+                            xc_dmat_0       = D%elms,   &
+                            xc_nr_dmat      = 0,        &
+                  	    xc_nr_fmat      = 1,        &
+                            xc_fmat         = F%elms,   &
+                            xc_do_potential = .true.)
+    end if
 
   end subroutine
 
@@ -690,7 +722,7 @@ contains
     real(8), pointer   :: work(:)
     integer                      :: lwork
 
-    if (.not. mat_isdef(G)) call init_mat(G, ntbas(0), ntbas(0))
+    if (.not. isdef(G)) call init_mat(G, ntbas(0), ntbas(0))
     G = 1.0d0*D !inherit symmetry information
     G%elms = 0.0d0
 
@@ -734,7 +766,7 @@ contains
     integer                      :: dummy_i
 !   ----------------------------------------------------------------------------
 
-    if (.not. mat_isdef(C)) call init_mat(C, ntbas(0), norbt)
+    if (.not. isdef(C)) call init_mat(C, ntbas(0), norbt)
 
     C%elms = 0.0d0
 
@@ -791,7 +823,7 @@ contains
     nr_g_ao    = nfbas(1, 0)
     nr_u_ao    = nfbas(2, 0)
 
-    if (.not. mat_isdef(C)) call init_mat(C, ntbas(0), norbt)
+    if (.not. isdef(C)) call init_mat(C, ntbas(0), norbt)
     C%elms = 0.0d0
 
     call get_full_c(C_file)
@@ -875,7 +907,7 @@ contains
     type(matrix),  intent(inout) :: S
 !   ----------------------------------------------------------------------------
 
-    if (.not. mat_isdef(S)) call init_mat(S, ntbas(0), ntbas(0))
+    if (.not. isdef(S)) call init_mat(S, ntbas(0), ntbas(0))
     S%elms = 0.0d0
 
 !   call gtovlt(S%elms, ssmtrc)
@@ -914,7 +946,7 @@ contains
     call alloc(op1int, idimension)
     allocate(first(nz))
 
-    if (.not. mat_isdef(P)) call init_mat(P, ntbas(0), ntbas(0))
+    if (.not. isdef(P)) call init_mat(P, ntbas(0), ntbas(0))
     P%elms = 0.0d0
 
     P%irep   = iprpsym(op_index) - 1
@@ -1143,7 +1175,9 @@ contains
     RHS_mo = dag(C)*(RHS*C)
     C      = 0
 
-    call copy_matrix_sym(RHS_mo, RHS)
+    RHS_mo%ih_sym = RHS%ih_sym
+    RHS_mo%tr_sym = RHS%tr_sym
+    RHS_mo%irep   = RHS%irep
 
     if (debug_me) then
       call print_mat(RHS,    label = 'debug RHS in AO basis')
@@ -1460,7 +1494,9 @@ contains
     Cig = 0
     Csg = 0
 
-    call copy_matrix_sym(Dp, Wp)
+    Dp%ih_sym = Wp%ih_sym
+    Dp%tr_sym = Wp%tr_sym
+    Dp%irep   = Wp%irep
 
     if (debug_me) then
       call print_mat(Wp, label = 'debug Wp')
