@@ -2092,6 +2092,7 @@ get_f90_flags(){
     g95)
       cpp_f90="$cpp_f90 -DVAR_G95"
       opt="-g -O3 -ffast-math -Wno=155 -fsloppy-char"
+      f90_extraflags="-cpp"
       safe="-g -Wno=155 -fsloppy-char"
       mod="-fmod=$MODULE_DIR"
       noformain="" # please add it
