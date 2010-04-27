@@ -945,14 +945,16 @@ C       Is this a LL+SS operator (IC=1) or a LS+SL operator (IC=2) ?
         IQP  = IQTOPQ(IQ,IBRPOP)
         IF(IQP.LE.0) THEN
           WRITE(LUPRI,'(/A)') '***** PRPMAO ERROR *****'
-          WRITE(LUPRI,'(A,I5,3X,A8)') 'Component nr.',I,PRPLBL(KLBL)
-          WRITE(LUPRI,'(A,I2,A)') 'IQP(',IQP,').LE.0'
+          WRITE(LUPRI,'(A,I3,A,I2,3X,A,A8)')
+     &     'Component nr. ',I,'/',NCMP,' label:',PRPLBL(KLBL)
+          WRITE(LUPRI,'(A,I2,A,I2,A,I2,A)')
+     &    'IQP(',IQP,')=IQTOPQ(',IQ,',',IBRPOP,').LE.0 !'
           CALL WRIXPR(0,IOP)
           WRITE(LUPRI,'(A,I5)') 'Q: Scalar :',JQBAS(IBRP,IC)
           WRITE(LUPRI,'(A,I5)') 'Q: Matrix :',IZ
-          WRITE(LUPRI,'(A,7I5)')
-     &        'IM4,IBRP,IH,IZ,IQ,IBRPOP,IQP :',
-     &         IM4,IBRP,IH,IZ,IQ,IBRPOP,IQP
+          WRITE(LUPRI,'(A,8I3)')
+     &        'IM4,IBRP,IH,IZ,IQ,IBRPOP,IQP,IC :',
+     &         IM4,IBRP,IH,IZ,IQ,IBRPOP,IQP,IC
           WRITE(LUPRI,'(A)') 'IQTOPQ(1:4,0:NBSYM-1):'
           DO IZ = 1,4
              WRITE(LUPRI,'(8I5)') (IQTOPQ(IZ,J),J=0,NBSYM-1)
@@ -983,7 +985,7 @@ C       Is this a LL+SS operator (IC=1) or a LS+SL operator (IC=2) ?
      &    'FIRST = ',FIRST(IQP),' and IC(1 or 2):',IC
         ENDIF
 C =============================================================
-C               Get integral from AOPROPER file
+C               Get integrals from the AOPROPER file
 C =============================================================
         CALL PRPREA(LU1INT,PRPLBL(KLBL),RTNLBL,PDOINT(KLBL),
      &              OP1INT,IDIMENS,IPRINT)

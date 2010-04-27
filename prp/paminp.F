@@ -2063,9 +2063,15 @@ C
           WRITE(LUPRI,*) 'TRIANG=',TRIANG
         ENDIF
 
+       ! ... call abacus routine...
         CALL PR1DIR(WORK,LWORK,CLASLB,INTTYP,NOPTYP,INTREP,
      &            ANTI,SQUARE,INTADR,LABINT,TRIANG,TRASPH,
      &            SOLVNT,IORDER,DOATOM,NATOM,NBAST,NELMNT,IPRINT)
+
+CMI      ... fix for iBETA GAMMA5 operator
+!       IF (CLASLB.EQ.'KINENER') THEN
+!           ANTI=.TRUE.
+!       ENDIF
 
         IF (IPRINT.GE.5) THEN
            WRITE(LUPRI,'(/,2X,A)') 'XPLDE1 after PR1DIR calling'
