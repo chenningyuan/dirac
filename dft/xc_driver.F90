@@ -1174,16 +1174,16 @@ contains
       time_integration = second() - time_integration_start
       call timtxt('  time spent in DFT integration                  =', &
                   time_integration, print_unit)
-      call timtxt('                AO evaluation                    =', &
-                  time_ao, print_unit)
-      call timtxt('                matrix distribution              =', &
-                  time_matrix_dist, print_unit)
-      call timtxt('                density evaluation               =', &
-                  time_density, print_unit)
-      call timtxt('                gradient evaluation              =', &
-                  time_gradient, print_unit)
-      call timtxt('                functional derivatives           =', &
-                  time_derv, print_unit)
+     !call timtxt('                AO evaluation                    =', &
+     !            time_ao, print_unit)
+     !call timtxt('                matrix distribution              =', &
+     !            time_matrix_dist, print_unit)
+     !call timtxt('                density evaluation               =', &
+     !            time_density, print_unit)
+     !call timtxt('                gradient evaluation              =', &
+     !            time_gradient, print_unit)
+     !call timtxt('                functional derivatives           =', &
+     !            time_derv, print_unit)
 
       write(print_unit, '(3x, a, i9)')                           &
             'number of processors                           = ', &
@@ -1354,6 +1354,7 @@ contains
          if (nr_points < 0) exit
 
          nr_points_process = nr_points
+         nr_processes      = 1
 #ifdef VAR_MPI
          if (parallel_xc) then
              nr_processes      = nodes + 1
