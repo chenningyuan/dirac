@@ -326,10 +326,16 @@ contains
          if (all(polq(:,:,1+nq*(ij-1):nq*ij)==0).and. &
              all(polq(:,:,1+nq*(ik-1):nq*ik)==0).and. &
              all(polq(:,:,1+nq*(jk-1):nq*jk)==0)) cycle
+#ifdef VAR_PGF90
+!radovan pgf complains here
+!PGF90-S-0152-All dimension specifiers must be ':' (aoresponse/vib_prop.f90: 329)
+         call quit('fix vib_prop.f90 for pgf')
+#else
          call print_vib_beta(dax,(/w(i),w(j),w(k)/),nq,wq(1:nq), &
                  -(/dipq(:,1+nq*(i-1):nq*i),dipq(:,1+nq*(j-1):nq*j),dipq(:,1+nq*(k-1):nq*k)/), &
                  -(/polq(:,:,1+nq*(ij-1):nq*ij),polq(:,:,1+nq*(ik-1):nq*ik), &
                    polq(:,:,1+nq*(jk-1):nq*jk)/),o)
+#endif
          exit !only one
       end do
       if ((any(dipq(:,1:nq*4) /= 0) .and. &

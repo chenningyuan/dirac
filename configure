@@ -2126,8 +2126,8 @@ get_f90_flags(){
       ldflag="-lstdc++"
       ;;
     pgf90)
-      opt="-g -fastsse"
-      safe="-g"
+      opt="-g -Mpreprocess -fastsse"
+      safe="-g -Mpreprocess "
       cpp_f90="$cpp_f90 -DVAR_PGF90"
       cpp_cc="$cpp_cc -DVAR_PGCC"
       mod="-module $MODULE_DIR"
