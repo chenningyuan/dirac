@@ -533,7 +533,9 @@ contains
       !call print_tensor( (/3,3/), Eoo, 'E1oDo'); Eoo=0
       call print_tensor((/3,3/), Eoo, 'no-London Magnetizability = Eoo', (/-freq,freq/))
       Db=0; Fb=0
-#ifndef PRG_DIRAC
+#ifdef PRG_DIRAC
+      Ebb = 0
+#else
       !London diamag
       call pert_dens(decomp, S, (/'MAG'/), (/3/), (/D/), (/F/), Db, Fb, freq=(/freq/))
       Ebb = 0
@@ -554,7 +556,7 @@ contains
       Db=0; Fb=0; DFDb=0
       !call print_tensor( (/3,3/), Ebb, 'E1bDb-i/2TbDb-SbDFDb'); Ebb=0
       call print_tensor((/3,3/), Ebb, 'London Magnetizability = Ebb', (/-freq,freq/))
-#endif /* ifndef PRG_DIRAC */
+#endif /* ifdef PRG_DIRAC */
    end subroutine
 
 

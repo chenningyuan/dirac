@@ -770,7 +770,7 @@ contains
          call quit('vibhyp_hyp_dipgra_polgra: sum(freq) should be zero!')
       ! verify that DALTON.HES exists before doing anything
       call GPINQ('DALTON.HES', 'EXIST', exists)
-      if (.not.exists) call quit('vibhyp_hyp_dipgra_polgra: Hessian file', &
+      if (.not.exists) call quit('vibhyp_hyp_dipgra_polgra: Hessian file'// &
                                  ' DALTON.HES not found, but will be needed')
       ! dipole moment
       dip = 0
