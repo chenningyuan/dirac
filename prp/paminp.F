@@ -872,7 +872,6 @@ C
      &           'ALPHADOT', 'GAMMA5  ', 'XSIGMA  ', 'YSIGMA  ',
      &           'ZSIGMA  ', 'XBETASIG', 'YBETASIG', 'ZBETASIG',
      &           'XiBETAAL', 'YiBETAAL', 'ZiBETAAL', 'BETA    ',
-CMI  &           'iBETAGAM', 'XXXXXXXX', 'XXXXXXXX', 'XXXXXXXX'/
      &           'XXXXXXXX', 'iBETAGAM', 'XXXXXXXX', 'XXXXXXXX'/
 C
       CALL QENTER('XPRINP')
@@ -2068,13 +2067,16 @@ C
      &            ANTI,SQUARE,INTADR,LABINT,TRIANG,TRASPH,
      &            SOLVNT,IORDER,DOATOM,NATOM,NBAST,NELMNT,IPRINT)
 
-CMI      ... fix for iBETA GAMMA5 operator
-!       IF (CLASLB.EQ.'KINENER') THEN
-!           ANTI=.TRUE.
-!       ENDIF
+CMI      ... fix for i*BETA*GAMMA5 operator
+        IF (CLASLB.EQ.'KINENER'.AND.INTTYP.EQ.21) THEN
+          ANTI=.TRUE.
+          WRITE(LUPRI,'(2X,A)')
+     &    'i*BETA*GAMMA5 operator; for KINENERG setting ANTI=.true.' 
+        ENDIF
 
         IF (IPRINT.GE.5) THEN
-           WRITE(LUPRI,'(/,2X,A)') 'XPLDE1 after PR1DIR calling'
+           WRITE(LUPRI,'(/,2X,A)')
+     &      '*** XPLDE1 after PR1DIR calling ***'
            WRITE(LUPRI,'(2X,A,I3)') 'INTTYP=',INTTYP
            WRITE(LUPRI,*) 'CLASLB=',CLASLB
            WRITE(LUPRI,*) 'PLABEL=',PLABEL
@@ -2111,6 +2113,7 @@ C
         PRPLBL (NPRPLBL) = LABINT(ICMP)
         PDOINT (NPRPLBL) = PCOMB
         IPRLREP(NPRPLBL) = INTREP(ICMP)
+!       .....  
         IF(SQUARE) THEN
 C
 C       Non - symmetric operator
@@ -2214,21 +2217,40 @@ C     ======================
 C
 C     Matrix operator :
 C - assign IATIM according to the IAIND = JM4(1,ITYP) = 
-C            = JM4(1,IPRPTYP(INDXPR)) = JM4(1,1-20)
+C            = JM4(1,IPRPTYP(INDXPR)) = JM4(1,1-21)
+C  JM4 is assigned in abacus/hergroup.F
 C
       IF (IAIND.EQ. 0 .OR. IAIND.EQ.4 .OR.
      &   (IAIND.GE.16 .AND.IAIND.LE.18)) THEN
 C       DIAGONAL, GAMMA5, i*BETA*[XYZ]ALPHA
         IATIM = 1
       ELSE
-C       [XYZ]SIGMA, [XYZ]ALPHA:
+C       [XYZ]SIGMA, [XYZ]ALPHA, i*BETA*GAMMA5
         IATIM = -1
       ENDIF
+
+CMI    exception for this type of operator !!!
+      IF (ITYP.EQ.21) THEN
+          IATIM=-1
+          WRITE(LUPRI,'(2X,A)')
+     &    'i*BETA*GAMMA5 operator; therefore setting IATIM=-1' 
+      ENDIF
+
 
 C     Scalar operator
       IBTIM    = IPRLTYP(IBIND)
 C     Total operator
       ICTIM(1) = IATIM*IBTIM
+
+      IF (IPRINT.GE.15) THEN
+        CALL HEADER('Output from PRPSYM',-1)
+        WRITE(LUPRI,'(2X,4(A,I2))')
+     &  'IAIND=',IAIND,' IBIND=',IBIND,
+     &  ' IATIM=',IATIM,' IBTIM=',IBTIM
+        WRITE(LUPRI,'(2X,1(A,I2))')
+     &  'ICTIM(1)=',ICTIM(1)
+      ENDIF
+
 C
 C     Check against other components of operator
 C     ==========================================
@@ -2245,6 +2267,7 @@ C     ==========================================
         ICTIM(ILBL) = IATIM*IBTIM
         DIFTIM      = DIFTIM.AND.(ICTIM(ILBL).NE.ICTIM(1))
    20 CONTINUE
+!     error message
       IF(DIFSYM.OR.DIFTIM) THEN
 C
 C         The components of the operator have not the same symmetry; abort
@@ -2274,7 +2297,7 @@ CMI   ... assign symmetries
 
 CMI ... control printout is always worth 
       IF (IPRINT.GE.15) THEN
-        CALL HEADER('Output from PRPSYM',-1)
+        !CALL HEADER('Output from PRPSYM',-1)
 
         WRITE(LUPRI,'(2X,A,I3,A,I2,A,I2)')
      &  'Operator index, INDXPR =',INDXPR,
@@ -2286,6 +2309,8 @@ CMI ... control printout is always worth
      & ' IPRLTYP() =',IPRLTYP(INDXPR)
         WRITE(LUPRI,'(2X,A,I1)')
      &   'Number of operator components, NLBL (1-3) =',NLBL   
+        WRITE(LUPRI,'(2X,3(A,I2))')
+     &  'IAIND=',IAIND,' IATIM=',IATIM,' IBTIM=',IBTIM
         WRITE(LUPRI,'(20X,A,14X,A)')
      &     '--- boson irrep ---','--- time rever symm ---'
         DO ILBL = 1, NLBL

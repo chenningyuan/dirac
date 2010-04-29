@@ -943,6 +943,13 @@ C       Is this a LL+SS operator (IC=1) or a LS+SL operator (IC=2) ?
         IZ   = JM4POS(IM4)
         IQ   = IQMULT(1,JQBAS(IBRP,IC),IZ)
         IQP  = IQTOPQ(IQ,IBRPOP)
+CMI fix
+        IF (IOPTYP.EQ.21) THEN 
+          IQP=1
+          WRITE(LUPRI,'(/,2X,A)')
+     &    'Operator of type 21, IQP set to 1.'
+        ENDIF
+! check
         IF(IQP.LE.0) THEN
           WRITE(LUPRI,'(/A)') '***** PRPMAO ERROR *****'
           WRITE(LUPRI,'(A,I3,A,I2,3X,A,A8)')
@@ -952,9 +959,9 @@ C       Is this a LL+SS operator (IC=1) or a LS+SL operator (IC=2) ?
           CALL WRIXPR(0,IOP)
           WRITE(LUPRI,'(A,I5)') 'Q: Scalar :',JQBAS(IBRP,IC)
           WRITE(LUPRI,'(A,I5)') 'Q: Matrix :',IZ
-          WRITE(LUPRI,'(A,8I3)')
-     &        'IM4,IBRP,IH,IZ,IQ,IBRPOP,IQP,IC :',
-     &         IM4,IBRP,IH,IZ,IQ,IBRPOP,IQP,IC
+          WRITE(LUPRI,'(A,9I3)')
+     &        'IM4,IBRP,IH,IZ,IQ,IBRPOP,IQP,IC,IOPTYP :',
+     &         IM4,IBRP,IH,IZ,IQ,IBRPOP,IQP,IC,IOPTYP
           WRITE(LUPRI,'(A)') 'IQTOPQ(1:4,0:NBSYM-1):'
           DO IZ = 1,4
              WRITE(LUPRI,'(8I5)') (IQTOPQ(IZ,J),J=0,NBSYM-1)
