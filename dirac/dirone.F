@@ -945,9 +945,9 @@ C       Is this a LL+SS operator (IC=1) or a LS+SL operator (IC=2) ?
         IQP  = IQTOPQ(IQ,IBRPOP)
 CMI fix
         IF (IOPTYP.EQ.21) THEN 
-          IQP=1
-          WRITE(LUPRI,'(/,2X,A)')
-     &    'Operator of type 21, IQP set to 1.'
+!          IQP=1
+!          WRITE(LUPRI,'(/,2X,A)')
+!     &    'Operator of type 21, IQP set to 1.'
         ENDIF
 ! check
         IF(IQP.LE.0) THEN

@@ -2067,11 +2067,15 @@ C
      &            ANTI,SQUARE,INTADR,LABINT,TRIANG,TRASPH,
      &            SOLVNT,IORDER,DOATOM,NATOM,NBAST,NELMNT,IPRINT)
 
+CMI ... FIX IT, ALWAYS RETURNS 21 for KINENERG !!!
 CMI      ... fix for i*BETA*GAMMA5 operator
-        IF (CLASLB.EQ.'KINENER'.AND.INTTYP.EQ.21) THEN
-          ANTI=.TRUE.
+!       IF (CLASLB.EQ.'KINENER'.AND.INTTYP.EQ.21) THEN
+        IF (INTTYP.EQ.21) THEN
+!         ANTI=.TRUE.
+!         WRITE(LUPRI,'(2X,A)')
+!    &   'i*BETA*GAMMA5 operator (INTTYP=21), setting ANTI=.true.' 
           WRITE(LUPRI,'(2X,A)')
-     &    'i*BETA*GAMMA5 operator; for KINENERG setting ANTI=.true.' 
+     &   'FYI: INTTYP=21 (KINENERG) !!!' 
         ENDIF
 
         IF (IPRINT.GE.5) THEN
