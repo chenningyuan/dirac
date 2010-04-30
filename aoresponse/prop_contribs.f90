@@ -1797,10 +1797,14 @@ contains
             return
          end if
          wrk(1:n2) = D%elms !ajt fixme
+#ifdef PRG_DIRAC
+         call quit('fix grcont in twofck')
+#else
          call GRCONT(wrk( 1+n2+n2*nf : lwrk ), (lwrk-n2-n2*nf),         &
                      wrk( 1+n2 : n2+n2*nf ), n2*nf, (what(1:1) == 'G'), &
                      (what(1:1) == 'M'), merge(1,2,what(2:2)==' '),     &
                      aa, .false., .true., wrk(1:n2), 1)
+#endif
          do i = 1, nf
             F(i)%elms = wrk( 1+n2*i : n2*(1+i) ) !ajt fixme
          end do
@@ -1932,6 +1936,11 @@ contains
 !        so in other words while A is always symmetric, F is non necessarily so
 !        and it would get symmetrized inside xc_integrator
 
+!        note to myself:
+!        geometric derivatives of 2nd order properties
+!        are incorrect with conventional derivatives, correct with xcfun
+!        (this is due to handling of options inside xc_driver)
+
          call xc_integrator(xc_mat_dim      = A%nrow,                              &
                             xc_nz           = nz,                                  &
                             xc_dmat_0       = D(1)%elms,                           &
@@ -1961,6 +1970,11 @@ contains
       real(8),      intent(inout) :: E(:)
       real(8), pointer :: wrk(:)
       integer          :: lwrk
+
+!     early return
+      if (iszero(Da) .or. iszero(Db)) then
+         return
+      end if
 
       if (natom==0) call quit('prop_contribs/twoctr error: Module not initialized')
       !ajt MagSus contraction doesn't work, so I disabled this. Use twofck instead

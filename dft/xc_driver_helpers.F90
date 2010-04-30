@@ -7,60 +7,6 @@ module xc_driver_helpers
 
 contains
 
-  subroutine get_xc_molecular_gradient(nr_atoms,           &
-                                       molecular_gradient, &
-                                       s,                  &
-                                       mat_dim,            &
-                                       dmat_0,             &
-                                       ao,                 &
-                                       ao1)
-
-
-!   ----------------------------------------------------------------------------
-!   so far only c1 and lda and large shells and with common blocks
-!   ----------------------------------------------------------------------------
-    integer, intent(in)    :: nr_atoms
-    real(8), intent(inout) :: molecular_gradient(nr_atoms*3)
-    real(8), intent(in)    :: s
-    integer, intent(in)    :: mat_dim
-    real(8), intent(in)    :: dmat_0(mat_dim, mat_dim)
-    real(8), intent(in)    :: ao(mat_dim)
-    real(8), intent(in)    :: ao1(mat_dim, 3)
-!   ----------------------------------------------------------------------------
-    integer                :: k, ks, kc
-    integer                :: l, ls, lc
-    integer                :: ixyz, ic, nr_center
-    real(8)                :: t
-!   ----------------------------------------------------------------------------
-
-#include "maxorb.h"
-#include "shells.h"
-
-      k = 0
-      do ks = 1, nlrgsh
-         nr_center = ncent(ks)
-         do kc = 1, kckt(ks)
-            k = k + 1
-      
-            t = 0.0d0
-            l = 0
-            do ls = 1, nlrgsh
-               do lc = 1, kckt(ls)
-                  l = l + 1
-                  t = t + ao(l)*dmat_0(l, k)
-               end do
-            end do
-      
-            do ixyz = 1, 3
-               ic = 3*(nr_center - 1) + ixyz
-               molecular_gradient(ic) = molecular_gradient(ic) &
-                                      - 2.0d0*s*ao1(k, ixyz)*t
-            end do
-         end do
-      end do
-   
-   end subroutine
-
   subroutine lr(block_length,       &
                 mat_dim,            &
                 nz,                 &

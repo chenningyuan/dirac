@@ -67,7 +67,9 @@ contains
       call prop_oneave(S, (/'GEO'/), (/D/), (/ng/), Eg, DFD=(/DFD/))
       call prop_twoave((/'GEO'/), (/D/), (/ng/), Eg)
       ! print
+#ifndef PRG_DIRAC
       call print_tensor((/ng/), Eg, 'gradient = Eg = E0g - Sg DFD')
+#endif
       ! free DFD
       DFD = 0
 

@@ -23,6 +23,7 @@ module xc_driver
   use xcfun
 #endif
   use xc_driver_helpers
+  use xc_geometric
 
   implicit none
 
@@ -104,9 +105,6 @@ module xc_driver
     real(8), allocatable :: derv(:, :)
     integer :: ioff
     real(8) :: RHG(3),VT(3)
-    real(8) :: r_0(mxbllen)
-    real(8) :: z_0(mxbllen)
-    real(8) :: w(mxbllen)
     real(8) :: rho13, rho_outer, rho_resp
             
     integer :: ipoint, need_limit
@@ -151,6 +149,11 @@ module xc_driver
                       
    real(8), pointer             :: dmat_0(:, :)
    real(8), allocatable, target :: dmat_0_container(:, :)
+
+!  real(8), pointer             :: tmat_1(:, :)
+!  real(8), pointer             :: tmat_2(:, :)
+   real(8), allocatable         :: tmat_1(:, :)
+   real(8), allocatable         :: tmat_2(:, :)
                       
    integer                      :: nr_dmat
    real(8), pointer             :: dmat(:, :, :, :)
@@ -168,34 +171,40 @@ module xc_driver
    integer, allocatable, target :: fmat_pg_sym_container(:)
 
    integer                      :: nr_atoms
-   real(8), pointer             :: molecular_gradient(:)
-   real(8), allocatable, target :: molecular_gradient_container(:)
+   real(8), pointer             :: property_gradient(:)
+   real(8), allocatable, target :: property_gradient_container(:)
 
    logical                      :: do_potential     
    integer                      :: response_order_mo
    integer                      :: response_order_ao
    logical                      :: do_london_rhs_direct
    logical                      :: do_london_rhs_ro    
-   logical                      :: do_molecular_gradient
+   logical                      :: do_geo
+   logical                      :: do_geo_0
+   logical                      :: do_geo_1
+   logical                      :: do_geo_2
 
 contains
 
-   subroutine xc_integrator(xc_mat_dim,              &
-                            xc_nz,                   &
-                            xc_dmat_0,               &
-                            xc_nr_dmat,              &
-                            xc_nr_fmat,              &
-                            xc_dmat,                 &
-                            xc_fmat,                 &
-                            xc_dmat_ih_sym,          &
-                            xc_dmat_pg_sym,          &
-                            xc_fmat_pg_sym,          &
-                            xc_nr_atoms,             &
-                            xc_molecular_gradient,   &
-                            xc_do_potential,         &
-                            xc_do_london_rhs_direct, &
-                            xc_do_london_rhs_ro,     &
-                            xc_response_order_mo,    &
+   subroutine xc_integrator(xc_mat_dim,                 &
+                            xc_nz,                      &
+                            xc_dmat_0,                  &
+                            xc_nr_dmat,                 &
+                            xc_nr_fmat,                 &
+                            xc_dmat,                    &
+                            xc_fmat,                    &
+                            xc_dmat_ih_sym,             &
+                            xc_dmat_pg_sym,             &
+                            xc_fmat_pg_sym,             &
+                            xc_nr_atoms,                &
+                            xc_property_gradient,      &
+                            xc_do_potential,            &
+                            xc_do_london_rhs_direct,    &
+                            xc_do_london_rhs_ro,        &
+                            xc_do_geo_0, &
+                            xc_do_geo_1, &
+                            xc_do_geo_2, &
+                            xc_response_order_mo,       &
                             xc_response_order_ao)
 
 ! response_order_mo/_ao:  0 - do nothing (no response)
@@ -222,11 +231,15 @@ contains
       integer, optional, target, intent(in)    :: xc_fmat_pg_sym(xc_nr_fmat)
 
       integer, optional,         intent(in)    :: xc_nr_atoms
-      real(8), optional, target, intent(inout) :: xc_molecular_gradient(*)
+      real(8), optional, target, intent(inout) :: xc_property_gradient(*)
 
       logical, optional,         intent(in)    :: xc_do_potential             
       logical, optional,         intent(in)    :: xc_do_london_rhs_direct
       logical, optional,         intent(in)    :: xc_do_london_rhs_ro       
+      logical, optional,         intent(in)    :: xc_do_geo_0
+      logical, optional,         intent(in)    :: xc_do_geo_1
+      logical, optional,         intent(in)    :: xc_do_geo_2
+
       integer, optional,         intent(in)    :: xc_response_order_mo         
       integer, optional,         intent(in)    :: xc_response_order_ao         
 !     --------------------------------------------------------------------------
@@ -288,28 +301,27 @@ contains
       end if
 
 !     set defaults
-      do_potential          = .false.
-      response_order_mo     = 0
-      response_order_ao     = 0
-      do_london_rhs_direct  = .false.
-      do_london_rhs_ro      = .false.
-      do_molecular_gradient = .false.
-      nr_atoms = 0
+      do_potential            = .false.
+      response_order_mo       = 0
+      response_order_ao       = 0
+      do_london_rhs_direct    = .false.
+      do_london_rhs_ro        = .false.
+      do_geo_0 = .false.
+      do_geo_1 = .false.
+      do_geo_2 = .false.
+      nr_atoms                = 0
 
       if (i_am_master) then
 !        change defaults
-         if (present(xc_do_potential         )) do_potential          = xc_do_potential
-         if (present(xc_response_order_mo    )) response_order_mo     = xc_response_order_mo
-         if (present(xc_response_order_ao    )) response_order_ao     = xc_response_order_ao
-         if (present(xc_do_london_rhs_direct )) do_london_rhs_direct  = xc_do_london_rhs_direct
-         if (present(xc_do_london_rhs_ro     )) do_london_rhs_ro      = xc_do_london_rhs_ro
-
-         if (present(xc_nr_atoms)) then
-            nr_atoms = xc_nr_atoms
-            if (present(xc_molecular_gradient)) then
-               do_molecular_gradient = .true.
-            end if
-         end if
+         if (present(xc_do_potential))         do_potential         = xc_do_potential
+         if (present(xc_response_order_mo))    response_order_mo    = xc_response_order_mo
+         if (present(xc_response_order_ao))    response_order_ao    = xc_response_order_ao
+         if (present(xc_do_london_rhs_direct)) do_london_rhs_direct = xc_do_london_rhs_direct
+         if (present(xc_do_london_rhs_ro))     do_london_rhs_ro     = xc_do_london_rhs_ro
+         if (present(xc_do_geo_0))             do_geo_0             = xc_do_geo_0
+         if (present(xc_do_geo_1))             do_geo_1             = xc_do_geo_1
+         if (present(xc_do_geo_2))             do_geo_2             = xc_do_geo_2
+         if (present(xc_nr_atoms))             nr_atoms             = xc_nr_atoms
       end if
 
 #ifdef VAR_MPI
@@ -325,9 +337,25 @@ contains
          call dirac_mpi_bcast(do_london_rhs_ro)
          call dirac_mpi_bcast(response_order_mo)
          call dirac_mpi_bcast(response_order_ao)
-         call dirac_mpi_bcast(do_molecular_gradient)
+         call dirac_mpi_bcast(do_geo_0)
+         call dirac_mpi_bcast(do_geo_1)
+         call dirac_mpi_bcast(do_geo_2)
       end if
 #endif
+
+!     nullify(tmat_1)
+!     nullify(tmat_2)
+      if (do_geo_1) then
+         call alloc(tmat_1, mat_dim, mat_dim)
+         tmat_1(:, :) = xc_dmat(:, :, 1, 1)
+      end if
+
+      if (do_geo_2) then
+         call alloc(tmat_1, mat_dim, mat_dim)
+         call alloc(tmat_2, mat_dim, mat_dim)
+         tmat_1(:, :) = xc_dmat(:, :, 1, 1)
+         tmat_2(:, :) = xc_dmat(:, :, 1, 2)
+      end if
 
       nullify(dmat_0)
       if (i_am_coworker) then
@@ -396,15 +424,22 @@ contains
          end if
       end if
 
-      nullify(molecular_gradient)
-      if (do_molecular_gradient) then
-         if (i_am_coworker) then
-            call alloc(molecular_gradient_container, nr_atoms*3)
-            molecular_gradient => molecular_gradient_container
-         else
-            molecular_gradient => xc_molecular_gradient(1:nr_atoms*3)
+      do_geo = .false.
+      if (do_geo_0 .or. do_geo_1 .or. do_geo_2) then
+         do_geo = .true.
+      end if
+      nullify(property_gradient)
+      if (i_am_coworker) then
+         if (do_geo) then
+            call alloc(property_gradient_container, nr_atoms*3)
+            property_gradient => property_gradient_container
+            property_gradient = 0.0d0
          end if
-         molecular_gradient = 0.0d0
+      else
+         if (present(xc_property_gradient)) then
+            property_gradient => xc_property_gradient(1:nr_atoms*3)
+            property_gradient = 0.0d0
+         end if
       end if
 
       if (i_am_master) then
@@ -603,9 +638,22 @@ contains
       if (associated(fmat_pg_sym)) then
          nullify(fmat_pg_sym)
       end if
-      if (associated(molecular_gradient)) then
-         nullify(molecular_gradient)
+      if (associated(property_gradient)) then
+         nullify(property_gradient)
       end if
+      if (do_geo_1) then
+         call dealloc(tmat_1)
+      end if
+      if (do_geo_2) then
+         call dealloc(tmat_1)
+         call dealloc(tmat_2)
+      end if
+!     if (associated(tmat_1)) then
+!        nullify(tmat_1)
+!     end if
+!     if (associated(tmat_2)) then
+!        nullify(tmat_2)
+!     end if
 
       if (i_am_coworker) then
          if (allocated(dmat_container)) then
@@ -626,8 +674,8 @@ contains
          if (allocated(fmat_pg_sym_container)) then
             deallocate(fmat_pg_sym_container)
          end if
-         if (allocated(molecular_gradient_container)) then
-            deallocate(molecular_gradient_container)
+         if (allocated(property_gradient_container)) then
+            deallocate(property_gradient_container)
          end if
       end if
 
@@ -696,12 +744,21 @@ contains
 
    subroutine integrate()
 
+!     --------------------------------------------------------------------------
+      real(8) :: r_0(mxbllen)
+      real(8) :: z_0(mxbllen)
+      real(8) :: w(mxbllen)
+!     --------------------------------------------------------------------------
+!     geometric business
+      real(8) :: r_t1(mxbllen)
+      real(8) :: r_t2(mxbllen)
+!     --------------------------------------------------------------------------
 
     max_ao_g_order = 0
     if (use_gga) then
       max_ao_g_order = 1
     end if
-    if (do_molecular_gradient) then
+    if (do_geo) then
       max_ao_g_order = max_ao_g_order + 1
     end if
 
@@ -784,8 +841,14 @@ contains
         max_fun_derv = 2
       end if
     end if
-    if (do_molecular_gradient) then
-      max_fun_derv = max_fun_derv + 1
+    if (do_geo_0) then
+      max_fun_derv = 1
+    end if
+    if (do_geo_1) then
+      max_fun_derv = 2
+    end if
+    if (do_geo_2) then
+      max_fun_derv = 3
     end if
 
 
@@ -1093,15 +1156,44 @@ contains
           end if
 #endif
 
-          if (do_molecular_gradient) then
-             call get_xc_molecular_gradient(nr_atoms,           &
-                                            molecular_gradient, &
-                                            derv(1, d_r),       &
-                                            mat_dim,            &
-                                            dmat_0,             &
-                                            ao_p,               &
-                                            ao_p(ao_start(1, 0):ao_end(1, 0)))
+          if (do_geo_0) then
+             call xc_geo_0_lda_c1(property_gradient, &
+                                  derv(1, d_r),      &
+                                  mat_dim,           &
+                                  dmat_0,            &
+                                  ao_p,              &
+                                  ao_p(ao_start(1, 0):ao_end(1, 0)))
           end if
+
+          if (do_geo_1) then
+             call get_n(r_t1(1), 0, mat_dim, tmat_1, buffer, ao_p)
+             call xc_geo_1_lda_c1(property_gradient, &
+                                  derv(1, d_r),      &
+                                  derv(1, d_rr),     &
+                                  r_t1(1),           &
+                                  mat_dim,           &
+                                  dmat_0,            &
+                                  tmat_1,            &
+                                  ao_p,              &
+                                  ao_p(ao_start(1, 0):ao_end(1, 0)))
+          end if
+
+          if (do_geo_2) then
+             call get_n(r_t1(1), 0, mat_dim, tmat_1, buffer, ao_p)
+             call get_n(r_t2(1), 0, mat_dim, tmat_2, buffer, ao_p)
+             call xc_geo_2_lda_c1(property_gradient, &
+                                  derv(1, d_rr),     &
+                                  derv(1, d_rrr),    &
+                                  r_t1(1),           &
+                                  r_t2(1),           &
+                                  mat_dim,           &
+                                  dmat_0,            &
+                                  tmat_1,            &
+                                  tmat_2,            &
+                                  ao_p,              &
+                                  ao_p(ao_start(1, 0):ao_end(1, 0)))
+          end if
+
           time_matrix_dist = time_matrix_dist + second() - time_matrix_dist_start
 
       end if !if (r_0(1) > dft_cfg_dfthr0) then
@@ -1269,13 +1361,13 @@ contains
          end if
       end if
 
-      if (do_molecular_gradient) then
+      if (do_geo) then
          if (i_am_master) then
-            call alloc(molecular_gradient_container, nr_atoms*3)
+            call alloc(property_gradient_container, nr_atoms*3)
          end if
       
-         call mpi_reduce(molecular_gradient,           &
-                         molecular_gradient_container, &
+         call mpi_reduce(property_gradient,           &
+                         property_gradient_container, &
                          nr_atoms*3,                   &
                          mpi_double_precision,         &
                          mpi_sum,                      &
@@ -1284,8 +1376,8 @@ contains
                          ierr) 
       
          if (i_am_master) then
-            call dcopy(nr_atoms*3, molecular_gradient_container, 1, molecular_gradient, 1)     
-            call dealloc(molecular_gradient_container)
+            call dcopy(nr_atoms*3, property_gradient_container, 1, property_gradient, 1)     
+            call dealloc(property_gradient_container)
          end if
       end if
 

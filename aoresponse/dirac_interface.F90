@@ -13,6 +13,8 @@ module dirac_interface
   public di_get_gbds
   public di_read_operator_int
   public di_get_geomderiv_molgrad_dft
+  public di_get_geomderiv_fxd_dft
+  public di_get_geomderiv_gxd_dft
   public do_dft
   public get_s
   public get_f
@@ -119,13 +121,62 @@ contains
       type(matrix), intent(in)    :: D
 !     --------------------------------------------------------------------------
 
-      call xc_integrator(xc_mat_dim            = ntbas(0), &
-                         xc_nz                 = nz,       &
-                         xc_dmat_0             = D%elms,   &
-                         xc_nr_dmat            = 0,        &
-                         xc_nr_fmat            = 0,        &
-                         xc_nr_atoms           = nr_atoms, &
-                         xc_molecular_gradient = g)
+      call xc_integrator(xc_mat_dim           = ntbas(0), &
+                         xc_nz                = nz,       &
+                         xc_dmat_0            = D%elms,   &
+                         xc_nr_dmat           = 0,        &
+                         xc_nr_fmat           = 0,        &
+                         xc_nr_atoms          = nr_atoms, &
+                         xc_property_gradient = g,        &
+                         xc_do_geo_0          = .true.)
+
+   end subroutine
+
+   subroutine di_get_geomderiv_fxd_dft(g, nr_atoms, D, T1)
+
+!     --------------------------------------------------------------------------
+      real(8),      intent(inout) :: g(*)
+      integer,      intent(in)    :: nr_atoms
+      type(matrix), intent(in)    :: D, T1
+!     --------------------------------------------------------------------------
+
+      if (iszero(T1)) then
+         return
+      end if
+
+      call xc_integrator(xc_mat_dim           = ntbas(0),    &
+                         xc_nz                = nz,          &
+                         xc_dmat_0            = D%elms,      &
+                         xc_nr_dmat           = 1,           &
+                         xc_dmat              = (/T1%elms/), &
+                         xc_nr_fmat           = 0,           &
+                         xc_nr_atoms          = nr_atoms,    &
+                         xc_property_gradient = g,           &
+                         xc_do_geo_1          = .true.)
+
+   end subroutine
+
+   subroutine di_get_geomderiv_gxd_dft(g, nr_atoms, D, T1, T2)
+
+!     --------------------------------------------------------------------------
+      real(8),      intent(inout) :: g(*)
+      integer,      intent(in)    :: nr_atoms
+      type(matrix), intent(in)    :: D, T1, T2
+!     --------------------------------------------------------------------------
+
+      if (iszero(T1) .or. iszero(T2)) then
+         return
+      end if
+
+      call xc_integrator(xc_mat_dim           = ntbas(0),             &
+                         xc_nz                = nz,                   &
+                         xc_dmat_0            = D%elms,               &
+                         xc_nr_dmat           = 2,                    &
+                         xc_dmat              = (/T1%elms, T2%elms/), &
+                         xc_nr_fmat           = 0,                    &
+                         xc_nr_atoms          = nr_atoms,             &
+                         xc_property_gradient = g,                    &
+                         xc_do_geo_2          = .true.)
 
    end subroutine
 

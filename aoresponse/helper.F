@@ -136,26 +136,10 @@
 !     XC stuff
 !     ========
 
-      subroutine di_get_geomderiv_fxd_dft()
-        call quit('di_get_geomderiv_fxd_dft not there')
-      end
-
       subroutine di_get_magderiv_gxd_dft()
         call quit('di_get_magderiv_gxd_dft not there')
       end
 
       subroutine di_get_magderiv_fxd_dft()
         call quit('di_get_magderiv_fxd_dft not there')
-      end
-
-      subroutine di_get_sigma_xc_cont()
-        call quit('di_get_sigma_xc_cont not there')
-      end
-
-      subroutine di_get_t_xc_cont()
-        call quit('di_get_t_xc_cont not there')
-      end
-
-      subroutine di_get_geomderiv_gxd_dft()
-        call quit('di_get_geomderiv_gxd_dft not there')
       end

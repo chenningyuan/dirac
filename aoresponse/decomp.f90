@@ -630,4 +630,5 @@ subroutine lowdin_diagonalize(lupri,unres,S,U,U_inv)
   call mat_set_from_full(Ut_full,     1d0, U)
   deallocate(S_full, Ut_inv_full, Ut_full)
 end subroutine lowdin_diagonalize
+
 #endif /* ifndef PRG_DIRAC */

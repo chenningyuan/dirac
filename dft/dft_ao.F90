@@ -86,17 +86,17 @@ module dft_ao
   integer              :: nr_ao_slices   = 0
   integer              :: nr_ao               = 0
   integer              :: nr_cartesian_ao     = 0
-  integer              :: dft_nr_shells       = 0
-  integer              :: dft_nr_large_shells = 0
+  integer, public      :: nr_shells       = 0
   integer              :: dft_maxrep          = 0
   integer              :: dft_maxopr          = 0
   integer              :: nr_boson_sym        = 0
 
   real(8), allocatable :: primitive_exp(:, :)
+  real(8), allocatable, public :: shell_center(:)
   real(8), allocatable :: contraction_coef(:, :)
   real(8), allocatable :: shell_extent(:)
   integer, allocatable :: nr_nonzero_contraction_coefs(:)
-  integer, allocatable :: cartesian_deg(:)
+  integer, allocatable, public :: cartesian_deg(:)
   integer, allocatable :: cartesian_off(:)
   integer, allocatable, public :: spherical_deg(:)
   integer, allocatable :: spherical_off(:)
@@ -347,16 +347,11 @@ contains
 
 !#define DEBUG_SHELL_RANGE
 #ifdef DEBUG_SHELL_RANGE
-    character(dft_nr_shells) :: shell_range
+    character(nr_shells) :: shell_range
 #endif
 !   ----------------------------------------------------------------------------
 
-    iend = dft_nr_shells
-!   if levy-leblond or x2c
-!   don't work on small component shells
-!   this will make problems if you calculate the relativistic current density
-!   expression using levy-leblond, in this case comment this out
-    if (only_large) iend = dft_nr_large_shells
+    iend = nr_shells
 
 #ifdef DEBUG_SHELL_RANGE
     do ishell = 1, iend
@@ -1200,6 +1195,7 @@ contains
     if (.not. dft_basis_info_allocated) then
 
       call alloc(primitive_exp, mxshel, mxcont)
+      call alloc(shell_center, mxshel)
       call alloc(contraction_coef, mxshel, mxcont)
       call alloc(shell_extent, mxshel)
       call alloc(nr_nonzero_contraction_coefs, mxshel)
@@ -1229,8 +1225,6 @@ contains
         end do
       end do
 
-      dft_nr_shells       = kmax
-      dft_nr_large_shells = nlrgsh
 
       call alloc(dft_csp,    ncsp)
       call alloc(dft_ispadr, mxqn)
@@ -1289,12 +1283,16 @@ contains
       if (only_large .and. force_small_ao) only_large = .false.
       nr_ao = ntbas(0)
 
+      nr_shells       = kmax
+      if (only_large) nr_shells = nlrgsh
+
       dft_csp    = csp
       dft_ispadr = ispadr
 
       dft_icos  = icos
       dft_ibbas = ibbas
       dft_nbbas = nbbas
+      shell_center = ncent
 
       dft_maxrep = maxrep
       dft_maxopr = maxopr
@@ -1442,14 +1440,14 @@ contains
 
 !     is done above
 !     call dirac_mpi_bcast(nr_cartesian_ao             )
-      call dirac_mpi_bcast(dft_nr_shells               )
-      call dirac_mpi_bcast(dft_nr_large_shells         )
+      call dirac_mpi_bcast(nr_shells               )
       call dirac_mpi_bcast(dft_maxrep                  )
       call dirac_mpi_bcast(dft_maxopr                  )
       call dirac_mpi_bcast(nr_boson_sym                )
       call dirac_mpi_bcast(nr_ao                       )
 
       call dirac_mpi_bcast(primitive_exp               )
+      call dirac_mpi_bcast(shell_center                )
       call dirac_mpi_bcast(contraction_coef            )
       call dirac_mpi_bcast(shell_extent                )
       call dirac_mpi_bcast(nr_nonzero_contraction_coefs)
