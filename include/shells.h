@@ -1,16 +1,21 @@
-!
-!MI... some description would be usefull....
-!
-! radovan: i agree Miro ...
-!          i am guessing because there is hardly any documentation:
-!          NHKT is l
-!          in Dalton KHKT would be the degeneracy among spherical Gaussians
-!          KHKT = 2*(l - 1) + 1
-!          and KCKT the corresponding cartesian degeneracy
-!          KCKT = l*(l + 1)/2
-!          but in DIRAC with cartesian basis both give the same (cartesian) degeneracy
+!*****************************************************************************
+!     Data on the AO-block associated with a given shell(ISHELL):
+!       NUCO    - number of uncontracted functions
+!       NRCO    - number of contracted functions
+!     Data on a given shell in an AO-block:
+!       NCENT   - index of symmetry independent center
+!       NUMCF   - index of shell in AO-block
+!       NBCH    - index of block in AO-vector
+!       LAMN    - name of center
+!       ISTBAO  - stabiliser: basic sym. op. that do not move center
+!       NHKT    - angular quantum number (s=1,p=2,d=3 etc.)
+!       KHKT    - number of spherical (Cartesian) components
+!       KCKT    - number of Cartesian components
+!       SEGM    - segmented contraction
+!       LCLASS  - class: large component (1), small or Huckel(2), density fitting (0)
+!       CENT    - coordinates of center
 !          JSTRT is an offset for the shell
-!
+!*****************************************************************************
       LOGICAL SHARE(MXSHEL), SEGM(MXSHEL), SPHR(MXSHEL)
       REAL*8 CENT(MXSHEL, 3, 2)
       INTEGER NHKT(MXSHEL), KHKT(MXSHEL), KCKT(MXSHEL), ISTBAO(MXSHEL), &
