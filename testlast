@@ -272,12 +272,12 @@ cat <<EOF >job_testlast.sh
 #
 # This file is a test job script created by the 'testlast' script
 #
-echo " Starting test at \`date\`"
+echo " Starting runtest to run tests at \`date\`"
 cd ${testdir};
 
 if [ -n "$TIMEOUT" ]; then
 #  ... include TIMEOUT flag
-./runtest --tests="$tests" --runtype="$RUNTYPE" $pampath $mpi $diracexe --run=$run --timeout=$TIMEOUT > ./logs/$runlog 2>&1 || \
+./runtest --tests="$tests" --runtype="$RUNTYPE" $pampath $mpi $diracexe --run=$run --timeout=$TIMEOUT > ./logs/$runlog || \
 { echo " runtest failed" ; \
   echo " Here is the logfile ${testdir}/logs/$runlog" ; \
   cat ${testdir}/logs/$runlog ; \
@@ -285,7 +285,7 @@ if [ -n "$TIMEOUT" ]; then
 }
 else
 # no TIMEOUT flag ...
-./runtest --tests="$tests" --runtype="$RUNTYPE" $pampath $mpi $diracexe --run=$run > ./logs/$runlog 2>&1 || \
+./runtest --tests="$tests" --runtype="$RUNTYPE" $pampath $mpi $diracexe --run=$run > ./logs/$runlog || \
 { echo " runtest failed" ; \
   echo " Here is the logfile ${testdir}/logs/$runlog" ; \
   cat ${testdir}/logs/$runlog ; \
@@ -294,6 +294,9 @@ else
 fi
 
 if [ -f logs/$txtlog ]; then
+   echo " =============================================================================="
+   echo "           Final summary from $0"
+   echo " =============================================================================="
    if [ -s logs/$txtlog ]; then
       echo " Calculations completed at \`date\` with one or more errors"
       echo " Below follows the list of tests that failed :"
@@ -303,7 +306,7 @@ if [ -f logs/$txtlog ]; then
       echo " Calculations completed at \`date\` : no errors were detected"
     fi
 else
-    echo ' Calculations were not completed : the run_log follows'
+    echo ' Calculations were not completed : the run log logs/$runlog follows'
     cat logs/$runlog
 fi
 EOF
@@ -327,7 +330,7 @@ if [ "${queue}" = "none" ]; then
   chmod u+x job_testlast.sh
   ./job_testlast.sh
   RT=$? 
-  echo job_testlash.sh finished with code $RT
+  echo " job_testlash.sh finished with code $RT"
   exit $RT
 else
   echo " Submitting test calculations to queue $queue ... "
