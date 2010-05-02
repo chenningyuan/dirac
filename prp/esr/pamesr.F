@@ -627,7 +627,7 @@ C
                 IHRM = -1
              END IF
           END IF
-          CALL GOSCI_MAKEH(.FALSE.,IHRM,WORK(KZCONF),
+          CALL GASCIP_MAKEH(.FALSE.,IHRM,WORK(KZCONF),
      &         WORK(KPR),WORK(KPI),WORK(KPMLF),WORK(KMUUUU))
           IF (ITIM.EQ.1) THEN
              WRITE (LUPRI,*)' WARNING: Inactive contribution not added!'

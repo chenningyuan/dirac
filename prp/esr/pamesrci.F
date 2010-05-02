@@ -69,7 +69,7 @@ C
       CALL SETDCBIDX()
 C
 C     Initialize IOPT_*(2) for generation of FC and FV matrices
-C     (used in GOSCI_FULLCI for getting FC)
+C     (used in GASCIP_FULLCI for getting FC)
 C
       DO I = 1,2
          IOPT_ISYMOP(I) = 1
@@ -91,11 +91,11 @@ C
 C     **** Find necessary CI information:
 C          - find number of determinants,
 C          - generate list of determinants.
-C          Note: only GOSCI program implemented for ESR_RESOLVE !
+C          Note: only GASCIP program implemented for ESR_RESOLVE !
 C
       IOPT_SYMMETRY = -1
 C     ... code for including all symmetries
-      CALL RSETCI('GOSCI',WORK,KFREE,LFREE)
+      CALL RSETCI('GASCIP',WORK,KFREE,LFREE)
 C
 C     This is CI, so no orbital rotations:
 C
@@ -132,7 +132,7 @@ C     Output: KEIGVL - WORK(KEIGVL) has eigenvalues
 C             KEIGVC - WORK(KEIGVC) has eigenvectors
 C
 C     Author: Hans Joergen Aa. Jensen
-C     (Based on GOSCI_STARTVEC by Joern Thyssen June 2000)
+C     (Based on GASCIP_STARTVEC by Joern Thyssen June 2000)
 C
 C***********************************************************************
 #include <implicit.h>
@@ -186,7 +186,7 @@ C
 C        MAXCIT Davidson CI iterations.
 C        -- not implemented yet for ESR_RESOLVE
 C
-Chj      CALL GOSCI_RCISTD(WORK(KZCONF),CMO,CREF,ECI,
+Chj      CALL GASCIP_RCISTD(WORK(KZCONF),CMO,CREF,ECI,
 Chj  &        WORK(KFREE),LFREE)
 Chj      WRITE(LUPRI,'(/A,F20.8)')
 Chj  &        ' (RCIST) CI energy:',ECI
@@ -197,11 +197,11 @@ C        Full CI.
 C           
 C debug TODO remove again: 
          IPROPT =  MAX(IPRINT,5)
-         CALL GOSCI_FULLCI(WORK(KZCONF),CMO,WORK(KEIGVL),WORK(KEIGVC),
+         CALL GASCIP_FULLCI(WORK(KZCONF),CMO,WORK(KEIGVL),WORK(KEIGVC),
      &                     ECORE,WORK,KFREE,LFREE)
 C debug TODO remove again: 
          IPROPT = IPRINT
-C        CALL GOSCI_FULLCI(IDET,CMO,EIGVAL,EIGVEC,ECORE,WORK,KFREE,LFREE)
+C        CALL GASCIP_FULLCI(IDET,CMO,EIGVAL,EIGVEC,ECORE,WORK,KFREE,LFREE)
 C           
 Chj   END IF
 C

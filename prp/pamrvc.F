@@ -151,7 +151,7 @@ C
       CALL GETMAT('FCAC',WORK(KFCAC),IPRXRS,FKRMC,WORK(KFREE),LFREE)
       CALL GETMAT('H2AC',WORK(KH2AC),IPRXRS,FKRMC,WORK(KFREE),LFREE)
 C
-      IF (XRS_CIPROGRAM .EQ. 'GOSCI' .OR.
+      IF (XRS_CIPROGRAM .EQ. 'GASCIP' .OR.
      &    XRS_CIPROGRAM .EQ. 'LUCIAREL') THEN
 C        use routine with MOLFDIR format for integrals
          CALL XRSSCIM(BCVEC,SCVEC,
@@ -214,7 +214,7 @@ C
      &             WORK,KFREE,LFREE)
       CALL QFC2MFC(FCAC,WORK(KMOLFFC),1,1,IPRXRS)
 C
-      IF (XRS_CIPROGRAM .EQ. 'GOSCI') THEN
+      IF (XRS_CIPROGRAM .EQ. 'GASCIP') THEN
 C
 C        Transform integrals from Dirac (NZ,3) basis to Molfdir basis
 C        ------------------------------------------------------------
@@ -234,8 +234,8 @@ C
 C        Call CI sigma vector module for calculating H * B
 C        -------------------------------------------------
 C
-         IF (XRS_CIPROGRAM .EQ. 'GOSCI') THEN
-            CALL GOSCI_SVC(.FALSE.,DUMMY,SCVEC(1,I+NOSIM),
+         IF (XRS_CIPROGRAM .EQ. 'GASCIP') THEN
+            CALL GASCIP_SVC(.FALSE.,DUMMY,SCVEC(1,I+NOSIM),
      &                     NZCONF,WORK(KZCONF),BCVEC(1,I),
      &                     WORK(KMOLFFC),WORK(KMUUUU),IPRXRS)
          ELSE IF (XRS_CIPROGRAM .EQ. 'LUCIAREL') THEN
@@ -3307,7 +3307,7 @@ C
          GO TO 100
       END IF
 C
-      IF ( XRS_CIPROGRAM .EQ. 'GOSCI' .OR.
+      IF ( XRS_CIPROGRAM .EQ. 'GASCIP' .OR.
      &     XRS_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
 C
 C        Allocate memory
@@ -3321,8 +3321,8 @@ C
 C        Calculate density matrices
 C        --------------------------
 C
-         IF ( XRS_CIPROGRAM .EQ. 'GOSCI' ) THEN
-            CALL GOSCI_RMAKDM(NZCONF,.TRUE.,.TRUE.,WORK(KZCONF),
+         IF ( XRS_CIPROGRAM .EQ. 'GASCIP' ) THEN
+            CALL GASCIP_RMAKDM(NZCONF,.TRUE.,.TRUE.,WORK(KZCONF),
      &           CLREF,CRREF,WORK(KDVMOLF),WORK(KPVMOLF),IPRXRS)
          ELSE
 C           LUCIAREL:
@@ -4952,7 +4952,7 @@ C
       CALL RTKTIME(.TRUE.,17)
       KFRSAV = KFREE
 C
-      IF (XRS_CIPROGRAM .EQ. 'GOSCI' .OR.
+      IF (XRS_CIPROGRAM .EQ. 'GASCIP' .OR.
      &    XRS_CIPROGRAM .EQ. 'LUCIAREL') THEN
          CALL MEMGET('REAL',KCREF,NZCONFQ,WORK,KFREE,LFREE)
          CALL READAC(LUBCI,NZCONFQ,WORK(KCREF),1)
@@ -5040,7 +5040,7 @@ C        Transform quarternion FCAC (Dirac MO-basis) to Molfdir MO-basis
 C
          CALL QFC2MFC(WORK(KFCACX),WORK(KMOLFFC),JSYMOP,JTIMOP,IPRXRS)
 C
-         IF (XRS_CIPROGRAM .EQ. 'GOSCI') THEN
+         IF (XRS_CIPROGRAM .EQ. 'GASCIP') THEN
 C
 C           Transform integrals from Dirac (NZ,3) basis to Molfdir basis
 C
@@ -5054,8 +5054,8 @@ C
 C
 C        Calculate sigma vector
 C
-         IF (XRS_CIPROGRAM .EQ. 'GOSCI') THEN
-            CALL GOSCI_SVC(.FALSE.,DUMMY,SCVEC(1,I),NZCONF,
+         IF (XRS_CIPROGRAM .EQ. 'GASCIP') THEN
+            CALL GASCIP_SVC(.FALSE.,DUMMY,SCVEC(1,I),NZCONF,
      &         WORK(KZCONF),CREF,WORK(KMOLFFC),WORK(KMUUUU),IPRXRS)
          ELSE IF (XRS_CIPROGRAM .EQ. 'LUCIAREL') THEN
             CALL LUCI_SIGMA(.FALSE.,DUMMY,CREF,SCVEC(1,I),
