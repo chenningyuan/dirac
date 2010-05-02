@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# directory that holds the binary
-# is set by configure
+# Directory that holds the Dirac binary is specified in BIN_DIR
+# which is set by configure
 BIN_DIR=
 
 # this was previously done in runtest
@@ -67,6 +67,27 @@ fi
   if [ -z "$FILTER" ]; then
      FILTER=filter
   fi
+  test_text='ok'
+  if [ ! -s result/$OLDOUT ]; then
+     test_text="reference output result/$OLDOUT not found"
+  elif [ ! -s result/$FILTER ]; then
+     test_text="test filter result/$FILTER not found"
+  fi
+  if [ "$test_text" != "ok" ]; then
+#
+# No reference file to compare to or no filter file
+#
+# Write only write a report in the logs directory.
+#
+    echo " <HR>"                                                    >>${LOG}/${TAG}_dif.htm
+    echo "<FONT COLOR="#FF0000"> `pwd` : $MOL $MENU test failed </FONT>" >>${LOG}/${TAG}_dif.htm
+    echo "<FONT COLOR="#FF0000"> $test_text </FONT>" >>${LOG}/${TAG}_dif.htm
+    echo " <HR>"                                                    >>${LOG}/${TAG}_dif.htm
+    echo " Test `pwd` $MOL $MENU test failed : test file not found" >>${LOG}/${TAG}_dif.txt
+    echo " Test `pwd` $MOL $MENU failed : $test_text" >>${LOG}/${TAG}_dif.txt
+    exit
+  fi
+#
   ../crep  result/$OLDOUT result/$FILTER >result/$OLDOUT.rep
   ../crep  $NEWOUT result/$FILTER >$NEWOUT.rep
 #
@@ -89,12 +110,14 @@ fi
 #
    if [ -s ${NEWOUT}_dif.txt ]; then
       echo " Test `pwd` $MOL $MENU failed : output not consistent with reference output" >>${LOG}/${TAG}_dif.txt
+      echo " Test `pwd` $MOL $MENU failed : output not consistent with reference output" > /dev/stderr
    else
 #
 #     This strange construction (cat an empty file) is needed to make sure that the log file
 #     exists to enable similar checking (using if -e and then if -s) in the testlast script.
 #
       cat ${NEWOUT}_dif.txt >>${LOG}/${TAG}_dif.txt
+      echo " Test `pwd` $MOL $MENU was passed :-) " > /dev/stderr
    fi
 #
 else
@@ -107,6 +130,7 @@ else
   echo "<FONT COLOR="#FF0000"> `pwd` : $MOL $MENU failed </FONT>" >>${LOG}/${TAG}_dif.htm
   echo " <HR>"                                                    >>${LOG}/${TAG}_dif.htm
   echo " Test `pwd` $MOL $MENU failed : runtime error (DIRAC crashed)" >>${LOG}/${TAG}_dif.txt
+  echo " Test `pwd` $MOL $MENU failed : runtime error (DIRAC crashed)" > /dev/stderr
 #
 fi
 #

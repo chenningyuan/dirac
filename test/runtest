@@ -349,6 +349,7 @@ for tt in $tests; do
    fi
    echo
    echo '*****> Running test '$tt
+   echo '*****> Running test '$tt > /dev/stderr
    echo
    if [ -r $tt/README ]; then
       cat $tt/README
