@@ -469,7 +469,7 @@ C
 #include "dcbdhf.h"
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "dcbgosci.h"
+#include "dcbgascip.h"
 C
       CALL QENTER('TDHFORB')
 C
@@ -489,7 +489,7 @@ c         NPSH(I) = NPSH_DHF(I)
       NELECT = NELECT_DHF
 C
 C     Transfer open shell average-of-configuration to GAS space notation
-C     (for e.g. ESR GOSCI) /July 2002 hjaaj
+C     (for e.g. ESR GASCIP) /July 2002 hjaaj
 C
       NAELEC = NAELEC_DHF
       NGAS_DC= NOPEN
@@ -583,7 +583,7 @@ C
 #include "dcborb.h"
 #include "dcbkrmc.h"
 #include "dcbopt.h"
-#include "dcbgosci.h"
+#include "dcbgascip.h"
 C
       CALL QENTER('TKRMCORB')
 C
@@ -695,7 +695,7 @@ C
 #include "dcborb.h"
 #include "dcbkrci.h"
 #include "dcbopt.h"
-#include "dcbgosci.h"
+#include "dcbgascip.h"
 C
       CALL QENTER('TKRCIORB')
 C
