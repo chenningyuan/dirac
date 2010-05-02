@@ -992,7 +992,7 @@ C
       CALL QENTER('RGETH2')
       CALL RTKTIME(.TRUE.,3)
 C
-      IF ( OPT_CIPROGRAM .EQ. 'GOSCI' .OR.
+      IF ( OPT_CIPROGRAM .EQ. 'GASCIP' .OR.
      &     OPT_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
 C
 C        Two electron integrals
@@ -2110,7 +2110,7 @@ C
       CALL QENTER('RGETH2TX')
       CALL RTKTIME(.TRUE.,4)
 C
-      IF ( XRS_CIPROGRAM .EQ. 'GOSCI' .OR.
+      IF ( XRS_CIPROGRAM .EQ. 'GASCIP' .OR.
      &     XRS_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
 C
 C        Two electron integrals

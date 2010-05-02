@@ -49,7 +49,7 @@
 /*
  * cgendet generates all n-bits integers with m bits set under
  * the symmetry constraints, occupation constraints, and M_k constraints
- * given by the functions gosci_{symok,gasok,mkok}.
+ * given by the functions gascip_{symok,gasok,mkok}.
  *
  * The code is written in C as fortran77 does not support recursive
  * functions.
@@ -223,7 +223,7 @@ getnbitscalls ( long *fReset, long long int *nCN, long long int *nFN ) {
 /*
  * cgendet generates all n-bits integers with m bits set under
  * the symmetry constraints, occupation constraints, and M_k constraints
- * given by the functions gosci_{symok,gasok,mkok}.
+ * given by the functions gascip_{symok,gasok,mkok}.
  *
  * The code is written in C as fortran77 does not support recursive
  * functions.

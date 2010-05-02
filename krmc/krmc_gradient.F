@@ -229,7 +229,7 @@ C
 C
 C     Calculate CI matrix times reference vector
 C     ------------------------------------------
-      IF ( OPT_CIPROGRAM .EQ. 'GOSCI') THEN
+      IF ( OPT_CIPROGRAM .EQ. 'GASCIP') THEN
 C
 C        Transform integrals from Dirac (NZ,3) basis to Molfdir basis
 C        ------------------------------------------------------------
@@ -239,8 +239,8 @@ C
 C
          CALL DNZ32M(H2AC,WORK(KMUUUU),IPROPT)
 C
-C        Calculate CI gradient with CI program GOSCI.
-         CALL GOSCI_SVC(.TRUE.,WORK(KDIAG),GCI,NZCONF,WORK(KZCONF),
+C        Calculate CI gradient with CI program GASCIP.
+         CALL GASCIP_SVC(.TRUE.,WORK(KDIAG),GCI,NZCONF,WORK(KZCONF),
      &        CREF,WORK(KMOLFFC),WORK(KMUUUU),IPROPT)
       ELSE IF ( OPT_CIPROGRAM .EQ. 'LUCIAREL') THEN
 C
@@ -316,7 +316,7 @@ C
       CALL DZERO(WORK(KHR),NZCONF2)
       CALL DZERO(WORK(KHI),NZCONF2)
 CTROND..check this call !!!
-      CALL GOSCI_MAKEH(.TRUE.,1,NZCONF,IDET,WORK(KHR),WORK(KHI),
+      CALL GASCIP_MAKEH(.TRUE.,1,NZCONF,IDET,WORK(KHR),WORK(KHI),
      &     WORK(KMOLFFC),WORK(KMUUUU))
       write(6,*) 'debug hamil'
       call prqmat(work(khr),nzconf,nzconf,nzconf,nzconf,

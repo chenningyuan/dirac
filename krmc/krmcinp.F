@@ -47,7 +47,7 @@ C     Input section for KRMSCF-module
 C
 C     Written by J. Thyssen - Oct 26 1998
 C     Last revision:
-C         Max. no. of active orbitals only for GOSCI
+C         Max. no. of active orbitals only for GASCIP
 C                T. Fleig   - May 24, 2002
 C
 C***********************************************************************
@@ -170,7 +170,7 @@ C
 C     Initialize /DCCKRMC/
 C     ===================
 C
-      KRMC_CIPROGRAM = 'GOSCI'
+      KRMC_CIPROGRAM = 'GASCIP'
       KRMC_FRZSTR(1) = ' '
       KRMC_FRZSTR(2) = ' '
       KRMC_DELSTR(1) = ' '

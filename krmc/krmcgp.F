@@ -920,7 +920,7 @@ C
       DIMENSION IP(4)
       CHARACTER CIPRG*(*)
 C
-chj   IF (CIPRG .EQ. 'GOSCI') THEN
+chj   IF (CIPRG .EQ. 'GASCIP') THEN
          IF (NZ .EQ. 1) THEN
             WRITE(LUPRI,9000)
             DO I = 1, NZCONF

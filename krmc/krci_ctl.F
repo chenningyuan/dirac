@@ -194,7 +194,7 @@ C
 C     Initialize /DCCKRCI/
 C     ===================
 C
-      KRCI_CIPROGRAM = 'GOSCI'
+      KRCI_CIPROGRAM = 'GASCIP'
 C
 C     Initialize /DCICKRCI/
 C     ===================
@@ -954,7 +954,7 @@ C***********************************************************************
 C
 C     Driver routine to KRCI_CALC_1
 C     Get CI wave function.
-C     Either LUCIAREL or GOSCI or ...
+C     Either LUCIAREL or GASCIP or ...
 C
 C     Based on PSIOPT.
 C
@@ -1282,7 +1282,7 @@ C
      &     3X,'  Stefan Knecht and Hans Joergen Aa. Jensen ',//,
      &     3X,'Integral transformation: ',/,
      &     3X,'  Luuk Visscher, Jon K. Laerdahl, and Trond Saue',//,
-     &     3X,'GOSCI CI code: ',/,
+     &     3X,'GASCIP CI code: ',/,
      &     3X,'  Joern Thyssen and Hans Joergen Aa. Jensen',//,
      &     3X,'LUCIAREL CI code: ',/,
      &     3X,'  Timo Fleig and Jeppe Olsen',//,
@@ -1293,7 +1293,7 @@ C
 !
       WRITE(LUPRI,9110)
  9110 FORMAT(/' This module is published in:',//,
-     &     4X,'GOSCI: J Thyssen, T Fleig, and H J Aa Jensen',/,
+     &     4X,'GASCIP: J Thyssen, T Fleig, and H J Aa Jensen',/,
      &    20X,'   J Chem Phys 129, 034109 (2008), suppl. material.',/,
      &     4X,'DIRAC-LUCIAREL: T Fleig, J Olsen, and L Visscher',/,
      &    20X,'   J Chem Phys, 119,6 (2003) 2963',/,
