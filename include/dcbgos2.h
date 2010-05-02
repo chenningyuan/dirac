@@ -1,9 +1,10 @@
+C File: dcbgos2.F
 C
-C     DEFINITION PARAMETERS GOSCIP :
+C     DEFINITION PARAMETERS GASCIP :
 C
-C     /DCIGOS2/
-C        KDOGOSCI : Flag to do GOSCI calculation
+C     /DCBGOS2/
+C        KDOGASCIP : Flag to do GASCIP calculation
 C
-      LOGICAL KDOGOSCI
-      COMMON /DCIGOS2/ KDOGOSCI
+      LOGICAL KDOGASCIP
+      COMMON /DCBGOS2/ KDOGASCIP
       

@@ -19,16 +19,16 @@
 !  DOKRCI - perform CI calculation with LUCIAREL/...
 !  DOKRCC - perform coupled-cluster calculation with LUCIAREL
 !  DOCOSCI- do COSCI calculation 
-!  DOGOSCI- do GOSCI calculation 
+!  DOGASCIP- do GASCIP calculation 
 
       LOGICAL                      DOMP2, DOMVO, DORES, DOCCM, DOCIM,   &
      &        DOHSCC, DOHSFS, DOLUCT, DOKRMC, DOLUCIAR, DOMP2NO,        &
      &        L1ORBM, L2ORBM, PHCOEF, DOCOSCI, DOADC, DOKRCI, DOKRCC,   &
-     &        DOGOSCI
+     &        DOGASCIP
 
       COMMON /DCLPSI/                                                   &
      &                             DOMP2, DOMVO, DORES, DOCCM, DOCIM,   &
      &        DOHSCC, DOHSFS, DOLUCT, DOKRMC, DOLUCIAR, DOMP2NO,        &
      &        L1ORBM, L2ORBM, PHCOEF, DOCOSCI, DOADC, DOKRCI, DOKRCC,   &
-     &        DOGOSCI
+     &        DOGASCIP
 ! --- end of dcbpsi.h ---
