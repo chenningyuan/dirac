@@ -2166,12 +2166,12 @@ C
       DATA TABDIR /'*END OF','*DHFCAL','*MP2CAL','*LUCITA',
      &             '*MVOCAL','*RESOLV','*KRMCSC','*STEP C',
      &             '*OPTIMI','*MP2 NO','*KRCICA','*COSCI ',
-     &             '*GOSCI ','*HSFS  ','.XXXXXX','.XXXXXX'/
+     &             '*GASCIP','*HSFS  ','.XXXXXX','.XXXXXX'/
       DATA TABLE  /'.DHF   ','.MP2   ','.LUCITA','.REORDE',
      &             '.POST D','.RELCCS','.DIRRCI','.MVO   ',
      &             '.RESOLV','.ORBROT','.LUCIAR','.KRMCSC',
      &             '.PHCOEF','.MP2 NO','.RELADC','.KR CI ',
-     &             '.KR CC ','.COSCI ','.GOSCI ','.HSFS  '/
+     &             '.KR CC ','.COSCI ','.GASCIP','.HSFS  '/
 C
       NJOBS = 0
 C
@@ -2193,7 +2193,7 @@ C
       DOKRCC  = .FALSE.
       CBKRINI = .FALSE.
       DOCOSCI = .FALSE.
-      DOGOSCI = .FALSE.
+      DOGASCIP= .FALSE.
       DOHSFS  = .FALSE.
 C
 C *** Initialize /CBIREO/ in dcbreo.h
@@ -2207,7 +2207,7 @@ C
 C     Initialize /DCIGOS2/ in dcbgos2.h
 C     ===================
 C
-      KDOGOSCI = .FALSE.
+      KDOGASCIP= .FALSE.
 C.q
 C
 C     Read menu file
@@ -2381,10 +2381,12 @@ C&&& COSCI: Do a COSCI calculation
             NJOBS = NJOBS + 1
             GO TO 100
  119     CONTINUE
-C&&& GOSCI: Do a GOSCI calculation (new code)
+C&&& GASCIP: Do a GASCIP calculation (new code)
 #ifdef MOD_KRMC
-            DOGOSCI = .TRUE.
+            DOGASCIP = .TRUE.
             NJOBS = NJOBS + 1
+#else
+            CALL QUIT('Sorry, .GASCIP not available in this version')
 #endif
             GO TO 100
  120     CONTINUE
@@ -2448,7 +2450,7 @@ C hj aug03: TODO: idea was/is to maybe follow MCSCF by big CI
 #endif
       IF(DOCOSCI) WRITE(LUPRI,'(A)') ' * Run COSCI CI code'
 #ifdef MOD_KRMC
-      IF(DOGOSCI) WRITE(LUPRI,'(A)') ' * Run GOSCI CI code'
+      IF(DOGASCIP) WRITE(LUPRI,'(A)') ' * Run GASCIP CI code'
 #endif
       IF(DOCIM) WRITE(LUPRI,'(A)') ' * Run DIRRCI CI code'
       IF(DOLUCT)WRITE(LUPRI,'(A)') ' * Run LUCITA CI code'
@@ -2573,7 +2575,7 @@ C
 !.s/sya,2007.02.06
    13 CONTINUE
 #ifdef MOD_KRMC
-        CALL GOSCI_INP(WORD,.FALSE.,WORK,LWORK)
+        CALL GASCIP_INP(WORD,.FALSE.,WORK,LWORK)
 #endif
         GO TO 200
 C
@@ -2668,8 +2670,8 @@ C
       END IF
 
 #ifdef MOD_KRMC
-      IF( DOGOSCI ) THEN
-         CALL GOSCI_INP(WORD,.TRUE.,WORK,LWORK)
+      IF( DOGASCIP ) THEN
+         CALL GASCIP_INP(WORD,.TRUE.,WORK,LWORK)
       END IF
 #endif
 C
