@@ -31,7 +31,6 @@ for arg in args:
    x0=float(entry[0])
    y0=float(entry[1])
    z0=float(entry[2])
-   print x0,y0,z0
    l=[]
    l.append(float(0))
    l.append(float(entry[3]))
