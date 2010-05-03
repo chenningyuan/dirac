@@ -68,6 +68,7 @@ module numoper_integrals
 
    integer, parameter :: max_boson_irreps = 8
    integer, save      :: n_boson_irreps = 1
+   integer, save      :: n_ao
    logical, save      :: numoper_cb_initialized = .false.
    logical, save      :: debug = .false.
 
@@ -133,6 +134,7 @@ module numoper_integrals
           call NumOper_BasisOffsetTables_init(basis_bu_offt)
 
           n_boson_irreps = nbsym
+          n_ao           = ntbas(0)
 
 ! first collecting the boson unsorted (ie LS(irrep1) LS(irrep2) etc
 
@@ -197,8 +199,8 @@ module numoper_integrals
       subroutine NumOper_OneElOp_SetMatrix_PS(oneint,from_file,doint,irrep_oper)
          use memory_allocator
          use grid_file
-         use dft_cb_interface 
-         use dft_ao
+         use ao_eval
+         use basis_info
 
          implicit none
          logical :: doint(4)
@@ -216,16 +218,11 @@ module numoper_integrals
 
          call read_grid(from_file,grid,operator)
          npoint = size(grid,2)
- 
-         call dft_ao_init(.false.,  & 
-                          0,        &
-                          0,        &
-                          .false.,  & 
-                          0.0D0,    &
-                          .false.)
-         call init_dft_cb()
 
-         ndim = nr_ao_total
+         call basis_info_read(.true., .false.) 
+         call ao_eval_init(0, 0, .false.)
+
+         ndim = n_ao
          call alloc(ao,ndim)
          call alloc(offt_bu,ndim)
          call alloc(buffer,ndim)
@@ -235,7 +232,7 @@ module numoper_integrals
 ! start numerical integration...
 
          do ipoint = 1, npoint
-            call get_so(grid(1,ipoint), &
+            call get_ao(grid(1,ipoint), &
                         grid(2,ipoint), &
                         grid(3,ipoint), &
                         ao, buffer)

@@ -31,7 +31,6 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       use dft_cfg
-      use dft_cb_interface
       use memory_allocator
 
 #include "implicit.h"
@@ -54,7 +53,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       real(8), allocatable :: buf(:)
       integer, allocatable :: iclab(:)
 
-      dft_temp_file_unit = 44
+      lunit_grid = 44
 
       call alloc(smat,  nbast*nbast*2)
       call alloc(gao,   nbast)
@@ -98,7 +97,6 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
          use dft_cfg
-         use dft_cb_interface
       use memory_allocator
 
 #include "implicit.h"
@@ -192,10 +190,11 @@ C
 C
 C     integrate
 C
-      REWIND dft_temp_file_unit
+      lunit_grid = 44
+      REWIND lunit_grid
       NPNTS = 0
   100 CONTINUE
-      READ(dft_temp_file_unit) NPOINT
+      READ(lunit_grid) NPOINT
       IF (NPOINT.GT.0) THEN
          NPNTS = NPNTS + NPOINT
          call alloc(kx, npoint)
@@ -203,7 +202,7 @@ C
          call alloc(kz, npoint)
          call alloc(kw, npoint)
          CALL GRTES3(kx, ky, kz, kw,
-     &               dft_temp_file_unit,NPOINT)
+     &               lunit_grid,NPOINT)
 
       CALL GRTES2(kx, ky, kz, kw,
      &               NPOINT,
@@ -477,8 +476,7 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       use dft_cfg
-      use dft_cb_interface
-      use dft_ao
+      use ao_eval
 
 #include "implicit.h"
 #include "priunit.h"

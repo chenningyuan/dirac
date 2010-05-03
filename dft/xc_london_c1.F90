@@ -21,7 +21,7 @@ module xc_london_c1
 !      (*) figure out centers of AOs in dft_ao
 
   use memory_allocator
-  use dft_ao
+  use basis_info
 
   implicit none
 

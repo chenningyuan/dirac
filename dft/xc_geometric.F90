@@ -1,6 +1,6 @@
 module xc_geometric
 
-   use dft_ao
+   use basis_info
 
    implicit none 
 

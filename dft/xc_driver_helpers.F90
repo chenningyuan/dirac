@@ -1,9 +1,9 @@
 module xc_driver_helpers
 
   use dft_cfg
+  use ao_eval
   use dft_functional_derv
-  use dft_ao
-  use dft_density
+  use density_eval
 
 contains
 

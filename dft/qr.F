@@ -24,7 +24,7 @@ c=======================================================================
 
       use xc_driver
       use dft_cfg
-      use dft_density
+      use density_eval
       use dft_functional_derv
 
 #include "implicit.h"

@@ -31,7 +31,6 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
         use dft_cfg
-        use dft_cb_interface
         use memory_allocator
 
 #include "implicit.h"
@@ -131,24 +130,24 @@ C
 C     Open unit
 C     ================
 C
-      dft_temp_file_unit = 44
+      lunit_grid = 44
       IF(dft_cfg_import_grid) THEN
-        OPEN(dft_temp_file_unit,
+        OPEN(lunit_grid,
      &       FORM   = 'FORMATTED',
      &       STATUS = 'UNKNOWN',
      &       ACCESS = 'SEQUENTIAL',
      &       FILE   =  dft_cfg_gridfile)
       ELSE
-        OPEN(dft_temp_file_unit,
+        OPEN(lunit_grid,
      &       FORM   = 'UNFORMATTED',
      &       STATUS = 'UNKNOWN',
      &       ACCESS = 'SEQUENTIAL',
      &       FILE   = 'DIRAC.QUAD')
       ENDIF
-      REWIND dft_temp_file_unit
+      REWIND lunit_grid
 
       if (dft_cfg_multigrid) then
-        iunit = dft_temp_file_unit
+        iunit = lunit_grid
         do i = 0, dft_cfg_multigrid_max
           iunit = iunit + 1
           dft_cfg_multigrid_file_unit(i) = iunit
@@ -164,12 +163,12 @@ C
       if (dft_cfg_import_grid .or. dft_cfg_multigrid) go to 999
 
       if (dft_cfg_export_grid) then
-        OPEN(dft_temp_file_unit+1,
+        OPEN(lunit_grid+1,
      &       FORM   = 'FORMATTED',
      &       STATUS = 'UNKNOWN',
      &       ACCESS = 'SEQUENTIAL',
      &       FILE   =  dft_cfg_gridfile)
-        rewind dft_temp_file_unit+1
+        rewind lunit_grid+1
       end if
 
 C
@@ -238,7 +237,6 @@ C      Adapted for DIRAC by T.Saue                                     C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
        use dft_cfg
-       use dft_cb_interface
 
 #include "implicit.h" 
 #include "priunit.h" 
@@ -550,10 +548,11 @@ C
 C        Write to file
 C        ====================
 C
-         CALL WRTQUA(X8,Y8,Z8,WT8,dft_temp_file_unit,NTHIS)
+         lunit_grid = 44
+         CALL WRTQUA(X8,Y8,Z8,WT8,lunit_grid,NTHIS)
          if (dft_cfg_export_grid) then
            call export_dft_grid(x8, y8, z8, wt8, 
-     &                          dft_temp_file_unit+1, nthis)
+     &                          lunit_grid+1, nthis)
          end if
 
          NTOTAL = NTOTAL + NTHIS
@@ -566,10 +565,10 @@ C
 10    CONTINUE
 
       NLAST = -1
-      CALL WRTQUA(X8,Y8,Z8,WT8,dft_temp_file_unit,NLAST)
+      CALL WRTQUA(X8,Y8,Z8,WT8,lunit_grid,NLAST)
       if (dft_cfg_export_grid) then
         call export_dft_grid(x8, y8, z8, wt8, 
-     &                       dft_temp_file_unit+1, nlast)
+     &                       lunit_grid+1, nlast)
       end if
 
       WRITE (LUPRI,'(/,2X,A,I10,A,F5.1,A/)') 
@@ -578,7 +577,7 @@ C
 C
 C     Print file
 C
-      IF (IPRINT .GT. 20) CALL PRIQUA(X8,Y8,Z8,WT8,dft_temp_file_unit)
+      IF (IPRINT .GT. 20) CALL PRIQUA(X8,Y8,Z8,WT8,lunit_grid)
       RETURN
       END
 
@@ -777,7 +776,6 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
        use dft_cfg
-       use dft_cb_interface
 
 #include "implicit.h" 
 #include "priunit.h" 

@@ -1,8 +1,9 @@
-module dft_density
+module density_eval
+
+   use basis_info
 
   implicit none
 
-  public dft_density_init
   public gga_sym
   public get_n
   public get_s
@@ -26,24 +27,8 @@ module dft_density
 
   save
 
-!            for (number) density and spin density
-!            and similar (diagonal operators)
-  integer :: llss_nr_density_blocks(0:3, 0:7)
-  integer :: llss_nr_ao(2, 16, 0:3, 0:7)
-  integer :: llss_st_ao(2, 16, 0:3, 0:7)
-  integer :: llss_iq(0:3)
-
-!            for kinetic energy density and current density
-!            and similar (offdiagonal operators)
-  integer :: lssl_nr_density_blocks(0:3, 0:7)
-  integer :: lssl_nr_ao(2, 16, 0:3, 0:7)
-  integer :: lssl_st_ao(2, 16, 0:3, 0:7)
-  integer :: lssl_iq(0:3)
-
-  logical :: dft_density_set    = .false.
-  logical :: dft_density_synced = .false.
-
-  real(8) :: speed_of_light
+!fixme: hardcoded
+  real(8), parameter :: speed_of_light = 137.0359998d0
 
 contains
 
@@ -739,149 +724,8 @@ contains
 
   end subroutine
 
-  subroutine dft_density_init(is_parallel_calculation)
-
-#ifdef VAR_MPI
-    use dirac_mpi
-#include "infpar.h"
-#include "mpif.h"
-#endif
-
-!   ----------------------------------------------------------------------------
-    logical, intent(in) :: is_parallel_calculation
-!   ----------------------------------------------------------------------------
-    integer             :: i, ic, irep, irep1, irep2, nr1, nr2, jxyz
-    integer             :: llss_ic(2) = (/1, 2/)
-    integer             :: lssl_ic(2) = (/2, 1/)
-    integer             :: inter_irep(0:3)
-!   ----------------------------------------------------------------------------
-
-#include "dcbbas.h"
-#include "dcbham.h"
-#include "dcbgen.h"
-#include "dgroup.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "symmet.h"
-
-#ifdef VAR_MPI
-!   only master sets values
-    if (mytid == mparid) then
-#endif
-
-    if (.not. dft_density_set) then
-
-      speed_of_light = cval
-
-      llss_iq(0) = 1
-      lssl_iq(0) = 1
-      do jxyz = 1, 3
-        llss_iq(jxyz) = jm4pos(4 - jxyz)
-        lssl_iq(jxyz) = jm4pos(4 - jxyz)
-!                                                          rotation
-        llss_iq(jxyz) = iqtopq(llss_iq(jxyz), isymax(jxyz, 2))
-!                                                          translation
-        lssl_iq(jxyz) = iqtopq(lssl_iq(jxyz), isymax(jxyz, 1))
-      end do
-
-
-!     set up llss, transform as rotation
-!     ==================================
-
-      inter_irep(0) = 0
-      do jxyz = 1, 3
-        inter_irep(jxyz) = isymax(jxyz, 2)
-      end do
-
-      llss_nr_density_blocks = 0
-      do irep = 0, nbsym - 1
-        do jxyz = 0, 3
-          i = 0
-          do ic = 1, mc
-            do irep1 = 0, nbsym - 1
-              irep2 = ieor(irep1, ieor(inter_irep(jxyz), irep))
-
-              nr1 = nbbas(irep1, ic)
-              nr2 = nbbas(irep2, llss_ic(ic))
-
-              if ((nr1 > 0) .and. (nr2 > 0)) then
-                i = i + 1
-                llss_nr_ao(1, i, jxyz, irep) = nr1
-                llss_st_ao(1, i, jxyz, irep) = ibbas(irep1, ic) + 1
-                llss_nr_ao(2, i, jxyz, irep) = nr2
-                llss_st_ao(2, i, jxyz, irep) = ibbas(irep2, llss_ic(ic)) + 1
-              end if
-
-            end do
-          end do
-          llss_nr_density_blocks(jxyz, irep) = i
-        end do
-      end do
-
-
-!     set up lssl, transform as trasnlation
-!     =====================================
-
-      inter_irep(0) = 0
-      do jxyz = 1, 3
-        inter_irep(jxyz) = isymax(jxyz, 1)
-      end do
-
-      lssl_nr_density_blocks = 0
-      do irep = 0, nbsym - 1
-        do jxyz = 0, 3
-          i = 0
-          do ic = 1, mc
-            do irep1 = 0, nbsym - 1
-              irep2 = ieor(irep1, ieor(inter_irep(jxyz), irep))
-
-              nr1 = nbbas(irep1, ic)
-              nr2 = nbbas(irep2, lssl_ic(ic))
-
-              if ((nr1 > 0) .and. (nr2 > 0)) then
-                i = i + 1
-                lssl_nr_ao(1, i, jxyz, irep) = nr1
-                lssl_st_ao(1, i, jxyz, irep) = ibbas(irep1, ic) + 1
-                lssl_nr_ao(2, i, jxyz, irep) = nr2
-                lssl_st_ao(2, i, jxyz, irep) = ibbas(irep2, lssl_ic(ic)) + 1
-              end if
-
-            end do
-          end do
-          lssl_nr_density_blocks(jxyz, irep) = i
-        end do
-      end do
-
-      dft_density_set = .true.
-    end if
-
-#ifdef VAR_MPI
-    end if !if (mytid == mparid) then
-#endif
-
-#ifdef VAR_MPI
-    if (is_parallel_calculation .and. .not. dft_density_synced) then
-
-      call dirac_mpi_bcast(llss_nr_density_blocks)
-      call dirac_mpi_bcast(llss_nr_ao)
-      call dirac_mpi_bcast(llss_st_ao)
-      call dirac_mpi_bcast(llss_iq)
-      call dirac_mpi_bcast(lssl_nr_density_blocks)
-      call dirac_mpi_bcast(lssl_nr_ao)
-      call dirac_mpi_bcast(lssl_st_ao)
-      call dirac_mpi_bcast(lssl_iq)
-      call dirac_mpi_bcast(speed_of_light)
-
-      dft_density_synced = .true.
-    end if
-#endif
-
-  end subroutine
-
   subroutine lda_london_distribute_r(s, isym, mat_dim, nz, fmat, ao, ao_b1, cx, cy, cz)
 
-    use dft_cb_interface
 
 !   ----------------------------------------------------------------------------
     real(8), intent(in)    :: s
@@ -899,9 +743,12 @@ contains
     real(8)                :: r_co(3)
 !   ----------------------------------------------------------------------------
 
-    r_co(1) = cx - dft_origin(1) 
-    r_co(2) = cy - dft_origin(2)
-    r_co(3) = cz - dft_origin(3)
+!   r_co(1) = cx - dft_origin(1) 
+!   r_co(2) = cy - dft_origin(2)
+!   r_co(3) = cz - dft_origin(3)
+    r_co(1) = cx
+    r_co(2) = cy
+    r_co(3) = cz
 
     do a = 1, 3
       select case (a)
@@ -952,7 +799,6 @@ contains
                                      cy,       &
                                      cz)
 
-    use dft_cb_interface
 
 !   ----------------------------------------------------------------------------
     real(8), intent(in)    :: d_r
@@ -974,9 +820,12 @@ contains
     real(8)                :: r(3)
 !   ----------------------------------------------------------------------------
 
-    r(1) = cx - dft_origin(1) 
-    r(2) = cy - dft_origin(2)
-    r(3) = cz - dft_origin(3)
+!   r(1) = cx - dft_origin(1) 
+!   r(2) = cy - dft_origin(2)
+!   r(3) = cz - dft_origin(3)
+    r(1) = cx
+    r(2) = cy
+    r(3) = cz
 
     do a = 1, 3
 

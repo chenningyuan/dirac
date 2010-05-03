@@ -75,7 +75,10 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirctl */
       SUBROUTINE DIRCTL(WORK,LWORK)
-C
+
+      use basis_info
+      use occupation_info
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"
@@ -88,7 +91,14 @@ C*****   I  N  P  U  T    S  E  C  T  I  O  N   ************************
 C***********************************************************************
 C
       CALL PAMINP(WORK,LWORK)
-C
+
+
+!     write info to files
+!     this is then used in dft and visualization
+      call basis_info_write()
+      call occupation_info_write()
+
+
       IF ( INPTES ) RETURN
 C
 C***********************************************************************

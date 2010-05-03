@@ -3,22 +3,19 @@ module xc_driver
 !   written by T. Helgaker
 !   DIRAC adaption by T. Saue
 
+  use basis_info
+  use occupation_info
   use fde_mod
   use memory_allocator
   use dft_cfg
   use dft_functional_derv
   use dft_ao_in_mem
-  use dft_ao
-  use dft_density
-! if you really have to use common blocks, then
-! please put them in dft_cb_interface
-  use dft_cb_interface
+  use ao_eval
+  use density_eval
 #ifdef MOD_AORESPONSE
   use xc_response
 #endif
-#ifdef VAR_MPI
   use dirac_mpi
-#endif
 #ifdef MOD_XCFUN
   use xcfun
 #endif
@@ -35,6 +32,8 @@ module xc_driver
    public reset_grid
 
    private
+
+#include "functionals.h"
 
 #include "infpar.h"
 #include "dcbgen.h"
@@ -69,6 +68,8 @@ module xc_driver
    integer, target    :: default_sym(max_mat_number)
 
 
+   integer, parameter :: file_unit      = 6
+   integer, parameter :: file_unit_grid = 44
 
 
 
@@ -100,7 +101,7 @@ module xc_driver
     real(8), allocatable :: mpi_buffer(:)
     integer :: nr_points_total, nr_points, nr_points_rest, IDISP_REST
     real(8) :: dummy
-    real(8) :: error_nr_electrons, nr_electrons_orbital_total
+    real(8) :: error_nr_electrons
     integer :: derv_length
     real(8), allocatable :: derv(:, :)
     integer :: ioff
@@ -119,8 +120,8 @@ module xc_driver
 !   otherwise it points to ao
     real(8), pointer             :: ao_p(:)
 
-    real(8), allocatable, target :: ao(:)
-    real(8), allocatable         :: buffer(:)
+    real(8), allocatable :: ao(:)
+    real(8), allocatable :: buffer(:)
 
    logical :: parallel_xc
    logical :: coworkers_are_awake = .false.
@@ -285,10 +286,10 @@ contains
       end if
 #endif
 
-      call init_dft_cb()
+      call basis_info_read(i_am_master, parallel_xc)
+
 #ifdef VAR_MPI
       if (parallel_xc) then
-         call sync_dft_cb()
          call sync_dft_cfg()
       end if
 #endif
@@ -449,7 +450,7 @@ contains
          end if
          
 !        get average density from open shells
-         if (nr_open_shells > 0) call gtdoav(dmat_0, 1)
+         if (nr_open_shells > 0) call gtdoav(mat_dim, nz, 1, dmat_0, 1)
          
          call scale_density_matrices(2.0d0)
          call insert_half_phases()
@@ -524,8 +525,8 @@ contains
          use_gga_qi = xcfun_is_gga()
       else
 #endif
-         use_gga_qr = is_gga_functional
-         use_gga_qi = is_gga_functional
+         use_gga_qr = dftisgga()
+         use_gga_qi = dftisgga()
 #ifdef MOD_XCFUN
       end if
 #endif
@@ -584,7 +585,7 @@ contains
          call scale_density_matrices(0.5d0)
    
 !        get average density from open shells
-         if (nr_open_shells > 0) call gtdoav(dmat_0, -1)
+         if (nr_open_shells > 0) call gtdoav(mat_dim, nz, 1, dmat_0, -1)
    
 !        in case of gga symmetrize matrices (if not london)
          if (use_gga .and. .not. do_london_rhs_direct) then
@@ -721,7 +722,7 @@ contains
          if (nr_dmat > 0) then
             do iz = 1, nz
                do im = 1, nr_dmat
-                  iq = dft_cb_pq_to_uq(iz, dmat_pg_sym(im) - 1)
+                  iq = pq_to_uq(iz, dmat_pg_sym(im) - 1)
                   call q2bphase('D', iq, 1, dmat(1, 1, iz, im))
                end do
             end do
@@ -729,7 +730,7 @@ contains
          if (nr_fmat > 0) then
             do iz = 1, nz
                do im = 1, nr_fmat
-                  iq = dft_cb_pq_to_uq(iz, fmat_pg_sym(im) - 1)
+                  iq = pq_to_uq(iz, fmat_pg_sym(im) - 1)
                   call q2bphase('F', iq, 1, fmat(1, 1, iz, im))
                end do
             end do
@@ -767,17 +768,12 @@ contains
       max_ao_m_order = 1
     end if
 
-    call dft_ao_init(parallel_xc, &
-                     max_ao_g_order,          &
-                     max_ao_m_order,          &
-                     dft_cfg_screening,       &
-                     dft_cfg_dfthri,          &
-                     .false.)
+    call ao_eval_init(max_ao_g_order, &
+                      max_ao_m_order, &
+                      dft_cfg_screening)
 
-    call dft_density_init(parallel_xc)
-
-    call alloc(ao,     total_ao_vector_length)
-    call alloc(buffer, total_ao_vector_length)
+    allocate(ao(total_ao_vector_length))
+    allocate(buffer(total_ao_vector_length))
 
     if (dft_cfg_keep_ao) then
       if (dft_cfg_ao_mem_limit < 1) then
@@ -816,11 +812,11 @@ contains
       end if
     end if
 
-    if (.not. (dft_cfg_keep_ao .and. batch_is_in_mem(ibatch))) then
+!   if (.not. (dft_cfg_keep_ao .and. batch_is_in_mem(ibatch))) then
 !     so we either don't use .KEEPAO or the AOs are not yet stored
 !     so let it point to ao
-      ao_p => ao
-    end if    
+!     ao_p => ao
+!   end if    
 
 
 !   check what functional derivatives do we need
@@ -881,8 +877,8 @@ contains
 
       time_ao_start = second()
       if (.not. (dft_cfg_keep_ao .and. batch_is_in_mem(ibatch))) then
-        call get_so(rx(ipoint), ry(ipoint), rz(ipoint), &
-                    ao_p, buffer)
+        call get_ao(rx(ipoint), ry(ipoint), rz(ipoint), &
+                    ao, buffer)
       end if
       if (dft_cfg_keep_ao) then
 
@@ -908,7 +904,7 @@ contains
 
 !     density
       time_density_start = second()
-      call get_n(r_0(1), 0, mat_dim, dmat_0, buffer, ao_p)
+      call get_n(r_0(1), 0, mat_dim, dmat_0, buffer, ao)
       time_density = time_density + second() - time_density_start
 
       if (r_0(1) > dft_cfg_dfthr0) then
@@ -920,7 +916,7 @@ contains
 !       density gradient
         time_gradient_start = second()
         if (need_ao_order(1, 0)) then
-          call get_gn(rhg, 0, mat_dim, dmat_0, buffer, ao_p, ao_p(ao_start(1, 0):ao_end(1, 0)))
+          call get_gn(rhg, 0, mat_dim, dmat_0, buffer, ao, ao(ao_start(1, 0):ao_end(1, 0)))
           z_0(1) = ddot(3, rhg, 1, rhg, 1)
         end if
         time_gradient = time_gradient + second() - time_gradient_start
@@ -973,14 +969,14 @@ contains
                        mat_dim,         &
                        dmat_saop_outer, &
                        buffer,          &
-                       ao_p)
+                       ao)
             if (dft_cfg_saop_with_response_part) then
               call get_n(rho_resp,       &
                          0,              &
                          mat_dim,        &
                          dmat_saop_resp, &
                          buffer,         &
-                         ao_p)
+                         ao)
             end if
           end if
           if (dft_cfg_grac_is_active .or. dft_cfg_saop_is_active) then
@@ -1011,14 +1007,14 @@ contains
                                   0,            &
                                   mat_dim,      &
                                   fmat,         &
-                                  ao_p,         &
-                                  ao_p(ao_start(1, 0):ao_end(1, 0)))
+                                  ao,         &
+                                  ao(ao_start(1, 0):ao_end(1, 0)))
           else
             call lda_distribute_r(derv(1, d_r), &
                                   0,            &
                                   mat_dim,      &
                                   fmat,         &
-                                  ao_p)
+                                  ao)
           end if
         end if
 
@@ -1034,10 +1030,10 @@ contains
                                          mat_dim,                           &
                                          nz,                                &
                                          fmat,                              &
-                                         ao_p(ao_start(0, 0):ao_end(0, 0)), &
-                                         ao_p(ao_start(0, 1):ao_end(0, 1)), &
-                                         ao_p(ao_start(1, 0):ao_end(1, 0)), &
-                                         ao_p(ao_start(1, 1):ao_end(1, 1)), &
+                                         ao(ao_start(0, 0):ao_end(0, 0)), &
+                                         ao(ao_start(0, 1):ao_end(0, 1)), &
+                                         ao(ao_start(1, 0):ao_end(1, 0)), &
+                                         ao(ao_start(1, 1):ao_end(1, 1)), &
                                          rx(ipoint), ry(ipoint), rz(ipoint))
           else
             call lda_london_distribute_r(derv(1, d_r),                      &
@@ -1045,8 +1041,8 @@ contains
                                          mat_dim,                           &
                                          nz,                           &
                                          fmat,                              &
-                                         ao_p,                              &
-                                         ao_p(ao_start(0, 1):ao_end(0, 1)), &
+                                         ao,                              &
+                                         ao(ao_start(0, 1):ao_end(0, 1)), &
                                          rx(ipoint), ry(ipoint), rz(ipoint))
           end if
         end if
@@ -1071,7 +1067,7 @@ contains
                   dmat_pg_sym,    &
                   dmat_ih_sym,         &
                   .false.,        &
-                  ao_p,           &
+                  ao,           &
                   r_0,            &
                   rhg,            &
                   z_0,            &
@@ -1092,7 +1088,7 @@ contains
                        use_gga,                &
                        dft_cfg_no_sdft,        &
                        mat_dim, dmat,fmat,   &
-                       dmat_pg_sym,dmat_ih_sym,ao_p,ao_p(ao_start(1, 0)), &
+                       dmat_pg_sym,dmat_ih_sym,ao,ao(ao_start(1, 0)), &
                        r_0(1),z_0(1),rhg,w(1), &
                        buffer,             &
                   derv_length,    &
@@ -1117,7 +1113,7 @@ contains
                   dmat_pg_sym,     &
                   dmat_ih_sym,          &
                   .true.,          &
-                  ao_p,            &
+                  ao,            &
                   r_0,             &
                   rhg,             &
                   z_0,             &
@@ -1142,8 +1138,8 @@ contains
                                           dmat_pg_sym,      &
                                           fmat_pg_sym,      &
                                           use_gga,                           &
-                                          ao_p(ao_start(0, 0):ao_end(0, 0)), &
-                                          ao_p(ao_start(1, 0):ao_end(1, 0)), &
+                                          ao(ao_start(0, 0):ao_end(0, 0)), &
+                                          ao(ao_start(1, 0):ao_end(1, 0)), &
                                           r_0(1),                            &
                                           rhg,                               &
                                           rx(ipoint),                      &
@@ -1161,12 +1157,12 @@ contains
                                   derv(1, d_r),      &
                                   mat_dim,           &
                                   dmat_0,            &
-                                  ao_p,              &
-                                  ao_p(ao_start(1, 0):ao_end(1, 0)))
+                                  ao,              &
+                                  ao(ao_start(1, 0):ao_end(1, 0)))
           end if
 
           if (do_geo_1) then
-             call get_n(r_t1(1), 0, mat_dim, tmat_1, buffer, ao_p)
+             call get_n(r_t1(1), 0, mat_dim, tmat_1, buffer, ao)
              call xc_geo_1_lda_c1(property_gradient, &
                                   derv(1, d_r),      &
                                   derv(1, d_rr),     &
@@ -1174,13 +1170,13 @@ contains
                                   mat_dim,           &
                                   dmat_0,            &
                                   tmat_1,            &
-                                  ao_p,              &
-                                  ao_p(ao_start(1, 0):ao_end(1, 0)))
+                                  ao,              &
+                                  ao(ao_start(1, 0):ao_end(1, 0)))
           end if
 
           if (do_geo_2) then
-             call get_n(r_t1(1), 0, mat_dim, tmat_1, buffer, ao_p)
-             call get_n(r_t2(1), 0, mat_dim, tmat_2, buffer, ao_p)
+             call get_n(r_t1(1), 0, mat_dim, tmat_1, buffer, ao)
+             call get_n(r_t2(1), 0, mat_dim, tmat_2, buffer, ao)
              call xc_geo_2_lda_c1(property_gradient, &
                                   derv(1, d_rr),     &
                                   derv(1, d_rrr),    &
@@ -1190,8 +1186,8 @@ contains
                                   dmat_0,            &
                                   tmat_1,            &
                                   tmat_2,            &
-                                  ao_p,              &
-                                  ao_p(ao_start(1, 0):ao_end(1, 0)))
+                                  ao,              &
+                                  ao(ao_start(1, 0):ao_end(1, 0)))
           end if
 
           time_matrix_dist = time_matrix_dist + second() - time_matrix_dist_start
@@ -1199,89 +1195,87 @@ contains
       end if !if (r_0(1) > dft_cfg_dfthr0) then
     end do !do ipoint = 1, nr_points_process
 
-    nullify(ao_p)
+!   nullify(ao_p)
 
-    call dealloc(ao)
-    call dealloc(buffer)
-    deallocate(derv)
-
-
+     deallocate(ao)
+     deallocate(buffer)
+     deallocate(derv)
 
    end subroutine
 
    subroutine report()
 
-      nr_electrons_orbital_total = nr_electrons_orbital &
-                                 + nr_electrons_orbital_active
+      call occupation_info_read()
+
       error_nr_electrons  = nr_electrons &
-                          - nr_electrons_orbital_total
+                          - nr_electrons_total
       
-      write(print_unit, *)
+      write(file_unit, *)
 
 !     verify that the number of points we have actually looped
 !     over indeed matches the expected total number of points
 !     if not something went wrong in the distribution
-      if ((nr_points_total - nr_points_looped_over) /= 0) then
-         call quit('parallel dft: error in distribution of points')
-      end if
+!     if ((nr_points_total - nr_points_looped_over) /= 0) then
+!        call quit('parallel dft: error in distribution of points')
+!     end if
 
-      write(print_unit, '(3x, a, i9)')                           &
+      write(file_unit, '(3x, a, i9)')                            &
             'number of grid points                          = ', &
             nr_points_total
-      write(print_unit, '(3x, a, i9)')                           &
+      write(file_unit, '(3x, a, i9)')                            &
             'number of grid points below density threshold  = ', &
             nr_points_total - nr_points_used
 
       if (do_potential) then
-         write(print_unit, '(3x, a, f26.16)')                       &
+         write(file_unit, '(3x, a, f26.16)')                        &
                'DFT exchange-correlation energy:               = ', &
                xc_energy
       end if
 
-      write(print_unit, '(3x, a, f26.16)')                       &
+      write(file_unit, '(3x, a, f26.16)')                        &
             'number of electrons from numerical integration = ', &
             nr_electrons
 
       if (abs(error_nr_electrons) > dft_cfg_accepted_error) then
-         write(print_unit, '(3x, a, f26.16)')                       &
+         write(file_unit, '(3x, a, i9)')                            &
                'number of electrons from orbital occupations   = ', &
-               nr_electrons_orbital_total
-         write(print_unit, '(3x, a, f26.16)')                       &
+               nr_electrons_total
+         write(file_unit, '(3x, a, f26.16)')                        &
                'WARNING: error in the number of electrons      = ', &
                error_nr_electrons
-         write(print_unit, '(12x, a, f15.6)')                       &
+         write(file_unit, '(12x, a, f15.6)')                        &
                'is larger than .ERRELS (set input)    =  ',         &
                 dft_cfg_accepted_error                              
-         write(print_unit, '(12x, a)')                              &
+         write(file_unit, '(12x, a)')                              &
                'this can happen when starting from coefficients'    
-         write(print_unit, '(12x, a)')                              &
+         write(file_unit, '(12x, a)')                              &
                'from a different geometry'                          
-         write(print_unit, '(12x, a)')                              &
+         write(file_unit, '(12x, a)')                               &
                'or it can mean that the quadrature '//              &
                'grid is inappropriate'
       end if
-      write(print_unit, *)
+      write(file_unit, *)
    
 !     timing
       time_integration = second() - time_integration_start
       call timtxt('  time spent in DFT integration                  =', &
-                  time_integration, print_unit)
+                  time_integration, file_unit)
      !call timtxt('                AO evaluation                    =', &
-     !            time_ao, print_unit)
+     !            time_ao, file_unit)
      !call timtxt('                matrix distribution              =', &
-     !            time_matrix_dist, print_unit)
+     !            time_matrix_dist, file_unit)
      !call timtxt('                density evaluation               =', &
-     !            time_density, print_unit)
+     !            time_density, file_unit)
      !call timtxt('                gradient evaluation              =', &
-     !            time_gradient, print_unit)
+     !            time_gradient, file_unit)
      !call timtxt('                functional derivatives           =', &
-     !            time_derv, print_unit)
+     !            time_derv, file_unit)
 
-      write(print_unit, '(3x, a, i9)')                           &
+      write(file_unit, '(3x, a, i9)')                           &
             'number of processors                           = ', &
             nr_processes
 
-      write(print_unit, *)
+      write(file_unit, *)
 
    end subroutine
 
@@ -1413,7 +1407,7 @@ contains
    subroutine loop_over_batches()
 
       if (i_am_master) then
-         rewind dft_temp_file_unit
+         rewind file_unit_grid
          if (dft_cfg_multigrid) then
             rewind dft_cfg_multigrid_file_unit(response_order_ao)
          end if
@@ -1430,11 +1424,11 @@ contains
 !        get number of points in this batch
          if (i_am_master) then
             if (dft_cfg_import_grid) then
-               read(dft_temp_file_unit, *) nr_points
+               read(file_unit_grid, *) nr_points
             elseif (dft_cfg_multigrid) then
                read(dft_cfg_multigrid_file_unit(response_order_ao), *) nr_points
             else
-               read(dft_temp_file_unit) nr_points
+               read(file_unit_grid) nr_points
             end if
          end if
 
@@ -1473,11 +1467,11 @@ contains
        
          if (i_am_master) then
             if (dft_cfg_import_grid) then
-               call import_dft_grid(rx, ry, rz, rw, dft_temp_file_unit, nr_points)
+               call import_dft_grid(rx, ry, rz, rw, file_unit_grid, nr_points)
             elseif (dft_cfg_multigrid) then
                call import_dft_grid(rx, ry, rz, rw, dft_cfg_multigrid_file_unit(response_order_ao), nr_points)
             else
-               call reaqua(rx, ry, rz, rw, dft_temp_file_unit, nr_points)
+               call reaqua(rx, ry, rz, rw, file_unit_grid, nr_points)
             end if
          end if
 

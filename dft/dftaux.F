@@ -23,23 +23,27 @@
       END
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE GTDOAV(DMAT,IFAC)
+      SUBROUTINE GTDOAV(mat_dim,
+     &                  nz,
+     &                  nr_dmat,
+     &                  dmat,
+     &                  ifac)
 !***********************************************************************
 !
 !     Get average density from open shells; only real part !
 !     Written by T.Saue March 2004
 !
 !***********************************************************************
-      use dft_cb_interface
       implicit none
 #include"dcbdhf.h"
+      integer :: mat_dim, nz, nr_dmat
       integer :: ifac, ishell
-      real(8) :: DMAT(nr_ao_total, nr_ao_total, nr_qu, nfmat)
+      real(8) :: DMAT(mat_dim, mat_dim, nz, nr_dmat)
       real(8) :: fac
       IF(AOC) THEN
         DO ISHELL = 1, NOPEN
           FAC = IFAC*DF(ISHELL)
-          CALL DAXPY(nr_ao_total*nr_ao_total,FAC,
+          CALL DAXPY(mat_dim*mat_dim,FAC,
      &        DMAT(1,1,1,ISHELL+1),1,DMAT,1)
         ENDDO
       ENDIF

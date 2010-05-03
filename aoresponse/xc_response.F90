@@ -2,8 +2,7 @@ module xc_response
 
 #ifdef MOD_XCFUN
   use dft_cfg
-  use dft_density
-  use dft_cb_interface
+  use density_eval
   use aor_cfg
   use xcfun
 

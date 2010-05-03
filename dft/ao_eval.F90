@@ -1,12 +1,12 @@
-module dft_ao
+module ao_eval
 
 !   this is based on DIRAC and Dalton
 !   routines written by T. Helgaker, P. Salek, T. Saue, and others
 
 ! - in order to calculate aos using this module
 !   you need to initialize some data first
-!   by calling dft_ao_init from each node
-! - dft_ao_init will set symmetry and basis set information
+!   by calling ao_eval_init from each node
+! - ao_eval_init will set symmetry and basis set information
 !   that is needed in each point and then mpi_bcast this info to the nodes
 ! - we try to not recalculate data which does not change from point to point
 !   (like symmetry)
@@ -21,7 +21,7 @@ module dft_ao
 !   note that in levy-leblond or x2c4 mode some elements will
 !   contain garbage but they are not (= should not be) used
 ! - this module is called dft_ao but should be usable also outside dft
-!   this is why some information is passed through dft_ao_init and not queried
+!   this is why some information is passed through ao_eval_init and not queried
 !   from dft_cfg, to keep this module generic, please dont "use dft_cfg" here
 
 !   some "bad ideas" = ideas which did not improve things
@@ -32,7 +32,7 @@ module dft_ao
 !   FAQ
 !   ===
 !
-!   1. how is the ao array sorted on output of get_so?
+!   1. how is the ao array sorted on output of get_ao?
 !      - it is sorted according to ibbas and nbbas
 !        a convenient way to see the sorting of (symmetry adapted) aos
 !        in the output is to search for 'Generating Lowdin matrix'
@@ -40,7 +40,7 @@ module dft_ao
 !
 !                                 Generating Lowdin matrix:
 !                                 -------------------------
-!        
+!
 !        L   Ag    * Deleted:          2(Proj:          2, Lindep:          0)
 !        L   B1g   * Deleted:          0(Proj:          0, Lindep:          0)
 !        L   B2g   * Deleted:          0(Proj:          0, Lindep:          0)
@@ -62,94 +62,22 @@ module dft_ao
 !        | L Ag | L B1g | L B2g | L B3g | S B3u | ... | S B3g | and then the derivatives
 
 
-  use memory_allocator
-#ifdef VAR_MPI
-  use dirac_mpi
-#endif
+  use basis_info
 
   implicit none
 
-  public get_so
-  public dft_ao_init
+  public get_ao
+  public ao_eval_init
 
-  save
+   private
 
-  integer, public    :: total_ao_vector_length = 0
-
-  integer, parameter :: max_order = 2
-  integer, public    :: ao_start     (0:max_order, 0:max_order) = 0
-  integer, public    :: ao_end       (0:max_order, 0:max_order) = 0
-  logical, public    :: need_ao_order(0:max_order, 0:max_order) = .false.
-
-  private
-
-  integer              :: nr_ao_slices   = 0
-  integer              :: nr_ao               = 0
-  integer              :: nr_cartesian_ao     = 0
-  integer, public      :: nr_shells       = 0
-  integer              :: dft_maxrep          = 0
-  integer              :: dft_maxopr          = 0
-  integer              :: nr_boson_sym        = 0
-
-  real(8), allocatable :: primitive_exp(:, :)
-  real(8), allocatable, public :: shell_center(:)
-  real(8), allocatable :: contraction_coef(:, :)
-  real(8), allocatable :: shell_extent(:)
-  integer, allocatable :: nr_nonzero_contraction_coefs(:)
-  integer, allocatable, public :: cartesian_deg(:)
-  integer, allocatable :: cartesian_off(:)
-  integer, allocatable, public :: spherical_deg(:)
-  integer, allocatable :: spherical_off(:)
-  integer, allocatable :: n_quantum_nr(:)
-  logical, allocatable :: is_spherical(:)
-  integer, allocatable :: dft_istbao(:)
-  integer, allocatable :: dft_isymao(:, :)
-  integer, allocatable :: dft_ipind(:)
-  real(8), allocatable :: dft_pt(:)
-  integer, allocatable :: dft_kstrt(:)
-  real(8), allocatable :: dft_cent(:, :, :)
-  integer              :: dft_isymax(3, 2)
-
-  real(8), allocatable :: dft_csp(:)
-  integer, allocatable :: dft_ispadr(:)
-
-  integer, allocatable :: dft_icos(:, :)
-  integer, allocatable :: dft_ibbas(:, :)
-  integer, allocatable :: dft_nbbas(:, :)
-
-  integer, allocatable :: l_exp(:)
-  integer, allocatable :: m_exp(:)
-  integer, allocatable :: n_exp(:)
-  real(8), allocatable :: sbuffer(:)
-
-  integer, parameter   :: max_nr_so_ao = 10000
-  integer             , public :: nr_so_ao
-  integer, allocatable, public :: i_so_ao(:, :)
-  real(8), allocatable, public :: f_so_ao(:)
-
-  logical              :: use_ao_screening = .false.
-  logical              :: only_large       = .false.
-
-  real(8), parameter   :: tiny = 1.0d-30
-
-! this is probably eq. 8.2.25 in the pink book
-  real(8), parameter   :: g(10) = (/1.0d0, 1.3333d0, 1.6d0, 1.83d0, 2.03d0, 2.22d0, 2.39d0, 2.55d0, 2.70d0, 2.84d0/)
-
-  real(8), parameter   :: cell_size          = 2.25d0
-! real(8), parameter   :: half_cell_diagonal = cell_size*0.5d0*sqrt(3.0d0)
-! compiler complains about intrinsic in a parameter declaration
-  real(8), parameter   :: half_cell_diagonal = cell_size*0.866025404d0
-
-  logical :: dft_basis_info_allocated = .false.
-  logical :: dft_basis_info_set       = .false.
-#ifdef VAR_MPI
-  logical :: dft_basis_info_synced    = .false.
-#endif
-
-#ifdef VAR_MPI
-#include "infpar.h"
-#include "mpif.h"
-#endif
+   integer, parameter :: max_order = 2
+   integer, public    :: total_ao_vector_length = 0
+   integer, public    :: ao_start     (0:max_order, 0:max_order) = 0
+   integer, public    :: ao_end       (0:max_order, 0:max_order) = 0
+   logical, public    :: need_ao_order(0:max_order, 0:max_order) = .false.
+   integer            :: nr_ao_slices = 0
+   logical            :: use_ao_screening = .false.
 
   real(8) :: g000_000
 
@@ -301,7 +229,7 @@ module dft_ao
 
 contains
 
-  subroutine get_so(cx,     &
+  subroutine get_ao(cx,     &
                     cy,     &
                     cz,     &
                     ao,     &
@@ -317,7 +245,7 @@ contains
 
     if (use_ao_screening) call dzero(ao, total_ao_vector_length)
 
-    call get_ao(cx,     &
+    call get_ao_sub(cx,     &
                 cy,     &
                 cz,     &
                 ao)
@@ -331,7 +259,7 @@ contains
 
   end subroutine
 
-  subroutine get_ao(cx,   &
+  subroutine get_ao_sub(cx,   &
                     cy,   &
                     cz,   &
                     ao)
@@ -361,12 +289,12 @@ contains
 
     i = 1
     do ishell = 1, iend
-      do isym = 0, dft_maxopr
-        if (iand(isym, dft_istbao(ishell)) == 0) then
+      do isym = 0, nr_boson_sym - 1
+        if (iand(isym, shell_stabilizer(ishell)) == 0) then
 
-          px = cx - dft_pt(iand(dft_isymax(1, 1), isym))*dft_cent(ishell, 1, 1)
-          py = cy - dft_pt(iand(dft_isymax(2, 1), isym))*dft_cent(ishell, 2, 1)
-          pz = cz - dft_pt(iand(dft_isymax(3, 1), isym))*dft_cent(ishell, 3, 1)
+          px = cx - bitstring_parity(iand(sym_axes(1, 1), isym))*shell_center_xyz(1, ishell)
+          py = cy - bitstring_parity(iand(sym_axes(2, 1), isym))*shell_center_xyz(2, ishell)
+          pz = cz - bitstring_parity(iand(sym_axes(3, 1), isym))*shell_center_xyz(3, ishell)
 
           p2 = px*px + py*py + pz*pz
 
@@ -400,7 +328,7 @@ contains
                             ao(ofg + 2*nr_ao),  &
                             px, py, pz, p2)
             end if
-            
+
             if (need_ao_order(0, 1)) then
               ! ao_start(0, 1) indicate the place in ao where
               ! magn dervs should start
@@ -469,7 +397,7 @@ contains
     do i = 1, nr_nonzero_contraction_coefs(ishell)
       g000_000 = g000_000 + contraction_coef(ishell, i)*dexp(-primitive_exp(ishell, i)*p2)
     end do
-  
+
     if (cartesian_deg(ishell) > 1) then
       g100_000 = g000_000*px
       g010_000 = g000_000*py
@@ -587,7 +515,7 @@ contains
     real(8), intent(in)    :: px, py, pz, p2
 !   ----------------------------------------------------------------------------
     integer                :: i
-    real(8)                :: f
+    real(8)                :: f, f2
 !   ----------------------------------------------------------------------------
 
     g000_000 = 0.0d0
@@ -597,25 +525,26 @@ contains
 
     do i = 1, nr_nonzero_contraction_coefs(ishell)
       f = -primitive_exp(ishell, i)
-      g000_000 = g000_000 +            contraction_coef(ishell, i)*dexp(f*p2)
-      g000_100 = g000_100 + px*f*2.0d0*contraction_coef(ishell, i)*dexp(f*p2)
-      g000_010 = g000_010 + py*f*2.0d0*contraction_coef(ishell, i)*dexp(f*p2)
-      g000_001 = g000_001 + pz*f*2.0d0*contraction_coef(ishell, i)*dexp(f*p2)
+      f2 = contraction_coef(ishell, i)*dexp(f*p2)
+      g000_000 = g000_000 +            f2
+      g000_100 = g000_100 + px*f*2.0d0*f2
+      g000_010 = g000_010 + py*f*2.0d0*f2
+      g000_001 = g000_001 + pz*f*2.0d0*f2
     end do
- 
+
     if (cartesian_deg(ishell) > 1) then
-      g100_000 =            px*g000_000           
-      g010_000 =            py*g000_000           
-      g001_000 =            pz*g000_000           
-      g100_100 = g000_000 + px*g000_100                      
-      g010_100 =            py*g000_100           
-      g001_100 =            pz*g000_100           
-      g100_010 =            px*g000_010           
-      g010_010 = g000_000 + py*g000_010                      
-      g001_010 =            pz*g000_010           
-      g100_001 =            px*g000_001           
-      g010_001 =            py*g000_001           
-      g001_001 = g000_000 + pz*g000_001                      
+      g100_000 =            px*g000_000
+      g010_000 =            py*g000_000
+      g001_000 =            pz*g000_000
+      g100_100 = g000_000 + px*g000_100
+      g010_100 =            py*g000_100
+      g001_100 =            pz*g000_100
+      g100_010 =            px*g000_010
+      g010_010 = g000_000 + py*g000_010
+      g001_010 =            pz*g000_010
+      g100_001 =            px*g000_001
+      g010_001 =            py*g000_001
+      g001_001 = g000_000 + pz*g000_001
     else
 !     s
       gao(1)  = g000_000
@@ -632,24 +561,24 @@ contains
       g020_000 =            py*g010_000
       g011_000 =            pz*g010_000
       g002_000 =            pz*g001_000
-      g200_100 = g100_000 + px*g100_100 
+      g200_100 = g100_000 + px*g100_100
       g110_100 =            py*g100_100
       g101_100 =            pz*g100_100
       g020_100 =            py*g010_100
       g011_100 =            pz*g010_100
       g002_100 =            pz*g001_100
       g200_010 =            px*g100_010
-      g110_010 = g100_000 + py*g100_010 
+      g110_010 = g100_000 + py*g100_010
       g101_010 =            pz*g100_010
-      g020_010 = g010_000 + py*g010_010 
+      g020_010 = g010_000 + py*g010_010
       g011_010 =            pz*g010_010
       g002_010 =            pz*g001_010
       g200_001 =            px*g100_001
       g110_001 =            py*g100_001
-      g101_001 = g100_000 + pz*g100_001 
+      g101_001 = g100_000 + pz*g100_001
       g020_001 =            py*g010_001
-      g011_001 = g010_000 + pz*g010_001 
-      g002_001 = g001_000 + pz*g001_001 
+      g011_001 = g010_000 + pz*g010_001
+      g002_001 = g001_000 + pz*g001_001
     else
 !     p
       gao(1)  = g100_000
@@ -928,7 +857,7 @@ contains
     do i = 1, nr_nonzero_contraction_coefs(ishell)
       g000_000 = g000_000 + contraction_coef(ishell, i)*dexp(-primitive_exp(ishell, i)*p2)
     end do
-  
+
     if (cartesian_deg(ishell) < 21) then
       call get_cartesian_ao(ishell, &
                             gao,    &
@@ -943,20 +872,8 @@ contains
     end if
 
 !   if spherical and d or higher then transform
-    if (is_spherical(ishell) .and. (cartesian_deg(ishell) > 3)) then
-      call dcopy(cartesian_deg(ishell), gao, 1, sbuffer, 1)
-      call mxma(dft_csp(dft_ispadr(n_quantum_nr(ishell))), &
-                1,                                         &
-                spherical_deg(ishell),                     &
-                sbuffer,                                   &
-                1,                                         &
-                cartesian_deg(ishell),                     &
-                gao,                                       &
-                1,                                         &
-                spherical_deg(ishell),                     &
-                spherical_deg(ishell),                     &
-                cartesian_deg(ishell),                     &
-                1)
+    if (shell_is_spherical(ishell) .and. (cartesian_deg(ishell) > 3)) then
+       call transform_c_to_s(ishell, gao)
     end if
 
   end subroutine
@@ -1036,59 +953,11 @@ contains
     end if
 
 !   if spherical and d or higher then transform
-    if (is_spherical(ishell) .and. (cartesian_deg(ishell) > 3)) then
-      call dcopy(cartesian_deg(ishell), gao, 1, sbuffer, 1)
-      call mxma(dft_csp(dft_ispadr(n_quantum_nr(ishell))), &
-                1,                                         &
-                spherical_deg(ishell),                     &
-                sbuffer,                                   &
-                1,                                         &
-                cartesian_deg(ishell),                     &
-                gao,                                       &
-                1,                                         &
-                spherical_deg(ishell),                     &
-                spherical_deg(ishell),                     &
-                cartesian_deg(ishell),                     &
-                1)
-      call dcopy(cartesian_deg(ishell), gaox, 1, sbuffer, 1)
-      call mxma(dft_csp(dft_ispadr(n_quantum_nr(ishell))), &
-                1,                                         &
-                spherical_deg(ishell),                     &
-                sbuffer,                                   &
-                1,                                         &
-                cartesian_deg(ishell),                     &
-                gaox,                                      &
-                1,                                         &
-                spherical_deg(ishell),                     &
-                spherical_deg(ishell),                     &
-                cartesian_deg(ishell),                     &
-                1)
-      call dcopy(cartesian_deg(ishell), gaoy, 1, sbuffer, 1)
-      call mxma(dft_csp(dft_ispadr(n_quantum_nr(ishell))), &
-                1,                                         &
-                spherical_deg(ishell),                     &
-                sbuffer,                                   &
-                1,                                         &
-                cartesian_deg(ishell),                     &
-                gaoy,                                      &
-                1,                                         &
-                spherical_deg(ishell),                     &
-                spherical_deg(ishell),                     &
-                cartesian_deg(ishell),                     &
-                1)
-      call dcopy(cartesian_deg(ishell), gaoz, 1, sbuffer, 1)
-      call mxma(dft_csp(dft_ispadr(n_quantum_nr(ishell))), &
-                1,                                         &
-                spherical_deg(ishell),                     &
-                sbuffer,                                   &
-                1,                                         &
-                cartesian_deg(ishell),                     &
-                gaoz,                                      &
-                1,                                         &
-                spherical_deg(ishell),                     &
-                spherical_deg(ishell),                     &
-                cartesian_deg(ishell),                     &
-                1)
+    if (shell_is_spherical(ishell) .and. (cartesian_deg(ishell) > 3)) then
+       call transform_c_to_s(ishell, gao)
+       call transform_c_to_s(ishell, gaox)
+       call transform_c_to_s(ishell, gaoy)
+       call transform_c_to_s(ishell, gaoz)
     end if
 
   end subroutine
@@ -1125,366 +994,92 @@ contains
       ao_bz(ic) = f*pz
 
     end do
-    
-  end subroutine
-
-  subroutine ao_to_so(ao, so)
-
-!   ----------------------------------------------------------------------------
-    real(8), intent(in)  :: ao(total_ao_vector_length)
-    real(8), intent(out) :: so(total_ao_vector_length)
-!   ----------------------------------------------------------------------------
-    integer              :: i, n, off
-!   ----------------------------------------------------------------------------
-
-    so = 0.0d0
-
-    do n = 1, nr_ao_slices
-      off = nr_ao*(n - 1)
-      do i = 1, nr_so_ao
-        so(off + i_so_ao(1, i)) = so(off + i_so_ao(1, i)) &
-                                + ao(off + i_so_ao(2, i))*f_so_ao(i)
-      end do
-    end do
 
   end subroutine
 
-  subroutine dft_ao_init(is_parallel_calculation, &
-                         max_ao_g_order,          &
-                         max_ao_m_order,          &
-                         use_screening,           &
-                         ao_threshold,            &
-                         force_small_ao)
+!> \brief transform ao to sa-ao (so)
+   subroutine ao_to_so(ao, so)
 
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "shells.h"
-#include "symmet.h"
-#include "aovec.h"
-#include "primit.h"
-#include "sphtrm.h"
-#include "dcbbas.h"
-#include "pincom.h"
-#include "dgroup.h"
-#include "dcbham.h"
+!     --------------------------------------------------------------------------
+      real(8), intent(in)  :: ao(total_ao_vector_length)
+      real(8), intent(out) :: so(total_ao_vector_length)
+!     --------------------------------------------------------------------------
+      integer              :: i, n, off
+!     --------------------------------------------------------------------------
 
-!   ----------------------------------------------------------------------------
-    logical, intent(in) :: is_parallel_calculation
-    integer, intent(in) :: max_ao_g_order
-    integer, intent(in) :: max_ao_m_order
-    logical, intent(in) :: use_screening
-    real(8), intent(in) :: ao_threshold
-    logical, intent(in) :: force_small_ao
-!   ----------------------------------------------------------------------------
-    integer             :: g_order
-    integer             :: m_order
-    integer             :: iprim, i, j, icount, i_c, i_s, contracted_shell_nr, ishell, isym
-
-    integer              :: iao, iso,         nshell
-    integer              :: ic,         iso_bs
-    integer              ::    nr_ao_irep, mul, irep,       n, ivec, off
-    real(8)              :: f, r
-#ifdef VAR_MPI
-    logical             :: i_am_the_master
-#endif
-!   ----------------------------------------------------------------------------
-
-    use_ao_screening = use_screening
-
-    if (.not. dft_basis_info_allocated) then
-
-      call alloc(primitive_exp, mxshel, mxcont)
-      call alloc(shell_center, mxshel)
-      call alloc(contraction_coef, mxshel, mxcont)
-      call alloc(shell_extent, mxshel)
-      call alloc(nr_nonzero_contraction_coefs, mxshel)
-      call alloc(cartesian_deg, mxshel)
-      call alloc(cartesian_off, mxshel)
-      call alloc(spherical_deg, mxshel)
-      call alloc(spherical_off, mxshel)
-      call alloc(n_quantum_nr, mxshel)
-      allocate(is_spherical(mxshel))
-      call alloc(dft_istbao, mxshel)
-      call alloc(dft_isymao, mxqn, mxaqn)
-      call alloc(dft_ipind, mxcorb)
-      allocate(dft_pt(0:7))
-      call alloc(dft_kstrt, mxshel)
-      call alloc(dft_cent, mxshel, 3, 2)
-
-!fixme: this is reset later but i need it here for nr_cartesian_ao
-      dft_istbao = istbao
-      dft_maxopr = maxopr
-
-      nr_cartesian_ao = 0
-      do ishell = 1, mxshel
-        do isym = 0, dft_maxopr
-          if (iand(isym, dft_istbao(ishell)) == 0) then
-            nr_cartesian_ao = nr_cartesian_ao + kckt(ishell)
-          end if
-        end do
+      so = 0.0d0
+      do n = 1, nr_ao_slices
+         off = nr_ao*(n - 1)
+         do i = 1, nr_so_ao
+            so(off + i_so_ao(1, i)) = so(off + i_so_ao(1, i)) &
+                                    + ao(off + i_so_ao(2, i))*f_so_ao(i)
+         end do
       end do
 
+   end subroutine
 
-      call alloc(dft_csp,    ncsp)
-      call alloc(dft_ispadr, mxqn)
+!> \brief initialize ao_eval module
+   subroutine ao_eval_init(max_ao_g_order, &
+                           max_ao_m_order, &
+                           use_screening)
 
-      call alloc(dft_icos, 8, 2)
-      allocate(dft_ibbas(0:7, 0:2))
-      allocate(dft_nbbas(0:7, 0:2))
+!     --------------------------------------------------------------------------
+      integer, intent(in) :: max_ao_g_order
+      integer, intent(in) :: max_ao_m_order
+      logical, intent(in) :: use_screening
+!     --------------------------------------------------------------------------
+      integer             :: g_order
+      integer             :: m_order
+!     --------------------------------------------------------------------------
 
-#ifdef VAR_MPI
-      if (is_parallel_calculation) then
-        call dirac_mpi_bcast(nr_cartesian_ao)
-      end if
-#endif
+      use_ao_screening = use_screening
+      need_ao_order    = .false.
+      nr_ao_slices     = 0
 
-      call alloc(l_exp,   nr_cartesian_ao)
-      call alloc(m_exp,   nr_cartesian_ao)
-      call alloc(n_exp,   nr_cartesian_ao)
-      call alloc(sbuffer, nr_cartesian_ao)
-
-      call alloc(i_so_ao, 2, max_nr_so_ao*8)
-      call alloc(f_so_ao, max_nr_so_ao*8)
-      i_so_ao = 0
-      f_so_ao = 0.0d0
-
-      dft_basis_info_allocated = .true.
-
-    end if
-
-#ifdef VAR_MPI
-    i_am_the_master = .false.
-    if (mytid == mparid) i_am_the_master = .true.
-
-!   only master sets values
-    if (i_am_the_master) then
-#endif
-
-    if (.not. dft_basis_info_set) then
-
-      nr_nonzero_contraction_coefs = 0
-      cartesian_deg                = 0
-      cartesian_off                = 0
-      spherical_deg                = 0
-      spherical_off                = 0
-      n_quantum_nr                 = 0
-      is_spherical                 = .false.
-
-      dft_ipind  = ipind
-      dft_istbao = istbao
-      dft_isymao = isymao
-      dft_pt     = pt
-      dft_kstrt  = kstrt
-      dft_cent   = cent
-      dft_isymax = isymax
-      nr_boson_sym                = nbsym
-      if (mc == 1) only_large = .true.
-      if (only_large .and. force_small_ao) only_large = .false.
-      nr_ao = ntbas(0)
-
-      nr_shells       = kmax
-      if (only_large) nr_shells = nlrgsh
-
-      dft_csp    = csp
-      dft_ispadr = ispadr
-
-      dft_icos  = icos
-      dft_ibbas = ibbas
-      dft_nbbas = nbbas
-      shell_center = ncent
-
-      dft_maxrep = maxrep
-      dft_maxopr = maxopr
-
-      i_c = 1
-      i_s = 1
-
-      do ishell = 1, kmax
-
-        n_quantum_nr(ishell)  = nhkt(ishell)
-
-        cartesian_deg(ishell) = kckt(ishell)
-        spherical_deg(ishell) = khkt(ishell)
-
-        cartesian_off(ishell) = i_c - 1
-        spherical_off(ishell) = i_s - 1
-
-        call lmnval(n_quantum_nr(ishell), cartesian_deg(ishell), l_exp(i_c), m_exp(i_c), n_exp(i_c))
-
-        i_c = i_c + cartesian_deg(ishell)
-        i_s = i_s + spherical_deg(ishell)
-
-        is_spherical(ishell)  = sphr(ishell)
-
-        contracted_shell_nr = numcf(ishell)
-
-        i = jstrt(ishell) + 1
-        j = jstrt(ishell) + nuco(ishell)
-
-!       get shell extents
-        shell_extent(ishell) = 0.0d0
-
-        icount = 0
-        do iprim = i, j
-          if (dabs(priccf(iprim, contracted_shell_nr)) > 1.0d-30) then
-            icount = icount + 1
-            nr_nonzero_contraction_coefs(ishell) = icount
-            contraction_coef(ishell, icount)    = priccf(iprim, contracted_shell_nr)
-            primitive_exp(ishell, icount)       = priexp(iprim)
-
-!           get shell extents
-            r = (log(abs(priccf(iprim, contracted_shell_nr))) &
-               - log(ao_threshold))/priexp(iprim)
-
-            if (shell_extent(ishell) < r) shell_extent(ishell) = r
-          end if
-        end do
-
-        shell_extent(ishell) = sqrt(shell_extent(ishell))*g(n_quantum_nr(ishell)) &
-                             + half_cell_diagonal
-
-!       better square this once than sqrt p2 in each point
-        shell_extent(ishell) = shell_extent(ishell)**2.0d0
-
+      do g_order = 0, max_ao_g_order
+         do m_order = 0, max_ao_m_order
+            need_ao_order(g_order, m_order) = .true.
+            ao_start     (g_order, m_order) = nr_ao_slices*nr_ao + 1
+            nr_ao_slices = nr_ao_slices + (3**g_order)*(3**m_order)
+            ao_end       (g_order, m_order) = nr_ao_slices*nr_ao
+         end do
       end do
 
-!     ao to so business
-      i = 1
-      nr_so_ao = 0
-      do irep = 0, dft_maxrep
-        nr_ao_irep = dft_nbbas(irep, 1) + dft_nbbas(irep, 2)
-        icount = 0
-        do iso = i, i + nr_ao_irep - 1
-      
-          ishell = iand(ishft(dft_ipind(iso), -16), 65535)
-          nshell = iand(ishft(dft_ipind(iso),  -8),   255)
-      
-          mul = dft_istbao(ishell)
-          n   = n_quantum_nr(ishell)
-      
-          iao = dft_kstrt(ishell) + nshell
-      
-          icount = icount + 1
-          if (icount > dft_nbbas(irep, 1)) then
-!           is small
-            ic = 2
-          else
-!           is large
-            ic = 1
-          end if
+!     total_ao_vector_length = nr_ao_slices*nr_ao
+!     radovan: the above can lead to "plus one" or "plus few" out-of-bounds
+!              error if spherical gaussians are used
+!              it is safe to do instead
+      total_ao_vector_length = nr_ao_slices*nr_ao_cartesian
+!              although it consumes more memory than needed
+!              the allocation could be refined
 
-!         do not plan to AO-SO transform small component functions
-!         in case of zero small-small metric (.LEVY-LEBLOND and .X2C4)
-          if (.not. (only_large .and. (ic == 2))) then
-      
-!           shift by difference boson sorted minus boson unsorted
-            iso_bs = iso + dft_ibbas(irep, ic) - dft_icos(irep + 1, ic)
-           
-            do isym = 0, dft_maxopr
-              if (iand(isym, mul) == 0) then
-           
-                f = dft_pt(iand(isym, ieor(irep, dft_isymao(n, nshell))))
-           
-                nr_so_ao = nr_so_ao + 1
+   end subroutine
 
-                if (nr_so_ao > max_nr_so_ao) then
-                  call quit('increase max_nr_so_ao')
-                end if
-           
-                i_so_ao(1, nr_so_ao) = iso_bs
-                i_so_ao(2, nr_so_ao) = iao
-                f_so_ao(nr_so_ao)    = f
-           
-                iao = iao + spherical_deg(ishell)
-           
-              endif
-            end do
+!> \brief transform cartesian to spherical
+   subroutine transform_c_to_s(ishell, ao)
 
-          end if
+!     --------------------------------------------------------------------------
+      integer, intent(in)    :: ishell
+      real(8), intent(inout) :: ao(*)
+!     --------------------------------------------------------------------------
+!> \fixme allocate cartesian to spherical buffer dynamically
+      real(8)                :: sbuffer(10000)
+!     --------------------------------------------------------------------------
 
-        end do
-        i = i + nr_ao_irep
-      end do
+      call dcopy(cartesian_deg(ishell), ao, 1, sbuffer, 1)
+      call mxma(cartesian_to_spherical(spherical_address(l_quantum_nr(ishell))), &
+                1,                                                               &
+                spherical_deg(ishell),                                           &
+                sbuffer,                                                         &
+                1,                                                               &
+                cartesian_deg(ishell),                                           &
+                ao,                                                              &
+                1,                                                               &
+                spherical_deg(ishell),                                           &
+                spherical_deg(ishell),                                           &
+                cartesian_deg(ishell),                                           &
+                1)
 
-      dft_basis_info_set = .true.
-
-    end if
-
-    need_ao_order = .false.
-    nr_ao_slices  = 0
-
-    do g_order = 0, max_ao_g_order
-      do m_order = 0, max_ao_m_order
-        need_ao_order(g_order, m_order) = .true.
-        ao_start     (g_order, m_order) = nr_ao_slices*nr_ao + 1
-        nr_ao_slices = nr_ao_slices + (3**g_order)*(3**m_order)
-        ao_end       (g_order, m_order) = nr_ao_slices*nr_ao
-      end do
-    end do
-
-!   total_ao_vector_length = nr_ao_slices*nr_ao
-!   radovan: the above can lead to "plus one" or "plus few" out-of-bounds
-!            error if spherical gaussians are used
-!            it is safe to do instead
-    total_ao_vector_length = nr_ao_slices*nr_cartesian_ao
-!            although it consumes more memory than needed
-!            the allocation could be refined
-
-#ifdef VAR_MPI
-    end if !if (i_am_the_master) then
-#endif
-
-#ifdef VAR_MPI
-    if (is_parallel_calculation .and. .not. dft_basis_info_synced) then
-
-!     is done above
-!     call dirac_mpi_bcast(nr_cartesian_ao             )
-      call dirac_mpi_bcast(nr_shells               )
-      call dirac_mpi_bcast(dft_maxrep                  )
-      call dirac_mpi_bcast(dft_maxopr                  )
-      call dirac_mpi_bcast(nr_boson_sym                )
-      call dirac_mpi_bcast(nr_ao                       )
-
-      call dirac_mpi_bcast(primitive_exp               )
-      call dirac_mpi_bcast(shell_center                )
-      call dirac_mpi_bcast(contraction_coef            )
-      call dirac_mpi_bcast(shell_extent                )
-      call dirac_mpi_bcast(nr_nonzero_contraction_coefs)
-      call dirac_mpi_bcast(cartesian_deg               )
-      call dirac_mpi_bcast(cartesian_off               )
-      call dirac_mpi_bcast(spherical_deg               )
-      call dirac_mpi_bcast(spherical_off               )
-      call dirac_mpi_bcast(n_quantum_nr                )
-      call dirac_mpi_bcast(is_spherical                )
-      call dirac_mpi_bcast(dft_istbao                  )
-      call dirac_mpi_bcast(dft_pt                      )
-      call dirac_mpi_bcast(dft_cent                    )
-      call dirac_mpi_bcast(dft_isymax                  )
-
-      call dirac_mpi_bcast(dft_csp                     )
-      call dirac_mpi_bcast(dft_ispadr                  )
-
-      call dirac_mpi_bcast(l_exp                       )
-      call dirac_mpi_bcast(m_exp                       )
-      call dirac_mpi_bcast(n_exp                       )
-
-      call dirac_mpi_bcast(nr_ao_slices    )
-      call dirac_mpi_bcast(need_ao_order )
-      call dirac_mpi_bcast(ao_start      )
-      call dirac_mpi_bcast(ao_end        )
-      call dirac_mpi_bcast(total_ao_vector_length)
-      call dirac_mpi_bcast(only_large)
-
-      call dirac_mpi_bcast(nr_so_ao)
-      call dirac_mpi_bcast(i_so_ao)
-      call dirac_mpi_bcast(f_so_ao)
-
-      dft_basis_info_synced = .true.
-
-    end if
-#endif
-
-  end subroutine
+   end subroutine
 
 end module

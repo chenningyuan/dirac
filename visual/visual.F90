@@ -3,7 +3,8 @@ module visual
   use memory_allocator
   use visual_cfg
   use codata
-  use dft_ao
+  use ao_eval
+  use basis_info
   use matrix_defop
   use matrix_genop
   use dirac_interface
@@ -240,12 +241,10 @@ contains
 !   initialize ao module
 !   ====================
 
-    call dft_ao_init(.false.,        &
-                     max_ao_g_order, &
-                     max_ao_m_order, &
-                     .false.,        &
-                     1.0d-15,        &
-                     visual_cfg_force_small_ao)
+    call basis_info_read(.true., .false.)
+    call ao_eval_init(max_ao_g_order, &
+                      max_ao_m_order, &
+                      .false.)
 
     call alloc(ao,     total_ao_vector_length)
     call alloc(buffer, total_ao_vector_length)
@@ -582,7 +581,7 @@ contains
       real(8) :: rx, ry, rz, TF_KIN, BOSON_KIN, distance_to_origin
       integer :: ic, iq, IXVECTOR, ixyz, imat
 
-      call get_so(px, py, pz, ao, buffer)
+      call get_ao(px, py, pz, ao, buffer)
 
       distance_to_origin = dsqrt(px*px + py*py + pz*pz)
 
