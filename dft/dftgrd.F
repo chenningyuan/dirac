@@ -97,7 +97,6 @@ C     *******************************************
 C     ***** Prepare arguments for CONSTRUCT *****
 C     *******************************************
 C
-CTROND      IBIG  = 100000
       IBIG    = 1000000
       IVECL   = 100
       NNAT    = NAT*(NAT-1)/2
@@ -253,8 +252,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #include "dftwrk.h"
 
-      DIMENSION ZAN(*), C(*)
-
 #include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -265,6 +262,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbbas.h"
 #include "dcbham.h"
 
+      DIMENSION ZAN(*), C(3,NUCDEP)
       DIMENSION WRKSP(4*NUM),
      &          ACCUM(IVECL),XMUIJN(IVECL),XMUIJ2(IVECL),
      &          PSMU(IVECL,NAT),RJ(IVECL,NAT)
@@ -343,15 +341,9 @@ C
       DO 7 INA=1,NAT
       DO 7 JNA=1,INA-1
           ITEMP=ITEMP+1
-          istride1 = ina 
-          jstride1 = jna 
-          istride2 = ina + nat
-          jstride2 = jna + nat
-          istride3 = ina + 2*nat
-          jstride3 = jna + 2*nat
-          RIJ(ITEMP) = 1.0D0/(DSQRT((C(istride1)-C(jstride1))**2
-     &                             +(C(istride2)-C(jstride2))**2
-     &                             +(C(istride3)-C(jstride3))**2))
+          RIJ(ITEMP) = 1.0D0/(DSQRT((C(1,INA)-C(1,JNA))**2
+     &                             +(C(2,INA)-C(2,JNA))**2
+     &                             +(C(3,INA)-C(3,JNA))**2))
           RBC(INA,JNA) = 1.0D0/RIJ(ITEMP)
           RBC(JNA,INA) = 1.0D0/RIJ(ITEMP)
           CHI = CHIMT(INA,JNA)
@@ -500,9 +492,9 @@ C
             DO 30 iy = 1, NANG
                IPT   = IPT + 1
                INDEX = INDEX + 1
-               X8(INDEX)  = XANG(iy)*RNODE+C(NATOM)
-               Y8(INDEX)  = YANG(iy)*RNODE+C(NATOM+nat)
-               Z8(INDEX)  = ZANG(iy)*RNODE+C(NATOM+2*nat)
+               X8(INDEX)  = XANG(iy)*RNODE+C(1,NATOM)
+               Y8(INDEX)  = YANG(iy)*RNODE+C(2,NATOM)
+               Z8(INDEX)  = ZANG(iy)*RNODE+C(3,NATOM)
                WT8(INDEX) = RWT*ANGWT(iy)
 C
 C              Becke partitioning
@@ -780,8 +772,7 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
 C  /* Deck sleb */                                                     C
-      SUBROUTINE SLEB(X,Y,Z,WT,NSCHEME,NCOUNT,NATOM,
-     &RNODE,RBRAGG)
+      SUBROUTINE SLEB(X,Y,Z,WT,NSCHEME,NCOUNT,NATOM,RNODE,RBRAGG)
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
@@ -949,16 +940,16 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &          AIJ(NAT*(NAT-1)/2),
      &          X(IVECL),Y(IVECL),Z(IVECL),WT(IVECL),
      &          XMUIJN(IVECL),XMUIJ2(IVECL),ACCUM(IVECL),XPASC(20),
-     &          ZAN(*),C(*)
+     &          ZAN(*),C(3,*)
 
 C
 C     WEIGHT FUNCTION BY BECKE PARTITIONING
 C
       DO 100 INA=1,NAT
       DO 100 M=1,IPT
-         RJ(M,INA)=DSQRT((C(INA)-X(M))**2
-     &                  +(C(INA+nat)-Y(M))**2
-     &                  +(C(INA+2*nat)-Z(M))**2)
+         RJ(M,INA)=DSQRT((C(1,INA)-X(M))**2
+     &                  +(C(2,INA)-Y(M))**2
+     &                  +(C(3,INA)-Z(M))**2)
          PSMU(M,INA)=1.0D0
   100 CONTINUE
 
@@ -1217,7 +1208,7 @@ C***********************************************************************
 #include "priunit.h"
 C
       DIMENSION DMAT(*)
-      DIMENSION C(*)
+      DIMENSION C(3,NUCDEP)
 #include "mxcent.h"
 #include "dcbgen.h"
 #include "nuclei.h"
@@ -1303,11 +1294,11 @@ C***********************************************************************
 #include "symmet.h"
 #include "nuclei.h"
 #include "dcbbas.h"
-      DIMENSION C(*)
+      DIMENSION C(3,NUCDEP)
 #if defined (VAR_G77) || defined (SYS_SX)
 C     g77 fails in the complicated dimension statement that was used
 C     in the original version, make things easier for the compiler with an
-C     equiavelence statment
+C     equivalence statment
       EQUIVALENCE (NBAST,NTBAS(0)),(NBASL,NTBAS(1))
       DIMENSION COORD(3,2),CHIMT(NATOMS,NATOMS),DMAT(NBAST,NBAST),
      &     GAO(NBAST),SMAT(NBASL,NBASL),ASMAT(NATOMS,NATOMS),
@@ -1330,12 +1321,12 @@ C
       DO 10 I = 1,NAT
          DO 20 J = 1,I-1
             CHIMT(I,J) = 1.0D0
-            COORD(1,1) = C(I)
-            COORD(2,1) = C(I+nat)
-            COORD(3,1) = C(I+nat*2)
-            COORD(1,2) = C(J)
-            COORD(2,2) = C(J+nat)
-            COORD(3,2) = C(J+nat*2)
+            COORD(1,1) = C(1,I)
+            COORD(2,1) = C(2,I)
+            COORD(3,1) = C(3,I)
+            COORD(1,2) = C(1,J)
+            COORD(2,2) = C(2,J)
+            COORD(3,2) = C(3,J)
             CALL CHI2(CHIMT,DMAT,GAO,SMAT,ASMAT,ICLAB,I,J,COORD,
      &              IPRINT)
  20      END DO
@@ -1675,24 +1666,24 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "ccom.h"
-      DIMENSION ZAN(*), C(*)
+      DIMENSION ZAN(*), C(3,NUCDEP)
 #include "ibtfun.h"
       NAT = 0
       NUM = NBASIS
       DO ICENT = 1, NUCIND
-         MULCNT = ISTBNU(ICENT)
-         ZCNT   = CHARGE(ICENT)
-         IF(NAMN(ICENT)(1:2).NE.'Gh') THEN
-           DO ISYMOP = 0, MAXOPR
-           IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
-             NAT = NAT + 1
-             ZAN(NAT) = ZCNT
-             C(NAT) = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
-             C(NAT+nucdep)=PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
-            C(NAT+nucdep*2)=PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
-           ENDIF
-           ENDDO
-         ENDIF
+        MULCNT = ISTBNU(ICENT)
+        ZCNT   = CHARGE(ICENT)
+        IF(NAMN(ICENT)(1:2).NE.'Gh') THEN
+          DO ISYMOP = 0, MAXOPR
+          IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+            NAT = NAT + 1
+            ZAN(NAT) = ZCNT
+            C(1,NAT)= PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+            C(2,NAT)= PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+            C(3,NAT)= PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+          ENDIF
+          ENDDO
+        ENDIF
       ENDDO
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
