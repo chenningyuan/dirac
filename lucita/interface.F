@@ -507,8 +507,8 @@ C     dimension IMOKW(NTABLE)
          IMAXCIITER = 100
          IMOKW(23) = 2
       else if (IMOKW(23).eq.1) then
-         if(ICIMAXITER.le.0) then
-           IMAXCIITER = 100
+         if(ICIMAXITER.lt.0) then
+           IMAXCIITER = -1
          else
            IMAXCIITER = ICIMAXITER
          end if

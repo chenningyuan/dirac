@@ -628,10 +628,13 @@ C?      CALL COMCIM(WORK(KSBIDT),MXP1+MXP2+MXQ,NVAR,1,WORK(KH0))
       ELSE
         MULSPCA = 0
       END IF
+C
+C     check for restart without CI --> we want to run an analysis only
+      IF( MAXIT .lt. 0) GOTO 404
+C
 #if defined (VAR_MPI2)
 C
 C     copy restart vector to MPI-file format
-C
       IF( INICI .lt. 0) THEN
 C
          WRITE(LUWRTOUT,'(2X,A)')
@@ -678,7 +681,7 @@ C
 CTF
 *  If TERACI has been chosen, only 1 root is determined.
 *  So change NROOTS accordingly, otherwise program crashes.
-      if (IDIAG.eq.2) then
+ 404  if (IDIAG.eq.2) then
         NROOT_SAVE = NROOT
         NROOT = 1
       end if
@@ -694,7 +697,7 @@ C     close parallel files that are not needed anymore...
 C
       CALL SETUNITS_PAR_CLOSE_1
 C
-      IF( IAM_NOT_INV .eq. 0 ) GOTO 505
+      IF( IAM_NOT_INV .eq. 0 .or. MAXIT .lt. 0) GOTO 505
 C
       LBLK = -1
 C
