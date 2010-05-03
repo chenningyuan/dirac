@@ -341,10 +341,6 @@ contains
       dft_cfg_screening = .true.
     end if
 
-    if (kw_matches(word, '.KEEPAO')) then
-      dft_cfg_keep_ao = .true.
-    end if
-
     if (kw_matches(word, '.OLDDFT')) then
       dft_cfg_old_dft = .true.
     end if

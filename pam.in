@@ -108,7 +108,6 @@ extrausage ()
    echo '     -clean                 : Clean work area before calculation'
    echo '     -keepwrk               : Keep work area after calculation (default: remove)'
    echo '     -aw n                  : Set maximum memory (in megawords) that can be allocated dynamically (per allocation)'
-   echo '     -dftmem n              : Set maximum memory (in Mb) for storing AOs in DFT numerical integration'
    echo '     -timeout|-to <TIME>    : Set time limit for dirac processes; kill them if time exceeded.'
    echo '     -debug                 : Run DIRAC in debugger:"'$DEBUGGER'"'
    echo '     -vg1 "valgrind_params" : Run DIRAC in valgrind (http://valgrind.org) with parameters of :"'$VALGRIND'"'
@@ -935,9 +934,6 @@ set_dirac_environment()
    if [ -n "$MAX_MEMORY" ]; then
       DIRMAX=$MAX_MEMORY; export DIRMAX
    fi
-   if [ -n "$MAX_DFT_AO_MEMORY" ]; then
-      DFT_AO_MEMORY=$MAX_DFT_AO_MEMORY; export DFT_AO_MEMORY
-   fi
 #  Next line is for IBM only but will not hurt other systems
    XLFRTEOPTS='namelist=old'; export XLFRTEOPTS
 
@@ -980,7 +976,6 @@ initialize()
    MEMORY=
    NODE_MEMORY=
    MAX_MEMORY=
-   MAX_DFT_AO_MEMORY=
 
    RUN='out'
    SUFFIX2=''
@@ -1123,10 +1118,6 @@ while [ -n "$1" ]; do
       -slavemem)
          shift
          let NODE_MEMORY=$1*128000
-         ;;
-      -dftmem)
-         shift
-         let MAX_DFT_AO_MEMORY=$1*128000
          ;;
       -mw|-memory)
          shift

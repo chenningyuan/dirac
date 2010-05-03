@@ -116,10 +116,6 @@ module xc_driver
     integer :: max_ao_m_order
     integer :: max_fun_derv
 
-!   this pointer is useful for .KEEPAO, then it can point to memory
-!   otherwise it points to ao
-    real(8), pointer             :: ao_p(:)
-
     real(8), allocatable :: ao(:)
     real(8), allocatable :: buffer(:)
 
@@ -459,7 +455,6 @@ contains
          if (.not. grid_is_done) then
            call dftgrd(dmat_0, 1)
            grid_is_done = .true.
-           if (dft_cfg_keep_ao .and. ao_mem_allocated) reload_batches = .true.
          end if
       end if
 
@@ -551,12 +546,6 @@ contains
          if (dft_cfg_alda_ha .and. (.not. dft_cfg_alda_hs)) then
             call quit('QR and partial ALDA is not implemented')
          end if
-      end if
-     
-      if (dft_cfg_keep_ao .and. ao_mem_allocated .and. reload_batches) then
-         call kill_ao_in_mem()
-         ao_mem_allocated = .false.
-         reload_batches   = .false.
       end if
      
 !     aspg, toying with having the frozen density and adfgrid available
@@ -775,49 +764,6 @@ contains
     allocate(ao(total_ao_vector_length))
     allocate(buffer(total_ao_vector_length))
 
-    if (dft_cfg_keep_ao) then
-      if (dft_cfg_ao_mem_limit < 1) then
-!       write(*, *) 'debug will not keep ao in mem, mem too small'
-        dft_cfg_keep_ao = .false.
-      end if
-!     write(*, *) 'debug will try to keep ao in mem', dft_cfg_ao_mem_limit
-!   else
-!     write(*, *) 'debug will not try to keep ao in mem', dft_cfg_ao_mem_limit
-    end if
-
-    if (dft_cfg_keep_ao) then
-      if (.not. ao_mem_allocated) then
-!       allocate
-        write(*, *) 'debug allocating ao in mem'
-        call init_ao_in_mem(dft_cfg_ao_mem_limit)
-        ao_mem_allocated = .true.
-!       reset
-        batch_pointer    = 1
-        batch_is_in_mem  = .false.
-      end if
-
-      ioff = batch_pointer(ibatch)
-      if (.not. batch_is_in_mem(ibatch)) then
-        do i = ibatch + 1, max_nr_of_batches
-          batch_pointer(i) = batch_pointer(i) + nr_points_process*total_ao_vector_length
-        end do
-      end if
-
-      need_limit = ioff + nr_points_process*total_ao_vector_length
-      if (need_limit > dft_cfg_ao_mem_limit) then
-        batch_fits_in_mem(ibatch) = .false.
-        write(*, *) 'debug cannot keep batch', ibatch
-        write(*, *) 'debug need', need_limit*8/1000000
-        write(*, *) 'debug have', dft_cfg_ao_mem_limit*8/1000000
-      end if
-    end if
-
-!   if (.not. (dft_cfg_keep_ao .and. batch_is_in_mem(ibatch))) then
-!     so we either don't use .KEEPAO or the AOs are not yet stored
-!     so let it point to ao
-!     ao_p => ao
-!   end if    
-
 
 !   check what functional derivatives do we need
 !   ============================================
@@ -866,40 +812,9 @@ contains
     do ipoint = 1, nr_points_process
        nr_points_looped_over = nr_points_looped_over + 1
 
-      if (ipoint == 1) then
-        if (dft_cfg_keep_ao .and. batch_is_in_mem(ibatch)) then
-          write(*, *) 'debug reading ao from mem', ioff
-!       else
-!         write(*, *) 'debug recalculating aos'
-        end if
-      end if
-      
-
       time_ao_start = second()
-      if (.not. (dft_cfg_keep_ao .and. batch_is_in_mem(ibatch))) then
-        call get_ao(rx(ipoint), ry(ipoint), rz(ipoint), &
-                    ao, buffer)
-      end if
-      if (dft_cfg_keep_ao) then
-
-!       copy ao to mem
-        if (batch_fits_in_mem(ibatch) .and. .not. batch_is_in_mem(ibatch)) then
-          if (ipoint == 1) then
-            write(*, *) 'debug storing ao to mem', ioff
-          end if
-          call dcopy(total_ao_vector_length, ao_p, 1, ao_in_mem(ioff), 1)
-        end if
-
-!       if already in mem, set pointer
-        if (batch_is_in_mem(ibatch)) then
-          ao_p => ao_in_mem(ioff:ioff + total_ao_vector_length)
-        end if
-        ioff = ioff + total_ao_vector_length
-        
-        if (ipoint == nr_points_process) then
-          if (batch_fits_in_mem(ibatch)) batch_is_in_mem(ibatch) = .true.
-        end if
-      end if
+      call get_ao(rx(ipoint), ry(ipoint), rz(ipoint), &
+                  ao, buffer)
       time_ao = time_ao + second() - time_ao_start
 
 !     density
@@ -1194,8 +1109,6 @@ contains
 
       end if !if (r_0(1) > dft_cfg_dfthr0) then
     end do !do ipoint = 1, nr_points_process
-
-!   nullify(ao_p)
 
      deallocate(ao)
      deallocate(buffer)
