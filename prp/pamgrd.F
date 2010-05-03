@@ -881,8 +881,8 @@ C        JXOP    - list of orbital rotations
 C        QMAT    - one-electron property matrix
 C        UDV     - active density matrix (symmetry packed)
 C        IH      - hermicity
-C           IH = 1: g(k,l) = sum_m Dlq Qkq - ( sum_m Dmk Qml )^*
-C           IH = 2: g(k,l) = sum_m Dlq Qkq + ( sum_m Dmk Qml )^*
+C           IH = 1: g(k,l) = sum_m Dlm Qkm - ( sum_m Dmk Qml )^*
+C           IH = 2: g(k,l) = sum_m Dlm Qkm + ( sum_m Dmk Qml )^*
 C
 C     Written by J. Thyssen May 7 1999
 C     Last revision 
