@@ -632,7 +632,7 @@ if [ -n "$XCFUN_FLG" ]; then
    echo "* PLEASE NOTE !!! "
    echo "* "
    echo "* Please use (in Makefile.config)"
-   echo "* LIBS=... -Lxcfun/lib -lxcfun -Wl,-rpath $install_dir/xcfun/lib"
+   echo "* LIBS=-Lxcfun/lib -lxcfun -Wl,-rpath \$(INSTALL_DIR)/xcfun/lib"
    echo "* "
    echo "*****************************************************************"
 fi
