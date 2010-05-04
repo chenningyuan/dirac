@@ -380,7 +380,7 @@ C
      &              69, 70, 71, 72,
      &              73, 74, 75, 76,
      &              77, 78, 79, 80,
-     &              81, 82
+     &              81, 82, 83
      &            ), I
          END IF
   100 CONTINUE
@@ -2021,12 +2021,34 @@ C
          SQUARE = .FALSE.
       GOTO 200
 
+C
+C     EMD - i* Electronic kinetic energy
+C     -------------------------
+C
+ 83   CONTINUE
+         IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
+     &' Calculation of EDM - i*KINENERG_LS(electronic kinetic energy)'
+         INTTYP = 21 ! the same typ as 'KINENERG'
+         NOPTYP = 1
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         LABINT(1) = 'KINENERG'
+         !LABINT(1) = 'iKINENER'
+         !LABINT(1) = 'EDM'
+         !  INTREP(1) = 0
+
+         ! force the symmetry of the Im(ab) quaternion component 
+         INTREP(1) = ISYMAX(1,1)
+         !ANTI = .FALSE.
+         ANTI = .TRUE.
+      GO TO 200
+
   200 CONTINUE
 C
 C     ***** Print section *****
 C
       IF (IPRINT .GT. 5) THEN
-         WRITE (LUPRI,'(3X,A)') '**** PR1DIR output ****'
+         WRITE (LUPRI,'(/,3X,A)') '**** PR1DIR output ****'
          WRITE (LUPRI,'(A,I5)') ' Integral type:', INTTYP
          WRITE (LUPRI,'(A,L5)') ' TRASPH:', TRASPH
          WRITE (LUPRI,'(A,L5)') ' SQUARE:', SQUARE
@@ -2034,8 +2056,10 @@ C
          WRITE (LUPRI,'(A,L5)') ' SOLVNT:', SOLVNT
          WRITE (LUPRI,'(A,I5)') ' Number of operator components:',NOPTYP
          DO 300 I = 1, NOPTYP
-            WRITE (LUPRI,'(2A)')   ' Molecule label: ', LABINT(I)
-            WRITE (LUPRI,'(A,I5)') ' Symmetry:', INTREP(I)
+            WRITE (LUPRI,'(I3,A,I3,2A)')  
+     &       I,'./',NOPTYP,' Molecule label: ', LABINT(I)
+            WRITE (LUPRI,'(I3,A,I3,A,I5)')
+     &       I,'./',NOPTYP,' Symmetry:', INTREP(I)
   300    CONTINUE
       END IF
 C

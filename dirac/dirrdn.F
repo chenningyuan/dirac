@@ -5304,7 +5304,8 @@ C         Operator must be totally symmetric
 C         Operator must be symmetric under time reversal
           ITRXPR = IPRPTIM(INDXPR)
           IF(ITRXPR.NE.1) THEN
-           IF (PRPLBL(INDXPR).NE.'CAP_IM  ') THEN
+           IF (PRPLBL(INDXPR).NE.'CAP_IM  '.AND.
+     &         PRPLBL(INDXPR).NE.'EDM ') THEN
             SYMSTP = .TRUE.
             WRITE(LUPRI,'(4X,A)') '***** HAMINP ERROR *****'
             WRITE(LUPRI,'(4X,A,A)')
@@ -5317,7 +5318,7 @@ C         Operator must be symmetric under time reversal
             WRITE(LUPRI,'(4X,A)') '***** HAMINP NOTE *****'
             WRITE(LUPRI,'(4X,A,A8,A)') 'Operator ',PRPLBL(INDXPR),
      &      ' is time reversal antisymmetric - designed'//
-     &      ' only for the complex FSCC method.'
+     &      ' only for the complex FSCC method.....'
            ENDIF
           ENDIF
         ENDDO

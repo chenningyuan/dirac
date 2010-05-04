@@ -1914,7 +1914,8 @@ CMI  CAP integrals/labels to be used in the MOLTRA/PRPTRA input
         CLASLB = 'CAPD_VD' 
 CMI  EDM operator
       ELSE IF(LABINT(1:3).EQ.'EDM') THEN
-        CLASLB = 'EDM    '
+        !CLASLB = 'EDM    '
+        CLASLB = 'KINENER'
 C
 C     Unknown LABINT
 C   
@@ -2051,6 +2052,11 @@ C
         DO I = 1,NUCIND
           DOATOM(I) = .TRUE.
         ENDDO
+
+        IF (PLABEL.EQ.'EDM') THEN
+          PLABEL='KINENERG'
+          WRITE(LUPRI,*) 'EDM: PLABEL SET to KINENERG'
+        ENDIF
 
         IF (IPRINT.GE.5) THEN
           WRITE(LUPRI,'(/,2X,A)') '** XPLDE1 before PR1DIR calling'
@@ -2213,15 +2219,15 @@ C     Matrix operator
       IAREP    = JM4REP(IAIND)
 C     Scalar operator
       IBREP    = IPRLREP(IBIND)
-C     Total operator
+C     Total operator, first component...
       ICREP(1) = IBTXOR(IAREP,IBREP)
 C
 C     Time reversal symmetry
 C     ======================
 C
 C     Matrix operator :
-C - assign IATIM according to the IAIND = JM4(1,ITYP) = 
-C            = JM4(1,IPRPTYP(INDXPR)) = JM4(1,1-21)
+C - assign IATIM according to the 
+C  IAIND = JM4(1,ITYP) = JM4(1,IPRPTYP(INDXPR)) = JM4(1,1-21)
 C  JM4 is assigned in abacus/hergroup.F
 C
       IF (IAIND.EQ. 0 .OR. IAIND.EQ.4 .OR.
@@ -2233,11 +2239,12 @@ C       [XYZ]SIGMA, [XYZ]ALPHA, i*BETA*GAMMA5
         IATIM = -1
       ENDIF
 
-CMI    exception for this type of operator !!!
-      IF (ITYP.EQ.21) THEN
-          IATIM=-1
-          WRITE(LUPRI,'(2X,A)')
-     &    'i*BETA*GAMMA5 operator; therefore setting IATIM=-1' 
+CMI    exception for the i*BETA*GAMMA5 operator:
+      IF (ITYP.EQ.21.AND.IAIND.EQ. 0) THEN
+        IATIM=-1 ! setting hurts the program ...
+         WRITE(LUPRI,'(2X,A)')
+     &    'i*BETA*GAMMA5 operator, setting IATIM=-1' 
+!    &    'FYI: i*BETA*GAMMA5 operator' 
       ENDIF
 
 
@@ -2292,6 +2299,8 @@ C
      &      REP(ICREP(ILBL)),'(',(ICREP(ILBL)+1),')','  |  ',
      &      ICTIM(ILBL)
    30   CONTINUE
+        WRITE(LUPRI,*) 'FYI: matrix oper, IAREP=JM4REP(:)=',JM4REP
+        WRITE(LUPRI,*) '     scalar oper,IBREP=IPRLREP(:)=',IPRLREP
         CALL QUIT('PRPSYM: Components of different symmetry !!!')
       ENDIF
 

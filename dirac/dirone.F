@@ -490,17 +490,27 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EDM_EFF_OPER(WORK,LWORK,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C
-C
+C  read KINENERG integrals into LS/SL blocks, antisymmetric because they are
+C  imaginary 
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
+#include "dcbbas.h"
       DIMENSION WORK(LWORK)
+!     ... local variables
+      LOGICAl DOINT(4)
+      CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4,OMITVNUC(2)*4
+#include "memint.h"
 
+C     Memory allocation
+      CALL MEMGET('REAL',K_EDM,NNBBASX,WORK,KFREE,LFREE)
+ 
+      write(LUPRI,'(/,2X,A,/)') '....integral routine for EDM '
        
-      CALL QUIT('EDM end')        
-      
+C     Memory deallocation
+      CALL MEMREL('EDM',WORK,KWORK,KWORK,KFREE,LFREE)
+      !CALL QUIT('EDM end')        
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -937,6 +947,7 @@ C       Is this a LL+SS operator (IC=1) or a LS+SL operator (IC=2) ?
           write(lupri,'(3A)') 'PRPMAO: illegal PDOINT = "',PDOINT,'"'
           CALL QUIT('PRPMAO: illegal PDOINT!')
         ENDIF
+CMI     ... assignements
         IBRP = IPRLREP(KLBL)
         IH   = IPRLTYP(KLBL)
         IM4  = JM4(I,IOPTYP)
@@ -944,11 +955,11 @@ C       Is this a LL+SS operator (IC=1) or a LS+SL operator (IC=2) ?
         IQ   = IQMULT(1,JQBAS(IBRP,IC),IZ)
         IQP  = IQTOPQ(IQ,IBRPOP)
 CMI fix
-        IF (IOPTYP.EQ.21) THEN 
+!       IF (IOPTYP.EQ.21) THEN 
 !          IQP=1
 !          WRITE(LUPRI,'(/,2X,A)')
 !     &    'Operator of type 21, IQP set to 1.'
-        ENDIF
+!       ENDIF
 ! check
         IF(IQP.LE.0) THEN
           WRITE(LUPRI,'(/A)') '***** PRPMAO ERROR *****'
