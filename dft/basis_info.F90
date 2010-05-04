@@ -51,13 +51,40 @@ module basis_info
 !>                    number of so-ao contributions when evaluating sa-ao (so)
    integer, public :: nr_so_ao
 
+!                     the following llss... and lssl... parameters are used
+!                     to figure out where to jump on quaternion symmetry-packed
+!                     matrices when evaluating densities and distributing XC factors
 !>                    for (number) density and spin density and similar (diagonal operators)
+!                                            0 operator: 1
+!                                            1 operator: \Sigma_x
+!                                            2 operator: \Sigma_y
+!                                            3 operator: \Sigma_z
+!                                            |
+!                                            |    0-7 irep
+!                                            |    |
+!                                            v    v
    integer, public :: llss_nr_density_blocks(0:3, 0:7)
+!                     for an operator (0:3) and irep (0:7)
+!                     there are maximum 16 llss_nr_density_blocks
+!                     (2*max_nr_boson_sym; 2 is for large and small)
+!                     which combinations are totally symmetric?
+!                     llss_nr_ao(1, ...) of functions that start at llss_st_ao(1, ...)
+!                     combined with
+!                     llss_nr_ao(2, ...) of functions that start at llss_st_ao(2, ...)
    integer, public :: llss_nr_ao(2, 16, 0:3, 0:7)
    integer, public :: llss_st_ao(2, 16, 0:3, 0:7)
+!                             on which nz unit is 0=r, 1=x, 2=y, 3=z
+!                             |
+!                             v
    integer, public :: llss_iq(0:3)
 
 !>                    for kinetic energy density and current density and similar (off-diagonal operators)
+!                                            0 operator: \gamma_5
+!                                            1 operator: \alpha_x
+!                                            2 operator: \alpha_y
+!                                            3 operator: \alpha_z
+!                                            |
+!                                            v
    integer, public :: lssl_nr_density_blocks(0:3, 0:7)
    integer, public :: lssl_nr_ao(2, 16, 0:3, 0:7)
    integer, public :: lssl_st_ao(2, 16, 0:3, 0:7)
