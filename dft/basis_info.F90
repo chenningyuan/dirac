@@ -512,11 +512,13 @@ contains
          end do
       end do
       do i = 1, nr_ao_cartesian
+!                            can be generated from l
          write(file_unit, *) l_exp(i), &
                              m_exp(i), &
                              n_exp(i)
       end do
       do i = 1, nr_so_ao
+!                            coefficients for ao to sa-ao transformation
          write(file_unit, *) i_so_ao(1, i), &
                              i_so_ao(2, i), &
                              f_so_ao(i)
