@@ -72,9 +72,11 @@ module basis_info
 !                     llss_nr_ao(1, b, ...) of functions that start at llss_st_ao(1, b, ...)
 !                     combined with
 !                     llss_nr_ao(2, b, ...) of functions that start at llss_st_ao(2, b, ...)
+!                     note that there can be less blocks then ireps (or ireps*2)
+!                     if some ireps do not contain any basis functions
    integer, public :: llss_nr_ao(2, 16, 0:3, 0:7)
    integer, public :: llss_st_ao(2, 16, 0:3, 0:7)
-!                             on which nz unit is 0=r, 1=x, 2=y, 3=z
+!                             on which iz unit is 0=r, 1=x, 2=y, 3=z
 !                             |
 !                             v
    integer, public :: llss_iq(0:3)
