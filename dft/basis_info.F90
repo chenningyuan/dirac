@@ -66,6 +66,7 @@ module basis_info
    integer, public :: llss_nr_density_blocks(0:3, 0:7)
 !                     for an operator (0:3) and irep (0:7)
 !                     there are maximum 16 llss_nr_density_blocks
+!                     which give totally symmetric contributions
 !                     (2*max_nr_boson_sym; 2 is for large and small)
 !                     which combinations are totally symmetric?
 !                     llss_nr_ao(1, ...) of functions that start at llss_st_ao(1, ...)
