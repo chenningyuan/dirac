@@ -479,15 +479,15 @@ contains
 
       do ishell = 1, nr_shells_all
          write(file_unit, *) cartesian_deg(ishell),       &
-                             cartesian_off(ishell),       &
-                             spherical_deg(ishell),       &
+                             cartesian_off(ishell),       & ! What is it?
+                             spherical_deg(ishell),       & ! Can we have both spherical and cartesian?
                              spherical_off(ishell),       &
-                             l_quantum_nr(ishell),        &
+                             l_quantum_nr(ishell),        & ! Not the same as *_deg?
                              shell_center(ishell),        &
                              shell_center_xyz(1, ishell), &
                              shell_center_xyz(2, ishell), &
                              shell_center_xyz(3, ishell), &
-                             shell_stabilizer(ishell),    &
+                             shell_stabilizer(ishell),    & ! What is it?
                              shell_is_spherical(ishell),  &
                              shell_extent(ishell),        &
                              nr_nonzero_contraction_coefs(ishell)
