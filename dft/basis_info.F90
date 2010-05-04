@@ -6,6 +6,26 @@
 !> \todo    complete this module so that dft_ao gets all info from file
 !> \warning incomplete, work in progress
 
+
+! there are a few things that are perhaps not ideal about the basis set exporter:
+! 
+! * it exports everything that is needed to calculated AOs with symmetry. some of
+! the exported information is redundant. it could be generated with knowledge of
+! symmetry, ordering, etc (e.g. AO-SO transformation, cartesian-spherical
+! transformation). but i didn't want to do any "thinking" after reading the
+! information, didn't want to double code that is figuring out all this already
+! in core DIRAC. so it contains a little bit too much, but at the moment i tried
+! to be not too clever, just to get it isolated.
+! 
+! * the exported file does not look very nice. i really want it to be formatted,
+! so that it can be read by python etc but i am not sure what format is ideal. so
+! i just throw all data in there, formatted but without much thinking. one could
+! certainly agree on a better structure.  so the data format is certainly not
+! final and not stable. and i don't mind if it changes. one could write the data
+! in some standard format like g5cost but then there are many DIRAC-own
+! parameters that i fear will not fit in (but i haven't checked q5cost). 
+
+
 module basis_info
 
 #ifdef VAR_MPI
