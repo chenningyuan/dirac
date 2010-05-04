@@ -480,14 +480,23 @@ contains
       do ishell = 1, nr_shells_all
          write(file_unit, *) cartesian_deg(ishell),       &
                              cartesian_off(ishell),       & ! What is it?
+!                offset;     cartesian_off(3) = 13 means that shell 3 starts at 14
                              spherical_deg(ishell),       & ! Can we have both spherical and cartesian?
+!                                  we need both - aos are evaluated in cartesian and maybe transformed
+!                                  to spherical, so we need offsets etc.
+!                                  the confusing thing is that in a standard DIRAC (cartesian) run
+!                                  both _degs and _offs are same
                              spherical_off(ishell),       &
                              l_quantum_nr(ishell),        & ! Not the same as *_deg?
+!                                  it's redundant info, l goes 1, 2, 3, 4, 5, degeneracy 1, 3, 6, ... or 1, 3, 5 ...
+!                                  ideally we should write only l to file and generate deg from it
                              shell_center(ishell),        &
                              shell_center_xyz(1, ishell), &
                              shell_center_xyz(2, ishell), &
                              shell_center_xyz(3, ishell), &
                              shell_stabilizer(ishell),    & ! What is it?
+!                                  shell stabiliser: sym that does not move center
+!                                  i don't know about the inner workings though
                              shell_is_spherical(ishell),  &
                              shell_extent(ishell),        &
                              nr_nonzero_contraction_coefs(ishell)
