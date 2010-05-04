@@ -2,9 +2,7 @@
 !> \brief   write/read basis set information to/from file
 !> \author  radovan bast
 !> \date    2010-05-01
-!> \todo    mpi bcasting
-!> \todo    complete this module so that dft_ao gets all info from file
-!> \warning incomplete, work in progress
+!> \warning output format ugly and not final, feel free to improve
 
 
 ! there are a few things that are perhaps not ideal about the basis set exporter:
