@@ -478,25 +478,29 @@ contains
       write(file_unit, *) sym_axes
 
       do ishell = 1, nr_shells_all
-         write(file_unit, *) cartesian_deg(ishell),       &
-                             cartesian_off(ishell),       & ! What is it?
+         write(file_unit, *) &
+! Degeneracy of cartesian ishell ( 1,3,6,10,.. = (L+1)(L+2)/2 )
+                             cartesian_deg(ishell),       &
 !                offset;     cartesian_off(3) = 13 means that shell 3 starts at 14
-                             spherical_deg(ishell),       & ! Can we have both spherical and cartesian?
-!                                  we need both - aos are evaluated in cartesian and maybe transformed
-!                                  to spherical, so we need offsets etc.
-!                                  the confusing thing is that in a standard DIRAC (cartesian) run
-!                                  both _degs and _offs are same
+                             cartesian_off(ishell),       &
+! Same thing for spherical function. we need both spherical and
+!                                  cartiesian- aos are evaluated in
+!                                  cartesian and maybe transformed to
+!                                  spherical, so we need offsets etc.
+!                                  the confusing thing is that in a
+!                                  standard DIRAC (cartesian) run both
+!                                  _degs and _offs are same
+!                             = (1,3,5,7,9, .. ) = 2*L+1
+                             spherical_deg(ishell),       & 
                              spherical_off(ishell),       &
-                             l_quantum_nr(ishell),        & ! Not the same as *_deg?
-!                                  it's redundant info, l goes 1, 2, 3, 4, 5, degeneracy 1, 3, 6, ... or 1, 3, 5 ...
-!                                  ideally we should write only l to file and generate deg from it
+!                            L quantum number, degeneracies can be computed from this.
+                             l_quantum_nr(ishell),        & 
                              shell_center(ishell),        &
                              shell_center_xyz(1, ishell), &
                              shell_center_xyz(2, ishell), &
                              shell_center_xyz(3, ishell), &
-                             shell_stabilizer(ishell),    & ! What is it?
-!                                  shell stabiliser: sym that does not move center
-!                                  i don't know about the inner workings though
+!                            shell stabiliser: sym op that does not move center
+                             shell_stabilizer(ishell),    & 
                              shell_is_spherical(ishell),  &
                              shell_extent(ishell),        &
                              nr_nonzero_contraction_coefs(ishell)
