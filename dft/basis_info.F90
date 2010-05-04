@@ -68,10 +68,10 @@ module basis_info
 !                     there are maximum 16 llss_nr_density_blocks
 !                     which give totally symmetric contributions
 !                     (2*max_nr_boson_sym; 2 is for large and small)
-!                     which combinations are totally symmetric?
-!                     llss_nr_ao(1, ...) of functions that start at llss_st_ao(1, ...)
+!                     so in a specific block b there are
+!                     llss_nr_ao(1, b, ...) of functions that start at llss_st_ao(1, b, ...)
 !                     combined with
-!                     llss_nr_ao(2, ...) of functions that start at llss_st_ao(2, ...)
+!                     llss_nr_ao(2, b, ...) of functions that start at llss_st_ao(2, b, ...)
    integer, public :: llss_nr_ao(2, 16, 0:3, 0:7)
    integer, public :: llss_st_ao(2, 16, 0:3, 0:7)
 !                             on which nz unit is 0=r, 1=x, 2=y, 3=z
