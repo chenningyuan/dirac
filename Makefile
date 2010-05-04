@@ -116,7 +116,7 @@ $(TARGET): $(OBJ) $(EXT_OBJ)
 
 clean:
 	@echo "Cleaning the entire DIRAC (recursively) of *.o,*.mod,... files"
-	rm -f `find . -name '*.o' -o -name '*.mod' -o -name '*~' -o -name '*.gc*' -o -name '*.s' -o -name '*.r' -o -name '*.i' -o -name '*.fc'  -o -name '*.p' `
+	rm -f `find . -name '*.o' -o -name '*.mod' -o -name '*~' -o -name '*.gcov' -o -name '*.s' -o -name '*.r' -o -name '*.i' -o -name '*.fc'  -o -name '*.p' | grep -v '\.svn'`
 
 # Main target here is utils, which builds all utilities and
 # puts them in $(INSTALL_DIR/bin)
