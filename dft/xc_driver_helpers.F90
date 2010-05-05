@@ -88,32 +88,34 @@ contains
 !     hermitian contribution (qr = quaternion real)
       if (calculate_qr) then
 
-        call get_n(r_b,                        &
-                   isym(im) - 1,               &
-                   mat_dim,                    &
-                   dmaterturbed(1 + im_off), &
-                   buffer,                     &
-                   ao_p)
-        
-        if (is_gga_qr) then
-          if (allow_nonhermitian) then
-            call get_gn_nonhermitian(gr_b,                       &
-                                     isym(im) - 1,               &
-                                     mat_dim,                    &
-                                     dmaterturbed(1 + im_off), &
-                                     buffer,                     &
-                                     ao_p,                       &
-                                     ao_p(ao_start(1, 0)))
-          else
-            call get_gn(gr_b,                       &
-                        isym(im) - 1,               &
-                        mat_dim,                    &
-                        dmaterturbed(1 + im_off), &
-                        buffer,                     &
-                        ao_p,                       &
-                        ao_p(ao_start(1, 0)))
-          end if
-        end if
+         if (is_gga_qr) then
+            if (allow_nonhermitian) then
+               call get_gn_nonhermitian(r_b,                      &
+                                        gr_b,                     &
+                                        isym(im) - 1,             &
+                                        mat_dim,                  &
+                                        dmaterturbed(1 + im_off), &
+                                        buffer,                   &
+                                        ao_p,                     &
+                                        ao_p(ao_start(1, 0)))
+            else
+               call get_gn(r_b,                      &
+                           gr_b,                     &
+                           isym(im) - 1,             &
+                           mat_dim,                  &
+                           dmaterturbed(1 + im_off), &
+                           buffer,                   &
+                           ao_p,                     &
+                           ao_p(ao_start(1, 0)))
+            end if
+         else
+            call get_n(r_b,                        &
+                       isym(im) - 1,               &
+                       mat_dim,                    &
+                       dmaterturbed(1 + im_off), &
+                       buffer,                     &
+                       ao_p)
+         end if
 
         u_qr = derv(1, d_rr)*r_b
         
@@ -152,16 +154,11 @@ contains
 !     antihermitian contribution (qi = quaternion imaginary)
       if (calculate_qi) then
 
-        call get_s(s_b,                        &
-                   isym(im) - 1,               &
-                   mat_dim,                    &
-                   dmaterturbed(1 + im_off), &
-                   buffer,                     &
-                   ao_p)
         
         if (is_gga_qi) then
           if (allow_nonhermitian) then
-            call get_gs_nonhermitian(gs_b,                       &
+            call get_gs_nonhermitian(s_b,                       &
+                                     gs_b,                       &
                                      isym(im) - 1,               &
                                      mat_dim,                    &
                                      dmaterturbed(1 + im_off), &
@@ -169,7 +166,8 @@ contains
                                      ao_p,                       &
                                      ao_p(ao_start(1, 0)))
           else
-            call get_gs(gs_b,                       &
+            call get_gs(s_b,                       &
+                        gs_b,                       &
                         isym(im) - 1,               &
                         mat_dim,                    &
                         dmaterturbed(1 + im_off), &
@@ -177,6 +175,13 @@ contains
                         ao_p,                       &
                         ao_p(ao_start(1, 0)))
           end if
+        else
+        call get_s(s_b,                        &
+                   isym(im) - 1,               &
+                   mat_dim,                    &
+                   dmaterturbed(1 + im_off), &
+                   buffer,                     &
+                   ao_p)
         end if
 
 !       initialize otherwise there can be numerical dirt

@@ -181,7 +181,8 @@ contains
 
   end subroutine
 
-  subroutine get_gn(gn,      &
+  subroutine get_gn(n,       &
+                    gn,      &
                     irep,    &
                     mat_dim, &
                     dmat,    &
@@ -190,6 +191,7 @@ contains
                     ao1)
 
 !   ----------------------------------------------------------------------------
+    real(8), intent(out) :: n
     real(8), intent(out) :: gn(3)
     integer, intent(in)  :: irep
     integer, intent(in)  :: mat_dim
@@ -202,6 +204,7 @@ contains
     real(8), external    :: ddot
 !   ----------------------------------------------------------------------------
 
+    n  = 0.0d0
     gn = 0.0d0
 
       do iblock = 1, llss_nr_density_blocks(0, irep)
@@ -223,8 +226,9 @@ contains
                    buffer,                   &
                    1)
 
+        n = n + ddot(nr1, ao(st1), 1, buffer, 1)
         do ixyz = 1, 3
-          gn(ixyz) = gn(ixyz) + ddot(nr1, ao1(st1, ixyz), 1, buffer, 1)
+           gn(ixyz) = gn(ixyz) + ddot(nr1, ao1(st1, ixyz), 1, buffer, 1)
         end do
 
       end do
@@ -358,7 +362,8 @@ contains
 
   end subroutine
 
-  subroutine get_gn_nonhermitian(gn,      &
+  subroutine get_gn_nonhermitian(n,       &
+                                 gn,      &
                                  irep,    &
                                  mat_dim, &
                                  dmat,    &
@@ -367,6 +372,7 @@ contains
                                  ao1)
 
 !   ----------------------------------------------------------------------------
+    real(8), intent(out) :: n
     real(8), intent(out) :: gn(3)
     integer, intent(in)  :: irep
     integer, intent(in)  :: mat_dim
@@ -379,6 +385,7 @@ contains
     real(8)              :: ddot
 !   ----------------------------------------------------------------------------
 
+    n  = 0.0d0
     gn = 0.0d0
 
       do iblock = 1, llss_nr_density_blocks(0, irep)
@@ -388,22 +395,24 @@ contains
         nr2 = llss_nr_ao(2, iblock, 0, irep)
         st2 = llss_st_ao(2, iblock, 0, irep)
 
+        call dgemv('N',                      &
+                   nr1,                      &
+                   nr2,                      &
+                   1.0d0,                    &
+                   dmat(st1, st2, llss_iq(0)), &
+                   mat_dim,                  &
+                   ao(st2),                  &
+                   1,                        &
+                   0.0d0,                    &
+                   buffer,                   &
+                   1)
+
+        n = n + ddot(nr1, ao(st1), 1, buffer, 1)
         do ixyz = 1, 3
-
-          call dgemv('N',                      &
-                     nr1,                      &
-                     nr2,                      &
-                     1.0d0,                    &
-                     dmat(st1, st2, llss_iq(0)), &
-                     mat_dim,                  &
-                     ao(st2),                  &
-                     1,                        &
-                     0.0d0,                    &
-                     buffer,                   &
-                     1)
-
           gn(ixyz) = gn(ixyz) + ddot(nr1, ao1(st1, ixyz), 1, buffer, 1)
+        end do
 
+        do ixyz = 1, 3
           call dgemv('N',                      &
                      nr1,                      &
                      nr2,                      &
@@ -423,7 +432,8 @@ contains
 
   end subroutine
 
-  subroutine get_gs(gs,      &
+  subroutine get_gs(s,       &
+                    gs,      &
                     irep,    &
                     mat_dim, &
                     dmat,    &
@@ -432,6 +442,7 @@ contains
                     ao1)
 
 !   ----------------------------------------------------------------------------
+    real(8), intent(out) :: s(3)
     real(8), intent(out) :: gs(3, 3)
     integer, intent(in)  :: irep
     integer, intent(in)  :: mat_dim
@@ -444,6 +455,7 @@ contains
     real(8), external    :: ddot
 !   ----------------------------------------------------------------------------
 
+    s  = 0.0d0
     gs = 0.0d0
 
     do jxyz = jxyz_start, 3
@@ -466,6 +478,7 @@ contains
                    buffer,                   &
                    1)
 
+        s(jxyz) = s(jxyz) + ddot(nr1, ao(st1), 1, buffer, 1)
         do ixyz = 1, 3
           gs(ixyz, jxyz) = gs(ixyz, jxyz) &
                          + ddot(nr1, ao1(st1, ixyz), 1, buffer, 1)
@@ -478,7 +491,8 @@ contains
 
   end subroutine
 
-  subroutine get_gs_nonhermitian(gs,      &
+  subroutine get_gs_nonhermitian(s,       &
+                                 gs,      &
                                  irep,    &
                                  mat_dim, &
                                  dmat,    &
@@ -487,6 +501,7 @@ contains
                                  ao1)
 
 !   ----------------------------------------------------------------------------
+    real(8), intent(out) :: s(3)
     real(8), intent(out) :: gs(3, 3)
     integer, intent(in)  :: irep
     integer, intent(in)  :: mat_dim
@@ -499,6 +514,7 @@ contains
     real(8)              :: ddot
 !   ----------------------------------------------------------------------------
 
+    s = 0.0d0
     gs = 0.0d0
 
     do jxyz = jxyz_start, 3
@@ -509,7 +525,6 @@ contains
         nr2 = llss_nr_ao(2, iblock, jxyz, irep)
         st2 = llss_st_ao(2, iblock, jxyz, irep)
 
-        do ixyz = 1, 3
 
           call dgemv('N',                      &
                      nr1,                      &
@@ -523,9 +538,13 @@ contains
                      buffer,                   &
                      1)
 
+        s(jxyz) = s(jxyz) + ddot(nr1, ao(st1), 1, buffer, 1)
+        do ixyz = 1, 3
           gs(ixyz, jxyz) = gs(ixyz, jxyz) &
                          + ddot(nr1, ao1(st1, ixyz), 1, buffer, 1)
+        end do
 
+        do ixyz = 1, 3
           call dgemv('N',                      &
                      nr1,                      &
                      nr2,                      &

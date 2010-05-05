@@ -110,35 +110,34 @@ contains
 !   ----------------------------------------------------------------------------
 
 !   get perturbed densities
+!   get perturbed densitiy gradients and gradient norms
 
     n(0) = n_0
+    gn(:, 0) = gn_0
     do i = 1, nr_dmat_p
-      call get_n(n(i),               &
-                 isym_d(i) - 1,        &
-                 mat_dim,            &
-                 dmat_p(1, 1, 1, i), &
-                 buffer,             &
-                 ao_g0_m0)
+       if (use_gga) then
+          call get_gn(n(i),               &
+                      gn(1, i),           &
+                      isym_d(i) - 1,      &
+                      mat_dim,            &
+                      dmat_p(1, 1, 1, i), &
+                      buffer,             &
+                      ao_g0_m0,           &
+                      ao_g1_m0)
+       else
+          call get_n(n(i),               &
+                     isym_d(i) - 1,      &
+                     mat_dim,            &
+                     dmat_p(1, 1, 1, i), &
+                     buffer,             &
+                     ao_g0_m0)
+       end if
     end do
-
-!   get perturbed densitiy gradients and gradient norms
 
 !   otherwise undefined with (a)lda
     z(0, 0) = 0.0d0
 
     if (use_gga) then
-
-      gn(:, 0) = gn_0
-      do i = 1, nr_dmat_p
-        call get_gn(gn(1, i),           &
-                    isym_d(i) - 1,        &
-                    mat_dim,            &
-                    dmat_p(1, 1, 1, i), &
-                    buffer,             &
-                    ao_g0_m0,           &
-                    ao_g1_m0)
-      end do
-
       do i = 0, nr_dmat_p
         do j = i, nr_dmat_p
 !         the perturbed z carries factor 2

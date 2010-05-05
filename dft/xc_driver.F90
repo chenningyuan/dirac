@@ -129,7 +129,6 @@ module xc_driver
    real(8)           :: time_ao,          time_ao_start
    real(8)           :: time_matrix_dist, time_matrix_dist_start
    real(8)           :: time_density,     time_density_start
-   real(8)           :: time_gradient,    time_gradient_start
    real(8)           :: time_derv,        time_derv_start
 
 
@@ -251,7 +250,6 @@ contains
       time_ao          = 0.0d0
       time_matrix_dist = 0.0d0
       time_density     = 0.0d0
-      time_gradient    = 0.0d0
       time_derv        = 0.0d0
 
       nr_electrons = 0.0d0
@@ -805,6 +803,8 @@ contains
 #if defined MOD_XCFUN && MOD_AORESPONSE
     end if
 #endif
+!       set it to zero, otherwise it is undefined with lda
+        z_0 = 0.0d0
 
 !   HERE STARTS THE EXPENSIVE LOOP OVER POINTS
 !   DO NOT EVALUATE ANYTHING INSIDE THIS LOOP
@@ -817,24 +817,20 @@ contains
                   ao, buffer)
       time_ao = time_ao + second() - time_ao_start
 
-!     density
       time_density_start = second()
-      call get_n(r_0(1), 0, mat_dim, dmat_0, buffer, ao)
+      if (need_ao_order(1, 0)) then
+!        density and density gradient
+         call get_gn(r_0(1), rhg, 0, mat_dim, dmat_0, buffer, ao, ao(ao_start(1, 0):ao_end(1, 0)))
+         z_0(1) = ddot(3, rhg, 1, rhg, 1)
+      else
+!        density
+         call get_n(r_0(1), 0, mat_dim, dmat_0, buffer, ao)
+      end if
       time_density = time_density + second() - time_density_start
 
       if (r_0(1) > dft_cfg_dfthr0) then
          nr_points_used = nr_points_used + 1
 
-!       set it to zero, otherwise it is undefined with lda
-        z_0 = 0.0d0
-
-!       density gradient
-        time_gradient_start = second()
-        if (need_ao_order(1, 0)) then
-          call get_gn(rhg, 0, mat_dim, dmat_0, buffer, ao, ao(ao_start(1, 0):ao_end(1, 0)))
-          z_0(1) = ddot(3, rhg, 1, rhg, 1)
-        end if
-        time_gradient = time_gradient + second() - time_gradient_start
 
         w(1) = rw(ipoint)
 
@@ -1179,8 +1175,6 @@ contains
      !            time_matrix_dist, file_unit)
      !call timtxt('                density evaluation               =', &
      !            time_density, file_unit)
-     !call timtxt('                gradient evaluation              =', &
-     !            time_gradient, file_unit)
      !call timtxt('                functional derivatives           =', &
      !            time_derv, file_unit)
 

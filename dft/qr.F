@@ -104,50 +104,73 @@ c=======================================================================
       k_start = 1
       if(dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
 
-      call get_n(r_b,
-     &           isymop(1) - 1,
-     &           mat_dim,           
-     &           dtrmat(1, 1, 1, 1),
-     &           buf,
-     &           gao)
-      call get_n(r_c,
-     &           isymop(2) - 1,
-     &           mat_dim,           
-     &           dtrmat(1, 1, 1, 2),
-     &           buf,
-     &           gao)
+      if (add_grad) then
+         call get_gn_nonhermitian(r_b,
+     &                            gr_b,
+     &                            isymop(1) - 1,
+     &                            mat_dim,           
+     &                            dtrmat(1, 1, 1, 1),
+     &                            buf,
+     &                            gao,
+     &                            gao1)
+         call get_gn_nonhermitian(r_c,
+     &                            gr_c,
+     &                            isymop(2) - 1,
+     &                            mat_dim,           
+     &                            dtrmat(1, 1, 1, 2),
+     &                            buf,
+     &                            gao,
+     &                            gao1)
+      else
+         call get_n(r_b,
+     &              isymop(1) - 1,
+     &              mat_dim,           
+     &              dtrmat(1, 1, 1, 1),
+     &              buf,
+     &              gao)
+         call get_n(r_c,
+     &              isymop(2) - 1,
+     &              mat_dim,           
+     &              dtrmat(1, 1, 1, 2),
+     &              buf,
+     &              gao)
+      end if
 
       if (.not. no_sdft) then
-        call get_s(s_b,
-     &             isymop(1) - 1,
-     &             mat_dim,           
-     &             dtrmat(1, 1, 1, 1),
-     &             buf,
-     &             gao)
-        call get_s(s_c,
-     &             isymop(2) - 1,
-     &             mat_dim,           
-     &             dtrmat(1, 1, 1, 2),
-     &             buf,
-     &             gao)
+         if (add_grad) then
+            call get_gs_nonhermitian(s_b,
+     &                               gs_b,
+     &                               isymop(1) - 1,
+     &                               mat_dim,           
+     &                               dtrmat(1, 1, 1, 1),
+     &                               buf,
+     &                               gao,
+     &                               gao1)
+            call get_gs_nonhermitian(s_c,
+     &                               gs_c,
+     &                               isymop(2) - 1,
+     &                               mat_dim,           
+     &                               dtrmat(1, 1, 1, 2),
+     &                               buf,
+     &                               gao,
+     &                               gao1)
+         else
+           call get_s(s_b,
+     &                isymop(1) - 1,
+     &                mat_dim,           
+     &                dtrmat(1, 1, 1, 1),
+     &                buf,
+     &                gao)
+           call get_s(s_c,
+     &                isymop(2) - 1,
+     &                mat_dim,           
+     &                dtrmat(1, 1, 1, 2),
+     &                buf,
+     &                gao)
+         end if
       endif
 
       if (add_grad) then
-        call get_gn_nonhermitian(gr_b,
-     &                           isymop(1) - 1,
-     &                           mat_dim,           
-     &                           dtrmat(1, 1, 1, 1),
-     &                           buf,
-     &                           gao,
-     &                           gao1)
-        call get_gn_nonhermitian(gr_c,
-     &                           isymop(2) - 1,
-     &                           mat_dim,           
-     &                           dtrmat(1, 1, 1, 2),
-     &                           buf,
-     &                           gao,
-     &                           gao1)
-
 !       Z = \nabla R \cdot \nabla R
         Z_b  = d2*ddot(3,gr_0,1,gr_b,1)
         Z_c  = d2*ddot(3,gr_0,1,gr_c,1)
@@ -155,21 +178,6 @@ c=======================================================================
       end if
 
       if(add_grad .and. .not. no_sdft) then
-        call get_gs_nonhermitian(gs_b,
-     &                           isymop(1) - 1,
-     &                           mat_dim,           
-     &                           dtrmat(1, 1, 1, 1),
-     &                           buf,
-     &                           gao,
-     &                           gao1)
-        call get_gs_nonhermitian(gs_c,
-     &                           isymop(2) - 1,
-     &                           mat_dim,           
-     &                           dtrmat(1, 1, 1, 2),
-     &                           buf,
-     &                           gao,
-     &                           gao1)
-
 !       Y = \nabla R \cdot \nabla S
         do k = k_start,3
           Y_b (k) = ddot(3,gr_0,1,gs_b(1,k),1)
