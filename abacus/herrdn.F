@@ -66,9 +66,9 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in REAINP.'
+     *            '" not recognized for "*READIN".'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in REAINP.')
+               CALL QUIT('Illegal keyword for "*READIN".')
     1          CONTINUE
                   READ (LUCMD, *,IOSTAT=IOS) IPREAD
                   IF (IOS.NE.0) THEN
@@ -127,9 +127,9 @@ C determined symmetry
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in REAINP.'
+     *            '" not recognized for "*READIN".'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in REAINP.')
+               CALL QUIT('Illegal prompt for "*READIN".')
             END IF
       END IF
   300 CONTINUE
@@ -355,6 +355,8 @@ C     JHS TMP reset the variables with the read .mol file
       CALL RDLINE(LUINFO)
       READ (MLINE(NMLINE),'(A6)',IOSTAT=IOS) KEYWRD
       IF (IOS.NE.0) THEN
+         WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+         WRITE(LUPRI,*) MLINE(NMLINE)
          CALL QUIT('Error in reading...KEYWRD')
       ENDIF
 
@@ -416,8 +418,8 @@ C     JHS050707 Free the reserved memory.
         CLOSE(inpfile)
 
       CASE DEFAULT
-        WRITE(LUPRI, '(//A)') ' *** ERROR *** extension of MOLECULE 
-     &        FILE COULD NOT BE DETECTED.'
+        WRITE(LUPRI, '(//A)') ' *** ERROR *** extension of MOLECULE'
+     &     //' input file could not be detected.'
         CALL QUIT(' *** ERROR (READIN) unable to detect extension')
       END SELECT
 
@@ -558,6 +560,8 @@ C***********************************************************************
       READ (MLINE(NMLINE),'(BN,A1,I4,I3,A11,A1,D10.2,6I5)',IOSTAT=IOS)
      &     CRT,NONTYP,KCHARG,SYMTXT,ID3,THRS
       IF (IOS.NE.0) THEN
+       WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+       WRITE(LUPRI,*) MLINE(NMLINE)
        CALL QUIT('Error in basis reading..BN,A1,I4,I3,A11,A1,D10.2,6I5')
       ENDIF
       IF(NONTYP.GT.KATOM) GOTO 5000
@@ -590,7 +594,9 @@ C     Also automatic symmetry detection for Dinfh or Cinfv
          READ(SYMTXT,'(BN,I2,9A1)',IOSTAT=IOS) 
      &          NSYMOP,((KASYM(I,J),I=1,3),J=1,3)
          IF (IOS.NE.0) THEN
-          CALL QUIT('Error in sjkjd')
+          WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+          WRITE(LUPRI,*) MLINE(NMLINE)
+          CALL QUIT('Error in decoding SYMTXT')
          ENDIF
       ELSE
          NSYMOP = 0
@@ -993,6 +999,8 @@ C
          IF (I .EQ. 1 .AND. .NOT. DIRAC) THEN
            READ (MLINE(NMLINE),'(A1)',IOSTAT=IOS) ZMATL
            IF (IOS.NE.0) THEN
+             WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+             WRITE(LUPRI,*) MLINE(NMLINE)
              CALL QUIT('Error read READ..akasjs')
            ENDIF
            IF (ZMATL .NE. ' ') THEN
@@ -1018,6 +1026,8 @@ C
             READ (MLINE(NMLINE),'(BN,1X,F9.0,I5,F20.5)',IOSTAT=IOS)
      &            Q,NONT(I),QEXP
             IF (IOS.NE.0) THEN
+              WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+              WRITE(LUPRI,*) MLINE(NMLINE)
               CALL QUIT('Error read READ..akasjsxxkd')
             ENDIF
           ELSE IF (.NOT.ZMTTST) THEN
@@ -1028,6 +1038,8 @@ C
      &                           Q,NONT(I),
      &                           IQM(I,1), (JCO(J,I,1), J=1, IQM(I,1))
             IF (IOS.NE.0) THEN
+              WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+              WRITE(LUPRI,*) MLINE(NMLINE)
               CALL QUIT('Error read READ..zzz')
             ENDIF
             IF (NINT(Q) .GT. 18) THEN
@@ -1119,6 +1131,7 @@ C
                IF (IOS.NE.0) THEN
                  WRITE(LUPRI,*) 'Error in reading BSET,BSKEYWORD:',
      &           BSET,BSKEYWORD
+                 WRITE(LUPRI,*) 'Line',NMLINE,': ',MLINE(NMLINE)
                  CALL QUIT('Error in reading BSET,BSKEYWORD')
                ENDIF
                
@@ -1140,31 +1153,39 @@ C
                   READ (MLINE(NMLINE),'(12X,12I5)',IOSTAT=IOS)
      &                 IQM(I,1),(JCO(K,I,1),K=1,IQM(I,1))
                   IF (IOS.NE.0)THEN
-                   CALL QUIT('Error in reading INTGRL...')
+                    WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+                    WRITE(LUPRI,*) MLINE(NMLINE)
+                    CALL QUIT('Error in reading INTGRL...')
                   ENDIF
                ELSE IF ( BSKEYWORD(1:8) .EQ. 'EXPLICIT') THEN
                   IBSFLAG = 1
                   READ (MLINE(NMLINE),'(14X,12I5)',IOSTAT=IOS)
      &                 IQM(I,1),(JCO(K,I,1),K=1,IQM(I,1))
                   IF (IOS.NE.0)THEN
-                   CALL QUIT('Error in reading EXPLICIT...')
+                    WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+                    WRITE(LUPRI,*) MLINE(NMLINE)
+                    CALL QUIT('Error in reading EXPLICIT...')
                   ENDIF
                ELSE IF ( BSKEYWORD(1:7) .EQ. 'MOLFBAS') THEN
                   IBSFLAG = 2
                   READ (MLINE(NMLINE),'(14X,A20)',IOSTAT=IOS) BASFIL
                   IF (IOS.NE.0)THEN
+                    WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+                    WRITE(LUPRI,*) MLINE(NMLINE)
                     CALL QUIT('Error in reading MOLFBAS..')
                   ENDIF
                ELSE IF ( BSKEYWORD(1:5) .EQ. 'BASIS') THEN
                   IBSFLAG = 3
                   IF(MLINE(NMLINE)(13:14).EQ.'Q=') THEN
                     READ (MLINE(NMLINE)(15:),*,IOSTAT=IOS) QB,BASFIL
-                    WRITE(6,*) '* WARNING: Reading basis ',BASFIL,
+                    WRITE(LUPRI,*) '* WARNING: Reading basis ',BASFIL,
      &                         ' using charge ',QB
                   ELSE
                     READ (MLINE(NMLINE),'(12X,A20)',IOSTAT=IOS) BASFIL
                   ENDIF
                   IF (IOS.NE.0)THEN
+                    WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+                    WRITE(LUPRI,*) MLINE(NMLINE)
                     CALL QUIT('Error in reading BASIS...')
                   ENDIF
                ELSE IF ( BSKEYWORD(1:8) .EQ. 'WELLTEMP' ) THEN
@@ -1216,7 +1237,8 @@ C                 Assume it is 'LARGE   2    1....'
                   READ (MLINE(NMLINE),'(5X,12I5)',IOSTAT=IOS)
      &                 IQM(I,1),(JCO(K,I,1),K=1,IQM(I,1))
                   IF (IOS.NE.0) THEN
-                    WRITE(LUPRI,*) 'Error in reading, NMLINE=',NMLINE
+                    WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+                    WRITE(LUPRI,*) MLINE(NMLINE)
                     CALL QUIT('Error in basis set reading')
                   ENDIF
                END IF
@@ -1441,6 +1463,8 @@ C
                READ (MLINE(NMLINE),'(A5,1X,A7)',IOSTAT=IOS)
      &             BSET,BSKEYWORD
                IF (IOS.NE.0) THEN
+                 WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+                 WRITE(LUPRI,*) MLINE(NMLINE)
                  CALL QUIT('Error in reading...jsjuduu')
                ENDIF
 C
@@ -1470,6 +1494,8 @@ C
                      READ (MLINE(NMLINE),'(12X,12I5)',IOSTAT=IOS)
      &                     IQM(I,2),(JCO(K,I,2),K=1,IQM(I,2))
                      IF (IOS.NE.0) THEN
+                       WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+                       WRITE(LUPRI,*) MLINE(NMLINE)
                        CALL QUIT('Error in reading...ssdk123uu')
                      ENDIF
                   ELSE IF ( BSKEYWORD(1:8) .EQ. 'EXPLICIT') THEN
@@ -1477,12 +1503,16 @@ C
                      READ (MLINE(NMLINE),'(14X,12I5)',IOSTAT=IOS)
      &                     IQM(I,2),(JCO(K,I,2),K=1,IQM(I,2))
                      IF (IOS.NE.0) THEN
+                       WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+                       WRITE(LUPRI,*) MLINE(NMLINE)
                        CALL QUIT('Error in reading...3323dd')
                      ENDIF
                   ELSE IF ( BSKEYWORD .EQ. 'MOLFBAS') THEN
                      IBSFLAG = 2
                      READ (MLINE(NMLINE),'(14X,A20)',IOSTAT=IOS) BASFIL
                      IF (IOS.NE.0) THEN
+                       WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+                       WRITE(LUPRI,*) MLINE(NMLINE)
                        CALL QUIT('Error in reading...asxdd')
                      ENDIF
                   ELSE IF ( BSKEYWORD(1:6) .EQ. 'KINBAL' ) THEN
@@ -1493,6 +1523,8 @@ C                    Assume it is 'SMALL   2    1....'
                      READ (MLINE(NMLINE),'(BN,A5,12I5)',IOSTAT=IOS)
      &                    BSET,IQM(I,2),(JCO(K,I,2),K=1,IQM(I,2))
                      IF (IOS.NE.0) THEN
+                       WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+                       WRITE(LUPRI,*) MLINE(NMLINE)
                        CALL QUIT('Error in reading...askdjdcn')
                      ENDIF
 
@@ -1679,6 +1711,8 @@ C
         CALL RDLINE(LUINFO)
         READ (MLINE(NMLINE),'(A5,1X,A14)',IOSTAT=IOS) BSET,BSKEYWORD
         IF (IOS.NE.0) THEN
+          WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+          WRITE(LUPRI,*) MLINE(NMLINE)
           CALL QUIT('Error in reading..csmxn')
         ENDIF
 
@@ -1700,9 +1734,8 @@ C
            IBSFLAG = 2     
 C
         ELSEIF (BSET.EQ.'FTLRG'.OR.BSET.EQ.'FTSML') THEN
-           WRITE(*,*) 'Only FTSET is supported at the moment.' 
+           WRITE(LUPRI,*) 'Only FTSET is supported at the moment.' 
            CALL QUIT('Unsupported option in MOLECULE input')
-
 C
         ELSE 
 C
@@ -1713,6 +1746,8 @@ C
               READ (MLINE(NMLINE),'(12X,12I5)',IOSTAT=IOS)
      &             IQM(I,ISET),(JCO(K,I,ISET),K=1,IQM(I,ISET))
               IF (IOS.NE.0) THEN
+                 WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+                 WRITE(LUPRI,*) MLINE(NMLINE)
                  CALL QUIT('Error in reading...ajdcn')
               ENDIF
            ELSE IF ( BSKEYWORD(1:8) .EQ. 'EXPLICIT') THEN
@@ -1720,6 +1755,8 @@ C
               READ (MLINE(NMLINE),'(14X,12I5)',IOSTAT=IOS)
      &             IQM(I,ISET),(JCO(K,I,ISET),K=1,IQM(I,ISET))
               IF (IOS.NE.0) THEN
+                 WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+                 WRITE(LUPRI,*) MLINE(NMLINE)
                  CALL QUIT('Error in reading...ajxxcn')
               ENDIF
            ELSE IF ( BSKEYWORD(1:7) .EQ. 'DEFAULT') THEN
@@ -1765,6 +1802,8 @@ C             Assume it is 'FTSET   2    1....'
               READ (MLINE(NMLINE),'(5X,12I5)',IOSTAT=IOS)
      &             IQM(I,ISET),(JCO(K,I,ISET),K=1,IQM(I,ISET))
               IF (IOS.NE.0) THEN
+                WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+                WRITE(LUPRI,*) MLINE(NMLINE)
                 CALL QUIT('Error in reading...kdjcn')
               ENDIF
 
@@ -2845,8 +2884,8 @@ C
             READ (MLINE(NMLINE),'(BN,A,I4,2I5)',IOSTAT=IOS)
      &              FRMT,NUCIJ,NRCIJ,ISGEN(NBLOCK)
             IF (IOS.NE.0) THEN
-               WRITE(LUPRI,*) 'Error in reading BN,A,I4,2I5, NMLINE=',NMLINE
-               WRITE(LUPRI,*) 'Read MLINE(NMLINE)=',MLINE(NMLINE)
+               WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+               WRITE(LUPRI,*) MLINE(NMLINE)
                CALL QUIT('Error in reading BN,A,I4,2I5 ... ')
             ENDIF
 
@@ -2915,12 +2954,16 @@ C
                READ (MLINE(NMLINE),'(BN,A,I4,1I5)',IOSTAT=IOS)
      &              FRMT,NUCIJ,NRCIJ
                IF (IOS.NE.0) THEN
+                 WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+                 WRITE(LUPRI,*) MLINE(NMLINE)
                  CALL QUIT('Error in reading...ddxm23jdcn')
                ENDIF
             ELSE
                READ (MLINE(NMLINE),'(BN,A,I4,1I5)',IOSTAT=IOS) 
      &              FRMT,NUCIJ,NRCIJ
                IF (IOS.NE.0) THEN
+                 WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+                 WRITE(LUPRI,*) MLINE(NMLINE)
                  CALL QUIT('Error in reading...d123s0dm3jdcn')
                ENDIF
 
@@ -3251,7 +3294,9 @@ C
             READ (MLINE(NMLINE),'(BN,A,I4,I5)',IOSTAT=IOS)
      &           FRMT,NUC(NBLOCK),NRC(NBLOCK)
             IF (IOS.NE.0) THEN
-             CALL QUIT('Error in reading...dd283cn')
+              WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+              WRITE(LUPRI,*) MLINE(NMLINE)
+              CALL QUIT('Error in reading...dd283cn')
             ENDIF
 
             IF (INPTST) THEN
@@ -3366,7 +3411,8 @@ C
               READ (MLINE(NMLINE),*,IOSTAT=IOS)
      &         ALPHA(L), (CPRIMU(L,M),M=1,NRCIJ)
               IF (IOS.NE.0) THEN
-                WRITE(LUPRI,*) 'error in reading NMLINE=',NMLINE
+                WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+                WRITE(LUPRI,*) MLINE(NMLINE)
                 CALL QUIT(
      &    'Error in reading ALPHA(L), (CPRIMU(L,M),M=1,NRCIJ)')
               ENDIF
@@ -3375,7 +3421,9 @@ C
               READ (MLINE(NMLINE),FMT1,IOSTAT=IOS) ALPHA(L),
      &           (CPRIMU(L,M), M = 1, MIN(NRCIJ,NCOL - 1))
               IF (IOS.NE.0) THEN
-               CALL QUIT(
+                WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+                WRITE(LUPRI,*) MLINE(NMLINE)
+                CALL QUIT(
      &         'Error in basis set reading ALPHA(L),'//
      &         '(CPRIMU(L,M), M = 1, MIN(NRCIJ,NCOL - 1))')
               ENDIF
@@ -3384,6 +3432,8 @@ C
                  READ (MLINE(NMLINE),FMT2,IOSTAT=IOS) (CPRIMU(L,M),
      &              M = 1 + (NCOL-1)*(K-1), MIN(NRCIJ,(NCOL-1)*K))
                  IF (IOS.NE.0) THEN
+                   WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+                   WRITE(LUPRI,*) MLINE(NMLINE)
                    CALL QUIT('Error in basis set reading...') 
                  ENDIF
   200         CONTINUE
@@ -3403,15 +3453,16 @@ C
 #else
               READ (MLINE(NMLINE),*,IOSTAT=IOS) ALPHA(L)
               IF (IOS.NE.0) THEN
-                WRITE(LUPRI,*) 'Error in reading NMLINE=',NMLINE
+                WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+                WRITE(LUPRI,*) MLINE(NMLINE)
                 CALL QUIT('Error in basis set reading of ALPHA(L)')
               ENDIF
 #endif
            ELSE
               READ (MLINE(NMLINE),FMT3,IOSTAT=IOS) ALPHA(L)
               IF (IOS.NE.0) THEN
-                WRITE(LUPRI,*)
-     &          'Error in reading of ALPHA(L), NMLINE=',NMLINE
+                WRITE(LUPRI,*) 'Error reading ALPHA(L), line',NMLINE,':'
+                WRITE(LUPRI,*) MLINE(NMLINE)
                 CALL QUIT('Error in basis set reading of ALPHA(L)')
               ENDIF
            END IF
@@ -4203,6 +4254,10 @@ C
                II = II + 1
                NUCDEP = NUCDEP + 1
                NUCNUM(N,LA+1) = NUCDEP
+               IF (NUCDEP .GT. MXCENT) GO TO 200
+C              ... otherwise we may get segmentation fault from NAMDEP,
+C              NAMDPX, and NDEGNM assignments. We exit after 200 loop
+C              when total NUCDEP is known. /hjaaj Jan 2010
                IF (NDEG .EQ. 1 ) THEN
                   NAMDEP(NUCDEP)     = NAMEX(3*N)(1:4)//'  '
                   NAMDPX(3*NUCDEP-2) = NAMEX(3*N-2)
@@ -4232,7 +4287,7 @@ C
 C     Nuclear repulsion energy
 C     ========================
 C
-      POTNUC =  GETPOT(CHARGE)
+      POTNUC =  GETPOT(CHARGE,IPREAD)
 C
 C     **********************************************************
 C     ***** Calculate symmetry-adapted nuclear coordinates *****
@@ -4246,14 +4301,14 @@ C
 C     Error messages:
 C
  5010 CONTINUE
-      WRITE (LUPRI,'(///1X,A,/,2(1X,A,I3/),/,1X,A,I3,A)')
-     &      ' Allowed number of atoms exceeded.',
-     &      ' Number of atoms in input:',NUCDEP,
-     &      ' Number of atoms allowed: ',MXCENT,
-     &      ' Increase MXCENT to ',NUCDEP,'.'
+      WRITE (LUPRI,'(///A/2(A,I5/)/A,I5,A)')
+     &    ' Allowed number of atoms exceeded.',
+     &    ' Number of atoms in input:',NUCDEP,
+     &    ' Number of atoms allowed: ',MXCENT,
+     &    ' Increase MXCENT to at least',NUCDEP,' and recompile DIrac.'
       CALL QUIT('NUCPRO: Too many atoms in READIN.')
 C
- 1000 FORMAT(2X,A4,5X,3F10.5,6X,/,
+ 1000 FORMAT(2X,A4,5X,3F10.5,/,
      &       16X, 'Stabilizer ',I3,',   with ',I2,
      &       ' symmetry equivalent atoms',/)
       END
@@ -4528,14 +4583,18 @@ C
       ENDDO
       DO JC = 1,2
         DO IC = 1,2
+         IF (IPREAD.GT.5)write(lupri,*) 'I2COSX: ic1,ic2', ic,jc
           DO JSYM = 1,MAXREP+1
             DO ISYM = 1,MAXREP+1
               I2COSX(ISYM,JSYM,IC,JC) =
      &               NSORB*ICOS(JSYM,JC)+ICOS(ISYM,IC)
             ENDDO
+            if (ipread.gt.5)
+     &         write(lupri,*) (i2cosx(isym,jsym,ic,jc),isym=1,maxrep+1)
           ENDDO
         ENDDO
       ENDDO
+
 c
 c---------------------------------------------------------------
 #ifdef MOD_ECP
@@ -5468,6 +5527,8 @@ C
         CALL RDLINE(LUINFO)
         READ (MLINE(NMLINE),'(BN,I5)',IOSTAT=IOS) MXSPD
         IF (IOS.NE.0) THEN
+           WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+           WRITE(LUPRI,*) MLINE(NMLINE)
            CALL QUIT('Error in reading...1jsj38')
         ENDIF
 
@@ -5484,6 +5545,8 @@ C
           CALL RDLINE(LUINFO)
           READ (MLINE(NMLINE),'(BN,4X,A1,I5)',IOSTAT=IOS)  KEY, KHK(I)
           IF (IOS.NE.0) THEN
+             WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+             WRITE(LUPRI,*) MLINE(NMLINE)
              CALL QUIT('Error in reading...aj2sjjsn dcn')
           ENDIF
           IF (KHK(I) .GT. KCK(I)) THEN
@@ -5531,6 +5594,8 @@ C  /* Deck rdcsp */
          READ (MLINE(NMLINE),'(1X,A,15F5.3)',IOSTAT=IOS)
      &          GTOTYP(I), (CSP(I,J),J=1,KCKI)
          IF (IOS.NE.0) THEN
+           WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+           WRITE(LUPRI,*) MLINE(NMLINE)
            CALL QUIT('Error in reading...sajksxn2773')
          ENDIF
   100 CONTINUE
@@ -5889,6 +5954,8 @@ C
 #else
          READ (MLINE(NMLINE)(5:80),*,IOSTAT=IOS) INUM, CHARGE(NUCIND)
          IF (IOS.NE.0) THEN
+           WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+           WRITE(LUPRI,*) MLINE(NMLINE)
            CALL QUIT('Error in reading...12jsj')
          ENDIF
 #endif
@@ -5928,6 +5995,8 @@ C
   201 READ (MLINE(NMLINE)(5:80),*,IOSTAT=IOS)
      &     INUM,IZ(NUCIND,1),BL(NUCIND),CHARGE(NUCIND)
       IF (IOS.NE.0) THEN
+        WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+        WRITE(LUPRI,*) MLINE(NMLINE)
         CALL QUIT('Error in reading...2339jdcn')
       ENDIF
       GO TO 204
@@ -5935,6 +6004,8 @@ C
      &     INUM,IZ(NUCIND,1),BL(NUCIND),IZ(NUCIND,2),
      &     ALP(NUCIND),CHARGE(NUCIND)
       IF (IOS.NE.0) THEN
+        WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+        WRITE(LUPRI,*) MLINE(NMLINE)
         CALL QUIT('Error in reading...2dcn')
       ENDIF
       GO TO 204
@@ -5943,6 +6014,8 @@ C
      &     ALP(NUCIND),IZ(NUCIND,3),BET(NUCIND),
      &     IZ(NUCIND,4),CHARGE(NUCIND)
       IF (IOS.NE.0) THEN
+        WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+        WRITE(LUPRI,*) MLINE(NMLINE)
         CALL QUIT('Error in reading...2xsydcn')
       ENDIF
 #endif
@@ -6302,17 +6375,26 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Getpot */
-      FUNCTION GETPOT(Q)
+      FUNCTION GETPOT(Q,IPRINT)
 C***********************************************************************
 C
 C     Get nuclear potential energy
 C     Surgery by T.Saue June 7 1997
 C     Point charges are not included. /June2000,jth+hjaaj
+C     Yes, but not if too close, and not pc-pc (pc=point charge). /May2010,hjaaj
 C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER (D0 = 0.0D0, DP1 = 0.1D0, DP5 = 0.5D0)
+      PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
+      PARAMETER (DIST_IDENT = 0.01D0)
+      ! if DIST .lt. DIST_IDENT then same center and no self-repulsion.
+      ! Could be used for small component charge modeled as a point
+      ! charge.
+      ! Maybe also useful for getting basis set from an atom with
+      ! another charge (e.g. for equivalent atom model in XPS). Example: 
+      ! to use nitrogen basis on oxygen, first specify nitrogen and
+      ! then a point charge of +1 with the same coordinates.
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -6324,50 +6406,62 @@ C
 #include "ibtfun.h"
 C
       CALL QENTER('GETPOT')
-      GETPOT = D0
+      N_IDENT   = 0
+      NTOTAL   = 0
+      EPOT_QM_QM = D0 ! QM is charge with orbitals
+      EPOT_QM_PC = D0 ! PC is point charge without orbitals
+      EPOT_PC_PC = D0
       DO 10 N = 1, NUCIND
          DO 20 M = N, NUCIND
+            Q_MN = Q(M)*Q(N)
+         IF (Q_MN .EQ. D0) GO TO 20
             DO 30 KB = 0, MAXREP
-            IF (IBTAND(KB,ISTBNU(M)) .EQ. 0) THEN
-               IF (M.EQ.N .AND. KB.EQ.0) GO TO 30
+            IF (IBTAND(KB,ISTBNU(M)) .NE. 0) GO TO 30
+            IF (IBTAND(KB,ISTBNU(N)) .NE. 0) GO TO 30
+            IF (M.EQ.N .AND. KB.EQ.0) GO TO 30 ! no self-repulsion
                DS = (CORD(1,N)-CORD(1,M)*PT(IBTAND(ISYMAX(1,1),KB)))**2
      &            + (CORD(2,N)-CORD(2,M)*PT(IBTAND(ISYMAX(2,1),KB)))**2
      &            + (CORD(3,N)-CORD(3,M)*PT(IBTAND(ISYMAX(3,1),KB)))**2
                DIST = SQRT(DS)
-               IF (DIST.LT.DP1 .AND. Q(M)*Q(N).NE.D0 .AND.
-     &             .NOT.(NOORBT(M).OR.NOORBT(N)) ) THEN
-CMI               ... hunting  bug                  
-                 write(LUPRI,*) '(CORD(1,N)-CORD(1,M)):',
-     &                       CORD(1,N)-CORD(1,M)
-                 write(LUPRI,*) '(CORD(2,N)-CORD(2,M)):',
-     &                       CORD(2,N)-CORD(2,M)
-                 write(LUPRI,*) '(CORD(3,N)-CORD(3,M)):',
-     &                       CORD(3,N)-CORD(3,M)
-                 write(LUPRI,*) 'DS=',DS
-                 write(LUPRI,*) 'DIST=sqrt(DS)=',DIST
-                 GOTO 5000
-               ENDIF
+               IF (DIST.LT.DIST_IDENT) THEN
+                  IF ( .NOT.(NOORBT(M).OR.NOORBT(N)) ) GOTO 5000
 C                  ... exit if close and no floating and no point charge
-               IF (IBTAND(KB,ISTBNU(N)) .EQ. 0) THEN
-                  IF (.NOT.(NOORBT(M).OR.NOORBT(N))) THEN
-C                 if (no point charge) then
-                     HKAB  = FMULT(IBTAND(ISTBNU(M),ISTBNU(N)))
-                     IF (M .EQ. N) HKAB = DP5*HKAB
-                     GETPOT = GETPOT + Q(M)*Q(N)*HKAB/DIST
-                  END IF
+                  N_IDENT = N_IDENT + 1
+                  GO TO 30
                END IF
-            END IF
-   30      CONTINUE
-   20    CONTINUE
-   10 CONTINUE
+               HKAB  = Q_MN * FMULT(IBTAND(ISTBNU(M),ISTBNU(N))) / DIST
+               IF (M .EQ. N) HKAB = DP5*HKAB
+               IF (NOORBT(N) .AND. NOORBT(M)) THEN
+                  EPOT_PC_PC = EPOT_PC_PC + HKAB
+               ELSE IF (NOORBT(M) .OR. NOORBT(N)) THEN
+                  EPOT_QM_PC = EPOT_QM_PC + HKAB
+               ELSE
+                  EPOT_QM_QM = EPOT_QM_QM + HKAB
+               END IF
+   30       CONTINUE ! DO 30 KB = 0, MAXREP
+   20    CONTINUE ! DO 20 M = N, NUCIND
+   10 CONTINUE ! DO 10 N = 1, NUCIND
 C
+      IF (IPRINT .GE. 0) THEN
+         WRITE(LUPRI,'(4(/A,F18.12))')
+     &   '  QM-QM nuclear repulsion energy :',EPOT_QM_QM,
+     &   '  QM-pc interaction energy       :',EPOT_QM_PC,
+     &   '  pc-pc interaction energy       :',EPOT_PC_PC,
+     &   '  Total interaction energy       :',
+     &         EPOT_QM_QM+EPOT_QM_PC+EPOT_PC_PC
+         IF (N_IDENT .GT. 0) WRITE (LUPRI,*) N_IDENT,
+     &   ' interactions neglected because between same physical center'
+      END IF
+      GETPOT = EPOT_QM_QM + EPOT_QM_MM
       CALL QEXIT('GETPOT')
       RETURN
 C
  5000 CONTINUE
-      WRITE (LUPRI,'(3(A,I3),A,D15.5)')
-     &     ' The nucleus',N,' is too close to the',KB,
-     &     'th transformation of nucleus no.',M,' DIST=',DIST
+      WRITE (LUPRI,'(//3(A,I3),A,D15.5/,2(/A,4F12.5))')
+     &     'ERROR: Nucleus',N,' is too close to the',KB,
+     &     'th transformation of nucleus no.',M,' DIST=',DIST,
+     &     'Charge annd coordinates of first  center:',Q(N),CORD(1:3,N),
+     &     'Charge annd coordinates of second center:',Q(M),CORD(1:3,M)
       CALL QUIT('GETPOT: Nuclei too close.')
       END
 C/*  Deck frefrm */
@@ -6387,6 +6481,8 @@ C
 C
       CHARACTER*80 STRING
       CHARACTER TYPE*3, FRMT*7
+C
+      CALL QENTER('FREFRM')
 C
       IF (IPREAD.GE.10) THEN
         CALL HEADER('Output from FREFRM',-1)
@@ -6446,10 +6542,13 @@ C
          END IF
          READ (STRING(ISTART:80),FRMT,IOSTAT=IOS) RVAL
          IF (IOS.NE.0) THEN
+           WRITE(LUPRI,*) 'Error reading string section : "',
+     &          STRING(ISTART:80),'"'
+           WRITE(LUPRI,*) 'Whole string is "',STRING,'"'
            CALL QUIT('Error in reading...RVAL')
          ENDIF
       ELSE
-         WRITE (LUPRI,'(/,A)') 'Illegal variable type in FREFRM'
+         WRITE (LUPRI,'(/A)') 'Illegal variable type in FREFRM : ',TYPE
          CALL QUIT('Illegal variable type in FREFRM')
       END IF
 
@@ -6462,6 +6561,7 @@ C
         WRITE(LUPRI,*) 'updated ISTART=',ISTART
       ENDIF
 
+      CALL QEXIT('FREFRM')
       RETURN
       END
 C  /* Deck genfamily */
@@ -6539,6 +6639,8 @@ C
             CALL RDLINE(LUINFO)
             READ (MLINE(NMLINE),*,IOSTAT=IOS) FAMEXP(I, 1)
             IF (IOS.NE.0) THEN
+              WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+              WRITE(LUPRI,*) MLINE(NMLINE)
               CALL QUIT('Error in reading...askc233n')
             ENDIF
          END DO
@@ -6558,6 +6660,8 @@ C
             CALL RDLINE(LUINFO)
             READ (MLINE(NMLINE),*,IOSTAT=IOS) FAMEXP(I, 1)
             IF (IOS.NE.0) THEN
+              WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+              WRITE(LUPRI,*) MLINE(NMLINE)
               CALL QUIT('Error in reading...3daskc233n')
             ENDIF
          END DO
@@ -6565,6 +6669,8 @@ C
             CALL RDLINE(LUINFO)
             READ (MLINE(NMLINE),*,IOSTAT=IOS) FAMEXP(I, 2)
             IF (IOS.NE.0) THEN
+              WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+              WRITE(LUPRI,*) MLINE(NMLINE)
               CALL QUIT('Error in reading...3cxzx33n')
             ENDIF
          END DO
