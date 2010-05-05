@@ -113,19 +113,18 @@ contains
 
     n = 0.0d0
 
-    do jxyz = 0, 0
-      do iblock = 1, llss_nr_density_blocks(jxyz, irep)
+      do iblock = 1, llss_nr_density_blocks(0, irep)
 
-        nr1 = llss_nr_ao(1, iblock, jxyz, irep)
-        st1 = llss_st_ao(1, iblock, jxyz, irep)
-        nr2 = llss_nr_ao(2, iblock, jxyz, irep)
-        st2 = llss_st_ao(2, iblock, jxyz, irep)
+        nr1 = llss_nr_ao(1, iblock, 0, irep)
+        st1 = llss_st_ao(1, iblock, 0, irep)
+        nr2 = llss_nr_ao(2, iblock, 0, irep)
+        st2 = llss_st_ao(2, iblock, 0, irep)
 
         call dgemv('N',                      &
                    nr1,                      &
                    nr2,                      &
                    1.0d0,                    &
-                   dmat(st1, st2, llss_iq(jxyz)), &
+                   dmat(st1, st2, llss_iq(0)), &
                    mat_dim,                  &
                    ao(st2),                  &
                    1,                        &
@@ -136,7 +135,6 @@ contains
         n = n + ddot(nr1, ao(st1), 1, buffer, 1)
 
       end do
-    end do
 
   end subroutine
 
@@ -206,19 +204,18 @@ contains
 
     gn = 0.0d0
 
-    do jxyz = 0, 0
-      do iblock = 1, llss_nr_density_blocks(jxyz, irep)
+      do iblock = 1, llss_nr_density_blocks(0, irep)
 
-        nr1 = llss_nr_ao(1, iblock, jxyz, irep)
-        st1 = llss_st_ao(1, iblock, jxyz, irep)
-        nr2 = llss_nr_ao(2, iblock, jxyz, irep)
-        st2 = llss_st_ao(2, iblock, jxyz, irep)
+        nr1 = llss_nr_ao(1, iblock, 0, irep)
+        st1 = llss_st_ao(1, iblock, 0, irep)
+        nr2 = llss_nr_ao(2, iblock, 0, irep)
+        st2 = llss_st_ao(2, iblock, 0, irep)
 
         call dgemv('N',                      &
                    nr1,                      &
                    nr2,                      &
                    1.0d0,                    &
-                   dmat(st1, st2, llss_iq(jxyz)), &
+                   dmat(st1, st2, llss_iq(0)), &
                    mat_dim,                  &
                    ao(st2),                  &
                    1,                        &
@@ -231,7 +228,6 @@ contains
         end do
 
       end do
-    end do
 
     gn = 2.0d0*gn
 
@@ -264,13 +260,12 @@ contains
 
     t = 0.0d0
 
-    do jxyz = 0, 0
-      do iblock = 1, llss_nr_density_blocks(jxyz, irep)
+      do iblock = 1, llss_nr_density_blocks(0, irep)
 
-        nr1 = llss_nr_ao(1, iblock, jxyz, irep)
-        st1 = llss_st_ao(1, iblock, jxyz, irep)
-        nr2 = llss_nr_ao(2, iblock, jxyz, irep)
-        st2 = llss_st_ao(2, iblock, jxyz, irep)
+        nr1 = llss_nr_ao(1, iblock, 0, irep)
+        st1 = llss_st_ao(1, iblock, 0, irep)
+        nr2 = llss_nr_ao(2, iblock, 0, irep)
+        st2 = llss_st_ao(2, iblock, 0, irep)
 
         do ixyz = 1, 3
 
@@ -278,7 +273,7 @@ contains
                      nr1,                           &
                      nr2,                           &
                      1.0d0,                         &
-                     dmat(st1, st2, llss_iq(jxyz)), &
+                     dmat(st1, st2, llss_iq(0)), &
                      mat_dim,                       &
                      ao_g1(st2, ixyz),              &
                      1,                             &
@@ -290,7 +285,6 @@ contains
 
         end do
       end do
-    end do
 
     t = 0.5d0*t
 
@@ -387,13 +381,12 @@ contains
 
     gn = 0.0d0
 
-    do jxyz = 0, 0
-      do iblock = 1, llss_nr_density_blocks(jxyz, irep)
+      do iblock = 1, llss_nr_density_blocks(0, irep)
 
-        nr1 = llss_nr_ao(1, iblock, jxyz, irep)
-        st1 = llss_st_ao(1, iblock, jxyz, irep)
-        nr2 = llss_nr_ao(2, iblock, jxyz, irep)
-        st2 = llss_st_ao(2, iblock, jxyz, irep)
+        nr1 = llss_nr_ao(1, iblock, 0, irep)
+        st1 = llss_st_ao(1, iblock, 0, irep)
+        nr2 = llss_nr_ao(2, iblock, 0, irep)
+        st2 = llss_st_ao(2, iblock, 0, irep)
 
         do ixyz = 1, 3
 
@@ -401,7 +394,7 @@ contains
                      nr1,                      &
                      nr2,                      &
                      1.0d0,                    &
-                     dmat(st1, st2, llss_iq(jxyz)), &
+                     dmat(st1, st2, llss_iq(0)), &
                      mat_dim,                  &
                      ao(st2),                  &
                      1,                        &
@@ -415,7 +408,7 @@ contains
                      nr1,                      &
                      nr2,                      &
                      1.0d0,                    &
-                     dmat(st1, st2, llss_iq(jxyz)), &
+                     dmat(st1, st2, llss_iq(0)), &
                      mat_dim,                  &
                      ao1(st2, ixyz),           &
                      1,                        &
@@ -427,7 +420,6 @@ contains
 
         end do
       end do
-    end do
 
   end subroutine
 
@@ -568,13 +560,12 @@ contains
     real(8)                :: f
 !   ----------------------------------------------------------------------------
 
-    do jxyz = 0, 0
-      do iblock = 1, llss_nr_density_blocks(jxyz, irep)
+      do iblock = 1, llss_nr_density_blocks(0, irep)
 
-        nr1 = llss_nr_ao(1, iblock, jxyz, irep)
-        st1 = llss_st_ao(1, iblock, jxyz, irep)
-        nr2 = llss_nr_ao(2, iblock, jxyz, irep)
-        st2 = llss_st_ao(2, iblock, jxyz, irep)
+        nr1 = llss_nr_ao(1, iblock, 0, irep)
+        st1 = llss_st_ao(1, iblock, 0, irep)
+        nr2 = llss_nr_ao(2, iblock, 0, irep)
+        st2 = llss_st_ao(2, iblock, 0, irep)
 
         do i = 1, nr2
 
@@ -586,11 +577,10 @@ contains
                      f,                       &
                      ao(st1),                 &
                      1,                       &
-                     fmat(st1, ii, llss_iq(jxyz)), &
+                     fmat(st1, ii, llss_iq(0)), &
                      1)
         end do
       end do
-    end do
 
   end subroutine
 
@@ -609,13 +599,12 @@ contains
     real(8)                :: f
 !   ----------------------------------------------------------------------------
 
-    do jxyz = 0, 0
-      do iblock = 1, llss_nr_density_blocks(jxyz, irep)
+      do iblock = 1, llss_nr_density_blocks(0, irep)
 
-        nr1 = llss_nr_ao(1, iblock, jxyz, irep)
-        st1 = llss_st_ao(1, iblock, jxyz, irep)
-        nr2 = llss_nr_ao(2, iblock, jxyz, irep)
-        st2 = llss_st_ao(2, iblock, jxyz, irep)
+        nr1 = llss_nr_ao(1, iblock, 0, irep)
+        st1 = llss_st_ao(1, iblock, 0, irep)
+        nr2 = llss_nr_ao(2, iblock, 0, irep)
+        st2 = llss_st_ao(2, iblock, 0, irep)
 
         do i = 1, nr2
 
@@ -630,12 +619,11 @@ contains
                      f,                       &
                      ao(st1),                 &
                      1,                       &
-                     fmat(st1, ii, llss_iq(jxyz)), &
+                     fmat(st1, ii, llss_iq(0)), &
                      1)
 
         end do
       end do
-    end do
 
   end subroutine
 
@@ -760,13 +748,12 @@ contains
           b = 1; c = 2
       end select
 
-      do jxyz = 0, 0
-        do iblock = 1, llss_nr_density_blocks(jxyz, isym(a) - 1)
+        do iblock = 1, llss_nr_density_blocks(0, isym(a) - 1)
   
-          nr1 = llss_nr_ao(1, iblock, jxyz, isym(a) - 1)
-          st1 = llss_st_ao(1, iblock, jxyz, isym(a) - 1)
-          nr2 = llss_nr_ao(2, iblock, jxyz, isym(a) - 1)
-          st2 = llss_st_ao(2, iblock, jxyz, isym(a) - 1)
+          nr1 = llss_nr_ao(1, iblock, 0, isym(a) - 1)
+          st1 = llss_st_ao(1, iblock, 0, isym(a) - 1)
+          nr2 = llss_nr_ao(2, iblock, 0, isym(a) - 1)
+          st2 = llss_st_ao(2, iblock, 0, isym(a) - 1)
 
           do ii = st1, st1 + nr1 - 1
             do jj = st2, st2 + nr2 - 1
@@ -779,7 +766,6 @@ contains
             end do
           end do
         end do
-      end do
     end do
 
   end subroutine
@@ -838,13 +824,12 @@ contains
           b = 1; c = 2
       end select
 
-      do jxyz = 0, 0
-        do iblock = 1, llss_nr_density_blocks(jxyz, irep)
+        do iblock = 1, llss_nr_density_blocks(0, irep)
   
-          nr1 = llss_nr_ao(1, iblock, jxyz, irep)
-          st1 = llss_st_ao(1, iblock, jxyz, irep)
-          nr2 = llss_nr_ao(2, iblock, jxyz, irep)
-          st2 = llss_st_ao(2, iblock, jxyz, irep)
+          nr1 = llss_nr_ao(1, iblock, 0, irep)
+          st1 = llss_st_ao(1, iblock, 0, irep)
+          nr2 = llss_nr_ao(2, iblock, 0, irep)
+          st2 = llss_st_ao(2, iblock, 0, irep)
 
           do i = st1, st1 + nr1 - 1
             do j = st2, st2 + nr2 - 1
@@ -880,7 +865,6 @@ contains
 
             end do
           end do
-        end do
       end do
     end do
 
