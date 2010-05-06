@@ -32,7 +32,9 @@ C  /* Deck onegen */
 C*****************************************************************************
 C
 C     This routine goes through the list of one-electron integrals specified
-C     in the COMMON block XCBCLS. The integrals will be put on the file
+C     in the COMMON block XCBCLS. 
+C
+C     Call other routines for integrals generation.
 C
 C     Called from: MINPRP
 C                  PAMSET
@@ -55,7 +57,6 @@ C
 #include "dcbprl.h"
 #include "dcbham.h"
 #include "dcbcls.h"
-!#include "dcbxpr.h"
 #include "cbihr1.h"
 #include "cbiher.h"
 #include "nuclei.h"
@@ -87,9 +88,11 @@ C
 C          ... zero SS integrals
            CALL NOSSNUCATT
            COMB(4:4) = 'F'
-C          WRITE(LUPRI,'(2X,A,A4)')
-C    &     'No SS-nuclear attraction integrals'// 
-C    &     '(MOLFLD), adapted COMB=',COMB
+           IF(IPRONE.GE.3) THEN
+               WRITE(LUPRI,'(2X,A,A4)')
+     &      'FYI: no SS-nuclear attraction integrals'// 
+     &      '(MOLFLD), adapted COMB=',COMB
+           ENDIF
         END IF
         CALL NUCATT(WORK,LWORK,COMB,IPRONE)
 C
@@ -107,13 +110,14 @@ C     Contribution from CAP integrals
 C
       ELSEIF(CLSINT(I).EQ.'CAP_RE '.OR.CLSINT(I).EQ.'CAP_IM ' .OR.
      &       CLSINT(I).EQ.'CAP_OVL'.OR.CLSINT(I).EQ.'CAPD1R ') THEN
-CMI     ... this serves only for 'catching' CAP_.. labels when 
-CMI     these integrals are added as the perturbation to the Hamiltonian
+CMI     ... this serves only for 'catching' CAP... labels because
+CMI     these integrals are not computed in the abacus part but are from external source
        CONTINUE
 
 CMI  Contribution from Heff_EDM integrals
-      ELSEIF (CLSINT(I).EQ.'EDM') THEN
-        CALL EDM_EFF_OPER(WORK,LWORK,IPRONE)
+!     ELSEIF (CLSINT(I).EQ.'EDM') THEN
+!       CALL EDM_EFF_OPER(WORK,LWORK,IPRONE)
+
       ELSE
 C
 C Process all other integrals, which are coded in the abacus part !
@@ -206,7 +210,7 @@ C     On input:  WORD     ...
 C                COMB     ... integral characteritics
 C                IORDER   ...
 C
-C     Called from ONEGEN/dirone.F
+C     Called from ONEGENdirone.F
 C
 C     Written by Trond Saue - May 1996
 C     Last revisions:  May 19 1996
@@ -249,7 +253,7 @@ C
       CALL MEMGET('INTE',KINTRP,MAXTYP,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KINTAD,NINTAD,WORK,KFREE,LFREE)
 C
-C     Generate integrals
+C  extra assignement of characteristics for very narrow group of integrals
 C
       NCOMP = 0
       IF (WORD.EQ.'S1MAGR ') THEN 
@@ -260,6 +264,9 @@ C
          MTFORM = 'TRIANG'
       END IF
 
+C
+C     Generate integrals in abacus
+C
 C     ... calling of ../abacus/her1pro.F
       CALL PR1IN1(WORK(KFREE),LFREE,WORK(KINTRP),WORK(KINTAD),
      &            LABINT,WORD,IORDER,NPQUAD,TRIANG,
@@ -274,7 +281,7 @@ C
       RETURN
  1000 CONTINUE
 C
-C     Not able to read DOINT information from COMB
+C    Not able to read DOINT information from COMB
 C
       WRITE(LUPRI,'(A,A)') 'OP1GEN: Class label:',WORD
       WRITE(LUPRI,'(A,A)') 'OP1GEN ERROR: Not able to read COMB =',COMB
@@ -490,8 +497,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EDM_EFF_OPER(WORK,LWORK,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-C  read KINENERG integrals into LS/SL blocks, antisymmetric because they are
-C  imaginary 
+C  prepare imaginary, antisymmetric KINENERG integrals into LS/SL blocks,
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -1938,6 +1944,7 @@ C
 C     Driver for getting one-electron property integrals
 C     Written by T.Saue October 1994
 C     Last revision : Nov 15 1994
+C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -1969,7 +1976,7 @@ C
       CALL MEMGET('INTE',KINTRP,MAXTYP,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KINTAD,NINTAD,WORK,KFREE,LFREE)
 C
-C     Calculate integrals
+C     Calculate integrals in abacus part
 C
       CALL PR1IN1(WORK(KFREE),LFREE,WORK(KINTRP),WORK(KINTAD),
      &            LABINT,WORD,IORDER,NPQUAD,TRIANG,

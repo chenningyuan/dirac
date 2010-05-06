@@ -2033,12 +2033,12 @@ C
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
          LABINT(1) = 'KINENERG'
-         !LABINT(1) = 'iKINENER'
-         !LABINT(1) = 'EDM'
-         !  INTREP(1) = 0
+         ! full symmetry ....
+         INTREP(1) = 0
 
-         ! force the symmetry of the Im(ab) quaternion component 
-         INTREP(1) = ISYMAX(1,1)
+         ! force the symmetry of the Im(ab) quaternion component - wrong !
+         !INTREP(1) = ISYMAX(1,1)
+
          !ANTI = .FALSE.
          ANTI = .TRUE.
       GO TO 200
