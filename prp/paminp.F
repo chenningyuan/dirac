@@ -2235,13 +2235,13 @@ C
 C       DIAGONAL, GAMMA5, i*BETA*[XYZ]ALPHA
         IATIM = 1
       ELSE
-C       [XYZ]SIGMA, [XYZ]ALPHA, i*BETA*GAMMA5
+C       [XYZ]SIGMA, [XYZ]ALPHA, but i*BETA*GAMMA5 has to be treated extra
         IATIM = -1
       ENDIF
 
-CMI    exception for the i*BETA*GAMMA5 operator:
-      IF (ITYP.EQ.21.AND.IAIND.EQ. 0) THEN
-        IATIM=-1 ! setting hurts the program ...
+CMI    exception for the i*BETA*GAMMA5 operator, is it OK ???
+      IF (ITYP.EQ.21) THEN
+        IATIM=-1 !
          WRITE(LUPRI,'(2X,A)')
      &    'i*BETA*GAMMA5 operator, setting IATIM=-1' 
 !    &    'FYI: i*BETA*GAMMA5 operator' 
