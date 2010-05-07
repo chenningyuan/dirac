@@ -2035,12 +2035,12 @@ C
          LABINT(1) = 'KINENERG'
          ! full symmetry ....
          INTREP(1) = 0
-
          ! force the symmetry of the Im(ab) quaternion component - wrong !
          !INTREP(1) = ISYMAX(1,1)
 
          !ANTI = .FALSE.
-         ANTI = .TRUE.
+         ANTI = .TRUE. ! it's pure imaginary !....
+
       GO TO 200
 
   200 CONTINUE

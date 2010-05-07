@@ -1080,14 +1080,14 @@ C
       JCOM(3,20) =  1
 
 C
-CMI   21.    i*BETA*GAMMA5 * scalar operator
+C     21.    i*BETA*GAMMA5 * scalar operator
 C     ===========================================
 C     occupies imaginary part of the LS block
 C
-C
       MCMP(21)  = 1
-      !JM4 (1,21)= 0  ! symmetric, as is proper symmetry
-      JM4 (1,21) =  3   ! im(ab), x-quaternion
+      !JM4 (1,21)= 0  ! wrong !
+      !JM4 (1,21) =  3   ! im(ab), x-quaternion
+      JM4 (1,21) =  4   ! symmetry of gamma5 
       JCOM(1,21)= 1
 
       RETURN
