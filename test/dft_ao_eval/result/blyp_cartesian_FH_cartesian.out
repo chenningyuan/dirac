@@ -1,7 +1,7 @@
-DIRAC launched (pam script) by bast@larry at Wed Jan 13 13:22:39 CET 2010
-in : /home/bast/dirac/d2/test/46.dft_response
+DIRAC launched (pam script) by bast@larry at Sat May  8 13:13:09 CEST 2010
+in : /home/bast/dirac/trunk/test/dft_ao_eval
 ===========================================================================================
-Size of all static allocations (pam script) : 71.5048 MB
+Size of all static allocations (pam script) : 71.5568 MB
 DIRAC serial allocating 64000000 words (488 MB) of memory
  ******************************************************************************
  *                                                                            *
@@ -133,20 +133,20 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
  ******************************************************************************
  Version           : Dirac 8.0 (patchlevel 0) 
  Hostname          : larry
- Operating system  : Linux 2.6.27-16-generic
+ Operating system  : Linux 2.6.31-20-generic
  Machine           : i686
  Run               : Sequential
- Last compilation  : 11:59:53 Jan 13 2010 (by bast@larry:/home/bast/dirac/d2)
- FORTRAN compiler  : /usr/bin/gfortran -g -fno-range-check -O3 -ffast-math -funroll-loops -Iinclude -Jmodules -DARCH32BIT -DVAR_GFOTRAN -DGFORTRAN=432 -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MFDS -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON 
- C compiler        : /usr/bin/gcc -g -O3 -ffast-math -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DSYS_FLAVOR=LINUX 
+ Last compilation  : 10:11:33 May  8 2010 (by bast@larry:/home/bast/dirac/trunk)
+ FORTRAN compiler  : /usr/bin/gfortran -g -fno-range-check -O3 -ffast-math -funroll-loops -Iinclude -Jmodules -DARCH32BIT -DVAR_GFORTRAN -DGFORTRAN=441 -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MFDS -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON 
+ C compiler        : /usr/bin/cc -g -O3 -ffast-math -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DSYS_FLAVOR=LINUX 
  External libraries: -L/usr/lib -lblas -L/usr/lib -llapack -lcblas -lf77blas -latlas -L/usr/lib -llapack 
  Internal libraries: DIRAC_BLAS=NO  DIRAC_LAPACK=NO 
  ILP data model    : ILP32 
  SVN URL:          : 'http://dirac.chem.sdu.dk/svnDirac/Dirac/trunk' 
- SVN Changeset     : '10147' 
+ SVN Changeset     : '10792' 
 
  
-     Date and time (Linux)  : Wed Jan 13 13:22:40 2010 
+     Date and time (Linux)  : Sat May  8 13:13:10 2010 
      Host name              :                                         
 
 
@@ -157,19 +157,11 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
 **DIRAC
 .WAVE FUNCTION
 **HAMILTONIAN
-.NONREL
+.LEVY-LEBLOND
 .DFT
  BLYP
 *DFT
 .ZIPGRID
-.DEBUG          !very coarse grid
-.INTCHK
- 1
-**INTEGRALS
-.NUCMOD
- 1
-*READIN
-.UNCONTRACT
 **WAVE FUNCTION
 .DHF
 *END OF
@@ -192,9 +184,12 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
                 Peter J. Mohr and Barry N. Taylor                         
    Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
  * The speed of light :        137.0359998
- * Running in pure two-component mode (with LL integrals only)
+ * Running in the four-component mode
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
+   - SL-integrals
+   - SS-integrals
+   - GT-integrals
  * Spherical transformation embedded in MO-transformation
    for large components
  * Transformation to scalar RKB basis embedded in
@@ -209,22 +204,6 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
     *************************************************************************
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
-
- Default print level:        1
- Nuclear model: Point charge.
-
- Two-electron integrals not calculated.
-
-
- Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
-
-
-
- Changes of defaults for READIN:
- -------------------------------
-
-
- Uncontracted basis forced, irrespective of basis input file.
 
 
 
@@ -246,12 +225,9 @@ Dynamical threshold is not (yet) implemented in DIRAC
   .                                                                       
   .                                                                       
 
- 
- * Two-component calculations will be performed in spherical gaussians.
-   Embedded C->S transformation   in the Lowdin will be skipped in this step.
+  Nuclear Gaussian exponent for atom of charge   9.000 :    5.3546911034D+08
 
- 
-
+  Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248239171D+09
 
 
                       SYMADD: Requested addition of symmetry
@@ -351,6 +327,11 @@ Represented as: C2v
     B2   k
     A2   i
 
+  QM-QM nuclear repulsion energy :    5.294117647059
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    5.294117647059
+
 
   Atoms and basis sets
   --------------------
@@ -360,17 +341,17 @@ Represented as: C2v
 
   label    atoms   charge   prim    cont     basis   
   ----------------------------------------------------------------------
-  F           1       9      44      44      L  - [11s6p3d|11s6p3d]                                              
-                              0       0      S  - No small component basis functions attached                    
-  H           1       1      15      15      L  - [6s3p|6s3p]                                                    
-                              0       0      S  - No small component basis functions attached                    
+  F           1       9      47      35      L  - [11s6p3d|5s4p3d]                                               
+                            114     114      S  - [6s14p6d3f|6s14p6d3f]                                          
+  H           1       1      15      13      L  - [6s3p|4s3p]                                                    
+                             39      39      S  - [3s6p3d|3s6p3d]                                                
   ----------------------------------------------------------------------
-                             59      59      L  - large components
-                              0       0      S  - small components
+                             62      48      L  - large components
+                            153     153      S  - small components
   ----------------------------------------------------------------------
-  total:      2      10      59      59
+  total:      2      10     215     201
 
-  Spherical harmonic basis used.
+  Cartesian basis used.
   Threshold for integrals (to be written to file):  1.00D-15
 
   MNF.INP input file (for the AMFI stuff) is ready.
@@ -457,58 +438,111 @@ Represented as: C2v
                                 GETLAB: AO-labels
                                 -----------------
 
-   * Large components:   13
-     1  L F     1s       2  L F     2px      3  L F     2py      4  L F     2pz      5  L F     3d2-     6  L F     3d1-
-     7  L F     3d0      8  L F     3d1+     9  L F     3d2+    10  L H     1s      11  L H     2px     12  L H     2py 
-    13  L H     2pz 
-   * Small components:    0
-
+   * Large components:   14
+     1  L F     s        2  L F     px       3  L F     py       4  L F     pz       5  L F     dxx      6  L F     dxy 
+     7  L F     dxz      8  L F     dyy      9  L F     dyz     10  L F     dzz     11  L H     s       12  L H     px  
+    13  L H     py      14  L H     pz  
+   * Small components:   30
+    15  S F     s       16  S F     px      17  S F     py      18  S F     pz      19  S F     dxx     20  S F     dxy 
+    21  S F     dxz     22  S F     dyy     23  S F     dyz     24  S F     dzz     25  S F     fxxx    26  S F     fxxy
+    27  S F     fxxz    28  S F     fxyy    29  S F     fxyz    30  S F     fxzz    31  S F     fyyy    32  S F     fyyz
+    33  S F     fyzz    34  S F     fzzz    35  S H     s       36  S H     px      37  S H     py      38  S H     pz  
+    39  S H     dxx     40  S H     dxy     41  S H     dxz     42  S H     dyy     43  S H     dyz     44  S H     dzz 
 
 
                                 GETLAB: SO-labels
                                 -----------------
 
-   * Large components:   13
-     1  L A1 F  1s       2  L A1 F  2pz      3  L A1 F  3d0      4  L A1 F  3d2+     5  L A1 H  1s       6  L A1 H  2pz 
-     7  L B1 F  2px      8  L B1 F  3d1+     9  L B1 H  2px     10  L B2 F  2py     11  L B2 F  3d1-    12  L B2 H  2py 
-    13  L A2 F  3d2-
-   * Small components:    0
-
+   * Large components:   14
+     1  L A1 F  s        2  L A1 F  pz       3  L A1 F  dxx      4  L A1 F  dyy      5  L A1 F  dzz      6  L A1 H  s   
+     7  L A1 H  pz       8  L B1 F  px       9  L B1 F  dxz     10  L B1 H  px      11  L B2 F  py      12  L B2 F  dyz 
+    13  L B2 H  py      14  L A2 F  dxy 
+   * Small components:   30
+    15  S A1 F  s       16  S A1 F  pz      17  S A1 F  dxx     18  S A1 F  dyy     19  S A1 F  dzz     20  S A1 F  fxxz
+    21  S A1 F  fyyz    22  S A1 F  fzzz    23  S A1 H  s       24  S A1 H  pz      25  S A1 H  dxx     26  S A1 H  dyy 
+    27  S A1 H  dzz     28  S B1 F  px      29  S B1 F  dxz     30  S B1 F  fxxx    31  S B1 F  fxyy    32  S B1 F  fxzz
+    33  S B1 H  px      34  S B1 H  dxz     35  S B2 F  py      36  S B2 F  dyz     37  S B2 F  fxxy    38  S B2 F  fyyy
+    39  S B2 F  fyzz    40  S B2 H  py      41  S B2 H  dyz     42  S A2 F  dxy     43  S A2 F  fxyz    44  S A2 H  dxy 
 
 
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:           32    12    12     3
-  Number of large orbitals in each symmetry:     32    12    12     3
-  Number of small orbitals in each symmetry:      0     0     0     0
+  Number of orbitals in each symmetry:           90    48    48    15
+  Number of large orbitals in each symmetry:     25    10    10     3
+  Number of small orbitals in each symmetry:     65    38    38    12
 
 * Large component functions
 
   Symmetry  A1 ( 1)
 
-       11 functions:    F  1s  
-        6 functions:    F  2pz 
-        3 functions:    F  3d0 
-        3 functions:    F  3d2+
-        6 functions:    H  1s  
-        3 functions:    H  2pz 
+        5 functions:    F  s   
+        4 functions:    F  pz  
+        3 functions:    F  dxx 
+        3 functions:    F  dyy 
+        3 functions:    F  dzz 
+        4 functions:    H  s   
+        3 functions:    H  pz  
 
   Symmetry  B1 ( 2)
 
-        6 functions:    F  2px 
-        3 functions:    F  3d1+
-        3 functions:    H  2px 
+        4 functions:    F  px  
+        3 functions:    F  dxz 
+        3 functions:    H  px  
 
   Symmetry  B2 ( 3)
 
-        6 functions:    F  2py 
-        3 functions:    F  3d1-
-        3 functions:    H  2py 
+        4 functions:    F  py  
+        3 functions:    F  dyz 
+        3 functions:    H  py  
 
   Symmetry  A2 ( 4)
 
-        3 functions:    F  3d2-
+        3 functions:    F  dxy 
+
+* Small component functions
+
+  Symmetry  A1 ( 1)
+
+        6 functions:    F  s   
+       14 functions:    F  pz  
+        6 functions:    F  dxx 
+        6 functions:    F  dyy 
+        6 functions:    F  dzz 
+        3 functions:    F  fxxz
+        3 functions:    F  fyyz
+        3 functions:    F  fzzz
+        3 functions:    H  s   
+        6 functions:    H  pz  
+        3 functions:    H  dxx 
+        3 functions:    H  dyy 
+        3 functions:    H  dzz 
+
+  Symmetry  B1 ( 2)
+
+       14 functions:    F  px  
+        6 functions:    F  dxz 
+        3 functions:    F  fxxx
+        3 functions:    F  fxyy
+        3 functions:    F  fxzz
+        6 functions:    H  px  
+        3 functions:    H  dxz 
+
+  Symmetry  B2 ( 3)
+
+       14 functions:    F  py  
+        6 functions:    F  dyz 
+        3 functions:    F  fxxy
+        3 functions:    F  fyyy
+        3 functions:    F  fyzz
+        6 functions:    H  py  
+        3 functions:    H  dyz 
+
+  Symmetry  A2 ( 4)
+
+        6 functions:    F  dxy 
+        3 functions:    F  fxyz
+        3 functions:    H  dxy 
 
 
    ***************************************************************************
@@ -516,8 +550,7 @@ Represented as: C2v
    ***************************************************************************
 
  * Print level:    0
- * Non-relativistic Hamiltonian
-   - parameter NZ set to one
+ * Levy-Leblond Hamiltonian
    - Spin-orbit interactions neglected
  * Kohn-Sham calculation using the xc functional: BLYP
    Weighted mixed functional:
@@ -530,7 +563,14 @@ Represented as: C2v
    - SS-integrals:     0
    - GT-integrals:     0
  * Basis set:
-   - uncontracted large component basis set
+   - contracted large component basis set
+   - uncontracted small component basis set
+
+
+ Information about the restricted kinetic balance scheme:
+ * Default RKB projection:
+   1: Pre-projection in scalar basis
+   2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
 
 
    Kohn-Sham calculation set-up
@@ -539,9 +579,8 @@ Represented as: C2v
  * Print level:     2
  * Numerical integration grid:
    - radial quadrature according to R. Lindh, P.-Aa. Malmqvist, and L. Gagliardi
-     precision of radial quadrature set to:  0.10000E-02
-   - angular quadrature using the Lebedev scheme, exact up to order L = 10
-   - numerical integration will be tested
+     precision of radial quadrature set to:  0.10000E-12
+   - angular quadrature using the Lebedev scheme, exact up to order L = 41
    - accepted error in integrated number of electrons:  0.10000E-02
  * DFT thresholds:
    - dfthr0 =  0.10000E-08
@@ -558,7 +597,7 @@ Represented as: C2v
  Maximum memory load for two-electron integral processing:
 ===========================================================================
  * LL-integrals:
-   3(F    Ld)   2(F    Lp)   3(F    Ld)   2(F    Lp)              298212
+   3(F    Ld)   2(F    Lp)   3(F    Ld)   2(F    Lp)              228543
 
 
     **************************************************************************
@@ -613,15 +652,26 @@ Represented as: C2v
     ************************ End of input processing ************************
     *************************************************************************
 
+  No SS-nuclear attraction integrals(MOLFLD), adapted PDOINT=+000
 
 
                        Generating Lowdin canonical matrix:
                        -----------------------------------
 
-   L   A1    * Deleted:          0
-   L   B1    * Deleted:          0
-   L   B2    * Deleted:          0
-   L   A2    * Deleted:          0
+   L   A1    * Deleted:          3(Proj:          3, Lindep:          0)
+   L   B1    * Deleted:          0(Proj:          0, Lindep:          0)
+   L   B2    * Deleted:          0(Proj:          0, Lindep:          0)
+   L   A2    * Deleted:          0(Proj:          0, Lindep:          0)
+   S   A1    * Deleted:         12(Proj:         12, Lindep:          0)
+   S   B1    * Deleted:          3(Proj:          3, Lindep:          0)
+   S   B2    * Deleted:          3(Proj:          3, Lindep:          0)
+   S   A2    * Deleted:          0(Proj:          0, Lindep:          0)
+
+
+                                Output from MODHAM
+                                ------------------
+
+* All positronic solutions deleted !
 
 
  WARNING : linear symmetry is not implemented for spinfree yet
@@ -632,9 +682,9 @@ Represented as: C2v
       ************************* Orbital dimensions *************************
       **********************************************************************
 
-No. of positive energy orbitals (NESH):    59
+No. of positive energy orbitals (NESH):    45
 No. of negative energy orbitals (NPSH):     0
-Total no. of orbitals           (NORB):    59
+Total no. of orbitals           (NORB):    45
 
 
     *************************************************************************
@@ -646,16 +696,16 @@ Total no. of orbitals           (NORB):    59
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Wed Jan 13 13:22:40 2010
+########## START ITERATION NO.   1 ##########   Sat May  8 13:13:10 2010
 
-It.   1    -47.89488529174      1.00D+20  0.00D+00  0.00D+00               0.03600299s   Scr. nuclei    Wed Jan 13
+It.   1    -47.79461475397      1.00D+20  0.00D+00  0.00D+00               0.01200098s   Scr. nuclei    Sat May  8
 
-########## START ITERATION NO.   2##########   Wed Jan 13 13:22:40 2010
+########## START ITERATION NO.   2##########   Sat May  8 13:13:10 2010
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   12.48%    0.00%    0.00%   0.05600303s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.06400400s
 
 
  ********************************************************************************
@@ -676,228 +726,197 @@ DFTGRD: ATSIZE not requested or no trial vectors found. Slater-Bragg radii will 
 
 Atom  Deg   Rmin        Rmax        Step size     #rp     #tp
 =============================================================
-F       1   0.110E-02   0.161E+02   0.356E+00      25     425
-H       1   0.369E-01   0.232E+02   0.399E+00      14     238
+F       1   0.510E-06   0.292E+02   0.123E+00     129    9794
+H       1   0.171E-04   0.466E+02   0.131E+00      98    9345
 
-   Number of grid points in quadrature:       663 ( 34.0%)
-
-
-
-                                Output from GRTEST
-                                ------------------
+   Number of grid points in quadrature:     19139 ( 28.3%)
 
 
-* Errors: 
-   Average SMAT error               : 0.2169383013E-04
-   Absolute average SMAT error      : 0.1375761485E-03
-   RMS deviation                    : 0.3564219815E-03
-
-   Largest error                    : 0.3170739706E-02
-   Position and label               : (  23,  23) = (L A1 F  3d2+,L A1 F  3d2+)
-
-* Relative errors (diagonal elements only) : 
-   Average SMAT error               : 0.2284133239E-03
-   Absolute average SMAT error      : 0.6635374928E-03
-
-   Largest error                    : 0.3170739706E-02
-   Position and label               : (  23,  23) = (L A1 F  3d2+,L A1 F  3d2+)
-
- >>>> Time used in DFTGRD:   0.06 seconds
+ >>>> Time used in DFTGRD:   0.04 seconds
 
 
-   number of quadrature points:                       663
-   DFT exchange-correlation energy:                   -11.0344587830587884
-   number of electrons from numerical integration:     10.0004364574399780
+   number of grid points                          =     19139
+   number of grid points below density threshold  =      1740
+   DFT exchange-correlation energy:               =       -10.8046912104552035
+   number of electrons from numerical integration =         9.9999888287453924
 
+   time spent in DFT integration                  =   0.50 seconds
+   number of processors                           =         1
 
- >>>> time used in dftexc:   0.10 seconds
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.73204601s
+
+########## END ITERATION NO.   2 ##########   Sat May  8 13:13:10 2010
+
+It.   2    -100.3372832926      5.25D+01  9.17D-01  7.17D-01               0.73204601s   LL             Sat May  8
+
+########## START ITERATION NO.   3##########   Sat May  8 13:13:10 2010
+
+    3 *** Differential density matrix. DCOVLP     = 0.5467
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.06400406s
+
+   number of grid points                          =     19139
+   number of grid points below density threshold  =      2987
+   DFT exchange-correlation energy:               =       -10.7259403151340642
+   number of electrons from numerical integration =         9.9999979838415367
+
+   time spent in DFT integration                  =   0.44 seconds
+   number of processors                           =         1
 
 >>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.22801399s
+>>> Total CPU-time : 0.51203191s
 
-########## END ITERATION NO.   2 ##########   Wed Jan 13 13:22:40 2010
+########## END ITERATION NO.   3 ##########   Sat May  8 13:13:10 2010
 
-It.   2    -100.2383362041      5.23D+01  1.31D+00  2.11D+00               0.22801399s   LL             Wed Jan 13
+It.   3    -100.4400323681      1.03D-01 -1.59D-01  2.39D-01   DIIS   2    0.51203191s   LL             Sat May  8
 
-########## START ITERATION NO.   3##########   Wed Jan 13 13:22:41 2010
+########## START ITERATION NO.   4##########   Sat May  8 13:13:11 2010
 
-    3 *** Differential density matrix. DCOVLP     = 0.9859
+    4 *** Differential density matrix. DCOVLP     = 1.0121
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   12.68%    0.00%    0.00%   0.14400905s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.06400406s
 
-   number of quadrature points:                       663
-   DFT exchange-correlation energy:                   -10.4109186146393959
-   number of electrons from numerical integration:     10.0007340219582197
+   number of grid points                          =     19139
+   number of grid points below density threshold  =      2974
+   DFT exchange-correlation energy:               =       -10.9089356617726043
+   number of electrons from numerical integration =         9.9999980082854556
 
-
- >>>> time used in dftexc:   0.05 seconds
+   time spent in DFT integration                  =   0.44 seconds
+   number of processors                           =         1
 
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.19201201s
+>>> Total CPU-time : 0.51603317s
 
-########## END ITERATION NO.   3 ##########   Wed Jan 13 13:22:41 2010
+########## END ITERATION NO.   4 ##########   Sat May  8 13:13:11 2010
 
-It.   3    -100.3304374366      9.21D-02 -8.37D-01  1.05D+00   DIIS   2    0.19201201s   LL             Wed Jan 13
+It.   4    -100.4392695484     -7.63D-04  2.17D-01  2.33D-01   DIIS   3    0.51603317s   LL             Sat May  8
 
-########## START ITERATION NO.   4##########   Wed Jan 13 13:22:41 2010
+########## START ITERATION NO.   5##########   Sat May  8 13:13:11 2010
 
-    4 *** Differential density matrix. DCOVLP     = 0.9896
+    5 *** Differential density matrix. DCOVLP     = 0.9758
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   12.76%    0.00%    0.00%   0.10000604s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.06400394s
 
-   number of quadrature points:                       663
-   DFT exchange-correlation energy:                   -11.1793739269193964
-   number of electrons from numerical integration:     10.0004571378007920
+   number of grid points                          =     19139
+   number of grid points below density threshold  =      2995
+   DFT exchange-correlation energy:               =       -10.7974415794308278
+   number of electrons from numerical integration =         9.9999981506798772
 
-
- >>>> time used in dftexc:   0.05 seconds
-
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.15600997s
-
-########## END ITERATION NO.   4 ##########   Wed Jan 13 13:22:41 2010
-
-It.   4    -100.3504532485      2.00D-02  9.16D-01  8.64D-01   DIIS   3    0.15600997s   LL             Wed Jan 13
-
-########## START ITERATION NO.   5##########   Wed Jan 13 13:22:41 2010
-
-    5 *** Differential density matrix. DCOVLP     = 0.9430
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   13.07%    0.00%    0.00%   0.14000809s
-
-   number of quadrature points:                       663
-   DFT exchange-correlation energy:                   -10.8031185893345913
-   number of electrons from numerical integration:     10.0005870941750725
-
-
- >>>> time used in dftexc:   0.03 seconds
+   time spent in DFT integration                  =   0.44 seconds
+   number of processors                           =         1
 
 >>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.17201006s
+>>> Total CPU-time : 0.51603174s
 
-########## END ITERATION NO.   5 ##########   Wed Jan 13 13:22:41 2010
+########## END ITERATION NO.   5 ##########   Sat May  8 13:13:11 2010
 
-It.   5    -100.4536137763      1.03D-01 -4.38D-01  1.50D-02   DIIS   4    0.17201006s   LL             Wed Jan 13
+It.   5    -100.4480921924      8.82D-03 -1.25D-01  1.54D-02   DIIS   4    0.51603174s   LL             Sat May  8
 
-########## START ITERATION NO.   6##########   Wed Jan 13 13:22:42 2010
+########## START ITERATION NO.   6##########   Sat May  8 13:13:12 2010
 
-    6 *** Differential density matrix. DCOVLP     = 1.0000
+    6 *** Differential density matrix. DCOVLP     = 1.0032
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   15.87%    0.00%    0.00%   0.11600792s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.06400394s
 
-   number of quadrature points:                       663
-   DFT exchange-correlation energy:                   -10.8044361372281408
-   number of electrons from numerical integration:     10.0005905587419655
+   number of grid points                          =     19139
+   number of grid points below density threshold  =      2994
+   DFT exchange-correlation energy:               =       -10.8021586700755581
+   number of electrons from numerical integration =         9.9999981536653557
 
-
- >>>> time used in dftexc:   0.05 seconds
-
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.17201102s
-
-########## END ITERATION NO.   6 ##########   Wed Jan 13 13:22:42 2010
-
-It.   6    -100.4536339378      2.02D-05  1.80D-03  6.24D-03   DIIS   5    0.17201102s   LL             Wed Jan 13
-
-########## START ITERATION NO.   7##########   Wed Jan 13 13:22:42 2010
-
-    7 *** Differential density matrix. DCOVLP     = 0.9999
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   16.71%    0.00%    0.00%   0.14000905s
-
-   number of quadrature points:                       663
-   DFT exchange-correlation energy:                   -10.8053057199023517
-   number of electrons from numerical integration:     10.0005887296852176
-
-
- >>>> time used in dftexc:   0.06 seconds
-
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.19601297s
-
-########## END ITERATION NO.   7 ##########   Wed Jan 13 13:22:42 2010
-
-It.   7    -100.4536401172      6.18D-06  1.49D-03  1.30D-03   DIIS   6    0.19601297s   LL             Wed Jan 13
-
-########## START ITERATION NO.   8##########   Wed Jan 13 13:22:42 2010
-
-    8 *** Differential density matrix. DCOVLP     = 1.0001
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   18.30%    0.00%    0.00%   0.09200501s
-
-   number of quadrature points:                       663
-   DFT exchange-correlation energy:                   -10.8058807161605532
-   number of electrons from numerical integration:     10.0005885826210736
-
-
- >>>> time used in dftexc:   0.05 seconds
+   time spent in DFT integration                  =   0.44 seconds
+   number of processors                           =         1
 
 >>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.14400804s
+>>> Total CPU-time : 0.51603222s
 
-########## END ITERATION NO.   8 ##########   Wed Jan 13 13:22:42 2010
+########## END ITERATION NO.   6 ##########   Sat May  8 13:13:12 2010
 
-It.   8    -100.4536403595      2.42D-07  6.74D-04  3.06D-05   DIIS   7    0.14400804s   LL             Wed Jan 13
+It.   6    -100.4481324008      4.02D-05  4.78D-03  8.69D-04   DIIS   5    0.51603222s   LL             Sat May  8
 
-########## START ITERATION NO.   9##########   Wed Jan 13 13:22:43 2010
+########## START ITERATION NO.   7##########   Sat May  8 13:13:13 2010
+
+    7 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    0.01%    0.00%    0.00%   0.06400394s
+
+   number of grid points                          =     19139
+   number of grid points below density threshold  =      2994
+   DFT exchange-correlation energy:               =       -10.8020923390228596
+   number of electrons from numerical integration =         9.9999981532638031
+
+   time spent in DFT integration                  =   0.44 seconds
+   number of processors                           =         1
+
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.51603317s
+
+########## END ITERATION NO.   7 ##########   Sat May  8 13:13:13 2010
+
+It.   7    -100.4481325032      1.02D-07 -9.73D-05  1.12D-04   DIIS   6    0.51603317s   LL             Sat May  8
+
+########## START ITERATION NO.   8##########   Sat May  8 13:13:13 2010
+
+    8 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    0.09%    0.00%    0.00%   0.06400418s
+
+   number of grid points                          =     19139
+   number of grid points below density threshold  =      2994
+   DFT exchange-correlation energy:               =       -10.8021232883454950
+   number of electrons from numerical integration =         9.9999981528208206
+
+   time spent in DFT integration                  =   0.44 seconds
+   number of processors                           =         1
+
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.52003098s
+
+########## END ITERATION NO.   8 ##########   Sat May  8 13:13:13 2010
+
+It.   8    -100.4481325060      2.75D-09  4.07D-05  3.85D-06   DIIS   7    0.52003098s   LL             Sat May  8
+
+########## START ITERATION NO.   9##########   Sat May  8 13:13:14 2010
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   23.81%    0.00%    0.00%   0.12800801s
+SOfock:LL  1.00D-12    0.00%    0.70%    0.00%    0.00%   0.06400394s
 
-   number of quadrature points:                       663
-   DFT exchange-correlation energy:                   -10.8058793590550142
-   number of electrons from numerical integration:     10.0005885955400746
+   number of grid points                          =     19139
+   number of grid points below density threshold  =      2994
+   DFT exchange-correlation energy:               =       -10.8021241613850574
+   number of electrons from numerical integration =         9.9999981527970476
 
-
- >>>> time used in dftexc:   0.05 seconds
+   time spent in DFT integration                  =   0.44 seconds
+   number of processors                           =         1
 
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.18401206s
+>>> Total CPU-time : 0.51203203s
 
-########## END ITERATION NO.   9 ##########   Wed Jan 13 13:22:43 2010
+########## END ITERATION NO.   9 ##########   Sat May  8 13:13:14 2010
 
-It.   9    -100.4536403597      2.40D-10 -4.17D-06  3.14D-06   DIIS   8    0.18401206s   LL             Wed Jan 13
+It.   9    -100.4481325060      4.29D-12  7.05D-07  3.33D-07   DIIS   8    0.51203203s   LL             Sat May  8
 
-########## START ITERATION NO.  10##########   Wed Jan 13 13:22:43 2010
+########## START ITERATION NO.  10##########   Sat May  8 13:13:14 2010
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   29.85%    0.00%    0.00%   0.13600802s
+SOfock:LL  1.00D-12    0.00%    2.91%    0.00%    0.00%   0.06400394s
 
-   number of quadrature points:                       663
-   DFT exchange-correlation energy:                   -10.8058789146408891
-   number of electrons from numerical integration:     10.0005885939339425
+   number of grid points                          =     19139
+   number of grid points below density threshold  =      2994
+   DFT exchange-correlation energy:               =       -10.8021243020170576
+   number of electrons from numerical integration =         9.9999981527904662
 
-
- >>>> time used in dftexc:   0.05 seconds
+   time spent in DFT integration                  =   0.44 seconds
+   number of processors                           =         1
 
 >>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.19201183s
+>>> Total CPU-time : 0.51203156s
 
-########## END ITERATION NO.  10 ##########   Wed Jan 13 13:22:43 2010
+########## END ITERATION NO.  10 ##########   Sat May  8 13:13:14 2010
 
-It.  10    -100.4536403597      2.46D-12 -5.29D-07  1.63D-07   DIIS   9    0.19201183s   LL             Wed Jan 13
-
-########## START ITERATION NO.  11##########   Wed Jan 13 13:22:44 2010
-
-   11 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   44.31%    0.00%    0.00%   0.13600802s
-
-   number of quadrature points:                       663
-   DFT exchange-correlation energy:                   -10.8058789905972059
-   number of electrons from numerical integration:     10.0005885939030108
-
-
- >>>> time used in dftexc:   0.05 seconds
-
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.19201207s
-
-########## END ITERATION NO.  11 ##########   Wed Jan 13 13:22:44 2010
-
-It.  11    -100.4536403597     -1.99D-13  9.02D-08  4.07D-09   DIIS   9    0.19201207s   LL             Wed Jan 13
+It.  10    -100.4481325060     -6.68D-13  1.59D-07  8.12D-09   DIIS   8    0.51203156s   LL             Sat May  8
 
 
                                    SCF - CYCLE
@@ -913,34 +932,33 @@ It.  11    -100.4536403597     -1.99D-13  9.02D-08  4.07D-09   DIIS   9    0.192
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.   1    -47.89488529174      1.00D+20  0.00D+00  0.00D+00               0.03600299s   Scr. nuclei    Wed Jan 13
-It.   2    -100.2383362041      5.23D+01  1.31D+00  2.11D+00               0.22801399s   LL             Wed Jan 13
-It.   3    -100.3304374366      9.21D-02 -8.37D-01  1.05D+00   DIIS   2    0.19201201s   LL             Wed Jan 13
-It.   4    -100.3504532485      2.00D-02  9.16D-01  8.64D-01   DIIS   3    0.15600997s   LL             Wed Jan 13
-It.   5    -100.4536137763      1.03D-01 -4.38D-01  1.50D-02   DIIS   4    0.17201006s   LL             Wed Jan 13
-It.   6    -100.4536339378      2.02D-05  1.80D-03  6.24D-03   DIIS   5    0.17201102s   LL             Wed Jan 13
-It.   7    -100.4536401172      6.18D-06  1.49D-03  1.30D-03   DIIS   6    0.19601297s   LL             Wed Jan 13
-It.   8    -100.4536403595      2.42D-07  6.74D-04  3.06D-05   DIIS   7    0.14400804s   LL             Wed Jan 13
-It.   9    -100.4536403597      2.40D-10 -4.17D-06  3.14D-06   DIIS   8    0.18401206s   LL             Wed Jan 13
-It.  10    -100.4536403597      2.46D-12 -5.29D-07  1.63D-07   DIIS   9    0.19201183s   LL             Wed Jan 13
-It.  11    -100.4536403597     -1.99D-13  9.02D-08  4.07D-09   DIIS   9    0.19201207s   LL             Wed Jan 13
+It.   1    -47.79461475397      1.00D+20  0.00D+00  0.00D+00               0.01200098s   Scr. nuclei    Sat May  8
+It.   2    -100.3372832926      5.25D+01  9.17D-01  7.17D-01               0.73204601s   LL             Sat May  8
+It.   3    -100.4400323681      1.03D-01 -1.59D-01  2.39D-01   DIIS   2    0.51203191s   LL             Sat May  8
+It.   4    -100.4392695484     -7.63D-04  2.17D-01  2.33D-01   DIIS   3    0.51603317s   LL             Sat May  8
+It.   5    -100.4480921924      8.82D-03 -1.25D-01  1.54D-02   DIIS   4    0.51603174s   LL             Sat May  8
+It.   6    -100.4481324008      4.02D-05  4.78D-03  8.69D-04   DIIS   5    0.51603222s   LL             Sat May  8
+It.   7    -100.4481325032      1.02D-07 -9.73D-05  1.12D-04   DIIS   6    0.51603317s   LL             Sat May  8
+It.   8    -100.4481325060      2.75D-09  4.07D-05  3.85D-06   DIIS   7    0.52003098s   LL             Sat May  8
+It.   9    -100.4481325060      4.29D-12  7.05D-07  3.33D-07   DIIS   8    0.51203203s   LL             Sat May  8
+It.  10    -100.4481325060     -6.68D-13  1.59D-07  8.12D-09   DIIS   8    0.51203156s   LL             Sat May  8
 --------------------------------------------------------------------------------------------------------------------------------
-* Convergence after   11 iterations.
+* Convergence after   10 iterations.
 * Average elapsed time per iteration: 
       No 2-ints    :    0.00000000s
-      LL           :    0.40000000s
+      LL           :    0.55555556s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -105.74775800678017
+   Electronic energy                        :    -105.74225015304938
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :       5.29411764705882
 
    Sum of all contributions to the energy
-   Total energy                             :    -100.45364035972135
+   Total energy                             :    -100.44813250599056
 
 
                                    Eigenvalues
@@ -949,63 +967,59 @@ It.  11    -100.4536403597     -1.99D-13  9.02D-08  4.07D-09   DIIS   9    0.192
 
 * Boson symmetry A1 
   * Closed shell, f = 1.0000
-   -24.30094098811  ( 2)       -1.11101990215  ( 2)       -0.49969782249  ( 2)
+-24.31830926552416  ( 2)    -1.11028169021334  ( 2)    -0.49845772531979  ( 2)
   * Virtual eigenvalues, f = 0.0000
-    -0.04016986559  ( 2)        0.01501379122  ( 2)        0.02606586023  ( 2)        0.06230828257  ( 2)        0.07131531633  ( 2)
-     0.18609430583  ( 2)        0.18792514208  ( 2)        0.30884972635  ( 2)        0.31371422286  ( 2)        0.49440374595  ( 2)
-     0.57127038421  ( 2)        0.70240850545  ( 2)        1.30309045269  ( 2)        1.43836089267  ( 2)        1.59968735194  ( 2)
-     2.16743282700  ( 2)        2.84708735428  ( 2)        3.17732095325  ( 2)        4.46300718452  ( 2)        4.74555526165  ( 2)
-     7.61886862420  ( 2)       15.61818936475  ( 2)       21.62277547487  ( 2)       41.39607100645  ( 2)       75.39199871874  ( 2)
-   287.94982936801  ( 2)     1095.50133763323  ( 2)     4745.24675797709  ( 2)    28555.14089454201  ( 2)
+ -0.03937463234094  ( 2)     0.01342803106660  ( 2)     0.02624733057599  ( 2)     0.06078503902346  ( 2)     0.07440364714615  ( 2)
+  0.18605416345284  ( 2)     0.18961669470044  ( 2)     0.31104207896925  ( 2)     0.31479007979643  ( 2)     0.49473555171366  ( 2)
+  0.57809380631388  ( 2)     0.75197529552603  ( 2)     1.30565240786274  ( 2)     1.62029892017634  ( 2)     1.78004416033007  ( 2)
+  2.31396055843149  ( 2)     3.23075767220342  ( 2)     4.46591344090920  ( 2)     4.75418900811264  ( 2)
 
 * Boson symmetry B1 
   * Closed shell, f = 1.0000
-    -0.35604749703  ( 2)
+ -0.35532811899748  ( 2)
   * Virtual eigenvalues, f = 0.0000
-     0.02669725018  ( 2)        0.06703798714  ( 2)        0.19447383769  ( 2)        0.30292614164  ( 2)        0.48550662517  ( 2)
-     1.21073920877  ( 2)        1.33725330753  ( 2)        1.98544513792  ( 2)        4.44092611911  ( 2)        7.06515340519  ( 2)
-    41.03848011313  ( 2)
+  0.02659722279718  ( 2)     0.06908430112295  ( 2)     0.19615569742723  ( 2)     0.30353097408681  ( 2)     0.48565922421900  ( 2)
+  1.21521633000819  ( 2)     1.39716419210397  ( 2)     1.98460210980043  ( 2)     4.44380073709765  ( 2)
 
 * Boson symmetry B2 
   * Closed shell, f = 1.0000
-    -0.35604749703  ( 2)
+ -0.35532811899748  ( 2)
   * Virtual eigenvalues, f = 0.0000
-     0.02669725018  ( 2)        0.06703798714  ( 2)        0.19447383769  ( 2)        0.30292614164  ( 2)        0.48550662517  ( 2)
-     1.21073920877  ( 2)        1.33725330753  ( 2)        1.98544513792  ( 2)        4.44092611911  ( 2)        7.06515340519  ( 2)
-    41.03848011313  ( 2)
+  0.02659722279718  ( 2)     0.06908430112296  ( 2)     0.19615569742723  ( 2)     0.30353097408681  ( 2)     0.48565922421900  ( 2)
+  1.21521633000819  ( 2)     1.39716419210395  ( 2)     1.98460210980045  ( 2)     4.44380073709765  ( 2)
 
 * Boson symmetry A2 
   * Virtual eigenvalues, f = 0.0000
-     0.30945448175  ( 2)        1.30181836541  ( 2)        4.46665949815  ( 2)
+  0.31104213075741  ( 2)     1.30565242361000  ( 2)     4.46591344366646  ( 2)
 
 * Occupation in fermion symmetry E1 
   * Inactive orbitals
     A1  A1  A1  B1  B2  
   * Virtual orbitals
-    A1  A1  A1  B2  B1  A1  B1  B2  A1  A1  A1  B2  B1  B2  B1  A1  A2  A1  
-    B2  B1  A1  A1  A1  B2  B1  A2  A1  B1  B2  A1  A1  B2  B1  A1  A1  A1  
-    B1  B2  A1  A2  A1  B2  B1  A1  A1  A1  B2  B1  A1  A1  A1  A1  A1  A1  
+    A1  A1  A1  B1  B2  A1  B1  B2  A1  A1  A1  B1  B2  B1  B2  A1  A2  A1  
+    B2  B1  A1  A1  A1  B1  B2  A1  A2  B2  B1  A1  A1  B1  B2  A1  A1  B1  
+    B2  A1  A2  A1  
 
 * Occupation of subblocks
                        E1 :  A1   B1   B2   A2                                                              
   closed shells (f=1.0000):    3    1    1    0
- virtual shells (f=0.0000):   29   11   11    3
-tot.num. of pos.erg shells:   32   12   12    3
+ virtual shells (f=0.0000):   19    9    9    3
+tot.num. of pos.erg shells:   22   10   10    3
 
 
 * HOMO - LUMO gap:
 
-    E(LUMO) :    -0.04016987 au (symmetry A1 )
-  - E(HOMO) :    -0.35604750 au (symmetry B2 )
+    E(LUMO) :    -0.03937463 au (symmetry A1 )
+  - E(HOMO) :    -0.35532812 au (symmetry B2 )
   ------------------------------------------
-    gap     :     0.31587763 au
+    gap     :     0.31595349 au
 
 
  
-     Date and time (Linux)  : Wed Jan 13 13:22:44 2010 
+     Date and time (Linux)  : Sat May  8 13:13:15 2010 
      Host name              :                                         
->>>> Node 0, utime: 1, stime: 0, minflt: 134521, majflt: 0, nvcsw: 150, nivcsw: 127
->>>> Total WALL time used in DIRAC: 5s
+>>>> Node 0, utime: 4, stime: 0, minflt: 134797, majflt: 0, nvcsw: 1, nivcsw: 453
+>>>> Total WALL time used in DIRAC: 6s
 *****************************************************
 ********** E N D   of   D I R A C  output  **********
 *****************************************************

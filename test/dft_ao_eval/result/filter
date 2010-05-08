@@ -1,0 +1,5 @@
+$ERROR 1.E-7
+Nlines 1:number of electrons from numerical integration
+
+$ERROR 1.E-7
+Nlines 1:Electronic energy
