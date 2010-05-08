@@ -185,6 +185,17 @@ C
 C        b = k + 1; a = j + k + 1
 C
 C     Commentary added by T. Saue Jun 23 2007
+
+!     radovan: in case you are interested
+!              here is a python routine that does that
+!              which i use in one of my scripts
+!     def lmn(k):
+!         for i in range(1, k + 2):
+!             for j in range(1, i + 1):
+!                 l = k + 1 - i
+!                 m = i - j
+!                 n = j - 1
+!                 print l, m, n
 C
 C***********************************************************************
 #include "priunit.h"
