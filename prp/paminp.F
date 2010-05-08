@@ -2197,7 +2197,7 @@ C
 #include "dgroup.h"
 #include "pgroup.h"
 C
-      LOGICAL DIFSYM,DIFTIM
+      LOGICAL DIFSYM,DIFTIM, SKIP_JM4
       DIMENSION ICREP(3),ICTIM(3)
 #include "ibtfun.h"
 
@@ -2219,7 +2219,7 @@ C     Matrix operator
       IAREP    = JM4REP(IAIND)
 C     Scalar operator
       IBREP    = IPRLREP(IBIND)
-C     Total operator, first component...
+C     Total point gropu symmetry of the operator, first component..
       ICREP(1) = IBTXOR(IAREP,IBREP)
 C
 C     Time reversal symmetry
@@ -2230,6 +2230,18 @@ C - assign IATIM according to the
 C  IAIND = JM4(1,ITYP) = JM4(1,IPRPTYP(INDXPR)) = JM4(1,1-21)
 C  JM4 is assigned in abacus/hergroup.F
 C
+C JM4(1,ITYP) = 0 ... scalar operator
+C               4 ... gamma5 P
+C               16..18 ????
+C
+C Miro: for determination of IATIm why not not use rather ITYP ?
+C
+      SKIP_JM4 = .TRUE.
+      SKIP_JM4 = .FALSE.
+      IF (IAIND.GE.16 .AND.IAIND.LE.18) CALL QUIT('quit here!')
+
+      IF (.NOT.SKIP_JM4) THEN
+
       IF (IAIND.EQ. 0 .OR. IAIND.EQ.4 .OR.
      &   (IAIND.GE.16 .AND.IAIND.LE.18)) THEN
 C       DIAGONAL, GAMMA5, i*BETA*[XYZ]ALPHA
@@ -2239,7 +2251,7 @@ C       [XYZ]SIGMA, [XYZ]ALPHA, but i*BETA*GAMMA5 has to be treated extra
         IATIM = -1
       ENDIF
 
-CMI    exception for the i*BETA*GAMMA5 operator, is it OK ???
+CMI    exception for the i*BETA*GAMMA5 operator
       IF (ITYP.EQ.21) THEN
         IATIM=-1 !
          WRITE(LUPRI,'(2X,A)')
@@ -2247,10 +2259,20 @@ CMI    exception for the i*BETA*GAMMA5 operator, is it OK ???
 !    &    'FYI: i*BETA*GAMMA5 operator' 
       ENDIF
 
+      ELSE
+CMI    Simplification 
+!       ... scalar , gamma5, and beta matrix operators have IATIM=+1
+       IF (ITYP.EQ.1.OR.ITYP.EQ.9.OR.ITYP.EQ.19) THEN
+        IATIM=+1
+       ELSE ! the rest ....
+        IATIM=-1
+       ENDIF
+
+      ENDIF
 
 C     Scalar operator
       IBTIM    = IPRLTYP(IBIND)
-C     Total operator
+C     Total time reversal symmetry of the 4-comp.operator
       ICTIM(1) = IATIM*IBTIM
 
       IF (IPRINT.GE.15) THEN
