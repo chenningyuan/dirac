@@ -410,115 +410,107 @@ contains
 
   end subroutine
 
-  subroutine get_cartesian_ao(ishell, &
+  subroutine get_cartesian_ao(l,      &
                               gao,    &
-                              px, py, pz, p2)
+                              px, py, pz)
 
 !   ----------------------------------------------------------------------------
-    integer, intent(in)    :: ishell
-    real(8), intent(out)   :: gao(*)
-    real(8), intent(in)    :: px, py, pz, p2
-!   ----------------------------------------------------------------------------
-    integer                :: i
+    integer, intent(in)  :: l
+    real(8), intent(out) :: gao(*)
+    real(8), intent(in)  :: px, py, pz
 !   ----------------------------------------------------------------------------
 
-    if (cartesian_deg(ishell) > 1) then
-      g100_000 = g000_000*px
-      g010_000 = g000_000*py
-      g001_000 = g000_000*pz
-    else
-!     s
-      gao(1)   = g000_000
-      return
+    if (l == 1) then
+       gao(1) = g000_000
+       return
     end if
 
-    if (cartesian_deg(ishell) > 3) then
-      g200_000 = g100_000*px
-      g110_000 = g100_000*py
-      g101_000 = g100_000*pz
-      g020_000 = g010_000*py
-      g011_000 = g010_000*pz
-      g002_000 = g001_000*pz
+    if (l == 2) then
+       gao(1) = g000_000*px
+       gao(2) = g000_000*py
+       gao(3) = g000_000*pz
+       return
     else
-!     p
-      gao(1)   = g100_000
-      gao(2)   = g010_000
-      gao(3)   = g001_000
-      return
+       g100_000 = g000_000*px
+       g010_000 = g000_000*py
+       g001_000 = g000_000*pz
     end if
 
-    if (cartesian_deg(ishell) > 6) then
-      g300_000 = g200_000*px
-      g210_000 = g200_000*py
-      g201_000 = g200_000*pz
-      g120_000 = g110_000*py
-      g111_000 = g110_000*pz
-      g102_000 = g101_000*pz
-      g030_000 = g020_000*py
-      g021_000 = g020_000*pz
-      g012_000 = g011_000*pz
-      g003_000 = g002_000*pz
+    if (l == 3) then
+       gao(1)   = g100_000*px
+       gao(2)   = g100_000*py
+       gao(3)   = g100_000*pz
+       gao(4)   = g010_000*py
+       gao(5)   = g010_000*pz
+       gao(6)   = g001_000*pz
+       return
     else
-!     d
-      gao(1)   = g200_000
-      gao(2)   = g110_000
-      gao(3)   = g101_000
-      gao(4)   = g020_000
-      gao(5)   = g011_000
-      gao(6)   = g002_000
-      return
+       g200_000 = g100_000*px
+       g110_000 = g100_000*py
+       g101_000 = g100_000*pz
+       g020_000 = g010_000*py
+       g011_000 = g010_000*pz
+       g002_000 = g001_000*pz
     end if
 
-    if (cartesian_deg(ishell) > 10) then
-      g400_000 = g300_000*px
-      g310_000 = g300_000*py
-      g301_000 = g300_000*pz
-      g220_000 = g210_000*py
-      g211_000 = g210_000*pz
-      g202_000 = g201_000*pz
-      g130_000 = g120_000*py
-      g121_000 = g120_000*pz
-      g112_000 = g111_000*pz
-      g103_000 = g102_000*pz
-      g040_000 = g030_000*py
-      g031_000 = g030_000*pz
-      g022_000 = g021_000*pz
-      g013_000 = g012_000*pz
-      g004_000 = g003_000*pz
+    if (l == 4) then
+       gao( 1)  = g200_000*px
+       gao( 2)  = g200_000*py
+       gao( 3)  = g200_000*pz
+       gao( 4)  = g110_000*py
+       gao( 5)  = g110_000*pz
+       gao( 6)  = g101_000*pz
+       gao( 7)  = g020_000*py
+       gao( 8)  = g020_000*pz
+       gao( 9)  = g011_000*pz
+       gao(10)  = g002_000*pz
+       return
     else
-!     f
-      gao( 1)  = g300_000
-      gao( 2)  = g210_000
-      gao( 3)  = g201_000
-      gao( 4)  = g120_000
-      gao( 5)  = g111_000
-      gao( 6)  = g102_000
-      gao( 7)  = g030_000
-      gao( 8)  = g021_000
-      gao( 9)  = g012_000
-      gao(10)  = g003_000
-      return
+       g300_000 = g200_000*px
+       g210_000 = g200_000*py
+       g201_000 = g200_000*pz
+       g120_000 = g110_000*py
+       g111_000 = g110_000*pz
+       g102_000 = g101_000*pz
+       g030_000 = g020_000*py
+       g021_000 = g020_000*pz
+       g012_000 = g011_000*pz
+       g003_000 = g002_000*pz
     end if
 
-    if (cartesian_deg(ishell) > 15) then
+    if (l == 5) then
+       gao( 1)  = g300_000*px
+       gao( 2)  = g300_000*py
+       gao( 3)  = g300_000*pz
+       gao( 4)  = g210_000*py
+       gao( 5)  = g210_000*pz
+       gao( 6)  = g201_000*pz
+       gao( 7)  = g120_000*py
+       gao( 8)  = g120_000*pz
+       gao( 9)  = g111_000*pz
+       gao(10)  = g102_000*pz
+       gao(11)  = g030_000*py
+       gao(12)  = g030_000*pz
+       gao(13)  = g021_000*pz
+       gao(14)  = g012_000*pz
+       gao(15)  = g003_000*pz
+       return
     else
-!     g
-      gao( 1)  = g400_000
-      gao( 2)  = g310_000
-      gao( 3)  = g301_000
-      gao( 4)  = g220_000
-      gao( 5)  = g211_000
-      gao( 6)  = g202_000
-      gao( 7)  = g130_000
-      gao( 8)  = g121_000
-      gao( 9)  = g112_000
-      gao(10)  = g103_000
-      gao(11)  = g040_000
-      gao(12)  = g031_000
-      gao(13)  = g022_000
-      gao(14)  = g013_000
-      gao(15)  = g004_000
-      return
+       g400_000 = g300_000*px
+       g310_000 = g300_000*py
+       g301_000 = g300_000*pz
+       g220_000 = g210_000*py
+       g211_000 = g210_000*pz
+       g202_000 = g201_000*pz
+       g130_000 = g120_000*py
+       g121_000 = g120_000*pz
+       g112_000 = g111_000*pz
+       g103_000 = g102_000*pz
+       g040_000 = g030_000*py
+       g031_000 = g030_000*pz
+       g022_000 = g021_000*pz
+       g013_000 = g012_000*pz
+       g004_000 = g003_000*pz
     end if
 
   end subroutine
@@ -875,9 +867,7 @@ contains
 !   ----------------------------------------------------------------------------
 
     if (cartesian_deg(ishell) < 21) then
-      call get_cartesian_ao(ishell, &
-                            gao,    &
-                            px, py, pz, p2)
+      call get_cartesian_ao(l_quantum_nr(ishell), gao, px, py, pz)
     else
 !     h and higher
       do ic = 1, cartesian_deg(ishell)
