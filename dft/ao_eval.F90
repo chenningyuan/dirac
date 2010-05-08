@@ -76,6 +76,17 @@ module ao_eval
    integer, public    :: ao_start     (0:max_order, 0:max_order) = 0
    integer, public    :: ao_end       (0:max_order, 0:max_order) = 0
    logical, public    :: need_ao_order(0:max_order, 0:max_order) = .false.
+!  standard LDA calculation: nr_ao_slices = 1
+!                            ao vector composition = | ao_g0 |
+!                            meaning there are no geometric derivatives
+!  standard GGA calculation: nr_ao_slices = 4
+!                            ao vector composition = | ao_g0 | ao_gx | ao_gy | ao_gz |
+!  with LAO there are more slices
+!  also with higher geometric derivatives (soon) there are more and more slices
+!  (higher derivatives and mixed derivatives)
+!  slices start at ao_start and end at ao_end
+!  and the total length of the ao vector is total_ao_vector_length
+!  buffer has the same length for convenience (one could get away with less for the buffer)
    integer            :: nr_ao_slices = 0
    logical            :: use_ao_screening = .false.
 
