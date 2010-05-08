@@ -280,7 +280,7 @@ contains
     real(8), intent(in) :: cz
     real(8)             :: ao(*)
 !   ----------------------------------------------------------------------------
-    integer             :: i, iend, ishell, isym
+    integer             :: i, iend, ishell, isym, ioff, j
     real(8)             :: px, py, pz, p2
     integer             :: ofg, ofm
 
@@ -322,6 +322,11 @@ contains
 #ifdef DEBUG_SHELL_RANGE
             shell_range(ishell:ishell) = '*'
 #endif
+
+            g000_000 = 0.0d0
+            do j = 1, nr_nonzero_contraction_coefs(ishell)
+              g000_000 = g000_000 + contraction_coef(ishell, j)*dexp(-primitive_exp(ishell, j)*p2)
+            end do
 
 !           this is because get_gao1 does both ao and ao1
             if (need_ao_order(0, 0) .and. .not. need_ao_order(1, 0)) then
@@ -378,6 +383,19 @@ contains
               end if
             end if
 
+!>          if spherical and d or higher then transform
+!> \fixme   spherical lao: nothing is done for them now
+!> \todo    this should happen outside this routine
+            if (shell_is_spherical(ishell) .and. (l_quantum_nr(ishell) > 2)) then
+               call transform_c_to_s(ishell, ao(i))
+               if (need_ao_order(1, 0)) then
+                  ioff = ao_start(1, 0) + i - 1
+                  call transform_c_to_s(ishell, ao(ioff          ))
+                  call transform_c_to_s(ishell, ao(ioff +   nr_ao))
+                  call transform_c_to_s(ishell, ao(ioff + 2*nr_ao))
+               end if
+            end if
+
           end if
 
           i = i + spherical_deg(ishell)
@@ -403,11 +421,6 @@ contains
 !   ----------------------------------------------------------------------------
     integer                :: i
 !   ----------------------------------------------------------------------------
-
-    g000_000 = 0.0d0
-    do i = 1, nr_nonzero_contraction_coefs(ishell)
-      g000_000 = g000_000 + contraction_coef(ishell, i)*dexp(-primitive_exp(ishell, i)*p2)
-    end do
 
     if (cartesian_deg(ishell) > 1) then
       g100_000 = g000_000*px
@@ -529,15 +542,12 @@ contains
     real(8)                :: f, f2
 !   ----------------------------------------------------------------------------
 
-    g000_000 = 0.0d0
     g000_100 = 0.0d0
     g000_010 = 0.0d0
     g000_001 = 0.0d0
-
     do i = 1, nr_nonzero_contraction_coefs(ishell)
       f = -primitive_exp(ishell, i)
       f2 = contraction_coef(ishell, i)*dexp(f*p2)
-      g000_000 = g000_000 +            f2
       g000_100 = g000_100 + px*f*2.0d0*f2
       g000_010 = g000_010 + py*f*2.0d0*f2
       g000_001 = g000_001 + pz*f*2.0d0*f2
@@ -864,11 +874,6 @@ contains
     real(8)                :: f1, f2
 !   ----------------------------------------------------------------------------
 
-    g000_000 = 0.0d0
-    do i = 1, nr_nonzero_contraction_coefs(ishell)
-      g000_000 = g000_000 + contraction_coef(ishell, i)*dexp(-primitive_exp(ishell, i)*p2)
-    end do
-
     if (cartesian_deg(ishell) < 21) then
       call get_cartesian_ao(ishell, &
                             gao,    &
@@ -880,11 +885,6 @@ contains
         gao(ic) = (px**l_exp(jc))*(py**m_exp(jc))*(pz**n_exp(jc))*g000_000
       end do
 
-    end if
-
-!   if spherical and d or higher then transform
-    if (shell_is_spherical(ishell) .and. (cartesian_deg(ishell) > 3)) then
-       call transform_c_to_s(ishell, gao)
     end if
 
   end subroutine
@@ -961,14 +961,6 @@ contains
         end do
       end do
 
-    end if
-
-!   if spherical and d or higher then transform
-    if (shell_is_spherical(ishell) .and. (cartesian_deg(ishell) > 3)) then
-       call transform_c_to_s(ishell, gao)
-       call transform_c_to_s(ishell, gaox)
-       call transform_c_to_s(ishell, gaoy)
-       call transform_c_to_s(ishell, gaoz)
     end if
 
   end subroutine
