@@ -2237,8 +2237,11 @@ C
 C Miro: for determination of IATIm why not not use rather ITYP ?
 C
       SKIP_JM4 = .TRUE.
-      SKIP_JM4 = .FALSE.
-      IF (IAIND.GE.16 .AND.IAIND.LE.18) CALL QUIT('quit here!')
+!     SKIP_JM4 = .FALSE.
+CMI ... catch possible exotic IAND...
+      IF (IAIND.GE.16 .AND.IAIND.LE.18) THEN 
+        CALL QUIT('quit here!')
+      ENDIF
 
       IF (.NOT.SKIP_JM4) THEN
 
