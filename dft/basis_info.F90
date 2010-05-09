@@ -306,6 +306,9 @@ contains
          shell_is_spherical(ishell)  = sphr(ishell)
 
          contracted_shell_nr = numcf(ishell)
+         if (contracted_shell_nr > mxcont) then
+            call quit('increase mxcont and recompile')
+         end if
 
          i = jstrt(ishell) + 1
          j = jstrt(ishell) + nuco(ishell)
