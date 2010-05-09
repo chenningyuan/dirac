@@ -288,17 +288,15 @@ contains
     real(8)                :: f1, f2
 !   ----------------------------------------------------------------------------
 
-    if (cartesian_deg(ishell) < 21) then
+    if (l_quantum_nr(ishell) < 12) then
        call get_cartesian_ao_g0(l_quantum_nr(ishell), &
                                 px, py, pz,           &
                                 gao)
     else
-!     h and higher
-      do ic = 1, cartesian_deg(ishell)
-        jc = cartesian_off(ishell) + ic
-        gao(ic) = (px**l_exp(jc))*(py**m_exp(jc))*(pz**n_exp(jc))*g_00_00_00_000
-      end do
-
+       do ic = 1, cartesian_deg(ishell)
+          jc = cartesian_off(ishell) + ic
+          gao(ic) = (px**l_exp(jc))*(py**m_exp(jc))*(pz**n_exp(jc))*g_00_00_00_000
+       end do
     end if
 
   end subroutine
@@ -325,7 +323,7 @@ contains
     real(8)                :: p0, p0t
 !   ----------------------------------------------------------------------------
 
-    if (cartesian_deg(ishell) < 21) then
+    if (l_quantum_nr(ishell) < 12) then
        call get_cartesian_ao_g1(l_quantum_nr(ishell), &
                                 px, py, pz,           &
                                 gao,                  &
@@ -335,46 +333,41 @@ contains
 
 
     else
-!     h and higher
-
-!     this lmn lookup is expensive so better keep this loop outside
-      do ic = 1,cartesian_deg(ishell)
-        jc = cartesian_off(ishell) + ic
-
-        l = l_exp(jc)
-        m = m_exp(jc)
-        n = n_exp(jc)
-
-        tx = 0.0d0
-        ty = 0.0d0
-        tz = 0.0d0
-
-        if (l > 0) tx = dfloat(l)*(px**(l-1))*(py**m)*(pz**n)
-        if (m > 0) ty = dfloat(m)*(px**l)*(py**(m-1))*(pz**n)
-        if (n > 0) tz = dfloat(n)*(px**l)*(py**m)*(pz**(n-1))
-
-        p0 = (px**l)*(py**m)*(pz**n)
-
-        gao (ic) = 0.0d0
-        gaox(ic) = 0.0d0
-        gaoy(ic) = 0.0d0
-        gaoz(ic) = 0.0d0
-        do i = 1, nr_nonzero_contraction_coefs(ishell)
-          f2 = contraction_coef(ishell, i)*dexp(-primitive_exp(ishell, i)*p2)
-
-          p0t = -2.0d0*primitive_exp(ishell, i)*p0
-          ux  = px*p0t + tx
-          uy  = py*p0t + ty
-          uz  = pz*p0t + tz
-
-          gao (ic) = gao (ic) + p0*f2
-          gaox(ic) = gaox(ic) + ux*f2
-          gaoy(ic) = gaoy(ic) + uy*f2
-          gaoz(ic) = gaoz(ic) + uz*f2
-
-        end do
-      end do
-
+       do ic = 1,cartesian_deg(ishell)
+          jc = cartesian_off(ishell) + ic
+      
+          l = l_exp(jc)
+          m = m_exp(jc)
+          n = n_exp(jc)
+      
+          tx = 0.0d0
+          ty = 0.0d0
+          tz = 0.0d0
+      
+          if (l > 0) tx = dfloat(l)*(px**(l-1))*(py**m)*(pz**n)
+          if (m > 0) ty = dfloat(m)*(px**l)*(py**(m-1))*(pz**n)
+          if (n > 0) tz = dfloat(n)*(px**l)*(py**m)*(pz**(n-1))
+      
+          p0 = (px**l)*(py**m)*(pz**n)
+      
+          gao (ic) = 0.0d0
+          gaox(ic) = 0.0d0
+          gaoy(ic) = 0.0d0
+          gaoz(ic) = 0.0d0
+          do i = 1, nr_nonzero_contraction_coefs(ishell)
+             f2 = contraction_coef(ishell, i)*dexp(-primitive_exp(ishell, i)*p2)
+       
+             p0t = -2.0d0*primitive_exp(ishell, i)*p0
+             ux  = px*p0t + tx
+             uy  = py*p0t + ty
+             uz  = pz*p0t + tz
+       
+             gao (ic) = gao (ic) + p0*f2
+             gaox(ic) = gaox(ic) + ux*f2
+             gaoy(ic) = gaoy(ic) + uy*f2
+             gaoz(ic) = gaoz(ic) + uz*f2
+          end do
+       end do
     end if
 
   end subroutine
