@@ -270,7 +270,12 @@ contains
     end if
 
     if (kw_matches(word, '.ZIPGRI')) then
+!     is true by default, keep for backward compatibimity
       dft_cfg_zipgrid = .true.
+    end if
+
+    if (kw_matches(word, '.NOZIP ')) then
+      dft_cfg_zipgrid = .false.
     end if
 
     if (kw_matches(word, '.GAUTSC')) then

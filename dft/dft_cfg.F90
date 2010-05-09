@@ -32,7 +32,7 @@ module dft_cfg
   logical, public :: dft_cfg_import_grid             = .false.
   logical, public :: dft_cfg_export_grid             = .false.
   logical, public :: dft_cfg_multigrid               = .false.
-  logical, public :: dft_cfg_zipgrid                 = .false.
+  logical, public :: dft_cfg_zipgrid                 = .true.
   logical, public :: dft_cfg_alda_hs                 = .false.
   logical, public :: dft_cfg_alda_ha                 = .false.
   logical, public :: dft_cfg_xalda                   = .false.
