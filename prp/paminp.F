@@ -1430,6 +1430,14 @@ CMI ... inform about the assigned PCOMB
       IF (IPRINT .GE. 6) THEN
          WRITE(LUPRI,'(A,A4)') '  assigned PCOMB:',PCOMB
       END IF
+
+!     ...  assign proper factor for EDM  ...
+      IF (PLABEL(1).EQ.'EDM') THEN
+        PFAC(1) = -4.0D0 * PFAC(1)
+        WRITE(LUPRI,'(2X,A,D12.6)') 
+     &  'EDM operator, factor multiplied by -4, PFAC(1)=', PFAC(1)
+      ENDIF
+
 C
 C     Define property
 C
@@ -1914,7 +1922,6 @@ CMI  CAP integrals/labels to be used in the MOLTRA/PRPTRA input
         CLASLB = 'CAPD_VD' 
 CMI  EDM operator
       ELSE IF(LABINT(1:3).EQ.'EDM') THEN
-        !CLASLB = 'EDM    '
         CLASLB = 'KINENER'
 C
 C     Unknown LABINT
@@ -2073,17 +2080,6 @@ C
      &            ANTI,SQUARE,INTADR,LABINT,TRIANG,TRASPH,
      &            SOLVNT,IORDER,DOATOM,NATOM,NBAST,NELMNT,IPRINT)
 
-CMI ... FIX IT, ALWAYS RETURNS 21 for KINENERG !!!
-CMI      ... fix for i*BETA*GAMMA5 operator
-!       IF (CLASLB.EQ.'KINENER'.AND.INTTYP.EQ.21) THEN
-        IF (INTTYP.EQ.21) THEN
-!         ANTI=.TRUE.
-!         WRITE(LUPRI,'(2X,A)')
-!    &   'i*BETA*GAMMA5 operator (INTTYP=21), setting ANTI=.true.' 
-          WRITE(LUPRI,'(2X,A)')
-     &   'FYI: INTTYP=21 (KINENERG) !!!' 
-        ENDIF
-
         IF (IPRINT.GE.5) THEN
            WRITE(LUPRI,'(/,2X,A)')
      &      '*** XPLDE1 after PR1DIR calling ***'
@@ -2240,9 +2236,10 @@ C
 !     SKIP_JM4 = .FALSE.
 CMI ... catch possible exotic IAND...
       IF (IAIND.GE.16 .AND.IAIND.LE.18) THEN 
-        CALL QUIT('quit here!')
+        CALL QUIT('quit here due to IAIND !')
       ENDIF
 
+C  remove this part (THEN block) if everythink goes well 
       IF (.NOT.SKIP_JM4) THEN
 
       IF (IAIND.EQ. 0 .OR. IAIND.EQ.4 .OR.
@@ -2263,8 +2260,10 @@ CMI    exception for the i*BETA*GAMMA5 operator
       ENDIF
 
       ELSE
-CMI    Simplification 
+!  ---------------------------------------------------------------------
 !       ... scalar , gamma5, and beta matrix operators have IATIM=+1
+! FYI: only this part (ELSE block) is to be kept for the future
+!  ---------------------------------------------------------------------
        IF (ITYP.EQ.1.OR.ITYP.EQ.9.OR.ITYP.EQ.19) THEN
         IATIM=+1
        ELSE ! the rest ....
