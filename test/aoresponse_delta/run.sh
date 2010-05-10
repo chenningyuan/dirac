@@ -3,9 +3,9 @@
 export MOL=fh
 
 export MENU=lda.inp
-../run.sh -dftmem 100
+../run.sh
 
 export MENU=blyp.inp
-../run.sh -dftmem 100
+../run.sh
 
 exit 0
