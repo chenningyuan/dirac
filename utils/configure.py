@@ -15,6 +15,10 @@ class PrintLevel:
   def set_iprint(self):
     self.iprint = iprint_read
 
+#### check where configure.py sits - must be the main trunk
+def check_position():
+  print 'checking position of configure.......'
+
 def process_configure_arguments():
   print 'processing configure arguments....'
 
