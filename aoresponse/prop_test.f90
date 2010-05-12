@@ -100,7 +100,7 @@ contains
       ! the following contribution is zero
       ! call prop_oneave(S, (/'EL ','MAG'/), (/D/), shape(Efb), Efb)
       ! solve EL response equations for the negative frequency
-      call pert_dens(decomp, S, (/'EL'/), shape(Df), (/D/), (/F/), &
+      call pert_dens(decomp, S, (/'EL'/), int(shape(Df)), (/D/), (/F/), &
                      Df, Ff, freq=-freq(1:1))
       ! compute the EL-perturbed energy-weighted density matrices,
       ! to be contracted against MAG-perturbed overlap integrals
@@ -109,11 +109,11 @@ contains
                      + D*(F + freq(1)/2*S)*Df(i)
       end do
       ! contract Df and DFDf with MAG-perturbed integrals
-      call prop_oneave(S, (/'MAG'/), (/Df/), shape(Efb), Efb, &
+      call prop_oneave(S, (/'MAG'/), (/Df/), int(shape(Efb)), Efb, &
                        perm=(/2,1/), freq=freq(1:1), DFD=DFDf)
-      call prop_twoave((/'MAG'/), (/D,Df/), shape(Efb), Efb, perm=(/2,1/))
+      call prop_twoave((/'MAG'/), (/D,Df/), int(shape(Efb)), Efb, perm=(/2,1/))
       ! print
-      call print_tensor(shape(Efb), Efb, 'G-prime = Efb = E1b Df - Sb DFDf')
+      call print_tensor(int(shape(Efb)), Efb, 'G-prime = Efb = E1b Df - Sb DFDf')
       ! free Df(:), Ff(:), DFDf(:)
       Df=0; Ff=0; DFDf=0
    end subroutine
@@ -128,14 +128,14 @@ contains
       type(matrix) :: Db(3), Fb(3)
       integer      :: i
       ! the following contribution is zero
-      call prop_oneave(S, (/'EL ','MAG'/), (/D/), shape(Efb), Efb)
+      call prop_oneave(S, (/'EL ','MAG'/), (/D/), int(shape(Efb)), Efb)
       ! solve EL response equations for the negative frequency
-      call pert_dens(decomp, S, (/'MAG'/), shape(Db), (/D/), (/F/), &
+      call pert_dens(decomp, S, (/'MAG'/), int(shape(Db)), (/D/), (/F/), &
                      Db, Fb, freq=freq(1:1))
       ! contract Db with -dipole integrals
-      call prop_oneave(S, (/'EL'/), (/Db/), shape(Efb), Efb)
+      call prop_oneave(S, (/'EL'/), (/Db/), int(shape(Efb)), Efb)
       ! print
-      call print_tensor(shape(Efb), Efb, 'G-prime = Efb = E1f Db')
+      call print_tensor(int(shape(Efb)), Efb, 'G-prime = Efb = E1f Db')
       ! free
       Db = 0;  Fb = 0
    end subroutine
@@ -326,7 +326,7 @@ contains
       call prop_twoave(UNP, (/D,De,Df,Dg,Dh, &
                               (0d0*D,i=1,18),Dfg,(0d0*D,i=1,9), &
                               Dfh,Dgh,(0d0*D,i=1,189)/), &
-                       shape(Effff), Effff)
+                       int(shape(Effff)), Effff)
       ! gradient Lagrange multiplier contribution -tr (DeSD-) (FDS-)fgh
       do i = 1, 3
          DeSD(i) = De(i)*S*D - D*S*De(i)
@@ -1019,22 +1019,22 @@ contains
 
     call pert_dens(decomp, S, (/'EL'/), (/1/), (/D/), (/F/), D_i(i), F_i(i), comp=(/i/), freq=(/w(1)/))
     e2 = 0.0d0
-    call prop_oneave(S, (/'EL'/), (/D_i/), shape(e2), e2)
+    call prop_oneave(S, (/'EL'/), (/D_i/), int(shape(e2)), e2)
     call print_polarizability(e2, (/w(1)/), i)
 
     call pert_dens(decomp, S, (/'EL'/), (/1/), (/D/), (/F/), D_j(j), F_j(j), comp=(/j/), freq=(/w(2)/))
     e2 = 0.0d0
-    call prop_oneave(S, (/'EL'/), (/D_j/), shape(e2), e2)
+    call prop_oneave(S, (/'EL'/), (/D_j/), int(shape(e2)), e2)
     call print_polarizability(e2, (/w(2)/), j)
 
     call pert_dens(decomp, S, (/'EL'/), (/1/), (/D/), (/F/), D_k(k), F_k(k), comp=(/k/), freq=(/w(3)/))
     e2 = 0.0d0
-    call prop_oneave(S, (/'EL'/), (/D_k/), shape(e2), e2)
+    call prop_oneave(S, (/'EL'/), (/D_k/), int(shape(e2)), e2)
     call print_polarizability(e2, (/w(3)/), k)
 
     call pert_dens(decomp, S, (/'EL'/), (/1/), (/D/), (/F/), D_l(l), F_l(l), comp=(/l/), freq=(/w(4)/))
     e2 = 0.0d0
-    call prop_oneave(S, (/'EL'/), (/D_l/), shape(e2), e2)
+    call prop_oneave(S, (/'EL'/), (/D_l/), int(shape(e2)), e2)
     call print_polarizability(e2, (/w(4)/), l)
 
     call pert_dens(decomp,             &
@@ -1056,7 +1056,7 @@ contains
                    comp=(/i, j/),      &
                    freq=(/w(1), w(2)/))
     e3 = 0.0d0
-    call prop_oneave(S, (/'EL'/), (/D_ij/), shape(e3), e3)
+    call prop_oneave(S, (/'EL'/), (/D_ij/), int(shape(e3)), e3)
     call print_polarizability(e3, (/w(1), w(2)/), i, j)
 
     call pert_dens(decomp,             &
@@ -1078,7 +1078,7 @@ contains
                    comp=(/i, k/),      &
                    freq=(/w(1), w(3)/))
     e3 = 0.0d0
-    call prop_oneave(S, (/'EL'/), (/D_ik/), shape(e3), e3)
+    call prop_oneave(S, (/'EL'/), (/D_ik/), int(shape(e3)), e3)
     call print_polarizability(e3, (/w(1), w(3)/), i, k)
 
     call pert_dens(decomp,             &
@@ -1100,7 +1100,7 @@ contains
                    comp=(/i, l/),      &
                    freq=(/w(1), w(4)/))
     e3 = 0.0d0
-    call prop_oneave(S, (/'EL'/), (/D_il/), shape(e3), e3)
+    call prop_oneave(S, (/'EL'/), (/D_il/), int(shape(e3)), e3)
     call print_polarizability(e3, (/w(1), w(4)/), i, l)
 
     call pert_dens(decomp,             &
@@ -1122,7 +1122,7 @@ contains
                    comp=(/j, k/),      &
                    freq=(/w(2), w(3)/))
     e3 = 0.0d0
-    call prop_oneave(S, (/'EL'/), (/D_jk/), shape(e3), e3)
+    call prop_oneave(S, (/'EL'/), (/D_jk/), int(shape(e3)), e3)
     call print_polarizability(e3, (/w(2), w(3)/), j, k)
 
     call pert_dens(decomp,             &
@@ -1144,7 +1144,7 @@ contains
                    comp=(/j, l/),      &
                    freq=(/w(2), w(4)/))
     e3 = 0.0d0
-    call prop_oneave(S, (/'EL'/), (/D_jl/), shape(e3), e3)
+    call prop_oneave(S, (/'EL'/), (/D_jl/), int(shape(e3)), e3)
     call print_polarizability(e3, (/w(2), w(4)/), j, l)
 
     call pert_dens(decomp,             &
@@ -1166,7 +1166,7 @@ contains
                    comp=(/k, l/),      &
                    freq=(/w(3), w(4)/))
     e3 = 0.0d0
-    call prop_oneave(S, (/'EL'/), (/D_kl/), shape(e3), e3)
+    call prop_oneave(S, (/'EL'/), (/D_kl/), int(shape(e3)), e3)
     call print_polarizability(e3, (/w(3), w(4)/), k, l)
 
     call pert_dens(decomp,             &
@@ -1196,7 +1196,7 @@ contains
                    comp=(/i, j, k/),   &
                    freq=(/w(1), w(2), w(3)/))
     e4 = 0.0d0
-    call prop_oneave(S, (/'EL'/), (/D_ijk/), shape(e4), e4)
+    call prop_oneave(S, (/'EL'/), (/D_ijk/), int(shape(e4)), e4)
     call print_polarizability(e4, (/w(1), w(2), w(3)/), i, j, k)
 
     call pert_dens(decomp,             &
@@ -1226,7 +1226,7 @@ contains
                    comp=(/i, j, l/),   &
                    freq=(/w(1), w(2), w(4)/))
     e4 = 0.0d0
-    call prop_oneave(S, (/'EL'/), (/D_ijl/), shape(e4), e4)
+    call prop_oneave(S, (/'EL'/), (/D_ijl/), int(shape(e4)), e4)
     call print_polarizability(e4, (/w(1), w(2), w(4)/), i, j, l)
 
     call pert_dens(decomp,             &
@@ -1256,7 +1256,7 @@ contains
                    comp=(/i, k, l/),   &
                    freq=(/w(1), w(3), w(4)/))
     e4 = 0.0d0
-    call prop_oneave(S, (/'EL'/), (/D_ikl/), shape(e4), e4)
+    call prop_oneave(S, (/'EL'/), (/D_ikl/), int(shape(e4)), e4)
     call print_polarizability(e4, (/w(1), w(3), w(4)/), i, k, l)
 
     call pert_dens(decomp,             &
@@ -1286,7 +1286,7 @@ contains
                    comp=(/j, k, l/),   &
                    freq=(/w(2), w(3), w(4)/))
     e4 = 0.0d0
-    call prop_oneave(S, (/'EL'/), (/D_jkl/), shape(e4), e4)
+    call prop_oneave(S, (/'EL'/), (/D_jkl/), int(shape(e4)), e4)
     call print_polarizability(e4, (/w(2), w(3), w(4)/), j, k, l)
 
     call pert_dens(decomp,                   &
@@ -1332,7 +1332,7 @@ contains
                    comp=(/i, j, k, l/),      &
                    freq=(/w(1), w(2), w(3), w(4)/))
     e5 = 0.0d0
-    call prop_oneave(S, (/'EL'/), (/D_ijkl/), shape(e5), e5)
+    call prop_oneave(S, (/'EL'/), (/D_ijkl/), int(shape(e5)), e5)
     call print_polarizability(e5, (/w(1), w(2), w(3), w(4)/), i, j, k, l)
 
     delta_element = -e5(h, i, j, k, l)

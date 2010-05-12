@@ -549,12 +549,12 @@ contains
       ! electric equations, polarizability, G-prime, A-tensor
       call pert_dens(decomp, S, (/'EL'/), (/3/), (/D/), (/F/), Df, Ff, freq=(/-freq/))
       Eff=0; Ebf=0; Eqf=0
-      call prop_oneave(S, (/'EL'/), (/Df/), shape(Eff), Eff)
-      call prop_oneave(S, (/'MAGO'/),(/Df/), shape(Ebf), Ebf)
-      call prop_oneave(S, (/'ELGR'/), (/Df/), shape(Eqf), Eqf)
-      call print_tensor(shape(Eff), -Eff, 'Alpha = -Eff', (/freq,-freq/))
-      call print_tensor(shape(Ebf),  Ebf, 'G-prime = Ebf', (/freq,-freq/))
-      call print_tensor(shape(Eqf), -Eqf, 'A-tensor = -Eqf', (/freq,-freq/))
+      call prop_oneave(S, (/'EL'/), (/Df/), int(shape(Eff)), Eff)
+      call prop_oneave(S, (/'MAGO'/),(/Df/), int(shape(Ebf)), Ebf)
+      call prop_oneave(S, (/'ELGR'/), (/Df/), int(shape(Eqf)), Eqf)
+      call print_tensor(int(shape(Eff)), -Eff, 'Alpha = -Eff', (/freq,-freq/))
+      call print_tensor(int(shape(Ebf)),  Ebf, 'G-prime = Ebf', (/freq,-freq/))
+      call print_tensor(int(shape(Eqf)), -Eqf, 'A-tensor = -Eqf', (/freq,-freq/))
       !--------------------------------------------------
       ! electric-electric equations, solve 6 eqs, not 3x3
       do k = 1, 3;
@@ -571,11 +571,11 @@ contains
       !------------------------
       ! polarizability gradient
       Egff = 0
-      call prop_oneave(S, (/'GEO','EL '/), (/Df/), shape(Egff), Egff)
+      call prop_oneave(S, (/'GEO','EL '/), (/Df/), int(shape(Egff)), Egff)
       ! call print_tensor(Egff, shape(Egff), 'E1geDf'); Egff=0
-      call prop_oneave(S, (/'GEO','EL '/), (/De/), shape(Egff), Egff, perm=(/1,3,2/))
+      call prop_oneave(S, (/'GEO','EL '/), (/De/), int(shape(Egff)), Egff, perm=(/1,3,2/))
       ! call print_tensor(Egff, shape(Egff), 'E1gfDe'); Egff=0
-      call prop_twoave((/'GEO'/), (/D,De,Df,Def/), shape(Egff), Egff)
+      call prop_twoave((/'GEO'/), (/D,De,Df,Def/), int(shape(Egff)), Egff)
       do k = 1, 3
          do j = 1, 3
             DFDef(j,k) = De(j)*Ff(k)*D + De(j)*(F+freq*S)*Df(k) + D*Fe(j)*Df(k) &
@@ -583,10 +583,10 @@ contains
                        + Def(j,k)*F*D + D*Fef(j,k)*D + D*F*Def(j,k)
          end do
       end do
-      call prop_oneave(S, (/'GEO'/), (/Def/), shape(Egff), Egff, DFD=(/DFDef/))
+      call prop_oneave(S, (/'GEO'/), (/Def/), int(shape(Egff)), Egff, DFD=(/DFDef/))
       DFDef = 0
       ! call print_tensor(Egff, shape(Egff), 'E1gDef+E2gDeDf-SgDFDef'); Egff=0
-      call print_tensor(shape(Egff), -Egff, 'd/dg Polari = -Egff', &
+      call print_tensor(int(shape(Egff)), -Egff, 'd/dg Polari = -Egff', &
                         (/0*freq,freq,-freq/))
       DFDef=0; De=0; Fe=0; Def=0; Fef=0
       !----------------------------------------
@@ -597,11 +597,11 @@ contains
       !-----------------
       ! G-prime gradient
       Egbf = 0
-      call prop_oneave(S, (/'GEO ','MAGO'/), (/Df/), shape(Egbf), Egbf)
+      call prop_oneave(S, (/'GEO ','MAGO'/), (/Df/), int(shape(Egbf)), Egbf)
       ! call print_tensor(Egbf, shape(Egbf), 'E1gbDf'); Egbf=0
-      call prop_oneave(S, (/'GEO','EL '/), (/Db/), shape(Egbf), Egbf, perm=(/1,3,2/))
+      call prop_oneave(S, (/'GEO','EL '/), (/Db/), int(shape(Egbf)), Egbf, perm=(/1,3,2/))
       ! call print_tensor(Egbf, shape(Egbf), 'E1gfDb'); Egbf=0
-      call prop_twoave((/'GEO'/), (/D,Db,Df,Dbf/), shape(Egbf), Egbf)
+      call prop_twoave((/'GEO'/), (/D,Db,Df,Dbf/), int(shape(Egbf)), Egbf)
       do k = 1, 3
          do j = 1, 3
             DFDbf(j,k) = Db(j)*Ff(k)*D + Db(j)*(F+freq*S)*Df(k) + D*Fb(j)*Df(k) &
@@ -609,9 +609,9 @@ contains
                        + Dbf(j,k)*F*D + D*Fbf(j,k)*D + D*F*Dbf(j,k)
          end do
       end do
-      call prop_oneave(S, (/'GEO'/), (/Dbf/), shape(Egbf), Egbf, DFD=(/DFDbf/))
+      call prop_oneave(S, (/'GEO'/), (/Dbf/), int(shape(Egbf)), Egbf, DFD=(/DFDbf/))
       ! call print_tensor(Egbf, shape(Egbf), 'E2gDbDf + E1gDfb - SgDFDbf'); Egbf=0
-      call print_tensor(shape(Egbf), Egbf, 'd/dg G-prime = Egbf', &
+      call print_tensor(int(shape(Egbf)), Egbf, 'd/dg G-prime = Egbf', &
                         (/0*freq,freq,-freq/))
       DFDbf=0; Db=0; Fb=0; Dbf=0; Fbf=0
       !---------------------------------------------
@@ -622,11 +622,11 @@ contains
       !------------------
       ! A-tensor gradient
       Egqf = 0
-      call prop_oneave(S, (/'GEO ','ELGR'/), (/Df/), shape(Egqf), Egqf)
+      call prop_oneave(S, (/'GEO ','ELGR'/), (/Df/), int(shape(Egqf)), Egqf)
       ! call print_tensor(shape(Egqf), Egqf, 'E1gqDf'); Egqf=0
-      call prop_oneave(S, (/'GEO','EL '/), (/Dq/), shape(Egqf), Egqf, perm=(/1,3,2/))
+      call prop_oneave(S, (/'GEO','EL '/), (/Dq/), int(shape(Egqf)), Egqf, perm=(/1,3,2/))
       ! call print_tensor(shape(Egqf), Egqf, 'E1gfDq'); Egqf=0
-      call prop_twoave((/'GEO'/), (/D,Dq,Df,Dqf/), shape(Egqf), Egqf)
+      call prop_twoave((/'GEO'/), (/D,Dq,Df,Dqf/), int(shape(Egqf)), Egqf)
       do k = 1, 3
          do j = 1, 6
             DFDqf(j,k) = Dq(j)*Ff(k)*D + Dq(j)*(F+freq*S)*Df(k) + D*Fq(j)*Df(k) &
@@ -634,9 +634,9 @@ contains
                        + Dqf(j,k)*F*D + D*Fqf(j,k)*D + D*F*Dqf(j,k)
          end do
       end do
-      call prop_oneave(S, (/'GEO'/), (/Dqf/), shape(Egqf), Egqf, DFD=(/DFDqf/))
+      call prop_oneave(S, (/'GEO'/), (/Dqf/), int(shape(Egqf)), Egqf, DFD=(/DFDqf/))
       ! call print_tensor(shape(Egqf), Egqf, 'E2gDqDf + E1gDqf - SgDFDqf'); Egqf=0
-      call print_tensor(shape(Egqf), -Egqf, 'd/dg A-tensor = -Egqf', &
+      call print_tensor(int(shape(Egqf)), -Egqf, 'd/dg A-tensor = -Egqf', &
                         (/0*freq,freq,-freq/))
       DFDqf=0; Dq=0; Fq=0; Df=0; Ff=0; Dqf=0; Fqf=0
       ! change sign on quasi-energy derivatives to get properties
@@ -685,11 +685,11 @@ contains
       !------------------------
       ! polarizability gradient
       Egff = 0
-      call prop_oneave(S, (/'GEO','EL '/), (/Df/), shape(Egff), Egff)
+      call prop_oneave(S, (/'GEO','EL '/), (/Df/), int(shape(Egff)), Egff)
       ! call print_tensor(Egff, shape(Egff), 'E1geDf'); Egff=0
-      call prop_oneave(S, (/'GEO','EL '/), (/De/), shape(Egff), Egff, perm=(/1,3,2/))
+      call prop_oneave(S, (/'GEO','EL '/), (/De/), int(shape(Egff)), Egff, perm=(/1,3,2/))
       ! call print_tensor(Egff, shape(Egff), 'E1gfDe'); Egff=0
-      call prop_twoave((/'GEO'/), (/D,De,Df,Def/), shape(Egff), Egff)
+      call prop_twoave((/'GEO'/), (/D,De,Df,Def/), int(shape(Egff)), Egff)
       do k = 1, 3
          do j = 1, 3
             DFDef(j,k) = De(j)*Ff(k)*D + De(j)*(F-freq*S)*Df(k) + D*Fe(j)*Df(k) &
@@ -697,10 +697,10 @@ contains
                        + Def(j,k)*F*D + D*Fef(j,k)*D + D*F*Def(j,k)
          end do
       end do
-      call prop_oneave(S, (/'GEO'/), (/Def/), shape(Egff), Egff, DFD=(/DFDef/))
+      call prop_oneave(S, (/'GEO'/), (/Def/), int(shape(Egff)), Egff, DFD=(/DFDef/))
       DFDef = 0
       ! call print_tensor(Egff, shape(Egff), 'E1gDef+E2gDeDf-SgDFDef'); Egff=0
-      call print_tensor(shape(Egff), -Egff, 'd/dg Alpha = -Egff', &
+      call print_tensor(int(shape(Egff)), -Egff, 'd/dg Alpha = -Egff', &
                         (/0*freq,-freq,freq/))
       DFDef=0
       !------------------------------------------------------------------
