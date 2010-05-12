@@ -17,7 +17,7 @@ Makefile.config:configure
 	@echo
 	false
 
-depend:
+depend: gp/compinfo.h include/fortran_interface.h
 	@echo Forcing a rebuild of Makefile.obj and Makefile.dep
 	@rm -f Makefile.obj
 	@rm -f Makefile.dep
