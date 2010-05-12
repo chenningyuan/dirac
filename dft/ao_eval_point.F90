@@ -1,4 +1,4 @@
-module ao_eval_backend
+module ao_eval_point
 
 !> \brief   automatically generated code for cartesian AOs up to m functions
 !> \author  radovan bast

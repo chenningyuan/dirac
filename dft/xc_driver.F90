@@ -48,7 +48,8 @@ module xc_driver
 
   real(8), parameter :: tiny = 1.0d-20
 
-  integer, parameter :: block_length = 1 !later more, now slowdft
+  integer, parameter :: bllen = 1 !later more, now slowdft
+  integer            :: block_length
 
   save
 
@@ -95,7 +96,7 @@ module xc_driver
     real(8), allocatable :: ry(:)
     real(8), allocatable :: rz(:)
     real(8), allocatable :: rw(:)
-    integer :: i, idummy, ierr, nr_points_process, nr_points_part, nr_processes
+    integer :: i, j, k, idummy, ierr, nr_points_process, nr_points_part, nr_processes
     integer ::  nr_points_looped_over
     integer ::  nr_points_used
     real(8), allocatable :: mpi_buffer(:)
@@ -118,6 +119,8 @@ module xc_driver
 
     real(8), allocatable :: ao(:)
     real(8), allocatable :: buffer(:)
+    real(8), allocatable :: ao_block(:, :)
+    real(8), allocatable :: buffer_block(:, :)
 
    logical :: parallel_xc
    logical :: coworkers_are_awake = .false.
@@ -130,6 +133,8 @@ module xc_driver
    real(8)           :: time_matrix_dist, time_matrix_dist_start
    real(8)           :: time_density,     time_density_start
    real(8)           :: time_derv,        time_derv_start
+   real(8)           :: time_new,         time_new_start
+   real(8)           :: time_old,         time_old_start
 
 
 
@@ -251,6 +256,8 @@ contains
       time_matrix_dist = 0.0d0
       time_density     = 0.0d0
       time_derv        = 0.0d0
+      time_new         = 0.0d0
+      time_old         = 0.0d0
 
       nr_electrons = 0.0d0
       xc_energy    = 0.0d0
@@ -741,6 +748,7 @@ contains
       real(8) :: r_t1(mxbllen)
       real(8) :: r_t2(mxbllen)
 !     --------------------------------------------------------------------------
+      real(8) :: avg
 
     max_ao_g_order = 0
     if (use_gga) then
@@ -759,8 +767,13 @@ contains
                       max_ao_m_order, &
                       dft_cfg_screening)
 
-    allocate(ao(total_ao_vector_length))
-    allocate(buffer(total_ao_vector_length))
+    call alloc(ao,     total_ao_vector_length)
+    call alloc(buffer, total_ao_vector_length)
+!#define TRY_BLOCK
+#ifdef TRY_BLOCK
+    call alloc(ao_block,     mxbllen, total_ao_vector_length)
+    call alloc(buffer_block, mxbllen, total_ao_vector_length)
+#endif
 
 
 !   check what functional derivatives do we need
@@ -806,15 +819,78 @@ contains
 !       set it to zero, otherwise it is undefined with lda
         z_0 = 0.0d0
 
-!   HERE STARTS THE EXPENSIVE LOOP OVER POINTS
-!   DO NOT EVALUATE ANYTHING INSIDE THIS LOOP
-!   THAT DOES NOT CHANGE FROM POINT TO POINT
-    do ipoint = 1, nr_points_process
-       nr_points_looped_over = nr_points_looped_over + 1
+#ifdef TRY_BLOCK
+   time_new_start = second()
+   loop_over_points_block: do ipoint = 1, nr_points_process, mxbllen
+      block_length = min(mxbllen, nr_points_process - ipoint + 1)
+
+      call get_ao(block_length,                     &
+                  rx(ipoint:ipoint+block_length-1), &
+                  ry(ipoint:ipoint+block_length-1), &
+                  rz(ipoint:ipoint+block_length-1), &
+                  ao_block,                         &
+                  buffer_block)
+
+
+      do k = 1, block_length
+         r_0(k) = 0.0d0
+      end do
+      do i = 1, mat_dim
+         avg = 0.0d0
+         do k = 1, block_length
+            avg = avg + ao_block(k, i)
+         end do
+         if (avg > 1.0d-10) then
+            do k = 1, block_length
+               r_0(k) = r_0(k) + ao_block(k, i)*ao_block(k, i)*dmat_0(i, i)
+            end do
+            do j = i + 1, mat_dim
+               do k = 1, block_length
+                  r_0(k) = r_0(k) + 2.0d0*ao_block(k, i)*ao_block(k, j)*dmat_0(j, i)
+               end do
+            end do
+         end if
+      end do
+
+   end do loop_over_points_block
+   time_new = time_new + second() - time_new_start
+
+   time_old_start = second()
+   loop_over_points: do ipoint = 1, nr_points_process
+
+      call get_ao(rx(ipoint), &
+                  ry(ipoint), &
+                  rz(ipoint), &
+                  ao,         &
+                  buffer)
+
+      call get_n(r_0(1), 0, mat_dim, dmat_0, buffer, ao)
+
+   end do loop_over_points
+   time_old = time_old + second() - time_old_start
+#endif
+
+
+
+
+
+
+
+!  here starts the expensive loop over points
+!  do not evaluate anything inside this loop
+!  that does not change from point to point
+   do ipoint = 1, nr_points_process
+      nr_points_looped_over = nr_points_looped_over + 1
 
       time_ao_start = second()
-      call get_ao(rx(ipoint), ry(ipoint), rz(ipoint), &
-                  ao, buffer)
+      call get_ao(rx(ipoint), &
+                  ry(ipoint), &
+                  rz(ipoint), &
+                  ao,         &
+                  buffer)
+
+
+
       time_ao = time_ao + second() - time_ao_start
 
       time_density_start = second()
@@ -844,7 +920,7 @@ contains
         if (response_order_ao == 0) then
 #endif
         call get_functional_derv(max_fun_derv, &
-                                 block_length, &
+                                 bllen, &
                                  w,            &
                                  r_0,          &
                                  z_0,          &
@@ -969,7 +1045,7 @@ contains
 !       ===============
         if (response_order_mo == 1) then
 
-          call lr(block_length,   &
+          call lr(bllen,   &
                   mat_dim,        &
                   nz,             &
                   nr_dmat,      &
@@ -995,7 +1071,7 @@ contains
 !       ==================
         if (response_order_mo == 2) then
 
-          call sdft_qr(block_length,           &
+          call sdft_qr(bllen,           &
                        use_gga,                &
                        dft_cfg_no_sdft,        &
                        mat_dim, dmat,fmat,   &
@@ -1015,7 +1091,7 @@ contains
 !         can be evaluated using lr code (below)
 !         only the remaining part is done in sdft_qr (above)
 !         
-          call lr(block_length,    &
+          call lr(bllen,    &
                   mat_dim,         &
                   nz,              &
                   nr_dmat,       &
@@ -1106,9 +1182,14 @@ contains
       end if !if (r_0(1) > dft_cfg_dfthr0) then
     end do !do ipoint = 1, nr_points_process
 
-     deallocate(ao)
-     deallocate(buffer)
      deallocate(derv)
+
+    call dealloc(ao)
+    call dealloc(buffer)
+#ifdef TRY_BLOCK
+    call dealloc(ao_block)
+    call dealloc(buffer_block)
+#endif
 
    end subroutine
 

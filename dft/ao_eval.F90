@@ -63,7 +63,7 @@ module ao_eval
 
 
    use basis_info
-   use ao_eval_backend
+   use block_config
  
    implicit none
  
@@ -71,6 +71,11 @@ module ao_eval
    public ao_eval_init
 
    private
+
+   interface get_ao
+      module procedure get_ao_point
+      module procedure get_ao_block
+   end interface
 
    integer, parameter :: max_order = 2
    integer, public    :: total_ao_vector_length = 0
@@ -93,40 +98,73 @@ module ao_eval
 
 contains
 
-  subroutine get_ao(cx,     &
-                    cy,     &
-                    cz,     &
-                    ao,     &
-                    buffer)
+   subroutine get_ao_point(cx, &
+                           cy, &
+                           cz, &
+                           ao, &
+                           buffer)
 
-!   ----------------------------------------------------------------------------
-    real(8), intent(in)    :: cx
-    real(8), intent(in)    :: cy
-    real(8), intent(in)    :: cz
-    real(8), intent(inout) :: ao(*)
-    real(8), intent(inout) :: buffer(*)
-!   ----------------------------------------------------------------------------
+!     --------------------------------------------------------------------------
+      real(8), intent(in)    :: cx
+      real(8), intent(in)    :: cy
+      real(8), intent(in)    :: cz
+      real(8), intent(inout) :: ao(*)
+      real(8), intent(inout) :: buffer(*)
+!     --------------------------------------------------------------------------
 
-    if (use_ao_screening) call dzero(ao, total_ao_vector_length)
+      call get_ao_point_sub(cx, &
+                            cy, &
+                            cz, &
+                            ao)
 
-    call get_ao_sub(cx,     &
-                cy,     &
-                cz,     &
-                ao)
+!     without symmetry skip the rest
+      if (nr_boson_sym == 1) return
 
-!   without symmetry skip the rest
-    if (nr_boson_sym == 1) return
+!     transform from ao(bu) to so(bs)
+      call ao_to_so_point(ao, &
+                          buffer)
 
-!   transform from ao(bu) to so(bs)
-    call ao_to_so(ao, buffer)
-    call dcopy(total_ao_vector_length, buffer, 1, ao, 1)
+   end subroutine
 
-  end subroutine
+   subroutine get_ao_block(block_length, &
+                           cx,           &
+                           cy,           &
+                           cz,           &
+                           ao,           &
+                           buffer)
 
-  subroutine get_ao_sub(cx,   &
+!     --------------------------------------------------------------------------
+      integer, intent(in)    :: block_length
+      real(8), intent(in)    :: cx(*)
+      real(8), intent(in)    :: cy(*)
+      real(8), intent(in)    :: cz(*)
+      real(8), intent(inout) :: ao(mxbllen, *)
+      real(8), intent(inout) :: buffer(mxbllen, *)
+!     --------------------------------------------------------------------------
+
+      call get_ao_block_sub(block_length, &
+                            cx,           &
+                            cy,           &
+                            cz,           &
+                            ao)
+
+!     without symmetry skip the rest
+      if (nr_boson_sym == 1) return
+
+!     transform from ao(bu) to so(bs)
+      call ao_to_so_block(block_length, &
+                          ao,           &
+                          buffer)
+
+   end subroutine
+
+
+
+  subroutine get_ao_point_sub(cx,   &
                     cy,   &
                     cz,   &
                     ao)
+   use ao_eval_point
 !   ----------------------------------------------------------------------------
     real(8), intent(in) :: cx
     real(8), intent(in) :: cy
@@ -137,19 +175,10 @@ contains
     real(8)             :: px, py, pz, p2, f1, f2
     integer             :: ofg, ofm
 
-!#define DEBUG_SHELL_RANGE
-#ifdef DEBUG_SHELL_RANGE
-    character(nr_shells) :: shell_range
-#endif
 !   ----------------------------------------------------------------------------
 
     iend = nr_shells
 
-#ifdef DEBUG_SHELL_RANGE
-    do ishell = 1, iend
-       shell_range(ishell:ishell) = ' '
-    end do
-#endif
 
     i = 1
     do ishell = 1, iend
@@ -165,16 +194,13 @@ contains
 !         note that in contrast to dalton:
 !       - shell_extent contains already the half_cell_diagonal
 !       - is squared (for more performance)
+!         if (                             &
+!             (.not. use_ao_screening)     &
+!             .or.                         &
+!             (p2 <= shell_extent(ishell)) &
+!            ) then
+!         else zero out!
 
-          if (                             &
-              (.not. use_ao_screening)     &
-              .or.                         &
-              (p2 <= shell_extent(ishell)) &
-             ) then
-
-#ifdef DEBUG_SHELL_RANGE
-            shell_range(ishell:ishell) = '*'
-#endif
 
             g_00_00_00_000 = 0.0d0
             if (need_ao_order(1, 0)) then
@@ -261,7 +287,6 @@ contains
                end if
             end if
 
-          end if
 
           i = i + spherical_deg(ishell)
 
@@ -269,15 +294,136 @@ contains
       end do
     end do
 
-#ifdef DEBUG_SHELL_RANGE
-    write(*, *) 'shell range: [', shell_range(1:iend), ']'
-#endif
 
   end subroutine
+
+
+   subroutine get_ao_block_sub(block_length, &
+                               cx,           &
+                               cy,           &
+                               cz,           &
+                               ao)
+
+      use ao_eval_block
+!     --------------------------------------------------------------------------
+      integer, intent(in)    :: block_length
+      real(8), intent(in)    :: cx(*)
+      real(8), intent(in)    :: cy(*)
+      real(8), intent(in)    :: cz(*)
+      real(8), intent(inout) :: ao(mxbllen, *)
+!     --------------------------------------------------------------------------
+      integer                :: i, ishell, isym, j, k
+      real(8)                :: px(mxbllen)
+      real(8)                :: py(mxbllen)
+      real(8)                :: pz(mxbllen)
+      real(8)                :: p2(mxbllen)
+      real(8)                :: sx
+      real(8)                :: sy
+      real(8)                :: sz
+      real(8)                :: f1, f2
+!     --------------------------------------------------------------------------
+
+      i = 1
+      do ishell = 1, nr_shells
+         do isym = 0, nr_boson_sym - 1
+            if (iand(isym, shell_stabilizer(ishell)) == 0) then
+      
+               sx = bitstring_parity(iand(sym_axes(1, 1), isym))*shell_center_xyz(1, ishell)
+               sy = bitstring_parity(iand(sym_axes(2, 1), isym))*shell_center_xyz(2, ishell)
+               sz = bitstring_parity(iand(sym_axes(3, 1), isym))*shell_center_xyz(3, ishell)
+    
+               do k = 1, block_length
+                  px(k) = cx(k) - sx
+                  py(k) = cy(k) - sy
+                  pz(k) = cz(k) - sz
+                  p2(k) = px(k)*px(k) &
+                        + py(k)*py(k) &
+                        + pz(k)*pz(k)
+               end do
+    
+               do k = 1, block_length
+                  g_00_00_00_000(k) = 0.0d0
+               end do
+               if (need_ao_order(1, 0)) then
+                  do k = 1, block_length
+                     g_00_00_00_100(k) = 0.0d0
+                     g_00_00_00_010(k) = 0.0d0
+                     g_00_00_00_001(k) = 0.0d0
+                  end do
+               end if
+               do j = 1, nr_nonzero_contraction_coefs(ishell)
+                  do k = 1, block_length
+                     f1 = contraction_coef(ishell, j)*dexp(-primitive_exp(ishell, j)*p2(k))
+                     g_00_00_00_000(k) = g_00_00_00_000(k) + f1
+                  end do
+                  if (need_ao_order(1, 0)) then
+                     do k = 1, block_length
+                        f2 = -2.0d0*f1*primitive_exp(ishell, j)
+                        g_00_00_00_100(k) = g_00_00_00_100(k) + px(k)*f2
+                        g_00_00_00_010(k) = g_00_00_00_010(k) + py(k)*f2
+                        g_00_00_00_001(k) = g_00_00_00_001(k) + pz(k)*f2
+                     end do
+                  end if
+               end do
+    
+               call get_gao_block(block_length, &
+                                  ishell,       &
+                                  ao(1, i),     &
+                                  px,           &
+                                  py,           &
+                                  pz)
+    
+               i = i + spherical_deg(ishell)
+    
+            end if
+         end do
+      end do
+
+   end subroutine
+
+   subroutine get_gao_block(block_length, &
+                            ishell,       &
+                            ao,           &
+                            px,           &
+                            py,           &
+                            pz)
+
+      use ao_eval_block
+!     --------------------------------------------------------------------------
+      integer, intent(in)    :: block_length
+      integer, intent(in)    :: ishell
+      real(8), intent(inout) :: ao(mxbllen, *)
+      real(8), intent(in)    :: px(*)
+      real(8), intent(in)    :: py(*)
+      real(8), intent(in)    :: pz(*)
+!     --------------------------------------------------------------------------
+      integer                :: ic, jc, k
+!     --------------------------------------------------------------------------
+
+      if (l_quantum_nr(ishell) < 12) then
+         call get_cartesian_ao_g0(block_length,         &
+                                  l_quantum_nr(ishell), &
+                                  px,                   &
+                                  py,                   &
+                                  pz,                   &
+                                  ao)
+      else
+         do ic = 1, cartesian_deg(ishell)
+            jc = cartesian_off(ishell) + ic
+            do k = 1, block_length
+               ao(k, ic) = (px(k)**l_exp(jc)) &
+                          *(py(k)**m_exp(jc)) &
+                          *(pz(k)**n_exp(jc))*g_00_00_00_000(k)
+            end do
+         end do
+      end if
+
+   end subroutine
 
   subroutine get_gao(ishell, &
                      gao,    &
                      px, py, pz, p2)
+   use ao_eval_point
 
 !   ----------------------------------------------------------------------------
     integer, intent(in)    :: ishell
@@ -307,6 +453,7 @@ contains
                       gaoy,   &
                       gaoz,   &
                       px, py, pz, p2)
+   use ao_eval_point
 
 !   ----------------------------------------------------------------------------
     integer, intent(in)    :: ishell
@@ -407,22 +554,64 @@ contains
 
   end subroutine
 
-!> \brief transform ao to sa-ao (so)
-   subroutine ao_to_so(ao, so)
+
+!> \brief point-wise transform ao to symmetrized ao
+   subroutine ao_to_so_point(ao, &
+                             buffer)
 
 !     --------------------------------------------------------------------------
-      real(8), intent(in)  :: ao(total_ao_vector_length)
-      real(8), intent(out) :: so(total_ao_vector_length)
+      real(8), intent(inout) :: ao(*)
+      real(8), intent(inout) :: buffer(*)
 !     --------------------------------------------------------------------------
-      integer              :: i, n, off
+      integer                :: i, n, off
 !     --------------------------------------------------------------------------
 
-      so = 0.0d0
+      do i = 1, total_ao_vector_length
+         buffer(i) = 0.0d0
+      end do
       do n = 1, nr_ao_slices
          off = nr_ao*(n - 1)
          do i = 1, nr_so_ao
-            so(off + i_so_ao(1, i)) = so(off + i_so_ao(1, i)) &
-                                    + ao(off + i_so_ao(2, i))*f_so_ao(i)
+            buffer(off + i_so_ao(1, i)) = buffer(off + i_so_ao(1, i)) &
+                                            + ao(off + i_so_ao(2, i))*f_so_ao(i)
+         end do
+      end do
+      do i = 1, total_ao_vector_length
+         ao(i) = buffer(i)
+      end do
+
+   end subroutine
+
+!> \brief block transform ao to symmetrized ao
+   subroutine ao_to_so_block(block_length, &
+                             ao,           &
+                             buffer)
+
+!     --------------------------------------------------------------------------
+      integer, intent(in)    :: block_length
+      real(8), intent(inout) :: ao(mxbllen, total_ao_vector_length)
+      real(8), intent(inout) :: buffer(mxbllen, total_ao_vector_length)
+!     --------------------------------------------------------------------------
+      integer                :: i, k, n, off
+!     --------------------------------------------------------------------------
+
+      do i = 1, total_ao_vector_length
+         do k = 1, block_length
+            buffer(k, i) = 0.0d0
+         end do
+      end do
+      do n = 1, nr_ao_slices
+         off = nr_ao*(n - 1)
+         do i = 1, nr_so_ao
+            do k = 1, block_length
+               buffer(k, off + i_so_ao(1, i)) = buffer(k, off + i_so_ao(1, i)) &
+                                                  + ao(k, off + i_so_ao(2, i))*f_so_ao(i)
+            end do
+         end do
+      end do
+      do i = 1, total_ao_vector_length
+         do k = 1, block_length
+            ao(k, i) = buffer(k, i)
          end do
       end do
 
@@ -465,22 +654,27 @@ contains
 
    end subroutine
 
-!> \brief transform cartesian to spherical
-   subroutine transform_c_to_s(ishell, ao)
+!> \brief point-wise transform cartesian to spherical
+   subroutine transform_c_to_s(ishell, &
+                               ao)
 
 !     --------------------------------------------------------------------------
       integer, intent(in)    :: ishell
       real(8), intent(inout) :: ao(*)
 !     --------------------------------------------------------------------------
 !> \fixme allocate cartesian to spherical buffer dynamically
-      real(8)                :: sbuffer(10000)
+      real(8)                :: buffer(1000)
+      integer                :: i, k
 !     --------------------------------------------------------------------------
 
-      call dcopy(cartesian_deg(ishell), ao, 1, sbuffer, 1)
+      do i = 1, cartesian_deg(ishell)
+         buffer(i) = ao(i)
+      end do
+
       call mxma(cartesian_to_spherical(spherical_address(l_quantum_nr(ishell))), &
                 1,                                                               &
                 spherical_deg(ishell),                                           &
-                sbuffer,                                                         &
+                buffer,                                                          &
                 1,                                                               &
                 cartesian_deg(ishell),                                           &
                 ao,                                                              &

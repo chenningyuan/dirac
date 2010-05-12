@@ -7,16 +7,16 @@ module dft_cfg
 #ifdef VAR_MPI
   use dirac_mpi
 #endif
+  use block_config
 
   implicit none
 
+  public mxbllen
 #ifdef VAR_MPI
   public sync_dft_cfg
 #endif
 
   save
-
-  integer, parameter, public :: mxbllen = 160
 
   character(30), public :: dft_cfg_gridfile
 

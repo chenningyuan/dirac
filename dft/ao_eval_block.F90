@@ -1,8 +1,10 @@
-module blocked_ao_eval_backend
+module ao_eval_block
 
 !> \brief   automatically generated code for cartesian AOs up to m functions
 !> \author  radovan bast
 !> \date    2010-05-09
+
+   use block_config
 
    implicit none
 
@@ -11,8 +13,6 @@ module blocked_ao_eval_backend
 
    private
 
-   integer, parameter, public :: mxbllen = 100
-      
    real(8), public :: g_00_00_00_000(mxbllen)
    real(8), public :: g_00_00_00_100(mxbllen)
    real(8), public :: g_00_00_00_010(mxbllen)
