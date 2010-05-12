@@ -954,7 +954,7 @@ C
          DO I = 1,NUCIND
             SCQ(I) = SCQ(I) + CHARGE(I)
          END DO
-         CORRLV = GETPOT(SCQ) - POTNUC
+         CORRLV = GETPOT(SCQ,0) - POTNUC
          IF (IPRINT .GT. 1) WRITE(LUPRI,'(/1X,A,F18.12)')
      &     '* ONECAP model 1 classical repulsion from small component',
      &     CORRLV
@@ -962,7 +962,7 @@ C
 C
 C        Calculate repulsion energy for small component atomic charges
 C
-         CORRLV = GETPOT(SCQ)
+         CORRLV = GETPOT(SCQ,0)
 C
 C        Print section
 C
