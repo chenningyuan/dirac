@@ -300,13 +300,17 @@ MODS_MESSAGE=
    #
    #   HSMRCC Dirac-interface module
    #
+   # delete the old file
+   if [ -f hsmrcc/hsmrcc_external/Makefile.hsmrcc ]; then
+    /bin/rm -r hsmrcc/hsmrcc_external/Makefile.hsmrcc
+   fi
    if [ -n "$HSCCMOD" ]; then
       HSCCFLG='-DMOD_HSCC'
       HSCCTAR=1
      # delete the old file
-      if [ -f hsmrcc/hsmrcc_external/Makefile.hsmrcc ]; then
-	   /bin/rm -r hsmrcc/hsmrcc_external/Makefile.hsmrcc
-      fi
+     # if [ -f hsmrcc/hsmrcc_external/Makefile.hsmrcc ]; then
+     #  /bin/rm -r hsmrcc/hsmrcc_external/Makefile.hsmrcc
+     # fi
       cp hsmrcc/hsmrcc_external/Makefile.hsmrcc.in  hsmrcc/hsmrcc_external/Makefile.hsmrcc || \
       (echo "Error exit: hsmrcc/hsmrcc_external/Makefile.hsmrcc not activated !"; exit 1)
 
@@ -324,6 +328,10 @@ MODS_MESSAGE=
    #
    #  Higher Sector Fock-space (HSFS) Coupled Cluster module 
    #
+   #        delete first the old file
+   if [ -f hsmrcc/high_sect_fscc_external/Makefile.hsfs ]; then
+     /bin/rm -r hsmrcc/high_sect_fscc_external/Makefile.hsfs
+   fi
    if [ -n "$HSFSMOD" ]; then
          HSFSFLG='-DMOD_HSFS'
          HSFSTAR=1
@@ -331,10 +339,6 @@ MODS_MESSAGE=
             # add important preprocessor flag
             HSFSFLG=$HSFSFLG' -DHSFS_DYN_ALLOC'
          fi
-	 # delete first the old file
-	 if [ -f hsmrcc/high_sect_fscc_external/Makefile.hsfs ]; then
-            /bin/rm -r hsmrcc/high_sect_fscc_external/Makefile.hsfs
-	 fi
          cp hsmrcc/high_sect_fscc_external/Makefile.hsfs.in  hsmrcc/high_sect_fscc_external/Makefile.hsfs || \
          (echo "Error exit: hsmrcc/high_sect_fscc/Makefile.hsfs not activated !"; exit 1)
 
