@@ -6452,9 +6452,7 @@ C
          IF (N_IDENT .GT. 0) WRITE (LUPRI,*) N_IDENT,
      &   ' interactions neglected because between same physical center'
       END IF
-CMI ... special fix for gfortran
-      GETPOT_EXPORT = EPOT_QM_QM + EPOT_QM_MM
-      GETPOT = GETPOT_EXPORT
+      GETPOT = EPOT_QM_QM + EPOT_QM_PC
       CALL QEXIT('GETPOT')
       RETURN
 C

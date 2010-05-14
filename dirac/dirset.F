@@ -654,8 +654,8 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck SCDEN2 */
-      SUBROUTINE SCDEN2(Q,SCQ,N,IPRINT)
+C/* Deck SCDENS_2 */
+      SUBROUTINE SCDENS_2(Q,SCQ,N,IPRINT)
 C***********************************************************************
 C
 C     INPUT:  Charge of atom
@@ -846,11 +846,11 @@ C
 C
 C       Calculate electrostatic correction to nuclear repulsion energy
 C     
-        CALL LVCOR1(WORK(KSCQ),IPRINT)
+        CALL LVCORR_1(WORK(KSCQ),IPRINT)
         CALL MEMREL('LVCORR',WORK,KWORK,KWORK,KFREE,LFREE)  
       ENDIF
 C
-C     Print section (this is now printed in LVCOR1)
+C     Print section (this is now printed in LVCORR_1)
 C
 C     IF(IPRINT.GE.1) THEN
 C       CALL HEADER('Output from LVCORR',-1)
@@ -903,14 +903,14 @@ c     ... when to use tabulated charges :
 C       ... use tabulated small component charges
          IF(IPRINT.GE.1) WRITE(LUPRI,'(A/)')
      &      ' * Using tabulated small component atomic charges:'
-         CALL SCDEN2(CHARGE,SCQ,NUCIND,IPRINT)
+         CALL SCDENS_2(CHARGE,SCQ,NUCIND,IPRINT)
        ELSE
 C       ... use Mulliken small component charges
          CALL MEMGET('REAL',KSMAT,NTBAS(0)*NTBAS(0),WORK,KFREE,LFREE)
          CALL GTOVLX(WORK(KSMAT),SSMTRC)
          CALL MEMGET('INTE',KICLAB,NTBAS(2),WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KGROSS,NTBAS(2),WORK,KFREE,LFREE)
-         CALL SCDEN1(SCQ,DMAT,WORK(KSMAT),WORK(KGROSS),
+         CALL SCDENS_1(SCQ,DMAT,WORK(KSMAT),WORK(KGROSS),
      &               WORK(KICLAB),WORK(KFREE),LFREE)
 C        Adjust for nuclear multiplicities
          DO I = 1,NUCIND
@@ -929,8 +929,8 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck Lvcor1 */
-      SUBROUTINE LVCOR1(SCQ,IPRINT)
+C/* Deck lvcorr_r1 */
+      SUBROUTINE LVCORR_1(SCQ,IPRINT)
 C***********************************************************************
 C
 C     Calculate classic repulsive potential of 
@@ -954,20 +954,20 @@ C
          DO I = 1,NUCIND
             SCQ(I) = SCQ(I) + CHARGE(I)
          END DO
-         CORRLV = GETPOT(SCQ,0) - POTNUC
-         IF (IPRINT .GT. 1) WRITE(LUPRI,'(/1X,A,F18.12)')
-     &     '* ONECAP model 1 classical repulsion from small component',
+         CORRLV = GETPOT(SCQ,IPRINT) - POTNUC
+         IF (IPRINT .GT. 0) WRITE(LUPRI,'(/A,F18.12)')
+     &     ' * ONECAP model 1 classical repulsion from small component',
      &     CORRLV
       ELSE
 C
 C        Calculate repulsion energy for small component atomic charges
 C
-         CORRLV = GETPOT(SCQ,0)
+         CORRLV = GETPOT(SCQ,IPRINT)
 C
 C        Print section
 C
-         IF (IPRINT .GT. 1) WRITE(LUPRI,'(/1X,A,F18.12)')
-     &     '* Classical repulsion of small component atomic charges:',
+         IF (IPRINT .GT. 0) WRITE(LUPRI,'(/A,F18.12)')
+     &     ' * Classical repulsion of small component atomic charges:',
      &     CORRLV
       END IF
 C
@@ -975,8 +975,8 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck scden1 */
-      SUBROUTINE SCDEN1(SCQ,DMAT,SMAT,GROSS,ICLAB,WORK,LWORK)
+C/* Deck SCDENS_1 */
+      SUBROUTINE SCDENS_1(SCQ,DMAT,SMAT,GROSS,ICLAB,WORK,LWORK)
 C***********************************************************************
 C
 C Calculate classic repulsive potential of 
@@ -1366,7 +1366,7 @@ C
      &                    OPNAME(IOP)
               END IF
               CALL OUTPUT(QMAT(1,1,IC,IOP),1,NUCDEP,1,NUCDEP,
-     &                    NUCDEP,NUCDEP,1,LUPRI)
+     &                    NUCDEP,NUCDEP,-1,LUPRI)
            END DO
          ENDIF
       END DO
