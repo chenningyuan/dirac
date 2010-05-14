@@ -4376,7 +4376,7 @@ C
 c     Like QTRANS, but uses fortran 90 memory allocation internally
 #include "implicit.h"
       double precision, allocatable :: work(:)
-      character typ*4
+      CHARACTER TREV*1,TYP*4
 C     find out how much buffer is needed in qtrans
       IF(TYP.EQ.'AOMO') THEN
          IF (NCAO.GE.NRAO) THEN
@@ -4395,13 +4395,18 @@ C     find out how much buffer is needed in qtrans
             NBUF = NRAO*NCMO*NZW
          endif
       endif
-      allocate( work(nbuf) )
+      allocate( work(nbuf), stat=ierr )
+      if (ierr.ne.0) call quit('QTRANS90: error in allocation !')
       call QTRANS(TYP,TREV,FADD,NRAO,NCAO,NRMO,NCMO,
      &                  FAO,LRAO,LCAO,NZAO,IQAO,
      &                  FMO,LRMO,LCMO,NZMO,IQMO,
      &                  TM1,LR1,LC1,NZTM1,IQTM1,
      &                  TM2,LR2,LC2,NZTM2,IQTM2,
      &                  work,nbuf,IPRINT)
+CMI    ... necessary to eliminate gfortran memory bug...
+      deallocate(work,  stat=ierr)
+      if (ierr.ne.0) call quit('QTRANS90: error in dallocation !')
+      continue
       end
 
 

@@ -694,7 +694,7 @@ C
 #include "dcbxrs.h"
 C
       DIMENSION DMAT(N2BBASX,NZ),CMO(*),BMAT(NORBT,NORBT,NZ)
-      LOGICAL   LBIT
+      LOGICAL   LBIT, LBIT_1
 C
       EXTERNAL BDQALGEBRA
 C
@@ -715,11 +715,14 @@ C
 C     Generate DB
 C     ============
 C
-      DO 10 I1 = 1,NFSYM
+!     ITYP_TEMP = ITYP
+!     ITYP = ITYP_TEMP
+
+      DO 10 I1 = 1, NFSYM
         I2  = MOD(I1+JOPSY,2) + 1
 C
 C       Parameters for first index
-C
+C    
         IF (.NOT. LBIT(ITYP,1)) THEN
 C
 C         electronic indices...
@@ -751,6 +754,8 @@ C
 C          Generate modified density matrix as transformation MO to AO
 C
            IF(NI.EQ.0.OR.NS.EQ.0) GOTO 10
+CMI         bug trap
+            ITYP_TEMP = ITYP
             CALL QTRANS90('MOAO','S',D0,
      &                  NFBAS(I1,0),NFBAS(I2,0),NS,NI,
      &                  DMAT(I2BASX(I1,I2)+1,1),NTBAS(0),NTBAS(0),
@@ -760,6 +765,8 @@ C
      &                  CMO(JS),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
      &                  CMO(JI),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
      &                  IPRXRS)
+CMI         bug trap for gfortran
+           ITYP_TEMP = ITYP
 C
          ELSE
 C           write(lupri,*) 'active DMOLI3'
