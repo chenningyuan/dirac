@@ -305,8 +305,10 @@ echo
 #
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-# CREATE HTML HEADER
 #
+#                           CREATE HTML HEADER
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 cat <<\eor > logs/${arg_tag}_dif.htm
 <HTML>
 <TITLE> Error report for DIRAC test runs </TITLE>
@@ -349,12 +351,14 @@ for tt in $tests; do
    fi
    echo
    echo '*****> Running test '$tt
-   echo '*****> Running test '$tt > /dev/stderr
+   echo '*****> Running test '$tt > /dev/stderra
+
    echo
-   if [ -r $tt/README ]; then
-      cat $tt/README
-   fi
-   echo
+  # if [ -r $tt/README ]; then
+     # cat $tt/README
+  # fi
+  # echo
+
    ( cd $tt; \
 #                            ... export variables for run.sh in each test subdirectory
      PAM_PATH=$arg_pampath;      export PAM_PATH; \
