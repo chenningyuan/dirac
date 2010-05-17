@@ -794,6 +794,7 @@ C    &          BVEC(*),PTRI(NNBBASX),IBUF(*),PBUF(*),
      &          BVEC(*),PTRI(IDIMENS,NZ),IBUF(*),PBUF(*),
      &          NR(NREFS,NFSYM),FMAT(NTOT,NTOT),PM(NTOT),INDX(2,*),
      &          WORK(*)
+      CHARACTER MXFORM*6,FMT*6
 C
       N2TOT = NTOT*NTOT
       CALL DZERO(FMAT,N2TOT)
@@ -833,15 +834,20 @@ C
         TMP = D2*FMAT(J,J)
         TOT = TOT + TMP
         FAC = TMP/EXPVAL
-        WRITE(LUPRI,'(I5,2X,A6,16X,E16.8,E16.5)') 
+        FMT = MXFORM(TMP,25)
+        WRITE(LUPRI,'(I5,2X,A6,16X,'//FMT//',E16.5)') 
      &    J,REFFIL(J),TMP,FAC
-        WRITE(LUPRI,'(9X,A,E16.8,E16.5)')
+        FMT = MXFORM(PM(J),25)
+        WRITE(LUPRI,'(9X,A,'//FMT//',E16.5)')
      &    '- principal moment: ',PM(J),PM(J)/EXPVAL
         TMP = TMP - PM(J)
-        WRITE(LUPRI,'(9X,A,E16.8,E16.5)')
+        FMT = MXFORM(TMP,25)
+        WRITE(LUPRI,'(9X,A,'//FMT//',E16.5)')
      &    '- hybridization   : ',TMP,TMP/EXPVAL
       ENDDO
-      WRITE(LUPRI,'(3X,A,19X,E16.8,E16.5)') 'Total: ',TOT,TOT/EXPVAL 
+      FMT=MXFORM(TOT,25)
+      WRITE(LUPRI,'(3X,A,19X,'//FMT//',E16.5)') 
+     &      'Total: ',TOT,TOT/EXPVAL 
       WRITE(LUPRI,'(A)') ' * Interatomic contributions:'
       TOT = D0
       DO J = 1,NREFS
@@ -849,11 +855,14 @@ C
           TMP = D2*(FMAT(I,J)+FMAT(J,I))
           TOT = TOT + TMP
           FAC = TMP/EXPVAL
-          WRITE(LUPRI,'(2(I5,2X,A6),3X,E16.8,E16.5)') 
+          FMT=MXFORM(TMP,25)
+          WRITE(LUPRI,'(2(I5,2X,A6),3X,'//FMT//',E16.5)') 
      &      J,REFFIL(J),I,REFFIL(I),TMP,FAC
         ENDDO
       ENDDO
-      WRITE(LUPRI,'(3X,A,19X,E16.8,E16.5)') 'Total: ',TOT,TOT/EXPVAL
+      FMT=MXFORM(TOT,25)
+      WRITE(LUPRI,'(3X,A,19X,'//FMT//',E16.5)') 
+     &      'Total: ',TOT,TOT/EXPVAL
       WRITE(LUPRI,'(A)') ' * Polarization contributions:'
       J = NREFS+1
       TOT = D0
@@ -861,15 +870,19 @@ C
         TMP = D2*(FMAT(I,J)+FMAT(J,I))
         TOT = TOT + TMP
         FAC = TMP/EXPVAL
-        WRITE(LUPRI,'(2(I5,2X,A6),3X,E16.8,E16.5)') 
+        FMT=MXFORM(TMP,25)
+        WRITE(LUPRI,'(2(I5,2X,A6),3X,'//FMT//',E16.5)') 
      &      J,REFFIL(J),I,REFFIL(I),TMP,FAC
       ENDDO
       TMP = D2*FMAT(J,J)
       TOT = TOT + TMP
       FAC = TMP/EXPVAL
-      WRITE(LUPRI,'(2(I5,2X,A6),3X,E16.8,E16.5)') 
+      FMT=MXFORM(TMP,25)
+      WRITE(LUPRI,'(2(I5,2X,A6),3X,'//FMT//',E16.5)') 
      &    J,REFFIL(J),J,REFFIL(J),TMP,FAC
-      WRITE(LUPRI,'(3X,A,19X,E16.8,E16.5)') 'Total: ',TOT,TOT/EXPVAL
+      FMT=MXFORM(TOT,25)
+      WRITE(LUPRI,'(3X,A,19X,'//FMT//',E16.5)') 
+     &     'Total: ',TOT,TOT/EXPVAL
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
