@@ -177,6 +177,10 @@ void print_prettytrace_to_stdout (size_t size, char **strings)
       if (strncmp(symbol_name,"",1))
       {
          printf("%3d   function name:   %30s\n",j,symbol_name);
+//radovan: Ossama reports a warning (is the 30s a problem?):
+//       gp/tracing.c(179): warning #181: argument is incompatible with
+//       corresponding format string
+//       conversion                                                            
       }
       else
       {
