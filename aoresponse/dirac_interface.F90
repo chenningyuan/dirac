@@ -819,6 +819,7 @@ contains
 
     if (.not. isdef(C)) call init_mat(C, ntbas(0), norbt)
 
+!mi: my g95 is complaining (Segm.fault), what helps is nullify(C%elms)
     C%elms = 0.0d0
 
     call alloc(eigenvalues, norbt)
