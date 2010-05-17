@@ -609,6 +609,7 @@ contains
          call report()
       end if
 
+      call basis_info_delete()
       call nullify_and_release()
 
    end subroutine
