@@ -1435,7 +1435,7 @@ CMI ... inform about the assigned PCOMB
       IF (PLABEL(1).EQ.'EDM') THEN
         PFAC(1) = -4.0D0 * PFAC(1)
         WRITE(LUPRI,'(2X,A,D12.6)') 
-     &  'EDM operator, factor multiplied by -4, PFAC(1)=', PFAC(1)
+     &  'EDM operator: factor multiplied by -4, PFAC(1)=', PFAC(1)
       ENDIF
 
 C
