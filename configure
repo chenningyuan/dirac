@@ -1933,7 +1933,7 @@ echo
 if [ -z "$worksp" ]; then
        get_worksp
 else
-   if [ ! -d $worksp -a $quick=0]; then
+   if [ ! -d $worksp -a $quick=0 ]; then
        echo 'Scratch directory '$worksp' you does not exist! Repeat!'
        get_worksp
    fi
