@@ -1043,14 +1043,14 @@ CC_COMP_DIR=`dirname $CC_COMP 2>/dev/null`
 MPIRUN_DIR=`dirname $mpirun 2>/dev/null`
 
 if [ "$MPIRUN_DIR" != "$F90_COMP_DIR" -a "$MPIRUN_DIR" != "$CC_COMP_DIR" ]; then
- #$echo "WARNING: mpirun sits in different directory than mpif90/mpicc. Is it correct ?"
- if ask_yesno y "WARNING: mpirun sits in different directory than mpif90/mpicc. Is it correct ?" ; then
-   $echo "Good. "
- else # find the mpi-launcher as is looking for compilers
+ if ask_yesno n "WARNING: mpirun sits in different directory than mpif90/mpicc. Is it correct ?" ; then
+  # find the mpi-launcher as is looking for compilers
    comp_list="mpirun poe dmpirun" # list of all possible mpi-launchers
    find_compiler "MPIRUN" $MPI_NAME
    mpirun=${comp_pwd}${comp_found}
    $echo "Assigned MPI launcher (also placed into \"pam\" script) : $mpirun"
+ else # yes, correct
+   $echo "Good. "
  fi
 else
  $echo "(Note: mpirun is in the same directory as mpif90/mpicc. Good.)"
@@ -2803,7 +2803,7 @@ fi
 
 
 
-
+#
 # generate pam and test/run.sh
 # ============================
 
@@ -2867,10 +2867,20 @@ EOF
 cat ./pam.in >> $INSTALL_DIR/pam
 chmod a+rx $INSTALL_DIR/pam
 
-# set BIN_DIR in run.sh
-replace_by="BIN_DIR=$INSTALL_DIR"
-sed "s-^BIN_DIR=.*-$replace_by-" $SRC_DIR/test/run.sh.in > $SRC_DIR/test/run.sh
+
+###############################
+### take care of the run.sh ###
+###############################
+echo '#!/bin/sh'                                                        > $SRC_DIR/test/run.sh
+echo ' '                                                               >> $SRC_DIR/test/run.sh
+echo '# Directory that holds the Dirac binary is specified in BIN_DIR' >> $SRC_DIR/test/run.sh
+echo '# which is set by configure'                                     >> $SRC_DIR/test/run.sh
+echo 'BIN_DIR='$INSTALL_DIR                                            >> $SRC_DIR/test/run.sh
+echo ' '                                                               >> $SRC_DIR/test/run.sh
+cat $SRC_DIR/test/run.sh.in                                            >> $SRC_DIR/test/run.sh
 chmod 700 $SRC_DIR/test/run.sh
+echo '$SRC_DIR/test/run.sh script for tests run ready.'
+###############################
 
 if [ $IPRINT -ge "5" ]; then
   echo 'make_pam_runtest: done'

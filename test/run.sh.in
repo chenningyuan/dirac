@@ -1,8 +1,3 @@
-#!/bin/sh
-
-# Directory that holds the Dirac binary is specified in BIN_DIR
-# which is set by configure
-BIN_DIR=
 
 # this was previously done in runtest
 # but i wonder why we check further below whether $PAM_PATH and $DIRAC are set
