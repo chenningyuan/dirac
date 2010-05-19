@@ -1393,9 +1393,9 @@ C
                    PFMT = '(5X,A,1P,D16.8)'
                 END IF
                 WRITE(LUPRI,'()')
-                IF (OSCILL .GT. 1.0D-10) WRITE(LUPRI,PFMT)
+                WRITE(LUPRI,PFMT)
      &             '-> dipole oscillator strength (length)   :',OSCILL
-                IF (OSCILV .GT. 1.0D-10) WRITE(LUPRI,PFMT)
+                WRITE(LUPRI,PFMT)
      &             '-> dipole oscillator strength (velocity) :',OSCILV
 c
 c hj TODO : mixed require code with XMOML(3), XMOMV(3) to be sure the
