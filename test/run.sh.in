@@ -112,7 +112,7 @@ fi
 #     exists to enable similar checking (using if -e and then if -s) in the testlast script.
 #
       cat ${NEWOUT}_dif.txt >>${LOG}/${TAG}_dif.txt
-      echo " Test `pwd` $MOL $MENU was passed :-) " > /dev/stderr
+      echo " Ok: `pwd` $MOL $MENU" > /dev/stderr
    fi
 #
 else
