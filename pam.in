@@ -392,7 +392,7 @@ execute_dirac()
    done
       
       # attach useful info into output file
-      $echo  "DIRAC launched (pam script) by `whoami`@`hostname -f` at `date`" > $OUTPUT_FILE
+      $echo  "DIRAC launched (pam script) by `whoami`@`hostname` at `date`" > $OUTPUT_FILE
       $echo  "in : $OLDPWD"  >> $OUTPUT_FILE
       $echo  "==========================================================================================="  >> $OUTPUT_FILE
       $echo  "Size of all static allocations (pam script) : \c" >> $OUTPUT_FILE
