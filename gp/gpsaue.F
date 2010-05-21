@@ -1270,6 +1270,7 @@ C	variable X
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
       CHARACTER MXFORM*6
@@ -1287,7 +1288,12 @@ C
         MXFORM(1:1) = 'F'
         NDEC = NDIG - NDEC - 3
       ENDIF
-      IF(NDEC.LE.0) CALL QUIT('MXFORM: NDEC.LE.0')
+      IF(NDEC.LE.0) THEN
+        WRITE(LUPRI,*) 'MXFORM out of boundaries...'
+        WRITE(LUPRI,*) 'X=',X
+        WRITE(LUPRI,*) 'NDEC,NDIG',NDEC,NDIG
+        CALL QUIT('MXFORM: NDEC.LE.0')
+      ENDIF
       IF(NDIG.LT.10) THEN
         IDIG = ICHAR('0') + NDIG
         MXFORM(2:2) = CHAR(IDIG)
