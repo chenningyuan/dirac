@@ -18,14 +18,12 @@
 !
 !   Magnetic susceptibilities of the LiH molecule (in a.u.)
 !
-!   Hamiltonian     Isotropic       Anisotropy
-!  ====================================================
+!   Hamiltonian     Isotropic        Anisotropy
+!====================================================
 !
-!   DCukb           -1.7451        -0.8138
+!   DCukb           -1.7451          -0.8138
 !
-!   DCrkb           -2.4839         0.2943
-!
-!   DCrkb_sf
+!   DCrkb           -2.4839           0.2943
 !
 !   LevyLe          -1.9809          -0.4603
 !
