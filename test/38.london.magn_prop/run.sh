@@ -69,4 +69,14 @@ MENU=LiH.levyle.suscp_lao_go=cm;
 export MENU;
 ../run.sh
 ###############################
+echo "DCrkb magnetic susceptibilities with LAO"
+MENU=LiH.dc_rkb.suscp_lao_go=cm;
+export MENU;
+../run.sh
+###############################
+echo "DCukb magnetic susceptibilities with LAO"
+MENU=LiH.dc_ukb.suscp_lao_go=cm;
+export MENU;
+../run.sh
+###############################
 
