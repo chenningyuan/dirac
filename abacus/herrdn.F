@@ -6401,6 +6401,7 @@ C***********************************************************************
 C
 #include "symmet.h"
 #include "nuclei.h"
+#include "infpar.h"
       DIMENSION Q(*)
 C
 #include "ibtfun.h"
@@ -6442,16 +6443,23 @@ C                  ... exit if close and no floating and no point charge
    20    CONTINUE ! DO 20 M = N, NUCIND
    10 CONTINUE ! DO 10 N = 1, NUCIND
 C
-      IF (IPRINT .GE. 0) THEN
-         WRITE(LUPRI,'(4(/A,F18.12))')
-     &   '  QM-QM nuclear repulsion energy :',EPOT_QM_QM,
-     &   '  QM-pc interaction energy       :',EPOT_QM_PC,
-     &   '  pc-pc interaction energy       :',EPOT_PC_PC,
-     &   '  Total interaction energy       :',
-     &         EPOT_QM_QM+EPOT_QM_PC+EPOT_PC_PC
-         IF (N_IDENT .GT. 0) WRITE (LUPRI,*) N_IDENT,
-     &   ' interactions neglected because between same physical center'
-      END IF
+#ifdef VAR_MPI
+!     print only from one process
+      if (mytid == 1) then
+#endif
+        IF (IPRINT .GE. 0) THEN
+           WRITE(LUPRI,'(4(/A,F18.12))')
+     &     '  QM-QM nuclear repulsion energy :',EPOT_QM_QM,
+     &     '  QM-pc interaction energy       :',EPOT_QM_PC,
+     &     '  pc-pc interaction energy       :',EPOT_PC_PC,
+     &     '  Total interaction energy       :',
+     &           EPOT_QM_QM+EPOT_QM_PC+EPOT_PC_PC
+           IF (N_IDENT .GT. 0) WRITE (LUPRI,*) N_IDENT,
+     & ' interactions neglected because between same physical center'
+        END IF
+#ifdef VAR_MPI
+      end if
+#endif
       GETPOT = EPOT_QM_QM + EPOT_QM_PC
       CALL QEXIT('GETPOT')
       RETURN
