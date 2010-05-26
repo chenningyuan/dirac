@@ -172,7 +172,7 @@ namespace m0xy_metagga_xc_internal
 
     const num zet_ab  = zet_a + zet_b;
     const num chi_ab2 = chi_a*chi_a + chi_b*chi_b;
-    return g(param_c,gamma_c_anti*chi_ab2); // + h(param_d,alpha_c_antiparallel,chi_ab2,zet_ab);
+    return g(param_c,gamma_c_anti*chi_ab2) + h(param_d,alpha_c_antiparallel,chi_ab2,zet_ab);
   }
 
   template<class num>
