@@ -820,7 +820,8 @@ contains
     if (.not. isdef(C)) call init_mat(C, ntbas(0), norbt)
 
 !mi: my g95 is complaining (Segm.fault), what helps is nullify(C%elms)
-    C%elms = 0.0d0
+    !C%elms = 0.0d0
+     nullify(C%elms)
 
     call alloc(eigenvalues, norbt)
 
@@ -901,7 +902,10 @@ contains
         do n = 1, nr_g_ao
           ir  = ir + 1
           iw2 = iw1 + (k - 1)*(nr_g_ao + nr_u_ao) + n
-          C%elms(iw2) = C_file%elms(ir)*g*i
+          ! mi fix for g95
+          if (associated(C%elms).and.associated(C_file%elms) ) then
+             C%elms(iw2) = C_file%elms(ir)*g*i
+          endif
         end do
       end do
 
@@ -910,7 +914,10 @@ contains
         do n = 1, nr_g_ao
           ir  = ir + 1
           iw2 = iw1 + (k - 1)*(nr_g_ao + nr_u_ao) + n
-          C%elms(iw2) = C_file%elms(ir)*g*s
+          ! mi fix for g95
+          if (associated(C%elms).and.associated(C_file%elms) ) then
+             C%elms(iw2) = C_file%elms(ir)*g*s
+          endif
         end do
       end do
 
@@ -928,7 +935,10 @@ contains
         do n = nr_g_ao + 1, nr_g_ao + nr_u_ao
           ir  = ir + 1
           iw2 = iw1 + (nr_g_mo + k - 1)*(nr_g_ao + nr_u_ao) + n
-          C%elms(iw2) = C_file%elms(ir)*u*s
+          ! mi fix for g95
+          if (associated(C%elms).and.associated(C_file%elms) ) then
+           C%elms(iw2) = C_file%elms(ir)*u*s
+          endif
         end do
       end do
 
@@ -937,7 +947,10 @@ contains
         do n = nr_g_ao + 1, nr_g_ao + nr_u_ao
           ir  = ir + 1
           iw2 = iw1 + (nr_g_mo + k - 1)*(nr_g_ao + nr_u_ao) + n
-          C%elms(iw2) = C_file%elms(ir)*u*i
+          ! mi fix for g95
+          if (associated(C%elms).and.associated(C_file%elms) ) then
+            C%elms(iw2) = C_file%elms(ir)*u*i
+          endif
         end do
       end do
 
@@ -946,7 +959,10 @@ contains
         do n = nr_g_ao + 1, nr_g_ao + nr_u_ao
           ir  = ir + 1
           iw2 = iw1 + (nr_g_mo + k - 1)*(nr_g_ao + nr_u_ao) + n
-          C%elms(iw2) = C_file%elms(ir)*u*s
+          ! mi fix for g95
+          if (associated(C%elms).and.associated(C_file%elms) ) then
+           C%elms(iw2) = C_file%elms(ir)*u*s
+          endif
         end do
       end do
 
