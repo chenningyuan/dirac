@@ -466,7 +466,7 @@ print_header()
    echo "   ****************************************"
    echo
    echo '   $Revision$'
-   echo "   User@Host   : `whoami`@`hostname -f`"
+   echo "   User@Host   : `whoami`@`hostname`"
    echo "   Date        : `date`"
    echo "   Command     : $0 $ARG_SAVE "
    echo "   PID         : $$"
