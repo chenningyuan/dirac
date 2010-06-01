@@ -45,7 +45,7 @@ C***********************************************************************
 
          use dirac_cfg
          use input_reader
-#ifdef MOD_AORESPONSE
+#ifdef MOD_OPENRSP
          use dirac_interface
 #endif
 
@@ -519,7 +519,7 @@ C     *STEX
 
 !     *AORESPONSE
    10 continue
-#ifdef MOD_AORESPONSE
+#ifdef MOD_OPENRSP
          dirac_cfg_aoresponse = .true.
          call init_dirac_interface()
          call move_to_next_star(word)

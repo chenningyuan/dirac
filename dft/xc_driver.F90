@@ -12,7 +12,7 @@ module xc_driver
   use dft_ao_in_mem
   use ao_eval
   use density_eval
-#ifdef MOD_AORESPONSE
+#ifdef MOD_OPENRSP
   use xc_response
 #endif
   use dirac_mpi
@@ -806,7 +806,7 @@ contains
     end if
 
 
-#if defined MOD_XCFUN && MOD_AORESPONSE
+#if defined MOD_XCFUN && MOD_OPENRSP
     if (response_order_ao > 0) then
       derv_length = xc_output_length(dft_cfg_fun_id, response_order_ao)
       allocate(derv(derv_length, mxbllen))
@@ -814,7 +814,7 @@ contains
 #endif
       derv_length = nr_nonzero_derv(max_fun_derv)
       allocate(derv(mxbllen, 0:derv_length))
-#if defined MOD_XCFUN && MOD_AORESPONSE
+#if defined MOD_XCFUN && MOD_OPENRSP
     end if
 #endif
 !       set it to zero, otherwise it is undefined with lda
@@ -915,7 +915,7 @@ contains
         nr_electrons = nr_electrons + w(1)*r_0(1)
 
         time_derv_start = second()
-#if defined MOD_XCFUN && MOD_AORESPONSE
+#if defined MOD_XCFUN && MOD_OPENRSP
 !       if we run aoresponse with xcfun we evaluate derivatives
 !       somewhere else
         if (response_order_ao == 0) then
@@ -927,7 +927,7 @@ contains
                                  z_0,          &
                                  derv_length,  &
                                  derv)
-#if defined MOD_XCFUN && MOD_AORESPONSE
+#if defined MOD_XCFUN && MOD_OPENRSP
         end if
 #endif
         time_derv = time_derv + second() - time_derv_start
@@ -1115,7 +1115,7 @@ contains
         endif
 
 
-#if defined MOD_XCFUN && MOD_AORESPONSE
+#if defined MOD_XCFUN && MOD_OPENRSP
           if (response_order_ao > 0) then
             call xc_response_contribution(response_order_ao,                 &
                                           mat_dim,   &

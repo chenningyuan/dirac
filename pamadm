@@ -35,7 +35,7 @@ usage()
    echo '     -krmc            : Include KR-MCSCF and LUCIAREL modules'
    echo '     -emb             : Include ab initio/DFT-embedding module'
    echo '     -visual          : Include visualization module'
-   echo '     -aoresponse      : Include AO response module'
+   echo '     -openrsp         : Include OpenRSP'
    echo '     -matrixop        : Include matrix operations module'
    echo '     -xcfun           : Include xcfun module'
    echo '     -cap             : Include CAP module'
@@ -93,7 +93,7 @@ MODS_MESSAGE=
       IHFSCCMOD=1
       ADCMOD=1
       MATRIX_OPERATIONS_MOD=1
-      AORESPONSEMOD=1
+      OPENRSP_MOD=1
       EMBMOD=1
 # LV: inform me before taking EMBMOD out of the -adm options !!!
 # MI  - needs to be fixed for gfortran !!!
@@ -234,10 +234,9 @@ MODS_MESSAGE=
    #
    #  AO response module
    #
-   if [ -n "$AORESPONSEMOD" ]; then
-      AORESPONSEFLG='-DMOD_AORESPONSE'
-      AORESPONSETAR=1
-      THIS_MOD_MESSAGE=" - AO response module, $AORESPONSEFLG"
+   if [ -n "$OPENRSP_MOD" ]; then
+      OPENRSP_FLG='-DMOD_OPENRSP'
+      THIS_MOD_MESSAGE=" - AO response module, $OPENRSP_FLG"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
@@ -558,7 +557,7 @@ rmline()
 which_modules()
 {
 for mod in $ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG \
-$ADCFLG $VISUALFLG $AORESPONSEFLG $MATRIX_OPERATIONS_FLG $XCFUN_FLG \
+$ADCFLG $VISUALFLG $OPENRSP_FLG $MATRIX_OPERATIONS_FLG $XCFUN_FLG \
 $CAPFLG $HSCCFLG $HSFSFLG $QDOTSFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG \
 $AMFIFLG $LONDONFLG $SRDFT_FLG $ECPFLG $LOG_FLG
 do
@@ -619,9 +618,9 @@ if [ -n "$VISUALFLG" ]; then
    rmline build/dontbuild "visual/\.\*"
 fi
 
-if [ -n "$AORESPONSEFLG" ]; then
-   dirs="$dirs aoresponse"
-   rmline build/dontbuild "aoresponse/\.\*"
+if [ -n "$OPENRSP_FLG" ]; then
+   dirs="$dirs openrsp"
+   rmline build/dontbuild "openrsp/\.\*"
 fi
 
 if [ -n "$MATRIX_OPERATIONS_FLG" ]; then
@@ -823,8 +822,8 @@ while [ -n "$1" ]; do
       -visual)
          VISUALMOD=1
          ;;
-      -aoresponse|-ao)
-         AORESPONSEMOD=1
+      -openrsp)
+         OPENRSP_MOD=1
          ;;
       -matrixop|-matop)
          MATRIX_OPERATIONS_MOD=1

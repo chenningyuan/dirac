@@ -127,7 +127,7 @@ C
 C***********************************************************************
 
       use dirac_cfg
-#ifdef MOD_AORESPONSE
+#ifdef MOD_OPENRSP
       use aor_main
 #endif
 
@@ -285,7 +285,7 @@ C
 #endif
       END IF
 
-#ifdef MOD_AORESPONSE
+#ifdef MOD_OPENRSP
       if (dirac_cfg_aoresponse) then
 !       main aoresponse driver
         call aoresponse_driver(work(kfree), lfree)

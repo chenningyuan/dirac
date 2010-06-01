@@ -523,7 +523,7 @@ contains
 
   subroutine read_input_aoresponse(word, kw_section)
 
-#ifdef MOD_AORESPONSE
+#ifdef MOD_OPENRSP
     use aor_cfg
 #endif
 
@@ -534,7 +534,7 @@ contains
 !   integer                          :: i
 !   ----------------------------------------------------------------------------
 
-#ifndef MOD_AORESPONSE
+#ifndef MOD_OPENRSP
     call quit(kw_section//' not available in this version')
 #else
 
@@ -658,7 +658,7 @@ contains
     end if
 
     call check_whether_kw_found(word, kw_section)
-#endif /* ifndef MOD_AORESPONSE */
+#endif /* ifndef MOD_OPENRSP */
 
   end subroutine
 
