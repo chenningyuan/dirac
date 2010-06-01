@@ -8430,7 +8430,6 @@ C**********************************************************************
 #include "dcborb.h"
 #include "dgroup.h"
 #include "maxorb.h"
-#include "maxorb.h"
 #include "maxash.h"
 #include "dcbidx.h"
 #include "krmcluci_inf.h"
