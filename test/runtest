@@ -23,7 +23,7 @@ short_test="$short_partest"
 medium_partest="2.nmrspinspin 10.efg 12.zora 17.scf_energy 19.fockspace 32.prjana 33.frozen 34.rhonuc 36.mp2_properties 25.qrpa visual_general"
 # blocking KRMC/KRCI tests for now - debug mode is turned on... - SK - # 27.11.2008 
 #medium_test="$short_test $medium_partest 27.krmc_luciarel 54.stex"
-medium_test="$short_test $medium_partest 54.stex"
+medium_test="$short_test $medium_partest 53.reladc 54.stex"
 # 28.luciarel_medium is currently not working ! Nov. 2005 hjaaj
 medium_partest="$short_partest $medium_partest"
 
