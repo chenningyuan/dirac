@@ -978,6 +978,7 @@ C
          WORD1 = WORD
   100    CONTINUE
             READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
             PROMPT = WORD(1:1)
             IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
                GO TO 100
@@ -1026,12 +1027,8 @@ C&&& MAXITR: Maximum number of SCF-iterations
                GO TO 100
     4          CONTINUE
 C&&& ERGCNV: Convergence on energy difference
-!radovan: please rewrite readin of .EVCCNV keyword 
-!         the way it is programmed it can crash if a !comment follows
-!         DIRAC stalled on on IBM p575+ "njord" using:
-!.EVCCNV
-! 1.0D-4         !we use poor convergence threshold for the test
                   READ(LUCMD,'(A80)') LINE
+                  CALL UPCASE(LINE)
                   READ(LINE,*,END=401,ERR=401) SCFCNV(1),SCFCNV(2)
                   GOTO 402
   401             READ(LINE,*) SCFCNV(1)
@@ -1044,6 +1041,7 @@ C&&& ERGCNV: Convergence on energy difference
     5          CONTINUE
 C&&& EVCCNV: Convergence on approximate gradient (error vector)
                   READ(LUCMD,'(A80)') LINE
+                  CALL UPCASE(LINE)
                   READ(LINE,*,END=501,ERR=501) SCFCNV(1),SCFCNV(2)
                   GOTO 502
   501             READ(LINE,*) SCFCNV(1)
@@ -1056,6 +1054,7 @@ C&&& EVCCNV: Convergence on approximate gradient (error vector)
     6          CONTINUE
 C&&& FCKCNV: Convergence on total Fock matrix
                   READ(LUCMD,'(A80)') LINE
+                  CALL UPCASE(LINE)
                   READ(LINE,*,END=601,ERR=601) SCFCNV(1),SCFCNV(2)
                   GOTO 602
   601             READ(LINE,*) SCFCNV(1)
@@ -1155,6 +1154,7 @@ C              as A/K then L is assumed to be zero.
 C
                DO IOPEN = 1,NOPEN
                   READ(LUCMD,'(A80)') LINE
+                  CALL UPCASE(LINE)
 C
                   ISLASH = INDEX(LINE,'/')
                   IF (ISLASH .LE. 0) THEN
@@ -1352,6 +1352,7 @@ CMI&&& Specify the ERGCNV2
 C&&& ERGCNV2: Convergence on energy difference in preliminary BSS-SCF
                IF (DO2C4C) THEN
                   READ(LUCMD,'(A80)') LINE
+                  CALL UPCASE(LINE)
                   READ(LINE,*,END=403,ERR=403) SCFCNV2(1),SCFCNV2(2)
                   GOTO 404
   403             READ(LINE,*) SCFCNV2(1)
@@ -1367,6 +1368,7 @@ CMI&& Specify the EVCCNV2
 C&&& EVCCNV: Convergence on approximate gradient (error vector)
                IF (DO2C4C) THEN
                   READ(LUCMD,'(A80)') LINE
+                  CALL UPCASE(LINE)
                   READ(LINE,*,END=503,ERR=503) SCFCNV2(1),SCFCNV2(2)
                   GOTO 504
   503             READ(LINE,*) SCFCNV2(1)
@@ -1382,6 +1384,7 @@ CMI&& Specify the FCKCNV2
 C&&& FCKCNV2: Convergence on total Fock matrix
                IF (DO2C4C) THEN
                   READ(LUCMD,'(A80)') LINE
+                  CALL UPCASE(LINE)
                   READ(LINE,*,END=603,ERR=603) SCFCNV2(1),SCFCNV2(2)
                   GOTO 604
   603             READ(LINE,*) SCFCNV2(1)
@@ -3204,7 +3207,7 @@ C
 #include "dcbmp2no.h"
 C
       LOGICAL SET, NEWDEF,ORBDEF, RESET
-      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,LINE*72
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION WORK(LWORK)
 C
       SAVE SET
@@ -3271,7 +3274,7 @@ C&&&& LABDEF: Define groups of primitive labels
                  LABDEF = .TRUE.
                  READ(LUCMD,*) NPOPLAB
                  CALL MEMGET('INTE',KIBUF,MAXLAB,WORK,KFREE,LFREE)
-                 CALL PROLAB(IPOPLAB,POPLAB,MAXLAB,NPOPLAB,LINE,LUCMD,
+                 CALL PROLAB(IPOPLAB,POPLAB,MAXLAB,NPOPLAB,LUCMD,
      &                       WORK(KIBUF),WORK(KFREE),LFREE)
                  CALL MEMREL('LABDEF',WORK,KWORK,KWORK,KFREE,LFREE)
                GO TO 100
@@ -5835,14 +5838,12 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prolab */
-      SUBROUTINE PROLAB(ILAB,LAB,NDIM,NLAB,LINE,IUNIT,IBUF,WORK,LWORK)
+      SUBROUTINE PROLAB(ILAB,LAB,NDIM,NLAB,IUNIT,IBUF,WORK,LWORK)
 C***********************************************************************
 C
 C     Process labels:
-C       Read a string of new label name and list of primitive
-C       labels.
-C         From pointer ILAB relating proimitve labels with new
-C       labels.
+C       Read a string of new label name and list of primitive labels.
+C       Form pointer ILAB relating primitve labels with new labels.
 C
 C     Written by T.Saue - Feb 3 1998
 C
