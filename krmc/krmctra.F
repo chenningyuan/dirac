@@ -198,7 +198,7 @@ C
       IF( ISZERO .eq. ISMXZERO )THEN
         WRITE(LUPRI,*) ' Empty orbital string detected !!!'
         WRITE(LUPRI,*) ' 4-index transformation will be erroneous.'
-        WRITE(LUPRI,*) ' Check parameter MAXORB (mx2orb.h) '//
+        WRITE(LUPRI,*) ' Check parameter MXCORB (maxorb.h) '//
      &                   'and try to increase.'
         WRITE(LUPRI,*) ' Going to quit.'
         CALL QUIT('*** ERROR in INISZT *** ' //
@@ -240,7 +240,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dummy.h"
 C
 #include "dcborb.h"
@@ -250,7 +250,7 @@ C
       CHARACTER C*4
       CHARACTER*(*) SZTRA(2,4)
       LOGICAL   USENOROT
-      DIMENSION NOROT(*), ILIST(MAXORB,2), NLIST(2), IDX(MAXORB)
+      DIMENSION NOROT(*), ILIST(MXCORB,2), NLIST(2), IDX(MXCORB)
 C
 C     *******************
 C     *** Index 1 & 2 ***
@@ -509,12 +509,12 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxash.h"
 C
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 C
       DIMENSION IDX(*)
-      DIMENSION ILIST(MAXORB,2), NLIST(2)
+      DIMENSION ILIST(MXCORB,2), NLIST(2)
 C
       NLIST(1) = 0
       NLIST(2) = 0
@@ -546,11 +546,11 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 C
 #include "dgroup.h"
 C
-      DIMENSION ILIST(MAXORB,2), NLIST(2)
+      DIMENSION ILIST(MXCORB,2), NLIST(2)
       CHARACTER*(*) SZTRA(2)
 C
       LOGICAL FIRST
@@ -1042,7 +1042,7 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "pgroup.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcbham.h"
 C
@@ -1852,7 +1852,7 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION H2FULL(NKL,NZ,3)
@@ -2002,7 +2002,7 @@ C***********************************************************************
 C
 #include "dcbopt.h"
 #include "dgroup.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION NFPCK12(2)
@@ -2166,7 +2166,7 @@ C
 #include "dcbxrs.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcbham.h"
 C
@@ -2657,7 +2657,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxash.h"
 C
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcbopt.h"
 #include "dcborb.h"
@@ -3159,7 +3159,7 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION H2GG(NKL,NZ,3)
@@ -3265,7 +3265,7 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION H2VPX(NASHT,NASHT,NZ,3)

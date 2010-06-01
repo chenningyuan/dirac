@@ -972,7 +972,7 @@ C
       LOGICAL   WFCONV
       DIMENSION WORK(LWORK)
 C
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1157,7 +1157,7 @@ C
 #include "consts.h"
 #include "thrzer.h"
 C
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbnrt.h"
 #include "dcbpsi.h"
 #include "dcbkrmc_itinfo.h"
@@ -1265,7 +1265,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxash.h"
 C
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 #include "dcbopt.h"

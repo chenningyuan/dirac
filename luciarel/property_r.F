@@ -462,7 +462,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 * boson symmetry info
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "../krmc/dcbbos.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -691,7 +691,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 * boson symmetry info
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "../krmc/dcbbos.h"
 #include "dcborb.h"
 #include "dgroup.h"

@@ -7733,7 +7733,7 @@ C             if available and used, otherwise IRAT2 = IRAT
 C     PARAMETER (IRAT = 2, IRAT2 = 2)
 #include "irat.inc"
       DIMENSION WRK(LWRK)
-      PARAMETER (MAXORB = 255, MAXRHF = 30, MAXVIR = 225)
+      PARAMETER ( MAXRHF = 30, MAXVIR = 225)
       INTEGER P,Q,R,S,A,B,C,D,E,F,G
       COMMON /CIPOL / NBAST, NNBAST, MORB(8), NMORBT, NORB(8),NNORB(8),
      *                NSYMHF, LBINTM, LPPOP(3,3), LSYMOP(3,3),
@@ -7791,7 +7791,7 @@ C     PARAMETER (IRAT = 2, IRAT2 = 2)
 #include "irat.inc"
       DIMENSION TWOMO(*),
      *          BUF(LBUF),IBUF(LBUF)
-      PARAMETER (MAXORB = 255, MAXRHF = 30, MAXVIR = 225)
+      PARAMETER ( MAXRHF = 30, MAXVIR = 225)
       INTEGER P,Q,R,S,A,B,C,D,E,F,G
 C----- bit manipulation definitions
       PARAMETER (IBT02=3, IBT08=255, IBT10=1023, IBT16=65535)

@@ -1585,7 +1585,7 @@ C
 #include "orgcom.h"
 #include "mgsolt.h"
 #include "inforb.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "infinp.h"
 #include "inftap.h"
 C
@@ -1788,7 +1788,7 @@ C
 #include "mgsolt.h"
 #include "orgcom.h"
 #include "inforb.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "infinp.h"
 #include "inftap.h"
 #include "chrnos.h"

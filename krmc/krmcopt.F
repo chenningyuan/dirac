@@ -60,7 +60,7 @@ C
       LOGICAL   WFCONV
       DIMENSION WORK(LWORK)
 C
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -273,7 +273,7 @@ C
 #include "consts.h"
 #include "thrzer.h"
 C
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbnrt.h"
 #include "dcbpsi.h"
 #include "dcbkrmc_itinfo.h"
@@ -1693,7 +1693,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "maxash.h"
 C
 #include "dcbopt.h"
@@ -1706,7 +1706,7 @@ C.s/sya,2006.02.07 - SK - 30-11-2009
 #include "dcbgos2.h"
 C.q
 C
-      DIMENSION WORK(*), ILIST(MAXORB)
+      DIMENSION WORK(*), ILIST(MXCORB)
       LOGICAL   GASWF
 C
       CALL QENTER('RSETWOP')
@@ -2220,7 +2220,7 @@ C
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "maxash.h"
 #include "dcbidx.h"
 C
@@ -2277,7 +2277,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 C
 #include "consts.h"
 C
@@ -2511,7 +2511,7 @@ C***********************************************************************
 C
 #include "consts.h"
 C
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbbos.h"
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -3175,7 +3175,7 @@ C***********************************************************************
 C
       PARAMETER (D0 = 0.00D00, D1 = 1.00D00)
 C
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbnrt.h"
 #include "dcbopt.h"
 #include "dgroup.h"
@@ -4485,7 +4485,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxash.h"
 C
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -4958,7 +4958,7 @@ C***********************************************************************
 #include "consts.h"
 #include "maxash.h"
 C
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -5120,7 +5120,7 @@ C***********************************************************************
 C
 #include "consts.h"
 C
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbnrt.h"
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -5355,7 +5355,7 @@ C
 #include "thrzer.h"
 C
 #include "dcborb.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 #include "dgroup.h"
 C
@@ -5486,7 +5486,7 @@ C***********************************************************************
 C
 #include "consts.h"
 C
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 #include "dcbbas.h"

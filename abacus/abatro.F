@@ -138,7 +138,7 @@ C
 #include "mxcent.h"
 #include "abainf.h"
 #include "cbitro.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "infinp.h"
 C
       IPRINT = IPRDEF
@@ -188,7 +188,7 @@ C
 #include "nuclei.h"
 #include "dorps.h"
 #include "infdim.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "infvar.h"
 #include "exeinf.h"
 #include "trkoor.h"
@@ -1695,7 +1695,7 @@ C
 #include "cbitro.h"
 #include "nuclei.h"
 #include "dorps.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "infvar.h"
 #ifndef PRG_DIRAC
 #include "inftap.h"

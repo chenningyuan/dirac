@@ -2426,7 +2426,6 @@ C*****************************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "mx2orb.h"
 #include "aovec.h"
 #include "maxaqn.h"
 #include "cbirea.h"

@@ -49,7 +49,7 @@ C
 #include "abainf.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "infinp.h"
 #include "ibtfun.h"
 C

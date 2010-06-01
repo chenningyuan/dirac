@@ -60,7 +60,7 @@ C
 C
 #include "dgroup.h"
 #include "dcborb.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION DV(NASHT,NASHT,NZ),  FC(NORBT,NORBT,NZ)

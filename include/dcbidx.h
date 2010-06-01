@@ -38,12 +38,12 @@
       INTEGER JTFRO, JTPOSI, JTINAC, JTACT, JTSEC
       PARAMETER (JTFRO=0, JTPOSI=1, JTINAC=2, JTACT=3, JTSEC=4)
 
-      INTEGER IFSMO(MAXORB) , IOBTYP(MAXORB), IDXG2U(MAXORB),           &
-     &        IDXU2G(MAXASH), IDXE2G(MAXORB), IDXG2E(MAXORB),           &
-     &        IDXP2G(MAXORB), IDXG2P(MAXORB), IDXI2G(MAXORB),           &
-     &        IDXG2I(MAXORB), IDXS2G(MAXORB), IDXG2S(MAXORB),           &
-     &        IDXV2G(MAXORB), IDXG2V(MAXORB), IDXG2D(MAXORB),           &
-     &        IDXD2G(MAXORB), IDXT2G(MAXORB, 4),                        &
+      INTEGER IFSMO(MXCORB) , IOBTYP(MXCORB), IDXG2U(MXCORB),           &
+     &        IDXU2G(MAXASH), IDXE2G(MXCORB), IDXG2E(MXCORB),           &
+     &        IDXP2G(MXCORB), IDXG2P(MXCORB), IDXI2G(MXCORB),           &
+     &        IDXG2I(MXCORB), IDXS2G(MXCORB), IDXG2S(MXCORB),           &
+     &        IDXV2G(MXCORB), IDXG2V(MXCORB), IDXG2D(MXCORB),           &
+     &        IDXD2G(MXCORB), IDXT2G(MXCORB, 4),                        &
      &        NIDXT(4), IIDX1(2), NIDX1(2), IIDX2(2), NIDX2(2),         &
      &                  IIDX3(2), NIDX3(2), IIDX4(2), NIDX4(2)
       COMMON /DCBIDX/ IFSMO,  IOBTYP, IDXG2U, IDXU2G, IDXE2G, IDXG2E,   &

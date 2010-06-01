@@ -1784,7 +1784,7 @@ C
       PARAMETER (D1=1.0D0, D2=2.0D0, DP5 = 0.5D0, DP25=0.25D0,
      *           THDE=1.0D-10)
 C
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "infinp.h"
 #include "cbiwlk.h"
 C
@@ -2008,7 +2008,6 @@ C
 #include "dummy.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "mx2orb.h"
 #include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0, D100 = 100.00D00)
@@ -5901,7 +5900,7 @@ C
 #include "inftap.h"
 #include "nuclei.h"
 #include "infdim.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "infvar.h"
 #include "inforb.h"
 #include "infopt.h"
@@ -5909,7 +5908,7 @@ C
 C
 C     kludge to avoid tranformation to natural orbitals
 C     I must talk to HJJ / tuh Jun 92
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "infinp.h"
       flag(15) = .false.
 C
@@ -6100,7 +6099,7 @@ C
       LOGICAL MCOK, TEST
       DIMENSION STPCAR(NCORD), WRK(LWRK)
 C
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "infvar.h"
 C
       KSTPMC = 1
@@ -6182,7 +6181,7 @@ C
 #include "nuclei.h"
 #include "dorps.h"
 #include "anrinf.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "infvar.h"
 #include "infdim.h"
 #include "priunit.h"

@@ -8430,7 +8430,7 @@ C**********************************************************************
 #include "dcborb.h"
 #include "dgroup.h"
 #include "maxorb.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "maxash.h"
 #include "dcbidx.h"
 #include "krmcluci_inf.h"
@@ -8536,11 +8536,11 @@ C
       CALL MPI_BCAST(OPT_NOPFQ,1,MPI_LOGICAL,MASTER,
      &               MPI_COMM_WORLD,IERR)
 C     big integer arrays ...
-      CALL MPI_BCAST(IDXT2G,4*MAXORB,my_MPI_INTEGER,MASTER,
+      CALL MPI_BCAST(IDXT2G,4*MXCORB,my_MPI_INTEGER,MASTER,
      &               MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(IDXU2G,MAXASH,my_MPI_INTEGER,MASTER,
      &               MPI_COMM_WORLD,IERR)
-      CALL MPI_BCAST(IDXG2U,MAXORB,my_MPI_INTEGER,MASTER,
+      CALL MPI_BCAST(IDXG2U,MXCORB,my_MPI_INTEGER,MASTER,
      &               MPI_COMM_WORLD,IERR)
 C
       CALL MPI_BCAST(NIDX3,2,my_MPI_INTEGER,MASTER,
@@ -8765,7 +8765,7 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "pgroup.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcbham.h"
 #include "parluci.h"

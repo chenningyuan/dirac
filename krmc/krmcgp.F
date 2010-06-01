@@ -185,7 +185,7 @@ C
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "pgroup.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 C
 C
@@ -229,7 +229,7 @@ C
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "pgroup.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 C
 C
@@ -487,7 +487,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxash.h"
 C
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcbopt.h"
 #include "dcborb.h"
@@ -545,7 +545,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxash.h"
 C
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcbopt.h"
 #include "dcborb.h"
@@ -682,7 +682,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxash.h"
 C
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcbopt.h"
 #include "dcborb.h"
@@ -747,7 +747,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxash.h"
 C
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -809,7 +809,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxash.h"
 C
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -1344,7 +1344,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxash.h"
 C
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 #include "dgroup.h"
 #include "dcborb.h"
@@ -1410,7 +1410,7 @@ C***********************************************************************
 C
 #include "consts.h"
 C
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1526,7 +1526,7 @@ C
 #include "consts.h"
 C
 #include "dcbbas.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 #include "dgroup.h"
 #include "dcborb.h"
@@ -1599,7 +1599,7 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "dcbbas.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -1720,7 +1720,7 @@ C***********************************************************************
 #include "parluci.h"
 #include "pgroup.h"
 #include "dgroup.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dcbham.h"
@@ -1937,7 +1937,7 @@ C     been initialized on the outside.
      &                 MPI_COMM_WORLD,IERR)
         CALL MPI_BCAST(NASH,NFSYM,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
-        CALL MPI_BCAST(IBOSYM,MAXORB,my_MPI_INTEGER,MASTER,
+        CALL MPI_BCAST(IBOSYM,MXCORB,my_MPI_INTEGER,MASTER,
      &                 MPI_COMM_WORLD,IERR)
       END IF
 #endif
@@ -2877,7 +2877,7 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "dcbbas.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"

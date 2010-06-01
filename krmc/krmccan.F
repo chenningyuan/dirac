@@ -363,7 +363,7 @@ C
 #include "dcbopt.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION CREF(*), CMO(*), EIG(*), WORK(*)
@@ -821,7 +821,7 @@ C***********************************************************************
 C
 #include "consts.h"
 C
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 #include "dcbbas.h"

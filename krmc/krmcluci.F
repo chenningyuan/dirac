@@ -177,7 +177,7 @@ C***********************************************************************
 *. Parameters for dimensioning
 #include "../luciarel/mxpdim.inc"
 *. Boson symmetry info
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbbos.h"
 #include "dgroup.h"
 *.Memory

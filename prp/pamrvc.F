@@ -4238,7 +4238,7 @@ C***********************************************************************
 C
 #include "dcborb.h"
 #include "dgroup.h"
-#include "mx2orb.h"
+#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION DV(NASHT,NASHT,NZ)
