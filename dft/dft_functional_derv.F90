@@ -153,6 +153,9 @@ contains
       do k = 1, block_length
         xcfun_in = 0.0d0
         xcfun_in(1) = r_0(k)
+!for mcscf ... 
+!       here we will have to rotate to the spin density vector direction
+!       xcfun_in(2) = z-component of spin density
         if (xcfun_in_length > 2) then
           xcfun_in(3) = z_0(k)
         end if
@@ -166,6 +169,12 @@ contains
 
         derv(k, d_r) = xcfun_out(xc_index(dft_cfg_fun_id, (/1, 0, 0, 0, 0/)), k)
         derv(k, d_z) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 0, 1, 0, 0/)), k)
+!for mcscf ... 
+!       myderv = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 1, 0, 0, 0/)), k)
+!       rotate back ...
+!       derv_sx = ...
+!       derv_sy = ...
+!       derv_sz = ...
         if (order < 2) exit
 
         derv(k, d_rr) = xcfun_out(xc_index(dft_cfg_fun_id, (/2, 0, 0, 0, 0/)), k)

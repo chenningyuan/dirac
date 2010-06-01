@@ -902,6 +902,8 @@ contains
       else
 !        density
          call get_n(r_0(1), 0, mat_dim, dmat_0, buffer, ao)
+!        for mcscf/srdft also evaluate spin density here
+!        call get_s(spin_density, 0, mat_dim, dmat_0, buffer, ao)
       end if
       time_density = time_density + second() - time_density_start
 
@@ -920,6 +922,7 @@ contains
 !       somewhere else
         if (response_order_ao == 0) then
 #endif
+!> todo for mcscf/srdft pass also spin density
         call get_functional_derv(max_fun_derv, &
                                  bllen, &
                                  w,            &
@@ -1003,6 +1006,18 @@ contains
                                   mat_dim,      &
                                   fmat,         &
                                   ao)
+
+!for mcscf ... this will do the magnetization contributions
+!           vector_x = derv_sx
+!           vector_y = derv_sy
+!           vector_z = derv_sz
+!           call lda_distribute_i(vector,       &
+!                                 0,            &
+!                                 mat_dim,      &
+!                                 fmat,         &
+!                                 ao)
+
+
           end if
         end if
 
