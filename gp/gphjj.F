@@ -364,7 +364,6 @@ C
 C
 C     CALL HOSTNM(HSTNAM)
 C
-CMI   CALL GETENV('HOST',HSTNAM)
       CALL GETENV('HOSTNAME',HSTNAM)
       WRITE (LUPRIN,'(T6,2A)') 'Host name              : ',HSTNAM
 #endif
@@ -546,6 +545,10 @@ C
       END
 C  /* Deck canon */
       SUBROUTINE CANON(I,J,K,L)
+C
+C     Reorder IJKL to canonical order for real 2-electron entities:
+C       I .ge. J, K .ge. L, IJ .ge. KL
+C
 #include "implicit.h"
       IP=MAX(I,J)
       JP=I+J-IP
@@ -598,7 +601,7 @@ C
 C   Subroutine DZERO sets a real array of length *LENGTH*
 C   to zero.
 C...................................................................
-C      DIMENSION DX(*)
+C     DIMENSION DX(*)
       DIMENSION DX(LENGTH)
 C
       IF (LENGTH.LE.0) RETURN
@@ -713,8 +716,8 @@ C  /* Deck imino8 */
 C...................................................................
 C   modified routine IZERO - S. Knecht - 19-Feb-2008
 C
-C   Subroutine IZERO sets an integer*8 array of length *LENGTH8*
-C   to zero.
+C   Subroutine IMIN08 sets an integer*8 array of length *LENGTH8*
+C   to minus one.
 C...................................................................
       INTEGER*8 INTI8(*),LENGTH8, IMIN1
 C
@@ -1100,9 +1103,8 @@ C (30-Jan-1984) hjaaj
 C
 #if defined (VAR_STAR2)
       INTEGER*2 INTX(N)
-#endif
-#if !defined (VAR_STAR2)
-      INTEGER INTX(N)
+#else
+      INTEGER   INTX(N)
 #endif
       READ (IT) INTX
       RETURN
@@ -1110,7 +1112,9 @@ C
 C  /* Deck readdi */
       SUBROUTINE READDI(IT,IU,N,IX)
       DIMENSION IX(N)
-#if !defined (VAR_FASTIO)
+#if defined (VAR_FASTIO)
+      ERROR - READDI is not programmed for VAR_FASTIO
+#else
       READ(IT,REC=IU) IX
 #endif
       RETURN
@@ -1123,10 +1127,10 @@ C  /* Deck readt */
       READ (IT,END=10,ERR=20) X
       RETURN
  10   CONTINUE
-      WRITE (STRING,'(A25,I5)') 'READT: END reading file, unit ',IT
+      WRITE (STRING,'(A25,I5)') 'READT: END reading unit  ',IT
       CALL QUIT(STRING)
  20   CONTINUE
-      WRITE (STRING,'(A25,I5)') 'READT: Error reading file, unit ',IT
+      WRITE (STRING,'(A25,I5)') 'READT: Error reading unit',IT
       CALL QUIT(STRING)
       END
 !C  /* Deck writi */
@@ -1145,9 +1149,8 @@ C (30-Jan-1984) hjaaj
 C
 #if defined (VAR_STAR2)
       INTEGER*2 INTX(N)
-#endif
-#if !defined (VAR_STAR2)
-      INTEGER INTX(N)
+#else
+      INTEGER   INTX(N)
 #endif
       WRITE (IT) INTX
       RETURN
@@ -1761,224 +1764,6 @@ C
       RETURN
       END
 
-C  /* Deck rdonel */
-      SUBROUTINE RDONEL(KEY,FOUND,A,NA)
-C
-C 31-Jul-1987 hjaaj
-C
-C     Purpose : Read LUONEL
-C
-C     Note: if FOUND true, it must not be updated.
-C
-C
-#include "implicit.h"
-#include "priunit.h"
-C     Global array
-      DIMENSION A(NA,*)
-      CHARACTER KEY*(*)
-      LOGICAL   FOUND, RDBUF
-C
-C Used from common blocks:
-C   INFINP : TITMOL(12,2), POTNUC, CENT(*), TYPE(*)
-C   INFORB : NBAS(8), NSYM, NBAST, NNBAST
-C
-#include "maxorb.h"
-#include "infinp.h"
-#include "inforb.h"
-#include "inftap.h"
-#include "r12int.h"
-C     Local arrays
-      PARAMETER ( LBUF = 600 )
-      DIMENSION BUF(LBUF), DBUF(LBUF,3), QBUF(LBUF,6), IBUF(LBUF)
-      DIMENSION ITMPMO(2*MXCORB)
-      EQUIVALENCE (BUF,DBUF,QBUF,ITMPMO)
-      LOGICAL   OPEND, FEXIST, ERRSTP
-C
-      CALL QENTER('RDONEL')
-      ERRSTP = FOUND
-      IF (.NOT.FOUND) FOUND  = .TRUE.
-C     Note: if FOUND true, it must not be updated.
-      RDBUF  = .FALSE.
-C
-      CALL GPINQ(FNONEL,'OPENED',OPEND)
-      IF (.NOT.OPEND) THEN
-         CALL GPINQ(FNONEL,'EXIST',FEXIST)
-       IF (FEXIST) THEN
-         CALL GPOPEN(LUONEL,FNONEL,'OLD',' ','UNFORMATTED',IDUMMY,
-     &               .FALSE.)
-         OPEND = .TRUE.
-         IF (LBONEL .LT. 0) LBONEL = LBUF
-       ELSE
-         WRITE (LUPRI,'(/3A)')
-     *      ' RDONEL ERROR: LUONEL file ',FNONEL,' does not exist'
-         WRITE (LUERR ,'(/3A)')
-     *      ' RDONEL ERROR: LUONEL file ',FNONEL,' does not exist'
-         IF (ERRSTP) THEN
-            CALL QUIT('RDONEL ERROR: AOONEINT file DOES NOT EXIST')
-         ELSE
-            FOUND = .FALSE.
-            GO TO 9999
-         END IF
-       END IF
-      END IF
-C
-      IF     (KEY.EQ.'OPEN    ') THEN
-C        ... file is opened automatically first time RDONEL is called.
-      ELSE IF(KEY.EQ.'CLOSE   ') THEN
-         CALL GPCLOSE(LUONEL,'KEEP')
-      ELSE IF(KEY.EQ.'MLCLINFO') THEN
-         REWIND LUONEL
-         READ (LUONEL) ((TITMOL(I,J),I=1,12),J=1,2),
-     *                 NSYM,(NBAS(ISYM),ISYM=1,NSYM),POTNUC
-         NBAST  = 0
-         NNBAST = 0
-         DO 110 I = 1,NSYM
-            NBAST  = NBAST  + NBAS(I)
-            NNBAST = NNBAST + NBAS(I)*(NBAS(I)+1)/2
-  110    CONTINUE
-         DO 120 I = NSYM+1,8
-            NBAS(I) = 0
-  120    CONTINUE
-         CALL MOLLAB('SYMINPUT',LUONEL,LUPRI)
-         READ (LUONEL) NBT,(ITMPMO(I),I=1,2*NBT)
-C        READ (LUONEL) NBT,(ICENT(I),I=1,NBT),(ITYPE(I),I=1,NBT)
-         IF (NBT .NE. NBAST) THEN
-            WRITE (LUPRI,'(//A,2(/A,I5))')
-     *      ' >>> RDONEL ERROR',
-     *      '     NBAST from first record on AOONEINT :',NBAST,
-     *      '     NBAST from "SYMINPUT"   on AOONEINT :',NBT
-            CALL QUIT('RDONEL ERROR, two different NBAST on AOONEINT')
-         END IF
-         REWIND LUONEL
-         DO 130 I=1,NBAST
-            WRITE(CENT(I),'(A4)') ITMPMO(I)
-            WRITE(TYPE(I),'(A4)') ITMPMO(NBAST+I)
-  130    CONTINUE
-      ELSE IF(KEY.EQ.'OVERLAP ') THEN
-C        Read overlap, in symmetry blocked triangular form
-         REWIND LUONEL
-         CALL MOLLAB('OVERLAP ',LUONEL,LUPRI)
-         RDBUF = .TRUE.
-      ELSE IF(KEY.EQ.'ONEHAMIL') THEN
-C        Read one electron part, in symmetry blocked triangular form
-         REWIND LUONEL
-         CALL MOLLAB('ONEHAMIL',LUONEL,LUPRI)
-         RDBUF = .TRUE.
-      ELSE IF(KEY.EQ.'KINETINT') THEN
-         REWIND LUONEL
-         CALL MOLLAB('KINETINT',LUONEL,LUPRI)
-         RDBUF = .TRUE.
-      ELSE IF(KEY.EQ.'DIPOLMOM') THEN
-         REWIND LUONEL
-         CALL MOLLAB('DIPOLMOM',LUONEL,LUPRI)
-         IF (LBONEL .NE. LBUF) THEN
-            WRITE(LUPRI,'(/A,2(/A,I8))')
-     *         ' ERROR RDONEL, LBONEL .ne. local LBUF for DIPOLMOM',
-     *         ' LBONEL =',LBONEL,' LBUF   =',LBUF
-            CALL QUIT('RDONEL ERROR, LBONEL .ne. LBUF for key DIPOLMOM')
-         END IF
-  501    READ (LUONEL) DBUF,IBUF,NUT
-         IF (NUT.EQ.0)   GO TO 501
-         IF (NUT.LT.0)   GO TO 502
-         IF (NOAUXB) THEN
-            DO I=1,NUT
-               CALL INOAUX(IBUF(I),IR12)
-               IF (IR12 .GT. 0) THEN
-                  A(IR12,1) = DBUF(I,1)
-                  A(IR12,2) = DBUF(I,2)
-                  A(IR12,3) = DBUF(I,3)
-               END IF
-            END DO 
-         ELSE
-            DO I=1,NUT
-               J = IBUF(I)
-               A(J,1) = DBUF(I,1)
-               A(J,2) = DBUF(I,2)
-               A(J,3) = DBUF(I,3)
-            END DO 
-         END IF
-         GO TO 501
-  502    CONTINUE
-      ELSE IF(KEY.EQ.'QUADRP  ') THEN
-         REWIND LUONEL
-         CALL MOLLAB('QUADRP  ',LUONEL,LUPRI)
-         IF (LBONEL .NE. LBUF) THEN
-            WRITE(LUPRI,'(/A,2(/A,I8))')
-     *         ' ERROR RDONEL, LBONEL .ne. local LBUF for QUADRP  ',
-     *         ' LBONEL =',LBONEL,' LBUF   =',LBUF
-            CALL QUIT('RDONEL ERROR, LBONEL .ne. LBUF for key QUADRP')
-         END IF
-  601    READ (LUONEL) QBUF,IBUF,NUT
-         IF (NUT.EQ.0)   GO TO 601
-         IF (NUT.LT.0)   GO TO 602
-         IF (NOAUXB) THEN
-            DO I=1,NUT
-               CALL INOAUX(IBUF(I),IR12)
-               IF (IR12 .GT. 0) THEN
-                  DO ICOMP = 1,6
-                     A(IR12,ICOMP) = QBUF(I,ICOMP)
-                  END DO
-               END IF
-            END DO
-         ELSE
-            DO I=1,NUT
-               J = IBUF(I)
-               DO ICOMP = 1,6
-                  A(J,ICOMP) = QBUF(I,ICOMP)
-               END DO
-            END DO
-         END IF
-         GO TO 601
-  602    CONTINUE
-      ELSE IF(KEY.EQ.'ISORDK  ') THEN
-         WRITE(LUPRI,'(2A)') KEY, ' IS NOT IMPLEMENTED YET IN RDONEL'
-         IF (ERRSTP) THEN
-            CALL QUIT('RDONEL ERROR, KEY ISORDK NOT IMPLEMENTED YET.')
-         ELSE
-            FOUND = .FALSE.
-         END IF
-      ELSE IF(KEY.EQ.'SCFINP  ') THEN
-         WRITE(LUPRI,'(2A)') KEY, ' IS NOT IMPLEMENTED YET IN RDONEL'
-         IF (ERRSTP) THEN
-            CALL QUIT('RDONEL ERROR, KEY SCFINP NOT IMPLEMENTED YET.')
-         ELSE
-            FOUND = .FALSE.
-         END IF
-      ELSE
-         WRITE(LUPRI,'(2A)') KEY, ' IS AN INVALID KEY TO RDONEL'
-         IF (ERRSTP) THEN
-            CALL QUIT('ERROR RDONEL, INVALID KEY')
-         ELSE
-            FOUND = .FALSE.
-         END IF
-      END IF
-      IF (RDBUF) THEN
-         IF (LBONEL .GT. LBUF) THEN
-            WRITE(LUPRI,'(/A,2(/A,I8))')
-     *         ' ERROR RDONEL, LBONEL .GT. local LBUF',
-     *         ' LBONEL =',LBONEL,' LBUF   =',LBUF
-            CALL QUIT('ERROR RDONEL, LBONEL .gt. LBUF')
-         END IF
-         CALL DZERO(A,NNBAST)
- 2100    READ (LUONEL) (BUF(I),I=1,LBONEL),(IBUF(I),I=1,LBONEL),LENGTH
-         IF (NOAUXB) THEN
-            DO I = 1, LENGTH
-               CALL INOAUX(IBUF(I),IR12)
-               IF (IR12 .GT. 0) A( IR12 , 1 ) = BUF(I)
-            END DO
-         ELSE
-            DO I = 1, LENGTH
-               A( IBUF(I) , 1 ) = BUF(I)
-            END DO
-         END IF
-         IF (LENGTH .GE. 0) GO TO 2100
-         REWIND LUONEL
-      END IF
-      CALL GPCLOSE(LUONEL,'KEEP')
-C
- 9999 CALL QEXIT('RDONEL')
-      RETURN
-      END
 C  /* Deck gpinq */
       SUBROUTINE GPINQ(FILENM,TASK,VALUE)
 C
@@ -2016,59 +1801,5 @@ C
       ELSE
          CALL QUIT('Unknown inquire status requested')
       END IF
-      RETURN
-      END
-C  /* Deck inoaux */
-      SUBROUTINE INOAUX(II,JJ)
-#include "implicit.h"
-#include "priunit.h"
-      INTEGER MAXFRO
-      INTEGER NSYM,NSYMFR,MULD2H,NLAMDS,N2BAST,
-     *        NRHF,NVIR,NORB,NRHFT,NVIRT,NORBT,
-     *        NRHFS,NVIRS,NORBS,NRHFTS,NVIRTS,NORBTS,
-     *        NBAS,NBAST,NNBASX,N2BASX,IORB,IBAS,
-     *        NRHFFR,NVIRFR,
-     *        KFRRHF,KFRVIR,NFC,NFV
-      PARAMETER (MAXFRO = 60)
-      LOGICAL LGLO
-      COMMON /CCORB/ NSYM,NSYMFR,MULD2H(8,8),NLAMDS,N2BAST,
-     *               NRHF(8),NVIR(8),NORB(8),NRHFT,NVIRT,NORBT,
-     *               NRHFS(8),NVIRS(8),NORBS(8),NRHFTS,NVIRTS,NORBTS,
-     *               NBAS(8),NBAST,NNBASX,N2BASX,IORB(8),IBAS(8),
-     *               NRHFFR(8),NVIRFR(8),
-     *               KFRRHF(MAXFRO,8),KFRVIR(MAXFRO,8),
-     *               NFC,NFV,LGLO
-C ... only used in RDONEL when called from cc/ routines,
-C     thus NSYM from ccorb.h and not from inforb.h /hjaaj checked aug 04
-#include "maxorb.h"
-#include "r12int.h"
-      LOGICAL FIRST
-      DATA FIRST /.TRUE./
-      ! miro+rado: extremely large in size (according to readelf -s printout) in size
-      ! please reprogram
-!     DIMENSION IJ(MXORBT)
-      DIMENSION IJ(1)
-      SAVE IJ
-!miro: looks routine is not used (medium test)
-      call quit('INOAUX: dectivated, needs rather dynamic allocation')
-      IF (FIRST) THEN
-         KL = 0
-         MN = 0
-         DO ISYM = 1, NSYM
-            DO I = 1, MBAS1(ISYM) + MBAS2(ISYM)
-               DO J = 1, I
-                  KL = KL + 1
-                  IF (I. LE. MBAS1(ISYM) .AND. J .LE. MBAS1(ISYM)) THEN
-                     MN = MN + 1
-                     IJ(KL) = MN
-                  ELSE
-                     IJ(KL) = -1
-                  END IF
-               END DO
-            END DO
-         END DO
-         FIRST = .FALSE.
-      END IF
-      JJ = IJ(II)
       RETURN
       END

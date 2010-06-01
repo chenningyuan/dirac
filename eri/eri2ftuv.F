@@ -1692,6 +1692,13 @@ C
       LOGICAL FOUND1, FOUND2
       DIMENSION DMAT(NBAST,NBAST),WORK(*)
 
+#ifdef PRG_DIRAC
+
+      WRITE(LUPRI,*)
+     &  'WARNING: REFERENCE_NA not implemented for Dirac, nothing done.'
+
+#else
+
 C aspg, 2006-06-29, making ftnchek happy
 C
       FOUND1 = .FALSE.
@@ -1737,6 +1744,8 @@ C     &         WORK(KH1AO+K)-WORK(KKINAO+K)
 
        IF ( .NOT. ( FOUND1 .AND. FOUND2 )) 
      &   WRITE (LUPRI,*) 'Error : Integrals not found !'
+
+#endif
 
       RETURN
       END
