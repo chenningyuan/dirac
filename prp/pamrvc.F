@@ -1381,9 +1381,7 @@ C     Written by T.Saue Oct 15 1996
 C
 C***********************************************************************
        use dirac_cfg
-#ifdef MOD_DFT
        use dft_cfg
-#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1411,13 +1409,11 @@ C
          IS = IBCVC(NCRED+I)
          IHRMOP(IM) = IBTYP(2,IS)
          IFCKOP(IM) = 1
-#ifdef MOD_DFT
 !        turn off exchange for .ALDA
 !        unless user wants .XALDA
          if (dirac_cfg_dft_calculation .and.
      &       (dft_cfg_alda_hs .or. dft_cfg_alda_ha)
      &       .and. .not. dft_cfg_xalda) ifckop(im) = 2
-#endif
          ISYMOP(IM) = JSYMOP
       END DO
 C
@@ -1430,13 +1426,11 @@ C
            IS = IBEVC(NERED+I)
            IHRMOP(IM) = IBTYP(2,IS)
            IFCKOP(IM) = 1
-#ifdef MOD_DFT
 !        turn off exchange for .ALDA
 !        unless user wants .XALDA
          if (dirac_cfg_dft_calculation .and.
      &       (dft_cfg_alda_hs .or. dft_cfg_alda_ha)
      &       .and. .not. dft_cfg_xalda) ifckop(im) = 2
-#endif
            ISYMOP(IM) = JSYMOP
          ENDDO
       END DO
@@ -1452,13 +1446,11 @@ C
            IS = IBPVC(NPRED+I)
            IHRMOP(IM) = IBTYP(2,IS)
            IFCKOP(IM) = 1
-#ifdef MOD_DFT
 !        turn off exchange for .ALDA
 !        unless user wants .XALDA
          if (dirac_cfg_dft_calculation .and.
      &       (dft_cfg_alda_hs .or. dft_cfg_alda_ha)
      &       .and. .not. dft_cfg_xalda) ifckop(im) = 2
-#endif
            ISYMOP(IM) = JSYMOP
          ENDDO
       END DO
@@ -3525,10 +3517,8 @@ C     Written by J. Thyssen - Nov 24 2000
 C
 C***********************************************************************
         use dirac_cfg
-#ifdef MOD_DFT
         use dft_cfg
         use xc_driver
-#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -3594,7 +3584,6 @@ C
       CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FAO,FMO,NDMAT,NPOS,INTFLG,
      &     IPRTWO,WORK(KFREE),LFREE)
 
-#ifdef MOD_DFT
 !       construct kohn-sham contribution
 !       ================================
 
@@ -3637,7 +3626,6 @@ C
 #endif
 
         end if
-#endif /* ifdef MOD_DFT */
 
 C
 C     Add solvent contributions

@@ -1923,7 +1923,6 @@ C
 #if defined (VAR_MPI)
       CALL MPI_SEND(ICOUNT,1,my_MPI_INTEGER,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)
-#ifdef MOD_DFT
       IF(ITYPE.EQ.7) THEN
 !        radovan: this looks like unused code
          CALL MPI_SEND(ELCTRN,1,MPI_DOUBLE_PRECISION,MPARID,40,
@@ -1940,7 +1939,7 @@ C
      &                 MPI_COMM_WORLD,IERR)
          RETURN
       ENDIF
-#endif
+
       IF(ITYPE.EQ.3.OR.ITYPE.EQ.9) THEN
          CALL MPI_SEND(DINTSKP,8,MPI_DOUBLE_PRECISION,MPARID,40,
      &                 MPI_COMM_WORLD,IERR)

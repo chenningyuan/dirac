@@ -4,10 +4,8 @@ module london_reorth_hb
   use memory_allocator 
 
   use dirac_cfg
-#ifdef MOD_DFT
   use dft_cfg
   use xc_driver
-#endif
 
 
   implicit none
@@ -246,7 +244,6 @@ contains
       call dealloc(npos_array)
     end if
 
-#ifdef MOD_DFT
 !       construct kohn-sham contribution
 !       ================================
 
@@ -274,7 +271,6 @@ contains
       call dealloc(dmat)
 
     end if
-#endif /* MOD_DFT */
 
   end subroutine get_gtb
 

@@ -359,10 +359,8 @@ C
 C*****************************************************************************
 
       use dirac_cfg
-#ifdef MOD_DFT
       use xc_driver
       use dft_cfg
-#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -548,7 +546,6 @@ C
 
 
 
-#ifdef MOD_DFT
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
            call xc_mpi_wake_up_coworkers()
@@ -563,7 +560,6 @@ C
            
            tdxc = second() - tdxc
         end if
-#endif /* ifdef MOD_DFT */
 
 
 
@@ -731,13 +727,11 @@ C
           CPUTID = SECTID(TDF2)
           WRITE(LUPRI,'(3X,A,A12)')
      &      '* Two-electron Fock matrix  (CPU):',CPUTID
-#ifdef MOD_DFT
           IF(dirac_cfg_dft_calculation) THEN
           CPUTID = SECTID(TDXC)
           WRITE(LUPRI,'(3X,A,A12)')
      &      '* DFT xc matrix             (CPU):',CPUTID
           ENDIF
-#endif
         ENDIF
         CPUTID = SECTID(CTIDTOT)
         CALL GTINFO(DAYTID)
@@ -1158,10 +1152,8 @@ C
 C*****************************************************************************
 
       use dirac_cfg
-#ifdef MOD_DFT
       use dft_cfg
       use xc_driver
-#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1213,18 +1205,14 @@ C
 C     Start cycle
 C
       CALL FLSHFO(LUPRI)
-#ifdef MOD_DFT
 !     asymptotic correction
       old_homo_eigenvalue = 0.0d0
-#endif
       DO 10 ITER = 2,MAXITR
 
-#ifdef MOD_DFT
 !       asymptotic correction
         if(dft_cfg_grac .or. dft_cfg_saop) then
           call dftac_eigenvalues(eig, old_homo_eigenvalue)
         end if
-#endif
 
          NITER  = NITER + 1
          KITER  = KITER + 1
@@ -1344,7 +1332,6 @@ C
          CALL WRIFCK(LUFCK2,FOCK,NFMAT)
 
 
-#ifdef MOD_DFT
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
            call xc_mpi_wake_up_coworkers()
@@ -1359,7 +1346,6 @@ C
            
            tdxc = second() - tdxc
         end if
-#endif /* ifdef MOD_DFT */
 
 
 C
@@ -1538,9 +1524,7 @@ C
 C*****************************************************************************
 
       use dirac_cfg
-#ifdef MOD_DFT
       use xc_driver
-#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1627,12 +1611,10 @@ C
          END DO
       END DO
 
-#ifdef MOD_DFT
 !     correct for contribution from ks potential to two-electron energy
       if (dirac_cfg_dft_calculation) then
         e(1, 2, 0) = e(1, 2, 0) - get_xc_mat_energy()
       end if
-#endif
 
       DO IZ = 1,NZ
         DO IOPEN = 0,ITOP
@@ -1658,11 +1640,9 @@ C
       ENDIF
       ELERGY = E1PART + E2PART
 
-#ifdef MOD_DFT
       if (dirac_cfg_dft_calculation) then
         elergy = elergy + get_xc_energy()
       end if
-#endif
 
       DHFERG = DHFERG + ELERGY
 C
@@ -1724,14 +1704,12 @@ CMI      ... print out matrixes ...
                END DO
    30          CONTINUE
             ENDIF
-#ifdef MOD_DFT
             IF (dirac_cfg_dft_calculation) then
                xc_energy = get_xc_energy()
                WRITE(LUPRI,'(6X,A,'//FMT//')')
      &         '* DFT xc energy              :  ',
      &         xc_energy
             end IF
-#endif
          END IF
       ENDIF
 #ifdef SAVE_BEST
@@ -3217,9 +3195,7 @@ C
 C     Last modification: MI, July 2005 for BSSpostDC-SCF calculation
 C
 C***********************************************************************
-#ifdef MOD_DFT
       use dft_cfg
-#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -3302,10 +3278,8 @@ CMI/May05 Do not use old DFCOEF when DO4C2C=.TRUE. !
      &    "             Improved by an "//
      &    "estimate of the electronic screening (Slater's rules)."
           TRIVEC = .FALSE.
-#ifdef MOD_DFT
 !         do not use density-based atomic size adjustments in this case
           dft_cfg_estimate_radii = .false.
-#endif
         ENDIF
       ENDIF
 C

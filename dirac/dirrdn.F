@@ -44,9 +44,7 @@ C***********************************************************************
 
       use dirac_cfg
       use input_reader
-#ifdef MOD_DFT
       use dft_input
-#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -117,12 +115,10 @@ C
 !     ignores rest
       call read_input()
 
-#ifdef MOD_DFT
       if (dirac_cfg_dft_calculation) then
         call consistency_after_dft_input()
         call report_after_dft_input()
       end if
-#endif
 
 
 CMI   ... instead of calling OP1INI in HAMINP, call it after
@@ -2419,12 +2415,8 @@ C
       end if
 
       if (dirac_cfg_dft_calculation) then
-#ifdef MOD_DFT
                WRITE(LUPRI,'(A)') ' * Density functional '//
      &    'calculation (Kohn-Sham method)'
-#else
-        CALL QUIT('*** DFT is not included in this version')
-#endif /* ifdef MOD_DFT */
       end if
 
 
@@ -3147,9 +3139,7 @@ C
         CALL DENSIN(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     7 CONTINUE
-#ifdef MOD_DFT
         CALL WT1IN(WORD,.FALSE.,WORK,LWORK)
-#endif
         GO TO 200
     8 CONTINUE
         CALL LOCINP(WORD,.FALSE.,WORK,LWORK)
@@ -3174,9 +3164,7 @@ C
       IF(DOVEC) CALL VECINP(WORD,.TRUE.,WORK,LWORK)
       IF(DO1RHO) CALL RHO1IN(WORD,.TRUE.,WORK,LWORK)
       IF(DO3RHO) CALL DENSIN(WORD,.TRUE.,WORK,LWORK)
-#ifdef MOD_DFT
       IF(DO1WT) CALL WT1IN(WORD,.TRUE.,WORK,LWORK)
-#endif
       IF(DOLOC) CALL LOCINP(WORD,.TRUE.,WORK,LWORK)
 C
       CALL QEXIT('ANWINP')
@@ -3939,11 +3927,9 @@ C     Written by T.Saue - May 1996
 C
 C***********************************************************************
       use dirac_cfg
-#ifdef MOD_DFT
       USE FDE_MOD, ONLY: FDEINI, FDEINP
       use dft_cfg
       use dft_input
-#endif
       use input_reader
 
 #include "implicit.h"
@@ -4275,7 +4261,6 @@ C             projection scheme
 !          .DFT
   117      CONTINUE
 C&&& DFT    : Kohn-Sham (DFT) Hamiltonian
-#ifdef MOD_DFT
                READ(LUCMD,'(A80)') LINE
                IF (.NOT. SETFUN) THEN
 C              ... hjaaj: DFTINPUT accumulates def. of functional
@@ -4303,7 +4288,6 @@ c DIRAOF->SKLFC1
                dirac_cfg_dft_calculation = .true.
                dirac_cfg_scf_calculation = .true.
                SETFUN = .TRUE.
-#endif
             GO TO 100
 
   118     CONTINUE
@@ -4584,7 +4568,6 @@ C    (see MRCON1 of the MOLTRA module)
 
 !         .DFTAUTO (dft with automatic differentiation)
   154     continue
-#ifdef MOD_DFT
 #ifdef MOD_XCFUN
           read(lucmd, '(a80)') line
           call parse_functional(line)
@@ -4594,7 +4577,6 @@ C    (see MRCON1 of the MOLTRA module)
           dirac_cfg_dft_calculation = .true.
           dirac_cfg_scf_calculation = .true.
 #endif /* ifdef MOD_XCFUN */
-#endif /* ifdef MOD_DFT */
           go to 100
 
   155     CONTINUE
@@ -4981,7 +4963,6 @@ CMI    ... quantum dots
      &      '(NB : ONLY in the DHF calculation !!)'
       END IF
 
-#ifdef MOD_DFT
       if (dirac_cfg_dft_calculation) then
 
 #ifdef MOD_XCFUN
@@ -5022,7 +5003,6 @@ C aspg, 20070909
          ENDIF
 
       ENDIF
-#endif /* MOD_DFT */
       IF(DOLVC) ISSINT = 0
 C
 C     Reset MC if necessary
@@ -6562,7 +6542,6 @@ C
       RETURN
 C
       END
-#ifdef MOD_DFT
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wt1in */
       SUBROUTINE WT1IN(WORD,RESET,WORK,LWORK)
@@ -6682,7 +6661,6 @@ C
       RETURN
 C
       END
-#endif
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck locinp */
       SUBROUTINE LOCINP(WORD,RESET,WORK,LWORK)

@@ -2291,10 +2291,8 @@ C     Written by panor 1999
 C
 C*****************************************************************************
       use dirac_cfg
-#ifdef MOD_DFT
       use dft_cfg
       use xc_driver
-#endif
 
 
 #include "implicit.h"
@@ -2371,7 +2369,6 @@ C
      &     WORK(KPOS),INTFLG,IPRXQR,WORK(KFREE),LFREE)
 
 
-#ifdef MOD_DFT
 
 
 !     construct XC contribution
@@ -2414,7 +2411,6 @@ C
         call memrel('e3drv.dft', work, 1, kdmat, kfree, lfree)
 
       end if
-#endif
 
 
 C     Scale all Fock matrices with a factor 4 to agree with
@@ -2956,14 +2952,12 @@ C
       IHRMOP(1) = 0
       IHRMOP(2) = 0
       IHRMOP(3) = 0
-#ifdef MOD_DFT
 cjohhe changed 0 to 1 to get anything at all out of DFT static QR
 !     IF(DFTADD) THEN
 !     IHRMOP(1) = 1
 !     IHRMOP(2) = 1
 !     IHRMOP(3) = 1
 !     END IF
-#endif
 C     IFOCKOP:  1 - C+E: (3,2,2,2), 2 - C: (1,0,0,0), 3 - E: (2,2,2,2)
       IFCKOP(1)=1
       IFCKOP(2)=1

@@ -644,7 +644,6 @@ C.....Get full AO-Fock matrix with two-electron London integrals
      &             WORK(KFREE),LFREE,IPRPRP)
       CALL MEMREL('TWOLON.TWOLO1B',WORK,KWORK,KFOCK,KFREE,LFREE)
 
-#ifdef MOD_DFT
 !     it has to happen after TWOLO1B
 !     because XC is done in SA-AO basis
       call memget('REAL',kdmat0,n2bbasxq,work,kfree,lfree)
@@ -659,7 +658,6 @@ C.....Get full AO-Fock matrix with two-electron London integrals
 !     and at the moment don't feel like unpacking the dft contribution
 !     because i would have to allocate extra space
 !     (dft adds on top), boson unsort, unpack, boson resort, etc
-#endif /* MOD_DFT */
 
       CALL MEMGET('REAL',KGBMO,N2ORBXQ,WORK,KFREE,LFREE)
       CALL TWOLO1C(WORK(KGBMO),WORK(KFMAT),CMO,NCOMP,
@@ -673,10 +671,8 @@ C.....Get full AO-Fock matrix with two-electron London integrals
       subroutine add_dft_to_twolon(fmat,dmat0,cmo,work,lwork,iprint)
 !
       use dirac_cfg
-#ifdef MOD_DFT
       use xc_driver
       use dft_cfg
-#endif
 
       implicit none
 !
@@ -775,10 +771,8 @@ C                 March 2006,MI
 C
 C***********************************************************************
       use dirac_cfg
-#ifdef MOD_DFT
       use xc_driver
       use dft_cfg
-#endif
 
 #include "implicit.h"
 #include "priunit.h"  
@@ -935,10 +929,8 @@ C                 March 2006,MI
 C
 C***********************************************************************
       use dirac_cfg
-#ifdef MOD_DFT
       use xc_driver
       use dft_cfg
-#endif
 
 #include "implicit.h"
 #include "priunit.h"  
@@ -1062,10 +1054,8 @@ C                 March 2006,MI
 C
 C***********************************************************************
       use dirac_cfg
-#ifdef MOD_DFT
       use xc_driver
       use dft_cfg
-#endif
 
 #include "implicit.h"
 #include "priunit.h"  

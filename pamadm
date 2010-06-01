@@ -24,7 +24,6 @@ usage()
    echo 'Usage: pamadm [flags] [tarfile]'
    echo '   Flags:'
    echo '     -adm             : Include ALL modules (administrator)'
-   echo '     -dft             : Include DFT module'
    echo '     -eri             : Include ERI integral routines'
    echo '     -densfit         : Include density fitting module'
    echo '     -largemolecules  : Increases commom blocks to handle more atoms and basis sets'
@@ -83,7 +82,6 @@ MODS_MESSAGE=
       DNFMOD=1
       ESRMOD=1
       XPPMOD=1
-      DFTMOD=1
       KRMCMOD=1
       VISUALMOD=1
       IHFSCCMOD=1
@@ -101,16 +99,6 @@ MODS_MESSAGE=
        THIS_MOD_MESSAGE=" - DIRAC administrator ..."
        echo $THIS_MOD_MESSAGE
        MODS_MESSAGE=$MODS_MESSAGE"# "$THIS_MOD_MESSAGE"\n"
-   fi
-   #
-   #  DFT
-   #
-   if [ -n "$DFTMOD" ]; then
-      DFTFLG='-DMOD_DFT'
-      DFTTAR=1
-      THIS_MOD_MESSAGE=" - DFT module (DFT), $DFTFLG"
-      echo $THIS_MOD_MESSAGE
-      MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
    #
    #  ESR
@@ -378,11 +366,10 @@ MODS_MESSAGE=
    if [ -n "$SRDFTMOD" ]; then
       SRDFT_FLG='-DMOD_SRDFT'
       SRDFT_TAR=1
-      DFTFLG='-DMOD_DFT'
       DFTTAR=1
       KRMCFLG='-DMOD_KRMC'
       KRMCTAR=1
-      THIS_MOD_MESSAGE=" - srDFT module (implies DFT and KRMC),$SRDFT_FLG, $DFTFLG, $KRMCFLG"
+      THIS_MOD_MESSAGE=" - srDFT module (implies DFT and KRMC),$SRDFT_FLG, $KRMCFLG"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
@@ -556,7 +543,7 @@ rmline()
 #
 which_modules()
 {
-for mod in $ERIFLG $DNFFLG $FMMFLG $DFTFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG \
+for mod in $ERIFLG $DNFFLG $FMMFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG \
 $ADCFLG $VISUALFLG $OPENRSP_FLG $MATRIX_OPERATIONS_FLG $XCFUN_FLG \
 $CAPFLG $HSCCFLG $HSFSFLG $QDOTSFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG \
 $AMFIFLG $LONDONFLG $SRDFT_FLG $ECPFLG $LOG_FLG
@@ -592,10 +579,6 @@ fi
 if [ -n "$FMMFLG" ]; then
    dirs="$dirs fmm"
    rmline build/dontbuild "fmm/\.\*"
-fi
-if [ -n "$DFTFLG" ]; then
-   dirs="$dirs dft"
-   rmline build/dontbuild "dft/\.\*"
 fi
 if [ -n "$XMLFLG" ]; then
    dirs="$dirs gp/xml"
@@ -770,9 +753,6 @@ while [ -n "$1" ]; do
    case "$1" in
       -adm|-ad|-a)
          PAMADM=1
-         ;;
-      -dft)
-         DFTMOD=1
          ;;
       -esr|-es)
          ESRMOD=1

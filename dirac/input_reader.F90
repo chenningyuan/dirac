@@ -131,9 +131,7 @@ contains
     integer                          :: i, n
 !   ----------------------------------------------------------------------------
 
-#ifndef MOD_DFT
     call quit(kw_section//' not available in this version')
-#endif
 
     if (.not. dirac_cfg_dft_calculation) return
 

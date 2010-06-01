@@ -32,9 +32,7 @@ program dirprg
 
   use memory_allocator
   use os_utils
-#ifdef MOD_DFT
   use dft_cfg
-#endif
 
   implicit none
 #include "priunit.h"

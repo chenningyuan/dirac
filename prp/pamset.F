@@ -537,10 +537,8 @@ C     Written by T.Saue, Sep 16 1996
 C
 C***********************************************************************
        use dirac_cfg
-#ifdef MOD_DFT
        use dft_cfg
        use xc_driver
-#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
@@ -656,7 +654,6 @@ C          Hermitian operator
 
 
 
-#ifdef MOD_DFT
 !       construct kohn-sham contribution
 !       ================================
 
@@ -675,7 +672,6 @@ C          Hermitian operator
          call xc_mpi_release_coworkers()
 
         end if
-#endif /* ifdef MOD_DFT */
 
 
 

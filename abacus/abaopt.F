@@ -2251,9 +2251,7 @@ C     Retreives the energy of the current geometry
 C     (by running HERMIT and SIRIUS).
 C
       use dirac_cfg
-#ifdef MOD_DFT
       use dft_cfg
-#endif /* ifdef MOD_DFT */
 
 #include "implicit.h"
 #include "priunit.h"
@@ -2284,12 +2282,10 @@ C
       END IF
       NEWGEO = .TRUE.
 
-#ifdef MOD_DFT
       if (dirac_cfg_dft_calculation) then
 !       get a new grid at new geometry
         call reset_grid()
       end if
-#endif /* ifdef MOD_DFT */
 
       IF (.NOT. EXSIR) THEN
          CALL EXESIR(WORK,LWORK,IWOFF,WRKDLM)
