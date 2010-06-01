@@ -60,9 +60,9 @@ C  /* Deck prqmat */
       M(4) = 'B imag'
       DO 10 IZ = 1,NZ
         IQ = IQP(IZ)
-        WRITE(IUNIT,'(/A,A6,A,2I4/)')
-     &  '*** ',M(IQ),' part ***;    NROW,NCOL:',NROW,NCOL
-        CALL OUTPUT(QMAT(1,1,IZ),1,NROW,1,NCOL,LRQ,LCQ,1,IUNIT)
+        WRITE(IUNIT,'(/A,A6,A,4I4/)')
+     &  '*** ',M(IQ),' part ***; NROW,NCOL,LRQ,LCQ:',NROW,NCOL,LRQ,LCQ
+        CALL OUTPUT(QMAT(1,1,IZ),1,NROW,1,NCOL,LRQ,LCQ,-1,IUNIT)
    10 CONTINUE
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
