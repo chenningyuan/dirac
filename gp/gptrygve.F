@@ -1243,11 +1243,6 @@ C
 C
       END
 #endif
-#ifdef FIX_UPCASE
-!radovan: there's another upcase
-!/home/bast/dirac/git_repo_work/lucita/utils.F:910: multiple definition of `upcase_'
-!./gp/gptrygve.o:/home/bast/dirac/git_repo_work/gp/gptrygve.F:1247: first defined here
-
 C /* Deck UPCASE */
       SUBROUTINE UPCASE(WORD)
 C
@@ -1282,5 +1277,4 @@ C
 C
       RETURN
       END
-#endif
 ! -- end of gptrygve.F --
