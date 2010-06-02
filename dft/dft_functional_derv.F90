@@ -167,6 +167,7 @@ contains
         derv(k, d_0) = xcfun_out(1, k)
         if (order < 1) exit
 
+!> todo save xc_indices in an integer array
         derv(k, d_r) = xcfun_out(xc_index(dft_cfg_fun_id, (/1, 0, 0, 0, 0/)), k)
         derv(k, d_z) = xcfun_out(xc_index(dft_cfg_fun_id, (/0, 0, 1, 0, 0/)), k)
 !for mcscf ... 
