@@ -1597,8 +1597,6 @@ C
          ELSE
 C           singularities
             WRITE(LUPRI,1010)I, ALFAR(I),ALFAI(I),BETA(I)
- 1010       FORMAT(/' *** SINGULARITY IN REDUCED MCRSP :',
-     +             /'     I,ALFAR(I),ALFAI(I),BETA(I):',I6,1P,3D13.6)
          END IF
 C        IF(ABS(ALFAR(I)).GT.ZEROT) THEN
 C    +   .OR.(ABS(ALFAR(I)).LE.ZEROT.AND.ABS(ALFAI(I)).GT.ZCRIT)) THEN
@@ -1607,8 +1605,6 @@ C        RATIO= ABS(ALFAI(I)/ALFAR(I))
 C        IF(RATIO.GT.ZCRIT) WRITE(6,1020) ALFAR(I),ALFAI(I)
          IF(ALFAI(I).NE.D0) THEN
             WRITE(LUPRI,1020) I,ALFAR(I),ALFAI(I)
- 1020       FORMAT(/' *** COMPLEX EIGENVALUE IN REDUCED MCRSP :',
-     +          /'     REAL AND IMAGINARY PART :',I8,1P,2D20.8)
 C
 C SET EIGENVALUE EQUAL TO COMPLX IN ORDER TO BE ABLE TO SKIP
 C CONTRIBUTIONS FROM THIS ROOT WHEN SUMMING UP TERMS
@@ -1617,6 +1613,10 @@ C
             ALFAR(I) = COMPLX
          END IF
   10  CONTINUE
+ 1010 FORMAT(/' WARNNG *** SINGULARITY IN REDUCED PP MATRIX:'
+     &      ,/'     I,ALFAR(I),ALFAI(I),BETA(I):',I6,1P,3D13.6)
+ 1020 FORMAT(/' WARNING *** COMPLEX EIGENVALUE IN REDUCED PP MATRIX :'
+     &      ,/'     REAL AND IMAGINARY PART :',I8,1P,2D20.8)
       IF (IPRINT .GE. 10) THEN
          WRITE (LUPRI,'(/A)') ' Eigenvalues of E(2)  :'
          WRITE (LUPRI,'(I10,1P,D12.2)') (I,ALFAR(I),I=1,KZYRED)
@@ -1730,7 +1730,7 @@ C
      &      INOPAIR = INOPAIR + 1
   110 CONTINUE
       IF (INEG.NE.IPOS) THEN
-         WRITE(LUPRI,'(3(/A))')' ***** WARNING ********* XPPORD:'
+         WRITE(LUPRI,'(/3A)')' **WARNING** XPPORD:'
      *   ,' number of eigenvalues with negative metric differ from'
      *   ,' number with positive metric'
          WRITE(LUPRI,'(/A)') '   NUMBER    EIGENVALUE '
@@ -1739,7 +1739,7 @@ C
  117     CONTINUE
       ELSE
          IF (INOPAIR.GT.0) WRITE(LUPRI,'(A/)')
-     &      ' **WARNING** XPPORD: EIGENVALUES NOT PAIRED'
+     &      ' **WARNING** XPPORD: Eigenvalues not paired'
          IF (IPRINT.GT.5 .OR. INOPAIR .GT.0) WRITE(LUPRI,'(/A)')
      *      '      NUMBER    EIGENVALUE       PAIRED EIGENVALUE'
          DO 115 I=1,IPOS
@@ -1749,7 +1749,7 @@ C
  115     CONTINUE
          IF (IZER .GT. 0) THEN
             WRITE(LUPRI,'(/A/A)')
-     *         ' **WARNING** XPPORD: ZERO METRIC EIGENVALUE(S)',
+     *         ' **WARNING** XPPORD: Zero metric eigenvalue(s)',
      *         '      NUMBER    EIGENVALUE (real part)'
             DO 116 I=1,IZER
                WRITE(LUPRI,'(I10,1P,D20.8)')
