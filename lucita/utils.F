@@ -905,16 +905,6 @@ C
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
 *                                                                     *
 ***********************************************************************
-*  Dummy routine for normal compilations
-*
-      subroutine upcase
-      return
-      end
-***********************************************************************
-*                                                                     *
-* LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
-*                                                                     *
-***********************************************************************
 * Copy vector to defined partition of matrix
 * (Simply the way the vector is arranged in memory)
 *
