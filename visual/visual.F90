@@ -276,6 +276,8 @@ contains
       D(imat) = 0
     end do
 
+    call basis_info_delete()
+
     end subroutine
 
 
