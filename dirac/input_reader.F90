@@ -131,8 +131,6 @@ contains
     integer                          :: i, n
 !   ----------------------------------------------------------------------------
 
-    call quit(kw_section//' not available in this version')
-
     if (.not. dirac_cfg_dft_calculation) return
 
     call reset_available_kw_list()
