@@ -265,7 +265,7 @@ contains
 
       ns    = kmax
       nc    = mxcont
-      np    = mxprim
+      np    = mxcorb
       nsoao = max_nr_so_ao
       ncs   = ncsp
       nq    = mxqn
