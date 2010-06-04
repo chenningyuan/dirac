@@ -435,10 +435,12 @@ contains
 !   ----------------------------------------------------------------------------
 
     if (l_quantum_nr(ishell) < 12) then
+!      faster explicit code
        call get_cartesian_ao_g0(l_quantum_nr(ishell), &
                                 px, py, pz,           &
                                 gao)
     else
+!      slower general-order code
        do ic = 1, cartesian_deg(ishell)
           jc = cartesian_off(ishell) + ic
           gao(ic) = (px**l_exp(jc))*(py**m_exp(jc))*(pz**n_exp(jc))*g_00_00_00_000
@@ -471,6 +473,7 @@ contains
 !   ----------------------------------------------------------------------------
 
     if (l_quantum_nr(ishell) < 12) then
+!      faster explicit code
        call get_cartesian_ao_g1(l_quantum_nr(ishell), &
                                 px, py, pz,           &
                                 gao,                  &
@@ -480,6 +483,7 @@ contains
 
 
     else
+!      slower general-order code
        do ic = 1,cartesian_deg(ishell)
           jc = cartesian_off(ishell) + ic
       
