@@ -145,8 +145,6 @@ module basis_info
 !>                            this is probably eq. 8.2.25 in the pink book
    real(8),      parameter :: g(10) = (/1.0d0, 1.3333d0, 1.6d0, 1.83d0, 2.03d0, 2.22d0, 2.39d0, 2.55d0, 2.70d0, 2.84d0/)
 
-   integer,      parameter :: max_nr_so_ao = 10000
-
 contains
 
 !> \brief deallocate arrays
@@ -201,7 +199,8 @@ contains
       integer :: i, j, i_c, i_s, ic
       integer :: ishell, icount, isym, iprim, irep
       integer :: iso, iso_bs, iao
-      integer :: contracted_shell_nr, nr_ao_irep, nshell, mul, l
+      integer :: index_in_ao_block, nr_ao_irep, nshell, mul, l
+      integer :: max_contraction_length
       real(8) :: r, f
       integer :: inter_irep(0:3), jxyz, irep1, irep2, nr1, nr2
       integer :: llss_ic(2) = (/1, 2/)
@@ -263,10 +262,95 @@ contains
       uq_to_pq     = iqtopq
       sym_axes     = isymax
 
-      ns    = kmax
-      nc    = mxcont
-      np    = mxcorb
-      nsoao = max_nr_so_ao
+
+!     get nr_ao_cartesian and max_contraction_length
+!     ==============================================
+
+      nr_ao_cartesian        = 0
+      max_contraction_length = 0
+      do ishell = 1, nr_shells_all
+
+         i = jstrt(ishell) + 1
+         j = jstrt(ishell) + nuco(ishell)
+
+         index_in_ao_block = numcf(ishell)
+         if (index_in_ao_block > mxcont) then
+            call quit('increase mxcont and recompile')
+         end if
+
+         icount = 0
+         do iprim = i, j
+            if (dabs(priccf(iprim, index_in_ao_block)) > tiny(1.0d0)) then
+               icount = icount + 1
+            end if
+         end do
+         if (icount > max_contraction_length) then
+            max_contraction_length = icount
+         end if
+
+         do isym = 0, maxopr
+            if (iand(isym, istbao(ishell)) == 0) then
+               nr_ao_cartesian = nr_ao_cartesian + kckt(ishell)
+            end if
+         end do
+
+      end do
+
+
+!     get nr_so_ao
+!     ============
+
+      i = 1
+      nr_so_ao = 0
+      do irep = 0, maxrep
+         icount = 0
+         nr_ao_irep = nbbas(irep, 1) + nbbas(irep, 2)
+         do iso = i, i + nr_ao_irep - 1
+
+            ishell = iand(ishft(ipind(iso), -16), 65535)
+            nshell = iand(ishft(ipind(iso),  -8),   255)
+
+            mul = istbao(ishell)
+            l   = nhkt(ishell)
+
+            iao = kstrt(ishell) + nshell
+
+            icount = icount + 1
+            if (icount > nbbas(irep, 1)) then
+!              is small
+               ic = 2
+            else
+!              is large
+               ic = 1
+            end if
+
+!           do not plan to AO-SO transform small component functions
+!           in case of zero small-small metric (.LEVY-LEBLOND and .X2C4)
+            if (.not. (only_large .and. (ic == 2))) then
+
+!              shift by difference boson sorted minus boson unsorted
+               iso_bs = iso + ibbas(irep, ic) - icos(irep + 1, ic)
+
+               do isym = 0, maxopr
+                  if (iand(isym, mul) == 0) then
+
+                     f = pt(iand(isym, ieor(irep, isymao(l, nshell))))
+
+                     nr_so_ao = nr_so_ao + 1
+
+                     iao = iao + khkt(ishell)
+
+                  endif
+               end do
+            end if
+         end do
+         i = i + nr_ao_irep
+      end do
+
+      ns    = nr_shells_all
+      nc    = max_contraction_length
+      np    = nr_ao_cartesian
+      nsoao = nr_so_ao
       ncs   = ncsp
       nq    = mxqn
 
@@ -285,8 +369,7 @@ contains
 !     shells
 !     ======
 
-      nr_ao_cartesian = 0
-      shell_extent    = 0.0d0
+      shell_extent = 0.0d0
 
       i_c = 1
       i_s = 1
@@ -305,24 +388,21 @@ contains
          shell_stabilizer(ishell)    = istbao(ishell)
          shell_is_spherical(ishell)  = sphr(ishell)
 
-         contracted_shell_nr = numcf(ishell)
-         if (contracted_shell_nr > mxcont) then
-            call quit('increase mxcont and recompile')
-         end if
+         index_in_ao_block = numcf(ishell)
 
          i = jstrt(ishell) + 1
          j = jstrt(ishell) + nuco(ishell)
 
          icount = 0
          do iprim = i, j
-            if (dabs(priccf(iprim, contracted_shell_nr)) > 1.0d-30) then
+            if (dabs(priccf(iprim, index_in_ao_block)) > tiny(1.0d0)) then
                icount = icount + 1
                nr_nonzero_contraction_coefs(ishell) = icount
-               contraction_coef(ishell, icount)     = priccf(iprim, contracted_shell_nr)
+               contraction_coef(ishell, icount)     = priccf(iprim, index_in_ao_block)
                primitive_exp(ishell, icount)        = priexp(iprim)
 
 !              get shell extents
-               r = (log(abs(priccf(iprim, contracted_shell_nr))) &
+               r = (log(abs(priccf(iprim, index_in_ao_block))) &
                   - log(ao_threshold))/priexp(iprim)
 
                if (shell_extent(ishell) < r) shell_extent(ishell) = r
@@ -334,12 +414,6 @@ contains
 
 !        better square this once than sqrt p2 in each point
          shell_extent(ishell) = shell_extent(ishell)**2.0d0
-
-         do isym = 0, maxopr
-            if (iand(isym, istbao(ishell)) == 0) then
-               nr_ao_cartesian = nr_ao_cartesian + cartesian_deg(ishell)
-            end if
-         end do
 
          call lmnval(l_quantum_nr(ishell), cartesian_deg(ishell), l_exp(i_c), m_exp(i_c), n_exp(i_c))
 
@@ -392,10 +466,6 @@ contains
 
                      nr_so_ao = nr_so_ao + 1
 
-                     if (nr_so_ao > max_nr_so_ao) then
-                        call quit('increase max_nr_so_ao')
-                     end if
-
                      i_so_ao(1, nr_so_ao) = iso_bs
                      i_so_ao(2, nr_so_ao) = iao
                      f_so_ao(nr_so_ao)    = f
@@ -408,7 +478,6 @@ contains
          end do
          i = i + nr_ao_irep
       end do
-      nsoao = nr_so_ao
 
 
 !     matrix blocking
