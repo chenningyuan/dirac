@@ -2,25 +2,27 @@ module density_eval
 
    use basis_info
 
-  implicit none
-
-  public gga_sym
-  public get_n
-  public get_s
-  public get_t
-  public get_tau
-  public get_gn
-  public get_gn_nonhermitian
-  public get_gs
-  public get_gs_nonhermitian
-  public lda_distribute_r
-  public gga_distribute_r
-  public lda_distribute_i
-  public gga_distribute_i
-  public lda_london_distribute_r
-  public gga_london_distribute_r
-
-  private
+   implicit none
+ 
+   public gga_sym
+   public get_n
+   public get_s
+   public get_t
+   public get_tau
+   public get_gn
+   public get_gn_nonhermitian
+   public get_gs
+   public get_gs_nonhermitian
+   public lda_distribute_r
+   public gga_distribute_r
+   public lda_distribute_i
+   public gga_distribute_i
+   public lda_london_distribute_r
+   public gga_london_distribute_r
+   public set_ss_prefactor_to_plus
+   public set_ss_prefactor_to_minus
+ 
+   private
 
   integer :: jxyz_start = 1 !noncollinear
 ! integer :: jxyz_start = 3 !collinear
@@ -30,7 +32,17 @@ module density_eval
 !fixme: hardcoded
   real(8), parameter :: speed_of_light = 137.0359998d0
 
+  real(8)            :: ss_prefactor   = 1.0d0
+
 contains
+
+   subroutine set_ss_prefactor_to_plus()
+      ss_prefactor = 1.0d0
+   end subroutine
+
+   subroutine set_ss_prefactor_to_minus()
+      ss_prefactor = -1.0d0
+   end subroutine
 
   subroutine gga_sym(mat_dim, &
                      nz,      &
@@ -231,7 +243,7 @@ contains
                      buffer,                      &
                      1)
 
-          s(jxyz) = s(jxyz) + ddot(nr1, ao(st1), 1, buffer, 1)
+          s(jxyz) = s(jxyz) + ss_prefactor*ddot(nr1, ao(st1), 1, buffer, 1)
        end do
 
     end do
@@ -640,10 +652,10 @@ contains
                      buffer,                      &
                      1)
 
-          s(jxyz) = s(jxyz) + ddot(nr1, ao(st1), 1, buffer, 1)
+          s(jxyz) = s(jxyz) + ss_prefactor*ddot(nr1, ao(st1), 1, buffer, 1)
           do ixyz = 1, 3
              gs(ixyz, jxyz) = gs(ixyz, jxyz) &
-                            + ddot(nr1, ao1(st1, ixyz), 1, buffer, 1)
+                            + ss_prefactor*ddot(nr1, ao1(st1, ixyz), 1, buffer, 1)
           end do
        end do
 
@@ -741,10 +753,10 @@ contains
                      buffer,                      &
                      1)
 
-          s(jxyz) = s(jxyz) + ddot(nr1, ao(st1), 1, buffer, 1)
+          s(jxyz) = s(jxyz) + ss_prefactor*ddot(nr1, ao(st1), 1, buffer, 1)
           do ixyz = 1, 3
              gs(ixyz, jxyz) = gs(ixyz, jxyz) &
-                            + ddot(nr1, ao1(st1, ixyz), 1, buffer, 1)
+                            + ss_prefactor*ddot(nr1, ao1(st1, ixyz), 1, buffer, 1)
           end do
 
           do ixyz = 1, 3
@@ -932,6 +944,7 @@ contains
           do i = 1, nr2
              ii = st2 + i - 1
              f  = s(jxyz)*ao(ii)
+             f  = ss_prefactor*f
 
              call daxpy(nr1,                        &
                         f,                          &
@@ -1002,6 +1015,7 @@ contains
                + 2.0d0*v(1, jxyz)*ao1(ii, 1) &
                + 2.0d0*v(2, jxyz)*ao1(ii, 2) &
                + 2.0d0*v(3, jxyz)*ao1(ii, 3)
+             f = ss_prefactor*f
 
              call daxpy(nr1,                        &
                         f,                          &

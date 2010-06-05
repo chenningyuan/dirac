@@ -751,6 +751,11 @@ contains
 !     --------------------------------------------------------------------------
       real(8) :: avg
 
+
+    if (dft_cfg_betasigma) then
+       call set_ss_prefactor_to_minus()
+    end if
+
     max_ao_g_order = 0
     if (use_gga) then
       max_ao_g_order = 1

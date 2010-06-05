@@ -41,7 +41,7 @@ module dft_cfg
   logical, public :: dft_cfg_no_sdft                 = .false.
   logical, public :: dft_cfg_sdft_collinear          = .false.
   logical, public :: dft_cfg_cdft_vrg                = .false.
-  logical, public :: dft_cfg_xcfun                = .false.
+  logical, public :: dft_cfg_xcfun                   = .false.
   logical, public :: dft_cfg_grac                    = .false.
   logical, public :: dft_cfg_grac_is_active          = .false.
   logical, public :: dft_cfg_saop                    = .false.
@@ -49,6 +49,7 @@ module dft_cfg
   logical, public :: dft_cfg_saop_with_response_part = .false.
   logical, public :: dft_cfg_asymptote_is_lb94       = .false.
   logical, public :: dft_cfg_asymptote_is_lbalpha    = .false.
+  logical, public :: dft_cfg_betasigma               = .false.
 
   real(8), public :: dft_cfg_radint          = 1.0d-13
   real(8), public :: dft_cfg_accepted_error  = 1.0d-3
@@ -92,10 +93,10 @@ contains
     call dirac_mpi_bcast(dft_cfg_explicit_potential     )
     call dirac_mpi_bcast(dft_cfg_no_pruning             )
     call dirac_mpi_bcast(dft_cfg_estimate_radii         )
-!radovan: not needed
-!         only master imports and exports
+!   only master imports and exports
 !   call dirac_mpi_bcast(dft_cfg_import_grid            )
 !   call dirac_mpi_bcast(dft_cfg_export_grid            )
+    call dirac_mpi_bcast(dft_cfg_multigrid              )
     call dirac_mpi_bcast(dft_cfg_zipgrid                )
     call dirac_mpi_bcast(dft_cfg_alda_hs                )
     call dirac_mpi_bcast(dft_cfg_alda_ha                )
@@ -105,7 +106,7 @@ contains
     call dirac_mpi_bcast(dft_cfg_no_sdft                )
     call dirac_mpi_bcast(dft_cfg_sdft_collinear         )
     call dirac_mpi_bcast(dft_cfg_cdft_vrg               )
-    call dirac_mpi_bcast(dft_cfg_xcfun               )
+    call dirac_mpi_bcast(dft_cfg_xcfun                  )
     call dirac_mpi_bcast(dft_cfg_grac                   )
     call dirac_mpi_bcast(dft_cfg_grac_is_active         )
     call dirac_mpi_bcast(dft_cfg_saop                   )
@@ -113,6 +114,7 @@ contains
     call dirac_mpi_bcast(dft_cfg_saop_with_response_part)
     call dirac_mpi_bcast(dft_cfg_asymptote_is_lb94      )
     call dirac_mpi_bcast(dft_cfg_asymptote_is_lbalpha   )
+    call dirac_mpi_bcast(dft_cfg_betasigma              )
     call dirac_mpi_bcast(dft_cfg_radint                 )
     call dirac_mpi_bcast(dft_cfg_accepted_error         )
     call dirac_mpi_bcast(dft_cfg_dfthr0                 )

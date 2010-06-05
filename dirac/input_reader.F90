@@ -351,6 +351,10 @@ contains
 !     call dftgridinput(line)
     end if
 
+    if (kw_matches(word, '.BETASI')) then
+      dft_cfg_betasigma = .true.
+    end if
+
     call check_whether_kw_found(word, kw_section)
 
   end subroutine
