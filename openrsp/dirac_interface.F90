@@ -819,9 +819,12 @@ contains
 
     if (.not. isdef(C)) call init_mat(C, ntbas(0), norbt)
 
+     C%elms = 0.0d0
+!radovan: the g95 modification breaks visualization on gfortran
+!         i will investigate g95 later
 !mi: my g95 is complaining (Segm.fault), what helps is nullify(C%elms)
-    !C%elms = 0.0d0
-     nullify(C%elms)
+!   !C%elms = 0.0d0
+!    nullify(C%elms)
 
     call alloc(eigenvalues, norbt)
 
@@ -903,9 +906,11 @@ contains
           ir  = ir + 1
           iw2 = iw1 + (k - 1)*(nr_g_ao + nr_u_ao) + n
           ! mi fix for g95
-          if (associated(C%elms).and.associated(C_file%elms) ) then
+        ! radovan: will check this soon for g95
+        !          now reactivating gfortran
+        ! if (associated(C%elms).and.associated(C_file%elms) ) then
              C%elms(iw2) = C_file%elms(ir)*g*i
-          endif
+        ! endif
         end do
       end do
 
@@ -915,9 +920,9 @@ contains
           ir  = ir + 1
           iw2 = iw1 + (k - 1)*(nr_g_ao + nr_u_ao) + n
           ! mi fix for g95
-          if (associated(C%elms).and.associated(C_file%elms) ) then
+        ! if (associated(C%elms).and.associated(C_file%elms) ) then
              C%elms(iw2) = C_file%elms(ir)*g*s
-          endif
+        ! endif
         end do
       end do
 
@@ -936,9 +941,9 @@ contains
           ir  = ir + 1
           iw2 = iw1 + (nr_g_mo + k - 1)*(nr_g_ao + nr_u_ao) + n
           ! mi fix for g95
-          if (associated(C%elms).and.associated(C_file%elms) ) then
+        ! if (associated(C%elms).and.associated(C_file%elms) ) then
            C%elms(iw2) = C_file%elms(ir)*u*s
-          endif
+        ! endif
         end do
       end do
 
@@ -948,9 +953,9 @@ contains
           ir  = ir + 1
           iw2 = iw1 + (nr_g_mo + k - 1)*(nr_g_ao + nr_u_ao) + n
           ! mi fix for g95
-          if (associated(C%elms).and.associated(C_file%elms) ) then
+        ! if (associated(C%elms).and.associated(C_file%elms) ) then
             C%elms(iw2) = C_file%elms(ir)*u*i
-          endif
+        ! endif
         end do
       end do
 
@@ -960,9 +965,9 @@ contains
           ir  = ir + 1
           iw2 = iw1 + (nr_g_mo + k - 1)*(nr_g_ao + nr_u_ao) + n
           ! mi fix for g95
-          if (associated(C%elms).and.associated(C_file%elms) ) then
+    !     if (associated(C%elms).and.associated(C_file%elms) ) then
            C%elms(iw2) = C_file%elms(ir)*u*s
-          endif
+    !     endif
         end do
       end do
 
