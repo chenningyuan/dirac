@@ -817,9 +817,9 @@ contains
     integer                      :: dummy_i
 !   ----------------------------------------------------------------------------
 
-    if (.not. isdef(C)) call init_mat(C, ntbas(0), norbt)
+!   if (.not. isdef(C)) call init_mat(C, ntbas(0), norbt)
 
-     C%elms = 0.0d0
+!    C%elms = 0.0d0
 !radovan: the g95 modification breaks visualization on gfortran
 !         i will investigate g95 later
 !mi: my g95 is complaining (Segm.fault), what helps is nullify(C%elms)
@@ -850,7 +850,7 @@ contains
   subroutine get_C(C, i, s, g, u)
 
 !   ----------------------------------------------------------------------------
-    type(matrix), intent(inout) :: C
+    type(matrix)                :: C
     real(8),      intent(in)    :: i, s, g, u
 !   ----------------------------------------------------------------------------
     type(matrix)                :: C_file
@@ -881,6 +881,9 @@ contains
 
     if (.not. isdef(C)) call init_mat(C, ntbas(0), norbt)
     C%elms = 0.0d0
+
+    call init_mat(C_file, ntbas(0), norbt)
+    C_file%elms = 0.0d0
 
     call get_full_c(C_file)
 
@@ -972,6 +975,7 @@ contains
       end do
 
     end do
+    C_file = 0
 
   end subroutine
 

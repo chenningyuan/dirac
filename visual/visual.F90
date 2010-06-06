@@ -159,6 +159,7 @@ contains
       D_mo%elms((m - 1)*norbt + m) = occupation(m)
     end do
 
+!> \fixme dag(C) has dimensions 0x0 with g95
     D(1) = C*(D_mo*dag(C))
 
 
