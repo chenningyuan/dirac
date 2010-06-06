@@ -1161,12 +1161,24 @@ contains
 #endif
 
           if (do_geo_0) then
-             call xc_geo_0_lda_c1(property_gradient, &
-                                  derv(1, d_r),      &
-                                  mat_dim,           &
-                                  dmat_0,            &
-                                  ao,              &
-                                  ao(ao_start(1, 0):ao_end(1, 0)))
+             if (use_gga) then
+                call xc_geo_0_gga_c1(property_gradient,               &
+                                     derv(1, d_r),                    &
+                                     derv(1, d_z),                    &
+                                     rhg,                             &
+                                     mat_dim,                         &
+                                     dmat_0,                          &
+                                     ao,                              &
+                                     ao(ao_start(1, 0):ao_end(1, 0)), &
+                                     ao(ao_start(2, 0):ao_end(2, 0)))
+             else
+                call xc_geo_0_lda_c1(property_gradient, &
+                                     derv(1, d_r),      &
+                                     mat_dim,           &
+                                     dmat_0,            &
+                                     ao,                &
+                                     ao(ao_start(1, 0):ao_end(1, 0)))
+             end if
           end if
 
           if (do_geo_1) then

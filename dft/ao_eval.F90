@@ -250,6 +250,25 @@ contains
                             z_power(off_power))
             end if
 
+            if (need_ao_order(2, 0)) then
+               ofg = ao_start(2, 0) + i - 1
+               off_power = power_offset(l_quantum_nr(ishell))
+               call get_gao2(ishell,             &
+                             ao(ofg          ),  &
+                             ao(ofg + 1*nr_ao),  &
+                             ao(ofg + 2*nr_ao),  &
+                             ao(ofg + 3*nr_ao),  &
+                             ao(ofg + 4*nr_ao),  &
+                             ao(ofg + 5*nr_ao),  &
+                             px,                 &
+                             py,                 &
+                             pz,                 &
+                             p2,                 &
+                             x_power(off_power), &
+                             y_power(off_power), &
+                             z_power(off_power))
+            end if
+
             if (need_ao_order(0, 1)) then
               ! ao_start(0, 1) indicate the place in ao where
               ! magn dervs should start
