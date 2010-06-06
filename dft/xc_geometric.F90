@@ -104,8 +104,8 @@ contains
                      f0 = ao1(k, ixyz)*ao(l)
                      f1 = 0.0
                      do jxyz = 1, 3
-                        f1 = f1 + gn(jxyz)*ao1(k,  ixyz            )*ao1(l, jxyz)
-                        f1 = f1 + gn(jxyz)*ao2(k, (ixyz-1)*3 + jxyz)*ao (l)
+                        f1 = f1 + gn(jxyz)*ao1(k,      ixyz             )*ao1(l, jxyz)
+                        f1 = f1 + gn(jxyz)*ao2(k, pos((jxyz-1)*3 + ixyz))*ao (l)
                      end do
                      t0 = t0 + dmat_0(l, k)*f0
                      t1 = t1 + dmat_0(l, k)*f1
