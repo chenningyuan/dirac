@@ -435,6 +435,37 @@ sdftpot2_(ThirdDrv *ds,
 
   drv3_clear(&drvs);
 
+//#define GET_REF_DATA
+#ifdef GET_REF_DATA
+//  this is useful for obtaining reference data
+//  of course you have to make sure that the *.c
+//  implementation is correct
+
+    dp.rhoa   = 0.39E+02;
+    dp.rhob   = 0.38E+02;
+    dp.grada  = sqrt(0.81E+06);
+    dp.gradb  = sqrt(0.82E+06);
+    dp.gradab = 0.82E+06;
+
+    selected_func->third(&drvs, 1.0, &dp);
+
+    fun_printf("drvs.df00000 =%20.12e", selected_func->func(&dp));
+    fun_printf("drvs.df10000 =%20.12e", drvs.df1000);
+    fun_printf("drvs.df01000 =%20.12e", drvs.df0100);
+    fun_printf("drvs.df00100 =%20.12e", drvs.df0010*0.5/dp.grada);
+    fun_printf("drvs.df00010 =%20.12e", drvs.df0001*0.5/dp.gradb);
+    fun_printf("drvs.df00001 =%20.12e", drvs.df00001);
+    fun_printf("drvs.df20000 =%20.12e", drvs.df2000);
+    fun_printf("drvs.df11000 =%20.12e", drvs.df1100);
+    fun_printf("drvs.df10100 =%20.12e", drvs.df1010*0.5/dp.grada);
+    fun_printf("drvs.df10010 =%20.12e", drvs.df1001*0.5/dp.gradb);
+    fun_printf("drvs.df10001 =%20.12e", drvs.df10001);
+    fun_printf("drvs.df02000 =%20.12e", drvs.df0200);
+    fun_printf("drvs.df01100 =%20.12e", drvs.df0110*0.5/dp.grada);
+    fun_printf("drvs.df01010 =%20.12e", drvs.df0101*0.5/dp.gradb);
+    fun_printf("drvs.df01001 =%20.12e", drvs.df01001);
+#endif
+
   dp.rhoa   = dp.rhob  = *rho *0.5;
   dp.grada  = dp.gradb = *grad*0.5;
   dp.gradab = dp.grada * dp.gradb;
