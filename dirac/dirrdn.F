@@ -4573,9 +4573,11 @@ C    (see MRCON1 of the MOLTRA module)
           call parse_functional(line)
 !         CALL DFTINPUT(LINE, INPERR)
 !fixme    reporting and consistency in here ...
-          dft_cfg_xcfun          = .true.
+          dft_cfg_xcfun             = .true.
           dirac_cfg_dft_calculation = .true.
           dirac_cfg_scf_calculation = .true.
+#else
+          call quit('.DFTAUTO not available in this version')
 #endif /* ifdef MOD_XCFUN */
           go to 100
 
