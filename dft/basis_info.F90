@@ -29,6 +29,7 @@ module basis_info
 #ifdef VAR_MPI
    use dirac_mpi
 #endif
+   use xyz_power
 
    implicit none
 
@@ -113,6 +114,7 @@ module basis_info
    integer, allocatable, public :: cartesian_off(:)
    integer, allocatable, public :: spherical_deg(:)
    integer, allocatable, public :: spherical_off(:)
+!>                                 starts at s=1
    integer, allocatable, public :: l_quantum_nr(:)
    integer, allocatable, public :: shell_center(:)
    real(8), allocatable, public :: shell_center_xyz(:, :)
@@ -123,9 +125,6 @@ module basis_info
    integer, allocatable, public :: nr_nonzero_contraction_coefs(:)
    real(8), allocatable, public :: contraction_coef(:, :)
    real(8), allocatable, public :: primitive_exp(:, :)
-   integer, allocatable, public :: l_exp(:)
-   integer, allocatable, public :: m_exp(:)
-   integer, allocatable, public :: n_exp(:)
    integer, allocatable, public :: i_so_ao(:, :)
    real(8), allocatable, public :: f_so_ao(:)
    real(8), allocatable, public :: bitstring_parity(:)
@@ -190,14 +189,13 @@ contains
       if (allocated(nr_nonzero_contraction_coefs)) deallocate(nr_nonzero_contraction_coefs)
       if (allocated(contraction_coef            )) deallocate(contraction_coef            )
       if (allocated(primitive_exp               )) deallocate(primitive_exp               )
-      if (allocated(l_exp                       )) deallocate(l_exp                       )
-      if (allocated(m_exp                       )) deallocate(m_exp                       )
-      if (allocated(n_exp                       )) deallocate(n_exp                       )
       if (allocated(i_so_ao                     )) deallocate(i_so_ao                     )
       if (allocated(f_so_ao                     )) deallocate(f_so_ao                     )
       if (allocated(bitstring_parity            )) deallocate(bitstring_parity            )
       if (allocated(cartesian_to_spherical      )) deallocate(cartesian_to_spherical      )
       if (allocated(spherical_address           )) deallocate(spherical_address           )
+
+      call xyz_power_delete()
 
    end subroutine
 
@@ -215,7 +213,6 @@ contains
       integer :: ls_ic(2) = (/2, 1/)
       integer :: ns
       integer :: nc
-      integer :: np
       integer :: nsoao
       integer :: ncs
       integer :: nq
@@ -357,14 +354,12 @@ contains
 
       ns    = nr_shells_all
       nc    = max_contraction_length
-      np    = nr_ao_cartesian
       nsoao = nr_so_ao
       ncs   = ncsp
       nq    = mxqn
 
       call allocate_arrays(ns,    &
                            nc,    &
-                           np,    &
                            nsoao, &
                            ncs,   &
                            nq)
@@ -422,8 +417,6 @@ contains
 
 !        better square this once than sqrt p2 in each point
          shell_extent(ishell) = shell_extent(ishell)**2.0d0
-
-         call lmnval(l_quantum_nr(ishell), cartesian_deg(ishell), l_exp(i_c), m_exp(i_c), n_exp(i_c))
 
          i_c = i_c + cartesian_deg(ishell)
          i_s = i_s + spherical_deg(ishell)
@@ -602,7 +595,6 @@ contains
 
       write(file_unit, *) ns
       write(file_unit, *) nc
-      write(file_unit, *) np
       write(file_unit, *) nsoao
       write(file_unit, *) ncs
       write(file_unit, *) nq
@@ -645,13 +637,14 @@ contains
 !                             = (1,3,5,7,9, .. ) = 2*L+1
                              spherical_deg(ishell),       & 
                              spherical_off(ishell),       &
-!                            L quantum number, degeneracies can be computed from this.
+!>                           l quantum number, degeneracies can be computed from this
+!>                           starts at s=1
                              l_quantum_nr(ishell),        & 
                              shell_center(ishell),        &
                              shell_center_xyz(1, ishell), &
                              shell_center_xyz(2, ishell), &
                              shell_center_xyz(3, ishell), &
-!                            shell stabiliser: sym op that does not move center
+!>                           shell stabiliser: sym op that does not move center
                              shell_stabilizer(ishell),    & 
                              shell_is_spherical(ishell),  &
                              shell_extent(ishell),        &
@@ -662,12 +655,6 @@ contains
             write(file_unit, *) contraction_coef(ishell, i), &
                                 primitive_exp(ishell, i)
          end do
-      end do
-      do i = 1, nr_ao_cartesian
-!                            can be generated from l
-         write(file_unit, *) l_exp(i), &
-                             m_exp(i), &
-                             n_exp(i)
       end do
       do i = 1, nr_so_ao
 !                            coefficients for ao to sa-ao transformation
@@ -699,10 +686,9 @@ contains
       logical, intent(in) :: i_am_master
       logical, intent(in) :: is_parallel_calculation
 !     --------------------------------------------------------------------------
-      integer             :: i, ishell
+      integer             :: i, ishell, l_max
       integer             :: ns
       integer             :: nc
-      integer             :: np
       integer             :: nsoao
       integer             :: ncs
       integer             :: nq
@@ -726,7 +712,6 @@ contains
          
          read(file_unit, *) ns     
          read(file_unit, *) nc     
-         read(file_unit, *) np     
          read(file_unit, *) nsoao     
          read(file_unit, *) ncs     
          read(file_unit, *) nq     
@@ -736,7 +721,6 @@ contains
       if (is_parallel_calculation) then
          call dirac_mpi_bcast(ns)
          call dirac_mpi_bcast(nc)
-         call dirac_mpi_bcast(np)
          call dirac_mpi_bcast(nsoao)
          call dirac_mpi_bcast(ncs)
          call dirac_mpi_bcast(nq)
@@ -745,7 +729,6 @@ contains
 
       call allocate_arrays(ns,    &
                            nc,    &
-                           np,    &
                            nsoao, &
                            ncs,   &
                            nq)
@@ -793,11 +776,6 @@ contains
                read(file_unit, *) contraction_coef(ishell, i), &
                                   primitive_exp(ishell, i)
             end do
-         end do
-         do i = 1, nr_ao_cartesian
-            read(file_unit, *) l_exp(i), &
-                               m_exp(i), &
-                               n_exp(i)
          end do
          do i = 1, nr_so_ao
             read(file_unit, *) i_so_ao(1, i), &
@@ -853,9 +831,6 @@ contains
          call dirac_mpi_bcast(nr_nonzero_contraction_coefs)
          call dirac_mpi_bcast(contraction_coef)
          call dirac_mpi_bcast(primitive_exp)
-         call dirac_mpi_bcast(l_exp)
-         call dirac_mpi_bcast(m_exp)
-         call dirac_mpi_bcast(n_exp)
          call dirac_mpi_bcast(i_so_ao)
          call dirac_mpi_bcast(f_so_ao)
          call dirac_mpi_bcast(bitstring_parity)
@@ -864,11 +839,18 @@ contains
       end if
 #endif
 
+      l_max = 0
+      do ishell = 1, nr_shells_all
+         if (l_quantum_nr(ishell) > l_max) then
+            l_max = l_quantum_nr(ishell)
+         end if
+      end do
+      call xyz_power_init(l_max)
+
    end subroutine
 
    subroutine allocate_arrays(ns,    &
                               nc,    &
-                              np,    &
                               nsoao, &
                               ncs,   &
                               nq)
@@ -876,7 +858,6 @@ contains
 !     --------------------------------------------------------------------------
       integer, intent(in) :: ns
       integer, intent(in) :: nc
-      integer, intent(in) :: np
       integer, intent(in) :: nsoao
       integer, intent(in) :: ncs
       integer, intent(in) :: nq
@@ -895,9 +876,6 @@ contains
       allocate(nr_nonzero_contraction_coefs(ns))
       allocate(contraction_coef(ns, nc))
       allocate(primitive_exp(ns, nc))
-      allocate(l_exp(np))
-      allocate(m_exp(np))
-      allocate(n_exp(np))
       allocate(i_so_ao(2, nsoao))
       allocate(f_so_ao(nsoao))
       allocate(bitstring_parity(0:7))

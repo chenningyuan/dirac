@@ -64,6 +64,7 @@ module ao_eval
 
    use basis_info
    use block_config
+   use xyz_power
  
    implicit none
  
@@ -173,7 +174,7 @@ contains
 !   ----------------------------------------------------------------------------
     integer             :: i, iend, ishell, isym, ioff, j
     real(8)             :: px, py, pz, p2, f1, f2
-    integer             :: ofg, ofm
+    integer             :: ofg, ofm, off_power
 
 !   ----------------------------------------------------------------------------
 
@@ -221,19 +222,32 @@ contains
 
 !           this is because get_gao1 does both ao and ao1
             if (need_ao_order(0, 0) .and. .not. need_ao_order(1, 0)) then
-              call get_gao(ishell,         &
-                           ao(i),   &
-                           px, py, pz, p2)
+              off_power = power_offset(l_quantum_nr(ishell))
+              call get_gao(ishell,             &
+                           ao(i),              &
+                           px,                 &
+                           py,                 &
+                           pz,                 &
+                           x_power(off_power), &
+                           y_power(off_power), &
+                           z_power(off_power))
             else if (need_ao_order(1, 0)) then
               ! ao_start(1, 0) indicate the place in ao where
               ! geom derivs should start
               ofg = ao_start(1, 0) + i - 1
-              call get_gao1(ishell,                   &
-                            ao(i),             &
-                            ao(ofg),           &
+              off_power = power_offset(l_quantum_nr(ishell))
+              call get_gao1(ishell,             &
+                            ao(i),              &
+                            ao(ofg),            &
                             ao(ofg + nr_ao),    &
                             ao(ofg + 2*nr_ao),  &
-                            px, py, pz, p2)
+                            px,                 &
+                            py,                 &
+                            pz,                 &
+                            p2,                 &
+                            x_power(off_power), &
+                            y_power(off_power), &
+                            z_power(off_power))
             end if
 
             if (need_ao_order(0, 1)) then
@@ -400,38 +414,48 @@ contains
       integer                :: ic, jc, k
 !     --------------------------------------------------------------------------
 
-      if (l_quantum_nr(ishell) < 12) then
-         call get_cartesian_ao_g0(block_length,         &
-                                  l_quantum_nr(ishell), &
-                                  px,                   &
-                                  py,                   &
-                                  pz,                   &
-                                  ao)
-      else
-         do ic = 1, cartesian_deg(ishell)
-            jc = cartesian_off(ishell) + ic
-            do k = 1, block_length
-               ao(k, ic) = (px(k)**l_exp(jc)) &
-                          *(py(k)**m_exp(jc)) &
-                          *(pz(k)**n_exp(jc))*g_00_00_00_000(k)
-            end do
-         end do
-      end if
+     !if (l_quantum_nr(ishell) < 12) then
+     !   call get_cartesian_ao_g0(block_length,         &
+     !                            l_quantum_nr(ishell), &
+     !                            px,                   &
+     !                            py,                   &
+     !                            pz,                   &
+     !                            ao)
+     !else
+     !   do ic = 1, cartesian_deg(ishell)
+     !      jc = cartesian_off(ishell) + ic
+     !      do k = 1, block_length
+     !         ao(k, ic) = (px(k)**l_exp(jc)) &
+     !                    *(py(k)**m_exp(jc)) &
+     !                    *(pz(k)**n_exp(jc))*g_00_00_00_000(k)
+     !      end do
+     !   end do
+     !end if
 
    end subroutine
 
-  subroutine get_gao(ishell, &
-                     gao,    &
-                     px, py, pz, p2)
+  subroutine get_gao(ishell,  &
+                     gao,     &
+                     px,      &
+                     py,      &
+                     pz,      &
+                     x_pwr, &
+                     y_pwr, &
+                     z_pwr)
+
    use ao_eval_point
 
 !   ----------------------------------------------------------------------------
     integer, intent(in)    :: ishell
     real(8), intent(out)   :: gao(*)
-    real(8), intent(in)    :: px, py, pz, p2
+    real(8), intent(in)    :: px
+    real(8), intent(in)    :: py
+    real(8), intent(in)    :: pz
+    integer, intent(in)    :: x_pwr(*)
+    integer, intent(in)    :: y_pwr(*)
+    integer, intent(in)    :: z_pwr(*)
 !   ----------------------------------------------------------------------------
-    integer                :: i, ic, jc
-    real(8)                :: f1, f2
+    integer                :: i, ic
 !   ----------------------------------------------------------------------------
 
     if (l_quantum_nr(ishell) < 12) then
@@ -442,8 +466,9 @@ contains
     else
 !      slower general-order code
        do ic = 1, cartesian_deg(ishell)
-          jc = cartesian_off(ishell) + ic
-          gao(ic) = (px**l_exp(jc))*(py**m_exp(jc))*(pz**n_exp(jc))*g_00_00_00_000
+          gao(ic) = (px**x_pwr(ic)) &
+                   *(py**y_pwr(ic)) &
+                   *(pz**z_pwr(ic))*g_00_00_00_000
        end do
     end if
 
@@ -454,7 +479,14 @@ contains
                       gaox,   &
                       gaoy,   &
                       gaoz,   &
-                      px, py, pz, p2)
+                      px,     &
+                      py,     &
+                      pz,     &
+                      p2,     &
+                      x_pwr,  &
+                      y_pwr,  &
+                      z_pwr)
+
    use ao_eval_point
 
 !   ----------------------------------------------------------------------------
@@ -464,10 +496,13 @@ contains
     real(8)                :: gaoy(*)
     real(8)                :: gaoz(*)
     real(8), intent(in)    :: px, py, pz, p2
+    integer, intent(in)    :: x_pwr(*)
+    integer, intent(in)    :: y_pwr(*)
+    integer, intent(in)    :: z_pwr(*)
 !   ----------------------------------------------------------------------------
-    integer                :: i, ic, jc
+    integer                :: i, ic
     integer                :: l, m, n
-    real(8)                :: f1, f2
+    real(8)                :: f2
     real(8)                :: tx, ty, tz, ux, uy, uz
     real(8)                :: p0, p0t
 !   ----------------------------------------------------------------------------
@@ -485,11 +520,10 @@ contains
     else
 !      slower general-order code
        do ic = 1,cartesian_deg(ishell)
-          jc = cartesian_off(ishell) + ic
       
-          l = l_exp(jc)
-          m = m_exp(jc)
-          n = n_exp(jc)
+          l = x_pwr(ic)
+          m = y_pwr(ic)
+          n = z_pwr(ic)
       
           tx = 0.0d0
           ty = 0.0d0
