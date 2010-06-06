@@ -519,7 +519,7 @@ contains
 
     else
 !      slower general-order code
-       do ic = 1,cartesian_deg(ishell)
+       do ic = 1, cartesian_deg(ishell)
       
           l = x_pwr(ic)
           m = y_pwr(ic)
@@ -554,6 +554,117 @@ contains
           end do
        end do
     end if
+
+  end subroutine
+
+  subroutine get_gao2(ishell, &
+                      gaoxx,  &
+                      gaoxy,  &
+                      gaoxz,  &
+                      gaoyy,  &
+                      gaoyz,  &
+                      gaozz,  &
+                      px,     &
+                      py,     &
+                      pz,     &
+                      p2,     &
+                      x_pwr,  &
+                      y_pwr,  &
+                      z_pwr)
+
+   use ao_eval_point
+
+!   ----------------------------------------------------------------------------
+    integer, intent(in)    :: ishell
+    real(8)                :: gaoxx(*)
+    real(8)                :: gaoxy(*)
+    real(8)                :: gaoxz(*)
+    real(8)                :: gaoyy(*)
+    real(8)                :: gaoyz(*)
+    real(8)                :: gaozz(*)
+    real(8), intent(in)    :: px, py, pz, p2
+    integer, intent(in)    :: x_pwr(*)
+    integer, intent(in)    :: y_pwr(*)
+    integer, intent(in)    :: z_pwr(*)
+!   ----------------------------------------------------------------------------
+    integer                :: i, ic
+    integer                :: l, m, n
+    real(8)                :: f2
+    real(8)                :: tx, ty, tz, ux, uy, uz
+    real(8)                :: p0, p0t
+    real(8)                :: talph, tapax, tapay, tapaz
+    real(8)                :: px0, pxd, pxm, pxp
+    real(8)                :: py0, pyd, pym, pyp
+    real(8)                :: pz0, pzd, pzm, pzp
+    real(8)                :: gaxx
+    real(8)                :: gaxy
+    real(8)                :: gaxz
+    real(8)                :: gayy
+    real(8)                :: gayz
+    real(8)                :: gazz
+    real(8)                :: alpha, p000
+!   ----------------------------------------------------------------------------
+
+       do ic = 1, cartesian_deg(ishell)
+      
+          l = x_pwr(ic)
+          m = y_pwr(ic)
+          n = z_pwr(ic)
+      
+          pxd = 0.0d0
+          pyd = 0.0d0
+          pzd = 0.0d0
+      
+          if (l > 1) pxd = dfloat(l*(l-1))*(px**(l-2))
+          if (m > 1) pyd = dfloat(m*(m-1))*(py**(m-2))
+          if (n > 1) pzd = dfloat(n*(n-1))*(pz**(n-2))
+      
+          pxm = 0.0d0
+          pym = 0.0d0
+          pzm = 0.0d0
+      
+          if (l > 0) pxm = dfloat(l)*(px**(l-1))
+          if (m > 0) pym = dfloat(m)*(py**(m-1))
+          if (n > 0) pzm = dfloat(n)*(pz**(n-1))
+
+          px0 = px**l
+          py0 = py**m
+          pz0 = pz**n
+          p000 = px0*py0*pz0
+      
+          gaoxx(ic) = 0.0d0
+          gaoxy(ic) = 0.0d0
+          gaoxz(ic) = 0.0d0
+          gaoyy(ic) = 0.0d0
+          gaoyz(ic) = 0.0d0
+          gaozz(ic) = 0.0d0
+          do i = 1, nr_nonzero_contraction_coefs(ishell)
+
+             alpha = primitive_exp(ishell, i)
+             talph = -2.0d0*alpha
+             tapax = talph*px
+             tapay = talph*py
+             tapaz = talph*pz
+
+             pxp = tapax*px0
+             pyp = tapay*py0
+             pzp = tapaz*pz0
+
+             gaxx = (tapax**2 + talph*dfloat(2*l + 1))*p000 + pxd*py0*pz0
+             gayy = (tapay**2 + talph*dfloat(2*m + 1))*p000 + px0*pyd*pz0
+             gazz = (tapaz**2 + talph*dfloat(2*n + 1))*p000 + px0*py0*pzd
+             gaxy = tapax*tapay*p000 + (pxp*pym + pxm*pyp + pxm*pym)*pz0
+             gaxz = tapax*tapaz*p000 + (pxp*pzm + pxm*pzp + pxm*pzm)*py0
+             gayz = tapay*tapaz*p000 + (pyp*pzm + pym*pzp + pym*pzm)*px0
+       
+             gaoxx(ic) = gaoxx(ic) + gaxx*f2
+             gaoxy(ic) = gaoxy(ic) + gaxy*f2
+             gaoxz(ic) = gaoxz(ic) + gaxz*f2
+             gaoyy(ic) = gaoyy(ic) + gayy*f2
+             gaoyz(ic) = gaoyz(ic) + gayz*f2
+             gaozz(ic) = gaozz(ic) + gazz*f2
+          end do
+       end do
 
   end subroutine
 
@@ -673,14 +784,68 @@ contains
       need_ao_order    = .false.
       nr_ao_slices     = 0
 
-      do g_order = 0, max_ao_g_order
-         do m_order = 0, max_ao_m_order
+!radovan: this does not work, for second g derivatives we calculate only 6 components, not 9
+!         dervs are symmetric
+!     do g_order = 0, max_ao_g_order
+!        do m_order = 0, max_ao_m_order
+!           need_ao_order(g_order, m_order) = .true.
+!           ao_start     (g_order, m_order) = nr_ao_slices*nr_ao + 1
+!           nr_ao_slices = nr_ao_slices + (3**g_order)*(3**m_order)
+!           ao_end       (g_order, m_order) = nr_ao_slices*nr_ao
+!        end do
+!     end do
+
+      if      (max_ao_m_order == 0) then
+            m_order = 0
+            g_order = 0
             need_ao_order(g_order, m_order) = .true.
             ao_start     (g_order, m_order) = nr_ao_slices*nr_ao + 1
-            nr_ao_slices = nr_ao_slices + (3**g_order)*(3**m_order)
+            nr_ao_slices = nr_ao_slices + 1
             ao_end       (g_order, m_order) = nr_ao_slices*nr_ao
-         end do
-      end do
+         if (max_ao_g_order > 0) then
+            g_order = 1
+            need_ao_order(g_order, m_order) = .true.
+            ao_start     (g_order, m_order) = nr_ao_slices*nr_ao + 1
+            nr_ao_slices = nr_ao_slices + 3
+            ao_end       (g_order, m_order) = nr_ao_slices*nr_ao
+         end if
+         if (max_ao_g_order > 1) then
+            g_order = 2
+            need_ao_order(g_order, m_order) = .true.
+            ao_start     (g_order, m_order) = nr_ao_slices*nr_ao + 1
+            nr_ao_slices = nr_ao_slices + 6
+            ao_end       (g_order, m_order) = nr_ao_slices*nr_ao
+         end if
+         if (max_ao_g_order > 2) then
+            call quit('problem in ao_eval_init')
+         end if
+      else if (max_ao_m_order == 1) then
+            m_order = 1
+            g_order = 0
+            need_ao_order(g_order, m_order) = .true.
+            ao_start     (g_order, m_order) = nr_ao_slices*nr_ao + 1
+            nr_ao_slices = nr_ao_slices + 1*3
+            ao_end       (g_order, m_order) = nr_ao_slices*nr_ao
+         if (max_ao_g_order > 0) then
+            g_order = 1
+            need_ao_order(g_order, m_order) = .true.
+            ao_start     (g_order, m_order) = nr_ao_slices*nr_ao + 1
+            nr_ao_slices = nr_ao_slices + 3*3
+            ao_end       (g_order, m_order) = nr_ao_slices*nr_ao
+         end if
+         if (max_ao_g_order > 1) then
+            g_order = 2
+            need_ao_order(g_order, m_order) = .true.
+            ao_start     (g_order, m_order) = nr_ao_slices*nr_ao + 1
+            nr_ao_slices = nr_ao_slices + 6*3
+            ao_end       (g_order, m_order) = nr_ao_slices*nr_ao
+         end if
+         if (max_ao_g_order > 2) then
+            call quit('problem in ao_eval_init')
+         end if
+      else
+         call quit('problem in ao_eval_init')
+      end if
 
 !     total_ao_vector_length = nr_ao_slices*nr_ao
 !     radovan: the above can lead to "plus one" or "plus few" out-of-bounds

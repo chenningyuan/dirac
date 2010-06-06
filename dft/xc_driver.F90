@@ -581,8 +581,8 @@ contains
 !        get average density from open shells
          if (nr_open_shells > 0) call gtdoav(mat_dim, nz, 1, dmat_0, -1)
    
-!        in case of gga symmetrize matrices (if not london)
-         if (use_gga .and. .not. do_london_rhs_direct) then
+!        symmetrize matrices
+         if (use_gga .and. .not. do_london_rhs_direct .and. .not. do_geo) then
             if (nr_dmat > 0) then
                call gga_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym, dmat_ih_sym)
             else
