@@ -447,6 +447,7 @@ sdftpot2_(ThirdDrv *ds,
     dp.gradb  = sqrt(0.82E+06);
     dp.gradab = 0.82E+06;
 
+//  the derivatives below can be obtained with ->second under dftpot1
     selected_func->third(&drvs, 1.0, &dp);
 
     fun_printf("drvs.df00000 =%20.12e", selected_func->func(&dp));
