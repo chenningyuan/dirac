@@ -911,7 +911,7 @@ c
         ENDDO
       ENDDO
       LEN_RKLM=ORIJK(IX)   
-      WRITE(IW,'(4X,A,I3,A,I)') 'Length of coupling block in symmetry',
+      WRITE(IW,'(4X,A,I3,A,I8)') 'Length of coupling block in symmetry',
      &      DESREP,':',LEN_RKLM
 c                                                                    |
 c____________________________________________________________________|
@@ -1338,7 +1338,7 @@ c
         ENDDO
       ENDDO
       LEN_RKLM=ORIJK(IX)   
-      WRITE(IW,'(4X,A,I3,A,I)') 'Length of coupling block in symmetry',
+      WRITE(IW,'(4X,A,I3,A,I8)') 'Length of coupling block in symmetry',
      &      DESREP,':',LEN_RKLM
 c                                                                    |
 c____________________________________________________________________|
