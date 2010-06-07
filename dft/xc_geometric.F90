@@ -113,7 +113,7 @@ contains
                end do
 
                ic = 3*(nr_center - 1) + ixyz
-               g(ic) = g(ic) - 2.0d0*t0*d_n - 2.0d0*t1*d_z
+               g(ic) = g(ic) - 2.0d0*t0*d_n - 4.0d0*t1*d_z
             end do
          end do
       end do
