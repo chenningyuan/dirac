@@ -253,6 +253,8 @@ C
          PRINT*," INCREASE MAXSP IN CCMAIN TO",NSP
          CALL QUIT("NSP.GT.MAXSP")
       ENDIF
+      WRITE (IW,*) 'Number of active electrons given to ADC:',
+     &             'Via MRCONEE', NELEC
 C
 C     Read input and set IPRNT variable =2 for CCSETI in order
 C     to print out the recomputed orbital energies and orbital numbers
@@ -311,13 +313,12 @@ C
       ENDDO
 C
       WRITE (IW,1004) NELECT,NSP-NELECT,CARITH,DOSORT,
-     &                ADCDEBUG,TIMING,INTERFACE
+     &                TIMING,INTERFACE
 c------ corresponding format
 1004  FORMAT (//" Number of electrons :",T40,I5
      &        /" Number of virtual spinors :",T40,I5
      &        /" Complex arithmetic mode :",T44,L1
      &        /" Do integral sorting     :",T44,L1
-     &        /" ADC debug level         :",T44,I1
      &        /" Timing information      :",T44,L1
      &        /" Interface used       :",T40,A10//)
 c------ corresponding format end
@@ -336,8 +337,18 @@ C
       WRITE(IW,*) 'Memory requirements of CCSETI:',MXCORR1
       MXCORR = MAX0(MXCORR,MXCORR1)
       MXCORR1 = 0
-      CALL CCADCX (ICALC,CC,KFREE,LFREE,MXCORR1,NSP,IREPSPI,EPS)
-      WRITE(IW,*) 'Memory requirements of CCADCX:',MXCORR1
+
+      IF(ADCLEVEL.EQ.4) THEN
+        CALL ADCDBLE_MAIN (ICALC,CC,KFREE,LFREE,
+     &                     MXCORR1,NSP,IREPSPI,EPS)
+        WRITE(IW,*) 'Memory requirements of Double-ionization calc:',
+     &              MXCORR1
+      ELSE
+        CALL CCADCX (ICALC,CC,KFREE,LFREE,MXCORR1,NSP,IREPSPI,EPS)
+        WRITE(IW,*) 'Memory requirements of Single-ionization calc:',
+     &              MXCORR1
+      ENDIF
+
       MXCORR = MAX0(MXCORR,MXCORR1)
 C
 C MXCORR is a cumulative maximum of individual memory requirements
@@ -392,7 +403,12 @@ C
       KFREE = 1
       LFREE = MAXCOR
 
-      CALL CCADCX (ICALC,CC,KFREE,LFREE,MXCORR,NSP,IREPSPI,EPS)
+      IF(ADCLEVEL.EQ.4) THEN
+         CALL ADCDBLE_MAIN (ICALC,CC,KFREE,LFREE,
+     &                      MXCORR,NSP,IREPSPI,EPS)
+      ELSE
+         CALL CCADCX (ICALC,CC,KFREE,LFREE,MXCORR,NSP,IREPSPI,EPS)
+      ENDIF
       CALL FLSHFO (IW)
 C
 C
@@ -484,11 +500,19 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include  "adcinpt.inc"
+#include "../relccsd/inpt.inc"
+C
+C  relccsd/inpt.inc is included because the NELEC array can also be 
+C  modified in the RELADC code. This corresponds to an open-shell
+C  single-reference calculation. From the NELEC array the corresponding
+C  occupied/virtual pointers and arrays are determined.
 C
 C---------------Local variables--------------------------------------
 C
-      NAMELIST/RELADC/ ADCTITLE,ADCLEVEL,ADCPRINT,ADCPRINTNM,ADCDEBUG,
-     $                 XREPS,NHOLST,READQKL,DOCONST,VCONV,DIAGTYPE,
+C------------- Execution starts -------------------------------------
+C
+      NAMELIST/RELADC/ ADCTITLE,ADCLEVEL,ADCPRINT,ADCPRINTNM,
+     $                 XREPS,READQKL,DOCONST,VCONV,DIAGTYPE,
      &                 INTERFACE
       NAMELIST/LANINP/ XNITER,XNP,XNEIGENV,XEVLLIM,XTHRVEC
 c
@@ -509,10 +533,8 @@ c
       ADCPRINTNM(6)='Bpq-values'
       ADCPRINTNM(7)='SIGMA-matrix'
       ADCPRINTNM(8)=' '
-      ADCDEBUG = 0
       DO IX=1,32
         XREPS(IX)=0
-        NHOLST(IX)=0
       ENDDO
       READQKL = .FALSE.
       DOCONST = .TRUE.
@@ -540,7 +562,7 @@ c
 c
 c  check consistencies
 c
-      IF( (ADCLEVEL.LT.0).OR.(ADCLEVEL.GT.3))
+      IF( (ADCLEVEL.LT.0).OR.(ADCLEVEL.GT.4))
      &  CALL QUIT('Illegal ADC level in namelist RELADC')
 
       IF(DIAGTYPE.NE.'EXTN') THEN
@@ -554,6 +576,11 @@ c
         ENDIF
        ENDIF
       ENDIF
+c
+c  single reference open-shell issue is not clarified!
+c  we therefore do not allow a non closed-shell reference state for the
+c  moment
+c
 c
 c  set Lanczos defaults and read input from DIRAC.INP
 c  * A minimum of 500 iterations
@@ -603,7 +630,6 @@ C             ADC-2, ADC-2X and ADC-3
 C
 C     By setting ADCLEVEL = 0 the diagonalizers are directly accessed
 C                             and any ADC calculation skipped.
-C     By setting ADCLEVEL = 4 the CSCF part is accessed.
 C     The ADCLEVELS 1-3 correspond to the hierarchy above.
 C
 C     Author : MP
@@ -829,7 +855,7 @@ C
  15   CONTINUE
 
       NCKKS   = MXNO*MXNO
-      INTBUF=8192
+      INTBUF = 65536  !output buffer is now enlarged to 64K
 C
 C  allocate memory needed in all types of ADC calculations
 C
@@ -1404,9 +1430,6 @@ C                  *************************************************
 C
       WRITE(IW,*) 'XREPS ---->',XREPS
       DO 900 IRPLOOP=1,NREP
-c debug
-c     write(*,*) 'IRPLOOP,xreps(irploop):',nrep,irploop,xreps(irploop)
-c debug end
         IF(XREPS(IRPLOOP).EQ.0) GOTO 900
 c
 c in KREP is the considered symmetry. Central control parameter
@@ -1873,6 +1896,16 @@ c
      &           cc(wrk_a),cc(wrk_a1),cc(wrk_b),cc(wrk_bx),
      &           cc(wrk_ipi),itapadc+6,THRVEC,EVLLIM)
           ELSE
+c
+c test of new F90 purger, shall substitute messy RBLANA soon.
+c at the moment RBLANA is doing too many things in a too crowded
+c fashion.
+c
+c         CALL RPURGER (KREP,NITER,NP,NO(KREP),ITAPADC+6,IW,
+c    &                  CC(WRK_EVL),CC(WRK_ZEV),ADCLEVEL)
+c
+c end of test
+ 
             CALL RBLANA(KREP,niter,np,neigenv,no(krep),
      &           cc(wrk_evl),cc(wrk_zev),cc(wrk_z),
      &           cc(wrk_t),cc(wrk_ind),cc(wrk_mlt),cc(wrk_lsp),
@@ -1881,14 +1914,10 @@ c
           ENDIF
 c
 c check if user wants to calculate eigenvectors of full ADC matrix
-c NGT is the actual number of nonspurious/unique eigenvalues.
 c *** important: the corresponding intensities and corrections for
 c the multiple eigenvalues are accounted for in the short eigenvector
 c array z. This array has to be transferred to the eigenvector
 c calculation.
-C The corresponding indices sit in the array IND2 which has to be
-C transferred to the eigenvector routine.
-c 
 c
           IF(NEIGENV.GT.0) THEN
 
@@ -6144,24 +6173,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DENOMVVOONOT2 (EPS,T2,CT2)
-C
-      IMPLICIT INTEGER (A-Z)
-C
-C---------------Description--------------------------------------------
-C
-C     Divide VVOO integrals by denominators ea + eb - ej - ei
-C     but such that a>b remains tridiagonal and i,j run independently
-C
-C---------------Calling variables--------------------------------------
-C
-      REAL*8 EPS(*)
-      REAL*8 T2(*)
-      COMPLEX*16 CT2(*)
-
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EPSARR(EPS,BUF,KREP,ISIZE)
 C
       IMPLICIT INTEGER (A-Z)
@@ -6221,20 +6232,13 @@ C from here ABREP(b) and LREP(f) are known.
               EPSA=EPS(AOFF+AFIE)
               BUF(DES)=EPSA+EPSB+EPSL+EPSK+EPSKS
               DES=DES+1
-!25          ENDDO
  25          CONTINUE
  30         CONTINUE
-! 30         ENDDO
 
   40       CONTINUE
-! 40       ENDDO
-!         ENDDO
          ENDDO                
-! 45     ENDDO
  45     CONTINUE
-!50    ENDDO
  50    CONTINUE
-!55   ENDDO
  55   CONTINUE
 
       ISIZE=DES-1
