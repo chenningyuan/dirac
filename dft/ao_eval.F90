@@ -659,7 +659,9 @@ contains
           gaozz(ic) = 0.0d0
           do i = 1, nr_nonzero_contraction_coefs(ishell)
 
+             f2 = contraction_coef(ishell, i)*dexp(-primitive_exp(ishell, i)*p2)
              alpha = primitive_exp(ishell, i)
+
              talph = -2.0d0*alpha
              tapax = talph*px
              tapay = talph*py
