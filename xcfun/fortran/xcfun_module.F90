@@ -9,6 +9,9 @@ module xcfun
   integer, parameter ::  XC_LDA  = 0
   integer, parameter ::  XC_GGA  = 1
   integer, parameter ::  XC_MGGA = 2
+
+  integer            ::  xcfun_id
+
 contains
   ! We pass strings as null terminated integer arrays to C, this
   ! should be portable if C and Fortran uses the same character set.
