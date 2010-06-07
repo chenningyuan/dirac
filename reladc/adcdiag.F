@@ -187,7 +187,7 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-      INTBUF = 8192
+      INTBUF = 65536  !output buffer now enlarged to 64K
       KFRSAV = KFREE
       KFRDYN = KFREE
 
@@ -279,7 +279,7 @@ c
           WRITE(IW,*) 'Half band width:                  ',NP
           WRITE(IW,*) 'Number of requested eigenvectors: ',NEIGENV
           WRITE(IW,*) 'Printing limit for eigenvalues:   ',EVLLIM
-          WRITE(IW,*) 'Threshol for vector printing:     ',THRVEC
+          WRITE(IW,*) 'Threshold for vector printing:    ',THRVEC
 C
 C  allocate required work space for band Lanczos iterations
 C  real/complex case are accounted for by the RCW variable
@@ -857,29 +857,38 @@ C
 C---------------Local variables and function definitions ------------
 C
       REAL*8 Y,DDOT,Z1
-      CHARACTER*7 EVECFN
+      CHARACTER*7 EVECFN,TEVCFN
+      real*8 rdummy
 C
 C---------------Executable code--------------------------------------
 c
-c  create symmetry-specific name for the eigenvectors
+c  create symmetry-specific name for the Lanczos eigenvector file
+c  and for the long eigenvector file.
 c
       IF(IRREP.GT.9) THEN
         WRITE(EVECFN,'(A5,I2)') 'EVEC.',IRREP
       ELSE
         WRITE(EVECFN,'(A6,I1)') 'EVEC.0',IRREP
       ENDIF
+      IF(IRREP.GT.9) THEN
+        WRITE(TEVCFN,'(A5,I2)') 'TEVC.',IRREP
+      ELSE
+        WRITE(TEVCFN,'(A6,I1)') 'TEVC.0',IRREP
+      ENDIF
 
-      CALL PST('Executing real symmetric Band-Lanczos+')
-      WRITE(IW,*)
-      WRITE(IW,*) '*** Symmetry ',IRREP
-      WRITE(IW,*)
-      WRITE(IW,*) ' Matrix dimension:',LADC
-      WRITE(IW,*) ' Band width:      ',NP
-      WRITE(IW,*) ' Number of iterations:',NITER
-      WRITE(IW,*) ' Unit numbers dia,off:',IO_DIA,IO_OFF
-      WRITE(IW,*) ' Eigenvector run:     ',CFLAG
-      WRITE(IW,*) ' Eigenvector file:    ',EVECFN
-      WRITE(IW,*)
+c     WRITE(IW,*)
+c     WRITE(IW,*) '*** Symmetry ',IRREP
+c     WRITE(IW,*)
+c     WRITE(IW,*) ' Matrix dimension:',LADC
+c     WRITE(IW,*) ' Band width:      ',NP
+c     WRITE(IW,*) ' Number of iterations:',NITER
+      IF(CFLAG) THEN
+        WRITE(IW,*) ' Long eigenvectors requested.'
+        WRITE(IW,*) ' Lanczos T matrix eigenvectors in         ',TEVCFN
+        WRITE(IW,*) ' Final ADC matrix eigenvectors stored in  ',EVECFN
+        WRITE(IW,*) ' Number of requested eigenvectors         ',NEIGENV
+        WRITE(IW,*)
+      ENDIF
 c
 c  ... clear large eigenvector array if requested
 c
@@ -891,23 +900,28 @@ c
         ENDDO
       ENDIF
 c
-c  ... read in purged eigenvector matrix ZVEC for calculation of
-c      the long eigenvectors.
+c  ... read in purged eigenvector matrix TEVC for calculation of
+c      the long eigenvectors. These are folded into the Lanczos
+c      iterations.
 c
       IF(CFLAG) THEN
-        OPEN(IO_LAN,FILe='ZVEC',FORM='UNFORMATTED',STATUS='UNKNOWN')
+        OPEN(IO_LAN,FILe=TEVCFN,FORM='UNFORMATTED',STATUS='UNKNOWN')
         REWIND(IO_LAN)
         READ(IO_LAN) N1
         READ(IO_LAN) N2
         WRITE(IW,*) 'There are',N1,' Lanczos eigenvectors available.'
-        WRITE(IW,*) 'Reading ZVEC ...'
-        IF(N1.NE.NEIGENV.OR.N2.NE.NITER)
-     &    CALL QUIT('Incompatible eigenvector parameters!')
-        DO I=1,N1
-          READ(IO_LAN) 
+        WRITE(IW,*) 'Reading TEVC ...'
+        IF(N1.LT.NEIGENV)
+     &    CALL QUIT('Too many eigenvecs requested for this symmetry!')
+        IF(N2.NE.NITER)
+     &    CALL QUIT('Incompatible T matrix eigenvector lengths!')
+        DO I=1,NEIGENV
+          READ(IO_LAN) rdummy
           READ(IO_LAN) (Z(IX,I),IX=1,N2)
+c         write(iw,*) rdummy
+c         write(iw,*) (Z(IX,I),IX=1,N2)
         ENDDO
-        CLOSE(IO_LAN,STATUS='DELETE')
+        CLOSE(IO_LAN)
       ENDIF
 
 c
@@ -947,7 +961,7 @@ c----------------------------- lanczos loop start ----------------------
       DO 99 IL = 1,NITER
 c
 c
-      IF(mod(il,50).eq.0) THEN
+      IF(mod(il,100).eq.0) THEN
         WRITE(IW,*) '---  Band Lanczos iteration ',IL,' of',niter
       ENDIF
 c
@@ -957,8 +971,23 @@ c  and the loop is only executed if previous vectors exist.
 c  the actual vector to be multiplied by A always sits in
 c  P(*,np+1)
 c
-        CALL RMATBLK(LADC, P(1,IVX(NP+1)), R, DIAG, BUF,
-     &               OI, OJ, INTBUF, IO_DIA, IO_OFF)
+c
+c  since for the double ionization the diagonal elements are
+c  not stored separately, we define an alternative matrix-vector
+c  multiplication routine which directly multiplies the matrix.
+c  If IO_DIA has value of -255 (which is surely no valid file handle)
+c  we know that the alternative routine should be accessed.
+c
+c  att: we need the buffer number in RMATBLK_ND! In order to avoid a lot
+c  of parameter rewriting we communicate this via a common block.
+c
+        IF(IO_DIA.eq.-255) THEN
+          CALL RMATBLK_ND(LADC, P(1,IVX(NP+1)), R, BUF,
+     &                    OI, OJ, INTBUF, IO_OFF)
+        ELSE
+          CALL RMATBLK(LADC, P(1,IVX(NP+1)), R, DIAG, BUF,
+     &                 OI, OJ, INTBUF, IO_DIA, IO_OFF)
+        ENDIF
 
 c  subtract all the previous components
 
@@ -1033,6 +1062,10 @@ c       write(iw,*) ' writing out Lanczos matrix...'
         write(io_lan) np+1,niter
         do j=1,niter
           write(io_lan) (t(i,j),i=1,np+1)
+c debug
+c         write(iw,*) (t(i,j),i=1,np+1)
+c debug end
+
         enddo
         close(io_lan)
         write(iw,*) ' Lanczos matrix written.'
@@ -1096,7 +1129,8 @@ C
 C---------------Local variables and function definitions ------------
 C
       COMPLEX*16 Y,ZDOTC,Z1
-      CHARACTER*7 EVECFN
+      CHARACTER*7 EVECFN,TEVCFN
+      real*8 rdummy
 C
 C---------------Executable code--------------------------------------
 C
@@ -1105,14 +1139,23 @@ C
       ELSE
         WRITE(EVECFN,'(A6,I1)') 'EVEC.0',IRREP
       ENDIF
+      IF(IRREP.GT.9) THEN
+        WRITE(TEVCFN,'(A5,I2)') 'TEVC.',IRREP
+      ELSE
+        WRITE(TEVCFN,'(A6,I1)') 'TEVC.0',IRREP
+      ENDIF
 
-      WRITE(IW,*) ' Matrix dimension:',LADC
-      WRITE(IW,*) ' Band width:      ',NP
-      WRITE(IW,*) ' Number of iterations:',NITER
-      WRITE(IW,*) ' Unit numbers dia,off:',IO_DIA,IO_OFF
-      WRITE(IW,*) ' Eigenvector run:     ',CFLAG
-      WRITE(IW,*) ' Eigenvector file:    ',EVECFN
-      WRITE(IW,*)
+c     WRITE(IW,*) ' Matrix dimension:',LADC
+c     WRITE(IW,*) ' Band width:      ',NP
+c     WRITE(IW,*) ' Number of iterations:',NITER
+c     WRITE(IW,*) ' Eigenvector run:     ',CFLAG
+      IF(CFLAG) THEN
+        WRITE(IW,*) ' Long eigenvectors requested.'
+        WRITE(IW,*) ' Lanczos T matrix eigenvectors in         ',TEVCFN
+        WRITE(IW,*) ' Final ADC matrix eigenvectors stored in  ',EVECFN
+        WRITE(IW,*) ' Number of requested eigenvectors         ',NEIGENV
+        WRITE(IW,*)
+      ENDIF
 c
 c  ... clear approx eigenvector array if requested
 c
@@ -1124,25 +1167,27 @@ c
         ENDDO
       ENDIF
 c
-c  ... read in purged eigenvector matrix ZVEC for calculation of
-c      the long eigenvectors.
+c  ... read in purged eigenvector matrix TEVC for calculation of
+c      the long eigenvectors. These are folded into the Lanczos
+c      iterations.
 c
-      if(cflag) then
-        open(io_lan,filE='ZVEC',form='UNFORMATTED',status='UNKNOWN')
-        rewind(io_lan)
-        read(io_lan) n1
-        read(io_lan) n2
-        write(iw,*) 'There are',n1,' Lanczos eigenvectors available.'
-        write(iw,*) 'Reading ZVEC ...'
-        if(n1.ne.neigenv.or.n2.ne.niter)
-     &    call quit('incompatible eigenvector parameters!')
-        do i=1,n1
-          read(io_lan) 
-          read(io_lan) (z(ix,i),ix=1,n2)
-        enddo
-        close(io_lan,status='DELETE')
-      endif
-
+      IF(CFLAG) THEN
+        OPEN(IO_LAN,FILe=TEVCFN,FORM='UNFORMATTED',STATUS='UNKNOWN')
+        REWIND(IO_LAN)
+        READ(IO_LAN) N1
+        READ(IO_LAN) N2
+        WRITE(IW,*) 'There are',N1,' Lanczos eigenvectors available.'
+        WRITE(IW,*) 'Reading TEVC ...'
+        IF(N1.LT.NEIGENV)
+     &    CALL QUIT('Too many eigenvecs requested for this symmetry!')
+        IF(N2.NE.NITER)
+     &    CALL QUIT('Incompatible T matrix eigenvector lengths!')
+        DO I=1,N1
+          READ(IO_LAN) rdummy
+          READ(IO_LAN) (Z(IX,I),IX=1,N2)
+        ENDDO
+        CLOSE(IO_LAN)
+      ENDIF
 c
 c  ... clear Lanczos matrix
 c
@@ -1180,7 +1225,7 @@ c----------------------------- lanczos loop start ----------------------
       DO 99 IL = 1,NITER
 c
 c
-      IF(mod(il,50).eq.0) THEN
+      IF(mod(il,100).eq.0) THEN
         WRITE(IW,*) '---  Band Lanczos iteration ',IL,' of',niter
       ENDIF
 c
@@ -1190,8 +1235,14 @@ c  and the loop is only executed if previous vectors exist.
 c  the actual vector to be multiplied by A always sits in
 c  P(*,np+1)
 c
-        CALL CMATBLK(LADC, P(1,IVX(NP+1)), R, DIAG, BUF,
-     &               OI, OJ, INTBUF, IO_DIA, IO_OFF)
+        IF(IO_DIA.eq.-255) THEN
+          CALL CMATBLK_ND(LADC, P(1,IVX(NP+1)), R, BUF,
+     &                 OI, OJ, INTBUF, IO_OFF)
+        ELSE
+          CALL CMATBLK(LADC, P(1,IVX(NP+1)), R, DIAG, BUF,
+     &                 OI, OJ, INTBUF, IO_DIA, IO_OFF)
+        ENDIF
+
 
 c  subtract all the previous components
 
@@ -1955,7 +2006,7 @@ C  current main program symmetry stored in IRREP
 c  (H.-D. Meyer's and Thomas Sommerfeld's formulation)
 c
 c  the corresponding eigenvalues are written out in the file
-c  EVAL.# for later analysis.
+c  SPEC.# for later analysis.
 c
 c  eigenvalues come in D(*), complete eigenvectors in ZLONG(N,N) !
 c  the first and last NP components will be needed for the analysis 
@@ -2012,6 +2063,11 @@ C
 
       CHARACTER*7 EVALFN
       LOGICAL INVSUC
+      CHARACTER*6 NAME5
+      PARAMETER (NAME5='ADCDAT')
+      CHARACTER*9 FNAME5
+      REAL*8 THTHR
+      CHARACTER*44 FIELD
 C
 C---------------Executable code--------------------------------------
 C
@@ -2020,10 +2076,12 @@ C
       CALL PST('Processing the real spectrum (real)+')
       WRITE(IW,*) 'Upper limit for printing eigenvalues:',ELIM
       WRITE(IW,*) 'Threshold for considering eigenvectors:',WTHR
+      WRITE(IW,*) 'Number of iterations:',N
+      WRITE(IW,*) 'Band width:',NP
 
 c
 c  copy the first and last NP components of the long eigenvectors
-c  to Z in order to apply dieters code easily.
+c  to Z in order to apply dieters purge routine easily.
 c
       do i=1,n
         IND(i)=0
@@ -2034,6 +2092,7 @@ c
 c  prepare short array z
          
       do i=1,n
+c        write(iw,*)(zlong(j,i),j=1,np)
       do j=1,np
         z(j,i)=zlong(j,i)
         z(j+np,i)=zlong(n-np+j,i)
@@ -2137,8 +2196,7 @@ C.....REMOVE SPURIOUS AND MULTIPLE EIGENVALUES.
      $     '   (',I3,'%)')
       write(6,'(4x,A,I4,6x,A,I4)') 'N_spurios = ', NSP,
      $     'N_multiple = ', NMU
-      write(6,*) 'Threshold for vector printing:',WTHR
-C
+c     write(6,*) 'Threshold for vector printing:',WTHR
 C
 C.....TRANSFORM THE EIGENVECTORS(FIRST NP ROWS) TO OBTAIN THE RESIDUES.
 C.....STORE THE RESULT IN THE FIRST NP ROWS OF THE EIGENVECTOR MATRIX Z.
@@ -2165,7 +2223,6 @@ c  (pole strengths). IMPORTANT: the band width of the Lanczos matrix
 c  can be larger than the number of actual hole states due to stability
 c  reasons. If we sum the intensities we just look at the hole states !
 c
-c
 c  print eigenvalues and accuracy in a more convenient format
 c  threshold applies only to the screen output. pole strength = square of
 c  eigenvector component. Write all eigenvalues and pole strength
@@ -2177,6 +2234,20 @@ c
         write(evalfn,'(a6,i1)') 'SPEC.0',irrep
       endif
       open(iounit,file=evalfn,form='FORMATTED',status='UNKNOWN')
+c
+c  if double_ionizations were done we additionally open the
+c  corresponding configuration data file
+c
+      IF(ADCLEVEL.EQ.4) THEN
+        IRECL44 = 44
+        IF(IRREP.GT.9) THEN
+          WRITE(FNAME5,'(A6,A1,I2)') NAME5,'.',IRREP
+        ELSE
+          WRITE(FNAME5,'(A6,A2,I1)') NAME5,'.0',IRREP
+        ENDIF
+        OPEN(IOUNIT+1,FILE=FNAME5,ACCESS='DIRECT',
+     &                RECL=IRECL44,STATUS='UNKNOWN')
+      ENDIF
       
       cntev=0
       DO J = 1, JND 
@@ -2200,11 +2271,17 @@ c  everything goes to file, no threshold for pole strength and
 c  no upper limit for the eigenvalues. That means: all eigenvalues
 c  together with their pole strengths and error estimates are written
 c  to the SPEC.XX files.
+c  it has turned out advantageous if we leave out the numeration
+c  variable. Especially for sorting purposes this variable is a pain.
 c
-        write(iounit,'(I5,2x,F10.4,4x,2F12.6)') j,d(j)*AUEV,x1,y1
+        write(iounit,'(2x,F10.4,4x,2F12.6)') d(j)*AUEV,x1,y1
 c
 c  print on screen only those eigenvalues that are below the given limit.
 c  use cntev for contiguous numbering !
+c
+c  ATT !!! For the two-hole final states an output of the squared
+c  coefficient is shrouding information! We therefore write out the
+c  coefficients themselves!
 c
         if(d(j)*AUEV.le.ELIM) THEN
           cntev = cntev + 1
@@ -2213,26 +2290,30 @@ c
      &    3x,'error estimate'/2x,60('-')/)
           write(iw,389) cntev,'@', d(j)*AUEV, x1, y1, ind(j)
  389      format(I5,A1,2x,F14.8,4x,F8.4,4x,1PE11.2,'  (',I5,')')
-          write(iw,'(100I8)') (ix,ix=1,nholes)
-          write(iw,'(100F8.4)') 
-     &         (z(ix,j)*z(ix,j),ix=1,nholes)
+          IF(ADCLEVEL.EQ.4) THEN
+            write(iw,*) '       -----Contributing 2h configurations:'
+            DO iths=1,nholes
+              ththr=z(iths,j)*z(iths,j)
+              if(ththr.gt.0.0001) then
+                read(iounit+1,rec=iths) field
+c               write(iw,'(12X,I5,A3,F12.5,A44)') 
+c    &             iths,':  ',ththr,field
+                write(iw,'(12X,I5,A3,F12.5,A44)') 
+     &             iths,':  ',z(iths,j),field
+              endif
+            ENDDO          
+          ELSE
+            write(iw,'(100I8)') (ix,ix=1,nholes)
+            write(iw,'(100F8.4)') 
+     &           (z(ix,j)*z(ix,j),ix=1,nholes)
+          ENDIF
         endif
 
       ENDDO
 
       close(iounit)
-c
-c  if ADCDEBUG=1 we print the eigenvalues as a special table for the
-c  DIRAC test suite reladc
-c
-      IF(ADCDEBUG.EQ.1) THEN
-        WRITE(IW,'(A9)') 'oooADCooo)'
-        DO J = 1, MIN0(JND,20) 
-          WRITE(IW,'(4x,F14.8,4x,F8.4,4x,F8.4)') d(j)*AUEV,x1,y1
-        ENDDO
-      ENDIF
+      if(adclevel.eq.4) close(iounit+1)
 
-      WRITE(IW,*)
       WRITE(IW,*)
          
 C
@@ -2276,7 +2357,7 @@ c
 c
 c  open file for the Lanczos eigenvectors
 c
-        OPEN(IOUNIT,FILE='ZVEC',FORM='UNFORMATTED',STATUS='UNKNOWN')
+        OPEN(IOUNIT,FILE='TEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
         REWIND(IOUNIT)
         WRITE(IOUNIT) NEIGENV
         WRITE(IOUNIT) N
@@ -2360,7 +2441,7 @@ C  current main program symmetry stored in IRREP
 c  (H.-D. Meyer's and Thomas Sommerfeld's formulation)
 c
 c  the corresponding eigenvalues are written out in the file
-c  EVAL.# for later analysis.
+c  SPEC.# for later analysis.
 c
 c  eigenvalues come in D(*), complete eigenvectors in ZLONG(N,N) !
 c  the first and last NP components will be needed for the analysis 
@@ -2417,6 +2498,12 @@ C
 
       CHARACTER*7 EVALFN
       LOGICAL INVSUC
+c variables for hole-configuration analysis
+      CHARACTER*6 NAME5
+      PARAMETER (NAME5='ADCDAT')
+      CHARACTER*9 FNAME5
+      REAL*8 THTHR
+      CHARACTER*44 FIELD
 C
 C---------------Executable code--------------------------------------
 C
@@ -2425,6 +2512,8 @@ C
       CALL PST('Processing the spectrum (complex)+')
       WRITE(IW,*) 'Upper limit for printing eigenvalues on screen',ELIM
       WRITE(IW,*) 'Threshold pole strength for eigenvectors:',WTHR
+      WRITE(IW,*) 'Number of iterations:',N
+      WRITE(IW,*) 'Band width:',NP
 c
 c  copy the first and last NP components of the long eigenvectors
 c  to Z in order to apply dieters code easily.
@@ -2541,7 +2630,7 @@ C.....REMOVE SPURIOUS AND MULTIPLE EIGENVALUES.
      $     '   (',I3,'%)')
       write(IW,'(4x,A,I4,6x,A,I4)') 'N_spurios = ', NSP,
      $     'N_multiple = ', NMU
-      write(IW,*) 'Threshold for vector printing:',WTHR
+c     write(IW,*) 'Threshold for vector printing:',WTHR
 C
 C
 C.....TRANSFORM THE EIGENVECTORS(FIRST NP ROWS) TO OBTAIN THE RESIDUES.
@@ -2582,6 +2671,20 @@ c
       endif
 
       open(iounit,file=evalfn,form='FORMATTED',status='UNKNOWN')
+c
+c  if double_ionizations were done we additionally open the
+c  corresponding configuration data file
+c
+      IF(ADCLEVEL.EQ.4) THEN
+        IRECL44 = 44
+        IF(IRREP.GT.9) THEN
+          WRITE(FNAME5,'(A6,A1,I2)') NAME5,'.',IRREP
+        ELSE
+          WRITE(FNAME5,'(A6,A2,I1)') NAME5,'.0',IRREP
+        ENDIF
+        OPEN(IOUNIT+1,FILE=FNAME5,ACCESS='DIRECT',
+     &                RECL=IRECL44,STATUS='UNKNOWN')
+      ENDIF
       
       cntev=0
       DO J = 1, JND 
@@ -2604,12 +2707,13 @@ c
 c  everything goes to file, no threshold for pole strength and
 c  no upper limit for the eigenvalues. That means: all eigenvalues
 c  together with their pole strengths and error estimates are written
-c  to the SPEC.XX files.
+c  to the SPEC.XX files. Again: no enumeration number.
 c
-        write(iounit,'(I5,2x,F10.4,4x,2F12.6)') j,d(j)*AUEV,x1,y1
+        write(iounit,'(2x,F10.4,4x,2F12.6)') d(j)*AUEV,x1,y1
 c
-c  screen print with threshold and hole components.
-c  use cntev for contiguous numbering !
+c  print on screen only those eigenvalues that are below the given limit.
+c  use cntev for contiguous numbering ! Again: we now write out the
+c  coefficients themselves for the two-particle case!
 c
         if(d(j)*AUEV.le.ELIM) then
           cntev = cntev + 1
@@ -2618,79 +2722,35 @@ c
      &    3x,'error estimate'/2x,60('-')/)
           write(iw,389) cntev,'@', d(j)*AUEV, x1, y1, ind(j)
  389      format(I5,A1,2x,F14.8,4x,F8.4,4x,1PE11.2,'  (',I5,')')
-          write(iw,'(100I8)') (ix,ix=1,nholes)
-          write(iw,'(100F8.4)') 
-     &         (dble(z(ix,j)*dconjg(z(ix,j))),ix=1,nholes)
+
+          IF(ADCLEVEL.EQ.4) THEN
+            write(iw,*) '       -----Contributing 2h configurations:'
+            DO iths=1,nholes
+              ththr=z(iths,j)*dconjg(z(iths,j))
+              if(ththr.gt.0.0001) then
+                read(iounit+1,rec=iths) field
+c               write(iw,'(12X,I5,A3,F12.5,A44)') 
+c    &             iths,':  ',ththr,field
+                write(iw,'(12X,I5,A3,2F12.5,A44)') 
+     &             iths,':  ',z(iths,j),field
+              endif
+            ENDDO    
+          ELSE
+            write(iw,'(100I8)') (ix,ix=1,nholes)
+            write(iw,'(100F8.4)') 
+     &           (dble(z(ix,j)*dconjg(z(ix,j))),ix=1,nholes)
+          ENDIF
         endif
 
       ENDDO
 
       close(iounit)
+      if(adclevel.eq.4) close(iounit+1)
 
       WRITE(IW,*)
-      WRITE(IW,*)
-c
-c  if ADCDEBUG=1 we print the eigenvalues as a special table for the
-c  DIRAC test suite reladc
-c
-      IF(ADCDEBUG.EQ.1) THEN
-        WRITE(IW,'(A9)') 'oooADCooo)'
-        DO J = 1, MIN0(JND,20) 
-          WRITE(IW,'(4x,F14.8,4x,F8.4,4x,F8.4)') d(j)*AUEV,x1,y1
-        ENDDO
-      ENDIF
 C
 C.....PRINT MEAN RESIDUES (X), EIGENVALUES (W), ERROR-EST.(Y) AND MULT.
 C----------------------------------------------------------------
-C *********** ATT *********** we skip this clumsy output !!!
-      GOTO 712
-C
-
-
-      ICNV = 0
-      JCNV = 0
-      WRITE(IW,900)
- 900  FORMAT(//2X,'E I G E N V A L U E S'/2X,125('-')//2
-     $     ('   NO.  MEAN-RES.*100  EIGEN-VL (eV)',3x
-     $     ,'ERROR     M   S',9x) // 2X,125('-')/ )
-      DO  330  J = 1, (JND+1)/2
-         Y1 = 0.D0
-         Y2 = 0.D0
-         K  = JND + 1 - J
-         DO  332  I = 1, NP
-            Y1 = Y1 + DBLE(DCONJG(Z(NP+I,J))*Z(NP+I,J))
-            Y2 = Y2 + DBLE(DCONJG(Z(NP+I,K))*Z(NP+I,K))
- 332     continue
-         Y1 = dsqrt(Y1)
-         Y2 = dsqrt(Y2)
-         IF(Y1.LT.1.D-9 .AND. J.NE.JND/2+1) ICNV = ICNV + 1
-         IF(Y2.LT.1.D-9)  ICNV = ICNV + 1
-         IF(Y1.LT.1.D-6 .AND. J.NE.JND/2+1) JCNV = JCNV + 1
-         IF(Y2.LT.1.D-6)  JCNV = JCNV + 1
-         X1 = 0.D0
-         X2 = 0.D0
-         DO  331  I = 1, NP
-            X1 = X1 + DBLE(DCONJG(Z(I,J))*Z(I,J))
-            X2 = X2 + DBLE(DCONJG(Z(I,K))*Z(I,K))
- 331     continue
-c
-c
-         X1 = DSQRT(X1)
-         X2 = DSQRT(X2)
-
-         WRITE(IW,901) J,X1,d(J)*AUEV,Y1,MLT(J),LSP(J), 
-     &         K,X2,d(K)*AUEV,Y2,MLT(K),LSP(K)
- 901     FORMAT(1X, 2( I4, 2PF12.6, 0PF16.9, 1PE11.2, 2I4, 11X ) ) 
- 330  CONTINUE
-      WRITE(IW,990)
- 990  FORMAT(/2('   NO.  MEAN-RES.*100  EIGEN-VL (eV)',3x,
-     &     'ERROR     M   S         '),//,2X,125('-')/ )
-      WRITE(IW,902) ICNV, 100.D0*ICNV/DBLE(JND), 100.D0*ICNV/DBLE(n)
-      WRITE(IW,903) JCNV, 100.D0*JCNV/DBLE(JND), 100.D0*JCNV/DBLE(n)
- 902  FORMAT(/,'    NUMBER OF CONVERGED (1.D-9) EIGENVALUES =',
-     &         I4, F11.2, ' %  (JND) ', F9.2,' %  (JEND) ' )
- 903  FORMAT(/,'    NUMBER OF CONVERGED (1.D-6) EIGENVALUES =',
-     &         I4, F11.2, ' %  (JND) ', F9.2,' %  (JEND) ' )     
 
 c     ----------------------------------------------------------------
 c     ----  from here the spectrum is purged and the number of valid
@@ -2700,7 +2760,6 @@ c     ----  in the following another control output is generated and
 c     ----  the inverse iterator called if required.
 c     ----------------------------------------------------------------
 
- 712  CONTINUE
       IF(NEIGENV.GT.0) THEN
         IF(NEIGENV.GT.N) NEIGENV = N
         WRITE(IW,*)
@@ -2729,7 +2788,7 @@ c
 c
 c  open file for the Lanczos eigenvectors
 c
-        OPEN(IOUNIT,FILE='ZVEC',FORM='UNFORMATTED',STATUS='UNKNOWN')
+        OPEN(IOUNIT,FILE='TEVC',FORM='UNFORMATTED',STATUS='UNKNOWN')
         REWIND(IOUNIT)
         WRITE(IOUNIT) NEIGENV
         WRITE(IOUNIT) N
@@ -2827,6 +2886,7 @@ C
 C we always compute the eigenvectors of the band matrix, because
 C they are needed in the further analysis
 C These eigenvectors have the FULL length of the Lanczos matrix. 
+C but not the length of the original ADC matrix!
 C In the original formulation only
 C the first and last NP components were available and the whole
 C eigenvector was calculated by inverse iteration. We do not pursue this
@@ -2837,16 +2897,16 @@ C
       UPLO='L'
       LDZ=N
 
-      CALL PST('Diagonalizing real tridiagonal matrix+')
+c     CALL PST('Diagonalizing real tridiagonal matrix+')
 
 
-      WRITE(IW,*) 'Parameters for real band diagonalizer'
-      WRITE(IW,*) 'N,NP,LDAB:',N,NP,LDAB
+c     WRITE(IW,*) 'Parameters for real band diagonalizer'
+c     WRITE(IW,*) 'N,NP,LDAB:',N,NP,LDAB
 
-      WRITE(IW,*) 'Calling Alternative DSBEV...'
+c     WRITE(IW,*) 'Calling Alternative DSBEV...'
       CALL ALDSBEV(JOBZ, UPLO, N, NP, AB, LDAB, EVL, Z, LDZ,
      &           RWORK, INFO)
-      WRITE(IW,*) 'Code from ALDSBEV:',INFO
+c     WRITE(IW,*) 'Code from ALDSBEV:',INFO
       IF(INFO.NE.0) THEN
         CALL QUIT('Error in ALDSBEV')
       ENDIF
@@ -2917,15 +2977,15 @@ C
       UPLO='L'
       LDZ=N
 
-      CALL PST('Diagonalizing hermitian tridiagonal matrix+')
+c     CALL PST('Diagonalizing hermitian tridiagonal matrix+')
 
-      WRITE(IW,*) 'Parameters for complex band diagonalizer'
-      WRITE(IW,*) 'N,NP,LDAB:',N,NP,LDAB
+c     WRITE(IW,*) 'Parameters for complex band diagonalizer'
+c     WRITE(IW,*) 'N,NP,LDAB:',N,NP,LDAB
 
-      WRITE(IW,*) 'Calling Alternative ZHBEV...'
+c     WRITE(IW,*) 'Calling Alternative ZHBEV...'
       CALL ALZHBEV(JOBZ, UPLO, N, NP, AB, LDAB, EVL, Z, LDZ,
      &           WORK, RWORK, INFO)
-      WRITE(IW,*) 'Code from ALZHBEV:',INFO
+c     WRITE(IW,*) 'Code from ALZHBEV:',INFO
       IF(INFO.NE.0) THEN
         CALL QUIT('Error in ALZHBEV')
       ENDIF
@@ -3105,6 +3165,156 @@ c  .. read off-diagonal elements and multiply on the fly
  88   CALL QUIT('Diagonal read error in RMATBLK')
  99   CALL QUIT('Unexpected end in RMATBLK')
  199  CALL QUIT('Off-diagonal read error in RMATBLK')
+
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE RMATBLK_ND(LADC,PO,PN,BUF,IOI,IOJ,INTBUF,IO_OFF)
+C
+      IMPLICIT INTEGER (A-Z)
+
+      INTEGER LADC,INTBUF,IO_OFF
+      REAL*8 PO(LADC), PN(LADC)
+      REAL*8 BUF(INTBUF)
+      INTEGER IOI(INTBUF),IOJ(INTBUF)
+
+C
+C---------------Description--------------------------------------------
+C
+C  Perform the real symmetric multiplication of the ADC matrix
+C  with the Krylov vectors. Here *NO* separate diagonal entries are
+C  processed ! They are contained in the packed matrix storage and
+C  a single multiplication suffices.
+c
+c  att! the required number of buffers is communicated through this
+c  common block.  **AND** the row/column indices are now in packed form!
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "../relccsd/files.inc"
+#include "../relccsd/complex.inc"
+      INTEGER NBUFS
+      COMMON/RDMATND/NBUFS
+C
+C---------------Local variables--------------------------------------
+C
+      INTEGER IREC,NACT,JDUMMY,IROW,ICOL
+      REAL*8 A
+      INTEGER LONGRC,MASK
+      DATA MASK/Z'00000000FFFFFFFF'/
+C
+C---------------Executable code--------------------------------------
+
+
+C  for the matrix elements we note that only the lower triangular
+C  part *AND* the diagonal of the ADC-matrix is stored. 
+C  the missing contribution is from the symmetric upper triangular part !
+
+c  the if takes care of not double counting the diagonal.
+c
+c  new vector has to be zeroed!
+      DO J = 1, LADC
+        PN(J) =  0.0d0
+      ENDDO
+
+
+c  .. read off-diagonal elements and multiply on the fly
+
+      REWIND(IO_OFF)
+      DO IREC = 1,NBUFS
+        READ(IO_OFF,ERR=444) (BUF(IXX),IXX=1,INTBUF),
+     &                       (IOI(IXX),IXX=1,INTBUF),
+     &                        NACT,JDUMMY
+        DO K = 1, NACT
+          LONGRC = IOI(K)
+          ICOL = AND(LONGRC,MASK)
+          IROW = ISHFT(LONGRC,-32)
+          A    = BUF(K)
+c       write(iw,*) 'vvvvv',irow,icol,A
+
+          PN(IROW) = PN(IROW) + PO(ICOL) * A
+          IF(IROW.NE.ICOL) PN(ICOL) = PN(ICOL) + PO(IROW) * A
+c         IF(IROW.eq.ICOL) write(iw,*) 'yeller outer!'
+        ENDDO
+      ENDDO
+
+      RETURN
+
+ 444  CALL QUIT('Matrix read error in RMATBLK_ND')
+
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE CMATBLK_ND(LADC,PO,PN,BUF,IOI,IOJ,INTBUF,IO_OFF)
+C
+      IMPLICIT INTEGER (A-Z)
+
+      INTEGER LADC,INTBUF,IO_OFF
+      COMPLEX*16 PO(LADC), PN(LADC)
+      COMPLEX*16 BUF(INTBUF)
+      INTEGER IOI(INTBUF),IOJ(INTBUF)
+
+C
+C---------------Description--------------------------------------------
+C
+C  Perform the complex hermitian multiplication of the ADC matrix
+C  with the Krylov vectors. Here *NO* separate diagonal entries are
+C  processed ! They are contained in the packed matrix storage and
+C  a single multiplication suffices.
+c
+c  att! the required number of buffers is communicated through this
+c  common block.  **AND** the row/column indices are now in packed form!
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "../relccsd/files.inc"
+#include "../relccsd/complex.inc"
+      INTEGER NBUFS
+      COMMON/RDMATND/NBUFS
+C
+C---------------Local variables--------------------------------------
+C
+      INTEGER IREC,NACT,JDUMMY,IROW,ICOL
+      COMPLEX*16 A
+      INTEGER LONGRC,MASK
+      DATA MASK/Z'00000000FFFFFFFF'/
+C
+C---------------Executable code--------------------------------------
+
+
+C  for the matrix elements we note that only the lower triangular
+C  part *AND* the diagonal of the ADC-matrix is stored. 
+C  the missing contribution is from the symmetric upper triangular part !
+
+c  the if takes care of not double counting the diagonal.
+c
+c  new vector has to be zeroed!
+      DO J = 1, LADC
+        PN(J) =  (0.0d0,0.0d0)
+      ENDDO
+
+
+c  .. read off-diagonal elements and multiply on the fly
+
+      REWIND(IO_OFF)
+      DO IREC = 1,NBUFS
+        READ(IO_OFF,ERR=444) (BUF(IXX),IXX=1,INTBUF),
+     &                       (IOI(IXX),IXX=1,INTBUF),
+     &                        NACT,JDUMMY
+        DO K = 1, NACT
+          LONGRC = IOI(K)
+          ICOL = AND(LONGRC,MASK)
+          IROW = ISHFT(LONGRC,-32)
+          A    = BUF(K)
+c       write(iw,*) 'vvvvv',irow,icol,A
+
+          PN(IROW) = PN(IROW) + PO(ICOL) * A
+          IF(IROW.NE.ICOL) PN(ICOL) = PN(ICOL) + PO(IROW) * DCONJG(A)
+c         IF(IROW.eq.ICOL) write(iw,*) 'yeller outer!'
+        ENDDO
+      ENDDO
+
+      RETURN
+
+ 444  CALL QUIT('Matrix read error in CMATBLK_ND')
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
