@@ -335,12 +335,16 @@ C     Print section
 C     =============
 C     
       IF(IPRINT.GE.2) THEN
-         CALL HEADER('Output from SETXEE',-1)        
-         WRITE(LUPRI,'(A,I10)') 'e-e rotations (non-redundant): ',NXOPE
-         WRITE(LUPRI,'(2I6)') (JXOPE(1,J),JXOPE(2,J),J=1,NXOPE)
-         WRITE(LUPRI,'(A,I10)') 'extra e-e rotations (redundant): ',
+        CALL HEADER('Output from SETXEE',-1)        
+        WRITE(LUPRI,'(A,I10)') 'e-e rotations (non-redundant): ',NXOPE
+        IF (IPRINT.GE.3) THEN
+          WRITE(LUPRI,'(2I6)') (JXOPE(1,J),JXOPE(2,J),J=1,NXOPE)
+        ENDIF
+        WRITE(LUPRI,'(A,I10)') 'extra e-e rotations (redundant): ',
      &        NHOPE - NXOPE
-         WRITE(LUPRI,'(2I6)') (JXOPE(1,J),JXOPE(2,J),J=NXOPE+1,NHOPE)
+        IF (IPRINT.GE.3) THEN
+          WRITE(LUPRI,'(2I6)') (JXOPE(1,J),JXOPE(2,J),J=NXOPE+1,NHOPE)
+        ENDIF
       ENDIF
 C     
       CALL QEXIT('SETXEE')
