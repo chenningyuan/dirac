@@ -3226,7 +3226,7 @@ c  .. read off-diagonal elements and multiply on the fly
      &                        NACT,JDUMMY
         DO K = 1, NACT
           LONGRC = IOI(K)
-          ICOL = AND(LONGRC,MASK)
+          ICOL = IAND(LONGRC,MASK)
           IROW = ISHFT(LONGRC,-32)
           A    = BUF(K)
 c       write(iw,*) 'vvvvv',irow,icol,A
@@ -3301,7 +3301,7 @@ c  .. read off-diagonal elements and multiply on the fly
      &                        NACT,JDUMMY
         DO K = 1, NACT
           LONGRC = IOI(K)
-          ICOL = AND(LONGRC,MASK)
+          ICOL = IAND(LONGRC,MASK)
           IROW = ISHFT(LONGRC,-32)
           A    = BUF(K)
 c       write(iw,*) 'vvvvv',irow,icol,A
