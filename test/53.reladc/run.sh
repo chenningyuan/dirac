@@ -6,4 +6,4 @@ MENU=adc;
 MOL=HCN;
 export MENU;
 export MOL;
-../run.sh
+../run.sh -mw 120
