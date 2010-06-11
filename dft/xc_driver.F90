@@ -559,6 +559,12 @@ contains
          call FDE_testFrozenDensity()
       endif
 
+!#define PRINT_FMAT
+#ifdef PRINT_FMAT
+      write(*, *) 'debug: XC potential matrix zeroed out prior to integration'
+      call dzero(fmat, mat_dim*mat_dim*nz)
+#endif
+
       call loop_over_batches()
 
 #ifdef VAR_MPI
@@ -611,6 +617,18 @@ contains
 
       call basis_info_delete()
       call nullify_and_release()
+
+#ifdef PRINT_FMAT
+      write(*, *) 'debug: real part of the XC potential matrix'
+      call prqmat(xc_fmat,        &
+                  mat_dim,        &
+                  mat_dim,        &
+                  mat_dim,        &
+                  mat_dim,        &
+                  1,              &
+                  (/1, 2, 3, 4/), &
+                  file_unit)
+#endif
 
    end subroutine
 
