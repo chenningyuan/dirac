@@ -2637,7 +2637,7 @@ C
      &      '* Number of positive eigenvalues:',INERT(1),
      &      '* Number of zero     eigenvalues:',INERT(3),
      &      '* Number of negative eigenvalues:',INERT(2),
-     &      '  number of +- (ep) trial vectors:',NPBEC
+     &      '  number of +- (ep) trial vectors:',NPVEC
           IF(IPAR.GT.0) THEN
             WRITE(LUPRI,'(/A)')
      &      '*** WARNING - Possible instability detected '//
