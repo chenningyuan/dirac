@@ -93,9 +93,8 @@ C     Add the master node
 #endif
 C
 C     FIXME: SK - Aug 08: write parallel slave initialization 
-C                         and slave release routines. 
-C                         Is RELADC in general working in parallel?
-C                         Markus, what do you say?
+C                         and slave release routines for later
+C                         parallelization.
 C
 C     Summon the slaves, who are waiting in the general menu routine.
 C
@@ -189,7 +188,7 @@ C
       REAL*8 CPUE,CPUFO,CPUSO,CPUFS,CPUVAR
       REAL*8 WALL0,WALL1,WALL2,WALLTOT,WALLI,WALLS
       REAL*8 WALLE,WALLFO,WALLSO,WALLFS,WALLVAR
-      CHARACTER*10 INTERFACE,INTFCE
+      CHARACTER*10 INTFCE
 C
 C---------------Executable code--------------------------------------
 
@@ -466,12 +465,6 @@ C
      &        T50,I10," 8-byte words")
 1002  FORMAT (" Not enough core, increase to at least",
      &        T50,I10," 8-byte words"//" Allocate ",I5," Megawords")
-1003  FORMAT (/" Size of 3- and 4-virtual batches :",T50,I10
-     &        /" Number of passes :",T50,I10)
-1005  FORMAT (" Size of I/O buffers :",T50,I10," kB")
-1006  FORMAT (" Too much memory specified, maximum is",
-     &        T50,I10," 8-byte words"//" Make Mword equal to ",I5)
-1008  FORMAT (" Amount of memory used :",T50,F10.1," megawords")
 1010  FORMAT(//' Timing of main modules :',T35,
      &           'Wallclock (s)',T55,'CPU on master (s)',
      &/' Before CC driver :',T30,F12.2,T55,F12.2
@@ -484,7 +477,6 @@ C
      &/' Untimed parts :',T30,F12.2,T55,F12.2 
      &/' Total time in CC driver :',T30,F12.0,T55,F12.2)
  1011 FORMAT (/'---< Process ',I5,' of ',I5,'----<'/)
- 1015 FORMAT (/' Checking ',A,'MXCORR1,MXCORR',2I10)
 C
       END
 
