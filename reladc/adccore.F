@@ -263,8 +263,8 @@ C
          PRINT*," INCREASE MAXSP IN CCMAIN TO",NSP
          CALL QUIT("NSP.GT.MAXSP")
       ENDIF
-      WRITE (IW,*) 'Number of active electrons given to ADC:',
-     &             'Via MRCONEE', NELEC
+c     WRITE (IW,*) 'Number of active electrons given to ADC:',
+c    &             'Via MRCONEE', NELEC
 C
 C     Read input and set IPRNT variable =2 for CCSETI in order
 C     to print out the recomputed orbital energies and orbital numbers
@@ -1076,54 +1076,43 @@ C----------------------------------------------------------------------
 C
       CALL MEMCHK('ADC-memcheck after alloc',CC,KFRSAV)
 C
-      WRITE(IW,*) '***********'
-      WRITE(IW,*) '*********** ADC parameters:'
-      WRITE(IW,*) '***********'
-      WRITE(IW,165) CALTYP(ADCLEVEL),ADCTITLE,DOCONST,VCONV,READQKL,NSP
+      WRITE(IW,*)
+      WRITE(IW,*)
+      WRITE(IW,*) 'Parameters for the ADC run:'
+      WRITE(IW,*)
+      WRITE(IW,165) CALTYP(ADCLEVEL),ADCTITLE,DOCONST,VCONV,
+     &              READQKL,NSP,DIAGTYPE,
+     &              IVOVVT (NREP+1)*8*RCW/(1024*1024),
+     &              IVVVVTT(NREP+1)*8*RCW/(1024*1024),
+     &              KFREE,LFREE,KFRSAV,KFRDYN
 c --------  corresponding format
  165  FORMAT (/" Type of ADC calculation: ",T50,A8/,
      &         " Title: ",T50,A30/
      &         " Add constant diagrams (in ADC-3): ",T50,L1/
      &         " up to a convergence of ",T50,E15.8/
      &         " Read in constant diagrams (in ADC-3): ",T50,L1/
-     &         " Number of spinors:",T50,I5)
+     &         " Number of spinors:",T50,I5/
+     &         " Selected diagonalization procedure:",T50,A4/
+     &         " Memory requirements (MB) for the VOVV ints:",T50,I6/
+     &         " Memory requirements (MB) for the VVVV ints:",T50,I6/
+     &         " Memory pointers KFREE,LFREE,KFRSAV,KFRDYN:",T50,4I12/)
 c --------  corresponding format end
-C
-C  print out most essential buffer dimensions for checking purposes
-C  and memory boundaries
-C
-      WRITE(IW,*) 'Selected diagonalization procedure:',DIAGTYPE
-      WRITE(IW,*) 'Largest h/h block:',MXNO,' x',MXNO
-      WRITE(IW,*) 'Largest occurring ADC matrix:',LADCM,' x',LADCM
-      WRITE(IW,*) 'Memory requirements (MB) for the VOVV ints:',
-     &  IVOVVT(NREP+1)*8*RCW/(1024*1024)
-      WRITE(IW,*) 'Memory requirements (MB) for the VVVV ints:',
-     &  IVVVVTT(NREP+1)*8*RCW/(1024*1024)
-      WRITE(IW,*)
-      WRITE(IW,*) 'Complex arithmetic:',CARITH
-      WRITE(IW,*)
-      WRITE(IW,*) 'Memory pointers KFREE,LFREE,KFRSAV,KFRDYN:',
-     & KFREE,LFREE,KFRSAV,KFRDYN
-C
-C  -------- sort VVVV integrals from AB||CD to AC||BD , BDREP=1
-C this  integral sorting is not necessary anymore because
-C the BVV contributions are not calculated.
 C
 C  relic:  check cumulative sum of the VVVV integrals
 C
-      IF(ADCLEVEL.EQ.3) THEN
-        CALL MEMOPT('REAL',BUFVVVV,IVMAX,CC,KFREE,LFREE,ALLOC)
-        CALL RDVVVV(CC(BUFVVVV))
-        if(carith) then
-          write(iw,*) 'vvvv chksum (c)',
-     &      zdotc(ivvvvtt(nrep+1),CC(BUFVVVV),1,CC(BUFVVVV),1)
-        else
-          write(iw,*) 'vvvv chksum (r)',
-     &      ddot(ivvvvtt(nrep+1),CC(BUFVVVV),1,CC(BUFVVVV),1)
-        endif
-        CALL MEMCHK('RDVVVV',CC,KFRSAV)
-        CALL MEMREL('ADC-memrel',CC,KFRSAV,KFRDYN,KFREE,LFREE)
-      ENDIF
+c     IF(ADCLEVEL.EQ.3) THEN
+c       CALL MEMOPT('REAL',BUFVVVV,IVMAX,CC,KFREE,LFREE,ALLOC)
+c       CALL RDVVVV(CC(BUFVVVV))
+c       if(carith) then
+c         write(iw,*) 'vvvv chksum (c)',
+c    &      zdotc(ivvvvtt(nrep+1),CC(BUFVVVV),1,CC(BUFVVVV),1)
+c       else
+c         write(iw,*) 'vvvv chksum (r)',
+c    &      ddot(ivvvvtt(nrep+1),CC(BUFVVVV),1,CC(BUFVVVV),1)
+c       endif
+c       CALL MEMCHK('RDVVVV',CC,KFRSAV)
+c       CALL MEMREL('ADC-memrel',CC,KFRSAV,KFRDYN,KFREE,LFREE)
+c     ENDIF
 C
 C  next we check if user wants to read in previously calculated Q_kl
 C  data. Otherwise we have to calculate them. JSTAT will give
@@ -1218,10 +1207,10 @@ c------------------------------------------------------------
 
         DO 700 KREP=1,NREP,SYMMITER
 
-          WRITE(IW,*)
-          WRITE(IW,*) ' /QKL_LOOP/ KREP:     ',KREP
-          WRITE(IW,*) ' /QKL_LOOP/ NO(KREP): ',NO(KREP)
-          WRITE(IW,*) ' /QKL_LOOP/ NV(KREP): ',NV(KREP)
+c         WRITE(IW,*)
+c         WRITE(IW,*) ' /QKL_LOOP/ KREP:     ',KREP
+c         WRITE(IW,*) ' /QKL_LOOP/ NO(KREP): ',NO(KREP)
+c         WRITE(IW,*) ' /QKL_LOOP/ NV(KREP): ',NV(KREP)
           IF( (NO(KREP).EQ.0).AND.(NV(KREP).EQ.0)) THEN
             WRITE(IW,*) 'No Qkl contribution in symmetry',KREP
             GOTO 700
@@ -1342,7 +1331,7 @@ c duplicate
             ELSE
               CALL QKLDUP(CC(BUFQOO),CC(BUFQVO),CC(BUFQVV),KREP)
             ENDIF
-            WRITE(IW,*) ' Q_kl duplication done.'
+            WRITE(IW,*) ' Q_kl duplication could be performed.'
           ELSE
             WRITE(IW,*) ' No Q_kl duplication possible !'
           ENDIF
@@ -1427,7 +1416,11 @@ C                  ******* LOOP OVER USER-DEFINED SYMMETRIES *******
 C                  ******* LOOP OVER USER-DEFINED SYMMETRIES *******
 C                  *************************************************
 C
-      WRITE(IW,*) 'XREPS ---->',XREPS
+c     WRITE(IW,*) 'XREPS ---->',XREPS
+
+      CALL PST('Constant diagrams finished, now calculating the/
+     &          remaining blocks+')
+
       DO 900 IRPLOOP=1,NREP
         IF(XREPS(IRPLOOP).EQ.0) GOTO 900
 c
@@ -1451,6 +1444,9 @@ c
         ENDIF
 
         WRITE(IW,300) KREP,REPNA(KREP)
+ 300    FORMAT (/" ******************************************"
+     & /" ***"/" ***"/" *** IRREP",I6,3X,"(",A4,")"/
+     & " ***"/" ***"/" ******************************************"//)
 C
 C  open files for ADC matrix (info-file, diagonal/off-diagonal
 C  elements) and set number of used buffers/position to
@@ -1503,9 +1499,9 @@ C  ADCINF.KREP and the configuration data into file2: ADCCNF.KREP
 C  close these files immediately.
 C
         LADC = NVOOT(KREP) + NO(KREP)
-        WRITE(IW,*) 'Main (hole) space of ADC matrix in irrep: ',
-     &               KREP,' : ',NO(KREP)
-        WRITE(IW,*) 'Dimension of ADC matrix in irrep: ',KREP,' : ',LADC
+        WRITE(IW,'(A,I4,2I8)') 
+     &      ' Hole space/dimension of ADC matrix in irrep: ',
+     &      KREP,NO(KREP),LADC
        
         ITYPE=0
         IF(CARITH) ITYPE = 1
@@ -1525,6 +1521,8 @@ C
 C  Compute C(3) of h/h block and add Sigma(inf) contributions.
 C  we also need space for the VVVV integrals.   
 C  ... BKC:  |><|
+C  S4P flag is always false because the Sigma(4+) algorithm will not
+C  go into this implementation.
 C
         IF(ADCLEVEL.EQ.3) THEN
           CALL MEMOPT('REAL',BUFVVVV,IVMAX,CC,KFREE,LFREE,ALLOC)
@@ -1552,12 +1550,12 @@ c
         WRITE(IW,*) 'Max. deviation from hermiticity'
         WRITE(IW,*) 'for the h/h block:',ASYM
         WRITE(IW,*)
-        WRITE(IW,*) 'h/h matrix:'
-        IF(CARITH) THEN
-           CALL cmatout(CC(CKKS),NO(KREP),NO(KREP))
-        ELSE
-           CALL matout(CC(CKKS),NO(KREP),NO(KREP))
-        ENDIF
+c       WRITE(IW,*) 'h/h matrix:'
+c       IF(CARITH) THEN
+c          CALL cmatout(CC(CKKS),NO(KREP),NO(KREP))
+c       ELSE
+c          CALL matout(CC(CKKS),NO(KREP),NO(KREP))
+c       ENDIF
 C
 C  compute 1h/2h-1p block contributions for ADC2 and ADC2X
 C
@@ -2013,9 +2011,6 @@ C
  290  FORMAT (" No occupied orbitals in IRREP",I2," ...skipping")
  295  FORMAT (" No VOOT orbitals in IRREP",I2," ...skipping")
  298  FORMAT (" No VVOT orbitals in IRREP",I2," ...skipping")
- 300  FORMAT (/" ******************************************"
-     & /" ***"/" ***"/" *** IRREP",I6,3X,"(",A4,")"/
-     & " ***"/" ***"/" ******************************************"//)
  305  FORMAT (" Eigenvalues written to ",A10,A1,I1/
      &        " Eigenvectors written to ",A10,A1,I1/)
  310  FORMAT (" Dimensions of ADC matrix:",I5,'x',I5/
@@ -3513,7 +3508,7 @@ C
 C---------------Executable Code --------------------------------------
 C
       CALL PST('Generating real Q_kl+')
-      WRITE(IW,*) ' **** Symmetry',KREP
+c     WRITE(IW,*) ' **** Symmetry',KREP
 
 C
 C  LENA is length of affinity blocks (U or V)
@@ -3539,7 +3534,7 @@ C
 c  debug
       nx=no(krep)*no(krep)
       off1=jjoo(krep,krep) + 1
-      WRITE(IW,*) 'QOO chksum:',ddot(nx,qoo(off1),1,qoo(off1),1)
+c     WRITE(IW,*) 'QOO chksum:',ddot(nx,qoo(off1),1,qoo(off1),1)
 c  debug end
         
 C
@@ -3569,8 +3564,8 @@ C
 c  debug
       nx=no(krep)*nv(krep)
       off1=jjvo(krep,krep) + 1
-      WRITE(IW,*) 'QVOA chksum:',ddot(nx,qvoa(off1),1,qvoa(off1),1)
-      WRITE(IW,*) 'QVOI chksum:',ddot(nx,qvoi(off1),1,qvoi(off1),1)
+c     WRITE(IW,*) 'QVOA chksum:',ddot(nx,qvoa(off1),1,qvoa(off1),1)
+c     WRITE(IW,*) 'QVOI chksum:',ddot(nx,qvoi(off1),1,qvoi(off1),1)
 c  debug end
 
 C
@@ -3587,7 +3582,7 @@ C
 c  debug
       nx=no(krep)*nv(krep)
       off1=jjvo(krep,krep) + 1
-      WRITE(IW,*) 'QVO chksum:',ddot(nx,qvo(off1),1,qvo(off1),1)
+c     WRITE(IW,*) 'QVO chksum:',ddot(nx,qvo(off1),1,qvo(off1),1)
 c  debug end
 
 C
@@ -3612,7 +3607,7 @@ C
 c  debug
       nx=nv(krep)*nv(krep)
       off1=jjvv(krep,krep) + 1
-      WRITE(IW,*) 'QVV chksum:',ddot(nx,qvv(off1),1,qvv(off1),1)
+c     WRITE(IW,*) 'QVV chksum:',ddot(nx,qvv(off1),1,qvv(off1),1)
 c  debug end
 
 C
@@ -3689,7 +3684,7 @@ C
 C---------------Executable Code --------------------------------------
 C
       CALL PST('Generating complex Q_kl+')
-      WRITE(IW,*) ' **** Symmetry',KREP
+c     WRITE(IW,*) ' **** Symmetry',KREP
 C
 C  LENA is length of affinity blocks (U or V)
 C  LENI is length of ionization blocks (U or V)
@@ -3714,7 +3709,7 @@ C
 c  debug
       nx=no(krep)*no(krep)
       off1=jjoo(krep,krep) + 1
-      WRITE(IW,*) 'QOO chksum:',zdotc(nx,qoo(off1),1,qoo(off1),1)
+c     WRITE(IW,*) 'QOO chksum:',zdotc(nx,qoo(off1),1,qoo(off1),1)
 c  debug end
 C
 C calculate Q+_vo + Q-_vo for a given symmetry KREP such that
@@ -3744,8 +3739,8 @@ C
 c  debug
       nx=no(krep)*nv(krep)
       off1=jjvo(krep,krep) + 1
-      WRITE(IW,*) 'QVOA chksum:',zdotc(nx,qvoa(off1),1,qvoa(off1),1)
-      WRITE(IW,*) 'QVOI chksum:',zdotc(nx,qvoi(off1),1,qvoi(off1),1)
+c     WRITE(IW,*) 'QVOA chksum:',zdotc(nx,qvoa(off1),1,qvoa(off1),1)
+c     WRITE(IW,*) 'QVOI chksum:',zdotc(nx,qvoi(off1),1,qvoi(off1),1)
 c  debug end
 C
 C  add +/- contributions of QVO in corresponding symmetry
@@ -3760,7 +3755,7 @@ C
 c  debug
       nx=no(krep)*nv(krep)
       off1=jjvo(krep,krep) + 1
-      WRITE(IW,*) 'QVO chksum:',zdotc(nx,qvo(off1),1,qvo(off1),1)
+c     WRITE(IW,*) 'QVO chksum:',zdotc(nx,qvo(off1),1,qvo(off1),1)
 c  debug end
 C
 C calculate Q+_vv + Q-_vv (zero for Q+) for a given symmetry KREP such
@@ -3779,7 +3774,7 @@ C
 c  debug
       nx=nv(krep)*nv(krep)
       off1=jjvv(krep,krep) + 1
-      WRITE(IW,*) 'QVV chksum:',zdotc(nx,qvv(off1),1,qvv(off1),1)
+c     WRITE(IW,*) 'QVV chksum:',zdotc(nx,qvv(off1),1,qvv(off1),1)
 c  debug end
 
 C
@@ -3801,8 +3796,6 @@ C
         WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
         CALL CMATOUT(QVV(JJVV(KREP,KREP) +1),NV(KREP),NV(KREP))
       ENDIF
-
-c     WRITE(iw,*) ' **** exiting CMAKE_QKL ****'
 
       RETURN
       END
@@ -3934,27 +3927,27 @@ c
       CALL CONJUGA(YVO,QVO(OFFVOD),1)
       CALL CONJUGA(YVV,QVV(OFFVVD),1)
 
-      IF(.FALSE.) THEN
-        WRITE(IW,*) ' **** CQKLDUP check for symmetry ',KREP,'/',KREP+1
-        WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-        WRITE(IW,*) '     ~~~ h/h part                ~~~'
-        WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-        CALL CMATOUT(QOO(JJOO(KREP,KREP)+1),NO(KREP),NO(KREP))
-        WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-        CALL CMATOUT(QOO(JJOO(KREP+1,KREP+1)+1),NO(KREP+1),NO(KREP+1))
-        WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-        WRITE(IW,*) '     ~~~ p/h part                ~~~'
-        WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-        CALL CMATOUT(QVO(JJVO(KREP,KREP)+1),NV(KREP),NO(KREP))
-        WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-        CALL CMATOUT(QVO(JJVO(KREP+1,KREP+1)+1),NV(KREP+1),NO(KREP+1))
-        WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-        WRITE(IW,*) '     ~~~ p/p part                ~~~'
-        WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-        CALL CMATOUT(QVV(JJVV(KREP,KREP)+1),NV(KREP),NV(KREP))
-        WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
-        CALL CMATOUT(QVV(JJVV(KREP+1,KREP+1)+1),NV(KREP+1),NV(KREP+1))
-      ENDIF
+c     IF(.FALSE.) THEN
+c       WRITE(IW,*) ' **** CQKLDUP check for symmetry ',KREP,'/',KREP+1
+c       WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+c       WRITE(IW,*) '     ~~~ h/h part                ~~~'
+c       WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+c       CALL CMATOUT(QOO(JJOO(KREP,KREP)+1),NO(KREP),NO(KREP))
+c       WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+c       CALL CMATOUT(QOO(JJOO(KREP+1,KREP+1)+1),NO(KREP+1),NO(KREP+1))
+c       WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+c       WRITE(IW,*) '     ~~~ p/h part                ~~~'
+c       WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+c       CALL CMATOUT(QVO(JJVO(KREP,KREP)+1),NV(KREP),NO(KREP))
+c       WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+c       CALL CMATOUT(QVO(JJVO(KREP+1,KREP+1)+1),NV(KREP+1),NO(KREP+1))
+c       WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+c       WRITE(IW,*) '     ~~~ p/p part                ~~~'
+c       WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+c       CALL CMATOUT(QVV(JJVV(KREP,KREP)+1),NV(KREP),NV(KREP))
+c       WRITE(IW,*) '     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
+c       CALL CMATOUT(QVV(JJVV(KREP+1,KREP+1)+1),NV(KREP+1),NV(KREP+1))
+c     ENDIF
 
       RETURN
       END
@@ -5021,12 +5014,6 @@ C
       CALL CNTRCT('T','N',NO,NO,NVVOT,-A1,VVOO3,VOVO3,A0,VVOO2,NREP)
       CALL XAXPY (LENC,A1,VVOO2(OFFS),1,CKKS,1)
       CALL CKKASYM(CKKS,CKKS,NO(KREP),ASYM)
-
-c debug
-      write(iw,*) 'matrix control output after part B'
-      call cmatout(ckks,no(krep),no(krep))
-c debug end
-
 C
 C  ............................................................calculation of C(C)_kk'
 C
@@ -7362,9 +7349,7 @@ c
              ENDDO
            ENDDO
          ENDDO
-! 45     ENDDO
  45     CONTINUE
-! 60   ENDDO
  60   CONTINUE
 
       CLOSE(LUN)
