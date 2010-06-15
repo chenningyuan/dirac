@@ -189,7 +189,7 @@ C
       REAL*8 CPUE,CPUFO,CPUSO,CPUFS,CPUVAR
       REAL*8 WALL0,WALL1,WALL2,WALLTOT,WALLI,WALLS
       REAL*8 WALLE,WALLFO,WALLSO,WALLFS,WALLVAR
-      CHARACTER*10 INTFCE
+      CHARACTER*10 INTERFACE,INTFCE
 C
 C---------------Executable code--------------------------------------
 
@@ -323,16 +323,14 @@ C
          NELECT = NELECT + NELEC(I)
       ENDDO
 C
-      WRITE (IW,1004) NELECT,NSP-NELECT,CARITH,DOSORT,
-     &                TIMING,INTERFACE
-c------ corresponding format
+      WRITE (IW,1004) NELECT,NSP-NELECT,CARITH,INTERFACE
+
+c------ format instructions
 1004  FORMAT (//" Number of electrons :",T40,I5
      &        /" Number of virtual spinors :",T40,I5
      &        /" Complex arithmetic mode :",T44,L1
-     &        /" Do integral sorting     :",T44,L1
-     &        /" Timing information      :",T44,L1
      &        /" Interface used       :",T40,A10//)
-c------ corresponding format end
+c------ format instructions end 
 C     
 C     Check the memory requirements of the active modules
 C     ---------------------------------------------------
@@ -523,8 +521,7 @@ C
 C------------- Execution starts -------------------------------------
 C
       NAMELIST/RELADC/ ADCTITLE,ADCLEVEL,ADCPRINT,ADCPRINTNM,
-     $                 XREPS,READQKL,DOCONST,VCONV,DIAGTYPE,
-     &                 INTERFACE
+     $                 XREPS,READQKL,DOCONST,VCONV,DIAGTYPE
       NAMELIST/LANINP/ XNITER,XNP,XNEIGENV,XEVLLIM,XTHRVEC
 c
 c  set some input default values and read ADC input
@@ -549,10 +546,9 @@ c
       ENDDO
       READQKL = .FALSE.
       DOCONST = .TRUE.
-      VCONV = 1.0D-10
+      VCONV = 1.0D-06
       DIAGTYPE = 'LANC'
 c 
-c  the INTERFACE variable is set on entry but can be overridden
 c  next read in actual parameters from ADC input
 c
       REWIND (5)
