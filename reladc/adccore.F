@@ -195,23 +195,34 @@ C---------------Executable code--------------------------------------
 
 C
 C     Set the input and output units and a control string
+C     In case relccsd is not called beforehand we need to agree
+C     on which orbital energies we take (the original ones!)
+C     Controlled by inpt.inc from relccsd.
 C
       INTERFACE = INTFCE
       CARITH = CA
       IN = IUNIN
       IW = IUNUT
       EQNS='RELADC'
+      USEOE = .TRUE.
 c
 c    say hello
 c
       WRITE (IW,160)
  160  FORMAT (///10X,"************************************************"/
-     &        10X,"****",40X,"****"/
-     &        10X,"****",13X,"A D C   MODULE",13X,"****"/
-     &        10X,"****",40X,"****"/
-     &        10X,"************************************************"//
-     &        /15X,"(A)lgebraic (D)iagrammatic (C)onstruction"//
-     &        /20X,"Four-component implementation"//)
+     &      10X,"****",40X,"****"/
+     &      10X,"****       FOUR-COMPONENT         ",10X,"****"/
+     &      10X,"****      PROPAGATOR MODULE       ",10X,"****"/
+     &      10X,"****",40X,"****"/
+     &      10X,"************************************************"///
+     &      10X,"****  written by"/
+     &      10X,"****  M. Pernpointner
+     &          (University of Heidelberg 2004, 2010)"/
+     &      10X,"****  For the 1P propagator cite: "/
+     &      10X,"****  M. Pernpointner,
+     &       J. Chem. Phys. 121, 8782 (2004)."/
+     &      10X,"****  For the 2P propagator cite: "/
+     &      10X,"****  M. Pernpointner, J. Phys. B in press."//)
       WRITE (IW,1011) MYPROC+1,NMPROC
       WRITE (IW,*) 'Numbers of words given to ADC:',MAXCORE
 
