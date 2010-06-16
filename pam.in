@@ -1083,7 +1083,6 @@ while [ -n "$1" ]; do
 	 VALGRIND_TOOL="$VALGRIND $1"
          ;;
       -vgfull)
-         shift
 	 VALGRIND_CHECK=1
 	 VALGRIND_TOOL="$VALGRIND --error-limit=no --leak-check=full --track-origins=yes --show-reachable=yes"
          ;;
