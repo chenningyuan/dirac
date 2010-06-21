@@ -1379,12 +1379,12 @@ C    .... prp/pamset.F
       CALL GETFCK(WORK(KFMAT),IPRPRP,WORK,KFREE,LFREE) 
       IPRINT = IPRPRP
 
-!fixme      IF (IPRINT.GE.5) THEN
+      IF (IPRINT.GE.5) THEN
         CALL HEADER(
      &'RNTLON: Total Fock matrix in MO basis:',-1)
         CALL PRQMAT(WORK(KFMAT),NORBT,NORBT,NORBT,
      &            NORBT,NZ,IPQTOQ(1,0),LUPRI)
-!fixme      ENDIF
+      ENDIF
 
 C ... get space for one-index transformed Fock matrixes,
 C     {T(1),F(0)}_x/y/z, in MO basis - 1. part of {T(1),H(0)}
@@ -1425,13 +1425,13 @@ C     T(1)_ICOMP, in MO basis, into WORK(KTMATC)
 C ...      routine generalized for square matrixes too... 
        CALL PRPMAT(INDXPR,IOPSY,WORK(KTMATC),CMO,
      &           IBEIG,ICMOQ,NORB,WORK,KFREE,LFREE,IPRPRP)
-!fixme       IF(IPRINT.GE.5) THEN
+       IF(IPRINT.GE.5) THEN
         CALL HEADER(
      &  'RNTLON: T(1)_ic connection matrix in MO basis ',-1)
         WRITE(LUPRI,'(2X,A,I1)') '** component:',ICOMP
         CALL PRQMAT(WORK(KTMATC),NORBT,NORBT,NORBT,NORBT,
      &               NZ,IPQTOQ(1,IREP(ICOMP)),LUPRI)
-!fixme       ENDIF
+       ENDIF
 C
 C ...  get 1.transformed term, {T(1),F(0)}_ICOMP, in MO basis
 C      into WORK(KF1TRC)
@@ -1448,13 +1448,13 @@ C
 C  ... and store them into WORK(KF1TR(1-3))
        CALL DCOPY(N2ORBXQ,WORK(KF1TRC),1,WORK(KF1TR(ICOMP)),1)
 
-!fixme       IF(IPRINT.GE.5) THEN
+       IF(IPRINT.GE.5) THEN
         CALL HEADER(
      &  'RNTLON: Transformed {T(1),F(0)}_icomp in MO basis ',-1)
         WRITE(LUPRI,'(2X,A,I1)') '** component:',ICOMP
         CALL PRQMAT(WORK(KF1TRC),NORBT,NORBT,NORBT,NORBT,
      &               NZ,IPQTOQ(1,IREP(ICOMP)),LUPRI)
-!fixme       ENDIF
+       ENDIF
   
 C ...  get symmetrized modified density matrix in AO basis
 C ...  into WORK(KMDMC)
@@ -1469,14 +1469,14 @@ C ...  into WORK(KMDMC)
 C ... and store it into WORK(KMDM(ICOMP))
        CALL DCOPY(N2BBASXQ,WORK(KMDMC),1,WORK(KMDM(ICOMP)),1)
 
-!fixme       IF(IPRINT.GE.5) THEN
+       IF(IPRINT.GE.5) THEN
          CALL HEADER(
      &'RNTLON: Total SYMMETRIZED modified density matrix',-1)
         WRITE(LUPRI,'(2X,A,I1)') '** component:',ICOMP
          CALL PRQMAT(WORK(KMDM(ICOMP)),NTBAS(0),NTBAS(0),
      &     NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP(ICOMP)),LUPRI)
          CALL FLSHFO(LUPRI)
-!fixme       ENDIF
+       ENDIF
 
       ENDDO ! x/y/z
 
@@ -1530,14 +1530,14 @@ C  copy WORK(KF2TR(ICOMP)) -> WORK(KMDMC)
      &                    1,WORK(KMDMC),1)
 
 C  Control output
-!fixme       IF(IPRINT.GE.5) THEN
+       IF(IPRINT.GE.5) THEN
         CALL HEADER(
      &  'RNTLON: {T(1),g(0)_add}_ic in AO basis ',-1)
         WRITE(LUPRI,'(2X,A,I1)') '** component:',ICOMP
         CALL PRQMAT(WORK(KMDMC),NTBAS(0),NTBAS(0),
 C       CALL PRQMAT(WORK(KF2TR(ICOMP)),NTBAS(0),NTBAS(0),
      &        NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP(ICOMP)),LUPRI)
-!fixme       ENDIF
+       ENDIF
 
 C  Make transformation of {T(1),g(0)_add}_icomp from AO to the MO basis.
 C  Transform to MO-basis only the blocks of correct fermion symmetry
@@ -1562,28 +1562,28 @@ C  ... it would be good to extend it using QBTRANS....
      &     WORK(KFREE),LFREE,IPRINT)
        ENDDO
 
-!fixme       IF (IPRINT.GE.5) THEN
+       IF (IPRINT.GE.5) THEN
          CALL HEADER(
      &'RNTLON: Total transf. term, {T(1),g(0)_add}_ic, in MO:',-1)
          WRITE(LUPRI,'(2X,A,I2)') '*** component :',ICOMP
          CALL PRQMAT(WORK(KTMATC),NORBT,NORBT,
      &               NORBT,NORBT,NZ,
      &            IPQTOQ(1,IREP(ICOMP)),LUPRI)
-!fixme       ENDIF
+       ENDIF
 
 C Sum {T(1),F(0)}_c + {T(1),g(0)_add}_c into WORK(KF1TR)
 C         ****  F1TR = F1TR + F2TR  ****
 C  MI(27.11'03) - D2h symmetry does not work correctly for F2TR evaluation!
 C      CALL DAXPY(N2ORBXQ,D0,WORK(KTMATC),1,WORK(KF1TR(ICOMP)),1) 
       CALL DAXPY(N2ORBXQ,D1,WORK(KTMATC),1,WORK(KF1TR(ICOMP)),1) 
-!fixme      IF (IPRINT.GE.5) THEN
+      IF (IPRINT.GE.5) THEN
         CALL HEADER(
      &'RNTLON: Total transformed term, {T(1),H(0)}_comp, in MO:',-1)
         WRITE(LUPRI,'(2X,A,I1)') '*** Component x-1/y-2/z-3:',ICOMP
         CALL PRQMAT(WORK(KF1TR(ICOMP)),
      &              NORBT,NORBT,NORBT,NORBT,NZ,
      &            IPQTOQ(1,IREP(ICOMP)),LUPRI)
-!fixme       ENDIF
+       ENDIF
 
 C  Write the total reorthonormalization term to the DA file
        CALL WRTDAC(LUFCKL,N2ORBXQ,WORK(KF1TR(ICOMP)),ICOMP)
@@ -1771,7 +1771,7 @@ C
 C
 C     Print section
 C
-      IF(IPRINT.GE.8) THEN
+!gosia      IF(IPRINT.GE.8) THEN
         WRITE(LUPRI,'(/,A)')
      &  'GETMDM: Entering T(1) MO-connection matrix:'
         CALL PRQMAT(TMAT,NORBT,NORBT,NORBT,NORBT,NZ,
@@ -1783,7 +1783,7 @@ C
         CALL PRQMAT(CMO,NTBAS(0),NORBT,NTBAS(0),NORBT,NZ,
      &               IPQTOQ(1,0),LUPRI)
        ENDIF
-      ENDIF
+!gosia      ENDIF
 
 C
 C     Generate MDM = modified density matrix of f.symm I1,I2
@@ -1811,6 +1811,32 @@ C
      &     CMO(ICMOQ(I2)+(NPSH(I2)*NFBAS(I2,0))+1),
      &       NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
      &     WORK(KFREE),LFREE,IPRINT)
+
+!gosia test:
+         open(51, file='getmdm_test', position='append')
+         write(51, *) 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+         write(51, *) 'getmdm: cmo(icmoq(i1)+1), <C(a,o)^+> '
+         write(51, *) 'nfbas(i1,0), norb(i1) = ', nfbas(i1,0), norb(i1)
+         do i = 1, nfbas(i1, 0)*norb(i1)
+           write(51, *) 'i, cmo = ', i, cmo(icmoq(i1) + i)
+         enddo
+         write(51, *) 'cmo(icmoq(i2)+(npsh(i2)*nfbas(i2,0))+1),<c(i,b)>'
+         write(51, *) 'nfbas(i2,0), norb(i2) = ', nfbas(i2,0), norb(i2)
+         do i = 1, nfbas(i2, 0)*norb(i2)
+           write(51, *) 'i, cmo = ', i, 
+     &             cmo(icmoq(i2)+(npsh(i2)*nfbas(i2,0))+i)
+         enddo
+         write(51, *) 'tmat(iorb(i1)+1,iorb(i2)+npsh(i2)+1,1),<T(o,i)>'
+         do k = 1, 4
+           do j = 1, norbt
+             do i = 1, norbt
+               write(51, *) 'i, j, tmat ', i, j, 
+     &             tmat(iorb(i1)+i, iorb(i2)+npsh(i2)+j, k)
+             enddo
+           enddo
+         enddo
+         close(51, status='keep')
+!end test
          ENDIF
         ELSE ! Run o only over electronic states
         IF (NOCC(I2).GT.0.AND.NESH(I1).GT.0) THEN
@@ -1863,7 +1889,7 @@ C
           ENDIF
         ENDIF
       ENDDO
-      IF (IPRINT.GE.6) THEN
+!gosia      IF (IPRINT.GE.6) THEN
         CALL HEADER(
      &'GETMDM: NON-HERMITIAN modified density matrix',-1)
         IF (EPMIX) THEN
@@ -1874,7 +1900,7 @@ C
         CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
      &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
         CALL FLSHFO(LUPRI)
-      ENDIF
+!gosia      ENDIF
 C
 C     Take symmetric/antisymmetric combinations to form MDMAT
 C    =========================================================
@@ -1886,7 +1912,7 @@ C    =========================================================
       ENDDO
 C  ... in gp/gpsaue.F
       CALL QGETAM(DMAT,NTBAS(0),NZ,NTBAS(0),NTBAS(0),IQSYM)
-      IF(IPRINT.GE.5) THEN
+!gosia      IF(IPRINT.GE.5) THEN
         CALL HEADER(
      &'GETMDM: Total SYMMETRIZED modified density matrix',-1)
         IF (EPMIX) THEN
@@ -1897,7 +1923,7 @@ C  ... in gp/gpsaue.F
         CALL PRQMAT(DMAT,NTBAS(0),NTBAS(0),NTBAS(0),
      &              NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
         CALL FLSHFO(LUPRI)
-      ENDIF
+!gosia      ENDIF
       CALL QEXIT('GETMDM')
       RETURN
       END
@@ -3253,7 +3279,9 @@ C     property IMP:
 C
 C     IMP = 1 .... NMR shielding, optical rotation (TEC)
 C     IMP = 2 .... magnetic susceptibility (MI)
-C     IMP = 3 ...  and more (to be added later)
+C     IMP = 3 .... first-order current density induced by B, j^B with LAO 
+!     gosia: temporary... (fixme)
+C     IMP = 4 ...  and more (to be added later)
 C
 C  Written by:  MI, jan.2003, based on TEC's routines
 C
@@ -3289,11 +3317,15 @@ C
        CALL HEADER(
      &'DEF_D1HBLOND: Operators for magnetic'//
      &' susceptibility with LAO!',-1)
+      ELSE IF (IMP.EQ.3) THEN
+       CALL HEADER(
+     &'DEF_D1HBLOND: Operators for first-order current density'//
+     &' induced by external magnetic field (JBLAO) with LAO!',-1)
       ELSE
        WRITE(LUPRI,'(2X,A)')
      & 'DEF_D1HBLOND: Entering magnetic property IMP '//
-     & ' has to be 1 or 2!'
-       CALL QUIT('DEF_D1HBLOND: wrong IMP value!') 
+     & ' has to be 1 or 2 or 3!'
+       CALL QUIT('DEF_D1HBLOND: wrong IMP value!')
       ENDIF
 
 C------------------------------------------------
@@ -3313,13 +3345,18 @@ C
       IF (IMP.EQ.1) THEN
         CALL OP1IND('XSHIELB',IPSHIELD(1+MXCOOR),LLRBPU,NLRBPT,INDXPR
      &     ,MAXLLR)
-      ELSE IF (IMP.EQ.2) THEN 
+      ELSE IF (IMP.EQ.2) THEN
         CALL OP1IND('MSUSCX1',IPMSUSC(1,1),LLRAPU,NLRAPT,INDXPR
      &     ,MAXLLR)
         CALL OP1IND('MSUSCX2',IPMSUSC(2,1),LLRBPU,NLRBPT,INDXPR
      &     ,MAXLLR)
+      ELSE IF (IMP.EQ.3 .and. JBXLAO) THEN
+        CALL OP1IND('JBLAOX1',IP_JBLAO(1,1),LLRAPU,NLRAPT,INDXPR
+     &     ,MAXLLR)
+        CALL OP1IND('JBLAOX2',IP_JBLAO(2,1),LLRBPU,NLRBPT,INDXPR
+     &     ,MAXLLR)
       ELSE
-        CONTINUE       
+        CONTINUE
       ENDIF
 
 C--------------------------------------------------------------
@@ -3386,10 +3423,14 @@ C
      &     ,MAXLLR)
        CALL OP1IND('MSUSCY2',IPMSUSC(2,2),LLRBPU,NLRBPT,INDXPR
      &     ,MAXLLR)
+      ELSE IF (IMP.EQ.3 .and. JBYLAO) THEN
+        CALL OP1IND('JBLAOY1',IP_JBLAO(1,2),LLRAPU,NLRAPT,INDXPR
+     &     ,MAXLLR)
+        CALL OP1IND('JBLAOY2',IP_JBLAO(2,2),LLRBPU,NLRBPT,INDXPR
+     &     ,MAXLLR)
       ELSE
        CONTINUE
       ENDIF
-
 C
 C        RM1H2-Y operator
 C
@@ -3452,6 +3493,11 @@ C
         CALL OP1IND('MSUSCZ1',IPMSUSC(1,3),LLRAPU,NLRAPT,INDXPR
      &     ,MAXLLR)
         CALL OP1IND('MSUSCZ2',IPMSUSC(2,3),LLRBPU,NLRBPT,INDXPR
+     &     ,MAXLLR)
+      ELSE IF (IMP.EQ.3 .and. JBZLAO) THEN
+        CALL OP1IND('JBLAOZ1',IP_JBLAO(1,3),LLRAPU,NLRAPT,INDXPR
+     &     ,MAXLLR)
+        CALL OP1IND('JBLAOZ2',IP_JBLAO(2,3),LLRBPU,NLRBPT,INDXPR
      &     ,MAXLLR)
       ELSE
        CONTINUE
@@ -3615,6 +3661,12 @@ C Specify latter PFAC(1)!!!
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
        IPCON23(6) = INDXPR
       ENDIF
+
+! also for <<B_i; B_i>> i=x/y/z for j^B with LAO
+! we should have higher-order reorthonormalization terms
+! but jblao is only for visualization purposes and for this
+! i'll need only 1st order reorthonormalization terms
+
 
       CALL QEXIT('DEF_D1HBLOND')
       RETURN

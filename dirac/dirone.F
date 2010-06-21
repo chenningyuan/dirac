@@ -898,7 +898,7 @@ C     Extract information about property
 C     ==================================
 C
       IOPTYP = IPRPTYP(IOP)
-      IF(IPRINT.GE.3) THEN
+!gosia      IF(IPRINT.GE.3) THEN
         CALL HEADER('Output from PRPMAO',-1)
         WRITE(LUPRI,*)
      & 'Generating property matrix for the property: ',PRPNAM(IOP)
@@ -909,7 +909,7 @@ C
          write(lupri,*)
      &   '.... it is the LOWER TRIANGULAR matrix ' 
         ENDIF
-      ENDIF
+!gosia      ENDIF
 C
 C     Loop over components
 C     ====================
@@ -1011,9 +1011,17 @@ CMI fix
 C =============================================================
 C               Get integrals from the AOPROPER file
 C =============================================================
+!gosia:
+        write(*, *) 'gosia in prpmao before prprea:  '
+        write(*, *) 'klbl, prplbl(klbl), pdoint(klbl), idimens', 
+     &               klbl, prplbl(klbl), pdoint(klbl), idimens 
+!
         CALL PRPREA(LU1INT,PRPLBL(KLBL),RTNLBL,PDOINT(KLBL),
      &              OP1INT,IDIMENS,IPRINT)
-        IF(IPRINT.GE.8) THEN
+!gosia        IF(IPRINT.GE.8) THEN
+      if (prplbl(klbl) == 'd|S>/dBX') then
+        write(*, *) 'gosia alamakota'
+!
           WRITE(LUPRI,'(A,I3)')
      &    '* Integrals from AOPROPER, size of matrix ',NTBAS(0)
           IF (NTBAS(0).EQ.NTBAS(1)) THEN
@@ -1029,13 +1037,18 @@ C =============================================================
           ELSE
            CALL OUTPAK(OP1INT,NTBAS(0),1,LUPRI)
           ENDIF
-        ENDIF        
+!gosia        ENDIF        
+      end if
+!
 C
 C       Determine factor to scale matrix with
 C       =====================================
 C
         IFAC  = JCOM(I,IOPTYP)*JM4FAS(IM4)
         PFAC  = FACPRP(I,IOP)*IFAC
+!gosia:
+        write(*, *) 'gosia prpmao: scale by pfac = ', pfac
+!
         IF(PFAC.NE.D1) THEN
           CALL DSCAL(IDIMENS,PFAC,OP1INT,1)
           IF(IPRINT.GE.8) THEN
@@ -2842,13 +2855,13 @@ C     The four blocks (AO basis): LL, SL, LS, SS
 C
       REWIND LU1INT
 
-      IF (IPRINT.GE.12) THEN
+!gosia      IF (IPRINT.GE.12) THEN
+       write(*, *) 'gosia prprea: ndim = ', ndim
        WRITE(LUPRI,'(A,I4)')
      & 'PRPREA: >>> Going to read the property '//PRPLBL//
      & ' with COMB '//COMB//
      & ' from the file with LU1INT = ',LU1INT
-      ENDIF
-
+!gosia      ENDIF
       IF(FNDLB3(PRPLBL,COMB,RTNLBL,LU1INT,IPRINT)) THEN
         CALL READT(LU1INT,NDIM,PRPINT)
         IF (IPRINT.GE.17) THEN

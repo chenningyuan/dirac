@@ -1383,6 +1383,25 @@ C
        CALL DEF_ROTG(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
       ENDIF
 
+!gosia: temporary solution (fixme)
+!     << B_i; B_i >>_0, i = x,y,z  with LAO
+!     used to get first-order wave function perturbed by B_i (needed for j^B)
+!     todo: i will remove it as instead for a moment i could also run 
+!     for instance magnetizabilities with london...
+!     maybe it would be better rather to do modifications in:
+!     *LINEAR RESPONSE
+!     .OPERATOR
+!     ........
+!     .here:add london!
+!     so that for magnetic field we could do
+!     .OPERATOR
+!     ZAVECTOR
+!     'YDIPLEN' 'XDIPLEN'
+!
+      IF (JBXLAO .OR. JBYLAO .OR. JBZLAO) THEN
+        CALL DEF_JBLAO(WORK, LWORK, IPRPRP)
+      ENDIF
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -8415,3 +8434,104 @@ C
       RETURN
 C
       END
+
+
+
+! gosia: temporary subroutine in which we'll define
+! operators needed to calculate:
+! <<B_i; B_i>> with LAO, i = x/y/z
+! needed for j^B with LAO
+! based on def_msusc subroutine
+
+      SUBROUTINE DEF_JBLAO(WORK, LWORK, IPRINT)
+!-----------------------------------------------------------------------
+#define debug_me
+
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0,
+     &          DMI2 = -0.5D0,DI2 = +0.5D00,DM1 = - 1.0D0)
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "gfac.h"
+#include "pi.h"
+#include "nuclei.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "symmet.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcbesr.h"
+#include "dcbxlr.h"
+#include "dcbexp.h"
+#include "dcbnmr.h"
+#include "chrxyz.h"
+      CHARACTER PNAME*16, PLABEL(3)*8,LABEL*4,LABELC*7,chcomp(3)*1
+      DIMENSION WORK(LWORK),PFAC(3),IOP(3)
+      integer a, b, c
+#include "chrnos.h"
+#include "ibtfun.h"
+#include "dcbxpr.h"
+#include "dcbsusc.h"
+#include "memint.h"
+!-----------------------------------------------------------------------
+
+      CALL HEADER(
+     &     'DEF_JBLAO: Operators for first order current density'//
+     &     ' induced by magnetic field with LAO (JBLAO)',-1)
+
+      CALL IZERO(IP_JBLAO, 6)
+      CALL IZERO(IPLONDON, 12)
+
+      call def_d1hblond(3, work, lwork, iprint)
+
+      if(jbxlao) then
+        icomp  = 1
+        chcomp = 'X'
+      elseif(jbylao) then
+        icomp  = 2
+        chcomp = 'Y'
+      elseif(jbzlao) then
+        icomp  = 3
+        chcomp = 'Z'
+      else
+        call quit('programming error in def_jblao')
+      endif
+
+
+!     print section:
+!     ==============
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(A,1X,A)') ' JBLAO, component :', chcomp
+      CALL PRSYMB(LUPRI,'=',75,0)
+!
+!     A operators
+!     ===========
+!
+      CALL PRSYMB(LUPRI,'-',75,0)
+      WRITE(LUPRI,'(1X,A,1X,A)')
+     &      '** A operators for jblao, component **', chcomp
+      CALL PRSYMB(LUPRI,'-',75,0)
+      DO J = 1, 4
+        CALL WRIXPR(0,IPLONDON(J,icomp))
+      ENDDO
+!
+!     B operators
+!     ===========
+!
+      CALL PRSYMB(LUPRI,'-',75,0)
+      WRITE(LUPRI,'(1X,A,1X,A)')
+     &      '** B operators for jblao, component **', chcomp
+      CALL PRSYMB(LUPRI,'-',75,0)
+      DO J = 1, 4
+        CALL WRIXPR(0,IPLONDON(J,icomp))
+      ENDDO
+
+! that is all as i only want to have files: PAMXVC with \kappa^B and
+! AOPROPER/FCKLON with T^B
+
+      END SUBROUTINE
+
+
+
