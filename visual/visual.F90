@@ -8,11 +8,14 @@ module visual
   use matrix_defop
   use matrix_genop
   use dirac_interface
+  use visual_london
+  use visual_integrate
+  use visual_in_point
+  
 
   implicit none
 
   public run_visual
-  public get_quantity_in_point
 
   private
 
@@ -29,43 +32,9 @@ module visual
 #include "nuclei.h"
 #include "symmet.h"
 
-      integer, parameter :: IQ_N           =  1 !                  \psi^\dag        \psi = n
-      integer, parameter :: IQ_M           =  2 !                  \psi^\dag \Sigma \psi
-      integer, parameter :: IQ_DIVM        =  3 !    \nabla \cdot  \psi^\dag \Sigma \psi
-      integer, parameter :: IQ_ROTM        =  4 !    \nabla \times \psi^\dag \Sigma \psi
-      integer, parameter :: IQ_J           =  5 !-ec               \psi^\dag \alpha \psi = j
-      integer, parameter :: IQ_DIVJ        =  6 !-ec \nabla \cdot  \psi^\dag \alpha \psi
-      integer, parameter :: IQ_ROTJ        =  7 !-ec \nabla \times \psi^\dag \alpha \psi
-      integer, parameter :: IQ_JPARA       =  8 !                  j_para
-      integer, parameter :: IQ_DIVJPARA    =  9 !    \nabla \cdot  j_para
-      integer, parameter :: IQ_ROTJPARA    = 10 !    \nabla \times j_para
-      integer, parameter :: IQ_JDIA        = 11 !                  j_dia (hardcoded for B along z)
-      integer, parameter :: IQ_ELF         = 12 !                  ELF
-      integer, parameter :: IQ_K           = 13 !                c \psi^\dag (\alpha \cdot p) \psi
-      integer, parameter :: IQ_H           = 14 !                  \psi^\dag (\Sigma \cdot p) \psi
-      integer, parameter :: IQ_GAMMA5      = 15 !                  \psi^\dag  \gamma^5        \psi
-
-!     WARNING: the factor 1/c^2 is missing on purpose for compatibility with the
-!              operators defined in prp/pamprp.F
-      integer, parameter :: IQ_NUCDIPX     = 16 !      -1/(r_K^3) (r_K \times j)_x
-      integer, parameter :: IQ_NUCDIPY     = 17 !      -1/(r_K^3) (r_K \times j)_y
-      integer, parameter :: IQ_NUCDIPZ     = 18 !      -1/(r_K^3) (r_K \times j)_z
-
-      integer, parameter :: IQ_EDIPX       = 19 !                  r_x n
-      integer, parameter :: IQ_EDIPY       = 20 !                  r_y n
-      integer, parameter :: IQ_EDIPZ       = 21 !                  r_z n
-      integer, parameter :: IQ_MDIPX       = 22 !            -1/2 (r_gauge \times j)_x
-      integer, parameter :: IQ_MDIPY       = 23 !            -1/2 (r_gauge \times j)_y
-      integer, parameter :: IQ_MDIPZ       = 24 !            -1/2 (r_gauge \times j)_z
-
-      integer, parameter :: IQ_GRADIENT    = 25 ! \nabla   n 
-      integer, parameter :: IQ_LAPLACIAN   = 26 ! \nabla^2 n
 
 
-
-      integer, save      :: vector_to_matrix(max_nr_xvectors) = 0
-
-      integer, parameter :: file_unit = 137
+    integer, parameter :: file_unit = 137
 
 contains
 
@@ -73,6 +42,7 @@ contains
 
 !   ----------------------------------------------------------------------------
     type(matrix)         :: D_mo, D(max_nr_xvectors)
+    type(matrix)         :: D_con_ao, D_con_mo, D_con(max_nr_xvectors)
     type(matrix)         :: C, Cig, Ciu, Csg, Csu
 
     real(8), allocatable :: eigenvalues(:)
@@ -83,6 +53,12 @@ contains
     real(8)              :: energy, time_start, second
     integer              :: max_ao_g_order, max_ao_m_order
     integer              :: ioff, imat, iq, iz, m, nr_dmat, ivector
+    integer              :: nr_dmat_con
+
+    logical              :: debug_me
+
+    integer :: i, j, off_ij, off_iz, off_ij_s, off_ij_e
+    type(matrix) :: D_mo_dagger, D_1a, D_1b, D_2
 !   ----------------------------------------------------------------------------
 
     max_ao_g_order = 0
@@ -113,6 +89,7 @@ contains
 
     end do
 
+!    if (visual_cfg_london) max_ao_m_order = 1
 
 !   find occupation
 !   ===============
@@ -122,6 +99,13 @@ contains
 
     call opnfil(file_unit, 'DFCOEF', 'OLD', 'visual.F90')
     call reacmo_no_work(file_unit, 'DFCOEF', (/0.0d0/), eigenvalues, (/0/), energy, 4)
+
+! gosia fixme: if (visual_cfg_london .and. .not. spinfree)
+!    if (visual_cfg_london) then
+!      call alloc(ibeig, ntbas(0))
+!      call reacmo_no_work(file_unit, 'DFCOEF', (/0.0d0/), (/0.0d0/), ibeig, energy, 8)
+!    end if
+
     close(file_unit, status = 'keep')
     write(LUPRI,'(2x,a)') 'Visualisation : DFCOEF file read'
 
@@ -159,15 +143,30 @@ contains
       D_mo%elms((m - 1)*norbt + m) = occupation(m)
     end do
 
-!> \fixme dag(C) has dimensions 0x0 with g95
     D(1) = C*(D_mo*dag(C))
+!    call print_mat(D(1), label='blub')
 
 
 !   get perturbed matrices
 !   ======================
 
     nr_dmat = 1
+
+    if (visual_cfg_london) then
+
+      nr_dmat_con = 0
+      call init_mat(D_con_mo, norbt, norbt)
+      call init_mat(D_con_ao, ntbas(0), ntbas(0))
+
+      debug_me = .false.
+
+    end if
+
+
     do ivector = 1, visual_cfg_nr_xvectors
+
+      if (visual_cfg_london) call visual_london_init(ivector)
+
       if (.not. visual_cfg_xvector_file(ivector) .eq. 'ZORDER') then
         nr_dmat = nr_dmat + 1
         vector_to_matrix(ivector) = nr_dmat
@@ -192,18 +191,156 @@ contains
           D(nr_dmat) = (Cig*(D_mo*dag(Csg))) &
                      - (Csg*(D_mo*dag(Cig)))
         end if
-       
+
         call copy_matrix_sym(D(nr_dmat), D_mo)
 
       else
         vector_to_matrix(ivector) = 1
+        if (visual_cfg_london) then
+          call quit('visual: ZORDER and LONDON cannot go together')
+        end if
       end if
-    end do
+
+
+!     if london - reorthonormalization contribution
+!     =============================================
+!     london - only for j^B and properties expressed in terms of j^B
+!     so we will need only matrices for iz = 2, 3, 4 (nz=4) as
+!     iz = 2 -> \alpha_z
+!     iz = 3 -> \alpha_y
+!     iz = 4 -> \alpha_x
+
+
+!     (*) gosia: todo later we can make the scheme
+!     D(1) -> unperturbed density matrix
+!     D(2:nr_dmat) -> perturbed density matrices
+!     D(nr_dmat+1:nr_dmat_con+nr_dmat+1) -> modified density matrices (by connection matrices)
+!     etc..
+!     and pass only D and total nr_dmat to visual_driver (one call to visual_driver)
+!     (*) for a moment i assume that we always visualize one component (x,y or z) at a time
+
+
+      if (visual_cfg_london) then
+      
+        nr_dmat_con = nr_dmat_con + 1
+        vector_to_matrix_con(ivector) = nr_dmat_con
+
+        D_con_ao%elms = 0.0d0
+        D_con_mo%elms = 0.0d0
+
+!       read connection matrices in AO basis from AOPROPER file
+!       -------------------------------------------------------
+        call setup_fo_conmat_ao(D_con_ao, ivector)
+
+        if (debug_me) then
+!         can be compared with matrices from PRPMAO when running response
+          call print_mat(D_con_ao, label = 'run_visual: debug D_con_ao in SA-AO basis')
+        end if
+
+        visual_cfg_irep_conmat(ivector) = D_con_ao%irep
+
+!       transform connection matrices to MO basis:
+!       ------------------------------------------
+        D_con_mo = dag(C)*(D_con_ao*C)
+
+        call copy_matrix_sym(D_con_mo, D_con_ao)
+
+        if (debug_me) then
+!         can be compared with matrices from PRPMAT when running response
+          call print_mat(D_con_mo, label = 'run_visual: debug D_con_mo in MO basis')
+        end if
+
+
+!       create modified density matrices
+!       --------------------------------
+!       *) gosia todo: include ep in options, now it is hardcoded to .true.
+!          ep = .true.  - 'p'-summation over e+p shells
+!               .false. - only over e-shells
+
+
+        if (visual_cfg_connection(ivector) == 2) then
+
+!         D_con_mo(iz=1) is antisymmetric
+!         D_con_mo(iz=2,3,4) is symmetric, so:
+          D_con(nr_dmat_con) = (C*(D_con_mo*dag(Cig))) &
+                             + (Cig*(D_con_mo*dag(C)))
+
+          call copy_matrix_sym(D_con(nr_dmat_con), D_con_mo)
+
+          if (debug_me) then
+!           can be compared with matrices from GETMDM when running response
+            call print_mat(D_con(nr_dmat_con),   &
+                 label='run_visual: debug D_con (symmetric con)')
+          end if
+
+
+        else if (visual_cfg_connection(ivector) == 1) then
+
+!         D_con_mo is a general matrix
+!         so we do dag(D_con_mo), but dag(A) does only transposition
+!         so the sign is changed by hand -> that is why we have "-"
+          D_con(nr_dmat_con) = (C*(D_con_mo*dag(Cig))) &
+                             - (Cig*(dag(D_con_mo)*dag(C)))
+
+          if (debug_me) then
+!           can be compared with matrices from GETMDM when running response
+            call print_mat(D_con(nr_dmat_con),  &
+                 label='run_visual: debug D_con (natural con)')
+          end if
+
+
+        else if (visual_cfg_connection(ivector) == 0) then
+!         gosia fixme working... but to be checked...
+
+!         'ij' block: overlap
+!         ===================
+!         if <none> connection, we take symmetric connection integrals to D_con_ao
+!         and they equal to -0.5d0*S^B, so:
+          D_2 = 2.0d0*D_con_mo
+
+!         create modified density matrix
+!         ------------------------------
+          D_con(nr_dmat_con) = Cig*(D_2*dag(Cig))
+
+!         'ai' block: D_con_mo - D_mo
+!         ===========================
+!         iz = 1     -> D_mo     symmetric, D_con_mo antisymmetric
+!         iz = 2,3,4 -> D_mo antisymmetric, D_con_mo     symmetric
+!                       dag(D_mo) = -D_mo,  dag(D_con_mo) = D_con_mo
+!         and only iz = 2,3,4 are important here, so:
+
+!         later on D matrices are multipled by 2.0d0, so:
+          D_1a = D_con_mo - 2.0d0*D_mo
+!         D_1b = dag(D_1a)
+          D_1b = D_con_mo + 2.0d0*D_mo
+!
+!         create modified density matrix
+!         ------------------------------
+          D(nr_dmat)%elms = 0.0d0
+          D(nr_dmat) = 0.5d0*(Cig*(D_1b*dag(Csg))) &
+                     + 0.5d0*(Csg*(D_1a*dag(Cig)))
+
+
+!         "uninitialize"
+!         --------------
+          D_1a = 0
+          D_1b = 0
+          D_2  = 0
+
+        else
+          call quit('run_visual: visual_cfg_connection(ivector) != {0,1,2}')
+        end if
+      
+      end if
+
+    end do   ! do ivector = 1, visual_cfg_nr_xvectors
+
 
 
 !   insert half phases
 !   ==================
 
+!gosia: if not connection=0
     do imat = 2, nr_dmat
       if (nz < 4) then
         do iz = 1, nz
@@ -219,6 +356,10 @@ contains
 !   ======================
 
     do imat = 1, nr_dmat
+!gosia: here valgrind gives a warning about uninitialised value
+!now D is a "temporary matrix" (function new_tmp in matrix_defop.f90)
+!actually a pointer to (initialized) matrix D_mo
+!to be checked...  
       D(imat) = 2.0d0*D(imat)
     end do
 
@@ -239,6 +380,12 @@ contains
       Csu = 0
     end if
 
+    if (visual_cfg_london) then
+      D_con_ao = 0
+      D_con_mo = 0
+    end if
+
+
 !   initialize ao module
 !   ====================
 
@@ -256,13 +403,26 @@ contains
 
     time_start = second()
 !   if (visual_cfg_integrate) then
-      call visual_driver(nr_dmat, D, ao, buffer)
+
+!gosia todo: merge these two to one call to visual_driver
+    if (visual_cfg_london) then
+      call visual_driver(nr_dmat, D, ao, buffer, nr_dmat_con, D_con=D_con)
+    else
+      call visual_driver(nr_dmat, D, ao, buffer, 0)
+    end if
+
 !   end if
     call timtxt('>>>> time used in plot:', (second() - time_start), lupri)
 
     time_start = second()
     if (visual_cfg_integrate) then
-      call visual_integration(nr_dmat, D, ao, buffer)
+
+! gosia fixme: merge these two to one call to visual_integration
+      if (visual_cfg_london) then
+        call visual_integration(nr_dmat,D,ao,buffer,nr_dmat_con,D_con=D_con)
+      else
+        call visual_integration(nr_dmat, D, ao, buffer, 0)
+      end if
     end if
     call timtxt('>>>> time used in integration:', (second() - time_start), lupri)
 
@@ -277,27 +437,38 @@ contains
       D(imat) = 0
     end do
 
-    call basis_info_delete()
+    if (visual_cfg_london) then
+      do imat = 1, nr_dmat_con
+        D_con(imat) = 0
+      end do
+    end if
+
 
     end subroutine
 
 
-      subroutine visual_driver(nr_dmat, D, ao, buffer)
+      subroutine visual_driver(nr_dmat, D, ao, buffer, nr_dmat_con, D_con)
 
       integer, intent(in) :: nr_dmat
       type(matrix)        :: D(nr_dmat)
       real(8), intent(in) :: ao(*)
       real(8), intent(in) :: buffer(*)
 
+      integer, intent(in)      :: nr_dmat_con
+      type(matrix), optional :: D_con(nr_dmat_con)
+
       real(8) ::          QUANTITY(0:3,visual_cfg_NCUBE(3))
       real(8) ::          STEP_3D(3,0:3)
       real(8) ::          ATOM_XYZ(4,NUCDEP)
+
+      real(8), allocatable :: r_kl(:, :, :)
 
       character(2) :: grid_orientation(1:3) = (/'xy', 'xz', 'yz'/)
       real(8) :: r(3), v(3), px, py, pz
       integer :: ICUBE, jCUBE, kCUBE, IORIENTATION, IPOINT_IN_LIST
       integer :: istep, i, j, k, l, m, ni, nj, nk, nr_steps, IXVECTOR
       integer :: lunit_2d, lunit_3d, lunit_line
+
 
 !     open files
 
@@ -327,6 +498,12 @@ contains
      &       status = 'new', &
      &       access = 'sequential', &
      &       form   = 'formatted')
+      end if
+
+!     if london create (R_M - R_N) array
+      if (visual_cfg_london) then
+        call alloc (r_kl, ntbas(0), ntbas(0), 3)
+        call create_rkl(ntbas(0), r_kl)
       end if
 
       if (visual_cfg_list) then
@@ -416,6 +593,10 @@ contains
           WRITE(LUNIT_2D,'(A)')  &
      &             'plane: ' // grid_orientation(IORIENTATION)
 
+!
+!fixme:
+!          NI = 1; NJ = 1; NK = 1
+!
           DO I = 1,NI
             DO J = 1,NJ
               DO K = 1,NK
@@ -434,11 +615,30 @@ contains
                 IF(IORIENTATION .EQ. 3) &                        ! 'yz'
      &                     PX = visual_cfg_ORIGIN_2D(1)
 
-                CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &
-     &                                     ao, &
-     &                                     PX,PY,PZ, &
-     &                                     buffer, &
-     &                                     QUANTITY)
+!fixme:
+!                PX = 1.0d0
+!                PY = 1.0d0
+!                PZ = 0.0d0
+!
+
+                if (visual_cfg_london) then
+                  if (.not. present(D_con) .or. nr_dmat_con == 0) &
+                     call quit("no D_con or nr_dmat_con=0")
+                  call get_quantity_lao_in_point(nr_dmat, D,         &
+                                                 nr_dmat_con, D_con, &
+                                                 ao,                 &
+                                                 px, py, pz,         &
+                                                 r_kl,               &
+                                                 buffer,             &
+                                                 quantity)
+                else
+                  CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &
+     &                                       ao, &
+     &                                       PX,PY,PZ, &
+     &                                       buffer, &
+     &                                       QUANTITY)
+                end if
+
 
 !               write to file
 
@@ -534,16 +734,36 @@ contains
      &                          + (JCUBE-1)*STEP_3D(3,2) &
      &                          + (KCUBE-1)*STEP_3D(3,3)
 
+!fixme
+!              px = 1.0d0
+!              py = 1.0d0
+!              pz = 0.0d0
 !             write even grid so that it can be fed into XC integrator
 !             for subsequent experiments
 !             zero weight is so that it does not mess up results
 !             write(lunit_3d, '(4d20.12)') px, py, pz, 0.0d0
 
-              CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &
-     &                                   ao, &
-     &                                   PX,PY,PZ, &
-     &                                   buffer, &
-     &                                   QUANTITY(0,KCUBE))
+              if (visual_cfg_london) then
+                if (.not. present(D_con) .or. nr_dmat_con == 0) &
+                   call quit("no D_con or nr_dmat_con=0")
+                call get_quantity_lao_in_point(nr_dmat, D,         &
+                                               nr_dmat_con, D_con, &
+                                               ao,                 &
+                                               px, py, pz,         &
+                                               r_kl,               &
+                                               buffer,             &
+                                               quantity)
+!               call quit('bla')
+              else
+
+                CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &
+     &                                     ao, &
+     &                                     PX,PY,PZ, &
+     &                                     buffer, &
+     &                                     QUANTITY(0,KCUBE))
+
+              end if
+
             ENDDO
 
 !           write to file
@@ -554,6 +774,11 @@ contains
         ENDDO
       ENDIF !3D
 
+
+      if (visual_cfg_london) then
+        call dealloc(r_kl)
+      end if
+
 !     close files
 
       if (visual_cfg_2d)   close(lunit_2d,   status = 'keep')
@@ -561,408 +786,7 @@ contains
       if (visual_cfg_line) close(lunit_line, status = 'keep')
 
       end subroutine
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!     /* GET_QUANTITY_IN_POINT */
-      SUBROUTINE GET_QUANTITY_IN_POINT(nr_dmat, D, &
-     &                                 ao, &
-     &                                 PX,PY,PZ, &
-     &                                 buffer, &
-     &                                 QUANTITY_ADDMEUP)
 
-      integer, intent(in) :: nr_dmat
-      type(matrix)        :: D(nr_dmat)
-      real(8) ::          AO(*)
-      real(8) ::          buffer(*)
-      real(8) ::          QUANTITY(0:3)
-      real(8) ::          QUANTITY_ADDMEUP(0:3)
-      real(8) ::          VECTOR_A(3)
-      real(8) ::          VECTOR_B(3)
-      real(8) :: factor, fermi_kin, elf_chi, GRADIENT_SQUARED, density
-      real(8) :: RSQ
-      real(8) :: rxx, rxy, rxz, ryy, ryz, rzz
-      real(8) :: px, py, pz, ddot, scalar
-      real(8) :: rx, ry, rz, TF_KIN, BOSON_KIN, distance_to_origin
-      integer :: ic, iq, IXVECTOR, ixyz, imat
-
-      call get_ao(px, py, pz, ao, buffer)
-
-      distance_to_origin = dsqrt(px*px + py*py + pz*pz)
-
-      CALL DZERO(QUANTITY_ADDMEUP,4)
-
-      DO IXVECTOR = 1, visual_cfg_NR_XVECTORS
-        imat = vector_to_matrix(ixvector)
-
-!       IF(visual_cfg_XVECTOR_FILE(IXVECTOR) .EQ. 'ZORDER') &
-
-        CALL DZERO(QUANTITY,4)
-!       Probability density:           \psi^\dag        \psi = n
-        IQ = IQ_N
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          DENSITY = 0.0d0
-
-          DO IC = 1,MC
-            IF(IC .EQ. 1) THEN
-              IF(.NOT. visual_cfg_IOPTION_XVECTOR(IXVECTOR) .EQ. 2) THEN
-                CALL GETRH1(DENSITY,1,visual_cfg_irep_xvector(IXVECTOR), &
-     &                      AO,D(imat)%elms,buffer)
-              ENDIF
-            ENDIF
-            IF(IC .EQ. 2) THEN
-              IF(.NOT. visual_cfg_IOPTION_XVECTOR(IXVECTOR) .EQ. 1) THEN
-                CALL GETRH1(DENSITY,2,visual_cfg_irep_xvector(IXVECTOR), &
-     &                      AO,D(imat)%elms,buffer)
-              ENDIF
-            ENDIF
-          ENDDO
-
-          CALL DAXPY(1,1.0d0,DENSITY,1,QUANTITY(0),1)
-        ENDIF
-! Gradient of probability density:  \nabla n 
-        IQ = IQ_GRADIENT
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          CALL GETGRHO(VECTOR_A, &
-     &                 visual_cfg_irep_xvector(IXVECTOR), &
-     &                 AO, &
-     &                 ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                 D(imat)%elms, &
-     &                 buffer)
-
-          CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
-        ENDIF
-! Laplacian of probability density: \nabla^2 n
-        IQ = IQ_LAPLACIAN
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-!         CALL GETLRHO(RXX, &
-!    &                 RXY, &
-!    &                 RXZ, &
-!    &                 RYY, &
-!    &                 RYZ, &
-!    &                 RZZ, &
-!    &                 GAO, &
-!    &                 GAO1, &
-!    &                 GAO2, &
-!    &                 D(imat)%elms, &
-!    &                 buffer)
-
-!         CALL DAXPY(1,1.0d0,RXX + RYY + RZZ,1,QUANTITY(0),1)
-        ENDIF
-
-! ELF: Electron Localization Function
-        IQ = IQ_ELF
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          FERMI_KIN = 0.0d0
-          DO IXYZ = 1,3
-            DO IC = 1,MC
-              SCALAR = 0.0d0
-
-              CALL GETRH1(SCALAR, &
-     &                    IC, &
-     &                    visual_cfg_irep_xvector(IXVECTOR), &
-     &                    AO(ao_start(1, 0)+(IXYZ-1)*NTBAS(0)), &
-     &                    D(imat)%elms, &
-     &                    buffer)
-
-              FERMI_KIN = FERMI_KIN + SCALAR
-            ENDDO
-          ENDDO
-
-          FERMI_KIN = FERMI_KIN/2.0d0
-
-          CALL GETRHO(DENSITY, &
-     &                visual_cfg_irep_xvector(IXVECTOR), &
-     &                AO, &
-     &                D(imat)%elms, &
-     &                buffer)
-
-          CALL GETGRHO(VECTOR_A, &
-     &                 visual_cfg_irep_xvector(IXVECTOR), &
-     &                 AO, &
-     &                 ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                 D(imat)%elms, &
-     &                 buffer)
-
-          GRADIENT_SQUARED = DDOT(3,VECTOR_A,1,VECTOR_A,1)
-
-          BOSON_KIN = GRADIENT_SQUARED/(8.0D0*DENSITY)
-
-          TF_KIN = 0.3D0*((3.0d0*PI*PI)**(2.0d0/3.0d0))*(DENSITY**(5.0d0/3.0d0))
-
-          ELF_CHI = (FERMI_KIN - BOSON_KIN)/TF_KIN
-
-          SCALAR = 1.0d0/(1.0d0 + ELF_CHI*ELF_CHI)
-
-          CALL DAXPY(1,1.0d0,SCALAR,1,QUANTITY(0),1)
-        ENDIF
-
-! j_dia (hardcoded for B along z)
-        IQ = IQ_JDIA
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          CALL GETRHO(DENSITY, &
-     &                visual_cfg_irep_xvector(IXVECTOR), &
-     &                AO, &
-     &                D(imat)%elms, &
-     &                buffer)
-
-          RX = PX - visual_cfg_GAUGE_ORIGIN(1)
-          RY = PY - visual_cfg_GAUGE_ORIGIN(2)
-          RZ = PZ - visual_cfg_GAUGE_ORIGIN(3)
-          VECTOR_A(1) = -0.5d0*RY*DENSITY
-          VECTOR_A(2) =  0.5d0*RX*DENSITY
-          VECTOR_A(3) =  0.0d0
-
-          CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
-        ENDIF
-
-! Spin density: \psi^\dag \Sigma \psi
-        IQ = IQ_M
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_M(.TRUE., &
-     &               VECTOR_A, &
-     &               visual_cfg_irep_xvector(IXVECTOR), &
-     &               AO, &
-     &               D(imat)%elms, &
-     &               buffer)
-
-          CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
-        ENDIF
-
-! Current density: -ec               \psi^\dag \alpha \psi = j
-        IQ = IQ_J
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_J(.TRUE., &
-     &               VECTOR_A, &
-     &               visual_cfg_irep_xvector(IXVECTOR), &
-     &               AO, &
-     &               D(imat)%elms, &
-     &               buffer)
-
-          CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
-        ENDIF
-
-! Non-relativistic paramagnetic current density (orbital part):  j_para
-        IQ = IQ_JPARA
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_JPARA(.TRUE., &
-     &                   VECTOR_A, &
-     &                   visual_cfg_irep_xvector(IXVECTOR), &
-     &                   AO, &
-     &                   ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                   D(imat)%elms, &
-     &                   buffer)
-
-          CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
-        ENDIF
-
-! Divergence of spin density:    \nabla \cdot  \psi^\dag \Sigma \psi
-        IQ = IQ_DIVM
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_DIVM(.TRUE., &
-     &                  SCALAR, &
-     &                  visual_cfg_irep_xvector(IXVECTOR), &
-     &                  AO, &
-     &                  ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                  D(imat)%elms, &
-     &                  buffer)
-
-          CALL DAXPY(1,1.0d0,SCALAR,1,QUANTITY(0),1)
-        ENDIF
-
-! Divergence of current density: -ec \nabla \cdot  \psi^\dag \alpha \psi
-        IQ = IQ_DIVJ
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_DIVJ(.TRUE., &
-     &                  SCALAR, &
-     &                  visual_cfg_irep_xvector(IXVECTOR), &
-     &                  AO, &
-     &                  ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                  D(imat)%elms, &
-     &                  buffer)
-
-          CALL DAXPY(1,1.0d0,SCALAR,1,QUANTITY(0),1)
-        ENDIF
-
-!                  \psi^\dag (\Sigma \cdot p) \psi
-        IQ = IQ_H
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_DIVM(.TRUE., &
-     &                  SCALAR, &
-     &                  visual_cfg_irep_xvector(IXVECTOR), &
-     &                  AO, &
-     &                  ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                  D(imat)%elms, &
-     &                  buffer)
-
-          CALL DAXPY(1,0.25d0,SCALAR,1,QUANTITY(0),1)
-        ENDIF
-
-!                c \psi^\dag (\alpha \cdot p) \psi
-        IQ = IQ_K
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_DIVJ(.TRUE., &
-     &                  SCALAR, &
-     &                  visual_cfg_irep_xvector(IXVECTOR), &
-     &                  AO, &
-     &                  ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                  D(imat)%elms, &
-     &                  buffer)
-
-          CALL DAXPY(1,0.5d0,SCALAR,1,QUANTITY(0),1)
-        ENDIF
-
-! Curl of spin density:     \nabla \times \psi^\dag \Sigma \psi
-        IQ = IQ_ROTM
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_ROTM(.TRUE., &
-     &                  VECTOR_A, &
-     &                  visual_cfg_irep_xvector(IXVECTOR), &
-     &                  AO, &
-     &                  ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                  D(imat)%elms, &
-     &                  buffer)
-
-          CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
-        ENDIF
-
-! Curl of current density: -ec \nabla \times \psi^\dag \alpha \psi
-        IQ = IQ_ROTJ
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_ROTJ(.TRUE., &
-     &                  VECTOR_A, &
-     &                  visual_cfg_irep_xvector(IXVECTOR), &
-     &                  AO, &
-     &                  ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                  D(imat)%elms, &
-     &                  buffer)
-
-          CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
-        ENDIF
-
-! Curl of non-relativistic paramagnetic current density:    \nabla \times j_para
-        IQ = IQ_ROTJPARA
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_ROTJPARA(.TRUE., &
-     &                      VECTOR_A, &
-     &                      visual_cfg_irep_xvector(IXVECTOR), &
-     &                      AO, &
-     &                      ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                      D(imat)%elms, &
-     &                      buffer)
-
-          CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
-        ENDIF
-
-!                  \psi^\dag  \gamma^5        \psi
-        IQ = IQ_GAMMA5
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_GAMMA5(.TRUE., &
-     &                    SCALAR, &
-     &                    visual_cfg_irep_xvector(IXVECTOR), &
-     &                    AO, &
-     &                    D(imat)%elms, &
-     &                    buffer)
-
-          CALL DAXPY(1,1.0d0,SCALAR,1,QUANTITY(0),1)
-        ENDIF
-! IQ_NUCDIPX     = 16       -1/(r_K^3) (r_K \times j)_x
-! IQ_NUCDIPY     = 17       -1/(r_K^3) (r_K \times j)_y
-! IQ_NUCDIPZ     = 18       -1/(r_K^3) (r_K \times j)_z
-
-        IF((visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_NUCDIPX) .OR. &
-     &     (visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_NUCDIPY) .OR. &
-     &     (visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_NUCDIPZ)) THEN
-
-          CALL GET_J(.TRUE., &
-     &               VECTOR_A, &
-     &               visual_cfg_irep_xvector(IXVECTOR), &
-     &               AO, &
-     &               D(imat)%elms, &
-     &               buffer)
-
-          RX = PX - CORD(1,visual_cfg_IOPTION_XVECTOR(IXVECTOR))
-          RY = PY - CORD(2,visual_cfg_IOPTION_XVECTOR(IXVECTOR))
-          RZ = PZ - CORD(3,visual_cfg_IOPTION_XVECTOR(IXVECTOR))
-
-          VECTOR_B(1) = RY*VECTOR_A(3) - RZ*VECTOR_A(2)
-          VECTOR_B(2) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
-          VECTOR_B(3) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
-
-          RSQ = RX*RX + RY*RY + RZ*RZ
-          FACTOR = -1.0d0/(RSQ**1.5d0)
-
-          IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_NUCDIPX) &
-     &      CALL DAXPY(1,FACTOR,VECTOR_B(1),1,QUANTITY(0),1)
-          IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_NUCDIPY) &
-     &      CALL DAXPY(1,FACTOR,VECTOR_B(2),1,QUANTITY(0),1)
-          IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_NUCDIPZ) &
-     &      CALL DAXPY(1,FACTOR,VECTOR_B(3),1,QUANTITY(0),1)
-        ENDIF
-
-! IQ_EDIPX       = 19                   r_x n
-! IQ_EDIPY       = 20                   r_y n
-! IQ_EDIPZ       = 21                   r_z n
-
-        IF((visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_EDIPX) .OR. &
-     &     (visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_EDIPY) .OR. &
-     &     (visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_EDIPZ)) THEN
-
-          CALL GETRHO(DENSITY, &
-     &                visual_cfg_irep_xvector(IXVECTOR), &
-     &                AO, &
-     &                D(imat)%elms, &
-     &                buffer)
-
-          IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_EDIPX) &
-     &      CALL DAXPY(1,1.0d0,DENSITY*PX,1,QUANTITY(0),1)
-          IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_EDIPY) &
-     &      CALL DAXPY(1,1.0d0,DENSITY*PY,1,QUANTITY(0),1)
-          IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_EDIPZ) &
-     &      CALL DAXPY(1,1.0d0,DENSITY*PZ,1,QUANTITY(0),1)
-        ENDIF
-
-! IQ_MDIPX       = 22             -1/2 (r_gauge \times j)_x
-! IQ_MDIPY       = 23             -1/2 (r_gauge \times j)_y
-! IQ_MDIPZ       = 24             -1/2 (r_gauge \times j)_z
-
-        IF((visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_MDIPX) .OR. &
-     &     (visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_MDIPY) .OR. &
-     &     (visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_MDIPZ)) THEN
-
-          CALL GET_J(.TRUE., &
-     &               VECTOR_A, &
-     &               visual_cfg_irep_xvector(IXVECTOR), &
-     &               AO, &
-     &               D(imat)%elms, &
-     &               buffer)
-
-          RX = PX - visual_cfg_GAUGE_ORIGIN(1)
-          RY = PY - visual_cfg_GAUGE_ORIGIN(2)
-          RZ = PZ - visual_cfg_GAUGE_ORIGIN(3)
-
-          VECTOR_B(1) = RY*VECTOR_A(3) - RZ*VECTOR_A(2)
-          VECTOR_B(2) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
-          VECTOR_B(3) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
-
-          FACTOR = -0.5d0
-
-          IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_MDIPX) &
-     &      CALL DAXPY(1,FACTOR,VECTOR_B(1),1,QUANTITY(0),1)
-          IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_MDIPY) &
-     &      CALL DAXPY(1,FACTOR,VECTOR_B(2),1,QUANTITY(0),1)
-          IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_MDIPZ) &
-     &      CALL DAXPY(1,FACTOR,VECTOR_B(3),1,QUANTITY(0),1)
-        ENDIF
-
-        factor = visual_cfg_common_factor
-        if (visual_cfg_radial) then
-          factor = factor*(distance_to_origin**2.0d0)
-        end if
-        call daxpy(4, factor, quantity(0), 1, quantity_addmeup(0), 1)
-
-      ENDDO
-
-      RETURN
-      END subroutine
 
       subroutine setup_orbital_string(occupation)
 
