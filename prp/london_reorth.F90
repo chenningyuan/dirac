@@ -366,8 +366,6 @@ contains
       indxpr       = ip_conmat(icomp)
       isym(icomp)  = p_iprpsym(indxpr)
       iopsy(icomp) = p_jbtof(isym(icomp)-1, 1)
-      write(*, *) 'alamakota icomp, indxpr, isym, jbtof(irep,1) = ', &
-                   icomp, indxpr, isym(icomp), p_jbtof(isym(icomp)-1, 1)
 
       call dzero(tb, p_n2orbxq)
 

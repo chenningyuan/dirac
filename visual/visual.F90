@@ -8,15 +8,6 @@ module visual
   use matrix_defop
   use matrix_genop
   use dirac_interface
-  use visual_london
-
-!#define ao_b_dervs
-! gosia: if ao_b_dervs is defined, then the direct contribution
-! to j^B with lao is calculated with "explicit" B-derivatives of lao
-! if ao_b_dervs is not defined then the direct contribution is calculated
-! from the derivative of lao overlap (like 'from equations'), namely:
-! f(r)*{ao*ao}, where f(r) is contructed in create_rkl 
-! i will remove one, it is only for testing
 
   implicit none
 
@@ -72,6 +63,8 @@ module visual
 
 
 
+      integer, save      :: vector_to_matrix(max_nr_xvectors) = 0
+
       integer, parameter :: file_unit = 137
 
 contains
@@ -80,7 +73,6 @@ contains
 
 !   ----------------------------------------------------------------------------
     type(matrix)         :: D_mo, D(max_nr_xvectors)
-    type(matrix)         :: D_con_ao, D_con_mo, D_con(max_nr_xvectors)
     type(matrix)         :: C, Cig, Ciu, Csg, Csu
 
     real(8), allocatable :: eigenvalues(:)
@@ -91,13 +83,6 @@ contains
     real(8)              :: energy, time_start, second
     integer              :: max_ao_g_order, max_ao_m_order
     integer              :: ioff, imat, iq, iz, m, nr_dmat, ivector
-    integer              :: nr_dmat_con
-
-    logical              :: ep, debug_me
-! gosia temporarily:
-    real(8) :: h
-    integer :: i, j, off_ij
-    type(matrix) :: D_con_mo_ij
 !   ----------------------------------------------------------------------------
 
     max_ao_g_order = 0
@@ -128,9 +113,6 @@ contains
 
     end do
 
-#ifdef ao_b_dervs
-    if (visual_cfg_london) max_ao_m_order = 1
-#endif
 
 !   find occupation
 !   ===============
@@ -140,13 +122,6 @@ contains
 
     call opnfil(file_unit, 'DFCOEF', 'OLD', 'visual.F90')
     call reacmo_no_work(file_unit, 'DFCOEF', (/0.0d0/), eigenvalues, (/0/), energy, 4)
-
-! gosia fixme: if (visual_cfg_london .and. .not. spinfree)
-!    if (visual_cfg_london) then
-!      call alloc(ibeig, ntbas(0))
-!      call reacmo_no_work(file_unit, 'DFCOEF', (/0.0d0/), (/0.0d0/), ibeig, energy, 8)
-!    end if
-
     close(file_unit, status = 'keep')
     write(LUPRI,'(2x,a)') 'Visualisation : DFCOEF file read'
 
@@ -173,15 +148,7 @@ contains
       call get_c(Csu, i=0.0d0, s=1.0d0, g=0.0d0, u=1.0d0)
     end if
 
-!gosia: debug coefficients:
-!    call print_mat(C, label='run_visual: debug C')
-!    call print_mat(Cig, label='run_visual: debug Cig')
-!    call print_mat(Csg, label='run_visual: debug Csg')
-!    write(lupri, *) 'run_visual: C%elms(1) = ', C%elms(1)
-!    write(lupri, *) 'run_visual: Cig%elms(1) = ', Cig%elms(1)
-!    write(lupri, *) 'run_visual: Csg%elms(1) = ', Csg%elms(1)
 
-!
 !   get unperturbed density matrix
 !   ==============================
 
@@ -198,222 +165,40 @@ contains
 
 !   get perturbed matrices
 !   ======================
-! gosia: and density matries modified by connection matrices 
-! (reorthonormalization contribution) if london
-! now: reorthonormalization checked for LVCORR and without symmetry
-! todo: add nz<4, nfsym=2 (molecules with inversion center)...
 
     nr_dmat = 1
-
-    if (visual_cfg_london) then
-
-      nr_dmat_con = 0
-      call init_mat(D_con_mo, norbt, norbt)
-      call init_mat(D_con_ao, ntbas(0), ntbas(0))
-
-      debug_me = .true.
-
-    end if
-
-
     do ivector = 1, visual_cfg_nr_xvectors
+      if (.not. visual_cfg_xvector_file(ivector) .eq. 'ZORDER') then
+        nr_dmat = nr_dmat + 1
+        vector_to_matrix(ivector) = nr_dmat
 
-      if ((.not. visual_cfg_london) .or.  &
-         (visual_cfg_london .and. visual_cfg_connection(ivector) .ne. 0)) then
+        call setup_fo_dmat_ao(ivector, occupation, D_mo)
 
-        if (.not. visual_cfg_xvector_file(ivector) .eq. 'ZORDER') then
-          nr_dmat = nr_dmat + 1
-          vector_to_matrix(ivector) = nr_dmat
-
-          call setup_fo_dmat_ao(ivector, occupation, D_mo)
-
-          if (nfsym == 2) then
-            if (jbtof(D_mo%irep, 1) == 2) then
-!             ungerade perturbation
-              D(nr_dmat) = (Cig*(D_mo*dag(Csu))) &
-                         + (Ciu*(D_mo*dag(Csg))) &
-                         - (Csg*(D_mo*dag(Ciu))) &
-                         - (Csu*(D_mo*dag(Cig)))
-            else
-!             gerade perturbation
-              D(nr_dmat) = (Cig*(D_mo*dag(Csg))) &
-                         + (Ciu*(D_mo*dag(Csu))) &
-                         - (Csg*(D_mo*dag(Cig))) &
-                         - (Csu*(D_mo*dag(Ciu)))
-            end if
+        if (nfsym == 2) then
+          if (jbtof(D_mo%irep, 1) == 2) then
+!           ungerade perturbation
+            D(nr_dmat) = (Cig*(D_mo*dag(Csu))) &
+                       + (Ciu*(D_mo*dag(Csg))) &
+                       - (Csg*(D_mo*dag(Ciu))) &
+                       - (Csu*(D_mo*dag(Cig)))
           else
+!           gerade perturbation
             D(nr_dmat) = (Cig*(D_mo*dag(Csg))) &
-                       - (Csg*(D_mo*dag(Cig)))
+                       + (Ciu*(D_mo*dag(Csu))) &
+                       - (Csg*(D_mo*dag(Cig))) &
+                       - (Csu*(D_mo*dag(Ciu)))
           end if
-
-          call copy_matrix_sym(D(nr_dmat), D_mo)
-
         else
-          vector_to_matrix(ivector) = 1
-          if (visual_cfg_london) then
-            call quit('visual: ZORDER and LONDON cannot go together')
-          end if
+          D(nr_dmat) = (Cig*(D_mo*dag(Csg))) &
+                     - (Csg*(D_mo*dag(Cig)))
         end if
+       
+        call copy_matrix_sym(D(nr_dmat), D_mo)
+
+      else
+        vector_to_matrix(ivector) = 1
       end if
-
-
-!     if london - reorthonormalization contribution
-!     =============================================
-!     (*) gosia: todo later:
-!     D(1) -> unperturbed density matrix
-!     D(2:nr_dmat) -> perturbed density matrices
-!     D(nr_dmat+1:nr_dmat_con+nr_dmat+1) -> modified density matrices (by connection matrices)
-!     etc..
-!     and pass only D and total nr_dmat to visual_driver (one call to visual_driver)
-!     (*) for a moment i assume that we always visualize one component (x,y or z) at a time
-
-
-      if (visual_cfg_london) then
-      
-        nr_dmat_con = nr_dmat_con + 1
-        vector_to_matrix_con(ivector) = nr_dmat_con
-
-        D_con_ao%elms = 0.0d0
-        D_con_mo%elms = 0.0d0
-
-!       read connection matrices in AO basis from AOPROPER file
-!       -------------------------------------------------------
-        call setup_fo_conmat_ao(D_con_ao, ivector)
-
-        if (debug_me) then
-!         should be the same (if not scaled inside setup_fo_conmat_ao) 
-!         as connection matrix in SA-AO basis
-!         which can be printed from e.g. PRPMAO when running response
-          call print_mat(D_con_ao, label = 'run_visual: debug D_con_ao in SA-AO basis')
-        end if
-
-        visual_cfg_irep_conmat(ivector) = D_con_ao%irep
-
-!       transform connection matrices to MO basis:
-!       ------------------------------------------
-!       gosia: in DIRAC to do this qbtrans or qtrans is called,
-!       all checked for nz=4 without symmetry
-
-        D_con_mo = dag(C)*(D_con_ao*C)
-
-
-!       also copy symmetries:
-        call copy_matrix_sym(D_con_mo, D_con_ao)
-
-        if (debug_me) then
-!         should be the same as connection matrix printed from PRPMAT
-!         when running response
-          call print_mat(D_con_mo, label = 'run_visual: debug D_con_mo in MO basis')
-          write(lupri, *) 'D_con_mo%tr_sym, D_con_mo%irep, jbtof(D_con_mo%irep, 1) = ', &
-                           D_con_mo%tr_sym, D_con_mo%irep, jbtof(D_con_mo%irep, 1)
-        end if
-
-
-!       create modified density matrices
-!       --------------------------------
-!       D_con_{\mu\nu} = \sum_{ip} C_{\mu p} T^B_{pi} C_{i\nu}^*
-!
-!       *) D_con_mo is a general matrix (natural connection) 
-!          or antihermitian (symmetric connection)
-!       *) gosia todo: include ep in options, now it is hardcoded to .true.
-!          ep = .true.  - 'p'-summation over e+p shells
-!               .false. - only over e-shells
-
-
-        if (visual_cfg_connection(ivector) == 2) then
-
-          D_con(nr_dmat_con) = (C*(D_con_mo*dag(Cig))) &
-                             + (Cig*(D_con_mo*dag(C)))
-
-!         also copy symmetries:
-          call copy_matrix_sym(D_con(nr_dmat_con), D_con_mo)
-
-          if (debug_me) then
-!           should be the same as connection matrix printed from GETMDM
-!           when running response
-            call print_mat(D_con(nr_dmat_con),   &
-                 label='run_visual: debug D_con (symmetric con)')
-            write(lupri, *) 'D_con%tr_sym, D_con%irep, jbtof(D_con%irep, 1) = ', &
-                             D_con%tr_sym, D_con%irep, jbtof(D_con%irep, 1)
-          end if
-
-
-        else if (visual_cfg_connection(ivector) == 1) then
-
-          D_con(nr_dmat_con) = (C*(D_con_mo*dag(Cig))) &
-                             - (Cig*(dag(D_con_mo)*dag(C)))
-
-          if (debug_me) then
-!           should be the same as connection matrix printed from GETMDM
-!           when running response
-            call print_mat(D_con(nr_dmat_con),  &
-                 label='run_visual: debug D_con (natural con)')
-            write(lupri, *) 'D_con%tr_sym, D_con%irep, jbtof(D_con%irep, 1) = ', &
-                             D_con%tr_sym, D_con%irep, jbtof(D_con%irep, 1)
-          end if
-
-
-        else if (visual_cfg_connection(ivector) == 0) then
-
-!         zero-out the 'ij' block of D_con_mo
-!         -----------------------------------
-
-          call init_mat(D_con_mo_ij, norbt, norbt)
-          D_con_mo_ij%elms = 0.0d0
-         
-          D_con_mo_ij = dag(Cig)*(D_con_ao*Cig)
-          off_ij = 1 + npsh(1)*norbt
-
-          call print_mat(D_con_mo_ij, label = 'D_con_mo_ij: block zeroed-out')
-          write(lupri, *) 'alamakota npsh(1) = ', npsh(1)
-          write(lupri, *) 'alamakota off_ij = ', off_ij
-          write(lupri, *) 'alamakota off_ij+nish(1)*norbt = ', off_ij + nish(1)*norbt
-          write(lupri, *) 'D_con_mo%elms(off_ij) = ', D_con_mo%elms(off_ij)
-          write(lupri, *) 'D_con_mo_ij%elms(off_ij) = ', D_con_mo_ij%elms(off_ij)
-          write(lupri, *) 'D_con_mo%elms(off_ij+nish(1)*norbt) = ', D_con_mo%elms(off_ij+nish(1)*norbt)
-          write(lupri, *) 'D_con_mo_ij%elms(off_ij+nish(1)*norbt) = ', D_con_mo_ij%elms(off_ij+nish(1)*norbt)
- 
-
-          D_con_mo%elms(1:(off_ij - 1)) = 0.0d0
-          D_con_mo%elms((off_ij + nish(1)*norbt + 1):(norbt*norbt)) = 0.0d0
-          D_con_mo_ij%elms = D_con_mo_ij%elms - D_con_mo%elms(off_ij:(off_ij+nish(1)*norbt))
-
-          if (iszero(D_con_mo_ij)) then
-            call quit('zero bla')
-          else
-            call quit('not zero bla')
-          end if
-
-          
-
-!         substract D_con_mo -  D_mo for 'ai' block
-!         -----------------------------------------
-          
-!          D_con_mo = D_con_mo - D_con_mo_ij
-
-
-
-!         take first order overlap matrix for 'ij' block
-!         ----------------------------------------------
-!      SUBROUTINE SM1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
-!     &                  DIFABX,DIFABY,DIFABZ)
-
-
-
-
-
-!         create modified density matrix
-!         ------------------------------
-
-
-        else
-          call quit('run_visual: visual_cfg_connection(ivector) != {0,1,2}')
-        end if
-      
-      end if
-
-    end do   ! do ivector = 1, visual_cfg_nr_xvectors
-
+    end do
 
 
 !   insert half phases
@@ -434,10 +219,6 @@ contains
 !   ======================
 
     do imat = 1, nr_dmat
-!gosia: here valgrind gives a warning about uninitialised value
-!now D is a "temporary matrix" (function new_tmp in matrix_defop.f90)
-!actually a pointer to (initialized) matrix D_mo
-!to be checked...  
       D(imat) = 2.0d0*D(imat)
     end do
 
@@ -458,12 +239,6 @@ contains
       Csu = 0
     end if
 
-    if (visual_cfg_london) then
-      D_con_ao = 0
-      D_con_mo = 0
-    end if
-
-
 !   initialize ao module
 !   ====================
 
@@ -481,14 +256,7 @@ contains
 
     time_start = second()
 !   if (visual_cfg_integrate) then
-
-!gosia todo: merge these two to one call to visual_driver
-    if (visual_cfg_london) then
-      call visual_driver(nr_dmat, D, ao, buffer, nr_dmat_con=nr_dmat_con, D_con=D_con)
-    else
-      call visual_driver(nr_dmat, D, ao, buffer, 0)
-    end if
-
+      call visual_driver(nr_dmat, D, ao, buffer)
 !   end if
     call timtxt('>>>> time used in plot:', (second() - time_start), lupri)
 
@@ -510,38 +278,26 @@ contains
     end do
 
     call basis_info_delete()
-    if (visual_cfg_london) then
-      do imat = 1, nr_dmat_con
-        D_con(imat) = 0
-      end do
-    end if
-
 
     end subroutine
 
 
-      subroutine visual_driver(nr_dmat, D, ao, buffer, nr_dmat_con, D_con)
+      subroutine visual_driver(nr_dmat, D, ao, buffer)
 
       integer, intent(in) :: nr_dmat
       type(matrix)        :: D(nr_dmat)
       real(8), intent(in) :: ao(*)
       real(8), intent(in) :: buffer(*)
 
-      integer, intent(in)      :: nr_dmat_con
-      type(matrix), intent(in), optional :: D_con(nr_dmat_con)
-
       real(8) ::          QUANTITY(0:3,visual_cfg_NCUBE(3))
       real(8) ::          STEP_3D(3,0:3)
       real(8) ::          ATOM_XYZ(4,NUCDEP)
-
-      real(8), allocatable :: r_kl(:, :, :)
 
       character(2) :: grid_orientation(1:3) = (/'xy', 'xz', 'yz'/)
       real(8) :: r(3), v(3), px, py, pz
       integer :: ICUBE, jCUBE, kCUBE, IORIENTATION, IPOINT_IN_LIST
       integer :: istep, i, j, k, l, m, ni, nj, nk, nr_steps, IXVECTOR
       integer :: lunit_2d, lunit_3d, lunit_line
-
 
 !     open files
 
@@ -571,12 +327,6 @@ contains
      &       status = 'new', &
      &       access = 'sequential', &
      &       form   = 'formatted')
-      end if
-
-!     if london create (R_M - R_N) array
-      if (visual_cfg_london) then
-        call alloc (r_kl, ntbas(0), ntbas(0), 3)
-        call create_rkl(ntbas(0), r_kl)
       end if
 
       if (visual_cfg_list) then
@@ -666,7 +416,6 @@ contains
           WRITE(LUNIT_2D,'(A)')  &
      &             'plane: ' // grid_orientation(IORIENTATION)
 
-!
           DO I = 1,NI
             DO J = 1,NJ
               DO K = 1,NK
@@ -685,25 +434,11 @@ contains
                 IF(IORIENTATION .EQ. 3) &                        ! 'yz'
      &                     PX = visual_cfg_ORIGIN_2D(1)
 
-
-                if (visual_cfg_london) then
-                  if (.not. present(D_con) .or. nr_dmat_con == 0) &
-                     call quit("no D_con or nr_dmat_con=0")
-                  call get_quantity_lao_in_point(nr_dmat, D,         &
-                                                 nr_dmat_con, D_con, &
-                                                 ao,                 &
-                                                 px, py, pz,         &
-                                                 r_kl,               &
-                                                 buffer,             &
-                                                 quantity)
-                else
-                  CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &
-     &                                       ao, &
-     &                                       PX,PY,PZ, &
-     &                                       buffer, &
-     &                                       QUANTITY)
-                end if
-
+                CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &
+     &                                     ao, &
+     &                                     PX,PY,PZ, &
+     &                                     buffer, &
+     &                                     QUANTITY)
 
 !               write to file
 
@@ -818,11 +553,6 @@ contains
           ENDDO
         ENDDO
       ENDIF !3D
-
-
-      if (visual_cfg_london) then
-        call dealloc(r_kl)
-      end if
 
 !     close files
 

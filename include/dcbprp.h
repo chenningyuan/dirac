@@ -31,8 +31,7 @@
      &        ESRGTENS, ESRANISO, EFT, EFTNTL, EFN, RHONUC,             &
      &        DOTPA,DOVER,DOEXCPRP,DOVDW,                               &
      &        ROTG, LONDON, SYMCON, NOORTH, DOPCT, MSUSCDIA, NOPCT,     & 
-     &        PVC_SHIELD, PVC_SPINSPIN, DOSTEX, OPTROT,DORKBIMP,        &
-     &        JBXLAO, JBYLAO, JBZLAO
+     &        PVC_SHIELD, PVC_SPINSPIN, DOSTEX, OPTROT,DORKBIMP
 
       INTEGER MXPRPWF,EXCPRPTYP
       PARAMETER (MXPRPWF = 4)
@@ -44,8 +43,7 @@
      &                PVC, DOESR, ESRGTENS, ESRANISO, EFT, EFTNTL,      &
      &                EFN, RHONUC, DOTPA, DOVER, DOEXCPRP, EXCPRPTYP,   &
      &                ROTG,LONDON,SYMCON,NOORTH,DOPCT,MSUSCDIA,NOPCT,   & 
-     &                PVC_SHIELD,PVC_SPINSPIN,DOSTEX,OPTROT,DORKBIMP,   &
-     &                JBXLAO, JBYLAO, JBZLAO
+     &                PVC_SHIELD,PVC_SPINSPIN,DOSTEX,OPTROT,DORKBIMP
 
       INTEGER IPRPRP, IPEPOLAR(3, 2), IPSPNSPN(2, MXCOOR),              &
      &        IPDSO(MXCOOR*(MXCOOR+1)/2), NDSOIN, IPSHIELD(MXCOOR+3),   &
@@ -54,16 +52,14 @@
      &        IPCON21(3),IPCON22(3),IPCON23(6),                         &
      &        IPLONDON(4,3),IPCON(3),IPRNST(MXCOOR*3),                  &
      &        IP_PVC_SHIELD(MXCOOR+3),                                  &
-     &        IP_PVC_SPINSPIN(2,MXCOOR),                                &
-     &        IP_JBLAO(2,3)
+     &        IP_PVC_SPINSPIN(2,MXCOOR)
       COMMON /CBIPRP/ IPRPRP, IPEPOLAR, IPSPNSPN, IPDSO, NDSOIN,        &
      &                IPSHIELD, IPNSTDIA, NNSTIN, IPESR, NPRPWF,        &
      &                         IPROTG,IPMSUSC,IMAGOUT,                  &
      &                IPCON21,IPCON22,IPCON23,                          &
      &                IPLONDON,IPCON,IPRNST,                            &
      &                IP_PVC_SHIELD,                                    &
-     &                IP_PVC_SPINSPIN,                                  &
-     &                IP_JBLAO
+     &                IP_PVC_SPINSPIN
 
       REAL*8 ABUND
       COMMON /CBRPRP/ ABUND

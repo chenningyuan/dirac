@@ -578,18 +578,14 @@ C     ===============================
 
 C .. control print out of 2c/4c-component
 C    operator in the SA-AO basis
-!gosia      IF (IPRINT.GE.7) THEN
-      if (prpnam(indxpr) == 'd|S>/dBX' .or. 
-     &    prpnam(indxpr) == 'dS/dBX') then
-!
+      IF (IPRINT.GE.7) THEN
         WRITE(LUPRI,'(/A,A16)')
      &'PRPMA1: Total 4c or 2c matrix (in SA-AO basis) of property ',
      & PRPNAM(INDXPR)
         CALL PRQMAT(PRPAO,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
      &            IPQTOQ(1,IREP),LUPRI)
-!gosia      ENDIF
-      end if
-!
+      ENDIF
+
 C
 C     Transform to MO-basis only the blocks of correct fermion symmetry
 C     =================================================================
@@ -627,10 +623,7 @@ C
 
          ENDIF
 
-!gosia         IF (IPRINT.GE.7) THEN
-      if (prpnam(indxpr) == 'd|S>/dBX' .or.
-     &    prpnam(indxpr) == 'dS/dBX') then
-!
+         IF (IPRINT.GE.7) THEN
           CALL HEADER('PRPMA1: Symm.blocked AO-matrix',-1)
           WRITE(LUPRI,'(A,I1,1X,I1,A,I1)')
      &    '* Fermion irps no.',I1,I2,' of ',NFSYM
@@ -643,9 +636,8 @@ C
           CALL PRQMAT(PRPMO(J2PMOX(I1,I2),1),NPMO(I1),NPMO(I2),
      &           NPMOT,NPMOT,NZ,IPQTOQ(1,IREP),LUPRI)
           CALL FLSHFO(LUPRI)
-!gosia         ENDIF
-      endif
-!
+         ENDIF
+
          IF (IPRINT.GE.10) THEN
           CALL HEADER(
      &    'PRPMA1: Symm.blocked MO-coefficients',-1)
@@ -661,10 +653,7 @@ C
 C     Print section
 C     =============
 C
-!gosia      IF(IPRINT.GE.16) THEN
-      if (prpnam(indxpr) == 'd|S>/dBX' .or.
-     &    prpnam(indxpr) == 'dS/dBX') then
-!
+      IF(IPRINT.GE.16) THEN
         CALL HEADER('PRPMA1: Total MO matrix of property',-1)
         IF (QBTR) THEN
          WRITE(LUPRI,'(4X,A)')
@@ -681,9 +670,7 @@ C
         CALL PRQMAT(PRPMO,NPMOT,NPMOT,NPMOT,NPMOT,NZ,
      &              IPQTOQ(1,IREP),LUPRI)
         CALL FLSHFO(LUPRI)
-!gosia      ENDIF
-      endif
-!
+      ENDIF
 C
       CALL QEXIT('PRPMA1')
       RETURN

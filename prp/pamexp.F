@@ -543,7 +543,7 @@ CMI ... check it ! In the pure two-component mode there should be no reading fro
         KLBL  = IPRPLBL(1,INDXPR)
         INQUIRE(FILE=PRPLBL(KLBL),EXIST=FIRST(1))
         IF(FIRST(1)) THEN
-          CALL OPNFIL(2,PRPLBL(KLBL),'OLD','PRPEX2')
+          CALL OPNFIL(2,PRPLBL(KLBL),'OLD','PRPMAO')
           CALL REAFCK(2,PMAT,.FALSE.,1)
           CLOSE(2,STATUS = 'KEEP')
           PFAC = FACPRP(1,INDXPR)
@@ -554,7 +554,7 @@ CMI ... check it ! In the pure two-component mode there should be no reading fro
           WRITE(LUPRI,'(A,A8,A,A16,A)')
      &      'Property file ',PRPLBL(KLBL),' for operator ',
      &      PRPNAM(INDXPR),' not found !'
-          CALL QUIT('PRPEX2: Property file not found !')
+          CALL QUIT('PRPMAO: Property file not found !')
         ENDIF
 
       ELSEIF (ITIM.EQ.0) THEN

@@ -8,9 +8,6 @@ module visual_cfg
   integer, parameter, public :: max_nr_points_in_list = 100
 
   character(6),  public :: visual_cfg_xvector_file(max_nr_xvectors)
-  character(8),  public :: visual_cfg_conmat_file(max_nr_xvectors)
-  !character(9),  public :: visual_cfg_connection_key(max_nr_xvectors)
-  character(1),  public :: visual_cfg_icomp(max_nr_xvectors)
   character(72), public :: visual_cfg_orbital_string(2)
 
   logical,       public :: visual_cfg_list               = .false.
@@ -28,14 +25,11 @@ module visual_cfg
   integer,       public :: visual_cfg_nr_xvectors                      = 0
   integer,       public :: visual_cfg_iq_xvector(max_nr_xvectors)      = 0
   integer,       public :: visual_cfg_irep_xvector(max_nr_xvectors)    = 0
-  integer,       public :: visual_cfg_irep_conmat(max_nr_xvectors)     = 0
   integer,       public :: visual_cfg_iwhich_xvector(max_nr_xvectors)  = 1
   integer,       public :: visual_cfg_ioption_xvector(max_nr_xvectors) = 0
   integer,       public :: visual_cfg_line_nr_steps                    = 0
   integer,       public :: visual_cfg_orientation                      = 1
-  !integer,       public :: visual_cfg_connection(max_nr_xvectors)      = 0 !gosia potem zmien
-  integer,       public :: visual_cfg_connection(max_nr_xvectors)      = 1
-  !integer,       public :: visual_cfg_london_options(max_nr_xvectors)  = 0
+  integer,       public :: visual_cfg_connection                       = 0
 
   real(8),       public :: visual_cfg_add_3d                             = 4.0d0
   real(8),       public :: visual_cfg_common_factor                      = 1.0d0
@@ -46,11 +40,6 @@ module visual_cfg
   real(8),       public :: visual_cfg_step_2d                            = 0.1d0
   real(8),       public :: visual_cfg_line_from(3)                       = 0.0d0
   real(8),       public :: visual_cfg_line_to(3)                         = 0.0d0
-
-! gosia: temporarily i move these from from visual.F90:
-  integer,       public :: vector_to_matrix(max_nr_xvectors) = 0
-  integer,       public :: vector_to_matrix_con(max_nr_xvectors) = 0
-
 
   private
 
