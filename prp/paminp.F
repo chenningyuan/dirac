@@ -1338,9 +1338,9 @@ C
 #include "dcbxpr.h"
 #include "dcbprl.h"
 #include "dcbham.h"
-CMI ...not possible to add ! use dcbham.h for flag modif. operators...
-CMI#include "dcbprp.h"
-C
+CMI ... needs CVAL
+#include "dcbgen.h"
+
       CHARACTER*4 PCOMB
 C     ... the four characters in PCOMB define inclusion of the
 C         LL, SL, LS, and SS blocks of one-electron operators.
@@ -1447,9 +1447,10 @@ CMI ... inform about the assigned PCOMB
 
 !     ...  assign proper factor for EDM  ...
       IF (PLABEL(1).EQ.'EDM') THEN
-        PFAC(1) = -4.0D0 * PFAC(1)
+        PFAC(1) = -4.0D0 * CVAL * PFAC(1)
         WRITE(LUPRI,'(2X,A,D12.6)') 
-     &  'EDM operator: factor multiplied by -4, PFAC(1)=', PFAC(1)
+     &  'EDM operator: operator strenght multiplied by -4*CVAL,'
+     & //' PFAC(1)=', PFAC(1)
       ENDIF
 
 C
@@ -2076,7 +2077,8 @@ C
 
         IF (PLABEL.EQ.'EDM') THEN
           PLABEL='KINENERG'
-          WRITE(LUPRI,*) 'EDM: PLABEL SET to KINENERG'
+          WRITE(LUPRI,*)
+     &     'EDM: PLABEL SET to KINENERG, factor -4*c*field_strenght'
         ENDIF
 
         IF (IPRINT.GE.5) THEN
