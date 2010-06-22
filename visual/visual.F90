@@ -444,6 +444,13 @@ contains
     end if
 
 
+    if (visual_cfg_london) then
+      do imat = 1, nr_dmat_con
+        D_con(imat) = 0
+      end do
+    end if
+
+
     end subroutine
 
 

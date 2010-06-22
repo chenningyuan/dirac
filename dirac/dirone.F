@@ -1529,7 +1529,6 @@ C     ... do resort PTRI to the boson sorted basis
         IF (IS_SQUARE) THEN
           CALL PRPMAO(LU1INT,INDXPR,IDIMENS,PMAT,OP1INT,FIRST,
      &                IPRINT2)   
-
           CALL SORT2SAO(IDIMENS,DUMMY,PMAT,FIRST,
      &               IREP,ITIM,WORK(KFREE),LFREE,IPRINT2)
         ELSE
@@ -2848,7 +2847,6 @@ C
      & ' with COMB '//COMB//
      & ' from the file with LU1INT = ',LU1INT
       ENDIF
-
       IF(FNDLB3(PRPLBL,COMB,RTNLBL,LU1INT,IPRINT)) THEN
         CALL READT(LU1INT,NDIM,PRPINT)
         IF (IPRINT.GE.17) THEN
