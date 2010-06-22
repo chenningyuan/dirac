@@ -52,7 +52,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 10, NTABLE = 36)
+      PARAMETER (NDIR = 10, NTABLE = 40)
 #include "maxorb.h"
 #include "mxcent.h"
 #include "dcbham.h"
@@ -77,7 +77,9 @@ C
      &             '.WAVE F','.RHONUC','.FIRST ','.TWO-PH',
      &             '.VERDET','.ROTG  ','.MSTDIA','.PVCSPN',
      &             '.NOPCTR','.EXCDIP','.MAGOUT','.OPTROT', 
-     &             '.C6    ','.RKBIMP','.XXXXXX','.XXXXXX' /
+     &             '.C6    ','.RKBIMP','.XXXXXX','.XXXXXX',
+     &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX' /
+
 C
       CALL QENTER('PRPINP')
 #include "memint.h"
@@ -185,7 +187,7 @@ C
      &                109,110,111,112,113,114,115,116,
      &                117,118,119,120,121,122,123,124,
      &                125,126,127,128,129,130,131,132,
-     &                133,134,135,136), I
+     &                133,134,135,136,137,138,139,140), I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -386,7 +388,19 @@ C&&&& RKBIMPort; read RKB coefficients and add complementary UKB space
   135    CONTINUE 
 C&&&& XXXXXX
             GO TO 100
-  136    CONTINUE 
+  136    CONTINUE
+C&&&& XXXXXX
+            GO TO 100
+  137    CONTINUE
+C&&&& XXXXXX
+            GO TO 100
+  138    CONTINUE
+C&&&& XXXXXX
+            GO TO 100
+  139    CONTINUE
+C&&&& XXXXXX
+            GO TO 100
+  140    CONTINUE
 C&&&& XXXXXX
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN

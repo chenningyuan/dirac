@@ -611,8 +611,6 @@ C         Write sigma-vectors to file
 C         ============================
 C
           ICOUNT = NZRED
-          !gosia: some memory problems if too many debug_me prints in
-          !dft, program always stops here..
           CALL WRSVEC(ICOUNT,WORK(KSCI),WORK(KSOE),WORK(KSOP))
 C
 C         Update restart info file

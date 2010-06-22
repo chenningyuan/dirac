@@ -501,20 +501,14 @@ contains
                          visual_cfg_gauge_origin(3))
     end if
 
-!gosia:
-! *) temporarily added LONDON keyword. 
-! *) specify connection={'symmetric', 'natural', 'none'}
-! default connection is none
     if (kw_matches(word, '.LONDON')) then
       visual_cfg_london = .true.
-      call kw_read(word, reply)
-      if(reply.eq.'symmet') then
-         visual_cfg_connection=1
-      elseif(reply.eq.'natura') then
-         visual_cfg_connection=0
-      endif
+      do i = 1, visual_cfg_nr_xvectors
+        read(unit_in, *) visual_cfg_conmat_file(i),     &
+                         visual_cfg_lao_chcomp(i),      &
+                         visual_cfg_connection_key(i)
+      end do
     end if
-
 
     call check_whether_kw_found(word, kw_section)
 #endif /* ifndef MOD_VISUAL */

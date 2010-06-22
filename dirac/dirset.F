@@ -38,6 +38,9 @@ C     Called from:  DIRCTL (after PAMINP)
 C                   EXEDIT ( -||-) - optimization
 C
 C***********************************************************************
+#ifdef MOD_VISUAL
+      use visual_cfg
+#endif 
 #ifdef MOD_CAP
       USE Memory
 #endif
@@ -88,6 +91,12 @@ C     exit if DOHRM: .ONLY INTEGRALS -- only calc. 1-el. integrals
 C
       INQUIRE(FILE='AOPROPER',EXIST=TOBE)
 !     radovan: don't restart if you do a geometry optimization!
+!     gosia: don't restart and don't generate integrals if visual_cfg_london
+#ifdef MOD_VISUAL
+      if (tobe .and. visual_cfg_london) then
+        goto 11
+      endif
+#endif /* #ifdef MOD_VISUAL */
       IF(TOBE .and. .not. optimi) THEN
         WRITE(LUPRI,'(2X,A,A)') 
      &  '* WARNING: DIRAC found the AOPROPER file ',
@@ -98,6 +107,9 @@ C
       ELSE 
         CALL ONEGEN(WORK,LWORK)
       ENDIF
+#ifdef MOD_VISUAL
+ 11   continue
+#endif /* #ifdef MOD_VISUAL */
 #ifdef MOD_CAP
 CMI ... check if CAP is not for everlap control
 CMI  ... call of F90 routine

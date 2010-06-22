@@ -1,9 +1,20 @@
-      subroutine visual_integration(nr_dmat, D, ao, buffer)
+module visual_integrate
+
+  public visual_integration
+
+  save
+
+  private
+
+contains
+
+      subroutine visual_integration(nr_dmat, D, ao, buffer, nr_dmat_con, D_con)
 
        use visual_cfg
        use memory_allocator
   use matrix_defop
   use dirac_interface
+  use visual_london
 
 #include "implicit.h"
 #include "priunit.h"
@@ -13,6 +24,9 @@
       type(matrix)        :: D(nr_dmat)
       real(8), intent(in) :: ao(*)
       real(8), intent(in) :: buffer(*)
+
+      integer, intent(in) :: nr_dmat_con
+      type(matrix), optional :: D_con(nr_dmat_con)
 
       dimension QUANTITY_INTEGRAL(0:3), &
                 QUANTITY_INTEGRAL_LAST(0:3)
@@ -46,13 +60,34 @@
 
         call reaqua(x, y, z, w, lunit, nr_points)
 
-        CALL INTEGRATE_QUANTITY(nr_dmat, D, &
-     &                          AO, &
-     &                          x, y, z, &
-     &                          buffer, &
-     &                          QUANTITY_INTEGRAL, &
-     &                          w, &
-     &                          NR_POINTS)
+!temporarily - gosia: fixme make all in 1 call
+        if (visual_cfg_london) then
+
+          if (.not. present(D_con) .or. nr_dmat_con == 0)  &
+             call quit("visual_integration: no D_con or nr_dmat_con=0")
+
+          CALL INTEGRATE_QUANTITY(nr_dmat, D,  &
+     &                            AO, &
+     &                            x, y, z, &
+     &                            buffer, &
+     &                            QUANTITY_INTEGRAL, &
+     &                            w, &
+     &                            NR_POINTS, &
+     &                            nr_dmat_con, &
+     &                            D_con=D_con)
+
+        else
+
+          CALL INTEGRATE_QUANTITY(nr_dmat, D, &
+     &                            AO, &
+     &                            x, y, z, &
+     &                            buffer, &
+     &                            QUANTITY_INTEGRAL, &
+     &                            w, &
+     &                            NR_POINTS, &
+     &                            0)
+
+        end if
 
         call dealloc(x)
         call dealloc(y)
@@ -137,13 +172,32 @@
             call reaqua(x, y, z, w, lunit, nr_points)
 
             CALL DZERO(QUANTITY_INTEGRAL,4)
-            CALL INTEGRATE_QUANTITY(nr_dmat, D, &
-     &                              AO, &
-     &                              x, y, z, &
-     &                              buffer, &
-     &                              QUANTITY_INTEGRAL, &
-     &                              w, &
-     &                              NR_POINTS)
+
+!temporarily - gosia: fixme make all in 1 call
+            if (visual_cfg_london) then
+
+              if (.not. present(D_con) .or. nr_dmat_con == 0)  &
+                 call quit("visual_integration: no D_con or nr_dmat_con=0")
+
+              CALL INTEGRATE_QUANTITY(nr_dmat, D,  &
+     &                                AO, &
+     &                                x, y, z, &
+     &                                buffer, &
+     &                                QUANTITY_INTEGRAL, &
+     &                                w, &
+     &                                NR_POINTS, &
+     &                                nr_dmat_con, &
+     &                                D_con=D_con)
+
+            else
+              CALL INTEGRATE_QUANTITY(nr_dmat, D, &
+     &                                AO, &
+     &                                x, y, z, &
+     &                                buffer, &
+     &                                QUANTITY_INTEGRAL, &
+     &                                w, &
+     &                                NR_POINTS, 0)
+            end if
 
             call dealloc(x)
             call dealloc(y)
@@ -185,7 +239,7 @@
       ENDIF !2D
 
       RETURN
-      END
+      END subroutine
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !     /* INTEGRATE_QUANTITY */
       SUBROUTINE INTEGRATE_QUANTITY(nr_dmat, D, &
@@ -194,7 +248,8 @@
      &                              buffer, &
      &                              QUANTITY_INTEGRAL, &
      &                              WEIGHT, &
-     &                              NR_POINTS)
+     &                              NR_POINTS, &
+     &                              nr_dmat_con, D_con)
 !=======================================================================
 !     description in here ...
 !-----------------------------------------------------------------------
@@ -202,16 +257,22 @@
 !                                              last revision: april 2007
 !=======================================================================
 
-      use visual
+      use visual_in_point
+  use visual_cfg
+  use visual_london
   use matrix_defop
   use dirac_interface
+  use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
+#include "dcbbas.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
 
-      integer, intent(in) :: nr_dmat
+      integer, intent(in) :: nr_dmat, nr_dmat_con
       type(matrix)        :: D(nr_dmat)
+      type(matrix), optional :: D_con(nr_dmat_con)
+      real(8), allocatable :: r_kl(:, :, :)
       dimension AO(*), &
      &          PX(*), &
      &          PY(*), &
@@ -221,21 +282,56 @@
      &          WEIGHT(*), &
      &          QUANTITY(0:3)
 
+! gosia fixme: set r_kl above (now it is done here and in visual_driver)
+! but i'll move it to run_visual.
+!gosia fixme: move it up to run_visual and call create_rkl once
+! now it is called here and in visual_driver
+!
+!     if london create (R_M - R_N) array
+      if (visual_cfg_london) then
+        call alloc (r_kl, ntbas(0), ntbas(0), 3)
+        call create_rkl(ntbas(0), r_kl)
+      end if
+
+
       DO IPOINT = 1,NR_POINTS
-        CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &
-     &                             AO, &
-     &                             PX(IPOINT), &
-     &                             PY(IPOINT), &
-     &                             PZ(IPOINT), &
-     &                             buffer, &
-     &                             QUANTITY)
+
+        if (visual_cfg_london) then
+          if (.not. present(D_con) .or. nr_dmat_con == 0)  &
+             call quit("integrate_quantity: no D_con or nr_dmat_con=0")
+
+          call get_quantity_lao_in_point(nr_dmat, D,         &
+                                         nr_dmat_con, D_con, &
+                                         ao,                 &
+                                         px(ipoint),         &
+                                         py(ipoint),         &
+                                         pz(ipoint),         &
+                                         r_kl,               &
+                                         buffer,             &
+                                         quantity)
+        else
+
+          CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &
+     &                               AO, &
+     &                               PX(IPOINT), &
+     &                               PY(IPOINT), &
+     &                               PZ(IPOINT), &
+     &                               buffer, &
+     &                               QUANTITY)
+
+        end if
 
         CALL DAXPY(4,WEIGHT(IPOINT),QUANTITY,1, &
      &                              QUANTITY_INTEGRAL,1)
       ENDDO
 
+      if (visual_cfg_london) then
+        call dealloc(r_kl)
+      end if
+
+
       RETURN
-      END
+      END subroutine
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !     /* LEGENDRE_POLYNOMIAL */
       SUBROUTINE LEGENDRE_POLYNOMIAL(P,N,X)
@@ -262,7 +358,7 @@
       ENDDO
 
       RETURN
-      END
+      END subroutine
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !     /* LEGENDRE_POLYNOMIAL_DERIVATIVES */
       SUBROUTINE LEGENDRE_POLYNOMIAL_DERIVATIVES(P,DP,N,X)
@@ -286,7 +382,7 @@
       ENDDO
 
       RETURN
-      END
+      END subroutine
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !     /* LOBATTO_1D_GRID */
       SUBROUTINE LOBATTO_1D_GRID(N,X,W)
@@ -345,7 +441,7 @@
       W(N) = W(1)
 
       RETURN
-      END
+      END subroutine
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !     /* LEGENDRE_1D_GRID */
       SUBROUTINE LEGENDRE_1D_GRID(N,X,W)
@@ -396,7 +492,7 @@
       ENDDO
 
       RETURN
-      END
+      END subroutine
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !     /* LOBATTO_2D_GRID */
       SUBROUTINE LOBATTO_2D_GRID(IORIENTATION, &
@@ -480,4 +576,6 @@
       call dealloc(weight)
 
       RETURN
-      END
+      END subroutine
+
+end module
