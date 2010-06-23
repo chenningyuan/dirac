@@ -138,54 +138,54 @@ contains
 
       w = get_weight(word_array(i), 'lda')
       if (dabs(w) > tiny) then
-        call xc_set_setting(dft_cfg_fun_id, 'slaterx', w, istat)
-        call xc_set_setting(dft_cfg_fun_id, 'vwn5c',   w, istat)
+        call xc_set_param(dft_cfg_fun_id, XC_SLATERX, w)
+        call xc_set_param(dft_cfg_fun_id, XC_VWN5C,   w)
       end if
 
       w = get_weight(word_array(i), 'blyp')
       if (dabs(w) > tiny) then
-        call xc_set_setting(dft_cfg_fun_id, 'beckex',     w, istat)
+        call xc_set_param(dft_cfg_fun_id, XC_BECKEX,     w)
 !       or:
-!       call xc_set_setting(dft_cfg_fun_id, 'slaterx',    w, istat)
-!       call xc_set_setting(dft_cfg_fun_id, 'beckexcorr', w, istat)
+!       call xc_set_param(dft_cfg_fun_id, 'slaterx',    w, istat)
+!       call xc_set_param(dft_cfg_fun_id, 'beckexcorr', w, istat)
 
-        call xc_set_setting(dft_cfg_fun_id, 'lypc',       w, istat)
+        call xc_set_param(dft_cfg_fun_id, XC_LYPC,       w)
       end if
 
       w = get_weight(word_array(i), 'b3lyp')
       if (dabs(w) > tiny) then
-        call xc_set_setting(dft_cfg_fun_id, 'slaterx',    0.80d0*w, istat)
-        call xc_set_setting(dft_cfg_fun_id, 'beckexcorr', 0.72d0*w, istat)
-        call xc_set_setting(dft_cfg_fun_id, 'vwn5c',      0.19d0*w, istat)
-        call xc_set_setting(dft_cfg_fun_id, 'lypc',       0.81d0*w, istat)
+        call xc_set_param(dft_cfg_fun_id, XC_SLATERX,    0.80d0*w)
+        call xc_set_param(dft_cfg_fun_id, XC_BECKECORRX, 0.72d0*w)
+        call xc_set_param(dft_cfg_fun_id, XC_VWN5C,      0.19d0*w)
+        call xc_set_param(dft_cfg_fun_id, XC_LYPC,       0.81d0*w)
         call add_hfx(0.2d0*w)
       end if
 
       w = get_weight(word_array(i), 'pbe')
       if (dabs(w) > tiny) then
-        call xc_set_setting(dft_cfg_fun_id, 'pbex', w, istat)
-        call xc_set_setting(dft_cfg_fun_id, 'pbec', w, istat)
+        call xc_set_param(dft_cfg_fun_id, XC_PBEX, w)
+        call xc_set_param(dft_cfg_fun_id, XC_PBEC, w)
       end if
 
       w = get_weight(word_array(i), 'pbe0')
       if (dabs(w) > tiny) then
-        call xc_set_setting(dft_cfg_fun_id, 'pbex', 0.75d0*w, istat)
-        call xc_set_setting(dft_cfg_fun_id, 'pbec',        w, istat)
+        call xc_set_param(dft_cfg_fun_id, XC_PBEX, 0.75d0*w)
+        call xc_set_param(dft_cfg_fun_id, XC_PBEC,        w)
         call add_hfx(0.25d0*w)
       end if
 
       w = get_weight(word_array(i), 'kt1')
       if (dabs(w) > tiny) then
-        call xc_set_setting(dft_cfg_fun_id, 'slaterx',           w, istat)
-        call xc_set_setting(dft_cfg_fun_id, 'ktx',      -0.006d0*w, istat)
-        call xc_set_setting(dft_cfg_fun_id, 'vwn5c',             w, istat)
+        call xc_set_param(dft_cfg_fun_id, XC_SLATERX,           w)
+        call xc_set_param(dft_cfg_fun_id, XC_KTX,      -0.006d0*w)
+        call xc_set_param(dft_cfg_fun_id, XC_VWN5C,             w)
       end if
 
       w = get_weight(word_array(i), 'kt2')
       if (dabs(w) > tiny) then
-        call xc_set_setting(dft_cfg_fun_id, 'slaterx', 1.07173d0*w, istat)
-        call xc_set_setting(dft_cfg_fun_id, 'ktx',      -0.006d0*w, istat)
-        call xc_set_setting(dft_cfg_fun_id, 'vwn5c',  0.576727d0*w, istat)
+        call xc_set_param(dft_cfg_fun_id, XC_SLATERX, 1.07173d0*w)
+        call xc_set_param(dft_cfg_fun_id, XC_KTX,      -0.006d0*w)
+        call xc_set_param(dft_cfg_fun_id, XC_VWN5C,  0.576727d0*w)
       end if
 
 
@@ -194,17 +194,17 @@ contains
 
       w = get_weight(word_array(i), 'ktx')
       if (dabs(w) > tiny) then
-        call xc_set_setting(dft_cfg_fun_id, 'ktx', w, istat)
+        call xc_set_param(dft_cfg_fun_id, XC_KTX, w)
       end if
 
       w = get_weight(word_array(i), 'pbex')
       if (dabs(w) > tiny) then
-        call xc_set_setting(dft_cfg_fun_id, 'pbex', w, istat)
+        call xc_set_param(dft_cfg_fun_id, XC_PBEX, w)
       end if
 
       w = get_weight(word_array(i), 'pbec')
       if (dabs(w) > tiny) then
-        call xc_set_setting(dft_cfg_fun_id, 'pbec', w, istat)
+        call xc_set_param(dft_cfg_fun_id, XC_PBEC, w)
       end if
 
       w = get_weight(word_array(i), 'hfx')

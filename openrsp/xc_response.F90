@@ -101,7 +101,7 @@ contains
     real(8)                :: gn(3, 0:max_nr_dmat)
     real(8)                :: z(0:max_nr_dmat, 0:max_nr_dmat)
 
-    integer                :: i, j
+    integer                :: i, j, npoints
     logical                :: u_above_threshold
     logical                :: v_above_threshold
 
@@ -156,7 +156,8 @@ contains
     xcfun_in(3) = z(0, 0)
 
     derv = 0.0d0
-    call xc_eval(dft_cfg_fun_id, derv, order, xcfun_in)
+    npoints = 1 ! TODO: Maybe do more points at a time?
+    call xc_eval(dft_cfg_fun_id, order, npoints, xcfun_in, derv)
 
     u = 0.0d0
     v = 0.0d0

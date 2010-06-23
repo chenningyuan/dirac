@@ -141,7 +141,7 @@ contains
     real(8), intent(out) :: derv(mxbllen, 0:n)
 !   ----------------------------------------------------------------------------
     real(8)              :: t(max_dim, mxbllen)
-    integer              :: k, l
+    integer              :: k, l, npoints
     real(8), external    :: dftenergy
 !   ----------------------------------------------------------------------------
 
@@ -159,7 +159,8 @@ contains
         if (xcfun_in_length > 2) then
           xcfun_in(3) = z_0(k)
         end if
-        call xc_eval(dft_cfg_fun_id, xcfun_out(1, k), order, xcfun_in)
+        npoints = 1 ! TODO: Do the whole block at a time, just check packing.
+        call xc_eval(dft_cfg_fun_id, order, npoints, xcfun_in, xcfun_out(1, k))
       end do
 
       do k = 1, block_length
