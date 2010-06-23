@@ -759,7 +759,7 @@ contains
                                                px, py, pz,         &
                                                r_kl,               &
                                                buffer,             &
-                                               quantity)
+                                               quantity(0,kcube))
 !               call quit('bla')
               else
 
@@ -775,6 +775,7 @@ contains
 
 !           write to file
 
+            !write(*, *) 'xyzq', px, py, pz, 
             WRITE(LUNIT_3D,'(6E13.5)')  &
      &         (QUANTITY(0,M),M=1, visual_cfg_NCUBE(3))
           ENDDO

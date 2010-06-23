@@ -220,7 +220,7 @@ contains
 
 !   -------------------------------------------------------------------
 
-    debug_me = .true.
+    debug_me = .false.
 
 !   connection matrices info
 !   ========================
@@ -522,7 +522,7 @@ contains
 
     vector_a = 0.0d0
 
-    debug_me = .true.
+    debug_me = .false.
 
     imat     = vector_to_matrix(ixvector)
     imat_con = vector_to_matrix_con(ixvector)
