@@ -63,18 +63,18 @@ C
       DATA MAXJ0 /-1/
 C
 #include "sdpre.h"
-CMI    ... watch up the value !
       IPOINT = NINT(D10*MIN(WVAL,TEN6))
 
       IF (IPOINT .LT. 120) THEN
          ISTART = 1 + 121*JMAX0 + IPOINT
-         IF (ISTART.LT.0) THEN
-          WRITE(LUPRI,*) 'GAMFUN: wrong index calculation !' 
-          WRITE(LUPRI,*) 'ISTART=1 + 121*JMAX0 + IPOINT=',ISTART
-          WRITE(LUPRI,*) 'IPOINT = NINT(D10*MIN(WVAL,TEN6))=',IPOINT 
-          WRITE(LUPRI,*) 'WVAL,TEN6=', WVAL,TEN6
-          CALL QUIT('GAMFUN: Error exit- wrong index calculation !')
-         ENDIF
+CMI    ... watch up the value !
+!        IF (ISTART.LT.0) THEN
+!         WRITE(LUPRI,*) 'GAMFUN: wrong index calculation !' 
+!         WRITE(LUPRI,*) 'ISTART=1 + 121*JMAX0 + IPOINT=',ISTART
+!         WRITE(LUPRI,*) 'IPOINT = NINT(D10*MIN(WVAL,TEN6))=',IPOINT 
+!         WRITE(LUPRI,*) 'WVAL,TEN6=', WVAL,TEN6
+!         CALL QUIT('GAMFUN: Error exit- wrong index calculation !')
+!        ENDIF
 
          WDIF = WVAL - TENTH*SDPRE(IPOINT)
          FJW(JMAX0) = (((((COEF6*TABFJW(ISTART + 726)*WDIF
