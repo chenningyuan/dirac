@@ -46,6 +46,7 @@ contains
 
         call dftgrd(D(1)%elms, 1)
 
+
         REWIND LUNIT
 
  1      CONTINUE
@@ -96,6 +97,7 @@ contains
 
         GOTO 1
  2      CONTINUE
+
 
         CLOSE(LUNIT,STATUS = 'DELETE')
 
@@ -272,7 +274,6 @@ contains
       integer, intent(in) :: nr_dmat, nr_dmat_con
       type(matrix)        :: D(nr_dmat)
       type(matrix), optional :: D_con(nr_dmat_con)
-      real(8), allocatable :: r_kl(:, :, :)
       dimension AO(*), &
      &          PX(*), &
      &          PY(*), &
@@ -281,17 +282,6 @@ contains
      &          QUANTITY_INTEGRAL(0:3), &
      &          WEIGHT(*), &
      &          QUANTITY(0:3)
-
-! gosia fixme: set r_kl above (now it is done here and in visual_driver)
-! but i'll move it to run_visual.
-!gosia fixme: move it up to run_visual and call create_rkl once
-! now it is called here and in visual_driver
-!
-!     if london create (R_M - R_N) array
-      if (visual_cfg_london) then
-        call alloc (r_kl, ntbas(0), ntbas(0), 3)
-        call create_rkl(ntbas(0), r_kl)
-      end if
 
 
       DO IPOINT = 1,NR_POINTS
@@ -306,7 +296,6 @@ contains
                                          px(ipoint),         &
                                          py(ipoint),         &
                                          pz(ipoint),         &
-                                         r_kl,               &
                                          buffer,             &
                                          quantity)
         else
@@ -324,10 +313,6 @@ contains
         CALL DAXPY(4,WEIGHT(IPOINT),QUANTITY,1, &
      &                              QUANTITY_INTEGRAL,1)
       ENDDO
-
-      if (visual_cfg_london) then
-        call dealloc(r_kl)
-      end if
 
 
       RETURN

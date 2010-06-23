@@ -17,6 +17,9 @@ module visual_london
   public get_quantity_lao_in_point
   public create_rkl
 
+  public visual_london_alloc
+  public visual_london_dealloc
+
 
   save
 
@@ -45,7 +48,9 @@ module visual_london
   integer, parameter :: ncomp = 3
   integer, parameter :: print_level = 0
 
-
+  real(8), allocatable     :: D_r(:, :, :)
+  real(8), allocatable     :: D_help(:, :, :)
+  real(8), allocatable     :: r_kl(:, :, :)
 
 contains
 
@@ -133,10 +138,29 @@ contains
 
 
 
-  subroutine create_rkl(mat_dim, r_kl)
+  subroutine visual_london_alloc()
 !   --------------------------------------------------------------------
-    integer, intent(in)  :: mat_dim
-    real(8) :: r_kl(mat_dim, mat_dim, 3)
+!   --------------------------------------------------------------------
+    if (.not. allocated(D_r)) call alloc(D_r, ntbas(0), ntbas(0), nz)
+    if (.not. allocated(D_help)) call alloc(D_help, ntbas(0), ntbas(0), nz)
+    if (.not. allocated(r_kl)) call alloc(r_kl, ntbas(0), ntbas(0), 3)
+  end subroutine visual_london_alloc
+
+
+
+  subroutine visual_london_dealloc()
+!   --------------------------------------------------------------------
+!   --------------------------------------------------------------------
+    if (allocated(D_r)) call dealloc(D_r)
+    if (allocated(D_help)) call dealloc(D_help)
+    if (allocated(r_kl)) call dealloc(r_kl)
+  end subroutine visual_london_dealloc
+
+
+
+  subroutine create_rkl()
+!   --------------------------------------------------------------------
+    integer  :: mat_dim
 
     integer :: i, j, k, l, ixyz, ishell, isym
     real(8) :: px, py, pz
@@ -145,9 +169,8 @@ contains
     logical :: debug_me
 
 !   it is the same as xc_london_c1_init
-!   but additionally returns r_kl array
-!   r_kl array contains (R_k - R_l) where k,l - centers of ao's
 !   --------------------------------------------------------------------
+    mat_dim = ntbas(0)
 
     call alloc(p, mat_dim, 3)
 
@@ -354,7 +377,6 @@ contains
                                        nr_dmat_con, D_con, &
                                        ao,                 &
                                        px, py, pz,         &
-                                       r_kl,   &
                                        buffer,             &
                                        quantity)
 !   --------------------------------------------------------------------
@@ -362,8 +384,6 @@ contains
     real(8)                  :: ao(*), buffer(*)
     integer, intent(in)      :: nr_dmat, nr_dmat_con
     real(8), intent(in)      :: px, py, pz
-    !real(8), intent(in)      :: r_kl(ntbas(0), ntbas(0), *)
-    real(8)      :: r_kl(ntbas(0), ntbas(0), *)
     real(8), intent(out)     :: quantity(0:3)
 
     real(8) :: quantity_ixvector(0:3), vector_a(3), vector_b(3)
@@ -397,7 +417,7 @@ contains
                        nr_dmat_con, D_con,  &
                        ao, &
                        buffer,          &
-                       px, py, pz, r_kl,    &
+                       px, py, pz,     &
                        vector_a)
 
         f = 1.0d0
@@ -419,7 +439,7 @@ contains
                        nr_dmat, D,          &
                        nr_dmat_con, D_con,  &
                        ao, buffer,          &
-                       px, py, pz, r_kl,    &
+                       px, py, pz,     &
                        vector_a)
 
         rx = px - cord(1, visual_cfg_ioption_xvector(ixvector))
@@ -458,7 +478,7 @@ contains
                        nr_dmat, D,          &
                        nr_dmat_con, D_con,  &
                        ao, buffer,          &
-                       px, py, pz, r_kl,    &
+                       px, py, pz,     &
                        vector_a)
 
 
@@ -499,15 +519,12 @@ contains
                        nr_dmat_con, D_con,  &
                        ao, buffer,          &
                        px, py, pz, &
-                       r_kl,    &
                        vector_a)
 !   --------------------------------------------------------------------
     type(matrix)             :: D(nr_dmat), D_con(nr_dmat_con)
     real(8), intent(in)      :: ao(*), buffer(*)
     integer, intent(in)      :: ixvector, nr_dmat, nr_dmat_con
     real(8), intent(in)      :: px, py, pz
-    !real(8), intent(in)      :: r_kl(ntbas(0), ntbas(0), *)
-    real(8)      :: r_kl(ntbas(0), ntbas(0), 3)
     real(8), intent(out)     :: vector_a(3)
 
     real(8) :: vector_b(3)
@@ -521,6 +538,7 @@ contains
 !   --------------------------------------------------------------------
 
     vector_a = 0.0d0
+    D_help   = 0.0d0
 
     debug_me = .false.
 
@@ -537,113 +555,47 @@ contains
 !   "direct" LAO contribution
 !   =========================
     if (.not. nodirect) then
-    
-      vector_b = 0.0d0
-
-!      call get_jblao_direct_temp(D(1), &
-!                                 vector_b, &
-!                                 ao(ao_start(0, 0):ao_end(0, 0)), &
-!                                 ao(ao_start(0, 1):ao_end(0, 1)), &
-!                                 (/px, py, pz/), &
-!                                 ixvector, buffer)
-
 
       call get_jblao_direct(D(1),           &
-                            vector_b,       &
                             ao(ao_start(0, 0):ao_end(0, 0)),  &
                             (/px, py, pz/), &
-                            r_kl,           &
                             ixvector,       &
                             buffer)
-    
-      f = - 1.0d0
-      call daxpy(3, f, vector_b, 1, vector_a, 1)
 
-      if (debug_me) then
-        write(lupri, *) 'direct contribution to j^B with lao is included'
-        write(lupri, *) 'j^b with lao after direct = ', vector_b
-      end if
-
-    
+       f = -1.0d0
+       call daxpy(ntbas(0)*ntbas(0)*nz, f, D_r, 1, D_help, 1)
     end if
-    
-    
-!     reorthonormalization contribution
-!     =================================
-      if (.not. noreorth) then
-      
-        vector_b = 0.0d0
-
-        call get_j(.true.,                 &
-                   vector_b,               &
-                   !visual_cfg_irep_conmat(ixvector), &
-                   0, &
-                   ao(ao_start(0, 0):ao_end(0, 0)),   &
-                   D_con(imat_con)%elms,   &
-                   buffer)
-      
-        f = -1.0d0
-        call daxpy(3, f, vector_b, 1, vector_a, 1)
-
-        if (debug_me) then
-          if (visual_cfg_connection(ixvector) == 0) then
-            write(lupri, *) 'contribution from overlap to j^b with lao is included'
-            write(lupri, *) 'j^b with lao only overlap = ', vector_b
-          else
-            write(lupri, *) 'reorthonormalization contribution to j^b with lao is included'
-            write(lupri, *) 'j^b with lao only reortho = ', vector_b
-          end if
-        end if
-
-      end if
-      
-!     "response" contribution
-!     =======================
-      if (.not. norespon) then
-      
-        vector_b = 0.0d0
-      
-        call get_j(.true.,                 &
-                   vector_b,               &
-                   !visual_cfg_irep_xvector(ixvector), &
-                   0, &
-                   ao(ao_start(0, 0):ao_end(0, 0)),   &
-                   D(imat)%elms,           &
-                   buffer)
-      
-        f = - 1.0d0
-        call daxpy(3, f, vector_b, 1, vector_a, 1)
  
-        if (debug_me) then
-          if (visual_cfg_connection(ixvector) == 0) then
-            write(lupri, *) 'contribution from (T^B-\kappa^B) to j^b with lao is included'
-            write(lupri, *) 'j^b with lao only (T^B-\kappa^B) = ', vector_b
-          else
-            write(lupri, *) 'response contribution to j^b with lao is included'
-            write(lupri, *) 'j^b with lao only response = ', vector_b
-          end if
-        end if
-     
-      end if
-    
+    if (.not. noreorth) then
+      f = -1.0d0
+      call daxpy(ntbas(0)*ntbas(0)*nz, f, D_con(imat_con)%elms, 1, D_help, 1)
+    end if
+      
+    if (.not. norespon) then
+      f = -1.0d0
+      call daxpy(ntbas(0)*ntbas(0)*nz, f, D(imat)%elms, 1, D_help, 1)
+    end if
+ 
+    call get_j(.true.,                 &
+               vector_a,               &
+               0, &
+               ao(ao_start(0, 0):ao_end(0, 0)),   &
+               D_help,   &
+               buffer)
 
   end subroutine get_jblao
 
 
 
-  subroutine get_jblao_direct(D_0, vector, ao, r, &
-                              r_kl, &
+  subroutine get_jblao_direct(D_0, ao, r, &
                               ixvector, buffer)
 !   ---------------------------------------------------------------------------------
     type(matrix)             :: D_0
     integer, intent(in)      :: ixvector
-    real(8), intent(out)     :: vector(3)
     real(8), intent(in)      :: r(3)
-    real(8)      :: r_kl(ntbas(0), ntbas(0), *)
     real(8)                  :: ao(*), buffer(*)
 
     integer                  :: k, l, b, c, iz, ioff
-    real(8), allocatable     :: D_r(:, :, :)
     real(8)                  :: f, rkl_cross_r
 
     logical :: debug_me
@@ -651,11 +603,6 @@ contains
 !   ----------------------------------------------------------------------------
 
     debug_me = .false.
-
-    vector = 0.0d0
-
-    call alloc(D_r, ntbas(0), ntbas(0), nz)
-    call dzero(D_r, ntbas(0)*ntbas(0)*nz)
 
 
 !   build 'modified' density matrix,
@@ -708,14 +655,12 @@ contains
 !   multiply D_r(k, l)*(ao(k)*(-c \alpha)*ao(l))
 !   --------------------------------------------
 
-    call get_j(.true., &
-               vector, &
-               0,      &
-               ao,     &
-               D_r,    &
-               buffer)
-
-    call dealloc(D_r)
+!    call get_j(.true., &
+!               vector, &
+!               0,      &
+!               ao,     &
+!               D_r,    &
+!               buffer)
 
 
   end subroutine get_jblao_direct

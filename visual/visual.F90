@@ -401,8 +401,14 @@ contains
 !   plot and integrate
 !   ==================
 
-    time_start = second()
 !   if (visual_cfg_integrate) then
+
+    if (visual_cfg_london) then
+      call visual_london_alloc()
+      call create_rkl()
+    end if
+
+    time_start = second()
 
 !gosia todo: merge these two to one call to visual_driver
     if (visual_cfg_london) then
@@ -428,6 +434,11 @@ contains
 
     call dealloc(ao)
     call dealloc(buffer)
+
+    if (visual_cfg_london) then
+      call visual_london_dealloc()
+    end if
+
 
 
 !   deallocate density matrices
@@ -468,7 +479,6 @@ contains
       real(8) ::          STEP_3D(3,0:3)
       real(8) ::          ATOM_XYZ(4,NUCDEP)
 
-      real(8), allocatable :: r_kl(:, :, :)
 
       character(2) :: grid_orientation(1:3) = (/'xy', 'xz', 'yz'/)
       real(8) :: r(3), v(3), px, py, pz
@@ -505,12 +515,6 @@ contains
      &       status = 'new', &
      &       access = 'sequential', &
      &       form   = 'formatted')
-      end if
-
-!     if london create (R_M - R_N) array
-      if (visual_cfg_london) then
-        call alloc (r_kl, ntbas(0), ntbas(0), 3)
-        call create_rkl(ntbas(0), r_kl)
       end if
 
       if (visual_cfg_list) then
@@ -635,7 +639,6 @@ contains
                                                  nr_dmat_con, D_con, &
                                                  ao,                 &
                                                  px, py, pz,         &
-                                                 r_kl,               &
                                                  buffer,             &
                                                  quantity)
                 else
@@ -757,7 +760,6 @@ contains
                                                nr_dmat_con, D_con, &
                                                ao,                 &
                                                px, py, pz,         &
-                                               r_kl,               &
                                                buffer,             &
                                                quantity(0,kcube))
 !               call quit('bla')
@@ -782,10 +784,6 @@ contains
         ENDDO
       ENDIF !3D
 
-
-      if (visual_cfg_london) then
-        call dealloc(r_kl)
-      end if
 
 !     close files
 
