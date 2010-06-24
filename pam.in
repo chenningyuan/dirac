@@ -366,7 +366,9 @@ setup_command()
 execute_dirac()
 {
 #  radovan: on IBM p575+ "njord" there is no short option to hostname
-   master=`hostname -s`
+#  miro: the same on cygwin
+  # master=`hostname -s`
+   master=`hostname`
    if test -f dirac_machines; then
       unique_nodes=`grep -v -E "\<$master\>" dirac_machines | sed s/:.// | sort | uniq`
    else
@@ -524,7 +526,9 @@ remove_work_dir()
 #  These directories are not suited for restart.
 #
 #  radovan: on IBM p575+ "njord" there is no short option to hostname
-   master=`hostname -s`
+#  miro: the same on cygwin
+   #master=`hostname -s`
+   master=`hostname`
 
    if test -f $WRK/dirac_machines; then # check the presence of "dirac_machines" file
      unique_nodes=`grep -v -E "\<$master\>" dirac_machines | sed s/:.// | sort | uniq`
@@ -667,7 +671,9 @@ distribute_work_dir()
 #  since on some installations it is absent in the machine list).
 #
 #  radovan: on IBM p575+ "njord" there is no short option to hostname
-   master=`hostname -s` 
+#  miro: the same on cygwin
+   #master=`hostname -s` 
+   master=`hostname` 
 #
 #  Loop over the remote machines and copy the contents of the work directory.
 #
