@@ -123,7 +123,7 @@ clean:
 include utils/Makefile.utils
 
 .SUFFIXES :
-.SUFFIXES : .F .F90 .f90 .c .cpp .s .r .o .i .fc .p 
+.SUFFIXES : .F .F90 .f90 .c .cpp .s .r .o .i .fc .p .opt
 
 .F.o:
 	$(F77) $(F77FLAGS) -c -o $*.o $*.F

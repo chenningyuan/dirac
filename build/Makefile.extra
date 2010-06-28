@@ -65,6 +65,8 @@ endif
 # flags for the ftnchek,  F77 source code verifying utility
 FTNCHEK_FLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet -noarguments -arguments=number -usage=var-unitialized
 
+.F.opt:
+	$(F77) $(F77FLAGS_OPT) -c -o $*.o $*.F > $*.opt
 .F.s:
 	$(F77) $(F77FLAGS_SAFE) -c -o $*.o $*.F > $*.s
 .F.r:
@@ -83,6 +85,8 @@ gp/gptrygve.p : gp/gptrygve.F
 .i.fc:
 	ftnchek $(FTNCHEK_FLAGS) $*.i > $*.fc
 
+.F90.opt:
+	$(F90) $(F90FLAGS_OPT) -c -o $*.o $*.F90  > $*.opt
 .F90.s:
 	$(F90) $(F90FLAGS_SAFE) -c -o $*.o $*.F90  > $*.s
 .F90.r:
@@ -92,6 +96,8 @@ gp/gptrygve.p : gp/gptrygve.F
 .F90.i:
 	$(F90) $(FPP_FLAGS) -E $*.F90 > $*.i
 
+.f90.opt:
+	$(F90) $(F90FLAGS_OPT) -c -o $*.o $*.f90  > $*.opt
 .f90.s:
 	$(F90) $(F90FLAGS_SAFE) -c -o $*.o $*.f90  > $*.s
 .f90.r:
@@ -101,6 +107,8 @@ gp/gptrygve.p : gp/gptrygve.F
 .f90.i:
 	$(F90) $(FPP_FLAGS) -E $*.f90  > $*.i
 
+.c.opt:
+	$(CC) $(CFLAGS_OPT) -c -o $*.o $*.c > $*.opt
 .c.s:
 	$(CC) $(CFLAGS_SAFE) -c -o $*.o $*.c > $*.s
 .c.r:
@@ -113,6 +121,10 @@ gp/gptrygve.p : gp/gptrygve.F
 obj: $(OBJ) 
 	@echo -e "\nDIRAC source files (at least these recently modifies) are recompiled\n\
 	(with dependencies)  using standard flags (without linking).\n"
+
+opt: $(OBJ:.o=.opt) $(TARGET)
+	@echo
+	@echo "Executable $(TARGET) is ready with optimization compiler flags."
 
 safe: $(OBJ:.o=.s) $(TARGET)
 	@echo

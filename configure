@@ -2678,12 +2678,13 @@ fi
 # determine what flags to be flushed into Makefile.config:  SAFE or OPTIMIZED flags
 if [ $nooptim = 1 ]; then # ... employ flags with no optimization
 #
-  use_flags=$safe
-  use_c_flags=$c_safe
+  F77FLAGS_USE="\${F77FLAGS_SAFE}"
+  F90FLAGS_USE="\${F90FLAGS_SAFE}"
+  CFLAGS_USE="\${CFLAGS_SAFE}"
 else # ... employ flags with the optimization
-#
-  use_flags=$opt
-  use_c_flags=$c_opt
+  F77FLAGS_USE="\${F77FLAGS_OPT}"
+  F90FLAGS_USE="\${F90FLAGS_OPT}"
+  CFLAGS_USE="\${CFLAGS_OPT}"
 fi
 
 cat <<EOF >> Makefile.config
@@ -2750,15 +2751,21 @@ EOF
 ##########################################################################
 
 cat <<EOF >> Makefile.config
-# compiler flags, standard
-F77FLAGS=`xlfify $use_flags $f90_inc $mod $cpp_f90`
-F90FLAGS=`xlfify $use_flags $f90_inc $mod $f90_extraflags $cpp_f90`
-CFLAGS=$use_c_flags $cc_inc $cpp_cc
 
-# compiler flags, safe
+# compiler flags with optimization flags
+F77FLAGS_OPT=`xlfify $opt $f90_inc $mod $cpp_f90`
+F90FLAGS_OPT=`xlfify $opt $f90_inc $mod $f90_extraflags $cpp_f90`
+CFLAGS_OPT=$c_opt $cc_inc $cpp_cc
+
+# compiler flags, safe (without optimization flags)
 F77FLAGS_SAFE=`xlfify $safe $f90_inc $mod $cpp_f90`
 F90FLAGS_SAFE=`xlfify $safe $f90_inc $mod $f90_extraflags $cpp_f90`
 CFLAGS_SAFE=$c_safe $cc_inc $cpp_cc
+
+# employed compiler flags (safe or standard, see above)
+F77FLAGS=$F77FLAGS_USE
+F90FLAGS=$F90FLAGS_USE
+CFLAGS=$CFLAGS_USE
 
 # ILP data type mode (to be passed to dirac.x)
 ILP_DATATYPE=$ilp_datatype
