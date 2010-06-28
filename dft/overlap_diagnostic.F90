@@ -8,7 +8,7 @@ module overlap_diagnostic
    public integrate_lambda
    public overlap_diagnostic_init
    public overlap_diagnostic_write
-!  public overlap_diagnostic_read
+   public overlap_diagnostic_print
 
    private
 
@@ -16,18 +16,25 @@ module overlap_diagnostic
 #include "dcborb.h"
 #include "dcbham.h" 
 
-   real(8), allocatable :: mo_coef(:)
-   real(8), allocatable :: lambda_matrix(:, :)
+   integer                 :: nr_mo
+   real(8), allocatable    :: mo_coef(:)
+   real(8), allocatable    :: lambda_matrix(:, :)
+
+   character(*), parameter :: file_name = 'lambda_matrix'
+   integer,      parameter :: file_unit = 137
+   logical                 :: file_exists
 
 contains
 
-   subroutine overlap_diagnostic_init(nz, nr_mo, nr_ao)
+   subroutine overlap_diagnostic_init(nz, nr_mo_in, nr_ao)
 
 !     --------------------------------------------------------------------------
       integer, intent(in)    :: nz
-      integer, intent(in)    :: nr_mo
+      integer, intent(in)    :: nr_mo_in
       integer, intent(in)    :: nr_ao
 !     --------------------------------------------------------------------------
+
+      nr_mo = nr_mo_in
 
     ! call alloc(mo_coef, nr_ao*nr_mo*nz)
       call alloc(mo_coef, nr_ao*nr_ao*nz)
@@ -38,18 +45,66 @@ contains
 
    subroutine overlap_diagnostic_write()
 
-         write(*, *) 'blub lambda'
-         call prqmat(lambda_matrix,  &
-                     norbt,          &
-                     norbt,          &
-                     norbt,          &
-                     norbt,          &
-                     1,              &
-                     (/1, 2, 3, 4/), &
-                     6)
+      inquire(file = file_name, exist = file_exists)
+
+      if (file_exists) then
+!        panic
+!        close(file_unit, status = 'keep')
+!        return
+      else
+         open(file_unit,              &
+              file   = file_name,     &
+              status = 'new',         &
+              form   = 'unformatted', &
+              access = 'sequential')
+         rewind(file_unit)
+      end if
+
+      write(file_unit) nr_mo
+      write(file_unit) lambda_matrix
+      close(file_unit, status = 'keep')
 
       if (allocated(mo_coef))       call dealloc(mo_coef)
       if (allocated(lambda_matrix)) call dealloc(lambda_matrix)
+
+   end subroutine
+
+   subroutine overlap_diagnostic_print()
+
+      inquire(file = file_name, exist = file_exists)
+
+      if (file_exists) then
+         open(file_unit,              &
+              file   = file_name,     &
+              status = 'old',         &
+              form   = 'unformatted', &
+              access = 'sequential')
+         rewind(file_unit)
+      else
+!        panic
+!        close(file_unit, status = 'keep')
+!        return
+      end if
+
+      read(file_unit) nr_mo
+
+      call alloc(lambda_matrix, nr_mo, nr_mo)
+
+      read(file_unit) lambda_matrix
+
+      close(file_unit, status = 'keep')
+
+      write(*, *) 'blub lambda'
+      call prqmat(lambda_matrix,  &
+                  norbt,          &
+                  norbt,          &
+                  norbt,          &
+                  norbt,          &
+                  1,              &
+                  (/1, 2, 3, 4/), &
+                  6)
+
+      call dealloc(lambda_matrix)
 
    end subroutine
 
