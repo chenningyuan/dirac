@@ -765,7 +765,7 @@ CMI         bug trap
      &                  CMO(JS),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
      &                  CMO(JI),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
      &                  IPRXRS)
-CMI         bug trap for gfortran
+CMI        'empirical'  bug trap for gfortran in OpenMPI, ILP64, optimized 
            ITYP_TEMP = ITYP
 C
          ELSE

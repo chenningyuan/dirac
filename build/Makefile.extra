@@ -64,10 +64,13 @@ endif
 #
 ################################################################################################
 
-# conditional directive
-ifeq (,$(findstring "gfortran",$(F77))) 
+# compilation of individual files with conditional directives
+ifeq (,$(findstring "DVAR_GFORTRAN",$(FPP_FLAGS))) 
 prp/pamrvc.o : prp/pamrvc.F
 	@echo " ----  gfortran compiler, prp/pamrvc.F with safe flags only :"
+	$(F77) $(F77FLAGS_SAFE) -c -o $*.o $<
+gp/gpsaue.o : gp/gpsaue.F
+	@echo " ----  gfortran compiler,  gp/gpsaue.F with safe flags only :"
 	$(F77) $(F77FLAGS_SAFE) -c -o $*.o $<
 endif
 
