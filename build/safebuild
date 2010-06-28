@@ -1,4 +1,4 @@
-Files listed here will be compiled with "safe" compiler options
+Files listed here will be compiled with "safe" compiler options without further  makefile-conditioning
 pdpack/dlamch.F
 amfi/amfi.F
 amfi/amfi1.F
