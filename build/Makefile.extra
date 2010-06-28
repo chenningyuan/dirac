@@ -57,10 +57,20 @@ hsfs: # for compilation of the standalone external code
 endif
 
 
+################################################################################################
 #
 #  Implicit rules
-#  for extra compilation with safe-flags, index-range-check + other checks flags,
+#  for extra compilation with safe-flags, index-range-check + other checks flags
 #
+################################################################################################
+
+# conditional directive
+ifeq (,$(findstring "gfortran",$(F77))) 
+prp/pamrvc.o : prp/pamrvc.F
+	@echo " ----  gfortran compiler, prp/pamrvc.F with safe flags only :"
+	$(F77) $(F77FLAGS_SAFE) -c -o $*.o $<
+endif
+
 
 # flags for the ftnchek,  F77 source code verifying utility
 FTNCHEK_FLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet -noarguments -arguments=number -usage=var-unitialized
