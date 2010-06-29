@@ -161,15 +161,23 @@ diag:
 	@readelf -s $(TARGET) 2> /dev/null | awk --non-decimal-data '{printf "%12.3f %s    %s\n",(($$3)+0)/(1024),"kB",$$8}' | sort -n -r -u || \
 	echo 'can not be determined, readelf not present'
 
+#miro: -DNO_SF_QUIT is only for file gp/gptrygve.F
+gp/gptrygve.p : gp/gptrygve.F
+	$(F77) -DNO_SF_QUIT $(FFLAG_PROFILE) $(F77FLAGS) -c -o gp/gptrygve.o gp/gptrygve.F > gp/gptrygve.p
+
 ################################################################################################
 #                                                                                              #
-#              compilation of individual files with conditional directives                     #
+#           'safe'  compilation of individual files with conditional directives                #
+#                                                                                              #
+#    Smart substitution for the "build/safebuild" list of source files designed 
+# for safe compilation   
+#                                                                                              #
+# Note: for --noopt configure flag optimization flags are empty                                #
+#                                                                                              #
 #                                                                                              #
 ################################################################################################
 
-#miro: -DNO_SF_QUIT is only for file gp/gptrygve.F
-gp/gptrygve.p : gp/gptrygve.F
-	$(F77) -DNO_SF_QUIT $(FFLAG_PROFILE) $(F77FLAGS_SAFE) -c -o gp/gptrygve.o gp/gptrygve.F > gp/gptrygve.p
+ifeq ($(SAFE_FLAGS_MODE),NO) 
 
 ifeq (,$(findstring "DVAR_GFORTRAN",$(FPP_FLAGS))) 
 prp/pamrvc.o : prp/pamrvc.F
@@ -180,3 +188,22 @@ gp/gpsaue.o : gp/gpsaue.F
 	$(F77) $(F77FLAGS_SAFE) -c -o $*.o $<
 endif
 
+### these individual files have to be supplied with make-if-directives to specify for  which 
+### compilers/architectures there is a need of the lower level of optimization
+
+pdpack/dlamch.o: pdpack/dlamch.F
+	$(F77) $(F77FLAGS_OPT_1) $(F77FLAGS_SAFE) -c -o $*.o $<
+
+amfi/amfi.o: amfi/amfi.F
+	$(F77) $(F77FLAGS_OPT_1) $(F77FLAGS_SAFE) -c -o $*.o $<
+
+amfi/amfi1.o: amfi/amfi1.F
+	$(F77) $(F77FLAGS_OPT_1) $(F77FLAGS_SAFE) -c -o $*.o $<
+
+abacus/hermodules.o: abacus/hermodules.F
+	$(F77) $(F77FLAGS_OPT_1) $(F77FLAGS_SAFE) -c -o $*.o $<
+
+matrix_operations/matrix_defop.o: matrix_operations/matrix_defop.f90
+	$(F90) $(F77FLAGS_OPT_1) $(F90FLAGS_SAFE) -c -o $*.o $<
+
+endif

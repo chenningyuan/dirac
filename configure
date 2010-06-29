@@ -800,7 +800,9 @@ safeflags_stuff() {
 #  'configure' argument list
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+safe_flags_mode="NO"
 if [ $nooptim = 1 ]; then
+  safe_flags_mode="YES"
   echo
   echo  'COMPILERS FLAGS set without the optimization => quick compilation of the DIRAC code.'
   echo
@@ -2849,6 +2851,9 @@ F77FLAGS_OPT_3=$opt_3
 CFLAGS_OPT_1=$c_opt_1
 CFLAGS_OPT_2=$c_opt_2
 CFLAGS_OPT_3=$c_opt_3
+
+# safe flags mode ?
+SAFE_FLAGS_MODE=$safe_flags_mode
 
 # employed compiler flags (safe or standard, see above)
 F77FLAGS=$F77FLAGS_USE
