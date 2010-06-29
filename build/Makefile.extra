@@ -188,10 +188,11 @@ gp/gpsaue.o : gp/gpsaue.F
 	$(F77) $(F77FLAGS_SAFE) -c -o $*.o $<
 endif
 
-### TODO: these individual files have to be supplied with make-if-directives to specify for  which 
-### compilers/architectures there is a need of the lower level of optimization
+### TODO: these individual files have to be supplied with make-if-directives to specify on which 
+### compilers/architectures there is a need of the lower/no level of optimization
 
 pdpack/dlamch.o: pdpack/dlamch.F
+	@echo " pdpack/dlamch.F compilation with 1st level (of 3) optimization"
 	$(F77) $(F77FLAGS_OPT_1) $(F77FLAGS_SAFE) -c -o $*.o $<
 
 amfi/amfi.o: amfi/amfi.F
