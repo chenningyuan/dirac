@@ -174,28 +174,28 @@ gp/gptrygve.p : gp/gptrygve.F
 #                                                                                              #
 # Note: for --noopt configure flag optimization flags are empty                                #
 #                                                                                              #
-#                                                                                              #
 ################################################################################################
 
-ifeq ($(SAFE_FLAGS_MODE),NO) 
+ifeq ($(SAFE_FLAGS_MODE),NO) # only if no safe-flags compilation
 
 ifeq (,$(findstring "DVAR_GFORTRAN",$(FPP_FLAGS))) 
 prp/pamrvc.o : prp/pamrvc.F
-	@echo " ----  gfortran compiler, prp/pamrvc.F with safe flags only :"
+	@echo " ----  gfortran compiler, prp/pamrvc.F with no level of optimization :"
 	$(F77) $(F77FLAGS_SAFE) -c -o $*.o $<
 gp/gpsaue.o : gp/gpsaue.F
-	@echo " ----  gfortran compiler,  gp/gpsaue.F with safe flags only :"
+	@echo " ----  gfortran compiler,  gp/gpsaue.F with no level of optimization :"
+#	$(F77) $(F77FLAGS_OPT_1) $(F77FLAGS_SAFE) -c -o $*.o $<
 	$(F77) $(F77FLAGS_SAFE) -c -o $*.o $<
 endif
 
-### these individual files have to be supplied with make-if-directives to specify for  which 
+### TODO: these individual files have to be supplied with make-if-directives to specify for  which 
 ### compilers/architectures there is a need of the lower level of optimization
 
 pdpack/dlamch.o: pdpack/dlamch.F
 	$(F77) $(F77FLAGS_OPT_1) $(F77FLAGS_SAFE) -c -o $*.o $<
 
 amfi/amfi.o: amfi/amfi.F
-	$(F77) $(F77FLAGS_OPT_1) $(F77FLAGS_SAFE) -c -o $*.o $<
+	$(F77) $(F77FLAGS_OPT_2) $(F77FLAGS_SAFE) -c -o $*.o $<
 
 amfi/amfi1.o: amfi/amfi1.F
 	$(F77) $(F77FLAGS_OPT_1) $(F77FLAGS_SAFE) -c -o $*.o $<
