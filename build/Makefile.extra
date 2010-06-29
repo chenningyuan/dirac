@@ -64,17 +64,6 @@ endif
 #
 ################################################################################################
 
-# compilation of individual files with conditional directives
-ifeq (,$(findstring "DVAR_GFORTRAN",$(FPP_FLAGS))) 
-prp/pamrvc.o : prp/pamrvc.F
-	@echo " ----  gfortran compiler, prp/pamrvc.F with safe flags only :"
-	$(F77) $(F77FLAGS_SAFE) -c -o $*.o $<
-gp/gpsaue.o : gp/gpsaue.F
-	@echo " ----  gfortran compiler,  gp/gpsaue.F with safe flags only :"
-	$(F77) $(F77FLAGS_SAFE) -c -o $*.o $<
-endif
-
-
 # flags for the ftnchek,  F77 source code verifying utility
 FTNCHEK_FLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet -noarguments -arguments=number -usage=var-unitialized
 
@@ -84,12 +73,6 @@ FTNCHEK_FLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet
 	$(F77) $(F77FLAGS_SAFE) -c -o $*.o $*.F > $*.s
 .F.r:
 	$(F77) $(FFLAGS_CHECK) $(F77FLAGS_SAFE) -c -o $*.o $*.F   > $*.r
-
-#
-#miro: -DNO_SF_QUIT is only for file gp/gptrygve.F
-#
-gp/gptrygve.p : gp/gptrygve.F
-	$(F77) -DNO_SF_QUIT $(FFLAG_PROFILE) $(F77FLAGS_SAFE) -c -o gp/gptrygve.o gp/gptrygve.F > gp/gptrygve.p
 .F.p:
 	$(F77) $(FFLAG_PROFILE) $(F77FLAGS_SAFE) -c -o $*.o $*.F > $*.p
 .F.i:
@@ -162,9 +145,11 @@ prof: $(OBJ:.o=.p)
 	@echo "Executable $(TARGET) with profiling info is ready."
 	@echo
 
+###############################################################################
 #
-# mi: added target for analyzing executable
+#         target for analyzing static allocations of the executable
 #
+###############################################################################
 diag: 
 	@echo -e "\tAnalyzing the dirac.x executable "
 	@echo -e "Size of all static allocations: \c "; \
@@ -175,4 +160,23 @@ diag:
 #           todo: try to make it universal for all architectures
 	@readelf -s $(TARGET) 2> /dev/null | awk --non-decimal-data '{printf "%12.3f %s    %s\n",(($$3)+0)/(1024),"kB",$$8}' | sort -n -r -u || \
 	echo 'can not be determined, readelf not present'
-	
+
+################################################################################################
+#                                                                                              #
+#              compilation of individual files with conditional directives                     #
+#                                                                                              #
+################################################################################################
+
+#miro: -DNO_SF_QUIT is only for file gp/gptrygve.F
+gp/gptrygve.p : gp/gptrygve.F
+	$(F77) -DNO_SF_QUIT $(FFLAG_PROFILE) $(F77FLAGS_SAFE) -c -o gp/gptrygve.o gp/gptrygve.F > gp/gptrygve.p
+
+ifeq (,$(findstring "DVAR_GFORTRAN",$(FPP_FLAGS))) 
+prp/pamrvc.o : prp/pamrvc.F
+	@echo " ----  gfortran compiler, prp/pamrvc.F with safe flags only :"
+	$(F77) $(F77FLAGS_SAFE) -c -o $*.o $<
+gp/gpsaue.o : gp/gpsaue.F
+	@echo " ----  gfortran compiler,  gp/gpsaue.F with safe flags only :"
+	$(F77) $(F77FLAGS_SAFE) -c -o $*.o $<
+endif
+
