@@ -2098,6 +2098,9 @@ get_f90_flags(){
       opt="-g -O3 -ffast-math -Wno=155 -fsloppy-char"
       f90_extraflags="-cpp"
       safe="-g -Wno=155 -fsloppy-char"
+      opt_1="-O1"
+      opt_2="-O2 -ffast-math"
+      opt_3="-O3 -ffast-math"
       mod="-fmod=$MODULE_DIR"
       noformain="" # please add it
       F_check_flags="-Wall -fbounds-check" # please add more
@@ -2123,6 +2126,9 @@ get_f90_flags(){
       fi
       f90_extraflags="-x f95-cpp-input"
       safe="-g -fno-range-check $march"
+      opt_1="-O1"
+      opt_2="-O2 -ffast-math -funroll-loops"
+      opt_3="-O3 -ffast-math -funroll-loops"
       mod="-J$MODULE_DIR"
       noformain="" # does not exist ?
       F_check_flags="-fbounds-check" 
@@ -2132,6 +2138,9 @@ get_f90_flags(){
     pgf90)
       opt="-g -Mpreprocess -fastsse"
       safe="-g -Mpreprocess "
+      opt_1="-O1"
+      opt_2="-fast"
+      opt_3="-fastsse"
       cpp_f90="$cpp_f90 -DVAR_PGF90"
       cpp_cc="$cpp_cc -DVAR_PGCC"
       mod="-module $MODULE_DIR"
@@ -2142,6 +2151,9 @@ get_f90_flags(){
     lfc)
       opt="-g --fast"
       safe="-g"
+      opt_1="-O1"
+      opt_2="--fast"
+      opt_3="--fast"
       cpp_f90="$cpp_f90 -DVAR_LFC"
       cpp_cc="$cpp_cc"
       mod="-M $MODULE_DIR"
@@ -2152,6 +2164,9 @@ get_f90_flags(){
     ifort)
       opt="-g -fpp1 -O3 -ip -w -assume byterecl -vec-report0"
       safe="-g -fpp1 -w -assume byterecl"
+      opt_1="-O1 -ip"
+      opt_2="-O2 -ip"
+      opt_3="-O3 -ip "
       cpp_f90="$cpp_f90 -DVAR_IFC"
       cpp_cc="$cpp_cc -DVAR_IFC"
       mod="-module $MODULE_DIR"
@@ -2167,6 +2182,9 @@ get_f90_flags(){
       cpp_f90="$cpp_f90 -DVAR_XLF"
       opt="-qsuppress=cmpmsg"
       safe="-qsuppress=cmpmsg"
+      opt_1=" "
+      opt_2=" "
+      opt_3=" "
       mod="-qmoddir=$MODULE_DIR -I$MODULE_DIR"
      # .... extra flags for *.F90 files !
       f90_extraflags="-qfree=f90 -qsuffix=cpp=F90"
@@ -2194,6 +2212,9 @@ get_f90_flags(){
     echo '***  get_f90_flags ***'
     echo ' F90real='$F90real
     echo '     opt='$opt
+    echo '     opt_1='$opt_1
+    echo '     opt_2='$opt_2
+    echo '     opt_3='$opt_3
     echo '    safe='$safe
     echo '     mod='$mod
   fi
@@ -2208,12 +2229,18 @@ get_cc_flags(){
   gcc|cc)
     c_opt="-g -O3 -ffast-math"
     c_safe="-g"
+    c_opt_1="-O1"
+    c_opt_2="-O2 -ffast-math"
+    c_opt_3="-O3 -ffast-math"
     C_check_flags="-fbounds-check -Wall" # please check/add more  ?
     C_profile="-pg" 
     ;;
   mpicc)
     c_opt="-g -O3 -ffast-math"
     c_safe="-g"
+    c_opt_1="-O1"
+    c_opt_2="-O2 -ffast-math"
+    c_opt_3="-O3 -ffast-math"
     C_check_flags="" # please add
     C_profile="" # please add
     echo
@@ -2224,18 +2251,27 @@ get_cc_flags(){
   pgcc)
     c_opt="-g -fastsse"
     c_safe="-g"
+    c_opt_1="-O1"
+    c_opt_2="-fast"
+    c_opt_3="-fastsse"
     C_check_flags="-Mbounds -Mchkstk" # please check/add more
     C_profile="-pg" 
     ;;
   icc)
     c_opt="-g -O3 -ip -w"
     c_safe="-g -w"
+    c_opt_1="-O1 -ip"
+    c_opt_1="-O2 -ip"
+    c_opt_1="-O3 -ip"
     C_check_flags="-Wcheck -fpstkchk -fstack-security-check" # 
     C_profile="-pg" 
     ;;
   pathcc)
     c_opt=$opt
     c_safe=$safe
+    c_opt_1=""
+    c_opt_2=""
+    c_opt_3=""
     C_check_flags="" # please add
     C_profile="" # please add
     ;;
@@ -2246,6 +2282,9 @@ get_cc_flags(){
   xlf)
     c_opt='-g -O2 -qcpluscmt'
     c_safe='-g -qcpluscmt'
+    c_opt_1="-O1"
+    c_opt_2="-O1"
+    c_opt_3="-O2"
     C_profile="" # please add
     ;;
   esac
@@ -2253,6 +2292,9 @@ get_cc_flags(){
   if [ $IPRINT -ge "5" ];  then
    echo 'get_cc_flags: used CCreal='$CCreal
    echo 'get_cc_flags: got c_opt='$c_opt
+   echo 'get_cc_flags: got c_opt_1='$c_opt_1
+   echo 'get_cc_flags: got c_opt_2='$c_opt_2
+   echo 'get_cc_flags: got c_opt_3='$c_opt_3
    echo 'get_cc_flags: got c_safe='$c_safe
   fi
 
@@ -2302,8 +2344,14 @@ case $machine in
        arflag='rv'
        c_opt='-g +DA2.0W +O3 +Onolimit +Ofastaccess -AC99'
        c_safe='+DA2.0W -g -AC99'
+       c_opt_1="+O1 +Onolimit "
+       c_opt_2="+O2 +Onolimit +Ofastaccess"
+       c_opt_3="+O3 +Onolimit +Ofastaccess"
        opt='-g +DA2.0W +O2 +U77 +Onolimit +Ofastaccess +ppu'
        safe='+DA2.0W  +U77 -g'
+       opt_1="+O1"
+       opt_2="+O1 +Onolimit"
+       opt_3="+O2 +Onolimit +Ofastaccess +ppu"
        LIB="-llapack +U77 +DA2.0W -lm $LIB"
        if [ ! -z "`echo $LIB | grep 'veclib'`" ]; then
           cpp_f90="$cpp_f90 -DVAR_LIBVECLIB"
@@ -2321,6 +2369,9 @@ case $machine in
        fi
        opt='-g -fast'
        safe='-g'
+       opt_1=" "
+       opt_2="-fast"
+       opt_3="-fast"
        ;;
 #
 #   CRAY
@@ -2331,8 +2382,14 @@ case $machine in
 
        opt="-g -Wf\"-i 64 -a stack -dp\" -Wp\"-F\""
        safe="-Wf\"-i 64 -a stack -Wp\"-F\"-g\""
+       opt_1=""
+       opt_2=""
+       opt_3="-dp\""
        c_opt="-g -i 64 -a stack -dp"
        c_safe="-i 64 -a stack -g"
+       c_opt_1=""
+       c_opt_2=""
+       c_opt_3=""
        LIB="C90lib.cld $LIB"
        ;;
 #
@@ -2344,8 +2401,14 @@ case $machine in
       cpp_f90="$cpp_f90 -DVAR_MFDS"
       opt='-g -fast # updated 28.Aug.04'
       safe='-g'
+      opt_1=""
+      opt_2="-fast"
+      opt_3="-fast"
       c_opt='-g -fast # updated 28.Aug.04'
       c_safe='-g'
+      c_opt_1=""
+      c_opt_1=""
+      c_opt_1="-fast"
       ;;
 #
 #   IBM
@@ -2376,16 +2439,28 @@ case $machine in
          gnu* )
             opt='-g -O3 -qstrict -qextname -q64'
             safe='-g -qextname -q64'
+            opt_1="-O1"
+            opt_2="-O2 -qstrict"
+            opt_3="-O3 -qstrict"
    	    c_opt='-g -O3 -qstrict -q64'
    	    c_safe='-g -q64'
+            c_opt_1="-O1 "
+            c_opt_2="-O2 -qstrict "
+            c_opt_3="-O3 -qstrict "
             ldflag='-q64 '
             arflag='rv'
             ;;
          *)
             opt='-g -O3 -qstrict -qextname -qzerosize -q64'
             safe='-g -qextname -qzerosize -q64'
+            opt_1="-O1"
+            opt_2="-O2 -qstrict"
+            opt_3="-O3 -qstrict"
    	    c_opt='-g -O3 -qstrict -qcpluscmt -q64'
    	    c_safe='-g -qcpluscmt -q64'
+            c_opt_1="-O1"
+            c_opt_2="-O2 -qstrict"
+            c_opt_3="-O3 -qstrict"
             ldflag='-q64 -bmaxdata:0x8000000000'
             arflag='-X64 rv'
             ;;
@@ -2404,8 +2479,14 @@ case $machine in
       get_cpp_flags
       opt='-g -O2 -G 0 -woff 2290'
       safe='-g -G 0 -woff 2290'
+      opt_1="-O1"
+      opt_2="-O2"
+      opt_3="-O2"
       c_opt='-g -O2 -G 0'
       c_safe='-g -G 0'
+      c_opt_1="-O1"
+      c_opt_2="-O2"
+      c_opt_3="-O2"
       ;;
 #
 #   Linux on 32 bit machines
@@ -2682,9 +2763,9 @@ if [ $nooptim = 1 ]; then # ... employ flags with no optimization
   F90FLAGS_USE="\${F90FLAGS_SAFE}"
   CFLAGS_USE="\${CFLAGS_SAFE}"
 else # ... employ flags with the optimization
-  F77FLAGS_USE="\${F77FLAGS_OPT}"
-  F90FLAGS_USE="\${F90FLAGS_OPT}"
-  CFLAGS_USE="\${CFLAGS_OPT}"
+  F77FLAGS_USE="\${F77FLAGS_OPT_3} \${F77FLAGS_SAFE} "
+  F90FLAGS_USE="\${F77FLAGS_OPT_3} \${F90FLAGS_SAFE}"
+  CFLAGS_USE="\${CFLAGS_OPT_3} \${CFLAGS_SAFE}"
 fi
 
 cat <<EOF >> Makefile.config
@@ -2750,17 +2831,24 @@ EOF
 #
 ##########################################################################
 
-cat <<EOF >> Makefile.config
+#F77FLAGS_OPT=`xlfify $opt $f90_inc $mod $cpp_f90`
+#F90FLAGS_OPT=`xlfify $opt $f90_inc $mod $f90_extraflags $cpp_f90`
+#CFLAGS_OPT=$c_opt $cc_inc $cpp_cc
 
-# compiler flags with optimization flags
-F77FLAGS_OPT=`xlfify $opt $f90_inc $mod $cpp_f90`
-F90FLAGS_OPT=`xlfify $opt $f90_inc $mod $f90_extraflags $cpp_f90`
-CFLAGS_OPT=$c_opt $cc_inc $cpp_cc
+cat <<EOF >> Makefile.config
 
 # compiler flags, safe (without optimization flags)
 F77FLAGS_SAFE=`xlfify $safe $f90_inc $mod $cpp_f90`
 F90FLAGS_SAFE=`xlfify $safe $f90_inc $mod $f90_extraflags $cpp_f90`
 CFLAGS_SAFE=$c_safe $cc_inc $cpp_cc
+
+# sole Fortran/C compilers optimization flags
+F77FLAGS_OPT_1=$opt_1
+F77FLAGS_OPT_2=$opt_2
+F77FLAGS_OPT_3=$opt_3
+CFLAGS_OPT_1=$c_opt_1
+CFLAGS_OPT_2=$c_opt_2
+CFLAGS_OPT_3=$c_opt_3
 
 # employed compiler flags (safe or standard, see above)
 F77FLAGS=$F77FLAGS_USE
