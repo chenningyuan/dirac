@@ -50,7 +50,6 @@
     >> K(rhoa,rhob,grada,gradb,gradab):=(Exa+Exb)/2;
 */
 
-#define _ISOC99_SOURCE 1
 #include <math.h>
 #include <stddef.h>
 

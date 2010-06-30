@@ -21,14 +21,12 @@
 !
 */
 
-#define _ISOC99_SOURCE 1
 #include <math.h>
 #include <stddef.h>
 
 #define __CVERSION__
 
 #include "functionals.h"
-#include "general.h"
 #define LOG log
 #define EXP exp
 #define ABS fabs
