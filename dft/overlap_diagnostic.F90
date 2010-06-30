@@ -1,20 +1,28 @@
 module overlap_diagnostic
-! pbht mo overlap diagnostic
+
+!  MO overlap diagnostic according to Peach, Benfield, Helgaker, and Tozer:
+!  M. J. G. Peach, P. Benfield, T. U. Helgaker, and D. J. Tozer, J. Chem. Phys. 128, 044118 (2008)
+
+!  implemented 2010/06/30 by Radovan Bast <radovan.bast@uit.no>
+
+!  known problems: so far no mpi, no symmetry, only nonrelativistic
 
    use memory_allocator
 
    implicit none
 
-   public integrate_lambda
+   public sum_lambda
+   public integrate_lambda_matrix
    public overlap_diagnostic_init
-   public overlap_diagnostic_write
-   public overlap_diagnostic_print
+   public overlap_diagnostic_delete
+   public overlap_diagnostic_to_disc
+   public overlap_diagnostic_from_disc
 
    private
 
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "dcbham.h" 
+#include "dcbham.h"
 
    integer                 :: nr_mo
    real(8), allocatable    :: mo_coef(:)
@@ -26,12 +34,31 @@ module overlap_diagnostic
 
 contains
 
+   subroutine sum_lambda(lambda_numerator,   &
+                         lambda_denominator, &
+                         i,                  &
+                         s,                  &
+                         kappa)
+
+!     --------------------------------------------------------------------------
+      real(8), intent(inout) :: lambda_numerator
+      real(8), intent(inout) :: lambda_denominator
+      integer, intent(in)    :: i
+      integer, intent(in)    :: s
+      real(8), intent(in)    :: kappa
+!     --------------------------------------------------------------------------
+
+      lambda_numerator   = lambda_numerator   + kappa*lambda_matrix(i, s)
+      lambda_denominator = lambda_denominator + kappa
+
+   end subroutine
+
    subroutine overlap_diagnostic_init(nz, nr_mo_in, nr_ao)
 
 !     --------------------------------------------------------------------------
-      integer, intent(in)    :: nz
-      integer, intent(in)    :: nr_mo_in
-      integer, intent(in)    :: nr_ao
+      integer, intent(in) :: nz
+      integer, intent(in) :: nr_mo_in
+      integer, intent(in) :: nr_ao
 !     --------------------------------------------------------------------------
 
       nr_mo = nr_mo_in
@@ -43,7 +70,16 @@ contains
 
    end subroutine
 
-   subroutine overlap_diagnostic_write()
+   subroutine overlap_diagnostic_delete()
+
+      nr_mo = 0
+
+      if (allocated(mo_coef))       call dealloc(mo_coef)
+      if (allocated(lambda_matrix)) call dealloc(lambda_matrix)
+
+   end subroutine
+
+   subroutine overlap_diagnostic_to_disc()
 
       inquire(file = file_name, exist = file_exists)
 
@@ -69,7 +105,7 @@ contains
 
    end subroutine
 
-   subroutine overlap_diagnostic_print()
+   subroutine overlap_diagnostic_from_disc()
 
       inquire(file = file_name, exist = file_exists)
 
@@ -94,7 +130,7 @@ contains
 
       close(file_unit, status = 'keep')
 
-      write(*, *) 'blub lambda'
+      write(*, *) 'debug lambda matrix'
       call prqmat(lambda_matrix,  &
                   norbt,          &
                   norbt,          &
@@ -104,11 +140,11 @@ contains
                   (/1, 2, 3, 4/), &
                   6)
 
-      call dealloc(lambda_matrix)
+!     call dealloc(lambda_matrix)
 
    end subroutine
 
-   subroutine integrate_lambda(w, nz, nr_mo, nr_ao, ao, buffer)
+   subroutine integrate_lambda_matrix(w, nz, nr_mo, nr_ao, ao, buffer)
 
 !     --------------------------------------------------------------------------
       real(8), intent(in)    :: w
@@ -124,7 +160,7 @@ contains
 !     --------------------------------------------------------------------------
 
       i = 0
-      do iz = 1, nz
+!     do iz = 1, nz
          do p = 1, nr_mo
             buffer(p) = 0.0d0
             do k = 1, nr_ao
@@ -138,7 +174,7 @@ contains
               lambda_matrix(p, q) = lambda_matrix(p, q) + w*dabs(buffer(p)*buffer(q))
             end do
          end do
-      end do
+!     end do
 
    end subroutine
 
