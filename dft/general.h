@@ -53,6 +53,10 @@
 
 #define ELEMENTS(arr) (sizeof(arr)/sizeof(arr[0]))
 
+// M_PI is nonstandard in math.h since C99
+#ifndef M_PI
+#define M_PI 3.14159265358979323846 
+#endif
 
 typedef struct FirstDrv_  FirstDrv;
 typedef struct SecondDrv_ SecondDrv;

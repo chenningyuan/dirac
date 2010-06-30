@@ -28,6 +28,7 @@
 #define __CVERSION__
 
 #include "functionals.h"
+#include "general.h"
 #define LOG log
 #define EXP exp
 #define ABS fabs
