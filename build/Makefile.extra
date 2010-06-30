@@ -5,19 +5,19 @@
 #############################################
 codata86: dirac/codata.F90 
 	@echo -e "\n\t **** Set CODATA-1986 ****"
-	$(F77) -DCODATA86 $(F77FLAGS_SAFE) -c dirac/codata.F90
+	$(F77) -DCODATA86 $(F90FLAGS_SAFE) -c dirac/codata.F90
 
 codata98: dirac/codata.F90 
 	@echo -e "\n\t **** Set CODATA-1998 ****"
-	$(F77) -DCODATA98 $(F77FLAGS_SAFE) -c dirac/codata.F90
+	$(F77) -DCODATA98 $(F90FLAGS_SAFE) -c dirac/codata.F90
 
 codata02: dirac/codata.F90 
 	@echo -e "\n\t **** Set CODATA-2002 ****"
-	$(F77) -DCODATA02 $(F77FLAGS_SAFE) -c dirac/codata.F90
+	$(F77) -DCODATA02 $(F90FLAGS_SAFE) -c dirac/codata.F90
 
 codata06: dirac/codata.F90 
 	@echo -e "\n\t **** Set CODATA-2006 ****"
-	$(F77) -DCODATA06 $(F77FLAGS_SAFE) -c dirac/codata.F90
+	$(F77) -DCODATA06 $(F90FLAGS_SAFE) -c dirac/codata.F90
 
 ### compile main program as SUBROUTINE ###
 main_as_subr:
@@ -68,7 +68,7 @@ endif
 FTNCHEK_FLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet -noarguments -arguments=number -usage=var-unitialized
 
 .F.opt:
-	$(F77) $(F77FLAGS_OPT) -c -o $*.o $*.F > $*.opt
+	$(F77) $(F77FLAGS_OPT_3) $(F77FLAGS_SAFE) -c -o $*.o $*.F > $*.opt
 .F.s:
 	$(F77) $(F77FLAGS_SAFE) -c -o $*.o $*.F > $*.s
 .F.r:
@@ -82,7 +82,7 @@ FTNCHEK_FLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet
 	ftnchek $(FTNCHEK_FLAGS) $*.i > $*.fc
 
 .F90.opt:
-	$(F90) $(F90FLAGS_OPT) -c -o $*.o $*.F90  > $*.opt
+	$(F90) $(F77FLAGS_OPT_3)  $(F90FLAGS_SAFE) -c -o $*.o $*.F90  > $*.opt
 .F90.s:
 	$(F90) $(F90FLAGS_SAFE) -c -o $*.o $*.F90  > $*.s
 .F90.r:
@@ -93,7 +93,7 @@ FTNCHEK_FLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet
 	$(F90) $(FPP_FLAGS) -E $*.F90 > $*.i
 
 .f90.opt:
-	$(F90) $(F90FLAGS_OPT) -c -o $*.o $*.f90  > $*.opt
+	$(F90) $(F77FLAGS_OPT_3)  $(F90FLAGS_SAFE) -c -o $*.o $*.f90  > $*.opt
 .f90.s:
 	$(F90) $(F90FLAGS_SAFE) -c -o $*.o $*.f90  > $*.s
 .f90.r:
@@ -104,7 +104,7 @@ FTNCHEK_FLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet
 	$(F90) $(FPP_FLAGS) -E $*.f90  > $*.i
 
 .c.opt:
-	$(CC) $(CFLAGS_OPT) -c -o $*.o $*.c > $*.opt
+	$(CC) $(CFLAGS_OPT_3) $(CFLAGS_SAFE) -c -o $*.o $*.c > $*.opt
 .c.s:
 	$(CC) $(CFLAGS_SAFE) -c -o $*.o $*.c > $*.s
 .c.r:
@@ -161,7 +161,7 @@ diag:
 	@readelf -s $(TARGET) 2> /dev/null | awk --non-decimal-data '{printf "%12.3f %s    %s\n",(($$3)+0)/(1024),"kB",$$8}' | sort -n -r -u || \
 	echo 'can not be determined, readelf not present'
 
-#miro: -DNO_SF_QUIT is only for file gp/gptrygve.F
+#miro: -DNO_SF_QUIT is only for gp/gptrygve.F to ensure no segm.fault quitting
 gp/gptrygve.p : gp/gptrygve.F
 	$(F77) -DNO_SF_QUIT $(FFLAG_PROFILE) $(F77FLAGS) -c -o gp/gptrygve.o gp/gptrygve.F > gp/gptrygve.p
 
@@ -176,9 +176,10 @@ gp/gptrygve.p : gp/gptrygve.F
 #                                                                                              #
 ################################################################################################
 
-ifeq ($(SAFE_FLAGS_MODE),NO) # only if no safe-flags compilation
+ifeq ($(SAFE_FLAGS_MODE),NO) # check only if no safe-flags compilation
 
 ifeq (,$(findstring "DVAR_GFORTRAN",$(FPP_FLAGS))) 
+#miro: I checked it with gfortran 4.4, we need to avoid optimization
 prp/pamrvc.o : prp/pamrvc.F
 	@echo " ----  gfortran compiler, prp/pamrvc.F with no level of optimization :"
 	$(F77) $(F77FLAGS_SAFE) -c -o $*.o $<
