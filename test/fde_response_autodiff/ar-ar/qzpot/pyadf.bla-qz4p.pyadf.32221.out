@@ -1,0 +1,191 @@
+
+ **************************************************
+ *                                          
+ *  PyADF v0.2                              
+ *                                          
+ *    Christoph Jacob, Nov 2006             
+ *                                          
+ **************************************************
+
+ Directory of input file:
+      /home/gomes/devel/PyADF-0.4/test/pyadf_testdir_Dirac_WFTinDFT/argon-1/ar-3
+
+ Directory of output files:
+      /home/gomes/devel/PyADF-0.4/test/pyadf_testdir_Dirac_WFTinDFT/argon-1/ar-3
+
+ ----------------------------------------
+ PyADF input file:  bla-qz4p.pyadf
+
+import shutil
+file_h2o_1 = os.path.join (pyadfenv.outdir, 'Ar3-mol.xyz')
+file_mol   = os.path.join (pyadfenv.outdir, 'Ar-mol.xyz')
+m_h2o_1 = molecule(file_h2o_1)
+m_mol   = molecule(file_mol)
+m_tot = m_mol + m_h2o_1 
+print m_tot.print_coordinates()
+# Prepare first water molecule
+r_h2o_1 = adfsinglepointjob(myfiles, m_h2o_1, 'ZORA/QZ4P', options=['NOSYMFIT']).run()
+fdesettings = adfsettings()
+# save TAPE10 is needed for exporting the FDE potential
+fdesettings.set_save_tapes([21,10])
+fdesettings.set_unrestricted(False)
+fdesettings.set_functional('LDA')
+fdesettings.set_integration(accint=8.0)
+frags = [fragment(r_h2o_1, [m_h2o_1], isfrozen=True),
+	 fragment(None,    [m_mol]  ) ]
+fde_res = adffragmentsjob(myfiles, frags, basis="ZORA/QZ4P", settings=fdesettings, options=['NOSYM', 'EXCITATIONS\n LOWEST 50\n END\n', 'RESPONSE\n ALLCOMPONENTS\n  Nfreq 2\n  FrqBeg 0.000000\n  FrqEnd 27.211\nEND\n']).run()
+grid = adfgrid(fde_res)
+fde_res.export_embedding_potential(os.path.join(pyadfenv.outdir, 'EMBPOT.k.acc8.qz4p'), dens_filename=os.path.join(pyadfenv.outdir, 'BLA22.k.acc8.qz4p'))
+rhob = fde_res.get_frozen_density (grid=grid)
+rhob.get_xyzw (os.path.join(pyadfenv.outdir, 'FRZDNS.k.acc8.qz4p'))
+#grid = adfgrid(fde_res)
+#rho = fde_res.get_density (grid=grid)
+#print rho
+#rho.get_xyzw (os.path.join(pyadfenv.outdir, 'TOTDNS'))
+ ----------------------------------------
+
+ **************************************************
+ Executing PyADF input ...
+
+    1)       Ar        0.00000        0.00000        0.00000    
+    2)       Ar        0.20000        0.20000        0.20000    
+
+ --------------------------------------------------
+ Running ADF single point job
+
+   Molecule
+   ========
+
+  Cartesian coordinates: 
+    1)       Ar        0.20000        0.20000        0.20000    
+
+
+   Settings
+   ========
+
+   Relativistic options:  Non-Relativistic 
+
+   XC functional   : LDA
+   Integration     : accint 4.0    
+   SCF convergence : 1.0e-06 
+
+   TAPE21 will be saved
+
+
+   Options
+   =======
+
+   NOSYMFIT
+
+   Output will be written to :  adfoutput.32221.out
+
+ Preparing for ADF job ... 
+
+ Running main ADF job ...
+ Created fragment Ar with basis set ZORA/QZ4P with LDA functional
+ Done with ADF CREATE job
+
+ Results file id is  None
+
+
+ Done with preparation
+
+ Running main ADF job ...
+ Done with ADF single point job
+
+ Results file id is  0
+
+ --------------------------------------------------
+ Running ADF NewFDE job
+
+   Total Molecule
+   ==============
+
+  Cartesian coordinates: 
+    1)       Ar        0.20000        0.20000        0.20000    
+    2)       Ar        0.00000        0.00000        0.00000    
+
+
+   Fragments 
+   ==========
+
+     Fragment Typ  1     type: frozen FDE fragment
+
+     Fragment Typ  1 , Fragment  1
+  Cartesian coordinates: 
+    1)       Ar        0.20000        0.20000        0.20000    
+
+     Fragment Typ  2     type: nonfrozen fragment
+
+     Fragment Typ  2 , Fragment  1
+  Cartesian coordinates: 
+    1)       Ar        0.00000        0.00000        0.00000    
+
+
+   Fragment Files 
+   ============== 
+
+     Fragment Typ  1 :  t21.results.0000
+
+   Settings
+   ========
+
+   Relativistic options:  Non-Relativistic 
+
+   XC functional   : LDA
+   Integration     : accint 8.0    
+   SCF convergence : 1.0e-06 
+
+   TAPE21 will be saved
+   TAPE10 will be saved
+
+
+   FDE settings
+   ============
+
+   TNAD  PW91k
+
+   Options
+   =======
+
+   NOSYM
+   EXCITATIONS
+ LOWEST 50
+ END
+
+   RESPONSE
+ ALLCOMPONENTS
+  Nfreq 2
+  FrqBeg 0.000000
+  FrqEnd 27.211
+END
+
+
+   Output will be written to :  adfoutput.32221.out
+
+ Preparing for ADF job ... 
+
+
+ Done with preparation
+
+ Running main ADF job ...
+ Done with ADF NewFDE job
+
+ Results file id is  1
+
+ --------------------------------------------------
+ Running DENSF job
+
+   SCF taken from ADF job  1  (results id)
+
+   Fragment used:  frag1
+
+   Calculated property :  Density SCF
+
+ Running main ADF job ...
+ Done with DENSF job
+
+ Results file id is  2
+
+ **************************************************
+ Finished Execution of PyADF input
