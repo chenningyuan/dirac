@@ -4571,6 +4571,8 @@ C    (see MRCON1 of the MOLTRA module)
 #ifdef MOD_XCFUN
           read(lucmd, '(a80)') line
           call parse_functional(line, id_xc_fun)
+          call set_xc_fun_alda(id_xc_fun_alda)
+          call set_xc_fun_xalda(id_xc_fun_xalda)
           dft_cfg_xcfun             = .true.
           dirac_cfg_dft_calculation = .true.
           dirac_cfg_scf_calculation = .true.
