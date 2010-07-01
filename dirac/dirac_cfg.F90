@@ -23,6 +23,10 @@ module dirac_cfg
   logical, public :: dirac_cfg_visual          = .false.
 !                    relcc module
   logical, public :: dirac_cfg_relcc           = .false.
+!                    embedding module
+  logical, public :: dirac_cfg_fde             = .false.
+  logical, public :: dirac_cfg_fde_response    = .false.
+
 
   private
 

@@ -1,7 +1,7 @@
 #if !defined(__CVERSION__)
 
-! VERSION : $Revision$
-! DATE    : $Date$
+! VERSION : $Revision: 9874 $
+! DATE    : $Date: 2009-11-09 10:29:00 +0100 (Mon, 09 Nov 2009) $
 ! FILE    : dcbham.h
 !
 !*****************************************************************************
@@ -123,7 +123,7 @@
      &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
      &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP, CMPEIG,  &
      &        DKH1, DKH2, NOAMFI, QDOTS,LSCALE_DFT_GAUNT,NOSFMU,MOLMF,  &
-     &        DO_FDE, TRMO4C2C
+     &        TRMO4C2C
 
       COMMON /DCLHAM/ I1_DCLHAM,                                        &
      &                QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL,      &
@@ -134,7 +134,7 @@
      &                RESTFCK, CONT2C, START2C, GAUNT, ALLAMFA, VACPOL, &
      &                RDSUSLLMOD,MIXVAC,VACREF,POSVAC,CAP,CMPEIG,       &
      &                DKH1, DKH2, NOAMFI, QDOTS, LSCALE_DFT_GAUNT,      &
-     &                NOSFMU,MOLMF,DO_FDE, TRMO4C2C,                    &
+     &                NOSFMU,MOLMF, TRMO4C2C,                           &
      &                I2_DCLHAM
 
 !    Do NOT add any variables after the end tag !!!

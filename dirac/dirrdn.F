@@ -22,9 +22,6 @@ C
 C
 C
 C
-C VERSION : $Revision$
-C DATE    : $Date$
-C FILE    : dirrdn.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck paminp */
@@ -1689,7 +1686,7 @@ CMI     CALL QUIT('DHFINP: Zero electrons not allowed!')
       END IF
 
 C! Print embedding information for the freeze & thaw scheme (not used currently)
-C     IF (DO_FDE) CALL report_embedding ()
+C     IF (dirac_cfg_fde .or. dirac_cfg_fde_response) CALL report_embedding ()
 
       IF(.NOT.dirac_cfg_scf_calculation) GOTO 999
 C
@@ -3935,7 +3932,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 56,NDIR = 8)
+      PARAMETER (NTABLE = 60,NDIR = 8)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include "maxaqn.h"
@@ -3995,7 +3992,9 @@ C
 !                   49        50        51        52
      &            '.NOAMFI','.QDOTS ','.X2C   ','.X2C4  ',
 !                   53        54        55        56
-     &            '.NOSFMU','.DFTAUT','.MMF   ','.MO4C2C'/
+     &            '.NOSFMU','.DFTAUT','.MMF   ','.MO4C2C',
+!                   57        58        59        60
+     &            '.FDERSP','.xA    ','.xB    ','.xC    '/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4039,7 +4038,6 @@ C
       POSVAC  = .FALSE.
       VACREF  = .TRUE.
       CAP     = .FALSE.
-      DO_FDE  = .FALSE.
       INTV1C  = 0
       ONECNV  = D0
       N1OPER  = 0
@@ -4140,7 +4138,7 @@ C     Keep track of number of changes and added finite field operators
      &                121,122,123,124,125,126,127,128,129,130,
      &                131,132,133,134,135,136,137,138,139,140,
      &                141,142,143,144,145,146,147,148,149,150, 
-     &                151,152,153,154,155,156),I
+     &                151,152,153,154,155,156,157,158,159,160),I
             END IF
   99    CONTINUE
         IF (WORD .EQ. '.OPTION') THEN
@@ -4487,8 +4485,7 @@ C&&& POSVAC: Use positronic vacuum polarisation
 !         .FDE
 !         frozen density embedding
   142     continue
-          DO_FDE = .true.
-          call fdeini()
+          dirac_cfg_fde = .true.
 !endif /* ifdef MOD_EMB */
           go to 100
 
@@ -4577,7 +4574,7 @@ C    (see MRCON1 of the MOLTRA module)
           dirac_cfg_dft_calculation = .true.
           dirac_cfg_scf_calculation = .true.
 #else
-          call quit('.DFTAUTO not available in this version')
+          call quit('XCFun not available in this version')
 #endif /* ifdef MOD_XCFUN */
           go to 100
 
@@ -4589,6 +4586,19 @@ C&&& Activate : molecular mean field approximation for correlated calculations
 CMI&& activate 4c-2c MO transformation 
           TRMO4C2C=.TRUE.
           GOTO 100
+  157     CONTINUE
+C activates fde response
+          dirac_cfg_fde_response =.TRUE.
+          GOTO 100
+! .xA
+  158     CONTINUE
+          GOTO 100
+! .xB
+  159     CONTINUE
+          GOTO 100
+! .xC
+  160     CONTINUE
+          GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
         GO TO 300
       ELSE
@@ -4598,6 +4608,13 @@ CMI&& activate 4c-2c MO transformation
         CALL QUIT('Illegal prompt in HAMINP.')
       END IF
   300 CONTINUE
+
+
+
+      if (dirac_cfg_fde .or. dirac_cfg_fde_response) then
+         call fdeini()
+      end if 
+      
 
 CMI   ... needed for output
       GAUNT_SAVE = GAUNT
@@ -5480,9 +5497,7 @@ C       if *CAP in input but MOD_CAP is not defined !!!
 !     .FDE
 !     frozen density embedding
     5 CONTINUE
-#ifdef MOD_EMB
       call fdeinp(word, .true.)
-#endif /* ifdef MOD_EMB */
       GO TO 200
 
     6 CONTINUE
@@ -5533,6 +5548,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck op1ini */
       SUBROUTINE OP1INI(WORK,LWORK)
+      use dirac_cfg
 C***********************************************************************
 C
 C     Initialize one-electron integrals for standard
@@ -5548,6 +5564,9 @@ C        MI/Febr 2006 Added nonrelativistic kinetic
 C                     energy integrals (TWOCOMP=.true)
 C
 C***********************************************************************
+
+      use dirac_cfg
+
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.0D0,DM2 = -2.0D0,DHALF=0.5D0)
@@ -5601,9 +5620,8 @@ C
 C     (static) embedding pontential
 C     =============================
 C
-C aspg: do_fde is coming from dcbham.h
 C 
-      IF (DO_FDE) THEN 
+      IF (dirac_cfg_fde) THEN 
          PNAME            = 'static emb. potential '
          IPTYP            = 1
          NPCOMP           = 1

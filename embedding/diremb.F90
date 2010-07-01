@@ -27,6 +27,11 @@
 #ifdef MOD_XML
       USE FILE, ONLY: OPEN_FILE
 #endif
+#ifdef MOD_XCFUN
+      use xcfun
+#endif
+      use dft_input
+      use dft_cfg
 
       PRIVATE
 !     PUBLIC GetFDEPotential_FromFile, FDEINI,FDEINP,FDE_GRIDOUT
@@ -34,12 +39,14 @@
       public FDE_setupFDEgrid, FDE_testFrozendensity, FDE_cleanupFDEgrid
       public FDEINI,FDEINP,FDE_GRIDOUT,have_frozen_density
       PUBLIC DO_GRID_OUT
-      public fde_grid, fde_frozen_prp, fde_grid_np
+      public fde_grid, fde_frozen_prp, fde_grid_np, fde_nprop
 
       LOGICAL,SAVE :: DO_GRID_OUT=.FALSE.
       logical,save :: have_frozen_density = .false.
+      logical,save :: import_vemb = .false.
+      logical,save :: update_vemb = .false.
       INTEGER,SAVE :: LUFDEPOT=45,LUTESTING=46,LUGRIDOUT=47, LUFDEFRZDNS=48
-      INTEGER,SAVE :: print_fde=0, fde_grid_np=0
+      INTEGER,SAVE :: print_fde=0, fde_grid_np=0, fde_nprop=1
       CHARACTER(LEN=60),SAVE :: FDEPOT='EMBPOT',FDEDNS='FRZDNS',GRIDOUT_NAME=''
       CHARACTER(LEN=60),SAVE :: out_level='HF'
       real(kind=8), pointer :: fde_grid(:,:), fde_frozen_prp(:,:) 
@@ -100,18 +107,23 @@
             call FDE_ImportFrozenDensity_FileOpen(frozdens_unit)
             call read_grid(frozdens_unit,fde_grid,fde_frozen_prp)
             call FDE_ImportFrozenDensity_FileClose()
+
+            fde_grid_np = size(fde_grid,2)
+            fde_nprop   = size(fde_frozen_prp,1)
+            
          end subroutine FDE_setupFDEgrid
 
          subroutine FDE_testFrozenDensity()
             integer      :: point = 0
             real(kind=8) :: frozen_particle_number = 0.0
 
-            do point = 1, size(fde_frozen_prp,2)  
-               frozen_particle_number = frozen_particle_number + fde_grid(4,point)*fde_frozen_prp(1,point) 
+            do point = 1, fde_grid_np 
+               frozen_particle_number = frozen_particle_number + fde_grid(4,point)*fde_frozen_prp(2,point) 
             end do
             
             write (*,*) '  Test: imported frozen density integrates to ',frozen_particle_number
-            write (*,*) '  Test: grid points processed ',point
+            write (*,*) '  Test: grid points processed ',fde_grid_np
+            write (*,*) '  Test: number of properties  ',fde_nprop
             frozen_particle_number = 0.0
 
          end subroutine FDE_testFrozenDensity
@@ -132,7 +144,7 @@
 #include "dcbgen.h"
       PARAMETER (NTABLE = 8)
 !
-      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
+      CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7, line*80
 !
 !
       logical :: Echo_Input,newdef
@@ -155,14 +167,30 @@
               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
               CYCLE
             CASE ('.EMBPOT')
+              import_vemb = .true.
 !             read filename for the embedding potential
               READ(LUCMD,'(A60)') FDEPOT 
-              write(*,*) 'File with embedding potentia (=fdepot) is ',fdepot
+
+            CASE ('.UPDATE')
+              update_vemb = .true.
+!             read filename for the embedding potential
+              write(*,*) 'Embedding potential will be updated and saved'
+
             CASE ('.FRDENS')
 !             read filename for the frozen density and density gradient
               READ(LUCMD,'(A60)') FDEDNS
               write(*,*) 'File with frozen density (+gradient etc) (=fdedns) is ',fdedns
               have_frozen_density = .true.
+
+! read kinetic energy functional for non-additive term
+            CASE ('.OFKEF')
+#ifdef MOD_XCFUN
+              read(lucmd, '(a80)') line
+              call parse_functional(line, id_kin_fun)
+              call set_kin_fun_alda(id_kin_fun_alda)
+#else         
+              call quit('XCFun not available in this version')
+#endif /* ifdef MOD_XCFUN */
 
             CASE ('.PRINT')
 !             set printlevel 
@@ -216,7 +244,25 @@
         WRITE(LUPRI,*)
         WRITE(LUPRI,'(A,I5)')  ' * Print level: ',print_fde
 
-        write(LUPRI,'(A,A60)')  ' * FDE Potential read from file: ',FDEPOT
+        if (import_vemb) then
+           write(LUPRI,'(A,A60)')  ' * FDE Potential read from file: ',FDEPOT
+        else
+           write(LUPRI,'(A,A60)')  ' * FDE Potential (re)generated internally'
+           if (.not.have_frozen_density) then
+              write(LUPRI,'(A,A60)')  '   Data from frozen subsystems unavailable!'
+              call quit("Missing datafile FRDENS")
+           endif
+        endif
+
+        if (update_vemb) then 
+           write(LUPRI,'(A,A60)') ' * Embedding potential will be updated and saved'
+           if (.not.have_frozen_density) then
+              write(LUPRI,'(A,A60)')  '   Data from frozen subsystems unavailable!'
+              call quit("Missing datafile FRDENS")
+           endif
+        else
+           write(LUPRI,'(A,A60)') ' * Fixed embedding potential will be used' 
+        endif
 
         if (have_frozen_density) then
            write(LUPRI,'(A,A60)') &
