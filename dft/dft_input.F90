@@ -80,7 +80,7 @@ contains
   end function
 
 #ifdef MOD_XCFUN
-  subroutine parse_functional(line)
+  subroutine parse_functional(line, id)
 
     use xcfun
 
@@ -100,12 +100,12 @@ contains
 
 !   ----------------------------------------------------------------------------
     character(80)              :: line
+    integer                    :: id
 !   ----------------------------------------------------------------------------
     character(80), allocatable :: word_array(:)
     integer                    :: i, nr_words
     real(8)                    :: w
     integer                    :: u
-    integer                    :: istat
 !   ----------------------------------------------------------------------------
 
     u = get_lupri()
@@ -113,13 +113,9 @@ contains
     write(u, '(a)') '* Kohn-Sham calculation using the automatic differentiation xc functional:'
     write(u, '(a)') '   (weight: functional)'
 
-    dft_cfg_fun_id       = xc_new_functional()
-    dft_cfg_fun_id_alda  = xc_new_functional()
-    dft_cfg_fun_id_xalda = xc_new_functional()
+    id = xc_new_functional()
 
-    call xc_set_mode(dft_cfg_fun_id,       XC_VARS_RS)
-    call xc_set_mode(dft_cfg_fun_id_alda,  XC_VARS_RS)
-    call xc_set_mode(dft_cfg_fun_id_xalda, XC_VARS_RS)
+    call xc_set_mode(id, XC_VARS_RS)
 
     call reset_hfx()
 
@@ -138,54 +134,50 @@ contains
 
       w = get_weight(word_array(i), 'lda')
       if (dabs(w) > tiny) then
-        call xc_set_param(dft_cfg_fun_id, XC_SLATERX, w)
-        call xc_set_param(dft_cfg_fun_id, XC_VWN5C,   w)
+        call xc_set_param(id, XC_SLATERX, w)
+        call xc_set_param(id, XC_VWN5C,   w)
       end if
 
       w = get_weight(word_array(i), 'blyp')
       if (dabs(w) > tiny) then
-        call xc_set_param(dft_cfg_fun_id, XC_BECKEX,     w)
-!       or:
-!       call xc_set_param(dft_cfg_fun_id, 'slaterx',    w, istat)
-!       call xc_set_param(dft_cfg_fun_id, 'beckexcorr', w, istat)
-
-        call xc_set_param(dft_cfg_fun_id, XC_LYPC,       w)
+        call xc_set_param(id, XC_BECKEX, w)
+        call xc_set_param(id, XC_LYPC,   w)
       end if
 
       w = get_weight(word_array(i), 'b3lyp')
       if (dabs(w) > tiny) then
-        call xc_set_param(dft_cfg_fun_id, XC_SLATERX,    0.80d0*w)
-        call xc_set_param(dft_cfg_fun_id, XC_BECKECORRX, 0.72d0*w)
-        call xc_set_param(dft_cfg_fun_id, XC_VWN5C,      0.19d0*w)
-        call xc_set_param(dft_cfg_fun_id, XC_LYPC,       0.81d0*w)
+        call xc_set_param(id, XC_SLATERX,    0.80d0*w)
+        call xc_set_param(id, XC_BECKECORRX, 0.72d0*w)
+        call xc_set_param(id, XC_VWN5C,      0.19d0*w)
+        call xc_set_param(id, XC_LYPC,       0.81d0*w)
         call add_hfx(0.2d0*w)
       end if
 
       w = get_weight(word_array(i), 'pbe')
       if (dabs(w) > tiny) then
-        call xc_set_param(dft_cfg_fun_id, XC_PBEX, w)
-        call xc_set_param(dft_cfg_fun_id, XC_PBEC, w)
+        call xc_set_param(id, XC_PBEX, w)
+        call xc_set_param(id, XC_PBEC, w)
       end if
 
       w = get_weight(word_array(i), 'pbe0')
       if (dabs(w) > tiny) then
-        call xc_set_param(dft_cfg_fun_id, XC_PBEX, 0.75d0*w)
-        call xc_set_param(dft_cfg_fun_id, XC_PBEC,        w)
+        call xc_set_param(id, XC_PBEX, 0.75d0*w)
+        call xc_set_param(id, XC_PBEC,        w)
         call add_hfx(0.25d0*w)
       end if
 
       w = get_weight(word_array(i), 'kt1')
       if (dabs(w) > tiny) then
-        call xc_set_param(dft_cfg_fun_id, XC_SLATERX,           w)
-        call xc_set_param(dft_cfg_fun_id, XC_KTX,      -0.006d0*w)
-        call xc_set_param(dft_cfg_fun_id, XC_VWN5C,             w)
+        call xc_set_param(id, XC_SLATERX,           w)
+        call xc_set_param(id, XC_KTX,      -0.006d0*w)
+        call xc_set_param(id, XC_VWN5C,             w)
       end if
 
       w = get_weight(word_array(i), 'kt2')
       if (dabs(w) > tiny) then
-        call xc_set_param(dft_cfg_fun_id, XC_SLATERX, 1.07173d0*w)
-        call xc_set_param(dft_cfg_fun_id, XC_KTX,      -0.006d0*w)
-        call xc_set_param(dft_cfg_fun_id, XC_VWN5C,  0.576727d0*w)
+        call xc_set_param(id, XC_SLATERX, 1.07173d0*w)
+        call xc_set_param(id, XC_KTX,      -0.006d0*w)
+        call xc_set_param(id, XC_VWN5C,  0.576727d0*w)
       end if
 
 
@@ -194,17 +186,17 @@ contains
 
       w = get_weight(word_array(i), 'ktx')
       if (dabs(w) > tiny) then
-        call xc_set_param(dft_cfg_fun_id, XC_KTX, w)
+        call xc_set_param(id, XC_KTX, w)
       end if
 
       w = get_weight(word_array(i), 'pbex')
       if (dabs(w) > tiny) then
-        call xc_set_param(dft_cfg_fun_id, XC_PBEX, w)
+        call xc_set_param(id, XC_PBEX, w)
       end if
 
       w = get_weight(word_array(i), 'pbec')
       if (dabs(w) > tiny) then
-        call xc_set_param(dft_cfg_fun_id, XC_PBEC, w)
+        call xc_set_param(id, XC_PBEC, w)
       end if
 
       w = get_weight(word_array(i), 'hfx')
@@ -215,12 +207,6 @@ contains
     end do
 
     deallocate(word_array)
-
-!   w = 0.0d0
-!   do i = 1, size(dft_cfg_functional_w)
-!     w = w + dabs(dft_cfg_functional_w(i))
-!   end do
-!   if (w < tiny) call quit('DFTAUTO: unknown functional or functional zero')
 
 !   dft_cfg_functional_w_alda                      = 0.0d0
 !   dft_cfg_functional_w_alda(XC_SLATER_EXCHANGE)  = 1.0d0

@@ -831,7 +831,7 @@ contains
 
 #if defined MOD_XCFUN && MOD_OPENRSP
     if (response_order_ao > 0) then
-      derv_length = xc_output_length(dft_cfg_fun_id, response_order_ao)
+      derv_length = xc_output_length(id_xc_fun, response_order_ao)
       allocate(derv(derv_length, mxbllen))
     else
 #endif

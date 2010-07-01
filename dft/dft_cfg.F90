@@ -76,9 +76,11 @@ module dft_cfg
   integer, public :: dft_cfg_integration_check_level = 0
   integer, public :: dft_cfg_alda_order              = 99
 #ifdef MOD_XCFUN
-  integer, public :: dft_cfg_fun_id
-  integer, public :: dft_cfg_fun_id_alda
-  integer, public :: dft_cfg_fun_id_xalda
+  integer, public :: id_xc_fun
+  integer, public :: id_xc_fun_alda
+  integer, public :: id_xc_fun_xalda
+  integer, public :: id_kin_fun
+  integer, public :: id_kin_fun_alda
 #endif
 
   private
@@ -132,9 +134,11 @@ contains
     call dirac_mpi_bcast(dft_cfg_integration_check_level)
     call dirac_mpi_bcast(dft_cfg_alda_order             )
 #ifdef MOD_XCFUN
-    call dirac_mpi_bcast(dft_cfg_fun_id                 )
-    call dirac_mpi_bcast(dft_cfg_fun_id_alda            )
-    call dirac_mpi_bcast(dft_cfg_fun_id_xalda           )
+    call dirac_mpi_bcast(id_xc_fun                      )
+    call dirac_mpi_bcast(id_xc_fun_alda                 )
+    call dirac_mpi_bcast(id_xc_fun_xalda                )
+    call dirac_mpi_bcast(id_kin_fun                     )
+    call dirac_mpi_bcast(id_kin_fun_alda                )
 #endif
 
   end subroutine

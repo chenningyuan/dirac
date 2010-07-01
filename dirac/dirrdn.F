@@ -4570,9 +4570,7 @@ C    (see MRCON1 of the MOLTRA module)
   154     continue
 #ifdef MOD_XCFUN
           read(lucmd, '(a80)') line
-          call parse_functional(line)
-!         CALL DFTINPUT(LINE, INPERR)
-!fixme    reporting and consistency in here ...
+          call parse_functional(line, id_xc_fun)
           dft_cfg_xcfun             = .true.
           dirac_cfg_dft_calculation = .true.
           dirac_cfg_scf_calculation = .true.

@@ -61,7 +61,7 @@ contains
 !   ----------------------------------------------------------------------------
 
     xcfun_is_gga = .false.
-    if (xc_get_type(dft_cfg_fun_id) > 0) then
+    if (xc_get_type(id_xc_fun) > 0) then
       xcfun_is_gga = .true.
     end if
 
@@ -79,8 +79,8 @@ contains
     integer             :: need_out_length
 !   ----------------------------------------------------------------------------
 
-    need_in_length  = xc_input_length(dft_cfg_fun_id)
-    need_out_length = xc_output_length(dft_cfg_fun_id, response_order)
+    need_in_length  = xc_input_length(id_xc_fun)
+    need_out_length = xc_output_length(id_xc_fun, response_order)
 
     if (need_in_length > xcfun_in_length) then
       xcfun_in_length = need_in_length
@@ -160,7 +160,7 @@ contains
           xcfun_in(3) = z_0(k)
         end if
         npoints = 1 ! TODO: Do the whole block at a time, just check packing.
-        call xc_eval(dft_cfg_fun_id, order, npoints, xcfun_in, xcfun_out(1, k))
+        call xc_eval(id_xc_fun, order, npoints, xcfun_in, xcfun_out(1, k))
       end do
 
       do k = 1, block_length
