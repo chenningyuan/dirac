@@ -3,6 +3,8 @@ module xc_driver
 !   written by T. Helgaker
 !   DIRAC adaption by T. Saue
 
+  use fde_mod
+  use dirac_cfg
   use basis_info
   use occupation_info
   use fde_mod
@@ -92,10 +94,18 @@ module xc_driver
 !radovan: many of these variables will get a more local scope later
     integer             :: ibatch
 
+
+
     real(8), allocatable :: rx(:)
     real(8), allocatable :: ry(:)
     real(8), allocatable :: rz(:)
     real(8), allocatable :: rw(:)
+
+    real(8), allocatable :: fde_prop1(:)
+    real(8), allocatable :: fde_prop2(:)
+
+
+
     integer :: i, j, k, idummy, ierr, nr_points_process, nr_points_part, nr_processes
     integer ::  nr_points_looped_over
     integer ::  nr_points_used
@@ -457,9 +467,16 @@ contains
          call insert_half_phases()
          
 !        calculate grid
-         if (.not. grid_is_done) then
-           call dftgrd(dmat_0, 1)
-           grid_is_done = .true.
+         if (.not. dirac_cfg_fde_response) then
+            if (.not. grid_is_done) then
+              call dftgrd(dmat_0, 1)
+              grid_is_done = .true.
+            end if
+         else
+            write (*,*) ' '
+            write (*,*) '  Test: Asked for FDE response, so imported grid is used'
+            write (*,*) '        Grid generation is therefore skipped'
+            write (*,*) ' '
          end if
       end if
 
@@ -506,7 +523,7 @@ contains
 !     set and sync functional
 #ifdef MOD_XCFUN
       if (dft_cfg_xcfun) then
-         call xcfun_set_functional(response_order_mo, response_order_ao)
+         call xcfun_set_functional(id_xc_fun, response_order_mo, response_order_ao)
       else
 #endif
 #ifdef VAR_MPI
@@ -761,6 +778,8 @@ contains
 !     --------------------------------------------------------------------------
       real(8) :: r_0(mxbllen)
       real(8) :: z_0(mxbllen)
+      real(8) :: r_0_t(mxbllen)
+      real(8) :: z_0_t(mxbllen)
       real(8) :: w(mxbllen)
 !     --------------------------------------------------------------------------
 !     geometric business
@@ -768,6 +787,8 @@ contains
       real(8) :: r_t2(mxbllen)
 !     --------------------------------------------------------------------------
       real(8) :: avg
+      integer :: id
+
 
 
     if (dft_cfg_betasigma) then
@@ -936,6 +957,36 @@ contains
 
         w(1) = rw(ipoint)
 
+
+        if ( dirac_cfg_fde_response ) then
+!          if ( fde_prop1(ipoint) > (dft_cfg_dfthr0/1000)) then
+           if ( fde_prop1(ipoint) > dft_cfg_dfthr0) then
+              r_0_t(1) = r_0(1) + fde_prop1(ipoint)
+              z_0_t(1) = z_0(1) + fde_prop2(ipoint)
+           else
+              r_0_t(1) = r_0(1)
+              z_0_t(1) = z_0(1) 
+           endif
+        else 
+           r_0_t(1) = r_0(1)
+           z_0_t(1) = z_0(1) 
+        endif
+        
+!       if ((ipoint.eq.1).or.(ipoint.eq.40125)) then
+!          write (*,*) ' '
+!          write (*,*) 'DEBUG: density gradients etc'
+!          write (*,*) 'DEBUG: '
+!          write (*,*) 'DEBUG: i:',ipoint,'  (x,y,z):',corx(ipoint),' ',cory(ipoint),' ',corz(ipoint)
+!          write (*,*) 'DEBUG: r_0   =',r_0(1)
+!          write (*,*) 'DEBUG: z_0   =',z_0(1)
+!          write (*,*) 'DEBUG: r_0_t =',r_0_t(1),'   ',fde_prop1(ipoint)
+!          write (*,*) 'DEBUG: z_0_t =',z_0_t(1),'   ',fde_prop2(ipoint)
+!          write (*,*) 'DEBUG: w     =',w(1)
+!          write (*,*) ' '
+!       endif
+
+
+
 !       number of electrons
         nr_electrons = nr_electrons + w(1)*r_0(1)
 
@@ -945,14 +996,39 @@ contains
 !       somewhere else
         if (response_order_ao == 0) then
 #endif
-!> todo for mcscf/srdft pass also spin density
-        call get_functional_derv(max_fun_derv, &
-                                 bllen, &
-                                 w,            &
-                                 r_0,          &
-                                 z_0,          &
-                                 derv_length,  &
-                                 derv)
+           id = 0
+#ifdef MOD_XCFUN
+           id = id_xc_fun
+           if (dirac_cfg_fde_response .and. (max_fun_derv > 1)) then
+!             fde_response:
+!             the frozen density has to be passed all the way to here
+!             and then the derivatives (of xc and kinetic energy functionals) 
+!             have to be evaluated twice once with normal density, once with the 
+!             total density (=frozen plus normal). then this kinetic+xc 
+!             contribution (=total - normal) is added to the usual xc contrubition
+              call get_general_fun_derv(id,           &
+                                        max_fun_derv, &
+                                        bllen,        &
+                                        w,            &
+                                        r_0,          &
+                                        r_0_t,        &
+                                        z_0,          &
+                                        z_0_t,        &
+                                        derv_length,  &
+                                        derv)
+           else
+#endif
+              call get_functional_derv(id,           &
+                                       max_fun_derv, &
+                                       bllen,        &
+                                       w,            &
+                                       r_0,          &
+                                       z_0,          &
+                                       derv_length,  &
+                                       derv)
+#ifdef MOD_XCFUN
+           end if
+#endif
 #if defined MOD_XCFUN && MOD_OPENRSP
         end if
 #endif
@@ -1446,9 +1522,14 @@ contains
    subroutine loop_over_batches()
 
       if (i_am_master) then
-         rewind file_unit_grid
-         if (dft_cfg_multigrid) then
-            rewind dft_cfg_multigrid_file_unit(response_order_ao)
+         if (dirac_cfg_fde_response) then
+!           don't open and rewind anything
+!           data is already stored at this point
+         else
+            rewind file_unit_grid
+            if (dft_cfg_multigrid) then
+               rewind dft_cfg_multigrid_file_unit(response_order_ao)
+            end if
          end if
       end if
 
@@ -1464,8 +1545,10 @@ contains
          if (i_am_master) then
             if (dft_cfg_import_grid) then
                read(file_unit_grid, *) nr_points
-            elseif (dft_cfg_multigrid) then
+            else if (dft_cfg_multigrid) then
                read(dft_cfg_multigrid_file_unit(response_order_ao), *) nr_points
+            else if (dirac_cfg_fde_response) then
+               nr_points = fde_grid_np
             else
                read(file_unit_grid) nr_points
             end if
@@ -1507,8 +1590,29 @@ contains
          if (i_am_master) then
             if (dft_cfg_import_grid) then
                call import_dft_grid(rx, ry, rz, rw, file_unit_grid, nr_points)
-            elseif (dft_cfg_multigrid) then
+            else if (dft_cfg_multigrid) then
                call import_dft_grid(rx, ry, rz, rw, dft_cfg_multigrid_file_unit(response_order_ao), nr_points)
+            else if (dirac_cfg_fde_response) then
+               if (parallel_xc) then
+                  call quit('fix fde_response mpi')
+               end if
+               call alloc(fde_prop1, nr_points)
+               call alloc(fde_prop2, nr_points)
+!              copy data over to rx, ry, rz, rw, fde_prop1, fde_prop2
+               do i = 1, nr_points
+                  rx(i) = fde_grid(1,i)
+                  ry(i) = fde_grid(2,i)
+                  rz(i) = fde_grid(3,i)
+                  rw(i) = fde_grid(4,i)
+            
+                  fde_prop1(i) = fde_frozen_prp(1,i)
+            
+                  if (fde_nprop.eq.2) then
+                     fde_prop2(i) = fde_frozen_prp(2,i)
+                  else
+                     fde_prop2(i) = 0.0d0
+                  endif
+               end do
             else
                call reaqua(rx, ry, rz, rw, file_unit_grid, nr_points)
             end if
@@ -1582,8 +1686,16 @@ contains
          call dealloc(rz)
          call dealloc(rw)
 
+        if (dirac_cfg_fde_response) then
+           if (allocated(fde_prop1)) call dealloc(fde_prop1)
+           if (allocated(fde_prop2)) call dealloc(fde_prop2)
+!          don't try to read another batch
+           goto 999
+        end if
+
 !     end loop over batches
       end do
+ 999  continue
 
    end subroutine
 
