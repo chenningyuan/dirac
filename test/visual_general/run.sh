@@ -48,11 +48,13 @@ export MENU=visual_current_bx_london.inp
 #../run.sh -incmo  -copy PAMXVC -copy AOPROPER -get PLOT_2D
 #mv PLOT_2D ${MENU}_co.2d
 
+rm -f PAMXVC AOPROPER DFCOEF
+
 export MENU=shielding_london_symcon.inp
-#../run.sh -outcmo -get PAMXVC -get AOPROPER
+../run.sh -outcmo -get PAMXVC -get AOPROPER
 export MENU=visual_shielding_xx_london_symcon.inp
-#../run.sh -incmo  -copy PAMXVC -copy AOPROPER -get PLOT_3D
-#mv PLOT_3D ${MENU}_co.3d
+../run.sh -incmo  -copy PAMXVC -copy AOPROPER -get PLOT_3D
+mv PLOT_3D ${MENU}_co.3d
 export MENU=visual_shielding_yy_london.inp
 #../run.sh -incmo  -copy PAMXVC -copy AOPROPER -get PLOT_3D
 #mv PLOT_3D ${MENU}_co.3d
@@ -64,7 +66,7 @@ export MENU=visual_current_bx_london.inp
 #mv PLOT_2D ${MENU}_co.2d
 
 export MENU=visual_shielding_xx_london_none.inp
-#../run.sh -incmo  -copy PAMXVC -copy AOPROPER -get PLOT_3D
-#mv PLOT_3D ${MENU}_co.3d
+../run.sh -incmo  -copy PAMXVC -copy AOPROPER -get PLOT_3D
+mv PLOT_3D ${MENU}_co.3d
 
 exit 0

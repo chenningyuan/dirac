@@ -89,7 +89,11 @@ contains
 
     end do
 
-!    if (visual_cfg_london) max_ao_m_order = 1
+!   if calculations with symmetry then the 'direct' lao contribution 
+!   is done with ao derivatives
+!   otherwise (london without symmetry) it is quicker to calculate 
+!   this contibution 'directly' from equation: (R_MN \times r)*ao*ao
+    if (visual_cfg_london .and. visual_cfg_london_with_sym) max_ao_m_order = 1
 
 !   find occupation
 !   ===============
@@ -144,7 +148,6 @@ contains
     end do
 
     D(1) = C*(D_mo*dag(C))
-!    call print_mat(D(1), label='blub')
 
 
 !   get perturbed matrices
@@ -155,7 +158,6 @@ contains
     if (visual_cfg_london) then
 
       nr_dmat_con = 0
-      call init_mat(D_con_mo, norbt, norbt)
       call init_mat(D_con_ao, ntbas(0), ntbas(0))
 
       debug_me = .false.
@@ -210,15 +212,12 @@ contains
 !     iz = 3 -> \alpha_y
 !     iz = 4 -> \alpha_x
 
-
 !     (*) gosia: todo later we can make the scheme
 !     D(1) -> unperturbed density matrix
 !     D(2:nr_dmat) -> perturbed density matrices
 !     D(nr_dmat+1:nr_dmat_con+nr_dmat+1) -> modified density matrices (by connection matrices)
 !     etc..
 !     and pass only D and total nr_dmat to visual_driver (one call to visual_driver)
-!     (*) for a moment i assume that we always visualize one component (x,y or z) at a time
-
 
       if (visual_cfg_london) then
       
@@ -226,7 +225,6 @@ contains
         vector_to_matrix_con(ivector) = nr_dmat_con
 
         D_con_ao%elms = 0.0d0
-        D_con_mo%elms = 0.0d0
 
 !       read connection matrices in AO basis from AOPROPER file
 !       -------------------------------------------------------
@@ -290,7 +288,6 @@ contains
 
 
         else if (visual_cfg_connection(ivector) == 0) then
-!         gosia fixme working... but to be checked...
 
 !         'ij' block: overlap
 !         ===================
@@ -340,7 +337,6 @@ contains
 !   insert half phases
 !   ==================
 
-!gosia: if not connection=0
     do imat = 2, nr_dmat
       if (nz < 4) then
         do iz = 1, nz
@@ -440,7 +436,6 @@ contains
     end if
 
 
-
 !   deallocate density matrices
 !   ===========================
 
@@ -454,15 +449,9 @@ contains
       end do
     end if
 
-
-    if (visual_cfg_london) then
-      do imat = 1, nr_dmat_con
-        D_con(imat) = 0
-      end do
-    end if
-
-
     end subroutine
+
+
 
 
       subroutine visual_driver(nr_dmat, D, ao, buffer, nr_dmat_con, D_con)
@@ -605,9 +594,6 @@ contains
      &             'plane: ' // grid_orientation(IORIENTATION)
 
 !
-!fixme:
-!          NI = 1; NJ = 1; NK = 1
-!
           DO I = 1,NI
             DO J = 1,NJ
               DO K = 1,NK
@@ -626,11 +612,6 @@ contains
                 IF(IORIENTATION .EQ. 3) &                        ! 'yz'
      &                     PX = visual_cfg_ORIGIN_2D(1)
 
-!fixme:
-!                PX = 1.0d0
-!                PY = 1.0d0
-!                PZ = 0.0d0
-!
 
                 if (visual_cfg_london) then
                   if (.not. present(D_con) .or. nr_dmat_con == 0) &
@@ -744,10 +725,6 @@ contains
      &                          + (JCUBE-1)*STEP_3D(3,2) &
      &                          + (KCUBE-1)*STEP_3D(3,3)
 
-!fixme
-!              px = 1.0d0
-!              py = 1.0d0
-!              pz = 0.0d0
 !             write even grid so that it can be fed into XC integrator
 !             for subsequent experiments
 !             zero weight is so that it does not mess up results

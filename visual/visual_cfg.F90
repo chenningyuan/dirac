@@ -12,8 +12,6 @@ module visual_cfg
   character(9),  public :: visual_cfg_connection_key(max_nr_xvectors)
   character(1),  public :: visual_cfg_lao_chcomp(max_nr_xvectors)
   character(72), public :: visual_cfg_orbital_string(2)
-!later make it optional in the input, now i need it for testing
-  character(14), public :: visual_cfg_none_integrals(max_nr_xvectors)
 
   logical,       public :: visual_cfg_list               = .false.
   logical,       public :: visual_cfg_line               = .false.
@@ -24,6 +22,7 @@ module visual_cfg
   logical,       public :: visual_cfg_radial             = .false.
   logical,       public :: visual_cfg_force_small_ao     = .false.
   logical,       public :: visual_cfg_london             = .false.
+  logical,       public :: visual_cfg_london_with_sym    = .false.
 
   integer,       public :: visual_cfg_ncube(0:3)                       = 80
   integer,       public :: visual_cfg_nr_points_in_list                = 0

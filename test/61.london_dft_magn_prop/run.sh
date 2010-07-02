@@ -4,12 +4,12 @@ export MOL=hehe_c1
 export MENU=lda_levyle_nosdft_london_shield.inp
 ../run.sh
 export MENU=blyp_levyle_nosdft_london_shield.inp
-#../run.sh
+../run.sh
 export MENU=b3lyp_levyle_nosdft_london_shield.inp
-#../run.sh
+../run.sh
 
 export MOL=hehe_ci
 export MENU=lda_levyle_nosdft_london_shield.inp
-../run.sh
+#../run.sh
 
 exit 0

@@ -16,7 +16,6 @@ module visual_london
   public setup_fo_conmat_ao
   public get_quantity_lao_in_point
   public create_rkl
-
   public visual_london_alloc
   public visual_london_dealloc
 
@@ -44,13 +43,9 @@ module visual_london
 #include "orgcom.h"
 
 
-
-  integer, parameter :: ncomp = 3
-  integer, parameter :: print_level = 0
-
   real(8), allocatable     :: D_r(:, :, :)
-  real(8), allocatable     :: D_help(:, :, :)
   real(8), allocatable     :: r_kl(:, :, :)
+  type(matrix)             :: D_help
 
 contains
 
@@ -60,8 +55,6 @@ contains
 
     integer :: key_l
     logical :: file_exists
-
-!   initialize visual_london and print messages
 !   --------------------------------------------------------------------
 
 !   london can be done only if iq_j, iq_nucdip, iq_mdip
@@ -119,22 +112,13 @@ contains
       write(lupri, *) 'no connection is set, the default is <natural>'
     end if
 
+
 !   additional options
 !   ------------------
-! which later will be put as optional in the input
-
-    if (visual_cfg_connection(ivector) == 0) then
-      if (visual_cfg_none_integrals(ivector) == 'none_symmetric') then
-        write(lupri, *) 'symmetric connection integrals taken'
-      else if (visual_cfg_none_integrals(ivector) == 'none_natural') then
-        write(lupri, *) 'natural connection integrals taken'
-      else
-        write(lupri, *) 'no choice'
-      end if
-    end if
 
 
   end subroutine visual_london_init
+
 
 
 
@@ -142,7 +126,7 @@ contains
 !   --------------------------------------------------------------------
 !   --------------------------------------------------------------------
     if (.not. allocated(D_r)) call alloc(D_r, ntbas(0), ntbas(0), nz)
-    if (.not. allocated(D_help)) call alloc(D_help, ntbas(0), ntbas(0), nz)
+    call mat_init(D_help, ntbas(0), ntbas(0))
     if (.not. allocated(r_kl)) call alloc(r_kl, ntbas(0), ntbas(0), 3)
   end subroutine visual_london_alloc
 
@@ -152,7 +136,7 @@ contains
 !   --------------------------------------------------------------------
 !   --------------------------------------------------------------------
     if (allocated(D_r)) call dealloc(D_r)
-    if (allocated(D_help)) call dealloc(D_help)
+    D_help = 0
     if (allocated(r_kl)) call dealloc(r_kl)
   end subroutine visual_london_dealloc
 
@@ -205,7 +189,7 @@ contains
     call dealloc(p)
 
 
-!    debug_me = .true.
+    debug_me = .false.
 
     if (debug_me) then
 
@@ -244,6 +228,7 @@ contains
 !   -------------------------------------------------------------------
 
     debug_me = .false.
+    print_level = 0
 
 !   connection matrices info
 !   ========================
@@ -356,7 +341,6 @@ contains
 
 !   assign symmetries 
 !   =================
-!(now hardcoded, later on - call prpsym? gosia fixme):
     D_con_ao%ih_sym = 1
     D_con_ao%tr_sym = -1
     D_con_ao%irep   = D_con_ao%ih_sym - 1
@@ -388,9 +372,7 @@ contains
 
     real(8) :: quantity_ixvector(0:3), vector_a(3), vector_b(3)
     real(8) :: rx, ry, rz, rsq, f, factor
-    integer :: ixvector, i, j, ixyz, imat, imat_con
-    logical :: nodirect, norespon, noreorth, noreortres, nooverlap
-    logical :: debug_me
+    integer :: ixvector
 
 !   visualize j^B and property densities based on j^B with lao:
 !   1) j^B with lao:             iq_j = 5
@@ -415,9 +397,9 @@ contains
         call get_jblao(ixvector,            &
                        nr_dmat, D,          &
                        nr_dmat_con, D_con,  &
-                       ao, &
-                       buffer,          &
-                       px, py, pz,     &
+                       ao,                  &
+                       buffer,              &
+                       px, py, pz,          &
                        vector_a)
 
         f = 1.0d0
@@ -434,12 +416,13 @@ contains
          (visual_cfg_iq_xvector(ixvector) .eq. iq_nucdipz)) then
 
 !       get j^B with lao to vector_a
+        vector_a = 0.0d0
 
         call get_jblao(ixvector,            &
                        nr_dmat, D,          &
                        nr_dmat_con, D_con,  &
                        ao, buffer,          &
-                       px, py, pz,     &
+                       px, py, pz,          &
                        vector_a)
 
         rx = px - cord(1, visual_cfg_ioption_xvector(ixvector))
@@ -471,7 +454,6 @@ contains
          (visual_cfg_iq_xvector(ixvector) .eq. iq_mdipz)) then
 
 !       get j^B with lao to vector_a
-
         vector_a = 0.0d0
 
         call get_jblao(ixvector,            &
@@ -518,27 +500,23 @@ contains
                        nr_dmat, D,          &
                        nr_dmat_con, D_con,  &
                        ao, buffer,          &
-                       px, py, pz, &
-                       vector_a)
+                       px, py, pz,          &
+                       jblao)
 !   --------------------------------------------------------------------
     type(matrix)             :: D(nr_dmat), D_con(nr_dmat_con)
     real(8), intent(in)      :: ao(*), buffer(*)
     integer, intent(in)      :: ixvector, nr_dmat, nr_dmat_con
     real(8), intent(in)      :: px, py, pz
-    real(8), intent(out)     :: vector_a(3)
+    real(8), intent(out)     :: jblao(3)
 
-    real(8) :: vector_b(3)
-    real(8) :: factor
-    integer :: icomp, imat, imat_con
-    logical :: nodirect, noreorth, norespon, noreortres, nooverlap 
-    logical :: debug_me
+    integer :: imat, imat_con
+    logical :: nodirect, noreorth, norespon, debug_me
 
     integer :: i, j, ixyz
     real(8) :: rx, ry, rz, rsq, f
 !   --------------------------------------------------------------------
 
-    vector_a = 0.0d0
-    D_help   = 0.0d0
+    D_help%elms   = 0.0d0
 
     debug_me = .false.
 
@@ -551,9 +529,6 @@ contains
     noreorth = .false.   ! <none> connection -> no overlap 
     norespon = .false.   ! <none> connection -> no (T^B-\kappa^B)
 
-
-!   "direct" LAO contribution
-!   =========================
     if (.not. nodirect) then
 
       call get_jblao_direct(D(1),           &
@@ -562,51 +537,50 @@ contains
                             ixvector,       &
                             buffer)
 
-       f = -1.0d0
-       call daxpy(ntbas(0)*ntbas(0)*nz, f, D_r, 1, D_help, 1)
+      f = -1.0d0
+      call daxpy(ntbas(0)*ntbas(0)*nz, f, D_r, 1, D_help%elms, 1)
     end if
- 
+
     if (.not. noreorth) then
       f = -1.0d0
-      call daxpy(ntbas(0)*ntbas(0)*nz, f, D_con(imat_con)%elms, 1, D_help, 1)
+      call mat_daxpy(f, D_con(imat_con), D_help)
     end if
-      
+
     if (.not. norespon) then
       f = -1.0d0
-      call daxpy(ntbas(0)*ntbas(0)*nz, f, D(imat)%elms, 1, D_help, 1)
+      call mat_daxpy(f, D(imat), D_help)
     end if
  
-    call get_j(.true.,                 &
-               vector_a,               &
-               0, &
-               ao(ao_start(0, 0):ao_end(0, 0)),   &
-               D_help,   &
+
+    call get_j(.true.,   &
+               jblao,    &
+               0,        &
+               ao(ao_start(0, 0):ao_end(0, 0)), &
+               !D_help,   &
+               D_help%elms,   &
                buffer)
 
   end subroutine get_jblao
 
 
 
-  subroutine get_jblao_direct(D_0, ao, r, &
-                              ixvector, buffer)
+  subroutine get_jblao_direct(D_0, ao, r, ixvector, buffer)
 !   ---------------------------------------------------------------------------------
-    type(matrix)             :: D_0
-    integer, intent(in)      :: ixvector
-    real(8), intent(in)      :: r(3)
-    real(8)                  :: ao(*), buffer(*)
+    type(matrix)         :: D_0
+    integer, intent(in)  :: ixvector
+    real(8), intent(in)  :: r(3)
+    real(8)              :: ao(*), buffer(*)
 
-    integer                  :: k, l, b, c, iz, ioff
-    real(8)                  :: f, rkl_cross_r
-
-    logical :: debug_me
-    integer                  :: ixyz, i, j
+    integer              :: k, l, b, c, iz, ioff
+    integer              :: ixyz, i, j
+    real(8)              :: f, rkl_cross_r
+    logical              :: debug_me
 !   ----------------------------------------------------------------------------
 
     debug_me = .false.
 
-
 !   build 'modified' density matrix,
-!   D_r = - 0.5d0*(R_mn \times r)_icomp D_0
+!   D_r = - 0.5d0*(R_mn \times r)_icomp*D_0
 !   -----------------------------------------
 
     if (visual_cfg_lao_icomp(ixvector) == 1) then
@@ -623,20 +597,13 @@ contains
         rkl_cross_r = r_kl(k, l, b)*r(c) &
                     - r_kl(k, l, c)*r(b)
 
-
-        if (debug_me) then
-          write(lupri, *) 'blabla : k, l, r_kl(k, l, b), r_kl(k, l, c) = ', &
-                                    k, l, r_kl(k, l, b), r_kl(k, l, c)
-        end if
-
-
         do iz = 2, 4
           ioff = (iz - 1)*ntbas(0)*ntbas(0) + ntbas(0)*(k-1) + l
           f = 0.5d0*rkl_cross_r*D_0%elms(ioff)
 
 !         D matrices are scaled by 2.0d0 in visual.F90
 !         D_0 for iz = 2, 4 is antisymmetric
-!         and now it is multiplied by entisymmetric (R_mn \times r)
+!         and now it is multiplied by antisymmetric (R_mn \times r)
 !         so finally we build a symmetric matrix:
           D_r(k, l, iz) = + 0.50d0*f
           D_r(l, k, iz) = + 0.50d0*f
@@ -645,26 +612,7 @@ contains
       end do
     end do
 
-    if (debug_me) then
-      write(*, *) 'bla d_0'
-      call prqmat(D_0%elms, ntbas(0),ntbas(0), ntbas(0), ntbas(0), 4, (/1,2,3,4/), lupri)
-      write(*, *) 'bla d_r'
-      call prqmat(D_r, ntbas(0),ntbas(0), ntbas(0), ntbas(0), 4, (/1,2,3,4/), lupri)
-    end if
-
-!   multiply D_r(k, l)*(ao(k)*(-c \alpha)*ao(l))
-!   --------------------------------------------
-
-!    call get_j(.true., &
-!               vector, &
-!               0,      &
-!               ao,     &
-!               D_r,    &
-!               buffer)
-
-
   end subroutine get_jblao_direct
-
 
 
 
@@ -712,8 +660,7 @@ contains
 
 
 
-  subroutine get_jblao_direct_temp(D_0, vector, ao, aob1, r, &
-                              ixvector, buffer)
+  subroutine get_jblao_direct_temp(D_0, vector, ao, aob1, r, ixvector, buffer)
 !   ---------------------------------------------------------------------------------
     type(matrix)             :: D_0
     integer, intent(in)      :: ixvector
@@ -749,7 +696,7 @@ contains
     n = 1
     j = 1
 
-!   left side: 0.5d0*r_M*ao_left*ao_right
+!   left side
 !   =========
     vector_a = 0.0d0
 
@@ -798,18 +745,10 @@ contains
 !    vector(2) = vector(2) - (r(1)*vector_a(3) - r(3)*vector_a(1))
 !    vector(3) = vector(3) - (r(2)*vector_a(1) - r(1)*vector_a(2))
 
-
-   f =  1.0d0
-   call daxpy(3, f, vector_a, 1, vector, 1)
-
-
+    f =  1.0d0
+    call daxpy(3, f, vector_a, 1, vector, 1)
 
   end subroutine get_jblao_direct_temp
-
-
-
-
-
 
 
 end module

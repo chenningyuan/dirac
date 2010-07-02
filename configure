@@ -2688,8 +2688,9 @@ esac
 cat <<EOF > Makefile.config
 # installation directory
 INSTALL_DIR=$INSTALL_DIR
+SRC_DIR=$SRC_DIR
 # preprocessor flags for active modules, svn snapshot variable
-include \$(INSTALL_DIR)/build/Makefile.moddef
+include \$(SRC_DIR)/build/Makefile.moddef
 # default memory (in 8 byte words)
 WRKMEM=$memsiz
 # scratch directory, the same as in "pam", from where it is used
