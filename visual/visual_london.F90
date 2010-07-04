@@ -5,8 +5,6 @@ module visual_london
   use ao_eval
   use basis_info
   use matrix_defop
-  use matrix_genop
-  use matrix_operations
   use dirac_interface
 
 
@@ -126,7 +124,7 @@ contains
 !   --------------------------------------------------------------------
 !   --------------------------------------------------------------------
     if (.not. allocated(D_r)) call alloc(D_r, ntbas(0), ntbas(0), nz)
-    call mat_init(D_help, ntbas(0), ntbas(0))
+    call init_mat(D_help, ntbas(0), ntbas(0))
     if (.not. allocated(r_kl)) call alloc(r_kl, ntbas(0), ntbas(0), 3)
   end subroutine visual_london_alloc
 
@@ -542,13 +540,11 @@ contains
     end if
 
     if (.not. noreorth) then
-      f = -1.0d0
-      call mat_daxpy(f, D_con(imat_con), D_help)
+       D_help = D_help - D_con(imat_con)
     end if
 
     if (.not. norespon) then
-      f = -1.0d0
-      call mat_daxpy(f, D(imat), D_help)
+       D_help = D_help - D(imat)
     end if
  
 
