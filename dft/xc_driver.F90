@@ -523,7 +523,7 @@ contains
 !     set and sync functional
 #ifdef MOD_XCFUN
       if (dft_cfg_xcfun) then
-         call xcfun_set_functional(id_xc_fun, response_order_mo, response_order_ao)
+         call xcfun_set_functional(xc_fun, response_order_mo, response_order_ao, parallel_xc)
       else
 #endif
 #ifdef VAR_MPI
@@ -852,7 +852,7 @@ contains
 
 #if defined MOD_XCFUN && MOD_OPENRSP
     if (response_order_ao > 0) then
-      derv_length = xc_output_length(id_xc_fun, response_order_ao)
+      derv_length = xc_output_length(xc_fun%id, response_order_ao)
       allocate(derv(derv_length, mxbllen))
     else
 #endif
@@ -996,9 +996,7 @@ contains
 !       somewhere else
         if (response_order_ao == 0) then
 #endif
-           id = 0
 #ifdef MOD_XCFUN
-           id = id_xc_fun
            if (dirac_cfg_fde_response .and. (max_fun_derv > 1)) then
 !             fde_response:
 !             the frozen density has to be passed all the way to here
@@ -1006,7 +1004,7 @@ contains
 !             have to be evaluated twice once with normal density, once with the 
 !             total density (=frozen plus normal). then this kinetic+xc 
 !             contribution (=total - normal) is added to the usual xc contrubition
-              call get_general_fun_derv(id,           &
+              call get_general_fun_derv(xc_fun,       &
                                         max_fun_derv, &
                                         bllen,        &
                                         w,            &
@@ -1015,10 +1013,11 @@ contains
                                         z_0,          &
                                         z_0_t,        &
                                         derv_length,  &
-                                        derv)
+                                        derv,         &
+                                        parallel_xc)
            else
 #endif
-              call get_functional_derv(id,           &
+              call get_functional_derv(xc_fun,       &
                                        max_fun_derv, &
                                        bllen,        &
                                        w,            &

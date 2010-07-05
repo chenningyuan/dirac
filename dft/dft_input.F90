@@ -84,7 +84,7 @@ contains
   end function
 
 #ifdef MOD_XCFUN
-   subroutine parse_functional(line, id)
+   subroutine parse_functional(line, f)
    
 !     radovan: line is made lowercase, then cut into words
 !              if word contains "=" the weight is read
@@ -102,7 +102,7 @@ contains
       
 !     --------------------------------------------------------------------------
       character(80)              :: line
-      integer                    :: id
+      type(functional)           :: f
 !     --------------------------------------------------------------------------
       character(80), allocatable :: word_array(:)
       integer                    :: i, nr_words
@@ -115,10 +115,8 @@ contains
       write(u, '(a)') '* Kohn-Sham calculation using the automatic differentiation xc functional:'
       write(u, '(a)') '   (weight: functional)'
       
-      id = xc_new_functional()
-      call xc_set_mode(id, XC_VARS_RS)
-      
       call reset_hfx()
+      f%w = 0.0d0
       
       line = lowercase(line)
       
@@ -135,50 +133,50 @@ contains
       
         w = get_weight(word_array(i), 'lda')
         if (dabs(w) > tiny(0.0d0)) then
-           call xc_set_param(id, XC_SLATERX, w)
-           call xc_set_param(id, XC_VWN5C,   w)
+           f%w(XC_SLATERX) = f%w(XC_SLATERX) + w
+           f%w(XC_VWN5C  ) = f%w(XC_VWN5C  ) + w
         end if
       
         w = get_weight(word_array(i), 'blyp')
         if (dabs(w) > tiny(0.0d0)) then
-           call xc_set_param(id, XC_BECKEX, w)
-           call xc_set_param(id, XC_LYPC,   w)
+           f%w(XC_BECKEX) = f%w(XC_BECKEX) + w
+           f%w(XC_LYPC  ) = f%w(XC_LYPC  ) + w
         end if
       
         w = get_weight(word_array(i), 'b3lyp')
         if (dabs(w) > tiny(0.0d0)) then
-           call xc_set_param(id, XC_SLATERX,    0.80d0*w)
-           call xc_set_param(id, XC_BECKECORRX, 0.72d0*w)
-           call xc_set_param(id, XC_VWN5C,      0.19d0*w)
-           call xc_set_param(id, XC_LYPC,       0.81d0*w)
+           f%w(XC_SLATERX   ) = f%w(XC_SLATERX   ) + 0.80d0*w
+           f%w(XC_BECKECORRX) = f%w(XC_BECKECORRX) + 0.72d0*w
+           f%w(XC_VWN5C     ) = f%w(XC_VWN5C     ) + 0.19d0*w
+           f%w(XC_LYPC      ) = f%w(XC_LYPC      ) + 0.81d0*w
            call add_hfx(0.2d0*w)
         end if
       
         w = get_weight(word_array(i), 'pbe')
         if (dabs(w) > tiny(0.0d0)) then
-           call xc_set_param(id, XC_PBEX, w)
-           call xc_set_param(id, XC_PBEC, w)
+           f%w(XC_PBEX) = f%w(XC_PBEX) + w
+           f%w(XC_PBEC) = f%w(XC_PBEC) + w
         end if
       
         w = get_weight(word_array(i), 'pbe0')
         if (dabs(w) > tiny(0.0d0)) then
-           call xc_set_param(id, XC_PBEX, 0.75d0*w)
-           call xc_set_param(id, XC_PBEC,        w)
+           f%w(XC_PBEX) = f%w(XC_PBEX) + 0.75d0*w
+           f%w(XC_PBEC) = f%w(XC_PBEC) +        w
            call add_hfx(0.25d0*w)
         end if
       
         w = get_weight(word_array(i), 'kt1')
         if (dabs(w) > tiny(0.0d0)) then
-           call xc_set_param(id, XC_SLATERX,          w)
-           call xc_set_param(id, XC_KTX,     -0.006d0*w)
-           call xc_set_param(id, XC_VWN5C,            w)
+           f%w(XC_SLATERX) = f%w(XC_SLATERX) +            w
+           f%w(XC_KTX    ) = f%w(XC_KTX    ) -    0.006d0*w
+           f%w(XC_VWN5C  ) = f%w(XC_VWN5C  ) +            w
         end if
       
         w = get_weight(word_array(i), 'kt2')
         if (dabs(w) > tiny(0.0d0)) then
-           call xc_set_param(id, XC_SLATERX, 1.07173d0*w)
-           call xc_set_param(id, XC_KTX,      -0.006d0*w)
-           call xc_set_param(id, XC_VWN5C,  0.576727d0*w)
+           f%w(XC_SLATERX) = f%w(XC_SLATERX) +  1.07173d0*w
+           f%w(XC_KTX    ) = f%w(XC_KTX    ) -    0.006d0*w
+           f%w(XC_VWN5C  ) = f%w(XC_VWN5C  ) + 0.576727d0*w
         end if
       
       
@@ -187,17 +185,17 @@ contains
       
         w = get_weight(word_array(i), 'ktx')
         if (dabs(w) > tiny(0.0d0)) then
-           call xc_set_param(id, XC_KTX, w)
+           f%w(XC_KTX) = f%w(XC_KTX) + w
         end if
       
         w = get_weight(word_array(i), 'pbex')
         if (dabs(w) > tiny(0.0d0)) then
-           call xc_set_param(id, XC_PBEX, w)
+           f%w(XC_PBEX) = f%w(XC_PBEX) + w
         end if
       
         w = get_weight(word_array(i), 'pbec')
         if (dabs(w) > tiny(0.0d0)) then
-           call xc_set_param(id, XC_PBEC, w)
+           f%w(XC_PBEC) = f%w(XC_PBEC) + w
         end if
       
         w = get_weight(word_array(i), 'hfx')
@@ -213,44 +211,39 @@ contains
    
    end subroutine
 
-   subroutine set_xc_fun_alda(id)
+   subroutine set_xc_fun_alda(f)
 
 !     --------------------------------------------------------------------------
-      integer :: id
+      type(functional) :: f
 !     --------------------------------------------------------------------------
 
-      id = xc_new_functional()
-      call xc_set_mode(id, XC_VARS_RS)
-
-      call xc_set_param(id, XC_SLATERX, 1.0d0)
-      call xc_set_param(id, XC_VWN5C,   1.0d0)
+      f%w = 0.0d0
+      f%w(XC_SLATERX) = 1.0d0
+      f%w(XC_VWN5C  ) = 1.0d0
 
    end subroutine
 
-   subroutine set_xc_fun_xalda(id)
+   subroutine set_xc_fun_xalda(f)
 
 !     --------------------------------------------------------------------------
-      integer :: id
+      type(functional) :: f
 !     --------------------------------------------------------------------------
 
-      id = xc_new_functional()
-      call xc_set_mode(id, XC_VARS_RS)
-
-      call xc_set_param(id, XC_SLATERX, 1.0d0 - get_hfx())
-      call xc_set_param(id, XC_VWN5C,   1.0d0)
+      f%w = 0.0d0
+      f%w(XC_SLATERX) = 1.0d0 - get_hfx()
+      f%w(XC_VWN5C  ) = 1.0d0
 
    end subroutine
 
-   subroutine set_kin_fun_alda(id)
+   subroutine set_kin_fun_alda(f)
 
 !     --------------------------------------------------------------------------
-      integer :: id
+      type(functional) :: f
 !     --------------------------------------------------------------------------
 
-      id = xc_new_functional()
-      call xc_set_mode(id, XC_VARS_RS)
-
-      call xc_set_param(id, XC_TFK, 1.0d0)
+      f%id = xc_new_functional()
+      call xc_set_mode(f%id, XC_VARS_RS)
+      call xc_set_param(f%id, XC_TFK, 1.0d0)
 
    end subroutine
 #endif /* ifdef MOD_XCFUN */

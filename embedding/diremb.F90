@@ -186,8 +186,8 @@
             CASE ('.OFKEF')
 #ifdef MOD_XCFUN
               read(lucmd, '(a80)') line
-              call parse_functional(line, id_kin_fun)
-              call set_kin_fun_alda(id_kin_fun_alda)
+              call parse_functional(line, kin_fun)
+              call set_kin_fun_alda(kin_fun_alda)
 #else         
               call quit('XCFun not available in this version')
 #endif /* ifdef MOD_XCFUN */

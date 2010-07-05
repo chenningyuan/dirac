@@ -43,13 +43,14 @@ module dft_functional_derv
 
 #include "functionals.h"
 
-  real(8), parameter   :: tiny    = 1.0d-20
   integer, parameter   :: max_dim = 99
 
   real(8), allocatable :: xcfun_in(:)
   real(8), allocatable :: xcfun_out(:, :)
   integer              :: xcfun_in_length  = 0
   integer              :: xcfun_out_length = 0
+
+  logical :: xcfun_id_is_set = .false.
 
 contains
 
@@ -62,70 +63,68 @@ contains
 !   ----------------------------------------------------------------------------
 
     xcfun_is_gga = .false.
-    if (xc_get_type(id_xc_fun) > 0) then
+    if (xc_get_type(xc_fun%id) > 0) then
       xcfun_is_gga = .true.
     end if
 
   end function
 
-  subroutine xcfun_set_functional(id, response_order, response_order_ao)
-!fixme: rename, functional is not set here, only room is made for in/out buffers
+   subroutine xcfun_set_functional(f,                 &
+                                   response_order,    &
+                                   response_order_ao, &
+                                   parallel_xc)
 
-!   ----------------------------------------------------------------------------
-    integer, intent(in) :: id
-    integer, intent(in) :: response_order
-    integer, intent(in) :: response_order_ao
-!   ----------------------------------------------------------------------------
-    integer             :: i, alda_order
-    integer             :: need_in_length
-    integer             :: need_out_length
-!   ----------------------------------------------------------------------------
+!     --------------------------------------------------------------------------
+      type(functional), intent(inout) :: f
+      integer,          intent(in)    :: response_order
+      integer,          intent(in)    :: response_order_ao
+      logical,          intent(in)    :: parallel_xc
+!     --------------------------------------------------------------------------
+      integer                         :: i
+      integer                         :: need_in_length
+      integer                         :: need_out_length
+!     --------------------------------------------------------------------------
 
-    need_in_length  = xc_input_length(id)
-    need_out_length = xc_output_length(id, response_order)
-
-    if (need_in_length > xcfun_in_length) then
-      xcfun_in_length = need_in_length
-      if (allocated(xcfun_in)) then
-        deallocate(xcfun_in)        
+      if (.not. xcfun_id_is_set) then
+#ifdef VAR_MPI
+         if (parallel_xc) then
+            call sync_functional(f)
+         end if
+#endif
+         f%id = xc_new_functional()
+         call xc_set_mode(f%id, XC_VARS_RS)
+       
+         do i = 1, XC_NR_PARAMS
+            if (dabs(f%w(i)) > tiny(0.0d0)) then
+               call xc_set_param(f%id, i, f%w(i))
+            end if
+         end do
+         xcfun_id_is_set = .true.
       end if
-      allocate(xcfun_in(xcfun_in_length))
-    end if
 
-    if (need_out_length > xcfun_out_length) then
-      xcfun_out_length = need_out_length
-      if (allocated(xcfun_out)) then
-        deallocate(xcfun_out)        
+      need_in_length  = xc_input_length(f%id)
+      need_out_length = xc_output_length(f%id, response_order)
+  
+      if (need_in_length > xcfun_in_length) then
+         xcfun_in_length = need_in_length
+         if (allocated(xcfun_in)) then
+            deallocate(xcfun_in)        
+         end if
+         allocate(xcfun_in(xcfun_in_length))
       end if
-      allocate(xcfun_out(xcfun_out_length, mxbllen))
-    end if
+  
+      if (need_out_length > xcfun_out_length) then
+         xcfun_out_length = need_out_length
+         if (allocated(xcfun_out)) then
+            deallocate(xcfun_out)        
+         end if
+         allocate(xcfun_out(xcfun_out_length, mxbllen))
+      end if
 
-!   alda_order = dft_cfg_alda_order
-!   if (dft_cfg_alda_hs .and. dft_cfg_alda_ha) then
-!     alda_order = 1
-!   end if
-
-!   if ((alda_order <= response_order) .or. (alda_order <= response_order_ao)) then
-!     if (dft_cfg_xalda) then
-!       call xc_set_functional(XC_RSZXY, dft_cfg_functional_w_xalda)
-!     else
-!       call xc_set_functional(XC_RSZXY, dft_cfg_functional_w_alda)
-!     end if
-!     dft_cfg_is_gga_xcfun = .false.
-!   else
-!     call xc_set_functional(XC_RSZXY, dft_cfg_functional_w)
-!radovan: fix later
-!     do i = 1, size(gga_functionals)
-!       if (dabs(dft_cfg_functional_w(gga_functionals(i))) > tiny) then
-!         dft_cfg_is_gga_xcfun = .true.
-!       end if
-!     end do
-!   end if
-
-  end subroutine
+   end subroutine
 #endif /* ifdef MOD_XCFUN */
 
-  subroutine get_functional_derv(id,           &
+  subroutine get_functional_derv(f,            &
                                  order,        &
                                  block_length, &
                                  w,            &
@@ -135,18 +134,18 @@ contains
                                  derv)
 
 !   ----------------------------------------------------------------------------
-    integer, intent(in)  :: id
-    integer, intent(in)  :: order
-    integer, intent(in)  :: block_length
-    real(8), intent(in)  :: w(*)
-    real(8), intent(in)  :: r_0(*)
-    real(8), intent(in)  :: z_0(*)
-    integer, intent(in)  :: n
-    real(8), intent(out) :: derv(mxbllen, 0:n)
+    type(functional), intent(in)  :: f
+    integer,          intent(in)  :: order
+    integer,          intent(in)  :: block_length
+    real(8),          intent(in)  :: w(*)
+    real(8),          intent(in)  :: r_0(*)
+    real(8),          intent(in)  :: z_0(*)
+    integer,          intent(in)  :: n
+    real(8),          intent(out) :: derv(mxbllen, 0:n)
 !   ----------------------------------------------------------------------------
-    real(8)              :: t(max_dim, mxbllen)
-    integer              :: k, l, npoints
-    real(8), external    :: dftenergy
+    real(8)                       :: t(max_dim, mxbllen)
+    integer                       :: k, l, npoints
+    real(8), external             :: dftenergy
 !   ----------------------------------------------------------------------------
 
     derv = 0.0d0
@@ -164,7 +163,7 @@ contains
           xcfun_in(3) = z_0(k)
         end if
         npoints = 1 ! TODO: Do the whole block at a time, just check packing.
-        call xc_eval(id, order, npoints, xcfun_in, xcfun_out(1, k))
+        call xc_eval(f%id, order, npoints, xcfun_in, xcfun_out(1, k))
       end do
 
       do k = 1, block_length
@@ -275,7 +274,7 @@ contains
 
 
 #ifdef MOD_XCFUN
-  subroutine get_general_fun_derv(id,           &
+  subroutine get_general_fun_derv(f,            &
                                   order,        &
                                   block_length, &
                                   w,            &
@@ -284,21 +283,23 @@ contains
                                   z_0,          &
                                   z_0_t,        &
                                   n,            &
-                                  derv)
+                                  derv,         &
+                                  parallel_xc)
    use dirac_cfg
    use fde_mod
 
 !   ----------------------------------------------------------------------------
-    integer, intent(in)  :: id
-    integer, intent(in)  :: order
-    integer, intent(in)  :: block_length
-    real(8), intent(in)  :: w(*)
-    real(8), intent(in)  :: r_0(*)
-    real(8), intent(in)  :: z_0(*)
-    real(8), intent(in)  :: r_0_t(*)
-    real(8), intent(in)  :: z_0_t(*)
-    integer, intent(in)  :: n
-    real(8), intent(out) :: derv(mxbllen, 0:n)
+    type(functional), intent(inout)  :: f
+    integer,          intent(in)  :: order
+    integer,          intent(in)  :: block_length
+    real(8),          intent(in)  :: w(*)
+    real(8),          intent(in)  :: r_0(*)
+    real(8),          intent(in)  :: z_0(*)
+    real(8),          intent(in)  :: r_0_t(*)
+    real(8),          intent(in)  :: z_0_t(*)
+    integer,          intent(in)  :: n
+    real(8),          intent(out) :: derv(mxbllen, 0:n)
+      logical,          intent(in)    :: parallel_xc
     real(8) :: dervtmp(mxbllen, 0:n)
     integer :: i, j
 !   ----------------------------------------------------------------------------
@@ -306,7 +307,7 @@ contains
     derv = 0.0d0
 
     if ( .not.have_frozen_density ) then
-      call get_functional_derv(id,                &
+      call get_functional_derv(f,                  &
                                order,              &
                                block_length,       &
                                w,                  &
@@ -336,7 +337,7 @@ contains
 ! tot_xc_fun in fde_mod (or some other place)
 !      call xc_fun_set_functional(order, order, tot_xc_fun)
 ! but also replace fun below by tot_xc_fun     
-      call get_functional_derv(id,                &
+      call get_functional_derv(f,                &
                                order,              &
                                block_length,       &
                                w,                  &
@@ -373,7 +374,7 @@ contains
 ! in case we implement the use of different xc for the total and active
 ! densities, we have to uncomment the line below
 !      call xc_fun_set_functional(order, order, fun)
-        call get_functional_derv(id,                 &
+        call get_functional_derv(f,                 &
                                  order,              &
                                  block_length,       &
                                  w,                  &
@@ -407,9 +408,9 @@ contains
 ! now we construct the contribution from the kinetic energy to the response
 ! of the embedding potential. 
 ! first set functional to the of-kef, do the non-additive ke contribution
-      call xcfun_set_functional(id_kin_fun, order, order)
+      call xcfun_set_functional(kin_fun, order, order, parallel_xc)
       
-      call get_functional_derv(id_kin_fun,            &
+      call get_functional_derv(kin_fun,            &
                                order,              &
                                block_length,       &
                                w,                  &
@@ -440,7 +441,7 @@ contains
 
 ! now subtract the active subsystem's kinetic energy contribution
 
-      call get_functional_derv(id_kin_fun,            &
+      call get_functional_derv(kin_fun,            &
                                order,              &
                                block_length,       &
                                w,                  &
@@ -471,7 +472,7 @@ contains
           
 ! and restore the default dft functional, if we are to use it 
 ! down the line...
-      call xcfun_set_functional(id, order, order)
+      call xcfun_set_functional(f, order, order, parallel_xc)
 
     endif
 
