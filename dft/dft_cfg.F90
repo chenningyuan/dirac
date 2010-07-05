@@ -22,7 +22,11 @@ module dft_cfg
 
   public functional
   type functional
+#ifdef MOD_XCFUN
      real(8) :: w(XC_NR_PARAMS)
+#else
+     real(8) :: w(1)
+#endif
      integer :: id
   end type
 
