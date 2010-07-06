@@ -379,8 +379,10 @@ execute_dirac()
      $echo "   Executing $ILP_DATATYPE, parallel, $MPI_NPROC cores run, on $master and $unique_nodes in working directory, command:"
     else
      $echo "   Executing $ILP_DATATYPE, parallel, $MPI_NPROC cores run, only on $master in working directory, command:"
-     ncores=`grep -ic ^processor /proc/cpuinfo`
-     $echo "     fyi: number of all cores: " $ncores
+     if [ `uname` == 'Linux' ]; then
+        ncores=`grep -ic ^processor /proc/cpuinfo`
+        $echo "     fyi: number of all cores: " $ncores
+     fi
     fi
     $echo "         \"$NICE_CMD $DIRAC_CMD\" with BASDIR(S) :"
    else
