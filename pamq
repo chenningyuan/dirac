@@ -552,21 +552,29 @@ fi
 #
 # ... arguments for pam ...
 # 
-all_arguments="$*"
-while [ $# -gt 2 ]; do
+#all_arguments="$*"
+all_arguments=" "
+while [ $# -gt 0 ]; do
    argv="$1"; shift
    case "${argv}" in
       -mw)
          MW=$1
          shift
+         all_arguments="-mw $MW $all_arguments"
          ;;
       -nw)
          NW=$1
          shift
+         all_arguments="-nw $NW $all_arguments"
          ;;
-       -mpi)
+      -mpi)
          MPI_NPROC=$1
          parallel="-pe mpich $MPI_NPROC" 
+         shift
+         all_arguments="-mpi $MPI_NPROC $all_arguments"
+         ;;
+      -p)
+         PAMDIR=$1
          shift
          ;;
       -q)
@@ -585,34 +593,42 @@ while [ $# -gt 2 ]; do
          IPRINT=$1
          shift
          ;;
+       *)
+         all_arguments="$all_arguments $argv"
+         ;;
    esac
 done
 
-if [ $IPRINT -ge "8" ]; then
-   echo "for pam all_arguments="$all_arguments
-fi
+##if [ $IPRINT -ge "8" ]; then
+##   echo "for pam all_arguments="$all_arguments
+##fi
 
 # remove any initial flags if user has specified just two arguments,
 # to catch errors.
-case "$1" in
-   -*)
-     shift
-     ;;
-esac
+##case "$1" in
+##   -*)
+##     shift
+##     ;;
+##esac
 
-if [ $IPRINT -gt "8" ]; then
-   echo "II. for pam all_arguments="$all_arguments
-fi
+##if [ $IPRINT -gt "8" ]; then
+##   echo "II. for pam all_arguments="$all_arguments
+##fi
 
-if [ $# != 2 ]; then
+##if [ $# != 2 ]; then
 # can only happen if user has -mw, -nw, -mpi, -q, or -t as third
 # last elements, i.e. user has forgotten the argument or one
 # of the MOL and MENU arguments
-   echo "$0: Error, check the last elements in your parameter list"
-   echo "  $all_arguments"
-   echo "Either you have forgotten a parameter to a flag or one or both of the mol and menu arguments"
-   exit 1
-fi
+##   echo "$0: Error, check the last elements in your parameter list"
+##   echo "  $all_arguments"
+##   echo "Either you have forgotten a parameter to a flag or one or both of the mol and menu arguments"
+##   exit 1
+##fi
+
+set - $all_arguments
+while [ $# -gt 2 ]; do
+  shift
+done
 
 #
 argv="$1";shift; MOL=$argv
