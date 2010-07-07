@@ -1,26 +1,14 @@
-! $Id: diremb.F 9568 2009-09-15 09:50:44Z gomes $
+! $Id$
 !
-! description : this subroutine will read an embedding potential from 
-!               file and construct a matrix representation of that 
-!               potential in the ao basis currently in use, via numerical
-!               integration. 
+! description : basic fde module, handling i/o of imported and exported
+!               data (potentials, densities and density gradients etc) on
+!               a grid, and also for setting options (do embedding response,
+!               regenerate the embedding potential, set kinetic energy 
+!               functional and so on).
 !
-!               the routine expects that the grid file has the following
-!               format:
-!
-!               line        one : number of grid point
-!               lines to to n-1 : quadruplet of numbers, where the
-!                                 first three are the (x,y,z) coords
-!                                 and the last is the value of the
-!                                 embedding potential at that point
-!                                 times the weight of the quadrature
-!                                 [= v(i)*w(i)]
-!               line          n : a non-negative integer, like  -42 =)
-!
-!               the default name for the grid file is EMBPOT, but that
-!               can be overriden via a menu option. see routine fdeinp_
-!               for further details
-!
+!               the module also keeps some internal variables (like the grid
+!               and the imported quantities) that can be made available to
+!               different parts of the code.
 !
       MODULE FDE_MOD
       USE GRID_FILE
@@ -34,7 +22,6 @@
       use dft_cfg
 
       PRIVATE
-!     PUBLIC GetFDEPotential_FromFile, FDEINI,FDEINP,FDE_GRIDOUT
       PUBLIC FDE_ImportStaticPotential_FileOpen, FDE_ImportStaticPotential_FileClose
       public FDE_setupFDEgrid, FDE_testFrozendensity, FDE_cleanupFDEgrid
       public FDEINI,FDEINP,FDE_GRIDOUT,have_frozen_density
@@ -50,9 +37,20 @@
       CHARACTER(LEN=60),SAVE :: FDEPOT='EMBPOT',FDEDNS='FRZDNS',GRIDOUT_NAME=''
       CHARACTER(LEN=60),SAVE :: out_level='HF'
       real(kind=8), pointer :: fde_grid(:,:), fde_frozen_prp(:,:) 
+
+      public fde_kef
+      type(Functional) :: fde_kef
+
+! the default (orbital-free) kinetic energy functional for now is the thomas-fermi one
+      character(len=80), save :: kefun_fde='tf_kin'
+      character(len=80), save :: kefun_alda_fde='tf_kin'
       
       CONTAINS
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! FDE_ImportStaticPotential_FileOpen: opens file containing the embedding potential
+!                                    (static) exported on a grid
+!
          subroutine FDE_ImportStaticPotential_FileOpen(embpot_unit)
             integer, intent(out) :: embpot_unit
             logical              :: embpot_found
@@ -72,11 +70,18 @@
 
          end subroutine FDE_ImportStaticPotential_FileOpen
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! FDE_ImportStaticPotential_FileClose: closes file containing the embedding potential
+!                                      (static) exported on a grid
+!
          subroutine FDE_ImportStaticPotential_FileClose()
             close(lufdepot) 
          end subroutine FDE_ImportStaticPotential_FileClose
 
-
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! FDE_ImportFrozenDensity_FileOpen: opens file containing the exported density and
+!                                    other quantities (density gradient components etc)
+!
          subroutine FDE_ImportFrozenDensity_FileOpen(frozdens_unit)
             integer, intent(out) :: frozdens_unit
             logical              :: frozdens_found
@@ -96,11 +101,24 @@
 
          end subroutine FDE_ImportFrozenDensity_FileOpen
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! FDE_ImportFrozenDensity_FileClose: closes file containing the exported density and
+!                                    other quantities (density gradient components etc)
+!
          subroutine FDE_ImportFrozenDensity_FileClose()
             close(lufdefrzdns) 
          end subroutine FDE_ImportFrozenDensity_FileClose
 
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! FDE_setupFDEgrid: opens the file containing the frozen density, reads in the density
+!                   and whatever other quantities we have exportend (such as the 
+!                   components of the density gradient etc) using read_grid (internally,
+!                   it is read_grid which will allocate storage, and later we have to 
+!                   free it using FDE_cleanupFDEgrid for instance). for convenience, 
+!                   we also set fde_grid_np (number of grid points) and fde_nprop 
+!                   (number of properties read in) 
+!
          subroutine FDE_setupFDEgrid()
             integer :: frozdens_unit
 
@@ -110,34 +128,53 @@
 
             fde_grid_np = size(fde_grid,2)
             fde_nprop   = size(fde_frozen_prp,1)
-            
+
          end subroutine FDE_setupFDEgrid
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! FDE_testFrozenDensity: integrates the imported density, useful to check if the
+!                        number of electrons does match that of the frozen subsystems
+!
          subroutine FDE_testFrozenDensity()
             integer      :: point = 0
             real(kind=8) :: frozen_particle_number = 0.0
 
             do point = 1, fde_grid_np 
-               frozen_particle_number = frozen_particle_number + fde_grid(4,point)*fde_frozen_prp(2,point) 
+               frozen_particle_number = frozen_particle_number + fde_grid(4,point)*fde_frozen_prp(1,point) 
             end do
             
-            write (*,*) '  Test: imported frozen density integrates to ',frozen_particle_number
-            write (*,*) '  Test: grid points processed ',fde_grid_np
-            write (*,*) '  Test: number of properties  ',fde_nprop
+            write (*,*) '  FDE info: imported frozen density integrates to ',frozen_particle_number,' electrons'
+            write (*,*) '            grid points processed ',fde_grid_np
+            write (*,*) '            number of properties  ',fde_nprop
             frozen_particle_number = 0.0
 
          end subroutine FDE_testFrozenDensity
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! FDE_cleanupFDEgrid: dealocates the storage used for holding the grid, and whatever
+!                     properties exported at the grid points
+!
          subroutine FDE_cleanupFDEgrid()
             deallocate(fde_grid)
             deallocate(fde_frozen_prp) 
          end subroutine FDE_cleanupFDEgrid
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! FDEINI: performs the initialization in dirac; at the moment, it simply sets the
+!         kinetic energy function to the default value
+!
       SUBROUTINE FDEINI()
-
+#ifdef MOD_XCFUN
+         call parse_functional(kefun_fde,fde_kef)
+         call set_kin_fun_alda(fde_kef)
+#else 
+         call quit('XCFun not available in this version')
+#endif /* ifdef MOD_XCFUN */
       END SUBROUTINE
 
-
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! FDEINP: dirac-specific input reader for the module
+!
       SUBROUTINE FDEINP(WORD,Echo_Input)
 #include "implicit.h"
 #include "priunit.h" 
@@ -179,15 +216,14 @@
             CASE ('.FRDENS')
 !             read filename for the frozen density and density gradient
               READ(LUCMD,'(A60)') FDEDNS
-              write(*,*) 'File with frozen density (+gradient etc) (=fdedns) is ',fdedns
               have_frozen_density = .true.
 
 ! read kinetic energy functional for non-additive term
             CASE ('.OFKEF')
 #ifdef MOD_XCFUN
-              read(lucmd, '(a80)') line
-              call parse_functional(line, kin_fun)
-              call set_kin_fun_alda(kin_fun_alda)
+              read(lucmd,'(a80)') kefun_fde
+              call parse_functional(kefun_fde,fde_kef)
+              call set_kin_fun_alda(fde_kef)
 #else         
               call quit('XCFun not available in this version')
 #endif /* ifdef MOD_XCFUN */
@@ -228,58 +264,72 @@
       END IF
 
 !     options are echoed
-      IF(Echo_Input) THEN
-        write (lupri,*) ' '
-        CALL PRSYMB(LUPRI,'=',101,1)
-        WRITE(LUPRI,'(1X,2A,/1X,2A)') &
+         IF (Echo_Input) THEN
+           write (lupri,*) ' '
+           CALL PRSYMB(LUPRI,'=',101,1)
+
+           WRITE(LUPRI,'(1X,2A,/1X,2A)') &
            'Frozen Density Embedding to include enviroment effects', &
            ' using the fixed potential method described in:',        &
            'A.S.P. Gomes, C. R. Jacob and L. Visscher, ',            &
            'Phys. Chem. Chem. Phys. 10 (2008) 5353–5362.'
-        CALL PRSYMB(LUPRI,'=',101,1)
-        WRITE(LUPRI,*)
-        WRITE(LUPRI,'(1X,A)') &
-           ' Frozen Density Embedding Calculation set-up:'  
-        CALL PRSYMB(LUPRI,'-',44,2)
-        WRITE(LUPRI,*)
-        WRITE(LUPRI,'(A,I5)')  ' * Print level: ',print_fde
 
-        if (import_vemb) then
-           write(LUPRI,'(A,A60)')  ' * FDE Potential read from file: ',FDEPOT
-        else
-           write(LUPRI,'(A,A60)')  ' * FDE Potential (re)generated internally'
-           if (.not.have_frozen_density) then
-              write(LUPRI,'(A,A60)')  '   Data from frozen subsystems unavailable!'
-              call quit("Missing datafile FRDENS")
+           CALL PRSYMB(LUPRI,'=',101,1)
+
+           WRITE(LUPRI,*)
+           WRITE(LUPRI,'(1X,A)') &
+              ' Frozen Density Embedding Calculation set-up:'  
+           CALL PRSYMB(LUPRI,'-',44,2)
+           WRITE(LUPRI,*)
+           WRITE(LUPRI,'(A,I5)')  ' * Print level               : ',print_fde
+           WRITE(LUPRI,'(A,A20)') ' * Kinetic energy functional : ',kefun_fde
+           WRITE(LUPRI,'(A,A20)') '   if .ALDA is set, will use : ',kefun_alda_fde
+
+           if (import_vemb) then
+              write(LUPRI,'(A,A60)')  ' * FDE Potential read from file: ',FDEPOT
+
+           else
+              write(LUPRI,'(A,A60)')  ' * FDE Potential (re)generated internally'
+
+              if (.not.have_frozen_density) then
+                 write(LUPRI,'(A,A60)') &
+                 '   Data from frozen subsystems unavailable!'
+
+                 call quit("Missing datafile FRDENS")
+              endif
            endif
-        endif
 
-        if (update_vemb) then 
-           write(LUPRI,'(A,A60)') ' * Embedding potential will be updated and saved'
-           if (.not.have_frozen_density) then
-              write(LUPRI,'(A,A60)')  '   Data from frozen subsystems unavailable!'
-              call quit("Missing datafile FRDENS")
+           if (update_vemb) then 
+              write(LUPRI,'(A,A60)') &
+              ' * Embedding potential will be updated and saved'
+
+              if (.not.have_frozen_density) then
+                 write(LUPRI,'(A,A60)')  '   Data from frozen subsystems unavailable!'
+                 call quit("Missing datafile FRDENS")
+              endif
+           else
+              write(LUPRI,'(A,A60)') ' * Fixed embedding potential will be used' 
            endif
-        else
-           write(LUPRI,'(A,A60)') ' * Fixed embedding potential will be used' 
-        endif
 
-        if (have_frozen_density) then
-           write(LUPRI,'(A,A60)') &
+           if (have_frozen_density) then
+              write(LUPRI,'(A,A60)') &
            ' * Density (and gradient) from frozen subsystems read from file: ',FDEDNS
-           call FDE_setupFDEgrid()
-        endif
+              call FDE_setupFDEgrid()
+           endif
 
-        IF (DO_GRID_OUT) then
-           write(LUPRI,'(2A)') &
-           ' * FDE Gridfile with updated density written to:',GRIDOUT_NAME
-        endif
+           IF (DO_GRID_OUT) then
+              write(LUPRI,'(2A)') &
+              ' * FDE Gridfile with updated density written to:',GRIDOUT_NAME
+           endif
 
-      END IF
+         END IF
 
       END SUBROUTINE
 
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! time: keeps track of time spent in operations within FDE_GRIDOUT
+!
       SUBROUTINE TIME()
 !     Simple timing function
 #include "priunit.h"
@@ -319,6 +369,12 @@
       END SUBROUTINE
 
 #ifdef MOD_XML
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+! FDE_GRIDOUT: calculates and exports the coulomb potential on a grid (taken to be
+!              the same from which the density etc was imported from). the export
+!              uses jetze sikkema's xml library (sitting in gp/xml in the dirac
+!              tree).
+! 
        SUBROUTINE FDE_GRIDOUT(WORK,LWORK)
       use memory_allocator
       USE VC_GRID
@@ -534,7 +590,7 @@
 #endif
 
 !
-! auxiliary routines
+! auxiliary routines, dirac/dalton-specific
 !
 !
 ! in case we use dalton 2.0 or dirac without enabling ERI

@@ -474,8 +474,8 @@ contains
             end if
          else
             write (*,*) ' '
-            write (*,*) '  Test: Asked for FDE response, so imported grid is used'
-            write (*,*) '        Grid generation is therefore skipped'
+            write (*,*) '   FDE info: requested FDE response. Grid generation will'
+            write (*,*) '             be skipped, and impoted grid will be used.'
             write (*,*) ' '
          end if
       end if
