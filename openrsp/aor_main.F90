@@ -3,9 +3,10 @@ module aor_main
   use prop_test
   use matrix_defop
   use dirac_interface
-  use aor_cfg
+  use openrsp_cfg
   use decompmod
   use vib_prop
+  use birefring
 
   implicit none
 
@@ -38,10 +39,10 @@ contains
 !   for debugging, remove later
 !   call print_prp_common_blocks()
 
-    cfg_rsp_freq(1) = aor_cfg_freq(1)
-    cfg_rsp_freq(2) = aor_cfg_freq(2)
-    cfg_rsp_freq(3) = aor_cfg_freq(3)
-    cfg_rsp_freq(4) = aor_cfg_freq(4)
+    cfg_rsp_freq(1) = openrsp_cfg_freq(1)
+    cfg_rsp_freq(2) = openrsp_cfg_freq(2)
+    cfg_rsp_freq(3) = openrsp_cfg_freq(3)
+    cfg_rsp_freq(4) = openrsp_cfg_freq(4)
 
     call get_S(S)
 
@@ -55,7 +56,7 @@ contains
 
     write(*, *) 'electron count from S**D:', dot(S, D)
 
-    if (aor_cfg_quadrupole) then
+    if (openrsp_cfg_quadrupole) then
       allocate(tsr(6))
       call elec_quadrupole(S, D, F, tsr)
       deallocate(tsr)
@@ -65,35 +66,35 @@ contains
     call elec_dipmom(S, D, F, tsr)
     deallocate(tsr)
 
-    if (aor_cfg_alpha) then
+    if (openrsp_cfg_alpha) then
       n = 2
       allocate(tsr(3**n))
       call elec_polariz(decomp, S, D, F, cfg_rsp_freq(1), tsr)
       deallocate(tsr)
     end if
 
-    if (aor_cfg_beta) then
+    if (openrsp_cfg_beta) then
       n = 3
       allocate(tsr(3**n))
       call elec_hypolar(decomp, S, D, F, (/cfg_rsp_freq(1:n-1), -sum(cfg_rsp_freq(1:n-1))/), tsr)
       deallocate(tsr)
     end if
 
-    if (aor_cfg_beta_2np1) then
+    if (openrsp_cfg_beta_2np1) then
       n = 3
       allocate(tsr(3**n))
       call alt_elec_hypol(decomp, S, D, F, (/cfg_rsp_freq(1:n-1), -sum(cfg_rsp_freq(1:n-1))/), tsr)
       deallocate(tsr)
     end if
 
-    if (aor_cfg_gamma) then
+    if (openrsp_cfg_gamma) then
       n = 4
       allocate(tsr(3**n))
       call elec_sechyp(decomp, S, D, F, (/cfg_rsp_freq(1:n-1), -sum(cfg_rsp_freq(1:n-1))/), tsr)
       deallocate(tsr)
     end if
 
-    if (aor_cfg_magnetizability) then
+    if (openrsp_cfg_magnetizability) then
       allocate(tsr(3*3))
       allocate(tsr2(3*3))
       call magnetiz(decomp, S, D, F, cfg_rsp_freq(1), tsr, tsr2)
@@ -101,7 +102,7 @@ contains
       deallocate(tsr2)
     end if
 
-    if (aor_cfg_dg_energy) then
+    if (openrsp_cfg_dg_energy) then
 !     call test_grcont(D%nrow, natoms_ifc(), .false., .true.)
 !     call debug_1grad(D, F, natoms_ifc())
 !     call debug_2grad(D,    natoms_ifc())
@@ -110,7 +111,7 @@ contains
       call prop_test_gradient(S, D, F, 3*nr_atoms)
     end if
 
-        if (aor_cfg_roa) then
+        if (openrsp_cfg_roa) then
            print '(//a,f11.8/)','linscf calls roa_pol_Gpri_Aten_grads, freq =',cfg_rsp_freq(1)
            call get_natoms(number_atoms)
            l = 3*number_atoms
@@ -129,7 +130,7 @@ contains
                            work,lwork)
            deallocate(tsr)
         endif
-        if (aor_cfg_cars) then
+        if (openrsp_cfg_cars) then
            print '(//a,f11.8/)','linscf calls cars_pol_shyp_polgra, freq =',cfg_rsp_freq(1)
            call get_natoms(number_atoms)
            l = 3*number_atoms
@@ -148,10 +149,36 @@ contains
            deallocate(tsr)
         endif
 
-    if (aor_cfg_gamma_lin_dc_kerr) then
+        if (openrsp_cfg_cme) then
+           !call lsquit('error: Module birefring is not compiled. ' &
+           !       // 'Uncomment in Makefile and linscf.f90, and recompile')           
+           !ajt This tsr() thing is a hack, and not intended to remain for ever
+           !    Response functions should eventually be stored in a dedicated module
+           allocate(tsr(3+6+3*3+3*3+3*3+3*3+6*3+3*3+3*3*3+3*3*3+6*3*3 &
+                        +6*3*3+3*3*3*3+3*3*3*3+6*3*3*3+6*3*3*3)) !ajt: hack
+        !  do i=1,cfg_rsp_nfreq
+           do i=1,1
+              print '(//a,f11.8/)','linscf calls cme_jones_eta_apri, freq =',cfg_rsp_freq(i)
+              !ajt fixme Apri requires 6 extra equations and some more contractions,
+              !          but is not used for Cotton-Mouton
+              call cme_jones_eta_apri(decomp,S,D,F,cfg_rsp_freq(i)*(1d0,0d0)*(/0,0,-1,1/), &
+                             tsr(1:3),tsr(4:9), &
+                             tsr(10:18),tsr(19:27),tsr(28:36),tsr(37:45),tsr(46:63),       &
+                             tsr(64:72),tsr(73:99),tsr(100:126),tsr(127:180),tsr(181:234), &
+                             tsr(235:315),tsr(316:396),tsr(397:558),tsr(559:720))
+              call cme_output(dreal(cfg_rsp_freq(i)),dreal(tsr(64:72)), &
+                              dreal(tsr(10:18)),dreal(tsr(19:27)), &
+                              (/((((dreal(tsr(235+i+3*j +9*k+27*l)),l=0,2),k=0,2),j=0,2),i=0,2)/), &
+                              (/((((dreal(tsr(316+i+3*j +9*k+27*l)),l=0,2),k=0,2),j=0,2),i=0,2)/), &
+                              lupri)
+           enddo
+           deallocate(tsr)
+        endif
+
+    if (openrsp_cfg_gamma_lin_dc_kerr) then
 
       w    = 0.0d0
-      w(1) = aor_cfg_freq_process
+      w(1) = openrsp_cfg_freq_process
       w(2) = 0.0d0
       w(3) = 0.0d0
 
@@ -172,11 +199,11 @@ contains
 
     end if
 
-    if (aor_cfg_gamma_lin_dc_shg) then
+    if (openrsp_cfg_gamma_lin_dc_shg) then
 
       w    = 0.0d0
-      w(1) = aor_cfg_freq_process
-      w(2) = aor_cfg_freq_process
+      w(1) = openrsp_cfg_freq_process
+      w(2) = openrsp_cfg_freq_process
       w(3) = 0.0d0
 
       sum_up =          8.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 1, 1, 1)
@@ -197,12 +224,12 @@ contains
 
     end if
 
-    if (aor_cfg_gamma_lin_thg) then
+    if (openrsp_cfg_gamma_lin_thg) then
 
       w    = 0.0d0
-      w(1) = aor_cfg_freq_process
-      w(2) = aor_cfg_freq_process
-      w(3) = aor_cfg_freq_process
+      w(1) = openrsp_cfg_freq_process
+      w(2) = openrsp_cfg_freq_process
+      w(3) = openrsp_cfg_freq_process
 
       sum_up =          8.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 1, 1, 1)
       sum_up = sum_up + 6.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 1, 3, 3)
@@ -220,12 +247,12 @@ contains
 
     end if
 
-    if (aor_cfg_gamma_lin_idri) then
+    if (openrsp_cfg_gamma_lin_idri) then
 
       w    =  0.0d0
-      w(1) =  aor_cfg_freq_process
-      w(2) = -aor_cfg_freq_process
-      w(3) =  aor_cfg_freq_process
+      w(1) =  openrsp_cfg_freq_process
+      w(2) = -openrsp_cfg_freq_process
+      w(3) =  openrsp_cfg_freq_process
 
       sum_up =          8.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 1, 1, 1)
       sum_up = sum_up + 8.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 1, 3, 3)
@@ -243,7 +270,7 @@ contains
 
     end if
 
-    if (aor_cfg_gamma_lin_static) then
+    if (openrsp_cfg_gamma_lin_static) then
 
       w = 0.0d0
 
@@ -262,14 +289,14 @@ contains
 
     end if
 
-    if (aor_cfg_test_delta) then
+    if (openrsp_cfg_test_delta) then
 
 !     this is 4hg (fourth harmonic generation)
       w    =  0.0d0
-      w(1) =  aor_cfg_freq_process
-      w(2) =  aor_cfg_freq_process
-      w(3) =  aor_cfg_freq_process
-      w(4) =  aor_cfg_freq_process
+      w(1) =  openrsp_cfg_freq_process
+      w(2) =  openrsp_cfg_freq_process
+      w(3) =  openrsp_cfg_freq_process
+      w(4) =  openrsp_cfg_freq_process
 
 !     for the moment do not sum up
 !     until i have the final isotropic average formula
@@ -283,7 +310,7 @@ contains
     end if
 
 #ifdef MERGE_WITH_LINSCA
-    if (aor_cfg_zzz) call aor_zzz(aor_cfg_zzz_order, S, D, F)
+    if (openrsp_cfg_zzz) call aor_zzz(openrsp_cfg_zzz_order, S, D, F)
 #endif /* ifdef MERGE_WITH_LINSCA */
 
     S = 0

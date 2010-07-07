@@ -3,7 +3,7 @@ module xc_response
 #ifdef MOD_XCFUN
   use dft_cfg
   use density_eval
-  use aor_cfg
+  use openrsp_cfg
   use xcfun
 
   implicit none

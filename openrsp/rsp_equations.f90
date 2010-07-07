@@ -772,7 +772,7 @@ contains
       use decompMod
 #ifdef PRG_DIRAC
       use dirac_interface
-      use aor_cfg
+      use openrsp_cfg
 #endif
 #ifdef DALTON_AO_RSP
       use dalton_ifc
@@ -859,7 +859,7 @@ contains
          real_freq = dreal(freq)
          R = (FDSp(i) - dag(FDSp(i)))
          R = 0.5d0*R
-         if (dreal(dot(R,R)) > aor_cfg_threshold_rhs) then
+         if (dreal(dot(R,R)) > openrsp_cfg_threshold_rhs) then
             R%tr_sym = 1
             call response_solver(real_freq, R, Xph(1))
             Dp(i) = Dp(i) + Xph(1)
@@ -868,7 +868,7 @@ contains
          R = (FDSp(i) + dag(FDSp(i)))
          R = 0.5d0*R
          FDSp(i) = 0
-         if (dreal(dot(R,R)) > aor_cfg_threshold_rhs) then
+         if (dreal(dot(R,R)) > openrsp_cfg_threshold_rhs) then
             R%tr_sym = -1
             call response_solver(real_freq, R, Xph(1))
             Dp(i) = Dp(i) + Xph(1)

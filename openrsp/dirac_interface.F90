@@ -2,7 +2,7 @@ module dirac_interface
 
    use memory_allocator
    use matrix_defop
-   use aor_cfg
+   use openrsp_cfg
    use character_processing
    use dirac_cfg
    use xc_driver
@@ -238,11 +238,11 @@ contains
         include_gt_integrals = .true.
       end if
 
-      if (.not. aor_cfg_skip_pp) then
+      if (.not. openrsp_cfg_skip_pp) then
         include_pp_rotations = .true.
       end if
 
-      if (nonzero_small_metric .and. .not. aor_cfg_skip_pn) then
+      if (nonzero_small_metric .and. .not. openrsp_cfg_skip_pn) then
         include_pn_rotations = .true.
         diamagnetic_via_pn   = .true.
       end if
@@ -1350,7 +1350,7 @@ contains
     tknorm    = .false.
     diaghe    = .true.
     iprxrs    = 0
-    thcxrs    = aor_cfg_threshold_response
+    thcxrs    = openrsp_cfg_threshold_response
     resfac    = 1.0d3
     maxitr    = 150
     nredm     = 400
