@@ -39,6 +39,16 @@ module openrsp_cfg
    logical, public :: openrsp_cfg_zzz       = .false.
    integer, public :: openrsp_cfg_zzz_order = 0
 
+   integer, parameter :: max_nr_response_functions = 20
+   integer, parameter :: max_order = 5
+
+   public response_function
+   type response_function
+      integer      :: order
+      real(8)      :: w(max_order)
+      character(1) :: op(max_order)
+   end type
+
    private
 
 end module

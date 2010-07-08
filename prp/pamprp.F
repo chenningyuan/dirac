@@ -128,7 +128,7 @@ C***********************************************************************
 
       use dirac_cfg
 #ifdef MOD_OPENRSP
-      use aor_main
+      use openrsp_main
 #endif
 
 !     USE FDE_MOD, ONLY: DO_GRID_OUT,FDE_GRIDOUT

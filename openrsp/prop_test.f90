@@ -28,6 +28,7 @@ module prop_test
 #ifdef PRG_DIRAC
 !  this should also work with Dalton
 !  but for this need to adapt output
+   public element_ooff
    public gamma_element
    public delta_element
 #endif
@@ -748,6 +749,178 @@ contains
 !         end function
 
 #ifdef PRG_DIRAC
+   function element_ooff(S, D, F, w, h, i, j, k)
+
+!     --------------------------------------------------------------------------
+      real(8)                     :: element_ooff
+      type(matrix), intent(inout) :: S, D, F
+      integer,      intent(in)    :: h, i, j, k
+      complex(8),   intent(in)    :: w(3)
+!     --------------------------------------------------------------------------
+      type(matrix)                :: D_i(3)
+      type(matrix)                :: D_j(3)
+      type(matrix)                :: D_k(3)
+      type(matrix)                :: D_ij(3, 3)
+      type(matrix)                :: D_ik(3, 3)
+      type(matrix)                :: D_jk(3, 3)
+      type(matrix)                :: D_ijk(3, 3, 3)
+      type(matrix)                :: F_i(3)
+      type(matrix)                :: F_j(3)
+      type(matrix)                :: F_k(3)
+      type(matrix)                :: F_ij(3, 3)
+      type(matrix)                :: F_ik(3, 3)
+      type(matrix)                :: F_jk(3, 3)
+      type(matrix)                :: F_ijk(3, 3, 3)
+      complex(8)                  :: e(3, 3, 3, 3)
+      integer                     :: c1, c2, c3
+      type(decompitem)            :: decomp
+!     --------------------------------------------------------------------------
+
+      S = 1.0d0*S
+      D = 1.0d0*D
+      F = 1.0d0*F
+     
+      do c1 = 1, 3
+         D_i(c1) = tiny(0.0d0)*D
+         D_j(c1) = tiny(0.0d0)*D
+         D_k(c1) = tiny(0.0d0)*D
+         F_i(c1) = tiny(0.0d0)*D
+         F_j(c1) = tiny(0.0d0)*D
+         F_k(c1) = tiny(0.0d0)*D
+         do c2 = 1, 3
+            D_ij(c1, c2) = tiny(0.0d0)*D
+            D_ik(c1, c2) = tiny(0.0d0)*D
+            D_jk(c1, c2) = tiny(0.0d0)*D
+            F_ij(c1, c2) = tiny(0.0d0)*D
+            F_ik(c1, c2) = tiny(0.0d0)*D
+            F_jk(c1, c2) = tiny(0.0d0)*D
+            do c3 = 1, 3
+               D_ijk(c1, c2, c3) = tiny(0.0d0)*D
+               F_ijk(c1, c2, c3) = tiny(0.0d0)*D
+            end do
+         end do
+      end do
+
+      call pert_dens(decomp, S, (/'MAGO'/), (/1/), (/D/), (/F/), D_i(i), F_i(i), comp=(/i/), freq=(/w(1)/))
+      call pert_dens(decomp, S, (/'EL'/), (/1/), (/D/), (/F/), D_j(j), F_j(j), comp=(/j/), freq=(/w(2)/))
+      call pert_dens(decomp, S, (/'EL'/), (/1/), (/D/), (/F/), D_k(k), F_k(k), comp=(/k/), freq=(/w(3)/))
+
+      call pert_dens(decomp,             &
+                     S,                  &
+                   (/'MAGO', 'EL'/),       &
+                   (/1, 1/),             &
+                   (/                    &
+                     D,                  &
+                     D_i(i),             &
+                     D_j(j)              &
+                    /),                  &
+                   (/                    &
+                     F,                  &
+                     F_i(i),             &
+                     F_j(j)              &
+                    /),                  &
+                     D_ij(i, j),         &
+                     F_ij(i, j),         &
+                     comp=(/i, j/),      &
+                     freq=(/w(1), w(2)/))
+  
+      call pert_dens(decomp,             &
+                     S,                  &
+                   (/'MAGO', 'EL'/),       &
+                   (/1, 1/),             &
+                   (/                    &
+                     D,                  &
+                     D_i(i),             &
+                     D_k(k)              &
+                    /),                  &
+                   (/                    &
+                     F,                  &
+                     F_i(i),             &
+                     F_k(k)              &
+                    /),                  &
+                     D_ik(i, k),         &
+                     F_ik(i, k),         &
+                     comp=(/i, k/),      &
+                     freq=(/w(1), w(3)/))
+  
+      call pert_dens(decomp,             &
+                     S,                  &
+                   (/'EL', 'EL'/),       &
+                   (/1, 1/),             &
+                   (/                    &
+                     D,                  &
+                     D_j(j),             &
+                     D_k(k)              &
+                    /),                  &
+                   (/                    &
+                     F,                  &
+                     F_j(j),             &
+                     F_k(k)              &
+                    /),                  &
+                     D_jk(j, k),         &
+                     F_jk(j, k),         &
+                     comp=(/j, k/),      &
+                     freq=(/w(2), w(3)/))
+  
+      call pert_dens(decomp,             &
+                     S,                  &
+                   (/'MAGO', 'EL', 'EL'/), &
+                   (/1, 1, 1/),          &
+                   (/                    &
+                     D,                  &
+                     D_i(i),             &
+                     D_j(j),             &
+                     D_k(k),             &
+                     D_ij(i, j),         &
+                     D_ik(i, k),         &
+                     D_jk(j, k)          &
+                    /),                  &
+                   (/                    &
+                     F,                  &
+                     F_i(i),             &
+                     F_j(j),             &
+                     F_k(k),             &
+                     F_ij(i, j),         &
+                     F_ik(i, k),         &
+                     F_jk(j, k)          &
+                    /),                  &
+                     D_ijk(i, j, k),     &
+                     F_ijk(i, j, k),     &
+                     comp=(/i, j, k/),   &
+                     freq=(/w(1), w(2), w(3)/))
+
+      e = 0.0d0
+      call prop_oneave(S, (/'MAGO'/), (/D_ijk/), (/3, 3, 3, 3/), e)
+  
+      D_i   = 0
+      D_j   = 0
+      D_k   = 0
+      D_ij  = 0
+      D_ik  = 0
+      D_jk  = 0
+      D_ijk = 0
+      F_i   = 0
+      F_j   = 0
+      F_k   = 0
+      F_ij  = 0
+      F_ik  = 0
+      F_jk  = 0
+      F_ijk = 0
+  
+      element_ooff = -e(h, i, j, k)
+      print '("@ ooff (w = "4f9.4")" a10 a2 a2 a2 f26.10)', real(-sum(w)), &
+                                                            real(w(1)),    &
+                                                            real(w(2)),    &
+                                                            real(w(3)),    &
+                                                            fc(h),         &
+                                                            fc(i),         &
+                                                            fc(j),         &
+                                                            fc(k),         &
+                                                            element_ooff
+
+   end function
+
+
   function gamma_element(S, D, F, w, h, i, j, k)
 
 !   ----------------------------------------------------------------------------
