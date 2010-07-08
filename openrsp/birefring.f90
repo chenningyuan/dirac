@@ -9,6 +9,10 @@ module birefring
    use prop_contribs     !property contractions and integrals
    use rsp_equations     !response equation contractor/solver
    use decompMod, only: DecompItem
+#ifdef PRG_DIRAC
+   use dirac_interface   !provides lsquit
+#endif
+
    implicit none
 
    public efgb_Jpri_Bten_Bcal, efgb_output
@@ -39,8 +43,6 @@ contains
       complex(8),   optional, intent(in) :: freqs(:)
       integer     :: uni, siz, dec, cwid, i
       character*9 :: fmt
-      write(*, *) 'blub', title, tensor(1:product(dims))
-      return
       uni = 6
       if (present(unit)) uni = unit
       if (present(title)) then
@@ -101,7 +103,7 @@ contains
                     0, 0,+1, 0, 0, 0,-1, 0, 0, &      
                     0,-1, 0,+1, 0, 0, 0, 0, 0/), (/3,3,3/))
       if (abs(sum(freq)) > 1d-15) &
-         call quit('verdet_dpol_db: sum(freq) should be zero!',decomp%lupri)
+         call lsquit('verdet_dpol_db: sum(freq) should be zero!',decomp%lupri)
       !----------------
       ! solve equations
       call pert_dens(decomp, S, (/'MAG'/), (/3/), (/D/), (/F/), Db, Fb, freq=(/freq(1)/))
@@ -224,7 +226,7 @@ contains
       type(matrix) :: Fe(3), Ff(3), Fef(3,3), Fte(3,3), Ft(3), DFDe(3)
       integer      :: i, j ,k
       if (abs(sum(freq)) > 1d-15) &
-         call quit('efgb_Jpri_Bten_Bcal_new: sum(freq) should be zero!',decomp%lupri)
+         call lsquit('efgb_Jpri_Bten_Bcal_new: sum(freq) should be zero!',decomp%lupri)
       ! dipole and quadrupole moments
       Ef=0; Eq=0
       call prop_oneave(S, (/'EL'/), (/D/), (/3/), Ef)
@@ -387,7 +389,7 @@ contains
       integer      :: i, j, k, l
       complex(8)   :: tmp(3,3,3,3)
       if (abs(sum(freq)) > 1d-15) &
-         call quit('cme_jones_eta_apri: sum(freq) should be zero!',decomp%lupri)
+         call lsquit('cme_jones_eta_apri: sum(freq) should be zero!',decomp%lupri)
       ! dipole and quadrupole moments
       Ef = 0
       call prop_oneave(S, (/'EL'/), (/D/), (/3/), Ef)
@@ -540,7 +542,6 @@ contains
       ! London section !
       !----------------!
       ! solve equations specific to London
-#ifdef CME_LONDON
       call pert_dens(decomp, S, (/'MAG'/), (/3/), (/D/), (/F/), Dc, Fc, freq=(/freq(2)/))
       Ebb = 0
       ! contract London magnetizability
@@ -774,7 +775,6 @@ contains
       call print_tensor(shape(Eqbff),-Eqbff, 'd/df d/db A-tensor-Lon = -Eqbff', freq)
       !free London-specific and common matrices
       Db=0; Dc=0; De=0; Df=0; Dq=0; Dce=0; Dcf=0; Def=0
-#endif
       Fb=0; Fc=0; Fe=0; Ff=0; Fq=0; Fce=0; Fcf=0; Fef=0; Sb=0
       !invert signs on a-prime to get properties from quasi-energy derivatives
       Ef=-Ef; Eq=-Eq; Eff=-Eff; Eqf=-Eqf; Eqoff=-Eqoff; Eqbff=-Eqbff

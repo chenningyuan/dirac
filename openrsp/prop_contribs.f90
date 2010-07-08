@@ -56,37 +56,42 @@ module prop_contribs
    private
 
    type ptb !private: 'perturbation'
-      character*4  :: code  !four-letter abbreviation
-      character*64 :: name  !long name
-      integer      :: ncomp !number of components (when known, 0 otherwise)
-      logical      :: anti  !anti-symmetric (1,3,5th ord.) perturbed integrals
-      logical      :: bas   !basis dependent (sa. GEO and MAG)
-      logical      :: lin   !one-electron operator linear in field strength (EL)
-      logical      :: quad  !one-electron operator quadratic in field strength (MAGO)
+      character(4)  :: code  !four-letter abbreviation
+      character(64) :: name  !long name
+      integer       :: ncomp !number of components (when known, 0 otherwise)
+      logical       :: anti  !anti-symmetric (1,3,5th ord.) perturbed integrals
+      logical       :: bas   !basis dependent (sa. GEO and MAG)
+      logical       :: lin   !one-electron operator linear in field strength (EL)
+      logical       :: quad  !one-electron operator quadratic in field strength (MAGO)
    end type
 
    ! to compactify the table
-   logical, parameter:: T = .true., F = .false.
+   logical, parameter :: T = .true.
+   logical, parameter :: F = .false.
 
-   ! ajt note: EXCI is a ZERO (no) perturbation, and is introduced to
-   !           allow the same code to contract response functions and
-   !           "generalized transition moments".
-   ! ajt note: AUX0..AUX9 are 10 configurable basis-independent 1-electron
-   !           perturbations, configured by setting the corresponding
-   !           HERMIT integral label in prop_auxlab(0:9).
-   type(ptb) :: pert_table(12) = &                        !nc an ba ln qu
-       (/ptb('EXCI', 'Generalized "excitation" field'     , 1, F, F, T, T), &
-         ptb('AUX*', 'Auxiliary integrals on file'        , 1, F, F, T, F), &
-         ptb('EL'  , 'Electric field'                     , 3, F, F, T, F), &
-         ptb('VEL' , 'Velocity'                           , 3, T, F, T, F), &
-         ptb('MAGO', 'Magnetic field w/o. London orbitals', 3, T, F, F, T), &
-         ptb('MAG' , 'Magnetic field with London orbitals', 3, T, T, F, F), &
-         ptb('ELGR', 'Electric field gradient'            , 6, F, F, T, F), &
-         ptb('VIBM', 'Dispacement along vibrational modes', 0, F, T, F, F), &
-         ptb('GEO' , 'Nuclear coordinates'                , 0, F, T, F, F), & !0=uninitialized
-         ptb('NUCM', 'Nuclear magnetic moment'            , 0, F, T, F, T), &
-         ptb('AOCC', 'AO contraction coefficients'        , 0, F, T, F, F), &
-         ptb('AOEX', 'AO exponents'                       , 0, F, T, F, F)/)
+   ! ajt nov09: AUX0..AUX9 are 10 configurable basis-independent 1-electron
+   !            perturbations, configured by setting the corresponding
+   !            HERMIT integral label in prop_auxlab(0:9).
+   ! ajt jan10: EXCI is a ZERO (no) perturbation, and is introduced to
+   !            allow the same code to contract response functions and
+   !            "generalized transition moments".
+   ! ajt may10: FREQ is also a ZERO (no) perturbation, and is introduced to
+   !            allow the same code to contract response functions and
+   !            frequency-differentiated response functions.
+   type(ptb) :: pert_table(13) = &                         !nc an ba ln qu
+       (/ptb('EXCI', 'Generalized "excitation" field'      , 1, F, F, T, T), &
+         ptb('FREQ', 'Generalized "freqency" field'        , 1, F, F, T, T), &
+         ptb('AUX*', 'Auxiliary integrals on file'         , 1, F, F, T, F), &
+         ptb('EL'  , 'Electric field'                      , 3, F, F, T, F), &
+         ptb('VEL' , 'Velocity'                            , 3, T, F, T, F), &
+         ptb('MAGO', 'Magnetic field w/o. London orbitals' , 3, T, F, F, T), &
+         ptb('MAG' , 'Magnetic field with London orbitals' , 3, T, T, F, F), &
+         ptb('ELGR', 'Electric field gradient'             , 6, F, F, T, F), &
+         ptb('VIBM', 'Displacement along vibrational modes',-1, F, T, F, F), &
+         ptb('GEO' , 'Nuclear coordinates'                 ,-1, F, T, F, F), & !-1:molecule-dependent
+         ptb('NUCM', 'Nuclear magnetic moment'             ,-1, F, T, F, T), &
+         ptb('AOCC', 'AO contraction coefficients'         ,-1, F, T, F, F), &
+         ptb('AOEX', 'AO exponents'                        ,-1, F, T, F, F)/)
 
    character(8) :: prop_auxlab(0:9)
 
@@ -113,8 +118,8 @@ contains
          prefix_zeros(i:i) = char0to9(mod(k,10))
          k = k / 10
       end do
-      if (k /= 0) call quit('prefix_zeros error: Argument integer does not fit ' &
-                            // 'in the specified number of ASCII caracters')
+      if (k /= 0) call lsquit('prefix_zeros error: Argument integer does not fit ' &
+                            // 'in the specified number of ASCII caracters',-1)
    end function
 #endif /* VAR_LINSCA */
 
@@ -155,7 +160,7 @@ contains
       !------------------------------------------------------------------------
       integer      :: idxp(size(p)), pperm(size(dime)), ccomp(size(p)), &
                       stepe(size(dime)), ddime(size(dime)), idxe(size(dime)), &
-                      i, j, k, tmpi, ndm, size_p, nd
+                      i, j, k, tmpi, nd
       character(4) :: pp(size(p)), tmpp
       complex(8)   :: ffreq(size(p)), Etmp(product(dime)), tmpf
       logical      :: zero, bas
@@ -190,10 +195,10 @@ contains
       j = count((/(pert_table(idxp(i))%anti, i=1,size(p))/))
       zero = (zero .or. (size(p)==size(dime) .and. mod(j,2)==1))
       ! check dimensions argument dime, verify that dimensions are positive
-      if (size(dime) < size(p)) call quit('prop_oneave argument error: ' &
-               // 'More perturbations than dimensions of property, size(dime) < size(p)')
-      if (any(dime <= 0)) call quit('prop_oneave argument error: ' &
-               // 'Property has a zero or negative dimension, dime <= 0')
+      if (size(dime) < size(p)) call lsquit('prop_oneave argument error: ' &
+               // 'More perturbations than dimensions of property, size(dime) < size(p)',-1)
+      if (any(dime <= 0)) call lsquit('prop_oneave argument error: ' &
+               // 'Property has a zero or negative dimension, dime <= 0',-1)
       ! compute step lengths in E (cumulative products of dimensions)
       stepe(1) = 1
       do i = 2, size(dime)
@@ -202,13 +207,13 @@ contains
       ! reorder dimensions and step lengths in E according to permutation argument perm
       ddime = dime
       if (present(perm)) then
-         if (size(perm) /= size(dime)) call quit('prop_oneave argument ' &
-               // 'error: Wrong length of permutation vector, size(perm) /= size(dime)')
+         if (size(perm) /= size(dime)) call lsquit('prop_oneave argument ' &
+               // 'error: Wrong length of permutation vector, size(perm) /= size(dime)',-1)
          ! verify that perm is indeed a permutation
          do i = 1, size(dime)-1
             if (perm(i) <= 0 .or. perm(i) > size(dime) .or. &
-                any(perm(i) == perm(i+1:size(dime)))) call quit('prop_oneave ' &
-                      // 'argument error: Permutation must contain each number exactly once')
+                any(perm(i) == perm(i+1:size(dime)))) call lsquit('prop_oneave ' &
+                      // 'argument error: Permutation must contain each number exactly once',-1)
          end do
          ddime = (/( dime(perm(i)), i=1,size(dime))/)
          stepe = (/(stepe(perm(i)), i=1,size(dime))/)
@@ -216,20 +221,20 @@ contains
       ! check optional arg comp, default to 1 1 ... 1
       ccomp = 1
       if (present(comp)) then
-         if (size(comp) /= size(p)) call quit('prop_oneave argument error: ' &
-                    // 'Wrong number of lowest component indices, size(comp) /= size(p)')
-         if (any(comp <= 0)) call quit('prop_oneave argument error: ' &
-                    // 'Lowest component indices must be positive, comp <= 0')
+         if (size(comp) /= size(p)) call lsquit('prop_oneave argument error: ' &
+                    // 'Wrong number of lowest component indices, size(comp) /= size(p)',-1)
+         if (any(comp <= 0)) call lsquit('prop_oneave argument error: ' &
+                    // 'Lowest component indices must be positive, comp <= 0',-1)
          ccomp = comp
       end if
       if (any(ccomp + ddime(:size(p)) - 1 > pert_shape(p))) &
-         call quit('prop_oneave argument error: Lowest component index plus ' &
-                    // 'dimension exceeds dimension of perturbation, comp + dime > pert_shape(p)')
+         call lsquit('prop_oneave argument error: Lowest component index plus ' &
+                    // 'dimension exceeds dimension of perturbation, comp + dime > pert_shape(p)',-1)
       ! check optional argument freq, default to zero
       ffreq = 0
       if (present(freq)) then
-         if (size(freq) /= size(p)) call quit('prop_oneave ' &
-               // 'argument error: Wrong number of frequencies, size(freq) /= size(p)')
+         if (size(freq) /= size(p)) call lsquit('prop_oneave ' &
+               // 'argument error: Wrong number of frequencies, size(freq) /= size(p)',-1)
          ffreq = freq
       end if
       ! sort perturbations p so that idxp is descending
@@ -251,33 +256,31 @@ contains
       end do
       ! verify that we have the correct number of perturbed densities
       nd = product(ddime(size(p)+1:size(dime)))
-      if (size(D) /= nd) call quit('prop_oneave error: Number of' &
-               // 'perturbed densities D does not correspond to dime (and perm)')
+      if (size(D) /= nd) call lsquit('prop_oneave error: Number of' &
+               // 'perturbed densities D does not correspond to dime (and perm)',-1)
       ! verify number of DFD, and that all are defined
       bas = all((/(pert_table(idxp(i))%bas, i=1,size(p))/))
       if (present(DFD)) then
-         if (size(DFD) /= nd) call quit('prop_oneave error: Number of' &
-               // 'perturbed DFD differs from number of perturbed densities D')
+         if (size(DFD) /= nd) call lsquit('prop_oneave error: Number of' &
+               // 'perturbed DFD differs from number of perturbed densities D',-1)
          ! if no basis perturbation (or zero perturbed integrals,
          ! DFD will not be used, so verify they are defined
          if (.not.bas .or. zero) then
             if (.not.all((/(isdef(DFD(i)), i=1,nd)/))) &
-               call quit('prop_oneave error: Undefined matrix in argument DFD(:)')
+               call lsquit('prop_oneave error: Undefined matrix in argument DFD(:)',-1)
          end if
       end if
       ! arguments checked. If perturbed integrals are zero, verify all D defined, return
       if (zero) then
          if (.not.all((/(isdef(D(i)), i=1,nd)/))) &
-            call quit('prop_oneave error: Undefined matrix in argument D(:)')
+            call lsquit('prop_oneave error: Undefined matrix in argument D(:)',-1)
          return
       end if
       ! everything set up, so call core procedure oneave.
       ! Argument nd=0 is used when averaging over unperturbed density,
       ! in which case also perturbed nuclear attraction should be included
       nd = merge(0, nd, size(p)==size(dime))
-      !call oneave(S0, size(p), pp, ccomp, ddime(:size(p)), ffreq, nd, D, Etmp, DFD)
-      size_p = size(p) ! fix for g95 on ILP64
-      call oneave(S0, size_p, pp, ccomp, ddime(:size(p)), ffreq, nd, D, Etmp, DFD)
+      call oneave(S0, size(p), pp, ccomp, ddime(:size(p)), ffreq, nd, D, Etmp, DFD)
       ! add oneavg property contribution in temporary array Etmp(:) to
       ! resulting property array E(:), while permuting indices according to pperm
       idxe = 0
@@ -319,11 +322,11 @@ contains
 #endif
       A(:) = (/(0d0*S0, i=1,size(A))/) !scratch matrices
       if (np==0) then
-         call quit('prop_oneave error: unperturbed one-electron contribution requested')
+         call lsquit('prop_oneave error: unperturbed one-electron contribution requested',-1)
       else if (np==1 .and. p(1)(1:3)=='AUX') then
          read (p(1)(4:),'(i1)') i
-         if (i < 0 .or. i > 9) call quit('prop_oneave error: Index in' &
-                  // ' auxiliary label out of range 0..9: ' // p(1))
+         if (i < 0 .or. i > 9) call lsquit('prop_oneave error: Index in' &
+                  // ' auxiliary label out of range 0..9: ' // p(1),-1)
          call load_oneint(prop_auxlab(i), A(1), S0)
          do j = 0, max(0,nd-1)
             E(1+j) = tr(A(1),D(1+j))
@@ -345,10 +348,14 @@ contains
          ! no densities means D(1) contains unperturbed density matrix.
          ! Then also add nuclear attraction contribution to -dipole moment
          if (nd==0) then
+#ifdef LSDALTON_ONLY
+      call lsquit('Cannot call DIPNUC_ifc, only new integral code is compiled',-1)
+#else
 #if defined(DALTON_AO_RSP)
             call DIPNUC_ifc( natom, R(:3) )
 #else
             call DIPNUC_ifc(natom, R(:3), (/(0d0, i=1,9*natom)/))
+#endif
 #endif
             E(:dp(1)) = E(:dp(1)) - R(c(1):c(1)+dp(1)-1) !sign change for -dipole
          end if
@@ -406,7 +413,11 @@ contains
          end do
          ! if unperturbed density, add nuclear contribution
          if (nd==0) then !to -quadrupole moment
+#ifdef LSDALTON_ONLY
+            call lsquit('Cannot call QDRNUC_ifc, only new integral code is compiled',-1)
+#else
             call QDRNUC_ifc(R(:6))
+#endif
             E(:dp(1)) = E(:dp(1)) - R(c(1):c(1)+dp(1)-1) !sign change for -theta
          end if
       else if (np==1 .and. p(1)=='GEO') then
@@ -451,7 +462,11 @@ contains
          ! nuclear repulsion contribution
          if (nd==0) then
             allocate(RR(3*natom))
+#ifdef LSDALTON_ONLY
+            call lsquit('Cannot call GRADNN_ifc, only new integral code is compiled',-1)
+#else
             call GRADNN_ifc(natom, RR(:3*natom))
+#endif
             E(:dp(1)) = E(:dp(1)) + RR(c(1):c(1)+dp(1)-1)
             deallocate(RR)
          end if
@@ -569,7 +584,11 @@ contains
          ! nd==0 has nuclear repulsion contribution to -dipole gradient
          if (nd==0) then
             allocate(RR(3*(3*natom)))
+#ifdef LSDALTON_ONLY
+            call lsquit('Cannot call DIPNUC_ifc, only new integral code is compiled',-1)
+#else
             call DIPNUC_ifc(natom, R(:3), RR(:3*(3*natom)))
+#endif
             do j = 0, dp(2)-1
                do i = 0, dp(1)-1
                   E(1+i+dp(1)*j) = E(1+i+dp(1)*j) &
@@ -622,17 +641,19 @@ contains
          ! end do
          ! nd==0, nuclear repulsion contribution to -quadrupole gradient
          if (nd==0) then
-             call quit('prop_oneave: ELGR GEO - nuc.rep. conrib. not implemented')
+             call lsquit('prop_oneave: ELGR GEO - nuc.rep. conrib. not implemented',-1)
          end if
       else if (np==2 .and. all(p==(/'GEO','GEO'/))) then
          allocate(RR((3*natom)*(3*natom)))
          ! one-electron integral contribution
          do k = 0, max(0,nd-1)
             !ajt fixme oneint_ave(GG..) misses frequency dependent -i/2 Tgg contribution
-            if (present(DFD)) &
+            if (present(DFD)) then
                call oneint_ave('GG', D(k+1), DFD(k+1), RR)
-            if (.not.present(DFD)) &
+            endif
+            if (.not.present(DFD)) then
                call oneint_ave('GG', D(k+1), 0d0*S0, RR)
+            endif
             do j = 0, dp(2)-1
                do i = 0, dp(1)-1
                   E(1+i+dp(1)*(j+dp(2)*k)) = RR(c(1)+i + 3*natom*(c(2)+j-1))
@@ -641,7 +662,11 @@ contains
          end do
          ! for zero-order density, add nuclear contribution to Hessian
          if (nd==0) then
+#ifdef LSDALTON_ONLY
+            call lsquit('Cannot call HESSNN_ifc, only new integral code is compiled',-1)
+#else
             call HESSNN_ifc(natom, RR)
+#endif
             do j = 0, dp(2)-1
                do i = 0, dp(1)-1
                   E(1+i+dp(1)*j) = E(1+i+dp(1)*j) + RR(c(1)+i + 3*natom*(c(2)+j-1))
@@ -665,7 +690,7 @@ contains
       else
          print *,'prop_oneave: no integrals for these perturbations: ', &
                  (p(i)//' ', i=1,np)
-         call quit('prop_oneave: no such integrals')
+         call lsquit('prop_oneave: no such integrals',-1)
       end if
       A(:) = 0 !delete scratch matrices
    end subroutine
@@ -700,7 +725,7 @@ contains
       !------------------------------------------------------------------------
       integer      :: idxp(size(p)), pperm(size(dime)), ccomp(size(p)), &
                       stepe(size(dime)), ddime(size(dime)), idxe(size(dime)), &
-                      i, j, k, tmpi, nd, size_p, size_dime
+                      i, j, k, tmpi, nd
       character(4) :: pp(size(p)), tmpp
       complex(8)   :: Etmp(product(dime))
       logical      :: zero
@@ -713,10 +738,10 @@ contains
                     pert_table(idxp(i))%quad .or. &
                .not.pert_table(idxp(i))%bas,  i=1,size(p))/))
       ! check dimensions argument dime, verify that dimensions are positive
-      if (size(dime) < size(p)) call quit('prop_twoave argument error: ' &
-               // 'More perturbations than dimensions of property, size(dime) < size(p)')
-      if (any(dime <= 0)) call quit('prop_twoave argument error: ' &
-               // 'Property has a zero or negative dimension, dime <= 0')
+      if (size(dime) < size(p)) call lsquit('prop_twoave argument error: ' &
+               // 'More perturbations than dimensions of property, size(dime) < size(p)',-1)
+      if (any(dime <= 0)) call lsquit('prop_twoave argument error: ' &
+               // 'Property has a zero or negative dimension, dime <= 0',-1)
       ! compute step lengths in E (cumulative products of dimensions)
       stepe(1) = 1
       do i = 2, size(dime)
@@ -725,13 +750,13 @@ contains
       ! reorder dimensions and step lengths in E according to permutation argument perm
       ddime = dime
       if (present(perm)) then
-         if (size(perm) /= size(dime)) call quit('prop_twoave argument ' &
-               // 'error: Wrong length of permutation vector, size(perm) /= size(dime)')
+         if (size(perm) /= size(dime)) call lsquit('prop_twoave argument ' &
+               // 'error: Wrong length of permutation vector, size(perm) /= size(dime)',-1)
          ! verify that perm is indeed a permutation
          do i = 1, size(dime)-1
             if (perm(i) <= 0 .or. perm(i) > size(dime) .or. &
-                any(perm(i) == perm(i+1:size(dime)))) call quit('prop_twoave ' &
-                      // 'argument error: Permutation must contain each number exactly once')
+                any(perm(i) == perm(i+1:size(dime)))) call lsquit('prop_twoave ' &
+                      // 'argument error: Permutation must contain each number exactly once',-1)
          end do
          ddime = (/( dime(perm(i)), i=1,size(dime))/)
          stepe = (/(stepe(perm(i)), i=1,size(dime))/)
@@ -739,15 +764,15 @@ contains
       ! check optional arg comp, default to 1 1 ... 1
       ccomp = 1
       if (present(comp)) then
-         if (size(comp) /= size(p)) call quit('prop_twoave argument error: ' &
-                    // 'Wrong number of lowest component indices, size(comp) /= size(p)')
-         if (any(comp <= 0)) call quit('prop_twoave argument error: ' &
-                    // 'Lowest component indices must be positive, comp <= 0')
+         if (size(comp) /= size(p)) call lsquit('prop_twoave argument error: ' &
+                    // 'Wrong number of lowest component indices, size(comp) /= size(p)',-1)
+         if (any(comp <= 0)) call lsquit('prop_twoave argument error: ' &
+                    // 'Lowest component indices must be positive, comp <= 0',-1)
          ccomp = comp
       end if
       if (any(ccomp + ddime(:size(p)) - 1 > pert_shape(p))) &
-         call quit('prop_twoave argument error: Lowest component index plus ' &
-                    // 'dimension exceeds dimension of perturbation, comp + dime > pert_shape(p)')
+         call lsquit('prop_twoave argument error: Lowest component index plus ' &
+                    // 'dimension exceeds dimension of perturbation, comp + dime > pert_shape(p)',-1)
       ! sort perturbations p so that idxp is descending
       pp = p
       do i = 1, size(p)
@@ -766,20 +791,18 @@ contains
       end do
       ! verify that we have the correct number of perturbed densities
       nd = product(1+ddime(size(p)+1:size(dime)))
-      if (size(D) /= nd) call quit('prop_twoave error: Number of' &
-               // 'perturbed densities D does not correspond to dime (and perm)')
+      if (size(D) /= nd) call lsquit('prop_twoave error: Number of' &
+               // 'perturbed densities D does not correspond to dime (and perm)',-1)
       ! arguments checked. If perturbed integrals are zero, verify all D defined, return
       if (zero) then
          if (.not.all((/(isdef(D(i)), i=1,nd)/))) &
-            call quit('prop_twoave error: Undefined matrix in argument D(:)')
-         return
+            call lsquit('prop_twoave error: Undefined matrix in argument D(:)',-1)
+            return
       end if
       ! everything set up, so call core procedure oneave.
       ! Argument nd=0 is used when averaging over unperturbed density,
       ! in which case also perturbed nuclear attraction should be included
-      !call twoave(size(p), size(dime)-size(p), pp, ccomp, ddime, D, Etmp)
-      size_p=size(p); size_dime=size(dime)
-      call twoave(size_p, size_dime-size_p, pp, ccomp, ddime, D, Etmp)
+      call twoave(size(p), size(dime)-size(p), pp, ccomp, ddime, D, Etmp)
       ! add oneavg property contribution in temporary array Etmp(:) to
       ! resulting property array E(:), while permuting indices according to pperm
       idxe = 0
@@ -812,20 +835,16 @@ contains
       pd  = product(de(np+1:np+nd))   !product of density dimensions
       pd1 = product(1+de(np+1:np+nd)) !size of D(*)
       if (np==0) then
-         if (nd==0) call quit('prop_twoave: unperturbed energy/integrals requested')
+         if (nd==0) call lsquit('prop_twoave: unperturbed energy/integrals requested',-1)
          !The highest order Ds multiply the unperturbed F, which is unknown here,
          !so insist that no highest-order Ds are present
          if (.not.all((/(iszero(D(i)), i=pd1-pd+1,pd1)/))) &
-            call quit('prop_twoave: unperturbed Fock matrix requested')
+            call lsquit('prop_twoave: unperturbed Fock matrix requested',-1)
          !ajt fixme Stopping at nd=2, for now
          if (nd==2) then
-            ! di_GET_GbDs and di_get_sigma expects A initialized (allocated)
-            !call init_mat(A(1), A(1))
-            !if (do_dft()) call init_mat(A(2), A(2))
             ! contract first density to Fock matrix, then trace with last
             do i = 0, de(1)-1
                ! Coulomb and exchange
-               !call di_GET_GbDs(D(2+i), A(1))
                call twofck('  ', D(2+i), A(1:1))
                ! Kohn-Sham exchange-correlation
                call twofck_ks(1, (/D(1),D(2+i)/), A(1))
@@ -848,9 +867,9 @@ contains
             ! contract first-order densities to Fock, then trace with second-order
             !ajt Fixme
             if (.not.all((/(iszero(D(i)), i=2+de(1)+de(2)+de(3),pd1)/))) &
-               call quit('prop_twoave: nd = 3 not fully implemented')
+               call lsquit('prop_twoave: nd = 3 not fully implemented',-1)
          else if (nd > 3) then
-            call quit('prop_twoave: nd > 3 not implemented')
+            call lsquit('prop_twoave: nd > 3 not implemented',-1)
          end if
       !London magnetic, no nd==0 because because MAG anti
       else if (np==1 .and. p(1)=='MAG' .and. nd /= 0) then
@@ -903,7 +922,7 @@ contains
                end do
             end do
          else
-            call quit('prop_twoave: MAG, nd > 2 not implemented')
+            call lsquit('prop_twoave: MAG, nd > 2 not implemented',-1)
          end if
       else if (np==1 .and. p(1)=='GEO') then
          allocate(RR(3*natom*2))
@@ -947,7 +966,7 @@ contains
                end do
             end do
          else
-            call quit('prop_energy_reort: GEO, nd > 2 not implemented')
+            call lsquit('prop_twoave: GEO, nd > 2 not implemented',-1)
          end if
          deallocate(RR)
          if (do_dft()) print* !after all the "...integrated to nn electrons..." prints
@@ -960,7 +979,7 @@ contains
             call twofck('MM', D(1:1), A(1:6))
             ! Kohn-Sham exchange-correlation
             if (do_dft()) then
-               call quit('prop_twoint: MAG MAG not implemented for DFT')
+               call lsquit('prop_twoave: MAG MAG not implemented for DFT',-1)
             end if
             do k = 0, pd-1
                do j = 0, de(2)-1
@@ -983,7 +1002,7 @@ contains
                if (iszero(D(2+k))) cycle
                call twofck('MM', D(2+k), A(:6))
                if (do_dft()) then
-                  call quit('prop_energy_reort: MAG MAG not implemented for DFT')
+                  call lsquit('prop_twoave: MAG MAG not implemented for DFT',-1)
                end if
                do l = 0, de(4)-1
                   do j = 0, de(2)-1
@@ -999,7 +1018,7 @@ contains
                end do
             end do
          else
-            call quit('prop_twoint: MAG MAG and nd > 2 not implemented')
+            call lsquit('prop_twoave: MAG MAG and nd > 2 not implemented',-1)
          end if
       else if (np==2 .and. all(p==(/'GEO','GEO'/))) then
          allocate(RR((3*natom)*(3*natom)))
@@ -1014,7 +1033,7 @@ contains
             if (nd==0) RR = RR/2 !factor 1/2 for unperturbed Hessian integrals
             ! Kohn-Sham exchange-correlation
             if (do_dft()) then
-               call quit('prop_twoint: GEO GEO, DFT not implemented')
+               call lsquit('prop_twoave: GEO GEO, DFT not implemented',-1)
             end if
             do j = 0, de(2)-1
                do i = 0, de(1)-1
@@ -1032,7 +1051,7 @@ contains
                   if (iszero(D(2+k))) cycle
                   call twoctr('GG', D(2+k), D(2+de(3)+l), RR)
                   if (do_dft()) then
-                     call quit('prop_energy_reort: GEO GEO, DFT not implemented')
+                     call lsquit('prop_twoave: GEO GEO, DFT not implemented',-1)
                   end if
                   do j = 0, de(2)-1
                      do i = 0, de(1)-1
@@ -1044,13 +1063,13 @@ contains
                end do
             end do
          else
-            call quit('prop_twoave: GEO GEO, nd > 2 not implemented')
+            call lsquit('prop_twoave: GEO GEO, nd > 2 not implemented',-1)
          end if
          deallocate(RR)
       else
          print *,'prop_twoave: no integrals for these perturbations: ', &
                  (p(i)//' ', i=1,np)
-         call quit('prop_twoave: no such integrals')
+         call lsquit('prop_twoave: no such integrals',-1)
       end if
       A(:) = 0 !delete scratch matrices
    end subroutine
@@ -1082,7 +1101,7 @@ contains
       !------------------------------------------------------------------------
       integer      :: idxp(size(p)), pperm(size(dimp)), ccomp(size(p)), &
                       stepf(size(dimp)), ddimp(size(dimp)), idxf(size(dimp)), &
-                      i, j, k, tmpi, size_p
+                      i, j, k, tmpi
       type(matrix) :: Ftmp(product(dimp)), Stmp(product(dimp))
       character(4) :: pp(size(p)), tmpp
       complex(8)   :: ffreq(size(p)), tmpf
@@ -1115,10 +1134,10 @@ contains
          j = i
       end do
       ! check dimensions argument dimp, verify that dimensions are positive
-      if (size(dimp) /= size(p)) call quit('prop_oneint argument error: ' &
-               // 'Different number of perturbations and dimensions, size(dimp) /= size(p)')
-      if (any(dimp <= 0)) call quit('prop_oneint argument error: ' &
-               // 'Perturbations have a zero or negative dimension, dimp <= 0')
+      if (size(dimp) /= size(p)) call lsquit('prop_oneint argument error: ' &
+               // 'Different number of perturbations and dimensions, size(dimp) /= size(p)',-1)
+      if (any(dimp <= 0)) call lsquit('prop_oneint argument error: ' &
+               // 'Perturbations have a zero or negative dimension, dimp <= 0',-1)
       ! compute step lengths in F (cumulative product of dimp)
       stepf(1) = 1
       do i = 2, size(dimp)
@@ -1127,20 +1146,20 @@ contains
       ! check optional arg comp, default to 1 1 ... 1
       ccomp = 1
       if (present(comp)) then
-         if (size(comp) /= size(p)) call quit('prop_oneint argument error: ' &
-                    // 'Wrong number of lowest component indices, size(comp) /= size(p)')
-         if (any(comp <= 0)) call quit('prop_oneint argument error: ' &
-                    // 'Lowest component indices must be positive, but comp <= 0')
+         if (size(comp) /= size(p)) call lsquit('prop_oneint argument error: ' &
+                    // 'Wrong number of lowest component indices, size(comp) /= size(p)',-1)
+         if (any(comp <= 0)) call lsquit('prop_oneint argument error: ' &
+                    // 'Lowest component indices must be positive, but comp <= 0',-1)
          ccomp = comp
       end if
       if (any(ccomp + dimp - 1 > pert_shape(p))) &
-         call quit('prop_oneave argument error: Lowest component index plus ' &
-                    // 'dimension exceeds dimension of perturbation, comp + dimp > pert_shape(p)')
+         call lsquit('prop_oneave argument error: Lowest component index plus ' &
+                    // 'dimension exceeds dimension of perturbation, comp + dimp > pert_shape(p)',-1)
       ! check optional argument freq, default to zero
       ffreq = 0
       if (present(freq)) then
-         if (size(freq) /= size(p)) call quit('prop_oneave ' &
-               // 'argument error: Wrong number of frequencies, size(freq) /= size(p)')
+         if (size(freq) /= size(p)) call lsquit('prop_oneave ' &
+               // 'argument error: Wrong number of frequencies, size(freq) /= size(p)',-1)
          ffreq = freq
       end if
       ! sort perturbations p so that idxp is descending
@@ -1169,9 +1188,7 @@ contains
       ! early return if the result is zero
       if (zero) return
       ! everything set up, so call core procedure oneint
-       size_p=size(p)
-      !call oneint(S0, size(p), pp, ccomp, ddimp, ffreq, Ftmp, Stmp)
-      call oneint(S0, size_p, pp, ccomp, ddimp, ffreq, Ftmp, Stmp)
+      call oneint(S0, size(p), pp, ccomp, ddimp, ffreq, Ftmp, Stmp)
       ! add oneavg property contribution in temporary array Etmp(:) to
       ! resulting property array E(:), while permuting indices according to pperm
       bas = all(pert_basdep(p))
@@ -1205,12 +1222,12 @@ contains
       integer      :: i, j, k, ii, jj, kk
       type(matrix) :: A(6) !scratch matrices
       if (np==0) then
-         call quit('prop_oneint error:' &
-                // ' Unperturbed one-electron integrals requested')
+         call lsquit('prop_oneint error:' &
+                // ' Unperturbed one-electron integrals requested',-1)
       else if (np==1 .and. p(1)(1:3)=='AUX') then
          read (p(1)(4:),'(i1)') i
-         if (i < 0 .or. i > 9) call quit('prop_oneint error:' &
-                  // ' Index in auxiliary label out of range 0..9')
+         if (i < 0 .or. i > 9) call lsquit('prop_oneint error:' &
+                  // ' Index in auxiliary label out of range 0..9',-1)
          call load_oneint(prop_auxlab(i), F(1), S0)
       else if (np==1 .and. p(1)=='EL') then
          do i = 0, dp(1)-1
@@ -1397,7 +1414,7 @@ contains
       else
          print *,'prop_oneint: No integrals for these perturbations:', &
                     (' ' // p(i),i=1,np)
-         call quit('prop_oneint: No such integrals')
+         call lsquit('prop_oneint: No such integrals',-1)
       end if
    end subroutine
 
@@ -1432,7 +1449,7 @@ contains
       !------------------------------------------------------------------------
       integer      :: idxp(size(p)), pperm(size(dimf)), ccomp(size(p)), &
                       stepf(size(dimf)), ddimf(size(dimf)), idxf(size(dimf)), &
-                      i, j, k, tmpi, nd, size_p, size_dimf
+                      i, j, k, tmpi, nd
       character(4) :: pp(size(p)), tmpp
       type(matrix) :: Ftmp(product(dimf))
       logical      :: zero
@@ -1445,10 +1462,10 @@ contains
                     pert_table(idxp(i))%quad .or. &
                .not.pert_table(idxp(i))%bas, i=1,size(p))/))
       ! check dimensions argument dime, verify that dimensions are positive
-      if (size(dimf) < size(p)) call quit('prop_twoint argument error: ' &
-               // 'More perturbations than dimensions of F(:), size(dimf) < size(p)')
-      if (any(dimf <= 0)) call quit('prop_twoint argument error: ' &
-               // 'Perturbed Fock F(:) has a zero or negative dimension, dimf <= 0')
+      if (size(dimf) < size(p)) call lsquit('prop_twoint argument error: ' &
+               // 'More perturbations than dimensions of F(:), size(dimf) < size(p)',-1)
+      if (any(dimf <= 0)) call lsquit('prop_twoint argument error: ' &
+               // 'Perturbed Fock F(:) has a zero or negative dimension, dimf <= 0',-1)
       ! compute step lengths in E (cumulative products of dimensions)
       stepf(1) = 1
       do i = 2, size(dimf)
@@ -1457,13 +1474,13 @@ contains
       ! reorder dimensions and step lengths in F according to permutation argument perm
       ddimf = dimf
       if (present(perm)) then
-         if (size(perm) /= size(dimf)) call quit('prop_twoint argument ' &
-               // 'error: Wrong length of permutation vector, size(perm) /= size(dimf)')
+         if (size(perm) /= size(dimf)) call lsquit('prop_twoint argument ' &
+               // 'error: Wrong length of permutation vector, size(perm) /= size(dimf)',-1)
          ! verify that perm is indeed a permutation
          do i = 1, size(dimf)-1
             if (perm(i) <= 0 .or. perm(i) > size(dimf) .or. &
-                any(perm(i) == perm(i+1:size(dimf)))) call quit('prop_twoint ' &
-                      // 'argument error: Permutation must contain each number exactly once')
+                any(perm(i) == perm(i+1:size(dimf)))) call lsquit('prop_twoint ' &
+                      // 'argument error: Permutation must contain each number exactly once',-1)
          end do
          ddimf = (/( dimf(perm(i)), i=1,size(dimf))/)
          stepf = (/(stepf(perm(i)), i=1,size(dimf))/)
@@ -1471,15 +1488,15 @@ contains
       ! check optional arg comp, default to 1 1 ... 1
       ccomp = 1
       if (present(comp)) then
-         if (size(comp) /= size(p)) call quit('prop_twoint argument error: ' &
-                    // 'Wrong number of lowest component indices, size(comp) /= size(p)')
-         if (any(comp <= 0)) call quit('prop_twoint argument error: ' &
-                    // 'Lowest component indices must be positive, comp <= 0')
+         if (size(comp) /= size(p)) call lsquit('prop_twoint argument error: ' &
+                    // 'Wrong number of lowest component indices, size(comp) /= size(p)',-1)
+         if (any(comp <= 0)) call lsquit('prop_twoint argument error: ' &
+                    // 'Lowest component indices must be positive, comp <= 0',-1)
          ccomp = comp
       end if
       if (any(ccomp + ddimf(:size(p)) - 1 > pert_shape(p))) &
-         call quit('prop_twoint argument error: Lowest component index plus ' &
-                   // 'dimension exceeds dimension of perturbation, comp + dimf > pert_shape(p)')
+         call lsquit('prop_twoint argument error: Lowest component index plus ' &
+                   // 'dimension exceeds dimension of perturbation, comp + dimf > pert_shape(p)',-1)
       ! sort perturbations p so that idxp is descending
       pp = p
       do i = 1, size(p)
@@ -1498,12 +1515,12 @@ contains
       end do
       ! verify that we have the correct number of perturbed densities
       nd = product(1+ddimf(size(p)+1:size(dimf)))
-      if (size(D) /= nd) call quit('prop_twoint error: Number of' &
-               // 'perturbed densities D does not correspond to dimf (and perm)')
+      if (size(D) /= nd) call lsquit('prop_twoint error: Number of' &
+               // 'perturbed densities D does not correspond to dimf (and perm)',-1)
       ! arguments checked. If perturbed integrals are zero, verify all D defined, return
       if (zero) then
          if (.not.all((/(isdef(D(i)), i=1,nd)/))) &
-            call quit('prop_twoint error: Undefined matrix in argument D(:)')
+            call lsquit('prop_twoint error: Undefined matrix in argument D(:)',-1)
          return
       end if
       ! permute perturbed Fock matrices in F(:) over to Ftmp(:)
@@ -1519,9 +1536,7 @@ contains
          end do
       end do
       ! everything set up, so call core procedure twoint
-      !call twoint(size(p), size(dimf)-size(p), pp, ccomp, ddimf, D, Ftmp)
-      size_p=size(p); size_dimf=size(dimf)
-      call twoint(size_p, size_dimf-size_p, pp, ccomp, ddimf, D, Ftmp)
+      call twoint(size(p), size(dimf)-size(p), pp, ccomp, ddimf, D, Ftmp)
       ! 'un-permute' perturbed Fock matrices from Ftmp(:) back into F(:)
       idxf = 0
       do j = 1, product(dimf)
@@ -1552,34 +1567,21 @@ contains
       pd  = product(df(np+1:np+nd))   !product of density dimensions
       pd1 = product(1+df(np+1:np+nd)) !size of D(*)
       if (np==0) then
-         if (nd==0) call quit('prop_twoint error: Unperturbed ' &
-                           // 'two-electron Fock matrix requested')
+         if (nd==0) call lsquit('prop_twoint error: Unperturbed ' &
+                           // 'two-electron Fock matrix requested',-1)
          ! di_GET_GbDs and di_get_sigma expects A initialized (allocated)
          call init_mat(A(1), A(1))
          do i = 0, pd-1
             if (iszero(D(pd1-pd+1+i))) cycle
             ! Coulomb-exchange
-            !call di_GET_GbDs(D(pd1-pd+1+i), A(1))
             call twofck('  ', D(pd1-pd+1+i), A(1:1))
             F(i+1) = F(i+1) + A(1)
             ! Kohn-Sham exchange-correlation
-            !if (do_dft()) then
-            !   call di_get_sigma_xc_cont(D(pd1-pd+1+i), D(1), D(1), A(1))
-            !   F(i+1) = F(i+1) + A(1)
-            !end if
             call twofck_ks(1, (/D(1),D(pd1-pd+1+i)/), F(1+i))
          end do
          if (nd==0 .or. nd==1 .or. .not.do_dft()) then
             ! nothing more
          else if (nd==2) then
-            !do j = 0, df(2)-1
-            !   if (iszero(D(2+df(1)+j))) cycle
-            !   do i = 0, df(1)-1
-            !      if (iszero(D(2+i))) cycle
-            !      call di_get_T_xc_cont(D(1), D(2+i), D(2+df(1)+j), A(1))
-            !      F(1+i+df(1)*j) = F(1+i+df(1)*j) + A(1)
-            !   end do
-            !end do
             do j = 0, df(2)-1
                do i = 0, df(1)-1
                   call twofck_ks(2, (/D(1),D(2+i),D(2+df(1)+j)/), F(1+i+df(1)*j))
@@ -1589,7 +1591,7 @@ contains
 #ifdef PRG_DIRAC
             call twofck_ks(pd1 - 1, D, F(1))
 #else
-            call quit('prop_twoint: nd > 2 not implemented with DFT')
+            call lsquit('prop_twoint: nd > 2 not implemented with DFT',-1)
 #endif
          end if
          A(1) = 0 !free
@@ -1614,7 +1616,7 @@ contains
          if (nd==0 .or. nd==1 .or. .not.do_dft()) then
             ! nothing more
          else
-            call quit('prop_twoint: MAG, nd > 2 not implemented with DFT')
+            call lsquit('prop_twoint: MAG, nd > 2 not implemented with DFT',-1)
          end if
       else if (np==1 .and. p(1)=='GEO') then
          do j = 0, pd-1 !highest-order D indices
@@ -1625,7 +1627,7 @@ contains
                   call twofck('G ', D(pd1-pd+1+j:pd1-pd+1+j), A(1:3), &
                               a=1+(c(1)+i-1)/3)
                   if (do_dft()) then
-                     call quit('prop_twoint: GEO not implemented with DFT')
+                     call lsquit('prop_twoint: GEO not implemented with DFT',-1)
                   end if
                end if
                F(1+i+df(1)*j) = F(1+i+df(1)*j) + A(1+mod(c(1)+i-1,3))
@@ -1634,7 +1636,7 @@ contains
          if (nd==0 .or. nd==1 .or. .not.do_dft()) then
             ! nothing more
          else
-            call quit('prop_twoint: GEO not implemented with DFT')
+            call lsquit('prop_twoint: GEO not implemented with DFT',-1)
          end if
          ! if (do_dft()) print* !after all the "...integrated to nn electrons..." prints
       else if (np==2 .and. all(p==(/'MAG','MAG'/))) then
@@ -1644,7 +1646,7 @@ contains
             call twofck('MM', D(1:1), A(1:6))
             ! Kohn-Sham
             if (do_dft()) then
-               call quit('prop_twoint: MAG MAG not implemented with DFT')
+               call lsquit('prop_twoint: MAG MAG not implemented with DFT',-1)
             end if
             do j = 0, df(2)-1
                do i = 0, df(1)-1
@@ -1658,12 +1660,12 @@ contains
          if (nd==0 .or. nd==1 .or. .not.do_dft()) then
              !nothing more
          else
-            call quit('prop_twoint: MAG MAG and nd > 2 not implemented with DFT')
+            call lsquit('prop_twoint: MAG MAG and nd > 2 not implemented with DFT',-1)
          end if
       else
          print *,'prop_twoint: No integrals for these perturbations: ', &
                  (p(i)//' ', i=1,np)
-         call quit('prop_twoint: No such integrals')
+         call lsquit('prop_twoint: No such integrals',-1)
       end if
       A(:) = 0 !delete scratch matrices
    end subroutine
@@ -1758,18 +1760,18 @@ contains
          lwrk = 50*n2 + 10000*D(1)%nrow + 5000000
       else if (what=='G ' .and. nf==3) then
          if (.not.present(a)) &
-            call quit("prop_integrals twofck: Geometry Fock but atom 'a' not specified")
+            call lsquit("prop_integrals twofck: Geometry Fock but atom 'a' not specified",-1)
          lwrk = 50*n2 + 10000*D(1)%nrow + 5000000
          aa = a !may not be present, replicate
       else if (what=='MM' .and. nf==6) then
          lwrk = 50*n2 + 10000*D(1)%nrow + 5000000
       else if (what=='GG' .and. nf==3*3) then
          if (.not.present(a) .or. .not.present(b)) &
-            call quit("prop_integrals twock: 2nd ord. geom Fock reqires atoms 'a','b' specified")
+            call lsquit("prop_integrals twock: 2nd ord. geom Fock reqires atoms 'a','b' specified",-1)
          !lwrk = (1+2*nf+50)*n2 + 10000*nbas + 5000000
          lwrk = 50*n2 + 10000*D(1)%nrow + 5000000
       else
-         call quit('prop_integrals twofck: wrong size(F) for what=' // what)
+         call lsquit('prop_integrals twofck: wrong size(F) for what=' // what,-1)
       end if
       !make usre F is properly allocated
       do i = 1, nf
@@ -1808,10 +1810,14 @@ contains
 #ifdef PRG_DIRAC
          call quit('fix grcont in twofck')
 #else
+#ifdef LSDALTON_ONLY
+         call lsquit('Cannot call GRCONT, only new integral code is compiled',-1)
+#else
          call GRCONT(wrk( 1+n2+n2*nf : lwrk ), (lwrk-n2-n2*nf),         &
                      wrk( 1+n2 : n2+n2*nf ), n2*nf, (what(1:1) == 'G'), &
                      (what(1:1) == 'M'), merge(1,2,what(2:2)==' '),     &
                      aa, .false., .true., wrk(1:n2), 1)
+#endif
 #endif
          do i = 1, nf
             F(i)%elms = wrk( 1+n2*i : n2*(1+i) ) !ajt fixme
@@ -1852,8 +1858,8 @@ contains
       call init_mat(A, D(1))
 
       if (n==0) then
-         call quit('prop_contribs/twofck_ks error: Kohn-Sham contribution ' &
-                // 'to unperturbed Fock matrix requested, but not implemented')
+         call lsquit('prop_contribs/twofck_ks error: Kohn-Sham contribution ' &
+                // 'to unperturbed Fock matrix requested, but not implemented',-1)
 #ifndef PRG_DIRAC
       else if (n==1) then
          if (D(2)%complex) &
@@ -1888,7 +1894,7 @@ contains
             call di_get_T_xc_cont(D(1), im(D(2)), im(D(3)), A)
          if (D(2)%complex .and. D(3)%complex) F = F - A
       else
-         call quit('prop_contribs/twofck_ks error: n > 2 not implemented')
+         call lsquit('prop_contribs/twofck_ks error: n > 2 not implemented',-1)
       end if
 #else
       else
@@ -1930,7 +1936,7 @@ contains
             order = 6
          end if
          if (nr_dmat > (1+5+10+10+5+1)) then
-            call quit('fix twofck_ks order pascal triangle')
+            call lsquit('fix twofck_ks order pascal triangle',-1)
          end if
          
          if (order < 2) then
@@ -1977,17 +1983,19 @@ contains
       type(matrix), intent(in)    :: Da, Db
       real(8),      intent(inout) :: E(:)
       real(8), pointer :: wrk(:)
-      integer          :: lwrk, size_E, len_what
+      integer          :: lwrk
 
+#ifdef PRG_DIRAC
 !     early return
       if (iszero(Da) .or. iszero(Db)) then
          return
       end if
+#endif
 
-      if (natom==0) call quit('prop_contribs/twoctr error: Module not initialized')
+      if (natom==0) call lsquit('prop_contribs/twoctr error: Module not initialized',-1)
       !ajt MagSus contraction doesn't work, so I disabled this. Use twofck instead
       if (what=='M' .or. what=='MM') &
-         call quit("prop_contribs/twoctr: 'M' or 'MM' not yet implemented")
+          & call lsquit("prop_contribs/twoctr: 'M' or 'MM' not yet implemented",-1)
       if     (what=='G' .and. size(e) == 3*natom) then
          lwrk = 50*Da%nrow**2 + 10000*Da%nrow + 5000000
       else if (what=='M' .and. size(e)==3) then
@@ -1997,7 +2005,7 @@ contains
       else if (what=='MM' .and. size(e)==3*3) then
          lwrk = 50*Da%nrow**2 + 10000*Da%nrow + 5000000
       else
-          call quit('prop_contribs/twoctr: wrong size(E) for what=' // what)
+          call lsquit('prop_contribs/twoctr: wrong size(E) for what=' // what,-1)
       end if
 
 #ifdef PRG_DIRAC
@@ -2010,12 +2018,20 @@ contains
 
 #ifndef PRG_DIRAC
 !radovan: is this necessary?
+!ajt: grcont presently needs Da and Db to be consecutive, and
+!     (/Da%elms,Db%elms/) will cause stack overflow, depending
+!     on ulimit and compiler flags; -auto-scalar:fine: -auto:overflow.
+!     A future rewrite of grcont could take a list of pointers
+!     (or just type(matrix)) instead of consecutive real(8) arrays.
       wrk(             1:  Da%nrow**2) = Da%elms !call mat_to_full(D ,1d0,A(:,:,1))
       wrk(Da%nrow**2 + 1:2*Da%nrow**2) = Db%elms !call mat_to_full(DD,1d0,A(:,:,2))
 #endif
 
-      E = 0.0d0 ; size_E=size(E); len_what=len(what)
+      E = 0.0d0
 
+#ifdef LSDALTON_ONLY
+         call lsquit('Cannot call GRCONT, only new integral code is compiled',-1)
+#else
 #ifdef PRG_DIRAC
       call grcont(wrk,                      &
                   lwrk,                     &
@@ -2026,12 +2042,10 @@ contains
                   lwrk - 2*Da%nrow**2,      &
 #endif
                   E,                        &
-                ! size(E),                  &
-                  size_E,                  &
+                  size(E),                  &
                   what(1:1) == 'G',         &
                   what(1:1) == 'M',         &
-                  !len(what),                &
-                  len_what,                &
+                  len(what),                &
                   0,                        &
                   .true.,                   &
                   .false.,                  &
@@ -2041,7 +2055,7 @@ contains
                   wrk(1),                   &
 #endif
                   2)
-
+#endif
 #ifdef PRG_DIRAC
 !radovan: there is a factor 8 missing in DIRAC
 !         will fix it later so that it's taken care of inside grcont
@@ -2057,10 +2071,15 @@ contains
       character(*), intent(in)  :: what
       type(matrix), intent(in)  :: D, DFD
       real(8),      intent(out) :: R(:)
+#ifndef LSDALTON_ONLY
 #include <mxcent.h>
 #include <taymol.h>
+#endif
       real(8), pointer :: wrk(:)
       integer          :: lwrk
+#ifdef LSDALTON_ONLY
+      call lsquit('Cannot run oneint_ave, only new integral code is compiled',-1)
+#else
       call save_D_and_DFD_for_ABACUS(.false., D, DFD)
       lwrk = 50*D%nrow**2+10000*D%nrow+50000000
       call di_select_wrk(wrk, lwrk)
@@ -2072,6 +2091,7 @@ contains
       ! HESMOL will contain either HESSKE+HESSNA or HESFS2 or their sum
       R(1:9*natom**2) = reshape(HESMOL(:3*natom,:3*natom), (/9*natom**2/))
       call di_deselect_wrk(wrk, lwrk)
+#endif
    end subroutine
 
 
@@ -2084,12 +2104,12 @@ contains
       if (p(1:min(3,len(p))) == 'AUX') then
          read (p(min(4,len(p)):),'(i1)', iostat=j) i
          if (j /= 0 .or. i < 0 .or. i > 9) &
-            call quit('prop_contribs error: ' &
-                     // 'Auxiliary label index should be within 0..9, ' // p)
+            call lsquit('prop_contribs error: ' &
+                     // 'Auxiliary label index should be within 0..9, ' // p,-1)
          idx = 1
          return
       end if
-      call quit('Perturbation not found: ' // p)
+      call lsquit('Perturbation not found: ' // p,-1)
    end function
 
 
@@ -2147,10 +2167,14 @@ contains
          if (     anti) call DGETAP(D%nrow, Full, DFDtri)
       end if
       ! write fo files
+#ifdef LSDALTON_ONLY
+      call lsquit('Cannot call write_dsofso, only new integral code is compiled',-1)
+#else
 #ifdef PRG_DIRAC
       call quit('dirac: implement write_dsofso')
 #else
       call write_dsofso(Dtri,DFDtri)
+#endif
 #endif
    end subroutine
 

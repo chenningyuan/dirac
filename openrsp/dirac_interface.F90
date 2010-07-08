@@ -7,37 +7,38 @@ module dirac_interface
    use dirac_cfg
    use xc_driver
 
-  implicit none
-
-  public print_q_vector
-  public di_get_gbds
-  public di_read_operator_int
-  public di_get_geomderiv_molgrad_dft
-  public di_get_geomderiv_fxd_dft
-  public di_get_geomderiv_gxd_dft
-  public do_dft
-  public get_s
-  public get_f
-  public get_p
-  public get_g
-  public get_C
-  public grcont
-  public ask_for_integrals
-  public response_solver
-  public get_natoms
-  public dipnuc_ifc
-  public qdrnuc_ifc
-  public gradnn_ifc
-  public di_set_f77_work
-  public di_select_wrk
-  public di_deselect_wrk
-  public daxpy_iz_jz
-  public print_prp_common_blocks
-  public init_dirac_interface
-  public scatter_vector
-  public set_orbital_rotation_indices
-
-  save
+   implicit none
+ 
+   public print_q_vector
+   public di_get_gbds
+   public di_read_operator_int
+   public di_get_geomderiv_molgrad_dft
+   public di_get_geomderiv_fxd_dft
+   public di_get_geomderiv_gxd_dft
+   public do_dft
+   public get_s
+   public get_f
+   public get_p
+   public get_g
+   public get_C
+   public grcont
+   public ask_for_integrals
+   public response_solver
+   public get_natoms
+   public dipnuc_ifc
+   public qdrnuc_ifc
+   public gradnn_ifc
+   public di_set_f77_work
+   public di_select_wrk
+   public di_deselect_wrk
+   public daxpy_iz_jz
+   public print_prp_common_blocks
+   public init_dirac_interface
+   public scatter_vector
+   public set_orbital_rotation_indices
+   public lsquit
+ 
+   save
 
   integer,      public              :: unit_input       = 0
   integer,      public              :: unit_output      = 0
@@ -112,6 +113,19 @@ module dirac_interface
   integer            :: mem_wrk_count = 0 ! Counts
 
 contains
+
+   subroutine lsquit(text, u)
+
+!     --------------------------------------------------------------------------
+      character(*), intent(in) :: text
+      integer,      intent(in) :: u
+!     --------------------------------------------------------------------------
+
+!     dalton has lsquit, we use quit and ignore the unit
+!     and use default lupri
+      call quit(text)
+
+   end subroutine
 
    subroutine di_get_geomDeriv_molgrad_DFT(g, nr_atoms, D)
 
