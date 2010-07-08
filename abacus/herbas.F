@@ -1389,6 +1389,10 @@ C* Based on FINPOS, LV, 14-5-2003                         *
 C*********************************************************
 #include "implicit.h"
 #include "priunit.h"
+#ifdef VAR_MPI
+#include "infpar.h"
+#endif
+
       CHARACTER*80 LINE,BASREF(10), BASNAM
 C*********************************************************
 C* Variable declarations:                                *
@@ -1455,10 +1459,17 @@ CMI   WRITE (LUPRI,'(//A,I5/2A/)')
 CMI  &     'Error in reading basis set file, your basis '//
 CMI  &     'has no documentation. IOSTAT code:',IOERR,
 CMI  &     'Basis set: ',BASNAM
+#ifdef VAR_MPI
+!     print only from one process
+      if (mytid == 1) then
+#endif
       WRITE (LUPRI,'(A,/,A,A)')
      &     'Info(warning) about the basis set file: your basis '//
      &     'has no documentation.',
      &     'Basis set: ',BASNAM
+#ifdef VAR_MPI
+      end if
+#endif
 
 Chj   CALL QUIT('Incomplete basis set file in HERBAS')
 
