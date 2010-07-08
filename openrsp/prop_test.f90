@@ -807,7 +807,7 @@ contains
 
       call pert_dens(decomp,             &
                      S,                  &
-                   (/'MAGO', 'EL'/),       &
+                   (/'MAGO', 'EL  '/),       &
                    (/1, 1/),             &
                    (/                    &
                      D,                  &
@@ -826,7 +826,7 @@ contains
   
       call pert_dens(decomp,             &
                      S,                  &
-                   (/'MAGO', 'EL'/),       &
+                   (/'MAGO', 'EL  '/),       &
                    (/1, 1/),             &
                    (/                    &
                      D,                  &
@@ -864,7 +864,7 @@ contains
   
       call pert_dens(decomp,             &
                      S,                  &
-                   (/'MAGO', 'EL', 'EL'/), &
+                   (/'MAGO', 'EL  ', 'EL  '/), &
                    (/1, 1, 1/),          &
                    (/                    &
                      D,                  &
