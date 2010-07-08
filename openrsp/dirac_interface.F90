@@ -2052,3 +2052,47 @@ contains
   end subroutine
 
 end module
+
+      subroutine fill_work(do_pp, &
+                           do_pn, &
+                           length_pp, &
+                           length_pn, &
+                           orbital_rotation_vector_pp, &
+                           orbital_rotation_vector_pn, &
+                           jxop_pp, &
+                           jxop_pn)
+
+      implicit none
+
+      logical   do_pp
+      logical   do_pn
+      integer   length_pp
+      integer   length_pn
+      integer   orbital_rotation_vector_pp
+      integer   orbital_rotation_vector_pn
+      integer   jxop_pp
+      integer   jxop_pn
+
+      dimension orbital_rotation_vector_pp(2, *)
+      dimension orbital_rotation_vector_pn(2, *)
+      dimension jxop_pp(2, *)
+      dimension jxop_pn(2, *)
+
+      integer   i
+
+      if (do_pp) then
+        do i = 1, length_pp
+          jxop_pp(1, i) = orbital_rotation_vector_pp(1, i)
+          jxop_pp(2, i) = orbital_rotation_vector_pp(2, i)
+        end do
+      end if
+
+      if (do_pn) then
+        do i = 1, length_pn
+          jxop_pn(1, i) = orbital_rotation_vector_pn(1, i)
+          jxop_pn(2, i) = orbital_rotation_vector_pn(2, i)
+        end do
+      end if
+
+      end
+
