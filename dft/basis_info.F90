@@ -567,14 +567,6 @@ contains
       end if
 
 !     set up ls, transform as translation
-      inter_irep(0) = 0
-      do jxyz = 1, 3
-         inter_irep(jxyz) = isymax(jxyz, 1)
-      end do
-
-      ls_nr_density_blocks = 0
-
-!     set up ls blocks, transform as rotation
       ls_nr_density_blocks = 0
 
       inter_irep(0) = 0

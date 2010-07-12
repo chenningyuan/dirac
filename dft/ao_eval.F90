@@ -433,14 +433,15 @@ contains
       integer                :: ic, jc, k
 !     --------------------------------------------------------------------------
 
-     !if (l_quantum_nr(ishell) < 12) then
-     !   call get_cartesian_ao_g0(block_length,         &
-     !                            l_quantum_nr(ishell), &
-     !                            px,                   &
-     !                            py,                   &
-     !                            pz,                   &
-     !                            ao)
-     !else
+      if (l_quantum_nr(ishell) < 12) then
+         call get_cartesian_ao_g0(block_length,         &
+                                  l_quantum_nr(ishell), &
+                                  px,                   &
+                                  py,                   &
+                                  pz,                   &
+                                  ao)
+      else
+         call quit('get_gao_block: l too high')
      !   do ic = 1, cartesian_deg(ishell)
      !      jc = cartesian_off(ishell) + ic
      !      do k = 1, block_length
@@ -449,7 +450,7 @@ contains
      !                    *(pz(k)**n_exp(jc))*g_00_00_00_000(k)
      !      end do
      !   end do
-     !end if
+      end if
 
    end subroutine
 

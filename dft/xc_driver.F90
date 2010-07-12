@@ -130,7 +130,12 @@ module xc_driver
     real(8), allocatable :: ao(:)
     real(8), allocatable :: buffer(:)
     real(8), allocatable :: ao_block(:, :)
+    integer, allocatable :: ao_sort_index(:)
+    integer, allocatable :: ao_sort_index_reverse(:)
     real(8), allocatable :: buffer_block(:, :)
+    real(8), allocatable :: dmat_sorted(:)
+    real(8), allocatable :: xmat_sorted(:)
+    real(8), allocatable :: ao_sorted(:)
 
    logical :: parallel_xc
    logical :: coworkers_are_awake = .false.
@@ -786,8 +791,16 @@ contains
       real(8) :: r_t1(mxbllen)
       real(8) :: r_t2(mxbllen)
 !     --------------------------------------------------------------------------
-      real(8) :: avg
-      integer :: id
+      integer :: id, m
+      real(8) :: temp
+      real(8) :: delec
+      real(8), parameter :: t1 = 1.0d-4
+      real(8), parameter :: t2 = 0.0d0
+      integer :: nr_above_t1
+      integer :: ioff
+      integer :: joff
+      integer :: moff
+      integer :: is, js
 
 
 
@@ -814,11 +827,16 @@ contains
 
     call alloc(ao,     total_ao_vector_length)
     call alloc(buffer, total_ao_vector_length)
-!#define TRY_BLOCK
-#ifdef TRY_BLOCK
+!#define TRY_NEW_DENSITY_EVALUATION
+#ifdef TRY_NEW_DENSITY_EVALUATION
     call alloc(ao_block,     mxbllen, total_ao_vector_length)
     call alloc(buffer_block, mxbllen, total_ao_vector_length)
-#endif
+    call alloc(ao_sort_index,         mat_dim)
+    call alloc(ao_sort_index_reverse, mat_dim)
+    allocate(dmat_sorted(mat_dim*mat_dim))
+    allocate(xmat_sorted(mxbllen*mat_dim))
+    allocate(ao_sorted(mxbllen*total_ao_vector_length))
+#endif /* TRY_NEW_DENSITY_EVALUATION */
 
 
 !   check what functional derivatives do we need
@@ -864,7 +882,8 @@ contains
 !       set it to zero, otherwise it is undefined with lda
         z_0 = 0.0d0
 
-#ifdef TRY_BLOCK
+#ifdef TRY_NEW_DENSITY_EVALUATION
+   delec = 0.0d0 
    time_new_start = second()
    loop_over_points_block: do ipoint = 1, nr_points_process, mxbllen
       block_length = min(mxbllen, nr_points_process - ipoint + 1)
@@ -876,30 +895,98 @@ contains
                   ao_block,                         &
                   buffer_block)
 
+      nr_above_t1 = 0
+      do i = 1, mat_dim
+         buffer(i) = 0.0d0
+         do k = 1, block_length
+            temp = dabs(ao_block(k, i))
+            if (temp > buffer(i)) then
+               buffer(i) = temp
+            end if
+         end do
+         if (buffer(i) > t1) then
+            nr_above_t1 = nr_above_t1 + 1
+         end if
+      end do
+
+!     early return
+      if (nr_above_t1 == 0) then
+         exit
+      end if
+
+!     get sorting index
+      call indexx(mat_dim, buffer, ao_sort_index_reverse)
+      do i = 1, nr_above_t1
+         ao_sort_index(i) = ao_sort_index_reverse(mat_dim - i + 1)
+      end do
+
+!     sort ao matrix
+      do i = 1, nr_above_t1
+         is = ao_sort_index(i)
+         ioff = (i - 1)*block_length
+         do k = 1, block_length
+            ao_sorted(ioff + k) = ao_block(k, is)
+         end do
+      end do
+
+!     sort density matrix (upper triangle)
+      do i = 1, nr_above_t1
+         is = ao_sort_index(i)
+         ioff = (i - 1)*nr_above_t1
+         do j = 1, i
+            js = ao_sort_index(j)
+            dmat_sorted(ioff + j) = dmat_0(js, is)
+         end do
+      end do
 
       do k = 1, block_length
          r_0(k) = 0.0d0
       end do
-      do i = 1, mat_dim
-         avg = 0.0d0
-         do k = 1, block_length
-            avg = avg + ao_block(k, i)
-         end do
-         if (avg > 1.0d-10) then
+
+      if (nr_above_t1 > 10) then
+         call dsymm('r',          &
+                    'u',          &
+                    block_length, &
+                    nr_above_t1,  &
+                    1.0d0,        &
+                    dmat_sorted,  &
+                    nr_above_t1,  &
+                    ao_sorted,    &
+                    block_length, &
+                    0.0d0,        &
+                    xmat_sorted,  &
+                    block_length)           
+         do i = 1, nr_above_t1
+            ioff = (i - 1)*block_length
             do k = 1, block_length
-               r_0(k) = r_0(k) + ao_block(k, i)*ao_block(k, i)*dmat_0(i, i)
+               r_0(k) = r_0(k) + xmat_sorted(ioff + k)*ao_sorted(ioff + k)
             end do
-            do j = i + 1, mat_dim
+         end do
+      else
+         do i = 1, nr_above_t1
+            moff = (i - 1)*nr_above_t1
+            ioff = (i - 1)*block_length
+            do k = 1, block_length
+               r_0(k) = r_0(k) + ao_sorted(ioff + k)*ao_sorted(ioff + k)*dmat_sorted(moff + i)
+            end do
+            do j = 1, i - 1
+               joff = (i - 1)*block_length
                do k = 1, block_length
-                  r_0(k) = r_0(k) + 2.0d0*ao_block(k, i)*ao_block(k, j)*dmat_0(j, i)
+                  r_0(k) = r_0(k) + 2.0d0*ao_sorted(ioff + k)*ao_sorted(joff + k)*dmat_sorted(moff + j)
                end do
             end do
-         end if
+         end do
+      end if
+
+      do k = 1, block_length
+         delec = delec + rw(ipoint + k - 1)*r_0(k)
       end do
 
    end do loop_over_points_block
    time_new = time_new + second() - time_new_start
+   write(*, *) 'debug nr electrons new', delec
 
+   delec = 0.0d0 
    time_old_start = second()
    loop_over_points: do ipoint = 1, nr_points_process
 
@@ -910,10 +997,12 @@ contains
                   buffer)
 
       call get_n(r_0(1), 0, mat_dim, dmat_0, buffer, ao)
+      delec = delec + rw(ipoint)*r_0(1)
 
    end do loop_over_points
    time_old = time_old + second() - time_old_start
-#endif
+   write(*, *) 'debug nr electrons old', delec
+#endif /* TRY_NEW_DENSITY_EVALUATION */
 
 
 
@@ -1312,10 +1401,15 @@ contains
 
     call dealloc(ao)
     call dealloc(buffer)
-#ifdef TRY_BLOCK
+#ifdef TRY_NEW_DENSITY_EVALUATION
     call dealloc(ao_block)
     call dealloc(buffer_block)
-#endif
+    call dealloc(ao_sort_index)
+    call dealloc(ao_sort_index_reverse)
+    deallocate(dmat_sorted)
+    deallocate(xmat_sorted)
+    deallocate(ao_sorted)
+#endif /* TRY_NEW_DENSITY_EVALUATION */
 
    end subroutine
 
@@ -1384,6 +1478,12 @@ contains
      !            time_density, file_unit)
      !call timtxt('                functional derivatives           =', &
      !            time_derv, file_unit)
+#ifdef TRY_NEW_DENSITY_EVALUATION
+      call timtxt('                debug time old                   =', &
+                  time_old, file_unit)
+      call timtxt('                debug time new                   =', &
+                  time_new, file_unit)
+#endif /* TRY_NEW_DENSITY_EVALUATION */
 
       write(file_unit, '(3x, a, i9)')                           &
             'number of processors                           = ', &
