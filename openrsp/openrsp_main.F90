@@ -173,15 +173,15 @@ contains
                               lupri)
            enddo
            deallocate(tsr)
-           w    =  0.0d0
-           w(1) =  0.0d0
-           w(2) = -0.72d0
-           w(3) =  0.72d0
-           sum_up = element_ooff(S, D, F, (/w(1:3)/), 1, 1, 1, 1)
-           sum_up = element_ooff(S, D, F, (/w(1:3)/), 1, 1, 2, 2)
-           sum_up = element_ooff(S, D, F, (/w(1:3)/), 1, 1, 3, 3)
-           sum_up = element_ooff(S, D, F, (/w(1:3)/), 2, 2, 3, 3)
-           sum_up = element_ooff(S, D, F, (/w(1:3)/), 3, 3, 3, 3)
+!          w    =  0.0d0
+!          w(1) =  0.0d0
+!          w(2) = -0.72d0
+!          w(3) =  0.72d0
+!          sum_up = element_ooff(S, D, F, (/w(1:3)/), 1, 1, 1, 1)
+!          sum_up = element_ooff(S, D, F, (/w(1:3)/), 1, 1, 2, 2)
+!          sum_up = element_ooff(S, D, F, (/w(1:3)/), 1, 1, 3, 3)
+!          sum_up = element_ooff(S, D, F, (/w(1:3)/), 2, 2, 3, 3)
+!          sum_up = element_ooff(S, D, F, (/w(1:3)/), 3, 3, 3, 3)
         endif
 
     if (openrsp_cfg_gamma_lin_dc_kerr) then
