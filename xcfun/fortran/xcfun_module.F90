@@ -18,50 +18,51 @@ module xcfun
 ! lda derivatives, all odd spin density orders give zero at closed-shell reference
   integer, parameter :: XC_D00 =  1
   integer, parameter :: XC_D10 =  2
-  integer, parameter :: XC_D01 =  3 !zero at closed-shell reference with XC_VARS_RS 
+  integer, parameter :: XC_D01 =  3 !zero at closed-shell reference with XC_VARS_RS
   integer, parameter :: XC_D20 =  4
-  integer, parameter :: XC_D11 =  5 !zero at closed-shell reference with XC_VARS_RS 
+  integer, parameter :: XC_D11 =  5 !zero at closed-shell reference with XC_VARS_RS
   integer, parameter :: XC_D02 =  6
   integer, parameter :: XC_D30 =  7
-  integer, parameter :: XC_D21 =  8 !zero at closed-shell reference with XC_VARS_RS 
+  integer, parameter :: XC_D21 =  8 !zero at closed-shell reference with XC_VARS_RS
   integer, parameter :: XC_D12 =  9
-  integer, parameter :: XC_D03 = 10 !zero at closed-shell reference with XC_VARS_RS 
+  integer, parameter :: XC_D03 = 10 !zero at closed-shell reference with XC_VARS_RS
 
   integer, parameter :: XC_D00000 = 1
   integer, parameter :: XC_D10000 = 2
-  integer, parameter :: XC_D01000 = 3
+  integer, parameter :: XC_D01000 = 3  !zero at closed-shell reference with XC_VARS_RS
   integer, parameter :: XC_D00100 = 4
-  integer, parameter :: XC_D00010 = 5
+  integer, parameter :: XC_D00010 = 5  !zero at closed-shell reference with XC_VARS_RS
   integer, parameter :: XC_D00001 = 6
   integer, parameter :: XC_D20000 = 7
-  integer, parameter :: XC_D11000 = 8
+  integer, parameter :: XC_D11000 = 8  !zero at closed-shell reference with XC_VARS_RS
   integer, parameter :: XC_D10100 = 9
-  integer, parameter :: XC_D10010 = 10
+  integer, parameter :: XC_D10010 = 10 !zero at closed-shell reference with XC_VARS_RS
   integer, parameter :: XC_D10001 = 11
   integer, parameter :: XC_D02000 = 12
-  integer, parameter :: XC_D01100 = 13
+  integer, parameter :: XC_D01100 = 13 !zero at closed-shell reference with XC_VARS_RS
   integer, parameter :: XC_D01010 = 14
-  integer, parameter :: XC_D01001 = 15
+  integer, parameter :: XC_D01001 = 15 !zero at closed-shell reference with XC_VARS_RS
   integer, parameter :: XC_D00200 = 16
-  integer, parameter :: XC_D00110 = 17
+  integer, parameter :: XC_D00110 = 17 !zero at closed-shell reference with XC_VARS_RS
   integer, parameter :: XC_D00101 = 18
   integer, parameter :: XC_D00020 = 19
-  integer, parameter :: XC_D00011 = 20
-  integer, parameter :: XC_D00002 = 21
+  integer, parameter :: XC_D00011 = 20 !zero at closed-shell reference with XC_VARS_RS
+  integer, parameter :: XC_D00002 = 21 !zero at closed-shell reference with XC_VARS_RS
+
 
 !radovan: here are the pointers to 3rd gga derivatives
-!         be careful, only those that are nonzero at closed-shell reference 
+!         be careful, only those that are nonzero at closed-shell reference
 !         with XC_VARS_RS are here
   integer, parameter :: XC_D30000 = 22
   integer, parameter :: XC_D20100 = 24
   integer, parameter :: XC_D12000 = 27
-  integer, parameter :: XC_D11001 = 30
+  integer, parameter :: XC_D11010 = 29
   integer, parameter :: XC_D10200 = 31
-  integer, parameter :: XC_D10002 = 36
+  integer, parameter :: XC_D10020 = 34
   integer, parameter :: XC_D02100 = 38
-  integer, parameter :: XC_D01101 = 43
+  integer, parameter :: XC_D01110 = 42
   integer, parameter :: XC_D00300 = 47
-  integer, parameter :: XC_D00102 = 52
+  integer, parameter :: XC_D00120 = 50
 
 contains
   ! We pass strings as null terminated integer arrays to C, this
@@ -112,12 +113,17 @@ contains
     xc_new_functional = xcnewf()
   end function xc_new_functional
 
+  subroutine xc_free_functional(funid)
+    integer funid
+    call xcfree(funid)
+  end subroutine xc_free_functional
+
   subroutine xc_set_param(funid, param, val)
     integer, intent(in) :: funid, param
     double precision, intent(in) :: val
     call xcsets(funid,param,val)
   end subroutine xc_set_param
-  
+
   function xc_get_param(funid, param)
     integer, intent(in) :: funid, param
     double precision xcgets, xc_get_param
@@ -167,11 +173,16 @@ contains
     xc_get_type = xcgett(funid)
   end function xc_get_type
 
-  subroutine xc_eval(funid, order, npoints, densvars, res)
-    integer, intent(in) :: funid, npoints, order
-    double precision, intent(out) :: res(*)
-    double precision, intent(in) :: densvars(*)
-    call xceval(funid,order,npoints,densvars,res)
+  subroutine xc_eval(funid, order, npoints, densities, results)
+    integer, intent(in) :: funid, order, npoints
+!radovan: trying to get it explicitly
+!         maybe later we go back to implicit
+!   integer :: npoints
+    double precision, intent(out) :: densities(:,:)
+    double precision, intent(in) :: results(:,:)
+!   npoints = size(densities,2)
+    call xceval(funid,order,npoints,densities(1,1),densities(1,2),&
+         results(1,1),results(1,2))
   end subroutine xc_eval
 
   function xc_index(funid, exponents)

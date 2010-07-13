@@ -101,12 +101,12 @@ contains
     real(8)                :: gn(3, 0:max_nr_dmat)
     real(8)                :: z(0:max_nr_dmat, 0:max_nr_dmat)
 
-    integer                :: i, j, npoints
+    integer                :: i, j
     logical                :: u_above_threshold
     logical                :: v_above_threshold
 
     real(8), external      :: ddot
-    real(8)                :: xcfun_in(5)
+    real(8)                :: xcfun_in(5, mxbllen)
 !   ----------------------------------------------------------------------------
 
 !   get perturbed densities
@@ -152,12 +152,11 @@ contains
     end if
 
     xcfun_in = 0.0d0
-    xcfun_in(1) = n(0)
-    xcfun_in(3) = z(0, 0)
+    xcfun_in(1, 1) = n(0)
+    xcfun_in(3, 1) = z(0, 0)
 
     derv = 0.0d0
-    npoints = 1 ! TODO: Maybe do more points at a time?
-    call xc_eval(xc_fun%id, order, npoints, xcfun_in, derv)
+    call xc_eval(xc_fun%id, order, 1, xcfun_in, derv)
 
     u = 0.0d0
     v = 0.0d0

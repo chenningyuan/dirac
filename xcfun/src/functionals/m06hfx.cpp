@@ -7,7 +7,7 @@
 template<class num>
 static num energy (const densvars<num> &d)
 {
-   using pw91_like_x_internal::chi;
+   using pw91_like_x_internal::chi2;
    using m0xy_metagga_xc_internal::zet;
    using m0xy_metagga_xc_internal::fw;
    using m0xy_metagga_xc_internal::h;
@@ -21,8 +21,8 @@ static num energy (const densvars<num> &d)
        { -1.179732e-01, -2.500000e-03, -1.180056e-02,  0.000000e+00,  0.000000e+00,
           0.000000e+00 };
 
-   num chia2 = pow(chi(d.a, d.gaa), 2);
-   num chib2 = pow(chi(d.b, d.gbb), 2);
+   num chia2 = chi2(d.a, d.gaa);
+   num chib2 = chi2(d.b, d.gbb);
 
    return (  (  pbex::energy_pbe_ab(pbex::R_pbe,d.a,d.gaa)*fw(param_a, d.a, d.taua) 
               + lsda_x(d.a)*h(param_d, alpha_x, chia2, zet(d.a, d.taua)))
@@ -44,6 +44,6 @@ void setup_m06hfx(functional &f)
   static const double d[] =
     {1., .8, 1., 1., 1., .33, .21};
   static const double ref[] =
-    {  0.19601260,  0.87809662,  0.90304189,  0.00284062,  0.00398338,  0.00000000, -1.37896315, -1.71127886 };
+    {  0.19601260,  0.87809662,  0.90304189,  0.00284062, 0.00000000, 0.00398338,   -1.37896315, -1.71127886 };
   f.add_test(XC_VARS_AB,1,d,ref,1e-5);
 }

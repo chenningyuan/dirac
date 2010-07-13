@@ -109,8 +109,8 @@ public:
   // series is no longer exact around the new "zero" point. For this
   // reason NdegOut may be choosen to be smaller than Ndeg.
   // TODO: implement for more variables, and without runtime polylen.
-  template<int NdegOut>
-  void shift(taylor<T,1,NdegOut> &out, const T dx[Nvar]) const
+  template<int NdegOut, class Tout>
+  void shift(taylor<Tout,1,NdegOut> &out, const Tout dx[Nvar]) const
   {
     assert(Nvar == 1);
     assert(NdegOut <= Ndeg);

@@ -107,8 +107,8 @@ static void eval_gga_ab(const xc_functional_data &fun,
   dv.s = dv.a-dv.b;
     
   dv.gaa = ttype(d[2],2);
-  dv.gbb = ttype(d[3],3);
-  dv.gab = ttype(d[4],4);
+  dv.gab = ttype(d[3],3);
+  dv.gbb = ttype(d[4],4);
   
   dv.gnn  = dv.gaa + 2*dv.gab + dv.gbb; 
   dv.gss  = dv.gaa - 2*dv.gab + dv.gbb;
@@ -131,8 +131,8 @@ static void eval_gga_rs(const xc_functional_data &fun,
   dv.b = (dv.n - dv.s)/2;
     
   dv.gnn = ttype(d[2],2);
-  dv.gss = ttype(d[3],3);
-  dv.gns = ttype(d[4],4);
+  dv.gns = ttype(d[3],3);
+  dv.gss = ttype(d[4],4);
   
   dv.gaa  = (dv.gss+2*dv.gns+dv.gnn)/4;
   dv.gbb  = (dv.gss-2*dv.gns+dv.gnn)/4;
@@ -157,8 +157,8 @@ static void eval_mgga_ab(const xc_functional_data &fun,
   dv.s = dv.a-dv.b;
     
   dv.gaa = ttype(d[2],2);
-  dv.gbb = ttype(d[3],3);
-  dv.gab = ttype(d[4],4);
+  dv.gab = ttype(d[3],3);
+  dv.gbb = ttype(d[4],4);
   
   dv.gnn  = dv.gaa + 2*dv.gab + dv.gbb; 
   dv.gss  = dv.gaa - 2*dv.gab + dv.gbb;
@@ -185,8 +185,9 @@ static void eval_mgga_rs(const xc_functional_data &fun,
   dv.b = (dv.n - dv.s)/2;
     
   dv.gnn = ttype(d[2],2);
-  dv.gss = ttype(d[3],3);
-  dv.gns = ttype(d[4],4);
+  dv.gns = ttype(d[3],3);
+  dv.gss = ttype(d[4],4);
+
   
   dv.gaa  = (dv.gss+2*dv.gns+dv.gnn)/4;
   dv.gbb  = (dv.gss-2*dv.gns+dv.gnn)/4;
@@ -209,7 +210,7 @@ static void eval_setup_lda(void)
   eval_tab->tab[XC_VARS_A][XC_LDA][Ndeg] = eval_lda_a<double,Ndeg>;
   eval_tab->tab[XC_VARS_AB][XC_LDA][Ndeg] = eval_lda_ab<double,Ndeg>;
   eval_tab->tab[XC_VARS_R][XC_LDA][Ndeg] = eval_lda_r<double,Ndeg>;
-  eval_tab->tab[XC_VARS_RS][XC_LDA][Ndeg] = eval_lda_rs<double,Ndeg>;
+  eval_tab->tab[XC_VARS_NS][XC_LDA][Ndeg] = eval_lda_rs<double,Ndeg>;
   eval_setup_lda<Ndeg-1>();
 }
 template<> void eval_setup_lda<-1>(void) {}
@@ -218,7 +219,7 @@ template<int Ndeg>
 static void eval_setup_gga(void)
 {
   eval_tab->tab[XC_VARS_AB][XC_GGA][Ndeg] = eval_gga_ab<double,Ndeg>;
-  eval_tab->tab[XC_VARS_RS][XC_GGA][Ndeg] = eval_gga_rs<double,Ndeg>;
+  eval_tab->tab[XC_VARS_NS][XC_GGA][Ndeg] = eval_gga_rs<double,Ndeg>;
   eval_setup_gga<Ndeg-1>();
 }
 template<> void eval_setup_gga<-1>(void) {}
@@ -227,7 +228,7 @@ template<int Ndeg>
 static void eval_setup_mgga(void)
 {
   eval_tab->tab[XC_VARS_AB][XC_MGGA][Ndeg] = eval_mgga_ab<double,Ndeg>;
-  eval_tab->tab[XC_VARS_RS][XC_MGGA][Ndeg] = eval_mgga_rs<double,Ndeg>;
+  eval_tab->tab[XC_VARS_NS][XC_MGGA][Ndeg] = eval_mgga_rs<double,Ndeg>;
   eval_setup_mgga<Ndeg-1>();
 }
 template<> void eval_setup_mgga<-1>(void) {}

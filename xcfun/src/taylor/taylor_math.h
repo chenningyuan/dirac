@@ -464,9 +464,72 @@ static taylor<T,Nvar,Ndeg> sinc(const taylor<T,Nvar,Ndeg> &t)
     }
 }
 
+// Curiously(?) sqrtx_asinh_sqrtx has the same taylor coefficients
+// as the odd coefficients of asinh at 0.
+template<class T, int Ndeg>
+static void sqrtx_asinh_sqrtx_taylor_at0(taylor<T,1,Ndeg>& t)
+{
+  static const double c[] = {0,1, 
+			     -1.0/6, 3.0/40, -5.0/112, 35.0/1152,
+			     -63.0/2816, 231.0/13321, -143.0/10240,
+			     6435.0/557056, -12155/1245184};
+  assert(Ndeg<=10 && "Extend table in sqrtx_asinh_sqrtx_taylor_at0()");
+  for (int i=0;i<=Ndeg;i++)
+    t[i] = c[i];
+}
+
+/*
+  The original function is unstable for small t[0] values similarly to
+  the Boys function. Use an [8,8] Pade approximation when |t[0]| is
+  small. This works less well but still ok in single precision.
+ */
+template<int Nvar, int Ndeg>
+static taylor<double,Nvar,Ndeg> sqrtx_asinh_sqrtx(const taylor<double,Nvar,Ndeg> &t)
+{
+  assert(t[0] > -0.5);
+  // Coefficients of an [8,8] Pade approximation at x = 0
+  static const double P[] = {0,
+			     3.510921856028398e3,
+			     1.23624388373212e4,
+			     1.734847003883674e4,
+			     1.235072285222234e4,
+			     4.691117148130619e3,
+			     9.119186273274577e2,
+			     7.815848629220836e1,	     
+			     1.96088643023654e0};
+  static const double Q[] = {3.510921856028398e3,
+			     1.29475924799926e4,
+			     1.924308297963337e4,
+			     1.474357149568687e4,    
+			     6.176496729255528e3,
+			     1.379806958043824e3,
+			     1.471833349002349e2,
+			     5.666278232986776e0,
+			     2.865104054302032e-2};
+  if (fabs(t[0]) < 0.5)
+    {
+      // Shift polys
+      assert(Ndeg<=8);
+      taylor<double,1,Ndeg> pp,pq,ppade;
+      reinterpret_cast<const taylor<double,1,8> *>(P)->shift(pp,&t[0]);
+      reinterpret_cast<const taylor<double,1,8> *>(Q)->shift(pq,&t[0]);
+      ppade = pp/pq;
+      taylor<double,Nvar,Ndeg> res;
+      t.compose(res,ppade);
+      return res;
+    }
+    else
+    {
+      // This is the unstable form
+      taylor<double,Nvar,Ndeg> s = sqrt(t);
+      return s*asinh(s);
+    }
+}
+
+
 template<class T,int Nvar, int Ndeg>
 static taylor<T,Nvar,Ndeg> min(const taylor<T,Nvar,Ndeg> &a,
-			const taylor<T,Nvar,Ndeg> &b)
+			       const taylor<T,Nvar,Ndeg> &b)
 {
   if (a <= b)
     return a;
@@ -476,7 +539,7 @@ static taylor<T,Nvar,Ndeg> min(const taylor<T,Nvar,Ndeg> &a,
 
 template<class T,int Nvar, int Ndeg>
 static taylor<T,Nvar,Ndeg> max(const taylor<T,Nvar,Ndeg> &a,
-			const taylor<T,Nvar,Ndeg> &b)
+			       const taylor<T,Nvar,Ndeg> &b)
 {
   if (a > b)
     return a;

@@ -46,10 +46,9 @@ static taylor<T,Nvar,Ndeg> ratfun(const taylor<T,Nvar,Ndeg> &x,
   return x.compose(poly(t,np,pc)/poly(t,nq,qc));
 }
 
-
 template<class T, int Nvar, int Ndeg>
 static taylor<T,Nvar,Ndeg> preexpand(taylor<T,1,Ndeg> (*f)(const taylor<T,1,Ndeg> &),
-			      const taylor<T,Nvar,Ndeg> &t)
+				     const taylor<T,Nvar,Ndeg> &t)
 {
   return t.compose(f(taylor<T,1,Ndeg>(t[0],0)));
 }
@@ -78,6 +77,27 @@ static taylor<T,Nvar,Ndeg> preexpand(taylor<T,2,Ndeg> (*f)(const taylor<T,2,Ndeg
   top[1] = y;
   top[1][0] = 0;
   return ft.eval(top);
+}
+
+
+template<class T>
+static T ufunc(const T &x, T &a)
+{
+  return pow(1+x,a)+pow(1-x,a);
+}
+
+template<class T, int Nvar, int Ndeg>
+static taylor<T,Nvar,Ndeg> ufunc(const taylor<T,Nvar,Ndeg> &x, const double &a)
+{
+  taylor<T,1,Ndeg> tmp1,tmp2;
+  taylor<T,Nvar,Ndeg> res;
+  pow_taylor(tmp1,1+x[0],a);
+  pow_taylor(tmp2,1-x[0],a);
+  for (int i=1;i<=Ndeg;i+=2)
+    tmp2[i] *= -1;
+  tmp1 += tmp2;
+  x.compose(res,tmp1);
+  return res;
 }
 
 

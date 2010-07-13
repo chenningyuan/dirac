@@ -30,9 +30,14 @@ int FSYM(xcnewf)(void)
 	  return i;
 	}
     }
-  fprintf(stderr,"Too many XC functionals (%i), check src/fortran.cpp.",MAX_FORTRAN_FUNCTIONALS);
-  exit(EXIT_FAILURE);
   return -1;
+}
+
+void FSYM(xcfree)(int *fun)
+{
+  assert(*fun >= 0 && *fun < MAX_FORTRAN_FUNCTIONALS);
+  xc_free_functional(fortran_functionals[*fun]);
+  fortran_functionals[*fun] = 0;
 }
 
 void FSYM(xcregu)(int *fun, double *density)
@@ -41,10 +46,23 @@ void FSYM(xcregu)(int *fun, double *density)
   xc_regularize_density(fortran_functionals[*fun],density);
 }
 
-void FSYM(xceval)(int *fun,  int *order, int *nr_points, double *density, double *result)
+/*
+  Figure out the memory distance between points
+  from the first and second pointers.
+ */
+void FSYM(xceval)(int *fun,  int *order, 
+		  int *nr_points, 
+		  double *first_density,
+		  double *second_density,
+		  double *first_result,
+		  double *second_result)
 {
   assert(*fun >= 0 && *fun < MAX_FORTRAN_FUNCTIONALS);
-  xc_eval(fortran_functionals[*fun], *order, *nr_points, density, result);
+  int dpitch = second_density - first_density;
+  int rpitch = second_result - first_result;
+  xc_eval(fortran_functionals[*fun], *order, *nr_points, 
+	  first_density, dpitch,
+	  first_result, rpitch);
 }
 
 void FSYM(xcsmod)(int *fun, int *mode)

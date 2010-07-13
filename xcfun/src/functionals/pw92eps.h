@@ -29,6 +29,7 @@ namespace pw92eps
   static num omega(const num &z)
   {
     return (pow(1+z,4.0/3.0)+pow(1-z,4.0/3.0)-2)/(2*pow(2,1.0/3.0)-2);
+    return (ufunc(z,4.0/3.0)-2)/(2*pow(2,1.0/3.0)-2);
   }
 
   template<class num>

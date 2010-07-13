@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
+#include <cmath>
 #include "xcfun_internal.h"
 
 static bool xcfun_is_setup = false;
@@ -76,7 +77,46 @@ void xc_functional_data::destroy()
 
 void xc_functional_data::regularize_density(double *density)
 {
-  //TODO: Actually do something here.
+  /*
+    Good density when 
+    na, nb > thres
+    gaa,gbb > thres^2
+    |gab|^2 < |gaa||gbb|
+    ta > thres
+    tb > thres
+    
+    ns variables:
+    n > thres
+    |s| < n - thres
+    tn > thres
+    |ts| < tn - thres
+   */
+  static const double thres = 1e-14, thres2 = thres*thres;
+  
+  if (mode==XC_VARS_AB)
+    {
+      if (density[0] < thres)
+	density[0] = thres;
+      if (density[1] < thres)
+	density[1] = thres;
+      if (type>=XC_GGA)
+	{
+	  if (density[2] < thres2)
+	    density[2] = thres2;
+	  if (density[4] < thres2)
+	    density[4] = thres2;
+	  if (density[3]*density[3] > density[2]*density[4])
+	    density[3] = copysign(sqrt(density[2]*density[4]),density[3]);
+	  if (type>=XC_MGGA)
+	    {
+	      
+	    }
+	}
+    }
+  else
+    {
+      xcint_die("FIXME in regularize_density",mode);
+    }
 }
 
 int xc_functional_data::get_type(void) const
@@ -156,7 +196,10 @@ void xc_regularize_density(xc_functional fun, double *density)
 }
 
 void xc_eval(xc_functional fun, int order, int nr_points,
-	     const double *density, double *result)
+	     const double *density, 
+	     int density_pitch,
+	     double *result,
+	     int result_pitch)
 {
   evaluator ev = xc_evaluator_lookup(fun->mode,fun->type,order);
   if (!ev)
@@ -166,10 +209,8 @@ void xc_eval(xc_functional fun, int order, int nr_points,
       fprintf(stderr,"type: %i\n",fun->type);
       xcint_die("eval(): Functional not available for order",order);
     }
-  int inlen = xc_input_length(fun); // TODO: cache this in fun
-  int outlen = xc_output_length(fun,order);
   for (int i=0;i<nr_points;i++)
-    ev(*fun,result+i*outlen,density+i*inlen);
+    ev(*fun,result+i*result_pitch,density+i*density_pitch);
 }
 
 int xc_get_type(xc_functional fun)
@@ -239,7 +280,7 @@ static int run_tests(functional *fun)
   int n = xc_output_length(xf, fun->test_order);
   double out[n];
   double *reference = fun->test_output;
-  xc_eval(xf,fun->test_order,1,fun->test_input,out);
+  xc_eval(xf,fun->test_order,1,fun->test_input,0,out,0);
 
   int nerr = 0;
   for (int i=0;i<n;i++)

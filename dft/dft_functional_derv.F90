@@ -45,7 +45,7 @@ module dft_functional_derv
 
   integer, parameter   :: max_dim = 99
 
-  real(8), allocatable :: xcfun_in(:)
+  real(8), allocatable :: xcfun_in(:, :)
   real(8), allocatable :: xcfun_out(:, :)
   integer              :: xcfun_in_length  = 0
   integer              :: xcfun_out_length = 0
@@ -110,7 +110,7 @@ contains
          if (allocated(xcfun_in)) then
             deallocate(xcfun_in)        
          end if
-         allocate(xcfun_in(xcfun_in_length))
+         allocate(xcfun_in(xcfun_in_length, 1))
       end if
   
       if (need_out_length > xcfun_out_length) then
@@ -144,7 +144,7 @@ contains
     real(8),          intent(out) :: derv(mxbllen, 0:n)
 !   ----------------------------------------------------------------------------
     real(8)                       :: t(max_dim, mxbllen)
-    integer                       :: k, l, npoints
+    integer                       :: k, l
     real(8), external             :: dftenergy
 !   ----------------------------------------------------------------------------
 
@@ -155,16 +155,15 @@ contains
 
       do k = 1, block_length
         xcfun_in = 0.0d0
-        xcfun_in(1) = r_0(k)
+        xcfun_in(1, 1) = r_0(k)
 !for mcscf ... 
 !       here we will have to rotate to the spin density vector direction
 !       xcfun_in(2) = z-component of spin density
         if (xcfun_in_length > 2) then
-          xcfun_in(3) = z_0(k)
+          xcfun_in(3, 1) = z_0(k)
         end if
-        npoints = 1 ! TODO: Do the whole block at a time, just check packing.
-        call xc_eval(f%id, order, npoints, xcfun_in, xcfun_out(1, k))
       end do
+      call xc_eval(f%id, order, block_length, xcfun_in, xcfun_out)
 
       do k = 1, block_length
 
@@ -184,10 +183,10 @@ contains
            derv(k, d_ss) = xcfun_out(XC_D02000, k)
            derv(k, d_rz) = xcfun_out(XC_D10100, k)
            derv(k, d_zz) = xcfun_out(XC_D00200, k)
-           derv(k, d_sy) = xcfun_out(XC_D01001, k)
-           derv(k, d_yy) = xcfun_out(XC_D00002, k)
+           derv(k, d_sy) = xcfun_out(XC_D01010, k)
+           derv(k, d_yy) = xcfun_out(XC_D00020, k)
            derv(k, d_z ) = xcfun_out(XC_D00100, k)
-           derv(k, d_x ) = xcfun_out(XC_D00010, k)
+           derv(k, d_x ) = xcfun_out(XC_D00001, k)
         else
            derv(k, d_rr) = xcfun_out(XC_D20, k)
            derv(k, d_ss) = xcfun_out(XC_D02, k)
@@ -198,17 +197,17 @@ contains
            derv(k, d_rrr) = xcfun_out(XC_D30000, k)
            derv(k, d_rss) = xcfun_out(XC_D12000, k)
            derv(k, d_rrz) = xcfun_out(XC_D20100, k)
-           derv(k, d_rsy) = xcfun_out(XC_D11001, k)
-           derv(k, d_rx ) = xcfun_out(XC_D10010, k)
-           derv(k, d_ryy) = xcfun_out(XC_D10002, k)
+           derv(k, d_rsy) = xcfun_out(XC_D11010, k)
+           derv(k, d_rx ) = xcfun_out(XC_D10001, k)
+           derv(k, d_ryy) = xcfun_out(XC_D10020, k)
            derv(k, d_rz ) = xcfun_out(XC_D10100, k)
            derv(k, d_rzz) = xcfun_out(XC_D10200, k)
            derv(k, d_ssz) = xcfun_out(XC_D02100, k)
-           derv(k, d_sy ) = xcfun_out(XC_D01001, k)
-           derv(k, d_szy) = xcfun_out(XC_D01101, k)
-           derv(k, d_yy ) = xcfun_out(XC_D00002, k)
-           derv(k, d_zx ) = xcfun_out(XC_D00110, k)
-           derv(k, d_zyy) = xcfun_out(XC_D00102, k)
+           derv(k, d_sy ) = xcfun_out(XC_D01010, k)
+           derv(k, d_szy) = xcfun_out(XC_D01110, k)
+           derv(k, d_yy ) = xcfun_out(XC_D00020, k)
+           derv(k, d_zx ) = xcfun_out(XC_D00101, k)
+           derv(k, d_zyy) = xcfun_out(XC_D00120, k)
            derv(k, d_zz ) = xcfun_out(XC_D00200, k)
            derv(k, d_zzz) = xcfun_out(XC_D00300, k)
         else

@@ -6,7 +6,7 @@
 template<class num>
 static num energy (const densvars<num> &d)
 {
-   using pw91_like_x_internal::chi;
+   using pw91_like_x_internal::chi2;
    using m0xy_metagga_xc_internal::zet;
    using m0xy_metagga_xc_internal::m06_c_anti;
    using m0xy_metagga_xc_internal::ueg_c_anti;
@@ -27,15 +27,15 @@ static num energy (const densvars<num> &d)
      {  6.902145e-01,  9.847204e-02,  2.214797e-01, -1.968264e-03, -6.775479e-03,
         0.000000e+00 }; 
 
-   num chi_a = chi(d.a, d.gaa);
-   num chi_b = chi(d.b, d.gbb);
+   num chi_a2 = chi2(d.a, d.gaa);
+   num chi_b2 = chi2(d.b, d.gbb);
    num zet_a = zet(d.a, d.taua);
    num zet_b = zet(d.b, d.taub);
 
-   num Ec_ab = ueg_c_anti(d) * m06_c_anti(param_c_anti,param_d_anti,chi_a,zet_a,
-                                                                    chi_b,zet_b);
-   num Ec_aa = ueg_c_para(d.a) * m06_c_para(param_c_para,param_d_para,chi_a,zet_a);
-   num Ec_bb = ueg_c_para(d.b) * m06_c_para(param_c_para,param_d_para,chi_b,zet_b);
+   num Ec_ab = ueg_c_anti(d) * m06_c_anti(param_c_anti,param_d_anti,chi_a2,zet_a,
+                                                                    chi_b2,zet_b);
+   num Ec_aa = ueg_c_para(d.a) * m06_c_para(param_c_para,param_d_para,chi_a2,zet_a);
+   num Ec_bb = ueg_c_para(d.b) * m06_c_para(param_c_para,param_d_para,chi_b2,zet_b);
 
    return Ec_ab + Ec_aa + Ec_bb;
 }

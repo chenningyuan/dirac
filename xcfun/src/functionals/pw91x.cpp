@@ -14,7 +14,7 @@ static num energy(const densvars<num> &d)
 
 void setup_pw91x(functional &f)
 {
-  f.describe(XC_PW91K, XC_GGA,
+  f.describe(XC_PW91X, XC_GGA,
 	     "Perdew-Wang 1991 GGA Exchange Functional",
 	     "Perdew-Wang 1991 GGA Exchange Functional\n"
 	     "J. P. Perdew, J. A. Chevary, S. H. Vosko, "
@@ -32,8 +32,8 @@ void setup_pw91x(functional &f)
       -0.500194130392E+01,
       -0.497593413511E+01,
       -0.661655297347E-05,
-      -0.665149614704E-05,
       0.000000000000E+00,
+      -0.665149614704E-05,
       -0.259426653786E-01,
       0.000000000000E+00,
       0.352029178373E-07,
@@ -41,13 +41,13 @@ void setup_pw91x(functional &f)
       0.000000000000E+00,
       -0.260706018375E-01,
       0.000000000000E+00,
-      0.346740334540E-07,
       0.000000000000E+00,
+      0.346740334540E-07,
       0.454242196579E-12,
       0.000000000000E+00,
       0.000000000000E+00,
-      0.463780470889E-12,
       0.000000000000E+00,
-      0.000000000000E+00};
+      0.000000000000E+00,
+      0.463780470889E-12,};
   f.add_test(XC_VARS_AB,2,d,out,1e-11);
 }
