@@ -5,7 +5,7 @@ module overlap_diagnostic
 
 !  implemented 2010/06/30 by Radovan Bast <radovan.bast@uit.no>
 
-!  known problems: so far no mpi, no symmetry, only nonrelativistic
+!  known problems: so far no mpi, no symmetry
 
    use memory_allocator
 
@@ -58,7 +58,7 @@ contains
       real(8), intent(in)    :: kappa
 !     --------------------------------------------------------------------------
 
-      lambda_numerator   = lambda_numerator   + kappa*lambda_matrix(i, s)
+      lambda_numerator   = lambda_numerator   + kappa*lambda_matrix(npsh(1) + i, npsh(1) + s)
       lambda_denominator = lambda_denominator + kappa
 
    end subroutine

@@ -1730,6 +1730,10 @@ C
 C     Written by Trond Saue July 4 2001
 C
 C***********************************************************************
+
+      use overlap_diagnostic
+      use dirac_cfg
+
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1747,6 +1751,11 @@ C
       CALL QENTER('ANAXRS')
       KFRSAV = KFREE
       CALL HEADER('Analysis of response solution vectors',-1)
+
+      if (dirac_cfg_overlap_diagnostic) then
+         call lambda_matrix_from_disc()
+      end if
+
 C
 C     Check if file of solution vectors is present
 C
@@ -1954,6 +1963,10 @@ C
 C     Written by T.Saue July 6 2001
 C
 C***********************************************************************
+
+      use overlap_diagnostic
+      use dirac_cfg
+
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DTOL=1.0D-12,DTOL2=1.0D-4,D0=0.0D0,D1=1.0D0,DM=1.0D2)
@@ -1968,6 +1981,8 @@ C
 C     Local variables
       CHARACTER TYP(3)*1
       DATA TYP/'i','a','v'/
+      real(8) :: lambda_numerator
+      real(8) :: lambda_denominator
 C
       CALL IZERO(IIBF,NI)
       CALL IZERO(IVBF,NV)
@@ -2132,6 +2147,21 @@ C       Give major orbital rotations in excitations
             WRITE(LUPRI,'(3X,I6,E16.8)') J,BUF2(J)
           ENDDO
         ENDIF
+        if (dirac_cfg_overlap_diagnostic) then
+           lambda_numerator   = 0.0d0
+           lambda_denominator = 0.0d0
+           do j = nbdim, 1, -1
+              jj = indx(j)
+              i1 = jxop(1, jj)
+              i2 = jxop(2, jj)
+              call sum_lambda(lambda_numerator,  
+     &                        lambda_denominator,
+     &                        iorbcl(2, i1),            
+     &                        iorbcl(2, i2),        
+     &                        buf2(jj))
+           enddo
+           write(*, *) 'lambda = ', lambda_numerator/lambda_denominator
+        end if
       ENDIF
  20   CONTINUE
       ENDDO

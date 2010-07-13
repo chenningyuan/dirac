@@ -13,17 +13,17 @@ module dirac_cfg
 
 !                    kohn-sham dft
   logical, public :: dirac_cfg_dft_calculation    = .false.
-!                    hartree-fock                 
+!                    hartree-fock
   logical, public :: dirac_cfg_hf_calculation     = .false.
-!                    hf or ks                     
+!                    hf or ks
   logical, public :: dirac_cfg_scf_calculation    = .false.
-!                    ao response                  
+!                    ao response
   logical, public :: dirac_cfg_aoresponse         = .false.
-!                    visualization module         
+!                    visualization module
   logical, public :: dirac_cfg_visual             = .false.
-!                    relcc module                 
+!                    relcc module
   logical, public :: dirac_cfg_relcc              = .false.
-!                    embedding module             
+!                    embedding module
   logical, public :: dirac_cfg_fde                = .false.
   logical, public :: dirac_cfg_fde_response       = .false.
 !                    overlap diagnostic

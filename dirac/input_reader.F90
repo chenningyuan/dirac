@@ -121,6 +121,7 @@ contains
   subroutine read_input_dft(word, kw_section)
 
     use dft_cfg
+    use dirac_cfg
 
 !   ----------------------------------------------------------------------------
     character(kw_length), intent(in) :: word
@@ -353,6 +354,10 @@ contains
 
     if (kw_matches(word, '.BETASI')) then
       dft_cfg_betasigma = .true.
+    end if
+
+    if (kw_matches(word, '.LAMBDA')) then
+      dirac_cfg_overlap_diagnostic = .true.
     end if
 
     call check_whether_kw_found(word, kw_section)

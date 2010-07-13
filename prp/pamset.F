@@ -660,23 +660,23 @@ C          Hermitian operator
 
 
 
-!       construct kohn-sham contribution
-!       ================================
+!       construct xc contribution
+!       =========================
 
         if (dirac_cfg_dft_calculation) then
-
-          call genden(fao, cmo, 1, iprint)
-
-         call xc_mpi_wake_up_coworkers()
-         call xc_integrator(xc_mat_dim      = ntbas(0),
-     &                      xc_nz           = nz,
-     &                      xc_dmat_0       = fao,
-     &                      xc_nr_dmat      = 0,
-     &			    xc_nr_fmat      = 1,
-     &                      xc_fmat         = fmo,
-     &                      xc_do_potential = .true.)
-         call xc_mpi_release_coworkers()
-
+           call genden(fao, cmo, 1, iprint)
+           
+           call xc_mpi_wake_up_coworkers()
+           call xc_integrator(xc_mat_dim               = ntbas(0),
+     &                        xc_nz                    = nz,
+     &                        xc_dmat_0                = fao,
+     &                        xc_nr_dmat               = 0,
+     &                        xc_nr_fmat               = 1,
+     &                        xc_fmat                  = fmo,
+     &                        xc_do_potential          = .true.,
+     &                        xc_do_overlap_diagnostic = 
+     &                           dirac_cfg_overlap_diagnostic)
+           call xc_mpi_release_coworkers()
         end if
 
 
