@@ -794,13 +794,6 @@ contains
       integer :: id, m
       real(8) :: temp
       real(8) :: delec
-      real(8), parameter :: t1 = 1.0d-4
-      real(8), parameter :: t2 = 0.0d0
-      integer :: nr_above_t1
-      integer :: ioff
-      integer :: joff
-      integer :: moff
-      integer :: is, js
 
 
 
@@ -895,88 +888,19 @@ contains
                   ao_block,                         &
                   buffer_block)
 
-      nr_above_t1 = 0
-      do i = 1, mat_dim
-         buffer(i) = 0.0d0
-         do k = 1, block_length
-            temp = dabs(ao_block(k, i))
-            if (temp > buffer(i)) then
-               buffer(i) = temp
-            end if
-         end do
-         if (buffer(i) > t1) then
-            nr_above_t1 = nr_above_t1 + 1
-         end if
-      end do
-
-!     early return
-      if (nr_above_t1 == 0) then
-         exit
-      end if
-
-!     get sorting index
-      call indexx(mat_dim, buffer, ao_sort_index_reverse)
-      do i = 1, nr_above_t1
-         ao_sort_index(i) = ao_sort_index_reverse(mat_dim - i + 1)
-      end do
-
-!     sort ao matrix
-      do i = 1, nr_above_t1
-         is = ao_sort_index(i)
-         ioff = (i - 1)*block_length
-         do k = 1, block_length
-            ao_sorted(ioff + k) = ao_block(k, is)
-         end do
-      end do
-
-!     sort density matrix (upper triangle)
-      do i = 1, nr_above_t1
-         is = ao_sort_index(i)
-         ioff = (i - 1)*nr_above_t1
-         do j = 1, i
-            js = ao_sort_index(j)
-            dmat_sorted(ioff + j) = dmat_0(js, is)
-         end do
-      end do
-
-      do k = 1, block_length
-         r_0(k) = 0.0d0
-      end do
-
-      if (nr_above_t1 > 10) then
-         call dsymm('r',          &
-                    'u',          &
-                    block_length, &
-                    nr_above_t1,  &
-                    1.0d0,        &
-                    dmat_sorted,  &
-                    nr_above_t1,  &
-                    ao_sorted,    &
-                    block_length, &
-                    0.0d0,        &
-                    xmat_sorted,  &
-                    block_length)           
-         do i = 1, nr_above_t1
-            ioff = (i - 1)*block_length
-            do k = 1, block_length
-               r_0(k) = r_0(k) + xmat_sorted(ioff + k)*ao_sorted(ioff + k)
-            end do
-         end do
-      else
-         do i = 1, nr_above_t1
-            moff = (i - 1)*nr_above_t1
-            ioff = (i - 1)*block_length
-            do k = 1, block_length
-               r_0(k) = r_0(k) + ao_sorted(ioff + k)*ao_sorted(ioff + k)*dmat_sorted(moff + i)
-            end do
-            do j = 1, i - 1
-               joff = (i - 1)*block_length
-               do k = 1, block_length
-                  r_0(k) = r_0(k) + 2.0d0*ao_sorted(ioff + k)*ao_sorted(joff + k)*dmat_sorted(moff + j)
-               end do
-            end do
-         end do
-      end if
+         call get_n_block( &
+                          block_length, &
+                          mat_dim, &
+                          r_0, &
+                          buffer, &
+                          ao_block, &
+                          ao_sorted, &
+                          ao_sort_index,  &
+                          ao_sort_index_reverse, &
+                          dmat_0, &
+                          dmat_sorted, &
+                          xmat_sorted,  &
+                          0)
 
       do k = 1, block_length
          delec = delec + rw(ipoint + k - 1)*r_0(k)

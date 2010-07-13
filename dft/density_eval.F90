@@ -3,7 +3,7 @@ module density_eval
    use basis_info
 
    implicit none
- 
+
    public gga_sym
    public get_n
    public get_s
@@ -21,7 +21,8 @@ module density_eval
    public gga_london_distribute_r
    public set_ss_prefactor_to_plus
    public set_ss_prefactor_to_minus
- 
+   public get_n_block
+
    private
 
   integer :: jxyz_start = 1 !noncollinear
@@ -1252,5 +1253,157 @@ contains
     end do
 
   end subroutine
+
+   subroutine get_n_block( &
+                          block_length, &
+                          mat_dim, &
+                          n, &
+                          buffer, &
+                          ao_block, &
+                          ao_sorted, &
+                          ao_sort_index,  &
+                          ao_sort_index_reverse, &
+                          dmat_0, &
+                          dmat_sorted, &
+                          xmat_sorted, &
+                          irep  &
+                         )
+
+      use block_config
+
+!     --------------------------------------------------------------------------
+      integer, intent(in)  :: block_length
+      integer, intent(in)  :: mat_dim
+      real(8), intent(out) :: n(*)
+      real(8)              :: buffer(*)
+      real(8), intent(in)  :: ao_block(mxbllen, *)
+      real(8)              :: ao_sorted(*)
+      integer              :: ao_sort_index(*)
+      integer              :: ao_sort_index_reverse(*)
+      real(8), intent(in)  :: dmat_0(mat_dim, mat_dim)
+      real(8)              :: dmat_sorted(*)
+      real(8)              :: xmat_sorted(*)
+      integer, intent(in)  :: irep
+!     --------------------------------------------------------------------------
+      integer              :: i, j, k
+      integer              :: ikoff, jkoff, ijoff
+      integer              :: nr_above_threshold
+      real(8)              :: temp
+      real(8), parameter   :: threshold = 0.0d0
+      integer, parameter   :: blas_limit = 20
+      integer              :: is, js
+      integer              :: nr1, nr2, st1, st2
+      integer              :: iblock
+!     --------------------------------------------------------------------------
+
+!     zero out density
+      do k = 1, block_length
+         n(k) = 0.0d0
+      end do
+
+!fixme: so far only ll
+      do iblock = 1, ll_nr_density_blocks(0, irep)
+
+         st1 = ll_st_ao(1, iblock, 0, irep)
+         nr1 = ll_nr_ao(1, iblock, 0, irep)
+!        st2 = ll_st_ao(2, iblock, 0, irep)
+!        nr2 = ll_nr_ao(2, iblock, 0, irep)
+
+!        if irep == 0 everything is along diagonal and square
+!        for other ireps we will have to do some tricks
+         if (irep /= 0) then
+            call quit('implement irep /= 0')
+         end if
+
+!        get buffer for sorting
+!        and get number of functions above threshold
+         nr_above_threshold = 0
+         do i = 1, nr1
+            buffer(i) = 0.0d0
+            is = i + st1 - 1
+            do k = 1, block_length
+               temp = dabs(ao_block(k, is))
+               if (temp > buffer(i)) then
+                  buffer(i) = temp
+               end if
+            end do
+            if (buffer(i) > threshold) then
+               nr_above_threshold = nr_above_threshold + 1
+            end if
+         end do
+
+!        check for early return
+         if (nr_above_threshold == 0) then
+            return
+         end if
+
+!        get sorting index
+         call indexx(nr1, buffer, ao_sort_index_reverse)
+         do i = 1, nr_above_threshold
+            ao_sort_index(i) = ao_sort_index_reverse(nr1 - i + 1)
+         end do
+
+!        sort ao matrix
+         do i = 1, nr_above_threshold
+            is = ao_sort_index(i) + st1 - 1
+            ikoff = (i - 1)*block_length
+            do k = 1, block_length
+               ao_sorted(ikoff + k) = ao_block(k, is)
+            end do
+         end do
+
+!        sort density matrix (upper triangle)
+!        note that the lower triangle of the sorted density matrix
+!        can contain numerical dirt from previous batch or previous
+!        symmetry block but it is not used
+         do i = 1, nr_above_threshold
+            is = ao_sort_index(i) + st1 - 1
+            ijoff = (i - 1)*nr_above_threshold
+            do j = 1, i
+               js = ao_sort_index(j) + st1 - 1
+               dmat_sorted(ijoff + j) = dmat_0(js, is)
+            end do
+         end do
+
+         if (nr_above_threshold > blas_limit) then
+            call dsymm('r',                &
+                       'u',                &
+                       block_length,       &
+                       nr_above_threshold, &
+                       1.0d0,              &
+                       dmat_sorted,        &
+                       nr_above_threshold, &
+                       ao_sorted,          &
+                       block_length,       &
+                       0.0d0,              &
+                       xmat_sorted,        &
+                       block_length)
+            do i = 1, nr_above_threshold
+               ikoff = (i - 1)*block_length
+               do k = 1, block_length
+                  n(k) = n(k) + xmat_sorted(ikoff + k)*ao_sorted(ikoff + k)
+               end do
+            end do
+         else
+            do i = 1, nr_above_threshold
+               ijoff = (i - 1)*nr_above_threshold
+               ikoff = (i - 1)*block_length
+!              triangle except diagonal
+               do j = 1, i - 1
+                  jkoff = (j - 1)*block_length
+                  do k = 1, block_length
+                     n(k) = n(k) + 2.0d0*ao_sorted(ikoff + k)*ao_sorted(jkoff + k)*dmat_sorted(ijoff + j)
+                  end do
+               end do
+!              diagonal
+               do k = 1, block_length
+                  n(k) = n(k) + ao_sorted(ikoff + k)*ao_sorted(ikoff + k)*dmat_sorted(ijoff + i)
+               end do
+            end do
+         end if
+
+      end do
+
+   end subroutine
 
 end module
