@@ -1275,27 +1275,38 @@ contains
       call print_mat(RHS_mo, label = 'debug RHS in MO basis')
     end if
 
+!radovan: known bug in sf with symmetry
+!         need to properly remove imaginary blocks
+     if (spinfr .and. (nbsym > 1)) then
+        call quit('correct spinfree bug in openrsp response solver')
+     end if
+
 
 !   get positive -> positive property gradient
 !   ==========================================
 
     if (include_pp_rotations) then
 
-      call alloc(prop_gradient_pp, length_pp, nz)
-      do iz = 1, nz
-        off = (iz - 1)*norbt*norbt
-        do k = 1, length_pp
-          i = orbital_rotation_indices_pp(1, k)
-          s = orbital_rotation_indices_pp(2, k)
-          prop_gradient_pp(k, iz) = prop_gradient_pp(k, iz) &
-                                  - 2.0d0*RHS_mo%elms(off + (i - 1)*norbt + s)
-        end do
-      end do
+       call alloc(prop_gradient_pp, length_pp, nz)
 
-      if (debug_me) then
-        call header('debug prop_gradient_pp', -1)
-        call print_q_vector(prop_gradient_pp, length_pp)
-      end if
+       do iz = 1, nz
+          off = (iz - 1)*norbt*norbt
+          do k = 1, length_pp
+             i = orbital_rotation_indices_pp(1, k)
+             s = orbital_rotation_indices_pp(2, k)
+             prop_gradient_pp(k, iz) = prop_gradient_pp(k, iz) &
+                                     - 2.0d0*RHS_mo%elms(off + (i - 1)*norbt + s)
+          end do
+       end do
+
+       if (spinfr) then
+          call dzero(prop_gradient_pp(1, 2), length_pp*3)
+       end if
+       
+       if (debug_me) then
+          call header('debug prop_gradient_pp', -1)
+          call print_q_vector(prop_gradient_pp, length_pp)
+       end if
 
     end if
 
@@ -1305,23 +1316,29 @@ contains
 
     if (include_pn_rotations) then
 
-      call alloc(prop_gradient_pn, length_pn, nz)
-      do iz = 1, nz
-        off = (iz - 1)*norbt*norbt
-        do k = 1, length_pn
-          i = orbital_rotation_indices_pn(1, k)
-          s = orbital_rotation_indices_pn(2, k)
-          prop_gradient_pn(k, iz) = prop_gradient_pn(k, iz) &
-                                  - 2.0d0*RHS_mo%elms(off + (i - 1)*norbt + s)
-        end do
-      end do
+       call alloc(prop_gradient_pn, length_pn, nz)
 
-      if (debug_me) then
-        call header('debug prop_gradient_pn', -1)
-        call print_q_vector(prop_gradient_pn, length_pn)
-      end if
+       do iz = 1, nz
+          off = (iz - 1)*norbt*norbt
+          do k = 1, length_pn
+             i = orbital_rotation_indices_pn(1, k)
+             s = orbital_rotation_indices_pn(2, k)
+             prop_gradient_pn(k, iz) = prop_gradient_pn(k, iz) &
+                                     - 2.0d0*RHS_mo%elms(off + (i - 1)*norbt + s)
+          end do
+       end do
+
+       if (spinfr) then
+          call dzero(prop_gradient_pn(1, 2), length_pn*3)
+       end if
+       
+       if (debug_me) then
+          call header('debug prop_gradient_pn', -1)
+          call print_q_vector(prop_gradient_pn, length_pn)
+       end if
 
     end if
+
 
 !   inherit shape
     Wp     = RHS_mo
