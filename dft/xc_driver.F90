@@ -14,6 +14,7 @@ module xc_driver
   use dft_ao_in_mem
   use ao_eval
   use density_eval
+  use overlap_diagnostic
 #ifdef MOD_OPENRSP
   use xc_response
 #endif
@@ -39,6 +40,7 @@ module xc_driver
 
 #include "infpar.h"
 #include "dcbgen.h"
+#include "dcborb.h"
 #ifdef VAR_MPI
 #include "mpif.h"
 #ifdef INT_STAR8
@@ -199,28 +201,30 @@ module xc_driver
    logical                      :: do_geo_0
    logical                      :: do_geo_1
    logical                      :: do_geo_2
+   logical                      :: do_overlap_diagnostic
 
 contains
 
-   subroutine xc_integrator(xc_mat_dim,                 &
-                            xc_nz,                      &
-                            xc_dmat_0,                  &
-                            xc_nr_dmat,                 &
-                            xc_nr_fmat,                 &
-                            xc_dmat,                    &
-                            xc_fmat,                    &
-                            xc_dmat_ih_sym,             &
-                            xc_dmat_pg_sym,             &
-                            xc_fmat_pg_sym,             &
-                            xc_nr_atoms,                &
-                            xc_property_gradient,      &
-                            xc_do_potential,            &
-                            xc_do_london_rhs_direct,    &
-                            xc_do_london_rhs_ro,        &
-                            xc_do_geo_0, &
-                            xc_do_geo_1, &
-                            xc_do_geo_2, &
-                            xc_response_order_mo,       &
+   subroutine xc_integrator(xc_mat_dim,               &
+                            xc_nz,                    &
+                            xc_dmat_0,                &
+                            xc_nr_dmat,               &
+                            xc_nr_fmat,               &
+                            xc_dmat,                  &
+                            xc_fmat,                  &
+                            xc_dmat_ih_sym,           &
+                            xc_dmat_pg_sym,           &
+                            xc_fmat_pg_sym,           &
+                            xc_nr_atoms,              &
+                            xc_property_gradient,     &
+                            xc_do_potential,          &
+                            xc_do_london_rhs_direct,  &
+                            xc_do_london_rhs_ro,      &
+                            xc_do_geo_0,              &
+                            xc_do_geo_1,              &
+                            xc_do_geo_2,              &
+                            xc_do_overlap_diagnostic, &
+                            xc_response_order_mo,     &
                             xc_response_order_ao)
 
 ! response_order_mo/_ao:  0 - do nothing (no response)
@@ -255,6 +259,7 @@ contains
       logical, optional,         intent(in)    :: xc_do_geo_0
       logical, optional,         intent(in)    :: xc_do_geo_1
       logical, optional,         intent(in)    :: xc_do_geo_2
+      logical, optional,         intent(in)    :: xc_do_overlap_diagnostic
 
       integer, optional,         intent(in)    :: xc_response_order_mo         
       integer, optional,         intent(in)    :: xc_response_order_ao         
@@ -318,27 +323,29 @@ contains
       end if
 
 !     set defaults
-      do_potential            = .false.
-      response_order_mo       = 0
-      response_order_ao       = 0
-      do_london_rhs_direct    = .false.
-      do_london_rhs_ro        = .false.
-      do_geo_0 = .false.
-      do_geo_1 = .false.
-      do_geo_2 = .false.
-      nr_atoms                = 0
+      do_potential          = .false.
+      response_order_mo     = 0
+      response_order_ao     = 0
+      do_london_rhs_direct  = .false.
+      do_london_rhs_ro      = .false.
+      do_geo_0              = .false.
+      do_geo_1              = .false.
+      do_geo_2              = .false.
+      do_overlap_diagnostic = .false.
+      nr_atoms              = 0
 
       if (i_am_master) then
 !        change defaults
-         if (present(xc_do_potential))         do_potential         = xc_do_potential
-         if (present(xc_response_order_mo))    response_order_mo    = xc_response_order_mo
-         if (present(xc_response_order_ao))    response_order_ao    = xc_response_order_ao
-         if (present(xc_do_london_rhs_direct)) do_london_rhs_direct = xc_do_london_rhs_direct
-         if (present(xc_do_london_rhs_ro))     do_london_rhs_ro     = xc_do_london_rhs_ro
-         if (present(xc_do_geo_0))             do_geo_0             = xc_do_geo_0
-         if (present(xc_do_geo_1))             do_geo_1             = xc_do_geo_1
-         if (present(xc_do_geo_2))             do_geo_2             = xc_do_geo_2
-         if (present(xc_nr_atoms))             nr_atoms             = xc_nr_atoms
+         if (present(xc_do_potential))          do_potential          = xc_do_potential
+         if (present(xc_response_order_mo))     response_order_mo     = xc_response_order_mo
+         if (present(xc_response_order_ao))     response_order_ao     = xc_response_order_ao
+         if (present(xc_do_london_rhs_direct))  do_london_rhs_direct  = xc_do_london_rhs_direct
+         if (present(xc_do_london_rhs_ro))      do_london_rhs_ro      = xc_do_london_rhs_ro
+         if (present(xc_do_geo_0))              do_geo_0              = xc_do_geo_0
+         if (present(xc_do_geo_1))              do_geo_1              = xc_do_geo_1
+         if (present(xc_do_geo_2))              do_geo_2              = xc_do_geo_2
+         if (present(xc_nr_atoms))              nr_atoms              = xc_nr_atoms
+         if (present(xc_do_overlap_diagnostic)) do_overlap_diagnostic = xc_do_overlap_diagnostic
       end if
 
 #ifdef VAR_MPI
@@ -357,6 +364,7 @@ contains
          call dirac_mpi_bcast(do_geo_0)
          call dirac_mpi_bcast(do_geo_1)
          call dirac_mpi_bcast(do_geo_2)
+         call dirac_mpi_bcast(do_overlap_diagnostic)
       end if
 #endif
 
@@ -587,7 +595,15 @@ contains
       call dzero(fmat, mat_dim*mat_dim*nz)
 #endif
 
+      if (do_overlap_diagnostic) then
+         call overlap_diagnostic_init(nz, norbt, mat_dim)
+      end if
+
       call loop_over_batches()
+
+      if (do_overlap_diagnostic) then
+         call lambda_matrix_to_disc()
+      end if
 
 #ifdef VAR_MPI
       if (parallel_xc) then
@@ -963,6 +979,10 @@ contains
 !        call get_s(spin_density, 0, mat_dim, dmat_0, buffer, ao)
       end if
       time_density = time_density + second() - time_density_start
+
+      if (do_overlap_diagnostic) then
+         call integrate_lambda_matrix(rw(ipoint), nz, norbt, mat_dim, ao, buffer)
+      end if
 
       if (r_0(1) > dft_cfg_dfthr0) then
          nr_points_used = nr_points_used + 1
