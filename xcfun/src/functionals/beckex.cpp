@@ -1,5 +1,7 @@
 #include "functional.h"
 
+
+#warning FIXME: Becke should use chi^2
 template<class num>
 static num becke_alpha(const num &na, const num &gaa)
 {
@@ -7,8 +9,8 @@ static num becke_alpha(const num &na, const num &gaa)
   static const parameter d = 0.0042;
   num na43 = pow(na,4.0/3.0);
   num lda = -c*na43;
-  num chi = sqrt(gaa)/na43;
-  num b88 = -(d*na43*chi*chi)/(1+6*d*chi*asinh(chi));
+  num chi2 = gaa*pow(na,-8.0/3.0);
+  num b88 = -(d*na43*chi2)/(1+6*d*sqrtx_asinh_sqrtx(chi2));
   return lda + b88;
 }
 
@@ -17,8 +19,8 @@ static num becke_corr(const num &na, const num &gaa)
 {
   static const parameter d = 0.0042;
   num na43 = pow(na,4.0/3.0);
-  num chi = sqrt(gaa)/na43;
-  return -(d*na43*chi*chi)/(1+6*d*chi*asinh(chi));
+  num chi2 = gaa*pow(na,-8.0/3.0);
+  return -(d*na43*chi2)/(1+6*d*sqrtx_asinh_sqrtx(chi2));
 }
 
 // Short range becke exchange as used in camb3lyp If mu=0 this reduces
@@ -35,8 +37,8 @@ static num becke_sr(parameter mu, const num &na, const num &gaa)
   static const parameter cparam = pow(81/(4*M_PI),1.0/3.0)/2;
   static const parameter d = 0.0042;
   num na43 = pow(na,4.0/3.0);
-  num chi = sqrt(gaa)/na43;
-  num K = 2*(cparam + (d*chi*chi)/(1+6*d*chi*asinh(chi)));
+  num chi2 = gaa*pow(na,-8.0/3.0);
+  num K = 2*(cparam + (d*chi2)/(1+6*d*sqrtx_asinh_sqrtx(chi2)));
   num a = mu*sqrt(K)/(6*M_PI*pow(na,1.0/3.0));
   num b = exp(-1/(4*a*a))-1;
   num c = 2*a*a*b + 0.5;

@@ -1,88 +1,143 @@
 program xc_example
 
-! this will calculate some functional derivatives
-! for example densities
+!  this example contains all f90 interface routines
+!  that are needed to "talk to" the xcfun library
+!  and demonstrates how to use them
 
-! this example contains all f90 interface toutines
-! that are needed to "talk to" the xcfun library
+   use xcfun
 
-  use xcfun
-  integer funid,n,order,ilen,olen
-  character*1000 descr
-  double precision, allocatable :: dens(:,:),funout(:,:)
-  integer :: k, block_length
+   implicit none
 
-! Print some info and copyright about the library.
-  call xcfun_splash(descr)
-  print *, descr(1:len_trim(descr))
+   character(1000)      :: text
+   integer              :: id, order, ilen, olen
+   integer              :: i, k, ipoint, nr_points, block_length, max_block_length
+   real(8)              :: derivative_nn_ab, derivative_ss_ab
+   real(8)              :: derivative_nn_rs, derivative_ss_rs
+   real(8), allocatable :: density_variables(:, :), derivatives(:, :)
 
-! Create a new functional, we need this for interacting
-! with the library.
-  funid = xc_new_functional()
+!  print some info and copyright about the library
+!  please always include this info in your code
+   call xcfun_splash(text)
+   print *, text(1:len_trim(text))
 
-! Set up BLYP
-  print *,'Setting up BLYP'
-  call xc_set_param(funid, XC_LYPC, 1.0d0)
-  call xc_set_param(funid, XC_BECKEX, 1.0d0)
+!  create a new functional
+!  we need this for interacting with the library
+   id = xc_new_functional()
 
-! Print currently set parameters
-! Discover all settings
-  print *,'Now defined (nonzero weights and parameters, including defaults):'
-  do n=1,XC_NR_PARAMS
-     call xc_param_name(n,descr)
-     if (xc_get_param(funid,n).ne.0.0D0) then
-        print *, descr(4:len_trim(descr)),xc_get_param(funid,n)
-     endif
-  enddo
-! Set alpha/beta density variable mode
-  call xc_set_mode(funid,XC_VARS_AB)
-! Type of functional
-  print *,'Functional type:',xc_get_type(funid),' (0 LDA, 1 GGA, 2 MGGA)'
-! Let's get derivatives to third order
-  order = 2
-  print *,'Order:',order
-! Ask for the length of the input
-  ilen = xc_input_length(funid)
-  olen = xc_output_length(funid,order)
-  print *,'Length of input:',ilen
-  print *,'Length of Output:',olen
-! Allocate data for evaluation, one point only.
-  allocate(dens(ilen,1))
-  allocate(funout(olen,1))
-! Set some random input
-  do n=1,ilen
-     dens(n,1) = n
-  enddo
-! Compute the functional and its derivatives up to order
-! We use ilen and olen as the leading dimension (pitch) values,
-! although with a single point these are not important.
-  call xc_eval(funid, order, dens, funout)
-! Print output
-  print *,'Output:'
-  do n=1,olen
-     print *,n,funout(n,1)
-  enddo
-  deallocate(dens)
-  deallocate(funout)
+!  in this example we use PBE
+   print *, 'Setting up PBE'
+   call xc_set_param(id, XC_PBEX, 1.0d0)
+   call xc_set_param(id, XC_PBEC, 1.0d0)
 
+!  print currently set parameters
+!  discover all settings
+   print *, 'Now defined (nonzero weights and parameters, including defaults):'
+   do i = 1, XC_NR_PARAMS
+      call xc_param_name(i, text)
+      if (dabs(xc_get_param(id, i)) > tiny(0.0d0)) then
+         print *, text(4:len_trim(text)), xc_get_param(id, i)
+      end if
+   end do
 
-!radovan: the following code generates the memory corruption
-! block_length = 1 !ok
-  block_length = 2 !crash
-  allocate(dens(ilen, block_length))
-  allocate(funout(olen, block_length))
-  do k = 1, block_length
-     do n = 1, ilen
-        dens(n, k) = n
-     end do
-  end do
-  call xc_eval(funid, order, dens, funout)
-  do k = 1, block_length
-     do n = 1, olen
-        print *, n, funout(n, k)
-     end do
-  end do
-  deallocate(dens)
-  deallocate(funout)
+!  functional type
+   print *, 'Functional type:', xc_get_type(id), ' (0 LDA, 1 GGA, 2 MGGA)'
+
+!  let's get derivatives to second order
+   order = 2
+   print *, 'Order:', order
+
+!  ask for the length of the input
+   ilen = xc_input_length(id)
+   olen = xc_output_length(id, order)
+   print *, 'Length of input (how many density variables):', ilen
+   print *, 'Length of output (how many derivatives):', olen
+
+!  set alpha/beta density variable mode
+   call xc_set_mode(id, XC_VARS_AB)
+
+!  here we decide to evaluate derivatives at 25 points
+!  by batches of 10 (or less; for the last batch)
+   nr_points        = 25
+   max_block_length = 10
+
+!  allocate space for density variables
+   allocate(density_variables(ilen, max_block_length))
+!  allocate space for functional derivatives
+   allocate(derivatives(olen, max_block_length))
+
+   do ipoint = 1, nr_points, max_block_length
+
+      block_length = min(max_block_length, nr_points - ipoint + 1)
+
+!     evaluate density variables in point(s)
+!     (here we cheat and get some random numbers)
+      do k = 1, block_length
+         do i = 1, ilen
+            call random_number(density_variables(i, k))
+         end do
+      end do
+
+!     compute the functional and its derivatives up to order
+!     we use ilen and olen as the leading dimension (pitch) values
+!     although with a single point these are not important
+      call xc_eval(id, order, block_length, density_variables, derivatives)
+
+!     in this example we are interested in say
+!     (d/dna)^1 (d/dnb)^0 (d/dgaa)^1 (d/dgab)^0 (d/dgab)^0 e_xc
+      print *, 'An example second derivative'
+      print *, '(d/dna)^1 (d/dnb)^0 (d/dgaa)^1 (d/dgab)^0 (d/dgab)^0 e_xc'
+      do k = 1, block_length
+         print *, 'k, exc_10100:', k, derivatives(XC_D10100, k)
+      end do
+      print *, 'Alternatively by xc_index (a bit slower for large grids):'
+      do k = 1, block_length
+         print *, 'k, exc_10100:', k, derivatives(xc_index(id, (/1, 0, 1, 0, 0/)), k)
+      end do
+
+   end do
+
+!  deallocate arrays
+   deallocate(density_variables)
+   deallocate(derivatives)
+
+!  finally let's compare the variable modes XC_VARS_AB (alpha and beta densities)
+!  and the complementary XC_VARS_RS (total density and spin density mode)
+!  at closed-shell reference for LDA
+
+   id = xc_new_functional()
+   call xc_set_param(id, XC_SLATERX, 1.0d0)
+   call xc_set_param(id, XC_VWN5C,   1.0d0)
+   ilen = xc_input_length(id)
+   olen = xc_output_length(id, order)
+
+   allocate(density_variables(ilen, 1))
+   allocate(derivatives(olen, 1))
+
+!  we switch to total/spin density mode
+   call xc_set_mode(id, XC_VARS_RS)
+
+   density_variables(1, 1) = 0.4d0
+   density_variables(2, 1) = 0.0d0
+
+   call xc_eval(id, order, 1, density_variables, derivatives)
+   derivative_nn_rs = derivatives(XC_D20, 1)
+   derivative_ss_rs = derivatives(XC_D02, 1)
+
+!  we switch back to alpha/beta density mode
+   call xc_set_mode(id, XC_VARS_AB)
+
+   density_variables(1, 1) = 0.2d0
+   density_variables(2, 1) = 0.2d0
+
+   call xc_eval(id, order, 1, density_variables, derivatives)
+   derivative_nn_ab = 0.5d0*derivatives(XC_D20, 1) + 0.5d0*derivatives(XC_D11, 1)
+   derivative_ss_ab = 0.5d0*derivatives(XC_D20, 1) - 0.5d0*derivatives(XC_D11, 1)
+
+   print *, 'Comparison of derivatives via XC_VARS_RS (left) and XC_VARS_AB (right):'
+   print *, '(d/dn)^2 (d/ds)^0 e_xc:', derivative_nn_rs, derivative_nn_ab
+   print *, '(d/dn)^0 (d/ds)^2 e_xc:', derivative_ss_rs, derivative_ss_ab
+
+   deallocate(density_variables)
+   deallocate(derivatives)
 
 end program

@@ -24,6 +24,7 @@ static num energy(const densvars<num> &d)
 {
   num eps = pw92eps::eps_pbe(d);
   num u = 0.5*ufunc(d.zeta,2.0/3.0);
+  // Unstable at gnn ~ 0: 
   //  num dd = (1.0/12*pow(3,5.0/6.0)/pow(M_PI,-1.0/6))*
   //  sqrt(d.gnn)/(u*pow(d.n,7.0/6.0));
   num d2 = pow(1.0/12*pow(3,5.0/6.0)/pow(M_PI,-1.0/6),2)*
