@@ -5,8 +5,7 @@ module overlap_diagnostic
 
 !  implemented 2010/06/30 by Radovan Bast <radovan.bast@uit.no>
 
-!  known problems: so far no mpi, works only for 1 fermion ircop
-!  (so it works for c1, c2, c2v, cs, d2; does not work for c2h, ci, d2h)
+!  known problems: so far no mpi, some point groups make problems with lvcorr
 
    use memory_allocator
 
