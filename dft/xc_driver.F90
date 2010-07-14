@@ -596,7 +596,7 @@ contains
 #endif
 
       if (do_overlap_diagnostic) then
-         call overlap_diagnostic_init(nz, norbt, mat_dim)
+         call overlap_diagnostic_init()
       end if
 
       call loop_over_batches()
@@ -981,7 +981,7 @@ contains
       time_density = time_density + second() - time_density_start
 
       if (do_overlap_diagnostic) then
-         call integrate_lambda_matrix(rw(ipoint), nz, norbt, mat_dim, ao, buffer)
+         call integrate_lambda_matrix(rw(ipoint), ao, buffer)
       end if
 
       if (r_0(1) > dft_cfg_dfthr0) then
