@@ -830,16 +830,13 @@ contains
 
       call opnfil(file_unit, 'DFCOEF', 'OLD', 'read_mo_coef')
 
-      call reacmo(file_unit, &
-                  'DFCOEF',  &
-                  mo_coef,   &
-                  (/0.0d0/), &
-                  (/0/),     &
-                  (/0.0d0/), &
-                  2,         &
-                  (/0.0d0/), &
-                  (/0/),     &
-                  (/0/))
+      call reacmo_no_work(file_unit, &
+                          'DFCOEF',  &
+                          mo_coef,   &
+                          (/0.0d0/), &
+                          (/0/),     &
+                          (/0.0d0/), &
+                          2)
 
       close(file_unit, status = 'keep')
 
