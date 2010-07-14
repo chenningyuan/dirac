@@ -213,7 +213,7 @@ contains
       case default
         call quit('unknown trans possibility in mat_mul')
     end select
- 
+
     select case (transb)
       case ('n', 'N')
         l  = B%nrow
@@ -326,16 +326,18 @@ contains
     i_dim = A%nrow
     j_dim = A%ncol
 
-    do iz = 1, nz
+    if (ieor(A%irep, B%irep) == 0) then
+       do iz = 1, nz
 
-      q = 1.0d0
-      if (ipqtoq(iz, B%irep) > 1) q = -1.0d0
+         q = 1.0d0
+         if (ipqtoq(iz, B%irep) > 1) q = -1.0d0
 
-      do j = 1, j_dim
-        r = r + q*ddot(i_dim, A%elms((iz - 1)*i_dim*j_dim + i_dim*(j - 1) + 1), 1, &
-                              B%elms((iz - 1)*i_dim*j_dim + j), j_dim)
-      enddo
-    end do
+         do j = 1, j_dim
+           r = r + q*ddot(i_dim, A%elms((iz - 1)*i_dim*j_dim + i_dim*(j - 1) + 1), 1, &
+                                 B%elms((iz - 1)*i_dim*j_dim + j), j_dim)
+         enddo
+       end do
+    end if
 
   end function
 
