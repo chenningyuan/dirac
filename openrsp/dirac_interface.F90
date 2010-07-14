@@ -820,46 +820,30 @@ contains
 
   end subroutine
 
-  subroutine get_full_c(C)
+   subroutine read_mo_coef(mo_coef)
 
-!   ----------------------------------------------------------------------------
-    type(matrix),  intent(inout) :: C
-!   ----------------------------------------------------------------------------
-    real(8), allocatable   :: eigenvalues(:)
-    integer,       parameter     :: file_unit = 66
-    real(8)                :: dummy_dp
-    integer                      :: dummy_i
-!   ----------------------------------------------------------------------------
+!     --------------------------------------------------------------------------
+      real(8)            :: mo_coef(*)
+!     --------------------------------------------------------------------------
+      integer, parameter :: file_unit = 66
+!     --------------------------------------------------------------------------
 
-!   if (.not. isdef(C)) call init_mat(C, ntbas(0), norbt)
+      call opnfil(file_unit, 'DFCOEF', 'OLD', 'read_mo_coef')
 
-!    C%elms = 0.0d0
-!radovan: the g95 modification breaks visualization on gfortran
-!         i will investigate g95 later
-!mi: my g95 is complaining (Segm.fault), what helps is nullify(C%elms)
-!   !C%elms = 0.0d0
-!    nullify(C%elms)
+      call reacmo(file_unit, &
+                  'DFCOEF',  &
+                  mo_coef,   &
+                  (/0.0d0/), &
+                  (/0/),     &
+                  (/0.0d0/), &
+                  2,         &
+                  (/0.0d0/), &
+                  (/0/),     &
+                  (/0/))
 
-    call alloc(eigenvalues, norbt)
+      close(file_unit, status = 'keep')
 
-    call opnfil(file_unit, 'DFCOEF', 'OLD', 'get_full_c')
-
-    call reacmo(file_unit,   &
-                'DFCOEF',    &
-                C%elms,      &
-                eigenvalues, &
-                dummy_i,     &
-                dummy_dp,    &
-                6,           &
-                dummy_dp,    &
-                dummy_i,     &
-                dummy_i)
-
-    close(file_unit, status = 'keep')
-
-    call dealloc(eigenvalues)
-
-  end subroutine
+   end subroutine
 
   subroutine get_C(C, i, s, g, u)
 
@@ -898,8 +882,7 @@ contains
 
     call init_mat(C_file, ntbas(0), norbt)
     C_file%elms = 0.0d0
-
-    call get_full_c(C_file)
+    call read_mo_coef(C_file%elms)
 
     ir = 0
 
@@ -1299,9 +1282,9 @@ contains
           end do
        end do
 
-       if (spinfr) then
-          call dzero(prop_gradient_pp(1, 2), length_pp*3)
-       end if
+!      if (spinfr) then
+!         call dzero(prop_gradient_pp(1, 2), length_pp*3)
+!      end if
        
        if (debug_me) then
           call header('debug prop_gradient_pp', -1)
@@ -1328,9 +1311,9 @@ contains
           end do
        end do
 
-       if (spinfr) then
-          call dzero(prop_gradient_pn(1, 2), length_pn*3)
-       end if
+!      if (spinfr) then
+!         call dzero(prop_gradient_pn(1, 2), length_pn*3)
+!      end if
        
        if (debug_me) then
           call header('debug prop_gradient_pn', -1)
