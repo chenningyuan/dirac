@@ -820,6 +820,28 @@ contains
 
   end subroutine
 
+   subroutine read_ibeig(ibeig)
+
+!     --------------------------------------------------------------------------
+      integer            :: ibeig(*)
+!     --------------------------------------------------------------------------
+      integer, parameter :: file_unit = 66
+!     --------------------------------------------------------------------------
+
+      call opnfil(file_unit, 'DFCOEF', 'OLD', 'read_mo_coef')
+
+      call reacmo_no_work(file_unit, &
+                          'DFCOEF',  &
+                          (/0.0d0/), &
+                          (/0.0d0/), &
+                          ibeig,     &
+                          (/0.0d0/), &
+                          8)
+
+      close(file_unit, status = 'keep')
+
+   end subroutine
+
    subroutine read_mo_coef(mo_coef)
 
 !     --------------------------------------------------------------------------
@@ -1168,6 +1190,11 @@ contains
     type(matrix)                :: RHS_mo, Wp
     type(matrix)                :: C, Cig, Ciu, Csg, Csu
 
+!                                  for sf calcs
+    integer,      allocatable   :: ibeig(:)
+    real(8),      allocatable   :: mo_coef(:)
+    integer                     :: i1, i2, irep
+
     integer,      allocatable   :: ibtyp(:)
     integer,      allocatable   :: ibtyp_pointer_pp(:)
     integer,      allocatable   :: ibtyp_pointer_pn(:)
@@ -1242,9 +1269,62 @@ contains
                                       1,         &
                                       orbital_rotation_indices_pn)
 
-    call get_C(C, i=1.0d0, s=1.0d0, g=1.0d0, u=1.0d0)
-    RHS_mo = dag(C)*(RHS*C)
-    C      = 0
+    if (spinfr .and. (RHS%tr_sym == 1)) then
+
+       call alloc(mo_coef, ncmotq)
+       call alloc(ibeig, ntbas(0))
+
+       call read_mo_coef(mo_coef)
+       call read_ibeig(ibeig)
+
+       call init_mat(RHS_mo, norbt, norbt)
+       RHS_mo%elms = 0.0d0
+       irep = RHS%irep
+
+       lwork = len_f77_work
+       call di_select_wrk(work, lwork)
+
+       do i1 = 1, nfsym
+          i2 = mod(i1 + jbtof(irep, 1), 2) + 1
+          if (nfbas(i1, 0) > 0) then
+             if (nfbas(i2, 0) > 0) then
+                call qbtrans(irep,                                           &
+                             'AOMO',                                         &
+                             'S',                                            &
+                             0.0d0,                                          &
+!                            -------------------------------------------------
+                             nfbas(i1, 0), nfbas(i2, 0), norb(i1), norb(i2), &
+!                            -------------------------------------------------
+                             RHS%elms(i2basx(i1, i2) + 1),                   &
+                             ntbas(0), ntbas(0), nz, ipqtoq(1, irep),        &
+!                            -------------------------------------------------
+                             RHS_mo%elms(i2orbx(i1, i2) + 1),                &
+                             norbt, norbt, nz, ipqtoq(1, irep),              &
+!                            -------------------------------------------------
+                             mo_coef(icmoq(i1) + 1),                         &
+                             nfbas(i1, 0), norb(i1), nz, ipqtoq(1, 0),       &
+                             ibeig(iorb(i1) + 1),                            &
+!                            -------------------------------------------------
+                             mo_coef(icmoq(i2) + 1),                         &
+                             nfbas(i2, 0), norb(i2), nz, ipqtoq(1, 0),       &
+                             ibeig(iorb(i2) + 1),                            &
+!                            -------------------------------------------------
+                             work, lwork, 0)
+             end if
+          end if
+       end do
+
+       call di_deselect_wrk(work, lwork)
+       call dealloc(mo_coef)
+       call dealloc(ibeig)
+
+    else
+
+       call get_C(C, i=1.0d0, s=1.0d0, g=1.0d0, u=1.0d0)
+       RHS_mo = dag(C)*(RHS*C)
+       C = 0
+
+    end if
 
     RHS_mo%ih_sym = RHS%ih_sym
     RHS_mo%tr_sym = RHS%tr_sym
@@ -1254,12 +1334,6 @@ contains
       call print_mat(RHS,    label = 'debug RHS in AO basis')
       call print_mat(RHS_mo, label = 'debug RHS in MO basis')
     end if
-
-!radovan: known bug in sf with symmetry
-!         need to properly remove imaginary blocks
-     if (spinfr .and. (nbsym > 1)) then
-        call quit('correct spinfree bug in openrsp response solver')
-     end if
 
 
 !   get positive -> positive property gradient
@@ -1278,10 +1352,6 @@ contains
                                      - 2.0d0*RHS_mo%elms(off + (i - 1)*norbt + s)
           end do
        end do
-
-!      if (spinfr) then
-!         call dzero(prop_gradient_pp(1, 2), length_pp*3)
-!      end if
        
        if (debug_me) then
           call header('debug prop_gradient_pp', -1)
@@ -1307,10 +1377,6 @@ contains
                                      - 2.0d0*RHS_mo%elms(off + (i - 1)*norbt + s)
           end do
        end do
-
-!      if (spinfr) then
-!         call dzero(prop_gradient_pn(1, 2), length_pn*3)
-!      end if
        
        if (debug_me) then
           call header('debug prop_gradient_pn', -1)
