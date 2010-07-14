@@ -718,10 +718,12 @@ C     LV: This option is badly out of place, has nothing to do with jobs !
         WRITE(LUPRI,'(3X,A)')
      &  '* If crash, end with no segment.fault.'//
      &  'Necessary for getting profiling file, gmon.out.'
-      ELSE
-        WRITE(LUPRI,'(3X,A)')
-     &  '* If crash, end with the segment.fault. Worth for'// 
-     &  ' debugging.'
+!radovan: commented out the following message about this default situation
+!         this is strange for users to see under jobs
+!     ELSE
+!       WRITE(LUPRI,'(3X,A)')
+!    &  '* If crash, end with the segment.fault. Worth for'// 
+!    &  ' debugging.'
       ENDIF
 C
  666  CONTINUE
