@@ -6,8 +6,10 @@ module dirac_mointegral_export
 
   integer, parameter     :: filenumber_1e = 21
   integer, parameter     :: filenumber_2e = 22
+  integer, parameter     :: filenumber_nw = 23
   integer, parameter     :: filenumber_55 = 55
   logical, parameter     :: generate_full_list = .false.
+  character(10)          :: target = 'mrcc'
 
   type SpinorInformation
 
@@ -95,16 +97,36 @@ contains
      allocate (integral(number_of_spinors,number_of_spinors,2))
      read (filenumber_1e) ((integral(i,j,1),integral(i,j,2),i=1,number_of_spinors),j=1,number_of_spinors)
 
-     do i = 1, number_of_spinors
-        do j = 1, number_of_spinors
-           if (abs(integral(i,j,1)) > 1.E-16 )                   &
-           write (filenumber_55,'(E28.20,4i4)') integral(i,j,1), &
-                 i,                                              &
-                 j,                                              &
-                 0,                                              &
-                 0                                              
+     select case (target)
+
+     case ('mrcc')
+        do i = 1, number_of_spinors
+           do j = 1, number_of_spinors
+              if (abs(integral(i,j,1)) > 1.E-16 )                   &
+              write (filenumber_55,'(E28.20,4i4)') integral(i,j,1), &
+                    i,                                              &
+                    j,                                              &
+                       0,                                              &
+                    0                                              
+           end do
         end do
-     end do
+
+     case ('nwchem')
+
+        do i = 1, number_of_spinors
+           do j = 1, number_of_spinors
+              if (abs(integral(i,j,1)) > 1.E-16 .or. abs(integral(i,j,2)) > 1.E-16)  &
+              write (filenumber_nw,'(2E28.20,4i4)') &
+                    integral(i,j,1),                &
+                    integral(i,j,2),                &
+                    i,                              &
+                    j,                              &
+                    0,                              &
+                    0                                              
+           end do
+        end do
+     end select
+
      deallocate (integral)
 
   end subroutine
@@ -121,25 +143,53 @@ contains
      allocate (indk(number_of_spinors**2))
      allocate (indl(number_of_spinors**2))
 
-     do
-        read (filenumber_2e) ikr, jkr, nonzero, (indk(inz), indl(inz), inz=1, nonzero), (integral(inz), inz=1, nonzero)
-        if (ikr == 0) exit
-        do inz = 1, nonzero
-           write (filenumber_55,'(E28.20,4i4)') integral(inz), &
+     select case (target)
+
+        case ('mrcc')
+
+           do
+              read (filenumber_2e) ikr, jkr, nonzero, (indk(inz), indl(inz), inz=1, nonzero), (integral(inz), inz=1, nonzero)
+              if (ikr == 0) exit
+              do inz = 1, nonzero
+                 write (filenumber_55,'(E28.20,4i4)') integral(inz), &
                  kramer_to_spinor(ikr),                        &
                  kramer_to_spinor(jkr),                        &
                  kramer_to_spinor(indk(inz)),                  &
                  kramer_to_spinor(indl(inz))             
-!          make also kramers-related integral if desired
-!          note that we assume real integrals, in which case the kr integral is identical
-           if (generate_full_list) &
-              write (filenumber_55,'(E28.20,4i4)') integral(inz), &
+!                make also kramers-related integral if desired
+!                note that we assume real integrals, in which case the kr integral is identical
+                 if (generate_full_list) &
+                    write (filenumber_55,'(E28.20,4i4)') integral(inz), &
                     kramer_to_spinor(-ikr),                        &
                     kramer_to_spinor(-jkr),                        &
                     kramer_to_spinor(-indk(inz)),                  &
                     kramer_to_spinor(-indl(inz))             
-       end do
-    end do
+              end do
+           end do
+
+        case ('nwchem')
+
+           do
+              read (filenumber_2e) ikr, jkr, nonzero, (indk(inz), indl(inz), inz=1, nonzero), (integral(inz), inz=1, nonzero)
+              if (ikr == 0) exit
+              do inz = 1, nonzero
+                 write (filenumber_nw,'(E28.20,4i4)') integral(inz), &
+                 kramer_to_spinor(ikr),                        &
+                 kramer_to_spinor(jkr),                        &
+                 kramer_to_spinor(indk(inz)),                  &
+                 kramer_to_spinor(indl(inz))             
+!                make also kramers-related integral if desired
+!                note that we assume real integrals, in which case the kr integral is identical
+                 if (generate_full_list) &
+                    write (filenumber_nw,'(E28.20,4i4)') integral(inz), &
+                    kramer_to_spinor(-ikr),                        &
+                    kramer_to_spinor(-jkr),                        &
+                    kramer_to_spinor(-indk(inz)),                  &
+                    kramer_to_spinor(-indl(inz))             
+              end do
+           end do
+
+    end select
   
     deallocate(integral)
     deallocate(indk)
@@ -250,10 +300,36 @@ contains
   call process_2e
   call process_1e
   write (filenumber_55,'(E28.20,4i4)') core_energy,0,0,0,0
+  close (filenumber_55, status='keep')
 
   deallocate (multiplication_table)
   deallocate (reordered_multiplication_table)
 !  deallocate (reordered_spinor)
+
+  end subroutine
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  subroutine write_nwchem_file
+
+
+!  Should still be tuned to Karols preferences...
+
+  integer               :: i, j
+
+  open (filenumber_nw, file='mo_integrals', Form='FORMATTED')
+  write (filenumber_nw,'(2i6)') number_of_spinors, number_of_electrons
+  write (filenumber_nw,'(8i6)') (spinor(i)%abelian_irrep,i=1,number_of_spinors)
+  write (filenumber_nw,'(2i6)') 2 * number_of_abelian_irreps
+  do j = 1, 2 * number_of_abelian_irreps
+     write (filenumber_nw,'(8i6)') (multiplication_table(i,j),i=1,2*number_of_abelian_irreps)
+  end do 
+  write (filenumber_nw,'(E28.20)') core_energy
+  call process_1e
+  call process_2e
+  close (filenumber_nw, status='keep')
+
+  deallocate (multiplication_table)
 
   end subroutine
 
@@ -265,7 +341,16 @@ end module
   
   use dirac_mointegral_export
 
-  call initialize
-  call write_mrcc_fort55
+  call initialize 
+  select case (target)
+     case ('mrcc')
+       write (*,*) ' Writing fort.55 interface file for mrcc...'
+       call write_mrcc_fort55
+       write (*,*) ' fort.55 file ready'
+     case ('nwchem')
+       write (*,*) ' Writing interface file for nwchem...'
+       call write_nwchem_file
+       write (*,*) ' nwchem file ready'
+  end select
 
   end
