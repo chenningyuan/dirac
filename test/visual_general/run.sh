@@ -21,16 +21,16 @@ done
 export MOL=co.mol
 
 export MENU=response_1z_bz.inp
-../run.sh -outcmo -get  PAMXVC
+#../run.sh -outcmo -get  PAMXVC
 export MENU=visual_1z_bz.inp
-../run.sh -incmo  -copy PAMXVC
+#../run.sh -incmo  -copy PAMXVC
 export MENU=visual_1z_bz_only_para.inp
-../run.sh -incmo  -copy PAMXVC
+#../run.sh -incmo  -copy PAMXVC
 
 export MENU=response_1z_2z.inp
-../run.sh -outcmo -get  PAMXVC
+#../run.sh -outcmo -get  PAMXVC
 export MENU=visual_1z_2z.inp
-../run.sh -incmo  -copy PAMXVC
+#../run.sh -incmo  -copy PAMXVC
 
 # -----------------------
 # visualization with LAOs
@@ -104,22 +104,26 @@ export MOL=co_small.mol
 export MENU=shielding_london.inp
  ../run.sh -outcmo -get PAMXVC -get AOPROPER
 export MENU=visual_shielding_zz_london_natural.inp
-# ../run.sh -incmo  -copy PAMXVC -copy AOPROPER
+ ../run.sh -incmo  -copy PAMXVC -copy AOPROPER
 export MENU=visual_shielding_zz_london_natural_onlydirect.inp
  ../run.sh -incmo  -copy PAMXVC -copy AOPROPER
 export MENU=visual_shielding_zz_london_natural_onlyresponse.inp
-# ../run.sh -incmo  -copy PAMXVC -copy AOPROPER
+ ../run.sh -incmo  -copy PAMXVC -copy AOPROPER
+export MENU=visual_shielding_zz_london_natural_onlyreorth.inp
+ ../run.sh -incmo  -copy PAMXVC -copy AOPROPER
 
 
 export MOL=co_small_sym.mol
 export MENU=shielding_london.inp
  ../run.sh -outcmo -get PAMXVC -get AOPROPER
 export MENU=visual_shielding_zz_london_natural.inp
-# ../run.sh -incmo  -copy PAMXVC -copy AOPROPER
+ ../run.sh -incmo  -copy PAMXVC -copy AOPROPER
 export MENU=visual_shielding_zz_london_natural_onlydirect.inp
  ../run.sh -incmo  -copy PAMXVC -copy AOPROPER
 export MENU=visual_shielding_zz_london_natural_onlyresponse.inp
-# ../run.sh -incmo  -copy PAMXVC -copy AOPROPER
+ ../run.sh -incmo  -copy PAMXVC -copy AOPROPER
+export MENU=visual_shielding_zz_london_natural_onlyreorth.inp
+ ../run.sh -incmo  -copy PAMXVC -copy AOPROPER
 
 
 

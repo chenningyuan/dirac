@@ -184,7 +184,14 @@ foreach $line1 (<FILE1>) {
 #
 #         instead do:
         if ($posreal < 1.0) {
-           if ($posreal > 0.0) {$diff = $diff * $posreal;}
+
+#gosia: $diff is a small number also when $posreal is very small, so
+# instead of:
+#
+#            if ($posreal > 0.0) {$diff = $diff * $posreal;}
+#do:
+#
+           if ($posreal > $small) {$diff = $diff * $posreal;}
            }
 
         if ($diff > $small) {
