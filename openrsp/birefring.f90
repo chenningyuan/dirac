@@ -114,19 +114,19 @@ contains
       !----------------------
       ! no-London Ebff tensor
       Eoff = 0
-      call prop_oneave(S, (/'MAGO'/), (/Def/), shape(Eoff), Eoff)
-      call print_tensor(shape(Eoff), -Eoff, 'no-Lon d/db alpha = -Eoff', freq)
+      call prop_oneave(S, (/'MAGO'/), (/Def/), int(shape(Eoff)), Eoff)
+      call print_tensor(int(shape(Eoff)), -Eoff, 'no-Lon d/db alpha = -Eoff', freq)
       print *, 'sum_ijk -eijk*Eoff_ijk=', &
                sum((/(((-eps(i,j,k)*Eoff(i,j,k),i=1,3),j=1,3),k=1,3)/))
       print *
       !-------------------------------------------------------------------
       ! London Ebff, 0+2+1 rule, only energy (oneave/twoave) contributions
       Ebff = 0
-      call prop_oneave(S, (/'MAG','EL '/), (/Df/), shape(Ebff), Ebff)
+      call prop_oneave(S, (/'MAG','EL '/), (/Df/), int(shape(Ebff)), Ebff)
       ! call print_tensor(shape(Ebff), Ebff, 'E1ebDf'); Ebff=0
-      call prop_oneave(S, (/'MAG','EL '/), (/De/), shape(Ebff), Ebff, perm=(/1,3,2/))
+      call prop_oneave(S, (/'MAG','EL '/), (/De/), int(shape(Ebff)), Ebff, perm=(/1,3,2/))
       ! call print_tensor(shape(Ebff), Ebff, 'E1fbDe'); Ebff=0
-      call prop_twoave((/'MAG'/), (/D,De,Df,Def/), shape(Ebff), Ebff)
+      call prop_twoave((/'MAG'/), (/D,De,Df,Def/), int(shape(Ebff)), Ebff)
       do k = 1, 3
          do j = 1, 3
             DFDef(j,k) = D*Fe(j)*Df(k) + De(j)*Ff(k)*D &
@@ -137,22 +137,22 @@ contains
                        + D*(F-(freq(2)+freq(3))/2*S)*Def(j,k)
          end do
       end do
-      call prop_oneave(S, (/'MAG'/), (/Def/), shape(Ebff), Ebff, &
+      call prop_oneave(S, (/'MAG'/), (/Def/), int(shape(Ebff)), Ebff, &
                        freq=(/freq(1)/), DFD=(/DFDef/))
       DFDef = 0
       ! call print_tensor(shape(Ebff), Ebff, 'E2bDeDf + E1bDef - i/2TbDef - Sb(DFD)ef'); Ebff=0
-      call print_tensor(shape(Ebff), -Ebff, 'London d/db alpha = -Ebff', freq)
+      call print_tensor(int(shape(Ebff)), -Ebff, 'London d/db alpha = -Ebff', freq)
       print *, 'sum_ijk -eijk*Ebff_ijk=', &
                sum((/(((-eps(i,j,k)*Ebff(i,j,k),i=1,3),j=1,3),k=1,3)/))
       print *
       !-----------------------------------------------------
       ! London Effb, 1+1+1 rule (2n+1 rule), energy contribs
       Ebff = 0
-      call prop_oneave(S, (/'MAG','EL '/), (/Df/), shape(Ebff), Ebff)
+      call prop_oneave(S, (/'MAG','EL '/), (/Df/), int(shape(Ebff)), Ebff)
       ! call print_tensor(shape(Ebff), Ebff, 'E1ebDf'); Ebff=0
-      call prop_oneave(S, (/'MAG','EL '/), (/De/), shape(Ebff), Ebff, perm=(/1,3,2/))
+      call prop_oneave(S, (/'MAG','EL '/), (/De/), int(shape(Ebff)), Ebff, perm=(/1,3,2/))
       ! call print_tensor(shape(Ebff), Ebff, 'E1fbDe'); Ebff=0
-      call prop_twoave((/'MAG'/), (/D,De,Df,(0d0*D,i=1,3*3)/), shape(Ebff), Ebff)
+      call prop_twoave((/'MAG'/), (/D,De,Df,(0d0*D,i=1,3*3)/), int(shape(Ebff)), Ebff)
       ! call print_tensor(shape(Ebff), Ebff, 'E2bDeDf'); Ebff=0
       ! partial reorth contribution
       call prop_oneint(S, (/'MAG'/), (/3/), S=Sb) !load overlap
@@ -198,7 +198,7 @@ contains
       end do
       FbDS = 0
       ! call print_tensor(shape(Ebff), Ebff, '-(FbDS)(DSD)fe'); Ebff=0
-      call print_tensor(shape(Ebff), -Ebff, 'London d/db alpha = -Ebff', freq)
+      call print_tensor(int(shape(Ebff)), -Ebff, 'London d/db alpha = -Ebff', freq)
       print *, 'sum_ijk -eijk*Ebff_ijk=', &
                sum((/(((-eps(i,j,k)*Ebff(i,j,k),i=1,3),j=1,3),k=1,3)/))
       print *
@@ -236,44 +236,44 @@ contains
       ! first order equations for last field, and polarizability
       call pert_dens(decomp, S, (/'EL'/), (/3/), (/D/), (/F/), Df, Ff, freq=(/freq(3)/))
       Eff = 0 !PS: alpha(-freq(3),freq(3)) is not returned from this subroutine
-      call prop_oneave(S, (/'EL'/), (/Df/), shape(Eff), Eff)
-      call print_tensor(shape(Eff), -Eff, 'alpha = -Eff', (/-freq(3),freq(3)/))
+      call prop_oneave(S, (/'EL'/), (/Df/), int(shape(Eff)), Eff)
+      call print_tensor(int(shape(Eff)), -Eff, 'alpha = -Eff', (/-freq(3),freq(3)/))
       ! first order equations for middle field, and various linear responses
       call pert_dens(decomp, S, (/'EL'/), (/3/), (/D/), (/F/), De, Fe, freq=(/freq(2)/))
       Eff=0; Evf=0; Eof=0; Ebf=0; Eqf=0
-      call prop_oneave(S, (/'EL'/), (/De/), shape(Eff), Eff)
-      call print_tensor(shape(Eff), -Eff, 'alpha = -Eff', (/-freq(2),freq(2)/))
-      call prop_oneave(S, (/'VEL'/), (/De/), shape(Evf), Evf)
-      call print_tensor(shape(Evf), -Evf, 'alpha-vel = -Evf', (/-freq(2),freq(2)/))
-      call prop_oneave(S, (/'MAGO'/), (/De/), shape(Eof), Eof)
-      call print_tensor(shape(Eof),  Eof, 'G-prime-noL = Eof', (/-freq(2),freq(2)/))
-      call prop_oneave(S, (/'ELGR'/), (/De/), shape(Eqf), Eqf)
-      call print_tensor(shape(Eqf), -Eqf, 'A-tensor = -Eqf', (/-freq(2),freq(2)/))
-      call prop_twoave((/'MAG'/), (/D,De/), shape(Ebf), Ebf)
+      call prop_oneave(S, (/'EL'/), (/De/), int(shape(Eff)), Eff)
+      call print_tensor(int(shape(Eff)), -Eff, 'alpha = -Eff', (/-freq(2),freq(2)/))
+      call prop_oneave(S, (/'VEL'/), (/De/), int(shape(Evf)), Evf)
+      call print_tensor(int(shape(Evf)), -Evf, 'alpha-vel = -Evf', (/-freq(2),freq(2)/))
+      call prop_oneave(S, (/'MAGO'/), (/De/), int(shape(Eof)), Eof)
+      call print_tensor(int(shape(Eof)),  Eof, 'G-prime-noL = Eof', (/-freq(2),freq(2)/))
+      call prop_oneave(S, (/'ELGR'/), (/De/), int(shape(Eqf)), Eqf)
+      call print_tensor(int(shape(Eqf)), -Eqf, 'A-tensor = -Eqf', (/-freq(2),freq(2)/))
+      call prop_twoave((/'MAG'/), (/D,De/), int(shape(Ebf)), Ebf)
       do j = 1, 3
          DFDe(j) = D*(F-freq(2)/2*S)*De(j) + D*Fe(j)*D &
                  + De(j)*(F+freq(2)/2*S)*D
       end do
-      call prop_oneave(S, (/'MAG'/), (/De/), shape(Ebf), Ebf, &
+      call prop_oneave(S, (/'MAG'/), (/De/), int(shape(Ebf)), Ebf, &
                        freq=(/-freq(2)/), DFD=(/DFDe/))
       DFDe = 0
-      call print_tensor(shape(Ebf), Ebf, 'G-prime-Lon = Ebf', (/-freq(2),freq(2)/))
+      call print_tensor(int(shape(Ebf)), Ebf, 'G-prime-Lon = Ebf', (/-freq(2),freq(2)/))
       ! second order equations for last two fields
       call pert_dens(decomp, S, (/'EL','EL'/), (/3,3/), (/D,De,Df/), (/F,Fe,Ff/), &
                      Def, Fef, freq=(/freq(2),freq(3)/))
       ! beta, beta-mixed, no-Lon J-prime, B-tensor, London J-prime
       Efff=0; Evff=0; Eoff=0; Ebff=0; Eqff=0
-      call prop_oneave(S, (/'EL'/), (/Def/), shape(Efff), Efff)
-      call print_tensor(shape(Efff), -Efff, 'd/df alpha = -Efff', freq)
-      call prop_oneave(S, (/'VEL'/), (/Def/), shape(Evff), Evff)
-      call print_tensor(shape(Evff), -Evff, 'd/df alpha-vel = -Evff', freq)
-      call prop_oneave(S, (/'MAGO'/), (/Def/), shape(Eoff), Eoff)
-      call print_tensor(shape(Eoff), Eoff, 'd/df G-prime-noL = Eoff', freq)
-      call prop_oneave(S, (/'ELGR'/), (/Def/), shape(Eqff), Eqff)
-      call print_tensor(shape(Eqff), -Eqff, 'd/df A-tensor = -Eqff', freq)
-      call prop_oneave(S, (/'MAG','EL '/), (/De/), shape(Ebff), Ebff, perm=(/1,3,2/))
-      call prop_oneave(S, (/'MAG','EL '/), (/Df/), shape(Ebff), Ebff)
-      call prop_twoave((/'MAG'/), (/D,De,Df,Def/), shape(Ebff), Ebff)
+      call prop_oneave(S, (/'EL'/), (/Def/), int(shape(Efff)), Efff)
+      call print_tensor(int(shape(Efff)), -Efff, 'd/df alpha = -Efff', freq)
+      call prop_oneave(S, (/'VEL'/), (/Def/), int(shape(Evff)), Evff)
+      call print_tensor(int(shape(Evff)), -Evff, 'd/df alpha-vel = -Evff', freq)
+      call prop_oneave(S, (/'MAGO'/), (/Def/), int(shape(Eoff)), Eoff)
+      call print_tensor(int(shape(Eoff)), Eoff, 'd/df G-prime-noL = Eoff', freq)
+      call prop_oneave(S, (/'ELGR'/), (/Def/), int(shape(Eqff)), Eqff)
+      call print_tensor(int(shape(Eqff)), -Eqff, 'd/df A-tensor = -Eqff', freq)
+      call prop_oneave(S, (/'MAG','EL '/), (/De/), int(shape(Ebff)), Ebff, perm=(/1,3,2/))
+      call prop_oneave(S, (/'MAG','EL '/), (/Df/), int(shape(Ebff)), Ebff)
+      call prop_twoave((/'MAG'/), (/D,De,Df,Def/), int(shape(Ebff)), Ebff)
       do k = 1, 3
          do j = 1, 3
             DFDef(j,k) = D*Fe(j)*Df(k) + De(j)*Ff(k)*D &
@@ -284,12 +284,12 @@ contains
                        + Def(j,k)*(F+(freq(2)+freq(3))/2*S)*D + D*Fef(j,k)*D
          end do
       end do
-      call prop_oneave(S, (/'MAG'/), (/Def/), shape(Ebff), Ebff, &
+      call prop_oneave(S, (/'MAG'/), (/Def/), int(shape(Ebff)), Ebff, &
                        freq=(/freq(1)/), DFD=(/DFDef/))
       DFDef = 0
       ! finished with f, free matrices
       Df=0; Ff=0; Def=0; Fef=0
-      call print_tensor(shape(Ebff), Ebff, 'd/df G-prime-Lon = Ebff', freq)
+      call print_tensor(int(shape(Ebff)), Ebff, 'd/df G-prime-Lon = Ebff', freq)
       ! second order equations for first two fields.
       ! If possible, solve 6 instead of 3x3 eqs.
       if (freq(1)==freq(2) .or. freq(1)==-freq(2)) then
@@ -315,8 +315,8 @@ contains
       end if
       ! field-gradient-perturbed polarizability B-calligraphic
       Effq = 0
-      call prop_oneave(S, (/'ELGR'/), (/Dte/), shape(Effq), Effq, perm=(/3,1,2/))
-      call print_tensor(shape(Effq), -Effq, 'd/dq Alpha = -Effq', freq)
+      call prop_oneave(S, (/'ELGR'/), (/Dte/), int(shape(Effq)), Effq, perm=(/3,1,2/))
+      call print_tensor(int(shape(Effq)), -Effq, 'd/dq Alpha = -Effq', freq)
       ! free matrices, change sign on quasi-energy derivatives to get
       ! property-derivatives
       Dt=0; Ft=0; De=0; Fe=0; Dte=0; Fte=0
@@ -401,13 +401,13 @@ contains
       call pert_dens(decomp, S, (/'EL'/), (/3/), (/D/), (/F/), Df, Ff, freq=(/freq(4)/))
       Eff = 0
       if (freq(3) == -freq(4)) then
-         call prop_oneave(S, (/'EL'/), (/Df/), shape(Eff), Eff)
-         call print_tensor(shape(Eff), -Eff, 'polari = -Eff', (/freq(3),freq(4)/))
+         call prop_oneave(S, (/'EL'/), (/Df/), int(shape(Eff)), Eff)
+         call print_tensor(int(shape(Eff)), -Eff, 'polari = -Eff', (/freq(3),freq(4)/))
       end if
       Eqf = 0
       if (freq(1) == -freq(4)) then
-         call prop_oneave(S, (/'ELGR'/), (/Df/), shape(Eqf), Eqf)
-         call print_tensor(shape(Eqf), -Eqf, 'polari = -Eff', (/freq(1),freq(4)/))
+         call prop_oneave(S, (/'ELGR'/), (/Df/), int(shape(Eqf)), Eqf)
+         call print_tensor(int(shape(Eqf)), -Eqf, 'polari = -Eff', (/freq(1),freq(4)/))
       end if
       call pert_dens(decomp, S, (/'ELGR'/), (/6/), (/D/), (/F/), Dq, Fq, freq=(/freq(1)/))
       if (freq(3)==freq(4) .or. freq(3)==-freq(4)) then
@@ -438,9 +438,9 @@ contains
       call pert_dens(decomp, S, (/'MAGO'/), (/3/), (/D/), (/F/), Dc, Fc, freq=(/freq(2)/))
       Eoo = 0
       if (freq(1)==-freq(2)) then
-         call prop_oneave(S, (/'MAGO','MAGO'/), (/D/), shape(Eoo), Eoo)
-         call prop_oneave(S, (/'MAGO'/), (/Dc/), shape(Eoo), Eoo)
-         call print_tensor(shape(Eoo), Eoo, 'magneti-noL = Eoo', (/freq(1),freq(2)/))
+         call prop_oneave(S, (/'MAGO','MAGO'/), (/D/), int(shape(Eoo)), Eoo)
+         call prop_oneave(S, (/'MAGO'/), (/Dc/), int(shape(Eoo)), Eoo)
+         call print_tensor(int(shape(Eoo)), Eoo, 'magneti-noL = Eoo', (/freq(1),freq(2)/))
       end if
       if (freq(1)==freq(2) .or. freq(1)==-freq(2)) then
          do j = 1, 3
@@ -454,8 +454,8 @@ contains
       end if
       Eof = 0
       if (freq(3)==-freq(1)) then
-         call prop_oneave(S, (/'EL'/), (/Db/), shape(Eof), Eof, perm=(/2,1/))
-         call print_tensor(shape(Eof), Eof, 'G-prime-noL = Eof', (/freq(1),freq(3)/))
+         call prop_oneave(S, (/'EL'/), (/Db/), int(shape(Eof)), Eof, perm=(/2,1/))
+         call print_tensor(int(shape(Eof)), Eof, 'G-prime-noL = Eof', (/freq(1),freq(3)/))
       end if
       call pert_dens(decomp, S, (/'MAGO','EL  '/), (/3,3/), (/D,Dc,Df/), (/F,Fc,Ff/), &
                      Dcf, Fcf, freq=(/freq(2),freq(4)/))
@@ -476,11 +476,11 @@ contains
       ! contract no-London d/db G-prime and d/db A-tensor
       Eoof = 0; Eqof = 0
       if (freq(4)==0) then
-         call prop_oneave(S, (/'MAGO','MAGO'/), (/De/), shape(Eoof), Eoof) !dia
-         call prop_oneave(S, (/'MAGO'/), (/Dce/), shape(Eoof), Eoof) !para
-         call print_tensor(shape(Eoof), Eoof, 'd/db G-prime-noL = Eoof', freq(:3))
-         call prop_oneave(S, (/'ELGR'/), (/Dce/), shape(Eqof), Eqof)
-         call print_tensor(shape(Eqof), -Eqof, 'd/db A-tensor-noL = -Eqof', freq(:3))
+         call prop_oneave(S, (/'MAGO','MAGO'/), (/De/), int(shape(Eoof)), Eoof) !dia
+         call prop_oneave(S, (/'MAGO'/), (/Dce/), int(shape(Eoof)), Eoof) !para
+         call print_tensor(int(shape(Eoof)), Eoof, 'd/db G-prime-noL = Eoof', freq(:3))
+         call prop_oneave(S, (/'ELGR'/), (/Dce/), int(shape(Eqof)), Eqof)
+         call print_tensor(int(shape(Eqof)), -Eqof, 'd/db A-tensor-noL = -Eqof', freq(:3))
       end if
       !-------------------------------------------------------
       ! simultaneously contract no-London hypermagnetizability
@@ -488,7 +488,7 @@ contains
       ! just one energy contribution for G-prime, none for A-tensor
       Eooff = 0
       Eqoff = 0
-      call prop_oneave(S, (/'MAGO','MAGO'/), (/Def/), shape(Eooff), Eooff)
+      call prop_oneave(S, (/'MAGO','MAGO'/), (/Def/), int(shape(Eooff)), Eooff)
       ! gradient multiplier contribution -tr (DbSD-) (FDS)cef (or Dq instead of Db)
       do i = 1,3
          DbSD(i) = Db(i)*S*D - D*S*Db(i)
@@ -534,8 +534,8 @@ contains
          end do
       end do; FbDS=0; FqDS=0
       ! print no-London response tensors to stdout
-      call print_tensor(shape(Eooff), Eooff, 'd/df d/db G-prime-noL = Eooff', freq)
-      call print_tensor(shape(Eqoff),-Eqoff, 'd/df d/db A-tensor-noL = -Eqoff', freq)
+      call print_tensor(int(shape(Eooff)), Eooff, 'd/df d/db G-prime-noL = Eooff', freq)
+      call print_tensor(int(shape(Eqoff)),-Eqoff, 'd/df d/db A-tensor-noL = -Eqoff', freq)
       !free no-London-specific matrices
       Db=0; Fb=0; Dc=0; Fc=0; Dce=0; Fce=0; Dcf=0; Fcf=0
 #ifdef CME_WITH_LAO
@@ -547,20 +547,20 @@ contains
       Ebb = 0
       ! contract London magnetizability
       if (freq(1)==-freq(2)) then
-         call prop_twoave((/'MAG','MAG'/), (/D/), shape(Ebb), Ebb)
+         call prop_twoave((/'MAG','MAG'/), (/D/), int(shape(Ebb)), Ebb)
          DFD = D*F*D
-         call prop_oneave(S, (/'MAG','MAG'/), (/D/), shape(Ebb), Ebb, &
+         call prop_oneave(S, (/'MAG','MAG'/), (/D/), int(shape(Ebb)), Ebb, &
                           freq=(/freq(1),freq(2)/), DFD=(/DFD/))
          DFD = 0
          do j = 1, 3
             DFDc(j) = Dc(j)*(F+freq(2)/2*S)*D + D*Fc(j)*D &
                         + D*(F-freq(2)/2*S)*Dc(j)
          end do
-         call prop_twoave((/'MAG'/), (/D,Dc/), shape(Ebb), Ebb)
-         call prop_oneave(S, (/'MAG'/), (/Dc/), shape(Ebb), Ebb, &
+         call prop_twoave((/'MAG'/), (/D,Dc/), int(shape(Ebb)), Ebb)
+         call prop_oneave(S, (/'MAG'/), (/Dc/), int(shape(Ebb)), Ebb, &
                           freq=(/freq(1)/), DFD=(/DFDc/))
          DFDc = 0
-         call print_tensor(shape(Ebb), Ebb, 'magneti-Lon = Ebb', (/freq(1),freq(2)/))
+         call print_tensor(int(shape(Ebb)), Ebb, 'magneti-Lon = Ebb', (/freq(1),freq(2)/))
       end if
       if (freq(1)==freq(2) .or. freq(1)==-freq(2)) then
          do j = 1, 3
@@ -574,8 +574,8 @@ contains
       end if
       Ebf = 0
       if (freq(3)==-freq(1)) then
-         call prop_oneave(S, (/'EL'/), (/Db/), shape(Ebf), Ebf, perm=(/2,1/))
-         call print_tensor(shape(Ebf), Ebf, 'G-prime-Lon = Ebf', (/freq(1),freq(3)/))
+         call prop_oneave(S, (/'EL'/), (/Db/), int(shape(Ebf)), Ebf, perm=(/2,1/))
+         call print_tensor(int(shape(Ebf)), Ebf, 'G-prime-Lon = Ebf', (/freq(1),freq(3)/))
       end if
       call pert_dens(decomp, S, (/'MAG','EL '/), (/3,3/), (/D,Dc,Df/), (/F,Fc,Ff/), &
                      Dcf, Fcf, freq=(/freq(2),freq(4)/))
