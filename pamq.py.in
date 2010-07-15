@@ -1,10 +1,10 @@
 ############################################################################################
 #
-# script for preparing and submitting DIRAC pam job into a specified  queue system
+# Script for preparing and submitting DIRAC pam job into a specified  queue system.
 #
-# writen by Miro ILIAS, Tel Aviv, 2008 after Luuk's pamq script
+# Writen by Miro ILIAS, Tel Aviv, 2008 after Luuk's pamq script
 #
-# further improvement, suggestion etc are warmly welcomed
+# Further improvement, suggestion etc are warmly welcomed
 #
 ############################################################################################
 
@@ -1027,7 +1027,7 @@ def process_pamq_arguments():
 #
 #                        MAIN FUNCTION
 #
-# MI: I had to remove error catching to be able to localize a bug in the script
+# MI: I had to remove error catching to be able to localize bugs in the script
 #
 #########################################################################
 def main(*args):
