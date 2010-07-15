@@ -423,7 +423,6 @@ contains
 
     call alloc(ao,     total_ao_vector_length)
     call alloc(buffer, total_ao_vector_length)
-    write(*, *) 'gosia: total_ao_vector_length =', total_ao_vector_length
 
 
 !   plot and integrate
@@ -664,7 +663,7 @@ contains
                                                  px, py, pz,         &
                                                  buffer,             &
                                                  quantity)
-                  call quit('bla')
+                  !call quit('bla')
                 else
                   CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &
      &                                       ao, &
@@ -755,9 +754,9 @@ contains
 !       grid walk
 
 !!gosia fixme
-        visual_cfg_NCUBE(1) = 1
-        visual_cfg_NCUBE(2) = 1
-        visual_cfg_NCUBE(3) = 1
+!        visual_cfg_NCUBE(1) = 1
+!        visual_cfg_NCUBE(2) = 1
+!        visual_cfg_NCUBE(3) = 1
 !!
         DO ICUBE = 1,visual_cfg_NCUBE(1)
           DO JCUBE = 1,visual_cfg_NCUBE(2)
@@ -779,9 +778,9 @@ contains
 !             write(lunit_3d, '(4d20.12)') px, py, pz, 0.0d0
 
 !!gosia fixme
-        px = 1.0d0
-        py = 1.0d0
-        pz = 0.0d0
+!        px = 1.0d0
+!        py = 1.0d0
+!        pz = 0.0d0
 !!
 
               if (visual_cfg_london) then
@@ -793,7 +792,7 @@ contains
                                                px, py, pz,         &
                                                buffer,             &
                                                quantity(0,kcube))
-               call quit('bla')
+               !call quit('bla')
               else
 
                 CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &

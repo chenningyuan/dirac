@@ -285,10 +285,10 @@ contains
 
 
 !!gosia fixme
-      nr_point = 1
-      px(ipoint) = 2.0d0
-      py(ipoint) = 0.0d0
-      pz(ipoint) = 0.0d0
+!      nr_point = 1
+!      px(ipoint) = 2.0d0
+!      py(ipoint) = 0.0d0
+!      pz(ipoint) = 0.0d0
 !!
       DO IPOINT = 1,NR_POINTS
 
@@ -304,7 +304,7 @@ contains
                                          pz(ipoint),         &
                                          buffer,             &
                                          quantity)
-          call quit('bla')
+          !call quit('bla')
         else
 
           CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &

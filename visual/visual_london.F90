@@ -567,23 +567,23 @@ contains
 
       if (visual_cfg_london_with_sym) then
 
-        !call get_jblao_direct_temp(D(1), &
-        !                           vector_a, & 
-        !                           ao(ao_start(0,0):ao_end(0,0)), &
-        !                           ao(ao_start(0,1):ao_end(0,1)), &
-        !                           (/px, py, pz/), &
-        !                           ixvector, &
-        !                           buffer)
+        call get_jblao_direct_temp(D(1), &
+                                   vector_a, & 
+                                   ao(ao_start(0,0):ao_end(0,0)), &
+                                   ao(ao_start(0,1):ao_end(0,1)), &
+                                   (/px, py, pz/), &
+                                   ixvector, &
+                                   buffer)
 
 
-        call test_direct(ixvector, &
-                         1, &
-                         D(1)%elms, &
-                         ntbas(0), &
-                         ao(ao_start(0,0):ao_end(0,0)), &
-                         ao(ao_start(0,1):ao_end(0,1)), &
-                         (/px, py, pz/), &
-                         vector_a)
+        !call test_direct(ixvector, &
+        !                 1, &
+        !                 D(1)%elms, &
+        !                 ntbas(0), &
+        !                 ao(ao_start(0,0):ao_end(0,0)), &
+        !                 ao(ao_start(0,1):ao_end(0,1)), &
+        !                 (/px, py, pz/), &
+        !                 vector_a)
 
       else
 
@@ -840,7 +840,7 @@ contains
       b = 1; c = 2
     end if
     
-    write(*, *) 'bla: a, isym, r_co = ', a, isym, r_co(1), r_co(2), r_co(3)
+    !write(*, *) 'bla: a, isym, r_co = ', a, isym, r_co(1), r_co(2), r_co(3)
 
 !   3 component of j-vector
     do ixyz = 1, 3
@@ -865,8 +865,8 @@ contains
 
             vector_a(ixyz) = vector_a(ixyz) + f(ixyz)*D_0(ii, jj, ls_iq(ixyz))
 
-            write(*, *) 'bla ixyz, ls_iq(ixyz), f(ixyz), vector_a(ixyz)', &
-                             ixyz, ls_iq(ixyz), f(ixyz), vector_a(ixyz)
+            !write(*, *) 'bla ixyz, ls_iq(ixyz), f(ixyz), vector_a(ixyz)', &
+            !                 ixyz, ls_iq(ixyz), f(ixyz), vector_a(ixyz)
             if (ls_iq(ixyz) == 0) call quit('ls_iq(ixyz) = 0')
 
           end do

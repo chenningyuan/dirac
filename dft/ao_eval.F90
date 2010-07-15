@@ -891,13 +891,6 @@ contains
 !              although it consumes more memory than needed
 !              the allocation could be refined
 
-!gosia fixme:
-     write(*, *) 'gosia ao_eval_init:'
-     write(*, *) 'gosia ao_start(0,0), ao_end(0,0)', &
-                        ao_start(0,0), ao_end(0,0)
-     write(*, *) 'gosia ao_start(0,1), ao_end(0,1)', &
-                        ao_start(0,1), ao_end(0,1)
-
    end subroutine
 
 !> \brief point-wise transform cartesian to spherical
