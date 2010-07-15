@@ -146,7 +146,7 @@ contains
 !   --------------------------------------------------------------------
 !   --------------------------------------------------------------------
     if (.not. allocated(D_r)) call alloc(D_r, ntbas(0), ntbas(0), nz)
-    call mat_init(D_help, ntbas(0), ntbas(0))
+    call init_mat(D_help, ntbas(0), ntbas(0))
 !    if (.not. visual_cfg_london_with_sym) then
       if (.not. allocated(r_kl)) call alloc(r_kl, ntbas(0), ntbas(0), 3)
 !    end if
