@@ -352,6 +352,7 @@ contains
       real(8), intent(out) :: mo_coef(*)
 !     --------------------------------------------------------------------------
       integer, parameter   :: file_unit = 66
+      real(8)              :: energy
 !     --------------------------------------------------------------------------
 
       call opnfil(file_unit, 'DFCOEF', 'OLD', 'read_mo_coef')
@@ -361,7 +362,7 @@ contains
                           mo_coef,   &
                           (/0.0d0/), &
                           (/0/),     &
-                          (/0.0d0/), &
+                          energy,    &
                           2)
 
       close(file_unit, status = 'keep')
