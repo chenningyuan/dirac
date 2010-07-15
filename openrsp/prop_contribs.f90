@@ -160,7 +160,7 @@ contains
       !------------------------------------------------------------------------
       integer      :: idxp(size(p)), pperm(size(dime)), ccomp(size(p)), &
                       stepe(size(dime)), ddime(size(dime)), idxe(size(dime)), &
-                      i, j, k, tmpi, nd
+                      i, j, k, tmpi, nd, isize_p
       character(4) :: pp(size(p)), tmpp
       complex(8)   :: ffreq(size(p)), Etmp(product(dime)), tmpf
       logical      :: zero, bas
@@ -280,7 +280,9 @@ contains
       ! Argument nd=0 is used when averaging over unperturbed density,
       ! in which case also perturbed nuclear attraction should be included
       nd = merge(0, nd, size(p)==size(dime))
-      call oneave(S0, size(p), pp, ccomp, ddime(:size(p)), ffreq, nd, D, Etmp, DFD)
+      isize_p = size(p)
+      !call oneave(S0, size(p), pp, ccomp, ddime(:size(p)), ffreq, nd, D, Etmp, DFD)
+      call oneave(S0, isize_p, pp, ccomp, ddime(:size(p)), ffreq, nd, D, Etmp, DFD)
       ! add oneavg property contribution in temporary array Etmp(:) to
       ! resulting property array E(:), while permuting indices according to pperm
       idxe = 0
@@ -725,7 +727,7 @@ contains
       !------------------------------------------------------------------------
       integer      :: idxp(size(p)), pperm(size(dime)), ccomp(size(p)), &
                       stepe(size(dime)), ddime(size(dime)), idxe(size(dime)), &
-                      i, j, k, tmpi, nd
+                      i, j, k, tmpi, nd, isize_p
       character(4) :: pp(size(p)), tmpp
       complex(8)   :: Etmp(product(dime))
       logical      :: zero
@@ -802,7 +804,8 @@ contains
       ! everything set up, so call core procedure oneave.
       ! Argument nd=0 is used when averaging over unperturbed density,
       ! in which case also perturbed nuclear attraction should be included
-      call twoave(size(p), size(dime)-size(p), pp, ccomp, ddime, D, Etmp)
+      isize_p = size(p)
+      call twoave(isize_p, size(dime)-isize_p, pp, ccomp, ddime, D, Etmp)
       ! add oneavg property contribution in temporary array Etmp(:) to
       ! resulting property array E(:), while permuting indices according to pperm
       idxe = 0
@@ -1109,7 +1112,7 @@ contains
       !------------------------------------------------------------------------
       integer      :: idxp(size(p)), pperm(size(dimp)), ccomp(size(p)), &
                       stepf(size(dimp)), ddimp(size(dimp)), idxf(size(dimp)), &
-                      i, j, k, tmpi
+                      i, j, k, tmpi, isize_p
       type(matrix) :: Ftmp(product(dimp)), Stmp(product(dimp))
       character(4) :: pp(size(p)), tmpp
       complex(8)   :: ffreq(size(p)), tmpf
@@ -1196,7 +1199,8 @@ contains
       ! early return if the result is zero
       if (zero) return
       ! everything set up, so call core procedure oneint
-      call oneint(S0, size(p), pp, ccomp, ddimp, ffreq, Ftmp, Stmp)
+      isize_p = size(p)
+      call oneint(S0, isize_p, pp, ccomp, ddimp, ffreq, Ftmp, Stmp)
       ! add oneavg property contribution in temporary array Etmp(:) to
       ! resulting property array E(:), while permuting indices according to pperm
       bas = all(pert_basdep(p))
@@ -1457,7 +1461,7 @@ contains
       !------------------------------------------------------------------------
       integer      :: idxp(size(p)), pperm(size(dimf)), ccomp(size(p)), &
                       stepf(size(dimf)), ddimf(size(dimf)), idxf(size(dimf)), &
-                      i, j, k, tmpi, nd
+                      i, j, k, tmpi, nd, isize_p
       character(4) :: pp(size(p)), tmpp
       type(matrix) :: Ftmp(product(dimf))
       logical      :: zero
@@ -1544,7 +1548,8 @@ contains
          end do
       end do
       ! everything set up, so call core procedure twoint
-      call twoint(size(p), size(dimf)-size(p), pp, ccomp, ddimf, D, Ftmp)
+      isize_p = size(p)
+      call twoint(isize_p, size(dimf)-isize_p, pp, ccomp, ddimf, D, Ftmp)
       ! 'un-permute' perturbed Fock matrices from Ftmp(:) back into F(:)
       idxf = 0
       do j = 1, product(dimf)
@@ -1995,7 +2000,7 @@ contains
       type(matrix), intent(in)    :: Da, Db
       real(8),      intent(inout) :: E(:)
       real(8), pointer :: wrk(:)
-      integer          :: lwrk
+      integer          :: lwrk, isize_E, ilen_what
 
 #ifdef PRG_DIRAC
 !     early return
@@ -2044,6 +2049,8 @@ contains
 #ifdef LSDALTON_ONLY
          call lsquit('Cannot call GRCONT, only new integral code is compiled',-1)
 #else
+ isize_E = size(E)
+ ilen_what = len(what)
 #ifdef PRG_DIRAC
       call grcont(wrk,                      &
                   lwrk,                     &
@@ -2054,10 +2061,10 @@ contains
                   lwrk - 2*Da%nrow**2,      &
 #endif
                   E,                        &
-                  size(E),                  &
+                  isize_E,                  &
                   what(1:1) == 'G',         &
                   what(1:1) == 'M',         &
-                  len(what),                &
+                  ilen_what,                &
                   0,                        &
                   .true.,                   &
                   .false.,                  &
