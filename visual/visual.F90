@@ -6,7 +6,7 @@ module visual
   use ao_eval
   use basis_info
   use matrix_defop
-  use matrix_genop
+  use matrix_genop, only: copy_matrix_sym
   use dirac_interface
   use visual_london
   use visual_integrate
