@@ -275,9 +275,9 @@ contains
               ofm = ao_start(0, 1) + i - 1
               call get_ao_b1(px, py, pz,         &
                              ishell,             &
-                             ao(i),              &
-                             ao(ofm),            &
-                             ao(ofm + nr_ao),    &
+                             ao(i),           &
+                             ao(ofm),         &
+                             ao(ofm + nr_ao),  &
                              ao(ofm + 2*nr_ao))
               if (need_ao_order(1, 1)) then
                 ofm = ao_start(1, 1) + i - 1
@@ -890,6 +890,13 @@ contains
       total_ao_vector_length = nr_ao_slices*nr_ao_cartesian
 !              although it consumes more memory than needed
 !              the allocation could be refined
+
+!gosia fixme:
+     write(*, *) 'gosia ao_eval_init:'
+     write(*, *) 'gosia ao_start(0,0), ao_end(0,0)', &
+                        ao_start(0,0), ao_end(0,0)
+     write(*, *) 'gosia ao_start(0,1), ao_end(0,1)', &
+                        ao_start(0,1), ao_end(0,1)
 
    end subroutine
 

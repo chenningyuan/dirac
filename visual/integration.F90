@@ -284,6 +284,12 @@ contains
      &          QUANTITY(0:3)
 
 
+!!gosia fixme
+      nr_point = 1
+      px(ipoint) = 2.0d0
+      py(ipoint) = 0.0d0
+      pz(ipoint) = 0.0d0
+!!
       DO IPOINT = 1,NR_POINTS
 
         if (visual_cfg_london) then
@@ -298,6 +304,7 @@ contains
                                          pz(ipoint),         &
                                          buffer,             &
                                          quantity)
+          call quit('bla')
         else
 
           CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &

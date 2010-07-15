@@ -509,9 +509,11 @@ contains
     if (kw_matches(word, '.LONDON')) then
       visual_cfg_london = .true.
       do i = 1, visual_cfg_nr_xvectors
-        read(unit_in, *) visual_cfg_conmat_file(i),     &
-                         visual_cfg_lao_chcomp(i),      &
-                         visual_cfg_connection_key(i)
+        read(unit_in, *) visual_cfg_conmat_file(i),      &
+                         visual_cfg_lao_chcomp(i),       &
+                         visual_cfg_connection_key(i),   &
+                         visual_cfg_lao_contributions(i)
+!     gosia todo: the last one should be made optional
       end do
     end if
 

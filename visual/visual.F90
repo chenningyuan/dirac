@@ -256,12 +256,24 @@ contains
 !               .false. - only over e-shells
 
 
+        write(*, *) 'gosia: nz, nfsym, jbtof(D_con_mo%irep, 1) = ', &
+                            nz, nfsym, jbtof(D_con_mo%irep, 1)
+
+!       symmetric connection
         if (visual_cfg_connection(ivector) == 2) then
 
 !         D_con_mo(iz=1) is antisymmetric
 !         D_con_mo(iz=2,3,4) is symmetric, so:
-          D_con(nr_dmat_con) = (C*(D_con_mo*dag(Cig))) &
-                             + (Cig*(D_con_mo*dag(C)))
+
+          if (nfsym == 2) then
+            D_con(nr_dmat_con) = (C*(D_con_mo*dag(Cig))) &
+                               + (C*(D_con_mo*dag(Ciu))) &
+                               + (Cig*(D_con_mo*dag(C))) &
+                               + (Ciu*(D_con_mo*dag(C)))
+          else
+            D_con(nr_dmat_con) = (C*(D_con_mo*dag(Cig))) &
+                               + (Cig*(D_con_mo*dag(C)))
+          end if
 
           call copy_matrix_sym(D_con(nr_dmat_con), D_con_mo)
 
@@ -272,13 +284,21 @@ contains
           end if
 
 
+!       natural connection
         else if (visual_cfg_connection(ivector) == 1) then
 
 !         D_con_mo is a general matrix
 !         so we do dag(D_con_mo), but dag(A) does only transposition
 !         so the sign is changed by hand -> that is why we have "-"
-          D_con(nr_dmat_con) = (C*(D_con_mo*dag(Cig))) &
-                             - (Cig*(dag(D_con_mo)*dag(C)))
+          if (nfsym == 2) then
+            D_con(nr_dmat_con) = (C*(D_con_mo*dag(Cig))) &
+                               !+ (C*(D_con_mo*dag(Ciu))) &
+                               - (Cig*(D_con_mo*dag(C)))
+                               !- (Ciu*(D_con_mo*dag(C)))
+          else
+            D_con(nr_dmat_con) = (C*(D_con_mo*dag(Cig))) &
+                               - (Cig*(dag(D_con_mo)*dag(C)))
+          end if
 
           if (debug_me) then
 !           can be compared with matrices from GETMDM when running response
@@ -287,6 +307,7 @@ contains
           end if
 
 
+!       <none> connection
         else if (visual_cfg_connection(ivector) == 0) then
 
 !         'ij' block: overlap
@@ -347,6 +368,16 @@ contains
       end if
     end do
 
+!    do imat = 1, nr_dmat_con
+!      if (nz < 4) then
+!        do iz = 1, nz
+!          iq   = ipqtoq(iz, D_con(imat)%irep)
+!          ioff = ntbas(0)*ntbas(0)*(iz - 1)
+!          call q2bphase('D', iq, 1, D_con(imat)%elms(1 + ioff))
+!        end do
+!      end if
+!    end do
+
 
 !   scale density matrices
 !   ======================
@@ -392,6 +423,7 @@ contains
 
     call alloc(ao,     total_ao_vector_length)
     call alloc(buffer, total_ao_vector_length)
+    write(*, *) 'gosia: total_ao_vector_length =', total_ao_vector_length
 
 
 !   plot and integrate
@@ -594,6 +626,11 @@ contains
      &             'plane: ' // grid_orientation(IORIENTATION)
 
 !
+!gosia fixme
+!          ni = 1
+!          nj = 1
+!          nk = 1
+!!
           DO I = 1,NI
             DO J = 1,NJ
               DO K = 1,NK
@@ -612,6 +649,11 @@ contains
                 IF(IORIENTATION .EQ. 3) &                        ! 'yz'
      &                     PX = visual_cfg_ORIGIN_2D(1)
 
+!gosia fixme:
+!               px = 2.0d0
+!               py = 2.0d0
+!               pz = 0.0d0
+!!
 
                 if (visual_cfg_london) then
                   if (.not. present(D_con) .or. nr_dmat_con == 0) &
@@ -622,6 +664,7 @@ contains
                                                  px, py, pz,         &
                                                  buffer,             &
                                                  quantity)
+                  call quit('bla')
                 else
                   CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &
      &                                       ao, &
@@ -711,6 +754,11 @@ contains
 
 !       grid walk
 
+!!gosia fixme
+        visual_cfg_NCUBE(1) = 1
+        visual_cfg_NCUBE(2) = 1
+        visual_cfg_NCUBE(3) = 1
+!!
         DO ICUBE = 1,visual_cfg_NCUBE(1)
           DO JCUBE = 1,visual_cfg_NCUBE(2)
             DO KCUBE = 1,visual_cfg_NCUBE(3)
@@ -730,6 +778,12 @@ contains
 !             zero weight is so that it does not mess up results
 !             write(lunit_3d, '(4d20.12)') px, py, pz, 0.0d0
 
+!!gosia fixme
+        px = 1.0d0
+        py = 1.0d0
+        pz = 0.0d0
+!!
+
               if (visual_cfg_london) then
                 if (.not. present(D_con) .or. nr_dmat_con == 0) &
                    call quit("no D_con or nr_dmat_con=0")
@@ -739,7 +793,7 @@ contains
                                                px, py, pz,         &
                                                buffer,             &
                                                quantity(0,kcube))
-!               call quit('bla')
+               call quit('bla')
               else
 
                 CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &

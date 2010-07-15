@@ -22,22 +22,21 @@ module visual_cfg
   logical,       public :: visual_cfg_radial             = .false.
   logical,       public :: visual_cfg_force_small_ao     = .false.
   logical,       public :: visual_cfg_london             = .false.
-  logical,       public :: visual_cfg_london_with_sym    = .false.
+  logical,       public :: visual_cfg_london_with_sym    = .true.
 
-  integer,       public :: visual_cfg_ncube(0:3)                       = 80
-  integer,       public :: visual_cfg_nr_points_in_list                = 0
-  integer,       public :: visual_cfg_nr_xvectors                      = 0
-  integer,       public :: visual_cfg_iq_xvector(max_nr_xvectors)      = 0
-  integer,       public :: visual_cfg_irep_xvector(max_nr_xvectors)    = 0
-  integer,       public :: visual_cfg_irep_conmat(max_nr_xvectors)     = 0
-  integer,       public :: visual_cfg_iwhich_xvector(max_nr_xvectors)  = 1
-  integer,       public :: visual_cfg_ioption_xvector(max_nr_xvectors) = 0
-  integer,       public :: visual_cfg_line_nr_steps                    = 0
-  integer,       public :: visual_cfg_orientation                      = 1
-  integer,       public :: visual_cfg_lao_icomp(max_nr_xvectors)       = 0
-  integer,       public :: visual_cfg_connection(max_nr_xvectors)      = 1
-!later make it optional in the input, now i need it for testing
-  integer,       public :: visual_cfg_lao_contrib(max_nr_xvectors)     = 1
+  integer,       public :: visual_cfg_ncube(0:3)                         = 80
+  integer,       public :: visual_cfg_nr_points_in_list                  = 0
+  integer,       public :: visual_cfg_nr_xvectors                        = 0
+  integer,       public :: visual_cfg_iq_xvector(max_nr_xvectors)        = 0
+  integer,       public :: visual_cfg_irep_xvector(max_nr_xvectors)      = 0
+  integer,       public :: visual_cfg_irep_conmat(max_nr_xvectors)       = 0
+  integer,       public :: visual_cfg_iwhich_xvector(max_nr_xvectors)    = 1
+  integer,       public :: visual_cfg_ioption_xvector(max_nr_xvectors)   = 0
+  integer,       public :: visual_cfg_line_nr_steps                      = 0
+  integer,       public :: visual_cfg_orientation                        = 1
+  integer,       public :: visual_cfg_lao_icomp(max_nr_xvectors)         = 0
+  integer,       public :: visual_cfg_connection(max_nr_xvectors)        = 1
+  integer,       public :: visual_cfg_lao_contributions(max_nr_xvectors) = 7 !all contributions by default
 
   real(8),       public :: visual_cfg_add_3d                             = 4.0d0
   real(8),       public :: visual_cfg_common_factor                      = 1.0d0

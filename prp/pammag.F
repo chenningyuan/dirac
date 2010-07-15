@@ -1766,6 +1766,10 @@ C     ==============
 C
       IREP = ISYMT-1 ! irre[ pf T(1)_icomp (0 till nirrep-1)
       IOPSY = JBTOF(IREP,1)
+!!gosia
+      write(*, *) 'gosia in getmdm: irep, JBTOF(IREP,1), nz', 
+     &                              irep, JBTOF(IREP,1), nz
+!!
 
       CALL DZERO(DMAT,N2BBASXQ)
 C

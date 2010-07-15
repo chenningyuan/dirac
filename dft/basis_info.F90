@@ -508,7 +508,9 @@ contains
 !                                                       rotation
          ss_iq(jxyz) = iqtopq(ss_iq(jxyz), isymax(jxyz, 2))
 !                                                       translation
-         ls_iq(jxyz) = iqtopq(ls_iq(jxyz), isymax(jxyz, 1))
+!        ls_iq(jxyz) = iqtopq(ls_iq(jxyz), isymax(jxyz, 1))
+!radovan: transform as rotations! fix this later
+         ls_iq(jxyz) = iqtopq(ls_iq(jxyz), isymax(jxyz, 2))
       end do
 
 !     set up ll and ss blocks, transform as rotation
