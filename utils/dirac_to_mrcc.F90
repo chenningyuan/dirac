@@ -1,6 +1,6 @@
-module dirac_to_mrcc
+module dirac_mointegral_export
 
-! Written by Lucas Visscher, VU University Amsterdam, December 2009
+! Written by Lucas Visscher, VU University Amsterdam, December 2009, July 2010
 
   implicit none
 
@@ -26,8 +26,8 @@ module dirac_to_mrcc
   integer                 :: irrep_occupation(128)
   type(SpinorInformation), allocatable :: spinor(:)
 
-  public initialize, write_fort55
-  private process_1e, process_2e, irrep_reordered
+  public initialize, write_mrcc_fort55
+  private process_1e, process_2e, make_index_to_occupied_first, irrep_reordered
 
 contains
 
@@ -35,7 +35,7 @@ contains
 
   subroutine initialize ()
 
-     integer       ::  number_of_kramerspairs, i, j, index, n
+     integer       ::  number_of_kramerspairs, i, j
      character(10) ::  date_of_generation
      character(8)  ::  time_of_generation
      logical       ::  breit_included
@@ -59,37 +59,11 @@ contains
      allocate (spinor(number_of_spinors))
      allocate (kramer_to_spinor(-number_of_spinors/2:number_of_spinors/2))
 
+!    create indices for optional reordering according to occupation
+     call make_index_to_occupied_first ()
+
      read (filenumber_1e) ((multiplication_table(i,j),i=1,2*number_of_abelian_irreps),j=1,2*number_of_abelian_irreps)
      read (filenumber_1e) (spinor(i)%irrep,spinor(i)%abelian_irrep,spinor(i)%energy,i=1,number_of_spinors)
-
-!    reorder spinors such that we have all occupied first
-     index = 0
-     do i = 1, number_of_irreps
-        n = 0
-        do j = 1, number_of_spinors
-           if (spinor(j)%irrep == i) then
-              n = n + 1
-              if (n <= irrep_occupation(i)) then
-                 index = index + 1
-                 spinor(j)%index = index
-                 spinor(j)%occupation = 1
-              end if
-           end if
-        end do
-     end do
-     do i = 1, number_of_irreps
-        n = 0
-        do j = 1, number_of_spinors
-           if (spinor(j)%irrep == i) then
-              n = n + 1
-              if (n > irrep_occupation(i)) then
-                 index = index + 1
-                 spinor(j)%index = index
-                 spinor(j)%occupation = 0
-              end if
-           end if
-        end do
-     end do
 
      write (*,*) " Initialized reading from MRCONEE"
      write (*,*) " Core energy: ", core_energy
@@ -192,15 +166,55 @@ contains
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  subroutine write_fort55
+  subroutine make_index_to_occupied_first
+
+     integer :: index, i, j, n
+
+!    We may want to reorder spinors such that we have all occupied first, create index for that
+     index = 0
+     do i = 1, number_of_irreps
+        n = 0
+        do j = 1, number_of_spinors
+           if (spinor(j)%irrep == i) then
+              n = n + 1
+              if (n <= irrep_occupation(i)) then
+                 index = index + 1
+                 spinor(j)%index = index
+                 spinor(j)%occupation = 1
+              end if
+           end if
+        end do
+     end do
+     do i = 1, number_of_irreps
+        n = 0
+        do j = 1, number_of_spinors
+           if (spinor(j)%irrep == i) then
+              n = n + 1
+              if (n > irrep_occupation(i)) then
+                 index = index + 1
+                 spinor(j)%index = index
+                 spinor(j)%occupation = 0
+              end if
+           end if
+        end do
+     end do
+
+  end subroutine
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  subroutine write_mrcc_fort55
+
+! Write mrcc integral file fort.55. 
+! Note that it is no longer necessary to reorder the spinors to occupied first, kept the code as an example
+! to show how this can be done.
 
   integer               :: i, j
   integer, allocatable  :: number_of_spinors_in_irrep(:)
   integer, allocatable  :: reordered_multiplication_table(:,:)
-  type(SpinorInformation), allocatable :: reordered_spinor(:)
+!  type(SpinorInformation), allocatable :: reordered_spinor(:)
 
   allocate (number_of_spinors_in_irrep(number_of_abelian_irreps))
-  allocate (reordered_spinor(number_of_spinors))
   allocate (reordered_multiplication_table(2*number_of_abelian_irreps,2*number_of_abelian_irreps))
 
 ! Count the number of spinors in each irrep
@@ -217,6 +231,7 @@ contains
   end do
   spinor(:)%abelian_irrep = spinor(:)%abelian_irrep + number_of_abelian_irreps
 
+!  allocate (reordered_spinor(number_of_spinors))
 ! Reorder to place occupied orbitals first
 !  do i = 1, number_of_spinors
 !     reordered_spinor(spinor(i)%index) = spinor(i)
@@ -238,7 +253,7 @@ contains
 
   deallocate (multiplication_table)
   deallocate (reordered_multiplication_table)
-  deallocate (reordered_spinor)
+!  deallocate (reordered_spinor)
 
   end subroutine
 
@@ -246,11 +261,11 @@ contains
 
 end module
 
-  program make_mrcc_interface
+  program make_interface_files
   
-  use dirac_to_mrcc
+  use dirac_mointegral_export
 
   call initialize
-  call write_fort55
+  call write_mrcc_fort55
 
   end
