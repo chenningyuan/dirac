@@ -4,6 +4,10 @@
 ! please mind that the naming is common with Dalton
 ! so some things make only sense in the larger picture (Dalton and DIRAC)
 
+! radovan: please do not use (also in the f90 terms) this module
+!          directly, use this functionality only via module matrix_defop
+!          otherwise you risk memory corruption!
+
 module matrix_operations
 
   use matrix_stat

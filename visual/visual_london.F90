@@ -5,8 +5,6 @@ module visual_london
   use ao_eval
   use basis_info
   use matrix_defop
-  use matrix_genop
-  use matrix_operations
   use dirac_interface
 
 
@@ -341,7 +339,7 @@ contains
 !   =======================
     factor = pfac
     if (visual_cfg_connection(ivector) == 1) then
-      call mat_scal(factor, D_con_ao)
+      D_con_ao = factor*D_con_ao
     else
       call dscal(idimens, factor, buffer, 1)
     end if
@@ -600,13 +598,11 @@ contains
     end if
 
     if (btest(visual_cfg_lao_contributions(ixvector), 1)) then
-      f = -1.0d0
-      call mat_daxpy(f, D(imat), D_help)
+      D_help = D_help - D(imat)
     end if
 
     if (btest(visual_cfg_lao_contributions(ixvector), 2)) then
-      f = -1.0d0
-      call mat_daxpy(f, D_con(imat_con), D_help)
+      D_help = D_help - D_con(imat)
     end if
 
 !gosia: fixme: visual_cfg_irep_xvector jest zle!!

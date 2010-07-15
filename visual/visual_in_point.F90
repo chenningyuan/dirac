@@ -6,7 +6,6 @@ module visual_in_point
   use ao_eval
   use basis_info
   use matrix_defop
-  use matrix_genop
   !use visual_london_in_point
   use visual_london
 
