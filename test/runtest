@@ -84,6 +84,8 @@ usage () {
    $echo '\texecute Dirac with nice/npri'
    $echo '--timeout="TIMEOUT"'
    $echo '\tset the time limit for Dirac run'
+   $echo '--overwrite=yes'
+   $echo '\toverwrite reference outputs (this is for updating tests, use with care)'
    $echo
 }
 
@@ -96,6 +98,7 @@ arg_tag=runtest
 arg_mpi=
 arg_nice=
 arg_timeout=
+arg_overwrite=
 RUNTYPE=undefined
 
 while [ $# != 0 ]; do
@@ -144,6 +147,14 @@ while [ $# != 0 ]; do
             exit 1
          fi
          RUNTYPE="$val" ; export RUNTYPE
+         ;;
+      "overwrite")
+         if [ "${valomitted}" = "yes" ]; then
+            echo  'Syntax error: Option "'${optname}'" is not allowed' \
+                  'without an argument'
+            exit 1
+         fi
+         arg_overwrite="$val"
          ;;
       "mpi")
          if [ "${valomitted}" = "yes" ]; then
@@ -361,12 +372,13 @@ for tt in $tests; do
 
    ( cd $tt; \
 #                            ... export variables for run.sh in each test subdirectory
-     PAM_PATH=$arg_pampath;      export PAM_PATH; \
-     MPIARG=$arg_mpi;            export MPIARG;   \
-     DIRAC=$arg_dirac;           export DIRAC;    \
-     TAG=$arg_tag;               export TAG;      \
-     NICE=$arg_nice;             export NICE;     \
-     TIMEOUT=$arg_timeout;       export TIMEOUT;  \
+     PAM_PATH=$arg_pampath;              export PAM_PATH;            \
+     MPIARG=$arg_mpi;                    export MPIARG;              \
+     DIRAC=$arg_dirac;                   export DIRAC;               \
+     TAG=$arg_tag;                       export TAG;                 \
+     NICE=$arg_nice;                     export NICE;                \
+     TIMEOUT=$arg_timeout;               export TIMEOUT;             \
+     OVERWRITE_REFERENCE=$arg_overwrite; export OVERWRITE_REFERENCE; \
      ./run.sh; \
      cd .. )  
 done

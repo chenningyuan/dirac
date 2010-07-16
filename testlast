@@ -25,6 +25,7 @@ parallel=" "
 nodes=1
 queue="none"
 time="4:00:00"
+OVERWRITE_REFERENCE="undefined"
 # Define exit procedure
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
@@ -86,6 +87,8 @@ usage='Usage: '$0'\n'\
 "\tRuntime (for the queueing system) (default: $time)\n"\
 '--timeout=TIMEOUT\n'\
 '\ttime for allowing dirac run (killed afterwards) \n'\
+'--overwrite=yes\n'\
+'\toverwrite reference outputs (this is for updating tests, use with care)\n'\
 '--q=QUEUE\n'\
 '\tQueue to be used in qsub (default: -q=none meaning run interactively)\n'
 
@@ -160,6 +163,11 @@ while [ $# != 0 ]; do
       "timeout")
          if [ "${valomitted}" = "no" ]; then
             TIMEOUT="$val"
+         fi
+         ;;
+      "overwrite")
+         if [ "${valomitted}" = "no" ]; then
+            OVERWRITE_REFERENCE="$val"
          fi
          ;;
       *)
@@ -275,9 +283,12 @@ cat <<EOF >job_testlast.sh
 echo " Starting runtest to run tests at \`date\`"
 cd ${testdir};
 
+
+
+#radovan: why this doubling of code? can the value of timeout not be checked inside?
 if [ -n "$TIMEOUT" ]; then
 #  ... include TIMEOUT flag
-./runtest --tests="$tests" --runtype="$RUNTYPE" $pampath $mpi $diracexe --run=$run --timeout=$TIMEOUT > ./logs/$runlog || \
+./runtest --tests="$tests" --runtype="$RUNTYPE" $pampath $mpi $diracexe --run=$run --timeout=$TIMEOUT --overwrite=$OVERWRITE_REFERENCE> ./logs/$runlog || \
 { echo " runtest failed" ; \
   echo " Here is the logfile ${testdir}/logs/$runlog" ; \
   cat ${testdir}/logs/$runlog ; \
@@ -285,7 +296,7 @@ if [ -n "$TIMEOUT" ]; then
 }
 else
 # no TIMEOUT flag ...
-./runtest --tests="$tests" --runtype="$RUNTYPE" $pampath $mpi $diracexe --run=$run > ./logs/$runlog || \
+./runtest --tests="$tests" --runtype="$RUNTYPE" $pampath $mpi $diracexe --run=$run                    --overwrite=$OVERWRITE_REFERENCE> ./logs/$runlog || \
 { echo " runtest failed" ; \
   echo " Here is the logfile ${testdir}/logs/$runlog" ; \
   cat ${testdir}/logs/$runlog ; \

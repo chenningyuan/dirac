@@ -83,8 +83,18 @@ fi
     exit
   fi
 #
-  ../crep  result/$OLDOUT result/$FILTER >result/$OLDOUT.rep
-  ../crep  $NEWOUT result/$FILTER >$NEWOUT.rep
+  ../crep result/$OLDOUT result/$FILTER > result/$OLDOUT.rep
+  ../crep $NEWOUT        result/$FILTER > $NEWOUT.rep
+
+
+
+# overwrite reference outputs
+if [ "$OVERWRITE_REFERENCE" = "yes" ]; then
+   echo "WARNING: overwriting reference output result/$OLDOUT by actual output $NEWOUT"
+   yes | cp $NEWOUT result/$OLDOUT
+fi
+
+
 #
 #  Generate file with the observed discrepancies with the standard output that is placed
 #  in the directory of the test. This is done both in html format and in txt format.
