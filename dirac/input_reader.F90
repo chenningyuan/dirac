@@ -532,6 +532,8 @@ contains
     character(kw_length), intent(in) :: word
     character(kw_length), intent(in) :: kw_section
 !   ----------------------------------------------------------------------------
+    integer                          :: i
+!   ----------------------------------------------------------------------------
 
 #ifndef MOD_OPENRSP
     call quit(kw_section//' not available in this version')
@@ -544,13 +546,11 @@ contains
     end if
 
     if (kw_matches(word, '.FREQ  ')) then
-!     give 4 frequencies
-!     \alpha will use only first 2
-!     \beta only first 3
-      call kw_read(word, openrsp_cfg_freq(1), &
-                         openrsp_cfg_freq(2), &
-                         openrsp_cfg_freq(3), &
-                         openrsp_cfg_freq(4))
+       call kw_read(word, openrsp_cfg_nr_freq)
+       allocate(openrsp_cfg_freq(openrsp_cfg_nr_freq))
+       do i = 1, openrsp_cfg_nr_freq
+          call kw_read(word, openrsp_cfg_freq(i))
+       end do
     end if
 
     if (kw_matches(word, '.FREQ_P')) then

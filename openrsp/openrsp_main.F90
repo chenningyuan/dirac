@@ -20,7 +20,7 @@ contains
 #include "dgroup.h"
 
     type(matrix)  :: S, C_i, D, F
-    complex(8) :: cfg_rsp_freq(4)
+    complex(8) :: cfg_rsp_freq(10)
     complex(8) :: w(10)
     real(8) :: sum_up
     integer       :: i, j, n, k, l, number_atoms
@@ -39,10 +39,11 @@ contains
 !   for debugging, remove later
 !   call print_prp_common_blocks()
 
-    cfg_rsp_freq(1) = openrsp_cfg_freq(1)
-    cfg_rsp_freq(2) = openrsp_cfg_freq(2)
-    cfg_rsp_freq(3) = openrsp_cfg_freq(3)
-    cfg_rsp_freq(4) = openrsp_cfg_freq(4)
+    cfg_rsp_freq = 0.0d0
+    do i = 1, openrsp_cfg_nr_freq 
+!      dirac frequencies are real, convert to complex
+       cfg_rsp_freq(i) = dcmplx(openrsp_cfg_freq(i), 0.0d0)
+    end do
 
     call get_S(S)
 

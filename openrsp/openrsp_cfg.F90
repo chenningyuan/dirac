@@ -6,8 +6,10 @@ module openrsp_cfg
 
    real(8), public :: openrsp_cfg_threshold_response = 1.0d-8
    real(8), public :: openrsp_cfg_threshold_rhs      = 1.0d-8
-   real(8), public :: openrsp_cfg_freq(4)            = 0.0d0
-   real(8), public :: openrsp_cfg_freq_process       = 0.0d0
+
+   integer, public              :: openrsp_cfg_nr_freq = 0
+   real(8), public, allocatable :: openrsp_cfg_freq(:)
+   real(8), public              :: openrsp_cfg_freq_process = 0.0d0
 
    logical, public :: openrsp_cfg_skip_pp = .false.
    logical, public :: openrsp_cfg_skip_pn = .false.
