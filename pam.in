@@ -113,7 +113,7 @@ extrausage ()
    echo '     -vg1 "valgrind_params" : Run DIRAC in valgrind (http://valgrind.org) with parameters of :"'$VALGRIND'"'
    echo '     -vg                    : Run DIRAC in valgrind (http://valgrind.org), no parameters'
    echo '     -vgfull                : Run DIRAC in valgrind (http://valgrind.org)'
-   echo '                              with --error-limit=no --leak-check=full --track-origins=yes --show-reachable=yes'
+   echo '                              with -v --error-limit=no --leak-check=full --track-origins=yes --show-reachable=yes'
    echo '     -prof                  : After finishing dirac executable perform profiling with:"'$PROFILER'"'
    echo '     -nobackup              : Do not backup output files, simply overwrite them'
 }
@@ -1092,7 +1092,7 @@ while [ -n "$1" ]; do
          ;;
       -vgfull)
 	 VALGRIND_CHECK=1
-	 VALGRIND_TOOL="$VALGRIND --error-limit=no --leak-check=full --track-origins=yes --show-reachable=yes"
+	 VALGRIND_TOOL="$VALGRIND -v --error-limit=no --leak-check=full --track-origins=yes --show-reachable=yes"
          ;;
       -get|-save)
          shift
