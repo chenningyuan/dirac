@@ -1545,6 +1545,7 @@ C
          DO J = 1,NOCC(I)
             IF (EHOMO .LT. EIG(IORB(I)+NPSH(I)+J)) THEN
                EHOMO = EIG(IORB(I)+NPSH(I)+J)
+!radovan: but if levyle == .true. also spinfr == .true.
                IF (LEVYLE .OR. SPINFR) THEN
                   IHOMO = IBEIG(IORB(I)+NPSH(I)+J)
                ELSE
