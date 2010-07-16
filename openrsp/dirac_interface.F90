@@ -39,28 +39,28 @@ module dirac_interface
    public lsquit
  
    save
+   private
 
-  integer,      public              :: unit_input       = 0
-  integer,      public              :: unit_output      = 0
+  integer                           :: unit_input       = 0
+  integer, public                   :: unit_output      = 0
 
-  integer,      public              :: nr_atoms         = 0
-  integer,      public              :: nr_sym_dep_nuc   = 0
-  integer,      public              :: nr_sym_indep_nuc = 0
+  integer, public                   :: nr_atoms         = 0
+  integer                           :: nr_sym_dep_nuc   = 0
+  integer                           :: nr_sym_indep_nuc = 0
   character(6), public, allocatable :: sym_dep_nuc_name(:)
 
-  logical,      public              :: nonzero_small_metric = .false.
+  logical                           :: nonzero_small_metric = .false.
 
-  integer,      public              :: integral_flag        = 0
-  logical,      public              :: include_ll_integrals = .false.
-  logical,      public              :: include_ls_integrals = .false.
-  logical,      public              :: include_ss_integrals = .false.
-  logical,      public              :: include_gt_integrals = .false.
+  integer                           :: integral_flag        = 0
+  logical                           :: include_ll_integrals = .false.
+  logical                           :: include_ls_integrals = .false.
+  logical                           :: include_ss_integrals = .false.
+  logical                           :: include_gt_integrals = .false.
 
-  logical,      public              :: include_pp_rotations = .false.
-  logical,      public              :: include_pn_rotations = .false.
-  logical,      public              :: diamagnetic_via_pn   = .false.
+  logical                           :: include_pp_rotations = .false.
+  logical                           :: include_pn_rotations = .false.
+  logical, public                   :: diamagnetic_via_pn   = .false.
 
-  private
 
   logical :: dirac_interface_data_allocated = .false.
   logical :: dirac_interface_data_set       = .false.
