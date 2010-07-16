@@ -435,7 +435,19 @@ contains
       ! no-London section !
       !-------------------!
       ! solve equations specific to no-London
-      call pert_dens(decomp, S, (/'MAGO'/), (/3/), (/D/), (/F/), Dc, Fc, freq=(/freq(2)/))
+      if (openrsp_levy_leblond .and. (nr_atoms == 1)) then
+!        for atoms this contribution is zero with levy-leblond
+!        solving this zero contribution explicitly makes numeric problems
+!        and can lead to a stall in the response part with ifort
+         Dc(1) = tiny(0.0d0)*D
+         Dc(2) = tiny(0.0d0)*D
+         Dc(3) = tiny(0.0d0)*D
+         Fc(1) = tiny(0.0d0)*F
+         Fc(2) = tiny(0.0d0)*F
+         Fc(3) = tiny(0.0d0)*F
+      else
+         call pert_dens(decomp, S, (/'MAGO'/), (/3/), (/D/), (/F/), Dc, Fc, freq=(/freq(2)/))
+      end if
       Eoo = 0
       if (freq(1)==-freq(2)) then
          call prop_oneave(S, (/'MAGO','MAGO'/), (/D/), int(shape(Eoo)), Eoo)

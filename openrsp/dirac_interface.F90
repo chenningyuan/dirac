@@ -61,6 +61,8 @@ module dirac_interface
   logical                           :: include_pn_rotations = .false.
   logical, public                   :: diamagnetic_via_pn   = .false.
 
+  logical, public :: openrsp_levy_leblond = .false.
+  logical, public :: openrsp_spinfree     = .false.
 
   logical :: dirac_interface_data_allocated = .false.
   logical :: dirac_interface_data_set       = .false.
@@ -260,6 +262,9 @@ contains
         include_pn_rotations = .true.
         diamagnetic_via_pn   = .true.
       end if
+
+      openrsp_levy_leblond = levyle
+      openrsp_spinfree     = spinfr
 
       dirac_interface_data_set = .true.
 
@@ -1271,7 +1276,7 @@ contains
                                       1,         &
                                       orbital_rotation_indices_pn)
 
-    if (spinfr .and. (RHS%tr_sym == 1)) then
+    if (openrsp_spinfree .and. (RHS%tr_sym == 1)) then
 
        call alloc(mo_coef, ncmotq)
        call alloc(ibeig, ntbas(0))
