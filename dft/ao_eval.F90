@@ -433,7 +433,7 @@ contains
       integer                :: ic, jc, k
 !     --------------------------------------------------------------------------
 
-      if (l_quantum_nr(ishell) < 12) then
+      if (l_quantum_nr(ishell) < 8) then
          call get_cartesian_ao_g0(block_length,         &
                                   l_quantum_nr(ishell), &
                                   px,                   &
