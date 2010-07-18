@@ -356,6 +356,10 @@ contains
       dft_cfg_betasigma = .true.
     end if
 
+    if (kw_matches(word, '.BLOCKE')) then
+      dft_cfg_blocked = .true.
+    end if
+
     if (kw_matches(word, '.LAMBDA')) then
       dirac_cfg_overlap_diagnostic = .true.
     end if

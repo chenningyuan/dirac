@@ -62,6 +62,7 @@ module dft_cfg
   logical, public :: dft_cfg_asymptote_is_lb94       = .false.
   logical, public :: dft_cfg_asymptote_is_lbalpha    = .false.
   logical, public :: dft_cfg_betasigma               = .false.
+  logical, public :: dft_cfg_blocked                 = .false.
 
   real(8), public :: dft_cfg_radint          = 1.0d-13
   real(8), public :: dft_cfg_accepted_error  = 1.0d-3
@@ -139,6 +140,7 @@ contains
     call dirac_mpi_bcast(dft_cfg_asymptote_is_lb94      )
     call dirac_mpi_bcast(dft_cfg_asymptote_is_lbalpha   )
     call dirac_mpi_bcast(dft_cfg_betasigma              )
+    call dirac_mpi_bcast(dft_cfg_blocked                )
     call dirac_mpi_bcast(dft_cfg_radint                 )
     call dirac_mpi_bcast(dft_cfg_accepted_error         )
     call dirac_mpi_bcast(dft_cfg_dfthr0                 )
