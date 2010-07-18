@@ -19,8 +19,6 @@ module density_eval
    public gga_distribute_i
    public lda_london_distribute_r
    public gga_london_distribute_r
-   public set_ss_prefactor_to_plus
-   public set_ss_prefactor_to_minus
    public get_n_block
 
    private
@@ -33,17 +31,7 @@ module density_eval
 !fixme: hardcoded
   real(8), parameter :: speed_of_light = 137.0359998d0
 
-  real(8)            :: ss_prefactor   = 1.0d0
-
 contains
-
-   subroutine set_ss_prefactor_to_plus()
-      ss_prefactor = 1.0d0
-   end subroutine
-
-   subroutine set_ss_prefactor_to_minus()
-      ss_prefactor = -1.0d0
-   end subroutine
 
   subroutine gga_sym(mat_dim, &
                      nz,      &
@@ -77,11 +65,11 @@ contains
 
        do jxyz = 0, 3
           if (.not. skip(jxyz)) then
-             do iblock = 1, ll_nr_density_blocks(jxyz, irep)
-                nr1 = ll_nr_ao(1, iblock, jxyz, irep)
-                st1 = ll_st_ao(1, iblock, jxyz, irep)
-                nr2 = ll_nr_ao(2, iblock, jxyz, irep)
-                st2 = ll_st_ao(2, iblock, jxyz, irep)
+             do iblock = 1, llss_nr_density_blocks(jxyz, irep)
+                nr1 = llss_nr_ao(1, iblock, jxyz, irep)
+                st1 = llss_st_ao(1, iblock, jxyz, irep)
+                nr2 = llss_nr_ao(2, iblock, jxyz, irep)
+                st2 = llss_st_ao(2, iblock, jxyz, irep)
 
                 if (.not. (st2 > st1)) then
                    do i = 1, nr1
@@ -89,34 +77,12 @@ contains
                          ii = st1 + i - 1
                          jj = st2 + j - 1
 
-                         average = mat(ii, jj, ll_iq(jxyz), imat) &
-                                 + mat(jj, ii, ll_iq(jxyz), imat)
+                         average = mat(ii, jj, iq(jxyz), imat) &
+                                 + mat(jj, ii, iq(jxyz), imat)
                          average = 0.5d0*average
 
-                         mat(ii, jj, ll_iq(jxyz), imat) = average
-                         mat(jj, ii, ll_iq(jxyz), imat) = average
-                      end do
-                   end do
-                end if
-             end do
-             do iblock = 1, ss_nr_density_blocks(jxyz, irep)
-                nr1 = ss_nr_ao(1, iblock, jxyz, irep)
-                st1 = ss_st_ao(1, iblock, jxyz, irep)
-                nr2 = ss_nr_ao(2, iblock, jxyz, irep)
-                st2 = ss_st_ao(2, iblock, jxyz, irep)
-
-                if (.not. (st2 > st1)) then
-                   do i = 1, nr1
-                      do j = 1, nr2
-                         ii = st1 + i - 1
-                         jj = st2 + j - 1
-
-                         average = mat(ii, jj, ss_iq(jxyz), imat) &
-                                 + mat(jj, ii, ss_iq(jxyz), imat)
-                         average = 0.5d0*average
-
-                         mat(ii, jj, ss_iq(jxyz), imat) = average
-                         mat(jj, ii, ss_iq(jxyz), imat) = average
+                         mat(ii, jj, iq(jxyz), imat) = average
+                         mat(jj, ii, iq(jxyz), imat) = average
                       end do
                    end do
                 end if
@@ -143,38 +109,17 @@ contains
 
     n = 0.0d0
 
-    do iblock = 1, ll_nr_density_blocks(0, irep)
-       nr1 = ll_nr_ao(1, iblock, 0, irep)
-       st1 = ll_st_ao(1, iblock, 0, irep)
-       nr2 = ll_nr_ao(2, iblock, 0, irep)
-       st2 = ll_st_ao(2, iblock, 0, irep)
+    do iblock = 1, llss_nr_density_blocks(0, irep)
+       nr1 = llss_nr_ao(1, iblock, 0, irep)
+       st1 = llss_st_ao(1, iblock, 0, irep)
+       nr2 = llss_nr_ao(2, iblock, 0, irep)
+       st2 = llss_st_ao(2, iblock, 0, irep)
 
        call dgemv('N',                      &
                   nr1,                      &
                   nr2,                      &
                   1.0d0,                    &
-                  dmat(st1, st2, ll_iq(0)), &
-                  mat_dim,                  &
-                  ao(st2),                  &
-                  1,                        &
-                  0.0d0,                    &
-                  buffer,                   &
-                  1)
-
-       n = n + ddot(nr1, ao(st1), 1, buffer, 1)
-    end do
-
-    do iblock = 1, ss_nr_density_blocks(0, irep)
-       nr1 = ss_nr_ao(1, iblock, 0, irep)
-       st1 = ss_st_ao(1, iblock, 0, irep)
-       nr2 = ss_nr_ao(2, iblock, 0, irep)
-       st2 = ss_st_ao(2, iblock, 0, irep)
-
-       call dgemv('N',                      &
-                  nr1,                      &
-                  nr2,                      &
-                  1.0d0,                    &
-                  dmat(st1, st2, ss_iq(0)), &
+                  dmat(st1, st2, iq(0)), &
                   mat_dim,                  &
                   ao(st2),                  &
                   1,                        &
@@ -205,17 +150,17 @@ contains
 
     do jxyz = jxyz_start, 3
 
-       do iblock = 1, ll_nr_density_blocks(jxyz, irep)
-          nr1 = ll_nr_ao(1, iblock, jxyz, irep)
-          st1 = ll_st_ao(1, iblock, jxyz, irep)
-          nr2 = ll_nr_ao(2, iblock, jxyz, irep)
-          st2 = ll_st_ao(2, iblock, jxyz, irep)
+       do iblock = 1, llss_nr_density_blocks(jxyz, irep)
+          nr1 = llss_nr_ao(1, iblock, jxyz, irep)
+          st1 = llss_st_ao(1, iblock, jxyz, irep)
+          nr2 = llss_nr_ao(2, iblock, jxyz, irep)
+          st2 = llss_st_ao(2, iblock, jxyz, irep)
 
           call dgemv('N',                         &
                      nr1,                         &
                      nr2,                         &
                      1.0d0,                       &
-                     dmat(st1, st2, ll_iq(jxyz)), &
+                     dmat(st1, st2, iq(jxyz)), &
                      mat_dim,                     &
                      ao(st2),                     &
                      1,                           &
@@ -223,28 +168,8 @@ contains
                      buffer,                      &
                      1)
 
-          s(jxyz) = s(jxyz) + ddot(nr1, ao(st1), 1, buffer, 1)
-       end do
-
-       do iblock = 1, ss_nr_density_blocks(jxyz, irep)
-          nr1 = ss_nr_ao(1, iblock, jxyz, irep)
-          st1 = ss_st_ao(1, iblock, jxyz, irep)
-          nr2 = ss_nr_ao(2, iblock, jxyz, irep)
-          st2 = ss_st_ao(2, iblock, jxyz, irep)
-
-          call dgemv('N',                         &
-                     nr1,                         &
-                     nr2,                         &
-                     1.0d0,                       &
-                     dmat(st1, st2, ss_iq(jxyz)), &
-                     mat_dim,                     &
-                     ao(st2),                     &
-                     1,                           &
-                     0.0d0,                       &
-                     buffer,                      &
-                     1)
-
-          s(jxyz) = s(jxyz) + ss_prefactor*ddot(nr1, ao(st1), 1, buffer, 1)
+          s(jxyz) = s(jxyz) &
+                  + llss_prefactor(iblock, jxyz, irep)*ddot(nr1, ao(st1), 1, buffer, 1)
        end do
 
     end do
@@ -277,41 +202,17 @@ contains
     n  = 0.0d0
     gn = 0.0d0
 
-    do iblock = 1, ll_nr_density_blocks(0, irep)
-       nr1 = ll_nr_ao(1, iblock, 0, irep)
-       st1 = ll_st_ao(1, iblock, 0, irep)
-       nr2 = ll_nr_ao(2, iblock, 0, irep)
-       st2 = ll_st_ao(2, iblock, 0, irep)
+    do iblock = 1, llss_nr_density_blocks(0, irep)
+       nr1 = llss_nr_ao(1, iblock, 0, irep)
+       st1 = llss_st_ao(1, iblock, 0, irep)
+       nr2 = llss_nr_ao(2, iblock, 0, irep)
+       st2 = llss_st_ao(2, iblock, 0, irep)
 
        call dgemv('N',                      &
                   nr1,                      &
                   nr2,                      &
                   1.0d0,                    &
-                  dmat(st1, st2, ll_iq(0)), &
-                  mat_dim,                  &
-                  ao(st2),                  &
-                  1,                        &
-                  0.0d0,                    &
-                  buffer,                   &
-                  1)
-
-       n = n + ddot(nr1, ao(st1), 1, buffer, 1)
-       do ixyz = 1, 3
-          gn(ixyz) = gn(ixyz) + ddot(nr1, ao1(st1, ixyz), 1, buffer, 1)
-       end do
-    end do
-
-    do iblock = 1, ss_nr_density_blocks(0, irep)
-       nr1 = ss_nr_ao(1, iblock, 0, irep)
-       st1 = ss_st_ao(1, iblock, 0, irep)
-       nr2 = ss_nr_ao(2, iblock, 0, irep)
-       st2 = ss_st_ao(2, iblock, 0, irep)
-
-       call dgemv('N',                      &
-                  nr1,                      &
-                  nr2,                      &
-                  1.0d0,                    &
-                  dmat(st1, st2, ss_iq(0)), &
+                  dmat(st1, st2, iq(0)), &
                   mat_dim,                  &
                   ao(st2),                  &
                   1,                        &
@@ -356,41 +257,18 @@ contains
 
     t = 0.0d0
 
-    do iblock = 1, ll_nr_density_blocks(0, irep)
-       nr1 = ll_nr_ao(1, iblock, 0, irep)
-       st1 = ll_st_ao(1, iblock, 0, irep)
-       nr2 = ll_nr_ao(2, iblock, 0, irep)
-       st2 = ll_st_ao(2, iblock, 0, irep)
+    do iblock = 1, llss_nr_density_blocks(0, irep)
+       nr1 = llss_nr_ao(1, iblock, 0, irep)
+       st1 = llss_st_ao(1, iblock, 0, irep)
+       nr2 = llss_nr_ao(2, iblock, 0, irep)
+       st2 = llss_st_ao(2, iblock, 0, irep)
 
        do ixyz = 1, 3
           call dgemv('N',                      &
                      nr1,                      &
                      nr2,                      &
                      1.0d0,                    &
-                     dmat(st1, st2, ll_iq(0)), &
-                     mat_dim,                  &
-                     ao_g1(st2, ixyz),         &
-                     1,                        &
-                     0.0d0,                    &
-                     buffer,                   &
-                     1)
-
-          t = t + ddot(nr1, ao_g1(st1, ixyz), 1, buffer, 1)
-       end do
-    end do
-
-    do iblock = 1, ss_nr_density_blocks(0, irep)
-       nr1 = ss_nr_ao(1, iblock, 0, irep)
-       st1 = ss_st_ao(1, iblock, 0, irep)
-       nr2 = ss_nr_ao(2, iblock, 0, irep)
-       st2 = ss_st_ao(2, iblock, 0, irep)
-
-       do ixyz = 1, 3
-          call dgemv('N',                      &
-                     nr1,                      &
-                     nr2,                      &
-                     1.0d0,                    &
-                     dmat(st1, st2, ss_iq(0)), &
+                     dmat(st1, st2, iq(0)), &
                      mat_dim,                  &
                      ao_g1(st2, ixyz),         &
                      1,                        &
@@ -446,18 +324,18 @@ contains
     t = 0.0d0
 
     do jxyz = 1, 3
-      do iblock = 1, ls_nr_density_blocks(jxyz, irep)
+      do iblock = 1, lssl_nr_density_blocks(jxyz, irep)
 
-        nr1 = ls_nr_ao(1, iblock, jxyz, irep)
-        st1 = ls_st_ao(1, iblock, jxyz, irep)
-        nr2 = ls_nr_ao(2, iblock, jxyz, irep)
-        st2 = ls_st_ao(2, iblock, jxyz, irep)
+        nr1 = lssl_nr_ao(1, iblock, jxyz, irep)
+        st1 = lssl_st_ao(1, iblock, jxyz, irep)
+        nr2 = lssl_nr_ao(2, iblock, jxyz, irep)
+        st2 = lssl_st_ao(2, iblock, jxyz, irep)
 
         call dgemv('N',                           &
                    nr1,                           &
                    nr2,                           &
                    1.0d0,                         &
-                   dmat(st1, st2, ls_iq(jxyz)), &
+                   dmat(st1, st2, iq(jxyz)), &
                    mat_dim,                       &
                    ao_g0(st2),                    &
                    1,                             &
@@ -500,17 +378,17 @@ contains
     n  = 0.0d0
     gn = 0.0d0
 
-    do iblock = 1, ll_nr_density_blocks(0, irep)
-       nr1 = ll_nr_ao(1, iblock, 0, irep)
-       st1 = ll_st_ao(1, iblock, 0, irep)
-       nr2 = ll_nr_ao(2, iblock, 0, irep)
-       st2 = ll_st_ao(2, iblock, 0, irep)
+    do iblock = 1, llss_nr_density_blocks(0, irep)
+       nr1 = llss_nr_ao(1, iblock, 0, irep)
+       st1 = llss_st_ao(1, iblock, 0, irep)
+       nr2 = llss_nr_ao(2, iblock, 0, irep)
+       st2 = llss_st_ao(2, iblock, 0, irep)
 
        call dgemv('N',                      &
                   nr1,                      &
                   nr2,                      &
                   1.0d0,                    &
-                  dmat(st1, st2, ll_iq(0)), &
+                  dmat(st1, st2, iq(0)), &
                   mat_dim,                  &
                   ao(st2),                  &
                   1,                        &
@@ -528,47 +406,7 @@ contains
                     nr1,                      &
                     nr2,                      &
                     1.0d0,                    &
-                    dmat(st1, st2, ll_iq(0)), &
-                    mat_dim,                  &
-                    ao1(st2, ixyz),           &
-                    1,                        &
-                    0.0d0,                    &
-                    buffer,                   &
-                    1)
-
-         gn(ixyz) = gn(ixyz) + ddot(nr1, ao(st1), 1, buffer, 1)
-       end do
-    end do
-
-    do iblock = 1, ss_nr_density_blocks(0, irep)
-       nr1 = ss_nr_ao(1, iblock, 0, irep)
-       st1 = ss_st_ao(1, iblock, 0, irep)
-       nr2 = ss_nr_ao(2, iblock, 0, irep)
-       st2 = ss_st_ao(2, iblock, 0, irep)
-
-       call dgemv('N',                      &
-                  nr1,                      &
-                  nr2,                      &
-                  1.0d0,                    &
-                  dmat(st1, st2, ss_iq(0)), &
-                  mat_dim,                  &
-                  ao(st2),                  &
-                  1,                        &
-                  0.0d0,                    &
-                  buffer,                   &
-                  1)
-
-       n = n + ddot(nr1, ao(st1), 1, buffer, 1)
-       do ixyz = 1, 3
-         gn(ixyz) = gn(ixyz) + ddot(nr1, ao1(st1, ixyz), 1, buffer, 1)
-       end do
-
-       do ixyz = 1, 3
-         call dgemv('N',                      &
-                    nr1,                      &
-                    nr2,                      &
-                    1.0d0,                    &
-                    dmat(st1, st2, ss_iq(0)), &
+                    dmat(st1, st2, iq(0)), &
                     mat_dim,                  &
                     ao1(st2, ixyz),           &
                     1,                        &
@@ -610,17 +448,17 @@ contains
 
     do jxyz = jxyz_start, 3
 
-       do iblock = 1, ll_nr_density_blocks(jxyz, irep)
-          nr1 = ll_nr_ao(1, iblock, jxyz, irep)
-          st1 = ll_st_ao(1, iblock, jxyz, irep)
-          nr2 = ll_nr_ao(2, iblock, jxyz, irep)
-          st2 = ll_st_ao(2, iblock, jxyz, irep)
+       do iblock = 1, llss_nr_density_blocks(jxyz, irep)
+          nr1 = llss_nr_ao(1, iblock, jxyz, irep)
+          st1 = llss_st_ao(1, iblock, jxyz, irep)
+          nr2 = llss_nr_ao(2, iblock, jxyz, irep)
+          st2 = llss_st_ao(2, iblock, jxyz, irep)
 
           call dgemv('N',                         &
                      nr1,                         &
                      nr2,                         &
                      1.0d0,                       &
-                     dmat(st1, st2, ll_iq(jxyz)), &
+                     dmat(st1, st2, iq(jxyz)), &
                      mat_dim,                     &
                      ao(st2),                     &
                      1,                           &
@@ -628,35 +466,10 @@ contains
                      buffer,                      &
                      1)
 
-          s(jxyz) = s(jxyz) + ddot(nr1, ao(st1), 1, buffer, 1)
+          s(jxyz) = s(jxyz) + llss_prefactor(iblock, jxyz, irep)*ddot(nr1, ao(st1), 1, buffer, 1)
           do ixyz = 1, 3
              gs(ixyz, jxyz) = gs(ixyz, jxyz) &
-                            + ddot(nr1, ao1(st1, ixyz), 1, buffer, 1)
-          end do
-       end do
-
-       do iblock = 1, ss_nr_density_blocks(jxyz, irep)
-          nr1 = ss_nr_ao(1, iblock, jxyz, irep)
-          st1 = ss_st_ao(1, iblock, jxyz, irep)
-          nr2 = ss_nr_ao(2, iblock, jxyz, irep)
-          st2 = ss_st_ao(2, iblock, jxyz, irep)
-
-          call dgemv('N',                         &
-                     nr1,                         &
-                     nr2,                         &
-                     1.0d0,                       &
-                     dmat(st1, st2, ss_iq(jxyz)), &
-                     mat_dim,                     &
-                     ao(st2),                     &
-                     1,                           &
-                     0.0d0,                       &
-                     buffer,                      &
-                     1)
-
-          s(jxyz) = s(jxyz) + ss_prefactor*ddot(nr1, ao(st1), 1, buffer, 1)
-          do ixyz = 1, 3
-             gs(ixyz, jxyz) = gs(ixyz, jxyz) &
-                            + ss_prefactor*ddot(nr1, ao1(st1, ixyz), 1, buffer, 1)
+                            + llss_prefactor(iblock, jxyz, irep)*ddot(nr1, ao1(st1, ixyz), 1, buffer, 1)
           end do
        end do
 
@@ -694,17 +507,17 @@ contains
 
     do jxyz = jxyz_start, 3
 
-       do iblock = 1, ll_nr_density_blocks(jxyz, irep)
-          nr1 = ll_nr_ao(1, iblock, jxyz, irep)
-          st1 = ll_st_ao(1, iblock, jxyz, irep)
-          nr2 = ll_nr_ao(2, iblock, jxyz, irep)
-          st2 = ll_st_ao(2, iblock, jxyz, irep)
+       do iblock = 1, llss_nr_density_blocks(jxyz, irep)
+          nr1 = llss_nr_ao(1, iblock, jxyz, irep)
+          st1 = llss_st_ao(1, iblock, jxyz, irep)
+          nr2 = llss_nr_ao(2, iblock, jxyz, irep)
+          st2 = llss_st_ao(2, iblock, jxyz, irep)
 
           call dgemv('N',                         &
                      nr1,                         &
                      nr2,                         &
                      1.0d0,                       &
-                     dmat(st1, st2, ll_iq(jxyz)), &
+                     dmat(st1, st2, iq(jxyz)), &
                      mat_dim,                     &
                      ao(st2),                     &
                      1,                           &
@@ -712,10 +525,10 @@ contains
                      buffer,                      &
                      1)
 
-          s(jxyz) = s(jxyz) + ddot(nr1, ao(st1), 1, buffer, 1)
+          s(jxyz) = s(jxyz) + llss_prefactor(iblock, jxyz, irep)*ddot(nr1, ao(st1), 1, buffer, 1)
           do ixyz = 1, 3
              gs(ixyz, jxyz) = gs(ixyz, jxyz) &
-                            + ddot(nr1, ao1(st1, ixyz), 1, buffer, 1)
+                            + llss_prefactor(iblock, jxyz, irep)*ddot(nr1, ao1(st1, ixyz), 1, buffer, 1)
           end do
 
           do ixyz = 1, 3
@@ -723,7 +536,7 @@ contains
                         nr1,                         &
                         nr2,                         &
                         1.0d0,                       &
-                        dmat(st1, st2, ll_iq(jxyz)), &
+                        dmat(st1, st2, iq(jxyz)), &
                         mat_dim,                     &
                         ao1(st2, ixyz),              &
                         1,                           &
@@ -732,49 +545,7 @@ contains
                         1)
 
              gs(ixyz, jxyz) = gs(ixyz, jxyz) &
-                            + ddot(nr1, ao(st1), 1, buffer, 1)
-          end do
-       end do
-
-       do iblock = 1, ss_nr_density_blocks(jxyz, irep)
-          nr1 = ss_nr_ao(1, iblock, jxyz, irep)
-          st1 = ss_st_ao(1, iblock, jxyz, irep)
-          nr2 = ss_nr_ao(2, iblock, jxyz, irep)
-          st2 = ss_st_ao(2, iblock, jxyz, irep)
-
-          call dgemv('N',                         &
-                     nr1,                         &
-                     nr2,                         &
-                     1.0d0,                       &
-                     dmat(st1, st2, ss_iq(jxyz)), &
-                     mat_dim,                     &
-                     ao(st2),                     &
-                     1,                           &
-                     0.0d0,                       &
-                     buffer,                      &
-                     1)
-
-          s(jxyz) = s(jxyz) + ss_prefactor*ddot(nr1, ao(st1), 1, buffer, 1)
-          do ixyz = 1, 3
-             gs(ixyz, jxyz) = gs(ixyz, jxyz) &
-                            + ss_prefactor*ddot(nr1, ao1(st1, ixyz), 1, buffer, 1)
-          end do
-
-          do ixyz = 1, 3
-             call dgemv('N',                         &
-                        nr1,                         &
-                        nr2,                         &
-                        1.0d0,                       &
-                        dmat(st1, st2, ss_iq(jxyz)), &
-                        mat_dim,                     &
-                        ao1(st2, ixyz),              &
-                        1,                           &
-                        0.0d0,                       &
-                        buffer,                      &
-                        1)
-
-             gs(ixyz, jxyz) = gs(ixyz, jxyz) &
-                            + ddot(nr1, ao(st1), 1, buffer, 1)
+                            + llss_prefactor(iblock, jxyz, irep)*ddot(nr1, ao(st1), 1, buffer, 1)
           end do
        end do
 
@@ -795,11 +566,11 @@ contains
     real(8)                :: f
 !   ----------------------------------------------------------------------------
 
-    do iblock = 1, ll_nr_density_blocks(0, irep)
-       nr1 = ll_nr_ao(1, iblock, 0, irep)
-       st1 = ll_st_ao(1, iblock, 0, irep)
-       nr2 = ll_nr_ao(2, iblock, 0, irep)
-       st2 = ll_st_ao(2, iblock, 0, irep)
+    do iblock = 1, llss_nr_density_blocks(0, irep)
+       nr1 = llss_nr_ao(1, iblock, 0, irep)
+       st1 = llss_st_ao(1, iblock, 0, irep)
+       nr2 = llss_nr_ao(2, iblock, 0, irep)
+       st2 = llss_st_ao(2, iblock, 0, irep)
 
        do i = 1, nr2
           ii = st2 + i - 1
@@ -809,26 +580,7 @@ contains
                      f,                       &
                      ao(st1),                 &
                      1,                       &
-                     fmat(st1, ii, ll_iq(0)), &
-                     1)
-       end do
-    end do
-
-    do iblock = 1, ss_nr_density_blocks(0, irep)
-       nr1 = ss_nr_ao(1, iblock, 0, irep)
-       st1 = ss_st_ao(1, iblock, 0, irep)
-       nr2 = ss_nr_ao(2, iblock, 0, irep)
-       st2 = ss_st_ao(2, iblock, 0, irep)
-
-       do i = 1, nr2
-          ii = st2 + i - 1
-          f  = s*ao(ii)
-
-          call daxpy(nr1,                     &
-                     f,                       &
-                     ao(st1),                 &
-                     1,                       &
-                     fmat(st1, ii, ss_iq(0)), &
+                     fmat(st1, ii, iq(0)), &
                      1)
        end do
     end do
@@ -850,11 +602,11 @@ contains
     real(8)                :: f
 !   ----------------------------------------------------------------------------
 
-    do iblock = 1, ll_nr_density_blocks(0, irep)
-       nr1 = ll_nr_ao(1, iblock, 0, irep)
-       st1 = ll_st_ao(1, iblock, 0, irep)
-       nr2 = ll_nr_ao(2, iblock, 0, irep)
-       st2 = ll_st_ao(2, iblock, 0, irep)
+    do iblock = 1, llss_nr_density_blocks(0, irep)
+       nr1 = llss_nr_ao(1, iblock, 0, irep)
+       st1 = llss_st_ao(1, iblock, 0, irep)
+       nr2 = llss_nr_ao(2, iblock, 0, irep)
+       st2 = llss_st_ao(2, iblock, 0, irep)
 
        do i = 1, nr2
 
@@ -869,32 +621,7 @@ contains
                      f,                       &
                      ao(st1),                 &
                      1,                       &
-                     fmat(st1, ii, ll_iq(0)), &
-                     1)
-
-       end do
-    end do
-
-    do iblock = 1, ss_nr_density_blocks(0, irep)
-       nr1 = ss_nr_ao(1, iblock, 0, irep)
-       st1 = ss_st_ao(1, iblock, 0, irep)
-       nr2 = ss_nr_ao(2, iblock, 0, irep)
-       st2 = ss_st_ao(2, iblock, 0, irep)
-
-       do i = 1, nr2
-
-          ii = st2 + i - 1
-
-          f =       s   *ao (ii)    &
-            + 2.0d0*v(1)*ao1(ii, 1) &
-            + 2.0d0*v(2)*ao1(ii, 2) &
-            + 2.0d0*v(3)*ao1(ii, 3)
-
-          call daxpy(nr1,                     &
-                     f,                       &
-                     ao(st1),                 &
-                     1,                       &
-                     fmat(st1, ii, ss_iq(0)), &
+                     fmat(st1, ii, iq(0)), &
                      1)
 
        end do
@@ -917,41 +644,21 @@ contains
 
     do jxyz = jxyz_start, 3
 
-       do iblock = 1, ll_nr_density_blocks(jxyz, irep)
-          nr1 = ll_nr_ao(1, iblock, jxyz, irep)
-          st1 = ll_st_ao(1, iblock, jxyz, irep)
-          nr2 = ll_nr_ao(2, iblock, jxyz, irep)
-          st2 = ll_st_ao(2, iblock, jxyz, irep)
+       do iblock = 1, llss_nr_density_blocks(jxyz, irep)
+          nr1 = llss_nr_ao(1, iblock, jxyz, irep)
+          st1 = llss_st_ao(1, iblock, jxyz, irep)
+          nr2 = llss_nr_ao(2, iblock, jxyz, irep)
+          st2 = llss_st_ao(2, iblock, jxyz, irep)
 
           do i = 1, nr2
              ii = st2 + i - 1
-             f  = s(jxyz)*ao(ii)
+             f  = llss_prefactor(iblock, jxyz, irep)*s(jxyz)*ao(ii)
 
-             call daxpy(nr1,                        &
-                        f,                          &
-                        ao(st1),                    &
-                        1,                          &
-                        fmat(st1, ii, ll_iq(jxyz)), &
-                        1)
-          end do
-       end do
-
-       do iblock = 1, ss_nr_density_blocks(jxyz, irep)
-          nr1 = ss_nr_ao(1, iblock, jxyz, irep)
-          st1 = ss_st_ao(1, iblock, jxyz, irep)
-          nr2 = ss_nr_ao(2, iblock, jxyz, irep)
-          st2 = ss_st_ao(2, iblock, jxyz, irep)
-
-          do i = 1, nr2
-             ii = st2 + i - 1
-             f  = s(jxyz)*ao(ii)
-             f  = ss_prefactor*f
-
-             call daxpy(nr1,                        &
-                        f,                          &
-                        ao(st1),                    &
-                        1,                          &
-                        fmat(st1, ii, ss_iq(jxyz)), &
+             call daxpy(nr1,                     &
+                        f,                       &
+                        ao(st1),                 &
+                        1,                       &
+                        fmat(st1, ii, iq(jxyz)), &
                         1)
           end do
        end do
@@ -977,11 +684,11 @@ contains
 
     do jxyz = jxyz_start, 3
 
-       do iblock = 1, ll_nr_density_blocks(jxyz, irep)
-          nr1 = ll_nr_ao(1, iblock, jxyz, irep)
-          st1 = ll_st_ao(1, iblock, jxyz, irep)
-          nr2 = ll_nr_ao(2, iblock, jxyz, irep)
-          st2 = ll_st_ao(2, iblock, jxyz, irep)
+       do iblock = 1, llss_nr_density_blocks(jxyz, irep)
+          nr1 = llss_nr_ao(1, iblock, jxyz, irep)
+          st1 = llss_st_ao(1, iblock, jxyz, irep)
+          nr2 = llss_nr_ao(2, iblock, jxyz, irep)
+          st2 = llss_st_ao(2, iblock, jxyz, irep)
 
           do i = 1, nr2
 
@@ -992,37 +699,13 @@ contains
                + 2.0d0*v(2, jxyz)*ao1(ii, 2) &
                + 2.0d0*v(3, jxyz)*ao1(ii, 3)
 
-             call daxpy(nr1,                        &
-                        f,                          &
-                        ao(st1),                    &
-                        1,                          &
-                        fmat(st1, ii, ll_iq(jxyz)), &
-                        1)
-
-          end do
-       end do
-
-       do iblock = 1, ss_nr_density_blocks(jxyz, irep)
-          nr1 = ss_nr_ao(1, iblock, jxyz, irep)
-          st1 = ss_st_ao(1, iblock, jxyz, irep)
-          nr2 = ss_nr_ao(2, iblock, jxyz, irep)
-          st2 = ss_st_ao(2, iblock, jxyz, irep)
-
-          do i = 1, nr2
-
-             ii = st2 + i - 1
-
-             f =       s(   jxyz)*ao (ii)    &
-               + 2.0d0*v(1, jxyz)*ao1(ii, 1) &
-               + 2.0d0*v(2, jxyz)*ao1(ii, 2) &
-               + 2.0d0*v(3, jxyz)*ao1(ii, 3)
-             f = ss_prefactor*f
+             f = llss_prefactor(iblock, jxyz, irep)*f
 
              call daxpy(nr1,                        &
                         f,                          &
                         ao(st1),                    &
                         1,                          &
-                        fmat(st1, ii, ss_iq(jxyz)), &
+                        fmat(st1, ii, iq(jxyz)), &
                         1)
 
           end do
@@ -1068,31 +751,12 @@ contains
           b = 1; c = 2
       end select
 
-        do iblock = 1, ll_nr_density_blocks(0, isym(a) - 1)
+        do iblock = 1, llss_nr_density_blocks(0, isym(a) - 1)
 
-          nr1 = ll_nr_ao(1, iblock, 0, isym(a) - 1)
-          st1 = ll_st_ao(1, iblock, 0, isym(a) - 1)
-          nr2 = ll_nr_ao(2, iblock, 0, isym(a) - 1)
-          st2 = ll_st_ao(2, iblock, 0, isym(a) - 1)
-
-          do ii = st1, st1 + nr1 - 1
-            do jj = st2, st2 + nr2 - 1
-
-              f = (r_co(c)*ao_b1(jj, b) - r_co(b)*ao_b1(jj, c))*ao(ii) &
-                - (r_co(c)*ao_b1(ii, b) - r_co(b)*ao_b1(ii, c))*ao(jj)
-
-              fmat(ii, jj, (a-1)*nz + 1) = fmat(ii, jj, (a-1)*nz + 1) + s*f
-
-            end do
-          end do
-        end do
-
-        do iblock = 1, ss_nr_density_blocks(0, isym(a) - 1)
-
-          nr1 = ss_nr_ao(1, iblock, 0, isym(a) - 1)
-          st1 = ss_st_ao(1, iblock, 0, isym(a) - 1)
-          nr2 = ss_nr_ao(2, iblock, 0, isym(a) - 1)
-          st2 = ss_st_ao(2, iblock, 0, isym(a) - 1)
+          nr1 = llss_nr_ao(1, iblock, 0, isym(a) - 1)
+          st1 = llss_st_ao(1, iblock, 0, isym(a) - 1)
+          nr2 = llss_nr_ao(2, iblock, 0, isym(a) - 1)
+          st2 = llss_st_ao(2, iblock, 0, isym(a) - 1)
 
           do ii = st1, st1 + nr1 - 1
             do jj = st2, st2 + nr2 - 1
@@ -1164,55 +828,12 @@ contains
           b = 1; c = 2
       end select
 
-        do iblock = 1, ll_nr_density_blocks(0, irep)
+        do iblock = 1, llss_nr_density_blocks(0, irep)
 
-          nr1 = ll_nr_ao(1, iblock, 0, irep)
-          st1 = ll_st_ao(1, iblock, 0, irep)
-          nr2 = ll_nr_ao(2, iblock, 0, irep)
-          st2 = ll_st_ao(2, iblock, 0, irep)
-
-          do i = st1, st1 + nr1 - 1
-            do j = st2, st2 + nr2 - 1
-
-              f_temp = (r(c)*ao_g0_b1(j, b) - r(b)*ao_g0_b1(j, c))*ao_g0_b0(i) &
-                     - (r(c)*ao_g0_b1(i, b) - r(b)*ao_g0_b1(i, c))*ao_g0_b0(j)
-
-              f = f_temp*d_r
-
-!             so far it's lda type contribution, rest are gradient terms
-
-              f_temp = (n_g1(c)*ao_g0_b1(j, b) - n_g1(b)*ao_g0_b1(j, c))*ao_g0_b0(i) &
-                     - (n_g1(c)*ao_g0_b1(i, b) - n_g1(b)*ao_g0_b1(i, c))*ao_g0_b0(j)
-
-              f_temp = f_temp                                                               &
-                     + (n_g1(1)*ao_g1_b0(j, 1)                                              &
-                     +  n_g1(2)*ao_g1_b0(j, 2)                                              &
-                     +  n_g1(3)*ao_g1_b0(j, 3))*(r(b)*ao_g0_b1(i, c) - r(c)*ao_g0_b1(i, b)) &
-                     - (n_g1(1)*ao_g1_b0(i, 1)                                              &
-                     +  n_g1(2)*ao_g1_b0(i, 2)                                              &
-                     +  n_g1(3)*ao_g1_b0(i, 3))*(r(b)*ao_g0_b1(j, c) - r(c)*ao_g0_b1(j, b))
-
-              f = f + f_temp*d_z
-
-              do ixyz = 1, 3
-                f_temp = (r(c)*ao_g1_b1(j, b, ixyz) - r(b)*ao_g1_b1(j, c, ixyz))*ao_g0_b0(i) &
-                       - (r(c)*ao_g1_b1(i, b, ixyz) - r(b)*ao_g1_b1(i, c, ixyz))*ao_g0_b0(j)
-
-                f = f + f_temp*d_z*n_g1(ixyz)
-              end do
-
-              fmat(i, j, (a-1)*nz + 1) = fmat(i, j, (a-1)*nz + 1) + f
-
-            end do
-          end do
-      end do
-
-        do iblock = 1, ss_nr_density_blocks(0, irep)
-
-          nr1 = ss_nr_ao(1, iblock, 0, irep)
-          st1 = ss_st_ao(1, iblock, 0, irep)
-          nr2 = ss_nr_ao(2, iblock, 0, irep)
-          st2 = ss_st_ao(2, iblock, 0, irep)
+          nr1 = llss_nr_ao(1, iblock, 0, irep)
+          st1 = llss_st_ao(1, iblock, 0, irep)
+          nr2 = llss_nr_ao(2, iblock, 0, irep)
+          st2 = llss_st_ao(2, iblock, 0, irep)
 
           do i = st1, st1 + nr1 - 1
             do j = st2, st2 + nr2 - 1
@@ -1323,12 +944,12 @@ contains
          n(k) = 0.0d0
       end do
 
-      iblock_loop_1: do iblock = 1, ll_nr_density_blocks(0, irep)
+      iblock_loop_1: do iblock = 1, llss_nr_density_blocks(0, irep)
 
-         st1 = ll_st_ao(1, iblock, 0, irep)
-         nr1 = ll_nr_ao(1, iblock, 0, irep)
-!        st2 = ll_st_ao(2, iblock, 0, irep)
-!        nr2 = ll_nr_ao(2, iblock, 0, irep)
+         st1 = llss_st_ao(1, iblock, 0, irep)
+         nr1 = llss_nr_ao(1, iblock, 0, irep)
+!        st2 = llss_st_ao(2, iblock, 0, irep)
+!        nr2 = llss_nr_ao(2, iblock, 0, irep)
 
 !        if irep == 0 everything is along diagonal and square
 !        for other ireps we will have to do some tricks
@@ -1445,9 +1066,9 @@ contains
                                derv_length,  &
                                derv)
 
-      iblock_loop_2: do iblock = 1, ll_nr_density_blocks(0, irep)
+      iblock_loop_2: do iblock = 1, llss_nr_density_blocks(0, irep)
 
-         st1 = ll_st_ao(1, iblock, 0, irep)
+         st1 = llss_st_ao(1, iblock, 0, irep)
 
          do i = 1, nr_above_threshold(iblock)
             ikoff = (i - 1)*block_length

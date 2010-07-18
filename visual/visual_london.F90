@@ -840,13 +840,13 @@ contains
 
 !   3 component of j-vector
     do ixyz = 1, 3
-      do iblock = 1, ls_nr_density_blocks(ixyz, isym - 1)
-      !do iblock = 1, ls_nr_density_blocks(0, isym - 1)
+      do iblock = 1, lssl_nr_density_blocks(ixyz, isym - 1)
+      !do iblock = 1, lssl_nr_density_blocks(0, isym - 1)
 
-        nr1 = ls_nr_ao(1, iblock, ixyz, isym - 1)
-        st1 = ls_st_ao(1, iblock, ixyz, isym - 1)
-        nr2 = ls_nr_ao(2, iblock, ixyz, isym - 1)
-        st2 = ls_st_ao(2, iblock, ixyz, isym - 1)
+        nr1 = lssl_nr_ao(1, iblock, ixyz, isym - 1)
+        st1 = lssl_st_ao(1, iblock, ixyz, isym - 1)
+        nr2 = lssl_nr_ao(2, iblock, ixyz, isym - 1)
+        st2 = lssl_st_ao(2, iblock, ixyz, isym - 1)
 
         !nr1 = ls_nr_ao(1, iblock, 0, isym - 1)
         !st1 = ls_st_ao(1, iblock, 0, isym - 1)
@@ -859,11 +859,11 @@ contains
             f(ixyz) = (r_co(c)*ao_b1(jj, b) - r_co(b)*ao_b1(jj, c))*ao(ii) &
                     - (r_co(c)*ao_b1(ii, b) - r_co(b)*ao_b1(ii, c))*ao(jj)
 
-            vector_a(ixyz) = vector_a(ixyz) + f(ixyz)*D_0(ii, jj, ls_iq(ixyz))
+            vector_a(ixyz) = vector_a(ixyz) + f(ixyz)*D_0(ii, jj, iq(ixyz))
 
-            !write(*, *) 'bla ixyz, ls_iq(ixyz), f(ixyz), vector_a(ixyz)', &
-            !                 ixyz, ls_iq(ixyz), f(ixyz), vector_a(ixyz)
-            !if (ls_iq(ixyz) == 0) call quit('ls_iq(ixyz) = 0')
+            !write(*, *) 'bla ixyz, iq(ixyz), f(ixyz), vector_a(ixyz)', &
+            !                 ixyz, iq(ixyz), f(ixyz), vector_a(ixyz)
+            !if (iq(ixyz) == 0) call quit('iq(ixyz) = 0')
 
           end do
         end do

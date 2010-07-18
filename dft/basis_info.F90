@@ -42,6 +42,7 @@ module basis_info
    use dirac_mpi
 #endif
    use xyz_power
+   use dft_cfg
 
    implicit none
 
@@ -76,24 +77,21 @@ module basis_info
 !                                            |    0-7 irep
 !                                            |    |
 !                                            v    v
-   integer, public :: ll_nr_density_blocks(0:3, 0:7)
+   integer, public :: llss_nr_density_blocks(0:3, 0:7)
 !                     in a specific block b there are
 !                     ll_nr_ao(1, b, ...) of functions that start at ll_st_ao(1, b, ...)
 !                     combined with
 !                     ll_nr_ao(2, b, ...) of functions that start at ll_st_ao(2, b, ...)
 !                     note that there can be less blocks then ireps (or ireps*2)
 !                     if some ireps do not contain any basis functions
-   integer, public :: ll_nr_ao(2, 8, 0:3, 0:7)
-   integer, public :: ll_st_ao(2, 8, 0:3, 0:7)
-!                           on which iz unit is 0=r, 1=x, 2=y, 3=z
-!                           |
-!                           v
-   integer, public :: ll_iq(0:3)
+   integer, public :: llss_nr_ao(2, 16, 0:3, 0:7)
+   integer, public :: llss_st_ao(2, 16, 0:3, 0:7)
+!                        on which iz unit is 0=r, 1=x, 2=y, 3=z
+!                        |
+!                        v
+   integer, public :: iq(0:3)
 
-   integer, public :: ss_nr_density_blocks(0:3, 0:7)
-   integer, public :: ss_nr_ao(2, 8, 0:3, 0:7)
-   integer, public :: ss_st_ao(2, 8, 0:3, 0:7)
-   integer, public :: ss_iq(0:3)
+   real(8), public :: llss_prefactor(16, 0:3, 0:7)
 
 !>                    for kinetic energy density and current density and similar (off-diagonal operators)
 !                                            0 operator: \gamma_5
@@ -102,14 +100,13 @@ module basis_info
 !                                            3 operator: \alpha_z
 !                                            |
 !                                            v
-   integer, public :: ls_nr_density_blocks(0:3, 0:7)
+   integer, public :: lssl_nr_density_blocks(0:3, 0:7)
 !                     for an operator (0:3) and irep (0:7)
 !                     there are maximum 16 ls_nr_density_blocks
 !                     which give totally symmetric contributions
 !                     (2*max_nr_boson_sym; 2 is for large and small)
-   integer, public :: ls_nr_ao(2, 16, 0:3, 0:7)
-   integer, public :: ls_st_ao(2, 16, 0:3, 0:7)
-   integer, public :: ls_iq(0:3)
+   integer, public :: lssl_nr_ao(2, 16, 0:3, 0:7)
+   integer, public :: lssl_st_ao(2, 16, 0:3, 0:7)
 
 !>                    packed quaternion to unpacked quaternion
    integer, public :: pq_to_uq(4, 0:7)
@@ -172,18 +169,14 @@ contains
       nr_ao_cartesian        = 0
       nr_ao                  = 0
       nr_so_ao               = 0
-      ll_nr_density_blocks   = 0
-      ll_nr_ao               = 0
-      ll_st_ao               = 0
-      ll_iq                  = 0
-      ss_nr_density_blocks   = 0
-      ss_nr_ao               = 0
-      ss_st_ao               = 0
-      ss_iq                  = 0
-      ls_nr_density_blocks   = 0
-      ls_nr_ao               = 0
-      ls_st_ao               = 0
-      ls_iq                  = 0
+      llss_nr_density_blocks = 0
+      llss_nr_ao             = 0
+      llss_st_ao             = 0
+      lssl_nr_density_blocks = 0
+      lssl_nr_ao             = 0
+      lssl_st_ao             = 0
+      iq                     = 0
+      llss_prefactor         = 0.0d0
       pq_to_uq               = 0
       uq_to_pq               = 0
       sym_axes               = 0
@@ -222,7 +215,7 @@ contains
       integer :: max_contraction_length
       real(8) :: r, f
       integer :: inter_irep(0:3), jxyz, irep1, irep2, nr1, nr2
-      integer :: ls_ic(2) = (/2, 1/)
+      integer :: lssl_ic(2) = (/2, 1/)
       integer :: ns
       integer :: nc
       integer :: nsoao
@@ -496,80 +489,49 @@ contains
 !     matrix blocking
 !     ===============
 
-      ll_iq(0) = 1
-      ss_iq(0) = 1
-      ls_iq(0) = 1
+      iq(0) = 1
       do jxyz = 1, 3
-         ll_iq(jxyz) = jm4pos(4 - jxyz)
-         ss_iq(jxyz) = jm4pos(4 - jxyz)
-         ls_iq(jxyz) = jm4pos(4 - jxyz)
-!                                                       rotation
-         ll_iq(jxyz) = iqtopq(ll_iq(jxyz), isymax(jxyz, 2))
-!                                                       rotation
-         ss_iq(jxyz) = iqtopq(ss_iq(jxyz), isymax(jxyz, 2))
-!                                                       translation
-!        ls_iq(jxyz) = iqtopq(ls_iq(jxyz), isymax(jxyz, 1))
-!radovan: transform as rotations! fix this later
-         ls_iq(jxyz) = iqtopq(ls_iq(jxyz), isymax(jxyz, 2))
+         iq(jxyz) = jm4pos(4 - jxyz)
+         iq(jxyz) = iqtopq(iq(jxyz), isymax(jxyz, 2))
       end do
 
-!     set up ll and ss blocks, transform as rotation
-      ll_nr_density_blocks = 0
-      ss_nr_density_blocks = 0
+!     transform as rotation
+      llss_nr_density_blocks = 0
 
       inter_irep(0) = 0
       do jxyz = 1, 3
          inter_irep(jxyz) = isymax(jxyz, 2)
       end do
 
-      ic = 1
       do irep = 0, nbsym - 1
          do jxyz = 0, 3
             i = 0
-            do irep1 = 0, nbsym - 1
-               irep2 = ieor(irep1, ieor(inter_irep(jxyz), irep))
+            do ic = 1, mc
+               do irep1 = 0, nbsym - 1
+                  irep2 = ieor(irep1, ieor(inter_irep(jxyz), irep))
 
-               nr1 = nbbas(irep1, ic)
-               nr2 = nbbas(irep2, ic)
+                  nr1 = nbbas(irep1, ic)
+                  nr2 = nbbas(irep2, ic)
 
-               if ((nr1 > 0) .and. (nr2 > 0)) then
-                  i = i + 1
-                  ll_nr_ao(1, i, jxyz, irep) = nr1
-                  ll_st_ao(1, i, jxyz, irep) = ibbas(irep1, ic) + 1
-                  ll_nr_ao(2, i, jxyz, irep) = nr2
-                  ll_st_ao(2, i, jxyz, irep) = ibbas(irep2, ic) + 1
-               end if
+                  if ((nr1 > 0) .and. (nr2 > 0)) then
+                     i = i + 1
+                     llss_nr_ao(1, i, jxyz, irep) = nr1
+                     llss_st_ao(1, i, jxyz, irep) = ibbas(irep1, ic) + 1
+                     llss_nr_ao(2, i, jxyz, irep) = nr2
+                     llss_st_ao(2, i, jxyz, irep) = ibbas(irep2, ic) + 1
+                     llss_prefactor(i, jxyz, irep) = 1.0d0
+                     if ((ic == 2) .and. dft_cfg_betasigma) then
+                        llss_prefactor(i, jxyz, irep) = -1.0d0
+                     end if
+                  end if
+               end do
             end do
-            ll_nr_density_blocks(jxyz, irep) = i
+            llss_nr_density_blocks(jxyz, irep) = i
          end do
       end do
 
-      if (mc > 1) then
-         ic = 2
-         do irep = 0, nbsym - 1
-            do jxyz = 0, 3
-               i = 0
-               do irep1 = 0, nbsym - 1
-                  irep2 = ieor(irep1, ieor(inter_irep(jxyz), irep))
-         
-                  nr1 = nbbas(irep1, ic)
-                  nr2 = nbbas(irep2, ic)
-         
-                  if ((nr1 > 0) .and. (nr2 > 0)) then
-                     i = i + 1
-                     ss_nr_ao(1, i, jxyz, irep) = nr1
-                     ss_st_ao(1, i, jxyz, irep) = ibbas(irep1, ic) + 1
-                     ss_nr_ao(2, i, jxyz, irep) = nr2
-                     ss_st_ao(2, i, jxyz, irep) = ibbas(irep2, ic) + 1
-                  end if
-               end do
-               ss_nr_density_blocks(jxyz, irep) = i
-            end do
-         end do
-      end if
-
-!     set up ls, transform as translation
-      ls_nr_density_blocks = 0
+!     transform as translation
+      lssl_nr_density_blocks = 0
 
       inter_irep(0) = 0
       do jxyz = 1, 3
@@ -584,18 +546,18 @@ contains
                   irep2 = ieor(irep1, ieor(inter_irep(jxyz), irep))
 
                   nr1 = nbbas(irep1, ic)
-                  nr2 = nbbas(irep2, ls_ic(ic))
+                  nr2 = nbbas(irep2, lssl_ic(ic))
 
                   if ((nr1 > 0) .and. (nr2 > 0)) then
                      i = i + 1
-                     ls_nr_ao(1, i, jxyz, irep) = nr1
-                     ls_st_ao(1, i, jxyz, irep) = ibbas(irep1, ic) + 1
-                     ls_nr_ao(2, i, jxyz, irep) = nr2
-                     ls_st_ao(2, i, jxyz, irep) = ibbas(irep2, ls_ic(ic)) + 1
+                     lssl_nr_ao(1, i, jxyz, irep) = nr1
+                     lssl_st_ao(1, i, jxyz, irep) = ibbas(irep1, ic) + 1
+                     lssl_nr_ao(2, i, jxyz, irep) = nr2
+                     lssl_st_ao(2, i, jxyz, irep) = ibbas(irep2, lssl_ic(ic)) + 1
                   end if
                end do
             end do
-            ls_nr_density_blocks(jxyz, irep) = i
+            lssl_nr_density_blocks(jxyz, irep) = i
          end do
       end do
 
@@ -611,18 +573,14 @@ contains
       write(file_unit, *) nr_ao_cartesian
       write(file_unit, *) nr_ao
       write(file_unit, *) nr_so_ao
-      write(file_unit, *) ll_nr_density_blocks
-      write(file_unit, *) ll_nr_ao
-      write(file_unit, *) ll_st_ao
-      write(file_unit, *) ll_iq
-      write(file_unit, *) ss_nr_density_blocks
-      write(file_unit, *) ss_nr_ao
-      write(file_unit, *) ss_st_ao
-      write(file_unit, *) ss_iq
-      write(file_unit, *) ls_nr_density_blocks
-      write(file_unit, *) ls_nr_ao
-      write(file_unit, *) ls_st_ao
-      write(file_unit, *) ls_iq
+      write(file_unit, *) llss_nr_density_blocks
+      write(file_unit, *) llss_nr_ao
+      write(file_unit, *) llss_st_ao
+      write(file_unit, *) lssl_nr_density_blocks
+      write(file_unit, *) lssl_nr_ao
+      write(file_unit, *) lssl_st_ao
+      write(file_unit, *) iq
+      write(file_unit, *) llss_prefactor
       write(file_unit, *) pq_to_uq
       write(file_unit, *) uq_to_pq
       write(file_unit, *) sym_axes
@@ -746,18 +704,14 @@ contains
          read(file_unit, *) nr_ao_cartesian
          read(file_unit, *) nr_ao
          read(file_unit, *) nr_so_ao
-         read(file_unit, *) ll_nr_density_blocks
-         read(file_unit, *) ll_nr_ao
-         read(file_unit, *) ll_st_ao
-         read(file_unit, *) ll_iq
-         read(file_unit, *) ss_nr_density_blocks
-         read(file_unit, *) ss_nr_ao
-         read(file_unit, *) ss_st_ao
-         read(file_unit, *) ss_iq
-         read(file_unit, *) ls_nr_density_blocks
-         read(file_unit, *) ls_nr_ao
-         read(file_unit, *) ls_st_ao
-         read(file_unit, *) ls_iq
+         read(file_unit, *) llss_nr_density_blocks
+         read(file_unit, *) llss_nr_ao
+         read(file_unit, *) llss_st_ao
+         read(file_unit, *) lssl_nr_density_blocks
+         read(file_unit, *) lssl_nr_ao
+         read(file_unit, *) lssl_st_ao
+         read(file_unit, *) iq
+         read(file_unit, *) llss_prefactor
          read(file_unit, *) pq_to_uq
          read(file_unit, *) uq_to_pq
          read(file_unit, *) sym_axes
@@ -812,15 +766,11 @@ contains
          call dirac_mpi_bcast(ll_nr_density_blocks)
          call dirac_mpi_bcast(ll_nr_ao)
          call dirac_mpi_bcast(ll_st_ao)
-         call dirac_mpi_bcast(ll_iq)
-         call dirac_mpi_bcast(ss_nr_density_blocks)
-         call dirac_mpi_bcast(ss_nr_ao)
-         call dirac_mpi_bcast(ss_st_ao)
-         call dirac_mpi_bcast(ss_iq)
          call dirac_mpi_bcast(ls_nr_density_blocks)
          call dirac_mpi_bcast(ls_nr_ao)
          call dirac_mpi_bcast(ls_st_ao)
-         call dirac_mpi_bcast(ls_iq)
+         call dirac_mpi_bcast(iq)
+         call dirac_mpi_bcast(llss_prefactor)
          call dirac_mpi_bcast(pq_to_uq)
          call dirac_mpi_bcast(uq_to_pq)
          call dirac_mpi_bcast(sym_axes)
