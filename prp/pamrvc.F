@@ -1,6 +1,5 @@
-C 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!dirac_copyright_start
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -18,11 +17,8 @@ C
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-C 
-C
-C
-C
+!dirac_copyright_end
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck xrssvc */
       SUBROUTINE XRSSVC(BCVEC,BEVEC,BPVEC,
