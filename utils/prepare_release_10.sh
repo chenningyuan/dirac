@@ -30,7 +30,7 @@ cd ../$release
 #
 # First delete code that should not be released.
 #
-delfunc="-UMOD_ECP -UMOD_KRMC -UMOD_DNF -UMOD_AUTODIFF -UMOD_OOF -UMOD_CAP -UMOD_HSCC -UMOD_IHFSCC -UMOD_AMFI -UMOD_LONDON -UMOD_FMM -UMOD_EMB -UMOD_XML"
+delfunc="-UMOD_ECP -UMOD_KRMC -UMOD_DNF -UMOD_XCFUN -UMOD_OOF -UMOD_CAP -UMOD_HSCC -UMOD_IHFSCC -UMOD_AMFI -UMOD_LONDON -UMOD_FMM -UMOD_EMB -UMOD_XML"
 
 echo "Removing functionalities from source files"
 utils/cppp.py $delfunc `find . -name '*.F' -o -name '*.f90' -o -name '*.F90' -o -name '*.c'`
@@ -66,18 +66,17 @@ rm -rf notes
 # Delete reference files that can be fetched from the Dirac website
 rm basis/reference_unedited/*[^sh]
 
+
+
 # delete tests that are not shipped
 # and adapt runtest
 echo "Deleting test directories that are not shipped"
-for test in 43.plots \
-            56.aoresponse \
-            45.densfit \
-            26.krmc_gosci \
-            27.krmc_luciarel \
-            28.luciarel_medium \
-            47.fde.prop \
-            38.london.magn_prop\
-            44.jengine; do
+for test in openrsp_cars \
+            openrsp_cme \
+            openrsp_delta \
+            openrsp_electric \
+            openrsp_molecular_gradient \
+            openrsp_roa; do
 
     rm -rf test/$test
     sed "s/$test//g" test/runtest > delete_me; mv delete_me test/runtest
@@ -100,18 +99,15 @@ for this_test in  19.fockspace \
 
 done
 
-
-
-
 for directory in hsmrcc \
                  cap \
                  oof \
-                 autodiff \
+                 xcfun \
                  argosecp \
                  arducca \
                  krmc \
                  luciarel \
-                 aoresponse \
+                 openrsp \
                  amfi; do
     echo "Deleting directory $directory"
     rm -rf $directory

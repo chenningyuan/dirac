@@ -567,7 +567,7 @@ if [ ! -r "Makefile.obj" ]; then
     touch -t 198001010000 build/Makefile.obj
 fi
 
-dirs="dirac prp abacus gp pdpack main relccsd moltra dirrci lucita utils argosecp"
+dirs="dirac prp abacus gp pdpack main relccsd moltra dirrci lucita utils"
 if [ -n "$ERIFLG" ]; then
     dirs="$dirs eri"
     rmline build/dontbuild "eri/\.\*"
