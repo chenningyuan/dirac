@@ -1,3 +1,6 @@
+!dirac_copyright_start
+!dirac_copyright_end
+
 module overlap_diagnostic
 
 !  MO overlap diagnostic according to Peach, Benfield, Helgaker, and Tozer:

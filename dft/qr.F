@@ -1,3 +1,6 @@
+!dirac_copyright_start
+!dirac_copyright_end
+
       subroutine sdft_qr(block_length,
      &                   add_grad,
      &                   no_sdft,

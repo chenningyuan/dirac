@@ -1,3 +1,6 @@
+!dirac_copyright_start
+!dirac_copyright_end
+
 module dft_cfg
 
 ! radovan: (1) if you modify this module (add new stuff)

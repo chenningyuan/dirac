@@ -1,3 +1,6 @@
+!dirac_copyright_start
+!dirac_copyright_end
+
 module ao_eval_block
 
 !> \brief   automatically generated code for cartesian AOs up to m functions

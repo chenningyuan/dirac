@@ -1,3 +1,6 @@
+!dirac_copyright_start
+!dirac_copyright_end
+
 module xc_driver
 
 !   written by T. Helgaker

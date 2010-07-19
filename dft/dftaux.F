@@ -1,3 +1,6 @@
+!dirac_copyright_start
+!dirac_copyright_end
+
       subroutine fortwrt(str, slength)
 
       implicit none

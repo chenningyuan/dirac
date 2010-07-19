@@ -1,3 +1,6 @@
+!dirac_copyright_start
+!dirac_copyright_end
+
 module ao_eval
 
 !   this is based on DIRAC and Dalton

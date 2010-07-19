@@ -1,3 +1,6 @@
+!dirac_copyright_start
+!dirac_copyright_end
+
       SUBROUTINE DFTNUM(DODRC,DOVWN,DOLYP,DOBCK,RHO,RHO13,RHOGRD)
 #include "priunit.h"
 !     PARAMETER (DP5 = 0.5D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,  &

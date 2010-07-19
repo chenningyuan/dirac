@@ -1,3 +1,6 @@
+!dirac_copyright_start
+!dirac_copyright_end
+
 module dft_functional_derv
 
   use dft_cfg

@@ -1,3 +1,5 @@
+!dirac_copyright_start
+!dirac_copyright_end
 
 !> \brief   write/read basis set information to/from file
 !> \author  radovan bast

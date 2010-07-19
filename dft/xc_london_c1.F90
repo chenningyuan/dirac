@@ -1,3 +1,6 @@
+!dirac_copyright_start
+!dirac_copyright_end
+
 module xc_london_c1
 
 ! radovan: this is the "equation on paper approach" to LAO XC
