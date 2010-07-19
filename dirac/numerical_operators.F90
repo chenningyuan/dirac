@@ -1,6 +1,5 @@
-! 
-!
-!      Copyright (c) 2008 by the authors of DIRAC.
+!dirac_copyright_start
+!      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -18,14 +17,7 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.sdu.dk
-!
-! 
-!
-!
-! VERSION : $Revision: 9568 $
-! DATE    : $Date: 2009-09-15 11:50:44 +0200 (Tue, 15 Sep 2009) $
-! FILE    : dirone.F
-!
+!dirac_copyright_end
 
 module numoper_integrals
 
