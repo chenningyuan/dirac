@@ -1,6 +1,6 @@
 #!/bin/bash
 
-release='DIRAC09'
+release='DIRAC10'
 
 echo "** $release release preparation script **"
 echo
@@ -37,7 +37,7 @@ utils/cppp.py $delfunc `find . -name '*.F' -o -name '*.f90' -o -name '*.F90' -o 
 
 # Then delete files that should not be shipped
 echo "Deleting files"
-rm utils/cppp.py utils/prepare_release.sh
+rm utils/cppp.py utils/prepare_release_10.sh
 rm doc/release_statement
 rm utils/add_copyright.py
 rm utils/basis_set.py
@@ -67,7 +67,7 @@ rm -rf notes
 rm basis/reference_unedited/*[^sh]
 
 # delete tests that are not shipped
-# and adapt runtest.in
+# and adapt runtest
 echo "Deleting test directories that are not shipped"
 for test in 43.plots \
             56.aoresponse \
@@ -80,7 +80,7 @@ for test in 43.plots \
             44.jengine; do
 
     rm -rf test/$test
-    sed "s/$test//g" test/runtest.in > delete_me; mv delete_me test/runtest.in
+    sed "s/$test//g" test/runtest > delete_me; mv delete_me test/runtest
 done
 
 echo "Removing certain functionalities from tests"
@@ -142,8 +142,8 @@ fi
 
 # run pamadm with the correct flags
 #
-echo "Running pamadm -dft -xpp -eri -adc -cdft -visual export"
-./pamadm -dft -xpp -eri -adc -cdft -visual export > /dev/null
+echo "Running pamadm -xpp -eri -adc -visual export"
+./pamadm -xpp -eri -adc -visual export > /dev/null
 if [[ -r $release.tar.gz ]]; then
     echo "Created ../$release/$release.tar.gz"
 else
