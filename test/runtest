@@ -34,6 +34,12 @@ long_test="$medium_test $long_partest"
 long_partest="$medium_partest $long_partest"
 
 benchmark_test="29.benchmark_cc"
+
+# here list all tests that are expected to work in the next release version
+release_test="dft_betasigma"
+
+#radovan: i don't think the all_test option has been used in years
+#         maybe we could remove it
 # all_test takes all directories (and will fail if filters or output are absent !)
 all_test=
 for ff in [1-9]\.* [1-9][0-9]\.*; do
@@ -247,6 +253,10 @@ if [ ! -z "$arg_tests" ]; then
             tests=$long_test;
          fi
          if [ $RUNTYPE="undefined" ]; then RUNTYPE="long" ; export RUNTYPE; fi
+         ;;
+      "release")
+         tests=$release_test;
+         if [ $RUNTYPE="undefined" ]; then RUNTYPE="release" ; export RUNTYPE; fi
          ;;
       "benchmark")
          tests=$benchmark_test;
