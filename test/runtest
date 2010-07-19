@@ -36,7 +36,7 @@ long_partest="$medium_partest $long_partest"
 benchmark_test="29.benchmark_cc"
 
 # here list all tests that are expected to work in the next release version
-release_test="dft_betasigma"
+release_test="dft_ac dft_response dft_response_symmetry dft_ao_eval dft_betasigma"
 
 #radovan: i don't think the all_test option has been used in years
 #         maybe we could remove it
