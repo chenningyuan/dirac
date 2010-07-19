@@ -35,51 +35,95 @@ delfunc="-UMOD_ECP -UMOD_KRMC -UMOD_DNF -UMOD_XCFUN -UMOD_OOF -UMOD_CAP -UMOD_HS
 echo "Removing functionalities from source files"
 utils/cppp.py $delfunc `find . -name '*.F' -o -name '*.f90' -o -name '*.F90' -o -name '*.c'`
 
-# Then delete files that should not be shipped
-echo "Deleting files"
-rm utils/cppp.py utils/prepare_release_10.sh
-rm doc/release_statement
-rm utils/add_copyright.py
-rm utils/basis_set.py
-rm utils/codegen_maxima.py
-rm utils/codegen_mupac.py
-rm utils/ihfscc_input_helper.py
-rm utils/make_targetbuilds.py
-rm utils/periodic_table.py
-rm relccsd/ccints_nomemget.F
-rm relccsd/ccdriv_nomemget.F
-rm utils/prepare_dyall_basis.sh
-rm utils/prepare_dyall_dblock_basis.sh
-rm utils/prepare_dyall_fblock_basis.sh
-rm utils/prepare_dyall_pblock_basis.sh
-rm utils/prepare_dyall_sblock_basis.sh
-rm utils/reformat_includes.py
-rm utils/remove_copyright.py
-rm utils/copyright_fortran
-rm utils/copyright_c
-rm utils/qjaco.F
-rm -rf utils/foray_0.1
-rm -rf utils/visualization_scripts
-rm -rf utils/diracinput
-rm -rf utils/fortran
-rm -rf notes
-# Delete reference files that can be fetched from the Dirac website
-rm basis/reference_unedited/*[^sh]
+echo "Deleting files that should not be shipped"
+for file in utils/prepare_release_08.sh \
+            utils/prepare_release_10.sh \
+            utils/update_copyright.py \
+            utils/cppp.py \
+            doc/release_statement \
+            utils/add_copyright.py \
+            utils/basis_set.py \
+            utils/codegen_maxima.py \
+            utils/codegen_mupac.py \
+            utils/ihfscc_input_helper.py \
+            utils/make_targetbuilds.py \
+            utils/periodic_table.py \
+            relccsd/ccints_nomemget.F \
+            relccsd/ccdriv_nomemget.F \
+            utils/prepare_dyall_basis.sh \
+            utils/prepare_dyall_dblock_basis.sh \
+            utils/prepare_dyall_fblock_basis.sh \
+            utils/prepare_dyall_pblock_basis.sh \
+            utils/prepare_dyall_sblock_basis.sh \
+            utils/reformat_includes.py \
+            utils/remove_copyright.py \
+            utils/copyright_fortran \
+            utils/copyright_c \
+            utils/qjaco.F; do
+    if [ -e "$file" ]; then
+       rm -f $file
+    else
+       echo "WARNING: file $file does not exist"
+    fi
+done
 
+echo "Deleting directories that should not be shipped"
+for directory in utils/foray_0.1 \
+                 utils/visualization_scripts \
+                 utils/diracinput \
+                 utils/fortran \
+                 utils/radovan \
+                 notes \
+                 hsmrcc \
+                 cap \
+                 oof \
+                 xcfun \
+                 argosecp \
+                 arducca \
+                 krmc \
+                 luciarel \
+                 openrsp \
+                 amfi; do
+    if [ -d "$directory" ]; then
+       rm -rf $directory
+    else
+       echo "WARNING: directory $directory does not exist"
+    fi
+done
 
+echo "Deleting reference files that can be fetched from the Dirac website"
+for file in `ls basis/reference_unedited/*[^sh]`; do
+    rm -f $file
+done
 
-# delete tests that are not shipped
-# and adapt runtest
-echo "Deleting test directories that are not shipped"
+echo "Deleting tests that should not be shipped"
 for test in openrsp_cars \
             openrsp_cme \
             openrsp_delta \
             openrsp_electric \
             openrsp_molecular_gradient \
             openrsp_roa; do
+    if [ -d "test/$test" ]; then
+       rm -rf test/$test
+       sed "s/$test//g" test/runtest > delete_me; mv delete_me test/runtest
+    else
+       echo "WARNING: test $test does not exist"
+    fi
+done
 
-    rm -rf test/$test
-    sed "s/$test//g" test/runtest > delete_me; mv delete_me test/runtest
+echo "Deleting object files (if any)"
+rm -f `find . -name '*.o'`
+
+echo "Deleting junk files (if any)"
+for file in `find . -name '*~'`; do
+    echo "deleting file $file"
+    rm -f $file
+done
+
+echo "Deleting .svn directories (if any)"
+for directory in `find . -name '.svn'`; do
+    echo "deleting directory $directory"
+    rm -rf $directory
 done
 
 echo "Removing certain functionalities from tests"
@@ -99,27 +143,7 @@ for this_test in  19.fockspace \
 
 done
 
-for directory in hsmrcc \
-                 cap \
-                 oof \
-                 xcfun \
-                 argosecp \
-                 arducca \
-                 krmc \
-                 luciarel \
-                 openrsp \
-                 amfi; do
-    echo "Deleting directory $directory"
-    rm -rf $directory
-done
 
-# Delete junk
-echo "Deleting *~ *.o"
-rm -f `find . -name '*~' -o -name '*.o'`
-
-# Delete .svn files if there are any (should not be with svn export)
-echo "Deleting old .svn files"
-rm -rf `find . -name '.svn'`
 
 #
 # Figure out the dependencies that will be shipped.
