@@ -36,7 +36,18 @@ long_partest="$medium_partest $long_partest"
 benchmark_test="29.benchmark_cc"
 
 # here list all tests that are expected to work in the next release version
-release_test="dft_ac dft_response dft_response_symmetry dft_ao_eval dft_betasigma"
+this_testset=""
+this_testset="$this_testset dft_ac"
+this_testset="$this_testset dft_response"
+this_testset="$this_testset dft_response_symmetry"
+this_testset="$this_testset dft_ao_eval"
+this_testset="$this_testset dft_betasigma"
+this_testset="$this_testset 17.scf_energy"
+this_testset="$this_testset 31.symmetry_recognition"
+this_testset="$this_testset 9.contraction"
+this_testset="$this_testset visual_elf"
+this_testset="$this_testset 49.xyzinput"
+release_test="$this_testset"
 
 #radovan: i don't think the all_test option has been used in years
 #         maybe we could remove it
