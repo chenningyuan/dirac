@@ -183,25 +183,16 @@ C
             WRITE (LUWMEM,1010) LREAL+LENIDS,LFREE
 
             CALL MEM_SHORTAGE_INFO(LREAL+LENIDS,LFREE)
-!           WRITE (LUWMEM,1012) 
-!    & ((DFLOAT(LREAL+LENIDS)/DFLOAT(LFREE))-1.0D0)*100.0D0
-
             CALL MEMCHK('MEMGET ERROR (insuff. memory)',WORK,1)
 
          ELSE
             LENIDS = 2*LENID
             WRITE (LUWMEM,1010) LREAL+LENIDS,LFREE
-
-!           WRITE (LUWMEM,1012) 
-!    & ((DFLOAT(LREAL+LENIDS)/DFLOAT(LFREE))-1.0D0)*100.0D0
             CALL MEM_SHORTAGE_INFO(LREAL+LENIDS,LFREE)
          END IF
          CALL QTRACE(LUWMEM)
          IF (LUEMEM .NE. LUWMEM) THEN
             WRITE (LUEMEM,1010) LREAL+LENIDS,LFREE
-
-!           WRITE (LUWMEM,1012) 
-!    &  ((DFLOAT(LREAL+LENIDS)/DFLOAT(LFREE))-1.0D0)*100.0D0
             CALL MEM_SHORTAGE_INFO(LREAL+LENIDS,LFREE)
 
             CALL QTRACE(LUEMEM)
@@ -211,8 +202,6 @@ C
  1010 FORMAT(
      &   /' MEMGET ERROR, insufficient free space for next allocation',
      &   /T16,'( Need:',I10,', available (LFREE):',I10,' )')
-!1012 FORMAT(
-!    &   /'...increase memory allocaton approximately by ',F5.0,' % .')
 C
 C        error branch IF (MEMCK(1) .NE. MEMID(1)) :
 C
