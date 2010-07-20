@@ -294,6 +294,11 @@ C
 C     Written by T.Saue, January 1995
 C     Last revision: June 25 1996 - tsaue
 C
+C     radovan: in case you ask yourself where the difference is
+C              between q2phase and q2bphase
+C              q2phase  (this routine) is for Hermit sorted matrices
+C              q2bphase (next routine) is for DIRAC  sorted matrices
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
