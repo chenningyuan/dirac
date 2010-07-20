@@ -828,6 +828,7 @@ contains
 !     --------------------------------------------------------------------------
       integer :: id, m
       real(8) :: temp
+      real(8) :: block_threshold
 
 
 
@@ -861,6 +862,7 @@ contains
        call alloc(xmat_sorted,           mxbllen*mat_dim)
        call alloc(ao_sorted,             mxbllen*total_ao_vector_length)
        call alloc(bmat,                  mxbllen*total_ao_vector_length)
+       block_threshold = get_block_threshold(mat_dim, dmat_0)
     end if
 
 
@@ -922,6 +924,7 @@ contains
       
             call get_n_block( &
                              block_length,          &
+                             block_threshold,       &
                              mat_dim,               &
                              r_0,                   &
                              buffer,                &

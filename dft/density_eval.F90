@@ -41,6 +41,7 @@ module density_eval
    public lda_london_distribute_r
    public gga_london_distribute_r
    public get_n_block
+   public get_block_threshold
 
    private
 
@@ -898,6 +899,7 @@ contains
 
    subroutine get_n_block( &
                           block_length,          &
+                          block_threshold,       &
                           mat_dim,               &
                           n,                     &
                           buffer,                &
@@ -923,6 +925,7 @@ contains
 
 !     --------------------------------------------------------------------------
       integer, intent(in)    :: block_length
+      real(8), intent(in)    :: block_threshold
       integer, intent(in)    :: mat_dim
       real(8), intent(out)   :: n(*)
       real(8)                :: buffer(*)
@@ -949,7 +952,6 @@ contains
       integer                :: iksoff(max_nr_blocks)
       integer                :: nr_above_threshold(max_nr_blocks)
       real(8)                :: temp
-      real(8), parameter     :: threshold = 1.0d-10
       integer, parameter     :: blas_limit = 10
       integer                :: is, js
       integer                :: nr1, nr2, st1, st2
@@ -979,7 +981,7 @@ contains
          end if
 
 !        get buffer for sorting
-!        and get number of functions above threshold
+!        and get number of functions above block_threshold
          nr_above_threshold(iblock) = 0
          do i = 1, nr1
             buffer(i) = 0.0d0
@@ -990,7 +992,7 @@ contains
                   buffer(i) = temp
                end if
             end do
-            if (buffer(i) > threshold) then
+            if (buffer(i) > block_threshold) then
                nr_above_threshold(iblock) = nr_above_threshold(iblock) + 1
             end if
          end do
@@ -1162,5 +1164,39 @@ contains
       end do iblock_loop_2
 
    end subroutine
+
+   function get_block_threshold(mat_dim, &
+                                dmat_0)
+
+      use dft_cfg
+
+!     --------------------------------------------------------------------------
+      real(8)                :: get_block_threshold
+!     --------------------------------------------------------------------------
+      integer, intent(in)    :: mat_dim
+      real(8), intent(in)    :: dmat_0(mat_dim, mat_dim)
+!     --------------------------------------------------------------------------
+      integer                :: i, j, iblock, st, nr
+      real(8)                :: f, x
+!     --------------------------------------------------------------------------
+
+      x = 0.0d0
+      iblock_loop: do iblock = 1, llss_nr_density_blocks(0, 0)
+         st = llss_st_ao(1, iblock, 0, 0)
+         nr = llss_nr_ao(1, iblock, 0, 0)
+         do i = st, st + nr - 1
+            do j = st, i
+!              dmat_0 is positive definite but just to be sure
+               f = dabs(dmat_0(j, i))
+               if (f > x) then
+                  x = f
+               end if
+            end do
+         end do
+      end do iblock_loop
+!radovan: my own empirical estimate, no physics behind this
+      get_block_threshold = dsqrt(10.0d0*dft_cfg_dfthr0/(mat_dim*mat_dim*x))
+
+   end function
 
 end module
