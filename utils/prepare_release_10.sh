@@ -55,9 +55,6 @@ for file in \
     utils/prepare_dyall_pblock_basis.sh \
     utils/prepare_dyall_sblock_basis.sh \
     utils/reformat_includes.py          \
-    utils/remove_copyright.py           \
-    utils/copyright_fortran             \
-    utils/copyright_c                   \
     utils/qjaco.F                       \
   ; do
     if [ -e "$file" ]; then
