@@ -71,100 +71,59 @@ module xc_driver
 #endif /* ifdef INT_STAR8 */
 #endif /* ifdef VAR_MPI */
 
-  real(8), parameter :: tiny = 1.0d-20
-
   integer, parameter :: bllen = 1 !later more, now slowdft
   integer            :: block_length
 
-  save
-
-  real(8) :: nr_electrons
-  real(8) :: xc_energy
-  real(8) :: xc_mat_energy
-  logical :: grid_is_done   = .false.
-  logical :: reload_batches = .false.
-
-  logical :: use_gga_qr = .false. !quaternion real
-  logical :: use_gga_qi = .false. !quaternion imaginary
-  logical :: use_gga    = .false.
-
-
-
-   integer, parameter :: max_mat_number = 10
-   integer, target    :: default_sym(max_mat_number)
-
+   save
 
    integer, parameter :: file_unit      = 6
    integer, parameter :: file_unit_grid = 44
 
+   real(8), allocatable :: dmat_saop_outer(:)
+   real(8), allocatable :: dmat_saop_resp(:)
+   real(8), allocatable :: rx(:)
+   real(8), allocatable :: ry(:)
+   real(8), allocatable :: rz(:)
+   real(8), allocatable :: rw(:)
+   real(8), allocatable :: fde_prop1(:)
+   real(8), allocatable :: fde_prop2(:)
+   real(8), allocatable :: ao(:)
+   real(8), allocatable :: buffer(:)
+   real(8), allocatable :: ao_block(:, :)
+   integer, allocatable :: ao_sort_index(:)
+   integer, allocatable :: ao_sort_index_reverse(:)
+   real(8), allocatable :: buffer_block(:, :)
+   real(8), allocatable :: dmat_sorted(:)
+   real(8), allocatable :: xmat_sorted(:)
+   real(8), allocatable :: ao_sorted(:)
+   real(8), allocatable :: bmat(:)
 
+   real(8) :: nr_electrons
+   real(8) :: xc_energy
+   real(8) :: xc_mat_energy
+   logical :: grid_is_done   = .false.
 
+   logical :: use_gga_qr = .false. !quaternion real
+   logical :: use_gga_qi = .false. !quaternion imaginary
+   logical :: use_gga    = .false.
 
-    real(8) :: sum_r
-    integer :: sum_i
-
-  real(8), allocatable :: dmat_saop_outer(:)
-  real(8), allocatable :: dmat_saop_resp(:)
-
-  logical              :: i_am_master
-  logical              :: i_am_coworker
-
-
-
-
-
-
-!radovan: many of these variables will get a more local scope later
-    integer             :: ibatch
-
-
-
-    real(8), allocatable :: rx(:)
-    real(8), allocatable :: ry(:)
-    real(8), allocatable :: rz(:)
-    real(8), allocatable :: rw(:)
-
-    real(8), allocatable :: fde_prop1(:)
-    real(8), allocatable :: fde_prop2(:)
-
-
-
-    integer :: i, j, k, idummy, ierr, nr_points_process, nr_points_part, nr_processes
-    integer ::  nr_points_looped_over
-    integer ::  nr_points_used
-    real(8), allocatable :: mpi_buffer(:)
-    integer :: nr_points_total, nr_points, nr_points_rest, IDISP_REST
-    real(8) :: dummy
-    real(8) :: error_nr_electrons
-    integer :: derv_length
-    real(8), allocatable :: derv(:, :)
-    integer :: ioff
-    real(8) :: RHG(3),VT(3)
-    real(8) :: rho13, rho_outer, rho_resp
-            
-    integer :: ipoint, need_limit
-    real(8), external :: ddot
-    real(8) :: f
-            
-    integer :: max_ao_g_order
-    integer :: max_ao_m_order
-    integer :: max_fun_derv
-
-    real(8), allocatable :: ao(:)
-    real(8), allocatable :: buffer(:)
-    real(8), allocatable :: ao_block(:, :)
-    integer, allocatable :: ao_sort_index(:)
-    integer, allocatable :: ao_sort_index_reverse(:)
-    real(8), allocatable :: buffer_block(:, :)
-    real(8), allocatable :: dmat_sorted(:)
-    real(8), allocatable :: xmat_sorted(:)
-    real(8), allocatable :: ao_sorted(:)
-    real(8), allocatable :: bmat(:)
-
+   logical :: i_am_master
+   logical :: i_am_coworker
    logical :: parallel_xc
    logical :: coworkers_are_awake = .false.
-    real(8)             :: save_ddot1, save_ddot2
 
+   integer :: nr_points_process
+   integer :: nr_points_part
+   integer :: nr_processes
+   integer :: nr_points_looped_over
+   integer :: nr_points_used
+   integer :: nr_points_total
+   integer :: nr_points
+   integer :: nr_points_rest
+
+   integer :: max_ao_g_order
+   integer :: max_ao_m_order
+   integer :: max_fun_derv
 
    real(8), external :: second
    real(8)           :: time_integration, time_integration_start
@@ -173,34 +132,23 @@ module xc_driver
    real(8)           :: time_density,     time_density_start
    real(8)           :: time_derv,        time_derv_start
 
-
-
-
-
-
-
-
-
-
    integer                      :: mat_dim
    integer                      :: nz
-                      
+
    real(8), pointer             :: dmat_0(:, :)
    real(8), allocatable, target :: dmat_0_container(:, :)
 
-!  real(8), pointer             :: tmat_1(:, :)
-!  real(8), pointer             :: tmat_2(:, :)
    real(8), allocatable         :: tmat_1(:, :)
    real(8), allocatable         :: tmat_2(:, :)
-                      
+
    integer                      :: nr_dmat
    real(8), pointer             :: dmat(:, :, :, :)
    real(8), allocatable, target :: dmat_container(:, :, :, :)
-                        
+
    integer                      :: nr_fmat
    real(8), pointer             :: fmat(:, :, :, :)
    real(8), allocatable, target :: fmat_container(:, :, :, :)
-                        
+
    integer, pointer             :: dmat_pg_sym(:)
    integer, allocatable, target :: dmat_pg_sym_container(:)
    integer, pointer             :: dmat_ih_sym(:)
@@ -212,11 +160,11 @@ module xc_driver
    real(8), pointer             :: property_gradient(:)
    real(8), allocatable, target :: property_gradient_container(:)
 
-   logical                      :: do_potential     
+   logical                      :: do_potential
    integer                      :: response_order_mo
    integer                      :: response_order_ao
    logical                      :: do_london_rhs_direct
-   logical                      :: do_london_rhs_ro    
+   logical                      :: do_london_rhs_ro
    logical                      :: do_geo
    logical                      :: do_geo_0
    logical                      :: do_geo_1
@@ -273,17 +221,21 @@ contains
       integer, optional,         intent(in)    :: xc_nr_atoms
       real(8), optional, target, intent(inout) :: xc_property_gradient(*)
 
-      logical, optional,         intent(in)    :: xc_do_potential             
+      logical, optional,         intent(in)    :: xc_do_potential
       logical, optional,         intent(in)    :: xc_do_london_rhs_direct
-      logical, optional,         intent(in)    :: xc_do_london_rhs_ro       
+      logical, optional,         intent(in)    :: xc_do_london_rhs_ro
       logical, optional,         intent(in)    :: xc_do_geo_0
       logical, optional,         intent(in)    :: xc_do_geo_1
       logical, optional,         intent(in)    :: xc_do_geo_2
       logical, optional,         intent(in)    :: xc_do_overlap_diagnostic
 
-      integer, optional,         intent(in)    :: xc_response_order_mo         
-      integer, optional,         intent(in)    :: xc_response_order_ao         
+      integer, optional,         intent(in)    :: xc_response_order_mo
+      integer, optional,         intent(in)    :: xc_response_order_ao
 !     --------------------------------------------------------------------------
+    real(8), external :: ddot
+   integer, parameter :: max_mat_number = 10
+   integer, target    :: default_sym(max_mat_number)
+    real(8)             :: save_ddot1, save_ddot2
 
 
 
@@ -369,13 +321,13 @@ contains
 #ifdef VAR_MPI
       if (parallel_xc) then
 !        broadcast non-allocatables
-         call dirac_mpi_bcast(mat_dim)      
+         call dirac_mpi_bcast(mat_dim)
          call dirac_mpi_bcast(nz)
-         call dirac_mpi_bcast(nr_dmat)  
-         call dirac_mpi_bcast(nr_fmat)  
-         call dirac_mpi_bcast(nr_atoms)  
-         call dirac_mpi_bcast(do_potential)  
-         call dirac_mpi_bcast(do_london_rhs_direct) 
+         call dirac_mpi_bcast(nr_dmat)
+         call dirac_mpi_bcast(nr_fmat)
+         call dirac_mpi_bcast(nr_atoms)
+         call dirac_mpi_bcast(do_potential)
+         call dirac_mpi_bcast(do_london_rhs_direct)
          call dirac_mpi_bcast(do_london_rhs_ro)
          call dirac_mpi_bcast(response_order_mo)
          call dirac_mpi_bcast(response_order_ao)
@@ -405,7 +357,7 @@ contains
          call alloc(dmat_0_container, mat_dim, mat_dim)
          dmat_0 => dmat_0_container
       else
-         dmat_0 => xc_dmat_0  
+         dmat_0 => xc_dmat_0
       end if
 
       nullify(dmat)
@@ -415,7 +367,7 @@ contains
             dmat => dmat_container
          else
             if (present(xc_dmat)) then
-               dmat => xc_dmat  
+               dmat => xc_dmat
             end if
          end if
       end if
@@ -427,7 +379,7 @@ contains
             fmat => fmat_container
          else
             if (present(xc_fmat)) then
-               fmat => xc_fmat  
+               fmat => xc_fmat
             end if
          end if
       end if
@@ -490,13 +442,13 @@ contains
          if (do_potential) then
             save_ddot1 = ddot(mat_dim*mat_dim, dmat_0, 1, fmat, 1)
          end if
-         
+
 !        get average density from open shells
          if (nr_open_shells > 0) call gtdoav(mat_dim, nz, 1, dmat_0, 1)
-         
+
          call scale_density_matrices(2.0d0)
          call insert_half_phases()
-         
+
 !        calculate grid
          if (.not. dirac_cfg_fde_response) then
             if (.not. grid_is_done) then
@@ -600,7 +552,7 @@ contains
             call quit('QR and partial ALDA is not implemented')
          end if
       end if
-     
+
 !     aspg, toying with having the frozen density and adfgrid available
 !     for the respose calcs or otherwise...
       if (have_frozen_density) then
@@ -639,10 +591,10 @@ contains
 
       if (i_am_master) then
          call scale_density_matrices(0.5d0)
-   
+
 !        get average density from open shells
          if (nr_open_shells > 0) call gtdoav(mat_dim, nz, 1, dmat_0, -1)
-   
+
 !        symmetrize matrices
          if (dft_cfg_blocked .or. (use_gga .and. .not. do_london_rhs_direct .and. .not. do_geo)) then
             if (nr_dmat > 0) then
@@ -652,7 +604,7 @@ contains
             end if
          end if
 
-   
+
 !#define DO_DAXPY
 #ifdef DO_DAXPY
 !!gosia fixme     if london-direct then antisymmetrize matrices
@@ -660,9 +612,9 @@ contains
             call antisym_london(mat_dim, nz, nr_fmat, fmat, (/1/), (/-1/))
          end if
 #endif
-   
+
          call insert_half_phases()
-   
+
 !        final expectation value of the two-electron matrix
          if (do_potential) then
             save_ddot2    = ddot(mat_dim*mat_dim, dmat_0, 1, fmat, 1)
@@ -829,6 +781,12 @@ contains
       integer :: id, m
       real(8) :: temp
       real(8) :: block_threshold
+      real(8) :: rho13, rho_outer, rho_resp
+    integer :: ipoint
+    integer :: k
+      real(8) :: RHG(3),VT(3)
+    integer              :: derv_length
+    real(8), allocatable :: derv(:, :)
 
 
 
@@ -914,14 +872,14 @@ contains
    if (dft_cfg_blocked) then
       loop_over_points_block: do ipoint = 1, nr_points_process, mxbllen
          block_length = min(mxbllen, nr_points_process - ipoint + 1)
-      
+
          call get_ao(block_length,                     &
                      rx(ipoint:ipoint+block_length-1), &
                      ry(ipoint:ipoint+block_length-1), &
                      rz(ipoint:ipoint+block_length-1), &
                      ao_block,                         &
                      buffer_block)
-      
+
             call get_n_block( &
                              block_length,          &
                              block_threshold,       &
@@ -943,12 +901,12 @@ contains
                              max_fun_derv,          &
                              z_0,                   &
                              rw(ipoint))
- 
+
          do k = 1, block_length
             nr_electrons = nr_electrons + rw(ipoint + k - 1)*r_0(k)
             xc_energy    = xc_energy    + derv(k, d_0)
          end do
-      
+
       end do loop_over_points_block
    else
 #endif /* ifdef MOD_UNRELEASED */
@@ -975,7 +933,7 @@ contains
       if (need_ao_order(1, 0)) then
 !        density and density gradient
          call get_gn(r_0(1), rhg, 0, mat_dim, dmat_0, buffer, ao, ao(ao_start(1, 0):ao_end(1, 0)))
-         z_0(1) = ddot(3, rhg, 1, rhg, 1)
+         z_0(1) = rhg(1)*rhg(1) + rhg(2)*rhg(2) + rhg(3)*rhg(3)
       else
 !        density
          call get_n(r_0(1), 0, mat_dim, dmat_0, buffer, ao)
@@ -1002,13 +960,13 @@ contains
               z_0_t(1) = z_0(1) + fde_prop2(ipoint)
            else
               r_0_t(1) = r_0(1)
-              z_0_t(1) = z_0(1) 
+              z_0_t(1) = z_0(1)
            endif
-        else 
+        else
            r_0_t(1) = r_0(1)
-           z_0_t(1) = z_0(1) 
+           z_0_t(1) = z_0(1)
         endif
-        
+
 !       if ((ipoint.eq.1).or.(ipoint.eq.40125)) then
 !          write (*,*) ' '
 !          write (*,*) 'DEBUG: density gradients etc'
@@ -1037,9 +995,9 @@ contains
            if (dirac_cfg_fde_response .and. (max_fun_derv > 1)) then
 !             fde_response:
 !             the frozen density has to be passed all the way to here
-!             and then the derivatives (of xc and kinetic energy functionals) 
-!             have to be evaluated twice once with normal density, once with the 
-!             total density (=frozen plus normal). then this kinetic+xc 
+!             and then the derivatives (of xc and kinetic energy functionals)
+!             have to be evaluated twice once with normal density, once with the
+!             total density (=frozen plus normal). then this kinetic+xc
 !             contribution (=total - normal) is added to the usual xc contrubition
               call get_general_fun_derv(xc_fun,       &
                                         max_fun_derv, &
@@ -1072,7 +1030,7 @@ contains
 
         time_matrix_dist_start = second()
 
-!       exchange-correlation potential 
+!       exchange-correlation potential
 !       ==============================
 
         if (do_potential) then
@@ -1152,7 +1110,7 @@ contains
 !       direct-lao contribution to differentiated kohn-sham matrix
 !       ==========================================================
 
-        if (do_london_rhs_direct .and. response_order_mo == 0) then 
+        if (do_london_rhs_direct .and. response_order_mo == 0) then
           if (use_gga) then
             call gga_london_distribute_r(derv(1, d_r),                      &
                                          2.0d0*derv(1, d_z),                      &
@@ -1231,10 +1189,10 @@ contains
 !         and the corresponding   q^[B]  \cdot \nabla \omega_{ia}^[C]
 !                                 q^[C]  \cdot \nabla \omega_{ia}^[B]
 !                                 q^[BC] \cdot \nabla \omega_{ia}
-          
+
 !         can be evaluated using lr code (below)
 !         only the remaining part is done in sdft_qr (above)
-!         
+!
           call lr(bllen,    &
                   mat_dim,         &
                   nz,              &
@@ -1359,12 +1317,13 @@ contains
    end subroutine
 
    subroutine report()
+    real(8) :: error_nr_electrons
 
       call occupation_info_read()
 
       error_nr_electrons  = nr_electrons &
                           - nr_electrons_total
-      
+
       write(file_unit, *)
 
 !     verify that the number of points we have actually looped
@@ -1400,17 +1359,17 @@ contains
                error_nr_electrons
          write(file_unit, '(12x, a, f15.6)')                        &
                'is larger than .ERRELS (set input)    =  ',         &
-                dft_cfg_accepted_error                              
+                dft_cfg_accepted_error
          write(file_unit, '(12x, a)')                              &
-               'this can happen when starting from coefficients'    
+               'this can happen when starting from coefficients'
          write(file_unit, '(12x, a)')                              &
-               'from a different geometry'                          
+               'from a different geometry'
          write(file_unit, '(12x, a)')                               &
                'or it can mean that the quadrature '//              &
                'grid is inappropriate'
       end if
       write(file_unit, *)
-   
+
 !     timing
       time_integration = second() - time_integration_start
       call timtxt('  time spent in DFT integration                  =', &
@@ -1436,6 +1395,9 @@ contains
 
 #ifdef VAR_MPI
    subroutine dft_collect()
+      integer :: ierr
+    real(8) :: sum_r
+    integer :: sum_i
 
       call mpi_reduce(nr_electrons,         &
                       sum_r,                &
@@ -1444,7 +1406,7 @@ contains
                       mpi_sum,              &
                       0,                    &
                       mpi_comm_world,       &
-                      ierr) 
+                      ierr)
       if (i_am_master) then
          nr_electrons = sum_r
       end if
@@ -1456,7 +1418,7 @@ contains
                       mpi_sum,               &
                       0,                     &
                       mpi_comm_world,        &
-                      ierr) 
+                      ierr)
       if (i_am_master) then
          nr_points_looped_over = sum_i
       end if
@@ -1468,11 +1430,11 @@ contains
                       mpi_sum,               &
                       0,                     &
                       mpi_comm_world,        &
-                      ierr) 
+                      ierr)
       if (i_am_master) then
          nr_points_used = sum_i
       end if
- 
+
       if (do_potential) then
          call mpi_reduce(xc_energy,            &
                          sum_r,                &
@@ -1481,17 +1443,17 @@ contains
                          mpi_sum,              &
                          0,                    &
                          mpi_comm_world,       &
-                         ierr) 
+                         ierr)
          if (i_am_master) then
             xc_energy = sum_r
          end if
       end if
-      
+
       if (nr_fmat > 0) then
          if (i_am_master) then
             call alloc(fmat_container, mat_dim, mat_dim, nz, nr_fmat)
          end if
-      
+
          call mpi_reduce(fmat,                       &
                          fmat_container,             &
                          mat_dim*mat_dim*nz*nr_fmat, &
@@ -1499,10 +1461,10 @@ contains
                          mpi_sum,                    &
                          0,                          &
                          mpi_comm_world,             &
-                         ierr) 
-      
+                         ierr)
+
          if (i_am_master) then
-            call dcopy(mat_dim*mat_dim*nz*nr_fmat, fmat_container, 1, fmat, 1)     
+            call dcopy(mat_dim*mat_dim*nz*nr_fmat, fmat_container, 1, fmat, 1)
             call dealloc(fmat_container)
          end if
       end if
@@ -1511,7 +1473,7 @@ contains
          if (i_am_master) then
             call alloc(property_gradient_container, nr_atoms*3)
          end if
-      
+
          call mpi_reduce(property_gradient,           &
                          property_gradient_container, &
                          nr_atoms*3,                   &
@@ -1519,10 +1481,10 @@ contains
                          mpi_sum,                      &
                          0,                            &
                          mpi_comm_world,               &
-                         ierr) 
-      
+                         ierr)
+
          if (i_am_master) then
-            call dcopy(nr_atoms*3, property_gradient_container, 1, property_gradient, 1)     
+            call dcopy(nr_atoms*3, property_gradient_container, 1, property_gradient, 1)
             call dealloc(property_gradient_container)
          end if
       end if
@@ -1531,32 +1493,38 @@ contains
 #endif /* ifdef VAR_MPI */
 
    function get_xc_energy()
-   
+
 !     --------------------------------------------------------------------------
       real(8) :: get_xc_energy
 !     --------------------------------------------------------------------------
-   
+
       get_xc_energy = xc_energy
-   
+
    end function
 
    function get_xc_mat_energy()
-   
+
 !     --------------------------------------------------------------------------
       real(8) :: get_xc_mat_energy
 !     --------------------------------------------------------------------------
-   
+
       get_xc_mat_energy = xc_mat_energy
-   
+
    end function
 
    subroutine reset_grid()
-   
+
       grid_is_done = .false.
-   
+
    end subroutine
 
    subroutine loop_over_batches()
+      integer :: ierr
+    real(8) :: dummy
+    integer :: idummy
+    integer             :: ibatch
+    integer             :: i
+    real(8), allocatable :: mpi_buffer(:)
 
       if (i_am_master) then
          if (dirac_cfg_fde_response) then
@@ -1623,7 +1591,7 @@ contains
             call alloc(rz, nr_points_process)
             call alloc(rw, nr_points_process)
          end if
-       
+
          if (i_am_master) then
             if (dft_cfg_import_grid) then
                call import_dft_grid(rx, ry, rz, rw, file_unit_grid, nr_points)
@@ -1641,9 +1609,9 @@ contains
                   ry(i) = fde_grid(2,i)
                   rz(i) = fde_grid(3,i)
                   rw(i) = fde_grid(4,i)
-            
+
                   fde_prop1(i) = fde_frozen_prp(1,i)
-            
+
                   if (fde_nprop.eq.2) then
                      fde_prop2(i) = fde_frozen_prp(2,i)
                   else
@@ -1657,7 +1625,7 @@ contains
 
          ibatch          = ibatch + 1
          nr_points_total = nr_points_total + nr_points
-        
+
 #ifdef VAR_MPI
          if (parallel_xc) then
             if (i_am_master) then
