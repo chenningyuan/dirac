@@ -26,7 +26,7 @@ usage()
    echo '     -adm             : Include ALL modules (administrator)'
    echo '     -eri             : Include ERI integral routines'
    echo '     -densfit         : Include density fitting module'
-   echo '     -largemolecules  : Increases commom blocks to handle more atoms and basis sets'
+   echo '     -largemolecules  : Increases common blocks to handle more atoms and basis sets'
    echo '     -fmm             : Include fast multipole method'
    echo '     -esr             : Include ESR property module'
    echo '     -xpp             : Include PP excitation energy and STEX modules'
@@ -36,7 +36,7 @@ usage()
    echo '     -visual          : Include visualization module'
    echo '     -openrsp         : Include OpenRSP'
    echo '     -matrixop        : Include matrix operations module'
-   echo '     -xcfun           : Include xcfun module'
+   echo '     -xcfun           : Include XCFun module'
    echo '     -cap             : Include CAP module'
    echo '     -hscc            : Include interface for the (external) HSMRCC code together with its objects'
    echo '     -hsfs            : Include higher external Higher sector FSCC code'
@@ -49,6 +49,7 @@ usage()
    echo '     -adc             : Include ADC electron propagator module'
    echo '     -ecp             : Include ARGOS ECP module'
    echo '     -srdft           : Include srDFT module'
+   echo '     -unreleased      : Include unreleased functionality (not covered by other flags)'
    echo '     -log             : Enable matrix logging in Matlab format'
    echo '     tarfile          : Name of export archive to create (if any)'
    echo '     tarfile=export   : Make DIRAC.new.tar.gz'
@@ -92,6 +93,7 @@ MODS_MESSAGE=
       ADCMOD=1
       MATRIX_OPERATIONS_MOD=1
       OPENRSP_MOD=1
+      UNRELEASED_MOD=1
       EMBMOD=1
 # LV: inform me before taking EMBMOD out of the -adm options !!!
 # MI  - needs to be fixed for gfortran !!!
@@ -219,12 +221,19 @@ MODS_MESSAGE=
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
-   #
-   #  AO response module
-   #
+
+#  unreleased code (not covered by other flags)
+   if [ -n "$UNRELEASED_MOD" ]; then
+      UNRELEASED_FLG='-DMOD_UNRELEASED'
+      THIS_MOD_MESSAGE=" - unreleased code (not covered by other flags), $UNRELEASED_FLG"
+      echo $THIS_MOD_MESSAGE
+      MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
+   fi
+
+#  OpenRSP
    if [ -n "$OPENRSP_MOD" ]; then
       OPENRSP_FLG='-DMOD_OPENRSP'
-      THIS_MOD_MESSAGE=" - AO response module, $OPENRSP_FLG"
+      THIS_MOD_MESSAGE=" - OpenRSP module, $OPENRSP_FLG"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
@@ -238,10 +247,10 @@ MODS_MESSAGE=
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
 
-#  xcfun
+#  XCFun
    if [ -n "$XCFUN_MOD" ]; then
       XCFUN_FLG='-DMOD_XCFUN'
-      THIS_MOD_MESSAGE=" - xcfun module, $XCFUN_FLG"
+      THIS_MOD_MESSAGE=" - XCFun module, $XCFUN_FLG"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
@@ -544,7 +553,7 @@ rmline()
 which_modules()
 {
 for mod in $ERIFLG $DNFFLG $FMMFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG \
-$ADCFLG $VISUALFLG $OPENRSP_FLG $MATRIX_OPERATIONS_FLG $XCFUN_FLG \
+$ADCFLG $VISUALFLG $OPENRSP_FLG $UNRELEASED_FLG $MATRIX_OPERATIONS_FLG $XCFUN_FLG \
 $CAPFLG $HSCCFLG $HSFSFLG $QDOTSFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG \
 $AMFIFLG $LONDONFLG $SRDFT_FLG $ECPFLG $LOG_FLG
 do
@@ -804,6 +813,9 @@ while [ -n "$1" ]; do
          ;;
       -openrsp)
          OPENRSP_MOD=1
+         ;;
+      -unreleased)
+         UNRELEASED_MOD=1
          ;;
       -matrixop|-matop)
          MATRIX_OPERATIONS_MOD=1
