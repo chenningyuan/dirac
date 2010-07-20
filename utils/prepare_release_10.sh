@@ -125,7 +125,7 @@ cp $source_directory/openrsp/precision.F90       openrsp
 # ===================================================================================
 
 echo "Removing functionalities from source files that should not be released"
-delfunc="-UMOD_UNRELEASED -UMOD_OPENRSP -UMOD_ESR -UMOD_ECP -UMOD_KRMC -UMOD_DNF -UMOD_XCFUN -UMOD_OOF -UMOD_CAP -UMOD_HSCC -UMOD_IHFSCC -UMOD_AMFI -UMOD_FMM -UMOD_EMB -UMOD_XML"
+delfunc="-UMOD_UNRELEASED -UMOD_DENSFIT -UMOD_OPENRSP -UMOD_ESR -UMOD_ECP -UMOD_KRMC -UMOD_DNF -UMOD_XCFUN -UMOD_OOF -UMOD_CAP -UMOD_HSCC -UMOD_IHFSCC -UMOD_AMFI -UMOD_FMM -UMOD_EMB -UMOD_XML"
 utils/cppp.py $delfunc `find . -name '*.F' -o -name '*.f90' -o -name '*.F90' -o -name '*.c'`
 # now remove utils/cppp.py
 rm -f utils/cppp.py
@@ -185,6 +185,8 @@ fi
 # run pamadm with the correct flags
 # =================================
 
+#radovan: i don't think we should use here or even keep pamadm export
+#         it is outdated and trying to do what this script already does
 echo "Running ./pamadm -xpp -eri -adc -visual -london export"
 ./pamadm -xpp -eri -adc -visual -london export > /dev/null
 if [[ -r $release.tar.gz ]]; then
