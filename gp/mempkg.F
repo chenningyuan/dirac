@@ -254,9 +254,15 @@ C
 #include "implicit.h"
 #include "priunit.h"
       PERC=((DFLOAT(MEM_NEED)/DFLOAT(MEM_DISPOSAL))-1.0D0)*100.0D0
-
+#ifdef VAR_MPI
+      WRITE(LUPRI,'(/,A,F6.0,A)')
+     & "...increase the memory allocaton approximately by ",PERC," %."
+      WRITE(LUPRI,'(A)') 
+     & "Check in the error output whether this is for master or slave."
+#else
       WRITE(LUPRI,'(/,A,F6.0,A,/)')
      & "...increase the memory allocaton approximately by ",PERC," %."
+#endif
       RETURN
       END
 
