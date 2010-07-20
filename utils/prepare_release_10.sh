@@ -27,12 +27,8 @@ tar c . | (cd ../$release; tar x)
 
 cd ../$release
 
-#
-# First delete code that should not be released.
-#
-delfunc="-UMOD_ECP -UMOD_KRMC -UMOD_DNF -UMOD_XCFUN -UMOD_OOF -UMOD_CAP -UMOD_HSCC -UMOD_IHFSCC -UMOD_AMFI -UMOD_LONDON -UMOD_FMM -UMOD_EMB -UMOD_XML"
-
-echo "Removing functionalities from source files"
+echo "Removing functionalities from source files htat should not be released"
+delfunc="-UMOD_UNRELEASED -UMOD_ECP -UMOD_KRMC -UMOD_DNF -UMOD_XCFUN -UMOD_OOF -UMOD_CAP -UMOD_HSCC -UMOD_IHFSCC -UMOD_AMFI -UMOD_LONDON -UMOD_FMM -UMOD_EMB -UMOD_XML"
 utils/cppp.py $delfunc `find . -name '*.F' -o -name '*.f90' -o -name '*.F90' -o -name '*.c'`
 
 echo "Deleting files that should not be shipped"

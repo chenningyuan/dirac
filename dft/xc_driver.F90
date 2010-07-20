@@ -908,7 +908,7 @@ contains
         z_0 = 0.0d0
 
 
-
+#ifdef MOD_UNRELEASED
    if (dft_cfg_blocked) then
       loop_over_points_block: do ipoint = 1, nr_points_process, mxbllen
          block_length = min(mxbllen, nr_points_process - ipoint + 1)
@@ -948,6 +948,7 @@ contains
       
       end do loop_over_points_block
    else
+#endif /* ifdef MOD_UNRELEASED */
 
 
 !  here starts the expensive loop over points
@@ -1333,7 +1334,9 @@ contains
 
       end if !if (r_0(1) > dft_cfg_dfthr0) then
     end do !do ipoint = 1, nr_points_process
+#ifdef MOD_UNRELEASED
    end if !if (dft_cfg_blocked) then
+#endif /* ifdef MOD_UNRELEASED */
 
      deallocate(derv)
 
