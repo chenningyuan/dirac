@@ -17,25 +17,103 @@
 # Some tests do not work in parallel (yet); the "*_partest" are the short, medum
 # and long tests for parallel runs.
 #
-short_partest="1.energy+dipole 3.geomopt.dhf 4.levy-leblond.nmr 5.cisd.energy 6.cosci.energy 7.directmp2.energy 8.spinfree.cosci.energy 9.contraction 11.methods.cosci 13.hf_dynamic_polarizability 14.basis.set.input 22.lucita_short 30.linear 31.symmetry_recognition 37.bss.energies 38.london.magn_prop 39.gaunt dft_ac dft_response dft_response_symmetry dft_ao_eval dft_betasigma 49.xyzinput visual_elf"
+
+
+# short parallel
+# ==============
+
+this_testset=""
+this_testset="$this_testset 1.energy+dipole"
+this_testset="$this_testset 3.geomopt.dhf"
+this_testset="$this_testset 4.levy-leblond.nmr"
+this_testset="$this_testset 5.cisd.energy"
+this_testset="$this_testset 6.cosci.energy"
+this_testset="$this_testset 7.directmp2.energy"
+this_testset="$this_testset 8.spinfree.cosci.energy"
+this_testset="$this_testset 9.contraction"
+this_testset="$this_testset 11.methods.cosci"
+this_testset="$this_testset 13.hf_dynamic_polarizability"
+this_testset="$this_testset 14.basis.set.input"
+this_testset="$this_testset 22.lucita_short"
+this_testset="$this_testset 30.linear"
+this_testset="$this_testset 31.symmetry_recognition"
+this_testset="$this_testset 37.bss.energies"
+this_testset="$this_testset 38.london.magn_prop"
+this_testset="$this_testset 39.gaunt"
+this_testset="$this_testset dft_ac"
+this_testset="$this_testset dft_response"
+this_testset="$this_testset dft_response_symmetry"
+this_testset="$this_testset dft_ao_eval"
+this_testset="$this_testset dft_betasigma"
+this_testset="$this_testset 49.xyzinput"
+this_testset="$this_testset visual_elf"
+
+short_partest="$this_testset"
+
+
+# short sequential
+# ================
+
 short_test="$short_partest"
 
-medium_partest="2.nmrspinspin 10.efg 12.zora 17.scf_energy 19.fockspace 32.prjana 33.frozen 34.rhonuc 36.mp2_properties 25.qrpa visual_general"
-# blocking KRMC/KRCI tests for now - debug mode is turned on... - SK - # 27.11.2008 
-#medium_test="$short_test $medium_partest 27.krmc_luciarel 54.stex"
-medium_test="$short_test $medium_partest 53.reladc 54.stex"
-# 28.luciarel_medium is currently not working ! Nov. 2005 hjaaj
-medium_partest="$short_partest $medium_partest"
 
-# blocking KRMC/KRCI tests for now - debug mode is turned on... - SK - # 27.11.2008 
-#long_partest="24.lucita_large 26.krmc_gosci 41.pv_nmr"
-long_partest="24.lucita_large                41.pv_nmr"
-long_test="$medium_test $long_partest"
-long_partest="$medium_partest $long_partest"
+# medium parallel (including short)
+# =================================
+
+this_testset=""
+this_testset="$this_testset 2.nmrspinspin"
+this_testset="$this_testset 10.efg"
+this_testset="$this_testset 12.zora"
+this_testset="$this_testset 17.scf_energy"
+this_testset="$this_testset 19.fockspace"
+this_testset="$this_testset 32.prjana"
+this_testset="$this_testset 33.frozen"
+this_testset="$this_testset 34.rhonuc"
+this_testset="$this_testset 36.mp2_properties"
+this_testset="$this_testset 25.qrpa"
+this_testset="$this_testset visual_general"
+
+medium_partest="$this_testset $short_partest"
+
+
+# medium sequential (including short)
+# ===================================
+
+this_testset=""
+#this_testset="$this_testset 27.krmc_luciarel"     currently blocked
+#this_testset="$this_testset 28.luciarel_medium"   currently blocked
+this_testset="$this_testset 54.stex"
+this_testset="$this_testset 53.reladc"
+
+medium_test="$this_testset $medium_partest"
+
+
+# long parallel (including short and medium)
+# ==========================================
+
+this_testset=""
+#this_testset="$this_testset 26.krmc_gosci"   currently blocked
+this_testset="$this_testset 41.pv_nmr"
+this_testset="$this_testset 24.lucita_large"
+
+long_partest="$this_testset $medium_partest"
+
+
+# long sequential (including short and medium)
+# ============================================
+
+long_test="$this_testset $medium_test"
+
+
+# benchmark
+# =========
 
 benchmark_test="29.benchmark_cc"
 
+
 # here list all tests that are expected to work in the next release version
+# =========================================================================
+
 this_testset=""
 this_testset="$this_testset dft_ac"
 this_testset="$this_testset dft_response"
@@ -47,10 +125,16 @@ this_testset="$this_testset 31.symmetry_recognition"
 this_testset="$this_testset 9.contraction"
 this_testset="$this_testset visual_elf"
 this_testset="$this_testset 49.xyzinput"
+
 release_test="$this_testset"
+
+
+# all tests
+# =========
 
 #radovan: i don't think the all_test option has been used in years
 #         maybe we could remove it
+#         anyway it won't work with tests that are not numbered
 # all_test takes all directories (and will fail if filters or output are absent !)
 all_test=
 for ff in [1-9]\.* [1-9][0-9]\.*; do
