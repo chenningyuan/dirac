@@ -23,7 +23,9 @@ module dirac_interface
    public get_C
    public grcont
    public ask_for_integrals
+#ifdef MOD_OPENRSP
    public response_solver
+#endif
    public get_natoms
    public dipnuc_ifc
    public qdrnuc_ifc
@@ -254,6 +256,7 @@ contains
         include_gt_integrals = .true.
       end if
 
+#ifdef MOD_OPENRSP
       if (.not. openrsp_cfg_skip_pp) then
         include_pp_rotations = .true.
       end if
@@ -262,6 +265,7 @@ contains
         include_pn_rotations = .true.
         diamagnetic_via_pn   = .true.
       end if
+#endif
 
       openrsp_levy_leblond = levyle
       openrsp_spinfree     = spinfr
@@ -1180,6 +1184,7 @@ contains
 
   end subroutine
 
+#ifdef MOD_OPENRSP
   subroutine response_solver(freq, RHS, Dp)
 
 !   1. RHS (AO) -> RHS (MO)
@@ -1667,6 +1672,7 @@ contains
     Wp = 0
 
   end subroutine
+#endif /* ifdef MOD_OPENRSP */
 
   subroutine construct_response_vector(vector_type,     &
                                        ih,              &
