@@ -181,28 +181,38 @@ C
          IF (KFREE .GT. 1) THEN
             LENIDS = LENID
             WRITE (LUWMEM,1010) LREAL+LENIDS,LFREE
-            WRITE (LUWMEM,1012) 
-     & ((DFLOAT(LREAL+LENIDS)/DFLOAT(LFREE))-1.0D0)*100.0D0
+
+            CALL MEM_SHORTAGE_INFO(LREAL+LENIDS,LFREE)
+!           WRITE (LUWMEM,1012) 
+!    & ((DFLOAT(LREAL+LENIDS)/DFLOAT(LFREE))-1.0D0)*100.0D0
+
             CALL MEMCHK('MEMGET ERROR (insuff. memory)',WORK,1)
+
          ELSE
             LENIDS = 2*LENID
             WRITE (LUWMEM,1010) LREAL+LENIDS,LFREE
-            WRITE (LUWMEM,1012) 
-     & ((DFLOAT(LREAL+LENIDS)/DFLOAT(LFREE))-1.0D0)*100.0D0
+
+!           WRITE (LUWMEM,1012) 
+!    & ((DFLOAT(LREAL+LENIDS)/DFLOAT(LFREE))-1.0D0)*100.0D0
+            CALL MEM_SHORTAGE_INFO(LREAL+LENIDS,LFREE)
          END IF
          CALL QTRACE(LUWMEM)
          IF (LUEMEM .NE. LUWMEM) THEN
             WRITE (LUEMEM,1010) LREAL+LENIDS,LFREE
-            WRITE (LUWMEM,1012) 
-     &  ((DFLOAT(LREAL+LENIDS)/DFLOAT(LFREE))-1.0D0)*100.0D0
+
+!           WRITE (LUWMEM,1012) 
+!    &  ((DFLOAT(LREAL+LENIDS)/DFLOAT(LFREE))-1.0D0)*100.0D0
+            CALL MEM_SHORTAGE_INFO(LREAL+LENIDS,LFREE)
+
             CALL QTRACE(LUEMEM)
+
          END IF
          CALL QUIT('MEMGET ERROR, insufficient work space in memory')
  1010 FORMAT(
      &   /' MEMGET ERROR, insufficient free space for next allocation',
      &   /T16,'( Need:',I10,', available (LFREE):',I10,' )')
- 1012 FORMAT(
-     &   /'...increase memory allocaton approximately by ',F5.0,' % .')
+!1012 FORMAT(
+!    &   /'...increase memory allocaton approximately by ',F5.0,' % .')
 C
 C        error branch IF (MEMCK(1) .NE. MEMID(1)) :
 C
@@ -246,6 +256,21 @@ C
 C     end of MEMGET
 C
       END
+
+      SUBROUTINE MEM_SHORTAGE_INFO (MEM_NEED, MEM_DISPOSAL)
+!
+! Print out worth info on how much the memory has to be increased
+! in the its shortage
+!
+#include "implicit.h"
+#include "priunit.h"
+      PERC=((DFLOAT(MEM_NEED)/DFLOAT(MEM_DISPOSAL))-1.0D0)*100.0D0
+
+      WRITE(LUPRI,'(/,A,F6.0,A,/)')
+     & "...increase the memory allocaton approximately by ",PERC," %."
+      RETURN
+      END
+
 C  /* Deck memrel */
       SUBROUTINE MEMREL(TEXT,WORK,KFIRST,KREL,KFREE,LFREE)
 C
