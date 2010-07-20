@@ -853,7 +853,7 @@ C                IOP - index of the property
 C                IDIMENS - dimension of array (either triangular or square)
 C                FIRST - array, must be set to true
 C
-C     On output: PMAT - accumulated property matrix (boson unsorted)
+C     On output: PMAT - accumulated property matrix (Hermit sorting)
 C
 C
 C     Written by Trond Saue May 1996
@@ -1139,7 +1139,7 @@ C
 C     On input:  LU1INT
 C                   IOP
 C     
-C     On output: PMAT - property matrix (boson unsorted)
+C     On output: PMAT - property matrix (Hermit sorting)
 C
 C        
 C     Written by Trond Saue May 1996
@@ -1518,7 +1518,7 @@ CMI    -----  get the full four-component operator -------
 
         CALL LSET(NZ,.TRUE.,FIRST)
 
-C     ... do resort PTRI to the boson sorted basis
+C     ... do resort PTRI to DIRAC sorting
         IPRINT2 = MAX(IPRPRP,IPRINT)
         IF (IS_SQUARE) THEN
           CALL PRPMAO(LU1INT,INDXPR,IDIMENS,PMAT,OP1INT,FIRST,

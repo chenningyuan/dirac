@@ -129,6 +129,7 @@ module numoper_integrals
           n_ao           = ntbas(0)
 
 ! first collecting the boson unsorted (ie LS(irrep1) LS(irrep2) etc
+! radovan: better naming for boson unsorted: hermit sorted
 
           i = 0 
           basis_bu_offt%large_start(i) = 1
@@ -145,6 +146,7 @@ module numoper_integrals
                basis_bu_offt%small_end(i)   = basis_bu_offt%large_end(i) + nbbas(i,2) 
           enddo
 
+! radovan: boson unsorted are actually hermit offsets
           if (debug) then
              write (*,*) ' '
              write (*,*) '=============================='
@@ -155,6 +157,7 @@ module numoper_integrals
           endif
 
 ! and now the boson_sorted (ie: L(irrep1)...L(irrepN)S(irrep1)...S(irrepN)
+! radovan: better naming for boson sorted: dirac sorted (and i think the examples are not right)
 
           do i = 0, n_boson_irreps-1
                basis_bs_offt%large_start(i) =  ibbas(i,1) + 1
@@ -164,6 +167,7 @@ module numoper_integrals
                basis_bs_offt%small_end(i)   =  ibbas(i,2) + nbbas(i,2)
           enddo
 
+! radovan: boson sorted are actually dirac offsets
           if (debug) then
              write (*,*) ' '
              write (*,*) '============================='

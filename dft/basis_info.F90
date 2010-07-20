@@ -291,7 +291,7 @@ contains
 !     --------------------------------------------------------------------------
       integer :: i, j, i_c, i_s, ic
       integer :: ishell, icount, isym, iprim, irep
-      integer :: iso, iso_bs, iao
+      integer :: iso, iso_dirac_sorting, iao
       integer :: index_in_ao_block, nr_ao_irep, nshell, mul, l
       integer :: max_contraction_length
       real(8) :: r, f
@@ -399,12 +399,7 @@ contains
          do iso = i, i + nr_ao_irep - 1
 
             ishell = iand(ishft(ipind(iso), -16), 65535)
-            nshell = iand(ishft(ipind(iso),  -8),   255)
-
-            mul = istbao(ishell)
-            l   = nhkt(ishell)
-
-            iao = kstrt(ishell) + nshell
+            mul    = istbao(ishell)
 
             icount = icount + 1
             if (icount > nbbas(irep, 1)) then
@@ -418,19 +413,9 @@ contains
 !           do not plan to AO-SO transform small component functions
 !           in case of zero small-small metric (.LEVY-LEBLOND and .X2C4)
             if (.not. (only_large .and. (ic == 2))) then
-
-!              shift by difference boson sorted minus boson unsorted
-               iso_bs = iso + ibbas(irep, ic) - icos(irep + 1, ic)
-
                do isym = 0, maxopr
                   if (iand(isym, mul) == 0) then
-
-                     f = pt(iand(isym, ieor(irep, isymao(l, nshell))))
-
                      nr_so_ao = nr_so_ao + 1
-
-                     iao = iao + khkt(ishell)
-
                   endif
                end do
             end if
@@ -543,8 +528,8 @@ contains
 !           in case of zero small-small metric (.LEVY-LEBLOND and .X2C4)
             if (.not. (only_large .and. (ic == 2))) then
 
-!              shift by difference boson sorted minus boson unsorted
-               iso_bs = iso + ibbas(irep, ic) - icos(irep + 1, ic)
+!              shift by difference dirac sorting minus hermit sorting
+               iso_dirac_sorting = iso + ibbas(irep, ic) - icos(irep + 1, ic)
 
                do isym = 0, maxopr
                   if (iand(isym, mul) == 0) then
@@ -553,7 +538,7 @@ contains
 
                      nr_so_ao = nr_so_ao + 1
 
-                     i_so_ao(1, nr_so_ao) = iso_bs
+                     i_so_ao(1, nr_so_ao) = iso_dirac_sorting
                      i_so_ao(2, nr_so_ao) = iao
                      f_so_ao(nr_so_ao)    = f
 

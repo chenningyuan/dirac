@@ -658,7 +658,7 @@ C.....Get full AO-Fock matrix with two-electron London integrals
 !     i don't know why we don't work with packed AO matrices here
 !     and at the moment don't feel like unpacking the dft contribution
 !     because i would have to allocate extra space
-!     (dft adds on top), boson unsort, unpack, boson resort, etc
+!     (dft adds on top), sort to hermit sorting, unpack, etc.
 
       CALL MEMGET('REAL',KGBMO,N2ORBXQ,WORK,KFREE,LFREE)
       CALL TWOLO1C(WORK(KGBMO),WORK(KFMAT),CMO,NCOMP,
