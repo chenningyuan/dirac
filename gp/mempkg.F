@@ -247,21 +247,25 @@ C
       END
 
       SUBROUTINE MEM_SHORTAGE_INFO (MEM_NEED, MEM_DISPOSAL)
-!
-! Print out worth info on how much the memory has to be increased
+!------------------------------------------------------------------------
+!  Print out worth info on how much the memory has to be increased
 ! in the its shortage
-!
+!------------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
-      PERC=((DFLOAT(MEM_NEED)/DFLOAT(MEM_DISPOSAL))-1.0D0)*100.0D0
-#ifdef VAR_MPI
+
+      DIFF_MEM=(DFLOAT(MEM_NEED)-DFLOAT(MEM_DISPOSAL))/1000000.0D0
+
       WRITE(LUPRI,'(/,A,F6.0,A)')
-     & "...increase the memory allocaton approximately by ",PERC," %."
-      WRITE(LUPRI,'(A)') 
-     & "Check in the error output whether this is for master or slave."
+     & "...increase the current memory allocation by ",
+     &  DIFF_MEM," megawords."
+
+#ifdef VAR_MPI
+      WRITE(LUPRI,'(A,/,A)') "This is a parallel run.",
+     & "Check in the error output whether"//
+     &" the increase is for the master or the slave."
 #else
-      WRITE(LUPRI,'(/,A,F6.0,A,/)')
-     & "...increase the memory allocaton approximately by ",PERC," %."
+      CONTINUE
 #endif
       RETURN
       END
