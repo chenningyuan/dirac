@@ -85,72 +85,44 @@ contains
       DO IXVECTOR = 1, visual_cfg_NR_XVECTORS
         imat = vector_to_matrix(ixvector)
 
-!       IF(visual_cfg_XVECTOR_FILE(IXVECTOR) .EQ. 'ZORDER') &
-
-        CALL DZERO(QUANTITY,4)
-!       Probability density:           \psi^\dag        \psi = n
-        IQ = IQ_N
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          DENSITY = 0.0d0
-
-          DO IC = 1,MC
-            IF(IC .EQ. 1) THEN
-              IF(.NOT. visual_cfg_IOPTION_XVECTOR(IXVECTOR) .EQ. 2) THEN
-                CALL GETRH1(DENSITY,1,visual_cfg_irep_xvector(IXVECTOR), &
-     &                      AO,D(imat)%elms,buffer)
-              ENDIF
-            ENDIF
-            IF(IC .EQ. 2) THEN
-              IF(.NOT. visual_cfg_IOPTION_XVECTOR(IXVECTOR) .EQ. 1) THEN
-                CALL GETRH1(DENSITY,2,visual_cfg_irep_xvector(IXVECTOR), &
-     &                      AO,D(imat)%elms,buffer)
-              ENDIF
-            ENDIF
-          ENDDO
-
-          CALL DAXPY(1,1.0d0,DENSITY,1,QUANTITY(0),1)
-        ENDIF
-! Gradient of probability density:  \nabla n 
-        IQ = IQ_GRADIENT
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          CALL GETGRHO(VECTOR_A, &
-     &                 visual_cfg_irep_xvector(IXVECTOR), &
-     &                 AO, &
-     &                 ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                 D(imat)%elms, &
-     &                 buffer)
-
-          CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
-        ENDIF
-! Laplacian of probability density: \nabla^2 n
-        IQ = IQ_LAPLACIAN
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-!         CALL GETLRHO(RXX, &
-!    &                 RXY, &
-!    &                 RXZ, &
-!    &                 RYY, &
-!    &                 RYZ, &
-!    &                 RZZ, &
-!    &                 GAO, &
-!    &                 GAO1, &
-!    &                 GAO2, &
-!    &                 D(imat)%elms, &
-!    &                 buffer)
-
-!         CALL DAXPY(1,1.0d0,RXX + RYY + RZZ,1,QUANTITY(0),1)
-        ENDIF
+!       zero out quantity in point
+        quantity = 0.0d0
 
 
+!       electron density
+!       ================
 
-!         call get_n(density,                           &
-!                    visual_cfg_irep_xvector(ixvector), &
-!                    D(imat)%nrow,                      &
-!                    D(imat)%elms,                      &
-!                    buffer,                            &
-!                    ao)
+        if (visual_cfg_iq_xvector(ixvector) == iq_n) then
+           call get_n(density,                           &
+                      visual_cfg_irep_xvector(ixvector), &
+                      D(imat)%nrow,                      &
+                      D(imat)%elms,                      &
+                      buffer,                            &
+                      ao)
+           quantity(0) = quantity(0) + density
+        end if
 
 
-!       ELF: Electron Localization Function
+!       electron density gradient
+!       =========================
+
+        if (visual_cfg_iq_xvector(ixvector) == iq_gradient) then
+           call get_gn(density,                           &
+                       density_gradient,                  &
+                       visual_cfg_irep_xvector(ixvector), &
+                       D(imat)%nrow,                      &
+                       D(imat)%elms,                      &
+                       buffer,                            &
+                       ao,                                &
+                       ao(ao_start(1, 0):ao_end(1, 0)))
+
+           quantity(1) = quantity(1) + density_gradient(1)
+           quantity(2) = quantity(2) + density_gradient(2)
+           quantity(3) = quantity(3) + density_gradient(3)
+        end if
+
+
+!       elf: electron localization function
 !       ===================================
 
         if (visual_cfg_iq_xvector(ixvector) == iq_elf) then
@@ -190,11 +162,12 @@ contains
 ! j_dia (hardcoded for B along z)
         IQ = IQ_JDIA
         IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          CALL GETRHO(DENSITY, &
-     &                visual_cfg_irep_xvector(IXVECTOR), &
-     &                AO, &
-     &                D(imat)%elms, &
-     &                buffer)
+           call get_n(density,                           &
+                      visual_cfg_irep_xvector(ixvector), &
+                      D(imat)%nrow,                      &
+                      D(imat)%elms,                      &
+                      buffer,                            &
+                      ao)
 
           RX = PX - visual_cfg_GAUGE_ORIGIN(1)
           RY = PY - visual_cfg_GAUGE_ORIGIN(2)
@@ -398,11 +371,12 @@ contains
      &     (visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_EDIPY) .OR. &
      &     (visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_EDIPZ)) THEN
 
-          CALL GETRHO(DENSITY, &
-     &                visual_cfg_irep_xvector(IXVECTOR), &
-     &                AO, &
-     &                D(imat)%elms, &
-     &                buffer)
+           call get_n(density,                           &
+                      visual_cfg_irep_xvector(ixvector), &
+                      D(imat)%nrow,                      &
+                      D(imat)%elms,                      &
+                      buffer,                            &
+                      ao)
 
           IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_EDIPX) &
      &      CALL DAXPY(1,1.0d0,DENSITY*PX,1,QUANTITY(0),1)
