@@ -70,7 +70,6 @@ module visual_cfg
   real(8),       public :: visual_cfg_line_to(3)                         = 0.0d0
 
 
-! gosia: temporarily i move these from from visual.F90:
   integer,       public :: vector_to_matrix(max_nr_xvectors) = 0
   integer,       public :: vector_to_matrix_con(max_nr_xvectors) = 0
 
