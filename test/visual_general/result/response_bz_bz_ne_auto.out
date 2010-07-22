@@ -1,4 +1,4 @@
-DIRAC launched (pam script) by bast@larry at Thu Jul 22 10:37:24 CEST 2010
+DIRAC launched (pam script) by bast@larry at Thu Jul 22 10:50:00 CEST 2010
 in : /home/bast/dirac/intel_mkl/test/visual_general
 ===========================================================================================
 Size of all static allocations (pam script) : 83.9428 MB
@@ -146,7 +146,7 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
  SVN Changeset     : 'unknown Subversion revision' 
 
  
-     Date and time (Linux)  : Thu Jul 22 10:37:25 2010
+     Date and time (Linux)  : Thu Jul 22 10:50:01 2010
      Host name              :                                         
 
 
@@ -767,7 +767,7 @@ Total no. of orbitals      (NORB):    28      24      52
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Thu Jul 22 10:37:25 2010
+########## START ITERATION NO.   1 ##########   Thu Jul 22 10:50:01 2010
 
 
 * AUTOCC( 0) : Initial occupation:
@@ -777,7 +777,7 @@ Total no. of orbitals      (NORB):    28      24      52
        3 orbitals in Fermion irrep 2
 It.   1    -65.22253667828      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Thu Jul 22
 
-########## START ITERATION NO.   2##########   Thu Jul 22 10:37:25 2010
+########## START ITERATION NO.   2##########   Thu Jul 22 10:50:01 2010
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
@@ -786,11 +786,11 @@ SOfock:LL  1.00D-12    2.85%    0.61%    3.05%   27.92%   0.00000000s
 >>> Total wall time: 0.00000000s
 >>> Total CPU-time : 0.00000000s
 
-########## END ITERATION NO.   2 ##########   Thu Jul 22 10:37:25 2010
+########## END ITERATION NO.   2 ##########   Thu Jul 22 10:50:01 2010
 
 It.   2    -128.4578957644      6.32D+01 -2.01D+01  3.13D+00               0.00000000s   LL             Thu Jul 22
 
-########## START ITERATION NO.   3##########   Thu Jul 22 10:37:25 2010
+########## START ITERATION NO.   3##########   Thu Jul 22 10:50:01 2010
 
     3 *** Differential density matrix. DCOVLP     = 1.0123
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
@@ -798,11 +798,11 @@ SOfock:LL  1.00D-12    0.80%    3.39%    3.03%   26.56%   0.00000000s
 >>> Total wall time: 0.00000000s
 >>> Total CPU-time : 0.00000000s
 
-########## END ITERATION NO.   3 ##########   Thu Jul 22 10:37:25 2010
+########## END ITERATION NO.   3 ##########   Thu Jul 22 10:50:01 2010
 
 It.   3    -128.6699298120      2.12D-01 -9.68D-01  4.73D-01   DIIS   2    0.00000000s   LL             Thu Jul 22
 
-########## START ITERATION NO.   4##########   Thu Jul 22 10:37:25 2010
+########## START ITERATION NO.   4##########   Thu Jul 22 10:50:01 2010
 
     4 *** Differential density matrix. DCOVLP     = 0.9938
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
@@ -810,11 +810,11 @@ SOfock:LL  1.00D-12    0.80%    3.44%    3.03%   26.51%   0.00000000s
 >>> Total wall time: 0.00000000s
 >>> Total CPU-time : 0.00000000s
 
-########## END ITERATION NO.   4 ##########   Thu Jul 22 10:37:25 2010
+########## END ITERATION NO.   4 ##########   Thu Jul 22 10:50:01 2010
 
 It.   4    -128.6868340249      1.69D-02  3.59D-01  1.63D-01   DIIS   3    0.00000000s   LL             Thu Jul 22
 
-########## START ITERATION NO.   5##########   Thu Jul 22 10:37:25 2010
+########## START ITERATION NO.   5##########   Thu Jul 22 10:50:01 2010
 
     5 *** Differential density matrix. DCOVLP     = 1.0006
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
@@ -822,11 +822,11 @@ SOfock:LL  1.00D-12    2.85%    1.07%    3.00%   27.73%   0.00000000s
 >>> Total wall time: 0.00000000s
 >>> Total CPU-time : 0.00000000s
 
-########## END ITERATION NO.   5 ##########   Thu Jul 22 10:37:25 2010
+########## END ITERATION NO.   5 ##########   Thu Jul 22 10:50:01 2010
 
 It.   5    -128.6889255550      2.09D-03 -8.95D-02  3.47D-03   DIIS   4    0.00000000s   LL             Thu Jul 22
 
-########## START ITERATION NO.   6##########   Thu Jul 22 10:37:25 2010
+########## START ITERATION NO.   6##########   Thu Jul 22 10:50:01 2010
 
     6 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
@@ -834,11 +834,11 @@ SOfock:LL  1.00D-12    0.80%    4.32%    2.91%   27.16%   0.00000000s
 >>> Total wall time: 0.00000000s
 >>> Total CPU-time : 0.00000000s
 
-########## END ITERATION NO.   6 ##########   Thu Jul 22 10:37:25 2010
+########## END ITERATION NO.   6 ##########   Thu Jul 22 10:50:01 2010
 
 It.   6    -128.6889263428      7.88D-07  1.51D-03  2.88D-04   DIIS   5    0.00000000s   LL             Thu Jul 22
 
-########## START ITERATION NO.   7##########   Thu Jul 22 10:37:25 2010
+########## START ITERATION NO.   7##########   Thu Jul 22 10:50:01 2010
 
     7 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
@@ -846,11 +846,11 @@ SOfock:LL  1.00D-12    0.80%    6.08%    2.79%   26.83%   0.00000000s
 >>> Total wall time: 0.00000000s
 >>> Total CPU-time : 0.00000000s
 
-########## END ITERATION NO.   7 ##########   Thu Jul 22 10:37:25 2010
+########## END ITERATION NO.   7 ##########   Thu Jul 22 10:50:01 2010
 
 It.   7    -128.6889263503      7.53D-09  1.29D-04  1.55D-05   DIIS   6    0.00000000s   LL             Thu Jul 22
 
-########## START ITERATION NO.   8##########   Thu Jul 22 10:37:25 2010
+########## START ITERATION NO.   8##########   Thu Jul 22 10:50:01 2010
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
@@ -858,11 +858,11 @@ SOfock:LL  1.00D-12    0.80%    8.82%    2.50%   25.17%   0.00000000s
 >>> Total wall time: 0.00000000s
 >>> Total CPU-time : 0.00000000s
 
-########## END ITERATION NO.   8 ##########   Thu Jul 22 10:37:25 2010
+########## END ITERATION NO.   8 ##########   Thu Jul 22 10:50:01 2010
 
 It.   8    -128.6889263504      4.05D-11 -2.45D-06  9.65D-07   DIIS   7    0.00000000s   LL             Thu Jul 22
 
-########## START ITERATION NO.   9##########   Thu Jul 22 10:37:25 2010
+########## START ITERATION NO.   9##########   Thu Jul 22 10:50:01 2010
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
@@ -870,11 +870,11 @@ SOfock:LL  1.00D-12    0.80%   15.86%    1.88%   24.50%   0.00000000s
 >>> Total wall time: 0.00000000s
 >>> Total CPU-time : 0.00000000s
 
-########## END ITERATION NO.   9 ##########   Thu Jul 22 10:37:25 2010
+########## END ITERATION NO.   9 ##########   Thu Jul 22 10:50:01 2010
 
 It.   9    -128.6889263504      2.56D-13  1.37D-07  2.04D-07   DIIS   8    0.00000000s   LL             Thu Jul 22
 
-########## START ITERATION NO.  10##########   Thu Jul 22 10:37:25 2010
+########## START ITERATION NO.  10##########   Thu Jul 22 10:50:01 2010
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
@@ -882,7 +882,7 @@ SOfock:LL  1.00D-12    0.80%   19.53%    1.61%   23.98%   0.00000000s
 >>> Total wall time: 0.00000000s
 >>> Total CPU-time : 0.00000000s
 
-########## END ITERATION NO.  10 ##########   Thu Jul 22 10:37:25 2010
+########## END ITERATION NO.  10 ##########   Thu Jul 22 10:50:01 2010
 
 It.  10    -128.6889263504     -5.68D-14  2.96D-08  1.69D-09   DIIS   8    0.00000000s   LL             Thu Jul 22
 
@@ -1041,7 +1041,7 @@ tot.num. of pos.erg shells:    8    4
     - Secondary orbitals :    -12..-1,     4..    12                               
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -128.688926350384662
-* Heading :DIRAC: No title specified !!!                     Thu Jul 22 10:37:25 2010
+* Heading :DIRAC: No title specified !!!                     Thu Jul 22 10:50:01 2010
 
 
 
@@ -1051,20 +1051,20 @@ operator         - Symmetry: B1g  T-
 
 * GETFCK: reading old two-electron Fock matrix
 
-* REAFCK: Fock matrix read from file /scratch/bast/ne_auto.5446/DFFCK2                           
-* Heading :DIRAC: No title specified !!!                     Thu Jul 22 10:37:25 2010
+* REAFCK: Fock matrix read from file /scratch/bast/ne_auto.8114/DFFCK2                           
+* Heading :DIRAC: No title specified !!!                     Thu Jul 22 10:50:01 2010
 
 * GETFCK: reading old one-electron Fock matrix
 
-* REAFCK: Fock matrix read from file /scratch/bast/ne_auto.5446/DFFCK1                           
-* Heading :DIRAC: No title specified !!!                     Thu Jul 22 10:37:25 2010
+* REAFCK: Fock matrix read from file /scratch/bast/ne_auto.8114/DFFCK1                           
+* Heading :DIRAC: No title specified !!!                     Thu Jul 22 10:50:01 2010
 
 * XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  2.41D-08
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 4.16D+02
 * Screening threshold in LR solver scaled with norm of property vector:  1.8723D+02
   and changed to:  4.5053D-06
 
-########## START MICROITERATION NO.   1 ##########   Thu Jul 22 10:37:25 2010
+########## START MICROITERATION NO.   1 ##########   Thu Jul 22 10:50:01 2010
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  4.51D-06   21.65%   10.58%    0.00%    0.00%   0.00000000s
@@ -1074,7 +1074,7 @@ SOfock:LL  4.51D-06   21.65%   10.58%    0.00%    0.00%   0.00000000s
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-05  4.86E-03  4.86E-03  1.29E-05
 
-########## START MICROITERATION NO.   2 ##########   Thu Jul 22 10:37:25 2010
+########## START MICROITERATION NO.   2 ##########   Thu Jul 22 10:50:01 2010
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  4.51D-06   21.65%   30.65%    0.00%    0.00%   0.00000000s
@@ -1240,11 +1240,11 @@ SOfock:LL  4.51D-06   21.65%   30.65%    0.00%    0.00%   0.00000000s
 ----------------------------------------------------------------------------
 
  
-     Date and time (Linux)  : Thu Jul 22 10:37:25 2010
+     Date and time (Linux)  : Thu Jul 22 10:50:01 2010
      Host name              :                                         
 *****************************************************
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 
->>>> Node 0, utime: 0, stime: 0, minflt: 127937, majflt: 0, nvcsw: 3, nivcsw: 151, maxrss: 510904
+>>>> Node 0, utime: 0, stime: 0, minflt: 127939, majflt: 0, nvcsw: 1, nivcsw: 202, maxrss: 510908
 >>>> Total WALL time used in DIRAC: 1s

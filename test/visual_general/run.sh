@@ -1,7 +1,6 @@
 #!/bin/sh
 
-#for molecule in ne*mol; do
-for molecule in ne_auto.mol; do
+for molecule in ne*mol; do
     export MOL=${molecule%\.mol}
 
     export MENU=response_ez_ez.inp
@@ -31,5 +30,8 @@ export MENU=response_1z_2z.inp
 ../run.sh -outcmo -get  PAMXVC
 export MENU=visual_1z_2z.inp
 ../run.sh -incmo  -copy PAMXVC
+
+# clean up
+rm -f DFCOEF* PAMXVC*
 
 exit 0
