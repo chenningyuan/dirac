@@ -50,10 +50,6 @@ srdft/.*
 xcfun/fortran/example.F90
 xcfun/.*[^0]$
 xcfun/.*
-openrsp/aoresponse_visual.F90
-openrsp/aor_property_definitions_zzz.F90
-openrsp/aor_binomial.F90
-openrsp/grid.F90
 openrsp/.*
+openrsp/aoresponse_visual.F90
 dft/vrg.F
-prp/rntlon_only_to_delete.F

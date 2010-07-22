@@ -18,45 +18,6 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://dirac.chem.sdu.dk
 !dirac_copyright_end
-
-      SUBROUTINE SET_LBIT(LBIT_INTEGER,IDIGIT)
-#include "implicit.h"
-      LOGICAL LBIT
-
-      IF(.NOT. LBIT(LBIT_INTEGER,IDIGIT)) THEN
-        LBIT_INTEGER = LBIT_INTEGER + 2**(IDIGIT - 1)
-      ENDIF
-
-      RETURN
-      END
-
-
-      LOGICAL FUNCTION LDEC(I,N,M)
-!     say integer I = 4242
-!     then LDEC(I,3,4) is .TRUE.
-!     since the 3rd digit is indeed a 4
-#include "implicit.h"
-#include "priunit.h"
-      CHARACTER*10 WORD
-
-      LDEC = .FALSE.
-
-      WRITE(WORD,'(I10)') I
-
-      JDIGIT = 0
-      DO IDIGIT = 1,10
-        IF(.NOT. WORD(IDIGIT:IDIGIT) .EQ. ' ') GOTO 1
-        JDIGIT = JDIGIT + 1
-      ENDDO
-
- 1    CONTINUE
-      READ(WORD(JDIGIT+N:JDIGIT+N),'(I1)') J
-
-      IF(M .EQ. J) LDEC = .TRUE.
-
-      END
-
-
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* CUBIC_SPLINE_SETUP */
       SUBROUTINE CUBIC_SPLINE_SETUP(N,XA,YA,D2YA)
