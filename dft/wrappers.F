@@ -19,126 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.sdu.dk
 !dirac_copyright_end
 
-      SUBROUTINE GET_GR(LGET,
-     &                  VECTOR,
-     &                  IREPOP,
-     &                  GAO,
-     &                  GAO1,
-     &                  DMAT,
-     &                  BUF)
-C=======================================================================
-C                                                           radovan bast
-C                                               last revision: july 2007
-C=======================================================================
-
-#include "implicit.h"
-#include "priunit.h"
-
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-
-#include "dummy.h"
-
-      LOGICAL   LGET
-      DIMENSION VECTOR(*),
-     &          GAO(*),
-     &          GAO1(*),
-     &          DMAT(*),
-     &          BUF(*)
-
-      IOPTION = 2211
-      IF(LGET) IOPTION = 1211
-
-      CALL GET_DENSITY(IOPTION,
-     &                 DUMMY,
-     &                 VECTOR,
-     &                 IREPOP,
-     &                 GAO,
-     &                 GAO1,
-     &                 DMAT,
-     &                 BUF)
-
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* GET_M */
-      SUBROUTINE GET_M(LGET,
-     &                 VECTOR,
-     &                 IREPOP,
-     &                 GAO,
-     &                 DMAT,
-     &                 BUF)
-C=======================================================================
-C                                                           radovan bast
-C                                               last revision: july 2007
-C=======================================================================
-
-#include "implicit.h"
-#include "priunit.h"
-
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-
-#include "dummy.h"
-
-      LOGICAL   LGET
-      DIMENSION VECTOR(*),
-     &          GAO(*),
-     &          DMAT(*),
-     &          BUF(*)
-
-      IOPTION = 2113
-      IF(LGET) IOPTION = 1113
-
-      CALL GET_DENSITY(IOPTION,
-     &                 DUMMY,
-     &                 VECTOR,
-     &                 IREPOP,
-     &                 GAO,
-     &                 DUMMY,
-     &                 DMAT,
-     &                 BUF)
-
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* GET_J */
-      SUBROUTINE GET_J(LGET,
-     &                 VECTOR,
-     &                 IREPOP,
-     &                 GAO,
-     &                 DMAT,
-     &                 BUF)
-C=======================================================================
-C                                                           radovan bast
-C                                               last revision: july 2007
-C=======================================================================
-
-#include "implicit.h"
-#include "priunit.h"
-
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-
-#include "dummy.h"
-
-      LOGICAL   LGET
-      DIMENSION VECTOR(*),
-     &          GAO(*),
-     &          DMAT(*),
-     &          BUF(*)
-
-      IOPTION = 2112
-      IF(LGET) IOPTION = 1112
-
-      CALL GET_DENSITY(IOPTION,
-     &                 DUMMY,
-     &                 VECTOR,
-     &                 IREPOP,
-     &                 GAO,
-     &                 DUMMY,
-     &                 DMAT,
-     &                 BUF)
-
-      RETURN
-      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* GET_ROTM */
       SUBROUTINE GET_ROTM(LGET,
@@ -390,45 +270,6 @@ C=======================================================================
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* GET_R */
-      SUBROUTINE GET_R(LGET,
-     &                 SCALAR,
-     &                 IREPOP,
-     &                 GAO,
-     &                 DMAT,
-     &                 BUF)
-C=======================================================================
-C                                                           radovan bast
-C                                               last revision: july 2007
-C=======================================================================
-
-#include "implicit.h"
-#include "priunit.h"
-
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-
-#include "dummy.h"
-
-      LOGICAL   LGET
-      DIMENSION GAO(*),
-     &          DMAT(*),
-     &          BUF(*)
-
-      IOPTION = 2111
-      IF(LGET) IOPTION = 1111
-
-      CALL GET_DENSITY(IOPTION,
-     &                 DUMMY,
-     &                 SCALAR,
-     &                 IREPOP,
-     &                 GAO,
-     &                 DUMMY,
-     &                 DMAT,
-     &                 BUF)
-
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* GET_ROTJPARA */
       SUBROUTINE GET_ROTJPARA(LGET,
      &                        VECTOR,
@@ -562,72 +403,72 @@ C=======================================================================
 
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* GET_M_DERVS_NH */
-      SUBROUTINE GET_M_DERVS_NH(LGET,
-     &                          VECTOR_DERVS,
-     &                          IREPOP,
-     &                          GAO,
-     &                          GAO1,
-     &                          DMAT,
-     &                          BUF)
-C=======================================================================
-C                                                           radovan bast
-C                                               last revision: july 2007
-C=======================================================================
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!     /* GET_M_DERVS_NH */
+!     SUBROUTINE GET_M_DERVS_NH(LGET,
+!    &                          VECTOR_DERVS,
+!    &                          IREPOP,
+!    &                          GAO,
+!    &                          GAO1,
+!    &                          DMAT,
+!    &                          BUF)
+!=======================================================================
+!                                                           radovan bast
+!                                               last revision: july 2007
+!=======================================================================
 
-#include "implicit.h"
-#include "priunit.h"
+!include "implicit.h"
+!include "priunit.h"
 
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
+!     PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 
-      LOGICAL   LGET
-      DIMENSION VECTOR_DERVS(*),
-     &          GAO(*),
-     &          GAO1(*),
-     &          DMAT(*),
-     &          BUF(*)
+!     LOGICAL   LGET
+!     DIMENSION VECTOR_DERVS(*),
+!    &          GAO(*),
+!    &          GAO1(*),
+!    &          DMAT(*),
+!    &          BUF(*)
 
-#include "dcbbas.h"
+!include "dcbbas.h"
 
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      joff = NBAST
-#else
-      joff = NTBAS(0)
-#endif
+!if defined (VAR_G77) || defined (SYS_SX)
+!     EQUIVALENCE (NBAST,NTBAS(0))
+!     joff = NBAST
+!else
+!     joff = NTBAS(0)
+!endif
 
-      K = 1
-      L = 1
-      M = 2
-      N = 2
-      A = D1
-      B = D1
-      ITRANSFORM = 2
+!     K = 1
+!     L = 1
+!     M = 2
+!     N = 2
+!     A = D1
+!     B = D1
+!     ITRANSFORM = 2
 
-      DO ixyz = 1,3
-        DO jxyz = 1,3
+!     DO ixyz = 1,3
+!       DO jxyz = 1,3
 
-          CALL GET_DENSITY_SUB(LGET,.TRUE.,
-     &                         VECTOR_DERVS(jxyz+3*(ixyz-1)),
-     &                         A,B,K,L,M,N,
-     &                         ixyz,ITRANSFORM,IREPOP,
-     &                         GAO,
-     &                         GAO1(1+joff*(jxyz-1)),
-     &                         DMAT,BUF)
-          CALL GET_DENSITY_SUB(LGET,.FALSE.,
-     &                         VECTOR_DERVS(jxyz+3*(ixyz-1)),
-     &                         A,B,K,L,M,N,
-     &                         ixyz,ITRANSFORM,IREPOP,
-     &                         GAO1(1+joff*(jxyz-1)),
-     &                         GAO,
-     &                         DMAT,BUF)
+!         CALL GET_DENSITY_SUB(LGET,.TRUE.,
+!    &                         VECTOR_DERVS(jxyz+3*(ixyz-1)),
+!    &                         A,B,K,L,M,N,
+!    &                         ixyz,ITRANSFORM,IREPOP,
+!    &                         GAO,
+!    &                         GAO1(1+joff*(jxyz-1)),
+!    &                         DMAT,BUF)
+!         CALL GET_DENSITY_SUB(LGET,.FALSE.,
+!    &                         VECTOR_DERVS(jxyz+3*(ixyz-1)),
+!    &                         A,B,K,L,M,N,
+!    &                         ixyz,ITRANSFORM,IREPOP,
+!    &                         GAO1(1+joff*(jxyz-1)),
+!    &                         GAO,
+!    &                         DMAT,BUF)
 
-        ENDDO
-      ENDDO
+!       ENDDO
+!     ENDDO
 
-      RETURN
-      END
+!     RETURN
+!     END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* GET_JPARA */
       SUBROUTINE GET_JPARA(LGET,

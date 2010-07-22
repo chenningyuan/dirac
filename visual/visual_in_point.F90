@@ -172,12 +172,27 @@ contains
         end if
 
 
+!       spin density: \psi^\dag \Sigma \psi
+!       ===================================
+
+        if (visual_cfg_iq_xvector(ixvector) == iq_m) then
+           call get_s(vector_a,                          &
+                      visual_cfg_irep_xvector(ixvector), &
+                      D(imat)%nrow,                      &
+                      D(imat)%elms,                      &
+                      buffer,                            &
+                      ao)
+
+           quantity(1) = quantity(1) + vector_a(1)
+           quantity(2) = quantity(2) + vector_a(2)
+           quantity(3) = quantity(3) + vector_a(3)
+        end if
 
 
+!       nr diamagnetic current density (hardcoded for B along z)
+!       ========================================================
 
-! j_dia (hardcoded for B along z)
-        IQ = IQ_JDIA
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
+        if (visual_cfg_iq_xvector(ixvector) == iq_jdia) then
            call get_n(density,                           &
                       visual_cfg_irep_xvector(ixvector), &
                       D(imat)%nrow,                      &
@@ -185,41 +200,38 @@ contains
                       buffer,                            &
                       ao)
 
-          RX = PX - visual_cfg_GAUGE_ORIGIN(1)
-          RY = PY - visual_cfg_GAUGE_ORIGIN(2)
-          RZ = PZ - visual_cfg_GAUGE_ORIGIN(3)
-          VECTOR_A(1) = -0.5d0*RY*DENSITY
-          VECTOR_A(2) =  0.5d0*RX*DENSITY
-          VECTOR_A(3) =  0.0d0
+           rx = px - visual_cfg_gauge_origin(1)
+           ry = py - visual_cfg_gauge_origin(2)
+           rz = pz - visual_cfg_gauge_origin(3)
+          
+           vector_a(1) = -0.5d0*ry*density
+           vector_a(2) =  0.5d0*rx*density
+           vector_a(3) =  0.0d0
 
-          CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
-        ENDIF
+           quantity(1) = quantity(1) + vector_a(1)
+           quantity(2) = quantity(2) + vector_a(2)
+           quantity(3) = quantity(3) + vector_a(3)
+        end if
 
-! Spin density: \psi^\dag \Sigma \psi
-        IQ = IQ_M
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_M(.TRUE., &
-     &               VECTOR_A, &
-     &               visual_cfg_irep_xvector(IXVECTOR), &
-     &               AO, &
-     &               D(imat)%elms, &
-     &               buffer)
 
-          CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
-        ENDIF
+!       current density: -ec \psi^\dag \alpha \psi
+!       ==========================================
 
-! Current density: -ec               \psi^\dag \alpha \psi = j
-        IQ = IQ_J
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_J(.TRUE., &
-     &               VECTOR_A, &
-     &               visual_cfg_irep_xvector(IXVECTOR), &
-     &               AO, &
-     &               D(imat)%elms, &
-     &               buffer)
+        if (visual_cfg_iq_xvector(ixvector) == iq_j) then
+           call get_j(vector_a,                          &
+                      visual_cfg_irep_xvector(ixvector), &
+                      D(imat)%nrow,                      &
+                      D(imat)%elms,                      &
+                      buffer,                            &
+                      ao)
 
-          CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
-        ENDIF
+           quantity(1) = quantity(1) + vector_a(1)
+           quantity(2) = quantity(2) + vector_a(2)
+           quantity(3) = quantity(3) + vector_a(3)
+        end if
+
+
+
 
 ! Non-relativistic paramagnetic current density (orbital part):  j_para
         IQ = IQ_JPARA
@@ -333,39 +345,6 @@ contains
           CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
         ENDIF
 
-! IQ_NUCDIPX     = 16       -1/(r_K^3) (r_K \times j)_x
-! IQ_NUCDIPY     = 17       -1/(r_K^3) (r_K \times j)_y
-! IQ_NUCDIPZ     = 18       -1/(r_K^3) (r_K \times j)_z
-
-        IF((visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_NUCDIPX) .OR. &
-     &     (visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_NUCDIPY) .OR. &
-     &     (visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_NUCDIPZ)) THEN
-
-          CALL GET_J(.TRUE., &
-     &               VECTOR_A, &
-     &               visual_cfg_irep_xvector(IXVECTOR), &
-     &               AO, &
-     &               D(imat)%elms, &
-     &               buffer)
-
-          RX = PX - CORD(1,visual_cfg_IOPTION_XVECTOR(IXVECTOR))
-          RY = PY - CORD(2,visual_cfg_IOPTION_XVECTOR(IXVECTOR))
-          RZ = PZ - CORD(3,visual_cfg_IOPTION_XVECTOR(IXVECTOR))
-
-          VECTOR_B(1) = RY*VECTOR_A(3) - RZ*VECTOR_A(2)
-          VECTOR_B(2) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
-          VECTOR_B(3) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
-
-          RSQ = RX*RX + RY*RY + RZ*RZ
-          FACTOR = -1.0d0/(RSQ**1.5d0)
-
-          IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_NUCDIPX) &
-     &      CALL DAXPY(1,FACTOR,VECTOR_B(1),1,QUANTITY(0),1)
-          IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_NUCDIPY) &
-     &      CALL DAXPY(1,FACTOR,VECTOR_B(2),1,QUANTITY(0),1)
-          IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_NUCDIPZ) &
-     &      CALL DAXPY(1,FACTOR,VECTOR_B(3),1,QUANTITY(0),1)
-        ENDIF
 
 ! IQ_EDIPX       = 19                   r_x n
 ! IQ_EDIPY       = 20                   r_y n
@@ -394,44 +373,95 @@ contains
 ! IQ_MDIPY       = 23             -1/2 (r_gauge \times j)_y
 ! IQ_MDIPZ       = 24             -1/2 (r_gauge \times j)_z
 
-        IF((visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_MDIPX) .OR. &
-     &     (visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_MDIPY) .OR. &
-     &     (visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_MDIPZ)) THEN
 
-          CALL GET_J(.TRUE., &
-     &               VECTOR_A, &
-     &               visual_cfg_irep_xvector(IXVECTOR), &
-     &               AO, &
-     &               D(imat)%elms, &
-     &               buffer)
 
-          RX = PX - visual_cfg_GAUGE_ORIGIN(1)
-          RY = PY - visual_cfg_GAUGE_ORIGIN(2)
-          RZ = PZ - visual_cfg_GAUGE_ORIGIN(3)
 
-          VECTOR_B(1) = RY*VECTOR_A(3) - RZ*VECTOR_A(2)
-          VECTOR_B(2) = RZ*VECTOR_A(1) - RX*VECTOR_A(3)
-          VECTOR_B(3) = RX*VECTOR_A(2) - RY*VECTOR_A(1)
 
-          FACTOR = -0.5d0
 
-          IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_MDIPX) &
-     &      CALL DAXPY(1,FACTOR,VECTOR_B(1),1,QUANTITY(0),1)
-          IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_MDIPY) &
-     &      CALL DAXPY(1,FACTOR,VECTOR_B(2),1,QUANTITY(0),1)
-          IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_MDIPZ) &
-     &      CALL DAXPY(1,FACTOR,VECTOR_B(3),1,QUANTITY(0),1)
-        ENDIF
+!       responding operator is nuclear magnetic dipole
+!       ==============================================
 
-        factor = visual_cfg_common_factor
-        if (visual_cfg_radial) then
-          factor = factor*(distance_to_origin**2.0d0)
+        if ((visual_cfg_iq_xvector(ixvector) == iq_nucdipx) .or. &
+            (visual_cfg_iq_xvector(ixvector) == iq_nucdipy) .or. &
+            (visual_cfg_iq_xvector(ixvector) == iq_nucdipz)) then
+
+           call get_j(vector_a,                          &
+                      visual_cfg_irep_xvector(ixvector), &
+                      D(imat)%nrow,                      &
+                      D(imat)%elms,                      &
+                      buffer,                            &
+                      ao)
+
+           rx = px - cord(1, visual_cfg_ioption_xvector(ixvector))
+           ry = py - cord(2, visual_cfg_ioption_xvector(ixvector))
+           rz = pz - cord(3, visual_cfg_ioption_xvector(ixvector))
+           
+           vector_b(1) = ry*vector_a(3) - rz*vector_a(2)
+           vector_b(2) = rz*vector_a(1) - rx*vector_a(3)
+           vector_b(3) = rx*vector_a(2) - ry*vector_a(1)
+           
+           rsq = rx*rx + ry*ry + rz*rz
+           f = -1.0d0/(rsq**1.5d0)
+           
+           if (visual_cfg_iq_xvector(ixvector) == iq_nucdipx) then
+              quantity(0) = quantity(0) + f*vector_b(1)
+           end if
+           if (visual_cfg_iq_xvector(ixvector) == iq_nucdipy) then
+              quantity(0) = quantity(0) + f*vector_b(2)
+           end if
+           if (visual_cfg_iq_xvector(ixvector) == iq_nucdipz) then
+              quantity(0) = quantity(0) + f*vector_b(3)
+           end if
         end if
-        call daxpy(4, factor, quantity(0), 1, quantity_addmeup(0), 1)
+
+
+!       responding operator is magnetic dipole
+!       ======================================
+
+        if ((visual_cfg_iq_xvector(ixvector) == iq_mdipx) .or. &
+            (visual_cfg_iq_xvector(ixvector) == iq_mdipy) .or. &
+            (visual_cfg_iq_xvector(ixvector) == iq_mdipz)) then
+
+           call get_j(vector_a,                          &
+                      visual_cfg_irep_xvector(ixvector), &
+                      D(imat)%nrow,                      &
+                      D(imat)%elms,                      &
+                      buffer,                            &
+                      ao)
+
+           rx = px - visual_cfg_gauge_origin(1)
+           ry = py - visual_cfg_gauge_origin(2)
+           rz = pz - visual_cfg_gauge_origin(3)
+           
+           vector_b(1) = ry*vector_a(3) - rz*vector_a(2)
+           vector_b(2) = rz*vector_a(1) - rx*vector_a(3)
+           vector_b(3) = rx*vector_a(2) - ry*vector_a(1)
+           
+           f = -0.5d0
+           
+           if (visual_cfg_iq_xvector(ixvector) == iq_mdipx) then
+              quantity(0) = quantity(0) + f*vector_b(1)
+           end if
+           if (visual_cfg_iq_xvector(ixvector) == iq_mdipy) then
+              quantity(0) = quantity(0) + f*vector_b(2)
+           end if
+           if (visual_cfg_iq_xvector(ixvector) == iq_mdipz) then
+              quantity(0) = quantity(0) + f*vector_b(3)
+           end if
+        end if
+
+
+        f = visual_cfg_common_factor
+        if (visual_cfg_radial) then
+           f = f*(distance_to_origin**2.0d0)
+        end if
+        quantity_addmeup(0) = quantity_addmeup(0) + f*quantity(0)
+        quantity_addmeup(1) = quantity_addmeup(1) + f*quantity(1)
+        quantity_addmeup(2) = quantity_addmeup(2) + f*quantity(2)
+        quantity_addmeup(3) = quantity_addmeup(3) + f*quantity(3)
 
       ENDDO
 
-      RETURN
       END subroutine
 
 

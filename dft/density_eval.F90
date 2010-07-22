@@ -29,6 +29,7 @@ module density_eval
    public get_n
    public get_gamma5
    public get_s
+   public get_j
    public get_t
    public get_tau
    public get_gn
@@ -51,8 +52,8 @@ module density_eval
 
   save
 
-!fixme: hardcoded
-  real(8), parameter :: speed_of_light = 137.0359998d0
+! cval, will not work in parallel!
+#include "dcbgen.h"
 
 contains
 
@@ -131,12 +132,11 @@ contains
       real(8), intent(in)  :: buffer(*)
       real(8), intent(in)  :: ao(*)
 !     --------------------------------------------------------------------------
-      integer              :: nr1, nr2, st1, st2, iblock, jxyz
+      integer              :: nr1, nr2, st1, st2, iblock
       real(8), external    :: ddot
 !     --------------------------------------------------------------------------
    
       n = 0.0d0
-    
       do iblock = 1, llss_nr_density_blocks(0, irep)
          nr1 = llss_nr_ao(1, iblock, 0, irep)
          st1 = llss_st_ao(1, iblock, 0, irep)
@@ -175,12 +175,11 @@ contains
       real(8), intent(in)  :: buffer(*)
       real(8), intent(in)  :: ao(*)
 !     --------------------------------------------------------------------------
-      integer              :: nr1, nr2, st1, st2, iblock, jxyz
+      integer              :: nr1, nr2, st1, st2, iblock
       real(8), external    :: ddot
 !     --------------------------------------------------------------------------
    
       n = 0.0d0
-    
       do iblock = 1, lssl_nr_density_blocks(0, irep)
          nr1 = lssl_nr_ao(1, iblock, 0, irep)
          st1 = lssl_st_ao(1, iblock, 0, irep)
@@ -204,49 +203,98 @@ contains
    
    end subroutine
 
-  subroutine get_s(s, irep, mat_dim, dmat, buffer, ao)
+   subroutine get_s(s,       &
+                    irep,    &
+                    mat_dim, &
+                    dmat,    &
+                    buffer,  &
+                    ao)
+   
+!     --------------------------------------------------------------------------
+      real(8), intent(out) :: s(3)
+      integer, intent(in)  :: irep
+      integer, intent(in)  :: mat_dim
+      real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
+      real(8), intent(in)  :: buffer(*)
+      real(8), intent(in)  :: ao(*)
+!     --------------------------------------------------------------------------
+      integer              :: nr1, nr2, st1, st2, iblock, jxyz
+      real(8), external    :: ddot
+!     --------------------------------------------------------------------------
+   
+      s = 0.0d0
+      do jxyz = jxyz_start, 3
+         do iblock = 1, llss_nr_density_blocks(jxyz, irep)
+            nr1 = llss_nr_ao(1, iblock, jxyz, irep)
+            st1 = llss_st_ao(1, iblock, jxyz, irep)
+            nr2 = llss_nr_ao(2, iblock, jxyz, irep)
+            st2 = llss_st_ao(2, iblock, jxyz, irep)
+     
+            call dgemv('N',                      &
+                       nr1,                      &
+                       nr2,                      &
+                       1.0d0,                    &
+                       dmat(st1, st2, iq(jxyz)), &
+                       mat_dim,                  &
+                       ao(st2),                  &
+                       1,                        &
+                       0.0d0,                    &
+                       buffer,                   &
+                       1)
+     
+            s(jxyz) = s(jxyz) &
+                    + llss_prefactor(iblock, jxyz, irep)*ddot(nr1, ao(st1), 1, buffer, 1)
+         end do
+      end do
+   
+   end subroutine
 
-!   ----------------------------------------------------------------------------
-    real(8), intent(out) :: s(3)
-    integer, intent(in)  :: irep
-    integer, intent(in)  :: mat_dim
-    real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
-    real(8), intent(in)  :: buffer(*)
-    real(8), intent(in)  :: ao(*)
-!   ----------------------------------------------------------------------------
-    integer              :: nr1, nr2, st1, st2, iblock, jxyz
-    real(8), external    :: ddot
-!   ----------------------------------------------------------------------------
+   subroutine get_j(j,       &
+                    irep,    &
+                    mat_dim, &
+                    dmat,    &
+                    buffer,  &
+                    ao)
+   
+!     --------------------------------------------------------------------------
+      real(8), intent(out) :: j(3)
+      integer, intent(in)  :: irep
+      integer, intent(in)  :: mat_dim
+      real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
+      real(8), intent(in)  :: buffer(*)
+      real(8), intent(in)  :: ao(*)
+!     --------------------------------------------------------------------------
+      integer              :: nr1, nr2, st1, st2, iblock, jxyz
+      real(8), external    :: ddot
+!     --------------------------------------------------------------------------
+   
+      j = 0.0d0
+      do jxyz = jxyz_start, 3
+         do iblock = 1, lssl_nr_density_blocks(jxyz, irep)
+            nr1 = lssl_nr_ao(1, iblock, jxyz, irep)
+            st1 = lssl_st_ao(1, iblock, jxyz, irep)
+            nr2 = lssl_nr_ao(2, iblock, jxyz, irep)
+            st2 = lssl_st_ao(2, iblock, jxyz, irep)
+     
+            call dgemv('N',                      &
+                       nr1,                      &
+                       nr2,                      &
+                       1.0d0,                    &
+                       dmat(st1, st2, iq(jxyz)), &
+                       mat_dim,                  &
+                       ao(st2),                  &
+                       1,                        &
+                       0.0d0,                    &
+                       buffer,                   &
+                       1)
+     
+            j(jxyz) = j(jxyz) + ddot(nr1, ao(st1), 1, buffer, 1)
+         end do
+      end do
+      j = -cval*j
+   
+   end subroutine
 
-    s = 0.0d0
-
-    do jxyz = jxyz_start, 3
-
-       do iblock = 1, llss_nr_density_blocks(jxyz, irep)
-          nr1 = llss_nr_ao(1, iblock, jxyz, irep)
-          st1 = llss_st_ao(1, iblock, jxyz, irep)
-          nr2 = llss_nr_ao(2, iblock, jxyz, irep)
-          st2 = llss_st_ao(2, iblock, jxyz, irep)
-
-          call dgemv('N',                         &
-                     nr1,                         &
-                     nr2,                         &
-                     1.0d0,                       &
-                     dmat(st1, st2, iq(jxyz)), &
-                     mat_dim,                     &
-                     ao(st2),                     &
-                     1,                           &
-                     0.0d0,                       &
-                     buffer,                      &
-                     1)
-
-          s(jxyz) = s(jxyz) &
-                  + llss_prefactor(iblock, jxyz, irep)*ddot(nr1, ao(st1), 1, buffer, 1)
-       end do
-
-    end do
-
-  end subroutine
 
   subroutine get_gn(n,       &
                     gn,      &
@@ -420,7 +468,7 @@ contains
       end do
     end do
 
-    t = t*speed_of_light
+    t = t*cval
 
   end subroutine
 

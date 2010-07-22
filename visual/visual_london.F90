@@ -24,6 +24,7 @@ module visual_london
   use memory_allocator
   use visual_cfg
   use ao_eval
+  use density_eval
   use basis_info
   use matrix_defop
   use dirac_interface
@@ -627,13 +628,13 @@ contains
     end if
 
 !gosia: fixme: visual_cfg_irep_xvector jest zle!!
-    call get_j(.true.,                          &
-               jblao,                           &
-               visual_cfg_irep_xvector(ixvector), &
-               !0,                               &
-               ao(ao_start(0, 0):ao_end(0, 0)), &
-               D_help%elms,                     &
-               buffer)
+           call get_j(jblao,                             &
+                      visual_cfg_irep_xvector(ixvector), &
+                      D_help%nrow,                       &
+                      D_help%elms,                       &
+                      buffer,                            &
+                      ao)
+
 
 
     if (visual_cfg_london_with_sym) then
