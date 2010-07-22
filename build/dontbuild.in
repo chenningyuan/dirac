@@ -55,4 +55,5 @@ openrsp/aor_property_definitions_zzz.F90
 openrsp/aor_binomial.F90
 openrsp/grid.F90
 openrsp/.*
+dft/vrg.F
 prp/rntlon_only_to_delete.F
