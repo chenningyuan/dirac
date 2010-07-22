@@ -160,6 +160,11 @@ module xc_driver
    real(8), pointer             :: property_gradient(:)
    real(8), allocatable, target :: property_gradient_container(:)
 
+#ifdef MOD_UNRELEASED
+   real(8), allocatable :: fde_froz_n(:)
+   real(8), allocatable :: fde_froz_ng(:,:)
+#endif
+
    logical                      :: do_potential
    integer                      :: response_order_mo
    integer                      :: response_order_ao
@@ -778,6 +783,10 @@ contains
       real(8) :: r_t1(mxbllen)
       real(8) :: r_t2(mxbllen)
 !     --------------------------------------------------------------------------
+!     fde and fde response
+      logical :: fde_resp_verbose =.false.
+      real(8) :: z0tt(3)
+!     --------------------------------------------------------------------------
       integer :: id, m
       real(8) :: temp
       real(8) :: block_threshold
@@ -952,35 +961,45 @@ contains
 
         w(1) = rw(ipoint)
 
-
+#ifdef MOD_UNRELEASED
         if ( dirac_cfg_fde_response ) then
-!          if ( fde_prop1(ipoint) > (dft_cfg_dfthr0/1000)) then
-           if ( fde_prop1(ipoint) > dft_cfg_dfthr0) then
-              r_0_t(1) = r_0(1) + fde_prop1(ipoint)
-              z_0_t(1) = z_0(1) + fde_prop2(ipoint)
+           if ( fde_froz_n(ipoint) > dft_cfg_dfthr0 ) then
+              r_0_t(1) = r_0(1) + fde_froz_n(ipoint)
+
+              z0tt(1)  = rhg(1) + fde_froz_ng(ipoint,1)
+              z0tt(2)  = rhg(2) + fde_froz_ng(ipoint,2)
+              z0tt(3)  = rhg(3) + fde_froz_ng(ipoint,3)
+
+              if (.false.) then
+! aspg: debugging the use of imported gradient
+!                r_0_t(1) = r_0(1)
+                 r_0_t(1) = r_0(1) + fde_froz_n(ipoint)
+                 z0tt(1)  = rhg(1) + fde_froz_ng(ipoint,1) * .50
+                 z0tt(2)  = rhg(2) + fde_froz_ng(ipoint,2) * .50
+                 z0tt(3)  = rhg(3) + fde_froz_ng(ipoint,3) * .50
+              endif
+
+              z_0_t(1) = z0tt(1)*z0tt(1) + z0tt(2)*z0tt(2) + z0tt(3)*z0tt(3)
+
            else
               r_0_t(1) = r_0(1)
               z_0_t(1) = z_0(1)
            endif
         else
-           r_0_t(1) = r_0(1)
-           z_0_t(1) = z_0(1)
-        endif
-
-!       if ((ipoint.eq.1).or.(ipoint.eq.40125)) then
-!          write (*,*) ' '
-!          write (*,*) 'DEBUG: density gradients etc'
-!          write (*,*) 'DEBUG: '
-!          write (*,*) 'DEBUG: i:',ipoint,'  (x,y,z):',corx(ipoint),' ',cory(ipoint),' ',corz(ipoint)
-!          write (*,*) 'DEBUG: r_0   =',r_0(1)
-!          write (*,*) 'DEBUG: z_0   =',z_0(1)
-!          write (*,*) 'DEBUG: r_0_t =',r_0_t(1),'   ',fde_prop1(ipoint)
-!          write (*,*) 'DEBUG: z_0_t =',z_0_t(1),'   ',fde_prop2(ipoint)
-!          write (*,*) 'DEBUG: w     =',w(1)
-!          write (*,*) ' '
-!       endif
-
-
+!        if ( dirac_cfg_fde_response.and.((ipoint.eq.5000).or.(ipoint.eq.8000)) )  then
+!           write (*,*) ' '
+!           write (*,*) ' debug: at point',ipoint
+!           write (*,*) ' debug: rhg(1,2,3)  ',rhg(1),rhg(2),rhg(3)
+!           write (*,*) ' debug: frz(1,2,3)  ',fde_froz_ng(ipoint,1), &
+!                         fde_froz_ng(ipoint,2),fde_froz_ng(ipoint,3)
+!           write (*,*) ' debug: z0tt(1,2,3) ',z0tt(1),z0tt(2),z0tt(3)
+!           write (*,*) ' r_0, r_0_t, z_0, z_0_t ',r_0(1),r_0_t(1),z_0(1),z_0_t(1)
+!           fde_resp_verbose = .true.
+!        else
+!           fde_resp_verbose = .false.
+!        endif
+      endif
+#endif
 
 !       number of electrons
         nr_electrons = nr_electrons + w(1)*r_0(1)
@@ -1009,9 +1028,9 @@ contains
                                         z_0_t,        &
                                         derv_length,  &
                                         derv,         &
-                                        parallel_xc)
+                                        parallel_xc,  &  
+                                        fde_resp_verbose)
            else
-#endif
               call get_functional_derv(xc_fun,       &
                                        max_fun_derv, &
                                        bllen,        &
@@ -1020,9 +1039,8 @@ contains
                                        z_0,          &
                                        derv_length,  &
                                        derv)
-#ifdef MOD_XCFUN
            end if
-#endif
+#endif 
 #if defined MOD_XCFUN && MOD_OPENRSP
         end if
 #endif
@@ -1601,23 +1619,30 @@ contains
                if (parallel_xc) then
                   call quit('fix fde_response mpi')
                end if
-               call alloc(fde_prop1, nr_points)
-               call alloc(fde_prop2, nr_points)
-!              copy data over to rx, ry, rz, rw, fde_prop1, fde_prop2
+
+               call alloc(fde_froz_n,  nr_points)
+               call alloc(fde_froz_ng, nr_points, 3)
+
+!              copy data over to rx, ry, rz, rw, fde_froz_n, fde_froz_ng
                do i = 1, nr_points
                   rx(i) = fde_grid(1,i)
                   ry(i) = fde_grid(2,i)
                   rz(i) = fde_grid(3,i)
                   rw(i) = fde_grid(4,i)
 
-                  fde_prop1(i) = fde_frozen_prp(1,i)
+                  fde_froz_n(i) = fde_frozen_prp(3,i)
 
-                  if (fde_nprop.eq.2) then
-                     fde_prop2(i) = fde_frozen_prp(2,i)
+                  if (fde_nprop.eq.6) then
+                     fde_froz_ng(i,1) = fde_frozen_prp(4,i)
+                     fde_froz_ng(i,2) = fde_frozen_prp(5,i)
+                     fde_froz_ng(i,3) = fde_frozen_prp(6,i)
                   else
-                     fde_prop2(i) = 0.0d0
+                     fde_froz_ng(i,1) = 0.0d0
+                     fde_froz_ng(i,2) = 0.0d0
+                     fde_froz_ng(i,3) = 0.0d0
                   endif
                end do
+
             else
                call reaqua(rx, ry, rz, rw, file_unit_grid, nr_points)
             end if
@@ -1692,8 +1717,8 @@ contains
          call dealloc(rw)
 
         if (dirac_cfg_fde_response) then
-           if (allocated(fde_prop1)) call dealloc(fde_prop1)
-           if (allocated(fde_prop2)) call dealloc(fde_prop2)
+           if (allocated(fde_froz_n)) call dealloc(fde_froz_n)
+           if (allocated(fde_froz_ng)) call dealloc(fde_froz_ng)
 !          don't try to read another batch
            goto 999
         end if

@@ -48,11 +48,14 @@
       public FDEINI,FDEINP,FDE_GRIDOUT,have_frozen_density
       PUBLIC DO_GRID_OUT
       public fde_grid, fde_frozen_prp, fde_grid_np, fde_nprop
+      public skip_kin_contribution, skip_xc_contribution
 
       LOGICAL,SAVE :: DO_GRID_OUT=.FALSE.
       logical,save :: have_frozen_density = .false.
       logical,save :: import_vemb = .false.
       logical,save :: update_vemb = .false.
+      logical,save :: skip_kin_contribution = .false.
+      logical,save :: skip_xc_contribution  = .false.
       INTEGER,SAVE :: LUFDEPOT=45,LUTESTING=46,LUGRIDOUT=47, LUFDEFRZDNS=48
       INTEGER,SAVE :: print_fde=0, fde_grid_np=0, fde_nprop=1
       CHARACTER(LEN=60),SAVE :: FDEPOT='EMBPOT',FDEDNS='FRZDNS',GRIDOUT_NAME=''
@@ -63,8 +66,8 @@
       type(Functional) :: fde_kef
 
 ! the default (orbital-free) kinetic energy functional for now is the thomas-fermi one
-      character(len=80), save :: kefun_fde='tf_kin'
-      character(len=80), save :: kefun_alda_fde='tf_kin'
+      character(len=80), save :: kefun_fde='kin_tf'
+      character(len=80), save :: kefun_alda_fde='kin_tf'
       
       CONTAINS
 
@@ -161,7 +164,7 @@
             real(kind=8) :: frozen_particle_number = 0.0
 
             do point = 1, fde_grid_np 
-               frozen_particle_number = frozen_particle_number + fde_grid(4,point)*fde_frozen_prp(1,point) 
+               frozen_particle_number = frozen_particle_number + fde_grid(4,point)*fde_frozen_prp(3,point) 
             end do
             
             write (*,*) '  FDE info: imported frozen density integrates to ',frozen_particle_number,' electrons'
@@ -187,7 +190,7 @@
       SUBROUTINE FDEINI()
 #ifdef MOD_XCFUN
          call parse_functional(kefun_fde,fde_kef)
-         call set_kin_fun_alda(fde_kef)
+!        call xcfun_set_functional(fde_kef)
 #else 
          call quit('XCFun not available in this version')
 #endif /* ifdef MOD_XCFUN */
@@ -234,6 +237,11 @@
 !             read filename for the embedding potential
               write(*,*) 'Embedding potential will be updated and saved'
 
+            CASE ('.SKIPK')
+               skip_kin_contribution = .true.
+            CASE ('.SKIPX')
+               skip_xc_contribution  = .true.
+
             CASE ('.FRDENS')
 !             read filename for the frozen density and density gradient
               READ(LUCMD,'(A60)') FDEDNS
@@ -244,7 +252,6 @@
 #ifdef MOD_XCFUN
               read(lucmd,'(a80)') kefun_fde
               call parse_functional(kefun_fde,fde_kef)
-              call set_kin_fun_alda(fde_kef)
 #else         
               call quit('XCFun not available in this version')
 #endif /* ifdef MOD_XCFUN */
@@ -304,7 +311,7 @@
            WRITE(LUPRI,*)
            WRITE(LUPRI,'(A,I5)')  ' * Print level               : ',print_fde
            WRITE(LUPRI,'(A,A20)') ' * Kinetic energy functional : ',kefun_fde
-           WRITE(LUPRI,'(A,A20)') '   if .ALDA is set, will use : ',kefun_alda_fde
+!          WRITE(LUPRI,'(A,A20)') '   if .ALDA is set, will use : ',kefun_alda_fde
 
            if (import_vemb) then
               write(LUPRI,'(A,A60)')  ' * FDE Potential read from file: ',FDEPOT
@@ -322,14 +329,14 @@
 
            if (update_vemb) then 
               write(LUPRI,'(A,A60)') &
-              ' * Embedding potential will be updated and saved'
+              ' * FDE Potential will be updated and saved'
 
               if (.not.have_frozen_density) then
                  write(LUPRI,'(A,A60)')  '   Data from frozen subsystems unavailable!'
                  call quit("Missing datafile FRDENS")
               endif
            else
-              write(LUPRI,'(A,A60)') ' * Fixed embedding potential will be used' 
+              write(LUPRI,'(A,A60)') ' * Fixed FDE potential will be used' 
            endif
 
            if (have_frozen_density) then

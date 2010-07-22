@@ -45,6 +45,7 @@ module dft_cfg
   type functional
 #ifdef MOD_XCFUN
      real(8) :: w(XC_NR_PARAMS)
+     logical :: xcfun_id_is_set
 #else
      real(8) :: w(1)
 #endif
@@ -129,6 +130,9 @@ contains
 
       call dirac_mpi_bcast(f%w)
       call dirac_mpi_bcast(f%id)
+#ifdef MOD_XCFUN
+      call dirac_mpi_bcast(f%xcfun_id_is_set)
+#endif
 
    end subroutine
 

@@ -71,7 +71,7 @@ module dft_functional_derv
   integer              :: xcfun_in_length  = 0
   integer              :: xcfun_out_length = 0
 
-  logical :: xcfun_id_is_set = .false.
+! logical :: xcfun_id_is_set = .false.
 
 contains
 
@@ -106,7 +106,7 @@ contains
       integer                         :: need_out_length
 !     --------------------------------------------------------------------------
 
-      if (.not. xcfun_id_is_set) then
+      if (.not. f%xcfun_id_is_set) then
 #ifdef VAR_MPI
          if (parallel_xc) then
             call sync_functional(f)
@@ -120,7 +120,7 @@ contains
                call xc_set_param(f%id, i, f%w(i))
             end if
          end do
-         xcfun_id_is_set = .true.
+         f%xcfun_id_is_set = .true.
       end if
 
       need_in_length  = xc_input_length(f%id)
@@ -304,7 +304,8 @@ contains
                                   z_0_t,        &
                                   n,            &
                                   derv,         &
-                                  parallel_xc)
+                                  parallel_xc,  &
+                                  debug)
    use dirac_cfg
    use fde_mod
 
@@ -320,6 +321,7 @@ contains
     integer,          intent(in)  :: n
     real(8),          intent(out) :: derv(mxbllen, 0:n)
       logical,          intent(in)    :: parallel_xc
+    logical,          intent(in)  :: debug
     real(8) :: dervtmp(mxbllen, 0:n)
     integer :: i, j
 !   ----------------------------------------------------------------------------
@@ -336,35 +338,41 @@ contains
                                n,                  &
                                derv)
 
-!   write (*,*) ' '
-!   write (*,*) 'DEBUG (functional derivative)'
-!   write (*,*) 'DEBUG (functional derivative): after nokern first xc' 
-!   call debug_general_fun(fun,               &
-!                             order,              &
-!                             block_length,       &
-!                             w,                  &
-!                             r_0   ,                &
-!                             z_0   ,                &
-!                             n,                  &
-!                             derv, dervtmp)
-!   write (*,*) 'DEBUG (functional derivative)'
-!   write (*,*) ' '
+    if (debug) then
+    write (*,*) ' '
+    write (*,*) 'DEBUG (functional derivative)'
+    write (*,*) 'DEBUG (functional derivative): after nokern first xc' 
+    call debug_general_fun(f,               &
+                           order,           &
+                           block_length,    &
+                           w,               &
+                           r_0   ,          &
+                           z_0   ,          &
+                           n,               &
+                           derv, dervtmp)
+    write (*,*) 'DEBUG (functional derivative)'
+    write (*,*) ' '
+    endif
                                
     else if ( dirac_cfg_fde_response.and.have_frozen_density ) then
+
 ! aspg, 2010-03-29      
 ! in case we implement the use different xc for the total and active
 ! densities, we have to uncomment the line below, and suitably define
 ! tot_xc_fun in fde_mod (or some other place)
 !      call xc_fun_set_functional(order, order, tot_xc_fun)
 ! but also replace fun below by tot_xc_fun     
-      call get_functional_derv(f,                &
-                               order,              &
-                               block_length,       &
-                               w,                  &
-                               r_0_t,              &
-                               z_0_t,              &
-                               n,                  &
-                               dervtmp)
+
+      if (.not.skip_xc_contribution) then
+         call get_functional_derv(f,                &
+                                  order,            &
+                                  block_length,     &
+                                  w,                &
+                                  r_0_t,            &
+                                  z_0_t,            &
+                                  n,                &
+                                  dervtmp)
+      endif
 
       do i = 1, mxbllen
         do j = 0, n
@@ -372,19 +380,21 @@ contains
          enddo
       enddo
     
-!   write (*,*) ' '
-!   write (*,*) 'DEBUG (functional derivative)'
-!   write (*,*) 'DEBUG (functional derivative): after first xc' 
-!   call debug_general_fun(fun,               &
-!                             order,              &
-!                             block_length,       &
-!                             w,                  &
-!                             r_0_t  ,                &
-!                             z_0_t  ,                &
-!                             n,                  &
-!                             derv, dervtmp)
-!   write (*,*) 'DEBUG (functional derivative)'
-!   write (*,*) ' '
+    if (debug) then
+    write (*,*) ' '
+    write (*,*) 'DEBUG (functional derivative)'
+    write (*,*) 'DEBUG (functional derivative): after first xc' 
+    call debug_general_fun(f,              &
+                           order,          &
+                           block_length,   &
+                           w,              &
+                           r_0_t  ,        &
+                           z_0_t  ,        &
+                           n,              &
+                           derv, dervtmp)
+    write (*,*) 'DEBUG (functional derivative)'
+    write (*,*) ' '
+    endif
     
       if ( .not.dirac_cfg_dft_calculation ) then
 ! if we are not doing dft, we subtract what would be the xc contribution from 
@@ -394,14 +404,17 @@ contains
 ! in case we implement the use of different xc for the total and active
 ! densities, we have to uncomment the line below
 !      call xc_fun_set_functional(order, order, fun)
-        call get_functional_derv(f,                 &
-                                 order,              &
-                                 block_length,       &
-                                 w,                  &
-                                 r_0,                &
-                                 z_0,                &
-                                 n,                  &
-                                 dervtmp)
+
+        if (.not.skip_xc_contribution) then
+           call get_functional_derv(f,                 &
+                                    order,             &
+                                    block_length,      &
+                                    w,                 &
+                                    r_0,               &
+                                    z_0,               &
+                                    n,                 &
+                                    dervtmp)
+        endif
                                  
         do i = 1, mxbllen
           do j = 0, n
@@ -409,35 +422,39 @@ contains
           enddo
         enddo
 
-!   write (*,*) ' '
-!   write (*,*) 'DEBUG (functional derivative)'
-!   write (*,*) 'DEBUG (functional derivative): after second xc' 
-!   call debug_general_fun(fun,               &
-!                             order,              &
-!                             block_length,       &
-!                             w,                  &
-!                             r_0  ,                &
-!                             z_0  ,                &
-!                             n,                  &
-!                             derv, dervtmp)
-!   write (*,*) 'DEBUG (functional derivative)'
-!   write (*,*) ' '
+    if (debug) then
+    write (*,*) ' '
+    write (*,*) 'DEBUG (functional derivative)'
+    write (*,*) 'DEBUG (functional derivative): after second xc' 
+    call debug_general_fun(f,            &
+                           order,        &
+                           block_length, &
+                           w,            &
+                           r_0  ,        &
+                           z_0  ,        &
+                           n,            &
+                           derv, dervtmp)
+    write (*,*) 'DEBUG (functional derivative)'
+    write (*,*) ' '
+    endif
 
       endif
 
 ! now we construct the contribution from the kinetic energy to the response
 ! of the embedding potential. 
 ! first set functional to the of-kef, do the non-additive ke contribution
-      call xcfun_set_functional(kin_fun, order, order, parallel_xc)
+      call xcfun_set_functional(fde_kef, order, order, parallel_xc)
       
-      call get_functional_derv(kin_fun,            &
-                               order,              &
-                               block_length,       &
-                               w,                  &
-                               r_0_t,              &
-                               z_0_t,              &
-                               n,                  &
-                               dervtmp)
+      if (.not.skip_kin_contribution) then
+         call get_functional_derv(fde_kef,            &
+                                  order,              &
+                                  block_length,       &
+                                  w,                  &
+                                  r_0_t,              &
+                                  z_0_t,              &
+                                  n,                  &
+                                  dervtmp)
+      endif
 
       do i = 1, mxbllen
         do j = 0, n
@@ -445,30 +462,34 @@ contains
          enddo
       enddo
       
-!   write (*,*) ' '
-!   write (*,*) 'DEBUG (functional derivative)'
-!   write (*,*) 'DEBUG (functional derivative): after first kinetic' 
-!   call debug_general_fun(id_kin_fun,               &
-!                             order,              &
-!                             block_length,       &
-!                             w,                  &
-!                             r_0_t ,                &
-!                             z_0_t ,                &
-!                             n,                  &
-!                             derv, dervtmp)
-!   write (*,*) 'DEBUG (functional derivative)'
-!   write (*,*) ' '
+    if (debug) then
+    write (*,*) ' '
+    write (*,*) 'DEBUG (functional derivative)'
+    write (*,*) 'DEBUG (functional derivative): after first kinetic' 
+    call debug_general_fun(fde_kef,         &
+                           order,           &
+                           block_length,    &
+                           w,               &
+                           r_0_t ,          &
+                           z_0_t ,          &
+                           n,               &
+                           derv, dervtmp)
+    write (*,*) 'DEBUG (functional derivative)'
+    write (*,*) ' '
+    endif
 
 ! now subtract the active subsystem's kinetic energy contribution
 
-      call get_functional_derv(kin_fun,            &
-                               order,              &
-                               block_length,       &
-                               w,                  &
-                               r_0,                &
-                               z_0,                &
-                               n,                  &
-                               dervtmp)
+      if (.not.skip_kin_contribution) then
+         call get_functional_derv(fde_kef,       &
+                                  order,         &
+                                  block_length,  &
+                                  w,             &
+                                  r_0,           &
+                                  z_0,           &
+                                  n,             &
+                                  dervtmp)
+      endif
                                
       do i = 1, mxbllen
         do j = 0, n
@@ -476,19 +497,21 @@ contains
          enddo
       enddo
 
-!   write (*,*) ' '
-!   write (*,*) 'DEBUG (functional derivative)'
-!   write (*,*) 'DEBUG (functional derivative): after second kinetic' 
-!   call debug_general_fun(id_kin_fun,               &
-!                             order,              &
-!                             block_length,       &
-!                             w,                  &
-!                             r_0 ,                &
-!                             z_0 ,                &
-!                             n,                  &
-!                             derv, dervtmp)
-!   write (*,*) 'DEBUG (functional derivative)'
-!   write (*,*) ' '
+    if (debug) then
+    write (*,*) ' '
+    write (*,*) 'DEBUG (functional derivative)'
+    write (*,*) 'DEBUG (functional derivative): after second kinetic' 
+    call debug_general_fun(fde_kef,         &
+                           order,           &
+                           block_length,    &
+                           w,               &
+                           r_0 ,            &
+                           z_0 ,            &
+                           n,               &
+                           derv, dervtmp)
+    write (*,*) 'DEBUG (functional derivative)'
+    write (*,*) ' '
+    endif
           
 ! and restore the default dft functional, if we are to use it 
 ! down the line...
@@ -496,19 +519,21 @@ contains
 
     endif
 
-!   write (*,*) ' '
-!   write (*,*) 'DEBUG (functional derivative)'
-!   write (*,*) 'DEBUG (functional derivative): at the end' 
-!   call debug_general_fun(fun,               &
-!                             order,              &
-!                             block_length,       &
-!                             w,                  &
-!                             r_0 ,                &
-!                             z_0 ,                &
-!                             n,                  &
-!                             derv, dervtmp)
-!   write (*,*) 'DEBUG (functional derivative)'
-!   write (*,*) ' '
+    if (debug) then
+    write (*,*) ' '
+    write (*,*) 'DEBUG (functional derivative)'
+    write (*,*) 'DEBUG (functional derivative): at the end' 
+    call debug_general_fun(f,               &
+                           order,           &
+                           block_length,    &
+                           w,               &
+                           r_0 ,            &
+                           z_0 ,            &
+                           n,               &
+                           derv, dervtmp)
+    write (*,*) 'DEBUG (functional derivative)'
+    write (*,*) ' '
+    endif
 !   call quit('debugging fde response. stop here.')
 
   end subroutine get_general_fun_derv
@@ -517,7 +542,8 @@ contains
 
 
 
-  subroutine debug_general_fun(order,        &
+  subroutine debug_general_fun(f,            &
+                               order,        &
                                block_length, &
                                w,            &
                                r_0,          &
@@ -528,6 +554,7 @@ contains
    use fde_mod
 
 !   ----------------------------------------------------------------------------
+    type(functional), intent(inout)  :: f    
     integer, intent(in)  :: order
     integer, intent(in)  :: block_length
     real(8), intent(in)  :: w(*)
@@ -541,16 +568,18 @@ contains
 
       write (*,*) ''
       write (*,*) '   functional definition'
-!radovan: commented this out - we don't handle the weights outside xcfun
-!         anymore
-!     do i = 1, XC_PARAMS_LEN
-!        if (fun%w(i) .gt. 0.0d0) then
-!           write (*,*) '      functional type :',i
-!           write (*,*) '            weight fulld =',fun%w(i)
-!           write (*,*) '            weight alda  =',fun%w_alda(i)
-!           write (*,*) '            weight xalda =',fun%w_xalda(i)
-!        endif
-!     enddo
+#ifdef MOD_XCFUN
+      do i = 1, XC_NR_PARAMS
+#else
+      i = 1
+#endif
+         if (f%w(i) .gt. 0.0d0) then
+            write (*,*) '      functional type :',i
+            write (*,*) '            weight =',f%w(i)
+         endif
+#ifdef MOD_XCFUN
+      enddo
+#endif
       write (*,*) ' '
       write (*,*) '   density and functional derivative values'
       do i = 1, 1
