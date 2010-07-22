@@ -47,6 +47,7 @@ this_testset="$this_testset dft_ao_eval"
 this_testset="$this_testset dft_betasigma"
 this_testset="$this_testset 49.xyzinput"
 this_testset="$this_testset visual_elf"
+this_testset="$this_testset visual_gamma5"
 
 short_partest="$this_testset"
 
