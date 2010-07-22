@@ -21,6 +21,6 @@ electric properties for frozen density embedding
 2
 **PROPERTIES
 .DIPOLE
-.POLARIZABILITY
+#.POLARIZABILITY
 *END OF
 
