@@ -68,7 +68,7 @@ contains
       real(8) ::          QUANTITY_ADDMEUP(0:3)
       real(8) ::          VECTOR_A(3)
       real(8) ::          VECTOR_B(3)
-      real(8) :: factor, f, elf_chi, tau
+      real(8) :: factor, f, elf_chi, tau, matrix_33(3, 3)
       real(8) :: density, density_gradient(3), density_gradient_squared
       real(8) :: RSQ
       real(8) :: rxx, rxy, rxz, ryy, ryz, rzz
@@ -189,8 +189,8 @@ contains
         end if
 
 
-!       nr diamagnetic current density (hardcoded for B along z)
-!       ========================================================
+!       nonrel diamagnetic current density (hardcoded for B along z)
+!       ============================================================
 
         if (visual_cfg_iq_xvector(ixvector) == iq_jdia) then
            call get_n(density,                           &
@@ -231,128 +231,83 @@ contains
         end if
 
 
+!       nonrel paramagnetic current density (orbital part)
+!       ==================================================
+
+        if (visual_cfg_iq_xvector(ixvector) == iq_jpara) then
+           call get_gn(density,                           &
+                       vector_a,                          &
+                       visual_cfg_irep_xvector(ixvector), &
+                       D(imat)%nrow,                      &
+                       D(imat)%elms,                      &
+                       buffer,                            &
+                       ao,                                &
+                       ao(ao_start(1, 0):ao_end(1, 0)))
+
+           quantity(1) = quantity(1) + 0.5d0*vector_a(1)
+           quantity(2) = quantity(2) + 0.5d0*vector_a(2)
+           quantity(3) = quantity(3) + 0.5d0*vector_a(3)
+        end if
 
 
-! Non-relativistic paramagnetic current density (orbital part):  j_para
-        IQ = IQ_JPARA
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_JPARA(.TRUE., &
-     &                   VECTOR_A, &
-     &                   visual_cfg_irep_xvector(IXVECTOR), &
-     &                   AO, &
-     &                   ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                   D(imat)%elms, &
-     &                   buffer)
+!       divergence or curl of spin density
+!       ==================================
 
-          CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
-        ENDIF
+        if ((visual_cfg_iq_xvector(ixvector) == iq_divm) .or. &
+            (visual_cfg_iq_xvector(ixvector) == iq_rotm)) then
 
-! Divergence of spin density:    \nabla \cdot  \psi^\dag \Sigma \psi
-        IQ = IQ_DIVM
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_DIVM(.TRUE., &
-     &                  SCALAR, &
-     &                  visual_cfg_irep_xvector(IXVECTOR), &
-     &                  AO, &
-     &                  ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                  D(imat)%elms, &
-     &                  buffer)
+           call get_gs(vector_a,                          &
+                       matrix_33,                         &
+                       visual_cfg_irep_xvector(ixvector), &
+                       D(imat)%nrow,                      &
+                       D(imat)%elms,                      &
+                       buffer,                            &
+                       ao,                                &
+                       ao(ao_start(1, 0):ao_end(1, 0)))
 
-          CALL DAXPY(1,1.0d0,SCALAR,1,QUANTITY(0),1)
-        ENDIF
-
-! Divergence of current density: -ec \nabla \cdot  \psi^\dag \alpha \psi
-        IQ = IQ_DIVJ
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_DIVJ(.TRUE., &
-     &                  SCALAR, &
-     &                  visual_cfg_irep_xvector(IXVECTOR), &
-     &                  AO, &
-     &                  ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                  D(imat)%elms, &
-     &                  buffer)
-
-          CALL DAXPY(1,1.0d0,SCALAR,1,QUANTITY(0),1)
-        ENDIF
-
-!                  \psi^\dag (\Sigma \cdot p) \psi
-        IQ = IQ_H
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_DIVM(.TRUE., &
-     &                  SCALAR, &
-     &                  visual_cfg_irep_xvector(IXVECTOR), &
-     &                  AO, &
-     &                  ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                  D(imat)%elms, &
-     &                  buffer)
-
-          CALL DAXPY(1,0.25d0,SCALAR,1,QUANTITY(0),1)
-        ENDIF
-
-!                c \psi^\dag (\alpha \cdot p) \psi
-        IQ = IQ_K
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_DIVJ(.TRUE., &
-     &                  SCALAR, &
-     &                  visual_cfg_irep_xvector(IXVECTOR), &
-     &                  AO, &
-     &                  ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                  D(imat)%elms, &
-     &                  buffer)
-
-          CALL DAXPY(1,0.5d0,SCALAR,1,QUANTITY(0),1)
-        ENDIF
-
-! Curl of spin density:     \nabla \times \psi^\dag \Sigma \psi
-        IQ = IQ_ROTM
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_ROTM(.TRUE., &
-     &                  VECTOR_A, &
-     &                  visual_cfg_irep_xvector(IXVECTOR), &
-     &                  AO, &
-     &                  ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                  D(imat)%elms, &
-     &                  buffer)
-
-          CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
-        ENDIF
-
-! Curl of current density: -ec \nabla \times \psi^\dag \alpha \psi
-        IQ = IQ_ROTJ
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_ROTJ(.TRUE., &
-     &                  VECTOR_A, &
-     &                  visual_cfg_irep_xvector(IXVECTOR), &
-     &                  AO, &
-     &                  ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                  D(imat)%elms, &
-     &                  buffer)
-
-          CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
-        ENDIF
-
-! Curl of non-relativistic paramagnetic current density:    \nabla \times j_para
-        IQ = IQ_ROTJPARA
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_ROTJPARA(.TRUE., &
-     &                      VECTOR_A, &
-     &                      visual_cfg_irep_xvector(IXVECTOR), &
-     &                      AO, &
-     &                      ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                      D(imat)%elms, &
-     &                      buffer)
-
-          CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
-        ENDIF
+           if (visual_cfg_iq_xvector(ixvector) == iq_divm) then
+              quantity(0) = quantity(0) + matrix_33(1, 1) + matrix_33(2, 2) + matrix_33(3, 3)
+           end if
+           if (visual_cfg_iq_xvector(ixvector) == iq_rotm) then
+              quantity(1) = quantity(1) - matrix_33(2, 3) + matrix_33(3, 2)
+              quantity(2) = quantity(2) - matrix_33(3, 1) + matrix_33(1, 3)
+              quantity(3) = quantity(3) - matrix_33(1, 2) + matrix_33(2, 1)
+           end if
+        end if
 
 
-! IQ_EDIPX       = 19                   r_x n
-! IQ_EDIPY       = 20                   r_y n
-! IQ_EDIPZ       = 21                   r_z n
+!       divergence or curl of current density
+!       =====================================
 
-        IF((visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_EDIPX) .OR. &
-     &     (visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_EDIPY) .OR. &
-     &     (visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_EDIPZ)) THEN
+        if ((visual_cfg_iq_xvector(ixvector) == iq_divj) .or. &
+            (visual_cfg_iq_xvector(ixvector) == iq_rotj)) then
+
+           call get_gj(vector_a,                          &
+                       matrix_33,                         &
+                       visual_cfg_irep_xvector(ixvector), &
+                       D(imat)%nrow,                      &
+                       D(imat)%elms,                      &
+                       buffer,                            &
+                       ao,                                &
+                       ao(ao_start(1, 0):ao_end(1, 0)))
+
+           if (visual_cfg_iq_xvector(ixvector) == iq_divj) then
+              quantity(0) = quantity(0) + matrix_33(1, 1) + matrix_33(2, 2) + matrix_33(3, 3)
+           end if
+           if (visual_cfg_iq_xvector(ixvector) == iq_rotj) then
+              quantity(1) = quantity(1) - matrix_33(2, 3) + matrix_33(3, 2)
+              quantity(2) = quantity(2) - matrix_33(3, 1) + matrix_33(1, 3)
+              quantity(3) = quantity(3) - matrix_33(1, 2) + matrix_33(2, 1)
+           end if
+        end if
+
+
+!       responding operator is electric dipole
+!       ======================================
+
+        if ((visual_cfg_iq_xvector(ixvector) == iq_edipx) .or. &
+            (visual_cfg_iq_xvector(ixvector) == iq_edipy) .or. &
+            (visual_cfg_iq_xvector(ixvector) == iq_edipz)) then
 
            call get_n(density,                           &
                       visual_cfg_irep_xvector(ixvector), &
@@ -361,21 +316,27 @@ contains
                       buffer,                            &
                       ao)
 
-          IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_EDIPX) &
-     &      CALL DAXPY(1,1.0d0,DENSITY*PX,1,QUANTITY(0),1)
-          IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_EDIPY) &
-     &      CALL DAXPY(1,1.0d0,DENSITY*PY,1,QUANTITY(0),1)
-          IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ_EDIPZ) &
-     &      CALL DAXPY(1,1.0d0,DENSITY*PZ,1,QUANTITY(0),1)
-        ENDIF
-
-! IQ_MDIPX       = 22             -1/2 (r_gauge \times j)_x
-! IQ_MDIPY       = 23             -1/2 (r_gauge \times j)_y
-! IQ_MDIPZ       = 24             -1/2 (r_gauge \times j)_z
-
-
-
-
+           rx = px - cord(1, visual_cfg_ioption_xvector(ixvector))
+           ry = py - cord(2, visual_cfg_ioption_xvector(ixvector))
+           rz = pz - cord(3, visual_cfg_ioption_xvector(ixvector))
+           
+           vector_b(1) = ry*vector_a(3) - rz*vector_a(2)
+           vector_b(2) = rz*vector_a(1) - rx*vector_a(3)
+           vector_b(3) = rx*vector_a(2) - ry*vector_a(1)
+           
+           rsq = rx*rx + ry*ry + rz*rz
+           f = -1.0d0/(rsq**1.5d0)
+           
+           if (visual_cfg_iq_xvector(ixvector) == iq_edipx) then
+              quantity(0) = quantity(0) + px*density
+           end if
+           if (visual_cfg_iq_xvector(ixvector) == iq_edipy) then
+              quantity(0) = quantity(0) + py*density
+           end if
+           if (visual_cfg_iq_xvector(ixvector) == iq_edipz) then
+              quantity(0) = quantity(0) + pz*density
+           end if
+        end if
 
 
 !       responding operator is nuclear magnetic dipole
@@ -450,7 +411,7 @@ contains
            end if
         end if
 
-
+!       multiply with common factor and add up
         f = visual_cfg_common_factor
         if (visual_cfg_radial) then
            f = f*(distance_to_origin**2.0d0)
@@ -460,10 +421,44 @@ contains
         quantity_addmeup(2) = quantity_addmeup(2) + f*quantity(2)
         quantity_addmeup(3) = quantity_addmeup(3) + f*quantity(3)
 
-      ENDDO
+      end do
 
-      END subroutine
-
-
+   end subroutine
 
 end module
+
+
+
+!radovan: rotjpara note for myself please do not delete
+!     k = 1
+!     l = 1
+!     m = 2
+!     n = 2
+!     a = d1
+!     b = d1
+!     itransform = 0
+
+!     do ixyz = 1,3
+
+!       jxyz = ixyz + 1
+!       kxyz = jxyz + 1
+
+!       if(jxyz .gt. 3) jxyz = jxyz - 3
+!       if(kxyz .gt. 3) kxyz = kxyz - 3
+
+!       call get_density_sub(lget,.true.,
+!    &                       vector(ixyz),
+!    &                       a,b,k,l,m,n,
+!    &                       1,itransform,irepop,
+!    &                       gao1(1+joff*(jxyz-1)),
+!    &                       gao1(1+joff*(kxyz-1)),
+!    &                       dmat,buf)
+!       call get_density_sub(lget,.false.,
+!    &                       vector(ixyz),
+!    &                       -a,-b,k,l,m,n,
+!    &                       1,itransform,irepop,
+!    &                       gao1(1+joff*(kxyz-1)),
+!    &                       gao1(1+joff*(jxyz-1)),
+!    &                       dmat,buf)
+
+!     enddo

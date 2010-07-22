@@ -34,6 +34,7 @@ module density_eval
    public get_tau
    public get_gn
    public get_gn_nonhermitian
+   public get_gj
    public get_gs
    public get_gs_nonhermitian
    public lda_distribute_r
@@ -540,64 +541,115 @@ contains
 
   end subroutine
 
-  subroutine get_gs(s,       &
-                    gs,      &
-                    irep,    &
-                    mat_dim, &
-                    dmat,    &
-                    buffer,  &
-                    ao,      &
-                    ao1)
+   subroutine get_gj(v,       &
+                     gv,      &
+                     irep,    &
+                     mat_dim, &
+                     dmat,    &
+                     buffer,  &
+                     ao,      &
+                     ao1)
 
-!   ----------------------------------------------------------------------------
-    real(8), intent(out) :: s(3)
-    real(8), intent(out) :: gs(3, 3)
-    integer, intent(in)  :: irep
-    integer, intent(in)  :: mat_dim
-    real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
-    real(8), intent(in)  :: buffer(mat_dim)
-    real(8), intent(in)  :: ao(mat_dim)
-    real(8), intent(in)  :: ao1(mat_dim, 3)
-!   ----------------------------------------------------------------------------
-    integer              :: nr1, nr2, st1, st2, iblock, jxyz, ixyz
-    real(8), external    :: ddot
-!   ----------------------------------------------------------------------------
+!     --------------------------------------------------------------------------
+      real(8), intent(out) :: v(3)
+      real(8), intent(out) :: gv(3, 3)
+      integer, intent(in)  :: irep
+      integer, intent(in)  :: mat_dim
+      real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
+      real(8), intent(in)  :: buffer(mat_dim)
+      real(8), intent(in)  :: ao(mat_dim)
+      real(8), intent(in)  :: ao1(mat_dim, 3)
+!     --------------------------------------------------------------------------
+      integer              :: nr1, nr2, st1, st2, iblock, jxyz, ixyz
+      real(8), external    :: ddot
+!     --------------------------------------------------------------------------
 
-    s  = 0.0d0
-    gs = 0.0d0
+      v  = 0.0d0
+      gv = 0.0d0
+      do jxyz = jxyz_start, 3
+         do iblock = 1, lssl_nr_density_blocks(jxyz, irep)
+            nr1 = lssl_nr_ao(1, iblock, jxyz, irep)
+            st1 = lssl_st_ao(1, iblock, jxyz, irep)
+            nr2 = lssl_nr_ao(2, iblock, jxyz, irep)
+            st2 = lssl_st_ao(2, iblock, jxyz, irep)
+  
+            call dgemv('N',                      &
+                       nr1,                      &
+                       nr2,                      &
+                       1.0d0,                    &
+                       dmat(st1, st2, iq(jxyz)), &
+                       mat_dim,                  &
+                       ao(st2),                  &
+                       1,                        &
+                       0.0d0,                    &
+                       buffer,                   &
+                       1)
+  
+            v(jxyz) = v(jxyz) + ddot(nr1, ao(st1), 1, buffer, 1)
+            do ixyz = 1, 3
+               gv(ixyz, jxyz) = gv(ixyz, jxyz) + ddot(nr1, ao1(st1, ixyz), 1, buffer, 1)
+            end do
+         end do
+      end do
+      gv = -cval*2.0d0*gv
 
-    do jxyz = jxyz_start, 3
+   end subroutine
 
-       do iblock = 1, llss_nr_density_blocks(jxyz, irep)
-          nr1 = llss_nr_ao(1, iblock, jxyz, irep)
-          st1 = llss_st_ao(1, iblock, jxyz, irep)
-          nr2 = llss_nr_ao(2, iblock, jxyz, irep)
-          st2 = llss_st_ao(2, iblock, jxyz, irep)
+   subroutine get_gs(v,       &
+                     gv,      &
+                     irep,    &
+                     mat_dim, &
+                     dmat,    &
+                     buffer,  &
+                     ao,      &
+                     ao1)
 
-          call dgemv('N',                         &
-                     nr1,                         &
-                     nr2,                         &
-                     1.0d0,                       &
-                     dmat(st1, st2, iq(jxyz)), &
-                     mat_dim,                     &
-                     ao(st2),                     &
-                     1,                           &
-                     0.0d0,                       &
-                     buffer,                      &
-                     1)
+!     --------------------------------------------------------------------------
+      real(8), intent(out) :: v(3)
+      real(8), intent(out) :: gv(3, 3)
+      integer, intent(in)  :: irep
+      integer, intent(in)  :: mat_dim
+      real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
+      real(8), intent(in)  :: buffer(mat_dim)
+      real(8), intent(in)  :: ao(mat_dim)
+      real(8), intent(in)  :: ao1(mat_dim, 3)
+!     --------------------------------------------------------------------------
+      integer              :: nr1, nr2, st1, st2, iblock, jxyz, ixyz
+      real(8), external    :: ddot
+!     --------------------------------------------------------------------------
 
-          s(jxyz) = s(jxyz) + llss_prefactor(iblock, jxyz, irep)*ddot(nr1, ao(st1), 1, buffer, 1)
-          do ixyz = 1, 3
-             gs(ixyz, jxyz) = gs(ixyz, jxyz) &
-                            + llss_prefactor(iblock, jxyz, irep)*ddot(nr1, ao1(st1, ixyz), 1, buffer, 1)
-          end do
-       end do
+      v  = 0.0d0
+      gv = 0.0d0
+      do jxyz = jxyz_start, 3
+         do iblock = 1, llss_nr_density_blocks(jxyz, irep)
+            nr1 = llss_nr_ao(1, iblock, jxyz, irep)
+            st1 = llss_st_ao(1, iblock, jxyz, irep)
+            nr2 = llss_nr_ao(2, iblock, jxyz, irep)
+            st2 = llss_st_ao(2, iblock, jxyz, irep)
+  
+            call dgemv('N',                      &
+                       nr1,                      &
+                       nr2,                      &
+                       1.0d0,                    &
+                       dmat(st1, st2, iq(jxyz)), &
+                       mat_dim,                  &
+                       ao(st2),                  &
+                       1,                        &
+                       0.0d0,                    &
+                       buffer,                   &
+                       1)
+  
+            v(jxyz) = v(jxyz) &
+                    + llss_prefactor(iblock, jxyz, irep)*ddot(nr1, ao(st1), 1, buffer, 1)
+            do ixyz = 1, 3
+               gv(ixyz, jxyz) = gv(ixyz, jxyz) &
+             + llss_prefactor(iblock, jxyz, irep)*ddot(nr1, ao1(st1, ixyz), 1, buffer, 1)
+            end do
+         end do
+      end do
+      gv = 2.0d0*gv
 
-    end do
-
-    gs = 2.0d0*gs
-
-  end subroutine
+   end subroutine
 
   subroutine get_gs_nonhermitian(s,       &
                                  gs,      &
