@@ -99,6 +99,7 @@ contains
                       D(imat)%elms,                      &
                       buffer,                            &
                       ao)
+
            quantity(0) = quantity(0) + density
         end if
 
@@ -153,6 +154,21 @@ contains
            elf_chi = (tau - b)/f
           
            quantity(0) = quantity(0) + 1.0d0/(1.0d0 + elf_chi*elf_chi)
+        end if
+
+
+!       gamma5 density: \psi^\dag \gamma^5 \psi
+!       =======================================
+
+        if (visual_cfg_iq_xvector(ixvector) == iq_gamma5) then
+           call get_gamma5(density,                           &
+                           visual_cfg_irep_xvector(ixvector), &
+                           D(imat)%nrow,                      &
+                           D(imat)%elms,                      &
+                           buffer,                            &
+                           ao)
+
+           quantity(0) = quantity(0) + density
         end if
 
 
@@ -317,18 +333,6 @@ contains
           CALL DAXPY(3,1.0d0,VECTOR_A,1,QUANTITY(1),1)
         ENDIF
 
-!                  \psi^\dag  \gamma^5        \psi
-        IQ = IQ_GAMMA5
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          CALL GET_GAMMA5(.TRUE., &
-     &                    SCALAR, &
-     &                    visual_cfg_irep_xvector(IXVECTOR), &
-     &                    AO, &
-     &                    D(imat)%elms, &
-     &                    buffer)
-
-          CALL DAXPY(1,1.0d0,SCALAR,1,QUANTITY(0),1)
-        ENDIF
 ! IQ_NUCDIPX     = 16       -1/(r_K^3) (r_K \times j)_x
 ! IQ_NUCDIPY     = 17       -1/(r_K^3) (r_K \times j)_y
 ! IQ_NUCDIPZ     = 18       -1/(r_K^3) (r_K \times j)_z

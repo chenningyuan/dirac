@@ -27,6 +27,7 @@ module density_eval
 
    public gga_sym
    public get_n
+   public get_gamma5
    public get_s
    public get_t
    public get_tau
@@ -115,44 +116,93 @@ contains
 
   end subroutine
 
-  subroutine get_n(n, irep, mat_dim, dmat, buffer, ao)
+   subroutine get_n(n,       &
+                    irep,    &
+                    mat_dim, &
+                    dmat,    &
+                    buffer,  &
+                    ao)
+   
+!     --------------------------------------------------------------------------
+      real(8), intent(out) :: n
+      integer, intent(in)  :: irep
+      integer, intent(in)  :: mat_dim
+      real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
+      real(8), intent(in)  :: buffer(*)
+      real(8), intent(in)  :: ao(*)
+!     --------------------------------------------------------------------------
+      integer              :: nr1, nr2, st1, st2, iblock, jxyz
+      real(8), external    :: ddot
+!     --------------------------------------------------------------------------
+   
+      n = 0.0d0
+    
+      do iblock = 1, llss_nr_density_blocks(0, irep)
+         nr1 = llss_nr_ao(1, iblock, 0, irep)
+         st1 = llss_st_ao(1, iblock, 0, irep)
+         nr2 = llss_nr_ao(2, iblock, 0, irep)
+         st2 = llss_st_ao(2, iblock, 0, irep)
+    
+         call dgemv('N',                   &
+                    nr1,                   &
+                    nr2,                   &
+                    1.0d0,                 &
+                    dmat(st1, st2, iq(0)), &
+                    mat_dim,               &
+                    ao(st2),               &
+                    1,                     &
+                    0.0d0,                 &
+                    buffer,                &
+                    1)
+    
+         n = n + ddot(nr1, ao(st1), 1, buffer, 1)
+      end do
+   
+   end subroutine
 
-!   ----------------------------------------------------------------------------
-    real(8), intent(out) :: n
-    integer, intent(in)  :: irep
-    integer, intent(in)  :: mat_dim
-    real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
-    real(8), intent(in)  :: buffer(*)
-    real(8), intent(in)  :: ao(*)
-!   ----------------------------------------------------------------------------
-    integer              :: nr1, nr2, st1, st2, iblock, jxyz
-    real(8), external    :: ddot
-!   ----------------------------------------------------------------------------
-
-    n = 0.0d0
-
-    do iblock = 1, llss_nr_density_blocks(0, irep)
-       nr1 = llss_nr_ao(1, iblock, 0, irep)
-       st1 = llss_st_ao(1, iblock, 0, irep)
-       nr2 = llss_nr_ao(2, iblock, 0, irep)
-       st2 = llss_st_ao(2, iblock, 0, irep)
-
-       call dgemv('N',                      &
-                  nr1,                      &
-                  nr2,                      &
-                  1.0d0,                    &
-                  dmat(st1, st2, iq(0)), &
-                  mat_dim,                  &
-                  ao(st2),                  &
-                  1,                        &
-                  0.0d0,                    &
-                  buffer,                   &
-                  1)
-
-       n = n + ddot(nr1, ao(st1), 1, buffer, 1)
-    end do
-
-  end subroutine
+   subroutine get_gamma5(n,       &
+                         irep,    &
+                         mat_dim, &
+                         dmat,    &
+                         buffer,  &
+                         ao)
+   
+!     --------------------------------------------------------------------------
+      real(8), intent(out) :: n
+      integer, intent(in)  :: irep
+      integer, intent(in)  :: mat_dim
+      real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
+      real(8), intent(in)  :: buffer(*)
+      real(8), intent(in)  :: ao(*)
+!     --------------------------------------------------------------------------
+      integer              :: nr1, nr2, st1, st2, iblock, jxyz
+      real(8), external    :: ddot
+!     --------------------------------------------------------------------------
+   
+      n = 0.0d0
+    
+      do iblock = 1, lssl_nr_density_blocks(0, irep)
+         nr1 = lssl_nr_ao(1, iblock, 0, irep)
+         st1 = lssl_st_ao(1, iblock, 0, irep)
+         nr2 = lssl_nr_ao(2, iblock, 0, irep)
+         st2 = lssl_st_ao(2, iblock, 0, irep)
+    
+         call dgemv('N',                   &
+                    nr1,                   &
+                    nr2,                   &
+                    1.0d0,                 &
+                    dmat(st1, st2, iq(0)), &
+                    mat_dim,               &
+                    ao(st2),               &
+                    1,                     &
+                    0.0d0,                 &
+                    buffer,                &
+                    1)
+    
+         n = n + ddot(nr1, ao(st1), 1, buffer, 1)
+      end do
+   
+   end subroutine
 
   subroutine get_s(s, irep, mat_dim, dmat, buffer, ao)
 

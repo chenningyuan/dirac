@@ -390,45 +390,6 @@ C=======================================================================
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* GET_GAMMA5 */
-      SUBROUTINE GET_GAMMA5(LGET,
-     &                      SCALAR,
-     &                      IREPOP,
-     &                      GAO,
-     &                      DMAT,
-     &                      BUF)
-C=======================================================================
-C                                                           radovan bast
-C                                               last revision: july 2007
-C=======================================================================
-
-#include "implicit.h"
-#include "priunit.h"
-
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-
-#include "dummy.h"
-
-      LOGICAL   LGET
-      DIMENSION GAO(*),
-     &          DMAT(*),
-     &          BUF(*)
-
-      IOPTION = 2115
-      IF(LGET) IOPTION = 1115
-
-      CALL GET_DENSITY(IOPTION,
-     &                 DUMMY,
-     &                 SCALAR,
-     &                 IREPOP,
-     &                 GAO,
-     &                 DUMMY,
-     &                 DMAT,
-     &                 BUF)
-
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* GET_R */
       SUBROUTINE GET_R(LGET,
      &                 SCALAR,
