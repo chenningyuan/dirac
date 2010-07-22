@@ -266,13 +266,13 @@ C
      & "(pam 'mw' or 'nw' parameter) by", DIFF_MEM," megawords."
 
 #ifdef VAR_MPI
-      WRITE(LUPRI,'(A,/,A)') "This is parallel run.",
+      WRITE(LUPRI,'(2X,A,/,A)') "This is parallel run.",
      & "Check in the error output whether"//
      &" the increase is for the master"//
      &" (pam 'mw' parameter) or for the slave (pam 'nw' parameter)."
 #else
-      WRITE(LUPRI,'(A,A)') "This is serial run.",
-     &"Increase is the pam 'mw' parameter."
+      WRITE(LUPRI,'(2X,A,A)') "This is serial run. ",
+     &"Increase the pam 'mw' parameter."
 #endif
       RETURN
       END
