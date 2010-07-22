@@ -25,6 +25,7 @@ module visual_in_point
   use visual_cfg
   use codata
   use ao_eval
+  use density_eval
   use basis_info
   use matrix_defop
   !use visual_london_in_point
@@ -67,11 +68,12 @@ contains
       real(8) ::          QUANTITY_ADDMEUP(0:3)
       real(8) ::          VECTOR_A(3)
       real(8) ::          VECTOR_B(3)
-      real(8) :: factor, fermi_kin, elf_chi, GRADIENT_SQUARED, density
+      real(8) :: factor, f, elf_chi, tau
+      real(8) :: density, density_gradient(3), density_gradient_squared
       real(8) :: RSQ
       real(8) :: rxx, rxy, rxz, ryy, ryz, rzz
       real(8) :: px, py, pz, ddot, scalar
-      real(8) :: rx, ry, rz, TF_KIN, BOSON_KIN, distance_to_origin
+      real(8) :: rx, ry, rz, t, b, distance_to_origin
       integer :: ic, iq, IXVECTOR, ixyz, imat
 
       call get_ao(px, py, pz, ao, buffer)
@@ -138,52 +140,52 @@ contains
 !         CALL DAXPY(1,1.0d0,RXX + RYY + RZZ,1,QUANTITY(0),1)
         ENDIF
 
-! ELF: Electron Localization Function
-        IQ = IQ_ELF
-        IF(visual_cfg_iq_xvector(IXVECTOR) .EQ. IQ) THEN
-          FERMI_KIN = 0.0d0
-          DO IXYZ = 1,3
-            DO IC = 1,MC
-              SCALAR = 0.0d0
 
-              CALL GETRH1(SCALAR, &
-     &                    IC, &
-     &                    visual_cfg_irep_xvector(IXVECTOR), &
-     &                    AO(ao_start(1, 0)+(IXYZ-1)*NTBAS(0)), &
-     &                    D(imat)%elms, &
-     &                    buffer)
 
-              FERMI_KIN = FERMI_KIN + SCALAR
-            ENDDO
-          ENDDO
+!         call get_n(density,                           &
+!                    visual_cfg_irep_xvector(ixvector), &
+!                    D(imat)%nrow,                      &
+!                    D(imat)%elms,                      &
+!                    buffer,                            &
+!                    ao)
 
-          FERMI_KIN = FERMI_KIN/2.0d0
 
-          CALL GETRHO(DENSITY, &
-     &                visual_cfg_irep_xvector(IXVECTOR), &
-     &                AO, &
-     &                D(imat)%elms, &
-     &                buffer)
+!       ELF: Electron Localization Function
+!       ===================================
 
-          CALL GETGRHO(VECTOR_A, &
-     &                 visual_cfg_irep_xvector(IXVECTOR), &
-     &                 AO, &
-     &                 ao(ao_start(1, 0):ao_end(1, 0)), &
-     &                 D(imat)%elms, &
-     &                 buffer)
+        if (visual_cfg_iq_xvector(ixvector) == iq_elf) then
+           call get_tau(tau,                               &
+                        visual_cfg_irep_xvector(ixvector), &
+                        D(imat)%nrow,                      &
+                        D(imat)%elms,                      &
+                        buffer,                            &
+                        ao(ao_start(1, 0):ao_end(1, 0)))
+           call get_gn(density,                           &
+                       density_gradient,                  &
+                       visual_cfg_irep_xvector(ixvector), &
+                       D(imat)%nrow,                      &
+                       D(imat)%elms,                      &
+                       buffer,                            &
+                       ao,                                &
+                       ao(ao_start(1, 0):ao_end(1, 0)))
+          
+           density_gradient_squared = density_gradient(1)*density_gradient(1) &
+                                    + density_gradient(2)*density_gradient(2) &
+                                    + density_gradient(3)*density_gradient(3)
+          
+           b = density_gradient_squared/(8.0d0*density)
+          
+!              2.87123400018819d0 = 0.3d0*((3.0d0*pi*pi)**(2.0d0/3.0d0))
+           f = 2.87123400018819d0*(density**(5.0d0/3.0d0))
+          
+           elf_chi = (tau - b)/f
+          
+           quantity(0) = quantity(0) + 1.0d0/(1.0d0 + elf_chi*elf_chi)
+        end if
 
-          GRADIENT_SQUARED = DDOT(3,VECTOR_A,1,VECTOR_A,1)
 
-          BOSON_KIN = GRADIENT_SQUARED/(8.0D0*DENSITY)
 
-          TF_KIN = 0.3D0*((3.0d0*PI*PI)**(2.0d0/3.0d0))*(DENSITY**(5.0d0/3.0d0))
 
-          ELF_CHI = (FERMI_KIN - BOSON_KIN)/TF_KIN
-
-          SCALAR = 1.0d0/(1.0d0 + ELF_CHI*ELF_CHI)
-
-          CALL DAXPY(1,1.0d0,SCALAR,1,QUANTITY(0),1)
-        ENDIF
 
 ! j_dia (hardcoded for B along z)
         IQ = IQ_JDIA
