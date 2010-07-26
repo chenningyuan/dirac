@@ -1,4 +1,5 @@
-#! /usr/bin/env python        
+#!/usr/bin/python 
+##! /usr/bin/env python        
 #
                                       
 ############################################################################################
@@ -24,10 +25,12 @@ class ConfigureVariables:
 
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-def process_arguments():
+def process_configure_arguments():
 #-----------------------------------------------------
 #
 #-----------------------------------------------------
+
+  print 'processing configure arguments....'
   from optparse import OptionParser
   usage="usage: %prog arg1 arg2..."
   parser = OptionParser(usage)
@@ -55,7 +58,7 @@ def call_bash_configure():
 #-----------------------------------------------------
     bash_script="cd ..; ./configure "
     bash_script_arguments="--noopt"
-    bash_script=bash_script_file+bash_script_arguments
+    bash_script=bash_script+bash_script_arguments
     subprocess.call(bash_script, executable="bash", shell=True)
 
 
@@ -67,11 +70,8 @@ class PrintLevel:
     self.iprint = iprint_read
 
 #### check where configure.py sits - must be the main trunk
-def check_position():
-  print 'checking position of configure.......'
-
-def process_configure_arguments():
-  print 'processing configure arguments....'
+#def check_position():
+#  print 'checking position of configure.......'
 
 def main(*args):
   global GlobalVars
