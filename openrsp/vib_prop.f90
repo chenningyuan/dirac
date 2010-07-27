@@ -94,7 +94,9 @@ contains
       integer,intent(out) :: nq !number of vib. modes
       real(8),intent(out) :: w(nc),Q(nc,nc) !frequencies, normal modes Q(:,k)
       real(8)      :: M(nc/3),Mtot,Z(nc/3),G(nc),Rc(nc),H(nc,nc),orig(3)=0
+      real(8)      :: diff
       integer      :: IS(nc/3),i,internal=0,negative=0,unit=-1
+      integer      :: ic
       logical      :: ex
       character*22 :: fmt
       call NUCLEI_ifc(nc/3,Z,IS,G)
@@ -107,8 +109,21 @@ contains
       read (unit,fmt) H
       write (fmt(1:15),'(a,i3,a)') '(',nc,'(/g24.17))'
       read (unit,fmt,iostat=i) Rc !if no geometry at the end, reads EOF
-      if (i==0.and..not.all(G==Rc)) & !if Rc read, compare
-         call quit('load_vib_modes: Different geometry in DALTON.HES and MOLECULE.INP')
+
+!radovan: do not compare geometry without numeric tolerance
+!         there can be small differences introduced by angstrom -> bohr conversion
+      if (i==0) then
+         do ic = 1, nc
+            diff = dabs(G(ic) - Rc(ic))
+            if (diff > 1.0d-10) then
+               call quit('load_vib_modes: Different geometry in DALTON.HES and MOLECULE.INP; '// &
+                         'one or more coordinates differ by more than 1.0d-10 bohr')
+            end if
+         end do
+      else
+!radovan: what happens now?
+      end if
+
       call GPCLOSE(unit,'KEEP')
       call VIBHES(1,nc,G,nq,(/(0d0,i=1,nc)/),H,(/(0d0,i=1,6*nc)/) &
                  ,nint(Z),(/(0d0,i=1,2*nc*nc)/)); nq=nc-nq
