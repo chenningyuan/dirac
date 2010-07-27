@@ -17,11 +17,16 @@ class ConfigureVariables:
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def __init__(self):
   #
-  #              ... initialize the global set of variables ...
+  #           ... initialize the global set of variables ...
   #
     self.Bash_Configure_Arguments=""
 
     self.PythonMode=False
+
+    self.InstallDirectory=""
+
+    # print level
+    self.iprint=0
 
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -31,6 +36,7 @@ def process_configure_arguments():
 #-----------------------------------------------------
 
   print 'processing configure arguments....'
+
   from optparse import OptionParser
   usage="usage: %prog arg1 arg2..."
   parser = OptionParser(usage)
@@ -42,43 +48,96 @@ def process_configure_arguments():
 
   # is this pure python script configuration ?
   use_python_label='use python only based script, otherwise loading bash-based configure ' 
-  parser.add_option("--config", action="store_true", default=GlobalVars.PythonMode,
-                     dest="dest_prep_config", help=use_python_label)
+  parser.add_option("--py", action="store_true", default=GlobalVars.PythonMode,
+                     dest="dest_py_config", help=use_python_label)
  
   # assign ...
   (options, args) = parser.parse_args()
 
   # extract read arguments
+  print '\n processing read arguments:  len(sys.argv)=', len(sys.argv)
 
+  GlobalVars.PythonMode=options.dest_py_config
+  print 'assigned GlobalVars.PythonMode=',GlobalVars.PythonMode
+  if (GlobalVars.PythonMode) :
+    print 'Pure python mode of the configure script ! Program it !'
+  else :
+    print 'Using the old bash written trunk/configure script'
+    
+  if (options.dest_configure_args is not None) :
+    GlobalVars.Bash_Configure_Arguments=options.dest_configure_args
+    print 'Read old bash-configure arguments:',GlobalVars.Bash_Configure_Arguments
+  else :
+    print 'No bash-configure arguments...'
+  
+ # sys.exit() 
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 def call_bash_configure():
 #-----------------------------------------------------
 #   calls the external bash-based configure script
 #-----------------------------------------------------
+    print 'Doing the old-style bash configure ...\n'
+
     bash_script="cd ..; ./configure "
-    bash_script_arguments="--noopt"
-    bash_script=bash_script+bash_script_arguments
+    #bash_script_arguments="--noopt"
+    if (GlobalVars.Bash_Configure_Arguments is not None) :
+      bash_script_arguments=GlobalVars.Bash_Configure_Arguments
+      bash_script=bash_script+bash_script_arguments
+      print '...old configure stuff:',bash_script
+
+    # old-style configuration...
     subprocess.call(bash_script, executable="bash", shell=True)
 
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-class PrintLevel:
-  def __init__(self):
-    self.iprint=0
-  def set_iprint(self):
-    self.iprint = iprint_read
+#class PrintLevel:
+#  def __init__(self):
+#    self.iprint=0
+#  def set_iprint(self):
+#    self.iprint = iprint_read
+
 
 #### check where configure.py sits - must be the main trunk
 #def check_position():
 #  print 'checking position of configure.......'
 
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+def call_python_configure():
+#-----------------------------------------------------
+#
+#        do the job of the old bash configure
+#
+#  create the trunk/Makefile.config file
+#
+#-----------------------------------------------------
+  print 'write me ! :)'
+
+  # take care of the installation directory ...
+
+  # scratch direcory ...
+
+#####################################################################################################
+#
+#  Define main function
+#
+#####################################################################################################
 def main(*args):
   global GlobalVars
   GlobalVars = ConfigureVariables() 
-  print 'write me ! :)'
 
-if __name__ == '__main__':
+  process_configure_arguments()
+
+  if (GlobalVars.PythonMode) :
+    call_python_configure()
+  else :
     call_bash_configure()  
+
+###########################################################################
+###                   process the main function
+###########################################################################
+if __name__ == '__main__':
     sys.exit(main(*sys.argv))
+
+
 
