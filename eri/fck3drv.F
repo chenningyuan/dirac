@@ -32,9 +32,6 @@
 !         http://www.kjemi.uio.no/software/dalton/dalton.html
 !dalton_copyright_end
 
-#ifndef MOD_DNF
-#define MOD_DNF
-#endif
       SUBROUTINE FCK3DRV( FMAT, DMAT, NDMT, GAB, GABFIT, CFIT, 
      &                    WORK, LWORK )
 #include "implicit.h"
