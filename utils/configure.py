@@ -22,12 +22,18 @@ class ConfigureVariables:
     self.Bash_Configure_Arguments=""
 
     self.PythonMode=False
-
+    
+	# installation directory
     self.InstallDirectory=""
 
-    # print level
-    self.iprint=0
-
+	#Fortran compiler
+    self.Fortran_Compiler=""
+	
+	#C-compiler
+    self.C_Compiler=""
+	
+    # print level default
+    self.iprint=1
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 def process_configure_arguments():
@@ -41,6 +47,12 @@ def process_configure_arguments():
   usage="usage: %prog arg1 arg2..."
   parser = OptionParser(usage)
 
+  #... get in the print level 
+  iprint_label='script verbose print level, default:'+str(GlobalVars.iprint)
+  parser.add_option("-i", "--iprint", type="int", nargs=1,  
+        action="store", dest="dest_iprint", default=GlobalVars.iprint, 
+        help=iprint_label, metavar="INT_NUM")
+  
   #  fill configure_arguments
   label_configure_arguments=" configure arguments (like '"' -nopt ....'"')"
   parser.add_option("--conf_args", type="string", dest="dest_configure_args",
@@ -51,12 +63,18 @@ def process_configure_arguments():
   parser.add_option("--py", action="store_true", default=GlobalVars.PythonMode,
                      dest="dest_py_config", help=use_python_label)
  
-  # assign ...
+    # assign aruments...
   (options, args) = parser.parse_args()
 
   # extract read arguments
   print '\n processing read arguments:  len(sys.argv)=', len(sys.argv)
 
+  # ... handle iprint
+  if (options.dest_iprint is not None) :
+    GlobalVars.iprint=int(options.dest_iprint)
+    if GlobalVars.iprint > 7:
+      print 'assigned GlobalVars.iprint=',GlobalVars.iprint
+    
   GlobalVars.PythonMode=options.dest_py_config
   print 'assigned GlobalVars.PythonMode=',GlobalVars.PythonMode
   if (GlobalVars.PythonMode) :
@@ -138,6 +156,3 @@ def main(*args):
 ###########################################################################
 if __name__ == '__main__':
     sys.exit(main(*sys.argv))
-
-
-
