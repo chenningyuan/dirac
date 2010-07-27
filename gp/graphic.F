@@ -32,7 +32,6 @@ C     Original source code provided by Kim Baldridge at SDSC. Punches
 C     molecule coordinate information as well as normal coordinate modes
 C     Modified for use in DALTON by K.Ruud, September 1995
 C
-      use codata
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -154,7 +153,6 @@ C     Original source code provided by Kim Baldridge at SDSC. Punches
 C     molecule orbital information
 C     Modified for use in DALTON by K.Ruud, September 1995
 C
-      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
