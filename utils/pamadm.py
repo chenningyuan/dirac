@@ -255,6 +255,11 @@ parser.add_option('-a',
                   dest='adm',
                   default=False,
                   help="Include (almost) all modules (administrator)")
+parser.add_option('--minus',
+                  action='store_true',
+                  dest='minus',
+                  default=False,
+                  help="All given individual modules are subtracted from --adm (has no effect if --adm missing)")
 
 
 # parse input
@@ -263,8 +268,12 @@ parser.add_option('-a',
 (options, args) = parser.parse_args()
 if options.adm:
    for module in dirac_modules:
-       if dirac_modules[module].part_of_adm:
-          dirac_modules[module].include()
+       if dirac_modules[module].is_included:
+          if options.minus:
+             dirac_modules[module].exclude()
+       else:
+          if dirac_modules[module].part_of_adm:
+             dirac_modules[module].include()
 
 
 # check dependencies among modules
