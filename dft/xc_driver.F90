@@ -1615,6 +1615,7 @@ contains
                call import_dft_grid(rx, ry, rz, rw, file_unit_grid, nr_points)
             else if (dft_cfg_multigrid) then
                call import_dft_grid(rx, ry, rz, rw, dft_cfg_multigrid_file_unit(response_order_ao), nr_points)
+#ifdef MOD_UNRELEASED
             else if (dirac_cfg_fde_response) then
                if (parallel_xc) then
                   call quit('fix fde_response mpi')
@@ -1643,6 +1644,7 @@ contains
                   endif
                end do
 
+#endif
             else
                call reaqua(rx, ry, rz, rw, file_unit_grid, nr_points)
             end if
@@ -1716,12 +1718,14 @@ contains
          call dealloc(rz)
          call dealloc(rw)
 
+#ifdef MOD_UNRELEASED
         if (dirac_cfg_fde_response) then
            if (allocated(fde_froz_n)) call dealloc(fde_froz_n)
            if (allocated(fde_froz_ng)) call dealloc(fde_froz_ng)
 !          don't try to read another batch
            goto 999
         end if
+#endif
 
 !     end loop over batches
       end do
