@@ -2646,6 +2646,29 @@ C     Input of reladc module
 C
 #ifdef MOD_ADC
       IF(DOADC) THEN
+         if (parcal) then
+            write (*,*) ' '
+            write (*,*) ' Warning! Warning! Warning! Warning! Warning!'
+            write (*,*) ' '
+            write (*,*) '  RELADC does not run in parallel. To avoid'
+            write (*,*) '  inconsitencies, it is suggested that jobs'
+            write (*,*) '  such as this are rerun setting the number' 
+            write (*,*) '  of MPI processes to one (e.g. in calling'
+            write (*,*) '  pam with the argument -mpi 1)'
+            write (*,*) ' '
+            write (*,*) '  If the 4-index transformation was performed'
+            write (*,*) '  separately using scheme 6, it should also'
+            write (*,*) '  be rerun with -mpi 1 (quantities from a '
+            write (*,*) '  transformation using scheme 4 can be reused,'
+            write (*,*) '  please refer to the section of the online'
+            write (*,*) '  manual describing how to run coupled-cluster'
+            write (*,*) '  calculations in separate steps for more)'
+            write (*,*) ' '
+            write (*,*) ' Warning! Warning! Warning! Warning! Warning!'
+            write (*,*) ' '
+           
+            call quit ('RELADC not parallelized')
+         endif
          OPEN(LUCMD,FILE = 'DIRAC.INP')
          CALL ADCINPT(LUCMD,LUPRI)
          CLOSE(LUCMD)
