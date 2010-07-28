@@ -233,7 +233,7 @@
       CHARACTER*80 BASREF(10)
       PARAMETER (MAXBSFIL=5)
       CHARACTER*20 BSFIL(MAXBSFIL)
-      LOGICAL GENERATE
+      LOGICAL GENERATE, CNTBAS
 #include "molinp.h"
 #include "nuclei.h"
 #include "huckel.h"
