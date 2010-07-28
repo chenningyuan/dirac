@@ -394,13 +394,17 @@ f.write(flags + '\n')
 # determine subversion url and revision
 is_subversion_working_copy = os.path.exists('.svn')
 if is_subversion_working_copy:
-   svn_url      = os.popen("echo `svn info | grep 'URL'      | awk '{ print $2 }'`", "r").read()
    svn_revision = os.popen("echo `svn info | grep 'Revision' | awk '{ print $2 }'`", "r").read()
-   f.write("DIRAC_SVN_URL=%s"      % svn_url)
    f.write("DIRAC_SVN_REVISION=%s" % svn_revision)
+   if options.tarfile != None:
+#     do not export svn url
+      f.write("DIRAC_SVN_URL='URL not exported in release'\n")
+   else:
+      svn_url = os.popen("echo `svn info | grep 'URL' | awk '{ print $2 }'`", "r").read()
+      f.write("DIRAC_SVN_URL=%s" % svn_url)
 else:
-   f.write("DIRAC_SVN_URL='unknown Subversion URL'\n")
    f.write("DIRAC_SVN_REVISION='unknown Subversion revision'\n")
+   f.write("DIRAC_SVN_URL='unknown Subversion URL'\n")
 
 f.close()
 
