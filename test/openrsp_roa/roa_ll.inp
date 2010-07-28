@@ -17,10 +17,8 @@
 *AORESPONSE
 .ROA
 .FREQ
+ 1
  0.072
- 0.0
- 0.0
- 0.0
 .THRESH
  1.0D-3 1.0D-3
 *END OF

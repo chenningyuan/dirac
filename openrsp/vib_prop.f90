@@ -96,19 +96,31 @@ contains
       real(8)      :: M(nc/3),Mtot,Z(nc/3),G(nc),Rc(nc),H(nc,nc),orig(3)=0
       real(8)      :: diff
       integer      :: IS(nc/3),i,internal=0,negative=0,unit=-1
-      integer      :: ic
+      integer      :: ic, jc
       logical      :: ex
-      character*22 :: fmt
       call NUCLEI_ifc(nc/3,Z,IS,G)
       call GPINQ('DALTON.HES','EXIST',ex)
       if (.not.ex) call quit('load_vib_modes: Hessian file DALTON.HES not found')
       call GPOPEN(unit,'DALTON.HES','OLD',' ','FORMATTED',0,.false.)
-      read (unit,'(i12)') i
+
+!     read number of coordinates
+      rewind(unit)
+      read(unit, *) i
       if (i/=nc) call quit('load_vib_modes: DALTON.HES inconsistent with MOLECULE.INP')
-      write (fmt,'(a,i4,a,i4,a)') '(',nc,'(/',nc,'(g24.17/)))'
-      read (unit,fmt) H
-      write (fmt(1:15),'(a,i3,a)') '(',nc,'(/g24.17))'
-      read (unit,fmt,iostat=i) Rc !if no geometry at the end, reads EOF
+
+!     read hessian
+      do ic = 1, nc
+         read(unit, *) !blank line
+         do jc = 1, nc
+            read(unit, *) H(jc, ic)
+         end do
+      end do
+
+!     read geometry
+      read(unit, *) !blank line
+      do ic = 1, nc
+         read(unit, *, iostat=i) Rc(ic)
+      end do
 
 !radovan: do not compare geometry without numeric tolerance
 !         there can be small differences introduced by angstrom -> bohr conversion
