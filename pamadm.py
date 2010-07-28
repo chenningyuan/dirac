@@ -362,15 +362,19 @@ f.close()
 # touch Makefile.dep and Makefile.obj
 # ===================================
 
-os.utime('build/Makefile.dep',get_touch_time())
-os.utime('build/Makefile.obj',get_touch_time())
+#radovan: this does not work if the files do not exist
+#os.utime('build/Makefile.dep',get_touch_time())
+#os.utime('build/Makefile.obj',get_touch_time())
+os.system('touch -t 198001010000 build/Makefile.dep') 
+os.system('touch -t 198001010000 build/Makefile.obj') 
 
 
 # prepare Makefile.extobj and Makefile.moddef
 # ===========================================
 
-#fixme: so far doing nothing with Makefile.extobj
-os.utime('build/Makefile.extobj',get_touch_time())
+#radovan: this does not work if the files do not exist
+#os.utime('build/Makefile.extobj',get_touch_time())
+os.system('touch -t 198001010000 build/Makefile.extobj') 
 
 f = open('build/Makefile.moddef', 'w')
 
@@ -388,9 +392,15 @@ for module in dirac_modules:
 f.write(flags + '\n')
 
 # determine subversion url and revision
-#fixme: so far no svn determ
-f.write("DIRAC_SVN_URL='unknown Subversion URL'\n")
-f.write("DIRAC_SVN_REVISION='unknown Subversion revision'\n")
+is_subversion_working_copy = os.path.exists('.svn')
+if is_subversion_working_copy:
+   svn_url      = os.popen("echo `svn info | grep 'URL'      | awk '{ print $2 }'`", "r").read()
+   svn_revision = os.popen("echo `svn info | grep 'Revision' | awk '{ print $2 }'`", "r").read()
+   f.write("DIRAC_SVN_URL=%s"      % svn_url)
+   f.write("DIRAC_SVN_REVISION=%s" % svn_revision)
+else:
+   f.write("DIRAC_SVN_URL='unknown Subversion URL'\n")
+   f.write("DIRAC_SVN_REVISION='unknown Subversion revision'\n")
 
 f.close()
 
