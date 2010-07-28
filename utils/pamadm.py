@@ -4,8 +4,7 @@
 # Radovan Bast <radovan.bast@uit.no> Tromso 2010
 #
 # based on: pamadm written by Trond Saue, Thomas Enevoldsen, Joern Thyssen, and others
-#           prepare_release.sh written by Ulf Ekstr\"om
-#           cppp.py            written by Ulf Ekstr\"om
+#           and prepare_release.sh written by Ulf Ekstr\"om
 #
 # examples: print available options
 #           ./utils/pamadm.py -h
@@ -18,10 +17,15 @@
 #
 #           select some modules
 #           ./utils/pamadm.py --xpp --adc --visual --london --matrixop
+#
+#           prepare release DIRAC10
+#           PLEASE MODIFY THIS LINE IF IT IS NOT CORRECT!
+#           ./utils/pamadm.py --xpp --adc --visual --london --matrixop --export=DIRAC10.tar.gz
 
 from optparse import OptionParser
 import sys
 import os
+import shutil
 
 
 # dirac module class
@@ -73,9 +77,23 @@ vital_directories.append('dirrci')
 vital_directories.append('lucita')
 vital_directories.append('utils')
 vital_directories.append('dft')
+vital_directories.append('test')
+vital_directories.append('build')
+vital_directories.append('include')
+vital_directories.append('modules')
+vital_directories.append('basis')
+vital_directories.append('basis_dalton')
 
 vital_files = []
 vital_files.append('configure')
+vital_files.append('testlast')
+vital_files.append('pam.in')
+vital_files.append('Makefile')
+vital_files.append('README')
+vital_files.append('config.guess')
+vital_files.append('config.status')
+vital_files.append('config.sub')
+vital_files.append('pamq.py.in')
 
 
 # list directories and files that are not compiled as part of main executable
@@ -139,12 +157,12 @@ dirac_modules['fmm'].take_out_of_adm()
 
 dirac_modules['esr'] = dirac_module('esr', 'Include ESR property module')
 dirac_modules['esr'].add_cppflag('MOD_ESR')
-dirac_modules['esr'].add_directory('esr')
+dirac_modules['esr'].add_directory('prp/esr')
 
 dirac_modules['xpp'] = dirac_module('xpp', 'Include PP excitation energy and STEX modules')
 dirac_modules['xpp'].add_cppflag('MOD_XPP')
 dirac_modules['xpp'].add_cppflag('MOD_STEX')
-dirac_modules['xpp'].add_directory('xpp')
+dirac_modules['xpp'].add_directory('prp/xpp')
 
 dirac_modules['xml'] = dirac_module('xml', 'Include XML input/output module')
 dirac_modules['xml'].add_cppflag('MOD_XML')
@@ -256,10 +274,9 @@ dirac_modules['log'].take_out_of_adm()
 
 parser = OptionParser()
 
-parser.add_option('--tarfile',
+parser.add_option('--export',
                   dest='tarfile',
                   help='Export or release DIRAC to TARFILE')
-
 for module in dirac_modules:
     parser.add_option('--' + module,
                       action="callback",
@@ -336,6 +353,7 @@ f.close()
 # touch Makefile.dep and Makefile.obj
 # ===================================
 
+#fixme: here better use os.utime
 os.system('touch -t 198001010000 build/Makefile.dep')
 os.system('touch -t 198001010000 build/Makefile.obj')
 
@@ -344,6 +362,7 @@ os.system('touch -t 198001010000 build/Makefile.obj')
 # ===========================================
 
 #fixme: so far doing nothing with Makefile.extobj
+#fixme: here better use os.utime
 os.system('touch -t 198001010000 build/Makefile.extobj')
 
 f = open('build/Makefile.moddef', 'w')
@@ -378,9 +397,53 @@ f.close()
 # ===========================
 
 if options.tarfile != None:
-   print 'export', options.tarfile
+#  parent_dir = os.getcwd()
+#  scratch_dir = parent_dir + '/DIRAC10'
+   scratch_dir = 'DIRAC10'
 
+#  create scratch dir
+   os.mkdir(scratch_dir)
 
+#  copy all vital parts to scratch dir
+   for directory in vital_directories:
+       shutil.copytree(directory, scratch_dir + '/' + directory)
+   for file in vital_files:
+       shutil.copy(file, scratch_dir + '/' + file)
 
+#  preventively remove all module directories in scratch dir (example is prp/esr which is copied along with prp and maybe not wanted)
+   for module in dirac_modules:
+       for directory in dirac_modules[module].directories:
+           shutil.rmtree(scratch_dir + '/' + directory, True)
 
+#  copy active module directories to scratch dir
+   for module in dirac_modules:
+       if dirac_modules[module].is_included:
+          for directory in dirac_modules[module].directories:
+              shutil.copytree(directory, scratch_dir + '/' + directory)
 
+#  remove all code that is not supposed to be shipped
+   delete_flags = ''
+   for module in dirac_modules:
+       if not dirac_modules[module].is_included:
+          for cppflag in dirac_modules[module].cppflags:
+              delete_flags += '-U%s ' % cppflag
+   if delete_flags != '':
+      find_command = "find %s -name '*.F' -o -name '*.f90' -o -name '*.F90' -o -name '*.c'" % scratch_dir
+      command = "./utils/cppp.py %s `%s`" % (delete_flags, find_command)
+      os.system(command)
+
+#  remove reference files that can be fetched from the dirac website
+   shutil.rmtree(scratch_dir + '/basis/reference_unedited')
+
+#  run the vacuum cleaner: remove junk files
+   os.system("rm -f  `find %s -name '*.o'`"  % scratch_dir)
+   os.system("rm -f  `find %s -name '*~'`"  % scratch_dir)
+   os.system("rm -rf `find %s -name '.svn'`" % scratch_dir)
+
+#  create tar.gz
+   command = 'tar -czf %s %s' % (options.tarfile, scratch_dir)
+   print command
+   os.system(command)
+
+#  remove scratch dir
+   shutil.rmtree(scratch_dir)
