@@ -699,18 +699,18 @@ $echo "MODS="$MODS >> build/Makefile.moddef
 $echo "Determining Subversion URL & revision (with svn info) ..."
 if [ -d ".svn" ]; then
   THIS_DIRAC_SVN_URL=`svn info | grep 'URL' | awk '{ print $2 }'`
-  THIS_DIRAC_SNAP=`svn info | grep 'Revision' | awk '{ print $2 }'`
+  THIS_DIRAC_SVN_REVISION=`svn info | grep 'Revision' | awk '{ print $2 }'`
 else
   # could be a Git working copy or something else
   echo "this is not a Subversion working copy"
   THIS_DIRAC_SVN_URL="unknown Subversion URL"
-  THIS_DIRAC_SNAP="unknown Subversion revision"
+  THIS_DIRAC_SVN_REVISION="unknown Subversion revision"
 fi
 $echo "Subversion URL:      $THIS_DIRAC_SVN_URL"
-$echo "Subversion revision: $THIS_DIRAC_SNAP"
+$echo "Subversion revision: $THIS_DIRAC_SVN_REVISION"
 $echo
-echo "DIRAC_SVN_URL='$THIS_DIRAC_SVN_URL'" >> build/Makefile.moddef
-echo "DIRAC_SNAP='$THIS_DIRAC_SNAP'"       >> build/Makefile.moddef
+echo "DIRAC_SVN_URL=$THIS_DIRAC_SVN_URL"           >> build/Makefile.moddef
+echo "DIRAC_SVN_REVISION=$THIS_DIRAC_SVN_REVISION" >> build/Makefile.moddef
 
 # Prevent rebuild of Makefile.dep and Makefile.obj if they
 # exist and we are doing an export.

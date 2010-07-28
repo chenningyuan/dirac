@@ -383,7 +383,7 @@ f.write(flags + '\n')
 # determine subversion url and revision
 #fixme: so far no svn determ
 f.write("DIRAC_SVN_URL='unknown Subversion URL'\n")
-f.write("DIRAC_SNAP='unknown Subversion revision'\n")
+f.write("DIRAC_SVN_REVISION='unknown Subversion revision'\n")
 
 f.close()
 
@@ -397,8 +397,6 @@ f.close()
 # ===========================
 
 if options.tarfile != None:
-#  parent_dir = os.getcwd()
-#  scratch_dir = parent_dir + '/DIRAC10'
    scratch_dir = 'DIRAC10'
 
 #  create scratch dir
@@ -442,7 +440,6 @@ if options.tarfile != None:
 
 #  create tar.gz
    command = 'tar -czf %s %s' % (options.tarfile, scratch_dir)
-   print command
    os.system(command)
 
 #  remove scratch dir
