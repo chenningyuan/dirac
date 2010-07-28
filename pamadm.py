@@ -20,7 +20,7 @@
 #
 #           prepare release DIRAC10
 #           PLEASE MODIFY THIS LINE IF IT IS NOT CORRECT!
-#           ./pamadm.py --xpp --adc --visual --london --matrixop --export=DIRAC10.tar.gz
+#           ./pamadm.py --xpp --adc --visual --london --matrixop --amfi --export=DIRAC10.tar.gz
 
 from optparse import OptionParser
 import sys
