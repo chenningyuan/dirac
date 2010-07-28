@@ -1,6 +1,23 @@
 #! /usr/bin/env python
 
-#radovan: this is under construction, use at own risk
+# script for selecting modules, packaging, exporting, and releasing of DIRAC
+# Radovan Bast <radovan.bast@uit.no> Tromso 2010
+#
+# based on: pamadm written by Trond Saue, Thomas Enevoldsen, Joern Thyssen, and others
+#           prepare_release.sh written by Ulf Ekstr\"om
+#           cppp.py            written by Ulf Ekstr\"om
+#
+# examples: print available options
+#           ./utils/pamadm.py -h
+#
+#           select all modules that a part of adm
+#           ./utils/pamadm.py --adm
+#
+#           select all modules that a part of adm except adc and amfi
+#           ./utils/pamadm.py --adm --minus --adc --amfi
+#
+#           select some modules
+#           ./utils/pamadm.py --xpp --adc --visual --london --matrixop
 
 from optparse import OptionParser
 import sys
@@ -11,7 +28,6 @@ import os
 # ==================
 
 class dirac_module:
-     """bla blub"""
      def __init__(self, flag, message):
          self.flag        = flag
          self.message     = message

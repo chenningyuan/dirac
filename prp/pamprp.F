@@ -128,8 +128,10 @@ C***********************************************************************
       use openrsp_main
 #endif
 
+#ifdef MOD_EMB
 !     USE FDE_MOD, ONLY: DO_GRID_OUT,FDE_GRIDOUT
       USE FDE_MOD ! MI: gfortran-4.2 does not accept "ONLY" (yet)
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -274,6 +276,7 @@ C*******************************************************************************
 C
 C JHS 17 apr 2008
 C
+#ifdef MOD_EMB
       IF (DO_GRID_OUT) THEN
 #ifdef MOD_XML
          CALL FDE_GRIDOUT(WORK,LFREE)
@@ -281,6 +284,7 @@ C
          call quit("FDE density export unsupported in this version.")
 #endif
       END IF
+#endif /* #ifdef MOD_EMB */
 
 #ifdef MOD_OPENRSP
       if (dirac_cfg_aoresponse) then

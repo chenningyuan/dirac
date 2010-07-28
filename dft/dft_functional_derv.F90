@@ -307,7 +307,9 @@ contains
                                   parallel_xc,  &
                                   debug)
    use dirac_cfg
+#ifdef MOD_EMB
    use fde_mod
+#endif
 
 !   ----------------------------------------------------------------------------
     type(functional), intent(inout)  :: f
@@ -551,7 +553,9 @@ contains
                                n,            &
                                derv, dervtmp)
    use dirac_cfg
+#ifdef MOD_EMB
    use fde_mod
+#endif
 
 !   ----------------------------------------------------------------------------
     type(functional), intent(inout)  :: f    

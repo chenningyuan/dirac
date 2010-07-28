@@ -24,11 +24,12 @@ module xc_driver
 !   written by T. Helgaker
 !   DIRAC adaption by T. Saue
 
+#ifdef MOD_EMB
   use fde_mod
+#endif
   use dirac_cfg
   use basis_info
   use occupation_info
-  use fde_mod
   use memory_allocator
   use dft_cfg
   use dft_functional_derv
@@ -558,11 +559,13 @@ contains
          end if
       end if
 
+#ifdef MOD_UNRELEASED
 !     aspg, toying with having the frozen density and adfgrid available
 !     for the respose calcs or otherwise...
       if (have_frozen_density) then
          call FDE_testFrozenDensity()
       endif
+#endif
 
 !#define PRINT_FMAT
 #ifdef PRINT_FMAT
@@ -1570,8 +1573,10 @@ contains
                read(file_unit_grid, *) nr_points
             else if (dft_cfg_multigrid) then
                read(dft_cfg_multigrid_file_unit(response_order_ao), *) nr_points
+#ifdef MOD_UNRELEASED
             else if (dirac_cfg_fde_response) then
                nr_points = fde_grid_np
+#endif
             else
                read(file_unit_grid) nr_points
             end if

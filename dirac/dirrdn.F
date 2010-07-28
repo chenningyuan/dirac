@@ -3922,7 +3922,9 @@ C     Written by T.Saue - May 1996
 C
 C***********************************************************************
       use dirac_cfg
+#ifdef MOD_EMB
       USE FDE_MOD, ONLY: FDEINI, FDEINP
+#endif
       use dft_cfg
       use dft_input
       use input_reader
@@ -4610,7 +4612,11 @@ C activates fde response
 
 
       if (dirac_cfg_fde .or. dirac_cfg_fde_response) then
+#ifdef MOD_EMB
          call fdeini()
+#else
+         call quit('embedding is not included in this version')
+#endif
       end if 
       
 
@@ -5495,7 +5501,11 @@ C       if *CAP in input but MOD_CAP is not defined !!!
 !     .FDE
 !     frozen density embedding
     5 CONTINUE
+#ifdef MOD_EMB
       call fdeinp(word, .true.)
+#else
+      call quit('embedding is not included in this version')
+#endif
       GO TO 200
 
     6 CONTINUE
