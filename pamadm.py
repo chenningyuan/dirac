@@ -235,11 +235,6 @@ dirac_modules['hsfsdyn'].add_dependency('hscc')
 dirac_modules['hsfsdyn'].add_directory('hsmrcc')
 dirac_modules['hsfsdyn'].take_out_of_adm()
 
-dirac_modules['qdots'] = dirac_module('qdots', 'Include Quantum Dots functionality (artificial atom)')
-dirac_modules['qdots'].add_cppflag('MOD_QDOTS')
-dirac_modules['qdots'].add_dependency('oof')
-dirac_modules['qdots'].take_out_of_adm()
-
 dirac_modules['ihfscc'] = dirac_module('ihfscc', 'Include Intermediate Hamiltonian functionality to FSCC code')
 dirac_modules['ihfscc'].add_cppflag('MOD_IHFSCC')
 
