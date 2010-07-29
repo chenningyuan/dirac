@@ -245,6 +245,10 @@ dirac_modules['amfi'].add_directory('amfi')
 dirac_modules['london'] = dirac_module('london', 'Include London orbitals functionality for magnetic properties')
 dirac_modules['london'].add_cppflag('MOD_LONDON')
 
+dirac_modules['magnetiz'] = dirac_module('magnetiz', 'Include calculation of magnetizabilities')
+dirac_modules['magnetiz'].add_cppflag('MOD_MAGNETIZ')
+dirac_modules['magnetiz'].add_dependency('london')
+
 dirac_modules['oof'] = dirac_module('oof', 'Include object oriented modularity of Fotran 90/95')
 dirac_modules['oof'].add_cppflag('MOD_OOF')
 dirac_modules['oof'].add_directory('oof')

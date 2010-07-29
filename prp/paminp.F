@@ -213,8 +213,10 @@ C&&&& POLAR - electronic dipole polarizabilities
             GO TO 100
   104    CONTINUE
 C&&&& MAGNET - magnetic susceptibilities
+#ifdef MOD_MAGNETIZ
             DOXLR  = .TRUE.
             MSUSCP = .TRUE.
+#endif
             GO TO 100
   105    CONTINUE
 C&&&& NMR parameters:
@@ -341,8 +343,10 @@ CMI ... at present it is not implemented
             GO TO 100
   127    CONTINUE 
 C&&&& MSUSCD diamagnetic contribution to the magnetizabilities
+#ifdef MOD_MAGNETIZ
             MSUSCDIA = .TRUE.
             DOEXP    = .TRUE.
+#endif
             GO TO 100
   128    CONTINUE 
 C&&&& PV contribution to spin-spin coupling

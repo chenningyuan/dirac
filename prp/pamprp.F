@@ -1232,10 +1232,12 @@ C      .... spin-spin coupling
             DSO = .TRUE.
          END IF
 C      .... magnetic susceptibilities
+#ifdef MOD_MAGNETIZ
          IF (MSUSCP) THEN
             DOEXP = .TRUE.
             MSUSCDIA = .TRUE.
          END IF
+#endif
       END IF
 C
 C     Dipole moment
@@ -1351,9 +1353,11 @@ C
 C
 C     Magnetizabilities
 C
+#ifdef MOD_MAGNETIZ
       IF(MSUSCP) THEN
         CALL DEF_MSUSCP(WORK,LWORK)
       ENDIF
+#endif
 C
 C     Nuclear shielding or ESR g-tensor or ESR anisotropy
 C
@@ -1499,9 +1503,11 @@ C
 C
 C     Magnetic susceptibilities
 C
+#ifdef MOD_MAGNETIZ
       IF (MSUSCP) THEN
         CALL PRP_MSUSCP(EXPVAL,ABLRF,ABCNV,WORK,KFREE,LFREE)
       ENDIF
+#endif
 C
 C     Molecular rotational g-tensor
 C
@@ -4815,6 +4821,7 @@ C
       RETURN
       END
 
+#ifdef MOD_MAGNETIZ
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck def_msuscp */
       SUBROUTINE DEF_MSUSCP(WORK,LWORK)
@@ -6125,6 +6132,7 @@ C     CALL DSCAL(9,-D1,PARSUS,1)
       CALL QEXIT('PRP_MSUSCP')
       RETURN
       END
+#endif
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck PRP_SHIELD */
