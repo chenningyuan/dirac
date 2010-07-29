@@ -21,6 +21,9 @@
 #           prepare release DIRAC10
 #           PLEASE MODIFY THIS LINE IF IT IS NOT CORRECT!
 #           ./pamadm.py --xpp --adc --visual --london --matrixop --amfi --export=DIRAC10.tar.gz
+#
+# remarks:  please do not use ./pamadm.py ... make
+#           "make" is unnecessary in this script
 
 from optparse import OptionParser
 import sys
@@ -301,6 +304,11 @@ parser.add_option('--minus',
                   dest='minus',
                   default=False,
                   help="All given individual modules are subtracted from --adm (has no effect if --adm missing)")
+parser.add_option('--auto',
+                  action='store_true',
+                  dest='auto',
+                  default=False,
+                  help="Automatically include all modules that the selected modules depend on")
 
 
 # parse input
@@ -324,8 +332,12 @@ for module in dirac_modules:
     if dirac_modules[module].is_included:
        for need_module in dirac_modules[module].depends_on:
            if not dirac_modules[need_module].is_included:
-              error_message = '%s depends on %s but %s is not included' % (module, need_module, need_module)
-              sys.exit(error_message)
+              if options.auto:
+#                user wants to include them automatically
+                 dirac_modules[need_module].include()
+              else:
+                 error_message = '%s depends on %s but %s is not included' % (module, need_module, need_module)
+                 sys.exit(error_message)
 
 
 # report on screen
