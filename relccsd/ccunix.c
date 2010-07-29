@@ -72,7 +72,7 @@ extern char  *getenv();
 
 /* Check that the large file option is enabled, if not use normal lseek */
 
-#if defined (SMALL_CFILES) || (SYS_DEC)
+#if defined (SMALL_CFILES) || (SYS_DEC) || (SYS_LINUX)
 typedef off_t off64_t;
 #define lseek64 lseek
 #elif defined (SYS_HPUX)
@@ -81,8 +81,8 @@ typedef off_t off64_t;
 
 typedef struct
 { int  fd ;
-  off64_t size, addr;
-  char fname[MAXLENGTH];
+    off64_t size, addr;
+    char fname[MAXLENGTH];
 } FILE_DEFINITION;
 
 FILE_DEFINITION files[MAXUNIT];
