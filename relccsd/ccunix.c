@@ -51,6 +51,7 @@ I/O routines:   openc(unit,fname,size,status)
         */
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -93,7 +94,7 @@ void MACRO_QUIT();
 #define PAM_GLOBAL_SYMBOLS_UNDERSCORED
 
 #ifdef PAM_GLOBAL_SYMBOLS_UNDERSCORED
-void openc_(int*unit, char*fname, off64_t* size, int *status)
+void openc_(int *unit, char *fname, off64_t* size, int *status)
 #else
 void openc(unit,fcd,size,status) off64_t *size; int *unit, *status; _fcd fcd;
 #endif
@@ -105,7 +106,10 @@ void openc(unit,fcd,size,status) off64_t *size; int *unit, *status; _fcd fcd;
         { fprintf(stderr,"openc: Unit number out of range (%d)\n",*unit);
           return;
         }
-  cp=fname+strlen(fname)-1;
+
+   cp=fname+strlen( fname )-1;
+ // cp=fname+strlen(  (const char *) fname ) -1 ;
+
  /*  if (*cp==' ') { while (*cp--==' '); *(cp+2)=NULL; }  */
   if (*cp==' ') { while (*cp--==' '); *(cp+2)='\0'; }
   if (strlen(fname)-1>MAXLENGTH) fprintf(stderr,"openc: filename too int >15\n");
