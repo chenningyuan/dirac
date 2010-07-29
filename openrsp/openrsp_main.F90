@@ -248,7 +248,7 @@ contains
       sum_up = sum_up/15.0d0
 
       print '(a30 " (w = "4f9.4"):" f26.10)', &
-            '@ averaged gamma dc THG',        &
+            '@ averaged gamma THG',           &
             real(-sum(w)),                    &
             real(w(1)),                       &
             real(w(2)),                       &
@@ -271,7 +271,7 @@ contains
       sum_up = sum_up/15.0d0
 
       print '(a30 " (w = "4f9.4"):" f26.10)', &
-            '@ averaged gamma dc IDRI',       &
+            '@ averaged gamma IDRI',          &
             real(-sum(w)),                    &
             real(w(1)),                       &
             real(w(2)),                       &
