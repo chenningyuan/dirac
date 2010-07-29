@@ -52,6 +52,8 @@ I/O routines:   openc(unit,fname,size,status)
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <stddef.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -100,6 +102,7 @@ void openc(unit,fcd,size,status) off64_t *size; int *unit, *status; _fcd fcd;
 #endif
 
 { char *cp, *env ;
+
   char  name[PATHMAX]; 
 
   if (*unit>MAXUNIT || *unit<0)
@@ -107,8 +110,7 @@ void openc(unit,fcd,size,status) off64_t *size; int *unit, *status; _fcd fcd;
           return;
         }
 
-   cp=fname+strlen( fname )-1;
- // cp=fname+strlen(  (const char *) fname ) -1 ;
+   cp=fname+ strlen( fname )-1;
 
  /*  if (*cp==' ') { while (*cp--==' '); *(cp+2)=NULL; }  */
   if (*cp==' ') { while (*cp--==' '); *(cp+2)='\0'; }
@@ -117,6 +119,7 @@ void openc(unit,fcd,size,status) off64_t *size; int *unit, *status; _fcd fcd;
            if it exists, use it, if not, use program supplied name 
         */  
   strcpy(name,fname); 
+
   if((env=getenv(fname)) !=NULL) 
   strcpy(name,env); 
 
@@ -150,6 +153,7 @@ void openc(unit,fcd,size,status) off64_t *size; int *unit, *status; _fcd fcd;
   files[*unit].size= *size;
   /* strncpy(files[*unit].fname,fname,14); *(files[*unit].fname+14)=NULL;  */
   strncpy(files[*unit].fname,fname,14); *(files[*unit].fname+14)='\0';
+
   *size=(lseek64(files[*unit].fd,0L,2)+511)/512;
   files[*unit].addr= -1;
 
