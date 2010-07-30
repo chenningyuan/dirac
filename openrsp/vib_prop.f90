@@ -122,18 +122,17 @@ contains
          read(unit, *, iostat=i) Rc(ic)
       end do
 
-!radovan: do not compare geometry without numeric tolerance
-!         there can be small differences introduced by angstrom -> bohr conversion
       if (i==0) then
          do ic = 1, nc
             diff = dabs(G(ic) - Rc(ic))
-            if (diff > 1.0d-10) then
+!radovan:   do not compare geometry without numeric tolerance
+            if (diff > 1.0d-3) then
                call quit('load_vib_modes: Different geometry in DALTON.HES and MOLECULE.INP; '// &
-                         'one or more coordinates differ by more than 1.0d-10 bohr')
+                         'one or more coordinates differ by more than 1.0d-3 bohr')
             end if
          end do
       else
-!radovan: what happens now?
+         call quit('load_vib_modes: error reading DALTON.HES')
       end if
 
       call GPCLOSE(unit,'KEEP')
