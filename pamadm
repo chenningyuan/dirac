@@ -288,8 +288,8 @@ MODS_MESSAGE=
    # London orbitals 
    #
    if [ -n "$LONDONMOD" ]; then
-      LONDONFLG='-DMOD_LONDON'
-      THIS_MOD_MESSAGE=" - London atomic orbitals enabled, $LONDONFLG"
+      LONDONFLG='-DMOD_LONDON -DMOD_MAGNETIZ'
+      THIS_MOD_MESSAGE=" - London atomic orbitals and magnetizabilities enabled, $LONDONFLG"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
