@@ -281,7 +281,7 @@ dirac_modules['log'].take_out_of_adm()
 
 
 # define input options
-# ======================
+# ====================
 
 parser = OptionParser()
 
@@ -309,6 +309,11 @@ parser.add_option('--auto',
                   dest='auto',
                   default=False,
                   help="Automatically include all modules that the selected modules depend on")
+
+# if there are no flags print help and exit
+if len(sys.argv) == 1:
+   parser.print_help()
+   sys.exit()
 
 
 # parse input
