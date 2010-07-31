@@ -117,7 +117,6 @@ vital_directories.append('dirrci')
 vital_directories.append('lucita')
 vital_directories.append('utils')
 vital_directories.append('dft')
-vital_directories.append('test')
 vital_directories.append('build')
 vital_directories.append('include')
 vital_directories.append('modules')
@@ -134,6 +133,14 @@ vital_files.append('config.guess')
 vital_files.append('config.status')
 vital_files.append('config.sub')
 vital_files.append('pamq.py.in')
+vital_files.append('test/MPI2_test.F')
+vital_files.append('test/README')
+vital_files.append('test/bdrep')
+vital_files.append('test/crep')
+vital_files.append('test/drep')
+vital_files.append('test/hdrep')
+vital_files.append('test/run.sh.in')
+vital_files.append('test/runtest')
 
 
 # list of vital tests - these are always exported/released
@@ -620,11 +627,13 @@ if options.tarfile != None:
 #  create scratch dir
    os.mkdir(scratch_dir)
 
-#  copy all vital parts to scratch dir
+#  copy all vital directories and files to scratch dir
    for directory in vital_directories:
        shutil.copytree(directory, scratch_dir + '/' + directory)
    for file in vital_files:
-       shutil.copy(file, scratch_dir + '/' + file)
+#      need to copy with parent, don't know how to do it in python
+       command = 'cp --parent %s %s' % (file, scratch_dir)
+       os.system(command)
 
 #  preventively remove all module directories in scratch dir (example is prp/esr which is copied along with prp and maybe not wanted)
    for module in dirac_modules:
@@ -650,6 +659,16 @@ if options.tarfile != None:
 
 #  remove reference files that can be fetched from the dirac website
    shutil.rmtree(scratch_dir + '/basis/reference_unedited')
+
+#  copy tests to scratch dir
+   for test in vital_tests:
+       d = 'test/' + test.directory
+       shutil.copytree(d, scratch_dir + '/' + d)
+   for module in dirac_modules:
+       if dirac_modules[module].is_included:
+          for test in dirac_modules[module].tests:
+              d = 'test/' + test.directory
+              shutil.copytree(d, scratch_dir + '/' + d)
 
 #  run the vacuum cleaner: remove junk files
    os.system("rm -f  `find %s -name '*.o'`"  % scratch_dir)
