@@ -427,11 +427,6 @@ parser.add_option('--auto',
                   default=False,
                   help="Automatically include all modules that the selected modules depend on")
 
-# if there are no flags print help and exit
-if len(sys.argv) == 1:
-   parser.print_help()
-   sys.exit()
-
 # complain if user still uses ./pamadm.py ... make
 if sys.argv[-1] == 'make':
    sys.exit('please do not use ./pamadm.py ... "make"; "make" is not needed')
@@ -469,7 +464,11 @@ for module in dirac_modules:
 # report on screen
 # ================
 
-print 'Active modules:'
+#  there are no flags
+if len(sys.argv) == 1:
+   print 'only core functionality selected'
+else:
+   print 'Active modules:'
 for module in dirac_modules:
     if dirac_modules[module].is_included:
        print dirac_modules[module].message
