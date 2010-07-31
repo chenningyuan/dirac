@@ -272,6 +272,7 @@ dirac_modules['srdft'] = dirac_module('srdft', 'Include srDFT module')
 dirac_modules['srdft'].add_cppflag('MOD_SRDFT')
 dirac_modules['srdft'].add_cppflag('MOD_KRMC')
 dirac_modules['srdft'].add_directory('srdft')
+dirac_modules['srdft'].add_dependency('krmc')
 dirac_modules['srdft'].take_out_of_adm()
 
 dirac_modules['unreleased'] = dirac_module('unreleased', 'Include unreleased functionality (not covered by other flags)')
