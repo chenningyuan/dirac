@@ -74,7 +74,7 @@ usage='Usage: '$0'\n'\
 '\tA common error is to forget the = character, e.g. -q long instead of the correct -q=long\n'\
 '--tests=TESTS\n'\
 '\tThe tests that should be run (default: --tests=short)\n'\
-'\tKnown tests: "short", "medium", "long", "all", "release", or the number(s) of some specific tests\n'\
+'\tKnown tests: "short", "medium", "long", "all", or the number(s) of some specific tests\n'\
 '--runtype=RUNTYPE\n'\
 '\tshort, medium, etc. (default: undefined)\n'\
 '--testdir=TESTDIR\n'\
@@ -204,10 +204,6 @@ else
       ;;
       "all")
       run=all_test;
-      echo ' Will do preselected test set : ' $tests ;
-      ;;
-      "release")
-      run=release_test;
       echo ' Will do preselected test set : ' $tests ;
       ;;
       *)

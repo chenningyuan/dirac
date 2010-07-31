@@ -103,28 +103,3 @@ long_partest="$this_testset $medium_partest"
 long_test="$this_testset $medium_test"
 
 
-# benchmark
-# =========
-
-benchmark_test="29.benchmark_cc"
-
-
-# here list all tests that are expected to work in the next release version
-# =========================================================================
-
-this_testset=""
-this_testset="$this_testset dft_ac"
-this_testset="$this_testset dft_response"
-this_testset="$this_testset dft_response_symmetry"
-this_testset="$this_testset dft_ao_eval"
-this_testset="$this_testset dft_betasigma"
-this_testset="$this_testset visual_elf"
-this_testset="$this_testset visual_general"
-this_testset="$this_testset visual_div_rot"
-this_testset="$this_testset symmetry_scf_energy"
-this_testset="$this_testset symmetry_recognition"
-this_testset="$this_testset basis_contraction"
-this_testset="$this_testset 47.fde.prop"
-this_testset="$this_testset 49.xyzinput"
-
-release_test="$this_testset"
