@@ -21,6 +21,7 @@
 
 module london_reorth_hb
 
+#ifdef MOD_LONDON
   use interface_for_pammag
   use memory_allocator 
 
@@ -466,4 +467,5 @@ contains
         mem_wrk_count = mem_wrk_count - 1
   end subroutine
 
+#endif /* ifdef MOD_LONDON */
 end module
