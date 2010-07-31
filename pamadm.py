@@ -36,9 +36,38 @@ def get_touch_time():
   mtime = atime
   times = (atime,mtime)
   return times
-  
-# dirac module class
-# ==================
+
+
+# classes
+# =======
+
+class dirac_test:
+     def __init__(self, directory, fine_with_mpi = True):
+         self.directory     = directory
+         self.fine_with_mpi = fine_with_mpi
+     def print_directory(self):
+         print self.directory
+
+class short_test(dirac_test):
+      """
+      short test
+      """
+      def type(self):
+          return 'short'
+
+class medium_test(dirac_test):
+      """
+      medium test
+      """
+      def type(self):
+          return 'medium'
+
+class long_test(dirac_test):
+      """
+      long test
+      """
+      def type(self):
+          return 'long'
 
 class dirac_module:
      def __init__(self, flag, message):
@@ -49,6 +78,7 @@ class dirac_module:
          self.directories = []
          self.files       = []
          self.cppflags    = []
+         self.tests       = []
          self.part_of_adm = True
      def add_directory(self, x):
          self.directories.append(x)
@@ -58,6 +88,8 @@ class dirac_module:
          self.depends_on.append(x)
      def add_cppflag(self, x):
          self.cppflags.append(x)
+     def add_test(self, x):
+         self.tests.append(x)
      def include(self):
          self.is_included = True
      def exclude(self):
@@ -69,9 +101,8 @@ def callback_include(option, opt, value, parser):
     dirac_modules[str(option)[2:]].include()
 
 
-# list vital directories and files
-# (these are always exported/released)
-# ====================================
+# list of vital directories and files - these are always exported/released
+# ========================================================================
 
 vital_directories = []
 vital_directories.append('dirac')
@@ -105,31 +136,76 @@ vital_files.append('config.sub')
 vital_files.append('pamq.py.in')
 
 
-# list directories and files that are not compiled as part of main executable
-# ===========================================================================
+# list of vital tests - these are always exported/released
+# ========================================================
 
-directories_not_built = []
-directories_not_built.append('utils')
-directories_not_built.append('xcfun/src')
-directories_not_built.append('xcfun/test')
+vital_tests = []
+# short tests
+vital_tests.append(short_test('1.energy+dipole'))
+vital_tests.append(short_test('3.geomopt.dhf'))
+vital_tests.append(short_test('4.levy-leblond.nmr'))
+vital_tests.append(short_test('5.cisd.energy'))
+vital_tests.append(short_test('6.cosci.energy'))
+vital_tests.append(short_test('8.spinfree.cosci.energy'))
+vital_tests.append(short_test('11.methods.cosci'))
+vital_tests.append(short_test('7.directmp2.energy'))
+vital_tests.append(short_test('basis_contraction'))
+vital_tests.append(short_test('basis_input'))
+vital_tests.append(short_test('13.hf_dynamic_polarizability'))
+vital_tests.append(short_test('22.lucita_short'))
+vital_tests.append(short_test('30.linear'))
+vital_tests.append(short_test('symmetry_recognition'))
+vital_tests.append(short_test('37.bss.energies'))
+vital_tests.append(short_test('39.gaunt'))
+vital_tests.append(short_test('dft_ac'))
+vital_tests.append(short_test('dft_response'))
+vital_tests.append(short_test('dft_response_symmetry'))
+vital_tests.append(short_test('dft_ao_eval'))
+vital_tests.append(short_test('dft_betasigma'))
+vital_tests.append(short_test('49.xyzinput'))
+# medium tests
+vital_tests.append(medium_test('2.nmrspinspin'))
+vital_tests.append(medium_test('10.efg'))
+vital_tests.append(medium_test('12.zora'))
+vital_tests.append(medium_test('symmetry_scf_energy'))
+vital_tests.append(medium_test('19.fockspace'))
+vital_tests.append(medium_test('projection_analysis'))
+vital_tests.append(medium_test('33.frozen'))
+vital_tests.append(medium_test('34.rhonuc'))
+vital_tests.append(medium_test('36.mp2_properties'))
+vital_tests.append(medium_test('25.qrpa'))
+vital_tests.append(medium_test('28.luciarel_medium',    fine_with_mpi = False))
+vital_tests.append(medium_test('54.stex',               fine_with_mpi = False))
+# long tests
+vital_tests.append(long_test('41.pv_nmr'))
+vital_tests.append(long_test('24.lucita_large'))
 
-files_not_built = []
-files_not_built.append('utils/cube2pov.c')
-files_not_built.append('test/MPI2_test.F')
-files_not_built.append('relccsd/ccdriv_nomemget.F')
-files_not_built.append('relccsd/ccints_nomemget.F')
-files_not_built.append('eri/eri2par.F')
-files_not_built.append('openrsp/aoresponse_visual.F90')
-files_not_built.append('densfit/denfit_noddy.F')
-files_not_built.append('lucita/unused.F')
-files_not_built.append('dft/vrg.F')
-files_not_built.append('eri/eriprg.F')
-files_not_built.append('dft/fun-tester.c')
-files_not_built.append('relccsd/ccmain.F')
-files_not_built.append('relccsd/quit.F')
-files_not_built.append('build/gen_fortran_interface_h.c')
-files_not_built.append('dirrci/cimain.F')
-files_not_built.append('xcfun/fortran/example.F90')
+
+# list of directories and files that are never compiled as part of DIRAC main executable
+# ======================================================================================
+
+directories_never_compiled = []
+directories_never_compiled.append('utils')
+directories_never_compiled.append('xcfun/src')
+directories_never_compiled.append('xcfun/test')
+
+files_never_compiled = []
+files_never_compiled.append('utils/cube2pov.c')
+files_never_compiled.append('test/MPI2_test.F')
+files_never_compiled.append('relccsd/ccdriv_nomemget.F')
+files_never_compiled.append('relccsd/ccints_nomemget.F')
+files_never_compiled.append('eri/eri2par.F')
+files_never_compiled.append('openrsp/aoresponse_visual.F90')
+files_never_compiled.append('densfit/denfit_noddy.F')
+files_never_compiled.append('lucita/unused.F')
+files_never_compiled.append('dft/vrg.F')
+files_never_compiled.append('eri/eriprg.F')
+files_never_compiled.append('dft/fun-tester.c')
+files_never_compiled.append('relccsd/ccmain.F')
+files_never_compiled.append('relccsd/quit.F')
+files_never_compiled.append('build/gen_fortran_interface_h.c')
+files_never_compiled.append('dirrci/cimain.F')
+files_never_compiled.append('xcfun/fortran/example.F90')
 
 
 # definition of modules
@@ -137,150 +213,188 @@ files_not_built.append('xcfun/fortran/example.F90')
 
 dirac_modules = {}
 
-dirac_modules['visual'] = dirac_module('visual', 'Include visualization module')
-dirac_modules['visual'].add_cppflag('MOD_VISUAL')
-dirac_modules['visual'].add_directory('visual')
-dirac_modules['visual'].add_file('somefile')
-dirac_modules['visual'].add_dependency('matrixop')
+this_module = 'visual'
+dirac_modules[this_module] = dirac_module('visual', 'Include visualization module')
+dirac_modules[this_module].add_cppflag('MOD_VISUAL')
+dirac_modules[this_module].add_directory('visual')
+dirac_modules[this_module].add_file('somefile')
+dirac_modules[this_module].add_dependency('matrixop')
+dirac_modules[this_module].add_test(short_test('visual_elf'))
+dirac_modules[this_module].add_test(short_test('visual_gamma5'))
+dirac_modules[this_module].add_test(medium_test('visual_general'))
+dirac_modules[this_module].add_test(medium_test('visual_div_rot'))
 
-dirac_modules['matrixop'] = dirac_module('matrixop', 'Include matrix operations module')
-dirac_modules['matrixop'].add_cppflag('MOD_MATRIX_OPERATIONS')
-dirac_modules['matrixop'].add_directory('matrix_operations')
+this_module = 'matrixop'
+dirac_modules[this_module] = dirac_module('matrixop', 'Include matrix operations module')
+dirac_modules[this_module].add_cppflag('MOD_MATRIX_OPERATIONS')
+dirac_modules[this_module].add_directory('matrix_operations')
 
-dirac_modules['eri'] = dirac_module('eri', 'Include ERI integral routines')
-dirac_modules['eri'].add_cppflag('MOD_ERI')
-dirac_modules['eri'].add_directory('eri')
+this_module = 'eri'
+dirac_modules[this_module] = dirac_module('eri', 'Include ERI integral routines')
+dirac_modules[this_module].add_cppflag('MOD_ERI')
+dirac_modules[this_module].add_directory('eri')
 
-dirac_modules['densfit'] = dirac_module('densfit', 'Include density fitting module')
-dirac_modules['densfit'].add_cppflag('MOD_DNF')
-dirac_modules['densfit'].add_dependency('eri')
-dirac_modules['densfit'].add_directory('densfit')
+this_module = 'densfit'
+dirac_modules[this_module] = dirac_module('densfit', 'Include density fitting module')
+dirac_modules[this_module].add_cppflag('MOD_DNF')
+dirac_modules[this_module].add_dependency('eri')
+dirac_modules[this_module].add_directory('densfit')
 
-dirac_modules['largemolecules'] = dirac_module('largemolecules', 'Increases common blocks to handle more atoms and basis sets')
-dirac_modules['largemolecules'].add_cppflag('LARGE_MOLECULES')
-dirac_modules['largemolecules'].take_out_of_adm()
+this_module = 'largemolecules'
+dirac_modules[this_module] = dirac_module('largemolecules', 'Increases common blocks to handle more atoms and basis sets')
+dirac_modules[this_module].add_cppflag('LARGE_MOLECULES')
+dirac_modules[this_module].take_out_of_adm()
 
-dirac_modules['fmm'] = dirac_module('fmm', 'Include fast multipole method')
-dirac_modules['fmm'].add_cppflag('MOD_FMM')
-dirac_modules['fmm'].add_dependency('eri')
-dirac_modules['fmm'].add_dependency('densfit')
-dirac_modules['fmm'].add_directory('fmm')
-dirac_modules['fmm'].take_out_of_adm()
+this_module = 'fmm'
+dirac_modules[this_module] = dirac_module('fmm', 'Include fast multipole method')
+dirac_modules[this_module].add_cppflag('MOD_FMM')
+dirac_modules[this_module].add_dependency('eri')
+dirac_modules[this_module].add_dependency('densfit')
+dirac_modules[this_module].add_directory('fmm')
+dirac_modules[this_module].take_out_of_adm()
 
-dirac_modules['esr'] = dirac_module('esr', 'Include ESR property module')
-dirac_modules['esr'].add_cppflag('MOD_ESR')
-dirac_modules['esr'].add_directory('prp/esr')
-dirac_modules['esr'].add_dependency('krmc')
+this_module = 'esr'
+dirac_modules[this_module] = dirac_module('esr', 'Include ESR property module')
+dirac_modules[this_module].add_cppflag('MOD_ESR')
+dirac_modules[this_module].add_directory('prp/esr')
+dirac_modules[this_module].add_dependency('krmc')
+dirac_modules[this_module].add_test(long_test('26.krmc_gosci'))
+dirac_modules[this_module].add_test(medium_test('27.krmc_luciarel', fine_with_mpi = False))
 
-dirac_modules['xpp'] = dirac_module('xpp', 'Include PP excitation energy and STEX modules')
-dirac_modules['xpp'].add_cppflag('MOD_XPP')
-dirac_modules['xpp'].add_cppflag('MOD_STEX')
-dirac_modules['xpp'].add_directory('prp/xpp')
+this_module = 'xpp'
+dirac_modules[this_module] = dirac_module('xpp', 'Include PP excitation energy and STEX modules')
+dirac_modules[this_module].add_cppflag('MOD_XPP')
+dirac_modules[this_module].add_cppflag('MOD_STEX')
+dirac_modules[this_module].add_directory('prp/xpp')
 
-dirac_modules['xml'] = dirac_module('xml', 'Include XML input/output module')
-dirac_modules['xml'].add_cppflag('MOD_XML')
-dirac_modules['xml'].add_directory('gp/xml')
-dirac_modules['xml'].take_out_of_adm()
+this_module = 'xml'
+dirac_modules[this_module] = dirac_module('xml', 'Include XML input/output module')
+dirac_modules[this_module].add_cppflag('MOD_XML')
+dirac_modules[this_module].add_directory('gp/xml')
+dirac_modules[this_module].take_out_of_adm()
 
-dirac_modules['krmc'] = dirac_module('krmc', 'Include KR-MCSCF and LUCIAREL modules')
-dirac_modules['krmc'].add_cppflag('MOD_KRMC')
-dirac_modules['krmc'].add_directory('krmc')
-dirac_modules['krmc'].add_directory('luciarel')
+this_module = 'krmc'
+dirac_modules[this_module] = dirac_module('krmc', 'Include KR-MCSCF and LUCIAREL modules')
+dirac_modules[this_module].add_cppflag('MOD_KRMC')
+dirac_modules[this_module].add_directory('krmc')
+dirac_modules[this_module].add_directory('luciarel')
 
-dirac_modules['emb'] = dirac_module('emb', 'Include ab initio/DFT-embedding module')
-dirac_modules['emb'].add_cppflag('MOD_EMB')
-dirac_modules['emb'].add_directory('embedding')
+this_module = 'emb'
+dirac_modules[this_module] = dirac_module('emb', 'Include ab initio/DFT-embedding module')
+dirac_modules[this_module].add_cppflag('MOD_EMB')
+dirac_modules[this_module].add_directory('embedding')
+dirac_modules[this_module].add_test(short_test('47.fde.prop'))
+dirac_modules[this_module].add_test(medium_test('fde_response_autodiff', fine_with_mpi = False))
 
-dirac_modules['openrsp'] = dirac_module('openrsp', 'Include OpenRSP')
-dirac_modules['openrsp'].add_cppflag('MOD_OPENRSP')
-dirac_modules['openrsp'].add_directory('openrsp')
-dirac_modules['openrsp'].add_dependency('matrixop')
+this_module = 'openrsp'
+dirac_modules[this_module] = dirac_module('openrsp', 'Include OpenRSP')
+dirac_modules[this_module].add_cppflag('MOD_OPENRSP')
+dirac_modules[this_module].add_directory('openrsp')
+dirac_modules[this_module].add_dependency('matrixop')
 
-dirac_modules['xcfun'] = dirac_module('xcfun', 'Include XCFun module')
-dirac_modules['xcfun'].add_cppflag('MOD_XCFUN')
-dirac_modules['xcfun'].add_directory('xcfun')
-dirac_modules['xcfun'].take_out_of_adm()
+this_module = 'xcfun'
+dirac_modules[this_module] = dirac_module('xcfun', 'Include XCFun module')
+dirac_modules[this_module].add_cppflag('MOD_XCFUN')
+dirac_modules[this_module].add_directory('xcfun')
+dirac_modules[this_module].add_test(short_test('dft_response_xcfun'))
+dirac_modules[this_module].take_out_of_adm()
 
-dirac_modules['cap'] = dirac_module('cap', 'Include CAP module')
-dirac_modules['cap'].add_cppflag('MOD_CAP')
-dirac_modules['cap'].add_dependency('oof')
-dirac_modules['cap'].add_directory('cap')
-dirac_modules['cap'].take_out_of_adm()
+this_module = 'cap'
+dirac_modules[this_module] = dirac_module('cap', 'Include CAP module')
+dirac_modules[this_module].add_cppflag('MOD_CAP')
+dirac_modules[this_module].add_dependency('oof')
+dirac_modules[this_module].add_directory('cap')
+dirac_modules[this_module].take_out_of_adm()
 
 #fixme: in pamadm this flag triggers a lot of operations
 #       so far this is not done here
 #       (can they be avoided?)
 #       same for directories ... so complicating
-dirac_modules['hscc'] = dirac_module('hscc', 'Include interface for the (external) HSMRCC code together with its objects')
-dirac_modules['hscc'].add_cppflag('MOD_HSCC')
-dirac_modules['hscc'].add_dependency('oof')
-dirac_modules['hscc'].add_directory('hsmrcc')
-dirac_modules['hscc'].take_out_of_adm()
+this_module = 'hscc'
+dirac_modules[this_module] = dirac_module('hscc', 'Include interface for the (external) HSMRCC code together with its objects')
+dirac_modules[this_module].add_cppflag('MOD_HSCC')
+dirac_modules[this_module].add_dependency('oof')
+dirac_modules[this_module].add_directory('hsmrcc')
+dirac_modules[this_module].take_out_of_adm()
 
 #fixme: in pamadm this flag triggers a lot of operations
 #       so far this is not done here
 #       (can they be avoided?)
 #       same for directories ... so complicating
-dirac_modules['hsfs'] = dirac_module('hsfs', 'Include higher external Higher sector FSCC code')
-dirac_modules['hsfs'].add_cppflag('MOD_HSFS')
-dirac_modules['hsfs'].add_dependency('oof')
-dirac_modules['hsfs'].add_dependency('hscc')
-dirac_modules['hsfs'].add_directory('hsmrcc')
-dirac_modules['hsfs'].take_out_of_adm()
+this_module = 'hsfs'
+dirac_modules[this_module] = dirac_module('hsfs', 'Include higher external Higher sector FSCC code')
+dirac_modules[this_module].add_cppflag('MOD_HSFS')
+dirac_modules[this_module].add_dependency('oof')
+dirac_modules[this_module].add_dependency('hscc')
+dirac_modules[this_module].add_directory('hsmrcc')
+dirac_modules[this_module].take_out_of_adm()
 
 #fixme: in pamadm this flag triggers a lot of operations
 #       so far this is not done here
 #       (can they be avoided?)
 #       same for directories ... so complicating
-dirac_modules['hsfsdyn'] = dirac_module('hsfsdyn', 'Include higher external Higher sector FSCC code - dynamic allocation version.')
-dirac_modules['hsfsdyn'].add_cppflag('HSFS_DYN_ALLOC')
-dirac_modules['hsfsdyn'].add_dependency('oof')
-dirac_modules['hsfsdyn'].add_dependency('hsfs')
-dirac_modules['hsfsdyn'].add_dependency('hscc')
-dirac_modules['hsfsdyn'].add_directory('hsmrcc')
-dirac_modules['hsfsdyn'].take_out_of_adm()
+this_module = 'hsfsdyn'
+dirac_modules[this_module] = dirac_module('hsfsdyn', 'Include higher external Higher sector FSCC code - dynamic allocation version.')
+dirac_modules[this_module].add_cppflag('HSFS_DYN_ALLOC')
+dirac_modules[this_module].add_dependency('oof')
+dirac_modules[this_module].add_dependency('hsfs')
+dirac_modules[this_module].add_dependency('hscc')
+dirac_modules[this_module].add_directory('hsmrcc')
+dirac_modules[this_module].take_out_of_adm()
 
-dirac_modules['ihfscc'] = dirac_module('ihfscc', 'Include Intermediate Hamiltonian functionality to FSCC code')
-dirac_modules['ihfscc'].add_cppflag('MOD_IHFSCC')
+this_module = 'ihfscc'
+dirac_modules[this_module] = dirac_module('ihfscc', 'Include Intermediate Hamiltonian functionality to FSCC code')
+dirac_modules[this_module].add_cppflag('MOD_IHFSCC')
 
-dirac_modules['amfi'] = dirac_module('amfi', 'Include the AMFI functionality into DIRAC')
-dirac_modules['amfi'].add_cppflag('MOD_AMFI')
-dirac_modules['amfi'].add_directory('amfi')
+this_module = 'amfi'
+dirac_modules[this_module] = dirac_module('amfi', 'Include the AMFI functionality into DIRAC')
+dirac_modules[this_module].add_cppflag('MOD_AMFI')
+dirac_modules[this_module].add_directory('amfi')
 
-dirac_modules['london'] = dirac_module('london', 'Include London orbitals functionality for magnetic properties')
-dirac_modules['london'].add_cppflag('MOD_LONDON')
+this_module = 'london'
+dirac_modules[this_module] = dirac_module('london', 'Include London orbitals functionality for magnetic properties')
+dirac_modules[this_module].add_cppflag('MOD_LONDON')
+dirac_modules[this_module].add_test(short_test('38.london.magn_prop'))
 
-dirac_modules['magnetiz'] = dirac_module('magnetiz', 'Include calculation of magnetizabilities')
-dirac_modules['magnetiz'].add_cppflag('MOD_MAGNETIZ')
-dirac_modules['magnetiz'].add_dependency('london')
+this_module = 'magnetiz'
+dirac_modules[this_module] = dirac_module('magnetiz', 'Include calculation of magnetizabilities')
+dirac_modules[this_module].add_cppflag('MOD_MAGNETIZ')
+dirac_modules[this_module].add_dependency('london')
 
-dirac_modules['oof'] = dirac_module('oof', 'Include object oriented modularity of Fotran 90/95')
-dirac_modules['oof'].add_cppflag('MOD_OOF')
-dirac_modules['oof'].add_directory('oof')
-dirac_modules['oof'].take_out_of_adm()
+this_module = 'oof'
+dirac_modules[this_module] = dirac_module('oof', 'Include object oriented modularity of Fotran 90/95')
+dirac_modules[this_module].add_cppflag('MOD_OOF')
+dirac_modules[this_module].add_directory('oof')
+dirac_modules[this_module].take_out_of_adm()
 
-dirac_modules['adc'] = dirac_module('adc', 'Include ADC electron propagator module')
-dirac_modules['adc'].add_cppflag('MOD_ADC')
-dirac_modules['adc'].add_directory('reladc')
+this_module = 'adc'
+dirac_modules[this_module] = dirac_module('adc', 'Include ADC electron propagator module')
+dirac_modules[this_module].add_cppflag('MOD_ADC')
+dirac_modules[this_module].add_directory('reladc')
+dirac_modules[this_module].add_test(medium_test('53.reladc', fine_with_mpi = False))
 
-dirac_modules['ecp'] = dirac_module('ecp', 'Include ARGOS ECP module')
-dirac_modules['ecp'].add_cppflag('MOD_ECP')
-dirac_modules['ecp'].add_directory('argosecp')
-dirac_modules['ecp'].take_out_of_adm()
+this_module = 'ecp'
+dirac_modules[this_module] = dirac_module('ecp', 'Include ARGOS ECP module')
+dirac_modules[this_module].add_cppflag('MOD_ECP')
+dirac_modules[this_module].add_directory('argosecp')
+dirac_modules[this_module].take_out_of_adm()
 
-dirac_modules['srdft'] = dirac_module('srdft', 'Include srDFT module')
-dirac_modules['srdft'].add_cppflag('MOD_SRDFT')
-dirac_modules['srdft'].add_cppflag('MOD_KRMC')
-dirac_modules['srdft'].add_directory('srdft')
-dirac_modules['srdft'].add_dependency('krmc')
-dirac_modules['srdft'].take_out_of_adm()
+this_module = 'srdft'
+dirac_modules[this_module] = dirac_module('srdft', 'Include srDFT module')
+dirac_modules[this_module].add_cppflag('MOD_SRDFT')
+dirac_modules[this_module].add_cppflag('MOD_KRMC')
+dirac_modules[this_module].add_directory('srdft')
+dirac_modules[this_module].add_dependency('krmc')
+dirac_modules[this_module].take_out_of_adm()
 
-dirac_modules['unreleased'] = dirac_module('unreleased', 'Include unreleased functionality (not covered by other flags)')
-dirac_modules['unreleased'].add_cppflag('MOD_UNRELEASED')
+this_module = 'unreleased'
+dirac_modules[this_module] = dirac_module('unreleased', 'Include unreleased functionality (not covered by other flags)')
+dirac_modules[this_module].add_cppflag('MOD_UNRELEASED')
 
-dirac_modules['log'] = dirac_module('log', 'Will log interesting matrices in matlab format (very verbose!)')
-dirac_modules['log'].add_cppflag('MOD_LOG')
-dirac_modules['log'].take_out_of_adm()
+this_module = 'log'
+dirac_modules[this_module] = dirac_module('log', 'Will log interesting matrices in matlab format (very verbose!)')
+dirac_modules[this_module].add_cppflag('MOD_LOG')
+dirac_modules[this_module].take_out_of_adm()
 
 
 # define input options
@@ -381,10 +495,10 @@ for module in dirac_modules:
        for directory in dirac_modules[module].directories:
            s = '%s/.*' % directory
            f.write(s + '\n')
-for directory in directories_not_built:
+for directory in directories_never_compiled:
     s = '%s/.*' % directory
     f.write(s + '\n')
-for file in files_not_built:
+for file in files_never_compiled:
     s = '%s' % file
     f.write(s + '\n')
 
@@ -397,8 +511,8 @@ f.close()
 #radovan: this does not work if the files do not exist
 #os.utime('build/Makefile.dep',get_touch_time())
 #os.utime('build/Makefile.obj',get_touch_time())
-os.system('touch -t 198001010000 build/Makefile.dep') 
-os.system('touch -t 198001010000 build/Makefile.obj') 
+os.system('touch -t 198001010000 build/Makefile.dep')
+os.system('touch -t 198001010000 build/Makefile.obj')
 
 
 # prepare Makefile.extobj and Makefile.moddef
@@ -406,7 +520,7 @@ os.system('touch -t 198001010000 build/Makefile.obj')
 
 #radovan: this does not work if the files do not exist
 #os.utime('build/Makefile.extobj',get_touch_time())
-os.system('touch -t 198001010000 build/Makefile.extobj') 
+os.system('touch -t 198001010000 build/Makefile.extobj')
 
 f = open('build/Makefile.moddef', 'w')
 
@@ -444,15 +558,57 @@ f.close()
 # create and distribute Makefile over active directories
 # ======================================================
 
+# ...not done so far....
+
+
 
 # package tests
 # =============
 
-# at the moment stupid code
-os.system("echo '##########################################################################################################' >  test/runtest")
-os.system("echo '# FILE IS AUTOMATICALLY GENERATED BY PAMADM, DO NOT EDIT THIS FILE, EDIT RUNTEST.PAMADM AND RERUN PAMADM #' >> test/runtest")
-os.system("echo '##########################################################################################################' >> test/runtest")
-os.system("cat test/runtest.pamadm test/runtest.in >> test/runtest")
+f = open('test/runtest', 'w')
+
+s = '''
+################################################
+# file is automatically generated by pamadm.py #
+################################################
+'''
+f.write(s)
+
+for type in ['short', 'medium', 'long']:
+    s = ''
+    for test in vital_tests:
+        if test.type() == type and test.fine_with_mpi:
+           s += ' %s' % test.directory
+    for module in dirac_modules:
+        if dirac_modules[module].is_included:
+           for test in dirac_modules[module].tests:
+               if test.type() == type and test.fine_with_mpi:
+                  s += ' %s' % test.directory
+    f.write('%s_parallel="%s"\n' % (type, s))
+    s = ''
+    for test in vital_tests:
+        if test.type() == type and not test.fine_with_mpi:
+           s += ' %s' % test.directory
+    for module in dirac_modules:
+        if dirac_modules[module].is_included:
+           for test in dirac_modules[module].tests:
+               if test.type() == type and not test.fine_with_mpi:
+                  s += ' %s' % test.directory
+    f.write('%s_onlyseq="%s"\n' % (type, s))
+
+s = '''
+long_test="      $short_parallel $short_onlyseq   $medium_parallel $medium_onlyseq $long_parallel $long_onlyseq"
+long_partest="   $short_parallel                  $medium_parallel                 $long_parallel"
+medium_test="    $short_parallel $short_onlyseq   $medium_parallel $medium_onlyseq"
+medium_partest=" $short_parallel                  $medium_parallel"
+short_test="     $short_parallel $short_onlyseq"
+short_partest="  $short_parallel"
+'''
+f.write(s)
+
+f.close()
+
+os.system("cat test/runtest.in >> test/runtest")
 os.system("chmod 700 test/runtest")
 
 
