@@ -21,9 +21,6 @@
 #           prepare release DIRAC10
 #           PLEASE MODIFY THIS LINE IF IT IS NOT CORRECT!
 #           ./pamadm.py --xpp --adc --visual --london --matrixop --amfi --export=DIRAC10.tar.gz
-#
-# remarks:  please do not use ./pamadm.py ... make
-#           "make" is unnecessary in this script
 
 from optparse import OptionParser
 import sys
@@ -113,6 +110,8 @@ vital_files.append('pamq.py.in')
 
 directories_not_built = []
 directories_not_built.append('utils')
+directories_not_built.append('xcfun/src')
+directories_not_built.append('xcfun/test')
 
 files_not_built = []
 files_not_built.append('utils/cube2pov.c')
@@ -130,6 +129,7 @@ files_not_built.append('relccsd/ccmain.F')
 files_not_built.append('relccsd/quit.F')
 files_not_built.append('build/gen_fortran_interface_h.c')
 files_not_built.append('dirrci/cimain.F')
+files_not_built.append('xcfun/fortran/example.F90')
 
 
 # definition of modules
@@ -318,6 +318,10 @@ if len(sys.argv) == 1:
    parser.print_help()
    sys.exit()
 
+# complain if user still uses ./pamadm.py ... make
+if sys.argv[-1] == 'make':
+   sys.exit('please do not use ./pamadm.py ... "make"; "make" is not needed')
+
 
 # parse input
 # ===========
@@ -356,6 +360,15 @@ for module in dirac_modules:
     if dirac_modules[module].is_included:
        print dirac_modules[module].message
 print
+if dirac_modules['xcfun'].is_included:
+   print "*****************************************************************"
+   print "* PLEASE NOTE !!! "
+   print "* "
+   print "* Please use (in Makefile.config)"
+   print "* LIBS=-Lxcfun/lib -lxcfun"
+   print "* "
+   print "*****************************************************************"
+   print
 
 
 # prepare dontbuild

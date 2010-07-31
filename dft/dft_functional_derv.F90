@@ -30,7 +30,9 @@ module dft_functional_derv
 
   public get_functional_derv
 #ifdef MOD_XCFUN
+#ifdef MOD_EMB
   public get_general_fun_derv
+#endif
   public xcfun_set_functional
   public xcfun_is_gga
 #endif
@@ -294,6 +296,7 @@ contains
 
 
 #ifdef MOD_XCFUN
+#ifdef MOD_EMB
   subroutine get_general_fun_derv(f,            &
                                   order,        &
                                   block_length, &
@@ -307,9 +310,7 @@ contains
                                   parallel_xc,  &
                                   debug)
    use dirac_cfg
-#ifdef MOD_EMB
    use fde_mod
-#endif
 
 !   ----------------------------------------------------------------------------
     type(functional), intent(inout)  :: f
@@ -553,9 +554,7 @@ contains
                                n,            &
                                derv, dervtmp)
    use dirac_cfg
-#ifdef MOD_EMB
    use fde_mod
-#endif
 
 !   ----------------------------------------------------------------------------
     type(functional), intent(inout)  :: f    
@@ -572,18 +571,12 @@ contains
 
       write (*,*) ''
       write (*,*) '   functional definition'
-#ifdef MOD_XCFUN
       do i = 1, XC_NR_PARAMS
-#else
-      i = 1
-#endif
          if (f%w(i) .gt. 0.0d0) then
             write (*,*) '      functional type :',i
             write (*,*) '            weight =',f%w(i)
          endif
-#ifdef MOD_XCFUN
       enddo
-#endif
       write (*,*) ' '
       write (*,*) '   density and functional derivative values'
       do i = 1, 1
@@ -595,6 +588,7 @@ contains
          enddo
       enddo
   end subroutine debug_general_fun
-#endif
+#endif /* ifdef MOD_EMB */
+#endif /* ifdef MOD_XCFUN */
 
 end module

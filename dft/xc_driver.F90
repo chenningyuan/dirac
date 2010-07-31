@@ -1014,6 +1014,7 @@ contains
         if (response_order_ao == 0) then
 #endif
 #ifdef MOD_XCFUN
+#ifdef MOD_EMB
            if (dirac_cfg_fde_response .and. (max_fun_derv > 1)) then
 !             fde_response:
 !             the frozen density has to be passed all the way to here
@@ -1035,6 +1036,7 @@ contains
                                         fde_resp_verbose)
            else
 #endif 
+#endif 
               call get_functional_derv(xc_fun,       &
                                        max_fun_derv, &
                                        bllen,        &
@@ -1044,7 +1046,9 @@ contains
                                        derv_length,  &
                                        derv)
 #ifdef MOD_XCFUN
+#ifdef MOD_EMB
            end if
+#endif 
 #endif 
 #if defined MOD_XCFUN && MOD_OPENRSP
         end if
