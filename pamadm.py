@@ -194,6 +194,7 @@ dirac_modules['emb'].add_directory('embedding')
 dirac_modules['openrsp'] = dirac_module('openrsp', 'Include OpenRSP')
 dirac_modules['openrsp'].add_cppflag('MOD_OPENRSP')
 dirac_modules['openrsp'].add_directory('openrsp')
+dirac_modules['openrsp'].add_dependency('matrixop')
 
 dirac_modules['xcfun'] = dirac_module('xcfun', 'Include XCFun module')
 dirac_modules['xcfun'].add_cppflag('MOD_XCFUN')

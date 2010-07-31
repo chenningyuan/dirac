@@ -800,7 +800,7 @@ contains
     G = 1.0d0*D !inherit symmetry information
     G%elms = 0.0d0
 
-    call stex_get_npos(npos_nr)
+    call get_npos(npos_nr)
     call alloc(npos, npos_nr)
 
 !   fixme:
@@ -2127,6 +2127,23 @@ contains
 
   end subroutine
 
+      SUBROUTINE GET_NPOS(NPOS)
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "dcbgen.h"
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "cbihr2.h"
+#include "blocks.h"
+#include "dcbfir.h"
+      integer npos
+      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
+      call SetIntTaskArrayDimension(NPOS,PARCAL)
+      end subroutine
+
+
 end module
 
       subroutine fill_work(do_pp, &
@@ -2171,4 +2188,5 @@ end module
       end if
 
       end
+
 
