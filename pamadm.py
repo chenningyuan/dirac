@@ -170,6 +170,7 @@ dirac_modules['fmm'].take_out_of_adm()
 dirac_modules['esr'] = dirac_module('esr', 'Include ESR property module')
 dirac_modules['esr'].add_cppflag('MOD_ESR')
 dirac_modules['esr'].add_directory('prp/esr')
+dirac_modules['esr'].add_dependency('krmc')
 
 dirac_modules['xpp'] = dirac_module('xpp', 'Include PP excitation energy and STEX modules')
 dirac_modules['xpp'].add_cppflag('MOD_XPP')
