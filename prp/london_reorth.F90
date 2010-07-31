@@ -242,7 +242,7 @@ contains
     end do
 
 !gosia fixme parallel run
-    call stex_get_npos(npos)
+    call get_npos(npos)
     call alloc(npos_array, npos)
 
     lwork = len_f77_work
@@ -466,6 +466,22 @@ contains
         memory_usage  = 0
         mem_wrk_count = mem_wrk_count - 1
   end subroutine
+
+      SUBROUTINE GET_NPOS(NPOS)
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "dcbgen.h"
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "cbihr2.h"
+#include "blocks.h"
+#include "dcbfir.h"
+      integer npos
+      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
+      call SetIntTaskArrayDimension(NPOS,PARCAL)
+      end subroutine
 
 #endif /* ifdef MOD_LONDON */
 end module
