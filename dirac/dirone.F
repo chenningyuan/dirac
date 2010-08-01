@@ -3808,7 +3808,7 @@ C     Memory allocation
       LWRK   = LWORK - KFREE + 1
       CALL DZERO(WORK(KCHRG),NUCIND)
       CALL DZERO(WORK(KONEMT),N2BBASX)
-      CALL DZERO(WORK(KESHEL),NUCIND)
+      CALL DZERO(WORK(KESHEL),7*NUCIND)
 C
 C     Initialization (calculate LL and SS)
 C
