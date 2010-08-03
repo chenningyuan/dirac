@@ -48,6 +48,7 @@ module london_reorth_hb
 contains
 
 
+#ifdef MOD_LONDON
   subroutine london_reort_hb(cmo, ibeig, work, lwork)
 
 ! calculates the reorthonormalization contribution to dH(0)/dB|B=0
