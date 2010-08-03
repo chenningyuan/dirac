@@ -74,8 +74,8 @@ C
      &             '.WAVE F','.RHONUC','.FIRST ','.TWO-PH',
      &             '.VERDET','.ROTG  ','.MSTDIA','.PVCSPN',
      &             '.NOPCTR','.EXCDIP','.MAGOUT','.OPTROT', 
-     &             '.C6    ','.RKBIMP','.XXXXXX','.XXXXXX',
-     &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX' /
+     &             '.C6    ','.RKBIMP','.BXLAO ','.BYLAO ',
+     &             '.BZLAO ','.XXXXXX','.XXXXXX','.XXXXXX' /
 
 C
       CALL QENTER('PRPINP')
@@ -127,6 +127,9 @@ C
       NPRPWF       = 1
       PRPWF(1)     = 'DHF'
       DORKBIMP     = .FALSE.
+      BXLAO       = .FALSE.
+      BYLAO       = .FALSE.
+      BZLAO       = .FALSE.
 
 CMI Activate the  picture change transformations
 C   of four-component property matrixes 
@@ -387,13 +390,22 @@ C&&&& RKBIMPort; read RKB coefficients and add complementary UKB space
             DORKBIMP = .TRUE.
             GO TO 100
   135    CONTINUE 
-C&&&& XXXXXX
+C&&&& BXLAO 
+            bxlao  = .true.
+            doxlr  = .true.
+            london = .true.
             GO TO 100
   136    CONTINUE
-C&&&& XXXXXX
+C&&&& BYLAO 
+            bylao  = .true.
+            doxlr  = .true.
+            london = .true.
             GO TO 100
   137    CONTINUE
-C&&&& XXXXXX
+C&&&& BZLAO 
+            bzlao  = .true.
+            doxlr  = .true.
+            london = .true.
             GO TO 100
   138    CONTINUE
 C&&&& XXXXXX
@@ -548,6 +560,13 @@ C     *STEX
       IF(DOXLR) CALL XLRINP(WORD,.TRUE.,WORK,LWORK)
 CMI ... read again the input
       CALL NMRINP(WORD,.TRUE.,WORK,LWORK)
+!gosia: i have to reset these variables once again...
+!or always remember to put *NMR .LONDON in the input...
+      if (bxlao .or. bylao .or. bzlao) then
+        london = .true.
+        doxlr  = .true.
+      end if
+!
       CALL GRDINP(WORD,.TRUE.)
 #ifdef MOD_XPP
       IF(DOXPP) CALL XPPINP(WORD,.TRUE.,WORK,LWORK)

@@ -21,8 +21,7 @@
 
 module london_reorth_hb
 
-#ifdef MOD_LONDON
-  use interface_for_pammag
+  use london_prp_cfg
   use memory_allocator 
 
   use dirac_cfg
@@ -42,8 +41,9 @@ module london_reorth_hb
   integer          :: memory_usage  = 0 ! Amount of work array used
   integer          :: mem_wrk_count = 0 ! Counts
 
-  integer          :: nr_fock       = 3
-  integer          :: ncomp         = 3 ! x,y,z
+  integer, parameter :: max_nr_xyz_comp = 3
+
+
 
 contains
 
@@ -69,15 +69,15 @@ contains
 !   set interface for f77 work array:
     call set_f77_work(work, lwork)
 
-!   set common blocks variables used (interface_for_pammag.F90):
-    call common_blocks_vars()
+!   set variables used in this module
+    call initialize_reorth_lao()
 
-    call alloc(tb_dmat, p_n2bbasxq*nr_fock)
+    call alloc(tb_dmat, p_n2bbasxq*nr_xyz_comp)
 
 !   get (C+)(T^B)C
     call get_tb_dmat(tb_dmat, cmo, ibeig)
 
-    call alloc(fao, p_n2bbasxq*nr_fock)
+    call alloc(fao, p_n2bbasxq*nr_xyz_comp)
 
 !   calculate "G" part in AO basis
     call get_gtb(fao, tb_dmat, cmo, ibeig)
@@ -85,7 +85,7 @@ contains
     call dealloc(tb_dmat)
 
 !   do AO-to-MO transformation on "G" part
-    call alloc(fmo, p_n2orbxq*nr_fock)
+    call alloc(fmo, p_n2orbxq*nr_xyz_comp)
     call do_ao_to_mo(fmo, fao, cmo, ibeig)
 
 !   calculate "F" part, add to "G" and write result to file
@@ -96,9 +96,65 @@ contains
   end subroutine
 
 
+
+  subroutine initialize_reorth_lao()
+!   --------------------------------------------------------------------
+    integer :: i
+    logical :: print_info
+!   --------------------------------------------------------------------
+
+!    call delete_reorth_info()
+
+!   initialize variables from common blocks
+    call common_blocks_vars()
+!
+!   symmetry info for connection matrices in AO basis
+
+!    do i = 1, nr_xyz_comp
+!      index_conmat(i) = ip_conmat(i)
+!      isym_conmat(i)  = p_iprpsym(index_conmat(i))
+!      irep_conmat(i)  = p_iprpsym(index_conmat(i)) - 1
+!      iopsy_conmat(i) = p_jbtof(irep_conmat(i), 1)
+!      !ihrmop
+!      !ifckop
+!    end do
+
+!
+!!   variables for modified density matrices:
+!
+!
+    print_info = .true.
+
+    if (print_info) then
+      call print_common_blocks_vars()
+!      write(*, *) 'info from initialize_reorth_lao: '
+!      write(*, *) '---------------------------------'
+!      write(*, *) 'nr_xyz_comp = ', nr_xyz_comp
+!      do i = 1, nr_xyz_comp
+!        write(*, *) 'i, isym_2el_lao(i) = ', i, isym_2el_lao(i)
+!        write(*, *) 'i, irep_2el_lao(i) = ', i, irep_2el_lao(i)
+!        write(*, *) 'i, itim_2el_lao(i) = ', i, itim_2el_lao(i)
+!      end do
+    end if
+
+  end subroutine initialize_reorth_lao
+
+!
+!  subroutine delete_reorth_info()
+!
+!    index_conmat = 0
+!    isym_conmat  = 0
+!    irep_conmat  = 0
+!    iopsy_conmat = 0
+!
+!  end subroutine delete_reorth_info
+
+
+
   subroutine get_ftb(fmat, cmo, ibeig)
 !-----------------------------------------------------------------------
     real(8), intent(in)    :: fmat(p_n2orbxq, *)
+    !real(8), intent(in)    :: fmat(*)
     real(8), intent(in)    :: cmo(*)
     integer, intent(in)    :: ibeig(*)
 
@@ -109,8 +165,8 @@ contains
     real(8), allocatable   :: buf(:)
     real(8), allocatable   :: tb(:)
 
-    integer :: isym(nr_fock), iopsy(nr_fock)
-    integer :: isymop(nr_fock), ihrmop(nr_fock), ifckop(nr_fock)
+    integer :: isym(nr_xyz_comp), iopsy(nr_xyz_comp)
+    integer :: isymop(nr_xyz_comp), ihrmop(nr_xyz_comp), ifckop(nr_xyz_comp)
     integer :: indxpr
     integer :: icomp, i, j, isymh
     logical :: ah
@@ -142,7 +198,12 @@ contains
          access='direct',recl=8*p_n2orbxq,                 &
          status='unknown')
 
-    do icomp = 1, ncomp
+!gosia     open(67, file='reortest', status='unknown', form='formatted', &
+!gosia          access = 'append')
+
+
+!   test
+    do icomp = 1, nr_xyz_comp
       indxpr       = ip_conmat(icomp)
       isym(icomp)  = p_iprpsym(indxpr)
       iopsy(icomp) = p_jbtof(isym(icomp)-1, 1)
@@ -197,7 +258,16 @@ contains
       call wrtdac(fcklon_unit, p_n2orbxq,   &
                   fmat(1, icomp), icomp)
 
+!gosia      write(67, *) 'gosia krtek, icomp, isym(icomp) = ', icomp, isym(icomp)
+
+      call prqmat(fmat(1, icomp), &
+                  p_norbt, p_norbt, p_norbt, p_norbt, &
+                  nr_qu, p_ipqtoq(1, isym(icomp)-1), 67)
+
+
     end do
+
+!gosia    close(67, status='keep')
 
     close(fcklon_unit, status='keep')
     close(int1_unit,   status='keep')
@@ -224,14 +294,14 @@ contains
     integer                :: npos
     
     real(8), allocatable   :: dmat(:)
-    integer :: isym(nr_fock), iopsy(nr_fock), irep(nr_fock)
-    integer :: isymop(nr_fock), ihrmop(nr_fock), ifckop(nr_fock)
+    integer :: isym(nr_xyz_comp), iopsy(nr_xyz_comp), irep(nr_xyz_comp)
+    integer :: isymop(nr_xyz_comp), ihrmop(nr_xyz_comp), ifckop(nr_xyz_comp)
     integer :: indxpr
     integer :: icomp
 !-----------------------------------------------------------------------
 
 !   set for twofck:
-    do icomp = 1, ncomp
+    do icomp = 1, nr_xyz_comp
       indxpr        = ip_conmat(icomp)
       isym(icomp)   = p_iprpsym(indxpr)
       iopsy(icomp)  = p_jbtof(isym(icomp) - 1, 1)
@@ -242,7 +312,7 @@ contains
     end do
 
 !gosia fixme parallel run
-    call get_npos(npos)
+    call stex_get_npos(npos)
     call alloc(npos_array, npos)
 
     lwork = len_f77_work
@@ -253,7 +323,7 @@ contains
                 ifckop,      &
                 fao,         &
                 tb_dmat,     &
-                nr_fock,     &
+                nr_xyz_comp, &
                 npos_array,  &
                 nmr_int,     &
                 prp_iprint,  &
@@ -268,6 +338,7 @@ contains
 
 !       construct kohn-sham contribution
 !       ================================
+! gosia: it won't work with visual now
 
 ! check if sdft, as only in this case this contribution is != 0
     if (dirac_cfg_dft_calculation .and. .not. dft_cfg_no_sdft) then
@@ -279,8 +350,8 @@ contains
          call xc_integrator(xc_mat_dim           = nr_ao_total,   &
                             xc_nz                = nr_qu,         &
                             xc_dmat_0            = dmat,          &
-                            xc_nr_dmat           = nr_fock,       &
-                            xc_nr_fmat           = nr_fock,       &
+                            xc_nr_dmat           = nr_xyz_comp,   &
+                            xc_nr_fmat           = nr_xyz_comp,   &
                             xc_dmat              = tb_dmat,       &
                             xc_fmat              = fao,           &
                             xc_fmat_pg_sym       = isymop,        &
@@ -309,13 +380,13 @@ contains
     real(8), pointer       :: work(:)
     integer                :: lwork
 
-    integer :: itim(nr_fock), isym(nr_fock), iopsy(nr_fock), irep(nr_fock)
-    integer :: isymop(nr_fock), ihrmop(nr_fock), ifckop(nr_fock)
+    integer :: itim(nr_xyz_comp), isym(nr_xyz_comp), iopsy(nr_xyz_comp), irep(nr_xyz_comp)
+    integer :: isymop(nr_xyz_comp), ihrmop(nr_xyz_comp), ifckop(nr_xyz_comp)
     integer :: indxpr
     integer :: icomp, i, j
 !-----------------------------------------------------------------------
 
-    do icomp = 1, ncomp
+    do icomp = 1, nr_xyz_comp
 
       indxpr        = ip_conmat(icomp)
       isym(icomp)   = p_iprpsym(indxpr)
@@ -377,14 +448,14 @@ contains
     integer                :: lwork, kfree
 
     real(8), allocatable   :: tb(:)
-    integer                :: isym(nr_fock), iopsy(nr_fock)
+    integer                :: isym(nr_xyz_comp), iopsy(nr_xyz_comp)
     integer                :: indxpr, icomp 
 !-----------------------------------------------------------------------
 
     call opnfil(int1_unit, 'AOPROPER', 'OLD', 'get_tb_dmat')
     call alloc(tb, p_n2orbxq)
 
-    do icomp = 1, ncomp
+    do icomp = 1, nr_xyz_comp
       indxpr       = ip_conmat(icomp)
       isym(icomp)  = p_iprpsym(indxpr)
       iopsy(icomp) = p_jbtof(isym(icomp)-1, 1)

@@ -827,19 +827,24 @@ C  ... Initialize
 C
       DO I=1,3
          ISYMOP(I) = 1
+         !ISYMOP(I) = isymax(i,2)+1
 C anti hermitisk
 !radovan: ??? but it's hermitian
          IHRMOP(I) = 1
+         !IHRMOP(I) = - 1
          IFCKOP(I) = 1
       END DO
 
 C ...  routine in 'dirac/dirtwo.F'
 C      Set up IFCTYP and IREPDM
       CALL SETFCK(IFCTYP,IREPDM,NCOMP,4,ISYMOP,IHRMOP,IFCKOP,IPRINT)
+!gosia      write(*, *) 'ifctyp = ', ifctyp
+!gosia      write(*, *) 'irepdm = ', irepdm
 C
 C     Get contravariant density matrix, no folding
 C  --------------------------------------------------
-      CALL GTCNVD(DMAT,CMO,IBEIG,IPRINT,WORK(KFREE),LWORK)
+       CALL GTCNVD(DMAT,CMO,IBEIG,IPRINT,WORK(KFREE),LWORK)
+
 C
 C     Prepare for two-electron contribution
 C
@@ -870,6 +875,10 @@ C     PARCAL = .FALSE.
 
       CALL GETTIM(CPU1,WALL1)
 
+! gosia:
+!        open(88, file='twolo1a', status='unknown', form='formatted',
+!     &       access = 'append')
+
       DO I2TYP = 1,3  ! LL,LS,SS
         IF (LBIT(INTNMR,I2TYP)) THEN
 #if defined (VAR_MPI) || defined (VAR_PVM)
@@ -897,7 +906,14 @@ CMI   - Cauchy-Schwarz inequality does not hold for dg(1,2)/dB integrals !
          ENDIF
 #endif
          ENDIF
+! gosia:
+!        write(88, *) 'i2typ = ', i2typ
+!        call prqmat(fmat(1, 1, i2typ), 
+!     &              ntbas(0), ntbas(0), ntbas(0), ntbas(0), 
+!     &              nz, ipqtoq(1, 0), 88)
       ENDDO
+!gosia:
+!        close(88)
 
 C     PARCAL = PARCAL_SAVE
 
@@ -960,6 +976,22 @@ C
      &          FOCK(N2BBASX,NZ),WORK(*)
       CALL QENTER('TWOLO1B')
 #include "memint.h"
+
+! gosia: check enetering fock matrix after rsklond:
+!        open(77, file='after_rsklond', status='unknown', 
+!     &       form='formatted', access = 'append')
+!        do i2typ = 1, 3
+!        write(77, *) 'gosia: i2typ, isymax(i2typ,2) = ', 
+!     &                       i2typ, isymax(i2typ,2)
+!        IREP = ISYMAX(i2typ,2)       ! irep of x,y and z
+!        call prqmat(fmat(1, 1, i2typ), 
+!     &              ntbas(0), ntbas(0), ntbas(0), ntbas(0), 
+!     &              nz, ipqtoq(1, irep), 77)
+!        end do
+!        close(77)
+!end
+!        open(66, file='twolo1b', status='unknown', form='formatted',
+!     &       access = 'append')
 C----------------------------------------------------------------
 C       Transform Fock matrix from AO to QO
 C       ===================================
@@ -968,10 +1000,21 @@ C----------------------------------------------------------------
          CALL DZERO(FOCK,N2BBASXQ)
          IREP = ISYMAX(I,2)       ! irep of x,y and z
          IPARI = JBTOF(IREP,1)    !  ??parity ??
+
+!gosia         write(lupri, *) 'twolo1b, i     = ', i    
+!gosia         write(lupri, *) 'twolo1b, irep  = ', irep
+!gosia         write(lupri, *) 'twolo1b, ipari = ', ipari
+
          DO IZ = 1,4
             IREPD = IRQMAT(IZ,IREP)
             IQ    = IQMULT(1,JQBAS(IREPD,IPARI),IZ)            
             IPQ   = IQTOPQ(IQ,IREP)
+
+!gosia            write(lupri, *) 'twolo1b, iz    = ', iz
+!gosia            write(lupri, *) 'twolo1b, irepd = ', irepd
+!gosia            write(lupri, *) 'twolo1b, iq    = ', iq
+!gosia            write(lupri, *) 'twolo1b, ipq   = ', ipq
+
 C ...    transform AO - SO
             CALL MTAOSO(FMAT(1,IZ,I),FOCK(1,IPQ),
      &           NTBAS(0),IREPD,IPRINT)
@@ -1033,7 +1076,14 @@ C ...
            CALL PRQMAT(FMAT(1,1,I),NTBAS(0),NTBAS(0),
      &            NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
          ENDIF
+!
+!        write(66, *) 'gosia: i, irep = ', i, irep
+!        call prqmat(fmat(1, 1, i), 
+!     &              ntbas(0), ntbas(0), ntbas(0), ntbas(0), 
+!     &              nz, ipqtoq(1, irep), 66)
+!
       ENDDO ! Of I = x,y,z
+!      close(66)
       CALL QEXIT('TWOLO1B')
       RETURN
       END
@@ -1085,6 +1135,10 @@ C
      &          CMO(*),WORK(*)
       CALL QENTER('TWOLO1C')
 #include "memint.h"
+!gosia:
+!        open(55, file='twolo1c', status='unknown', form='formatted',
+!     &       access = 'append')
+
 C----------------------------------------------------------------
 C   Open new file for MO-transformed g(B) x,y,z matrixes
 C----------------------------------------------------------------
@@ -1125,9 +1179,18 @@ C   ....  it would be good to add also QBTRANS for spin-free case
       ENDIF
 
 C .... write the two-electron London contribution to the file...
+!gosia       write(*, *) 'twolo1c, i=', i
        CALL WRTDAC(LUTWOL,N2ORBXQ,GBMO,I)
 
+!gosia
+!        write(55, *) 'gosia: i = ', i
+!        call prqmat(gbmo, 
+!     &              ntbas(0), ntbas(0), ntbas(0), ntbas(0), 
+!     &              nz, ipqtoq(1, irep), 55)
+
       ENDDO ! Of I = x,y,z
+!gosia:
+!      close(55)
 
       CLOSE(LUTWOL,STATUS='KEEP')
       CALL QEXIT('TWOLO1C')
@@ -1767,7 +1830,6 @@ C     ==============
 C
       IREP = ISYMT-1 ! irre[ pf T(1)_icomp (0 till nirrep-1)
       IOPSY = JBTOF(IREP,1)
-
       CALL DZERO(DMAT,N2BBASXQ)
 C
 C     Print section
@@ -2387,6 +2449,14 @@ C
        END DO
       END IF
 
+!gosia fixme
+!       write(lupri, *) 'density matrix before twoint'
+!       call prqmat(dmat(1, 1, 1),
+!     &           ntbas(0), ntbas(0), ntbas(0), ntbas(0), 
+!     &           nz, ipqtoq(1, 0), lupri)
+!
+
+
 C     Dispose used memory
       CALL MEMREL('GTCNVD',WORK,KWORK,KWORK,KFREE,LFREE)
 C
@@ -2525,6 +2595,12 @@ C
       NCOMP = 6
 
 C     get contavariant density matrixes
+
+!gosia: gtcnvd won't always work: 
+!here for dmat we allocate n2bbasx*4 memory, 
+!while inside gtcnvd we need n2bbasx*4*nrfmat memory for this dmat
+!(here it is ok, as we loop over 1 'nrfmat' only inside gtcnvd)
+
       CALL GTCNVD(DMAT,CMO,IBEIG,IPRPRP,WORK,LWORK)
 
 C set up for second derivative g12 over B
@@ -3254,7 +3330,9 @@ C     property IMP:
 C
 C     IMP = 1 .... NMR shielding, optical rotation (TEC)
 C     IMP = 2 .... magnetic susceptibility (MI)
-C     IMP = 3 ...  and more (to be added later)
+C     IMP = 3 ...  perturbation from one component of magnetic field
+C                  (gosia: temporarily i need it in visual module)
+C     IMP = 4 ...  and more (to be added later)
 C
 C  Written by:  MI, jan.2003, based on TEC's routines
 C
@@ -3290,10 +3368,14 @@ C
        CALL HEADER(
      &'DEF_D1HBLOND: Operators for magnetic'//
      &' susceptibility with LAO!',-1)
+      ELSE IF (IMP.EQ.3) THEN
+        CALL HEADER(
+     &'DEF_D1HBLOND: Operators for perturbation from '//
+     &' one component of magnetic field with LAO!',-1)
       ELSE
        WRITE(LUPRI,'(2X,A)')
      & 'DEF_D1HBLOND: Entering magnetic property IMP '//
-     & ' has to be 1 or 2!'
+     & ' has to be 1 or 2 or 3!'
        CALL QUIT('DEF_D1HBLOND: wrong IMP value!')
       ENDIF
 
@@ -3318,6 +3400,11 @@ C
         CALL OP1IND('MSUSCX1',IPMSUSC(1,1),LLRAPU,NLRAPT,INDXPR
      &     ,MAXLLR)
         CALL OP1IND('MSUSCX2',IPMSUSC(2,1),LLRBPU,NLRBPT,INDXPR
+     &     ,MAXLLR)
+      ELSE IF ((IMP.EQ.3) .AND. BXLAO) THEN
+        CALL OP1IND('BLAOX1',IP_BLAO(1,1),LLRAPU,NLRAPT,INDXPR
+     &     ,MAXLLR)
+        CALL OP1IND('BLAOX2',IP_BLAO(2,1),LLRBPU,NLRBPT,INDXPR
      &     ,MAXLLR)
       ELSE
         CONTINUE
@@ -3387,6 +3474,11 @@ C
      &     ,MAXLLR)
        CALL OP1IND('MSUSCY2',IPMSUSC(2,2),LLRBPU,NLRBPT,INDXPR
      &     ,MAXLLR)
+      ELSE IF ((IMP.EQ.3) .AND. BYLAO) THEN
+        CALL OP1IND('BLAOY1',IP_BLAO(1,2),LLRAPU,NLRAPT,INDXPR
+     &     ,MAXLLR)
+        CALL OP1IND('BLAOY2',IP_BLAO(2,2),LLRBPU,NLRBPT,INDXPR
+     &     ,MAXLLR)
       ELSE
        CONTINUE
       ENDIF
@@ -3453,6 +3545,11 @@ C
      &     ,MAXLLR)
         CALL OP1IND('MSUSCZ2',IPMSUSC(2,3),LLRBPU,NLRBPT,INDXPR
      &     ,MAXLLR)
+      ELSE IF ((IMP.EQ.3) .AND. BZLAO) THEN
+        CALL OP1IND('BLAOZ1',IP_BLAO(1,3),LLRAPU,NLRAPT,INDXPR
+     &     ,MAXLLR)
+        CALL OP1IND('BLAOZ2',IP_BLAO(2,3),LLRBPU,NLRBPT,INDXPR
+     &     ,MAXLLR)
       ELSE
        CONTINUE
       ENDIF
@@ -3500,6 +3597,7 @@ C
 C----------------------------------------------------------------
 C   Define connection matrix T for the first derivate dH/dB
 C----------------------------------------------------------------
+! for imp=3 always write the correct indxpr to ipcon(1), it is easier for a moment
       IPTYP  = 1
       NPCOMP = 1
       IF (SYMCON) THEN
@@ -3516,16 +3614,31 @@ C----------------------------------------------------------------
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPCON(1) = INDXPR
+      if ((imp .eq. 3) .and. bxlao) then
+        ipcon(1) = indxpr
+      end if
       PNAME     = LABELC(1:ILABELC)//'Y'
       PLABEL(1) = LABELC(1:ILABELC)//'Y'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPCON(2) = INDXPR
+      if ((imp .eq. 3) .and. bylao) then
+        ipcon(1) = indxpr
+      end if
       PNAME     = LABELC(1:ILABELC)//'Z'
       PLABEL(1) = LABELC(1:ILABELC)//'Z'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
       IPCON(3) = INDXPR
+      if ((imp .eq. 3) .and. bzlao) then
+        ipcon(1) = indxpr
+      end if
+
+! if (imp == 3) only ipcon(1) is important, lines below are to catch errors 
+      if (imp .eq. 3) then
+        ipcon(2) = 0
+        ipcon(3) = 0
+      end if
 
 C----------------------------------------------------------------
 C   Define connection matrixes T(1),T(2) for 
@@ -3681,6 +3794,8 @@ C
 #include "mxcent.h"
 #include "dcbnmr.h"
 C
+!gosia, i need bxlao, bylao, bzlao
+#include "dcbprp.h"
       DIMENSION PRPMO(NORBT,NORBT,NZ),WORK(*)
       INTEGER ICONVXYZ
       CHARACTER*1 COMP
@@ -3737,6 +3852,7 @@ C   ... 2. accumulate TWOLON into WORK(KPRPMOLO) if 2.bit is ON
       IF (IBTAND(IB,2).EQ.2.AND.(.NOT.NOTWOL)) THEN
          OPEN(LUTWOL,FILE='TWOLON',FORM='UNFORMATTED',
      &        ACCESS='DIRECT',RECL=8*N2ORBXQ,STATUS='OLD')
+         !CALL READAC(LUTWOL,N2ORBXQ,WORK(KPRPMOLO),ICOMP)
          CALL READAC(LUTWOL,N2ORBXQ,WORK(KPRPMOLO),ICOMP)
 C   ...   if 4.bit is ON, acc TWOLON with some factor FAC2LO
          IF (IBTAND(IB,8).EQ.8) THEN
@@ -3756,10 +3872,17 @@ C   ...   if 4.bit is ON, acc TWOLON with some factor FAC2LO
       ENDIF
 
 C   ... 3. accumulate FCKLON into WORK(KPRPMOLO) if 3.bit is ON
+!gosia (i'll fix it later)
+      if (bxlao .or. bylao .or. bzlao) then
+!       we always write to component "1"
+        icomp_reorth = 1
+      else
+        icomp_reorth = icomp
+      end if
       IF (IBTAND(IB,4).EQ.4.AND.(.NOT.NOONEI)) THEN
          OPEN(LUFCKL,FILE='FCKLON',FORM='UNFORMATTED',
      &        ACCESS='DIRECT',RECL=8*N2ORBXQ,STATUS='OLD')
-         CALL READAC(LUFCKL,N2ORBXQ,WORK(KPRPMOLO),ICOMP)
+         CALL READAC(LUFCKL,N2ORBXQ,WORK(KPRPMOLO),icomp_reorth)
          CALL DAXPY(N2ORBXQ,D1,WORK(KPRPMOLO),1,PRPMO,1)
          CLOSE(LUFCKL,STATUS = 'KEEP')
          CALL DZERO(WORK(KPRPMOLO),N2ORBXQ)

@@ -1388,6 +1388,15 @@ C
        CALL DEF_ROTG(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
       ENDIF
 
+! gosia:
+! calculate << B_i; B_i >>_0 with LAO
+! only for one component of magnetic field, i = x, y or z 
+! i need it temporarily in visual
+      IF (BXLAO .OR. BYLAO .OR. BZLAO) THEN
+        CALL DEF_BLAO(WORK, LWORK, IPRPRP)
+      ENDIF
+
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -8423,4 +8432,91 @@ C
 
       RETURN
 C
+      end
+
+      subroutine def_blao(work, lwork, iprint)
+!     ------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0,
+     &          DMI2 = -0.5D0,DI2 = +0.5D00,DM1 = - 1.0D0)
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "gfac.h"
+#include "pi.h"
+#include "nuclei.h"
+#include "dgroup.h"
+#include "pgroup.h"
+#include "symmet.h"
+#include "dcbgen.h"
+#include "dcbprp.h"
+#include "dcbesr.h"
+#include "dcbxlr.h"
+#include "dcbexp.h"
+#include "dcbnmr.h"
+#include "chrxyz.h"
+      CHARACTER PNAME*16, PLABEL(3)*8,LABEL*4,LABELC*7,chcomp*1
+      DIMENSION WORK(LWORK),PFAC(3),IOP(3)
+      integer a, b, c
+#include "chrnos.h"
+#include "ibtfun.h"
+#include "dcbxpr.h"
+#include "dcbsusc.h"
+#include "memint.h"
+
+!     ------------------------------------------------------------------
+
+      CALL HEADER(
+     &     'DEF_BLAO: Operators in case the perturbation is B_i' //
+     &     ' with LAO ',-1)
+
+      CALL IZERO(IP_BLAO, 6)
+      CALL IZERO(IPLONDON, 12)
+
+      doexp = .true.
+      call def_d1hblond(3, work, lwork, iprint)
+
+
+      if(bxlao) then
+        icomp  = 1
+        chcomp = 'X'
+      else if(bylao) then
+        icomp  = 2
+        chcomp = 'Y'
+      else if(bzlao) then
+        icomp  = 3
+        chcomp = 'Z'
+      else
+        call quit('programming error in def_blao')
+      endif
+
+!     print section:
+!     ==============
+      CALL PRSYMB(LUPRI,'=',75,0)
+      WRITE(LUPRI,'(A,1X,A)') ' BLAO, component :', chcomp
+      CALL PRSYMB(LUPRI,'=',75,0)
+!
+!     A operators
+!     ===========
+!
+      CALL PRSYMB(LUPRI,'-',75,0)
+      WRITE(LUPRI,'(1X,A,1X,A)')
+     &      '** A operators for blao, component **', chcomp
+      CALL PRSYMB(LUPRI,'-',75,0)
+      DO J = 1, 4
+        CALL WRIXPR(0,IPLONDON(J,icomp))
+      ENDDO
+!
+!     B operators
+!     ===========
+      CALL PRSYMB(LUPRI,'-',75,0)
+      WRITE(LUPRI,'(1X,A,1X,A)')
+     &      '** B operators for blao, component **', chcomp
+      CALL PRSYMB(LUPRI,'-',75,0)
+      DO J = 1, 4
+        CALL WRIXPR(0,IPLONDON(J,icomp))
+      ENDDO
+
+
       END

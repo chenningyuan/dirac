@@ -31,6 +31,7 @@ C Alliant version 30. Dec. 1987
 C Linux/IBM, +updates, Joern Thyssen, Nov. 1999
 C
 #include "implicit.h"
+!gosia#include "../include/implicit.h"
 CTROND      DOUBLE PRECISION TIME, SECOND
       CHARACTER*8 B(4), STARS
       PARAMETER (STARS = '********')

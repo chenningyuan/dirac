@@ -1,49 +1,16 @@
-DIRAC launched (pam script) by gosia@ibm at wto, 29 cze 2010, 15:53:22 CEST
-in : /home/gosia/jobs_dirac/wizualizacja
-===========================================================================================
 
-  Atoms and basis sets
-  --------------------
+ =========================================================================
+ Version           : Dirac 8.0 (patchlevel 0) 
+ Hostname          : ibm
+ Operating system  : Linux 2.6.31-22-generic
+ Machine           : i686
+ Run               : Sequential
+ Last compilation  : 19:40:16 Jul 31 2010 (by gosia@ibm:/home/gosia/dirac.git/work/visual)
+ FORTRAN compiler  : /usr/bin/gfortran -g -fno-range-check -Iinclude -Jmodules -DARCH32BIT -DUSE_DIRAC_BLAS -DUSE_DIRAC_DLAMCH -DUSE_DIRAC_DLAPACK -DUSE_DIRAC_ZLAPACK -DVAR_GFORTRAN -DGFORTRAN 441 -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM 63963136 -DVAR_MFDS -DMOD_ERI -DMOD_DNF -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_OPENRSP -DMOD_UNRELEASED -DMOD_MATRIX_OPERATIONS -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON 
 
-  Number of atom types:     2
-  Total number of atoms:    2
-
-  label    atoms   charge   prim    cont     basis   
-  ----------------------------------------------------------------------
-  C           1       6      15      15      L  - [6s3p|6s3p]                                                    
-                             39      39      S  - [3s6p3d|3s6p3d]                                                
-  O           1       8      15      15      L  - [6s3p|6s3p]                                                    
-                             39      39      S  - [3s6p3d|3s6p3d]                                                
-  ----------------------------------------------------------------------
-                             30      30      L  - large components
-                             78      78      S  - small components
-  ----------------------------------------------------------------------
-  total:      2      14     108     108
-
-  Cartesian basis used.
-  Threshold for integrals (to be written to file):  1.00D-15
-
-  MNF.INP input file (for the AMFI stuff) is ready.
-
-
- >>>> Time used in DFTGRD:   0.04 seconds
-
-
+ =========================================================================
+$ERROR 1.E-5
+$SIGNCHECK
       scalar              x-component         y-component         z-component
 
-   -0.3647291577E+01    0.0000000000E+00    0.0000000000E+00    0.0000000000E+00
-
-----------------------------------------------------------------------------------------------------
-
-
- >>>> time used in integration:  47.79 seconds
-
- 
-     Date and time (Linux)  : Tue Jun 29 15:54:12 2010 
-     Host name              :                                         
->>>> Node 0, utime: 48, stime: 0, minflt: 40429, majflt: 0, nvcsw: 2, nivcsw: 4072, maxrss: 0
->>>> Total WALL time used in DIRAC: 50s
-*****************************************************
-********** E N D   of   D I R A C  output  **********
-*****************************************************
-
+   -0.3647291415E+01    0.0000000000E+00    0.0000000000E+00    0.0000000000E+00

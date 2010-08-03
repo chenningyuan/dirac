@@ -51,6 +51,7 @@ module visual_cfg
   integer,       public :: visual_cfg_iq_xvector(max_nr_xvectors)        = 0
   integer,       public :: visual_cfg_irep_xvector(max_nr_xvectors)      = 0
   integer,       public :: visual_cfg_irep_conmat(max_nr_xvectors)       = 0
+  integer,       public :: visual_cfg_itim_conmat(max_nr_xvectors)       = 0
   integer,       public :: visual_cfg_iwhich_xvector(max_nr_xvectors)    = 1
   integer,       public :: visual_cfg_ioption_xvector(max_nr_xvectors)   = 0
   integer,       public :: visual_cfg_line_nr_steps                      = 0

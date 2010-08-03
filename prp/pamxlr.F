@@ -133,7 +133,7 @@ C     2002/2003, MI & HJAaj(&TEC) added changes for LAO based
 C     calculation of magnetic properties
 C
 C***********************************************************************
-!     use london_direct_hb
+      use london_direct_hb
       use london_reorth_hb
       use memory_allocator
 
@@ -197,7 +197,7 @@ c.......direct contribution
         call onelon(cmo, ibeig, work, kfree, lfree)
 
         if (.not.notwol) then
-!new          call london_twoel_hb(cmo, ibeig, work(kfree), lfree)
+!          call london_twoel_hb(cmo, ibeig, work(kfree), lfree)
           CALL TWOLON(cmo, ibeig, WORK(KFREE), LFREE)
         end if
 

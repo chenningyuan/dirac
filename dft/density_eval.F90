@@ -43,6 +43,8 @@ module density_eval
    public gga_distribute_i
    public lda_london_distribute_r
    public gga_london_distribute_r
+   public lda_london_distribute_i
+   public get_s_lao
    public get_n_block
    public get_block_threshold
 
@@ -1046,6 +1048,129 @@ contains
     end do
 
   end subroutine
+
+  subroutine lda_london_distribute_i(s, isym, mat_dim, nz, fmat, ao, ao_b1, cx, cy, cz)
+
+!   ----------------------------------------------------------------------------
+    real(8), intent(in)    :: s(3)
+    integer, intent(in)    :: isym(*)
+    integer, intent(in)    :: mat_dim
+    integer, intent(in)    :: nz
+    real(8), intent(inout) :: fmat(mat_dim, mat_dim, *)
+    real(8), intent(in)    :: ao(mat_dim)
+    real(8), intent(in)    :: ao_b1(mat_dim, *)
+    real(8), intent(in)    :: cx, cy, cz
+!   ----------------------------------------------------------------------------
+    integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz, jj, j
+    integer                :: a, b, c
+    real(8)                :: f
+    real(8)                :: r_co(3)
+!   ----------------------------------------------------------------------------
+
+    r_co(1) = cx
+    r_co(2) = cy
+    r_co(3) = cz
+
+    do a = 1, 3
+      select case (a)
+        case (1)
+          b = 2; c = 3
+        case (2)
+          b = 3; c = 1
+        case (3)
+          b = 1; c = 2
+      end select
+
+      do jxyz = jxyz_start, 3
+
+        do iblock = 1, llss_nr_density_blocks(jxyz, isym(a) - 1)
+
+          nr1 = llss_nr_ao(1, iblock, jxyz, isym(a) - 1)
+          st1 = llss_st_ao(1, iblock, jxyz, isym(a) - 1)
+          nr2 = llss_nr_ao(2, iblock, jxyz, isym(a) - 1)
+          st2 = llss_st_ao(2, iblock, jxyz, isym(a) - 1)
+
+          do ii = st1, st1 + nr1 - 1
+            do jj = st2, st2 + nr2 - 1
+
+              f = (r_co(c)*ao_b1(jj, b) - r_co(b)*ao_b1(jj, c))*ao(ii) &
+                - (r_co(c)*ao_b1(ii, b) - r_co(b)*ao_b1(ii, c))*ao(jj)
+
+              !fmat(ii, jj, (a-1)*nz + 1) = fmat(ii, jj, (a-1)*nz + 1) + s(jxyz)*f
+              fmat(ii, jj, iq(jxyz)) = fmat(ii, jj, iq(jxyz)) + s(jxyz)*f
+
+            end do
+          end do
+        end do
+      end do
+    end do
+
+  end subroutine
+
+  subroutine gga_london_distribute_i()
+  end subroutine
+
+
+  subroutine get_s_lao(s, isym, mat_dim, dmat, ao, ao_b1, cx, cy, cz)
+
+!   ----------------------------------------------------------------------------
+    real(8), intent(out) :: s(3, 3)
+    integer, intent(in)  :: isym(*)
+    integer, intent(in)  :: mat_dim
+    real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
+    real(8), intent(in)  :: ao(mat_dim)
+    real(8), intent(in)  :: ao_b1(mat_dim, *)
+    real(8), intent(in)  :: cx, cy, cz
+!   ----------------------------------------------------------------------------
+    integer              :: nr1, nr2, st1, st2, iblock, jxyz
+    integer              :: a, b, c, irp1, irp2, ii, jj
+    real(8)              :: r_co(3), f
+!   ----------------------------------------------------------------------------
+
+    r_co(1) = cx
+    r_co(2) = cy
+    r_co(3) = cz
+
+    s = 0.0d0
+    f = 0.0d0
+
+    do a = 1, 3
+      select case (a)
+        case (1)
+          b = 2; c = 3
+        case (2)
+          b = 3; c = 1
+        case (3)
+          b = 1; c = 2
+      end select
+
+
+      do jxyz = jxyz_start, 3
+        do iblock = 1, llss_nr_density_blocks(jxyz, isym(a) - 1)
+
+          nr1 = llss_nr_ao(1, iblock, jxyz, isym(a) - 1)
+          st1 = llss_st_ao(1, iblock, jxyz, isym(a) - 1)
+          nr2 = llss_nr_ao(2, iblock, jxyz, isym(a) - 1)
+          st2 = llss_st_ao(2, iblock, jxyz, isym(a) - 1)
+
+          do ii = st1, st1 + nr1 - 1
+            do jj = st2, st2 + nr2 - 1
+
+              f = (r_co(c)*ao_b1(jj, b) - r_co(b)*ao_b1(jj, c))*ao(ii) &
+                - (r_co(c)*ao_b1(ii, b) - r_co(b)*ao_b1(ii, c))*ao(jj)
+
+              s(jxyz, a) = s(jxyz, a) + dmat(ii, jj, iq(jxyz))*f
+
+            end do
+          end do
+        end do
+      end do
+
+    end do
+
+
+  end subroutine
+
 
    subroutine get_n_block( &
                           block_length,          &

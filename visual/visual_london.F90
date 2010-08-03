@@ -19,6 +19,7 @@
 !      DIRAC program, see: http://dirac.chem.sdu.dk
 !dirac_copyright_end
 
+
 module visual_london
 
   use memory_allocator
@@ -35,9 +36,8 @@ module visual_london
   public visual_london_init
   public setup_fo_conmat_ao
   public get_quantity_lao_in_point
-  public create_rkl
-  public visual_london_alloc
-  public visual_london_dealloc
+!  public visual_london_alloc
+!  public visual_london_dealloc
 
 
   save
@@ -62,11 +62,27 @@ module visual_london
 #include "shells.h"
 #include "orgcom.h"
 
+#include "dcbprl.h"
 
-  real(8), allocatable     :: D_r(:, :, :)
-  real(8), allocatable     :: r_kl(:, :, :)
-  type(matrix)             :: D_help
 
+! information about property integrals read from AOPROPER file:
+
+  character(16) ::   property_name
+  integer       ::   property_type
+  integer       ::   number_of_components
+
+  real(8)       ::   property_factor(3)
+  integer       ::   property_label(3)
+  character(4)  ::   property_do_int(3)
+  integer       ::   property_lrep(3)
+  integer       ::   property_ltyp(3)
+  integer       ::   property_jm4(3)
+  integer       ::   property_jm4pos(3)
+  integer       ::   property_iqmult(3)
+  integer       ::   property_iqtopq(3)
+
+  integer       ::   property_ihqmat(4)
+  integer       ::   number_nz
 
 
 contains
@@ -137,8 +153,6 @@ contains
 
 !   additional options
 !   ------------------
-!   gosia: i don't know if it is the best, maybe it will be problematic
-!   with some compilers...
     if (btest(visual_cfg_lao_contributions(ivector), 0)) &
       write(lupri, *) 'visual_london: direct contribution included'
     if (btest(visual_cfg_lao_contributions(ivector), 1)) then
@@ -162,94 +176,17 @@ contains
 
 
 
-  subroutine visual_london_alloc()
-!   --------------------------------------------------------------------
-!   --------------------------------------------------------------------
-    if (.not. allocated(D_r)) call alloc(D_r, ntbas(0), ntbas(0), nz)
-    call init_mat(D_help, ntbas(0), ntbas(0))
-!    if (.not. visual_cfg_london_with_sym) then
-      if (.not. allocated(r_kl)) call alloc(r_kl, ntbas(0), ntbas(0), 3)
-!    end if
-  end subroutine visual_london_alloc
-
-
-
-  subroutine visual_london_dealloc()
-!   --------------------------------------------------------------------
-!   --------------------------------------------------------------------
-    if (allocated(D_r)) call dealloc(D_r)
-    D_help = 0
-    if (allocated(r_kl)) call dealloc(r_kl)
-  end subroutine visual_london_dealloc
-
-
-
-  subroutine create_rkl()
-!   --------------------------------------------------------------------
-    integer  :: mat_dim
-
-    integer :: i, j, k, l, ixyz, ishell, isym
-    real(8) :: px, py, pz
-    real(8), allocatable :: p(:, :)
-
-    logical :: debug_me
-
-!   it is the same as xc_london_c1_init
-!   --------------------------------------------------------------------
-    mat_dim = ntbas(0)
-
-    call alloc(p, mat_dim, 3)
-
-    i = 1
-    do ishell = 1, kmax
-      do isym = 0, maxopr
-        if (iand(isym, istbao(ishell)) == 0) then
-
-          px = pt(iand(isymax(1, 1), isym))*cent(ishell, 1, 1)
-          py = pt(iand(isymax(2, 1), isym))*cent(ishell, 2, 1)
-          pz = pt(iand(isymax(3, 1), isym))*cent(ishell, 3, 1)
-
-          do j = i, i + spherical_deg(ishell) - 1
-            p(j, 1) = px
-            p(j, 2) = py
-            p(j, 3) = pz
-          end do
-
-          i = i + spherical_deg(ishell)
-        end if
-      end do
-    end do
-
-    do ixyz = 1, 3
-      do k = 1, mat_dim
-        do l = 1, mat_dim
-          r_kl(k, l, ixyz) = p(k, ixyz) - p(l, ixyz)
-        end do
-      end do
-    end do
-
-    call dealloc(p)
-
-
-    debug_me = .false.
-
-    if (debug_me) then
-
-      write(lupri, *) 'create_rkl: debug r_kl'
-      do ixyz = 1, 3
-        do k = 1, mat_dim
-          do l = 1, mat_dim
-            if (r_kl(k, l, ixyz) .ne. 0.0d0) then
-              write(lupri, *) 'ixyz, k, l, r_kl(k, l, ixyz) = ',&
-                               ixyz, k, l, r_kl(k, l, ixyz)
-            end if
-          end do
-        end do
-      end do
-
-    end if
-
-  end subroutine create_rkl
+!  subroutine visual_london_alloc()
+!
+!
+!  end subroutine visual_london_alloc
+!
+!
+!
+!  subroutine visual_london_dealloc()
+!
+!
+!  end subroutine visual_london_dealloc
 
 
 
@@ -260,12 +197,15 @@ contains
 
     integer    :: icomp, file_unit, idimens, print_level, idoint(4)
     integer    :: im4, iz, ibrp, p_typ
-    character  :: p_name*10, p_int*4, rtnlbl(2)*8
+    character  :: p_name*8, p_int*4, rtnlbl(2)*8
     logical    :: debug_me, file_exists, ldoint(4)
     real(8)    :: pfac, factor
     real(8), allocatable  :: buffer(:)
 
     integer :: p_index
+    logical :: doint(4), first(4)
+    integer :: i
+    integer :: iq, iqp, ioff, ioff2
 
 !   -------------------------------------------------------------------
 
@@ -306,9 +246,21 @@ contains
       p_int(4:4) = '0'
     end if
 
-!   read connection matrix in AO basis into buffer
-!   ==============================================
+    do i = 1, 4
+      if (p_int(i:i) == '0') then
+        doint(i) = .false.
+      else
+        doint(i) = .true.
+      end if
+    end do
 
+!   get info about symmetries from file (for selected p_name)
+!   =========================================================
+    call D_con_symmetry_info(ivector, p_name(1:len_trim(p_name)))
+
+
+!   read property integrals into buffer
+!   ===================================
     file_unit = lu1int
 
     open(file_unit,            &
@@ -319,16 +271,16 @@ contains
 
     call alloc(buffer, idimens)
 
-!   i do this to avoid 1 dcopy:
-    if (visual_cfg_connection(ivector) == 1) then
-      call prprea(file_unit,   &
-                  p_name(1:len_trim(p_name)), &
-                  rtnlbl,      &
-                  p_int,       &
-                  D_con_ao%elms,      &
-                  idimens,     &
-                  print_level)
-    else
+!!   i do this to avoid 1 dcopy:
+!    if (visual_cfg_connection(ivector) == 1) then
+!      call prprea(file_unit,   &
+!                  p_name(1:len_trim(p_name)), &
+!                  rtnlbl,      &
+!                  p_int,       &
+!                  D_con_ao%elms,      &
+!                  idimens,     &
+!                  print_level)
+!    else
       call prprea(file_unit,   &
                   p_name(1:len_trim(p_name)), &
                   rtnlbl,      &
@@ -336,7 +288,7 @@ contains
                   buffer,      &
                   idimens,     &
                   print_level)
-    end if
+!    end if
 
     close(file_unit, status='keep')
 
@@ -357,48 +309,88 @@ contains
     end if
 
 
-!   scale matrices by pfac:
+!   scale integrals by pfac
 !   =======================
     factor = pfac
-    if (visual_cfg_connection(ivector) == 1) then
-      D_con_ao = factor*D_con_ao
+    call dscal(idimens, factor, buffer, 1)
+
+
+!   insert phases
+!   =============
+    if (nz .lt. 4) then
+      if (visual_cfg_connection(ivector) == 1) then
+        call qmphase('S', property_jm4pos, property_lrep, buffer, doint)
+      else
+        call qmphase('L', property_jm4pos, property_lrep, buffer, doint)
+      end if
+    end if
+
+
+    if (debug_me) then
+      write(lupri, *) 'phase-transformed integrals'
+      if (visual_cfg_connection(ivector) == 1) then
+        call output(buffer, 1, ntbas(0), 1, ntbas(0), ntbas(0), ntbas(0), 1,lupri)
+      else
+        call outpak(buffer, ntbas(0), 1, lupri)
+      end if
+    end if
+
+
+!   gosia i'll fix it later
+    do i = 1, 4 
+      first(i) = .false.
+    end do
+
+    do i = 1, nz
+      first(i) = .true.
+    end do
+
+
+    if ((visual_cfg_connection(ivector) == 2) .or. &
+        (visual_cfg_connection(ivector) == 0)) then
+
+      ioff = ntbas(0)*ntbas(0)*(property_iqtopq(1) - 1) + 1
+      if (first(property_iqtopq(1))) then
+        call dcopy(idimens, buffer, 1, D_con_ao%elms(ioff), 1)
+        first(property_iqtopq(1)) = .false.
+      end if
+
+
+      do i = 1, nz
+        ioff2 = ntbas(0)*ntbas(0)*(i - 1) + 1
+        if (.not. first(i)) then
+          call dzero(buffer, idimens)
+          call dcopy(idimens, D_con_ao%elms(i), 1, buffer, 1)
+          if (property_ihqmat(i) == 2) then
+            call daptge(ntbas(0), buffer, D_con_ao%elms(ioff2))
+          else if (property_ihqmat(i) == 1) then
+            call dsptsi(ntbas(0), buffer, D_con_ao%elms(ioff2))
+          end if
+          call butobs_no_work(D_con_ao%elms(ioff2), 1)
+        else
+          call dzero(D_con_ao%elms(ioff2), n2bbasx)
+        end if
+      end do 
+
     else
-      call dscal(idimens, factor, buffer, 1)
+
+      ioff = ntbas(0)*ntbas(0)*(property_iqtopq(1) - 1) + 1
+      call dcopy(idimens, buffer, 1, D_con_ao%elms(ioff), 1)
+      call butobs_no_work(D_con_ao%elms, nz)
+
     end if
 
 
-!   create the full matrix if symmetric connection
-!   ==============================================
-
-    !if (visual_cfg_connection(ivector) == 2) then
-    if ((visual_cfg_connection(ivector) == 2) .or. &
-        (visual_cfg_connection(ivector) == 0)) then
-      call daptge(ntbas(0), buffer, D_con_ao%elms)
-    end if
-
-
-!   if symmetric connection resort
-!   ==============================
-!    if (visual_cfg_connection(ivector) == 2) then
-    if ((visual_cfg_connection(ivector) == 2) .or. &
-        (visual_cfg_connection(ivector) == 0)) then
-      call butobs_no_work(D_con_ao%elms, 1)
-!    else
-!      call dcopy(idimens, buffer, 1, D_con_ao%elms, 1)
-    end if
 
     call dealloc(buffer)
 
 
 !   assign symmetries 
 !   =================
-!fixme
-    !D_con_ao%ih_sym = 1
-    D_con_ao%ih_sym = visual_cfg_irep_xvector(ivector) + 1
-    D_con_ao%tr_sym = -1
-    D_con_ao%irep   = D_con_ao%ih_sym - 1
+    D_con_ao%ih_sym = visual_cfg_irep_conmat(ivector) + 1
+    D_con_ao%tr_sym = visual_cfg_itim_conmat(ivector)
+    D_con_ao%irep   = visual_cfg_irep_conmat(ivector)
 
-    !call symmetry_info(p_name(1:len_trim(p_name))
 
     if (debug_me) then
 !     should be the same as connection matrix in SA-AO basis
@@ -408,6 +400,112 @@ contains
 
 
   end subroutine setup_fo_conmat_ao
+
+
+  subroutine D_con_symmetry_info(ivector, p_name)
+!   --------------------------------------------------------------------
+    integer, intent(in)       :: ivector
+    character(*), intent(in)  :: p_name
+
+    integer       :: isym, itim, indxpr, i
+    character(8)  :: line
+    logical :: in_file
+    logical :: debug_me
+!   --------------------------------------------------------------------
+
+    debug_me = .true.
+
+    if (debug_me) then
+      write(lupri, *) 'read symmetry info for connection matrices'
+      write(lupri, *) 'entering ivector, p_name, len_trim(p_name) = ', &
+                                ivector, p_name, len_trim(p_name)
+    end if
+
+
+    open(11, file='property_info',form='formatted',access='sequential')
+    rewind(11)
+    in_file = .true.
+
+    do while (in_file)
+
+      read(11, *, end = 99) line
+      write(*, *) 'line(1:len_trim(p_name)', line(1:len_trim(p_name))
+
+      !if (p_name == line(1:len_trim(p_name))) then
+      if (line(1:2) == p_name(1:2)) then
+
+        property_name = p_name(1:len_trim(p_name))
+        read(11, *, end = 99) property_type
+        read(11, *, end = 99) isym
+        read(11, *, end = 99) itim
+
+!
+        read(11, *, end = 99) number_nz
+        do i = 1, number_nz
+          read(11, *, end = 99) property_ihqmat(i)
+        end do
+!
+        read(11, *, end = 99) number_of_components
+        do i = 1, number_of_components
+          read(11, *, end = 99) property_factor(i)
+          read(11, *, end = 99) property_label(i)
+          read(11, *, end = 99) property_do_int(i)
+          read(11, *, end = 99) property_lrep(i)
+          read(11, *, end = 99) property_ltyp(i)
+          read(11, *, end = 99) property_jm4(i)
+          read(11, *, end = 99) property_jm4pos(i)
+          read(11, *, end = 99) property_iqmult(i)
+          read(11, *, end = 99) property_iqtopq(i)
+        end do
+
+        visual_cfg_irep_conmat(ivector) = isym - 1
+        visual_cfg_itim_conmat(ivector) = itim    
+
+      end if
+
+    end do
+
+ 99 in_file = .false.
+
+    close(11)
+
+    debug_me = .false.
+    if (debug_me) then
+
+      write(lupri, *) 'gosia output from read_property_info'
+
+      write(lupri, *) 'property_name        = ', property_name
+      write(lupri, *) 'property_type        = ', property_type
+      write(lupri, *) 'visual_cfg_irep_conmat(ivector) = ', visual_cfg_irep_conmat(ivector)
+      write(lupri, *) 'isym                 = ', isym
+      write(lupri, *) 'visual_cfg_itim_conmat(ivector) = ', visual_cfg_itim_conmat(ivector)
+      write(lupri, *) 'itim                 = ', itim
+
+      write(lupri, *) 'number_nz            =', number_nz
+      do i = 1, number_nz
+        write(lupri, *) 'i, property_ihqmat(i) = ', i, property_ihqmat(i)
+      end do
+!
+
+      write(lupri, *) 'number_of_components = ', number_of_components
+
+      do i = 1, number_of_components
+       write(lupri, *) '                i   = ', i 
+       write(lupri, *) 'property_factor(i)  = ', property_factor(i)
+       write(lupri, *) 'property_label(i)   = ', property_label(i)
+       write(lupri, *) 'property_do_int(i)  = ', property_do_int(i)
+       write(lupri, *) 'property_lrep(i)    = ', property_lrep(i)
+       write(lupri, *) 'property_ltyp(i)    = ', property_ltyp(i)
+       write(lupri, *) 'property_jm4(i)     = ', property_jm4(i)
+       write(lupri, *) 'property_jm4pos(i)  = ', property_jm4pos(i)
+       write(lupri, *) 'property_iqmult(i)  = ', property_iqmult(i)
+       write(lupri, *) 'property_iqtopq(i)  = ', property_iqtopq(i)
+      end do
+
+    end if
+
+
+  end subroutine D_con_symmetry_info
 
 
 
@@ -573,185 +671,73 @@ contains
     real(8) :: vector_a(3)
 !   --------------------------------------------------------------------
 
-    D_help%elms   = 0.0d0
+    jblao = 0.0d0
 
     debug_me = .false.
 
     imat     = vector_to_matrix(ixvector)
     imat_con = vector_to_matrix_con(ixvector)
-    
 
+!   'direct' contribution
     if (btest(visual_cfg_lao_contributions(ixvector), 0)) then
 
-      !vector_a = 0.0d0
+      vector_a = 0.0d0
 
-      if (visual_cfg_london_with_sym) then
+      call get_jblao_direct(ixvector, &
+                            1, &
+                            D(1)%elms, &
+                            ntbas(0), &
+                            ao(ao_start(0,0):ao_end(0,0)), &
+                            ao(ao_start(0,1):ao_end(0,1)), &
+                            (/px, py, pz/), &
+                            vector_a)
 
-        !call get_jblao_direct_temp(D(1), &
-        !                           vector_a, & 
-        !                           ao(ao_start(0,0):ao_end(0,0)), &
-        !                           ao(ao_start(0,1):ao_end(0,1)), &
-        !                           (/px, py, pz/), &
-        !                           ixvector, &
-        !                           buffer)
-
-
-        call test_direct(ixvector, &
-                         1, &
-                         D(1)%elms, &
-                         ntbas(0), &
-                         ao(ao_start(0,0):ao_end(0,0)), &
-                         ao(ao_start(0,1):ao_end(0,1)), &
-                         (/px, py, pz/), &
-                         vector_a)
-
-      else
-
-        call get_jblao_direct(D(1),           &
-                              ao(ao_start(0, 0):ao_end(0, 0)),  &
-                              (/px, py, pz/), &
-                              ixvector,       &
-                              buffer)
-        
-        f = -1.0d0
-        call daxpy(ntbas(0)*ntbas(0)*nz, f, D_r, 1, D_help%elms, 1)
-      end if
+      f = -1.0d0
+      call daxpy(3, f, vector_a, 1, jblao, 1)
 
     end if
 
+!   'response' contribution
     if (btest(visual_cfg_lao_contributions(ixvector), 1)) then
-      D_help = D_help - D(imat)
-    end if
 
-    if (btest(visual_cfg_lao_contributions(ixvector), 2)) then
-      D_help = D_help - D_con(imat_con)
-    end if
+      vector_a = 0.0d0
 
-!gosia: fixme: visual_cfg_irep_xvector jest zle!!
-           call get_j(jblao,                             &
+           call get_j(vector_a,                             &
                       visual_cfg_irep_xvector(ixvector), &
-                      D_help%nrow,                       &
-                      D_help%elms,                       &
+                      D(imat)%nrow,                       &
+                      D(imat)%elms,                       &
                       buffer,                            &
                       ao)
 
 
-
-    if (visual_cfg_london_with_sym) then
       f = -1.0d0
       call daxpy(3, f, vector_a, 1, jblao, 1)
+
     end if
+
+!   'reorthonormalization' contribution
+    if (btest(visual_cfg_lao_contributions(ixvector), 2)) then
+
+      vector_a = 0.0d0
+
+      call get_j(vector_a,                          &
+                 visual_cfg_irep_conmat(ixvector), &
+                 D_con(imat_con)%nrow,                       &
+                 D_con(imat_con)%elms,                       &
+                 buffer, &
+                 ao(ao_start(0, 0):ao_end(0, 0)))
+
+      f = -1.0d0
+      call daxpy(3, f, vector_a, 1, jblao, 1)
+
+    end if
+
 
   end subroutine get_jblao
 
 
 
-  subroutine get_jblao_direct(D_0, ao, r, ixvector, buffer)
-!   ---------------------------------------------------------------------------------
-    type(matrix)         :: D_0
-    integer, intent(in)  :: ixvector
-    real(8), intent(in)  :: r(3)
-    real(8)              :: ao(*), buffer(*)
-
-    integer              :: k, l, b, c, iz, ioff
-    integer              :: ixyz, i, j
-    real(8)              :: f, rkl_cross_r
-    logical              :: debug_me
-!   ----------------------------------------------------------------------------
-
-    debug_me = .false.
-
-!   build 'modified' density matrix,
-!   D_r = - 0.5d0*(R_mn \times r)_icomp*D_0
-!   -----------------------------------------
-
-    if (visual_cfg_lao_icomp(ixvector) == 1) then
-      b = 2; c = 3
-    else if (visual_cfg_lao_icomp(ixvector) == 2) then
-      b = 3; c = 1
-    else if (visual_cfg_lao_icomp(ixvector) == 3) then
-      b = 1; c = 2
-    end if
-
-    do k = 1, ntbas(0)
-      do l = 1, k - 1
-
-        rkl_cross_r = r_kl(k, l, b)*r(c) &
-                    - r_kl(k, l, c)*r(b)
-
-        do iz = 2, 4
-          ioff = (iz - 1)*ntbas(0)*ntbas(0) + ntbas(0)*(k-1) + l
-          f = 0.5d0*rkl_cross_r*D_0%elms(ioff)
-
-!         D matrices are scaled by 2.0d0 in visual.F90
-!         D_0 for iz = 2, 4 is antisymmetric
-!         and now it is multiplied by antisymmetric (R_mn \times r)
-!         so finally we build a symmetric matrix:
-          D_r(k, l, iz) = + 0.50d0*f
-          D_r(l, k, iz) = + 0.50d0*f
-        end do
-
-      end do
-    end do
-
-  end subroutine get_jblao_direct
-
-
-
-  subroutine get_p_index(file_unit, prop_name, prop_index)
-!   -------------------------------------------------------------------
-    integer, intent(in)       :: file_unit
-    character(*), intent(in)  :: prop_name
-    integer, intent(out)      :: prop_index
-
-    integer :: i, j
-    character :: t(4)*8, line*72
-    logical :: prop_on_file, end_of_file, in_file
-
-!   --------------------------------------------------------------------
-
-    rewind file_unit
-    end_of_file  = .false.
-    prop_on_file = .false.
-    i = 0
-
-    !do while (.not. end_of_file)
-    do while (.true.)
-      !read(file_unit, end = 10, err = 20) t
-      read(file_unit, err = 20) t
-      i = i + 1
-      if (t(1) == '********') then
-        j = j + 1
-        write(lupri, *) 'in file: i, t(4) = ', i, t(4)
-        if (t(4) == prop_name(1:len_trim(prop_name))) then
-          prop_index = i
-          prop_on_file = .true.
-        end if
-      end if
-    end do
-
- 10 end_of_file  = .true.
- 20 write(lupri, *) 'error in reading record i = ', i
-
-
-    if (.not. prop_on_file) then
-      write(lupri, *) 'error in reading AOPROPER: no property ', prop_name, &
-                      ' on file'
-    end if
-
-
-  end subroutine get_p_index
-
-
-
-
-
-
-
-
-
-
-  subroutine test_direct(ivector, isym, D_0, mat_dim, ao, ao_b1, r_co, vector)
+  subroutine get_jblao_direct(ivector, isym, D_0, mat_dim, ao, ao_b1, r_co, vector)
 !   ----------------------------------------------------------------------------
     integer, intent(in)    :: ivector
     integer, intent(in)    :: isym
@@ -770,7 +756,6 @@ contains
 
     vector_a = 0.0d0
 
-!   calculate for one component of B-field at a time
     a = visual_cfg_lao_icomp(ivector)
 
     if (a == 1) then
@@ -781,22 +766,13 @@ contains
       b = 1; c = 2
     end if
     
-    !write(*, *) 'bla: a, isym, r_co = ', a, isym, r_co(1), r_co(2), r_co(3)
-
-!   3 component of j-vector
     do ixyz = 1, 3
       do iblock = 1, lssl_nr_density_blocks(ixyz, isym - 1)
-      !do iblock = 1, lssl_nr_density_blocks(0, isym - 1)
 
         nr1 = lssl_nr_ao(1, iblock, ixyz, isym - 1)
         st1 = lssl_st_ao(1, iblock, ixyz, isym - 1)
         nr2 = lssl_nr_ao(2, iblock, ixyz, isym - 1)
         st2 = lssl_st_ao(2, iblock, ixyz, isym - 1)
-
-        !nr1 = ls_nr_ao(1, iblock, 0, isym - 1)
-        !st1 = ls_st_ao(1, iblock, 0, isym - 1)
-        !nr2 = ls_nr_ao(2, iblock, 0, isym - 1)
-        !st2 = ls_st_ao(2, iblock, 0, isym - 1)
 
         do ii = st1, st1 + nr1 - 1
           do jj = st2, st2 + nr2 - 1
@@ -806,20 +782,15 @@ contains
 
             vector_a(ixyz) = vector_a(ixyz) + f(ixyz)*D_0(ii, jj, iq(ixyz))
 
-            !write(*, *) 'bla ixyz, iq(ixyz), f(ixyz), vector_a(ixyz)', &
-            !                 ixyz, iq(ixyz), f(ixyz), vector_a(ixyz)
-            !if (iq(ixyz) == 0) call quit('iq(ixyz) = 0')
-
           end do
         end do
 
       end do
       vector(ixyz) = 0.5d0*cval*vector_a(ixyz)
-      !write(*, *) 'bla ixyz, vector_a, vector', &
-      !                 ixyz, vector_a(ixyz), vector(ixyz)
     end do
 
-  end subroutine
+  end subroutine get_jblao_direct
+
 
 
 end module

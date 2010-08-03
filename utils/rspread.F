@@ -26,6 +26,8 @@ C based on program LABREAD
 C
 #include "implicit.h"
 #include "priunit.h"
+!gosia#include "../include/implicit.h"
+!gosia#include "../include/priunit.h"
       PARAMETER (LUINP = 1)
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2,LBUF*16
       INTEGER   NARG,IARG,JARG

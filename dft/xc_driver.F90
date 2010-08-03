@@ -800,6 +800,9 @@ contains
     integer              :: derv_length
     real(8), allocatable :: derv(:, :)
 
+!   gosia: temporarily
+    real(8) :: u_qi(3,3), s_b(3,3)
+    integer :: l
 
 
     max_ao_g_order = 0
@@ -1138,42 +1141,77 @@ contains
 !       ==========================================================
 
         if (do_london_rhs_direct .and. response_order_mo == 0) then
+          if (dft_cfg_no_sdft) then
+!           spin-density contribution for closed-shell systems is 0
+            if (use_gga) then
+              call gga_london_distribute_r(derv(1, d_r),                      &
+                                           2.0d0*derv(1, d_z),                      &
+                                           rhg,                               &
+                                           0,                                 &
+                                           mat_dim,                           &
+                                           nz,                                &
+                                           fmat,                              &
+                                           ao(ao_start(0, 0):ao_end(0, 0)), &
+                                           ao(ao_start(0, 1):ao_end(0, 1)), &
+                                           ao(ao_start(1, 0):ao_end(1, 0)), &
+                                           ao(ao_start(1, 1):ao_end(1, 1)), &
+                                           rx(ipoint), ry(ipoint), rz(ipoint))
+            else
+              call lda_london_distribute_r(derv(1, d_r),                      &
+                                           fmat_pg_sym,                       &
+                                           mat_dim,                           &
+                                           nz,                           &
+                                           fmat,                              &
+                                           ao,                              &
+                                           ao(ao_start(0, 1):ao_end(0, 1)), &
+                                           rx(ipoint), ry(ipoint), rz(ipoint))
+            end if
+
+          end if
+
+!       gosia: maybe move this to lr() xc_driver_helpers.F90
+        else if (do_london_rhs_direct .and. response_order_mo == 1) then
+!           spin-density contribution only
+          if (.not. dft_cfg_no_sdft)  &
+             call quit("error: no_sdft but do_london_rhs_direct and response_order_mo = 1")
+
+!           get "ds_x/dBx ds_y/dBx ds_z/dBx ds_x/dBy ..." to s_b
+!           where ds_i/dBj = (R_MN \times r)_j (\chi_mu \Sigma_i \chi_nu) (c_{\mu j}^* c_{\nu j})
+          call get_s_lao(s_b,                               &
+                         dmat_pg_sym,                       & ! dmat_0_pg_sym
+                         mat_dim,                           &
+                         dmat_0,                            &
+                         ao(ao_start(0, 0):ao_end(0, 0)),   &
+                         ao(ao_start(0, 1):ao_end(0, 1)),   &
+                         rx(ipoint), ry(ipoint), rz(ipoint))
+
+!         gosia: check whether you multiply correct two numbers (check ordering in derv(,d_ss)
+          do l = 1, 3
+            do k = 1, 3
+              u_qi(k, l) = derv(1, d_ss)*s_b(k, l)
+            end do
+          end do
+
           if (use_gga) then
-            call gga_london_distribute_r(derv(1, d_r),                      &
-                                         2.0d0*derv(1, d_z),                      &
-                                         rhg,                               &
-                                         0,                                 &
-                                         mat_dim,                           &
-                                         nz,                                &
-                                         fmat,                              &
-                                         ao(ao_start(0, 0):ao_end(0, 0)), &
-                                         ao(ao_start(0, 1):ao_end(0, 1)), &
-                                         ao(ao_start(1, 0):ao_end(1, 0)), &
-                                         ao(ao_start(1, 1):ao_end(1, 1)), &
-                                         rx(ipoint), ry(ipoint), rz(ipoint))
+!           gosia todo  call gga_distribute_i
           else
-            call lda_london_distribute_r(derv(1, d_r),                      &
-                                         fmat_pg_sym,                       &
-                                         mat_dim,                           &
-                                         nz,                           &
-                                         fmat,                              &
-                                         ao,                              &
-                                         ao(ao_start(0, 1):ao_end(0, 1)), &
-                                         rx(ipoint), ry(ipoint), rz(ipoint))
+            do k = 1, 3
+              call lda_distribute_i(u_qi(1, k),               &
+                                    fmat_pg_sym(k) - 1,       & ! i hope pg sym of "Bx", "By" or "Bz" contribution, gosia: to check
+                                    mat_dim,                  &
+                                    fmat,                     &
+                                    ao(ao_start(0, 0):ao_end(0, 0)))
+            end do
           end if
         end if
 
-! if(do_london_rhs_direct .and. response_order_mo == 1) ... for sdft
-
-! reorthonormalization-lao contribution to differentiated kohn-sham matrix
-!       if (do_london_rhs_ro) then
-!       end if
 
 
 !       linear response
 !       ===============
         if (response_order_mo == 1) then
 
+!         gosia: todo use this call to add lao+sdft
           call lr(bllen,   &
                   mat_dim,        &
                   nz,             &
