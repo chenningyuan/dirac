@@ -515,6 +515,7 @@ f.close()
 # ===================================
 
 #radovan: this does not work if the files do not exist
+#mi TODO:  os.path.isfile (http://stackoverflow.com/questions/82831/how-do-i-check-if-a-file-exists-using-python)
 #os.utime('build/Makefile.dep',get_touch_time())
 #os.utime('build/Makefile.obj',get_touch_time())
 os.system('touch -t 198001010000 build/Makefile.dep')
