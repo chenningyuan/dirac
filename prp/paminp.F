@@ -66,15 +66,25 @@ C
       DATA TABDIR /'*END OF','*EXPECT','*LINEAR','*EXCITA',
      &             '*MOLGRD','*NMR   ','*ESR   ','*QUADRA',
      &             '*STEX  ','*AORESP'/
+!                     1         2         3         4
       DATA TABLE  /'.DIPOLE','.QUADRU','.POLARI','.MAGNET',
+!                     5         6         7         8
      &             '.NMR   ','.SPIN-S','.SHIELD','.PRINT ',
+!                     9        10        11        12
      &             '.ABUNDA','.EFG   ','.NQCC  ','.DSO   ',
+!                    13        14        15        16
      &             '.MOLGRD','.NSTDIA','.ESR   ','.PVC   ',
+!                    17        18        19        20
      &             '.EFT   ','.EFTNTL','.PVCSHI','.EFN   ',
+!                    21        22        23        24
      &             '.WAVE F','.RHONUC','.FIRST ','.TWO-PH',
+!                    25        26        27        28
      &             '.VERDET','.ROTG  ','.MSTDIA','.PVCSPN',
+!                    29        30        31        32
      &             '.NOPCTR','.EXCDIP','.MAGOUT','.OPTROT', 
+!                    33        34        35        36
      &             '.C6    ','.RKBIMP','.BXLAO ','.BYLAO ',
+!                    37        38        39        40
      &             '.BZLAO ','.XXXXXX','.XXXXXX','.XXXXXX' /
 
 C
