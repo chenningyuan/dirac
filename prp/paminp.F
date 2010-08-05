@@ -85,7 +85,7 @@ C
 !                    33        34        35        36
      &             '.C6    ','.RKBIMP','.BXLAO ','.BYLAO ',
 !                    37        38        39        40
-     &             '.BZLAO ','.XXXXXX','.XXXXXX','.XXXXXX' /
+     &             '.BZLAO ','.MQSUSC','.XXXXXX','.XXXXXX' /
 
 C
       CALL QENTER('PRPINP')
@@ -110,7 +110,12 @@ C
       QUADRU       = .FALSE.
       EPOLAR       = .FALSE.
       DOVDW        = .FALSE.
+
+!     magnetic dipole susceptibility
       MSUSCP       = .FALSE.
+!     magnetic quadrupole susceptibility
+      MQSUSCP      = .FALSE.
+
       IMAGOUT      = 0
       SHIELD       = .FALSE.
       PVC_SHIELD   = .FALSE.
@@ -224,13 +229,15 @@ C&&&& POLAR - electronic dipole polarizabilities
             DOXLR  = .TRUE.
             EPOLAR = .TRUE.
             GO TO 100
-  104    CONTINUE
-C&&&& MAGNET - magnetic susceptibilities
+
+  104    continue
+!           magnetic dipole susceptibility
 #ifdef MOD_MAGNETIZ
-            DOXLR  = .TRUE.
-            MSUSCP = .TRUE.
+            doxlr  = .true.
+            msuscp = .true.
 #endif
-            GO TO 100
+            go to 100
+
   105    CONTINUE
 C&&&& NMR parameters:
             DOXLR  = .TRUE.
@@ -417,9 +424,13 @@ C&&&& BZLAO
             doxlr  = .true.
             london = .true.
             GO TO 100
-  138    CONTINUE
-C&&&& XXXXXX
-            GO TO 100
+
+  138    continue
+!           magnetic quadrupole susceptibility
+            doxlr   = .true.
+            mqsuscp = .true.
+            go to 100
+
   139    CONTINUE
 C&&&& XXXXXX
             GO TO 100
