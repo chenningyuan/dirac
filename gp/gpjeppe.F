@@ -637,22 +637,34 @@ C   Timo Fleig, 18-12-2002
 C Implemented THR_RTRUNC and THR_ETRUNC /HJAaJ 28-Mar-2007
 C
 #include "implicit.h"
+#include "priunit.h"
+#include "infpar.h"
       PARAMETER (THRES=1.0D-4)
       DIMENSION VECOUT(*),VECIN(*),DIAG(*)
 C
+      n_zero_1 = 0
+      n_zero_2 = 0
       DO I=1,NDIM
          IF(ABS(VECIN(I)) .LE. THR_RTRUNC) THEN
            VECOUT(I) = 0.0D0
+           n_zero_1 = n_zero_1 + 1
          ELSE
            DIVIDE=DIAG(I)+SHIFT
            IF(ABS(DIVIDE).LE.THRES) DIVIDE=THRES
            VECOUT(I)=VECIN(I)/DIVIDE
            IF (THR_ETRUNC .GT. 0.0D0) THEN
-              IF (ABS(VECOUT(I)*VECIN(I)) .LE. THR_ETRUNC)
-     &           VECOUT(I) = 0.0D0
+              IF (ABS(VECOUT(I)*VECIN(I)) .LE. THR_ETRUNC) THEN
+                 VECOUT(I) = 0.0D0
+                 n_zero_2 = n_zero_2 + 1
+              END IF
            END IF
          END IF
       END DO
+      x_nonzero = ndim-n_zero_1-n_zero_2
+      x_nonzero = x_nonzero / (0.01D0*ndim)
+      write (lupri,'(a,i3,a,4i10,f7.2,a)')
+     & 'Node ',mytid,' DIAVC2_TRUNC, NDIM,zero1/2,nonzero =',
+     & NDIM,n_zero_1, n_zero_2, ndim-n_zero_1-n_zero_2,x_nonzero,'%'
       RETURN
       END
 C  /* Deck gatvec */

@@ -1369,7 +1369,7 @@ C?    write(6,*) ' LCISPC : NICISP ', NICISP
       CALL IAIBCM_GAS(LCMBSPC(ICI),ICMBSPC(1,ICI),
      &                IGSOCCX,NOCTPA,NOCTPB,
      &                ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),NELFGP,
-     &                MXPNGAS,NGAS,WORK(KLIOIO),IPRDIA)
+     &                MXPNGAS,NGAS,WORK(KLIOIO),IPRNT)
 *
       DO  50 ISYM = 1, NSMCI
           if (IDC.eq.3.or.IDC.eq.4) then

@@ -3409,7 +3409,7 @@ C?     &              LU1,LU2,LU3,LU4,LU5,LU6,LU7
        END IF
        KAPROJ = 1
        KFREE = KAPROJ+ MAXVEC*(MAXVEC+1)/2
-       TEST = 1.0D-8
+       TEST = 1.0D-4
        CONVER = .FALSE.
 *
 * ===================

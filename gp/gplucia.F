@@ -2062,8 +2062,11 @@ C     INTEGER MNOCC(NGAS),MXOCC(NGAS)
 *.Output
       INTEGER IOCOC(NOCTPA,NOCTPB)
 *
+#include "parluci.h"
+*
       NTEST = 00000
       NTEST = MAX(NTEST,IPRNT)
+
 *
       IF(NTEST.GE.100) THEN
         IF(MYPROC.EQ.MASTER) THEN

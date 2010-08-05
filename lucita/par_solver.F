@@ -1158,7 +1158,7 @@ C            WRTVCD(SEGMNT,LU,IREW,LBLK)
       SUBROUTINE MICDV6_PAR(VEC1,VEC2,RNRM,EIG,FINEIG,MAXIT,
      &                      NVAR,NROOT,MAXVEC,NINVEC,APROJ,AVEC,WORK,
      &                      IPRTXX,NPRDIM,H0,IPNTR,
-     &                      NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,E_CONV,
+     &                      NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,THRES_E,
      &                      IROOTHOMING,LUWRTOUT,IBLOCKL,NBLOCKDN,
      &                      SCRRED,SCRRED2,RCCTOS,LU1LIST,LU2LIST,
      &                      LU3LIST,LU4LIST,LU5LIST,LU6LIST,LU7LIST,
@@ -1300,7 +1300,7 @@ C
       END IF
       KAPROJ = 1
       KFREE = KAPROJ+ MAXVEC*(MAXVEC+1)/2
-      TEST = 1.0D-8
+      TEST = 1.0D-4
       CONVER = .FALSE.
 C
 C     ===================
@@ -1489,7 +1489,7 @@ C
 *       calculate residues ...
 *
         CALL P1_B_PAR_RL_LUCI1(VEC1,VEC2,EIGAPR,RNRM,EIGSHF,
-     &                         EIG,TEST,E_CONV,RTCNV,CONVER,ITER,MAXIT,
+     &                         EIG,TEST,THRES_E,RTCNV,CONVER,ITER,MAXIT,
      &                         IROOT,LU2LIST,LU1LIST,LU5LIST,NBATV,
      &                         LBATV,LEBATV,I1BATV,IBATV,
      &                         MY_LU2_OFF,MY_LU1_OFF,MY_LU5_OFF,
@@ -1515,10 +1515,10 @@ csk       CSCREEN = .FALSE.
           CALL H0M1TD_REL_PAR(ILU6,IDIA,ILU5,-EIGAPR,VEC1,VEC2,
      &                        LU6LIST,LU5LIST,NBATV,LBATV,LEBATV,
      &                        I1BATV,IBATV,MY_LU6_OFF,MY_DIA_OFF,
-     &                        MY_LU5_OFF,1)
+     &                        MY_LU5_OFF,1,THRES_E)
 *              H0M1TD_REL_PAR(LUOUT,LUDIA,LUIN,SHIFT,VEC1,VEC2,LISTOUT,
 *    &                        LISTIN,NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,
-*    &                        OFFSET_OUT,OFFSET_DIAG,OFFSET_IN,INV)
+*    &                        OFFSET_OUT,OFFSET_DIAG,OFFSET_IN,INV,THRES_E)
 *
 *
 *         hardwired to 1!

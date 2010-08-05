@@ -4167,7 +4167,8 @@ C     END IF
 * 53 : Convergence threshold for CI
 *
       IF(ISETKW(53).EQ.0) THEN
-        THRES_E = 1.0D-10
+!       THRES_E = 1.0D-10
+        THRES_E = 1.0D-7
         ISETKW(53) = 2
       END IF
 *
@@ -5203,8 +5204,8 @@ C    &  '        Allowed number of iterations    ',MAXIT
       WRITE(LUOUT,'(1H ,A,I2)')
      &  '        Allowed Dimension of CI subspace',MXCIV
 *
-      WRITE(LUOUT,'(1H ,A,E11.5)')
-     &  '        Convergence threshold for energy ',THRES_E
+      WRITE(LUOUT,'(A,1P,E11.5)')
+     &  '         Convergence threshold for energy ',THRES_E
 *. Multispace (multigrid info )
       IF(MULSPC.EQ.1) THEN
         WRITE(LUOUT,'(1H ,A,I3)')

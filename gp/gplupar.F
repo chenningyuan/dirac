@@ -855,7 +855,7 @@ C
      &                          LUOUTLIST,LUINLIST,
      &                          NBATCH,LBATCH,LEBATCH,I1BATCH,
      &                          IBATCH,MY_IOFF_LUOUT,MY_IOFF_LUDIA,
-     &                          MY_IOFF_LUIN,INV)
+     &                          MY_IOFF_LUIN,INV,THRES_E)
 C
 C     calculate inverted general preconditioner matrix times vector
 C
@@ -967,10 +967,10 @@ C
            IF( CSCREEN) THEN
 C             set proper truncation factor
               THR_TRUNC  = TRUNC_FAC * RNORM_FAC
-Csk           WRITE(LUWRT,*) 'TRUNCATION FACTOR:',THR_TRUNC
+              THR_ETRUNC = 1.0D-7 * THRES_E
 Chj           14-jun-07:   disable THR_ETRUNC
-Chj           THR_ETRUNC = 1.0D-6 * THRES_E
-              THR_ETRUNC = -1.0D0
+!             THR_ETRUNC = -1.0D0
+              WRITE(LUWRT,*) 'TRUNCATION FACTORS:',THR_TRUNC,THR_ETRUNC
               CALL DIAVC2_TRUNC(VEC1,VEC2,VEC1,SHIFT,LEBATCH(ISBATCH),
      &                          THR_TRUNC,THR_ETRUNC)
            ELSE

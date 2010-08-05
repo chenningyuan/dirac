@@ -31,7 +31,7 @@
      &                  RNRM,EIG,FINEIG,MAXIT,NROOT,MAXVEC,NINVEC,
      &                  APROJ,AVEC,WORK,IPRT,
      &                  NPRDIM,IPNTR,LBLK,EIGSHF,
-     &                  E_CONV,IBLOCKL,NPARBLOCK,NBLOCKS,
+     &                  THRES_E,IBLOCKL,NPARBLOCK,NBLOCKS,
      &                  LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
      &                  LUCLIST,NBATV,
      &                  LBATV,LEBATV,I1BATV,IBATV,RCCTOS,SCRRED,
@@ -316,7 +316,7 @@ CSK       WRITE(LUWRT,*) 'NVEC, NINVEC' , NVEC, NINVEC
 *        calculate residues ...
 *
          CALL P1_B_PAR_RL_1(VEC1,VEC2,AVEC,EIGAPR,RNRM,EIGSHF,
-     &                      EIG,TEST,E_CONV,RTCNV,CONVER,ITER,MAXIT,
+     &                      EIG,TEST,THRES_E,RTCNV,CONVER,ITER,MAXIT,
      &                      IROOT,LU2LIST,LU1LIST,LU5LIST,NBATV,LBATV,
      &                      LEBATV,I1BATV,IBATV,MY_LU2_OFF,MY_LU1_OFF,
      &                      MY_LU5_OFF,SCRRED,NVEC,ILU2,ILU1,ILU5)
@@ -337,10 +337,10 @@ CSK       WRITE(LUWRT,*) 'NVEC, NINVEC' , NVEC, NINVEC
            CALL H0M1TD_REL_PAR(ILU3,IDIA,ILU5,-EIGAPR,VEC1,VEC2,
      &                         LU3LIST,LU5LIST,NBATV,LBATV,LEBATV,
      &                         I1BATV,IBATV,MY_LU3_OFF,MY_DIA_OFF,
-     &                         MY_LU5_OFF,1)
+     &                         MY_LU5_OFF,1,THRES_E)
 *               H0M1TD_REL_PAR(LUOUT,LUDIA,LUIN,SHIFT,VEC1,VEC2,LISTOUT,
 *    &                         LISTIN,NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,
-*    &                         OFFSET_OUT,OFFSET_DIAG,OFFSET_IN,INV)
+*    &                         OFFSET_OUT,OFFSET_DIAG,OFFSET_IN,INV,THRES_E)
 *
 *
 *          hardwired to 1!
