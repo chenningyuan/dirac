@@ -2,28 +2,27 @@ module matrix_stat
 
   implicit none
 
-  integer :: matrix_stat_allocations      = 0
-  integer :: matrix_stat_allocations_diff = 0
-  integer :: matrix_stat_allocations_peak = 0
-  integer :: matrix_stat_deallocations    = 0
-  integer :: matrix_stat_multiplications  = 0
+  public add_allocation
+  public remove_allocation
+  public print_nr_allocations
 
-! private
+  private
+
+  integer :: nr_allocations = 0
 
 contains
 
-  subroutine print_matrix_stat()
+  subroutine add_allocation()
+     nr_allocations = nr_allocations + 1
+  end subroutine
 
-!radovan: the following printout fails - i will debug this later, not vital at this moment
-!#if !defined VAR_IFC
-!    print '("@ " i10 a)', matrix_stat_allocations,      ' matrix allocations (total)'
-!    print '("@ " i10 a)', matrix_stat_allocations_peak, ' matrix allocations (peak)'
-!    print '("@ " i10 a)', matrix_stat_deallocations,    ' matrix deallocations'
-!    print '("@ " i10 a)', matrix_stat_multiplications,  ' matrix multiplications'
-!#else
-!    print *,'ifort does not handle this printout'
-!#endif
+  subroutine remove_allocation()
+     nr_allocations = nr_allocations - 1
+  end subroutine
 
+  subroutine print_nr_allocations(text)
+     character(*), intent(in) :: text
+     write(*, *) 'debug nr allocations ', nr_allocations, text
   end subroutine
 
 end module

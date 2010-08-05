@@ -435,6 +435,7 @@ contains
             call daxpy_iz_jz(1.0d0, T, 1, A(1), 3)
             call load_oneint('G1KZ' // prefix_zeros(c(1)+i, 3), T)
             call daxpy_iz_jz(1.0d0, T, 1, A(1), 2)
+            T = 0
 #else
             call load_oneint('1DHAM' // prefix_zeros(c(1)+i, 3), A(1))
 #endif

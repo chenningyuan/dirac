@@ -141,12 +141,7 @@ contains
     A%ncol = ncol
 
     allocate(A%elms(A%nrow*A%ncol*nz*merge(2, 1, A%complex)))
-
-    matrix_stat_allocations      = matrix_stat_allocations      + 1
-    matrix_stat_allocations_diff = matrix_stat_allocations_diff + 1
-    if (matrix_stat_allocations_diff > matrix_stat_allocations_peak) then
-      matrix_stat_allocations_peak = matrix_stat_allocations_diff
-    end if
+    call add_allocation()
 
   end subroutine
 
@@ -162,9 +157,7 @@ contains
 
     deallocate(A%elms)
     nullify(A%elms)
-
-    matrix_stat_deallocations    = matrix_stat_deallocations    + 1
-    matrix_stat_allocations_diff = matrix_stat_allocations_diff - 1
+    call remove_allocation()
 
     if (associated(A%iaux)) deallocate(A%iaux)
     if (associated(A%raux)) deallocate(A%raux)
@@ -240,8 +233,6 @@ contains
                ta, 'N', ipqtoq(1, A%irep), A%elms, A%nrow, A%ncol, nz, &
                tb, 'N', ipqtoq(1, B%irep), B%elms, B%nrow, B%ncol, nz, &
                beta,    iq               , C%elms, C%nrow, C%ncol, nz)
-
-    matrix_stat_multiplications = matrix_stat_multiplications + 1
 
   end subroutine
 

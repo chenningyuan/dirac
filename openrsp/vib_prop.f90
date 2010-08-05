@@ -614,7 +614,7 @@ contains
       ! call print_tensor(Egff, shape(Egff), 'E1gDef+E2gDeDf-SgDFDef'); Egff=0
       call print_tensor(int(shape(Egff)), -Egff, 'd/dg Polari = -Egff', &
                         (/0*freq,freq,-freq/))
-      DFDef=0; De=0; Fe=0; Def=0; Fef=0
+      De=0; Fe=0; Def=0; Fef=0
       !----------------------------------------
       ! magetic and electric-magnetic equations
       call pert_dens(decomp, S, (/'MAGO'/), (/3/), (/D/), (/F/), Db, Fb, freq=(/freq/))
@@ -639,7 +639,8 @@ contains
       ! call print_tensor(Egbf, shape(Egbf), 'E2gDbDf + E1gDfb - SgDFDbf'); Egbf=0
       call print_tensor(int(shape(Egbf)), Egbf, 'd/dg G-prime = Egbf', &
                         (/0*freq,freq,-freq/))
-      DFDbf=0; Db=0; Fb=0; Dbf=0; Fbf=0
+      DFDbf=0
+      Db=0; Fb=0; Dbf=0; Fbf=0
       !---------------------------------------------
       ! quadrupole and quadrupole-electric equations
       call pert_dens(decomp, S, (/'ELGR'/), (/6/), (/D/), (/F/), Dq, Fq, freq=(/freq/))
@@ -664,7 +665,8 @@ contains
       ! call print_tensor(shape(Egqf), Egqf, 'E2gDqDf + E1gDqf - SgDFDqf'); Egqf=0
       call print_tensor(int(shape(Egqf)), -Egqf, 'd/dg A-tensor = -Egqf', &
                         (/0*freq,freq,-freq/))
-      DFDqf=0; Dq=0; Fq=0; Df=0; Ff=0; Dqf=0; Fqf=0
+      DFDqf=0
+      Dq=0; Fq=0; Df=0; Ff=0; Dqf=0; Fqf=0
       ! change sign on quasi-energy derivatives to get properties
       Eff=-Eff; Eqf=-Eqf; Egff=-Egff; Egqf=-Egqf
    end subroutine

@@ -32,6 +32,7 @@ module rsp_equations
 
    use matrix_defop  !matrix type and operators
    use prop_contribs !integrals and integral contractions
+   use matrix_stat
 
    implicit none
 
@@ -721,8 +722,8 @@ contains
                 // 'excitation densities saved in rsp_equations')
       ! zero highest-order D and F for RHS calculation
       do i = 1, pd
-         Dp(i) = 0d0*D(1)
-         Fp(i) = 0d0*F(1)
+         Dp(i) = tiny(0.0d0)*D(1)
+         Fp(i) = tiny(0.0d0)*F(1)
       end do
       ! calculate all lower-order contributions to the
       ! minus-right-hand-sides DSDp and FDSp
@@ -837,6 +838,9 @@ contains
       ! prepare the right-hand-sides
       DS = D0*S0
       call scf_eq_prep_rhs(D0, DS, sym, neq, FDSp, DSDp, Fp, Dp)
+      do i = 1, neq
+         DSDp(i) = 0
+      end do
 #ifndef PRG_DIRAC
       ! check whether the frequency is resonant (+-excitation energy)
       call scf_eq_find_resonances(freq, iexci)
@@ -863,6 +867,7 @@ contains
             R%tr_sym = 1
             call response_solver(real_freq, R, Xph(1))
             Dp(i) = Dp(i) + Xph(1)
+            Xph(1) = 0
          end if
 
          R = (FDSp(i) + dag(FDSp(i)))
@@ -872,6 +877,7 @@ contains
             R%tr_sym = -1
             call response_solver(real_freq, R, Xph(1))
             Dp(i) = Dp(i) + Xph(1)
+            Xph(1) = 0
          end if
 
          R = 0

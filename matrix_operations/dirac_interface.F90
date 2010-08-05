@@ -958,7 +958,7 @@ contains
 
     end do
 
-    if (nfsym == 1) return
+    if (nfsym == 2) then
 
     do iz = 1, nz
 
@@ -1002,6 +1002,7 @@ contains
       end do
 
     end do
+    end if !if (nfsym == 2) then
     C_file = 0
 
   end subroutine
