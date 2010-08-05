@@ -1350,23 +1350,14 @@ C
       IF(SPNSPN) THEN
         CALL DEF_SPNSPN(PNAME,PLABEL,PFAC,WORK,LWORK,IPRPRP)
       ENDIF
-
-
-!     magnetic dipole susceptibility ("magnetizability")
+C
+C     Magnetizabilities
+C
 #ifdef MOD_MAGNETIZ
-      if (msuscp) then
-         call def_msuscp(work, lwork)
-      end if
+      IF(MSUSCP) THEN
+        CALL DEF_MSUSCP(WORK,LWORK)
+      ENDIF
 #endif
-
-!     magnetic quadrupole susceptibility
-      if (mqsuscp) then
-         call def_magnetic_quadrupole_susceptibility(work, lwork)
-      end if
-
-
-
-
 C
 C     Nuclear shielding or ESR g-tensor or ESR anisotropy
 C
@@ -4837,94 +4828,6 @@ C
 
       CALL QEXIT('DEF_NSTDIA1')   
       RETURN
-      END
-
-      subroutine def_magnetic_quadrupole_susceptibility(work, lwork)
-!     radovan: copy pasted def_msuscp
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-      PARAMETER(DI2 = 0.5D0, DI4=0.25D0, DM1 = -1.0D0,
-     &           D2 = 2.0D0, DM2 = -2.0D0, D1 = 1.0D0)
-#include "dcbgen.h"
-
-#include "dcbxlr.h"
-#include "dcbxpr.h"
-#include "dcbprp.h"
-#include "dcbexp.h"
-#include "dcbsusc.h"
-#include "dcbham.h"
-      CHARACTER PNAME*16, PLABEL(3)*8, LABELC*7
-      DIMENSION WORK(LWORK),PFAC(3),IOP(3)
-
-#include "memint.h"
-
-
-!     radovan: this routine is wrong! it is just to test structure
-!              need to adapt it for quadrupole...
-
-
-C
-C  ** Split for conventional and London orbitals
-C
-      IPRINT = IPRPRP
-      CALL IZERO(IPMSUSC,6)
-    
-
-C      ... XAVECTOR
-       IOP(1) = 5
-C      ... YAVECTOR
-       IOP(2) = 6
-C      ... ZAVECTOR
-       IOP(3) = 7
-C
-C     Define  operators for conventional orbitals
-       NPCOMP   = 2
-       PFAC(1)  = DI2*CVAL
-       PFAC(2)  = DI2*CVAL
-C   ....X componete of B-field
-C      PNAME     = 'MAGFLDX'
-       PNAME     = 'X magnetic field'
-       IPTYP     = IOP(1)
-       PLABEL(1) = 'ZDIPLEN'
-       PLABEL(2) = 'YDIPLEN'
-       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-       CALL OP1IND('XFIELDA',IPMSUSC(1,1),LLRAPU,NLRAPT,INDXPR
-     &     ,MAXLLR)
-       CALL OP1IND('XFIELDB',IPMSUSC(2,1),LLRBPU,NLRBPT,INDXPR
-     &     ,MAXLLR)
-#if !defined (XH4)
-C Y componete of B-field
-C      PNAME     = 'MAGFLDY'
-       PNAME     = 'Y magnetic field'
-       IPTYP     = IOP(2)
-       PLABEL(1) = 'XDIPLEN'
-       PLABEL(2) = 'ZDIPLEN'
-       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-       CALL OP1IND('XFIELDA',IPMSUSC(1,2),LLRAPU,NLRAPT,INDXPR
-     &     ,MAXLLR)
-       CALL OP1IND('XFIELDB',IPMSUSC(2,2),LLRBPU,NLRBPT,INDXPR
-     &     ,MAXLLR)
-C Z componete of B-field
-C      PNAME     = 'MAGFLDZ'
-       PNAME     = 'Z magnetic field'
-       IPTYP     = IOP(3)
-       PLABEL(1) = 'YDIPLEN'
-       PLABEL(2) = 'XDIPLEN'
-       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &        INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-       CALL OP1IND('XFIELDA',IPMSUSC(1,3),LLRAPU,NLRAPT,INDXPR
-     &     ,MAXLLR)
-       CALL OP1IND('XFIELDB',IPMSUSC(2,3),LLRBPU,NLRBPT,INDXPR
-     &     ,MAXLLR)
-#endif
-
-
       END
 
 #ifdef MOD_MAGNETIZ
