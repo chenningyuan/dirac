@@ -7,6 +7,7 @@ utils: $(INSTALL_DIR)/labread.x \
        $(INSTALL_DIR)/polfit.x \
        $(INSTALL_DIR)/mx2fit.x \
        $(INSTALL_DIR)/rspread.x \
+       $(INSTALL_DIR)/vibcal.x \
        $(INSTALL_DIR)/test_dsyevr
 
 $(INSTALL_DIR)/test_dsyevr: utils/test_dsyevr.F
@@ -18,6 +19,7 @@ $(INSTALL_DIR)/rspread.x: utils/rspread.o
 $(INSTALL_DIR)/labread.x: utils/labread.o
 	$(LD) -o $@ utils/labread.o
 
+
 $(INSTALL_DIR)/twofit.x: utils/twofit.o gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o \
                     gp/mempkg.o  pdpack/linextra.o  pdpack/printpkg.o  \
                     abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
@@ -25,6 +27,20 @@ $(INSTALL_DIR)/twofit.x: utils/twofit.o gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  
                     pdpack/dge.o \
                     gp/memory_allocator.o gp/memory_tracker.o gp/tracker_util.o
 	$(LD) -o $@ utils/twofit.o  gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o \
+                    gp/mempkg.o  pdpack/linextra.o  pdpack/printpkg.o  \
+                    abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
+                    pdpack/dsp.o gp/tracing.o \
+                    pdpack/dge.o \
+                    gp/memory_allocator.o gp/memory_tracker.o gp/tracker_util.o \
+                    gp/gpc.o $(LIBS)
+
+$(INSTALL_DIR)/vibcal.x: utils/vibcal.o gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o \
+                    gp/mempkg.o  pdpack/linextra.o  pdpack/printpkg.o  \
+                    abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
+                    pdpack/dsp.o gp/tracing.o \
+                    pdpack/dge.o \
+                    gp/memory_allocator.o gp/memory_tracker.o gp/tracker_util.o
+	$(LD) -o $@ utils/vibcal.o  gp/gpsaue.o  gp/gptrygve.o  gp/gphjj.o  gp/qpack.o \
                     gp/mempkg.o  pdpack/linextra.o  pdpack/printpkg.o  \
                     abacus/hergp.o pdpack/eispack.o gp/gpjeppe.o pdpack/arhpack.o \
                     pdpack/dsp.o gp/tracing.o \
