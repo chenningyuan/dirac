@@ -8,7 +8,7 @@ module dirac_interface
    use xc_driver
 
    implicit none
- 
+
    public print_q_vector
    public di_get_gbds
    public di_read_operator_int
@@ -39,7 +39,7 @@ module dirac_interface
    public scatter_vector
    public set_orbital_rotation_indices
    public lsquit
- 
+
    save
    private
 
@@ -106,8 +106,8 @@ module dirac_interface
   integer, parameter :: max_aoproper_indices = 900
   character(16)      :: op_name_to_aoproper_index(max_aoproper_indices) = '----------------'
 
-  character(2)       ::  i_iterator(3) = (/ 'X',  'Y',  'Z'/)
-  character(2)       :: ij_iterator(6) = (/'XX', 'XY', 'XZ', 'YY', 'YZ', 'ZZ'/)
+  character(2)       ::  i_iter(3) = (/ 'X',  'Y',  'Z'/)
+  character(2)       :: ij_iter(6) = (/'XX', 'XY', 'XZ', 'YY', 'YZ', 'ZZ'/)
 
   integer            :: coulomb_mem_req   ! Memory requirements for the Coulomb build
   integer            :: dft_mem_req       ! Memory requirements for the DFT build
@@ -1215,7 +1215,7 @@ contains
     real(8),      allocatable   :: eigval(:)
     real(8),      allocatable   :: eigvec(:)
     real(8),      allocatable   :: convergence(:)
-                  
+
     real(8),      allocatable   :: response_vector_pph(:, :, :)
     real(8),      allocatable   :: response_vector_ppa(:, :, :)
     real(8),      allocatable   :: response_vector_pnh(:, :, :)
@@ -1237,6 +1237,7 @@ contains
     integer                     :: nr_freq
 
     logical                     :: debug_me = .false.
+    real(8)                     :: f, fmax
 !   ----------------------------------------------------------------------------
 
 !   fixme: nssh not always properly set, change to nesh minus nish
@@ -1349,6 +1350,9 @@ contains
     end if
 
 
+    fmax = 0.0d0
+
+
 !   get positive -> positive property gradient
 !   ==========================================
 
@@ -1361,11 +1365,14 @@ contains
           do k = 1, length_pp
              i = orbital_rotation_indices_pp(1, k)
              s = orbital_rotation_indices_pp(2, k)
-             prop_gradient_pp(k, iz) = prop_gradient_pp(k, iz) &
-                                     - 2.0d0*RHS_mo%elms(off + (i - 1)*norbt + s)
+             prop_gradient_pp(k, iz) = -2.0d0*RHS_mo%elms(off + (i - 1)*norbt + s)
+             f = dabs(prop_gradient_pp(k, iz))
+             if (f > fmax) then
+                fmax = f
+             end if
           end do
        end do
-       
+
        if (debug_me) then
           call header('debug prop_gradient_pp', -1)
           call print_q_vector(prop_gradient_pp, length_pp)
@@ -1386,17 +1393,23 @@ contains
           do k = 1, length_pn
              i = orbital_rotation_indices_pn(1, k)
              s = orbital_rotation_indices_pn(2, k)
-             prop_gradient_pn(k, iz) = prop_gradient_pn(k, iz) &
-                                     - 2.0d0*RHS_mo%elms(off + (i - 1)*norbt + s)
+             prop_gradient_pn(k, iz) = -2.0d0*RHS_mo%elms(off + (i - 1)*norbt + s)
+             f = dabs(prop_gradient_pn(k, iz))
+             if (f > fmax) then
+                fmax = f
+             end if
           end do
        end do
-       
+
        if (debug_me) then
           call header('debug prop_gradient_pn', -1)
           call print_q_vector(prop_gradient_pn, length_pn)
        end if
 
     end if
+
+    write(*, *) 'blub fmax', fmax
+    if (fmax > 1.0d-50) then
 
 
 !   inherit shape
@@ -1666,11 +1679,21 @@ contains
     Dp%irep   = Wp%irep
 
     if (debug_me) then
-      call print_mat(Wp, label = 'debug Wp')
-      call print_mat(Dp, label = 'debug Dp')
+       call print_mat(Wp, label = 'debug Wp')
     end if
 
     Wp = 0
+
+    else
+       Dp = tiny(0.0d0)*RHS
+       Dp%ih_sym = RHS%ih_sym
+       Dp%tr_sym = RHS%tr_sym
+       Dp%irep   = RHS%irep
+    end if !if (fmax > 1.0d-10) then
+
+    if (debug_me) then
+       call print_mat(Dp, label = 'debug Dp')
+    end if
 
   end subroutine
 #endif /* ifdef MOD_OPENRSP */
@@ -1835,9 +1858,9 @@ contains
 !   ----------------------------------------------------------------------------
     character(1) :: ss
     character(4) :: blocks
-    character(8) :: s, s1, s2
+    character(8) :: s, s1, s2, s3
     real(8)      :: f
-    integer      :: icomponent, iatom
+    integer      :: i, ij, iatom
 !   ----------------------------------------------------------------------------
 !   todo: 1. adapt for symmetry
 !            only diplen is right at the moment
@@ -1847,7 +1870,9 @@ contains
     ss = '0'
     if (nonzero_small_metric) ss = '+'
 
+
 !   add to dcbcls
+!   =============
 
 !                               for the electric field
     call request_1el_integrals('DIPLEN ', '+00'//ss)
@@ -1867,9 +1892,34 @@ contains
     call request_1el_integrals('G1KX   ', '0++0')
     call request_1el_integrals('G1KY   ', '0++0')
     call request_1el_integrals('G1KZ   ', '0++0')
+
+!   dbet/dB
+    call request_1el_integrals('S1MAG  ', '000+')
+!   dbet/dB2
+    call request_1el_integrals('S2MAG  ', '000+')
+
+!   dnuc/dB
+    call request_1el_integrals('RM1H2  ', '+00'//ss)
+!   dnuc/dB2
+    call request_1el_integrals('RM2H2  ', '+00'//ss)
+
+!   dkin/dB
+    call request_1el_integrals('RM1H3  ', '0++0')
+!   dkin/dB2
+    call request_1el_integrals('RM2H3  ', '0++0')
+
+!   dvec/dB
+    call request_1el_integrals('RM1RN  ', '0++0')
+
+!   dS/dB
+    call request_1el_integrals('S1MAG  ', '+00'//ss)
+!   dS/dB2
+    call request_1el_integrals('S2MAG  ', '+00'//ss)
 #endif /* ifndef ONLY_DIPLEN */
 
+
 !   add to dcbxpr and dcbprl
+!   ========================
 
     f = 1.0d0
     blocks = '+00'//ss
@@ -1898,8 +1948,8 @@ contains
 #ifndef ONLY_DIPLEN
     f = 1.0d0
     blocks = '+00'//ss
-    do icomponent = 1, size(ij_iterator)
-      s = ij_iterator(icomponent)//'THETA '
+    do ij = 1, size(ij_iter)
+      s = ij_iter(ij)//'THETA '
       call add_op(s//'        ',      &
                   blocks,             &
                   1,                  &
@@ -1932,6 +1982,13 @@ contains
                 1,                  &
                 (/f, f/),           &
                 (/'YDIPLEN ', 'XDIPLEN '/))
+
+
+
+
+
+
+
 
     f = -cval
     blocks = '0++0'
@@ -1967,8 +2024,8 @@ contains
 
     f = 1.0d0
     blocks = '+00'//ss
-    do icomponent = 1, size(ij_iterator)
-      s = ij_iterator(icomponent)//'SUSCGO'
+    do ij = 1, size(ij_iter)
+      s = ij_iter(ij)//'SUSCGO'
       call add_op(s//'        ',      &
                   blocks,             &
                   1,                  &
@@ -1981,8 +2038,8 @@ contains
     f = 1.0d0
     blocks = '+00'//ss
     do iatom = 1, nr_atoms*3
-      do icomponent = 1, size(i_iterator)
-        s = prefix_zeros(iatom, 2)//' DPG '//i_iterator(icomponent)
+      do i = 1, size(i_iter)
+        s = prefix_zeros(iatom, 2)//' DPG '//i_iter(i)
         call add_op(s//'        ',      &
                     blocks,             &
                     1,                  &
@@ -1996,8 +2053,8 @@ contains
     f = 1.0d0
     blocks = '+00'//ss
     do iatom = 1, nr_atoms*3
-      do icomponent = 1, size(ij_iterator)
-        s = prefix_zeros(iatom, 2)//'QDG '//ij_iterator(icomponent)
+      do ij = 1, size(ij_iter)
+        s = prefix_zeros(iatom, 2)//'QDG '//ij_iter(ij)
         call add_op(s//'        ',      &
                     blocks,             &
                     1,                  &
@@ -2079,6 +2136,166 @@ contains
                   (/f/),              &
                   (/s/))
     end do
+
+
+
+
+
+!   dbet/dB
+    f = -2.0d0*cval*cval
+    blocks = '000+'
+    do i = 1, size(i_iter)
+!           12345678
+       s = 'dS/dB   '
+       s(6:6) = i_iter(i)
+!                   1234567     8             90123456
+       call add_op('dbet/dB' // i_iter(i) // '        ', &
+                   blocks,                               &
+                   1,                                    &
+                  -1,                                    &
+                   1,                                    &
+                   (/f/),                                &
+                   (/s/))
+    end do
+!   dbet/dB2
+    do ij = 1, size(ij_iter)
+!           123456     78
+       s = 'dS/dB2' // ij_iter(ij)
+!                   12345678     9               123456
+       call add_op('dbet/dB2' // ij_iter(ij) // '      ', &
+                   blocks,                                &
+                   1,                                     &
+                   1,                                     &
+                   1,                                     &
+                   (/f/),                                 &
+                   (/s/))
+    end do
+
+!   dnuc/dB
+    f = 1.0d0
+    blocks = '+00'//ss
+    do i = 1, size(i_iter)
+!           12345678
+       s = ' RM1H2  '
+       s(1:1) = i_iter(i)
+!                   12345678     9             0123456
+       call add_op('dnuc/dB2' // i_iter(i) // '       ', &
+                   blocks,                               &
+                   1,                                    &
+                  -1,                                    &
+                   1,                                    &
+                   (/f/),                                &
+                   (/s/))
+    end do
+!   dnuc/dB2
+    do ij = 1, size(ij_iter)
+!           12345678
+       s = '  RM2H2 '
+       s(1:2) = ij_iter(ij)
+!                   12345678     9               123456
+       call add_op('dnuc/dB2' // ij_iter(ij) // '      ', &
+                   blocks,                                &
+                   1,                                     &
+                   1,                                     &
+                   1,                                     &
+                   (/f/),                                 &
+                   (/s/))
+    end do
+
+!   dkin/dB
+    f = cval
+    blocks = '0++0'
+    do i = 1, size(i_iter)
+!            12345678
+       s1 = ' RM1H3X '
+       s2 = ' RM1H3Y '
+       s3 = ' RM1H3Z '
+       s1(1:1) = i_iter(i)
+       s2(1:1) = i_iter(i)
+       s3(1:1) = i_iter(i)
+!                   1234567     8             90123456
+       call add_op('dkin/dB' // i_iter(i) // '        ', &
+                   blocks,                               &
+                   8,                                    &
+                   0,                                    &
+                   1,                                    &
+                   (/f,  f,  f/),                        &
+                   (/s1, s2, s3/))
+    end do
+!   dkin/dB2
+    do ij = 1, size(ij_iter)
+!            12345678
+       s1 = '  RM2H3X'
+       s2 = '  RM2H3Y'
+       s3 = '  RM2H3Z'
+       s1(1:2) = ij_iter(ij)
+       s2(1:2) = ij_iter(ij)
+       s3(1:2) = ij_iter(ij)
+!                   12345678     9               123456
+       call add_op('dkin/dB2' // ij_iter(ij) // '      ', &
+                   blocks,                                &
+                   8,                                     &
+                   0,                                     &
+                   1,                                     &
+                   (/f,  f,  f/),                         &
+                   (/s1, s2, s3/))
+    end do
+
+!   dvec/dB
+    f = 0.5d0*cval
+    blocks = '0++0'
+    call add_op('dvec/dBX        ', &
+                blocks,             &
+                5,                  &
+                0,                  &
+                1,                  &
+                (/f, f/),           &
+                (/'ZRM1RN  ', 'YRM1RN  '/))
+    call add_op('dvec/dBY        ', &
+                blocks,             &
+                6,                  &
+                0,                  &
+                1,                  &
+                (/f, f/),           &
+                (/'XRM1RN  ', 'ZRM1RN  '/))
+    call add_op('dvec/dBZ        ', &
+                blocks,             &
+                7,                  &
+                0,                  &
+                1,                  &
+                (/f, f/),           &
+                (/'YRM1RN  ', 'XRM1RN  '/))
+
+!   dS/dB
+    f = 1.0d0
+    blocks = '+00'//ss
+    do i = 1, size(i_iter)
+!           12345678
+       s = 'dS/dB   '
+       s(6:6) = i_iter(i)
+!                   12345     6             7890123456
+       call add_op('dS/dB' // i_iter(i) // '          ', &
+                   blocks,                               &
+                   1,                                    &
+                  -1,                                    &
+                   1,                                    &
+                   (/f/),                                &
+                   (/s/))
+    end do
+!   dS/dB2
+    do ij = 1, size(ij_iter)
+!           123456     78
+       s = 'dS/dB2' // ij_iter(ij)
+!                   123456     78              90123456
+       call add_op('dS/dB2' // ij_iter(ij) // '        ', &
+                   blocks,                                &
+                   1,                                     &
+                   1,                                     &
+                   1,                                     &
+                   (/f/),                                 &
+                   (/s/))
+    end do
+
 #endif /* ifndef ONLY_DIPLEN */
 
   end subroutine
@@ -2189,5 +2406,4 @@ end module
       end if
 
       end
-
 
