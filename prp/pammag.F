@@ -3442,8 +3442,8 @@ C
       PNAME    = 'LAO-XRM1RN'
       IPTYP    = 5
       NPCOMP   = 2
-      PFAC(1)  = -DMI2*CVAL
-      PFAC(2)  = -DMI2*CVAL
+      PFAC(1)  = 0.5d0*cval
+      PFAC(2)  = 0.5d0*cval
       PLABEL(1) = 'ZRM1RN'
       PLABEL(2) = 'YRM1RN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
@@ -3514,8 +3514,8 @@ C
       PNAME     = 'LAO-YRM1RN'
       IPTYP     = 6
       NPCOMP    = 2
-      PFAC(1)   = -DMI2*CVAL
-      PFAC(2)   = -DMI2*CVAL
+      PFAC(1)   = 0.5d0*cval
+      PFAC(2)   = 0.5d0*cval
       PLABEL(1) = 'XRM1RN'
       PLABEL(2) = 'ZRM1RN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
@@ -3585,8 +3585,8 @@ C
       PNAME     = 'LAO-ZRM1RN'
       IPTYP     = 7
       NPCOMP    = 2
-      PFAC(1)   = -DMI2*CVAL
-      PFAC(2)   = -DMI2*CVAL
+      PFAC(1)   = 0.5d0*cval
+      PFAC(2)   = 0.5d0*cval
       PLABEL(1) = 'YRM1RN'
       PLABEL(2) = 'XRM1RN'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
