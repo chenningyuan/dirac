@@ -1,6 +1,7 @@
 module memory_bouncer
 
    use matrix_defop
+   use matrix_stat
 
    implicit none
 
@@ -38,6 +39,7 @@ contains
          M(i) = 0
       end do
       write(*, *) 'successfully deallocated the memory'
+      call matrix_stat_reset()
 
    end subroutine
 
