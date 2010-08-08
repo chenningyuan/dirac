@@ -599,6 +599,10 @@ contains
       openrsp_cfg_skip_pn = .true.
     end if
 
+    if (kw_matches(word, '.SKIP1E')) then
+      openrsp_cfg_skip_1el = .true.
+    end if
+
     if (kw_matches(word, '.ALPHA ')) then
 !     frequency-dependent \alpha
       openrsp_cfg_alpha = .true.

@@ -65,9 +65,10 @@ contains
       deallocate(tsr)
     end if
 
-    allocate(tsr(3))
-    call elec_dipmom(S, D, F, tsr)
-    deallocate(tsr)
+!radovan: this needs an if check
+!   allocate(tsr(3))
+!   call elec_dipmom(S, D, F, tsr)
+!   deallocate(tsr)
 
     if (openrsp_cfg_alpha) then
       n = 2

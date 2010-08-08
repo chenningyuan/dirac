@@ -14,6 +14,8 @@ module openrsp_cfg
    logical, public :: openrsp_cfg_skip_pp = .false.
    logical, public :: openrsp_cfg_skip_pn = .false.
 
+   logical, public :: openrsp_cfg_skip_1el = .false.
+
    logical, public :: openrsp_cfg_alpha             = .false.
    logical, public :: openrsp_cfg_alpha_lin_static  = .false.
    logical, public :: openrsp_cfg_beta              = .false.

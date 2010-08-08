@@ -44,6 +44,7 @@ C***********************************************************************
          use input_reader
 #ifdef MOD_OPENRSP
          use dirac_interface
+         use openrsp_cfg
 #endif
 
 #include "implicit.h"
@@ -560,7 +561,11 @@ C     *STEX
          dirac_cfg_aoresponse = .true.
          call init_dirac_interface()
          call move_to_next_star(word)
-         call ask_for_integrals()
+         if (openrsp_cfg_skip_1el) then
+            write(*, *) 'OpenRSP: skipping calculation of 1el integrals'
+         else
+            call ask_for_integrals()
+         end if
 #else
          call quit('*AORESPONSE not included in this version')
 #endif
