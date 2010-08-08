@@ -8,12 +8,16 @@ module matrix_stat
 
   private
 
-  integer :: nr_allocations = 0
+  integer :: nr_allocations      = 0
+  integer :: nr_allocations_peak = 0
 
 contains
 
   subroutine add_allocation()
      nr_allocations = nr_allocations + 1
+     if (nr_allocations > nr_allocations_peak) then
+        nr_allocations_peak = nr_allocations
+     end if
   end subroutine
 
   subroutine remove_allocation()
@@ -22,7 +26,8 @@ contains
 
   subroutine print_nr_allocations(text)
      character(*), intent(in) :: text
-     write(*, *) 'debug nr allocations ', nr_allocations, text
+     write(*, *) 'debug nr allocations      ', nr_allocations,      text
+     write(*, *) 'debug nr allocations peak ', nr_allocations_peak, text
   end subroutine
 
 end module

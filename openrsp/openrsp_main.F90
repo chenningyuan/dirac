@@ -2,6 +2,8 @@ module openrsp_main
 
   use prop_test
   use matrix_defop
+  use matrix_stat
+  use memory_bouncer
   use dirac_interface
   use openrsp_cfg
   use decompmod
@@ -113,6 +115,8 @@ contains
     end if
 
         if (openrsp_cfg_roa) then
+           call test_available_memory(102, D%nrow, nz)
+
            print '(//a,f11.8/)','linscf calls roa_pol_Gpri_Aten_grads, freq =',cfg_rsp_freq(1)
            call get_natoms(number_atoms)
            l = 3*number_atoms
