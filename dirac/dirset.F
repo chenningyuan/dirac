@@ -72,7 +72,7 @@ C
 C
 C ... if 2c-mode IOTC, read basis in 4c-mode here
 C
-      IF (TWOCOMPBSS) THEN                     
+      IF (TWOCOMPBSS .or. x2c_mod) THEN
         TWOCOMP = .FALSE.
         RDINPC = .FALSE.
         CNTMAT = .FALSE.

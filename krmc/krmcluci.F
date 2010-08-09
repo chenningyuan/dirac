@@ -19,6 +19,7 @@
 !      DIRAC program, see: http://dirac.chem.sdu.dk
 !dirac_copyright_end
 
+C
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : krmcluci.F
@@ -1512,6 +1513,25 @@ C     Initialize density matrices to zero
 C
       LF2_ZERO = L2
 C
+#if defined MCSCF_DEBUG
+C     Write current CI vector(s) to file
+      idothishere = 1
+      if(idothishere .eq. 0) goto 10
+      CALL MEMGET('REAL',KRSCR,NZCONF*MZ,WORK,KFREE,LFREE)
+      REWIND LUC
+      CALL KR_LUCI_IO(1,0,0,CREFL,NZCONF*MZ,
+     &                DUMMY,1,
+     &                DUMMY,1,DUMMY,1,
+     &                WORK(KRSCR),IDUMMY,2,MZ,
+     &                LUC,IDUMMY,IDUMMY,IDUMMY,IPROPT)
+      CALL KR_LUCI_IO(1,1,0,CREFL,NZCONF*MZ,
+     &                CREFR,NZCONF*MZ,
+     &                DUMMY,1,DUMMY,1,
+     &                WORK(KRSCR),IDUMMY,2,MZ,
+     &                LUSC61,LUSC62,IDUMMY,IDUMMY,IPROPT)
+      CALL MEMREL('LUCI_DENS 1',WORK,1,KRSCR,KFREE,LFREE)
+ 10   CONTINUE
+#else
       IF( .NOT. NATOLCR ) THEN
 C       
 C       Write current CI vector(s) to file
@@ -1526,6 +1546,7 @@ C       Write current CI vector(s) to file
           CALL MEMREL('LUCI_DENS 1',WORK,1,KRSCR,KFREE,LFREE)
         END IF
       END IF
+#endif
 C
 C     Density run of LUCIAREL only
 C

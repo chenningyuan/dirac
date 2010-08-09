@@ -45,7 +45,7 @@ C#include "mxcent.h"
 C#include "maxorb.h"
 C#include "symmet.h"
 C
-      PARAMETER (NTABLE = 32)
+      PARAMETER (NTABLE = 35)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00)
 C
       LOGICAL SET, NEWDEF, LBIT, RESET
@@ -74,7 +74,7 @@ C
      &            '.NO CI ','.THRPCI','.NR SYM','.MIN MK','.MAX MK',
      &            '.GASSH ','.GASSPC','.MK2REF','.MK2DEL','.FREEZE',
      &            '.CI PRO','.INACTI','.CASSCF','.CI SYM','.SYMMET',
-     &            '.RELSYM','.MEMFAC'/
+     &            '.RELSYM','.MEMFAC','.NOCKJZ','.xxxxxx','.xxxxxx'/
       DATA SET/.FALSE./
 C
 C
@@ -105,6 +105,8 @@ C
       KRMC_NOCI   = .FALSE.
       KRMC_UCIBOS = .FALSE.
       KRMC_MKCNST = .FALSE.
+      KRMC_CHCKJZ = .FALSE.
+      IF(LINEAR) KRMC_CHCKJZ = .TRUE.
 C
 C     Initialize /CBIKRMC/
 C     ===================
@@ -180,7 +182,7 @@ C
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                     11,12,13,14,15,16,17,18,19,20,
      &                     21,22,23,24,25,26,27,28,29,30,
-     &                     31,32), I
+     &                     31,32,33,34,35), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -391,6 +393,21 @@ C             luciarel/ciinfo_r.F - Z_BLKFO_REL
      &                 'Illegal memory multiplier')
                END IF
                GO TO 100
+ 33            CONTINUE
+C&&&  .NOCKJZ  -- do not refine orbital rotation vector (kappa matrix) wrt
+C                 the m_j values of each orbital
+                 IF( .NOT. LINEAR )THEN
+                   CALL QUIT('*** ERROR in KRMCINP *** ' //
+     &             ' mj-blocking is only active for linear symmetry')
+                 END IF
+                 KRMC_CHCKJZ = .FALSE.
+               GO TO 100
+ 34            CONTINUE
+C&&&  .xxxxxx  -- xxx
+               GO TO 100
+ 35            CONTINUE
+C&&&  .xxxxxx  -- xxx
+               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -451,8 +468,6 @@ C
          KRMC_UCIBOS = .TRUE.
       END IF
 c     krmc_ucibos = .false.
-C
-C
 C
 C     Print section
 C     =============
@@ -621,6 +636,10 @@ C
       IF(KRMC_SKIPEP) WRITE(LUPRI,'(A)')
      &     ' * NB!!! No rotations between electrons and positrons'//
      &     ' in 2nd order optimization.'
+      IF( KRMC_CHCKJZ ) WRITE(LUPRI,'(A)')
+     &     ' * Checking kappa matrix for orbital rotations'//
+     &     ' with respect to the mj-values of the orbitals.'
+
 C
 C     Frozen orbitals:
 C     ----------------

@@ -362,6 +362,8 @@ C
       DO IZ = 1, MIN0(NZ,2)
          DO I = 1, NZCONF
             GCI(I,IZ) = GCI(I,IZ) - EMCACT * CREF(I,IZ)
+!           SK - Aug 2010: suggestion for improvement
+!           call daxpy(NZCONF,-EMCACT,CREF(1,IZ),1,GCI(1,IZ),1)
          END DO
       END DO
 C

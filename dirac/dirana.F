@@ -149,6 +149,9 @@ C  LABELS: NLAB
 C
       LOGICAL TOBE,TOBEK,DONETP_M,ADDSML_M,LABDEF_M,ORBDEF_M,ORBDEF
       LOGICAL FNDLAB,CINATORB
+#ifdef MOD_KRMC
+      LOGICAL MJVEC_AVAIL
+#endif
       CHARACTER FILELABEL*8
       DIMENSION WORK(LWORK)
 C
@@ -210,6 +213,7 @@ C...  may be oversized when not all orbitals are investigated
       CALL MEMGET('REAL',KOCC ,NORBT   ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KBEIG,NORBT   ,WORK,KFREE,LFREE)
 C
+      CALL IZERO(WORK(KBEIG),NORBT)
       CALL DZERO(WORK(KCMO),N2BBASXQ)
       CALL DZERO(WORK(KOCC),NORBT)
 C
@@ -233,11 +237,15 @@ C
            CLOSE(LUKRMC,STATUS='KEEP')
          ELSE
            CINATORB = .FALSE.
+           MJVEC_AVAIL = .FALSE.
            CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','MULPOP')
            REWIND(LUKRMC)
            FILELABEL = 'MCCINATO'
            CINATORB = FNDLAB(FILELABEL,LUKRMC)
            JRDMO = -1
+           REWIND(LUKRMC)
+           FILELABEL = 'MJVEC   '
+           MJVEC_AVAIL = FNDLAB(FILELABEL,LUKRMC)
            IF(CINATORB)THEN
              KRMC_FLG = 3
 C            coefficients
@@ -257,6 +265,12 @@ C            occupancies
      &               ' (MULPOP)  Orbitals read from' //
      &               ' label NEWORB on file KRMCSCF'
              END IF
+           END IF
+           IF( MJVEC_AVAIL )THEN
+             CALL IREAKRMC(LUKRMC,'MJVEC   ',WORK(KBEIG),NORBT)
+             WRITE(LUPRI,'(/A)')
+     &            ' (MULPOP)  mj-values read from' //
+     &            ' label MJVEC on file KRMCSCF'
            END IF
          END IF
          CLOSE (LUKRMC)
@@ -618,18 +632,29 @@ c
         IF(I.GT.NPVECS) THEN
           II = NPSH(IFRP)+JVEC(I)
           FMT = MXFORM(EIG(II),16)
-          IF (KRMC_FLG.EQ.1) THEN
-             WRITE(LUPRI,'(/A,I3,A)')
-     &       '* Electronic eigenvalue no.',JVEC(I),': '
-          ELSE IF (KRMC_FLG.EQ.2) THEN
-             WRITE(LUPRI,'(/A,I3,A,A,F12.8)')
-     &       '* Electronic eigenvalue no.',JVEC(I),': ',
-     &       '     Occupation :',OCC2(I)
-          ELSE IF(KRMC_FLG.EQ.3) THEN
-C           ... CI-NOs
-             WRITE(LUPRI,'(/A,I3,A,A,F12.8)')
-     &       '* Electronic eigenvalue no.',JVEC(I),': ',
-     &       '      Occupation :',OCC2(I)
+          IF (KRMC_FLG.gt.0 )THEN
+            ID = IBEIG(II)
+            WRITE(SYMLAB,'("m_j=",I3,"/2")') ID
+            IF (KRMC_FLG.EQ.1) THEN
+              IF( ID .eq. 0) THEN 
+                WRITE(LUPRI,'(/A,I3,A)')
+     &          '* Electronic eigenvalue no.',JVEC(I),': '
+              ELSE
+                WRITE(LUPRI,'(/A,I3,A,2X,A9)')
+     &          '* Electronic eigenvalue no.',JVEC(I),': ',SYMLAB
+              END IF
+            ELSE
+C             ... CI-NOs, MP2-NOs,...
+              IF( ID .eq. 0) THEN 
+                WRITE(LUPRI,'(/A,I3,A,A,F12.8)')
+     &          '* Electronic eigenvalue no.',JVEC(I),': ',
+     &          '      Occupation :',OCC2(I)
+              ELSE
+                WRITE(LUPRI,'(/A,I3,A,A,F12.8,2X,A9)')
+     &          '* Electronic eigenvalue no.',JVEC(I),': ',
+     &          '      Occupation :',OCC2(I),SYMLAB
+              END IF
+            END IF
           ELSE
              IF(SPINFR) THEN
                ID = IBEIG(II)
@@ -1125,7 +1150,7 @@ C
       DIMENSION WORK(LWORK)
       DIMENSION NSTR(2,0:2,0:MAXREF),KVEC(2,0:MAXREF),
      &          KE(2,2),KQ(2,2),NVECS(2,0:2),NQ(2),NE(2),
-     &          KBV(2),IOFF(2),IDIM(3,2)
+     &          KI(2,2),NI(2),KBV(2),IOFF(2),IDIM(3,2)
       CHARACTER TEXT*74
 C
 #include "memint.h"
@@ -1170,7 +1195,9 @@ C
         NDIM = NDIM + NVECS(IFRP,0)
       ENDDO
       CALL MEMGET('REAL',KE(1,1),NDIM,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KI(1,1),NDIM,WORK,KFREE,LFREE)
       KE(1,2) = KE(1,1) + NVECS(1,1)
+      KI(1,2) = KI(1,1) + NVECS(1,1)
 C
 C     Calculate dimensions of coefficient arrays:
 C      reference orbitals ............... KQ(IFRP,1) 
@@ -1186,11 +1213,15 @@ C
       IF(NFSYM.EQ.2) THEN
         KE(2,1) = KE(1,1) + NVECS(1,0)
         KE(2,2) = KE(2,1) + NVECS(2,1)
+        KI(2,1) = KI(1,1) + NVECS(1,0)
+        KI(2,2) = KI(2,1) + NVECS(2,1)
         KQ(2,1) = KQ(1,1) + NQ(1)
         KQ(2,2) = KQ(2,1) + NFBAS(2,0)*NVECS(2,1)
       ELSE
         KE(2,1) = KFREE
         KE(2,2) = KFREE
+        KI(2,1) = KFREE
+        KI(2,2) = KFREE
         KQ(2,1) = KFREE
         KQ(2,2) = KFREE
       ENDIF
@@ -1202,7 +1233,8 @@ C
       IF(IPRPRJ.GE.4) IOPT = 7
       CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT   ,WORK,KFREE,LFREE)
-      KIBE = KFREE
+      CALL MEMGET('INTE',KIBE,NORBT   ,WORK,KFREE,LFREE)
+      CALL IZERO(WORK(KIBE),NORBT)
 C
 C
 C     Select reference orbitals and eigenvalues
@@ -1210,7 +1242,7 @@ C
       DO IFRP = 1,NFSYM
         IOFF(IFRP) = 0
       ENDDO
-      CALL SELFRAG(WORK(KQ(1,1)),NVECS(1,0),WORK(KE(1,1)),IDUM,
+      CALL SELFRAG(WORK(KQ(1,1)),NVECS(1,0),WORK(KE(1,1)),WORK(KI(1,1)),
      &             NREFS,NSTR(1,0,1),REFFIL,OWNBAS,NPROJNUC,IOPT,
      &             KVEC(1,1),WORK(KCMO),WORK(KEIG),WORK(KIBE),
      &             IOFF,WORK,KFREE,LFREE)
@@ -1219,7 +1251,7 @@ C     Get molecular coefficients and eigenvalues
 C     Note that integer arrays IOFF is used to get correct
 C     positioning...
 C
-      CALL SELFRAG(WORK(KQ(1,1)),NVECS(1,0),WORK(KE(1,1)),IDUM,
+      CALL SELFRAG(WORK(KQ(1,1)),NVECS(1,0),WORK(KE(1,1)),WORK(KI(1,1)),
      &             1,NSTR(1,0,0),'DFCOEF',.FALSE.,1,IOPT,
      &             KVEC(1,0),WORK(KCMO),WORK(KEIG),WORK(KIBE),
      &             IOFF,WORK,KFREE,LFREE)
@@ -1253,7 +1285,7 @@ C
       ELSE
         KBV(2)   = KFREE
       ENDIF
-      CALL ANAPR1(NVECS,KVEC,NSTR,KQ,KE,KBV,WORK,KFREE,LFREE)
+      CALL ANAPR1(NVECS,KVEC,NSTR,KQ,KE,KI,KBV,IOPT,WORK,KFREE,LFREE)
 C
 C     Dump reference and projection coefficients to file
 C     ==================================================
@@ -1281,7 +1313,7 @@ C
      &                    WORK(KE(IFRP,1)),
      &                    WORK(KCMO),NVECS,IPRPRJ,IOFF,WORK,KFREE,LFREE)
         CALL MEMREL('POLTST',WORK,KWORK,KCMO,KFREE,LFREE)
-        CALL ANAPR1(NVECS,KVEC,NSTR,KQ,KE,KBV,WORK,KFREE,LFREE)
+        CALL ANAPR1(NVECS,KVEC,NSTR,KQ,KE,KI,KBV,IOPT,WORK,KFREE,LFREE)
       ENDIF
 C
 C     If requested, do phase transformation of molecule coefficients
@@ -1318,17 +1350,22 @@ C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck prjan1 */
-      SUBROUTINE PRJAN1(IFRP,NMOL,NREF,NTOT,KQ,KE,AMAT,BVEC,PMAT,
-     &                  GVEC,JMOL,JREF,NSTR,SMAT,IPIVOT,GROSS,POL,
+      SUBROUTINE PRJAN1(IFRP,NMOL,NREF,NTOT,KQ,KE,KI,AMAT,BVEC,PMAT,
+     &                  GVEC,JMOL,JREF,NSTR,SMAT,IPIVOT,GROSS,POL,IOPT,
      &                  WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Projection analysis for fermion ircop IFRP
 C
-C     KQ and KE are adresses for coefficients and eigenvalues
+C     KQ, KE and KI are adresses for coefficients, eigenvalues and
+C     boson irrep information/ mj-values (if appropriate)
 C       KQ(IFRP,1)   reference orbitals
 C       KQ(IFRP,2)   on input: Molecular Orbitals
 C                    on output: Polarization contributions
+C
+C    IOPT carries information on whether this is a regular projection
+C    analysis (IOPT == 6 or 7) or a projection analysis of
+C    MCSCF natural orbitals (IOPT == 14). S. Knecht - April 2010
 C
 C     Written by T.Saue March 26 1999
 C
@@ -1346,8 +1383,9 @@ C
       LOGICAL DOPOP
       DIMENSION GROSS(2,0:2,MAXREF)
       DIMENSION NSTR(2,0:2,0:MAXREF),JREF(3,*),JMOL(*),
-     &          KE(2,2),KQ(2,2),AMAT(NTOT,NTOT,NZ),PMAT(NREF,NREF),
-     &          BVEC(NTOT,NMOL,NZ),SMAT(*),GVEC(*),IPIVOT(*),WORK(*)
+     &          KE(2,2),KQ(2,2),KI(2,2),AMAT(NTOT,NTOT,NZ),
+     &          PMAT(NREF,NREF),BVEC(NTOT,NMOL,NZ),SMAT(*),GVEC(*),
+     &          IPIVOT(*),WORK(*)
 C
       KFRSAV = KFREE
       DOPOP = NREFS.GT.1
@@ -1371,8 +1409,8 @@ C
           WRITE(LUPRI,'(A,A3)') 
      &     '* Raw projection coefficients for fermion ircop ',FREP(IFRP)
           CALL ANAPR2(IFRP,.FALSE.,NREF,NMOL,NTOT,PMAT,GVEC,AMAT,BVEC,
-     &            JMOL,WORK(KE(IFRP,2)),NSTR,
-     &            JREF,WORK(KE(IFRP,1)),GROSS,WORK(KOCC),POL)
+     &            JMOL,WORK(KE(IFRP,2)),WORK(KI(IFRP,2)),NSTR,
+     &            JREF,WORK(KE(IFRP,1)),GROSS,WORK(KOCC),POL,IOPT)
         ENDIF
 C
 C       Make overlap matrix AMAT = <\psi^B_j1\psi^A_i>
@@ -1479,8 +1517,8 @@ C
 C     Mulliken-type population analysis
 C
       CALL ANAPR2(IFRP,DOPOP,NREF,NMOL,NTOT,PMAT,GVEC,AMAT,BVEC,
-     &            JMOL,WORK(KE(IFRP,2)),NSTR,
-     &            JREF,WORK(KE(IFRP,1)),GROSS,WORK(KOCC),POL)
+     &            JMOL,WORK(KE(IFRP,2)),WORK(KI(IFRP,2)),NSTR,
+     &            JREF,WORK(KE(IFRP,1)),GROSS,WORK(KOCC),POL,IOPT)
 C
 C     Löwdin type population analysis
 C
@@ -1530,7 +1568,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck anapr2 */
       SUBROUTINE ANAPR2(IFRP,DOPOP,NREF,NMOL,NTOT,PMAT,GVEC,AMAT,BVEC,
-     &                  JMOL,EMOL,NSTR,JREF,EREF,GROSS,OCC,POL)
+     &                  JMOL,EMOL,IBMOL,NSTR,JREF,EREF,GROSS,OCC,POL,
+     &                  IOPT)
 C***********************************************************************
 C
 C
@@ -1543,7 +1582,10 @@ C     Projection coeffients:  c_ji = <Y(ref)_j|Y(mol)_i>
 C     PROTHR is threshold for print of projection coeffiencients.
 C
 C     Written by Trond Saue March 13 1996
-C     Last revision Jan 7 1998 - jth NFBAS(IFRP,0) is now parameter
+C          revision Jan  7 1998 - jth NFBAS(IFRP,0) is now parameter
+C     Last revision Apr 16 2010 - SK introduced proper handling of 
+C                                    MCSCF-NO coefficients, occupation
+C                                    numbers (and mj-values)
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1559,12 +1601,14 @@ C
 #include "dcbdhf.h"
 C
       LOGICAL DOPOP
-      CHARACTER FMT*6,MXFORM*6,OTYP*1
+      CHARACTER FMT*6,MXFORM*6,OTYP*1,SYMLAB*9
       DIMENSION GROSS(2,0:2,MAXREF)
       DIMENSION PMAT(NREF,NREF),GVEC(NREF+1,2),AMAT(NTOT,NTOT,NZ),
-     &          BVEC(NTOT,NMOL,NZ),JMOL(*),EMOL(*),
+     &          BVEC(NTOT,NMOL,NZ),JMOL(*),EMOL(*),IBMOL(*),
      &          NSTR(2,0:2,0:MAXREF),JREF(3,*),EREF(*),OCC(*)
       DIMENSION P(4),OTYP(2)
+      REAL*8 Dno_occ
+      DATA SYMLAB/'         '/
       DATA OTYP/'E','P'/
       SAVE OTYP
 C
@@ -1579,6 +1623,15 @@ C
 C     Loop over molecular orbitals
 C
       CALL DZERO(OCC,NMOL)
+!
+!     copy MCSCF-NO occupancies
+      Dno_occ = D1
+      IF( IOPT .eq. 14 ) THEN 
+        CALL DCOPY(NMOL,EMOL,1,OCC,1)
+!       set scaling factor for Gross population calculation
+        Dno_occ = D1/D2
+      END IF
+!
       DO 10 K = 1,NMOL
         FMT = MXFORM(EMOL(K),16)
         IF(K.GT.NSTR(IFRP,2,0)) THEN
@@ -1586,23 +1639,38 @@ C...    POSITIVE-ENERGY (electronic) ORBITAL
 c
 c         Find fractional occupation for each requested orbital string
 c
-          NVORB =  NISH(IFRP)
-          DO IOPEN=1,NOPEN
-c       ... open shell
-             NVORB =  NVORB + NACSH(IFRP,IOPEN)
-             IF (JMOL(K).GT.NISH(IFRP).AND.JMOL(K).LE.NVORB) THEN
-               OCC(K) = DF(IOPEN)
-               GO TO 11
-             ENDIF
-          END DO
-          IF (JMOL(K).GT.0.AND.JMOL(K).LE.NISH(IFRP)) THEN
-c       ... closed shell
-             OCC(K) = DF(0)
-          ENDIF
- 11       CONTINUE
-          WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
-     +       '* Electronic eigenvalue nr.',JMOL(K),': ',
-     &       EMOL(K),'       (Occupation : f = ',OCC(K),')'
+          IF( IOPT .lt. 14 )THEN
+            NVORB =  NISH(IFRP)
+            DO IOPEN=1,NOPEN
+c          ... open shell
+               NVORB =  NVORB + NACSH(IFRP,IOPEN)
+               IF (JMOL(K).GT.NISH(IFRP).AND.JMOL(K).LE.NVORB) THEN
+                 OCC(K) = DF(IOPEN)
+                 GO TO 11
+               ENDIF
+            END DO
+            IF (JMOL(K).GT.0.AND.JMOL(K).LE.NISH(IFRP)) THEN
+c          ... closed shell
+               OCC(K) = DF(0)
+            ENDIF
+ 11         CONTINUE
+            WRITE(LUPRI,'(/A,I3,A,'//FMT//',A,F6.4,A)')
+     +         '* Electronic eigenvalue nr.',JMOL(K),': ',
+     &         EMOL(K),'       (Occupation : f = ',OCC(K),')'
+          ELSE
+            ID = IBMOL(K)
+            WRITE(SYMLAB,'("m_j=",I3,"/2")') ID
+            IF( ID .eq. 0) THEN
+              WRITE(LUPRI,'(/A,I3,A,A,F12.8)')
+     &         '* Electronic eigenvalue nr.',JMOL(K),': ',
+     &            '      Occupation :',OCC(K)
+            ELSE
+                  WRITE(LUPRI,'(/A,I3,A,A,F12.8,2X,A9)')
+     &            '* Electronic eigenvalue no.',JMOL(K),': ',
+     &            '      Occupation :',OCC(K),SYMLAB
+            END IF
+          END IF
+
         ELSE
 C...    NEGATIVE-ENERGY (positronic) ORBITAL
           KK  = NPSH(IFRP)+1+JMOL(K)
@@ -1702,7 +1770,7 @@ C
         ENDIF
         WRITE(LUPRI,'(A)') '* Gross contributions:'
         CALL GROSSC(GROSS,NREFS,IFRP,NREF,D1,GVEC(1,2),NSTR,REFFIL)
-        FACTOR  = D2*OCC(K)
+        FACTOR  = D2*OCC(K)*Dno_occ
         CALL DAXPY((NREF+1),FACTOR,GVEC(1,2),1,GVEC(1,1),1)
   10  CONTINUE
       CALL PRSYMB(LUPRI,'=',48,0)
@@ -1716,7 +1784,7 @@ C
      &   REFFIL(KREF),OTYP(KTYP),KORB,GVEC(I,1),EREF(I)
       ENDDO
       WRITE(LUPRI,'(/A)') '* Total gross contributions:'
-      TOTM = D2*DSUM(NMOL,OCC,1)
+      TOTM = D2*Dno_occ*DSUM(NMOL,OCC,1)
       CALL GROSSC(GROSS,NREFS,IFRP,NREF,TOTM,GVEC(1,1),NSTR,REFFIL)
       POL = GVEC(NMOL+1,1)
 C
@@ -3305,7 +3373,7 @@ C
         CALL QHMRST(AMAT,NREF,NZ,NREF,NREF)
       ENDIF
 C
-      CALL MEMREL('PRJAN1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      CALL MEMREL('ORBLP2',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3859,9 +3927,14 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Anapr1 */
-      SUBROUTINE ANAPR1(NVECS,KVEC,NSTR,KQ,KE,KBV,
+      SUBROUTINE ANAPR1(NVECS,KVEC,NSTR,KQ,KE,KI,KBV,IOPT,
      &                  WORK,KFREE,LFREE)
 C***********************************************************************
+C
+C    IOPT carries information on whether this is a regular projection
+C    analysis (IOPT == 6 or 7) or a projection analysis of 
+C    MCSCF natural orbitals (IOPT == 14). S. Knecht - April 2010
+C
 C
 C***********************************************************************
 #include "implicit.h"
@@ -3873,8 +3946,8 @@ C
 #include "dcbham.h"
 #include "dcbbas.h"
       DIMENSION NVECS(2,0:2),KVEC(2,0:MAXREF),NSTR(2,0:2,0:MAXREF),
-     &          KE(2,2),KQ(2,2),KBV(2),GROSS(2,0:2,MAXREF),POL(2),
-     &          WORK(*)
+     &          KE(2,2),KQ(2,2),KI(2,2),KBV(2),GROSS(2,0:2,MAXREF),
+     &          POL(2),WORK(*)
 C
       CALL MEMGET('REAL',KSMAT,N2BAST,WORK,KFREE,LFREE)
       CALL GTOVLT(WORK(KSMAT),SSMTRC)
@@ -3904,9 +3977,9 @@ C.......ntot   = nmol + nref
         N2REF = NREF*NREF
         CALL MEMGET('REAL',KPMAT,N2REF,WORK,KFREE,LFREE)
         CALL PRJAN1(IFRP,NMOL,NREF,NTOT,
-     &       KQ,KE,WORK(KAMAT),WORK(KBV(IFRP)),WORK(KPMAT),
+     &       KQ,KE,KI,WORK(KAMAT),WORK(KBV(IFRP)),WORK(KPMAT),
      &       WORK(KGVEC),WORK(KVEC(IFRP,0)),WORK(KJREF),NSTR,
-     &       WORK(IS),WORK(KIPIV),GROSS,POL(IFRP),WORK,KFREE,LFREE)
+     &       WORK(IS),WORK(KIPIV),GROSS,POL(IFRP),IOPT,WORK,KFREE,LFREE)
         POLT = POLT + POL(IFRP)
         IS = IS + N2BAS(IFRP)
         CALL MEMREL('PRJANA.loop',WORK,KBUF,KBUF,KFREE,LFREE)

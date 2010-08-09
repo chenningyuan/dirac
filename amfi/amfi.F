@@ -245,7 +245,9 @@ C       WRITE(LUPRI,*) 'AMFI: SO1 + MFSSO2 !'
         ADDSO1=.TRUE.
 C       WRITE(LUPRI,*) 'AMFI: SO1 + MFSO2 !' 
        ELSE
-        CALL QUIT('AMFI: IC_AMFI out of range')
+         write(lupri,'(a,i3,a)') ' *** error in AMFI: 
+     & IC_AMFI is out of range (1 <= IC_AMFI <= 5):',IC_AMFI,' ***' 
+         CALL QUIT('AMFI: IC_AMFI out of range')
        ENDIF    
 
 CMI    if (amfi_verbose) then

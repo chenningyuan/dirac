@@ -6,7 +6,7 @@ Oxygen atom
 **HAMILTONIAN
 #.LVCORR
 #.IOTC
-.X2C
+.X2COLD
 .CMPEIG
 .PRINT
 2

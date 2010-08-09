@@ -1623,10 +1623,10 @@ C
       IF(DOLVC .AND.
      &   .NOT.(ONECAP.AND.(INTV1C.EQ.2.OR.INTV1C.EQ.3)) ) ISSINT = 0
 C   .... discard calculation of LS/SS/GT integrals
-C          for the LevyLe/BSS Hamiltonians
+C          for the LevyLe/BSS/X2C Hamiltonians
 
       IF (LEVYLE.OR.
-     &    (BSS.AND..NOT.DO4C2C.AND..NOT.DO2C4C)
+     &    ((BSS.or.x2c).AND..NOT.DO4C2C.AND..NOT.DO2C4C)
      &    .OR.TWOCOMP) THEN
         ISLINT = 0
         ISSINT = 0
@@ -4005,15 +4005,15 @@ C
 !                   29        30        31        32
      &            '.ONESTE','.BLOCKD','.DO2C4C','.DO4C2C',
 !                   33        34        35        36
-     &            '.CONT2C','.BEG_2C','.VACPOL','xXXXXXX',
+     &            '.CONT2C','.BEG_2C','.VACPOL','.X2COLD',
 !                   37        38        39        40
-     &            '.IOTC  ','.MIXVAC','.CAP   ','.NOVREF',
+     &            '.X2C   ','.MIXVAC','.CAP   ','.NOVREF',
 !                   41        42        43        44
      &            '.POSVAC','.FDE   ','.IOTC4 ','.NONREL',
 !                   45        46        47        48
      &            '.BSS4  ','.CMPEIG','.DKH2  ','.DKH1  ',
 !                   49        50        51        52
-     &            '.NOAMFI','.QDOTS ','.X2C   ','.X2C4  ',
+     &            '.NOAMFI','.QDOTS ','.IOTC  ','.X2C4  ',
 !                   53        54        55        56
      &            '.NOSFMU','.DFTAUT','.MMF   ','.MO4C2C',
 !                   57        58        59        60
@@ -4038,6 +4038,7 @@ C
       IPRHAM  = 0
       QED     = .FALSE.
       MOLMF   = .FALSE.
+      MOLMF3  = .FALSE.
       ONESYS  = .FALSE.
       FREEPJ  = .FALSE.
       VEXTPJ  = .FALSE.
@@ -4066,6 +4067,16 @@ C
       N1OPER  = 0
       SSMTRC  = D1
       BSS     = .FALSE.
+      x2c     = .false.
+      x2c_mod = .false.
+!     default for X2C module: add spin-same orbit MFSSO2 terms
+#if defined MOD_AMFI
+      isorder_amfi_x2c = 2
+#else
+      isorder_amfi_x2c = 0
+#endif
+!     (fragment-) or atom-by-atom X2C (for now: always false!)
+      X2C_aba = .false.
       IBSS    = -1
       IMFCH   = 0
 CMI ... default for BSS - do always the preliminary free particle basis transformation
@@ -4462,25 +4473,22 @@ C&&&& VACPOL: vacuum polarization included
             VACPOL = .TRUE.
             GO TO 100
   136     CONTINUE
-!#ifdef MOD_AMFI
-C&&& specify centers for AMFI which are to be added to the BSS+AMFI Hamiltonian
-!            ALLAMFA = .FALSE.
-!            READ(LUCMD,*) NAMFA
-!            READ(LUCMD,*) (IAMFA(I),I=1,NAMFA)
-!#endif
+C&&&& X2COLD: flag for the one-step Exact TWO-component relativistic Hamiltonian
+!                                   ^     ^^^ ^
+!             obtained by Miro's old BSS/X2C module
+            IOTC = .TRUE.
+            BSS = .TRUE.
+            NOPRTR = .TRUE.
+            IBSS = 2999
+            TWOCOMPBSS = .TRUE.
+            TWOCOMP = .TRUE.
             GO TO 100
   137     CONTINUE
-C&&&  IOTC: complex flag for the one-step infinite-order two-component relativistic Hamiltonian
-CMI  it's BSS_RKB+AMFI; later fix this options when interacting
-CMI  with other flags...
-!radovan: note that .X2C points to here
-!         so be careful when changing "137"
-             IOTC = .TRUE.
-             BSS = .TRUE.
-             NOPRTR = .TRUE.
-             IBSS = 2999
-             TWOCOMPBSS = .TRUE.
-             TWOCOMP = .TRUE.
+C&&&  X2C: one-step Exact TWO-component relativistic Hamiltonian
+!                   ^     ^^^ ^
+             NOPRTR  = .true.
+             x2c     = .true.
+             x2c_mod = .true.
              GO TO 100
   138     CONTINUE
 C&&& MIXVAC: Alternative definition of vacuum polarisation
@@ -4573,9 +4581,17 @@ C&&& QDOTS: activate artificial atom (quantum dots)
 #endif
              GO TO 100
 
-!         .X2C is alias for .IOTC
+!&&& IOTC: complex flag for the one-step infinite-order two-component relativistic Hamiltonian
+CMI  it's BSS_RKB+AMFI; later fix this options when interacting
+CMI  with other flags...
   151     continue
-          go to 137
+             IOTC = .TRUE.
+             BSS = .TRUE.
+             NOPRTR = .TRUE.
+             IBSS = 2999
+             TWOCOMPBSS = .TRUE.
+             TWOCOMP = .TRUE.
+             GO TO 100
 
 !         .X2C4 is alias for .IOTC4
   152     continue
@@ -4602,7 +4618,8 @@ C    (see MRCON1 of the MOLTRA module)
           go to 100
 
   155     CONTINUE
-C&&& Activate : molecular mean field approximation for correlated calculations
+C&&& activate : molecular mean field approximation for correlated calculations
+C               using LL integrals only that is ^4 DC(G)**.
           MOLMF = .TRUE.
           GOTO 100
   156     CONTINUE
@@ -4645,8 +4662,31 @@ C activates fde response
 
 CMI   ... needed for output
       GAUNT_SAVE = GAUNT
+
+!     take care of the correct choice of the X2C module 
+!     -------------------------------------------------
+!     1. X2C+spinfree 
+!     2. X2C+compare eigenvalues 4c-Hamiltonian <--> 2c-Hamiltonian
+      if(x2c.and.spinfr)then
+!       disable new x2c module
+        x2c        = .false.
+        x2c_mod    = .false.
+!       enable old bss/x2c module (AMFI flags are taken care of via ibss)
+        iotc       = .true.
+        bss        = .true.
+        noprtr     = .true.
+        ibss       = 2999
+        twocompbss = .true.
+        twocomp    = .true.
+        isorder_amfi_x2c = -1
+      else if(x2c.and.cmpeig)then
+        write(lupri,'(a/)') 
+     &  ' *** Warning: the .cmpeig option is not implemented in'//
+     &  ' the new X2C module. please rerun with .X2COLD ***'
+        cmpeig = .false.
+      end if
 C
-C    Remove inconsistencies
+C     Remove inconsistencies
 C     =====================
 C
       IF (NOSMLV .AND. ONECAP) THEN
@@ -4709,23 +4749,24 @@ C     =====================================================
      &'HAMINP: DO2C4C/DO4C2C/USEDF options require BSS keyword !')
       ENDIF
 
-      IF (BSS) THEN
+      IF (BSS .or. x2c) THEN
         IF (LEVYLE.OR.FREEPJ.OR.VEXTPJ) THEN
           CALL QUIT(
-     &   'HAMINP: Conflicting options LEVYL/FREEPJ/VEXTPJ & BSS !')
+     &   'HAMINP: Conflicting options LEVYL/FREEPJ/VEXTPJ & BSS/X2C !')
         ENDIF
         IF (SMLV1C.OR.DOLVC.OR.NOSMLV.OR.ONECAP) THEN
           CALL QUIT(
-     &'HAMINP: Conflicting options SMLV1C/DOLVC/NOSMLV/ONECAP & BSS !')
+     &    'HAMINP: Conflicting options SMLV1C/DOLVC/NOSMLV/ONECAP 
+     &    & BSS/X2C !')
         ENDIF
         IF (URKBAL.OR.SPINFR2) THEN
          CALL QUIT(
-     &   'HAMINP: Conflicting options URKBAL/SPINFR2 & BSS!')
+     &   'HAMINP: Conflicting options URKBAL/SPINFR2 & BSS/X2C!')
         ENDIF
 C ...   DIRCON(1) means contracted L component basis set !
         IF (ZORA) THEN
           CALL QUIT(
-     &    'HAMINP: Conflicting options ZORA & BSS !')
+     &    'HAMINP: Conflicting options ZORA & BSS/X2C !')
         ENDIF
 CTROND        IF (DIRCON(1)) THEN
 CTROND          CALL QUIT(
@@ -4768,7 +4809,7 @@ CMI ... set up the default value of I2CHAM, when the BSS-postDC-SCF is on
        ENDIF
 
 CMI ... fix the .IOTC keyword interaction with .GAUNT,.ONESYS,.SPINFR
-        IF (IBSS.EQ.2999.AND.NOPRTR) THEN
+        IF (((IBSS.EQ.2999).or.x2c).AND.NOPRTR) THEN
          IF (SPINFR) THEN
            IBSS = 009
 C          write(lupri,*) '.IOTC for .SPINFR'
@@ -4777,14 +4818,21 @@ C          write(lupri,*) '.IOTC for .SPINFR'
 CMI        ... AMFI SSO+SOO terms
 CMI        ... we have to switch off this term as we are in the 2c framework
 CMI        ... instead we use GAUNT_SAVE
+           if(.not.x2c)then
+             IBSS = 3999
+           else
+!            X2C and AMFI - handling of GAUNT; the order can also be set through
+!            the *AMFI input deck.
+             isorder_amfi_x2c = 3
+           end if
            GAUNT = .FALSE.
-           IBSS = 3999
          ENDIF
 CMI      IF (ONESYS) THEN
 CMI        ... no AMFI contribution
 CMI        IBSS = 999
 CMI      ENDIF
         ENDIF
+        
 
 CMI   ... fix the DKH2 keyword interaction with .GAUNT,.ONESYS,.SPINFR
         IF (DKH2) THEN
@@ -4828,7 +4876,7 @@ C     NZC1 is the NZ value in C1 symmetry
 C
       NZC1 = 4
       IF (TWOCOMP) THEN
-        IF(BSS) THEN
+        IF(BSS.or.x2c) THEN
           NZC1 = 4 
         ELSE IF (.NOT. ECPCALC) THEN
           NZC1 = 1
@@ -4845,10 +4893,15 @@ C
 C
       IF(LEVYLE) THEN
         WRITE(LUPRI,'(A)') ' * Levy-Leblond Hamiltonian'
-      ELSE IF (BSS) THEN
+      ELSE IF(BSS.or.x2c) THEN
         IF(NOPRTR) THEN
-          WRITE(LUPRI,'(A)')
+          if(bss)then
+            WRITE(LUPRI,'(A)')
      & ' * One-step Infinite-Order Two-component Hamiltonian'
+          else if(x2c)then
+            WRITE(LUPRI,'(A)')
+     & ' * Exact-Two-Component (X2C) Hamiltonian'
+          end if
           WRITE(LUPRI,'(A)')
      & '   Reference: ',
      & '    M. Ilias and T. Saue:',
@@ -4856,6 +4909,14 @@ C
      & 'relativistic Hamiltonian ',
      & '    by a simple one-step transformation." ',
      & '    J. Chem. Phys., 126 (2007) 064102. '
+          if(x2c)then
+          WRITE(LUPRI,'(a)')
+     & '   additional reference for the new X2C module: '
+          WRITE(LUPRI,'(a)')
+     & '    S. Knecht and T. Saue:'
+          WRITE(LUPRI,'(a/)')
+     & '    manuscript in preparation, Strasbourg 2010. '
+          end if
         ELSE
 C         .... two-step method of Barysz
           WRITE(LUPRI,'(A,I5)')
@@ -4903,9 +4964,9 @@ C         .... two-step method of Barysz
         ENDIF
 
         IF (TWOCOMP) THEN
-          WRITE(LUPRI,'(1X,A)') '  - running in 2-component modus'
+          WRITE(LUPRI,'(A)') ' * running in 2-component modus'
         ELSE
-          WRITE(LUPRI,'(1X,A)') '  - running in 4-component modus'
+          WRITE(LUPRI,'(A)') ' * running in 4-component modus'
         ENDIF
 
 C       ... take care of AMFI contribution
@@ -5058,7 +5119,7 @@ C
 C     Remove integral classes not needed for this Hamiltonians
 C
       IF (LEVYLE.OR.
-     &   (BSS.AND..NOT.DO4C2C.AND..NOT.DO2C4C)
+     &   ((BSS.or.x2c).AND..NOT.DO4C2C.AND..NOT.DO2C4C)
      &    .OR.TWOCOMP) THEN
         ISLINT = 0
         ISSINT = 0
@@ -5114,7 +5175,7 @@ C     ... first large component
          WRITE(LUPRI,'(A)')'   - contracted large component basis set'
 CMI ... contracted L comp. basis set in NOT for generated matrix elemensts
 CMI     but for precursive four-component matrix elements !!!
-         IF (BSS.OR.DO2C4C.OR.DO4C2C) THEN
+         IF (BSS.or.x2c.OR.DO2C4C.OR.DO4C2C) THEN
              WRITE(LUPRI,'(2X,A)')
      & 'WARNING: for BSS transformation the contracted'//
      & ' L component basis is not implemented!'
@@ -5534,7 +5595,7 @@ C       if *CAP in input but MOD_CAP is not defined !!!
     6 CONTINUE
 #ifdef MOD_AMFI
 CMI  ... reading input routine for AMFI+RELSCF
-        IF (IBSS.GT.999.AND..NOT.NOAMFI) THEN
+        IF((IBSS.GT.999.or.x2c).AND..NOT.NOAMFI) THEN
           CALL AMFI_RELSCF_INP(WORD,.FALSE.)
         ELSE
           GO TO 1
@@ -5561,7 +5622,7 @@ C
 #endif
 
 #ifdef MOD_AMFI
-      IF (IBSS.GT.999.AND..NOT.NOAMFI) THEN
+      IF((IBSS.GT.999.or.x2c).AND..NOT.NOAMFI) THEN
          CALL AMFI_RELSCF_INP(WORD,.TRUE.)
       ENDIF
 #endif
@@ -5607,11 +5668,15 @@ C
 #include "dcbham.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3),WORK(LWORK)
+      logical is_2c_rel_run
+
+      is_2c_rel_run = .false.
+      is_2c_rel_run = bss.or.x2c
 
       CALL QENTER('OP1INI')
 
       IF (IPRHAM.GE.7) THEN
-       IF (TWOCOMP.AND..NOT.BSS) THEN
+       IF (TWOCOMP.AND..NOT.is_2c_rel_run) THEN
         CALL HEADER(
      &  'OP1INI: activating non-relativistic 1-el. integrals',-1)
        ELSE
@@ -5664,7 +5729,7 @@ C
       ENDIF
 
 
-      IF (TWOCOMP.AND..NOT.BSS) THEN
+      IF(TWOCOMP.AND..NOT.is_2c_rel_run)THEN
 CMI   nonrelativistic  kinetic energy integrals ...
       PNAME            = 'Nonrel. kinetic energy '
       IPTYP            = 1
@@ -6148,11 +6213,16 @@ C
 #include "dcbprp.h"
 #include "dgroup.h"
       LOGICAL SS_COR, SS_COR_NEEDED
+      logical is_2c_rel_run
+
 #include "ibtfun.h"
 C
       CALL TITLER('Input consistency checks','*',127)
 
-      IF (DOPRP.AND.TWOCOMP.AND..NOT.BSS) THEN
+      is_2c_rel_run = .false.
+      is_2c_rel_run = bss.or.x2c
+
+      IF (DOPRP.AND.TWOCOMP.AND..NOT.is_2c_rel_run) THEN
        WRITE(LUPRI,'(1X,A/)')
      & 'NB: Properties & TWOCOMP require non-relativistic'//
      & ' form of operators !'
@@ -6174,26 +6244,20 @@ C     Correct input from the naive user who neglects the SS without applying a c
 C     The experienced user may subtract the LVCOR later on.
 C
 C     Check for Hamiltonians were SS do not appear anyway..
-      SS_COR_NEEDED = .NOT.(LEVYLE.OR.BSS.OR.(ZORA.AND..NOT.ZORA4))
+      SS_COR_NEEDED = 
+     &       .NOT.(LEVYLE.OR.is_2c_rel_run.OR.(ZORA.AND..NOT.ZORA4))
 C     .. or are computed exactly
       SS_COR_NEEDED = SS_COR_NEEDED.AND.(IBTAND(INTGEN/4,1).EQ.0)
 C     Check for possible ways of correcting..
       SS_COR = DOLVC.OR.DOTSC
       IF (SS_COR_NEEDED.AND..NOT.SS_COR.AND.
-     &   .NOT.TWOCOMP.AND..NOT.LEVYLE.AND..NOT.BSS) THEN
+     &   .NOT.TWOCOMP.AND..NOT.LEVYLE.AND..NOT.is_2c_rel_run) THEN
          DOLVC = .TRUE.
          WRITE (LUPRI,'(A/A)')
      &     " * WARNING: User asked for neglect of SS-integrals "//
      &     "without invoking a correction.",
      &     "   Activated SCC method (.LVCORR), "//
      &     "see L. Visscher TCA 98 (1997) 68."
-      ENDIF
-C
-C     Check for LUCIA and parallel
-C
-      IF (PARCAL .AND. DOKRMC) THEN
-CSK         IF (KRMC_CIPROGRAM .EQ. 'LUCIAREL')
-CSK     &   CALL QUIT ('LUCIAREL cannot run in parallel mode')
       ENDIF
 C
 C     Check for C1 symmetry if localization requested
@@ -6985,11 +7049,13 @@ C
 C        Look for 2-component Hamiltonians
 C
          IF (WORD.EQ.'.IOTC  '.OR.WORD.EQ.'.BSS   '.OR.
-     &       WORD.EQ.'.X2C   ') THEN
-C..........active 2-component modus
-           TWOCOMP=.TRUE. 
-C..........variable telling that this is a 2-component relativistic calculation
-           TWOCOMPBSS=.TRUE.
+     &       WORD.EQ.'.X2C   '.OR.WORD.EQ.'.X2COLD') THEN
+           if(.not.x2c)then
+C............active 2-component modus
+             TWOCOMP=.TRUE. 
+C............variable telling that this is a 2-component relativistic calculation
+             TWOCOMPBSS=.TRUE.
+           end if
            CNTMAT=.TRUE.
            ! write(LUPRI,*) "HAMSCAN detected BSS..."
          ENDIF

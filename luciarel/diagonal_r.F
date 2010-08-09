@@ -280,6 +280,8 @@ C?          WRITE(6,*)  ' IA = ', IA
             if (NTEST.ge.100) then
                write(6,*) 'Element ITDET and value X:'
                write(6,*) ITDET,X
+               write(6,*) 'offset IDET:'
+               write(6,*) IDET
                WRITE(6,*) ' alpha and beta string : '
                CALL IWRTMA(IASTR(1,IA),1,NAEL,1,NAEL)
                CALL IWRTMA(IBSTR(1,IB),1,NBEL,1,NBEL)

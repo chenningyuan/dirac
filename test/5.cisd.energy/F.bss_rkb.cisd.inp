@@ -11,7 +11,7 @@ Fluorine atom.
 #.BSS
 #999
 #.ONESTEP
-.X2C
+.X2COLD
 .NOAMFI
 .CMPEIG
 .PRINT

@@ -35,6 +35,8 @@ C        IOPT    - option (current only 0 supported)
 C
 C     Written by J. Thyssen - Nov 26 1998
 C     Last revision :
+C                S. Knecht - Feb 2010: print of mj-vector to file 
+C                                      KRMCSCF added.
 C
 C***********************************************************************
 #include "implicit.h"
@@ -58,11 +60,18 @@ C
 C
 C     Write file KRMCSCF:
 C
-C     (1) OLDORB  : old MO orbitals
-C     (2) RESTART : info needed for restart
-C     (3) LREDUCED: info needed for backsteps
-C     (4) CREF    : new CI vector
-C     (5) NEWORB  : new MO orbitals
+C     (1) MJVEC   : orbital mj-vector
+C     (2) OLDORB  : old MO orbitals
+C     (3) RESTART : info needed for restart
+C     (4) LREDUCED: info needed for backsteps
+C     (5) CREF    : new CI vector
+C     (6) NEWORB  : new MO orbitals
+C
+      IF( OPT_CHCKJZ .AND. LINEAR )THEN
+        CALL MEMGET('INTE',KMJVEC,NORBT,WORK,KFREE,LFREE)
+        CALL IZERO(WORK(KMJVEC),NORBT)
+        CALL IREAKRMC(LUKRMC,'MJVEC   ',WORK(KMJVEC),NORBT)
+      END IF
 C
 C     Clean LUKRMC
 C     ------------
@@ -73,7 +82,15 @@ C
       CALL NEWLAB('SODLABEL',LUKRMC,LUPRI)
       REWIND(LUKRMC)
 C
-C     (1) OLDORB & OLDCREF: write old MO orbitals
+C     (1) MJVEC: write orbital mj-vector
+C     -------------------------------------------
+C
+      IF( OPT_CHCKJZ .AND. LINEAR )THEN
+        CALL IWRTKRMC(LUKRMC,'MJVEC   ',WORK(KMJVEC),NORBT)
+        CALL MEMREL('KRMCSAV.1',WORK,1,KFRSAV,KFREE,LFREE)
+      END IF
+C
+C     (2) OLDORB & OLDCREF: write old MO orbitals
 C     -------------------------------------------
 C
       CALL WRTKRMC(LUKRMC,'OLDORB  ',CMO,NCMOTQ)
@@ -133,7 +150,7 @@ C
 CSK   IF (.FALSE.) THEN
 C     TODO Feb 2004 hjaaj: KRMCCNO not working correctly yet ...
 C
-C          July 2208 sk+hjaaj : fix for FOCKON only
+C          July 2008 sk+hjaaj : fix for FOCKON only
 C                               still TODO: implement RTRACI + 
 C                                           fix TRTOCO/TRTONO branch
 C
@@ -173,7 +190,7 @@ C          input from .HF to .MCSCF /hjaaj Feb 2004)
 C
       REWIND(LUKRMC)
 C
-      CALL MEMREL('KRMCSAV.1',WORK,1,KFRSAV,KFREE,LFREE)
+      CALL MEMREL('KRMCSAV.2',WORK,1,KFRSAV,KFREE,LFREE)
 C
       CALL QEXIT('KRMCSAV')
       RETURN

@@ -202,6 +202,9 @@ C     MI,HJAaJ(&TEC), march 2003: added new routine calling
 C     that gets the total property gradient dH(B)/dB|B=0 when using
 C     London atomic orbitals
 C
+C     S. Knecht, Jan 2010: added read-in of coefficients from a 
+C                          previous MCSCF run.
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -214,24 +217,56 @@ C
 #include "dcbham.h"
 #include "mxcent.h"
 #include "dcbprp.h"
+#if defined MOD_KRMC
+#include "dcbpsi.h"
+#endif
 C
       DIMENSION GPOE(*),GPOP(*),JXOPE(*),JXOPP(*),
      &          PRPMO(NORBT,NORBT,NZ),CMO(*),IBEIG(*),WORK(*)
+      LOGICAL TOBEK
 C
       CALL QENTER('GRDOR1')
+C
+      TOBEK =.FALSE.
 C
 C     Read coefficients
 C     =================
 C
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GRDOR1')
-      IF(SPINFR) THEN
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IBEIG,TOTERG,10,
-     &              WORK,KFREE,LFREE)
+#if defined MOD_KRMC
+C
+C     check for coefficients from the current KRMCSCF run
+      INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
+C
+      IF(TOBEK.and.DOKRMC)THEN
+C
+        IF(SPINFR) THEN
+          WRITE(LUPRI,'(A)') ' *** ERROR in GRDOR1: reading'//
+     &                       ' of MCSCF coefficients in a spinfree'//
+     &                       ' calculation. ***'
+          CALL QUIT('Spinfree MCSCF calculations are not possible.')
+        END IF
+        CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','GRDOR1')
+        JRDMO = -1
+        CALL RREADMO(CMO,JRDMO,1,LUKRMC)
+C       CLOSE (LUKRM5,STATUS='KEEP')
+C       ... set to zero
+        TOTERG = 0.0D0
       ELSE
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,DUM,TOTERG,2,
-     &              WORK,KFREE,LFREE)
-      ENDIF
-      CLOSE(LUCOEF,STATUS='KEEP')
+#endif /* MOD_KRMC */
+C
+C       read HF coefficients 
+        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GRDOR1')
+        IF(SPINFR) THEN
+          CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IBEIG,TOTERG,10,
+     &                WORK,KFREE,LFREE)
+        ELSE
+          CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,DUM,TOTERG,2,
+     &                WORK,KFREE,LFREE)
+        ENDIF
+        CLOSE(LUCOEF,STATUS='KEEP')
+#if defined MOD_KRMC
+      END IF
+#endif /* MOD_KRMC */
 C
 C     Get property matrix in MO-basis and scale by factor -1
 C     ======================================================
@@ -275,7 +310,7 @@ C
       KFRSAV = KFREE
       IF (NASHT .GT. 0) THEN
          CALL MEMGET('REAL',KDV,N2ASHXQ,WORK,KFREE,LFREE)
-         CALL GETMAT('DVMO',WORK(KDV),IPRINT,.FALSE.,WORK(KFREE),LFREE)
+         CALL GETMAT('DVMO',WORK(KDV),IPRINT,TOBEK,WORK(KFREE),LFREE)
       ELSE
          CALL MEMGET('REAL',KDV,0,WORK,KFREE,LFREE)
       END IF

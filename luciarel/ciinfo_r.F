@@ -1274,10 +1274,9 @@ C
       MXPDBGDIM = 8
       MXPDBGDIM2 = MXPDBGDIM ** 2
 *
-      IZERO = 0
-      CALL ISETVC(IDBGMULT,IZERO,MXPDBGDIM2)
-      CALL ISETVC(IMOSF_SP,IZERO,MXPDBGDIM)
-      CALL ISETVC(ISPSF_MO,IZERO,MXPDBGDIM)
+      CALL IZERO(IDBGMULT,MXPDBGDIM2)
+      CALL IZERO(IMOSF_SP,MXPDBGDIM)
+      CALL IZERO(ISPSF_MO,MXPDBGDIM)
       IF(PNTGRP.EQ.5) THEN
 *. C1 point group
         DBGSYM(1:6) ='C1    '
@@ -3189,9 +3188,9 @@ C    &                IOSPIR,NGSOB2(1,IGAS),NGSOBT2(IGAS))
       IGSINA = 0
       IGSDEL = 0
 *
-      CALL ISETVC(NTOOBS,0,NSMOB)
-      CALL ISETVC(NOCOBS,0,NSMOB)
-      CALL ISETVC(NACOBS,0,NSMOB)
+      CALL IZERO(NTOOBS,NSMOB)
+      CALL IZERO(NOCOBS,NSMOB)
+      CALL IZERO(NACOBS,NSMOB)
 *
       NTOOB = 0
       NACOB = 0
@@ -3261,14 +3260,14 @@ CSK   NTEST = 100
 #endif
 *
       IF(IDBG.EQ.1) THEN
-*. Repete the above for construction of beta spinors
-* current inactive and deleted orbitals are not identified so
+*.     Repeat the above for construction of beta spinors
+*      current inactive and deleted orbitals are not identified so
        IGSINA = 0
        IGSDEL = 0
 *
-       CALL ISETVC(NTOOBS2,0,NSMOB)
-       CALL ISETVC(NOCOBS2,0,NSMOB)
-       CALL ISETVC(NACOBS2,0,NSMOB)
+       CALL IZERO(NTOOBS2,NSMOB)
+       CALL IZERO(NOCOBS2,NSMOB)
+       CALL IZERO(NACOBS2,NSMOB)
 *
        NTOOB2 = 0
        NACOB2 = 0

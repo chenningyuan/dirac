@@ -548,6 +548,8 @@ C        various modified atomic integrals of H2c AO
 C   MI/Strasbg,Febr. 2006 H2cAO Hamiltonian reading placed into separate routine
 C
 C*****************************************************************************
+      use x2c_utils, only:
+     &    read_1fock_x2c
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -563,7 +565,12 @@ C
 
 CMI   ... control output ...
       IF (IPRHAM.GE.4) THEN
-        IF (BSS) THEN
+        IF (BSS .or. x2c) THEN
+         if(x2c)then
+          CALL HEADER(
+     &    'ONEFCK: One-electron Fock matrix from - '//
+     &    ' X2C 2c Hamiltonian ',-1)
+         end if
          IF (TWOCOMPBSS) THEN
           CALL HEADER(
      &    'ONEFCK: One-electron Fock matrix from - '//
@@ -588,11 +595,13 @@ CMI   ... control output ...
        ENDIF
       ENDIF
 
-      IF (BSS) THEN
+      if(bss)then
 !MI If BSS is active read one-electron DKn(BSS) AO integrals from the
 !   BSSMAT file (lu=LUBSS) according to the parameter I2COFK
        CALL GETH2CAO(I2COFK,FOCK,WORK(KFREE),LFREE,IPRHAM)
-      ELSE
+      else if(x2c)then
+        call read_1fock_x2c(fock,n2bbasx,nz,i2cofk)
+      else
 C
 C     Memory allocation
 C
@@ -611,7 +620,7 @@ C
 C     Memory deallocation
        CALL MEMREL('ONEFCK.ONEFC1',WORK,KWORK,KWORK,KFREE,LFREE)
 
-      ENDIF
+      end if
 C
 C     Output section
 C     ==============
@@ -631,6 +640,10 @@ C
      &    ' BSS 2c Hamiltonian (LL blocks in four-component mode, '//
      &    'wasting memory)',-1)
          ENDIF
+        ELSE IF(x2c)THEN
+          CALL HEADER(
+     &    'ONEFCK: One-electron Fock (symm.blocked SA-AO)'//
+     &    ' matrix from - X2C 2c Hamiltonian)',-1)
         ELSE
           IF (TWOCOMP) THEN
          CALL HEADER(
@@ -1425,6 +1438,7 @@ C
 C     Written by Miro ILIAS/Strasbourg, March 2006
 C
 C*****************************************************************************
+      use x2c_fio
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0, D0 = 0.0D0, PTOL = 1.0D-12)
@@ -1443,8 +1457,7 @@ C
       LOGICAL FIRST(NZ),IS_SQUARE, YESPCTRA, MAKEPCTRA
       DIMENSION PTRI(IDIMENS,NZ),PMAT(N2BBASX,NZ),
      &          OP1INT(IDIMENS),WORK(LWORK)
-      CHARACTER*8 PRPLABEL
-      CHARACTER*4 NUMSTR
+      CHARACTER PRPLABEL*8, prplab_x2c*12, NUMSTR*4
 C
       EXTERNAL BDQALGEBRA
 
@@ -1490,32 +1503,43 @@ C     =============================
 C ========================================================================================
 C    ... in this case read picture change transformed property integrals from BSSMAT file
 C      which are there under the name  'P2C_'//NUMSTR 
+C
+C     X2C module: picture change transformed property integrals reside
+C                 on file X2CMAT
 C ========================================================================================
-      IF (TWOCOMP.AND.BSS) THEN
+      IF((TWOCOMP.AND.BSS).or.x2c) THEN
 
-       IPRINT2 = MAX(IPRHAM,IPRINT)
+        IPRINT2 = MAX(IPRHAM,IPRINT)
 
-       IF (N2BBASXQ.NE.(NTBAS(1)*NTBAS(1)*NZ)) THEN
-         write(lupri,*) 'PRPMSAO error output:'
-         write(lupri,*) 'N2BBASXQ=',N2BBASXQ
-         write(lupri,*) 'NTBAS(1)=',NTBAS(1)
-         write(lupri,*) 'NTBAS(1)*NTBAS(1)*NZ=',
-     &    NTBAS(1)*NTBAS(1)*NZ
-         CALL QUIT('PRPMSAO: N2BBASXQ.ne.N2BBASXQ_L!!!')
-      ENDIF
-
-CMI ... the label will contain the INDXPR operator index in the string form !
-       CALL NUM2STR(INDXPR,NUMSTR)
-       PRPLABEL = 'P2C_'//NUMSTR
-
-       CALL RFBSSMAT(PRPLABEL,.FALSE.,'PRPMSAO',
-     &             PMAT,N2BBASXQ,LUBSS,IPRINT2)
-
-       IF (IPRINT2.GE.3) THEN  
-        write(lupri,'(2x,A,A,A)')   
-     & 'PRPMSAO: 2comp. property record ',PRPLABEL,
-     & ' was read from BSSMAT file.'      
+        IF (N2BBASXQ.NE.(NTBAS(1)*NTBAS(1)*NZ)) THEN
+          write(lupri,*) 'PRPMSAO error output:'
+          write(lupri,*) 'N2BBASXQ=',N2BBASXQ
+          write(lupri,*) 'NTBAS(1)=',NTBAS(1)
+          write(lupri,*) 'NTBAS(1)*NTBAS(1)*NZ=',
+     &                    NTBAS(1)*NTBAS(1)*NZ
+          CALL QUIT('PRPMSAO: N2BBASXQ.ne.N2BBASXQ_L!!!')
        ENDIF
+
+CMI    ...the label will contain the INDXPR operator index in the string form !
+       CALL NUM2STR(INDXPR,NUMSTR)
+
+       if(x2c)then
+         write(prplab_x2c,'(a8,a4)') 'prpint2c',numstr
+         open(lux2c,file='X2CMAT',status='old',form='unformatted',
+     &        access='sequential',action="read",position='rewind')
+         call x2c_read(prplab_x2c,pmat,n2bbasxq,lux2c)
+         close(lux2c,status="keep")
+       else
+         PRPLABEL = 'P2C_'//NUMSTR
+         CALL RFBSSMAT(PRPLABEL,.FALSE.,'PRPMSAO',
+     &                 PMAT,N2BBASXQ,LUBSS,IPRINT2)
+         IF (IPRINT2.GE.3) THEN  
+           write(lupri,'(2x,A,A,A)')   
+     &     'PRPMSAO: 2comp. property record ',PRPLABEL,
+     &     ' was read from BSSMAT file.'      
+         ENDIF
+       end if
+
 
        CALL LSET(NZ,.FALSE.,FIRST)
 
@@ -1533,7 +1557,7 @@ C     ... do resort PTRI to DIRAC sorting
      &               IREP,ITIM,WORK(KFREE),LFREE,IPRINT2)
         ELSE
           CALL PRPMAO(LU1INT,INDXPR,IDIMENS,PTRI,OP1INT,FIRST,
-     &                       IPRINT2)   
+     &                       IPRINT2)
 
           CALL SORT2SAO(IDIMENS,PTRI,PMAT,FIRST,
      &               IREP,ITIM,WORK(KFREE),LFREE,IPRINT2)
@@ -1601,12 +1625,14 @@ C ... here is list of operators which DO not have to be picture change tranforme
 C ... LL-forms of some operators (Beta matrix, Kinetic energy...) are not usable, however,
 C ... some are usable (ZANGMOM) 
 
-      IF ( PROPNAME.EQ.'Overlap matrix  ' .OR.                   
+      IF ( PROPNAME.EQ.'Overlap matrix  ' .OR.  !                
+     &     PROPNAME.EQ.'z-spin'           .OR.  ! overlap * 1/2
      &     PROPNAME.EQ.'Nuc. attraction ' .OR.
      &     PROPNAME.EQ.'Beta matrix     ' .OR.
      &     PROPNAME.EQ.'Kinetic energy  ' .OR.
      &     PROPNAME.EQ.'Orbital z-moment' .OR.  ! ... ZANGMOM
      &     PROPNAME.EQ.'ZANGMOM'          .OR.  ! ... ZANGMOM
+     &     PROPNAME.EQ.'z-angular mom'    .OR.  ! ... ZANGMOM
      &     PROPNAME.EQ.'d|S>/dBX        ' .OR.
      &     PROPNAME.EQ.'d|S>/dBY        ' .OR.
      &     PROPNAME.EQ.'d|S>/dBZ        ' .OR.
@@ -1636,7 +1662,6 @@ C ... some are usable (ZANGMOM)
       ENDIF
                                                             
       CALL QEXIT('DECIDEPCTR')                              
-      RETURN                                                
       END                                                   
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1706,7 +1731,7 @@ CMI   ... in this case PTRI is dummy, only PMAT exists
               CALL QUIT('SORT2SAO: wrong value of IDIMENS !') 
             ENDIF
            ENDIF
-           CALL BUTOBS(PMAT(1,IZ),1,WORK,LWORK)
+             CALL BUTOBS(PMAT(1,IZ),1,WORK,LWORK)
          ELSE 
 CMI ... zeroed out non-used quaternionic blocks of property matrixes...
            CALL DZERO(PMAT(1,IZ),N2BBASX)  
@@ -1714,7 +1739,83 @@ CMI ... zeroed out non-used quaternionic blocks of property matrixes...
       END DO
 
       CALL QEXIT('SORT2SAO')
-      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck sort2sao */
+      SUBROUTINE SORT2SAO_no_work(IDIMENS,PTRI,PMAT,FIRST,
+     &                            IREP,ITIM,IPRINT)
+C*****************************************************************************
+C
+C    PURPOSE: Sort the general 4comp. property operator
+C             to the symmetry adapted AO-basis
+C
+C    On input:  PTRI - matrix of 4c prop. operator in unsorted basis
+C               IDIMENS - tells whether it is triangular or square matrix
+C
+C               IREP, ITIM
+C
+C               IPRINT
+C               FIRST 
+C
+C  NOTE: In the case of SQUARE matrix only the PMAT is entering ! All others
+C        parameters in this case are dummy (PTRI only...)
+C
+C    On output: PMAT
+C
+C    Call from: PRPMSAO
+C
+C    Written by Miro ILIAS/Strasbourg/March 2006
+C
+C*****************************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+#include "dcbbas.h"
+      DIMENSION PMAT(N2BBASX,NZ),PTRI(IDIMENS,NZ)
+      LOGICAL   FIRST(NZ), IS_SQUARE
+C
+      CALL QENTER('SORT2SAO_no_work')
+
+      IF (IDIMENS.EQ.N2BBASX.AND.ITIM.EQ.0) THEN
+        IS_SQUARE = .TRUE.
+      ELSE IF (IDIMENS.EQ.NNBBASX.AND.(ITIM.EQ.1.OR.ITIM.EQ.-1)) THEN
+        IS_SQUARE = .FALSE.
+      ELSE
+        write(lupri,*) 'SORT2SAO_no_work: N2BBASX,NNBBASX,IDIMENS=',
+     &  N2BBASX,NNBBASX,IDIMENS
+        CALL QUIT('SORT2SAO_no_work: wrong value of IDIMENS !')
+      ENDIF
+
+      DO IZ = 1,NZ
+        IF(.NOT.FIRST(IZ)) THEN
+          IQ = IPQTOQ(IZ,IREP)
+          IH = IHQMAT(IQ,ITIM)
+          IF(IH.EQ.1) THEN
+            CALL DSPTSI(NTBAS(0),PTRI(1,IZ),PMAT(1,IZ))
+            IF (IS_SQUARE) THEN
+             CALL QUIT('SORT2SAO_no_work: wrong value of IDIMENS !') 
+            ENDIF
+          ELSEIF(IH.EQ.2) THEN
+            CALL DAPTGE(NTBAS(0),PTRI(1,IZ),PMAT(1,IZ))
+            IF (IS_SQUARE) THEN
+             CALL QUIT('SORT2SAO_no_work: wrong value of IDIMENS !') 
+            ENDIF
+          ELSE
+CMI   ... in this case PTRI is dummy, only PMAT exists
+            IF (.NOT.IS_SQUARE) THEN
+              CALL QUIT('SORT2SAO_no_work: wrong value of IDIMENS !') 
+            ENDIF
+          ENDIF
+            CALL BUTOBS_no_work(PMAT(1,IZ),1)
+        ELSE 
+CMI ... zeroed out non-used quaternionic blocks of property matrixes...
+          CALL DZERO(PMAT(1,IZ),N2BBASX)  
+        ENDIF
+      END DO
+
+      CALL QEXIT('SORT2SAO_no_work')
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2283,6 +2384,14 @@ C     Last revision May 21 1996 - tsaue
 C                    2006 - M.Ilias
 C
 C*****************************************************************************
+      use dirx2c
+      use x2c_cb_interface, only:
+     &    set_wrk_x2c
+      use x2c_pct_ao,       only:
+     &    pctrafo_all_op_driver
+      use x2c_fio,          only:
+     &    x2c_write
+!
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
@@ -2298,14 +2407,20 @@ C   PAMIOU: LUTMAT
 #include "dcbdhf.h"
 #include "dcbbas.h"
 #include "dcborb.h"
+#include "maxaqn.h"
+#include "ccom.h"
 #include "dgroup.h"
-      LOGICAL TWOBUF,GOFAST,TOBE,FNDLAB
+      LOGICAL TWOBUF,GOFAST,TOBE,FNDLAB,FNDLAB12
+      logical is_2c_rel_run
       DIMENSION WORK(LWORK)
       CALL QENTER('GMOTRA')
-      IF(GOFAST.AND..NOT.BSS) GOTO 10
+      IF(GOFAST.AND.(.NOT.(BSS.or.x2c))) GOTO 10
 #include "memint.h"
       KFRSAV = KFREE
 C
+!     set file unit number for X2CMAT
+      lux2c = 40
+
 C     By default we do not partition the space. This may be
 C     modified if we have linear symmetry or approximate the
 C     Hamiltonian : Levy-Leblond, Spinfree, ..
@@ -2321,14 +2436,27 @@ C
 C     Get Lowdin canonical orthonormalization matrix
 C     ==============================================
 C
+!     SK- 2010-07-30: this step has been moved inside the x2c module if(x2c == .true.)
+      if(.not.x2c)then
 C aspg, timing
-      CALL TIMER('START ',TIMSTR,TIMEND)
-CTROND
-C.....we use N2BBASXQ instead of N2BBASX for BSS...to be checked      
-      CALL MEMGET('REAL',KVMAT,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL LOWDIN(WORK(KVMAT),WORK(KFREE),LFREE,IPRHAM)
-      CALL TIMER('Lwdn_a',TIMSTR,TIMEND)
+        CALL TIMER('START ',TIMSTR,TIMEND)
+C.....  we use N2BBASXQ instead of N2BBASX for BSS...to be checked
+        CALL MEMGET('REAL',KVMAT,N2BBASXQ,WORK,KFREE,LFREE)
+        CALL LOWDIN(WORK(KVMAT),WORK(KFREE),LFREE,IPRHAM)
+        CALL TIMER('Lwdn_a',TIMSTR,TIMEND)
 C aspg, timing
+      else
+!       IOTC = .false.
+!       BSS = .false.
+!       NOPRTR = .false.
+!       IBSS = 2999
+!       TWOCOMPBSS = .false.
+!       TWOCOMP = .true.
+      end if
+
+!     set up local 2c-relativistic run flag
+      is_2c_rel_run = .false.
+      is_2c_rel_run = bss.or.x2c
 C
 C     Unrestricted kinetic balance; use Lowdin canonical matrix
 C     =========================================================
@@ -2336,7 +2464,8 @@ C
 C     LV : The unrestricted procedure should be revised so that
 C     the large components are also sorted on boson irreps !!!
 C
-      IF(.NOT.URKBAL.AND.NTBAS(2).EQ.0.AND..NOT.(TWOCOMP.OR.BSS)) THEN
+      IF(.NOT.URKBAL.AND.NTBAS(2).EQ.0.AND.
+     &   .NOT.(TWOCOMP.OR.is_2c_rel_run)) THEN
         URKBAL = .TRUE.
         WRITE(LUPRI,'(A)') 
      &  '*** WARNING *** : No small bases. Setting URKBAL = T !'
@@ -2345,11 +2474,11 @@ C
 C     ** Branching point **
 C=======================================================================
 C
-      IF (URKBAL.OR.(TWOCOMP.AND..NOT.BSS)) THEN
+C     Case 1: Unrestricted kinetic balance 
+C             or 2-component non-relativistic calculation
+C     ---------------------------------------------------
+      IF (URKBAL.OR.(TWOCOMP.AND..NOT.is_2c_rel_run)) THEN
 C
-C       Case 1: Unrestricted kinetic balance 
-C               or 2-component non-relativistic calculation
-C       ---------------------------------------------------
 C
         NZT = 1
         KTMAT = KVMAT
@@ -2369,48 +2498,136 @@ C
      &     (NESH(IFRP),NPSH(IFRP),IFRP=1,NFSYM)
         ENDIF
 
-      ELSE IF (BSS) THEN
-C
-C       Case 2: Generate 2-component Hamiltonian
-C       ----------------------------------------
-C
+!     Case 2: relativistic 2-component Hamiltonian
+!     --------------------------------------------
+      ELSE IF (is_2c_rel_run)THEN
+!
         CALL TIMER('START ',TIMSTR,TIMEND)
+
         TOBE=.FALSE.
         IF(GOFAST) THEN
-          INQUIRE(FILE='BSSMAT',EXIST=TOBE)
+          if(bss)then
+            inquire(file='BSSMAT',exist=tobe)
+          else if(x2c)then
+            inquire(file='X2CMAT',exist=tobe)
+          end if
         ENDIF
-        IF(TOBE) THEN
-C.........AOMOMAT and BSSMAT available:
-C         1) open BSSMAT and remove all property integrals
-C         2) do picture change transformation of integrals on AOPROPER
-          WRITE(LUPRI,'(A,A)') '* WARNING: DIRAC found BSSMAT ',
-     &         '(X2c stuff) ... skipping generation of H2C'
-          LUBSS = 40
-          CALL OPNFIL(LUBSS,'BSSMAT','OLD','GMOTRA')
-          IF (FNDLAB('P2C_0001',LUBSS)) THEN
-            BACKSPACE(LUBSS)                   
-            CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
-          ENDIF
-          CLOSE(LUBSS,STATUS='KEEP')
-          CALL PROP2BSS(WORK(KVMAT),IPRHAM,WORK(KFREE),LFREE)
-        ELSE
-          CALL MAKE_H2C(WORK(KVMAT),WORK(KFREE),LFREE)
-          KTMAT = KVMAT
-          IF (IPRHAM.GE.5) THEN
-            write(lupri,*) 'GMOTRA: branch BSS'
-            write(lupri,*) 'NESH(IFRP),NPSH(IFRP)',
-     &     (NESH(IFRP),NPSH(IFRP),IFRP=1,NFSYM)
-          ENDIF
-        ENDIF
-        CALL TIMER('mk_h2c',TIMSTR,TIMEND)
-CMI    ... transformation matrix is the Large-electronic part of
-C          the adapted Lowdin canonical matrix VMAT
 
-        IF(TWOCOMPBSS) THEN
+!       case 2.1 - step a: restart 2c-run from file
+!       -------------------------------------------
+        IF(TOBE) THEN
+
+C         BSSMAT or X2CMAT available:
+C         1) open BSSMAT/X2CMAT and remove all property integrals
+C         2) do picture change transformation of integrals on AOPROPER
+
+          if(bss)then
+
+            WRITE(LUPRI,'(A,A)') '* Info: DIRAC found BSSMAT ',
+     &           '(BSS stuff) ... skipping generation of H2C'
+            LUBSS = 40
+            CALL OPNFIL(LUBSS,'BSSMAT','OLD','GMOTRA')
+            IF (FNDLAB('P2C_0001',LUBSS)) THEN
+              BACKSPACE(LUBSS)                   
+              CALL NEWLAB('EOFLABEL',LUBSS,LUPRI)
+            ENDIF
+            CLOSE(LUBSS,STATUS='KEEP')
+            CALL PROP2BSS(WORK(KVMAT),IPRHAM,WORK(KFREE),LFREE)
+
+          else if(x2c)then
+
+            write(lupri,'(a,a)') '* Info: DIRAC found X2CMAT ',
+     &           '(X2C stuff) ... skipping generation of H2C'
+            open(lux2c,file='X2CMAT',status='old',form='unformatted',
+     &           access='sequential',action='readwrite',
+     &           position='rewind')
+
+!           find Hamiltonian on file property integral... and step back
+            if(.not.x2c_aba)then
+              i2cofk =  0
+!             check for hamiltonian integrals on file X2CMAT and set i2cofk
+              if(fndlab12('h12cAOA   00',lux2c))then
+                if(noamfi)then
+                  write(lupri,'(a)') 
+     &' *** restart error: try to read h1+amfi and noamfi == .true. ***'
+                  call quit(
+     &'*** error in gmotra: mismatch between X2CMAT data and input ***')
+                end if
+!               set i2cofk to |3|: since we restart, it does not matter
+!               how the AMFI part was derived.
+                i2cofk = 3
+              else if(fndlab12('h12cAOn   00',lux2c))then
+                i2cofk = 1
+              else
+                  write(lupri,'(a)') 
+     &'*** restart error: no hamiltonian integrals stored on X2CMAT ***'
+                  call quit(
+     &'*** error in gmotra: no h1 data on file X2CMAT ***')
+              end if
+            else
+!             nothing to do here for now: x2c_aba is always false.
+            end if
+ 
+!           find first property integral... and step back
+            if(fndlab12('prpint2c0001',lux2c))then
+              backspace(lux2c)
+              call x2c_write('thisisadummy',work,-1,lux2c)
+            end if
+
+            if(dosphe) call set_wrk_x2c(work,lfree)
+
+            call pctrafo_all_op_driver(ntbas(0),
+     &                                 ntbas(1),
+     &                                 nfbas(1,0),
+     &                                 nfbas(1,1),
+     &                                 nfsym,
+     &                                 nz,
+     &                                 ipqtoq,
+     &                                 i2basx,
+     &                                 lux2c,
+     &                                 lu1int,
+     &                                 jbtof,
+     &                                 nprps,
+     &                                 lfree,
+     &                                 dosphe,
+     &                                 .false.,
+     &                                 iprham)
+
+          close(lux2c,status='keep')
+
+          end if
+
+!       case 2.2 - step a: generate 2c-Hamiltonian
+!       ------------------------------------------
+        ELSE
+
+          if(bss)then
+
+!           bss module (if asked for it can also perform an X2C transformation)
+            CALL MAKE_H2C(WORK(KVMAT),WORK(KFREE),LFREE)
+          else if(x2c)then
+
+!           optimized x2c module
+            call x2c_driver(work(kfree),lfree,x2c_aba,1,.true.)
+
+!           call quit( '*** stop after x2c_driver run ***' )
+          end if
+
+        ENDIF
+
+        CALL TIMER('mk_h2c',TIMSTR,TIMEND)
+
+!       
+!       case2 - step b: generate Lowdin canonical orthonormalization matrix in 2c-mode
+!       ------------------------------------------------------------------------------
+        if(.not.(twocompbss.or.x2c))then
+!         WORK(KTMAT) carries already the large-electronic part of the Lowdin canonical matrix
+          KTMAT = KVMAT
+        else
 C
-C         Go back to 2c-mode
-C
-          CALL MEMREL('BSS.2c',WORK,KWORK,KWORK,KFREE,LFREE)
+          if(.not.x2c)
+     &    CALL MEMREL('BSS.2c',WORK,KWORK,KWORK,KFREE,LFREE)
+
           TWOCOMP = .TRUE.
           RDINPC = .FALSE.
           IPREAD = IPREAD - 5
@@ -2421,6 +2638,7 @@ C.........reset NEWPRP to re-initialize AOPROPER
           NEWPRP = .TRUE.
           CALL LSET(NPRPCLS,.TRUE.,CLSCAL)
           CALL ONEGEN(WORK,LWORK)
+
           CALL MEMGET('REAL',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
 C.........do canonical orthonormalization
 C aspg, timing
@@ -2428,6 +2646,8 @@ C aspg, timing
           CALL LOWDIN(WORK(KTMAT),WORK(KFREE),LFREE,IPRHAM)
           CALL TIMER('Lwdn_b',TIMSTR,TIMEND)
 C aspg, timing
+
+!         reset orbital dimensions
           NZT = 1
           DO IFRP = 1,NFSYM
             NESH(IFRP)  = NFORB(IFRP,1)
@@ -2437,12 +2657,19 @@ C aspg, timing
           ENDDO
           SSMTRC = D0
           MC = 1
+
+        end if
+
+        IF (IPRHAM.GE.5) THEN
+          write(lupri,*) 'GMOTRA: relativistic 2c-branch'
+          write(lupri,*) 'NESH(IFRP),NPSH(IFRP)',
+     &     (NESH(IFRP),NPSH(IFRP),IFRP=1,NFSYM)
         ENDIF
+
+C
+C     Case 3: Transformation matrix with modified Dirac equation embedded
+C     -------------------------------------------------------------------
       ELSE
-C
-C       Case 3: Transformation matrix with modified Dirac equation embedded
-C       -------------------------------------------------------------------
-C
         CALL MEMGET('REAL',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
@@ -3744,6 +3971,10 @@ C
 C    Last modifications: March 2006/MI,Strasbourg 
 C
 C*****************************************************************************
+      use x2c_fio, only:
+     &    x2c_read
+!     use x2c_utils, only:
+!    &    print_x2cmat
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -3756,6 +3987,8 @@ C
       CHARACTER*4 OMITVNUC
       CHARACTER*8 BNCRLAB
       DIMENSION WORK(LWORK),FMAT(*)
+      logical fndlab12
+      character*12 flabel
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -3775,20 +4008,42 @@ c
 #include "memint.h"
 
       WEHAVE = .FALSE.
-      IF (BSS) THEN
+
+      if(bss)then
         WEHAVE = ISONBSSMAT('BNCR2C_2','BNCORR',LUBSS,IPRHAM).OR.
      &           ISONBSSMAT('BNCR2C_4','BNCORR',LUBSS,IPRHAM)
-      ENDIF
+
+      else if(x2c)then
+
+       open(lux2c,file='X2CMAT',status='old',form='unformatted',
+     &      access='sequential',action='read',position='rewind')
+
+       write(flabel,'(a11,i1)') 'h1bncc2cAOl',0
+       if(fndlab12(flabel,lux2c)) then 
+         wehave = .true.
+       else
+         close(lux2c,status='keep')
+       end if
+      end if
 
       IF (WEHAVE) THEN
 CMI   ... read 2c screened bare nucleus from the BSSMAT file in 4c or 2c metric
-        IF (BSS.AND.TWOCOMP) THEN
-          BNCRLAB='BNCR2C_2'
-        ELSE IF (BSS) THEN
-          BNCRLAB='BNCR2C_4'
-        ENDIF
-        CALL RFBSSMAT(BNCRLAB,.FALSE.,'BNCORR',
-     &  FMAT,N2BBASXQ,LUBSS,IPRHAM)
+        if(bss)then
+          if(twocomp)then
+            BNCRLAB='BNCR2C_2'
+          else
+            BNCRLAB='BNCR2C_4'
+          end if
+          CALL RFBSSMAT(BNCRLAB,.FALSE.,'BNCORR',
+     &                  FMAT,N2BBASXQ,LUBSS,IPRHAM)
+!         call print_x2cmat(FMAT,NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
+!    &         'bss - h1barenuc',LUPRI)
+        else if(x2c)then
+          call x2c_read(flabel,fmat,n2bbasx * nz,lux2c)
+!         call print_x2cmat(FMAT,NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
+!    &         'x2c - h1barenuc',LUPRI)
+          close(file_unit,status='keep')
+        end if
       ELSE
 CMI   ... continue the standard way
 C     Memory allocation
@@ -3805,7 +4060,8 @@ C     Memory allocation
       CALL MEMGET('REAL',KXGEXP,  NUCIND,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KCHRG ,  NUCIND,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KESHEL,7*NUCIND,WORK,KFREE,LFREE)
-      LWRK   = LWORK - KFREE + 1
+!     allocate(eshell_vec(7*NUCIND))
+      LEN_WRK   = LWORK - KFREE + 1
       CALL DZERO(WORK(KCHRG),NUCIND)
       CALL DZERO(WORK(KONEMT),N2BBASX)
       CALL DZERO(WORK(KESHEL),7*NUCIND)
@@ -3830,8 +4086,9 @@ c
       DO I = 1,NUCIND
          Z = MAX(Z,CHARGE(I))
       ENDDO
+
       CALL BNCOR1(GNU,ZEFF,0,Z,NSHELL,0,DUMMY,NUCIND,.TRUE.)
-c
+
 c   ... loop over shells
 c       in the first shell (N=1) we only place one electron to avoid
 c       self-interaction. This electron is delocalized (to some degree)
@@ -3903,7 +4160,7 @@ c    ... Calculate integrals (both LL and SS)
 c
          CALL CATDR1(WORK(KONEMT),DUMMY,NCENTC,WORK(KFCBA),
      &            WORK(KCOORC),WORK(KSIGNC),WORK(KJSYMC),
-     &            WORK(KJCENT),WORK(KGEXP),WORK(KFREE),LWRK,IPRONE,
+     &            WORK(KJCENT),WORK(KGEXP),WORK(KFREE),LEN_WRK,IPRONE,
      &            .FALSE.,0,NNBBASX,DOINT)
 c
          END IF ! if (ztest .ne. d0)

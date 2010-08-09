@@ -175,6 +175,8 @@ C     ===============
 C
       READ (IUNIT,END=10,ERR=20) TEXT,NSYM,
      &       ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
+
+      IF(IOPT.EQ.-1) RETURN
 C
 C     Compatibility check for NFSYM and NFBAS
 C     =======================================
@@ -358,6 +360,8 @@ C     ===============
 C
       READ (IUNIT,END=10,ERR=20) TEXT,NSYM,
      &       ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
+
+      IF(IOPT.EQ.-1) RETURN
 C
 C     Compatibility check for NFSYM and NFBAS
 C     =======================================
@@ -1952,6 +1956,7 @@ C     take out symmetry and write to unformatted DFACMO
 C
 C     Written by T.Saue May 26 2003
 C     extended for KRMC modules - S. Knecht Feb 2009
+C     small fix for MCSCF/natural orbitals S. Knecht April 2010
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -1968,7 +1973,7 @@ C
 #include "dcblab.h"
 #include "dgroup.h"
 #include "nuclei.h"
-      LOGICAL TOBE, TOBEK
+      LOGICAL TOBE, TOBEK, FNDLAB, MCORB, MJAVA
       CHARACTER TEXT*74
       DIMENSION CMO1(*),EIG1(NORBT),IBEIG1(NORBT),
      &          CMO2(*),EIG2(NORBT),IBEIG2(NORBT),
@@ -1979,6 +1984,8 @@ C
 C     First check if file KRMCSCF or DFCOEF is there
 C
 #ifdef MOD_KRMC
+      MCORB = .FALSE.
+      MJAVA = .FALSE.
       INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
 #else
       TOBEK=.FALSE.
@@ -2011,31 +2018,37 @@ C     Get coefficients from KRMCSCF/DFCOEF --> stored in CMO1
 C     =======================================================
 C
 #ifdef MOD_KRMC
-      IF(TOBEK.and.(DOKRMC.or.DOKRCI.or.DOKRCC))THEN
+      IF(TOBEK)THEN
         CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','ACMOU1')
-        JRDMO = -1
-        CALL RREADMO(CMO1,JRDMO,1,LUKRMC)
+        REWIND LUKRMC
+        MCORB = FNDLAB('MCCINATO',LUKRMC)
+        REWIND LUKRMC
+        MJAVA = FNDLAB('MJVEC   ',LUKRMC)
+        IF(MJAVA)THEN
+          CALL IREAKRMC(LUKRMC,'MJVEC   ',IBEIG1,NORBT)
+        ELSE
+          CALL IZERO(IBEIG1,NORBT)
+        END IF
+        IF(.NOT.MCORB)THEN
+          JRDMO = -1
+          CALL RREADMO(CMO1,JRDMO,1,LUKRMC)
+!         ... set to zero
+          TOTERG = 0.0D0
+          CALL DZERO(EIG1,NORBT)
+          IREADMO = 1
+        ELSE
+!
+!         read CI/MCSCF natural orbitals and occupancies
+          JRDMO = -1
+          CALL RREADMO(CMO1,JRDMO,4,LUKRMC)
+          CALL REAKRMC(LUKRMC,'MCNATOCC',EIG1,NORBT)
+!
+!         temporary fix for use of occupancies in Mulliken population
+!         analysis - set energy to 137.0D0 - SK Feb 2009
+          TOTERG = 137.0D0
+          IREADMO = 3
+        END IF
         CLOSE (LUKRMC,STATUS='KEEP')
-C       ... set to zero
-        TOTERG = 0.0D0
-        CALL DZERO(EIG1,NORBT)
-        CALL IZERO(IBEIG1,NORBT)
-        IREADMO = 1
-      ELSE IF(TOBEK.and.(.not.DOKRMC.or..not.DOKRCI.or..not.DOKRCC))THEN
-C
-C       read CI/MCSCF natural orbitals and occupancies
-        CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','ACMOU1')
-        JRDMO = -1
-        CALL RREADMO(CMO1,JRDMO,4,LUKRMC)
-        CALL REAKRMC(LUKRMC,'MCNATOCC',EIG1,NORBT)
-        CLOSE (LUKRMC,STATUS='KEEP')
-C
-C       temporary fix for use of occupancies in Mulliken population
-C       analysis - set energy to 137.0D0 - SK Feb 2009
-        TOTERG = 137.0D0
-C       ... set to zero
-        CALL IZERO(IBEIG1,NORBT)
-        IREADMO = 3
       ELSE
 #endif /* MOD_KRMC */
         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','ACMOUT')
@@ -2090,10 +2103,12 @@ C
 C     Get correct column ordering
 C     ===========================
 C 
+      CALL IZERO(IBEIG2,NORBT)
 C     ... only if coefficients are read from DFCOEF
       IF(IREADMO .eq. 2)THEN
         CALL INDEXX(NORBT,EIG1,IBUF)
-C       Sort eigenvalues and boson irrep info
+C       Sort eigenvalues (and boson irrep info) 
+C                         ^ this is not done here - SK - April 2010
         DO J = 1,NORBT
           EIG2(J) = EIG1(IBUF(J))
           CALL ACMOU3(CMO1,CMO2,IBUF(J),J,NTBAS(0),NORBT)
@@ -2102,8 +2117,9 @@ C       Sort eigenvalues and boson irrep info
         NDIM = NTBAS(0)*NORBT*4
         CALL DCOPY(NDIM,CMO1,1,CMO2,1)
         CALL DZERO(EIG2,NORBT)
+        IF(MCORB) CALL DCOPY(NORBT,EIG1,1,EIG2,1)
+        IF(MJAVA) CALL ICOPY(NORBT,IBEIG1,1,IBEIG2,1)
       END IF
-      CALL IZERO(IBEIG2,NORBT)
 C
 C     Write coefficients etc. to file
 C     ===============================
@@ -2127,13 +2143,17 @@ C
       CLOSE(LUCOEF,STATUS='KEEP')
 C
       CALL PRSYMB(LUPRI,'=',75,0)
-      IF( IREADMO .eq. 1 .or. IREADMO .eq. 3 )THEN
+      IF( IREADMO .eq. 1 )THEN
         WRITE(LUPRI,'(A)')
-     &      '* ACMOU1: Coefficients read from unformatted KRMCSCF',
+     &      '* ACMOU1: MCSCF orb. coefficients read from KRMCSCF',
      &      '          and written to unformatted DFACMO (no symmetry)'
       ELSE IF( IREADMO .eq. 2)THEN
         WRITE(LUPRI,'(A)')
      &      '* ACMOU1: Coefficients read from unformatted DFCOEF ',
+     &      '          and written to unformatted DFACMO (no symmetry)'
+      ELSE IF( IREADMO .eq. 3)THEN
+        WRITE(LUPRI,'(A)')
+     &      '* ACMOU1: MC natural orb. coefficients read from KRMCSCF',
      &      '          and written to unformatted DFACMO (no symmetry)'
       END IF
       CALL PRSYMB(LUPRI,'=',75,0)
@@ -2693,6 +2713,9 @@ C     Then, using the list of orbitals with adresses given in KVEC,
 C     the selected information is extracted into the corresponding
 C     arrays CSEL,ESEL and IBSEL
 C
+C     modifications for analysis of MCSCF coefficients
+C     by S. Knecht - April 2010
+C
 C     Written by Trond Saue Sep 6 2006
 C
 C***********************************************************************
@@ -2709,6 +2732,11 @@ C
       DIMENSION CSEL(*),ESEL(*),IBSEL(*),NVECS(*),CMO(*),KVEC(2,NFRAG),
      &          EIG(*),IBEIG(*),NSTR(2,0:2,NFRAG),NUCFRAG(NFRAG),WORK(*)
       DIMENSION IOFF(2)
+      REAL*8 CMCSCF_MAGIC
+!
+!     flag for MCSCF coefficents present on fragment/molecular
+!     coefficients file
+      CMCSCF_MAGIC = 137.0D0
 C
 C.....loop over fragments
       INUC  = 1
@@ -2742,14 +2770,25 @@ C.......Fragment orbitals in own basis
      &                NSTR(1,0,IFRAG),WORK,KFREE,LFREE)
 C.......Fragment orbitals in molecular basis
         ELSE
+!
+!         check for MCSCF coefficients on fragment/molecule file
           CALL REACMO(LUCOEF,FRAGFIL(IFRAG),CMO,EIG,IBEIG,
-     &                TOTERG,IOPT,WORK,KFREE,LFREE)
+     &                TOTERG,-1,WORK,KFREE,LFREE)
+!
+!         set local IOPT_TMP
+          IOPT_TMP = IOPT
+!
+!         found MCSCF coefficients on file CMOFIL?
+          IF( TOTERG .eq. CMCSCF_MAGIC ) IOPT_TMP = 14
+          CALL REACMO(LUCOEF,FRAGFIL(IFRAG),CMO,EIG,IBEIG,
+     &                TOTERG,IOPT_TMP,WORK,KFREE,LFREE)
+!
           ICOFF = 1
           IEOFF = 1
           DO IFRP = 1, NFSYM
             IF(NSTR(IFRP,0,IFRAG).GT.0) THEN
 C             Select coefficients
-              IF(LBIT(IOPT,2)) THEN
+              IF(LBIT(IOPT_TMP,2)) THEN
                 ICSEL = ICOFF + NFBAS(IFRP,0)*IOFF(IFRP)
                 CALL SELCFS (CMO(1+ICMOQ(IFRP)),IFRP,CSEL(ICSEL),
      &                       NVECS(IFRP),WORK(KVEC(IFRP,IFRAG)),
@@ -2758,13 +2797,13 @@ C             Select coefficients
               ENDIF
               IESEL = IEOFF + IOFF(IFRP)
 C             Select eigenvalues
-              IF(LBIT(IOPT,3)) THEN
+              IF(LBIT(IOPT_TMP,3)) THEN
                 CALL SELEIG(EIG(1+IORB(IFRP)),IFRP,ESEL(IESEL),
      &               WORK(KVEC(IFRP,IFRAG)),
      &               NSTR(IFRP,2,IFRAG),NSTR(IFRP,1,IFRAG))
               ENDIF
 C       Select boson irrep information
-              IF(LBIT(IOPT,4)) THEN
+              IF(LBIT(IOPT_TMP,4)) THEN
                 CALL SELIBEIG(IBEIG(1+IORB(IFRP)),IORB(IFRP),IFRP,
      &                 IBSEL(IESEL),WORK(KVEC(IFRP,IFRAG)),
      &                 NSTR(IFRP,2,IFRAG),NSTR(IFRP,1,IFRAG))
@@ -2781,6 +2820,12 @@ C       Select boson irrep information
  12     CONTINUE
         INUC = INUC + NUCFRAG(IFRAG)
  10   CONTINUE
+!
+!     reset IOPT flag for extra printout in ANAPR1 and proper handling 
+!     of the occupation vector.
+      IF((TOTERG.eq.CMCSCF_MAGIC).and.(FRAGFIL(NFRAG).eq.'DFCOEF')) 
+     &    IOPT = IOPT_TMP
+      
       RETURN
 C
       END
@@ -3405,6 +3450,7 @@ C
       IF(IPRINT.GE.3) THEN
         WRITE(LUPRI,'(A,A3,2X,A1)') 
      &    'RKBCAR: Transformation matrix for ',REP(IREP),COMP(IC)
+        WRITE(LUPRI,*) ' NCAR and NSPH:',NCAR,NSPH
         CALL PRSYMB(LUPRI,'-',40,0)
         CALL OUTPUT(SPHM,1,NCAR,1,NSPH,NCAR,NSPH,1,LUPRI)
       ENDIF

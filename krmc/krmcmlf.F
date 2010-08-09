@@ -223,6 +223,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mfc2qfc */
       SUBROUTINE MFC2QFC(KSYMM,DMFC,DQFC,IPRINT)
+      use memory_allocator
 C***********************************************************************
 C
 C
@@ -246,7 +247,8 @@ C
 C
       DIMENSION DQFC(NASHT,NASHT,NZ)
       DIMENSION DMFC(2*NASHT,2*NASHT,2)
-      LOGICAL KSYMM
+      LOGICAL KSYMM, ex, fileopen
+      integer, allocatable :: mjvec(:)
 C
 C
 csk   IPRINT = 30
@@ -310,12 +312,39 @@ C
          IOFF2 = IOFF2 + 2*NASH(IFSYM)
          IOFF3 = IOFF3 + NASH(IFSYM)
       ENDDO
-C
+!     
+!     linear symmetry - make sure only proper <mj|mj> off-diagonal terms
+!     enter the KR-MCSCF machinery... (get rid off numerical noise)
+      if(linear)then
+
+        call alloc(mjvec,norbt)
+        mjvec =  0
+        luni  = -1
+        inquire(file='KRMCSCF',exist=ex,opened=fileopen,number=luni)
+        if(ex.and.fileopen)then
+           call ireakrmc(luni,'MJVEC   ',mjvec,norbt)
+        else if( ex.and.(.not. fileopen))then
+          luni = 99
+          call opnfil(luni,'KRMCSCF','OLD    ','MFC2QF')
+          call ireakrmc(luni,'MJVEC   ',mjvec,norbt)
+          close(luni,status='keep')
+        else if(.not. ex)then
+          call quit('*** error in mfc2qfc: no mj-vector available
+     &              or block-diagonalization. ***')
+        end if
+!       call iwrtmamn(mjvec,1,norbt,1,norbt,lupri)
+        call block_one_dens(mjvec,dqfc)
+        call dealloc(mjvec)
+
+      end if
+!
+!     print section
+!     IPRINT = 30
       IF ( IPRINT .GE. 30 ) THEN
          CALL HEADER('Output matrix:',-1)
          CALL PRQMAT(DQFC,NASHT,NASHT,NASHT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
       END IF
-csk   IPRINT = 00
+!     IPRINT = 00
 C
       RETURN
       END

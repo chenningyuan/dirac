@@ -8,7 +8,7 @@ Water molecule.
 .NUMGRA
 **HAMILTONIAN
 #.IOTC
-.X2C
+.X2COLD
 .NOAMFI
 .CMPEIG
 .PRINT

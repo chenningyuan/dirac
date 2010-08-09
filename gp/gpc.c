@@ -49,6 +49,12 @@
 #include "compinfo.h"
 #include "fortran_interface.h"
 
+void printaddr_(void *p)
+{
+   fprintf(stderr,"Address is %p\n",p);
+}
+
+
 /*
  * Take string of tokens and return new ordering
  */

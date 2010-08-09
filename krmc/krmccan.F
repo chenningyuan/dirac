@@ -26,6 +26,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgetno */
       SUBROUTINE RGETNO(CREF,OCCNO,UNO,CMO,NATORB,MOISNO,
      &                  IPRINT,WORK,KFREE,LFREE)
+      use memory_allocator
 C***********************************************************************
 C
 C     Calculate natural orbital occupation numbers and, 
@@ -64,6 +65,11 @@ C
       DIMENSION WORK(*)
 C
       LOGICAL NATORB, MOISNO, EX, FILEOPEN
+#if defined MCSCF_DEBUG
+      real*8,  allocatable :: onedens(:,:,:)
+      real*8,  allocatable :: cref_x(:)
+      integer, allocatable :: mjvec(:)
+#endif
 C
       CALL QENTER('RGETNO')
       KFRSAV = KFREE
@@ -73,7 +79,39 @@ C     ---------------------------
 C
       CALL MEMGET('REAL',KDV,N2ASHXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NASHT,WORK,KFREE,LFREE)
+#if defined MCSCF_DEBUG
+
+      iread_from_mc_file = 0
+      call alloc(cref_x,nzconfq)
+      cref_x = 0
+      luni = -1
+      inquire(file='KRMCOLD',exist=ex,opened=fileopen,number=luni)
+      if(ex.and.fileopen) then
+        rewind(luni)
+        call reakrmc(luni,'CREF    ',cref_x,nzconfq)
+        iread_from_mc_file = 1
+      else if( ex.and.(.not. fileopen ))then
+        luni = 99
+        call opnfil(luni,'KRMCOLD','OLD    ','RGETNO')
+        rewind(luni)
+        call reakrmc(luni,'CREF    ',cref_x,nzconfq)
+        iread_from_mc_file = 1
+      else if( .not. ex )then
+	  call dcopy(nzconfq,cref,1,cref_x,1)
+      end if
+!     call wrtmatmn(cref_x,1,nzconfq,1,nzconfq,lupri)
+
+	if( iread_from_mc_file .gt. 0)then
+        write(lupri,'(/1X,A,I16)')
+     &  '(RGETNO) NO calculation:'//
+     &  ' cref read from KRMCOLD with # of dets =',nzconfq
+      end if
+
+      call rmakdv(work(kdv),cref_x,work,kfree,lfree)
+      call dealloc(cref_x)
+#else
       CALL RMAKDV(WORK(KDV),CREF,WORK,KFREE,LFREE)
+#endif
 C
 C     Calculate max off-diagonal elements of density matrix
 C
@@ -93,7 +131,7 @@ C
       END DO
       IF (DVMAX .LE. THRZER) THEN
          MOISNO = .TRUE.
-         IF (IPRINT .GE. 2) WRITE(LUPRI,'(1X,A)')
+         IF (IPRINT .GE. 0) WRITE(LUPRI,'(1X,A)')
      &      '(RGETNO) The orbitals are already natural orbitals.'
          CALL DZERO(UNO,N2ASHXQ)
          CALL DUNIT(UNO,NASHT)
@@ -103,11 +141,74 @@ C
       ELSE
          MOISNO = .FALSE.
       END IF
+!
+#if defined MCSCF_DEBUG
+      call alloc(onedens,nasht,nasht,nz)
+      onedens = 0
+      call dcopy(n2ashxq,work(kdv),1,onedens,1)
+      do i = 1, NFSYM
+         write(lupri,'(/1X,A,I3)')
+     &   '(RGETNO) one-electron density matrix for NO calculation'//
+     &    '(active orb.) for symmetry ',I
+         call prqmat(onedens(1+iash(i),1+iash(i),1),nash(i),nash(i),
+     &               nasht,nasht,nz,ipqtoq(1,0),lupri)
+      end do
+      call dealloc(onedens)
+#endif
+!
 C
 C     Diagonalize density matrix
 C     --------------------------
 C
       IF (.NOT. MOISNO) THEN
+#if defined MCSCF_DEBUG
+!
+!        S. Knecht - commented out (and not working yet) because I have
+!        implemented a general mj-blocking in the conversion of the 
+!        one-electron density matrix from MOLFDIR to quaternion format.
+!        It seems simpler to me... and the result ought to be the same.
+!
+!        in linear symmetry we block-diagonalize the 
+!        one-electron density matrix in terms of mj-blocks
+!        if( linear )then
+!!         some scratch space 
+!          call alloc(onedens,nasht,nasht,nz)
+!          call alloc(mjvec,norbt)
+!          onedens = 0
+!          mjvec   = 0
+!          luni = -1
+!          inquire(file='KRMCSCF',exist=ex,opened=fileopen,number=luni)
+!          if(ex.and.fileopen)then
+!            call ireakrmc(luni,'MJVEC   ',mjvec,norbt)
+!          else if( ex.and.(.not. fileopen))then
+!            luni = 99
+!            call opnfil(luni,'KRMCSCF','OLD    ','rgetno')
+!            call ireakrmc(luni,'MJVEC   ',mjvec,norbt)
+!            close(luni,status='keep')
+!          else if(.not. ex)then
+!            call quit('*** error in rgetno: no mj-vector available
+!    &                  or block-diagonalization. ***')
+!          end if 
+!          call dcopy(n2ashxq,work(kdv),1,onedens,1)
+!          call dzero(uno,n2ashxq)
+!          call dzero(work(keig),nasht)
+!          do ifsym = 1, nfsym
+!            mj_max = 0
+!            do i = 1, nash(ifsym)
+!             mj_max = max(mj_max,iabs(mjvec(iash(ifsym)+i)))
+!            end do
+!            do imj_val = 1, mj_max
+!              call onedens_diag_block(iprint,imj_val,
+!    &              onedens(1+iash(ifsym),1+iash(ifsym),1),
+!    &              work(keig+iash(ifsym)),
+!    &              uno(1+iash(ifsym),1+iash(ifsym),1),
+!    &              mjvec(1+iash(ifsym)),nash(ifsym),work(kfree),lfree)
+!            end do
+!          end do
+!          call dealloc(onedens)
+!          call dealloc(mjvec)
+!        end if
+#endif
          IF (NZ .EQ. 1) THEN
             IJOB = 1
             IORDER = 0
@@ -226,87 +327,91 @@ C
 C     Transform to natural orbitals
 C     -----------------------------
 C
-      IF (.NOT. MOISNO) THEN
-         IF (.NOT. NATORB) THEN
-            IF ( IPRINT .GE. 1 )
-     &           WRITE(LUPRI,'(/1X,A)')
-     &           '(RGETNO) active orbitals are NOT transformed '//
-     &           'to natural orbitals.'
-         ELSE
-            IF ( IPRINT .GE. 1 )
-     &           WRITE(LUPRI,'(/1X,A)')
-     &           '(RGETNO) active orbitals are transformed '//
-     &           'to natural orbitals.'
 C
-            CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-            CALL DCOPY(NCMOTQ,CMO,1,WORK(KCMO),1)
+      IF (.NOT. NATORB) THEN
+        IF ( IPRINT .GE. 1 )
+     &    WRITE(LUPRI,'(/1X,A)')
+     &    '(RGETNO) active orbitals are NOT transformed '//
+     &    'to natural orbitals.'
+      ELSE
+C       save MO coefficients
+        CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
+        CALL DCOPY(NCMOTQ,CMO,1,WORK(KCMO),1)
 C
-            DO 10 I = 1, NFSYM
-               IF (NASH(I) .EQ. 0) GO TO 10
+        IF(.NOT. MOISNO) THEN
+          IF(IPRINT.GE.1)
+     &      WRITE(LUPRI,'(/1X,A)')
+     &        '(RGETNO) active orbitals are transformed '//
+     &        'to natural orbitals.'
 C
-               IF ( IPRINT .GE. 20 ) THEN
-                  WRITE(LUPRI,'(/1X,A,I3)')
-     &                 '(RGETNO) Before transformation: '//
-     &                 'MO coefficients, symmetry ',I
-                  CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
-     &                 NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-               END IF
 C
-C              Transform active orbitals:
+          DO 10 I = 1, NFSYM
+             IF (NASH(I) .EQ. 0) GO TO 10
 C
-C              CMO(NO) = CMO * UNO
+             IF ( IPRINT .GE. 20 ) THEN
+                WRITE(LUPRI,'(/1X,A,I3)')
+     &               '(RGETNO) Before transformation: '//
+     &               'MO coefficients, symmetry ',I
+                CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
+     &               NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+             END IF
 C
-               NBASI = NFBAS(I,0)
-               NASHI = NASH(I)
-               NORBI = NORB(I)
-               JUNO = 1 + IASH(I)
-               ICMOA = 1 + ICMOQ(I) + (NPSH(I)+NISH(I)) * NBASI
-               CALL QGEMM(NBASI,NASHI,NASHI,D1,
-     &              'N','N',IPQTOQ(1,0),
-     &              WORK(KCMO+ICMOA-1),NBASI,NORBI,NZ,
-     &              'N','N',IPQTOQ(1,0),
-     &              UNO(JUNO,JUNO,1),NASHT,NASHT,NZ,
-     &              D0,IPQTOQ(1,0),
-     &              CMO(ICMOA),NBASI,NORBI,NZ)
+C            Transform active orbitals:
 C
-               IF ( IPRINT .GE. 20 ) THEN
-                  WRITE(LUPRI,'(/1X,A,I3)')
-     &                 '(RGETNO) After transformation: '//
-     &                 'MO coefficients, symmetry ',I
-                  CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
-     &                 NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-               END IF
+C            CMO(NO) = CMO * UNO
 C
- 10         CONTINUE
+             NBASI = NFBAS(I,0)
+             NASHI = NASH(I)
+             NORBI = NORB(I)
+             JUNO = 1 + IASH(I)
+             ICMOA = 1 + ICMOQ(I) + (NPSH(I)+NISH(I)) * NBASI
+             CALL QGEMM(NBASI,NASHI,NASHI,D1,
+     &            'N','N',IPQTOQ(1,0),
+     &            WORK(KCMO+ICMOA-1),NBASI,NORBI,NZ,
+     &            'N','N',IPQTOQ(1,0),
+     &            UNO(JUNO,JUNO,1),NASHT,NASHT,NZ,
+     &            D0,IPQTOQ(1,0),
+     &            CMO(ICMOA),NBASI,NORBI,NZ)
 C
-C           write back to file with label MCCINATO
-            LUNI = -1
-            INQUIRE(FILE='KRMCSCF',EXIST=EX,OPENED=FILEOPEN,NUMBER=LUNI)
-            IF(EX.and.FILEOPEN)THEN
-              CALL WRTKRMC(LUNI,'MCCINATO',CMO,NCMOTQ)
-              CALL WRTKRMC(LUNI,'MCNATOCC',WORK(KOCCNO2),NORBT)
-            ELSE IF( EX.and.(.not. FILEOPEN))THEN
-              LUNI = 99
-              CALL OPNFIL(LUNI,'KRMCSCF','OLD    ','RGETNO')
-              CALL WRTKRMC(LUNI,'MCCINATO',CMO,NCMOTQ)
-              CALL WRTKRMC(LUNI,'MCNATOCC',WORK(KOCCNO2),NORBT)
-              CLOSE(LUNI,STATUS='KEEP')
-            ELSE IF(.NOT. EX)THEN
-              LUNI = 99
-              CALL OPNFIL(LUNI,'KRMCSCF','UNKNOWN','RGETNO')
-              CALL NEWLAB('*RGETNO ',LUNI,LUPRI)
-              CALL WRTKRMC(LUNI,'MCCINATO',CMO,NCMOTQ)
-              CALL WRTKRMC(LUNI,'MCNATOCC',WORK(KOCCNO2),NORBT)
-              CLOSE(LUNI,STATUS='KEEP')
-            END IF
-            WRITE(LUPRI,'(/A)')
-     &   '  Natural orbitals saved with label MCCINATO on KRMCSCF'
+             IF ( IPRINT .GE. 20 ) THEN
+                WRITE(LUPRI,'(/1X,A,I3)')
+     &               '(RGETNO) After transformation: '//
+     &               'MO coefficients, symmetry ',I
+                CALL PRQMAT(CMO(1+ICMOQ(I)),NFBAS(I,0),NORB(I),
+     &               NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+             END IF
 C
-C           copy back MO coefficients
-            CALL DZERO(CMO,NCMOTQ)
-            CALL DCOPY(NCMOTQ,WORK(KCMO),1,CMO,1)
-            MOISNO = .TRUE.
-         ENDIF
+ 10       CONTINUE
+          MOISNO = .TRUE.
+        END IF
+C
+C       write NOs and occupancies to file with label MCCINATO and 
+C       MCNATOCC, respectively.
+        LUNI = -1
+        INQUIRE(FILE='KRMCSCF',EXIST=EX,OPENED=FILEOPEN,NUMBER=LUNI)
+        IF(EX.and.FILEOPEN)THEN
+          CALL WRTKRMC(LUNI,'MCCINATO',CMO,NCMOTQ)
+          CALL WRTKRMC(LUNI,'MCNATOCC',WORK(KOCCNO2),NORBT)
+        ELSE IF( EX.and.(.not. FILEOPEN))THEN
+          LUNI = 99
+          CALL OPNFIL(LUNI,'KRMCSCF','OLD    ','RGETNO')
+          CALL WRTKRMC(LUNI,'MCCINATO',CMO,NCMOTQ)
+          CALL WRTKRMC(LUNI,'MCNATOCC',WORK(KOCCNO2),NORBT)
+          CLOSE(LUNI,STATUS='KEEP')
+        ELSE IF(.NOT. EX)THEN
+          LUNI = 99
+          CALL OPNFIL(LUNI,'KRMCSCF','UNKNOWN','RGETNO')
+          CALL NEWLAB('*RGETNO ',LUNI,LUPRI)
+          CALL WRTKRMC(LUNI,'MCCINATO',CMO,NCMOTQ)
+          CALL WRTKRMC(LUNI,'MCNATOCC',WORK(KOCCNO2),NORBT)
+          CLOSE(LUNI,STATUS='KEEP')
+        END IF
+        WRITE(LUPRI,'(/A)')
+     &  '  Natural orbitals saved with label MCCINATO on KRMCSCF'
+C
+C       copy back MO coefficients
+        CALL DZERO(CMO,NCMOTQ)
+        CALL DCOPY(NCMOTQ,WORK(KCMO),1,CMO,1)
       ENDIF
       CALL MEMREL('RGETNO.transform',WORK,1,KFRSAV,KFREE,LFREE)
 C
@@ -816,6 +921,8 @@ C
 #include "dcbkrci.h"
 C
       DIMENSION CMO(*), WORK(*)
+      integer, allocatable :: iomval(:)
+      logical selected
 C
 #include "memint.h"
       MZ = MIN(2,NZ)
@@ -891,15 +998,34 @@ C     ***************************************************
 C     *** get spectroscopic quantities ******************
 C     ***************************************************
 C
-C     array of eigenvalues 
+C     array of eigen- and omega values 
       CALL MEMGET('REAL',KXROOTS,NPROP_ROOTS_KRCI,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KXROOTS),NPROP_ROOTS_KRCI)
+      allocate(iomval(nprop_roots_krci))
 C
       CALL KRCIPRPANA(WORK(KXPRPKRCI),WORK(KXROOTS),WORK(KPRPCORE),
-     &                WORK(KFREE),LFREE)
-C
+     &                iomval,WORK(KFREE),LFREE)
       CALL MEMREL('RPROP_KRCI',WORK,KWORK,KWORK,KFREE,LFREE)
-
+C
+C     CI root selection based on the omega value
+      if(state_select_krci)then
+        iroot_cnt = 0
+        do i = 1, nkrci_max_sym
+          if(nkrci_selom(i).gt.0)then
+            selected = .false.
+            do j = 1, nkrci_ciroots(i)
+             iom_val_tmp = iabs(iomval(iroot_cnt+j))
+             if((iom_val_tmp.eq.nkrci_selom(i)).and.(.not.selected))then
+                call krci_cp_sel_root(xsymflab(i),j,mz,iom_val_tmp)
+                selected = .true.
+             end if
+            end do
+          end if
+          iroot_cnt = iroot_cnt + nkrci_ciroots(i)
+        end do
+      end if
+      deallocate(iomval)
+C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck KRCIPRPMO */
@@ -934,6 +1060,9 @@ C
       DIMENSION CMO(*), PRPCOREE(*), WORK(*)
       CHARACTER*8 FILELAB
       LOGICAL LOPEN
+#if defined MCSCF_DEBUG
+      real*8, allocatable:: jz_momat(:)
+#endif
 C
 #include "memint.h"
 C
@@ -946,6 +1075,14 @@ C
          OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
      &        FILE='AOPROPER')
       ENDIF
+#if defined MCSCF_DEBUG
+      if( dojzexp) then
+        allocate(jz_momat(n2ashxq))
+        jz_momat = 0
+        iprintjz = 0
+      end if
+#endif
+        
 C
 C     ***************************************************
 C     *** Get property matrices *************************
@@ -996,6 +1133,24 @@ C        transform to MOLFDIR format
          CALL DZERO(WORK(KRPRPMOACM),  4*N2ASHX*MZ)
 C        WRITE(LUPRI,'(/2A)')'   KRCIPRPMO: MO matrix of property: ',
 C    &                           FILELAB
+#if defined MCSCF_DEBUG
+         if( dojzexp )then
+           xmultfac = 1.0D0
+           if( filelab .eq. 'z-angula') then
+             xmultfac = -1.0D0
+             call daxpy(n2ashxq,xmultfac,work(krprpmoac),1,jz_momat,1)
+             iprintjz = iprintjz + 1
+           else if ( filelab .eq. 'z-spin')then
+             call daxpy(n2ashxq,xmultfac,work(krprpmoac),1,jz_momat,1)
+             iprintjz = iprintjz + 2
+           end if
+           if( iprintjz .eq. 3) then
+             write(lupri,*) ' property matrix (a-a part) of jz-operator'
+             call prqmat(jz_momat,nasht,nasht,nasht,
+     &                   nasht,nz,ipqtoq(1,isym-1),lupri )
+           end if
+         end if
+#endif
 C        WRITE(LUPRI,'(A,3I5)')
 C    &   ' - KRCIPRPMO: Boson, Fermion, and Time reversal symmetry :',
 C    &   ISYM,IOPSY,ITRSYM
@@ -1009,13 +1164,19 @@ C        save on file KRMC_FOCK
          CALL MEMREL('KRCIPRPMO',WORK,KWORK,KWORK,KFREE,LFREE)
       END DO
 C
+#if defined MCSCF_DEBUG
+      if( dojzexp) then
+        deallocate(jz_momat)
+      end if
+#endif
+C
       CLOSE(LU1INT,STATUS = 'KEEP')
       CALL QEXIT('KRCIPRPMO')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck KRCIPRPANA */
-      SUBROUTINE KRCIPRPANA(XPROPMAT,EVECS,EPROP_CORE,WORK,LWORK)
+      SUBROUTINE KRCIPRPANA(XPROPMAT,EVECS,EPROP_CORE,IOMVAL,WORK,LWORK)
 C***********************************************************************
 C
 C     Calculate requested spectroscopic quantities.
@@ -1329,7 +1490,7 @@ C       get and diagonalize omega expectation value matrix
         CALL GET_OMEGA_EXP(WORK(KOMEGAEXP),NPROP_ROOTS_KRCI,NZ,
      &                     XPROPMAT,NPROP_KRCI,XREPEIG,
      &                     MAX_NKRCI_MAX_SYM,NKRCI_CIROOTS,
-     &                     WORK(KFREE),LFREE)
+     &                     naelec,IOMVAL,WORK(KFREE),LFREE)
 C       release memory        
         CALL MEMREL('XKRCIPRPANA',WORK,KWORK,KWORK,KFREE,LFREE)
       END IF
@@ -1343,8 +1504,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck GET_OMEGA_EXP */
       SUBROUTINE GET_OMEGA_EXP(OMEGAMAT,NOMEGAST,NZ,XPROPMAT,NPROPX,
-     &                         XREPOM,IALL_SYM,NKRCI_CIROOTS,
-     &                         WORK,LWORK)
+     &                         XREPOM,IALL_SYM,NKRCI_CIROOTS,naelec,
+     &                         IOMVAL,WORK,LWORK)
 C***********************************************************************
 C
 C     Diagonalize matrix containing j_z = s_z + l_z expectation values.
@@ -1362,9 +1523,9 @@ C
 #include "dcbxpr.h"
       CHARACTER*4 XREPOM(*)
       DIMENSION OMEGAMAT(NOMEGAST,NOMEGAST,*), NKRCI_CIROOTS(*)
-      DIMENSION XPROPMAT(NOMEGAST,NOMEGAST,NPROPX,*), WORK(*)
+      DIMENSION XPROPMAT(NOMEGAST,NOMEGAST,NPROPX,*), WORK(*), IOMVAL(*)
       INTEGER IND_DIP(2)
-      CHARACTER XLABEL*16
+      CHARACTER XLABEL*16, om_string*5, om_divst*2
 #include "memint.h"
       CALL QENTER('GET_OMEGA_EXP')
       NXTEST = 0
@@ -1405,6 +1566,21 @@ C     print omega expectation values
       WRITE(LUPRI,'(/A/,A/)')
      & '    state #        symmetry        <omega>',
      & '  ----------     -----------   ---------------'
+C
+C     determine: boson or fermion wave function...
+      if(mod(naelec,2).eq.0)then
+        om_multf = 1.0D0
+        om_divst = '  '
+      else
+        om_multf = 2.0D0
+        om_divst = '/2'
+      end if
+!     initialize array which will contain the final omega values
+      do initvl = 1, nomegast
+        iomval(initvl) = -99999
+      end do
+C
+C     offset index
       IX_AC = 0
 C
 C     loop over all symmetries and block diagonalize
@@ -1471,19 +1647,27 @@ C         list of CI eigenstates
           WRITE(LUPRI,'(A/)') 
      &    ' and do thus a stepwise identification... ;)'
 C
-C         print section
-          DO I = 1, NXSTATES
-            WRITE(LUPRI,'(I11,8X,A4,6X,1F16.10)')
-     &            I,XREPOM(IX),WORK(KEIGX+I-1)
-          END DO
-        ELSE
-C
-C         print section
-          DO I = 1, NXSTATES
-          WRITE(LUPRI,'(I11,8X,A4,6X,1F16.10)')
-     &                I,XREPOM(IX),WORK(KEIGX+I-1)
-          END DO
         END IF
+C
+C       print omega values
+        do i = 1, nxstates
+          om_state  = work(keigx+i-1) * om_multf
+          iom_state = nint(om_state)
+          if(iabs(iom_state).eq.0) iom_state = 0
+          write(om_string,'(i3,a2)') iom_state,om_divst
+          write(lupri,'(i11,8x,a4,12x,a5)')
+     &          i,xrepom(ix),om_string
+!         save omega value on array (for later use 
+!         when CI root selection is enabled)
+          iomval(ix_ac+i) = iom_state
+        end do
+#ifdef MOD_DEBUG
+        do i = 1, nxstates
+          write(lupri,'(/a)')' *** omega values in original format ***'
+          write(lupri,'(i11,8X,a4,6x,1f16.10)')
+     &          i,xrepom(ix),work(keigx+i-1)
+        end do
+#endif
 C
 C       release memory
         CALL MEMREL('RKRMCCNO.after x-x',WORK,1,KOMX,KFREE,LFREE)

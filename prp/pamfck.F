@@ -153,7 +153,10 @@ C
 c              CALL RMAKDM(.TRUE.,.FALSE.,DUMMY,WORK(KDV),DUMMY,DUMMY,
 c    &              WORK,LWORK)
 c              RMAKDM need to be called "...,WORK,KFREE,LFREE)"
-               CALL QUIT('ralle ralle')
+               WRITE(LUPRI,'(/A)') '*** GETMAT: one-electron active'//
+     &         ' matrix DV missing. Cannot continue. ***'
+               CALL QUIT('*** GETMAT: one-electron active matrix DV 
+     &                    missing. Cannot continue. ***')
 C
 C              Write it to file
 C

@@ -850,8 +850,10 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck REDPAR */
-      SUBROUTINE REDPAR(GPCI,GPOE,GPOP,JCONF,JXOPE,JXOPP,
-     &                  THRCOM,WORK,KFREE,LFREE,IPRINT)
+      SUBROUTINE REDPAR(IREDJOB,GPCI,GPOE,GPOP,JCONF,JXOPE,JXOPP,
+     &                  NZXOPE,NZXOPEQ,NZXOPP,NZXOPPQ,NZXOPT,NZXOPTQ,
+     &                  NZVAR,NZVARQ,NZCONF,NZCONFQ,THRCOM,
+     &                  WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
 C     Reduce number of parameters by deleting parameters
@@ -860,15 +862,21 @@ C     below threshold THRCOM
 C
 C     Written by T.Saue - July 22 1997
 C
+C     Last revision: S. Knecht - Jan 2010
+C     added control variable IREDJOB:
+C     bit 1 of IREDJOB: reduction in configurational vector
+C     bit 2 of IREDJOB: reduction in e-e orbital rotations
+C     bit 3 of IREDJOB: reduction in e-p orbital rotations
+C                    
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,DC = 100.0D0)
 C
-#include "dcbxrs.h"
 #include "dgroup.h"
       DIMENSION GPCI(*),GPOE(*),GPOP(*),WORK(*),
      &          JCONF(*),JXOPE(2,NZXOPE),JXOPP(2,NZXOPP)
+      LOGICAL LBIT
 C
       KFRSAV = KFREE
       IF(IPRINT.GE.4) CALL HEADER('Output from REDPAR',-1)        
@@ -877,104 +885,108 @@ C
 C     Configurational part
 C     ====================
 C
-      IF(NZCONF.GT.0) THEN
-        WRITE(LUPRI,'(A)') '* REDPAR: No configurational code,',
-     &                     '          thus no reduction in conf vector.'
-C hjaaj sep 05: continue with just reduction in orb vector(s)
-C       CALL QUIT('REDPAR: No conf.code')
+      IF(LBIT(IREDJOB,1)) THEN
+        WRITE(LUPRI,'(3A)')' * REDPAR: reduction in conf vector ',
+     &                     ' not implemented; thus no reduction ',
+     &                     ' in conf vector.'
+        WRITE(LUPRI,'(1A)')' * Continuing with orbital rotations.'
       ENDIF
 C
 C     e-e orbital rotations
 C     =====================
 C
-      IF(NZXOPE.GT.0) THEN
-        CALL MEMGET('REAL',KBUF,NZXOPEQ,WORK,KFREE,LFREE)
-        II = 0
-        DO I = 1,NZXOPE
-          DTST = D0
-          IZOFF = 0
-          DO IZ = 1,NZ
-            DTST = DTST + GPOE(I+IZOFF)*GPOE(I+IZOFF)  
-            IZOFF = IZOFF + NZXOPE
-          ENDDO
-          IF(SQRT(DTST).GE.THRCOM) THEN
-            II = II + 1
-            JXOPE(1,II) = JXOPE(1,I)
-            JXOPE(2,II) = JXOPE(2,I)
-            IOFF = KBUF-1
-            JOFF = 0
+      IF(LBIT(IREDJOB,2)) THEN
+        IF(NZXOPE.GT.0) THEN
+          CALL MEMGET('REAL',KBUF,NZXOPEQ,WORK,KFREE,LFREE)
+          II = 0
+          DO I = 1,NZXOPE
+            DTST = D0
+            IZOFF = 0
             DO IZ = 1,NZ
-              WORK(IOFF+II) = GPOE(JOFF+I)
-              IOFF = IOFF + NZXOPE
-              JOFF = JOFF + NZXOPE
+              DTST = DTST + GPOE(I+IZOFF)*GPOE(I+IZOFF)  
+              IZOFF = IZOFF + NZXOPE
             ENDDO
-          ENDIF
-        ENDDO
-        IF(II.LT.NZXOPE) THEN
-          IOFF = KBUF
-          JOFF = 1
-          DO IZ = 1,NZ
-            CALL DCOPY(II,WORK(IOFF),1,GPOE(JOFF),1)
-            IOFF = IOFF + NZXOPE
-            JOFF = JOFF + II
+            IF(SQRT(DTST).GE.THRCOM) THEN
+              II = II + 1
+              JXOPE(1,II) = JXOPE(1,I)
+              JXOPE(2,II) = JXOPE(2,I)
+              IOFF = KBUF-1
+              JOFF = 0
+              DO IZ = 1,NZ
+                WORK(IOFF+II) = GPOE(JOFF+I)
+                IOFF = IOFF + NZXOPE
+                JOFF = JOFF + NZXOPE
+              ENDDO
+            ENDIF
           ENDDO
-          IF(IPRINT.GE.4) THEN
-            DTST = DC*(NZXOPE-II)/NZXOPE
-            WRITE(LUPRI,'(A,I10,A,F5.1,A)') 
-     &            'e-e rotations: ',II,' (reduction: ',DTST,'%)'
-            WRITE(LUPRI,'(2I6)') (JXOPE(1,J),JXOPE(2,J),J=1,II)
-            CALL PRQMAT(GPOE,II,1,II,1,NZ,1,LUPRI)
+          IF(II.LT.NZXOPE) THEN
+            IOFF = KBUF
+            JOFF = 1
+            DO IZ = 1,NZ
+              CALL DCOPY(II,WORK(IOFF),1,GPOE(JOFF),1)
+              IOFF = IOFF + NZXOPE
+              JOFF = JOFF + II
+            ENDDO
+            IF(IPRINT.GE.4) THEN
+              DTST = DC*(NZXOPE-II)/NZXOPE
+              WRITE(LUPRI,'(A,I10,A,F5.1,A)') 
+     &              'e-e rotations: ',II,' (reduction: ',DTST,'%)'
+              WRITE(LUPRI,'(2I6)') (JXOPE(1,J),JXOPE(2,J),J=1,II)
+              CALL PRQMAT(GPOE,II,1,II,1,NZ,1,LUPRI)
+            ENDIF
+            NZXOPE  = II
+            NZXOPEQ = NZXOPE*NZ
           ENDIF
-          NZXOPE  = II
-          NZXOPEQ = NZXOPE*NZ
+          CALL MEMREL('REDPAR.ee',WORK,1,KFRSAV,KFREE,LFREE)
         ENDIF
-        CALL MEMREL('REDPAR.ee',WORK,1,KFRSAV,KFREE,LFREE)
-      ENDIF      
+      ENDIF
 C
 C     e-p orbital rotations
 C     =====================
 C
-      IF(NZXOPP.GT.0) THEN
-        CALL MEMGET('REAL',KBUF,NZXOPPQ,WORK,KFREE,LFREE)
-        II = 0
-        DO I = 1,NZXOPP
-          DTST = D0
-          IZOFF = 0
-          DO IZ = 1,NZ
-            DTST = DTST + GPOP(I+IZOFF)*GPOP(I+IZOFF)  
-            IZOFF = IZOFF + NZXOPP
-          ENDDO
-          IF(SQRT(DTST).GE.THRCOM) THEN
-            II = II + 1
-            JXOPP(1,II) = JXOPP(1,I)
-            JXOPP(2,II) = JXOPP(2,I)
-            IOFF = KBUF-1
-            JOFF = 0
+      IF(LBIT(IREDJOB,3)) THEN
+        IF(NZXOPP.GT.0) THEN
+          CALL MEMGET('REAL',KBUF,NZXOPPQ,WORK,KFREE,LFREE)
+          II = 0
+          DO I = 1,NZXOPP
+            DTST = D0
+            IZOFF = 0
             DO IZ = 1,NZ
-              WORK(IOFF+II) = GPOP(JOFF+I)
-              IOFF = IOFF + NZXOPP
-              JOFF = JOFF + NZXOPP
+              DTST = DTST + GPOP(I+IZOFF)*GPOP(I+IZOFF)  
+              IZOFF = IZOFF + NZXOPP
             ENDDO
-          ENDIF
-        ENDDO
-        IF(II.LT.NZXOPP) THEN
-          IOFF = KBUF
-          JOFF = 1
-          DO IZ = 1,NZ
-            CALL DCOPY(II,WORK(IOFF),1,GPOP(JOFF),1)
-            IOFF = IOFF + NZXOPP
-            JOFF = JOFF + II
+            IF(SQRT(DTST).GE.THRCOM) THEN
+              II = II + 1
+              JXOPP(1,II) = JXOPP(1,I)
+              JXOPP(2,II) = JXOPP(2,I)
+              IOFF = KBUF-1
+              JOFF = 0
+              DO IZ = 1,NZ
+                WORK(IOFF+II) = GPOP(JOFF+I)
+                IOFF = IOFF + NZXOPP
+                JOFF = JOFF + NZXOPP
+              ENDDO
+            ENDIF
           ENDDO
-          IF(IPRINT.GE.4) THEN
-            DTST = DC*(NZXOPP-II)/NZXOPP
-            WRITE(LUPRI,'(A,I10,A,F5.1,A)') 
-     &            'e-p rotations: ',II,'(reduction: ',DTST,'%)'
-            WRITE(LUPRI,'(2I6)') (JXOPP(1,J),JXOPP(2,J),J=1,II)
+          IF(II.LT.NZXOPP) THEN
+            IOFF = KBUF
+            JOFF = 1
+            DO IZ = 1,NZ
+              CALL DCOPY(II,WORK(IOFF),1,GPOP(JOFF),1)
+              IOFF = IOFF + NZXOPP
+              JOFF = JOFF + II
+            ENDDO
+            IF(IPRINT.GE.4) THEN
+              DTST = DC*(NZXOPP-II)/NZXOPP
+              WRITE(LUPRI,'(A,I10,A,F5.1,A)') 
+     &              'e-p rotations: ',II,'(reduction: ',DTST,'%)'
+              WRITE(LUPRI,'(2I6)') (JXOPP(1,J),JXOPP(2,J),J=1,II)
+            ENDIF
+            NZXOPP  = II
+            NZXOPPQ = NZXOPP*NZ
           ENDIF
-          NZXOPP  = II
-          NZXOPPQ = NZXOPP*NZ
-        ENDIF
-        CALL MEMREL('REDPAR.ep',WORK,1,KFRSAV,KFREE,LFREE)
+          CALL MEMREL('REDPAR.ep',WORK,1,KFRSAV,KFREE,LFREE)
+        ENDIF      
       ENDIF      
 C
       NZXOPT   = NZXOPE + NZXOPP
@@ -985,9 +997,7 @@ C     ==========================
 C
       NZVAR    = NZCONF  + NZXOPT
       NZVARQ   = NZCONFQ + NZXOPTQ
-      RETURN
       END
-      
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck DEFORB */
       SUBROUTINE DEFORB(IORBCL,NIND,NTYP,INDSTR,WORK,KFREE,LFREE,

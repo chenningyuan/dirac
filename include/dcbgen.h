@@ -19,8 +19,9 @@
 !           guess
 !
 !      TWOCOMP, TWOCOMPBSS - related to the pure two-component mode as follows:
-!  TWOCOMP = T means that the program is currently running in 2c modus (either nonrelativistic or 2c-relativistic)
-!  TWOCOMPBSS = T means that this is a 2-component relativistic calculation in 2c modus 
+!  TWOCOMP = T means that the program is currently running in 2c mode (either nonrelativistic or 2c-relativistic)
+!  TWOCOMPBSS = T means that this is a 2-component relativistic calculation in 2c mode 
+!  X2C_mod    = T means that this is a 2-component relativistic calculation in 2c mode using the X2C module
 !
 !  SKIP2E - Skip all two electron steps.
 !
@@ -44,7 +45,8 @@
      &        NEWBAS, NEWPRP, RELCAL, NEWSYM, RDMLIN, USRIPR, DOLVC,    &
      &        LVNEW, DOTSC, DIRSET, BNCRON, DOACUT, MP2ORG, DENSFIT,    &
      &        TWOCOMP, TWOCOMPBSS, DOLINK, DOFMM, NOSET, ECPCALC,       &
-     &        DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH, DOQJACO
+     &        DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH, DOQJACO,     & 
+     &        X2C_mod
 
       COMMON /GNLPAM/ FAMILY, INPTES, VACUUM, DOPSI, NUCVAC, DOTRA,     &
      &                NOTRA, DOPRP, DOANA, DOHEINZ, DOHRM, DOJACO,      &
@@ -55,7 +57,7 @@
      &                BNCRON, DOACUT, MP2ORG, DENSFIT, TWOCOMP,         &
      &                TWOCOMPBSS, DOLINK, DOFMM, NOSET, ECPCALC,        &
      &                DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH,      &
-     &                DOQJACO
+     &                DOQJACO, X2C_mod
 
       INTEGER IPRGEN, ISPHTR, IDFLAG, LENBAS, IPRUSR, KCHARG, INTGEN,   &
      &        ILLDIR, ISLDIR, ISSDIR, IGTDIR, LENDND
@@ -67,10 +69,10 @@
       COMMON /GNRPAM/ CVAL, STOL, PANAS
 
       INTEGER LUCOEF, LUOVLP, LUTMAT, LUPMAT, LU1INT, LUKRMC, LUKRM1,   &
-     &        LUKRM2, LUKRM3, LUKRM4, LUKRM5, LUITFO, LUBSS
+     &        LUKRM2, LUKRM3, LUKRM4, LUKRM5, LUITFO, LUBSS,  LUX2C
       COMMON /PAMIOU/ LUCOEF, LUOVLP, LUTMAT, LUPMAT, LU1INT, LUKRMC,   &
      &                LUKRM1, LUKRM2, LUKRM3, LUKRM4, LUKRM5, LUITFO,   &
-     &                LUBSS
+     &                LUBSS,  LUX2C
 
       CHARACTER*(LBASDIR) BASDIR, CDIRNOD
       COMMON /GNCPAM/ BASDIR, CDIRNOD

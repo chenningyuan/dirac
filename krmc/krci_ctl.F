@@ -95,7 +95,7 @@ C
      &            '.THRPCI','.NR SYM','.MIN MK','.MAX MK','.GASSH ',
      &            '.GASSPC','.MK2REF','.MK2DEL','.CI PRO','.INACTI',
      &            '.CASSCF','.TRDM  ','.OMEGAQ','.RELSYM','.CHECKP',
-     &            '.USE PB','.GENFOC','.TRA NO','.LOWSRT','-------'/
+     &            '.USE PB','.GENFOC','.TRA NO','.LOWSRT','.SEL ST'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -116,18 +116,21 @@ C
 C     Initialize /CBLKRCI/
 C     ===================
 C
-      KRCI_UCIBOS     = .FALSE.
-      KRCI_MKCNST     = .FALSE.
-      CRDFO_MAT_KRCI  = .FALSE.
-      CWRTFO_MAT_KRCI = .FALSE.
-      CSHMEMO_KRCI    = .FALSE.
-      CINT_REORD_KRCI = .FALSE.
-      CINT_SPLIT_KRCI = .FALSE.
-      NATOLCR_KRCI    = .FALSE.
-      CHCKPT_KRCI     = .FALSE.
-      CUSE_PBLFL_KRCI = .FALSE.
-      GENFOCK_KRCI    = .FALSE.
-      TRANATO_KRCI    = .FALSE.
+      KRCI_UCIBOS       = .FALSE.
+      KRCI_MKCNST       = .FALSE.
+      CRDFO_MAT_KRCI    = .FALSE.
+      CWRTFO_MAT_KRCI   = .FALSE.
+      CSHMEMO_KRCI      = .FALSE.
+      CINT_REORD_KRCI   = .FALSE.
+      CINT_SPLIT_KRCI   = .FALSE.
+      NATOLCR_KRCI      = .FALSE.
+      CHCKPT_KRCI       = .FALSE.
+      CUSE_PBLFL_KRCI   = .FALSE.
+      GENFOCK_KRCI      = .FALSE.
+      TRANATO_KRCI      = .FALSE.
+      LOWSORT_KRCI      = .FALSE.
+      STATE_SELECT_KRCI = .FALSE.
+      LOWSORT_KRCI    = .FALSE.
       LOWSORT_KRCI    = .FALSE.
 C
 C     Initialize /CBIKRCI/
@@ -135,6 +138,7 @@ C     ===================
 C
       DO I = 1,MAX_NKRCI_MAX_SYM
          NKRCI_CIROOTS(I) = 0
+         NKRCI_SELOM(I)   = 0
       END DO
       NKRCI_MAX_SYM   = -1
 
@@ -205,6 +209,9 @@ C     ... in "krciprop.h"
 C     ... in dcbopt.h
       ISHMEM_TYPE =  - 1
 C
+C     some scratch
+      IKRCI_SYMSEL   = 0 
+      NOMEGASEL_KRCI = 0
 C
 C     Process input for *KRCICALC
 C     ===========================
@@ -562,6 +569,26 @@ C              can only be used in combination with .IJKLRO
                LOWSORT_KRCI = .TRUE.
                GO TO 100
    40          CONTINUE
+C&&&  SEL ST:  select CI state(s) by <j_z> expectation value
+C              the coefficients will be stored on the vector file
+C              KRCI_CVECS."$sym_tag".select
+C              this option may be used for "state-selection" in a 
+C              subsequent MCSCF...
+               STATE_SELECT_KRCI = .TRUE.
+               DOPROP_KRCI       = .TRUE.
+               DOJZEXP           = .TRUE.
+               READ(LUCMD,*) IKRCI_SYMSEL,NOMEGASEL_KRCI
+               IF (IKRCI_SYMSEL .LE. MAX_NKRCI_MAX_SYM .AND.
+     &            IKRCI_SYMSEL .GT. 0) THEN
+                  NKRCI_SELOM(IKRCI_SYMSEL) = NOMEGASEL_KRCI
+               ELSE
+                  WRITE(LUPRI,'(//A/I10,A,I3)')
+     &            '*** ERROR in KRCI_INP .SEL ST  *** ' //
+     &            'Requested symmetry outside hardwired limits:',
+     &            IKRCI_SYMSEL, ' outside of',MAX_NKRCI_MAX_SYM
+                  CALL QUIT('*** ERROR in KRCI_INP .SEL ST  *** ' //
+     &            'Requested symmetry outside hardwired limits.')
+               END IF
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -930,6 +957,23 @@ C
         WRITE(LUPRI,'(/A)') ' * Use memory-saving integral reordering'//
      &                      ' scheme'
       END IF
+      if(state_select_krci)then
+        write(lupri,'(/a)') ' * Select CI state(s) for subsequent'//
+     &                      ' MCSCF optimizations based on the'//
+     &                      ' respective Omega value(s).'
+        do 303 ikrci_symmetry = 1, max_nkrci_max_sym
+          if(nkrci_selom(ikrci_symmetry) .gt. 0)then
+            if(nkrci_ciroots(ikrci_symmetry) .le. 0)then
+              call quit(' *** error in KRCI_INP: 
+     &                    CI root selection for inactive symmetry. ***')
+            end if
+            write(lupri,'(/a,a5,a,i4,a)') 
+     &      ' *** symmetry:',xrepeig(ikrci_symmetry),
+     &      ' Omega value = ',nkrci_selom(ikrci_symmetry),
+     &      '(/2 for fermionic systems)'
+          end if
+  303   continue
+      end if
 C
   400 RETURN
       END
@@ -1325,7 +1369,7 @@ C     LUKRMC ('KRMCSCF') not used in KRCI, but not touched here
 C            because LUKRMC = 50 is set globally in dirac/dirset.F
 C     LUKRM1 ('KRMC_KAPPA') not used in KRCI
 C     LUKRM2 ('KRMC_CMO') not used in KRCI
-C     LUKRM3 ('KRMC_FOCK') used in KRCI for FOCK matrix and propertz
+C     LUKRM3 ('KRMC_FOCK') used in KRCI for FOCK matrix and property
 C            matrices
 C     LUKRM4 ('KRMC_LRED') not used in KRCI
 C     LUITFO ('KRMC_ITINFO') not used in KRCI

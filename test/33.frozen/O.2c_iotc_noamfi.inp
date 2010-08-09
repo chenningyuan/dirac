@@ -6,7 +6,7 @@ Oxygen atom
 **HAMILTONIAN
 #.LVCORR
 #.IOTC ! deprecated
-.X2C
+.X2COLD
 .NOAMFI
 .CMPEIG
 .PRINT

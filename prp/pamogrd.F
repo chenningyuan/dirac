@@ -42,7 +42,7 @@ C        JXOP    - orbital rotations
 C        FPV     - scratch memory used for F_{pv}
 C        DFAC    - factors used in grad. expression
 C        IPQ     - index array
-C        ORBTRI  - true for an orbital trial vector
+C        LORBTRI - true for an orbital trial vector
 C
 C     Output:
 C        GORB    - the gradient

@@ -369,7 +369,8 @@ C&&&& PV contribution to spin-spin coupling
             IF(NBSYM .GT. 1) CALL QUIT('.PVCSPN only for C1 symmetry')
             GO TO 100
   129    CONTINUE 
-C&&&& NOPCT - when DOPCT is .true. do NOT do picture change transformation...
+C&&&& NOPCT - even if DOPCT is .true. (because of default settings) 
+C             do NOT activate picture change transformation...
             NOPCT = .TRUE.
             GO TO 100
   130    CONTINUE 
@@ -460,6 +461,12 @@ CMI   g_tensors operator centers might be changed
       GAGORGX = GAGORG(1)
       GAGORGY = GAGORG(2)
       GAGORGZ = GAGORG(3)
+
+!     set compulsary default values for X2C module.
+      if(x2c)then
+        DOPCT = .true.
+        NOPCT = .false.
+      end if
 
       IF (DOPCT) THEN
        IF (.NOT.NOPCT) THEN

@@ -1264,6 +1264,47 @@ C
 C
    10 RETURN
       END
+!C  /* Deck fndlab12 */
+      LOGICAL FUNCTION FNDLAB12(A,LU)
+!C
+!C 26-May-1985 hjaaj -- logical function version of SEARCH
+!C 16-Jun-1986 hjaaj -- changed to CHARACTER*8 from REAL*8
+!C 02-May-2010 sk    -- copy/paste from fndlab + changed to CHARACTER*12 
+!C                      from CHARACTER*8
+!C
+      CHARACTER*12 B(4), C
+      CHARACTER*12 A
+      DATA C/'************'/
+      IRDERR = 0
+    1 READ(LU,END=3,ERR=6)B
+      IRDERR = 0
+      IF (B(1).NE.C) GO TO 1
+      IF (B(4).NE.A) GO TO 1
+      FNDLAB12 = .TRUE.
+      GO TO 10
+C
+    6 IRDERR = IRDERR + 1
+      IF (IRDERR .LT. 5) GO TO 1
+#if defined (SYS_IBM)
+!C 880703-hjaaj -- attempt to fix an IBM problem
+!C IBM gave permanent io error on write after calling FNDLAB for
+!C     a non-existing file
+      CLOSE(LU,ERR=8)
+#endif
+      GO TO 8
+    3 CONTINUE
+#if defined (SYS_IBM) || defined (SYS_CRAY) || defined (VAR_MFDS) || defined (SYS_T3D)
+!C 880916-hjaaj -- attempt to fix an IBM problem
+!C IBM shifts to new file after END= branch (e.g. FTxxF002 instead
+!C     of FTxxF001), backspace makes LU ready for append.
+!C 940510-hjaaj: same change for Cray's multifile datasets
+      BACKSPACE LU
+#endif
+C
+    8 FNDLAB12 = .FALSE.
+C
+   10 RETURN
+      END
 C  /* Deck mollb2 */
       SUBROUTINE MOLLB2(SRCLBL,RTNLBL,LU,LUERR)
 C
@@ -1483,6 +1524,30 @@ C
      &      '         IOSTAT value',IOSVAL
          CALL QTRACE(LUERR)
          CALL QUIT('NEWLB2: output error writing label')
+      END IF
+      END
+C  /* Deck newlab12 */
+      SUBROUTINE NEWLAB12(LABEL,LU,LUERR)
+C
+C  29-Sep-1988 Hans Joergen Aa. Jensen
+C
+C  Write new MOLECULE-type label to LU
+C
+      CHARACTER*12 LABEL, LTIME, LDATE, LSTARS
+      DATA LSTARS /'************'/
+      CALL GETDAT(LDATE,LTIME)
+      WRITE (LU,ERR=1000,IOSTAT=IOSVAL) LSTARS,LDATE,LTIME,LABEL
+      RETURN
+C
+ 1000 IF (LUERR .LT. 0) THEN
+         LUERR = -2
+         RETURN
+      ELSE
+         WRITE (LUERR,'(/3A,I5/A,I7)')
+     &      ' NEWLAB12: error writing label "',LABEL,'" to unit',LU,
+     &      '           IOSTAT value',IOSVAL
+         CALL QTRACE(LUERR)
+         CALL QUIT('NEWLAB12: output error writing label')
       END IF
       END
 C  /* Deck second */

@@ -1678,6 +1678,133 @@ C          ... no sorting
 C
       CALL QEXIT('DIAGC')
       END
+!***********************************************************************
+!     SUBROUTINE ONEDENS_DIAG_BLOCK(WORK,LWORK)
+!***********************************************************************
+!
+!     diagonalize matrix in terms of mj-blocks, 
+!     return eigenvectors and eigenvalues.
+!
+!
+!     written by S. Knecht - April 2010
+!
+!***********************************************************************
+!#include "implicit.h"
+!#include "priunit.h"
+!
+!     DIMENSION EIG(*), EIGVEC(NDIM,NDIM,NZ), AM(NDIM,NDIM,NZ)
+!     DIMENSION WORK(*)
+!
+!#include "memint.h"
+!     IOFF2 = 1
+!
+!     ... calculate eigenvalues and eigenvectors
+!     IJOB   = 1
+!     ... no ordering
+!     IORDER = 0
+!     IPACK  = 0
+!     CALL RSJACO(NDIM,NDIM2,NDIM2,AM(IOFF2,IOFF2,1),
+!    &            EIG(IOFF2),IJOB,IORDER,IPACK,
+!    &            EIGVEC(IOFF2,IOFF2,1),WORK(KFREE),LFREE)
+!
+!     END
+!***********************************************************************
+      subroutine block_one_dens(mjvector,amat)
+!***********************************************************************
+!
+!     zero numerical noise in mj-blocked matrix amat
+!
+!
+!     written by S. Knecht - April 2010
+!
+!***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dcborb.h"
+#include "dgroup.h"
+      dimension mjvector(norbt), amat(nasht,nasht,nz)
+      parameter(xtol_dens = 1.0D-3, d0=0.0D0)
+	logical call_quit
+
+      call_quit = .false.
+      ioff1 = 0
+      ioff2 = 0
+      dmj_offmax = 1.0D-15
+!
+!     loop over active orbitals in each fermion corep
+      do ifsym = 1, nfsym
+        do mjorb = 1, nash(ifsym)
+          mjvec_mjorb = mjvector(ioff2+npsh(ifsym)+nish(ifsym)+mjorb)
+
+!         write(lupri,'(A,2I5)') 'mjvec_mjorb,mjorb:',mjvec_mjorb,mjorb
+!         write(lupri,'(A,I5)') 'off-mj #1:',
+!    &    ioff2+npsh(ifsym)+nish(ifsym)+mjorb
+
+          do njorb = mjorb+1,nash(ifsym)
+
+!         write(lupri,'(A,2I5)') 'mjvector(njorb),njorb:',
+!    &    mjvector(ioff2+npsh(ifsym)+nish(ifsym)+njorb),njorb
+!         write(lupri,'(A,I5)') 'off-mj #2:',
+!    &    ioff2+npsh(ifsym)+nish(ifsym)+njorb
+
+            if( mjvector(ioff2+npsh(ifsym)+nish(ifsym)+njorb) 
+     &          .ne. mjvec_mjorb )then
+!
+!             test element
+              do iz = 1, nz
+                dmj_offmax =
+     &          max(dmj_offmax,dabs(amat(ioff1+mjorb,ioff1+njorb,iz)))
+              end do
+!
+!             stop if symmetry-breaking element is too large and print
+!             diagnosis
+!               
+              if(dmj_offmax .gt. xtol_dens) then
+                write(lupri,'(/A,I2,A)') '*** warning: mj-symmetry '//
+     &        'breaking off-diagonal element larger than tolerance'//
+     &        ' in fermion irrep',ifsym,'. ***'
+                write(lupri,'(/A,1F14.9,A,1F14.9)') 
+     &        'tolerance:',xtol_dens,' off-diagonal element:',dmj_offmax
+                write(lupri,'(/A,1I4,A,1I4)') 
+     &        'adress #1:',mjorb,' adress #2:',njorb
+                write(lupri,'(/A,1I4,A,1I4)') 
+     &        'mj-value #1:',mjvec_mjorb,' mj-value #2:',
+     &         mjvector(ioff2+npsh(ifsym)+nish(ifsym)+njorb)
+                dmj_offmax = 1.0D-15
+                if( call_quit )then
+                  write(lupri,'(/A)') ' *** full mj-vector *** '
+		      call iwrtmamn(mjvector,1,norbt,1,norbt,lupri)
+                   do ix = 1, nfsym
+                     write(lupri,'(/1X,A,I3)')
+     &               '*** full density matrix for fermion irrep ***',ix
+           call prqmat(amat(1+iash(ix),1+iash(ix),1),nash(ix),nash(ix),
+     &                 nasht,nasht,nz,ipqtoq(1,0),lupri)
+                   end do
+                  call quit(
+     & ' *** error in block_one_dens: symmetry-breaking element 
+     &   too large. Cannot continue. ***')
+                end if
+              end if
+
+              do iz = 1, nz
+                amat(ioff1+mjorb,ioff1+njorb,iz) = d0
+                amat(ioff1+njorb,ioff1+mjorb,iz) = d0
+              end do
+
+            end if
+
+          end do
+        end do
+        ioff1 = ioff1 + nash(ifsym)
+        ioff2 = ioff2 + norb(ifsym)
+      end do
+#if defined MCSCF_DEBUG	
+      write(lupri,'(1X,A,1F14.9)') 
+     &	' * block_one_dens info: largest mj-symmetry breaking'//
+     &      ' off-diagonal element in the DV matrix is',dmj_offmax
+#endif
+
+      end subroutine block_one_dens
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck TRKRLUCI */
       SUBROUTINE TRKRLUCI(CIRUN,ISYNC_NODES)
@@ -3001,6 +3128,33 @@ C
         END IF
       END DO
       IFIND_NELM = INDEX_SCR
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE ZERO_KAPPA_MJ(XKAPPA,IMJ2,IPRINT)
+C***********************************************************************
+C
+C     Written by S. Knecht - Jan 2010
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+      DIMENSION XKAPPA(NORBT,NORBT,NZ), IMJ2(NORBT)
+C
+      DO IFRP = 1,NFSYM
+        DO IZ = 1, NZ
+          DO J = 1, NORB(IFRP)
+            DO I = 1, NORB(IFRP)
+        IF( IMJ2(IORB(IFRP)+I) .ne. IMJ2(IORB(IFRP)+J)) 
+     &  XKAPPA(IORB(IFRP)+I,IORB(IFRP)+J,IZ) = 0.0D0
+            END DO
+          END DO
+        END DO
+      END DO
       END
 C=========================================================================
 C end of file krmcgp.F

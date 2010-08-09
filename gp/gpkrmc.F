@@ -736,7 +736,7 @@ C
      &            WORK(KCOS),NORBI,NORBI,NZ,IP,
      &            WORK(KV),NORBI,NORBI,NZ,IP,
      &            WORK(KV),NORBI,NORBI,NZ,IP,
-     &            WORK(KFREE),LFREE,IPROPT)
+     &            WORK(KFREE),LFREE,IPRINT)
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('ROTCMO: V cos(d) V^{dagger}',-1)
          CALL PRQMAT(WORK(KTMP),NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
@@ -751,7 +751,7 @@ C
      &            WORK(KSIN),NORBI,NORBI,NZ,IP,
      &            WORK(KV),NORBI,NORBI,NZ,IP,
      &            WORK(KV),NORBI,NORBI,NZ,IP,
-     &            WORK(KFREE),LFREE,IPROPT)
+     &            WORK(KFREE),LFREE,IPRINT)
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('ROTCMO: V sin(d)/d V^{dagger}',-1)
          CALL PRQMAT(WORK(KCOS),NORBI,NORBI,NORBI,NORBI,NZ,IP,LUPRI)
@@ -812,6 +812,7 @@ C
          CALL HEADER('ROTCMO: old orbitals',-1)
          CALL PRQMAT(CMO,NBASI,NORBI,NBASI,NORBI,NZ,IP,LUPRI)
       END IF
+CSK   CALL DZERO(WORK(KCOS),NORBXQ)
       CALL QGEMM(NBASI,NORBI,NORBI,D1,
      &           'N','N',IP,CMO,NBASI,NORBI,NZ,
      &           'N','N',IP,WORK(KTMP),NORBI,NORBI,NZ,

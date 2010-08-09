@@ -5,7 +5,7 @@ H2O2 molecule, integral calculations with ERI in pure one-component mode
 .PROPERTIES
 **HAMILTONIAN
 #.IOTC
-.X2C
+.X2COLD
 **INTEGRALS
 .NUCMOD
  1

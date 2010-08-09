@@ -614,13 +614,28 @@ C
       SUBROUTINE QDIAG90(NZ,N,A,LRA,LCA,EIG,MATZ,VEC,LRV,LCV,IERR)
 C     Like QDIAG but uses f90 memory allocation internally.
 #include "implicit.h"
-      double precision, allocatable :: work(:)
+      real(8)         , allocatable :: work(:)
+#ifdef LAPACK_QDIAG
+      DDUM = 0.0D0
+      IDUM = 0
+      WORKDUM = 0.0D0
+      IWORKDUM = 0
+c     first let lapack estimate memory use
+      INFO = 0
+      CALL DSYEVR('V','A','U',N,A,LRA,DDUM,DDUM,IDUM,IDUM,0.0D0,
+     &            M,EIG,VEC,LRV,IDUM,WORKDUM,-1,IWORKDUM,-1,INFO)
+      LLWORK = WORKDUM
+      LILWORK = IWORKDUM
+      lwork = LLWORK + LILWORK + 2*N +6
+#else
       lwork = 6 + 2*N
       IF(NZ.GT.1) THEN
         NTAU = N*NZ
         lwork = lwork + ntau
       ENDIF
+#endif
       allocate(work(lwork))
+      work = 0
       call qdiag(NZ,N,A,LRA,LCA,EIG,MATZ,VEC,LRV,LCV,work,lwork,IERR)
       deallocate(work)
       END
@@ -3421,6 +3436,9 @@ C***********************************************************************
 #include "priunit.h"
 C
       DIMENSION A(LRA,LCA,NZ),D(N),IPIVOT(*),P(4),IP(4)
+
+C
+      CALL DZERO(P,4)
 C
 C     Initialization
 C
@@ -3732,6 +3750,7 @@ C***********************************************************************
       DIMENSION A(LRA,LCA,NZ),D(N),B(LRB,LCB,NZ),X(LRX,LCX,NZ),
      &          IPIVOT(*),W(*)
       DIMENSION P(4),IQA(4),IQB(4)
+      CALL DZERO(P,4)
 C
 C     Initialization
 C
@@ -4168,6 +4187,7 @@ C
       DIMENSION IQW(4)
 CMI   .... IPRINT threshold 
       DATA IPRLIM / 200 /
+!     DATA IPRLIM /   4 /
 
 C
       CALL QENTER('QTRANS')
@@ -4398,6 +4418,7 @@ C     find out how much buffer is needed in qtrans
       endif
       allocate( work(nbuf), stat=ierr )
       if (ierr.ne.0) call quit('QTRANS90: error in allocation !')
+      work = 0
       call QTRANS(TYP,TREV,FADD,NRAO,NCAO,NRMO,NCMO,
      &                  FAO,LRAO,LCAO,NZAO,IQAO,
      &                  FMO,LRMO,LCMO,NZMO,IQMO,

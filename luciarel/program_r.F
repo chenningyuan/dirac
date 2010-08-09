@@ -123,6 +123,7 @@ C     memory pointer for C2 vector block
 #endif /* VAR_SHMEM */
 #endif /* VAR_MPI2 */
 C
+      IDUM = 0
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'GASCI ')
 C
       NTESTL = 0000
@@ -1386,7 +1387,8 @@ C
 #endif
       write(LUWRT,'(/2A/)') '  I have completed task  ',CIRUN
 C     release memory
-      call memmar(KDUMMY,IDUMMY,'FLUSM ',IDUM,'GASCI ')
+      IDUM = 0
+      call memmar(KDUM,  IDUM,  'FLUSM ',IDUM,'GASCI ')
 C
       END
 ***********************************************************************

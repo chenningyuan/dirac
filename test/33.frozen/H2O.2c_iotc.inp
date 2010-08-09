@@ -8,7 +8,7 @@ Water molecule.
 .NUMGRA
 **HAMILTONIAN
 #.IOTC ! deprecated
-.X2C
+.X2COLD
 .CMPEIG
 .PRINT
 2

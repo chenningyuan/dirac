@@ -3312,6 +3312,9 @@ C
      &        ,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KDVMOLF,(2*NASHT)**2 * MIN(2,NZ),
      &        WORK,KFREE,LFREE)
+!
+         CALL DZERO(WORK(KPVMOLF),(2*NASHT)**4 * MIN(2,NZ))
+         CALL DZERO(WORK(KDVMOLF),(2*NASHT)**2 * MIN(2,NZ))
 C
 C        Calculate density matrices
 C        --------------------------
@@ -3330,11 +3333,15 @@ C        ------------------------------------------------------
 C
 C        One-electron density matrix
 C
+         CALL DZERO(DV,NASHT**2 * MIN(2,NZ))
+!
          CALL MFC2QFC(.TRUE.,WORK(KDVMOLF),DV,IPRXRS)
 C        CALL MFC2QFC(KSYMM,DVM,DV,IPRINT)
 C
 C        Two-electron density matrix
 C
+         CALL DZERO(PV,NASHT**4 * MIN(2,NZ))
+!
          CALL M2DNZ3(TSYMM,.TRUE.,.TRUE.,WORK(KPVMOLF),PV,IPRXRS)
 C        CALL M2DNZ3(TSYMM,KSYMM,PSYMM,PVM,PV,IPRINT)
 C

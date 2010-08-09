@@ -181,6 +181,86 @@ C
 *
       RETURN
       END
+!**********************************************************************
+      subroutine krci_cp_sel_root(xflabel,istate,iri,omega_val)
+!**********************************************************************
+      implicit none
+
+      character (len=1),  intent(in)     :: xflabel
+      integer,            intent(in)     :: istate
+      integer,            intent(in)     :: iri
+      integer,            intent(in)     :: omega_val
+!----------------------------------------------------------------------
+      real(8), allocatable               :: vecblock(:)
+      integer                            :: in_fh
+      integer                            :: out_fh
+      integer                            :: block_length
+      integer                            :: iszero
+      integer                            :: ispacked
+      integer                            :: iskip
+      integer                            :: ipart
+      character (len=12)                 :: infile_name
+      character (len=19)                 :: outfile_name
+!**********************************************************************
+!
+!     initialize scratch variables
+      in_fh  = 98
+      out_fh = 99
+      block_length = 0
+
+!     initialize file names
+      write(infile_name,'(a11,a1)')     'KRCI_CVECS.',xflabel
+      write(outfile_name,'(a11,a1,a7)') 'KRCI_CVECS.',xflabel,'.select'
+
+!     step 1: open files
+      open(in_fh,file=infile_name,status='old',form='unformatted',
+     &     position='rewind')
+      open(out_fh,file=outfile_name,status='new',form='unformatted',
+     &     position='rewind')
+
+!     step 2: forward to the right position in the vector file
+      do iskip = 1, ((istate-1)*iri)
+ 101    continue
+          read(in_fh) block_length
+          if(block_length.ge.0)then
+            allocate(vecblock(block_length))
+            call frmdsc(vecblock,block_length,-1,in_fh,iszero,ispacked)
+            deallocate(vecblock)
+          end if
+        if(block_length.ge.0) goto 101
+      end do
+
+!     step 3: copy the selected vector
+!     real part + imaginary part (iri == 2)     
+      do ipart = 1, iri
+ 202    continue
+        call ifrmds(block_length,1,-1,in_fh)
+        call itods(block_length,1,-1,out_fh)
+        if(block_length.ge.0)then
+          allocate(vecblock(block_length))
+          call frmdsc2(vecblock,block_length,-1,in_fh,iszero,ispacked,1)
+          if(iszero.eq.0)then
+            if(ispacked.eq.0)then
+              call todsc(vecblock,block_length,-1,out_fh)
+            else
+              call todscp(vecblock,block_length,-1,out_fh)
+            end if
+          else
+            call zerorc_rel(block_length,out_fh,ispacked)
+          end if
+          deallocate(vecblock)
+        end if
+        if(block_length.ge.0) goto 202
+      end do
+
+!     step 4: close files
+      close(in_fh)
+      close(out_fh)
+
+      print '(/2x,a,i2,a,a19)', 
+     &      ' *** selected CI vector (omega = ',omega_val,
+     &      '[/2 for fermionic systems]) saved on file ',outfile_name
+      end
 ***********************************************************************
 *                                                                     *
 * LUCIAREL, written by Timo Fleig and Jeppe Olsen                     *

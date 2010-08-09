@@ -64,6 +64,9 @@ C
         IF (BSS) THEN
           CALL TITLER('Two-component BSS/DKH Kohn-Sham calculation',
      &       '*',125)
+        ELSE IF (x2c) THEN
+          CALL TITLER('X2C Kohn-Sham calculation',
+     &       '*',125)
         ELSE
            CALL TITLER('Kohn-Sham calculation','*',125)
         ENDIF
@@ -74,6 +77,9 @@ C
            CALL TITLER(
      &     'Two-component BSS/DKH relativistic HF calculation',
      &     '*',125)
+        ELSE IF (x2c) THEN
+          CALL TITLER('X2C relativistic HF calculation',
+     &       '*',125)
         ELSE
            CALL TITLER('Hartree-Fock calculation','*',125)
         ENDIF
@@ -99,7 +105,7 @@ C     ===================
 C
       DO4C2C_SAVE = DO4C2C
       DO4C2C = .FALSE.
-      IF (DO2C4C.AND.BSS) THEN
+      IF (DO2C4C.AND.(BSS.or.x2c)) THEN
 CMI    ... prepare for the preliminary BSS-SCF procedure to get
 CMI   starting Fock-Dirac MO matrix for the DC-SCF
         ERGCNV_SAVE = ERGCNV

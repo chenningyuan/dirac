@@ -169,6 +169,10 @@ C
       CALL QENTER('PRPXL1')
       KFRSAV = KFREE
 C
+C     set control variable for REDPAR (see REDPAR for an explanation of
+C     IREDJOB)
+      IREDJOB = 6
+C
 C     ****************************
 C     *** I N I T I A L I Z E  ***
 C     ****************************
@@ -298,9 +302,11 @@ C           Compress number of orbital rotations
 C           ====================================
 C
             IF(THRCOM.NE.D0) THEN
-              CALL REDPAR(WORK(KGPCI),WORK(KGPOE),WORK(KGPOP),
+              CALL REDPAR(IREDJOB,WORK(KGPCI),WORK(KGPOE),WORK(KGPOP),
      &                    WORK(KZCONF),WORK(KZXOPE),WORK(KZXOPP),
-     &                    THRCOM,WORK,KFREE,LFREE,IPRXLR)
+     &                    NZXOPE,NZXOPEQ,NZXOPP,NZXOPPQ,NZXOPT,NZXOPTQ,
+     &                    NZVAR,NZVARQ,NZCONF,NZCONFQ,THRCOM,
+     &                    WORK,KFREE,LFREE,IPRXLR)
             ENDIF
 C
 C           ********************************************************

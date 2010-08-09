@@ -555,6 +555,8 @@ C
       OPT_NOCI       = .FALSE.
       OPT_UCIBOS     = .FALSE.
       OPT_MKCNST     = .FALSE.
+      OPT_CHCKJZ     = .FALSE.
+      IF( LINEAR ) OPT_CHCKJZ = .TRUE.
 C
 C     Set common block DCCOPT
 C
@@ -652,6 +654,7 @@ C
       OPT_NOCI       = KRMC_NOCI
       OPT_UCIBOS     = KRMC_UCIBOS
       OPT_MKCNST     = KRMC_MKCNST
+      OPT_CHCKJZ     = KRMC_CHCKJZ
 C
       DO I = 1, NOPTFLAGS
          FLAG(I) = MCFLAG(I)
@@ -763,6 +766,7 @@ C
       OPT_NOCI       = .FALSE.
       OPT_UCIBOS     = KRCI_UCIBOS
       OPT_MKCNST     = KRCI_MKCNST
+      OPT_CHCKJZ     = .FALSE.
 C
       DO I = 1, NOPTFLAGS
          FLAG(I) = .FALSE.

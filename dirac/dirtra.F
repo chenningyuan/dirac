@@ -1930,8 +1930,6 @@ C
       CALL MEMREL('SPHGEN.SPHGE1',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       CALL QEXIT('SPHGEN')
-      RETURN
-C
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

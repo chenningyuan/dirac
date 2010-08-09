@@ -1,7 +1,7 @@
 #if !defined(__CVERSION__)
 
-! VERSION : $Revision: 9874 $
-! DATE    : $Date: 2009-11-09 10:29:00 +0100 (Mon, 09 Nov 2009) $
+! VERSION : $Revision$
+! DATE    : $Date$
 ! FILE    : dcbham.h
 !
 !*****************************************************************************
@@ -32,7 +32,8 @@
 !
 !     SPINFR     - Neglect spin-orbit coupling
 !     SPINFR2    - Neglect 2-electron spin-orbit coupling
-!     MOLMF      - Use molecular mean field approximation in correlated calcs.
+!     MOLMF      - Use molecular mean field approximation (^4 DC(G)**) in correlated calcs.
+!     MOLMF3     - Use molecular mean field approximation (^4 DCG*)    in correlated calcs.
 !     ZORA       - Make ZORA approximation (ZORA: approx density, cheap)
 !     ZORA4      - Make ZORA approximation (ZORA4: full density, expensive)
 !     SMLV1C     - Neglect two-center blocks of VSS
@@ -49,6 +50,11 @@
 !                  Barysz-Sadlej-Snijders transformed two-component Hamiltonians
 !     IBSS       - what kind of BSS Hamiltonian(1.,2. or infinite order; scalar of full
 !                  relativity)
+!     X2C        - flag for generating matrix elements of
+!                  the exact two-component Hamiltonian using the X2C module (i.e. X2C_mod == .true. (dcbgen.h))
+!     X2C_aba    - flag for generating matrix elements of
+!                  the exact two-component Hamiltonian using the X2C module (i.e. X2C_mod == .true. (dcbgen.h))
+!                  in the molecular fragment/atom-by-atom approach
 !     IMFCH      - charge of the system to be spliited among mean-field summations of AMFI centers
 !     NOPRTR     - do not perform the preliminary transformation to the ON basis in the 2c mode
 !                  (only for infinite order Tronds approach), if .false., we do the preliminary
@@ -74,6 +80,7 @@
 !     TRMO4C2C   - flag meaning transformation of 4c MO into 2c form using the picture change transformation matrix
 !
 !     ALLAMFA    - flag about if all atoms are present for the AMFI contributions.
+!     ISORDER_AMFI_x2c - integer value determining the order of AMFI contributions to the X2C Hamiltonian.
 !     CMPEIG     - for IOTC/BSS: compare eigenvalues of 2c and 4c Hamiltonian
 !
 !     DKH1       - own flag for the 1st order DKH,  very rough approximation
@@ -99,7 +106,8 @@
       INTEGER IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD, IPKINERG, IPANGMOM, &
      &        IPSPNMOM, N1OPER, IPR1OP(MAX1OPER), LSOLMX, IPRSOL,       &
      &        ICTLV1C(2), IBSS, MC, I1_HAM, I2_HAM, IMFCH, I2CHAM,      &
-     &        INI2C, I2COFK, IPSOPP, IPVEMB0, I1_DCLHAM,I2_DCLHAM                                     
+     &        INI2C, I2COFK, IPSOPP, IPVEMB0, ISORDER_AMFI_x2c,         &
+     &        I1_DCLHAM,I2_DCLHAM                                     
 !
 !     IMPORTANT !!!
 !     =============
@@ -111,7 +119,7 @@
      &                IPKINERG, IPANGMOM, IPSPNMOM, N1OPER, IPR1OP,     &
      &                LSOLMX, IPRSOL, ICTLV1C, IBSS, MC,                &
      &                IMFCH, I2CHAM, INI2C, I2COFK, IPVEMB0, IPSOPP,    &
-     &                I2_HAM
+     &                ISORDER_AMFI_x2c, I2_HAM
 
       INTEGER INTV1C
       EQUIVALENCE (INTV1C, ICTLV1C (1))
@@ -123,7 +131,7 @@
      &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
      &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP, CMPEIG,  &
      &        DKH1, DKH2, NOAMFI, QDOTS,LSCALE_DFT_GAUNT,NOSFMU,MOLMF,  &
-     &        TRMO4C2C
+     &        TRMO4C2C, MOLMF3, X2C, X2C_aba
 
       COMMON /DCLHAM/ I1_DCLHAM,                                        &
      &                QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL,      &
@@ -134,7 +142,7 @@
      &                RESTFCK, CONT2C, START2C, GAUNT, ALLAMFA, VACPOL, &
      &                RDSUSLLMOD,MIXVAC,VACREF,POSVAC,CAP,CMPEIG,       &
      &                DKH1, DKH2, NOAMFI, QDOTS, LSCALE_DFT_GAUNT,      &
-     &                NOSFMU,MOLMF, TRMO4C2C,                           &
+     &                NOSFMU,MOLMF, TRMO4C2C, MOLMF3, X2C, X2C_aba,     &
      &                I2_DCLHAM
 
 !    Do NOT add any variables after the end tag !!!

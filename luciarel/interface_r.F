@@ -1266,8 +1266,16 @@ C    &                      IXCHNG,IKSM,JLSM,ICOUL,IRI)
 !
 !     control writing of file INDICES.x (x =0,... last slave tag)
       NOINT_FILE = .FALSE.
-C     NOINT_FILE = .TRUE.
       if( lowsrt_ijkl .or. reord_ijkl ) NOINT_FILE = .TRUE.
+C     NOINT_FILE = .TRUE.
+      IF( NOINT_FILE )THEN
+        write(LUWRT,'(/A)') ' NOTICE from DIST_INTS_SIGDEN: '
+        write(LUWRT,'( A)') ' INDICES file is not written as'
+        write(LUWRT,'(/A)') ' requested by ".IJKLRO".       '
+        write(LUWRT,'( A)') ' The calculation of natural    '
+        write(LUWRT,'( A)') ' orbital occupations numbers   '
+        write(LUWRT,'( A)') ' is therefore not allowed.     '
+      END IF
 *
 * Double group type
       if (NZ.eq.1) then

@@ -54,7 +54,7 @@ rm *.bas
 #  $ Elements Supported
 #  $ K  Ca Rb Sr Cs Ba Fr Ra
 #  $ Ga Ge As Se Br Kr In Sn Sb Te I  Xe Tl Pb Bi Po At Rn
-#  $ Y  Zr Nb Mo Tc Ru Rh Pd Ag Cd Hf Ta W  Re Os Ir Pt Au Hg
+$ Y  Zr Nb Mo Tc Ru Rh Pd Ag Cd Hf Ta W  Re Os Ir Pt Au Hg
 #  $ Rf Db Sg Bh Hs Mt Uub
 #  $ Ac Th Pa U  Np Pu Am Cm Bk Cf Es Fm Md No Lr 
 #  $ La Ce Pr Nd Pm Sm Eu Gd Tb Dy Ho Er Tm Yb Lu 

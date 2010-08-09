@@ -1594,6 +1594,9 @@ C       IDIM(1,IFRP) = NPSH(IFRP)    : number of positronic solutions
 C       IDIM(2,IFRP) = NESH(IFRP)    : number of electronic solutions
 C       IDIM(3,IFRP) = NFBAS(IFRP,0) : number of AO-basis functions
 C
+C     modified for MCSCF coefficients, occupation numbers and mj-values 
+C     by S. Knecht - April 2010
+C
 C     Written by T.Saue Sep 25 2000
 C
 C***********************************************************************
@@ -1610,6 +1613,10 @@ C     Local variables
       LOGICAL LBIT
       CHARACTER TEXT*74,CMOFIL*6,FMT*6,MXFORM*6
       DIMENSION IDIM(3,2)
+      REAL*8 CMCSCF_MAGIC
+!
+!     flag for MCSCF coefficients on file CMOFIL
+      CMCSCF_MAGIC = 137.0D0
 C
       KFRSAV = KFREE
       REWIND IUNIT
@@ -1619,12 +1626,17 @@ C     ===============
 C
       READ (IUNIT,END=10,ERR=20) TEXT,NSYM,
      &       ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
-
+!
+!     set local IOPT_TMP
+      IOPT_TMP = IOPT
+!
+!     found MCSCF coefficients on file CMOFIL?
+      IF( TOTERG .eq. CMCSCF_MAGIC ) IOPT_TMP = 14
 C
 C     File info
 C     =========
 C
-      IF(LBIT(IOPT,1)) THEN
+      IF(LBIT(IOPT_TMP,1)) THEN
         FMT = MXFORM(TOTERG,20)
         WRITE(LUPRI,'(/A,A6,3X,A,'//FMT//')')
      &   'SELOWN: Coefficients read from file ',CMOFIL,
@@ -1654,7 +1666,7 @@ C
 C     Read coefficients
 C     =================
 C    
-      IF(LBIT(IOPT,2)) THEN
+      IF(LBIT(IOPT_TMP,2)) THEN
         CALL READT(IUNIT,NCDIM,CMO)
       ELSE
         READ(IUNIT)
@@ -1663,7 +1675,7 @@ C
 C     Read eigenvalues
 C     ================
 C
-      IF(LBIT(IOPT,3)) THEN
+      IF(LBIT(IOPT_TMP,3)) THEN
         CALL READT(IUNIT,NEDIM,EIG)
       ELSE
         READ(IUNIT)
@@ -1672,7 +1684,7 @@ C
 C     Read boson irrep info
 C     =====================
 C
-      IF(LBIT(IOPT,4)) THEN
+      IF(LBIT(IOPT_TMP,4)) THEN
         CALL READI(IUNIT,NEDIM,IBEIG)
       ELSE
         READ(IUNIT)
@@ -1703,7 +1715,7 @@ C       Generate pointer array for bases
            CALL QUIT('SELOWN: Error in cf.selection !')
         ENDIF
 C       Select coefficients
-        IF(LBIT(IOPT,2)) THEN
+        IF(LBIT(IOPT_TMP,2)) THEN
           ICSEL = ICOFF + NFBAS(IFRP,0)*IOFF(IFRP)
           CALL SELOWC(INUC,CMO(ICMO),IDIM(3,IFRP),NCMO,
      &              IDIM(1,IFRP),IDIM(2,IFRP),
@@ -1714,13 +1726,13 @@ C       Select coefficients
         ENDIF
         IESEL = IEOFF + IOFF(IFRP)
 C       Select eigenvalues
-        IF(LBIT(IOPT,3)) THEN
+        IF(LBIT(IOPT_TMP,3)) THEN
           CALL SELOWE(EIG(IEIG),IDIM(1,IFRP),IDIM(2,IFRP),
      &                ESEL(IESEL),WORK(KVEC(IFRP)),
      &                NSTR(IFRP,2),NSTR(IFRP,1))
         ENDIF
 C       Select boson irrep information
-        IF(LBIT(IOPT,4)) THEN
+        IF(LBIT(IOPT_TMP,4)) THEN
           CALL SELOWB(IBEIG(IEIG),IDIM(1,IFRP),IDIM(2,IFRP),
      &                IBSEL(IESEL),WORK(KVEC(IFRP)),
      &                NSTR(IFRP,2),NSTR(IFRP,1))

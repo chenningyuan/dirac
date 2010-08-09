@@ -161,7 +161,7 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
 .UNCONT
 **HAMILTONIAN
 #.IOTC
-.X2C
+.X2COLD
 .NOAMFI
 **WAVE FUNCTION
 .DHF
