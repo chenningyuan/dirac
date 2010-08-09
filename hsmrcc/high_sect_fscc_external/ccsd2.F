@@ -3675,26 +3675,41 @@ c *************************************************
       subroutine rdin
 !--------------------------------------------------------------------------------
 !
-!           input reading routine called from each executable
+!   input reading routine called from each method routine (formerly executable)
 !
 !--------------------------------------------------------------------------------
       use print_level
 #if defined HSFS_DYN_ALLOC
       use dat_mod
-#include "implicit.h"
-#include "priunit.h"
 #else
-#include "implicit.h"
 !     implicit real*8 (a-h,o-z)
-#include "priunit.h"
 #include "dat.h"
 !      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
 #endif
+
+#include "implicit.h"
+#include "priunit.h"
 
       character typ(2,5),cc(200)
       character*8 title(10)
       data typ /'c','C','h','H','p','P','g','G','v','V'/
       logical :: is_input_file,is_open
+ 
+      logical :: dirac_input = .false.
+       
+      logical :: rdin_called = .false.
+
+      if (rdin_called) then
+       write(LUPRI,*) 'rdin was already called, leaving'
+       return
+      else
+       write(LUPRI,*) '...continuing with the rdin procedure...'
+      endif
+
+      dirac_input = .true.
+
+      if (.not.dirac_input) then
+
 
 !!! first reading of the input file - open it !!!
 !!!! anyway, input file presence must be checked !!!
@@ -3702,9 +3717,13 @@ c *************************************************
       ! needed for repeating reading by subsequent executables
       if (.not.is_input_file) then
          call quit('input file not present !')
+      else
+         write(LUPRI,*) 'input file present, is_open=',is_open
       endif
 
       rewind(LUCMD)
+
+      endif
 
 !     read (5,'(10a8)')     title
       read (LUCMD,'(10a8)')     title
@@ -3745,7 +3764,9 @@ c *************************************************
       write (LUPRI,'(i4,'' norbs. types''/(1x,80a1))')
      &        norb,(cc(i),i=1,norb)
 
-      write(LUPRI,'(/,2x,a)') 'end rdin'
+      write(LUPRI,'(/,2x,a)') 'end of rdin, returning'
+
+      rdin_called = .true.
 
       return
       end subroutine rdin
@@ -3900,6 +3921,14 @@ c *************************************************
       ! mi: save time - no typing of input, data ready
       !logical :: no_inter_rd=.true.
       logical :: no_inter_rd=.false.
+      logical :: rdsym_called=.false.  
+
+      if (rdsym_called) then    
+        write(LUPRI,'(/,2x,a,/)') 'rdsym was already read, leaving'
+        return
+      else
+        write(LUPRI,*) '...continuing rdsym procedure...'
+      endif
 
       if (no_inter_rd) then
        nclass=4
@@ -3995,8 +4024,12 @@ c *************************************************
       else
         nir=2**nsym
       end if
-  
+ 
+      rdsym_called = .true. 
       write(LUPRI,'(/,2x,a,/)') 'returning from rdsym'
+
+       ! write(LUPRI,'(/,2x,a,/)') 'rdsym was already read, leaving'
 
       return
       end subroutine rdsym
+

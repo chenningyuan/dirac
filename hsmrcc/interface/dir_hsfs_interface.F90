@@ -110,7 +110,7 @@ subroutine HSFSINP(WORD)
 ! 
 !  Called from PSIINP (dirrdn.F), entering WORD is label currently read
 !
-!  Written by Miro ILIAS, Tel Aviv, 2009
+!  Written by Miro ILIAS, Tel Aviv, 2009, Banska Bystrica, 2010
 !
 !-----------------------------------------------------------------------------
   use DIRAC_HSFS
@@ -124,7 +124,7 @@ CHARACTER(len=7), INTENT(INOUT) :: WORD
 !Logical, save :: set = .false.
 !Logical, intent(in) :: reset
 
-Logical :: PROPER_POS, iprint_read=.false.
+Logical :: PROPER_POS, iprint_read=.false., rdin_read=.false.
 
 CHARACTER:: PROMPT*1=' ',PROMPT_M*1=' ' 
 CHARACTER(len=7) :: METHOD, KEYWORD=' '
@@ -132,7 +132,7 @@ CHARACTER(len=7) :: METHOD, KEYWORD=' '
 ! ... nice F90 version 
 character(len=7) :: TABLE_TEMP, TABLE(10) =  & 
   (/'.PRINT ','.NACT  ','.NCORE ','.NOHSD ','.DRYRUN', & 
-    '.CONV  ','.METHOD','.I_FILE','.XXXXXX','.XXXXXX' /)
+    '.CONV  ','.METHOD','.I_FILE','.INPUT ','.XXXXXX' /)
 !
 !  Initializations...
 !
@@ -173,10 +173,14 @@ Do
          READ(LUCMD,*) iconv_hsfs
          write(LUPRI,*) ' read iconv_hsfs=',iconv_hsfs
        Case('.METHOD')
-         write(LUPRI,*) ' going to read methdos !'
+         write(LUPRI,*) ' going to read HSFS methdos !'
           call read_hsfs_methods(WORD)
 !      Case ('.DRYRUN')
 !        nohsccfiles=.true.
+      Case('.INPUT')
+         write(LUPRI,*) ' going to read HSFS "input" data ...'
+         call read_rdin_input(WORD)
+         rdin_read = .true.
       Case ('.I_FILE')
           i_file_based=.true.
       Case Default
@@ -184,6 +188,8 @@ Do
         '" is not yet implemented in HSFSINP.'
      End Select
     EndIf
+  Else If (rdin_read) Then
+    write(LUPRI,*) 'rdin was read...'
   Else
     WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,'" not recognized in HSFSINP.'
     CALL PRTAB(size(TABLE),TABLE,WORD//' input keywords',LUPRI)
@@ -259,6 +265,8 @@ subroutine read_hsfs_methods(WORDIN)
 !
 !    read the sequence of individual HSFS methods which are to be run
 !
+!    called from HSFSINP
+!
 !-----------------------------------------------------------------------------
  use high_sect_execs
 #include "implicit.h"
@@ -270,7 +278,7 @@ CHARACTER:: PROMPT*1=' ',PROMPT_M*1=' '
 
 IF (.NOT.WORDIN == '.METHOD') THEN
    WRITE(LUPRI,*) 'WORDIN=',WORDIN
-   CALL QUIT('read_hsfs_methods: worng entering word ! Must be .WORDIN ')
+   CALL QUIT('read_hsfs_methods: wrong entering word ! Must be .METHOD ')
 ELSE
   im = 0
   Do
@@ -305,4 +313,35 @@ ELSE
 ENDIF
 
 end subroutine read_hsfs_methods
+
+subroutine read_rdin_input(WORD)
+!
+! ... for reading "input" from within DIRAC input file ...
+!
+#if defined HSFS_DYN_ALLOC
+      use dat_mod
+      use sym_mod
+      use dpd_mod
+#else
+!     implicit real*8 (a-h,o-z)
+#include "dat.h"
+!      common /dat/   norb,ic(200),icv(200),idum2,eps(200),iopt(40)
+#include "sym.h"
+!     common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
+#include "dpd.h"
+!     common /dpd/ nir,igmt(8,8),ici(200)
+#endif
+
+#include "implicit.h"
+#include "priunit.h"
+CHARACTER(len=7) :: WORDIN, METHOD, KEYWORD=' '
+CHARACTER:: PROMPT*1=' ',PROMPT_M*1=' '
+#if defined HSFS_DYN_ALLOC
+   call init_dat_mod
+   call init_sym_mod
+   call init_dpd_mod
+#endif
+   call rdin
+   call rdsym
+end subroutine read_rdin_input
 

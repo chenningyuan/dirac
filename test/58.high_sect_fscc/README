@@ -1,10 +1,47 @@
  
-Basis tests for the spin-free higher-sectors Fock Space Coupled Cluster method.
+Tests for the spin-free higher-sectors Fock Space Coupled Cluster method.
 
 You have to prepare the "input" file and copy it to working directory:
-   
+  
+   copy input_Mg input 
    pam -copy input -noarch Mg.D2h.mol dc_sf.scf_motra_hsfs.inp
 
 
+results:
 
- 
+CCSD 02: -0.13113488967157
+relcc  : -0.131134892087296
+
+01:   -0.52345057E+00. degen  2.
+      -0.523450570249
+      -0.22231511E+00. degen  2
+      -0.222315110263
+      0.60482483E+00. degen  6.
+      0.604824830845
+
+02:   -0.77584492E+00. degen  1.
+      -0.775844923290
+      -0.60277004E+00. degen  3.
+      -0.602770039654
+      -0.58644739E+00. degen  1.
+      -0.586447396947
+      -0.32064907E+00. degen  1.
+      -0.320649068442
+
+20:    0.68347932E+01. degen  9.
+       6.834793186609
+       0.70102683E+01. degen  5.
+       7.010268354366
+       0.71926553E+01. degen  1.
+       7.192655334165
+
+
+.... differences !
+11:    0.19901840E+01. degen  9.
+       1.989659151079
+       0.20075755E+01. degen  3.
+       2.007207787789
+       0.25112430E+01. degen  9.
+       2.511157022314
+
+

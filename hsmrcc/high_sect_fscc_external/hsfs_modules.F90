@@ -271,14 +271,20 @@ module dpd_mod
 ! .. to replace dpd.h
 integer :: nir
 integer, allocatable :: igmt(:,:),ici(:)
+logical :: dpd_mod_initialized = .false.
 contains
 subroutine init_dpd_mod
  use hsfs_parameters
 #include "priunit.h"
 integer,parameter :: dpd_size=200
+if (.not.dpd_mod_initialized) then
 allocate(ici(1:dpd_size))
 allocate(igmt(1:8,1:8))
  write(LUPRI,*) 'dpd_mod initialized'
+ dpd_mod_initialized = .true.
+else 
+ write(LUPRI,*) 'dpd_mod was already initialized, leaving'
+endif
 end subroutine init_dpd_mod
 
 subroutine dealloc_dpd_mod
@@ -377,16 +383,27 @@ module dat_mod
 integer :: norb, idum2
 integer, allocatable  :: ic(:), icv(:), iopt(:)
 real*8, allocatable  :: eps(:)
+logical :: dat_mod_initialized = .false.
 contains
 subroutine init_dat_mod
  use hsfs_parameters
 #include "priunit.h"
 integer, parameter :: dat_size=200, iopt_size=40
+
+if (.not.dat_mod_initialized) then
+!
 allocate(ic(1:dat_size))
 allocate(icv(1:dat_size))
 allocate(eps(1:dat_size))
 allocate(iopt(1:iopt_size))
+!
+ dat_mod_initialized = .true.
  write(LUPRI,*) 'dat_mod initialized'
+!
+else
+ write(LUPRI,*) 'dat_mod was already initialized'
+endif
+
 end subroutine init_dat_mod
 
 subroutine dealloc_dat_mod
@@ -435,13 +452,19 @@ module sym_mod
 ! .. to replace sym.h
 integer ::  nsym,nclass
 integer, allocatable  :: iclass(:),isym(:,:),ibias(:)
+logical :: sym_mod_initialized = .false.
 contains
 subroutine init_sym_mod
 #include "priunit.h"
+if (.not.sym_mod_initialized) then
 allocate(iclass(1:16))
 allocate(isym(1:16,1:8))
 allocate(ibias(1:17))
+ sym_mod_initialized = .true.
  write(LUPRI,*) 'sym_mod initialized'
+else
+  write(LUPRI,*) 'sym_mod was initialized, leaving'
+endif
 end subroutine init_sym_mod
 
 subroutine dealloc_sym_mod
