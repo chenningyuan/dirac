@@ -38,7 +38,7 @@ contains
     dimp = 1
     l = 'EL'
 
-    call get_P('ZDIPLEN', P)
+    call read_1el_integrals('ZDIPLEN', P)
 
     do iorder = 1, max_order
       Dp(iorder) = 1.0d-100*D

@@ -8,113 +8,26 @@ module openrsp_interface_1el
    implicit none
 
    public order_1el_integrals
-   public di_read_operator_int
-   public get_P
+   public read_1el_integrals
 
    private
 
-  interface di_read_operator_int
-    module procedure get_P
-  end interface
+   integer, parameter :: max_aoproper_indices = 900
+   character(16)      :: op_name_to_aoproper_index(max_aoproper_indices) = '----------------'
 
-
-  integer, parameter :: max_aoproper_indices = 900
-  character(16)      :: op_name_to_aoproper_index(max_aoproper_indices) = '----------------'
-
-  character(2)       ::  i_iter(3) = (/ 'X',  'Y',  'Z'/)
-  character(2)       :: ij_iter(6) = (/'XX', 'XY', 'XZ', 'YY', 'YZ', 'ZZ'/)
-
-#include "priunit.h"
-#include "mxcent.h"
-#include "../abacus/cbinuc.h"
-#include "cbihr2.h"
 #include "dcbbas.h"
 #include "dcbcls.h"
 #include "dcbgen.h"
-#include "dcbgrd.h"
-#include "dcbham.h"
-#include "dcborb.h"
 #include "dcbprl.h"
 #include "dcbxpr.h"
-#include "dcbxrs.h"
 #include "dgroup.h"
-#include "dipole.h"
-#include "dorps.h"
-#include "exeinf.h"
+#include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "nqcc.h"
-
-
 
 contains
-
-  subroutine get_P(op_name, P)
-
-    character(*),  intent(in)    :: op_name
-    type(matrix),  intent(inout) :: P
-!   ----------------------------------------------------------------------------
-    real(8), allocatable   :: ptri(:), op1int(:)
-    logical,       allocatable   :: first(:)
-    logical                      :: lexpst(2) = .false.
-    integer                      :: op_index, file_unit, idimension
-    real(8)                :: dummy_dp
-    logical                      :: file_exists, debug_me = .false.
-
-    real(8), pointer   :: work(:)
-    integer            :: lwork
-
-    file_unit = lu1int
-    call opnfil(file_unit, 'AOPROPER', 'UNKNOWN', 'get_P')
-    rewind file_unit
-
-    op_index = index_on_aoproper(op_name)
-
-    idimension = nnbbasx
-    if (iprptim(op_index) == 0) then
-      idimension = n2bbasx
-    end if
-
-    call alloc(ptri, nz*idimension)
-    call alloc(op1int, idimension)
-    allocate(first(nz))
-
-    if (.not. isdef(P)) call init_mat(P, ntbas(0), ntbas(0))
-    P%elms = 0.0d0
-
-    P%irep   = iprpsym(op_index) - 1
-    P%tr_sym = iprptim(op_index)
-    P%ih_sym = P%tr_sym
-
-    lwork = n2bbasxq*2
-    call di_select_wrk(work, lwork)
-
-    call prpex2(op_index,   &
-                dummy_dp,   &
-                .false.,    &
-                lexpst,     &
-                idimension, &
-                ptri,       &
-                P%elms,     &
-                op1int,     &
-                first,      &
-                work, 1, lwork, 0)
-
-    call di_deselect_wrk(work, lwork)
-    close(file_unit, status = 'keep')
-
-    if (debug_me) then
-      call print_mat(P, label = 'debug P in AO basis')
-    end if
-
-    call dealloc(ptri)
-    call dealloc(op1int)
-    deallocate(first)
-
-  end subroutine
-
 
    subroutine order_1el_integrals()
 
@@ -124,594 +37,611 @@ contains
       character(8) :: s, s1, s2, s3
       real(8)      :: f
       integer      :: i, ij, iatom
+      character(2) ::  i_iter(3) = (/ 'X',  'Y',  'Z'/)
+      character(2) :: ij_iter(6) = (/'XX', 'XY', 'XZ', 'YY', 'YZ', 'ZZ'/)
 !     --------------------------------------------------------------------------
 !     todo: 1. adapt for symmetry
 !              only diplen is right at the moment
 !           2. generalize for other hamiltonians
 !              not every combination hamiltonian--property is tested
+!     --------------------------------------------------------------------------
 
 
-!     decide what to do with the small small metric
+!     decide what to do with the small-small metric
 !     =============================================
 
       ss = '0'
       if (nonzero_small_metric) ss = '+'
 
 
-!   add to dcbcls
-!   =============
+!     add to dcbcls
+!     =============
 
-!                               for the electric field
-    call request_1el_integrals('DIPLEN ', '+00'//ss)
-    call request_1el_integrals('DPLGRA ', '+00'//ss)
-    call request_1el_integrals('QUAGRA ', '+00'//ss)
-!                               for the magnetic field
-    call request_1el_integrals('DIPLEN ', '0++0')
-    call request_1el_integrals('DPLGRA ', '0++0')
+!     electric field
+      call add_class('DIPLEN ', '+00'//ss)
+      call add_class('DPLGRA ', '+00'//ss)
+      call add_class('QUAGRA ', '+00'//ss)
 
-    call request_1el_integrals('THETA  ', '+00'//ss)
-    call request_1el_integrals('DSUSCGO', '+00'//ss)
-    call request_1el_integrals('G1O    ', '+00'//ss)
-    call request_1el_integrals('G1N    ', '+00'//ss)
-    call request_1el_integrals('G1B    ', '000+')
-    call request_1el_integrals('G1KX   ', '0++0')
-    call request_1el_integrals('G1KY   ', '0++0')
-    call request_1el_integrals('G1KZ   ', '0++0')
+!     magnetic field
+      call add_class('DIPLEN ', '0++0')
+      call add_class('DPLGRA ', '0++0')
 
-!   dbet/dB
-    call request_1el_integrals('S1MAG  ', '000+')
-!   dbet/dB2
-    call request_1el_integrals('S2MAG  ', '000+')
+      call add_class('THETA  ', '+00'//ss)
+      call add_class('DSUSCGO', '+00'//ss)
+      call add_class('G1O    ', '+00'//ss)
+      call add_class('G1N    ', '+00'//ss)
+      call add_class('G1B    ', '000+')
+      call add_class('G1KX   ', '0++0')
+      call add_class('G1KY   ', '0++0')
+      call add_class('G1KZ   ', '0++0')
 
-!   dnuc/dB
-    call request_1el_integrals('RM1H2  ', '+00'//ss)
-!   dnuc/dB2
-    call request_1el_integrals('RM2H2  ', '+00'//ss)
+!     dbet/dB
+      call add_class('S1MAG  ', '000+')
+!     dbet/dB2
+      call add_class('S2MAG  ', '000+')
 
-!   dkin/dB
-    call request_1el_integrals('RM1H3  ', '0++0')
-!   dkin/dB2
-    call request_1el_integrals('RM2H3  ', '0++0')
+!     dnuc/dB
+      call add_class('RM1H2  ', '+00'//ss)
+!     dnuc/dB2
+      call add_class('RM2H2  ', '+00'//ss)
 
-!   dvec/dB
-    call request_1el_integrals('RM1RN  ', '0++0')
+!     dkin/dB
+      call add_class('RM1H3  ', '0++0')
+!     dkin/dB2
+      call add_class('RM2H3  ', '0++0')
 
-!   dS/dB
-    call request_1el_integrals('S1MAG  ', '+00'//ss)
-!   dS/dB2
-    call request_1el_integrals('S2MAG  ', '+00'//ss)
+!     dvec/dB
+      call add_class('RM1RN  ', '0++0')
 
-
-!   add to dcbxpr and dcbprl
-!   ========================
-
-    f = 1.0d0
-    blocks = '+00'//ss
-    call add_op('XDIPLEN         ', &
-                blocks,             &
-                1,                  &
-                1,                  &
-                (isymax(1, 1) + 1), &
-                (/f/),              &
-                (/'XDIPLEN '/))
-    call add_op('YDIPLEN         ', &
-                blocks,             &
-                1,                  &
-                1,                  &
-                (isymax(2, 1) + 1), &
-                (/f/),              &
-                (/'YDIPLEN '/))
-    call add_op('ZDIPLEN         ', &
-                blocks,             &
-                1,                  &
-                1,                  &
-                (isymax(3, 1) + 1), &
-                (/f/),              &
-                (/'ZDIPLEN '/))
-
-    f = 1.0d0
-    blocks = '+00'//ss
-    do ij = 1, size(ij_iter)
-      s = ij_iter(ij)//'THETA '
-      call add_op(s//'        ',      &
-                  blocks,             &
-                  1,                  &
-                  1,                  &
-                  1,                  &
-                  (/f/),              &
-                  (/s/))
-    end do
-
-    f = 0.5d0*cval
-    blocks = '0++0'
-    call add_op('XANGMOM         ', &
-                blocks,             &
-                5,                  &
-               -1,                  &
-                1,                  &
-                (/f, f/),           &
-                (/'ZDIPLEN ', 'YDIPLEN '/))
-    call add_op('YANGMOM         ', &
-                blocks,             &
-                6,                  &
-               -1,                  &
-                1,                  &
-                (/f, f/),           &
-                (/'XDIPLEN ', 'ZDIPLEN '/))
-    call add_op('ZANGMOM         ', &
-                blocks,             &
-                7,                  &
-               -1,                  &
-                1,                  &
-                (/f, f/),           &
-                (/'YDIPLEN ', 'XDIPLEN '/))
+!     dS/dB
+      call add_class('S1MAG  ', '+00'//ss)
+!     dS/dB2
+      call add_class('S2MAG  ', '+00'//ss)
 
 
+!     add to dcbxpr and dcbprl
+!     ========================
 
-
-
-
-
-
-    f = -cval
-    blocks = '0++0'
-    do iatom = 1, nr_atoms*3
-      s1 = prefix_zeros(iatom, 2)//' DPG Z'
-      s2 = prefix_zeros(iatom, 2)//' DPG Y'
-      call add_op(prefix_zeros(iatom, 3)//'AMDRX        ', &
-                  blocks,                                  &
-                  5,                                       &
-                 -1,                                       &
-                  1,                                       &
-                  (/f,  f/),                               &
-                  (/s1, s2/))
-      s1 = prefix_zeros(iatom, 2)//' DPG X'
-      s2 = prefix_zeros(iatom, 2)//' DPG Z'
-      call add_op(prefix_zeros(iatom, 3)//'AMDRY        ', &
-                  blocks,                                  &
-                  6,                                       &
-                 -1,                                       &
-                  1,                                       &
-                  (/f,  f/),                               &
-                  (/s1, s2/))
-      s1 = prefix_zeros(iatom, 2)//' DPG Y'
-      s2 = prefix_zeros(iatom, 2)//' DPG X'
-      call add_op(prefix_zeros(iatom, 3)//'AMDRZ        ', &
-                  blocks,                                  &
-                  7,                                       &
-                 -1,                                       &
-                  1,                                       &
-                  (/f,  f/),                               &
-                  (/s1, s2/))
-    end do
-
-    f = 1.0d0
-    blocks = '+00'//ss
-    do ij = 1, size(ij_iter)
-      s = ij_iter(ij)//'SUSCGO'
-      call add_op(s//'        ',      &
-                  blocks,             &
-                  1,                  &
-                  1,                  &
-                  1,                  &
-                  (/f/),              &
-                  (/s/))
-    end do
-
-    f = 1.0d0
-    blocks = '+00'//ss
-    do iatom = 1, nr_atoms*3
+      f = 1.0d0
+      blocks = '+00'//ss
       do i = 1, size(i_iter)
-        s = prefix_zeros(iatom, 2)//' DPG '//i_iter(i)
-        call add_op(s//'        ',      &
-                    blocks,             &
-                    1,                  &
-                    1,                  &
-                    1,                  &
-                    (/f/),              &
-                    (/s/))
+         s      = ' DIPLEN '
+         s(1:1) = i_iter(i)
+         call add_operator(s // '        ',    &
+                           blocks,             &
+                           1,                  &
+                           1,                  &
+                           (isymax(i, 1) + 1), &
+                           (/f/),              &
+                           (/s/))
       end do
-    end do
 
-    f = 1.0d0
-    blocks = '+00'//ss
-    do iatom = 1, nr_atoms*3
+      f = 1.0d0
+      blocks = '+00'//ss
       do ij = 1, size(ij_iter)
-        s = prefix_zeros(iatom, 2)//'QDG '//ij_iter(ij)
-        call add_op(s//'        ',      &
-                    blocks,             &
-                    1,                  &
-                    1,                  &
-                    1,                  &
-                    (/f/),              &
-                    (/s/))
+         s = ij_iter(ij) // 'THETA '
+         call add_operator(s // '        ', &
+                           blocks,          &
+                           1,               &
+                           1,               &
+                           1,               &
+                           (/f/),           &
+                           (/s/))
       end do
-    end do
 
-    f = 1.0d0
-    blocks = '+00'//ss
-    do iatom = 1, nr_atoms*3
-      s = 'G1O'//prefix_zeros(iatom, 3)//'  '
-      call add_op(s//'        ',      &
-                  blocks,             &
-                  1,                  &
-                  1,                  &
-                  1,                  &
-                  (/f/),              &
-                  (/s/))
-    end do
+      f = 0.5d0*cval
+      blocks = '0++0'
+      call add_operator('XANGMOM         ', &
+                        blocks,             &
+                        5,                  &
+                       -1,                  &
+                        1,                  &
+                        (/f, f/),           &
+                        (/'ZDIPLEN ', 'YDIPLEN '/))
+      call add_operator('YANGMOM         ', &
+                        blocks,             &
+                        6,                  &
+                       -1,                  &
+                        1,                  &
+                        (/f, f/),           &
+                        (/'XDIPLEN ', 'ZDIPLEN '/))
+      call add_operator('ZANGMOM         ', &
+                        blocks,             &
+                        7,                  &
+                       -1,                  &
+                        1,                  &
+                        (/f, f/),           &
+                        (/'YDIPLEN ', 'XDIPLEN '/))
 
-    f = 1.0d0
-    blocks = '+00'//ss
-    do iatom = 1, nr_atoms*3
-      s = 'G1N'//prefix_zeros(iatom, 3)//'  '
-      call add_op(s//'        ',      &
-                  blocks,             &
-                  1,                  &
-                  1,                  &
-                  1,                  &
-                  (/f/),              &
-                  (/s/))
-    end do
+      f = -cval
+      blocks = '0++0'
+      do iatom = 1, nr_atoms*3
+         s1 = prefix_zeros(iatom, 2) // ' DPG Z'
+         s2 = prefix_zeros(iatom, 2) // ' DPG Y'
+         call add_operator(prefix_zeros(iatom, 3) // 'AMDRX        ', &
+                           blocks,                                    &
+                           5,                                         &
+                          -1,                                         &
+                           1,                                         &
+                           (/f,  f/),                                 &
+                           (/s1, s2/))
+         s1 = prefix_zeros(iatom, 2) // ' DPG X'
+         s2 = prefix_zeros(iatom, 2) // ' DPG Z'
+         call add_operator(prefix_zeros(iatom, 3) // 'AMDRY        ', &
+                           blocks,                                    &
+                           6,                                         &
+                          -1,                                         &
+                           1,                                         &
+                           (/f,  f/),                                 &
+                           (/s1, s2/))
+         s1 = prefix_zeros(iatom, 2) // ' DPG Y'
+         s2 = prefix_zeros(iatom, 2) // ' DPG X'
+         call add_operator(prefix_zeros(iatom, 3) // 'AMDRZ        ', &
+                           blocks,                                    &
+                           7,                                         &
+                          -1,                                         &
+                           1,                                         &
+                           (/f,  f/),                                 &
+                           (/s1, s2/))
+      end do
 
-    f = 2.0d0*(cval**2.0d0)
-    blocks = '000+'
-    do iatom = 1, nr_atoms*3
-      s = 'G1B'//prefix_zeros(iatom, 3)//'  '
-      call add_op(s//'        ',      &
-                  blocks,             &
-                  1,                  &
-                  1,                  &
-                  1,                  &
-                  (/f/),              &
-                  (/s/))
-    end do
+      f = 1.0d0
+      blocks = '+00'//ss
+      do ij = 1, size(ij_iter)
+         s = ij_iter(ij) // 'SUSCGO'
+         call add_operator(s // '        ', &
+                           blocks,          &
+                           1,               &
+                           1,               &
+                           1,               &
+                           (/f/),           &
+                           (/s/))
+      end do
 
-    f = cval
-    blocks = '0++0'
-    do iatom = 1, nr_atoms*3
-      s = 'G1KX'//prefix_zeros(iatom, 3)//'  '
-      call add_op(s//'        ',      &
-                  blocks,             &
-                  1,                  &
-                 -1,                  &
-                  1,                  &
-                  (/f/),              &
-                  (/s/))
-    end do
-    do iatom = 1, nr_atoms*3
-      s = 'G1KY'//prefix_zeros(iatom, 3)//'  '
-      call add_op(s//'        ',      &
-                  blocks,             &
-                  1,                  &
-                 -1,                  &
-                  1,                  &
-                  (/f/),              &
-                  (/s/))
-    end do
-    do iatom = 1, nr_atoms*3
-      s = 'G1KZ'//prefix_zeros(iatom, 3)//'  '
-      call add_op(s//'        ',      &
-                  blocks,             &
-                  1,                  &
-                 -1,                  &
-                  1,                  &
-                  (/f/),              &
-                  (/s/))
-    end do
+      f = 1.0d0
+      blocks = '+00'//ss
+      do iatom = 1, nr_atoms*3
+         do i = 1, size(i_iter)
+            s = prefix_zeros(iatom, 2) // ' DPG ' // i_iter(i)
+            call add_operator(s // '        ', &
+                              blocks,          &
+                              1,               &
+                              1,               &
+                              1,               &
+                              (/f/),           &
+                              (/s/))
+         end do
+      end do
 
+      f = 1.0d0
+      blocks = '+00'//ss
+      do iatom = 1, nr_atoms*3
+         do ij = 1, size(ij_iter)
+            s = prefix_zeros(iatom, 2) // 'QDG ' // ij_iter(ij)
+            call add_operator(s // '        ', &
+                              blocks,          &
+                              1,               &
+                              1,               &
+                              1,               &
+                              (/f/),           &
+                              (/s/))
+         end do
+      end do
 
+      f = 1.0d0
+      blocks = '+00'//ss
+      do iatom = 1, nr_atoms*3
+         s = 'G1O' // prefix_zeros(iatom, 3) // '  '
+         call add_operator(s // '        ', &
+                           blocks,          &
+                           1,               &
+                           1,               &
+                           1,               &
+                           (/f/),           &
+                           (/s/))
+      end do
 
+      f = 1.0d0
+      blocks = '+00'//ss
+      do iatom = 1, nr_atoms*3
+         s = 'G1N' // prefix_zeros(iatom, 3) // '  '
+         call add_operator(s // '        ', &
+                           blocks,          &
+                           1,               &
+                           1,               &
+                           1,               &
+                           (/f/),           &
+                           (/s/))
+      end do
 
+      f = 2.0d0*cval*cval
+      blocks = '000+'
+      do iatom = 1, nr_atoms*3
+         s = 'G1B' // prefix_zeros(iatom, 3) // '  '
+         call add_operator(s // '        ', &
+                           blocks,          &
+                           1,               &
+                           1,               &
+                           1,               &
+                           (/f/),           &
+                           (/s/))
+      end do
 
-!   dbet/dB
-    f = -2.0d0*cval*cval
-    blocks = '000+'
-    do i = 1, size(i_iter)
-!           12345678
-       s = 'dS/dB   '
-       s(6:6) = i_iter(i)
-!                   1234567     8             90123456
-       call add_op('dbet/dB' // i_iter(i) // '        ', &
-                   blocks,                               &
-                   1,                                    &
-                  -1,                                    &
-                   1,                                    &
-                   (/f/),                                &
-                   (/s/))
-    end do
-!   dbet/dB2
-    do ij = 1, size(ij_iter)
-!           123456     78
-       s = 'dS/dB2' // ij_iter(ij)
-!                   12345678     9               123456
-       call add_op('dbet/dB2' // ij_iter(ij) // '      ', &
-                   blocks,                                &
-                   1,                                     &
-                   1,                                     &
-                   1,                                     &
-                   (/f/),                                 &
-                   (/s/))
-    end do
+      f = cval
+      blocks = '0++0'
+      do iatom = 1, nr_atoms*3
+         do i = 1, size(i_iter)
+            s      = 'G1K     '
+            s(4:4) = i_iter(i)
+            s(5:7) = prefix_zeros(iatom, 3)
+            call add_operator(s // '        ',    &
+                              blocks,             &
+                              1,                  &
+                             -1,                  &
+                              1,                  &
+                              (/f/),              &
+                              (/s/))
+         end do
+      end do
 
-!   dnuc/dB
-    f = 1.0d0
-    blocks = '+00'//ss
-    do i = 1, size(i_iter)
-!           12345678
-       s = ' RM1H2  '
-       s(1:1) = i_iter(i)
-!                   12345678     9             0123456
-       call add_op('dnuc/dB2' // i_iter(i) // '       ', &
-                   blocks,                               &
-                   1,                                    &
-                  -1,                                    &
-                   1,                                    &
-                   (/f/),                                &
-                   (/s/))
-    end do
-!   dnuc/dB2
-    do ij = 1, size(ij_iter)
-!           12345678
-       s = '  RM2H2 '
-       s(1:2) = ij_iter(ij)
-!                   12345678     9               123456
-       call add_op('dnuc/dB2' // ij_iter(ij) // '      ', &
-                   blocks,                                &
-                   1,                                     &
-                   1,                                     &
-                   1,                                     &
-                   (/f/),                                 &
-                   (/s/))
-    end do
+!     dbet/dB
+      f = -2.0d0*cval*cval
+      blocks = '000+'
+      do i = 1, size(i_iter)
+         s = 'dS/dB   '
+         s(6:6) = i_iter(i)
+         call add_operator('dbet/dB' // i_iter(i) // '        ', &
+                           blocks,                               &
+                           1,                                    &
+                          -1,                                    &
+                           1,                                    &
+                           (/f/),                                &
+                           (/s/))
+      end do
+!     dbet/dB2
+      do ij = 1, size(ij_iter)
+         s = 'dS/dB2' // ij_iter(ij)
+         call add_operator('dbet/dB2' // ij_iter(ij) // '      ', &
+                           blocks,                                &
+                           1,                                     &
+                           1,                                     &
+                           1,                                     &
+                           (/f/),                                 &
+                           (/s/))
+      end do
 
-!   dkin/dB
-    f = cval
-    blocks = '0++0'
-    do i = 1, size(i_iter)
-!            12345678
-       s1 = ' RM1H3X '
-       s2 = ' RM1H3Y '
-       s3 = ' RM1H3Z '
-       s1(1:1) = i_iter(i)
-       s2(1:1) = i_iter(i)
-       s3(1:1) = i_iter(i)
-!                   1234567     8             90123456
-       call add_op('dkin/dB' // i_iter(i) // '        ', &
-                   blocks,                               &
-                   8,                                    &
-                   0,                                    &
-                   1,                                    &
-                   (/f,  f,  f/),                        &
-                   (/s1, s2, s3/))
-    end do
-!   dkin/dB2
-    do ij = 1, size(ij_iter)
-!            12345678
-       s1 = '  RM2H3X'
-       s2 = '  RM2H3Y'
-       s3 = '  RM2H3Z'
-       s1(1:2) = ij_iter(ij)
-       s2(1:2) = ij_iter(ij)
-       s3(1:2) = ij_iter(ij)
-!                   12345678     9               123456
-       call add_op('dkin/dB2' // ij_iter(ij) // '      ', &
-                   blocks,                                &
-                   8,                                     &
-                   0,                                     &
-                   1,                                     &
-                   (/f,  f,  f/),                         &
-                   (/s1, s2, s3/))
-    end do
+!     dnuc/dB
+      f = 1.0d0
+      blocks = '+00'//ss
+      do i = 1, size(i_iter)
+         s = ' RM1H2  '
+         s(1:1) = i_iter(i)
+         call add_operator('dnuc/dB2' // i_iter(i) // '       ', &
+                           blocks,                               &
+                           1,                                    &
+                          -1,                                    &
+                           1,                                    &
+                           (/f/),                                &
+                           (/s/))
+      end do
+!     dnuc/dB2
+      do ij = 1, size(ij_iter)
+         s = '  RM2H2 '
+         s(1:2) = ij_iter(ij)
+         call add_operator('dnuc/dB2' // ij_iter(ij) // '      ', &
+                           blocks,                                &
+                           1,                                     &
+                           1,                                     &
+                           1,                                     &
+                           (/f/),                                 &
+                           (/s/))
+      end do
 
-!   dvec/dB
-    f = 0.5d0*cval
-    blocks = '0++0'
-    call add_op('dvec/dBX        ', &
-                blocks,             &
-                5,                  &
-                0,                  &
-                1,                  &
-                (/f, f/),           &
-                (/'ZRM1RN  ', 'YRM1RN  '/))
-    call add_op('dvec/dBY        ', &
-                blocks,             &
-                6,                  &
-                0,                  &
-                1,                  &
-                (/f, f/),           &
-                (/'XRM1RN  ', 'ZRM1RN  '/))
-    call add_op('dvec/dBZ        ', &
-                blocks,             &
-                7,                  &
-                0,                  &
-                1,                  &
-                (/f, f/),           &
-                (/'YRM1RN  ', 'XRM1RN  '/))
+!     dkin/dB
+      f = cval
+      blocks = '0++0'
+      do i = 1, size(i_iter)
+         s1 = ' RM1H3X '
+         s2 = ' RM1H3Y '
+         s3 = ' RM1H3Z '
+         s1(1:1) = i_iter(i)
+         s2(1:1) = i_iter(i)
+         s3(1:1) = i_iter(i)
+         call add_operator('dkin/dB' // i_iter(i) // '        ', &
+                           blocks,                               &
+                           8,                                    &
+                           0,                                    &
+                           1,                                    &
+                           (/f,  f,  f/),                        &
+                           (/s1, s2, s3/))
+      end do
+!     dkin/dB2
+      do ij = 1, size(ij_iter)
+         s1 = '  RM2H3X'
+         s2 = '  RM2H3Y'
+         s3 = '  RM2H3Z'
+         s1(1:2) = ij_iter(ij)
+         s2(1:2) = ij_iter(ij)
+         s3(1:2) = ij_iter(ij)
+         call add_operator('dkin/dB2' // ij_iter(ij) // '      ', &
+                           blocks,                                &
+                           8,                                     &
+                           0,                                     &
+                           1,                                     &
+                           (/f,  f,  f/),                         &
+                           (/s1, s2, s3/))
+      end do
 
-!   dS/dB
-    f = 1.0d0
-    blocks = '+00'//ss
-    do i = 1, size(i_iter)
-!           12345678
-       s = 'dS/dB   '
-       s(6:6) = i_iter(i)
-!                   12345     6             7890123456
-       call add_op('dS/dB' // i_iter(i) // '          ', &
-                   blocks,                               &
-                   1,                                    &
-                  -1,                                    &
-                   1,                                    &
-                   (/f/),                                &
-                   (/s/))
-    end do
-!   dS/dB2
-    do ij = 1, size(ij_iter)
-!           123456     78
-       s = 'dS/dB2' // ij_iter(ij)
-!                   123456     78              90123456
-       call add_op('dS/dB2' // ij_iter(ij) // '        ', &
-                   blocks,                                &
-                   1,                                     &
-                   1,                                     &
-                   1,                                     &
-                   (/f/),                                 &
-                   (/s/))
-    end do
+!     dvec/dB
+      f = 0.5d0*cval
+      blocks = '0++0'
+      call add_operator('dvec/dBX        ', &
+                        blocks,             &
+                        5,                  &
+                        0,                  &
+                        1,                  &
+                        (/f, f/),           &
+                        (/'ZRM1RN  ', 'YRM1RN  '/))
+      call add_operator('dvec/dBY        ', &
+                        blocks,             &
+                        6,                  &
+                        0,                  &
+                        1,                  &
+                        (/f, f/),           &
+                        (/'XRM1RN  ', 'ZRM1RN  '/))
+      call add_operator('dvec/dBZ        ', &
+                        blocks,             &
+                        7,                  &
+                        0,                  &
+                        1,                  &
+                        (/f, f/),           &
+                        (/'YRM1RN  ', 'XRM1RN  '/))
+
+!     dS/dB
+      f = 1.0d0
+      blocks = '+00'//ss
+      do i = 1, size(i_iter)
+         s = 'dS/dB   '
+         s(6:6) = i_iter(i)
+         call add_operator('dS/dB' // i_iter(i) // '          ', &
+                           blocks,                               &
+                           1,                                    &
+                          -1,                                    &
+                           1,                                    &
+                           (/f/),                                &
+                           (/s/))
+      end do
+!     dS/dB2
+      do ij = 1, size(ij_iter)
+         s = 'dS/dB2' // ij_iter(ij)
+         call add_operator('dS/dB2' // ij_iter(ij) // '        ', &
+                           blocks,                                &
+                           1,                                     &
+                           1,                                     &
+                           1,                                     &
+                           (/f/),                                 &
+                           (/s/))
+      end do
 
    end subroutine
 
-  subroutine add_op(op_name,    &
-                    blocks,     &
-                    typ,        &
-                    tr_sym,     &
-                    pg_sym,     &
-                    prefactors, &
-                    labels)
+   subroutine read_1el_integrals(op_name, P)
 
-!   ----------------------------------------------------------------------------
-    character(16), intent(in) :: op_name
-    character(4),  intent(in) :: blocks
-    integer,       intent(in) :: typ
-    integer,       intent(in) :: tr_sym
-    integer,       intent(in) :: pg_sym
-    real(8),       intent(in) :: prefactors(:)
-    character(8),  intent(in) :: labels(:)
-!   ----------------------------------------------------------------------------
-    integer                   :: i, ixpr, iprl
-!   ----------------------------------------------------------------------------
+!     --------------------------------------------------------------------------
+      character(*),  intent(in)    :: op_name
+      type(matrix),  intent(inout) :: P
+!     --------------------------------------------------------------------------
+      real(8), allocatable         :: ptri(:)
+      real(8), allocatable         :: op1int(:)
+      logical, allocatable         :: first(:)
+      logical                      :: lexpst(2) = .false.
+      integer                      :: op_index, file_unit, idimension
+      real(8)                      :: dummy_dp
+      logical                      :: file_exists
+      logical                      :: debug_me = .false.
+      real(8), pointer             :: work(:)
+      integer                      :: lwork
+!     --------------------------------------------------------------------------
 
-    ixpr = nprps + 1
-    iprl = nprplbl
+      file_unit = lu1int
+      call opnfil(file_unit, 'AOPROPER', 'UNKNOWN', 'read_1el_integrals')
+      rewind file_unit
 
-    if (ixpr > maxprps) then
-      call quit('add_op: ixpr > maxprps')
-    end if
+      op_index = index_on_aoproper(op_name)
 
-    prpnam(ixpr)  = op_name
-    iprptyp(ixpr) = typ
-    iprpsym(ixpr) = pg_sym
-    iprptim(ixpr) = tr_sym
-
-    do i = 1, size(prefactors)
-
-      iprl = iprl + 1
-
-      if (iprl > maxprplbl) then
-        call quit('add_op: iprl > maxprplbl')
+      idimension = nnbbasx
+      if (iprptim(op_index) == 0) then
+         idimension = n2bbasx
       end if
 
-      prplbl(iprl)  = labels(i)
-      pdoint(iprl)  = blocks
-      iprlrep(iprl) = pg_sym - 1
-      iprltyp(iprl) = tr_sym
+      call alloc(ptri, nz*idimension)
+      call alloc(op1int, idimension)
+      allocate(first(nz))
 
-      facprp(i, ixpr)  = prefactors(i)
-      iprplbl(i, ixpr) = iprl
+      if (.not. isdef(P)) call init_mat(P, ntbas(0), ntbas(0))
+      P%elms = 0.0d0
 
-    end do
+      P%irep   = iprpsym(op_index) - 1
+      P%tr_sym = iprptim(op_index)
+      P%ih_sym = P%tr_sym
 
-    nprps   = ixpr
-    nprplbl = iprl
+      lwork = n2bbasxq*2
+      call di_select_wrk(work, lwork)
 
-!   private
-    op_name_to_aoproper_index(ixpr) = op_name
+      call prpex2(op_index,   &
+                  dummy_dp,   &
+                  .false.,    &
+                  lexpst,     &
+                  idimension, &
+                  ptri,       &
+                  P%elms,     &
+                  op1int,     &
+                  first,      &
+                  work, 1, lwork, 0)
 
-  end subroutine
+      call di_deselect_wrk(work, lwork)
+      close(file_unit, status = 'keep')
 
-  subroutine print_prp_common_blocks()
-
-!   ----------------------------------------------------------------------------
-    integer :: i
-!   ----------------------------------------------------------------------------
-
-    do i = 1, nprps
-      write(*, *) 'dcbxpr:  --------------'
-      write(*, *) 'dcbxpr:  i             ', i
-      write(*, *) 'dcbxpr:  prpnam(i)     ', prpnam(i)
-      write(*, *) 'dcbxpr:  iprptyp(i)    ', iprptyp(i)
-      write(*, *) 'dcbxpr:  iprpsym(i)    ', iprpsym(i)
-      write(*, *) 'dcbxpr:  iprptim(i)    ', iprptim(i)
-      write(*, *) 'dcbxpr:  facprp(1, i)  ', facprp(1, i)
-      write(*, *) 'dcbxpr:  facprp(2, i)  ', facprp(2, i)
-      write(*, *) 'dcbxpr:  facprp(3, i)  ', facprp(3, i)
-      write(*, *) 'dcbxpr:  iprplbl(1, i) ', iprplbl(1, i)
-      write(*, *) 'dcbxpr:  iprplbl(2, i) ', iprplbl(2, i)
-      write(*, *) 'dcbxpr:  iprplbl(3, i) ', iprplbl(3, i)
-      write(*, *) 'dcbxpr:  --------------'
-    end do
-
-    do i = 1, nprplbl
-      write(*, *) 'dcbprl:  -----------'
-      write(*, *) 'dcbprl:  i          ', i
-      write(*, *) 'dcbprl:  prplbl(i)  ', prplbl(i)
-      write(*, *) 'dcbprl:  pdoint(i)  ', pdoint(i)
-      write(*, *) 'dcbprl:  iprlrep(i) ', iprlrep(i)
-      write(*, *) 'dcbprl:  iprltyp(i) ', iprltyp(i)
-      write(*, *) 'dcbprl:  -----------'
-    end do
-
-    do i = 1, nprpcls
-      write(*, *) 'dcbcls:  ----------'
-      write(*, *) 'dcbcls:  i         ', i
-      write(*, *) 'dcbcls:  clscal(i) ', clscal(i)
-      write(*, *) 'dcbcls:  clsint(i) ', clsint(i)
-      write(*, *) 'dcbcls:  clscmb(i) ', clscmb(i)
-      write(*, *) 'dcbcls:  ----------'
-    end do
-
-  end subroutine
-
-  subroutine request_1el_integrals(label, blocks)
-
-!   ----------------------------------------------------------------------------
-    character(7), intent(in) :: label
-    character(4), intent(in) :: blocks
-!   ----------------------------------------------------------------------------
-    integer                  :: i
-!   ----------------------------------------------------------------------------
-
-    i = nprpcls + 1
-
-    if (i > maxcls) then
-      call quit('request_1el_integrals: i > maxcls')
-    end if
-
-    clscal(i) = .true.
-    clsint(i) = label
-    clscmb(i) = blocks
-
-!   important only for cartesian or spherical moment integrals
-!   here just set it to something
-    iordcl(i) = 0
-
-    nprpcls = i
-
-  end subroutine
-
-  function index_on_aoproper(op_name)
-
-!   ----------------------------------------------------------------------------
-    integer                   :: index_on_aoproper
-    character(*), intent(in)  :: op_name
-!   ----------------------------------------------------------------------------
-    integer                   :: i
-!   ----------------------------------------------------------------------------
-
-    index_on_aoproper = 0
-    do i = 1, max_aoproper_indices
-      if (op_name_to_aoproper_index(i) == op_name(1:len_trim(op_name))) then
-        index_on_aoproper = i
+      if (debug_me) then
+         call print_mat(P, label = 'debug P in AO basis')
       end if
-    end do
 
-    if (index_on_aoproper == 0) then
-      call quit('index_on_aoproper: index for ' &
-              //op_name(1:len_trim(op_name))    &
-              //' not found')
-    end if
+      call dealloc(ptri)
+      call dealloc(op1int)
+      deallocate(first)
 
-  end function
+   end subroutine
 
+   subroutine add_operator(op_name,    &
+                           blocks,     &
+                           typ,        &
+                           tr_sym,     &
+                           pg_sym,     &
+                           prefactors, &
+                           labels)
+
+!     --------------------------------------------------------------------------
+      character(16), intent(in) :: op_name
+      character(4),  intent(in) :: blocks
+      integer,       intent(in) :: typ
+      integer,       intent(in) :: tr_sym
+      integer,       intent(in) :: pg_sym
+      real(8),       intent(in) :: prefactors(:)
+      character(8),  intent(in) :: labels(:)
+!     --------------------------------------------------------------------------
+      integer                   :: i, ixpr, iprl
+!     --------------------------------------------------------------------------
+
+      ixpr = nprps + 1
+      iprl = nprplbl
+
+      if (ixpr > maxprps) then
+         call quit('add_operator: ixpr > maxprps')
+      end if
+
+      prpnam(ixpr)  = op_name
+      iprptyp(ixpr) = typ
+      iprpsym(ixpr) = pg_sym
+      iprptim(ixpr) = tr_sym
+
+      do i = 1, size(prefactors)
+
+         iprl = iprl + 1
+
+         if (iprl > maxprplbl) then
+            call quit('add_operator: iprl > maxprplbl')
+         end if
+
+         prplbl(iprl)  = labels(i)
+         pdoint(iprl)  = blocks
+         iprlrep(iprl) = pg_sym - 1
+         iprltyp(iprl) = tr_sym
+
+         facprp(i, ixpr)  = prefactors(i)
+         iprplbl(i, ixpr) = iprl
+
+      end do
+
+      nprps   = ixpr
+      nprplbl = iprl
+
+!     private
+      op_name_to_aoproper_index(ixpr) = op_name
+
+   end subroutine
+
+   subroutine print_prp_common_blocks()
+
+!     --------------------------------------------------------------------------
+      integer :: i
+!     --------------------------------------------------------------------------
+
+      do i = 1, nprps
+         write(*, *) 'dcbxpr:  --------------'
+         write(*, *) 'dcbxpr:  i             ', i
+         write(*, *) 'dcbxpr:  prpnam(i)     ', prpnam(i)
+         write(*, *) 'dcbxpr:  iprptyp(i)    ', iprptyp(i)
+         write(*, *) 'dcbxpr:  iprpsym(i)    ', iprpsym(i)
+         write(*, *) 'dcbxpr:  iprptim(i)    ', iprptim(i)
+         write(*, *) 'dcbxpr:  facprp(1, i)  ', facprp(1, i)
+         write(*, *) 'dcbxpr:  facprp(2, i)  ', facprp(2, i)
+         write(*, *) 'dcbxpr:  facprp(3, i)  ', facprp(3, i)
+         write(*, *) 'dcbxpr:  iprplbl(1, i) ', iprplbl(1, i)
+         write(*, *) 'dcbxpr:  iprplbl(2, i) ', iprplbl(2, i)
+         write(*, *) 'dcbxpr:  iprplbl(3, i) ', iprplbl(3, i)
+         write(*, *) 'dcbxpr:  --------------'
+      end do
+
+      do i = 1, nprplbl
+         write(*, *) 'dcbprl:  -----------'
+         write(*, *) 'dcbprl:  i          ', i
+         write(*, *) 'dcbprl:  prplbl(i)  ', prplbl(i)
+         write(*, *) 'dcbprl:  pdoint(i)  ', pdoint(i)
+         write(*, *) 'dcbprl:  iprlrep(i) ', iprlrep(i)
+         write(*, *) 'dcbprl:  iprltyp(i) ', iprltyp(i)
+         write(*, *) 'dcbprl:  -----------'
+      end do
+
+      do i = 1, nprpcls
+         write(*, *) 'dcbcls:  ----------'
+         write(*, *) 'dcbcls:  i         ', i
+         write(*, *) 'dcbcls:  clscal(i) ', clscal(i)
+         write(*, *) 'dcbcls:  clsint(i) ', clsint(i)
+         write(*, *) 'dcbcls:  clscmb(i) ', clscmb(i)
+         write(*, *) 'dcbcls:  ----------'
+      end do
+
+   end subroutine
+
+   subroutine add_class(label, blocks)
+
+!     --------------------------------------------------------------------------
+      character(7), intent(in) :: label
+      character(4), intent(in) :: blocks
+!     --------------------------------------------------------------------------
+      integer                  :: i
+!     --------------------------------------------------------------------------
+
+      i = nprpcls + 1
+
+      if (i > maxcls) then
+         call quit('add_class: i > maxcls')
+      end if
+
+      clscal(i) = .true.
+      clsint(i) = label
+      clscmb(i) = blocks
+
+!     important only for cartesian or spherical moment integrals
+!     here just set it to something
+      iordcl(i) = 0
+
+      nprpcls = i
+
+   end subroutine
+
+   function index_on_aoproper(op_name)
+
+!     --------------------------------------------------------------------------
+      integer                   :: index_on_aoproper
+      character(*), intent(in)  :: op_name
+!     --------------------------------------------------------------------------
+      integer                   :: i
+!     --------------------------------------------------------------------------
+
+      index_on_aoproper = 0
+      do i = 1, max_aoproper_indices
+         if (op_name_to_aoproper_index(i) == op_name(1:len_trim(op_name))) then
+            index_on_aoproper = i
+         end if
+      end do
+
+      if (index_on_aoproper == 0) then
+         call quit('index_on_aoproper: index for ' &
+                   // op_name(1:len_trim(op_name)) &
+                   // ' not found')
+      end if
+
+   end function
 
 end module

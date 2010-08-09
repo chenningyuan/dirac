@@ -1759,7 +1759,12 @@ contains
       ! if A is zero, get it allocated
       if (iszero(A)) call init_mat(A, A)
       ! read integrals from file into A
+#ifdef VAR_LINSCA
       call di_read_operator_int(lab, A)
+#endif
+#ifdef PRG_DIRAC
+      call read_1el_integrals(lab, A)
+#endif
    end subroutine
 
 
