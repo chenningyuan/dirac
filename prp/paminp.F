@@ -45,6 +45,7 @@ C***********************************************************************
 #ifdef MOD_OPENRSP
          use dirac_interface
          use openrsp_cfg
+         use openrsp_interface_1el
 #endif
 
 #include "implicit.h"
@@ -571,7 +572,7 @@ C     *STEX
          if (openrsp_cfg_skip_1el) then
             write(*, *) 'OpenRSP: skipping calculation of 1el integrals'
          else
-            call ask_for_integrals()
+            call order_1el_integrals()
          end if
 #else
          call quit('*OpenRSP not included in this version')

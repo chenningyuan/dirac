@@ -13,6 +13,7 @@ module prop_contribs
    use matrix_defop
 #ifdef PRG_DIRAC
    use dirac_interface
+   use openrsp_interface_1el
    use character_processing
    use xc_driver
 #endif

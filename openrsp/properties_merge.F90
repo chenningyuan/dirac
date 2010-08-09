@@ -2,6 +2,7 @@ module openrsp_property_definitions_zzz
 
     use matrix_defop
     use matrix_genop
+    use openrsp_interface_1el
     use dirac_interface
     use rsp_equations
     use decompmod
