@@ -459,7 +459,7 @@ C            LEXPST(1) - molecular point group symmetry
 C        or  LEXPST(2) - time reversal symmetry
 C
 C     if ONLY_TS = .false.
-C        return property matrix anyway (i need it in aoresponse --radovan)
+C        return property matrix anyway (i need it in OpenRSP --radovan)
 C
 C     On output: PMAT - the complete propery matrix in SA-AO basis !
 C

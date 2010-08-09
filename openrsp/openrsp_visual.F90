@@ -1,4 +1,4 @@
-module aoresponse_visual_m
+module openrsp_visual
 
   use kinds_m
   use scf_density_m
@@ -9,7 +9,7 @@ module aoresponse_visual_m
 
   implicit none
 
-  public aoresponse_visual_driver
+  public openrsp_visual_driver
 
   private
 
@@ -40,7 +40,7 @@ contains
 
   end subroutine
 
-  subroutine aoresponse_visual_driver(D)
+  subroutine openrsp_visual_driver(D)
 
     type(matrix)                   :: D(:)
 !   ----------------------------------------------------------------------------
@@ -154,7 +154,7 @@ contains
       call init_cube_file(cube_file(48), 12, file_unit, '3d_n_zy_z', 3)
       call init_cube_file(cube_file(49), 13, file_unit, '3d_n_zz_z', 3)
     else
-      call quit('error in aoresponse_visual')
+      call quit('error in openrsp_visual')
     end if
 
     call init_dft_grid(D(1), dft_grid)

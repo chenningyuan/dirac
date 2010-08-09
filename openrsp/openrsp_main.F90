@@ -14,7 +14,7 @@ module openrsp_main
 
 contains
 
-  subroutine aoresponse_driver(work, lwork)
+  subroutine openrsp_driver(work, lwork)
 
 #include "priunit.h"
 #include "dcbbas.h"
@@ -325,7 +325,7 @@ contains
     end if
 
 #ifdef MERGE_WITH_LINSCA
-    if (openrsp_cfg_zzz) call aor_zzz(openrsp_cfg_zzz_order, S, D, F)
+    if (openrsp_cfg_zzz) call openrsp_zzz(openrsp_cfg_zzz_order, S, D, F)
 #endif /* ifdef MERGE_WITH_LINSCA */
 
     S = 0

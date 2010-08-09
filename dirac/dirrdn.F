@@ -104,7 +104,7 @@ C
 !     *DFT
 !     *VISUAL
 !     **RELCC
-!     *AORESPONSE
+!     *OPENRSP     
 !     ignores rest
       call read_input()
 

@@ -1,4 +1,4 @@
-module aoresponse_output
+module openrsp_output
 
   implicit none
 

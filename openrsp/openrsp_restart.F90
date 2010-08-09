@@ -1,4 +1,4 @@
-module aor_restart
+module openrsp_restart
 
 !radovan: this module is common to Dalton and DIRAC
 !         and is used to restart property calculations
@@ -24,7 +24,7 @@ module aor_restart
     module procedure write_restart_tensor_3
   end interface
 
-  character(*), parameter :: restart_file = 'aoresponse.restart'
+  character(*), parameter :: restart_file = 'openrsp.restart'
   logical                 :: restart_file_exists
   logical                 :: restart_file_is_open
   integer,      parameter :: file_unit    = 137

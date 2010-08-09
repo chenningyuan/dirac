@@ -287,9 +287,9 @@ C
 #endif /* #ifdef MOD_EMB */
 
 #ifdef MOD_OPENRSP
-      if (dirac_cfg_aoresponse) then
-!       main aoresponse driver
-        call aoresponse_driver(work(kfree), lfree)
+      if (dirac_cfg_openrsp) then
+!       main openrsp driver
+        call openrsp_driver(work(kfree), lfree)
 !       initialize dirac interface
         call init_dirac_interface()
       end if

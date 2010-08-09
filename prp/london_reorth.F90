@@ -509,8 +509,6 @@ contains
 
 
 
-!-----------------------------------------------------------------------
-! three subroutines from aoresponse/dirac_interface.F90
 
   SUBROUTINE set_f77_work(wrk,lwork)
      real(8),target :: wrk(:)

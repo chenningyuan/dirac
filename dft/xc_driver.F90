@@ -204,7 +204,7 @@ contains
 ! response_order_mo/_ao:  0 - do nothing (no response)
 !                         1 - ks lr
 !                         2 - ks qr
-!                         *_mo - old code, *_ao - aoresponse code
+!                         *_mo - old code, *_ao - openrsp code
 !
 ! do_potential            = .true.  - do energy and xc potential
 !
@@ -1012,7 +1012,7 @@ contains
 
         time_derv_start = second()
 #if defined MOD_XCFUN && MOD_OPENRSP
-!       if we run aoresponse with xcfun we evaluate derivatives
+!       if we run openrsp with xcfun we evaluate derivatives
 !       somewhere else
         if (response_order_ao == 0) then
 #endif

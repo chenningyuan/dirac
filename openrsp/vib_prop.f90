@@ -354,7 +354,7 @@ contains
              all(polq(:,:,1+nq*(jk-1):nq*jk)==0)) cycle
 #ifdef VAR_PGF90
 !radovan pgf complains here
-!PGF90-S-0152-All dimension specifiers must be ':' (aoresponse/vib_prop.f90: 329)
+!PGF90-S-0152-All dimension specifiers must be ':'
          call quit('fix vib_prop.f90 for pgf')
 #else
          call print_vib_beta(dax,(/w(i),w(j),w(k)/),nq,wq(1:nq), &

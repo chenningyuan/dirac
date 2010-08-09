@@ -1,4 +1,4 @@
-module aor_property_definitions_zzz
+module openrsp_property_definitions_zzz
 
     use matrix_defop
     use matrix_genop
@@ -8,13 +8,13 @@ module aor_property_definitions_zzz
 
     implicit none
 
-    public aor_zzz
+    public openrsp_zzz
 
     private
 
 contains
 
-  subroutine aor_zzz(order, S, D, F)
+  subroutine openrsp_zzz(order, S, D, F)
 
 !   ----------------------------------------------------------------------------
     integer,      intent(in)    :: order
@@ -30,7 +30,7 @@ contains
     type(DecompItem) :: decomp
 !   ----------------------------------------------------------------------------
 
-    if (order > max_order) call quit('aor_zzz: order > max_order')
+    if (order > max_order) call quit('openrsp_zzz: order > max_order')
 
     g = 0.0d0
     i = 3

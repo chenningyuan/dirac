@@ -95,7 +95,7 @@ contains
             case ('**VISUA', '*VISUAL')
               call read_input_visual(word, kw_section)
 
-            case ('*AORESP')
+            case ('*OPENRS')
               call read_input_openrsp(word, kw_section)
 
             case ('**RELCC')

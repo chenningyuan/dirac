@@ -66,7 +66,7 @@ C
 C
       DATA TABDIR /'*END OF','*EXPECT','*LINEAR','*EXCITA',
      &             '*MOLGRD','*NMR   ','*ESR   ','*QUADRA',
-     &             '*STEX  ','*AORESP'/
+     &             '*STEX  ','*OPENRS'/
 !                     1         2         3         4
       DATA TABLE  /'.DIPOLE','.QUADRU','.POLARI','.MAGNET',
 !                     5         6         7         8
@@ -562,10 +562,10 @@ C     *STEX
 #endif
          GO TO 200
 
-!     *AORESPONSE
+!     *OPENRSP    
    10 continue
 #ifdef MOD_OPENRSP
-         dirac_cfg_aoresponse = .true.
+         dirac_cfg_openrsp = .true.
          call init_dirac_interface()
          call move_to_next_star(word)
          if (openrsp_cfg_skip_1el) then
@@ -574,7 +574,7 @@ C     *STEX
             call ask_for_integrals()
          end if
 #else
-         call quit('*AORESPONSE not included in this version')
+         call quit('*OpenRSP not included in this version')
 #endif
       go to 200
 

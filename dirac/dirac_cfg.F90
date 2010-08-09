@@ -38,8 +38,8 @@ module dirac_cfg
   logical, public :: dirac_cfg_hf_calculation     = .false.
 !                    hf or ks
   logical, public :: dirac_cfg_scf_calculation    = .false.
-!                    ao response
-  logical, public :: dirac_cfg_aoresponse         = .false.
+!                    openrsp module
+  logical, public :: dirac_cfg_openrsp            = .false.
 !                    visualization module
   logical, public :: dirac_cfg_visual             = .false.
 !                    relcc module

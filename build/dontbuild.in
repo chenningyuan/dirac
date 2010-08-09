@@ -51,5 +51,5 @@ xcfun/fortran/example.F90
 xcfun/.*[^0]$
 xcfun/.*
 openrsp/.*
-openrsp/aoresponse_visual.F90
+openrsp/openrsp_visual.F90
 dft/vrg.F
