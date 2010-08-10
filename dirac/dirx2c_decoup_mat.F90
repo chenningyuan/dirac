@@ -243,10 +243,11 @@ contains
 ! 
 !    purpose: solve the 'R' equation using Cholesky decomposition
 ! 
-!    IDEA: replace the Cholesky part 2 (qchols) by 
-!          op(A)*X = alpha*B,
-!          call dtrsm(side, uplo, transa, diag, m, n, alpha, a, lda, b, ldb)
-!          ? (BLAS routine)
+!    IDEA: replace the Cholesky part 2 (qchols) by two calls to 
+!          dtrsm(side, uplo, transa, diag, m, n, alpha, a, lda, b, ldb)
+!          performing op(A)*X = alpha*B (for upper/lower triangular matrices A)
+!          --> advantage: this would be a true BLAS routine. 
+!              what remains unsolved is how to deal with the pivoting...
 !
 !    'R' equation: (Y--.Y--^+) R = -Y--.Y+-^+
 !
