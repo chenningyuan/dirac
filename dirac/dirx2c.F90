@@ -238,7 +238,7 @@ contains
 !              out: AOtoMO transformation matrices -> xmat, scr1mat
 !                                                   + (scr2mat, if x2c_is_defining_h1mat == 2 .and. x2c_linsym == .true.) 
 !        ------------------------------------------------------------------------------
-         lin_aomo_mat_req = ((x2c_is_defining_h1mat == 2).and.(x2c_linsym == .true.))
+         lin_aomo_mat_req = ((x2c_is_defining_h1mat == 2).and.(x2c_linsym .eqv. .true.))
 
 !        allocate remaining required matrices and arrays
 !        TODO: check if dimensions can actually be reduced...
