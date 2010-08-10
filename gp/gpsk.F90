@@ -134,7 +134,8 @@ contains
 
        maxdiff = 0.0D0
        do i = 1, ilen
-         if(i < 10 ) print '(2x,a,i0,a,e26.18,2x,e26.18)', '* calc_diff_a_b: test print - element i= ',i,'in matrix a and b are',mat1(i),mat2(i)
+         if(i < 10 ) print '(2x,a,i0,a,e26.18,2x,e26.18)', & 
+         '* calc_diff_a_b: test print - element i= ',i,'in matrix a and b are',mat1(i),mat2(i)
          maxdiff = max(maxdiff,abs(abs(mat1(i))-abs(mat2(i))))
        end do
 
