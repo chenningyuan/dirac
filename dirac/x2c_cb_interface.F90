@@ -61,6 +61,7 @@ module x2c_cb_interface
   integer, public :: nr_ao_total_x2c
   integer, public :: nr_ao_large_x2c
   integer, public :: nr_ao_small_x2c
+  integer, public :: n2bastq_dim_x2c
   integer, public :: nr_ao_all(2)
   integer, public :: nr_ao_l(2)
   integer, public :: nr_ao_s(2)
@@ -190,13 +191,15 @@ contains
          else 
 !
 !          initialize integer variables
-           num_nuclei = nucdep
-!                                       [  L+S  ] (ifsym==1) + [  L+S  ] (ifsym==2)
-           nr_ao_total_x2c             = ntbas(0)
-!                                       [  L    ] (ifsym==1) + [  L    ] (ifsym==2)
-           nr_ao_large_x2c             = ntbas(1)
-!                                       [    S  ] (ifsym==1) + [    S  ] (ifsym==2)
-           nr_ao_small_x2c             = ntbas(2)
+           num_nuclei      = nucdep
+!                           [  L+S  ] (ifsym==1) + [  L+S  ] (ifsym==2)
+           nr_ao_total_x2c = ntbas(0)
+!                           [  L    ] (ifsym==1) + [  L    ] (ifsym==2)
+           nr_ao_large_x2c = ntbas(1)
+!                           [    S  ] (ifsym==1) + [    S  ] (ifsym==2)
+           nr_ao_small_x2c = ntbas(2)
+!
+           n2bastq_dim_x2c = n2bastq
 !
            fullemat_dim     = 0
            fullomat_dim     = 0

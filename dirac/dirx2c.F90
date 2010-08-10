@@ -243,17 +243,22 @@ contains
 !        ------------------------------------------------------------------------------
          lin_aomo_mat_req = ((x2c_is_defining_h1mat == 2).and.(x2c_linsym .eqv. .true.))
 
-!        allocate remaining required matrices and arrays
-!        TODO: check if dimensions can actually be reduced...
-         call alloc(scr1mat,nr_ao_total_x2c**2 * nr_quat)
+!        allocate remaining required matrices and arrays: TODO: check if dimensions can actually be reduced...
+!        1st try:
+!        before modham: size for scr1mat could be reduced to n2bastq_dim_x2c
+!        after  modham: back to nr_ao_total_x2c**2 * nr_quat
+
+         j = nr_ao_total_x2c**2 * nr_quat
+         if(x2c_is_defining_h1mat < 1) j = n2bastq_dim_x2c
          call alloc(scr2mat,nr_ao_total_x2c**2 * nr_quat)
+         call alloc(scr1mat,j)
          call alloc(eigvl  ,nr_ao_total_x2c)
          scr1mat = x2c_d0
          scr2mat = x2c_d0
          eigvl   = x2c_d0
 
 !        set maximum allowed length of wrk array allocations
-         is_allocated_dyn = is_allocated_dyn + nr_ao_total_x2c + nr_ao_total_x2c**2 * nr_quat * 2
+         is_allocated_dyn = is_allocated_dyn + nr_ao_total_x2c + nr_ao_total_x2c**2 * nr_quat + j
          lwrk             = len_wrk_f77_x2c  - is_allocated_dyn
 
          call sel_wrk_x2c(wrk,lwrk)
@@ -267,12 +272,18 @@ contains
                      wrk,                      &
                      lwrk)
 
-!        nullify pointer to work array and release matrix
+!        nullify pointer to work array and release matrices
          call desel_wrk_x2c(wrk,lwrk)
          call dealloc(eigvl)
+         if(x2c_is_defining_h1mat < 1)then
+           call dealloc(scr1mat)
+!          reallocate with full size
+           call alloc(scr1mat,nr_ao_total_x2c**2 * nr_quat)
+           scr1mat = x2c_d0
+         end if
 !
 !        recalculate the new maximum allowed length of wrk array allocations to be used in the subroutines.
-         is_allocated_dyn = is_allocated_dyn - nr_ao_total_x2c
+         is_allocated_dyn = is_allocated_dyn - nr_ao_total_x2c - j + nr_ao_total_x2c**2 * nr_quat
          lwrk             = len_wrk_f77_x2c  - is_allocated_dyn
 
 !        ------------------------------------------------------------------------------
@@ -325,8 +336,8 @@ contains
                       x2c_do_spherical)
 
 !        free memory
-         call dealloc(scr2mat)
          call dealloc(scr1mat)
+         call dealloc(scr2mat)
          call dealloc(xmat)
 
          close(x2c_Sao_scrF,status="delete")
@@ -506,7 +517,7 @@ contains
 
 !      step 1: save RKB AOtoMO transformation matrices to file x2cscr
 !
-!              in : AOtoMO transformation matrices: see above
+!              in : AOtoMO transformation matrices
 !              out: ["SL resorted"] matrix -> scr2mat
 !              on file x2cscr: 
 !                 a. AOtoMO transformation matrix ["SL resorted"] under the label 4cAOMOr
