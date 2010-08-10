@@ -320,6 +320,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DIMENSION VMAT(*),WORK(LWORK)
       LOGICAL DK2SO1,ONLYSO1,SAVESO1,SF_BEG,FPB,FNDLAB,
      &    GETPCTM,ADD_AMFI,ONLYTRA,ELIM_SF, WRITEH2C, LINAD
+      integer is_defining_h1mat
 
         CALL QENTER('MAKE_BSS')
 #include "memint.h"
@@ -371,10 +372,14 @@ C     ... choose the file number !
 C ============================================================
 C ... get the RKB transformation matrix into WORK(KTMAT)
 C ============================================================
-      ! flag for the adaptation for the linear symmetry
+!     flag for the adaptation for the linear symmetry
       LINAD = ( DO4C2C.AND.LINEAR ) 
+!     defining h1 matrix control variable (in the X2C module) - 
+!     set here for consistency to the maximum value (the true value 
+!     needs to be checked though)
+      is_defining_h1mat = 3
       CALL MODHAM(WORK(KTMAT),VMAT,WORK(KTBUF),WORK(KEIG),.NOT.FPB,
-     &            LINAD,WORK(KFREE),LFREE)
+     &            LINAD,is_defining_h1mat,WORK(KFREE),LFREE)
 C.....set variables needed in DFDIAG (N2TMT etc.)
       CALL SET_TMT(IPRHAM)
 C     1. Write transformation matrices to file BSSMAT

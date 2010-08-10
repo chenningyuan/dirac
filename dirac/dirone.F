@@ -2412,6 +2412,7 @@ C   PAMIOU: LUTMAT
 #include "dgroup.h"
       LOGICAL TWOBUF,GOFAST,TOBE,FNDLAB,FNDLAB12
       logical is_2c_rel_run
+      integer is_defining_h1mat
       DIMENSION WORK(LWORK)
       CALL QENTER('GMOTRA')
       IF(GOFAST.AND.(.NOT.(BSS.or.x2c))) GOTO 10
@@ -2674,8 +2675,12 @@ C     -------------------------------------------------------------------
         CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
 
+!       defining h1 matrix control variable (in the X2C module) -
+!       set here for consistency to the maximum value (the true value
+!       needs to be checked though)
+        is_defining_h1mat = 3
         CALL MODHAM(WORK(KTMAT),WORK(KVMAT),WORK(KTBUF),WORK(KEIG),
-     &             .FALSE.,.FALSE.,WORK(KFREE),LFREE)
+     &             .FALSE.,.FALSE.,is_defining_h1mat,WORK(KFREE),LFREE)
         CALL MEMREL('MODHAM',WORK,KEIG,KEIG,KFREE,LFREE)
 
         IF (IPRHAM.GE.5) THEN
@@ -2792,7 +2797,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck modham */
-      SUBROUTINE MODHAM(TMAT,VMAT,TBUF,EIG,SLGROUP,LSYMAD,WORK,LWORK)
+      SUBROUTINE MODHAM(TMAT,VMAT,TBUF,EIG,SLGROUP,LSYMAD,
+     &                  is_defining_h1mat,WORK,LWORK)
 C*****************************************************************************
 C
 C     Generate transformation matrix to MO-basis with the
@@ -2815,6 +2821,8 @@ C     LSYMAD  - if .true., apply the LINSYM procedure for adaptation
 C               of the transformation matrix for the linear symmetry - needed in connection
 C               to 4c->2c transition (.DO4C2C keyword)
 C
+C     is_defining_h1mat - control parameter for the defining h1 matrix 
+C                         in the X2C module wrt which the decoupling will be performed.
 C        
 C     On output:
 C   ==============
@@ -2829,7 +2837,8 @@ C         to the linear MO
 C     
 C   Written by T.Saue, October 1995
 C   Modified by L. Visscher, Jan 20, 1998 to include Levy-Leblond 
-C            M.Ilias, 2005, to include LSYMAD, SLGROUP
+C            M. Ilias, 2005, to include LSYMAD, SLGROUP
+C            S. Knecht, 2010, to include is_defining_h1mat
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -2853,6 +2862,7 @@ C  DGROUP:
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
       LOGICAL SLGROUP,LSYMAD
+      integer is_defining_h1mat
       CALL QENTER('MODHAM')
 #include "memint.h" 
 C
@@ -2942,16 +2952,27 @@ C
 
 CMI ...  For the BSS.RKB (ie 1step approach) do resort columns of transformation matrix so that
 CMI     they are in the order S1 S2 ... S(nbsym) L1 L2 ... L(nbsym) instead of former S1 L1 S2 L2 ...
-      IF (SLGROUP) THEN
-       ISIZE = NFBAS(1,0)*NORB(1)*NZ
-       IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ 
-       CALL MEMGET('REAL',KBUF,ISIZE,WORK,KFREE,LFREE)
-CMI    ... TMAT remains unchanged, the SL resorted matrix is in WORK(KBUF)!
-       CALL SLSORT(TMAT,WORK(KBUF),IPRHAM,WORK(KFREE),LFREE)
+      IF(SLGROUP)THEN
+        ISIZE = NFBAS(1,0)*NORB(1)*NZ
+        IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ 
+!       is_defining_h1mat is the control variable for the defining h1
+!       matrix wrt which the decoupling is performed in the X2C module.
+!       see the following lsymad procedure for more comments - SK Aug 2010
+        if(is_defining_h1mat .gt. 0)then
+          CALL MEMGET('REAL',KBUF,ISIZE,WORK,KFREE,LFREE)
+CMI       ... TMAT remains unchanged, the SL resorted matrix is in WORK(KBUF)!
+          CALL SLSORT(TMAT,WORK(KBUF),IPRHAM,WORK(KFREE),LFREE)
+        else
+!         return the SL resorted matrix in vmat
+          call dzero(vmat,n2bbasxq)
+          CALL SLSORT(TMAT,vmat,IPRHAM,WORK(KFREE),LFREE)
+        end if
       ENDIF
 
 CMI   ... adaptation for the linear symmetry 
-      IF (LSYMAD) THEN
+!     lsymad is only relevant if the defining h1 matrix for the X2C/BSS
+!     module is NOT the bare-nucleus h1 matrix - SK Aug 2010
+      IF(LSYMAD)THEN
         ISIZE = NFBAS(1,0)*NORB(1)*NZ
         IF (NFSYM.EQ.2) ISIZE = ISIZE + NFBAS(2,0)*NORB(2)*NZ
         CALL MEMGET('REAL',KBUF1,ISIZE,WORK,KFREE,LFREE)
@@ -2959,70 +2980,72 @@ CMI   ... adaptation for the linear symmetry
         CALL DCOPY(ISIZE,TMAT,1,WORK(KBUF1),1)
         IF(IPRHAM.GE.5) THEN
           CALL HEADER(
-     &   'MODHAM: BEFORE LINSYM final transformation'//
-     &   ' matrix 4c AO->MO, VMAT(copyied from TMAT) ',-1)
+     &    'MODHAM: BEFORE LINSYM final transformation'//
+     &    ' matrix 4c AO->MO, VMAT(copyied from TMAT) ',-1)
           IMAT = 1
           DO I = 1,NFSYM
-          IF(NORB(I).GT.0) THEN
-           WRITE(LUPRI,'(/A,I1,A,I1)')
-     &    '* Fermion ircop no.',I,'/',NFSYM
-           CALL PRQMAT(VMAT(IMAT),NFBAS(I,0),NORB(I),
-     &                NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-           IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ
-          ENDIF
+            IF(NORB(I).GT.0) THEN
+              WRITE(LUPRI,'(/A,I1,A,I1)')
+     &        '* Fermion ircop no.',I,'/',NFSYM
+              CALL PRQMAT(VMAT(IMAT),NFBAS(I,0),NORB(I),
+     &                    NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+              IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ
+            ENDIF
           ENDDO
         ENDIF
+
         CALL DZERO(TMAT,N2BBASXQ)
         CALL DZERO(TBUF,N2BBASXQ)
-        CALL LINSYM(TMAT,VMAT,TBUF,EIG,
-     &            WORK(KFREE),LFREE)
+        CALL LINSYM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
 C ...   always return non-linear symmetry adapted transformation matrix :
         CALL DCOPY(ISIZE,WORK(KBUF1),1,TMAT,1)
+
         IF(IPRHAM.GE.5) THEN
-         CALL HEADER(
-     &  'MODHAM: AFTER LINSYM final transformation'//
-     &  ' matrix 4c AO->LINSYM MO, TMAT(output)',-1)
-         IMAT = 1
-         IBUF = 1
-         DO I = 1,NFSYM
-         IF(NORB(I).GT.0) THEN
-          WRITE(LUPRI,'(A,I1,A,I1)')
-     &    '* Fermion ircop no.',I,'/',NFSYM
-          CALL PRQMAT(TMAT(IMAT),NFBAS(I,0),NORB(I),
-     &        NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-          WRITE(LUPRI,'(/5X,A/)')
+          CALL HEADER(
+     &    'MODHAM: AFTER LINSYM final transformation'//
+     &    ' matrix 4c AO->LINSYM MO, TMAT(output)',-1)
+          IMAT = 1
+          IBUF = 1
+          DO I = 1,NFSYM
+            IF(NORB(I).GT.0) THEN
+              WRITE(LUPRI,'(A,I1,A,I1)')
+     &        '* Fermion ircop no.',I,'/',NFSYM
+              CALL PRQMAT(TMAT(IMAT),NFBAS(I,0),NORB(I),
+     &                    NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+              WRITE(LUPRI,'(/5X,A/)')
      &    'MODHAM: 4c ON  RKB "theta" -> LSYM "theta" transformation'//
-     &    '  matrix (TBUF).'
-          WRITE(LUPRI,'(A,I1,A,I1)')
-     &    '* Fermion ircop no.',I,'/',NFSYM
-          CALL PRQMAT(TBUF(IBUF),NORB(I),NORB(I),
-     &        NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-          IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ
-          IBUF = IBUF + NORB(I)*NORB(I)*NZ
-         ENDIF
-         ENDDO
+     &        '  matrix (TBUF).'
+              WRITE(LUPRI,'(A,I1,A,I1)')
+     &        '* Fermion ircop no.',I,'/',NFSYM
+              CALL PRQMAT(TBUF(IBUF),NORB(I),NORB(I),
+     &                    NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+              IMAT = IMAT + NFBAS(I,0)*NORB(I)*NZ
+              IBUF = IBUF + NORB(I)*NORB(I)*NZ
+            ENDIF
+          ENDDO
         ENDIF
+        CALL MEMREL('SLGROU1',WORK,KBUF1,KBUF1,KFREE,LFREE)
       ENDIF
 
-      IF (SLGROUP) THEN
-C  ... copy the SL resorted transformation matrix to be exported into VMAT ...
-       CALL DCOPY(ISIZE,WORK(KBUF),1,VMAT,1)
-       IF(IPRHAM.GE.5) THEN
-        CALL HEADER(
-     &  'MODHAM: "SL" resorted transformation matrix'//
-     &  ' 4c AO->MO, VMAT(ouput) ',-1)
-        IBUF = 1
-        DO I = 1, NFSYM
-        IF(NORB(I).GT.0) THEN
-         WRITE(LUPRI,'(A,I1,A,I1)')
-     &   '* Fermion ircop no.',I,'/',NFSYM
-         CALL PRQMAT(VMAT(IBUF),NFBAS(I,0),NORB(I),
-     &        NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-         IBUF = IBUF + (NFBAS(I,0)*NORB(I)*NZ)
+      IF(SLGROUP.and.(is_defining_h1mat .gt. 0))THEN
+C  ...  copy the SL resorted transformation matrix to be exported into VMAT ...
+        CALL DCOPY(ISIZE,WORK(KBUF),1,VMAT,1)
+        IF(IPRHAM.GE.5) THEN
+          CALL HEADER(
+     &    'MODHAM: "SL" resorted transformation matrix'//
+     &    ' 4c AO->MO, VMAT(ouput) ',-1)
+          IBUF = 1
+          DO I = 1, NFSYM
+            IF(NORB(I).GT.0) THEN
+              WRITE(LUPRI,'(A,I1,A,I1)')
+     &        '* Fermion ircop no.',I,'/',NFSYM
+              CALL PRQMAT(VMAT(IBUF),NFBAS(I,0),NORB(I),
+     &                    NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+              IBUF = IBUF + (NFBAS(I,0)*NORB(I)*NZ)
+            ENDIF
+          ENDDO
         ENDIF
-        ENDDO
-       ENDIF
-       CALL MEMREL('SLGROUP',WORK,KBUF,KBUF,KFREE,LFREE)
+        CALL MEMREL('SLGROU2',WORK,KBUF,KBUF,KFREE,LFREE)
       ENDIF
 
       CALL FLSHFO(LUPRI)

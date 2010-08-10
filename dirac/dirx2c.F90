@@ -256,6 +256,7 @@ contains
                      eigvl,                    &
                      .true.,                   &
                      lin_aomo_mat_req,         &
+                     x2c_is_defining_h1mat,    &
                      wrk,                      &
                      lwrk)
 
