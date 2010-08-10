@@ -14,16 +14,16 @@ static num energy (const densvars<num> &d)
    using m0xy_metagga_xc_internal::ueg_c_para;
 
    // parameters for anti-parallel spin contributions
-   static const parameter param_c_anti[5] =
+   const parameter param_c_anti[5] =
      {  8.833596e-01,  3.357972e+01, -7.043548e+01,  4.978271e+01, -1.852891e+01 };
-   static const parameter param_d_anti[6] =
+   const parameter param_d_anti[6] =
      {  1.166404e-01, -9.120847e-02, -6.726189e-02,  6.720580e-05,  8.448011e-04, 
         0.000000e+00 };
 
    // parameters for parallel spin contributions
-   static const parameter param_c_para[5] =
+   const parameter param_c_para[5] =
      {  3.097855e-01, -5.528642e+00,  1.347420e+01, -3.213623e+01,  2.846742e+01 };
-   static const parameter param_d_para[6] =
+   const parameter param_d_para[6] =
      {  6.902145e-01,  9.847204e-02,  2.214797e-01, -1.968264e-03, -6.775479e-03,
         0.000000e+00 }; 
 
@@ -49,9 +49,9 @@ void setup_m06x2c(functional &f)
              "Implemented by Andre Gomes\n");
 
   SET_MGGA_ENERGY_FUNCTION(f,energy);
-  static const double d[] = 
-    {1., .8, 1., 1., 1., .33, .21};
-  static const double ref[] =
+  const double d[] = 
+    {1., .8, 1., 1., 1., 0.165,   0.1050}; //.33, .21};
+  const double ref[] =
     { -1.57876583, -2.12127045, -2.11264351, -0.00315462, -0.00444560,  0.00000000,  1.72820116,  2.21748787 };
   f.add_test(XC_VARS_AB,1,d,ref,1e-5);
 }

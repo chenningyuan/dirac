@@ -14,11 +14,11 @@ static num energy (const densvars<num> &d)
    using m0xy_metagga_xc_internal::ueg_c_para;
 
    // parameters for anti-parallel spin contributions
-   static const parameter param_c_anti[5] =
+   const parameter param_c_anti[5] =
        {  1.000000e+00,  1.092970e+00, -3.791710e+00,  2.828100e+00, -1.058909e+01 };
 
      // parameters for parallel spin contributions
-   static const parameter param_c_para[5] =
+   const parameter param_c_para[5] =
        {  1.000000e+00, -3.054300e+00,  7.618540e+00,  1.476650e+00, -1.192365e+01 };
 
    num chi_a2 = chi2(d.a, d.gaa);
@@ -42,9 +42,9 @@ void setup_m05x2c(functional &f)
              "Implemented by Andre Gomes\n");
 
   SET_MGGA_ENERGY_FUNCTION(f,energy);
-  static const double d[] = 
+  const double d[] = 
     {1., .8, 1., 1., 1., .33, .21};
-  static const double ref[] =
+  const double ref[] =
     { -0.06717000, -0.14727520,  0.04240607,  0.02498949,  0.03125835,  0.00000000, -0.07317847, -0.16011489 };
   f.add_test(XC_VARS_AB,1,d,ref,1e-5);
 }

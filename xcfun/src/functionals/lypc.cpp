@@ -4,10 +4,10 @@
 template<class num>
 static num new_energy(const densvars<num> &d) 
 {
-  static const parameter A = 0.04918;
-  static const parameter B = 0.132;
-  static const parameter C = 0.2533;
-  static const parameter Dd = 0.349;
+  const parameter A = 0.04918;
+  const parameter B = 0.132;
+  const parameter C = 0.2533;
+  const parameter Dd = 0.349;
   using xc_constants::CF;
   num icbrtn = pow(d.n,-1.0/3.0);
   num P = 1/(1+Dd*icbrtn);
@@ -36,9 +36,9 @@ void setup_lypc(functional &f)
 	     "Implemented by Ulf Ekstrom\n"
 	     "Test: http://www.cse.scitech.ac.uk/ccg/dft/data_pt_c_lyp.html\n");
   SET_GGA_ENERGY_FUNCTION(f,new_energy);
-  static const double d[5] = 
+  const double d[5] = 
     {0.39E+02, 0.38E+02, 0.81E+06, 0.82E+06,0.82E+06};
-  static const double ref[21] =
+  const double ref[21] =
     {
       -0.402158795173E+01,
 

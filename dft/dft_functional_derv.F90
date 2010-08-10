@@ -115,7 +115,7 @@ contains
          end if
 #endif
          f%id = xc_new_functional()
-         call xc_set_mode(f%id, XC_VARS_RS)
+         call xc_set_mode(f%id, XC_VARS_NS)
        
          do i = 1, XC_NR_PARAMS
             if (dabs(f%w(i)) > tiny(0.0d0)) then

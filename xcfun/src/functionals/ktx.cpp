@@ -4,7 +4,7 @@
 template<class num>
 static num new_energy(const densvars<num> &d)
 {
-  static const parameter DELTA = 0.1;
+  const parameter DELTA = 0.1;
 
   num ea = d.gaa/(DELTA + pow(d.a, 4.0/3.0));
   num eb = d.gbb/(DELTA + pow(d.b, 4.0/3.0));
@@ -37,7 +37,7 @@ void setup_ktx(functional &f)
 
   SET_GGA_ENERGY_FUNCTION(f, new_energy);
 
-  static const double d[5] =
+  const double d[5] =
     {
      0.39e+02,
      0.38e+02,
@@ -46,7 +46,7 @@ void setup_ktx(functional &f)
      0.82e+06
     };
 
-  static const double ref[21] =
+  const double ref[21] =
     {
       0.12533312965365759737e+05, // 00000
       -.20906588852649329624e+03, // 10000

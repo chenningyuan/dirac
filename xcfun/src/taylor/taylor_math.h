@@ -1,4 +1,4 @@
-
+#include <cstdio>
 // By Ulf Ekstrom March-June 2009.
 // Elementary functions. For inclusion in taylor.h only!
 
@@ -118,6 +118,26 @@ static taylor<T,Nvar,Ndeg> exp(const taylor<T,Nvar,Ndeg> &t)
   return res;
 }
 
+
+// exp(x)-1, but accurate for small x
+template<class T,int Nvar, int Ndeg>
+static taylor<T,Nvar,Ndeg> expm1(const taylor<T,Nvar,Ndeg> &t)
+{
+  taylor<T,1,Ndeg> tmp;
+  exp_taylor(tmp,t[0]);
+
+  // Only constant value is affected by the cancellation
+  if (fabs(t[0]) > 1e-3)
+    tmp[0] -= 1;
+  else
+    tmp[0] = 2*exp(t[0]/2)*sinh(t[0]/2);
+
+  taylor<T,Nvar,Ndeg> res;
+  t.compose(res,tmp);
+  return res;
+}
+
+
 // Log series log(a+x) = log(1+x/a) + log(a)
 template<class T,int N>
 static void log_taylor_old(taylor<T,1,N> &t, const T &x0)
@@ -163,6 +183,8 @@ static taylor<T,Nvar,Ndeg> log(const taylor<T,Nvar,Ndeg> &t)
 template<class S,class T,int N>
 static void pow_taylor(taylor<T,1,N>& t, const T &x0, const S &a)
 {
+  if (x0 <= 0)
+    *(int *)0 = 0;
   assert(x0 > 0 && "pow(x,a) not real analytic at x <= 0");
   t[0] = pow(x0,a);
   T x0inv = 1/x0;
@@ -209,11 +231,24 @@ static taylor<T,Nvar,Ndeg> pow(const taylor<T,Nvar,Ndeg> &t,
 }
 #endif
 
+/* Use that (x0+x)^a=x0^a*(1+x/x0)^a */
+template<class T,int N>
+static void sqrt_taylor(taylor<T,1,N>& t, const T &x0)
+{
+  if (x0 <= 0)
+    *(int *)0 = 0;
+  assert(x0 > 0 && "sqrt(x) not real analytic at x <= 0");
+  t[0] = sqrt(x0);
+  T x0inv = 1/x0;
+  for (int i=1;i<=N;i++)
+    t[i] = t[i-1]*x0inv*(3.0/(2*i) - 1.0);
+}
+
 template<class T,int Nvar, int Ndeg>
 static taylor<T,Nvar,Ndeg> sqrt(const taylor<T,Nvar,Ndeg> &t)
 {
   taylor<T,1,Ndeg> tmp;
-  pow_taylor(tmp,t[0],0.5);
+  sqrt_taylor(tmp,t[0]);
 
   taylor<T,Nvar,Ndeg> res;
   t.compose(res,tmp);
@@ -227,12 +262,22 @@ static taylor<T,Nvar,Ndeg> sqrt(const taylor<T,Nvar,Ndeg> &t)
 template<class T,int Nvar, int Ndeg>
 static taylor<T,Nvar,Ndeg> pow(const taylor<T,Nvar,Ndeg> &t, int n)
 {
-  if (n < 1)
-    return pow(t,double(n));
-  taylor<T,Nvar,Ndeg> res = t;
-  while (n-- > 1)
-      res *= t;
-  return res;
+  if (n > 0)
+    {
+      taylor<T,Nvar,Ndeg> res = t;
+      while (n-- > 1)
+	res *= t;
+      return res;
+    }
+  else if (n < 0)
+    {
+      return pow(t,double(n));
+    }
+  else 
+    {
+      taylor<T,Nvar,Ndeg> res(1);
+      return res;
+    }
 }
 
 // Use that d/dx atan(x) = 1/(1 + x^2),
@@ -462,20 +507,6 @@ static taylor<T,Nvar,Ndeg> sinc(const taylor<T,Nvar,Ndeg> &t)
     {
 	return sin(t)/t;
     }
-}
-
-// Curiously(?) sqrtx_asinh_sqrtx has the same taylor coefficients
-// as the odd coefficients of asinh at 0.
-template<class T, int Ndeg>
-static void sqrtx_asinh_sqrtx_taylor_at0(taylor<T,1,Ndeg>& t)
-{
-  static const double c[] = {0,1, 
-			     -1.0/6, 3.0/40, -5.0/112, 35.0/1152,
-			     -63.0/2816, 231.0/13321, -143.0/10240,
-			     6435.0/557056, -12155/1245184};
-  assert(Ndeg<=10 && "Extend table in sqrtx_asinh_sqrtx_taylor_at0()");
-  for (int i=0;i<=Ndeg;i++)
-    t[i] = c[i];
 }
 
 /*

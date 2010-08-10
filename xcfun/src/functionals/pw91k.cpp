@@ -7,7 +7,7 @@
 template<class num>
 static num energy(const densvars<num> &d)
 {
-  static const parameter param_AB[6] = 
+  const parameter param_AB[6] = 
     { 0.093907, 76.320, 0.26608, 0.0809615, 100.0, 0.57767e-4};
   using pw91_like_x_internal::pw91k_prefactor;
   using pw91_like_x_internal::pw91xk_enhancement;

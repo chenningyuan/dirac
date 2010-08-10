@@ -19,9 +19,9 @@ void setup_pbex(functional &f)
 	     "Phys. Rev. Lett 77, 3865 (1996)\n"
 	     "Implemented by Ulf Ekstrom and Andre Gomes.\n");
   SET_GGA_ENERGY_FUNCTION(f,energy);
-  static const double d[] = 
+  const double d[] = 
     {0.39E+02, 0.38E+02, 0.81E+06, 0.82E+06,0.82E+06};
-  static const double ref[] = {
+  const double ref[] = {
     -0.276589791995E+03,
 
     -0.382556082420E+01,

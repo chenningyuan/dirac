@@ -101,7 +101,7 @@ program xc_example
    deallocate(derivatives)
 
 !  finally let's compare the variable modes XC_VARS_AB (alpha and beta densities)
-!  and the complementary XC_VARS_RS (total density and spin density mode)
+!  and the complementary XC_VARS_NS (total density and spin density mode)
 !  at closed-shell reference for LDA
 
    id = xc_new_functional()
@@ -114,7 +114,7 @@ program xc_example
    allocate(derivatives(olen, 1))
 
 !  we switch to total/spin density mode
-   call xc_set_mode(id, XC_VARS_RS)
+   call xc_set_mode(id, XC_VARS_NS)
 
    density_variables(1, 1) = 0.4d0
    density_variables(2, 1) = 0.0d0
@@ -133,7 +133,7 @@ program xc_example
    derivative_nn_ab = 0.5d0*derivatives(XC_D20, 1) + 0.5d0*derivatives(XC_D11, 1)
    derivative_ss_ab = 0.5d0*derivatives(XC_D20, 1) - 0.5d0*derivatives(XC_D11, 1)
 
-   print *, 'Comparison of derivatives via XC_VARS_RS (left) and XC_VARS_AB (right):'
+   print *, 'Comparison of derivatives via XC_VARS_NS (left) and XC_VARS_AB (right):'
    print *, '(d/dn)^2 (d/ds)^0 e_xc:', derivative_nn_rs, derivative_nn_ab
    print *, '(d/dn)^0 (d/ds)^2 e_xc:', derivative_ss_rs, derivative_ss_ab
 

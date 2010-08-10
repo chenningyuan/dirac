@@ -23,12 +23,12 @@ T BR_y(const T &x)
 
 
 // Determine x as a function of y = BR_y(x), using first 
-// a guess and then NR root polishing.
+// a guess and then root polishing.
 // We need about 3-5 NR iterations depending on the y value.
 double BR(double y)
 {
   double d;
-  taylor<double,1,1> x(0,0),fx;
+  taylor<double,1,2> x(0,0),fx;
   // More or less clever starting guesses
   if (y < 0)
     {
@@ -50,12 +50,16 @@ double BR(double y)
 	  x[0] = -3.0/2.0*log(y) + y*(47 + y*(-850 + y*4800));
 	}
     }
-  //Polish root with Newton-Raphson
+  //Polish root with Newton-Raphson (or Halley's method)
   int niter = 0;
   do
     {
       fx = BR_y(x);
-      d = (y-fx[0])/fx[1];
+      // Newton:
+       d = (y-fx[0])/fx[1];
+      // Halley:
+      double yn = fx[0] - y;
+      //d = -yn*fx[1]/(fx[1]*fx[1] - yn*fx[2]);
       x[0] += d;
       if (++niter > 100)
 	{
@@ -64,6 +68,7 @@ double BR(double y)
 	}
     }
   while (fabs(d)>1e-12);
+  cerr << "niter = " << niter << endl;
   return x[0];
 }
 
@@ -108,7 +113,7 @@ int main()
 
   taylor<double,1,5> seed(3,0);
 
-  for (double y = -10.01;y<10;y+= 0.1)
+  for (double y = -100;y<100;y+= 5.001)
     cout << y << " " << BR(y) << endl;
   cout << "# taylor expansion coeffs at y = 3: " << BR(seed) << endl;
   return 0;

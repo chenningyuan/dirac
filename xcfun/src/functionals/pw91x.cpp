@@ -4,7 +4,7 @@
 template<class num>
 static num energy(const densvars<num> &d)
 {
-  static const parameter param_AB[6] = 
+  const parameter param_AB[6] = 
     { 0.19645, 7.7956, 0.2743, 0.1508, 100.0, 0.004};
   using pw91_like_x_internal::prefactor;
   using pw91_like_x_internal::pw91xk_enhancement;
@@ -24,9 +24,9 @@ void setup_pw91x(functional &f)
 	     "Test from http://www.cse.scitech.ac.uk/ccg/dft/"
 	     "data_pt_x_pw91.html\n"); 
   SET_GGA_ENERGY_FUNCTION(f,energy);
-  static const double d[] = 
+  const double d[] = 
     {0.82E+02, 0.81E+02, 0.49E+07, 0.49E+07, 0.49E+07};
-  static const double out[] = 
+  const double out[] = 
     {
       -0.739934270280E+03,
       -0.500194130392E+01,

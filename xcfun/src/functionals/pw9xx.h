@@ -22,7 +22,7 @@ namespace pw91_like_x_internal
     The chi2 and S2 functions return the square of the typical chi and S
     functions. This avoids a square root of the gradient square norm,
     which makes the functions differentiable at grad = 0. This is 
-    physics, so the square root can always(?) be avoided. A special
+    physical, so the square root can always(?) be avoided. A special
     sqrt(x)asinh(sqrt(x)) function is implemented for use in this context.
    */
   template<class num>
@@ -35,7 +35,7 @@ namespace pw91_like_x_internal
   template<class num>
   static num S2(const num &rho, const num &grad)
   {
-    return chi2(rho,grad)*pow(pow(6.0,2.0/3.0)/(12*pow(M_PI,2.0/3.0)),2);
+    return grad/pow(rho,8.0/3.0)*pow(pow(6.0,2.0/3.0)/(12*pow(M_PI,2.0/3.0)),2);
   }
 
 // prefactor multiples the enhancement factor F(S), which is then different

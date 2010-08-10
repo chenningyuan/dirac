@@ -40,6 +40,8 @@ struct densvars
 
   T zeta; //s/n
   T r_s; // (3/4pi)^1/3*n^(-1/3)
+  T n_m13; // pow(n,-1.0/3.0)
+  T a_43, b_43; // pow(a,4.0/3.0), pow(b,4.0/3.0)
 };
 
 class functional

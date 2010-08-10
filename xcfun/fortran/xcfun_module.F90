@@ -4,9 +4,9 @@ module xcfun
   implicit none
 ! These parameters should mirror those in xcfun.h
   integer, parameter ::  XC_VARS_A  = 0
-  integer, parameter ::  XC_VARS_R  = 1
+  integer, parameter ::  XC_VARS_N  = 1
   integer, parameter ::  XC_VARS_AB = 2
-  integer, parameter ::  XC_VARS_RS = 3
+  integer, parameter ::  XC_VARS_NS = 3
   integer, parameter ::  XC_LDA  = 0
   integer, parameter ::  XC_GGA  = 1
   integer, parameter ::  XC_MGGA = 2
@@ -18,41 +18,41 @@ module xcfun
 ! lda derivatives, all odd spin density orders give zero at closed-shell reference
   integer, parameter :: XC_D00 =  1
   integer, parameter :: XC_D10 =  2
-  integer, parameter :: XC_D01 =  3 !zero at closed-shell reference with XC_VARS_RS
+  integer, parameter :: XC_D01 =  3 !zero at closed-shell reference with XC_VARS_NS
   integer, parameter :: XC_D20 =  4
-  integer, parameter :: XC_D11 =  5 !zero at closed-shell reference with XC_VARS_RS
+  integer, parameter :: XC_D11 =  5 !zero at closed-shell reference with XC_VARS_NS
   integer, parameter :: XC_D02 =  6
   integer, parameter :: XC_D30 =  7
-  integer, parameter :: XC_D21 =  8 !zero at closed-shell reference with XC_VARS_RS
+  integer, parameter :: XC_D21 =  8 !zero at closed-shell reference with XC_VARS_NS
   integer, parameter :: XC_D12 =  9
-  integer, parameter :: XC_D03 = 10 !zero at closed-shell reference with XC_VARS_RS
+  integer, parameter :: XC_D03 = 10 !zero at closed-shell reference with XC_VARS_NS
 
   integer, parameter :: XC_D00000 = 1
   integer, parameter :: XC_D10000 = 2
-  integer, parameter :: XC_D01000 = 3  !zero at closed-shell reference with XC_VARS_RS
+  integer, parameter :: XC_D01000 = 3  !zero at closed-shell reference with XC_VARS_NS
   integer, parameter :: XC_D00100 = 4
-  integer, parameter :: XC_D00010 = 5  !zero at closed-shell reference with XC_VARS_RS
+  integer, parameter :: XC_D00010 = 5  !zero at closed-shell reference with XC_VARS_NS
   integer, parameter :: XC_D00001 = 6
   integer, parameter :: XC_D20000 = 7
-  integer, parameter :: XC_D11000 = 8  !zero at closed-shell reference with XC_VARS_RS
+  integer, parameter :: XC_D11000 = 8  !zero at closed-shell reference with XC_VARS_NS
   integer, parameter :: XC_D10100 = 9
-  integer, parameter :: XC_D10010 = 10 !zero at closed-shell reference with XC_VARS_RS
+  integer, parameter :: XC_D10010 = 10 !zero at closed-shell reference with XC_VARS_NS
   integer, parameter :: XC_D10001 = 11
   integer, parameter :: XC_D02000 = 12
-  integer, parameter :: XC_D01100 = 13 !zero at closed-shell reference with XC_VARS_RS
+  integer, parameter :: XC_D01100 = 13 !zero at closed-shell reference with XC_VARS_NS
   integer, parameter :: XC_D01010 = 14
-  integer, parameter :: XC_D01001 = 15 !zero at closed-shell reference with XC_VARS_RS
+  integer, parameter :: XC_D01001 = 15 !zero at closed-shell reference with XC_VARS_NS
   integer, parameter :: XC_D00200 = 16
-  integer, parameter :: XC_D00110 = 17 !zero at closed-shell reference with XC_VARS_RS
+  integer, parameter :: XC_D00110 = 17 !zero at closed-shell reference with XC_VARS_NS
   integer, parameter :: XC_D00101 = 18
   integer, parameter :: XC_D00020 = 19
-  integer, parameter :: XC_D00011 = 20 !zero at closed-shell reference with XC_VARS_RS
-  integer, parameter :: XC_D00002 = 21 !zero at closed-shell reference with XC_VARS_RS
+  integer, parameter :: XC_D00011 = 20 !zero at closed-shell reference with XC_VARS_NS
+  integer, parameter :: XC_D00002 = 21 !zero at closed-shell reference with XC_VARS_NS
 
 
 !radovan: here are the pointers to 3rd gga derivatives
 !         be careful, only those that are nonzero at closed-shell reference
-!         with XC_VARS_RS are here
+!         with XC_VARS_NS are here
   integer, parameter :: XC_D30000 = 22
   integer, parameter :: XC_D20100 = 24
   integer, parameter :: XC_D12000 = 27
@@ -178,8 +178,8 @@ contains
 !radovan: trying to get it explicitly
 !         maybe later we go back to implicit
 !   integer :: npoints
-    double precision, intent(out) :: densities(:,:)
-    double precision, intent(in) :: results(:,:)
+    double precision, intent(in) :: densities(:,:)
+    double precision, intent(out) :: results(:,:)
 !   npoints = size(densities,2)
     call xceval(funid,order,npoints,densities(1,1),densities(1,2),&
          results(1,1),results(1,2))
