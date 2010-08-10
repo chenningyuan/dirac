@@ -4042,7 +4042,7 @@ CMI   ... read 2c screened bare nucleus from the BSSMAT file in 4c or 2c metric
           call x2c_read(flabel,fmat,n2bbasx * nz,lux2c)
 !         call print_x2cmat(FMAT,NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
 !    &         'x2c - h1barenuc',LUPRI)
-          close(file_unit,status='keep')
+          close(int(file_unit),status='keep')
         end if
       ELSE
 CMI   ... continue the standard way
