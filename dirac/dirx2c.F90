@@ -275,10 +275,6 @@ contains
                           prop_idummy,          &
                           prop_cdummy)
 
-!        re-allocate with appropriate dimension
-         call alloc(eigvl  ,max(nr_ao_total_x2c,fullemat_dim,fulleomat_dim))
-         eigvl   = x2c_d0
-
 !        ------------------------------------------------------------------------------
 !        step 1.5: obtain 
 !                  a. decoupling matrix "R" in orthonormal MO basis
@@ -289,7 +285,6 @@ contains
          call x2c_tra(xmat,                   &
                       scr1mat,                &
                       scr2mat,                &
-                      eigvl,                  &
                       nr_ao_large_x2c,        &
                       nr_ao_total_x2c,        &
                       nr_ao_all,              &
@@ -298,6 +293,7 @@ contains
                       dim_eshell,             &
                       dim_pshell,             &
                       fullomat_dim,           &
+                      fulleomat_dim,          &
                       ioff_aomat_x,           &
                       nr_fsym,                &
                       nr_quat,                &
@@ -318,7 +314,6 @@ contains
                       x2c_do_spherical)
 
 !        free memory
-         call dealloc(eigvl)
          call dealloc(scr2mat)
          call dealloc(scr1mat)
          call dealloc(xmat)
@@ -412,7 +407,6 @@ contains
   subroutine x2c_tra(xmat,                 &
                      scr1mat,              &
                      scr2mat,              &
-                     eigvl,                &
                      nr_ao_L,              &
                      naosh_ls,             &
                      naosh_all,            &
@@ -421,6 +415,7 @@ contains
                      nesh_dim,             &
                      npsh_dim,             &
                      h1mat_dim_4c,         &
+                     momat_orbesh_dim_4c,  &
                      ioff_aomx,            &
                      nfsym,                &
                      nz,                   &
@@ -459,7 +454,6 @@ contains
      real(8), intent(inout) :: xmat(*)
      real(8), intent(inout) :: scr1mat(*)
      real(8), intent(inout) :: scr2mat(*)
-     real(8), intent(inout) :: eigvl(*)
      integer, intent(in)    :: nfsym
      integer, intent(in)    :: nz
      integer, intent(in)    :: nr_ao_L
@@ -470,6 +464,7 @@ contains
      integer, intent(in)    :: nesh_dim(nfsym)
      integer, intent(in)    :: npsh_dim(nfsym)
      integer, intent(in)    :: h1mat_dim_4c
+     integer, intent(in)    :: momat_orbesh_dim_4c
      integer, intent(in)    :: ioff_aomx(nfsym,nfsym)
      integer, intent(in)    :: ipq_off(4,0:7)
      integer, intent(in)    :: is_fragment
@@ -488,6 +483,7 @@ contains
      logical, intent(in)    :: spherical_on
 !----------------------------------------------------------------------
      real(8), pointer       :: wrk(:)
+     real(8), allocatable   :: eigvl(:)
      integer                :: i,j
      integer                :: lwrk
      integer                :: is_fragment_pctmat
@@ -540,6 +536,10 @@ contains
                                     linear_sym,            &
                                     print_lvl)
  
+!      allocate scratch matrix with appropriate dimension
+       call alloc(eigvl  ,max(naosh_ls,momat_orbesh_dim_4c,h1mat_dim_4c))
+       eigvl   = x2c_d0
+
 !      step 3: get the transformed operator h1_infinite_2c in orthonormal basis
 !
 !              in : 4c-h1 in orthonormal basis -> xmat
@@ -563,7 +563,7 @@ contains
 
 !      step 4: get the transformed operator h1_infinite_2c in SA-AO basis
 !
-!              in : 2c-h1 in orthonormal basis -> xmat
+!              in : 2c-h1 in orthonormal MO basis -> xmat
 !              out: 2c-h1 in SA-AO basis -> xmat + *
 !                   
 !              * == on file X2CMAT     : under the label h12cAOn (written in h1_2c^++ format)
@@ -627,6 +627,9 @@ contains
                                       x2c_file_scr,        &
                                       x2c_file_glb,        &
                                       print_lvl)
+
+!      free scratch memory
+       call dealloc(eigvl)
 
        close(x2c_file_scr,status="delete")
 
