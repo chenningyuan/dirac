@@ -140,6 +140,7 @@ contains
      integer                :: prop_idummy(x2c_dum_asz)
      character (len=16)     :: prop_cdummy(x2c_dum_asz)
      integer                :: lwrk
+     integer                :: is_allocated_dyn
      integer                :: i,j
      integer                :: is_center_x2c
      integer                :: dim1_fsym_Sao
@@ -167,6 +168,7 @@ contains
 
 !      initialize variable(s)
        final_ham_lvl_x2c = 0
+       is_allocated_dyn  = 0
  
 !      open file X2CMAT
        open(x2c_funit,file='X2CMAT',status='replace',form='unformatted',    &
@@ -204,6 +206,7 @@ contains
 !        allocate necessary matrices and arrays - xmat for step 1.1 + 1.2
          call alloc(xmat   ,nr_ao_total_x2c**2 * nr_quat)
          xmat    = x2c_d0
+         is_allocated_dyn  = nr_ao_total_x2c**2 * nr_quat
 
 !        ------------------------------------------------------------------------------
 !        step 1.1: compute 4c-Sao_LL overlap matrix for fragment "is_center_x2c"
@@ -225,7 +228,7 @@ contains
 !        step 1.2: get LOWDIN matrix for fragment "is_center_x2c"
 !        ------------------------------------------------------------------------------
 
-         lwrk = len_wrk_f77_x2c
+         lwrk = len_wrk_f77_x2c - is_allocated_dyn
          call sel_wrk_x2c(wrk,lwrk)
          call lowdin(xmat,wrk,lwrk,x2c_prt)
          call desel_wrk_x2c(wrk,lwrk)
@@ -249,6 +252,10 @@ contains
          scr2mat = x2c_d0
          eigvl   = x2c_d0
 
+!        set maximum allowed length of wrk array allocations
+         is_allocated_dyn = is_allocated_dyn + nr_ao_total_x2c + nr_ao_total_x2c**2 * nr_quat * 2
+         lwrk             = len_wrk_f77_x2c  - is_allocated_dyn
+
          call sel_wrk_x2c(wrk,lwrk)
          call modham(scr1mat,                  &
                      xmat,                     &
@@ -263,6 +270,10 @@ contains
 !        nullify pointer to work array and release matrix
          call desel_wrk_x2c(wrk,lwrk)
          call dealloc(eigvl)
+!
+!        recalculate the new maximum allowed length of wrk array allocations to be used in the subroutines.
+         is_allocated_dyn = is_allocated_dyn - nr_ao_total_x2c
+         lwrk             = len_wrk_f77_x2c  - is_allocated_dyn
 
 !        ------------------------------------------------------------------------------
 !        step 1.4: transfer dimensions on common blocks concerning the orthonormal MO basis -
@@ -306,7 +317,7 @@ contains
                       final_ham_lvl_x2c,      &
                       x2c_add_amfi,           &
                       x2c_bs_to_fs,           &
-                      len_wrk_f77_x2c,        &
+                      lwrk,                   &
                       x2c_prt,                &
                       atom_by_atom_x2c,       &
                       x2c_linsym,             &
@@ -482,7 +493,6 @@ contains
      logical, intent(in)    :: return_h1_inf_2c
      logical, intent(in)    :: spherical_on
 !----------------------------------------------------------------------
-     real(8), pointer       :: wrk(:)
      real(8), allocatable   :: eigvl(:)
      integer                :: i,j
      integer                :: lwrk
@@ -491,6 +501,8 @@ contains
 !**********************************************************************
 !
 
+!      initialize maximum allowed length of wrk array allocations
+       lwrk = is_len_wrk
 
 !      step 1: save RKB AOtoMO transformation matrices to file x2cscr
 !
@@ -530,7 +542,7 @@ contains
                                     nz,                    &
                                     ipq_off,               &
                                     defining_h1mat,        &
-                                    is_len_wrk,            &
+                                    lwrk,                  &
                                     is_fragment,           &
                                     x2c_file_scr,          &
                                     linear_sym,            &
@@ -539,6 +551,9 @@ contains
 !      allocate scratch matrix with appropriate dimension
        call alloc(eigvl  ,max(naosh_ls,momat_orbesh_dim_4c,h1mat_dim_4c))
        eigvl   = x2c_d0
+
+!      set new maximum allowed length of wrk array allocations
+       lwrk = lwrk - max(naosh_ls,momat_orbesh_dim_4c,h1mat_dim_4c)
 
 !      step 3: get the transformed operator h1_infinite_2c in orthonormal basis
 !
@@ -589,7 +604,7 @@ contains
                                    is_fragment,             &
                                    is_final_ham_lvl,        &
                                    add_amfi_contrib,        &
-                                   is_len_wrk,              &
+                                   lwrk,                    &
                                    x2c_file_scr,            &
                                    x2c_file_glb,            &
                                    x2c_file_amf,            &
