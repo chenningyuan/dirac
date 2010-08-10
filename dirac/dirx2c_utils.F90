@@ -375,7 +375,7 @@ contains
            write(flabel,'(a7,i4,i1)') '4cAOMOo',is_fragment,i
            call x2c_write(flabel,mat2(ioff_aomo),naosh_all(i)*norb_dim(i)*nz,x2c_file_scr)
 
-           if(linear_sym == .true.)then
+           if(linear_sym .eqv. .true.)then
              write(flabel,'(a7,i4,i1)') '4cMOMOl',is_fragment,i
              call x2c_write(flabel,mat3(ioff_momo),norb_dim(i)**2 * nz,x2c_file_scr)
            end if
@@ -503,7 +503,7 @@ contains
        call x2c_write(flabel,lowd_mat,naosh_ls*naosh_ls,x2c_file_glb)
 
 !      step 4: in case of linear symmetry - adapt the LOWDIN matrix
-       if(linear_sym == .true.)then
+       if(linear_sym .eqv. .true.)then
 
 !        set pointer to WORK array and allow full length for allocations
          lwrk = is_len_wrk
