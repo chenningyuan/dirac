@@ -456,8 +456,12 @@ CMI ....
       ER_IH(1,2) = EPMIN ! ... limits for Pi space for (0,1)/(0,2) plus (1,1) sectors
       ER_IH(2,2) = EPMAX
 
-      write(IW,*) 'EHMIN, EHMAX:',ER_IH(1,1),ER_IH(2,1)
-      write(IW,*) 'EPMIN, EPMAX:',ER_IH(1,2),ER_IH(2,2)
+! MI: control output ... 
+      write(IW,'(/,2X,A,F12.5,1X,A,F12.5)') 
+     &    'EHMIN:',ER_IH(1,1),'EHMAX:',ER_IH(2,1)
+      write(IW,'(2X,A,F12.5,1X,A,F12.5)') 
+     &     'EPMIN:',ER_IH(1,2),'EPMAX:',ER_IH(2,2)
+
 C
 C     XIH energy shift sign definition.
 C     Array with as first dimension 1e/2e shift
@@ -468,6 +472,7 @@ C     Shifts for particles should be negative
       SHIFT_IH(2,1) = -DABS(SHIFTP12)
       SHIFT_IH(2,5) = -DABS(SHIFTP2)
 CEE     Shifts for holes must be negative (not positive)
+!----------------------------------------------------------
       SHIFT_IH(1,2) =  -DABS(SHIFTH11)
       SHIFT_IH(2,2) =  -DABS(SHIFTH12)
       SHIFT_IH(2,6) =  -DABS(SHIFTH2)
