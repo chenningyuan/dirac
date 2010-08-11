@@ -60,18 +60,24 @@ C
 C
 C     Write file KRMCSCF:
 C
-C     (1) MJVEC   : orbital mj-vector
+C     (1) MJVEC .or. IBEIG: orbital mj-vector or boson irreps orbital-vector
 C     (2) OLDORB  : old MO orbitals
 C     (3) RESTART : info needed for restart
 C     (4) LREDUCED: info needed for backsteps
 C     (5) CREF    : new CI vector
 C     (6) NEWORB  : new MO orbitals
 C
-      IF( OPT_CHCKJZ .AND. LINEAR )THEN
-        CALL MEMGET('INTE',KMJVEC,NORBT,WORK,KFREE,LFREE)
-        CALL IZERO(WORK(KMJVEC),NORBT)
-        CALL IREAKRMC(LUKRMC,'MJVEC   ',WORK(KMJVEC),NORBT)
-      END IF
+      if(.not.spinfr_krmc)then
+        IF( OPT_CHCKJZ .AND. LINEAR )THEN
+          CALL MEMGET('INTE',KMJVEC,NORBT,WORK,KFREE,LFREE)
+          CALL IZERO(WORK(KMJVEC),NORBT)
+          CALL IREAKRMC(LUKRMC,'MJVEC   ',WORK(KMJVEC),NORBT)
+        END IF
+      else
+        CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
+        CALL IZERO(WORK(KIBEIG),NORBT)
+        CALL IREAKRMC(LUKRMC,'IBEIG   ',WORK(KIBEIG),NORBT)
+      end if
 C
 C     Clean LUKRMC
 C     ------------
@@ -81,14 +87,25 @@ C
       BACKSPACE LUKRMC
       CALL NEWLAB('SODLABEL',LUKRMC,LUPRI)
       REWIND(LUKRMC)
+
+      if(.not.spinfr_krmc)then
 C
-C     (1) MJVEC: write orbital mj-vector
-C     -------------------------------------------
+C       (1).1 MJVEC: write orbital mj-vector
+C       -------------------------------------------
 C
-      IF( OPT_CHCKJZ .AND. LINEAR )THEN
-        CALL IWRTKRMC(LUKRMC,'MJVEC   ',WORK(KMJVEC),NORBT)
+        IF( OPT_CHCKJZ .AND. LINEAR )THEN
+          CALL IWRTKRMC(LUKRMC,'MJVEC   ',WORK(KMJVEC),NORBT)
+          CALL MEMREL('KRMCSAV.1',WORK,1,KFRSAV,KFREE,LFREE)
+        END IF
+
+      else
+C
+C       (1).2 IBEIG: write boson irreps orbital-vector
+C       -------------------------------------------
+C
+        CALL IWRTKRMC(LUKRMC,'IBEIG   ',WORK(KIBEIG),NORBT)
         CALL MEMREL('KRMCSAV.1',WORK,1,KFRSAV,KFREE,LFREE)
-      END IF
+      end if
 C
 C     (2) OLDORB & OLDCREF: write old MO orbitals
 C     -------------------------------------------

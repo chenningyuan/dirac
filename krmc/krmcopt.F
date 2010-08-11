@@ -51,6 +51,7 @@ C
 #include "dgroup.h"
 #include "dcbopt.h"
 #include "dcbgen.h"
+#include "dcbham.h"
 C
       LOGICAL EX
       INTEGER RENAME
@@ -195,6 +196,18 @@ c        CALL MEMGET('REAL',KGCI  ,NZCONFQ_BUF,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KGOEE ,NZHOPEQ    ,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KGOEP ,NZXOPPQ    ,WORK,KFREE,LFREE)
       END IF
+
+!     implement boson symmetry in MCSCF - enabling spinfree MCSCF
+!     sk + hjaaj 10-aug-10
+      if(spinfr)then
+        call memget('INTE',kibeig,norbt,work,kfree,lfree)
+!       set logical flag on common block in dcbopt.h        
+        spinfr_krmc = .true.
+      else
+        call memget('INTE',kibeig,    0,work,kfree,lfree)
+!       set logical flag on common block in dcbopt.h        
+        spinfr_krmc = .false.
+      end if
 C
 C     ***************************************************
 C     *** Call 2nd order optimization *******************
@@ -203,7 +216,7 @@ C
       CALL PSIOP1(WORK(KCMO),WORK(KDV),WORK(KPV),WORK(KFC),
      &            WORK(KFV),WORK(KFQ),WORK(KFCAC),WORK(KCREF),
      &            WORK(KH2AC),WORK(KGCI),WORK(KGOEE),WORK(KGOEP),
-     &            WFCONV,WORK,KFREE,LFREE)
+     &            WORK(KIBEIG),WFCONV,WORK,KFREE,LFREE)
 C
 C
 C     ***************************************************
@@ -242,7 +255,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck psiopt */
       SUBROUTINE PSIOP1(CMO,DV,PV,FC,FV,FQ,FCAC,CREF,H2AC,GCI,GOEE,GOEP,
-     &                  WFCONV,WORK,KFREE,LFREE)
+     &                  IBEIG,WFCONV,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Get second-order optimized wave function.
@@ -270,7 +283,7 @@ C
       LOGICAL   WFCONV, MOISNO
       DIMENSION WORK(*)
       DIMENSION CMO(*),DV(*),FC(*),FV(*),FQ(*),FCAC(*),CREF(*),
-     &          H2AC(*),GCI(*),GOEE(*),GOEP(*), PV(*)
+     &          H2AC(*),GCI(*),GOEE(*),GOEP(*), PV(*), IBEIG(*)
 C
       LOGICAL CHKSTP,DO4INDEX,TOBE
       LOGICAL NRALW, NEOALW
@@ -339,8 +352,8 @@ C
 C
 C     Get start orbitals and CI vectors:
 C
-      CALL ROPTST(IOPTST,3,CMO,CREF,IPROPT,WORK,KFREE,LFREE)
-C     CALL ROPTST(ISTART,IWRT,CMO,CREF,IPRINT,WORK,KFREE,LFREE)
+      CALL ROPTST(IOPTST,3,CMO,CREF,IBEIG,IPROPT,WORK,KFREE,LFREE)
+C     CALL ROPTST(ISTART,IWRT,CMO,CREF,IBEIG,IPRINT,WORK,KFREE,LFREE)
 C
 C     Only integral transformation done
 C
@@ -1624,7 +1637,6 @@ C
       CALL MEMREL('RGETFC',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL FLSHFO(LUPRI)
       CALL QEXIT('RGETFC')
-      IPROPT = 00
       RETURN
  9011 FORMAT(/' RGETFC: ',A,' fock matrix, irrep ',I1)
       END
@@ -1759,8 +1771,9 @@ C        with IOPTST.
 C
          CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
          ISTART = MOD(IOPTST,100)
-         CALL ROPTST(ISTART,0,WORK(KCMO),DUMMY,-1,WORK,KFREE,LFREE)
-C        CALL ROPTST(ISTART,IWRT,CMO,CREF,IPRINT,WORK,KFREE,LFREE)
+         CALL ROPTST(ISTART,0,WORK(KCMO),DUMMY,IDUMMY,-1,
+     &               WORK,KFREE,LFREE)
+C        CALL ROPTST(ISTART,IWRT,CMO,CREF,IBEIG,IPRINT,WORK,KFREE,LFREE)
          CALL RAPPBOS(WORK(KCMO),IBOSYM,IPROPT,WORK(KFREE),LFREE)
          CALL MEMREL('RSETWOP.LUCIAREL',WORK,1,KCMO,KFREE,LFREE)
 C
@@ -2794,7 +2807,8 @@ csk   IPROPT      = 10
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck roptst */
-      SUBROUTINE ROPTST(ISTART,IWRT,CMO,CREF,IPRINT,WORK,KFREE,LFREE)
+      SUBROUTINE ROPTST(ISTART,IWRT,CMO,CREF,IBEIG,IPRINT,
+     &                  WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Generate start vectors
@@ -2810,6 +2824,9 @@ C     Last revision :
 C                S. Knecht  - Jul 07 2008  start plain CI calculation 
 C                             from MCSCF/MP2 natural orbitals 
 C                             (RCI_MCORB = .TRUE.)
+C                S. Knecht  - Aug 10 2010  read boson symmetry array
+C                             IBEIG (if spinfr_krmc == .true.)
+C                             --> reuse mj-related logicals.
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2828,7 +2845,7 @@ C
 C
       LOGICAL EX, FNDLAB, FILEOPEN, MJVEC_AVAIL, readmj_df
       DIMENSION WORK(*)
-      DIMENSION CREF(*), CMO(*)
+      DIMENSION CREF(*), CMO(*), IBEIG(*)
       LOGICAL VERBOSE
 C
       LOGICAL LBIT, RCI_MCORB, RTRACI, NATOLCR_SAVE, READ_DFCOEF
@@ -3023,6 +3040,8 @@ C
      &      "           Improved by an estimate "//
      &      "of the electronic screening (Slater's rules)."
          END IF
+         CALL QUIT('*** ERROR in ROPTST: H_1 start guess is
+     &             not operational. ***')
          GOTO 1000
       END IF
 C
@@ -3055,58 +3074,112 @@ C
      &           NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
          END DO
       END IF
-!     
-!     store mj-values if appropriate
-      IF ( LUKRM5 .GT. 0 ) THEN
-        REWIND(LUKRM5)
-        FILELABEL = 'MJVEC   '
-        MJVEC_AVAIL = FNDLAB(FILELABEL,LUKRM5)
-        REWIND(LUKRM5)
-      END IF
-      if( linear .and. readmj_df ) MJVEC_AVAIL = .true.
-      IF( MJVEC_AVAIL )THEN
-        CALL MEMGET('INTE',KMJVEC,NORBT,WORK,KFREE,LFREE)
-        CALL IZERO(WORK(KMJVEC),NORBT)
 !
-!       read mj-vector from DFCOEF or KRMC"SCF"(OLD)
-        if( readmj_df )then
-          call opnfil(lucoef,'DFCOEF','OLD','RMJVEC ')
-          call reacmo(lucoef,'DFCOEF',dummy,dummy,work(kmjvec),dummy,8,
-     &                work,kfree,lfree)
-          close(lucoef,STATUS='KEEP')
-        else
-          call ireakrmc(lukrm5,'MJVEC   ',work(kmjvec),norbt)
-        end if
+!     intermediate step: 
+!     save additional required information (integer arrays) to file KRMCSCF 
+
+!     1. store mj-values (MCSCF run in linear symmetry)
+!     -------------------------------------------------
+      if(.not.spinfr_krmc)then
+
+        IF ( LUKRM5 .GT. 0 ) THEN
+          REWIND(LUKRM5)
+          FILELABEL = 'MJVEC   '
+          MJVEC_AVAIL = FNDLAB(FILELABEL,LUKRM5)
+          REWIND(LUKRM5)
+        END IF
+        if( linear .and. readmj_df ) MJVEC_AVAIL = .true.
+        IF( MJVEC_AVAIL )THEN
+          CALL MEMGET('INTE',KMJVEC,NORBT,WORK,KFREE,LFREE)
+          CALL IZERO(WORK(KMJVEC),NORBT)
+!
+!         read mj-vector from DFCOEF or KRMC"SCF"(OLD)
+          if( readmj_df )then
+            call opnfil(lucoef,'DFCOEF','OLD','RMJVEC ')
+            call reacmo(lucoef,'DFCOEF',dummy,dummy,work(kmjvec),
+     &                  dummy,8,work,kfree,lfree)
+            close(lucoef,STATUS='KEEP')
+          else
+            call ireakrmc(lukrm5,'MJVEC   ',work(kmjvec),norbt)
+          end if
 C
-C       write back on file - if not present
-        LUNI = -1
-        INQUIRE(FILE='KRMCSCF',EXIST=EX,OPENED=FILEOPEN,NUMBER=LUNI)
-        IF(EX.and.FILEOPEN)THEN
-          rewind(LUNI)
-          if(.not.(FNDLAB(FILELABEL,LUNI)))
-     &      CALL IWRTKRMC(LUNI,'MJVEC   ',WORK(KMJVEC),NORBT)
-        ELSE IF( EX.and.(.not. FILEOPEN))THEN
-          LUNI = 99
-          CALL OPNFIL(LUNI,'KRMCSCF','OLD    ','ROPTST')
-          rewind(LUNI)
-          if(.not.(FNDLAB(FILELABEL,LUNI)))
-     &      CALL IWRTKRMC(LUNI,'MJVEC   ',WORK(KMJVEC),NORBT)
-          CLOSE(LUNI,STATUS='KEEP')
-        ELSE IF(.NOT. EX)THEN ! can only happen if /= MCSCF run
-          LUNI = 99
-          CALL OPNFIL(LUNI,'KRMCSCF','UNKNOWN','KR CI ')
-          CALL NEWLAB('*KRCI   ',LUNI,LUPRI)
-          CALL NEWLAB('SODLABEL',LUNI,LUPRI)
-          CALL IWRTKRMC(LUNI,'MJVEC   ',WORK(KMJVEC),NORBT)
-          CLOSE(LUNI,STATUS='KEEP')
+C         write back on file - if not present
+          LUNI = -1
+          INQUIRE(FILE='KRMCSCF',EXIST=EX,OPENED=FILEOPEN,NUMBER=LUNI)
+          IF(EX.and.FILEOPEN)THEN
+            rewind(LUNI)
+            if(.not.(FNDLAB(FILELABEL,LUNI)))
+     &        CALL IWRTKRMC(LUNI,'MJVEC   ',WORK(KMJVEC),NORBT)
+          ELSE IF( EX.and.(.not. FILEOPEN))THEN
+            LUNI = 99
+            CALL OPNFIL(LUNI,'KRMCSCF','OLD    ','ROPTST')
+            rewind(LUNI)
+            if(.not.(FNDLAB(FILELABEL,LUNI)))
+     &        CALL IWRTKRMC(LUNI,'MJVEC   ',WORK(KMJVEC),NORBT)
+            CLOSE(LUNI,STATUS='KEEP')
+          ELSE IF(.NOT. EX)THEN ! can only happen if /= MCSCF run
+            LUNI = 99
+            CALL OPNFIL(LUNI,'KRMCSCF','UNKNOWN','KR CI ')
+            CALL NEWLAB('*KRCI   ',LUNI,LUPRI)
+            CALL NEWLAB('SODLABEL',LUNI,LUPRI)
+            CALL IWRTKRMC(LUNI,'MJVEC   ',WORK(KMJVEC),NORBT)
+            CLOSE(LUNI,STATUS='KEEP')
+          END IF
+
+          CALL MEMREL('KRMCSAV.1',WORK,1,KFRSAV,KFREE,LFREE)
+          WRITE(LUPRI,'(/A)') 
+     &    '  Vector containing mj-values saved as MJVEC on KRMCSCF'
         END IF
 
-        CALL MEMREL('KRMCSAV.1',WORK,1,KFRSAV,KFREE,LFREE)
-        WRITE(LUPRI,'(/A)') 
-     &  '  Vector containing mj-values saved as MJVEC on KRMCSCF'
-      END IF
+!     2. store IBEIG array containing boson irreps of each orbital (spinfree MCSCF run)
+!     ---------------------------------------------------------------------------------
+      else
+
+        IF ( LUKRM5 .GT. 0 ) THEN
+          REWIND(LUKRM5)
+          FILELABEL = 'IBEIG   '
+          MJVEC_AVAIL = FNDLAB(FILELABEL,LUKRM5)
+          REWIND(LUKRM5)
+        END IF
+        if( readmj_df ) MJVEC_AVAIL = .true.
+        IF( MJVEC_AVAIL )THEN
 !
-!     Write coefficients back to file as label NEWORB
+!         read ibeig (info array on boson irreps) from DFCOEF or KRMC"SCF"(OLD)
+          if( readmj_df )then
+            call opnfil(lucoef,'DFCOEF','OLD','RIBEIG ')
+            call reacmo(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8,
+     &                  work,kfree,lfree)
+!           WRITE(LUPRI,'(/A)') ' IBEIG array read from file DFCOEF'
+!           call iwrtmamn(ibeig,1,norbt,1,norbt,lupri)
+            close(lucoef,STATUS='KEEP')
+          else
+            call ireakrmc(lukrm5,'IBEIG   ',ibeig,norbt)
+          end if
+C
+C         write back on file - if not present
+          LUNI = -1
+          INQUIRE(FILE='KRMCSCF',EXIST=EX,OPENED=FILEOPEN,NUMBER=LUNI)
+          IF(EX.and.FILEOPEN)THEN
+            rewind(LUNI)
+            if(.not.(FNDLAB(FILELABEL,LUNI)))
+     &        CALL IWRTKRMC(LUNI,'IBEIG   ',ibeig,NORBT)
+          ELSE IF( EX.and.(.not. FILEOPEN))THEN
+            LUNI = 99
+            CALL OPNFIL(LUNI,'KRMCSCF','OLD    ','ROPTST')
+            rewind(LUNI)
+            if(.not.(FNDLAB(FILELABEL,LUNI)))
+     &        CALL IWRTKRMC(LUNI,'IBEIG   ',ibeig,NORBT)
+            CLOSE(LUNI,STATUS='KEEP')
+          END IF
+ 
+          WRITE(LUPRI,'(/A)') 
+     &    '  Vector containing the boson irreps saved as IBEIG'//
+     &    ' on KRMCSCF'
+        END IF
+      end if
+!
+!     final step in orbital part: write coefficients back to file as label NEWORB
+!     ---------------------------------------------------------------------------
       IF(LBIT(IWRT,1)) THEN 
         CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
          WRITE(LUPRI,'(/A)') 
@@ -3384,7 +3457,6 @@ C
      &      ' Using MAXCIT = 3 instead!'
          MAXCIT = 3
       END IF
-C
 C
       IF ( OPT_CIPROGRAM .EQ. 'GASCIP' ) THEN
 C

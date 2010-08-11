@@ -1089,12 +1089,15 @@ C
         ELSE
            CALL MEMGET('REAL',KCREF ,NZCONFQ ,WORK,KFREE,LFREE)
         END IF
+!       disable all actions related to a spinfree MCSCF run
+        spinfr_krmc = .false.
+        call memget('INTE',kibeig,    0,work,kfree,lfree)
 C
 C       ***************************************************
 C       *** Call DRIVER for CI calculation ****************
 C       ***************************************************
 C
-        CALL KRCI_CALC_1(WORK(KCMO),WORK(KCREF),
+        CALL KRCI_CALC_1(WORK(KCMO),WORK(KCREF),WORK(KIBEIG),
      &                   WFTYP,WFCONV,WORK,KFREE,LFREE)
 C
         CALL MEMREL('KRCI_CALC_1',WORK,KWORK,KFREE_100_LOOP,

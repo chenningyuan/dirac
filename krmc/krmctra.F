@@ -1193,10 +1193,10 @@ C                    full
 C
 C                    (FIXME: write me)
 C
-                     IF (SPINFR) THEN
-                        write(6,*) 'SPINFR not implemented in RGETH2'
-                        CALL QUIT('SPINFR not implemented in RGETH2')
-                     END IF
+!                    IF (SPINFR) THEN
+!                       write(6,*) 'SPINFR not implemented in RGETH2'
+!                       CALL QUIT('SPINFR not implemented in RGETH2')
+!                    END IF
 C
                   END DO
                END IF

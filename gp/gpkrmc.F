@@ -169,7 +169,7 @@ C
 #include "dcbopt.h"
 C
       DIMENSION VECTOR(ISIZE)
-      CHARACTER LABEL*8,C(4)*8
+      CHARACTER LABEL*8
 C
 C     Write label at end or - if already existing - after SODLABEL
 C
@@ -338,7 +338,7 @@ C
 #include "iratdef.h"
 C
       DIMENSION IVECTOR(ISIZE)
-      CHARACTER LABEL*8,C(4)*8
+      CHARACTER LABEL*8
 C
 C     Write label at end or - if already existing - after SODLABEL
 C
@@ -431,7 +431,7 @@ C
 #include "iratdef.h"
 C
       DIMENSION VECTOR(ISIZE)
-      CHARACTER LABEL*8,C(4)*8
+      CHARACTER LABEL*8
       LOGICAL   FNDLAB
 C
       REWIND(LUNIT)
@@ -473,7 +473,7 @@ C
 #include "iratdef.h"
 C
       DIMENSION IVECTOR(ISIZE)
-      CHARACTER LABEL*8,C(4)*8
+      CHARACTER LABEL*8
       LOGICAL   FNDLAB
 C
       REWIND(LUNIT)
@@ -517,7 +517,7 @@ C
 #include "iratdef.h"
 C
       DIMENSION VECTOR(ISIZE)
-      CHARACTER LABEL*8,C(4)*8
+      CHARACTER LABEL*8
       CHARACTER FILENAME*(*)
       LOGICAL   FNDLAB, FEXIST, FOPEN
 C

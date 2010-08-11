@@ -3306,7 +3306,7 @@ C       scratch memory
         CALL DZERO(WORK(KRELCOEFFX),LDIMC+2)
 C
 C       read info array
-        CALL IREAAMFI(LURELSCFCOEF,RELSCFLABI,IRELSCF_INFO,
+        CALL IREAKRMC(LURELSCFCOEF,RELSCFLABI,IRELSCF_INFO,
      &                MXRELSCF_INFO)
         IPLACEVLEN = 0
 CSK     WRITE(LUPRI,*) ' IRELSCF_INFO(1)',IRELSCF_INFO(1)
@@ -6248,45 +6248,6 @@ C
      &        '*** ERROR in REAAMFI ***',
      &        'Label <',LABEL,'> does not exist on unit ',LUNIT
          CALL QUIT('*** ERROR in REAAMFI ***')
-      END IF
-C
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE IREAAMFI(LUNIT,LABEL,IVECTOR,ISIZE)
-C***********************************************************************
-C
-C     Read VECTOR from LUNIT under label LABEL.
-C
-C     Input:
-C
-C     Output:
-C        VECTOR  - vector of size ISIZE
-C        LABEL   - the label
-C        LUNIT   - unit number
-C
-C     written by S. Knecht - Jan 2009
-C     inspired by IREAKRMC by J. Thyssen
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-      DIMENSION IVECTOR(ISIZE)
-      CHARACTER LABEL*8
-      LOGICAL   FNDLAB
-C
-      REWIND(LUNIT)
-      IF (FNDLAB(LABEL,LUNIT)) THEN
-C
-C        Label exists.
-C
-         CALL READI(LUNIT,ISIZE,IVECTOR)
-C
-      ELSE
-         WRITE(LUPRI,'(//A/,3A,I3)')
-     $        '*** ERROR in IREAAMFI ***',
-     $        'Label <',LABEL,'> does not exists on unit ',LUNIT
-         CALL QUIT('*** ERROR in IREAAMFI ***')
       END IF
 C
       END
