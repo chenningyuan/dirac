@@ -938,7 +938,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rappbos */
-      SUBROUTINE RAPPBOS(CMO,IBOSYM,IPRINT,WORK,LWORK)
+      SUBROUTINE RAPPBOS(CMO,IBOSYM,IBEIG,IPRINT,WORK,LWORK)
 C***********************************************************************
 C
 C     Calculates approximate boson symmetry of orbitals.
@@ -973,7 +973,7 @@ C
 #include "dcbgen.h"
 C
       DIMENSION CMO(*)
-      DIMENSION IBOSYM(*)
+      DIMENSION IBOSYM(*), IBEIG(*)
       DIMENSION WORK(*)
 C
       DIMENSION WEIGHT(8)
@@ -1040,6 +1040,31 @@ c     IF (IPRINT .GE. 3) THEN
      &        ' (RAPPBOS) Approximate boson symmetries: '
          WRITE(LUPRI,9000) (REP(IBOSYM(I)),I=1,NORBT)
 c     END IF
+
+#if defined MCSCF_DEBUG_SPINFREE
+!     additional check: ibosym <--> ibeig
+      if(spinfr)then
+        
+        do  i = 1, norbt
+          if(ibosym(i) .ne. ibeig(i))then
+            WRITE(LUPRI,'(/A)')
+     &        ' (RAPPBOS) ibosym: Approximate boson symmetries: '
+         WRITE(LUPRI,9000) (REP(IBOSYM(j)),j=1,NORBT)
+            WRITE(LUPRI,'(/A)')
+     &        ' (RAPPBOS) ibeig: Approximate boson symmetries: '
+         WRITE(LUPRI,9000) (REP(ibeig(j)),j=1,NORBT)
+            call quit('*** error in RAPPBOS: 
+     &      wrong approximate boson symmetries. ***')
+          else
+            WRITE(LUPRI,'(A,i6)')
+     &' (RAPPBOS) boson symmetry from IBOSYM and IBEIG for orbital # =',
+     &  i         
+              WRITE(LUPRI,'(10x,2a4/)') REP(IBOSYM(i)), REP(IBEIG(i))
+          end if
+        end do
+      end if
+#endif
+
  9000 FORMAT(10X,15(A4))
 C
       CALL MEMREL('RAPPBOS',WORK,KWORK,KWORK,KFREE,LFREE)

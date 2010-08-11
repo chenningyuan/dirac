@@ -110,6 +110,13 @@ C
       END IF
       IF (THQKVA .LE. D0) THQKVA = 8.0D00
 C     ... default quadratic conv. factor for MCSCF
+
+!     set logical flag on common block in dcbopt.h for spinfree MCSCF    
+      if(spinfr)then
+        spinfr_krmc = .true.
+      else
+        spinfr_krmc = .false.
+      end if
 cdebug
 c     opt_ucibos = .false.
 cdebug
@@ -199,14 +206,10 @@ c        CALL MEMGET('REAL',KGCI  ,NZCONFQ_BUF,WORK,KFREE,LFREE)
 
 !     implement boson symmetry in MCSCF - enabling spinfree MCSCF
 !     sk + hjaaj 10-aug-10
-      if(spinfr)then
+      if(spinfr_krmc)then
         call memget('INTE',kibeig,norbt,work,kfree,lfree)
-!       set logical flag on common block in dcbopt.h        
-        spinfr_krmc = .true.
       else
         call memget('INTE',kibeig,    0,work,kfree,lfree)
-!       set logical flag on common block in dcbopt.h        
-        spinfr_krmc = .false.
       end if
 C
 C     ***************************************************
@@ -443,6 +446,7 @@ C
 C
          JRDCMO = 0
          CALL RREADMO(CMO,JRDCMO,1,LUKRMC)
+         if(spinfr_krmc) call ireakrmc(lukrmc,'IBEIG   ',ibeig,norbt)
 C
 C
 C        ***************************************************
@@ -475,6 +479,10 @@ C
             CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
             CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
 C
+C           TODO: Boson symmetry not implemented in KRMCSCF yet.
+C
+            CALL IZERO(WORK(KIBEIG),NORBT)
+C
 C           Read coefficients from KRMCSCF
 C
             INQUIRE(FILE='KRMCSCF',EXIST=TOBE)
@@ -485,11 +493,9 @@ C
             ELSE
                JRDMO = 1
                CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
+               if(spinfr_krmc) 
+     &           call ireakrmc(lukrmc,'IBEIG   ',work(kibeig),norbt)
             END IF
-C
-C           TODO: Boson symmetry not implemented in KRMCSCF yet.
-C
-            CALL IZERO(WORK(KIBEIG),NORBT)
 C
 C           *** Now do the transformation
 C
@@ -641,7 +647,7 @@ C
          STPLEP = D0
          DEPRED = D0
 c        IF (DONR) THEN
-            CALL DIRNR(CREF,GCI,GOEE,GOEP,CMO,DV,FC,FV,FCAC,
+            CALL DIRNR(CREF,GCI,GOEE,GOEP,CMO,IBEIG,DV,FC,FV,FCAC,
      &           H2AC,WORK,KFREE,LFREE)
             LDIRNR = .TRUE.
 c        ELSE
@@ -1760,6 +1766,8 @@ C     can also be used for spin-free and Levy-Leblond Hamiltonians.
 C     (Only if LUCIAREL is run in spinfree formalism. Otherwise
 C     boson symmetry array is reset.)
 C
+C     this step is also done for GASCIP.
+C
       IF (OPT_UCIBOS) THEN
 C
 C        For the current version of LUCIAREL we need the
@@ -1770,11 +1778,13 @@ C        FIXME: the control parameter should be consistent
 C        with IOPTST.
 C
          CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
+         CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
          ISTART = MOD(IOPTST,100)
-         CALL ROPTST(ISTART,0,WORK(KCMO),DUMMY,IDUMMY,-1,
+         CALL ROPTST(ISTART,0,WORK(KCMO),DUMMY,WORK(KIBEIG),-1,
      &               WORK,KFREE,LFREE)
 C        CALL ROPTST(ISTART,IWRT,CMO,CREF,IBEIG,IPRINT,WORK,KFREE,LFREE)
-         CALL RAPPBOS(WORK(KCMO),IBOSYM,IPROPT,WORK(KFREE),LFREE)
+         CALL RAPPBOS(WORK(KCMO),IBOSYM,WORK(KIBEIG),IPROPT,
+     &                WORK(KFREE),LFREE)
          CALL MEMREL('RSETWOP.LUCIAREL',WORK,1,KCMO,KFREE,LFREE)
 C
       END IF
@@ -3586,7 +3596,7 @@ C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirnr */
-      SUBROUTINE DIRNR(CREF,GCI,GOEE,GOEP,CMO,DV,FC,FV,FCAC,
+      SUBROUTINE DIRNR(CREF,GCI,GOEE,GOEP,CMO,IBEIG,DV,FC,FV,FCAC,
      &                 H2AC,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -3594,6 +3604,7 @@ C     Perform NR step
 C
 C     Input:
 C        CMO     - the orbitals for the CEP
+C        IBEIG   - the boson irreps arry of the orbitals for the CEP
 C        CREF    - CI vector
 C        G       - the gradient
 C         CI       CI
@@ -3620,7 +3631,7 @@ C
 C
       LOGICAL OPTRST,OPTNRM,OPTDIH,OPTSTERN, GOEER
       DIMENSION CREF(*),GCI(*),DV(*),FC(*),FV(*),
-     &          H2AC(*),WORK(*),GOEE(*),GOEP(*)
+     &          H2AC(*),WORK(*),GOEE(*),GOEP(*), IBEIG(*)
       DIMENSION ITRINT_MIC(2),CNVINT_MIC(2)
       DIMENSION IOPTTB(-1:2)
       DATA IOPTTB / 0,0,0,0 /

@@ -3462,8 +3462,9 @@ C        We are doing a KRMCSCF opt. Read orbitals from KRMCSCF
 C
          JRDMO = 1
          CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
-         IF(SPINFR) 
-     &     CALL QUIT('GMOLITX: IBEIG must be passed...')
+!        IF(SPINFR) 
+!    &     CALL QUIT('GMOLITX: IBEIG must be passed...')
+         if(spinfr) call ireakrmc(lukrmc,'IBEIG   ',work(kbeig),norbt)
 #endif /* MOD_KRMC */
       ENDIF
 C
