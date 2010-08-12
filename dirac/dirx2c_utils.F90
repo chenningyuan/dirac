@@ -79,9 +79,8 @@ contains
 !             using the AO-to-MO transformation matrix V and the 
 !             pct-matrix Umat_ON in orthonormal MO basis.
 !
-!             if the atom-by-atom approach is not in use then the picture-change
-!             transformation matrix is written under the label
-!             "is_fragment_pctmat"
+!             NOTE: the picture-change transformation matrix is written under the label
+!             "is_fragment_pctmat" as defined in the calling routine.
 !
 !             equation: U = RKB AOtoMO trafo mat ["SL resorted"]  * Umat_ON
 !
