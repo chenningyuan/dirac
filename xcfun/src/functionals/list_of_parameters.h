@@ -37,6 +37,7 @@
   PARAM(XC_M05X2C),
   PARAM(XC_M05C),
   PARAM(XC_M06C),
+  PARAM(XC_M06LC),
   PARAM(XC_M06X2C),
 #endif
   // This has to be last:

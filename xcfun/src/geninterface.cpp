@@ -3,6 +3,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include "config.h"
 
 enum xc_parameters
   {

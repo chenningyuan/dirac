@@ -37,8 +37,6 @@ static num energy (const densvars<num> &d)
                                                                     chi_b2,zet_b);
    num Ec_aa = ueg_c_para(d.a) * m06_c_para(param_c_para,param_d_para,chi_a2,zet_a);
    num Ec_bb = ueg_c_para(d.b) * m06_c_para(param_c_para,param_d_para,chi_b2,zet_b);
-   printf("Ec_ab = %.15f, Ec_aa = %.15f, Ec_bb = %.15f \n",Ec_ab[0],
-	  Ec_aa[0],Ec_bb[0]);
    return Ec_ab + Ec_aa + Ec_bb;
 }
 
@@ -47,7 +45,7 @@ void setup_m06c(functional &f)
   f.describe(XC_M06C, XC_MGGA,
 	     "M06 Correlation",
              "M06 Meta-Hybrid Correlation Functional\n"
-             "Y Zhao, N. E. Schultz and D. G. Truhlar, J. Chem. Theory Comput. 2, 364 (2006)\n"
+             "Zhao, Truhlar; Theor Chem Account (2008) 120:215-241\n"
              "Implemented by Andre Gomes\n"
 	     "Reference data from ADF, except energy which is self-computed.");
 
