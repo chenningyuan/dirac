@@ -1107,7 +1107,7 @@ C
       CALL MEMGET('REAL',KH2XY,N2ORBX*NCLASS,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KH2YX,N2ORBX*NCLASS,WORK,KFREE,LFREE)
 c
-#ifdef MOD_DEBUG
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
       write(6,*) '(RGETH2) IDXKR12'
       do i = 1, nfpck12t
          write(6,*) I,
@@ -1135,9 +1135,9 @@ C
             IREC = IREC + 1
             CALL GTXY(NXY,IX,IY,IXU,IYU,WORK(KDXKR12))
             IREPIJB = IGETINT(WORK(KDXB12),NXY*2-1)
-#ifdef MOD_DEBUG
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
             write(6,*) 'x & y: ',ix,iy
-            write(6,*) 'ative : ',ixu,iyu
+            write(6,*) 'active : ',ixu,iyu
             write(6,*) ' '
 #endif
 C           We only need active-active distributions.
@@ -1158,7 +1158,7 @@ C
             READ (LUINT + IREPIJ, REC=IREC,
      &           ERR=8000, IOSTAT=IOSVAL)
      &           (WORK(KH2XY+I-1),I=1,NKL*NCLASS)
-#ifdef MOD_DEBUG
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
             ii = 0
             do i = 1, 4 * nz
                write(6,*) 'class ',i,' before transformation'
@@ -1216,7 +1216,7 @@ C
      &           H2AC,IUU,IXU .EQ. IYU, DOFQ, DOH2AC)
 C           CALL X2GU(HX,H2XY,H2YX,H2AC,IUU,ONLYXY,DOFQ,DOH2AC)
 C
-#ifdef MOD_DEBUG
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
             do i = 1, 3 * nz
                write(6,*) 'xy matrix no ',i
                call output(work(kh2xy + (i-1)*norbt*nasht),
@@ -2271,7 +2271,7 @@ C
 C     Loop over records on file
 C     -------------------------
 C
-#ifdef MOD_DEBUG
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
       write(6,*) 'nfpck12',nfpck12,nfpck12t
       write(6,*) 'nfpck34',nfpck34,nfpck34t
       call flshfo(6)
@@ -2305,7 +2305,7 @@ C
 C           else:
 C              nothing (jump to 20)
 C
-#ifdef MOD_DEBUG
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
             write(6,*) 'ix,..',ix,iy,ixu,iyu
             call flshfo(6)
 #endif
@@ -2325,7 +2325,7 @@ C
             READ (LUINT + IREPXY, REC=IREC,
      &           ERR=8000, IOSTAT=IOSVAL)
      &           (WORK(KHMA2+I-1),I=1,NKL*NCLASS)
-#ifdef MOD_DEBUG
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
             write(6,*) 'integrals...'
             call output(work(khma2),1,nkl,1,nclass,nkl,nclass,1,lupri)
 #endif

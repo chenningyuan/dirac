@@ -153,7 +153,6 @@ C
 C
       ENDIF ! spinfree
 C
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck x2uu */
@@ -246,10 +245,21 @@ C
                DO IZ = 1, NZ
                   WRITE(LUPRI,'(1X,A,I3,A,I3,A)')
      &                 'Matrix no. (',IZ,',',I3,'): '
+                  CALL OUTPUT(HX(1,1,IZ,I3),1,norbt,1,norbt,
+     &                 norbt,norbt,1,LUPRI)
+               END DO
+            END DO
+#if defined MCSCF_DEBUG_SPINFREE
+            WRITE(LUPRI,'(1X,A)') '(X2GU) HX(*,*,*,*): '
+            DO I3 = 1, 3
+               DO IZ = 1, NZ
+                  WRITE(LUPRI,'(1X,A,I3,A,I3,A)')
+     &                 'Matrix no. (',IZ,',',I3,'): '
                   CALL OUTPUT(H2AC(1,1,IUU,IZ,I3),1,NASHT,1,NASHT,
      &                 NASHT,NASHT,1,LUPRI)
                END DO
             END DO
+#endif
          END IF
       END IF
 C

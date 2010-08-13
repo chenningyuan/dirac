@@ -822,7 +822,7 @@ C
 C        Get Fock matrix with both indices active.
 C        FCAC is written to KRMC FOCK.
 C
-         CALL RGETAC(FC,FCAC,IPROPT)
+         CALL RGETAC(FC,FCAC,IPRINT)
 C
       END IF
 C
@@ -924,7 +924,7 @@ C
       IF (COMPROT) THEN
 C
          CALL SVLDEG(GOEE,GOEP,JXOPE,NZHOPE,JXOPP,NZXOPP,
-     &        DV,FC,FV,FQ,CMO,IPROPT,WORK(KFREE),LFREE)
+     &        DV,FC,FV,FQ,CMO,IPRINT,WORK(KFREE),LFREE)
 C
       END IF
 C
@@ -1190,7 +1190,6 @@ C           TODO FIXME: check trace of PV
 C
          END IF
 C     END IF
-      IPROPT = 0
       IF ( IPROPT .GE. 5 ) THEN
          IF (CALCDV) THEN
             WRITE(LUPRI,'(/A)') ' (RMAKDM) DV density matrix'
@@ -1201,7 +1200,6 @@ C     END IF
             CALL PRDNZ3(PV,NASHT,NNASHX,NZ,IPQTOQ(1,0),LUPRI)
          END IF
       END IF
-      IPROPT = 0
 C
       CALL RTKTIME(.FALSE.,8)
       CALL QEXIT('RMAKDM')

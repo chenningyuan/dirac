@@ -1745,7 +1745,6 @@ C
 C     Read two-electron integrals:
 C     ----------------------------
 C
-      CALL MEMGET('REAL',KMUUUU,(2*NASHT)**4 * 2, WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KH2AC,NASHT*NASHT*NNASHX*NZ*3,WORK,KFREE,LFREE)
 C
 C     Read integrals from 4IND1XXXX0:
@@ -1756,6 +1755,7 @@ C
 C     Make sure imag(VMUUUU) = 0 for NZ=1
 C     (DNZ32M only DZERO'es real part for NZ = 1)
 C
+      CALL MEMGET('REAL',KMUUUU,(2*NASHT)**4 * 2, WORK,KFREE,LFREE)
       IF (NZ .EQ. 1) CALL DZERO(WORK(KMUUUU+(2*NASHT)**4),(2*NASHT)**4)
 C
 C     Transform integrals to Molfdir format:
