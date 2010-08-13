@@ -1,7 +1,7 @@
-DIRAC launched (pam script) by bast@larry at Fri Aug 13 17:03:30 CEST 2010
+DIRAC launched (pam script) by bast@larry at Fri Aug 13 17:29:37 CEST 2010
 in : /home/bast/dirac/roa_mem/test/dft_minnesota
 ===========================================================================================
-Size of all static allocations (pam script) : 90.9608 MB
+Size of all static allocations (pam script) : 90.9606 MB
 DIRAC serial allocating 64000000 words (488 MB) of memory
  ******************************************************************************
  *                                                                            *
@@ -136,7 +136,7 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
  Operating system  : Linux 2.6.32-24-generic
  Machine           : i686
  Run               : Sequential
- Last compilation  : 17:01:20 Aug 13 2010 (by bast@larry:/home/bast/dirac/roa_mem)
+ Last compilation  : 17:28:16 Aug 13 2010 (by bast@larry:/home/bast/dirac/roa_mem)
  FORTRAN compiler  : /opt/intel/Compiler/11.1/072/bin/ia32/ifort  -g -fpp1 -w -assume byterecl -Iinclude -module modules -DARCH32BIT -DVAR_IFC -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MKL -DVAR_MFDS -DMOD_AMFI -DMOD_XCFUN -DMOD_MAGNETIZ -DMOD_LONDON -DMOD_DNF -DMOD_ESR -DMOD_MATRIX_OPERATIONS -DMOD_ADC -DMOD_KRMC -DMOD_OPENRSP -DMOD_VISUAL -DMOD_IHFSCC -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ERI -DMOD_UNRELEASED   
  C compiler        : /opt/intel/Compiler/11.1/072/bin/ia32/icc  -g -w -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DMOD_AMFI -DMOD_XCFUN -DMOD_MAGNETIZ -DMOD_LONDON -DMOD_DNF -DMOD_ESR -DMOD_MATRIX_OPERATIONS -DMOD_ADC -DMOD_KRMC -DMOD_OPENRSP -DMOD_VISUAL -DMOD_IHFSCC -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ERI -DMOD_UNRELEASED  -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DSYS_FLAVOR=LINUX 
  External libraries: -L/opt/intel/mkl/10.2.5.035/lib/32 -lmkl_lapack -lmkl_intel -lmkl_intel_thread -lmkl_core -lguide -lpthread -Lxcfun/lib -lxcfun 
@@ -146,7 +146,7 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
  SVN Revision      : 'unknown Subversion revision' 
 
  
-     Date and time (Linux)  : Fri Aug 13 17:03:31 2010
+     Date and time (Linux)  : Fri Aug 13 17:29:38 2010
      Host name              :                                         
 
 
@@ -734,7 +734,7 @@ Total no. of orbitals      (NORB):    14       9      23
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Fri Aug 13 17:03:31 2010
+########## START ITERATION NO.   1 ##########   Fri Aug 13 17:29:38 2010
 
 
 * AUTOCC( 0) : Initial occupation:
@@ -744,7 +744,7 @@ Total no. of orbitals      (NORB):    14       9      23
        3 orbitals in Fermion irrep 2
 It.   1    -65.08436732374      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Fri Aug 13
 
-########## START ITERATION NO.   2##########   Fri Aug 13 17:03:31 2010
+########## START ITERATION NO.   2##########   Fri Aug 13 17:29:38 2010
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
@@ -769,19 +769,19 @@ DFTGRD: ATSIZE not requested or no trial vectors found. Slater-Bragg radii will 
  
 Atom  Deg   Rmin        Rmax        Step size     #rp     #tp
 =============================================================
-Ne      1   0.462E-08   0.129E+02   0.123E+00     160    5326
+Ne      1   0.462E-06   0.129E+02   0.123E+00     123    4737
 
-   Number of grid points in quadrature:      5326 ( 15.7%)
+   Number of grid points in quadrature:      4737 ( 15.4%)
 
 
  >>>> Time used in DFTGRD:   0.00 seconds
 
  
-   number of grid points                          =      5326
+   number of grid points                          =      4737
    number of grid points below density threshold  =       255
-   DFT exchange-correlation energy:               =        -8.6645423029056516
-   number of electrons from numerical integration =         9.9999998525796130
-   tau integral        from numerical integration =       125.7155539499634926
+   DFT exchange-correlation energy:               =        -8.6645457431581221
+   number of electrons from numerical integration =         9.9999999775789856
+   tau integral        from numerical integration =       125.7155542036493188
  
    time spent in DFT integration                  =   0.00 seconds
    number of processors                           =         1
@@ -789,21 +789,21 @@ Ne      1   0.462E-08   0.129E+02   0.123E+00     160    5326
 >>> Total wall time: 0.00000000s
 >>> Total CPU-time : 0.00000000s
 
-########## END ITERATION NO.   2 ##########   Fri Aug 13 17:03:31 2010
+########## END ITERATION NO.   2 ##########   Fri Aug 13 17:29:38 2010
 
-It.   2    -128.5312489128      6.34D+01 -1.05D+00  1.18D+00               0.00000000s   LL             Fri Aug 13
+It.   2    -128.5312523531      6.34D+01 -1.05D+00  1.18D+00               0.00000000s   LL             Fri Aug 13
 
-########## START ITERATION NO.   3##########   Fri Aug 13 17:03:31 2010
+########## START ITERATION NO.   3##########   Fri Aug 13 17:29:38 2010
 
     3 *** Differential density matrix. DCOVLP     = 1.0708
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12   26.25%    9.38%    3.35%   23.43%   0.00000000s
  
-   number of grid points                          =      5326
-   number of grid points below density threshold  =       340
-   DFT exchange-correlation energy:               =        -9.4787267886250284
-   number of electrons from numerical integration =         9.9999999205190591
-   tau integral        from numerical integration =       132.9083948663815136
+   number of grid points                          =      4737
+   number of grid points below density threshold  =       425
+   DFT exchange-correlation energy:               =        -9.4787128296336665
+   number of electrons from numerical integration =         9.9999994269209047
+   tau integral        from numerical integration =       132.9082623706298989
  
    time spent in DFT integration                  =   1.00 seconds
    number of processors                           =         1
@@ -811,21 +811,21 @@ SOfock:LL  1.00D-12   26.25%    9.38%    3.35%   23.43%   0.00000000s
 >>> Total wall time: 1.00000000s
 >>> Total CPU-time : 1.00000000s
 
-########## END ITERATION NO.   3 ##########   Fri Aug 13 17:03:31 2010
+########## END ITERATION NO.   3 ##########   Fri Aug 13 17:29:38 2010
 
-It.   3    -128.7428485419      2.12D-01  1.47D+00  1.15D+00   DIIS   2    1.00000000s   LL             Fri Aug 13
+It.   3    -128.7428561490      2.12D-01  1.47D+00  1.15D+00   DIIS   2    1.00000000s   LL             Fri Aug 13
 
-########## START ITERATION NO.   4##########   Fri Aug 13 17:03:32 2010
+########## START ITERATION NO.   4##########   Fri Aug 13 17:29:39 2010
 
     4 *** Differential density matrix. DCOVLP     = 0.8331
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12   26.25%    9.38%    3.35%   23.43%   0.00000000s
  
-   number of grid points                          =      5326
+   number of grid points                          =      4737
    number of grid points below density threshold  =       340
-   DFT exchange-correlation energy:               =        -9.1125995391948003
-   number of electrons from numerical integration =         9.9999996794709531
-   tau integral        from numerical integration =       128.4458482262189705
+   DFT exchange-correlation energy:               =        -9.1125933904696179
+   number of electrons from numerical integration =         9.9999999229198142
+   tau integral        from numerical integration =       128.4457920884747750
  
    time spent in DFT integration                  =   0.00 seconds
    number of processors                           =         1
@@ -833,87 +833,65 @@ SOfock:LL  1.00D-12   26.25%    9.38%    3.35%   23.43%   0.00000000s
 >>> Total wall time: 0.00000000s
 >>> Total CPU-time : 0.00000000s
 
-########## END ITERATION NO.   4 ##########   Fri Aug 13 17:03:32 2010
+########## END ITERATION NO.   4 ##########   Fri Aug 13 17:29:39 2010
 
-It.   4    -128.9130406897      1.70D-01 -7.08D-01  4.36D-02   DIIS   3    0.00000000s   LL             Fri Aug 13
+It.   4    -128.9130398561      1.70D-01 -7.08D-01  4.36D-02   DIIS   3    0.00000000s   LL             Fri Aug 13
 
-########## START ITERATION NO.   5##########   Fri Aug 13 17:03:32 2010
+########## START ITERATION NO.   5##########   Fri Aug 13 17:29:39 2010
 
     5 *** Differential density matrix. DCOVLP     = 0.9943
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12   26.25%    9.38%    3.35%   23.43%   0.00000000s
  
-   number of grid points                          =      5326
+   number of grid points                          =      4737
    number of grid points below density threshold  =       340
-   DFT exchange-correlation energy:               =        -9.1017438112055160
-   number of electrons from numerical integration =         9.9999996711013601
-   tau integral        from numerical integration =       128.3158384668358565
+   DFT exchange-correlation energy:               =        -9.1017361404662775
+   number of electrons from numerical integration =         9.9999999209041697
+   tau integral        from numerical integration =       128.3157693429060942
  
-   time spent in DFT integration                  =   1.00 seconds
+   time spent in DFT integration                  =   0.00 seconds
    number of processors                           =         1
  
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 1.00000000s
+>>> Total CPU-time : 0.00000000s
 
-########## END ITERATION NO.   5 ##########   Fri Aug 13 17:03:32 2010
+########## END ITERATION NO.   5 ##########   Fri Aug 13 17:29:39 2010
 
-It.   5    -128.9132494998      2.09D-04 -2.11D-02  5.50D-03   DIIS   4    1.00000000s   LL             Fri Aug 13
+It.   5    -128.9132487251      2.09D-04 -2.11D-02  5.50D-03   DIIS   4    0.00000000s   LL             Fri Aug 13
 
-########## START ITERATION NO.   6##########   Fri Aug 13 17:03:32 2010
+########## START ITERATION NO.   6##########   Fri Aug 13 17:29:39 2010
 
     6 *** Differential density matrix. DCOVLP     = 0.9992
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12   26.25%    9.38%    3.35%   23.43%   0.00000000s
  
-   number of grid points                          =      5326
+   number of grid points                          =      4737
    number of grid points below density threshold  =       340
-   DFT exchange-correlation energy:               =        -9.1000696450374754
-   number of electrons from numerical integration =         9.9999996692926718
-   tau integral        from numerical integration =       128.2955256396161872
+   DFT exchange-correlation energy:               =        -9.1000614401375639
+   number of electrons from numerical integration =         9.9999999204689356
+   tau integral        from numerical integration =       128.2954505988756466
  
-   time spent in DFT integration                  =   0.00 seconds
+   time spent in DFT integration                  =   1.00 seconds
    number of processors                           =         1
  
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.00000000s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 1.00000000s
 
-########## END ITERATION NO.   6 ##########   Fri Aug 13 17:03:32 2010
+########## END ITERATION NO.   6 ##########   Fri Aug 13 17:29:39 2010
 
-It.   6    -128.9132531014      3.60D-06 -3.26D-03  1.62D-04   DIIS   5    0.00000000s   LL             Fri Aug 13
+It.   6    -128.9132523288      3.60D-06 -3.26D-03  1.61D-04   DIIS   5    1.00000000s   LL             Fri Aug 13
 
-########## START ITERATION NO.   7##########   Fri Aug 13 17:03:33 2010
+########## START ITERATION NO.   7##########   Fri Aug 13 17:29:39 2010
 
     7 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12   26.25%    9.38%    3.35%   23.43%   0.00000000s
  
-   number of grid points                          =      5326
+   number of grid points                          =      4737
    number of grid points below density threshold  =       340
-   DFT exchange-correlation energy:               =        -9.1000184917266438
-   number of electrons from numerical integration =         9.9999996692019160
-   tau integral        from numerical integration =       128.2949093185764298
- 
-   time spent in DFT integration                  =   1.00 seconds
-   number of processors                           =         1
- 
->>> Total wall time: 0.00000000s
->>> Total CPU-time : 1.00000000s
-
-########## END ITERATION NO.   7 ##########   Fri Aug 13 17:03:33 2010
-
-It.   7    -128.9132531046      3.13D-09 -9.82D-05  2.38D-06   DIIS   6    1.00000000s   LL             Fri Aug 13
-
-########## START ITERATION NO.   8##########   Fri Aug 13 17:03:33 2010
-
-    8 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   26.25%    9.38%    3.35%   23.43%   0.00000000s
- 
-   number of grid points                          =      5326
-   number of grid points below density threshold  =       340
-   DFT exchange-correlation energy:               =        -9.1000191765972076
-   number of electrons from numerical integration =         9.9999996692014665
-   tau integral        from numerical integration =       128.2949186450752279
+   DFT exchange-correlation energy:               =        -9.1000103064368556
+   number of electrons from numerical integration =         9.9999999204471823
+   tau integral        from numerical integration =       128.2948345589628900
  
    time spent in DFT integration                  =   0.00 seconds
    number of processors                           =         1
@@ -921,21 +899,21 @@ SOfock:LL  1.00D-12   26.25%    9.38%    3.35%   23.43%   0.00000000s
 >>> Total wall time: 0.00000000s
 >>> Total CPU-time : 0.00000000s
 
-########## END ITERATION NO.   8 ##########   Fri Aug 13 17:03:33 2010
+########## END ITERATION NO.   7 ##########   Fri Aug 13 17:29:39 2010
 
-It.   8    -128.9132531046      7.39D-13  1.35D-06  1.49D-07   DIIS   7    0.00000000s   LL             Fri Aug 13
+It.   7    -128.9132523320      3.13D-09 -9.82D-05  2.37D-06   DIIS   6    0.00000000s   LL             Fri Aug 13
 
-########## START ITERATION NO.   9##########   Fri Aug 13 17:03:33 2010
+########## START ITERATION NO.   8##########   Fri Aug 13 17:29:39 2010
 
-    9 *** Differential density matrix. DCOVLP     = 1.0000
+    8 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   26.25%    9.45%    3.35%   23.41%   0.00000000s
+SOfock:LL  1.00D-12   26.25%    9.38%    3.35%   23.43%   0.00000000s
  
-   number of grid points                          =      5326
+   number of grid points                          =      4737
    number of grid points below density threshold  =       340
-   DFT exchange-correlation energy:               =        -9.1000191262735228
-   number of electrons from numerical integration =         9.9999996692011379
-   tau integral        from numerical integration =       128.2949180910378857
+   DFT exchange-correlation energy:               =        -9.1000109889969369
+   number of electrons from numerical integration =         9.9999999204469869
+   tau integral        from numerical integration =       128.2948438553313224
  
    time spent in DFT integration                  =   0.00 seconds
    number of processors                           =         1
@@ -943,21 +921,21 @@ SOfock:LL  1.00D-12   26.25%    9.45%    3.35%   23.41%   0.00000000s
 >>> Total wall time: 1.00000000s
 >>> Total CPU-time : 0.00000000s
 
-########## END ITERATION NO.   9 ##########   Fri Aug 13 17:03:33 2010
+########## END ITERATION NO.   8 ##########   Fri Aug 13 17:29:39 2010
 
-It.   9    -128.9132531046      2.84D-14 -9.54D-08  1.53D-09   DIIS   3    0.00000000s   LL             Fri Aug 13
+It.   8    -128.9132523320      8.53D-13  1.34D-06  1.49D-07   DIIS   7    0.00000000s   LL             Fri Aug 13
 
-########## START ITERATION NO.  10##########   Fri Aug 13 17:03:34 2010
+########## START ITERATION NO.   9##########   Fri Aug 13 17:29:40 2010
 
-   10 *** Differential density matrix. DCOVLP     = 1.0000
+    9 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   26.25%   14.42%    3.36%   22.81%   0.00000000s
+SOfock:LL  1.00D-12   26.25%    9.45%    3.35%   23.41%   0.00000000s
  
-   number of grid points                          =      5326
+   number of grid points                          =      4737
    number of grid points below density threshold  =       340
-   DFT exchange-correlation energy:               =        -9.1000191256173721
-   number of electrons from numerical integration =         9.9999996692012179
-   tau integral        from numerical integration =       128.2949180844422870
+   DFT exchange-correlation energy:               =        -9.1000109387713604
+   number of electrons from numerical integration =         9.9999999204469550
+   tau integral        from numerical integration =       128.2948433023649670
  
    time spent in DFT integration                  =   1.00 seconds
    number of processors                           =         1
@@ -965,9 +943,31 @@ SOfock:LL  1.00D-12   26.25%   14.42%    3.36%   22.81%   0.00000000s
 >>> Total wall time: 0.00000000s
 >>> Total CPU-time : 1.00000000s
 
-########## END ITERATION NO.  10 ##########   Fri Aug 13 17:03:34 2010
+########## END ITERATION NO.   9 ##########   Fri Aug 13 17:29:40 2010
 
-It.  10    -128.9132531046     -1.17D-12 -1.21D-09  2.01D-10   DIIS   3    1.00000000s   LL             Fri Aug 13
+It.   9    -128.9132523320     -1.42D-13 -9.52D-08  1.53D-09   DIIS   3    1.00000000s   LL             Fri Aug 13
+
+########## START ITERATION NO.  10##########   Fri Aug 13 17:29:40 2010
+
+   10 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   26.25%   14.42%    3.36%   22.81%   0.00000000s
+ 
+   number of grid points                          =      4737
+   number of grid points below density threshold  =       340
+   DFT exchange-correlation energy:               =        -9.1000109381176770
+   number of electrons from numerical integration =         9.9999999204470100
+   tau integral        from numerical integration =       128.2948432957930720
+ 
+   time spent in DFT integration                  =   0.00 seconds
+   number of processors                           =         1
+ 
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.00000000s
+
+########## END ITERATION NO.  10 ##########   Fri Aug 13 17:29:40 2010
+
+It.  10    -128.9132523320     -9.09D-13 -1.21D-09  1.98D-10   DIIS   3    0.00000000s   LL             Fri Aug 13
 
 
                                    SCF - CYCLE
@@ -984,32 +984,32 @@ It.  10    -128.9132531046     -1.17D-12 -1.21D-09  2.01D-10   DIIS   3    1.000
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
 It.   1    -65.08436732374      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Fri Aug 13
-It.   2    -128.5312489128      6.34D+01 -1.05D+00  1.18D+00               0.00000000s   LL             Fri Aug 13
-It.   3    -128.7428485419      2.12D-01  1.47D+00  1.15D+00   DIIS   2    1.00000000s   LL             Fri Aug 13
-It.   4    -128.9130406897      1.70D-01 -7.08D-01  4.36D-02   DIIS   3    0.00000000s   LL             Fri Aug 13
-It.   5    -128.9132494998      2.09D-04 -2.11D-02  5.50D-03   DIIS   4    1.00000000s   LL             Fri Aug 13
-It.   6    -128.9132531014      3.60D-06 -3.26D-03  1.62D-04   DIIS   5    0.00000000s   LL             Fri Aug 13
-It.   7    -128.9132531046      3.13D-09 -9.82D-05  2.38D-06   DIIS   6    1.00000000s   LL             Fri Aug 13
-It.   8    -128.9132531046      7.39D-13  1.35D-06  1.49D-07   DIIS   7    0.00000000s   LL             Fri Aug 13
-It.   9    -128.9132531046      2.84D-14 -9.54D-08  1.53D-09   DIIS   3    0.00000000s   LL             Fri Aug 13
-It.  10    -128.9132531046     -1.17D-12 -1.21D-09  2.01D-10   DIIS   3    1.00000000s   LL             Fri Aug 13
+It.   2    -128.5312523531      6.34D+01 -1.05D+00  1.18D+00               0.00000000s   LL             Fri Aug 13
+It.   3    -128.7428561490      2.12D-01  1.47D+00  1.15D+00   DIIS   2    1.00000000s   LL             Fri Aug 13
+It.   4    -128.9130398561      1.70D-01 -7.08D-01  4.36D-02   DIIS   3    0.00000000s   LL             Fri Aug 13
+It.   5    -128.9132487251      2.09D-04 -2.11D-02  5.50D-03   DIIS   4    0.00000000s   LL             Fri Aug 13
+It.   6    -128.9132523288      3.60D-06 -3.26D-03  1.61D-04   DIIS   5    1.00000000s   LL             Fri Aug 13
+It.   7    -128.9132523320      3.13D-09 -9.82D-05  2.37D-06   DIIS   6    0.00000000s   LL             Fri Aug 13
+It.   8    -128.9132523320      8.53D-13  1.34D-06  1.49D-07   DIIS   7    0.00000000s   LL             Fri Aug 13
+It.   9    -128.9132523320     -1.42D-13 -9.52D-08  1.53D-09   DIIS   3    1.00000000s   LL             Fri Aug 13
+It.  10    -128.9132523320     -9.09D-13 -1.21D-09  1.98D-10   DIIS   3    0.00000000s   LL             Fri Aug 13
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   10 iterations.
 * Average elapsed time per iteration: 
       No 2-ints    :    0.00000000s
-      LL           :    0.33333333s
+      LL           :    0.22222222s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -128.91325310455923
+   Electronic energy                        :    -128.91325233196781
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :       0.00000000000000
 
    Sum of all contributions to the energy
-   Total energy                             :    -128.91325310455923
+   Total energy                             :    -128.91325233196781
 
 
                                    Eigenvalues
@@ -1018,39 +1018,39 @@ It.  10    -128.9132531046     -1.17D-12 -1.21D-09  2.01D-10   DIIS   3    1.000
 
 * Boson symmetry Ag 
   * Closed shell, f = 1.0000
--31.07226169712431  ( 2)    -1.51690060923638  ( 2)
+-31.07228788742819  ( 2)    -1.51690052606522  ( 2)
   * Virtual eigenvalues, f = 0.0000
-  0.15694190187735  ( 2)     1.50754433657162  ( 4)     2.42008793031415  ( 2)     5.85287463616087  ( 4)
+  0.15693410163687  ( 2)     1.50754582621561  ( 4)     2.42008780057274  ( 2)     5.85287095303986  ( 4)
 
 * Boson symmetry B1g
   * Virtual eigenvalues, f = 0.0000
-  1.50754433657170  ( 2)     5.85287463616084  ( 2)
+  1.50754582621556  ( 2)     5.85287095303989  ( 2)
 
 * Boson symmetry B2g
   * Virtual eigenvalues, f = 0.0000
-  1.50754433657170  ( 2)     5.85287463616084  ( 2)
+  1.50754582621556  ( 2)     5.85287095303989  ( 2)
 
 * Boson symmetry B3g
   * Virtual eigenvalues, f = 0.0000
-  1.50754433657170  ( 2)     5.85287463616083  ( 2)
+  1.50754582621556  ( 2)     5.85287095303988  ( 2)
 
 * Boson symmetry B3u
   * Closed shell, f = 1.0000
- -0.60099313796113  ( 2)
+ -0.60099472178341  ( 2)
   * Virtual eigenvalues, f = 0.0000
-  0.20297048160579  ( 2)     1.64879587951428  ( 2)
+  0.20296894725772  ( 2)     1.64880255070599  ( 2)
 
 * Boson symmetry B2u
   * Closed shell, f = 1.0000
- -0.60099313796113  ( 2)
+ -0.60099472178341  ( 2)
   * Virtual eigenvalues, f = 0.0000
-  0.20297048160579  ( 2)     1.64879587951429  ( 2)
+  0.20296894725772  ( 2)     1.64880255070601  ( 2)
 
 * Boson symmetry B1u
   * Closed shell, f = 1.0000
- -0.60099313796113  ( 2)
+ -0.60099472178341  ( 2)
   * Virtual eigenvalues, f = 0.0000
-  0.20297048160579  ( 2)     1.64879587951427  ( 2)
+  0.20296894725772  ( 2)     1.64880255070599  ( 2)
 
 * Boson symmetry Au 
   * No eigenvalues.
@@ -1059,13 +1059,13 @@ It.  10    -128.9132531046     -1.17D-12 -1.21D-09  2.01D-10   DIIS   3    1.000
   * Inactive orbitals
     Ag  Ag  
   * Virtual orbitals
-    Ag  Ag  Ag  B1g B3g B2g Ag  B3g B2g B1g Ag  Ag  
+    Ag  B2g B3g B1g Ag  Ag  Ag  Ag  Ag  B3g B1g B2g 
 
 * Occupation in fermion symmetry E1u
   * Inactive orbitals
-    B2u B1u B3u 
+    B3u B2u B1u 
   * Virtual orbitals
-    B3u B1u B2u B1u B3u B2u 
+    B3u B1u B2u B3u B1u B2u 
 
 * Occupation of subblocks
                        E1g:  Ag   B1g  B2g  B3g                                                             
@@ -1080,10 +1080,10 @@ tot.num. of pos.erg shells:    3    3    3    0
 
 * HOMO - LUMO gap:
 
-    E(LUMO) :     0.15694190 au (symmetry Ag )
-  - E(HOMO) :    -0.60099314 au (symmetry B3u)
+    E(LUMO) :     0.15693410 au (symmetry Ag )
+  - E(HOMO) :    -0.60099472 au (symmetry B1u)
   ------------------------------------------
-    gap     :     0.75793504 au
+    gap     :     0.75792882 au
 
 
 
@@ -1131,18 +1131,18 @@ tot.num. of pos.erg shells:    3    3    3    0
 
                                                    s0 t0
 ----------------------------------------------------------------------------
-    Kinetic energy   :     128.2949089569 a.u.      F   F
+    Kinetic energy   :     128.2948337837 a.u.      F   F
 ----------------------------------------------------------------------------
     s0 = T : Expectation value zero by point group symmetry.
     t0 = T : Expectation value zero by time reversal symmetry.
 ----------------------------------------------------------------------------
 
  
-     Date and time (Linux)  : Fri Aug 13 17:03:34 2010
+     Date and time (Linux)  : Fri Aug 13 17:29:40 2010
      Host name              :                                         
 *****************************************************
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 
->>>> Node 0, utime: 4, stime: 0, minflt: 135909, majflt: 0, nvcsw: 33, nivcsw: 2241, maxrss: 541896
->>>> Total WALL time used in DIRAC: 4s
+>>>> Node 0, utime: 3, stime: 0, minflt: 135887, majflt: 0, nvcsw: 25, nivcsw: 3592, maxrss: 541876
+>>>> Total WALL time used in DIRAC: 3s
