@@ -8935,8 +8935,7 @@ C
       OPEN (LUINT, FILE = '4INDINFO', STATUS = 'OLD',
      &     FORM = 'UNFORMATTED' )
 C
-      WRITE(LUWRT,*)
-      WRITE(LUWRT,'(A)') ' Reading from file : 4INDINFO '
+      WRITE(LUWRT,'(/A)') ' Reading from file : 4INDINFO '
 C
 C     Read time & date for creation
 C
@@ -8952,9 +8951,9 @@ C
       CALL MEMMAR(KDXB12  ,2*NFPCK12T,'ADDL  ',1,'KDXB12') 
       CALL MEMMAR(KDXB34  ,2*NFPCK34T,'ADDL  ',1,'KDXB34') 
 C
-      CALL ISETVC(WORK(KDXKR12), IIZERO, 2*NFPCK12T)
-      CALL ISETVC(WORK(KDXB12) , IIZERO, 2*NFPCK12T)
-      CALL ISETVC(WORK(KDXB34) , IIZERO, 2*NFPCK34T)
+      CALL IZERO(WORK(KDXKR12),2*NFPCK12T)
+      CALL IZERO(WORK(KDXB12) ,2*NFPCK12T)
+      CALL IZERO(WORK(KDXB34) ,2*NFPCK34T)
 C
 C     I and J indices
       CALL READI(LUINT,NFPCK12T*2,WORK(KDXKR12))
@@ -8991,8 +8990,6 @@ C
       CALL MEMMAR(KH2XY ,N2ORBX*NCLASS, 'ADDL  ', 2, 'KH2XY ')
       CALL MEMMAR(KH2YX ,N2ORBX*NCLASS, 'ADDL  ', 2, 'KH2YX ')
 
-      CALL RMEMCHK
-C
       CALL DZERO(WORK(KHMAT),N2ORBX*NCLASS)
       CALL DZERO(WORK(KH2XY),N2ORBX*NCLASS)
       CALL DZERO(WORK(KH2YX),N2ORBX*NCLASS)
@@ -9032,7 +9029,7 @@ C
             IREPIJB = IGETINT(WORK(KDXB12),NXY*2-1)
 #ifdef MOD_DEBUG
             write(LUWRT,*) 'x & y: ',ix,iy
-            write(LUWRT,*) 'ative : ',ixu,iyu
+            write(LUWRT,*) 'active : ',ixu,iyu
             write(LUWRT,*) ' '
 #endif
 C           We only need active-active distributions.
@@ -9091,6 +9088,16 @@ C
             CALL CL2NZ3(WORK(KH2YX),WORK(KHMAT),N2ORBX,IREPIJ,
      &           IREPIJB,WORK(KDXB34),IKLB)
 C           CALL CL2NZ3(VCL,VNZ3,NELEM,IREPIJ,IREPIJB,IREPKLB,IKLB)
+!
+!           ---------------------------------------------------------
+!           zero out integrals that should be zero in linear symmetry
+!           but aren't due to numerical noise
+!           ---------------------------------------------------------
+!           FIXME!!! - SK - August 2010. (linzero is in moltra/traout.F)
+!
+!           if(linear) then
+!             call linzero()
+!           end if
 C
 C           Get (gu) and (ug) blocks + H2AC
 C           -------------------------------
@@ -9114,9 +9121,6 @@ C
             end if
 #endif
 C
-C           Do the gazillion matrix multiplies to construct
-C           the auxiliary Fock matrix FQ.
-C
  20      CONTINUE
  10   CONTINUE
 C
@@ -9127,19 +9131,12 @@ C
          CLOSE (LUINT + IFSYM, STATUS = 'KEEP')
       END DO
 C
-CSK      IF( MYPROC .eq. 2 ) THEN
-CSK        IPRINT = 10
-CSK      ELSE
-CSK        IPRINT = 00
-CSK      END IF
-csk      IPRINT = 10
       IF (IPRINT .GE. 10) THEN
          IF (DOH2AC) THEN
-            CALL PRDNZ3(H2AC,NASHT,NNASHX,NZ,IPQTOQ(1,0),6)
+            CALL PRDNZ3(H2AC,NASHT,NNASHX,NZ,IPQTOQ(1,0),LUWRT)
          END IF
 C
       END IF
-      IPRINT = 0
 C
 C     eliminate local memory
       IDUM = 0
@@ -9153,7 +9150,7 @@ C
  8000 CONTINUE
       WRITE(LUWRT,'(/A)')
      &     '*** ERROR in RGTETH21_LUCIAREL *** Read error'
-      Call Abend2('Sorry, I am quitting ...')
+      call quit('*** error in RGTETH21_LU...: read error. ***')
  8100 CONTINUE
       WRITE(LUWRT,'(1X,A,I4)')
      &     'IREPIJ = ',IREPIJ,

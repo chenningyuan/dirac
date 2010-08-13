@@ -1066,6 +1066,12 @@ C
      &     ' (RGETH2) Time and date read from 4INDINFO: ',
      &     TIMEX, ' ',DATEX
 C
+!                  offset array (index ij), total number, offset array (kl), total number, 
+!    NSTR(ifrp,0,i) - total number of orbitals for
+!    NSTR(ifrp,1,i) - number of electronic orbitals
+!    NSTR(ifrp,2,i) - number of positronic orbitals
+!    DIMENSION NSTR(2,0:2,4)
+
       READ (LUINT) NFPCK12, NFPCK12T, NFPCK34, NFPCK34T, NSTR
 C
       CALL MEMGET('INTE',KDXKR12,2*NFPCK12T,WORK,KFREE,LFREE)
@@ -1082,6 +1088,10 @@ C
       CLOSE (LUINT, STATUS = 'KEEP')
 C
       NCLASS = NZ * NZ * NBSYM / NFSYM
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
+      write(lupri,'(2x,a,4i4)') ' (RGETH21) # classes, # boson'//
+     &  ' irreps, # fermion irreps, nz',NCLASS,NBSYM,NFSYM,NZ
+#endif
 C
 C     Open integral files.
 C     --------------------
@@ -1089,6 +1099,7 @@ C
       IIKLB = 0
       LUINT = 56
 C     LUINT = 56 + IREPIJ, IREPIJ = 1,NFSYM are actually used
+!     IKLB is offset pointer to first KL integral in fermion irrep IREPIJ
       DO IREPIJ = 1, NFSYM
          IKLB(IREPIJ) = IIKLB
          IRECL = IRECLEN(NCLASS * NFPCK34 (IREPIJ), 0, 0)
@@ -1128,6 +1139,11 @@ C
 C     Loop over records in integrals files.
 C
       NXY = 0
+!
+!     new stuff for spinfree MCSCF
+      NIJOFF = 0
+      NKLOFF = 0
+
       DO 10 IREPIJ = 1, NFSYM
          IREC = 0
          DO 20 IXY = 1, NFPCK12(IREPIJ)
@@ -1136,9 +1152,11 @@ C
             CALL GTXY(NXY,IX,IY,IXU,IYU,WORK(KDXKR12))
             IREPIJB = IGETINT(WORK(KDXB12),NXY*2-1)
 #if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
-            write(6,*) 'x & y: ',ix,iy
-            write(6,*) 'active : ',ixu,iyu
-            write(6,*) ' '
+            write(6,'(2x,a,2i8)') ' x and y: ',ix,iy
+            write(6,'(2x,a,2i8)') ' active : ',ixu,iyu
+            write(6,'(2x,a, i8)') ' boson irrep: ',IREPIJB
+            write(6,'(2x,a, i8)') ' NXY is     : ',NXY
+            write(6,'(2x,a, i8)') ' IXY is     : ',IXY
 #endif
 C           We only need active-active distributions.
 C
@@ -1161,7 +1179,8 @@ C
 #if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
             ii = 0
             do i = 1, 4 * nz
-               write(6,*) 'class ',i,' before transformation'
+               write(6,'(2x,a,i3,a)') 
+     &         'integral class ',i,' before transformation'
                call output(work(kh2xy+ii),1,norbt,1,norbt,
      &              norbt,norbt,1,lupri)
                ii = ii + nkl
@@ -1178,14 +1197,20 @@ C
                IF (IREPIJ .EQ. JBTOF(IREPAB,1)) THEN
                   IREPABR = IREPABR + 1
                   DO IZ2 = 1, NZ
-                     IQ2 = IPQTOQ(IZ2,IREPAB)
+!                    IQ2 = IPQTOQ(IZ2,IREPAB)
+
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
+                     write(6,'(2x,a,3i4)') 
+     &               ' fermion irrep, boson irrep for IJ, KL & IREPABR',
+     &               IREPIJ,IREPAB,IREPABR
+#endif
 C
 C                    Transform symmetry packed
 C                    integrals to full matrix.
 C                    (take care of diff. integral transformations etc.)
 C
                      CALL INTB2X(WORK(KH2XY),IZ2,IREPABR,IREPAB,
-     &                    WORK(KH2YX),IREPIJ,NKL)
+     &                           WORK(KH2YX),IREPIJ,NKL)
 C                    CALL INTB2X(HT,IZ2,IREPABR,IREPAB,HX,IREPIJ,NKL)
 C
 C                    Transform boson-symmetry array to
@@ -1205,15 +1230,30 @@ C
 C           Transform to Dirac (NZ,3) format
 C           --------------------------------
 C
+!           call CL2NZ3_driver(WORK(KH2YX),WORK(KHMAT),N2ORBX,IREPIJ,
+!    &                         WORK(KDXB12),WORK(KDXB34),
+!    &                         IJ+NIJOFF,1+NKLOFF,IKLB)
+C
             CALL CL2NZ3(WORK(KH2YX),WORK(KHMAT),N2ORBX,IREPIJ,
-     &           IREPIJB,WORK(KDXB34),IKLB)
+     &                  IREPIJB,WORK(KDXB34),IKLB)
+!                       (1,IJ+NIJOFF),INDXB34(1,1+NKLOFF)
 C           CALL CL2NZ3(VCL,VNZ3,NELEM,IREPIJ,IREPIJB,IREPKLB,IKLB)
+
+!           ---------------------------------------------------------
+!           zero out integrals that should be zero in linear symmetry
+!           but aren't due to numerical noise
+!           ---------------------------------------------------------
+!           FIXME!!! - SK - August 2010. (linzero is in moltra/traout.F)
+!
+!           if(linear) then
+!             call linzero()
+!           end if
 C
 C           Get (gu) and (ug) blocks + H2AC
 C           -------------------------------
 C
             CALL X2GU(WORK(KHMAT),WORK(KH2XY),WORK(KH2YX),
-     &           H2AC,IUU,IXU .EQ. IYU, DOFQ, DOH2AC)
+     &                H2AC,IUU,IXU .EQ. IYU, DOFQ, DOH2AC)
 C           CALL X2GU(HX,H2XY,H2YX,H2AC,IUU,ONLYXY,DOFQ,DOH2AC)
 C
 #if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
@@ -1240,6 +1280,8 @@ C
             END IF
 C
  20      CONTINUE
+         NIJOFF = NIJOFF + NFPCK12(IREPIJ)
+         NKLOFF = NKLOFF + NFPCK34(IREPIJ)
  10   CONTINUE
 C
 C     Close integral files

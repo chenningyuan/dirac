@@ -60,6 +60,10 @@ C     symmetry and can be fed into non-relativistic codes.
 C     Only one class of integrals (all-unbarred) suffices for
 C     this purpose.
 C
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
+      write(6,'(2x,a,1i4)') ' (CL2NZ3) IREPIJB(1) = ',IREPIJB(1)
+      write(6,'(2x,a,1i4)') ' (CL2NZ3) IREPIJB(2) = ',IREPIJB(2)
+#endif
       IREPABR = 0
       DO IREPAB = 0, NBSYM-1
          IF (IREPIJ.EQ.JBTOF(IREPAB,1)) THEN
@@ -67,6 +71,10 @@ C
 C
 C           Zero out the spin-orbit coupling for electron 1
 C
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
+      write(6,'(/2x,a,2i4)') ' (CL2NZ3) IREPAB and IREPIJB(1) = ',
+     &                         IREPAB, IREPIJB(1)
+#endif
             IF (IREPAB.NE.IREPIJB(1)) GOTO 100
             DO I = 1, NELEM
                IF (IREPAB.NE.IREPKLB(1,IKLB(IREPIJ)+I)) THEN
@@ -80,6 +88,13 @@ C                  Take out quaternion phase factor by multiplying
 C                  with the compound phase factor that was introduced
 C                  in the consecutive multiplications
 C
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
+      write(6,'(/2x,a,2i4,D15.6)') ' (CL2NZ3) element I,1,1,IREPABR = ',
+     &                         I,IREPABR,VCL(I,1,1,IREPABR)
+      write(6,'(/2x,a,2i4)') ' (CL2NZ3) multiplication factors are'//
+     &                       ' IREPIJB(2) * IREPKLB(2,IKLB(IREPIJ)+I)', 
+     &                         IREPIJB(2), IREPKLB(2,IKLB(IREPIJ)+I)
+#endif
                    VCL(I,1,1,IREPABR) =
      &             VCL(I,1,1,IREPABR) *
      &             IREPIJB(2)*IREPKLB(2,IKLB(IREPIJ)+I)
@@ -94,6 +109,7 @@ C
       ENDDO
 C
       ELSE ! spinfree
+
       DO ICLASS = 1, 3
          IREPABR = 0
          DO IREPAB = 0, NBSYM - 1
@@ -598,39 +614,60 @@ C
 C
       END IF
 C
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
+      write(lupri,'(/2x,a,l)') ' (INTB2X) symmetrize matrix == ',DOFULL
+#endif
 C
       DO IZ1 = 1, NZ
          IKL = 0
          IQ1 = IPQTOQ(IZ1,IREPAB)
          DO IREPL = 1, NFSYM
             IREPK = MOD (IREPL + IREPIJ, 2) + 1
-         IF (DOFULL) THEN
-            IF (IQ1 .EQ. 1) THEN
-               QFAC = 1.0D0
+            IF (DOFULL) THEN
+               IF (IQ1 .EQ. 1) THEN
+                  QFAC = 1.0D0
+               ELSE
+                  QFAC = -1.0D0
+               END IF
+               DO ICOL = 1, NIDX4(IREPL)
+                  JJ = IDXT2G(ICOL+IIDX4(IREPL),4)
+                  DO IROW = 1, NIDX3(IREPK)
+                     II = IDXT2G(IROW+IIDX3(IREPK),3)
+                     IKL = IKL + 1
+                     HTVALUE = HT(IKL,IZ1,IZ2,IREPABR)
+                     HX(II,JJ,IZ1,IZ2,IREPABR) = HTVALUE
+                     HX(JJ,II,IZ1,IZ2,IREPABR) = QFAC*HTVALUE
+                     END DO
+               END DO
             ELSE
-               QFAC = -1.0D0
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
+      write(lupri,'(/2x,a,6i4)') 
+     &' (INTB2X) variables IREPAB, IREPABR, IKL, IQ1, IREPK,'//
+     &  ' NIDX4(IREPL)',IREPAB, IREPABR, IKL, IQ1, IREPK, NIDX4(IREPL)
+#endif
+!           stefan: we end up here
+               DO ICOL = 1, NIDX4(IREPL)
+                  JJ = IDXT2G(ICOL+IIDX4(IREPL),4)
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
+      write(lupri,'(2x,a,i4,a,i8)') 
+     &   ' (INTB2X) ICOL ==',ICOL, ': index JJ =',JJ
+#endif
+                  DO IROW = 1, NIDX3(IREPK)
+                     II = IDXT2G(IROW+IIDX3(IREPK),3)
+                     IKL = IKL + 1
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
+      write(lupri,'(2x,a,i4,a,i8,a,i8)') 
+     &   ' (INTB2X) IROW ==',IROW, ': index II =',II, ' index IKL',IKL
+#endif
+                     HX(II,JJ,IZ1,IZ2,IREPABR) =
+     &                    HT(IKL,IZ1,IZ2,IREPABR)
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
+      write(lupri,'(2x,a,1D15.6)') 
+     &   ' (INTB2X) new integral is =',HX(II,JJ,IZ1,IZ2,IREPABR)
+#endif
+                  END DO
+               END DO
             END IF
-            DO ICOL = 1, NIDX4(IREPL)
-               JJ = IDXT2G(ICOL+IIDX4(IREPL),4)
-               DO IROW = 1, NIDX3(IREPK)
-                  II = IDXT2G(IROW+IIDX3(IREPK),3)
-                  IKL = IKL + 1
-                  HTVALUE = HT(IKL,IZ1,IZ2,IREPABR)
-                  HX(II,JJ,IZ1,IZ2,IREPABR) = HTVALUE
-                  HX(JJ,II,IZ1,IZ2,IREPABR) = QFAC*HTVALUE
-               END DO
-            END DO
-         ELSE
-            DO ICOL = 1, NIDX4(IREPL)
-               JJ = IDXT2G(ICOL+IIDX4(IREPL),4)
-               DO IROW = 1, NIDX3(IREPK)
-                  II = IDXT2G(IROW+IIDX3(IREPK),3)
-                  IKL = IKL + 1
-                  HX(II,JJ,IZ1,IZ2,IREPABR) =
-     &                 HT(IKL,IZ1,IZ2,IREPABR)
-               END DO
-            END DO
-         END IF
 #ifdef HJ_DISABLED_18jun2004
 C
             IF (DOFULL) THEN
