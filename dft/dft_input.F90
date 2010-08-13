@@ -128,7 +128,7 @@ contains
 !     --------------------------------------------------------------------------
       character(80), allocatable :: word_array(:)
       integer                    :: i, nr_words
-      real(8)                    :: w
+      real(8)                    :: w, h
       integer                    :: u
 !     --------------------------------------------------------------------------
       
@@ -172,6 +172,32 @@ contains
            f%w(XC_VWN5C     ) = f%w(XC_VWN5C     ) + 0.19d0*w
            f%w(XC_LYPC      ) = f%w(XC_LYPC      ) + 0.81d0*w
            call add_hfx(0.2d0*w)
+        end if
+      
+        w = get_weight(word_array(i), 'm05')
+        if (dabs(w) > tiny(0.0d0)) then
+           h = 0.28d0
+!radovan:  notice the difference of the x weight in m05 and m06
+!          it seems that the hfx modification is already absorbed
+!          in the parameters of m06x
+!          this is not the case for m05x
+           f%w(XC_M05X) = f%w(XC_M05X) + w*(1.0d0 - h)
+           f%w(XC_M05C) = f%w(XC_M05C) + w
+           call add_hfx(w*h)
+        end if
+      
+        w = get_weight(word_array(i), 'm06')
+        if (dabs(w) > tiny(0.0d0)) then
+           h = 0.27d0
+           f%w(XC_M06X) = f%w(XC_M06X) + w
+           f%w(XC_M06C) = f%w(XC_M06C) + w
+           call add_hfx(w*h)
+        end if
+      
+        w = get_weight(word_array(i), 'm06-l')
+        if (dabs(w) > tiny(0.0d0)) then
+           f%w(XC_M06LX) = f%w(XC_M06LX) + w
+           f%w(XC_M06LC) = f%w(XC_M06LC) + w
         end if
       
         w = get_weight(word_array(i), 'pbe')
