@@ -670,7 +670,7 @@ C
 C     INPUT:  Charge of atom
 C     OUTPUT: Small component charge
 C
-C     Small component charges have been obtained from calculaltions
+C     Small component charges have been obtained from calculations
 C     using the relativistic atomic code GRASP.
 C     see T.SAUE, Ph.D. thesis, University of Oslo 1997
 C

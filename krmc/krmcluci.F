@@ -100,7 +100,7 @@ C     Add the master node
       NMPROC = 1
 #endif
 C
-C     Summon the slaves, who are waiting in the general menu routine.
+C     Summon the co-workers, who are waiting in the general menu routine.
       CALL LUMSTI_REL
 C
 C     communicate necessary information with slaves ...
@@ -800,6 +800,9 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
+C  here is the LVCORR logical stored on...
+!#include "dcbgen.h"
+
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"

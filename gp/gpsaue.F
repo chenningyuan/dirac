@@ -3421,7 +3421,7 @@ C         * complex Hermitian matrices                  NZ = 2
 C         * quaternionic Hermitian matrices             NZ = 4
 C                                                (dagger)
 C     Upper triangle Cholesky decomposition: A=UU
-C     where L is an upper triangular matrix.  
+C     where U is an upper triangular matrix.  
 C     On input/output A contains the lower triangle and diagonal of
 C     the Hermitian matrix to be decomposed.
 C     On output the upper triangle of the Cholesky matrix U is stored

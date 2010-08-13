@@ -862,6 +862,9 @@ C        .. we do not accept user input of less than 100 000 !
 *   2) Particle symmetry
 *   3) Real/imaginary symmetry
 *
+!     initialize TWELINT array
+      call dzero(twelint,iglsum)
+!
       ZERO = 0.D0
 *  Proceed according to spinfree formalism, i.e. only (IJ|KL) list
       ICT = 1
@@ -923,7 +926,8 @@ C        .. we do not accept user input of less than 100 000 !
 *  L
 *   I
 *    J
-                if (NTEST.ge.5) write(6,*) 'checkind'
+                if (NTEST.ge.5) 
+     &            write(6,*) ' loop over non-redundant output indices'
 *  loop over non-redundant output indices including symmetry offsets
                 do K=IKOFF,IKOFF+NORBK-1,1
                   if (KL_RES.eq.1) then
@@ -950,7 +954,12 @@ C        .. we do not accept user input of less than 100 000 !
                       end if
                       do J=J_FIRST,J_LAST,1
                         if (NTEST.ge.5) then
-                          write(6,'(A,4I6)') 'I,J,K,L ',I,J,K,L
+                          write(6,'(/2x,a)') 
+     &        '-------------------------------------------------------'
+                          write(6,'(2x,a,4i4)') 'next indices pairs:'//
+     &                      ' I, J, K, L = ',I,J,K,L
+                          write(6,'(2x,a/)') 
+     &        '-------------------------------------------------------'
                         end if
 *
 *  Translate to input indices from Dirac lists
@@ -960,14 +969,14 @@ C        .. we do not accept user input of less than 100 000 !
                         LIN = INVREO(L)
                         if (NTEST.ge.5) then
                           write(6,*) 'Reordered indices:'
-                          write(6,'(A,4I6)')
-     &                      'NIN',IIN,JIN,KIN,LIN
+                          write(6,'(A,4I6/)')
+     &                      'xIN',IIN,JIN,KIN,LIN
                         end if
 *
                         if (NTEST.ge.5) then
                           write(6,*) 'Kramers indices:'
-                          write(6,'(A,4I6)')
-     &                      'KR(NIN) ',KR(IIN),KR(JIN),KR(KIN),KR(LIN)
+                          write(6,'(A,4I6/)')
+     &                      'KR(xIN) ',KR(IIN),KR(JIN),KR(KIN),KR(LIN)
                         end if
 *
 *  Find non-vanishing Kramers block
@@ -998,20 +1007,23 @@ C        .. we do not accept user input of less than 100 000 !
                           write(6,*)
      &                    'Kramers indices after symm. reordering:'
                           write(6,'(A,4I6)')
-     &                    'KR(NIN) ',KR(IIN),KR(JIN),KR(KIN),KR(LIN)
+     &                    'KR(xIN) ',KR(IIN),KR(JIN),KR(KIN),KR(LIN)
                         end if
 *
 *  Fetch integral
                         IBLKOFF = IOFF12(KR(IIN),KR(JIN))
                         do INRUN=1,IBLLEN,1
-                          if (KR(INDK(INRUN+IBLKOFF)).eq.KR(KIN).
-     &                    and.KR(INDL(INRUN+IBLKOFF)).eq.KR(LIN))
+                          if (KR(INDK(INRUN+IBLKOFF)).eq.KR(KIN).and.
+     &                        KR(INDL(INRUN+IBLKOFF)).eq.KR(LIN))
      &                    then
                             TWELINT(ICT) = RKL(INRUN+IBLKOFF)
                             if (NTEST.ge.10) then
-                              write(6,'(A,3I4,1F18.12)')
-     &                            'ICT,IBLKOFF,INRUN,TWELINT(ICT) '
-     &                            ,ICT,IBLKOFF,INRUN,TWELINT(ICT)
+                              write(6,'(2x,a/,4i6,1F18.12/)')
+     &                          ' integral fetched: integral number,'//
+     &                          ' (IBLKOFF + INRUN) = offset on input'//
+     &                          ' block, integral value:',ICT,
+     &                            IBLKOFF,INRUN,IBLKOFF+INRUN,
+     &                            TWELINT(ICT)
                             end if
                             ICT = ICT + 1
                             goto 10
@@ -1048,14 +1060,14 @@ C        .. we do not accept user input of less than 100 000 !
 *     ^ End loops over symmetries of 4 indices
 *
       if (NTEST.ge.3) then
-        write(6,*) 'Dirac: Symmetry reduced 2-el. integrals:'
-        do I=1,IGLSUM,1
-          write(6,'(I6,F18.12)') I,TWELINT(I)
-        end do
+        write(6,'(//a/,a,i8/)') ' (dist_2eints_dirac): symmetry'//
+     &                          ' reduced 2-el. integrals:',
+     &                          ' total # =',IGLSUM
+        write(6,'(2x,4F18.12)') (TWELINT(I), I=1,IGLSUM)
       end if
 *
       if (myproc.eq.master) then
-        write(LUWRT,'(A)') 
+        write(LUWRT,'(/A)') 
      &       ' Complete real list of 2-el. ints processed. '
       end if
 *
@@ -1112,6 +1124,10 @@ C        .. we do not accept user input of less than 100 000 !
 *
 * NSTR contains only active set of Kramers pairs.
 *
+!     initialize
+      call izero(ireo,  imxdim*nirrep)
+      call izero(invreo,itotdim)
+!
 * Determine reordering arrays for 1- and 2-electron integrals
       do IRR=1,NIRREP,1
         IOFFBS = 0
@@ -6074,8 +6090,7 @@ CC        IVFLEV = 1               ! could be made more flexible
       end do
 *
       if (NTEST.ge.2) then
-        write(6,*)
-        write(6,*) NCT,
+        write(6,'(/i14,a)') NCT,
      &             ' 2-el. integrals need to be allocated for DIRAC!'
       end if
 *
@@ -6113,13 +6128,16 @@ CC        IVFLEV = 1               ! could be made more flexible
       NTESTL = 00
       NTEST = max(NTESTL,IPRINT)
 *
-      NTEST  = 00
       if (NTEST.ge.1) then
         write(LUWRT,*)
         write(LUWRT,*) '=========================='
         write(LUWRT,*) ' numints_red speaking:    '
         write(LUWRT,*) '=========================='
       end if
+
+!     initialize IGLSUM
+      IGLSUM = 0
+!
 *
 * Set up triangular array
       II = 0
@@ -6465,6 +6483,9 @@ C    &           ' MO orbitals obtained from LUCIA ')
 *
 * This is a VERY preliminary solution for running bigger
 * calculations. Partial symmetry reduction of allocated space.
+      NTEST_save = NTEST
+      NTEST  = 2000
+
       call nsymint_dc(NUM_TWEI,NTOOBS,NIRREP,ISYDISUM,IPRINT)
       if (NTEST.ge.1)
      & write(6,*) 'Allocating space for ',NUM_TWEI,' 2-el. ints'
@@ -6506,6 +6527,8 @@ CSK      call lmemchk
      &                     INVERSM,
      &                     IHAM12,ISPINFREE,IMXDIM,NIRREP,NTEST)
 *
+      NTEST = NTEST_save
+
 CSK      call lmemchk
       call memman(IDUM,IDUM,'FLUSM ',IDUM,'RDIRAC')
 *

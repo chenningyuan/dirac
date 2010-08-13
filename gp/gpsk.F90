@@ -143,4 +143,108 @@ contains
 
   end subroutine calc_diff_a_b
 
+#ifdef LAPACK_QCHOLS
+!**********************************************************************
+  subroutine qchols_lapack_real_cplx(smat,            &
+                                     ndim_s,          &
+                                     vmat,            &
+                                     nv,              &
+                                     ldm,             &
+                                     sstol,           &
+                                     eigvl,           &
+                                     iord,            &
+                                     wrtunit)
+!**********************************************************************
+!
+!     purpose: FIXME.
+!
+!     written by S. Knecht August 2010
+!
+!**********************************************************************
+     real(8), intent(inout) :: smat(ldm,*)
+     real(8), intent(inout) :: vmat(ldm,*)
+     real(8), intent(inout) :: eigvl(*)
+     real(8), intent(in)    :: sstol
+     integer, intent(inout) :: nv
+     integer, intent(in)    :: ldm
+     integer, intent(in)    :: ndim_s
+     integer, intent(in)    :: iord
+     integer, intent(in)    :: wrtunit
+!----------------------------------------------------------------------
+     real(8)                :: d1
+     real(8)                :: scaling_factor
+     integer                :: ierr_qdiag
+     integer                :: i
+!**********************************************************************
+!
+       call dtrsm('L', 'U', 'N', diag, m, n, alpha, a, lda, b, ldb)
+
+C     First solve U(dagger)y = b by forward substitution
+C
+      DO J = 1,NSIM
+C
+C       In case of pivot, reorder coefficient array b
+C
+        IF(JOB.NE.0) THEN
+          DO IZ = 1,NZ
+            CALL DCOPY(N,B(1,J,IZ),1,W,1)
+            DO I = 1,NEFF
+              B(I,J,IZ) = W(IPIVOT(I))
+            ENDDO
+          ENDDO
+        ENDIF
+        DO IZ = 1,NZ
+          X(1,J,IZ) = B(1,J,IZ)/D(1)
+        ENDDO
+        DO I = 2,NEFF
+          KMAX = I-1
+            CALL QDOT(P,IQA,NZ,KMAX,
+     &               'H',IQA,A(1,I,1),NA,NZ,1,
+     &               'N',IQA,X(1,J,1),NX,NZ,1)
+          DO IZ = 1,NZ
+            X(I,J,IZ) = (B(I,J,IZ)-P(IZ))/D(I)
+          ENDDO
+        ENDDO
+      ENDDO
+C
+C     Solve Ux = y by backsubstitution
+C
+      DO J = 1,NSIM
+        DO IZ = 1,NZ
+          X(NEFF,J,IZ) = X(NEFF,J,IZ)/D(NEFF)
+        ENDDO
+      ENDDO
+      DO I = (NEFF-1),1,-1
+        P(2) = D1/D(I)
+        P(1) = -P(2)
+        NELM = NEFF-I
+        KINT = I+1
+        CALL QGEMM(1,NSIM,NELM,P(1),
+     &             'N','N',IQA,A(I,KINT,1),LRA,LCA,NZ,
+     &             'N','N',IQA,X(KINT,1,1),LRX,LCX,NZ,
+     &                P(2),IQB,X(I,1,1),LRX,LCX,NZ)
+      ENDDO
+C
+C     In case of pivot, reorder solution vectors
+C
+      IF(JOB.NE.0) THEN
+        DO J = 1,NSIM
+          DO IZ = 1,NZ
+            CALL DCOPY(NEFF,X(1,J,IZ),1,W,1)
+            DO I = 1,NEFF
+              X(IPIVOT(I),J,IZ) = W(I)
+            ENDDO
+            DO I = (NEFF+1),N
+              X(IPIVOT(I),J,IZ) = D0
+            ENDDO
+          ENDDO
+        ENDDO
+      ENDIF
+C
+      END
+
+  end subroutine qchols_lapack_real_cplx
+
+#endif
+
 end module

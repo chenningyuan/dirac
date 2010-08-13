@@ -2868,7 +2868,7 @@ C
 C
 CMI  ... check of keywords..
       IF (SLGROUP.AND.(VEXTPJ.OR.FREEPJ.OR.LEVYLE)) 
-     &  CALL QUIT('MODHAM: SLGROUP not correspond with'//
+     &  CALL QUIT('MODHAM: SLGROUP does not correspond with'//
      &  ' VEXTPJ/FREEPJ/LEVYLE flags!')
       
       FAC = DM2*CVAL*CVAL
