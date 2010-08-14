@@ -44,7 +44,6 @@ module xc_driver
 #ifdef MOD_XCFUN
   use xcfun
 #endif
-  use xc_driver_helpers
   use xc_geometric
 
   implicit none
@@ -1781,5 +1780,670 @@ contains
  999  continue
 
    end subroutine
+
+
+
+
+  subroutine lr(block_length,       &
+                mat_dim,            &
+                nz,                 &
+                nr_mat,             &
+                dmaterturbed,     &
+                fmat,               &
+                isym,               &
+                ih,                 &
+                allow_nonhermitian, &
+                ao_p,               &
+                r_0,                &
+                gr_0,               &
+                z_0,                &
+                w,                  &
+                is_gga_qr,          &
+                is_gga_qi,          &
+                buffer,             &
+                n,                  &
+                derv)
+
+!   ----------------------------------------------------------------------------
+    integer, intent(in)    :: block_length
+    integer, intent(in)    :: mat_dim
+    integer, intent(in)    :: nz
+    integer, intent(in)    :: nr_mat
+    real(8), intent(in)    :: dmaterturbed(*)
+    real(8), intent(inout) :: fmat(*)
+    integer, intent(in)    :: isym(nr_mat)
+    integer, intent(in)    :: ih(nr_mat)
+    logical, intent(in)    :: allow_nonhermitian
+    real(8), intent(in)    :: ao_p(*)
+    real(8), intent(in)    :: r_0(*)
+    real(8), intent(in)    :: gr_0(*)
+    real(8), intent(in)    :: z_0(*)
+    real(8), intent(in)    :: w(*)
+    logical, intent(in)    :: is_gga_qr
+    logical, intent(in)    :: is_gga_qi
+    real(8), intent(in)    :: buffer(*)
+    integer, intent(in)    :: n
+    real(8), intent(in)    :: derv(mxbllen, 0:n)
+!   ----------------------------------------------------------------------------
+    logical                :: calculate_qr, calculate_qi
+
+    real(8)                :: u_qr,    u_qi(3)
+    real(8)                :: v_qr(3), v_qi(3, 3)
+
+    real(8)                ::  r_b,     s_b(3)
+    real(8)                :: gr_b(3), gs_b(3, 3)
+
+    real(8)                :: z_b
+    real(8)                :: y_b(3)
+
+    real(8)                :: ddot
+    integer                :: k_start, k, im, im_off, j
+!   ----------------------------------------------------------------------------
+
+    k_start = 1
+    if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
+
+    do im = 1, nr_mat
+
+      calculate_qr = .false.
+      calculate_qi = .false.
+
+      if (ih(im) == +1) calculate_qr = .true.
+      if (ih(im) == -1) calculate_qi = .true.
+
+      if (ih(im) == 0 .and. allow_nonhermitian) then
+        calculate_qr = .true.
+        calculate_qi = .true.
+      end if
+
+      if (dft_cfg_no_sdft) then
+        calculate_qi = .false.
+      end if
+
+      im_off = mat_dim*mat_dim*nz*(im - 1)
+
+!     hermitian contribution (qr = quaternion real)
+      if (calculate_qr) then
+
+         if (is_gga_qr) then
+            if (allow_nonhermitian) then
+               call get_gn_nonhermitian(r_b,                      &
+                                        gr_b,                     &
+                                        isym(im) - 1,             &
+                                        mat_dim,                  &
+                                        dmaterturbed(1 + im_off), &
+                                        buffer,                   &
+                                        ao_p,                     &
+                                        ao_p(ao_start(1, 0)))
+            else
+               call get_gn(r_b,                      &
+                           gr_b,                     &
+                           isym(im) - 1,             &
+                           mat_dim,                  &
+                           dmaterturbed(1 + im_off), &
+                           buffer,                   &
+                           ao_p,                     &
+                           ao_p(ao_start(1, 0)))
+            end if
+         else
+            call get_n(r_b,                        &
+                       isym(im) - 1,               &
+                       mat_dim,                    &
+                       dmaterturbed(1 + im_off), &
+                       buffer,                     &
+                       ao_p)
+         end if
+
+        u_qr = derv(1, d_rr)*r_b
+        
+        if (is_gga_qr) then
+          z_b  = 2.0d0*ddot(3, gr_0, 1, gr_b, 1)
+          u_qr = u_qr + derv(1, d_rz)*z_b
+
+          do j = 1, 3
+            v_qr(j) = gr_0(j)*(                   & 
+                                r_b*derv(1, d_rz) &
+                              + z_b*derv(1, d_zz) &   
+                              )                   &
+                    + gr_b(j)*derv(1, d_z)
+          end do
+          v_qr = 2.0d0*v_qr
+        end if
+
+        if (is_gga_qr) then
+          call gga_distribute_r(u_qr,             &
+                                v_qr,             &
+                                isym(im) - 1,     &
+                                mat_dim,          &
+                                fmat(1 + im_off), &
+                                ao_p,             &
+                                ao_p(ao_start(1, 0)))
+        else
+          call lda_distribute_r(u_qr,             &
+                                isym(im) - 1,     &
+                                mat_dim,          &
+                                fmat(1 + im_off), &
+                                ao_p)
+        end if
+
+      end if !end of qr contribution
+
+!     antihermitian contribution (qi = quaternion imaginary)
+      if (calculate_qi) then
+
+        
+        if (is_gga_qi) then
+          if (allow_nonhermitian) then
+            call get_gs_nonhermitian(s_b,                       &
+                                     gs_b,                       &
+                                     isym(im) - 1,               &
+                                     mat_dim,                    &
+                                     dmaterturbed(1 + im_off), &
+                                     buffer,                     &
+                                     ao_p,                       &
+                                     ao_p(ao_start(1, 0)))
+          else
+            call get_gs(s_b,                       &
+                        gs_b,                       &
+                        isym(im) - 1,               &
+                        mat_dim,                    &
+                        dmaterturbed(1 + im_off), &
+                        buffer,                     &
+                        ao_p,                       &
+                        ao_p(ao_start(1, 0)))
+          end if
+        else
+        call get_s(s_b,                        &
+                   isym(im) - 1,               &
+                   mat_dim,                    &
+                   dmaterturbed(1 + im_off), &
+                   buffer,                     &
+                   ao_p)
+        end if
+
+!       initialize otherwise there can be numerical dirt
+!       and then collinear numbers are wrong
+        u_qi = 0.0d0
+        v_qi = 0.0d0
+
+        do k = k_start, 3
+
+          u_qi(k) = derv(1, d_ss)*s_b(k)
+         
+          if (is_gga_qi) then
+            y_b(k)  = ddot(3, gr_0, 1, gs_b(1, k), 1)
+            u_qi(k) = u_qi(k) + derv(1, d_sy)*y_b(k)
+
+            do j = 1, 3
+              v_qi(j, k) = gr_0(j)*(                   & 
+                                  s_b(k)*derv(1, d_sy) &
+                                + y_b(k)*derv(1, d_yy) &   
+                                )                      &
+                      + 2.0d0*gs_b(j, k)*derv(1, d_x)
+            end do
+          end if
+        end do
+
+        if (is_gga_qi) then
+          call gga_distribute_i(u_qi,             &
+                                v_qi,             &
+                                isym(im) - 1,     &
+                                mat_dim,          &
+                                fmat(1 + im_off), &
+                                ao_p,             &
+                                ao_p(ao_start(1, 0)))
+        else
+          call lda_distribute_i(u_qi,             &
+                                isym(im) - 1,     &
+                                mat_dim,          &
+                                fmat(1 + im_off), &
+                                ao_p)
+        end if
+
+      end if !end of qi contribution
+
+    end do
+
+  end subroutine
+
+  subroutine g_lao_contrib(block_length,       &
+                mat_dim,            &
+                nz,             &
+                nr_mat,             &
+                dmaterturbed,     &
+                fmat,               &
+                isym,               &
+                ih,                 &
+                allow_nonhermitian, &
+                ao_p,               &
+                r_0,                &
+                gr_0,               &
+                z_0,                &
+                w,                  &
+                is_gga_qr,          &
+                is_gga_qi,          &
+                buffer,             &
+                n,                  &
+                derv)
+
+!   ----------------------------------------------------------------------------
+    integer, intent(in)    :: block_length
+    integer, intent(in)    :: mat_dim
+    integer, intent(in)    :: nz
+    integer, intent(in)    :: nr_mat
+    real(8), intent(in)    :: dmaterturbed(*)
+    real(8), intent(inout) :: fmat(*)
+    integer, intent(in)    :: isym(nr_mat)
+    integer, intent(in)    :: ih(nr_mat)
+    logical, intent(in)    :: allow_nonhermitian
+    real(8), intent(in)    :: ao_p(*)
+    real(8), intent(in)    :: r_0(*)
+    real(8), intent(in)    :: gr_0(*)
+    real(8), intent(in)    :: z_0(*)
+    real(8), intent(in)    :: w(*)
+    logical, intent(in)    :: is_gga_qr
+    logical, intent(in)    :: is_gga_qi
+    real(8), intent(in)    :: buffer(*)
+    integer, intent(in)    :: n
+    real(8), intent(in)    :: derv(mxbllen, 0:n)
+!   ----------------------------------------------------------------------------
+    logical                :: calculate_qr, calculate_qi
+
+    real(8)                :: u_qr,    u_qi(3)
+    real(8)                :: v_qr(3), v_qi(3, 3)
+
+    real(8)                ::  r_b,     s_b(3)
+    real(8)                :: gr_b(3), gs_b(3, 3)
+
+    real(8)                :: z_b
+    real(8)                :: y_b(3)
+
+    real(8)                :: ddot
+    integer                :: k_start, k, im, im_off, j, off_mag
+!   ----------------------------------------------------------------------------
+
+    do im = 1, nr_mat
+
+      im_off = mat_dim*mat_dim*nz*(im - 1)
+
+        call get_n(r_b,                        &
+                   isym(im) - 1,               &
+                   mat_dim,                    &
+                   dmaterturbed(1 + im_off), &
+                   buffer,                     &
+                   ao_p)
+        
+        u_qr = derv(1, d_rr)*r_b
+        
+          call lda_distribute_r(u_qr,             &
+                                isym(im) - 1,     &
+                                mat_dim,          &
+                                fmat(1 + im_off), &
+                                ao_p)
+
+    end do
+
+  end subroutine
+
+
+      subroutine sdft_qr(block_length, &
+                         add_grad, &
+                         no_sdft, &
+                         mat_dim,  &
+                         dtrmat, &
+                         excmat, &
+                         isymop, &
+                         ihrmop, &
+                         gao, &
+                         gao1, &
+                         r_0, &
+                         z_0, &
+                         gr_0, &
+                         w, &
+                         buf, &
+                         derv_len, &
+                         derv)
+
+      integer, intent(in) :: block_length
+      integer, intent(in)    :: derv_len
+      integer, intent(in)    :: mat_dim
+      real(8), intent(in)    :: derv(mxbllen, 0:derv_len)
+      logical   add_grad, &
+     &          no_sdft
+     real(8) ::          dtrmat(mat_dim,mat_dim,nz,3)
+     real(8) ::          excmat(mat_dim,mat_dim,nz,3)
+     integer ::          isymop(3)
+     integer ::          ihrmop(3)
+     real(8) ::          gao(*)
+     real(8) ::          gao1(*)
+     real(8) ::          buf(*)
+     real(8) ::          r_0(*)
+     real(8) ::          z_0(*)
+     real(8) ::          w(*)
+!
+     real(8) ::          gr_0 (  3)
+     real(8) ::          gr_b (  3)
+     real(8) ::          gr_c (  3)
+!
+     real(8) ::          s_b  (  3)
+     real(8) ::          s_c  (  3)
+!
+     real(8) ::          gs_b (3,3)
+     real(8) ::          gs_c (3,3)
+!
+     real(8) ::          Y_b  (  3)
+     real(8) ::          Y_c  (  3)
+     real(8) ::          Y_bc (  3)
+!
+     real(8) ::          X_bc (  3)
+!
+     real(8) ::          v_bc_h_Y_0(3)
+     real(8) ::          v_bc_h_Y_b(3)
+     real(8) ::          v_bc_h_Y_c(3)
+     real(8) ::          v_bc_h_X_b(3)
+     real(8) ::          v_bc_h_X_c(3)
+
+
+      real(8) ::  v_bc_h_Z_0
+      real(8) ::  s_bc_h
+      real(8) ::  v_bc_h_Z_b
+      real(8) ::  v_bc_h_Z_c
+      real(8) ::  Z_b, z_c, z_bc
+
+
+    real(8), external :: ddot
+
+
+
+
+!
+!               here we construct (see thesis for notation):
+!
+!               K_{pq,0}^(BC) = r_0^(BC) \Omega_{pq,0} + q_{0j}^(BC) \nabla_j \Omega_{pq,0}
+!               K_{pq,z}^(BC) = r_z^(BC) \Omega_{pq,z} + q_{zj}^(BC) \nabla_j \Omega_{pq,z}
+!               K_{pq,y}^(BC) = r_y^(BC) \Omega_{pq,y} + q_{yj}^(BC) \nabla_j \Omega_{pq,y}
+!               K_{pq,x}^(BC) = r_x^(BC) \Omega_{pq,x} + q_{xj}^(BC) \nabla_j \Omega_{pq,x}
+!
+!               all the rest is done elsewhere
+!
+!               scalar h+ part: r_0^[BC]
+!               s_bc_h
+!               vector h+ part: q_{0j}^[BC] with j = x,y,z
+     real(8) ::          v_bc_h (  3)
+!               scalar h- part: r_k^[BC]    with k = x,y,z
+     real(8) ::          s_bc_ah(  3)
+!               vector h- part: q_{kj}^[BC] with k = x,y,z and j = x,y,z
+     real(8) ::          v_bc_ah(3,3)
+      real(8), parameter :: tiny = 1.0d-20
+      real(8) :: f, r_c, r_b
+      integer :: i
+    integer                :: k_start, k, im, im_off, j
+
+
+      k_start = 1
+      if(dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
+
+      if (add_grad) then
+         call get_gn_nonhermitian(r_b, &
+     &                            gr_b, &
+     &                            isymop(1) - 1, &
+     &                            mat_dim,            &
+     &                            dtrmat(1, 1, 1, 1), &
+     &                            buf, &
+     &                            gao, &
+     &                            gao1) 
+         call get_gn_nonhermitian(r_c, &
+     &                            gr_c, &
+     &                            isymop(2) - 1, &
+     &                            mat_dim,            &
+     &                            dtrmat(1, 1, 1, 2), &
+     &                            buf, &
+     &                            gao, &
+     &                            gao1)
+      else
+         call get_n(r_b, &
+     &              isymop(1) - 1, &
+     &              mat_dim,            &
+     &              dtrmat(1, 1, 1, 1), &
+     &              buf, &
+     &              gao)
+         call get_n(r_c, &
+     &              isymop(2) - 1, &
+     &              mat_dim,         &   
+     &              dtrmat(1, 1, 1, 2), &
+     &              buf, &
+     &              gao)
+      end if
+
+      if (.not. no_sdft) then
+         if (add_grad) then
+            call get_gs_nonhermitian(s_b, &
+     &                               gs_b, &
+     &                               isymop(1) - 1, &
+     &                               mat_dim,            &
+     &                               dtrmat(1, 1, 1, 1), &
+     &                               buf, &
+     &                               gao, &
+     &                               gao1)
+            call get_gs_nonhermitian(s_c, &
+     &                               gs_c, &
+     &                               isymop(2) - 1, &
+     &                               mat_dim,            &
+     &                               dtrmat(1, 1, 1, 2), &
+     &                               buf, &
+     &                               gao, &
+     &                               gao1)
+         else
+           call get_s(s_b, &
+     &                isymop(1) - 1, &
+     &                mat_dim,            &
+     &                dtrmat(1, 1, 1, 1), &
+     &                buf, &
+     &                gao)
+           call get_s(s_c, &
+     &                isymop(2) - 1, &
+     &                mat_dim,            &
+     &                dtrmat(1, 1, 1, 2), &
+     &                buf, &
+     &                gao)
+         end if
+      endif
+
+      if (add_grad) then
+!       Z = \nabla R \cdot \nabla R
+        Z_b  = 2.0d0*ddot(3,gr_0,1,gr_b,1)
+        Z_c  = 2.0d0*ddot(3,gr_0,1,gr_c,1)
+        Z_bc = 2.0d0*ddot(3,gr_b,1,gr_c,1)
+      end if
+
+      if(add_grad .and. .not. no_sdft) then
+!       Y = \nabla R \cdot \nabla S
+        do k = k_start,3
+          Y_b (k) = ddot(3,gr_0,1,gs_b(1,k),1)
+          Y_c (k) = ddot(3,gr_0,1,gs_c(1,k),1)
+          Y_bc(k) = ddot(3,gr_b,1,gs_c(1,k),1) &
+     &            + ddot(3,gr_c,1,gs_b(1,k),1)
+        enddo
+
+!       X = \nabla S \cdot \nabla S
+        do k = k_start,3
+          X_bc(k) = 2.0d0*ddot(3,gs_b(1,k),1,gs_c(1,k),1)
+        enddo
+      endif
+
+!-------------------------------------------------------------------------------
+!     collect s_bc_h
+
+      s_bc_h = 0.0d0
+
+      s_bc_h = s_bc_h + derv(1, d_RRR)*(r_b*r_c)
+
+      if(add_grad) then
+        s_bc_h = s_bc_h + derv(1, d_RRZ)*(r_b*Z_c + Z_b*r_c) &
+     &                  + derv(1, d_RZZ)*(Z_b*Z_c) &
+     &                  + derv(1, d_RZ)*Z_bc
+      endif
+
+      if(.not. no_sdft) then
+        do k = k_start,3
+          s_bc_h = s_bc_h + derv(1, d_RSS)*(s_b(k)*s_c(k))
+
+          if(add_grad) then
+       s_bc_h = s_bc_h + derv(1, d_RSY)*(s_b(k)*Y_c(k) + Y_b(k)*s_c(k)) &
+     &                 + derv(1, d_RYY)*(Y_b(k)*Y_c(k)) &
+     &                 + derv(1, d_RX)*X_bc(k)
+          endif
+        enddo
+      endif
+
+!-------------------------------------------------------------------------------
+!     collect s_bc_ah
+
+      s_bc_ah = 0.0d0
+
+      if(.not. no_sdft) then
+        do k = k_start,3
+       s_bc_ah(k) = s_bc_ah(k) &
+     &            + derv(1, d_RSS)*(r_b*s_c(k) + s_b(k)*r_c)
+
+          if(add_grad) then
+       s_bc_ah(k) = s_bc_ah(k)  &
+     &            + derv(1, d_RSY)*(r_b*Y_c(k) + Y_b(k)*r_c) &
+     &            + derv(1, d_SSZ)*(Z_b*s_c(k) + s_b(k)*Z_c) &
+     &            + derv(1, d_SZY)*(Z_b*Y_c(k) + Y_b(k)*Z_c) &
+     &            + derv(1, d_SY)*Y_bc(k)
+          endif
+        enddo
+      endif
+
+!-------------------------------------------------------------------------------
+!     collect vector components
+
+      v_bc_h  = 0.0d0
+      v_bc_ah = 0.0d0
+
+      if(add_grad) then
+
+        v_bc_h_Z_0 = 0.0d0
+        v_bc_h_Z_b = 0.0d0
+        v_bc_h_Z_c = 0.0d0
+
+        v_bc_h_Z_0 = v_bc_h_Z_0 &
+     &             + derv(1, d_ZZZ)*(Z_b*Z_c) &
+     &             + derv(1, d_RZZ)*(r_b*Z_c + Z_b*r_c) &
+     &             + derv(1, d_RRZ)*(r_b*r_c)
+
+        v_bc_h_Z_0 = v_bc_h_Z_0 &
+     &             + derv(1, d_ZZ)*Z_bc
+        v_bc_h_Z_b = v_bc_h_Z_b &
+     &             + derv(1, d_RZ)*r_c &
+     &             + derv(1, d_ZZ)*Z_c
+        v_bc_h_Z_c = v_bc_h_Z_c &
+     &             + derv(1, d_RZ)*r_b &
+     &             + derv(1, d_ZZ)*Z_b
+
+        if(.not. no_sdft) then
+
+          v_bc_h_Y_0 = 0.0d0
+          v_bc_h_Y_b = 0.0d0
+          v_bc_h_Y_c = 0.0d0
+
+          v_bc_h_X_b = 0.0d0
+          v_bc_h_X_c = 0.0d0
+
+          do k = k_start,3
+            v_bc_h_Z_0  = v_bc_h_Z_0 &
+     &                  + derv(1, d_ZYY)*(Y_b(k)*Y_c(k)) &
+     &                  + derv(1, d_SZY)*(s_b(k)*Y_c(k) + Y_b(k)*s_c(k)) &
+     &                  + derv(1, d_SSZ)*(s_b(k)*s_c(k))
+
+            v_bc_h_Y_0(k) = v_bc_h_Y_0(k) &
+     &                    + derv(1, d_YY)*Y_bc(k)
+            v_bc_h_Y_b(k) = v_bc_h_Y_b(k) &
+     &                    + derv(1, d_SY)*s_c(k) &
+     &                    + derv(1, d_YY)*Y_c(k)
+            v_bc_h_Y_c(k) = v_bc_h_Y_c(k) &
+     &                    + derv(1, d_SY)*s_b(k) &
+     &                    + derv(1, d_YY)*Y_b(k)
+
+            v_bc_h_X_b(k) = v_bc_h_X_b(k) &
+     &                    + derv(1, d_RX)*r_c &
+     &                    + derv(1, d_ZX)*Z_c
+            v_bc_h_X_c(k) = v_bc_h_X_c(k) &
+     &                    + derv(1, d_RX)*r_b &
+     &                    + derv(1, d_ZX)*Z_b
+
+            v_bc_h_Y_0(k) = v_bc_h_Y_0(k) &
+     &                    + derv(1, d_RSY)*(r_b*s_c(k) + s_b(k)*r_c) &
+     &                    + derv(1, d_RYY)*(r_b*Y_c(k) + Y_b(k)*r_c) &
+     &                    + derv(1, d_SZY)*(Z_b*s_c(k) + s_b(k)*Z_c) &
+     &                    + derv(1, d_ZYY)*(Z_b*Y_c(k) + Y_b(k)*Z_c)
+          enddo
+        endif
+
+        do j = 1,3
+          v_bc_h(j) = v_bc_h(j) + v_bc_h_Z_0*gr_0(j)*2.0d0 &
+     &                          + v_bc_h_Z_b*gr_b(j)*2.0d0 &
+     &                          + v_bc_h_Z_c*gr_c(j)*2.0d0
+          if(.not. no_sdft) then
+            do k = k_start,3
+              v_bc_ah(j,k) = v_bc_ah(j,k) + v_bc_h_Y_0(k)*gr_0(j) &
+     &                                    + v_bc_h_Y_b(k)*gr_b(j) &
+     &                                    + v_bc_h_Y_c(k)*gr_c(j)
+
+              v_bc_h(j) = v_bc_h(j) + v_bc_h_Y_b(k)*gs_b(j,k) &
+     &                              + v_bc_h_Y_c(k)*gs_c(j,k)
+
+              v_bc_ah(j,k) = v_bc_ah(j,k) + v_bc_h_X_b(k)*gs_b(j,k)*2.0d0 &
+     &                                    + v_bc_h_X_c(k)*gs_c(j,k)*2.0d0
+            enddo
+          endif
+        enddo
+      endif
+
+!-------------------------------------------------------------------------------
+
+      s_bc_h =     2.0d0*s_bc_h
+      call dscal(3,2.0d0,v_bc_h,1)
+
+      if (add_grad) then
+        call gga_distribute_r(s_bc_h, &
+     &                        v_bc_h, &
+     &                        isymop(3) - 1, &
+     &                        mat_dim,  &
+     &                        excmat(1, 1, 1, 3), &
+     &                        gao, &
+     &                        gao1)
+      else
+        call lda_distribute_r(s_bc_h, &
+     &                        isymop(3) - 1, &
+     &                        mat_dim,  &
+     &                        excmat(1, 1, 1, 3), &
+     &                        gao)
+      end if
+
+      if (.not. no_sdft) then
+
+        s_bc_ah = 2.0d0*s_bc_ah
+        v_bc_ah = 2.0d0*v_bc_ah
+
+        if (add_grad) then
+          call gga_distribute_i(s_bc_ah, &
+     &                          v_bc_ah, &
+     &                          isymop(3) - 1, &
+     &                          mat_dim,  &
+     &                          excmat(1, 1, 1, 3), &
+     &                          gao, &
+     &                          gao1)
+        else
+          call lda_distribute_i(s_bc_ah, &
+     &                          isymop(3) - 1, &
+     &                          mat_dim,  &
+     &                          excmat(1, 1, 1, 3), &
+     &                          gao)
+        end if
+      end if
+
+      end subroutine
 
 end module
