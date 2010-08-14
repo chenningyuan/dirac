@@ -57,6 +57,19 @@ module xc_driver
 
    private
 
+
+
+   type omega_prefactor
+      real(8), allocatable :: n(:)
+      real(8), allocatable :: s(:, :)
+      real(8), allocatable :: t(:)
+      real(8), allocatable :: gn(:, :)
+      real(8), allocatable :: gs(:, :, :)
+   end type
+
+
+
+
 #include "functionals.h"
 
 #include "infpar.h"
@@ -792,16 +805,26 @@ contains
       integer :: id, m
       real(8) :: temp
       real(8) :: block_threshold
-      real(8) :: rho13, rho_outer, rho_resp
+      real(8) :: rho13, rho_outer, rho_resp, f
     integer :: ipoint
     integer :: k
       real(8) :: RHG(3),VT(3)
-    integer              :: derv_length
+    integer              :: derv_length, imat
     real(8), allocatable :: derv(:, :)
 
 !   gosia: temporarily
     real(8) :: u_qi(3,3), s_b(3,3)
     integer :: l
+
+    type(omega_prefactor) :: u
+
+    allocate(u%n (      nr_fmat))
+    allocate(u%s (   3, nr_fmat))
+    allocate(u%t (      nr_fmat))
+    allocate(u%gn(   3, nr_fmat))
+    allocate(u%gs(3, 3, nr_fmat))
+
+
 
 
     max_ao_g_order = 0
@@ -963,6 +986,11 @@ contains
       if (r_0(1) > dft_cfg_dfthr0) then
          nr_points_used = nr_points_used + 1
 
+         u%n  = 0.0d0
+         u%s  = 0.0d0
+         u%t  = 0.0d0
+         u%gn = 0.0d0
+         u%gs = 0.0d0
 
         w(1) = rw(ipoint)
 
@@ -1067,12 +1095,13 @@ contains
 !         energy density
           xc_energy = xc_energy + derv(1, d_0)
 
+          u%n(1) = derv(1, d_r)
           if (use_gga) then
 !           this factor has nothing to do
 !           with symmetrization later
 !           it comes from the fact that derivative of z
 !           yields two identical terms (one left, one right)
-            derv(1, d_z) = 2.0d0*derv(1, d_z)
+            u%gn(:, 1) = 2.0d0*derv(1, d_z)*rhg
           end if
 
 !         asymptotic correction
@@ -1101,40 +1130,39 @@ contains
         end if !exchange-correlation potential
 
 
-!       exchange-correlation contribution to (undifferentiated) kohn-sham matrix
-!       ========================================================================
-        if (do_potential) then
 
-          if (use_gga) then
-            vt = derv(1, d_z)*rhg
+!      distribute over fock matrices
+!      =============================
 
-            call gga_distribute_r(derv(1, d_r), &
-                                  vt,           &
-                                  0,            &
-                                  mat_dim,      &
-                                  fmat,         &
-                                  ao,         &
-                                  ao(ao_start(1, 0):ao_end(1, 0)))
-          else
-            call lda_distribute_r(derv(1, d_r), &
-                                  0,            &
-                                  mat_dim,      &
-                                  fmat,         &
-                                  ao)
+       do imat = 1, nr_fmat
 
-!for mcscf ... this will do the magnetization contributions
-!           vector_x = derv_sx
-!           vector_y = derv_sy
-!           vector_z = derv_sz
-!           call lda_distribute_i(vector,       &
-!                                 0,            &
-!                                 mat_dim,      &
-!                                 fmat,         &
-!                                 ao)
+          f = u%gn(1, imat)*u%gn(1, imat) &
+            + u%gn(2, imat)*u%gn(2, imat) &
+            + u%gn(3, imat)*u%gn(3, imat)
 
-
+          if (f > 0.0d0) then
+             call gga_distribute_r(u%n(imat),             &
+                                   u%gn(1, imat),         &
+                                   fmat_pg_sym(imat) - 1, &
+                                   mat_dim,               &
+                                 ! fmat(1, 1, 1, imat),   &              
+                                   fmat,                  &              
+                                   ao,                    &
+                                   ao(ao_start(1, 0)))
           end if
-        end if
+
+          if ((dabs(u%n(imat)) > 0.0d0) .and. (f < tiny(0.0d0))) then
+             call lda_distribute_r(u%n(imat),             &
+                                   fmat_pg_sym(imat) - 1, &
+                                   mat_dim,               &
+                                 ! fmat(1, 1, 1, imat),   &              
+                                   fmat,                  &              
+                                   ao)
+          end if
+
+       end do
+
+
 
 !       direct-lao contribution to differentiated kohn-sham matrix
 !       ==========================================================
@@ -1229,7 +1257,7 @@ contains
                   use_gga_qi,     &
                   buffer,         &
                   derv_length,    &
-                  derv)
+                  derv, u)
 
         endif
 
@@ -1275,7 +1303,7 @@ contains
                   use_gga_qi,      &
                   buffer,          &
                   derv_length,     &
-                  derv)
+                  derv, u)
 
         endif
 
@@ -1377,6 +1405,12 @@ contains
        call dealloc(ao_sorted)
        call dealloc(bmat)
     end if
+
+    deallocate(u%n)
+    deallocate(u%s)
+    deallocate(u%t)
+    deallocate(u%gn)
+    deallocate(u%gs)
 
    end subroutine
 
@@ -1802,7 +1836,7 @@ contains
                 is_gga_qi,          &
                 buffer,             &
                 n,                  &
-                derv)
+                derv, u)
 
 !   ----------------------------------------------------------------------------
     integer, intent(in)    :: block_length
@@ -1837,6 +1871,7 @@ contains
     real(8)                :: y_b(3)
 
     integer                :: k_start, k, im, im_off, j
+    type(omega_prefactor) :: u
 !   ----------------------------------------------------------------------------
 
     k_start = 1
@@ -2098,7 +2133,6 @@ contains
      real(8) ::          s_bc_ah(  3)
 !               vector h- part: q_{kj}^[BC] with k = x,y,z and j = x,y,z
      real(8) ::          v_bc_ah(3,3)
-      real(8), parameter :: tiny = 1.0d-20
       real(8) :: f, r_c, r_b
       integer :: i
     integer                :: k_start, k, im, im_off, j
