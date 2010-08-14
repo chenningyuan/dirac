@@ -1836,7 +1836,6 @@ contains
     real(8)                :: z_b
     real(8)                :: y_b(3)
 
-    real(8)                :: ddot
     integer                :: k_start, k, im, im_off, j
 !   ----------------------------------------------------------------------------
 
@@ -1897,7 +1896,11 @@ contains
         u_qr = derv(1, d_rr)*r_b
         
         if (is_gga_qr) then
-          z_b  = 2.0d0*ddot(3, gr_0, 1, gr_b, 1)
+          z_b  = gr_0(1)*gr_b(1) &
+               + gr_0(2)*gr_b(2) &
+               + gr_0(3)*gr_b(3)
+          z_b  = 2.0d0*z_b
+
           u_qr = u_qr + derv(1, d_rz)*z_b
 
           do j = 1, 3
@@ -1971,7 +1974,9 @@ contains
           u_qi(k) = derv(1, d_ss)*s_b(k)
          
           if (is_gga_qi) then
-            y_b(k)  = ddot(3, gr_0, 1, gs_b(1, k), 1)
+            y_b(k)  = gr_0(1)*gs_b(1, k) &
+                    + gr_0(2)*gs_b(2, k) &
+                    + gr_0(3)*gs_b(3, k)
             u_qi(k) = u_qi(k) + derv(1, d_sy)*y_b(k)
 
             do j = 1, 3
@@ -2071,7 +2076,6 @@ contains
       real(8) ::  Z_b, z_c, z_bc
 
 
-    real(8), external :: ddot
 
 
 
@@ -2171,23 +2175,43 @@ contains
 
       if (add_grad) then
 !       Z = \nabla R \cdot \nabla R
-        Z_b  = 2.0d0*ddot(3,gr_0,1,gr_b,1)
-        Z_c  = 2.0d0*ddot(3,gr_0,1,gr_c,1)
-        Z_bc = 2.0d0*ddot(3,gr_b,1,gr_c,1)
+        z_b  = gr_0(1)*gr_b(1) &
+             + gr_0(2)*gr_b(2) &
+             + gr_0(3)*gr_b(3)
+        z_c  = gr_0(1)*gr_c(1) &
+             + gr_0(2)*gr_c(2) &
+             + gr_0(3)*gr_c(3)
+        z_bc = gr_b(1)*gr_c(1) &
+             + gr_b(2)*gr_c(2) &
+             + gr_b(3)*gr_c(3)
+        Z_b  = 2.0d0*Z_b 
+        Z_c  = 2.0d0*Z_c 
+        Z_bc = 2.0d0*Z_bc
       end if
 
       if(add_grad .and. .not. no_sdft) then
 !       Y = \nabla R \cdot \nabla S
         do k = k_start,3
-          Y_b (k) = ddot(3,gr_0,1,gs_b(1,k),1)
-          Y_c (k) = ddot(3,gr_0,1,gs_c(1,k),1)
-          Y_bc(k) = ddot(3,gr_b,1,gs_c(1,k),1) &
-     &            + ddot(3,gr_c,1,gs_b(1,k),1)
+        y_b(k)  = gr_0(1)*gs_b(1, k) &
+                + gr_0(2)*gs_b(2, k) &
+                + gr_0(3)*gs_b(3, k)
+        y_c(k)  = gr_0(1)*gs_c(1, k) &
+                + gr_0(2)*gs_c(2, k) &
+                + gr_0(3)*gs_c(3, k)
+        y_bc(k) = gr_b(1)*gs_c(1, k) &
+                + gr_b(2)*gs_c(2, k) &
+                + gr_b(3)*gs_c(3, k) &
+                + gr_c(1)*gs_b(1, k) &
+                + gr_c(2)*gs_b(2, k) &
+                + gr_c(3)*gs_b(3, k)
         enddo
 
 !       X = \nabla S \cdot \nabla S
         do k = k_start,3
-          X_bc(k) = 2.0d0*ddot(3,gs_b(1,k),1,gs_c(1,k),1)
+          X_bc(k) = gs_b(1, k)*gs_c(1, k) &
+                  + gs_b(2, k)*gs_c(2, k) &
+                  + gs_b(3, k)*gs_c(3, k)
+          X_bc(k) = 2.0d0*X_bc(k)
         enddo
       endif
 
