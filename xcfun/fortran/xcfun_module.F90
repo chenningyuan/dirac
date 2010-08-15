@@ -15,44 +15,31 @@ module xcfun
   integer, parameter :: XC_D1 = 2
   integer, parameter :: XC_D2 = 3
 
-! lda derivatives, all odd spin density orders give zero at closed-shell reference
+! lda up to order 3
+! only derivatives that are nonzero at closed-shell reference
+! with XC_VARS_NS are here
   integer, parameter :: XC_D00 =  1
   integer, parameter :: XC_D10 =  2
-  integer, parameter :: XC_D01 =  3 !zero at closed-shell reference with XC_VARS_NS
   integer, parameter :: XC_D20 =  4
-  integer, parameter :: XC_D11 =  5 !zero at closed-shell reference with XC_VARS_NS
   integer, parameter :: XC_D02 =  6
   integer, parameter :: XC_D30 =  7
-  integer, parameter :: XC_D21 =  8 !zero at closed-shell reference with XC_VARS_NS
   integer, parameter :: XC_D12 =  9
-  integer, parameter :: XC_D03 = 10 !zero at closed-shell reference with XC_VARS_NS
 
+! gga up to order 3
+! only derivatives that are nonzero at closed-shell reference
+! with XC_VARS_NS are here
   integer, parameter :: XC_D00000 = 1
   integer, parameter :: XC_D10000 = 2
-  integer, parameter :: XC_D01000 = 3  !zero at closed-shell reference with XC_VARS_NS
   integer, parameter :: XC_D00100 = 4
-  integer, parameter :: XC_D00010 = 5  !zero at closed-shell reference with XC_VARS_NS
   integer, parameter :: XC_D00001 = 6
   integer, parameter :: XC_D20000 = 7
-  integer, parameter :: XC_D11000 = 8  !zero at closed-shell reference with XC_VARS_NS
   integer, parameter :: XC_D10100 = 9
-  integer, parameter :: XC_D10010 = 10 !zero at closed-shell reference with XC_VARS_NS
   integer, parameter :: XC_D10001 = 11
   integer, parameter :: XC_D02000 = 12
-  integer, parameter :: XC_D01100 = 13 !zero at closed-shell reference with XC_VARS_NS
   integer, parameter :: XC_D01010 = 14
-  integer, parameter :: XC_D01001 = 15 !zero at closed-shell reference with XC_VARS_NS
   integer, parameter :: XC_D00200 = 16
-  integer, parameter :: XC_D00110 = 17 !zero at closed-shell reference with XC_VARS_NS
   integer, parameter :: XC_D00101 = 18
   integer, parameter :: XC_D00020 = 19
-  integer, parameter :: XC_D00011 = 20 !zero at closed-shell reference with XC_VARS_NS
-  integer, parameter :: XC_D00002 = 21 !zero at closed-shell reference with XC_VARS_NS
-
-
-!radovan: here are the pointers to 3rd gga derivatives
-!         be careful, only those that are nonzero at closed-shell reference
-!         with XC_VARS_NS are here
   integer, parameter :: XC_D30000 = 22
   integer, parameter :: XC_D20100 = 24
   integer, parameter :: XC_D12000 = 27
@@ -63,6 +50,35 @@ module xcfun
   integer, parameter :: XC_D01110 = 42
   integer, parameter :: XC_D00300 = 47
   integer, parameter :: XC_D00120 = 50
+
+! tau mgga
+! so far only linear response
+! list under construction ...
+  integer, parameter :: XC_D0000000 =  1
+  integer, parameter :: XC_D1000000 =  2
+  integer, parameter :: XC_D0010000 =  4
+  integer, parameter :: XC_D0000100 =  6
+  integer, parameter :: XC_D0000010 =  7
+  integer, parameter :: XC_D0000001 =  8
+  integer, parameter :: XC_D2000000 =  9
+  integer, parameter :: XC_D1010000 = 11
+  integer, parameter :: XC_D1000010 = 14
+  integer, parameter :: XC_D1000001 = 15
+  integer, parameter :: XC_D0200000 = 16
+  integer, parameter :: XC_D0101000 = 18
+  integer, parameter :: XC_D0100010 = 20
+  integer, parameter :: XC_D0100001 = 21
+  integer, parameter :: XC_D0020000 = 22
+  integer, parameter :: XC_D0010010 = 25
+  integer, parameter :: XC_D0010001 = 26
+  integer, parameter :: XC_D0002000 = 27
+  integer, parameter :: XC_D0001010 = 29
+  integer, parameter :: XC_D0001001 = 30
+  integer, parameter :: XC_D0000110 = 32
+  integer, parameter :: XC_D0000101 = 33
+  integer, parameter :: XC_D0000020 = 34
+  integer, parameter :: XC_D0000011 = 35
+  integer, parameter :: XC_D0000002 = 36
 
 contains
   ! We pass strings as null terminated integer arrays to C, this
