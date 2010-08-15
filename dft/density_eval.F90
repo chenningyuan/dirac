@@ -37,10 +37,10 @@ module density_eval
    public get_gj
    public get_gs
    public get_gs_nonhermitian
-   public lda_distribute_r
-   public gga_distribute_r
-   public lda_distribute_i
-   public gga_distribute_i
+   public omega_real
+   public omega_imag
+   public nabla_omega_real
+   public nabla_omega_imag
    public lda_london_distribute_r
    public gga_london_distribute_r
    public lda_london_distribute_i
@@ -727,167 +727,195 @@ contains
 
   end subroutine
 
-  subroutine lda_distribute_r(s, irep, mat_dim, fmat, ao)
+   subroutine omega_real(fmat,    &
+                         im,      &
+                         irep,    &
+                         mat_dim, &
+                         nz,      &
+                         u,       &
+                         ao_g0)
 
-!   ----------------------------------------------------------------------------
-    real(8), intent(in)    :: s
-    integer, intent(in)    :: irep
-    integer, intent(in)    :: mat_dim
-    real(8), intent(inout) :: fmat(mat_dim, mat_dim, *)
-    real(8), intent(in)    :: ao(mat_dim)
-!   ----------------------------------------------------------------------------
-    integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz
-    real(8)                :: f
-!   ----------------------------------------------------------------------------
+!     --------------------------------------------------------------------------
+      real(8), intent(inout) :: fmat(mat_dim, mat_dim, nz, *)
+      integer, intent(in)    :: im
+      integer, intent(in)    :: irep
+      integer, intent(in)    :: mat_dim
+      integer, intent(in)    :: nz
+      real(8), intent(in)    :: u
+      real(8), intent(in)    :: ao_g0(mat_dim)
+!     --------------------------------------------------------------------------
+      integer                :: nr1, nr2, st1, st2, iblock, i, ii
+      real(8)                :: f
+!     --------------------------------------------------------------------------
+      
+      do iblock = 1, llss_nr_density_blocks(0, irep)
+         nr1 = llss_nr_ao(1, iblock, 0, irep)
+         st1 = llss_st_ao(1, iblock, 0, irep)
+         nr2 = llss_nr_ao(2, iblock, 0, irep)
+         st2 = llss_st_ao(2, iblock, 0, irep)
+      
+         do i = 1, nr2
+            ii = st2 + i - 1
+            f  = u*ao_g0(ii)
+      
+            call daxpy(nr1,                      &
+                       f,                        &
+                       ao_g0(st1),               &
+                       1,                        &
+                       fmat(st1, ii, iq(0), im), &
+                       1)
+         end do
+      end do
 
-    do iblock = 1, llss_nr_density_blocks(0, irep)
-       nr1 = llss_nr_ao(1, iblock, 0, irep)
-       st1 = llss_st_ao(1, iblock, 0, irep)
-       nr2 = llss_nr_ao(2, iblock, 0, irep)
-       st2 = llss_st_ao(2, iblock, 0, irep)
+   end subroutine
 
-       do i = 1, nr2
-          ii = st2 + i - 1
-          f  = s*ao(ii)
+   subroutine nabla_omega_real(fmat,    &
+                               im,      &
+                               irep,    &
+                               mat_dim, &
+                               nz,      &
+                               u,       &
+                               v,       &
+                               ao_g0,   &
+                               ao_g1)
 
-          call daxpy(nr1,                     &
-                     f,                       &
-                     ao(st1),                 &
-                     1,                       &
-                     fmat(st1, ii, iq(0)), &
-                     1)
-       end do
-    end do
+!     --------------------------------------------------------------------------
+      real(8), intent(inout) :: fmat(mat_dim, mat_dim, nz, *)
+      integer, intent(in)    :: im
+      integer, intent(in)    :: irep
+      integer, intent(in)    :: mat_dim
+      integer, intent(in)    :: nz
+      real(8), intent(in)    :: u
+      real(8), intent(in)    :: v(3)
+      real(8), intent(in)    :: ao_g0(mat_dim)
+      real(8), intent(in)    :: ao_g1(mat_dim, 3)
+!     --------------------------------------------------------------------------
+      integer                :: nr1, nr2, st1, st2, iblock, i, ii
+      real(8)                :: f
+!     --------------------------------------------------------------------------
+      
+      do iblock = 1, llss_nr_density_blocks(0, irep)
+         nr1 = llss_nr_ao(1, iblock, 0, irep)
+         st1 = llss_st_ao(1, iblock, 0, irep)
+         nr2 = llss_nr_ao(2, iblock, 0, irep)
+         st2 = llss_st_ao(2, iblock, 0, irep)
+      
+         do i = 1, nr2
+            ii = st2 + i - 1
+            f =       u   *ao_g0(ii)    &
+              + 2.0d0*v(1)*ao_g1(ii, 1) &
+              + 2.0d0*v(2)*ao_g1(ii, 2) &
+              + 2.0d0*v(3)*ao_g1(ii, 3)
+      
+            call daxpy(nr1,                      &
+                       f,                        &
+                       ao_g0(st1),               &
+                       1,                        &
+                       fmat(st1, ii, iq(0), im), &
+                       1)
+         end do
+      end do
 
-  end subroutine
+   end subroutine
 
-  subroutine gga_distribute_r(s, v, irep, mat_dim, fmat, ao, ao1)
+   subroutine omega_imag(fmat,    &
+                         im,      &
+                         irep,    &
+                         mat_dim, &
+                         nz,      &
+                         u,       &
+                         ao_g0)
 
-!   ----------------------------------------------------------------------------
-    real(8), intent(in)    :: s
-    real(8), intent(in)    :: v(3)
-    integer, intent(in)    :: irep
-    integer, intent(in)    :: mat_dim
-    real(8), intent(inout) :: fmat(mat_dim, mat_dim, *)
-    real(8), intent(in)    :: ao(mat_dim)
-    real(8), intent(in)    :: ao1(mat_dim, 3)
-!   ----------------------------------------------------------------------------
-    integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz
-    real(8)                :: f
-!   ----------------------------------------------------------------------------
+!     --------------------------------------------------------------------------
+      real(8), intent(inout) :: fmat(mat_dim, mat_dim, nz, *)
+      integer, intent(in)    :: im
+      integer, intent(in)    :: irep
+      integer, intent(in)    :: mat_dim
+      integer, intent(in)    :: nz
+      real(8), intent(in)    :: u(3)
+      real(8), intent(in)    :: ao_g0(mat_dim)
+!     --------------------------------------------------------------------------
+      integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz
+      real(8)                :: f
+!     --------------------------------------------------------------------------
+      
+      do jxyz = jxyz_start, 3
 
-    do iblock = 1, llss_nr_density_blocks(0, irep)
-       nr1 = llss_nr_ao(1, iblock, 0, irep)
-       st1 = llss_st_ao(1, iblock, 0, irep)
-       nr2 = llss_nr_ao(2, iblock, 0, irep)
-       st2 = llss_st_ao(2, iblock, 0, irep)
+         do iblock = 1, llss_nr_density_blocks(jxyz, irep)
+            nr1 = llss_nr_ao(1, iblock, jxyz, irep)
+            st1 = llss_st_ao(1, iblock, jxyz, irep)
+            nr2 = llss_nr_ao(2, iblock, jxyz, irep)
+            st2 = llss_st_ao(2, iblock, jxyz, irep)
+         
+            do i = 1, nr2
+               ii = st2 + i - 1
+               f  = u(jxyz)*ao_g0(ii)*llss_prefactor(iblock, jxyz, irep)
+         
+               call daxpy(nr1,                         &
+                          f,                           &
+                          ao_g0(st1),                  &
+                          1,                           &
+                          fmat(st1, ii, iq(jxyz), im), &
+                          1)
+            end do
+         end do
+      end do
 
-       do i = 1, nr2
+   end subroutine
 
-          ii = st2 + i - 1
+   subroutine nabla_omega_imag(fmat,    &
+                               im,      &
+                               irep,    &
+                               mat_dim, &
+                               nz,      &
+                               u,       &
+                               v,       &
+                               ao_g0,   &
+                               ao_g1)
 
-          f =       s   *ao (ii)    &
-            + 2.0d0*v(1)*ao1(ii, 1) &
-            + 2.0d0*v(2)*ao1(ii, 2) &
-            + 2.0d0*v(3)*ao1(ii, 3)
+!     --------------------------------------------------------------------------
+      real(8), intent(inout) :: fmat(mat_dim, mat_dim, nz, *)
+      integer, intent(in)    :: im
+      integer, intent(in)    :: irep
+      integer, intent(in)    :: mat_dim
+      integer, intent(in)    :: nz
+      real(8), intent(in)    :: u(3)
+      real(8), intent(in)    :: v(3, 3)
+      real(8), intent(in)    :: ao_g0(mat_dim)
+      real(8), intent(in)    :: ao_g1(mat_dim, 3)
+!     --------------------------------------------------------------------------
+      integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz
+      real(8)                :: f
+!     --------------------------------------------------------------------------
+      
+      do jxyz = jxyz_start, 3
 
-          call daxpy(nr1,                     &
-                     f,                       &
-                     ao(st1),                 &
-                     1,                       &
-                     fmat(st1, ii, iq(0)), &
-                     1)
+         do iblock = 1, llss_nr_density_blocks(jxyz, irep)
+            nr1 = llss_nr_ao(1, iblock, jxyz, irep)
+            st1 = llss_st_ao(1, iblock, jxyz, irep)
+            nr2 = llss_nr_ao(2, iblock, jxyz, irep)
+            st2 = llss_st_ao(2, iblock, jxyz, irep)
+         
+            do i = 1, nr2
+               ii = st2 + i - 1
+               f =       u(   jxyz)*ao_g0(ii)    &
+                 + 2.0d0*v(1, jxyz)*ao_g1(ii, 1) &
+                 + 2.0d0*v(2, jxyz)*ao_g1(ii, 2) &
+                 + 2.0d0*v(3, jxyz)*ao_g1(ii, 3)
+              
+               f = llss_prefactor(iblock, jxyz, irep)*f
+         
+               call daxpy(nr1,                         &
+                          f,                           &
+                          ao_g0(st1),                  &
+                          1,                           &
+                          fmat(st1, ii, iq(jxyz), im), &
+                          1)
+            end do
+         end do
+      end do
 
-       end do
-    end do
-
-  end subroutine
-
-  subroutine lda_distribute_i(s, irep, mat_dim, fmat, ao)
-
-!   ----------------------------------------------------------------------------
-    real(8), intent(in)    :: s(3)
-    integer, intent(in)    :: irep
-    integer, intent(in)    :: mat_dim
-    real(8), intent(inout) :: fmat(mat_dim, mat_dim, *)
-    real(8), intent(in)    :: ao(mat_dim)
-!   ----------------------------------------------------------------------------
-    integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz
-    real(8)                :: f
-!   ----------------------------------------------------------------------------
-
-    do jxyz = jxyz_start, 3
-
-       do iblock = 1, llss_nr_density_blocks(jxyz, irep)
-          nr1 = llss_nr_ao(1, iblock, jxyz, irep)
-          st1 = llss_st_ao(1, iblock, jxyz, irep)
-          nr2 = llss_nr_ao(2, iblock, jxyz, irep)
-          st2 = llss_st_ao(2, iblock, jxyz, irep)
-
-          do i = 1, nr2
-             ii = st2 + i - 1
-             f  = llss_prefactor(iblock, jxyz, irep)*s(jxyz)*ao(ii)
-
-             call daxpy(nr1,                     &
-                        f,                       &
-                        ao(st1),                 &
-                        1,                       &
-                        fmat(st1, ii, iq(jxyz)), &
-                        1)
-          end do
-       end do
-
-    end do
-
-  end subroutine
-
-  subroutine gga_distribute_i(s, v, irep, mat_dim, fmat, ao, ao1)
-
-!   ----------------------------------------------------------------------------
-    real(8), intent(in)    :: s(3)
-    real(8), intent(in)    :: v(3, 3)
-    integer, intent(in)    :: irep
-    integer, intent(in)    :: mat_dim
-    real(8), intent(inout) :: fmat(mat_dim, mat_dim, *)
-    real(8), intent(in)    :: ao(mat_dim)
-    real(8), intent(in)    :: ao1(mat_dim, 3)
-!   ----------------------------------------------------------------------------
-    integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz
-    real(8)                :: f
-!   ----------------------------------------------------------------------------
-
-    do jxyz = jxyz_start, 3
-
-       do iblock = 1, llss_nr_density_blocks(jxyz, irep)
-          nr1 = llss_nr_ao(1, iblock, jxyz, irep)
-          st1 = llss_st_ao(1, iblock, jxyz, irep)
-          nr2 = llss_nr_ao(2, iblock, jxyz, irep)
-          st2 = llss_st_ao(2, iblock, jxyz, irep)
-
-          do i = 1, nr2
-
-             ii = st2 + i - 1
-
-             f =       s(   jxyz)*ao (ii)    &
-               + 2.0d0*v(1, jxyz)*ao1(ii, 1) &
-               + 2.0d0*v(2, jxyz)*ao1(ii, 2) &
-               + 2.0d0*v(3, jxyz)*ao1(ii, 3)
-
-             f = llss_prefactor(iblock, jxyz, irep)*f
-
-             call daxpy(nr1,                        &
-                        f,                          &
-                        ao(st1),                    &
-                        1,                          &
-                        fmat(st1, ii, iq(jxyz)), &
-                        1)
-
-          end do
-       end do
-
-    end do
-
-  end subroutine
+   end subroutine
 
   subroutine lda_london_distribute_r(s, isym, mat_dim, nz, fmat, ao, ao_b1, cx, cy, cz)
 

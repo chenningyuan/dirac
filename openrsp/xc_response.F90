@@ -195,21 +195,25 @@ contains
     end if
 
     if (v_above_threshold) then
-      call gga_distribute_r(u,        &
-                            2.0d0*v,  &
-                            isym_f(1) - 1,        &
-                            mat_dim,  &
-                            fmat,     &
-                            ao_g0_m0, &
-                            ao_g1_m0)
+       call nabla_omega_real(fmat,          &
+                             1,             &
+                             isym_f(1) - 1, &
+                             mat_dim,       &
+                             nz,            &
+                             u,             &
+                             2.0d0*v,       &
+                             ao_g0_m0,      &
+                             ao_g1_m0)
     else
-      if (u_above_threshold) then
-        call lda_distribute_r(u,        &
-                              isym_f(1) - 1,  &
-                              mat_dim,  &
-                              fmat,     &
-                              ao_g0_m0)
-      end if
+       if (u_above_threshold) then
+          call omega_real(fmat,          &
+                          1,             &
+                          isym_f(1) - 1, &
+                          mat_dim,       &
+                          nz,            &
+                          u,             &
+                          ao_g0_m0)
+       end if
     end if
 
   end subroutine

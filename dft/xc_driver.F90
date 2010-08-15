@@ -809,12 +809,18 @@ contains
     integer :: ipoint
     integer :: k
       real(8) :: RHG(3),VT(3)
-    integer              :: derv_length, imat
+    integer              :: derv_length, im
     real(8), allocatable :: derv(:, :)
 
 !   gosia: temporarily
     real(8) :: u_qi(3,3), s_b(3,3)
     integer :: l
+
+      logical :: un_above_threshold
+      logical :: us_above_threshold
+      logical :: ut_above_threshold
+      logical :: ugn_above_threshold
+      logical :: ugs_above_threshold
 
     type(omega_prefactor) :: u
 
@@ -1131,39 +1137,6 @@ contains
 
 
 
-!      distribute over fock matrices
-!      =============================
-
-       do imat = 1, nr_fmat
-
-          f = u%gn(1, imat)*u%gn(1, imat) &
-            + u%gn(2, imat)*u%gn(2, imat) &
-            + u%gn(3, imat)*u%gn(3, imat)
-
-          if (f > 0.0d0) then
-             call gga_distribute_r(u%n(imat),             &
-                                   u%gn(1, imat),         &
-                                   fmat_pg_sym(imat) - 1, &
-                                   mat_dim,               &
-                                 ! fmat(1, 1, 1, imat),   &              
-                                   fmat,                  &              
-                                   ao,                    &
-                                   ao(ao_start(1, 0)))
-          end if
-
-          if ((dabs(u%n(imat)) > 0.0d0) .and. (f < tiny(0.0d0))) then
-             call lda_distribute_r(u%n(imat),             &
-                                   fmat_pg_sym(imat) - 1, &
-                                   mat_dim,               &
-                                 ! fmat(1, 1, 1, imat),   &              
-                                   fmat,                  &              
-                                   ao)
-          end if
-
-       end do
-
-
-
 !       direct-lao contribution to differentiated kohn-sham matrix
 !       ==========================================================
 
@@ -1220,14 +1193,16 @@ contains
           end do
 
           if (use_gga) then
-!           gosia todo  call gga_distribute_i
+          !  call nabla_omega_imag(...
           else
             do k = 1, 3
-              call lda_distribute_i(u_qi(1, k),               &
-                                    fmat_pg_sym(k) - 1,       & ! i hope pg sym of "Bx", "By" or "Bz" contribution, gosia: to check
-                                    mat_dim,                  &
-                                    fmat,                     &
-                                    ao(ao_start(0, 0):ao_end(0, 0)))
+               call omega_imag(fmat,                &              
+                               1,                   &
+                               fmat_pg_sym(k) - 1,  & ! i hope pg sym of "Bx", "By" or "Bz" contribution, gosia: to check
+                               mat_dim,             &
+                               nz,                  &
+                               u_qi(1, k),          &
+                               ao)
             end do
           end if
         end if
@@ -1273,7 +1248,7 @@ contains
                        r_0(1),z_0(1),rhg,w(1), &
                        buffer,             &
                   derv_length,    &
-                  derv)
+                  derv, u)
 
 !         the idea here is that   r^[B]               \omega_{ia}^[C]
 !                                 r^[C]               \omega_{ia}^[B]
@@ -1382,6 +1357,91 @@ contains
                                   ao,              &
                                   ao(ao_start(1, 0):ao_end(1, 0)))
           end if
+
+
+
+!         distribute over fock matrices
+!         =============================
+       
+          do im = 1, nr_fmat
+       
+             un_above_threshold = .false.
+             if (dabs(u%n(im)) > tiny(0.0d0)) then
+                un_above_threshold = .true.
+             end if
+
+             ugn_above_threshold = .false.
+             if (maxval((/dabs(u%gn(1, im)), &
+                          dabs(u%gn(2, im)), &
+                          dabs(u%gn(3, im))/)) > tiny(0.0d0)) then
+                ugn_above_threshold = .true.
+             end if
+
+             if (ugn_above_threshold) then
+                call nabla_omega_real(fmat,                &              
+                                      im,                  &
+                                      fmat_pg_sym(im) - 1, &
+                                      mat_dim,             &
+                                      nz,                  &
+                                      u%n(im),             &
+                                      u%gn(1, im),         &
+                                      ao,                  &
+                                      ao(ao_start(1, 0)))
+             else
+                if (un_above_threshold) then
+                   call omega_real(fmat,                &              
+                                   im,                  &
+                                   fmat_pg_sym(im) - 1, &
+                                   mat_dim,             &
+                                   nz,                  &
+                                   u%n(im),             &
+                                   ao)
+                end if
+             end if
+       
+             us_above_threshold = .false.
+             if (maxval((/dabs(u%s(1, im)), &
+                          dabs(u%s(2, im)), &
+                          dabs(u%s(3, im))/)) > tiny(0.0d0)) then
+                us_above_threshold = .true.
+             end if
+       
+             ugs_above_threshold = .false.
+             if (maxval((/dabs(u%gs(1, 1, im)), &
+                          dabs(u%gs(1, 2, im)), &
+                          dabs(u%gs(1, 3, im)), &
+                          dabs(u%gs(2, 1, im)), &
+                          dabs(u%gs(2, 2, im)), &
+                          dabs(u%gs(2, 3, im)), &
+                          dabs(u%gs(3, 1, im)), &
+                          dabs(u%gs(3, 2, im)), &
+                          dabs(u%gs(3, 3, im))/)) > tiny(0.0d0)) then
+                ugs_above_threshold = .true.
+             end if
+
+             if (ugs_above_threshold) then
+                call nabla_omega_imag(fmat,                &              
+                                      im,                  &
+                                      fmat_pg_sym(im) - 1, &
+                                      mat_dim,             &
+                                      nz,                  &
+                                      u%s(1, im),          &
+                                      u%gs(1, 1, im),      &
+                                      ao,                  &
+                                      ao(ao_start(1, 0)))
+             else
+                if (us_above_threshold) then
+                   call omega_imag(fmat,                &              
+                                   im,                  &
+                                   fmat_pg_sym(im) - 1, &
+                                   mat_dim,             &
+                                   nz,                  &
+                                   u%s(1, im),          &
+                                   ao)
+                end if
+             end if
+       
+          end do
 
           time_matrix_dist = time_matrix_dist + second() - time_matrix_dist_start
 
@@ -1946,23 +2006,9 @@ contains
                     + gr_b(j)*derv(1, d_z)
           end do
           v_qr = 2.0d0*v_qr
+          u%gn(:, im) = u%gn(:, im) + v_qr
         end if
-
-        if (is_gga_qr) then
-          call gga_distribute_r(u_qr,             &
-                                v_qr,             &
-                                isym(im) - 1,     &
-                                mat_dim,          &
-                                fmat(1 + im_off), &
-                                ao_p,             &
-                                ao_p(ao_start(1, 0)))
-        else
-          call lda_distribute_r(u_qr,             &
-                                isym(im) - 1,     &
-                                mat_dim,          &
-                                fmat(1 + im_off), &
-                                ao_p)
-        end if
+        u%n(im)     = u%n(im) + u_qr
 
       end if !end of qr contribution
 
@@ -2025,20 +2071,9 @@ contains
         end do
 
         if (is_gga_qi) then
-          call gga_distribute_i(u_qi,             &
-                                v_qi,             &
-                                isym(im) - 1,     &
-                                mat_dim,          &
-                                fmat(1 + im_off), &
-                                ao_p,             &
-                                ao_p(ao_start(1, 0)))
-        else
-          call lda_distribute_i(u_qi,             &
-                                isym(im) - 1,     &
-                                mat_dim,          &
-                                fmat(1 + im_off), &
-                                ao_p)
+          u%gs(:, :, im) = u%gs(:, :, im) + v_qi
         end if
+        u%s(:, im) = u%s(:, im) + u_qi
 
       end if !end of qi contribution
 
@@ -2062,8 +2097,9 @@ contains
                          w, &
                          buf, &
                          derv_len, &
-                         derv)
+                         derv, u)
 
+    type(omega_prefactor) :: u
       integer, intent(in) :: block_length
       integer, intent(in)    :: derv_len
       integer, intent(in)    :: mat_dim
@@ -2385,20 +2421,9 @@ contains
       call dscal(3,2.0d0,v_bc_h,1)
 
       if (add_grad) then
-        call gga_distribute_r(s_bc_h, &
-     &                        v_bc_h, &
-     &                        isymop(3) - 1, &
-     &                        mat_dim,  &
-     &                        excmat(1, 1, 1, 3), &
-     &                        gao, &
-     &                        gao1)
-      else
-        call lda_distribute_r(s_bc_h, &
-     &                        isymop(3) - 1, &
-     &                        mat_dim,  &
-     &                        excmat(1, 1, 1, 3), &
-     &                        gao)
+        u%gn(:, 3) = u%gn(:, 3) + v_bc_h
       end if
+      u%n(3) = u%n(3) + s_bc_h
 
       if (.not. no_sdft) then
 
@@ -2406,20 +2431,9 @@ contains
         v_bc_ah = 2.0d0*v_bc_ah
 
         if (add_grad) then
-          call gga_distribute_i(s_bc_ah, &
-     &                          v_bc_ah, &
-     &                          isymop(3) - 1, &
-     &                          mat_dim,  &
-     &                          excmat(1, 1, 1, 3), &
-     &                          gao, &
-     &                          gao1)
-        else
-          call lda_distribute_i(s_bc_ah, &
-     &                          isymop(3) - 1, &
-     &                          mat_dim,  &
-     &                          excmat(1, 1, 1, 3), &
-     &                          gao)
+          u%gs(:, :, 3) = u%gs(:, :, 3) + v_bc_ah
         end if
+        u%s(:, 3) = u%s(:, 3) + s_bc_ah
       end if
 
       end subroutine
