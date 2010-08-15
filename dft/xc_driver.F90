@@ -947,7 +947,7 @@ contains
 
          do k = 1, block_length
             nr_electrons = nr_electrons + rw(ipoint + k - 1)*r_0(k)
-            xc_energy    = xc_energy    + derv(k, d_0)
+            xc_energy    = xc_energy    + derv(k, d0000000)
          end do
 
       end do loop_over_points_block
@@ -1099,15 +1099,15 @@ contains
         if (do_potential) then
 
 !         energy density
-          xc_energy = xc_energy + derv(1, d_0)
+          xc_energy = xc_energy + derv(1, d0000000)
 
-          u%n(1) = derv(1, d_r)
+          u%n(1) = derv(1, d1000000)
           if (use_gga) then
 !           this factor has nothing to do
 !           with symmetrization later
 !           it comes from the fact that derivative of z
 !           yields two identical terms (one left, one right)
-            u%gn(:, 1) = 2.0d0*derv(1, d_z)*rhg
+            u%gn(:, 1) = 2.0d0*derv(1, d0010000)*rhg
           end if
 
 !         asymptotic correction
@@ -1144,8 +1144,8 @@ contains
           if (dft_cfg_no_sdft) then
 !           spin-density contribution for closed-shell systems is 0
             if (use_gga) then
-              call gga_london_distribute_r(derv(1, d_r),                      &
-                                           2.0d0*derv(1, d_z),                      &
+              call gga_london_distribute_r(derv(1, d1000000),                      &
+                                           2.0d0*derv(1, d0010000),                      &
                                            rhg,                               &
                                            0,                                 &
                                            mat_dim,                           &
@@ -1157,7 +1157,7 @@ contains
                                            ao(ao_start(1, 1):ao_end(1, 1)), &
                                            rx(ipoint), ry(ipoint), rz(ipoint))
             else
-              call lda_london_distribute_r(derv(1, d_r),                      &
+              call lda_london_distribute_r(derv(1, d1000000),                      &
                                            fmat_pg_sym,                       &
                                            mat_dim,                           &
                                            nz,                           &
@@ -1185,10 +1185,10 @@ contains
                          ao(ao_start(0, 1):ao_end(0, 1)),   &
                          rx(ipoint), ry(ipoint), rz(ipoint))
 
-!         gosia: check whether you multiply correct two numbers (check ordering in derv(,d_ss)
+!         gosia: check whether you multiply correct two numbers (check ordering in derv(,d0200000)
           do l = 1, 3
             do k = 1, 3
-              u_qi(k, l) = derv(1, d_ss)*s_b(k, l)
+              u_qi(k, l) = derv(1, d0200000)*s_b(k, l)
             end do
           end do
 
@@ -1311,8 +1311,8 @@ contains
           if (do_geo_0) then
              if (use_gga) then
                 call xc_geo_0_gga_c1(property_gradient,               &
-                                     derv(1, d_r),                    &
-                                     derv(1, d_z),                    &
+                                     derv(1, d1000000),                    &
+                                     derv(1, d0010000),                    &
                                      rhg,                             &
                                      mat_dim,                         &
                                      dmat_0,                          &
@@ -1321,7 +1321,7 @@ contains
                                      ao(ao_start(2, 0):ao_end(2, 0)))
              else
                 call xc_geo_0_lda_c1(property_gradient, &
-                                     derv(1, d_r),      &
+                                     derv(1, d1000000),      &
                                      mat_dim,           &
                                      dmat_0,            &
                                      ao,                &
@@ -1332,8 +1332,8 @@ contains
           if (do_geo_1) then
              call get_n(r_t1(1), 0, mat_dim, tmat_1, buffer, ao)
              call xc_geo_1_lda_c1(property_gradient, &
-                                  derv(1, d_r),      &
-                                  derv(1, d_rr),     &
+                                  derv(1, d1000000),      &
+                                  derv(1, d2000000),     &
                                   r_t1(1),           &
                                   mat_dim,           &
                                   dmat_0,            &
@@ -1346,8 +1346,8 @@ contains
              call get_n(r_t1(1), 0, mat_dim, tmat_1, buffer, ao)
              call get_n(r_t2(1), 0, mat_dim, tmat_2, buffer, ao)
              call xc_geo_2_lda_c1(property_gradient, &
-                                  derv(1, d_rr),     &
-                                  derv(1, d_rrr),    &
+                                  derv(1, d2000000),     &
+                                  derv(1, d3000000),    &
                                   r_t1(1),           &
                                   r_t2(1),           &
                                   mat_dim,           &
@@ -1988,7 +1988,7 @@ contains
                        ao_p)
          end if
 
-        u_qr = derv(1, d_rr)*r_b
+        u_qr = derv(1, d2000000)*r_b
         
         if (is_gga_qr) then
           z_b  = gr_0(1)*gr_b(1) &
@@ -1996,14 +1996,14 @@ contains
                + gr_0(3)*gr_b(3)
           z_b  = 2.0d0*z_b
 
-          u_qr = u_qr + derv(1, d_rz)*z_b
+          u_qr = u_qr + derv(1, d1010000)*z_b
 
           do j = 1, 3
             v_qr(j) = gr_0(j)*(                   & 
-                                r_b*derv(1, d_rz) &
-                              + z_b*derv(1, d_zz) &   
+                                r_b*derv(1, d1010000) &
+                              + z_b*derv(1, d0020000) &   
                               )                   &
-                    + gr_b(j)*derv(1, d_z)
+                    + gr_b(j)*derv(1, d0010000)
           end do
           v_qr = 2.0d0*v_qr
           u%gn(:, im) = u%gn(:, im) + v_qr
@@ -2052,20 +2052,20 @@ contains
 
         do k = k_start, 3
 
-          u_qi(k) = derv(1, d_ss)*s_b(k)
+          u_qi(k) = derv(1, d0200000)*s_b(k)
          
           if (is_gga_qi) then
             y_b(k)  = gr_0(1)*gs_b(1, k) &
                     + gr_0(2)*gs_b(2, k) &
                     + gr_0(3)*gs_b(3, k)
-            u_qi(k) = u_qi(k) + derv(1, d_sy)*y_b(k)
+            u_qi(k) = u_qi(k) + derv(1, d0101000)*y_b(k)
 
             do j = 1, 3
               v_qi(j, k) = gr_0(j)*(                   & 
-                                  s_b(k)*derv(1, d_sy) &
-                                + y_b(k)*derv(1, d_yy) &   
+                                  s_b(k)*derv(1, d0101000) &
+                                + y_b(k)*derv(1, d0002000) &   
                                 )                      &
-                      + 2.0d0*gs_b(j, k)*derv(1, d_x)
+                      + 2.0d0*gs_b(j, k)*derv(1, d0000100)
             end do
           end if
         end do
@@ -2127,24 +2127,24 @@ contains
      real(8) ::          gs_b (3,3)
      real(8) ::          gs_c (3,3)
 !
-     real(8) ::          Y_b  (  3)
-     real(8) ::          Y_c  (  3)
-     real(8) ::          Y_bc (  3)
+     real(8) ::          y_b  (  3)
+     real(8) ::          y_c  (  3)
+     real(8) ::          y_bc (  3)
 !
-     real(8) ::          X_bc (  3)
+     real(8) ::          x_bc (  3)
 !
-     real(8) ::          v_bc_h_Y_0(3)
-     real(8) ::          v_bc_h_Y_b(3)
-     real(8) ::          v_bc_h_Y_c(3)
-     real(8) ::          v_bc_h_X_b(3)
-     real(8) ::          v_bc_h_X_c(3)
+     real(8) ::          v_bc_h_y_0(3)
+     real(8) ::          v_bc_h_y_b(3)
+     real(8) ::          v_bc_h_y_c(3)
+     real(8) ::          v_bc_h_x_b(3)
+     real(8) ::          v_bc_h_x_c(3)
 
 
-      real(8) ::  v_bc_h_Z_0
+      real(8) ::  v_bc_h_z_0
       real(8) ::  s_bc_h
-      real(8) ::  v_bc_h_Z_b
-      real(8) ::  v_bc_h_Z_c
-      real(8) ::  Z_b, z_c, z_bc
+      real(8) ::  v_bc_h_z_b
+      real(8) ::  v_bc_h_z_c
+      real(8) ::  z_b, z_c, z_bc
 
 
 
@@ -2154,20 +2154,20 @@ contains
 !
 !               here we construct (see thesis for notation):
 !
-!               K_{pq,0}^(BC) = r_0^(BC) \Omega_{pq,0} + q_{0j}^(BC) \nabla_j \Omega_{pq,0}
-!               K_{pq,z}^(BC) = r_z^(BC) \Omega_{pq,z} + q_{zj}^(BC) \nabla_j \Omega_{pq,z}
-!               K_{pq,y}^(BC) = r_y^(BC) \Omega_{pq,y} + q_{yj}^(BC) \nabla_j \Omega_{pq,y}
-!               K_{pq,x}^(BC) = r_x^(BC) \Omega_{pq,x} + q_{xj}^(BC) \nabla_j \Omega_{pq,x}
+!               k_{pq,0}^(bc) = r_0^(bc) \omega_{pq,0} + q_{0j}^(bc) \nabla_j \omega_{pq,0}
+!               k_{pq,z}^(bc) = r_z^(bc) \omega_{pq,z} + q_{zj}^(bc) \nabla_j \omega_{pq,z}
+!               k_{pq,y}^(bc) = r_y^(bc) \omega_{pq,y} + q_{yj}^(bc) \nabla_j \omega_{pq,y}
+!               k_{pq,x}^(bc) = r_x^(bc) \omega_{pq,x} + q_{xj}^(bc) \nabla_j \omega_{pq,x}
 !
 !               all the rest is done elsewhere
 !
-!               scalar h+ part: r_0^[BC]
+!               scalar h+ part: r_0^[bc]
 !               s_bc_h
-!               vector h+ part: q_{0j}^[BC] with j = x,y,z
+!               vector h+ part: q_{0j}^[bc] with j = x,y,z
      real(8) ::          v_bc_h (  3)
-!               scalar h- part: r_k^[BC]    with k = x,y,z
+!               scalar h- part: r_k^[bc]    with k = x,y,z
      real(8) ::          s_bc_ah(  3)
-!               vector h- part: q_{kj}^[BC] with k = x,y,z and j = x,y,z
+!               vector h- part: q_{kj}^[bc] with k = x,y,z and j = x,y,z
      real(8) ::          v_bc_ah(3,3)
       real(8) :: f, r_c, r_b
       integer :: i
@@ -2244,7 +2244,7 @@ contains
       endif
 
       if (add_grad) then
-!       Z = \nabla R \cdot \nabla R
+!       z = \nabla r \cdot \nabla r
         z_b  = gr_0(1)*gr_b(1) &
              + gr_0(2)*gr_b(2) &
              + gr_0(3)*gr_b(3)
@@ -2254,13 +2254,13 @@ contains
         z_bc = gr_b(1)*gr_c(1) &
              + gr_b(2)*gr_c(2) &
              + gr_b(3)*gr_c(3)
-        Z_b  = 2.0d0*Z_b 
-        Z_c  = 2.0d0*Z_c 
-        Z_bc = 2.0d0*Z_bc
+        z_b  = 2.0d0*z_b 
+        z_c  = 2.0d0*z_c 
+        z_bc = 2.0d0*z_bc
       end if
 
       if(add_grad .and. .not. no_sdft) then
-!       Y = \nabla R \cdot \nabla S
+!       y = \nabla r \cdot \nabla s
         do k = k_start,3
         y_b(k)  = gr_0(1)*gs_b(1, k) &
                 + gr_0(2)*gs_b(2, k) &
@@ -2276,12 +2276,12 @@ contains
                 + gr_c(3)*gs_b(3, k)
         enddo
 
-!       X = \nabla S \cdot \nabla S
+!       x = \nabla s \cdot \nabla s
         do k = k_start,3
-          X_bc(k) = gs_b(1, k)*gs_c(1, k) &
+          x_bc(k) = gs_b(1, k)*gs_c(1, k) &
                   + gs_b(2, k)*gs_c(2, k) &
                   + gs_b(3, k)*gs_c(3, k)
-          X_bc(k) = 2.0d0*X_bc(k)
+          x_bc(k) = 2.0d0*x_bc(k)
         enddo
       endif
 
@@ -2290,22 +2290,22 @@ contains
 
       s_bc_h = 0.0d0
 
-      s_bc_h = s_bc_h + derv(1, d_RRR)*(r_b*r_c)
+      s_bc_h = s_bc_h + derv(1, d3000000)*(r_b*r_c)
 
       if(add_grad) then
-        s_bc_h = s_bc_h + derv(1, d_RRZ)*(r_b*Z_c + Z_b*r_c) &
-     &                  + derv(1, d_RZZ)*(Z_b*Z_c) &
-     &                  + derv(1, d_RZ)*Z_bc
+        s_bc_h = s_bc_h + derv(1, d2010000)*(r_b*z_c + z_b*r_c) &
+     &                  + derv(1, d1020000)*(z_b*z_c) &
+     &                  + derv(1, d1010000)*z_bc
       endif
 
       if(.not. no_sdft) then
         do k = k_start,3
-          s_bc_h = s_bc_h + derv(1, d_RSS)*(s_b(k)*s_c(k))
+          s_bc_h = s_bc_h + derv(1, d1200000)*(s_b(k)*s_c(k))
 
           if(add_grad) then
-       s_bc_h = s_bc_h + derv(1, d_RSY)*(s_b(k)*Y_c(k) + Y_b(k)*s_c(k)) &
-     &                 + derv(1, d_RYY)*(Y_b(k)*Y_c(k)) &
-     &                 + derv(1, d_RX)*X_bc(k)
+       s_bc_h = s_bc_h + derv(1, d1101000)*(s_b(k)*y_c(k) + y_b(k)*s_c(k)) &
+     &                 + derv(1, d1002000)*(y_b(k)*y_c(k)) &
+     &                 + derv(1, d1000100)*x_bc(k)
           endif
         enddo
       endif
@@ -2318,14 +2318,14 @@ contains
       if(.not. no_sdft) then
         do k = k_start,3
        s_bc_ah(k) = s_bc_ah(k) &
-     &            + derv(1, d_RSS)*(r_b*s_c(k) + s_b(k)*r_c)
+     &            + derv(1, d1200000)*(r_b*s_c(k) + s_b(k)*r_c)
 
           if(add_grad) then
        s_bc_ah(k) = s_bc_ah(k)  &
-     &            + derv(1, d_RSY)*(r_b*Y_c(k) + Y_b(k)*r_c) &
-     &            + derv(1, d_SSZ)*(Z_b*s_c(k) + s_b(k)*Z_c) &
-     &            + derv(1, d_SZY)*(Z_b*Y_c(k) + Y_b(k)*Z_c) &
-     &            + derv(1, d_SY)*Y_bc(k)
+     &            + derv(1, d1101000)*(r_b*y_c(k) + y_b(k)*r_c) &
+     &            + derv(1, d0210000)*(z_b*s_c(k) + s_b(k)*z_c) &
+     &            + derv(1, d0111000)*(z_b*y_c(k) + y_b(k)*z_c) &
+     &            + derv(1, d0101000)*y_bc(k)
           endif
         enddo
       endif
@@ -2338,78 +2338,78 @@ contains
 
       if(add_grad) then
 
-        v_bc_h_Z_0 = 0.0d0
-        v_bc_h_Z_b = 0.0d0
-        v_bc_h_Z_c = 0.0d0
+        v_bc_h_z_0 = 0.0d0
+        v_bc_h_z_b = 0.0d0
+        v_bc_h_z_c = 0.0d0
 
-        v_bc_h_Z_0 = v_bc_h_Z_0 &
-     &             + derv(1, d_ZZZ)*(Z_b*Z_c) &
-     &             + derv(1, d_RZZ)*(r_b*Z_c + Z_b*r_c) &
-     &             + derv(1, d_RRZ)*(r_b*r_c)
+        v_bc_h_z_0 = v_bc_h_z_0 &
+     &             + derv(1, d0030000)*(z_b*z_c) &
+     &             + derv(1, d1020000)*(r_b*z_c + z_b*r_c) &
+     &             + derv(1, d2010000)*(r_b*r_c)
 
-        v_bc_h_Z_0 = v_bc_h_Z_0 &
-     &             + derv(1, d_ZZ)*Z_bc
-        v_bc_h_Z_b = v_bc_h_Z_b &
-     &             + derv(1, d_RZ)*r_c &
-     &             + derv(1, d_ZZ)*Z_c
-        v_bc_h_Z_c = v_bc_h_Z_c &
-     &             + derv(1, d_RZ)*r_b &
-     &             + derv(1, d_ZZ)*Z_b
+        v_bc_h_z_0 = v_bc_h_z_0 &
+     &             + derv(1, d0020000)*z_bc
+        v_bc_h_z_b = v_bc_h_z_b &
+     &             + derv(1, d1010000)*r_c &
+     &             + derv(1, d0020000)*z_c
+        v_bc_h_z_c = v_bc_h_z_c &
+     &             + derv(1, d1010000)*r_b &
+     &             + derv(1, d0020000)*z_b
 
         if(.not. no_sdft) then
 
-          v_bc_h_Y_0 = 0.0d0
-          v_bc_h_Y_b = 0.0d0
-          v_bc_h_Y_c = 0.0d0
+          v_bc_h_y_0 = 0.0d0
+          v_bc_h_y_b = 0.0d0
+          v_bc_h_y_c = 0.0d0
 
-          v_bc_h_X_b = 0.0d0
-          v_bc_h_X_c = 0.0d0
+          v_bc_h_x_b = 0.0d0
+          v_bc_h_x_c = 0.0d0
 
           do k = k_start,3
-            v_bc_h_Z_0  = v_bc_h_Z_0 &
-     &                  + derv(1, d_ZYY)*(Y_b(k)*Y_c(k)) &
-     &                  + derv(1, d_SZY)*(s_b(k)*Y_c(k) + Y_b(k)*s_c(k)) &
-     &                  + derv(1, d_SSZ)*(s_b(k)*s_c(k))
+            v_bc_h_z_0  = v_bc_h_z_0 &
+     &                  + derv(1, d0012000)*(y_b(k)*y_c(k)) &
+     &                  + derv(1, d0111000)*(s_b(k)*y_c(k) + y_b(k)*s_c(k)) &
+     &                  + derv(1, d0210000)*(s_b(k)*s_c(k))
 
-            v_bc_h_Y_0(k) = v_bc_h_Y_0(k) &
-     &                    + derv(1, d_YY)*Y_bc(k)
-            v_bc_h_Y_b(k) = v_bc_h_Y_b(k) &
-     &                    + derv(1, d_SY)*s_c(k) &
-     &                    + derv(1, d_YY)*Y_c(k)
-            v_bc_h_Y_c(k) = v_bc_h_Y_c(k) &
-     &                    + derv(1, d_SY)*s_b(k) &
-     &                    + derv(1, d_YY)*Y_b(k)
+            v_bc_h_y_0(k) = v_bc_h_y_0(k) &
+     &                    + derv(1, d0002000)*y_bc(k)
+            v_bc_h_y_b(k) = v_bc_h_y_b(k) &
+     &                    + derv(1, d0101000)*s_c(k) &
+     &                    + derv(1, d0002000)*y_c(k)
+            v_bc_h_y_c(k) = v_bc_h_y_c(k) &
+     &                    + derv(1, d0101000)*s_b(k) &
+     &                    + derv(1, d0002000)*y_b(k)
 
-            v_bc_h_X_b(k) = v_bc_h_X_b(k) &
-     &                    + derv(1, d_RX)*r_c &
-     &                    + derv(1, d_ZX)*Z_c
-            v_bc_h_X_c(k) = v_bc_h_X_c(k) &
-     &                    + derv(1, d_RX)*r_b &
-     &                    + derv(1, d_ZX)*Z_b
+            v_bc_h_x_b(k) = v_bc_h_x_b(k) &
+     &                    + derv(1, d1000100)*r_c &
+     &                    + derv(1, d0010100)*z_c
+            v_bc_h_x_c(k) = v_bc_h_x_c(k) &
+     &                    + derv(1, d1000100)*r_b &
+     &                    + derv(1, d0010100)*z_b
 
-            v_bc_h_Y_0(k) = v_bc_h_Y_0(k) &
-     &                    + derv(1, d_RSY)*(r_b*s_c(k) + s_b(k)*r_c) &
-     &                    + derv(1, d_RYY)*(r_b*Y_c(k) + Y_b(k)*r_c) &
-     &                    + derv(1, d_SZY)*(Z_b*s_c(k) + s_b(k)*Z_c) &
-     &                    + derv(1, d_ZYY)*(Z_b*Y_c(k) + Y_b(k)*Z_c)
+            v_bc_h_y_0(k) = v_bc_h_y_0(k) &
+     &                    + derv(1, d1101000)*(r_b*s_c(k) + s_b(k)*r_c) &
+     &                    + derv(1, d1002000)*(r_b*y_c(k) + y_b(k)*r_c) &
+     &                    + derv(1, d0111000)*(z_b*s_c(k) + s_b(k)*z_c) &
+     &                    + derv(1, d0012000)*(z_b*y_c(k) + y_b(k)*z_c)
           enddo
         endif
 
         do j = 1,3
-          v_bc_h(j) = v_bc_h(j) + v_bc_h_Z_0*gr_0(j)*2.0d0 &
-     &                          + v_bc_h_Z_b*gr_b(j)*2.0d0 &
-     &                          + v_bc_h_Z_c*gr_c(j)*2.0d0
+          v_bc_h(j) = v_bc_h(j) + v_bc_h_z_0*gr_0(j)*2.0d0 &
+     &                          + v_bc_h_z_b*gr_b(j)*2.0d0 &
+     &                          + v_bc_h_z_c*gr_c(j)*2.0d0
           if(.not. no_sdft) then
             do k = k_start,3
-              v_bc_ah(j,k) = v_bc_ah(j,k) + v_bc_h_Y_0(k)*gr_0(j) &
-     &                                    + v_bc_h_Y_b(k)*gr_b(j) &
-     &                                    + v_bc_h_Y_c(k)*gr_c(j)
+              v_bc_ah(j,k) = v_bc_ah(j,k) + v_bc_h_y_0(k)*gr_0(j) &
+     &                                    + v_bc_h_y_b(k)*gr_b(j) &
+     &                                    + v_bc_h_y_c(k)*gr_c(j)
 
-              v_bc_h(j) = v_bc_h(j) + v_bc_h_Y_b(k)*gs_b(j,k) &
-     &                              + v_bc_h_Y_c(k)*gs_c(j,k)
+              v_bc_h(j) = v_bc_h(j) + v_bc_h_y_b(k)*gs_b(j,k) &
+     &                              + v_bc_h_y_c(k)*gs_c(j,k)
 
-              v_bc_ah(j,k) = v_bc_ah(j,k) + v_bc_h_X_b(k)*gs_b(j,k)*2.0d0 &
-     &                                    + v_bc_h_X_c(k)*gs_c(j,k)*2.0d0
+              v_bc_ah(j,k) = v_bc_ah(j,k) + v_bc_h_x_b(k)*gs_b(j,k)*2.0d0 &
+     &                                    + v_bc_h_x_c(k)*gs_c(j,k)*2.0d0
             enddo
           endif
         enddo

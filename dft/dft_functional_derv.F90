@@ -37,28 +37,28 @@ module dft_functional_derv
   public xcfun_is_gga
 #endif
 
-  integer, parameter, public :: d_0   =  0
-  integer, parameter, public :: d_r   =  1
-  integer, parameter, public :: d_z   =  2
-  integer, parameter, public :: d_x   =  3
-  integer, parameter, public :: d_rr  =  4
-  integer, parameter, public :: d_ss  =  5
-  integer, parameter, public :: d_zz  =  6
-  integer, parameter, public :: d_yy  =  7
-  integer, parameter, public :: d_rz  =  8
-  integer, parameter, public :: d_sy  =  9
-  integer, parameter, public :: d_rx  = 10
-  integer, parameter, public :: d_zx  = 11
-  integer, parameter, public :: d_rrr = 12
-  integer, parameter, public :: d_zzz = 13
-  integer, parameter, public :: d_rss = 14
-  integer, parameter, public :: d_rzz = 15
-  integer, parameter, public :: d_ryy = 16
-  integer, parameter, public :: d_rrz = 17
-  integer, parameter, public :: d_ssz = 18
-  integer, parameter, public :: d_rsy = 19
-  integer, parameter, public :: d_szy = 20
-  integer, parameter, public :: d_zyy = 21
+  integer, parameter, public :: d0000000   =  0
+  integer, parameter, public :: d1000000   =  1
+  integer, parameter, public :: d0010000   =  2
+  integer, parameter, public :: d0000100   =  3
+  integer, parameter, public :: d2000000  =  4
+  integer, parameter, public :: d0200000  =  5
+  integer, parameter, public :: d0020000  =  6
+  integer, parameter, public :: d0002000  =  7
+  integer, parameter, public :: d1010000  =  8
+  integer, parameter, public :: d0101000  =  9
+  integer, parameter, public :: d1000100  = 10
+  integer, parameter, public :: d0010100  = 11
+  integer, parameter, public :: d3000000 = 12
+  integer, parameter, public :: d0030000 = 13
+  integer, parameter, public :: d1200000 = 14
+  integer, parameter, public :: d1020000 = 15
+  integer, parameter, public :: d1002000 = 16
+  integer, parameter, public :: d2010000 = 17
+  integer, parameter, public :: d0210000 = 18
+  integer, parameter, public :: d1101000 = 19
+  integer, parameter, public :: d0111000 = 20
+  integer, parameter, public :: d0012000 = 21
 
   integer, parameter, public :: nr_nonzero_derv(3) = (/2, 11, 21/)
 
@@ -190,52 +190,52 @@ contains
 
       do k = 1, block_length
 
-        derv(k, d_0) = xcfun_out(1, k)
+        derv(k, d0000000) = xcfun_out(1, k)
         if (order < 1) exit
 
         if (xcfun_is_gga()) then
-           derv(k, d_r) = xcfun_out(XC_D10000, k)
-           derv(k, d_z) = xcfun_out(XC_D00100, k)
+           derv(k, d1000000) = xcfun_out(XC_D10000, k)
+           derv(k, d0010000) = xcfun_out(XC_D00100, k)
         else
-           derv(k, d_r) = xcfun_out(XC_D10, k)
+           derv(k, d1000000) = xcfun_out(XC_D10, k)
         end if
         if (order < 2) exit
 
         if (xcfun_is_gga()) then
-           derv(k, d_rr) = xcfun_out(XC_D20000, k)
-           derv(k, d_ss) = xcfun_out(XC_D02000, k)
-           derv(k, d_rz) = xcfun_out(XC_D10100, k)
-           derv(k, d_zz) = xcfun_out(XC_D00200, k)
-           derv(k, d_sy) = xcfun_out(XC_D01010, k)
-           derv(k, d_yy) = xcfun_out(XC_D00020, k)
-           derv(k, d_z ) = xcfun_out(XC_D00100, k)
-           derv(k, d_x ) = xcfun_out(XC_D00001, k)
+           derv(k, d2000000) = xcfun_out(XC_D20000, k)
+           derv(k, d0200000) = xcfun_out(XC_D02000, k)
+           derv(k, d1010000) = xcfun_out(XC_D10100, k)
+           derv(k, d0020000) = xcfun_out(XC_D00200, k)
+           derv(k, d0101000) = xcfun_out(XC_D01010, k)
+           derv(k, d0002000) = xcfun_out(XC_D00020, k)
+           derv(k, d0010000 ) = xcfun_out(XC_D00100, k)
+           derv(k, d0000100 ) = xcfun_out(XC_D00001, k)
         else
-           derv(k, d_rr) = xcfun_out(XC_D20, k)
-           derv(k, d_ss) = xcfun_out(XC_D02, k)
+           derv(k, d2000000) = xcfun_out(XC_D20, k)
+           derv(k, d0200000) = xcfun_out(XC_D02, k)
         end if
         if (order < 3) exit
 
         if (xcfun_is_gga()) then
-           derv(k, d_rrr) = xcfun_out(XC_D30000, k)
-           derv(k, d_rss) = xcfun_out(XC_D12000, k)
-           derv(k, d_rrz) = xcfun_out(XC_D20100, k)
-           derv(k, d_rsy) = xcfun_out(XC_D11010, k)
-           derv(k, d_rx ) = xcfun_out(XC_D10001, k)
-           derv(k, d_ryy) = xcfun_out(XC_D10020, k)
-           derv(k, d_rz ) = xcfun_out(XC_D10100, k)
-           derv(k, d_rzz) = xcfun_out(XC_D10200, k)
-           derv(k, d_ssz) = xcfun_out(XC_D02100, k)
-           derv(k, d_sy ) = xcfun_out(XC_D01010, k)
-           derv(k, d_szy) = xcfun_out(XC_D01110, k)
-           derv(k, d_yy ) = xcfun_out(XC_D00020, k)
-           derv(k, d_zx ) = xcfun_out(XC_D00101, k)
-           derv(k, d_zyy) = xcfun_out(XC_D00120, k)
-           derv(k, d_zz ) = xcfun_out(XC_D00200, k)
-           derv(k, d_zzz) = xcfun_out(XC_D00300, k)
+           derv(k, d3000000) = xcfun_out(XC_D30000, k)
+           derv(k, d1200000) = xcfun_out(XC_D12000, k)
+           derv(k, d2010000) = xcfun_out(XC_D20100, k)
+           derv(k, d1101000) = xcfun_out(XC_D11010, k)
+           derv(k, d1000100 ) = xcfun_out(XC_D10001, k)
+           derv(k, d1002000) = xcfun_out(XC_D10020, k)
+           derv(k, d1010000 ) = xcfun_out(XC_D10100, k)
+           derv(k, d1020000) = xcfun_out(XC_D10200, k)
+           derv(k, d0210000) = xcfun_out(XC_D02100, k)
+           derv(k, d0101000 ) = xcfun_out(XC_D01010, k)
+           derv(k, d0111000) = xcfun_out(XC_D01110, k)
+           derv(k, d0002000 ) = xcfun_out(XC_D00020, k)
+           derv(k, d0010100 ) = xcfun_out(XC_D00101, k)
+           derv(k, d0012000) = xcfun_out(XC_D00120, k)
+           derv(k, d0020000 ) = xcfun_out(XC_D00200, k)
+           derv(k, d0030000) = xcfun_out(XC_D00300, k)
         else
-           derv(k, d_rrr) = xcfun_out(XC_D30, k)
-           derv(k, d_rss) = xcfun_out(XC_D12, k)
+           derv(k, d3000000) = xcfun_out(XC_D30, k)
+           derv(k, d1200000) = xcfun_out(XC_D12, k)
         end if
         if (order < 4) exit
 
@@ -250,12 +250,12 @@ contains
 
         case (0)
           do k = 1, block_length
-            derv(k, d_0) = dftenergy(r_0(k), dsqrt(z_0(k)))
+            derv(k, d0000000) = dftenergy(r_0(k), dsqrt(z_0(k)))
           end do
 
         case (1)
           do k = 1, block_length
-            derv(k, d_0) = dftenergy(r_0(k), dsqrt(z_0(k)))
+            derv(k, d0000000) = dftenergy(r_0(k), dsqrt(z_0(k)))
             call dftpot0(t(1, k), 1.0d0, r_0(k), dsqrt(z_0(k)))
           end do
 

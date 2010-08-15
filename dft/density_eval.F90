@@ -1399,7 +1399,7 @@ contains
          do i = 1, nr_above_threshold(iblock)
             ikoff = (i - 1)*block_length
             do k = 1, block_length
-               bmat(ikoff + k) = ao_sorted(iksoff(iblock) + ikoff + k)*derv(k, d_r)
+               bmat(ikoff + k) = ao_sorted(iksoff(iblock) + ikoff + k)*derv(k, d1000000)
             end do
          end do
           

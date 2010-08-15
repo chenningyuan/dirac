@@ -99,10 +99,10 @@ C
         VX_RESP(FR0) = 0.42D0*WEIGHT*RHO_RESP/RHO
         VX_BULK(FR0) = VX_SLATER(FR0) + VX_RESP(FR0)
       ELSE
-        VX_BULK(FR0) = derv(1, d_r)
+        VX_BULK(FR0) = derv(1, d1000000)
       END IF
 C
-      VX_BULK(FZ0) = derv(1, d_z)
+      VX_BULK(FZ0) = derv(1, d0010000)
 C
 C
 C     asymptotic potential
@@ -132,8 +132,8 @@ C     ==========
 C
 !     VX = 0.0d0
 C
-      derv(1, d_z) = (D1-FADE)* VX_BULK(FZ0)
-      derv(1, d_r) = (D1-FADE)*(VX_BULK(FR0)-WEIGHT*SHIFTBULK)
+      derv(1, d0010000) = (D1-FADE)* VX_BULK(FZ0)
+      derv(1, d1000000) = (D1-FADE)*(VX_BULK(FR0)-WEIGHT*SHIFTBULK)
      &        +     FADE * VX_OUTER(FR0)*(D1-HFXFAC)
 C
 C
