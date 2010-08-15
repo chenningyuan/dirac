@@ -1977,11 +1977,12 @@ contains
 !   ----------------------------------------------------------------------------
     logical                :: calculate_qr, calculate_qi
 
-    real(8)                :: u_qr,    u_qi(3)
-    real(8)                :: v_qr(3), v_qi(3, 3)
+    real(8)                ::          u_qi(3)
+    real(8)                ::          v_qi(3, 3)
 
     real(8)                ::  r_b,     s_b(3)
     real(8)                :: gr_b(3), gs_b(3, 3)
+    real(8)                ::  t_b
 
     real(8)                :: z_b
     real(8)                :: y_b(3)
@@ -2015,6 +2016,15 @@ contains
 !     hermitian contribution (qr = quaternion real)
       if (calculate_qr) then
 
+         if (is_tau_mgga) then
+            call get_tau(t_b,     &
+                         isym(im) - 1,             &
+                         mat_dim, &
+                         dmaterturbed(1 + im_off), &
+                         buffer,  &
+                         ao_p(ao_start(1, 0)))
+         end if
+
          if (is_gga_qr) then
             if (allow_nonhermitian) then
                call get_gn_nonhermitian(r_b,                      &
@@ -2044,7 +2054,7 @@ contains
                        ao_p)
          end if
 
-        u_qr = derv(1, d2000000)*r_b
+        u%n(im) = u%n(im) + derv(1, d2000000)*r_b
         
         if (is_gga_qr) then
           z_b  = gr_0(1)*gr_b(1) &
@@ -2052,19 +2062,20 @@ contains
                + gr_0(3)*gr_b(3)
           z_b  = 2.0d0*z_b
 
-          u_qr = u_qr + derv(1, d1010000)*z_b
+          u%n(im) = u%n(im) + derv(1, d1010000)*z_b
 
-          do j = 1, 3
-            v_qr(j) = gr_0(j)*(                   & 
-                                r_b*derv(1, d1010000) &
-                              + z_b*derv(1, d0020000) &   
-                              )                   &
-                    + gr_b(j)*derv(1, d0010000)
-          end do
-          v_qr = 2.0d0*v_qr
-          u%gn(:, im) = u%gn(:, im) + v_qr
+          u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gr_0(1:3)*r_b*derv(1, d1010000) &
+                                        + 2.0d0*gr_0(1:3)*z_b*derv(1, d0020000) &
+                                        + 2.0d0*gr_b(1:3)*derv(1, d0010000)
         end if
-        u%n(im)     = u%n(im) + u_qr
+
+        if (is_tau_mgga) then
+           u%t(im) = u%t(im) + derv(1, d0000020)*t_b
+           u%t(im) = u%t(im) + derv(1, d1000010)*r_b
+           u%t(im) = u%t(im) + derv(1, d0010010)*z_b
+           u%n(im) = u%n(im) + derv(1, d1000010)*t_b
+           u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gr_0(1:3)*t_b*derv(1, d0010010)
+        end if
 
       end if !end of qr contribution
 

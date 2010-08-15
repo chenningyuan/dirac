@@ -60,9 +60,13 @@ module dft_functional_derv
   integer, parameter, public :: d1101000 = 19
   integer, parameter, public :: d0111000 = 20
   integer, parameter, public :: d0012000 = 21
-  integer, parameter, public :: d0000010 = 22
 
-  integer, parameter, public :: nr_nonzero_derv = 22
+  integer, parameter, public :: d0000010 = 22
+  integer, parameter, public :: d0000020 = 23
+  integer, parameter, public :: d1000010 = 24
+  integer, parameter, public :: d0010010 = 25
+
+  integer, parameter, public :: nr_nonzero_derv = 25
 
   private
 
@@ -74,8 +78,6 @@ module dft_functional_derv
   real(8), allocatable :: xcfun_out(:, :)
   integer              :: xcfun_in_length  = 0
   integer              :: xcfun_out_length = 0
-
-! logical :: xcfun_id_is_set = .false.
 
 contains
 
@@ -229,8 +231,10 @@ contains
            derv(k, d0020000) = xcfun_out(XC_D0020000, k)
            derv(k, d0101000) = xcfun_out(XC_D0101000, k)
            derv(k, d0002000) = xcfun_out(XC_D0002000, k)
-           derv(k, d0010000) = xcfun_out(XC_D0010000, k)
            derv(k, d0000100) = xcfun_out(XC_D0000100, k)
+           derv(k, d0000020) = xcfun_out(XC_D0000020, k)
+           derv(k, d1000010) = xcfun_out(XC_D1000010, k)
+           derv(k, d0010010) = xcfun_out(XC_D0010010, k)
         else if (xcfun_is_gga()) then
            derv(k, d2000000) = xcfun_out(XC_D20000, k)
            derv(k, d0200000) = xcfun_out(XC_D02000, k)
@@ -238,7 +242,6 @@ contains
            derv(k, d0020000) = xcfun_out(XC_D00200, k)
            derv(k, d0101000) = xcfun_out(XC_D01010, k)
            derv(k, d0002000) = xcfun_out(XC_D00020, k)
-           derv(k, d0010000) = xcfun_out(XC_D00100, k)
            derv(k, d0000100) = xcfun_out(XC_D00001, k)
         else
            derv(k, d2000000) = xcfun_out(XC_D20, k)
@@ -255,15 +258,11 @@ contains
            derv(k, d1101000) = xcfun_out(XC_D11010, k)
            derv(k, d1000100) = xcfun_out(XC_D10001, k)
            derv(k, d1002000) = xcfun_out(XC_D10020, k)
-           derv(k, d1010000) = xcfun_out(XC_D10100, k)
            derv(k, d1020000) = xcfun_out(XC_D10200, k)
            derv(k, d0210000) = xcfun_out(XC_D02100, k)
-           derv(k, d0101000) = xcfun_out(XC_D01010, k)
            derv(k, d0111000) = xcfun_out(XC_D01110, k)
-           derv(k, d0002000) = xcfun_out(XC_D00020, k)
            derv(k, d0010100) = xcfun_out(XC_D00101, k)
            derv(k, d0012000) = xcfun_out(XC_D00120, k)
-           derv(k, d0020000) = xcfun_out(XC_D00200, k)
            derv(k, d0030000) = xcfun_out(XC_D00300, k)
         else
            derv(k, d3000000) = xcfun_out(XC_D30, k)
