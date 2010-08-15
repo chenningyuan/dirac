@@ -1,21 +1,13 @@
-#!/bin/sh
+#!/bin/bash
 
-export MOL=he
+for mol in *mol; do
+    for inp in *inp; do
+        export MENU=$inp
+        export MOL=$mol
+        ../run.sh
+    done
+done
 
-export MENU=b3lyp.inp
-../run.sh
-export MENU=b3lyp_alda.inp
-../run.sh
-export MENU=b3lyp_xalda.inp
-../run.sh
-
-export MOL=zn
-
-export MENU=pbe.inp
-../run.sh
-export MENU=pbe_alda+.inp
-../run.sh
-export MENU=pbe_alda-.inp
-../run.sh
+rm -f *tgz
 
 exit 0

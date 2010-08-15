@@ -528,7 +528,8 @@ contains
 !     set and sync functional
 #ifdef MOD_XCFUN
       if (dft_cfg_xcfun) then
-         call xcfun_set_functional(xc_fun, response_order_mo, response_order_ao, parallel_xc)
+         call xcfun_set_functional(xc_fun,      response_order_mo, parallel_xc)
+         call xcfun_set_functional(xc_fun_alda, response_order_mo, parallel_xc)
       else
 #endif
 #ifdef VAR_MPI
@@ -543,8 +544,8 @@ contains
 !     check whether gga code structure will be used
 #ifdef MOD_XCFUN
       if (dft_cfg_xcfun) then
-         use_gga_qr  = xcfun_is_gga()
-         use_gga_qi  = xcfun_is_gga()
+         use_gga_qr  = (xcfun_is_gga() .or. xcfun_is_tau_mgga())
+         use_gga_qi  = (xcfun_is_gga() .or. xcfun_is_tau_mgga())
          is_tau_mgga = xcfun_is_tau_mgga()
       else
 #endif
@@ -1097,7 +1098,9 @@ contains
                                        z_0,          &
                                        derv_length,  &
                                        derv,         &
-                                       tau)
+                                       alda_real=dft_cfg_alda_hs, &
+                                       alda_imag=dft_cfg_alda_ha, &
+                                       tau=tau)
 #ifdef MOD_XCFUN
 #ifdef MOD_EMB
            end if

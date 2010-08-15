@@ -4608,7 +4608,6 @@ C    (see MRCON1 of the MOLTRA module)
           read(lucmd, '(a80)') line
           call parse_functional(line, xc_fun)
           call set_xc_fun_alda(xc_fun_alda)
-          call set_xc_fun_xalda(xc_fun_xalda)
           dft_cfg_xcfun             = .true.
           dirac_cfg_dft_calculation = .true.
           dirac_cfg_scf_calculation = .true.

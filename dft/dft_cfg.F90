@@ -45,11 +45,13 @@ module dft_cfg
   type functional
 #ifdef MOD_XCFUN
      real(8) :: w(XC_NR_PARAMS)
-     logical :: xcfun_id_is_set
 #else
      real(8) :: w(1)
 #endif
      integer :: id
+     logical :: xcfun_id_is_set
+     real(8), allocatable :: input(:, :)
+     real(8), allocatable :: output(:, :)
   end type
 
   character(30), public :: dft_cfg_gridfile
@@ -113,7 +115,6 @@ module dft_cfg
 
   type(functional), public :: xc_fun
   type(functional), public :: xc_fun_alda
-  type(functional), public :: xc_fun_xalda
   type(functional), public :: kin_fun
   type(functional), public :: kin_fun_alda
 
