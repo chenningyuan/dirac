@@ -35,20 +35,21 @@ module dft_functional_derv
 #endif
   public xcfun_set_functional
   public xcfun_is_gga
+  public xcfun_is_tau_mgga
 #endif
 
-  integer, parameter, public :: d0000000   =  0
-  integer, parameter, public :: d1000000   =  1
-  integer, parameter, public :: d0010000   =  2
-  integer, parameter, public :: d0000100   =  3
-  integer, parameter, public :: d2000000  =  4
-  integer, parameter, public :: d0200000  =  5
-  integer, parameter, public :: d0020000  =  6
-  integer, parameter, public :: d0002000  =  7
-  integer, parameter, public :: d1010000  =  8
-  integer, parameter, public :: d0101000  =  9
-  integer, parameter, public :: d1000100  = 10
-  integer, parameter, public :: d0010100  = 11
+  integer, parameter, public :: d0000000 =  0
+  integer, parameter, public :: d1000000 =  1
+  integer, parameter, public :: d0010000 =  2
+  integer, parameter, public :: d0000100 =  3
+  integer, parameter, public :: d2000000 =  4
+  integer, parameter, public :: d0200000 =  5
+  integer, parameter, public :: d0020000 =  6
+  integer, parameter, public :: d0002000 =  7
+  integer, parameter, public :: d1010000 =  8
+  integer, parameter, public :: d0101000 =  9
+  integer, parameter, public :: d1000100 = 10
+  integer, parameter, public :: d0010100 = 11
   integer, parameter, public :: d3000000 = 12
   integer, parameter, public :: d0030000 = 13
   integer, parameter, public :: d1200000 = 14
@@ -59,8 +60,9 @@ module dft_functional_derv
   integer, parameter, public :: d1101000 = 19
   integer, parameter, public :: d0111000 = 20
   integer, parameter, public :: d0012000 = 21
+  integer, parameter, public :: d0000010 = 22
 
-  integer, parameter, public :: nr_nonzero_derv(3) = (/2, 11, 21/)
+  integer, parameter, public :: nr_nonzero_derv = 22
 
   private
 
@@ -79,18 +81,27 @@ contains
 
 #ifdef MOD_XCFUN
 
-  function xcfun_is_gga()
+   function xcfun_is_gga()
+      logical :: xcfun_is_gga
+      
+      xcfun_is_gga = .false.
+      if (xc_get_type(xc_fun%id) > 0) then
+         xcfun_is_gga = .true.
+      end if
+   end function
 
-!   ----------------------------------------------------------------------------
-    logical :: xcfun_is_gga
-!   ----------------------------------------------------------------------------
+   function xcfun_is_tau_mgga()
+      logical :: xcfun_is_tau_mgga
+      
+      xcfun_is_tau_mgga = .false.
+      if (xc_get_type(xc_fun%id) == 2) then
+         xcfun_is_tau_mgga = .true.
+      end if
+   end function
 
-    xcfun_is_gga = .false.
-    if (xc_get_type(xc_fun%id) > 0) then
-      xcfun_is_gga = .true.
-    end if
 
-  end function
+
+
 
    subroutine xcfun_set_functional(f,                 &
                                    response_order,    &
@@ -154,7 +165,8 @@ contains
                                  r_0,          &
                                  z_0,          &
                                  n,            &
-                                 derv)
+                                 derv,         &
+                                 tau)
 
 !   ----------------------------------------------------------------------------
     type(functional), intent(in)  :: f
@@ -165,6 +177,7 @@ contains
     real(8),          intent(in)  :: z_0(*)
     integer,          intent(in)  :: n
     real(8),          intent(out) :: derv(mxbllen, 0:n)
+    real(8), optional, intent(in) :: tau
 !   ----------------------------------------------------------------------------
     real(8)                       :: t(max_dim, mxbllen)
     integer                       :: k, l
@@ -185,8 +198,15 @@ contains
         if (xcfun_in_length > 2) then
           xcfun_in(3, 1) = z_0(k)
         end if
+!fixme: hack mgga - will not work with block_length > 1
+        if (xcfun_in_length > 5) then
+           xcfun_in(6, 1) = tau
+        end if
       end do
       call xc_eval(f%id, order, block_length, xcfun_in, xcfun_out)
+      if (xcfun_in_length > 5) then
+         derv(1, d0000010) = xcfun_out(7, 1)
+      end if
 
       do k = 1, block_length
 

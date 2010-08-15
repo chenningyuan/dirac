@@ -111,6 +111,7 @@ module xc_driver
    real(8), allocatable :: ao_sorted(:)
    real(8), allocatable :: bmat(:)
 
+   real(8) :: tau_integral
    real(8) :: nr_electrons
    real(8) :: xc_energy
    real(8) :: xc_mat_energy
@@ -119,6 +120,8 @@ module xc_driver
    logical :: use_gga_qr = .false. !quaternion real
    logical :: use_gga_qi = .false. !quaternion imaginary
    logical :: use_gga    = .false.
+
+   logical :: is_tau_mgga = .false.
 
    logical :: i_am_master
    logical :: i_am_coworker
@@ -269,6 +272,7 @@ contains
 
       nr_electrons = 0.0d0
       xc_energy    = 0.0d0
+      tau_integral = 0.0d0
 
       i_am_master   = .true.
       i_am_coworker = .false.
@@ -539,8 +543,9 @@ contains
 !     check whether gga code structure will be used
 #ifdef MOD_XCFUN
       if (dft_cfg_xcfun) then
-         use_gga_qr = xcfun_is_gga()
-         use_gga_qi = xcfun_is_gga()
+         use_gga_qr  = xcfun_is_gga()
+         use_gga_qi  = xcfun_is_gga()
+         is_tau_mgga = xcfun_is_tau_mgga()
       else
 #endif
          use_gga_qr = dftisgga()
@@ -789,6 +794,7 @@ contains
 
 !     --------------------------------------------------------------------------
       real(8) :: r_0(mxbllen)
+      real(8) :: tau
       real(8) :: z_0(mxbllen)
       real(8) :: r_0_t(mxbllen)
       real(8) :: z_0_t(mxbllen)
@@ -902,7 +908,7 @@ contains
       allocate(derv(derv_length, mxbllen))
     else
 #endif
-      derv_length = nr_nonzero_derv(max_fun_derv)
+      derv_length = nr_nonzero_derv
       allocate(derv(mxbllen, 0:derv_length))
 #if defined MOD_XCFUN && MOD_OPENRSP
     end if
@@ -998,7 +1004,17 @@ contains
          u%gn = 0.0d0
          u%gs = 0.0d0
 
-        w(1) = rw(ipoint)
+         w(1) = rw(ipoint)
+
+         if (is_tau_mgga) then
+            call get_tau(tau,     &
+                         0,       &
+                         mat_dim, &
+                         dmat_0,  &
+                         buffer,  &
+                         ao(ao_start(1, 0):ao_end(1, 0)))
+            tau_integral = tau_integral + w(1)*tau
+         end if
 
 #ifdef MOD_UNRELEASED
         if ( dirac_cfg_fde_response ) then
@@ -1080,7 +1096,8 @@ contains
                                        r_0,          &
                                        z_0,          &
                                        derv_length,  &
-                                       derv)
+                                       derv,         &
+                                       tau)
 #ifdef MOD_XCFUN
 #ifdef MOD_EMB
            end if
@@ -1097,18 +1114,6 @@ contains
 !       ==============================
 
         if (do_potential) then
-
-!         energy density
-          xc_energy = xc_energy + derv(1, d0000000)
-
-          u%n(1) = derv(1, d1000000)
-          if (use_gga) then
-!           this factor has nothing to do
-!           with symmetrization later
-!           it comes from the fact that derivative of z
-!           yields two identical terms (one left, one right)
-            u%gn(:, 1) = 2.0d0*derv(1, d0010000)*rhg
-          end if
 
 !         asymptotic correction
           if (dft_cfg_saop_is_active) then
@@ -1132,6 +1137,21 @@ contains
             call dftac(derv, w(1), r_0(1), rho13, &
      &                 rho_resp, rho_outer, z_0(1))
           end if
+
+!         energy density
+          xc_energy = xc_energy + derv(1, d0000000)
+
+          u%n(1) = derv(1, d1000000)
+          if (use_gga) then
+!           this factor has nothing to do
+!           with symmetrization later
+!           it comes from the fact that derivative of z
+!           yields two identical terms (one left, one right)
+            u%gn(:, 1) = 2.0d0*derv(1, d0010000)*rhg
+          end if
+         if (is_tau_mgga) then
+            u%t(1) = derv(1, d0000010)
+         end if
 
         end if !exchange-correlation potential
 
@@ -1378,6 +1398,8 @@ contains
              end if
 
              if (ugn_above_threshold) then
+!               F_pq +=   u%n    \chi_p* \chi_q 
+!                     + 2 u%gn_i \chi_p* \nabla_i \chi_q
                 call nabla_omega_real(fmat,                &              
                                       im,                  &
                                       fmat_pg_sym(im) - 1, &
@@ -1389,6 +1411,7 @@ contains
                                       ao(ao_start(1, 0)))
              else
                 if (un_above_threshold) then
+!                  F_pq += u%n \chi_p* \chi_q
                    call omega_real(fmat,                &              
                                    im,                  &
                                    fmat_pg_sym(im) - 1, &
@@ -1420,6 +1443,8 @@ contains
              end if
 
              if (ugs_above_threshold) then
+!               F_pq +=   u%s_j   \chi_p* \Sigma_j \chi_q 
+!                     + 2 u%gs_ij \chi_p* \Sigma_j \nabla_i \chi_q
                 call nabla_omega_imag(fmat,                &              
                                       im,                  &
                                       fmat_pg_sym(im) - 1, &
@@ -1431,6 +1456,7 @@ contains
                                       ao(ao_start(1, 0)))
              else
                 if (us_above_threshold) then
+!                  F_pq += u%s_j \chi_p* \Sigma_j \chi_q
                    call omega_imag(fmat,                &              
                                    im,                  &
                                    fmat_pg_sym(im) - 1, &
@@ -1439,6 +1465,36 @@ contains
                                    u%s(1, im),          &
                                    ao)
                 end if
+             end if
+       
+             ut_above_threshold = .false.
+             if (dabs(u%t(im)) > tiny(0.0d0)) then
+                ut_above_threshold = .true.
+             end if
+
+             if (ut_above_threshold) then
+!               F_pq += 0.5 u%t (\nabla_i \chi_p*) (\nabla_i \chi_q)
+                call omega_real(fmat,                &              
+                                im,                  &
+                                fmat_pg_sym(im) - 1, &
+                                mat_dim,             &
+                                nz,                  &
+                                0.5d0*u%t(im),       &
+                                ao(ao_start(1, 0)))
+                call omega_real(fmat,                &              
+                                im,                  &
+                                fmat_pg_sym(im) - 1, &
+                                mat_dim,             &
+                                nz,                  &
+                                0.5d0*u%t(im),       &
+                                ao(ao_start(1, 0) + mat_dim))
+                call omega_real(fmat,                &              
+                                im,                  &
+                                fmat_pg_sym(im) - 1, &
+                                mat_dim,             &
+                                nz,                  &
+                                0.5d0*u%t(im),       &
+                                ao(ao_start(1, 0) + mat_dim*2))
              end if
        
           end do
