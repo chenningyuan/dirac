@@ -32,6 +32,7 @@ module dft_input
 #ifdef MOD_XCFUN
   public parse_functional
   public set_xc_fun_alda
+  public set_xc_fun_xalda
   public set_kin_fun_alda
   public set_kin_fun_xalda
 #endif
@@ -271,6 +272,18 @@ contains
    end subroutine
 
    subroutine set_xc_fun_alda(f)
+
+!     --------------------------------------------------------------------------
+      type(functional) :: f
+!     --------------------------------------------------------------------------
+
+      f%w = 0.0d0
+      f%w(XC_SLATERX) = 1.0d0
+      f%w(XC_VWN5C  ) = 1.0d0
+
+   end subroutine
+
+   subroutine set_xc_fun_xalda(f)
 
 !     --------------------------------------------------------------------------
       type(functional) :: f

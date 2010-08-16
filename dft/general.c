@@ -264,11 +264,13 @@ dftpot1_(SecondDrv *ds,
     selected_func->second(&drvs, *weight, &dp);
 
   ds->fR   = drvs.df1000;
-  ds->fZ   = drvs.df0010*by4*bygrada +drvs.df00001*by4;
-
   ds->fRR  = drvs.df2000*by2 +drvs.df1100*by2;
-  ds->fRZ  = drvs.df1010*by8*bygrada +drvs.df1001*by8*bygrada +drvs.df10001*by4;
-  ds->fZZ  = drvs.df00101*by8*bygrada +drvs.df0020*by32*bygrada2 +drvs.df0011*by32*bygrada2 -drvs.df0010*by32*bygrada3 +drvs.df00002*by16;
+
+  if (!do_alda_hs) {
+     ds->fZ   = drvs.df0010*by4*bygrada +drvs.df00001*by4;
+     ds->fRZ  = drvs.df1010*by8*bygrada +drvs.df1001*by8*bygrada +drvs.df10001*by4;
+     ds->fZZ  = drvs.df00101*by8*bygrada +drvs.df0020*by32*bygrada2 +drvs.df0011*by32*bygrada2 -drvs.df0010*by32*bygrada3 +drvs.df00002*by16;
+  }
 }
 
 void
@@ -397,18 +399,18 @@ sdftpot1_(SecondDrv *ds,
   else
     selected_func->second(&drvs, *weight, &dp);
        
-  ds->fR   = drvs.df1000;
-  ds->fZ   = drvs.df0010*by4*bygrada +drvs.df00001*by4;
-
-  ds->fRR  = drvs.df2000*by2 +drvs.df1100*by2;
-  ds->fZZ  = drvs.df00101*by8*bygrada +drvs.df0020*by32*bygrada2 +drvs.df0011*by32*bygrada2 -drvs.df0010*by32*bygrada3 +drvs.df00002*by16;
-  ds->fRZ  = drvs.df1010*by8*bygrada +drvs.df1001*by8*bygrada +drvs.df10001*by4;
-
-  ds->fX   = drvs.df0010*by4*bygrada -drvs.df00001*by4;
-
+//ds->fR   = drvs.df1000;
+//ds->fRR  = drvs.df2000*by2 +drvs.df1100*by2;
   ds->fSS  = drvs.df2000*by2 -drvs.df1100*by2;
-  ds->fYY  = drvs.df0020*by8*bygrada2 -drvs.df0011*by8*bygrada2 -drvs.df0010*by8*bygrada3;
-  ds->fSY  = drvs.df1010*by4*bygrada -drvs.df1001*by4*bygrada;
+
+  if (!do_alda_ha) {
+//   ds->fZ   = drvs.df0010*by4*bygrada +drvs.df00001*by4;
+//   ds->fZZ  = drvs.df00101*by8*bygrada +drvs.df0020*by32*bygrada2 +drvs.df0011*by32*bygrada2 -drvs.df0010*by32*bygrada3 +drvs.df00002*by16;
+//   ds->fRZ  = drvs.df1010*by8*bygrada +drvs.df1001*by8*bygrada +drvs.df10001*by4;
+     ds->fX   = drvs.df0010*by4*bygrada -drvs.df00001*by4;
+     ds->fYY  = drvs.df0020*by8*bygrada2 -drvs.df0011*by8*bygrada2 -drvs.df0010*by8*bygrada3;
+     ds->fSY  = drvs.df1010*by4*bygrada -drvs.df1001*by4*bygrada;
+  }
 
 /*ds->fX   = drvs.df0010*by4*bygrada -drvs.df00001*by4;
 

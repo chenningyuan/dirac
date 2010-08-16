@@ -115,6 +115,7 @@ module dft_cfg
 
   type(functional), public :: xc_fun
   type(functional), public :: xc_fun_alda
+  type(functional), public :: xc_fun_xalda
   type(functional), public :: kin_fun
   type(functional), public :: kin_fun_alda
 

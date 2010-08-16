@@ -528,8 +528,9 @@ contains
 !     set and sync functional
 #ifdef MOD_XCFUN
       if (dft_cfg_xcfun) then
-         call xcfun_set_functional(xc_fun,      response_order_mo, parallel_xc)
-         call xcfun_set_functional(xc_fun_alda, response_order_mo, parallel_xc)
+         call xcfun_set_functional(xc_fun,       response_order_mo, parallel_xc)
+         call xcfun_set_functional(xc_fun_alda,  response_order_mo, parallel_xc)
+         call xcfun_set_functional(xc_fun_xalda, response_order_mo, parallel_xc)
       else
 #endif
 #ifdef VAR_MPI

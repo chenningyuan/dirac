@@ -81,7 +81,7 @@ contains
 
    function xcfun_is_lda()
       logical :: xcfun_is_lda
-      
+
       xcfun_is_lda = .false.
       if (xc_get_type(xc_fun%id) == 0) then
          xcfun_is_lda = .true.
@@ -90,7 +90,7 @@ contains
 
    function xcfun_is_gga()
       logical :: xcfun_is_gga
-      
+
       xcfun_is_gga = .false.
       if (xc_get_type(xc_fun%id) == 1) then
          xcfun_is_gga = .true.
@@ -99,7 +99,7 @@ contains
 
    function xcfun_is_tau_mgga()
       logical :: xcfun_is_tau_mgga
-      
+
       xcfun_is_tau_mgga = .false.
       if (xc_get_type(xc_fun%id) == 2) then
          xcfun_is_tau_mgga = .true.
@@ -130,7 +130,7 @@ contains
 #endif
          f%id = xc_new_functional()
          call xc_set_mode(f%id, XC_VARS_NS)
-       
+
          do i = 1, XC_NR_PARAMS
             if (dabs(f%w(i)) > tiny(0.0d0)) then
                call xc_set_param(f%id, i, f%w(i))
@@ -147,7 +147,7 @@ contains
       if (xc_input_length(f%id) > l) then
          l = xc_input_length(f%id)
          if (allocated(f%input)) then
-            deallocate(f%input)        
+            deallocate(f%input)
          end if
          allocate(f%input(l, 1))
       end if
@@ -160,11 +160,11 @@ contains
       if (xc_output_length(f%id, 1 + response_order) > l) then
          l = xc_output_length(f%id, 1 + response_order)
          if (allocated(f%output)) then
-            deallocate(f%output)        
+            deallocate(f%output)
          end if
          allocate(f%output(l, 1))
       end if
- 
+
    end subroutine
 #endif /* ifdef MOD_XCFUN */
 
@@ -193,8 +193,9 @@ contains
     logical, optional, intent(in) :: alda_imag
     real(8), optional, intent(in) :: tau
 !   ----------------------------------------------------------------------------
-    real(8)                       :: t(max_dim, mxbllen)
-    integer                       :: k, l
+    real(8)                       :: t1(max_dim, mxbllen)
+    real(8)                       :: t2(max_dim, mxbllen)
+    integer                       :: k, l, id
     real(8), external             :: dftenergy
     logical                       :: do_alda_real
     logical                       :: do_alda_imag
@@ -213,6 +214,8 @@ contains
     end if
 
     derv = 0.0d0
+    t1   = 0.0d0
+    t2   = 0.0d0
 
 #ifdef MOD_XCFUN
     if (dft_cfg_xcfun) then
@@ -246,7 +249,11 @@ contains
          do k = 1, block_length
             xc_fun_alda%input(1, k) = r_0(k)
          end do
-         call xc_eval(xc_fun_alda%id,    &
+         id = xc_fun_alda%id
+         if (dft_cfg_xalda) then
+            id = xc_fun_xalda%id
+         end if
+         call xc_eval(id,                &
                       order,             &
                       block_length,      &
                       xc_fun_alda%input, &
@@ -255,89 +262,110 @@ contains
 
       do k = 1, block_length
 
-        derv(k, d0000000) = f%output(1, k)
-        if (order < 1) exit
+         derv(k, d0000000) = f%output(1, k)
 
-        if (do_alda_real .or. do_alda_imag) then
-        else
-           if (xcfun_is_lda()) then
-              derv(k, d1000000) = f%output(XC_D10, k)
-           else if (xcfun_is_gga()) then
-              derv(k, d1000000) = f%output(XC_D10000, k)
-              derv(k, d0010000) = f%output(XC_D00100, k)
-           else if (xcfun_is_tau_mgga()) then
-              derv(k, d1000000) = f%output(XC_D1000000, k)
-              derv(k, d0010000) = f%output(XC_D0010000, k)
-              derv(k, d0000010) = f%output(XC_D0000010, k)
-           else
-              call quit('get_functional_derv: unknown fun type')
-           end if
-        end if
-        if (order < 2) exit
+         select case (order)
 
-        if (do_alda_real .or. do_alda_imag) then
-           derv(k, d2000000) = xc_fun_alda%output(XC_D20, k)
-           derv(k, d0200000) = xc_fun_alda%output(XC_D02, k)
-        else
-           if (xcfun_is_lda()) then
-              derv(k, d2000000) = f%output(XC_D20, k)
-              derv(k, d0200000) = f%output(XC_D02, k)
-           else if (xcfun_is_gga()) then
-              derv(k, d2000000) = f%output(XC_D20000, k)
-              derv(k, d1010000) = f%output(XC_D10100, k)
-              derv(k, d0020000) = f%output(XC_D00200, k)
-             
-              derv(k, d0200000) = f%output(XC_D02000, k)
-              derv(k, d0101000) = f%output(XC_D01010, k)
-              derv(k, d0002000) = f%output(XC_D00020, k)
-              derv(k, d0000100) = f%output(XC_D00001, k)
-           else if (xcfun_is_tau_mgga()) then
-              derv(k, d2000000) = f%output(XC_D2000000, k)
-              derv(k, d1010000) = f%output(XC_D1010000, k)
-              derv(k, d0020000) = f%output(XC_D0020000, k)
-             
-              derv(k, d0200000) = f%output(XC_D0200000, k)
-              derv(k, d0101000) = f%output(XC_D0101000, k)
-              derv(k, d0002000) = f%output(XC_D0002000, k)
-              derv(k, d0000100) = f%output(XC_D0000100, k)
-             
-              derv(k, d0000020) = f%output(XC_D0000020, k)
-              derv(k, d1000010) = f%output(XC_D1000010, k)
-              derv(k, d0010010) = f%output(XC_D0010010, k)
-           else
-              call quit('get_functional_derv: unknown fun type')
-           end if
-        end if
-        if (order < 3) exit
+            case (1)
+               if (xcfun_is_lda()) then
+                  derv(k, d1000000) = f%output(XC_D10, k)
+               else if (xcfun_is_gga()) then
+                  derv(k, d1000000) = f%output(XC_D10000, k)
+                  derv(k, d0010000) = f%output(XC_D00100, k)
+               else if (xcfun_is_tau_mgga()) then
+                  derv(k, d1000000) = f%output(XC_D1000000, k)
+                  derv(k, d0010000) = f%output(XC_D0010000, k)
+                  derv(k, d0000010) = f%output(XC_D0000010, k)
+               else
+                  call quit('get_functional_derv: unknown fun type')
+               end if
 
-        if (do_alda_real .or. do_alda_imag) then
-           call quit('get_functional_derv: xcfun alda qr not implemented')
-        else
-           if (xcfun_is_lda()) then
-              derv(k, d3000000) = f%output(XC_D30, k)
-              derv(k, d1200000) = f%output(XC_D12, k)
-           else if (xcfun_is_gga()) then
-              derv(k, d3000000) = f%output(XC_D30000, k)
-              derv(k, d1200000) = f%output(XC_D12000, k)
-              derv(k, d2010000) = f%output(XC_D20100, k)
-              derv(k, d1101000) = f%output(XC_D11010, k)
-              derv(k, d1000100) = f%output(XC_D10001, k)
-              derv(k, d1002000) = f%output(XC_D10020, k)
-              derv(k, d1020000) = f%output(XC_D10200, k)
-              derv(k, d0210000) = f%output(XC_D02100, k)
-              derv(k, d0111000) = f%output(XC_D01110, k)
-              derv(k, d0010100) = f%output(XC_D00101, k)
-              derv(k, d0012000) = f%output(XC_D00120, k)
-              derv(k, d0030000) = f%output(XC_D00300, k)
-           else if (xcfun_is_tau_mgga()) then
-              call quit('get_functional_derv: tau mgga qr not implemented')
-           else
-              call quit('get_functional_derv: unknown fun type')
-           end if
-        end if
-        if (order < 4) exit
+            case (2)
+!              order 2 - spin unpolarized
+               if (do_alda_real) then
+                  derv(k, d2000000) = xc_fun_alda%output(XC_D20, k)
+               else
+                  if (xcfun_is_lda()) then
+                     derv(k, d2000000) = f%output(XC_D20, k)
+                  else if (xcfun_is_gga()) then
+                     derv(k, d2000000) = f%output(XC_D20000, k)
+                     derv(k, d1010000) = f%output(XC_D10100, k)
+                     derv(k, d0020000) = f%output(XC_D00200, k)
+                     derv(k, d0010000) = f%output(XC_D00100, k)
+                  else if (xcfun_is_tau_mgga()) then
+                     derv(k, d2000000) = f%output(XC_D2000000, k)
+                     derv(k, d1010000) = f%output(XC_D1010000, k)
+                     derv(k, d0020000) = f%output(XC_D0020000, k)
+                     derv(k, d0010000) = f%output(XC_D0010000, k)
 
-        call quit('get_functional_derv: order too high')
+                     derv(k, d0010010) = f%output(XC_D0010010, k)
+                     derv(k, d1000010) = f%output(XC_D1000010, k)
+                     derv(k, d0000020) = f%output(XC_D0000020, k)
+                  else
+                     call quit('get_functional_derv: unknown fun type')
+                  end if
+               end if
+!              order 2 - spin polarized
+               if (do_alda_imag) then
+                  derv(k, d0200000) = xc_fun_alda%output(XC_D02, k)
+               else
+                  if (xcfun_is_lda()) then
+                     derv(k, d0200000) = f%output(XC_D02, k)
+                  else if (xcfun_is_gga()) then
+                     derv(k, d0200000) = f%output(XC_D02000, k)
+                     derv(k, d0101000) = f%output(XC_D01010, k)
+                     derv(k, d0002000) = f%output(XC_D00020, k)
+                     derv(k, d0000100) = f%output(XC_D00001, k)
+                  else if (xcfun_is_tau_mgga()) then
+                     derv(k, d0200000) = f%output(XC_D0200000, k)
+                     derv(k, d0101000) = f%output(XC_D0101000, k)
+                     derv(k, d0002000) = f%output(XC_D0002000, k)
+                     derv(k, d0000100) = f%output(XC_D0000100, k)
+                  else
+                     call quit('get_functional_derv: unknown fun type')
+                  end if
+               end if
+
+            case (3)
+               if (do_alda_real .or. do_alda_imag) then
+                  call quit('get_functional_derv: xcfun alda qr not implemented')
+               end if
+               if (xcfun_is_lda()) then
+                  derv(k, d2000000) = f%output(XC_D20, k)
+                  derv(k, d0200000) = f%output(XC_D02, k)
+                  derv(k, d1200000) = f%output(XC_D12, k)
+                  derv(k, d3000000) = f%output(XC_D30, k)
+               else if (xcfun_is_gga()) then
+                  derv(k, d0010000) = f%output(XC_D00100, k)
+                  derv(k, d0000100) = f%output(XC_D00001, k)
+                  derv(k, d2000000) = f%output(XC_D20000, k)
+                  derv(k, d1010000) = f%output(XC_D10100, k)
+                  derv(k, d1000100) = f%output(XC_D10001, k)
+                  derv(k, d0200000) = f%output(XC_D02000, k)
+                  derv(k, d0101000) = f%output(XC_D01010, k)
+                  derv(k, d0020000) = f%output(XC_D00200, k)
+                  derv(k, d0010100) = f%output(XC_D00101, k)
+                  derv(k, d0002000) = f%output(XC_D00020, k)
+                  derv(k, d3000000) = f%output(XC_D30000, k)
+                  derv(k, d2010000) = f%output(XC_D20100, k)
+                  derv(k, d1200000) = f%output(XC_D12000, k)
+                  derv(k, d1101000) = f%output(XC_D11010, k)
+                  derv(k, d1020000) = f%output(XC_D10200, k)
+                  derv(k, d1002000) = f%output(XC_D10020, k)
+                  derv(k, d0210000) = f%output(XC_D02100, k)
+                  derv(k, d0111000) = f%output(XC_D01110, k)
+                  derv(k, d0030000) = f%output(XC_D00300, k)
+                  derv(k, d0012000) = f%output(XC_D00120, k)
+               else if (xcfun_is_tau_mgga()) then
+                  call quit('get_functional_derv: tau mgga qr not implemented')
+               else
+                  call quit('get_functional_derv: unknown fun type')
+               end if
+
+            case default
+               call quit('get_functional_derv: order too high')
+
+         end select
 
       end do
 
@@ -354,17 +382,18 @@ contains
         case (1)
           do k = 1, block_length
             derv(k, d0000000) = dftenergy(r_0(k), dsqrt(z_0(k)))
-            call dftpot0(t(1, k), 1.0d0, r_0(k), dsqrt(z_0(k)))
+            call dftpot0(t1(1, k), 1.0d0, r_0(k), dsqrt(z_0(k)))
           end do
 
         case (2)
           do k = 1, block_length
-            call sdftpot1(t(1, k), 1.0d0, r_0(k), dsqrt(z_0(k)))
+            call  dftpot1(t1(1, k), 1.0d0, r_0(k), dsqrt(z_0(k)))
+            call sdftpot1(t2(1, k), 1.0d0, r_0(k), dsqrt(z_0(k)))
           end do
 
         case (3)
           do k = 1, block_length
-            call sdftpot2(t(1, k), 1.0d0, r_0(k), dsqrt(z_0(k)))
+            call sdftpot2(t1(1, k), 1.0d0, r_0(k), dsqrt(z_0(k)))
           end do
 
         case default
@@ -374,9 +403,16 @@ contains
 
       do l = 1, n
         do k = 1, block_length
-          derv(k, l) = derv(k, l) + t(l, k)
+          derv(k, l) = derv(k, l) + t1(l, k)
         end do
       end do
+      if (order == 2) then
+         do l = 1, n
+           do k = 1, block_length
+             derv(k, l) = derv(k, l) + t2(l, k)
+           end do
+         end do
+      end if
 
 #ifdef MOD_XCFUN
     end if
@@ -442,7 +478,7 @@ contains
     if (debug) then
     write (*,*) ' '
     write (*,*) 'DEBUG (functional derivative)'
-    write (*,*) 'DEBUG (functional derivative): after nokern first xc' 
+    write (*,*) 'DEBUG (functional derivative): after nokern first xc'
     call debug_general_fun(f,               &
                            order,           &
                            block_length,    &
@@ -454,15 +490,15 @@ contains
     write (*,*) 'DEBUG (functional derivative)'
     write (*,*) ' '
     endif
-                               
+
     else if ( dirac_cfg_fde_response.and.have_frozen_density ) then
 
-! aspg, 2010-03-29      
+! aspg, 2010-03-29
 ! in case we implement the use different xc for the total and active
 ! densities, we have to uncomment the line below, and suitably define
 ! tot_xc_fun in fde_mod (or some other place)
 !      call xc_fun_set_functional(order, order, tot_xc_fun)
-! but also replace fun below by tot_xc_fun     
+! but also replace fun below by tot_xc_fun
 
       if (.not.skip_xc_contribution) then
          call get_functional_derv(f,                &
@@ -480,11 +516,11 @@ contains
            derv(i,j) = derv(i,j) + dervtmp(i,j)
          enddo
       enddo
-    
+
     if (debug) then
     write (*,*) ' '
     write (*,*) 'DEBUG (functional derivative)'
-    write (*,*) 'DEBUG (functional derivative): after first xc' 
+    write (*,*) 'DEBUG (functional derivative): after first xc'
     call debug_general_fun(f,              &
                            order,          &
                            block_length,   &
@@ -496,12 +532,12 @@ contains
     write (*,*) 'DEBUG (functional derivative)'
     write (*,*) ' '
     endif
-    
+
       if ( .not.dirac_cfg_dft_calculation ) then
-! if we are not doing dft, we subtract what would be the xc contribution from 
+! if we are not doing dft, we subtract what would be the xc contribution from
 ! the active subsystem from the response.
 
-! aspg, 2010-03-29      
+! aspg, 2010-03-29
 ! in case we implement the use of different xc for the total and active
 ! densities, we have to uncomment the line below
 !      call xc_fun_set_functional(order, order, fun)
@@ -516,7 +552,7 @@ contains
                                     n,                 &
                                     dervtmp)
         endif
-                                 
+
         do i = 1, mxbllen
           do j = 0, n
            derv(i,j) = derv(i,j) - dervtmp(i,j)
@@ -526,7 +562,7 @@ contains
     if (debug) then
     write (*,*) ' '
     write (*,*) 'DEBUG (functional derivative)'
-    write (*,*) 'DEBUG (functional derivative): after second xc' 
+    write (*,*) 'DEBUG (functional derivative): after second xc'
     call debug_general_fun(f,            &
                            order,        &
                            block_length, &
@@ -542,10 +578,10 @@ contains
       endif
 
 ! now we construct the contribution from the kinetic energy to the response
-! of the embedding potential. 
+! of the embedding potential.
 ! first set functional to the of-kef, do the non-additive ke contribution
       call xcfun_set_functional(fde_kef, order, parallel_xc)
-      
+
       if (.not.skip_kin_contribution) then
          call get_functional_derv(fde_kef,            &
                                   order,              &
@@ -562,11 +598,11 @@ contains
            derv(i,j) = derv(i,j) + dervtmp(i,j)
          enddo
       enddo
-      
+
     if (debug) then
     write (*,*) ' '
     write (*,*) 'DEBUG (functional derivative)'
-    write (*,*) 'DEBUG (functional derivative): after first kinetic' 
+    write (*,*) 'DEBUG (functional derivative): after first kinetic'
     call debug_general_fun(fde_kef,         &
                            order,           &
                            block_length,    &
@@ -591,7 +627,7 @@ contains
                                   n,             &
                                   dervtmp)
       endif
-                               
+
       do i = 1, mxbllen
         do j = 0, n
            derv(i,j) = derv(i,j) - dervtmp(i,j)
@@ -601,7 +637,7 @@ contains
     if (debug) then
     write (*,*) ' '
     write (*,*) 'DEBUG (functional derivative)'
-    write (*,*) 'DEBUG (functional derivative): after second kinetic' 
+    write (*,*) 'DEBUG (functional derivative): after second kinetic'
     call debug_general_fun(fde_kef,         &
                            order,           &
                            block_length,    &
@@ -613,8 +649,8 @@ contains
     write (*,*) 'DEBUG (functional derivative)'
     write (*,*) ' '
     endif
-          
-! and restore the default dft functional, if we are to use it 
+
+! and restore the default dft functional, if we are to use it
 ! down the line...
       call xcfun_set_functional(f, order, parallel_xc)
 
@@ -623,7 +659,7 @@ contains
     if (debug) then
     write (*,*) ' '
     write (*,*) 'DEBUG (functional derivative)'
-    write (*,*) 'DEBUG (functional derivative): at the end' 
+    write (*,*) 'DEBUG (functional derivative): at the end'
     call debug_general_fun(f,               &
                            order,           &
                            block_length,    &
@@ -655,7 +691,7 @@ contains
    use fde_mod
 
 !   ----------------------------------------------------------------------------
-    type(functional), intent(inout)  :: f    
+    type(functional), intent(inout)  :: f
     integer, intent(in)  :: order
     integer, intent(in)  :: block_length
     real(8), intent(in)  :: w(*)
