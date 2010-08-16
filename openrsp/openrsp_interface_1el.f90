@@ -9,6 +9,7 @@ module openrsp_interface_1el
 
    public order_1el_integrals
    public read_1el_integrals
+   public print_prp_common_blocks
 
    private
 
@@ -97,6 +98,11 @@ contains
       call add_class('S1MAG  ', '+00'//ss)
 !     dS/dB2
       call add_class('S2MAG  ', '+00'//ss)
+
+!     rdsusll
+      call add_class('RDSUSLL', '00+0')
+!     dsusnol
+      call add_class('DSUSNOL', '+00'//ss)
 
 
 !     add to dcbxpr and dcbprl
@@ -316,7 +322,7 @@ contains
       do i = 1, size(i_iter)
          s = ' RM1H2  '
          s(1:1) = i_iter(i)
-         call add_operator('dnuc/dB2' // i_iter(i) // '       ', &
+         call add_operator('dnuc/dB' // i_iter(i) // '        ', &
                            blocks,                               &
                            1,                                    &
                           -1,                                    &
@@ -420,6 +426,34 @@ contains
                            1,                                     &
                            1,                                     &
                            (/f/),                                 &
+                           (/s/))
+      end do
+
+!     rdsusll
+      f = -2.0d0*cval
+      blocks = '00+0'
+      call add_operator('XXrdsusll       ', blocks, 5, 0, 1, (/f, f/), (/'XXRDSULZ', 'XXRDSULY'/))
+      call add_operator('XYrdsusll       ', blocks, 6, 0, 1, (/f, f/), (/'XYRDSULX', 'XYRDSULZ'/))
+      call add_operator('XZrdsusll       ', blocks, 7, 0, 1, (/f, f/), (/'XZRDSULY', 'XZRDSULX'/))
+      call add_operator('YXrdsusll       ', blocks, 5, 0, 1, (/f, f/), (/'YXRDSULZ', 'YXRDSULY'/))
+      call add_operator('YYrdsusll       ', blocks, 6, 0, 1, (/f, f/), (/'YYRDSULX', 'YYRDSULZ'/))
+      call add_operator('YZrdsusll       ', blocks, 7, 0, 1, (/f, f/), (/'YZRDSULY', 'YZRDSULX'/))
+      call add_operator('ZXrdsusll       ', blocks, 5, 0, 1, (/f, f/), (/'ZXRDSULZ', 'ZXRDSULY'/))
+      call add_operator('ZYrdsusll       ', blocks, 6, 0, 1, (/f, f/), (/'ZYRDSULX', 'ZYRDSULZ'/))
+      call add_operator('ZZrdsusll       ', blocks, 7, 0, 1, (/f, f/), (/'ZZRDSULY', 'ZZRDSULX'/))
+
+!     dsusnol
+      f = 1.0d0
+      blocks = '+00'//ss
+      do ij = 1, size(ij_iter)
+         s      = '  DSUSNL'
+         s(1:2) = ij_iter(ij)
+         call add_operator(ij_iter(ij) // 'DSUSNL        ', &
+                           blocks,                          &
+                           1,                               &
+                           0,                               &
+                           1,                               &
+                           (/f/),                           &
                            (/s/))
       end do
 

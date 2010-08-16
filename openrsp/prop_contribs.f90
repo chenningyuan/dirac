@@ -53,6 +53,7 @@ module prop_contribs
    public pert_shape
    public pert_antisym
    public prop_auxlab
+   public load_oneint
 
    private
 

@@ -861,9 +861,12 @@ contains
 #ifdef PRG_DIRAC
       do i = 1, neq
          real_freq = dreal(freq)
+
          R = (FDSp(i) - dag(FDSp(i)))
          R = 0.5d0*R
-         if (dreal(dot(R,R)) > openrsp_cfg_threshold_rhs) then
+         rhs_norm = norm(R)
+         print *, 'before response solver: h+ norm(RHS) = ', rhs_norm
+         if (rhs_norm > openrsp_cfg_threshold_rhs) then
             R%tr_sym = 1
             call response_solver(real_freq, R, Xph(1))
             Dp(i) = Dp(i) + Xph(1)
@@ -872,22 +875,24 @@ contains
 
          R = (FDSp(i) + dag(FDSp(i)))
          R = 0.5d0*R
-         FDSp(i) = 0
-         if (dreal(dot(R,R)) > openrsp_cfg_threshold_rhs) then
+         rhs_norm = norm(R)
+         print *, 'before response solver: h- norm(RHS) = ', rhs_norm
+         if (rhs_norm > openrsp_cfg_threshold_rhs) then
             R%tr_sym = -1
             call response_solver(real_freq, R, Xph(1))
             Dp(i) = Dp(i) + Xph(1)
             Xph(1) = 0
          end if
 
-         R = 0
+         FDSp(i) = 0
+         R       = 0
       end do
 #elif defined(DALTON_AO_RSP)
       do i = 1, neq
-         nrm = norm(FDSp(i))
-         print *, 'before response solver: norm(RHS) = ', nrm
+         rhs_norm = norm(FDSp(i))
+         print *, 'before response solver: norm(RHS) = ', rhs_norm
 
-         if (nrm < 1d-10) then
+         if (rhs_norm < 1d-10) then
             print *, '=> skipping this equation'
             Xph(1) = 0d0 * S0
          else
