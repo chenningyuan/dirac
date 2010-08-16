@@ -62,9 +62,10 @@ module xc_driver
    type omega_prefactor
       real(8), allocatable :: n(:)
       real(8), allocatable :: s(:, :)
-      real(8), allocatable :: t(:)
       real(8), allocatable :: gn(:, :)
       real(8), allocatable :: gs(:, :, :)
+      real(8), allocatable :: tn(:)
+      real(8), allocatable :: ts(:, :)
    end type
 
 
@@ -826,17 +827,19 @@ contains
 
       logical :: un_above_threshold
       logical :: us_above_threshold
-      logical :: ut_above_threshold
       logical :: ugn_above_threshold
       logical :: ugs_above_threshold
+      logical :: utn_above_threshold
+      logical :: uts_above_threshold
 
     type(omega_prefactor) :: u
 
     allocate(u%n (      nr_fmat))
     allocate(u%s (   3, nr_fmat))
-    allocate(u%t (      nr_fmat))
     allocate(u%gn(   3, nr_fmat))
     allocate(u%gs(3, 3, nr_fmat))
+    allocate(u%tn(      nr_fmat))
+    allocate(u%ts(   3, nr_fmat))
 
 
 
@@ -1002,9 +1005,10 @@ contains
 
          u%n  = 0.0d0
          u%s  = 0.0d0
-         u%t  = 0.0d0
          u%gn = 0.0d0
          u%gs = 0.0d0
+         u%tn = 0.0d0
+         u%ts = 0.0d0
 
          w(1) = rw(ipoint)
 
@@ -1154,7 +1158,7 @@ contains
             u%gn(:, 1) = 2.0d0*derv(1, d0010000)*rhg
           end if
          if (is_tau_mgga) then
-            u%t(1) = derv(1, d0000010)
+            u%tn(1) = derv(1, d0000010)
          end if
 
         end if !exchange-correlation potential
@@ -1243,7 +1247,6 @@ contains
                   nz,             &
                   nr_dmat,      &
                   dmat,         &
-                  fmat,           &
                   dmat_pg_sym,    &
                   dmat_ih_sym,         &
                   .false.,        &
@@ -1267,7 +1270,7 @@ contains
           call sdft_qr(bllen,           &
                        use_gga,                &
                        dft_cfg_no_sdft,        &
-                       mat_dim, dmat,fmat,   &
+                       mat_dim, dmat,        &
                        dmat_pg_sym,dmat_ih_sym,ao,ao(ao_start(1, 0)), &
                        r_0(1),z_0(1),rhg,w(1), &
                        buffer,             &
@@ -1289,7 +1292,6 @@ contains
                   nz,              &
                   nr_dmat,       &
                   dmat,          &
-                  fmat,            &
                   dmat_pg_sym,     &
                   dmat_ih_sym,          &
                   .true.,          &
@@ -1471,33 +1473,66 @@ contains
                 end if
              end if
        
-             ut_above_threshold = .false.
-             if (dabs(u%t(im)) > tiny(0.0d0)) then
-                ut_above_threshold = .true.
+             utn_above_threshold = .false.
+             if (dabs(u%tn(im)) > tiny(0.0d0)) then
+                utn_above_threshold = .true.
              end if
 
-             if (ut_above_threshold) then
-!               F_pq += 0.5 u%t (\nabla_i \chi_p*) (\nabla_i \chi_q)
+             if (utn_above_threshold) then
+!               F_pq += 0.5 u%tn (\nabla_i \chi_p*) (\nabla_i \chi_q)
                 call omega_real(fmat,                &              
                                 im,                  &
                                 fmat_pg_sym(im) - 1, &
                                 mat_dim,             &
                                 nz,                  &
-                                0.5d0*u%t(im),       &
+                                0.5d0*u%tn(im),      &
                                 ao(ao_start(1, 0)))
                 call omega_real(fmat,                &              
                                 im,                  &
                                 fmat_pg_sym(im) - 1, &
                                 mat_dim,             &
                                 nz,                  &
-                                0.5d0*u%t(im),       &
+                                0.5d0*u%tn(im),      &
                                 ao(ao_start(1, 0) + mat_dim))
                 call omega_real(fmat,                &              
                                 im,                  &
                                 fmat_pg_sym(im) - 1, &
                                 mat_dim,             &
                                 nz,                  &
-                                0.5d0*u%t(im),       &
+                                0.5d0*u%tn(im),      &
+                                ao(ao_start(1, 0) + mat_dim*2))
+             end if
+
+             uts_above_threshold = .false.
+             if (maxval((/dabs(u%ts(1, im)), &
+                          dabs(u%ts(2, im)), &
+                          dabs(u%ts(3, im))/)) > tiny(0.0d0)) then
+                uts_above_threshold = .true.
+             end if
+
+             if (uts_above_threshold) then
+!               F_pq += 0.5 u%ts_j (\nabla_i \chi_p*) \Sigma_j (\nabla_i \chi_q)
+                u%ts(:, im) = 0.5d0*u%ts(:, im)
+                call omega_imag(fmat,                &              
+                                im,                  &
+                                fmat_pg_sym(im) - 1, &
+                                mat_dim,             &
+                                nz,                  &
+                                u%ts(1, im),         &
+                                ao(ao_start(1, 0)))
+                call omega_imag(fmat,                &              
+                                im,                  &
+                                fmat_pg_sym(im) - 1, &
+                                mat_dim,             &
+                                nz,                  &
+                                u%ts(1, im),         &
+                                ao(ao_start(1, 0) + mat_dim))
+                call omega_imag(fmat,                &              
+                                im,                  &
+                                fmat_pg_sym(im) - 1, &
+                                mat_dim,             &
+                                nz,                  &
+                                u%ts(1, im),         &
                                 ao(ao_start(1, 0) + mat_dim*2))
              end if
        
@@ -1528,9 +1563,10 @@ contains
 
     deallocate(u%n)
     deallocate(u%s)
-    deallocate(u%t)
     deallocate(u%gn)
     deallocate(u%gs)
+    deallocate(u%tn)
+    deallocate(u%ts)
 
    end subroutine
 
@@ -1943,7 +1979,6 @@ contains
                 nz,                 &
                 nr_mat,             &
                 dmaterturbed,     &
-                fmat,               &
                 isym,               &
                 ih,                 &
                 allow_nonhermitian, &
@@ -1964,7 +1999,6 @@ contains
     integer, intent(in)    :: nz
     integer, intent(in)    :: nr_mat
     real(8), intent(in)    :: dmaterturbed(*)
-    real(8), intent(inout) :: fmat(*)
     integer, intent(in)    :: isym(nr_mat)
     integer, intent(in)    :: ih(nr_mat)
     logical, intent(in)    :: allow_nonhermitian
@@ -1981,12 +2015,10 @@ contains
 !   ----------------------------------------------------------------------------
     logical                :: calculate_qr, calculate_qi
 
-    real(8)                ::          u_qi(3)
-    real(8)                ::          v_qi(3, 3)
 
     real(8)                ::  r_b,     s_b(3)
     real(8)                :: gr_b(3), gs_b(3, 3)
-    real(8)                ::  t_b
+    real(8)                ::  t_b, ts_b(3)
 
     real(8)                :: z_b
     real(8)                :: y_b(3)
@@ -2061,23 +2093,22 @@ contains
         u%n(im) = u%n(im) + derv(1, d2000000)*r_b
         
         if (is_gga_qr) then
-          z_b  = gr_0(1)*gr_b(1) &
-               + gr_0(2)*gr_b(2) &
-               + gr_0(3)*gr_b(3)
-          z_b  = 2.0d0*z_b
-
-          u%n(im) = u%n(im) + derv(1, d1010000)*z_b
-
-          u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gr_0(1:3)*r_b*derv(1, d1010000) &
-                                        + 2.0d0*gr_0(1:3)*z_b*derv(1, d0020000) &
-                                        + 2.0d0*gr_b(1:3)*derv(1, d0010000)
+           z_b = 2.0d0*(gr_0(1)*gr_b(1) &
+                      + gr_0(2)*gr_b(2) &
+                      + gr_0(3)*gr_b(3))
+          
+           u%n(im) = u%n(im) + derv(1, d1010000)*z_b
+          
+           u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gr_0(1:3)*r_b*derv(1, d1010000) &
+                                         + 2.0d0*gr_0(1:3)*z_b*derv(1, d0020000) &
+                                         + 2.0d0*gr_b(1:3)*derv(1, d0010000)
         end if
 
         if (is_tau_mgga) then
-           u%t(im) = u%t(im) + derv(1, d0000020)*t_b
-           u%t(im) = u%t(im) + derv(1, d1000010)*r_b
-           u%t(im) = u%t(im) + derv(1, d0010010)*z_b
-           u%n(im) = u%n(im) + derv(1, d1000010)*t_b
+           u%tn(im) = u%tn(im) + derv(1, d0000020)*t_b
+           u%tn(im) = u%tn(im) + derv(1, d1000010)*r_b
+           u%tn(im) = u%tn(im) + derv(1, d0010010)*z_b
+           u%n(im)  = u%n(im)  + derv(1, d1000010)*t_b
            u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gr_0(1:3)*t_b*derv(1, d0010010)
         end if
 
@@ -2115,36 +2146,37 @@ contains
                    buffer,                     &
                    ao_p)
         end if
-
-!       initialize otherwise there can be numerical dirt
-!       and then collinear numbers are wrong
-        u_qi = 0.0d0
-        v_qi = 0.0d0
+        if (is_tau_mgga) then
+           call get_tau_imag(ts_b,     &
+                             isym(im) - 1,             &
+                             mat_dim, &
+                             dmaterturbed(1 + im_off), &
+                             buffer,  &
+                             ao_p(ao_start(1, 0)))
+        end if
 
         do k = k_start, 3
-
-          u_qi(k) = derv(1, d0200000)*s_b(k)
-         
-          if (is_gga_qi) then
-            y_b(k)  = gr_0(1)*gs_b(1, k) &
-                    + gr_0(2)*gs_b(2, k) &
-                    + gr_0(3)*gs_b(3, k)
-            u_qi(k) = u_qi(k) + derv(1, d0101000)*y_b(k)
-
-            do j = 1, 3
-              v_qi(j, k) = gr_0(j)*(                   & 
-                                  s_b(k)*derv(1, d0101000) &
-                                + y_b(k)*derv(1, d0002000) &   
-                                )                      &
-                      + 2.0d0*gs_b(j, k)*derv(1, d0000100)
-            end do
-          end if
+           u%s(k, im) = u%s(k, im) + derv(1, d0200000)*s_b(k)
+           
+           if (is_gga_qr) then
+              y_b(k)  = gr_0(1)*gs_b(1, k) &
+                      + gr_0(2)*gs_b(2, k) &
+                      + gr_0(3)*gs_b(3, k)
+           
+              u%s(k, im) = u%s(k, im) + derv(1, d0101000)*y_b(k)
+           
+              u%gs(1:3, k, im) = u%gs(1:3, k, im) +       gr_0(1:3)*s_b(k)*derv(1, d0101000) &
+                                                  +       gr_0(1:3)*y_b(k)*derv(1, d0002000) &
+                                                  + 2.0d0*gs_b(1:3, k)*derv(1, d0000100)
+           end if
+           if (is_tau_mgga) then
+              u%ts(k, im) = u%ts(k, im) + derv(1, d0000002)*ts_b(k)
+              u%ts(k, im) = u%ts(k, im) + derv(1, d0100001)*s_b(k)
+              u%ts(k, im) = u%ts(k, im) + derv(1, d0001001)*y_b(k)
+              u%s(k, im) = u%s(k, im) + derv(1, d0100001)*ts_b(k)
+              u%gs(1:3, k, im) = u%gs(1:3, k, im) + gr_0(1:3)*ts_b(k)*derv(1, d0001001)
+           end if
         end do
-
-        if (is_gga_qi) then
-          u%gs(:, :, im) = u%gs(:, :, im) + v_qi
-        end if
-        u%s(:, im) = u%s(:, im) + u_qi
 
       end if !end of qi contribution
 
@@ -2157,7 +2189,6 @@ contains
                          no_sdft, &
                          mat_dim,  &
                          dtrmat, &
-                         excmat, &
                          isymop, &
                          ihrmop, &
                          gao, &
@@ -2178,7 +2209,6 @@ contains
       logical   add_grad, &
      &          no_sdft
      real(8) ::          dtrmat(mat_dim,mat_dim,nz,3)
-     real(8) ::          excmat(mat_dim,mat_dim,nz,3)
      integer ::          isymop(3)
      integer ::          ihrmop(3)
      real(8) ::          gao(*)

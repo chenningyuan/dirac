@@ -8,4 +8,6 @@ for mol in *mol; do
     done
 done
 
+rm -f *tgz
+
 exit 0

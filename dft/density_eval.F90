@@ -32,6 +32,7 @@ module density_eval
    public get_j
    public get_t
    public get_tau
+   public get_tau_imag
    public get_gn
    public get_gn_nonhermitian
    public get_gj
@@ -353,59 +354,110 @@ contains
 
   end subroutine
 
-  subroutine get_tau(t,       &
-                     irep,    &
-                     mat_dim, &
-                     dmat,    &
-                     buffer,  &
-                     ao_g1)
+   subroutine get_tau(t,       &
+                      irep,    &
+                      mat_dim, &
+                      dmat,    &
+                      buffer,  &
+                      ao_g1)
 
-!   ----------------------------------------------------------------------------
-!   radovan bast 2010-04-15
-!                this routine calculates the \tau = \nabla_i \phi_k \nabla_i \phi_k
-!
-!                needs ao_g1
-!                integral approaches the kinetic energy as c -> oo
-!   ----------------------------------------------------------------------------
-    real(8), intent(out) :: t
-    integer, intent(in)  :: irep
-    integer, intent(in)  :: mat_dim
-    real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
-    real(8), intent(in)  :: buffer(mat_dim)
-    real(8), intent(in)  :: ao_g1(mat_dim, 3)
-!   ----------------------------------------------------------------------------
-    integer              :: nr1, nr2, st1, st2, iblock, ixyz, jxyz
-    real(8), external    :: ddot
-!   ----------------------------------------------------------------------------
+!     --------------------------------------------------------------------------
+!     radovan bast 2010-04-15
+!                  this routine calculates the \tau = \nabla_i \phi_k \nabla_i \phi_k
+!     
+!                  needs ao_g1
+!                  integral approaches the kinetic energy as c -> oo
+!     --------------------------------------------------------------------------
+      real(8), intent(out) :: t
+      integer, intent(in)  :: irep
+      integer, intent(in)  :: mat_dim
+      real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
+      real(8), intent(in)  :: buffer(mat_dim)
+      real(8), intent(in)  :: ao_g1(mat_dim, 3)
+!     --------------------------------------------------------------------------
+      integer              :: nr1, nr2, st1, st2, iblock, ixyz
+      real(8), external    :: ddot
+!     --------------------------------------------------------------------------
 
-    t = 0.0d0
+      t = 0.0d0
+      
+      do iblock = 1, llss_nr_density_blocks(0, irep)
+         nr1 = llss_nr_ao(1, iblock, 0, irep)
+         st1 = llss_st_ao(1, iblock, 0, irep)
+         nr2 = llss_nr_ao(2, iblock, 0, irep)
+         st2 = llss_st_ao(2, iblock, 0, irep)
+      
+         do ixyz = 1, 3
+            call dgemv('N',                   &
+                       nr1,                   &
+                       nr2,                   &
+                       1.0d0,                 &
+                       dmat(st1, st2, iq(0)), &
+                       mat_dim,               &
+                       ao_g1(st2, ixyz),      &
+                       1,                     &
+                       0.0d0,                 &
+                       buffer,                &
+                       1)
+      
+            t = t + ddot(nr1, ao_g1(st1, ixyz), 1, buffer, 1)
+         end do
+      end do
+      
+      t = 0.5d0*t
 
-    do iblock = 1, llss_nr_density_blocks(0, irep)
-       nr1 = llss_nr_ao(1, iblock, 0, irep)
-       st1 = llss_st_ao(1, iblock, 0, irep)
-       nr2 = llss_nr_ao(2, iblock, 0, irep)
-       st2 = llss_st_ao(2, iblock, 0, irep)
+   end subroutine
 
-       do ixyz = 1, 3
-          call dgemv('N',                      &
-                     nr1,                      &
-                     nr2,                      &
-                     1.0d0,                    &
-                     dmat(st1, st2, iq(0)), &
-                     mat_dim,                  &
-                     ao_g1(st2, ixyz),         &
-                     1,                        &
-                     0.0d0,                    &
-                     buffer,                   &
-                     1)
+   subroutine get_tau_imag(t,       &
+                           irep,    &
+                           mat_dim, &
+                           dmat,    &
+                           buffer,  &
+                           ao_g1)
 
-          t = t + ddot(nr1, ao_g1(st1, ixyz), 1, buffer, 1)
-       end do
-    end do
+!     --------------------------------------------------------------------------
+      real(8), intent(out) :: t(3)
+      integer, intent(in)  :: irep
+      integer, intent(in)  :: mat_dim
+      real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
+      real(8), intent(in)  :: buffer(mat_dim)
+      real(8), intent(in)  :: ao_g1(mat_dim, 3)
+!     --------------------------------------------------------------------------
+      integer              :: nr1, nr2, st1, st2, iblock, ixyz, jxyz
+      real(8), external    :: ddot
+!     --------------------------------------------------------------------------
 
-    t = 0.5d0*t
+      t = 0.0d0
+     
+      do jxyz = 1, 3 
+         do iblock = 1, llss_nr_density_blocks(jxyz, irep)
+            nr1 = llss_nr_ao(1, iblock, jxyz, irep)
+            st1 = llss_st_ao(1, iblock, jxyz, irep)
+            nr2 = llss_nr_ao(2, iblock, jxyz, irep)
+            st2 = llss_st_ao(2, iblock, jxyz, irep)
+         
+            do ixyz = 1, 3
+               call dgemv('N',                      &
+                          nr1,                      &
+                          nr2,                      &
+                          1.0d0,                    &
+                          dmat(st1, st2, iq(jxyz)), &
+                          mat_dim,                  &
+                          ao_g1(st2, ixyz),         &
+                          1,                        &
+                          0.0d0,                    &
+                          buffer,                   &
+                          1)
+         
+               t(jxyz) = t(jxyz) &
+             + llss_prefactor(iblock, jxyz, irep)*ddot(nr1, ao_g1(st1, ixyz), 1, buffer, 1)
+            end do
+         end do
+      end do
+      
+      t = 0.5d0*t
 
-  end subroutine
+   end subroutine
 
   subroutine get_t(t,       &
                    irep,    &

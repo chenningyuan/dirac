@@ -66,8 +66,11 @@ module dft_functional_derv
   integer, parameter, public :: d0000020 = 23
   integer, parameter, public :: d1000010 = 24
   integer, parameter, public :: d0010010 = 25
+  integer, parameter, public :: d0100001 = 26
+  integer, parameter, public :: d0001001 = 27
+  integer, parameter, public :: d0000002 = 28
 
-  integer, parameter, public :: nr_nonzero_derv = 25
+  integer, parameter, public :: nr_nonzero_derv = 28
 
   private
 
@@ -293,14 +296,14 @@ contains
                      derv(k, d0020000) = f%output(XC_D00200, k)
                      derv(k, d0010000) = f%output(XC_D00100, k)
                   else if (xcfun_is_tau_mgga()) then
+                     derv(k, d0010000) = f%output(XC_D0010000, k)
                      derv(k, d2000000) = f%output(XC_D2000000, k)
                      derv(k, d1010000) = f%output(XC_D1010000, k)
                      derv(k, d0020000) = f%output(XC_D0020000, k)
-                     derv(k, d0010000) = f%output(XC_D0010000, k)
 
+                     derv(k, d0000020) = f%output(XC_D0000020, k)
                      derv(k, d0010010) = f%output(XC_D0010010, k)
                      derv(k, d1000010) = f%output(XC_D1000010, k)
-                     derv(k, d0000020) = f%output(XC_D0000020, k)
                   else
                      call quit('get_functional_derv: unknown fun type')
                   end if
@@ -317,10 +320,14 @@ contains
                      derv(k, d0002000) = f%output(XC_D00020, k)
                      derv(k, d0000100) = f%output(XC_D00001, k)
                   else if (xcfun_is_tau_mgga()) then
+                     derv(k, d0000100) = f%output(XC_D0000100, k)
                      derv(k, d0200000) = f%output(XC_D0200000, k)
                      derv(k, d0101000) = f%output(XC_D0101000, k)
                      derv(k, d0002000) = f%output(XC_D0002000, k)
-                     derv(k, d0000100) = f%output(XC_D0000100, k)
+
+                     derv(k, d0000002) = f%output(XC_D0000002, k)
+                     derv(k, d0001001) = f%output(XC_D0001001, k)
+                     derv(k, d0100001) = f%output(XC_D0100001, k)
                   else
                      call quit('get_functional_derv: unknown fun type')
                   end if
