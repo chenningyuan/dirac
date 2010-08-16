@@ -9884,6 +9884,9 @@ C
 !    ... all atomic centers are included for the AMFI contribution
       ALLAMFA  = .TRUE. ! ALLAMFA = [A]ll [AMF]i [A]toms
       ONRELSCF = .FALSE. ! ONRELSCF = [ON]ly RELSCF, i.e. stop after RELSCF run
+
+!     order of Amfi contributions 
+      ISORDER_AMFI_in = -1
 C
 C     Process input for AMFI/RELSCF
 C     ==================================
