@@ -14,6 +14,15 @@ C     Performance tip : Make this an multiple of 1024 MINUS 1 (to leave space fo
 C
       INTEGER NADMIN,NKWORDS,NKBUFFS,NGBFSZ
       PARAMETER (NADMIN=1)
+!
+!     !!! CAUTION!!! the current value for this parameter leads to 
+!     crashes on various machines BRUTUS/ETH Zuerich, Horseshoe/SDU Odense, my laptop, ... 
+!     (I could not test IBM machines since I do not have access anymore).
+!     SK - Aug 2010.
+!
+!     example: node 1 will always try to read/write the first record at:
+!     (( NKWORDS * 1024 *4)**2) * 4 * 64 > 4.38 * 10^12.
+!
       PARAMETER (NKWORDS=32)
       PARAMETER (NKBUFFS=1)
       PARAMETER (NGBFSZ=NKWORDS*1024-NADMIN)
