@@ -194,6 +194,12 @@ contains
            call add_hfx(w*h)
         end if
       
+        w = get_weight(word_array(i), 'm06l')
+        if (dabs(w) > tiny(0.0d0)) then
+           f%w(XC_M06LX) = f%w(XC_M06LX) + w
+           f%w(XC_M06LC) = f%w(XC_M06LC) + w
+        end if
+      
         w = get_weight(word_array(i), 'm06-l')
         if (dabs(w) > tiny(0.0d0)) then
            f%w(XC_M06LX) = f%w(XC_M06LX) + w
