@@ -266,8 +266,19 @@ contains
       end do
       
       deallocate(word_array)
-      
+ 
       write(u, '(a)')
+
+!     check that not all weights are zero
+!     this happens when no functional is recognized
+!     in this case quit the program
+      h = 0.0d0
+      do i = 1, size(f%w)
+         h = h + dabs(f%w(i)) 
+      end do
+      if (h < tiny(0.0d0)) then
+         call quit('XCFun functional not recognized from input')
+      end if
    
    end subroutine
 
