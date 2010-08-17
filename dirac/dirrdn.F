@@ -880,6 +880,9 @@ CTROND      NOQCDHF   = .FALSE.
 C     ... default do QCDHF if DIIS does not converge
       DHF_SKIPEE = .FALSE.
       DHF_SKIPEP = .FALSE.
+!     if number of positronic shells is zero skip e-p rotations. hjj+sk - aug 2010
+      if((npsht .eq. 0).or.x2c.or.bss.or.levyle.or.freepj.or.vextpj) 
+     &  DHF_SKIPEP = .TRUE.
 C     ... Average-of-Configuration (AOC) is default for Hartree-Fock,
 C     ... whereas Fractional Occupation is default for DFT
       AOC = .TRUE.

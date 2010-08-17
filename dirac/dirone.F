@@ -4092,7 +4092,7 @@ C
 C     Initialization (calculate LL and SS)
 C
       DOINT(1,1) = .TRUE.
-      IF (NOSMLV.OR.BSS) THEN
+      IF (NOSMLV.OR.BSS.x2c.) THEN
 C     IF (NOSMLV) THEN
          DOINT(2,2) = .FALSE.
          IF (IPRINT.GE.1) WRITE(LUPRI,'(/A)')

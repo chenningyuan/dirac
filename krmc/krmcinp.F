@@ -102,6 +102,9 @@ C
       END DO
       KRMC_SKIPEE = .FALSE.
       KRMC_SKIPEP = .FALSE.
+!     if number of positronic shells is zero skip e-p rotations. hjj+sk - aug 2010
+      if((npsht .eq. 0).or.x2c.or.bss.or.levyle.or.freepj.or.vextpj) 
+     &  KRMC_SKIPEP = .TRUE.
       KRMC_NOCI   = .FALSE.
       KRMC_UCIBOS = .FALSE.
       KRMC_MKCNST = .FALSE.

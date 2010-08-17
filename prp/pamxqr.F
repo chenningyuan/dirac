@@ -125,6 +125,9 @@ C
       XQR_ALLCMB = .FALSE.
       XQR_SKIPEE = .FALSE.
       XQR_SKIPEP = .FALSE.
+!     if number of positronic shells is zero skip e-p rotations. hjj+sk - aug 2010
+      if((npsht .eq. 0).or.x2c.or.bss.or.levyle.or.freepj.or.vextpj) 
+     &  XQR_SKIPEP = .TRUE.
       DO I = 1,NFSYM
          XQR_INDSTR(1,I) = ' '
          XQR_INDSTR(2,I) = ' '
@@ -344,17 +347,11 @@ C     .EXCPRP compute excited state properties (or matrix elements)
 C
 C     Process section
 C
-      IF (LEVYLE.OR.BSS) THEN
+!     this test is only for safety reasons - it ought to be already correct
+!     anyway - SK Aug 2010
+      IF(LEVYLE.OR.BSS.or.x2c) THEN
 C        INTXQR = ILLINT
          INTXQR = 1
-         XQR_SKIPEP = .TRUE.
-      ELSE IF (FREEPJ .OR. VEXTPJ) THEN
-C     No positron orbitals ("no-pair")
-         XQR_SKIPEP = .TRUE.
-!
-!     radovan: the ELSE below ignores the .SKIPEP keyword!!!
-!     ELSE
-!        XQR_SKIPEP = .FALSE.
       END IF
 
       IF (CNVXQR(1).LT.DUMMY) ITRIQR(1) = 1

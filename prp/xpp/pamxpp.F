@@ -631,7 +631,9 @@ C
 C        calculate default MAXRM
       MXREDZ = MAXRM/2
       MAXRM  = 2*MXREDZ
-      IF(LEVYLE.OR.BSS.OR.FREEPJ.OR.VEXTPJ) XPP_SKIPEP = .TRUE.
+      IF(NPSHT .EQ. 0) XPP_SKIPEP = .TRUE.
+C     ... no positronic orbitals
+      IF(LEVYLE.OR.BSS.OR.X2C.OR.FREEPJ.OR.VEXTPJ) XPP_SKIPEP = .TRUE.
 C     ... no positronic orbitals for Levy-Leblond or no-pair
       IF (XPP_SKIPEE .AND. XPP_SKIPEP) THEN
          WRITE(LUPRI,'(/A)') 'INPUT ERROR: both SKIPEE and SKIPEP'

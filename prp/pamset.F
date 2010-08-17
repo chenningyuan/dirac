@@ -1381,23 +1381,23 @@ C
         DO I = 1,NFSYM
           INDSTR(3,I) = ' '
           IT=1
-          IF(.NOT.SKIPEP) THEN
+          IF(.NOT.SKIPEP .AND. NPSH(I).GT.0) THEN
             IF (NPSH(I) .EQ. 1) THEN
               WRITE(INDSTR(3,I),'(I2)') -1
               IT=3
-            ELSEIF (NPSH(I) .GT. 1) THEN
+            ELSE
               WRITE(INDSTR(3,I),'(I6,A4)') -NPSH(I),'..-1'
               IT=11
             ENDIF
           ENDIF
-          IF(.NOT.SKIPEE) THEN
-            IF((.NOT.SKIPEP).AND.NSSH(I).GT.0) THEN
+          IF(.NOT.SKIPEE .AND. NSSH(I).GT.0) THEN
+            IF (IT .GT. 1) THEN ! e-p rotations were added above
               WRITE(INDSTR(3,I)(IT:IT),'(A1)') ','
               IT=IT+1
             ENDIF
             IF(NSSH(I).EQ.1) THEN
               WRITE(INDSTR(3,I)(IT:IT),'(I1)') 1
-            ELSEIF(NSSH(I).GT.1) THEN
+            ELSE
               WRITE(INDSTR(3,I)(IT:IT+14),'(I6,A2,I6)')
      &             NOCC(I)+1,'..',NESH(I)
             ENDIF

@@ -436,7 +436,7 @@ C
       INTXLR     = ILLINT+2*ISLINT+4*ISSINT+8*IGTINT
 CMI ... set up only LL class of integrals 
 C        as the default for LevyLe/BSS
-      IF (LEVYLE.OR.BSS) INTXLR = ILLINT
+      IF (LEVYLE.OR.BSS.or.x2c) INTXLR = ILLINT
       ITRILR(1)  = 1
       ITRILR(2)  = 1
       NLRAPT     = 0
@@ -459,6 +459,9 @@ C     Calculation of C6 dispersion coefficient
       END IF
       ALLCMB     = .FALSE.
       XLR_SKIPEP = .FALSE.
+!     if number of positronic shells is zero skip e-p rotations. hjj+sk - aug 2010
+      if((npsht .eq. 0).or.x2c.or.bss.or.levyle.or.freepj.or.vextpj) 
+     &  XLR_SKIPEP = .TRUE.
       XLR_SKIPEE = .FALSE.
       XLR_LSFG(1)= .TRUE.
       XLR_LSFG(2)= .TRUE.
@@ -765,8 +768,6 @@ C
 C        ... then calculate default MAXRM
       MXREDZ = MAXRM/2
       MAXRM  = 2*MXREDZ
-      IF(LEVYLE.OR.BSS.OR.FREEPJ.OR.VEXTPJ) XLR_SKIPEP = .TRUE.
-C     ... no positrons for Levy-Leblond or no-pair
 C     ... also to make sure diamagnetic terms are calculated for magn.prop.
 C           (see PRPDEF) /hj jan 2001
       IF(QED .AND. XLR_SKIPEP) THEN
@@ -814,7 +815,7 @@ C
      &'  and ignoring coupling between e-e and e-p rotations.',
      &'  Note that .STERNH forces .MAXITR 0 and .SKIPEE and',
      &'  neglects any of .SKIPEP, .REAXVC, and .NOPREC'
-        IF (LEVYLE.OR.BSS.OR.FREEPJ.OR.VEXTPJ.OR.XLR_SKIPEP) THEN
+        IF (LEVYLE.OR.BSS.or.x2c.OR.FREEPJ.OR.VEXTPJ.OR.XLR_SKIPEP)THEN
            WRITE (LUPRI,'(/A)') ' FATAL ERROR: '//
      &     '.STERNH is not valid for Levy-Leblond/no-pair/.SKIPEP'
            CALL QUIT(
@@ -826,7 +827,7 @@ C
      &'* Sternheimer complement: ',
      &'  Note that .STERNH forces .MAXITR 0 and .SKIPEP and',
      &'  neglects any of .SKIPEP, .REAXVC, and .NOPREC'
-        IF (LEVYLE.OR.BSS.OR.FREEPJ.OR.VEXTPJ.OR.XLR_SKIPEE) THEN
+        IF (LEVYLE.OR.BSS.or.x2c.OR.FREEPJ.OR.VEXTPJ.OR.XLR_SKIPEE)THEN
            WRITE (LUPRI,'(/A)') ' FATAL ERROR: '//
      &     '.STERNC is not valid for Levy-Leblond/no-pair/.SKIPEE'
            CALL QUIT(
@@ -839,10 +840,10 @@ C
         WRITE(LUPRI,'(A)')
      &  ' * e-e rotations are allowed in the linear response function.'
       ENDIF
-      IF(XLR_SKIPEP .AND. .NOT. (LEVYLE.OR.BSS.OR.FREEPJ.OR.VEXTPJ))
+      IF(XLR_SKIPEP.AND..NOT.(LEVYLE.OR.BSS.or.x2c.OR.FREEPJ.OR.VEXTPJ))
      &     WRITE(LUPRI,'(A)')
      &     ' * NB!!! No rotations between electrons and positrons.'
-      IF(XLR_SKIPEP.AND.(LEVYLE.OR.BSS.OR.FREEPJ.OR.VEXTPJ))
+      IF(XLR_SKIPEP.AND.(LEVYLE.OR.BSS.or.x2c.OR.FREEPJ.OR.VEXTPJ))
      &  WRITE(LUPRI,'(A)')
      &  ' * No rotations between electrons and positrons,'// 
      &  ' which are expelled.'
@@ -891,7 +892,7 @@ C
       WRITE(LUPRI,'(A)') ' * Include contributions from '//
      +    'the following two-electron integrals:'
       IF(ILLINT.EQ.1) WRITE(LUPRI,'(3X,A)') '- LL-integrals'
-      IF ((LEVYLE.OR.BSS).AND.(ISLINT.EQ.1.OR.ISSINT.EQ.1)) THEN
+      IF ((LEVYLE.OR.BSS.or.x2c).AND.(ISLINT.EQ.1.OR.ISSINT.EQ.1)) THEN
         WRITE(LUPRI,'(3X,A)')
      & 'Only LL integrals are allowed for LevyLe/BSS!'
         ISLINT=0

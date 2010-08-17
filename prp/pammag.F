@@ -305,13 +305,13 @@ C ... call the routine in abacus/hergp.F
      &' terms for the H(B m_K) expectation value terms !'
        ENDIF
 
-       IF ((LEVYLE.OR.BSS).AND.DOEPRN) THEN
+       IF ((LEVYLE.OR.BSS.or.x2c).AND.DOEPRN) THEN
         WRITE(LUPRI,'(2X,A)') ': For the LevyLe/BSS '//
      &'Hamiltonian the only choice for DOEPRN is .FALSE.!  '
          DOEPRN = .FALSE.
        ENDIF
 
-       IF ((LEVYLE.OR.BSS).AND.(INTNMR.GT.1)) THEN
+       IF ((LEVYLE.OR.BSS.or.x2c).AND.(INTNMR.GT.1)) THEN
          INTNMR=1 ! Include only LL integrals...
          WRITE(LUPRI,'(2X,A)') ': For the LevyLe/BSS '//
      &'Hamiltonian include only LL integrals for the dg(1,2)/dB terms!'

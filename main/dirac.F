@@ -763,6 +763,8 @@ C     Set common block DCLOPT
 C
       OPT_SKIPEE     = .FALSE.
       OPT_SKIPEP     = .FALSE.
+!     if number of positronic shells is zero skip e-p rotations. hjj+sk - aug 2010
+      if(npsht .eq. 0) OPT_SKIPEP = .TRUE.
       OPT_NOCI       = .FALSE.
       OPT_UCIBOS     = KRCI_UCIBOS
       OPT_MKCNST     = KRCI_MKCNST
