@@ -10,6 +10,7 @@ module prop_test
 #endif
 #ifdef PRG_DIRAC
    use dirac_interface
+   use openrsp_interface_2el
    use openrsp_output
 #endif
 

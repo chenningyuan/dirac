@@ -14,6 +14,7 @@ module prop_contribs
 #ifdef PRG_DIRAC
    use dirac_interface
    use openrsp_interface_1el
+   use openrsp_interface_2el
    use character_processing
    use xc_driver
 #endif
@@ -1866,26 +1867,32 @@ contains
       type(matrix),      intent(inout) :: F(:)
       integer, optional, intent(in)    :: a, b
       type(matrix)     :: dupD, dupF(size(F))
-      integer          :: nf, n2, lwrk, i, aa=0
-      real(8), pointer :: wrk(:)
+      integer          :: nf, n2, lwork, i, aa=0
+#ifdef PRG_DIRAC
+      real(8), allocatable :: work(:)
+#else
+      real(8), pointer :: work(:)
+#endif
       nf = size(F)
-      n2 = D(1)%nrow**2
+!radovan: this is Dalton only
+!     n2 = D(1)%nrow**2
+      n2 = size(D(1)%elms)
       if (what=='  ' .and. nf==1) then
-         lwrk = 0
+         lwork = 0
       else if (what=='M ' .and. nf==3) then
-         lwrk = 50*n2 + 10000*D(1)%nrow + 5000000
+         lwork = 50*n2 + 10000*D(1)%nrow + 5000000
       else if (what=='G ' .and. nf==3) then
          if (.not.present(a)) &
             call lsquit("prop_integrals twofck: Geometry Fock but atom 'a' not specified",-1)
-         lwrk = 50*n2 + 10000*D(1)%nrow + 5000000
+         lwork = 50*n2 + 10000*D(1)%nrow + 5000000
          aa = a !may not be present, replicate
       else if (what=='MM' .and. nf==6) then
-         lwrk = 50*n2 + 10000*D(1)%nrow + 5000000
+         lwork = 50*n2 + 10000*D(1)%nrow + 5000000
       else if (what=='GG' .and. nf==3*3) then
          if (.not.present(a) .or. .not.present(b)) &
             call lsquit("prop_integrals twock: 2nd ord. geom Fock reqires atoms 'a','b' specified",-1)
-         !lwrk = (1+2*nf+50)*n2 + 10000*nbas + 5000000
-         lwrk = 50*n2 + 10000*D(1)%nrow + 5000000
+         !lwork = (1+2*nf+50)*n2 + 10000*nbas + 5000000
+         lwork = 50*n2 + 10000*D(1)%nrow + 5000000
       else
          call lsquit('prop_integrals twofck: wrong size(F) for what=' // what,-1)
       end if
@@ -1897,7 +1904,16 @@ contains
          end if
       end do
       !allocate work
-      if (lwrk/=0) call di_select_wrk(wrk, lwrk)
+      if (lwork /= 0) then
+#ifdef PRG_DIRAC
+!radovan: for dirac the above lwork allocation is too much (and more than needed)
+!         so rather use the whole work array and hope for the best
+         lwork = len_f77_work
+         allocate(work(lwork))
+#else
+         call di_select_wrk(work, lwork)
+#endif
+      end if
       !process complex D with two calls
       if (D(1)%complex) then
          call init_mat(dupD, D(1), alias='RF')
@@ -1913,7 +1929,13 @@ contains
       else
          call subr(D(1), F)
       end if
-      if (lwrk/=0) call di_deselect_wrk(wrk, lwrk)
+      if (lwork /= 0) then
+#ifdef PRG_DIRAC
+         deallocate(work)
+#else
+         call di_deselect_wrk(work, lwork)
+#endif
+      end if
    contains
       subroutine subr(D, F)
          type(matrix), intent(in)    :: D
@@ -1922,21 +1944,25 @@ contains
             call di_GET_GbDs(D, F(1))
             return
          end if
-         wrk(1:n2) = D%elms !ajt fixme
-#ifdef PRG_DIRAC
-         call quit('fix grcont in twofck')
-#else
+         work(1:n2) = D%elms !ajt fixme
 #ifdef LSDALTON_ONLY
          call lsquit('Cannot call GRCONT, only new integral code is compiled',-1)
 #else
-         call GRCONT(wrk( 1+n2+n2*nf : lwrk ), (lwrk-n2-n2*nf),         &
-                     wrk( 1+n2 : n2+n2*nf ), n2*nf, (what(1:1) == 'G'), &
-                     (what(1:1) == 'M'), merge(1,2,what(2:2)==' '),     &
-                     aa, .false., .true., wrk(1:n2), 1)
-#endif
+         call grcont(work(1+n2+n2*nf : lwork ),       &
+                    (lwork-n2-n2*nf),                &
+                     work(1+n2 : n2+n2*nf ),         &
+                     n2*nf,                         &
+                    (what(1:1) == 'G'),             &
+                    (what(1:1) == 'M'),             &
+                     merge(1, 2, what(2:2) == ' '), &
+                     aa,                            &
+                     .false.,                       &
+                     .true.,                        &
+                     work(1:n2),                     &
+                     1)
 #endif
          do i = 1, nf
-            F(i)%elms = wrk( 1+n2*i : n2*(1+i) ) !ajt fixme
+            F(i)%elms = work( 1+n2*i : n2*(1+i) ) !ajt fixme
          end do
       end subroutine
    end subroutine
@@ -2097,9 +2123,13 @@ contains
    !gm=F -> tre magnetiske
       character(*), intent(in)    :: what
       type(matrix), intent(in)    :: Da, Db
-      real(8),      intent(inout) :: E(:)
-      real(8), pointer :: wrk(:)
-      integer          :: lwrk
+      real(8),      intent(inout) :: e(:)
+#ifdef PRG_DIRAC
+      real(8), allocatable :: work(:)
+#else
+      real(8), pointer :: work(:)
+#endif
+      integer              :: lwork, l
 
 #ifdef PRG_DIRAC
 !     early return
@@ -2113,73 +2143,65 @@ contains
       if (what=='M' .or. what=='MM') &
           & call lsquit("prop_contribs/twoctr: 'M' or 'MM' not yet implemented",-1)
       if     (what=='G' .and. size(e) == 3*natom) then
-         lwrk = 50*Da%nrow**2 + 10000*Da%nrow + 5000000
+         lwork = 50*Da%nrow**2 + 10000*Da%nrow + 5000000
       else if (what=='M' .and. size(e)==3) then
-         lwrk = 50*Da%nrow**2 + 10000*Da%nrow + 5000000
+         lwork = 50*Da%nrow**2 + 10000*Da%nrow + 5000000
       else if (what=='GG' .and. size(e) == 3*3*natom**2) then
-         lwrk = 50*Da%nrow**2 + 10000*Da%nrow + 10000000
+         lwork = 50*Da%nrow**2 + 10000*Da%nrow + 10000000
       else if (what=='MM' .and. size(e)==3*3) then
-         lwrk = 50*Da%nrow**2 + 10000*Da%nrow + 5000000
+         lwork = 50*Da%nrow**2 + 10000*Da%nrow + 5000000
       else
           call lsquit('prop_contribs/twoctr: wrong size(E) for what=' // what,-1)
       end if
 
 #ifdef PRG_DIRAC
-!radovan: for DIRAC the above lwrk allocation is too much (and more than needed)
+!radovan: for dirac the above lwork allocation is too much (and more than needed)
 !         so rather use the whole work array and hope for the best
-      lwrk = len_f77_work
+      lwork = len_f77_work
+      allocate(work(lwork))
+#else
+      call di_select_wrk(work, lwork)
 #endif
 
-      call di_select_wrk(wrk, lwrk)
+!     this is done because grcont presently needs Da and Db to be consecutive
+!     and (/Da%elms, Db%elms/) can cause stack overflow, depending
+!     on ulimit and compiler flags; -auto-scalar:fine: -auto:overflow
+!     a future rewrite of grcont could take a list of pointers
+!     (or just type(matrix)) instead of consecutive real(8) arrays
+      l = size(Da%elms)
+      work(    1:  l) = Da%elms
+      work(l + 1:2*l) = Db%elms
 
-#ifndef PRG_DIRAC
-!radovan: is this necessary?
-!ajt: grcont presently needs Da and Db to be consecutive, and
-!     (/Da%elms,Db%elms/) will cause stack overflow, depending
-!     on ulimit and compiler flags; -auto-scalar:fine: -auto:overflow.
-!     A future rewrite of grcont could take a list of pointers
-!     (or just type(matrix)) instead of consecutive real(8) arrays.
-      wrk(             1:  Da%nrow**2) = Da%elms !call mat_to_full(D ,1d0,A(:,:,1))
-      wrk(Da%nrow**2 + 1:2*Da%nrow**2) = Db%elms !call mat_to_full(DD,1d0,A(:,:,2))
-#endif
-
-      E = 0.0d0
+      e = 0.0d0
 
 #ifdef LSDALTON_ONLY
-         call lsquit('Cannot call GRCONT, only new integral code is compiled',-1)
+      call lsquit('cannot call grcont, only new integral code is compiled',-1)
 #else
-
-#ifdef PRG_DIRAC
-      call grcont(wrk,                      &
-                  lwrk,                     &
-#else
-!     this does not compile in DIRAC
-!     besides matrices have larger size in DIRAC: 4*Da%nrow**2
-      call grcont(wrk(2*Da%nrow**2 + 1),    &
-                  lwrk - 2*Da%nrow**2,      &
-#endif
-                  E,                        &
-                  int(size(E)),             &
-                  what(1:1) == 'G',         &
-                  what(1:1) == 'M',         &
-                  int(len(what)),           &
-                  0,                        &
-                  .true.,                   &
-                  .false.,                  &
-#ifdef PRG_DIRAC
-                  (/Da%elms, Db%elms/),     &
-#else
-                  wrk(1),                   &
-#endif
+      call grcont(work(2*l + 1),    &
+                  lwork - 2*l,      &
+                  e,                &
+                  int(size(e)),     &
+                  what(1:1) == 'G', &
+                  what(1:1) == 'M', &
+                  int(len(what)),   &
+                  0,                &
+                  .true.,           &
+                  .false.,          &
+                  work,             &
                   2)
 #endif
+
 #ifdef PRG_DIRAC
-!radovan: there is a factor 8 missing in DIRAC
+!radovan: there is a factor 8 missing in dirac
 !         will fix it later so that it's taken care of inside grcont
-      E = 8.0d0*E
+      e = 8.0d0*e
 #endif
 
-      call di_deselect_wrk(wrk, lwrk)
+#ifdef PRG_DIRAC
+      deallocate(work)
+#else
+      call di_deselect_wrk(work, lwork)
+#endif
 
    end subroutine
 
