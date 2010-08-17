@@ -2336,6 +2336,10 @@ find_real_f90
 get_f90_flags
 cpp_cc="\$(MODS)"
 
+if [ "$localdisks" = "no" ]; then
+  cpp_f90="$cpp_f90 -DVAR_PFS"
+fi
+
 case $machine in
 #
 #  HEWLETT - PACKARD
@@ -2433,9 +2437,9 @@ case $machine in
 	  cpp_f90="-DVAR_MFDS $cpp_f90"
          esac
 
-         if [ "$localdisks" = "no" ]; then
-            cpp_f90="$cpp_f90 -DVAR_PFS"
-         fi
+#        if [ "$localdisks" = "no" ]; then
+#           cpp_f90="$cpp_f90 -DVAR_PFS"
+#        fi
 
       case $os in
          gnu* )
