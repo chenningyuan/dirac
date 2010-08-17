@@ -1235,8 +1235,8 @@ contains
 
     end if
 
-    write(*, *) 'blub fmax', fmax
-    if (fmax > 1.0d-50) then
+    write(*, *) 'debug fmax', fmax
+    if (fmax > 1.0d-10) then
 
 
 !   inherit shape

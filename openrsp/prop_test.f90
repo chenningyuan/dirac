@@ -531,14 +531,9 @@ contains
       call pert_dens(decomp, S, (/'MAGO'/), (/3/), (/D/), (/F/), Db, Fb, freq=(/freq/))
       Eoo = 0
       call prop_oneave(S, (/'MAGO','MAGO'/), (/D/), (/3,3/), Eoo)
-      !call print_tensor( (/3,3/), Eoo, 'E0oo'); Eoo=0
       call prop_oneave(S, (/'MAGO'/), (/Db/), (/3,3/), Eoo)
-      !call print_tensor( (/3,3/), Eoo, 'E1oDo'); Eoo=0
-      call print_tensor((/3,3/), Eoo, 'no-London Magnetizability = Eoo', (/-freq,freq/))
+      call print_tensor((/3,3/), Eoo, 'cgo Magnetizability = Eoo', (/-freq,freq/))
       Db=0; Fb=0
-#ifdef PRG_DIRAC
-      Ebb = 0
-#else
       !London diamag
       call pert_dens(decomp, S, (/'MAG'/), (/3/), (/D/), (/F/), Db, Fb, freq=(/freq/))
       Ebb = 0
@@ -547,7 +542,6 @@ contains
       call prop_oneave(S, (/'MAG','MAG'/), (/D/), (/3,3/), Ebb, &
                        DFD=(/DFD/), freq=(/-freq,freq/))
       DFD = 0
-      !call print_tensor( (/3,3/), Ebb, 'E0bb-i/2TbbD-SbbW'); Ebb=0
       !London paramag
       call prop_twoave((/'MAG'/), (/D,Db/), (/3,3/), Ebb)
       do j = 1, 3
@@ -557,9 +551,7 @@ contains
       call prop_oneave(S, (/'MAG'/), (/Db/), (/3,3/), Ebb, &
                        DFD=DFDb, freq=(/-freq/))
       Db=0; Fb=0; DFDb=0
-      !call print_tensor( (/3,3/), Ebb, 'E1bDb-i/2TbDb-SbDFDb'); Ebb=0
       call print_tensor((/3,3/), Ebb, 'London Magnetizability = Ebb', (/-freq,freq/))
-#endif /* ifdef PRG_DIRAC */
    end subroutine
 
 

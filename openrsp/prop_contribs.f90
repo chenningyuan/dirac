@@ -320,7 +320,9 @@ contains
       type(matrix) :: A(6) !scratch matrices
 #ifdef PRG_DIRAC
       !> temporary matrix
-      type(matrix) :: T
+      type(matrix)  :: T
+      character(2)  :: ij_string
+      character(16) :: integral_label
 #endif
       A(:) = (/(0d0*S0, i=1,size(A))/) !scratch matrices
       if (np==0) then
@@ -386,7 +388,23 @@ contains
          !one-electron contribution
          do i = 0, dp(1)-1
             ! Hamiltonian integrals
+#ifdef PRG_DIRAC
+            integral_label = 'dkin/dB' // xyz(c(1) + i) // '        '
+            call load_oneint(integral_label, A(1))
+            T = tiny(0.0d0)*A(1)
+            integral_label = 'dnuc/dB' // xyz(c(1) + i) // '        '
+            call load_oneint(integral_label, T)
+            A(1) = A(1) + T
+            integral_label = 'dbet/dB' // xyz(c(1) + i) // '        '
+            call load_oneint(integral_label, T)
+            A(1) = A(1) + T
+            integral_label = 'dvec/dB' // xyz(c(1) + i) // '        '
+            call load_oneint(integral_label, T)
+            A(1) = A(1) + T
+            T = 0
+#else
             call load_oneint('dh/dB' // xyz(c(1)+i) // '  ', A(1))
+#endif
             ! -i/2 Tb in A(1), overlap integrals Sb in A(2)
             if (w(1)==0) then !no -i/2 Tb contribution
                call load_oneint('dS/dB' // xyz(c(1)+i) // '  ', A(2))
@@ -517,8 +535,28 @@ contains
          do j = 0, dp(2)-1
             do i = 0, dp(1)-1
                ! Hamiltonian integrals and -i/2 Tbb in A(1), Sbb in A(2)
+#ifdef PRG_DIRAC
+               ij_string = xyz(min(c(1) + i, c(2) + j)) // xyz(max(c(1) + i, c(2) + j))
+               integral_label = 'dbet/dB2' // ij_string // '      '
+               call load_oneint(integral_label, A(1))
+               T = tiny(0.0d0)*A(1)
+               integral_label = 'dnuc/dB2' // ij_string // '      '
+               call load_oneint(integral_label, T)
+               A(1) = A(1) + T
+               integral_label = 'dkin/dB2' // ij_string // '      '
+               call load_oneint(integral_label, T)
+               A(1) = A(1) + T
+               integral_label = ij_string // 'rdsusll       '
+               call load_oneint(integral_label, T)
+               A(1) = A(1) + T
+               integral_label = ij_string // 'DSUSNL        '
+               call load_oneint(integral_label, T)
+               A(1) = A(1) + T
+               T = 0
+#else
                call load_oneint(xyz(min(c(1)+i,c(2)+j)) &
                         // xyz(max(c(1)+i,c(2)+j)) // 'dh/dB2', A(1))
+#endif
                ! If both fields static, no -i/2 Tbb to A(1)
                if (w(1)==0 .and. w(2)==0) then
                   call load_oneint('dS/dB2' // xyz(min(c(1)+i,c(2)+j)) &
@@ -1242,6 +1280,12 @@ contains
       type(matrix), intent(inout) :: S(*) !perturbed overlap matrices
       integer      :: i, j, k, ii, jj, kk
       type(matrix) :: A(6) !scratch matrices
+#ifdef PRG_DIRAC
+      !> temporary matrix
+      type(matrix)  :: T
+      character(2)  :: ij_string
+      character(16) :: integral_label
+#endif
       if (np==0) then
          call lsquit('prop_oneint error:' &
                 // ' Unperturbed one-electron integrals requested',-1)
@@ -1271,9 +1315,29 @@ contains
          end do
       else if (np==1 .and. p(1)=='MAG') then
          do i = 0, dp(1)-1
+#ifdef PRG_DIRAC
+            integral_label = 'dkin/dB' // xyz(c(1) + i) // '        '
+            call load_oneint(integral_label, F(i+1), S0)
+            T = tiny(0.0d0)*F(i+1)
+            integral_label = 'dnuc/dB' // xyz(c(1) + i) // '        '
+            call load_oneint(integral_label, T, S0)
+            F(i+1) = F(i+1) + T
+            integral_label = 'dbet/dB' // xyz(c(1) + i) // '        '
+            call load_oneint(integral_label, T, S0)
+            F(i+1) = F(i+1) + T
+            integral_label = 'dvec/dB' // xyz(c(1) + i) // '        '
+            call load_oneint(integral_label, T, S0)
+            F(i+1) = F(i+1) + T
+            T = 0
+#else
             call load_oneint('dh/dB' // xyz(c(1)+i) // '  ', F(i+1), S0)
+#endif
             if (w(1)==0) then !no -i/2 Tb contribution
                call load_oneint('dS/dB' // xyz(c(1)+i) // '  ', S(i+1), S0)
+#ifdef PRG_DIRAC
+!radovan: to reproduce LAO magnetizability i have to multiply here by 0.5
+            S(i+1) = 0.5d0*S(i+1)
+#endif
             else
                call load_oneint('d|S>/dB' // xyz(c(1)+i), S(i+1), S0)
                F(i+1) = F(i+1) - w(1)/2 * S(i+1)
@@ -1337,8 +1401,28 @@ contains
             do i = 0, dp(1)-1
                ii = 1+i+dp(1)*j
                ! Hamiltonian integrals and -i/2 Tbb in A(1), Sbb in A(2)
+#ifdef PRG_DIRAC
+               ij_string = xyz(min(c(1) + i, c(2) + j)) // xyz(max(c(1) + i, c(2) + j))
+               integral_label = 'dbet/dB2' // ij_string // '      '
+               call load_oneint(integral_label, F(ii), S0)
+               T = tiny(0.0d0)*F(ii)
+               integral_label = 'dnuc/dB2' // ij_string // '      '
+               call load_oneint(integral_label, T, S0)
+               F(ii) = F(ii) + T
+               integral_label = 'dkin/dB2' // ij_string // '      '
+               call load_oneint(integral_label, T, S0)
+               F(ii) = F(ii) + T
+               integral_label = ij_string // 'rdsusll       '
+               call load_oneint(integral_label, T, S0)
+               F(ii) = F(ii) + T
+               integral_label = ij_string // 'DSUSNL        '
+               call load_oneint(integral_label, T, S0)
+               F(ii) = F(ii) + T
+               T = 0
+#else
                call load_oneint(xyz(min(c(1)+i,c(2)+j)) &
                              // xyz(max(c(1)+i,c(2)+j)) // 'dh/dB2', F(ii), S0)
+#endif
                ! If both fields static, no -i/2 Tbb to A(1)
                if (w(1)==0 .and. w(2)==0) then
                   call load_oneint('dS/dB2' // xyz(min(c(1)+i,c(2)+j))  &
