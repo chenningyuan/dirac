@@ -434,9 +434,23 @@ C***********************************************************************
 C***** C C *************************************************************
 C***********************************************************************
 C
-!     IF(DOKRCC.AND.DOPSI) THEN
-!        CALL KRCC_CALC('KR-CC',WFCONV,WORK,LWORK)
-!     END IF
+      IF(DOKRCC.AND.DOPSI) THEN
+C
+C        Transfer KR-CI info to common block DCBORB
+C        and recalculate DCBORB.
+C
+C        ... reset dcbopt.h
+C
+C Not sure which to include?
+C
+         CALL OPTINI
+         CALL TKRCIORB
+         CALL TKRMCORB
+         CALL SETDC2(0)
+C         CALL SETDCBIDX()
+C
+         CALL PAMKRCC(WORK,LWORK)
+      END IF
 C
 
 C
