@@ -1,0 +1,5 @@
+#ifdef LUCIAREL_STANDALONE
+      COMMON/BIGGY/WORK(MXPWRD)
+#else
+      COMMON/BIGGY/WORK(1)
+#endif
