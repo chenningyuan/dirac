@@ -126,7 +126,7 @@ C
       XQR_SKIPEE = .FALSE.
       XQR_SKIPEP = .FALSE.
 !     if number of positronic shells is zero skip e-p rotations. hjj+sk - aug 2010
-      if((npsht .eq. 0).or.x2c.or.bss.or.levyle.or.freepj.or.vextpj) 
+      if(x2c.or.bss.or.levyle.or.freepj.or.vextpj) 
      &  XQR_SKIPEP = .TRUE.
       DO I = 1,NFSYM
          XQR_INDSTR(1,I) = ' '
