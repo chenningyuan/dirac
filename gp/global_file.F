@@ -296,9 +296,22 @@ C     in two parts (the first part performs an implicit cast).
       RECORD_OFFSET =
      +  GLOBAL_FILE_OFFSET(TARGET_NODE,SOURCE_NODE,THIS_REC)
 
+      IERR = 0
+
       CALL MPI_FILE_IWRITE_AT(
      +  GF_HANDLE,RECORD_OFFSET,GF_RECBUF,GF_RECLEN,MPI_PACKED,
      +  WRITE_REQUEST,IERR)
+
+!     check for successful writing. SK - Aug 2010
+!     if it fails you need to change the general record offset 
+!     for a given node; for more information consult the 
+!     comments in bucket_sort.h.
+      IF(IERR .ne. 0)THEN
+        PRINT *, 'ERROR: GLOBAL_FILE_WRITE: writing failed at
+     +  RECORD_OFFSET (mytid) =',RECORD_OFFSET,SOURCE_NODE
+!       errorcode 112
+        CALL MPI_ABORT(MPI_COMM_WORLD,112,IERR)
+      END IF
 
       GF_BREC(IBUF,TARGET_NODE,SOURCE_NODE) = THIS_REC
       GF_NREC(TARGET_NODE,SOURCE_NODE) = THIS_REC
