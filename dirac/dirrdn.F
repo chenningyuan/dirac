@@ -2163,7 +2163,7 @@ C
       DATA TABDIR /'*END OF','*DHFCAL','*MP2CAL','*LUCITA',
      &             '*MVOCAL','*RESOLV','*KRMCSC','*STEP C',
      &             '*OPTIMI','*MP2 NO','*KRCICA','*COSCI ',
-     &             '*GASCIP','*HSFS  ','.XXXXXX','.XXXXXX'/
+     &             '*GASCIP','*HSFS  ','*KRCCCA','.XXXXXX'/
       DATA TABLE  /'.DHF   ','.MP2   ','.LUCITA','.REORDE',
      &             '.POST D','.RELCCS','.DIRRCI','.MVO   ',
      &             '.RESOLV','.ORBROT','.LUCIAR','.KRMCSC',
@@ -2369,8 +2369,8 @@ C&&&& KR CI :  perform (large-scale) KR-CI calculation
             GO TO 100
  117     CONTINUE
 C&&&& KR CC : perform (large-scale) KR-CC calculation
-CSK         DOKRCC  = .TRUE.
-CSK         NJOBS = NJOBS + 1
+            DOKRCC  = .TRUE.
+            NJOBS = NJOBS + 1
             GO TO 100
  118     CONTINUE
 C&&& COSCI: Do a COSCI calculation
@@ -2452,6 +2452,8 @@ C hj aug03: TODO: idea was/is to maybe follow MCSCF by big CI
 #endif
       IF(DOKRCI)
      &   WRITE(LUPRI,'(A)') ' * Kramers restricted CI calculation'
+      IF(DOKRCC)
+     &   WRITE(LUPRI,'(A)') ' * Kramers restricted CC calculation'
 C
 C     Orbital manipulations
 C
@@ -2588,8 +2590,9 @@ C       if "*HSFS" is in the input but MOD_HSFS is not defined !!!
      &     'but HSFS module is not included in this version')
 #endif
         GO TO 200
-C
+C     '*KRCCCALC' - Kramers Restricted CC CALCulation
    15 CONTINUE
+        CALL KRCC_INP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
 C
    16 CONTINUE
@@ -2627,6 +2630,7 @@ C
       CALL ROPTINP(WORD,.TRUE.,WORK,LWORK)
       CALL KRCI_INP(WORD,.TRUE.,WORK,LWORK)
 #endif
+      CALL KRCC_INP(WORD,.TRUE.,WORK,LWORK)
 C
 C     Input of relccsd module
 C
