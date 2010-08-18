@@ -32,6 +32,7 @@ usage()
    echo '     -xpp             : Include PP excitation energy and STEX modules'
    echo '     -xml             : Include XML input/output module'
    echo '     -krmc            : Include KR-MCSCF and LUCIAREL modules'
+   echo '     -krcc            : Include KRCC module'
    echo '     -emb             : Include ab initio/DFT-embedding module'
    echo '     -visual          : Include visualization module'
    echo '     -openrsp         : Include OpenRSP'
@@ -84,6 +85,7 @@ MODS_MESSAGE=
       ESRMOD=1
       XPPMOD=1
       KRMCMOD=1
+      KRCCMOD=1
       VISUALMOD=1
       IHFSCCMOD=1
       # by deactivating AMFI you save cca 17MB of static alloc (with ILP64)
@@ -129,6 +131,16 @@ MODS_MESSAGE=
       KRMCFLG='-DMOD_KRMC'
       KRMCTAR=1
       THIS_MOD_MESSAGE=" - KR-MCSCF and LUCIAREL modules (KRMC), $KRMCFLG"
+      echo $THIS_MOD_MESSAGE
+      MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
+   fi
+   #
+   #  KRCC
+   #
+   if [ -n "$KRCCMOD" ]; then
+      KRMCFLG='-DMOD_KRCC'
+      KRMCTAR=1
+      THIS_MOD_MESSAGE=" - KRCC module (KRCC)"
       echo $THIS_MOD_MESSAGE
       MODS_MESSAGE=$MODS_MESSAGE"#   "$THIS_MOD_MESSAGE"\n"
    fi
@@ -525,6 +537,117 @@ echo $dirs
       tar rvf \$szCurrDir.tar \$MDir/*.c \$MDir/*.F \$MDir/*.F90 \$Mdir/*.f90 \$MDir/*.inc \$MDir/*.h \$MDir/Makefile \$MDir/include 2>> export.log
    done
 EOF
+   #
+   # Active modules
+   #
+   if [ "$DFTTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/dft/{*.c,*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$DNFTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/densfit/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$FMMTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/fmm/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$XMLTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/gp/xml/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$EMBTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/embedding/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$ADCTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/reladc/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$ECPTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/argosecp/{*.F,*.F90,*.f90,*.h,*.c,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$VISUALTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/visual/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$AORESPONSETAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/aoresponse/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$MATRIX_OPERATIONS_TAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/matrix_operations/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$CAPTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/cap/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$HSCCTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/hsmrcc/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$ERITAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/eri/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$ESRTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/prp/esr/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$XPPTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/prp/xpp/{*.F,*.F90,*.f90,*.h,Makefile,include} 2>> export.log
+EOF
+   fi
+   if [ "$KRMCTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/krmc/{*.F,*.F90,*.f90,Makefile.in} 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/luciarel/{*.c,*.F,*.F90,*.f90,Makefile.in,*.inc,*.c} 2>> export.log
+EOF
+   fi
+   if [ "$KRCCTAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/krcc/{*.F,*.F90,*.f90,Makefile.in} 2>> export.log
+EOF
+   fi
+   if [ "$OOF_TAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/oof/{*.F,*.F90,*.f90,Makefile.in} 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/oof/{*.c,*.F,*.F90,*.f90,Makefile.in,*.inc,*.c} 2>> export.log
+EOF
+   fi
+   if [ "$SRDFT_TAR" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/srdft/{*.F,*.F90,*.f90,Makefile.in} 2>> export.log
+      tar rvf \$szCurrDir.tar \$szCurrDir/srdft/{*.c,*.F,*.F90,*.f90,Makefile.in,*.inc,*.c} 2>> export.log
+EOF
+   fi
+# A DIRAC administrator should have everything
+   if [ "$PAMADM" ]; then
+      cat <<EOF>> ./export
+      tar rvf \$szCurrDir.tar \$szCurrDir/pamadm \$szCurrDir/WHATSNEW 2>> export.log
+EOF
+   fi
+   if [ "$EXPORTTAR" ]; then
+      cat <<EOF>> ./export
+EOF
+   fi
    cat <<EOF >> ./export
       echo " - gzip'ing archive..."
       echo
@@ -555,7 +678,7 @@ which_modules()
 for mod in $ERIFLG $DNFFLG $FMMFLG $KRMCFLG $ESRFLG $XPPFLG $EMBFLG \
 $ADCFLG $VISUALFLG $OPENRSP_FLG $UNRELEASED_FLG $MATRIX_OPERATIONS_FLG $XCFUN_FLG \
 $CAPFLG $HSCCFLG $HSFSFLG $QDOTSFLG $LRGMOLFLG $OOF_FLG $XMLFLG $IHFSCCFLG \
-$AMFIFLG $LONDONFLG $SRDFT_FLG $ECPFLG $LOG_FLG
+$AMFIFLG $LONDONFLG $SRDFT_FLG $ECPFLG $LOG_FLG $KRCCFLG
 do
   if [ -n "$MODS" ]; then
     MODS="$MODS $mod"
@@ -671,6 +794,10 @@ if [ -n "$KRMCFLG" ]; then
    dirs="$dirs krmc luciarel"
    rmline build/dontbuild "krmc/\.\*"
    rmline build/dontbuild "luciarel/\.\*"
+fi
+if [ -n "$KRCCFLG" ]; then
+   dirs="$dirs krcc"
+   rmline build/dontbuild "krcc/\.\*"
 fi
 if [ -n "$ESRFLG" ]; then
    dirs="$dirs prp/esr"
@@ -798,6 +925,9 @@ while [ -n "$1" ]; do
          ;;
       -krmc|-krm|-kr|-k)
          KRMCMOD=1
+         ;;
+      -krcc|-krc|-kr|-k)
+         KRCCMOD=1
          ;;
       -emb|-embedding)
          EMBMOD=1
