@@ -1002,3 +1002,19 @@ C
 C
       RETURN
       END
+*
+      SUBROUTINE NXT_NUM_GE_NUM_MINUS_ONE(IVEC,IDIMM)
+C makes sure that the number in an array is always greater or equal
+C to the number before.
+#include "implicit.h"
+*
+      INTEGER IVEC(IDIMM)
+*
+      DO I=1,IDIMM-1
+        IF(IVEC(I).GT.IVEC(I+1)) THEN
+          IVEC(I+1) = IVEC(I)
+        END IF
+      END DO
+*
+      RETURN
+      END
