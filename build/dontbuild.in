@@ -42,6 +42,7 @@ embedding/.*
 lucita/unused.F
 luciarel/.*
 krmc/.*
+krcc/.*
 amfi/.*
 prp/xpp/.*
 prp/esr/.*
