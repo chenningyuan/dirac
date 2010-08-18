@@ -286,6 +286,13 @@ dirac_modules[this_module].add_cppflag('MOD_KRMC')
 dirac_modules[this_module].add_directory('krmc')
 dirac_modules[this_module].add_directory('luciarel')
 
+this_module = 'krcc'
+dirac_modules[this_module] = dirac_module('krcc', 'Include KRCC module')
+dirac_modules[this_module].add_cppflag('MOD_KRCC')
+dirac_modules[this_module].add_directory('krcc')
+#radovan: not sure
+#dirac_modules[this_module].add_dependency('krmc')
+
 this_module = 'emb'
 dirac_modules[this_module] = dirac_module('emb', 'Include ab initio/DFT-embedding module')
 dirac_modules[this_module].add_cppflag('MOD_EMB')
@@ -465,6 +472,7 @@ for module in dirac_modules:
                  dirac_modules[need_module].include()
               else:
                  error_message = '%s depends on %s but %s is not included' % (module, need_module, need_module)
+                 error_message += '\n(use ./pamadm.py --auto to automatically add all required modules)'
                  sys.exit(error_message)
 
 
@@ -474,6 +482,7 @@ for module in dirac_modules:
 #  there are no flags
 if len(sys.argv) == 1:
    print 'only core functionality selected'
+   print '(run ./pamadm.py -h to see all available options)'
 else:
    print 'Active modules:'
 for module in dirac_modules:
