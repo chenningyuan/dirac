@@ -3240,28 +3240,28 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
 *
 #include "krmcluci_inf.h"
 *
-      dimension IBATS(8,NBLOCK),LBATS(NBLOCK),I1BATS(NBLOCK),
-     &          LEBATS(NBLOCK),NBAT_MS2(NMS2VAL)
-*
-      IF(NBLOCK.GT.MXNTTS_MC) THEN
-       WRITE(6,*) 'NBLOCK IS GREATER THAN MXNTTS_MC'
-       WRITE(6,*) 'PLEASE INCREASE MXNTTS_MC ON krmcluci_inf.h TO',
-     &             NBLOCK
-       Call Abend2( 'Quitting.' )
-      END IF
-      do ITP = 1,NBLOCK,1
-        LBATS_MC(ITP) = LBATS(ITP)
-        I1BATS_MC(ITP) = I1BATS(ITP)
-        LEBATS_MC(ITP) = LEBATS(ITP)
-        do JTP = 1,8,1
-          IBATS_MC(JTP,ITP) = IBATS(JTP,ITP)
-        end do
-      end do
-*
-      NMK2VAL = NMS2VAL
-      do IM = 1,NMS2VAL,1
-        NBAT_MS2_MC(IM) = NBAT_MS2(IM)
-      end do
+C     dimension IBATS(8,NBLOCK),LBATS(NBLOCK),I1BATS(NBLOCK),
+C    &          LEBATS(NBLOCK),NBAT_MS2(NMS2VAL)
+C
+C     IF(NBLOCK.GT.MXNTTS_MC) THEN
+C      WRITE(6,*) 'NBLOCK IS GREATER THAN MXNTTS_MC'
+C      WRITE(6,*) 'PLEASE INCREASE MXNTTS_MC ON krmcluci_inf.h TO',
+C    &             NBLOCK
+C      Call Abend2( 'Quitting.' )
+C     END IF
+C     do ITP = 1,NBLOCK,1
+C       LBATS_MC(ITP) = LBATS(ITP)
+C       I1BATS_MC(ITP) = I1BATS(ITP)
+C       LEBATS_MC(ITP) = LEBATS(ITP)
+C       do JTP = 1,8,1
+C         IBATS_MC(JTP,ITP) = IBATS(JTP,ITP)
+C       end do
+C     end do
+C
+C     NMK2VAL = NMS2VAL
+C     do IM = 1,NMS2VAL,1
+C       NBAT_MS2_MC(IM) = NBAT_MS2(IM)
+C     end do
 *
       return
       end
