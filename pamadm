@@ -569,9 +569,15 @@ if is_subversion_working_copy:
    else:
       svn_url = os.popen("echo `svn info | grep 'URL' | awk '{ print $2 }'`", "r").read()
       f.write("DIRAC_SVN_URL=%s" % svn_url)
+   # remove line break in strings
+   svn_revision=svn_revision[:-1]; svn_url=svn_url[:-1]
+   # add also stdout print as was in the old pamadm
+   print "DIRAC svn revision (%s)= %s\n " % (svn_url,svn_revision)
+
 else:
    f.write("DIRAC_SVN_REVISION='unknown Subversion revision'\n")
    f.write("DIRAC_SVN_URL='unknown Subversion URL'\n")
+   print "unknown Subversion revision & Subversion URL"
 
 f.close()
 
