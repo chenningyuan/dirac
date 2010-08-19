@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+####################################################################################################
+#
 # script for selecting modules, packaging, exporting, and releasing of DIRAC
 # Radovan Bast <radovan.bast@uit.no> Tromso 2010
 #
@@ -21,6 +23,8 @@
 #           prepare release DIRAC10
 #           PLEASE MODIFY THIS LINE IF IT IS NOT CORRECT!
 #           ./pamadm.py --xpp --adc --visual --london --matrixop --amfi --export=DIRAC10.tar.gz
+#
+####################################################################################################
 
 from optparse import OptionParser
 import sys
@@ -101,6 +105,7 @@ def callback_include(option, opt, value, parser):
     dirac_modules[str(option)[2:]].include()
 
 
+#
 # list of vital directories and files - these are always exported/released
 # ========================================================================
 
@@ -143,6 +148,7 @@ vital_files.append('test/run.sh.in')
 vital_files.append('test/runtest')
 
 
+#
 # list of vital tests - these are always exported/released
 # ========================================================
 
@@ -292,6 +298,7 @@ dirac_modules[this_module].add_cppflag('MOD_KRCC')
 dirac_modules[this_module].add_directory('krcc')
 #radovan: not sure
 #dirac_modules[this_module].add_dependency('krmc')
+dirac_modules[this_module].take_out_of_adm()
 
 this_module = 'emb'
 dirac_modules[this_module] = dirac_module('emb', 'Include ab initio/DFT-embedding module')

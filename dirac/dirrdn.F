@@ -2634,7 +2634,11 @@ C
       CALL ROPTINP(WORD,.TRUE.,WORK,LWORK)
       CALL KRCI_INP(WORD,.TRUE.,WORK,LWORK)
 #endif
+
+#ifdef MOD_KRCC
       CALL KRCC_INP(WORD,.TRUE.,WORK,LWORK)
+#endif
+
 C
 C     Input of relccsd module
 C

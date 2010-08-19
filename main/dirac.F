@@ -449,7 +449,9 @@ C
          CALL SETDC2(0)
 C         CALL SETDCBIDX()
 C
+#ifdef MOD_KRCC
          CALL PAMKRCC(WORK,LWORK)
+#endif
       END IF
 C
 
