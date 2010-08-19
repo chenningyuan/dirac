@@ -249,9 +249,9 @@ if [ "${svn}" = "yes" ]; then
   }
 #
 #
-  echo ' Making the Makefiles (running ./pamadm.py --adm) - basic set of modules ...'
-  ./pamadm.py --adm  > ${testdir}/logs/$makelog 2>&1 || \
-  { echo " Running ./pamadm.py failed" ; \
+  echo ' Making the Makefiles (running ./pamadm --adm) - basic set of modules ...'
+  ./pamadm --adm  > ${testdir}/logs/$makelog 2>&1 || \
+  { echo " Running pamadm failed" ; \
     echo " Here is the logfile ${testdir}/logs/$makelog" ; \
     cat ${testdir}/logs/$makelog ; \
     exit 1 ;\

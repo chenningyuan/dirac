@@ -79,7 +79,7 @@ build/Makefile.dep: build/Makefile.obj build/Makefile.moddef
 	@echo "gp/gpc.p: include/fortran_interface.h" >> build/Makefile.dep
 
 dontbuild:dontbuild.in
-	@echo "The file 'dontbuild.in' is newer than 'dontbuild'. Run pamadm.py to correct this."; false
+	@echo "The file 'dontbuild.in' is newer than 'dontbuild'. Run pamadm to correct this."; false
 
 .PHONY:gp/compinfo.h
 gp/compinfo.h:
