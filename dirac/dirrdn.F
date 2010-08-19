@@ -2592,7 +2592,11 @@ C       if "*HSFS" is in the input but MOD_HSFS is not defined !!!
         GO TO 200
 C     '*KRCCCALC' - Kramers Restricted CC CALCulation
    15 CONTINUE
+#if defined (MOD_KRCC) 
         CALL KRCC_INP(WORD,.FALSE.,WORK,LWORK)
+#else
+        CALL QUIT('KRCC not activated.')
+#endif
         GO TO 200
 C
    16 CONTINUE
