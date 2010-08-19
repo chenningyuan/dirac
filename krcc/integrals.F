@@ -1757,7 +1757,7 @@ C#include "wrkspc.inc"
 *
 #include "implicit.inc"
 #include "ipoist8.inc"
-#include "include/dgroup.h"
+#include "dgroup.h"
 *
 C     dimension DMFC(*),H2AC(*)
       dimension DMFC(*),H2AC(NASHT/2,NASHT/2,NNASHX,NZ,*)
