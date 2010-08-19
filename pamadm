@@ -582,11 +582,18 @@ else:
 f.close()
 
 
-# create and distribute Makefile over active directories
-# ======================================================
+# =================================================================
+#  Link  build/Makefile.dirs as Makefile over active directories
+# =================================================================
 
 # ...not done so far....
 
+## miro: storing of 'material' for linking
+#for directory in vital_directories:
+#   print directory
+#for module in dirac_modules:
+#   if dirac_modules[module].directories and dirac_modules[module].is_included:
+#      print dirac_modules[module].directories
 
 
 # package tests
