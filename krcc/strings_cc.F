@@ -4692,9 +4692,9 @@ C?        call memchk
       NTEST = 00
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Spin-orbital excitation type '
-        CALL WRT_SPOX_TP_CC(ICAAB_IN,1)
+        CALL WRT_SPOX_TP_CC_KRCC(ICAAB_IN,1)
         WRITE(6,*) ' Spinflipped orbital excitation type '
-        CALL WRT_SPOX_TP_CC(ICAAB_OUT,1)
+        CALL WRT_SPOX_TP_CC_KRCC(ICAAB_OUT,1)
       END IF
 *
       RETURN

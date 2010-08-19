@@ -915,4 +915,359 @@ C            WRTVCD(SEGMNT,LU,IREW,LBLK)
 *
       RETURN
       END
+*
+      SUBROUTINE ADDVEC_DIIS_SUBSPC(MAXVEC,NVECIN,NVECADD,
+     &           LUVEC,LUADD,LUSCR1,LUSCR2,VEC1,VEC2,NVECOUT,NVECDEL,
+     &           IRESET)
+*
+* Add NVECADD vectors to DIIS subspace. If the number of vectors in subspace 
+* before addition is MAXVEC, remove also the oldest correction
+*
+* LUVEC : Initial approximation to solution vector and 
+*         NVECIN - 1 correction correction
+*     
+* IF IRESET = 1, then the LUVEC file is reset : current approximation
+* is constructed on LUVEC and the NVECADD vectors are added
+* Jeppe Olsen, Feb. 2000
+*     
+#include "implicit.inc"
+      DIMENSION VEC1(*),VEC2(*)
+*. Local scratch : Assuming max dim of subspace is 100
+      PARAMETER (MXP_DIM_SUBSPACE = 100)
+      DIMENSION SCR(MXP_DIM_SUBSPACE)
+*
+      IF(MAXVEC.GT.MXP_DIM_SUBSPACE) THEN
+        WRITE(6,*) ' Potential problem for ADDVEC_DIIS_SUBSPC '
+        WRITE(6,*) ' Max dim of subspace larger than program limit'
+        WRITE(6,*) ' MAXVEC, MXP_DIM_SUBSPACE = ',
+     &               MAXVEC, MXP_DIM_SUBSPACE
+        WRITE(6,*) ' Increase  MXP_DIM_SUBSPACE or decrease MAXVEC'
+        STOP       ' Increase  MXP_DIM_SUBSPACE or decrease MAXVEC'
+      END IF
+*
+      LBLK = -1
+*
+      IF(IRESET.EQ.0) THEN
+        NVECOUT = MIN(MAXVEC,NVECIN+NVECADD)
+        NVECDEL = MAX(0,NVECIN+NVECADD-MAXVEC)
+      ELSE
+        NVECOUT = 1 + NVECADD
+        NVECDEL = NVECIN - 1
+      END IF
+C?    WRITE(6,*) ' NVECIN, NVECADD,NVECOUT, NVECDEL',
+C?   &             NVECIN, NVECADD,NVECOUT, NVECDEL
+      IF(NVECDEL.EQ.0) THEN
+*. Just add vectors
+       CALL SKPVCD(LUVEC,NVECIN,VEC1,1,LBLK)
+       CALL REWINO(LUADD)
+       DO IVEC = 1, NVECADD
+         CALL COPVCD(LUADD,LUVEC,VEC1,0,LBLK)
+       END DO
+      ELSE IF( NVECDEL.GT.0 ) THEN
+*. Reset and add 
+*. New first vector (initial approximation) 
+*  should now by sum of first NVECDEL+1 vectors 
+*. on LUVEC  
+       NVECDELP1 = NVECDEL + 1
+       CALL REWINO(LUVEC)
+       ONE = 1.0D0
+       CALL SETVEC(SCR,ONE,NVECDELP1)
+C           MVCSMD(LUIN, FAC,LUOUT, LUSCR, VEC1,VEC2,NVEC,IREW,LBL
+       CALL MVCSMD(LUVEC,SCR,LUSCR1,LUSCR2,VEC1,VEC2,NVECDELP1,1,LBLK)
+*. Copy to LUSCR1 the vectors that should be kept after new vector 
+       CALL SKPVCD(LUVEC,NVECDELP1,VEC1,1,LBLK)
+       DO IVEC = NVECDELP1+1,NVECIN
+         CALL COPVCD(LUVEC,LUSCR1,VEC1,0,LBLK)
+       END DO
+       CALL REWINO(LUSCR1)
+       CALL REWINO(LUVEC)
+       DO IVEC = 1, NVECIN-NVECDEL
+         CALL COPVCD(LUSCR1,LUVEC,VEC1,0,LBLK)
+       END DO
+*. And new vectors from LUADD
+       CALL REWINO(LUADD)
+       DO IVEC = 1, NVECADD
+         CALL COPVCD(LUADD,LUVEC,VEC1,0,LBLK)
+       END DO
+      END IF
+*     ^ End of switch : NVECIN
+      RETURN
+      END
+*
+      SUBROUTINE DIIS_ACC(LUVEC_IN,NVEC,NPVEC,SCR,BMAT,LUVEC_OUT,
+     &                    VEC1,VEC2,LUSCR,IACTCOR,IRESET)
+*
+* DIIS acceleration
+*
+* A set of corrections, e_k,  are residing  on LUVEC_IN, 
+* combine these to an obtained improved approximation and 
+* write improved eigenvector on LUVEC_OUT as first vectors
+*
+* IF IACTCOR.EQ.1 Then overwrite the last correction vector 
+*                 with the actual difference between current 
+*                 and previous approximations
+*                 The previous approximation is assumed to be 
+*                 the sum of the first NVEC-1 vectors
+*     
+* IRESET is advice given by this routine to control routine.
+* IRESET = 0 suggest no reset
+* IRESET = 1 suggest reset
+*
+* The routine minimizes the vector
+*     
+* sum_k w_k e_k with the constraint that sum_k w_k = 1
+*
+* Jeppe Olsen, Feb. 1999
+*
+#include "implicit.inc"
+*. Scratch for holding two blocks of vectors
+      DIMENSION VEC1(*),VEC2(*)
+*. Scratch Atleast length 3*(NVEC+1)**2 + NVEC+1
+      DIMENSION SCR(*)
+*. Input/Output
+      DIMENSION BMAT(*)
+*
+      REAL*8 INPRDD
+*. Form of files
+      LBLK = -1
+*
+      IRESET = 0
+      NVECP1 = NVEC + 1
+      KLINV  = 1
+      KLSCR1 = KLINV  + NVECP1**2
+      KLSCR2 = KLSCR1 + NVECP1**2
+      KLW    = KLSCR2 + NVECP1**2
+*
+      NTEST = 0
+      IF(NTEST.GE.10) THEN
+        WRITE(6,*) ' Welcome to DIIS_ACC '
+        WRITE(6,*) ' Number of vectors in subspace', NVEC
+      END IF
+*
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Vectors on file LUVEC_IN'
+        CALL REWINO(LUVEC_IN)
+        DO IVEC = 1, NVEC
+          CALL WRTVCD(VEC1,LUVEC_IN,0,LBLK)
+        END DO
+      END IF
+*. Currently no reuse of B matrix so
+      IF(NPVEC.GT.0) THEN
+        WRITE(6,*) ' DIIS_ACC : ERROR NPVEC .ne. 0 '
+        STOP       ' DIIS_ACC : ERROR NPVEC .ne. 0 '
+      END IF
+*
+*
+*. Augment matrix B = <e_i!e_j>
+*. It is assumed that the B-matrix previously has been constructed
+*. for NPVEC vectors and is stored in BMAT in packed form. 
+      DO IVEC = NPVEC+1, NVEC
+*. Copy vector IVEC to LUSCR
+        CALL SKPVCD(LUVEC_IN,IVEC-1,VEC1,1,LBLK)
+        CALL REWINO(LUSCR)
+        CALL COPVCD(LUVEC_IN,LUSCR,VEC1,0,LBLK)
+        CALL REWINO(LUVEC_IN)
+        DO JVEC = 1, IVEC
+          CALL REWINO(LUSCR)
+          X = INPRDD(VEC1,VEC2,LUSCR,LUVEC_IN,0,LBLK)
+          BMAT(IVEC*(IVEC-1)/2+JVEC) = X
+        END DO
+      END DO
+*
+      IF(NTEST.GE.10) THEN
+         WRITE(6,*) ' Updated B = EE  matrix '
+         CALL PRSYM(BMAT,NVEC)
+      END IF
+*
+*. We will start by allowing individual weights for
+*. all NVEC vectors. If the system is to loose -
+*. as indicated by the first vectors getting a high 
+*. weight, we will first combine the first two vectors 
+*. Into a single vector, then the first three vectors in 
+*. a single vector etc.
+*
+        I_DO_WCHECK = 1
+        IF(I_DO_WCHECK.EQ.1) THEN
+          NTRUNC_MX = 2
+        ELSE
+          NTRUNC_MX = 1
+        END IF
+        DO NTRUNC = 1, NTRUNC_MX
+          NVEC_ACT   = NVEC-NTRUNC
+          NVEC_ACTP1 = NVEC_ACT +1
+*. Set up matrix A
+*
+*       ( B11  B12  B13 ... B1N  -1)
+*       ( B21  B22  B23 ... B1N  -1)
+*       .
+*       .
+*       ( BN1  BN2  BN3 ... BNN  -1)
+*       (  -1  -1   -1  ... -1    0)
+*
+      CALL DIIS_AMAT(BMAT,SCR(KLSCR1),NVEC)
+      CALL COPVEC(SCR(KLSCR1),BMAT,NVECP1*(NVECP1+1)/2)
+*. Modifications connected with truncation of basis set
+* B(1,1) = SUM(I=1,NTRUNC,J=1,NTRUNC) B(I,J)
+      B11 = 0.0D0
+      IJ = 0
+      DO I = 1, NTRUNC
+        DO J =1 , I-1
+         IJ = IJ + 1
+         B11 = B11 + 2.0D0*BMAT(IJ)
+        END DO
+        IJ = IJ + 1
+        B11 = B11 + BMAT(IJ)
+      END DO
+      BMAT(1) = B11
+*. B(NTRUNC,1) = 0
+      IF(NTRUNC.GT.1) THEN
+        BMAT(NTRUNC*(NTRUNC-1)/2+1) = 0.0D0
+      END IF
+*. B(I,1),I .gt. NTRUNC
+      DO I = NTRUNC+1, NVEC
+       BI1 = 0.0D0
+*. B(I,1) = Sum(J=1,NTRUNC) B(I,J)
+       DO J = 1, NTRUNC
+         IJ = MAX(I,J)*(MAX(I,J)-1)/2 + MIN(I,J)
+         BI1 = BI1 + BMAT(IJ)
+       END DO
+       BMAT(I*(I-1)/2+1) = BI1
+      END DO
+*
+C     Zero all off diagonal elemnents for truncated vectors
+      DO J = 2, NTRUNC
+       DO I = J+1,NVECP1
+         IJ = I*(I-1)/2+J
+         BMAT(IJ) = 0.0D0
+       END DO
+      END DO
+C?    WRITE(6,*) ' BMAT after truncation '
+C?    CALL PRSYM(BMAT,NVECP1)
+*
+      CALL TRIPAK(SCR(KLINV),BMAT,2,NVECP1,NVECP1,1.0D0)
+*. Invert 
+      CALL INVERT_BY_DIAG2(SCR(KLINV),SCR(KLSCR1),SCR(KLSCR2),
+     &                    SCR(KLW),NVECP1)
+*. Multiply inverse matrix and vector (0,0, .. ,-1)
+      CALL COPVEC(SCR(KLINV+NVEC*(NVEC+1)),SCR(KLW),NVEC)
+*. Copy the weight from the first vector to vectors 2-NTRUNC 
+      DO I = 2, NTRUNC
+        SCR(KLW-1+I) = SCR(KLW-1+1)
+      END DO
+*
+      ONEM = -1.0D0
+      CALL SCALVE(SCR(KLW),ONEM,NVEC)
+*
+      IF(NTEST.GE.10) THEN
+       WRITE(6,*) ' Weight vector '
+       CALL WRTMAT(SCR(KLW),1,NVEC,1,NVEC)
+      END IF
+*. Is this weight vector okay ?
+*. Current criteria sum_i=1,NVEC-1 Abs(W_I) .le. ABS(W_NVEC)
+      WPREV = 0.0D0
+      DO I = 1, NVEC-1
+       WPREV = WPREV + ABS(SCR(KLW-1+I))
+      END DO
+      FACTOR = 1.0D0
+      WNVEC = ABS(SCR(KLW-1+NVEC))
+      IF(WPREV.LE.FACTOR*WNVEC.OR.NVEC.LE.3.OR.I_DO_WCHECK.EQ.0)THEN
+        I_AM_OKAY = 1
+        IF(NTRUNC.EQ.1) IRESET = 0
+      ELSE
+        I_AM_OKAY = 0
+        IF(NTRUNC.EQ.1) IRESET = 1
+      END IF
+      IF(NTEST.GE.1) WRITE(6,'(A,I3,2E13.6)')
+     &' DIIS : nvec, w_prev, w_nvec',NVEC,WPREV,WNVEC
+      IF(I_AM_OKAY.EQ.1) GOTO 1001
+      END DO
+*     ^ End of loop over truncation level
+ 1001 CONTINUE
+*. Form new vector 
+*. First we have only the corrections stored on LUVEC_IN, 
+*. weights are given as som of sum of solution vectors, so 
+*. change weights
+*. sum w_k x_k = sum (n+1-k)w_k e_k
+*
+      DO I = 1, NVEC
+        SUM = 0
+        DO K = I, NVEC
+          SUM = SUM + SCR(KLW-1+K)
+        END DO
+        SCR(KLINV-1+I) = SUM
+      END DO
+      IF(IACTCOR.EQ.0) THEN
+        CALL MVCSMD(LUVEC_IN,SCR(KLINV),LUVEC_OUT,LUSCR,
+     &              VEC1,VEC2,NVEC,1,LBLK)
+      ELSE
+*. Obtain correction vector
+       DO IVEC = 1, NVEC - 1
+         SCR(KLINV-1+IVEC) = SCR(KLINV-1+IVEC) -1.0D0
+       END DO
+       CALL MVCSMD(LUVEC_IN,SCR(KLINV),LUVEC_OUT,LUSCR,
+     &              VEC1,VEC2,NVEC,1,LBLK)
+*. And save on LUVEC_IN
+       CALL SKPVCD(LUVEC_IN,NVEC-1,VEC1,1,LBLK)
+       CALL REWINO(LUVEC_OUT)
+       CALL COPVCD(LUVEC_OUT,LUVEC_IN,VEC1,0,LBLK)
+*. And obtain new total vector on LUVEC_OUT
+       ONE = 1.0D0
+       CALL SETVEC(SCR(KLINV),ONE,NVEC)
+       CALL MVCSMD(LUVEC_IN,SCR(KLINV),LUVEC_OUT,LUSCR,
+     &              VEC1,VEC2,NVEC,1,LBLK)
+      END IF
+*     ^ End of IACTCOR switch 
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' New approximation to solution vector'
+        CALL WRTVCD(VEC1,LUVEC_OUT,1,LBLK)
+      END IF
+*
+      RETURN
+      END
+*
+      SUBROUTINE DIIS_AMAT(EE,A,NVEC)
+*     
+* Construct B matrix of DIIS method from error matrix
+*
+* Input :
+* 
+* NVEC : Number of vectors in DIIS subspace
+* EE(I,J) =  <e_i!e_j>
+*
+* Output
+*     
+*   A =  
+*
+*       ( E11  E12  E13 ... E1N  -1)
+*       ( E21  E22  E23 ... E1N  -1)
+*       .
+*       .
+*       ( EN1  EN2  EN3 ... ENN  -1)
+*       (  -1  -1   -1  ... -1    0)
+*
+* Input and output matrices are assumed in lower diag packed form
+*
+* Jeppe Olsen, Feb28, 2000
+*
+#include "implicit.inc"
+*. Input
+      DIMENSION EE(*)
+*. Output
+      DIMENSION A(*)
+*
+      LEN = NVEC*(NVEC+1)/2
+      CALL COPVEC(EE,A,LEN)
+      ONEM = -1.0D0
+      CALL SETVEC(A(LEN+1),ONEM,NVEC)
+      NVECP1 = NVEC+1
+      A(NVECP1*(NVECP1+1)/2) = 0.0D0
+*
+      NTEST = 00
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' A matrix from DIIS_AMAT'
+        CALL PRSYM(A,NVECP1)
+      END IF
+*
+      RETURN
+      END
 
