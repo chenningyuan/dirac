@@ -5,7 +5,7 @@
  are supposed to change frequently.
 
  To include these fortran 90 features, use Fortran90/95 compiler. 
- Type first 'pamadm -adm -emb -oof make', then 'make mod' and finally 'make'.
+ Type first './pamadm.py --adm --emb --oof', then 'make mod' and finally 'make'.
 
  If you change the content of some module, run first 'make mod' to create the refreshed
  "*.mod" file.

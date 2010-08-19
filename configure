@@ -2315,7 +2315,7 @@ checkmods()
 {
     if [ ! -r build/Makefile.moddef ]; then
 	echo "Error, cannot find the file: build/Makefile.moddef" >&2
-	echo 'You must run "pamadm" before "configure" to correct this problem. Quitting.' >&2
+	echo 'You must run "pamadm.py" before "configure" to correct this problem. Quitting.' >&2
 	kill $$ # Suicide is painless, it brings on many changes
     fi
 }
@@ -3252,7 +3252,7 @@ if [ $IPRINT -gt "0" ];  then
   echo 'configure print level set to '$IPRINT
 fi
 
-checkmods # Make sure that pamadm was run before configure
+checkmods # Make sure that pamadm.py was run before configure
 guess_system
 parallel_stuff
 safeflags_stuff
