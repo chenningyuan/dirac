@@ -85,7 +85,7 @@ MODS_MESSAGE=
       ESRMOD=1
       XPPMOD=1
       KRMCMOD=1
- #     KRCCMOD=1
+      KRCCMOD=1
       VISUALMOD=1
       IHFSCCMOD=1
       # by deactivating AMFI you save cca 17MB of static alloc (with ILP64)

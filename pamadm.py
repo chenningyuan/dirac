@@ -298,7 +298,7 @@ dirac_modules[this_module].add_cppflag('MOD_KRCC')
 dirac_modules[this_module].add_directory('krcc')
 #radovan: not sure
 #dirac_modules[this_module].add_dependency('krmc')
-dirac_modules[this_module].take_out_of_adm()
+#dirac_modules[this_module].take_out_of_adm()
 
 this_module = 'emb'
 dirac_modules[this_module] = dirac_module('emb', 'Include ab initio/DFT-embedding module')
