@@ -346,6 +346,8 @@ C--------------------------------------------------------
 !     ... printout - orb.energies per symmetries
       WRITE(LUPRI,'(/,2X,A)') 
      &  'Orbitals per symmetry, their irreps, energies...'
+      call flush (LUPRI)
+
       do 340 icl=1,nclass
       write (*,3300) icl
 3300  format(' irrep ',i2)
@@ -354,12 +356,17 @@ C--------------------------------------------------------
 !     write (*,3400) (io,ilet(2*ic(io)-1+icv(io)),eps(io),
 !    1 io=ibias(icl)+1,ibias(icl+1))
        ilet_indx = 2*ic(io)-1+icv(io)
-       if (ilet_indx.le.0) then
-         write(LUPRI,*) 'error, io,ic(io),icv(io):',io,ic(io),icv(io)
+       if (ilet_indx.le.0.or.ilet_indx.gt.6) then
+         write(LUPRI,*) 'error, io,ic(io),icv(io): ',
+     &                   io,ic(io),icv(io)
+         write(LUPRI,*) 'ibias(icl)+1,ibias(icl+1): ',
+     &                   ibias(icl)+1,ibias(icl+1)
          write(LUPRI,*) ' ilet_indx=',ilet_indx
+         call flush (LUPRI)
          call quit('ilet_indx error!')
        endif
-       write (*,3400) io,ilet(ilet_indx),eps(io)
+       write (*,3400) io,ilet(ilet_indx),eps(io) 
+       call flush (LUPRI)
       enddo
 
 3400  format(3('orb ',i3,2x,a1,', e=',1pe12.5,:,';  '))
