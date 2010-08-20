@@ -178,7 +178,8 @@ gp/gptrygve.p : gp/gptrygve.F
 
 ifeq ($(SAFE_FLAGS_MODE),NO) # check only if no safe-flags compilation
 
-ifeq (,$(findstring "DVAR_GFORTRAN",$(FPP_FLAGS))) 
+ifeq (-DVAR_GFORTRAN, $(findstring -DVAR_GFORTRAN, $(FPP_FLAGS) ))
+
 #miro: I checked it with gfortran 4.4, we need to avoid optimization
 prp/pamrvc.o : prp/pamrvc.F
 	@echo " ----  gfortran compiler, prp/pamrvc.F with no level of optimization :"
