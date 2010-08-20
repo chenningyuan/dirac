@@ -227,7 +227,7 @@ files_never_compiled.append('xcfun/fortran/example.F90')
 dirac_modules = {}
 
 this_module = 'visual'
-dirac_modules[this_module] = dirac_module('visual', 'Include visualization module')
+dirac_modules[this_module] = dirac_module('visual', 'visualization module')
 dirac_modules[this_module].add_cppflag('MOD_VISUAL')
 dirac_modules[this_module].add_directory('visual')
 dirac_modules[this_module].add_file('somefile')
@@ -238,17 +238,17 @@ dirac_modules[this_module].add_test(medium_test('visual_general'))
 dirac_modules[this_module].add_test(medium_test('visual_div_rot'))
 
 this_module = 'matrixop'
-dirac_modules[this_module] = dirac_module('matrixop', 'Include matrix operations module')
+dirac_modules[this_module] = dirac_module('matrixop', 'matrix operations module')
 dirac_modules[this_module].add_cppflag('MOD_MATRIX_OPERATIONS')
 dirac_modules[this_module].add_directory('matrix_operations')
 
 this_module = 'eri'
-dirac_modules[this_module] = dirac_module('eri', 'Include ERI integral routines')
+dirac_modules[this_module] = dirac_module('eri', 'ERI integral routines')
 dirac_modules[this_module].add_cppflag('MOD_ERI')
 dirac_modules[this_module].add_directory('eri')
 
 this_module = 'densfit'
-dirac_modules[this_module] = dirac_module('densfit', 'Include density fitting module')
+dirac_modules[this_module] = dirac_module('densfit', 'density fitting module')
 dirac_modules[this_module].add_cppflag('MOD_DNF')
 dirac_modules[this_module].add_dependency('eri')
 dirac_modules[this_module].add_directory('densfit')
@@ -259,7 +259,7 @@ dirac_modules[this_module].add_cppflag('LARGE_MOLECULES')
 dirac_modules[this_module].take_out_of_adm()
 
 this_module = 'fmm'
-dirac_modules[this_module] = dirac_module('fmm', 'Include fast multipole method')
+dirac_modules[this_module] = dirac_module('fmm', 'fast multipole method')
 dirac_modules[this_module].add_cppflag('MOD_FMM')
 dirac_modules[this_module].add_dependency('eri')
 dirac_modules[this_module].add_dependency('densfit')
@@ -267,7 +267,7 @@ dirac_modules[this_module].add_directory('fmm')
 dirac_modules[this_module].take_out_of_adm()
 
 this_module = 'esr'
-dirac_modules[this_module] = dirac_module('esr', 'Include ESR property module')
+dirac_modules[this_module] = dirac_module('esr', 'ESR property module')
 dirac_modules[this_module].add_cppflag('MOD_ESR')
 dirac_modules[this_module].add_directory('prp/esr')
 dirac_modules[this_module].add_dependency('krmc')
@@ -275,51 +275,51 @@ dirac_modules[this_module].add_test(long_test('26.krmc_gosci'))
 dirac_modules[this_module].add_test(medium_test('27.krmc_luciarel', fine_with_mpi = False))
 
 this_module = 'xpp'
-dirac_modules[this_module] = dirac_module('xpp', 'Include PP excitation energy and STEX modules')
+dirac_modules[this_module] = dirac_module('xpp', 'PP excitation energy and STEX modules')
 dirac_modules[this_module].add_cppflag('MOD_XPP')
 dirac_modules[this_module].add_cppflag('MOD_STEX')
 dirac_modules[this_module].add_directory('prp/xpp')
 
 this_module = 'xml'
-dirac_modules[this_module] = dirac_module('xml', 'Include XML input/output module')
+dirac_modules[this_module] = dirac_module('xml', 'XML input/output module')
 dirac_modules[this_module].add_cppflag('MOD_XML')
 dirac_modules[this_module].add_directory('gp/xml')
 dirac_modules[this_module].take_out_of_adm()
 
 this_module = 'krmc'
-dirac_modules[this_module] = dirac_module('krmc', 'Include KR-MCSCF and LUCIAREL modules')
+dirac_modules[this_module] = dirac_module('krmc', 'KR-MCSCF and LUCIAREL modules')
 dirac_modules[this_module].add_cppflag('MOD_KRMC')
 dirac_modules[this_module].add_directory('krmc')
 dirac_modules[this_module].add_directory('luciarel')
 
 this_module = 'krcc'
-dirac_modules[this_module] = dirac_module('krcc', 'Include KRCC module')
+dirac_modules[this_module] = dirac_module('krcc', 'KRCC module')
 dirac_modules[this_module].add_cppflag('MOD_KRCC')
 dirac_modules[this_module].add_directory('krcc')
 dirac_modules[this_module].take_out_of_adm()
 
 this_module = 'emb'
-dirac_modules[this_module] = dirac_module('emb', 'Include ab initio/DFT-embedding module')
+dirac_modules[this_module] = dirac_module('emb', 'ab initio/DFT-embedding module')
 dirac_modules[this_module].add_cppflag('MOD_EMB')
 dirac_modules[this_module].add_directory('embedding')
 dirac_modules[this_module].add_test(short_test('47.fde.prop'))
 dirac_modules[this_module].add_test(medium_test('fde_response_autodiff', fine_with_mpi = False))
 
 this_module = 'openrsp'
-dirac_modules[this_module] = dirac_module('openrsp', 'Include OpenRSP')
+dirac_modules[this_module] = dirac_module('openrsp', 'OpenRSP')
 dirac_modules[this_module].add_cppflag('MOD_OPENRSP')
 dirac_modules[this_module].add_directory('openrsp')
 dirac_modules[this_module].add_dependency('matrixop')
 
 this_module = 'xcfun'
-dirac_modules[this_module] = dirac_module('xcfun', 'Include XCFun module')
+dirac_modules[this_module] = dirac_module('xcfun', 'XCFun module')
 dirac_modules[this_module].add_cppflag('MOD_XCFUN')
 dirac_modules[this_module].add_directory('xcfun')
 dirac_modules[this_module].add_test(short_test('dft_response_xcfun'))
 dirac_modules[this_module].take_out_of_adm()
 
 this_module = 'cap'
-dirac_modules[this_module] = dirac_module('cap', 'Include CAP module')
+dirac_modules[this_module] = dirac_module('cap', 'CAP module')
 dirac_modules[this_module].add_cppflag('MOD_CAP')
 dirac_modules[this_module].add_dependency('oof')
 dirac_modules[this_module].add_directory('cap')
@@ -330,7 +330,7 @@ dirac_modules[this_module].take_out_of_adm()
 #       (can they be avoided?)
 #       same for directories ... so complicating
 this_module = 'hscc'
-dirac_modules[this_module] = dirac_module('hscc', 'Include interface for the (external) HSMRCC code together with its objects')
+dirac_modules[this_module] = dirac_module('hscc', 'interface for the (external) HSMRCC code together with its objects')
 dirac_modules[this_module].add_cppflag('MOD_HSCC')
 dirac_modules[this_module].add_dependency('oof')
 dirac_modules[this_module].add_directory('hsmrcc')
@@ -341,7 +341,7 @@ dirac_modules[this_module].take_out_of_adm()
 #       (can they be avoided?)
 #       same for directories ... so complicating
 this_module = 'hsfs'
-dirac_modules[this_module] = dirac_module('hsfs', 'Include higher external Higher sector FSCC code')
+dirac_modules[this_module] = dirac_module('hsfs', 'higher external Higher sector FSCC code')
 dirac_modules[this_module].add_cppflag('MOD_HSFS')
 dirac_modules[this_module].add_dependency('oof')
 dirac_modules[this_module].add_dependency('hscc')
@@ -353,7 +353,7 @@ dirac_modules[this_module].take_out_of_adm()
 #       (can they be avoided?)
 #       same for directories ... so complicating
 this_module = 'hsfsdyn'
-dirac_modules[this_module] = dirac_module('hsfsdyn', 'Include higher external Higher sector FSCC code - dynamic allocation version.')
+dirac_modules[this_module] = dirac_module('hsfsdyn', 'higher external Higher sector FSCC code - dynamic allocation version.')
 dirac_modules[this_module].add_cppflag('HSFS_DYN_ALLOC')
 dirac_modules[this_module].add_dependency('oof')
 dirac_modules[this_module].add_dependency('hsfs')
@@ -362,44 +362,44 @@ dirac_modules[this_module].add_directory('hsmrcc')
 dirac_modules[this_module].take_out_of_adm()
 
 this_module = 'ihfscc'
-dirac_modules[this_module] = dirac_module('ihfscc', 'Include Intermediate Hamiltonian functionality to FSCC code')
+dirac_modules[this_module] = dirac_module('ihfscc', 'Intermediate Hamiltonian functionality to FSCC code')
 dirac_modules[this_module].add_cppflag('MOD_IHFSCC')
 
 this_module = 'amfi'
-dirac_modules[this_module] = dirac_module('amfi', 'Include the AMFI functionality into DIRAC')
+dirac_modules[this_module] = dirac_module('amfi', 'the AMFI functionality into DIRAC')
 dirac_modules[this_module].add_cppflag('MOD_AMFI')
 dirac_modules[this_module].add_directory('amfi')
 
 this_module = 'london'
-dirac_modules[this_module] = dirac_module('london', 'Include London orbitals functionality for magnetic properties')
+dirac_modules[this_module] = dirac_module('london', 'London orbitals functionality for magnetic properties')
 dirac_modules[this_module].add_cppflag('MOD_LONDON')
 dirac_modules[this_module].add_test(short_test('38.london.magn_prop'))
 
 this_module = 'magnetiz'
-dirac_modules[this_module] = dirac_module('magnetiz', 'Include calculation of magnetizabilities')
+dirac_modules[this_module] = dirac_module('magnetiz', 'calculation of magnetizabilities')
 dirac_modules[this_module].add_cppflag('MOD_MAGNETIZ')
 dirac_modules[this_module].add_dependency('london')
 
 this_module = 'oof'
-dirac_modules[this_module] = dirac_module('oof', 'Include object oriented modularity of Fotran 90/95')
+dirac_modules[this_module] = dirac_module('oof', 'object oriented modularity of Fotran 90/95')
 dirac_modules[this_module].add_cppflag('MOD_OOF')
 dirac_modules[this_module].add_directory('oof')
 dirac_modules[this_module].take_out_of_adm()
 
 this_module = 'adc'
-dirac_modules[this_module] = dirac_module('adc', 'Include ADC electron propagator module')
+dirac_modules[this_module] = dirac_module('adc', 'ADC electron propagator module')
 dirac_modules[this_module].add_cppflag('MOD_ADC')
 dirac_modules[this_module].add_directory('reladc')
 dirac_modules[this_module].add_test(medium_test('53.reladc', fine_with_mpi = False))
 
 this_module = 'ecp'
-dirac_modules[this_module] = dirac_module('ecp', 'Include ARGOS ECP module')
+dirac_modules[this_module] = dirac_module('ecp', 'ARGOS ECP module')
 dirac_modules[this_module].add_cppflag('MOD_ECP')
 dirac_modules[this_module].add_directory('argosecp')
 dirac_modules[this_module].take_out_of_adm()
 
 this_module = 'srdft'
-dirac_modules[this_module] = dirac_module('srdft', 'Include srDFT module')
+dirac_modules[this_module] = dirac_module('srdft', 'srDFT module')
 dirac_modules[this_module].add_cppflag('MOD_SRDFT')
 dirac_modules[this_module].add_cppflag('MOD_KRMC')
 dirac_modules[this_module].add_directory('srdft')
@@ -407,7 +407,7 @@ dirac_modules[this_module].add_dependency('krmc')
 dirac_modules[this_module].take_out_of_adm()
 
 this_module = 'unreleased'
-dirac_modules[this_module] = dirac_module('unreleased', 'Include unreleased functionality (not covered by other flags)')
+dirac_modules[this_module] = dirac_module('unreleased', 'unreleased functionality (not covered by other flags)')
 dirac_modules[this_module].add_cppflag('MOD_UNRELEASED')
 
 this_module = 'log'
@@ -484,6 +484,9 @@ for module in dirac_modules:
 # report on screen
 # ================
 
+# blank line
+print
+
 #  there are no flags
 if len(sys.argv) == 1:
    print 'only core functionality selected'
@@ -492,7 +495,7 @@ else:
    print 'Active modules:'
 for module in dirac_modules:
     if dirac_modules[module].is_included:
-       print dirac_modules[module].message
+       print '       ' + dirac_modules[module].message
 print
 if dirac_modules['xcfun'].is_included:
    print "*****************************************************************"
