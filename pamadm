@@ -572,7 +572,9 @@ if is_subversion_working_copy:
    # remove line break in strings
    svn_revision=svn_revision[:-1]; svn_url=svn_url[:-1]
    # add also stdout print as was in the old pamadm
-   print "DIRAC svn revision (%s)= %s\n " % (svn_url,svn_revision)
+#radovan: why should pamadm print svn url and revision to stdout?
+#         svn info does that much better - if needed
+#  print "DIRAC svn revision (%s)= %s\n " % (svn_url,svn_revision)
 
 else:
    f.write("DIRAC_SVN_REVISION='unknown Subversion revision'\n")
