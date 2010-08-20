@@ -334,6 +334,10 @@ dirac_modules[this_module] = dirac_module('hscc', 'interface for the (external) 
 dirac_modules[this_module].add_cppflag('MOD_HSCC')
 dirac_modules[this_module].add_dependency('oof')
 dirac_modules[this_module].add_directory('hsmrcc')
+dirac_modules[this_module].add_directory('hsmrcc/second_quant')
+dirac_modules[this_module].add_directory('hsmrcc/interface')
+dirac_modules[this_module].add_directory('hsmrcc/hsmrcc_external/modules')
+dirac_modules[this_module].add_directory('hsmrcc/hsmrcc_external/source')
 dirac_modules[this_module].take_out_of_adm()
 
 #fixme: in pamadm this flag triggers a lot of operations
@@ -345,7 +349,7 @@ dirac_modules[this_module] = dirac_module('hsfs', 'higher external Higher sector
 dirac_modules[this_module].add_cppflag('MOD_HSFS')
 dirac_modules[this_module].add_dependency('oof')
 dirac_modules[this_module].add_dependency('hscc')
-dirac_modules[this_module].add_directory('hsmrcc')
+dirac_modules[this_module].add_directory('hsmrcc/high_sect_fscc_external')
 dirac_modules[this_module].take_out_of_adm()
 
 #fixme: in pamadm this flag triggers a lot of operations
@@ -358,7 +362,7 @@ dirac_modules[this_module].add_cppflag('HSFS_DYN_ALLOC')
 dirac_modules[this_module].add_dependency('oof')
 dirac_modules[this_module].add_dependency('hsfs')
 dirac_modules[this_module].add_dependency('hscc')
-dirac_modules[this_module].add_directory('hsmrcc')
+#dirac_modules[this_module].add_directory('hsmrcc')
 dirac_modules[this_module].take_out_of_adm()
 
 this_module = 'ihfscc'
@@ -582,7 +586,7 @@ if is_subversion_working_copy:
 else:
    f.write("DIRAC_SVN_REVISION='unknown Subversion revision'\n")
    f.write("DIRAC_SVN_URL='unknown Subversion URL'\n")
-   print "unknown Subversion revision & Subversion URL"
+ #  print "unknown Subversion revision & Subversion URL"
 
 f.close()
 
@@ -593,6 +597,8 @@ f.close()
 # get position of absolute dirac directory
 dirac_dir=os.path.dirname(os.path.abspath(sys.argv[0]))
 source_dir=dirac_dir+"/build/Makefile.dirs"
+if not os.path.exists(source_dir):
+   sys.exit(source_dir+' does not exist ! No linking possible, exit !')
 
 #pick up directory names
 for directory in vital_directories:
@@ -609,7 +615,6 @@ for module in dirac_modules:
             dest_dir=dirac_dir+"/"+directory+"/Makefile"
             if not os.path.islink(dest_dir):
                os.symlink(source_dir,dest_dir)
-
 
 # package tests
 # =============
