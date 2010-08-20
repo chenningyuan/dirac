@@ -583,19 +583,29 @@ else:
 
 f.close()
 
+# ===================================================================================
+#  Link  "build/Makefile.dirs" as "Makefile" over active source code directories
+# ===================================================================================
 
-# =================================================================
-#  Link  build/Makefile.dirs as Makefile over active directories
-# =================================================================
+# get position of absolute dirac directory
+dirac_dir=os.path.dirname(os.path.abspath(sys.argv[0]))
+source_dir=dirac_dir+"/build/Makefile.dirs"
 
-# ...not done so far....
-
-## miro: storing of 'material' for linking
-#for directory in vital_directories:
-#   print directory
-#for module in dirac_modules:
-#   if dirac_modules[module].directories and dirac_modules[module].is_included:
-#      print dirac_modules[module].directories
+#pick up directory names
+for directory in vital_directories:
+   if os.path.exists(dirac_dir+"/"+directory):
+      #print dirac_dir+"/"+directory
+      dest_dir=dirac_dir+"/"+directory+"/Makefile"
+      if not os.path.islink(dest_dir):
+         os.symlink(source_dir,dest_dir)
+for module in dirac_modules:
+   if dirac_modules[module].directories and dirac_modules[module].is_included:
+      for directory in dirac_modules[module].directories:
+         if os.path.exists(dirac_dir+"/"+directory):
+            #print dirac_dir+"/"+directory
+            dest_dir=dirac_dir+"/"+directory+"/Makefile"
+            if not os.path.islink(dest_dir):
+               os.symlink(source_dir,dest_dir)
 
 
 # package tests
