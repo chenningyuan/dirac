@@ -2407,6 +2407,8 @@ C   PAMIOU: LUTMAT
 #include "dcbdhf.h"
 #include "dcbbas.h"
 #include "dcborb.h"
+! needed for restart from X2CMAT
+#include "dcbxpr.h"
 #include "maxaqn.h"
 #include "ccom.h"
 #include "dgroup.h"
