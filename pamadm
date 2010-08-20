@@ -576,17 +576,10 @@ if is_subversion_working_copy:
    else:
       svn_url = os.popen("echo `svn info | grep 'URL' | awk '{ print $2 }'`", "r").read()
       f.write("DIRAC_SVN_URL=%s" % svn_url)
-   # remove line break in strings
-   svn_revision=svn_revision[:-1]; svn_url=svn_url[:-1]
-   # add also stdout print as was in the old pamadm
-#radovan: why should pamadm print svn url and revision to stdout?
-#         svn info does that much better - if needed
-#  print "DIRAC svn revision (%s)= %s\n " % (svn_url,svn_revision)
 
 else:
    f.write("DIRAC_SVN_REVISION='unknown Subversion revision'\n")
    f.write("DIRAC_SVN_URL='unknown Subversion URL'\n")
- #  print "unknown Subversion revision & Subversion URL"
 
 f.close()
 
@@ -603,18 +596,17 @@ if not os.path.exists(source_dir):
 #pick up directory names
 for directory in vital_directories:
    if os.path.exists(dirac_dir+"/"+directory):
-      #print dirac_dir+"/"+directory
       dest_dir=dirac_dir+"/"+directory+"/Makefile"
       if not os.path.islink(dest_dir):
          os.symlink(source_dir,dest_dir)
 for module in dirac_modules:
-   if dirac_modules[module].directories and dirac_modules[module].is_included:
+   if dirac_modules[module].directories and dirac_modules[module].is_included and (module != 'xcfun'):
       for directory in dirac_modules[module].directories:
          if os.path.exists(dirac_dir+"/"+directory):
-            #print dirac_dir+"/"+directory
             dest_dir=dirac_dir+"/"+directory+"/Makefile"
             if not os.path.islink(dest_dir):
                os.symlink(source_dir,dest_dir)
+
 
 # package tests
 # =============
