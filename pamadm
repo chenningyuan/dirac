@@ -600,6 +600,7 @@ for directory in vital_directories:
       if not os.path.islink(dest_dir):
          os.symlink(source_dir,dest_dir)
 for module in dirac_modules:
+#  xcfun has its own Makefile, do not overwrite it with a link
    if dirac_modules[module].directories and dirac_modules[module].is_included and (module != 'xcfun'):
       for directory in dirac_modules[module].directories:
          if os.path.exists(dirac_dir+"/"+directory):
