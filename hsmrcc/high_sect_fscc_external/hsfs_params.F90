@@ -47,7 +47,10 @@ write(LUPRI,*) 'assigning HSFS parameters...according to priunit.h file'
 
  ndt1 =1000
  ndt2 =500000
- ndp3 =700000
+
+! ndp3 = 700000
+ ndp3 = 1600000
+
  ndp4 =2000000
  ndp5 = 325000
 

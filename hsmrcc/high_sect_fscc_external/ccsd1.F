@@ -2441,7 +2441,8 @@ c  iparm=6 : 8x2=8
       character*8 aa
       integer*4 ii
       ii=99
-      write(LUPRI,*) ' aborted from ',aa
+      write(LUPRI,*) 'abext: aborted from ',aa
+      call flush(LUPRI)
       call quit(aa)
 !     call abort()
       end

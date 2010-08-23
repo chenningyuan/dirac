@@ -62,8 +62,7 @@
       subroutine reads (nt,nrec,namein) 
 !---------------------------------------------------------------------------
 !
-! entering parameter "name" renamed to "namein"
-!
+! Note:  entering parameter "name" renamed to "namein"
 !
 !---------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -332,11 +331,9 @@ C--------------------------------------------------------
            endif
 
           enddo
-
       else 
         ! ... get DIRAC integrals
         call get_dirac_ints(nort,eps,nn,ind,v,nint) 
-
       endif
 
 !-----------------------------------------------------------------------------------------------
@@ -375,7 +372,7 @@ C--------------------------------------------------------
        call flush (LUPRI)
       enddo
 
-3400  format(3(1x,'orb.: ',i3,2x,a1,', orb.energy=',1pe12.5,:,';  '))
+3400  format(1x,'orb.: ',i3,2x,a1,', orb.energy=',f18.10)
 
 340   continue
 

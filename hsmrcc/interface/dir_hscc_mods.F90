@@ -397,7 +397,7 @@ write(LUPRI,*)  '... hsfs_indx vector allocated'
 do isp=1, nsp
 
   if (iprint_hsfs >= 4) then
-   write (LUPRI,'(2x,a,i2,a,2i3,a,f18.13,a,a4)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
+   write (LUPRI,'(2x,a,i3,a,2i3,a,f18.10,a,a4)') 'ISP=',ISP,' IREPSP(ISP/NSP+ISP):', &
    IREPSP(ISP),IREPSP(NSP+ISP),                                                      &
    ' EPS1(ISP)=',EPS1(ISP),'--> ',REPNA(IREPSP(NSP+ISP))
   endif
@@ -453,7 +453,7 @@ do j=1,nsp
 enddo
 enddo
 
-write(LUPRI,*) 'HSFS - MOLTRA index mapping is ready.'
+write(LUPRI,'(/,2x,a)') '* HSFS - MOLTRA integrals index mapping is ready.'
 
 do isp=1,nsp
 
@@ -483,7 +483,7 @@ write(LUPRI,'(2x,a,i2,a,i4)') 'written nirp=',nirp,' nort=',nsp/2
 
 write(luhsfs) ( boson_irps_indx%p_iA1D(i),i=1,nirp )
 
-write(LUPRI,'(1x,a,8i2,/)') 'written boson_irps:',( boson_irps_indx%p_iA1D(i),i=1,nirp )
+write(LUPRI,'(1x,a,8i4,/)') 'written boson_irps:',( boson_irps_indx%p_iA1D(i),i=1,nirp )
 
 
 ix=0
@@ -1449,7 +1449,7 @@ read(MDINT) ! skip record: DATEX,TIMEX,NKR,(KR(I),KR(-I), I=1,NKR )
  write(LUPRI,'(2x,a,i7)')  &
  'maximum number of integrals from the MDCINT integral block:',nintmaxbl
 
- write(LUPRI,*) ' while (2*NKR)**4=',16*NKR*NKR*NKR*NKR,' ratio=',DFLOAT(MOINT)/DFLOAT(16*NKR*NKR*NKR*NKR)
+! write(LUPRI,*) ' while (2*NKR)**4=',16*NKR*NKR*NKR*NKR,' ratio=',DFLOAT(MOINT)/DFLOAT(16*NKR*NKR*NKR*NKR)
 
  write(LUPRI,*)  &
  'number of integral blocks:',nintbl

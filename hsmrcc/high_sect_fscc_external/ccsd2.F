@@ -20,12 +20,14 @@
       character*8 na
 
       if (nn.le.n0) then   
-        ! ... proper return
+        ! ... proper return, no overflow
         return
-      else
+      else ! treat overflow
+
         write (LUPRI,10) na,nn,n0
-10      format('dimx: **** dimension overflow at ',a8,1h:,i8,
-     1   ', n allowed ',i8)
+10      format(/,'dimx: dimension overflow at ',a8,1h:,i8,
+     1   ', n allowed ',i8,/)
+
         do 20 i=1,nflcur
           write (LUPRI,99) i,namefl(i),nstrt(2,i)-nstrt(2,i-1)
 99        format (1x,i3,1x,a8,1x,i20)
@@ -3765,6 +3767,7 @@ c *************************************************
      &        norb,(cc(i),i=1,norb)
 
       write(LUPRI,'(/,2x,a)') 'end of rdin, returning'
+      call flush (LUPRI)
 
       rdin_called = .true.
 
@@ -4027,6 +4030,7 @@ c *************************************************
  
       rdsym_called = .true. 
       write(LUPRI,'(/,2x,a,/)') 'returning from rdsym'
+      call flush (LUPRI)
 
        ! write(LUPRI,'(/,2x,a,/)') 'rdsym was already read, leaving'
 
