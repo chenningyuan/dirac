@@ -82,13 +82,15 @@ c     iopt(10) .ne.0 - do not write tape9
       call getenv('tape12',filenm)
       if (filenm(1:1).eq.' ') filenm='tape12'
       open(12,file=filenm,form='UNFORMATTED')
-      write (*,*) '   $$$$$$$$$   csw   $$$$$$$$$  '
+
+      write (LUPRI,*) '   $$$$$$$$$   csw   $$$$$$$$$  '
+
       csdstim = cputime(real(0.))
       csdltim = csdstim
       call rdin
       call rdsym
       convrg = 10.**(-iopt(3))
-      write (6,'('' max # of iter='',i3,''. convrg='',e10.2)') 
+      write (LUPRI,'('' max # of iter='',i3,''. convrg='',e10.2)') 
      1 iopt(2),convrg
       call prtime ("rdin    ",0,0)
       if (iopt(10).eq.0) then

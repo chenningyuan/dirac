@@ -1068,7 +1068,6 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 !
 ! called many times like "call reord6("s1  ","t3p ",126345)"
 !
-!
 !---------------------------------------------------------------------------
       use print_level
 #if defined HSFS_DYN_ALLOC
@@ -1186,10 +1185,12 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
 60        continue
           call vsort (itmp(1),lngth,tmp)
           do 70 j=1,lngth
+!miro: watch possible index leak ! (make check)
            itmp(ndp3+(ii-1)*ndp8+j)=int(tmp(j))
 70        continue
         end if
         do 80 j=1,lngth
+! miro: might get index leak for the "itmp" array !
           gen(istrtt2+ije1(i-1)+j)=
      1    gen(istrtf2+ije2(i-1)+itmp(ndp3+(ii-1)*ndp8+j))
 80      continue
@@ -2339,7 +2340,10 @@ c  indices not retained for pppp.
 !     common /prm/ iperm(0:6,720)
 #endif
 
+      call check_iperm
       call perms (3)
+      call check_iperm
+
       call move    (name,"s1  ")
       do 10 i=2,6  
         iord1=123000+100*(iperm(1,i)+3)+10*(iperm(2,i)+3)+iperm(3,i)+3
@@ -2371,7 +2375,10 @@ c  indices not retained for pppp.
 !     common /prm/ iperm(0:6,720)
 #endif
 
+     
       call perms (4)
+      call check_iperm
+
       call move  (name,"s1  ")
       do 10 i=2,24
         iord=10000000*iperm(1,i)+1000000*iperm(2,i)+
@@ -2405,6 +2412,8 @@ c  indices not retained for pppp.
 #endif
 
       call perms (3)
+      call check_iperm
+
       call move  (name,"s1  ")
       do 10 i=2,6  
         iord=10000000+1000000*(iperm(1,i)+1)+
@@ -4229,7 +4238,10 @@ c
       ii(2)=mod(jb,2)
       ii(3)=mod(jc,2)
       v3det=0.d0
+
+      call check_iperm
       call perms (3)
+
       do 10 i=1,6  
         iflag=1
         do 20 j=1,3

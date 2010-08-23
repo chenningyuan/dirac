@@ -446,6 +446,15 @@ end subroutine init_prm_mod
 subroutine dealloc_prm_mod
  deallocate(iperm)
 end subroutine dealloc_prm_mod
+
+subroutine check_iperm
+#include "implicit.h"
+#include "priunit.h"
+itemp1=iperm(0,1); itemp2=iperm(0,720)
+itemp3=iperm(6,1); itemp4=iperm(6,720);
+write(LUPRI,*) "iperm check: ",itemp1,itemp2,itemp3,itemp4
+end subroutine check_iperm
+
 end module prm_mod
 
 module sym_mod

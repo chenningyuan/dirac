@@ -3046,6 +3046,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
       subroutine perm (i1,i2,isign,nval1)
 !--------------------------------------------------------------------------------
 !
+!                         returns "isign"
 !
 !--------------------------------------------------------------------------------
 !     implicit real*8 (a-h,o-z)
@@ -3093,6 +3094,8 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 #endif
       dimension k1(6),k2(6)
 
+      call check_iperm
+
       if (n.eq.1) then
         iperm(0,1)=1
         iperm(1,1)=1
@@ -3119,8 +3122,10 @@ CUK   common /crle/ trle(nrle,4),isize(4)
               k2(1)=i
               k2(2)=j
               k2(3)=k
-              call perm(k1,k2,isign,3)
-              iperm(0,ii)=isign
+              !call perm(k1,k2,isign,3)
+              call perm(k1,k2,isign_x,3)
+              !iperm(0,ii)=isign
+              iperm(0,ii)=isign_x
             end if
 20        continue
 10      continue
@@ -3144,8 +3149,8 @@ CUK   common /crle/ trle(nrle,4),isize(4)
                   k2(2)=j
                   k2(3)=k
                   k2(4)=l
-                  call perm (k1,k2,isign,4)
-                  iperm(0,ii)=isign
+                  call perm (k1,k2,isign_x,4)
+                  iperm(0,ii)=isign_x
                 end if
 50            continue
             end if
@@ -3175,8 +3180,8 @@ CUK   common /crle/ trle(nrle,4),isize(4)
                       k2(3)=k
                       k2(4)=l
                       k2(5)=m
-                      call perm(k1,k2,isign,5)
-                      iperm(0,ii)=isign
+                      call perm(k1,k2,isign_x,5)
+                      iperm(0,ii)=isign_x
                     end if
 90                continue
                 end if
@@ -3213,8 +3218,8 @@ CUK   common /crle/ trle(nrle,4),isize(4)
                           k2(4)=l
                           k2(5)=m
                           k2(6)=n
-                          call perm(k1,k2,isign,6)    
-                          iperm(0,ii)=isign
+                          call perm(k1,k2,isign_x,6)    
+                          iperm(0,ii)=isign_x
                         end if
 140                   continue
                     end if
@@ -3225,6 +3230,9 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 110       continue
 100     continue
       end if
+
+      call check_iperm
+
       return
       end
 
