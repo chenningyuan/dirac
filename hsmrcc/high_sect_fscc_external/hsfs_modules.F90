@@ -403,7 +403,6 @@ allocate(iopt(1:iopt_size))
 else
  write(LUPRI,*) 'dat_mod was already initialized'
 endif
-
 end subroutine init_dat_mod
 
 subroutine dealloc_dat_mod
@@ -412,6 +411,12 @@ subroutine dealloc_dat_mod
  deallocate(eps)
  deallocate(iopt)
 end subroutine dealloc_dat_mod
+
+subroutine check_dat
+#include "implicit.h"
+#include "priunit.h"
+end subroutine check_dat
+
 end module dat_mod
 
 module idv_mod
