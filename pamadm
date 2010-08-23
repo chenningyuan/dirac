@@ -536,19 +536,28 @@ f.close()
 # ===================================
 
 #radovan: this does not work if the files do not exist
-#mi TODO:  os.path.isfile (http://stackoverflow.com/questions/82831/how-do-i-check-if-a-file-exists-using-python)
-#os.utime('build/Makefile.dep',get_touch_time())
-#os.utime('build/Makefile.obj',get_touch_time())
-os.system('touch -t 198001010000 build/Makefile.dep')
-os.system('touch -t 198001010000 build/Makefile.obj')
+#mi : this fix should work
+
+if os.path.isfile('build/Makefile.dep'):
+   os.utime('build/Makefile.dep',get_touch_time())
+
+if os.path.isfile('build/Makefile.obj'):
+   os.utime('build/Makefile.obj',get_touch_time())
+
+#remove if above commands work:
+#os.system('touch -t 198001010000 build/Makefile.dep')
+#os.system('touch -t 198001010000 build/Makefile.obj')
 
 
 # prepare Makefile.extobj and Makefile.moddef
 # ===========================================
 
 #radovan: this does not work if the files do not exist
-#os.utime('build/Makefile.extobj',get_touch_time())
-os.system('touch -t 198001010000 build/Makefile.extobj')
+
+if os.path.isfile('build/Makefile.extobj'):
+   os.utime('build/Makefile.extobj',get_touch_time())
+
+#os.system('touch -t 198001010000 build/Makefile.extobj')
 
 f = open('build/Makefile.moddef', 'w')
 
@@ -711,8 +720,14 @@ if options.tarfile != None:
               d = 'test/' + test.directory
               shutil.copytree(d, scratch_dir + '/' + d)
 
-#  run the vacuum cleaner: remove junk files
+#  run the vacuum cleaner: remove all junk files in exporter DIRAC
    os.system("rm -f  `find %s -name '*.o'`"  % scratch_dir)
+   os.system("rm -f  `find %s -name '*.r'`"  % scratch_dir)
+   os.system("rm -f  `find %s -name '*.i'`"  % scratch_dir)
+   os.system("rm -f  `find %s -name '*.opt'`"  % scratch_dir)
+   os.system("rm -f  `find %s -name '*.s'`"  % scratch_dir)
+   os.system("rm -f  `find %s -name '*.p'`"  % scratch_dir)
+   os.system("rm -f  `find %s -name '*.fc'`"  % scratch_dir)
    os.system("rm -f  `find %s -name '*~'`"  % scratch_dir)
    os.system("rm -rf `find %s -name '.svn'`" % scratch_dir)
 
