@@ -537,16 +537,17 @@ f.close()
 
 #radovan: this does not work if the files do not exist
 #mi : this fix should work
+#radovan: the files are not there after fresh co!
 
-if os.path.isfile('build/Makefile.dep'):
-   os.utime('build/Makefile.dep',get_touch_time())
+#if os.path.isfile('build/Makefile.dep'):
+#   os.utime('build/Makefile.dep',get_touch_time())
 
-if os.path.isfile('build/Makefile.obj'):
-   os.utime('build/Makefile.obj',get_touch_time())
+#if os.path.isfile('build/Makefile.obj'):
+#   os.utime('build/Makefile.obj',get_touch_time())
 
 #remove if above commands work:
-#os.system('touch -t 198001010000 build/Makefile.dep')
-#os.system('touch -t 198001010000 build/Makefile.obj')
+os.system('touch -t 198001010000 build/Makefile.dep')
+os.system('touch -t 198001010000 build/Makefile.obj')
 
 
 # prepare Makefile.extobj and Makefile.moddef
@@ -554,10 +555,11 @@ if os.path.isfile('build/Makefile.obj'):
 
 #radovan: this does not work if the files do not exist
 
-if os.path.isfile('build/Makefile.extobj'):
-   os.utime('build/Makefile.extobj',get_touch_time())
+#radovan: the files are not there after fresh co!
+#if os.path.isfile('build/Makefile.extobj'):
+#   os.utime('build/Makefile.extobj',get_touch_time())
 
-#os.system('touch -t 198001010000 build/Makefile.extobj')
+os.system('touch -t 198001010000 build/Makefile.extobj')
 
 f = open('build/Makefile.moddef', 'w')
 
