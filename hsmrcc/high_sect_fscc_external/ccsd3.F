@@ -1246,7 +1246,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       call files_ccsd (namef,ntapef,new,2,-1,-1)
       if (new.ne.0) then
         write (6,*) 'reord7 input tape does not exist, ',name2
-        stop                     
+        call quit('reord7: input tape does not exist,')   
       end if
       call parse6 (iord,i1,i2,i3,idum1,idum2,idum3)
       call parse6 (iii2,ia(1),ia(2),ia(3),ia(4),ia(5),ia(6))
@@ -1257,8 +1257,9 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
      1     100*ja(4)+10*ja(5)+ja(6)
       call tmplt6 (iii1,iiv1,namet,ntapet)
       if (nij2.ne.nij1) then
-        write (6,*) 'mismatch in numbers of blocks - reord7'
-        stop
+        write (LUPRI,*)
+     &  'mismatch in numbers of blocks - reord7: nij2,nij1',nij2,nij1
+        call quit('mismatch in numbers of blocks - reord7')
       end if
       istrt11=nstrt(1,ntapet-1)+2*nij1+4
       istrt12=nstrt(2,ntapet-1)
@@ -1358,8 +1359,8 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
         lngth=ije1(i)-ije1(i-1)
         call dimx (lngth,ndp5,"reord10 ")
         if (ije2(i)-ije2(i-1).ne.lngth) then
-          write (6,*) 'mismatch in block lengths - reord10'
-          stop                        
+          write (LUPRI,*) 'mismatch in block lengths - reord10'
+          call quit('mismatch in block lengths - reord10')
         end if
         do 50 j=1,lngth
           ijtmp1(j)=igen(istrtf1+ije2(i-1)+j)
@@ -1443,12 +1444,12 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       call tmplt10 (namet,ntapet)
       call files_ccsd (namef,ntapef,new,2,-1,-1)
       if (new.ne.0) then
-        write (6,*) 'reorder input tape does not exist, ',name2
-        stop                      
+        write (LUPRI,*) 'reorder input tape does not exist, ',name2
+        call quit('reorder input tape does not exist')             
       end if
       if (nij2.ne.nij1) then
-        write (6,*) 'mismatch in numbers of blocks - reord11'
-        stop                      
+        write (LUPRI,*) 'mismatch in numbers of blocks - reord11'
+        call quit('mismatch in numbers of blocks - reord11')
       end if
       istrtt1=nstrt(1,ntapet-1)+2*nij1+4
       istrtt2=nstrt(2,ntapet-1)
@@ -1486,7 +1487,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
         n1=ije1(i)-ije1(i-1)
         n2=ije2(indx(i))-ije2(indx(i)-1)
         if (n1.ne.n2) then
-          write (6,*) 'mismatch in block lengths - reord11'
+          write (LUPRI,*) 'mismatch in block lengths - reord11'
         end if
         do 20 j=ije2(indx(i)-1)+1,ije2(indx(i))
           tmp(k)=gen(istrtf2+j)
@@ -1551,8 +1552,8 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       call files_ccsd (namef,ntapef,new,2,-1,-1)
 
       if (new.ne.0) then
-        write (6,*) 'reord12 input tape does not exist, ',name2
-        stop                     
+        write (LUPRI,*) 'reord12 input tape does not exist, ',name2
+        call quit('reord12 input tape does not exist')
       end if
       i1=iord(1)
       i2=iord(2)
@@ -1570,7 +1571,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
         call dimx (lngth,ndp5,"reord12 ")
         if (ije2(i)-ije2(i-1).ne.lngth) then
           write (6,*) 'mismatch in block lengths - reord12'
-          stop                         
+          call quit('mismatch in block lengths - reord12')
         end if
         do 50 j=1,lngth
           ijtmp1(j)=igen(istrtf1+ije2(i-1)+j)
@@ -1659,12 +1660,12 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       call tmplt12 (namet,ntapet)
       call files_ccsd (namef,ntapef,new,2,-1,-1)
       if (new.ne.0) then
-        write (6,*) 'reorder input tape does not exist, ',name2
-        stop                    
+        write (LUPRI,*) 'reorder input tape does not exist, ',name2
+        call quit('reorder input tape does not exist')  
       end if
       if (nij2.ne.nij1) then
-        write (6,*) 'mismatch in numbers of blocks - reord13'
-        stop                        
+        write (LUPRI,*) 'mismatch in numbers of blocks - reord13'
+        call quit('mismatch in numbers of blocks - reord13')       
       end if
       istrtt1=nstrt(1,ntapet-1)+2*nij1+4
       istrtt2=nstrt(2,ntapet-1)
@@ -1705,8 +1706,8 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
         n1=ije1(i)-ije1(i-1)
         n2=ije2(indx(i))-ije2(indx(i)-1)
         if (n1.ne.n2) then
-          write (6,*) 'mismatch in block lengths - reord13'
-          stop                      
+          write (LUPRI,*) 'mismatch in block lengths - reord13'
+          call quit('mismatch in block lengths - reord13') 
         end if
         do 20 j=ije2(indx(i)-1)+1,ije2(indx(i))
           tmp(k)=gen(istrtf2+j)
@@ -3533,8 +3534,8 @@ c
 
       call files_ccsd (name3,ntape3,new,1,-1,-1)
       if (new.ne.0) then
-        write (6,*) ' t3 file in t1t2 does not exist'
-        stop
+        write (LUPRI,*) ' t3 file in t1t2 does not exist'
+        call quit('t3 file in t1t2 does not exist')
       endif
       call tmplt6 (iii1,iiv1,names,ntapes)
       call files_ccsd (names,ntapes,new,1,-1,-1)
@@ -3684,8 +3685,8 @@ c
       endif
       call files_ccsd (name3,ntape3,new,3,-1,-1)
       if (new.ne.0) then
-        write (6,*) ' t3 file in t1t3 does not exist'
-        stop
+        write (LUPRI,*) ' t3 file in t1t3 does not exist'
+        call quit(' t3 file in t1t3 does not exist')
       endif
       istrt21=nstrt(1,ntape1-1)+2*nij2+4
       istrt22=nstrt(2,ntape1-1)
@@ -3721,8 +3722,8 @@ c
                   gen(istrt12+ije1(m-1)+ninds(m))=v
                   iquit=1
                 else
-                  write (6,*) 't1t3 - block id not found '
-                  stop
+                  write (LUPRI,*) 't1t3 - block id not found '
+                  call quit('t1t3 - block id not found ')
                 end if
               end do
             end if
@@ -3818,12 +3819,12 @@ c
       call files_ccsd (name2a,ntape2a,new,2,-1,-1)
       if (new.ne.0) then
         write (6,*) ' t2a file in t2sqr does not exist'
-        stop
+        call quit(' t2a file in t2sqr does not exist')
       endif
       call files_ccsd (name2b,ntape2b,new,3,-1,-1)
       if (new.ne.0) then
         write (6,*) ' t2b file in t2sqr does not exist'
-        stop
+        call quit(' t2b file in t2sqr does not exist')
       endif
       istrt21=nstrt(1,ntape2a-1)+2*nij2+4
       istrt22=nstrt(2,ntape2a-1)

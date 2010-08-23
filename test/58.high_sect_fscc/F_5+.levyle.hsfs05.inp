@@ -35,12 +35,12 @@
 .CONV
 9
 .METHOD
-csd
-csv
-csu
+!csd
+!csv
+!csu
 csw
-csx
-csy
+!csx
+!csy
 .END
 .INPUT
  F_5+ test with DIRAC-HSFS
