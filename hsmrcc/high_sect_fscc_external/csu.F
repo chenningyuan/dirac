@@ -2,7 +2,7 @@
       subroutine csu
 !-----------------------------------------------------------------------------
 !
-!
+!  (0,2) sector
 !
 !-----------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -78,7 +78,12 @@ c     iopt(10) .ne.0 - do not save pppp.
       call getenv('tape12',filenm)
       if (filenm(1:1).eq.' ') filenm='tape12'
       open(12,file=filenm,form='UNFORMATTED')
-      write (*,*) '   $$$$$$$$$   csu   $$$$$$$$$  '
+
+      write (LUPRI,'(/,2X,A)')
+     &    '   $$$$$$$$$   csu / (0,2)   $$$$$$$$$  '
+
+      call check_modules
+
       csdstim = cputime(real(0.))
       csdltim = csdstim
       call rdin

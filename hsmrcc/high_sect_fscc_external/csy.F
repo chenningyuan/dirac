@@ -2,6 +2,7 @@
       subroutine csy
 !---------------------------------------------------------------------
 !
+!                        (0,5) sector
 !
 !---------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -140,6 +141,7 @@ c     iopt(5) - print only elements .gt. 10**(-iopt(5))
         write (6,98) tmax
 98      format (1x,'tmax,symmetrised=',e10.3)
       end if
+
       egr0=0.d0
       call eneru2  (egr0,1,3,max(1,iopt(1)))
       call eneru2  (egr0,2,3,max(1,iopt(1)))
@@ -147,8 +149,10 @@ c     iopt(5) - print only elements .gt. 10**(-iopt(5))
       call eneru2  (egr0,4,3,max(1,iopt(1)))                         
       call eneru2  (egr0,5,3,max(1,iopt(1)))                         
       call wrtfile (61,1,"tyf ")
-      write (6,*) nstrt(1,nflcur),'words used in igen,',
+
+      write (LUPRI,*) nstrt(1,nflcur),'words used in igen,',
      1nstrt(2,nflcur),' words used in gen'
+
       call prtime ("end ",0,0)
 !      stop
       end

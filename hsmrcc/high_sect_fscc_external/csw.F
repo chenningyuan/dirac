@@ -226,7 +226,8 @@ c     iopt(10) .ne.0 - do not write tape9
         call prt6 ("t33 ","t33 ",0)
         call wrtfile (59,1,"t33 ")
       end if
-      write (6,*) nstrt(1,nflcur),' words used in igen,',
+
+      write (LUPRI,*) nstrt(1,nflcur),' words used in igen,',
      1nstrt(2,nflcur),' words used in gen'
       call prtime ("end ",0,0)
 !      stop

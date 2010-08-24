@@ -111,7 +111,11 @@ c     iopt(10) .ne.0 - do not save pppp.
 
       call prtime("rdin",0,0)
 
+      call check_modules 
+
       call ordv_csd ! sorting integrals
+
+      call check_modules 
 
       iter=0
 
@@ -178,6 +182,8 @@ c     iopt(10) .ne.0 - do not save pppp.
       call ordta_csd
       call calt1
       call calt2
+
+      call check_modules 
 
       if (iopt(17).ne.0) then
         call calt3
@@ -255,7 +261,7 @@ c     iopt(10) .ne.0 - do not save pppp.
       end if
 
 !     ... error output ...
-      write (6,*) ' '
+      write (LUPRI,*) ' '
       if (abs(tmax).gt.1.d10.or.abs(tmax).lt.1.d-10) then
         write (*,*) ' abort. tmax out of bounds'
         call abext('tmax    ') 

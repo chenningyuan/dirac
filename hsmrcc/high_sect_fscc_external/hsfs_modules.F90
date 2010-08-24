@@ -323,8 +323,8 @@ subroutine init_ctmp_mod
 allocate(tmp(1:ndp4))
 allocate(itmp(1:ndp4))
 write(LUPRI,*) 'ctmp_mod initialized, ndp4=',ndp4
-write(LUPRI,*) 'ctmp_mod initialized, itmp:',itmp(1),itmp(2),itmp(ndp4-1),itmp(ndp4)
-write(LUPRI,*) 'ctmp_mod: size(itmp)=',size(itmp)
+!write(LUPRI,*) 'ctmp_mod initialized, itmp:',itmp(1),itmp(2),itmp(ndp4-1),itmp(ndp4)
+!write(LUPRI,*) 'ctmp_mod: size(itmp)=',size(itmp)
 end subroutine init_ctmp_mod
 
 subroutine check_ctmp_mod
@@ -332,13 +332,13 @@ subroutine check_ctmp_mod
  use hsfs_parameters
 #include "priunit.h"
 if (allocated(tmp).and.allocated(itmp)) then
+ temp1=tmp(1);temp2=tmp(ndp4);
+ if (size(tmp).ne.ndp4) call quit('tmp_mod: size <> ndp4!')
+ itemp1=itmp(1);itemp2=itmp(ndp4);
+ if (size(itmp).ne.ndp4) call quit('size(itmp) <> ndp4!')
+else
  call FLSHFO(LUPRI)
- write(LUPRI,*) 'ctmp_mod: size(itmp),ndp4=',size(itmp),ndp4
- write(LUPRI,*) 'ctmp_mod, check of itmp(1,2,ndp4-1,ndp4):'
- write(LUPRI,*)  itmp(1),itmp(2)
- write(LUPRI,*) 'ctmp_mod, check of itmp(ndp4-1,ndp4):'
- write(LUPRI,*)  itmp(ndp4-1),itmp(ndp4)
- write(LUPRI,*) 
+ call quit('ctmp_mod not allocated!')
 endif
 end subroutine check_ctmp_mod
 
@@ -402,11 +402,11 @@ integer :: norb, idum2
 integer, allocatable  :: ic(:), icv(:), iopt(:)
 real*8, allocatable  :: eps(:)
 logical :: dat_mod_initialized = .false.
+integer, parameter :: dat_size=200, iopt_size=40
 contains
 subroutine init_dat_mod
  use hsfs_parameters
 #include "priunit.h"
-integer, parameter :: dat_size=200, iopt_size=40
 
 if (.not.dat_mod_initialized) then
 !
@@ -451,11 +451,11 @@ module idv_mod
 ! .. to replace idv.h
 integer :: nvalo
 integer, allocatable  :: iv(:)
+integer, parameter :: idv_size=200
 contains
 subroutine init_idv_mod
 ! use hsfs_parameters
 #include "priunit.h"
-integer, parameter :: idv_size=200
 allocate(iv(1:idv_size))
 write(LUPRI,*) 'idv_mod initialized'
 end subroutine init_idv_mod
@@ -467,6 +467,10 @@ if (allocated(iv)) then
 !itemp1=iv(1);itemp2=iv(int(idv_size))
 itemp1=iv(1)
 itemp2=iv(idv_size)
+if (size(iv).ne.idv_size) then
+  write(LUPRI,*) 'idv_mod: size(iv),idv_size',size(iv),idv_size
+  call quit('idv_mod: size(iv)<>idv_size!')
+endif
 else
 call quit('iv not allocated!')
 endif
@@ -524,6 +528,18 @@ else
   !call quit('sym_mod was not initialized, leaving!')
 endif
 end subroutine init_sym_mod
+
+subroutine check_sym_mod
+#include "implicit.h"
+#include "priunit.h"
+if (sym_mod_initialized) then
+  itemp1=iclass(1); itemp2=iclass(16)
+  itemp3=isym(1,1); itemp4=isym(16,1);itemp5=isym(1,8);itemp6=isym(16,8)
+  itemp7=ibias(1);  itemp8=ibias(17)
+else
+ call quit('sym_mod: not initialized !')
+endif
+end subroutine check_sym_mod
 
 subroutine dealloc_sym_mod
  deallocate(iclass)
@@ -911,14 +927,6 @@ end module high_sect_execs
 
  end module get_gamess_mo_ints
 
-#if !defined HSFS_DYN_ALLOC
-subroutine check_ctmp_mod
-! .. empty for HSFS static
- continue
- return
-end subroutine check_ctmp_mod
-#endif
-
 #if defined HSFS_DYN_ALLOC
 subroutine check_modules
 !##########################################################################
@@ -933,6 +941,7 @@ use ctmp_mod
 use dat_mod
 use idv_mod
 use cij1_mod
+use sym_mod
 #include "priunit.h"
 
 call check_gen_mod
