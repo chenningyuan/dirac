@@ -897,7 +897,10 @@ c     collect equal energy terms.
           idcol(nval-iiii,i1)=ifndso(mod(iddd,16))
           iddd=iddd/16
         else
-          idcol(nvalp-iiii,i1)=mod(iddd,256)
+!miro: fix idcol index leak...
+          if (nvalp-iiii.le.2) then
+            idcol(nvalp-iiii,i1)=mod(iddd,256)
+          endif
           iddd=iddd/256
         end if
 3903  continue
@@ -914,7 +917,10 @@ c     collect equal energy terms.
           idcol(nval-iiii,icol)=ifndso(mod(iddd,16))
           iddd=iddd/16
         else
-          idcol(nvalp-iiii,icol)=mod(iddd,256)
+!mi: idcol first index leak, introduce "if-"fix
+          if (nvalp-iiii.le.2) then
+            idcol(nvalp-iiii,icol)=mod(iddd,256)
+          endif
           iddd=iddd/256
         end if
 3904  continue

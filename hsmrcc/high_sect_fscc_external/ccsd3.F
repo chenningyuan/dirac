@@ -3130,16 +3130,25 @@ c   special for scratch files, which start with s
        do 90 ji=1,nvalo
        do 90 jj=1,nvalo
         iflag=1
+
         do 100 ii=1,nsym
+!miro: fix first index leak of icsym(iv(jj))) !
+        if (icsym(iv(jj)).ge.1.and.icsym(iv(jj)).le.16) then
+
          if (mod(isym((icsym(iv(ja))),ii)+
      1   isym((icsym(iv(jb))),ii)+isym((icsym(iv(jc))),ii)+
      2   isym((icsym(iv(jd))),ii)+isym((icsym(iv(je))),ii)+
      3   isym((icsym(iv(jf))),ii)+isym((icsym(iv(jg))),ii)+
      4   isym((icsym(iv(jh))),ii)+isym((icsym(iv(ji))),ii)+
      5   isym((icsym(iv(jj))),ii),2).ne.0) then
+
           iflag=0
+
          end if
+         end if
+
 100     continue
+
         if (iflag.eq.1) then
          nt=nt+1
          call dimx (nt,nbig,"tmp10    ")
