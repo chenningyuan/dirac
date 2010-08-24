@@ -1,7 +1,5 @@
 #! /usr/bin/env python
 
-####################################################################################################
-#
 # script for selecting modules, packaging, exporting, and releasing of DIRAC
 # Radovan Bast <radovan.bast@uit.no> Tromso 2010
 #
@@ -23,8 +21,7 @@
 #           prepare release DIRAC10
 #           PLEASE MODIFY THIS LINE IF IT IS NOT CORRECT!
 #           ./pamadm --xpp --adc --visual --london --matrixop --amfi --export=DIRAC10.tar.gz
-#
-####################################################################################################
+
 
 from optparse import OptionParser
 import sys
@@ -32,14 +29,18 @@ import os
 import shutil
 import time,datetime
 
-#  get time for 'touch'
-def get_touch_time():
+def make_old_file(path):
+  """Create (if not already there) a file at path,
+  set the date in the past."""
+  if not os.path.isfile(path):
+    f = open(path,'w')
+    f.close
   today = datetime.datetime.now()
   pastday = today - datetime.timedelta(days=11)
   atime = int(time.mktime(pastday.timetuple()))
   mtime = atime
   times = (atime,mtime)
-  return times
+  os.utime(path,times)
 
 
 # classes
@@ -491,13 +492,12 @@ for module in dirac_modules:
        print '       ' + dirac_modules[module].message
 print
 if dirac_modules['xcfun'].is_included:
-   print "*****************************************************************"
-   print "* PLEASE NOTE !!! "
    print "* "
-   print "* Please use (in Makefile.config)"
+   print "* XCFun module active"
+   print "* First compile xcfun (cd xcfun; make -f Makefile.gcc)"
+   print "* Then please use (in Makefile.config)"
    print "* LIBS=-Lxcfun/lib -lxcfun"
    print "* "
-   print "*****************************************************************"
    print
 
 
@@ -521,33 +521,16 @@ for file in files_never_compiled:
 f.close()
 
 
-# touch Makefile.dep and Makefile.obj
-# ===================================
+# Force make to collect dependencies
+# ==================================
 
-if not os.path.isfile('build/Makefile.dep'):
-   # create empty file, which is needed by Makefile
-   f = open('build/Makefile.dep','w')
-   f.close
-   
-if not os.path.isfile('build/Makefile.obj'):
-   # create empty file, which is needed by Makefile
-   f = open('build/Makefile.obj','w')
-   f.close
-
-os.utime('build/Makefile.dep',get_touch_time())
-os.utime('build/Makefile.obj',get_touch_time())
-
+make_old_file('build/Makefile.dep')
+make_old_file('build/Makefile.obj')
 
 # prepare Makefile.extobj and Makefile.moddef
 # ===========================================
 
-if not os.path.isfile('build/Makefile.extobj'):
-   # create some empty file, which is needed by Makefile
-   f = open('build/Makefile.extobj', 'w')
-   f.write('# Extra (externally compiled) objects to use with Dirac\n')
-   f.close
-
-os.utime('build/Makefile.extobj',get_touch_time())
+make_old_file('build/Makefile.extobj')
 
 f = open('build/Makefile.moddef', 'w')
 
@@ -582,9 +565,9 @@ else:
 
 f.close()
 
-# ===================================================================================
+# ==============================================================================
 #  Link  "build/Makefile.dirs" as "Makefile" over active source code directories
-# ===================================================================================
+# ==============================================================================
 
 # get position of absolute dirac directory
 dirac_dir=os.path.dirname(os.path.abspath(sys.argv[0]))
