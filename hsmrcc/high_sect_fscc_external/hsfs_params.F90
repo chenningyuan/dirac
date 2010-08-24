@@ -34,11 +34,12 @@ subroutine assign_hsfs_parameters
 !---------------------------------------------------------------------------------------------
 #include "priunit.h"
 
-write(LUPRI,*) 'assigning HSFS parameters...according to priunit.h file'
+write(LUPRI,'(/,2x,a)') 'assigning HSFS dimensions parameters'
 
 ! nbig =  9000000
 !  nbig = 20000000
- nbig = 90000000
+ !nbig =  90000000
+ nbig  = 240000000
 
  ndij = 960000
 

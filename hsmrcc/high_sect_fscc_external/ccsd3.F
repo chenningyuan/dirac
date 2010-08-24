@@ -3129,11 +3129,22 @@ c   special for scratch files, which start with s
        do 90 jh=1,nvalo
        do 90 ji=1,nvalo
        do 90 jj=1,nvalo
+
         iflag=1
 
         do 100 ii=1,nsym
-!miro: fix first index leak of icsym(iv(jj))) !
-        if (icsym(iv(jj)).ge.1.and.icsym(iv(jj)).le.16) then
+
+!miro: fixing first index leaks (shows when range-check compiler flag included)
+        if (icsym(iv(jj)).ge.1.and.icsym(iv(jj)).le.16.and.
+     &      icsym(iv(jh)).ge.1.and.icsym(iv(jh)).le.16.and.
+     &      icsym(iv(jf)).ge.1.and.icsym(iv(jf)).le.16.and.
+     &      icsym(iv(jd)).ge.1.and.icsym(iv(jd)).le.16.and.
+     &      icsym(iv(ji)).ge.1.and.icsym(iv(ji)).le.16.and.
+     &      icsym(iv(jg)).ge.1.and.icsym(iv(jg)).le.16.and.
+     &      icsym(iv(je)).ge.1.and.icsym(iv(je)).le.16.and.
+     &      icsym(iv(jc)).ge.1.and.icsym(iv(jc)).le.16.and.
+     &      icsym(iv(ja)).ge.1.and.icsym(iv(ja)).le.16.and.
+     &      icsym(iv(jb)).ge.1.and.icsym(iv(jb)).le.16) then
 
          if (mod(isym((icsym(iv(ja))),ii)+
      1   isym((icsym(iv(jb))),ii)+isym((icsym(iv(jc))),ii)+
@@ -3154,6 +3165,7 @@ c   special for scratch files, which start with s
          call dimx (nt,nbig,"tmp10    ")
          igen(nt)=ipack(jf,jg,jh,ji,jj)
         end if
+
 90     continue
        if (nt.gt.nt00) then
 !       nij=nij+1
