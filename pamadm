@@ -105,7 +105,6 @@ def callback_include(option, opt, value, parser):
     dirac_modules[str(option)[2:]].include()
 
 
-#
 # list of vital directories and files - these are always exported/released
 # ========================================================================
 
@@ -148,7 +147,6 @@ vital_files.append('test/run.sh.in')
 vital_files.append('test/runtest')
 
 
-#
 # list of vital tests - these are always exported/released
 # ========================================================
 
@@ -340,10 +338,6 @@ dirac_modules[this_module].add_directory('hsmrcc/hsmrcc_external/modules')
 dirac_modules[this_module].add_directory('hsmrcc/hsmrcc_external/source')
 dirac_modules[this_module].take_out_of_adm()
 
-#fixme: in pamadm this flag triggers a lot of operations
-#       so far this is not done here
-#       (can they be avoided?)
-#       same for directories ... so complicating
 this_module = 'hsfs'
 dirac_modules[this_module] = dirac_module('hsfs', 'higher external Higher sector FSCC code')
 dirac_modules[this_module].add_cppflag('MOD_HSFS')
@@ -352,17 +346,12 @@ dirac_modules[this_module].add_dependency('hscc')
 dirac_modules[this_module].add_directory('hsmrcc/high_sect_fscc_external')
 dirac_modules[this_module].take_out_of_adm()
 
-#fixme: in pamadm this flag triggers a lot of operations
-#       so far this is not done here
-#       (can they be avoided?)
-#       same for directories ... so complicating
 this_module = 'hsfsdyn'
 dirac_modules[this_module] = dirac_module('hsfsdyn', 'higher external Higher sector FSCC code - dynamic allocation version.')
 dirac_modules[this_module].add_cppflag('HSFS_DYN_ALLOC')
 dirac_modules[this_module].add_dependency('oof')
 dirac_modules[this_module].add_dependency('hsfs')
 dirac_modules[this_module].add_dependency('hscc')
-#dirac_modules[this_module].add_directory('hsmrcc')
 dirac_modules[this_module].take_out_of_adm()
 
 this_module = 'ihfscc'
@@ -535,9 +524,6 @@ f.close()
 # touch Makefile.dep and Makefile.obj
 # ===================================
 
-#radovan: this does not work if the files do not exist
-#radovan: the files are not there after fresh co!
-
 if not os.path.isfile('build/Makefile.dep'):
    # create empty file, which is needed by Makefile
    f = open('build/Makefile.dep','w')
@@ -551,16 +537,10 @@ if not os.path.isfile('build/Makefile.obj'):
 os.utime('build/Makefile.dep',get_touch_time())
 os.utime('build/Makefile.obj',get_touch_time())
 
-#remove if above commands work:
-#os.system('touch -t 198001010000 build/Makefile.dep')
-#os.system('touch -t 198001010000 build/Makefile.obj')
-
 
 # prepare Makefile.extobj and Makefile.moddef
 # ===========================================
 
-#radovan: this does not work if the files do not exist
-#radovan: the files are not there after fresh co!
 if not os.path.isfile('build/Makefile.extobj'):
    # create some empty file, which is needed by Makefile
    f = open('build/Makefile.extobj', 'w')
@@ -568,7 +548,6 @@ if not os.path.isfile('build/Makefile.extobj'):
    f.close
 
 os.utime('build/Makefile.extobj',get_touch_time())
-#os.system('touch -t 198001010000 build/Makefile.extobj')
 
 f = open('build/Makefile.moddef', 'w')
 
@@ -613,7 +592,7 @@ source_dir=dirac_dir+"/build/Makefile.dirs"
 if not os.path.exists(source_dir):
    sys.exit(source_dir+' does not exist ! No linking possible, exit !')
 
-#pick up directory names
+# pick up directory names
 for directory in vital_directories:
    if os.path.exists(dirac_dir+"/"+directory):
       dest_dir=dirac_dir+"/"+directory+"/Makefile"
