@@ -55,6 +55,7 @@ use rsp2_mod
 use dpd_mod
 use ctmp_mod
 use crle_mod
+use prm_mod
 
  call header ('Output from Init_HSFS_Modules',-1)
 
@@ -79,6 +80,7 @@ use crle_mod
  call init_dpd_mod
  call init_ctmp_mod
  call init_crle_mod
+ call init_prm_mod
 
 End Subroutine Init_HSFS_Modules
 

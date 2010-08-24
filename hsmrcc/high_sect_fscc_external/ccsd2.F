@@ -3094,8 +3094,6 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 #endif
       dimension k1(6),k2(6)
 
-      call check_iperm
-
       if (n.eq.1) then
         iperm(0,1)=1
         iperm(1,1)=1
@@ -3231,8 +3229,6 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 100     continue
       end if
 
-      call check_iperm
-
       return
       end
 
@@ -3245,7 +3241,7 @@ CUK   common /crle/ trle(nrle,4),isize(4)
 !  name : 4-byte (integer) character 
 !  tit  :  8-byte  (real)  character
 !
-! iparm : printout parameter 
+!  iparm : printout parameter 
 !
 !---------------------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC

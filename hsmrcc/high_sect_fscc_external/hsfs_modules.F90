@@ -10,7 +10,6 @@ integer, allocatable :: igen(:)
 contains
 subroutine init_gen_mod
  use hsfs_parameters
-!#include "param_ccsd.h"
 #include "priunit.h"
 integer :: istat
  allocate(gen(nbig),stat=istat)
@@ -24,6 +23,17 @@ subroutine dealloc_gen_mod
  deallocate(gen)
  deallocate(igen)
 end subroutine dealloc_gen_mod
+
+subroutine  check_gen_mod
+  use hsfs_parameters
+#include "implicit.h"
+#include "priunit.h"
+if (allocated(gen).and.allocated(igen)) then
+isize_gen=size(gen); isize_igen=size(igen)
+temp1=gen(1);temp2=gen(nbig)
+itemp1=igen(1);itemp2=igen(nbig)
+endif
+end subroutine  check_gen_mod
 
 end module gen_mod
 
@@ -405,6 +415,16 @@ else
 endif
 end subroutine init_dat_mod
 
+subroutine check_dat_mod
+#include "implicit.h"
+#include "priunit.h"
+if (dat_mod_initialized) then
+itemp1=ic(1);itemp2=ic(int(dat_size))
+temp1=eps(1); temp2=eps(int(dat_size))
+itemp3=iopt(1);itemp4=iopt(int(iopt_size))
+endif
+end subroutine check_dat_mod
+
 subroutine dealloc_dat_mod
  deallocate(ic)
  deallocate(icv)
@@ -445,20 +465,23 @@ subroutine init_prm_mod
 ! use hsfs_parameters
 #include "priunit.h"
 allocate(iperm(0:6,1:720))
- write(LUPRI,*) 'prm_mod initialized'
+write(LUPRI,*) 'prm_mod initialized - iperm(0:6,1:720)'
 end subroutine init_prm_mod
 
 subroutine dealloc_prm_mod
  deallocate(iperm)
 end subroutine dealloc_prm_mod
 
-subroutine check_iperm
+subroutine check_prm_mod
 #include "implicit.h"
 #include "priunit.h"
+if (allocated(iperm)) then
 itemp1=iperm(0,1); itemp2=iperm(0,720)
-itemp3=iperm(6,1); itemp4=iperm(6,720);
-write(LUPRI,*) "iperm check: ",itemp1,itemp2,itemp3,itemp4
-end subroutine check_iperm
+itemp3=iperm(6,1); itemp4=iperm(6,720)
+else
+call quit('iperm NOT allocated ! No reason to check !')
+endif
+end subroutine check_prm_mod
 
 end module prm_mod
 
@@ -477,7 +500,8 @@ allocate(ibias(1:17))
  sym_mod_initialized = .true.
  write(LUPRI,*) 'sym_mod initialized'
 else
-  write(LUPRI,*) 'sym_mod was initialized, leaving'
+  write(LUPRI,*) 'sym_mod was not initialized, leaving'
+  !call quit('sym_mod was not initialized, leaving!')
 endif
 end subroutine init_sym_mod
 
@@ -874,3 +898,28 @@ subroutine check_ctmp_mod
  return
 end subroutine check_ctmp_mod
 #endif
+
+#if defined HSFS_DYN_ALLOC
+subroutine check_modules
+!##########################################################################
+!
+!   General checking routine for all dynamically allocated arrays
+!
+!##########################################################################
+use gen_mod
+use cint_mod
+use prm_mod
+use ctmp_mod
+use dat_mod
+!#include "implicit.h"
+#include "priunit.h"
+
+call check_gen_mod
+call check_ctmp_mod
+call check_prm_mod
+call check_dat_mod
+
+end subroutine check_modules
+#endif
+
+

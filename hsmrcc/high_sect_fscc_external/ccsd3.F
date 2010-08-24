@@ -2341,9 +2341,7 @@ c  indices not retained for pppp.
 !     common /prm/ iperm(0:6,720)
 #endif
 
-      call check_iperm
       call perms (3)
-      call check_iperm
 
       call move    (name,"s1  ")
       do 10 i=2,6  
@@ -2378,7 +2376,6 @@ c  indices not retained for pppp.
 
      
       call perms (4)
-      call check_iperm
 
       call move  (name,"s1  ")
       do 10 i=2,24
@@ -2413,7 +2410,6 @@ c  indices not retained for pppp.
 #endif
 
       call perms (3)
-      call check_iperm
 
       call move  (name,"s1  ")
       do 10 i=2,6  
@@ -3401,7 +3397,7 @@ c   special for scratch files, which start with s
         write(LUPRI,*) 'name1b=',name1b
         write(LUPRI,*) 'name2=',name2
         write(LUPRI,*) 'namet=',namet
-        call check_ctmp_mod
+        !call check_ctmp_mod
       endif
 
       call files_ccsd(name1a,ntape1a,new,2,-1,-1)
@@ -3426,7 +3422,7 @@ c   special for scratch files, which start with s
      &                  nij2,ije2(nij2),iii2,iiv2
         write(LUPRI,*) 'nij3,ije3(nij3),iii3,iiv3=',
      &                  nij3,ije3(nij3),iii3,iiv3
-        call check_ctmp_mod
+        call check_modules
       endif
 c
       ntmp=0
@@ -3459,7 +3455,7 @@ c
         write(LUPRI,*) 'nsize3=',nsize3
         write(LUPRI,*) 'istrt11=',istrt11
         write(LUPRI,*) 'istrt12=',istrt12
-        call check_ctmp_mod
+        call check_modules
       endif
 
       call vxsort(itmp,ntmp,nsize1,gen(istrt12+1),igen(istrt11+1))
@@ -3468,7 +3464,7 @@ c
         write(LUPRI,*) 't1sqr: after vxsort, before call add'
         write(LUPRI,*) 'namet=',namet 
         write(LUPRI,*) 'name2=',name2
-        call check_ctmp_mod
+        call check_modules
       endif
 
       call add(namet,1.d0,name2,1.d0,namet)
@@ -3477,7 +3473,7 @@ c
         write(LUPRI,*) 't1sqr: after call add'
         write(LUPRI,*) 'namet=',namet 
         write(LUPRI,*) 'name2=',name2
-        call check_ctmp_mod
+        call check_modules
       endif
 
       return
@@ -3530,7 +3526,7 @@ c
       data ia / 5,1,1,0,0,1,5,2,0,0,2,2,5,0,0,
      1          6,3,3,0,0,3,6,4,0,0,4,4,6,0,0 /
 
-        call check_ctmp_mod
+      !  call check_modules
 
       call files_ccsd (name3,ntape3,new,1,-1,-1)
       if (new.ne.0) then
@@ -3606,7 +3602,7 @@ c
         end if
 70    continue
 
-        call check_ctmp_mod
+      !  call check_modules
 
       call add (names,1.d0,name3,1.d0,names)
       return
@@ -4240,7 +4236,6 @@ c
       ii(3)=mod(jc,2)
       v3det=0.d0
 
-      call check_iperm
       call perms (3)
 
       do 10 i=1,6  

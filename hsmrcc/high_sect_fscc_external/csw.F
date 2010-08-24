@@ -462,6 +462,8 @@ C  *********************************************************************
 #include "dat.h"
 #endif
 
+      call check_modules
+
 c  GROUP I
 c   diag 1
       call reorder    ("pvvv","box1",2431,4)
@@ -471,6 +473,9 @@ c v1 Feb 95
       call reorder    ("s2  ","s1  ",1342,4)
       call mult       ("s1  ","ph  ","s2  ",311)
       call add        ("box1",1.d0,"s2  ",-.5d0,"box1")
+
+      call check_modules
+
 c   diag 2
       call fold4      ("tv1 ","s1  ",2,4)
       call reorder    ("ppvh","s2  ",3142,4)
@@ -488,6 +493,9 @@ c   diag 4
       call mult       ("s1  ","s2  ","s3  ",222)
       call reorder    ("s3  ","s1  ",1324,4)
       call add        ("s1  ",-1.d0,"box1",1.d0,"box1")
+
+      call check_modules
+
 c   diag 5
       call reorder    ("vhhp","s1  ",1432,4)
       call fold4      ("tcm ","s2  ",3,4)
@@ -610,6 +618,8 @@ c   diag 10
       call mult       ("vvhh","s1  ","s2  ",311)
       call reorder    ("s2  ","s1  ",2143,4)
       call add        ("s1  ",1.d0,"box2",1.d0,"box2")
+
+      call check_modules
 c
       if (iopt(17).lt.3) then
         call fold4      ("tv  ","s1  ",3,4)
@@ -661,6 +671,7 @@ c  diag e5
         call add      ("s3  ",0.5d0,"twf ",1.d0,"twf ")
       end if
       if (iopt(17).ne.3) then
+        call check_modules
         call sqr3     ("twf ")
       end if
       call prtime     ("endiag  ",0,0)
