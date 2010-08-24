@@ -1,6 +1,7 @@
       subroutine csw                     
 !---------------------------------------------------------------------
 !
+! (0,3) sector...
 !
 !---------------------------------------------------------------------
 #if defined HSFS_DYN_ALLOC
@@ -85,6 +86,8 @@ c     iopt(10) .ne.0 - do not write tape9
 
       write (LUPRI,*) '   $$$$$$$$$   csw   $$$$$$$$$  '
 
+      call check_modules
+
       csdstim = cputime(real(0.))
       csdltim = csdstim
       call rdin
@@ -116,6 +119,9 @@ c     iopt(10) .ne.0 - do not write tape9
           call rdbox_csw
         end if
       end if
+
+      call check_modules
+
       call t1sqr    ("t1c ","t1c ","tc  ","tcm ")
       call t1sqr    ("t1v ","t1c ","tv  ","tvm ")
       call t1sqr    ("t1v ","t1v ","tu  ","tum ")
@@ -207,6 +213,9 @@ c     iopt(10) .ne.0 - do not write tape9
           call prt6 ("t33 ","last t33",0)
         end if
       end if
+
+      call check_modules
+
       call endiag_csw 
       call eneru2 (egr0,1,3,max(1,iopt(1)))
       call eneru2 (egr0,2,3,max(1,iopt(1)))

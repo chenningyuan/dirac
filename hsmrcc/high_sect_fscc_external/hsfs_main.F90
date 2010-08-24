@@ -56,6 +56,7 @@ use dpd_mod
 use ctmp_mod
 use crle_mod
 use prm_mod
+use idv_mod
 
  call header ('Output from Init_HSFS_Modules',-1)
 
@@ -81,10 +82,11 @@ use prm_mod
  call init_ctmp_mod
  call init_crle_mod
  call init_prm_mod
+ call init_idv_mod
 
 End Subroutine Init_HSFS_Modules
 
- Subroutine alloc_stat_check(alloc_label,istat)
+Subroutine alloc_stat_check(alloc_label,istat)
 #include "priunit.h"
   character(*), intent(in) :: alloc_label
   integer, intent(in) :: istat
@@ -93,5 +95,4 @@ End Subroutine Init_HSFS_Modules
     write(LUPRI,*) 'istat=',istat
     call quit('error in F90 dynamic allocation !')
   endif
- End Subroutine alloc_stat_check
-
+End Subroutine alloc_stat_check

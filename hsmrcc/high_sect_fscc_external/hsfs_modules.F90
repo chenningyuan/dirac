@@ -135,6 +135,14 @@ subroutine init_cij1_mod
  write(LUPRI,*) 'cij1_mod initialized'
 end subroutine init_cij1_mod
 
+subroutine check_cij1_mod
+ use hsfs_parameters
+#include "implicit.h"
+#include "priunit.h"
+itemp1=ij1(1);itemp2=ij1(ndij)
+itemp3=ije1(0);itemp4=ije1(ndij)
+end subroutine check_cij1_mod
+
 subroutine dealloc_cij1_mod
  deallocate(ij1)
  deallocate(ije1)
@@ -449,8 +457,20 @@ subroutine init_idv_mod
 #include "priunit.h"
 integer, parameter :: idv_size=200
 allocate(iv(1:idv_size))
- write(LUPRI,*) 'idv_mod initialized'
+write(LUPRI,*) 'idv_mod initialized'
 end subroutine init_idv_mod
+
+subroutine check_idv_mod
+#include "implicit.h"
+#include "priunit.h"
+if (allocated(iv)) then
+!itemp1=iv(1);itemp2=iv(int(idv_size))
+itemp1=iv(1)
+itemp2=iv(idv_size)
+else
+call quit('iv not allocated!')
+endif
+end subroutine check_idv_mod
 
 subroutine dealloc_idv_mod
  deallocate(iv)
@@ -911,13 +931,16 @@ use cint_mod
 use prm_mod
 use ctmp_mod
 use dat_mod
-!#include "implicit.h"
+use idv_mod
+use cij1_mod
 #include "priunit.h"
 
 call check_gen_mod
 call check_ctmp_mod
 call check_prm_mod
 call check_dat_mod
+call check_idv_mod
+call check_cij1_mod
 
 end subroutine check_modules
 #endif

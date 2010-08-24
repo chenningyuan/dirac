@@ -3090,12 +3090,11 @@ c   special for scratch files, which start with s
 !     common /sym/ nsym,nclass,iclass(16),isym(16,8),ibias(17)
 #include "idv.h"
 !     common /idv/ iv(200),nvalo
-
 #endif
 
       integer*4 ch1,ch2
 
-!!!!!!!!!!!!!!!! own dynamic allocation !!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!! assign own dynamic allocation !!!!!!!!!!!!!!!!!!
       dimension icsym(200)
 
       ipack(i,j,k,l,m)=ior(ishft(i,16),
@@ -3118,6 +3117,9 @@ c   special for scratch files, which start with s
 20      continue
         isum=isum+iclass(i)
 10    continue
+
+      call check_modules
+
       do 30 ja=1,nvalo
       do 30 jb=1,nvalo
       do 30 jc=1,nvalo
@@ -3162,6 +3164,7 @@ c   special for scratch files, which start with s
         call dimx (nij1,ndij,"tmpndij ")
        end if
 30    continue
+
 !     igen(nstrt(1,num-1)+1)=nij
       igen(nstrt(1,num-1)+1)=nij1
 !     call kcopy (nij,ij(1),igen(nstrt(1,num-1)+2))

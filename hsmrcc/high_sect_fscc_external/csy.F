@@ -97,6 +97,9 @@ c     iopt(5) - print only elements .gt. 10**(-iopt(5))
         call rdfile  (54,2,"t32 ",-1)
         call rdfile  (59,1,"t33 ",-1)
       end if
+
+      call check_modules
+
       nvalo=0
       do 20 j=1,120
         if (icv(j).eq.1) then
@@ -104,6 +107,7 @@ c     iopt(5) - print only elements .gt. 10**(-iopt(5))
           iv(nvalo)=j      
         end if
 20    continue
+
       call ordv_csy
       call ordta_csy
       call t1sqr    ("t1c ","t1c ","tc  ","tcm ")
