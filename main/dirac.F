@@ -435,6 +435,7 @@ C***** C C *************************************************************
 C***********************************************************************
 C
       IF(DOKRCC.AND.DOPSI) THEN
+#ifdef MOD_KRCC
 C
 C        Transfer KR-CI info to common block DCBORB
 C        and recalculate DCBORB.
@@ -449,8 +450,10 @@ C
          CALL SETDC2(0)
 C         CALL SETDCBIDX()
 C
-#ifdef MOD_KRCC
          CALL PAMKRCC(WORK,LWORK)
+#else
+            CALL QUIT(
+     &  ' KR-CC module not included in this version')
 #endif
       END IF
 C

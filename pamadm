@@ -219,6 +219,13 @@ files_never_compiled.append('build/gen_fortran_interface_h.c')
 files_never_compiled.append('dirrci/cimain.F')
 files_never_compiled.append('xcfun/fortran/example.F90')
 
+do_not_release = []
+do_not_release.append('utils/add_copyright.py')
+do_not_release.append('utils/update_copyright.py')
+do_not_release.append('utils/gints')
+do_not_release.append('utils/foray_0.1')
+do_not_release.append('utils/reformat_includes.py')
+
 
 # definition of modules
 # =====================
@@ -694,15 +701,19 @@ if options.tarfile != None:
               shutil.copytree(d, scratch_dir + '/' + d)
 
 #  run the vacuum cleaner: remove all junk files in exporter DIRAC
-   os.system("rm -f  `find %s -name '*.o'`"  % scratch_dir)
-   os.system("rm -f  `find %s -name '*.r'`"  % scratch_dir)
-   os.system("rm -f  `find %s -name '*.i'`"  % scratch_dir)
-   os.system("rm -f  `find %s -name '*.opt'`"  % scratch_dir)
-   os.system("rm -f  `find %s -name '*.s'`"  % scratch_dir)
-   os.system("rm -f  `find %s -name '*.p'`"  % scratch_dir)
+   os.system("rm -f  `find %s -name '*.o'`"   % scratch_dir)
+   os.system("rm -f  `find %s -name '*.r'`"   % scratch_dir)
+   os.system("rm -f  `find %s -name '*.i'`"   % scratch_dir)
+   os.system("rm -f  `find %s -name '*.opt'`" % scratch_dir)
+   os.system("rm -f  `find %s -name '*.s'`"   % scratch_dir)
+   os.system("rm -f  `find %s -name '*.p'`"   % scratch_dir)
    os.system("rm -f  `find %s -name '*.fc'`"  % scratch_dir)
-   os.system("rm -f  `find %s -name '*~'`"  % scratch_dir)
-   os.system("rm -rf `find %s -name '.svn'`" % scratch_dir)
+   os.system("rm -f  `find %s -name '*~'`"    % scratch_dir)
+   os.system("rm -rf `find %s -name '.svn'`"  % scratch_dir)
+
+#  remove files that are not supposed to be shipped
+   for x in do_not_release:
+       os.system("rm -rf %s/%s"  % (scratch_dir, x))
 
 #  create tar.gz
    command = 'tar -czf %s %s' % (options.tarfile, scratch_dir)
