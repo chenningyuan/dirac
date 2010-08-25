@@ -225,6 +225,15 @@ do_not_release.append('utils/update_copyright.py')
 do_not_release.append('utils/gints')
 do_not_release.append('utils/foray_0.1')
 do_not_release.append('utils/reformat_includes.py')
+do_not_release.append('utils/rsp')
+do_not_release.append('utils/test')
+do_not_release.append('utils/fortran')
+do_not_release.append('utils/prepare_dyall_basis.sh')
+do_not_release.append('utils/prepare_dyall_dblock_basis.sh')
+do_not_release.append('utils/prepare_dyall_fblock_basis.sh')
+do_not_release.append('utils/prepare_dyall_pblock_basis.sh')
+do_not_release.append('utils/prepare_dyall_sblock_basis.sh')
+do_not_release.append('utils/configure.py')
 
 
 # definition of modules
