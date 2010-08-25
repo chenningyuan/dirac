@@ -1046,11 +1046,14 @@ C    &        XPROPMAT(ISTATE_Y,ISTATE_X,IPROP_X,2)
 C300        CONTINUE
 C           ^ end of inner loop over all eigenstates
 #else
+            is_state_of_correct_sym = 0
             DO 300 ISTATE_Y = 1, NPROP_ROOTS_KRCI
 C
 C             calculate all dot products <sigma_ISTATE_X|C_ISTATE_Y>
               IF( ISSM .ne. ISYMEIG_KRCI(ISTATE_Y)) GOTO 300
-              CALL INPRDD_REAL_CPLX(VEC1,VEC2,LUHC,LUC,1,ISTATE_Y,1,
+              is_state_of_correct_sym = is_state_of_correct_sym + 1
+              CALL INPRDD_REAL_CPLX(VEC1,VEC2,LUHC,LUC,1,
+     &                              is_state_of_correct_sym,1,
      &                              -1,XR,XI,MZ)
               IF( PRPNAM(INDXPR) .eq. 'z-angular mom') THEN
                 XR = -XR

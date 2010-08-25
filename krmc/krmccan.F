@@ -1483,11 +1483,20 @@ C
 C       ... allocate omega matrix
         CALL MEMGET('REAL',KOMEGAEXP,NZ*NPROP_ROOTS_KRCI**2,WORK,
      &              KFREE,LFREE)
+C       s_z operator
+        CALL MEMGET('REAL',Ksz_op,NZ*NPROP_ROOTS_KRCI**2,WORK,
+     &              KFREE,LFREE)
+C       l_z operator
+        CALL MEMGET('REAL',Klz_op,NZ*NPROP_ROOTS_KRCI**2,WORK,
+     &              KFREE,LFREE)
 C       ... initialize
         CALL DZERO(WORK(KOMEGAEXP),NZ*NPROP_ROOTS_KRCI**2)
+        CALL DZERO(WORK(Ksz_op)   ,NZ*NPROP_ROOTS_KRCI**2)
+        CALL DZERO(WORK(Klz_op)   ,NZ*NPROP_ROOTS_KRCI**2)
 C
 C       get and diagonalize omega expectation value matrix
-        CALL GET_OMEGA_EXP(WORK(KOMEGAEXP),NPROP_ROOTS_KRCI,NZ,
+        CALL GET_OMEGA_EXP(WORK(KOMEGAEXP),WORK(Ksz_op),WORK(Klz_op),
+     &                     NPROP_ROOTS_KRCI,NZ,
      &                     XPROPMAT,NPROP_KRCI,XREPEIG,
      &                     MAX_NKRCI_MAX_SYM,NKRCI_CIROOTS,
      &                     naelec,IOMVAL,WORK(KFREE),LFREE)
@@ -1503,7 +1512,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck GET_OMEGA_EXP */
-      SUBROUTINE GET_OMEGA_EXP(OMEGAMAT,NOMEGAST,NZ,XPROPMAT,NPROPX,
+      SUBROUTINE GET_OMEGA_EXP(OMEGAMAT,op_sz,op_lz,NOMEGAST,NZ,
+     &                         XPROPMAT,NPROPX,
      &                         XREPOM,IALL_SYM,NKRCI_CIROOTS,naelec,
      &                         IOMVAL,WORK,LWORK)
 C***********************************************************************
@@ -1523,6 +1533,7 @@ C
 #include "dcbxpr.h"
       CHARACTER*4 XREPOM(*)
       DIMENSION OMEGAMAT(NOMEGAST,NOMEGAST,*), NKRCI_CIROOTS(*)
+      DIMENSION op_sz(NOMEGAST,NOMEGAST,*), op_lz(NOMEGAST,NOMEGAST,*)
       DIMENSION XPROPMAT(NOMEGAST,NOMEGAST,NPROPX,*), WORK(*), IOMVAL(*)
       INTEGER IND_DIP(2)
       CHARACTER XLABEL*16, om_string*5, om_divst*2
@@ -1542,9 +1553,13 @@ C     copy sz-matrix part and lz-matrix part to OMEGAMAT
 C         ... extract sz and copy to OMEGAMAT
           CALL DCOPY(NOMEGAST,XPROPMAT(1,I,IND_DIP(1),IZ),1,
      &               OMEGAMAT(1,I,IZ),1)
+          CALL DCOPY(NOMEGAST,XPROPMAT(1,I,IND_DIP(1),IZ),1,
+     &               op_sz(1,I,IZ),1)
 C         ... now extract and add lz 
           CALL DAXPY(NOMEGAST,1.0D0,XPROPMAT(1,I,IND_DIP(2),IZ),1,
      &               OMEGAMAT(1,I,IZ),1)
+          CALL DCOPY(NOMEGAST,XPROPMAT(1,I,IND_DIP(2),IZ),1,
+     &               op_lz(1,I,IZ),1)
         END DO
       END DO
 C
@@ -1564,8 +1579,8 @@ C     print omega expectation values
      & '    omega expectation values for calculated eigenstates',
      & '  ________________________________________________________'
       WRITE(LUPRI,'(/A/,A/)')
-     & '    state #        symmetry        <omega>',
-     & '  ----------     -----------   ---------------'
+     & '    state #        symmetry      <omega>      <s_z>     <l_z>',
+     & '  ----------     -----------   ------------  -------  --------'
 C
 C     determine: boson or fermion wave function...
       if(mod(naelec,2).eq.0)then
@@ -1594,22 +1609,50 @@ C       ... allocate for x-x block diagonalization of <OMEGA>-matrix
         CALL MEMGET('REAL',KOMX,   NZ*NXSTATES**2,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KEIGVCX,NZ*NXSTATES**2,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KEIGX,  NXSTATES      ,WORK,KFREE,LFREE)
+C       s_z
+        CALL MEMGET('REAL',KszX,   NZ*NXSTATES**2,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KEIGszX,NZ*NXSTATES**2,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KEIGsz, NXSTATES      ,WORK,KFREE,LFREE)
+C       l_z
+        CALL MEMGET('REAL',KlzX,   NZ*NXSTATES**2,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KEIGlzX,NZ*NXSTATES**2,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KEIGlz, NXSTATES      ,WORK,KFREE,LFREE)
 C       ... initialize
         CALL DZERO(WORK(KOMX),   NZ*NXSTATES**2)
         CALL DZERO(WORK(KEIGVCX),NZ*NXSTATES**2)
         CALL DZERO(WORK(KEIGX),  NXSTATES)
+        CALL DZERO(WORK(KszX),   NZ*NXSTATES**2)
+        CALL DZERO(WORK(KEIGszX),NZ*NXSTATES**2)
+        CALL DZERO(WORK(KEIGsz),  NXSTATES)
+        CALL DZERO(WORK(KlzX),   NZ*NXSTATES**2)
+        CALL DZERO(WORK(KEIGlzX),NZ*NXSTATES**2)
+        CALL DZERO(WORK(KEIGlz),  NXSTATES)
 C
 C       extract x-x part of <OMEGA>-matrix
         CALL MATGATX(OMEGAMAT,NOMEGAST,WORK(KOMX),NXSTATES,IX_AC,NZ)
+C       extract x-x part of <s_z>-matrix
+        CALL MATGATX(op_sz,NOMEGAST,WORK(KszX),NXSTATES,IX_AC,NZ)
+C       extract x-x part of <l_z>-matrix
+        CALL MATGATX(op_lz,NOMEGAST,WORK(KlzX),NXSTATES,IX_AC,NZ)
 C
 #ifdef MOD_DEBUG
         WRITE(LUPRI,*) ' OMEGAMAT (block) before diagonalization'
         CALL WRTMATMN(WORK(KOMX),1,NZ*NXSTATES**2,1,
      &                NZ*NXSTATES**2,LUPRI)
+        WRITE(LUPRI,*) ' szMAT (block) before diagonalization'
+        CALL WRTMATMN(WORK(KszX),1,NZ*NXSTATES**2,1,
+     &                NZ*NXSTATES**2,LUPRI)
+        WRITE(LUPRI,*) ' lzMAT (block) before diagonalization'
+        CALL WRTMATMN(WORK(KlzX),1,NZ*NXSTATES**2,1,
+     &                NZ*NXSTATES**2,LUPRI)
 #endif
 C
 C       diagonalize
         CALL DIAGC('X',WORK(KOMX),WORK(KEIGX),WORK(KEIGVCX),
+     &             NXSTATES,WORK(KFREE),LFREE)
+        CALL DIAGC('X',WORK(KszX),WORK(KEIGsz),WORK(KEIGszX),
+     &             NXSTATES,WORK(KFREE),LFREE)
+        CALL DIAGC('X',WORK(KlzX),WORK(KEIGlz),WORK(KEIGlzX),
      &             NXSTATES,WORK(KFREE),LFREE)
 C
         NXTEST = 0
@@ -1655,8 +1698,12 @@ C       print omega values
           iom_state = nint(om_state)
           if(iabs(iom_state).eq.0) iom_state = 0
           write(om_string,'(i3,a2)') iom_state,om_divst
-          write(lupri,'(i11,8x,a4,12x,a5)')
-     &          i,xrepom(ix),om_string
+          write(lupri,'(i11,8x,a4,10x,a5,7x,1f6.3,4x,1f6.3)')
+     &          i,xrepom(ix),om_string,
+     &          work(KEIGsz+i-1),
+     &          work(KEIGlz+i-1)
+!    &          op_sz(IX_AC+i,IX_AC+i,1),
+!    &          op_lz(IX_AC+i,IX_AC+i,1)
 !         save omega value on array (for later use 
 !         when CI root selection is enabled)
           iomval(ix_ac+i) = iom_state
