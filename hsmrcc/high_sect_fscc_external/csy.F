@@ -120,9 +120,12 @@ c     iopt(5) - print only elements .gt. 10**(-iopt(5))
         call diags32_csy
         call diags33_csy
       end if
+
       call fmax    ("tyf ",tmax,idum)
-      write (6,99) tmax
+      write (LUPRI,99) tmax
 99    format (1x,'tmax,unsymmetrised=',e10.3)
+
+!miro: why is this restricted for abs(tmax)>1.d-13 ?
       if (abs(tmax).gt.1.d-13) then
         call perms (5)
         call move    ("tyf ","s1  ")
@@ -138,7 +141,7 @@ c     iopt(5) - print only elements .gt. 10**(-iopt(5))
           end if
 30      continue
         call fmax    ("tyf ",tmax,idum)
-        write (6,98) tmax
+        write (LUPRI,98) tmax
 98      format (1x,'tmax,symmetrised=',e10.3)
       end if
 
@@ -155,7 +158,7 @@ c     iopt(5) - print only elements .gt. 10**(-iopt(5))
 
       call prtime ("end ",0,0)
 !      stop
-      end
+      end subroutine csy
 C  *******************************************************************
       subroutine ordv_csy
 !---------------------------------------------------------------------
