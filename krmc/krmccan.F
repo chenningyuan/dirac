@@ -1384,22 +1384,22 @@ C       ---------
               JFLST = IVEC
             END IF
             DEIG  = EVECS(JFLST) - EVECS(INIST)
-C           WRITE(LUPRI,*) ' INIST, JFLST, DEIG',INIST, JFLST, DEIG
             DO IPRP=1,3
 C             length gauge
               XREAL = XPROPMAT(INIST,JFLST,IND_DIP(IPRP),1)
-              IF( MZ .eq. 2 ) 
+              IF( MZ .eq. 2 )
      &        XCOMP = XPROPMAT(INIST,JFLST,IND_DIP(IPRP),2)
               XMOM = DCMPLX(XREAL,XCOMP)
-              OSCL(IPRP) = ABS(XMOM)
+              OSCL(IPRP) = XMOM
+              OSCLABS(IPRP) = ABS(XMOM)
             END DO
             ISYMST_IN = ISYMEIG_KRCI(INIST)
             ISYMST_FL = ISYMEIG_KRCI(JFLST)
 C
 C           print only values above a given threshold - 1.0D-7
-            IF( (OSCL(1)+OSCL(2)+OSCL(3)) .lt. XTHRESH )
+            IF( (OSCLABS(1)+OSCLABS(2)+OSCLABS(3)) .lt. XTHRESH )
      &         GOTO 101
-          
+
        WRITE(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,3F12.8,2X,1F12.8,2X 1F12.8)')
      &  '   * state',INIST,'(',XREPEIG(ISYMST_IN),')         * state',
      &      JFLST,'(',XREPEIG(ISYMST_FL),')   ',
