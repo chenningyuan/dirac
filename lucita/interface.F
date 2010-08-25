@@ -6483,13 +6483,14 @@ C    &           ' MO orbitals obtained from LUCIA ')
 *
 * This is a VERY preliminary solution for running bigger
 * calculations. Partial symmetry reduction of allocated space.
-      NTEST_save = NTEST
-      NTEST  = 2000
+!     NTEST_save = NTEST
+!     NTEST  = 2000
 
       call nsymint_dc(NUM_TWEI,NTOOBS,NIRREP,ISYDISUM,IPRINT)
       if (NTEST.ge.1)
      & write(6,*) 'Allocating space for ',NUM_TWEI,' 2-el. ints'
       call memman(KDITWOE,NUM_TWEI,'ADDL  ',2,'IDITWO')
+      call dzero(WORK(KDITWOE),NUM_TWEI)
       call memman(KINVREO,ISYDISUM,'ADDL  ',2,'INVREO')
       call memman(KKR,(2*ISYDISUM+1),'ADDL  ',2,'IKR   ')
       call memman(KINDK,num_twei,'ADDL  ',1,'INDK  ')
@@ -6527,7 +6528,7 @@ CSK      call lmemchk
      &                     INVERSM,
      &                     IHAM12,ISPINFREE,IMXDIM,NIRREP,NTEST)
 *
-      NTEST = NTEST_save
+!     NTEST = NTEST_save
 
 CSK      call lmemchk
       call memman(IDUM,IDUM,'FLUSM ',IDUM,'RDIRAC')
@@ -7450,13 +7451,15 @@ C
       close(LUONE)
 *
 
+#if defined LUCI_DEBUG
       if (NTEST.ge.10) then
         do IND=1,MORB,1
           INOFF = (IND-1)*MORB
-          write(6,'(I4,1X,4F18.12)')
+          write(6,*)
      &          IND,(ONEINT(INOFF+JND),JND=1,MORB,1)
         end do
       end if
+#endif
       END IF
 C     /\ read in master
 C
@@ -7513,8 +7516,8 @@ C**********************************************************************
       character*8 DIRACTWO
       character*10 DATEX,TIMEX*8
 C     logical BREIT
-      dimension RKLR((2*NDIM)**4)
-      dimension KR(-NDIM:NDIM),INDK((2*NDIM)**4),INDL((2*NDIM)**4),
+      dimension RKLR(*)
+      dimension KR(-NDIM:NDIM),INDK(*),INDL(*),
      &          IOFF12(MORB,MORB),NUMINT(MORB,MORB)
       INTEGER IDIST_IJKL, IDIST_IJKL_A(NMPROC)
       LOGICAL EX, IJKL_AV
@@ -7522,13 +7525,17 @@ C
       NTESTL = 00
       NTEST = max(NTESTL,IPRINT)
 C
-      TRESINT    = 1.D-12
+C
       NINT       = 0
       N2EFIL     = 0
       ISYMOFF    = 0
       IDIST_IJKL = 0
       IJKL_AV    = .TRUE.
       CALL IZERO(IDIST_IJKL_A,NMPROC)
+
+!     initialize offset and integral counter arrays
+      CALL IZERO(NUMINT,    MORB**2)
+      CALL IZERO(IOFF12,    MORB**2)
 C
 C     check for integral file on local disks
       INQUIRE(FILE='MDCINT',EXIST=EX)
@@ -7686,7 +7693,7 @@ C       redundant Kramers block has been read (symmetric)
         write(LUWRT,'(A,1X,2I6)') 'Integral block: ',KR(IKR),KR(JKR)
         if (NTEST.ge.100) then
           do INT=1,NZ,1
-            write(LUWRT,'(A,2I8,1X,1F18.12)')
+            write(LUWRT,'(A,2I8,1X,1D15.6)')
      &      'Indices K,L ',KR(INDK(INT+ISYMOFF)),KR(INDL(INT+ISYMOFF)),
      &                     RKLR(INT+ISYMOFF)
           end do
@@ -7699,16 +7706,16 @@ C
  20   CONTINUE
 #if defined LUCI_DEBUG
       if (NTEST.ge.50) then
-        write(LUWRT,*)
-        write(LUWRT,*) '===================='
-        write(LUWRT,*) 'rdtwo_dirac speaking'
-        write(LUWRT,*) '===================='
-        write(LUWRT,*) 'Full two-electron integral list:'
+        write(LUWRT,'(/a)') '===================='
+        write(LUWRT,'(a )') 'rdtwo_dirac speaking'
+        write(LUWRT,'(a )') '===================='
+        write(LUWRT,'(a/)') 'Full two-electron integral list:'
         do IJ=1,MORB,1
           do II=1,MORB,1
             write(LUWRT,*) 'Block :',II,IJ
+            write(LUWRT,*) 'number of elements :',NUMINT(II,IJ)
             do INT=1,NUMINT(II,IJ),1
-              write(LUWRT,'(2I4,2F18.12)')
+              write(LUWRT,'(2I4,1D15.6)')
      &              KR(INDK(INT+IOFF12(II,IJ))),
      &              KR(INDL(INT+IOFF12(II,IJ))),
      &              RKLR(INT+IOFF12(II,IJ))
