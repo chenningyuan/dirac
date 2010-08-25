@@ -39,7 +39,8 @@ write(LUPRI,'(/,2x,a)') 'assigning HSFS dimensions parameters'
 ! nbig =  9000000
 !  nbig = 20000000
  !nbig =  90000000
- nbig  = 240000000
+ !nbig  = 240000000
+ nbig  = 600000000
 
  ndij = 960000
 
@@ -50,16 +51,17 @@ write(LUPRI,'(/,2x,a)') 'assigning HSFS dimensions parameters'
  ndt2 =500000
 
 ! ndp3 = 700000
- ndp3 = 1600000
+ ndp3 = 7000000
 
 ! ndp4 =2000000
 ! ndp4 = 3000000
 ! ndp4 = 5000000
-  ndp4 = 10000000
+ ! ndp4 = 20000000
+  ndp4 = 35000000
 
  ndp5 = 325000
 
- ndp6 = ndp3+3*ndp5
+ ndp6 = ndp3+(3*ndp5)
 
  nrle1= 8*ndt1
  nrle2 = 8*ndt2 

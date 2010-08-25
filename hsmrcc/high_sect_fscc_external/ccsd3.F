@@ -1355,6 +1355,9 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
       istrtt2=nstrt(2,ntapet-1)
       istrtf1=nstrt(1,ntapef-1)+2*nij2+4
       istrtf2=nstrt(2,ntapef-1)
+
+      call check_modules
+
       do 10 i=1,nij2
         lngth=ije1(i)-ije1(i-1)
         call dimx (lngth,ndp5,"reord10 ")
@@ -1363,6 +1366,7 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
           call quit('mismatch in block lengths - reord10')
         end if
         do 50 j=1,lngth
+          !miro: index leak may occur here
           ijtmp1(j)=igen(istrtf1+ije2(i-1)+j)
 50      continue
         call vands  (lngth,ijtmp1(1),msk(i1),ijtmp1(ndp5))
@@ -1488,6 +1492,11 @@ c   reorder from file namef (info in /cij2/) to namet (/cij1/)
         n2=ije2(indx(i))-ije2(indx(i)-1)
         if (n1.ne.n2) then
           write (LUPRI,*) 'mismatch in block lengths - reord11'
+          write (LUPRI,*) 'n1,n2:',n1,n2
+          write (LUPRI,*) 'ije1(i),ije1(i-1):',ije1(i),ije1(i-1)
+          write (LUPRI,*) 'ije2(indx(i)),ije2(indx(i)-1):',
+     &                  ije2(indx(i)),ije2(indx(i)-1)
+          call quit('mismatch in block lengths - reord11')
         end if
         do 20 j=ije2(indx(i)-1)+1,ije2(indx(i))
           tmp(k)=gen(istrtf2+j)

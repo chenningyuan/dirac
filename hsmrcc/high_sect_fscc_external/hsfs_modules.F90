@@ -560,6 +560,13 @@ allocate(ijtmp1(1:ndp6))
  write(LUPRI,*) 'ijtemp_mod initialized'
 end subroutine init_ijtemp_mod
 
+subroutine check_ijtemp_mod
+ use hsfs_parameters
+#include "implicit.h"
+#include "priunit.h"
+itemp1=ijtmp1(1);itemp2=ijtmp1(ndp6)
+end subroutine check_ijtemp_mod
+
 subroutine dealloc_ijtemp_mod
  deallocate(ijtmp1)
 end subroutine dealloc_ijtemp_mod
@@ -942,6 +949,7 @@ use dat_mod
 use idv_mod
 use cij1_mod
 use sym_mod
+use ijtemp_mod
 #include "priunit.h"
 
 call check_gen_mod
@@ -950,6 +958,7 @@ call check_prm_mod
 call check_dat_mod
 call check_idv_mod
 call check_cij1_mod
+call check_ijtemp_mod
 
 end subroutine check_modules
 #endif

@@ -57,6 +57,7 @@ use ctmp_mod
 use crle_mod
 use prm_mod
 use idv_mod
+use ijtemp_mod
 
  call header ('Output from Init_HSFS_Modules',-1)
 
@@ -83,6 +84,7 @@ use idv_mod
  call init_crle_mod
  call init_prm_mod
  call init_idv_mod
+ call init_ijtemp_mod
 
 End Subroutine Init_HSFS_Modules
 

@@ -988,8 +988,8 @@ c   move p to p transitions to folded
             if (ii.eq.1) then
               lngth=ije3(k)-ije3(k-1)
               if (lngth.ne.(ibe(j)-ibe(j-1))) then
-                write (6,*) 'mismatch in block lengths - msub1'
-                  stop
+                write (LUPRI,*) 'mismatch in block lengths - msub1'
+                call quit('mismatch in block lengths - msub1')
               end if
               elnew=ddot(lngth,gen(istrt22+ije2(i-1)+ibe(j-1)+1),1,
      1        gen(istrt32+ije3(k-1)+1),1)
@@ -1131,8 +1131,8 @@ c   move p to p transitions to folded
             end if
           end do
           if (ije3(nij3).ne.(ije2(idc)-ije2(idc-1))) then
-            write (6,*) 'mismatch in block lengths - msub2 '
-            stop
+            write (LUPRI,*) 'mismatch in block lengths - msub2 '
+            call quit('mismatch in block lengths - msub2')
           end if
           gen(istrt12+i)=ddot(ije3(nij3),gen(istrt22+ije2(idc-1)+1),1,
      1    gen(istrt32+1),1)
@@ -1175,8 +1175,8 @@ c   move p to p transitions to folded
             end do
             lngth=ije2(imark)-ije2(imark-1)
             if (lngth.ne.ije3(nij3)) then
-              write (6,*) 'mismatch in block lengths - msub2'
-              stop
+              write (LUPRI,*) 'mismatch in block lengths - msub2'
+              call quit('mismatch in block lengths - msub2')
             end if
             gen(istrt12+ije1(i-1)+j)=ddot(lngth,
      1      gen(istrt22+ije2(imark-1)+1),1,gen(istrt32+1),1)
@@ -1309,8 +1309,8 @@ c   move p to p transitions to folded
             if (ii.eq.1) then
               lngth=ije3(k)-ije3(k-1)
               if (lngth.ne.(ibe(j)-ibe(j-1))) then
-                write (6,*) 'mismatch in block lengths - msub3'
-                stop
+                write (LUPRI,*) 'mismatch in block lengths - msub3'
+                call quit('mismatch in block lengths - msub3')
               end if
               elnew=ddot(lngth,gen(istrt22+ije2(i-1)+ibe(j-1)+1),1,
      1        gen(istrt32+ije3(k-1)+1),1)
@@ -1470,8 +1470,8 @@ c   move p to p transitions to folded
             if (ii.eq.1) then
               lngth=ije3(k)-ije3(k-1)
               if (lngth.ne.(ibe(j)-ibe(j-1))) then
-                write (6,*) 'mismatch in block lengths - msub4'
-                stop
+                write (LUPRI,*) 'mismatch in block lengths - msub4'
+                call quit('mismatch in block lengths - msub4')
               end if
               elnew=ddot(lngth,gen(istrt22+ije2(i-1)+ibe(j-1)+1),1,
      1        gen(istrt32+ije3(k-1)+1),1)
@@ -1612,8 +1612,8 @@ c   move p to p transitions to folded
           if (ii.eq.1) then
             lngth=ije2(i)-ije2(i-1)
             if (lngth.ne.(ije3(j)-ije3(j-1))) then
-              write (6,*) 'mismatch in block lengths - msub5'
-              stop
+              write (LUPRI,*) 'mismatch in block lengths - msub5'
+              call quit('mismatch in block lengths - msub5')
             end if
             elnew=ddot(lngth,gen(istrt22+ije2(i-1)+1),1,
      1      gen(istrt32+ije3(j-1)+1),1)
@@ -1767,8 +1767,8 @@ c   move p to p transitions to folded
             if (ii.eq.1) then
               lngth=ije3(k)-ije3(k-1)
               if (lngth.ne.(ibe(j)-ibe(j-1))) then
-                write (6,*) 'mismatch in block lengths - msub6'
-                stop
+                write (LUPRI,*) 'mismatch in block lengths - msub6'
+                call quit('mismatch in block lengths - msub6')
               end if
               elnew=ddot(lngth,gen(istrt22+ije2(i-1)+ibe(j-1)+1),1,
      1        gen(istrt32+ije3(k-1)+1),1)
@@ -2255,8 +2255,8 @@ c
             if (id1.eq.id2) then
               n2=ije2(j)-ije2(j-1)
               if (n2.ne.nsize3) then
-                write (6,*) 'mismatch check isym'
-                stop                      
+                write (LUPRI,*) 'mismatch check isym'
+                call quit('mismatch check isym')
               end if
               n20=istrt22+ije2(j-1)+1
               gen(istrt12+i)=ddot(n2,gen(n20),1,gen(istrt32+1),1)
@@ -2265,8 +2265,8 @@ c
             else if (id1.gt.id2) then
               j=j+1
             else if (id1.lt.id2) then
-              write (6,*) 'label not in template'
-              stop                    
+              write (LUPRI,*) 'label not in template'
+              call quit('label not in template')                 
             end if
           end do   
         else if (iii3.le.33) then
@@ -2293,8 +2293,8 @@ c
             if (id1.eq.id2) then
               n2=ije2(j)-ije2(j-1)
               if (n2.ne.nsize3) then
-                write (6,*) 'mismatch check isym - mult6'
-                stop                      
+                write (LUPRI,*) 'mismatch check isym - mult6'
+                call quit('mismatch check isym - mult6')              
               end if
               n20=istrt22+ije2(j-1)+1
               gen(istrt12+i)=ddot(n2,gen(n20),1,gen(istrt32+1),1)
@@ -2355,8 +2355,8 @@ c
                 if (ii.eq.1) then
                   lngth=ije3(k)-ije3(k-1)
                   if (lngth.ne.(itce(j)-itce(j-1))) then
-                    write (6,*) 'mismatch in block lengths - mult6'
-                    stop
+                    write (LUPRI,*) 'mismatch in block lengths - mult6'
+                    call quit('mismatch in block lengths - mult6')
                   end if
                   elnew=ddot(lngth,gen(istrt22+ije2(i-1)+itce(j-1)+1),1,
      1            gen(istrt32+ije3(k-1)+1),1)
@@ -2518,8 +2518,9 @@ c   namet=name1*f1+name2*f2
         write (LUPRI,*) 'iiv2,iiv3:',iiv2,iiv3
         write (LUPRI,*) 'nij2,nij3:',nij2,nij3 
         write (LUPRI,*) 'ije2(nij2),ije3(nij3):',ije2(nij2),ije3(nij3)
-!       write (LUPRI,123) name1,name2,iii2,iii3,iiv2,iiv3,ije2(nij2),
-!    1  ije3(nij3)
+        write(LUPRI,*) 'name1,name2:',name1,name2
+        write (LUPRI,123) name1,name2,iii2,iii3,iiv2,iiv3,ije2(nij2),
+     &    ije3(nij3)
 123     format(2a8,6i10)
         call flush(LUPRI)
         call abext('add     ')
@@ -3044,8 +3045,8 @@ CUK   common /crle/ trle(nrle,4),isize(4)
               end if
 80          continue 
             if (nel1.ne.nel2) then  
-              write (6,*) 'mismatch in lengths of records - dge5n2'
-              stop
+              write (LUPRI,*) 'mismatch in lengths of records - dge5n2'
+              call quit('mismatch in lengths of records - dge5n2')
             else  
               gen(istrt12+ije1(i-1)+j)=
      1        ddot(nel1,save1,1,save2,1)  
@@ -3171,8 +3172,8 @@ CUK   common /crle/ trle(nrle,4),isize(4)
               end if
 80          continue
             if (nel1.ne.nel2) then
-              write (6,*) 'length mismatch in dge6n2'
-              stop
+              write (LUPRI,*) 'length mismatch in dge6n2'
+              call quit('length mismatch in dge6n2')
             else
               gen(istrt12+ije1(i-1)+j)=ddot(nel1,save1,1,save2,1)
             end if
