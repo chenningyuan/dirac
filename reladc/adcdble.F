@@ -1,24 +1,3 @@
-!dirac_copyright_start
-!      Copyright (c) 2010 by the authors of DIRAC.
-!      All Rights Reserved.
-!
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
-!
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
-!
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
-!dirac_copyright_end
-
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C      *****************************************************
@@ -58,8 +37,8 @@ C
 #include  "../relccsd/symm.inc"
 #include  "../relccsd/complex.inc"
 #include  "../relccsd/param.inc"
-C
       COMMON/RDMATND/NBUFS
+C
 C
 C---------------Local variables memory requirements------------------
 C
@@ -67,13 +46,16 @@ C
       INTEGER KFRSAV,LFRSAV
       INTEGER ICOLLEN(MXREP),INTBUF
 c file names for the Lanczos
-      CHARACTER*6 NAME1,NAME2
-      PARAMETER(NAME1='ADC2PC',NAME2='ADC2PF')
-      CHARACTER*9 FNAME1,FNAME2
+      CHARACTER*6 NAME2,NAME3
+      PARAMETER(NAME2='ADC2PF',NAME3='ADCCNF')
+      CHARACTER*7 INFOFN
+      PARAMETER(INFOFN='MATINFO')
+      CHARACTER*5 NMSPECF
+      PARAMETER(NMSPECF='DSPEC')
 c variables for the lanczos
-      REAL*8 RDUMMY,EVLLIM,THRVEC
-      LOGICAL LFLAG
-      COMPLEX*16 CDUMMY
+      REAL*8 RDUMMY
+      INTEGER IONIZLEVEL
+      INTEGER IRECL
 C
 C---------------Executable code--------------------------------------
 C
@@ -86,6 +68,7 @@ C |
       ALLOC = ICALC.GE.2
       KFRSAV=KFREE
       LFRSAV=LFREE
+      IONIZLEVEL=2
       WRITE(IW,*) 'Entering double with MXCORR/KFREE/LFREE/ALLOC:',
      & MXCORR,KFREE,LFREE,ALLOC
 C
@@ -179,13 +162,22 @@ C |
 C |
       WRITE(IW,*)
       WRITE(IW,*) '***************************************************'
-      WRITE(IW,*) '*** Relativistic double ionization ADC(2) *********'
+      WRITE(IW,*) '*** '
+      WRITE(IW,*) '*** '
+      WRITE(IW,*) '*** '
+      WRITE(IW,*) '***                  STARTING THE'
+      WRITE(IW,*) '*** '
+      WRITE(IW,*) '*** '
+      WRITE(IW,*) '***      RELATIVISTIC DOUBLE IONIZATION ADC(2x)'
+      WRITE(IW,*) '*** '
+      WRITE(IW,*) '*** '
+      WRITE(IW,*) '***                     MODULE'
+      WRITE(IW,*) '*** '
+      WRITE(IW,*) '*** '
+      WRITE(IW,*) '*** '
+      WRITE(IW,*) '*** '
       WRITE(IW,*) '***************************************************'
       WRITE(IW,*)
-      WRITE(IW,*) ADCTITLE
-C
-      WRITE(IW,*) 'Selected diagonalization procedure:',DIAGTYPE
-      WRITE(IW,*) 'Number of symmetries;', NREP
 C |
 C |
 C |
@@ -250,7 +242,8 @@ c*****************************************************************
       DO 200 DESREP = 1,NREP
         ICOLLEN(DESREP) = 0
         IF(NOOT(DESREP).GT.0) THEN
-          WRITE(IW,*) ' *** Found two-hole final states in symm.',DESREP
+          WRITE(IW,'(A,I4)') 
+     &       ' *** Found 2H final states in symm. ',DESREP
           IF(CARITH) THEN
             CALL BUILD_3H1P_2H_C(IO(NREP+1),CC(BIXOOO),CC(BIROOO),
      &                           CC(BORIJK),CC(BVOOO1),CC(BVOOO2),
@@ -262,15 +255,12 @@ c*****************************************************************
      &                           CC(BUFCOL),CC(BGIJKL),EPS,DESREP,
      &                           LENSATBL)
           ENDIF
-c         WRITE(IW,*) ' *** Corresponding length of SAT block:',LENSATBL
-c         WRITE(IW,*)
           ICOLLEN(DESREP) = LENSATBL
         ENDIF
  200  CONTINUE
 
 c
 c  release *ALL* allocations done during computation so far
-c  and enter in-core diagonalizer. Reallocate inside according
 c  to ADC control file.  This part goes away later on !!
 c
       CALL MEMCHK('after BUILD_3H1P_2H',CC,KFRSAV)
@@ -336,6 +326,9 @@ c
 c  loop over the symmetries
 c  att: the additional, symmetry-specific memory is allocated
 c  within this loop and immediately released afterwards.
+c  att2: it was observed that the ADC2 matrices get very large and
+c  therefore a diagonalization is required immediately after the
+c  SAT block construction! No incore option is available anymore.
 c      
       DO 300 DESREP = 1,NREP
         IF(NOOT(DESREP).EQ.0) GOTO 300
@@ -366,6 +359,45 @@ c
         CALL MEMCHK('after BUILD_SAT',CC,KFRSAV)
         CALL MEMREL('Release after BUILD_SAT',CC,1,KFRSAV2,KFREE,LFREE)
 
+        write(iw,*) 'memchk after build_sat'
+
+C  call generalized configuration generation routine
+C  suitable for single and double ionization!
+C
+        LADC = NOOT(DESREP) + LENSATBL
+        CALL WHOLECNF(ITAPADC,NAME3,IRECL,DESREP,EPS,IONIZLEVEL)
+C
+C  write general matrix control file and perform Lanczos diagonalization
+C  for each symmetry immediately.
+C
+        OPEN(ITAPADC,FILE=INFOFN,FORM='FORMATTED',STATUS='UNKNOWN')
+
+        WRITE(ITAPADC,'(I1)')  IONIZLEVEL      !IONIZLEVEL
+        WRITE(ITAPADC,'(I2)')  DESREP          !KREP
+        WRITE(ITAPADC,'(I1)')  RCW             !RCW
+        N=2
+        WRITE(ITAPADC,'(I1)')  N               !IOLDNEW
+        WRITE(ITAPADC,'(I12)') LADC            !LADC
+        WRITE(ITAPADC,'(A6)')  NAME2           !FILEADC
+        WRITE(ITAPADC,'(A6)')  '      '        !FILEDIA
+        WRITE(ITAPADC,'(A6)')  NAME3           !FILECNF
+        WRITE(ITAPADC,'(A5)')  NMSPECF         !Name of SPEC
+        WRITE(ITAPADC,'(I9)')  IRECL           !IRECL of config
+        WRITE(ITAPADC,'(I9)')  DIPITER         !NITER
+        WRITE(ITAPADC,'(I9)')  NOOT(DESREP)    !1h space size
+        WRITE(ITAPADC,'(I9)')  NBUFS           !NBUFS
+        N=0
+        WRITE(ITAPADC,'(I9)')  N               !NEIGENV
+        WRITE(ITAPADC,'(F10.1)') DIPPRNT       !EVLLIM
+
+        CLOSE(ITAPADC)
+c
+c  call diagonalizer.
+c
+        OPEN(ITAPADC,FILE=INFOFN,FORM='FORMATTED',STATUS='OLD')
+        CALL DIAGEXE(CC,KFRSAV2,LFREE,ITAPADC,IW)
+        CLOSE(ITAPADC,STATUS='DELETE')
+
  300  CONTINUE
 
 C |
@@ -374,268 +406,9 @@ C |
 C |________________E_N_D______S_E_C_T_I_O_N__________________________
 c
 c  perform a complete memory release now
+c  
 c
       CALL MEMREL('Release after all blocks',CC,1,KFRSAV,KFREE,LFREE)
-
-C  __________________  SELECT DIAGONALIZATION PROCEDURE _____________
-C |
-C |
-
-      IF(DIAGTYPE.eq.'FULL') THEN
-        IF(CARITH) STOP 'Full diag only in real number mode!'
-
-c             *************************************************
-c             ************  INCORE DIAG
-c             *************************************************
-C
-c    matrices are already on disk. For each symmetry
-C     the required memory is determined and freed again after
-C     termination.
-c  
-        WRITE(IW,*) '************************************************'
-        WRITE(IW,*) '***'
-        WRITE(IW,*) '***'
-        WRITE(IW,*) '***'
-        WRITE(IW,*) '***'
-        WRITE(IW,*) '***'
-        WRITE(IW,*) '***  Performing INCORE diagonalization'
-        WRITE(IW,*) '***  via LAPACK routine'
-        WRITE(IW,*) '***'
-        WRITE(IW,*) '***  Each symmetry is checked for possible'
-        WRITE(IW,*) '***  final state.'
-        WRITE(IW,*) '***'
-        WRITE(IW,*) '***'
-        WRITE(IW,*) '***'
-        WRITE(IW,*) '***'
-        WRITE(IW,*) '************************************************'
-        WRITE(IW,*)
-        WRITE(IW,*)
-        ITAP7=ITAPADC+7
-        DO 350 DESREP = 1,NREP
-          IF(NOOT(DESREP).EQ.0) GOTO 350
-          WRITE(IW,*) '-----------------------------------------------'
-          WRITE(IW,'(A,I4,A8)') ' ----   Symmetry:',DESREP,REPNA(DESREP)
-          WRITE(IW,*) '-----------------------------------------------'
-
-          LADC = ICOLLEN(DESREP) + NOOT(DESREP)
-          NDIM=LADC*LADC
-          CALL MEMOPT('REAL',BUFMAT,NDIM,CC,KFREE,LFREE,ALLOC)
-          NDIM=LADC
-          CALL MEMOPT('REAL',BUFEVL,NDIM,CC,KFREE,LFREE,ALLOC)
-          LWORK=3*LADC*RCW
-          CALL MEMOPT('REAL',BRWORK,LWORK,CC,KFREE,LFREE,ALLOC)
-          NDIM=INTBUF
-          CALL MEMOPT('INTE',BUFIOI,NDIM,CC,KFREE,LFREE,ALLOC)
-          CALL MEMOPT('INTE',BUFIOJ,NDIM,CC,KFREE,LFREE,ALLOC)
-          NDIM=INTBUF*RCW
-          CALL MEMOPT('REAL',BUFBUF,NDIM,CC,KFREE,LFREE,ALLOC)
-
-c         WRITE(IW,*) 'File handle for full incore diag.:',ITAP7
-          CALL FULLDIAR2(ITAP7,INTBUF,LADC,DESREP,
-     &                   CC(BUFMAT),CC(BUFEVL),CC(BRWORK),LWORK,
-     &                   CC(BUFIOI),CC(BUFIOJ),CC(BUFBUF))
-          CALL MEMREL('Release FULLDIAR2',CC,1,KFRSAV,KFREE,LFREE)
- 350    CONTINUE
-
-      ELSE IF(DIAGTYPE.eq.'LANC') THEN
-
-c             *************************************************
-c             ************  LANCZOS DIAG
-c             *************************************************
-
-        CALL PST('Performing Lanczos diagonalization+')
-
-        ITAP1 = ITAPADC+1
-        ITAP2 = ITAPADC+2
-        ITAP3 = ITAPADC+3
-        ITAP4 = ITAPADC+4
-        ITAPVOID = -255
-C
-C looping over all symmetries where a two-hole final state is available
-C
-        DO 380 DESREP = 1,NREP
-          IF(NOOT(DESREP).eq.0) GOTO 380
-          WRITE(IW,'(A,I4,A,A8)') ' Found final states in Symm.:',
-     &          DESREP,' Irep name: ',REPNA(DESREP)
-          WRITE(IW,*)
-          WRITE(IW,'(20X,A)') '***** PARAMETERS FOR THIS RUN *****'
-          WRITE(IW,*)
-c
-c  open matrix control file and read control parameters
-c  check for consistency.
-c
-          IF(DESREP.GT.9) THEN
-            WRITE(FNAME1,'(A6,A1,I2)') NAME1,'.',DESREP
-          ELSE
-            WRITE(FNAME1,'(A6,A2,I1)') NAME1,'.0',DESREP
-          ENDIF
-          WRITE(IW,*) '2P-ADC matrix control data in       ',FNAME1
-          OPEN(ITAP1,FILE=FNAME1,FORM='FORMATTED',  STATUS='UNKNOWN')
-          READ(ITAP1,'(I4,3I10,I2)') ZDESREP,LADC,Z2H2H,NBUFS,ZRCW
-          CLOSE(ITAP1)
-          IF(ZDESREP.ne.DESREP) STOP 'Incompatible symmetry headers!'
-          IF(Z2H2H.ne.NOOT(DESREP)) STOP 'Incompatible 2H2H length!'
-          IF(LADC.ne.ICOLLEN(DESREP)+Z2H2H) 
-     &            STOP 'Incompatible matrix dimensions!'
-          IF(ZRCW.ne.RCW) STOP 'Incompatible real/complex flag!'
-c
-c  open packed matrix file 
-c
-          IF(DESREP.GT.9) THEN
-            WRITE(FNAME2,'(A6,A1,I2)') NAME2,'.',DESREP
-          ELSE
-            WRITE(FNAME2,'(A6,A2,I1)') NAME2,'.0',DESREP
-          ENDIF
-          WRITE(IW,*) 'Packed ADC matrix data in       ',FNAME2
-          OPEN(ITAP2,FILE=FNAME2,FORM='UNFORMATTED',STATUS='UNKNOWN')
-c
-c  transfer actual calculation parameters from the ADC input file.
-c  *** ATT *** For the double ionization case everything is determined
-c              automatically. This means, just give *ONE* value for
-c              requested number of Iterations and number of eigenvectors
-c              This then holds for *ALL* symmetries.
-c              Additionally: the half band width is always equal to the
-c              number of 2h states in this symmetry !
-c
-          NITER  = XNITER(1)
-          NP = NOOT(DESREP)
-          NEIGENV = XNEIGENV(1)
-          EVLLIM  = XEVLLIM(1)
-          THRVEC  = XTHRVEC(1)
-
-          WRITE(IW,*) 'Dimension of the ADC-2 matrix      ',LADC
-          WRITE(IW,*) 'Number of iterations:              ',NITER
-          WRITE(IW,*) 'Number of 2h states in this symm,  ',
-     &                 NOOT(DESREP)
-          WRITE(IW,*) 'Half band width:                   ',NP
-          WRITE(IW,*) 'Number of requested eigenvectors:  ',NEIGENV
-          WRITE(IW,'(A,F15.2)') 'Printing limit for eigenvalues:    ',
-     &                 EVLLIM
-          WRITE(IW,'(A,F15.2)') 'Threshold for vector printing:     ',
-     &                 THRVEC
-          WRITE(IW,*) 'Size of I/O buffer:                ',INTBUF
-          WRITE(IW,*) 'Buffers in packed ADC file:        ',NBUFS
-          WRITE(IW,*)
-          WRITE(IW,*) '      Starting iterations:'
-c
-c allocating memory for band lanczos within this symmetry
-c
-          NDIM=2*NP+1
-          CALL MEMOPT('INTE',WRK_IVX,NDIM,CC,KFREE,LFREE,ALLOC)
-          NDIM=(2*NP+1)*LADC*RCW
-          CALL MEMOPT('REAL',WRK_P,NDIM,CC,KFREE,LFREE,ALLOC)
-          NDIM=(NP+1)*NITER*RCW
-          CALL MEMOPT('REAL',WRK_T,NDIM,CC,KFREE,LFREE,ALLOC)
-          NDIM=LADC*RCW
-          CALL MEMOPT('REAL',WRK_R,NDIM,CC,KFREE,LFREE,ALLOC)
-          CALL MEMOPT('REAL',WRK_DIAG,NDIM,CC,KFREE,LFREE,ALLOC)
-          NDIM=INTBUF*RCW
-          CALL MEMOPT('REAL',WRK_BUF,NDIM,CC,KFREE,LFREE,ALLOC)
-          NDIM=INTBUF
-          CALL MEMOPT('INTE',WRK_IOI,NDIM,CC,KFREE,LFREE,ALLOC)
-          CALL MEMOPT('INTE',WRK_IOJ,NDIM,CC,KFREE,LFREE,ALLOC)
-c
-c  set the diagonal file LUN to -255 (ie there is none in the 
-c  ADC-2 DI case)
-c
-          LFLAG = .FALSE.
-
-          IF(CARITH.EQV..TRUE.) THEN
-            CALL ZLANCZOS(DESREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
-     &                    CC(WRK_P), CC(WRK_T), CC(WRK_R),
-     &                    CC(WRK_DIAG), CDUMMY, CDUMMY, CC(WRK_BUF),
-     &                    CC(WRK_IOI), CC(WRK_IOJ), CDUMMY,LFLAG,
-     &                    INTBUF, ITAPVOID, ITAP2, ITAP3)
-          ELSE
-            CALL RLANCZOS(DESREP,LADC, NP, NITER, NEIGENV, CC(WRK_IVX),
-     &                    CC(WRK_P), CC(WRK_T), CC(WRK_R),
-     &                    CC(WRK_DIAG), RDUMMY, RDUMMY, CC(WRK_BUF),
-     &                    CC(WRK_IOI), CC(WRK_IOJ), RDUMMY,LFLAG,
-     &                    INTBUF, ITAPVOID, ITAP2, ITAP3)
-          ENDIF
-          CLOSE(ITAP2)
-          CALL MEMCHK('AFTER REAL LANCZOS',CC,KFRSAV)
-
-C
-C  from here the Lanczos matrix T is available. we acquire work
-C  space for the LAPACK Band-diagonalizer.
-C  After the BANDDIA runs the corresponding eigenVECTORS of the
-C  Lanczos matrix T are available in ZEV resp. in CC(WRK_ZEV)
-C
-          NDIM=NITER
-          CALL MEMOPT('REAL',WRK_EVL,NDIM,CC,KFREE,LFREE,ALLOC)
-          NDIM=NITER*NITER*RCW
-          CALL MEMOPT('REAL',WRK_ZEV,NDIM,CC,KFREE,LFREE,ALLOC)
-          NDIM=4*NITER*RCW
-          CALL MEMOPT('REAL',WRK_WORK1,NDIM,CC,KFREE,LFREE,ALLOC)
-          NDIM=6*NITER
-          CALL MEMOPT('REAL',WRK_RWORK1,NDIM,CC,KFREE,LFREE,ALLOC)
-
-          IF(CARITH) THEN
-             CALL ZBANDDIA(NITER,NP,NP+1,CC(WRK_T),CC(WRK_EVL),
-     &                  CC(WRK_ZEV),CC(WRK_WORK1),CC(WRK_RWORK1))
-             CALL MEMCHK('AFTER ZBANDDIA',CC,KFRSAV)
-          ELSE
-             CALL RBANDDIA(NITER,NP,NP+1,CC(WRK_T),CC(WRK_EVL),
-     &                  CC(WRK_ZEV),CC(WRK_RWORK1))
-             CALL MEMCHK('AFTER RBANDDIA',CC,KFRSAV)
-          ENDIF
-c
-c  from here the Lanczos matrix eigenvalues are available and the
-c  eigenvalue spectrum will be processed
-c
-c
-c remove spurious/multiple eigenvalues and
-c analyze eigenvectors of band matrix
-c if eigenvectors desired perform inverse iteration for the
-c purged spectrum.
-c
-          NDIM=2*NP*NITER*RCW
-          CALL MEMOPT('REAL',WRK_Z,NDIM,CC,KFREE,LFREE,ALLOC)
-          NDIM=NITER
-          CALL MEMOPT('INTE',WRK_IND,NDIM,CC,KFREE,LFREE,ALLOC)
-          CALL MEMOPT('INTE',WRK_MLT,NDIM,CC,KFREE,LFREE,ALLOC)
-          CALL MEMOPT('INTE',WRK_LSP,NDIM,CC,KFREE,LFREE,ALLOC)
-          CALL MEMOPT('INTE',WRK_IPI,NDIM,CC,KFREE,LFREE,ALLOC)
-          NDIM=NITER*(2*NP+1)*RCW
-          CALL MEMOPT('REAL',WRK_A,NDIM,CC,KFREE,LFREE,ALLOC)
-          CALL MEMOPT('REAL',WRK_A1,NDIM,CC,KFREE,LFREE,ALLOC)
-          NDIM=NITER*RCW
-          CALL MEMOPT('REAL',WRK_B,NDIM,CC,KFREE,LFREE,ALLOC)
-          CALL MEMOPT('REAL',WRK_BX,NDIM,CC,KFREE,LFREE,ALLOC)
-
-          IF(CARITH.EQV..TRUE.) THEN
-            CALL ZBLANA(DESREP,niter,np,neigenv,noot(desrep),
-     &           cc(wrk_evl),cc(wrk_zev),cc(wrk_z),
-     &           cc(wrk_t),cc(wrk_ind),cc(wrk_mlt),cc(wrk_lsp),
-     &           cc(wrk_a),cc(wrk_a1),cc(wrk_b),cc(wrk_bx),
-     &           cc(wrk_ipi),itap4,THRVEC,EVLLIM)
-          ELSE
-c           CALL rpurger(desrep,NITER,NP,NOOT(desrep),ITAP4,IW,
-c    &                  CC(WRK_EVL),CC(WRK_ZEV),ADCLEVEL)
-            CALL RBLANA(DESREP,niter,np,neigenv,noot(desrep),
-     &           cc(wrk_evl),cc(wrk_zev),cc(wrk_z),
-     &           cc(wrk_t),cc(wrk_ind),cc(wrk_mlt),cc(wrk_lsp),
-     &           cc(wrk_a),cc(wrk_a1),cc(wrk_b),cc(wrk_bx),
-     &           cc(wrk_ipi),itap4,THRVEC,EVLLIM)
-          ENDIF
-c
-          CALL MEMREL('Release LANCZOS',CC,1,KFRSAV,KFREE,LFREE)
-
-          DO IYY = 1,10
-            WRITE(IW,'(20X,A,I4,A)')
-     &     ' # # # # # # # # # # # # # # End Lanczos for Symmetry:',
-     &     DESREP,' # # # # # # # # # # # # # #'
-          ENDDO
-          WRITE(IW,*)
-          WRITE(IW,*)
-          WRITE(IW,*)
-
- 380    CONTINUE
-
-      ELSE
-        STOP 'Illegal default of diagonalizer'
-      ENDIF
 
       RETURN
       END
@@ -832,10 +605,9 @@ C
 C---------------Local variables--------------------------------------
 C
       REAL*8 AUX
-      CHARACTER*6 NAME1,NAME3,NAME4
-      PARAMETER(NAME1='ADC2PC',
-     &          NAME3='ADC2PE',NAME4='ADC2PP')
-      CHARACTER*9 FNAME1,FNAME3,FNAME4
+      CHARACTER*6 NAME3,NAME4
+      PARAMETER(NAME3='ADC2PE',NAME4='ADC2PP')
+      CHARACTER*9 FNAME3,FNAME4
       REAL*8 ENERGY_I,ENERGY_J,ENERGY_K,ENERGY_R
 C
 C---------------Executable code--------------------------------------
@@ -941,34 +713,18 @@ c                                                                    |
 c            OPEN CONTROL/MATRIX/ENERGY FILES FOR THE ADC-2          |
 c                                                                    |
       IF(DESREP.GT.9) THEN
-        WRITE(FNAME1,'(A6,A1,I2)') NAME1,'.',DESREP
         WRITE(FNAME3,'(A6,A1,I2)') NAME3,'.',DESREP
         WRITE(FNAME4,'(A6,A1,I2)') NAME4,'.',DESREP
       ELSE
-        WRITE(FNAME1,'(A6,A2,I1)') NAME1,'.0',DESREP
         WRITE(FNAME3,'(A6,A2,I1)') NAME3,'.0',DESREP
         WRITE(FNAME4,'(A6,A2,I1)') NAME4,'.0',DESREP
       ENDIF
 
-c     WRITE(IW,*) '2P-ADC matrix control data in       ',FNAME1
 c     WRITE(IW,*) '2P-ADC block data (packed) in       ',FNAME4
 c     WRITE(IW,*) '2P-ADC matrix satellite energies in ',FNAME3
 
-      OPEN(ITAPADC+1,FILE=FNAME1,FORM='FORMATTED',STATUS='UNKNOWN')
       OPEN(ITAPADC+3,FILE=FNAME3,FORM='UNFORMATTED',STATUS='UNKNOWN')
       OPEN(ITAPADC+4,FILE=FNAME4,FORM='UNFORMATTED',STATUS='UNKNOWN')
-c
-c       write control information immediately
-c                information consists of: 
-c   -  Final state irrep
-c   -  Length of ADC-2 matrix
-c   -  Length of 2h block
-c   -  Real/complex indicator
-c
-c
-      WRITE(ITAPADC+1,'(I4,2I10,I2)')
-     &           DESREP,LEN_RKLM + NOOT(DESREP),NOOT(DESREP),RCW
-      CLOSE(ITAPADC+1)
 c
 c       write satellite block diagonal energies immediately
 c
@@ -1259,10 +1015,9 @@ C---------------Local variables--------------------------------------
 C
       REAL*8 AUX
       COMPLEX*16 CAUX
-      CHARACTER*6 NAME1,NAME3,NAME4
-      PARAMETER(NAME1='ADC2PC',
-     &          NAME3='ADC2PE',NAME4='ADC2PP')
-      CHARACTER*9 FNAME1,FNAME3,FNAME4
+      CHARACTER*6 NAME3,NAME4
+      PARAMETER(NAME3='ADC2PE',NAME4='ADC2PP')
+      CHARACTER*9 FNAME3,FNAME4
       REAL*8 ENERGY_I,ENERGY_J,ENERGY_K,ENERGY_R
 C
 C---------------Executable code--------------------------------------
@@ -1368,34 +1123,18 @@ c                                                                    |
 c            OPEN CONTROL/MATRIX/ENERGY FILES FOR THE ADC-2          |
 c                                                                    |
       IF(DESREP.GT.9) THEN
-        WRITE(FNAME1,'(A6,A1,I2)') NAME1,'.',DESREP
         WRITE(FNAME3,'(A6,A1,I2)') NAME3,'.',DESREP
         WRITE(FNAME4,'(A6,A1,I2)') NAME4,'.',DESREP
       ELSE
-        WRITE(FNAME1,'(A6,A2,I1)') NAME1,'.0',DESREP
         WRITE(FNAME3,'(A6,A2,I1)') NAME3,'.0',DESREP
         WRITE(FNAME4,'(A6,A2,I1)') NAME4,'.0',DESREP
       ENDIF
 
-c     WRITE(IW,*) '2P-ADC matrix control data in       ',FNAME1
 c     WRITE(IW,*) '2P-ADC block data (packed) in       ',FNAME4
 c     WRITE(IW,*) '2P-ADC matrix satellite energies in ',FNAME3
 
-      OPEN(ITAPADC+1,FILE=FNAME1,FORM='FORMATTED',STATUS='UNKNOWN')
       OPEN(ITAPADC+3,FILE=FNAME3,FORM='UNFORMATTED',STATUS='UNKNOWN')
       OPEN(ITAPADC+4,FILE=FNAME4,FORM='UNFORMATTED',STATUS='UNKNOWN')
-c
-c       write control information immediately
-c                information consists of: 
-c   -  Final state irrep
-c   -  Length of ADC-2 matrix
-c   -  Length of 2h block
-c   -  Real/complex indicator
-c
-c
-      WRITE(ITAPADC+1,'(I4,2I10,I2)')
-     &           DESREP,LEN_RKLM + NOOT(DESREP),NOOT(DESREP),RCW
-      CLOSE(ITAPADC+1)
 c
 c write satellite block diagonal energies immediately
 c
@@ -1673,16 +1412,16 @@ C
 #include  "../relccsd/symm.inc"
 #include  "../relccsd/complex.inc"
 #include  "../relccsd/files.inc"
+
+      COMMON/RDMATND/NBUFS
 C
 C---------------Local variables--------------------------------------
 C
       REAL*8 G
       INTEGER IB,NBUFS,JDUMMY,NTOTELE
-      CHARACTER*6 NAME1,NAME2,NAME3,NAME4,NAME5
-      PARAMETER(NAME1='ADC2PC',NAME2='ADC2PE',
-     &          NAME3='ADC2PP',NAME4='ADC2PF',
-     &          NAME5='ADCDAT')
-      CHARACTER*9 FNAME1,FNAME2,FNAME3,FNAME4,FNAME5
+      CHARACTER*6 NAME2,NAME3,NAME4
+      PARAMETER(NAME2='ADC2PE',NAME3='ADC2PP',NAME4='ADC2PF')
+      CHARACTER*9 FNAME2,FNAME3,FNAME4
       INTEGER R,I,J,K,S,L,M,N
       CHARACTER*44 FIELD
 
@@ -1747,116 +1486,32 @@ c
       VOVO(0)=0.0d0
 c
 c  create symmetry-specific filenames for 
-c  sat-diag eigenvalues, for packed 3h1p/2h matrix and final packed
-c  ADC-2 matrix.
+c  sat-diag eigenvalues, for packed 3h1p/2h matrix 
+c  ATT: final packed ADC matrix now only described by generic name!
+c  These **huge** files will be deleted immediately after the
+c  diagonalization.
 c
       IF(DESREP.GT.9) THEN
-        WRITE(FNAME1,'(A6,A1,I2)') NAME1,'.',DESREP
         WRITE(FNAME2,'(A6,A1,I2)') NAME2,'.',DESREP
         WRITE(FNAME3,'(A6,A1,I2)') NAME3,'.',DESREP
-        WRITE(FNAME4,'(A6,A1,I2)') NAME4,'.',DESREP
-        WRITE(FNAME5,'(A6,A1,I2)') NAME5,'.',DESREP
+c       WRITE(FNAME4,'(A6,A1,I2)') NAME4,'.',DESREP
       ELSE
-        WRITE(FNAME1,'(A6,A2,I1)') NAME1,'.0',DESREP
         WRITE(FNAME2,'(A6,A2,I1)') NAME2,'.0',DESREP
         WRITE(FNAME3,'(A6,A2,I1)') NAME3,'.0',DESREP
-        WRITE(FNAME4,'(A6,A2,I1)') NAME4,'.0',DESREP
-        WRITE(FNAME5,'(A6,A2,I1)') NAME5,'.0',DESREP
+c       WRITE(FNAME4,'(A6,A2,I1)') NAME4,'.0',DESREP
       ENDIF
 
-c     WRITE(IW,*) '2P-ADC matrix control data in       ',FNAME1
-c     WRITE(IW,*) '2P-ADC matrix satellite energies in ',FNAME2
-c     WRITE(IW,*) '2P-ADC 3h1p/2h (packed) data in     ',FNAME3
-c     WRITE(IW,*) '2P-ADC final packed ADC matrix in   ',FNAME4
-c     WRITE(IW,*) '2P-ADC configuration data in        ',FNAME5
+      WRITE(IW,*) '2P-ADC matrix satellite energies in ',FNAME2
+      WRITE(IW,*) '2P-ADC 3h1p/2h (packed) data in     ',FNAME3
+      WRITE(IW,*) '2P-ADC final packed ADC matrix in   ',NAME4
 
-      ITAP1 = ITAPADC+1
       ITAP2 = ITAPADC+2
       ITAP3 = ITAPADC+3
       ITAP4 = ITAPADC+4
-      ITAP5 = ITAPADC+5
-      IRECL = 44
 
-      OPEN(ITAP1,FILE=FNAME1,FORM='FORMATTED',  STATUS='UNKNOWN')
       OPEN(ITAP2,FILE=FNAME2,FORM='UNFORMATTED',STATUS='UNKNOWN')
       OPEN(ITAP3,FILE=FNAME3,FORM='UNFORMATTED',STATUS='UNKNOWN')
-      OPEN(ITAP4,FILE=FNAME4,FORM='UNFORMATTED',STATUS='UNKNOWN')
-      OPEN(ITAP5,FILE=FNAME5,ACCESS='DIRECT',
-     &           RECL=IRECL,STATUS='UNKNOWN')
-
-c
-c  read from previous control file and perform internal consistency
-c  check. Control file is then deleted because another one is created.
-c
-      READ(ITAP1,'(I4,2I10,I2)')
-     &           CHV1,CHV2,CHV3,CHV4
-      CLOSE(ITAP1,STATUS='DELETE')
-      IF(CHV1.NE.DESREP) STOP 'Inconsistency in BUILD_SAT (DESREP)'
-      IF(CHV2.NE.IRCDLEN+NOOT(DESREP)) 
-     &       STOP 'Inconsistency in BUILD_SAT (IRCDLEN)'
-      IF(CHV3.NE.NOOT(DESREP)) STOP 'Inconsistency in BUILD_SAT (2H)!'
-      IF(CHV4.NE.RCW) STOP 'Inconsistency in BUILD_SAT (RCW)!'
-c
-c__________ matrix control check passed, we create config information ___
-c|
-c|
-c|    .... first the 2h information depending on DESREP (bosonic)
-c|
-      COOC=1
-      DO 14 JRP = 1, NREP
-        IRP = MULTB(JRP,DESREP+NREP,2)
-        IF (IRP.LT.JRP) GOTO 14
-        DO J = 1, NO(JRP)
-          IMIN = 1
-          IF (IRP.EQ.JRP) IMIN = J + 1
-          DO I = IMIN, NO(IRP)
-c
-            WRITE(FIELD,381) I,REPNA(IRP),J,REPNA(JRP),
-     &  0,'        ',0,'        '
-            WRITE(ITAP5,REC=COOC) FIELD
-            COOC = COOC + 1
-c
-          ENDDO
-        ENDDO
-  14  CONTINUE
-      IF( (COOC-1).NE.NOOT(DESREP)) 
-     &       STOP '2H counting error in BUILD_SAT!'
- 381  FORMAT(4(I3,'(',A4,')  '))
-c|
-c|    .... then the 3h1p information depending on DESREP (bosonic)
-c|
-c|
-      DO K=1,MAXOCCSP
-        KSP = IROOO(K,1)
-        KRP = IROOO(K,2)
-        DO J=K+1,MAXOCCSP
-          JSP = IROOO(J,1)
-          JRP = IROOO(J,2)
-          JKRP = MULTB(JRP,KRP,1)
-          DO I=J+1,MAXOCCSP
-            ISP = IROOO(I,1)
-            IRP = IROOO(I,2)
-            IJKRP = MULTB(IRP,JKRP+NREP,1)
-            RRP = MULTB(DESREP+NREP,IJKRP,2)
-            DO RSP = 1,NV(RRP)
-c
-            WRITE(FIELD,381) RSP,REPNA(RRP),ISP,REPNA(IRP),
-     &                       JSP,REPNA(JRP),KSP,REPNA(KRP)
-            WRITE(ITAP5,REC=COOC) FIELD
-            COOC = COOC + 1
-c
-            ENDDO
-          ENDDO
-        ENDDO
-      ENDDO
-      CLOSE(ITAP5)
-      IF( (COOC-1) .NE. IRCDLEN+NOOT(DESREP))
-     &        stop '3H1P counting error in BUILD_SAT' 
-c|
-c|
-c|
-c|_______________________________________________________________________
-c
+      OPEN(ITAP4,FILE=NAME4, FORM='UNFORMATTED',STATUS='UNKNOWN')
 c
 c  read packed 3h1p/2h packed matrix created previously and transform
 c  it to final format where only the nonzero numbers together with
@@ -2099,14 +1754,6 @@ c
       SPARS=100.0D0 - SPARS
       WRITE(IW,'(A,F5.2,A)') ' Sparsity of ADC matrix:',SPARS,' %'
       WRITE(IW,*)
-c
-c  write out matrix control file for symmetry DESREP
-c  for later processing by the diagonalizer.
-c
-      OPEN(ITAP1,FILE=FNAME1,FORM='FORMATTED',STATUS='UNKNOWN')
-      WRITE(ITAP1,'(I4,3I10,I2)')
-     &           DESREP,IRCDLEN + SATOFF,SATOFF,NBUFS,RCW
-      CLOSE(ITAP1)
 
       RETURN
       END
@@ -2142,16 +1789,16 @@ C
 #include  "../relccsd/symm.inc"
 #include  "../relccsd/complex.inc"
 #include  "../relccsd/files.inc"
+
+      COMMON/RDMATND/NBUFS
 C
 C---------------Local variables--------------------------------------
 C
       COMPLEX*16 G
       INTEGER IB,NBUFS,JDUMMY,NTOTELE
-      CHARACTER*6 NAME1,NAME2,NAME3,NAME4,NAME5
-      PARAMETER(NAME1='ADC2PC',NAME2='ADC2PE',
-     &          NAME3='ADC2PP',NAME4='ADC2PF',
-     &          NAME5='ADCDAT')
-      CHARACTER*9 FNAME1,FNAME2,FNAME3,FNAME4,FNAME5
+      CHARACTER*6 NAME2,NAME3,NAME4
+      PARAMETER(NAME2='ADC2PE',NAME3='ADC2PP',NAME4='ADC2PF')
+      CHARACTER*9 FNAME2,FNAME3,FNAME4
       INTEGER R,I,J,K,S,L,M,N
       CHARACTER*44 FIELD
 
@@ -2160,7 +1807,6 @@ C
       INTEGER LONGRC   ! contains packed row/column indices.
 c
 c  meaning of the file names:
-c  ADC2PC:  control file with the dimensions and file infos
 c  ADC2PE:  contains the 3h1p/3h1p diagonal energies
 c  ADC2PP:  packed matrix of the 3h1p/2h block. contains also diags
 c  ADC2PF:  full packed ADC matrix in the conventional nonzero element
@@ -2215,117 +1861,33 @@ c
       OOOO(0)=(0.0d0,0.0d0)
       VOVO(0)=(0.0d0,0.0d0)
 c
-c  create symmetry-specific filenames for 
-c  sat-diag eigenvalues, for packed 3h1p/2h matrix and final packed
-c  ADC-2 matrix.
+c  create symmetry-specific filenames for
+c  sat-diag eigenvalues, for packed 3h1p/2h matrix
+c  ATT: final packed ADC matrix now only described by generic name!
+c  These **huge** files will be deleted immediately after the
+c  diagonalization.
 c
       IF(DESREP.GT.9) THEN
-        WRITE(FNAME1,'(A6,A1,I2)') NAME1,'.',DESREP
         WRITE(FNAME2,'(A6,A1,I2)') NAME2,'.',DESREP
         WRITE(FNAME3,'(A6,A1,I2)') NAME3,'.',DESREP
-        WRITE(FNAME4,'(A6,A1,I2)') NAME4,'.',DESREP
-        WRITE(FNAME5,'(A6,A1,I2)') NAME5,'.',DESREP
+c       WRITE(FNAME4,'(A6,A1,I2)') NAME4,'.',DESREP
       ELSE
-        WRITE(FNAME1,'(A6,A2,I1)') NAME1,'.0',DESREP
         WRITE(FNAME2,'(A6,A2,I1)') NAME2,'.0',DESREP
         WRITE(FNAME3,'(A6,A2,I1)') NAME3,'.0',DESREP
-        WRITE(FNAME4,'(A6,A2,I1)') NAME4,'.0',DESREP
-        WRITE(FNAME5,'(A6,A2,I1)') NAME5,'.0',DESREP
+c       WRITE(FNAME4,'(A6,A2,I1)') NAME4,'.0',DESREP
       ENDIF
 
-c     WRITE(IW,*) '2P-ADC matrix control data in       ',FNAME1
-c     WRITE(IW,*) '2P-ADC matrix satellite energies in ',FNAME2
-c     WRITE(IW,*) '2P-ADC 3h1p/2h (packed) data in     ',FNAME3
-c     WRITE(IW,*) '2P-ADC final packed ADC matrix in   ',FNAME4
-c     WRITE(IW,*) '2P-ADC configuration data in        ',FNAME5
+      WRITE(IW,*) '2P-ADC matrix satellite energies in ',FNAME2
+      WRITE(IW,*) '2P-ADC 3h1p/2h (packed) data in     ',FNAME3
+      WRITE(IW,*) '2P-ADC final packed ADC matrix in   ',NAME4
 
-      ITAP1 = ITAPADC+1
       ITAP2 = ITAPADC+2
       ITAP3 = ITAPADC+3
       ITAP4 = ITAPADC+4
-      ITAP5 = ITAPADC+5
-      IRECL = 44
 
-      OPEN(ITAP1,FILE=FNAME1,FORM='FORMATTED',  STATUS='UNKNOWN')
       OPEN(ITAP2,FILE=FNAME2,FORM='UNFORMATTED',STATUS='UNKNOWN')
       OPEN(ITAP3,FILE=FNAME3,FORM='UNFORMATTED',STATUS='UNKNOWN')
-      OPEN(ITAP4,FILE=FNAME4,FORM='UNFORMATTED',STATUS='UNKNOWN')
-      OPEN(ITAP5,FILE=FNAME5,ACCESS='DIRECT',
-     &           RECL=IRECL,STATUS='UNKNOWN')
-
-c
-c  read from previous control file and perform internal consistency
-c  check. Control file is then deleted because another one is created.
-c
-      READ(ITAP1,'(I4,2I10,I2)')
-     &           CHV1,CHV2,CHV3,CHV4
-      CLOSE(ITAP1,STATUS='DELETE')
-      IF(CHV1.NE.DESREP) STOP 'Inconsistency in BUILD_SAT (DESREP)'
-      IF(CHV2.NE.IRCDLEN+NOOT(DESREP)) 
-     &       STOP 'Inconsistency in BUILD_SAT (IRCDLEN)'
-      IF(CHV3.NE.NOOT(DESREP)) STOP 'Inconsistency in BUILD_SAT (2H)!'
-      IF(CHV4.NE.RCW) STOP 'Inconsistency in BUILD_SAT (RCW)!'
-c
-c__________ matrix control check passed, we create config information ___
-c|
-c|
-c|    .... first the 2h information depending on DESREP (bosonic)
-c|
-      COOC=1
-      DO 14 JRP = 1, NREP
-        IRP = MULTB(JRP,DESREP+NREP,2)
-        IF (IRP.LT.JRP) GOTO 14
-        DO J = 1, NO(JRP)
-          IMIN = 1
-          IF (IRP.EQ.JRP) IMIN = J + 1
-          DO I = IMIN, NO(IRP)
-c
-            WRITE(FIELD,381) I,REPNA(IRP),J,REPNA(JRP),
-     &  0,'        ',0,'        '
-            WRITE(ITAP5,REC=COOC) FIELD
-            COOC = COOC + 1
-c
-          ENDDO
-        ENDDO
-  14  CONTINUE
-      IF( (COOC-1).NE.NOOT(DESREP)) 
-     &       STOP '2H counting error in BUILD_SAT!'
- 381  FORMAT(4(I3,'(',A4,')  '))
-c|
-c|    .... then the 3h1p information depending on DESREP (bosonic)
-c|
-c|
-      DO K=1,MAXOCCSP
-        KSP = IROOO(K,1)
-        KRP = IROOO(K,2)
-        DO J=K+1,MAXOCCSP
-          JSP = IROOO(J,1)
-          JRP = IROOO(J,2)
-          JKRP = MULTB(JRP,KRP,1)
-          DO I=J+1,MAXOCCSP
-            ISP = IROOO(I,1)
-            IRP = IROOO(I,2)
-            IJKRP = MULTB(IRP,JKRP+NREP,1)
-            RRP = MULTB(DESREP+NREP,IJKRP,2)
-            DO RSP = 1,NV(RRP)
-c
-            WRITE(FIELD,381) RSP,REPNA(RRP),ISP,REPNA(IRP),
-     &                       JSP,REPNA(JRP),KSP,REPNA(KRP)
-            WRITE(ITAP5,REC=COOC) FIELD
-            COOC = COOC + 1
-c
-            ENDDO
-          ENDDO
-        ENDDO
-      ENDDO
-      CLOSE(ITAP5)
-      IF( (COOC-1) .NE. IRCDLEN+NOOT(DESREP))
-     &        stop '3H1P counting error in BUILD_SAT' 
-c|
-c|
-c|
-c|_______________________________________________________________________
-c
+      OPEN(ITAP4,FILE=NAME4, FORM='UNFORMATTED',STATUS='UNKNOWN')
 c
 c  read packed 3h1p/2h packed matrix created previously and transform
 c  it to final format where only the nonzero numbers together with
@@ -2570,14 +2132,6 @@ c
       SPARS=100.0D0 - SPARS
       WRITE(IW,'(A,F5.2,A)') ' Sparsity of ADC matrix:',SPARS,' %'
       WRITE(IW,*)
-c
-c  write out matrix control file for symmetry DESREP
-c  for later processing by the diagonalizer.
-c
-      OPEN(ITAP1,FILE=FNAME1,FORM='FORMATTED',STATUS='UNKNOWN')
-      WRITE(ITAP1,'(I4,3I10,I2)')
-     &           DESREP,IRCDLEN + SATOFF,SATOFF,NBUFS,RCW
-      CLOSE(ITAP1)
 
       RETURN
       END
@@ -3254,125 +2808,6 @@ c     WRITE(IW,*) 'Preparing VOVO Lookup table...'
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE FULLDIAR2(LUN,INTBUF,LADC,DESREP,A,EVL,WORK,LWORK,
-     &                   IOI,IOJ,BUF)
-C
-      IMPLICIT INTEGER (A-Z)
-
-      INTEGER LUN,INTBUF,LADC,DESREP,LWORK
-      REAL*8 A(LADC,LADC),WORK(LWORK),EVL(LADC),BUF(INTBUF)
-      INTEGER IOI(INTBUF),IOJ(INTBUF)
-C
-C---------------Description--------------------------------------------
-C
-C  Incore diagonalizer for real symmetric matrices. Recommendable for
-C  test cases only.
-C
-C---------------Common blocks----------------------------------------
-C
-#include  "../relccsd/files.inc"
-C
-C---------------Local variables--------------------------------------
-C
-      CHARACTER*6 NAME1,NAME2
-      PARAMETER(NAME1='ADC2PC',NAME2='ADC2PF')
-      CHARACTER*9 FNAME1,FNAME2
-
-      REAL*8 S
-      CHARACTER*1 JOBZ,UPLO
-      INTEGER JDUMMY
-
-      REAL*8 AUTOEV
-      PARAMETER(AUTOEV = 27.2113957D0)
-C
-C---------------Executable code--------------------------------------
-C
-c
-c  create proper filenames
-c
-      IF(DESREP.GT.9) THEN
-        WRITE(FNAME1,'(A6,A1,I2)') NAME1,'.',DESREP
-        WRITE(FNAME2,'(A6,A1,I2)') NAME2,'.',DESREP
-      ELSE
-        WRITE(FNAME1,'(A6,A2,I1)') NAME1,'.0',DESREP
-        WRITE(FNAME2,'(A6,A2,I1)') NAME2,'.0',DESREP
-      ENDIF
-
-      WRITE(IW,*) '2P-ADC matrix control data in       ',FNAME1
-      WRITE(IW,*) '2P-ADC packed matrix data in        ',FNAME2
-C
-C  initialize ADC matrix (important because only nonzero elements are
-C  stored!)
-C
-      DO I=1,LADC
-      DO J=1,LADC
-        A(J,I)=0.0D0
-      ENDDO
-      ENDDO
-C
-C  read control file for the number of buffers to be read in this
-C  particular symmetry.
-C
-      OPEN(LUN,FILE=FNAME1,FORM='FORMATTED',STATUS='UNKNOWN')
-      READ(LUN,'(I4,3I10,I2)')
-     &    ZDESREP,ZLADC,Z2H2H,NBUFS,ZRCW
-        write(iw,*) ZDESREP,ZLADC,Z2H2H,NBUFS,ZRCW
-      CLOSE(LUN)
-      IF(ZDESREP.ne.DESREP) STOP 'Incompatible symmetry designations!'
-      IF(ZLADC.ne.LADC)     STOP 'Incompatible matrix dimensions!'
-      IF(ZRCW.ne.1)         STOP 'Incompatible real/complex flag!'
-      WRITE(IW,*) 'Number of buffers in ADC matrix file:',NBUFS
-C
-C  read back in ADC matrix by reading nonzero elements from file
-C
-      OPEN(LUN,FILE=FNAME2,FORM='UNFORMATTED',STATUS='UNKNOWN')
-      NTOTELE1 = 0
-      DO IREC = 1,NBUFS
-        READ(LUN,ERR=199) (BUF(IXX),IXX=1,INTBUF),
-     &                    (IOI(IXX),IXX=1,INTBUF),
-     &                    (IOJ(IXX),IXX=1,INTBUF),
-     &                     NACT,JDUMMY
-        DO K = 1, NACT
-          IROW = IOI(K)
-          ICOL = IOJ(K)
-          S    = BUF(K)
-
-          IF(ICOL.GT.IROW) CALL QUIT('ICOL.GT.IROW should not happen')
- 
-          A(IROW,ICOL)=S
-          NTOTELE1=NTOTELE1 + 1
-        ENDDO
-      ENDDO
-      WRITE(*,555) NTOTELE1
-      CLOSE(LUN)
-C
-C  call symmetric diagonalizer
-C  calculate eigenvectors being placed in A
-C
-      JOBZ='N'
-      UPLO='L'
-
-      CALL DSYEV( JOBZ, UPLO, LADC, A, LADC, EVL, WORK, LWORK, INFO )
-
-      IF(INFO.NE.0) THEN
-           write(*,*) 'Error in DSYEV. Info:',INFO
-           CALL QUIT ('*** Error in FULLDIAR (lapack dsyev) ***')
-      ENDIF
-
-      WRITE(*,*) 'Eigenvalues in eV (lowest 30):'
-      DO I=1,min(30,LADC)
-C     DO I=1,LADC
-        WRITE(*,*) I,EVL(I),EVL(I)*AUTOEV
-      ENDDO
-
-      RETURN
-
- 199  STOP 'Error reading packed ADC matrix file (FULLDIAR2)'
-
- 555  FORMAT (1X,'Total number of elements in ADC-file:',T40,I8)
-
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE MAKESPTRA(IROOO,ILENO)
 C
       IMPLICIT INTEGER (A-Z)
