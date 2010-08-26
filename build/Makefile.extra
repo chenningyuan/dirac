@@ -161,6 +161,10 @@ diag:
 	@readelf -s $(TARGET) 2> /dev/null | awk --non-decimal-data '{printf "%12.3f %s    %s\n",(($$3)+0)/(1024),"kB",$$8}' | sort -n -r -u || \
 	echo 'can not be determined, readelf not present'
 
+#miro: python wrapping ('replacement')
+dgn:
+	@utils/diagn.py
+
 #miro: -DNO_SF_QUIT is only for gp/gptrygve.F to ensure no segm.fault quitting
 gp/gptrygve.p : gp/gptrygve.F
 	$(F77) -DNO_SF_QUIT $(FFLAG_PROFILE) $(F77FLAGS) -c -o gp/gptrygve.o gp/gptrygve.F > gp/gptrygve.p
