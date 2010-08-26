@@ -24,7 +24,7 @@ def hex2dec(s):
 # return the integer value of a hexadecimal string s
   if  re.match("0x[0-9a-fA-F]+$", s) or re.match("[0-9]+$", s):
    return int(s, 16)
-  else :
+  else :  # no proper hex number - return 0
    return 0
 
 dirac_exe="dirac.x"
@@ -51,21 +51,33 @@ print 'analyzing individual objects...'
 command = " readelf -s "+dirac_exe+" 2> /dev/null || echo 'can not be determined, readelf not present'"
 process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
 
+#output = process.stdout.read().splitlines(False)
 output = process.stdout.read().splitlines(False)
 
 ### substitute strings-hex numbers by converted decimal numbers
+i=0
 for line in output:
+   line_temp=line.strip()
    line=line.strip().split()
    numstr=string.join(line[2:3]);#  print 'numstr=',numstr
    decstr=hex2dec(numstr);        #print 'decstr=',decstr
-
-   #print decstr,line[2:3],line
    # replace hexadecimal value with decimal value (string)
-   line.insert(3,str(decstr))
-   #print line
+   line.insert(3,str(decstr)); del line[2:3] # insert and remove ...
+   linex=line
+   #output.insert(i,linex)
+   print 'line=',linex
+   print 'line_temp=',line_temp
+   line_temp=line
+   print 'line_temp_new=',line_temp
+   print 'output=',output[i]
+   i=i+1
 
+#print output[1:30]
 
-data_as_lists = [ line.strip().split() for line in output ]     ## convert to a list of lists
+data_as_lists = [ line.strip().split() for line in output ]  ## convert to a list of lists
+
+print data_as_lists[1:2][1:5]
+#print data_as_lists[1:1,1:5]
 
 #data_as_lists = [ for line in output:  line.strip().split(); print line[2:3] ]     ## convert to a list of lists
 
