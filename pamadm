@@ -20,7 +20,7 @@
 #
 #           prepare release DIRAC10
 #           PLEASE MODIFY THIS LINE IF IT IS NOT CORRECT!
-#           ./pamadm --xpp --adc --visual --london --matrixop --amfi --export=DIRAC10.tar.gz
+#           ./pamadm --xpp --adc --visual --london --matrixop --amfi --krmc --export=DIRAC10.tar.gz
 
 
 from optparse import OptionParser
@@ -420,6 +420,12 @@ dirac_modules[this_module].add_cppflag('MOD_KRMC')
 dirac_modules[this_module].add_directory('srdft')
 dirac_modules[this_module].add_dependency('krmc')
 dirac_modules[this_module].take_out_of_adm()
+
+this_module = 'mcscf_sf'
+dirac_modules[this_module] = dirac_module('mcscf_sf', 'spinfree MCSCF module')
+dirac_modules[this_module].add_cppflag('MOD_MCSCF_spinfree')
+dirac_modules[this_module].add_cppflag('MOD_KRMC')
+dirac_modules[this_module].add_dependency('krmc')
 
 this_module = 'unreleased'
 dirac_modules[this_module] = dirac_module('unreleased', 'unreleased functionality (not covered by other flags)')
