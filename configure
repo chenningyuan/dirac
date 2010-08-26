@@ -2179,6 +2179,10 @@ get_f90_flags(){
       noformain="-nofor_main"
       F_check_flags="-check bounds -fpstkchk -check pointers -check uninit -check output_conversion -traceback" 
       F_profile="-p" 
+      # work-around for incompatibility ifort and Xcode 3.2.2
+      if [[ "$machine" == *apple* ]]; then
+       safe="$safe -use-asm"
+      fi
       ;;
     xlf|xlf_r)
       cpp_f90="$cpp_f90 -DVAR_XLF"
