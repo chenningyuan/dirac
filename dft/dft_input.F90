@@ -43,25 +43,28 @@ module dft_input
 
 contains
 
-  subroutine reset_hfx()
-
+   subroutine reset_hfx()
 #include "dcbham.h"
+      hfxfac = 0.0d0
+   end subroutine
 
-    hfxfac = 0.0d0
-
-  end subroutine
-
-  subroutine add_hfx(w)
-
-!   ----------------------------------------------------------------------------
-    real(8), intent(in) :: w
-!   ----------------------------------------------------------------------------
-
+   subroutine add_hfx(w)
+      real(8), intent(in) :: w
 #include "dcbham.h"
+      hfxfac = hfxfac + w
+   end subroutine
 
-    hfxfac = hfxfac + w
+   subroutine set_cam_mu(mu)
+      real(8), intent(in) :: mu
+#include "dcbham.h"
+      hfxmu  = mu
+   end subroutine
 
-  end subroutine
+   subroutine set_cam_beta(beta)
+      real(8), intent(in) :: beta
+#include "dcbham.h"
+      hfxatt = beta
+   end subroutine
 
   function get_hfx()
 
@@ -267,6 +270,32 @@ contains
         w = get_weight(word_array(i), 'hfx')
         if (dabs(w) > tiny(0.0d0)) then
            call add_hfx(w)
+        end if
+      
+        w = get_weight(word_array(i), 'ldaerfx')
+        if (dabs(w) > tiny(0.0d0)) then
+           f%w(XC_LDAERFX) = f%w(XC_LDAERFX) + w
+        end if
+      
+        w = get_weight(word_array(i), 'ldaerfc')
+        if (dabs(w) > tiny(0.0d0)) then
+           f%w(XC_LDAERFC) = f%w(XC_LDAERFC) + w
+        end if
+      
+        w = get_weight(word_array(i), 'mu')
+        if (dabs(w) > tiny(0.0d0)) then
+           f%w(XC_RANGESEP_MU) = w
+           call set_cam_mu(w)
+        end if
+      
+        w = get_weight(word_array(i), 'beta')
+        if (dabs(w) > tiny(0.0d0)) then
+           call set_cam_beta(w)
+        end if
+
+        w = get_weight(word_array(i), 'slater')
+        if (dabs(w) > tiny(0.0d0)) then
+           f%w(XC_SLATERX) = f%w(XC_SLATERX) + w
         end if
       
       end do
