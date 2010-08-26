@@ -335,6 +335,7 @@ dirac_modules[this_module].add_directory('xcfun')
 dirac_modules[this_module].add_test(short_test('dft_response_xcfun'))
 dirac_modules[this_module].add_test(short_test('dft_alda_xcfun'))
 dirac_modules[this_module].add_test(short_test('dft_minnesota'))
+dirac_modules[this_module].add_test(short_test('dft_erf_xcfun'))
 dirac_modules[this_module].take_out_of_adm()
 
 this_module = 'cap'
