@@ -23,8 +23,8 @@ C VERSION : $Revision$
 C DATE    : $Date$
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck cl2nz3 */
-      SUBROUTINE CL2NZ3(VCL,VNZ3,NELEM,IREPIJ,IREPIJB,IREPKLB,IKLB)
+      SUBROUTINE CL2NZ3(VCL,VNZ3,NELEM,IREPIJ,IREPIJB,IREPKLB,
+     &                  set_qphaseFAC)
 C***********************************************************************
 C
 C     Transform from 4INDXXXX0-integral-file format to (NZ,3) format.
@@ -46,13 +46,16 @@ C
 C
       DIMENSION VCL(NELEM,NZ,NZ,*)
       DIMENSION VNZ3(NELEM,NZ,3)
-      DIMENSION IREPIJB(2),IREPKLB(2,*),IKLB(2)
+      DIMENSION IREPIJB(2),IREPKLB(2,*)
+      logical   set_qphaseFAC
+      real(8)   qphase_FAC
 C
 #include "sdpre.h"
 C
       CALL DZERO(VNZ3,NELEM*NZ*3)
 C
       IF (SPINFR.OR.LEVYLE) THEN
+
 C
 C     Special code that takes out the quaternion phase factors
 C     The resulting integrals have full 8-fold permutational
@@ -61,23 +64,27 @@ C     Only one class of integrals (all-unbarred) suffices for
 C     this purpose.
 C
 #if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
-      write(6,'(2x,a,1i4)') ' (CL2NZ3) IREPIJB(1) = ',IREPIJB(1)
-      write(6,'(2x,a,1i4)') ' (CL2NZ3) IREPIJB(2) = ',IREPIJB(2)
+!     write(6,'(2x,a,1i4)') ' (CL2NZ3) IREPIJB(1) = ',IREPIJB(1)
+!     write(6,'(2x,a,1i4)') ' (CL2NZ3) IREPIJB(2) = ',IREPIJB(2)
 #endif
       IREPABR = 0
       DO IREPAB = 0, NBSYM-1
          IF (IREPIJ.EQ.JBTOF(IREPAB,1)) THEN
             IREPABR = IREPABR + 1
-C
-C           Zero out the spin-orbit coupling for electron 1
+
 C
 #if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
-      write(6,'(/2x,a,2i4)') ' (CL2NZ3) IREPAB and IREPIJB(1) = ',
-     &                         IREPAB, IREPIJB(1)
+!     write(6,'(/2x,a,2i4)') ' (CL2NZ3) IREPAB and IREPIJB(1) = ',
+!    &                         IREPAB, IREPIJB(1)
 #endif
+C
+C           Zero out the spin-orbit coupling for electron 1
             IF (IREPAB.NE.IREPIJB(1)) GOTO 100
+
             DO I = 1, NELEM
-               IF (IREPAB.NE.IREPKLB(1,IKLB(IREPIJ)+I)) THEN
+!     write(6,'(/2x,a,3i4)') '(CL2NZ3) element I and irepab vs kl(1,i)',
+!    &                        i,irepab,IREPKLB(1,I)
+               IF (IREPAB.NE.IREPKLB(1,I)) THEN
 C
 C                  Zero out the spin-orbit coupling for electron 2
 C
@@ -89,26 +96,28 @@ C                  with the compound phase factor that was introduced
 C                  in the consecutive multiplications
 C
 #if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
-      write(6,'(/2x,a,2i4,D15.6)') ' (CL2NZ3) element I,1,1,IREPABR = ',
-     &                         I,IREPABR,VCL(I,1,1,IREPABR)
-      write(6,'(/2x,a,2i4)') ' (CL2NZ3) multiplication factors are'//
-     &                       ' IREPIJB(2) * IREPKLB(2,IKLB(IREPIJ)+I)', 
-     &                         IREPIJB(2), IREPKLB(2,IKLB(IREPIJ)+I)
+!     write(6,'(/2x,a,2i4,D15.6)') ' (CL2NZ3) element I,1,1,IREPABR = ',
+!    &                         I,IREPABR,VCL(I,1,1,IREPABR)
+!     write(6,'(/2x,a,2i4)') ' (CL2NZ3) multiplication factors are'//
+!    &                       ' IREPIJB(2) * IREPKLB(2,I)', 
+!    &                         IREPIJB(2), IREPKLB(2,I)
 #endif
-                   VCL(I,1,1,IREPABR) =
-     &             VCL(I,1,1,IREPABR) *
-     &             IREPIJB(2)*IREPKLB(2,IKLB(IREPIJ)+I)
+                   if(set_qphaseFAC)then
+                     qphase_FAC         =     IREPIJB(2)*IREPKLB(2,I)
+                   else
+                     qphase_FAC         = abs(IREPIJB(2)*IREPKLB(2,I))
+                   end if
+                   VCL(I,1,1,IREPABR) = VCL(I,1,1,IREPABR) * qphase_FAC
                ENDIF
             ENDDO
-            IFAC = 1
-            CALL DAXPY (NELEM,SDPRE(IFAC),
-     &                  VCL(1,1,1,IREPABR),1,
-     &                  VNZ3(1,1,1),1)
+            CALL DAXPY(NELEM,1.0D0,
+     &                 VCL(1,1,1,IREPABR),1,
+     &                 VNZ3(1,1,1),1)
  100        CONTINUE
          ENDIF
       ENDDO
 C
-      ELSE ! spinfree
+      ELSE ! not spinfree
 
       DO ICLASS = 1, 3
          IREPABR = 0
@@ -137,7 +146,20 @@ C
                END DO
             END IF
          END DO
+!        ---------------------------------------------------------
+!        zero out integrals that should be zero in linear symmetry
+!        but aren't due to numerical noise
+!        ---------------------------------------------------------
+!        FIXME!!! - SK - August 2010. (linzero is in moltra/traout.F)
+!        the routine below does not work yet for classes 2 and 3 but i
+!        am working on it...
+!
+         if(linear)then
+!          call linzero_nz3(iclass,irepijb,irepklb(1,1),nelem,vnz3)
+         end if
+
       END DO
+
       IF (NZ .EQ. 4) THEN
          DO ICLASS = 1, 3
             IREPABR = 0
@@ -192,18 +214,28 @@ C
       DIMENSION HX(NORBT,NORBT,NZ,3)
       DIMENSION H2XY(NASHT,NASHT,NZ,3)
 C
-      DO I3 = 1, 3
-         DO IZ = 1, NZ
-            DO IU = 1, NASHT
-               IUG = IDXU2G(IU)
-               DO IV = 1, NASHT
-                  IVG = IDXU2G(IV)
-                  H2XY(IU,IV,IZ,I3) = HX(IUG,IVG,IZ,I3)
-               END DO
-            END DO
-         END DO
-      END DO
-      RETURN
+      if(.not.spinfr_krmc)then
+        DO I3 = 1, 3
+           DO IZ = 1, NZ
+              DO IU = 1, NASHT
+                 IUG = IDXU2G(IU)
+                 DO IV = 1, NASHT
+                    IVG = IDXU2G(IV)
+                    H2XY(IU,IV,IZ,I3) = HX(IUG,IVG,IZ,I3)
+                 END DO
+              END DO
+           END DO
+        END DO
+      else
+        DO IU = 1, NASHT
+           IUG = IDXU2G(IU)
+           DO IV = 1, NASHT
+              IVG = IDXU2G(IV)
+              H2XY(IU,IV,1,1) = HX(IUG,IVG,1,1)
+           END DO
+        END DO
+      end if
+
       END
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -215,7 +247,6 @@ C     Make (ug) block integrals from (gu) block.
 C
 C     Input:
 C        GUINT: (gu) integrals
-C        NORBI,NASHI: dimensions
 C
 C     Output:
 C        UGINT: (ug) integrals.
@@ -241,62 +272,99 @@ C
 C
       IF (DOH2AC) THEN
 C
-         DO I3 = 1, 3
-            DO IZ = 1, NZ
-               DO IU = 1, NASHT
-                  IUG = IDXU2G(IU)
-                  DO IV = 1, NASHT
-                     IVG = IDXU2G(IV)
-                     H2AC(IU,IV,IUU,IZ,I3) = HX(IUG,IVG,IZ,I3)
-                  END DO
-               END DO
-            END DO
-         END DO
+         if(.not.spinfr_krmc)then
+           DO I3 = 1, 3
+              DO IZ = 1, NZ
+                 DO IU = 1, NASHT
+                    IUG = IDXU2G(IU)
+                    DO IV = 1, NASHT
+                       IVG = IDXU2G(IV)
+                       H2AC(IU,IV,IUU,IZ,I3) = HX(IUG,IVG,IZ,I3)
+                    END DO
+                 END DO
+              END DO
+           END DO
+         else 
+           DO IU = 1, NASHT
+              IUG = IDXU2G(IU)
+              DO IV = 1, NASHT
+                 IVG = IDXU2G(IV)
+                 H2AC(IU,IV,IUU,1,1) = HX(IUG,IVG,1,1)
+              END DO
+           END DO
+         end if
 C
 C        Print section
 C
-         IF (IPROPT .GE. 30 .AND. DOH2AC) THEN
-            WRITE(LUPRI,'(1X,A,I3,A)') '(X2GU) H2AC(*,*,',IUU,'): '
-            DO I3 = 1, 3
-               DO IZ = 1, NZ
-                  WRITE(LUPRI,'(1X,A,I3,A,I3,A)')
-     &                 'Matrix no. (',IZ,',',I3,'): '
-                  CALL OUTPUT(HX(1,1,IZ,I3),1,norbt,1,norbt,
-     &                 norbt,norbt,1,LUPRI)
-               END DO
-            END DO
+         IF(IPROPT .GE. 30 .AND. DOH2AC) THEN
 #if defined MCSCF_DEBUG_SPINFREE
-            WRITE(LUPRI,'(1X,A)') '(X2GU) HX(*,*,*,*): '
-            DO I3 = 1, 3
-               DO IZ = 1, NZ
-                  WRITE(LUPRI,'(1X,A,I3,A,I3,A)')
-     &                 'Matrix no. (',IZ,',',I3,'): '
-                  CALL OUTPUT(H2AC(1,1,IUU,IZ,I3),1,NASHT,1,NASHT,
-     &                 NASHT,NASHT,1,LUPRI)
-               END DO
-            END DO
+!          WRITE(LUPRI,'(1X,A)') '(X2GU) input HX(*,*,*,*): '
+!          DO I3 = 1, 3
+!             DO IZ = 1, NZ
+!                WRITE(LUPRI,'(1X,A,I3,A,I3,A)')
+!    &                'Matrix no. (',IZ,',',I3,'): '
+!                CALL OUTPUT(HX(1,1,IZ,I3),1,norbt,1,norbt,
+!    &                norbt,norbt,1,LUPRI)
+!             END DO
+!          END DO
 #endif
+           WRITE(LUPRI,'(1X,A,I3,A)') '(X2GU) output H2AC(*,*,',IUU,'):'
+           DO I3 = 1, 3
+              DO IZ = 1, NZ
+                 WRITE(LUPRI,'(1X,A,I3,A,I3,A)')
+     &                'Matrix no. (',IZ,',',I3,'): '
+                 CALL OUTPUT(H2AC(1,1,IUU,IZ,I3),1,NASHT,1,NASHT,
+     &                       NASHT,NASHT,1,LUPRI)
+              END DO
+           END DO
          END IF
       END IF
+
+!     get rid of noise
+      CALL DZERO(H2XY, n2orbx * nz * nz * nbsym / nfsym)
+      IF (.NOT. ONLYXY) 
+     &CALL DZERO(H2YX, n2orbx * nz * nz * nbsym / nfsym)
 C
 C     Collect (gu) and (ug) elements.
 C
       IF (DOFQ) THEN
-         CALL DZERO(H2XY, NORBT * NASHT * NZ * 3)
-         IF (.NOT. ONLYXY) CALL DZERO(H2YX, NORBT * NASHT * NZ * 3)
+!        CALL DZERO(H2XY, NORBT * NASHT * NZ * 3)
+!        IF (.NOT. ONLYXY) CALL DZERO(H2YX, NORBT * NASHT * NZ * 3)
 C
-         DO I3 = 1, 3
-            DO IZ = 1, NZ
-               DO IG = 1, NORBT
-                  DO IU = 1, NASHT
-                     IUG = IDXU2G(IU)
-                     H2XY(IG,IU,IZ,I3) = HX(IG,IUG,IZ,I3)
-                     IF (.NOT. ONLYXY)
-     &                    H2YX(IG,IU,IZ,I3) = HX(IUG,IG,IZ,I3)
-                  END DO
-               END DO
-            END DO
-         END DO
+C
+         if(.not.spinfr_krmc)then
+           DO I3 = 1, 3
+              DO IZ = 1, NZ
+                 DO IG = 1, NORBT
+                    DO IU = 1, NASHT
+                       IUG = IDXU2G(IU)
+                       H2XY(IG,IU,IZ,I3) = HX(IG,IUG,IZ,I3)
+                       IF (.NOT. ONLYXY)
+     &                 H2YX(IG,IU,IZ,I3) = HX(IUG,IG,IZ,I3)
+                    END DO
+                 END DO
+              END DO
+           END DO
+         else  ! I3 = 1 and NZ = 1 for spin-free
+           DO IG = 1, NORBT
+             DO IU = 1, NASHT
+                IUG = IDXU2G(IU)
+                H2XY(IG,IU,1,1) = HX(IG,IUG,1,1)
+                IF (.NOT. ONLYXY)    
+     &          H2YX(IG,IU,1,1) = HX(IUG,IG,1,1)
+#if defined MCSCF_DEBUG_SPINFREE
+!               if(HX(IUG,IG,1,1).ne.0.0D0) 
+!    &          write(lupri,'(2x,a,1p,2d15.6)') ' (X2GU) H2X(act,sec)'//
+!    &          'is nonzero... compare ig,iug and iug,ig',
+!    &          HX(IG,IUG,1,1), HX(IUG,IG,1,1)
+#endif
+!                                     ^  ^ this is NOT a typo...
+!                                 (HX matrix is symmetric and
+!                                 H2X(act,sec) is not calculated for
+!                                 spin-free)
+             END DO
+           END DO
+         end if ! spinfree KRMC
       END IF
 C
       RETURN
@@ -615,15 +683,16 @@ C
       END IF
 C
 #if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
-      write(lupri,'(/2x,a,l)') ' (INTB2X) symmetrize matrix == ',DOFULL
+!     write(lupri,'(/2x,a,l)') ' (INTB2X) symmetrize matrix == ',DOFULL
+!     write(lupri,'(/2x,a,i4)') ' (INTB2X) IREPABR == ',IREPABR
 #endif
 C
       DO IZ1 = 1, NZ
          IKL = 0
-         IQ1 = IPQTOQ(IZ1,IREPAB)
          DO IREPL = 1, NFSYM
             IREPK = MOD (IREPL + IREPIJ, 2) + 1
             IF (DOFULL) THEN
+               IQ1 = IPQTOQ(IZ1,IREPAB)
                IF (IQ1 .EQ. 1) THEN
                   QFAC = 1.0D0
                ELSE
@@ -640,30 +709,28 @@ C
                      END DO
                END DO
             ELSE
-#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
-      write(lupri,'(/2x,a,6i4)') 
-     &' (INTB2X) variables IREPAB, IREPABR, IKL, IQ1, IREPK,'//
-     &  ' NIDX4(IREPL)',IREPAB, IREPABR, IKL, IQ1, IREPK, NIDX4(IREPL)
-#endif
 !           stefan: we end up here
                DO ICOL = 1, NIDX4(IREPL)
                   JJ = IDXT2G(ICOL+IIDX4(IREPL),4)
-#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
-      write(lupri,'(2x,a,i4,a,i8)') 
-     &   ' (INTB2X) ICOL ==',ICOL, ': index JJ =',JJ
-#endif
+!#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
+!     write(lupri,'(2x,a,i4,a,i6)') 
+!    &   ' (INTB2X) ICOL ==',ICOL, ': index JJ =',JJ
+!#endif
                   DO IROW = 1, NIDX3(IREPK)
                      II = IDXT2G(IROW+IIDX3(IREPK),3)
                      IKL = IKL + 1
 #if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
-      write(lupri,'(2x,a,i4,a,i8,a,i8)') 
-     &   ' (INTB2X) IROW ==',IROW, ': index II =',II, ' index IKL',IKL
+!     write(lupri,'(2x,a,i4,a,i6,a,i6)') 
+!    &   ' (INTB2X) IROW ==',IROW, ': index II =',II, ' index IKL',IKL
+!     write(lupri,'(2x,a,i4)') 
+!    &   ' (INTB2X) its absolute address is: (jj-1)*norbt + ii',
+!    &     (jj-1)*norbt + ii
 #endif
                      HX(II,JJ,IZ1,IZ2,IREPABR) =
      &                    HT(IKL,IZ1,IZ2,IREPABR)
 #if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
-      write(lupri,'(2x,a,1D15.6)') 
-     &   ' (INTB2X) new integral is =',HX(II,JJ,IZ1,IZ2,IREPABR)
+!     write(lupri,'(2x,a,1D15.6)') 
+!    &   ' (INTB2X) new integral is =',HX(II,JJ,IZ1,IZ2,IREPABR)
 #endif
                   END DO
                END DO
@@ -1090,7 +1157,7 @@ c     END IF
 
 #if defined MCSCF_DEBUG_SPINFREE
 !     additional check: ibosym <--> ibeig
-      if(spinfr)then
+      if(spinfr.or.levyle)then
         
         do  i = 1, norbt
           if(ibosym(i) .ne. ibeig(i))then

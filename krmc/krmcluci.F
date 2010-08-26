@@ -103,7 +103,7 @@ C
 C     Summon the co-workers, who are waiting in the general menu routine.
       CALL LUMSTI_REL
 C
-C     communicate necessary information with slaves ...
+C     communicate necessary information with co-workers ...
 #if defined (VAR_MPI2)
       CALL SYNC_NODES_REL_P1(ECORE_KRMC,CIRUN,LUPRI)
 C
@@ -128,7 +128,7 @@ C     Enter the generic LUCIAREL routine
 C     (master becomes now somewhat like primus inter parens)
       CALL KRMC_LUCI2(F1,F2,WRK,LWRK,ECORE_KRMC,CIRUN)
 C
-C     Return the slaves to the general menu routine.
+C     Return the co-workers to the general menu routine.
       CALL LUMSTE_REL
 C
       END
@@ -861,8 +861,22 @@ C
      &               WORK,KFREE,LFREE)
         print*,'Dimension of MOLFDIR array : ',(2*NASHT)**4 * 2
         print*,'Dimension of (NZ,3)  array : ',NASHT*NASHT*NNASHX*NZ*3
-        CALL RGETH21(.FALSE.,.TRUE.,DUMMY,DUMMY,WORK(KH2AC),
-     &               WORK(KFREE),LFREE,IPROPT)
+
+!       get dimensions for scracth matrices
+        call rgeth2_dim(ndim_ij,ndim_kl,ndim_h12_tmp)
+
+        call memget('REAL',khmat,ndim_h12_tmp,work,kfree,lfree)
+        call memget('REAL',kh2xy,ndim_h12_tmp,work,kfree,lfree)
+        call memget('REAL',kh2yx,ndim_h12_tmp,work,kfree,lfree)
+
+        call memget('INTE',kdxb12, 2*ndim_ij,work,kfree,lfree)
+        call memget('INTE',kdxb34, 2*ndim_kl,work,kfree,lfree)
+        call memget('INTE',kdxkr12,2*ndim_ij,work,kfree,lfree)
+
+        call rgeth21(.false.,.true.,dummy,dummy,work(kh2ac),
+     &               work(khmat),work(kh2xy),work(kh2yx),
+     &               work(kdxkr12),work(kdxb12),work(kdxb34),
+     &               ipropt,lupri)
         stop
 C
       else if (I_IITP.eq.1) then
@@ -1044,8 +1058,22 @@ C
      &               WORK,KFREE,LFREE)
         print*,'Dimension of MOLFDIR array : ',(2*NASHT)**4 * 2
         print*,'Dimension of (NZ,3)  array : ',NASHT*NASHT*NNASHX*NZ*3
-        CALL RGETH21(.FALSE.,.TRUE.,DUMMY,DUMMY,WORK(KH2AC),
-     &               WORK(KFREE),LFREE,IPROPT)
+
+!       get dimensions for scracth matrices
+        call rgeth2_dim(ndim_ij,ndim_kl,ndim_h12_tmp)
+
+        call memget('REAL',khmat,ndim_h12_tmp,work,kfree,lfree)
+        call memget('REAL',kh2xy,ndim_h12_tmp,work,kfree,lfree)
+        call memget('REAL',kh2yx,ndim_h12_tmp,work,kfree,lfree)
+
+        call memget('INTE',kdxb12, 2*ndim_ij,work,kfree,lfree)
+        call memget('INTE',kdxb34, 2*ndim_kl,work,kfree,lfree)
+        call memget('INTE',kdxkr12,2*ndim_ij,work,kfree,lfree)
+
+        call rgeth21(.false.,.true.,dummy,dummy,work(kh2ac),
+     &               work(khmat),work(kh2xy),work(kh2yx),
+     &               work(kdxkr12),work(kdxb12),work(kdxb34),
+     &               ipropt,lupri)
         stop
 C
       else if (I_IITP.eq.1) then
@@ -2053,8 +2081,26 @@ C
      &               WORK,KFREE,LFREE)
         print*,'Dimension of MOLFDIR array : ',(2*NASHT)**4 * 2
         print*,'Dimension of (NZ,3)  array : ',NASHT*NASHT*NNASHX*NZ*3
-        CALL RGETH21(.FALSE.,.TRUE.,DUMMY,DUMMY,WORK(KH2AC),
-     &               WORK(KFREE),LFREE,IPROPT)
+
+!       get dimensions for scracth matrices
+!       SK - Aug 2010: FIXME: this structure as it is cannot work 
+!       if the integral files are not available to the co-workers... 
+!       @ Timo: before continuing (if ever) we have to think about how
+!       to handle this issue properly.
+        call rgeth2_dim(ndim_ij,ndim_kl,ndim_h12_tmp)
+
+        call memget('REAL',khmat,ndim_h12_tmp,work,kfree,lfree)
+        call memget('REAL',kh2xy,ndim_h12_tmp,work,kfree,lfree)
+        call memget('REAL',kh2yx,ndim_h12_tmp,work,kfree,lfree)
+
+        call memget('INTE',kdxb12, 2*ndim_ij,work,kfree,lfree)
+        call memget('INTE',kdxb34, 2*ndim_kl,work,kfree,lfree)
+        call memget('INTE',kdxkr12,2*ndim_ij,work,kfree,lfree)
+
+        call rgeth21(.false.,.true.,dummy,dummy,work(kh2ac),
+     &               work(khmat),work(kh2xy),work(kh2yx),
+     &               work(kdxkr12),work(kdxb12),work(kdxb34),
+     &               0,luwrt)
         stop
 C
       else if (I_IITP.eq.1) then

@@ -2730,7 +2730,7 @@ C    &     MAXVAL(NGAS).LT.ISYM(NGAS)    )NONEW = 1
      &                      NCOMB,XNCOMB,MXSB,MXSOOB,
      &                      IBLTP,NTTSBL,LCOL,IOCOC)
 *
-* Number of combinations with symmetry ITOTSM and
+* Number of combinations (NCOMB) with symmetry ITOTSM and
 * occupation between IOCCMN and IOCCMX
 *
 * In view of the limited range of I*4, the number of dets

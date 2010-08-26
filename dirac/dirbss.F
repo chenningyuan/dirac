@@ -9884,7 +9884,6 @@ C
 !    ... all atomic centers are included for the AMFI contribution
       ALLAMFA  = .TRUE. ! ALLAMFA = [A]ll [AMF]i [A]toms
       ONRELSCF = .FALSE. ! ONRELSCF = [ON]ly RELSCF, i.e. stop after RELSCF run
-
 !     order of Amfi contributions 
       ISORDER_AMFI_in = -1
 C
@@ -9951,7 +9950,6 @@ C                file RELSCF_COEF
                  GO TO 100
  7               CONTINUE
 C&&& .AMFLVL: set up order of AMFI contributions
-                 ISORDER_AMFI_in = -1
                  READ(LUCMD,*) ISORDER_AMFI_in
                  if(ISORDER_AMFI_in .lt. 2 .or. 
      &              ISORDER_AMFI_in .gt. 3)then

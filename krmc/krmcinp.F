@@ -259,7 +259,7 @@ C&&& ITRINT: Number of iterations before adding SL- and SS-integrals
                   READ(LUCMD,*) IKRMC_ITRINT(1),IKRMC_ITRINT(2)
                GO TO 100
    15          CONTINUE
-C&&& INTFLG: Specify what two-itegrals should be included in this run
+C&&& INTFLG: Specify what two-integrals should be included in this run
                   READ(LUCMD,*) ILLINT,ISLINT,ISSINT
                GO TO 100
    16          CONTINUE
@@ -470,6 +470,14 @@ C
       IF (IKWSET(18).LE.1 .AND. (SPINFR)) THEN
          KRMC_UCIBOS = .TRUE.
       END IF
+C
+C     spinfree MCSCF
+      if((spinfr.or.levyle).and.(KRMC_CIPROGRAM.ne.'GASCIP'))then
+        write(lupri,'(/a)') ' *** error in krmcinp: spinfree or'//
+     *  ' Levy-Leblond Hamiltonian needs GASCIP as CI program. ***'
+        call quit('*** error in krmcinp: spinfree or Levy-Leblond 
+     &            Hamiltonian needs GASCIP as CI program.***')
+      endif
 c     krmc_ucibos = .false.
 C
 C     Print section

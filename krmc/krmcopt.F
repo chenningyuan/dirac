@@ -112,11 +112,15 @@ C
 C     ... default quadratic conv. factor for MCSCF
 
 !     set logical flag on common block in dcbopt.h for spinfree MCSCF    
-      if(spinfr)then
+#if MOD_MCSCF_spinfree
+      if(spinfr.or.levyle)then
         spinfr_krmc = .true.
       else
         spinfr_krmc = .false.
       end if
+#else
+        spinfr_krmc = .false.
+#endif
 cdebug
 c     opt_ucibos = .false.
 cdebug
@@ -500,7 +504,8 @@ C
 C           *** Now do the transformation
 C
             print*,'CALL RTRACTL 1'
-            CALL RTRACTL(WORK(KCMO),SZTRA,WORK(KFREE),LFREE)
+            CALL RTRACTL(WORK(KCMO),work(kibeig),SZTRA,
+     &                   WORK(KFREE),LFREE)
 C
 C           *** Throw away CMO again
 C
@@ -1968,13 +1973,15 @@ C     with active spaces that contain orbitals of different mj-values.
 C     Note that linear symmetry is not implemented (yet) for KR-CI
 C     and we run instead in C2h*. SK+HJAaJ/Jan 2010
 C
-      IF( OPT_CHCKJZ .AND. LINEAR )THEN
+C     similar arguments apply for spinfree MCSCF: remove rotations
+C     between orbitals of different boson symmetry. 
+C
+      IF((OPT_CHCKJZ.AND.LINEAR).or. spinfr_krmc)THEN
 C
 C       set internal control variable
         IREDJOB = 10
 C
-!       CALL RESETXOP_MJ(DUMMY,IREDJOB,IPROPT)
-        CALL RESETXOP_MJ(DUMMY,WORK(KZXOPE),WORK(KZXOPP),IREDJOB,1)
+        CALL RESETXOP_sym(DUMMY,WORK(KZXOPE),WORK(KZXOPP),IREDJOB,1)
 C
       END IF
 C
@@ -2248,13 +2255,16 @@ C
       CALL QEXIT('RSETCI')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE RESETXOP_MJ(UKAPPA,JXOPE,JXOPP,IREDJOB,IPRINT)
+      SUBROUTINE RESETXOP_sym(UKAPPA,JXOPE,JXOPP,IREDJOB,IPRINT)
 C***********************************************************************
       use memory_allocator
 C***********************************************************************
 C
-C     reset orbital rotation parameters wrt mj-blocking in linear
-C     symmetry (D_ooh*, C_oov*) cases.
+C     driver routine for a reset orbital rotation parameters wrt 
+C
+C     - mj-values     --> linear spin-orbit calculation
+C     - ml-values     --> linear spinfree   calculation
+C     - boson irreps  -->        spinfree   calculation
 C
 C     Input: (stored on common block in dcbopt.h)
 C        NZXOPE  - total number of e-e orbital rotations
@@ -2293,53 +2303,69 @@ C
 C
       DIMENSION UKAPPA(NORBT,NORBT,NZ), JXOPE(2,*), JXOPP(2,*)
       LOGICAL FNDLAB, FND
-      integer, allocatable :: mjvec(:)
+      character orbital_info_label*8
+      integer, allocatable :: orb_sym_vec(:)
       real*8,  allocatable :: ukappa2(:)
 C
-      CALL QENTER('RESETXOP_MJ')
+      CALL QENTER('RESETXOP_sym')
 C
       IF(IREDJOB .ge. 9)THEN
 C
 C...    may be oversized if not all orbitals are active
-        call alloc(mjvec,norbt)
-        mjvec = 0
+        call alloc(orb_sym_vec,norbt)
+        orb_sym_vec = 0
 C
-C       get mj-values - either from a previous MCSCF or HF run
+C       get orbital symmetry values - either from a previous MCSCF or HF run
         IF ( LUKRM5 .GT. 0 ) THEN
           REWIND(LUKRM5)
-          IF ( FNDLAB('MJVEC   ',LUKRM5) ) THEN
-            CALL IREAKRMC(LUKRM5,'MJVEC   ',mjvec,NORBT)
+          IF ( FNDLAB('MJVEC   ',LUKRM5) )THEN
+            CALL IREAKRMC(LUKRM5,'MJVEC   ',orb_sym_vec,NORBT)
             WRITE(LUPRI,'(/A)') 
-     & ' (RESETXOP_MJ) ** orbital mj-vector read from KRMCOLD **'
+     & ' (RESETXOP_sym) *** orbital mj-vector read from KRMCOLD ***'
+          ELSE IF(FNDLAB('IBEIG   ',LUKRM5))THEN
+            CALL IREAKRMC(LUKRM5,'IBEIG   ',orb_sym_vec,NORBT)
+            WRITE(LUPRI,'(/A)') 
+     &      ' (RESETXOP_sym) *** orbital boson irreps read'//
+     &      ' from KRMCOLD ***'
           END IF
         ELSE
-C         read mj-values
-          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RESMJ ')
-          CALL REACMO_no_work(LUCOEF,'DFCOEF',DUMMY,DUMMY,mjvec,
+C         read orbital symmetry values from DFCOEF
+          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RESoro')
+          CALL REACMO_no_work(LUCOEF,'DFCOEF',DUMMY,DUMMY,orb_sym_vec,
      &                        TOTERG,8)
           CLOSE(LUCOEF,STATUS='KEEP')
           WRITE(LUPRI,'(/A)') 
-     & ' (RESETXOP_MJ) ** orbital mj-vector read from DFCOEF **'
+     &    ' (RESETXOP_sym) *** orbital symmetry information read'// 
+     &    ' from DFCOEF ***'
         END IF
 C
 C       debug print
         IF( IPRINT .ge. 2 )THEN
-          WRITE(LUPRI,*) ' DEBUG info: mj*2 vector of orbitals'
-          CALL IWRTMA(mjvec,1,NORBT,1,NORBT,LUPRI)
+          WRITE(LUPRI,*) ' DEBUG info: symmetry-info vector of orbitals'
+          CALL IWRTMA(orb_sym_vec,1,NORBT,1,NORBT,LUPRI)
         END IF
 C
         IF( IREDJOB .eq. 10 )THEN 
 C
-C         clean LUKRMC and save MJVEC on file KRMCSCF
+C
+C         clean LUKRMC and save orbital symmetry information on file KRMCSCF
           REWIND(LUKRMC)
           FND = FNDLAB('SODLABEL',LUKRMC)
           BACKSPACE LUKRMC
           CALL NEWLAB('SODLABEL',LUKRMC,LUPRI)
           REWIND(LUKRMC)
-          CALL IWRTKRMC(LUKRMC,'MJVEC   ',mjvec,norbt)
+
+          if(.not.spinfr_krmc)then
+            orbital_info_label = 'MJVEC   '
+          else
+            orbital_info_label = 'IBEIG   '
+          end if
+ 
+          CALL IWRTKRMC(LUKRMC,orbital_info_label,orb_sym_vec,norbt)
 C
 C         reduce orbital parameters wrt mj-blocking
-          CALL DELPAR(mjvec,JXOPE,NZXOPE,NZHOPE,JXOPP,NZXOPP,IPRINT)
+          CALL DELPAR(orb_sym_vec,JXOPE,NZXOPE,NZHOPE,JXOPP,NZXOPP,
+     &                IPRINT)
         END IF
 C
         IF ( IREDJOB .eq. 9) THEN
@@ -2349,7 +2375,7 @@ C
 C         save original kappa matrix
           CALL DCOPY(N2ORBXQ,UKAPPA,1,ukappa2,1)
 C
-          call zero_kappa_mj(ukappa2,mjvec,iprint)
+          call zero_kappa_mj(ukappa2,orb_sym_vec,iprint)
 C
           IF( IPRINT .ge. 5 )THEN
             WRITE(LUPRI,'(A)') ' orig kappa'
@@ -2368,157 +2394,10 @@ C         use modified kappa matrix
 C
           call dealloc(ukappa2)
         END IF
-       call dealloc(mjvec)
+       call dealloc(orb_sym_vec)
       END IF
 C
-      CALL QEXIT('RESETXOP_MJ')
-C
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE RESETXOP_MJ_OLD(UKAPPA,IREDJOB,WORK,KFREE,LFREE,IPRINT)
-C***********************************************************************
-      use memory_allocator
-C***********************************************************************
-C
-C     reset orbital rotation parameters wrt mj-blocking.
-C
-C     Input:
-C        NZXOPE  - 
-C        NZHOPE  - 
-C        NZXOPP  - 
-C
-C     Output:
-C        updated values of NZXOPE, NZHOPE and NZXOPP
-C
-C     Written by S. Knecht  - Jan 2010
-C
-C     Last revision :
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "dcbgen.h"
-#include "dcbham.h"
-!#include "dcbxlr.h"
-#include "mxcent.h"
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dgroup.h"
-#include "pgroup.h"
-#include "dcbxpr.h"
-!#include "dcbxrs.h"
-#include "dcbopt.h"
-#include "dcbprp.h"
-
-C
-      CHARACTER TTYP(-1:1)*2
-      DIMENSION WORK(*), UKAPPA(NORBT,NORBT,NZ)
-      SAVE TTYP
-      DATA TTYP /'T-','T0','T+'/
-      integer, allocatable :: iop_loop(:)
-C
-      CALL QENTER('RESETXOP_MJ')
-
-      KFRSAV = KFREE
-C
-C     allocate memory
-      CALL MEMGET('REAL',KGPO1,NZXOPEQ,WORK,KFREE,LFREE)
-      CALL DZERO(WORK(KGPO1),NZXOPEQ)
-      IF(NZXOPPQ .GT. 0) THEN
-        CALL MEMGET('REAL',KGPO2,NZXOPPQ,WORK,KFREE,LFREE)
-        CALL DZERO(WORK(KGPO2),NZXOPPQ)
-      END IF
-C
-C     pointer to operators
-      iop_length = 2
-      call alloc(iop_loop,iop_length)
-      iop_loop(1) = IPANGMOM
-      iop_loop(2) = IPSPNMOM
-C
-C     Loop over operators: jz = l_z + s_z
-C     ===================
-C
-      DO ILZSZ= 1,2
-C
-C       setup for operators
-        INDXPR  = iop_loop(ILZSZ)
-C
-        ISYM    = IPRPSYM(INDXPR)
-        JTIMOP  = IPRPTIM(INDXPR)
-        JOPSY   = JBTOF(ISYM-1,1)
-C
-        WRITE (LUPRI,'(///A/6X,A,A,A3,2X,A2/)')
-     &  ' <<<  Calculating property gradient for'//
-     &  ' property >>>',PRPNAM(INDXPR),
-     &  ' - Symmetry: ',REP(ISYM-1),TTYP(JTIMOP)
-C
-C       ******************************************
-C       *** P R O P E R T Y    G R A D I E N T ***
-C       ******************************************
-C
-        KGRAD = KFREE
-        CALL MEMGET('REAL',KGPOE,NZXOPEQ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KGPOP,NZXOPPQ,WORK,KFREE,LFREE)
-C
-        CALL PAMGRD(INDXPR,DUMMY,WORK(KGPOE),WORK(KGPOP),
-     &              JOPSY,WORK(KZCONF),WORK(KZXOPE),WORK(KZXOPP),
-C    &              IDUMMY,NZXOPE,NZXOPP,WORK,KFREE,LFREE,10)
-     &              IDUMMY,NZXOPE,NZXOPP,WORK,KFREE,LFREE,IPRINT)
-C
-        CALL DAXPY(NZXOPEQ,1.0D0,WORK(KGPOE),1,WORK(KGPO1),1)
-        IF(NZXOPPQ .GT. 0) 
-     &    CALL DAXPY(NZXOPPQ,1.0D0,WORK(KGPOP),1,WORK(KGPO2),1)
-C
-C     ... reuse KGP space.
-      CALL MEMREL('PRPX01',WORK,1,KGRAD,KFREE,LFREE)
-C
-      END DO
-C
-C     print orbital gradient for j_z operator
-      CALL RPRKAP(WORK(KGPO1),WORK(KGPO2),WORK(KZXOPE),NZXOPE,
-     &            WORK(KZXOPP),NZXOPP,NZ,IPQTOQ(1,0),LUPRI)
-      IF(IREDJOB .eq. 9)THEN
-C
-C       test mj-values
-C
-        CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KEIG ,NORBT   ,WORK,KFREE,LFREE)
-C...    may be oversized when not all orbitals are investigated
-        CALL MEMGET('INTE',KBEIG,NORBT   ,WORK,KFREE,LFREE)
-      
-        CALL DZERO(WORK(KCMO),N2BBASXQ)
-        CALL DZERO(WORK(KEIG),NORBT)
-        CALL IZERO(WORK(KBEIG),NORBT)
-C       read HF coefficients
-        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GRDOR1')
-        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
-     &              TOTERG,10,WORK,KFREE,LFREE)
-        WRITE(LUPRI,*) 'mj*2 matrix of orbs'
-        CALL IWRTMA(WORK(KBEIG),1,NORBT,1,NORBT,LUPRI)
-        CLOSE(LUCOEF,STATUS='KEEP')
-        CALL MEMGET('REAL',KUKAPPA2,N2ORBXQ,WORK,KFREE,LFREE)
-        CALL DZERO(WORK(KUKAPPA2),N2ORBXQ)
-        CALL DCOPY(N2ORBXQ,UKAPPA,1,WORK(KUKAPPA2),1)
-        CALL ZERO_KAPPA_MJ(WORK(KUKAPPA2),WORK(KBEIG),IPRINT)
-        WRITE(LUPRI,'(A)') ' orig kappa'
-        CALL PRQMAT(UKAPPA,NORBT,NORBT,NORBT,NORBT,NZ,
-     &              IPQTOQ(1,0),LUPRI)
-        WRITE(LUPRI,'(A)') ' revised kappa'
-        CALL PRQMAT(WORK(KUKAPPA2),NORBT,NORBT,NORBT,NORBT,NZ,
-     &              IPQTOQ(1,0),LUPRI)
-C
-C
-        CALL DZERO(UKAPPA,N2ORBXQ)
-        CALL DCOPY(N2ORBXQ,WORK(KUKAPPA2),1,UKAPPA,1)
-        WRITE(LUPRI,'(A)') ' *** modified kappa in use ***'
-C
-      END IF
-C
-C     release memory
-      call dealloc(iop_loop)
-      CALL MEMREL('RSTXOP',WORK,1,KFRSAV,KFREE,LFREE)
-      CALL QEXIT('RESETXOP_MJ')
+      CALL QEXIT('RESETXOP_sym')
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3274,7 +3153,7 @@ C
                         END IF
                       END IF
                       CALL INISZT(JTRLVL,SZTRA,LNOROT,NOROT)
-                      CALL RTRACTL(CMO,SZTRA,WORK(KFREE),LFREE)
+                      CALL RTRACTL(CMO,IBEIG,SZTRA,WORK(KFREE),LFREE)
                       CALL RCIST(CMO,CREF,WORK,KFREE,LFREE)
                     ELSE
                       CALL QUIT(' MOPT_MXMACRO .LT. 0, Stopping. ')
@@ -3333,10 +3212,10 @@ C
                IF ( .NOT. EX ) THEN
                  IF (KTRLVL.EQ.5)
      &           WRITE(LUPRI,*) 'CALL RTRACTL for transformation only !'
-                 CALL RTRACTL(CMO,SZTRA,WORK(KFREE),LFREE)
+                 CALL RTRACTL(CMO,IBEIG,SZTRA,WORK(KFREE),LFREE)
                END IF
             ELSE
-               CALL RTRACTL(CMO,SZTRA,WORK(KFREE),LFREE)
+               CALL RTRACTL(CMO,IBEIG,SZTRA,WORK(KFREE),LFREE)
             END IF
 C
             IF (KTRLVL.EQ.5) GOTO 2100
@@ -3690,7 +3569,7 @@ C
             JTRLVL = KTRLVL
             CALL INISZT(JTRLVL,SZTRA,.TRUE.,NOROTC)
             print*,'CALL RTRACTL 4'
-            CALL RTRACTL(CMO,SZTRA,WORK(KFREE),LFREE)
+            CALL RTRACTL(CMO,IBEIG,SZTRA,WORK(KFREE),LFREE)
          END IF
 C
       END IF
@@ -4113,7 +3992,7 @@ C
 Csk   IF( OPT_CHCKJZ .AND. LINEAR )THEN
 C       set internal control variable
 Csk     IREDJOB = 9
-Csk     CALL RESETXOP_MJ(WORK(KUKAPPA),DUMMY,DUMMY,IREDJOB,IPROPT)
+Csk     CALL RESETXOP_sym(WORK(KUKAPPA),DUMMY,DUMMY,IREDJOB,IPROPT)
 Csk   END IF
 C
 C     Save old coefficients
@@ -5327,7 +5206,8 @@ C
           ENDDO
           IF(IPRINT.GE.3) THEN
             DTST = DC*(NXOPP-II)/NXOPP
-            WRITE(LUPRI,9001) 'e-p',NHOPE,NXOPE,II,III,DTST
+            III  = II
+            WRITE(LUPRI,9001) 'e-p',NXOPP,NXOPP,II,III,DTST
           ENDIF
           NXOPP  = II
         ENDIF
@@ -5337,13 +5217,20 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DELPAR(MJVEC,JXOPE,NXOPE,NHOPE,JXOPP,NXOPP,IPRINT)
+      SUBROUTINE DELPAR(orb_type_vec,JXOPE,NXOPE,NHOPE,JXOPP,NXOPP,
+     &                  IPRINT)
 C***********************************************************************
 C
 C     This routine is inspired by REDPAR (../prp/pamset.F).
 C     Note that the new vectors are returned along with their new sizes.
 C
-C     Delete parameters for which the corresponding orbital mj-values 
+C     purpose: delete parameters for which the corresponding orbital 
+C     --------------------------------------------------------------
+C
+C     - mj-values     --> linear spin-orbit calculation
+C     - ml-values     --> linear spinfree   calculation
+C     - boson irreps  -->        spinfree   calculation
+C
 C     do not match.
 C
 C     Written by S. Knecht - Feb 2010
@@ -5356,18 +5243,20 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 C
-      DIMENSION MJVEC(NORBT), JXOPE(2,*), JXOPP(2,*)
+      DIMENSION JXOPE(2,*), JXOPP(2,*)
+      integer orb_type_vec(NORBT)
 C
       IF( IPRINT .ge. 1 )THEN
-        WRITE(LUPRI,'(/A)')' (DELPAR): vector of orbital mj-values:'
-        CALL IWRTMA(MJVEC,1,NORBT,1,NORBT,LUPRI)
+        WRITE(LUPRI,'(/A)')' (DELPAR): vector of orbital types:'// 
+     &              ' mj-/ml-/boson-irrep values'
+        CALL IWRTMA(orb_type_vec,1,NORBT,1,NORBT,LUPRI)
       END IF
 
       IF(NXOPE.GT.0) THEN
          II = 0
          III = 0
          DO I = 1,NHOPE
-           IF( MJVEC(JXOPE(1,I)) .eq. MJVEC(JXOPE(2,I)) )THEN
+           IF(orb_type_vec(JXOPE(1,I)).eq.orb_type_vec(JXOPE(2,I)))THEN
              II = II + 1
              IF (I .LE. NXOPE) III = III + 1
              JXOPE(1,II) = JXOPE(1,I)
@@ -5396,10 +5285,10 @@ C     e-p orbital rotations
 C     =====================
 C
       IF(NXOPP.GT.0) THEN
-        II = 0
+        II  = 0
         DO I = 1,NXOPP
           DTST = D0
-          IF( MJVEC(JXOPP(1,I)) .eq. MJVEC(JXOPP(2,I))) THEN
+          IF(orb_type_vec(JXOPP(1,I)).eq.orb_type_vec(JXOPP(2,I)))THEN
             II = II + 1
             JXOPP(1,II) = JXOPP(1,I)
             JXOPP(2,II) = JXOPP(2,I)
@@ -5411,7 +5300,8 @@ C
         IF(II.LT.NXOPP) THEN
           IF(IPRINT.GE.0) THEN
             DTST = DC*(NXOPP-II)/NXOPP
-            WRITE(LUPRI,9001) 'e-p',NHOPE,NXOPE,II,III,DTST
+            III  = II
+            WRITE(LUPRI,9001) 'e-p',NXOPP,NXOPP,II,III,DTST
           ENDIF
           NXOPP  = II
         ENDIF

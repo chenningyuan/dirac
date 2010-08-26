@@ -811,13 +811,30 @@ C
       LH2AC = NASHT*NASHT*NNASHX*NZ*3
       CALL MEMGET('REAL',KH2AC,LH2AC,WORK,KFREE,LFREE)
 C
-C     Read integrals from 4IND1XXXX0:
-C
-      CALL RGETH21(.FALSE.,.TRUE.,DUMMY,DUMMY,WORK(KH2AC),
-     &     WORK(KFREE),LFREE,IPRINT)
+C     read integrals from 4IND*: out --> work(kh2ac)
+C     ==============================================
+
+!     get dimensions for scracth matrices
+      call rgeth2_dim(ndim_ij,ndim_kl,ndim_h12_tmp)
+
+      call memget('REAL',khmat,ndim_h12_tmp,work,kfree,lfree)
+      call memget('REAL',kh2xy,ndim_h12_tmp,work,kfree,lfree)
+      call memget('REAL',kh2yx,ndim_h12_tmp,work,kfree,lfree)
+
+      call memget('INTE',kdxb12, 2*ndim_ij,work,kfree,lfree)
+      call memget('INTE',kdxb34, 2*ndim_kl,work,kfree,lfree)
+      call memget('INTE',kdxkr12,2*ndim_ij,work,kfree,lfree)
+
+      call rgeth21(.false.,.true.,dummy,dummy,work(kh2ac),
+     &             work(khmat),work(kh2xy),work(kh2yx),
+     &             work(kdxkr12),work(kdxb12),work(kdxb34),
+     &             iprint,lupri)
 C
 C     Transform integrals to Molfdir format:
 C
+C     remove potential "garbage" from imaginary part...
+      IF (NZ .EQ. 1) CALL DZERO(WORK(KMUUUU+(2*NASHT)**4),(2*NASHT)**4)
+
       CALL DNZ32M(WORK(KH2AC),WORK(KMUUUU),IPRINT)
       CALL MEMREL('GASCIP_FULLCI.H2AC',WORK,1,KH2AC,KFREE,LFREE)
 C
@@ -1745,17 +1762,32 @@ C
 C     Read two-electron integrals:
 C     ----------------------------
 C
+      CALL MEMGET('REAL',KMUUUU,(2*NASHT)**4 * 2, WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KH2AC,NASHT*NASHT*NNASHX*NZ*3,WORK,KFREE,LFREE)
 C
-C     Read integrals from 4IND1XXXX0:
-C
-      CALL RGETH21(.FALSE.,.TRUE.,DUMMY,DUMMY,WORK(KH2AC),
-     &     WORK(KFREE),LFREE,IPRINT)
+C     read integrals from 4IND*: out --> work(kh2ac)
+C     ==============================================
+
+!     get dimensions for scracth matrices
+      call rgeth2_dim(ndim_ij,ndim_kl,ndim_h12_tmp)
+
+      call memget('REAL',khmat,ndim_h12_tmp,work,kfree,lfree)
+      call memget('REAL',kh2xy,ndim_h12_tmp,work,kfree,lfree)
+      call memget('REAL',kh2yx,ndim_h12_tmp,work,kfree,lfree)
+
+      call memget('INTE',kdxb12, 2*ndim_ij,work,kfree,lfree)
+      call memget('INTE',kdxb34, 2*ndim_kl,work,kfree,lfree)
+      call memget('INTE',kdxkr12,2*ndim_ij,work,kfree,lfree)
+
+      call rgeth21(.false.,.true.,dummy,dummy,work(kh2ac),
+     &             work(khmat),work(kh2xy),work(kh2yx),
+     &             work(kdxkr12),work(kdxb12),work(kdxb34),
+     &             iprint,lupri)
+
 C
 C     Make sure imag(VMUUUU) = 0 for NZ=1
 C     (DNZ32M only DZERO'es real part for NZ = 1)
 C
-      CALL MEMGET('REAL',KMUUUU,(2*NASHT)**4 * 2, WORK,KFREE,LFREE)
       IF (NZ .EQ. 1) CALL DZERO(WORK(KMUUUU+(2*NASHT)**4),(2*NASHT)**4)
 C
 C     Transform integrals to Molfdir format:

@@ -8502,8 +8502,10 @@ C
      &                 MPI_COMM_WORLD,IERR)
       END IF
 C
-C     all needed for proper read-in of integrals...?
+C     all needed for proper read-in of integrals...
 C
+      CALL MPI_BCAST(NBSYM,1,my_MPI_INTEGER,MASTER,
+     &               MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(JBTOF,8*2,my_MPI_INTEGER,MASTER,
      &               MPI_COMM_WORLD,IERR)
       CALL MPI_BCAST(IPQTOQ,4*8,my_MPI_INTEGER,MASTER,

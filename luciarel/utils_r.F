@@ -852,17 +852,47 @@ C***********************************************************************
       real*8,  allocatable :: t_buffx(:)
 #endif
 !     scratch memory
-      real*8,  allocatable :: t_unsort(:)
-      real*8,  allocatable :: t_buff_lowsort(:)
+      real(8), allocatable :: t_unsort(:)
+      real(8), allocatable :: t_buff_lowsort(:)
+      real(8), allocatable :: hmat(:)
+      real(8), allocatable :: h2xy(:)
+      real(8), allocatable :: h2yx(:)
+      integer, allocatable :: indxb12(:,:)
+      integer, allocatable :: indxb34(:,:)
+      integer, allocatable :: idxkr12(:,:)
 C
       allocate(t_unsort(len_all_int))
 C
-      IF( IIOMOD_REL .eq. 1 .or. MYPROC .eq. MASTER )THEN
-C
-        CALL RGETH21_LUCIAREL(.FALSE.,.TRUE.,DUMMY,DUMMY,
-     &                         t_unsort,IPRNT)
-      END IF
-C     ^ IIOMOD_REL == 1 or MYPROC ==. MASTER
+      if(iiomod_rel.eq.1 .or. myproc.eq.master)then
+
+!       get dimensions for scratch matrices
+        call rgeth2_dim(ndim_ij,ndim_kl,ndim_h12_tmp)
+ 
+!       allocate scratch matrices
+        allocate(hmat(ndim_h12_tmp))
+        allocate(h2xy(ndim_h12_tmp))
+        allocate(h2yx(ndim_h12_tmp))
+
+        allocate(indxb12(2,ndim_ij))
+        allocate(indxb34(2,ndim_kl))
+        allocate(idxkr12(2,ndim_ij))
+        
+!       get integrals on t_unsort
+        call rgeth21(.false.,.true.,dummy,dummy,t_unsort,
+     &               hmat,h2xy,h2yx,idxkr12,indxb12,indxb34,
+     &               iprnt,luwrt)
+
+!       release scratch space
+        deallocate(idxkr12)
+        deallocate(indxb34)
+        deallocate(indxb12)
+
+        deallocate(hmat)
+        deallocate(h2xy)
+        deallocate(h2yx)
+      end if
+C     ^ iiomod_rel == 1 or myproc == master
+
       IF( IIOMOD_REL .eq. 0 )THEN
 C
 C       LEN_ALL_INT is INTEGER*8: this might not work with 

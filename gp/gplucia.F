@@ -2440,38 +2440,6 @@ C
   100 CONTINUE
  1110 FORMAT(/,1X,8I10,/,(1X,8I10))
 C
-      RETURN
-      END
-***********************************************************************
-*                                                                     *
-* LUCIAREL, by Timo Fleig and Jeppe Olsen                             *
-*           parallelization by Stefan Knecht                          *
-*                                                                     *
-***********************************************************************
-      CHARACTER*10 FUNCTION LFNAM_LUCIPAR(FILNAM)
-C
-C     Add the node identification to the file name for shared disk
-C     systems
-C     original written by Luuk Visscher, February 1998
-C     adaption for parallel run of LUCIAREL by Stefan Knecht, June 2007
-C
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C
-#include "implicit.h"
-#include "dcbgen.h"
-#include "infpar.h"
-      CHARACTER*5  FILNAM
-      CHARACTER*10 LFILNAM
-      NODE = 0
- 1000 FORMAT (A5,I5)
-C
-      WRITE (LFILNAM,1000) FILNAM,NODE
-      DO I = 6, 10
-         IF (LFILNAM(I:I).EQ.' ') LFILNAM(I:I) = 'X'
-      ENDDO
-C
-      LFNAM_LUCIPAR = LFILNAM
-C
       END
 ***********************************************************************
 *                                                                     *

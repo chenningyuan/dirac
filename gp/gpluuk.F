@@ -1267,7 +1267,6 @@ C
 C
       LFNAM = LFILNAM
 C
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE BUFFER_FILE_INFO (NBUF,NSIZE)

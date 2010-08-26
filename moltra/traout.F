@@ -346,10 +346,13 @@ C
          ELSE
             MKL = - IREPKLB(1,I) - IREPKLB(2,I)
          ENDIF
+!        write(lupri,'(2x,a,2i6)') '(linzero): MIJ, MKL are:', MIJ,MKL
+!        IF (MIJ+MKL.NE.0)
+!    &   write(lupri,'(2x,a,i6,a,1p,d10.2)')
+!    &   '(linzero): removed integral(',i,')',FMAT(I)
          IF (MIJ+MKL.NE.0) FMAT(I) = 0.D0
       ENDDO
 C
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck SYMFINT */
@@ -417,6 +420,7 @@ C
                    FMAT(I,1,1,IREPABR) = 
      &             FMAT(I,1,1,IREPABR) *
      &             IREPIJB(2)*IREPKLB(2,I)
+                   
                ENDIF
             ENDDO
             FACTR = 1.D0

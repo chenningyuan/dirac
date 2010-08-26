@@ -604,6 +604,10 @@ C
       IF (.NOT. NEWDEF) GOTO 400
 C
 C
+C     consistency checks
+C     ------------------
+C
+C     ... integral flags
       IF(DOLVC) ISSINT = 0
       IF (LEVYLE) THEN
         ISLINT = 0
@@ -615,6 +619,12 @@ C
       IKRCI_INTDEF = ILLINT + 2*ISLINT + 4*ISSINT
       IF(DKRCI_CNVINT(1).LT.DUMMY) IKRCI_ITRINT(1) = 1
       IF(DKRCI_CNVINT(2).LT.DUMMY) IKRCI_ITRINT(2) = 1
+C
+C     ... calculating omega values only in linear symmetry
+      if(doprop_krci.and.dojzexp)then
+        if(.not.linear) dojzexp = .false.
+      end if
+C
 C
       IF (NKRCIGAS .GT. 0) THEN
          NKRCIASHT = 0
@@ -1172,7 +1182,8 @@ C
       END
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE KRCI_CALC_1(CMO,CREF,WFTYP,WFCONV,WORK,KFREE,LFREE)
+      SUBROUTINE KRCI_CALC_1(CMO,CREF,IBEIG,WFTYP,WFCONV,WORK,
+     &                       KFREE,LFREE)
 C***********************************************************************
 C
 C     Get CI wave function.
@@ -1200,7 +1211,7 @@ C
 #include "krciprop.h"
 C
       LOGICAL   WFCONV, DO4INDEX, TOBE
-      DIMENSION WORK(*), CMO(*), CREF(*)
+      DIMENSION WORK(*), CMO(*), CREF(*), IBEIG(*)
       CHARACTER WFTYP*(*), SECTID*12, CPUTID*12, WALLTID*12
 C
       CALL QENTER('KRCI_CALC_1')
@@ -1254,7 +1265,7 @@ C     KRMCSCF may not be opened.
 C
 C     Read start orbitals and get CI vectors:
 C
-      CALL ROPTST(IOPTST,IWRT,CMO,CREF,IPROPT,WORK,KFREE,LFREE)
+      CALL ROPTST(IOPTST,IWRT,CMO,CREF,IBEIG,IPROPT,WORK,KFREE,LFREE)
 C     CALL ROPTST(ISTART,IWRT,CMO,CREF,IPRINT,WORK,KFREE,LFREE)
 C
 C     only 4-index integral transformation done

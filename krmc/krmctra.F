@@ -25,7 +25,7 @@ C FILE    : krmctra.F
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rtractl */
-      SUBROUTINE RTRACTL(CMO,SZTRA,WORK,LWORK)
+      SUBROUTINE RTRACTL(CMO,IBEIG,SZTRA,WORK,LWORK)
 C***********************************************************************
 C
 C     Input : ITRLVL - level of integrals transformation (see below)
@@ -82,11 +82,11 @@ C
 C
 C     Transfer information to moltra common blocks
 C
-      CALL SETUP_DCBTRA(SZTRA,IOPT_INTFLG,OPT_SKIPEP,0)
+      CALL SETUP_DCBTRA(SZTRA,IOPT_INTFLG,OPT_SKIPEP,IPROPT)
 C
 C     Call 4-index transformation driver
 C
-      CALL RTRACTL1(CMO,WORK(KFREE),LFREE)
+      CALL RTRACTL1(CMO,IBEIG,WORK(KFREE),LFREE)
 C
 C
       CALL RTKTIME(.FALSE.,7)
@@ -121,11 +121,11 @@ C
       CHARACTER*(*) SZTRA(2,4)
       CHARACTER*4 TESTSTRING
       LOGICAL USENOROT
-      INTEGER ISZERO, ISMXZERO, IZERO
+      INTEGER ISZERO, ISMXZERO, ISZERO_FINAL
       DIMENSION NOROT(*)
 C
       TESTSTRING = '    '
-      IZERO = 0
+      ISZERO_FINAL = 0
 C
 C     ITRLVL = 0: (uu|uu) transformation
 C     ITRLVL = 1: (gu|uu) transformation
@@ -188,18 +188,17 @@ C
         WRITE(LUPRI,*) ' Going to quit.'
         CALL QUIT('*** ERROR in INISZT *** ' //
      &        'Empty string array SZTRA detected' )
-      ELSE IF( ISZERO .lt. ISMXZERO .AND. ISZERO .gt. IZERO)THEN
+      ELSE IF( ISZERO .lt. ISMXZERO .AND. ISZERO .gt. ISZERO_FINAL)THEN
         WRITE(LUPRI,*) ' WARNING!!! WARNING !!! WARNING!!!'
         WRITE(LUPRI,*) ' partial empty orbital string detected!'
         WRITE(LUPRI,*) ' WARNING!!! WARNING !!! WARNING!!!'
         WRITE(LUPRI,*) ' 4-index could be erroneous.'
-      ELSE IF( ISZERO .eq. IZERO )THEN
+      ELSE IF( ISZERO .eq. ISZERO_FINAL )THEN
 C
 C       WRITE(LUPRI,*) ' succesful test'
 C    
       END IF
 C
-      RETURN
       END
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -420,11 +419,21 @@ C
       CALL INISZ3(IDXT2G(1,4),NIDXT(4),ILIST,NLIST)
       CALL INISZ4(ILIST,NLIST,SZTRA(1,4))
 C
-#ifdef MOD_DEBUG
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
       do j = 1, nfsym
          write(6,*) 'ilist',(ilist(i,j),i=1,nlist(j))
          write(6,*) 'sztra index 4 = ',sztra(j,4)
       end do
+!     write(6,*) 'IDXT2G:(norbt,*)'
+
+      write(6,'(2x,a)') 'IDXT2G:(*,1):'
+      write(6,'(2x,8i4)')  (IDXT2G(j,1),j=1,norbt)
+      write(6,'(2x,a)') 'IDXT2G:(*,2):'
+      write(6,'(2x,8i4)')  (IDXT2G(j,2),j=1,norbt)
+      write(6,'(2x,a)') 'IDXT2G:(*,3):'
+      write(6,'(2x,8i4)')  (IDXT2G(j,3),j=1,norbt)
+      write(6,'(2x,a)') 'IDXT2G:(*,4):'
+      write(6,'(2x,8i4)')  (IDXT2G(j,4),j=1,norbt)
 C
       write(6,*) 'iidx',iidx1,iidx2,iidx3,iidx4
       write(6,*) 'nidx',nidx1,nidx2,nidx3,nidx4
@@ -727,7 +736,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck rtractl1 */
-      SUBROUTINE RTRACTL1(CMO,WORK,LWORK)
+      SUBROUTINE RTRACTL1(CMO,IBEIG,WORK,LWORK)
 C***********************************************************************
 C
 C     Driver routine for KRMCSCF 4-index transformation
@@ -747,9 +756,10 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbgen.h"
+#include "dcbopt.h"
       CHARACTER*24 DAYTID
       LOGICAL TRASAM
-      DIMENSION CMO(*),WORK(*),
+      DIMENSION CMO(*),WORK(*), IBEIG(*),
      &          NSTR(2,0:2,4),KVEC(2,4),KQ(2,4),KIBE(2,4),
      &          IR(2,2),NR(2),NQ(2,4),NQT(4),KE(2,4),
      &          NSPC(2,0:2),KQC(2),NSTRT(4)
@@ -873,16 +883,30 @@ C
       DO I = 1, 4
          DO IFRP = 1, NFSYM
             CALL MEMGET('INTE',KIBE(IFRP,I),NSTR(IFRP,0,I),
-     &           WORK,KFREE,LFREE)
+     &                  WORK,KFREE,LFREE)
+            call izero(work(KIBE(IFRP,I)),NSTR(IFRP,0,I))
+!           write(lupri,*) 'allocate kibe with length',
+!    &                      NSTR(IFRP,0,I)
          ENDDO
       ENDDO
 C
 C     Select the set that we need
-C
-C     TODO: selection IBEIG not implemented yet
-C
       CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
-      CALL IZERO(WORK(KIBEIG),NORBT)
+C
+C     two cases for which we want to pass down information, otherwise
+C     set to 0.
+C
+C     a. spinfree MCSCF
+      if(spinfr_krmc)then
+        call icopy(norbt,ibeig,1,work(kibeig),1)
+C     b. MCSCF in linear symmetry
+      else if(opt_chckjz)then
+        rewind(lukrmc)
+        call ireakrmc(lukrmc,'MJVEC   ',work(kibeig),norbt)
+C     c. initialize to 0
+      else
+        call izero(work(kibeig),norbt)
+      end if
 C
       DO I = 1, 4
         DO IFRP = 1, NFSYM
@@ -891,14 +915,23 @@ C
      &                   NSTR(IFRP,0,I),WORK(KVEC(IFRP,I)),
      &                   NSTR(IFRP,2,I),NSTR(IFRP,1,I),
      &                   NFBAS(IFRP,0),NORB(IFRP))
-             CALL SELIBEIG(WORK(KIBEIG),IORB(IFRP),IFRP,
+             CALL SELIBEIG(work(kibeig),IORB(IFRP),IFRP,
      &                     WORK(KIBE(IFRP,I)),WORK(KVEC(IFRP,I)),
      &                     NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           ENDIF
         ENDDO
       ENDDO
-C
-C     Throw away IBEIG again
+#if defined MCSCF_DEBUG_SPINFREE
+      write(lupri,*) ' (RTRACTL1) speaking'
+      write(lupri,'(2x,a,2i4)') '(RTRACTL1) input nstr(1) is',
+     &                           (nstr(i,0,1), i = 1, nfsym)
+      write(lupri,'(2x,a,2i4)') '(RTRACTL1) input nstr(2) is',
+     &                           (nstr(i,0,2), i = 1, nfsym)
+      write(lupri,'(2x,a,2i4)') '(RTRACTL1) input nstr(3) is',
+     &                           (nstr(i,0,3), i = 1, nfsym)
+      write(lupri,'(2x,a,2i4)') '(RTRACTL1) input nstr(4) is',
+     &                           (nstr(i,0,4), i = 1, nfsym)
+#endif
 C
       CALL MEMREL('RTRACTL1.CMO',WORK,KFRSAV,KIBEIG,KFREE,LFREE)
 C
@@ -955,7 +988,8 @@ C        FQ   -   aux. FQ fock matrix
 C        H2AC -   two-electron integrals with active indices.
 C
 C     Written by J. Thyssen - Jul 21 2000
-C     Last revision :
+C     Last revision : S Knecht - August 2010: adapted for revised 
+C                     structure of rgeth21 
 C
 C***********************************************************************
 #include "implicit.h"
@@ -984,9 +1018,26 @@ C        Two electron integrals
 C        ----------------------
 C
 C        Get FQ and active two-electron integrals.
-C
-         CALL RGETH21(.TRUE.,.TRUE.,PV,FQ,H2AC,
-     &                WORK(KFREE),LFREE,IPROPT)
+C        =========================================
+
+!        a. get dimensions and offset for scratch matrices
+         call rgeth2_dim(ndim_ij,ndim_kl,ndim_h12_tmp)
+
+         call memget('REAL',khmat,ndim_h12_tmp,work,kfree,lfree)
+         call memget('REAL',kh2xy,ndim_h12_tmp,work,kfree,lfree)
+         call memget('REAL',kh2yx,ndim_h12_tmp,work,kfree,lfree)
+
+         call memget('INTE',kdxkr12,2*ndim_ij,work,kfree,lfree)
+         call memget('INTE',kdxb12, 2*ndim_ij,work,kfree,lfree)
+         call memget('INTE',kdxb34, 2*ndim_kl,work,kfree,lfree)
+
+!        b. read integrals and construct fq
+         call rgeth21(.true.,.true.,pv,fq,h2ac,
+     &                work(khmat),work(kh2xy),work(kh2yx),
+     &                work(kdxkr12),work(kdxb12),work(kdxb34),
+     &                ipropt,lupri)
+
+         call memrel('rgeth2',work,1,khmat,kfree,lfree)
 C
       ELSE
          WRITE(LUPRI,'(/,A,/,2A)')
@@ -997,11 +1048,76 @@ C
       END IF
       CALL RTKTIME(.FALSE.,3)
       CALL QEXIT('RGETH2')
-      RETURN
       END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine rgeth2_dim(ndim_ij,ndim_kl,ndim_h12_tmp)
+!***********************************************************************
+!
+!     purpose: read dimensions for a suitable handling of 2-electron 
+!              integrals from the file 4INDINFO.
+!              this routine aims to simplify the co-existence of 
+!              the KR-MCSCF and KR-CI + KR-CC codes thus avoiding 
+!              duplication of integral reading codes.
+!       
+!     written by S. Knecht - August 2010
+!
+!***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "maxash.h"
+C
+#include "dcbopt.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "maxorb.h"
+!-----------------------------------------------------------------------
+      integer luint
+      integer nfh12ij_offset(2), nfh12kl_offset(2), indxb34_offset(2)
+      dimension nstr(2,0:2,4)
+      character datex*8,timex*8
+      logical trian
+!-----------------------------------------------------------------------
+
+!     set dimension for the temporary h12 integral arrays
+      ndim_h12_tmp = n2orbx * nz * nz * nbsym / nfsym
+
+      luint = 1
+      open(luint,file='4INDINFO',status='old',form='unformatted')
+!
+!     read time & date for creation
+      read(luint) datex, timex
+!
+!     hint for read sequence
+!     a. offset array (index ij), b. total number, c. offset array (kl), d. total number, 
+!     e. nstr(ifrp,0,i) - total number of orbitals for:
+!                         nstr(ifrp,1,i) - number of electronic orbitals
+!                         nstr(ifrp,2,i) - number of positronic orbitals
+!        --> dimension nstr(2,0:2,4)
+
+!     read dimensions for indices and boson irreps arrays for ij and kl indices
+!     from file 4INDINFO
+      read(luint) nfh12ij_offset, ndim_ij, nfh12kl_offset, ndim_kl, nstr
+      
+!     write(lupri,*)'my dimensions are: ndim_ij, ndim_kl, ndim_h12_tmp',
+!    &               ndim_ij, ndim_kl, ndim_h12_tmp
+!     close file
+      close(luint,status ='keep')
+
+!     calculate the offset to access the indxb34 array - using a
+!     template of Luuks subroutine MKINDXB
+
+!     no triangular packing for index 3+4
+!     trian = .false.
+!     write(lupri,*)' calling mk34bindex_offset with trian = ',trian
+!     call mk34bindex_offset(indxb34_offset,nstr,trian)
+ 
+!
+      end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgeth21 */
-      SUBROUTINE RGETH21(DOFQ,DOH2AC,PV,FQ,H2AC,WORK,LWORK,IPRINT)
+      SUBROUTINE RGETH21(DOFQ,DOH2AC,PV,FQ,H2AC,
+     &                   hmat,h2xy,h2yx,idxkr12,indxb12,indxb34,
+     &                   iprint,print_unit)
 C***********************************************************************
 C
 C     Calculate FQ and H2AC.
@@ -1012,13 +1128,15 @@ C        DOH2AC - collect active two-electron integrals.
 C        PV - two-electron density matrix
 C
 C     Output:
-C        FQ - auxiliary Fock matrix
-C        (H2AC written to disk)
+C        FQ   - auxiliary Fock matrix
+C        H2AC - two-electron integrals
 C
 C     Written by J. Thyssen - Jul 21 2000
 C     Last revision : L. Visscher - Mar 15 2001
+C                     S. Knecht   - Aug 14 2010
 C
 C***********************************************************************
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -1026,7 +1144,6 @@ C
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "pgroup.h"
 #include "maxorb.h"
 #include "dcbidx.h"
 #include "dcbham.h"
@@ -1034,7 +1151,8 @@ C
       DIMENSION FQ(NORBT,NASHT,NZ)
       DIMENSION PV(NASHT,NASHT,NNASHX,NZ,3)
       DIMENSION H2AC(NASHT,NASHT,NNASHX,NZ,3)
-      DIMENSION WORK(*)
+      dimension hmat(*),h2xy(*),h2yx(*)
+      dimension idxkr12(2,*),indxb12(2,*),indxb34(2,*)
       LOGICAL DOFQ, DOH2AC
 C     index arrays
       DIMENSION NFPCK12(2), NFPCK34(2)
@@ -1043,54 +1161,86 @@ C     index arrays
 C     strings
       CHARACTER DATEX*8,TIMEX*8,FNAM*5,FNODE*10,LFNAM*10
       logical fopen
-C
-#include "memint.h"
-C
+!     common internal print unit (reason: interface to KR-CI where co-workers
+!                                          may also enter this routine)
+      integer print_unit
+      integer, allocatable :: indxb34_reod(:,:)
+      integer, allocatable :: orb_info_array(:,:,:)
+      logical              :: set_qphaseFAC
+
       CALL QENTER('RGETH21')
 C
 C     Read information from integral file
 C     -----------------------------------
 C
       LUINT = 1
-      OPEN (LUINT, FILE = '4INDINFO', STATUS = 'OLD',
+      OPEN(LUINT, FILE = '4INDINFO', STATUS = 'OLD',
      &     FORM = 'UNFORMATTED' )
 C
-      WRITE(LUPRI,*)
-      WRITE(LUPRI,'(A)') ' Reading from file : 4INDINFO '
+      write(print_unit,'(/a)') ' Reading from file : 4INDINFO '
 C
 C     Read time & date for creation
 C
       READ (LUINT) DATEX, TIMEX
 C
-      IF ( IPRINT .GE. 5 ) WRITE(LUPRI,'(4A)')
-     &     ' (RGETH2) Time and date read from 4INDINFO: ',
+      IF ( IPRINT .GE. 5 ) WRITE(print_unit,'(4A)')
+     &     ' (RGETH21) Time and date read from 4INDINFO: ',
      &     TIMEX, ' ',DATEX
 C
-!                  offset array (index ij), total number, offset array (kl), total number, 
-!    NSTR(ifrp,0,i) - total number of orbitals for
-!    NSTR(ifrp,1,i) - number of electronic orbitals
-!    NSTR(ifrp,2,i) - number of positronic orbitals
-!    DIMENSION NSTR(2,0:2,4)
-
       READ (LUINT) NFPCK12, NFPCK12T, NFPCK34, NFPCK34T, NSTR
 C
-      CALL MEMGET('INTE',KDXKR12,2*NFPCK12T,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KDXB12,2*NFPCK12T,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KDXB34,2*NFPCK34T,WORK,KFREE,LFREE)
-C
-C     I and J indices
-      CALL READI(LUINT,NFPCK12T*2,WORK(KDXKR12))
-C     Boson irrep for IJ indices
-      CALL READI(LUINT,NFPCK12T*2,WORK(KDXB12))
-C     Boson irrep for KL indices
-      CALL READI(LUINT,NFPCK34T*2,WORK(KDXB34))
-C
-      CLOSE (LUINT, STATUS = 'KEEP')
-C
+C     set number of integral classes
       NCLASS = NZ * NZ * NBSYM / NFSYM
+
+C     initialize scratch arrays
+      call dzero(hmat,nclass*n2orbx)
+      call dzero(h2xy,nclass*n2orbx)
+!     call dzero(h2yx,nclass*n2orbx)
+
+      call izero(idxkr12,2*nfpck12t)
+      call izero(indxb12,2*nfpck12t)
+      call izero(indxb34,2*nfpck34t)
+
+!     allocate reordered boson irrep array for indices k,l
+      call alloc(indxb34_reod,2,n2orbx,'idxb34_reod_geth2')
+      if(spinfr.or.levyle.or.linear) 
+     & call alloc(orb_info_array,2,norbt,norbt,'idx34_orbinfo_geth2')
+  
+!     set orbital info array
+      if(spinfr.or.levyle.or.linear) call setorb_attrib(orb_info_array)
+ 
+!     spinfree MCSCF - always multiply with the quaternion phase factor
+      set_qphaseFAC = .true.
+
+C     read indices and boson irrep information
+
+C     a. I and J indices
+      CALL READI(LUINT,2*NFPCK12T,idxkr12)
+C     b. boson irrep for IJ indices
+      CALL READI(LUINT,2*NFPCK12T,indxb12)
+C     c. boson irrep for KL indices
+      CALL READI(LUINT,2*NFPCK34T,indxb34)
+C
+      CLOSE(LUINT, STATUS='KEEP')
+C
 #if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
-      write(lupri,'(2x,a,4i4)') ' (RGETH21) # classes, # boson'//
-     &  ' irreps, # fermion irreps, nz',NCLASS,NBSYM,NFSYM,NZ
+
+      if(IPRINT.gt.20)then
+      write(print_unit,'(2x,a)') ' (RGETH21) idxkr12(1,*)'
+      write(print_unit,'(2x,8i4)') (idxkr12(1,i),i=1,NFPCK12T)
+      write(print_unit,'(2x,a)') ' (RGETH21) idxkr12(2,*)'
+      write(print_unit,'(2x,8i4)') (idxkr12(2,i),i=1,NFPCK12T)
+
+      write(print_unit,'(2x,a)') ' (RGETH21) indxb12(1,*)'
+      write(print_unit,'(2x,8i4)') (indxb12(1,i),i=1,NFPCK12T)
+      write(print_unit,'(2x,a)') ' (RGETH21) indxb12(2,*)'
+      write(print_unit,'(2x,8i4)') (indxb12(2,i),i=1,NFPCK12T)
+
+      write(print_unit,'(2x,a)') ' (RGETH21) indxb34(1,*)'
+      write(print_unit,'(2x,8i4)') (indxb34(1,i),i=1,NFPCK34T)
+      write(print_unit,'(2x,a)') ' (RGETH21) indxb34(2,*)'
+      write(print_unit,'(2x,8i4)') (indxb34(2,i),i=1,NFPCK34T)
+      end if
 #endif
 C
 C     Open integral files.
@@ -1102,61 +1252,44 @@ C     LUINT = 56 + IREPIJ, IREPIJ = 1,NFSYM are actually used
 !     IKLB is offset pointer to first KL integral in fermion irrep IREPIJ
       DO IREPIJ = 1, NFSYM
          IKLB(IREPIJ) = IIKLB
-         IRECL = IRECLEN(NCLASS * NFPCK34 (IREPIJ), 0, 0)
-         IRECL = MAX(IRECL,IRECLEN(1,0,0))
+         IRECL = MAX(IRECLEN(NCLASS*NFPCK34(IREPIJ),0,0),
+     &               IRECLEN(1,0,0))
          WRITE (FNAM,'(A4,I1)') '4IND',IREPIJ
          FNODE = LFNAM(FNAM)
-         WRITE(LUPRI,'(A,A)') ' Reading from file : ',FNODE
+         WRITE(print_unit,'(A,A)') ' Reading from file : ',FNODE
          OPEN (LUINT+IREPIJ,FILE=FNODE,STATUS='OLD',
      &        ACCESS='DIRECT',RECL=IRECL)
-         IIKLB = IIKLB + NFPCK34 (IREPIJ)
+         IIKLB = IIKLB + NFPCK34(IREPIJ)
       END DO
-C
-C     Allocate memory for integrals (H2XY)
-C
-      CALL MEMGET('REAL',KHMAT,N2ORBX*NCLASS,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KH2XY,N2ORBX*NCLASS,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KH2YX,N2ORBX*NCLASS,WORK,KFREE,LFREE)
-c
-#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
-      write(6,*) '(RGETH2) IDXKR12'
-      do i = 1, nfpck12t
-         write(6,*) I,
-     &        IGETINT(WORK(KDXKR12),1+(I-1)*2),
-     &        IGETINT(WORK(KDXKR12),I*2)
-      end do
-#endif
-c
 C
 C     Read integrals (x>y)
 C     --------------------
 C
-C     zero arrays
-C
-      IF (DOFQ) CALL DZERO(FQ,NASHT*NORBT*NZ)
-      IF (DOH2AC) CALL DZERO(H2AC,NASHT*NASHT*NNASHX*NZ*3)
+C     initialize output arrays
+      IF(DOFQ)   CALL DZERO(FQ,NASHT*NORBT*NZ)
+      IF(DOH2AC) CALL DZERO(H2AC,NASHT*NASHT*NNASHX*NZ*3)
 C
 C     Loop over records in integrals files.
 C
       NXY = 0
 !
-!     new stuff for spinfree MCSCF
-      NIJOFF = 0
-      NKLOFF = 0
+!     offsets required for a spinfree MCSCF
+      NIJOFF   = 0
 
       DO 10 IREPIJ = 1, NFSYM
          IREC = 0
          DO 20 IXY = 1, NFPCK12(IREPIJ)
             NXY = NXY + 1
             IREC = IREC + 1
-            CALL GTXY(NXY,IX,IY,IXU,IYU,WORK(KDXKR12))
-            IREPIJB = IGETINT(WORK(KDXB12),NXY*2-1)
+            CALL GTXY(NXY,IX,IY,IXU,IYU,idxkr12)
+            call dzero(h2xy,nclass*n2orbx)
 #if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
-            write(6,'(2x,a,2i8)') ' x and y: ',ix,iy
             write(6,'(2x,a,2i8)') ' active : ',ixu,iyu
-            write(6,'(2x,a, i8)') ' boson irrep: ',IREPIJB
-            write(6,'(2x,a, i8)') ' NXY is     : ',NXY
             write(6,'(2x,a, i8)') ' IXY is     : ',IXY
+      write(print_unit,'(2x,a,i4)') ' (RGETH21) idxkr12(1,ixy)',
+     &                              idxkr12(1,ixy)
+      write(print_unit,'(2x,a,i4)') ' (RGETH21) idxkr12(2,ixy)',
+     &                              idxkr12(2,ixy)
 #endif
 C           We only need active-active distributions.
 C
@@ -1171,121 +1304,123 @@ C
 C
 C           Read integrals
 C
+            NIJ = NFPCK12(IREPIJ)
             NKL = NFPCK34(IREPIJ)
 C
-            READ (LUINT + IREPIJ, REC=IREC,
-     &           ERR=8000, IOSTAT=IOSVAL)
-     &           (WORK(KH2XY+I-1),I=1,NKL*NCLASS)
+            READ(LUINT + IREPIJ, REC=IREC,
+     &          ERR=8000, IOSTAT=IOSVAL)
+     &          (h2xy(i),i=1,nkl*nclass)
 #if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
+           write(6,'(/2x,a,1i4)') ' (RGETH21) index IUU = ',iuu
             ii = 0
-            do i = 1, 4 * nz
-               write(6,'(2x,a,i3,a)') 
-     &         'integral class ',i,' before transformation'
-               call output(work(kh2xy+ii),1,norbt,1,norbt,
-     &              norbt,norbt,1,lupri)
-               ii = ii + nkl
-            end do
+!           do i = 1, nz * 4
+!              write(6,'(2x,a,i3,a)') 
+!    &         'integral class ',i,' before transformation'
+!              call output(h2xy(1+ii),1,norbt,1,norbt,
+!    &                     norbt,norbt,1,print_unit)
+!              ii = ii + nkl
+!           end do
 #endif
 C
 C           Reorder integrals to full matrix
 C           --------------------------------
 C
-            CALL DZERO(WORK(KH2YX),N2ORBX*NCLASS)
+            call dzero(h2yx,n2orbx*nclass)
 C
             IREPABR = 0
             DO IREPAB = 0, NBSYM - 1
                IF (IREPIJ .EQ. JBTOF(IREPAB,1)) THEN
                   IREPABR = IREPABR + 1
                   DO IZ2 = 1, NZ
-!                    IQ2 = IPQTOQ(IZ2,IREPAB)
 
 #if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
-                     write(6,'(2x,a,3i4)') 
-     &               ' fermion irrep, boson irrep for IJ, KL & IREPABR',
-     &               IREPIJ,IREPAB,IREPABR
+!                    write(6,'(2x,a,3i4)') 
+!    &               ' fermion irrep, boson irrep for IJ, KL & IREPABR',
+!    &               IREPIJ,IREPAB,IREPABR
 #endif
 C
 C                    Transform symmetry packed
 C                    integrals to full matrix.
 C                    (take care of diff. integral transformations etc.)
 C
-                     CALL INTB2X(WORK(KH2XY),IZ2,IREPABR,IREPAB,
-     &                           WORK(KH2YX),IREPIJ,NKL)
+!                    if(.not.SPINFR)then
+                     CALL INTB2X(h2xy,IZ2,IREPABR,IREPAB,
+     &                           h2yx,IREPIJ,NKL)
 C                    CALL INTB2X(HT,IZ2,IREPABR,IREPAB,HX,IREPIJ,NKL)
 C
 C                    Transform boson-symmetry array to
 C                    full
 C
-C                    (FIXME: write me)
-C
-!                    IF (SPINFR) THEN
-!                       write(6,*) 'SPINFR not implemented in RGETH2'
-!                       CALL QUIT('SPINFR not implemented in RGETH2')
-!                    END IF
-C
+!
+!                    transform boson-symmetry array for index 3 and 4
+!                    do we also need to transform indxb12 ???
+                     if(spinfr.or.levyle.or.linear)then
+!                      initialize
+                       call izero(indxb34_reod,2*n2orbx)
+                       call int_irreps_b2x_2(irepij,
+     &                                       indxb34_reod(1,1),
+     &                                       orb_info_array)
+                     end if
                   END DO
                END IF
             END DO
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
+!     write(print_unit,'(2x,a)') ' (RGETH21) indxb34_reod(1,*)'
+!     write(print_unit,'(2x,5i5)') (indxb34_reod(1,i),i=1,n2orbx)
+!     write(print_unit,'(2x,a)') ' (RGETH21) indxb34_reod(2,*)'
+!     write(print_unit,'(2x,5i5)') (indxb34_reod(2,i),i=1,n2orbx)
+#endif
 C
 C           Transform to Dirac (NZ,3) format
 C           --------------------------------
 C
-!           call CL2NZ3_driver(WORK(KH2YX),WORK(KHMAT),N2ORBX,IREPIJ,
-!    &                         WORK(KDXB12),WORK(KDXB34),
-!    &                         IJ+NIJOFF,1+NKLOFF,IKLB)
-C
-            CALL CL2NZ3(WORK(KH2YX),WORK(KHMAT),N2ORBX,IREPIJ,
-     &                  IREPIJB,WORK(KDXB34),IKLB)
-!                       (1,IJ+NIJOFF),INDXB34(1,1+NKLOFF)
-C           CALL CL2NZ3(VCL,VNZ3,NELEM,IREPIJ,IREPIJB,IREPKLB,IKLB)
+!                            vnz3
+            call cl2nz3(h2yx,hmat,n2orbx,irepij,
+     &                  indxb12(1,ixy+nijoff),
+     &                  indxb34_reod(1,1),
+     &                  set_qphaseFAC)
 
-!           ---------------------------------------------------------
-!           zero out integrals that should be zero in linear symmetry
-!           but aren't due to numerical noise
-!           ---------------------------------------------------------
-!           FIXME!!! - SK - August 2010. (linzero is in moltra/traout.F)
-!
-!           if(linear) then
-!             call linzero()
-!           end if
 C
 C           Get (gu) and (ug) blocks + H2AC
 C           -------------------------------
 C
-            CALL X2GU(WORK(KHMAT),WORK(KH2XY),WORK(KH2YX),
+            CALL X2GU(hmat,h2xy,h2yx,
      &                H2AC,IUU,IXU .EQ. IYU, DOFQ, DOH2AC)
 C           CALL X2GU(HX,H2XY,H2YX,H2AC,IUU,ONLYXY,DOFQ,DOH2AC)
 C
 #if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
-            do i = 1, 3 * nz
-               write(6,*) 'xy matrix no ',i
-               call output(work(kh2xy + (i-1)*norbt*nasht),
-     &              1,norbt,1,nasht,norbt,nasht,1,lupri)
-            end do
-            if ( ix .ne. iy) then
-               do i = 1, 3 * nz
-                  write(6,*) 'yx matrix no ',i
-                  call output(work(kh2yx + (i-1)*norbt*nasht),
-     &                 1,norbt,1,nasht,norbt,nasht,1,lupri)
-               end do
-            end if
+!           do i = 1, 3 * nz
+!              write(6,*) 'xy matrix no ',i
+!              call output(h2xy(1+(i-1)*norbt*nasht),
+!    &              1,norbt,1,nasht,norbt,nasht,1,print_unit)
+!           end do
+!           if ( ix .ne. iy) then
+!              do i = 1, 3 * nz
+!                 write(6,*) 'yx matrix no ',i
+!                 call output(h2yx(1+ (i-1)*norbt*nasht),
+!    &                 1,norbt,1,nasht,norbt,nasht,1,print_unit)
+!              end do
+!           end if
 #endif
 C
 C           Do the gazillion matrix multiplies to construct
 C           the auxiliary Fock matrix FQ.
 C
             IF (DOFQ) THEN
-               CALL RADDFQ(FQ,WORK(KH2XY),WORK(KH2YX),PV,
+               CALL RADDFQ(FQ,h2xy,h2yx,PV,
      &              IUU,IXU,IYU,IREPIJ,IPRINT)
             END IF
 C
  20      CONTINUE
-         NIJOFF = NIJOFF + NFPCK12(IREPIJ)
-         NKLOFF = NKLOFF + NFPCK34(IREPIJ)
+         NIJOFF  = NIJOFF  + NFPCK12(IREPIJ)
  10   CONTINUE
+
 C
 C     Close integral files
 C     --------------------
+!     release temporary array
+      call dealloc(indxb34_reod)
+      if(spinfr.or.levyle.or.linear) call dealloc(orb_info_array)
 C
       DO IFSYM = 1, NFSYM
          CLOSE (LUINT + IFSYM, STATUS = 'KEEP')
@@ -1293,13 +1428,14 @@ C
 C
       IF (IPRINT .GE. 10) THEN
          IF (DOH2AC) THEN
-            WRITE(LUPRI,'(A)') ' (RGETH21) H2AC matrix'
-            CALL PRDNZ3(H2AC,NASHT,NNASHX,NZ,IPQTOQ(1,0),LUPRI)
+            WRITE(print_unit,'(A)') ' (RGETH21) H2AC matrix'
+            CALL PRDNZ3(H2AC,NASHT,NNASHX,NZ,IPQTOQ(1,0),print_unit)
          END IF
 C
          IF (DOFQ) THEN
-            WRITE(LUPRI,'(A)') ' (RGETH21) FQ matrix'
-            CALL PRQMAT(FQ,NORBT,NASHT,NORBT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
+            WRITE(print_unit,'(A)') ' (RGETH21) FQ matrix'
+            CALL PRQMAT(FQ,NORBT,NASHT,NORBT,NASHT,NZ,
+     &                  IPQTOQ(1,0),print_unit)
          END IF
       END IF
 C
@@ -1309,10 +1445,10 @@ C
 C     Read errors
 C
  8000 CONTINUE
-      WRITE(LUPRI,'(/A)')
-     &     '*** ERROR in RGETH2 *** Read error'
+      WRITE(print_unit,'(/A)')
+     &     '*** ERROR in RGETH21 *** Read error'
  8100 CONTINUE
-      WRITE(LUPRI,'(1X,A,I4)')
+      WRITE(print_unit,'(1X,A,I4)')
      &     'IREPIJ = ',IREPIJ,
      &     'IREC   = ',IREC,
      &     'IOSTAT = ',IOSVAL,
@@ -1320,7 +1456,7 @@ C
      &     'IX     = ',IX,
      &     'IY     = ',IY,
      &     'NXY    = ',NXY
-      CALL QUIT('*** ERROR in RGTETH2 *** Error reading integral file')
+      CALL QUIT('*** ERROR in RGTETH21 *** Error reading integral file')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck raddfq */
@@ -2113,7 +2249,7 @@ C        FQT  -   transition density FQ fock matrix
 C        H2ACX-   two-electron integrals with active indices.
 C
 C     Written by J. Thyssen - Dec 3 2000
-C     Last revision :
+C     Last revision : S. Knecht - modifications for spinfree MCSCF
 C
 C***********************************************************************
 #include "implicit.h"
@@ -2136,35 +2272,33 @@ C
 C
       CALL QENTER('RGETH2TX')
       CALL RTKTIME(.TRUE.,4)
-C
-      IF ( XRS_CIPROGRAM .EQ. 'GASCIP' .OR.
-     &     XRS_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
-C
-C        Two electron integrals
-C        ----------------------
-C
-C        Get FQ and active two-electron integrals.
-C
-         CALL RGETH2TX1(.TRUE.,.TRUE.,PV,PVT,FQX,FQT,H2ACX,
-     &        BEVEC,BPVEC,JXOPE,JXOPP,IBEVC,IBPVC,IBTYP,IPRINT,
-     &        WORK(KFREE),LFREE)
-C
-      ELSE
-         WRITE(LUPRI,'(/,A,/,2A)')
-     $        '*** ERROR in RGETH2TX ***',
-     $        'FQX, FQT, and H2ACX not implemented for CI program ',
-     $        XRS_CIPROGRAM
-         CALL QUIT('*** ERROR in RGETH2TX ***')
-      END IF
+!
+!     Get FQX and active one-index transformed 2e-integrals H2ACX
+!     ===========================================================
+!
+!     a. get dimensions for scratch matrices
+      call rgeth2_dim(ndim_ij,ndim_kl,ndim_h12_tmp)
+!
+      CALL MEMGET('INTE',KDXKR12,2*ndim_ij,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KDXB12 ,2*ndim_ij,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KDXB34 ,2*ndim_kl,WORK,KFREE,LFREE)
+!
+!     b. get one-index transformed FQ and active two-electron integrals
+      CALL RGETH2TX1(.TRUE.,.TRUE.,PV,PVT,FQX,FQT,H2ACX,
+     &               BEVEC,BPVEC,JXOPE,JXOPP,IBEVC,IBPVC,IBTYP,
+     &               WORK(KDXKR12),WORK(KDXB12),WORK(KDXB34),
+     &               IPRINT,WORK(KFREE),LFREE)
+!
+      call memrel('rgeth2tx',work,1,kdxkr12,kfree,lfree)
+!
       CALL RTKTIME(.FALSE.,4)
       CALL QEXIT('RGETH2TX')
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgeth2tx1 */
       SUBROUTINE RGETH2TX1(DOFQ,DOH2AC,PV,PVT,FQX,FQT,H2ACX,
-     &     BEVEC,BPVEC,JXOPE,JXOPP,
-     &     IBEVC,IBPVC,IBTYP,IPRINT,WORK,LWORK)
+     &                     BEVEC,BPVEC,JXOPE,JXOPP,IBEVC,IBPVC,IBTYP,
+     &                     idxkr12,indxb12,indxb34,IPRINT,WORK,LWORK)
 C***********************************************************************
 C
 C
@@ -2183,9 +2317,10 @@ C              density matrix.
 C        H2ACX - one-index transformed integrals.
 C
 C     Written by J. Thyssen - Dec 3 2000
-C     Last revision :
+C     Last revision : S. Knecht - modifications for spinfree MCSCF
 C
 C***********************************************************************
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -2211,11 +2346,19 @@ C     index arrays
       DIMENSION NFPCK12(2), NFPCK34(2)
       DIMENSION NSTR(2,0:2,4)
       DIMENSION IKLB(2)
+      dimension idxkr12(2,*), indxb12(2,*), indxb34(2,*)
+      dimension indxb34_offset(2)
 C     strings
       CHARACTER DATEX*8,TIMEX*8,FNAM*5,FNODE*10,LFNAM*10
 C     logicals
       LOGICAL DOFQT, DOFQX, DOH2ACX
       logical fopen
+      integer, allocatable :: indxb34_reod(:,:)
+      integer, allocatable :: orb_info_array(:,:,:)
+      logical              :: set_qphaseFAC
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE_extra
+      real(8), allocatable :: xsave(:)
+#endif
 C
 #include "memint.h"
 C
@@ -2234,12 +2377,6 @@ C
      &        ', and DOH2ACX = ',DOH2ACX
       END IF
 C
-C
-C     debug debug
-c     calculate FQT with RGET2 module
-c     CALL RGETH2(FQT,H2ACX,PVT,WORK(KFREE),LFREE)
-c     call quit('ralle ralle')
-C
 C     *******************************************
 C     *** Read information from integral file ***
 C     *******************************************
@@ -2249,7 +2386,6 @@ C
      &     FORM = 'UNFORMATTED' )
 C
 C     Read time & date for creation
-C
       READ (LUINT) DATEX, TIMEX
 C
       IF ( IPRINT .GE. 3 ) WRITE(LUPRI,'(/4A/)')
@@ -2257,21 +2393,37 @@ C
      &     TIMEX, ' ',DATEX
 C
       READ (LUINT) NFPCK12, NFPCK12T, NFPCK34, NFPCK34T, NSTR
-C
-      CALL MEMGET('INTE',KDXKR12,2*NFPCK12T,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KDXB12,2*NFPCK12T,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KDXB34,2*NFPCK34T,WORK,KFREE,LFREE)
-C
-C     I and J indices
-      CALL READI(LUINT,NFPCK12T*2,WORK(KDXKR12))
-C     Boson irrep for IJ indices
-      CALL READI(LUINT,NFPCK12T*2,WORK(KDXB12))
-C     Boson irrep for KL indices
-      CALL READI(LUINT,NFPCK34T*2,WORK(KDXB34))
+!  
+!     set number of integral classes
+      NCLASS = NZ * NZ * NBSYM / NFSYM
+!
+!     initialize scratch arrays
+      call izero(idxkr12,2*nfpck12t)
+      call izero(indxb12,2*nfpck12t)
+      call izero(indxb34,2*nfpck34t)
+
+!     allocate reordered boson irrep array for indices k,l
+      call alloc(indxb34_reod,2,n2orbx,'idxb34_reod_geth2tx1')
+      if(spinfr.or.levyle.or.linear) 
+     & call alloc(orb_info_array,2,norbt,norbt,'idx34_orbinfo_geth2tx1')
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE_extra
+      call alloc(xsave,nclass*n2orbx,'xsave')
+#endif
+! 
+!     set orbital info array
+      if(spinfr.or.levyle.or.linear) call setorb_attrib(orb_info_array)
+
+C     read indices and boson irrep information
+
+C     a. I and J indices
+      CALL READI(LUINT,2*NFPCK12T,idxkr12)
+C     b. boson irrep for IJ indices
+      CALL READI(LUINT,2*NFPCK12T,indxb12)
+C     c. boson irrep for KL indices
+      CALL READI(LUINT,2*NFPCK34T,indxb34)
 C
       CLOSE (LUINT, STATUS = 'KEEP')
 C
-      NCLASS = NZ * NZ * NBSYM / NFSYM
 C
 C     Open integral files.
 C     --------------------
@@ -2281,21 +2433,44 @@ C     LUINT = 56 + IREPIJ, IREPIJ = 1,NFSYM are actually used
       IIKLB = 0
       DO IREPIJ = 1, NFSYM
          IKLB(IREPIJ) = IIKLB
-         IRECL = IRECLEN(NCLASS * NFPCK34 (IREPIJ), 0, 0)
+         IRECL = IRECLEN(NCLASS * NFPCK34(IREPIJ), 0, 0)
          IRECL = MAX(IRECL,IRECLEN(1,0,0))
          WRITE (FNAM,'(A4,I1)') '4IND',IREPIJ
          FNODE = LFNAM(FNAM)
          OPEN (LUINT+IREPIJ,FILE=FNODE,STATUS='OLD',
      &        ACCESS='DIRECT',RECL=IRECL)
-         IIKLB = IIKLB + NFPCK34 (IREPIJ)
+         IIKLB = IIKLB + NFPCK34(IREPIJ)
       END DO
 C
-C     Allocate memory for integrals (H2XY)
-C
+C     Allocate memory for integrals (H2XY) and initialize
       CALL MEMGET('REAL',KHMAT,N2ORBX*NCLASS,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KHMA2,N2ORBX*NCLASS,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KH2XY,N2ORBX*NCLASS,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KH2YX,N2ORBX*NCLASS,WORK,KFREE,LFREE)
+
+      call dzero(work(khmat),nclass*n2orbx)
+!     call dzero(work(khma2),nclass*n2orbx)
+      call dzero(work(kh2xy),nclass*n2orbx)
+      call dzero(work(kh2yx),nclass*n2orbx)
+
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
+      if(IPRINT.gt.20)then
+      write(lupri,'(2x,a)') ' (...H21TX1) idxkr12(1,*)'
+      write(lupri,'(2x,8i4)') (idxkr12(1,i),i=1,NFPCK12T)
+      write(lupri,'(2x,a)') ' (...H21TX1) idxkr12(2,*)'
+      write(lupri,'(2x,8i4)') (idxkr12(2,i),i=1,NFPCK12T)
+
+      write(lupri,'(2x,a)') ' (...H21TX1) indxb12(1,*)'
+      write(lupri,'(2x,8i4)') (indxb12(1,i),i=1,NFPCK12T)
+      write(lupri,'(2x,a)') ' (...H21TX1) indxb12(2,*)'
+      write(lupri,'(2x,8i4)') (indxb12(2,i),i=1,NFPCK12T)
+
+      write(lupri,'(2x,a)') ' (...H21TX1) indxb34(1,*)'
+      write(lupri,'(2x,8i4)') (indxb34(1,i),i=1,NFPCK34T)
+      write(lupri,'(2x,a)') ' (...H21TX1) indxb34(2,*)'
+      write(lupri,'(2x,8i4)') (indxb34(2,i),i=1,NFPCK34T)
+      end if
+#endif
 C
 C     ****************************
 C     *** Read integrals (x>y) ***
@@ -2313,20 +2488,31 @@ C
 C     Loop over records on file
 C     -------------------------
 C
-#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
-      write(6,*) 'nfpck12',nfpck12,nfpck12t
-      write(6,*) 'nfpck34',nfpck34,nfpck34t
-      call flshfo(6)
-#endif
       NXY = 0
       IUU = 0
+!
+!     offsets required for a spinfree MCSCF
+      NXYOFF  = 0
+
       DO 10 IREPXY = 1, NFSYM
          IREC = 0
+
          DO 20 IXY = 1, NFPCK12(IREPXY)
             IREC = IREC + 1
             NXY = NXY + 1
-            CALL GTXY(NXY,IX,IY,IXU,IYU,WORK(KDXKR12))
-            IREPIJB = IGETINT(WORK(KDXB12),NXY*2-1)
+            CALL GTXY(NXY,IX,IY,IXU,IYU,idxkr12)
+
+!           spinfree MCSCF - initially always multiply with the quaternion phase factor
+            set_qphaseFAC = .true.
+
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
+!           write(6,'(2x,a,2i4)') ' (...H21TX1) x and y: ',ix,iy
+!           write(6,'(2x,a,2i4)') ' (...H21TX1) active : ',ixu,iyu
+!           write(6,'(2x,a, i4)') ' (...H21TX1) NXY is     : ',NXY
+!           write(6,'(2x,a, i4)') ' (...H21TX1) IXY is     : ',IXY
+            write(6,'(2x,a,2i4)') ' (...H21TX1) NOSIM and NCSIM = ',
+     &                              NOSIM, NCSIM
+#endif
 C
 C           We assume it is a (gu|gg) or (gg|gg) integral
 C           transformation.
@@ -2346,11 +2532,10 @@ C              (1) calculate (pv|x~y~) P_{qv,xy} contribution
 C
 C           else:
 C              nothing (jump to 20)
+
+!           initialize
+            call dzero(work(khma2),nclass*n2orbx)
 C
-#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
-            write(6,*) 'ix,..',ix,iy,ixu,iyu
-            call flshfo(6)
-#endif
             IF (IXU .LT. 0 .AND. IYU .LT. 0) GO TO 20
 C
 C           If there are no orbital trial vectors we only need FQT.
@@ -2368,8 +2553,8 @@ C
      &           ERR=8000, IOSTAT=IOSVAL)
      &           (WORK(KHMA2+I-1),I=1,NKL*NCLASS)
 #if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
-            write(6,*) 'integrals...'
-            call output(work(khma2),1,nkl,1,nclass,nkl,nclass,1,lupri)
+!           write(6,*) ' full list of integrals (all classes) '
+!           call output(work(khma2),1,nkl,1,nclass,nkl,nclass,1,lupri)
 #endif
 C
 C           Reorder integrals to full matrix
@@ -2382,29 +2567,30 @@ C
                IF (IREPXY .EQ. JBTOF(IREPAB,1)) THEN
                   IREPABR = IREPABR + 1
                   DO IZ2 = 1, NZ
-                     IQ2 = IPQTOQ(IZ2,IREPAB)
 C
 C                    Transform symmetry packed
 C                    integrals to full matrix.
 C                    (take care of diff. integral transformations etc.)
 C
                      CALL INTB2X(WORK(KHMA2),IZ2,IREPABR,IREPAB,
-     &                    WORK(KHMAT),IREPXY,NKL)
+     &                           WORK(KHMAT),IREPXY,NKL)
 C                    CALL INTB2X(HT,IZ2,IREPABR,IREPAB,HX,IREPIJ,NKL)
 C
-C                    Transform boson-symmetry array to
-C                    full
-C
-C                    (FIXME: write me)
-C
-!                    IF (SPINFR) THEN
-!                       write(6,*) 'SPINFR not implemented in RGETH2TX1'
-!                       CALL QUIT('SPINFR not implemented in RGETH2TX1')
-!                    END IF
-C
+!
+!                     transform boson-symmetry array for index 3 and 4
+!                     do we also need to transform indxb12 ???
+                      if(spinfr.or.levyle.or.linear)then
+!                       initialize indxb34_reod array
+                        call izero(indxb34_reod,2*n2orbx)
+                        call int_irreps_b2x_2(irepxy,
+     &                                        indxb34_reod(1,1),
+     &                                        orb_info_array)
+                      end if
+!
                   END DO
                END IF
             END DO
+
 C
             IF (IXU .GT. 0 .AND. IYU .GT. 0) THEN
 C
@@ -2434,18 +2620,31 @@ C
                IF ( DOFQT ) THEN
 C
 C
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE_extra
+                  call dcopy(nclass*n2orbx,work(khmat),1,xsave,1)
+#endif
+
 C                 Transform to Dirac (NZ,3) format
 C                 --------------------------------
 C
-                  CALL CL2NZ3(WORK(KHMAT),WORK(KHMA2),N2ORBX,IREPXY,
-     &                 IREPIJB,WORK(KDXB34),IKLB)
-C                 CALL CL2NZ3(VCL,VNZ3,NELEM,IREPIJ,IREPIJB,IREPKLB,IKLB)
+!                                                vnz3
+                  call cl2nz3(work(khmat),work(khma2),n2orbx,
+     &                        irepxy,indxb12(1,ixy+nxyoff),
+     &                        indxb34_reod(1,1),set_qphaseFAC)
+
+!                 quaternion phase factor has been multiplied into 
+!                 work(khmat) and work(khma2), respectively. in order to
+!                 avoid a double counting of phase factor
+!                 multiplications in the orbital-trial vector part 
+!                 the control flag is set to .false.
+!test             set_qphaseFAC = .false.
+                  set_qphaseFAC = .false.
 C
 C                 Get (gu) and (ug) blocks
 C                 -------------------------------
 C
                   CALL X2GU(WORK(KHMA2),WORK(KH2XY),WORK(KH2YX),
-     &                 DUMMY,DUMMY,IXU .EQ. IYU, DOFQT, .FALSE.)
+     &                      DUMMY,DUMMY,IXU .EQ. IYU, DOFQT, .FALSE.)
 C                 CALL X2GU(HX,H2XY,H2YX,H2AC,IUU,ONLYXY,DOFQ,DOH2AC)
 C
 C                 Calculate FQT:
@@ -2458,9 +2657,25 @@ C                 the auxiliary Fock matrix FQT.
 C
                   DO ICSIM = 1, NCSIM
                      CALL RADDFQ(FQT(1,1,1,ICSIM),
-     &                    WORK(KH2XY),WORK(KH2YX),PVT(1,1,1,1,1,ICSIM),
-     &                    IUU,IXU,IYU,IREPXY,IPRINT)
+     &                           WORK(KH2XY),WORK(KH2YX),
+     &                           PVT(1,1,1,1,1,ICSIM),
+     &                           IUU,IXU,IYU,IREPXY,IPRINT)
                   END DO
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE_extra
+                  if (ncsim .gt. 0 .and. nosim .gt. 0) then
+                  do ii = 1,nclass
+                     write(lupri,*) 'Test output HMAT mod class',ii
+                  call output(work(khmat+(ii-1)*n2orbx),1,norbt,1,norbt,
+     &                        norbt,norbt,1,lupri)
+                     write(lupri,*) 'Test output HMAT orig class',ii
+                  call output(xsave(1+(ii-1)*n2orbx),1,norbt,1,norbt,
+     &                        norbt,norbt,1,lupri)
+                  end do
+                      iprint = 999
+                      iprxrs = 999
+                  end if
+                  call dcopy(nclass*n2orbx,xsave,1,work(khmat),1)
+#endif
                END IF
 C
                IF ( DOFQX .OR. DOH2ACX ) THEN
@@ -2474,9 +2689,6 @@ c                 quaternion 1.
 C
 C                 Note, that index 2 is always (gg).
 C
-                  call flshfo(6)
-                  IREP = JSYMOP - 1
-C
 C                 e-e and e-p trial vectors
 C                 -------------------------
 C
@@ -2486,36 +2698,37 @@ C                    One-index transform integrals
 C                    -----------------------------
 C
                      CALL RGETH2TX2(I,BEVEC,BPVEC,IBEVC,IBPVC,IBTYP,
-     &                    WORK(KHMAT),WORK(KH2XY),JXOPE,JXOPP,
-     &                    IREPXY,NKL,.TRUE.,IXU .EQ. IYU,
-     &                    WORK(KFREE),LFREE)
+     &                              WORK(KHMAT),WORK(KH2XY),JXOPE,JXOPP,
+     &                              IREPXY,NKL,.TRUE.,IXU .EQ. IYU,
+     &                              WORK(KFREE),LFREE)
 C
 C
 C                    Transform to Dirac (NZ,3) format
 C                    --------------------------------
 C
-                     CALL CL2NZ3(WORK(KH2XY),WORK(KHMA2),N2ORBX,IREPXY,
-     &                    IREPIJB,WORK(KDXB34),IKLB)
-C                    CALL CL2NZ3(VCL,VNZ3,NELEM,IREPIJ,IREPIJB,IREPKLB,IKLB)
+!                                                   vnz3
+                    call cl2nz3(work(kh2xy),work(khma2),n2orbx,
+     &                          irepxy,indxb12(1,ixy+nxyoff),
+     &                          indxb34_reod(1,1),set_qphaseFAC)
 C
 C
-C                    Get (gu) and (ug) blocks + H2ACX
-C                    --------------------------------
+C                   Get (gu) and (ug) blocks + H2ACX
+C                   --------------------------------
 C
-                     CALL X2GU(WORK(KHMA2),WORK(KH2XY),WORK(KH2YX),
-     &                    H2ACX(1,1,1,1,1,I),
-     &                    IUU,IXU .EQ. IYU, DOFQX, DOH2ACX)
-C                    CALL X2GU(HX,H2XY,H2YX,H2AC,IUU,ONLYXY,DOFQ,DOH2AC)
+                    CALL X2GU(WORK(KHMA2),WORK(KH2XY),WORK(KH2YX),
+     &                        H2ACX(1,1,1,1,1,I),
+     &                        IUU,IXU .EQ. IYU, DOFQX, DOH2ACX)
+C                   CALL X2GU(HX,H2XY,H2YX,H2AC,IUU,ONLYXY,DOFQ,DOH2AC)
 C
 C
-C                    Calculate ``matrix-multiply'' part of FQX:
-C                    ------------------------------------------
+C                   Calculate ``matrix-multiply'' part of FQX:
+C                   ------------------------------------------
 C
-                     IF ( DOFQX ) THEN
-                        CALL RADDFQ(FQX(1,1,1,I),
-     &                       WORK(KH2XY),WORK(KH2YX),PV,
-     &                       IUU,IXU,IYU,IREPXY,IPRINT)
-                     END IF
+                    IF ( DOFQX ) THEN
+                       CALL RADDFQ(FQX(1,1,1,I),
+     &                             WORK(KH2XY),WORK(KH2YX),PV,
+     &                             IUU,IXU,IYU,IREPXY,IPRINT)
+                    END IF
 C
                   END DO
 C
@@ -2551,8 +2764,6 @@ C              (3.1) One-index transform integrals.
 C
 C              Note, that index 2 is always (gg).
 C
-               IREP = JSYMOP - 1
-C
 C              Loop over e-e and e-p trial vectors
 C              -----------------------------------
 C
@@ -2562,26 +2773,24 @@ C                 One index transform integrals
 C                 -----------------------------
 C
                   CALL RGETH2TX2(I,BEVEC,BPVEC,IBEVC,IBPVC,IBTYP,
-     &                 WORK(KHMAT),WORK(KH2XY),JXOPE,JXOPP,
-     &                 IREPXY,NKL,.FALSE.,.FALSE.,
-     &                 WORK(KFREE),LFREE)
+     &                           WORK(KHMAT),WORK(KH2XY),JXOPE,JXOPP,
+     &                           IREPXY,NKL,.FALSE.,.FALSE.,
+     &                           WORK(KFREE),LFREE)
 C
 C
 C                 Transform to Dirac (NZ,3) format
 C                 --------------------------------
 C
-                  CALL CL2NZ3(WORK(KH2XY),WORK(KHMA2),N2ORBX,IREPXY,
-     &                 IREPIJB,WORK(KDXB34),IKLB)
-C                 CALL CL2NZ3(VCL,VNZ3,NELEM,IREPIJ,IREPIJB,IREPKLB,IKLB)
+!                                                  vnz3
+                  call cl2nz3(work(kh2xy),work(khma2),n2orbx,
+     &                        irepxy,indxb12(1,ixy+nxyoff),
+     &                        indxb34_reod(1,1),set_qphaseFAC)
 C
 C
 C                 Get (uu) block
 C                 --------------
 C
-C                 (use the H2AC-branch in X2GU)
-C
-                  KH2VP = KH2XY
-                  CALL X2UU(WORK(KHMA2),WORK(KH2VP))
+                  CALL X2UU(WORK(KHMA2),WORK(KH2XY))
 C                 CALL X2UU(HX,H2XY)
 C
 C
@@ -2589,15 +2798,17 @@ C                 Add contribution to FQX
 C                 -----------------------
 C
                   CALL RADDFQX(FQX(1,1,1,I),
-     &                 WORK(KH2VP),PV,
-     &                 IX,IY,IREPXY,IPRINT)
+     &                         WORK(KH2XY),PV,
+     &                         IX,IY,IREPXY,IPRINT)
 C
                END DO
 C
             END IF
 C
- 20      CONTINUE
- 10   CONTINUE
+ 20      CONTINUE    ! DO 20 IXY = 1, NFPCK12(IREPXY)
+         NXYOFF  = NXYOFF  + NFPCK12(IREPXY)
+ 10   CONTINUE   ! DO 10 IREPXY = 1, NFSYM
+!           if (ncsim .gt. 0 .and. nosim .gt. 0)stop 'end of test'
 C
 C     Close integral files
 C     ---------------------
@@ -2607,6 +2818,11 @@ C
       END DO
 C
       CALL MEMREL('RGETH2TX1',WORK,KWORK,KWORK,KFREE,LFREE)
+      call dealloc(indxb34_reod)
+      if(spinfr.or.levyle.or.linear) call dealloc(orb_info_array)
+#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE_extra
+      call dealloc(xsave)
+#endif
 C
 C     Symmetrize H2ACX matrices
 C     -------------------------
@@ -2656,7 +2872,7 @@ C     Read errors
 C
  8000 CONTINUE
       WRITE(LUPRI,'(/A)')
-     &     '*** ERROR in RGETH2 *** Read error'
+     &     '*** ERROR in RGETH2TX1 *** Read error'
  8100 CONTINUE
       WRITE(LUPRI,'(1X,A,I4)')
      &     'IREPIJ = ',IREPIJ,
@@ -2666,7 +2882,8 @@ C
      &     'IX     = ',IX,
      &     'IY     = ',IY,
      &     'NXY    = ',NXY
-      CALL QUIT('*** ERROR in RGTETH2 *** Error reading integral file')
+      CALL QUIT('*** ERROR in RGTETH2TX1 *** Error reading 
+     &           integral file')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gtxy */
@@ -2695,6 +2912,7 @@ C     Get X and Y indices:
 C
       IX = IDXKR12(1,IXY)
       IY = IDXKR12(2,IXY)
+!     write(6,*) 'gtxy: kramers indices 1,2',ix,iy
 C
 C
       IX = IDXT2G(IX,1)
@@ -2704,7 +2922,6 @@ C
       IXU = IDXG2U(IX)
       IYU = IDXG2U(IY)
 C
-c     write(6,*) 'gtxy(2): ',ixu,iyu
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2760,6 +2977,7 @@ C
 #include "consts.h"
 C
 #include "dcborb.h"
+#include "dcbopt.h"
 #include "dgroup.h"
 C
       DIMENSION H2AC(NASHT,NASHT,NNASHX,NZ,3,*)
@@ -2795,6 +3013,7 @@ C
 C
 C                    (kL|iJ) + (iJ|kL) = (kL|iJ) - (iJ|lK)
 C
+                     if(.not.spinfr_krmc)then
                      H2AC(K,L,NIJ,1,2,IN) =
      &                    H2AC(K,L,NIJ,1,2,IN)
      &                    - H2ACO(I,J,NKL,1,2)
@@ -2866,6 +3085,7 @@ C
      &                       - H2ACO(I,J,NKL,4,2)
 C
                      END IF
+                     endif
                   END DO
 C
 C                 The K>L part:
@@ -2882,6 +3102,8 @@ C
                      H2AC(K,L,NIJ,1,1,IN) =
      &                    H2AC(K,L,NIJ,1,1,IN) +
      &                    H2ACO(I,J,NKL,1,1)
+
+                     if(.not.spinfr_krmc)then
 C
 C                    (kL|iJ) + (iJ|kL)
 C
@@ -2956,6 +3178,7 @@ C
      &                       H2ACO(J,I,NKL,4,1)
 C
                      END IF
+                     endif
 C
                   END DO
                END DO

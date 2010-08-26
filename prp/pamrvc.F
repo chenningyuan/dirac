@@ -4319,19 +4319,25 @@ C        no positronic rotations (and vice versa). However, it's just simpler
 C        to let the second index run over all orbitals.
 C
          IF(NS.NE.0.AND.NI.NE.0) THEN
-           IF(IOPT.GT.0) THEN
+           iopt_spinfree = IOPT
+#if defined MOD_MCSCF_spinfree
+           if(spinfr) iopt_spinfree = 1
+#endif
+!          IF(IOPT.GT.0) THEN
+           IF(iopt_spinfree.GT.0) THEN
              CALL QBTRANS(JREP,'AOMO','S',D0,
      &           NFBAS(I1,0),NFBAS(I2,0),NS,NI,
      &           FAO(I2BASX(I1,I2)+1),NTBAS(0),NTBAS(0),NZ,
      &           IPQTOQ(1,IREP),
-     &           FMO(IS,II,IOPT),NORBT,NORBT,1,IPQTOQ(IOPT,IREP),
+     &           FMO(IS,II,iopt_spinfree),NORBT,NORBT,1,
+     &           IPQTOQ(iopt_spinfree,IREP),
      &           CMO(JS),NFBAS(I1,0),NORB(I1),NZ,IPQTOQ(1,0),
      &           IBEIG(IS),
      &           CMO(JI),NFBAS(I2,0),NORB(I2),NZ,IPQTOQ(1,0),
      &           IBEIG(II),
      &           WORK(KFREE),LFREE,IPRXRS)
              DO IZ = 1,NZ
-             IF(IZ.NE.IOPT) THEN
+             IF(IZ.NE.iopt_spinfree) THEN
                CALL DZERO(FMO(1,1,IZ),N2ORBX)
              ENDIF  
              ENDDO

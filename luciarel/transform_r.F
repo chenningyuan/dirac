@@ -2122,17 +2122,34 @@ C
 C
               CALL MEMMAR_I8(KINTI12,LEN_ALL_INT,'ADDL  ',2,'XTIT12')
 C
-C             parallel run - broadcast integrals from MASTER if required
-C
-              IF( IIOMOD_REL .eq. 1 .or. MYPROC .eq. MASTER )THEN
-C
-                 CALL RGETH21_LUCIAREL(.FALSE.,.TRUE.,DUMMY,DUMMY,
-     &                                 WORK(KINTI12),NTEST)
-              END IF
-C             ^ IIOMOD_REL == 1 or MYPROC ==. MASTER
+              if(iiomod_rel.eq.1 .or. myproc.eq.master)then
+
+!               get dimensions for scratch matrices
+                call rgeth2_dim(ndim_ij,ndim_kl,ndim_h12_tmp)
+
+                call memmar(kdumx12,idum,'MARK  ',idum,'geth12')
+!               allocate scratch matrices
+                call memmar(khmat,ndim_h12_tmp,'ADDL  ',2,'hmat12')
+                call memmar(kh2xy,ndim_h12_tmp,'ADDL  ',2,'h12xy ')
+                call memmar(kh2yx,ndim_h12_tmp,'ADDL  ',2,'h12yx ')
+
+                call memmar(kdxb12, 2*ndim_ij,'ADDL  ', 1,'idxb12')
+                call memmar(kdxb34, 2*ndim_kl,'ADDL  ', 1,'idxb34')
+                call memmar(kdxkr12,2*ndim_ij,'ADDL  ', 1,'idxk12')
+
+!               get integrals on work(kinti12)
+                call rgeth21(.false.,.true.,dummy,dummy,work(kinti12),
+     &                       work(khmat),work(kh2xy),work(kh2yx),
+     &                       work(kdxkr12),work(kdxb12),work(kdxb34),
+     &                       ntest,luwrt)
+
+!               release scratch space
+                call memmar(kdumx12,idum,'FLUSM ',idum,'geth12')
+              end if
+!             ^ iiomod_rel == 1 or myproc == master
 #if defined (VAR_MPI2)
               IF( IIOMOD_REL .eq. 0 )THEN
-*               ... slaves get the integrals
+*               ... co-workers get the integrals
                 LEN_INT_BCAST = 0
 #if defined (INT_STAR8)
                 LEN_INT_BCAST = LEN_ALL_INT

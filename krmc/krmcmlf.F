@@ -373,6 +373,7 @@ C
 C
 #include "dcborb.h"
 #include "dgroup.h"
+#include "dcbham.h"
 C
       DIMENSION VDUUUU(NASHT,NASHT,NNASHX,NZ,*)
       DIMENSION VMUUUU(2*NASHT,2*NASHT,2*NASHT,2*NASHT,*)
@@ -888,6 +889,14 @@ C
             END DO
          END DO
       END DO
+C
+!     remove integrals that should be zero in spinfree calculations but
+!     are not due to numerical noise
+      if(spinfr.or.levyle)then
+        do i = 2,3
+          call dzero(VDUUUU(1,1,1,1,i),NASHT*NASHT*NNASHX*NZ)
+        end do
+      end if
 C
       IF (IPRINT .GE. 30) THEN
          CALL HEADER('VUUUU matrix in Dirac (NZ,3) format',-1)
