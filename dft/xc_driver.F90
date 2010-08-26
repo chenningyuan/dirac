@@ -593,9 +593,9 @@ contains
       call dzero(fmat, mat_dim*mat_dim*nz)
 #endif
 
-      !if (do_overlap_diagnostic) then
-      !   call overlap_diagnostic_init()
-      !end if
+      if (do_overlap_diagnostic) then
+         call overlap_diagnostic_init()
+      end if
 
       call loop_over_batches()
 
@@ -996,9 +996,9 @@ contains
       end if
       time_density = time_density + second() - time_density_start
 
-      !if (do_overlap_diagnostic) then
-      !   call integrate_lambda_matrix(rw(ipoint), ao, buffer)
-      !end if
+      if (do_overlap_diagnostic) then
+         call integrate_lambda_matrix(rw(ipoint), ao, buffer)
+      end if
 
       if (r_0(1) > dft_cfg_dfthr0) then
          nr_points_used = nr_points_used + 1
