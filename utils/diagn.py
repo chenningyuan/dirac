@@ -13,19 +13,27 @@
 #        echo 'can not be determined, readelf not present'
 
 
-import re, sys, os
+import re, sys, os, subprocess
 
 dirac_exe="dirac.x"
 
 if not os.path.isfile(dirac_exe):
-   print 'executable dirac.x does not exist! Exit'
+   print '\nExecutable dirac.x does not exist for analyze! Exit\n'
    sys.exit(-1)
 
-print 'analyzing static allocation in the dirac.x executable'
-#cmd = 'size '+dirac_exe+' 2> /dev/null | grep dirac.x | awk "{printf $$3/(1024*1024)}"; echo " MB" || echo "can not be determined"'
-cmd = 'size '+dirac_exe+' 2> /dev/null | grep dirac.x || echo "can not be determined"'
-status = os.system(cmd)
-#status = os.popen(cmd)
-#print status
 
+command = "size "+dirac_exe+" 2> /dev/null | grep dirac.x || echo 'can not be determined' "
+process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+istat=os.waitpid(process.pid, 0)
+output = process.stdout.read().strip()
+
+#process the output now - pick up the third string #
+#print output
+#print (output.split()[3])/(1024*1024)
+#print float(output.split()[2])/(1024*1024)
+
+if istat[1]==0 :
+  print '\nTotal size of all static allocations in the dirac.x executable:',float(output.split()[2])/(1024*1024),'MB'
+else :
+  print 'can not determine, exit'; sys.exit('exit!')
 
