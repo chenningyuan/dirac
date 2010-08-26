@@ -21,19 +21,43 @@ if not os.path.isfile(dirac_exe):
    print '\nExecutable dirac.x does not exist for analyze! Exit\n'
    sys.exit(-1)
 
-
+##### Process size ######
 command = "size "+dirac_exe+" 2> /dev/null | grep dirac.x || echo 'can not be determined' "
 process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
 istat=os.waitpid(process.pid, 0)
 output = process.stdout.read().strip()
 
-#process the output now - pick up the third string #
-#print output
-#print (output.split()[3])/(1024*1024)
-#print float(output.split()[2])/(1024*1024)
-
 if istat[1]==0 :
   print '\nTotal size of all static allocations in the dirac.x executable:',float(output.split()[2])/(1024*1024),'MB'
 else :
-  print 'can not determine, exit'; sys.exit('exit!')
+  print 'can not determine'; sys.exit('exit!')
+
+#### Process readelf ####
+
+print 'analyzing individual objects...'
+
+command = " readelf -s "+dirac_exe+" 2> /dev/null || echo 'can not be determined, readelf not present'"
+process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+#p = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True).stdout
+
+#while 1:
+#  line = p.readline()
+#  print line
+
+#for line in p.read():
+#  print line
+
+#output = process.stdout.read()
+output = process.stdout.read().split()
+print output[1]
+for word in output:
+  print word
+
+#object_line=[[]]
+#for line in output:
+#for line in process.stdout.read().strip():
+#for line in process.stdout.read().strip():
+ #line = line.strip()
+ #object_line.append(line)
+#  print line
 
