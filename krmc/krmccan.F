@@ -451,6 +451,7 @@ C
 C
 #include "dcborb.h"
 #include "dcbopt.h"
+#include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "maxorb.h"
