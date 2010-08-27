@@ -75,7 +75,7 @@ data_as_lists.sort(key=lambda data_as_lists:data_as_lists[2:3], reverse=True)
 
 
 # selected printing
-i=1;
+i=1; imax=600
 for el in data_as_lists : 
   #print el.split()[1]
   # z=el
@@ -83,14 +83,13 @@ for el in data_as_lists :
   #print len(el),z[-2: :-1]
   #print el[-1: :-5]
   if (len(el) >= 8) :
-    # avoid printing duplicities #
-    if (i>1 and el[2:3]==el1[2:3] and el[7:8]==el1[7:8] and i<=200 ):
+    # avoid printing duplicities, limits the size of the output by imax #
+    if (i>1 and el[2:3]==el1[2:3] and el[7:8]==el1[7:8] and i<=imax ):
        #obj_size=(str(el[2:3]));
-       print_string=str(el[2:3])+" kB  "+str(el[7:8])
-       #print " %f   " % el[2:3] % " %s " % el[7:8]
+       #print_string=str(el[2:3])+" kB  "+str(el[4:5])+str(el[3:4])+str(el[7:8])
+       print_string=str(el[2:3])+" kB  "+str(el[7:8])+"----"+str(el[3:4])
        #print " %s   "%el[2:3] % " %s " % el[7:8]
-       #print " %s kB   "%el[2:3]
-       #print "    %s "%el[7:8] 
        print "* %s "%print_string
+       #print el
     el1=el
     i=i+1 # increase counter
