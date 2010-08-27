@@ -1,6 +1,6 @@
 #! /usr/bin/env python
 #
-# Script aimed to replace this makefile command by python equivalent
+# Script aimed to replace this old makefile command by wise python equivalent
 #================================================================================
 #        @echo -e "\tAnalyzing the dirac.x executable "
 #        @echo -e "Size of all static allocations: \c "; \
@@ -11,6 +11,10 @@
 #           todo: try to make it universal for all architectures
 #        @readelf -s $(TARGET) 2> /dev/null | awk --non-decimal-data '{printf "%12.3f %s    %s\n",(($$3)+0)/(1024),"kB",$$8}' | sort -n -r -u || \
 #        echo 'can not be determined, readelf not present'
+#================================================================================
+#
+# Script depends on linux commands 'size' and 'readelf'.
+#
 #
 #   Written by Miro Ilias, Banska Bystrica, 2010
 #
@@ -40,13 +44,13 @@ istat=os.waitpid(process.pid, 0)
 output = process.stdout.read().strip()
 
 if istat[1]==0 :
-  print '\nTotal size of all static allocations in the dirac.x executable:',float(output.split()[2])/(1024*1024),'MB'
+  print '\nTotal size of all static allocations in the dirac.x executable:',float(output.split()[2])/(1024*1024),'MB ( what makes ',float(output.split()[2])/(1024), 'kB )'
 else :
   print 'can not determine'; sys.exit('exit!')
 
 #### Process readelf ####
 
-print 'analyzing individual objects...'
+print 'Sizes of  individual objects:'
 
 command = " readelf -s "+dirac_exe+" 2> /dev/null || echo 'can not be determined, readelf not present'"
 process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
@@ -59,28 +63,34 @@ data_as_lists = [ line.strip().split() for line in output ]  ## convert to a lis
 for line in data_as_lists:
    numstr=string.join(line[2:3]); #print 'numstr=',numstr
    decstr=hex2dec(numstr);       # print 'decstr=',decstr
-   # replace hexadecimal value with decimal value (not string, rather integer)
+   # replace hexadecimal value with decimal value (not string, rather float)
    #line.insert(3,str(decstr))
-   line.insert(3,int(decstr))
+   #line.insert(3,int(decstr))
+   line.insert(3, (float(decstr)/1024) )
    del line[2:3] # insert and remove ...
 
-#print data_as_lists[1:2][1:5]
-#print data_as_lists[1:1,1:5]
 
-#### sort according to the size of object ####
-data_as_lists.sort(key=lambda data_as_lists:data_as_lists[2:3], reverse=True)  
+#### sort according to the size of the object ####
+data_as_lists.sort(key=lambda data_as_lists:data_as_lists[2:3], reverse=True)
 
 
-for el in data_as_lists : ## print each item in the list
+# selected printing
+i=1;
+for el in data_as_lists : 
   #print el.split()[1]
   # z=el
   #print len(el),el
   #print len(el),z[-2: :-1]
   #print el[-1: :-5]
   if (len(el) >= 8) :
-    #print el[2:3], el[7:8]
-    #if e[2:3].isdigit():
-    #  print e[2:3]
-    print el[2:3], el[7:8]
-     #print el
-
+    # avoid printing duplicities #
+    if (i>1 and el[2:3]==el1[2:3] and el[7:8]==el1[7:8] and i<=200 ):
+       #obj_size=(str(el[2:3]));
+       print_string=str(el[2:3])+" kB  "+str(el[7:8])
+       #print " %f   " % el[2:3] % " %s " % el[7:8]
+       #print " %s   "%el[2:3] % " %s " % el[7:8]
+       #print " %s kB   "%el[2:3]
+       #print "    %s "%el[7:8] 
+       print "* %s "%print_string
+    el1=el
+    i=i+1 # increase counter
