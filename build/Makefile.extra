@@ -152,6 +152,8 @@ prof: $(OBJ:.o=.p)
 ###############################################################################
 dgn:
 	@utils/diagn.py
+diagnostic:
+	@utils/diagn.py
 
 #miro: -DNO_SF_QUIT is only for gp/gptrygve.F to ensure no segm.fault quitting
 gp/gptrygve.p : gp/gptrygve.F
