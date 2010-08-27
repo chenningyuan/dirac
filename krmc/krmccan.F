@@ -559,6 +559,8 @@ C
 C     Calculate FD
 C
       IF (NASHT .GT. 0) CALL DAXPY(N2ORBXQ,D1,WORK(KFV),1,WORK(KFD),1)
+
+      CALL MEMREL('RKRMCCNO.after full FD',WORK,KFV,KFV,KFREE,LFREE)
 C
       IF (TRTOCO) THEN
 C
@@ -589,6 +591,25 @@ C
      &                  NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
          ENDDO
       END IF
+!
+      CALL MEMGET('REAL',kibeig,norbt,WORK,KFREE,LFREE)
+
+!     read symmetry informations for orbitals from file KRMCSCF
+!     for the two cases that are currently implemented:
+ 
+!     a. spinfree MCSCF
+      if(spinfr_krmc)then
+        rewind(lukrmc)
+        call ireakrmc(lukrmc,'IBEIG   ',work(kibeig),norbt)
+!     b. MCSCF in linear symmetry
+      else if(opt_chckjz)then
+        rewind(lukrmc)
+        call ireakrmc(lukrmc,'MJVEC   ',work(kibeig),norbt)
+!     c. initialize to 0
+      else
+        call izero(work(kibeig),norbt)
+      end if
+
 C
 C     3. Diagonalize Fock matrix 
 C     --------------------------
@@ -609,8 +630,8 @@ C        ... initialize
 C
 C        extract p-p part of WORK(KFD)
 C
-         CALL MATGAT(WORK(KFD),NORBT,NORBT,WORK(KFDP),NPSHT,NPSHT,
-     &               IDXP2G,NZ)
+         CALL MATGAT_symm(WORK(KFD),NORBT,NORBT,WORK(KFDP),NPSHT,NPSHT,
+     &                    IDXP2G,work(kibeig),NZ)
 C
 C        diagonalize
 C
@@ -619,8 +640,8 @@ C
 C
 C        insert new p-p matrix block into complete transformation matrix
 C
-         CALL MATSCT(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCP),
-     &               NPSHT,NPSHT,IDXP2G,NZ)
+         CALL MATSCT_symm(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCP),
+     &                    NPSHT,NPSHT,IDXP2G,work(kibeig),NZ)
 C
          CALL MEMREL('RKRMCCNO.after p-p',WORK,1,KFDP,KFREE,LFREE)
       END IF
@@ -641,8 +662,8 @@ C        ... initialize
 C
 C        extract i-i part of WORK(KFD)
 C
-         CALL MATGAT(WORK(KFD),NORBT,NORBT,WORK(KFDI),NISHT,NISHT,
-     &               IDXI2G,NZ)
+         CALL MATGAT_symm(WORK(KFD),NORBT,NORBT,WORK(KFDI),NISHT,NISHT,
+     &                    IDXI2G,work(kibeig),NZ)
 C
 C        diagonalize
 C
@@ -651,8 +672,8 @@ C
 C
 C        insert new i-i matrix block into complete transformation matrix
 C
-         CALL MATSCT(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCI),
-     &               NISHT,NISHT,IDXI2G,NZ)
+         CALL MATSCT_symm(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCI),
+     &                    NISHT,NISHT,IDXI2G,work(kibeig),NZ)
 C
          CALL MEMREL('RKRMCCNO.after i-i',WORK,1,KFDI,KFREE,LFREE)
       END IF
@@ -673,8 +694,8 @@ C        ... initialize
 C
 C        extract s-s part of WORK(KFD)
 C
-         CALL MATGAT(WORK(KFD),NORBT,NORBT,WORK(KFDVI),NVSHT,
-     &               NVSHT,IDXV2G,NZ)
+         CALL MATGAT_symm(WORK(KFD),NORBT,NORBT,WORK(KFDVI),NVSHT,
+     &                    NVSHT,IDXV2G,work(kibeig),NZ)
 C
 C        diagonalize
 C
@@ -684,8 +705,8 @@ C
 C
 C        insert new s-s matrix block into transformation matrix
 C
-         CALL MATSCT(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCVI),
-     &               NVSHT,NVSHT,IDXV2G,NZ)
+         CALL MATSCT_symm(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCVI),
+     &                    NVSHT,NVSHT,IDXV2G,work(kibeig),NZ)
 C
          CALL MEMREL('RKRMCCNO.after v-v',WORK,1,KFDVI,KFREE,LFREE)
       END IF
@@ -703,8 +724,8 @@ C
 C
 C        insert d-d matrix block into complete transformation matrix
 C
-         CALL MATSCT(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCDL),
-     &               NDSHT,NDSHT,IDXD2G,NZ)
+         CALL MATSCT_symm(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCDL),
+     &                    NDSHT,NDSHT,IDXD2G,work(kibeig),NZ)
 C
          CALL MEMREL('RKRMCCNO.after d-d',WORK,1,KEIGVCDL,KFREE,LFREE)
       END IF
@@ -722,8 +743,8 @@ C
 C
 C        insert a-a matrix block into complete transformation matrix
 C
-         CALL MATSCT(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCA),
-     &               NASHT,NASHT,IDXU2G,NZ)
+         CALL MATSCT_symm(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCA),
+     &                    NASHT,NASHT,IDXU2G,work(kibeig),NZ)
 C
          CALL MEMREL('RKRMCCNO.after a-a',WORK,1,KEIGVCA,KFREE,LFREE)
       END IF

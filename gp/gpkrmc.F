@@ -1614,6 +1614,36 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MATGAT_symm(AMAT,NRA,NCA,BMAT,NRB,NCB,IDX,IBEIG,NZ)
+C***********************************************************************
+C
+C     Construct BMAT from AMAT elements using IDX and ibeig arrays.
+C
+C     Input:
+C
+C     Output:
+C
+C     Written by S. Knecht - August 2010
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION AMAT(NRA,NCA,NZ), BMAT(NRB,NCB,NZ), IDX(*), IBEIG(*)
+C
+      DO IZ = 1, NZ
+         DO J = 1, NCB
+            JJ = IDX(J)
+            DO 10 K = 1, NRB
+               KK = IDX(K)
+               if(IBEIG(kk) .ne. IBEIG(JJ)) goto 10
+               BMAT(K,J,IZ) = AMAT(KK,JJ,IZ)
+ 10         continue
+         END DO
+      END DO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck matgatx */
       SUBROUTINE MATGATX(AMAT,NDIMA,BMAT,NDIMB,ISKIP,NZ)
 C***********************************************************************
@@ -1665,6 +1695,35 @@ C
                KK = IDX(K)
                AMAT(KK,JJ,IZ) = BMAT(K,J,IZ)
             END DO
+         END DO
+      END DO
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE MATSCT_symm(AMAT,NRA,NCA,BMAT,NRB,NCB,IDX,ibeig,NZ)
+C***********************************************************************
+C
+C     Construct AMAT from BMAT elements using IDX and ibeig.
+C
+C     Input:
+C
+C     Output:
+C
+C     Written by S. Knecht - August 2010
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION AMAT(NRA,NCA,NZ), BMAT(NRB,NCB,NZ), IDX(*), ibeig(*)
+C
+      DO IZ = 1, NZ
+         DO J = 1, NCB
+            JJ = IDX(J)
+            DO 10 K = 1, NRB
+               KK = IDX(K)
+               if(ibeig(KK).ne.ibeig(jj)) goto 10
+               AMAT(KK,JJ,IZ) = BMAT(K,J,IZ)
+ 10         continue
          END DO
       END DO
       END
