@@ -15,6 +15,8 @@
 #
 # Script depends on linux commands 'size' and 'readelf'.
 #
+# TODO: better formatting, count all objects/data sizes
+#
 #
 #   Written by Miro Ilias, Banska Bystrica, 2010
 #
@@ -24,8 +26,9 @@
 import string, re, sys, os, subprocess
 
 #
-def hex2dec(s):
 # return the integer value of a hexadecimal string s, or return zero if string is wrong
+#
+def hex2dec(s):
   if  re.match("0x[0-9a-fA-F]+$", s) or re.match("[0-9]+$", s):
    return int(s, 16)
   else :  # no proper hex number - return 0
@@ -44,7 +47,8 @@ istat=os.waitpid(process.pid, 0)
 output = process.stdout.read().strip()
 
 if istat[1]==0 :
-  print '\nTotal size of all static allocations in the dirac.x executable:',float(output.split()[2])/(1024*1024),'MB ( what makes ',float(output.split()[2])/(1024), 'kB )'
+  print '\nTotal size of all static allocations in the dirac.x executable:\n ',\
+  float(output.split()[2])/(1024*1024),'MB ( what makes ',float(output.split()[2])/(1024), 'kB )'
 else :
   print 'can not determine'; sys.exit('exit!')
 
@@ -58,37 +62,28 @@ process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
 output = process.stdout.read().splitlines(False)
 
 ### substitute strings-hex numbers by converted decimal numbers
-
 data_as_lists = [ line.strip().split() for line in output ]  ## convert to a list of lists
 for line in data_as_lists:
-   numstr=string.join(line[2:3]); #print 'numstr=',numstr
-   decstr=hex2dec(numstr);       # print 'decstr=',decstr
-   # replace hexadecimal value with decimal value (not string, rather float)
-   #line.insert(3,str(decstr))
-   #line.insert(3,int(decstr))
-   line.insert(3, (float(decstr)/1024) )
-   del line[2:3] # insert and remove ...
-
+  if (len(line) >= 8) :
+     numstr=string.join(line[2:3]); #print 'numstr=',numstr
+     decstr=hex2dec(numstr);       # print 'decstr=',decstr
+     # replace hexadecimal value with decimal value (not string, rather float)
+     #line.insert(3,str(decstr))
+     #line.insert(3,int(decstr))
+     line.insert(3, (float(decstr)/1024) )
+     del line[2:3] # insert and remove ...
 
 #### sort according to the size of the object ####
 data_as_lists.sort(key=lambda data_as_lists:data_as_lists[2:3], reverse=True)
 
-
 # selected printing
 i=1; imax=600
 for el in data_as_lists : 
-  #print el.split()[1]
-  # z=el
-  #print len(el),el
-  #print len(el),z[-2: :-1]
-  #print el[-1: :-5]
   if (len(el) >= 8) :
     # avoid printing duplicities, limits the size of the output by imax #
     if (i>1 and el[2:3]==el1[2:3] and el[7:8]==el1[7:8] and i<=imax ):
        #obj_size=(str(el[2:3]));
-       #print_string=str(el[2:3])+" kB  "+str(el[4:5])+str(el[3:4])+str(el[7:8])
        print_string=str(el[2:3])+" kB  "+str(el[7:8])+"----"+str(el[3:4])
-       #print " %s   "%el[2:3] % " %s " % el[7:8]
        print "* %s "%print_string
        #print el
     el1=el
