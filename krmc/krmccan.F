@@ -463,6 +463,7 @@ C
 C
       LOGICAL TRTOFD, TRTOCO, TRTONO
       DIMENSION J1MO(2), N1MO(2), J2MO(2), N2MO(2)
+      integer iimax
 C
       CALL QENTER('KRMCCNO')
       KFRSAV = KFREE
@@ -610,10 +611,28 @@ C
       else
         call izero(work(kibeig),norbt)
       end if
-
 C
 C     3. Diagonalize Fock matrix 
 C     --------------------------
+C
+      if(spinfr_krmc)then 
+        max_loop = nbsym
+      else if(opt_chckjz)then
+        max_loop = iimax(norbt,work(kibeig),1)
+      else
+        max_loop = 1
+      end if
+
+      do indx_loop = 1, max_loop
+
+        if(spinfr_krmc)then
+          is_symm = indx_loop - 1
+        else if(opt_chckjz)then
+!         get mj-value
+          is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
+        else
+          is_symm = 0
+        end if
 C
 C     3.1 p-p block
 C     -------------
@@ -632,7 +651,7 @@ C
 C        extract p-p part of WORK(KFD)
 C
          CALL MATGAT_symm(WORK(KFD),NORBT,NORBT,WORK(KFDP),NPSHT,NPSHT,
-     &                    IDXP2G,work(kibeig),NZ)
+     &                    IDXP2G,work(kibeig),is_symm,NZ)
 C
 C        diagonalize
 C
@@ -642,7 +661,7 @@ C
 C        insert new p-p matrix block into complete transformation matrix
 C
          CALL MATSCT_symm(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCP),
-     &                    NPSHT,NPSHT,IDXP2G,work(kibeig),NZ)
+     &                    NPSHT,NPSHT,IDXP2G,work(kibeig),is_symm,NZ)
 C
          CALL MEMREL('RKRMCCNO.after p-p',WORK,1,KFDP,KFREE,LFREE)
       END IF
@@ -664,7 +683,7 @@ C
 C        extract i-i part of WORK(KFD)
 C
          CALL MATGAT_symm(WORK(KFD),NORBT,NORBT,WORK(KFDI),NISHT,NISHT,
-     &                    IDXI2G,work(kibeig),NZ)
+     &                    IDXI2G,work(kibeig),is_symm,NZ)
 C
 C        diagonalize
 C
@@ -674,7 +693,7 @@ C
 C        insert new i-i matrix block into complete transformation matrix
 C
          CALL MATSCT_symm(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCI),
-     &                    NISHT,NISHT,IDXI2G,work(kibeig),NZ)
+     &                    NISHT,NISHT,IDXI2G,work(kibeig),is_symm,NZ)
 C
          CALL MEMREL('RKRMCCNO.after i-i',WORK,1,KFDI,KFREE,LFREE)
       END IF
@@ -696,7 +715,7 @@ C
 C        extract s-s part of WORK(KFD)
 C
          CALL MATGAT_symm(WORK(KFD),NORBT,NORBT,WORK(KFDVI),NVSHT,
-     &                    NVSHT,IDXV2G,work(kibeig),NZ)
+     &                    NVSHT,IDXV2G,work(kibeig),is_symm,NZ)
 C
 C        diagonalize
 C
@@ -707,7 +726,7 @@ C
 C        insert new s-s matrix block into transformation matrix
 C
          CALL MATSCT_symm(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCVI),
-     &                    NVSHT,NVSHT,IDXV2G,work(kibeig),NZ)
+     &                    NVSHT,NVSHT,IDXV2G,work(kibeig),is_symm,NZ)
 C
          CALL MEMREL('RKRMCCNO.after v-v',WORK,1,KFDVI,KFREE,LFREE)
       END IF
@@ -726,7 +745,7 @@ C
 C        insert d-d matrix block into complete transformation matrix
 C
          CALL MATSCT_symm(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCDL),
-     &                    NDSHT,NDSHT,IDXD2G,work(kibeig),NZ)
+     &                    NDSHT,NDSHT,IDXD2G,work(kibeig),is_symm,NZ)
 C
          CALL MEMREL('RKRMCCNO.after d-d',WORK,1,KEIGVCDL,KFREE,LFREE)
       END IF
@@ -745,10 +764,12 @@ C
 C        insert a-a matrix block into complete transformation matrix
 C
          CALL MATSCT_symm(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCA),
-     &                    NASHT,NASHT,IDXU2G,work(kibeig),NZ)
+     &                    NASHT,NASHT,IDXU2G,work(kibeig),is_symm,NZ)
 C
          CALL MEMREL('RKRMCCNO.after a-a',WORK,1,KEIGVCA,KFREE,LFREE)
       END IF
+
+      end do ! do indx_loop = 1, max_loop
 C
       CALL MEMREL('RKRMCCNO.after FD diag',WORK,1,KFD,KFREE,LFREE)
 C
@@ -778,6 +799,7 @@ C
 C
 C        Transform all orbitals
 C
+!        CALL QGEMM(NBASI,NORBI,NORBI,D0,
          CALL QGEMM(NBASI,NORBI,NORBI,D1,
      &        'N','N',IPQTOQ(1,0),
      &        WORK(KCMO+ICMOQ(I)),NBASI,NORBI,NZ,

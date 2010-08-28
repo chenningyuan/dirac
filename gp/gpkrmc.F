@@ -1614,7 +1614,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE MATGAT_symm(AMAT,NRA,NCA,BMAT,NRB,NCB,IDX,IBEIG,NZ)
+      SUBROUTINE MATGAT_symm(AMAT,NRA,NCA,BMAT,NRB,NCB,IDX,
+     &                       IBEIG,is_symm,NZ)
 C***********************************************************************
 C
 C     Construct BMAT from AMAT elements using IDX and ibeig arrays.
@@ -1632,14 +1633,15 @@ C
       DIMENSION AMAT(NRA,NCA,NZ), BMAT(NRB,NCB,NZ), IDX(*), IBEIG(*)
 C
       DO IZ = 1, NZ
-         DO J = 1, NCB
+         do 5 J = 1, NCB
             JJ = IDX(J)
-            DO 10 K = 1, NRB
+            if(IBEIG(JJ).ne.is_symm) goto 5
+            do 10 K = 1, NRB
                KK = IDX(K)
-               if(IBEIG(kk) .ne. IBEIG(JJ)) goto 10
+               if(IBEIG(kk).ne.is_symm) goto 10
                BMAT(K,J,IZ) = AMAT(KK,JJ,IZ)
  10         continue
-         END DO
+  5      continue
       END DO
       RETURN
       END
@@ -1699,7 +1701,8 @@ C
       END DO
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE MATSCT_symm(AMAT,NRA,NCA,BMAT,NRB,NCB,IDX,ibeig,NZ)
+      SUBROUTINE MATSCT_symm(AMAT,NRA,NCA,BMAT,NRB,NCB,IDX,
+     &                       ibeig,is_symm,NZ)
 C***********************************************************************
 C
 C     Construct AMAT from BMAT elements using IDX and ibeig.
@@ -1717,15 +1720,40 @@ C
       DIMENSION AMAT(NRA,NCA,NZ), BMAT(NRB,NCB,NZ), IDX(*), ibeig(*)
 C
       DO IZ = 1, NZ
-         DO J = 1, NCB
+         DO 5 J = 1, NCB
             JJ = IDX(J)
+            if(ibeig(jj).ne.is_symm) goto 5
             DO 10 K = 1, NRB
                KK = IDX(K)
-               if(ibeig(KK).ne.ibeig(jj)) goto 10
+               if(ibeig(KK).ne.is_symm) goto 10
                AMAT(KK,JJ,IZ) = BMAT(K,J,IZ)
  10         continue
-         END DO
+  5      continue
       END DO
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      integer function iimax(n,iarr,inca)
+C***********************************************************************
+C
+C     find largest absolute element in integer array iarr.
+C
+C     Input:
+C
+C     Output:
+C
+C     Written by S. Knecht - August 2010
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION iarr(*)
+C
+      ismax = 0
+      DO ielm = 1, n
+        ismax = max(ismax,abs(iarr(ielm)))
+      END DO
+      iimax = ismax
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DETXFLAB */
