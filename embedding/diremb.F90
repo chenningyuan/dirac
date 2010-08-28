@@ -120,7 +120,7 @@
                      FILE   =  FDEDNS)
                 frozdens_unit = lufdefrzdns
              else
-                call quit("File with Frozen Density(+gradient) not found!")
+             call quit("File with Frozen Density(+gradient) not found!")
              endif
 
          end subroutine FDE_ImportFrozenDensity_FileOpen
@@ -189,7 +189,9 @@
 !
       SUBROUTINE FDEINI()
 #ifdef MOD_XCFUN
+         reset_hfxfac = .false.
          call parse_functional(kefun_fde,fde_kef)
+         reset_hfxfac = .true.
 !        call xcfun_set_functional(fde_kef)
 #else 
          call quit('XCFun not available in this version')

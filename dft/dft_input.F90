@@ -38,6 +38,10 @@ module dft_input
 #endif
   public consistency_after_dft_input
   public report_after_dft_input
+  public reset_hfxfac
+
+
+  logical, save :: reset_hfxfac = .true.
 
   private
 
@@ -140,7 +144,7 @@ contains
       write(u, '(a)') '* Kohn-Sham calculation using the automatic differentiation xc functional:'
       write(u, '(a)') '   (weight: functional)'
       
-      call reset_hfx()
+      if (reset_hfxfac) call reset_hfx()
       f%w = 0.0d0
       
       line = lowercase(line)
