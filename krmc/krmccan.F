@@ -1742,7 +1742,7 @@ C       print omega values
           iom_state = nint(om_state)
           if(iabs(iom_state).eq.0) iom_state = 0
           write(om_string,'(i3,a2)') iom_state,om_divst
-          write(lupri,'(i11,8x,a4,10x,a5,7x,1f6.3,4x,1f6.3)')
+          write(lupri,'(i11,8x,a4,10x,a5,4x,1f10.4,1f10.4)')
      &          i,xrepom(ix),om_string,
      &          work(KEIGsz+i-1),
      &          work(KEIGlz+i-1)
