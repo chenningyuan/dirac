@@ -5594,11 +5594,9 @@ CMI       dirac.x went into an infinite loop here
 C       if *CAP in input but MOD_CAP is not defined !!!
         CALL QUIT(
      &  '*CAP specified, but CAP is not included in this version')
-        GO TO 200
 #endif
-
-!     .FDE
-!     frozen density embedding
+        GO TO 200
+!     .FDE, frozen density embedding
     5 CONTINUE
 #ifdef MOD_EMB
       call fdeinp(word, .true.)
@@ -5606,7 +5604,6 @@ C       if *CAP in input but MOD_CAP is not defined !!!
       call quit('embedding is not included in this version')
 #endif
       GO TO 200
-
     6 CONTINUE
 #ifdef MOD_AMFI
 CMI  ... reading input routine for AMFI+RELSCF
