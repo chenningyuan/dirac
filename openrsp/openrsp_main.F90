@@ -179,16 +179,40 @@ contains
                               lupri)
            enddo
            deallocate(tsr)
-!          w    =  0.0d0
-!          w(1) =  0.0d0
-!          w(2) = -0.72d0
-!          w(3) =  0.72d0
-!          sum_up = element_ooff(S, D, F, (/w(1:3)/), 1, 1, 1, 1)
-!          sum_up = element_ooff(S, D, F, (/w(1:3)/), 1, 1, 2, 2)
-!          sum_up = element_ooff(S, D, F, (/w(1:3)/), 1, 1, 3, 3)
-!          sum_up = element_ooff(S, D, F, (/w(1:3)/), 2, 2, 3, 3)
-!          sum_up = element_ooff(S, D, F, (/w(1:3)/), 3, 3, 3, 3)
         endif
+
+        if (openrsp_cfg_jones) then
+           !call lsquit('error: Module birefring is not compiled. ' &
+           !       // 'Uncomment in Makefile and linscf.f90, and recompile')
+           allocate(tsr(3+6+3*3+3*3+3*3+3*3+6*3+3*3+3*3*3+3*3*3+6*3*3+6*3*3 &
+                        +3*3*3*3+3*3*3*3+6*3*3*3+6*3*3*3))
+        !  do i=1,cfg_rsp_nfreq
+           do i=1,1
+              print '(//a,4f11.8/)','linscf calls cme_jones_eta_api, freq =',cfg_rsp_freq(i)
+              call cme_jones_eta_apri(decomp,S,D,F,cfg_rsp_freq(i)*(1d0,0d0)*(/1,0,-1,0/), &
+                             tsr(1:3),tsr(4:9),tsr(10:18),tsr(19:27),tsr(28:36),    &
+                             tsr(37:45),tsr(46:63),tsr(64:72),tsr(73:99),           &
+                             tsr(100:126),tsr(127:180),tsr(181:234),                &
+                             tsr(235:315),tsr(316:396),tsr(397:558),tsr(559:720))
+              !no-London output (.false.)
+              call jones_output(cfg_rsp_freq(i)*(1d0,0d0),.false.,tsr(1:3), &
+                                (/(((tsr(73 +i+3*j +9*k),k=0,2),j=0,2),i=0,2)/), &
+                                (/(((tsr(127+i+6*j+18*k),k=0,2),j=0,2),i=0,5)/), &
+                                (/((((tsr(235+i+3*j +9*k+27*l),l=0,2),k=0,2),j=0,2),i=0,2)/), &
+                                (/((((tsr(397+i+6*j+18*k+54*l),l=0,2),k=0,2),j=0,2),i=0,5)/), &
+                                lupri)
+              !London output (.true.)
+              call jones_output(cfg_rsp_freq(i)*(1d0,0d0),.true.,tsr(1:3), &
+                                (/(((tsr(100+i+3*j +9*k),k=0,2),j=0,2),i=0,2)/), &
+                                (/(((tsr(181+i+6*j+18*k),k=0,2),j=0,2),i=0,5)/), &
+                                (/((((tsr(316+i+3*j +9*k+27*l),l=0,2),k=0,2),j=0,2),i=0,2)/), &
+                                (/((((tsr(559+i+6*j+18*k+54*l),l=0,2),k=0,2),j=0,2),i=0,5)/), &
+                                lupri)
+           enddo
+           deallocate(tsr)
+        endif
+
+
 
     if (openrsp_cfg_gamma_lin_dc_kerr) then
 

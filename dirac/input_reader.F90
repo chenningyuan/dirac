@@ -670,6 +670,10 @@ contains
       openrsp_cfg_cars = .true.
     end if
 
+    if (kw_matches(word, '.JONES ')) then
+      openrsp_cfg_jones = .true.
+    end if
+
     if (kw_matches(word, '.CME   ')) then
       openrsp_cfg_cme = .true.
     end if
