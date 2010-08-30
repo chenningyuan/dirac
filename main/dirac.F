@@ -789,8 +789,8 @@ C
       OPT_MKCNST     = KRCI_MKCNST
       OPT_CHCKJZ     = .FALSE.
 !     required for KR-CI in linear symmetry set-up
-!     if(linear) opt_chckjz = .true.
-      opt_chckjz = .true.
+      if(linear) opt_chckjz = .true.
+!     opt_chckjz = .true.
 C
       DO I = 1, NOPTFLAGS
          FLAG(I) = .FALSE.

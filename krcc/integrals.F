@@ -629,18 +629,18 @@ c     NNASHX = NASHT * (NASHT+1) / 2
       call memget('INTE',kdxkr12,2*ndim_ij,work,kfree,lfree)
       call memget('INTE',kdxb12, 2*ndim_ij,work,kfree,lfree)
       call memget('INTE',kdxb34, 2*ndim_kl,work,kfree,lfree)
+C
+C     orbital symmetry info array
+      call memget('INTE',kibeig, norbt,work,kfree,lfree)
+      call izero(work(kibeig),norbt)
 
 !     b. read integrals into WORK(KH2AC)
       call rgeth21(.false.,.true.,dummy,dummy,WORK(KH2AC),
      &             work(khmat),work(kh2xy),work(kh2yx),
      &             work(kdxkr12),work(kdxb12),work(kdxb34),
-     &             ipropt,lupri)
+     &             work(kibeig),ipropt,lupri)
 
       call memrel('rgeth2',work,1,khmat,kfree,lfree)
-
-      CALL RGETH21(.FALSE.,.TRUE.,DUMMY,DUMMY,WORK(KH2AC),
-     &               WORK(KFREE),LFREE,IPROPT)
-
 *
       CALL QEXIT('KRCC_INT')
 *

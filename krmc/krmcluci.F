@@ -872,12 +872,13 @@ C
         call memget('INTE',kdxb12, 2*ndim_ij,work,kfree,lfree)
         call memget('INTE',kdxb34, 2*ndim_kl,work,kfree,lfree)
         call memget('INTE',kdxkr12,2*ndim_ij,work,kfree,lfree)
+   
+        stop 'FIXME: this interface is not complete'
 
         call rgeth21(.false.,.true.,dummy,dummy,work(kh2ac),
      &               work(khmat),work(kh2xy),work(kh2yx),
      &               work(kdxkr12),work(kdxb12),work(kdxb34),
      &               ipropt,lupri)
-        stop
 C
       else if (I_IITP.eq.1) then
 C
@@ -1070,11 +1071,12 @@ C
         call memget('INTE',kdxb34, 2*ndim_kl,work,kfree,lfree)
         call memget('INTE',kdxkr12,2*ndim_ij,work,kfree,lfree)
 
+        stop 'FIXME: this interface is not complete'
+
         call rgeth21(.false.,.true.,dummy,dummy,work(kh2ac),
      &               work(khmat),work(kh2xy),work(kh2yx),
      &               work(kdxkr12),work(kdxb12),work(kdxb34),
      &               ipropt,lupri)
-        stop
 C
       else if (I_IITP.eq.1) then
 C
@@ -2097,11 +2099,12 @@ C
         call memget('INTE',kdxb34, 2*ndim_kl,work,kfree,lfree)
         call memget('INTE',kdxkr12,2*ndim_ij,work,kfree,lfree)
 
+        stop 'FIXME: this interface is not complete'
+
         call rgeth21(.false.,.true.,dummy,dummy,work(kh2ac),
      &               work(khmat),work(kh2xy),work(kh2yx),
      &               work(kdxkr12),work(kdxb12),work(kdxb34),
      &               0,luwrt)
-        stop
 C
       else if (I_IITP.eq.1) then
 C

@@ -210,11 +210,7 @@ c        CALL MEMGET('REAL',KGCI  ,NZCONFQ_BUF,WORK,KFREE,LFREE)
 
 !     implement boson symmetry in MCSCF - enabling spinfree MCSCF
 !     sk + hjaaj 10-aug-10
-      if(spinfr_krmc)then
-        call memget('INTE',kibeig,norbt,work,kfree,lfree)
-      else
-        call memget('INTE',kibeig,    0,work,kfree,lfree)
-      end if
+      call memget('INTE',kibeig,norbt,work,kfree,lfree)
 C
 C     ***************************************************
 C     *** Call 2nd order optimization *******************
@@ -450,7 +446,13 @@ C
 C
          JRDCMO = 0
          CALL RREADMO(CMO,JRDCMO,1,LUKRMC)
-         if(spinfr_krmc) call ireakrmc(lukrmc,'IBEIG   ',ibeig,norbt)
+C        read orbital symmetry info
+         call izero(ibeig,norbt)
+         if(spinfr_krmc)then
+           call ireakrmc(lukrmc,'IBEIG   ',ibeig,norbt)
+         else if(opt_chckjz)then
+           call ireakrmc(lukrmc,'MJVEC   ',ibeig,norbt)
+         end if
 C
 C
 C        ***************************************************
@@ -483,8 +485,6 @@ C
             CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
             CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
 C
-C           TODO: Boson symmetry not implemented in KRMCSCF yet.
-C
             CALL IZERO(WORK(KIBEIG),NORBT)
 C
 C           Read coefficients from KRMCSCF
@@ -497,8 +497,13 @@ C
             ELSE
                JRDMO = 1
                CALL RREADMO(WORK(KCMO),JRDMO,1,LUKRMC)
-               if(spinfr_krmc) 
-     &           call ireakrmc(lukrmc,'IBEIG   ',work(kibeig),norbt)
+
+               if(spinfr_krmc)then
+                 call ireakrmc(lukrmc,'IBEIG   ',work(kibeig),norbt)
+               else if(opt_chckjz)then
+                 call ireakrmc(lukrmc,'MJVEC   ',work(kibeig),norbt)
+               end if
+              
             END IF
 C
 C           *** Now do the transformation
@@ -521,7 +526,7 @@ C        *** Get Gradient **********************************
 C        ***************************************************
 C
 C
-         CALL RGRAD(CMO,CREF,WORK(KZXOPE),WORK(KZXOPP),
+         CALL RGRAD(CMO,CREF,ibeig,WORK(KZXOPE),WORK(KZXOPP),
      &              GCI,GOEE,GOEP,EMY,EACTIV,DV,PV,FC,FV,FQ,
      &              FCAC,H2AC,IPROPT,WORK,KFREE,LFREE)
 C
@@ -725,7 +730,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgrad */
-      SUBROUTINE RGRAD(CMO,CREF,JXOPE,JXOPP,
+      SUBROUTINE RGRAD(CMO,CREF,ibeig,JXOPE,JXOPP,
      &                 GCI,GOEE,GOEP,EMCMY,EMCACT,DV,PV,FC,FV,FQ,FCAC,
      &                 H2AC,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
@@ -735,6 +740,7 @@ C
 C     Input:
 C        CMO     - the orbitals for the CEP
 C        CREF    - CI vector
+C        ibeig   - orbital symmetry info
 C        JXOPE   - orbital e-e rotations
 C        JXOPP   - orbital e-p rotations
 C
@@ -768,7 +774,7 @@ C
 C
       DIMENSION GCI(*),DV(*),FC(*),FV(*),FQ(*),PV(*)
       DIMENSION JXOPE(*),JXOPP(*),GOEE(*),GOEP(*)
-      DIMENSION CREF(*)
+      DIMENSION CREF(*), ibeig(*)
       DIMENSION WORK(*)
 C
 C     Local variable
@@ -837,7 +843,7 @@ C        Calculate FQ matrix and two-electron integrals
 C        with active orbital indices (H2AC).
 C        FQ and H2AC are written to KRMC FOCK.
 C
-         CALL RGETH2(FQ,H2AC,PV,WORK(KFREE),LFREE)
+         CALL RGETH2(FQ,H2AC,PV,ibeig,WORK(KFREE),LFREE)
 C
 C        Active energy.
 C

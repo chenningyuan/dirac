@@ -766,6 +766,7 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -825,10 +826,19 @@ C     ==============================================
       call memget('INTE',kdxb34, 2*ndim_kl,work,kfree,lfree)
       call memget('INTE',kdxkr12,2*ndim_ij,work,kfree,lfree)
 
+      call memget('INTE',kibeig,norbt,work,kfree,lfree)
+
+      call izero(work(kibeig),norbt)
+      if(spinfr.or.levyle)then
+        call ireakrmc(lukrmc,'IBEIG   ',work(kibeig),norbt)
+      else if(linear)then
+        call ireakrmc(lukrmc,'MJVEC   ',work(kibeig),norbt)
+      end if
+
       call rgeth21(.false.,.true.,dummy,dummy,work(kh2ac),
      &             work(khmat),work(kh2xy),work(kh2yx),
      &             work(kdxkr12),work(kdxb12),work(kdxb34),
-     &             iprint,lupri)
+     &             work(kibeig),iprint,lupri)
 C
 C     Transform integrals to Molfdir format:
 C
@@ -1706,6 +1716,7 @@ C
 #include "thrzer.h"
 C
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -1779,10 +1790,19 @@ C     ==============================================
       call memget('INTE',kdxb34, 2*ndim_kl,work,kfree,lfree)
       call memget('INTE',kdxkr12,2*ndim_ij,work,kfree,lfree)
 
+      call memget('INTE',kibeig,norbt,work,kfree,lfree)
+
+      call izero(work(kibeig),norbt)
+      if(spinfr.or.levyle)then
+        call ireakrmc(lukrmc,'IBEIG   ',work(kibeig),norbt)
+      else if(linear)then
+        call ireakrmc(lukrmc,'MJVEC   ',work(kibeig),norbt)
+      end if
+
       call rgeth21(.false.,.true.,dummy,dummy,work(kh2ac),
      &             work(khmat),work(kh2xy),work(kh2yx),
      &             work(kdxkr12),work(kdxb12),work(kdxb34),
-     &             iprint,lupri)
+     &             work(kibeig),iprint,lupri)
 
 C
 C     Make sure imag(VMUUUU) = 0 for NZ=1

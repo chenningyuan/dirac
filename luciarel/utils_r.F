@@ -804,7 +804,7 @@ C
      &                          ISOBEX,ISTR_CA,ISTR_CB,ISTR_AA,
      &                          ISTR_AB,NASHT,F1,MDIASV,IBOSYM, 
      &                          LABEL,CIRUN,IPRNT,NDIAMINT,ENVIRO,
-     &                          SIGDEN_ROUTE,INTSPACE)
+     &                          ibeig,SIGDEN_ROUTE,INTSPACE)
 C**********************************************************************
 C
 C     write sorted integrals back on file - driver routine                         
@@ -844,7 +844,7 @@ C***********************************************************************
 *
 #include "dgroup.h"
       CHARACTER*6 CIRUN
-      DIMENSION   T_BUFF(*), T(*), F1(*)
+      DIMENSION   T_BUFF(*), T(*), F1(*), ibeig(*)
 #if defined (VAR_MPI2)
 #include "krmc_shmem.h"
 #include "mxdim_mpi2.h"
@@ -880,7 +880,7 @@ C
 !       get integrals on t_unsort
         call rgeth21(.false.,.true.,dummy,dummy,t_unsort,
      &               hmat,h2xy,h2yx,idxkr12,indxb12,indxb34,
-     &               iprnt,luwrt)
+     &               ibeig,iprnt,luwrt)
 
 !       release scratch space
         deallocate(idxkr12)

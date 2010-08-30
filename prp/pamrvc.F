@@ -469,6 +469,8 @@ C***********************************************************************
       DIMENSION GPOE(*),GPOP(*)
 C
 #include "dcborb.h"
+#include "dcbham.h"
+#include "dcbgen.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
@@ -574,8 +576,17 @@ C
      &        NASHT * NASHT * N2ASHX * NZ * 3,WORK,KFREE,LFREE)
          CALL GETMAT('PVMO',WORK(KPV),IPRXRS,FKRMC,WORK(KFREE),LFREE)
 C
+         CALL MEMGET('INTE',kibeig,norbt,WORK,KFREE,LFREE)
+         call izero(work(kibeig),norbt)
+C        read orbital symmetry info
+         if(spinfr.or.levyle)then
+           call ireakrmc(lukrmc,'IBEIG   ',work(kibeig),norbt)
+         else if(linear)then
+           call ireakrmc(lukrmc,'MJVEC   ',work(kibeig),norbt)
+         end if
+C
          CALL RGETH2TX(WORK(KFQX),WORK(KFQT),WORK(KH2ACX),
-     &        WORK(KPV),WORK(KPVT),
+     &        work(kibeig),WORK(KPV),WORK(KPVT),
      &        BEVEC,BPVEC,WORK(KZXOPE),WORK(KZXOPP),
      &        IBEVC,IBPVC,IBTYP,IPRXRS,
      &        WORK(KFREE),LFREE)

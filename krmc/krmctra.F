@@ -974,7 +974,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgeth2 */
-      SUBROUTINE RGETH2(FQ,H2AC,PV,WORK,LWORK)
+      SUBROUTINE RGETH2(FQ,H2AC,PV,ibeig,WORK,LWORK)
 C***********************************************************************
 C
 C     Calculate FQ and get H2AC (two-electron integrals
@@ -1002,7 +1002,7 @@ C
 C
       DIMENSION FQ(*)
       DIMENSION H2AC(*)
-      DIMENSION PV(*)
+      DIMENSION PV(*), ibeig(*)
       DIMENSION WORK(*)
 C
 C
@@ -1035,7 +1035,7 @@ C        =========================================
          call rgeth21(.true.,.true.,pv,fq,h2ac,
      &                work(khmat),work(kh2xy),work(kh2yx),
      &                work(kdxkr12),work(kdxb12),work(kdxb34),
-     &                ipropt,lupri)
+     &                ibeig,ipropt,lupri)
 
          call memrel('rgeth2',work,1,khmat,kfree,lfree)
 C
@@ -1117,7 +1117,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgeth21 */
       SUBROUTINE RGETH21(DOFQ,DOH2AC,PV,FQ,H2AC,
      &                   hmat,h2xy,h2yx,idxkr12,indxb12,indxb34,
-     &                   iprint,print_unit)
+     &                   ibeig,iprint,print_unit)
 C***********************************************************************
 C
 C     Calculate FQ and H2AC.
@@ -1151,7 +1151,7 @@ C
       DIMENSION FQ(NORBT,NASHT,NZ)
       DIMENSION PV(NASHT,NASHT,NNASHX,NZ,3)
       DIMENSION H2AC(NASHT,NASHT,NNASHX,NZ,3)
-      dimension hmat(*),h2xy(*),h2yx(*)
+      dimension hmat(*),h2xy(*),h2yx(*), ibeig(*)
       dimension idxkr12(2,*),indxb12(2,*),indxb34(2,*)
       LOGICAL DOFQ, DOH2AC
 C     index arrays
@@ -1207,7 +1207,8 @@ C     initialize scratch arrays
      & call alloc(orb_info_array,2,norbt,norbt,'idx34_orbinfo_geth2')
   
 !     set orbital info array
-      if(spinfr.or.levyle.or.linear) call setorb_attrib(orb_info_array)
+      if(spinfr.or.levyle.or.linear) 
+     &   call setorb_attrib(orb_info_array,ibeig)
  
 !     spinfree MCSCF - always multiply with the quaternion phase factor
       set_qphaseFAC = .true.
@@ -2230,7 +2231,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgeth2tx */
-      SUBROUTINE RGETH2TX(FQX,FQT,H2ACX,PV,PVT,
+      SUBROUTINE RGETH2TX(FQX,FQT,H2ACX,ibeig,PV,PVT,
      &     BEVEC,BPVEC,JXOPE,JXOPP,
      &     IBEVC,IBPVC,IBTYP,IPRINT,WORK,LWORK)
 C***********************************************************************
@@ -2263,7 +2264,7 @@ C
       DIMENSION FQX(*),FQT(*), H2ACX(*)
       DIMENSION PV(*),PVT(*)
       DIMENSION BEVEC(*),BPVEC(*)
-      DIMENSION IBEVC(*),IBPVC(*),IBTYP(*)
+      DIMENSION IBEVC(*),IBPVC(*),IBTYP(*), ibeig(*)
       DIMENSION JXOPE(*),JXOPP(*)
       DIMENSION WORK(*)
 C
@@ -2287,7 +2288,7 @@ C
       CALL RGETH2TX1(.TRUE.,.TRUE.,PV,PVT,FQX,FQT,H2ACX,
      &               BEVEC,BPVEC,JXOPE,JXOPP,IBEVC,IBPVC,IBTYP,
      &               WORK(KDXKR12),WORK(KDXB12),WORK(KDXB34),
-     &               IPRINT,WORK(KFREE),LFREE)
+     &               ibeig,IPRINT,WORK(KFREE),LFREE)
 !
       call memrel('rgeth2tx',work,1,kdxkr12,kfree,lfree)
 !
@@ -2298,7 +2299,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgeth2tx1 */
       SUBROUTINE RGETH2TX1(DOFQ,DOH2AC,PV,PVT,FQX,FQT,H2ACX,
      &                     BEVEC,BPVEC,JXOPE,JXOPP,IBEVC,IBPVC,IBTYP,
-     &                     idxkr12,indxb12,indxb34,IPRINT,WORK,LWORK)
+     &                     idxkr12,indxb12,indxb34,ibeig,
+     &                     IPRINT,WORK,LWORK)
 C***********************************************************************
 C
 C
@@ -2339,7 +2341,7 @@ C
       DIMENSION H2ACX(NASHT,NASHT,NNASHX,NZ,3,*)
       DIMENSION JXOPE(*),JXOPP(*)
       DIMENSION BEVEC(*),BPVEC(*)
-      DIMENSION IBEVC(*),IBPVC(*),IBTYP(2,*)
+      DIMENSION IBEVC(*),IBPVC(*),IBTYP(2,*), ibeig(*)
       DIMENSION WORK(*)
       LOGICAL DOFQ, DOH2AC
 C     index arrays
@@ -2404,14 +2406,17 @@ C
 
 !     allocate reordered boson irrep array for indices k,l
       call alloc(indxb34_reod,2,n2orbx,'idxb34_reod_geth2tx1')
-      if(spinfr.or.levyle.or.linear) 
-     & call alloc(orb_info_array,2,norbt,norbt,'idx34_orbinfo_geth2tx1')
+      if(spinfr.or.levyle.or.linear)then 
+       call alloc(orb_info_array,2,norbt,norbt,'idx34_orbinfo_geth2tx1')
+      end if
 #if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE_extra
       call alloc(xsave,nclass*n2orbx,'xsave')
 #endif
 ! 
 !     set orbital info array
-      if(spinfr.or.levyle.or.linear) call setorb_attrib(orb_info_array)
+      if(spinfr.or.levyle.or.linear)then 
+        call setorb_attrib(orb_info_array,ibeig)
+      end if
 
 C     read indices and boson irrep information
 

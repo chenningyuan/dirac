@@ -181,7 +181,7 @@ C
 
       end
 !***********************************************************************
-      subroutine setorb_attrib(orb_info_array)
+      subroutine setorb_attrib(orb_info_array,ibeig)
 !
 !     purpose: setup the orbital info array which will on output contain 
 !              for the ( |kl) integral either 
@@ -204,6 +204,7 @@ C
 #include "dgroup.h"
 #include "dcbqal.h"
       integer orb_info_array(2,norbt,norbt)
+      dimension ibeig(*)
       integer, allocatable  :: orb_sym_vec(:)
       character (len=8)     :: orbital_info_label
 #include "ibtfun.h"
@@ -212,15 +213,7 @@ C
       call alloc(orb_sym_vec,norbt,'orb_sym_vec-setorb_att')
       orb_sym_vec = 0
 
-      rewind(lukrmc)
-      if(linear)then
-        orbital_info_label = 'MJVEC   '
-      else
-        orbital_info_label = 'IBEIG   '
-      end if
-
-      call ireakrmc(lukrmc,orbital_info_label,orb_sym_vec,norbt)
-
+      call icopy(norbt,ibeig,1,orb_sym_vec,1)
 C
 C     debug print
 !     write(lupri,'(2x,a)') 

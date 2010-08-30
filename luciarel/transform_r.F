@@ -1658,6 +1658,7 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
 *  (use of T_BUFF) by Stefan Knecht  
 *
 *
+      use memory_allocator
 #include "implicit.inc"
 #include "ipoist8.inc"
 #if defined (VAR_MPI2)
@@ -1683,15 +1684,17 @@ C    &             ISPITRA,ISPITRA_RC,IAOSFSP,ISPSFAO,LSPINOR)
 #endif
 *
 #include "dgroup.h"
+#include "dcborb.h"
 *
       character*72 ENVIRO
       character*6 SIGDEN_ROUTE
       character*6 CIRUN
       character*1 COORD
-      LOGICAL MCSCF, EX, ALLOC_INT, ALLOC_INT_SCR
+      LOGICAL MCSCF, EX, ALLOC_INT, ALLOC_INT_SCR, fileopen, ex_mc
       dimension INTEG(1000), T_BUFF(*), T_BUFF_D(*), IT_TTPL(*)
       dimension NORB_FULL(MXPIRR)
       integer*8 IDUMMY_LENGTH
+      integer, allocatable :: ibeig(:)
 *
 * ITRA_TYPE       Defines the type of transformation
 *---------------------------------------------------
@@ -2047,6 +2050,36 @@ C
             call memmar(KISTR_AA,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STR_AA')
             call memmar(KISTR_AB,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STR_AB')
 C
+C           orbital symmetry info
+            call alloc(ibeig,norbt)
+            call izero(ibeig,norbt)
+#if defined (VAR_MPI)
+            call mpi_bcast(linear,1,MPI_LOGICAL,master,
+     &                     mpi_comm_world,ierr)
+#endif
+            if(linear)then
+              if(myproc.eq.master)then
+                luni = -1
+                inquire(file='KRMCSCF',exist=ex_mc,opened=fileopen,
+     &                  number=luni)
+                if(ex_mc.and.fileopen)then
+                  rewind(luni)
+                else if(ex_mc.and.(.not.fileopen))then
+                  luni = 99
+                  call opnfil(luni,'KRMCSCF','OLD    ','itrctl')
+                  rewind(luni)
+                end if
+                call ireakrmc(luni,'MJVEC   ',ibeig,norbt)
+                if(.not.fileopen) close(luni,status='keep')
+              end if
+#if defined (VAR_MPI)
+              call mpi_bcast(ibeig,norbt,my_MPI_INTEGER,master,
+     &                       mpi_comm_world,ierr)
+#endif
+            end if
+            
+ 
+C
             IF( REORD_IJKL ) THEN
               IF( CIRUN .eq. 'CIINII' .or. CIRUN .eq. 'KR-CI ' ) THEN
 #if defined (VAR_MPI2)
@@ -2063,6 +2096,7 @@ C
      &                             IT_TTPL,WORK(KMDIASV),NDIAMINT,
      &                             NSPOBEX_TP,N1ELINT)
 C
+                call dealloc(ibeig)
                 GOTO 1001
 C
               ELSE IF( CIRUN .eq. 'IJKLRO' ) THEN
@@ -2092,7 +2126,7 @@ C
      &                               WORK(KISTR_AB),NDIM_TOT2,
      &                               F1,WORK(KMDIASV),IBOSYM,
      &                               WORK(KLABEXTP),CIRUN,NTEST,
-     &                               NDIAMINT,ENVIRO,SIGDEN_ROUTE,
+     &                               NDIAMINT,ENVIRO,ibeig,SIGDEN_ROUTE,
      &                               INTSPACE)
 C
  797            CONTINUE
@@ -2101,6 +2135,7 @@ C
                 CALL MPI_COMM_FREE(IXCOMM,IERR)
 #endif
 C
+                call dealloc(ibeig)
                 GOTO 1001
               END IF
 C             ^ CIRUN ???
@@ -2141,7 +2176,7 @@ C
                 call rgeth21(.false.,.true.,dummy,dummy,work(kinti12),
      &                       work(khmat),work(kh2xy),work(kh2yx),
      &                       work(kdxkr12),work(kdxb12),work(kdxb34),
-     &                       ntest,luwrt)
+     &                       ibeig,ntest,luwrt)
 
 !               release scratch space
                 call memmar(kdumx12,idum,'FLUSM ',idum,'geth12')
@@ -2201,9 +2236,10 @@ CSK           NTEST = 00
 C
             END IF
 C           ^ CIRUN eq CIINII .or. CIRUN .eq. 'KR-CI '?
+            call dealloc(ibeig)
           end if
 C         ^ SIGDEN_ROUTE ?
-        end if
+        end if ! (ENVIRO(1:6).eq.'DIRAC ')
       else
         WRITE(LUWRT,'(/A,I3)') ' Problem in itrctl: IFOCKEX is ',IFOCKEX
         CALL QUIT( ' *** ERROR in ITRCTL: unknown IFOCKEX value ***' )
