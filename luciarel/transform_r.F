@@ -2054,8 +2054,10 @@ C           orbital symmetry info
             call alloc(ibeig,norbt)
             call izero(ibeig,norbt)
 #if defined (VAR_MPI)
-            call mpi_bcast(linear,1,MPI_LOGICAL,master,
-     &                     mpi_comm_world,ierr)
+            if(CIRUN.ne.'PROP1 ')then
+              call mpi_bcast(linear,1,MPI_LOGICAL,master,
+     &                       mpi_comm_world,ierr)
+            end if
 #endif
             if(linear)then
               if(myproc.eq.master)then
@@ -2073,8 +2075,10 @@ C           orbital symmetry info
                 if(.not.fileopen) close(luni,status='keep')
               end if
 #if defined (VAR_MPI)
-              call mpi_bcast(ibeig,norbt,my_MPI_INTEGER,master,
-     &                       mpi_comm_world,ierr)
+              if(CIRUN.ne.'PROP1 ')then
+                call mpi_bcast(ibeig,norbt,my_MPI_INTEGER,master,
+     &                         mpi_comm_world,ierr)
+              end if
 #endif
             end if
             
