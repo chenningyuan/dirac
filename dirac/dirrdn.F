@@ -4745,6 +4745,12 @@ CMI   ... take care of 2c-4c/4c-2c transitions !
           TWOCOMPBSS=TWOCOMPBSS_SAVE 
       ENDIF
 
+!     quit if user wants .LEVY-LEBLOND and .LVCORR
+      if (levyle .and. dolvc) then
+         call quit('.LEVY-LEBLOND and .LVCORR should not be used together')
+      end if
+
+
 CMI     Remove inconsistencies for the TWOCOMP option
       IF (TWOCOMP.AND.(LEVYLE.OR.
      &              URKBAL.OR.FREEPJ.OR.VEXTPJ)) THEN
