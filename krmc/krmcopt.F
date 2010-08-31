@@ -1374,9 +1374,16 @@ C     ***************************************************
 C     *** Get 2-electron Fock matrices ******************
 C     ***************************************************
 C
+C     idea: call twofck twice:
+C                             - coulomb{^lr} + exchange^{lr}
+C                             - coulomb^{sr} (and calculate EJKVSR = tr(DAO * J^{sr} * DVAO) see DALTON for more info)
       CALL TWOFCK(IOPT_ISYMOP,IOPT_IHRMOP,IOPT_IFCKOP,
      &            WORK(KFAO),WORK(KDAO),
      &            NFMAT,WORK(KPOS),IOPT_INTFLG,IPRTWO,WORK(KFREE),LFREE)
+C
+C     now call xcfun... with the (inactive+active)DAO to obtain V_{xc}^{sr}
+C     and E_{xc}^{sr} 
+C     having it at hand we calculate -tr(V_{xc}^{sr} * DVAO) - 1/2 tr(V_{xc}^{sr} * DCAO) 
 C
 C     ***************************************************
 C     *** Get 1-electron Fock matrix ********************
@@ -1393,11 +1400,13 @@ C
 C        1-electron inactive energy
 C        (factor D2: DCao normed to 1 (not 2))
 C
+C                  tr(h1 * DC)
          EMCMY1E = D2*DDOT(N2BBASXQ,WORK(KDCAO),1,WORK(KH1AO),1)
 C
 C        Add 2-electron inactive energy
 C        (factor D2: DCao normed to 1 (not 2))
 C
+C                1/2 *  tr(FC * DC) ! Note that FC does not contain h1 yet ... 
          EMCMY2E = DP5 * D2 * DDOT(N2BBASXQ,WORK(KDCAO),1,WORK(KFCAO),1)
          EMCMY = EMCMY1E + EMCMY2E
          IF (IPROPT .GE. 4) THEN
@@ -1420,6 +1429,7 @@ C
       ELSE
          CALL DCOPY(N2BBASXQ,WORK(KH1AO),1,WORK(KFCAO),1)
       END IF
+C Manu srdft: the frozen srHxc potential should be added to FCAO there
 C
       IF ( IPROPT .GE. 5 ) THEN
          WRITE(LUPRI,9005)
