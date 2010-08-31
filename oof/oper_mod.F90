@@ -165,9 +165,8 @@ integer :: IKFREE, ILFREE,IKSTART
               FILE='AOPROPER')
 #endif
 
-
-   CALL MEMCHK('get_prop_saao',PW,1)
-
+   !mi: do not call, causing mem.error
+   !CALL MEMCHK('get_prop_saao',PW,1)
 
    write(LUPRI,*) 'get_prop_saao: KFREE,LFREE,LWORK=',get_KFREE(),get_LFREE(),get_LWORK()
    write(LUPRI,*) 'get_qmtx_kstart(propmat)=',get_qmtx_kstart(propmat)
