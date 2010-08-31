@@ -3670,6 +3670,9 @@ C     FVT Fock matrices
 C     -----------------
 C
       IREP = JSYMOP - 1
+!stefan & radovan: we decide to set jrep to zero
+!                  otherwise undefined
+      JREP = 0
       IAOMAT = 0
       IMOMAT = 0
       DO I = 1, NCSIM
@@ -3705,6 +3708,7 @@ C
          CALL DZERO(FMO(1,IMOMAT),N2ORBXQ)
          IF (NISHT .GT. 0) THEN
             IAOMAT = IAOMAT + 1
+!radovan: jrep seems to be irep of kappa
             CALL GMOLITX2(JZ,JREP,FMO(1,IMOMAT),FAO(1,IAOMAT),CMO,IBEIG,
      &           WORK(KFREE),LFREE)
             IF ( IPRXRS .GE. 8) THEN
@@ -4333,8 +4337,10 @@ C
            iopt_spinfree = IOPT
 #if defined MOD_MCSCF_spinfree
 !radovan:  the following line breaks .SPINFREE and .LEVY-LEBLOND
-!          magnetizability and related properties (CME, JONES)
-!          if(spinfr) iopt_spinfree = 1
+!          magnetic response
+!          if (SPINFR) iopt_spinfree = 1
+!          rather do:
+           if (SPINFR.AND.((ITIM.EQ.1).OR.NOSPIN)) iopt_spinfree = 1
 #endif
 !          IF(IOPT.GT.0) THEN
            IF(iopt_spinfree.GT.0) THEN
