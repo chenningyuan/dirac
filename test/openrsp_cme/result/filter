@@ -1,2 +1,5 @@
 $ERROR 1.E-8
-Nlines 29:d/df d/db G-prime-noL
+Nlines 4:magneti-noL
+
+$ERROR 1.E-8
+Nlines 28:d/df d/db G-prime-noL

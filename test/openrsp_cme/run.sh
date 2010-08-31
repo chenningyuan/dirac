@@ -1,12 +1,13 @@
 #!/bin/bash
 
-export MOL=ne_c1.mol
+for mol in *mol; do
+    for inp in *inp; do
+        export MENU=$inp
+        export MOL=$mol
+        ../run.sh
+    done
+done
 
-export MENU=cme_nr.inp
-../run.sh
-export MENU=cme_sf.inp
-../run.sh
-export MENU=cme_dc.inp
-../run.sh
+rm -f *tgz
 
 exit 0
