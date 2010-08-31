@@ -37,6 +37,8 @@ C
 #include "memint.h"
 C
       CALL QENTER('KRCC ')
+* First do transformation and get integrals from DIRAC
+      CALL READ_DIRAC_FOR_KRCC(WORK,KFREE,LFREE)
 *. Assign diskunits 
 !!!!needs updating!!!!
 !!!!needs updating!!!!

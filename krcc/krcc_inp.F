@@ -30,7 +30,7 @@ C
       SAVE SET
       DATA TABLE /'.MAX CC','.MK2REF','.MK2DEL','.GASSH ','.GASSPC',
      &            '.MXCCVE','.PRINT ','.NACTEL','.NOCOVA','.E_CONV',
-     &            '.GASSHK','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX',
+     &            '.GASSHK','.INACTI','.XXXXXX','.XXXXXX','.XXXXXX',
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
@@ -82,7 +82,10 @@ C
           END DO
         END DO
       END DO
-
+C
+      DO I =1,2
+        KRCC_NISH(I) = 0
+      END DO
 C
 C
 C     Process input for *KRCCCALC
@@ -201,6 +204,7 @@ C&&& GASSHK: GAS setup for spinors
                   IKWSET(11) = 1
                GO TO 100
    12          CONTINUE
+               READ(LUCMD,*) (KRCC_NISH(I),I=1,NFSYM)
                GO TO 100
    13          CONTINUE
                GO TO 100
@@ -358,9 +362,12 @@ C
      &   ' Kramers projection of the reference ', MK2REF
       WRITE(LUPRI,'(A,I4)')
      &   ' Maximum flipping of Kramers projection ', MK2DEL
+      WRITE(LUPRI,'(A,I4)')
+     &   ' Number of inactive shells ',(KRCC_NISH(I),I=1,NFSYM)
 C
 C
 C
   400 RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
