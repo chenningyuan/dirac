@@ -18,6 +18,7 @@ sh prepare_dyall_dblock_basis.sh
 # preparation for the 5f elements
 sh prepare_dyall_fblock_basis.sh
 
+
 # concatenating different blocks, first for sets with diffuses 
 cat *.{4p,5p,6p,7p}.dz.aug-val.bas > dyall.av2z
 cat *.{4p,5p,6p,7p}.tz.aug-val.bas > dyall.av3z

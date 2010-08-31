@@ -18,6 +18,9 @@ class basis_set :
 
 	def add_exponent (self, sym, exp) :
 
+                if (exp > 1.0e+40) :
+                        return
+
 		if sym not in self.exponents :
 			self.exponents[sym] = []
 			self.coefficients[sym] = []
@@ -25,7 +28,10 @@ class basis_set :
 		for e in self.exponents[sym] :
 			if (abs((e-exp)/e) < self.sameness) :
 				exp_already_there = True
-				print "$ Warning: in symmetry %8s, exponent %14.10e is considered to be too close to one already present (%14.10e) and is not included. threshold: %4.2e"%(sym,exp,e,self.sameness)
+				print "$ Warning: in symmetry %8s, exponent %14.10e "\
+                                      "is considered to be too close to one already "\
+                                      "present (%14.10e) and is not included. "\
+                                      "threshold: %4.2e"%(sym,exp,e,self.sameness)
 		if exp_already_there == False :
 			self.exponents[sym].append(exp)
 			self.coefficients[sym].append([]) 
@@ -46,6 +52,7 @@ class basis_set :
 	def get_symmetries (self) :
 		syms = ['s', 'p', 'd', 'f', 'g', 'h', 'i', 'k']
 
+                max_i = 0
 		for i, s in enumerate(syms) :
 			if s in self.exponents :
 				max_i = i
@@ -349,12 +356,13 @@ def main():
 				if show_header :
 					print "$ "+options.library_basis_file
 					print "$"
-					print "$  REFERENCE"
-					print "$ see dirac website"
-					print "$"
-					print "$ Elements Supported\n$"+element_list
-					print "$"
-					print "$ Description"
+#				print "$  REFERENCE"
+#				print "$ see dirac website"
+#				print "$"
+#				print "$ Elements Supported\n$"+element_list
+  	 				print "$ el contained in the file \n$"+element_list
+#				print "$"
+#				print "$ Description"
 					print header
 
 				show_header = False

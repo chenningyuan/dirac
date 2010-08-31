@@ -6,7 +6,7 @@
 # shell script to prepare intermediate files for assembling dyall basis dirac/dalton basis set files
 #
 
-ARCHIVE_DIR=../basis/reference_unedited
+ARCHIVE_DIR=../basis/reference_edited
 
 
 zeta=dz
@@ -26,8 +26,8 @@ python2.4 basis_set.py --file=$ARCHIVE_DIR/$block"_"$zeta"_archive" \
 
 
 block=5d
-val="valence correlating and polarizing"
-core="valence correlating and polarizing,4f core correlating"
+val="valence correlating and polarization"
+core="valence correlating and polarization,4f core correlating"
 echo "processing "$block" "$basis" "$zeta" "$val" set"
 python2.4 basis_set.py --file=$ARCHIVE_DIR/$block"_"$zeta"_archive" \
                        --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 \
@@ -89,8 +89,8 @@ python2.4 basis_set.py --file=$ARCHIVE_DIR/$block"_"$zeta"_archive" \
 done
 
 block=5d
-val="valence correlating,valence polarizability"
-core="valence correlating,valence polarizability,4f core correlating"
+val="valence correlating,valence dipole polarization"
+core="valence correlating,valence dipole polarization,4f core correlating"
 zeta=tz
 echo "processing "$block" "$basis" "$zeta" "$val" set"
 python2.4 basis_set.py --file=$ARCHIVE_DIR/$block"_"$zeta"_archive" \
@@ -105,8 +105,8 @@ python2.4 basis_set.py --file=$ARCHIVE_DIR/$block"_"$zeta"_archive" \
 
 
 block=5d
-val="valence correlating,valence polarizability"
-core="valence correlating,valence polarizability,outer core (5s5p) correlating g,4f core correlating'"
+val="valence correlating,valence dipole polarization"
+core="valence correlating,valence dipole polarization,outer core (5s5p) correlating g,4f core correlating'"
 zeta=qz
 echo "processing "$block" "$basis" "$zeta" "$val" set"
 python2.4 basis_set.py --file=$ARCHIVE_DIR/$block"_"$zeta"_archive" \

@@ -6,7 +6,7 @@
 # shell script to prepare intermediate files for assembling dyall basis dirac/dalton basis set files
 #
 
-ARCHIVE_DIR=../basis/reference_unedited
+ARCHIVE_DIR=../basis/reference_edited
 
 
 zeta=dz
