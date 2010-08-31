@@ -129,7 +129,7 @@ class dyall_set :
 
 		start1 = re.compile (type+" basis sets?")
 		start2 = re.compile (functions+" functions")
-		atom   = re.compile (r"\*\* "+self.element+"\s{1,2}\*\*")
+		atom   = re.compile (r"\*\* "+self.element+"\s{1,2}\d*\s{0,2}\*\*")
 		functions = re.compile (r".* functions\s*$")
 
 		symline = re.compile (r"^\s+\d([spdfghik])[+-]?")
@@ -296,7 +296,7 @@ def parse_cmdline():
 
 def get_elements(filename):
 
-	element = re.compile(r'^\*\* ([a-zA-Z]+)\s{1,2}\*\*', re.MULTILINE)
+	element = re.compile(r'^\*\* ([a-zA-Z]+)\s{1,2}\d*\s{0,2}\*\*', re.MULTILINE)
 	elementlist = []
         f = file(filename,'r')
         for m in element.finditer(f.read()):
