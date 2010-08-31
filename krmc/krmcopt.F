@@ -1879,7 +1879,6 @@ C        FIXME: IMPLEMENT ME - SK Aug 2008
 C
 csk      CALL NUMLST(OPT_FRZSTR(I),ILIST,NORB(I),
 csk  &        -NPSH(I),NESH(I),I,NVEC)
-
          IF (NVEC .GT. 0) THEN
             LNOROT = .TRUE.
 csk         WRITE(LUPRI,'(A,A50)')
@@ -2232,6 +2231,11 @@ C
             LZCONF = 0
             CALL MEMGET('INTE',KZCONF,LZCONF,WORK,KFREE,LFREE)
 C
+         ELSE IF ( USE_CIPROGRAM .EQ. 'KRCC' ) THEN
+            WRITE(6,*) 'IT is ok'
+            NZCONF = 1
+            LZCONF = 0
+            CALL MEMGET('INTE',KZCONF,LZCONF,WORK,KFREE,LFREE)
          ELSE
 C
             WRITE(LUPRI,'(A/3A)')
@@ -3413,6 +3417,8 @@ C
            CALL LUCI_ANAL(CREF,WORK,KFREE,LFREE)
          END IF
 C
+      ELSE IF ( OPT_CIPROGRAM .EQ. 'KRCC' ) THEN
+         WRITE(6,*) 'NEED TO PASS CHECK'
       ELSE
          WRITE(LUPRI,'(//3A)')
      &        '*** ERROR in RCIST ***' //
