@@ -1193,6 +1193,7 @@ C
 #endif /* VAR_MPI */
       RETURN
       END
+#ifdef MOD_KRCC
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck tkrciorb */
       SUBROUTINE TKRCCORB
@@ -1322,3 +1323,4 @@ C at the moment no fock type orbitlas
 C
       CALL QEXIT('TKRCCORB')
       END
+#endif /* MOD_KRCC */
