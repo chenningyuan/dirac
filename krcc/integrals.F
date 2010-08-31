@@ -270,7 +270,9 @@ c       call memmar(KINVREO,2*NDIM_TOT+1,'ADDL  ',1,'INVREO')
 *
       print*,'check before READ_DIRAC_FOR_KRCC'
       CALL MEMCHK_KRCC(WORK)
-      CALL READ_DIRAC_FOR_KRCC(WORK,KFREE,LFREE) !to start with
+C     CALL READ_DIRAC_FOR_KRCC(WORK,KFREE,LFREE) !to start with
+      print*,'check after READ_DIRAC_FOR_KRCC'
+      CALL MEMCHK_KRCC(WORK)
 *
 *******************************************************
 *  Integral reading section
@@ -278,13 +280,13 @@ c       call memmar(KINVREO,2*NDIM_TOT+1,'ADDL  ',1,'INVREO')
 *
 *  Read SO integrals to packed vector format (all symms on one triangle)
 C Assumes only this hamiltonian only. Lasse
-              write(6,*) 'Itrctl: Full Dirac Hamiltonian!'
-              call rdone_dirac_KRCC(WORK(KDIONEE),LU2,DIRACONE,MORB,
-     &                             NDIM_TOT,ISPINFREE,WORK(KBOSYM),
-     &                             WORK(KIDUMAR),WORK(KDUMAR),NTEST)
-              MORB_DIRAC = MORB
-      print*,'check after rdone_dirac_KRCC'
-      CALL MEMCHK_KRCC(WORK)
+C             write(6,*) 'Itrctl: Full Dirac Hamiltonian!'
+C             call rdone_dirac_KRCC(WORK(KDIONEE),LU2,DIRACONE,MORB,
+C    &                             NDIM_TOT,ISPINFREE,WORK(KBOSYM),
+C    &                             WORK(KIDUMAR),WORK(KDUMAR),NTEST)
+C             MORB_DIRAC = MORB
+C     print*,'check after rdone_dirac_KRCC'
+C     CALL MEMCHK_KRCC(WORK)
 *
 *
 *******************************************************
@@ -495,6 +497,7 @@ C     call memmar(KDUM,IDUM,'FLUSM ',IDUM,'ITRCTL')
 * for the integral sorting step. Probably a lot of redundancies 
 * since taken without any knowledge from som routines in krmc.
 * Don't think just do
+* Much is a copy paste from KRCI_CALC and KRCI_CALC1
 *
 #include "implicit.h"
 #include "priunit.h"
@@ -503,7 +506,8 @@ C
 #include "thrzer.h"
 C
 C#include "mx2orb.h"
-C#include "dcbnrt.h" !hope we don't need it
+#include "maxorb.h"
+#include "krmc/dcbnrt.h" !hope we don't need it
 #include "dcbpsi.h"
 #include "dcbkrmc_itinfo.h"
 #include "dcbgen.h"
@@ -519,6 +523,7 @@ C#include "inforb.h"
 #include "ipoist8.inc"
 C
       LOGICAL   WFCONV, DO4INDEX, TOBE, EX
+      CHARACTER SZTRA(2,4)*80
 C     DIMENSION CMO(*), CREF(*)
 C     CHARACTER WFTYP*(*), SECTID*12, CPUTID*12, WALLTID*12
 C
@@ -530,16 +535,26 @@ C#include "memint.h"
 *
       CALL QENTER('KRCC_INT')
 C
+C From KRCI_CALC
+C
+
+      CALL SETDCBIDX()
+      CALL RSETWOP(WORK,KFREE,LFREE)
+      CALL FLSHFO(LUPRI)
+C
+C From KRCI_CALC_1
+C
+C
 C
 C     ***************************************************
 C     *** Initialize some parameters ********************
 C     ***************************************************
 C
-c     DO I = 1,2
-c        IOPT_ISYMOP(I) = 1
-c        IOPT_IFCKOP(I) = 1
-c        IOPT_IHRMOP(I) = 1
-c     END DO
+      DO I = 1,2
+         IOPT_ISYMOP(I) = 1
+         IOPT_IFCKOP(I) = 1
+         IOPT_IHRMOP(I) = 1
+      END DO
       JTRLVL = 0
       ITMAC  = 0
       DO4INDEX = ( MCTYPE .GE. JMCMIN )
@@ -551,10 +566,14 @@ C
 C
 C     Integrals for KR-CC calculation. Which are actually needed
 C
+      print*,'AT THE MOMENT HARDWIRED TO LL LS AND SS INTEGRALS'
+      IOPT_INTDEF = 0111
+      IOPT_INTBUF = 0111
       CALL INTCON(IOPT_INTFLG,IOPT_INTBUF,IOPT_INTDEF,GNORM(5),
      &            OPT_CNVINT,ITMAC,IOPT_ITRINT,OPT_INTTYP)
 *     Mo's from DFCOEF
       EX = .FALSE.
+      print*,'NCMOTQ',NCMOTQ
       CALL MEMGET('REAL',   KCMO  ,NCMOTQ  ,WORK,KFREE,LFREE)
          INQUIRE ( FILE = 'DFCOEF', EXIST = EX )
          IF ( EX ) THEN
@@ -568,8 +587,24 @@ C
      &              ' file DFCOEF'
             END IF
          END IF
+C        CALL MEMCHK_KRCC(WORK)
       print*,'after DFCOEF read'
       CALL RGMCMO(WORK(KCMO),WORK(KFREE),LFREE)
+C        CALL MEMCHK_KRCC(WORK)
+* Transformation 
+      CALL INISZT(JTRLVL,SZTRA,LNOROT,NOROT)
+C      CALL RTRACTL(CMO,SZTRA,WORK(KFREE),LFREE)
+      print*,'after INISZT'
+      CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
+      CALL IZERO(WORK(KIBEIG),NORBT)
+      print*,'NORBT',NORBT
+C
+      CALL RTRACTL(WORK(KCMO),WORK(KIBEIG),SZTRA,WORK(KFREE),LFREE)
+C      CALL RCIST(CMO,CREF,WORK,KFREE,LFREE)
+      print*,'after RTRACTL'
+      CALL MEMGET('REAL',KCREF ,0       ,WORK,KFREE,LFREE)
+      CALL RCIST(WORK(KCMO),WORK(KCREF),WORK,KFREE,LFREE)
+*
 *
 * Calculate NASHT
 *
