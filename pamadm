@@ -337,17 +337,19 @@ dirac_modules[this_module].add_test(short_test('dft_minnesota'))
 dirac_modules[this_module].add_test(short_test('dft_erf_xcfun'))
 dirac_modules[this_module].take_out_of_adm()
 
+this_module = 'oof'
+dirac_modules[this_module] = dirac_module('oof', 'Object oriented modularity of Fortran 90/95')
+dirac_modules[this_module].add_cppflag('MOD_OOF')
+dirac_modules[this_module].add_directory('oof')
+dirac_modules[this_module].take_out_of_adm()
+
 this_module = 'cap'
-dirac_modules[this_module] = dirac_module('cap', 'CAP module')
+dirac_modules[this_module] = dirac_module('cap', 'CAP module (together with object oriented modularity F90/95')
 dirac_modules[this_module].add_cppflag('MOD_CAP')
 dirac_modules[this_module].add_dependency('oof')
 dirac_modules[this_module].add_directory('cap')
 dirac_modules[this_module].take_out_of_adm()
 
-#fixme: in pamadm this flag triggers a lot of operations
-#       so far this is not done here
-#       (can they be avoided?)
-#       same for directories ... so complicating
 this_module = 'hscc'
 dirac_modules[this_module] = dirac_module('hscc', 'interface for the (external) HSMRCC code together with its objects')
 dirac_modules[this_module].add_cppflag('MOD_HSCC')
@@ -360,7 +362,7 @@ dirac_modules[this_module].add_directory('hsmrcc/hsmrcc_external/source')
 dirac_modules[this_module].take_out_of_adm()
 
 this_module = 'hsfs'
-dirac_modules[this_module] = dirac_module('hsfs', 'higher external Higher sector FSCC code')
+dirac_modules[this_module] = dirac_module('hsfs', 'Higher sectors FSCC codes')
 dirac_modules[this_module].add_cppflag('MOD_HSFS')
 dirac_modules[this_module].add_dependency('oof')
 dirac_modules[this_module].add_dependency('hscc')
@@ -368,7 +370,7 @@ dirac_modules[this_module].add_directory('hsmrcc/high_sect_fscc_external')
 dirac_modules[this_module].take_out_of_adm()
 
 this_module = 'hsfsdyn'
-dirac_modules[this_module] = dirac_module('hsfsdyn', 'higher external Higher sector FSCC code - dynamic allocation version.')
+dirac_modules[this_module] = dirac_module('hsfsdyn', 'Higher sectors FSCC codes- dynamic allocation version.')
 dirac_modules[this_module].add_cppflag('HSFS_DYN_ALLOC')
 dirac_modules[this_module].add_dependency('oof')
 dirac_modules[this_module].add_dependency('hsfs')
@@ -380,7 +382,7 @@ dirac_modules[this_module] = dirac_module('ihfscc', 'Intermediate Hamiltonian fu
 dirac_modules[this_module].add_cppflag('MOD_IHFSCC')
 
 this_module = 'amfi'
-dirac_modules[this_module] = dirac_module('amfi', 'the AMFI functionality into DIRAC')
+dirac_modules[this_module] = dirac_module('amfi', 'AMFI functionality for DIRAC')
 dirac_modules[this_module].add_cppflag('MOD_AMFI')
 dirac_modules[this_module].add_directory('amfi')
 
@@ -390,15 +392,9 @@ dirac_modules[this_module].add_cppflag('MOD_LONDON')
 dirac_modules[this_module].add_test(short_test('38.london.magn_prop'))
 
 this_module = 'magnetiz'
-dirac_modules[this_module] = dirac_module('magnetiz', 'calculation of magnetizabilities')
+dirac_modules[this_module] = dirac_module('magnetiz', 'Calculation of magnetizabilities')
 dirac_modules[this_module].add_cppflag('MOD_MAGNETIZ')
 dirac_modules[this_module].add_dependency('london')
-
-this_module = 'oof'
-dirac_modules[this_module] = dirac_module('oof', 'object oriented modularity of Fotran 90/95')
-dirac_modules[this_module].add_cppflag('MOD_OOF')
-dirac_modules[this_module].add_directory('oof')
-dirac_modules[this_module].take_out_of_adm()
 
 this_module = 'adc'
 dirac_modules[this_module] = dirac_module('adc', 'ADC electron propagator module')
