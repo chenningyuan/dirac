@@ -4332,7 +4332,9 @@ C
          IF(NS.NE.0.AND.NI.NE.0) THEN
            iopt_spinfree = IOPT
 #if defined MOD_MCSCF_spinfree
-           if(spinfr) iopt_spinfree = 1
+!radovan:  the following line breaks .SPINFREE and .LEVY-LEBLOND
+!          magnetizability and related properties (CME, JONES)
+!          if(spinfr) iopt_spinfree = 1
 #endif
 !          IF(IOPT.GT.0) THEN
            IF(iopt_spinfree.GT.0) THEN
