@@ -4747,7 +4747,7 @@ CMI   ... take care of 2c-4c/4c-2c transitions !
 
 !     quit if user wants .LEVY-LEBLOND and .LVCORR
       if (levyle .and. dolvc) then
-         call quit('.LEVY-LEBLOND and .LVCORR should not be used together')
+      call quit('.LEVY-LEBLOND and .LVCORR should not be used together')
       end if
 
 
