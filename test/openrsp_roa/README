@@ -1,7 +1,0 @@
-try:
-diff restart*
-
-file restart2 is modified elements in ebg are
-manipulated (= wrong) but also the frequency is modified
-and in a correct restart this wrong record with
-different frequency should be skipped
