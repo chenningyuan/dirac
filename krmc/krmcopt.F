@@ -113,8 +113,16 @@ C     ... default quadratic conv. factor for MCSCF
 
 !     set logical flag on common block in dcbopt.h for spinfree MCSCF    
 #if MOD_MCSCF_spinfree
-      if(spinfr.or.levyle)then
+!     if(spinfr.or.levyle)then
+      if(spinfr)then
         spinfr_krmc = .true.
+      else if(levyle)then
+!       fixme: already the initial CI using Levy-Leblond yields 
+!              wrong results compared to Dalton. S. Knecht - Aug 2010
+        write(lupri,*) ' *** error in KRMCSCF: MCSCF with
+     &            Levy-Leblond Hamiltonian is not working.***'
+        call quit('*** error in KRMCSCF: MCSCF with 
+     &            Levy-Leblond Hamiltonian is not working.***')
       else
         spinfr_krmc = .false.
       end if
