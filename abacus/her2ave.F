@@ -56,7 +56,6 @@ Cjth - they are now defined always.
          KLAST  = KPAO + NORBA*NORBB*NORBC*NORBD
       END IF
       IF (LONDON .AND. DDFOCK) THEN
-!     IF (LONDON .AND. DDFOCK .AND. .NOT.SUSCEP) THEN
          KPINT = KLAST
          KQINT = KPINT + 3*NCCINT
 Cajt six components if second derivative integrals
@@ -134,7 +133,7 @@ C      DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          DMAT(NBASIS,NBASIS,NDMAT), WORK(LWORK),
      &          FT(NBASIS,NBASIS,*), FV(NBASIS,NBASIS,*), DINT(12),
-     &          NCART(12), PINT(NCCINT,3), QINT(NCCINT,3),
+     &          NCART(12), PINT(NCCINT,*), QINT(NCCINT,*),
      &          DIFAB(3), DIFCD(3), DINTSKP(*)
       DIMENSION DINTMAX(3)
 #include "twocom.h"
@@ -2163,7 +2162,7 @@ C     DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
      &     NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &     DMAT(NBASIS,NBASIS,NDMAT), WORK(LWORK),
      &     FT(NBASIS,NBASIS,NDMAT,*), FV(NBASIS,NBASIS,NDMAT,*),
-     &     DINT(12), NCART(12), PINT(NCCINT,3), QINT(NCCINT,3),
+     &     DINT(12), NCART(12), PINT(NCCINT,*), QINT(NCCINT,*),
      &     DIFAB(3), DIFCD(3), DINTSKP(*)
 #include "twocom.h"
 #include "symmet.h"
@@ -2200,23 +2199,57 @@ C
       DIFCD(1) = XAND(ISYMT)*CORCX0 - XAND(ISYMTS)*CORDX0
       DIFCD(2) = YAND(ISYMT)*CORCY0 - YAND(ISYMTS)*CORDY0
       DIFCD(3) = ZAND(ISYMT)*CORCZ0 - ZAND(ISYMTS)*CORDZ0
-      DO 10 N = 1, 3
-         Y   = NEXT(N)
-         Z   = NEXT(Y)
-         ABY = DIFAB(Y)
-         ABZ = DIFAB(Z)
-         CDY = DIFCD(Y)
-         CDZ = DIFCD(Z)
-         Y2  = Y + 3
-         Z2  = Z + 3
-         DO 20 I = 1, NCCINT
-            AOAB = ABY*AOINT(I,Z ) - ABZ*AOINT(I,Y )
-            AOCD = CDY*AOINT(I,Z2) - CDZ*AOINT(I,Y2)
-            PINT(I,N) = AOAB + AOCD
-            QINT(I,N) = AOAB - AOCD
- 20      CONTINUE
- 10   CONTINUE
-C     
+
+
+      IF (.NOT.SUSCEP) THEN
+         DO 10 N = 1, 3
+            Y   = NEXT(N)
+            Z   = NEXT(Y)
+            ABY = DIFAB(Y)
+            ABZ = DIFAB(Z)
+            CDY = DIFCD(Y)
+            CDZ = DIFCD(Z)
+            Y2  = Y + 3
+            Z2  = Z + 3
+            DO 20 I = 1, NCCINT
+               AOAB = ABY*AOINT(I,Z ) - ABZ*AOINT(I,Y )
+               AOCD = CDY*AOINT(I,Z2) - CDZ*AOINT(I,Y2)
+               PINT(I,N) = AOAB + AOCD
+               QINT(I,N) = AOAB - AOCD
+  20        CONTINUE
+  10     CONTINUE
+         ELSE
+         DO J = 1, 6
+            K = (7+2*J)/5; M = J-K*(K-1)/2
+            K = NEXT(K); L = NEXT(K)
+            M = NEXT(M); N = NEXT(M)
+            KK = 1+(8-MIN(K,M))*(MIN(K,M)-1)/2+ABS(K-M)
+            KL = 1+(8-MIN(K,N))*(MIN(K,N)-1)/2+ABS(K-N)
+            LK = 1+(8-MIN(L,M))*(MIN(L,M)-1)/2+ABS(L-M)
+            LL = 1+(8-MIN(L,N))*(MIN(L,N)-1)/2+ABS(L-N)
+            KM = 3*(K-1) + M; MK = 3*(M-1) + K
+            KN = 3*(K-1) + N; NK = 3*(N-1) + K
+            LM = 3*(L-1) + M; ML = 3*(M-1) + L
+            LN = 3*(L-1) + N; NL = 3*(N-1) + L
+            ABK = DIFAB(K); ABL = DIFAB(L)
+            ABM = DIFAB(M); ABN = DIFAB(N)
+            CDK = DIFCD(K); CDL = DIFCD(L)
+            CDM = DIFCD(M); CDN = DIFCD(N)
+            DO I = 1, NCCINT
+               PPQQ = ABL*ABN*AOINT(I, 6+KK) - ABL*ABM*AOINT(I, 6+KL)
+     &              - ABK*ABN*AOINT(I, 6+LK) + ABK*ABM*AOINT(I, 6+LL)
+     &              + CDL*CDN*AOINT(I,12+KK) - CDL*CDM*AOINT(I,12+KL)
+     &              - CDK*CDN*AOINT(I,12+LK) + CDK*CDM*AOINT(I,12+LL)
+               PQPQ = ABL*CDN*AOINT(I,18+KM) - ABL*CDM*AOINT(I,18+KN)
+     &              - ABK*CDN*AOINT(I,18+LM) + ABK*CDM*AOINT(I,18+LN)
+     &              + ABN*CDL*AOINT(I,18+MK) - ABN*CDK*AOINT(I,18+ML)
+     &              - ABM*CDL*AOINT(I,18+NK) + ABM*CDK*AOINT(I,18+NL)
+               PINT(I,J) = -(PPQQ + PQPQ)/4
+               QINT(I,J) = -(PPQQ - PQPQ)/4
+            END DO
+         END DO
+      END IF
+
       SFAC = SYMFAC
       IF (.NOT.SHABAB) SFAC = D2*SFAC
       IF (.NOT.SHAEQB) SFAC = D2*SFAC
@@ -2323,44 +2356,82 @@ C
                               ddb = efac*dmat(d, b, imat)
                            end if
 
-                           do ixyz = 1, 3
+                           if (suscep) then
+                              do i = 1, 6
 
-                              abcd = pint(int, ixyz)
-                              abdc = qint(int, ixyz)
+                                 abcd = pint(int, i)
+                                 abdc = qint(int, i)
+            
+            
+!                                coulomb
+!                                =======
+            
+             ft(a, b, imat, i) = ft(a, b, imat, i) + abcd*ddc + abdc*dcd
+             ft(c, d, imat, i) = ft(c, d, imat, i) + abcd*dba + abdc*dab
+
+             ft(b, a, imat, i) = ft(b, a, imat, i) + abcd*dcd + abdc*ddc
+             ft(d, c, imat, i) = ft(d, c, imat, i) + abcd*dab + abdc*dba
 
 
-!                             coulomb
-!                             =======
-
-                  ft(b, a, imat, ixyz) = ft(b, a, imat, ixyz) - abcd*dcd
-                  ft(b, a, imat, ixyz) = ft(b, a, imat, ixyz) - abdc*ddc
-                  ft(d, c, imat, ixyz) = ft(d, c, imat, ixyz) - abcd*dab
-                  ft(d, c, imat, ixyz) = ft(d, c, imat, ixyz) + abdc*dba
+!                                exchange
+!                                ========
+                                
+                                 if (dabs(efac) > tiny(0.0d0)) then
+           
+                        ft(a, c, imat, i) = ft(a, c, imat, i) - abdc*dbd
+                        ft(a, d, imat, i) = ft(a, d, imat, i) - abcd*dbc
+                        ft(b, c, imat, i) = ft(b, c, imat, i) - abcd*dad
+                        ft(b, d, imat, i) = ft(b, d, imat, i) - abdc*dac
                                                                         
-                  ft(a, b, imat, ixyz) = ft(a, b, imat, ixyz) + abcd*ddc
-                  ft(a, b, imat, ixyz) = ft(a, b, imat, ixyz) + abdc*dcd
-                  ft(c, d, imat, ixyz) = ft(c, d, imat, ixyz) + abcd*dba
-                  ft(c, d, imat, ixyz) = ft(c, d, imat, ixyz) - abdc*dab
+                        ft(c, a, imat, i) = ft(c, a, imat, i) - abdc*ddb
+                        ft(d, a, imat, i) = ft(d, a, imat, i) - abcd*dcb
+                        ft(c, b, imat, i) = ft(c, b, imat, i) - abcd*dda
+                        ft(d, b, imat, i) = ft(d, b, imat, i) - abdc*dca
+            
+                                 end if
 
+                              end do
+                           else
+                              do i = 1, 3
+            
+                                 abcd = pint(int, i)
+                                 abdc = qint(int, i)
+            
+            
+!                                coulomb
+!                                =======
+            
+                        ft(b, a, imat, i) = ft(b, a, imat, i) - abcd*dcd
+                        ft(b, a, imat, i) = ft(b, a, imat, i) - abdc*ddc
+                        ft(d, c, imat, i) = ft(d, c, imat, i) - abcd*dab
+                        ft(d, c, imat, i) = ft(d, c, imat, i) + abdc*dba
+                                                                              
+                        ft(a, b, imat, i) = ft(a, b, imat, i) + abcd*ddc
+                        ft(a, b, imat, i) = ft(a, b, imat, i) + abdc*dcd
+                        ft(c, d, imat, i) = ft(c, d, imat, i) + abcd*dba
+                        ft(c, d, imat, i) = ft(c, d, imat, i) - abdc*dab
+           
+           
+!                                exchange
+!                                ========
+                                
+                                 if (dabs(efac) > tiny(0.0d0)) then
+           
+                        ft(c, a, imat, i) = ft(c, a, imat, i) + abdc*ddb
+                        ft(d, a, imat, i) = ft(d, a, imat, i) + abcd*dcb
+                        ft(c, b, imat, i) = ft(c, b, imat, i) - abcd*dda
+                        ft(d, b, imat, i) = ft(d, b, imat, i) - abdc*dca
+                    
+                        ft(a, c, imat, i) = ft(a, c, imat, i) - abdc*dbd
+                        ft(a, d, imat, i) = ft(a, d, imat, i) - abcd*dbc
+                        ft(b, c, imat, i) = ft(b, c, imat, i) + abcd*dad
+                        ft(b, d, imat, i) = ft(b, d, imat, i) + abdc*dac
+            
+                                 end if
+            
+                              end do
+                           end if
 
-!                             exchange
-!                             ========
-
-                              if (dabs(efac) > tiny(0.0d0)) then
-
-                  ft(c, a, imat, ixyz) = ft(c, a, imat, ixyz) + abdc*ddb
-                  ft(d, a, imat, ixyz) = ft(d, a, imat, ixyz) + abcd*dcb
-                  ft(c, b, imat, ixyz) = ft(c, b, imat, ixyz) - abcd*dda
-                  ft(d, b, imat, ixyz) = ft(d, b, imat, ixyz) - abdc*dca
-
-                  ft(a, c, imat, ixyz) = ft(a, c, imat, ixyz) - abdc*dbd
-                  ft(a, d, imat, ixyz) = ft(a, d, imat, ixyz) - abcd*dbc
-                  ft(b, c, imat, ixyz) = ft(b, c, imat, ixyz) + abcd*dad
-                  ft(b, d, imat, ixyz) = ft(b, d, imat, ixyz) + abdc*dac
-
-                              end if
-
-                           end do
                         end do
 
 

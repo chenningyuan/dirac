@@ -100,7 +100,7 @@ contains
     else if (fock) then
 
       gencnt   = .false.
-      fmat_dim = 3*n2bbasxq
+      fmat_dim = 3*n2bbasxq*max_derv
 
       if (geo) then
         itype = 8
@@ -118,8 +118,8 @@ contains
     f = 1.0d0
     if (fock) then
       if (geo)                        f = 0.25d0
-      if (london .and. max_derv == 1) f = 0.50d0
-      if (london .and. max_derv == 2) f = 1.00d0
+      if (london .and. max_derv == 1) f = 2.00d0
+      if (london .and. max_derv == 2) f = 4.00d0
     end if
 
     allocate(tmat(fmat_dim))
@@ -135,7 +135,7 @@ contains
       tmat = 0.0d0
       call dzero(skip, 3*14*3)
 
-      call twoint(work, lwork, fmat, dmat, 4*nr_dmat, (/0/),             &
+      call twoint(work, lwork, tmat, dmat, 4*nr_dmat, (/0/),             &
                   ifctyp, (/0.0d0/), (/0/), (/0/), itype,                &
                   max_derv, iatom, .true., .true., .false., tktime,      &
                   1, 0, 0, 0, 0, .false., (/0/), i2typ,                  &
@@ -154,7 +154,7 @@ contains
       tmat = 0.0d0
       call dzero(skip, 3*14*3)
 
-      call twoint(work, lwork, fmat, dmat, 4*nr_dmat, (/0/),             &
+      call twoint(work, lwork, tmat, dmat, 4*nr_dmat, (/0/),             &
                   ifctyp, (/0.0d0/), (/0/), (/0/), itype,                &
                   max_derv, iatom, .true., .true., .false., tktime,      &
                   1, 0, 0, 0, 0, .false., (/0/), i2typ,                  &
@@ -173,7 +173,7 @@ contains
       tmat = 0.0d0
       call dzero(skip, 3*14*3)
 
-      call twoint(work, lwork, fmat, dmat, 4*nr_dmat, (/0/),             &
+      call twoint(work, lwork, tmat, dmat, 4*nr_dmat, (/0/),             &
                   ifctyp, (/0.0d0/), (/0/), (/0/), itype,                &
                   max_derv, iatom, .true., .true., .false., tktime,      &
                   1, 0, 0, 0, 0, .false., (/0/), i2typ,                  &

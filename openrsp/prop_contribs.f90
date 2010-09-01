@@ -1049,6 +1049,7 @@ contains
                      ! ajt Since MAG is imaginary/anti-symmetric, we get a minus sign here
                      E(1+i+de(1)*(j+de(2)*k)) = -tr(A(ii), D(pd1-pd+1+k)) &
                                               * merge(1/2d0,1d0,nd==0) !half for magnetizability
+!                    merge(1/2d0,1d0,nd==0) means multiply by 0.5 if nd == 0
                   end do
                end do
             end do
