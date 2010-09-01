@@ -8,13 +8,6 @@ export MENU=LiH.levyle.shield_lao_go=cm
 export MENU=LiH.bss.shield_lao_go=cm
 ../run.sh
 
-if [ "$RUNTYPE" = "short" ]; then
-   echo
-   echo "Completed short test"
-   echo "<-----"
-   exit 0
-fi
-
 export MENU=LiH.bss+mfsso.shield_lao_go=cm
 ../run.sh
 
