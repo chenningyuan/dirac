@@ -55,12 +55,15 @@ Cjth - they are now defined always.
          KPAA   = KPAO
          KLAST  = KPAO + NORBA*NORBB*NORBC*NORBD
       END IF
-CMI   IF (LONDON .AND. DDFOCK) THEN
-      IF (LONDON .AND. DDFOCK .AND. .NOT.SUSCEP) THEN
+      IF (LONDON .AND. DDFOCK) THEN
+!     IF (LONDON .AND. DDFOCK .AND. .NOT.SUSCEP) THEN
          KPINT = KLAST
          KQINT = KPINT + 3*NCCINT
+Cajt six components if second derivative integrals
+         IF (SUSCEP) KQINT = KPINT + 6*NCCINT
          KLAST = KQINT + 3*NCCINT
-CMI ... an addition from TEC
+Cajt six components if second derivative integrals
+         IF (SUSCEP) KLAST = KQINT + 6*NCCINT
          IF (KLAST .GT. LWORK) CALL STOPIT('INTEXP',' ',KLAST,LWORK)
          LWRK   = LWORK  - KLAST + 1
          MWINTE = MAX(MWINTE,KLAST)
@@ -2296,6 +2299,10 @@ C
                         dfac = dp125*fab*fcd*fcabcd
                         efac = hfxfac*dp5*dfac
 
+!radovan                cancelling a factor 2 somewhere in the code
+                        dfac = 0.5d0*dfac
+                        efac = 0.5d0*efac
+
                         do imat = 1, ndmat
 
                            dab = dfac*dmat(a, b, imat)
@@ -2325,34 +2332,32 @@ C
 !                             coulomb
 !                             =======
 
-
-                              if (imat == 1) then 
-!                               real part
-                                ft(b, a, imat, ixyz) 
-     &                        = ft(b, a, imat, ixyz) - (abcd + abdc)*ddc
-                                ft(d, c, imat, ixyz)                    
-     &                        = ft(d, c, imat, ixyz) - (abcd - abdc)*dba
-                              else                                      
-!                               quaternion imaginary part               
-                                ft(b, a, imat, ixyz)                    
-     &                        = ft(b, a, imat, ixyz) + (abcd - abdc)*ddc
-                                ft(d, c, imat, ixyz)                    
-     &                        = ft(d, c, imat, ixyz) + (abcd + abdc)*dba
-                              end if
+                  ft(b, a, imat, ixyz) = ft(b, a, imat, ixyz) - abcd*dcd
+                  ft(b, a, imat, ixyz) = ft(b, a, imat, ixyz) - abdc*ddc
+                  ft(d, c, imat, ixyz) = ft(d, c, imat, ixyz) - abcd*dab
+                  ft(d, c, imat, ixyz) = ft(d, c, imat, ixyz) + abdc*dba
+                                                                        
+                  ft(a, b, imat, ixyz) = ft(a, b, imat, ixyz) + abcd*ddc
+                  ft(a, b, imat, ixyz) = ft(a, b, imat, ixyz) + abdc*dcd
+                  ft(c, d, imat, ixyz) = ft(c, d, imat, ixyz) + abcd*dba
+                  ft(c, d, imat, ixyz) = ft(c, d, imat, ixyz) - abdc*dab
 
 
 !                             exchange
 !                             ========
 
                               if (dabs(efac) > tiny(0.0d0)) then
-                                 ft(c, a, imat, ixyz) 
-     &                         = ft(c, a, imat, ixyz) + abdc*ddb
-                                 ft(d, a, imat, ixyz)           
-     &                         = ft(d, a, imat, ixyz) + abcd*dcb
-                                 ft(c, b, imat, ixyz)           
-     &                         = ft(c, b, imat, ixyz) - abcd*dda
-                                 ft(d, b, imat, ixyz)           
-     &                         = ft(d, b, imat, ixyz) - abdc*dca
+
+                  ft(c, a, imat, ixyz) = ft(c, a, imat, ixyz) + abdc*ddb
+                  ft(d, a, imat, ixyz) = ft(d, a, imat, ixyz) + abcd*dcb
+                  ft(c, b, imat, ixyz) = ft(c, b, imat, ixyz) - abcd*dda
+                  ft(d, b, imat, ixyz) = ft(d, b, imat, ixyz) - abdc*dca
+
+                  ft(a, c, imat, ixyz) = ft(a, c, imat, ixyz) - abdc*dbd
+                  ft(a, d, imat, ixyz) = ft(a, d, imat, ixyz) - abcd*dbc
+                  ft(b, c, imat, ixyz) = ft(b, c, imat, ixyz) + abcd*dad
+                  ft(b, d, imat, ixyz) = ft(b, d, imat, ixyz) + abdc*dac
+
                               end if
 
                            end do
