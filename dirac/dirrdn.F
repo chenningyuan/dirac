@@ -6246,7 +6246,9 @@ C
      & ' form of operators !'
       ENDIF
 
-      IF (SPINFR.AND.DOPRP)WRITE (LUPRI,1000)'Spinfree properties'
+!radovan: i think they are now rather ok tested
+!     IF (SPINFR.AND.DOPRP)WRITE (LUPRI,1000)'Spinfree properties'
+
       IF (DORES .AND.dirac_cfg_dft_calculation)
      &   CALL QUIT ('.RESOLVE does not work with DFT')
 C hjaaj April 2002: why not DORES .and. DOTRA ??? TODO
