@@ -2292,51 +2292,71 @@ C             based on DALTON integrals formalism
 C
 CMI TODO: Carefully analyze these formulas ! 
 C
-                        DFAC =  DP125*FAB*FCD*FCABCD
 
-!                        EFAC = DP5*DFAC
-                        EFAC = HFXFAC*DP5*DFAC
-C     
-C     Total Fock matrix
-C     
-CTEC/MI  Remember that D(1) is symmetric whereas D(2,3,4) are antisymmetric
-C        ===================================================================
-!-----------------------------------------------------------------------
-                        DO IMAT = 1, NDMAT
-                           DAB  = DFAC*DMAT(B,A,IMAT)
-                           DCD  = DFAC*DMAT(D,C,IMAT)
-                           DAC  = EFAC*DMAT(C,A,IMAT)
-                           DAD  = EFAC*DMAT(D,A,IMAT)
-                           DBC  = EFAC*DMAT(C,B,IMAT)
-                           DBD  = EFAC*DMAT(D,B,IMAT)
-                           DO IXYZ = 1, 3
-                              ABCD = PINT(INT,IXYZ)
-                              ABDC = QINT(INT,IXYZ)
-                              IF (IMAT.EQ.1) THEN 
-CMI                       .... real part
-                                 FT(B,A,IMAT,IXYZ) 
-     &                         = FT(B,A,IMAT,IXYZ) - (ABCD+ABDC)*DCD
-                                 FT(D,C,IMAT,IXYZ) 
-     &                         = FT(D,C,IMAT,IXYZ) - (ABCD-ABDC)*DAB
-                               ELSE  
-CMI                       .... quaternion imaginary part
-                                 FT(B,A,IMAT,IXYZ) 
-     &                         = FT(B,A,IMAT,IXYZ) + (ABCD-ABDC)*DCD
-                                 FT(D,C,IMAT,IXYZ) 
-     &                         = FT(D,C,IMAT,IXYZ) + (ABCD+ABDC)*DAB
-                              END IF
+                        dfac = dp125*fab*fcd*fcabcd
+                        efac = hfxfac*dp5*dfac
 
-                              FT(C,A,IMAT,IXYZ) 
-     &                      = FT(C,A,IMAT,IXYZ) + ABDC*DBD
-                              FT(D,A,IMAT,IXYZ) 
-     &                      = FT(D,A,IMAT,IXYZ) + ABCD*DBC
-                              FT(C,B,IMAT,IXYZ) 
-     &                      = FT(C,B,IMAT,IXYZ) - ABCD*DAD
-                              FT(D,B,IMAT,IXYZ) 
-     &                      = FT(D,B,IMAT,IXYZ) - ABDC*DAC
+                        do imat = 1, ndmat
 
-                           END DO
-                        END DO
+                           dab = dfac*dmat(b, a, imat)
+                           dcd = dfac*dmat(d, c, imat)
+
+                           dba = dfac*dmat(a, b, imat)
+                           ddc = dfac*dmat(c, d, imat)
+
+                           if (dabs(efac) > tiny(0.0d0)) then
+                              dac = efac*dmat(c, a, imat)
+                              dad = efac*dmat(d, a, imat)
+                              dbc = efac*dmat(c, b, imat)
+                              dbd = efac*dmat(d, b, imat)
+                              
+                              dca = efac*dmat(a, c, imat)
+                              dda = efac*dmat(a, d, imat)
+                              dcb = efac*dmat(b, c, imat)
+                              ddb = efac*dmat(b, d, imat)
+                           end if
+
+                           do ixyz = 1, 3
+
+                              abcd = pint(int, ixyz)
+                              abdc = qint(int, ixyz)
+
+
+!                             coulomb
+!                             =======
+
+
+                              if (imat == 1) then 
+!                               real part
+                                ft(b, a, imat, ixyz) 
+     &                        = ft(b, a, imat, ixyz) - (abcd + abdc)*dcd
+                                ft(d, c, imat, ixyz)           
+     &                        = ft(d, c, imat, ixyz) - (abcd - abdc)*dab
+                              else  
+!                               quaternion imaginary part
+                                ft(b, a, imat, ixyz) 
+     &                        = ft(b, a, imat, ixyz) + (abcd - abdc)*dcd
+                                ft(d, c, imat, ixyz)           
+     &                        = ft(d, c, imat, ixyz) + (abcd + abdc)*dab
+                              end if
+
+
+!                             exchange
+!                             ========
+
+                              if (dabs(efac) > tiny(0.0d0)) then
+                                 ft(c, a, imat, ixyz) 
+     &                         = ft(c, a, imat, ixyz) + abdc*dbd
+                                 ft(d, a, imat, ixyz) 
+     &                         = ft(d, a, imat, ixyz) + abcd*dbc
+                                 ft(c, b, imat, ixyz) 
+     &                         = ft(c, b, imat, ixyz) - abcd*dad
+                                 ft(d, b, imat, ixyz) 
+     &                         = ft(d, b, imat, ixyz) - abdc*dac
+                              end if
+
+                           end do
+                        end do
 
 
 
