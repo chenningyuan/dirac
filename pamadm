@@ -616,9 +616,14 @@ for module in dirac_modules:
       for directory in dirac_modules[module].directories:
          if os.path.exists(dirac_dir+"/"+directory):
             dest_dir=dirac_dir+"/"+directory+"/Makefile"
-            if not os.path.islink(dest_dir):
-               os.symlink(source_dir,dest_dir)
-
+            #if (not os.path.islink(dest_dir)) and (not os.path.isfile(dest_dir)):
+            if (not os.path.islink(dest_dir)) :
+               try:
+                  os.symlink(source_dir,dest_dir)
+               except (OSError, ValueError):
+                  print "linking error - source dir: ",source_dir
+                  print "linking error - destination dir: ",dest_dir
+                  sys.exit("Linking error ! Check that Makefile !")
 
 # package tests
 # =============
