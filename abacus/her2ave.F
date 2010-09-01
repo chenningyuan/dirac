@@ -2298,22 +2298,22 @@ C
 
                         do imat = 1, ndmat
 
-                           dab = dfac*dmat(b, a, imat)
-                           dcd = dfac*dmat(d, c, imat)
-
-                           dba = dfac*dmat(a, b, imat)
-                           ddc = dfac*dmat(c, d, imat)
+                           dab = dfac*dmat(a, b, imat)
+                           dcd = dfac*dmat(c, d, imat)
+                                               
+                           dba = dfac*dmat(b, a, imat)
+                           ddc = dfac*dmat(d, c, imat)
 
                            if (dabs(efac) > tiny(0.0d0)) then
-                              dac = efac*dmat(c, a, imat)
-                              dad = efac*dmat(d, a, imat)
-                              dbc = efac*dmat(c, b, imat)
-                              dbd = efac*dmat(d, b, imat)
-                              
-                              dca = efac*dmat(a, c, imat)
-                              dda = efac*dmat(a, d, imat)
-                              dcb = efac*dmat(b, c, imat)
-                              ddb = efac*dmat(b, d, imat)
+                              dac = efac*dmat(a, c, imat)
+                              dad = efac*dmat(a, d, imat)
+                              dbc = efac*dmat(b, c, imat)
+                              dbd = efac*dmat(b, d, imat)
+                                                  
+                              dca = efac*dmat(c, a, imat)
+                              dda = efac*dmat(d, a, imat)
+                              dcb = efac*dmat(c, b, imat)
+                              ddb = efac*dmat(d, b, imat)
                            end if
 
                            do ixyz = 1, 3
@@ -2329,15 +2329,15 @@ C
                               if (imat == 1) then 
 !                               real part
                                 ft(b, a, imat, ixyz) 
-     &                        = ft(b, a, imat, ixyz) - (abcd + abdc)*dcd
-                                ft(d, c, imat, ixyz)           
-     &                        = ft(d, c, imat, ixyz) - (abcd - abdc)*dab
-                              else  
-!                               quaternion imaginary part
-                                ft(b, a, imat, ixyz) 
-     &                        = ft(b, a, imat, ixyz) + (abcd - abdc)*dcd
-                                ft(d, c, imat, ixyz)           
-     &                        = ft(d, c, imat, ixyz) + (abcd + abdc)*dab
+     &                        = ft(b, a, imat, ixyz) - (abcd + abdc)*ddc
+                                ft(d, c, imat, ixyz)                    
+     &                        = ft(d, c, imat, ixyz) - (abcd - abdc)*dba
+                              else                                      
+!                               quaternion imaginary part               
+                                ft(b, a, imat, ixyz)                    
+     &                        = ft(b, a, imat, ixyz) + (abcd - abdc)*ddc
+                                ft(d, c, imat, ixyz)                    
+     &                        = ft(d, c, imat, ixyz) + (abcd + abdc)*dba
                               end if
 
 
@@ -2346,13 +2346,13 @@ C
 
                               if (dabs(efac) > tiny(0.0d0)) then
                                  ft(c, a, imat, ixyz) 
-     &                         = ft(c, a, imat, ixyz) + abdc*dbd
-                                 ft(d, a, imat, ixyz) 
-     &                         = ft(d, a, imat, ixyz) + abcd*dbc
-                                 ft(c, b, imat, ixyz) 
-     &                         = ft(c, b, imat, ixyz) - abcd*dad
-                                 ft(d, b, imat, ixyz) 
-     &                         = ft(d, b, imat, ixyz) - abdc*dac
+     &                         = ft(c, a, imat, ixyz) + abdc*ddb
+                                 ft(d, a, imat, ixyz)           
+     &                         = ft(d, a, imat, ixyz) + abcd*dcb
+                                 ft(c, b, imat, ixyz)           
+     &                         = ft(c, b, imat, ixyz) - abcd*dda
+                                 ft(d, b, imat, ixyz)           
+     &                         = ft(d, b, imat, ixyz) - abdc*dca
                               end if
 
                            end do
