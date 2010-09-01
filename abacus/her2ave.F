@@ -2292,14 +2292,16 @@ C             based on DALTON integrals formalism
 C
 CMI TODO: Carefully analyze these formulas ! 
 C
-                        DFAC = -DP125*FAB*FCD*FCABCD
-CMI DALTON COUNTERPART  DFAC =  DP125*FAB*FCD*FCABCD
+                        DFAC =  DP125*FAB*FCD*FCABCD
 
 !                        EFAC = DP5*DFAC
                         EFAC = HFXFAC*DP5*DFAC
 C     
 C     Total Fock matrix
 C     
+CTEC/MI  Remember that D(1) is symmetric whereas D(2,3,4) are antisymmetric
+C        ===================================================================
+!-----------------------------------------------------------------------
                         DO IMAT = 1, NDMAT
                            DAB  = DFAC*DMAT(B,A,IMAT)
                            DCD  = DFAC*DMAT(D,C,IMAT)
@@ -2310,46 +2312,34 @@ C
                            DO IXYZ = 1, 3
                               ABCD = PINT(INT,IXYZ)
                               ABDC = QINT(INT,IXYZ)
-CTEC/MI  Remember that D(1) is symmetric whereas D(2,3,4) are antisymmetric
-C        ===================================================================
                               IF (IMAT.EQ.1) THEN 
 CMI                       .... real part
-                                 FT(B,A,IMAT,IXYZ) = FT(B,A,IMAT,IXYZ)
-     &                                + (ABCD+ABDC)*DCD
-CMI DALTON  Re  FT(B,A,N) = FT(B,A,N) - (ABCD+ABDC)*DCD
-
-                                 FT(D,C,IMAT,IXYZ) = FT(D,C,IMAT,IXYZ)
-     &                                + (ABCD-ABDC)*DAB
-CMI DALTON  Re  FT(D,C,N) = FT(D,C,N) - (ABCD-ABDC)*DAB
+                                 FT(B,A,IMAT,IXYZ) 
+     &                         = FT(B,A,IMAT,IXYZ) - (ABCD+ABDC)*DCD
+                                 FT(D,C,IMAT,IXYZ) 
+     &                         = FT(D,C,IMAT,IXYZ) - (ABCD-ABDC)*DAB
                                ELSE  
 CMI                       .... quaternion imaginary part
-                                 FT(B,A,IMAT,IXYZ) = FT(B,A,IMAT,IXYZ)
-     &                                - (ABCD-ABDC)*DCD
-CMI DALTON  Re  FT(B,A,N) = FT(B,A,N) - (ABCD+ABDC)*DCD
-
-                                 FT(D,C,IMAT,IXYZ) = FT(D,C,IMAT,IXYZ)
-     &                                - (ABCD+ABDC)*DAB
-CMI DALTON  Re  FT(D,C,N) = FT(D,C,N) - (ABCD-ABDC)*DAB
+                                 FT(B,A,IMAT,IXYZ) 
+     &                         = FT(B,A,IMAT,IXYZ) + (ABCD-ABDC)*DCD
+                                 FT(D,C,IMAT,IXYZ) 
+     &                         = FT(D,C,IMAT,IXYZ) + (ABCD+ABDC)*DAB
                               END IF
 
-                              FT(C,A,IMAT,IXYZ) = FT(C,A,IMAT,IXYZ)
-     &                                - ABDC*DBD
-CMI DALTON  Re  FT(C,A,N) = FT(C,A,N) + ABDC*DBD
-
-                              FT(D,A,IMAT,IXYZ) = FT(D,A,IMAT,IXYZ)
-     &                                - ABCD*DBC
-CMI DALTON  Re  FT(D,A,N) = FT(D,A,N) + ABCD*DBC 
-
-                              FT(C,B,IMAT,IXYZ) = FT(C,B,IMAT,IXYZ)
-     &                                + ABCD*DAD
-CMI DALTON  Re  FT(C,B,N) = FT(C,B,N) - ABCD*DAD
-
-                              FT(D,B,IMAT,IXYZ) = FT(D,B,IMAT,IXYZ)
-     &                                + ABDC*DAC
-CMI DALTON  Re  FT(D,B,N) = FT(D,B,N) - ABDC*DAC
+                              FT(C,A,IMAT,IXYZ) 
+     &                      = FT(C,A,IMAT,IXYZ) + ABDC*DBD
+                              FT(D,A,IMAT,IXYZ) 
+     &                      = FT(D,A,IMAT,IXYZ) + ABCD*DBC
+                              FT(C,B,IMAT,IXYZ) 
+     &                      = FT(C,B,IMAT,IXYZ) - ABCD*DAD
+                              FT(D,B,IMAT,IXYZ) 
+     &                      = FT(D,B,IMAT,IXYZ) - ABDC*DAC
 
                            END DO
                         END DO
+
+
+
 CMI  ... control print-out
                         IF (IPRINT .GT. 30) THEN
                           WRITE(LUPRI,'(//A,4I5)')
