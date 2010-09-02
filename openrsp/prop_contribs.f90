@@ -1562,6 +1562,9 @@ contains
       character(4) :: pp(size(p)), tmpp
       type(matrix) :: Ftmp(product(dimf))
       logical      :: zero
+#ifdef PRG_DIRAC
+      integer, allocatable :: irep_remember(:)
+#endif
       ! (re-)initialize the module's data on nuclei and basis
       call init_this_module(D(1))
       ! verify that all perturbation labels exist, find index of each
@@ -1632,6 +1635,12 @@ contains
             call lsquit('prop_twoint error: Undefined matrix in argument D(:)',-1)
          return
       end if
+#ifdef PRG_DIRAC
+      allocate(irep_remember(product(dimf)))
+      do i = 1, product(dimf)
+         irep_remember(i) = F(i)%irep
+      end do
+#endif
       ! permute perturbed Fock matrices in F(:) over to Ftmp(:)
       idxf = 0
       do j = 1, product(dimf)
@@ -1658,6 +1667,12 @@ contains
             idxf(k) = 0
          end do
       end do
+#ifdef PRG_DIRAC
+      do i = 1, product(dimf)
+         F(i)%irep = irep_remember(i)
+      end do
+      deallocate(irep_remember)
+#endif
    end subroutine
 
 
