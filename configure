@@ -2602,8 +2602,6 @@ make_Makefile.config ()  {
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 echo
-echo 'MAKING MAKEFILE.CONFIG'
-echo
 if [ -f Makefile.config ]; then
    echo 'Makefile.config exists. I will take a backup.'
    backup  Makefile.config
@@ -2991,7 +2989,6 @@ echo 'BIN_DIR='$INSTALL_DIR                                            >> $SRC_D
 echo ' '                                                               >> $SRC_DIR/test/run.sh
 cat $SRC_DIR/test/run.sh.in                                            >> $SRC_DIR/test/run.sh
 chmod 700 $SRC_DIR/test/run.sh
-echo '$SRC_DIR/test/run.sh script for tests run ready.'
 ###############################
 
 if [ $IPRINT -ge "5" ]; then
@@ -3008,10 +3005,7 @@ final_words () {
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 echo
-echo "END OF CONFIGURE"
-echo
-echo "Please check 'Known issues and problems' at"
-echo "http://dirac.chem.sdu.dk/ and http://wiki.chem.vu.nl/dirac"
+echo "Please check http://wiki.chem.vu.nl/dirac/index.php/Dirac_Program"
 echo "to see hints or/and problems concerning your platform."
 echo
 if [ "$bit_set" = "64" ]; then
@@ -3028,12 +3022,10 @@ if [ "$bit_set" = "64" ]; then
 fi
 fi
 echo
-echo "Before you run make, you may check the Makefile.config and "
-echo "pam files and edit them if you wish."
+echo "Before you run make, you may check and edit Makefile.config."
 echo
-echo "Then run "
-echo "   make"
-echo "and then Dirac should be ready to run..."
+echo "Then run"
+echo "$ make"
 }
 
 make_pamq ()  {
@@ -3060,7 +3052,6 @@ EOF
 cat ./pamq.py.in  >>  $INSTALL_DIR/pamq.py
 chmod a+rx  $INSTALL_DIR/pamq.py
 
-$echo "$INSTALL_DIR/pamq.py script for launching queuing job ready.\n"
 }
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3075,9 +3066,10 @@ $echo "$INSTALL_DIR/pamq.py script for launching queuing job ready.\n"
 initialize
 opt=
 echo
-echo '   Generating Makefile.config, pam, and test/run.sh'
+echo '   Generating files Makefile.config and pam'
 echo
-echo '   Run configure with the --help argument for more options'
+echo '   To see all available options run'
+echo '   $ ./configure --help'
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
