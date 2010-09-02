@@ -774,6 +774,7 @@ contains
 #ifdef PRG_DIRAC
       use dirac_interface
       use openrsp_cfg
+      use openrsp_interface_response
 #endif
 #ifdef DALTON_AO_RSP
       use dalton_ifc
