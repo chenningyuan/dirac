@@ -38,6 +38,7 @@ contains
       character(8) :: s, s1, s2, s3
       real(8)      :: f
       integer      :: i, ij, iatom
+      integer      :: irep(6)
       character(2) ::  i_iter(3) = (/ 'X',  'Y',  'Z'/)
       character(2) :: ij_iter(6) = (/'XX', 'XY', 'XZ', 'YY', 'YZ', 'ZZ'/)
 !     --------------------------------------------------------------------------
@@ -112,53 +113,80 @@ contains
 
       f = 1.0d0
       blocks = '+00'//ss
+
+      irep(1) = isymax(1, 1)
+      irep(2) = isymax(2, 1)
+      irep(3) = isymax(3, 1)
+
       do i = 1, size(i_iter)
          s      = ' DIPLEN '
          s(1:1) = i_iter(i)
-         call add_operator(s // '        ',    &
-                           blocks,             &
-                           1,                  &
-                           1,                  &
-                           (isymax(i, 1) + 1), &
-                           (/f/),              &
-                           (/s/))
-      end do
-
-      f = 1.0d0
-      blocks = '+00'//ss
-      do ij = 1, size(ij_iter)
-         s = ij_iter(ij) // 'THETA '
          call add_operator(s // '        ', &
                            blocks,          &
                            1,               &
                            1,               &
-                           1,               &
+                           1 + irep(i),     &
+                           (/1 + irep(i)/), &
                            (/f/),           &
+                           (/s/))
+      end do
+
+      irep(1) = 0
+      irep(2) = ieor(isymax(1, 1), isymax(2, 1))
+      irep(3) = ieor(isymax(1, 1), isymax(3, 1))
+      irep(4) = 0                            
+      irep(5) = ieor(isymax(2, 1), isymax(3, 1))
+      irep(6) = 0
+
+      do ij = 1, size(ij_iter)
+         s = ij_iter(ij) // 'THETA '
+         call add_operator(s // '        ',  &
+                           blocks,           &
+                           1,                &
+                           1,                &
+                           1 + irep(ij),     &
+                           (/1 + irep(ij)/), &
+                           (/f/),            &
+                           (/s/))
+      end do
+
+      do ij = 1, size(ij_iter)
+         s = ij_iter(ij) // 'SUSCGO'
+         call add_operator(s // '        ',  &
+                           blocks,           &
+                           1,                &
+                           1,                &
+                           1 + irep(ij),     &
+                           (/1 + irep(ij)/), &
+                           (/f/),            &
                            (/s/))
       end do
 
       f = 0.5d0*cval
       blocks = '0++0'
-      call add_operator('XANGMOM         ', &
-                        blocks,             &
-                        5,                  &
-                       -1,                  &
-                        1,                  &
-                        (/f, f/),           &
+      call add_operator('XANGMOM         ',                     &
+                        blocks,                                 &
+                        5,                                      &
+                       -1,                                      &
+                        (1 + ieor(isymax(3, 1), isymax(2, 1))), &
+                        (/1 + isymax(3, 1), 1 + isymax(2, 1)/), &
+                        (/f, f/),                               &
                         (/'ZDIPLEN ', 'YDIPLEN '/))
-      call add_operator('YANGMOM         ', &
-                        blocks,             &
-                        6,                  &
-                       -1,                  &
-                        1,                  &
-                        (/f, f/),           &
+      call add_operator('YANGMOM         ',                     &
+                        blocks,                                 &
+                        6,                                      &
+                       -1,                                      &
+                        (1 + ieor(isymax(1, 1), isymax(3, 1))), &
+                        (/1 + isymax(1, 1), 1 + isymax(3, 1)/), &
+                        (/f, f/),                               &
                         (/'XDIPLEN ', 'ZDIPLEN '/))
-      call add_operator('ZANGMOM         ', &
-                        blocks,             &
-                        7,                  &
-                       -1,                  &
-                        1,                  &
-                        (/f, f/),           &
+      call add_operator('ZANGMOM         ',                     &
+                        blocks,                                 &
+                        7,                                      &
+                       -1,                                      &
+                        (1 + ieor(isymax(2, 1), isymax(1, 1))), &
+                        (/1 + isymax(2, 1), 1 + isymax(1, 1)/), &
+                        (/f, f/),                               &
                         (/'YDIPLEN ', 'XDIPLEN '/))
 
       f = -cval
@@ -171,6 +199,7 @@ contains
                            5,                                         &
                           -1,                                         &
                            1,                                         &
+                           (/1,  1/),                                 &
                            (/f,  f/),                                 &
                            (/s1, s2/))
          s1 = prefix_zeros(iatom, 2) // ' DPG X'
@@ -180,6 +209,7 @@ contains
                            6,                                         &
                           -1,                                         &
                            1,                                         &
+                           (/1,  1/),                                 &
                            (/f,  f/),                                 &
                            (/s1, s2/))
          s1 = prefix_zeros(iatom, 2) // ' DPG Y'
@@ -189,22 +219,11 @@ contains
                            7,                                         &
                           -1,                                         &
                            1,                                         &
+                           (/1,  1/),                                 &
                            (/f,  f/),                                 &
                            (/s1, s2/))
       end do
 
-      f = 1.0d0
-      blocks = '+00'//ss
-      do ij = 1, size(ij_iter)
-         s = ij_iter(ij) // 'SUSCGO'
-         call add_operator(s // '        ', &
-                           blocks,          &
-                           1,               &
-                           1,               &
-                           1,               &
-                           (/f/),           &
-                           (/s/))
-      end do
 
       f = 1.0d0
       blocks = '+00'//ss
@@ -216,6 +235,7 @@ contains
                               1,               &
                               1,               &
                               1,               &
+                              (/1/),           &
                               (/f/),           &
                               (/s/))
          end do
@@ -231,6 +251,7 @@ contains
                               1,               &
                               1,               &
                               1,               &
+                              (/1/),           &
                               (/f/),           &
                               (/s/))
          end do
@@ -245,6 +266,7 @@ contains
                            1,               &
                            1,               &
                            1,               &
+                           (/1/),           &
                            (/f/),           &
                            (/s/))
       end do
@@ -258,6 +280,7 @@ contains
                            1,               &
                            1,               &
                            1,               &
+                           (/1/),           &
                            (/f/),           &
                            (/s/))
       end do
@@ -271,6 +294,7 @@ contains
                            1,               &
                            1,               &
                            1,               &
+                           (/1/),           &
                            (/f/),           &
                            (/s/))
       end do
@@ -287,6 +311,7 @@ contains
                               1,                  &
                              -1,                  &
                               1,                  &
+                              (/1/),              &
                               (/f/),              &
                               (/s/))
          end do
@@ -303,6 +328,7 @@ contains
                            1,                                    &
                           -1,                                    &
                            1,                                    &
+                           (/1/),                                &
                            (/f/),                                &
                            (/s/))
       end do
@@ -314,6 +340,7 @@ contains
                            1,                                     &
                            1,                                     &
                            1,                                     &
+                           (/1/),                                 &
                            (/f/),                                 &
                            (/s/))
       end do
@@ -329,6 +356,7 @@ contains
                            1,                                    &
                           -1,                                    &
                            1,                                    &
+                           (/1/),                                &
                            (/f/),                                &
                            (/s/))
       end do
@@ -341,6 +369,7 @@ contains
                            1,                                     &
                            1,                                     &
                            1,                                     &
+                           (/1/),                                 &
                            (/f/),                                 &
                            (/s/))
       end do
@@ -360,6 +389,7 @@ contains
                            8,                                    &
                            0,                                    &
                            1,                                    &
+                           (/1,  1,  1/),                        &
                            (/f,  f,  f/),                        &
                            (/s1, s2, s3/))
       end do
@@ -376,6 +406,7 @@ contains
                            8,                                     &
                            0,                                     &
                            1,                                     &
+                           (/1,  1,  1/),                         &
                            (/f,  f,  f/),                         &
                            (/s1, s2, s3/))
       end do
@@ -388,6 +419,7 @@ contains
                         5,                  &
                         0,                  &
                         1,                  &
+                        (/1, 1/),           &
                         (/f, f/),           &
                         (/'ZRM1RN  ', 'YRM1RN  '/))
       call add_operator('dvec/dBY        ', &
@@ -395,6 +427,7 @@ contains
                         6,                  &
                         0,                  &
                         1,                  &
+                        (/1, 1/),           &
                         (/f, f/),           &
                         (/'XRM1RN  ', 'ZRM1RN  '/))
       call add_operator('dvec/dBZ        ', &
@@ -402,6 +435,7 @@ contains
                         7,                  &
                         0,                  &
                         1,                  &
+                        (/1, 1/),           &
                         (/f, f/),           &
                         (/'YRM1RN  ', 'XRM1RN  '/))
 
@@ -416,6 +450,7 @@ contains
                            1,                                    &
                           -1,                                    &
                            1,                                    &
+                           (/1/),                                &
                            (/f/),                                &
                            (/s/))
       end do
@@ -427,6 +462,7 @@ contains
                            1,                                     &
                            1,                                     &
                            1,                                     &
+                           (/1/),                                 &
                            (/f/),                                 &
                            (/s/))
       end do
@@ -441,6 +477,7 @@ contains
                            1,                                    &
                            0,                                    &
                            1,                                    &
+                           (/1/),                                &
                            (/f/),                                &
                            (/s/))
       end do
@@ -448,15 +485,15 @@ contains
 !     rdsusll
       f = -2.0d0*cval
       blocks = '00+0'
-      call add_operator('XXrdsusll       ', blocks, 5, 0, 1, (/f, f/), (/'XXRDSULZ', 'XXRDSULY'/))
-      call add_operator('XYrdsusll       ', blocks, 6, 0, 1, (/f, f/), (/'XYRDSULX', 'XYRDSULZ'/))
-      call add_operator('XZrdsusll       ', blocks, 7, 0, 1, (/f, f/), (/'XZRDSULY', 'XZRDSULX'/))
-      call add_operator('YXrdsusll       ', blocks, 5, 0, 1, (/f, f/), (/'YXRDSULZ', 'YXRDSULY'/))
-      call add_operator('YYrdsusll       ', blocks, 6, 0, 1, (/f, f/), (/'YYRDSULX', 'YYRDSULZ'/))
-      call add_operator('YZrdsusll       ', blocks, 7, 0, 1, (/f, f/), (/'YZRDSULY', 'YZRDSULX'/))
-      call add_operator('ZXrdsusll       ', blocks, 5, 0, 1, (/f, f/), (/'ZXRDSULZ', 'ZXRDSULY'/))
-      call add_operator('ZYrdsusll       ', blocks, 6, 0, 1, (/f, f/), (/'ZYRDSULX', 'ZYRDSULZ'/))
-      call add_operator('ZZrdsusll       ', blocks, 7, 0, 1, (/f, f/), (/'ZZRDSULY', 'ZZRDSULX'/))
+      call add_operator('XXrdsusll       ', blocks, 5, 0, 1, (/1, 1/), (/f, f/), (/'XXRDSULZ', 'XXRDSULY'/))
+      call add_operator('XYrdsusll       ', blocks, 6, 0, 1, (/1, 1/), (/f, f/), (/'XYRDSULX', 'XYRDSULZ'/))
+      call add_operator('XZrdsusll       ', blocks, 7, 0, 1, (/1, 1/), (/f, f/), (/'XZRDSULY', 'XZRDSULX'/))
+      call add_operator('YXrdsusll       ', blocks, 5, 0, 1, (/1, 1/), (/f, f/), (/'YXRDSULZ', 'YXRDSULY'/))
+      call add_operator('YYrdsusll       ', blocks, 6, 0, 1, (/1, 1/), (/f, f/), (/'YYRDSULX', 'YYRDSULZ'/))
+      call add_operator('YZrdsusll       ', blocks, 7, 0, 1, (/1, 1/), (/f, f/), (/'YZRDSULY', 'YZRDSULX'/))
+      call add_operator('ZXrdsusll       ', blocks, 5, 0, 1, (/1, 1/), (/f, f/), (/'ZXRDSULZ', 'ZXRDSULY'/))
+      call add_operator('ZYrdsusll       ', blocks, 6, 0, 1, (/1, 1/), (/f, f/), (/'ZYRDSULX', 'ZYRDSULZ'/))
+      call add_operator('ZZrdsusll       ', blocks, 7, 0, 1, (/1, 1/), (/f, f/), (/'ZZRDSULY', 'ZZRDSULX'/))
 
 !     dsusnol
       f = 1.0d0
@@ -469,6 +506,7 @@ contains
                            1,                               &
                            0,                               &
                            1,                               &
+                           (/1/),                           &
                            (/f/),                           &
                            (/s/))
       end do
@@ -542,12 +580,13 @@ contains
 
    end subroutine
 
-   subroutine add_operator(op_name,    &
-                           blocks,     &
-                           typ,        &
-                           tr_sym,     &
-                           pg_sym,     &
-                           prefactors, &
+   subroutine add_operator(op_name,           &
+                           blocks,            &
+                           typ,               &
+                           tr_sym,            &
+                           pg_sym,            &
+                           pg_sym_components, &
+                           prefactors,        &
                            labels)
 
 !     --------------------------------------------------------------------------
@@ -556,6 +595,7 @@ contains
       integer,       intent(in) :: typ
       integer,       intent(in) :: tr_sym
       integer,       intent(in) :: pg_sym
+      integer,       intent(in) :: pg_sym_components(:)
       real(8),       intent(in) :: prefactors(:)
       character(8),  intent(in) :: labels(:)
 !     --------------------------------------------------------------------------
@@ -584,7 +624,7 @@ contains
 
          prplbl(iprl)  = labels(i)
          pdoint(iprl)  = blocks
-         iprlrep(iprl) = pg_sym - 1
+         iprlrep(iprl) = pg_sym_components(i) - 1
          iprltyp(iprl) = tr_sym
 
          facprp(i, ixpr)  = prefactors(i)
