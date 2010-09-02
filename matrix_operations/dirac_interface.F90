@@ -1097,7 +1097,10 @@ contains
 
     call setrsp
 
-    static    = .false.
+    static = .true.
+    if (dabs(freq) > tiny(0.0d0)) then
+       static = .false.
+    end if
 
     lineq     = .true.
 !   in setrsp
@@ -1112,6 +1115,7 @@ contains
     maxitr    = 150
     nredm     = 400
     n2redm    = nredm*nredm
+    maxsim    = -1
     loffty    = 0
     cnvint(1) = 1.0d20
     cnvint(2) = 1.0d20
@@ -1148,7 +1152,7 @@ contains
     call alloc(eigval,           nr_freq)
     call alloc(eigvec,           nredm*nr_freq)
 
-    call dcopy(nr_freq, freq, 1, eigval, 1)
+    eigval = freq
 
     call xrsctl((/0.0d0/),        &
                 prop_gradient_pp, &
