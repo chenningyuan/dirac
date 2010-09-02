@@ -229,7 +229,8 @@ class dyall_set :
 	def get_pol_set_types (self) :
 		pol_set_types = []
 		
-		pol_header = re.compile(r'^Exponents of (.+) functions?\w*$', re.IGNORECASE | re.MULTILINE)
+#pol_header = re.compile(r'^Exponents of (.+) functions?\w*$', re.IGNORECASE | re.MULTILINE)
+		pol_header = re.compile(r'^Exponents of (.+) functions.*$', re.IGNORECASE | re.MULTILINE)
 
 		f = file(self.filename, 'r')
 		for m in pol_header.finditer(f.read()) :
