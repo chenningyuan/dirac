@@ -57,23 +57,22 @@ rm *.bas
 #  $ Ga Ge As Se Br Kr In Sn Sb Te I  Xe Tl Pb Bi Po At Rn
 #  $ Y  Zr Nb Mo Tc Ru Rh Pd Ag Cd Hf Ta W  Re Os Ir Pt Au Hg
 #  $ Rf Db Sg Bh Hs Mt Uub Uut Uuq Uup Uuh Uus Uuo
-#  $ Ac Th Pa U  Np Pu Am Cm Bk Cf Es Fm Md No Lr 
-#  $ La Ce Pr Nd Pm Sm Eu Gd Tb Dy Ho Er Tm Yb Lu 
+#  $ Ac Th Pa U  Np Pu Am Cm Bk Cf Es Fm Md No Lr
+#  $ La Ce Pr Nd Pm Sm Eu Gd Tb Dy Ho Er Tm Yb Lu
 #  $
 #  $  REFERENCE
 #  $
-#  $ 4s-7s: K.G. Dyall, J. Phys. Chem. A. (2009) 113:12638 
-#  $ 4p-6p: K.G. Dyall, Theor. Chem. Acc. (1998) 99:366;
-#  $        addendum  Theor. Chem. Acc. (2002) 108:365;
-#  $        revision  Theor. Chem. Acc. (2006) 115:441
-#  $    7p: K.G. Dyall, in preparation 
+#  $ 4s-7s: K.G. Dyall, J. Phys. Chem. A. (2009) 113:12638
+#  $ 4p-6p: K.G. Dyall, Theor. Chem. Acc. (1998) 99:366; addendum Theor.
+#  $        Chem. Acc. (2002) 108:365; revision  Theor. Chem. Acc. (2006) 115:441
 #  $    4d: K.G. Dyall, Theor. Chem. Acc. (2007) 117:483.
 #  $    5d: K.G. Dyall, Theor. Chem. Acc. 112, 403-409 (2004);
-#  $        revision  K.G. Dyall and A.S.P. Gomes, Theor. Chem. Acc. (2009) 125:97 
-#  $    6d: K.G. Dyall, in preparation.
+#  $        revision  K.G. Dyall and A.S.P. Gomes, Theor. Chem. Acc. (2009) 125:97
 #  $    4f: A.S.P. Gomes, K.G. Dyall and L. Visscher DOI: 10.1007/s00214-009-0725-7
-#  $    5f: K.G. Dyall, Theor. Chem. Acc. (2007) 117:491.
+#  $    5f: K.G. Dyall, Theor. Chem. Acc. (2007) 117:491.$ 6d,7p: K.G. Dyall, in preparation
 #  $ Available from the Dirac web site, http://dirac.chem.sdu.dk.
+#  $
+#  $
 #  $
 #  $
 #<--- ends here
