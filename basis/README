@@ -48,3 +48,14 @@ core-valence basis sets mentione above, are also provided.
 
 In case of errors or omissions on any of the files in this directory, 
 users are kindly asked to contact the authors of Dirac.
+
+*** NOTE ***
+
+The basis set files have been updated for the DIRAC10 release, so
+that new elements are supported and errors that have been spotted
+corrected.
+
+In order to facilitate comparison with/verification of past calculations,
+the files for the DIRAC08 release can be found at the basis/dirac08
+directory.
+
