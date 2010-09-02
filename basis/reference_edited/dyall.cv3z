@@ -1,4 +1,4 @@
-$  
+$ 
 $ Elements Supported
 $ K  Ca Rb Sr Cs Ba Fr Ra 
 $ Ga Ge As Se Br Kr In Sn Sb Te I  Xe Tl Pb Bi Po At Rn 
@@ -6,9 +6,9 @@ $ Y  Zr Nb Mo Tc Ru Rh Pd Ag Cd Hf Ta W  Re Os Ir Pt Au Hg
 $ Rf Db Sg Bh Hs Mt Uub Uut Uuq Uup Uuh Uus Uuo
 $ Ac Th Pa U  Np Pu Am Cm Bk Cf Es Fm Md No Lr 
 $ La Ce Pr Nd Pm Sm Eu Gd Tb Dy Ho Er Tm Yb Lu 
-$  
+$ 
 $  REFERENCE
-$  
+$ 
 $ 4s-7s: K.G. Dyall, J. Phys. Chem. A. (2009) 113:12638 
 $ 4p-6p: K.G. Dyall, Theor. Chem. Acc. (1998) 99:366;
 $        addendum  Theor. Chem. Acc. (2002) 108:365;
@@ -21,8 +21,8 @@ $    6d: K.G. Dyall, in preparation.
 $    4f: A.S.P. Gomes, K.G. Dyall and L. Visscher DOI: 10.1007/s00214-009-0725-7
 $    5f: K.G. Dyall, Theor. Chem. Acc. (2007) 117:491.
 $ Available from the Dirac web site, http://dirac.chem.sdu.dk.
-$  
-$  
+$ 
+$ 
 
 
 $ 
@@ -170,7 +170,7 @@ $
 $ K
 a 19
 $ s functions 
-   23    0    0
+   24    0    0
  2.70979580e+07
  3.59285640e+06
  7.22263810e+05
@@ -194,8 +194,9 @@ $ s functions
  4.08176990e-02
  2.02297140e-02
  1.12857350e-02
+ 1.20407410e-01
 $ p functions 
-   16    0    0
+   17    0    0
  9.53330900e+03
  1.85208140e+03
  5.46425070e+02
@@ -212,22 +213,25 @@ $ p functions
  5.18690950e-02
  2.25843550e-02
  1.02275850e-02
+ 9.13683690e-02
 $ d functions 
-    5    0    0
+    6    0    0
  4.72026650e-02
  1.56924630e+00
  5.41992100e-01
  2.59819840e+01
  8.15536910e+00
+ 1.83454480e-01
 $ f functions 
-    2    0    0
+    3    0    0
  1.13400170e+00
  1.49672840e+01
+ 3.83838990e-01
 
 $ Ca
 a 20
 $ s functions 
-   23    0    0
+   24    0    0
  3.24633540e+07
  4.42837860e+06
  9.00751940e+05
@@ -251,8 +255,9 @@ $ s functions
  8.33226130e-02
  4.20740520e-02
  2.01269250e-02
+ 1.68945740e-01
 $ p functions 
-   16    0    0
+   17    0    0
  1.18730240e+04
  2.25751340e+03
  6.58388430e+02
@@ -269,19 +274,22 @@ $ p functions
  9.27043200e-02
  4.00808590e-02
  1.73705920e-02
+ 1.20321460e-01
 $ d functions 
-    6    0    0
+    7    0    0
  2.16309250e-01
  8.25122550e-02
  1.97367340e+00
  6.97722480e-01
  2.96064660e+01
  9.32840960e+00
+ 2.49044850e-01
 $ f functions 
-    3    0    0
+    4    0    0
  1.48691880e-01
  1.38907420e+00
  1.70179250e+01
+ 4.95815720e-01
 
 $ 
 $ Basis set library file automatically generatered by basis_set.py
@@ -3687,7 +3695,7 @@ a 38
 $ Warning: in symmetry        d, exponent 1.1030875000e+00 is considered to be too close to one already present (1.1030875000e+00) and is not included. threshold: 5.00e-02
 $ Warning: in symmetry        d, exponent 4.5912254000e-01 is considered to be too close to one already present (4.5912254000e-01) and is not included. threshold: 5.00e-02
 $ s functions 
-   28    0    0
+   29    0    0
  8.26818770e+07
  1.93389720e+07
  5.61837340e+06
@@ -3716,8 +3724,9 @@ $ s functions
  7.23524260e-02
  3.68625190e-02
  1.78092270e-02
+ 1.30234500e-01
 $ p functions 
-   20    0    0
+   21    0    0
  4.61401270e+05
  6.80589090e+04
  1.53828330e+04
@@ -3738,8 +3747,9 @@ $ p functions
  8.28758350e-02
  3.69974890e-02
  1.60536750e-02
+ 1.14931910e-01
 $ d functions 
-   12    0    0
+   13    0    0
  1.64614040e+03
  4.71488440e+02
  1.78633890e+02
@@ -3752,12 +3762,14 @@ $ d functions
  1.10308750e+00
  4.59122540e-01
  9.68010640e-02
+ 1.75087430e-01
 $ f functions 
-    4    0    0
+    5    0    0
  1.22699970e-01
  9.56145310e-01
  1.69433630e+01
  5.28251710e+00
+ 3.64628200e-01
 $ g functions 
     1    0    0
  1.08302320e+01
@@ -3767,7 +3779,7 @@ a 37
 $ Warning: in symmetry        d, exponent 9.4011123000e-01 is considered to be too close to one already present (9.4011123000e-01) and is not included. threshold: 5.00e-02
 $ Warning: in symmetry        d, exponent 3.7650944000e-01 is considered to be too close to one already present (3.7650944000e-01) and is not included. threshold: 5.00e-02
 $ s functions 
-   28    0    0
+   29    0    0
  8.08767230e+07
  1.83371170e+07
  5.18347780e+06
@@ -3796,8 +3808,9 @@ $ s functions
  3.76439080e-02
  1.89943870e-02
  1.01896360e-02
+ 9.70047420e-02
 $ p functions 
-   20    0    0
+   21    0    0
  3.81779750e+05
  5.66060140e+04
  1.29430680e+04
@@ -3818,8 +3831,9 @@ $ p functions
  4.36553790e-02
  1.93866380e-02
  8.98776020e-03
+ 8.51815390e-02
 $ d functions 
-   12    0    0
+   13    0    0
  1.45065190e+03
  4.17222530e+02
  1.58380420e+02
@@ -3832,11 +3846,13 @@ $ d functions
  9.40111230e-01
  3.76509440e-01
  4.43202370e-02
+ 1.36639330e-01
 $ f functions 
-    3    0    0
+    4    0    0
  8.13612250e-01
  1.54186010e+01
  4.76050800e+00
+ 2.95268640e-01
 $ g functions 
     1    0    0
  9.83284100e+00
@@ -7626,7 +7642,7 @@ a 55
 $ Warning: in symmetry        d, exponent 6.2934575000e-01 is considered to be too close to one already present (6.2934575000e-01) and is not included. threshold: 5.00e-02
 $ Warning: in symmetry        d, exponent 2.7938275000e-01 is considered to be too close to one already present (2.7938275000e-01) and is not included. threshold: 5.00e-02
 $ s functions 
-   31    0    0
+   32    0    0
  7.46013950e+07
  1.95239770e+07
  6.47858800e+06
@@ -7658,8 +7674,9 @@ $ s functions
  3.27743150e-02
  1.87929480e-02
  1.06102310e-02
+ 7.43981270e-02
 $ p functions 
-   24    0    0
+   25    0    0
  9.10396530e+06
  1.43948700e+06
  3.11897000e+05
@@ -7684,8 +7701,9 @@ $ p functions
  3.54583510e-02
  1.60300030e-02
  7.58971300e-03
+ 6.97423140e-02
 $ d functions 
-   15    0    0
+   16    0    0
  6.76506420e+03
  1.80894080e+03
  6.60020320e+02
@@ -7701,11 +7719,13 @@ $ d functions
  6.29345750e-01
  2.79382750e-01
  4.38502110e-02
+ 1.04582820e-01
 $ f functions 
-    3    0    0
+    4    0    0
  5.63575040e-01
  5.43668860e+00
  1.99304060e+00
+ 2.10966020e-01
 $ g functions 
     1    0    0
  3.66665530e+00
@@ -7715,7 +7735,7 @@ a 56
 $ Warning: in symmetry        d, exponent 7.2368236000e-01 is considered to be too close to one already present (7.2368236000e-01) and is not included. threshold: 5.00e-02
 $ Warning: in symmetry        d, exponent 3.3303281000e-01 is considered to be too close to one already present (3.3303281000e-01) and is not included. threshold: 5.00e-02
 $ s functions 
-   30    0    0
+   31    0    0
  7.28086970e+07
  1.89790760e+07
  6.25586980e+06
@@ -7746,8 +7766,9 @@ $ s functions
  5.84048860e-02
  3.09846150e-02
  1.53305840e-02
+ 9.86002370e-02
 $ p functions 
-   24    0    0
+   25    0    0
  9.97190040e+06
  1.59658230e+06
  3.47800160e+05
@@ -7772,8 +7793,9 @@ $ p functions
  7.23590520e-02
  3.35388560e-02
  1.45643840e-02
+ 9.30992220e-02
 $ d functions 
-   15    0    0
+   16    0    0
  7.51767150e+03
  1.99851230e+03
  7.26579390e+02
@@ -7789,12 +7811,14 @@ $ d functions
  7.23682360e-01
  3.33032810e-01
  7.69569950e-02
+ 1.29802090e-01
 $ f functions 
-    4    0    0
+    5    0    0
  9.38639360e-02
  6.51074070e-01
  5.90063720e+00
  2.18316630e+00
+ 2.53761100e-01
 $ g functions 
     1    0    0
  3.96824520e+00

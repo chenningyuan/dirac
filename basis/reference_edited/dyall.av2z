@@ -1,24 +1,19 @@
-$  
+$
 $ Elements Supported
-$ Ga Ge As Se Br Kr In Sn Sb Te I  Xe Tl Pb Bi Po At Rn
+$ Ga  Ge  As  Se  Br  Kr 
+$ In  Sn  Sb  Te  I   Xe 
+$ Tl  Pb  Bi  Po  At  Rn
 $ Uut Uuq Uup Uuh Uus Uuo
-$  
+$
 $  REFERENCE
-$  
-$ 4s-7s: K.G. Dyall, J. Phys. Chem. A. (2009) 113:12638 
+$
 $ 4p-6p: K.G. Dyall, Theor. Chem. Acc. (1998) 99:366;
 $        addendum  Theor. Chem. Acc. (2002) 108:365;
 $        revision  Theor. Chem. Acc. (2006) 115:441
-$    7p: K.G. Dyall, in preparation 
-$    4d: K.G. Dyall, Theor. Chem. Acc. (2007) 117:483.
-$    5d: K.G. Dyall, Theor. Chem. Acc. 112, 403-409 (2004);
-$        revision  K.G. Dyall and A.S.P. Gomes, Theor. Chem. Acc. (2009) 125:97 
-$    6d: K.G. Dyall, in preparation.
-$    4f: A.S.P. Gomes, K.G. Dyall and L. Visscher DOI: 10.1007/s00214-009-0725-7
-$    5f: K.G. Dyall, Theor. Chem. Acc. (2007) 117:491.
+$    7p: K.G. Dyall, in preparation
 $ Available from the Dirac web site, http://dirac.chem.sdu.dk.
-$  
-$  
+$
+$
 
 
 $ 
@@ -1577,10 +1572,10 @@ $ f functions
 $ 
 $ Basis set library file automatically generatered by basis_set.py
 $ 
-$ invocation: basis_set.py --file=../basis/reference_edited/7p_dz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=correlating,diffuse,dipole polarizing f functions for the 6d shell --output=dyall.7p.dz.bas
+$ invocation: basis_set.py --file=../basis/reference_edited/7p_dz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=correlating,diffuse --output=dyall.7p.dz.bas
 $ 
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
-$  ['correlating', 'diffuse', 'dipole polarizing f functions for the 6d shell']
+$  ['correlating', 'diffuse']
 $ 
 $ dyall.7p.dz.bas
 $
@@ -1787,7 +1782,7 @@ $ d functions
  1.49209300e-01
  5.23860200e-02
 $ f functions 
-   11    0    0
+   10    0    0
  1.29101510e+03
  4.29840880e+02
  1.79894990e+02
@@ -1798,7 +1793,6 @@ $ f functions
  4.75970910e+00
  2.14831390e+00
  8.42948500e-01
- 2.03019500e-01
 
 $ Uuq
 a 114
@@ -1880,7 +1874,7 @@ $ d functions
  1.61789960e-01
  4.51817250e-02
 $ f functions 
-   11    0    0
+   10    0    0
  1.35864530e+03
  4.51803350e+02
  1.89101030e+02
@@ -1891,7 +1885,6 @@ $ f functions
  5.09611080e+00
  2.32511880e+00
  9.31317460e-01
- 2.38837200e-01
 
 $ Uup
 a 115
@@ -1973,7 +1966,7 @@ $ d functions
  1.76404310e-01
  3.98283780e-02
 $ f functions 
-   11    0    0
+   10    0    0
  1.42553850e+03
  4.73475160e+02
  1.98163900e+02
@@ -1984,7 +1977,6 @@ $ f functions
  5.42672660e+00
  2.49940950e+00
  1.01858990e+00
- 2.79120220e-01
 
 $ Uus
 a 117
@@ -2066,7 +2058,7 @@ $ d functions
  2.07169730e-01
  8.19822830e-02
 $ f functions 
-   11    0    0
+   10    0    0
  1.55874570e+03
  5.16482520e+02
  2.16090440e+02
@@ -2077,7 +2069,6 @@ $ f functions
  6.07887380e+00
  2.84454760e+00
  1.19184730e+00
- 3.56439300e-01
 
 $ Uuo
 a 118
@@ -2159,7 +2150,7 @@ $ d functions
  2.23304940e-01
  8.78787900e-02
 $ f functions 
-   11    0    0
+   10    0    0
  1.62557490e+03
  5.37987570e+02
  2.25026760e+02
@@ -2170,7 +2161,6 @@ $ f functions
  6.40298980e+00
  3.01668440e+00
  1.27846070e+00
- 3.94295680e-01
 
 $ Uuh
 a 116
@@ -2252,7 +2242,7 @@ $ d functions
  1.91490580e-01
  6.21776100e-02
 $ f functions 
-   11    0    0
+   10    0    0
  1.49214830e+03
  4.95004730e+02
  2.07147260e+02
@@ -2263,5 +2253,4 @@ $ f functions
  5.75382200e+00
  2.67230700e+00
  1.10531310e+00
- 3.18133820e-01
 

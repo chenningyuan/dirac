@@ -24,7 +24,6 @@ $ Available from the Dirac web site, http://dirac.chem.sdu.dk.
 $  
 $  
 
-
 $ 
 $ Basis set library file automatically generatered by basis_set.py
 $ 
@@ -3401,10 +3400,10 @@ $ f functions
 $ 
 $ Basis set library file automatically generatered by basis_set.py
 $ 
-$ invocation: basis_set.py --file=../basis/reference_edited/5d_dz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=valence correlating and polarization --output=dyall.5d.dz.bas
+$ invocation: basis_set.py --file=../basis/reference_edited/5d_dz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=valence correlating and dipole polarization --output=dyall.5d.dz.bas
 $ 
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
-$  ['valence correlating and polarization']
+$  ['valence correlating and dipole polarization']
 $ 
 $ dyall.5d.dz.bas
 $
@@ -3540,6 +3539,7 @@ $
 
 $ Pt
 a 78
+$ Warning: in symmetry        f, exponent 9.0639763000e-01 is considered to be too close to one already present (9.0639763000e-01) and is not included. threshold: 5.00e-02
 $ s functions 
    24    0    0
  5.86523220e+07
@@ -3602,7 +3602,7 @@ $ d functions
  5.86934060e-01
  1.91099850e-01
 $ f functions 
-    8    0    0
+    9    0    0
  3.76572610e+02
  1.27871040e+02
  5.33480740e+01
@@ -3611,9 +3611,11 @@ $ f functions
  5.28400790e+00
  2.33781160e+00
  9.06397630e-01
+ 2.68636660e-01
 
 $ Hf
 a 72
+$ Warning: in symmetry        f, exponent 3.8547549000e-01 is considered to be too close to one already present (3.8547549000e-01) and is not included. threshold: 5.00e-02
 $ s functions 
    24    0    0
  5.87243620e+07
@@ -3676,7 +3678,7 @@ $ d functions
  3.36693170e-01
  9.61593720e-02
 $ f functions 
-    8    0    0
+    9    0    0
  2.33440440e+02
  7.91613380e+01
  3.23907450e+01
@@ -3685,9 +3687,11 @@ $ f functions
  2.80705280e+00
  1.12799600e+00
  3.85475490e-01
+ 1.11953270e-01
 
 $ Ir
 a 77
+$ Warning: in symmetry        f, exponent 8.1914535000e-01 is considered to be too close to one already present (8.1914535000e-01) and is not included. threshold: 5.00e-02
 $ s functions 
    24    0    0
  5.86240440e+07
@@ -3750,7 +3754,7 @@ $ d functions
  5.44288140e-01
  1.75374450e-01
 $ f functions 
-    8    0    0
+    9    0    0
  3.52899410e+02
  1.19840640e+02
  4.98999180e+01
@@ -3759,9 +3763,11 @@ $ f functions
  4.87368020e+00
  2.13564610e+00
  8.19145350e-01
+ 2.46251920e-01
 
 $ Re
 a 75
+$ Warning: in symmetry        f, exponent 6.4713929000e-01 is considered to be too close to one already present (6.4713929000e-01) and is not included. threshold: 5.00e-02
 $ s functions 
    24    0    0
  5.88559530e+07
@@ -3824,7 +3830,7 @@ $ d functions
  4.59750740e-01
  1.44037680e-01
 $ f functions 
-    8    0    0
+    9    0    0
  3.05940190e+02
  1.03883230e+02
  4.30377830e+01
@@ -3833,9 +3839,11 @@ $ f functions
  4.06003640e+00
  1.73647710e+00
  6.47139290e-01
+ 1.92373800e-01
 
 $ Au
 a 79
+$ Warning: in symmetry        f, exponent 9.9485802000e-01 is considered to be too close to one already present (9.9485802000e-01) and is not included. threshold: 5.00e-02
 $ s functions 
    24    0    0
  5.86641870e+07
@@ -3898,7 +3906,7 @@ $ d functions
  6.29799130e-01
  2.06895060e-01
 $ f functions 
-    8    0    0
+    9    0    0
  4.00441890e+02
  1.35960200e+02
  5.68188200e+01
@@ -3907,9 +3915,11 @@ $ f functions
  5.69842520e+00
  2.54253880e+00
  9.94858020e-01
+ 3.05376020e-01
 
 $ W
 a 74
+$ Warning: in symmetry        f, exponent 5.6143065000e-01 is considered to be too close to one already present (5.6143065000e-01) and is not included. threshold: 5.00e-02
 $ s functions 
    24    0    0
  5.89486040e+07
@@ -3972,7 +3982,7 @@ $ d functions
  4.17928550e-01
  1.28319860e-01
 $ f functions 
-    8    0    0
+    9    0    0
  2.82322990e+02
  9.58440680e+01
  3.95772430e+01
@@ -3981,9 +3991,11 @@ $ f functions
  3.65176670e+00
  1.53726810e+00
  5.61430650e-01
+ 1.59256210e-01
 
 $ Os
 a 76
+$ Warning: in symmetry        f, exponent 7.3285164000e-01 is considered to be too close to one already present (7.3285164000e-01) and is not included. threshold: 5.00e-02
 $ s functions 
    24    0    0
  5.84125260e+07
@@ -4046,7 +4058,7 @@ $ d functions
  5.01883700e-01
  1.59699320e-01
 $ f functions 
-    8    0    0
+    9    0    0
  3.29395260e+02
  1.11858310e+02
  4.64688740e+01
@@ -4055,9 +4067,11 @@ $ f functions
  4.46633270e+00
  1.93549270e+00
  7.32851640e-01
+ 2.17768010e-01
 
 $ Hg
 a 80
+$ Warning: in symmetry        f, exponent 1.0847115000e+00 is considered to be too close to one already present (1.0847115000e+00) and is not included. threshold: 5.00e-02
 $ s functions 
    24    0    0
  5.81789970e+07
@@ -4120,7 +4134,7 @@ $ d functions
  7.01705130e-01
  2.36689730e-01
 $ f functions 
-    8    0    0
+    9    0    0
  4.24155820e+02
  1.43982700e+02
  6.02529850e+01
@@ -4129,9 +4143,11 @@ $ f functions
  6.10672930e+00
  2.74486520e+00
  1.08471150e+00
+ 3.40593950e-01
 
 $ Ta
 a 73
+$ Warning: in symmetry        f, exponent 4.7476634000e-01 is considered to be too close to one already present (4.7476634000e-01) and is not included. threshold: 5.00e-02
 $ s functions 
    24    0    0
  5.90224270e+07
@@ -4194,7 +4210,7 @@ $ d functions
  3.76593300e-01
  1.12421520e-01
 $ f functions 
-    8    0    0
+    9    0    0
  2.58359410e+02
  8.76728720e+01
  3.60567720e+01
@@ -4203,6 +4219,7 @@ $ f functions
  3.23704750e+00
  1.33572910e+00
  4.74766340e-01
+ 1.40593440e-01
 
 $ 
 $ Basis set library file automatically generatered by basis_set.py
@@ -7897,10 +7914,10 @@ $ f functions
 $ 
 $ Basis set library file automatically generatered by basis_set.py
 $ 
-$ invocation: basis_set.py --file=../basis/reference_edited/7p_dz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=correlating,dipole polarizing f functions for the 6d shell --output=dyall.7p.dz.bas
+$ invocation: basis_set.py --file=../basis/reference_edited/7p_dz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=correlating --output=dyall.7p.dz.bas
 $ 
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
-$  ['correlating', 'dipole polarizing f functions for the 6d shell']
+$  ['correlating']
 $ 
 $ dyall.7p.dz.bas
 $
@@ -8104,7 +8121,7 @@ $ d functions
  3.99541700e-01
  1.49209300e-01
 $ f functions 
-   11    0    0
+   10    0    0
  1.29101510e+03
  4.29840880e+02
  1.79894990e+02
@@ -8115,7 +8132,6 @@ $ f functions
  4.75970910e+00
  2.14831390e+00
  8.42948500e-01
- 2.03019500e-01
 
 $ Uuq
 a 114
@@ -8194,7 +8210,7 @@ $ d functions
  4.29553470e-01
  1.61789960e-01
 $ f functions 
-   11    0    0
+   10    0    0
  1.35864530e+03
  4.51803350e+02
  1.89101030e+02
@@ -8205,7 +8221,6 @@ $ f functions
  5.09611080e+00
  2.32511880e+00
  9.31317460e-01
- 2.38837200e-01
 
 $ Uup
 a 115
@@ -8284,7 +8299,7 @@ $ d functions
  4.66643180e-01
  1.76404310e-01
 $ f functions 
-   11    0    0
+   10    0    0
  1.42553850e+03
  4.73475160e+02
  1.98163900e+02
@@ -8295,7 +8310,6 @@ $ f functions
  5.42672660e+00
  2.49940950e+00
  1.01858990e+00
- 2.79120220e-01
 
 $ Uus
 a 117
@@ -8374,7 +8388,7 @@ $ d functions
  5.46674430e-01
  2.07169730e-01
 $ f functions 
-   11    0    0
+   10    0    0
  1.55874570e+03
  5.16482520e+02
  2.16090440e+02
@@ -8385,7 +8399,6 @@ $ f functions
  6.07887380e+00
  2.84454760e+00
  1.19184730e+00
- 3.56439300e-01
 
 $ Uuo
 a 118
@@ -8464,7 +8477,7 @@ $ d functions
  5.88745940e-01
  2.23304940e-01
 $ f functions 
-   11    0    0
+   10    0    0
  1.62557490e+03
  5.37987570e+02
  2.25026760e+02
@@ -8475,7 +8488,6 @@ $ f functions
  6.40298980e+00
  3.01668440e+00
  1.27846070e+00
- 3.94295680e-01
 
 $ Uuh
 a 116
@@ -8554,7 +8566,7 @@ $ d functions
  5.05800520e-01
  1.91490580e-01
 $ f functions 
-   11    0    0
+   10    0    0
  1.49214830e+03
  4.95004730e+02
  2.07147260e+02
@@ -8565,5 +8577,4 @@ $ f functions
  5.75382200e+00
  2.67230700e+00
  1.10531310e+00
- 3.18133820e-01
 

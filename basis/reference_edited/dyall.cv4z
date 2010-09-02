@@ -1,4 +1,4 @@
-$  
+$ 
 $ Elements Supported
 $ K  Ca Rb Sr Cs Ba Fr Ra 
 $ Ga Ge As Se Br Kr In Sn Sb Te I  Xe Tl Pb Bi Po At Rn 
@@ -6,9 +6,9 @@ $ Y  Zr Nb Mo Tc Ru Rh Pd Ag Cd Hf Ta W  Re Os Ir Pt Au Hg
 $ Rf Db Sg Bh Hs Mt Uub Uut Uuq Uup Uuh Uus Uuo
 $ Ac Th Pa U  Np Pu Am Cm Bk Cf Es Fm Md No Lr 
 $ La Ce Pr Nd Pm Sm Eu Gd Tb Dy Ho Er Tm Yb Lu 
-$  
+$ 
 $  REFERENCE
-$  
+$ 
 $ 4s-7s: K.G. Dyall, J. Phys. Chem. A. (2009) 113:12638 
 $ 4p-6p: K.G. Dyall, Theor. Chem. Acc. (1998) 99:366;
 $        addendum  Theor. Chem. Acc. (2002) 108:365;
@@ -21,8 +21,8 @@ $    6d: K.G. Dyall, in preparation.
 $    4f: A.S.P. Gomes, K.G. Dyall and L. Visscher DOI: 10.1007/s00214-009-0725-7
 $    5f: K.G. Dyall, Theor. Chem. Acc. (2007) 117:491.
 $ Available from the Dirac web site, http://dirac.chem.sdu.dk.
-$  
-$  
+$ 
+$ 
 
 
 $ 
@@ -172,8 +172,9 @@ $
 
 $ K
 a 19
+$ Warning: in symmetry        p, exponent 5.8769131000e-02 is considered to be too close to one already present (5.6688968000e-02) and is not included. threshold: 5.00e-02
 $ s functions 
-   30    0    0
+   31    0    0
  1.13549080e+08
  2.44783820e+07
  6.74102680e+06
@@ -204,6 +205,7 @@ $ s functions
  3.49678040e-02
  2.11473060e-02
  1.10653410e-02
+ 8.75891610e-02
 $ p functions 
    21    0    0
  9.29525080e+04
@@ -228,7 +230,7 @@ $ p functions
  1.42877970e-02
  7.38139410e-03
 $ d functions 
-    8    0    0
+    9    0    0
  9.52412990e-02
  2.63333830e-02
  2.87798320e+00
@@ -237,22 +239,26 @@ $ d functions
  4.49580830e+01
  1.62847130e+01
  6.26195670e+00
+ 1.63280260e-01
 $ f functions 
-    5    0    0
+    6    0    0
  6.06891410e-02
  1.61969150e+00
  6.99098690e-01
  2.64491020e+01
  9.86983860e+00
+ 2.42751950e-01
 $ g functions 
-    2    0    0
+    3    0    0
  1.29553830e+00
  1.91000750e+01
+ 4.49857020e-01
 
 $ Ca
 a 20
+$ Warning: in symmetry        p, exponent 1.2449453000e-01 is considered to be too close to one already present (1.2943369000e-01) and is not included. threshold: 5.00e-02
 $ s functions 
-   30    0    0
+   31    0    0
  1.04228680e+08
  2.16345110e+07
  5.82914700e+06
@@ -283,6 +289,7 @@ $ s functions
  6.57966130e-02
  3.36436460e-02
  1.69852570e-02
+ 1.32288090e-01
 $ p functions 
    20    0    0
  1.26579830e+05
@@ -306,7 +313,7 @@ $ p functions
  3.03511570e-02
  1.44643290e-02
 $ d functions 
-    8    0    0
+    9    0    0
  1.63218420e-01
  7.17542960e-02
  6.09873650e+00
@@ -315,19 +322,22 @@ $ d functions
  5.11827140e+01
  1.85863020e+01
  7.17559220e+00
+ 2.36206950e-01
 $ f functions 
-    6    0    0
+    7    0    0
  1.99058800e-01
  1.18385170e-01
  1.97600260e+00
  8.74015400e-01
  3.00576600e+01
  1.12636170e+01
+ 3.14450020e-01
 $ g functions 
-    3    0    0
+    4    0    0
  1.86062450e-01
  1.60298690e+00
  2.17359170e+01
+ 5.76716670e-01
 
 $ 
 $ Basis set library file automatically generatered by basis_set.py
@@ -4530,7 +4540,7 @@ $ Warning: in symmetry        d, exponent 1.3360123000e+00 is considered to be t
 $ Warning: in symmetry        d, exponent 8.4661778000e-01 is considered to be too close to one already present (8.4661778000e-01) and is not included. threshold: 5.00e-02
 $ Warning: in symmetry        d, exponent 3.8674894000e-01 is considered to be too close to one already present (3.8674894000e-01) and is not included. threshold: 5.00e-02
 $ s functions 
-   33    0    0
+   34    0    0
  9.55372300e+07
  2.56470520e+07
  8.95789440e+06
@@ -4564,8 +4574,9 @@ $ s functions
  5.07010960e-02
  2.63090230e-02
  1.35951430e-02
+ 1.08043400e-01
 $ p functions 
-   25    0    0
+   26    0    0
  4.86588340e+06
  7.30259220e+05
  1.56698160e+05
@@ -4591,8 +4602,9 @@ $ p functions
  4.55755000e-02
  2.29961400e-02
  1.15323830e-02
+ 7.85003390e-02
 $ d functions 
-   15    0    0
+   16    0    0
  2.93562360e+03
  8.23516940e+02
  3.09066950e+02
@@ -4608,20 +4620,23 @@ $ d functions
  3.86748940e-01
  9.21648720e-02
  3.15800950e-02
+ 1.48036190e-01
 $ f functions 
-    6    0    0
+    7    0    0
  1.27202100e-01
  1.31750490e+00
  6.23414360e-01
  2.73579170e+01
  9.94295830e+00
  3.76892160e+00
+ 2.38624800e-01
 $ g functions 
-    4    0    0
+    5    0    0
  1.71360960e-01
  1.07981880e+00
  1.91478390e+01
  6.77028640e+00
+ 4.13323090e-01
 $ h functions 
     1    0    0
  1.25080540e+01
@@ -4632,7 +4647,7 @@ $ Warning: in symmetry        d, exponent 1.1645349000e+00 is considered to be t
 $ Warning: in symmetry        d, exponent 6.9059818000e-01 is considered to be too close to one already present (6.9059818000e-01) and is not included. threshold: 5.00e-02
 $ Warning: in symmetry        d, exponent 3.0892267000e-01 is considered to be too close to one already present (3.0892267000e-01) and is not included. threshold: 5.00e-02
 $ s functions 
-   34    0    0
+   35    0    0
  9.73958230e+07
  2.61676110e+07
  9.16368030e+06
@@ -4667,8 +4682,9 @@ $ s functions
  3.68561380e-02
  2.08730430e-02
  1.11404760e-02
+ 6.22348510e-02
 $ p functions 
-   25    0    0
+   26    0    0
  4.18459000e+06
  6.23576210e+05
  1.33474940e+05
@@ -4694,8 +4710,9 @@ $ p functions
  2.82981890e-02
  1.51479600e-02
  7.85788840e-03
+ 6.22821360e-02
 $ d functions 
-   15    0    0
+   16    0    0
  2.61377960e+03
  7.37076530e+02
  2.77322450e+02
@@ -4711,19 +4728,22 @@ $ d functions
  3.08922670e-01
  8.78357850e-02
  2.37758180e-02
+ 1.16508830e-01
 $ f functions 
-    6    0    0
+    7    0    0
  5.69831620e-02
  1.13732910e+00
  5.19801060e-01
  2.49173420e+01
  8.99500410e+00
  3.37518010e+00
+ 1.96040680e-01
 $ g functions 
-    3    0    0
+    4    0    0
  9.13594130e-01
  1.74176540e+01
  6.10246310e+00
+ 3.44558010e-01
 $ h functions 
     1    0    0
  1.13498600e+01
@@ -11974,10 +11994,10 @@ $ i functions
 $ 
 $ Basis set library file automatically generatered by basis_set.py
 $ 
-$ invocation: basis_set.py --file=../basis/reference_edited/7s_qz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=7s7p correlating,6s6p correlating,6s6p dipole polarization,5d correlating --output=dyall.7s.qz.bas
+$ invocation: basis_set.py --file=../basis/reference_edited/7s_qz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=7s7p correlating,6s6p correlating,6s6p polarizing,5d correlating --output=dyall.7s.qz.bas
 $ 
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
-$  ['7s7p correlating', '6s6p correlating', '6s6p dipole polarization', '5d correlating']
+$  ['7s7p correlating', '6s6p correlating', '6s6p polarizing', '5d correlating']
 $ 
 $ dyall.7s.qz.bas
 $

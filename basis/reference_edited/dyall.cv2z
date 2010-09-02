@@ -1,4 +1,4 @@
-$  
+$ 
 $ Elements Supported
 $ K  Ca Rb Sr Cs Ba Fr Ra 
 $ Ga Ge As Se Br Kr In Sn Sb Te I  Xe Tl Pb Bi Po At Rn 
@@ -6,9 +6,9 @@ $ Y  Zr Nb Mo Tc Ru Rh Pd Ag Cd Hf Ta W  Re Os Ir Pt Au Hg
 $ Rf Db Sg Bh Hs Mt Uub Uut Uuq Uup Uuh Uus Uuo
 $ Ac Th Pa U  Np Pu Am Cm Bk Cf Es Fm Md No Lr 
 $ La Ce Pr Nd Pm Sm Eu Gd Tb Dy Ho Er Tm Yb Lu 
-$  
+$ 
 $  REFERENCE
-$  
+$ 
 $ 4s-7s: K.G. Dyall, J. Phys. Chem. A. (2009) 113:12638 
 $ 4p-6p: K.G. Dyall, Theor. Chem. Acc. (1998) 99:366;
 $        addendum  Theor. Chem. Acc. (2002) 108:365;
@@ -21,8 +21,8 @@ $    6d: K.G. Dyall, in preparation.
 $    4f: A.S.P. Gomes, K.G. Dyall and L. Visscher DOI: 10.1007/s00214-009-0725-7
 $    5f: K.G. Dyall, Theor. Chem. Acc. (2007) 117:491.
 $ Available from the Dirac web site, http://dirac.chem.sdu.dk.
-$  
-$  
+$ 
+$ 
 
 
 $ 
@@ -237,10 +237,10 @@ $ d functions
 $ 
 $ Basis set library file automatically generatered by basis_set.py
 $ 
-$ invocation: basis_set.py --file=../basis/reference_edited/4p_dz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=correlating --output=dyall.4p.dz.bas
+$ invocation: basis_set.py --file=../basis/reference_edited/4p_dz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=correlating,polarizing f --output=dyall.4p.dz.bas
 $ 
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
-$  ['correlating']
+$  ['correlating', 'polarizing f']
 $ 
 $ dyall.4p.dz.bas
 $
@@ -406,8 +406,9 @@ $ d functions
  6.96231840e-01
  1.91389540e-01
 $ f functions 
-    1    0    0
+    2    0    0
  3.93743940e+00
+ 7.29394340e-01
 
 $ As
 a 33
@@ -452,8 +453,9 @@ $ d functions
  1.04220710e+00
  3.02713190e-01
 $ f functions 
-    1    0    0
+    2    0    0
  5.34798650e+00
+ 1.22852480e+00
 
 $ Kr
 a 36
@@ -498,8 +500,9 @@ $ d functions
  1.58810230e+00
  4.65251240e-01
 $ f functions 
-    1    0    0
+    2    0    0
  7.46380700e+00
+ 2.09744120e+00
 
 $ Ge
 a 32
@@ -544,8 +547,9 @@ $ d functions
  8.62070420e-01
  2.43551430e-01
 $ f functions 
-    1    0    0
+    2    0    0
  4.64271290e+00
+ 9.66656260e-01
 
 $ Br
 a 35
@@ -590,8 +594,9 @@ $ d functions
  1.43085340e+00
  4.32158950e-01
 $ f functions 
-    1    0    0
+    2    0    0
  6.75853350e+00
+ 1.79715170e+00
 
 $ Se
 a 34
@@ -636,8 +641,9 @@ $ d functions
  1.23191150e+00
  3.65720970e-01
 $ f functions 
-    1    0    0
+    2    0    0
  6.05326000e+00
+ 1.50752950e+00
 
 $ 
 $ Basis set library file automatically generatered by basis_set.py
@@ -2938,10 +2944,10 @@ $ f functions
 $ 
 $ Basis set library file automatically generatered by basis_set.py
 $ 
-$ invocation: basis_set.py --file=../basis/reference_edited/5p_dz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=correlating --output=dyall.5p.dz.bas
+$ invocation: basis_set.py --file=../basis/reference_edited/5p_dz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=correlating,polarizing f --output=dyall.5p.dz.bas
 $ 
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
-$  ['correlating']
+$  ['correlating', 'polarizing f']
 $ 
 $ dyall.5p.dz.bas
 $
@@ -3120,8 +3126,9 @@ $ d functions
  8.25505790e-01
  2.98523850e-01
 $ f functions 
-    1    0    0
+    2    0    0
  2.67709400e+00
+ 1.21693500e+00
 
 $ Xe
 a 54
@@ -3180,8 +3187,9 @@ $ d functions
  9.27044060e-01
  3.39242330e-01
 $ f functions 
-    1    0    0
+    2    0    0
  2.91412710e+00
+ 1.38446680e+00
 
 $ Sn
 a 50
@@ -3240,8 +3248,9 @@ $ d functions
  5.38655350e-01
  1.84430760e-01
 $ f functions 
-    1    0    0
+    2    0    0
  1.96599480e+00
+ 7.27041910e-01
 
 $ In
 a 49
@@ -3300,8 +3309,9 @@ $ d functions
  4.51079300e-01
  1.50882920e-01
 $ f functions 
-    1    0    0
+    2    0    0
  1.72896180e+00
+ 5.81789580e-01
 
 $ Sb
 a 51
@@ -3360,8 +3370,9 @@ $ d functions
  6.31672290e-01
  2.21234800e-01
 $ f functions 
-    1    0    0
+    2    0    0
  2.20302790e+00
+ 8.85180770e-01
 
 $ Te
 a 52
@@ -3420,16 +3431,17 @@ $ d functions
  7.27350980e-01
  2.59354130e-01
 $ f functions 
-    1    0    0
+    2    0    0
  2.44006100e+00
+ 1.04949990e+00
 
 $ 
 $ Basis set library file automatically generatered by basis_set.py
 $ 
-$ invocation: basis_set.py --file=../basis/reference_edited/5d_dz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=valence correlating and polarization,4f core correlating --output=dyall.5d.dz.bas
+$ invocation: basis_set.py --file=../basis/reference_edited/5d_dz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=valence correlating and dipole polarization,4f core correlating --output=dyall.5d.dz.bas
 $ 
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
-$  ['valence correlating and polarization', '4f core correlating']
+$  ['valence correlating and dipole polarization', '4f core correlating']
 $ 
 $ dyall.5d.dz.bas
 $
@@ -3565,6 +3577,7 @@ $
 
 $ Pt
 a 78
+$ Warning: in symmetry        f, exponent 9.0639763000e-01 is considered to be too close to one already present (9.0639763000e-01) and is not included. threshold: 5.00e-02
 $ s functions 
    24    0    0
  5.86523220e+07
@@ -3627,7 +3640,7 @@ $ d functions
  5.86934060e-01
  1.91099850e-01
 $ f functions 
-    8    0    0
+    9    0    0
  3.76572610e+02
  1.27871040e+02
  5.33480740e+01
@@ -3636,12 +3649,14 @@ $ f functions
  5.28400790e+00
  2.33781160e+00
  9.06397630e-01
+ 2.68636660e-01
 $ g functions 
     1    0    0
  1.08306210e+01
 
 $ Hf
 a 72
+$ Warning: in symmetry        f, exponent 3.8547549000e-01 is considered to be too close to one already present (3.8547549000e-01) and is not included. threshold: 5.00e-02
 $ s functions 
    24    0    0
  5.87243620e+07
@@ -3704,7 +3719,7 @@ $ d functions
  3.36693170e-01
  9.61593720e-02
 $ f functions 
-    8    0    0
+    9    0    0
  2.33440440e+02
  7.91613380e+01
  3.23907450e+01
@@ -3713,12 +3728,14 @@ $ f functions
  2.80705280e+00
  1.12799600e+00
  3.85475490e-01
+ 1.11953270e-01
 $ g functions 
     1    0    0
  7.14482820e+00
 
 $ Ir
 a 77
+$ Warning: in symmetry        f, exponent 8.1914535000e-01 is considered to be too close to one already present (8.1914535000e-01) and is not included. threshold: 5.00e-02
 $ s functions 
    24    0    0
  5.86240440e+07
@@ -3781,7 +3798,7 @@ $ d functions
  5.44288140e-01
  1.75374450e-01
 $ f functions 
-    8    0    0
+    9    0    0
  3.52899410e+02
  1.19840640e+02
  4.98999180e+01
@@ -3790,12 +3807,14 @@ $ f functions
  4.87368020e+00
  2.13564610e+00
  8.19145350e-01
+ 2.46251920e-01
 $ g functions 
     1    0    0
  1.01876050e+01
 
 $ Re
 a 75
+$ Warning: in symmetry        f, exponent 6.4713929000e-01 is considered to be too close to one already present (6.4713929000e-01) and is not included. threshold: 5.00e-02
 $ s functions 
    24    0    0
  5.88559530e+07
@@ -3858,7 +3877,7 @@ $ d functions
  4.59750740e-01
  1.44037680e-01
 $ f functions 
-    8    0    0
+    9    0    0
  3.05940190e+02
  1.03883230e+02
  4.30377830e+01
@@ -3867,12 +3886,14 @@ $ f functions
  4.06003640e+00
  1.73647710e+00
  6.47139290e-01
+ 1.92373800e-01
 $ g functions 
     1    0    0
  8.93607990e+00
 
 $ Au
 a 79
+$ Warning: in symmetry        f, exponent 9.9485802000e-01 is considered to be too close to one already present (9.9485802000e-01) and is not included. threshold: 5.00e-02
 $ s functions 
    24    0    0
  5.86641870e+07
@@ -3935,7 +3956,7 @@ $ d functions
  6.29799130e-01
  2.06895060e-01
 $ f functions 
-    8    0    0
+    9    0    0
  4.00441890e+02
  1.35960200e+02
  5.68188200e+01
@@ -3944,12 +3965,14 @@ $ f functions
  5.69842520e+00
  2.54253880e+00
  9.94858020e-01
+ 3.05376020e-01
 $ g functions 
     1    0    0
  1.14853380e+01
 
 $ W
 a 74
+$ Warning: in symmetry        f, exponent 5.6143065000e-01 is considered to be too close to one already present (5.6143065000e-01) and is not included. threshold: 5.00e-02
 $ s functions 
    24    0    0
  5.89486040e+07
@@ -4012,7 +4035,7 @@ $ d functions
  4.17928550e-01
  1.28319860e-01
 $ f functions 
-    8    0    0
+    9    0    0
  2.82322990e+02
  9.58440680e+01
  3.95772430e+01
@@ -4021,12 +4044,14 @@ $ f functions
  3.65176670e+00
  1.53726810e+00
  5.61430650e-01
+ 1.59256210e-01
 $ g functions 
     1    0    0
  8.32737660e+00
 
 $ Os
 a 76
+$ Warning: in symmetry        f, exponent 7.3285164000e-01 is considered to be too close to one already present (7.3285164000e-01) and is not included. threshold: 5.00e-02
 $ s functions 
    24    0    0
  5.84125260e+07
@@ -4089,7 +4114,7 @@ $ d functions
  5.01883700e-01
  1.59699320e-01
 $ f functions 
-    8    0    0
+    9    0    0
  3.29395260e+02
  1.11858310e+02
  4.64688740e+01
@@ -4098,12 +4123,14 @@ $ f functions
  4.46633270e+00
  1.93549270e+00
  7.32851640e-01
+ 2.17768010e-01
 $ g functions 
     1    0    0
  9.55613430e+00
 
 $ Hg
 a 80
+$ Warning: in symmetry        f, exponent 1.0847115000e+00 is considered to be too close to one already present (1.0847115000e+00) and is not included. threshold: 5.00e-02
 $ s functions 
    24    0    0
  5.81789970e+07
@@ -4166,7 +4193,7 @@ $ d functions
  7.01705130e-01
  2.36689730e-01
 $ f functions 
-    8    0    0
+    9    0    0
  4.24155820e+02
  1.43982700e+02
  6.02529850e+01
@@ -4175,12 +4202,14 @@ $ f functions
  6.10672930e+00
  2.74486520e+00
  1.08471150e+00
+ 3.40593950e-01
 $ g functions 
     1    0    0
  1.21519160e+01
 
 $ Ta
 a 73
+$ Warning: in symmetry        f, exponent 4.7476634000e-01 is considered to be too close to one already present (4.7476634000e-01) and is not included. threshold: 5.00e-02
 $ s functions 
    24    0    0
  5.90224270e+07
@@ -4243,7 +4272,7 @@ $ d functions
  3.76593300e-01
  1.12421520e-01
 $ f functions 
-    8    0    0
+    9    0    0
  2.58359410e+02
  8.76728720e+01
  3.60567720e+01
@@ -4252,6 +4281,7 @@ $ f functions
  3.23704750e+00
  1.33572910e+00
  4.74766340e-01
+ 1.40593440e-01
 $ g functions 
     1    0    0
  7.73012670e+00
@@ -6106,10 +6136,10 @@ $ f functions
 $ 
 $ Basis set library file automatically generatered by basis_set.py
 $ 
-$ invocation: basis_set.py --file=../basis/reference_edited/6p_dz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=correlating --output=dyall.6p.dz.bas
+$ invocation: basis_set.py --file=../basis/reference_edited/6p_dz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=correlating,polarizing f --output=dyall.6p.dz.bas
 $ 
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
-$  ['correlating']
+$  ['correlating', 'polarizing f']
 $ 
 $ dyall.6p.dz.bas
 $
@@ -6304,7 +6334,7 @@ $ d functions
  5.52008080e-01
  2.02232070e-01
 $ f functions 
-    8    0    0
+    9    0    0
  5.51023050e+02
  1.86924360e+02
  7.88015410e+01
@@ -6313,6 +6343,7 @@ $ f functions
  8.45836180e+00
  3.96752280e+00
  1.68654420e+00
+ 6.67301970e-01
 
 $ Pb
 a 82
@@ -6383,7 +6414,7 @@ $ d functions
  4.85219170e-01
  1.75459930e-01
 $ f functions 
-    8    0    0
+    9    0    0
  5.20138450e+02
  1.76510090e+02
  7.43430140e+01
@@ -6392,6 +6423,7 @@ $ f functions
  7.90770330e+00
  3.68433520e+00
  1.54783110e+00
+ 5.60408710e-01
 
 $ Tl
 a 81
@@ -6462,7 +6494,7 @@ $ d functions
  4.21552200e-01
  1.50267780e-01
 $ f functions 
-    8    0    0
+    9    0    0
  4.89995590e+02
  1.66331970e+02
  6.99800850e+01
@@ -6471,6 +6503,7 @@ $ f functions
  7.36995780e+00
  3.40866130e+00
  1.41384690e+00
+ 4.52629430e-01
 
 $ At
 a 85
@@ -6541,7 +6574,7 @@ $ d functions
  6.88260340e-01
  2.56992820e-01
 $ f functions 
-    8    0    0
+    9    0    0
  6.14902930e+02
  2.08417200e+02
  8.79848050e+01
@@ -6550,6 +6583,7 @@ $ f functions
  9.59533210e+00
  4.55444770e+00
  1.97652640e+00
+ 8.78194270e-01
 
 $ Rn
 a 86
@@ -6620,7 +6654,7 @@ $ d functions
  7.60663340e-01
  2.86675320e-01
 $ f functions 
-    8    0    0
+    9    0    0
  6.47900270e+02
  2.19493860e+02
  9.27081990e+01
@@ -6629,6 +6663,7 @@ $ f functions
  1.01812230e+01
  4.85784110e+00
  2.12743540e+00
+ 9.78889640e-01
 
 $ Po
 a 84
@@ -6699,7 +6734,7 @@ $ d functions
  6.19815650e-01
  2.29483250e-01
 $ f functions 
-    8    0    0
+    9    0    0
  5.82612870e+02
  1.97561080e+02
  8.33493580e+01
@@ -6708,6 +6743,7 @@ $ f functions
  9.02103230e+00
  4.25765080e+00
  1.82952430e+00
+ 7.73526070e-01
 
 $ 
 $ Basis set library file automatically generatered by basis_set.py
@@ -7991,10 +8027,10 @@ $ f functions
 $ 
 $ Basis set library file automatically generatered by basis_set.py
 $ 
-$ invocation: basis_set.py --file=../basis/reference_edited/7p_dz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=correlating,dipole polarizing f functions for the 6d shell --output=dyall.7p.dz.bas
+$ invocation: basis_set.py --file=../basis/reference_edited/7p_dz_archive --print_polarization --print_scfbas --uncontracted --equal_exponent_threshold=0.05 --polarization_type=correlating,polarizing f --output=dyall.7p.dz.bas
 $ 
 $ These are the sets of functions selected from the TCA archive (apart from SCF):
-$  ['correlating', 'dipole polarizing f functions for the 6d shell']
+$  ['correlating', 'polarizing f']
 $ 
 $ dyall.7p.dz.bas
 $
