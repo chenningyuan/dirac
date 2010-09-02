@@ -99,6 +99,8 @@ contains
 !     dS/dB2
       call add_class('S2MAG  ', '+00'//ss)
 
+      call add_class('S1MAGR ', '+00'//ss)
+
 !     rdsusll
       call add_class('RDSUSLL', '00+0')
 !     dsusnol
@@ -426,6 +428,20 @@ contains
                            1,                                     &
                            1,                                     &
                            (/f/),                                 &
+                           (/s/))
+      end do
+
+      f = 1.0d0
+      blocks = '+00'//ss
+      do i = 1, size(i_iter)
+         s = 'd|S>/dB '
+         s(8:8) = i_iter(i)
+         call add_operator('d|S>/dB' // i_iter(i) // '        ', &
+                           blocks,                               &
+                           1,                                    &
+                           0,                                    &
+                           1,                                    &
+                           (/f/),                                &
                            (/s/))
       end do
 

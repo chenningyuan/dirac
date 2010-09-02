@@ -1336,16 +1336,16 @@ contains
 #endif
             if (w(1)==0) then !no -i/2 Tb contribution
                call load_oneint('dS/dB' // xyz(c(1)+i) // '  ', S(i+1), S0)
-#ifdef PRG_DIRAC
-!radovan: to reproduce LAO magnetizability i have to multiply here by 0.5
-            S(i+1) = 0.5d0*S(i+1)
-#endif
             else
                call load_oneint('d|S>/dB' // xyz(c(1)+i), S(i+1), S0)
                F(i+1) = F(i+1) - w(1)/2 * S(i+1)
                F(i+1) = F(i+1) - w(1)/2 * dag(S(i+1))
                S(i+1) = S(i+1) - dag(S(i+1))
             end if
+#ifdef PRG_DIRAC
+!radovan: to reproduce LAO magnetizability i have to multiply here by 0.5
+            S(i+1) = 0.5d0*S(i+1)
+#endif
          end do
       else if (np==1 .and. p(1)=='ELGR') then
          do i = 0, dp(1)-1
