@@ -11,6 +11,16 @@
 
 import  sys, os, string, subprocess, optparse
 
+# Search in the system for these compilers
+F_compilers=['ifort','gfortran','pgf90','g95','lfc']
+C_compilers=['icc','gcc','pgcc']
+
+def guess_system():
+# guess the operating system
+  print "guessing oper.system",os.uname()
+
+
+
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 class ConfigureVariables:
   # ... class containing all important variables, methods for submitting 
@@ -21,6 +31,7 @@ class ConfigureVariables:
   #
     self.Bash_Configure_Arguments=""
 
+    #  pure python mode or bash shell mode
     self.PythonMode=False
     
 	# installation directory
@@ -124,12 +135,14 @@ def call_bash_configure():
 def call_python_configure():
 #-----------------------------------------------------
 #
-#        do the job of the old bash configure
+#      do the job of the old bash configure
 #
 #  create the trunk/Makefile.config file
 #
 #-----------------------------------------------------
   print 'write me ! :)'
+ 
+  guess_system()
 
   # take care of the installation directory ...
 
