@@ -1012,6 +1012,7 @@ contains
 
          w(1) = rw(ipoint)
 
+#ifdef MOD_UNRELEASED
          if (is_tau_mgga) then
             call get_tau(tau,     &
                          0,       &
@@ -1022,7 +1023,6 @@ contains
             tau_integral = tau_integral + w(1)*tau
          end if
 
-#ifdef MOD_UNRELEASED
         if ( dirac_cfg_fde_response ) then
            if ( fde_froz_n(ipoint) > dft_cfg_dfthr0 ) then
               r_0_t(1) = r_0(1) + fde_froz_n(ipoint)
@@ -1060,7 +1060,7 @@ contains
 !           fde_resp_verbose = .false.
 !        endif
       endif
-#endif
+#endif /* ifdef MOD_UNRELEASED */
 
 !       number of electrons
         nr_electrons = nr_electrons + w(1)*r_0(1)
@@ -1473,6 +1473,7 @@ contains
                 end if
              end if
        
+#ifdef MOD_UNRELEASED
              utn_above_threshold = .false.
              if (dabs(u%tn(im)) > tiny(0.0d0)) then
                 utn_above_threshold = .true.
@@ -1535,6 +1536,7 @@ contains
                                 u%ts(1, im),         &
                                 ao(ao_start(1, 0) + mat_dim*2))
              end if
+#endif /* ifdef MOD_UNRELEASED */
        
           end do
 
@@ -2052,6 +2054,7 @@ contains
 !     hermitian contribution (qr = quaternion real)
       if (calculate_qr) then
 
+#ifdef MOD_UNRELEASED
          if (is_tau_mgga) then
             call get_tau(t_b,     &
                          isym(im) - 1,             &
@@ -2060,6 +2063,7 @@ contains
                          buffer,  &
                          ao_p(ao_start(1, 0)))
          end if
+#endif /* ifdef MOD_UNRELEASED */
 
          if (is_gga_qr) then
             if (allow_nonhermitian) then
@@ -2104,6 +2108,7 @@ contains
                                          + 2.0d0*gr_b(1:3)*derv(1, d0010000)
         end if
 
+#ifdef MOD_UNRELEASED
         if (is_tau_mgga) then
            u%tn(im) = u%tn(im) + derv(1, d0000020)*t_b
            u%tn(im) = u%tn(im) + derv(1, d1000010)*r_b
@@ -2111,6 +2116,7 @@ contains
            u%n(im)  = u%n(im)  + derv(1, d1000010)*t_b
            u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gr_0(1:3)*t_b*derv(1, d0010010)
         end if
+#endif /* ifdef MOD_UNRELEASED */
 
       end if !end of qr contribution
 
@@ -2146,6 +2152,7 @@ contains
                    buffer,                     &
                    ao_p)
         end if
+#ifdef MOD_UNRELEASED
         if (is_tau_mgga) then
            call get_tau_imag(ts_b,     &
                              isym(im) - 1,             &
@@ -2154,6 +2161,7 @@ contains
                              buffer,  &
                              ao_p(ao_start(1, 0)))
         end if
+#endif /* ifdef MOD_UNRELEASED */
 
         do k = k_start, 3
            u%s(k, im) = u%s(k, im) + derv(1, d0200000)*s_b(k)
@@ -2169,6 +2177,7 @@ contains
                                                   +       gr_0(1:3)*y_b(k)*derv(1, d0002000) &
                                                   + 2.0d0*gs_b(1:3, k)*derv(1, d0000100)
            end if
+#ifdef MOD_UNRELEASED
            if (is_tau_mgga) then
               u%ts(k, im) = u%ts(k, im) + derv(1, d0000002)*ts_b(k)
               u%ts(k, im) = u%ts(k, im) + derv(1, d0100001)*s_b(k)
@@ -2176,6 +2185,7 @@ contains
               u%s(k, im) = u%s(k, im) + derv(1, d0100001)*ts_b(k)
               u%gs(1:3, k, im) = u%gs(1:3, k, im) + gr_0(1:3)*ts_b(k)*derv(1, d0001001)
            end if
+#endif /* ifdef MOD_UNRELEASED */
         end do
 
       end if !end of qi contribution
