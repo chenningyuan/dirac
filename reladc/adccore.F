@@ -3088,13 +3088,6 @@ C
           OFF1 = OFF1 + 1
         ENDDO
       ENDDO
-
-c  debug
-      nx=no(krep)*no(krep)
-      off1=jjoo(krep,krep) + 1
-c     WRITE(IW,*) 'QOO chksum:',ddot(nx,qoo(off1),1,qoo(off1),1)
-c  debug end
-        
 C
 C calculate Q+_vo + Q-_vo for a given symmetry KREP such that
 C Q_kl contains only totally symmetric contributions.
@@ -3118,14 +3111,6 @@ C
           OFF1 = OFF1 + 1
         ENDDO
       ENDDO
-
-c  debug
-      nx=no(krep)*nv(krep)
-      off1=jjvo(krep,krep) + 1
-c     WRITE(IW,*) 'QVOA chksum:',ddot(nx,qvoa(off1),1,qvoa(off1),1)
-c     WRITE(IW,*) 'QVOI chksum:',ddot(nx,qvoi(off1),1,qvoi(off1),1)
-c  debug end
-
 C
 C  add +/- contributions of QVO in corresponding symmetry
 C
@@ -3138,8 +3123,8 @@ C
       ENDDO
 
 c  debug
-      nx=no(krep)*nv(krep)
-      off1=jjvo(krep,krep) + 1
+c     nx=no(krep)*nv(krep)
+c     off1=jjvo(krep,krep) + 1
 c     WRITE(IW,*) 'QVO chksum:',ddot(nx,qvo(off1),1,qvo(off1),1)
 c  debug end
 
@@ -3163,8 +3148,8 @@ C
       ENDDO
 
 c  debug
-      nx=nv(krep)*nv(krep)
-      off1=jjvv(krep,krep) + 1
+c     nx=nv(krep)*nv(krep)
+c     off1=jjvv(krep,krep) + 1
 c     WRITE(IW,*) 'QVV chksum:',ddot(nx,qvv(off1),1,qvv(off1),1)
 c  debug end
 
@@ -3265,8 +3250,8 @@ C
         ENDDO
       ENDDO
 c  debug
-      nx=no(krep)*no(krep)
-      off1=jjoo(krep,krep) + 1
+c     nx=no(krep)*no(krep)
+c     off1=jjoo(krep,krep) + 1
 c     WRITE(IW,*) 'QOO chksum:',zdotc(nx,qoo(off1),1,qoo(off1),1)
 c  debug end
 C
@@ -3295,8 +3280,8 @@ C
         ENDDO
       ENDDO
 c  debug
-      nx=no(krep)*nv(krep)
-      off1=jjvo(krep,krep) + 1
+c     nx=no(krep)*nv(krep)
+c     off1=jjvo(krep,krep) + 1
 c     WRITE(IW,*) 'QVOA chksum:',zdotc(nx,qvoa(off1),1,qvoa(off1),1)
 c     WRITE(IW,*) 'QVOI chksum:',zdotc(nx,qvoi(off1),1,qvoi(off1),1)
 c  debug end
@@ -3311,8 +3296,8 @@ C
         ENDDO
       ENDDO
 c  debug
-      nx=no(krep)*nv(krep)
-      off1=jjvo(krep,krep) + 1
+c     nx=no(krep)*nv(krep)
+c     off1=jjvo(krep,krep) + 1
 c     WRITE(IW,*) 'QVO chksum:',zdotc(nx,qvo(off1),1,qvo(off1),1)
 c  debug end
 C
@@ -3330,8 +3315,8 @@ C
         ENDDO
       ENDDO
 c  debug
-      nx=nv(krep)*nv(krep)
-      off1=jjvv(krep,krep) + 1
+c     nx=nv(krep)*nv(krep)
+c     off1=jjvv(krep,krep) + 1
 c     WRITE(IW,*) 'QVV chksum:',zdotc(nx,qvv(off1),1,qvv(off1),1)
 c  debug end
 
@@ -6605,24 +6590,6 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-c
-c  for test purposes: low-level direct I/O
-c
-c------------------------- debug ---------------------
-c     size=ivovvt(nrep+1)*2*RCW
-c     froff=0
-c     call rdabsf(itapt+5,vovv,size,froff)
-
-c     nnx=ivovvt(nrep+1)
-c     if(carith) then
-c       write(*,*) 'vovv control:',zdotc(nnx,vovv,1,vovv,1)
-c     else
-c       write(*,*) 'vovv control:',ddot(nnx,vovv,1,vovv,1)
-c     endif
-
-c     return
-c------------------------- debug end -----------------
-
       OFF1 = 1
       DO 30 IRP = 1, NREP
 
@@ -6675,17 +6642,6 @@ C
 C
 C---------------Executable code--------------------------------------
 C
-c
-c  ---- for test purpose: perform a low-level I/O
-c
-c------------------------ debug ----------------------------
-c     size=ivvvvtt(nrep+1)*2*rcw
-c     froff = 0
-c     call rdabsf(itapt+6,vvvv,size,froff)
-c     return
-c------------------------ debug end ----------------------------
-      
-
       OFF1 = 1
       DO 30 IRP = 1, NREP
 c        WRITE(IW,*) 'GETVVVV irep:',IRP
