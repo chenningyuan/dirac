@@ -1278,6 +1278,7 @@ C      Oct 24, 2003: Diagonalization of FC + FV matrix,
 C                    save orbital energies in ORBENE      T. Fleig
 C
 C***********************************************************************
+      use dirac_cfg ! for MCSCF-srDFT calculations
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -1414,9 +1415,15 @@ C
 C        Add 2-electron inactive energy
 C        (factor D2: DCao normed to 1 (not 2))
 C
-C                1/2 *  tr(FC * DC) ! Note that FC does not contain h1 yet ... 
+C                1/2 *  tr(DC * G * DC) where G = J -K ! Note that FCAO does not contain h1 yet ... 
          EMCMY2E = DP5 * D2 * DDOT(N2BBASXQ,WORK(KDCAO),1,WORK(KFCAO),1)
          EMCMY = EMCMY1E + EMCMY2E
+C
+C        Note that for MCSCF-srDFT, EMCMY is the purely long-range
+C        inactive energy (the srHxc potential has NOT been added to the
+C        inactive Fock operator FCAO yet).  
+C
+C
          IF (IPROPT .GE. 4) THEN
             WRITE(LUPRI,9000) 1,EMCMY1E
             WRITE(LUPRI,9000) 2,EMCMY2E
@@ -1437,7 +1444,31 @@ C
       ELSE
          CALL DCOPY(N2BBASXQ,WORK(KH1AO),1,WORK(KFCAO),1)
       END IF
-C Manu srdft: the frozen srHxc potential should be added to FCAO there
+
+#ifdef DEBUG_SRDFT
+C 
+C     If MCSCF-srDFT calculation: add the srxc
+C     potential V^{sr}_{xc}[D] to the inactive Fock operator
+C     FCAO, where D = DC + DV is the total density matrix.
+C     Note that, in addition, the srXC correction
+C     E^{sr}_{xc}[D] - tr (V^{sr}_xc[D] * dvao)
+C     is added to the inactive energy. The second term relates
+C     to the active energy contribution tr(FC*DV) which will be
+C     calculated later on with the MCSCF-srDFT inactive Fock operator
+C     that contains V^{sr}_xc[D].
+      if (dirac_cfg_dft_calculation) then
+         call addsrxc(ntbas(0),
+     &                nz,
+     &                nisht,
+     &                work(kfcao),
+     &                work(kdcao),
+     &                work(kdvao),
+     &                emcmy) ! inactive energy
+      end if 
+#endif 
+C
+
+
 C
       IF ( IPROPT .GE. 5 ) THEN
          WRITE(LUPRI,9005)
