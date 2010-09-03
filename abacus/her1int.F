@@ -2595,7 +2595,6 @@ C
 #include "onecom.h"
 #include "lmns.h"
       INT = 0
-      EXPPIH = EXPPI/D2
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
          MVALA = MVALUA(ICOMPA)
@@ -2659,7 +2658,6 @@ C
 #include "orgcom.h"
 #include "lmns.h"
       INT = 0
-      EXPPIH = EXPPI/D2
       ADX = CORAX - DIPORG(1)
       ADY = CORAY - DIPORG(2)
       ADZ = CORAZ - DIPORG(3)
@@ -2734,7 +2732,6 @@ C
 #include "orgcom.h"
 #include "lmns.h"
       INT = 0
-      EXPPIH = EXPPI/D2
       ADX = CORAX - DIPORG(1)
       ADY = CORAY - DIPORG(2)
       ADZ = CORAZ - DIPORG(3)
@@ -3970,7 +3967,6 @@ C
 #include "onecom.h"
 #include "lmns.h"
       INT = 0
-      EXPPIH = EXPPI/D2
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
          MVALA = MVALUA(ICOMPA)
