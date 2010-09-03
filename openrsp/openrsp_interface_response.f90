@@ -376,6 +376,9 @@ contains
 
     call setrsp
 
+!   .URKBAL response with frequency=0.0 but static=.false. converges much worse
+!   than frequency=0.0 with static=.true.
+!   it is important to correctly set static
     static = .true.
     if (dabs(freq) > tiny(0.0d0)) then
        static = .false.
