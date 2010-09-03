@@ -337,9 +337,9 @@ C
 !                  85         86         87         88
      &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 
 !                  89         90         91         92
-     &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 
+     &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'QDBINT ', 
 !                  93         94         95         96
-     &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx'/
+     &            'S2MBRA ', 'S2MKET ', 'S2MMIX ', 'xxxxxxx'/
 C
 #include "ibtfun.h"
 C
@@ -374,7 +374,10 @@ C
      &              69, 70, 71, 72,
      &              73, 74, 75, 76,
      &              77, 78, 79, 80,
-     &              81, 82, 83
+     &              81, 82, 83, 84,
+     &              85, 86, 87, 88,
+     &              89, 90, 91, 92,
+     &              93, 94, 95, 96
      &            ), I
          END IF
   100 CONTINUE
@@ -1202,24 +1205,34 @@ C
          INTTYP = 42
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &     ' Calculation of first magnetic derivative of electric field'
-         NOPTYP  = 3
+         NOPTYP  = 9
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-         EFDIR = FIELD1(1:1)
-         LABINT(1) = EFDIR//'-CM1 X'
-         LABINT(2) = EFDIR//'-CM1 Y'
-         LABINT(3) = EFDIR//'-CM1 Z'
-         IF (EFDIR .EQ. 'X') THEN
-            IRET = 1
-         ELSE IF (EFDIR .EQ. 'Y') THEN
-            IRET = 2
-         ELSE
-            IRET = 3
-         END IF
-         INTREP(1) = IBTXOR(ISYMAX(1,2),ISYMAX(IRET,1))
-         INTREP(2) = IBTXOR(ISYMAX(2,2),ISYMAX(IRET,1))
-         INTREP(3) = IBTXOR(ISYMAX(3,2),ISYMAX(IRET,1))
-         ANTI      = .TRUE.
+
+         LABINT( 1) = 'X-CM1 X '
+         LABINT( 2) = 'X-CM1 Y '
+         LABINT( 3) = 'X-CM1 Z '
+         LABINT( 4) = 'Y-CM1 X '
+         LABINT( 5) = 'Y-CM1 Y '
+         LABINT( 6) = 'Y-CM1 Z '
+         LABINT( 7) = 'Z-CM1 X '
+         LABINT( 8) = 'Z-CM1 Y '
+         LABINT( 9) = 'Z-CM1 Z '
+
+         if (maxrep > 0) then
+            call quit('implement cm1 for maxrep > 0')
+         end if
+         intrep( 1) = 0
+         intrep( 2) = 0
+         intrep( 3) = 0
+         intrep( 4) = 0
+         intrep( 5) = 0
+         intrep( 6) = 0
+         intrep( 7) = 0
+         intrep( 8) = 0
+         intrep( 9) = 0
+
+         anti = .true.
       GOTO 200
 C
 C     Second order magnetic field derivatives of electric field
@@ -1229,33 +1242,52 @@ C
          INTTYP = 43
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &   ' Calculation of second magnetic derivatives of electric field'
-         NOPTYP  = 6
+         NOPTYP  = 18
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-         EFDIR      = FIELD2(1:1)
-         LABINT(1)  = EFDIR//'-CM2XX'
-         LABINT(2)  = EFDIR//'-CM2XY'
-         LABINT(3)  = EFDIR//'-CM2XZ'
-         LABINT(4)  = EFDIR//'-CM2YY'
-         LABINT(5)  = EFDIR//'-CM2YZ'
-         LABINT(6)  = EFDIR//'-CM2ZZ'
-         IF (EFDIR .EQ. 'X') THEN
-            IRET = 1
-         ELSE IF (EFDIR .EQ. 'Y') THEN
-            IRET = 2
-         ELSE
-            IRET = 3
-         END IF
-         INTREP(1)  = ISYMAX(IRET,1)
-         INTREP(2)  = IBTXOR(IBTXOR(ISYMAX(1,2),ISYMAX(2,2)),
-     &                              ISYMAX(IRET,1))
-         INTREP(3)  = IBTXOR(IBTXOR(ISYMAX(1,2),ISYMAX(3,2)),
-     &                              ISYMAX(IRET,1))
-         INTREP(4)  = ISYMAX(IRET,1)
-         INTREP(5)  = IBTXOR(IBTXOR(ISYMAX(2,2),ISYMAX(3,2)),
-     &                              ISYMAX(IRET,1))
-         INTREP(6)  = ISYMAX(IRET,1)
-         ANTI       = .FALSE.
+
+         LABINT( 1) = 'X-CM2XX '
+         LABINT( 2) = 'X-CM2XY '
+         LABINT( 3) = 'X-CM2XZ '
+         LABINT( 4) = 'X-CM2YY '
+         LABINT( 5) = 'X-CM2YZ '
+         LABINT( 6) = 'X-CM2ZZ '
+         LABINT( 7) = 'Y-CM2XX '
+         LABINT( 8) = 'Y-CM2XY '
+         LABINT( 9) = 'Y-CM2XZ '
+         LABINT(10) = 'Y-CM2YY '
+         LABINT(11) = 'Y-CM2YZ '
+         LABINT(12) = 'Y-CM2ZZ '
+         LABINT(13) = 'Z-CM2XX '
+         LABINT(14) = 'Z-CM2XY '
+         LABINT(15) = 'Z-CM2XZ '
+         LABINT(16) = 'Z-CM2YY '
+         LABINT(17) = 'Z-CM2YZ '
+         LABINT(18) = 'Z-CM2ZZ '
+
+         if (maxrep > 0) then
+            call quit('implement cm2 for maxrep > 0')
+         end if
+         intrep( 1) = 0
+         intrep( 2) = 0
+         intrep( 3) = 0
+         intrep( 4) = 0
+         intrep( 5) = 0
+         intrep( 6) = 0
+         intrep( 7) = 0
+         intrep( 8) = 0
+         intrep( 9) = 0
+         intrep(10) = 0
+         intrep(11) = 0
+         intrep(12) = 0
+         intrep(13) = 0
+         intrep(14) = 0
+         intrep(15) = 0
+         intrep(16) = 0
+         intrep(17) = 0
+         intrep(18) = 0
+
+         anti = .false.
       GOTO 200
 C
 C     Half-derivative overlap integrals not to be antisymmetrized
@@ -2036,6 +2068,180 @@ C
          ANTI = .TRUE. ! it's pure imaginary !....
 
       GO TO 200
+
+ 84   continue
+ 85   continue
+ 86   continue
+ 87   continue
+ 88   continue
+ 89   continue
+ 90   continue
+ 91   continue
+      go to 200
+
+C
+C     First order magnetic field derivatives of electric field gradient QDBINT
+C     -----------------------------------------------------------------
+C
+ 92   CONTINUE
+         INTTYP = 65
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &     ' Calculation of first magnetic derivative of electric '//
+     &     'field gradient'
+         NOPTYP  = 18
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+
+         LABINT( 1) = 'XX-QDB X'
+         LABINT( 2) = 'XX-QDB Y'
+         LABINT( 3) = 'XX-QDB Z'
+         LABINT( 4) = 'YY-QDB X'
+         LABINT( 5) = 'YY-QDB Y'
+         LABINT( 6) = 'YY-QDB Z'
+         LABINT( 7) = 'ZZ-QDB X'
+         LABINT( 8) = 'ZZ-QDB Y'
+         LABINT( 9) = 'ZZ-QDB Z'
+         LABINT(10) = 'XY-QDB X'
+         LABINT(11) = 'XY-QDB Y'
+         LABINT(12) = 'XY-QDB Z'
+         LABINT(13) = 'XZ-QDB X'
+         LABINT(14) = 'XZ-QDB Y'
+         LABINT(15) = 'XZ-QDB Z'
+         LABINT(16) = 'YZ-QDB X'
+         LABINT(17) = 'YZ-QDB Y'
+         LABINT(18) = 'YZ-QDB Z'
+
+         if (maxrep > 0) then
+            call quit('implement qdb for maxrep > 0')
+         end if
+         intrep( 1) = 0
+         intrep( 2) = 0
+         intrep( 3) = 0
+         intrep( 4) = 0
+         intrep( 5) = 0
+         intrep( 6) = 0
+         intrep( 7) = 0
+         intrep( 8) = 0
+         intrep( 9) = 0
+         intrep(10) = 0
+         intrep(11) = 0
+         intrep(12) = 0
+         intrep(13) = 0
+         intrep(14) = 0
+         intrep(15) = 0
+         intrep(16) = 0
+         intrep(17) = 0
+         intrep(18) = 0
+
+         ANTI      = .TRUE.
+      GOTO 200
+
+
+C
+C     Second order contribution from overlap matrix to magnetic properties
+cdj bra, ket, and mixed bra-ket contributions separately
+C
+ 93   CONTINUE
+         IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
+     &    ' Calculation of 2nd magnetic derivative of overlap matrix,'//
+     &    ' bra part'
+         INTTYP = 304
+         NOPTYP = 6
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         LABINT(1) = '<<S/B2XX'
+         LABINT(2) = '<<S/B2XY'
+         LABINT(3) = '<<S/B2XZ'
+         LABINT(4) = '<<S/B2YY'
+         LABINT(5) = '<<S/B2YZ'
+         LABINT(6) = '<<S/B2ZZ'
+         INTREP(1) = 0
+         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(4) = 0
+         INTREP(5) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(6) = 0
+         ANTI = .FALSE.
+         SQUARE = .TRUE.
+      GOTO 200
+C
+ 94   CONTINUE
+         IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
+     &    ' Calculation of 2nd magnetic derivative of overlap matrix,'//
+     &    ' ket part'
+         INTTYP = 305
+         NOPTYP = 6
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         LABINT(1) = '>>S/B2XX'
+         LABINT(2) = '>>S/B2XY'
+         LABINT(3) = '>>S/B2XZ'
+         LABINT(4) = '>>S/B2YY'
+         LABINT(5) = '>>S/B2YZ'
+         LABINT(6) = '>>S/B2ZZ'
+         INTREP(1) = 0
+         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(4) = 0
+         INTREP(5) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(6) = 0
+         ANTI = .FALSE.
+         SQUARE = .TRUE.
+      GOTO 200
+C
+ 95   CONTINUE
+         IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
+     &    ' Calculation of 2nd magnetic derivative of overlap matrix,'//
+     &    ' mixed bra-ket part'
+         INTTYP = 306
+         NOPTYP = 9
+         CALL NTYPTS(NOPTYP)
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         LABINT(1) = '<>S/B2XX'
+         LABINT(2) = '<>S/B2XY'
+         LABINT(3) = '<>S/B2XZ'
+         LABINT(4) = '<>S/B2YX'
+         LABINT(5) = '<>S/B2YY'
+         LABINT(6) = '<>S/B2YZ'
+         LABINT(7) = '<>S/B2ZX'
+         LABINT(8) = '<>S/B2ZY'
+         LABINT(9) = '<>S/B2ZZ'
+         INTREP(1) = 0
+         INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(4) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+         INTREP(5) = 0
+         INTREP(6) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(7) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
+         INTREP(8) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
+         INTREP(9) = 0
+         ANTI = .FALSE.
+         SQUARE = .TRUE.
+      GOTO 200
+
+ 96   continue
+      go to 200
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   200 CONTINUE
 C

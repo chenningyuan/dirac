@@ -102,6 +102,13 @@ contains
 
       call add_class('S1MAGR ', '+00'//ss)
 
+      call add_class('S2MKET ', '+00'//ss)
+      call add_class('S2MMIX ', '+00'//ss)
+
+      call add_class('CM1    ', '+00'//ss)
+      call add_class('CM2    ', '+00'//ss)
+      call add_class('QDBINT ', '+00'//ss)
+
 !     rdsusll
       call add_class('RDSUSLL', '00+0')
 !     dsusnol
@@ -466,6 +473,64 @@ contains
                            (/f/),                                 &
                            (/s/))
       end do
+
+      do ij = 1, size(ij_iter)
+         s = '>>S/B2' // ij_iter(ij)
+         call add_operator(s // '        ', blocks, 1, 1, 1, (/1/), (/f/), (/s/))
+      end do
+
+      do ij = 1, size(ij_iter)
+         s = '<>S/B2' // ij_iter(ij)
+         call add_operator(s // '        ', blocks, 1, 1, 1, (/1/), (/f/), (/s/))
+      end do
+
+      call add_operator('X-CM1 X         ', blocks, 1, -1, 1, (/1/), (/f/), (/'X-CM1 X '/))
+      call add_operator('X-CM1 Y         ', blocks, 1, -1, 1, (/1/), (/f/), (/'X-CM1 Y '/))
+      call add_operator('X-CM1 Z         ', blocks, 1, -1, 1, (/1/), (/f/), (/'X-CM1 Z '/))
+      call add_operator('Y-CM1 X         ', blocks, 1, -1, 1, (/1/), (/f/), (/'Y-CM1 X '/))
+      call add_operator('Y-CM1 Y         ', blocks, 1, -1, 1, (/1/), (/f/), (/'Y-CM1 Y '/))
+      call add_operator('Y-CM1 Z         ', blocks, 1, -1, 1, (/1/), (/f/), (/'Y-CM1 Z '/))
+      call add_operator('Z-CM1 X         ', blocks, 1, -1, 1, (/1/), (/f/), (/'Z-CM1 X '/))
+      call add_operator('Z-CM1 Y         ', blocks, 1, -1, 1, (/1/), (/f/), (/'Z-CM1 Y '/))
+      call add_operator('Z-CM1 Z         ', blocks, 1, -1, 1, (/1/), (/f/), (/'Z-CM1 Z '/))
+                                                                                       
+      call add_operator('X-CM2XX         ', blocks, 1, 1, 1, (/1/), (/f/), (/'X-CM2XX '/))
+      call add_operator('X-CM2XY         ', blocks, 1, 1, 1, (/1/), (/f/), (/'X-CM2XY '/))
+      call add_operator('X-CM2XZ         ', blocks, 1, 1, 1, (/1/), (/f/), (/'X-CM2XZ '/))
+      call add_operator('X-CM2YY         ', blocks, 1, 1, 1, (/1/), (/f/), (/'X-CM2YY '/))
+      call add_operator('X-CM2YZ         ', blocks, 1, 1, 1, (/1/), (/f/), (/'X-CM2YZ '/))
+      call add_operator('X-CM2ZZ         ', blocks, 1, 1, 1, (/1/), (/f/), (/'X-CM2ZZ '/))
+      call add_operator('Y-CM2XX         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Y-CM2XX '/))
+      call add_operator('Y-CM2XY         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Y-CM2XY '/))
+      call add_operator('Y-CM2XZ         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Y-CM2XZ '/))
+      call add_operator('Y-CM2YY         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Y-CM2YY '/))
+      call add_operator('Y-CM2YZ         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Y-CM2YZ '/))
+      call add_operator('Y-CM2ZZ         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Y-CM2ZZ '/))
+      call add_operator('Z-CM2XX         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Z-CM2XX '/))
+      call add_operator('Z-CM2XY         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Z-CM2XY '/))
+      call add_operator('Z-CM2XZ         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Z-CM2XZ '/))
+      call add_operator('Z-CM2YY         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Z-CM2YY '/))
+      call add_operator('Z-CM2YZ         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Z-CM2YZ '/))
+      call add_operator('Z-CM2ZZ         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Z-CM2ZZ '/))
+
+      call add_operator('XX-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XX-QDB X '/))
+      call add_operator('XY-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XY-QDB X '/))
+      call add_operator('XZ-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XZ-QDB X '/))
+      call add_operator('YY-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YY-QDB X '/))
+      call add_operator('YZ-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YZ-QDB X '/))
+      call add_operator('ZZ-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'ZZ-QDB X '/))
+      call add_operator('XX-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XX-QDB Y '/))
+      call add_operator('XY-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XY-QDB Y '/))
+      call add_operator('XZ-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XZ-QDB Y '/))
+      call add_operator('YY-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YY-QDB Y '/))
+      call add_operator('YZ-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YZ-QDB Y '/))
+      call add_operator('ZZ-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'ZZ-QDB Y '/))
+      call add_operator('XX-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XX-QDB Z '/))
+      call add_operator('XY-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XY-QDB Z '/))
+      call add_operator('XZ-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XZ-QDB Z '/))
+      call add_operator('YY-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YY-QDB Z '/))
+      call add_operator('YZ-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YZ-QDB Z '/))
+      call add_operator('ZZ-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'ZZ-QDB Z '/))
 
       f = 1.0d0
       blocks = '+00'//ss

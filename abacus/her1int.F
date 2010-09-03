@@ -400,6 +400,11 @@ C     type 58 already defined (NUCFIEL)
          JMAXM = 0
          DONUC1 = .FALSE.
          DOMOM1 = .FALSE.
+      ELSE IF (INTTYP .EQ.65) THEN
+         JMAXD = 0
+         JMAXM = 3
+         DONUC1 = .FALSE.
+         DOMOM1 = .TRUE.
       ELSE IF (INTTYP .EQ.73) THEN
          JMAXD  = 1
          JMAXM  = 0
@@ -486,6 +491,22 @@ CMI/march '03 ... obviously should be JMAXD=0, but is gives unzero XY component 
          JMAXM = 2
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
+      ELSE IF (INTTYP .EQ.304) THEN
+         JMAXD = 0
+         JMAXM = 2
+         DONUC1= .FALSE.
+         DOMOM1 = .TRUE.
+      ELSE IF (INTTYP .EQ.305) THEN
+         JMAXD = 0
+         JMAXM = 2
+         DONUC1= .FALSE.
+         DOMOM1 = .TRUE.
+      ELSE IF (INTTYP .EQ.306) THEN
+         JMAXD = 0
+         JMAXM = 2
+         DONUC1= .FALSE.
+         DOMOM1 = .TRUE.
+
       ELSE
          CALL QUIT('PR1DR1: Unknown INTTYP')
       END IF
@@ -1047,6 +1068,7 @@ C
       IF (INTTYP .EQ. 43) JMAXA = JMAXA + 2
       IF (INTTYP .EQ. 46) JMAXA = JMAXA + 1
       IF (INTTYP .EQ. 47) JMAXA = JMAXA + 2
+      IF (INTTYP .EQ. 65) JMAXA = JMAXA + 2
       JMAXB  = NHKTB - 1
 
 CMI     for RDSUSLL, wee need to multiply with x_N, y_N, z_N ...
@@ -1413,8 +1435,8 @@ C        Second order magnetic derivatives of overlap matrix
 C        ---------------------------------------------------
 C
          ELSE IF (INTTYP .EQ. 16) THEN
-            CALL SM2INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
-     &                  EXPPI,DIFABX,DIFABY,DIFABZ)
+!           CALL SM2INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+!    &                  DIFABX,DIFABY,DIFABZ)
 C
 C        Angular momentum around the nuclei
 C        ----------------------------------
@@ -1630,14 +1652,14 @@ C        ----------------------------------------------
 C
          ELSE IF (INTTYP .EQ. 42) THEN
             CALL CM1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
-     &                  EXPPI,DIFABX,DIFABY,DIFABZ)
+     &                  DIFABX,DIFABY,DIFABZ)
 C
 C        Electric field contribution to diamagnetic magnetizability
 C        ----------------------------------------------------------
 C
          ELSE IF (INTTYP .EQ. 43) THEN
             CALL CM2INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
-     &                  EXPPI,DIFABX,DIFABY,DIFABZ)
+     &                  DIFABX,DIFABY,DIFABZ)
 C
 C        First magnetic derivative of solvent integrals
 C        ----------------------------------------------
@@ -1748,6 +1770,15 @@ C
             CALL EFTINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
      &                  SHLINT,NOPTYP,NATOMC,.FALSE.,ONCN,
      &                  CORCX,CORCY,CORCZ)
+
+
+
+C        Electric field contribution to magnetic moment
+C        ----------------------------------------------
+C
+         ELSE IF (INTTYP .EQ. 65) THEN
+            CALL QDBINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &                  DIFABX,DIFABY,DIFABZ)
 
 
 !     g1o: first geo derivatives of overlap integrals
@@ -1915,6 +1946,42 @@ C
          ELSE IF (INTTYP .EQ. 208) THEN
            CALL DSUSLH(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                 AHGTF,DIFABX,DIFABY,DIFABZ,NATOMC,.FALSE.)
+
+
+
+C        Second order magnetic derivatives of overlap matrix
+C        ---------------------------------------------------
+Cdj bra part
+         ELSE IF (INTTYP .EQ. 304) THEN
+            DIFAOX = CORAX - GAGORG(1)
+            DIFAOY = CORAY - GAGORG(2)
+            DIFAOZ = CORAZ - GAGORG(3)
+           !CALL SM2INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &     !            DIFAOX,DIFAOY,DIFAOZ)
+Cdj ket part
+         ELSE IF (INTTYP .EQ. 305) THEN
+            DIFOBX = GAGORG(1) - CORBX
+            DIFOBY = GAGORG(2) - CORBY
+            DIFOBZ = GAGORG(3) - CORBZ
+           !CALL SM2INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &     !            DIFOBX,DIFOBY,DIFOBZ)
+Cdj mixed bra-ket part
+         ELSE IF (INTTYP .EQ. 306) THEN
+            DIFAOX = CORAX - GAGORG(1)
+            DIFAOY = CORAY - GAGORG(2)
+            DIFAOZ = CORAZ - GAGORG(3)
+            DIFOBX = GAGORG(1) - CORBX
+            DIFOBY = GAGORG(2) - CORBY
+            DIFOBZ = GAGORG(3) - CORBZ
+           !CALL SM2BIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &     !            DIFAOX,DIFAOY,DIFAOZ,DIFOBX,DIFOBY,DIFOBZ)
+
+
+
+
+
+
+
 
          END IF
   200    CONTINUE
@@ -2582,7 +2649,7 @@ C
       END
 C  /* Deck sm2int */
       SUBROUTINE SM2INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
-     &                  EXPPI,DIFABX,DIFABY,DIFABZ)
+     &                  DIFABX,DIFABY,DIFABZ)
 C
 C     K. Ruud, Oct. 1991
 C
@@ -2640,9 +2707,87 @@ C
  100  CONTINUE
       RETURN
       END
+
+      SUBROUTINE SM2BIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &                  DIFAX,DIFAY,DIFAZ,DIFBX,DIFBY,DIFBZ)
+C
+C     dj oct 08, based on SM2INT
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+      PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4INV = 0.25D0)
+      DIMENSION SHLINT(KCKTAB,9)
+      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
+#include "onecom.h"
+#include "lmns.h"
+      INT = 0
+      DO 100 ICOMPA = 1, KCKTA
+         LVALA = LVALUA(ICOMPA)
+         MVALA = MVALUA(ICOMPA)
+         NVALA = NVALUA(ICOMPA)
+      DO 100 ICOMPB = 1,KCKTB
+         LVALB = LVALUB(ICOMPB)
+         MVALB = MVALUB(ICOMPB)
+         NVALB = NVALUB(ICOMPB)
+C
+         INT = INT + 1
+C
+         SX0 = SHGTF*ODC(LVALA,LVALB,0,0,0,1)
+         SY0 = SHGTF*ODC(MVALA,MVALB,0,0,0,2)
+         SZ0 = SHGTF*ODC(NVALA,NVALB,0,0,0,3)
+         DX1 = SHGTF*ODC(LVALA,LVALB,0,0,1,1)
+         DY1 = SHGTF*ODC(MVALA,MVALB,0,0,1,2)
+         DZ1 = SHGTF*ODC(NVALA,NVALB,0,0,1,3)
+         DX2 = SHGTF*ODC(LVALA,LVALB,0,0,2,1)
+         DY2 = SHGTF*ODC(MVALA,MVALB,0,0,2,2)
+         DZ2 = SHGTF*ODC(NVALA,NVALB,0,0,2,3)
+C
+         SHLINT(INT,1) = SHLINT(INT,1) - (DIFAZ*DIFBY*SX0*DY1*DZ1 +
+     &                   DIFAY*DIFBZ*SX0*DY1*DZ1 -
+     &                   DIFAZ*DIFBZ*SX0*DY2*SZ0 -
+     &                   DIFAY*DIFBY*SX0*SY0*DZ2)*D4INV
+         SHLINT(INT,2) = SHLINT(INT,2) - (DIFAZ*DIFBZ*DX1*DY1*SZ0 -
+     &                   DIFAY*DIFBZ*DX1*SY0*DZ1 -
+     &                   DIFAZ*DIFBX*SX0*DY1*DZ1 +
+     &                   DIFAY*DIFBX*SX0*SY0*DZ2)*D4INV
+         SHLINT(INT,3) = SHLINT(INT,3) - (DIFAY*DIFBY*DX1*SY0*DZ1 -
+     &                   DIFAY*DIFBX*SX0*DY1*DZ1 +
+     &                   DIFAZ*DIFBX*DY2*SX0*SZ0 -
+     &                   DIFAZ*DIFBY*DX1*DY1*SZ0)*D4INV
+         SHLINT(INT,4) = SHLINT(INT,4) - (DIFAZ*DIFBZ*DX1*DY1*SZ0 -
+     &                   DIFAZ*DIFBY*DX1*SY0*DZ1 -
+     &                   DIFAX*DIFBZ*SX0*DY1*DZ1 +
+     &                   DIFAX*DIFBY*SX0*SY0*DZ2)*D4INV
+         SHLINT(INT,5) = SHLINT(INT,5) - (DIFAZ*DIFBX*DX1*SY0*DZ1 +
+     &                   DIFAX*DIFBZ*DX1*SY0*DZ1 -
+     &                   DIFAZ*DIFBZ*DX2*SY0*SZ0 -
+     &                   DIFAX*DIFBX*SX0*SY0*DZ2)*D4INV
+         SHLINT(INT,6) = SHLINT(INT,6) - (DIFAZ*DIFBY*DX2*SY0*SZ0 -
+     &                   DIFAZ*DIFBX*DX1*DY1*SZ0 -
+     &                   DIFAX*DIFBY*DX1*DZ1*SY0 +
+     &                   DIFAX*DIFBX*DY1*DZ1*SX0)*D4INV
+         SHLINT(INT,7) = SHLINT(INT,7) - (DIFAY*DIFBY*DX1*SY0*DZ1 -
+     &                   DIFAX*DIFBY*SX0*DY1*DZ1 +
+     &                   DIFAX*DIFBZ*SX0*DY2*SZ0 -
+     &                   DIFAY*DIFBZ*DX1*DY1*SZ0)*D4INV
+         SHLINT(INT,8) = SHLINT(INT,8) - (DIFAY*DIFBZ*DX2*SY0*SZ0 -
+     &                   DIFAX*DIFBZ*DX1*DY1*SZ0 -
+     &                   DIFAY*DIFBX*DX1*SY0*DZ1 +
+     &                   DIFAX*DIFBX*SX0*DY1*DZ1)*D4INV
+         SHLINT(INT,9) = SHLINT(INT,9) - (DIFAX*DIFBY*DX1*DY1*SZ0 +
+     &                   DIFAY*DIFBX*DX1*DY1*SZ0 -
+     &                   DIFAY*DIFBY*DX2*SY0*SZ0 -
+     &                   DIFAX*DIFBX*SX0*DY2*SZ0)*D4INV
+ 100  CONTINUE
+      RETURN
+      END
+
+
+
 C  /* Deck cm1int */
       SUBROUTINE CM1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
-     &                  EXPPI,DIFABX,DIFABY,DIFABZ)
+     &                  DIFABX,DIFABY,DIFABZ)
 C
 C     K. Ruud, Aug.-93.
 C     Rewritten in order to separate dipole origin, aug.-94 KR
@@ -2694,30 +2839,33 @@ C
      &           ADY* ODC(MVALA    ,MVALB,0,0,1,2))
          DZ2 = SHGTF*(ODC(NVALA + 1,NVALB,0,0,1,3) +
      &           ADZ* ODC(NVALA    ,NVALB,0,0,1,3))
-C
-         IF (FIELD1 .EQ. 'X-FIELD') THEN
-            DPLX = DX2*SY0*SZ0
-            DPLY = DX1*SY1*SZ0
-            DPLZ = DX1*SY0*SZ1
-         ELSE IF (FIELD1 .EQ. 'Y-FIELD') THEN
-            DPLX = SX1*DY1*SZ0
-            DPLY = SX0*DY2*SZ0
-            DPLZ = SX0*DY1*SZ1
-         ELSE
-            DPLX = SX1*SY0*DZ1
-            DPLY = SX0*SY1*DZ1
-            DPLZ = SX0*SY0*DZ2
-         END IF
-C
-         SHLINT(INT,1) = SHLINT(INT,1) - D2I*(DIFABY*DPLZ - DIFABZ*DPLY)
-         SHLINT(INT,2) = SHLINT(INT,2) - D2I*(DIFABZ*DPLX - DIFABX*DPLZ)
-         SHLINT(INT,3) = SHLINT(INT,3) - D2I*(DIFABX*DPLY - DIFABY*DPLX)
+
+         SHLINT(INT,1) = SHLINT(INT,1) 
+     &                 - D2I*(DIFABY*DX1*SY0*SZ1 - DIFABZ*DX1*SY1*SZ0)
+         SHLINT(INT,2) = SHLINT(INT,2) 
+     &                 - D2I*(DIFABZ*DX2*SY0*SZ0 - DIFABX*DX1*SY0*SZ1)
+         SHLINT(INT,3) = SHLINT(INT,3) 
+     &                 - D2I*(DIFABX*DX1*SY1*SZ0 - DIFABY*DX2*SY0*SZ0)
+
+         SHLINT(INT,4) = SHLINT(INT,4) 
+     &                 - D2I*(DIFABY*SX0*DY1*SZ1 - DIFABZ*SX0*DY2*SZ0)
+         SHLINT(INT,5) = SHLINT(INT,5) 
+     &                 - D2I*(DIFABZ*SX1*DY1*SZ0 - DIFABX*SX0*DY1*SZ1)
+         SHLINT(INT,6) = SHLINT(INT,6) 
+     &                 - D2I*(DIFABX*SX0*DY2*SZ0 - DIFABY*SX1*DY1*SZ0)
+
+         SHLINT(INT,7) = SHLINT(INT,7) 
+     &                 - D2I*(DIFABY*SX0*SY0*DZ2 - DIFABZ*SX0*SY1*DZ1)
+         SHLINT(INT,8) = SHLINT(INT,8) 
+     &                 - D2I*(DIFABZ*SX1*SY0*DZ1 - DIFABX*SX0*SY0*DZ2)
+         SHLINT(INT,9) = SHLINT(INT,9) 
+     &                 - D2I*(DIFABX*SX0*SY1*DZ1 - DIFABY*SX1*SY0*DZ1)
  100  CONTINUE
       RETURN
       END
 C  /* Deck cm2int */
       SUBROUTINE CM2INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
-     &                  EXPPI,DIFABX,DIFABY,DIFABZ)
+     &                  DIFABX,DIFABY,DIFABZ)
 C
 C     K. Ruud, Aug.-93
 C
@@ -2775,53 +2923,290 @@ C
          DZ3 = SHGTF*(ODC(NVALA + 1,NVALB,0,0,2,3) +
      &           ADZ* ODC(NVALA    ,NVALB,0,0,2,3))
 C
-         IF (FIELD2 .EQ. 'X-FIELD') THEN
-            DPLXX = DX3*SY0*SZ0
-            DPLXY = DX2*SY1*SZ0
-            DPLXZ = DX2*SY0*SZ1
-            DPLYY = DX1*SY2*SZ0
-            DPLYZ = DX1*SY1*SZ1
-            DPLZZ = DX1*SY0*SZ2
-         ELSE IF (FIELD2 .EQ. 'Y-FIELD') THEN
-            DPLXX = SX2*DY1*SZ0
-            DPLXY = SX1*DY2*SZ0
-            DPLXZ = SX1*DY1*SZ1
-            DPLYY = SX0*DY3*SZ0
-            DPLYZ = SX0*DY2*SZ1
-            DPLZZ = SX0*DY1*SZ2
-         ELSE
-            DPLXX = SX2*SY0*DZ1
-            DPLXY = SX1*SY1*DZ1
-            DPLXZ = SX1*SY0*DZ2
-            DPLYY = SX0*SY2*DZ1
-            DPLYZ = SX0*SY1*DZ2
-            DPLZZ = SX0*SY0*DZ3
-         END IF
-C
-         SHLINT(INT,1) = SHLINT(INT,1) - (D2*DIFABZ*DIFABY*DPLYZ -
+         DPLXX = DX3*SY0*SZ0
+         DPLXY = DX2*SY1*SZ0
+         DPLXZ = DX2*SY0*SZ1
+         DPLYY = DX1*SY2*SZ0
+         DPLYZ = DX1*SY1*SZ1
+         DPLZZ = DX1*SY0*SZ2
+
+         ioff = 0
+
+         SHLINT(INT,ioff+1) = SHLINT(INT,ioff+1) 
+     &                - (D2*DIFABZ*DIFABY*DPLYZ -
      &                   DIFABZ*DIFABZ*DPLYY -
      &                   DIFABY*DIFABY*DPLZZ)*D4INV
-         SHLINT(INT,2) = SHLINT(INT,2) - (DIFABZ*DIFABZ*DPLXY -
+         SHLINT(INT,ioff+2) = SHLINT(INT,ioff+2) 
+     &                - (DIFABZ*DIFABZ*DPLXY -
      &                   DIFABY*DIFABZ*DPLXZ -
      &                   DIFABZ*DIFABX*DPLYZ +
      &                   DIFABY*DIFABX*DPLZZ)*D4INV
-         SHLINT(INT,3) = SHLINT(INT,3) - (DIFABY*DIFABY*DPLXZ -
+         SHLINT(INT,ioff+3) = SHLINT(INT,ioff+3) 
+     &                - (DIFABY*DIFABY*DPLXZ -
      &                   DIFABX*DIFABY*DPLYZ +
      &                   DIFABZ*DIFABX*DPLYY -
      &                   DIFABY*DIFABZ*DPLXY)*D4INV
-         SHLINT(INT,4) = SHLINT(INT,4) - (D2*DIFABZ*DIFABX*DPLXZ -
+         SHLINT(INT,ioff+4) = SHLINT(INT,ioff+4) 
+     &                - (D2*DIFABZ*DIFABX*DPLXZ -
      &                   DIFABZ*DIFABZ*DPLXX -
      &                   DIFABX*DIFABX*DPLZZ)*D4INV
-         SHLINT(INT,5) = SHLINT(INT,5) - (DIFABZ*DIFABY*DPLXX -
+         SHLINT(INT,ioff+5) = SHLINT(INT,ioff+5) 
+     &                - (DIFABZ*DIFABY*DPLXX -
      &                   DIFABZ*DIFABX*DPLXY -
      &                   DIFABY*DIFABX*DPLXZ +
      &                   DIFABX*DIFABX*DPLYZ)*D4INV
-         SHLINT(INT,6) = SHLINT(INT,6) - (D2*DIFABX*DIFABY*DPLXY -
+         SHLINT(INT,ioff+6) = SHLINT(INT,ioff+6) 
+     &                - (D2*DIFABX*DIFABY*DPLXY -
      &                   DIFABY*DIFABY*DPLXX -
      &                   DIFABX*DIFABX*DPLYY)*D4INV
+
+         DPLXX = SX2*DY1*SZ0
+         DPLXY = SX1*DY2*SZ0
+         DPLXZ = SX1*DY1*SZ1
+         DPLYY = SX0*DY3*SZ0
+         DPLYZ = SX0*DY2*SZ1
+         DPLZZ = SX0*DY1*SZ2
+
+         ioff = 6
+
+         SHLINT(INT,ioff+1) = SHLINT(INT,ioff+1) 
+     &                - (D2*DIFABZ*DIFABY*DPLYZ -
+     &                   DIFABZ*DIFABZ*DPLYY -
+     &                   DIFABY*DIFABY*DPLZZ)*D4INV
+         SHLINT(INT,ioff+2) = SHLINT(INT,ioff+2) 
+     &                - (DIFABZ*DIFABZ*DPLXY -
+     &                   DIFABY*DIFABZ*DPLXZ -
+     &                   DIFABZ*DIFABX*DPLYZ +
+     &                   DIFABY*DIFABX*DPLZZ)*D4INV
+         SHLINT(INT,ioff+3) = SHLINT(INT,ioff+3) 
+     &                - (DIFABY*DIFABY*DPLXZ -
+     &                   DIFABX*DIFABY*DPLYZ +
+     &                   DIFABZ*DIFABX*DPLYY -
+     &                   DIFABY*DIFABZ*DPLXY)*D4INV
+         SHLINT(INT,ioff+4) = SHLINT(INT,ioff+4) 
+     &                - (D2*DIFABZ*DIFABX*DPLXZ -
+     &                   DIFABZ*DIFABZ*DPLXX -
+     &                   DIFABX*DIFABX*DPLZZ)*D4INV
+         SHLINT(INT,ioff+5) = SHLINT(INT,ioff+5) 
+     &                - (DIFABZ*DIFABY*DPLXX -
+     &                   DIFABZ*DIFABX*DPLXY -
+     &                   DIFABY*DIFABX*DPLXZ +
+     &                   DIFABX*DIFABX*DPLYZ)*D4INV
+         SHLINT(INT,ioff+6) = SHLINT(INT,ioff+6) 
+     &                - (D2*DIFABX*DIFABY*DPLXY -
+     &                   DIFABY*DIFABY*DPLXX -
+     &                   DIFABX*DIFABX*DPLYY)*D4INV
+
+         DPLXX = SX2*SY0*DZ1
+         DPLXY = SX1*SY1*DZ1
+         DPLXZ = SX1*SY0*DZ2
+         DPLYY = SX0*SY2*DZ1
+         DPLYZ = SX0*SY1*DZ2
+         DPLZZ = SX0*SY0*DZ3
+
+         ioff = 12
+
+         SHLINT(INT,ioff+1) = SHLINT(INT,ioff+1) 
+     &                - (D2*DIFABZ*DIFABY*DPLYZ -
+     &                   DIFABZ*DIFABZ*DPLYY -
+     &                   DIFABY*DIFABY*DPLZZ)*D4INV
+         SHLINT(INT,ioff+2) = SHLINT(INT,ioff+2) 
+     &                - (DIFABZ*DIFABZ*DPLXY -
+     &                   DIFABY*DIFABZ*DPLXZ -
+     &                   DIFABZ*DIFABX*DPLYZ +
+     &                   DIFABY*DIFABX*DPLZZ)*D4INV
+         SHLINT(INT,ioff+3) = SHLINT(INT,ioff+3) 
+     &                - (DIFABY*DIFABY*DPLXZ -
+     &                   DIFABX*DIFABY*DPLYZ +
+     &                   DIFABZ*DIFABX*DPLYY -
+     &                   DIFABY*DIFABZ*DPLXY)*D4INV
+         SHLINT(INT,ioff+4) = SHLINT(INT,ioff+4) 
+     &                - (D2*DIFABZ*DIFABX*DPLXZ -
+     &                   DIFABZ*DIFABZ*DPLXX -
+     &                   DIFABX*DIFABX*DPLZZ)*D4INV
+         SHLINT(INT,ioff+5) = SHLINT(INT,ioff+5) 
+     &                - (DIFABZ*DIFABY*DPLXX -
+     &                   DIFABZ*DIFABX*DPLXY -
+     &                   DIFABY*DIFABX*DPLXZ +
+     &                   DIFABX*DIFABX*DPLYZ)*D4INV
+         SHLINT(INT,ioff+6) = SHLINT(INT,ioff+6) 
+     &                - (D2*DIFABX*DIFABY*DPLXY -
+     &                   DIFABY*DIFABY*DPLXX -
+     &                   DIFABX*DIFABX*DPLYY)*D4INV
+
  100  CONTINUE
       RETURN
       END
+
+
+      SUBROUTINE QDBINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &                  DIFABX,DIFABY,DIFABZ)
+C
+C     K. Ruud, February.-02.
+C     Based on CM1INT
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "efield.h"
+      PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D2I = 1.0D0/D2, D1P5 = 1.5D0,
+     &           D1 = 1.0D0)
+      DIMENSION SHLINT(KCKTAB,6)
+      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
+!radovan: dummy just to make it compile
+      character(16) :: field3
+#include "onecom.h"
+#include "orgcom.h"
+#include "lmns.h"
+      INT = 0
+      ADX = CORAX - DIPORG(1)
+      ADY = CORAY - DIPORG(2)
+      ADZ = CORAZ - DIPORG(3)
+      DO 100 ICOMPA = 1, KCKTA
+         LVALA = LVALUA(ICOMPA)
+         MVALA = MVALUA(ICOMPA)
+         NVALA = NVALUA(ICOMPA)
+C
+      DO 100 ICOMPB = 1,KCKTB
+         LVALB = LVALUB(ICOMPB)
+         MVALB = MVALUB(ICOMPB)
+         NVALB = NVALUB(ICOMPB)
+C
+         INT = INT + 1
+C
+         SX0 = SHGTF*ODC(LVALA,LVALB,0,0,0,1)
+         SY0 = SHGTF*ODC(MVALA,MVALB,0,0,0,2)
+         SZ0 = SHGTF*ODC(NVALA,NVALB,0,0,0,3)
+         SX1 = SHGTF*ODC(LVALA,LVALB,0,0,1,1)
+         SY1 = SHGTF*ODC(MVALA,MVALB,0,0,1,2)
+         SZ1 = SHGTF*ODC(NVALA,NVALB,0,0,1,3)
+         DX1 = SHGTF*(ODC(LVALA + 1,LVALB,0,0,0,1) +
+     &           ADX* ODC(LVALA    ,LVALB,0,0,0,1))
+         DY1 = SHGTF*(ODC(MVALA + 1,MVALB,0,0,0,2) +
+     &           ADY* ODC(MVALA    ,MVALB,0,0,0,2))
+         DZ1 = SHGTF*(ODC(NVALA + 1,NVALB,0,0,0,3) +
+     &           ADZ* ODC(NVALA    ,NVALB,0,0,0,3))
+         DX2 = SHGTF*(ODC(LVALA + 2,LVALB,0,0,0,1) +
+     &        D2*ADX* ODC(LVALA + 1,LVALB,0,0,0,1) +
+     &        ADX*ADX*ODC(LVALA    ,LVALB,0,0,0,1))
+         DY2 = SHGTF*(ODC(MVALA + 2,MVALB,0,0,0,2) +
+     &        D2*ADY* ODC(MVALA + 1,MVALB,0,0,0,2) +
+     &        ADY*ADY*ODC(MVALA    ,MVALB,0,0,0,2))
+         DZ2 = SHGTF*(ODC(NVALA + 2,NVALB,0,0,0,3) +
+     &        D2*ADZ* ODC(NVALA + 1,NVALB,0,0,0,3) +
+     &        ADZ*ADZ*ODC(NVALA    ,NVALB,0,0,0,3))
+         SDX2 = SHGTF*(ODC(LVALA + 1,LVALB,0,0,1,1) +
+     &            ADX* ODC(LVALA    ,LVALB,0,0,1,1))
+         SDY2 = SHGTF*(ODC(MVALA + 1,MVALB,0,0,1,2) +
+     &            ADY* ODC(MVALA    ,MVALB,0,0,1,2))
+         SDZ2 = SHGTF*(ODC(NVALA + 1,NVALB,0,0,1,3) +
+     &            ADZ* ODC(NVALA    ,NVALB,0,0,1,3))
+         DX3 = SHGTF*(ODC(LVALA + 2,LVALB,0,0,1,1) +
+     &        D2*ADX* ODC(LVALA + 1,LVALB,0,0,1,1) +
+     &        ADX*ADX*ODC(LVALA    ,LVALB,0,0,1,1))
+         DY3 = SHGTF*(ODC(MVALA + 2,MVALB,0,0,1,2) +
+     &        D2*ADY* ODC(MVALA + 1,MVALB,0,0,1,2) +
+     &        ADY*ADY*ODC(MVALA    ,MVALB,0,0,1,2))
+         DZ3 = SHGTF*(ODC(NVALA + 2,NVALB,0,0,1,3) +
+     &        D2*ADZ* ODC(NVALA + 1,NVALB,0,0,1,3) +
+     &        ADZ*ADZ*ODC(NVALA    ,NVALB,0,0,1,3))
+C
+         FAC = 1.5d0
+
+         XR2 = D2I*(DX3*SY0*SZ0 + SX1*DY2*SZ0 + SX1*SY0*DZ2)
+         YR2 = D2I*(DX2*SY1*SZ0 + SX0*DY3*SZ0 + SX0*SY1*DZ2)
+         ZR2 = D2I*(DX2*SY0*SZ1 + SX0*DY2*SZ1 + SX0*SY0*DZ3)
+
+!        xx
+         ioff = 0
+
+         DPLX = - XR2 + FAC*DX3*SY0*SZ0
+         DPLY = - YR2 + FAC*DX2*SY1*SZ0
+         DPLZ = - ZR2 + FAC*DX2*SY0*SZ1
+
+         SHLINT(INT,ioff+1) = SHLINT(INT,ioff+1) 
+     &                 - D2I*(DIFABY*DPLZ - DIFABZ*DPLY)
+         SHLINT(INT,ioff+2) = SHLINT(INT,ioff+2) 
+     &                 - D2I*(DIFABZ*DPLX - DIFABX*DPLZ)
+         SHLINT(INT,ioff+3) = SHLINT(INT,ioff+3) 
+     &                 - D2I*(DIFABX*DPLY - DIFABY*DPLX)
+
+!        yy
+         ioff = ioff + 3
+
+         DPLX = - XR2 + FAC*SX1*DY2*SZ0
+         DPLY = - YR2 + FAC*SX0*DY3*SZ0
+         DPLZ = - ZR2 + FAC*SX0*DY2*SZ1
+
+         SHLINT(INT,ioff+1) = SHLINT(INT,ioff+1) 
+     &                 - D2I*(DIFABY*DPLZ - DIFABZ*DPLY)
+         SHLINT(INT,ioff+2) = SHLINT(INT,ioff+2) 
+     &                 - D2I*(DIFABZ*DPLX - DIFABX*DPLZ)
+         SHLINT(INT,ioff+3) = SHLINT(INT,ioff+3) 
+     &                 - D2I*(DIFABX*DPLY - DIFABY*DPLX)
+
+!        zz
+         ioff = ioff + 3
+
+         DPLX = - XR2 + FAC*SX1*SY0*DZ2
+         DPLY = - YR2 + FAC*SX0*SY1*DZ2
+         DPLZ = - ZR2 + FAC*SX0*SY0*DZ3
+
+         SHLINT(INT,ioff+1) = SHLINT(INT,ioff+1) 
+     &                 - D2I*(DIFABY*DPLZ - DIFABZ*DPLY)
+         SHLINT(INT,ioff+2) = SHLINT(INT,ioff+2) 
+     &                 - D2I*(DIFABZ*DPLX - DIFABX*DPLZ)
+         SHLINT(INT,ioff+3) = SHLINT(INT,ioff+3) 
+     &                 - D2I*(DIFABX*DPLY - DIFABY*DPLX)
+
+!        xy
+         ioff = ioff + 3
+
+         DPLX = FAC*SDX2*DY1*SZ0
+         DPLY = FAC*DX1*SDY2*SZ0
+         DPLZ = FAC*DX1*DY1*SZ1
+
+         SHLINT(INT,ioff+1) = SHLINT(INT,ioff+1) 
+     &                 - D2I*(DIFABY*DPLZ - DIFABZ*DPLY)
+         SHLINT(INT,ioff+2) = SHLINT(INT,ioff+2) 
+     &                 - D2I*(DIFABZ*DPLX - DIFABX*DPLZ)
+         SHLINT(INT,ioff+3) = SHLINT(INT,ioff+3) 
+     &                 - D2I*(DIFABX*DPLY - DIFABY*DPLX)
+
+!        xz
+         ioff = ioff + 3
+
+         DPLX = FAC*SDX2*SY0*SZ1
+         DPLY = FAC*DX1*SY1*DZ1
+         DPLZ = FAC*DX1*SY0*SDZ2
+
+         SHLINT(INT,ioff+1) = SHLINT(INT,ioff+1) 
+     &                 - D2I*(DIFABY*DPLZ - DIFABZ*DPLY)
+         SHLINT(INT,ioff+2) = SHLINT(INT,ioff+2) 
+     &                 - D2I*(DIFABZ*DPLX - DIFABX*DPLZ)
+         SHLINT(INT,ioff+3) = SHLINT(INT,ioff+3) 
+     &                 - D2I*(DIFABX*DPLY - DIFABY*DPLX)
+
+!        yz
+         ioff = ioff + 3
+
+         DPLX = FAC*SX1*DY1*DZ1
+         DPLY = FAC*SX0*SDY2*DZ1
+         DPLZ = FAC*SX0*SY1*SDZ2
+
+         SHLINT(INT,ioff+1) = SHLINT(INT,ioff+1) 
+     &                 - D2I*(DIFABY*DPLZ - DIFABZ*DPLY)
+         SHLINT(INT,ioff+2) = SHLINT(INT,ioff+2) 
+     &                 - D2I*(DIFABZ*DPLX - DIFABX*DPLZ)
+         SHLINT(INT,ioff+3) = SHLINT(INT,ioff+3) 
+     &                 - D2I*(DIFABX*DPLY - DIFABY*DPLX)
+
+ 100  CONTINUE
+      RETURN
+      END
+
+
+
 C  /* Deck am1int */
       SUBROUTINE AM1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                  FAC)
