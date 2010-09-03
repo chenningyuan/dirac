@@ -829,7 +829,7 @@ if [ "$mesp" = "mpi" ]; then
   esac
 # gfortran needs -fcray-pointer flag for POINTER statements in MPI2_test.F !
   case $F90real in
-    gfortran|gfortran-*)
+    gfortran|gfortran-*|gfortran*)
     #*/gfortran|*/gfortran-*)
         comptst="$comptst -fcray-pointer"
         opt="$opt -fcray-pointer"
@@ -1075,7 +1075,7 @@ compiler_fortran(){
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 # all supported fortran compilers
-comp_list='ifort ifc g95 g90 gfortran gfortran-4.2 gfortran-4.3 pgf90 lfc f90 xlf_r xlf efc cf90 pathf90'
+comp_list='ifort ifc g95 g90 gfortran gfortran44 gfortran-4.2 gfortran-4.3 pgf90 lfc f90 xlf_r xlf efc cf90 pathf90'
 # Prefer "parallel" compilers if mpi
 if [ "$mesp" = "mpi" ]; then
   comp_list="mpfort_r mpfort mpxlf_r mpxlf mpiifort openmpif90 mpif90 mpif77 $comp_list"
@@ -1100,7 +1100,7 @@ compiler_c(){
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 # (Almost) all supported C compilers; gcc-*.* serie has to be continuosly updated
-comp_list='icc gcc gcc-3.3 gcc-4.3 pgcc pathcc cc ecc xlc_r xlc xlc'
+comp_list='icc gcc gcc44 gcc-3.3 gcc-4.3 pgcc pathcc cc ecc xlc_r xlc xlc'
 if [ "$mesp" = "mpi" ]; then
   comp_list="mpcc_r mpcc openmpicc mpicc mpiicc $comp_list" 
 fi
