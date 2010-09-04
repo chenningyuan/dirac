@@ -153,9 +153,9 @@ vital_files.append('test/runtest')
 vital_tests = []
 # short tests
 vital_tests.append(short_test('1.energy+dipole'))
-vital_tests.append(short_test('3.geomopt.dhf'))
+vital_tests.append(short_test('geo_opt'))
 vital_tests.append(short_test('response_nmr_levy-leblond'))
-vital_tests.append(short_test('5.cisd.energy'))
+vital_tests.append(short_test('cisd.energy'))
 vital_tests.append(short_test('cosci_energy'))
 vital_tests.append(short_test('cosci_energy_spinfree'))
 vital_tests.append(short_test('cosci_methods'))
