@@ -163,7 +163,7 @@ vital_tests.append(short_test('7.directmp2.energy'))
 vital_tests.append(short_test('basis_contraction'))
 vital_tests.append(short_test('basis_input'))
 vital_tests.append(short_test('13.hf_dynamic_polarizability'))
-vital_tests.append(short_test('22.lucita_short'))
+vital_tests.append(short_test('lucita_short'))
 vital_tests.append(short_test('30.linear'))
 vital_tests.append(short_test('symmetry_recognition'))
 vital_tests.append(short_test('37.bss.energies'))
@@ -191,7 +191,7 @@ vital_tests.append(medium_test('28.luciarel_medium',    fine_with_mpi = False))
 vital_tests.append(medium_test('54.stex',               fine_with_mpi = False))
 # long tests
 vital_tests.append(long_test('41.pv_nmr'))
-vital_tests.append(long_test('24.lucita_large'))
+vital_tests.append(long_test('lucita_large'))
 
 
 # list of directories and files that are never compiled as part of DIRAC main executable
@@ -287,8 +287,8 @@ dirac_modules[this_module] = dirac_module('esr', 'ESR property module')
 dirac_modules[this_module].add_cppflag('MOD_ESR')
 dirac_modules[this_module].add_directory('prp/esr')
 dirac_modules[this_module].add_dependency('krmc')
-dirac_modules[this_module].add_test(long_test('26.krmc_gosci'))
-dirac_modules[this_module].add_test(medium_test('27.krmc_luciarel', fine_with_mpi = False))
+dirac_modules[this_module].add_test(long_test('krmc_gosci'))
+dirac_modules[this_module].add_test(medium_test('krmc_luciarel', fine_with_mpi = False))
 
 this_module = 'xpp'
 dirac_modules[this_module] = dirac_module('xpp', 'PP excitation energy and STEX modules')
