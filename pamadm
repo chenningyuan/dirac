@@ -155,7 +155,7 @@ vital_tests = []
 vital_tests.append(short_test('cc_energy_and_mp2_dipole'))
 vital_tests.append(short_test('geo_opt'))
 vital_tests.append(short_test('response_nmr_levy-leblond'))
-vital_tests.append(short_test('cisd.energy'))
+vital_tests.append(short_test('cisd_energy'))
 vital_tests.append(short_test('cosci_energy'))
 vital_tests.append(short_test('cosci_energy_spinfree'))
 vital_tests.append(short_test('cosci_methods'))
