@@ -551,13 +551,13 @@ contains
       f = -2.0d0*cval
       blocks = '00+0'
       call add_operator('XXrdsusll       ', blocks, 5, 0, 1, (/1, 1/), (/f, f/), (/'XXRDSULZ', 'XXRDSULY'/))
-      call add_operator('XYrdsusll       ', blocks, 6, 0, 1, (/1, 1/), (/f, f/), (/'XYRDSULX', 'XYRDSULZ'/))
-      call add_operator('XZrdsusll       ', blocks, 7, 0, 1, (/1, 1/), (/f, f/), (/'XZRDSULY', 'XZRDSULX'/))
-      call add_operator('YXrdsusll       ', blocks, 5, 0, 1, (/1, 1/), (/f, f/), (/'YXRDSULZ', 'YXRDSULY'/))
+      call add_operator('YXrdsusll       ', blocks, 6, 0, 1, (/1, 1/), (/f, f/), (/'XYRDSULX', 'XYRDSULZ'/))
+      call add_operator('ZXrdsusll       ', blocks, 7, 0, 1, (/1, 1/), (/f, f/), (/'XZRDSULY', 'XZRDSULX'/))
+      call add_operator('XYrdsusll       ', blocks, 5, 0, 1, (/1, 1/), (/f, f/), (/'YXRDSULZ', 'YXRDSULY'/))
       call add_operator('YYrdsusll       ', blocks, 6, 0, 1, (/1, 1/), (/f, f/), (/'YYRDSULX', 'YYRDSULZ'/))
-      call add_operator('YZrdsusll       ', blocks, 7, 0, 1, (/1, 1/), (/f, f/), (/'YZRDSULY', 'YZRDSULX'/))
-      call add_operator('ZXrdsusll       ', blocks, 5, 0, 1, (/1, 1/), (/f, f/), (/'ZXRDSULZ', 'ZXRDSULY'/))
-      call add_operator('ZYrdsusll       ', blocks, 6, 0, 1, (/1, 1/), (/f, f/), (/'ZYRDSULX', 'ZYRDSULZ'/))
+      call add_operator('ZYrdsusll       ', blocks, 7, 0, 1, (/1, 1/), (/f, f/), (/'YZRDSULY', 'YZRDSULX'/))
+      call add_operator('XZrdsusll       ', blocks, 5, 0, 1, (/1, 1/), (/f, f/), (/'ZXRDSULZ', 'ZXRDSULY'/))
+      call add_operator('YZrdsusll       ', blocks, 6, 0, 1, (/1, 1/), (/f, f/), (/'ZYRDSULX', 'ZYRDSULZ'/))
       call add_operator('ZZrdsusll       ', blocks, 7, 0, 1, (/1, 1/), (/f, f/), (/'ZZRDSULY', 'ZZRDSULX'/))
 
 !     dsusnol

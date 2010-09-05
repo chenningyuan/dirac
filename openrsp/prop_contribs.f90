@@ -322,7 +322,7 @@ contains
 #ifdef PRG_DIRAC
       !> temporary matrix
       type(matrix)  :: T
-      character(2)  :: ij_string
+      character(2)  :: ij_string, ji_string
       character(16) :: integral_label
 #endif
       A(:) = (/(0d0*S0, i=1,size(A))/) !scratch matrices
@@ -538,6 +538,7 @@ contains
                ! Hamiltonian integrals and -i/2 Tbb in A(1), Sbb in A(2)
 #ifdef PRG_DIRAC
                ij_string = xyz(min(c(1) + i, c(2) + j)) // xyz(max(c(1) + i, c(2) + j))
+               ji_string = xyz(max(c(1) + i, c(2) + j)) // xyz(min(c(1) + i, c(2) + j))
                integral_label = 'dbet/dB2' // ij_string // '      '
                call load_oneint(integral_label, A(1))
                T = tiny(0.0d0)*A(1)
@@ -549,7 +550,10 @@ contains
                A(1) = A(1) + T
                integral_label = ij_string // 'rdsusll       '
                call load_oneint(integral_label, T)
-               A(1) = A(1) + T
+               A(1) = A(1) + 0.5d0*T
+               integral_label = ji_string // 'rdsusll       '
+               call load_oneint(integral_label, T)
+               A(1) = A(1) + 0.5d0*T
                integral_label = ij_string // 'DSUSNL        '
                call load_oneint(integral_label, T)
                A(1) = A(1) + T

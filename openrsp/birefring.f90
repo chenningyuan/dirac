@@ -20,7 +20,7 @@ module birefring
    public verdet_dpol_db
 
    private
-
+ 
    !wavenumber, velocity of light, and nanometer (in au), pi
    real(8), parameter :: cm1 = 1/219474.631371d0, &
                          cvl = 137.03599907d0, &
@@ -545,7 +545,7 @@ contains
       call print_tensor(int(shape(Eqoff)),-Eqoff, 'd/df d/db A-tensor-noL = -Eqoff', freq)
       !free no-London-specific matrices
       Db=0; Fb=0; Dc=0; Fc=0; Dce=0; Fce=0; Dcf=0; Fcf=0
-#ifdef CME_WITH_LAO
+      
       !----------------!
       ! London section !
       !----------------!
@@ -784,7 +784,6 @@ contains
       !free London-specific and common matrices
       Db=0; Dc=0; De=0; Df=0; Dq=0; Dce=0; Dcf=0; Def=0
       Fb=0; Fc=0; Fe=0; Ff=0; Fq=0; Fce=0; Fcf=0; Fef=0; Sb=0
-#endif /* ifdef CME_WITH_LAO */
       !invert signs on a-prime to get properties from quasi-energy derivatives
       Ef=-Ef; Eq=-Eq; Eff=-Eff; Eqf=-Eqf; Eqoff=-Eqoff; Eqbff=-Eqbff
    end subroutine
@@ -831,7 +830,6 @@ contains
          write (o,'(5x,a,g13.6,a,g13.6,a/)') '(calculated from deta =',deta, &
                  ' au, and dalpha*dxi =',dalxi,' au)'
       end if
-#ifdef CME_WITH_LAO
       if (any(Xi/=0)) then
          write (o,'(//17x,a/17x,a/)') 'London static Magnetizability (au)', &
                                       '----------------------------------'
@@ -860,7 +858,6 @@ contains
          write (o,'(5x,a,g13.6,a,g13.6,a/)') '(calculated from deta =',deta, &
                  ' au, and dalpha*dxi =',dalxi,' au)'
       end if
-#endif /* ifdef CME_WITH_LAO */
    end subroutine
 
 
