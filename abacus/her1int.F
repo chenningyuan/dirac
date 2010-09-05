@@ -1435,8 +1435,8 @@ C        Second order magnetic derivatives of overlap matrix
 C        ---------------------------------------------------
 C
          ELSE IF (INTTYP .EQ. 16) THEN
-!           CALL SM2INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
-!    &                  DIFABX,DIFABY,DIFABZ)
+            CALL SM2INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &                  DIFABX,DIFABY,DIFABZ)
 C
 C        Angular momentum around the nuclei
 C        ----------------------------------
@@ -1956,15 +1956,15 @@ Cdj bra part
             DIFAOX = CORAX - GAGORG(1)
             DIFAOY = CORAY - GAGORG(2)
             DIFAOZ = CORAZ - GAGORG(3)
-           !CALL SM2INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
-     &     !            DIFAOX,DIFAOY,DIFAOZ)
+            CALL SM2INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &                  DIFAOX,DIFAOY,DIFAOZ)
 Cdj ket part
          ELSE IF (INTTYP .EQ. 305) THEN
             DIFOBX = GAGORG(1) - CORBX
             DIFOBY = GAGORG(2) - CORBY
             DIFOBZ = GAGORG(3) - CORBZ
-           !CALL SM2INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
-     &     !            DIFOBX,DIFOBY,DIFOBZ)
+            CALL SM2INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &                  DIFOBX,DIFOBY,DIFOBZ)
 Cdj mixed bra-ket part
          ELSE IF (INTTYP .EQ. 306) THEN
             DIFAOX = CORAX - GAGORG(1)
@@ -1973,8 +1973,8 @@ Cdj mixed bra-ket part
             DIFOBX = GAGORG(1) - CORBX
             DIFOBY = GAGORG(2) - CORBY
             DIFOBZ = GAGORG(3) - CORBZ
-           !CALL SM2BIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
-     &     !            DIFAOX,DIFAOY,DIFAOZ,DIFOBX,DIFOBY,DIFOBZ)
+            CALL SM2BIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &                  DIFAOX,DIFAOY,DIFAOZ,DIFOBX,DIFOBY,DIFOBZ)
 
 
 
@@ -2797,7 +2797,7 @@ C
 #include "maxaqn.h"
 #include "efield.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D2I = 1.0D0/D2)
-      DIMENSION SHLINT(KCKTAB,6)
+      DIMENSION SHLINT(KCKTAB,9)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 #include "onecom.h"
 #include "orgcom.h"
@@ -2874,7 +2874,7 @@ C
 #include "maxaqn.h"
 #include "efield.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4INV = 0.25D0)
-      DIMENSION SHLINT(KCKTAB,6)
+      DIMENSION SHLINT(KCKTAB,18)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 #include "onecom.h"
 #include "orgcom.h"
@@ -3051,7 +3051,7 @@ C
 #include "efield.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D2I = 1.0D0/D2, D1P5 = 1.5D0,
      &           D1 = 1.0D0)
-      DIMENSION SHLINT(KCKTAB,6)
+      DIMENSION SHLINT(KCKTAB,18)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 !radovan: dummy just to make it compile
       character(16) :: field3

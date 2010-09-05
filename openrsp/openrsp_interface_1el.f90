@@ -476,12 +476,12 @@ contains
 
       do ij = 1, size(ij_iter)
          s = '>>S/B2' // ij_iter(ij)
-         call add_operator(s // '        ', blocks, 1, 1, 1, (/1/), (/f/), (/s/))
+         call add_operator(s // '        ', blocks, 1, 0, 1, (/1/), (/f/), (/s/))
       end do
 
       do ij = 1, size(ij_iter)
          s = '<>S/B2' // ij_iter(ij)
-         call add_operator(s // '        ', blocks, 1, 1, 1, (/1/), (/f/), (/s/))
+         call add_operator(s // '        ', blocks, 1, 0, 1, (/1/), (/f/), (/s/))
       end do
 
       call add_operator('X-CM1 X         ', blocks, 1, -1, 1, (/1/), (/f/), (/'X-CM1 X '/))
@@ -513,24 +513,24 @@ contains
       call add_operator('Z-CM2YZ         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Z-CM2YZ '/))
       call add_operator('Z-CM2ZZ         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Z-CM2ZZ '/))
 
-      call add_operator('XX-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XX-QDB X '/))
-      call add_operator('XY-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XY-QDB X '/))
-      call add_operator('XZ-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XZ-QDB X '/))
-      call add_operator('YY-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YY-QDB X '/))
-      call add_operator('YZ-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YZ-QDB X '/))
-      call add_operator('ZZ-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'ZZ-QDB X '/))
-      call add_operator('XX-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XX-QDB Y '/))
-      call add_operator('XY-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XY-QDB Y '/))
-      call add_operator('XZ-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XZ-QDB Y '/))
-      call add_operator('YY-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YY-QDB Y '/))
-      call add_operator('YZ-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YZ-QDB Y '/))
-      call add_operator('ZZ-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'ZZ-QDB Y '/))
-      call add_operator('XX-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XX-QDB Z '/))
-      call add_operator('XY-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XY-QDB Z '/))
-      call add_operator('XZ-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XZ-QDB Z '/))
-      call add_operator('YY-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YY-QDB Z '/))
-      call add_operator('YZ-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YZ-QDB Z '/))
-      call add_operator('ZZ-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'ZZ-QDB Z '/))
+      call add_operator('XX-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XX-QDB X'/))
+      call add_operator('XY-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XY-QDB X'/))
+      call add_operator('XZ-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XZ-QDB X'/))
+      call add_operator('YY-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YY-QDB X'/))
+      call add_operator('YZ-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YZ-QDB X'/))
+      call add_operator('ZZ-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'ZZ-QDB X'/))
+      call add_operator('XX-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XX-QDB Y'/))
+      call add_operator('XY-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XY-QDB Y'/))
+      call add_operator('XZ-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XZ-QDB Y'/))
+      call add_operator('YY-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YY-QDB Y'/))
+      call add_operator('YZ-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YZ-QDB Y'/))
+      call add_operator('ZZ-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'ZZ-QDB Y'/))
+      call add_operator('XX-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XX-QDB Z'/))
+      call add_operator('XY-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XY-QDB Z'/))
+      call add_operator('XZ-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XZ-QDB Z'/))
+      call add_operator('YY-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YY-QDB Z'/))
+      call add_operator('YZ-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YZ-QDB Z'/))
+      call add_operator('ZZ-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'ZZ-QDB Z'/))
 
       f = 1.0d0
       blocks = '+00'//ss
