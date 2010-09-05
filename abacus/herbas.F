@@ -193,7 +193,7 @@ C notation changed from 'd' to 'd-' for consistency with EMSL
                CALL QUIT('Illegal augmentation level in HERBAS')
             END IF
 
-!#define ALLOW_NONSTANDARD_AUGMENTATION
+#define ALLOW_NONSTANDARD_AUGMENTATION
 #ifdef ALLOW_NONSTANDARD_AUGMENTATION
 !        else if (basnam(3:15) == 'aug-Turbomole') then
 !radovan: this does not work because basis set is max 20 characters long

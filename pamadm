@@ -174,6 +174,7 @@ vital_tests.append(short_test('dft_betasigma'))
 vital_tests.append(short_test('dft_response'))
 vital_tests.append(short_test('dft_response_symmetry'))
 vital_tests.append(short_test('xyz_input'))
+vital_tests.append(short_test('basis_automatic_augmentation'))
 
 # medium tests
 vital_tests.append(medium_test('dft_alda'))
@@ -250,6 +251,7 @@ dirac_modules[this_module].add_file('somefile')
 dirac_modules[this_module].add_dependency('matrixop')
 dirac_modules[this_module].add_test(short_test('visual_elf'))
 dirac_modules[this_module].add_test(short_test('visual_gamma5'))
+dirac_modules[this_module].add_test(short_test('visual_virtual_density'))
 dirac_modules[this_module].add_test(medium_test('visual_general'))
 dirac_modules[this_module].add_test(medium_test('visual_div_rot'))
 
