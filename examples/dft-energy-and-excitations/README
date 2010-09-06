@@ -7,10 +7,7 @@ The Br2 molecule has linear symmetry (D_oo,h), and the program will detect this
 automatically. In most parts of the program the highest abelian subgroup (D2h)
 will be used instead of the full linear symmetry.
 
-In this example we use the aug-cc-pVTZ basis. This basis is not appropriate for
-heavy elements, but since it is used in uncontracted form it can be used for
-the Br atom. The basis can then describe the relativistic effects on the core
-orbitals properly.
+In this example we use Dyall's augmented TZ basis dyall.av3z in uncontracted form.
 
 If you have cd'd to this directory run the example like
 

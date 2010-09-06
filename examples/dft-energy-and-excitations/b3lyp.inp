@@ -5,9 +5,7 @@
 *BASIS
 ! Use the same basis for all atoms
 .DEFAULT
-aug-cc-pVTZ
-! The aug-cc-pVTZ basis is nonrelativistic and not suitable
-! for heavy elements!
+dyall.av3z
 **HAMILTONIAN
 ! Use the exact two-component Hamiltonian
 ! with atomic mean field spin-orbit
@@ -32,11 +30,11 @@ aug-cc-pVTZ
 .A OPERATOR
  ZDIPLEN
 .EXCITATIONS
-!  8 excitations in boson irrep 2 (here B3u)
  2 8
+!  8 excitations in boson irrep 2 (here B3u)
 .EXCITATIONS
-!  8 excitations in boson irrep 5 (here B1u)
  5 8
+!  8 excitations in boson irrep 5 (here B1u)
 ! Analyze orbital contributions to each excitation
 .ANALYZE
 *END OF
