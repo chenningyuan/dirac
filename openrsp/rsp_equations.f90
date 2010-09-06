@@ -269,7 +269,7 @@ contains
       complex(8), optional, intent(in) :: freq(:)
       !------------------------------------------
       type(matrix), dimension(size(Dp)) :: Sp, DSp, SDp, FDp, DFp
-      integer      :: np, nd, i, j, i0, j0, ij, c(size(p)) !copy of comp or 1
+      integer      :: np, nd, i, j, i0, j0, ij, c(size(p)), k !copy of comp or 1
       complex(8)   :: w(size(p)) !copy of freq or zero
       character(4) :: UNP(0)
       logical      :: bas(size(p)), presnt
@@ -312,7 +312,15 @@ contains
          if (presnt) then
             DSp(1) = Dp(1)*S0
             if (bas(1)) FDp(1) = Fp(1)*Dp(1)
-            if (bas(1)) call prop_oneint(S0, p, dimp, S=Sp(2:1+dimp(1)), comp=c)
+            if (bas(1)) then
+               call prop_oneint(S0, p, dimp, S=Sp(2:1+dimp(1)), comp=c)
+#ifdef PRG_DIRAC
+!radovan       magic factor (?)
+               do k = 2, 1+dimp(1)
+                  Sp(k) = 0.5d0*Sp(k)
+               end do
+#endif
+            end if
             do i0 = 1, dimp(1)
                i = 1+i0
 #ifdef PRG_DIRAC
@@ -366,6 +374,8 @@ contains
                                          S=Sp(2:1+dimp(1)), comp=c(1:1))
             if (bas(2)) call prop_oneint(S0, p(2:2), dimp(2:2), S=Sp(2+dimp(1): &
                                          1+dimp(1)+dimp(2)), comp=c(2:2))
+
+
             do j0 = 0, dimp(2)-1
                j = 2+dimp(1)+j0
 #ifdef PRG_DIRAC
@@ -740,6 +750,8 @@ contains
 !radovan: this is necessary otherwise matrices inherit wrong irep from Sp
 !         which breaks point group symmetry in DIRAC
           Sp(i)%irep = DSDp(i)%irep
+!         magic factor
+          Sp(i) = 0.5d0*Sp(i)
 #endif
          !ajt fixme This will not result in completely (anti-)symmetric
          !          DSDp and FDSp. Use +=sym*dag(..) to achieve this

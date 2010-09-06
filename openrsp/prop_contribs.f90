@@ -1346,10 +1346,6 @@ contains
                F(i+1) = F(i+1) - w(1)/2 * dag(S(i+1))
                S(i+1) = S(i+1) - dag(S(i+1))
             end if
-#ifdef PRG_DIRAC
-!radovan: to reproduce LAO magnetizability i have to multiply here by 0.5
-            S(i+1) = 0.5d0*S(i+1)
-#endif
          end do
       else if (np==1 .and. p(1)=='ELGR') then
          do i = 0, dp(1)-1
