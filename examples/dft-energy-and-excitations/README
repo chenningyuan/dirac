@@ -16,7 +16,7 @@ relativistic effects on the core orbitals properly.
 
 If you have cd'd to this directory run the example like
 
-../../pam Br2.xyz b3lyp.mol
+../../pam Br2.xyz b3lyp.inp
 
 Output will be written to the file b3lyp_Br2.out, which can be
 monitored during the caculation. Restart information will be saved to

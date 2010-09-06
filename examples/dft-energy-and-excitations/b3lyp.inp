@@ -25,11 +25,11 @@ aug-cc-pVTZ
 *EXCITATIONS
 ! Compute transition moments in the length gauge
 .A OPERATOR
-XDIPLEN
+ XDIPLEN
 .A OPERATOR
-YDIPLEN
+ YDIPLEN
 .A OPERATOR
-ZDIPLEN
+ ZDIPLEN
 ! Number of excitations in each boson irrep
 .EXCITATIONS
  2 8
