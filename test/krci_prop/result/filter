@@ -1,0 +1,8 @@
+$ERROR 1.E-4
+
+Nlines 7:   * state  1(  ag)         * state
+
+$ERROR 1.E-3
+
+Nlines 1:1          ag            
+Nlines 1:1          bu            
