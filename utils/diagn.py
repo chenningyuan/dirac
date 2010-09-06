@@ -48,7 +48,7 @@ output = process.stdout.read().strip()
 
 if istat[1]==0 :
   print '\nTotal size of all static allocations in the dirac.x executable:\n ',\
-  float(output.split()[2])/(1024*1024),'MB ( what makes ',float(output.split()[2])/(1024), 'kB )'
+  float(output.split()[2])/(1024*1024),'MB (what makes ',float(output.split()[2])/(1024), 'kB)'
 else :
   print 'can not determine'; sys.exit('exit!')
 
@@ -66,14 +66,14 @@ data_as_lists = [ line.strip().split() for line in output ]  ## convert to a lis
 for line in data_as_lists:
   if (len(line) >= 8) :
      numstr=string.join(line[2:3]); #print 'numstr=',numstr
-     decstr=hex2dec(numstr);       # print 'decstr=',decstr
      # replace hexadecimal value with decimal value (not string, rather float)
-     #line.insert(3,str(decstr))
-     #line.insert(3,int(decstr))
-     line.insert(3, (float(decstr)/1024) )
-     del line[2:3] # insert and remove ...
+     decstr=hex2dec(numstr);       # print 'decstr=',decstr
+     # format float value (into MB) and insert it
+     float_val="%11.7f" % (float(decstr)/(1024*1024))
+     line.insert(3, float_val )
+     del line[2:3] # remove list member
 
-#### sort according to the size of the object ####
+#### sort according to the size of the object - position 2:3  ####
 data_as_lists.sort(key=lambda data_as_lists:data_as_lists[2:3], reverse=True)
 
 # selected printing
@@ -83,8 +83,7 @@ for el in data_as_lists :
     # avoid printing duplicities, limits the size of the output by imax #
     if (i>1 and el[2:3]==el1[2:3] and el[7:8]==el1[7:8] and i<=imax ):
        #obj_size=(str(el[2:3]));
-       print_string=str(el[2:3])+" kB  "+str(el[7:8])+"----"+str(el[3:4])
+       print_string=str(el[2:3])+" MB  "+str(el[7:8])+"----"+str(el[3:4])
        print "* %s "%print_string
-       #print el
     el1=el
     i=i+1 # increase counter
