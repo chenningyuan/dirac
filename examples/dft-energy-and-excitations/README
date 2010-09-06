@@ -1,0 +1,23 @@
+This examples shows how one can compute excitation energies with DFT
+and the exact two component approximation (X2C). The .inp file
+specifies the boson irreps of the excitations to be considered.  Since
+this depends on the molecule symmetry it has to be adapted for each
+particular molecule.
+
+The Br2 molecule has linear symmetry (D_oo,h), and the program will
+detect this automatically. In most parts of the program the highest
+abelian subgroup (D2h) will be used instead of the full linear
+symmetry.
+
+In this example we use the aug-cc-pVTZ basis. This basis is not
+appropriate for heavy elements, but since it is used in uncontracted
+form it can be used for the Br atom. The basis can then describe the
+relativistic effects on the core orbitals properly.
+
+If you have cd'd to this directory run the example like
+
+../../pam Br2.xyz b3lyp.mol
+
+Output will be written to the file b3lyp_Br2.out, which can be
+monitored during the caculation. Restart information will be saved to
+b3lyp_Br2.tgz.

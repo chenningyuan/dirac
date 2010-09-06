@@ -1,0 +1,40 @@
+**DIRAC
+.WAVE FUNCTION
+.PROPERTIES
+**MOLECULE
+*BASIS
+! Use the same basis for all atoms.
+.DEFAULT
+aug-cc-pVTZ
+! The aug-cc-pVTZ basis is nonrelativistic and not suitable
+! for heavy elements!
+**HAMILTONIAN
+! Use the exact two-component with atomic mean field spin-orbit
+.X2C
+! Use the B3LYP functional with default parameters
+.DFT
+ B3LYP
+**INTEGRALS
+*READIN
+! A limitation in the AMFI code requires an uncontracted basis
+.UNCONTRACT
+**WAVE FUNCTION
+.DHF
+**PROPERTIES
+! Run excitation energies
+*EXCITATIONS
+! Compute transition moments in the length gauge
+.A OPERATOR
+XDIPLEN
+.A OPERATOR
+YDIPLEN
+.A OPERATOR
+ZDIPLEN
+! Number of excitations in each boson irrep
+.EXCITATIONS
+ 2 8
+.EXCITATIONS
+ 5 8
+! Analyze orbital contributions to each excitation
+.ANALYZE
+*END OF
