@@ -63,6 +63,7 @@ contains
       call add_class('DIPLEN ', '+00'//ss)
       call add_class('DPLGRA ', '+00'//ss)
       call add_class('QUAGRA ', '+00'//ss)
+      call add_class('DIPVEL ', '+00'//ss)
 
 !     magnetic field
       call add_class('DIPLEN ', '0++0')
@@ -134,6 +135,19 @@ contains
                            1,               &
                            1 + irep(i),     &
                            (/1 + irep(i)/), &
+                           (/f/),           &
+                           (/s/))
+      end do
+
+      do i = 1, size(i_iter)
+         s      = ' DIPVEL '
+         s(1:1) = i_iter(i)
+         call add_operator(s // '        ', &
+                           blocks,          &
+                           1,               &
+                          -1,               &
+                           1,               &
+                           (/1/),           &
                            (/f/),           &
                            (/s/))
       end do

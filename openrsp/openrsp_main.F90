@@ -155,11 +155,33 @@ contains
            deallocate(tsr)
         endif
 
+        if (openrsp_cfg_efgb) then
+           do i=1,1
+              print '(//a,f11.8/)','linscf calls efgb_Jpri_Bten_Bcal w=',cfg_rsp_freq(i)
+              allocate(tsr(3+6+9+9+9+9+18+27+27+27+27+54+54)) !ajt: This tsr() thing is a hack.
+                  !Response functions should perhaps eventually be stored in a dedicated module
+              call efgb_Jpri_Bten_Bcal(decomp,S,D,F,                           &
+                      & cfg_rsp_freq(i)*(1d0,0d0)*(/1,-1,0/),                  &
+                      & tsr(1:3),tsr(4:9),tsr(10:18),tsr(19:27),tsr(28:36),    &
+                      & tsr(37:45),tsr(46:63),tsr(64:90),tsr(91:117),          &
+                      & tsr(118:144),tsr(145:171),tsr(172:225),tsr(226:279))
+              call efgb_output(dreal(cfg_rsp_freq(i)),                                 &
+                      & dreal(tsr(1:3)),dreal(tsr(4:9)),dreal(tsr(10:18)),      &
+                      & (/((dreal(tsr(19+i+3*j)),j=0,2),i=0,2)/),               &
+                      & (/((dreal(tsr(28+i+3*j)),j=0,2),i=0,2)/),               &
+                      & (/((dreal(tsr(37+i+3*j)),j=0,2),i=0,2)/),               &
+                      & (/((dreal(tsr(46+i+6*j)),j=0,2),i=0,5)/),               &
+                      & (/(((dreal(tsr(64 +i+3*j+9*k)),k=0,2),j=0,2),i=0,2)/),  &
+                      & (/(((dreal(tsr(91 +i+3*j+9*k)),k=0,2),j=0,2),i=0,2)/),  &
+                      & (/(((dreal(tsr(118+i+3*j+9*k)),k=0,2),j=0,2),i=0,2)/),  &
+                      & (/(((dreal(tsr(145+i+3*j+9*k)),k=0,2),j=0,2),i=0,2)/),  &
+                      & (/(((dreal(tsr(172+i+6*j+18*k)),k=0,2),j=0,2),i=0,5)/), &
+                      & dreal(tsr(226:279)),lupri)
+              deallocate(tsr)
+           enddo
+        endif
+
         if (openrsp_cfg_cme) then
-           !call lsquit('error: Module birefring is not compiled. ' &
-           !       // 'Uncomment in Makefile and linscf.f90, and recompile')           
-           !ajt This tsr() thing is a hack, and not intended to remain for ever
-           !    Response functions should eventually be stored in a dedicated module
            allocate(tsr(3+6+3*3+3*3+3*3+3*3+6*3+3*3+3*3*3+3*3*3+6*3*3 &
                         +6*3*3+3*3*3*3+3*3*3*3+6*3*3*3+6*3*3*3)) !ajt: hack
         !  do i=1,cfg_rsp_nfreq
@@ -182,8 +204,6 @@ contains
         endif
 
         if (openrsp_cfg_jones) then
-           !call lsquit('error: Module birefring is not compiled. ' &
-           !       // 'Uncomment in Makefile and linscf.f90, and recompile')
            allocate(tsr(3+6+3*3+3*3+3*3+3*3+6*3+3*3+3*3*3+3*3*3+6*3*3+6*3*3 &
                         +3*3*3*3+3*3*3*3+6*3*3*3+6*3*3*3))
         !  do i=1,cfg_rsp_nfreq
