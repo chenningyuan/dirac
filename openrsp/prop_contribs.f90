@@ -493,34 +493,16 @@ contains
             deallocate(RR)
          end if
       else if (np==2 .and. all(p==(/'MAGO','MAGO'/))) then
-#ifdef PRG_DIRAC
-         if (diamagnetic_via_pn) then
-!           diamagnetic contribution comes from positive-negative response
-            do j = 0, dp(2) - 1
-               do i = 0, dp(1) - 1
-                  do k = 0, max(0, nd - 1)
-!radovan:            this thing has to be zeroed out here otherwise
-!                    the final tensor can contain numerical dirt
-                     E(1 + i + dp(1)*(j + dp(2)*k)) = 0.0d0
-                  end do
+         do j = 0, dp(2) - 1
+            do i = 0, dp(1) - 1
+               call load_oneint(xyz(min(c(1)+i,c(2)+j)) &
+                        // xyz(max(c(1)+i,c(2)+j)) // 'SUSCGO', A(1))
+               do k = 0, max(0, nd - 1)
+                  ! ajt Since MAGO is imaginary/anti-symmetri, we get a minus sign here
+                  E(1 + i + dp(1)*(j + dp(2)*k)) = -tr(A(1), D(1+k))
                end do
             end do
-         else
-#endif
-!           diamagnetic contribution comes from expectation value
-            do j = 0, dp(2) - 1
-               do i = 0, dp(1) - 1
-                  call load_oneint(xyz(min(c(1)+i,c(2)+j)) &
-                           // xyz(max(c(1)+i,c(2)+j)) // 'SUSCGO', A(1))
-                  do k = 0, max(0, nd - 1)
-                     ! ajt Since MAGO is imaginary/anti-symmetri, we get a minus sign here
-                     E(1 + i + dp(1)*(j + dp(2)*k)) = -tr(A(1), D(1+k))
-                  end do
-               end do
-            end do
-#ifdef PRG_DIRAC
-         end if
-#endif
+         end do
       ! EL MAG has no nd==0 because MAG anti-symmetric
       else if (np==2 .and. all(p==(/'MAG','EL '/)) .and. nd /= 0) then
          do j = 0, dp(2)-1 !EL indices
@@ -1379,25 +1361,15 @@ contains
             end do
          end do
       else if (np==2 .and. all(p==(/'MAGO','MAGO'/))) then
-#ifdef PRG_DIRAC
-         if (diamagnetic_via_pn) then
-!           diamagnetic contribution comes from positive-negative response
-!           do nothing
-         else
-#endif
-!           diamagnetic contribution comes from expectation value
-            do j = 0, dp(2)-1
-               do i = 0, dp(1)-1
-                  call load_oneint(xyz(min(c(1)+i,c(2)+j))              &
-                                // xyz(max(c(1)+i,c(2)+j)) // 'SUSCGO', &
-                                   F(1+i+dp(1)*j), S0)
-                  !ajt Since MAGO is imaginary/anti-symmetric, we get a minus sign here
-                  F(1 + i + dp(1)*j) = -F(1 + i + dp(1)*j)
-               end do
+         do j = 0, dp(2)-1
+            do i = 0, dp(1)-1
+               call load_oneint(xyz(min(c(1)+i,c(2)+j))              &
+                             // xyz(max(c(1)+i,c(2)+j)) // 'SUSCGO', &
+                                F(1+i+dp(1)*j), S0)
+               !ajt Since MAGO is imaginary/anti-symmetric, we get a minus sign here
+               F(1 + i + dp(1)*j) = -F(1 + i + dp(1)*j)
             end do
-#ifdef PRG_DIRAC
-         end if
-#endif
+         end do
       else if (np==2 .and. all(p==(/'MAG','MAG'/))) then
          do j = 0, dp(2)-1
             do i = 0, dp(1)-1

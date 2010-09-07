@@ -171,6 +171,13 @@ contains
                            (/s/))
       end do
 
+      blocks = '+00'//ss
+      if (diamagnetic_via_pn) then
+         f = 0.0d0
+      else
+         f = 1.0d0
+      end if
+
       do ij = 1, size(ij_iter)
          s = ij_iter(ij) // 'SUSCGO'
          call add_operator(s // '        ',  &
@@ -561,9 +568,13 @@ contains
                            (/s/))
       end do
 
-!     rdsusll
-      f = -2.0d0*cval
       blocks = '00+0'
+     !if (openrsp_levy_leblond) then
+         f = -2.0d0*cval
+     !else
+     !   f = -1.0d0*cval
+     !end if
+
       call add_operator('XXrdsusll       ', blocks, 5, 0, 1, (/1, 1/), (/f, f/), (/'XXRDSULZ', 'XXRDSULY'/))
       call add_operator('YXrdsusll       ', blocks, 6, 0, 1, (/1, 1/), (/f, f/), (/'XYRDSULX', 'XYRDSULZ'/))
       call add_operator('ZXrdsusll       ', blocks, 7, 0, 1, (/1, 1/), (/f, f/), (/'XZRDSULY', 'XZRDSULX'/))
@@ -574,9 +585,13 @@ contains
       call add_operator('YZrdsusll       ', blocks, 6, 0, 1, (/1, 1/), (/f, f/), (/'ZYRDSULX', 'ZYRDSULZ'/))
       call add_operator('ZZrdsusll       ', blocks, 7, 0, 1, (/1, 1/), (/f, f/), (/'ZZRDSULY', 'ZZRDSULX'/))
 
-!     dsusnol
-      f = 1.0d0
       blocks = '+00'//ss
+      if (diamagnetic_via_pn) then
+         f = 0.0d0
+      else
+         f = 1.0d0
+      end if
+
       do ij = 1, size(ij_iter)
          s      = '  DSUSNL'
          s(1:2) = ij_iter(ij)
