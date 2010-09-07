@@ -5302,6 +5302,8 @@ C       IF (LEVYLE) THEN
         IF (RDSUSLLMOD) THEN
            FACLL = -2.0D0
         ELSE
+!radovan:  why is this factor different?
+!          in which situation is this needed?
            FACLL = -1.0D0
         ENDIF
 

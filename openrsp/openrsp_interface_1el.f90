@@ -569,11 +569,7 @@ contains
       end do
 
       blocks = '00+0'
-     !if (openrsp_levy_leblond) then
-         f = -2.0d0*cval
-     !else
-     !   f = -1.0d0*cval
-     !end if
+      f = -2.0d0*cval
 
       call add_operator('XXrdsusll       ', blocks, 5, 0, 1, (/1, 1/), (/f, f/), (/'XXRDSULZ', 'XXRDSULY'/))
       call add_operator('YXrdsusll       ', blocks, 6, 0, 1, (/1, 1/), (/f, f/), (/'XYRDSULX', 'XYRDSULZ'/))
