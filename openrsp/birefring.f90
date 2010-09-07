@@ -606,20 +606,20 @@ contains
       Ebbf = 0
       Eqbf = 0
       if (freq(4)==0) then
-         call prop_oneave(S, (/'MAG','MAG','EL '/), (/D/), shape(Ebbf), Ebbf)
+         call prop_oneave(S, (/'MAG','MAG','EL '/), (/D/), int(shape(Ebbf)), Ebbf)
          ! call print_tensor(shape(Ebbf), Ebbf, 'E0bce'); Ebbf=0
-         call prop_twoave((/'MAG','MAG'/), (/D,De/), shape(Ebbf), Ebbf)
+         call prop_twoave((/'MAG','MAG'/), (/D,De/), int(shape(Ebbf)), Ebbf)
          do k = 1, 3
             DFDe(k) = De(k)*(F+freq(3)/2*S)*D + D*Fe(k)*D &
                         + D*(F-freq(3)/2*S)*De(k)
          end do
-         call prop_oneave(S, (/'MAG','MAG'/), (/De/), shape(Ebbf), Ebbf, &
+         call prop_oneave(S, (/'MAG','MAG'/), (/De/), int(shape(Ebbf)), Ebbf, &
                           freq=(/freq(1),freq(2)/), DFD=(/DFDe/))
          DFDe = 0
          ! call print_tensor(shape(Ebbf), Ebbf, 'E1bcDe-i/2TbcDe-SbcWe'); Ebbf=0
-         call prop_oneave(S, (/'MAG','EL '/), (/Dc/), shape(Ebbf), Ebbf, perm=(/1,3,2/))
+         call prop_oneave(S, (/'MAG','EL '/), (/Dc/), int(shape(Ebbf)), Ebbf, perm=(/1,3,2/))
          ! call print_tensor(shape(Ebbf), Ebbf, 'E1ecDb'); Ebbf=0
-         call prop_twoave((/'MAG'/), (/D,Dc,De,Dce/), shape(Ebbf), Ebbf)
+         call prop_twoave((/'MAG'/), (/D,Dc,De,Dce/), int(shape(Ebbf)), Ebbf)
          do k = 1, 3
             do j = 1, 3
                DFDce(j,k) = Dc(j)*Fe(k)*D + D*(Fc(j)-freq(3)/2*Sb(j))*De(k) &
@@ -630,14 +630,14 @@ contains
                           + Dce(j,k)*(F+(freq(2)+freq(3))/2*S)*D + D*Fce(j,k)*D
             end do
          end do
-         call prop_oneave(S, (/'MAG'/), (/Dce/), shape(Ebbf), Ebbf, &
+         call prop_oneave(S, (/'MAG'/), (/Dce/), int(shape(Ebbf)), Ebbf, &
                           freq=(/freq(1)/), DFD=(/DFDce/))
          DFDce = 0
          ! call print_tensor(shape(Ebbf), Ebbf, 'E1cDeb+E2cDeDb-i/2TcDeb-ScWeb'); Ebbf=0
-         call print_tensor(shape(Ebbf), Ebbf, 'd/db G-prime-Lon = Ebbf', freq(:3))
-         call prop_oneave(S, (/'ELGR','MAG '/), (/De/), shape(Eqbf), Eqbf)
-         call prop_oneave(S, (/'ELGR'/), (/Dce/), shape(Eqbf), Eqbf)
-         call print_tensor(shape(Eqbf), -Eqbf, 'd/db A-tensor-Lon = -Efbq', freq(:3))
+         call print_tensor(int(shape(Ebbf)), Ebbf, 'd/db G-prime-Lon = Ebbf', freq(:3))
+         call prop_oneave(S, (/'ELGR','MAG '/), (/De/), int(shape(Eqbf)), Eqbf)
+         call prop_oneave(S, (/'ELGR'/), (/Dce/), int(shape(Eqbf)), Eqbf)
+         call print_tensor(int(shape(Eqbf)), -Eqbf, 'd/db A-tensor-Lon = -Efbq', freq(:3))
       end if
       !----------------------------------------------------
       ! simultaneously contract London hypermagnetizability
@@ -645,7 +645,7 @@ contains
       ! 7 energy contributions to hypermag, 2 to A-tensor
       Eqbff = 0
       Ebbff = 0
-      call prop_oneave(S, (/'ELGR','MAG '/), (/Def/), shape(Eqbff), Eqbff)
+      call prop_oneave(S, (/'ELGR','MAG '/), (/Def/), int(shape(Eqbff)), Eqbff)
       ! call print_tensor(shape(Eqbff), Eqbff, 'E1qbDef', Eqbff); Eqbff=0
       !ajt This should really be a 3rd order perturbed density, which isn't
       !    implemented in prop_contribs. Rather, fake it with a second order density
@@ -653,11 +653,11 @@ contains
       call prop_twoave((/'MAG'/), (/D,Dq,Def,(0d0*D,i=1,6*3*3)/), &
                        (/6,3,3*3/), Eqbff, perm=(/2,1,3/))
       ! call print_tensor(shape(Eqbff), Eqbff, 'E2bDqDef', Eqbff); Eqbff=0
-      call prop_oneave(S, (/'MAG','MAG','EL '/), (/Df/), shape(Ebbff), Ebbff)
-      call prop_oneave(S, (/'MAG','MAG','EL '/), (/De/), shape(Ebbff), Ebbff, &
+      call prop_oneave(S, (/'MAG','MAG','EL '/), (/Df/), int(shape(Ebbff)), Ebbff)
+      call prop_oneave(S, (/'MAG','MAG','EL '/), (/De/), int(shape(Ebbff)), Ebbff, &
                        perm=(/1,2,4,3/))
       ! call print_tensor(shape(Ebbff), Ebbff, 'E1bcfDe + E1bceDf'); Ebbff=0
-      call prop_twoave((/'MAG','MAG'/), (/D,De,Df,Def/), shape(Ebbff), Ebbff)
+      call prop_twoave((/'MAG','MAG'/), (/D,De,Df,Def/), int(shape(Ebbff)), Ebbff)
       do l = 1, 3
          do k = 1, 3
             DFDef(k,l) = De(k)*Ff(l)*D + D*Fe(k)*Df(l) &
@@ -668,12 +668,12 @@ contains
                        + Def(k,l)*(F+(freq(3)+freq(4))/2*S)*D + D*Fef(k,l)*D
          end do
       end do
-      call prop_oneave(S, (/'MAG','MAG'/), (/Def/), shape(Ebbff), Ebbff, &
+      call prop_oneave(S, (/'MAG','MAG'/), (/Def/), int(shape(Ebbff)), Ebbff, &
                        freq=(/freq(1),freq(2)/), DFD=(/DFDef/))
       DFDef = 0
       ! call print_tensor(shape(Ebbff), Ebbff, 'E1bcDef + E2bcDeDf - 1/2TbcDef - SbcdDFDef'); Ebbff=0
-      call prop_oneave(S, (/'MAG','EL '/), (/Dcf/), shape(Ebbff), Ebbff, perm=(/1,3,2,4/))
-      call prop_oneave(S, (/'MAG','EL '/), (/Dce/), shape(Ebbff), Ebbff, perm=(/1,4,2,3/))
+      call prop_oneave(S, (/'MAG','EL '/), (/Dcf/), int(shape(Ebbff)), Ebbff, perm=(/1,3,2,4/))
+      call prop_oneave(S, (/'MAG','EL '/), (/Dce/), int(shape(Ebbff)), Ebbff, perm=(/1,4,2,3/))
       ! call print_tensor(shape(Ebbff), Ebbff, 'E1beDcf + E1bfDce'); Ebbff=0
       !ajt This should really be the 3rd order perturbed density
       !    (/D,Db,De,Df,(0d0*D,i=1,2*3*3),Def,(0d0*D,i=1,3*3*3)/), but 3rd order
@@ -779,8 +779,8 @@ contains
       ! call print_tensor(shape(Ebbff), Ebbff, '-FbDS DSDcef'); Ebbff=0
       ! call print_tensor(shape(Eqbff), Eqbff, '-FqDS DSDcef'); Eqbff=0
       ! print to stdout
-      call print_tensor(shape(Ebbff), Ebbff, 'd/df d/db G-prime-Lon = Ebbff', freq)
-      call print_tensor(shape(Eqbff),-Eqbff, 'd/df d/db A-tensor-Lon = -Eqbff', freq)
+      call print_tensor(int(shape(Ebbff)), Ebbff, 'd/df d/db G-prime-Lon = Ebbff', freq)
+      call print_tensor(int(shape(Eqbff)),-Eqbff, 'd/df d/db A-tensor-Lon = -Eqbff', freq)
       !free London-specific and common matrices
       Db=0; Dc=0; De=0; Df=0; Dq=0; Dce=0; Dcf=0; Def=0
       Fb=0; Fc=0; Fe=0; Ff=0; Fq=0; Fce=0; Fcf=0; Fef=0; Sb=0
