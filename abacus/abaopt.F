@@ -2115,7 +2115,8 @@ C
       IF (GECONV .AND. DOPRE .AND. (.NOT. FINPRE)) MARK = '*'
       WRITE(LUPRI,'(A,L1,A1)')
      &      ' End of minimization            :       ', GECONV, MARK
-      WRITE(LUPRI,678) ' Energy at this geometry is     : ', ENERGY
+      WRITE(LUPRI,'(A,F20.12)') 
+     &      ' Energy at this geometry is     : ', ENERGY
       IF ((ITRNMR .GT. 0) .AND. (ITRBRK .LT. (ITRNMR - 1))) THEN
          ERGDIF = ENERGY - ERGOLD
          IF (ABS(ERGPRO) .GT. 1.0D-10) THEN
@@ -2123,16 +2124,22 @@ C
          ELSE
             RATIO = 1.0D0
          END IF
- 678     FORMAT(A,F14.6)
-         WRITE(LUPRI,678)' Energy change from last geom.  : ', ERGDIF
+ 678     FORMAT(A,F20.12)
+         WRITE(LUPRI,'(A,D12.6)')
+     &   ' Energy change from last geom.  : ', ERGDIF
          IF (IPRINT .GE. 3) THEN
-            WRITE(LUPRI,678)' Predicted change               : ',ERGPRO
-            WRITE(LUPRI,678)' Ratio, actual/predicted change : ',RATIO
+            WRITE(LUPRI,'(A,D12.6)')
+     &      ' Predicted change               : ',ERGPRO
+            WRITE(LUPRI,'(A,D12.6)')
+     &     ' Ratio, actual/predicted change : ',RATIO
          END IF
       END IF
-      WRITE(LUPRI,678) ' Norm of gradient               : ', GRADNM
-      WRITE(LUPRI,678) ' Norm of step                   : ', STPNRM
-      WRITE(LUPRI,678) ' Updated trust radius           : ', TRSTRA
+      WRITE(LUPRI,'(A,D12.6)')
+     &   ' Norm of gradient               : ', GRADNM
+      WRITE(LUPRI,'(A,D12.6)')
+     &   ' Norm of step                   : ', STPNRM
+      WRITE(LUPRI,'(A,D12.6)')
+     &   ' Updated trust radius           : ', TRSTRA
       IF (IPRINT .GE. 3) THEN
          DO 50 I = 0, MAXREP
             IF (INDHES(I) .GT. 0) WRITE(LUPRI,'(A,I2,A,I7)')
