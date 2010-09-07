@@ -2336,7 +2336,7 @@ C
                         dfac = 0.5d0*dfac
                         efac = 0.5d0*efac
 
-                        do imat = 1, ndmat
+				do imat = 1, ndmat
 
                            dab = dfac*dmat(a, b, imat)
                            dcd = dfac*dmat(c, d, imat)
@@ -2366,11 +2366,13 @@ C
 !                                coulomb
 !                                =======
             
+                        if (imat == 1) then
              ft(a, b, imat, i) = ft(a, b, imat, i) + abcd*ddc + abdc*dcd
              ft(c, d, imat, i) = ft(c, d, imat, i) + abcd*dba + abdc*dab
 
              ft(b, a, imat, i) = ft(b, a, imat, i) + abcd*dcd + abdc*ddc
              ft(d, c, imat, i) = ft(d, c, imat, i) + abcd*dab + abdc*dba
+                        end if
 
 
 !                                exchange
@@ -2401,6 +2403,7 @@ C
 !                                coulomb
 !                                =======
             
+                        if (imat == 1) then
                         ft(b, a, imat, i) = ft(b, a, imat, i) - abcd*dcd
                         ft(b, a, imat, i) = ft(b, a, imat, i) - abdc*ddc
                         ft(d, c, imat, i) = ft(d, c, imat, i) - abcd*dab
@@ -2410,6 +2413,7 @@ C
                         ft(a, b, imat, i) = ft(a, b, imat, i) + abdc*dcd
                         ft(c, d, imat, i) = ft(c, d, imat, i) + abcd*dba
                         ft(c, d, imat, i) = ft(c, d, imat, i) - abdc*dab
+                        end if
            
            
 !                                exchange
