@@ -2107,6 +2107,7 @@ C
          CALL HEADER('Final geometry (au)',-1)
          CALL PRIGEO(CORD)
       END IF
+
       CALL HEADER('Optimization information',-1)
       WRITE(LUPRI,'(A,I7)')
      &     ' Iteration number               : ',ITRNMR
@@ -2115,6 +2116,7 @@ C
       IF (GECONV .AND. DOPRE .AND. (.NOT. FINPRE)) MARK = '*'
       WRITE(LUPRI,'(A,L1,A1)')
      &      ' End of minimization            :       ', GECONV, MARK
+      IF (GECONV) WRITE(LUPRI,'(6X,A)') '****  minimization ended  ****'
       WRITE(LUPRI,'(A,F20.12)') 
      &      ' Energy at this geometry is     : ', ENERGY
       IF ((ITRNMR .GT. 0) .AND. (ITRBRK .LT. (ITRNMR - 1))) THEN
@@ -2125,8 +2127,9 @@ C
             RATIO = 1.0D0
          END IF
  678     FORMAT(A,F20.12)
-         WRITE(LUPRI,'(A,D12.6)')
-     &   ' Energy change from last geom.  : ', ERGDIF
+         WRITE(LUPRI,'(A,D12.6,A,D8.2,A)')
+     &   ' Energy change from last geom.  : ',ERGDIF,
+     &   ' (the threshold is:',THRERG,')'
          IF (IPRINT .GE. 3) THEN
             WRITE(LUPRI,'(A,D12.6)')
      &      ' Predicted change               : ',ERGPRO
@@ -2134,10 +2137,12 @@ C
      &     ' Ratio, actual/predicted change : ',RATIO
          END IF
       END IF
-      WRITE(LUPRI,'(A,D12.6)')
-     &   ' Norm of gradient               : ', GRADNM
-      WRITE(LUPRI,'(A,D12.6)')
-     &   ' Norm of step                   : ', STPNRM
+      WRITE(LUPRI,'(A,D12.6,A,D8.2,A)')
+     &   ' Norm of gradient               : ', GRADNM, 
+     & ' (the threshold is:',GRDTHR,')'
+      WRITE(LUPRI,'(A,D12.6,A,D8.2,A)')
+     &   ' Norm of step                   : ', STPNRM, 
+     & ' (the threshold is:',THRSTP,')'
       WRITE(LUPRI,'(A,D12.6)')
      &   ' Updated trust radius           : ', TRSTRA
       IF (IPRINT .GE. 3) THEN
