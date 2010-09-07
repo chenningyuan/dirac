@@ -224,14 +224,14 @@ C
 C     Initialise NOGENINP
 C     NOGENINP is set, if there is no **GENERAL
 C
-      NOGENINP = .FALSE.
-      TWOCOMP  = .FALSE.
+      NOGENINP   = .FALSE.
+      TWOCOMP    = .FALSE.
       TWOCOMPBSS = .FALSE.
-      ECPCALC  = .FALSE.
-      SKIP2E = .FALSE.
-      LOWJACO = .FALSE.
-      LOGMEMGET = .FALSE.
-      DOQJACO  = .FALSE.
+      ECPCALC    = .FALSE.
+      SKIP2E     = .FALSE.
+      LOWJACO    = .FALSE.
+      LOGMEMGET  = .FALSE.
+      DOQJACO    = .FALSE.
 C
 C     Look for 2c. Hamiltonians
 C

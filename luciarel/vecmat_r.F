@@ -1795,10 +1795,9 @@ C
       INTEGER ISCR(2)
 * Zero record
       ISCR(1) = 1
-*. Packed form
-      ISCR(2) = 1
+!  no packing
+      ISCR(2) = 0
 *
       CALL ITODS(ISCR,2,2,IFIL)
 *
-      RETURN
       END

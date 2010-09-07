@@ -103,28 +103,30 @@ C LBLK DEFINES STRUCTURE OF FILE
 *
 C Type of file LUOUT is inherited from LUIN
       IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
       DIMENSION SEGMNT(*)
+      integer iscr(2)
+      integer LUIN,LUOUT, myluout
 C
       IF( IREW .NE. 0 ) THEN
-        CALL REWINE( LUIN ,LBLK)
-        CALL REWINE( LUOUT ,LBLK)
+        REWIND(LUIN)
+        REWIND(LUOUT)
       END IF
  
+      call izero(iscr,2)
 C
 C LOOP OVER BLOCKS
 C
-C?      write(6,*) ' COPVCD LBLK : ', LBLK
+        myluout = LUOUT
  1000 CONTINUE
         IF(LBLK .GT. 0 ) THEN
           LBL = LBLK
         ELSE IF ( LBLK .EQ. 0 ) THEN
           READ(LUIN) LBL
-          WRITE(LUOUT) LBL
+          WRITE(myluout) LBL
 C?        write(6,*) ' COPVCD LBL : ', LBL
         ELSE IF  (LBLK .LT. 0 ) THEN
           CALL IFRMDS(LBL,1,-1,LUIN)
-          CALL ITODS (LBL,1,-1,LUOUT)
+          CALL ITODS( LBL,1,-1,myluout)
         END IF
         IF( LBL .GE. 0 ) THEN
           IF(LBLK .GE.0 ) THEN
@@ -137,16 +139,19 @@ C?        write(6,*) ' LBL and KBLK ', LBL,KBLK
           CALL FRMDSC2(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK,
      &         NO_ZEROING)
           IF(IAMPACK.NE.0) THEN
-C?          WRITE(6,*) ' COPVCD, IAMPACK,FILE = ', IAMPACK,LUIN
+            WRITE(6,*) ' COPVCD_REL, IMZERO,IAMPACK,FILE = ', 
+     &      IMZERO,IAMPACK,LUIN
           END IF
           IF(IMZERO.EQ.0) THEN
             IF(IAMPACK.EQ.0) THEN
-              CALL TODSC (SEGMNT,LBL,KBLK,LUOUT)
+              CALL TODSC(SEGMNT,LBL,KBLK,myluout)
             ELSE  
-              CALL TODSCP(SEGMNT,LBL,KBLK,LUOUT)
+              CALL TODSCP(SEGMNT,LBL,KBLK,myluout)
             END IF
           ELSE
-            CALL ZERORC_REL(LBL,LUOUT,IAMPACK)
+            ISCR(1) = 1
+            ISCR(2) = 0
+            CALL ITODS(ISCR,2,2,myluout)
           END IF
         END IF
       IF( LBL .GE. 0 .AND. LBLK .LE. 0 ) GOTO 1000
@@ -246,7 +251,7 @@ C
               call todscp(vecblock,block_length,-1,out_fh)
             end if
           else
-            call zerorc_rel(block_length,out_fh,ispacked)
+            call zerorc_rel(block_length,out_fh)
           end if
           deallocate(vecblock)
         end if
@@ -750,7 +755,7 @@ C**********************************************************************
 #include "cstate.inc"
 #include "krciprop.h"
       CHARACTER LUC_NAME*10, my_LUC_NAME*12, SYMFLABEL*1
-      LOGICAL EX
+      LOGICAL EX, open_already
       EX = .FALSE.
       LUC_NAME    = "KRCI_CVECS"
       LUC_NAMEL   = 12
@@ -765,8 +770,8 @@ C         WRITE(6,*) ' SYMFLABEL is now ',SYMFLABEL
       END IF
 C     set file name and open file (if existing)
       WRITE (my_LUC_NAME,'(A10,A1,A1)') LUC_NAME,'.',SYMFLABEL
-C     WRITE(6,*) 'reading from file KRCI_CVECS.x = ',my_LUC_NAME
-      INQUIRE (FILE=my_LUC_NAME,EXIST=EX)
+      INQUIRE (FILE=my_LUC_NAME,EXIST=EX,opened=open_already)
+      if(open_already) print *,'*** attention: file already open***'
       IF( EX )THEN 
         OPEN(UNIT=LUC,FILE=my_LUC_NAME(1:LUC_NAMEL),STATUS='OLD',
      &       FORM='UNFORMATTED')

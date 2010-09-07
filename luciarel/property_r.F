@@ -671,6 +671,7 @@ C
 C     Last revision :
 C
 C***********************************************************************
+      use krci_prop
 #include "implicit.h"
 #include "priunit.h"
 * boson symmetry info
@@ -710,9 +711,10 @@ C information for property run
 #include "parluci.h"
       DIMENSION XPROPMAT(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,NPROP_KRCI,*)
       DIMENSION IPROCLIST(*), IGROUPLIST(*)
-      CHARACTER CIRUN*6, FILELAB*8, FILELAB_REOD*8, RODLAB*2
+      CHARACTER CIRUN*6,FILELAB*8,FILELAB_REOD*8,RODLAB*2,x_NAME*800
       LOGICAL MCSCF, RUN_SHMEM_T, COPY_NEW_C, EX
       INTEGER*8 IL_KTCC8
+      integer mz
 C
       CALL QENTER('XPROP_KRCI')
       NTESTX = 10
@@ -960,14 +962,14 @@ C           debug print
      &                        LENGTH_BLK,1)
 #endif
             ISSM      = IDBGMULT(ICSM,ISYM_T)
-            L_COMBI_S = XISPSM(ISSM,ISSPC)
+            L_COMBI_S =   XISPSM(ISSM,ISSPC)
 C           which "active" S irrep?
-            IX_ST = IGET_ACTIVE_IRREP(IXSYMLIST,IXSYMACT,ISSM)
+            IX_ST     = IGET_ACTIVE_IRREP(IXSYMLIST,IXSYMACT,ISSM)
 C
 C           compute new sigma vector = T_prop x C
 C           -------------------------------------
             CALL XSIGDEN_CTRL(WORK(KVEC1),WORK(KVEC2),WORK(KT_CC),
-     &                        COPY_NEW_C,NVC_LUC,IRC
+     &                        COPY_NEW_C,NVC_LUC,MZ
 #if defined (VAR_MPI2)
      &                        ,WORK(KILU1LIST),WORK(KILU2LIST),
      &                         WORK(KILUCLIST),WORK(KPCLBXX),
@@ -1046,24 +1048,48 @@ C    &        XPROPMAT(ISTATE_Y,ISTATE_X,IPROP_X,2)
 C300        CONTINUE
 C           ^ end of inner loop over all eigenstates
 #else
-            is_state_of_correct_sym = 0
-            DO 300 ISTATE_Y = 1, NPROP_ROOTS_KRCI
+#ifdef MOD_DEBUG
+            WRITE(LUWRT,*) '<S_ISSM|prop|C_ICSM> for C_# and IPROP_X',
+     &                         ISSM,PRPNAM(INDXPR),ICSM,ISTATE_X,IPROP_X
+#endif
+!           close current c-vector file
+            close(unit=luc,status="keep")
+            is_correct_sym = 0
+            
+            do istate_y = 1, nprop_roots_krci
 C
-C             calculate all dot products <sigma_ISTATE_X|C_ISTATE_Y>
-              IF( ISSM .ne. ISYMEIG_KRCI(ISTATE_Y)) GOTO 300
-              is_state_of_correct_sym = is_state_of_correct_sym + 1
-              CALL INPRDD_REAL_CPLX(VEC1,VEC2,LUHC,LUC,1,
-     &                              is_state_of_correct_sym,1,
-     &                              -1,XR,XI,MZ)
-              IF( PRPNAM(INDXPR) .eq. 'z-angular mom') THEN
-                XR = -XR
-                XI = -XI
-              END IF
-              XPROPMAT(ISTATE_Y,ISTATE_X,IPROP_X,1) = XR
-              IF( MZ .eq. 2 ) XPROPMAT(ISTATE_Y,ISTATE_X,IPROP_X,2) = XI
+              call get_inner_product_sigmaprop_dot_c(work(kvec1),
+     &                                               work(kvec2),
+     &                                               xpropmat(
+     &                                               istate_y,
+     &                                               istate_x,
+     &                                               iprop_x,1),
+     &                                               xpropmat(
+     &                                               istate_y,
+     &                                               istate_x,
+     &                                               iprop_x,mz),
+     &                                               issm,            
+     &                                               isymeig_krci(
+     &                                               istate_y),
+     &                                               luhc,           
+     &                                               is_correct_sym,    
+     &                                               mz,     
+     &                                               xsymflab(
+     &                                               isymeig_krci(
+     &                                               istate_y)))
+
+              if(prpnam(indxpr).eq.'z-angular mom')then
+                            xpropmat(istate_y,istate_x,iprop_x,1) = 
+     &                     -xpropmat(istate_y,istate_x,iprop_x,1)
+                if(mz.eq.2) xpropmat(istate_y,istate_x,iprop_x,2) = 
+     &                     -xpropmat(istate_y,istate_x,iprop_x,2)
+              end if
 C
- 300        CONTINUE
+            end do
 C           ^ end of inner loop over all eigenstates
+
+C           reopen current c-vector file
+            call get_luc_file(luc,icsm,ex)
 #endif
  200     CONTINUE
 C        ^ end of loop over all properties

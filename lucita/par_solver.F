@@ -1240,7 +1240,7 @@ C            WRTVCD(SEGMNT,LU,IREW,LBLK)
 * outside (for roothoming :dim = 3*MAXVEC )
       DIMENSION XJEP(10000)
       INTEGER   IXJEP(10000)
-      DIMENSION RCCTOS(*), IGROUPLIST(NMPROC)
+      INTEGER RCCTOS(*), IGROUPLIST(NMPROC)
       DIMENSION IBLOCKL(*),NBLOCKDN(*), IPROCLIST(NMPROC)
       INTEGER NDATATYPE, NREDTYPE, IONE, NZERO
       REAL*8 REDSCRVAR
@@ -1248,7 +1248,7 @@ C            WRTVCD(SEGMNT,LU,IREW,LBLK)
       IONE  = 1
       NZERO = 0
 *
-      TIMING = .TRUE.
+      TIMING = .false.
 C
 C      set check point parameters - after every 6th iteration
 C      of MAXIT

@@ -136,7 +136,7 @@ C
                IRPAMO(II) = IREPA
             END IF
          ENDDO
-         IF (NZ.NE.4.OR.SPINFR) IREPA = IREPA + 1
+         IF (NZ.NE.4.OR.SPINFR.or.levyle) IREPA = IREPA + 1
 C        for NZ.eq.4: unbarred and barred in same fermion irrep !
 C        (see GMULTA for def. of fermion irreps)
          DO ISTR = 1, NASH(I)
@@ -3689,7 +3689,7 @@ C
 C     Boson symmetry in the CI expansion
 C
       IF(IGASCIP_REP.GT.0) THEN
-        IF (SPINFR.AND.GASCIP_UCIBOS) THEN
+        IF ((SPINFR.or.levyle).AND.GASCIP_UCIBOS) THEN
           NREP = NBSYM
           WRITE(LUPRI,'(A)')
      &    ' * Boson spatial spinor symmetry used in CI expansion.'
@@ -3699,7 +3699,7 @@ C
           WRITE(LUPRI,'(A,I4,A,I3)')
      &    ' * Allowed interval of 2 * MS :',
      &    IGASCIP_MINMK2, ' to ', IGASCIP_MAXMK2
-        ELSE IF (.NOT.SPINFR.AND.GASCIP_UCIBOS) THEN
+        ELSE IF (.NOT.(SPINFR.or.levyle).AND.GASCIP_UCIBOS) THEN
           NREP = NBSYM
           WRITE(LUPRI,'(A)') ' * Approximate boson spatial spinor'//
      &    ' symmetry (as non-rel) used in CI expansion.'
@@ -3710,7 +3710,7 @@ C
      &    ' * Allowed interval of approximate 2 * MS :',
      &    IGASCIP_MINMK2, ' to ', IGASCIP_MAXMK2
         ELSE
-          IF (SPINFR) THEN
+          IF (SPINFR.or.levyle) THEN
             CALL GMULTSF(NREP,REPNA,MULTB_TMP)
           ELSE
             CALL GMULTA(NZ,NFSYM,NREP,REPNA,MULTB_TMP)

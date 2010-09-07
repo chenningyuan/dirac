@@ -57,7 +57,8 @@ C**********************************************************************
 #include "infpar.h"
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE), IT_TTPL(*), IGROUPLIST(*)
-      DIMENSION RCCTOS(*), NPARBLOCK(*), IBLOCKL_S(*), IBLOCKL_C(*)
+      DIMENSION NPARBLOCK(*), IBLOCKL_S(*), IBLOCKL_C(*)
+      INTEGER   RCCTOS(*)
 #include "parluci.h"
 #include "typesz_mpi2.h"
 #include "wrkspc.inc"
@@ -1755,8 +1756,8 @@ C       close C vector file (opened in GET_LUC_FILE)
 C       keep track of correct offset
         NVEC_TOT = NVEC_TOT + NVEC
       END DO
-C     WRITE(LUWRT,*) ' MY LUOUTLIST AFTER ALL',MYPROC
-C     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
+!     WRITE(LUWRT,*) ' MY LUOUTLIST AFTER ALL',MYPROC
+!     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
 C
       END
 ***********************************************************************
@@ -5820,15 +5821,18 @@ C
       INTEGER(KIND=MPI_OFFSET_KIND) MY_IOFF_LUIN2
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_IN_LUIN1, IOFFSET_IN_LUIN2
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
+      INTEGER(KIND=MPI_OFFSET_KIND) IXOFF_internal
       INTEGER NUM_BLK
 C
 C     initialize scratch offsets
-      NUM_BLK = 0
-      IOFFSET_SCRATCH = 0
-      IOFFSET_IN_LUIN1  = 0
-      IOFFSET_IN_LUIN2  = 0
+      NUM_BLK          = 0
+      IOFFSET_SCRATCH  = 0
+      IOFFSET_IN_LUIN1 = 0
+      IOFFSET_IN_LUIN2 = 0
       IOFFSET_INT_IN1  = 0
       IOFFSET_INT_IN2  = 0
+!
+      IXOFF_internal   =  IXOFF
 C
 C     zero final dot product vectors
 C
@@ -5847,8 +5851,8 @@ C
 C
         IF( ISYM_CTRL(JOFF) .ne. ISSM ) GOTO 500
 C
-C       WRITE(LUWRT,'(/A,I4,A,I4)') ' dot product for sigma vector', 
-C    &        ISTATE_X,' and C vector ',JOFF
+!       WRITE(LUWRT,'(/A,I4,A,I4)') ' dot product for sigma vector',
+!    &        ISTATE_X,' and C vector ',JOFF
 C
         IOFFSET_SCRATCH  = 0
         NUM_BLK          = 0
@@ -5868,19 +5872,20 @@ C
 C       set new offset
 C       position in file is at the end of vector NVEC + IVEC - 1
         IOFFSET_IN_LUIN1 = MY_IOFF_LUIN1 + IOFFSET_SCRATCH +
-     &                     ( IXOFF       - 1 )  * MY_VEC2_IOFF
+     &                     ( IXOFF_internal - 1 )  * MY_VEC2_IOFF
         IOFFSET_INT_IN1  = 1 + NUM_BLK  +
-     &                     ( IXOFF       - 1 ) * MY_ACT_BLK2
+     &                     ( IXOFF          - 1 )  * MY_ACT_BLK2
 C
-C       WRITE(LUWRT,*) 'This is my OFFSET for ISTATE_X',IOFFSET_IN_LUIN1
+!       WRITE(LUWRT,*) 'This is my OFFSET for sigma ',IOFFSET_IN_LUIN1
+!       WRITE(LUWRT,*) 'This is my block OFFSET     ',IOFFSET_INT_IN1
 C
         CALL RDVEC_BATCH_DRV4(LUIN1,VEC2,LBATCH(ISBATCH),
      &                       IBATCH(1,I1BATCH(ISBATCH)),
      &                       IOFFSET_IN_LUIN1,IOFFSET_INT_IN1,
      &                       LUIN1LIST,NUM_ACTIVE_BATCH)
 C
-C       WRITE(LUWRT,*) 'initial VEC2 (real) of ISTATE_X'
-C       CALL WRTMATMN(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
+!       WRITE(LUWRT,*) 'initial VEC2 (real) of sigma vec',ISTATE_X
+!       CALL WRTMATMN(VEC2,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
 C
 C       set new offset and zero read-in vector
         CALL DZERO(VEC1,LEBATCH(ISBATCH))
@@ -5890,7 +5895,7 @@ C
         IOFFSET_INT_IN2  = 1 + NUM_BLK   + 
      &                     ( JOFF - 1 )  * MY_ACT_BLK2
 C
-C       WRITE(LUWRT,*) 'This is my OFFSET for JOFF',IOFFSET_IN_LUIN2
+!       WRITE(LUWRT,*) 'This is my OFFSET for cstate ',IOFFSET_IN_LUIN2
 C
 C       read in batch ISBATCH from LUIN1 to VEC1
         CALL RDVEC_BATCH_DRV4(LUIN2,VEC1,LBATCH(ISBATCH),
@@ -5898,8 +5903,8 @@ C       read in batch ISBATCH from LUIN1 to VEC1
      &                        IOFFSET_IN_LUIN2,IOFFSET_INT_IN2,
      &                        LUIN2LIST,NUM_ACTIVE_BATCH)
 C
-C       WRITE(LUWRT,*) 'initial VEC1 (real) of JOFF'
-C       CALL WRTMATMN(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
+!       WRITE(LUWRT,*) 'initial VEC1 (real) of cstate # =',JOFF
+!       CALL WRTMATMN(VEC1,1,LEBATCH(ISBATCH),1,LEBATCH(ISBATCH),LUWRT)
         XR(JOFF) = XR(JOFF) + DDOT(LEBATCH(ISBATCH),VEC2,1,VEC1,1)
 C
   100   CONTINUE
@@ -5938,11 +5943,11 @@ C       set new offset and zero read-in vector
         CALL DZERO(VEC2,LEBATCH(ISBATCH))
 C
         IOFFSET_IN_LUIN1 = MY_IOFF_LUIN1 + IOFFSET_SCRATCH +
-     &                     ( IXOFF       - 1 ) * MY_VEC2_IOFF +
-     &                                           MY_VEC1_IOFF 
+     &                     ( IXOFF_internal  - 1 ) * MY_VEC2_IOFF +
+     &                                               MY_VEC1_IOFF 
         IOFFSET_INT_IN1  = 1 + NUM_BLK  + 
-     &                     ( IXOFF       - 1 ) * MY_ACT_BLK2  +
-     &                                           MY_ACT_BLK1
+     &                     ( IXOFF           - 1 ) * MY_ACT_BLK2  +
+     &                                               MY_ACT_BLK1
 C
 C       WRITE(LUWRT,*) 'This is my OFFSET for ISTATE_X',IOFFSET_IN_LUIN1
 C
@@ -5992,9 +5997,9 @@ C       keep track of correct offset
       END DO
 C     ^ loop over batches ...
 C
-C       WRITE(LUWRT,*) ' final XR(JOFF) --> JOFF,ISTATE_X',
-C    &                   XR(JOFF),JOFF,ISTATE_X
-C       IF( MZ .eq. 2) WRITE(LUWRT,*) ' final XI(JOFF)',XI(JOFF)
+!       WRITE(LUWRT,*) ' final XR(JOFF) --> JOFF,ISTATE_X',
+!    &                   XR(JOFF),JOFF,ISTATE_X
+!       IF( MZ .eq. 2) WRITE(LUWRT,*) ' final XI(JOFF)',XI(JOFF)
 C
   500 CONTINUE
 C     ^ loop over NVEC
@@ -8678,7 +8683,8 @@ C**********************************************************************
 #include "implicit.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE), RCCTOS(*), NPARBLOCK(*)
+      DIMENSION ISTAT(MPI_STATUS_SIZE), NPARBLOCK(*)
+      INTEGER   RCCTOS(*)
 #include "parluci.h"
       DIMENSION ICCTOS(I_NZERO_LEN_C,I_NZERO_LEN_S), IT_TTPL(LEN_TTPL)
       LOGICAL SHARED_M_FILE, SPLIT_IJKL_FILE, DIST_COMPLETE
@@ -8880,8 +8886,8 @@ C**********************************************************************
 #include "parluci.h"
 #include "wrkspc.inc"
 #include "ipoist8.inc"
-      DIMENSION ISCLFAC_GROUP(*), LUCLIST(*) 
-      DIMENSION RCCTOS(*), CB(*)
+      DIMENSION ISCLFAC_GROUP(*), LUCLIST(*), CB(*)
+      INTEGER   RCCTOS(*)
       DIMENSION NPARBLOCK(*), IBLOCKL(*)
       DIMENSION IGROUPLIST(*), IPROCLIST(*)
       CHARACTER*12 WALLTID3, SECTID
@@ -8908,6 +8914,11 @@ C     the complete CI-vector
 C
 C     find all c-blocks connecting to all sigma-blocks on each cpu
       CALL ICOPY(NUM_BLOCKS2,RCCTOS,1,WORK(KSCALLOC3),1)
+
+!     WRITE(LUWRT,*) '  subroutine UPDATE_LUC_LIST speaking'
+!     WRITE(LUWRT,*) 'RCCTOS:'
+!     CALL IWRTMAMN(RCCTOS,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
+
 C
 C     case 1: number of CPUs in new group != to total number of CPUs
 C     case 2: number of CPUs in new group == to total number of CPUs
@@ -8944,11 +8955,10 @@ C
       END IF
 C     ^ NEWCOMM_PROC == NMPROC ?
 C
-CSK      WRITE(LUWRT,*) '  subroutine UPDATE_LUC_LIST speaking'
-CSK      WRITE(LUWRT,*) 'LUCLIST:'
-CSK      CALL IWRTMAMN(LUCLIST,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
-CSK      WRITE(LUWRT,*) 'ISCLFAC_GROUP:'
-CSK      CALL IWRTMAMN(ISCLFAC_GROUP,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
+!     WRITE(LUWRT,*) 'LUCLIST:'
+!     CALL IWRTMAMN(LUCLIST,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
+!     WRITE(LUWRT,*) 'ISCLFAC_GROUP:'
+!     CALL IWRTMAMN(ISCLFAC_GROUP,1,NUM_BLOCKS2,1,NUM_BLOCKS2,LUWRT)
 C
 C     final timing for block distribution
       blocktime = blocktime + MPI_WTIME() - starttimer

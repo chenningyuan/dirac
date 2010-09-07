@@ -63,6 +63,7 @@
       DIMENSION LU1LIST(*), LU2LIST(*), LU3LIST(*)
       DIMENSION LU4LIST(*), LU5LIST(*), LUCLIST(*)
       DIMENSION IT_TTPL(*)
+      INTEGER   RCCTOS(*)
       INTEGER(KIND=MPI_OFFSET_KIND) IT_TTOL(*)
 #include "cstate.inc"
 #endif

@@ -1471,7 +1471,7 @@ C**********************************************************************
       DIMENSION NPARBLOCK(*), IBLOCKL(*)
       DIMENSION IGROUPLIST(*), IPROCLIST(*)
       CHARACTER*12 WALLTID3, SECTID
-      DIMENSION RCCTOS(*)
+      INTEGER   RCCTOS(*)
 C     some scratch
       INTEGER NZERO
 C

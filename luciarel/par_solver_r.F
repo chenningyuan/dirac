@@ -84,7 +84,8 @@
        DIMENSION RNRM(MAXIT,NROOT),EIG(MAXIT,NROOT)
        DIMENSION APROJ(*),AVEC(*),WORK(*)
        DIMENSION IPNTR(1), IBLOCKL(*), NPARBLOCK(*)
-       DIMENSION T_CC(*), RCCTOS(*), SCRRED(*), T_BUFF(*)
+       DIMENSION T_CC(*), SCRRED(*), T_BUFF(*)
+       INTEGER   RCCTOS(*)
        DIMENSION IT_TTPL(*) 
        INTEGER(KIND=MPI_OFFSET_KIND) IT_TTOL(*)
 *
@@ -114,7 +115,7 @@ C      no screening
        CSCREEN = .FALSE.
 C
 C      do more explicit timing
-       TIMING  = .TRUE.
+       TIMING = .false.
 C
 C      set check point parameters - approx after every 5th iteration 
 C      of MAXIT
@@ -815,7 +816,8 @@ C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
       DIMENSION LU4LIST(*), LU5LIST(*), LUCLIST(*)
       DIMENSION LBATV(*), LEBATV(*), I1BATV(*), IBATV(8,*)
       DIMENSION SCRRED_R(*), SCRRED_I(*)
-      DIMENSION RCCTOS(*), IGROUPLIST(*), IPROCLIST(*)
+      INTEGER   RCCTOS(*)
+      DIMENSION IGROUPLIST(*), IPROCLIST(*)
       DIMENSION VEC1(*),VEC2(*)
       DIMENSION RNRM(NROOT,MAXIT),EIG(2*MAXVEC,MAXIT)
       DIMENSION APROJI(*),APROJR(*),AVEC(*),WORK(*)

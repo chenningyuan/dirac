@@ -1824,6 +1824,7 @@ C?          write(6,*) ' corresponding number ', JSTRIN
 * Loop over possible partitionings between RAS1,RAS2,RAS3
       DO 1001 IEL1 = NELMX1,NELMN1,-1
       DO 1003 IEL3 = NELMN3,NELMX3, 1
+!      print *, 'IEL1, IEL3, NORB1, NORB3',IEL1, IEL3,NORB1, NORB3
        IF(IEL1.GT. NORB1 ) GOTO 1001
        IF(IEL3.GT. NORB3 ) GOTO 1003
        IEL2 = NEL - IEL1-IEL3
@@ -1833,6 +1834,7 @@ C?          write(6,*) ' corresponding number ', JSTRIN
   901  CONTINUE
          IF( IEL1 .NE. 0 ) THEN
            IF(IFRST1.EQ.1) THEN
+!           print *, ' calling ISTVC2',IOC(1)
             CALL ISTVC2(IOC(1),0,1,IEL1)
             IFRST1 = 0
            ELSE
@@ -1895,7 +1897,9 @@ C?          write(6,*) ' corresponding number ', JSTRIN
              NSTRIN = NSTRIN + 1
 *. Symmetry
 *                   ISYMST_REL(STRING,NEL)
+!            WRITE(6,*) ' get ISYM'
              ISYM = ISYMST_REL(IOC,NEL)
+!            WRITE(6,*) ' got ISYM',ISYM
 C            IF(NTEST.GE.500)  WRITE(6,*) ' ISYM= ',ISYM
 *. Occupation type
 C            ITYP = IOCTP2(IOC,NEL,IOTYP)
@@ -1907,10 +1911,10 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
                LEXCI = ISTRNM(IOC,NACOB,NEL,Z,IREORD,0)
                LACTU = ISTASO(ISYM,IGRP)-1+LSTASO(ITYP,ISYM)
                IREORD(LEXCI) = LACTU
-#if defined LUCI_DEBUG
-               IF(NTEST.GT.500) WRITE(6,*) ' LEXCI,LACTU',
+!#if defined LUCI_DEBUG
+               IF(NTEST.GT.50) WRITE(6,*) ' LEXCI,LACTU',
      &         LEXCI,LACTU
-#endif
+!#endif
                CALL ICOPVE(IOC,STRING(1,LACTU),NEL)
              END IF
 *
@@ -1921,7 +1925,7 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
  1003 CONTINUE
  1001 CONTINUE
 *
-#if defined LUCI_DEBUG
+!#if defined LUCI_DEBUG
       IF(NTEST.GE.1 ) THEN
         WRITE(6,*) ' Number of strings generated   ', NSTRIN
       END IF
@@ -1951,7 +1955,7 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
         WRITE(6,*) ' ============================================'
         CALL IWRTMA(IREORD,1,NPR,1,NPR)
       END IF
-#endif
+!#endif
 
       RETURN
       END
@@ -3560,6 +3564,7 @@ C     CALL QENTER('STRIN')
         CALL WEIGHT_REL(STIN(KZ(IGRP)),IEL,NORB1,NORB2,NORB3,
      &                  MNRS1X,MXRS1X,MNRS3X,MXRS3X,
      &                  STIN(KFREEL),IPRNT)
+!       print *,'blub NSTRSO_GAS_REL'
 *. Number of strings per symmetry in a given group
         CALL NSTRSO_GAS_REL(IEL,NORB1,NORB2,NORB3,
      &                      MNRS1X,MXRS1X,MNRS3X,MXRS3X,
@@ -3568,18 +3573,21 @@ C     CALL QENTER('STRIN')
      &                      STIN(KISTSGP(1)),
      &                      IOCTYPX,NSMST,IGRP,IPRNT)
 *
+!       print *,'blub blub NSTRSO_GAS_REL'
        CALL ICOPVE2(STIN(KNSTSGP(1)),1+(IGRP-1)*NSMST,NSMST,
      &              NSTFSMGP(1,IGRP))
        CALL ICOPVE2(STIN(KISTSGP(1)),1+(IGRP-1)*NSMST,NSMST,
      &              ISTFSMGP(1,IGRP))
 *. Construct the strings ordered by symmetry
         if (IEL.gt.0) then
+!       print *,'blub blub GENSTR_GAS_REL',IEL
           CALL GENSTR_GAS_REL(IEL,MNRS1X,MXRS1X,MNRS3X,MXRS3X,
      &                        STIN(KISTSGP(1)),IGRP,
      &                        IOCTYPX,NSMST,STIN(KZ(IGRP)),STIN(KFREEL),
      &                        STIN(KSTREO(IGRP)),STIN(KOCSTR(IGRP)),
      &                        STIN(KFREEL+IOCTYPX*NSMST),IGRP,IPRNT)
         end if
+!       print *,'blub blub blub GENSTR_GAS_REL'
       END DO
 *
 *. Min and max of sym for each group

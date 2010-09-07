@@ -89,7 +89,8 @@ C     DIMENSION INIDET(100)
 *. Output from Subspace dagonalization
       DIMENSION H0(*),IPNTR(*),H0SCR(*),PEIGVC(*)
 *.
-      DIMENSION EROOTL(NROOTSL), RCCTOS(*)
+      DIMENSION EROOTL(NROOTSL)
+      INTEGER   RCCTOS(*)
 C
 C     parameter used in parallel scheme /sk march 2007/
 C

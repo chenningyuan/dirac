@@ -1201,12 +1201,15 @@ C
       implicit real*8 (A-H,O-Z)
 #include "ipoist8.inc"
 *
-      integer PNTGRP
+      integer, intent(inout) :: PNTGRP
 *
 #include "mxpdim.inc"
 #include "symm.inc"
+! stefan: test for spinfree run in D2h symmetry
+#include "dcbham.h"
 *
       if (PNTGRP.eq.9) DOUGRP = 4
+      if (PNTGRP.eq.9.and.spinfr) DOUGRP = 9
       if (PNTGRP.eq.8) DOUGRP = 5
       if (PNTGRP.eq.7) DOUGRP = 6
       if (PNTGRP.eq.6) DOUGRP = 7
@@ -1252,11 +1255,20 @@ C
          NIRR_PN = 1
          IHASDG = DOUGRP
          PNTGRP = 5
+      else if (DOUGRP.eq.9) then
+         NIRR_DG = 12
+         NIRR_PN = 8
+         IHASDG = DOUGRP
+         PNTGRP = 9
+         print *, 
+     & '*** error in grinfo: no spinfree formalism yet in LUCIAREL. ***'
+         call quit(
+     & '*** error in grinfo: no spinfree formalism in LUCIAREL.!***')
       else
          write(*,*) 'Double group out of range!'
          write(*,*) 'Double group is  ',DOUGRP
          write(*,*) 'Picasso will put down his brush.'
-         Call Abend()
+         call quit('*** error in grinfo: Double group out of range!***')
       end if
 *
 *  Set up info for highest abelian double subgroup
@@ -1268,15 +1280,25 @@ C
          else if (DOUGRP.eq.2.or.DOUGRP.eq.3) then
             NSDGIRR = 4
             NSPGIRR = 2
+         else if (DOUGRP.eq.9) then
+            NSDGIRR = 12
+            NSPGIRR = 8
          end if
       end if
-*
-      MXPDBGDIM = 8
+ 
+!     stefan: generalization of dimensions
+      MXPDBGDIM  = max(8,NIRR_DG)
+      MXPPGPDIM  = max(4,NIRR_PN)
       MXPDBGDIM2 = MXPDBGDIM ** 2
-*
+   
+!     initialize
       CALL IZERO(IDBGMULT,MXPDBGDIM2)
-      CALL IZERO(IMOSF_SP,MXPDBGDIM)
-      CALL IZERO(ISPSF_MO,MXPDBGDIM)
+      CALL IZERO(IMOSF_SP, MXPDBGDIM)
+      CALL IZERO(ISPSF_MO, MXPDBGDIM)
+
+!     stefan: adapt here for straightforward implementation of linear symmetry 
+!             and spinfree LUCIAREL. SK - Sep 2010
+      MXPDBGDIM  = max(8,NIRR_DG)
       IF(PNTGRP.EQ.5) THEN
 *. C1 point group
         DBGSYM(1:6) ='C1    '
@@ -1431,8 +1453,8 @@ C
         IMOSF_SP(4,1) = 8
         IMOSF_SP(4,2) = 7
 *
-        do JJ=1,8,1
-           do II=1,8,1
+        do JJ=1,MXPDBGDIM,1
+           do II=1,MXPDBGDIM,1
               if (II.le.4.and.JJ.le.4) then
                  if (II.eq.JJ) then
                     IDBGMULT(II,JJ) = 1
@@ -1474,8 +1496,8 @@ C
               end if
            end do
         end do
-        do JJ=1,4,1
-           do II=1,4,1
+        do JJ=1,MXPPGPDIM,1
+           do II=1,MXPPGPDIM,1
               if (II.eq.JJ) then
                  IPGMULT(II,JJ) = 1
               else if ((II+JJ).eq.3.or.(II+JJ).eq.7) then
@@ -6423,7 +6445,8 @@ C
 #include "symm.inc"
       DIMENSION ISTAT(MPI_STATUS_SIZE), ISYM_DISTR(IXSYMACT)
       DIMENSION NPARBLOCK_X(NUM_BLOCKS,*),IBLOCKL_X(NUM_BLOCKS,*)
-      DIMENSION RCCTOS_X(NUM_BLOCKS2,*), IXSYMPAIRS(MXPROPKRCI_SYM,*)
+      DIMENSION IXSYMPAIRS(MXPROPKRCI_SYM,*)
+      INTEGER   RCCTOS_X(NUM_BLOCKS2,*)
 C
       IXPAIR = 0
 C

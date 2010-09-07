@@ -330,6 +330,8 @@ C***********************************************************************
       IMPLICIT REAL*8(A-H,O-Z)
       DIMENSION VEC1(*),VEC2(*)
       REAL*8 INPRDD
+      integer LU1, LU2, I1, I2, IREW, LBLK, MZ
+      integer internal_rew
 C
       NTEST = 0
       XR  = 0.0D0
@@ -338,20 +340,22 @@ C
       XRI = 0.0D0
       XIR = 0.0D0
       XII = 0.0D0
+      internal_rew = 0
 C
 C     position files at start of complex vectors I1, I2
       IF(IREW.NE.0) THEN
-        CALL SKPVCD(LU1,MZ*(I1-1),VEC1,1,LBLK)
+        CALL SKPVCD(LU1,MZ*(I1-1),VEC1,IREW,LBLK)
         IF(LU2.NE.LU1) THEN
-          CALL SKPVCD(LU2,MZ*(I2-1),VEC1,1,LBLK)
+          CALL SKPVCD(LU2,MZ*(I2-1),VEC1,IREW,LBLK)
         END IF
       END IF
 C
       IF(LU1.EQ.LU2) THEN
 C
 C       Norm of vector
-        XRR = INPRDD(VEC1,VEC2,LU1,LU2,0,LBLK)
-        IF( MZ .eq. 2 ) XII =  INPRDD(VEC1,VEC2,LU1,LU2,0,LBLK)
+        XRR = INPRDD(VEC1,VEC2,LU1,LU2,internal_rew,LBLK)
+        IF( MZ .eq. 2 ) XII =  
+     &  INPRDD(VEC1,VEC2,LU1,LU2,internal_rew,LBLK)
         XIR = 0.0D0
         XRI = 0.0D0
       ELSE
@@ -360,7 +364,7 @@ C       general inner product of two vectors
 C       ------------------------------------
 C
 C       real * real
-        XRR = INPRDD(VEC1,VEC2,LU1,LU2,0,LBLK)
+        XRR = INPRDD(VEC1,VEC2,LU1,LU2,internal_rew,LBLK)
         IF(NTEST.NE.0)
      &  WRITE(6,*) ' Real part * Real part ', XRR
         IF( MZ .eq. 2 )THEN
@@ -388,6 +392,7 @@ C         imag*imag
 C
       XR = XRR + XII
       XI = XRI - XIR
+!     print *, 'set XR and XI',XR,XI
 C
       END
 ***********************************************************************
@@ -1570,7 +1575,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 #include "mpif.h"
 #include "infpar.h"
 #include "parluci.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE),RCCTOS(NUM_BLOCKS2)
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER   RCCTOS(NUM_BLOCKS2)
       DIMENSION ICCTOS(I_NZERO_LEN_C,I_NZERO_LEN_S),IT_TTPL(LEN_TTPL)
       DIMENSION NPARBLOCK(NUM_BLOCKS),ICWEIGHTF(I_NZERO_LEN_S)
       CHARACTER BLOCKFLE*16
@@ -1630,7 +1636,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 #include "mpif.h"
 #include "infpar.h"
 #include "parluci.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE),RCCTOS(NUM_BLOCKS2)
+      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER   RCCTOS(NUM_BLOCKS2)
       DIMENSION ICCTOS(I_NZERO_LEN_C,I_NZERO_LEN_S),IT_TTPL(LEN_TTPL)
       DIMENSION NPARBLOCK(NUM_BLOCKS),ICWEIGHTF(I_NZERO_LEN_S)
       CHARACTER BLOCKFLE*16

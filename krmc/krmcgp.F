@@ -2198,6 +2198,7 @@ C     erase first
           NGSSH(I,J) = 0
         END DO
       END DO
+!     write(6,*) 'OPT_UCIBOS is',OPT_UCIBOS
       DO IFSYM = 1, NFSYM
          IOFF = 0
          IF (.NOT.OPT_UCIBOS) THEN
@@ -2215,13 +2216,16 @@ C           different symmetry generator setup.
             IBOSYM(IORB(IFSYM)+NPSH(IFSYM)+NISH(IFSYM))=IBOSYMI
          END IF
          DO IGAS = 1, NGAS
+!           write(6,*) 'NGSH(IFSYM,IGAS) is',NGSH(IFSYM,IGAS)
             DO I = 1, NGSH(IFSYM,IGAS)
                IOFF = IOFF + 1
                IF( OPT_UCIBOS )THEN
                   IBOSYMI = 
      &            IBOSYM(IORB(IFSYM)+NPSH(IFSYM)+NISH(IFSYM)+IOFF)
+!              write(6,*) 'IBOSYMI is',IBOSYMI
                END IF
                IADR = IBOSYMI + 1 + (IGAS-1) * MXPIRR
+!              write(6,*) 'IADR is',IADR
                CALL ADD_TO_GSS(NGSSH,IADR,0,1)
 CSK            NGSSH(IADR) = NGSSH(IADR) + 1
             END DO

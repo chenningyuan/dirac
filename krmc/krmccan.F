@@ -1162,7 +1162,7 @@ C
          ELSE
             PRPCOREE(I) = D0
          END IF
-         IF (IPROPT .GE. 0)
+         IF (IPROPT .GE. 5)
      &      WRITE(LUPRI,9000) FILELAB,PRPCOREE(I)
  9000 FORMAT(' (KRCIPRPMO): ',A,' property core value: ',F25.15/)
 C
@@ -1738,8 +1738,9 @@ C
 C
 C       print omega values
         do i = 1, nxstates
-          om_state  = work(keigx+i-1) * om_multf
-          iom_state = nint(om_state)
+!         om_state  =  work(keigx+i-1) * om_multf
+          om_state  = (work(KEIGsz+i-1) + work(KEIGlz+i-1))* om_multf
+          iom_state =  nint(om_state)
           if(iabs(iom_state).eq.0) iom_state = 0
           write(om_string,'(i3,a2)') iom_state,om_divst
           write(lupri,'(i11,8x,a4,10x,a5,4x,1f10.4,1f10.4)')

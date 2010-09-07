@@ -1344,7 +1344,6 @@ C                    Transform symmetry packed
 C                    integrals to full matrix.
 C                    (take care of diff. integral transformations etc.)
 C
-!                    if(.not.SPINFR)then
                      CALL INTB2X(h2xy,IZ2,IREPABR,IREPAB,
      &                           h2yx,IREPIJ,NKL)
 C                    CALL INTB2X(HT,IZ2,IREPABR,IREPAB,HX,IREPIJ,NKL)
@@ -1354,7 +1353,6 @@ C                    full
 C
 !
 !                    transform boson-symmetry array for index 3 and 4
-!                    do we also need to transform indxb12 ???
                      if(spinfr.or.levyle.or.linear)then
 !                      initialize
                        call izero(indxb34_reod,2*n2orbx)

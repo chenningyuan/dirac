@@ -176,6 +176,7 @@ vital_tests.append(short_test('dft_response_symmetry'))
 vital_tests.append(short_test('xyz_input'))
 vital_tests.append(short_test('basis_automatic_augmentation'))
 vital_tests.append(short_test('free-particle_projection'))
+vital_tests.append(short_test('krci_prop'))
 
 # medium tests
 vital_tests.append(medium_test('dft_alda'))

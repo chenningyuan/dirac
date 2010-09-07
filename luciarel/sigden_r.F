@@ -3089,6 +3089,7 @@ C
 #if defined (VAR_MPI2)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)     
+      INTEGER RCCTOS(*)
 #endif
 #include "infpar.h"
 #include "parluci.h"
@@ -3209,7 +3210,8 @@ C***********************************************************************
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
       DIMENSION LUCLIST(*), IBLOCKL_C(*), NPARBLOCK_C(*), IGROUPLIST(*)
-      DIMENSION IPROCLIST(*), RCCTOS(*), IBLOCKL_S(*), NPARBLOCK_S(*)
+      DIMENSION IPROCLIST(*), IBLOCKL_S(*), NPARBLOCK_S(*)
+      INTEGER   RCCTOS(*)
       DIMENSION ISCLFAC_GROUP(*), LUHCLIST(*)
       INTEGER(KIND=MPI_OFFSET_KIND) IOFFSET_SCRATCH
       INTEGER(KIND=MPI_OFFSET_KIND) IOFF_SCR1, IOFF_SCR2
@@ -3658,11 +3660,11 @@ CSK             END IF
 C                 mark block as nonzero
                   LUHCLIST(INT_IOFF1) = IONE
 C                 transfer block to disc
-C                 WRITE(LUWRT,*) 'I transfer to file block ISBLK',
-C    &                            ISBLK
-C                 CALL WRTMATMN(HC(IOFF),1,LEN_T,1,LEN_T,LUWRT)
-C                 WRITE(LUWRT,*) 'offset,length, IRIS',
-C    &                            IOFF_SCR1,LEN_T,IRIS
+!                 WRITE(LUWRT,*) 'I transfer to file block ISBLK',
+!    &                            ISBLK
+!                 CALL WRTMATMN(HC(IOFF),1,LEN_T,1,LEN_T,LUWRT)
+!                 WRITE(LUWRT,*) 'offset,length, IRIS',
+!    &                            IOFF_SCR1,LEN_T,IRIS
                   CALL MPI_FILE_WRITE_AT(LLUHC,IOFF_SCR1,HC(IOFF),LEN_T,
      &                                   MPI_REAL8,ISTAT,IERR)
                   ISI_CALC_BL = ISI_CALC_BL + 1
@@ -5210,7 +5212,7 @@ C
 C     erase old LUCLIST
       CALL IZERO(LUCLIST,IALL_LUC)
 C
-CSK   WRITE(LUWRT,*) ' IOFF_LU1 is',IOFF_LU1
+!     WRITE(LUWRT,*) ' IOFF_LU1 is',IOFF_LU1
       IF( IZ .eq. 1 ) THEN
 C       real quaternion double group
         CALL COPVCD_PP_CC_B(ILU1,ILUC,VEC1,NBATX,
