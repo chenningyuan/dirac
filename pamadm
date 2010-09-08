@@ -26,6 +26,7 @@ from optparse import OptionParser
 import sys
 import os
 import shutil
+import distutils.util
 import time,datetime
 
 def make_old_file(path):
@@ -41,7 +42,15 @@ def make_old_file(path):
   times = (atime,mtime)
   os.utime(path,times)
 
-
+def is_windows():
+  # returns true if this machine is Windows operating system
+  platform=distutils.util.get_platform()
+  if platform.find("win") == -1 : 
+    return False
+  else:
+    return True
+  
+  
 # classes
 # =======
 
@@ -613,7 +622,8 @@ for directory in vital_directories:
    if os.path.exists(dirac_dir+"/"+directory):
       dest_dir=dirac_dir+"/"+directory+"/Makefile"
       if not os.path.islink(dest_dir):
-         os.symlink(source_dir,dest_dir)
+         if not is_windows: 
+		    os.symlink(source_dir,dest_dir)
 for module in dirac_modules:
 #  xcfun has its own Makefile, do not overwrite it with a link
    if dirac_modules[module].directories and dirac_modules[module].is_included and (module != 'xcfun'):
@@ -621,9 +631,9 @@ for module in dirac_modules:
          if os.path.exists(dirac_dir+"/"+directory):
             dest_dir=dirac_dir+"/"+directory+"/Makefile"
             #if (not os.path.islink(dest_dir)) and (not os.path.isfile(dest_dir)):
-            if (not os.path.islink(dest_dir)) :
+            if (not os.path.islink(dest_dir) and not is_windows()) :
                try:
-                  os.symlink(source_dir,dest_dir)
+			      os.symlink(source_dir,dest_dir)
                except (OSError, ValueError):
                   print "linking error - source dir: ",source_dir
                   print "linking error - destination dir: ",dest_dir
@@ -675,9 +685,11 @@ f.write(s)
 
 f.close()
 
-os.system("cat test/runtest.in >> test/runtest")
-os.system("chmod 700 test/runtest")
-
+if not is_windows:
+  os.system("cat test/runtest.in >> test/runtest")
+  os.system("chmod 700 test/runtest")
+else:
+  print 'fix os.system cat,chmod'
 
 # export dirac to tar.gz file
 # ===========================
