@@ -18,8 +18,8 @@
 #           select some modules
 #           ./pamadm --xpp --adc --visual --london --matrixop
 #
-#           prepare release DIRAC10
-#           ./pamadm --xpp --adc --visual --london --matrixop --amfi --krmc --emb --export=DIRAC10.tar.gz
+#           prepare release Dirac2010
+#           ./pamadm --xpp --adc --visual --london --matrixop --amfi --krmc --emb --export=Dirac2010
 
 
 from optparse import OptionParser
@@ -449,8 +449,8 @@ dirac_modules[this_module].take_out_of_adm()
 parser = OptionParser()
 
 parser.add_option('--export',
-                  dest='tarfile',
-                  help='Export or release DIRAC to TARFILE')
+                  dest='exportfile',
+                  help='Export or release DIRAC to EXPORTFILE')
 for module in dirac_modules:
     parser.add_option('--' + module,
                       action="callback",
@@ -585,7 +585,7 @@ is_subversion_working_copy = os.path.exists('.svn')
 if is_subversion_working_copy:
    svn_revision = os.popen("echo `svn info | grep 'Revision' | awk '{ print $2 }'`", "r").read()
    f.write("DIRAC_SVN_REVISION=%s" % svn_revision)
-   if options.tarfile != None:
+   if options.exportfile != None:
 #     do not export svn url
       f.write("DIRAC_SVN_URL='URL not exported in release'\n")
    else:
@@ -682,8 +682,8 @@ os.system("chmod 700 test/runtest")
 # export dirac to tar.gz file
 # ===========================
 
-if options.tarfile != None:
-   scratch_dir = 'DIRAC10'
+if options.exportfile != None:
+   scratch_dir = options.exportfile
 
 #  create scratch dir
    os.mkdir(scratch_dir)
@@ -747,7 +747,7 @@ if options.tarfile != None:
        os.system("rm -rf %s/%s"  % (scratch_dir, x))
 
 #  create tar.gz
-   command = 'tar -czf %s %s' % (options.tarfile, scratch_dir)
+   command = 'tar -czf %s.tar.gz %s' % (options.exportfile, scratch_dir)
    os.system(command)
 
 #  remove scratch dir
