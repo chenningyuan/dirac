@@ -2,6 +2,9 @@
 # Files matching lines in the file dontbuild will not be compiled, while files
 # listed in safebuild will be built with "safe" flags.
 # This files might require GNU make
+#
+#TODO: replace all linux commands with system independent python equivalents
+
 
 include build/Makefile.moddef
 include Makefile.config
