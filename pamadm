@@ -685,7 +685,7 @@ f.write(s)
 
 f.close()
 
-if not is_windows:
+if not is_windows():
   os.system("cat test/runtest.in >> test/runtest")
   os.system("chmod 700 test/runtest")
 else:
