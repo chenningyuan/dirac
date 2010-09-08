@@ -191,7 +191,7 @@ vital_tests.append(medium_test('frozen_orbitals'))
 vital_tests.append(medium_test('density_at_nuclei'))
 vital_tests.append(medium_test('mp2_properties'))
 vital_tests.append(medium_test('response_qr'))
-vital_tests.append(medium_test('luciarel_medium', fine_with_mpi = False))
+vital_tests.append(medium_test('krci_energy'))
 vital_tests.append(medium_test('stex',            fine_with_mpi = False))
 # long tests
 vital_tests.append(long_test('response_pv_nmr'))
