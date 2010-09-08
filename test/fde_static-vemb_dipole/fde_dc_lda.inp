@@ -4,7 +4,7 @@ electric properties for frozen density embedding
 .WAVE F
 .PROPERTIES
 **HAMILTONIAN
-#.LVCORR
+.LVCORR
 .DFT
 LDA
 ! frozen density embedding selected
