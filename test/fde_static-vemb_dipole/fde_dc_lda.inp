@@ -4,9 +4,9 @@ electric properties for frozen density embedding
 .WAVE F
 .PROPERTIES
 **HAMILTONIAN
-.LVCORR
+#.LVCORR
 .DFT
- LDA
+LDA
 ! frozen density embedding selected
 .FDE
 ! one can give the file name for the potential here
@@ -20,12 +20,7 @@ electric properties for frozen density embedding
 vemb.grid
 **INTEGRALS
 .NUCMOD
-1
-#*ONEINT
-#.PRINT
-# 4
-*TWOINT
-.AOFOCK
+ 1
 **WAVE FUNCTIONS
 .DHF
 *DHFCAL
@@ -33,6 +28,5 @@ vemb.grid
  1
 **PROPERTIES
 .DIPOLE
-#.POLARIZABILITY
 *END OF
 

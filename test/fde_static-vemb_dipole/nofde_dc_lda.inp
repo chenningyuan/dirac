@@ -4,7 +4,7 @@ electric properties for frozen density embedding
 .WAVE F
 .PROPERTIES
 **HAMILTONIAN
-.LVCORR
+#.LVCORR
 .DFT
  LDA
 *DFT
@@ -12,8 +12,6 @@ electric properties for frozen density embedding
 **INTEGRALS
 .NUCMOD
 1
-*TWOINT
-.AOFOCK
 **WAVE FUNCTIONS
 .DHF
 *DHFCAL

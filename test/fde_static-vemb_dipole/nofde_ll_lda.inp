@@ -12,8 +12,6 @@ electric properties for frozen density embedding
 **INTEGRALS
 .NUCMOD
 1
-*TWOINT
-.AOFOCK
 **WAVE FUNCTIONS
 .DHF
 *DHFCAL
