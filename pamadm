@@ -179,7 +179,6 @@ vital_tests.append(short_test('free-particle_projection'))
 vital_tests.append(short_test('krci_prop'))
 vital_tests.append(short_test('krci_energy'))
 vital_tests.append(short_test('mcscf_energy'))
-
 # medium tests
 vital_tests.append(medium_test('dft_alda'))
 vital_tests.append(medium_test('response_nmr_spin-spin'))
@@ -194,11 +193,9 @@ vital_tests.append(medium_test('mp2_properties'))
 vital_tests.append(medium_test('response_qr'))
 vital_tests.append(medium_test('luciarel_medium', fine_with_mpi = False))
 vital_tests.append(medium_test('stex',            fine_with_mpi = False))
-vital_tests.append(short_test('mcscf_energy'))
 # long tests
 vital_tests.append(long_test('response_pv_nmr'))
 vital_tests.append(long_test('lucita_large'))
-vital_tests.append(short_test('mcscf_energy'))
 
 
 # list of directories and files that are never compiled as part of DIRAC main executable
