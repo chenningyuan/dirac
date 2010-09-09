@@ -122,7 +122,7 @@ print *, '*    Timo Fleig               Université P. Sabatier, Toulouse  Franc
 print *, '*    Andre S. P. Gomes        VU University Amsterdam           Netherlands  *'
 print *, '*    Trygve U. Helgaker       University of Oslo                Norway       *'
 print *, '*    Johan Henriksson         Linkoeping University             Sweden       *'
-print *, '*    Miroslav Ilias           University of Zilina              Slovakia     *'
+print *, '*    Miroslav Ilias           Matej Bel University              Slovakia     *'
 print *, '*    Christoph R. Jacob       ETH Zurich                        Switzerland  *'
 print *, '*    Stefan Knecht            University of Duesseldorf         Germany      *'
 print *, '*    Patrick Norman           Linkoeping University             Sweden       *'
