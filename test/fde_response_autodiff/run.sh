@@ -1,34 +1,19 @@
 #!/bin/sh
 
+bzip2 -d FRZDNS.k.nr.acc4.lda+tfk.fdem_h2o+2h2o_tz2p_nosym.bz2
+bzip2 -d ../fde_static-vemb_dipole/EMBPOT.k.nr.acc4.lda+tfk.fdem_h2o+2h2o_tz2p_nosym.bz2
 
-export MENU=lda+tf_ll_fdekern.inp
+ln -sf FRZDNS.k.nr.acc4.lda+tfk.fdem_h2o+2h2o_tz2p_nosym FRZDNS
+ln -sf ../fde_static-vemb_dipole/EMBPOT.k.nr.acc4.lda+tfk.fdem_h2o+2h2o_tz2p_nosym EMBPOT 
 
-bunzip2 -d *.k.nr.acc10.lda+tf.fdem_ar+ar_qz4p.bz2
+export MENU=lda+tf_ll_5_fdekern.inp
 
-ln -sf FRZDNS.k.nr.acc10.lda+tf.fdem_ar+ar_qz4p FRZDNS
-ln -sf EMBPOT.k.nr.acc10.lda+tf.fdem_ar+ar_qz4p EMBPOT
-
-export MOL=ar.dav2z.mol
-
+export MOL=h2o.6311++G_2d2p.c2v.mol
+../run.sh -put FRZDNS -put EMBPOT 
+export MOL=h2o.6311++G_2d2p.mol
 ../run.sh -put FRZDNS -put EMBPOT 
 
-bzip2 -9 *.k.nr.acc10.lda+tf.fdem_ar+ar_qz4p
-
-#
-# doing water embedded in the potential of two other water
-# molecules
-# 
-
-bunzip2 -d *.k.nr.acc4.lda+tf.fdem_h2o+2h2o_dzp.bz2
-
-ln -sf FRZDNS.k.nr.acc4.lda+tf.fdem_h2o+2h2o_dzp FRZDNS
-ln -sf EMBPOT.k.nr.acc4.lda+tf.fdem_h2o+2h2o_dzp EMBPOT
-
-export MOL=h2o.dav2z.c2v.mol
-../run.sh -put FRZDNS -put EMBPOT 
-export MOL=h2o.dav2z.mol
-../run.sh -put FRZDNS -put EMBPOT 
-
-bzip2 -9 *.k.nr.acc4.lda+tf.fdem_h2o+2h2o_dzp
+bzip2 -9 FRZDNS.k.nr.acc4.lda+tfk.fdem_h2o+2h2o_tz2p_nosym 
+bzip2 -9 ../fde_static-vemb_dipole/EMBPOT.k.nr.acc4.lda+tfk.fdem_h2o+2h2o_tz2p_nosym 
 
 exit 0
