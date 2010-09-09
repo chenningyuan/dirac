@@ -1093,9 +1093,25 @@ C&&& ITRINT: Number of iterations before adding SL- and SS-integrals
 C&&& INTFLG: Specify what two-itegrals should be included in this run
                   IF (IGTINT.EQ.1) THEN
 !                    ... if gaunt=true 
-                     READ(LUCMD,*,ERR=1000) ILLINT,ISLINT,ISSINT,IGTINT
+                     READ(LUCMD,*,IOSTAT=IOS) 
+     &               ILLINT,ISLINT,ISSINT,IGTINT
+                     IF (IOS.NE.0) THEN
+                        WRITE(LUPRI,'(/,2X,A)') 
+     &                  'Error in SCF INTFLG reading !'//
+     &                  '4 parameters needed for Gaunt term !'
+                        CALL FLSHFO(LUPRI)
+                        CALL QUIT( 'DHFINP: Error in INTFLG'//
+     &                  'reading for GAUNT=true!')
+                     ENDIF
                   ELSE
-                     READ(LUCMD,*) ILLINT,ISLINT,ISSINT
+                     READ(LUCMD,*,IOSTAT=IOS) ILLINT,ISLINT,ISSINT
+                     IF (IOS.NE.0) THEN
+                       WRITE(LUPRI,'(/,2X,A)') 
+     &                 'Error in SCF INTFLG reading !'//
+     &                 '3 integer parameters needed  !'
+                       CALL FLSHFO(LUPRI)
+                       CALL QUIT('DHFINP: Error in INTFLG reading')
+                     ENDIF
                   END IF
                GO TO 100
    16          CONTINUE
@@ -1123,7 +1139,10 @@ C&&&& CLOSED: number of closed shell electrons
                GO TO 100
    19          CONTINUE
 C&&&& EIGPRI: Print control for electron and positron solutions
-                  READ(LUCMD,*) IL,IS
+                  READ(LUCMD,*,IOSTAT=IOS) IL,IS
+                  IF (IOS.NE.0) THEN
+                    CALL QUIT('DHFINP ERROR: IL,IS input error')
+                  ENDIF
                   IPREIG = IL+2*IS
                GO TO 100
    20          CONTINUE
@@ -1131,7 +1150,10 @@ C&&& OPEN SHELLS: read in number of active shells
 C                 and their occupation
 C             Read in number of open shells
 C
-               READ(LUCMD,*) NOPEN
+               READ(LUCMD,*,IOSTAT=IOS) NOPEN
+               IF (IOS.NE.0) THEN
+                 CALL QUIT('DHFINP:open shell input error !')
+               ENDIF
                IF (NOPEN.LE.0.OR.NOPEN.GT.MXOPEN) THEN
                   WRITE(LUPRI,'(1X,A,I2,A,I2)')
      &               'DHFINP: NOPEN must be between ',
@@ -1152,10 +1174,14 @@ C
 C
                   ISLASH = INDEX(LINE,'/')
                   IF (ISLASH .LE. 0) THEN
-                     WRITE (LUPRI,'(/A,I4/A/A)')
-     &               'ERROR for *DHFCAL .OPEN SHELL shell no.',IOPEN,
-     &               'the defining input line does not contain a "/":',
-     &               LINE
+                     WRITE (LUPRI,'(/A,I2,A,I2/A/A,A)')
+     &               'ERROR for *DHFCAL .OPEN SHELL shell no.',
+     &                IOPEN,'/',NOPEN,
+     &             '- the defining input line does not contain a "/":',
+     &             '- the following input line is:',LINE
+                    WRITE(LUPRI,'(A)')
+     &             '- Also there could be forgotten the number'//
+     &             ' of open-shells before ! Check the input.'
                      CALL QUIT(
      &               'Input error for .OPEN SHELL under *DHFCAL')
                   END IF
@@ -2042,15 +2068,9 @@ C
       IF(IPREIG.EQ.3) WRITE(LUPRI,'(A)')
      +  ' * Both electron and positron component eigenvalues '
      +  //'written out.'
-
 C
   999 CONTINUE
       RETURN
-CMI ... error message 
- 1000 WRITE(LUPRI,'(/,2X,A)') 'Error in SCF INTFLG reading !'
-     &//'4 parameters needed for Gaunt term !'
-      CALL FLSHFO(LUPRI)
-      CALL QUIT('DHFINP: Error in INTFLG reading for GAUNT=true!')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck idnnuc */
