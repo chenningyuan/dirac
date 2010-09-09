@@ -119,7 +119,7 @@ print *, '*    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA   
 print *, '*    Ulf Ekstrom              VU University Amsterdam           Netherlands  *'
 print *, '*    Ephraim Eliav            University of Tel Aviv            Israel       *'
 print *, '*    Timo Fleig               Université P. Sabatier, Toulouse  France       *'
-print *, '*    Andre S. P. Gomes        VU University Amsterdam           Netherlands  *'
+print *, '*    Andre S. P. Gomes        CNRS/Universite Lille 1           France       *'
 print *, '*    Trygve U. Helgaker       University of Oslo                Norway       *'
 print *, '*    Johan Henriksson         Linkoeping University             Sweden       *'
 print *, '*    Miroslav Ilias           Matej Bel University              Slovakia     *'
