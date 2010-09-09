@@ -405,8 +405,9 @@ C***********************************************************************
 C
       CALL QENTER('DENMAT')
 
-      IF (IPRINT.GE.7) THEN
+      IF (IPRINT.GE.8) THEN
         CALL HEADER('Output from DENMAT',-1)
+        WRITE(LUPRI,'(2X,A,I3)') 'NFMAT=',NFMAT
         WRITE(LUPRI,'(3X,A)')
      &  'Entering molecular orbitals (CMO):'
         DO IFRP = 1, NFSYM
@@ -417,8 +418,7 @@ C
         ENDDO
       ENDIF
 
-CMI ... entering DMAT must be allocated with N2BBASXQ*NFMAT !
-      IF (NFMAT.GT.1) WRITE(LUPRI,*) 'DENMAT: DMAT with NFMAT=',NFMAT
+CMI ... entering DMAT array must be allocated before with N2BBASXQ*NFMAT 
       CALL DZERO(DMAT,N2BBASXQ*NFMAT)
 
       IDEN = 1
