@@ -124,7 +124,7 @@ print *, '*    Trygve U. Helgaker       University of Oslo                Norway
 print *, '*    Johan Henriksson         Linkoeping University             Sweden       *'
 print *, '*    Miroslav Ilias           Matej Bel University              Slovakia     *'
 print *, '*    Christoph R. Jacob       ETH Zurich                        Switzerland  *'
-print *, '*    Stefan Knecht            University of Duesseldorf         Germany      *'
+print *, '*    Stefan Knecht            CNRS/Université de Strasbourg     France       *'
 print *, '*    Patrick Norman           Linkoeping University             Sweden       *'
 print *, '*    Jeppe Olsen              Aarhus University                 Denmark      *'
 print *, '*    Markus Pernpointner      University of Heidelberg          Germany      *'
