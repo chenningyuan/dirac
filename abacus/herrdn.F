@@ -6444,14 +6444,25 @@ C
       if (mytid == 1) then
 #endif
         IF (IPRINT .GE. 0) THEN
-           WRITE(LUPRI,'(4(/A,F18.12))')
-     &     '  QM-QM nuclear repulsion energy :',EPOT_QM_QM,
-     &     '  QM-pc interaction energy       :',EPOT_QM_PC,
-     &     '  pc-pc interaction energy       :',EPOT_PC_PC,
-     &     '  Total interaction energy       :',
-     &           EPOT_QM_QM+EPOT_QM_PC+EPOT_PC_PC
-           IF (N_IDENT .GT. 0) WRITE (LUPRI,*) N_IDENT,
-     & ' interactions neglected because between same physical center'
+
+
+           if (
+     &               (dabs(epot_qm_qm) == 0.0d0)
+     &         .and. (dabs(epot_qm_pc) == 0.0d0)
+     &         .and. (dabs(epot_pc_pc) == 0.0d0)
+     &        ) then
+!             don't print anything if there is
+!             only one atom and no point charges
+           else
+              WRITE(LUPRI,'(4(/A,F18.12))')
+     &        '  QM-QM nuclear repulsion energy :',EPOT_QM_QM,
+     &        '  QM-pc interaction energy       :',EPOT_QM_PC,
+     &        '  pc-pc interaction energy       :',EPOT_PC_PC,
+     &        '  Total interaction energy       :',
+     &              EPOT_QM_QM+EPOT_QM_PC+EPOT_PC_PC
+              IF (N_IDENT .GT. 0) WRITE (LUPRI,*) N_IDENT,
+     &    ' interactions neglected because between same physical center'
+           end if
         END IF
 #ifdef VAR_MPI
       end if
