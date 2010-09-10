@@ -7,18 +7,18 @@ if [ ! -z "$RUNTYPE" ]; then
       "short")
          MENU=Be.d2h;
          MOL=Be.d2h.mol;
-         cp filter_be filter;
+         cp result/filter_be filter;
          ;;
       "medium")
          MENU=F;
          MOL=F.mol;
-         cp filter_f filter;
+         cp result/filter_f filter;
          ;;
    esac
 else
    MENU=Be.d2h;
    MOL=Be.d2h.mol;
-   cp filter_be filter;
+   cp result/filter_be filter;
 fi
 export MENU;
 export MOL;
