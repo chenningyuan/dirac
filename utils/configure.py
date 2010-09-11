@@ -9,7 +9,7 @@
 #
 ############################################################################################
 
-import  sys, os, string, subprocess, optparse
+import  sys, os, string, subprocess, optparse, distutils.util
 
 # Search in the system for these compilers
 F_compilers=['ifort','gfortran','pgf90','g95','lfc']
@@ -18,6 +18,15 @@ C_compilers=['icc','gcc','pgcc']
 def guess_system():
 # guess the operating system
   print "guessing oper.system",os.uname()
+  print "is it Windows ? --> ",is_windows()
+
+def is_windows():
+  # returns true if this machine is Windows operating system
+  platform=distutils.util.get_platform()
+  if platform.find("win") == -1 :
+    return False
+  else:
+    return True
 
 
 
