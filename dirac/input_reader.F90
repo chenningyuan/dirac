@@ -539,6 +539,7 @@ contains
                          visual_cfg_gauge_origin(3))
     end if
 
+#ifdef MOD_UNRELEASED
     if (kw_matches(word, '.LONDON')) then
       visual_cfg_london = .true.
       do i = 1, visual_cfg_nr_xvectors
@@ -549,6 +550,7 @@ contains
 !     gosia todo: the last one should be made optional
       end do
     end if
+#endif
 
     call check_whether_kw_found(word, kw_section)
 #endif /* ifndef MOD_VISUAL */

@@ -29,13 +29,11 @@ module visual
   use matrix_defop
   use matrix_genop, only: copy_matrix_sym
   use dirac_interface
+#ifdef MOD_UNRELEASED
   use visual_london
+#endif
   use visual_integrate
   use visual_in_point
-
-!gosia: for debugging
-!#define one_point
-  
 
   implicit none
 
@@ -114,11 +112,13 @@ contains
 
     end do
 
+#ifdef MOD_UNRELEASED
 !   if calculations with symmetry then the 'direct' lao contribution 
 !   is done with ao derivatives
 !   otherwise (london without symmetry) it is quicker to calculate 
 !   this contibution 'directly' from equation: (R_MN \times r)*ao*ao
     if (visual_cfg_london .and. visual_cfg_london_with_sym) max_ao_m_order = 1
+#endif
 
 !   find occupation
 !   ===============
@@ -128,12 +128,6 @@ contains
 
     call opnfil(file_unit, 'DFCOEF', 'OLD', 'visual.F90')
     call reacmo_no_work(file_unit, 'DFCOEF', (/0.0d0/), eigenvalues, (/0/), energy, 4)
-
-! gosia fixme: if (visual_cfg_london .and. .not. spinfree)
-!    if (visual_cfg_london) then
-!      call alloc(ibeig, ntbas(0))
-!      call reacmo_no_work(file_unit, 'DFCOEF', (/0.0d0/), (/0.0d0/), ibeig, energy, 8)
-!    end if
 
     close(file_unit, status = 'keep')
     write(LUPRI,'(2x,a)') 'Visualisation : DFCOEF file read'
@@ -193,6 +187,7 @@ contains
 
     nr_dmat = 1
 
+#ifdef MOD_UNRELEASED
     if (visual_cfg_london) then
 
       nr_dmat_con = 0
@@ -201,11 +196,14 @@ contains
       debug_me = .false.
 
     end if
+#endif
 
 
     do ivector = 1, visual_cfg_nr_xvectors
 
+#ifdef MOD_UNRELEASED
       if (visual_cfg_london) call visual_london_init(ivector)
+#endif
 
       if (.not. visual_cfg_xvector_file(ivector) .eq. 'ZORDER') then
         nr_dmat = nr_dmat + 1
@@ -236,12 +234,15 @@ contains
 
       else
         vector_to_matrix(ivector) = 1
+#ifdef MOD_UNRELEASED
         if (visual_cfg_london) then
           call quit('visual: ZORDER and LONDON cannot go together')
         end if
+#endif
       end if
 
 
+#ifdef MOD_UNRELEASED
 !     if london - reorthonormalization contribution
 !     =============================================
 !     london - only for j^B and properties expressed in terms of j^B
@@ -407,6 +408,7 @@ contains
         end if
       
       end if
+#endif /* ifdef MOD_UNRELEASED */
 
     end do   ! do ivector = 1, visual_cfg_nr_xvectors
 
@@ -467,10 +469,12 @@ contains
       Csu = 0
     end if
 
+#ifdef MOD_UNRELEASED
     if (visual_cfg_london) then
       D_con_ao = 0
       D_con_mo = 0
     end if
+#endif
 
 
 !   initialize ao module
@@ -488,20 +492,18 @@ contains
 !   plot and integrate
 !   ==================
 
-!   if (visual_cfg_integrate) then
-
-    !if (visual_cfg_london) then
-    !  call visual_london_alloc()
-    !end if
-
     time_start = second()
 
+#ifdef MOD_UNRELEASED
 !gosia todo: merge these two to one call to visual_driver
     if (visual_cfg_london) then
       call visual_driver(nr_dmat, D, ao, buffer, nr_dmat_con, D_con=D_con)
     else
+#endif
       call visual_driver(nr_dmat, D, ao, buffer, 0)
+#ifdef MOD_UNRELEASED
     end if
+#endif
 
 !   end if
     call timtxt('>>>> time used in plot:', (second() - time_start), lupri)
@@ -509,21 +511,21 @@ contains
     time_start = second()
     if (visual_cfg_integrate) then
 
+#ifdef MOD_UNRELEASED
 ! gosia fixme: merge these two to one call to visual_integration
       if (visual_cfg_london) then
         call visual_integration(nr_dmat,D,ao,buffer,nr_dmat_con,D_con=D_con)
       else
+#endif
         call visual_integration(nr_dmat, D, ao, buffer, 0)
+#ifdef MOD_UNRELEASED
       end if
+#endif
     end if
     call timtxt('>>>> time used in integration:', (second() - time_start), lupri)
 
     call dealloc(ao)
     call dealloc(buffer)
-
-    !if (visual_cfg_london) then
-    !  call visual_london_dealloc()
-    !end if
 
 
 !   deallocate density matrices
@@ -533,11 +535,13 @@ contains
       D(imat) = 0
     end do
 
+#ifdef MOD_UNRELEASED
     if (visual_cfg_london) then
       do imat = 1, nr_dmat_con
         D_con(imat) = 0
       end do
     end if
+#endif
 
     end subroutine
 
@@ -612,6 +616,7 @@ contains
 
         DO IPOINT_IN_LIST = 1, visual_cfg_nr_points_in_list
 
+#ifdef MOD_UNRELEASED
                 if (visual_cfg_london) then
                   if (.not. present(D_con) .or. nr_dmat_con == 0) &
                      call quit("no D_con or nr_dmat_con=0")
@@ -624,6 +629,7 @@ contains
                                                  buffer,             &
                                                  quantity)
                 else
+#endif
 
           CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &
      &                               AO, &
@@ -632,7 +638,9 @@ contains
      &            visual_cfg_XYZ_LIST(IPOINT_IN_LIST,3), &
      &                               buffer, &
      &                               QUANTITY)
+#ifdef MOD_UNRELEASED
           end if
+#endif
 
           WRITE(LUPRI,'(3E14.6,4E18.10)')  &
      &             visual_cfg_XYZ_LIST(IPOINT_IN_LIST,1), &
@@ -697,14 +705,6 @@ contains
           WRITE(LUNIT_2D,'(A)')  &
      &             'plane: ' // grid_orientation(IORIENTATION)
 
-!
-!gosia fixme
-#ifdef one_point
-          ni = 1
-          nj = 1
-          nk = 1
-#endif
-!!
           DO I = 1,NI
             DO J = 1,NJ
               DO K = 1,NK
@@ -723,14 +723,8 @@ contains
                 IF(IORIENTATION .EQ. 3) &                        ! 'yz'
      &                     PX = visual_cfg_ORIGIN_2D(1)
 
-!gosia fixme:
-#ifdef one_point
-               px = 1.0d0
-               py = 1.0d0
-               pz = 0.0d0
-#endif
-!!
 
+#ifdef MOD_UNRELEASED
                 if (visual_cfg_london) then
                   if (.not. present(D_con) .or. nr_dmat_con == 0) &
                      call quit("no D_con or nr_dmat_con=0")
@@ -740,16 +734,16 @@ contains
                                                  px, py, pz,         &
                                                  buffer,             &
                                                  quantity)
-#ifdef one_point
-                  call quit('bla')
-#endif
                 else
+#endif
                   CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &
      &                                       ao, &
      &                                       PX,PY,PZ, &
      &                                       buffer, &
      &                                       QUANTITY)
+#ifdef MOD_UNRELEASED
                 end if
+#endif
 
 
 !               write to file
@@ -832,13 +826,6 @@ contains
 
 !       grid walk
 
-!!gosia fixme
-#ifdef one_point
-        visual_cfg_NCUBE(1) = 1
-        visual_cfg_NCUBE(2) = 1
-        visual_cfg_NCUBE(3) = 1
-#endif
-!!
         DO ICUBE = 1,visual_cfg_NCUBE(1)
           DO JCUBE = 1,visual_cfg_NCUBE(2)
             DO KCUBE = 1,visual_cfg_NCUBE(3)
@@ -858,14 +845,7 @@ contains
 !             zero weight is so that it does not mess up results
 !             write(lunit_3d, '(4d20.12)') px, py, pz, 0.0d0
 
-!!gosia fixme
-#ifdef one_point
-        px = 1.0d0
-        py = 1.0d0
-        pz = 0.0d0
-#endif
-!!
-
+#ifdef MOD_UNRELEASED
               if (visual_cfg_london) then
                 if (.not. present(D_con) .or. nr_dmat_con == 0) &
                    call quit("no D_con or nr_dmat_con=0")
@@ -875,10 +855,8 @@ contains
                                                px, py, pz,         &
                                                buffer,             &
                                                quantity(0,kcube))
-#ifdef one_point
-               call quit('bla')
-#endif
               else
+#endif
 
                 CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &
      &                                     ao, &
@@ -886,7 +864,9 @@ contains
      &                                     buffer, &
      &                                     QUANTITY(0,KCUBE))
 
+#ifdef MOD_UNRELEASED
               end if
+#endif
 
             ENDDO
 
@@ -1114,6 +1094,7 @@ contains
                         D_mo%elms,                &
                         D_mo%irep)
 
+#ifdef MOD_UNRELEASED
 !gosia
 !
 !      open(99, file='response_vec_vis',  &
@@ -1139,12 +1120,15 @@ contains
 !      end do
 !      close(99, status='keep')
 !
+#endif
+
     call dealloc(orbital_rotation_indices)
     call dealloc(response_vector)
 
   end subroutine
 
 
+#ifdef MOD_UNRELEASED
 !  subroutine read_solution_vector_file(ixvector)
 !!   ----------------------------------------------------------------------------
 !    integer, intent(in) :: ixvector
@@ -1251,6 +1235,7 @@ contains
 !!
 !  end subroutine
 !
+#endif
 
   subroutine scatter_vector(length,                   &
                             orbital_rotation_indices, &

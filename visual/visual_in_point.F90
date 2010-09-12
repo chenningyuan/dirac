@@ -28,8 +28,9 @@ module visual_in_point
   use density_eval
   use basis_info
   use matrix_defop
-  !use visual_london_in_point
+#ifdef MOD_UNRELEASED
   use visual_london
+#endif
 
   implicit none
 

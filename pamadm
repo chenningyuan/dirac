@@ -258,7 +258,6 @@ this_module = 'visual'
 dirac_modules[this_module] = dirac_module('visual', 'visualization module')
 dirac_modules[this_module].add_cppflag('MOD_VISUAL')
 dirac_modules[this_module].add_directory('visual')
-dirac_modules[this_module].add_file('somefile')
 dirac_modules[this_module].add_dependency('matrixop')
 dirac_modules[this_module].add_test(short_test('visual_elf'))
 dirac_modules[this_module].add_test(short_test('visual_gamma5'))
@@ -445,6 +444,7 @@ dirac_modules[this_module].add_dependency('krmc')
 this_module = 'unreleased'
 dirac_modules[this_module] = dirac_module('unreleased', 'unreleased functionality (not covered by other flags)')
 dirac_modules[this_module].add_cppflag('MOD_UNRELEASED')
+dirac_modules[this_module].add_file('visual/visual_london.F90')
 
 this_module = 'log'
 dirac_modules[this_module] = dirac_module('log', 'Will log interesting matrices in matlab format (very verbose!)')
@@ -552,6 +552,9 @@ for module in dirac_modules:
     if not dirac_modules[module].is_included:
        for directory in dirac_modules[module].directories:
            s = '%s/.*' % directory
+           f.write(s + '\n')
+       for file in dirac_modules[module].files:
+           s = '%s' % file
            f.write(s + '\n')
 for directory in directories_never_compiled:
     s = '%s/.*' % directory
@@ -729,6 +732,12 @@ if options.exportfile != None:
       find_command = "find %s -name '*.F' -o -name '*.f90' -o -name '*.F90' -o -name '*.c'" % scratch_dir
       command = "./utils/cppp.py %s `%s`" % (delete_flags, find_command)
       os.system(command)
+
+#  remove unreleased files
+   for module in dirac_modules:
+       if not dirac_modules[module].is_included:
+          for file in dirac_modules[module].files:
+              os.system("rm -f %s/%s" % (scratch_dir, file))
 
 #  remove reference files that can be fetched from the dirac website
    shutil.rmtree(scratch_dir + '/basis/reference_unedited')

@@ -21,6 +21,15 @@
 
 module visual_integrate
 
+   use dirac_interface
+   use matrix_defop
+   use memory_allocator
+   use visual_cfg
+   use visual_in_point
+#ifdef MOD_UNRELEASED
+   use visual_london
+#endif
+
   public visual_integration
 
   save
@@ -30,12 +39,6 @@ module visual_integrate
 contains
 
       subroutine visual_integration(nr_dmat, D, ao, buffer, nr_dmat_con, D_con)
-
-       use visual_cfg
-       use memory_allocator
-  use matrix_defop
-  use dirac_interface
-  use visual_london
 
 #include "implicit.h"
 #include "priunit.h"
@@ -82,6 +85,7 @@ contains
 
         call reaqua(x, y, z, w, lunit, nr_points)
 
+#ifdef MOD_UNRELEASED
 !temporarily - gosia: fixme make all in 1 call
         if (visual_cfg_london) then
 
@@ -99,6 +103,7 @@ contains
      &                            D_con=D_con)
 
         else
+#endif
 
           CALL INTEGRATE_QUANTITY(nr_dmat, D, &
      &                            AO, &
@@ -109,7 +114,9 @@ contains
      &                            NR_POINTS, &
      &                            0)
 
+#ifdef MOD_UNRELEASED
         end if
+#endif
 
         call dealloc(x)
         call dealloc(y)
@@ -196,6 +203,7 @@ contains
 
             CALL DZERO(QUANTITY_INTEGRAL,4)
 
+#ifdef MOD_UNRELEASED
 !temporarily - gosia: fixme make all in 1 call
             if (visual_cfg_london) then
 
@@ -213,6 +221,7 @@ contains
      &                                D_con=D_con)
 
             else
+#endif
               CALL INTEGRATE_QUANTITY(nr_dmat, D, &
      &                                AO, &
      &                                x, y, z, &
@@ -220,7 +229,9 @@ contains
      &                                QUANTITY_INTEGRAL, &
      &                                w, &
      &                                NR_POINTS, 0)
+#ifdef MOD_UNRELEASED
             end if
+#endif
 
             call dealloc(x)
             call dealloc(y)
@@ -280,12 +291,6 @@ contains
 !                                              last revision: april 2007
 !=======================================================================
 
-      use visual_in_point
-  use visual_cfg
-  use visual_london
-  use matrix_defop
-  use dirac_interface
-  use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbbas.h"
@@ -305,14 +310,9 @@ contains
      &          QUANTITY(0:3)
 
 
-!!gosia fixme
-!      nr_point = 1
-!      px(ipoint) = 2.0d0
-!      py(ipoint) = 0.0d0
-!      pz(ipoint) = 0.0d0
-!!
       DO IPOINT = 1,NR_POINTS
 
+#ifdef MOD_UNRELEASED
         if (visual_cfg_london) then
           if (.not. present(D_con) .or. nr_dmat_con == 0)  &
              call quit("integrate_quantity: no D_con or nr_dmat_con=0")
@@ -325,8 +325,8 @@ contains
                                          pz(ipoint),         &
                                          buffer,             &
                                          quantity)
-          !call quit('bla')
         else
+#endif
 
           CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &
      &                               AO, &
@@ -336,7 +336,9 @@ contains
      &                               buffer, &
      &                               QUANTITY)
 
+#ifdef MOD_UNRELEASED
         end if
+#endif
 
         CALL DAXPY(4,WEIGHT(IPOINT),QUANTITY,1, &
      &                              QUANTITY_INTEGRAL,1)
@@ -517,8 +519,6 @@ contains
 !                                              last revision: april 2007
 !=======================================================================
 
-      use memory_allocator
-      use visual_cfg
 #include "implicit.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
