@@ -1735,7 +1735,9 @@ C     Written by Trond Saue July 4 2001
 C
 C***********************************************************************
 
+#ifdef MOD_UNRELEASED
       use overlap_diagnostic
+#endif
       use dirac_cfg
 
 #include "implicit.h"
@@ -1756,9 +1758,11 @@ C
       KFRSAV = KFREE
       CALL HEADER('Analysis of response solution vectors',-1)
 
+#ifdef MOD_UNRELEASED
       if (dirac_cfg_overlap_diagnostic) then
          call lambda_matrix_from_disc()
       end if
+#endif
 
 C
 C     Check if file of solution vectors is present
@@ -1968,7 +1972,9 @@ C     Written by T.Saue July 6 2001
 C
 C***********************************************************************
 
+#ifdef MOD_UNRELEASED
       use overlap_diagnostic
+#endif
       use dirac_cfg
 
 #include "implicit.h"
@@ -2151,6 +2157,7 @@ C       Give major orbital rotations in excitations
             WRITE(LUPRI,'(3X,I6,E16.8)') J,BUF2(J)
           ENDDO
         ENDIF
+#ifdef MOD_UNRELEASED
         if (dirac_cfg_overlap_diagnostic) then
            lambda_numerator   = 0.0d0
            lambda_denominator = 0.0d0
@@ -2166,6 +2173,7 @@ C       Give major orbital rotations in excitations
            enddo
            write(*, *) 'lambda = ', lambda_numerator/lambda_denominator
         end if
+#endif
       ENDIF
  20   CONTINUE
       ENDDO

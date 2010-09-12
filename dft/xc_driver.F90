@@ -36,7 +36,10 @@ module xc_driver
   use dft_ao_in_mem
   use ao_eval
   use density_eval
+#ifdef MOD_UNRELEASED
   use overlap_diagnostic
+  use xc_geometric
+#endif
 #ifdef MOD_OPENRSP
   use xc_response
 #endif
@@ -44,7 +47,7 @@ module xc_driver
 #ifdef MOD_XCFUN
   use xcfun
 #endif
-  use xc_geometric
+
 
   implicit none
 
@@ -593,15 +596,19 @@ contains
       call dzero(fmat, mat_dim*mat_dim*nz)
 #endif
 
+#ifdef MOD_UNRELEASED
       if (do_overlap_diagnostic) then
          call overlap_diagnostic_init()
       end if
+#endif
 
       call loop_over_batches()
 
+#ifdef MOD_UNRELEASED
       if (do_overlap_diagnostic) then
          call lambda_matrix_to_disc()
       end if
+#endif
 
 #ifdef VAR_MPI
       if (parallel_xc) then
@@ -996,9 +1003,11 @@ contains
       end if
       time_density = time_density + second() - time_density_start
 
+#ifdef MOD_UNRELEASED
       if (do_overlap_diagnostic) then
          call integrate_lambda_matrix(rw(ipoint), ao, buffer)
       end if
+#endif
 
       if (r_0(1) > dft_cfg_dfthr0) then
          nr_points_used = nr_points_used + 1
@@ -1334,6 +1343,7 @@ contains
           end if
 #endif
 
+#ifdef MOD_UNRELEASED
           if (do_geo_0) then
              if (use_gga) then
                 call xc_geo_0_gga_c1(property_gradient,               &
@@ -1383,6 +1393,7 @@ contains
                                   ao,              &
                                   ao(ao_start(1, 0):ao_end(1, 0)))
           end if
+#endif /* ifdef MOD_UNRELEASED */
 
 
 
