@@ -41,7 +41,7 @@ contains
 
   subroutine mat_copy(alpha,a,b)
      implicit none
-     REAL(REALK),  INTENT(IN)    :: alpha
+     REAL(8),  INTENT(IN)    :: alpha
      TYPE(Matrix), INTENT(IN)    :: a
      TYPE(Matrix), INTENT(INOUT) :: b
      integer                     :: i
@@ -58,7 +58,7 @@ contains
   subroutine mat_add(alpha,a,beta,b,c)
      implicit none
      TYPE(Matrix), intent(IN) :: a, b
-     REAL(realk), INTENT(IN)  :: alpha, beta
+     REAL(8), INTENT(IN)  :: alpha, beta
      TYPE(Matrix)             :: c
      integer                  :: i
 
@@ -73,8 +73,8 @@ contains
 
   subroutine mat_set_from_full(afull,alpha,a, mat_label,unres3)
      implicit none
-     real(realk), INTENT(IN) :: afull(*)
-     real(realk), intent(in) :: alpha
+     real(8), INTENT(IN) :: afull(*)
+     real(8), intent(in) :: alpha
      TYPE(Matrix)            :: a
      integer                 :: i
          character(*), INTENT(IN), OPTIONAL :: mat_label
@@ -95,8 +95,8 @@ contains
 
      implicit none
      TYPE(Matrix), intent(in):: a
-     real(realk), intent(in) :: alpha
-     real(realk), intent(out):: afull(*)
+     real(8), intent(in) :: alpha
+     real(8), intent(out):: afull(*)
      integer                 :: i
          character(*), INTENT(IN), OPTIONAL :: mat_label
 

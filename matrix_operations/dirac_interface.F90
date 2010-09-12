@@ -2,7 +2,7 @@ module dirac_interface
 
    use memory_allocator
    use matrix_defop
-   use openrsp_cfg
+!  use openrsp_cfg
    use character_processing
    use dirac_cfg
    use xc_driver
@@ -170,6 +170,10 @@ contains
    end subroutine
 
   subroutine init_dirac_interface()
+
+#ifdef MOD_OPENRSP
+    use openrsp_cfg
+#endif
 
 !   ----------------------------------------------------------------------------
     integer :: ill_int

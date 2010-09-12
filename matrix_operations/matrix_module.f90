@@ -16,7 +16,6 @@
 !> ALWAYS and ONLY call mat_free on a matrix you have initialized with mat_init
 !>
 MODULE Matrix_module
-   use precision
 !> Logical unit number of file DALTON.OUT used by matrix operation modules
    integer, save :: mat_lu
 !> True if various info from matrix module should be printed
@@ -30,7 +29,7 @@ MODULE Matrix_module
       !> Column index
       integer :: j
       !> Value of element
-      real(realk) :: val
+      real(8) :: val
    END TYPE SMAT1
    !> The general matrix type that is used throughout LSDALTON
    TYPE Matrix
@@ -44,13 +43,13 @@ MODULE Matrix_module
       !> bsm permutation pointer
       integer, dimension(:),pointer :: permutation
       !> pointer to double precision matrix element storage
-      real(realk), pointer   :: elms(:)
+      real(8), pointer   :: elms(:)
       !> pointer to double precision matrix element storage for beta part
-      real(realk), pointer   :: elmsb(:)
+      real(8), pointer   :: elmsb(:)
       !> pointer to complex matrix element storage
-      complex(realk), pointer :: celms(:)
+      complex(8), pointer :: celms(:)
       !> pointer to complex matrix element storage for beta part
-      complex(realk), pointer :: celmsb(:)
+      complex(8), pointer :: celmsb(:)
       !> pointer to storage scheme 1 for sparse matrices
       type(SMAT1),pointer :: selm1(:)
       !pointer to storage scheme 2 for sparse matrices
@@ -62,7 +61,7 @@ MODULE Matrix_module
       !> room for any integer auxiliary information
       integer, pointer     :: iaux(:)
       !> room for any real auxiliary information
-      real(realk), pointer :: raux(:)
+      real(8), pointer :: raux(:)
       !ajt feb09 to mark complex matrices
       !> marker for complex elements
       logical :: complex = .false.  

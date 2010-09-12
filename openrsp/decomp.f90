@@ -75,7 +75,7 @@ type DecompItem
       !> Do not use preconditioning when solving for Hessian eigenvalue
       logical     :: cfg_noprec
       !> Relative convergence threshold used when doing PCG preconditioning
-      real(realk) :: cfg_micro_thresh  
+      real(8) :: cfg_micro_thresh  
    !SETTINGS:
    !=========
       !> Set to true when we use PCG for preconditioning (i.e. do not add 2nd order contribution to linear transformation)
@@ -275,10 +275,10 @@ contains
          !> Contains settings for decomposition and OAO decomposed overlap
          type(DecompItem)                          :: decomp
          type(Matrix)                              :: S_sav
-         real(realk),dimension(:), allocatable     :: work1
-         real(realk),dimension(:,:), allocatable   :: U_full, U_inv_full 
+         real(8),dimension(:), allocatable     :: work1
+         real(8),dimension(:,:), allocatable   :: U_full, U_inv_full 
          integer, dimension(:),allocatable         :: IPVT
-         real(realk)                               :: RCOND, dummy(2), tmstart, tmend
+         real(8)                               :: RCOND, dummy(2), tmstart, tmend
          integer                                   :: IERR, i, j, fulldim, ludecomp, ndim
 
    call lstimer('START ',tmstart,tmend,decomp%lupri)
@@ -609,7 +609,7 @@ subroutine lowdin_diagonalize(lupri,unres,S,U,U_inv)
   type(matrix), intent(in) :: U
   !> Inverse of decomposition of overlap matrix
   type(matrix), intent(in) :: U_inv
-  real(realk), allocatable :: S_full(:,:), Ut_full(:,:), Ut_inv_full(:,:)
+  real(8), allocatable :: S_full(:,:), Ut_full(:,:), Ut_inv_full(:,:)
   integer dim
 
   dim = S%ncol
