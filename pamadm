@@ -331,7 +331,6 @@ dirac_modules[this_module] = dirac_module('emb', 'ab initio/DFT-embedding module
 dirac_modules[this_module].add_cppflag('MOD_EMB')
 dirac_modules[this_module].add_directory('embedding')
 dirac_modules[this_module].add_test(short_test('fde_static-vemb_dipole'))
-dirac_modules[this_module].add_test(medium_test('fde_response_autodiff', fine_with_mpi = False))
 
 this_module = 'openrsp'
 dirac_modules[this_module] = dirac_module('openrsp', 'OpenRSP')
@@ -444,6 +443,7 @@ dirac_modules[this_module].add_dependency('krmc')
 this_module = 'unreleased'
 dirac_modules[this_module] = dirac_module('unreleased', 'unreleased functionality (not covered by other flags)')
 dirac_modules[this_module].add_cppflag('MOD_UNRELEASED')
+dirac_modules[this_module].add_test(medium_test('fde_response_autodiff', fine_with_mpi = False))
 dirac_modules[this_module].add_file('visual/visual_london.F90')
 
 this_module = 'log'
