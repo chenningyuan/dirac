@@ -27,7 +27,9 @@ import sys
 import os
 import shutil
 import distutils.util
-import time,datetime
+import string
+import time
+import datetime
 
 def make_old_file(path):
   """Create (if not already there) a file at path,
@@ -734,6 +736,8 @@ if options.exportfile != None:
               delete_flags += '-U%s ' % cppflag
    if delete_flags != '':
       find_command = "find %s -name '*.F' -o -name '*.f90' -o -name '*.F90' -o -name '*.c'" % scratch_dir
+#     remove -ULARGE_MOLECULES from delete_flags
+      delete_flags = string.replace(delete_flags, '-ULARGE_MOLECULES', '')
       command = "./utils/cppp.py %s `%s`" % (delete_flags, find_command)
       os.system(command)
 

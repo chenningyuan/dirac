@@ -112,7 +112,7 @@ C
 C     ... default quadratic conv. factor for MCSCF
 
 !     set logical flag on common block in dcbopt.h for spinfree MCSCF    
-#if MOD_MCSCF_spinfree
+#ifdef MOD_MCSCF_spinfree
 !     if(spinfr.or.levyle)then
       if(spinfr)then
         spinfr_krmc = .true.

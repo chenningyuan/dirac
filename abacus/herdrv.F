@@ -69,9 +69,7 @@ C#endif
 #include "huckel.h"
 #include "ccom.h"
 #include "hrunit.h"
-C#ifdef MOD_DNF
 #include "densfit.h"
-C#endif
 C
       DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',
      &             '*SUPINT', '*ER2INT', '*JENGIN', '*DENSFI',

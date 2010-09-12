@@ -19,7 +19,7 @@
 !      DIRAC program, see: http://dirac.chem.sdu.dk
 !dirac_copyright_end
 
-#if defined MOD_CAP
+#ifdef MOD_CAP
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck capout */
       SUBROUTINE CAPOUT(IPRINT,

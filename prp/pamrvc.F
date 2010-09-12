@@ -4333,7 +4333,7 @@ C        to let the second index run over all orbitals.
 C
          IF(NS.NE.0.AND.NI.NE.0) THEN
            iopt_spinfree = IOPT
-#if defined MOD_MCSCF_spinfree
+#ifdef MOD_MCSCF_spinfree
 !radovan:  the following line breaks .SPINFREE and .LEVY-LEBLOND
 !          magnetic response
 !          if (SPINFR) iopt_spinfree = 1

@@ -914,16 +914,20 @@ contains
     end if
 
 
-#if defined MOD_XCFUN && MOD_OPENRSP
+#ifdef MOD_XCFUN
+#ifdef MOD_OPENRSP
     if (response_order_ao > 0) then
       derv_length = xc_output_length(xc_fun%id, response_order_ao)
       allocate(derv(derv_length, mxbllen))
     else
 #endif
+#endif
       derv_length = nr_nonzero_derv
       allocate(derv(mxbllen, 0:derv_length))
-#if defined MOD_XCFUN && MOD_OPENRSP
+#ifdef MOD_XCFUN
+#ifdef MOD_OPENRSP
     end if
+#endif
 #endif
 !       set it to zero, otherwise it is undefined with lda
         z_0 = 0.0d0
@@ -1075,10 +1079,12 @@ contains
         nr_electrons = nr_electrons + w(1)*r_0(1)
 
         time_derv_start = second()
-#if defined MOD_XCFUN && MOD_OPENRSP
+#ifdef MOD_XCFUN
+#ifdef MOD_OPENRSP
 !       if we run openrsp with xcfun we evaluate derivatives
 !       somewhere else
         if (response_order_ao == 0) then
+#endif
 #endif
 #ifdef MOD_XCFUN
 #ifdef MOD_EMB
@@ -1120,9 +1126,11 @@ contains
            end if
 #endif 
 #endif 
-#if defined MOD_XCFUN && MOD_OPENRSP
+#ifdef MOD_XCFUN
+#ifdef MOD_OPENRSP
         end if
-#endif
+#endif 
+#endif 
         time_derv = time_derv + second() - time_derv_start
 
         time_matrix_dist_start = second()
@@ -1166,9 +1174,11 @@ contains
 !           yields two identical terms (one left, one right)
             u%gn(:, 1) = 2.0d0*derv(1, d0010000)*rhg
           end if
+#ifdef MOD_UNRELEASED
          if (is_tau_mgga) then
             u%tn(1) = derv(1, d0000010)
          end if
+#endif
 
         end if !exchange-correlation potential
 
@@ -1318,7 +1328,8 @@ contains
         endif
 
 
-#if defined MOD_XCFUN && MOD_OPENRSP
+#ifdef MOD_XCFUN
+#ifdef MOD_OPENRSP
           if (response_order_ao > 0) then
             call xc_response_contribution(response_order_ao,                 &
                                           mat_dim,   &
@@ -1341,6 +1352,7 @@ contains
                                           derv_length,  &
                                           derv)
           end if
+#endif
 #endif
 
 #ifdef MOD_UNRELEASED

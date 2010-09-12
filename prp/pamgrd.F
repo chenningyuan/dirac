@@ -217,7 +217,7 @@ C
 #include "dcbham.h"
 #include "mxcent.h"
 #include "dcbprp.h"
-#if defined MOD_KRMC
+#ifdef MOD_KRMC
 #include "dcbpsi.h"
 #endif
 C
@@ -232,7 +232,7 @@ C
 C     Read coefficients
 C     =================
 C
-#if defined MOD_KRMC
+#ifdef MOD_KRMC
 C
 C     check for coefficients from the current KRMCSCF run
       INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
@@ -264,7 +264,7 @@ C       read HF coefficients
      &                WORK,KFREE,LFREE)
         ENDIF
         CLOSE(LUCOEF,STATUS='KEEP')
-#if defined MOD_KRMC
+#ifdef MOD_KRMC
       END IF
 #endif /* MOD_KRMC */
 C
