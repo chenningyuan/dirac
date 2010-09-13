@@ -21,6 +21,7 @@
 
 C  $Id$
 C
+#ifdef MOD_UNRELEASED
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCSETI_LM (ICALC,EPS,NSP,IREPSP,IREPSPI)
 C
@@ -819,3 +820,7 @@ C
 10011 CALL QUIT('ERROR READING INTEGRALS FROM MDBINT')
       END
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#else
+      subroutine ccseti_lm
+      end
+#endif

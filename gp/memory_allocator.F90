@@ -55,12 +55,17 @@
 !
       module memory_allocator
 
+#ifdef MOD_UNRELEASED
          use memory_tracker
+#endif
                   
          implicit none
          private
-         public alloc, dealloc, allocp, deallocp, initData, alloc_maxsize
+         public alloc, dealloc, allocp, deallocp, initData
          public allocator_init, allocator_setmax
+#ifdef MOD_UNRELEASED
+         public alloc_maxsize
+#endif
 
          interface alloc
             module procedure alloc_real_1d
@@ -111,10 +116,11 @@
             module procedure initDataInt_3d
          end interface initData
 
+#ifdef MOD_UNRELEASED
          interface alloc_maxsize
             module procedure alloc_maxsize_k8
          end interface alloc_maxsize 
-
+#endif
 
 ! error codes, variable kinds
 
@@ -986,6 +992,7 @@
                endif
             end subroutine dealloc_pint_0d
 
+#ifdef MOD_UNRELEASED
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! interface to the tracker
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -995,6 +1002,10 @@
 !         call trackCreateGroup('main')          ! always create a main tracking group
 !         call trackInitGroup('main')
       end subroutine allocator_init
+#else
+      subroutine allocator_init
+      end subroutine allocator_init
+#endif
 
       subroutine allocator_setmax(maxmemsize)
          integer :: maxmemsize
@@ -1008,6 +1019,7 @@
          
       end subroutine allocator_setmax
 
+#ifdef MOD_UNRELEASED
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !
       subroutine alloc_maxsize_k8(maxsize,minsize,verbose)
@@ -1071,6 +1083,7 @@
          endif
 
        end subroutine alloc_maxsize_k8
+#endif
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !
 ! end of memory allocator module definition

@@ -62,12 +62,14 @@
       CHARACTER(LEN=60),SAVE :: out_level='HF'
       real(kind=8), pointer :: fde_grid(:,:), fde_frozen_prp(:,:) 
 
+#ifdef MOD_UNRELEASED
       public fde_kef
       type(Functional) :: fde_kef
 
 ! the default (orbital-free) kinetic energy functional for now is the thomas-fermi one
       character(len=80), save :: kefun_fde='kin_tf'
       character(len=80), save :: kefun_alda_fde='kin_tf'
+#endif
       
       CONTAINS
 
@@ -102,6 +104,7 @@
             close(lufdepot) 
          end subroutine FDE_ImportStaticPotential_FileClose
 
+#ifdef MOD_UNRELEASED
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! FDE_ImportFrozenDensity_FileOpen: opens file containing the exported density and
 !                                    other quantities (density gradient components etc)
@@ -182,12 +185,14 @@
             deallocate(fde_grid)
             deallocate(fde_frozen_prp) 
          end subroutine FDE_cleanupFDEgrid
+#endif /* MOD_UNRELEASED */
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! FDEINI: performs the initialization in dirac; at the moment, it simply sets the
 !         kinetic energy function to the default value
 !
       SUBROUTINE FDEINI()
+#ifdef MOD_UNRELEASED
 #ifdef MOD_XCFUN
          reset_hfxfac = .false.
          call parse_functional(kefun_fde,fde_kef)
@@ -196,6 +201,7 @@
 #else 
          call quit('XCFun not available in this version')
 #endif /* ifdef MOD_XCFUN */
+#endif
       END SUBROUTINE
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -234,6 +240,11 @@
 !             read filename for the embedding potential
               READ(LUCMD,'(A60)') FDEPOT 
 
+            CASE ('.PRINT')
+!             set printlevel 
+              READ(LUCMD,*) print_fde 
+
+#ifdef MOD_UNRELEASED
             CASE ('.UPDATE')
               update_vemb = .true.
 !             read filename for the embedding potential
@@ -258,9 +269,6 @@
               call quit('XCFun not available in this version')
 #endif /* ifdef MOD_XCFUN */
 
-            CASE ('.PRINT')
-!             set printlevel 
-              READ(LUCMD,*) print_fde 
             CASE ('.LEVEL')
               READ(LUCMD,'(A60)') out_level
               select case(out_level)
@@ -276,6 +284,7 @@
               READ(LUCMD,'(A60)') GRIDOUT_NAME
               DO_GRID_OUT=.TRUE.
               DOPRP=.TRUE.
+#endif /* MOD_UNRELEASED */
             CASE DEFAULT
               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD, &
                  '" not recognized in FDEINP.'
@@ -312,12 +321,14 @@
            CALL PRSYMB(LUPRI,'-',44,2)
            WRITE(LUPRI,*)
            WRITE(LUPRI,'(A,I5)')  ' * Print level               : ',print_fde
+#ifdef MOD_UNRELEASED
            WRITE(LUPRI,'(A,A20)') ' * Kinetic energy functional : ',kefun_fde
 !          WRITE(LUPRI,'(A,A20)') '   if .ALDA is set, will use : ',kefun_alda_fde
+#endif
 
            if (import_vemb) then
               write(LUPRI,'(A,A60)')  ' * FDE Potential read from file: ',FDEPOT
-
+#ifdef MOD_UNRELEASED
            else
               write(LUPRI,'(A,A60)')  ' * FDE Potential (re)generated internally'
 
@@ -350,13 +361,14 @@
            IF (DO_GRID_OUT) then
               write(LUPRI,'(2A)') &
               ' * FDE Gridfile with updated density written to:',GRIDOUT_NAME
+#endif
            endif
 
          END IF
 
       END SUBROUTINE
 
-
+#ifdef MOD_UNRELEASED
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! time: keeps track of time spent in operations within FDE_GRIDOUT
 !
@@ -652,5 +664,6 @@
 !
 #endif
 
+#endif /* MOD_UNRELEASED */
 
       END MODULE FDE_MOD

@@ -706,13 +706,16 @@ C
 C 
       MXCORR1 = 0
 
+#ifdef MOD_UNRELEASED
       if (lowmem) then
          call CCSETI_LM (ICALC,EPS,NSP,IREPSP,IREPSPI)
       else
+#endif
          CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
      &                NSP,IREPSP,IREPSPI)
+#ifdef MOD_UNRELEASED
       endif
-
+#endif
       IF (DOSORT.and..not.lowmem) MXCORR = MAX(MXCORR,MXCORR1)
 
       MXCORR1 = 0
@@ -772,12 +775,16 @@ C
 C
       CALL XTIME(5,1,'Sorting of integrals          ')
       IF (DOSORT) THEN
+#ifdef MOD_UNRELEASED
          if (lowmem) then
             call CCSETI_LM (ICALC,EPS,NSP,IREPSP,IREPSPI)
          else
+#endif
             CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
      &            NSP,IREPSP,IREPSPI)
+#ifdef MOD_UNRELEASED
          endif
+#endif
       endif
       CALL XTIME(5,2,'Sorting of integrals          ')
       CALL GETTIM(CPU2,WALL2)

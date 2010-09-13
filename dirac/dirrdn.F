@@ -4662,8 +4662,12 @@ CMI&& activate 4c-2c MO transformation
           TRMO4C2C=.TRUE.
           GOTO 100
   157     CONTINUE
+#ifdef MOD_UNRELEASED
 C activates fde response
           dirac_cfg_fde_response =.TRUE.
+#else
+          write (*,*) 'Keyword inactive in this release'
+#endif
           GOTO 100
 ! .xA
   158     CONTINUE
