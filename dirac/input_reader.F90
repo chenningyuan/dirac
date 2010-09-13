@@ -157,9 +157,36 @@ contains
 
     call reset_available_kw_list()
 
-    if (kw_matches(word, '.IMPORT')) then
-      dft_cfg_import_grid = .true.
-      call kw_read(word, dft_cfg_gridfile)
+    if (kw_matches(word, '.SMALLD')) then
+      call kw_read(word, dft_cfg_dfthr0)
+    end if
+
+    if (kw_matches(word, '.RADINT')) then
+      call kw_read(word, dft_cfg_radint)
+    end if
+
+    if (kw_matches(word, '.ANGINT')) then
+      call kw_read(word, dft_cfg_angint)
+    end if
+
+    if (kw_matches(word, '.NOPRUN')) then
+!     turn off pruning of angular grid
+      dft_cfg_no_pruning = .true.
+    end if
+
+    if (kw_matches(word, '.ANGMIN')) then
+      call kw_read(word, dft_cfg_angmin)
+    end if
+
+    if (kw_matches(word, '.ATSIZE')) then
+!     estimate relative atomic sizes for use in the Becke
+!     partitioning scheme from atomic contributions
+      dft_cfg_estimate_radii = .true.
+    end if
+
+    if (kw_matches(word, '.ERRELS')) then
+!     threshold for accepted error in integrated number of electrons
+      call kw_read(word, dft_cfg_accepted_error)
     end if
 
     if (kw_matches(word, '.EXPORT')) then
@@ -167,6 +194,12 @@ contains
       call kw_read(word, dft_cfg_gridfile)
     end if
 
+    if (kw_matches(word, '.IMPORT')) then
+      dft_cfg_import_grid = .true.
+      call kw_read(word, dft_cfg_gridfile)
+    end if
+
+!radovan: not documented on wiki, i plan to remove this option
     if (kw_matches(word, '.MULTIG')) then
       dft_cfg_multigrid = .true.
       call kw_read(word, n)
@@ -178,20 +211,20 @@ contains
       end do
     end if
 
-    if (kw_matches(word, '.FROMVX')) then
-      call quit('explicit xc potential (.FROMVX) not available')
+!radovan: not documented on wiki
+    if (kw_matches(word, '.ZIPGRI')) then
+!     is true by default, keep for backward compatibimity
+      dft_cfg_zipgrid = .true.
     end if
 
-    if (kw_matches(word, '.RADINT')) then
-      call kw_read(word, dft_cfg_radint)
+    if (kw_matches(word, '.NOZIP ')) then
+      dft_cfg_zipgrid = .false.
     end if
 
-    if (kw_matches(word, '.ANGMIN')) then
-      call kw_read(word, dft_cfg_angmin)
-    end if
-
-    if (kw_matches(word, '.ANGINT')) then
-      call kw_read(word, dft_cfg_angint)
+    if (kw_matches(word, '.4CGRID')) then
+!     include small component in the grid generation
+!     also for 1- and 2-c dft calculations
+      dft_cfg_force_4c_grid = .true.
     end if
 
     if (kw_matches(word, '.DEBUG ')) then
@@ -209,28 +242,8 @@ contains
       dft_cfg_angint = 64
     end if
 
-    if (kw_matches(word, '.PRINT ')) then
-      call kw_read(word, dft_cfg_print_level)
-    end if
-
     if (kw_matches(word, '.INTCHK')) then
       call kw_read(word, dft_cfg_integration_check_level)
-    end if
-
-    if (kw_matches(word, '.NOPRUN')) then
-!     turn off pruning of angular grid
-      dft_cfg_no_pruning = .true.
-    end if
-
-    if (kw_matches(word, '.ATSIZE')) then
-!     estimate relative atomic sizes for use in the Becke
-!     partitioning scheme from atomic contributions
-      dft_cfg_estimate_radii = .true.
-    end if
-
-    if (kw_matches(word, '.ERRELS')) then
-!     threshold for accepted error in integrated number of electrons
-      call kw_read(word, dft_cfg_accepted_error)
     end if
 
     if (kw_matches(word, '.GRAC  ')) then
@@ -283,30 +296,24 @@ contains
       dft_cfg_sdft_collinear = .true.
     end if
 
-    if (kw_matches(word, '.VRG   ')) then
-      dft_cfg_cdft_vrg = .true.
-    end if
-
-    if (kw_matches(word, '.ZIPGRI')) then
-!     is true by default, keep for backward compatibimity
-      dft_cfg_zipgrid = .true.
-    end if
-
-    if (kw_matches(word, '.NOZIP ')) then
-      dft_cfg_zipgrid = .false.
-    end if
-
-    if (kw_matches(word, '.GAUTSC')) then
-      call set_lscale_dft_gaunt()
-    end if
-
-    if (kw_matches(word, '.ALDAOR')) then
-      call kw_read(word, dft_cfg_alda_order)
+    if (kw_matches(word, '.BETASI')) then
+      dft_cfg_betasigma = .true.
     end if
 
     if (kw_matches(word, '.ALDA  ')) then
       dft_cfg_alda_hs = .true.
       dft_cfg_alda_ha = .true.
+      call setaldahs(.true.) !activate alda for the h+ part
+      call setaldaha(.true.) !activate alda for the h- part
+    end if
+
+    if (kw_matches(word, '.XALDA ')) then
+!     use        (1-f)*S + VWN + f*HFx
+!     instead of       S + VWN
+      dft_cfg_xalda   = .true.
+      dft_cfg_alda_hs = .true.
+      dft_cfg_alda_ha = .true.
+      call setxalda(.true.)
       call setaldahs(.true.) !activate alda for the h+ part
       call setaldaha(.true.) !activate alda for the h- part
     end if
@@ -320,17 +327,6 @@ contains
     if (kw_matches(word, '.ALDA- ')) then
 !     use alda only for the anti-hermitian part
       dft_cfg_alda_ha = .true.
-      call setaldaha(.true.) !activate alda for the h- part
-    end if
-
-    if (kw_matches(word, '.XALDA ')) then
-!     use        (1-f)*S + VWN + f*HFx
-!     instead of       S + VWN
-      dft_cfg_xalda   = .true.
-      dft_cfg_alda_hs = .true.
-      dft_cfg_alda_ha = .true.
-      call setxalda(.true.)
-      call setaldahs(.true.) !activate alda for the h+ part
       call setaldaha(.true.) !activate alda for the h- part
     end if
 
@@ -350,37 +346,40 @@ contains
       call setaldaha(.true.) !activate alda for the h- part
     end if
 
-    if (kw_matches(word, '.SMALLD')) then
-      call kw_read(word, dft_cfg_dfthr0)
+!radovan: not documented on wiki, code not perfectly tested
+    if (kw_matches(word, '.ALDAOR')) then
+      call kw_read(word, dft_cfg_alda_order)
     end if
 
-    if (kw_matches(word, '.4CGRID')) then
-!     include small component in the grid generation
-!     also for 1- and 2-c dft calculations
-      dft_cfg_force_4c_grid = .true.
+    if (kw_matches(word, '.PRINT ')) then
+      call kw_read(word, dft_cfg_print_level)
     end if
 
+    if (kw_matches(word, '.GAUTSC')) then
+      call set_lscale_dft_gaunt()
+    end if
+
+!radovan: not documented on wiki
+    if (kw_matches(word, '.FROMVX')) then
+      call quit('explicit xc potential (.FROMVX) not available')
+    end if
+
+!radovan: not documented on wiki, code not perfectly tested
+    if (kw_matches(word, '.VRG   ')) then
+      dft_cfg_cdft_vrg = .true.
+    end if
+
+!radovan: not documented on wiki, code not perfectly tested
     if (kw_matches(word, '.SCREEN')) then
       dft_cfg_screening = .true.
     end if
 
-    if (kw_matches(word, '.OLDDFT')) then
-      dft_cfg_old_dft = .true.
-    end if
-
-    if (kw_matches(word, '.GRID T')) then
-      call kw_read(word, line)
-!     call dftgridinput(line)
-    end if
-
-    if (kw_matches(word, '.BETASI')) then
-      dft_cfg_betasigma = .true.
-    end if
-
+!radovan: not documented on wiki, code not perfectly tested
     if (kw_matches(word, '.BLOCKE')) then
       dft_cfg_blocked = .true.
     end if
 
+!radovan: not documented on wiki, code not perfectly tested
     if (kw_matches(word, '.LAMBDA')) then
       dirac_cfg_overlap_diagnostic = .true.
     end if
