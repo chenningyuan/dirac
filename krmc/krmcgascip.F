@@ -636,8 +636,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gascip_startvec */
-      SUBROUTINE GASCIP_STARTVEC(IDET,CMO,CREF,ECI,NDET,ISTATE,THRPCI,
-     &                          CIPROG,IPRINT,WORK,KFREE,LFREE)
+      SUBROUTINE GASCIP_STARTVEC(IDET,CMO,CREF,ECI,clvcorr,NDET,ISTATE,
+     &                           THRPCI,CIPROG,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Generate CI start vectors from GASCIP by diagonalizing the
@@ -720,6 +720,9 @@ C
 C     Get CI energy
 C
       ECI = WORK(KEIGVL + ISTATE - 1)
+!
+!     add LVCORR correction (zero if flag is not active)
+      ECORE = ECORE + clvcorr
       WRITE(LUPRI,'(/A,F20.8)')
      &     ' (GASCIP_STARTVEC) Core energy    = ',ECORE
       WRITE(LUPRI,'(A,F20.8)')
@@ -1690,8 +1693,9 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gascip_rcistd */
-      SUBROUTINE GASCIP_RCISTD(NDET,IDET,CMO,CREF,ECI,NCIROOT,ISTATE,
-     &                        MAXCIT,THRPCI,CIPROG,IPRINT,WORK,LWORK)
+      SUBROUTINE GASCIP_RCISTD(NDET,IDET,CMO,CREF,ECI,clvcorr,NCIROOT,
+     &                        ISTATE,MAXCIT,THRPCI,CIPROG,
+     &                        IPRINT,WORK,LWORK)
 C***********************************************************************
 C
 C     Do MAXCIT CI iterations.
@@ -1756,6 +1760,10 @@ C
 C
 C     Get active-active part of FCmo:
 C
+!
+!     add LVCORR correction (zero if flag is not active)
+      ECORE = ECORE + clvcorr
+
       CALL RGETAC(WORK(KFC),WORK(KFCAC),IPRINT)
       IF (IPRINT.GE.5) THEN
         WRITE(LUPRI,'(A)') 'Active Fock matrix:'

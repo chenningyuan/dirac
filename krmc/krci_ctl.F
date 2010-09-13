@@ -603,6 +603,14 @@ C              subsequent MCSCF...
 C
       IF (.NOT. NEWDEF) GOTO 400
 C
+!     warnings for options not implemented (yet)
+!     ------------------------------------------
+      if(lvnew)then
+        write(lupri,'(/,a,/,a/)') 
+     & ' *** WARNING *** - (SS|SS)-integral approximation using LVNEW'//
+     & ' is not implemented for KR-CI/KR-MCSCF/KR-CC.',
+     & ' *** WARNING *** - Please use the LVCORR approximation.'
+      end if
 C
 C     consistency checks
 C     ------------------
@@ -1019,6 +1027,9 @@ C
 #include "dcbgen.h"
 #include "dcbkrci.h"
 #include "krciprop.h"
+!needed for LVCORR
+#include "dcbham.h"
+#include "frame.h"
 C
       LOGICAL EX, FILEOPEN
       INTEGER RENAME
@@ -1062,8 +1073,18 @@ C     ***************************************************
 C     *** Initialize common block information         ***
 C     ***************************************************
 C
+!     1. mpi
       CALL MPIXCALC_TYPESZ()
 #endif
+!     2. lvcorr correction
+      if(dolvc.and.((iopt_intdef.eq.3).or.(onecap.and.intv1c.eq.2)))then
+        kfree_save = kfree
+        call memget('REAL',klvc,n2bbasxq*(nopen_mc+1),work,kfree,lfree)
+        call lvcorr(work(klvc),work(kfree),lfree,ipropt)
+        call memrel('lvcorr-ci',work,1,kfree_save,kfree,lfree)
+!       set lvcorr value (otherwise it was initialized to 0.0d0)
+        lvcorr_mc = corrlv
+      end if
 C
 C     ***************************************************
 C     *** Loop over symmetries for CI roots *************

@@ -47,6 +47,10 @@
 !
 !     spinfr_krmc    - flag for running a spinfree MCSCF
 !
+!
+!     LVCORR correction (re-)calculated within the KR-MC/CI framework
+!     --> LVCORR_MC 
+!
 !     Parameters for MCTYPE:
 !
       INTEGER JDHF, JODHF, JCAS, JMCMIN, JGAS
@@ -64,7 +68,7 @@
      &        MCTYPE, JHESSIAN, IKRMCCNO, IDOPARIO, IMEMFAC,            &
      &        IDENSLR_STATE, ISHMEM_TYPE, NDSH(2), NDSHT, N2DSHX,       &
      &        N2DSHXQ, NVSH(2), NVSHT, N2VSHX, N2VSHXQ, JKRRUNTYPE,     &
-     &        NMAX_SYM
+     &        NMAX_SYM, nopen_mc
       COMMON /DCIOPT/ IPROPT, IOPT_ITRINT, IOPT_INTDEF, IOPT_INTFLG,    &
      &                IOPT_INTBUF, IOPT_IHRMOP, IOPT_IFCKOP,            &
      &                IOPT_ISYMOP, NZVAR, NZVARQ, NZCONF, NZCONFQ,      &
@@ -77,19 +81,21 @@
      &                JHESSIAN, IKRMCCNO, IDOPARIO, IMEMFAC,            &
      &                IDENSLR_STATE, ISHMEM_TYPE, NDSH, NDSHT, N2DSHX,  &
      &                N2DSHXQ, NVSH, NVSHT, N2VSHX, N2VSHXQ, JKRRUNTYPE,&
-     &                NMAX_SYM
+     &                NMAX_SYM, nopen_mc
 
       REAL*8 OPT_CNVINT(2), GNORM(5), EMCSCF, EMCOLD, DEPRED, BETA,     &
      &       BETMIN, BETMAX, RTRUST, RTTOL, RATMIN, RATGOD, EMY, EACTIV,&
      &       RATREJ, STPLEN, STPMAX, STPINC, STPRED, THQMIN, THQLIN,    &
      &       THQKVA, GAMMA, RBETA, STPC, STPO, ECORR, OPT_THRGRD,       &
-     &       STPLCI, STPLEE, STPLEP, DLVLSH, THRPCI, COMPFAC, ECORE_LR
+     &       STPLCI, STPLEE, STPLEP, DLVLSH, THRPCI, COMPFAC, ECORE_LR, &
+     &       LVCORR_MC
       COMMON /DCROPT/ OPT_CNVINT, GNORM, EMCSCF, EMCOLD, DEPRED, BETA,  &
      &                BETMIN, BETMAX, RTRUST, RTTOL, RATMIN, RATGOD,    &
      &                EMY, EACTIV, RATREJ, STPLEN, STPMAX, STPINC,      &
      &                STPRED, THQMIN, THQLIN, THQKVA, GAMMA, RBETA,     &
      &                STPC, STPO, ECORR, OPT_THRGRD, STPLCI, STPLEE,    &
-     &                STPLEP, DLVLSH, THRPCI, COMPFAC, ECORE_LR
+     &                STPLEP, DLVLSH, THRPCI, COMPFAC, ECORE_LR,        &
+     &                LVCORR_MC
 
       INTEGER NOPTFLAGS
       PARAMETER (NOPTFLAGS = 20)

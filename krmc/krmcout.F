@@ -222,22 +222,43 @@ C
 C
 C        Write out KR-MCSCF energy
 C
-         WRITE(LUPRI,9200) IOPT_ISTATE,IOPT_SYMMETRY,
-     &        EMCSCF,POTNUC,EMCSCF-POTNUC
+         if(dabs(lvcorr_mc).gt.0.0d0)then
+           WRITE(LUPRI,9200) IOPT_ISTATE,IOPT_SYMMETRY,
+     &          EMCSCF,POTNUC,lvcorr_mc,
+     &          EMCSCF-POTNUC-lvcorr_mc
+         else 
+           WRITE(LUPRI,9201) IOPT_ISTATE,IOPT_SYMMETRY,
+     &          EMCSCF,POTNUC,EMCSCF-POTNUC
+         end if
          WRITE(LUPRI,9220) GRDNRM
       ELSE
 C
 C        Write out KR-SCF energy
 C
-         WRITE(LUPRI,9210) EMCSCF,POTNUC,EMCSCF-POTNUC
+         if(dabs(lvcorr_mc).gt.0.0d0)then
+           WRITE(LUPRI,9210) EMCSCF,POTNUC,lvcorr_mc,
+     &           EMCSCF-POTNUC-lvcorr_mc
+         else 
+           WRITE(LUPRI,9211) EMCSCF,POTNUC,EMCSCF-POTNUC
+         end if
          WRITE(LUPRI,9220) GRDNRM
       END IF
  9200 FORMAT(  T6,'State number         :',T31,I5,
      &       /,T6,'Symmetry             :',T31,I5,
      &      //,T6,'Final KR-MCSCF energy:',T31,F20.12,
      &       /,T6,'Nuclear repulsion    :',T31,F20.12,
+     &       /,T6,'LVCORR correction    :',T31,F20.12,
+     &       /,T6,'Electronic energy    :',T31,F20.12)
+ 9201 FORMAT(  T6,'State number         :',T31,I5,
+     &       /,T6,'Symmetry             :',T31,I5,
+     &      //,T6,'Final KR-MCSCF energy:',T31,F20.12,
+     &       /,T6,'Nuclear repulsion    :',T31,F20.12,
      &       /,T6,'Electronic energy    :',T31,F20.12)
  9210 FORMAT(/,T6,'Final DHF energy     :',T31,F20.12,
+     &       /,T6,'Nuclear repulsion    :',T31,F20.12,
+     &       /,T6,'LVCORR correction    :',T31,F20.12,
+     &       /,T6,'Electronic energy    :',T31,F20.12)
+ 9211 FORMAT(/,T6,'Final DHF energy     :',T31,F20.12,
      &       /,T6,'Nuclear repulsion    :',T31,F20.12,
      &       /,T6,'Electronic energy    :',T31,F20.12)
  9220 FORMAT(/,T6,'Final gradient norm  :',T31,F20.12)

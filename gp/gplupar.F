@@ -970,7 +970,7 @@ C             set proper truncation factor
               THR_ETRUNC = 1.0D-7 * THRES_E
 Chj           14-jun-07:   disable THR_ETRUNC
 !             THR_ETRUNC = -1.0D0
-              WRITE(LUWRT,*) 'TRUNCATION FACTORS:',THR_TRUNC,THR_ETRUNC
+!testprint    WRITE(LUWRT,*) 'TRUNCATION FACTORS:',THR_TRUNC,THR_ETRUNC
               CALL DIAVC2_TRUNC(VEC1,VEC2,VEC1,SHIFT,LEBATCH(ISBATCH),
      &                          THR_TRUNC,THR_ETRUNC)
            ELSE

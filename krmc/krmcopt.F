@@ -52,6 +52,8 @@ C
 #include "dcbopt.h"
 #include "dcbgen.h"
 #include "dcbham.h"
+!needed for LVCORR
+#include "frame.h"
 C
       LOGICAL EX
       INTEGER RENAME
@@ -161,10 +163,20 @@ C
 C     ***************************************************
 C     *** Initialize common block information         ***
 C     ***************************************************
-C
+!     1. mpi
       CALL MPIXCALC_TYPESZ()
 C
 #endif
+
+!     2. lvcorr correction
+      if(dolvc.and.((iopt_intdef.eq.3).or.(onecap.and.intv1c.eq.2)))then
+        kfree_save = kfree
+        call memget('REAL',klvc,n2bbasxq*(nopen_mc+1),work,kfree,lfree)
+        call lvcorr(work(klvc),work(kfree),lfree,ipropt)
+        call memrel('lvcorr',work,1,kfree_save,kfree,lfree)
+!       set lvcorr value (otherwise it was initialized to 0.0d0)
+        lvcorr_mc = corrlv
+      end if
 C
 C     ***************************************************
 C     *** Memory allocation *****************************
@@ -542,13 +554,22 @@ C
          CALL RGRDINF(GCI,GOEE,GOEP)
 C
 C
-         EMCSCF = POTNUC + EMY + EACTIV
-         WRITE(LUPRI,9005) POTNUC,EMY,EACTIV,EMCSCF
+         EMCSCF = POTNUC + EMY + EACTIV + LVCORR_MC
 C
- 9005    FORMAT(/' Nuclear repulsion            : ',F25.15,/,
-     &           ' Inactive energy              : ',F25.15,/,
-     &           ' Active energy                : ',F25.15,/,
-     &           ' Total KR-MCSCF energy        : ',F25.15)
+         if(dabs(lvcorr_mc).gt.0.0d0)then
+           WRITE(LUPRI,9005) POTNUC,LVCORR_MC,EMY,EACTIV,EMCSCF
+ 9005      FORMAT(/' Nuclear repulsion            : ',F25.15,/,
+     &             ' LVCORR correction            : ',F25.15,/,
+     &             ' Inactive energy              : ',F25.15,/,
+     &             ' Active energy                : ',F25.15,/,
+     &             ' Total KR-MCSCF energy        : ',F25.15)
+         else 
+           WRITE(LUPRI,9006) POTNUC,EMY,EACTIV,EMCSCF
+ 9006      FORMAT(/' Nuclear repulsion            : ',F25.15,/,
+     &             ' Inactive energy              : ',F25.15,/,
+     &             ' Active energy                : ',F25.15,/,
+     &             ' Total KR-MCSCF energy        : ',F25.15)
+         end if
 C
          WRITE(LUPRI,9010) (ITMAC,GNORM(I),I=1,5)
 C
@@ -3410,17 +3431,19 @@ C
 C
 C           MAXCIT Davidson CI iterations.
 C
-            CALL GASCIP_RCISTD(NZCONF,WORK(KZCONF),CMO,CREF,ECI,NCIROOT,
-     &                       IOPT_ISTATE,MAXCIT,THRPCI, 
-     &                       OPT_CIPROGRAM,IPROPT,WORK(KFREE),LFREE)
+            CALL GASCIP_RCISTD(NZCONF,WORK(KZCONF),CMO,CREF,ECI,
+     &                         lvcorr_mc,NCIROOT,IOPT_ISTATE,
+     &                         MAXCIT,THRPCI,OPT_CIPROGRAM,
+     &                         IPROPT,WORK(KFREE),LFREE)
 C
          ELSE
 C
 C           Full CI.
 C
-            CALL GASCIP_STARTVEC(WORK(KZCONF),CMO,CREF,ECI,NZCONF,
-     &           IOPT_ISTATE,THRPCI,OPT_CIPROGRAM,IPROPT,
-     &           WORK,KFREE,LFREE)
+            CALL GASCIP_STARTVEC(WORK(KZCONF),CMO,CREF,ECI,lvcorr_mc,
+     &                           NZCONF,IOPT_ISTATE,THRPCI,
+     &                           OPT_CIPROGRAM,IPROPT,
+     &                           WORK,KFREE,LFREE)
 C
          END IF
          IF (IANACI.EQ.1) THEN

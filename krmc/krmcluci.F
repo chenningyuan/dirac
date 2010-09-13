@@ -800,9 +800,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-C  here is the LVCORR logical stored on...
-!#include "dcbgen.h"
-
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -908,6 +905,10 @@ CSK       CALL WRTMATMN(CMO,1,NCMOTQ,1,NCMOTQ,LUPRI)
           CALL RGETFC(CWRTFO_MAT,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
 C
         END IF
+!
+!       add LVCORR correction (zero if flag is not active)
+        ECORE = ECORE + lvcorr_mc
+
         IF (IPROPT.GE.1) THEN
           WRITE(LUPRI,'(A,1F18.10)') '   Core energy : ',ECORE
         END IF
@@ -954,10 +955,6 @@ C
         LEN_ALL_INT = 0
         LEN_ALL_INT = NASHT*NASHT*NNASHX*NZ*3
         CALL MEMGET('REAL', KH2AC, 0, WORK, KFREE, LFREE)
-C
-C       FIXME: write me
-C              SPINFR=.TRUE. not yet implemented in RGETH2 (why?)
-C
       else
         CALL QUIT('LUCI_KRCI: Invalid flag I_IITP.')
       end if
@@ -1104,6 +1101,10 @@ C
           CALL RGETFC(CWRTFO_MAT,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
 C
         END IF
+!
+!       add LVCORR correction (zero if flag is not active)
+        ECORE = ECORE + lvcorr_mc
+
         IF (IPROPT.GE.1) THEN
           WRITE(LUPRI,'(A,1F18.10)') '   Core energy : ',ECORE
         END IF
@@ -1282,6 +1283,10 @@ C
         CALL RGETFC(CWRTFO_MAT,CMO,WORK(KFC),ECORE,WORK(KFREE),LFREE)
 C
       END IF
+!
+!       add LVCORR correction (zero if flag is not active)
+        ECORE = ECORE + lvcorr_mc
+
       IF (IPROPT.GE.1) THEN
         WRITE(LUPRI,'(A,1F18.10)') 'Core energy : ',ECORE
       END IF

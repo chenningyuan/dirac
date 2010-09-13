@@ -424,6 +424,14 @@ C&&&  .xxxxxx  -- xxx
 C
       IF (.NOT.DOKRMC) GO TO 9999
 C
+!     warnings for options not implemented (yet)
+!     ------------------------------------------
+      if(lvnew)then
+        write(lupri,'(/,a,/,a/)')
+     & ' *** WARNING *** - (SS|SS)-integral approximation using LVNEW'//
+     & ' is not implemented for KR-CI/KR-MCSCF/KR-CC.',
+     & ' *** WARNING *** - Please use the LVCORR approximation.'
+      end if
 C
       IF(DOLVC) ISSINT = 0
       IF (LEVYLE) THEN

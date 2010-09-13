@@ -612,6 +612,7 @@ C
 #include "dcbkrmc.h"
 #include "dcbopt.h"
 #include "dcbgascip.h"
+#include "dcbdhf.h"
 C
       CALL QENTER('TKRMCORB')
 C
@@ -658,6 +659,8 @@ C
       IOPT_SYMMETRY  = IKRMC_SYMMETRY
       IMEMFAC        = IKRMC_MEMFAC
       JKRRUNTYPE     = 1
+!     information from dcbdhf.h
+      nopen_mc       = nopen
 C
 C     Set common block DCROPT
 C
@@ -665,6 +668,7 @@ C
       OPT_CNVINT(2)  = DKRMC_CNVINT(2)
       OPT_THRGRD     = DKRMC_THRGRD
       THRPCI         = DKRMC_THRPCI
+      LVCORR_MC      = 0.0d0
 C
 C     Set common block DCLOPT
 C
@@ -725,6 +729,7 @@ C
 #include "dcbkrci.h"
 #include "dcbopt.h"
 #include "dcbgascip.h"
+#include "dcbdhf.h"
 C
       CALL QENTER('TKRCIORB')
 C
@@ -770,6 +775,8 @@ C
       IOPT_SYMMETRY  = -1
       IMEMFAC        = IKRCI_MEMFAC
       JKRRUNTYPE     = 2
+!     information from dcbdhf.h
+      nopen_mc       = nopen
 C
 C     Set common block DCROPT
 C
@@ -777,6 +784,7 @@ C
       OPT_CNVINT(2)  = DKRCI_CNVINT(2)
       OPT_THRGRD     = 1.0D99
       THRPCI         = DKRCI_THRPCI
+      LVCORR_MC      = 0.0d0
 C
 C     Set common block DCLOPT
 C
@@ -1279,6 +1287,8 @@ C IOPT_INTDEF controls the Hamiltonian
 C     
 C     Set common block DCROPT
 C     
+      LVCORR_MC      = 0.0d0
+
       OPT_CIPROGRAM  = 'KRCC' !KRCI_CIPROGRAM
       DO I = 1, NFSYM
          OPT_FRZSTR(I) = ' '
