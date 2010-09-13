@@ -11,6 +11,8 @@
 !                  modules
 !     DOOSCILLST:  calculate oscillator strength for electronic 
 !                  transitions
+!     dodipmom_krci: calculate permanent electronic dipole moments of 
+!                    electronic ground and excited states.
 !     DOJZEXP:     calculate <j_z> expectation value 
 !                  (omega quantum number) for electronic states
 !     DOSYMOPPRP:  call LUCIAREL to calculate property operator 
@@ -62,8 +64,9 @@
      &                 IHTYPE_X
 !	
 	LOGICAL DOPROP_KRCI, TWOEPROP, DOOSCILLST, DOSYMOPPRP, DOJZEXP,
-     &        DOPROPREOD, DOSIGPROP, RUNXPROP
+     &        DOPROPREOD, DOSIGPROP, RUNXPROP, dodipmom_krci
 	COMMON/LUCILPRP/ DOPROP_KRCI, TWOEPROP, DOOSCILLST, DOSYMOPPRP,
-     &                 DOJZEXP, DOPROPREOD, DOSIGPROP, RUNXPROP
+     &                 DOJZEXP, DOPROPREOD, DOSIGPROP, RUNXPROP,
+     &                 dodipmom_krci
       CHARACTER XSYMFLAB*1, XREPEIG*4
 	COMMON/LUCICPRP/ XSYMFLAB(MXPROPKRCI_SYM), XREPEIG(64)

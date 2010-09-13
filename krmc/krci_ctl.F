@@ -62,7 +62,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "dummy.h"
 #include "maxash.h"
-      PARAMETER (NTABLE = 40)
+      PARAMETER (NTABLE = 45)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00)
 C
       LOGICAL SET, NEWDEF, RESET, LBIT
@@ -95,7 +95,8 @@ C
      &            '.THRPCI','.NR SYM','.MIN MK','.MAX MK','.GASSH ',
      &            '.GASSPC','.MK2REF','.MK2DEL','.CI PRO','.INACTI',
      &            '.CASSCF','.TRDM  ','.OMEGAQ','.RELSYM','.CHECKP',
-     &            '.USE PB','.GENFOC','.TRA NO','.LOWSRT','.SEL ST'/
+     &            '.USE PB','.GENFOC','.TRA NO','.LOWSRT','.SEL ST',
+     &            '.DIPMOM','.xxxxxx','.xxxxxx','.xxxxxx','.xxxxxx'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -200,12 +201,13 @@ C
       IDOPARIO_KRCI =    0
 #endif
 C     ... in "krciprop.h"
-      NPROP_KRCI  =    0
-      DOPROP_KRCI = .FALSE.
-      DOSYMOPPRP  = .FALSE.
-      DOJZEXP     = .FALSE.
-      DOOSCILLST  = .FALSE.
-      RUNXPROP    = .FALSE.
+      NPROP_KRCI    =    0
+      DOPROP_KRCI   = .FALSE.
+      DOSYMOPPRP    = .FALSE.
+      DOJZEXP       = .FALSE.
+      DOOSCILLST    = .FALSE.
+      DODIPMOM_KRCI = .FALSE.
+      RUNXPROP      = .FALSE.
 C     ... in dcbopt.h
       ISHMEM_TYPE =  - 1
 C
@@ -232,7 +234,8 @@ C
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                     11,12,13,14,15,16,17,18,19,20,
      &                     21,22,23,24,25,26,27,28,29,30,
-     &                     31,32,33,34,35,36,37,38,39,40)
+     &                     31,32,33,34,35,36,37,38,39,40,
+     &                     41,42,43,44,45)
      &                     , I
                   END IF
   200          CONTINUE
@@ -590,6 +593,24 @@ C              subsequent MCSCF...
      &            'Requested symmetry outside hardwired limits.')
                END IF
                GO TO 100
+   41          CONTINUE
+C&&&  DIPMOM:  calculate permanent dipole moment of electronic ground
+C              and excited states.
+               doprop_krci   = .true.
+               dodipmom_krci = .true.
+               GO TO 100
+   42          CONTINUE
+C&&&  xxxxxx:  
+               GO TO 100
+   43          CONTINUE
+C&&&  xxxxxx:  
+               GO TO 100
+   44          CONTINUE
+C&&&  xxxxxx:  
+               GO TO 100
+   45          CONTINUE
+C&&&  xxxxxx:  
+               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -938,8 +959,8 @@ C       subgroup notation
         WRITE(LUPRI,'(A/)')
      &     ' * Property calculation for the following'// 
      &     ' one-electron operators: '
-        IF( DOOSCILLST )  CALL DEF_OSCILL(WORK,LWORK,0)
-        IF( DOJZEXP )     CALL DEF_OMEGAQUANT(WORK,LWORK,0)
+        IF(DOOSCILLST.or.dodipmom_krci) CALL DEF_OSCILL(WORK,LWORK,0)
+        IF(DOJZEXP) CALL DEF_OMEGAQUANT(WORK,LWORK,0)
         DO I = 1, NPROP_KRCI
 C         ... initialize operator symmetry array
           ISYMOPPRP_KRCI(I) = 0
@@ -949,11 +970,15 @@ C
         ENDDO
 C
       ENDIF
-      IF( DOOSCILLST ) THEN
+      IF(DOOSCILLST) THEN
         WRITE(LUPRI,'(/A)') ' * Calculation of oscillator strength'//
      &                     ' for (allowed) electronic transitions'
       END IF
-      IF( DOJZEXP ) THEN
+      if(dodipmom_krci)then
+        write(lupri,'(/a)') ' * Calculation of permanent dipole'//
+     &                     'moments of electronic states'
+      end if
+      IF(DOJZEXP) THEN
         WRITE(LUPRI,'(/A)') ' * Determine Omega quantum number for'//
      &                      ' electronic eigenstates'
       END IF

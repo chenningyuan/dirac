@@ -1337,7 +1337,7 @@ C       write title
      & ' ********* printing transition dipole moment(s) *********',
      & ' ********************************************************'
 C
-C       calculate and print oscillator strength - length gauge
+C       calculate and print TDM - length gauge
 C       ------------------------------------------------------
 C
 C       determine index for (x,y,z)
@@ -1349,62 +1349,6 @@ C       determine index for (x,y,z)
         IND_DIP(3) = IXPRPINDEX(PRPNAM,LPROP_KRCI,NPROP_KRCI,XLABEL)
         XREAL = 0.0D0
         XCOMP = 0.0D0
-C
-C       print oscillator strength
-        IF(IPROPPRINT .gt. 100 )THEN
-C
-C         Check sum rule for oscillator strength
-          SUML = 0.0D0
-          WRITE(LUPRI,'(/A/A)')
-     &   '    initial state             final state   '//
-     &   '      oscillator strength (length gauge)',
-     &   '  __________________       _________________'//
-     &   '      ____________________________________'
-          DO 200 IVEC=1,NPROP_ROOTS_KRCI
-            DO 100 JVEC= IVEC+1, NPROP_ROOTS_KRCI
-              IF( EVECS(IVEC) .lt. EVECS(JVEC) )THEN
-                INIST = IVEC
-                JFLST = JVEC
-              ELSE IF( EVECS(IVEC) .eq. EVECS(JVEC) )THEN
-                GOTO 100
-              ELSE IF( EVECS(IVEC) .gt. EVECS(JVEC) )THEN
-                INIST = JVEC
-                JFLST = IVEC
-              END IF
-              DEIG  = EVECS(JFLST) - EVECS(INIST)
-C             WRITE(LUPRI,*) ' INIST, JFLST, DEIG',INIST, JFLST, DEIG
-              DO IPRP=1,3
-C               length gauge
-                XREAL = XPROPMAT(INIST,JFLST,IND_DIP(IPRP),1)
-                IF( MZ .eq. 2 ) 
-     &          XCOMP = XPROPMAT(INIST,JFLST,IND_DIP(IPRP),2)
-                XMOM = DCMPLX(XREAL,XCOMP)
-C               WRITE(LUPRI,*) ' XREAL,XCOMP, ABS(XMOM)**2 ',
-C    &                           XREAL,XCOMP, ABS(XMOM)**2
-C               f_(x,y,z)  = 2.0D0*|<inist|(x,y,z)|jflst>|**2 * (E_fl - E_ini)
-                OSCL(IPRP) = 2.0D0*ABS(XMOM)**2*(DEIG)
-              END DO
-              SUML = SUML + (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0
-              ISYMST_IN = ISYMEIG_KRCI(INIST)
-              ISYMST_FL = ISYMEIG_KRCI(JFLST)
-C
-C             print only values above a given threshold - 1.0D-7
-              IF( (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0 .lt. XTHRESH ) 
-     &            GOTO 100
-              WRITE(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F10.6)')
-     &    '   * state',INIST,'(',XREPEIG(ISYMST_IN),')        * state',
-     &        JFLST,'(',XREPEIG(ISYMST_FL),')                   ',
-     &        (OSCL(1)+OSCL(2)+OSCL(3))/3.0D0 
-              WRITE(LUPRI,'(A,1F16.8,A,1F16.8)')
-     &    '  E(au)',EVECS(INIST),'    E(au)',EVECS(JFLST)
- 100        CONTINUE
- 200      CONTINUE
-          WRITE(LUPRI,*) 
-     & ' -----------------------------------------------------------'//
-     &   '----------'
-          WRITE(LUPRI,'(1A,1F10.6)')
-     $       '   Sum of oscillator strength : ',SUML
-        ENDIF ! IPROPPRINT .gt. 100 
 C
 C       ---------
 C       print TDM
@@ -1430,11 +1374,11 @@ C       ---------
             DEIG  = EVECS(JFLST) - EVECS(INIST)
             DO IPRP=1,3
 C             length gauge
-              XREAL = XPROPMAT(INIST,JFLST,IND_DIP(IPRP),1)
               IF( MZ .eq. 2 )
-     &        XCOMP = XPROPMAT(INIST,JFLST,IND_DIP(IPRP),2)
-              XMOM = DCMPLX(XREAL,XCOMP)
-              OSCL(IPRP) = XMOM
+     &        XCOMP         = XPROPMAT(INIST,JFLST,IND_DIP(IPRP),2)
+              XREAL         = XPROPMAT(INIST,JFLST,IND_DIP(IPRP),1)
+              XMOM          = DCMPLX(XREAL,XCOMP)
+              OSCL(IPRP)    = XMOM
               OSCLABS(IPRP) = ABS(XMOM)
             END DO
             ISYMST_IN = ISYMEIG_KRCI(INIST)
@@ -1519,10 +1463,80 @@ C             f_(dx,dy,dz)  = 2.0D0*|<inist|(x,y,z)|jflst>|**2 * (E_fl - E_ini)
      &     ' gauge)  : ',SUMV+SUML
 #endif
       END IF
+
+C     2. permanent dipole moments
+C     =======================================================
+      if(dodipmom_krci)then
 C
-C     2. omega expectation values
-C     ===========================
+C       print title
+        write(lupri,'(/28x,a/28x,a/28x,a)') 
+     & ' ********************************************************',
+     & ' ********* permanent electric  dipole moment(s) *********',
+     & ' ********************************************************'
 C
+C       calculate and print dipole moment - length gauge
+C       ------------------------------------------------------
+C
+C       determine index for (x,y,z)
+        XLABEL     = 'X dipole length'
+        IND_DIP(1) = IXPRPINDEX(PRPNAM,LPROP_KRCI,NPROP_KRCI,XLABEL)
+        XLABEL     = 'Y dipole length'
+        IND_DIP(2) = IXPRPINDEX(PRPNAM,LPROP_KRCI,NPROP_KRCI,XLABEL)
+        XLABEL     = 'Z dipole length'
+        IND_DIP(3) = IXPRPINDEX(PRPNAM,LPROP_KRCI,NPROP_KRCI,XLABEL)
+        XREAL = 0.0D0
+        XCOMP = 0.0D0
+!
+!       -------------------
+!       print dipole moment
+!       -------------------
+        write(lupri,'(/a/a)')
+     & '            < state |x,y,z| state>  '//
+     & '               dipole moment [a.u.] (x, y, z)     Norm [a.u.]'//
+     & '  Norm [Debye]',
+     & '  __________________       _________________'//
+     & '    ________________________________________________________'//
+     & '_______'
+        do 202 ivec = 1, nprop_roots_krci
+
+          jvec  = ivec
+          inist = ivec
+          jflst = jvec
+          do iprp = 1, 3
+!           length gauge
+            if(mz.eq.2)
+     &      xcomp         = xpropmat(inist,jflst,ind_dip(iprp),2)
+            xreal         = xpropmat(inist,jflst,ind_dip(iprp),1)
+            xmom          = dcmplx(xreal,xcomp)
+            oscl(iprp)    = xmom
+            osclabs(iprp) = abs(xmom)
+          end do
+          isymst_in = isymeig_krci(inist)
+          isymst_fl = isymeig_krci(jflst)
+!
+!         print only values above a given threshold - 1.0D-7
+          if((osclabs(1)+osclabs(2)+osclabs(3)).lt.xthresh)then
+!           print *, 'dipole moment too small for state #',inist
+            call dzero(oscl,3)
+          end if
+
+       write(lupri,'(a,i3,a,a4,a,i3,a,a4,a,3f12.8,2x,1f12.8,2x 1f12.8)')
+     &  '   * state',inist,'(',xrepeig(isymst_in),')         * state',
+     &      jflst,'(',xrepeig(isymst_fl),')   ',
+     &      oscl(1),oscl(2),oscl(3),
+     &      sqrt((oscl(1)**2)+(oscl(2)**2)+(oscl(3)**2)),
+     &      sqrt((oscl(1)**2)+(oscl(2)**2)+(oscl(3)**2))*debye
+ 202    continue
+        write(lupri,'(a)')
+     & '  __________________________________________'//
+     & '    ________________________________________________________'//
+     & '_______'
+
+      end if
+!
+!     3. omega expectation values
+!     ===========================
+!
       IF( DOJZEXP )THEN
 C       ... allocate omega matrix
         CALL MEMGET('REAL',KOMEGAEXP,NZ*NPROP_ROOTS_KRCI**2,WORK,
