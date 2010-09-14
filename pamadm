@@ -744,6 +744,12 @@ if options.exportfile != None:
        if not dirac_modules[module].is_included:
           for cppflag in dirac_modules[module].cppflags:
               delete_flags += '-U%s ' % cppflag
+#  another exception: sometimes modules have overlapping MODs
+#  now remove some -UMODs again from delete_flags
+   for module in dirac_modules:
+       if dirac_modules[module].is_included:
+          for cppflag in dirac_modules[module].cppflags:
+              delete_flags = string.replace(delete_flags, '-U%s' % cppflag, '')
    if delete_flags != '':
       find_command = "find %s -name '*.F' -o -name '*.f90' -o -name '*.F90' -o -name '*.c'" % scratch_dir
 #     remove -ULARGE_MOLECULES from delete_flags
