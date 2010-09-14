@@ -982,6 +982,16 @@ C
      &     3X,'Written by: ',/,
      &     3X,'  Stefan Knecht and Hans Joergen Aa. Jensen ',//,
      &     1X,79('*'))
+!
+      WRITE(LUPRI,9001)
+ 9001 FORMAT(/3X,'The module is published in:',//,
+     & 4X,'  Stefan R. Knecht,',/,
+     & 4X,'    Parallel Relativistic Multiconfiguration Methods:',/,
+     & 8X,'New Powerful Tools for Heavy-Element
+     & Electronic-Structure Studies,',
+     & /,4X '    PhD thesis, University of Duesseldorf, 2009.',//,
+     & 1X,79('*'),/)
+
 C
       WRITE (LUPRI,'(/A/A)')
      &   '  Symmetry   # of electronic states',
