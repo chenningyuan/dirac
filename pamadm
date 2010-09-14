@@ -203,7 +203,7 @@ vital_tests.append(medium_test('frozen_orbitals'))
 vital_tests.append(medium_test('density_at_nuclei'))
 vital_tests.append(medium_test('mp2_properties'))
 vital_tests.append(medium_test('response_qr'))
-vital_tests.append(medium_test('stex',            fine_with_mpi = False))
+vital_tests.append(medium_test('stex',fine_with_mpi = False))
 # long tests
 vital_tests.append(long_test('response_pv_nmr'))
 vital_tests.append(long_test('lucita_large'))
@@ -707,8 +707,13 @@ f.close()
 if not is_windows():
   os.system("cat test/runtest.in >> test/runtest")
   os.system("chmod 700 test/runtest")
-else:
-  print 'fix os.system cat,chmod'
+else: # universal for Windows....
+  runtest_file = open("test/runtest","a")
+  runtest_file_in=open("test/runtest.in","r")
+  runtest_file.write(runtest_file_in.read())
+  runtest_file.close()
+  runtest_file_in.close()
+  #print 'fix os.system cat,chmod'
 
 # export dirac to tar.gz file
 # ===========================
@@ -776,7 +781,7 @@ if options.exportfile != None:
               d = 'test/' + test.directory
               shutil.copytree(d, scratch_dir + '/' + d)
 
-#  run the vacuum cleaner: remove all junk files in exporter DIRAC
+#  run the vacuum cleaner: remove all junk files in exported DIRAC
    os.system("rm -f  `find %s -name '*.o'`"   % scratch_dir)
    os.system("rm -f  `find %s -name '*.r'`"   % scratch_dir)
    os.system("rm -f  `find %s -name '*.i'`"   % scratch_dir)
