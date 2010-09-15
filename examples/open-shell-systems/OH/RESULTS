@@ -16,7 +16,7 @@
  SCF configurations
 --------------------
 
-What does not converge is 1 electron in 1 open-shell :
+What does not converge is the 1 electron in 1 open-shell !
 .CLOSED SHELL
  8
 .OPEN S
@@ -37,9 +37,25 @@ Its spin-free version confirms two-fould (pi_x=pi_y) degeneration of the  valenc
 Correlated approach
 --------------------
 
+The user can try to approach experimental data on:
+http://webbook.nist.gov/cgi/cbook.cgi?ID=C3352576&Units=SI&Mask=1000#Diatomic
 
-  Hydroxyl radical cation
-============================
+  Hydroxyl radical cation OH+ (X 3_Pi)
+===========================================
+Again one employes the average-of-configuration:
+.CLOSED SHELL
+ 6
+.OPEN S
+1
+2/4
+
+Number of electronic states is higher.
+
+Electronic states can be found
+http://webbook.nist.gov/cgi/cbook.cgi?ID=C12259299&Units=SI&Mask=1000#Diatomic
+
+
+
 
 
 
