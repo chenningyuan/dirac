@@ -701,19 +701,14 @@ short_test="     $short_parallel $short_onlyseq"
 short_partest="  $short_parallel"
 '''
 f.write(s)
-
 f.close()
 
-if not is_windows():
-  os.system("cat test/runtest.in >> test/runtest")
-  os.system("chmod 700 test/runtest")
-else: # universal for Windows....
-  runtest_file = open("test/runtest","a")
-  runtest_file_in=open("test/runtest.in","r")
-  runtest_file.write(runtest_file_in.read())
-  runtest_file.close()
-  runtest_file_in.close()
-  #print 'fix os.system cat,chmod'
+# further pythonization:  os.system("cat...") replaced by python io-commands
+runtest_file = open("test/runtest","a")
+runtest_file_in=open("test/runtest.in","r")
+runtest_file.write(runtest_file_in.read())
+runtest_file.close()
+runtest_file_in.close()
 
 # export dirac to tar.gz file
 # ===========================
