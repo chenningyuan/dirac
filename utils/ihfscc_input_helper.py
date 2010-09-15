@@ -293,6 +293,7 @@ class molecular_electronic_structure:
 		end_regexp_definition                          = "    gap     :\s+([-+]?\d+?\.\d*) au"
 		lumo_energy_regexp_definition                  = "    E\(LUMO\) :\s+([-+]?\d+?\.\d*) au"   
 		homo_energy_regexp_definition                  = "  - E\(HOMO\) :\s+([-+]?\d+?\.\d*) au"
+		symmetry_definition_so_regexp_definition       = "\* Fermion symmetry ([a-zA-Z][0-9]?)([gu])?"
 		symmetry_definition_spinfree_regexp_definition = "\* Boson symmetry ([a-zA-Z][0-9]?)([gu])?"
 		symmetry_definition_linear_regexp_definition   = "\* Block\s+([0-9]+) in ([a-zA-Z][0-9][gu ])\:  Omega \=\s+([0-9\/]+)"
 		occupied_or_not_regexp_definition              = ".+ f = \s*([0-9.]+)"
@@ -304,6 +305,7 @@ class molecular_electronic_structure:
 		homo_energy                  = re.compile (r''+ homo_energy_regexp_definition                +'', re.IGNORECASE)
 		symmetry_definition_linear   = re.compile (r''+ symmetry_definition_linear_regexp_definition +'', re.IGNORECASE)
 		symmetry_definition_spinfree = re.compile (r''+ symmetry_definition_spinfree_regexp_definition +'', re.IGNORECASE)
+		symmetry_definition_so       = re.compile (r''+ symmetry_definition_so_regexp_definition +''    , re.IGNORECASE)
 		occupied_or_not              = re.compile (r''+ occupied_or_not_regexp_definition            +'', re.IGNORECASE)
 		eigenvalues_and_degeneracy   = re.compile (r''+ eigenvalues_and_degeneracy_regexp_definition +'', re.IGNORECASE)
 
@@ -330,6 +332,10 @@ class molecular_electronic_structure:
 
 				elif occupied_or_not.match(l):
 					spinor_occupancy = occupied_or_not.match(l).group(1)	
+
+				elif symmetry_definition_so.match(l):
+                                           fermion_symmetry = symmetry_definition_so.match(l).group(1)+symmetry_definition_so.match(l).group(2)
+			   		   self.fermion_irreps.append(fermion_symmetry)
 
 				elif symmetry_definition_spinfree.match(l):
                                         if ( symmetry_definition_spinfree.match(l).group(2) == "g" ):
