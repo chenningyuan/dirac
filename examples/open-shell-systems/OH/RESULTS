@@ -1,0 +1,52 @@
+
+
+  Hydroxyl radical
+=========================
+
+ Open-shell SCF calculations on the OH.(known as the hydroxyl radical) system, followed by
+ complete small open shell CI method (cosci) for getting individual states.
+
+ Ground state is X 2_Pi_3/2 resulting from the electron configuration of
+ 
+    1 s_sig(2) 2s_sig(2) 2p_sig(2) 2p_pi_1/2(2) 2p_pi_3/2(1)
+
+
+ The basis set input file brings linear symmery.
+
+ SCF configurations
+--------------------
+
+What does not converge is 1 electron in 1 open-shell :
+.CLOSED SHELL
+ 8
+.OPEN S
+1
+1/2
+
+Therefore one has to resort to the average-of-configurations (3 electrons over 4 pi shells):
+.CLOSED SHELL
+ 6
+.OPEN S
+1
+3/4
+
+The Dirac-Coulomb Hamiltonian gives noncorrelated fine structure splitting of cca 144 cm-1.
+
+Its spin-free version confirms two-fould (pi_x=pi_y) degeneration of the  valence open shell.
+
+Correlated approach
+--------------------
+
+
+  Hydroxyl radical cation
+============================
+
+
+
+
+
+
+
+ 
+
+ 
