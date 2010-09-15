@@ -29,7 +29,10 @@ module dirac_mointegral_export
   integer, parameter     :: filenumber_2e = 22
   integer, parameter     :: filenumber_nw = 23
   integer, parameter     :: filenumber_55 = 55
-  logical, parameter     :: generate_full_list = .false.
+  integer, parameter     :: filenumber_56 = 56
+  logical, parameter     :: generate_full_list = .true.
+! The target variable should involve into an input option, for now we have no input since mrcc
+! is presently the only code that is supported (the interface to nwchem is in an experimental stage)
   character(10)          :: target = 'mrcc'
 
   type SpinorInformation
@@ -49,7 +52,7 @@ module dirac_mointegral_export
   integer                 :: irrep_occupation(128)
   type(SpinorInformation), allocatable :: spinor(:)
 
-  public initialize, write_mrcc_fort55
+  public initialize, write_mrcc_fort55, write_mrcc_fort56
   private process_1e, process_2e, make_index_to_occupied_first, irrep_reordered
 
 contains
@@ -82,11 +85,11 @@ contains
      allocate (spinor(number_of_spinors))
      allocate (kramer_to_spinor(-number_of_spinors/2:number_of_spinors/2))
 
-!    create indices for optional reordering according to occupation
-     call make_index_to_occupied_first ()
-
      read (filenumber_1e) ((multiplication_table(i,j),i=1,2*number_of_abelian_irreps),j=1,2*number_of_abelian_irreps)
      read (filenumber_1e) (spinor(i)%irrep,spinor(i)%abelian_irrep,spinor(i)%energy,i=1,number_of_spinors)
+
+!    create indices for optional reordering according to occupation
+     call make_index_to_occupied_first ()
 
      write (*,*) " Initialized reading from MRCONEE"
      write (*,*) " Core energy: ", core_energy
@@ -127,7 +130,7 @@ contains
               write (filenumber_55,'(E28.20,4i4)') integral(i,j,1), &
                     i,                                              &
                     j,                                              &
-                       0,                                              &
+                    0,                                              &
                     0                                              
            end do
         end do
@@ -317,7 +320,8 @@ contains
   do j = 1, 2 * number_of_abelian_irreps
      write (filenumber_55,'(8i6)') (reordered_multiplication_table(i,j),i=1,2*number_of_abelian_irreps)
   end do 
-  write (filenumber_55,'(8i6)') (number_of_spinors_in_irrep(i),i=1,number_of_abelian_irreps)
+! temporary fix (adding two zeroes) as the 2009 version of mrcc appears to always want to read 4 irreps 
+  write (filenumber_55,'(8i6)') (number_of_spinors_in_irrep(i),i=1,number_of_abelian_irreps),0,0
   call process_2e
   call process_1e
   write (filenumber_55,'(E28.20,4i4)') core_energy,0,0,0,0
@@ -326,6 +330,29 @@ contains
   deallocate (multiplication_table)
   deallocate (reordered_multiplication_table)
 !  deallocate (reordered_spinor)
+
+  end subroutine
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  subroutine write_mrcc_fort56
+
+! Write a sample mrcc input file fort.56. 
+! We will default the excitation level to doubles, this can be changed by the user
+
+  integer       ::  i
+
+  open (filenumber_56, file='fort.56', Form='FORMATTED')
+
+! First line of the input contains all the options, we specify the default values for a closed shell CCSD. Has to be modified by the user.
+! Second line of the input is a comment line with the names of all of the options. Taken from the 2010 version of mrcc.
+  write (filenumber_56,'(A)') "     2     0     0     0     1     0     0     1     0     0     1     0     1     0     0    12     0     0   0.00     0    750 0 0.000E-00"
+  write (filenumber_56,'(A)') "ex.lev,nsing,ntrip, rest,method,dens,conver,symm, diag, CS ,spatial, HF, ndoub,nacto,nactv, tol, maxex, sacc, freq,  dboc,   mem, locno, eps"
+
+! Third line of the input contains a string with occupation numbers.
+  write (filenumber_56,'(40i2)') (spinor(i)%occupation,i=1,number_of_spinors)
+
+  close (filenumber_56, status='keep')
 
   end subroutine
 
@@ -365,6 +392,9 @@ end module
   call initialize 
   select case (target)
      case ('mrcc')
+       write (*,*) ' Writing sample fort.56 ccsd input file for mrcc...'
+       call write_mrcc_fort56
+       write (*,*) ' fort.56 file ready: can be modified by user'
        write (*,*) ' Writing fort.55 interface file for mrcc...'
        call write_mrcc_fort55
        write (*,*) ' fort.55 file ready'
