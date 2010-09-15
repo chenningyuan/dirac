@@ -2189,7 +2189,7 @@ contains
         do k = k_start, 3
            u%s(k, im) = u%s(k, im) + derv(1, d0200000)*s_b(k)
            
-           if (is_gga_qr) then
+           if (is_gga_qi) then
               y_b(k)  = gr_0(1)*gs_b(1, k) &
                       + gr_0(2)*gs_b(2, k) &
                       + gr_0(3)*gs_b(3, k)
