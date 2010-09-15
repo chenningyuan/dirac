@@ -709,6 +709,7 @@ runtest_file_in=open("test/runtest.in","r")
 runtest_file.write(runtest_file_in.read())
 runtest_file.close()
 runtest_file_in.close()
+os.system("chmod 700 test/runtest") 
 
 # export dirac to tar.gz file
 # ===========================
