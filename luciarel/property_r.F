@@ -671,7 +671,7 @@ C
 C     Last revision :
 C
 C***********************************************************************
-      use krci_prop
+      use krci_properties
 #include "implicit.h"
 #include "priunit.h"
 * boson symmetry info

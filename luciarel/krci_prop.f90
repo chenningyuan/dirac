@@ -24,7 +24,7 @@
 !
 ! written by sknecht september 2010
 !
-module krci_prop
+module krci_properties
 
   implicit none
 
@@ -107,4 +107,4 @@ contains
 
   end subroutine get_inner_product_sigmaprop_dot_c
 !**********************************************************************
-end module krci_prop
+end module krci_properties
