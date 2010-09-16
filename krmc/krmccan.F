@@ -989,7 +989,7 @@ C
      & 4X,'    Parallel Relativistic Multiconfiguration Methods:',/,
      & 8X,'New Powerful Tools for Heavy-Element
      & Electronic-Structure Studies,',
-     & /,4X '    PhD thesis, University of Duesseldorf, 2009.',//,
+     & /,4X,'    PhD thesis, University of Duesseldorf, 2009.',//,
      & 1X,79('*'),/)
 
 C
