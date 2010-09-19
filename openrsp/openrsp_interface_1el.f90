@@ -1,6 +1,7 @@
 module openrsp_interface_1el
 
    use dirac_interface
+   use openrsp_cfg
    use matrix_defop
    use memory_allocator
    use character_processing
@@ -59,61 +60,64 @@ contains
 !     add to dcbcls
 !     =============
 
-!     electric field
-      call add_class('DIPLEN ', '+00'//ss)
-      call add_class('DPLGRA ', '+00'//ss)
-      call add_class('QUAGRA ', '+00'//ss)
-      call add_class('DIPVEL ', '+00'//ss)
+      if (need_1el_f) then
+         call add_class('DIPLEN ', '+00'//ss)
+         if (need_1el_g) then
+            call add_class('DPLGRA ', '+00'//ss)
+         end if
+      end if
 
-!     magnetic field
-      call add_class('DIPLEN ', '0++0')
-      call add_class('DPLGRA ', '0++0')
+      if (need_1el_v) then
+         call add_class('DIPVEL ', '+00'//ss)
+      end if
 
-      call add_class('THETA  ', '+00'//ss)
-      call add_class('DSUSCGO', '+00'//ss)
-      call add_class('G1O    ', '+00'//ss)
-      call add_class('G1N    ', '+00'//ss)
-      call add_class('G1B    ', '000+')
-      call add_class('G1KX   ', '0++0')
-      call add_class('G1KY   ', '0++0')
-      call add_class('G1KZ   ', '0++0')
+      if (need_1el_q) then
+         call add_class('THETA  ', '+00'//ss)
+         if (need_1el_g) then
+            call add_class('QUAGRA ', '+00'//ss)
+         end if
+      end if
 
-!     dbet/dB
-      call add_class('S1MAG  ', '000+')
-!     dbet/dB2
-      call add_class('S2MAG  ', '000+')
+      if (need_1el_o .or. need_1el_b) then
+         call add_class('DIPLEN ', '0++0')
+         if (need_1el_g) then
+            call add_class('DPLGRA ', '0++0')
+         end if
+         call add_class('DSUSCGO', '+00'//ss)
+      end if
 
-!     dnuc/dB
-      call add_class('RM1H2  ', '+00'//ss)
-!     dnuc/dB2
-      call add_class('RM2H2  ', '+00'//ss)
+      if (need_1el_b) then
+         call add_class('S1MAG  ', '000+')
+         call add_class('S2MAG  ', '000+')
+         call add_class('RM1H2  ', '+00'//ss)
+         call add_class('RM2H2  ', '+00'//ss)
+         call add_class('RM1H3  ', '0++0')
+         call add_class('RM2H3  ', '0++0')
+         call add_class('RM1RN  ', '0++0')
+         call add_class('S1MAG  ', '+00'//ss)
+         call add_class('S2MAG  ', '+00'//ss)
+         call add_class('S1MAGR ', '+00'//ss)
+         call add_class('S2MKET ', '+00'//ss)
+         call add_class('S2MMIX ', '+00'//ss)
+         call add_class('RDSUSLL', '00+0')
+         call add_class('DSUSNOL', '+00'//ss)
+         if (need_1el_f) then
+            call add_class('CM1    ', '+00'//ss)
+            call add_class('CM2    ', '+00'//ss)
+         end if
+         if (need_1el_q) then
+            call add_class('QDBINT ', '+00'//ss)
+         end if
+      end if
 
-!     dkin/dB
-      call add_class('RM1H3  ', '0++0')
-!     dkin/dB2
-      call add_class('RM2H3  ', '0++0')
-
-!     dvec/dB
-      call add_class('RM1RN  ', '0++0')
-
-!     dS/dB
-      call add_class('S1MAG  ', '+00'//ss)
-!     dS/dB2
-      call add_class('S2MAG  ', '+00'//ss)
-
-      call add_class('S1MAGR ', '+00'//ss)
-
-      call add_class('S2MKET ', '+00'//ss)
-      call add_class('S2MMIX ', '+00'//ss)
-
-      call add_class('CM1    ', '+00'//ss)
-      call add_class('CM2    ', '+00'//ss)
-      call add_class('QDBINT ', '+00'//ss)
-
-!     rdsusll
-      call add_class('RDSUSLL', '00+0')
-!     dsusnol
-      call add_class('DSUSNOL', '+00'//ss)
+      if (need_1el_g) then
+         call add_class('G1O    ', '+00'//ss)
+         call add_class('G1N    ', '+00'//ss)
+         call add_class('G1B    ', '000+')
+         call add_class('G1KX   ', '0++0')
+         call add_class('G1KY   ', '0++0')
+         call add_class('G1KZ   ', '0++0')
+      end if
 
 
 !     add to dcbxpr and dcbprl
@@ -122,158 +126,466 @@ contains
       f = 1.0d0
       blocks = '+00'//ss
 
-      irep(1) = isymax(1, 1)
-      irep(2) = isymax(2, 1)
-      irep(3) = isymax(3, 1)
+      if (need_1el_f) then
 
-      do i = 1, size(i_iter)
-         s      = ' DIPLEN '
-         s(1:1) = i_iter(i)
-         call add_operator(s // '        ', &
-                           blocks,          &
-                           1,               &
-                           1,               &
-                           1 + irep(i),     &
-                           (/1 + irep(i)/), &
-                           (/f/),           &
-                           (/s/))
-      end do
-
-      do i = 1, size(i_iter)
-         s      = ' DIPVEL '
-         s(1:1) = i_iter(i)
-         call add_operator(s // '        ', &
-                           blocks,          &
-                           1,               &
-                          -1,               &
-                           1,               &
-                           (/1/),           &
-                           (/f/),           &
-                           (/s/))
-      end do
-
-      irep(1) = 0
-      irep(2) = ieor(isymax(1, 1), isymax(2, 1))
-      irep(3) = ieor(isymax(1, 1), isymax(3, 1))
-      irep(4) = 0                            
-      irep(5) = ieor(isymax(2, 1), isymax(3, 1))
-      irep(6) = 0
-
-      do ij = 1, size(ij_iter)
-         s = ij_iter(ij) // 'THETA '
-         call add_operator(s // '        ',  &
-                           blocks,           &
-                           1,                &
-                           1,                &
-                           1 + irep(ij),     &
-                           (/1 + irep(ij)/), &
-                           (/f/),            &
-                           (/s/))
-      end do
-
-      blocks = '+00'//ss
-      if (diamagnetic_via_pn) then
-         f = 0.0d0
-      else
-         f = 1.0d0
-      end if
-
-      do ij = 1, size(ij_iter)
-         s = ij_iter(ij) // 'SUSCGO'
-         call add_operator(s // '        ',  &
-                           blocks,           &
-                           1,                &
-                           1,                &
-                           1 + irep(ij),     &
-                           (/1 + irep(ij)/), &
-                           (/f/),            &
-                           (/s/))
-      end do
-
-      f = 0.5d0*cval
-      blocks = '0++0'
-      call add_operator('XANGMOM         ',                     &
-                        blocks,                                 &
-                        5,                                      &
-                       -1,                                      &
-                        (1 + ieor(isymax(3, 1), isymax(2, 1))), &
-                        (/1 + isymax(3, 1), 1 + isymax(2, 1)/), &
-                        (/f, f/),                               &
-                        (/'ZDIPLEN ', 'YDIPLEN '/))
-      call add_operator('YANGMOM         ',                     &
-                        blocks,                                 &
-                        6,                                      &
-                       -1,                                      &
-                        (1 + ieor(isymax(1, 1), isymax(3, 1))), &
-                        (/1 + isymax(1, 1), 1 + isymax(3, 1)/), &
-                        (/f, f/),                               &
-                        (/'XDIPLEN ', 'ZDIPLEN '/))
-      call add_operator('ZANGMOM         ',                     &
-                        blocks,                                 &
-                        7,                                      &
-                       -1,                                      &
-                        (1 + ieor(isymax(2, 1), isymax(1, 1))), &
-                        (/1 + isymax(2, 1), 1 + isymax(1, 1)/), &
-                        (/f, f/),                               &
-                        (/'YDIPLEN ', 'XDIPLEN '/))
-
-      f = -cval
-      blocks = '0++0'
-      do iatom = 1, nr_atoms*3
-         s1 = prefix_zeros(iatom, 2) // ' DPG Z'
-         s2 = prefix_zeros(iatom, 2) // ' DPG Y'
-         call add_operator(prefix_zeros(iatom, 3) // 'AMDRX        ', &
-                           blocks,                                    &
-                           5,                                         &
-                          -1,                                         &
-                           1,                                         &
-                           (/1,  1/),                                 &
-                           (/f,  f/),                                 &
-                           (/s1, s2/))
-         s1 = prefix_zeros(iatom, 2) // ' DPG X'
-         s2 = prefix_zeros(iatom, 2) // ' DPG Z'
-         call add_operator(prefix_zeros(iatom, 3) // 'AMDRY        ', &
-                           blocks,                                    &
-                           6,                                         &
-                          -1,                                         &
-                           1,                                         &
-                           (/1,  1/),                                 &
-                           (/f,  f/),                                 &
-                           (/s1, s2/))
-         s1 = prefix_zeros(iatom, 2) // ' DPG Y'
-         s2 = prefix_zeros(iatom, 2) // ' DPG X'
-         call add_operator(prefix_zeros(iatom, 3) // 'AMDRZ        ', &
-                           blocks,                                    &
-                           7,                                         &
-                          -1,                                         &
-                           1,                                         &
-                           (/1,  1/),                                 &
-                           (/f,  f/),                                 &
-                           (/s1, s2/))
-      end do
-
-
-      f = 1.0d0
-      blocks = '+00'//ss
-      do iatom = 1, nr_atoms*3
+         irep(1) = isymax(1, 1)
+         irep(2) = isymax(2, 1)
+         irep(3) = isymax(3, 1)
+        
          do i = 1, size(i_iter)
-            s = prefix_zeros(iatom, 2) // ' DPG ' // i_iter(i)
+            s      = ' DIPLEN '
+            s(1:1) = i_iter(i)
             call add_operator(s // '        ', &
                               blocks,          &
                               1,               &
                               1,               &
+                              1 + irep(i),     &
+                              (/1 + irep(i)/), &
+                              (/f/),           &
+                              (/s/))
+         end do
+
+         if (need_1el_g) then
+            do iatom = 1, nr_atoms*3
+               do i = 1, size(i_iter)
+                  s = prefix_zeros(iatom, 2) // ' DPG ' // i_iter(i)
+                  call add_operator(s // '        ', &
+                                    blocks,          &
+                                    1,               &
+                                    1,               &
+                                    1,               &
+                                    (/1/),           &
+                                    (/f/),           &
+                                    (/s/))
+               end do
+            end do
+         end if
+      end if
+
+      if (need_1el_v) then
+         do i = 1, size(i_iter)
+            s      = ' DIPVEL '
+            s(1:1) = i_iter(i)
+            call add_operator(s // '        ', &
+                              blocks,          &
+                              1,               &
+                             -1,               &
                               1,               &
                               (/1/),           &
                               (/f/),           &
                               (/s/))
          end do
-      end do
+      end if
 
-      f = 1.0d0
-      blocks = '+00'//ss
-      do iatom = 1, nr_atoms*3
+      if (need_1el_q) then
+         
+         irep(1) = 0
+         irep(2) = ieor(isymax(1, 1), isymax(2, 1))
+         irep(3) = ieor(isymax(1, 1), isymax(3, 1))
+         irep(4) = 0                            
+         irep(5) = ieor(isymax(2, 1), isymax(3, 1))
+         irep(6) = 0
+         
          do ij = 1, size(ij_iter)
-            s = prefix_zeros(iatom, 2) // 'QDG ' // ij_iter(ij)
+            s = ij_iter(ij) // 'THETA '
+            call add_operator(s // '        ',  &
+                              blocks,           &
+                              1,                &
+                              1,                &
+                              1 + irep(ij),     &
+                              (/1 + irep(ij)/), &
+                              (/f/),            &
+                              (/s/))
+         end do
+
+         if (need_1el_g) then
+            do iatom = 1, nr_atoms*3
+               do ij = 1, size(ij_iter)
+                  s = prefix_zeros(iatom, 2) // 'QDG ' // ij_iter(ij)
+                  call add_operator(s // '        ', &
+                                    blocks,          &
+                                    1,               &
+                                    1,               &
+                                    1,               &
+                                    (/1/),           &
+                                    (/f/),           &
+                                    (/s/))
+               end do
+            end do
+         end if
+      end if
+
+      if (need_1el_o .or. need_1el_b) then
+
+         f = 0.5d0*cval
+         blocks = '0++0'
+
+         call add_operator('XANGMOM         ',                     &
+                           blocks,                                 &
+                           5,                                      &
+                          -1,                                      &
+                           (1 + ieor(isymax(3, 1), isymax(2, 1))), &
+                           (/1 + isymax(3, 1), 1 + isymax(2, 1)/), &
+                           (/f, f/),                               &
+                           (/'ZDIPLEN ', 'YDIPLEN '/))
+         call add_operator('YANGMOM         ',                     &
+                           blocks,                                 &
+                           6,                                      &
+                          -1,                                      &
+                           (1 + ieor(isymax(1, 1), isymax(3, 1))), &
+                           (/1 + isymax(1, 1), 1 + isymax(3, 1)/), &
+                           (/f, f/),                               &
+                           (/'XDIPLEN ', 'ZDIPLEN '/))
+         call add_operator('ZANGMOM         ',                     &
+                           blocks,                                 &
+                           7,                                      &
+                          -1,                                      &
+                           (1 + ieor(isymax(2, 1), isymax(1, 1))), &
+                           (/1 + isymax(2, 1), 1 + isymax(1, 1)/), &
+                           (/f, f/),                               &
+                           (/'YDIPLEN ', 'XDIPLEN '/))
+
+         if (need_1el_g) then
+
+            f = -cval
+            blocks = '0++0'
+
+            do iatom = 1, nr_atoms*3
+               s1 = prefix_zeros(iatom, 2) // ' DPG Z'
+               s2 = prefix_zeros(iatom, 2) // ' DPG Y'
+               call add_operator(prefix_zeros(iatom, 3) // 'AMDRX        ', &
+                                 blocks,                                    &
+                                 5,                                         &
+                                -1,                                         &
+                                 1,                                         &
+                                 (/1,  1/),                                 &
+                                 (/f,  f/),                                 &
+                                 (/s1, s2/))
+               s1 = prefix_zeros(iatom, 2) // ' DPG X'
+               s2 = prefix_zeros(iatom, 2) // ' DPG Z'
+               call add_operator(prefix_zeros(iatom, 3) // 'AMDRY        ', &
+                                 blocks,                                    &
+                                 6,                                         &
+                                -1,                                         &
+                                 1,                                         &
+                                 (/1,  1/),                                 &
+                                 (/f,  f/),                                 &
+                                 (/s1, s2/))
+               s1 = prefix_zeros(iatom, 2) // ' DPG Y'
+               s2 = prefix_zeros(iatom, 2) // ' DPG X'
+               call add_operator(prefix_zeros(iatom, 3) // 'AMDRZ        ', &
+                                 blocks,                                    &
+                                 7,                                         &
+                                -1,                                         &
+                                 1,                                         &
+                                 (/1,  1/),                                 &
+                                 (/f,  f/),                                 &
+                                 (/s1, s2/))
+            end do
+         end if
+
+         blocks = '+00'//ss
+         if (diamagnetic_via_pn) then
+            f = 0.0d0
+         else
+            f = 1.0d0
+         end if
+        
+         irep(1) = 0
+         irep(2) = ieor(isymax(1, 1), isymax(2, 1))
+         irep(3) = ieor(isymax(1, 1), isymax(3, 1))
+         irep(4) = 0                            
+         irep(5) = ieor(isymax(2, 1), isymax(3, 1))
+         irep(6) = 0
+        
+         do ij = 1, size(ij_iter)
+            s = ij_iter(ij) // 'SUSCGO'
+            call add_operator(s // '        ',  &
+                              blocks,           &
+                              1,                &
+                              1,                &
+                              1 + irep(ij),     &
+                              (/1 + irep(ij)/), &
+                              (/f/),            &
+                              (/s/))
+         end do
+      end if
+
+      if (need_1el_b) then
+
+         f = -2.0d0*cval*cval
+         blocks = '000+'
+   
+         do i = 1, size(i_iter)
+            s = 'dS/dB   '
+            s(6:6) = i_iter(i)
+            call add_operator('dbet/dB' // i_iter(i) // '        ', &
+                              blocks,                               &
+                              1,                                    &
+                             -1,                                    &
+                              1,                                    &
+                              (/1/),                                &
+                              (/f/),                                &
+                              (/s/))
+         end do
+   
+         do ij = 1, size(ij_iter)
+            s = 'dS/dB2' // ij_iter(ij)
+            call add_operator('dbet/dB2' // ij_iter(ij) // '      ', &
+                              blocks,                                &
+                              1,                                     &
+                              1,                                     &
+                              1,                                     &
+                              (/1/),                                 &
+                              (/f/),                                 &
+                              (/s/))
+         end do
+   
+         f = 1.0d0
+         blocks = '+00'//ss
+   
+         do i = 1, size(i_iter)
+            s = ' RM1H2  '
+            s(1:1) = i_iter(i)
+            call add_operator('dnuc/dB' // i_iter(i) // '        ', &
+                              blocks,                               &
+                              1,                                    &
+                             -1,                                    &
+                              1,                                    &
+                              (/1/),                                &
+                              (/f/),                                &
+                              (/s/))
+         end do
+   
+         do ij = 1, size(ij_iter)
+            s = '  RM2H2 '
+            s(1:2) = ij_iter(ij)
+            call add_operator('dnuc/dB2' // ij_iter(ij) // '      ', &
+                              blocks,                                &
+                              1,                                     &
+                              1,                                     &
+                              1,                                     &
+                              (/1/),                                 &
+                              (/f/),                                 &
+                              (/s/))
+         end do
+   
+         f = cval
+         blocks = '0++0'
+   
+         do i = 1, size(i_iter)
+            s1 = ' RM1H3X '
+            s2 = ' RM1H3Y '
+            s3 = ' RM1H3Z '
+            s1(1:1) = i_iter(i)
+            s2(1:1) = i_iter(i)
+            s3(1:1) = i_iter(i)
+            call add_operator('dkin/dB' // i_iter(i) // '        ', &
+                              blocks,                               &
+                              8,                                    &
+                              0,                                    &
+                              1,                                    &
+                              (/1,  1,  1/),                        &
+                              (/f,  f,  f/),                        &
+                              (/s1, s2, s3/))
+         end do
+   
+         do ij = 1, size(ij_iter)
+            s1 = '  RM2H3X'
+            s2 = '  RM2H3Y'
+            s3 = '  RM2H3Z'
+            s1(1:2) = ij_iter(ij)
+            s2(1:2) = ij_iter(ij)
+            s3(1:2) = ij_iter(ij)
+            call add_operator('dkin/dB2' // ij_iter(ij) // '      ', &
+                              blocks,                                &
+                              8,                                     &
+                              0,                                     &
+                              1,                                     &
+                              (/1,  1,  1/),                         &
+                              (/f,  f,  f/),                         &
+                              (/s1, s2, s3/))
+         end do
+   
+         f = 0.5d0*cval
+         blocks = '0++0'
+   
+         call add_operator('dvec/dBX        ', &
+                           blocks,             &
+                           5,                  &
+                           0,                  &
+                           1,                  &
+                           (/1, 1/),           &
+                           (/f, f/),           &
+                           (/'ZRM1RN  ', 'YRM1RN  '/))
+         call add_operator('dvec/dBY        ', &
+                           blocks,             &
+                           6,                  &
+                           0,                  &
+                           1,                  &
+                           (/1, 1/),           &
+                           (/f, f/),           &
+                           (/'XRM1RN  ', 'ZRM1RN  '/))
+         call add_operator('dvec/dBZ        ', &
+                           blocks,             &
+                           7,                  &
+                           0,                  &
+                           1,                  &
+                           (/1, 1/),           &
+                           (/f, f/),           &
+                           (/'YRM1RN  ', 'XRM1RN  '/))
+   
+         f = 1.0d0
+         blocks = '+00'//ss
+   
+         do i = 1, size(i_iter)
+            s = 'dS/dB   '
+            s(6:6) = i_iter(i)
+            call add_operator('dS/dB' // i_iter(i) // '          ', &
+                              blocks,                               &
+                              1,                                    &
+                             -1,                                    &
+                              1,                                    &
+                              (/1/),                                &
+                              (/f/),                                &
+                              (/s/))
+         end do
+   
+         do ij = 1, size(ij_iter)
+            s = 'dS/dB2' // ij_iter(ij)
+            call add_operator('dS/dB2' // ij_iter(ij) // '        ', &
+                              blocks,                                &
+                              1,                                     &
+                              1,                                     &
+                              1,                                     &
+                              (/1/),                                 &
+                              (/f/),                                 &
+                              (/s/))
+         end do
+   
+         do ij = 1, size(ij_iter)
+            s = '>>S/B2' // ij_iter(ij)
+            call add_operator(s // '        ', blocks, 1, 0, 1, (/1/), (/f/), (/s/))
+         end do
+   
+         do ij = 1, size(ij_iter)
+            s = '<>S/B2' // ij_iter(ij)
+            call add_operator(s // '        ', blocks, 1, 0, 1, (/1/), (/f/), (/s/))
+         end do
+   
+         do i = 1, size(i_iter)
+            s = 'd|S>/dB '
+            s(8:8) = i_iter(i)
+            call add_operator('d|S>/dB' // i_iter(i) // '        ', &
+                              blocks,                               &
+                              1,                                    &
+                              0,                                    &
+                              1,                                    &
+                              (/1/),                                &
+                              (/f/),                                &
+                              (/s/))
+         end do
+
+         blocks = '00+0'
+         f = -2.0d0*cval
+       
+         call add_operator('XXrdsusll       ', blocks, 5, 0, 1, (/1, 1/), (/f, f/), (/'XXRDSULZ', 'XXRDSULY'/))
+         call add_operator('YXrdsusll       ', blocks, 6, 0, 1, (/1, 1/), (/f, f/), (/'XYRDSULX', 'XYRDSULZ'/))
+         call add_operator('ZXrdsusll       ', blocks, 7, 0, 1, (/1, 1/), (/f, f/), (/'XZRDSULY', 'XZRDSULX'/))
+         call add_operator('XYrdsusll       ', blocks, 5, 0, 1, (/1, 1/), (/f, f/), (/'YXRDSULZ', 'YXRDSULY'/))
+         call add_operator('YYrdsusll       ', blocks, 6, 0, 1, (/1, 1/), (/f, f/), (/'YYRDSULX', 'YYRDSULZ'/))
+         call add_operator('ZYrdsusll       ', blocks, 7, 0, 1, (/1, 1/), (/f, f/), (/'YZRDSULY', 'YZRDSULX'/))
+         call add_operator('XZrdsusll       ', blocks, 5, 0, 1, (/1, 1/), (/f, f/), (/'ZXRDSULZ', 'ZXRDSULY'/))
+         call add_operator('YZrdsusll       ', blocks, 6, 0, 1, (/1, 1/), (/f, f/), (/'ZYRDSULX', 'ZYRDSULZ'/))
+         call add_operator('ZZrdsusll       ', blocks, 7, 0, 1, (/1, 1/), (/f, f/), (/'ZZRDSULY', 'ZZRDSULX'/))
+
+         blocks = '+00'//ss
+         if (diamagnetic_via_pn) then
+            f = 0.0d0
+         else
+            f = 1.0d0
+         end if
+      
+         do ij = 1, size(ij_iter)
+            s      = '  DSUSNL'
+            s(1:2) = ij_iter(ij)
+            call add_operator(ij_iter(ij) // 'DSUSNL        ', &
+                              blocks,                          &
+                              1,                               &
+                              0,                               &
+                              1,                               &
+                              (/1/),                           &
+                              (/f/),                           &
+                              (/s/))
+         end do
+
+         if (need_1el_f) then
+
+            f = 1.0d0
+            blocks = '+00'//ss
+           
+            call add_operator('X-CM1 X         ', blocks, 1, -1, 1, (/1/), (/f/), (/'X-CM1 X '/))
+            call add_operator('X-CM1 Y         ', blocks, 1, -1, 1, (/1/), (/f/), (/'X-CM1 Y '/))
+            call add_operator('X-CM1 Z         ', blocks, 1, -1, 1, (/1/), (/f/), (/'X-CM1 Z '/))
+            call add_operator('Y-CM1 X         ', blocks, 1, -1, 1, (/1/), (/f/), (/'Y-CM1 X '/))
+            call add_operator('Y-CM1 Y         ', blocks, 1, -1, 1, (/1/), (/f/), (/'Y-CM1 Y '/))
+            call add_operator('Y-CM1 Z         ', blocks, 1, -1, 1, (/1/), (/f/), (/'Y-CM1 Z '/))
+            call add_operator('Z-CM1 X         ', blocks, 1, -1, 1, (/1/), (/f/), (/'Z-CM1 X '/))
+            call add_operator('Z-CM1 Y         ', blocks, 1, -1, 1, (/1/), (/f/), (/'Z-CM1 Y '/))
+            call add_operator('Z-CM1 Z         ', blocks, 1, -1, 1, (/1/), (/f/), (/'Z-CM1 Z '/))
+                                                                                             
+            call add_operator('X-CM2XX         ', blocks, 1, 1, 1, (/1/), (/f/), (/'X-CM2XX '/))
+            call add_operator('X-CM2XY         ', blocks, 1, 1, 1, (/1/), (/f/), (/'X-CM2XY '/))
+            call add_operator('X-CM2XZ         ', blocks, 1, 1, 1, (/1/), (/f/), (/'X-CM2XZ '/))
+            call add_operator('X-CM2YY         ', blocks, 1, 1, 1, (/1/), (/f/), (/'X-CM2YY '/))
+            call add_operator('X-CM2YZ         ', blocks, 1, 1, 1, (/1/), (/f/), (/'X-CM2YZ '/))
+            call add_operator('X-CM2ZZ         ', blocks, 1, 1, 1, (/1/), (/f/), (/'X-CM2ZZ '/))
+            call add_operator('Y-CM2XX         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Y-CM2XX '/))
+            call add_operator('Y-CM2XY         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Y-CM2XY '/))
+            call add_operator('Y-CM2XZ         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Y-CM2XZ '/))
+            call add_operator('Y-CM2YY         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Y-CM2YY '/))
+            call add_operator('Y-CM2YZ         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Y-CM2YZ '/))
+            call add_operator('Y-CM2ZZ         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Y-CM2ZZ '/))
+            call add_operator('Z-CM2XX         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Z-CM2XX '/))
+            call add_operator('Z-CM2XY         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Z-CM2XY '/))
+            call add_operator('Z-CM2XZ         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Z-CM2XZ '/))
+            call add_operator('Z-CM2YY         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Z-CM2YY '/))
+            call add_operator('Z-CM2YZ         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Z-CM2YZ '/))
+            call add_operator('Z-CM2ZZ         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Z-CM2ZZ '/))
+
+         end if
+         if (need_1el_q) then
+            f = 1.0d0
+            blocks = '+00'//ss
+           
+            call add_operator('XX-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XX-QDB X'/))
+            call add_operator('XY-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XY-QDB X'/))
+            call add_operator('XZ-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XZ-QDB X'/))
+            call add_operator('YY-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YY-QDB X'/))
+            call add_operator('YZ-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YZ-QDB X'/))
+            call add_operator('ZZ-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'ZZ-QDB X'/))
+            call add_operator('XX-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XX-QDB Y'/))
+            call add_operator('XY-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XY-QDB Y'/))
+            call add_operator('XZ-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XZ-QDB Y'/))
+            call add_operator('YY-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YY-QDB Y'/))
+            call add_operator('YZ-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YZ-QDB Y'/))
+            call add_operator('ZZ-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'ZZ-QDB Y'/))
+            call add_operator('XX-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XX-QDB Z'/))
+            call add_operator('XY-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XY-QDB Z'/))
+            call add_operator('XZ-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XZ-QDB Z'/))
+            call add_operator('YY-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YY-QDB Z'/))
+            call add_operator('YZ-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YZ-QDB Z'/))
+            call add_operator('ZZ-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'ZZ-QDB Z'/))
+         end if
+      end if
+
+      if (need_1el_g) then
+
+         f = 1.0d0
+         blocks = '+00'//ss
+
+         do iatom = 1, nr_atoms*3
+            s = 'G1O' // prefix_zeros(iatom, 3) // '  '
             call add_operator(s // '        ', &
                               blocks,          &
                               1,               &
@@ -283,323 +595,53 @@ contains
                               (/f/),           &
                               (/s/))
          end do
-      end do
-
-      f = 1.0d0
-      blocks = '+00'//ss
-      do iatom = 1, nr_atoms*3
-         s = 'G1O' // prefix_zeros(iatom, 3) // '  '
-         call add_operator(s // '        ', &
-                           blocks,          &
-                           1,               &
-                           1,               &
-                           1,               &
-                           (/1/),           &
-                           (/f/),           &
-                           (/s/))
-      end do
-
-      f = 1.0d0
-      blocks = '+00'//ss
-      do iatom = 1, nr_atoms*3
-         s = 'G1N' // prefix_zeros(iatom, 3) // '  '
-         call add_operator(s // '        ', &
-                           blocks,          &
-                           1,               &
-                           1,               &
-                           1,               &
-                           (/1/),           &
-                           (/f/),           &
-                           (/s/))
-      end do
-
-      f = 2.0d0*cval*cval
-      blocks = '000+'
-      do iatom = 1, nr_atoms*3
-         s = 'G1B' // prefix_zeros(iatom, 3) // '  '
-         call add_operator(s // '        ', &
-                           blocks,          &
-                           1,               &
-                           1,               &
-                           1,               &
-                           (/1/),           &
-                           (/f/),           &
-                           (/s/))
-      end do
-
-      f = cval
-      blocks = '0++0'
-      do iatom = 1, nr_atoms*3
-         do i = 1, size(i_iter)
-            s      = 'G1K     '
-            s(4:4) = i_iter(i)
-            s(5:7) = prefix_zeros(iatom, 3)
-            call add_operator(s // '        ',    &
-                              blocks,             &
-                              1,                  &
-                             -1,                  &
-                              1,                  &
-                              (/1/),              &
-                              (/f/),              &
+         
+         do iatom = 1, nr_atoms*3
+            s = 'G1N' // prefix_zeros(iatom, 3) // '  '
+            call add_operator(s // '        ', &
+                              blocks,          &
+                              1,               &
+                              1,               &
+                              1,               &
+                              (/1/),           &
+                              (/f/),           &
                               (/s/))
          end do
-      end do
+         
+         f = 2.0d0*cval*cval
+         blocks = '000+'
 
-!     dbet/dB
-      f = -2.0d0*cval*cval
-      blocks = '000+'
-      do i = 1, size(i_iter)
-         s = 'dS/dB   '
-         s(6:6) = i_iter(i)
-         call add_operator('dbet/dB' // i_iter(i) // '        ', &
-                           blocks,                               &
-                           1,                                    &
-                          -1,                                    &
-                           1,                                    &
-                           (/1/),                                &
-                           (/f/),                                &
-                           (/s/))
-      end do
-!     dbet/dB2
-      do ij = 1, size(ij_iter)
-         s = 'dS/dB2' // ij_iter(ij)
-         call add_operator('dbet/dB2' // ij_iter(ij) // '      ', &
-                           blocks,                                &
-                           1,                                     &
-                           1,                                     &
-                           1,                                     &
-                           (/1/),                                 &
-                           (/f/),                                 &
-                           (/s/))
-      end do
+         do iatom = 1, nr_atoms*3
+            s = 'G1B' // prefix_zeros(iatom, 3) // '  '
+            call add_operator(s // '        ', &
+                              blocks,          &
+                              1,               &
+                              1,               &
+                              1,               &
+                              (/1/),           &
+                              (/f/),           &
+                              (/s/))
+         end do
+         
+         f = cval
+         blocks = '0++0'
 
-!     dnuc/dB
-      f = 1.0d0
-      blocks = '+00'//ss
-      do i = 1, size(i_iter)
-         s = ' RM1H2  '
-         s(1:1) = i_iter(i)
-         call add_operator('dnuc/dB' // i_iter(i) // '        ', &
-                           blocks,                               &
-                           1,                                    &
-                          -1,                                    &
-                           1,                                    &
-                           (/1/),                                &
-                           (/f/),                                &
-                           (/s/))
-      end do
-!     dnuc/dB2
-      do ij = 1, size(ij_iter)
-         s = '  RM2H2 '
-         s(1:2) = ij_iter(ij)
-         call add_operator('dnuc/dB2' // ij_iter(ij) // '      ', &
-                           blocks,                                &
-                           1,                                     &
-                           1,                                     &
-                           1,                                     &
-                           (/1/),                                 &
-                           (/f/),                                 &
-                           (/s/))
-      end do
-
-!     dkin/dB
-      f = cval
-      blocks = '0++0'
-      do i = 1, size(i_iter)
-         s1 = ' RM1H3X '
-         s2 = ' RM1H3Y '
-         s3 = ' RM1H3Z '
-         s1(1:1) = i_iter(i)
-         s2(1:1) = i_iter(i)
-         s3(1:1) = i_iter(i)
-         call add_operator('dkin/dB' // i_iter(i) // '        ', &
-                           blocks,                               &
-                           8,                                    &
-                           0,                                    &
-                           1,                                    &
-                           (/1,  1,  1/),                        &
-                           (/f,  f,  f/),                        &
-                           (/s1, s2, s3/))
-      end do
-!     dkin/dB2
-      do ij = 1, size(ij_iter)
-         s1 = '  RM2H3X'
-         s2 = '  RM2H3Y'
-         s3 = '  RM2H3Z'
-         s1(1:2) = ij_iter(ij)
-         s2(1:2) = ij_iter(ij)
-         s3(1:2) = ij_iter(ij)
-         call add_operator('dkin/dB2' // ij_iter(ij) // '      ', &
-                           blocks,                                &
-                           8,                                     &
-                           0,                                     &
-                           1,                                     &
-                           (/1,  1,  1/),                         &
-                           (/f,  f,  f/),                         &
-                           (/s1, s2, s3/))
-      end do
-
-!     dvec/dB
-      f = 0.5d0*cval
-      blocks = '0++0'
-      call add_operator('dvec/dBX        ', &
-                        blocks,             &
-                        5,                  &
-                        0,                  &
-                        1,                  &
-                        (/1, 1/),           &
-                        (/f, f/),           &
-                        (/'ZRM1RN  ', 'YRM1RN  '/))
-      call add_operator('dvec/dBY        ', &
-                        blocks,             &
-                        6,                  &
-                        0,                  &
-                        1,                  &
-                        (/1, 1/),           &
-                        (/f, f/),           &
-                        (/'XRM1RN  ', 'ZRM1RN  '/))
-      call add_operator('dvec/dBZ        ', &
-                        blocks,             &
-                        7,                  &
-                        0,                  &
-                        1,                  &
-                        (/1, 1/),           &
-                        (/f, f/),           &
-                        (/'YRM1RN  ', 'XRM1RN  '/))
-
-!     dS/dB
-      f = 1.0d0
-      blocks = '+00'//ss
-      do i = 1, size(i_iter)
-         s = 'dS/dB   '
-         s(6:6) = i_iter(i)
-         call add_operator('dS/dB' // i_iter(i) // '          ', &
-                           blocks,                               &
-                           1,                                    &
-                          -1,                                    &
-                           1,                                    &
-                           (/1/),                                &
-                           (/f/),                                &
-                           (/s/))
-      end do
-!     dS/dB2
-      do ij = 1, size(ij_iter)
-         s = 'dS/dB2' // ij_iter(ij)
-         call add_operator('dS/dB2' // ij_iter(ij) // '        ', &
-                           blocks,                                &
-                           1,                                     &
-                           1,                                     &
-                           1,                                     &
-                           (/1/),                                 &
-                           (/f/),                                 &
-                           (/s/))
-      end do
-
-      do ij = 1, size(ij_iter)
-         s = '>>S/B2' // ij_iter(ij)
-         call add_operator(s // '        ', blocks, 1, 0, 1, (/1/), (/f/), (/s/))
-      end do
-
-      do ij = 1, size(ij_iter)
-         s = '<>S/B2' // ij_iter(ij)
-         call add_operator(s // '        ', blocks, 1, 0, 1, (/1/), (/f/), (/s/))
-      end do
-
-      call add_operator('X-CM1 X         ', blocks, 1, -1, 1, (/1/), (/f/), (/'X-CM1 X '/))
-      call add_operator('X-CM1 Y         ', blocks, 1, -1, 1, (/1/), (/f/), (/'X-CM1 Y '/))
-      call add_operator('X-CM1 Z         ', blocks, 1, -1, 1, (/1/), (/f/), (/'X-CM1 Z '/))
-      call add_operator('Y-CM1 X         ', blocks, 1, -1, 1, (/1/), (/f/), (/'Y-CM1 X '/))
-      call add_operator('Y-CM1 Y         ', blocks, 1, -1, 1, (/1/), (/f/), (/'Y-CM1 Y '/))
-      call add_operator('Y-CM1 Z         ', blocks, 1, -1, 1, (/1/), (/f/), (/'Y-CM1 Z '/))
-      call add_operator('Z-CM1 X         ', blocks, 1, -1, 1, (/1/), (/f/), (/'Z-CM1 X '/))
-      call add_operator('Z-CM1 Y         ', blocks, 1, -1, 1, (/1/), (/f/), (/'Z-CM1 Y '/))
-      call add_operator('Z-CM1 Z         ', blocks, 1, -1, 1, (/1/), (/f/), (/'Z-CM1 Z '/))
-                                                                                       
-      call add_operator('X-CM2XX         ', blocks, 1, 1, 1, (/1/), (/f/), (/'X-CM2XX '/))
-      call add_operator('X-CM2XY         ', blocks, 1, 1, 1, (/1/), (/f/), (/'X-CM2XY '/))
-      call add_operator('X-CM2XZ         ', blocks, 1, 1, 1, (/1/), (/f/), (/'X-CM2XZ '/))
-      call add_operator('X-CM2YY         ', blocks, 1, 1, 1, (/1/), (/f/), (/'X-CM2YY '/))
-      call add_operator('X-CM2YZ         ', blocks, 1, 1, 1, (/1/), (/f/), (/'X-CM2YZ '/))
-      call add_operator('X-CM2ZZ         ', blocks, 1, 1, 1, (/1/), (/f/), (/'X-CM2ZZ '/))
-      call add_operator('Y-CM2XX         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Y-CM2XX '/))
-      call add_operator('Y-CM2XY         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Y-CM2XY '/))
-      call add_operator('Y-CM2XZ         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Y-CM2XZ '/))
-      call add_operator('Y-CM2YY         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Y-CM2YY '/))
-      call add_operator('Y-CM2YZ         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Y-CM2YZ '/))
-      call add_operator('Y-CM2ZZ         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Y-CM2ZZ '/))
-      call add_operator('Z-CM2XX         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Z-CM2XX '/))
-      call add_operator('Z-CM2XY         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Z-CM2XY '/))
-      call add_operator('Z-CM2XZ         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Z-CM2XZ '/))
-      call add_operator('Z-CM2YY         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Z-CM2YY '/))
-      call add_operator('Z-CM2YZ         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Z-CM2YZ '/))
-      call add_operator('Z-CM2ZZ         ', blocks, 1, 1, 1, (/1/), (/f/), (/'Z-CM2ZZ '/))
-
-      call add_operator('XX-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XX-QDB X'/))
-      call add_operator('XY-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XY-QDB X'/))
-      call add_operator('XZ-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XZ-QDB X'/))
-      call add_operator('YY-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YY-QDB X'/))
-      call add_operator('YZ-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YZ-QDB X'/))
-      call add_operator('ZZ-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'ZZ-QDB X'/))
-      call add_operator('XX-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XX-QDB Y'/))
-      call add_operator('XY-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XY-QDB Y'/))
-      call add_operator('XZ-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XZ-QDB Y'/))
-      call add_operator('YY-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YY-QDB Y'/))
-      call add_operator('YZ-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YZ-QDB Y'/))
-      call add_operator('ZZ-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'ZZ-QDB Y'/))
-      call add_operator('XX-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XX-QDB Z'/))
-      call add_operator('XY-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XY-QDB Z'/))
-      call add_operator('XZ-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XZ-QDB Z'/))
-      call add_operator('YY-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YY-QDB Z'/))
-      call add_operator('YZ-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YZ-QDB Z'/))
-      call add_operator('ZZ-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'ZZ-QDB Z'/))
-
-      f = 1.0d0
-      blocks = '+00'//ss
-      do i = 1, size(i_iter)
-         s = 'd|S>/dB '
-         s(8:8) = i_iter(i)
-         call add_operator('d|S>/dB' // i_iter(i) // '        ', &
-                           blocks,                               &
-                           1,                                    &
-                           0,                                    &
-                           1,                                    &
-                           (/1/),                                &
-                           (/f/),                                &
-                           (/s/))
-      end do
-
-      blocks = '00+0'
-      f = -2.0d0*cval
-
-      call add_operator('XXrdsusll       ', blocks, 5, 0, 1, (/1, 1/), (/f, f/), (/'XXRDSULZ', 'XXRDSULY'/))
-      call add_operator('YXrdsusll       ', blocks, 6, 0, 1, (/1, 1/), (/f, f/), (/'XYRDSULX', 'XYRDSULZ'/))
-      call add_operator('ZXrdsusll       ', blocks, 7, 0, 1, (/1, 1/), (/f, f/), (/'XZRDSULY', 'XZRDSULX'/))
-      call add_operator('XYrdsusll       ', blocks, 5, 0, 1, (/1, 1/), (/f, f/), (/'YXRDSULZ', 'YXRDSULY'/))
-      call add_operator('YYrdsusll       ', blocks, 6, 0, 1, (/1, 1/), (/f, f/), (/'YYRDSULX', 'YYRDSULZ'/))
-      call add_operator('ZYrdsusll       ', blocks, 7, 0, 1, (/1, 1/), (/f, f/), (/'YZRDSULY', 'YZRDSULX'/))
-      call add_operator('XZrdsusll       ', blocks, 5, 0, 1, (/1, 1/), (/f, f/), (/'ZXRDSULZ', 'ZXRDSULY'/))
-      call add_operator('YZrdsusll       ', blocks, 6, 0, 1, (/1, 1/), (/f, f/), (/'ZYRDSULX', 'ZYRDSULZ'/))
-      call add_operator('ZZrdsusll       ', blocks, 7, 0, 1, (/1, 1/), (/f, f/), (/'ZZRDSULY', 'ZZRDSULX'/))
-
-      blocks = '+00'//ss
-      if (diamagnetic_via_pn) then
-         f = 0.0d0
-      else
-         f = 1.0d0
+         do iatom = 1, nr_atoms*3
+            do i = 1, size(i_iter)
+               s      = 'G1K     '
+               s(4:4) = i_iter(i)
+               s(5:7) = prefix_zeros(iatom, 3)
+               call add_operator(s // '        ',    &
+                                 blocks,             &
+                                 1,                  &
+                                -1,                  &
+                                 1,                  &
+                                 (/1/),              &
+                                 (/f/),              &
+                                 (/s/))
+            end do
+         end do
       end if
-
-      do ij = 1, size(ij_iter)
-         s      = '  DSUSNL'
-         s(1:2) = ij_iter(ij)
-         call add_operator(ij_iter(ij) // 'DSUSNL        ', &
-                           blocks,                          &
-                           1,                               &
-                           0,                               &
-                           1,                               &
-                           (/1/),                           &
-                           (/f/),                           &
-                           (/s/))
-      end do
 
    end subroutine
 

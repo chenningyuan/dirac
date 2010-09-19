@@ -118,7 +118,7 @@ contains
         if (openrsp_cfg_roa) then
            call test_available_memory(102, D%nrow, nz)
 
-           print '(//a,f11.8/)','linscf calls roa_pol_Gpri_Aten_grads, freq =',cfg_rsp_freq(1)
+!          print '(//a,f11.8/)','linscf calls roa_pol_Gpri_Aten_grads, freq =',cfg_rsp_freq(1)
            call get_natoms(number_atoms)
            l = 3*number_atoms
            allocate(tsr(3*3+3*3+6*3+l*3*3+l*3*3+l*6*3)) !ajt: hack
@@ -137,7 +137,7 @@ contains
            deallocate(tsr)
         endif
         if (openrsp_cfg_cars) then
-           print '(//a,f11.8/)','linscf calls cars_pol_shyp_polgra, freq =',cfg_rsp_freq(1)
+!          print '(//a,f11.8/)','linscf calls cars_pol_shyp_polgra, freq =',cfg_rsp_freq(1)
            call get_natoms(number_atoms)
            l = 3*number_atoms
            allocate(tsr(3+3*3+3*3*3*3+l*3*3)) !ajt: hack
@@ -157,7 +157,7 @@ contains
 
         if (openrsp_cfg_efgb) then
            do i=1,1
-              print '(//a,f11.8/)','linscf calls efgb_Jpri_Bten_Bcal w=',cfg_rsp_freq(i)
+!             print '(//a,f11.8/)','linscf calls efgb_Jpri_Bten_Bcal w=',cfg_rsp_freq(i)
               allocate(tsr(3+6+9+9+9+9+18+27+27+27+27+54+54)) !ajt: This tsr() thing is a hack.
                   !Response functions should perhaps eventually be stored in a dedicated module
               call efgb_Jpri_Bten_Bcal(decomp,S,D,F,                           &
@@ -186,7 +186,7 @@ contains
                         +6*3*3+3*3*3*3+3*3*3*3+6*3*3*3+6*3*3*3)) !ajt: hack
         !  do i=1,cfg_rsp_nfreq
            do i=1,1
-              print '(//a,f11.8/)','linscf calls cme_jones_eta_apri, freq =',cfg_rsp_freq(i)
+!             print '(//a,f11.8/)','linscf calls cme_jones_eta_apri, freq =',cfg_rsp_freq(i)
               !ajt fixme Apri requires 6 extra equations and some more contractions,
               !          but is not used for Cotton-Mouton
               call cme_jones_eta_apri(decomp,S,D,F,cfg_rsp_freq(i)*(1d0,0d0)*(/0,0,-1,1/), &
@@ -208,7 +208,7 @@ contains
                         +3*3*3*3+3*3*3*3+6*3*3*3+6*3*3*3))
         !  do i=1,cfg_rsp_nfreq
            do i=1,1
-              print '(//a,4f11.8/)','linscf calls cme_jones_eta_api, freq =',cfg_rsp_freq(i)
+!             print '(//a,4f11.8/)','linscf calls cme_jones_eta_api, freq =',cfg_rsp_freq(i)
               call cme_jones_eta_apri(decomp,S,D,F,cfg_rsp_freq(i)*(1d0,0d0)*(/1,0,-1,0/), &
                              tsr(1:3),tsr(4:9),tsr(10:18),tsr(19:27),tsr(28:36),    &
                              tsr(37:45),tsr(46:63),tsr(64:72),tsr(73:99),           &

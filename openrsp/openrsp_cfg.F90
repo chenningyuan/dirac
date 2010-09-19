@@ -53,6 +53,13 @@ module openrsp_cfg
       character(1) :: op(max_order)
    end type
 
+   logical, public :: need_1el_f = .false.
+   logical, public :: need_1el_q = .false.
+   logical, public :: need_1el_v = .false.
+   logical, public :: need_1el_o = .false.
+   logical, public :: need_1el_b = .false.
+   logical, public :: need_1el_g = .false.
+
    private
 
 end module

@@ -607,84 +607,121 @@ contains
     if (kw_matches(word, '.ALPHA ')) then
 !     frequency-dependent \alpha
       openrsp_cfg_alpha = .true.
+      need_1el_f = .true.
     end if
 
     if (kw_matches(word, '.0ALPHA')) then
 !     static \alpha
       openrsp_cfg_alpha_lin_static = .true.
+      need_1el_f = .true.
     end if
 
     if (kw_matches(word, '.BETA  ')) then
 !     frequency-dependent \beta by the n+1 rule
       openrsp_cfg_beta = .true.
+      need_1el_f = .true.
     end if
 
     if (kw_matches(word, '.BETA2N')) then
 !     frequency-dependent \beta by the 2n+1 rule
       openrsp_cfg_beta_2np1 = .true.
+      need_1el_f = .true.
     end if
 
     if (kw_matches(word, '.0BETA ')) then
 !     static \beta
       openrsp_cfg_beta_lin_static = .true.
+      need_1el_f = .true.
     end if
 
     if (kw_matches(word, '.GAMMA ')) then
 !     frequency-dependent \gamma
       openrsp_cfg_gamma = .true.
+      need_1el_f = .true.
     end if
 
     if (kw_matches(word, '.0GAMMA')) then
 !     static \gamma
       openrsp_cfg_gamma_lin_static = .true.
+      need_1el_f = .true.
     end if
 
     if (kw_matches(word, '.DC-SHG')) then
       openrsp_cfg_gamma_lin_dc_shg = .true.
+      need_1el_f = .true.
     end if
 
     if (kw_matches(word, '.THG   ')) then
       openrsp_cfg_gamma_lin_thg = .true.
+      need_1el_f = .true.
     end if
 
     if (kw_matches(word, '.IDRI  ')) then
       openrsp_cfg_gamma_lin_idri = .true.
+      need_1el_f = .true.
     end if
 
     if (kw_matches(word, '.DC-KER')) then
       openrsp_cfg_gamma_lin_dc_kerr = .true.
+      need_1el_f = .true.
     end if
 
     if (kw_matches(word, '.MAGNET')) then
       openrsp_cfg_magnetizability = .true.
+      need_1el_o = .true.
+      need_1el_b = .true.
     end if
 
     if (kw_matches(word, '.QUADRU')) then
       openrsp_cfg_quadrupole = .true.
+      need_1el_f = .true.
     end if
 
     if (kw_matches(word, '.ROA   ')) then
       openrsp_cfg_roa = .true.
+      need_1el_f = .true.
+      need_1el_q = .true.
+      need_1el_o = .true.
+      need_1el_g = .true.
     end if
 
     if (kw_matches(word, '.CARS  ')) then
       openrsp_cfg_cars = .true.
+      need_1el_f = .true.
+      need_1el_q = .true.
+      need_1el_o = .true.
+      need_1el_g = .true.
     end if
 
     if (kw_matches(word, '.EFGB  ')) then
       openrsp_cfg_efgb = .true.
+      need_1el_f = .true.
+      need_1el_q = .true.
+      need_1el_v = .true.
+      need_1el_o = .true.
+      need_1el_b = .true.
     end if
 
     if (kw_matches(word, '.JONES ')) then
       openrsp_cfg_jones = .true.
+      need_1el_f = .true.
+      need_1el_q = .true.
+      need_1el_o = .true.
+      need_1el_b = .true.
     end if
 
     if (kw_matches(word, '.CME   ')) then
       openrsp_cfg_cme = .true.
+      need_1el_f = .true.
+      need_1el_q = .true.
+      need_1el_o = .true.
+      need_1el_b = .true.
     end if
 
     if (kw_matches(word, '.MOLGRD')) then
       openrsp_cfg_dg_energy = .true.
+      need_1el_f = .true.
+      need_1el_g = .true.
     end if
 
     if (kw_matches(word, '.INTEGR')) then
@@ -700,10 +737,12 @@ contains
 !     of given order
       openrsp_cfg_zzz = .true.
       call kw_read(word, openrsp_cfg_zzz_order)
+      need_1el_f = .true.
     end if
 
     if (kw_matches(word, '.DELTA ')) then
       openrsp_cfg_test_delta = .true.
+      need_1el_f = .true.
     end if
 
     call check_whether_kw_found(word, kw_section)
