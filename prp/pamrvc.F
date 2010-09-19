@@ -2707,6 +2707,9 @@ C     Written by T.Saue, Oct 18 1996
 C     Last modification Nov 26 1997
 C
 C***********************************************************************
+
+      use dirac_cfg
+
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0,D5=5.0D0)
@@ -2784,6 +2787,11 @@ C
          XTNORM = DNRM2(NVPAR,XNORM(IFREQ,1),MFREQ)
          IF ( .NOT. FKRMC ) THEN
             IF(XTNORM.EQ.D0) THEN
+               if (dirac_cfg_openrsp) then
+                  do i = 1, nvpar
+                     ivecs(ifreq, i) = 0
+                  end do
+               end if
                WRITE(LUPRI,'(A)')
      &         '*** WARNING! *** Zero norm of solution vector !'
             ELSE

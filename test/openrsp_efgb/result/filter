@@ -30,3 +30,6 @@ Nlines 10:d/df G-prime-Lon = Ebff
 
 $ERROR 1.E-7
 Nlines 19:d/dq Alpha = -Effq
+
+$ERROR 1.E-7
+Nlines 12:           Electric-field-gradient-induced

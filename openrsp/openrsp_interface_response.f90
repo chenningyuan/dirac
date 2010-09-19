@@ -170,7 +170,6 @@ contains
     integer                     :: nr_freq
 
     logical                     :: debug_me = .false.
-    real(8)                     :: f, fmax
 !   ----------------------------------------------------------------------------
 
 !   fixme: nssh not always properly set, change to nesh minus nish
@@ -283,9 +282,6 @@ contains
     end if
 
 
-    fmax = 0.0d0
-
-
 !   get positive -> positive property gradient
 !   ==========================================
 
@@ -299,10 +295,6 @@ contains
              i = orbital_rotation_indices_pp(1, k)
              s = orbital_rotation_indices_pp(2, k)
              prop_gradient_pp(k, iz) = -2.0d0*RHS_mo%elms(off + (i - 1)*norbt + s)
-             f = dabs(prop_gradient_pp(k, iz))
-             if (f > fmax) then
-                fmax = f
-             end if
           end do
        end do
 
@@ -327,10 +319,6 @@ contains
              i = orbital_rotation_indices_pn(1, k)
              s = orbital_rotation_indices_pn(2, k)
              prop_gradient_pn(k, iz) = -2.0d0*RHS_mo%elms(off + (i - 1)*norbt + s)
-             f = dabs(prop_gradient_pn(k, iz))
-             if (f > fmax) then
-                fmax = f
-             end if
           end do
        end do
 
@@ -340,9 +328,6 @@ contains
        end if
 
     end if
-
-    write(*, *) 'debug fmax', fmax
-    if (fmax > 1.0d-10) then
 
 
 !   inherit shape
@@ -385,32 +370,32 @@ contains
     end if
 
     lineq     = .true.
-!   in setrsp
-!   fkrmc     = .false.
     lsvcfg(1) = .true.
     lsvcfg(2) = .true.
-    tknorm    = .false.
+    tknorm    = .true.
     diaghe    = .true.
     iprxrs    = 0
     thcxrs    = openrsp_cfg_threshold_response
     resfac    = 1.0d3
     maxitr    = 150
+    nr_freq   = 1
+    maxsim    = -1
     nredm     = 400
     n2redm    = nredm*nredm
-    maxsim    = -1
     loffty    = 0
+    uncoup    = .false.
+    imfreq    = .false.
+    triplet   = .false.
     cnvint(1) = 1.0d20
     cnvint(2) = 1.0d20
     itrint(1) = 1
     itrint(2) = 1
-!   in setrsp
-!   uncoup    = .false.
-    sternh    = .false.
-
     intdef    = integral_flag
+    sternh    = .false.
+    sternc    = .false.
+    e2chek    = .false.
 
 !   nr_freq   = size(freq)
-    nr_freq   = 1
     jsymop    = RHS%irep + 1
     jtimop    = RHS%tr_sym
     jopsy     = jbtof(RHS%irep, 1)
@@ -623,13 +608,6 @@ contains
     end if
 
     Wp = 0
-
-    else
-       Dp = tiny(0.0d0)*RHS
-       Dp%ih_sym = RHS%ih_sym
-       Dp%tr_sym = RHS%tr_sym
-       Dp%irep   = RHS%irep
-    end if !if (fmax > 1.0d-10) then
 
     if (debug_me) then
        call print_mat(Dp, label = 'debug Dp')
