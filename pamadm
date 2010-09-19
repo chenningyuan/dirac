@@ -51,6 +51,33 @@ def is_windows():
     return False
   else:
     return True
+
+###################################################################
+#  create symbolic link (Unix), before make a comprehensive check
+###################################################################
+def create_link(source, dest_dir, dest_file):
+  if not os.path.exists(source):
+     print "create_link error ! source does not exist:"+source
+     sys.exit(source+' does not exist ! No linking possible, error exit !')
+     
+  if not os.path.exists(dest_dir):
+     print "create_link error ! destination dir does not exist :"+dest_dir
+
+  dest = dest_dir+"/"+dest_file
+
+  # always remove old stuff (file or link) before 
+  if os.path.isfile(dest) or os.path.islink(dest):
+      #print 'removing old regular file:'+dest
+      os.remove(dest)
+
+  if not is_windows(): 
+    try:
+       os.symlink(source,dest)
+    except (OSError, ValueError):
+       print "*** linking error !!! "
+       print "source : ",source
+       print "destination : ",dest
+       sys.exit("Linking error ! Check source and destination !")
   
   
 # classes
@@ -633,30 +660,19 @@ f.close()
 # get position of absolute dirac directory
 dirac_dir=os.path.dirname(os.path.abspath(sys.argv[0]))
 source_dir=dirac_dir+"/build/Makefile.dirs"
-if not os.path.exists(source_dir):
-   sys.exit(source_dir+' does not exist ! No linking possible, exit !')
 
 # pick up directory names
 for directory in vital_directories:
-   if os.path.exists(dirac_dir+"/"+directory):
-      dest_dir=dirac_dir+"/"+directory+"/Makefile"
-      if not os.path.islink(dest_dir):
-         if not is_windows: 
-		    os.symlink(source_dir,dest_dir)
+   directory_path = dirac_dir+"/"+directory
+   create_link(source_dir,directory_path,"Makefile")
+
 for module in dirac_modules:
 #  xcfun has its own Makefile, do not overwrite it with a link
    if dirac_modules[module].directories and dirac_modules[module].is_included and (module != 'xcfun'):
       for directory in dirac_modules[module].directories:
-         if os.path.exists(dirac_dir+"/"+directory):
-            dest_dir=dirac_dir+"/"+directory+"/Makefile"
-            #if (not os.path.islink(dest_dir)) and (not os.path.isfile(dest_dir)):
-            if (not os.path.islink(dest_dir) and not is_windows()) :
-               try:
-			      os.symlink(source_dir,dest_dir)
-               except (OSError, ValueError):
-                  print "linking error - source dir: ",source_dir
-                  print "linking error - destination dir: ",dest_dir
-                  sys.exit("Linking error ! Check that Makefile !")
+        create_link(source_dir,dirac_dir+"/"+directory,"Makefile")
+
+
 
 # package tests
 # =============
