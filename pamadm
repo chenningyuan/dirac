@@ -25,6 +25,7 @@
 from optparse import OptionParser
 import sys
 import os
+import stat
 import shutil
 import distutils.util
 import string
@@ -725,7 +726,8 @@ runtest_file_in=open("test/runtest.in","r")
 runtest_file.write(runtest_file_in.read())
 runtest_file.close()
 runtest_file_in.close()
-os.system("chmod 700 test/runtest") 
+# read,write and execute by the owner (Windows accepted solution)
+os.chmod("test/runtest", stat.S_IRWXU) 
 
 # export dirac to tar.gz file
 # ===========================
