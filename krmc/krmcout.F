@@ -333,8 +333,8 @@ C
 C           Analyze CI vectors
 C
          IF (OPT_CIPROGRAM .EQ. 'GASCIP') THEN
-            CALL GASCIP_ANACI(NZCONF,WORK(KCREF),WORK(KZCONF),
-     &                       THRPCI,WORK(KFREE),LFREE)
+            CALL GASCIP_ANACI(WORK(KCREF),NZCONF,WORK(KZCONF),
+     &                        THRPCI,WORK(KFREE),LFREE)
          ELSE IF (OPT_CIPROGRAM .EQ. 'LUCIAREL') THEN
             CALL LUCI_ANAL(WORK(KCREF),WORK,KFREE,LFREE)
          END IF

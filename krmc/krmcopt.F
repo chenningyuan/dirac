@@ -3447,8 +3447,8 @@ C
 C
          END IF
          IF (IANACI.EQ.1) THEN
-           CALL GASCIP_ANACI(NZCONF,CREF,WORK(KZCONF),THRPCI,
-     &                      WORK(KFREE),LFREE)
+           CALL GASCIP_ANACI(CREF,NZCONF,WORK(KZCONF),THRPCI,
+     &                       WORK(KFREE),LFREE)
          END IF
 C
       ELSE IF ( OPT_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
