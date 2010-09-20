@@ -430,15 +430,19 @@ contains
       end if
     end do
 
-    do imat = 1, nr_dmat_con
-      if (nz < 4) then
-        do iz = 1, nz
-          iq   = ipqtoq(iz, D_con(imat)%irep)
-          ioff = ntbas(0)*ntbas(0)*(iz - 1)
-          call q2bphase('D', iq, 1, D_con(imat)%elms(1 + ioff))
-        end do
-      end if
-    end do
+#ifdef MOD_UNRELEASED
+    if (visual_cfg_london) then
+      do imat = 1, nr_dmat_con
+        if (nz < 4) then
+          do iz = 1, nz
+            iq   = ipqtoq(iz, D_con(imat)%irep)
+            ioff = ntbas(0)*ntbas(0)*(iz - 1)
+            call q2bphase('D', iq, 1, D_con(imat)%elms(1 + ioff))
+          end do
+        end if
+      end do
+    end if
+#endif
 
 
 !   scale density matrices
