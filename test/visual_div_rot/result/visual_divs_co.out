@@ -1,7 +1,7 @@
-DIRAC launched (pam script) by bast@larry at Thu Jul 22 16:02:41 CEST 2010
+DIRAC launched (pam script) by bast@larry at Mon Sep 20 08:56:47 CEST 2010
 in : /home/bast/dirac/intel_mkl/test/visual_div_rot
 ===========================================================================================
-Size of all static allocations (pam script) : 83.9428 MB
+Size of all static allocations (pam script) : 82.5895 MB
 DIRAC serial allocating 64000000 words (488 MB) of memory
  ******************************************************************************
  *                                                                            *
@@ -95,12 +95,12 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
  *    Ulf Ekstrom              VU University Amsterdam           Netherlands  *
  *    Ephraim Eliav            University of Tel Aviv            Israel       *
  *    Timo Fleig               Université P. Sabatier, Toulouse  France       *
- *    Andre S. P. Gomes        VU University Amsterdam           Netherlands  *
+ *    Andre S. P. Gomes        CNRS/Universite Lille 1           France       *
  *    Trygve U. Helgaker       University of Oslo                Norway       *
  *    Johan Henriksson         Linkoeping University             Sweden       *
- *    Miroslav Ilias           University of Zilina              Slovakia     *
+ *    Miroslav Ilias           Matej Bel University              Slovakia     *
  *    Christoph R. Jacob       ETH Zurich                        Switzerland  *
- *    Stefan Knecht            University of Duesseldorf         Germany      *
+ *    Stefan Knecht            CNRS/Université de Strasbourg     France       *
  *    Patrick Norman           Linkoeping University             Sweden       *
  *    Jeppe Olsen              Aarhus University                 Denmark      *
  *    Markus Pernpointner      University of Heidelberg          Germany      *
@@ -133,20 +133,20 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
  ******************************************************************************
  Version           : Dirac 8.0 (patchlevel 0) 
  Hostname          : larry
- Operating system  : Linux 2.6.32-23-generic
+ Operating system  : Linux 2.6.32-24-generic
  Machine           : i686
  Run               : Sequential
- Last compilation  : 15:23:01 Jul 22 2010 (by bast@larry:/home/bast/dirac/intel_mkl)
- FORTRAN compiler  : /opt/intel/Compiler/11.1/072/bin/ia32/ifort  -g -fpp1 -w -assume byterecl -Iinclude -module modules -DARCH32BIT -DVAR_IFC -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MKL -DVAR_MFDS -DMOD_ERI -DMOD_DNF -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_OPENRSP -DMOD_UNRELEASED -DMOD_MATRIX_OPERATIONS -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON  
- C compiler        : /opt/intel/Compiler/11.1/072/bin/ia32/icc  -g -w -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DMOD_ERI -DMOD_DNF -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_OPENRSP -DMOD_UNRELEASED -DMOD_MATRIX_OPERATIONS -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DSYS_FLAVOR=LINUX 
+ Last compilation  : 08:43:57 Sep 20 2010 (by bast@larry:/home/bast/dirac/intel_mkl)
+ FORTRAN compiler  : /opt/intel/Compiler/11.1/072/bin/ia32/ifort  -g -fpp1 -w -assume byterecl -Iinclude -module modules -DARCH32BIT -DVAR_IFC -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MKL -DVAR_MFDS -DMOD_MAGNETIZ -DMOD_LONDON -DMOD_MCSCF_spinfree -DMOD_KRMC -DMOD_DNF -DMOD_ESR -DMOD_MATRIX_OPERATIONS -DMOD_ADC -DMOD_AMFI -DMOD_KRMC -DMOD_OPENRSP -DMOD_VISUAL -DMOD_IHFSCC -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ERI -DMOD_UNRELEASED   
+ C compiler        : /opt/intel/Compiler/11.1/072/bin/ia32/icc  -g -w -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DMOD_MAGNETIZ -DMOD_LONDON -DMOD_MCSCF_spinfree -DMOD_KRMC -DMOD_DNF -DMOD_ESR -DMOD_MATRIX_OPERATIONS -DMOD_ADC -DMOD_AMFI -DMOD_KRMC -DMOD_OPENRSP -DMOD_VISUAL -DMOD_IHFSCC -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ERI -DMOD_UNRELEASED  -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DSYS_FLAVOR=LINUX 
  External libraries: -L/opt/intel/mkl/10.2.5.035/lib/32 -lmkl_lapack -lmkl_intel -lmkl_intel_thread -lmkl_core -lguide -lpthread 
  Internal libraries: DIRAC_BLAS=NO  DIRAC_LAPACK=NO 
  ILP data model    : ILP32 
- SVN URL:          : 'unknown Subversion URL' 
- SVN Changeset     : 'unknown Subversion revision' 
+ SVN URL           : 'unknown Subversion URL' 
+ SVN Revision      : 'unknown Subversion revision' 
 
  
-     Date and time (Linux)  : Thu Jul 22 16:02:42 2010
+     Date and time (Linux)  : Mon Sep 20 08:56:48 2010
      Host name              :                                         
 
 
@@ -166,7 +166,6 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
 **WAVE FUNCTION
 .DHF
 **VISUAL
-.3D
 .LIST
  5
  0.0 0.1 0.0
@@ -609,24 +608,24 @@ Total no. of orbitals           (NORB):   104
 
      r_x           r_y           r_z            scalar          x-component       y-component       z-component
 
-  0.000000E+00  0.100000E+00  0.000000E+00  0.1235908869E-01  0.0000000000E+00  0.0000000000E+00  0.0000000000E+00
-  0.000000E+00  0.200000E+00  0.000000E+00 -0.7583478086E-04  0.0000000000E+00  0.0000000000E+00  0.0000000000E+00
-  0.000000E+00  0.500000E+00  0.000000E+00 -0.2596441584E-02  0.0000000000E+00  0.0000000000E+00  0.0000000000E+00
-  0.000000E+00  0.100000E+01  0.000000E+00  0.8478396553E-05  0.0000000000E+00  0.0000000000E+00  0.0000000000E+00
-  0.000000E+00  0.200000E+01  0.000000E+00  0.1299413933E-03  0.0000000000E+00  0.0000000000E+00  0.0000000000E+00
+  0.000000E+00  0.100000E+00  0.000000E+00  0.1235908428E-01  0.0000000000E+00  0.0000000000E+00  0.0000000000E+00
+  0.000000E+00  0.200000E+00  0.000000E+00 -0.7583643372E-04  0.0000000000E+00  0.0000000000E+00  0.0000000000E+00
+  0.000000E+00  0.500000E+00  0.000000E+00 -0.2596441630E-02  0.0000000000E+00  0.0000000000E+00  0.0000000000E+00
+  0.000000E+00  0.100000E+01  0.000000E+00  0.8478326323E-05  0.0000000000E+00  0.0000000000E+00  0.0000000000E+00
+  0.000000E+00  0.200000E+01  0.000000E+00  0.1299414202E-03  0.0000000000E+00  0.0000000000E+00  0.0000000000E+00
 
 ----------------------------------------------------------------------------------------------------
 
 
- >>>> time used in plot:  2 minutes 57 seconds
+ >>>> time used in plot:   0.00 seconds
  >>>> time used in integration:   0.00 seconds
 
  
-     Date and time (Linux)  : Thu Jul 22 16:04:15 2010
+     Date and time (Linux)  : Mon Sep 20 08:56:48 2010
      Host name              :                                         
 *****************************************************
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 
->>>> Node 0, utime: 177, stime: 1, minflt: 135526, majflt: 0, nvcsw: 814, nivcsw: 132692, maxrss: 521112
->>>> Total WALL time used in DIRAC: 1min34s
+>>>> Node 0, utime: 0, stime: 0, minflt: 135511, majflt: 0, nvcsw: 21, nivcsw: 126, maxrss: 519196
+>>>> Total WALL time used in DIRAC: 1s
