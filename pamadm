@@ -442,6 +442,7 @@ dirac_modules[this_module].take_out_of_adm()
 this_module = 'ihfscc'
 dirac_modules[this_module] = dirac_module('ihfscc', 'Intermediate Hamiltonian functionality to FSCC code')
 dirac_modules[this_module].add_cppflag('MOD_IHFSCC')
+dirac_modules[this_module].add_test(medium_test('fscc_ih'))
 
 this_module = 'amfi'
 dirac_modules[this_module] = dirac_module('amfi', 'AMFI functionality for DIRAC')
@@ -451,12 +452,13 @@ dirac_modules[this_module].add_directory('amfi')
 this_module = 'london'
 dirac_modules[this_module] = dirac_module('london', 'London orbitals functionality for magnetic properties')
 dirac_modules[this_module].add_cppflag('MOD_LONDON')
-dirac_modules[this_module].add_test(short_test('response_lao'))
+dirac_modules[this_module].add_test(short_test('response_lao_shield'))
 
 this_module = 'magnetiz'
 dirac_modules[this_module] = dirac_module('magnetiz', 'Calculation of magnetizabilities')
 dirac_modules[this_module].add_cppflag('MOD_MAGNETIZ')
 dirac_modules[this_module].add_dependency('london')
+dirac_modules[this_module].add_test(short_test('response_lao_magnetiz'))
 
 this_module = 'adc'
 dirac_modules[this_module] = dirac_module('adc', 'ADC electron propagator module')
