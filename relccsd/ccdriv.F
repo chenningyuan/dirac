@@ -58,19 +58,22 @@ C
       WRITE (IW,1001) DATEX,TIMEX
 C
  1000 FORMAT (//" Relativistic Coupled Cluster program RELCCSD"
-     &//" Written by :",/" Lucas (Luuk) Visscher"/
+     &//" Written by :",/" Lucas Visscher"/
      &/" NASA Ames Research Center    (1994)"
      &/" Rijks Universiteit Groningen (1995)"
      &/" Odense Universitet           (1996-1997)" 
-     &/" Vrije Universiteit Amsterdam (1998-present)")
+     &/" VU University Amsterdam (1998-present)")
  1001 FORMAT (//" Today is :",T15,A10/" The time is :",T17,A8)
  1002 FORMAT (//" This module is documented in"
      &/"  - Initial implementation :",T30,
      &"L. Visscher, T.J. Lee and K.G. Dyall, ",
      &"J. Chem. Phys. 105 (1996) 8769."
-     &/"  - Fock space formalism :",T30,
+     &/"  - Fock Space (FSCC):",T30,
      &"L. Visscher, E. Eliav and U. Kaldor, ",
      &"J. Chem. Phys. 115 (2002) 9720."
+     &/"  - Intermediate Hamiltonian FSCC :",T30,
+     &"A. Landau, E. Eliav and U. Kaldor, ",
+     &"Chem. Phys. Lett. 313 (1999) 399–403",
      &/"  - Parallelization :",T30,
      &"M. Pernpointner and L. Visscher, ",
      &"J. Comp. Chem. 24 (2003) 754.")
@@ -176,7 +179,6 @@ C
      &                 MAXIT,MAXDIM,NTOL
       NAMELIST/CCEXC / NEXC,MAXIT,MAXDIM,NTOL
 CMI   ... add sector selectives MAXITxy's
-#ifdef MOD_IHFSCC
       NAMELIST/CCFSPC/ DOEA,DOIE,DOEA2,DOIE2,DOEXC,
      &                 FSSECT,MAXIT_SECT,NACTH,NACTP,
      &                 MAXIT,MAXDIM,NTOL,DOIH,TSHOLD,
@@ -184,12 +186,6 @@ CMI   ... add sector selectives MAXITxy's
       NAMELIST/CCIH/ NACTHI,NACTPI,EHMIN,EHMAX,EPMIN,EPMAX,
      &               IHSCHEME,SHIFTH11,SHIFTH2,SHIFTP11,SHIFTP2,
      &               SHIFTH12,SHIFTHP,SHIFTP12,AIH,NIH
-#else
-      NAMELIST/CCFSPC/ DOEA,DOIE,DOEA2,DOIE2,DOEXC,
-     &                 FSSECT,MAXIT_SECT,NACTH,NACTP,
-     &                 MAXIT,MAXDIM,NTOL,TSHOLD,
-     &                 MAXIT02,MAXIT01,MAXIT20,MAXIT10,MAXIT11,MAXIT00
-#endif /* MOD_IHFSCC */
       NAMELIST/CCEND / REWINP
       DOUBLE PRECISION D0
       PARAMETER (D0 = 0.0D00)
@@ -219,9 +215,7 @@ C
       DOFOPR  = relcc_do_gradient
       DOSOPR  = .FALSE. ! This option is to be removed until we have at least the MP2 Hessian
       DOFSPC  = relcc_do_fspc
-#ifdef MOD_IHFSCC
       DOIH  = .FALSE.
-#endif
       DEBUG  = relcc_debug
       TIMING = relcc_timing
       MWORD = 0
@@ -417,7 +411,6 @@ C
          FSSECT(3) = 1
          FSSECT(6) = 1
       ENDIF
-#ifdef MOD_IHFSCC
 C
 C     General input for IH procedure
 C
@@ -483,7 +476,6 @@ C     Input for the sorting routine.
 C     We can add a finite field here, if desired
 C     This assumes that PRTRA is called as well !
 C
-#endif /* MOD_IHFSCC */
       LOWMEM  = .FALSE.
       USEOE   = .TRUE.
       NORECMP = .FALSE.
@@ -970,10 +962,8 @@ C
       INTEGER NO_ACT(MXREP),NV_ACT(MXREP)
       INTEGER NIO_ACT(MXREP),NAO_ACT(MXREP)
       INTEGER NAV_ACT(MXREP),NIV_ACT(MXREP)
-#ifdef MOD_IHFSCC
       !MI: for the IH-FSCC method in linear symmetry
       INTEGER NAOPI_ACT(MXREP),NAVPI_ACT(MXREP)   
-#endif
       LOGICAL ASSREP
       INTEGER IOI(0:3), IVA(0:3)
 
@@ -1778,14 +1768,11 @@ C
             ENDIF
 !           ... place orbital energy into common array; I - particular spinor
             EPS(I) = EPS1(ISP)
-#ifdef MOD_IHFSCC
 C           Always fill this array, used in intermediate Hamiltonian formalism
             IF (I.GT.MAXSPIM)
      &          CALL QUIT ("Increase MAXSPIM in relccsd/ihm.inc")
 !        ... 0/1 - intermediate Ham. space
-#endif /* MOD_IHFSCC */
             IPIORB(I)=0
-#ifdef MOD_IHFSCC
             DO J = 1, 2
                IF(EPS(I).LE.ER_IH(2,J).AND.   ! EPS(I) <= EHMAX,EPMAX
      &            EPS(I).GE.ER_IH(1,J)) THEN  ! EPS(I) >= EHMIN,EPMIN
@@ -1809,10 +1796,8 @@ C           Always fill this array, used in intermediate Hamiltonian formalism
                ENDIF
              ENDIF
            ENDIF
-#endif /* MOD_IHFSCC */
        ENDDO
 
-#ifdef MOD_IHFSCC
        IF (REPORT.AND.DOIH) THEN
 
          IF (NREP.GT.8) THEN
@@ -1850,7 +1835,6 @@ CMI ..... write only active irreps
          ENDIF
 
        ENDIF
-#endif /* MOD_IHFSCC */
 
       ENDIF
 C
@@ -1859,11 +1843,9 @@ C
  1002 FORMAT (' Spinor class : ',A,T40,16(1X,I4))
  1003 FORMAT (//' List of frozen spinors (amplitudes zeroed out)')
  1004 FORMAT (//' List of inactive and active spinors (Fock space)')
-#ifdef MOD_IHFSCC
  1005 FORMAT (
      &  //' Configuration in abelian subgroup with the IH-FSCC Pi space'
      &       //T40,8(1X,A4))
-#endif
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCSETI (ICALC,CC,KFREE,LFREE,MXCORR,EPS,
@@ -2920,7 +2902,6 @@ C
       REPORT = ICALC.GT.1
       IF (REPORT) WRITE (IW,1007)
      
-#ifdef MOD_IHFSCC
 CMI ... more print out
       IF (FOCKSP.AND.DOIH.AND.REPORT) THEN
         WRITE(IW,'(/A)') ' Intermediate Hamiltonian version !'
@@ -2932,7 +2913,6 @@ CMI ... more print out
      &  'Energy range for the virtual Pi space is:  <',
      &  ER_IH(1,2),';',ER_IH(2,2),'>'
       ENDIF
-#endif /* MOD_IHFSCC */
 C
 C Allocate space for the Fock space CCSD energy calculation
 C
