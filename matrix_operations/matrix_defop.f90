@@ -418,6 +418,11 @@ contains
       type(matrix), target             :: C
       type(tmp_mat), pointer           :: TA, TB, TC
       logical                          :: zeroA, zeroB, swap, ltmp, plus
+
+!radovan: fix for g95
+      C%nrow = -1
+      C%ncol = -1
+
       !if (matrix_defop_debug) print *, 'mat_plus_minus_mat', loc(A), &
       !                                 merge(' + ',' - ',plus), loc(B), ' => ', loc(C)
       !if (matrix_defop_debug) print *, 'A%nrow=', A%nrow, ' A%ncol=', A%ncol, &
@@ -530,6 +535,12 @@ contains
       logical                          :: zeroA, zeroB
       !if (matrix_defop_debug) print *, 'mat_times_mat', loc(A), &
       !                            ' *', loc(B), ' => ', loc(C)
+
+
+!radovan: fix for g95
+      C%nrow = -1
+      C%ncol = -1
+
       TA => find_tmp(A, 'matrix A * B : A undefined')
       zeroA = .false.
       if (.not.associated(TA)) zeroA = iszero(A)
@@ -583,6 +594,10 @@ contains
 #ifdef PRG_DIRAC
       call copy_matrix_sym(B, A)
 #endif
+
+!radovan: fix for g95
+      B%nrow = -1
+      B%ncol = -1
 
       !if (matrix_defop_debug) print *,'real_times_mat',r,' *',loc(A),' =>',loc(B)
       TA => find_tmp(A, 'matrix r * A : A undefined')
@@ -640,6 +655,11 @@ contains
       type(matrix),target,intent(in) :: A
       type(matrix),target            :: B
       type(tmp_mat),pointer          :: TA, TB
+
+!radovan: fix for g95
+      B%nrow = -1
+      B%ncol = -1
+
       !if (matrix_defop_debug) print *,'mat_dagger',loc(A),' => ',loc(B)
       TA => find_tmp(A,'matrix dag(A) : A undefined')
       if (.not.associated(TA)) then

@@ -547,6 +547,8 @@ contains
     end if
 #endif
 
+    call basis_info_delete()
+
     end subroutine
 
 
