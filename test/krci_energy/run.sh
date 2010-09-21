@@ -14,6 +14,11 @@ if [ ! -z "$RUNTYPE" ]; then
          MOL=F.mol;
          cp result/filter_f result/filter;
          ;;
+      "long")
+         MENU=F;
+         MOL=F.mol;
+         cp result/filter_f result/filter;
+         ;;
    esac
 else
    MENU=Be.d2h;
