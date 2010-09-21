@@ -18,8 +18,11 @@
 #           select some modules
 #           ./pamadm --xpp --adc --visual --london --matrixop
 #
-#           prepare release Dirac2010
+#           prepare release Dirac2010 (exports and packs selected files)
 #           ./pamadm --xpp --adc --visual --london --matrixop --amfi --krmc --emb --export=Dirac2010
+#
+#           select only modules (no exporting) of the Dirac2010 release
+#          ./pamadm --xpp --adc --visual --london --matrixop --amfi --krmc --emb
 
 
 from optparse import OptionParser
