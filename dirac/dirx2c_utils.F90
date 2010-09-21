@@ -203,6 +203,9 @@ contains
            write(flabel,'(a7,i4,i1)') 'pctmtAO',is_fragment_pctmat,i
            call x2c_write(flabel,xmat,nbas1_f*nbasL_f*nz,x2c_file_glb)
 
+!          debug print
+!          call print_x2cmat(xmat,nbas1_f,nbasL_f,nz,ipq_off_in,'x2c - umat_saao',6)
+
          end if
 
 !        update offset for matrix

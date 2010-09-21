@@ -163,6 +163,8 @@ contains
                                    x2c_file_scr,   &
                                    flabel_tag)
 
+!          debug print
+!          call print_x2cmat(scr2mat(ioff_esh2),nesh2_f,n1esh_f,nz,ipq_off(1,0),'x2c - umat_onmo',6)
 
 !          step 3: perform U+ h1_4c_ON U = h1_infinite_2c_ON (if requested)
 !          -------------------------------------------------------
