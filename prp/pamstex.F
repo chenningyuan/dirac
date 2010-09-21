@@ -1829,7 +1829,7 @@ C*****************************************************************************
       JCMO(2) = ICMOQ(2) + NFBAS(2,0)*(NPSH(2)+NISH(2)) + 1      
 
       CALL DZERO(FMO,STEX_N2VIRXQ)
-      IPRINT=0
+      !IPRINT=0 ! mi-commented out (fixed openmpi gfortran 4.4.5 prob)
       DO I1=1,NFSYM
          I2 = MOD(I1+IFER,2) + 1
          IF(STEX_NVIR(I1).GT.0 .AND. STEX_NVIR(I2).GT.0) THEN
