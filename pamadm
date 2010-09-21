@@ -165,6 +165,7 @@ vital_directories.append('include')
 vital_directories.append('modules')
 vital_directories.append('basis')
 vital_directories.append('basis_dalton')
+vital_directories.append('examples')
 
 vital_files = []
 vital_files.append('configure')
