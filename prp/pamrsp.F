@@ -913,33 +913,36 @@ C     ... set proper dimension for integer arrays. default. SK - Sep 08
       LEVEC  = NESIM 
       LPVEC  = NPSIM    
       LCVEC  = NCSIM    
-#ifdef MOD_KRMC
-C     ... SK - Sep 08: if XRSST is called as part from the MCSCF
-C     optimization procedure we need to allocate at least 2* NxSIM where 
-C     x = E (e-e), P (e-p) or C (CI gradient). 
-C     In subroutine XRSST2 the corresponding integer array is accessed 
-C     by 
-C     IVEC(IP) = x
-C     IVEC(IM) = x
-C     where IP = NFREQ + IM and IM = 1, NFREQ
-C
-C     example for bad access to IVEC which caused the crash for GOSCI 
-C     (and in principle also for LUCIAREL):
-C
-C     NESIM = 1 ==> LEVEC = 1 --> DIMENSION IVEC(1)
-C     NFREQ = 1 ==> IM = 1, IP = 2 
-C
-C     allowed access:       IVEC(IM) = ...
-C     resulting bad access: IVEC(IP) = ...
-C
-C     FIXME: does this also apply to other cases with STATIC = .TRUE.? 
-C     Do we need a "#ifdef MOD_KRMC" statement?
-C     SK - Sep 08
-C
-      LEVEC  = NESIM * 2
-      LPVEC  = NPSIM * 2
-      LCVEC  = NCSIM * 2
-#endif
+
+!     krmc optimization
+      if(fkrmc)then
+!       ... SK - Sep 08: if XRSST is called as part from the MCSCF
+!       optimization procedure we need to allocate at least 2* NxSIM where 
+!       x = E (e-e), P (e-p) or C (CI gradient). 
+!       In subroutine XRSST2 the corresponding integer array is accessed 
+!       by 
+!       IVEC(IP) = x
+!       IVEC(IM) = x
+!       where IP = NFREQ + IM and IM = 1, NFREQ
+!
+!       example for bad access to IVEC which caused the crash for GOSCI 
+!       (and in principle also for LUCIAREL):
+!
+!       NESIM = 1 ==> LEVEC = 1 --> DIMENSION IVEC(1)
+!       NFREQ = 1 ==> IM = 1, IP = 2 
+!
+!       allowed access:       IVEC(IM) = ...
+!       resulting bad access: IVEC(IP) = ...
+!
+!       FIXME: does this also apply to other cases with STATIC = .TRUE.? 
+!       Do we need a "if(fkrmc)then" statement?
+!       SK - Sep 08
+!
+        levec  = nesim * 2
+        lpvec  = npsim * 2
+        lcvec  = ncsim * 2
+      end if
+
       CALL MEMGET('INTE',KEVEC,LEVEC,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KPVEC,LPVEC,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KCVEC,LCVEC,WORK,KFREE,LFREE)
