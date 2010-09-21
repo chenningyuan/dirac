@@ -1,90 +1,102 @@
-!Copyright 2009 Andreas J. Thorvaldsen
-!This file is made available under the terms of the
-!GNU Lesser General Public License.
+! Copyright 2009 Andreas J. Thorvaldsen
+! This file is made available under the terms of the
+! GNU Lesser General Public License.
 
-!radovan: this file is generic for both DALTON and DIRAC
-!         DALTON or DIRAC specific things are in matrix_genop
-!         which is the backend to matrix_defop
+!> @file
+!> Contains module matrix_defop
 
+!> radovan: this file is generic for both DALTON and DIRAC
+!>          DALTON or DIRAC specific things are in matrix_genop
+!>          which is the backend to matrix_defop
+!> 
+!> Defined operators for type(matrix)
+!> (which in linsca comes from module matrix_operations).
+!>
+!> The operators are as follows:
+!
+!>     equals                       A = B
+!>     plus                         A + B
+!>     minus                        A - B
+!>     matrix product               A * B
+!>     scale by real(8)             r * A
+!>     divide by real(8)            A / r
+!>     (conjugate) transpose        dag(A)
+!>     trace                        tr(A)
+!>     scalar product               dot(A,B)
+!>     product trace                tr(A,B),
+!>     for zeroing and freeing      A=0, A(:)=0, A(:,:)=0
+!>     norm ie. sqrt(dot(A,A))      norm(A)
+!>     mat_to_full                  A = B(:,:)
+!>     mat_set_from_full            B(:,:) = A, B(:) = A
+!>
+!> To increase performance and lower memory needs, formulas are not
+!> evaluated by executing the operators immediately, but the operators are
+!> first collected into "batches" of the forms
+!>
+!>     axtpby:     Z = a * X(^T) + b * Y   (where Z may be Y)
+!>     gemm:       Y = a * X(^T) * Z(^T) + b * Y
+!>
+!> To create matrices, mat_init (from module matrix_operations) is replaced
+!> by a more general init_mat. This is to hide context-specific information:
+!> closed/open shell, real/complex, 1/2/4-component, full/sparse,
+!> and thus make it possible to write general code:
+!>
+!>     call init_mat(A,nrow,ncol)       original version
+!>     call init_mat(A,B)               same shape
+!>     call init_mat(A,B,'T')           transpose shape
+!>     call init_mat(A,B,'T',C,'N')     rows and columns from diff. mats.
+!>     call init_mat(A,B,zero=.true.)   non-allocated zero of same shape
+!>     call init_mat(A,reset=.true.)    reset to defaults, nullifying pointers
+!>     call init_mat(A,B,alias='FF')    copy pointers, no new allocation
+!>
+!> Comparison of the shapes (and content) of matrices is done with mat_same
+!>
+!>     if (mat_same(A,B)) ..            if same shape and content (alias)
+!>     if (mat_same(A,B,'N')) ..        if same shapes
+!>     if (mat_same(A,B,'T')) ..        if transposed shapes
+!>     if (mat_same(A,B,'T','R')) ..    if A's rows matches B's columns
+!>     if (mat_same(A,B,'N','C')) ..    if A's columns matches B's columns
+!>
+!> For printing matrices, mat_print has been replaced:
+!>
+!>     call print_mat(A,label='A',colwidth=7,unit=6,braces='{')
+!>
+!> The label is printed on the line preceding the matrix. Width specifies the
+!> text width of each column (excluding separator). The number of digits printed
+!> is adjusted so that no columns become overfilled (*****). Braces can either
+!> be one character {, [, (, | etc., or four '{,};', where the comma is column
+!> separator and semicolon row separator. This is convenient for pasting into
+!> python, maple, mathematica, etc.
+!>
+!> To check the state of matrices: Whether defined: isdef(A),
+!> whether zero: iszero(A)
+!>
+!> In order to pass a "formula", such as A+3*dag(B) etc., as argument X to a subroutine,
+!> the subroutine must execute mat_fix_arg(X) before using X inside the subroutine.
+!> At the end of the subroutine mat_unfix_arg(X) should be called in order to free X.
+!> Neither call has any effect on a non-temporary matrix argument.
+!> This is neccessary since the Fortran programmer cannot tell whether the temporary
+!> is used inside its own subruoutine, where it should be deleted after use,
+!> or inside a called subroutine, in which it should be non-temporary.
+!>
+!> In order to have type(matrix) as the result of a function, mat_fix_result(X)
+!> should be called before returning from the function. This sets X's status as
+!> temporary, so that it will be deleted once used.
 module matrix_defop
-! Defined operators for type(matrix)
-! (which in linsca comes from module matrix_operations).
-!
-! The operators are as follows:
-!
-!     equals                       A = B
-!     plus                         A + B
-!     minus                        A - B
-!     matrix product               A * B
-!     scale by real(8)             r * A
-!     divide by real(8)            A / r
-!     (conjugate) transpose        dag(A)
-!     trace                        tr(A)
-!     scalar product               dot(A,B)
-!     product trace                tr(A,B),
-!     for zeroing and freeing      A=0, A(:)=0, A(:,:)=0
-!     norm ie. sqrt(dot(A,A))      norm(A)
-!     mat_to_full                  A = B(:,:)
-!     mat_set_from_full            B(:,:) = A, B(:) = A
-!
-! To increase performance and lower memory needs, formulas are not
-! evaluated by executing the operators immediately, but the operators are
-! first collected into "batches" of the forms
-!
-!     axtpby:     Z = a * X(^T) + b * Y   (where Z may be Y)
-!     gemm:       Y = a * X(^T) * Z(^T) + b * Y
-!
-! To create matrices, mat_init (from module matrix_operations) is replaced
-! by a more general init_mat. This is to hide context-specific information:
-! closed/open shell, real/complex, 1/2/4-component, full/sparse,
-! and thus make it possible to write general code:
-!
-!     call init_mat(A,nrow,ncol)       original version
-!     call init_mat(A,B)               same shape
-!     call init_mat(A,B,'T')           transpose shape
-!     call init_mat(A,B,'T',C,'N')     rows and columns from diff. mats.
-!     call init_mat(A,B,zero=.true.)   non-allocated zero of same shape
-!     call init_mat(A,reset=.true.)    reset to defaults, nullifying pointers
-!     call init_mat(A,B,alias='FF')    copy pointers, no new allocation
-!
-! Comparison of the shapes (and content) of matrices is done with mat_same
-!
-!     if (mat_same(A,B)) ..            if same shape and content (alias)
-!     if (mat_same(A,B,'N')) ..        if same shapes
-!     if (mat_same(A,B,'T')) ..        if transposed shapes
-!     if (mat_same(A,B,'T','R')) ..    if A's rows matches B's columns
-!     if (mat_same(A,B,'N','C')) ..    if A's columns matches B's columns
-!
-! For printing matrices, mat_print has been replaced:
-!
-!     call print_mat(A,label='A',colwidth=7,unit=6,braces='{')
-!
-! The label is printed on the line preceding the matrix. Width specifies the
-! text width of each column (excluding separator). The number of digits printed
-! is adjusted so that no columns become overfilled (*****). Braces can either
-! be one character {, [, (, | etc., or four '{,};', where the comma is column
-! separator and semicolon row separator. This is convenient for pasting into
-! python, maple, mathematica, etc.
-!
-! To check the state of matrices: Whether defined: isdef(A),
-! whether zero: iszero(A)
-!
-! In order to pass a "formula", such as A+3*dag(B) etc., as argument X to a subroutine,
-! the subroutine must execute mat_fix_arg(X) before using X inside the subroutine.
-! At the end of the subroutine mat_unfix_arg(X) should be called in order to free X.
-! Neither call has any effect on a non-temporary matrix argument.
-! This is neccessary since the Fortran programmer cannot tell whether the temporary
-! is used inside its own subruoutine, where it should be deleted after use,
-! or inside a called subroutine, in which it should be non-temporary.
-!
-! In order to have type(matrix) as the result of a function, mat_fix_result(X)
-! should be called before returning from the function. This sets X's status as
-! temporary, so that it will be deleted once used.
 
+   !ajt Many linsca modules propagate mat_init (no private statement).
+   !         To avoid collision, rename it to init_mat
    use matrix_genop, &
          init_mat => mat_init
 
    implicit none
+
+   ! ajt LSDALTON has replaced the (global) quit with lsquit
+   !     with unit (lupri) as extra argument, which doesn't
+   !     exist in DIRAC. For now, this macro gets around that.
+#ifdef LSDALTON_ONLY
+#define quit(msg) lsquit(msg,-1)
+#endif
 
    public matrix
    public init_mat
@@ -166,32 +178,32 @@ module matrix_defop
       module procedure mat_imag_part
    end interface
 
+   !> specification of A = fx*X^tx * Z^tz + Y    gemm
+   !>        or        A = fx*X^tx * Z^tz        gemm
+   !>        or        A = fx*X^tx        + Y    axtpby
+   !>        or        A = fx*X^tx               axt or by
+   !> A points to the matrix where result is to be stored, which is undef.
+   !> Flags dx,dy,dz decides whether arguments whould be deleted after use
    type tmp_mat
-   ! specification of A = fx*X^tx * Z^tz + Y    gemm
-   !        or        A = fx*X^tx * Z^tz        gemm
-   !        or        A = fx*X^tx        + Y    axtpby
-   !        or        A = fx*X^tx               axt or by
-   ! A points to the matrix where result is to be stored, which is undef.
-   ! Flags dx,dy,dz decides whether arguments whould be deleted after use
       type(matrix),pointer :: A,  X,  Z,  Y !associated or not- pointers
       complex(8)           ::    fx         !complex scale factor
       logical              ::    tx, tz     !transpose X or Z ?
       logical              ::    dx, dz, dy !delete X, Y or Z after use ?
    end type
 
-   !tmp(:) contains a 'stack' of temporary matrices
+   !> tmp(:) contains a 'stack' of temporary matrices
    integer,parameter         :: max_tmp = 64
    type(tmp_mat),target,save :: tmp(max_tmp)
    integer                   :: top_tmp = 0 !0 as "before index 1, thus empty"
 
-   !for switching debugging on and off
+   !> for switching debugging on and off
    logical :: matrix_defop_debug = .false.
 
 contains
 
+   !> if A is defined, return null, if A is undefined and A%elms
+   !> points to within tmp(1:max_tmp), return A%elms
    function find_tmp(A,errmsg) result(T)
-   ! if A is defined, return null, if A is undefined and A%elms
-   ! points to within tmp(1:max_tmp), return A%elms
       type(matrix),target,  intent(in) :: A
       character(*),optional,intent(in) :: errmsg
       type(tmp_mat),pointer            :: T
@@ -207,8 +219,8 @@ contains
       end if !otherwise, just return null
    end function
 
+   !> record the temporary, non-zero matrix M in tmp(:)
    function new_tmp(A, fx, X, tx, dx, Z, tz, dz, fy, Y, dy) result(T)
-   !record the temporary, non-zero matrix M in tmp(:)
       type(matrix),        target,intent(inout) ::  A
       type(matrix), target, optional,intent(in) ::  X,  Z,  Y
       complex(8),           optional,intent(in) :: fx,     fy
@@ -244,8 +256,8 @@ contains
       end if
    end function
 
+   !> remove tmp_mat T from within tmp(:), deallocate t%A if needed
    subroutine del_tmp(T)
-   !remove tmp_mat T from within tmp(:), deallocate t%A if needed
       type(tmp_mat),intent(inout) :: T
       nullify(T%A)
       !update last occupied index
@@ -255,9 +267,9 @@ contains
       end do
    end subroutine
 
+   !> initialize T%A to a zero matrix of the correct shape,
+   !> then delete (or not) T%X,T%Z,T%Y, then del_tmp(T)
    subroutine zero_tmp(T)
-   !initialize T%A to a zero matrix of the correct shape,
-   !then delete (or not) T%X,T%Z,T%Y, then del_tmp(T)
       type(tmp_mat),intent(inout) :: T
       !if (matrix_defop_debug) print *,'zero_tmp',loc(T%A),T%A%nrow,T%A%ncol
       if (T%A%nrow==-1 .and. T%A%ncol/=-1) T%A%ncol = -1
@@ -277,9 +289,9 @@ contains
    end subroutine
 
 
+   !> evaluate the expression A = f*X*Z + Y, as specified in the fields in T,
+   !> by executing either an axtpby or a gemm operation. Then remove T from tmp(:)
    subroutine eval_tmp(T)
-   ! evaluate the expression A = f*X*Z + Y, as specified in the fields in T,
-   ! by executing either an axtpby or a gemm operation. Then remove T from tmp(:)
       type(tmp_mat),intent(inout) :: T
       logical             :: Azero, complex, fits
       type(matrix),target :: dupA
@@ -494,24 +506,24 @@ contains
    end subroutine
 
 
+   !> verify that shapes match, check for zeros
    function mat_plus_mat(A, B) result(C)
-   !verify that shapes match, check for zeros
       type(matrix), target, intent(in) :: A, B
       type(matrix), target             :: C
       call gen_mat_plus_mat(A, .true., B, C)
    end function
 
 
+   !> verify that shapes match, check for zeros
    function mat_minus_mat(A, B) result(C)
-   !verify that shapes match, check for zeros
       type(matrix), target, intent(in) :: A, B
       type(matrix), target             :: C
       call gen_mat_plus_mat(A, .false., B, C)
    end function
 
 
+   !> verify that shapes match, check for zeroes
    function mat_times_mat(A, B) result(C)
-   !verify that shapes match, check for zeroes
       type(matrix), target, intent(in) :: A, B
       type(matrix), target             :: C
       type(tmp_mat), pointer           :: TA, TB, TC
@@ -620,10 +632,11 @@ contains
       call gen_complex_times_mat((-1d0,0d0), A, B)
    end function
 
+
+   !> Transpose the matrix A. If A is temporary and A=a*X or A=a*X*Z,
+   !> only swap X and Z, and slip-swap tx and tz.
+   !> Otherwise, evaluate A (if tmp), and create a new temporary for B
    function mat_dagger(A) result(B)
-   ! Transpose the matrix A. If A is temporary and A=a*X or A=a*X*Z,
-   ! only swap X and Z, and slip-swap tx and tz.
-   ! Otherwise, evaluate A (if tmp), and create a new temporary for B
       type(matrix),target,intent(in) :: A
       type(matrix),target            :: B
       type(tmp_mat),pointer          :: TA, TB
@@ -706,7 +719,7 @@ contains
 
 
    function mat_dot_prod(A, B) result(r)
-      type(matrix),target,intent(inout) :: A, B
+      type(matrix),target,intent(in) :: A, B
       complex(8)                        :: r
       !print *,'mat_dot_prod',loc(A),loc(B)
       r = gen_mat_dot(A, B, (.false.))
