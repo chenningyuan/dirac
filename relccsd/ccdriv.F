@@ -72,8 +72,8 @@ C
      &"L. Visscher, E. Eliav and U. Kaldor, ",
      &"J. Chem. Phys. 115 (2002) 9720."
      &/"  - Intermediate Hamiltonian FSCC :",T30,
-     &"A. Landau, E. Eliav and U. Kaldor, ",
-     &"Chem. Phys. Lett. 313 (1999) 399–403",
+     &"E. Eliav, M. J. Vilkas, Y. Ishikawa, and U. Kaldor, ",
+     &"J. Chem. Phys. 122 (2005) 224113.",
      &/"  - Parallelization :",T30,
      &"M. Pernpointner and L. Visscher, ",
      &"J. Comp. Chem. 24 (2003) 754.")
