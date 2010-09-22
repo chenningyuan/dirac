@@ -22,7 +22,7 @@
 #           ./pamadm --xpp --adc --visual --london --matrixop --amfi --krmc --emb --export=Dirac2010
 #
 #           select only modules (no exporting) of the Dirac2010 release
-#          ./pamadm --xpp --adc --visual --london --matrixop --amfi --krmc --emb
+#           ./pamadm --xpp --adc --visual --london --matrixop --amfi --krmc --emb
 
 
 from optparse import OptionParser
@@ -815,6 +815,11 @@ if options.exportfile != None:
 #  remove files that are not supposed to be shipped
    for x in do_not_release:
        os.system("rm -rf %s/%s"  % (scratch_dir, x))
+
+#  remove copyright tags
+   for suffix in ['*.F90', '*.f90', '*.F', '*.c']:
+       command = "for file in `find %s -name '%s'`; do grep -v copyright_start $file | grep -v copyright_end > deleteme; mv -f deleteme $file; done" % (scratch_dir, suffix)
+       os.system(command)
 
 #  create tar.gz
    command = 'tar -czf %s.tar.gz %s' % (options.exportfile, scratch_dir)
