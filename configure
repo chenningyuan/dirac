@@ -1577,7 +1577,7 @@ for index in $lib_index; do
     $echo "Default (internal) LAPACK used."
     append cpp_f90 "-DUSE_DIRAC_DLAMCH -DUSE_DIRAC_DLAPACK -DUSE_DIRAC_ZLAPACK"
   elif [ ! -z $index ]; then
-    if [ '$old_libs' ]; then
+    if [ -n '$old_libs' ]; then
        get_item "$libs" lib_name $index 2
        set -- $lib_name
        setup_math_lib $1 $2
