@@ -439,11 +439,6 @@ dirac_modules[this_module].add_dependency('hsfs')
 dirac_modules[this_module].add_dependency('hscc')
 dirac_modules[this_module].take_out_of_adm()
 
-this_module = 'ihfscc'
-dirac_modules[this_module] = dirac_module('ihfscc', 'Intermediate Hamiltonian functionality to FSCC code')
-dirac_modules[this_module].add_cppflag('MOD_IHFSCC')
-dirac_modules[this_module].add_test(medium_test('fscc_ih'))
-
 this_module = 'amfi'
 dirac_modules[this_module] = dirac_module('amfi', 'AMFI functionality for DIRAC')
 dirac_modules[this_module].add_cppflag('MOD_AMFI')

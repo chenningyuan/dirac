@@ -160,9 +160,7 @@ C
 #include "symm.inc"
 #include "eqns.inc"
 #include "inpt.inc"
-#ifdef MOD_IHFSCC
 #include "ihm.inc"
-#endif /* MOD_IHFSCC */
 #include "results.inc"
 #include "complex.inc"
 #include "ccpar.inc"
@@ -408,13 +406,11 @@ C
       CALL XTIME(5,2,'- T2 equations                  ')
 C
  100  CONTINUE
-#ifdef MOD_IHFSCC
 C
 C     Delete the Pi->Q excitations in case of Int. Ham. CCFS scheme 2
       IF (FOCKSP.AND.DOIH.AND.IHSCHEME.EQ.2) THEN
          CALL DENOMF (EPS,S1,S2,S1,S2,3)
       ENDIF
-#endif
 C
 C     Add the first order wave function contribution
 C
@@ -610,9 +606,7 @@ C
 #include "param.inc"
 #include "symm.inc"
 #include "eqns.inc"
-#ifdef MOD_IHFSCC
 #include "ihm.inc"
-#endif /* MOD_IHFSCC */
 #include "complex.inc"
 #include "ccpar.inc"
 C
@@ -872,9 +866,7 @@ C
 #include "param.inc"
 #include "complex.inc"
 #include "eqns.inc"
-#ifdef MOD_IHFSCC
 #include "ihm.inc"
-#endif /* MOD_IHFSCC */
 #include "symm.inc"
 #include "ccpar.inc"
 C
