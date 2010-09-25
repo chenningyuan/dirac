@@ -499,7 +499,10 @@ exitfunc()
  	     EXIT=1	
 	fi
    fi   
-   if [ $EXIT -eq 0 ]; then
+#  radovan: this is not always reliable
+#  if [ $EXIT -eq 0 ]; then
+#  instead check whether $OUTPUT_FILE contains "E N D   of   D I R A C  output"
+   if [ `grep -l "E N D   of   D I R A C  output" $OUTPUT_FILE | cat` ]; then
       echo
       echo "   Exit date: `date`"
       echo "   *** NORMAL EXIT"
