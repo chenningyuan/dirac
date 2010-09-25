@@ -483,13 +483,15 @@ contains
 
 !   xc contribution to ks matrix
     if (dirac_cfg_dft_calculation) then
-         call xc_integrator(xc_mat_dim      = ntbas(0), &
-                            xc_nz           = nz,       &
-                            xc_dmat_0       = D%elms,   &
-                            xc_nr_dmat      = 0,        &
-                  	    xc_nr_fmat      = 1,        &
-                            xc_fmat         = F%elms,   &
-                            xc_do_potential = .true.)
+        call xc_mpi_wake_up_coworkers()
+        call xc_integrator(xc_mat_dim      = ntbas(0), &
+                           xc_nz           = nz,       &
+                           xc_dmat_0       = D%elms,   &
+                           xc_nr_dmat      = 0,        &
+                 	    xc_nr_fmat      = 1,        &
+                           xc_fmat         = F%elms,   &
+                           xc_do_potential = .true.)
+        call xc_mpi_release_coworkers()
     end if
 
   end subroutine

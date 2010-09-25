@@ -2085,6 +2085,7 @@ contains
 !        are incorrect with conventional derivatives, correct with xcfun
 !        (this is due to handling of options inside xc_driver)
 
+         call xc_mpi_wake_up_coworkers()
          call xc_integrator(xc_mat_dim      = A%nrow,                              &
                             xc_nz           = nz,                                  &
                             xc_dmat_0       = D(1)%elms,                           &
@@ -2095,6 +2096,7 @@ contains
                             xc_dmat_pg_sym  = (/(D(i)%irep + 1, i = 2, nr_dmat)/), &
                             xc_fmat_pg_sym  = (/A%irep + 1/),                      &
                             xc_response_order_ao = order)
+         call xc_mpi_release_coworkers()
 
          F = F + A
 
