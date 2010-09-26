@@ -155,6 +155,23 @@ contains
            deallocate(tsr)
         endif
 
+        if (openrsp_cfg_jprime) then
+           do i=1,1
+!             print '(//a,f11.8/)','linscf calls efgb_Jpri_Bten_Bcal w=',cfg_rsp_freq(i)
+              allocate(tsr(3+6+9+9+9+9+18+27+27+27+27+54+54)) !ajt: This tsr() thing is a hack.
+                  !Response functions should perhaps eventually be stored in a dedicated module
+              call get_jprime_response(decomp,S,D,F,                           &
+                      & cfg_rsp_freq(i)*(1d0,0d0)*(/1,-1,0/),                  &
+                      & tsr(1:3),tsr(4:9),tsr(10:18),tsr(19:27),tsr(28:36),    &
+                      & tsr(37:45),tsr(46:63),tsr(64:90),tsr(91:117),          &
+                      & tsr(118:144),tsr(145:171),tsr(172:225),tsr(226:279))
+              call jprime_output(dreal(cfg_rsp_freq(i)),                                 &
+                      & (/(((dreal(tsr(118+i+3*j+9*k)),k=0,2),j=0,2),i=0,2)/),  &
+                      &  lupri)
+              deallocate(tsr)
+           enddo
+        endif
+
         if (openrsp_cfg_efgb) then
            do i=1,1
 !             print '(//a,f11.8/)','linscf calls efgb_Jpri_Bten_Bcal w=',cfg_rsp_freq(i)

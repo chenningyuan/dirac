@@ -693,6 +693,12 @@ contains
       need_1el_g = .true.
     end if
 
+    if (kw_matches(word, '.JPRIME')) then
+      openrsp_cfg_jprime = .true.
+      need_1el_f = .true.
+      need_1el_o = .true.
+    end if
+
     if (kw_matches(word, '.EFGB  ')) then
       openrsp_cfg_efgb = .true.
       need_1el_f = .true.

@@ -32,6 +32,7 @@ module openrsp_cfg
    logical, public :: openrsp_cfg_roa               = .false.
    logical, public :: openrsp_cfg_cars              = .false.
    logical, public :: openrsp_cfg_efgb              = .false.
+   logical, public :: openrsp_cfg_jprime            = .false.
    logical, public :: openrsp_cfg_jones             = .false.
    logical, public :: openrsp_cfg_cme               = .false.
    logical, public :: openrsp_cfg_dg_energy         = .false.

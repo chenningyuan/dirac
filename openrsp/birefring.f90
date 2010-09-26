@@ -15,7 +15,10 @@ module birefring
 
    implicit none
 
-   public efgb_Jpri_Bten_Bcal, efgb_output
+   public efgb_Jpri_Bten_Bcal
+   public efgb_output
+   public get_jprime_response
+   public jprime_output
    public cme_jones_eta_apri, cme_output, jones_output
    public verdet_dpol_db
 
@@ -206,6 +209,47 @@ contains
    end subroutine
 
 
+   subroutine get_jprime_response(decomp, S, D, F, freq, Ef, Eq, Eff, Evf, Eof, Ebf, &
+                                  Eqf, Efff, Evff, Eoff, Ebff, Eqff, Effq)
+   ! Electric-field-gradient-induced birefringence (Buckingham birefringence).
+   ! For freq=(w1,w2,w3) calculate the dipole moment in Ef, quadrupole moment in Eq,
+   ! polarizability alpha(w1,w2) in Eff, velocity-polarizability(w1,w2) in Evf,
+   ! no-London G-prime(w1,w2) in Eof, London G-prime(w1,w2) in Ebf, A-tensor(w1,w2)
+   ! in Eqf, hyperpolarizability beta(w1,w2,w3) in Efff, no-London 
+   ! electric-field-perturbed G-prime in Eoff, London electric-field-perturbed
+   ! G-prime in Ebff, electric-field-perturbed A-tensor in Eqff, and
+   ! electric-field-gradient-perturbed polarizability in Effq
+      type(decompItem),intent(inout) :: decomp
+      type(matrix), intent(in)  :: S, D, F
+      complex(8),   intent(in)  :: freq(3)
+      complex(8),   intent(out) :: Ef(3), Eq(6), Eff(3,3), Evf(3,3), Eof(3,3), &
+                                   Ebf(3,3), Eqf(6,3), Efff(3,3,3), Evff(3,3,3), &
+                                   Eoff(3,3,3), Ebff(3,3,3), Eqff(6,3,3), Effq(3,3,6)
+      type(matrix) :: De(3), Df(3), Def(3,3), Dte(3,3), Dt(3), DFDef(3,3)
+      type(matrix) :: Fe(3), Ff(3), Fef(3,3), Fte(3,3), Ft(3), DFDe(3)
+      integer      :: i, j ,k
+      if (abs(sum(freq)) > 1d-15) &
+         call lsquit('efgb_Jpri_Bten_Bcal_new: sum(freq) should be zero!',decomp%lupri)
+      ! dipole and quadrupole moments
+      call pert_dens(decomp, S, (/'EL'/), (/3/), (/D/), (/F/), Df, Ff, freq=(/freq(3)/))
+      call pert_dens(decomp, S, (/'EL'/), (/3/), (/D/), (/F/), De, Fe, freq=(/freq(2)/))
+      call pert_dens(decomp, S, (/'EL','EL'/), (/3,3/), (/D,De,Df/), (/F,Fe,Ff/), &
+                     Def, Fef, freq=(/freq(2),freq(3)/))
+
+      Eoff = 0
+
+      call prop_oneave(S, (/'MAGO'/), (/Def/), int(shape(Eoff)), Eoff)
+      call print_tensor(int(shape(Eoff)), Eoff, 'd/df G-prime-noL = Eoff', freq)
+
+      De  = 0
+      Df  = 0
+      Def = 0
+      Fe  = 0
+      Ff  = 0
+      Fef = 0
+
+   end subroutine
+
    subroutine efgb_Jpri_Bten_Bcal(decomp, S, D, F, freq, Ef, Eq, Eff, Evf, Eof, Ebf, &
                                   Eqf, Efff, Evff, Eoff, Ebff, Eqff, Effq)
    ! Electric-field-gradient-induced birefringence (Buckingham birefringence).
@@ -324,6 +368,24 @@ contains
       Efff=-Efff; Evff=-Evff; Eqff=-Eqff; Effq=-Effq
    end subroutine
 
+
+   subroutine jprime_output(w, Pffo, o)
+   !ajt jan09 Based on Dmitry Shcherbin's post-calculation script efgb.py
+      real(8),intent(in)    :: w
+      real(8),intent(in)    :: Pffo(3,3,3)
+      integer,intent(in)    :: o !outputting unit (lupri or stdout)
+      real(8) :: tr3,trm3(3,3),Jprio,Jpril,Bten,Bcal
+      real(8),parameter:: c1=3.75874d-21,c2=63154.9d0,c3=6.18385d-14
+      real(8),parameter:: hz=1/48168836676d0,c4=0.164518d0*c1/cm1
+      !calculate tensor averages sum J'_ijk eps_ijk
+      Jprio = Pffo(1,2,3) + Pffo(3,1,2) + Pffo(2,3,1) & !no-London
+            - Pffo(3,2,1) - Pffo(2,1,3) - Pffo(1,3,2)
+      !print
+      write (o,'(6x,a,f12.9,a,i7,a,i4,a/)') 'For frequency w = ',w, &
+               ' au =',nint(w/cm1),' cm-1 ~ ', nint((2*pi*cvl/w)/nm),' nm'
+      write (o,'(6x,a,1x,g13.7)') &
+               'no-London J-prime i<<mu;mu,mg>>0w = -Effb(-w,0,w) eps-average :',Jprio
+   end subroutine
 
    subroutine efgb_output(w, dip, qua, Pff, Pfv, Pfo, Pfb, Pfq, &
                           Pfff, Pffv, Pffo, Pffb, Pffq, Pffs, o)
