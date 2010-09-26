@@ -237,7 +237,7 @@ contains
       real(8),           target, intent(in)    :: xc_dmat_0(xc_mat_dim, xc_mat_dim)
       integer,                   intent(in)    :: xc_nr_dmat
       integer,                   intent(in)    :: xc_nr_fmat
-      real(8), optional, target, intent(in)    :: xc_dmat(xc_mat_dim, xc_mat_dim, xc_nz, xc_nr_fmat)
+      real(8), optional, target, intent(in)    :: xc_dmat(xc_mat_dim, xc_mat_dim, xc_nz, xc_nr_dmat)
       real(8), optional, target, intent(inout) :: xc_fmat(xc_mat_dim, xc_mat_dim, xc_nz, xc_nr_fmat)
       integer, optional, target, intent(in)    :: xc_dmat_ih_sym(xc_nr_dmat)
       integer, optional, target, intent(in)    :: xc_dmat_pg_sym(xc_nr_dmat)
