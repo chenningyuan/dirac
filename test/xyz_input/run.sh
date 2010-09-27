@@ -22,18 +22,18 @@ if [ ! -z "$RUNTYPE" ]; then
          ;;
 
       "long")
-
          MOL=CH3F.xyz;
 	 MENU=xyz.inp;
 	 export MOL;
 	 export MENU;
 	 ../run.sh;
 
-	 MOL=CH3F.xyz;
-	 MENU=xyz-2.inp;
-	 export MOL;
-	 export MENU;
-	 ../run.sh 
+#	 MOL=CH3F.xyz;
+#	 MENU=xyz-2.inp;
+#	 export MOL;
+#	 export MENU;
+#	 ../run.sh 
+
          ;;
    esac
 else
@@ -44,10 +44,3 @@ else
     ../run.sh
 
 fi
-      
-
-
-	 
-
-
-
