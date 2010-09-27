@@ -445,12 +445,13 @@ C        ... we need additional integer array...
           IF (ISIZE.LT.NORB(2)) ISIZE=NORB(2)
          ENDIF
 
-         CALL MEMGET('INTE',KIPIVOT,ISIZE,WORK,KFREE,LFREE)
+         !CALL MEMGET('INTE',KIPIVOT,ISIZE,WORK,KFREE,LFREE)
+
 C        ... both for FPM "k" & RKB 
          CALL GET_HINF_R(WORK(KTBUF),WORK(KTMAT),VMAT,WORK(KFACKIN),
-     &                   WORK(KEIG),WORK(KIPIVOT),FPB,YREQ1,
+     &                   WORK(KEIG),WORK(KIBEIG),FPB,YREQ1,
      &               GETPCTM,SF_BEG,WORK(KFREE),LFREE,IPRHAM)
-         CALL MEMREL('AFTER_INF_R',WORK,KWORK,KIPIVOT,KFREE,LFREE)
+         !CALL MEMREL('AFTER_INF_R',WORK,KWORK,KIPIVOT,KFREE,LFREE)
 
         ENDIF
 C =======================================================================
@@ -1021,7 +1022,7 @@ C            LUBSS - file unit number ...
 C
 C  On output: TMAT with record
 C
-C  Written by Miro ILIAS, Strasbourg March, 2006,
+C  Written by Miro ILIAS, Strasbourg, March 2006
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
@@ -1031,8 +1032,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       CHARACTER*8 LBL
       CHARACTER*(*) FROMSUB
       
-      CALL QENTER('RFBSSMAT')
-
       IF (IPRINT.GE.3) THEN
        CALL HEADER('*** Output from the RFBSSMAT routine ***',-1)
        write(lupri,'(2x,a,a)')
@@ -1090,7 +1089,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
         ENDIF
       ENDIF
 
-      CALL QEXIT('RFBSSMAT')
       RETURN
       END
 
@@ -4702,9 +4700,7 @@ C
       LOGICAL SAVESO1, SPFR,SPFR_BEG, 
      &          WRITEH2C, GETPCTM, TRAFPRKB, FPB
 
-      CALL QENTER('H2CFINAL')
 #include "memint.h"
-
 
 C ... assumes that H2C_ONBA is in FP "k" basis !
       TRAFPRKB = .FALSE.
@@ -4905,7 +4901,7 @@ C  ********************************************************************
           ENDIF
 
         ENDIF
-
+ 
         IF (IPRINT.GE.4) THEN
           CALL HEADER(
      & 'H2CFINAL: H2c in ON basis',-1)
@@ -4966,7 +4962,6 @@ C ====================================================================
      & ' into the BSSMAT file, EOFLABEL renewed.'
       ENDIF
 
-      CALL QEXIT('H2CFINAL')
       RETURN
       END
 
