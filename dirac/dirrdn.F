@@ -1208,7 +1208,8 @@ C
      &            'DHFINP: Error in open-shell input reading !'
                    WRITE(LUPRI,*) 'NOPEN:',NOPEN,' NFSYM:',NFSYM
                    WRITE(LUPRI,'(A,A)') 'text:',LINE
-                   WRITE(LUPRI,*) 'for NFSYM=2 has to be like xx/xx,xx'
+                   WRITE(LUPRI,*)
+     &  'for NFSYM=2 has to be of the for xx/xx,xx (see the manual)'
                    CALL QUIT(
      &             'DHFINP: Error in open-shell input reading !')
                   ELSE IF (IPERIOD.GT.0.AND.NFSYM.EQ.1) THEN
