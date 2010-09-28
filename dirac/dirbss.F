@@ -4659,7 +4659,7 @@ C ... save H2c_ON basis into BSSMAT
       ENDIF
 
       CALL QEXIT('GET_HINF_R')
-      IPRINT = IPRINT_SAVE
+
       RETURN
       END
 
