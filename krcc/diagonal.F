@@ -28,33 +28,36 @@ C#include "wrkspc.inc"
       DIMENSION WORK(*)
 *
       IDUM = 0
-      CALL MEMMAR(IDUM,IDUM,'MARK  ',IDUM,'GCC_FD')
-      CALL MEMMAR(KFDIA_AL,NTOOB,'ADDL  ',2,'FDIA_A')
-      CALL MEMMAR(KFDIA_BE,NTOOB,'ADDL  ',2,'FDIA_B')
+C     CALL MEMMAR(IDUM,IDUM,'MARK  ',IDUM,'GCC_FD')
+C      CALL MEMGET('INTE',,,WORK,KFREE,LFREE)
+C      CALL MEMGET('REAL',,,WORK,KFREE,LFREE)
+
+      CALL MEMGET('REAL',KFDIA_AL,NTOOB,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KFDIA_BE,NTOOB,WORK,KFREE,LFREE)
       IRECOM = 1
       IF(IRECOM.NE.1) THEN
-      CALL MEMMAR(KFDIA_AL_IM,NTOOB,'ADDL  ',2,'FDIA_A_IM')
-      CALL MEMMAR(KFDIA_BE_IM,NTOOB,'ADDL  ',2,'FDIA_B_IM')
+      CALL MEMGET('REAL',KFDIA_AL_IM,NTOOB,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KFDIA_BE_IM,NTOOB,WORK,KFREE,LFREE)
       END IF
 *. Four blocks of string occupations
 C
 C     MX_ST_TSOSO_BLK_MX NEEDS TO BE CORRECTED FOR LARGER CC CALCULATIONS
 C
-      CALL MEMMAR(KLSTR1_OCC,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STOCC1')
-      CALL MEMMAR(KLSTR2_OCC,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STOCC2')
-      CALL MEMMAR(KLSTR3_OCC,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STOCC3')
-      CALL MEMMAR(KLSTR4_OCC,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STOCC4')
+      CALL MEMGET('INTE',KLSTR1_OCC,MX_ST_TSOSO_BLK_MX,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KLSTR2_OCC,MX_ST_TSOSO_BLK_MX,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KLSTR3_OCC,MX_ST_TSOSO_BLK_MX,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KLSTR4_OCC,MX_ST_TSOSO_BLK_MX,WORK,KFREE,LFREE)
 *. Four arrays ( will be used to store sums of orbital energies)
-      CALL MEMMAR(KLSTR1,MX_ST_TSOSO_MX,'ADDL  ',2,'STAR1 ')
-      CALL MEMMAR(KLSTR2,MX_ST_TSOSO_MX,'ADDL  ',2,'STAR2 ')
-      CALL MEMMAR(KLSTR3,MX_ST_TSOSO_MX,'ADDL  ',2,'STAR3 ')
-      CALL MEMMAR(KLSTR4,MX_ST_TSOSO_MX,'ADDL  ',2,'STAR4 ')
+      CALL MEMGET('REAL',KLSTR1,MX_ST_TSOSO_MX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KLSTR2,MX_ST_TSOSO_MX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KLSTR3,MX_ST_TSOSO_MX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KLSTR4,MX_ST_TSOSO_MX,WORK,KFREE,LFREE)
       IF(IRECOM.NE.1) THEN
 *. And for the imaginary part
-      CALL MEMMAR(KLSTR5,MX_ST_TSOSO_MX,'ADDL  ',2,'STAR5 ')
-      CALL MEMMAR(KLSTR6,MX_ST_TSOSO_MX,'ADDL  ',2,'STAR6 ')
-      CALL MEMMAR(KLSTR7,MX_ST_TSOSO_MX,'ADDL  ',2,'STAR7 ')
-      CALL MEMMAR(KLSTR8,MX_ST_TSOSO_MX,'ADDL  ',2,'STAR8 ')
+      CALL MEMGET('REAL',KLSTR5,MX_ST_TSOSO_MX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KLSTR6,MX_ST_TSOSO_MX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KLSTR7,MX_ST_TSOSO_MX,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KLSTR8,MX_ST_TSOSO_MX,WORK,KFREE,LFREE)
       END IF
 *
 * 1 : Obtain Inactive Fock matrix
@@ -112,8 +115,8 @@ C THEREFORE ONLY THAT WILL BE GENERATED
      &               NGAS,NGSSH,IHPVGAS_AB,
      &               NTOOBS,NTOOB,IREOTS,IREOTS2,IDOH2,
      &               ENVIRO,ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
-     &               NTOOB,WORK(KFDIA_AL),WORK(KFDIA_BE))
-        call rmemchk
+     &               NTOOB,WORK(KFDIA_AL),WORK(KFDIA_BE),
+     &               WORK,KFREE,LFREE)
 *
           IF(IRECOM.NE.1) THEN
             print*,'img dia'
@@ -122,7 +125,8 @@ C THEREFORE ONLY THAT WILL BE GENERATED
      &               NGAS,NGSSH,IHPVGAS_AB,
      &               NTOOBS,NTOOB,IREOTS,IREOTS2,IDOH2,
      &               ENVIRO,ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
-     &               NTOOB,WORK(KFDIA_AL_IM),WORK(KFDIA_BE_IM))
+     &               NTOOB,WORK(KFDIA_AL_IM),WORK(KFDIA_BE_IM),
+     &               WORK,KFREE,LFREE)
           END IF
         ELSE
 *. Spin unrestricted Fock matrices
@@ -163,11 +167,11 @@ C      print*,'img diagonal 2'
 c      print*,(WORK(KFDIA_BE_IM+II),II=0,NACOB)
 *. And then the diagonal
 C NOTE : THIS ROUTINE SHOULD PERHAPS BE CHANGED, LASSE
-      call rmemchk
 C      print*,'before GENCC_F_DIAG_REL'
 C      do i=1,100
 C        print*,'me'
 C      end do
+      stop 'enough'
       IF(IRECOM.EQ.1) THEN
       CALL GENCC_F_DIAG_KRCC(ITSS_TP,NTSS_TP,CCDIA,ISM,N_CC_AMP,IRECOM,
      &     WORK(KFDIA_AL),WORK(KFDIA_BE),
@@ -197,7 +201,8 @@ C     &     WORK(KLSTR5),WORK(KLSTR6),WORK(KLSTR7),WORK(KLSTR8))
 *
 C?    WRITE(6,*) ' Enforced stop in GENCC_F_DIAG_M '
 C?    STOP '  Enforced stop in GENCC_F_DIAG_M'
-      CALL MEMMAR(IDUM,IDUM,'FLUSM ',IDUM,'GCC_FD')
+C      CALL MEMMAR(IDUM,IDUM,'FLUSM ',IDUM,'GCC_FD')
+      CALL MEMREL('F_DIAG',WORK,KFDIA_AL,KFDIA_AL,KFREE,LFREE)
 *
       RETURN
       END
@@ -207,7 +212,8 @@ C      SUBROUTINE FI_HS_REL(T,FI_AL,FI_BE,ECC,IDOH2)
      &                   NGAS,NGSSH,IHPVGAS_AB,
      &                   LOBSM,NORBT,IREOTS,IREOTS2,IDOH2,
      &                   ENVIRO,ISPINFREE,NGSOB,NGSOB2,NGSOBT,NGSOBT2,
-     &                   NTOOB,FI_AL,FI_BE)
+     &                   NTOOB,FI_AL,FI_BE,
+     &                   WORK,KFREE,LFREE)
 *
 * Obtain core energy and alpha and beta part of inactive Fock-matrix
 * / effective 1- electron operator for high spin openshell
@@ -242,7 +248,7 @@ C      SUBROUTINE FI_HS_REL(T,FI_AL,FI_BE,ECC,IDOH2)
 *
 #include "implicit.inc"
 *. General input
-#include "wrkspc.inc"
+C#include "wrkspc.inc"
 #include "mxpdim.inc"
 #include "ipoist8.inc"
 #include "ctcc.inc"
@@ -251,6 +257,8 @@ C      SUBROUTINE FI_HS_REL(T,FI_AL,FI_BE,ECC,IDOH2)
 C#include "cgas.inc"
 C#include "orbinp.inc"
 C#include "lucinp.inc"
+*
+      DIMENSION WORK(*)
 *. Standard 1+2 electron integrals
       DIMENSION T(*)
 *. Output
@@ -269,11 +277,10 @@ C#include "lucinp.inc"
 C      print*,'N1DIAINT',N1DIAINT
       CALL SETVEC(FI_AL,ZERO,N1DIAINT/2)
       CALL SETVEC(FI_BE,ZERO,N1DIAINT/2)
-      call rmemchk
 *
-      NTEST = 0
-C      print*,'NTOOBS,NTOOBS,NSMOB',NTOOBS,NTOOBS,NSMOB
-C      print*,'NORBT',NORBT
+      NTEST = 00
+      print*,'NTOOBS,NTOOBS,NSMOB',NTOOBS,NTOOBS,NSMOB
+      print*,'NORBT',NORBT
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' FI_HS : Initial 1 e integral list '
         CALL APRBLM2(T,NTOOBS,NTOOBS,NSMOB,ISYMPACK)
@@ -357,7 +364,6 @@ C          IOFFSD = IOFFSD + NGSSH(ISMOB,IGAS)
         end do
       end do
 C      print*,'ECC',ECC
-      call rmemchk
 *
 * Testing
 *. Number of 1-e integrals
@@ -508,7 +514,6 @@ C                END IF
           END IF
         end do
 C       print*,'ECC',ECC
-       call rmemchk
 *
 * Exchange
 *
@@ -610,7 +615,6 @@ C                END IF
           END IF
         end do
 C       print*,'ECC',ECC
-       call rmemchk
 *
 * Exchange 2
 *
@@ -722,7 +726,6 @@ C                END IF
             END IF
           end do
 C       print*,'ECC',ECC
-       call rmemchk
 *
       IF(NTEST.GT.111110.AND.IDOH2.NE.0) THEN
        WRITE(6,*) ' FI_alpha in Symmetry blocked form '

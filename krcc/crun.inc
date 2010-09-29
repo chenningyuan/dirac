@@ -43,6 +43,7 @@
      &            I_RE_MS2_SPACE,I_RE_MS2_VALUE, IPRECOND,
      &            ISIMSYM, IUSE_HW, 
      &            IUSEH0P, I_DO_MCSCF, MX_EXC_LEVEL,
+     &            IMAXKRFLIP,
      &            I_DO_LZ2, ICCSOLVE,I_DO_CCN, I_DO_SBSPJA,
      &            IDUM1,CCCONV, N_HOLE_ORBSPACEX, I_DO_CC3,
      &            I_DO_CI_TO_CC,CCFORM,PADDY2,LCCBD12,LCCB,

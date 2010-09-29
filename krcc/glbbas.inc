@@ -10,7 +10,7 @@
      &              KDIONEE,KDITWOE,KKR,KIOFF12,KINDK,KINDL,
      &              KINVREO,KNUMINT,KT_CC,KBOSYM,KISREO,
      &              KINDEX,KMDIASV,KPOSDIA,
-     &              IMOFFSET,
+     &              IMOFFSET,KLOOK,
      &              KFI_AL,KFI_BE,KFI_AL_IM,KFI_BE_IM,
      &              KFDIA_AL,KFDIA_BE,KFDIA_AL_IM,KFDIA_BE_IM,
      &              KCC1,KCC2,KCC3,KCC4,KCC5,KDIA,KVEC1P,KVEC2P,
@@ -26,4 +26,4 @@
      &              KREO_PTDT(MXPORB+1), KZ_TYPES(MXPORB+1),
      &              KINT1_SIMTRH_A,KINT1_SIMTRH_B,
      &              KINT2_SIMTRH_AA,KINT2_SIMTRH_BB,KINT2_SIMTRH_AB,
-     &              KPINT2_SIMTRH_AB 
+     &              KPINT2_SIMTRH_AB

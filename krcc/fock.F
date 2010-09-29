@@ -28,7 +28,7 @@
       DIMENSION T(*),FIMAT(*)
 *
 #include "mxpdim.inc"
-#include "wrkspc.inc"
+C#include "wrkspc.inc"
 #include "orbinp.inc"
 #include "glbbas.inc"
 #include "lucinp.inc"
@@ -120,7 +120,7 @@ C      SUBROUTINE FI_HS_REL(T,FI_AL,FI_BE,ECC,IDOH2)
 *
 #include "implicit.inc"
 *. General input
-#include "wrkspc.inc"
+C#include "wrkspc.inc"
 #include "mxpdim.inc"
 #include "ipoist8.inc"
 #include "ctcc.inc"
@@ -168,7 +168,6 @@ C IINT is dimension of FI, ISIDE is square root of IINT
         END DO
       END DO
       CALL SETVEC(FI,ZERO,IINT)
-      call rmemchk
 *
 * Core energy
 *
@@ -225,7 +224,6 @@ C              print*,'NGSSH,JSM,JGASS',NGSSH(JSM,JGASS),JSM,JGASS
           END DO
         end do
       end do
-      call rmemchk
        NTEST = 00
        IF(NTEST.GE.100) THEN
        WRITE(6,*) ' Printing entire one-electron inactive Fock-matrix '
@@ -355,7 +353,6 @@ C           ^ JGAS
 C         ^ NGASOCC
         end do
 C       ^ IGAS
-       call rmemchk
        NTEST = 00
        IF(NTEST.GE.100) THEN
        WRITE(6,*) ' Printing entire inactive Fock-matrix '
