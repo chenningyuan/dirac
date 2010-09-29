@@ -47,6 +47,8 @@
 CTF adding global info
       common/glbref/ISPC/ISM/ITERGLB
 *
+      DIMENSION WORK(*)
+*
 C#include "memint.h"
 *
 * New allocateable array. SHOULD CHECK IF IT IS OKAY TO JUST ALLOCATE ARRAYS FOR MATRICES
@@ -177,7 +179,7 @@ C     END IF
       RETURN
       END
 *
-      SUBROUTINE MEMCHK_KRCC(WORK)
+      SUBROUTINE MEMCHK_KRCC(WORK)!,KFREE,LFREE)
 *
 *     Lazy mans memchk for entire memory, Lasse
 *
@@ -186,7 +188,9 @@ C     END IF
 #include "mxpdim.inc"
 #include "glbbas.inc"
 *
-      CALL MEMCHK('cemory',WORK,KINT1)
+      DIMENSION WORK(*)
+*
+      CALL MEMCHK('cemory',WORK,KLOOK)
 *
       RETURN
       END

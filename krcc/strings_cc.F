@@ -623,7 +623,7 @@ C     call memmar(KFREEL,IDUMMY,'FREE  ',IDUMMY,'DUMMY ')
       IDUMMY  = 6000
       KFREEL = 0
       CALL MEMGET('INTE',KFREEL,IDUMMY,WORK,KFREE,LFREE)
-      CALL MEMCHK_KRCC(WORK)
+C      CALL MEMCHK('UU',WORK,KLOOK)
       if (NTEST.ge.1) then
         write(6,*) 'Getting first free address in strinf_gas'
         write(6,*) '----------------------------------------'
@@ -644,7 +644,7 @@ C     KFREEL2=KFREEL!+2
         write(6,*) '======================================='
       end if
       print*,'before it all'
-      CALL MEMCHK_KRCC(WORK)
+      CALL MEMCHK_KRCC(WORK)!,KFREE,LFREE)
       DO IGRP = 1, NGRP
 *. A gas group can be considered as a RAS group with 0 electrons in
 *  RAS1, RAS3 !
@@ -1199,7 +1199,6 @@ C
 *
 *. Start of string information
       IDUMMY = 0
-      CALL MEMCHK_KRCC(WORK)
 C     call memmar(KSTINF,IDUMMY,'FREE  ',IDUMMY,'DUMMY ')
       CALL MEMGET('INTE',KSTINF,IDUMMY,WORK,KFREE,LFREE)
       print*,'KSTINF',KSTINF
@@ -2417,7 +2416,7 @@ C#include "memint.h"
      &                 DUMMY,DUMMY,DUMMY,I2DIATP,DUMMY,DUMMY,DUMMY,
      &                 DUMMY,JCMBSPC,IPRNT)
       NSPOBEX_TP = NHX
-C      print*,'NSPOBEX_TP',NSPOBEX_TP
+      print*,'NSPOBEX_TP',NSPOBEX_TP
 *
 *. and the actual spin-orbital excitations
       CALL MEMGET('INTE',KLSOBEX,4*NGAS*NSPOBEX_TP,WORK,KFREE,LFREE)
@@ -3441,7 +3440,7 @@ C              WRT_SPOX_TP(IEX_TP,NEX_TP)
 *. An excitation is stored as :
 *  Alpha creation,beta creation,alpha annihilation,beta annihilation.
 *
-      NTESTL = 00
+      NTESTL = 100
       NTEST = max(NTESTL,IPRNT)
 *
       IZERO = 0
@@ -3922,7 +3921,7 @@ C      print*,'JCMBSPC,NHX',JCMBSPC,NHX
 *
 * one-electron spin orbit
 *
-      IF (IHTYPE.GT.2) THEN
+      IF (IHTYPE.GT.20) THEN
 *
 * operator:
 * a+i alpha  j beta
@@ -4001,228 +4000,6 @@ C      print*,'JCMBSPC,NHX',JCMBSPC,NHX
       END IF
 *
 * Two-electron terms with Delta mk .ne. 0
-*
-      if (IHTYPE.eq.3.or.IHTYPE.eq.5) THEN
-*
-**********************************************************
-*  Spin-dependent spinor basis. E.g. DIRAC environment   *
-*    (ub|uu), (bu|uu), (bu|bb), (ub|bb) integral classes *
-**********************************************************
-*
-* operator:
-*. a+i alpha a+j alpha a k alpha a l beta, i .ge. j
-        DO IGAS = 1, NGAS
-          DO JGAS = 1, IGAS
-            DO KGAS = 1, NGAS
-              DO LGAS = 1, NGAS
-                if ((IGAS.eq.JGAS.and.MXNELGS(IGAS).ge.2.and.
-     &               MXNELGS(KGAS).ge.1.and.MXNELGS(LGAS).ge.1.and.
-     &               NOBPT(IGAS).ge.2.and.NOBPT(KGAS).ge.1.and.
-     &               NOBPT(LGAS).ge.1).or.
-     &               (IGAS.ne.JGAS.and.
-     &                MXNELGS(IGAS).ge.1.and.MXNELGS(JGAS).ge.1.and.
-     &                MXNELGS(KGAS).ge.1.and.MXNELGS(LGAS).ge.1.and.
-     &                NOBPT(IGAS).ge.1.and.NOBPT(JGAS).ge.1.and.
-     &                NOBPT(KGAS).ge.1.and.NOBPT(LGAS).ge.1)) then
-                  CALL ISETVC(IHX_LOC,IZERO,4*NGAS)
-                  IHX_LOC(IGAS+(1-1)*NGAS) = 1
-                  IHX_LOC(JGAS+(1-1)*NGAS) = IHX_LOC(JGAS+(1-1)*NGAS)+1
-                  IHX_LOC(KGAS+(3-1)*NGAS) = 1
-                  IHX_LOC(LGAS+(4-1)*NGAS) = 1
-                  CALL CAAB_INCLUDED_KRCC(IHX_LOC,INCLUDED)
-                  IF (INCLUDED.EQ.0) THEN
-                    WRITE(6,*) ' Hamiltonian type excluded '
-                    CALL WRT_SPOX_TP(IHX_LOC,1)
-                  ELSE
-                    NHX = NHX + 1
-                    if (IFLAG.ne.1) then
-                      CALL ICOPVE(IHX_LOC,IHX(1,1,NHX),4*NGAS)
-* This excitation corresponds to the integral
-*  (+a  a | b  a+)
-* so reorder accordingly:
-                      IHINDX(1,NHX) = 1
-                      IHINDX(2,NHX) = 3
-                      IHINDX(3,NHX) = 4
-                      IHINDX(4,NHX) = 2
-                      SIGN_NHX(NHX) = ONE
-                      LABEL(IHINDX(1,NHX),NHX) = 1
-                      LABEL(IHINDX(2,NHX),NHX) = 1
-                      LABEL(IHINDX(3,NHX),NHX) = 1
-                      LABEL(IHINDX(4,NHX),NHX) = -1
-                      IOP_REO(1,NHX) = 1
-                      IOP_REO(2,NHX) = 3
-                      IOP_REO(3,NHX) = 2
-                      IOP_REO(4,NHX) = 4
-                      SIGN_OPREO(NHX) = -1.D0 * ONE
-                    end if
-                  END IF
-                END IF
-              END DO
-            END DO
-          END DO
-        END DO
-*
-* operator:
-*. a+i beta a+j alpha a k alpha a l alpha, k .ge. l
-        DO IGAS = 1, NGAS
-          DO JGAS = 1, NGAS
-            DO KGAS = 1, NGAS
-              DO LGAS = 1, KGAS
-                if ((KGAS.eq.LGAS.and.MXNELGS(KGAS).ge.2.and.
-     &               MXNELGS(IGAS).ge.1.and.MXNELGS(JGAS).ge.1.and.
-     &               NOBPT(KGAS).ge.2.and.NOBPT(IGAS).ge.1.and.
-     &               NOBPT(JGAS).ge.1).or.
-     &               (KGAS.ne.LGAS.and.
-     &                MXNELGS(IGAS).ge.1.and.MXNELGS(JGAS).ge.1.and.
-     &                MXNELGS(KGAS).ge.1.and.MXNELGS(LGAS).ge.1.and.
-     &                NOBPT(IGAS).ge.1.and.NOBPT(JGAS).ge.1.and.
-     &                NOBPT(KGAS).ge.1.and.NOBPT(LGAS).ge.1)) then
-                  CALL ISETVC(IHX_LOC,IZERO,4*NGAS)
-                  IHX_LOC(IGAS+(1-1)*NGAS) = 1
-                  IHX_LOC(JGAS+(2-1)*NGAS) = 1
-                  IHX_LOC(KGAS+(3-1)*NGAS) = 1
-                  IHX_LOC(LGAS+(3-1)*NGAS) = IHX_LOC(LGAS+(3-1)*NGAS)+1
-                  CALL CAAB_INCLUDED_KRCC(IHX_LOC,INCLUDED)
-                  IF (INCLUDED.EQ.0) THEN
-                    WRITE(6,*) ' Hamiltonian type excluded '
-                    CALL WRT_SPOX_TP(IHX_LOC,1)
-                  ELSE
-                    NHX = NHX + 1
-                    if (IFLAG.ne.1) then
-                      CALL ICOPVE(IHX_LOC,IHX(1,1,NHX),4*NGAS)
-* This excitation corresponds to the integral
-*  (+b  a | a  a+)
-* so reorder accordingly:
-                      IHINDX(1,NHX) = 1
-                      IHINDX(2,NHX) = 3
-                      IHINDX(3,NHX) = 4
-                      IHINDX(4,NHX) = 2
-                      SIGN_NHX(NHX) = ONE
-                      LABEL(IHINDX(1,NHX),NHX) = -1
-                      LABEL(IHINDX(2,NHX),NHX) = 1
-                      LABEL(IHINDX(3,NHX),NHX) = 1
-                      LABEL(IHINDX(4,NHX),NHX) = 1
-                      IOP_REO(1,NHX) = 3
-                      IOP_REO(2,NHX) = 1
-                      IOP_REO(3,NHX) = 2
-                      IOP_REO(4,NHX) = 4
-                      SIGN_OPREO(NHX) = ONE
-                    end if
-                  END IF
-                END IF
-              END DO
-            END DO
-          END DO
-        END DO
-*
-* operator:
-*. a+i beta  a+j beta  a k beta  a l alpha , i .ge. j
-        DO IGAS = 1, NGAS
-          DO JGAS = 1, IGAS
-            DO KGAS = 1, NGAS
-              DO LGAS = 1, NGAS
-                if ((IGAS.eq.JGAS.and.MXNELGS(IGAS).ge.2.and.
-     &               MXNELGS(KGAS).ge.1.and.MXNELGS(LGAS).ge.1.and.
-     &               NOBPT(IGAS).ge.2.and.NOBPT(KGAS).ge.1.and.
-     &               NOBPT(LGAS).ge.1).or.
-     &               (IGAS.ne.JGAS.and.
-     &                MXNELGS(IGAS).ge.1.and.MXNELGS(JGAS).ge.1.and.
-     &                MXNELGS(KGAS).ge.1.and.MXNELGS(LGAS).ge.1.and.
-     &                NOBPT(IGAS).ge.1.and.NOBPT(JGAS).ge.1.and.
-     &                NOBPT(KGAS).ge.1.and.NOBPT(LGAS).ge.1)) then
-                  CALL ISETVC(IHX_LOC,IZERO,4*NGAS)
-                  IHX_LOC(IGAS+(2-1)*NGAS) = 1
-                  IHX_LOC(JGAS+(2-1)*NGAS) = IHX_LOC(JGAS+(2-1)*NGAS)+1
-                  IHX_LOC(KGAS+(4-1)*NGAS) = 1
-                  IHX_LOC(LGAS+(3-1)*NGAS) = 1
-                  CALL CAAB_INCLUDED_KRCC(IHX_LOC,INCLUDED)
-                  IF (INCLUDED.EQ.0) THEN
-                    WRITE(6,*) ' Hamiltonian type excluded '
-                    CALL WRT_SPOX_TP(IHX_LOC,1)
-                  ELSE
-                    NHX = NHX + 1
-                    if (IFLAG.ne.1) then
-                      CALL ICOPVE(IHX_LOC,IHX(1,1,NHX),4*NGAS)
-* This excitation corresponds to the integral
-*  (+b  a | b  b+)
-* so reorder accordingly:
-                      IHINDX(1,NHX) = 1
-                      IHINDX(2,NHX) = 4
-                      IHINDX(3,NHX) = 3
-                      IHINDX(4,NHX) = 2
-C  ???                SIGN_NHX(NHX) = -1 * ONE
-                      SIGN_NHX(NHX) = ONE
-                      LABEL(IHINDX(1,NHX),NHX) = -1
-                      LABEL(IHINDX(2,NHX),NHX) = -1
-                      LABEL(IHINDX(3,NHX),NHX) = -1
-                      LABEL(IHINDX(4,NHX),NHX) = 1
-                      IOP_REO(1,NHX) = 1
-                      IOP_REO(2,NHX) = 3
-                      IOP_REO(3,NHX) = 2
-                      IOP_REO(4,NHX) = 4
-                      SIGN_OPREO(NHX) = ZERO
-                    end if
-                  END IF
-                END IF
-              END DO
-            END DO
-          END DO
-        END DO
-
-* operator:
-*. a+i alpha  a+j beta  a k beta  a l beta , k .ge. l
-        DO IGAS = 1, NGAS
-          DO JGAS = 1, NGAS
-            DO KGAS = 1, NGAS
-              DO LGAS = 1, KGAS
-                if ((KGAS.eq.LGAS.and.MXNELGS(KGAS).ge.2.and.
-     &               MXNELGS(IGAS).ge.1.and.MXNELGS(JGAS).ge.1.and.
-     &               NOBPT(KGAS).ge.2.and.NOBPT(IGAS).ge.1.and.
-     &               NOBPT(JGAS).ge.1).or.
-     &               (KGAS.ne.LGAS.and.
-     &                MXNELGS(IGAS).ge.1.and.MXNELGS(JGAS).ge.1.and.
-     &                MXNELGS(KGAS).ge.1.and.MXNELGS(LGAS).ge.1.and.
-     &                NOBPT(IGAS).ge.1.and.NOBPT(JGAS).ge.1.and.
-     &                NOBPT(KGAS).ge.1.and.NOBPT(LGAS).ge.1)) then
-                  CALL ISETVC(IHX_LOC,IZERO,4*NGAS)
-                  IHX_LOC(IGAS+(1-1)*NGAS) = 1
-                  IHX_LOC(JGAS+(2-1)*NGAS) = 1
-                  IHX_LOC(KGAS+(4-1)*NGAS) = 1
-                  IHX_LOC(LGAS+(4-1)*NGAS) = IHX_LOC(LGAS+(4-1)*NGAS)+1
-                  CALL CAAB_INCLUDED_KRCC(IHX_LOC,INCLUDED)
-                  IF (INCLUDED.EQ.0) THEN
-                    WRITE(6,*) ' Hamiltonian type excluded '
-                    CALL WRT_SPOX_TP(IHX_LOC,1)
-                  ELSE
-                    NHX = NHX + 1
-                    if (IFLAG.ne.1) then
-                      CALL ICOPVE(IHX_LOC,IHX(1,1,NHX),4*NGAS)
-* This excitation corresponds to the integral
-*  (+a  b | +b  b)
-* so reorder accordingly:
-                      IHINDX(1,NHX) = 1
-                      IHINDX(2,NHX) = 3
-                      IHINDX(3,NHX) = 4
-                      IHINDX(4,NHX) = 2
-                      SIGN_NHX(NHX) = ONE  !!??
-                      LABEL(IHINDX(1,NHX),NHX) = 1
-                      LABEL(IHINDX(2,NHX),NHX) = -1
-                      LABEL(IHINDX(3,NHX),NHX) = -1
-                      LABEL(IHINDX(4,NHX),NHX) = -1
-                      IOP_REO(1,NHX) = 1
-                      IOP_REO(2,NHX) = 3
-                      IOP_REO(3,NHX) = 2
-                      IOP_REO(4,NHX) = 4
-                      SIGN_OPREO(NHX) = ZERO
-                    end if
-                  END IF
-                END IF
-              END DO
-            END DO
-          END DO
-        END DO
-*
-      end if
 *
 **********************************************************
 *  Spin-dependent spinor basis. E.g. DIRAC environment   *
@@ -4568,12 +4345,15 @@ CTI  Set following stuff to zero in such cases.
           ELSE
             KOCSTR_ADD = KOCSTR2(ITPFGS(IGAS))
           END IF
+          print*,'KOCSTR_ADD',KOCSTR_ADD
 *
-C?        call memchk
+          call memchk_KRCC(WORK)
 *
           NSTI = NSTFGS(IGAS)
+          print*,'before ADD_STR_GROUP_KRCC'
           CALL ADD_STR_GROUP_KRCC(NSTI,IBSTFGS(IGAS),WORK(KOCSTR_ADD),
      &                       NSTB,NSTA,ISTROC,NELB+1,NELI,NEL)
+          print*,'after ADD_STR_GROUP_KRCC'
 *. Loop over strings in IGAS
         END IF
       END DO
@@ -4623,12 +4403,13 @@ C?        call memchk
 * NELTOT : Total number of electrons
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
+C#include "ipoist8.inc"
 *. Input
       DIMENSION ISTADD(NELADD,*)
 *. Input and output
       DIMENSION ISTRING(NELTOT,*)
 *
+      print*,'NSTA,NSTB,NELADD',NSTA,NSTB,NELADD
       IF(NSTA.GT.1) THEN
         DO IISTR = 1,NSTADD
 *. Address of A(1,IISTR,1)
@@ -4834,7 +4615,7 @@ C#include "wrkspc.inc"
       DIMENSION WORK(*)
 *
       CALL QENTER('GETST')
-      NTEST = 00
+      NTEST = 000
       IF(NTEST.GE.100) THEN
         WRITE(6,*)
         WRITE(6,*) ' ============================== '
@@ -4869,6 +4650,7 @@ C#include "wrkspc.inc"
       END DO
       IF(NGASL.EQ.0) NGASL = 1
 *. Number of strings per GAS space and offsets for strings of given sym
+      print*,'before copy'
       DO IGAS = 1, NGAS
         if (IUB.eq.1) then
           CALL ICOPVE2(WORK(KNSTSGP(1)),(ITPFGS(IGAS)-1)*NSMST+1,NSMST,
@@ -4882,6 +4664,7 @@ C#include "wrkspc.inc"
      &                 IISTSGP(1,IGAS))
         end if
       END DO
+      print*,'after copy'
 *
       IF(NTEST.GE.200) THEN
         WRITE(6,*) ' Write out NNSTSGP '
@@ -4951,6 +4734,7 @@ C#include "wrkspc.inc"
      &                              NSTR,NEL,
      &                              NNSTSGP,IISTSGP,IUB,
      &                              WORK,KFREE,LFREE)
+        print*,'after GETSTRN_GASSM_SPGP_KRCC'
 *. Reorder Info : Lexical => actual number
         IF(IDOREO.NE.0) THEN
 *. Lexical number of NEL electrons
@@ -4990,6 +4774,7 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
           CALL IWRTMA(IREO,1,NSTR,1,NSTR)
         END IF
       END IF
+      print*,'about to exit'
 *
       CALL QEXIT('GETST')
       RETURN
@@ -5067,16 +4852,455 @@ C?          WRITE(6,*) ' JSTR and LEX ', JSTR,LEX
         CALL IWRTMA(IOCC,1,NGAS,1,NGAS)
         WRITE(6,*) ' Included = ',INCLUDED
       END IF
-      DO I=1,NGAS
-        print*,' NGPSTR ',NGPSTR(I),' IGAS ',I
-      END DO
-      DO I=1,NGAS
-        print*,' IBGPSTR ',IBGPSTR(I),' IGAS ',I
-      END DO
-      DO I=1,50
-        print*,' NELFGP ',NELFGP(I),' IGAS ',I
-      END DO
+C     DO I=1,NGAS
+C       print*,' NGPSTR ',NGPSTR(I),' IGAS ',I
+C     END DO
+C     DO I=1,NGAS
+C       print*,' IBGPSTR ',IBGPSTR(I),' IGAS ',I
+C     END DO
+C     DO I=1,50
+C       print*,' NELFGP ',NELFGP(I),' IGAS ',I
+C     END DO
 *
       RETURN
       END
 *
+      SUBROUTINE SORT_OP_MASTER(WORK,KFREE,LFREE)
+*
+* Routine for sorting all operators according to N,Mk,Mub
+*
+#include "implicit.inc"
+#include "mxpdim.inc"
+#include "crun.inc"
+#include "ctcc.inc"
+#include "ipoist8.inc"
+*
+       DIMENSION WORK(*)
+*
+       IZERO = 0
+*
+* Choosing same dimension for all cluster and intermediate operators
+*
+      IMAXKRFLIP = MIN(3*MK2DEL,MX_EXC_LEVEL)
+      IMUBMAX = MX_EXC_LEVEL
+      IDIMINDX = (MX_EXC_LEVEL+1)*(2*IMAXKRFLIP+1)*(2*IMUBMAX+1)
+*
+* First cluster operator (could perhaps be done before (see if this
+* needs to mve later on)
+      CALL MEMGET('INTE',KT_IDXS,IDIMINDX,WORK,KFREE,LFREE)
+      CALL ISETVC(WORK(KT_IDXS),IZERO,IDIMINDX)
+      CALL MEMGET('INTE',KT_IDXF,IDIMINDX,WORK,KFREE,LFREE)
+      CALL ISETVC(WORK(KT_IDXF),IZERO,IDIMINDX)
+*
+* Allocate help arrays
+*
+      CALL MEMGET('INTE',KHELP_OP,4*NGAS*NSPOBEX_TPE,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KHELP_IDX,NSPOBEX_TPE,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KT_IDXH,IDIMINDX,WORK,KFREE,LFREE)
+      CALL ISETVC(WORK(KT_IDXH),IZERO,IDIMINDX)
+*
+      CALL SORT_OP_3_INDEX(WORK(KLSOBEX_CC),NSPOBEX_TPE,NGAS,
+     &                     MX_EXC_LEVEL,IMAXKRFLIP,
+     &                     WORK(KT_IDXS),WORK(KT_IDXF),
+     &                     WORK(KT_IDXH),WORK(KHELP_OP),WORK(KHELP_IDX))
+*
+* release memory
+*
+      CALL MEMREL('T_IDX',WORK,KHELP_OP,KHELP_OP,KFREE,LFREE)
+*
+* Sort intermediate 01
+*
+      CALL MEMGET('INTE',KINT01_IDXS,IDIMINDX,WORK,KFREE,LFREE)
+      CALL ISETVC(WORK(KINT01_IDXS),IZERO,IDIMINDX)
+      CALL MEMGET('INTE',KINT01_IDXF,IDIMINDX,WORK,KFREE,LFREE)
+      CALL ISETVC(WORK(KINT01_IDXF),IZERO,IDIMINDX)
+*
+* Allocate help arrays
+*
+      CALL MEMGET('INTE',KHELP_OP,4*NGAS*NINTER01,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KHELP_IDX,NINTER01,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KT_IDXH,IDIMINDX,WORK,KFREE,LFREE)
+      CALL ISETVC(WORK(KT_IDXH),IZERO,IDIMINDX)
+*
+      CALL SORT_OP_3_INDEX(WORK(KINTM01),NINTER01,NGAS,
+     &                     MX_EXC_LEVEL,IMAXKRFLIP,
+     &                     WORK(KINT01_IDXS),WORK(KINT01_IDXF),
+     &                     WORK(KT_IDXH),WORK(KHELP_OP),WORK(KHELP_IDX))
+*
+* release memory
+*
+      CALL MEMREL('INT01_IDX',WORK,KHELP_OP,KHELP_OP,KFREE,LFREE)
+*
+* Sort intermediate 10
+*
+      CALL MEMGET('INTE',KINT10_IDXS,IDIMINDX,WORK,KFREE,LFREE)
+      CALL ISETVC(WORK(KINT10_IDXS),IZERO,IDIMINDX)
+      CALL MEMGET('INTE',KINT10_IDXF,IDIMINDX,WORK,KFREE,LFREE)
+      CALL ISETVC(WORK(KINT10_IDXF),IZERO,IDIMINDX)
+*
+* Allocate help arrays
+*
+      CALL MEMGET('INTE',KHELP_OP,4*NGAS*NINTER10,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KHELP_IDX,NINTER10,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KT_IDXH,IDIMINDX,WORK,KFREE,LFREE)
+      CALL ISETVC(WORK(KT_IDXH),IZERO,IDIMINDX)
+*
+      CALL SORT_OP_3_INDEX(WORK(KINTM10),NINTER10,NGAS,
+     &                     MX_EXC_LEVEL,IMAXKRFLIP,
+     &                     WORK(KINT10_IDXS),WORK(KINT10_IDXF),
+     &                     WORK(KT_IDXH),WORK(KHELP_OP),WORK(KHELP_IDX))
+*
+* release memory
+*
+      CALL MEMREL('INT10_IDX',WORK,KHELP_OP,KHELP_OP,KFREE,LFREE)
+*
+* Sort intermediate 11
+*
+      CALL MEMGET('INTE',KINT11_IDXS,IDIMINDX,WORK,KFREE,LFREE)
+      CALL ISETVC(WORK(KINT11_IDXS),IZERO,IDIMINDX)
+      CALL MEMGET('INTE',KINT11_IDXF,IDIMINDX,WORK,KFREE,LFREE)
+      CALL ISETVC(WORK(KINT11_IDXF),IZERO,IDIMINDX)
+*
+* Allocate help arrays
+*
+      CALL MEMGET('INTE',KHELP_OP,4*NGAS*NINTER11,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KHELP_IDX,NINTER11,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KT_IDXH,IDIMINDX,WORK,KFREE,LFREE)
+      CALL ISETVC(WORK(KT_IDXH),IZERO,IDIMINDX)
+*
+      CALL SORT_OP_3_INDEX(WORK(KINTM11),NINTER11,NGAS,
+     &                     MX_EXC_LEVEL,IMAXKRFLIP,
+     &                     WORK(KINT11_IDXS),WORK(KINT11_IDXF),
+     &                     WORK(KT_IDXH),WORK(KHELP_OP),WORK(KHELP_IDX))
+*
+* release memory
+*
+      CALL MEMREL('INT11_IDX',WORK,KHELP_OP,KHELP_OP,KFREE,LFREE)
+*
+* Sort intermediate 02
+*
+      CALL MEMGET('INTE',KINT02_IDXS,IDIMINDX,WORK,KFREE,LFREE)
+      CALL ISETVC(WORK(KINT02_IDXS),IZERO,IDIMINDX)
+      CALL MEMGET('INTE',KINT02_IDXF,IDIMINDX,WORK,KFREE,LFREE)
+      CALL ISETVC(WORK(KINT02_IDXF),IZERO,IDIMINDX)
+*
+* Allocate help arrays
+*
+      CALL MEMGET('INTE',KHELP_OP,4*NGAS*NINTER02,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KHELP_IDX,NINTER02,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KT_IDXH,IDIMINDX,WORK,KFREE,LFREE)
+      CALL ISETVC(WORK(KT_IDXH),IZERO,IDIMINDX)
+*
+      CALL SORT_OP_3_INDEX(WORK(KINTM02),NINTER02,NGAS,
+     &                     MX_EXC_LEVEL,IMAXKRFLIP,
+     &                     WORK(KINT02_IDXS),WORK(KINT02_IDXF),
+     &                     WORK(KT_IDXH),WORK(KHELP_OP),WORK(KHELP_IDX))
+*
+* release memory
+*
+      CALL MEMREL('INT02_IDX',WORK,KHELP_OP,KHELP_OP,KFREE,LFREE)
+*
+* Sort intermediate 12
+*
+      CALL MEMGET('INTE',KINT12_IDXS,IDIMINDX,WORK,KFREE,LFREE)
+      CALL ISETVC(WORK(KINT12_IDXS),IZERO,IDIMINDX)
+      CALL MEMGET('INTE',KINT12_IDXF,IDIMINDX,WORK,KFREE,LFREE)
+      CALL ISETVC(WORK(KINT12_IDXF),IZERO,IDIMINDX)
+*
+* Allocate help arrays
+*
+      CALL MEMGET('INTE',KHELP_OP,4*NGAS*NINTER12,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KHELP_IDX,NINTER12,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KT_IDXH,IDIMINDX,WORK,KFREE,LFREE)
+      CALL ISETVC(WORK(KT_IDXH),IZERO,IDIMINDX)
+*
+      CALL SORT_OP_3_INDEX(WORK(KINTM12),NINTER12,NGAS,
+     &                     MX_EXC_LEVEL,IMAXKRFLIP,
+     &                     WORK(KINT12_IDXS),WORK(KINT12_IDXF),
+     &                     WORK(KT_IDXH),WORK(KHELP_OP),WORK(KHELP_IDX))
+*
+* release memory
+*
+      CALL MEMREL('INT12_IDX',WORK,KHELP_OP,KHELP_OP,KFREE,LFREE)
+*
+      RETURN
+      END
+*
+      SUBROUTINE HTYPE_PH_CONTRACTIONS_MASTER(WORK,KFREE,LFREE)
+*
+* Master routine to find the number of holes and particles for given
+* HTYPE
+*
+#include "implicit.inc"
+*. General input
+#include "mxpdim.inc"
+#include "cgas.inc"
+#include "ctcc.inc"
+#include "ipoist8.inc"
+      DIMENSION WORK(*)
+*
+* Initialize
+*
+      NH22 = 0
+      NH21 = 0
+      NH12 = 0
+      NH20 = 0
+      NH11 = 0
+      NH02 = 0
+      NH10 = 0
+      NH01 = 0
+      NH00 = 0
+*
+      INI = 0
+      CALL HTYPE_PH_CONTRACTIONS(INI,WORK(KLSOBEX),NSPOBEX_TP,NGAS,
+     &                                 NH22,NH21,NH12,NH20,
+     &                                 NH11,NH02,NH10,NH01,NH00,
+     &                                 IDUMMY,IDUMMY,
+     &                                 IDUMMY,IDUMMY,
+     &                                 IDUMMY,IDUMMY,
+     &                                 IDUMMY,IDUMMY,
+     &                                 IDUMMY)
+*
+      CALL MEMGET('INTE',KNH22,NH22,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KNH21,NH21,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KNH12,NH12,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KNH20,NH20,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KNH11,NH11,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KNH02,NH02,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KNH10,NH10,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KNH01,NH01,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KNH00,NH00,WORK,KFREE,LFREE)
+*
+      INI = 1
+      CALL HTYPE_PH_CONTRACTIONS(INI,WORK(KLSOBEX),NSPOBEX_TP,NGAS,
+     &                                 NH22,NH21,NH12,NH20,
+     &                                 NH11,NH02,NH10,NH01,NH00,
+     &                                 WORK(KNH22),WORK(KNH21),
+     &                                 WORK(KNH12),WORK(KNH20),
+     &                                 WORK(KNH11),WORK(KNH02),
+     &                                 WORK(KNH10),WORK(KNH01),
+     &                                 WORK(KNH00))
+*
+      RETURN
+      END
+*
+      SUBROUTINE HTYPE_PH_CONTRACTIONS(INI,IHTP,NHTP,NGAS,
+     &                                 NH22,NH21,NH12,NH20,
+     &                                 NH11,NH02,NH10,NH01,NH00,
+     &                                 INH22,INH21,INH12,INH20,
+     &                                 INH11,INH02,INH10,INH01,INH00)
+*
+* Find the number of holes and particles a given HTYPE has.
+* Extended to also include an active space
+*
+      INTEGER IHTP(4*NGAS,NHTP)
+      INTEGER INH22(NH22), INH21(NH21), INH12(NH12), INH20(NH20)
+      INTEGER INH11(NH11), INH02(NH02), INH10(NH10), INH01(NH01)
+      INTEGER INH00(NH00)
+*
+* Initialize
+*
+      NH22 = 0
+      NH21 = 0
+      NH12 = 0
+      NH20 = 0
+      NH11 = 0
+      NH02 = 0
+      NH10 = 0
+      NH01 = 0
+      NH00 = 0
+*
+      DO ITP = 1,NHTP
+        CALL RANK_FOR_CAAB_KRCC(IHTP(1,ITP),NEX,NDEEX,
+     &                          NHOLE,NPART,NHOLEV,NPARTV)
+* This HTYPE will now have a minimum of NPART,NHOLE and maximum of
+* NPART+NPARTV,NHOLE+NHOLEV indices to be contracted
+        DO IPART = NPART,MIN(NPART+NPARTV,2)
+          DO IHOLE = NHOLE,MIN(NHOLE+NHOLEV,2)
+            IF(IPART.EQ.2.AND.IHOLE.EQ.2) THEN
+              NH22 = NH22 + 1
+              IF(INI.EQ.1) THEN
+                INH22(NH22) = ITP
+              END IF
+            ELSE IF(IPART.EQ.2.AND.IHOLE.EQ.1) THEN
+              NH21 = NH21 + 1
+              IF(INI.EQ.1) THEN
+                INH21(NH21) = ITP
+              END IF
+            ELSE IF(IPART.EQ.1.AND.IHOLE.EQ.2) THEN
+              NH12 = NH12 + 1
+              IF(INI.EQ.1) THEN
+                INH12(NH12) = ITP
+              END IF
+            ELSE IF(IPART.EQ.2.AND.IHOLE.EQ.0) THEN
+              NH20 = NH20 + 1
+              IF(INI.EQ.1) THEN
+                INH20(NH20) = ITP
+              END IF
+            ELSE IF(IPART.EQ.1.AND.IHOLE.EQ.1) THEN
+              NH11 = NH11 + 1
+              IF(INI.EQ.1) THEN
+                INH11(NH11) = ITP
+              END IF
+            ELSE IF(IPART.EQ.0.AND.IHOLE.EQ.2) THEN
+              NH02 = NH02 + 1
+              IF(INI.EQ.1) THEN
+                INH02(NH02) = ITP
+              END IF
+            ELSE IF(IPART.EQ.1.AND.IHOLE.EQ.0) THEN
+              NH10 = NH10 + 1
+              IF(INI.EQ.1) THEN
+                INH10(NH10) = ITP
+              END IF
+            ELSE IF(IPART.EQ.0.AND.IHOLE.EQ.1) THEN
+              NH01 = NH01 + 1
+              IF(INI.EQ.1) THEN
+                INH01(NH01) = ITP
+              END IF
+            ELSE IF(IPART.EQ.0.AND.IHOLE.EQ.0) THEN
+              NH00 = NH00 + 1
+              IF(INI.EQ.1) THEN
+                INH00(NH00) = ITP
+              END IF
+            END IF
+          END DO
+        END DO
+      END DO
+*
+      NHTOT=NH22+NH21+NH12+NH20+NH11+NH02+NH10+NH01+NH00
+*
+      NTEST = 100
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Number of Hamiltonian Types ',NHTOT
+        WRITE(6,*) ' 2 Particles 2 Holes ',NH22
+        IF(INI.EQ.1) THEN
+          WRITE(6,*) ' The Specific types are '
+          DO I = 1,NH22
+            WRITE(6,*) INH22(I)
+          END DO
+        END IF
+        WRITE(6,*) ' 2 Particles 1 Holes ',NH21
+        IF(INI.EQ.1) THEN
+          WRITE(6,*) ' The Specific types are '
+          DO I = 1,NH21
+            WRITE(6,*) INH21(I)
+          END DO
+        END IF
+        WRITE(6,*) ' 1 Particles 2 Holes ',NH12
+        IF(INI.EQ.1) THEN
+          WRITE(6,*) ' The Specific types are '
+          DO I = 1,NH12
+            WRITE(6,*) INH12(I)
+          END DO
+        END IF
+        WRITE(6,*) ' 2 Particles 0 Holes ',NH20
+        IF(INI.EQ.1) THEN
+          WRITE(6,*) ' The Specific types are '
+          DO I = 1,NH20
+            WRITE(6,*) INH20(I)
+          END DO
+        END IF
+        WRITE(6,*) ' 1 Particles 1 Holes ',NH11
+        IF(INI.EQ.1) THEN
+          WRITE(6,*) ' The Specific types are '
+          DO I = 1,NH11
+            WRITE(6,*) INH11(I)
+          END DO
+        END IF
+        WRITE(6,*) ' 0 Particles 2 Holes ',NH02
+        IF(INI.EQ.1) THEN
+          WRITE(6,*) ' The Specific types are '
+          DO I = 1,NH02
+            WRITE(6,*) INH02(I)
+          END DO
+        END IF
+        WRITE(6,*) ' 1 Particles 0 Holes ',NH10
+        IF(INI.EQ.1) THEN
+          WRITE(6,*) ' The Specific types are '
+          DO I = 1,NH10
+            WRITE(6,*) INH10(I)
+          END DO
+        END IF
+        WRITE(6,*) ' 0 Particles 1 Holes ',NH01
+        IF(INI.EQ.1) THEN
+          WRITE(6,*) ' The Specific types are '
+          DO I = 1,NH01
+            WRITE(6,*) INH01(I)
+          END DO
+        END IF
+        WRITE(6,*) ' 0 Particles 0 Holes ',NH00
+        IF(INI.EQ.1) THEN
+          WRITE(6,*) ' The Specific types are '
+          DO I = 1,NH00
+            WRITE(6,*) INH00(I)
+          END DO
+        END IF
+      END IF
+*
+      RETURN
+      END
+*
+      SUBROUTINE RANK_FOR_CAAB_KRCC(IHTP,NEX,NDEEX,
+     &                              NHOLE,NPART,NHOLEV,NPARTV)
+*
+* An operator IHTP is given in CAAB form. 
+* Obtain number of excitation and deexcitation operators
+*
+* IHPVGAS_AB is used to determine the hp nature of spinorbitals
+*
+* Jeppe Olsen, March 2003
+*
+* Extended to include NHOLE and NPART and Valence space 2010 Lasse
+*
+#include "implicit.inc"
+*. General input
+#include "mxpdim.inc"
+#include "wrkspc.inc"
+#include "cgas.inc"
+*. Specific input
+      INTEGER IHTP(NGAS,4)
+*
+      NEX = 0
+      NHOLE = 0
+      NPART = 0
+      NHOLEV = 0
+      NPARTV = 0
+*
+      DO ICA = 1, 2
+        DO IAB = 1, 2
+          ICAAB = (ICA-1)*2+ IAB
+          DO IGAS = 1, NGAS
+            IF((ICA.EQ.1.AND.IHPVGAS_AB(IGAS,IAB).EQ.2).OR.
+     &         (ICA.EQ.2.AND.IHPVGAS_AB(IGAS,IAB).EQ.1)    ) THEN
+                NEX = NEX  + IHTP(IGAS,ICAAB)
+            ELSE IF(ICA.EQ.2.AND.IHPVGAS_AB(IGAS,IAB).EQ.2) THEN
+                NPART = NPART + IHTP(IGAS,ICAAB)
+            ELSE IF(ICA.EQ.1.AND.IHPVGAS_AB(IGAS,IAB).EQ.1) THEN
+                NHOLE = NHOLE + IHTP(IGAS,ICAAB)
+            ELSE IF(ICA.EQ.2.AND.IHPVGAS_AB(IGAS,IAB).EQ.3) THEN
+                NPARTV = NPARTV + IHTP(IGAS,ICAAB)
+            ELSE IF(ICA.EQ.1.AND.IHPVGAS_AB(IGAS,IAB).EQ.3) THEN
+                NHOLEV = NHOLEV + IHTP(IGAS,ICAAB)
+            END IF
+          END DO
+        END DO
+      END DO
+*
+      NDEEX = NPART + NHOLE + NPARTV + NHOLEV
+*
+      NTEST = 100
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' CAAB operator : '
+        CALL WRT_SPOX_TP_CC_KRCC(IHTP,1)
+        WRITE(6,*) ' Number of excitation and max deexcitation ops : ',
+     &  NEX,NDEEX
+        WRITE(6,*) ' The certain deexcitation ops  '
+        WRITE(6,*) ' The Holes                     ',NHOLE
+        WRITE(6,*) ' The Particles                 ',NPART
+        WRITE(6,*) ' The possible deexcitation ops '
+        WRITE(6,*) ' The Valence Holes             ',NHOLEV
+        WRITE(6,*) ' The Valence Particles         ',NPARTV
+      END IF
+*
+      RETURN
+      END

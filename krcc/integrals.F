@@ -334,7 +334,7 @@ C           call memmar(KISTR_AB,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STR_AB')
 C    &                            IBOSYM,
      &                            WORK(KBOSYM),
      &                            WORK(KLIBSOBEX),WORK(KINC_HX),
-     &                            WORK(KLABEXTP),CIRUN,NTEST,
+     &                            WORK(KLABEXTP),NTEST,
      &                            WORK,KFREE,LFREE)
 *
         write(6,*)
@@ -537,10 +537,13 @@ C#include "memint.h"
 C
 C From KRCI_CALC
 C
-
+      print*,'before SETDCBIDX'
       CALL SETDCBIDX()
+      print*,'after SETDCBIDX'
       CALL RSETWOP(WORK,KFREE,LFREE)
+      print*,'after RSETWOP'
       CALL FLSHFO(LUPRI)
+      print*,'after FLSHFO'
 C
 C From KRCI_CALC_1
 C
@@ -550,6 +553,7 @@ C     ***************************************************
 C     *** Initialize some parameters ********************
 C     ***************************************************
 C
+      print*,'initialize something'
       DO I = 1,2
          IOPT_ISYMOP(I) = 1
          IOPT_IFCKOP(I) = 1
@@ -604,6 +608,7 @@ C      CALL RCIST(CMO,CREF,WORK,KFREE,LFREE)
       print*,'after RTRACTL'
       CALL MEMGET('REAL',KCREF ,0       ,WORK,KFREE,LFREE)
       CALL RCIST(WORK(KCMO),WORK(KCREF),WORK,KFREE,LFREE)
+      CALL MEMCHK('cemory2',WORK,KCMO)
 *
 *
 * Calculate NASHT
@@ -675,6 +680,7 @@ C     orbital symmetry info array
      &             work(kdxkr12),work(kdxb12),work(kdxb34),
      &             work(kibeig),ipropt,lupri)
 
+      CALL MEMCHK('cemory3',WORK,KCMO)
       call memrel('rgeth2',work,1,khmat,kfree,lfree)
 *
       CALL QEXIT('KRCC_INT')
@@ -698,15 +704,19 @@ C     orbital symmetry info array
 *
 *  Added fetching of integrals for inactive Fock-matrix 05 Lasse
 *  Removed them again 08 since KT_CC is now used instead. Lasse
-*
+* 
 *  Added array IOFFINTTYPE for integral fetching in effecient CC code. Lasse
+*
+* Demoslished and revised for KRCC Lasse 2010
+* Now all integrals are coulomb - exchange
+*
 *----------------------------------------------
 *
       subroutine dist_ints_sigden_KRCC(INTIMP,ISPINFREE,ISYM_T,ISOBEX,T,
      &                            ISTR_CA,ISTR_CB,ISTR_AA,ISTR_AB,
      &                            NASHT,F1,F2,MDIASV,IPOSDIA,
      &                            IBOSYM,IBSPOBEX_TP,INCLUDED_HX,
-     &                            LABEL,CIRUN,IPRNT,
+     &                            LABEL,IPRNT,
      &                            WORK,KFREE,LFREE)
 *
 #include "implicit.inc"
@@ -812,15 +822,13 @@ C       call reo_info_molcas()
 *
 * Open ASCII unit for checking integral sorting information
       if (NTEST.ge.1) then
-        if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
-          LUINGR = LUSC81
-          open(unit=LUINGR,file='INTEGRALS',
-     &         status='UNKNOWN',form='FORMATTED',iostat=ios)
-      if(ios.ne.0) then
-        call abend2('problem with file integrals')
-      end if
-          rewind(LUINGR)
+        LUINGR = LUSC81
+        open(unit=LUINGR,file='INTEGRALS',
+     &       status='UNKNOWN',form='FORMATTED',iostat=ios)
+        if(ios.ne.0) then
+          call abend2('problem with file integrals')
         end if
+        rewind(LUINGR)
       end if
 *
 * File for saving index sequence
@@ -848,19 +856,14 @@ C       call reo_info_molcas()
       ICOUNTRELTYPE = 0
       do IRI=1,IRILP,1
         if (NTEST.ge.1) then
-          if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
-            write(6,*)
-            if (IRI.eq.1.and.NTEST.ge.2) write(6,*) 'REAL LOOP'
-            if (IRI.eq.1) write(LUINGR,'(A)') 'Real  integrals.'
-            if (IRI.eq.2.and.NTEST.ge.2) write(6,*) 'IMAG LOOP'
-            if (IRI.eq.2) write(LUINGR,'(A)') 'Imag. integrals.'
-          end if
+          write(6,*)
+          if (IRI.eq.1.and.NTEST.ge.2) write(6,*) 'REAL LOOP'
+          if (IRI.eq.1) write(LUINGR,'(A)') 'Real  integrals.'
+          if (IRI.eq.2.and.NTEST.ge.2) write(6,*) 'IMAG LOOP'
+          if (IRI.eq.2) write(LUINGR,'(A)') 'Imag. integrals.'
         end if
         ITPSV = 0
-        if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
-          if (NTEST.ge.1)
-     &      write(LUINGR,'(A)') 'INTEGRAL FILE'
-        end if
+        if (NTEST.ge.1) write(LUINGR,'(A)') 'INTEGRAL FILE'
         CALL MEMCHK_KRCC(WORK)
 *
 * Loop over excitation types
@@ -889,7 +892,6 @@ C       if(IXTP.GE.2) stop 'try again'
 C
 C Notice at the moment TEST must be at least 1 for newccv to work. Lasse
 C
-          if (CIRUN.ne.'DENS1 '.and.CIRUN.ne.'DENS2 ') then
             if (NTEST.ge.1)
      &          call integral_type_KRCC(ISOBEX(1,1,IXTP),
      &                             NGAS,ITPSV,LUINGR,
@@ -908,7 +910,6 @@ C                ICOUNTRELTYPE = 1
 C              END IF
             if (NTEST.ge.1)
      &        write(LUINGR,'(A,I5)') 'Type ',IXTP
-          end if
 * New addition by Lasse 12-05-10
           print*,'INCLUDED_HX(IXTP),IXTP',INCLUDED_HX(IXTP),IXTP
           IF(INCLUDED_HX(IXTP).EQ.1) cycle
@@ -976,7 +977,7 @@ C              END IF
               ISM_CB = IDBGMULT(ISM_C,INVELM(ISM_CA))
               do ISM_AA=1,NIRR_DG,1
                 ISM_AB = IDBGMULT(ISM_A,INVELM(ISM_AA))
-                if (NTEST.ge.20.and.IRI.eq.1) then
+                if (NTEST.ge.2000.and.IRI.eq.1) then
                   write(6,*)
                   write(6,*)
                   write(6,*) 'Printing symmetries:'
@@ -991,6 +992,20 @@ C              END IF
                   write(6,*) 'more',INVELM(ISM_CA),INVELM(ISM_AA)
                 end if
                 CALL MEMCHK_KRCC(WORK)
+*
+* Horrible temp solutin Lasse
+*
+C     IF(NEL_CA.EQ.2.OR.NEL_CB.EQ.2.OR.NEL_AA.EQ.2.OR.NEL_AB.EQ.2) THEN
+C     NEL_CA_OLD = NEL_CA
+C     NEL_CB_OLD = NEL_CB
+C     NEL_AA_OLD = NEL_AA
+C     NEL_AB_OLD = NEL_AB
+C     NEL_CA = 1
+C     NEL_CB = 1
+C     NEL_AA = 1
+C     NEL_AB = 1
+C     print*,'i am old'
+C     END IF
 *
 *. Generate strings of these symmetries
 *. obtain strings
@@ -1015,11 +1030,21 @@ C              END IF
      &                                      NORBT,0,IDUM,IDUM,
      &                                      WORK,KFREE,LFREE)
 *
+* reset horribly solution
+*
+C     IF(NEL_CA_OLD.EQ.2.OR.NEL_CB_OLD.EQ.2.OR.
+C    &   NEL_AA_OLD.EQ.2.OR.NEL_AB_OLD.EQ.2) THEN
+C     NEL_CA = NEL_CA_OLD
+C     NEL_CB = NEL_CB_OLD
+C     NEL_AA = NEL_AA_OLD
+C     NEL_AB = NEL_AB_OLD
+C     END IF
+*
 * Loops over strings for the given symmetries and types
 * Loop over T elements as matrix T(I_CA,I_CB,I_AA,I_AB)
 *  Determine possible connections
-C               print*,'NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA',
-C    &                  NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
+                print*,'NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA',
+     &                  NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
                 if ((NSTR_CA.ge.1.or.NSTR_CB.ge.1).and.
      &              (NSTR_AA.ge.1.or.NSTR_AB.ge.1)) then
 *
@@ -1044,6 +1069,9 @@ C    &                  NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
 *. Indices of STRING I_CA are stored in IOCC_CA and first element is
 *  IOCC_CA(1+NEL_CA*(I_CA-1))
 *
+                          print*,'NEL_C',NEL_C
+                          print*,'NEL_CA,NEL_CB',NEL_CA,NEL_CB
+                          print*,'NEL_AA,NEL_AB',NEL_AA,NEL_AB
                           if (NEL_C.eq.1) then
                             IXCH = 0
 *
@@ -1079,125 +1107,155 @@ C    &                  NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
                               call abend2('Quitting.')
                             end if
 *
+                          DO IJ=1,4
+                            print*,'INDEX,IJ',INDEX(IJ),IJ
+                          END DO
                           else if (NEL_C.eq.2) then
 *
+* Will now make exchange on all integrals
+*
                             if (NEL_CA.eq.2.and.NEL_CB.eq.0) then
-                              IXCH = 0
-                              if (NEL_AA.eq.2) then
-*                               Exchange integrals
-                                IXCH = 1
-                                do IEL=1,NEL_CA,1
-                                  INDEX(IEL) =
-     &                                ISTR_CA(IEL+NEL_CA*(I_CA-1))
-                                end do
-                              else if (NEL_AB.eq.2) then
-*                               Spin-orbit integrals (no exchange)
-                                IXCH = 1
-                                INDEX(1)
-     &                              = ISTR_CA(1+NEL_CA*(I_CA-1))
-                                INDEX(2)
-     &                              = ISTR_CA(2+NEL_CA*(I_CA-1))
-                              else if (NEL_AA.eq.1.and.NEL_AB.eq.1) then
-*                               Spin-orbit integral
-                                IXCH = 0
-                                do IEL=1,NEL_CA,1
-                                  INDEX(IEL) =
-     &                                ISTR_CA(IEL+NEL_CA*(I_CA-1))
-                                end do
-                              end if
+                              IXCH = 1
+                              do IEL=1,NEL_CA,1
+                                INDEX(IEL) =ISTR_CA(IEL+NEL_CA*(I_CA-1))
+C                                INDEX(IEL) =ISTR_CA(1+NEL_CA*(I_CA-1))
+                              end do
+C                             IXCH = 0
+C                             if (NEL_AA.eq.2) then
+C                               Exchange integrals
+C                               IXCH = 1
+C                               do IEL=1,NEL_CA,1
+C                                 INDEX(IEL) =
+C    &                                ISTR_CA(IEL+NEL_CA*(I_CA-1))
+C                               end do
+C                             else if (NEL_AB.eq.2) then
+C                               Spin-orbit integrals (no exchange)
+C                               IXCH = 1
+C                               INDEX(1)
+C    &                              = ISTR_CA(1+NEL_CA*(I_CA-1))
+C                               INDEX(2)
+C    &                              = ISTR_CA(2+NEL_CA*(I_CA-1))
+C                             else if (NEL_AA.eq.1.and.NEL_AB.eq.1) then
+C                               Spin-orbit integral
+C                               IXCH = 0
+C                               do IEL=1,NEL_CA,1
+C                                 INDEX(IEL) =
+C    &                                ISTR_CA(IEL+NEL_CA*(I_CA-1))
+C                               end do
+C                             end if
                             else if (NEL_CA.eq.1.and.NEL_CB.eq.1) then
-                              IXCH = 0
-                              INDEX(1)
-     &                              = ISTR_CA(1+NEL_CA*(I_CA-1))
-                              INDEX(3)
-     &                              = ISTR_CB(1+NEL_CB*(I_CB-1))
+                              IXCH = 1
+                              INDEX(1) = ISTR_CA(1+NEL_CA*(I_CA-1))
+                              INDEX(3) = ISTR_CB(1+NEL_CB*(I_CB-1))
+C                             IXCH = 0
+C                             INDEX(1)
+C    &                              = ISTR_CA(1+NEL_CA*(I_CA-1))
+C                             INDEX(3)
+C    &                              = ISTR_CB(1+NEL_CB*(I_CB-1))
                             else if (NEL_CA.eq.0.and.NEL_CB.eq.2) then
-                              IXCH = 0
-                              if (NEL_AB.eq.2) then
-*                               Exchange integrals
-                                IXCH = 1
-                                do IEL=1,NEL_CB,1
-                                  INDEX(IEL) =
-     &                                ISTR_CB(IEL+NEL_CB*(I_CB-1))
-                                end do
-                              else if (NEL_AA.eq.2) then
-*                               Spin-orbit integrals (no exchange)
-                                IXCH = 1
-                                INDEX(1)
-     &                              = ISTR_CB(1+NEL_CB*(I_CB-1))
-                                INDEX(2)
-     &                              = ISTR_CB(2+NEL_CB*(I_CB-1))
-                              else if (NEL_AA.eq.1.and.NEL_AB.eq.1) then
-*                               Spin-orbit integral
-                                INDEX(1)
-     &                              = ISTR_CB(1+NEL_CB*(I_CB-1))
-                                INDEX(3)
-     &                              = ISTR_CB(2+NEL_CB*(I_CB-1))
-                              end if
-                            else
-                              write(6,*)
-     &                              'Impossible number of creators.'
-                              write(6,*)
-     &                              'NEL_CA,NEL_CB = ',NEL_CA,NEL_CB
-                              call abend2('Quitting.')
+                              IXCH = 1
+                              do IEL=1,NEL_CB,1
+                                INDEX(IEL) =ISTR_CB(IEL+NEL_CB*(I_CB-1))
+                              end do
+C                             IXCH = 0
+C                             if (NEL_AB.eq.2) then
+C                               Exchange integrals
+C                               IXCH = 1
+C                               do IEL=1,NEL_CB,1
+C                                 INDEX(IEL) =
+C    &                                ISTR_CB(IEL+NEL_CB*(I_CB-1))
+C                               end do
+C                             else if (NEL_AA.eq.2) then
+C                               Spin-orbit integrals (no exchange)
+C                               IXCH = 1
+C                               INDEX(1)
+C    &                              = ISTR_CB(1+NEL_CB*(I_CB-1))
+C                               INDEX(2)
+C    &                              = ISTR_CB(2+NEL_CB*(I_CB-1))
+C                             else if (NEL_AA.eq.1.and.NEL_AB.eq.1) then
+C                               Spin-orbit integral
+C                               INDEX(1)
+C    &                              = ISTR_CB(1+NEL_CB*(I_CB-1))
+C                               INDEX(3)
+C    &                              = ISTR_CB(2+NEL_CB*(I_CB-1))
+C                             end if
+C                           else
+C                             write(6,*)
+C    &                              'Impossible number of creators.'
+C                             write(6,*)
+C    &                              'NEL_CA,NEL_CB = ',NEL_CA,NEL_CB
+C                             call abend2('Quitting.')
                             end if
 *
                             if (NEL_AA.eq.2.and.NEL_AB.eq.0) then
-                              if (NEL_CA.eq.2) then
-                                IXCH = 1
-                                do IEL=1,NEL_AA,1
-                                 INDEX(IEL+2) =
-     &                                ISTR_AA(IEL+NEL_AA*(I_AA-1))
-                                end do
-                              else if (NEL_CB.eq.2) then
-*                               Spin-orbit integrals (no exchange)
-                                IXCH = 1
-                                INDEX(3)
-     &                              = ISTR_AA(1+NEL_AA*(I_AA-1))
-                                INDEX(4)
-     &                              = ISTR_AA(2+NEL_AA*(I_AA-1))
-                              else if (NEL_CA.eq.1.and.NEL_CB.eq.1) then
-*                               Spin-orbit integral
-                                do IEL=1,NEL_AA,1
-                                 INDEX(IEL*2) =
-     &                                ISTR_AA(IEL+NEL_AA*(I_AA-1))
-                                end do
-                              end if
+                              IXCH = 1
+                              do IEL=1,NEL_AA,1
+                               INDEX(IEL+2)=ISTR_AA(IEL+NEL_AA*(I_AA-1))
+C                               INDEX(IEL+2)=ISTR_AA(1+NEL_AA*(I_AA-1))
+                              end do
+C                             if (NEL_CA.eq.2) then
+C                               IXCH = 1
+C                               do IEL=1,NEL_AA,1
+C                                INDEX(IEL+2) =
+C    &                                ISTR_AA(IEL+NEL_AA*(I_AA-1))
+C                               end do
+C                             else if (NEL_CB.eq.2) then
+C                               Spin-orbit integrals (no exchange)
+C                               IXCH = 1
+C                               INDEX(3)
+C    &                              = ISTR_AA(1+NEL_AA*(I_AA-1))
+C                               INDEX(4)
+C    &                              = ISTR_AA(2+NEL_AA*(I_AA-1))
+C                             else if (NEL_CA.eq.1.and.NEL_CB.eq.1) then
+C                               Spin-orbit integral
+C                               do IEL=1,NEL_AA,1
+C                                INDEX(IEL*2) =
+C    &                                ISTR_AA(IEL+NEL_AA*(I_AA-1))
+C                               end do
+C                             end if
                             else if (NEL_AA.eq.1.and.NEL_AB.eq.1) then
-                              IXCH = 0
-                              if (NEL_CA.eq.1.and.NEL_CB.eq.1) then
-*                               Spinfree integral
-                                INDEX(2)
-     &                                = ISTR_AA(1+NEL_AA*(I_AA-1))
-                                INDEX(4)
-     &                                = ISTR_AB(1+NEL_AB*(I_AB-1))
-                              else
-*                               Spin-orbit integral
-                                INDEX(4)
-     &                                = ISTR_AA(1+NEL_AA*(I_AA-1))
-                                INDEX(2)
-     &                                = ISTR_AB(1+NEL_AB*(I_AB-1))
-                              end if
+                              IXCH = 1
+                              INDEX(2) = ISTR_AA(1+NEL_AA*(I_AA-1))
+                              INDEX(4) = ISTR_AB(1+NEL_AB*(I_AB-1))
+C                             IXCH = 0
+C                             if (NEL_CA.eq.1.and.NEL_CB.eq.1) then
+C                               Spinfree integral
+C                               INDEX(2)
+C    &                                = ISTR_AA(1+NEL_AA*(I_AA-1))
+C                               INDEX(4)
+C    &                                = ISTR_AB(1+NEL_AB*(I_AB-1))
+C                             else
+C                               Spin-orbit integral
+C                               INDEX(4)
+C    &                                = ISTR_AA(1+NEL_AA*(I_AA-1))
+C                               INDEX(2)
+C    &                                = ISTR_AB(1+NEL_AB*(I_AB-1))
+C                             end if
                             else if (NEL_AA.eq.0.and.NEL_AB.eq.2) then
-                              if (NEL_CB.eq.2) then
-                                IXCH = 1
-                                do IEL=1,NEL_AB,1
-                                 INDEX(IEL+2) =
-     &                                ISTR_AB(IEL+NEL_AB*(I_AB-1))
-                                end do
-                              else if (NEL_CA.eq.2) then
-*                               Spin-orbit integrals (no exchange)
-                                INDEX(3)
-     &                              = ISTR_AB(1+NEL_AB*(I_AB-1))
-                                INDEX(4)
-     &                              = ISTR_AB(2+NEL_AB*(I_AB-1))
-                              else if (NEL_CA.eq.1.and.NEL_CB.eq.1) then
-*                               Spin-orbit integral
-                                do IEL=1,NEL_AB,1
-                                 INDEX(IEL*2) =
-     &                                ISTR_AB(IEL+NEL_AB*(I_AB-1))
-                                end do
-                              end if
+                              IXCH = 1
+                              do IEL=1,NEL_AB,1
+                                INDEX(IEL+2) =
+     &                          ISTR_AB(IEL+NEL_AB*(I_AB-1))
+                              end do
+C                             if (NEL_CB.eq.2) then
+C                               IXCH = 1
+C                               do IEL=1,NEL_AB,1
+C                                INDEX(IEL+2) =
+C    &                                ISTR_AB(IEL+NEL_AB*(I_AB-1))
+C                               end do
+C                             else if (NEL_CA.eq.2) then
+C                               Spin-orbit integrals (no exchange)
+C                               INDEX(3)
+C    &                              = ISTR_AB(1+NEL_AB*(I_AB-1))
+C                               INDEX(4)
+C    &                              = ISTR_AB(2+NEL_AB*(I_AB-1))
+C                             else if (NEL_CA.eq.1.and.NEL_CB.eq.1) then
+C                               Spin-orbit integral
+C                               do IEL=1,NEL_AB,1
+C                                INDEX(IEL*2) =
+C    &                                ISTR_AB(IEL+NEL_AB*(I_AB-1))
+C                               end do
+C                             end if
                             else
                               write(6,*)
      &                              'Impossible number of annihil.'
@@ -1218,6 +1276,10 @@ C    &                  NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
                           JR_IND = 0
                           KR_IND = 0
                           LR_IND = 0
+      DO IJ =1,4
+      print*,'IREOTS(INDEX(IJ)),INDEX(IJ),IJ',
+     &        IREOTS(INDEX(IJ)),INDEX(IJ),IJ
+      END DO
                           if (INDEX(1).ne.IZERO)
      &                              IR_IND = IREOTS(INDEX(1))
                           if (INDEX(2).ne.IZERO)
@@ -1230,6 +1292,7 @@ C    &                  NSTR_AB,NSTR_AA,NSTR_CB,NSTR_CA
                           INDEX(2) = JR_IND
                           INDEX(3) = KR_IND
                           INDEX(4) = LR_IND
+       print*,'I,J,K,L',IR_IND,JR_IND,KR_IND,LR_IND
 *
 * Index reordering and second integral in exchange case:
 * (Reason: CACA string generated e.g. for two alpha excitations,
@@ -1307,77 +1370,77 @@ C                         print*,'writing out IXCH',IXCH
                               end if
                             end if
 *
-* Check for diagonal integrals
+* Check for diagonal integrals. No need Lasse
 *
-                            if (IRI.eq.1) then
-                              ICNT = 0
-                              do IR = 1,4,1
-                                if (INDEX(IR).ne.0) then
-                                  ICNT = ICNT + 1
-                                  IND_SAVE(ICNT) = INDEX(IR)
-                                end if
-                              end do
-                              if (ICNT.eq.2) then
-                                if (IND_SAVE(1).eq.IND_SAVE(2)) then
-                                  if (INDEX(1).ne.IZERO) IUBDIA = 1
-                                  if (INDEX(2).ne.IZERO) IUBDIA = 2
-                                  if (IUBDIA.eq.1) then
-                                    NDIAINT = NDIAINT + 1
-                                    N1DIAINT = N1DIAINT + 1
-                                    IPOSDIA(NDIAINT) = ICOUNT
-                                    MDIASV(1,NDIAINT) = IND_SAVE(1)
-                                    MDIASV(2,NDIAINT) = IZERO
-                                    MDIASV(3,NDIAINT) = IND_SAVE(2)
-                                    MDIASV(4,NDIAINT) = IZERO
+C                           if (IRI.eq.1) then
+C                             ICNT = 0
+C                             do IR = 1,4,1
+C                               if (INDEX(IR).ne.0) then
+C                                 ICNT = ICNT + 1
+C                                 IND_SAVE(ICNT) = INDEX(IR)
+C                               end if
+C                             end do
+C                             if (ICNT.eq.2) then
+C                               if (IND_SAVE(1).eq.IND_SAVE(2)) then
+C                                 if (INDEX(1).ne.IZERO) IUBDIA = 1
+C                                 if (INDEX(2).ne.IZERO) IUBDIA = 2
+C                                 if (IUBDIA.eq.1) then
+C                                   NDIAINT = NDIAINT + 1
+C                                   N1DIAINT = N1DIAINT + 1
+C                                   IPOSDIA(NDIAINT) = ICOUNT
+C                                   MDIASV(1,NDIAINT) = IND_SAVE(1)
+C                                   MDIASV(2,NDIAINT) = IZERO
+C                                   MDIASV(3,NDIAINT) = IND_SAVE(2)
+C                                   MDIASV(4,NDIAINT) = IZERO
 C           print*,'D INT ',NDIAINT,' is ',(MDIASV(JR,NDIAINT),JR=1,4),
 C    &             ' at ',ICOUNT
-                                  IF(N1DIAINT.GE.NDIAMINT) THEN
-                                WRITE(6,*) ' PLEASE INCREASE NDIAMINT '
-                                CALL ABEND2('NDIAMINT TOO SMALL')
-                                  END IF
-                                  else if (IUBDIA.eq.2) then
-                                    NDIAINT = NDIAINT + 1
-                                    N1DIAINT = N1DIAINT + 1
-                                    IPOSDIA(NDIAINT) = ICOUNT
-                                    MDIASV(1,NDIAINT) = IZERO
-                                    MDIASV(2,NDIAINT) = IND_SAVE(1)
-                                    MDIASV(3,NDIAINT) = IZERO
-                                    MDIASV(4,NDIAINT) = IND_SAVE(2)
+C                                 IF(N1DIAINT.GE.NDIAMINT) THEN
+C                               WRITE(6,*) ' PLEASE INCREASE NDIAMINT '
+C                               CALL ABEND2('NDIAMINT TOO SMALL')
+C                                 END IF
+C                                 else if (IUBDIA.eq.2) then
+C                                   NDIAINT = NDIAINT + 1
+C                                   N1DIAINT = N1DIAINT + 1
+C                                   IPOSDIA(NDIAINT) = ICOUNT
+C                                   MDIASV(1,NDIAINT) = IZERO
+C                                   MDIASV(2,NDIAINT) = IND_SAVE(1)
+C                                   MDIASV(3,NDIAINT) = IZERO
+C                                   MDIASV(4,NDIAINT) = IND_SAVE(2)
 C           print*,'D INT ',NDIAINT,' is ',(MDIASV(JR,NDIAINT),JR=1,4),
 C    &             ' at ',ICOUNT
-                                  IF(N1DIAINT.GE.NDIAMINT) THEN
-                                WRITE(6,*) ' PLEASE INCREASE NDIAMINT '
-                                CALL ABEND2('NDIAMINT TOO SMALL')
-                                  END IF
-                                  end if
-                                end if
-                              else if (ICNT.eq.4) then
-                                if ((INDEX(1).eq.INDEX(4)).and.
-     &                              (INDEX(2).eq.INDEX(3)).or.
-     &                              (INDEX(1).eq.INDEX(2)).and.
-     &                              (INDEX(3).eq.INDEX(4)).or.
-     &                              (INDEX(1).eq.-INDEX(3)).and.
-     &                              (INDEX(2).eq.-INDEX(4))) then
-                                  NDIAINT = NDIAINT + 1
-                                  N2DIAINT = N2DIAINT + 1
-                                  IPOSDIA(NDIAINT) = ICOUNT
-                                  do IR = 1,4,1
-                                    MDIASV(IR,NDIAINT) = INDEX(IR)
-                                  end do
+C                                 IF(N1DIAINT.GE.NDIAMINT) THEN
+C                               WRITE(6,*) ' PLEASE INCREASE NDIAMINT '
+C                               CALL ABEND2('NDIAMINT TOO SMALL')
+C                                 END IF
+C                                 end if
+C                               end if
+C                             else if (ICNT.eq.4) then
+C                               if ((INDEX(1).eq.INDEX(4)).and.
+C    &                              (INDEX(2).eq.INDEX(3)).or.
+C    &                              (INDEX(1).eq.INDEX(2)).and.
+C    &                              (INDEX(3).eq.INDEX(4)).or.
+C    &                              (INDEX(1).eq.-INDEX(3)).and.
+C    &                              (INDEX(2).eq.-INDEX(4))) then
+C                                 NDIAINT = NDIAINT + 1
+C                                 N2DIAINT = N2DIAINT + 1
+C                                 IPOSDIA(NDIAINT) = ICOUNT
+C                                 do IR = 1,4,1
+C                                   MDIASV(IR,NDIAINT) = INDEX(IR)
+C                                 end do
 C           print*,'D INT ',NDIAINT,' is ',(MDIASV(JR,NDIAINT),JR=1,4),
 C    &             ' at ',ICOUNT
-                                  IF(N1DIAINT.GE.NDIAMINT) THEN
-                                WRITE(6,*) ' PLEASE INCREASE NDIAMINT '
-                                CALL ABEND2('NDIAMINT TOO SMALL')
-                                  END IF
-                                end if
-                              else
-                                write(6,*) ' Diagonal check failed in '
-                                write(6,*) ' dist_ints_sigden.        '
-                                write(6,*) '  ICNT = ',ICNT
-                                stop 'Quitting.'
-                              end if
-                            end if
+C                                 IF(N1DIAINT.GE.NDIAMINT) THEN
+C                               WRITE(6,*) ' PLEASE INCREASE NDIAMINT '
+C                               CALL ABEND2('NDIAMINT TOO SMALL')
+C                                 END IF
+C                               end if
+C                             else
+C                               write(6,*) ' Diagonal check failed in '
+C                               write(6,*) ' dist_ints_sigden.        '
+C                               write(6,*) '  ICNT = ',ICNT
+C                               stop 'Quitting.'
+C                             end if
+C                           end if
 *
 *                           Write INDEX sequence to line in file
 *                           for use in diagonal routine (saving memory):

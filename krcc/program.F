@@ -30,15 +30,21 @@ C#include "chktyp.inc"
 C#include "wrkspc.inc"
 C added by lasse
 #include "cintfo.inc"
+#include "ipoist8.inc"
 C
-      DIMENSION WORK(LWORK)
+C#include "memint.h"
+      DIMENSION WORK(*)!(LWORK)
 C
 C
 #include "memint.h"
 C
       CALL QENTER('KRCC ')
+* First make an entry on memory to look for
+      IONE = 1
+      CALL MEMGET('REAL',KLOOK,IONE,WORK,KFREE,LFREE)
 * First do transformation and get integrals from DIRAC
       CALL READ_DIRAC_FOR_KRCC(WORK,KFREE,LFREE)
+      CALL MEMCHK('LL0',WORK,KLOOK)
 *. Assign diskunits 
 !!!!needs updating!!!!
 !!!!needs updating!!!!
@@ -47,6 +53,7 @@ C
       CALL DISKUN_KRCC
 *. Header 
       CALL WRTHD_KRCC(LUOUT) !ok
+      CALL MEMCHK('LL1',WORK,KLOOK)
 *. Ratio beteeen real and integer word length
       CALL ZIRAT_KRCC !ok
 *. From shells to orbitals
@@ -54,6 +61,7 @@ C
 *. Types of determinants to be included
       CALL DETTYP_KRCC(IPRSTR)
 *. Number of string types
+      CALL MEMCHK('LL2',WORK,KLOOK)
       CALL STRTYP_GAS_KRCC(IPRSTR)
 *. Symmetry information
       CALL SYMINF_KRCC(IPRORB)
@@ -68,7 +76,7 @@ C
       CALL ALLOC_KRCC(WORK,KFREE,LFREE)
       print*,'after alloc'
       print*,'KFREE,LFREE',KFREE,LFREE
-      CALL MEMCHK('LULU6',WORK,KINT1)
+      CALL MEMCHK('LULU6',WORK,KLOOK)
 *. Internal string information (stored in WORK, bases in /STRBAS/)
       CALL STRINF_GAS_KRCC(WORK,KFREE,LFREE,IPRSTR)
       print*,'after STRINF_GAS_KRCC'
@@ -90,6 +98,10 @@ C Notice JCMBSPC is hardwired
 * This is just for the integral sorting
 C      CALL SET_HOP_DBG_KRCC(4,1,WORK,LWORK)
 C assumes totally symmetric hamiltonian
+!!!!!May need updating to elminate obsolete operators!!!!!
+!!!!!May need updating to elminate obsolete operators!!!!!
+!!!!!May need updating to elminate obsolete operators!!!!!
+!!!!!May need updating to elminate obsolete operators!!!!!
       ISYM_T = 1
       CALL SET_HOP_DBG_FOR_NEWCCV(4,1,WORK,KFREE,LFREE)
       CALL MEMCHK('LULU2',WORK,KINT1)
@@ -236,11 +248,11 @@ C     IF(I_DO_NEWCCV.EQ.1) THEN
 C     END IF
 * Dimensioning
 * ADDED FOR REL CALC
-      CALL Z_BLKFO_KRCC(IDC,NMS2VAL,
-     &                 ISPC,ISM,KPCLBT,KPCLEBT,KPCI1BT,KPCIBT,KPCBLTP,
-     &                 NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,NBAT_MS2,
-     &                 IBAT_MS2,
-     &                 WORK,KFREE,LFREE)
+C     CALL Z_BLKFO_KRCC(IDC,NMS2VAL,
+C    &                 ISPC,ISM,KPCLBT,KPCLEBT,KPCI1BT,KPCIBT,KPCBLTP,
+C    &                 NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,NBAT_MS2,
+C    &                 IBAT_MS2,
+C    &                 WORK,KFREE,LFREE)
       CALL MEMCHK_KRCC(WORK)
 *
 *
@@ -473,7 +485,7 @@ C    &             MXSPOX, MXSPOX_L, MX_EXC_LEVEL
      &     NOBPT,0,IZERO ,IAAEXC_TYP,IACT_SPC,IPRCC,IDUMMY,
      &     MXSPOX_L,WORK(KNSOX_FOR_OX),
      &     WORK(KIBSOX_FOR_OX),WORK(KISOX_FOR_OX),NAEL,NBEL,IREFSPC,
-     &     WORK,KFREE,LFREE)
+     &     IRECOM,WORK,KFREE,LFREE)
 *. Extended number of spin-orbital excitations : Include
 *. unit operator as last spinorbital excitation operator
 C allowing ample space for all operator that is yet to be found
@@ -501,8 +513,9 @@ C     CALL MEMMAR(KISOX_FOR_OX,NSPOBEX_TPE,'ADDL  ',1,'IBSOXF')
      &     NGAS,NOBPT,0,MSCOMB_CC,IAAEXC_TYP,IACT_SPC,
      &     IPRCC,WORK(KLSOX_TO_OX),MXSPOX_L,WORK(KNSOX_FOR_OX),
      &     WORK(KIBSOX_FOR_OX),WORK(KISOX_FOR_OX),NAEL,NBEL,IREFSPC,
-     &     WORK,KFREE,LFREE)
+     &     IRECOM,WORK,KFREE,LFREE)
       NSPOBEX_TPE = NSPOBEX_TP_CC + 1
+      CALL MEMCHK_KRCC(WORK)
 *. Add unit-operator as last spinorbital excitation
       IZERO = 0
       CALL ISTVC3(WORK(KLSOBEX_CC),(NSPOBEX_TPE-1)*4*NGAS+1,IZERO,
@@ -522,6 +535,7 @@ C     CALL MEMMAR(KISOX_FOR_OCCLS,NSPOBEX_TPE,'ADDL  ',1,' ISXOC')
       CALL SPOBEX_FOR_OCCLS(WORK(KEX_TO_OC),NOCCLS,WORK(KLSOX_TO_OX),
      &     NSPOBEX_TPE,WORK(KNSOX_FOR_OCCLS),WORK(KISOX_FOR_OCCLS),
      &     WORK(KIBSOX_FOR_OCCLS))
+      CALL MEMCHK_KRCC(WORK)
 *
 *. Frozen spin-orbital excitation types
 C     CALL MEMMAR(KLSPOBEX_FRZ, NSPOBEX_TP_CC+1,'ADDL  ',1,'SPOBFR')
@@ -536,6 +550,8 @@ C     CALL ISTVC3(WORK(KLSPOBEX_FRZ),NSPOBEX_TP_CC+1,IZERO,1)
 *. Spin-orbital excitation types related by spin-flip
 C     CALL MEMMAR(KLSPOBEX_AB,2*NSPOBEX_TP_CC+1,'ADDL  ',1,'SPOBAB')
       CALL MEMGET('INTE',KLSPOBEX_AB,2*NSPOBEX_TP_CC+1,WORK,KFREE,LFREE)
+C NEXT ARRAY ONLY ALLOCATED FOR THE PROGAM TO RUN LASSE
+      CALL MEMGET('INTE',KLSPOBEX22,2*NSPOBEX_TP_CC+1,WORK,KFREE,LFREE)
       CALL SPOBEXTP_PAIRS_KRCC(NSPOBEX_TP_CC+1,WORK(KLSOBEX_CC),NGAS,
      &                    WORK(KLSPOBEX_AB))
       IF(NTEST.GE.5) WRITE(6,*) ' After SPOBEXTP_PAIRS'
@@ -547,15 +563,19 @@ C     CALL MEMMAR(KLSPOBEX_AB,2*NSPOBEX_TP_CC+1,'ADDL  ',1,'SPOBAB')
 **************
 *. Alpha- and beta-excitations constituting the spinorbital excitations
 *. Number
+      CALL MEMCHK_KRCC(WORK)
       CALL SPOBEX_TO_ABOBEX_CC(WORK(KLSOBEX_CC),NSPOBEX_TP_CC,NGAS,
      &     1,NAOBEX_TP,NBOBEX_TP,IDUMMY,IDUMMY)
 *. And the alpha-and beta-excitations
       LENA = 2*NGAS*NAOBEX_TP
       LENB = 2*NGAS*NBOBEX_TP
+      CALL MEMCHK_KRCC(WORK)
+      print*,'LENA,LENB,KFREE,LFREE',LENA,LENB,KFREE,LFREE
+      CALL MEMCHK_KRCC(WORK)
 C     CALL MEMMAR(KLAOBEX_CC,LENA,'ADDL  ',2,'IAOBEX')
 C     CALL MEMMAR(KLBOBEX_CC,LENB,'ADDL  ',2,'IAOBEX')
-      CALL MEMGET('REAL',KLAOBEX_CC,LENA,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KLBOBEX_CC,LENB,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KLAOBEX_CC,LENA,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KLBOBEX_CC,LENB,WORK,KFREE,LFREE)
       CALL SPOBEX_TO_ABOBEX_CC(WORK(KLSOBEX_CC),NSPOBEX_TP_CC,NGAS,
      &     0,NAOBEX_TP,NBOBEX_TP,WORK(KLAOBEX_CC),WORK(KLBOBEX_CC))
       IF(NTEST.GE.10) WRITE(6,*) ' After SPOBEX_TO_ABOBEX_CC '
@@ -673,10 +693,28 @@ C      CALL MEMMAR(KCC2,IMULTFAC*LENNY,'ADDL  ',2,'CC2_VE')
       CALL MEMGET('REAL',KCC2,IMULTFAC*LENNY,WORK,KFREE,LFREE)
 *
 * Cluster operator setup is now finshed
+* Find the number of holes and particles to be contracted for a given H
+* operator
+*
+      CALL HTYPE_PH_CONTRACTIONS_MASTER(WORK,KFREE,LFREE)
+*
 * Start setting up intermediates
 *
       CALL SET_INTERMEDIATES_MASTER(WORK,KFREE,LFREE)
-      stop
+*
+* Sort Cluster operator and intermediates according to 
+* N, delta Mk, Mub
+* for easy solution of equations
+*
+      CALL SORT_OP_MASTER(WORK,KFREE,LFREE)
+*
+* Now that operators are found and sorted it is time to solve the cc
+* equations. This will be done by first finding all possible
+* contractions and then eliminating the redundant ones and in the
+* process calculate permutation factors and signs for contractions
+*
+      CALL CONTRACTION_SOLVER(WORK,KFREE,LFREE)
+      stop 'enough for now'
 *
 * ============================================================
 * Initialize : Restart, set coefs to zero, start from CI coefs

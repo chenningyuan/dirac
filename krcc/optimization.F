@@ -84,6 +84,7 @@ C     CALL MEMMAR(IDUMMY,IDUMMY,'MARK  ',IDUMMY,'CC_OPT')
       ELSE
         IMULTFAC = 2
       END IF
+      print*,'IRECOM',IRECOM
 * ===========================================
 *             Construct diagonal 
 * ===========================================
@@ -120,17 +121,26 @@ C      print*,(WORK(KT_CC+II),II=N1ELINT+N2ELINT,2*(N1ELINT+N2ELINT))
       ZERO = 0.0D0
       CALL SETVEC(CCVEC1,ZERO,IMULTFAC*N_CC_AMP)
 C
-      IF(I_DO_NEWCCV.EQ.0) THEN
-      CALL GENCC_F_DIAG_M_KRCC(WORK(KLSOBEX_CC),NSPOBEX_TP_CC,CCVEC1,
-     &      1,WORK(KVEC1P),WORK(KVEC2P),MX_ST_TSOSO_MX,
-     &      MX_ST_TSOSO_BLK_MX,N1ELINT,N2ELINT,WORK(KT_CC),
-     &      WORK,KFREE,LFREE)
-      ELSE
+C     IF(I_DO_NEWCCV.EQ.0) THEN
+C     CALL GENCC_F_DIAG_M_KRCC(WORK(KLSOBEX_CC),NSPOBEX_TP_CC,CCVEC1,
+C    &      1,WORK(KVEC1P),WORK(KVEC2P),MX_ST_TSOSO_MX,
+C    &      MX_ST_TSOSO_BLK_MX,N1ELINT,N2ELINT,WORK(KT_CC),
+C    &      WORK,KFREE,LFREE)
+C     ELSE
+!!!!!!!!!!!!! Warning not yet fixed !!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!! Warning not yet fixed !!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!! Warning not yet fixed !!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!! Warning not yet fixed !!!!!!!!!!!!!!!!!!
+      IAMTOIMPLEMENT = 0
+      IF(IAMTOIMPLEMENT.EQ.1) THEN
+      print*,'call GENCC_F_DIAG_M_KRCC'
       CALL GENCC_F_DIAG_M_KRCC(WORK(KLSOBEX_CC),NSPOBEX_TP_CC,CCVEC1,
      &      1,KDUM,KDUM,MX_ST_TSOSO_MX,
      &      MX_ST_TSOSO_BLK_MX,N1ELINT,N2ELINT,WORK(KT_CC),
      &      WORK,KFREE,LFREE)
+      stop 'after GENCC_F_DIAG_M_KRCC' 
       END IF
+C     END IF
 *
 *
       NTEST = 00
@@ -165,6 +175,7 @@ C
       NVEC = 0
       NPVEC = -1
       IM_CONVERGED = 0
+      stop 'to the iterations'
 *. (Maxit is obtained from CRUN)
       DO ITER = 1, MAXIT
         IITER = ITER
@@ -185,8 +196,9 @@ C
 C**************************************************************
 C NOTE perhaps CCVEC6 should be added, Done
 C ADD ECC1_IMG ?
-C       CALL CC_VEC_FNC_REL(CC_AMP,CCVEC1,ECC1,VEC1,VEC2,
-C    &                      CCTYPE,CCVEC2)
+C       CALL CC_VEC_FNC_KRCC(CC_AMP,CCVEC1,ECC1,
+C    &                       WORK,KFREE,LFREE)
+        stop 'after CC_VEC_FNC_KRCC'
         call rmemchk               
 C**************************************************************
 *. Save on LUHC
@@ -746,7 +758,7 @@ C?   &             NVEC_SUB, NVEC_SKIP
       CALL TRIPAK(SCR(KLS),SCR(KLS2),2,NVEC_SUB,NVEC_SUB,1.0D0)
 C          INVERT_BY_DIAG(A,B,SCR,VEC,NDIM)
 C trying to switch to 2
-      CALL INVERT_BY_DIAG2(SCR(KLS),SCR(KLEIGVEC),SCR(KLSCR),
+      CALL INVERT_BY_DIAG3(SCR(KLS),SCR(KLEIGVEC),SCR(KLSCR),
      &                    SCR(KLVEC),NVEC_SUB)
 *. And pack it
       CALL TRIPAK(SCR(KLEIGVEC),SCR(KLS),1,NVEC_SUB,NVEC_SUB,1.0D0)
@@ -818,7 +830,7 @@ CERROR     &                      + SCR(KLS-1+IJSYM) - SCR(KLS2-1+IJSYM)
 *. Inverse U matrix and keep in KLU
 C          INVERT_BY_DIAG(A,B,SCR,VEC,NDIM)
 C trying to switch to 2
-      CALL INVERT_BY_DIAG2(SCR(KLU),SCR(KLEIGVEC),SCR(KLSCR),
+      CALL INVERT_BY_DIAG3(SCR(KLU),SCR(KLEIGVEC),SCR(KLSCR),
      &                    SCR(KLVEC),NVEC_SUB)
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Inverted U matrix '
@@ -1146,7 +1158,7 @@ C?    CALL PRSYM(BMAT,NVECP1)
 *
       CALL TRIPAK(SCR(KLINV),BMAT,2,NVECP1,NVECP1,1.0D0)
 *. Invert 
-      CALL INVERT_BY_DIAG2(SCR(KLINV),SCR(KLSCR1),SCR(KLSCR2),
+      CALL INVERT_BY_DIAG3(SCR(KLINV),SCR(KLSCR1),SCR(KLSCR2),
      &                    SCR(KLW),NVECP1)
 *. Multiply inverse matrix and vector (0,0, .. ,-1)
       CALL COPVEC(SCR(KLINV+NVEC*(NVEC+1)),SCR(KLW),NVEC)
@@ -1270,4 +1282,8 @@ C?    CALL PRSYM(BMAT,NVECP1)
 *
       RETURN
       END
-
+*
+      SUBROUTINE INVERT_BY_DIAG3
+      print*,'you should call INVERT_BY_DIAG2 instead'
+      stop 'you should call INVERT_BY_DIAG2 instead'
+      END 

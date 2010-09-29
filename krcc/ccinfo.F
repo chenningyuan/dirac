@@ -2195,7 +2195,7 @@ CTEMP     ISM2(3,5) = 1
 * GAS VERSION
 *
       IMPLICIT REAL*8(A-H,O-Z)
-#include "ipoist8.inc"
+C#include "ipoist8.inc"
 *
 * ===================
 *.Input common blocks
@@ -2220,6 +2220,7 @@ CTEMP     ISM2(3,5) = 1
 * ====================
 *
 #include "cicisp.inc"
+#include "ipoist8.inc"
 *
       DIMENSION WORK(*)
 C
@@ -2237,6 +2238,7 @@ C#include "memint.h"
 *
 *.  Largest NOCTPA*NOCTPB
       print*,'entering LCISPC_KRCC'
+      CALL MEMCHK_KRCC(WORK)
       MXNOCAB = 0
       DO IMS2 = 1, NMS2VAL
         IATP = IST_FOR_DT(1,IMS2)
@@ -2251,6 +2253,7 @@ C     SUBROUTINE MEMGET(DATA_TYPE,KBASE,LENGTH,WORK,KFREE,LFREE)
 C     call memmar(KLIOIO,MXNOCAB,   'ADDL  ',2,'KLIOIO')
       print*,'MXNOCAB',MXNOCAB
       CALL MEMGET('REAL',KLIOIO,MXNOCAB,WORK,KFREE,LFREE)
+      print*,'KFREE,LFREE',KFREE,LFREE
       print*,'after KLIOIO'
 *
 C     call memmar(KLBLTP,NSMST,'ADDL  ',2,'KLBLTP')
@@ -2292,6 +2295,7 @@ C?      WRITE(6,*)   IMS2,IATP,IBTP,NOCTPA,NOCTPB
      &                    IGSOCCX,NOCTPA,
      &                    NOCTPB,ISPGPFTP(1,IOCTPA),ISPGPFTP(1,IOCTPB),
      &                    NELFGP,MXPNGAS,NGAS,WORK(KLIOIO),IPRNT)
+      CALL MEMCHK_KRCC(WORK)
 *
           KLCVST = 1
           DO  ISYM = 1, NSMCI
@@ -4073,7 +4077,7 @@ C             print*,'NCREA,NANNI',NCREA,NANNI
      &                          NOBPT,MS2TOT,MSCOMB_CC,IAAEXC,IACT_SPC,
      &                          IPRDIA,ISOX_TO_OX,MXSPOX,NSOX_FOR_OX,
      &                          IBSOX_FOR_OX,ISOX_FOR_OX,NAEL,NBEL,
-     &                          IREFSPC,WORK,KFREE,LFREE)
+     &                          IREFSPC,IRECOM,WORK,KFREE,LFREE)
 *
 * Orbital excitation types => Spin-orbital excitations
 *
@@ -4183,11 +4187,12 @@ C          NCOMP = 0
 *. spin projection MSTOT
 *. Changes needs to be made from here
             DO I = 1,NMS2VAL
-              do j = 1,1  ! can only be in use for restricted or adapted cases
 C              IMS2TOT = MS2VAL(I)
 C              CALL AB_COMP_FOR_OBOP_REL(ICREA,IANNI,IMS2TOT,IMS2_REF,
 C     &                 NABCOMP,WORK(KLSOEX),NAEL,NBEL,IFLAG)
               IMS2TOT = MS2VAL(I)
+C              CALL EVENODD(ITEST,IMS2TOT)
+C              IF(ITEST.EQ.1) CYCLE
 C             print*,'IMS2TOT',IMS2TOT
 C              if(j.eq.1) then
               IMS2TOT = IMS2TOT - IMS2_REF
@@ -4208,8 +4213,6 @@ C              end if
               WRITE(6,*) ' IMS2TOT = ', IMS2TOT
               WRITE(6,*) ' IMS2_REF = ', IMS2_REF
               END IF
-              iok = 1
-              if(iok.eq.1) then
               DO JOBEX_TP = 1, NOBEX_TP
                 IF(LCOBEX_TP(JOBEX_TP).EQ.ICREA .AND.
      &             LAOBEX_TP(JOBEX_TP).EQ.IANNI .AND.
@@ -4223,7 +4226,7 @@ C              end if
      &                NGAS,NOPEN,NABCOMP,WORK(KLSOEX),NSPCOMP_ACT,
      &                ISPOBEX_TP(1,NSPOBEX_TP+1),NOBPT,MSCOMB_CC,
      &                IACT_SPC,IAAEXC,IREF_AL,IREF_BE,
-     &                IREFSPC,NAEL,NBEL)
+     &                IREFSPC,NAEL,NBEL,IRECOM)
 *
                    IF(IFLAG.EQ.2) THEN
 C?    WRITE(6,*) ' First SPOBEX_TP (a) '
@@ -4241,8 +4244,6 @@ C?    CALL IWRTMA(ISPOBEX_TP(1,1),4*NGAS,1,4*NGAS)
                    NSPOBEX_TP =  NSPOBEX_TP + NSPCOMP_ACT
                 END IF
               END DO
-              end if
-              end do
             END DO
           END IF
 *         ^ End if nonvanishing number of operators
@@ -4898,6 +4899,89 @@ C#include "wrkspc.inc"
 *
       print*,'say hi'
 *
+* Values
+*
+      IZERO = 0
+*
+* Setup (1,0)
+*
+      IP = 1
+      IH = 0
+      IKRFLIPMAX = MIN(2*MK2DEL,MX_EXC_LEVEL)
+      IKRFLIPMAX = MIN(2+MK2DEL,IKRFLIPMAX)
+      IHOLEATOT = NGAS+1
+      IHOLEBTOT = NGAS+1
+      IPARTATOT = NGAS+1
+      IPARTBTOT = NGAS+1
+*
+* Allocate a few dummy arrays
+*
+      CALL MEMGET('INTE',KIHOLEA,NGAS**2,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIHOLEB,NGAS**2,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIPARTICLEA,NGAS**2,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIPARTICLEB,NGAS**2,WORK,KFREE,LFREE)
+*
+* Set vectors
+*
+      CALL ISETVC(WORK(KIHOLEA),IZERO,NGAS**2)
+      CALL ISETVC(WORK(KIHOLEB),IZERO,NGAS**2)
+      CALL ISETVC(WORK(KIPARTICLEA),IZERO,NGAS**2)
+      CALL ISETVC(WORK(KIPARTICLEB),IZERO,NGAS**2)
+*
+* Initialize
+*
+      IINI = 0
+*
+      CALL SET_INTMEDIATES(IINI,IP,IH,NINTER10,IDUMMY,IKRFLIPMAX,
+     &                     IHOLEATOT,IHOLEBTOT,
+     &                     WORK(KIHOLEA),WORK(KIHOLEB),
+     &                     IPARTATOT,IPARTBTOT,
+     &                     WORK(KIPARTICLEA),WORK(KIPARTICLEB),
+     &                     NAOBEX_TP,NBOBEX_TP,
+     &                     WORK(KLAOBEX_CC),WORK(KLBOBEX_CC))
+*
+* Remove dummy arrays
+*
+      CALL MEMCHK_KRCC(WORK)
+      CALL MEMREL('INT10',WORK,KIHOLEA,KIHOLEA,KFREE,LFREE)
+*
+* Allocate permanent array
+*
+      print*,'NINTER10',NINTER10
+      CALL MEMGET('INTE',KINTM10,4*NGAS*NINTER10,WORK,KFREE,LFREE)
+*
+* Allocate a few dummy arrays
+*
+      CALL MEMGET('INTE',KIHOLEA,IHOLEATOT*NGAS,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIHOLEB,IHOLEBTOT*NGAS,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIPARTICLEA,IPARTATOT*NGAS,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIPARTICLEB,IPARTBTOT*NGAS,WORK,KFREE,LFREE)
+*
+* Set vectors
+*
+      CALL ISETVC(WORK(KIHOLEA),IZERO,IHOLEATOT*NGAS)
+      CALL ISETVC(WORK(KIHOLEB),IZERO,IHOLEBTOT*NGAS)
+      CALL ISETVC(WORK(KIPARTICLEA),IZERO,IPARTATOT*NGAS)
+      CALL ISETVC(WORK(KIPARTICLEB),IZERO,IPARTBTOT*NGAS)
+*
+* Find the 01 intermediates
+*
+      CALL MEMCHK_KRCC(WORK)
+      IINI = 1
+*
+      CALL SET_INTMEDIATES(IINI,IP,IH,NINTER10,WORK(KINTM10),IKRFLIPMAX,
+     &                     IHOLEATOT,IHOLEBTOT,
+     &                     WORK(KIHOLEA),WORK(KIHOLEB),
+     &                     IPARTATOT,IPARTBTOT,
+     &                     WORK(KIPARTICLEA),WORK(KIPARTICLEB),
+     &                     NAOBEX_TP,NBOBEX_TP,
+     &                     WORK(KLAOBEX_CC),WORK(KLBOBEX_CC))
+*
+* Remove dummy arrays
+*
+      CALL MEMCHK_KRCC(WORK)
+      CALL MEMREL('INT10',WORK,KIHOLEA,KIHOLEA,KFREE,LFREE)
+*
 * Setup (0,1)
 *
       IP = 0
@@ -4915,6 +4999,13 @@ C#include "wrkspc.inc"
       CALL MEMGET('INTE',KIPARTICLEA,NGAS**2,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIPARTICLEB,NGAS**2,WORK,KFREE,LFREE)
 *
+* Set vectors
+*
+      CALL ISETVC(WORK(KIHOLEA),IZERO,NGAS**2)
+      CALL ISETVC(WORK(KIHOLEB),IZERO,NGAS**2)
+      CALL ISETVC(WORK(KIPARTICLEA),IZERO,NGAS**2)
+      CALL ISETVC(WORK(KIPARTICLEB),IZERO,NGAS**2)
+*
 * Initialize
 *
       IINI = 0
@@ -4929,21 +5020,30 @@ C#include "wrkspc.inc"
 *
 * Remove dummy arrays
 *
+      CALL MEMCHK_KRCC(WORK)
       CALL MEMREL('INT01',WORK,KIHOLEA,KIHOLEA,KFREE,LFREE)
 *
 * Allocate permanent array
 *
-      CALL MEMGET('INTE',KINTM01,NINTER01,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KINTM01,4*NGAS*NINTER01,WORK,KFREE,LFREE)
 *
 * Allocate a few dummy arrays
 *
-      CALL MEMGET('INTE',KIHOLEA,IHOLEATOT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIHOLEB,IHOLEBTOT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIPARTICLEA,IPARTATOT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIPARTICLEB,IPARTBTOT,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIHOLEA,IHOLEATOT*NGAS,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIHOLEB,IHOLEBTOT*NGAS,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIPARTICLEA,IPARTATOT*NGAS,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIPARTICLEB,IPARTBTOT*NGAS,WORK,KFREE,LFREE)
+*
+* Set vectors
+*
+      CALL ISETVC(WORK(KIHOLEA),IZERO,IHOLEATOT*NGAS)
+      CALL ISETVC(WORK(KIHOLEB),IZERO,IHOLEBTOT*NGAS)
+      CALL ISETVC(WORK(KIPARTICLEA),IZERO,IPARTATOT*NGAS)
+      CALL ISETVC(WORK(KIPARTICLEB),IZERO,IPARTBTOT*NGAS)
 *
 * Find the 01 intermediates
 *
+      CALL MEMCHK_KRCC(WORK)
       IINI = 1
 *
       CALL SET_INTMEDIATES(IINI,IP,IH,NINTER01,WORK(KINTM01),IKRFLIPMAX,
@@ -4956,29 +5056,247 @@ C#include "wrkspc.inc"
 *
 * Remove dummy arrays
 *
+      CALL MEMCHK_KRCC(WORK)
       CALL MEMREL('INT01',WORK,KIHOLEA,KIHOLEA,KFREE,LFREE)
-      stop
-*
-* Setup (1,0)
-*
-
 *
 * Setup (1,1)
 *
-
+      IP = 1
+      IH = 1
+      IKRFLIPMAX = MIN(2*MK2DEL,MX_EXC_LEVEL)
+      IKRFLIPMAX = MIN(2+1*MK2DEL,IKRFLIPMAX)
+      IHOLEATOT = NGAS+1
+      IHOLEBTOT = NGAS+1
+      IPARTATOT = NGAS+1
+      IPARTBTOT = NGAS+1
+*
+* Allocate a few dummy arrays
+*
+      CALL MEMGET('INTE',KIHOLEA,NGAS**2,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIHOLEB,NGAS**2,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIPARTICLEA,NGAS**2,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIPARTICLEB,NGAS**2,WORK,KFREE,LFREE)
+*
+* Set vectors
+*
+      CALL ISETVC(WORK(KIHOLEA),IZERO,NGAS**2)
+      CALL ISETVC(WORK(KIHOLEB),IZERO,NGAS**2)
+      CALL ISETVC(WORK(KIPARTICLEA),IZERO,NGAS**2)
+      CALL ISETVC(WORK(KIPARTICLEB),IZERO,NGAS**2)
+*
+* Initialize
+*
+      IINI = 0
+*
+      CALL SET_INTMEDIATES(IINI,IP,IH,NINTER11,IDUMMY,IKRFLIPMAX,
+     &                     IHOLEATOT,IHOLEBTOT,
+     &                     WORK(KIHOLEA),WORK(KIHOLEB),
+     &                     IPARTATOT,IPARTBTOT,
+     &                     WORK(KIPARTICLEA),WORK(KIPARTICLEB),
+     &                     NAOBEX_TP,NBOBEX_TP,
+     &                     WORK(KLAOBEX_CC),WORK(KLBOBEX_CC))
+*
+* Remove dummy arrays
+*
+      CALL MEMCHK_KRCC(WORK)
+      CALL MEMREL('INT11',WORK,KIHOLEA,KIHOLEA,KFREE,LFREE)
+*
+* Allocate permanent array
+*
+      CALL MEMGET('INTE',KINTM11,4*NGAS*NINTER11,WORK,KFREE,LFREE)
+*
+* Allocate a few dummy arrays
+*
+      CALL MEMGET('INTE',KIHOLEA,IHOLEATOT*NGAS,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIHOLEB,IHOLEBTOT*NGAS,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIPARTICLEA,IPARTATOT*NGAS,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIPARTICLEB,IPARTBTOT*NGAS,WORK,KFREE,LFREE)
+*
+* Set vectors
+*
+      CALL ISETVC(WORK(KIHOLEA),IZERO,IHOLEATOT*NGAS)
+      CALL ISETVC(WORK(KIHOLEB),IZERO,IHOLEBTOT*NGAS)
+      CALL ISETVC(WORK(KIPARTICLEA),IZERO,IPARTATOT*NGAS)
+      CALL ISETVC(WORK(KIPARTICLEB),IZERO,IPARTBTOT*NGAS)
+*
+* Find the 11 intermediates
+*
+      CALL MEMCHK_KRCC(WORK)
+      IINI = 1
+*
+      CALL SET_INTMEDIATES(IINI,IP,IH,NINTER11,WORK(KINTM11),IKRFLIPMAX,
+     &                     IHOLEATOT,IHOLEBTOT,
+     &                     WORK(KIHOLEA),WORK(KIHOLEB),
+     &                     IPARTATOT,IPARTBTOT,
+     &                     WORK(KIPARTICLEA),WORK(KIPARTICLEB),
+     &                     NAOBEX_TP,NBOBEX_TP,
+     &                     WORK(KLAOBEX_CC),WORK(KLBOBEX_CC))
+*
+* Remove dummy arrays
+*
+      CALL MEMCHK_KRCC(WORK)
+      CALL MEMREL('INT11',WORK,KIHOLEA,KIHOLEA,KFREE,LFREE)
 *
 * Setup (0,2)
 *
-
+      IP = 0
+      IH = 2
+      IKRFLIPMAX = MIN(3*MK2DEL,MX_EXC_LEVEL)
+      IKRFLIPMAX = MIN(2+2*MK2DEL,IKRFLIPMAX)
+      IHOLEATOT = NGAS+1
+      IHOLEBTOT = NGAS+1
+      IPARTATOT = NGAS+1
+      IPARTBTOT = NGAS+1
+*
+* Allocate a few dummy arrays
+*
+      CALL MEMGET('INTE',KIHOLEA,NGAS**2,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIHOLEB,NGAS**2,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIPARTICLEA,NGAS**2,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIPARTICLEB,NGAS**2,WORK,KFREE,LFREE)
+*
+* Set vectors
+*
+      CALL ISETVC(WORK(KIHOLEA),IZERO,NGAS**2)
+      CALL ISETVC(WORK(KIHOLEB),IZERO,NGAS**2)
+      CALL ISETVC(WORK(KIPARTICLEA),IZERO,NGAS**2)
+      CALL ISETVC(WORK(KIPARTICLEB),IZERO,NGAS**2)
+*
+* Initialize
+*
+      IINI = 0
+*
+      CALL SET_INTMEDIATES(IINI,IP,IH,NINTER02,IDUMMY,IKRFLIPMAX,
+     &                     IHOLEATOT,IHOLEBTOT,
+     &                     WORK(KIHOLEA),WORK(KIHOLEB),
+     &                     IPARTATOT,IPARTBTOT,
+     &                     WORK(KIPARTICLEA),WORK(KIPARTICLEB),
+     &                     NAOBEX_TP,NBOBEX_TP,
+     &                     WORK(KLAOBEX_CC),WORK(KLBOBEX_CC))
+*
+* Remove dummy arrays
+*
+      CALL MEMCHK_KRCC(WORK)
+      CALL MEMREL('INT02',WORK,KIHOLEA,KIHOLEA,KFREE,LFREE)
+*
+* Allocate permanent array
+*
+      CALL MEMGET('INTE',KINTM02,4*NGAS*NINTER02,WORK,KFREE,LFREE)
+*
+* Allocate a few dummy arrays
+*
+      CALL MEMGET('INTE',KIHOLEA,IHOLEATOT*NGAS,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIHOLEB,IHOLEBTOT*NGAS,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIPARTICLEA,IPARTATOT*NGAS,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIPARTICLEB,IPARTBTOT*NGAS,WORK,KFREE,LFREE)
+*
+* Set vectors
+*
+      CALL ISETVC(WORK(KIHOLEA),IZERO,IHOLEATOT*NGAS)
+      CALL ISETVC(WORK(KIHOLEB),IZERO,IHOLEBTOT*NGAS)
+      CALL ISETVC(WORK(KIPARTICLEA),IZERO,IPARTATOT*NGAS)
+      CALL ISETVC(WORK(KIPARTICLEB),IZERO,IPARTBTOT*NGAS)
+*
+* Find the 02 intermediates
+*
+      CALL MEMCHK_KRCC(WORK)
+      IINI = 1
+*
+      CALL SET_INTMEDIATES(IINI,IP,IH,NINTER02,WORK(KINTM02),IKRFLIPMAX,
+     &                     IHOLEATOT,IHOLEBTOT,
+     &                     WORK(KIHOLEA),WORK(KIHOLEB),
+     &                     IPARTATOT,IPARTBTOT,
+     &                     WORK(KIPARTICLEA),WORK(KIPARTICLEB),
+     &                     NAOBEX_TP,NBOBEX_TP,
+     &                     WORK(KLAOBEX_CC),WORK(KLBOBEX_CC))
+*
+* Remove dummy arrays
+*
+      CALL MEMCHK_KRCC(WORK)
+      CALL MEMREL('INT02',WORK,KIHOLEA,KIHOLEA,KFREE,LFREE)
 *
 * Setup (1,2)
 *
-
+      IP = 1
+      IH = 2
+      IKRFLIPMAX = MIN(2*MK2DEL,MX_EXC_LEVEL)
+      IKRFLIPMAX = MIN(2+1*MK2DEL,IKRFLIPMAX)
+      IHOLEATOT = NGAS+1
+      IHOLEBTOT = NGAS+1
+      IPARTATOT = NGAS+1
+      IPARTBTOT = NGAS+1
+*
+* Allocate a few dummy arrays
+*
+      CALL MEMGET('INTE',KIHOLEA,NGAS**2,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIHOLEB,NGAS**2,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIPARTICLEA,NGAS**2,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIPARTICLEB,NGAS**2,WORK,KFREE,LFREE)
+*
+* Set vectors
+*
+      CALL ISETVC(WORK(KIHOLEA),IZERO,NGAS**2)
+      CALL ISETVC(WORK(KIHOLEB),IZERO,NGAS**2)
+      CALL ISETVC(WORK(KIPARTICLEA),IZERO,NGAS**2)
+      CALL ISETVC(WORK(KIPARTICLEB),IZERO,NGAS**2)
+*
+* Initialize
+*
+      IINI = 0
+*
+      CALL SET_INTMEDIATES(IINI,IP,IH,NINTER12,IDUMMY,IKRFLIPMAX,
+     &                     IHOLEATOT,IHOLEBTOT,
+     &                     WORK(KIHOLEA),WORK(KIHOLEB),
+     &                     IPARTATOT,IPARTBTOT,
+     &                     WORK(KIPARTICLEA),WORK(KIPARTICLEB),
+     &                     NAOBEX_TP,NBOBEX_TP,
+     &                     WORK(KLAOBEX_CC),WORK(KLBOBEX_CC))
+*    
+* Remove dummy arrays      
+*    
+      CALL MEMCHK_KRCC(WORK)
+      CALL MEMREL('INT12',WORK,KIHOLEA,KIHOLEA,KFREE,LFREE)
+*    
+* Allocate permanent array
+*
+      CALL MEMGET('INTE',KINTM12,4*NGAS*NINTER12,WORK,KFREE,LFREE)
+*     
+* Allocate a few dummy arrays
+*
+      CALL MEMGET('INTE',KIHOLEA,IHOLEATOT*NGAS,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIHOLEB,IHOLEBTOT*NGAS,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIPARTICLEA,IPARTATOT*NGAS,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KIPARTICLEB,IPARTBTOT*NGAS,WORK,KFREE,LFREE)
+*
+* Set vectors
+*     
+      CALL ISETVC(WORK(KIHOLEA),IZERO,IHOLEATOT*NGAS)
+      CALL ISETVC(WORK(KIHOLEB),IZERO,IHOLEBTOT*NGAS)
+      CALL ISETVC(WORK(KIPARTICLEA),IZERO,IPARTATOT*NGAS)
+      CALL ISETVC(WORK(KIPARTICLEB),IZERO,IPARTBTOT*NGAS)
+*
+* Find the 12 intermediates
+*     
+      CALL MEMCHK_KRCC(WORK)
+      IINI = 1
+*     
+      CALL SET_INTMEDIATES(IINI,IP,IH,NINTER12,WORK(KINTM12),IKRFLIPMAX,
+     &                     IHOLEATOT,IHOLEBTOT,
+     &                     WORK(KIHOLEA),WORK(KIHOLEB),
+     &                     IPARTATOT,IPARTBTOT,
+     &                     WORK(KIPARTICLEA),WORK(KIPARTICLEB),
+     &                     NAOBEX_TP,NBOBEX_TP,
+     &                     WORK(KLAOBEX_CC),WORK(KLBOBEX_CC))
+*    
+* Remove dummy arrays
+*
+      CALL MEMCHK_KRCC(WORK)
+      CALL MEMREL('INT12',WORK,KIHOLEA,KIHOLEA,KFREE,LFREE)
 *
       RETURN
       END
 *
-      SUBROUTINE SET_INTMEDIATES(IINI,IH,IP,NINTER,INTER,IKRFLIPMAX,
+      SUBROUTINE SET_INTMEDIATES(IINI,IP,IH,NINTER,INTER,IKRFLIPMAX,
      &                           IHOLEATOT,IHOLEBTOT,
      &                           IHOLEA,IHOLEB,
      &                           IPARTATOT,IPARTBTOT,
@@ -5007,7 +5325,15 @@ C#include "wrkspc.inc"
       IHOLEBTOT = 0
       IPARTATOT = 0
       IPARTBTOT = 0
+      IHOLEAIDENT = 0
+      IHOLEBIDENT = 0
+      IPARTAIDENT = 0
+      IPARTBIDENT = 0
       NINTER = 0
+      IALLOWIDENT = 0
+      print*,'start'
+      print*,IHOLEA(1,1),IHOLEA(2,1)
+      print*,IHOLEB(1,1),IHOLEB(2,1)
 *
 * Now distribute IH number of holes in IHOLEATOT + IHOLEBTOT number of GAS
       IF(IH.GE.1) THEN
@@ -5070,28 +5396,56 @@ C#include "wrkspc.inc"
       END IF
 *
 * Now create the intermediate supergroups
+      print*,'NAOBEX_TP,NBOBEX_TP',NAOBEX_TP,NBOBEX_TP
+      print*,'IPARTATOT,IPARTBTOT',IPARTATOT,IPARTBTOT
+      print*,IPARTICLEA(1,1),IPARTICLEA(2,1)
+      print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
+      print*,'IHOLEATOT,IHOLEBTOT',IHOLEATOT,IHOLEBTOT
+      print*,IHOLEA(1,1),IHOLEA(2,1)
+      print*,IHOLEB(1,1),IHOLEB(2,1)
       DO IAOBEX =1,NAOBEX_TP
         DO IBOBEX =1,NBOBEX_TP
 * List the five cases of (P,H)
+C     print*,IPARTICLEA(1,1),IPARTICLEA(2,1)
+C     print*,IPARTICLEB(1,1),IPARTICLEB(2,1)
+      print*,IHOLEA(1,1),IHOLEA(2,1)
+      print*,IHOLEB(1,1),IHOLEB(2,1)
           IF(IH.EQ.0.AND.IP.EQ.1) THEN
-            CALL IH0IP1(NGAS,IINI,NINTER,INTER,IKRFLIPMAX,
+            CALL IH0IP1(NGAS,IINI,IP,IH,NINTER,INTER,IKRFLIPMAX,
      &                  IAOBEX_TP(1,IAOBEX),IBOBEX_TP(1,IBOBEX),
      &                  IPARTATOT,IPARTBTOT,IPARTICLEA,IPARTICLEB,
-     &                  IPARTAIDENT,IPARTBIDENT)
-C         ELSE IF(IH.EQ.0.AND.IP.EQ.2) THEN
-C           CALL IH0IP2(NGAS,IINI,NINTER,INTER,IKRFLIPMAX,
-C    &                  IAOBEX_TP(1,IAOBEX),IBOBEX_TP(1,IBOBEX),)
-C         ELSE IF(IH.EQ.1.AND.IP.EQ.0) THEN
-C           CALL IH1IP0(NGAS,IINI,NINTER,INTER,IKRFLIPMAX,
-C    &                  IAOBEX_TP(1,IAOBEX),IBOBEX_TP(1,IBOBEX),)
-C         ELSE IF(IH.EQ.1.AND.IP.EQ.1) THEN
-C           CALL IH1IP1(NGAS,IINI,NINTER,INTER,IKRFLIPMAX,
-C    &                  IAOBEX_TP(1,IAOBEX),IBOBEX_TP(1,IBOBEX),)
-C         ELSE IF(IH.EQ.1.AND.IP.EQ.2) THEN
-C           CALL IH1IP2(NGAS,IINI,NINTER,INTER,IKRFLIPMAX,
-C    &                  IAOBEX_TP(1,IAOBEX),IBOBEX_TP(1,IBOBEX),)
-C         ELSE
-C           STOP 'HOW DID YOU MANAGE TO GET HERE???'
+     &                  IPARTAIDENT,IPARTBIDENT,
+     &                  IALLOWIDENT)
+          ELSE IF(IH.EQ.1.AND.IP.EQ.0) THEN
+            CALL IH1IP0(NGAS,IINI,IP,IH,NINTER,INTER,IKRFLIPMAX,
+     &                  IAOBEX_TP(1,IAOBEX),IBOBEX_TP(1,IBOBEX),
+     &                  IHOLEATOT,IHOLEBTOT,IHOLEA,IHOLEB,
+     &                  IHOLEAIDENT,IHOLEBIDENT,
+     &                  IALLOWIDENT)
+          ELSE IF(IH.EQ.1.AND.IP.EQ.1) THEN
+            CALL IH1IP1(NGAS,IINI,IP,IH,NINTER,INTER,IKRFLIPMAX,
+     &                  IAOBEX_TP(1,IAOBEX),IBOBEX_TP(1,IBOBEX),
+     &                  IPARTATOT,IPARTBTOT,IPARTICLEA,IPARTICLEB,
+     &                  IPARTAIDENT,IPARTBIDENT,
+     &                  IHOLEATOT,IHOLEBTOT,IHOLEA,IHOLEB,
+     &                  IHOLEAIDENT,IHOLEBIDENT,
+     &                  IALLOWIDENT)
+          ELSE IF(IH.EQ.2.AND.IP.EQ.0) THEN
+            CALL IH2IP0(NGAS,IINI,IP,IH,NINTER,INTER,IKRFLIPMAX,
+     &                  IAOBEX_TP(1,IAOBEX),IBOBEX_TP(1,IBOBEX),
+     &                  IHOLEATOT,IHOLEBTOT,IHOLEA,IHOLEB,
+     &                  IHOLEAIDENT,IHOLEBIDENT,
+     &                  IALLOWIDENT)
+          ELSE IF(IH.EQ.2.AND.IP.EQ.1) THEN
+            CALL IH2IP1(NGAS,IINI,IP,IH,NINTER,INTER,IKRFLIPMAX,
+     &                  IAOBEX_TP(1,IAOBEX),IBOBEX_TP(1,IBOBEX),
+     &                  IPARTATOT,IPARTBTOT,IPARTICLEA,IPARTICLEB,
+     &                  IPARTAIDENT,IPARTBIDENT,
+     &                  IHOLEATOT,IHOLEBTOT,IHOLEA,IHOLEB,
+     &                  IHOLEAIDENT,IHOLEBIDENT,
+     &                  IALLOWIDENT)
+          ELSE
+            STOP 'HOW DID YOU MANAGE TO GET HERE???'
           END IF
         END DO
       END DO
@@ -5101,13 +5455,25 @@ C           STOP 'HOW DID YOU MANAGE TO GET HERE???'
         WRITE(6,*) ' =============================== '
         WRITE(6,*) ' Holes and particles '
         WRITE(6,*) ' IHOLEATOT ',IHOLEATOT
-        CALL IWRTMA10(IHOLEA,NGAS,IHOLEATOT,NGAS,IHOLEATOT)
+        DO I =1,IHOLEATOT
+          WRITE(6,*) ' ALPHA HOLE STRING ',I
+          WRITE(6,*) (IHOLEA(IGAS,I),IGAS=1,NGAS)
+        END DO
         WRITE(6,*) ' IHOLEBTOT ',IHOLEBTOT
-        CALL IWRTMA10(IHOLEB,NGAS,IHOLEBTOT,NGAS,IHOLEBTOT)
+        DO I =1,IHOLEBTOT
+          WRITE(6,*) ' BETA HOLE STRING ',I
+          WRITE(6,*) (IHOLEB(IGAS,I),IGAS=1,NGAS)
+        END DO
         WRITE(6,*) ' IPARTATOT ',IPARTATOT
-        CALL IWRTMA10(IPARTICLEA,NGAS,IPARTATOT,NGAS,IPARTATOT)
+        DO I =1,IPARTATOT
+          WRITE(6,*) ' ALPHA PARTICLE STRING ',I
+          WRITE(6,*) (IPARTICLEA(IGAS,I),IGAS=1,NGAS)
+        END DO
         WRITE(6,*) ' IPARTBTOT ',IPARTBTOT
-        CALL IWRTMA10(IPARTICLEB,NGAS,IPARTBTOT,NGAS,IPARTBTOT)
+        DO I =1,IPARTBTOT
+          WRITE(6,*) ' BETA PARTICLE STRING ',I
+          WRITE(6,*) (IPARTICLEB(IGAS,I),IGAS=1,NGAS)
+        END DO
         WRITE(6,*) ' =============================== '
         WRITE(6,*) ' Placement of identity operators '
         WRITE(6,*) ' IHOLEAIDENT ',IHOLEAIDENT
@@ -5117,22 +5483,801 @@ C           STOP 'HOW DID YOU MANAGE TO GET HERE???'
         WRITE(6,*) ' =============================== '
         WRITE(6,*) ' Number of intermediates ',NINTER
         IF(IINI.EQ.1) THEN
-          DO IINT = 1,NINTER
-            WRITE(6,*) ' Intermediate number ',IINT
-            DO IGAS =1,NGAS
-              WRITE(6,*) INTER(IGAS,IINT)
-            END DO
-          END DO
+        CALL WRT_SPOX_TP_CC_KRCC(INTER,NINTER)
         END IF
       END IF
 *
       RETURN
       END
 *
-      SUBROUTINE IH0IP1(NGAS,IINI,NINTER,INTER,IKRFLIPMAX,
+      SUBROUTINE IH2IP0(NGAS,IINI,IP,IH,NINTER,INTER,IKRFLIPMAX,
+     &                  IAOBEX_TP,IBOBEX_TP,
+     &                  IHOLEATOT,IHOLEBTOT,IHOLEA,IHOLEB,
+     &                  IHOLEAIDENT,IHOLEBIDENT,IALLOWIDENT)
+* For 2 holes and 0 particle
+* Will only allow one identity operator to pass though
+      IMPLICIT REAL*8(A-H,O-Z)
+* Output    
+      INTEGER INTER(4*NGAS,*)
+      INTEGER IHOLEA(NGAS,IHOLEATOT),IHOLEB(NGAS,IHOLEBTOT)
+* Input   
+      INTEGER IAOBEX_TP(2*NGAS),IBOBEX_TP(2*NGAS)
+* Scratch
+      INTEGER ITEMP(4*NGAS) 
+*           
+      IF(IALLOWIDENT.EQ.0) THEN
+        IDENTHA = 0
+        IDENTHB = 0
+      ELSE         
+        IDENTHA = 1
+        IDENTHB = 1
+      END IF
+* hole  A B
+      DO IAH = 1,IHOLEATOT
+*
+        IF(IAH.EQ.IHOLEAIDENT) THEN
+          IF(IDENTHA.EQ.1) THEN
+            CYCLE
+          ELSE
+            IDENTHA = 1
+          END IF
+        END IF
+*
+        DO IBH = 1,IHOLEBTOT
+*
+          IF(IBH.EQ.IHOLEBIDENT) THEN
+            IF(IDENTHB.EQ.1) THEN
+              CYCLE
+            ELSE
+              IDENTHB = 1
+            END IF
+          END IF
+*
+          DO IGAS =1,NGAS
+* Creator alpha
+            ITEMP(IGAS+0*NGAS) = IAOBEX_TP(IGAS+0*NGAS) +
+     &                           IHOLEA(IGAS,IAH)
+* Creator Beta
+            ITEMP(IGAS+1*NGAS) = IBOBEX_TP(IGAS+0*NGAS) +
+     &                           IHOLEB(IGAS,IBH)
+* Annihilator Alpha
+            ITEMP(IGAS+2*NGAS) = IAOBEX_TP(IGAS+1*NGAS) 
+* Annihilator Beta
+            ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS)
+          END DO
+          CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+          CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
+          IF(IANSWER.EQ.1) THEN
+* We have found an intemediate super group
+            NINTER = NINTER + 1
+            IF(IINI.EQ.1) THEN
+* Store super group
+              CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
+              CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+            END IF
+          END IF
+        END DO
+      END DO
+* Hole A A
+      DO IAH = 1,IHOLEATOT
+*
+        IF(IAH.EQ.IHOLEAIDENT) THEN
+          IF(IDENTHA.EQ.1) THEN
+            CYCLE
+          ELSE
+            IDENTHA = 1
+          END IF
+        END IF
+*
+        DO IAH2 = 1,IHOLEATOT
+*
+          IF(IAH2.EQ.IHOLEAIDENT) THEN
+            IF(IDENTHA.EQ.1) THEN
+              CYCLE
+            ELSE
+              IDENTHA = 1
+            END IF
+          END IF
+*
+          DO IGAS =1,NGAS
+* Creator alpha
+            ITEMP(IGAS+0*NGAS) = IAOBEX_TP(IGAS+0*NGAS) +
+     &                           IHOLEA(IGAS,IAH)       +
+     &                           IHOLEA(IGAS,IAH2)
+* Creator Beta
+            ITEMP(IGAS+1*NGAS) = IBOBEX_TP(IGAS+0*NGAS) 
+* Annihilator Alpha
+            ITEMP(IGAS+2*NGAS) = IAOBEX_TP(IGAS+1*NGAS) 
+* Annihilator Beta
+            ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS)
+          END DO
+          CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+          CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
+          IF(IANSWER.EQ.1) THEN
+* We have found an intemediate super group
+            NINTER = NINTER + 1
+            IF(IINI.EQ.1) THEN
+* Store super group
+              CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
+              CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+            END IF
+          END IF
+        END DO
+      END DO
+* Hole B B
+      DO IBH = 1,IHOLEBTOT
+*
+        IF(IBH.EQ.IHOLEBIDENT) THEN
+          IF(IDENTHB.EQ.1) THEN
+            CYCLE
+          ELSE
+            IDENTHB = 1
+          END IF        
+        END IF          
+*
+        DO IBH2 = 1,IHOLEBTOT
+*
+          IF(IBH2.EQ.IHOLEBIDENT) THEN
+            IF(IDENTHB.EQ.1) THEN
+              CYCLE
+            ELSE
+              IDENTHB = 1
+            END IF        
+          END IF          
+*
+          DO IGAS =1,NGAS
+* Creator alpha
+            ITEMP(IGAS+0*NGAS) = IAOBEX_TP(IGAS+0*NGAS) 
+* Creator Beta
+            ITEMP(IGAS+1*NGAS) = IBOBEX_TP(IGAS+0*NGAS) +
+     &                           IHOLEB(IGAS,IBH)       +
+     &                           IHOLEB(IGAS,IBH2)
+* Annihilator Alpha
+            ITEMP(IGAS+2*NGAS) = IAOBEX_TP(IGAS+1*NGAS) 
+* Annihilator Beta
+            ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS)
+          END DO
+          CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+          CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
+          IF(IANSWER.EQ.1) THEN
+* We have found an intemediate super group
+            NINTER = NINTER + 1
+            IF(IINI.EQ.1) THEN
+* Store super group
+              CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
+              CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+            END IF
+          END IF
+        END DO
+      END DO 
+*
+      RETURN
+      END
+*
+      SUBROUTINE IH2IP1(NGAS,IINI,IP,IH,NINTER,INTER,IKRFLIPMAX,
      &                  IAOBEX_TP,IBOBEX_TP,
      &                  IPARTATOT,IPARTBTOT,IPARTICLEA,IPARTICLEB,
-     &                  IPARTAIDENT,IPARTBIDENT)
+     &                  IPARTAIDENT,IPARTBIDENT,
+     &                  IHOLEATOT,IHOLEBTOT,IHOLEA,IHOLEB,
+     &                  IHOLEAIDENT,IHOLEBIDENT,IALLOWIDENT)
+* For 1 holes and 1 particle
+* Will only allow one identity operator to pass though for given
+* ha,hb,pa,pb
+      IMPLICIT REAL*8(A-H,O-Z)
+* Output
+      INTEGER INTER(4*NGAS,*)
+      INTEGER IHOLEA(NGAS,IHOLEATOT),IHOLEB(NGAS,IHOLEBTOT)
+      INTEGER IPARTICLEA(NGAS,IPARTATOT),IPARTICLEB(NGAS,IPARTBTOT)
+* Input
+      INTEGER IAOBEX_TP(2*NGAS),IBOBEX_TP(2*NGAS)
+* Scratch
+      INTEGER ITEMP(4*NGAS)
+*
+      IF(IALLOWIDENT.EQ.0) THEN
+        IDENTP  = 0
+        IDENTHA = 0
+        IDENTHB = 0
+      ELSE
+        IDENTP  = 1
+        IDENTHA = 1
+        IDENTHB = 1
+      END IF
+* hole  A B part A and B
+      DO IAH = 1,IHOLEATOT
+*
+        IF(IAH.EQ.IHOLEAIDENT) THEN
+          IF(IDENTHA.EQ.1) THEN
+            CYCLE
+          ELSE
+            IDENTHA = 1
+          END IF
+        END IF
+*
+        DO IBH = 1,IHOLEBTOT
+*
+          IF(IBH.EQ.IHOLEBIDENT) THEN
+            IF(IDENTHB.EQ.1) THEN
+              CYCLE
+            ELSE
+              IDENTHB = 1
+            END IF
+          END IF
+* Part A
+          DO IAP = 1,IPARTATOT
+*
+            IF(IAP.EQ.IPARTAIDENT) THEN
+              IF(IDENTP.EQ.1) THEN
+                CYCLE
+              ELSE
+                IDENTP = 1
+              END IF
+            END IF
+*
+            DO IGAS =1,NGAS
+* Creator alpha
+              ITEMP(IGAS+0*NGAS) = IAOBEX_TP(IGAS+0*NGAS) +
+     &                             IHOLEA(IGAS,IAH)
+* Creator Beta
+              ITEMP(IGAS+1*NGAS) = IBOBEX_TP(IGAS+0*NGAS) +
+     &                             IHOLEB(IGAS,IBH)
+* Annihilator Alpha
+              ITEMP(IGAS+2*NGAS) = IAOBEX_TP(IGAS+1*NGAS) +
+     &                             IPARTICLEA(IGAS,IAP)
+* Annihilator Beta
+              ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS)
+            END DO
+            CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+            CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
+            IF(IANSWER.EQ.1) THEN
+* We have found an intemediate super group
+              NINTER = NINTER + 1
+              IF(IINI.EQ.1) THEN
+* Store super group
+                CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
+                CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+              END IF
+            END IF
+          END DO
+* Part B
+          DO IBP = 1,IPARTBTOT
+*
+            IF(IBP.EQ.IPARTBIDENT) THEN
+              IF(IDENTP.EQ.1) THEN
+                CYCLE
+              ELSE
+                IDENTP = 1
+              END IF
+            END IF
+*
+            DO IGAS =1,NGAS
+* Creator alpha
+              ITEMP(IGAS+0*NGAS) = IAOBEX_TP(IGAS+0*NGAS) +
+     &                             IHOLEA(IGAS,IAH)
+* Creator Beta
+              ITEMP(IGAS+1*NGAS) = IBOBEX_TP(IGAS+0*NGAS) +
+     &                             IHOLEB(IGAS,IBH)
+* Annihilator Alpha
+              ITEMP(IGAS+2*NGAS) = IAOBEX_TP(IGAS+1*NGAS)
+* Annihilator Beta
+              ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS) +
+     &                             IPARTICLEB(IGAS,IBP)
+            END DO
+            CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+            CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
+            IF(IANSWER.EQ.1) THEN
+* We have found an intemediate super group
+              NINTER = NINTER + 1
+              IF(IINI.EQ.1) THEN
+* Store super group
+                CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
+                CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+              END IF
+            END IF
+          END DO
+        END DO
+      END DO
+* Hole A A Part A and B
+      DO IAH = 1,IHOLEATOT
+*
+        IF(IAH.EQ.IHOLEAIDENT) THEN
+          IF(IDENTHA.EQ.1) THEN
+            CYCLE
+          ELSE
+            IDENTHA = 1
+          END IF
+        END IF
+*
+        DO IAH2 = 1,IHOLEATOT
+*
+          IF(IAH2.EQ.IHOLEAIDENT) THEN
+            IF(IDENTHA.EQ.1) THEN
+              CYCLE
+            ELSE
+              IDENTHA = 1
+            END IF
+          END IF
+* Part A
+          DO IAP = 1,IPARTATOT
+*
+            IF(IAP.EQ.IPARTAIDENT) THEN
+              IF(IDENTP.EQ.1) THEN
+                CYCLE
+              ELSE
+                IDENTP = 1
+              END IF
+            END IF
+*
+            DO IGAS =1,NGAS
+* Creator alpha
+              ITEMP(IGAS+0*NGAS) = IAOBEX_TP(IGAS+0*NGAS) +
+     &                             IHOLEA(IGAS,IAH)       +
+     &                             IHOLEA(IGAS,IAH2)
+* Creator Beta
+              ITEMP(IGAS+1*NGAS) = IBOBEX_TP(IGAS+0*NGAS) 
+* Annihilator Alpha
+              ITEMP(IGAS+2*NGAS) = IAOBEX_TP(IGAS+1*NGAS) +
+     &                             IPARTICLEA(IGAS,IAP)
+* Annihilator Beta
+              ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS)
+            END DO
+            CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+            CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
+            IF(IANSWER.EQ.1) THEN
+* We have found an intemediate super group
+              NINTER = NINTER + 1
+              IF(IINI.EQ.1) THEN
+* Store super group
+                CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
+                CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+              END IF
+            END IF
+          END DO
+* Part B
+          DO IBP = 1,IPARTBTOT
+*
+            IF(IBP.EQ.IPARTBIDENT) THEN
+              IF(IDENTP.EQ.1) THEN
+                CYCLE
+              ELSE
+                IDENTP = 1
+              END IF
+            END IF
+*
+            DO IGAS =1,NGAS
+* Creator alpha
+              ITEMP(IGAS+0*NGAS) = IAOBEX_TP(IGAS+0*NGAS) +
+     &                             IHOLEA(IGAS,IAH)       +
+     &                             IHOLEA(IGAS,IAH2)
+* Creator Beta
+              ITEMP(IGAS+1*NGAS) = IBOBEX_TP(IGAS+0*NGAS) 
+* Annihilator Alpha
+              ITEMP(IGAS+2*NGAS) = IAOBEX_TP(IGAS+1*NGAS)
+* Annihilator Beta
+              ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS) +
+     &                             IPARTICLEB(IGAS,IBP)
+            END DO
+            CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+            CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
+            IF(IANSWER.EQ.1) THEN
+* We have found an intemediate super group
+              NINTER = NINTER + 1
+              IF(IINI.EQ.1) THEN
+* Store super group
+                CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
+                CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+              END IF
+            END IF
+          END DO
+        END DO
+      END DO
+* Hole B B Part A and B
+      DO IBH = 1,IHOLEBTOT
+*
+        IF(IBH.EQ.IHOLEBIDENT) THEN
+          IF(IDENTHB.EQ.1) THEN
+            CYCLE
+          ELSE
+            IDENTHB = 1
+          END IF
+        END IF
+*
+        DO IBH2 = 1,IHOLEBTOT
+*
+          IF(IBH2.EQ.IHOLEBIDENT) THEN
+            IF(IDENTHB.EQ.1) THEN
+              CYCLE
+            ELSE
+              IDENTHB = 1
+            END IF
+          END IF
+* Part A
+          DO IAP = 1,IPARTATOT
+*
+            IF(IAP.EQ.IPARTAIDENT) THEN
+              IF(IDENTP.EQ.1) THEN
+                CYCLE
+              ELSE
+                IDENTP = 1
+              END IF
+            END IF
+*
+            DO IGAS =1,NGAS
+* Creator alpha
+              ITEMP(IGAS+0*NGAS) = IAOBEX_TP(IGAS+0*NGAS) 
+* Creator Beta
+              ITEMP(IGAS+1*NGAS) = IBOBEX_TP(IGAS+0*NGAS) +
+     &                             IHOLEB(IGAS,IBH)       +
+     &                             IHOLEB(IGAS,IBH2)
+* Annihilator Alpha
+              ITEMP(IGAS+2*NGAS) = IAOBEX_TP(IGAS+1*NGAS) +
+     &                             IPARTICLEA(IGAS,IAP)
+* Annihilator Beta
+              ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS)
+            END DO
+            CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+            CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
+            IF(IANSWER.EQ.1) THEN
+* We have found an intemediate super group
+              NINTER = NINTER + 1
+              IF(IINI.EQ.1) THEN
+* Store super group
+                CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
+                CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+              END IF
+            END IF
+          END DO
+* Part B
+          DO IBP = 1,IPARTBTOT
+*
+            IF(IBP.EQ.IPARTBIDENT) THEN
+              IF(IDENTP.EQ.1) THEN
+                CYCLE
+              ELSE
+                IDENTP = 1
+              END IF
+            END IF
+*
+            DO IGAS =1,NGAS
+* Creator alpha
+              ITEMP(IGAS+0*NGAS) = IAOBEX_TP(IGAS+0*NGAS) 
+* Creator Beta
+              ITEMP(IGAS+1*NGAS) = IBOBEX_TP(IGAS+0*NGAS) +
+     &                             IHOLEB(IGAS,IBH)       +
+     &                             IHOLEB(IGAS,IBH2)
+* Annihilator Alpha
+              ITEMP(IGAS+2*NGAS) = IAOBEX_TP(IGAS+1*NGAS)
+* Annihilator Beta
+              ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS) +
+     &                             IPARTICLEB(IGAS,IBP)
+            END DO
+            CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+            CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
+            IF(IANSWER.EQ.1) THEN
+* We have found an intemediate super group
+              NINTER = NINTER + 1
+              IF(IINI.EQ.1) THEN
+* Store super group
+                CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
+                CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+              END IF
+            END IF
+          END DO
+        END DO
+      END DO
+*
+      RETURN
+      END
+*
+      SUBROUTINE IH1IP1(NGAS,IINI,IP,IH,NINTER,INTER,IKRFLIPMAX,
+     &                  IAOBEX_TP,IBOBEX_TP,
+     &                  IPARTATOT,IPARTBTOT,IPARTICLEA,IPARTICLEB,
+     &                  IPARTAIDENT,IPARTBIDENT,
+     &                  IHOLEATOT,IHOLEBTOT,IHOLEA,IHOLEB,
+     &                  IHOLEAIDENT,IHOLEBIDENT,IALLOWIDENT)
+* For 1 holes and 1 particle
+* Will only allow one identity operator to pass though for given
+* ha,hb,pa,pb
+      IMPLICIT REAL*8(A-H,O-Z)
+* Output
+      INTEGER INTER(4*NGAS,*)
+      INTEGER IHOLEA(NGAS,IHOLEATOT),IHOLEB(NGAS,IHOLEBTOT)
+      INTEGER IPARTICLEA(NGAS,IPARTATOT),IPARTICLEB(NGAS,IPARTBTOT)
+* Input
+      INTEGER IAOBEX_TP(2*NGAS),IBOBEX_TP(2*NGAS)
+* Scratch
+      INTEGER ITEMP(4*NGAS)
+*
+      IF(IALLOWIDENT.EQ.0) THEN
+        IDENTPA = 0
+        IDENTPB = 0
+        IDENTHA = 0
+        IDENTHB = 0
+      ELSE              
+        IDENTPA = 1
+        IDENTPB = 1
+        IDENTHA = 1
+        IDENTHB = 1
+      END IF            
+*
+      DO IAH = 1,IHOLEATOT
+*
+        IF(IAH.EQ.IHOLEAIDENT) THEN
+          IF(IDENTHA.EQ.1) THEN
+            CYCLE
+          ELSE
+            IDENTHA = 1
+          END IF
+        END IF
+*
+        DO IAP = 1,IPARTATOT
+*
+          IF(IAP.EQ.IPARTAIDENT) THEN
+            IF(IDENTPA.EQ.1) THEN
+              CYCLE
+            ELSE
+              IDENTPA = 1
+            END IF
+          END IF
+*
+          DO IGAS =1,NGAS
+* Creator alpha
+            ITEMP(IGAS+0*NGAS) = IAOBEX_TP(IGAS+0*NGAS) +
+     &                           IHOLEA(IGAS,IAH)
+* Creator Beta
+            ITEMP(IGAS+1*NGAS) = IBOBEX_TP(IGAS+0*NGAS)
+* Annihilator Alpha
+            ITEMP(IGAS+2*NGAS) = IAOBEX_TP(IGAS+1*NGAS) +
+     &                           IPARTICLEA(IGAS,IAP)
+* Annihilator Beta
+            ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS)
+          END DO
+          CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+          CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
+          IF(IANSWER.EQ.1) THEN
+* We have found an intemediate super group
+            NINTER = NINTER + 1
+            IF(IINI.EQ.1) THEN
+* Store super group
+              CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
+              CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+            END IF
+          END IF
+        END DO
+      END DO
+*
+      DO IAH = 1,IHOLEATOT
+*
+        IF(IAH.EQ.IHOLEAIDENT) THEN
+          IF(IDENTHA.EQ.1) THEN
+            CYCLE
+          ELSE
+            IDENTHA = 1 
+          END IF
+        END IF
+*
+        DO IBP = 1,IPARTBTOT
+*
+          IF(IBP.EQ.IPARTBIDENT) THEN
+            IF(IDENTPB.EQ.1) THEN
+              CYCLE
+            ELSE
+              IDENTPB = 1
+            END IF
+          END IF
+*
+          DO IGAS =1,NGAS
+* Creator alpha
+            ITEMP(IGAS+0*NGAS) = IAOBEX_TP(IGAS+0*NGAS) +
+     &                           IHOLEA(IGAS,IAH)
+* Creator Beta
+            ITEMP(IGAS+1*NGAS) = IBOBEX_TP(IGAS+0*NGAS)
+* Annihilator Alpha
+            ITEMP(IGAS+2*NGAS) = IAOBEX_TP(IGAS+1*NGAS) 
+* Annihilator Beta
+            ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS) +
+     &                           IPARTICLEB(IGAS,IBP)
+          END DO
+          CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+          CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
+          IF(IANSWER.EQ.1) THEN
+* We have found an intemediate super group
+            NINTER = NINTER + 1
+            IF(IINI.EQ.1) THEN
+* Store super group
+              CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
+              CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+            END IF
+          END IF
+        END DO                   
+      END DO
+*
+      DO IBH = 1,IHOLEBTOT
+*
+        IF(IBH.EQ.IHOLEBIDENT) THEN
+          IF(IDENTHB.EQ.1) THEN
+            CYCLE
+          ELSE
+            IDENTHB = 1
+          END IF
+        END IF
+*
+        DO IAP = 1,IPARTATOT
+*    
+          IF(IAP.EQ.IPARTAIDENT) THEN
+            IF(IDENTPA.EQ.1) THEN
+              CYCLE
+            ELSE
+              IDENTPA = 1
+            END IF
+          END IF 
+*       
+          DO IGAS =1,NGAS
+* Creator alpha         
+            ITEMP(IGAS+0*NGAS) = IAOBEX_TP(IGAS+0*NGAS) 
+* Creator Beta
+            ITEMP(IGAS+1*NGAS) = IBOBEX_TP(IGAS+0*NGAS) +
+     &                           IHOLEB(IGAS,IBH)
+* Annihilator Alpha
+            ITEMP(IGAS+2*NGAS) = IAOBEX_TP(IGAS+1*NGAS) +
+     &                           IPARTICLEA(IGAS,IAP)
+* Annihilator Beta
+            ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS)
+          END DO
+          CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+          CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
+          IF(IANSWER.EQ.1) THEN
+* We have found an intemediate super group
+            NINTER = NINTER + 1
+            IF(IINI.EQ.1) THEN
+* Store super group
+              CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
+              CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+            END IF
+          END IF
+        END DO
+      END DO
+*
+      DO IBH = 1,IHOLEBTOT
+*
+        IF(IBH.EQ.IHOLEBIDENT) THEN
+          IF(IDENTHB.EQ.1) THEN  
+            CYCLE
+          ELSE
+            IDENTHB = 1
+          END IF
+        END IF
+*
+        DO IBP = 1,IPARTBTOT
+*    
+          IF(IBP.EQ.IPARTBIDENT) THEN
+            IF(IDENTPB.EQ.1) THEN
+              CYCLE
+            ELSE
+              IDENTPB = 1
+            END IF
+          END IF 
+*       
+          DO IGAS =1,NGAS
+* Creator alpha         
+            ITEMP(IGAS+0*NGAS) = IAOBEX_TP(IGAS+0*NGAS) 
+* Creator Beta
+            ITEMP(IGAS+1*NGAS) = IBOBEX_TP(IGAS+0*NGAS) +
+     &                           IHOLEB(IGAS,IBH)
+* Annihilator Alpha
+            ITEMP(IGAS+2*NGAS) = IAOBEX_TP(IGAS+1*NGAS) 
+* Annihilator Beta
+            ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS) +
+     &                           IPARTICLEB(IGAS,IBP)
+          END DO
+          CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+          CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
+          IF(IANSWER.EQ.1) THEN
+* We have found an intemediate super group
+            NINTER = NINTER + 1
+            IF(IINI.EQ.1) THEN
+* Store super group
+              CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
+              CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+            END IF
+          END IF
+        END DO
+      END DO
+*
+      RETURN
+      END
+*
+      SUBROUTINE IH1IP0(NGAS,IINI,IP,IH,NINTER,INTER,IKRFLIPMAX,
+     &                  IAOBEX_TP,IBOBEX_TP,
+     &                  IHOLEATOT,IHOLEBTOT,IHOLEA,IHOLEB,
+     &                  IHOLEAIDENT,IHOLEBIDENT,IALLOWIDENT)
+* For 1 holes and 0 particle
+* Will only allow one identity operator to pass though
+      IMPLICIT REAL*8(A-H,O-Z)
+* Output
+      INTEGER INTER(4*NGAS,*)
+      INTEGER IHOLEA(NGAS,IHOLEATOT),IHOLEB(NGAS,IHOLEBTOT)
+* Input
+      INTEGER IAOBEX_TP(2*NGAS),IBOBEX_TP(2*NGAS)
+* Scratch
+      INTEGER ITEMP(4*NGAS)
+*
+      IF(IALLOWIDENT.EQ.0) THEN
+        IDENT = 0
+      ELSE
+        IDENT = 1
+      END IF
+*
+      DO IA = 1,IHOLEATOT
+        IF(IA.EQ.IHOLEAIDENT) THEN
+          IF(IDENT.EQ.1) THEN
+            CYCLE
+          ELSE
+            IDENT = 1
+          END IF
+        END IF
+        DO IGAS =1,NGAS
+* Creator alpha
+          ITEMP(IGAS+0*NGAS) = IAOBEX_TP(IGAS+0*NGAS) +
+     &                         IHOLEA(IGAS,IA)
+* Creator Beta
+          ITEMP(IGAS+1*NGAS) = IBOBEX_TP(IGAS+0*NGAS)
+* Annihilator Alpha
+          ITEMP(IGAS+2*NGAS) = IAOBEX_TP(IGAS+1*NGAS) 
+* Annihilator Beta
+          ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS)
+        END DO
+        CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+        CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
+        IF(IANSWER.EQ.1) THEN
+* We have found an intemediate super group
+          NINTER = NINTER + 1
+          IF(IINI.EQ.1) THEN
+* Store super group
+            CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
+            CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+          END IF
+        END IF
+      END DO
+*
+      DO IB = 1,IHOLEBTOT
+        IF(IB.EQ.IHOLEBIDENT) THEN
+          IF(IDENT.EQ.1) THEN
+            CYCLE
+          ELSE
+            IDENT = 1
+          END IF
+        END IF
+        DO IGAS =1,NGAS
+* Creator alpha
+            ITEMP(IGAS+0*NGAS) = IAOBEX_TP(IGAS+0*NGAS)
+* Creator Beta
+            ITEMP(IGAS+1*NGAS) = IBOBEX_TP(IGAS+0*NGAS) +
+     &                           IHOLEB(IGAS,IB)
+* Annihilator Alpha
+            ITEMP(IGAS+2*NGAS) = IAOBEX_TP(IGAS+1*NGAS)
+* Annihilator Beta
+            ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS)
+        END DO
+        CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
+        CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
+        IF(IANSWER.EQ.1) THEN
+* We have found an intemediate super group
+          NINTER = NINTER + 1
+          IF(IINI.EQ.1) THEN
+* Store super group
+            CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
+            CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
+          END IF
+        END IF
+      END DO
+*
+      RETURN
+      END
+*
+      SUBROUTINE IH0IP1(NGAS,IINI,IP,IH,NINTER,INTER,IKRFLIPMAX,
+     &                  IAOBEX_TP,IBOBEX_TP,
+     &                  IPARTATOT,IPARTBTOT,IPARTICLEA,IPARTICLEB,
+     &                  IPARTAIDENT,IPARTBIDENT,IALLOWIDENT)
 * For 0 holes and 1 particle
 * Will only allow one identity operator to pass though
       IMPLICIT REAL*8(A-H,O-Z)
@@ -5144,23 +6289,32 @@ C           STOP 'HOW DID YOU MANAGE TO GET HERE???'
 * Scratch
       INTEGER ITEMP(4*NGAS)
 *
-      IDENT = 0
-      IH = 0
-      IP = 1
+      IF(IALLOWIDENT.EQ.0) THEN
+        IDENT = 0
+      ELSE
+        IDENT = 1
+      END IF
 *
       DO IA = 1,IPARTATOT
-        IF(IA.EQ.IPARTAIDENT) IDENT = 1
+        IF(IA.EQ.IPARTAIDENT) THEN
+          IF(IDENT.EQ.1) THEN
+            CYCLE
+          ELSE
+            IDENT = 1
+          END IF
+        END IF
         DO IGAS =1,NGAS
 * Creator alpha
-          ITEMP(IGAS+0*NGAS) = IPARTICLEA(IGAS,IA) +
-     &                         IAOBEX_TP(IGAS+0*NGAS)
+          ITEMP(IGAS+0*NGAS) = IAOBEX_TP(IGAS+0*NGAS)
 * Creator Beta
           ITEMP(IGAS+1*NGAS) = IBOBEX_TP(IGAS+0*NGAS)
 * Annihilator Alpha
-          ITEMP(IGAS+2*NGAS) = IAOBEX_TP(IGAS+1*NGAS)
+          ITEMP(IGAS+2*NGAS) = IAOBEX_TP(IGAS+1*NGAS) +
+     &                         IPARTICLEA(IGAS,IA)
 * Annihilator Beta
           ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS)
         END DO
+        CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
         CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
         IF(IANSWER.EQ.1) THEN
 * We have found an intemediate super group
@@ -5168,6 +6322,7 @@ C           STOP 'HOW DID YOU MANAGE TO GET HERE???'
           IF(IINI.EQ.1) THEN
 * Store super group
             CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
+            CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
           END IF
         END IF
       END DO
@@ -5184,13 +6339,14 @@ C           STOP 'HOW DID YOU MANAGE TO GET HERE???'
 * Creator alpha
             ITEMP(IGAS+0*NGAS) = IAOBEX_TP(IGAS+0*NGAS)
 * Creator Beta
-            ITEMP(IGAS+1*NGAS) = IPARTICLEB(IGAS,IB) + 
-     &                           IBOBEX_TP(IGAS+0*NGAS)
+            ITEMP(IGAS+1*NGAS) = IBOBEX_TP(IGAS+0*NGAS)
 * Annihilator Alpha
             ITEMP(IGAS+2*NGAS) = IAOBEX_TP(IGAS+1*NGAS)
 * Annihilator Beta
-            ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS)
+            ITEMP(IGAS+3*NGAS) = IBOBEX_TP(IGAS+1*NGAS) +
+     &                           IPARTICLEB(IGAS,IB)
         END DO
+        CALL WRT_SPOX_TP_CC_KRCC(ITEMP,1)
         CALL CANITBE(ITEMP,IANSWER,IKRFLIPMAX,IH,IP)
         IF(IANSWER.EQ.1) THEN
 * We have found an intemediate super group
@@ -5198,6 +6354,7 @@ C           STOP 'HOW DID YOU MANAGE TO GET HERE???'
           IF(IINI.EQ.1) THEN
 * Store super group
             CALL ICOPVE(ITEMP,INTER(1,NINTER),4*NGAS)
+            CALL WRT_SPOX_TP_CC_KRCC(INTER(1,NINTER),1)
           END IF
         END IF
       END DO
@@ -5228,28 +6385,35 @@ C           STOP 'HOW DID YOU MANAGE TO GET HERE???'
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "crun.inc"
+#include "dgroup.h"
 *
       INTEGER IOP(4*NGAS)
 *
       IANSWER = 0
 *
 * Conservation of particle number
+      ICONS = 0
       DO IGAS =1,NGAS
         ICONS = IOP(IGAS+0*NGAS) + 
      &          IOP(IGAS+1*NGAS) -
      &          IOP(IGAS+2*NGAS) -
-     &          IOP(IGAS+3*NGAS)
+     &          IOP(IGAS+3*NGAS) +
+     &          ICONS
       END DO
       IF(ICONS.NE.0) RETURN
+      print*,' we have conservation'
 *
 * Particle rank cannot excede max excitation level
+      IPART = 0
       DO IGAS =1,NGAS
         IPART = IOP(IGAS+0*NGAS) + 
      &          IOP(IGAS+1*NGAS) +
      &          IOP(IGAS+2*NGAS) +
-     &          IOP(IGAS+3*NGAS)
+     &          IOP(IGAS+3*NGAS) +
+     &          IPART
       END DO
       IF(IPART.GT.2*MX_EXC_LEVEL) RETURN
+      print*,'not too highly excited'
 *
 * Must contain the correct number of holes and particles
       NHOLE = 0
@@ -5285,28 +6449,46 @@ C           STOP 'HOW DID YOU MANAGE TO GET HERE???'
           END IF
         END DO
       END DO
-      IF(IH.GT.NHOLE.AND.IP.GT.NPART) RETURN
+      print*,'NHOLE,NPART',NHOLE,NPART
+      IF(IH.NE.NHOLE.AND.IP.NE.NPART) RETURN
+      print*,' right number of holes '
+      
 *
 * Is this an allowed operator in the GAS
       DO IGAS=1,NGAS
         ICOMP = 0
+        print*,'NFSYM',NFSYM
         DO J=1,NFSYM
           ICOMP = ICOMP + NGSSH(J,IGAS)
         END DO
+        print*,'ICOMP',ICOMP
         IF(IOP(IGAS+0*NGAS).GT.ICOMP) RETURN
         IF(IOP(IGAS+1*NGAS).GT.ICOMP) RETURN
         IF(IOP(IGAS+2*NGAS).GT.ICOMP) RETURN
         IF(IOP(IGAS+3*NGAS).GT.ICOMP) RETURN
       END DO
+      print*,' operator allowed for GAS'
 *
 * Kramers flipping of operator
+      IKRFLIP = 0
       DO IGAS =1,NGAS
         IKRFLIP = IOP(IGAS+0*NGAS) -
      &            IOP(IGAS+1*NGAS) -
      &            IOP(IGAS+2*NGAS) +
-     &            IOP(IGAS+3*NGAS)
+     &            IOP(IGAS+3*NGAS) +
+     &            IKRFLIP
       END DO
       IF(ABS(IKRFLIP).GT.IKRFLIPMAX) RETURN
+      print*,' I flip ok '
+*
+* Even or Odd Kramers flip
+      IF(NZ.LT.4) THEN
+        IKRFLIP = IKRFLIP/2
+        print*,'IKRFLIP',IKRFLIP
+        CALL EVENODD(ITEST,ABS(IKRFLIP))
+        IF(ITEST.EQ.1) RETURN
+        print*,' even KRAMERS FLIP'
+      END IF
 *
 * An operator has been found
       IANSWER = 1
@@ -6032,7 +7214,7 @@ C
       SUBROUTINE ACT_SPOBEX_OBEX_KRCC(IFLAG,IOBEX_TP,NGAS,NOPEN,
      &           NSPCOMP_F,ISPCOMP_F,NSPCOMP_ACT,ISPCOMP_ACT,
      &           NOBPT,IMSCOMB,IACT_SPC,IAAEXC,IREF_AL,IREF_BE,
-     &           IREFSPC,NAEL,NBEL)
+     &           IREFSPC,NAEL,NBEL,IRECOM)
 *
 * A set of spincomponents, ISCOMP_F  of an orbital excitation
 * is given. Find the number of spinorbital excitations consistent
@@ -6076,7 +7258,7 @@ C
 *.Output
       INTEGER ISPCOMP_ACT(4*NGAS,*)
 *
-      NTEST = 00
+      NTEST = 100
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' ACT_SPOEX....: Orbital excitation '
         CALL IWRTMA(IOBEX_TP,1,2*NGAS,1,2*NGAS)
@@ -6201,6 +7383,23 @@ C And T will always be from hole to particle
         END IF
 C        IREFSPC = IREFSPCS
 *
+* New check by lasse for the Kramers flip
+*
+        IF(I_AM_OKAY.EQ.1.AND.I_EXCLUDE.EQ.0) THEN
+* No need to check if it allready not okay
+          IMK2 = 0
+          DO IGAS = 1,NGAS
+            IMK2 = NCA(IGAS) - NCB(IGAS) - NAA(IGAS) + NAB(IGAS) + IMK2
+          END DO
+          IMK2 = IMK2/2
+          print*,'IMK2,IRECOM',IMK2,IRECOM
+          IF(IRECOM.EQ.1) THEN
+            CALL EVENODD(ITEST,ABS(IMK2))
+            IF(ITEST.EQ.1) I_AM_OKAY = 0
+          END IF
+        END IF
+
+*
         IF(I_AM_OKAY.EQ.1.AND.I_EXCLUDE.EQ.0) THEN
 *. All test passed, welcome to the included
           NSPCOMP_ACT = NSPCOMP_ACT+1
@@ -6308,3 +7507,196 @@ C     Double group
       RETURN
       END
 *
+      SUBROUTINE FIND_MUB(IEXCITE,IKRFLIP,IVEC)
+*
+* Find the possible MUB values for a given Kramers flip
+*
+#include "implicit.inc"
+*
+      INTEGER IVEC(0:IEXCITE,0:IKRFLIP,-IEXCITE:IEXCITE)
+*
+      NTEST = 100
+*
+      DO I = 0,IEXCITE
+        DO J = 0,MIN(I,IKRFLIP)
+          IMUBMAX = I-J
+          DO K = -IMUBMAX,IMUBMAX,2
+            IVEC(I,J,K) = K
+          END DO
+        END DO
+      END DO
+*
+      IF(NTEST.GE.100) THEN
+      WRITE(6,*) ' All possible Mub values for given N and Mk'
+        DO I = 0,IEXCITE
+          DO J = 0,MIN(I,IKRFLIP)
+            IMUBMAX = I-J
+            WRITE(6,*) ' N ',I,' Mk ',J
+            WRITE(6,*) ' Mub Range '
+            DO K = -IMUBMAX,IMUBMAX,2
+              WRITE(6,*) K
+            END DO
+          END DO
+        END DO
+      END IF
+*
+      RETURN
+      END
+*
+      SUBROUTINE SORT_OP_3_INDEX(IOP,IDIMOP,NGAS,
+     &                           IEXCITE,IKRFLIP,
+     &                           IVECS,IVECF,
+     &                           IVECH,IHELP_OP,IHELP_IDX)
+*
+* Will sort the operator according to N,Mk,Mub and return the sorted
+* operator along with position of and operator with given  N,Mk,Mub in
+* new sorting
+*
+#include "implicit.inc"
+*
+      INTEGER IVECS(0:IEXCITE,-IKRFLIP:IKRFLIP,-IEXCITE:IEXCITE)
+      INTEGER IVECF(0:IEXCITE,-IKRFLIP:IKRFLIP,-IEXCITE:IEXCITE)
+      INTEGER IVECH(0:IEXCITE,-IKRFLIP:IKRFLIP,-IEXCITE:IEXCITE)
+      INTEGER IOP(4*NGAS,IDIMOP)
+      INTEGER IHELP_OP(4*NGAS,IDIMOP),IHELP_IDX(IDIMOP)
+*
+      NTEST = 100
+*
+* Find the number of operators with given N,Mk,Mub
+*
+      print*,'NGAS,IDIMOP',NGAS,IDIMOP
+      DO I =1,IDIMOP
+        CALL ANALYZE_OP(IOP(1,I),NGAS,N,MK,MUB)
+        IVECS(N,MK,MUB) = IVECS(N,MK,MUB) + 1
+        print*,'IVECS(N,MK,MUB),N,MK,MUB',IVECS(N,MK,MUB),N,MK,MUB
+      END DO
+*
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Number of operators of given N,Mk,Mub '
+        DO I = 0,IEXCITE
+          DO J = -IKRFLIP,IKRFLIP
+            DO K = -IEXCITE,IEXCITE
+              IF(IVECS(I,J,K).GT.0) THEN
+                WRITE(6,*) IVECS(I,J,K),' Operators with ',
+     &                     'N ',I,' Mk',J,' Mub ',K
+              END IF
+            END DO
+          END DO
+        END DO
+      END IF
+*
+* Want to store operators as N,-Mk to Mk,-Mub to Mub at the moment!!!
+* Therefore find the range where an operator can be stored
+*
+      ISUM = 0
+*
+      DO I =0,IEXCITE
+        DO J = -IKRFLIP,IKRFLIP
+          DO K = -IEXCITE,IEXCITE
+            ISUM = ISUM + IVECS(I,J,K)
+            IVECF(I,J,K) = ISUM 
+            IVECS(I,J,K) = ISUM - IVECS(I,J,K) + 1
+          END DO
+        END DO
+      END DO
+*
+      IF(NTEST.GE.100) THEN
+        IDIFF = 0
+        WRITE(6,*) ' Start and finish for Operators '
+        DO I =0,IEXCITE
+          DO J = -IKRFLIP,IKRFLIP
+            DO K = -IEXCITE,IEXCITE
+              IF(IVECF(I,J,K)-IVECS(I,J,K).GE.0) THEN
+                WRITE(6,*) ' Operators with ',
+     &                     'N ',I,' Mk',J,' Mub ',K,
+     &                     ' begins ',IVECS(I,J,K),
+     &                     ' ends ',IVECF(I,J,K)
+                IDIFF = IDIFF + 1
+              END IF
+            END DO
+          END DO
+        END DO
+        WRITE(6,*) ' Number of different operators ',IDIFF
+      END IF
+*
+* Now find the new place for the operators and copy to temp array
+*
+      DO I =1,IDIMOP
+        CALL ANALYZE_OP(IOP(1,I),NGAS,N,MK,MUB)
+        IHELP_IDX(I) = IVECS(N,MK,MUB) + IVECH(N,MK,MUB)
+        CALL ICOPVE(IOP(1,I),IHELP_OP(1,IHELP_IDX(I)),4*NGAS)
+        IVECH(N,MK,MUB) = IVECH(N,MK,MUB) + 1
+      END DO
+*
+      IF(NTEST.GE.100) THEN
+        DO I =1,IDIMOP
+          WRITE(6,*) ' Original order ',I,' New order ',IHELP_IDX(I)
+        END DO
+      END IF
+*
+* Copy operators from temp array back again
+*
+      DO I =1,IDIMOP
+        CALL ICOPVE(IHELP_OP(1,I),IOP(1,I),4*NGAS)
+      END DO
+*
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' New order of operators '
+        CALL WRT_SPOX_TP_CC_KRCC(IOP,IDIMOP)
+      END IF
+*
+      RETURN
+      END
+*
+      SUBROUTINE ANALYZE_OP(IOP,NGAS,N,MK,MUB)
+*
+* Will give N,MK,MUB of any operator
+*
+#include "implicit.inc"
+*
+      INTEGER IOP(4*NGAS)
+*
+      NTEST = 100
+*
+      NCA = 0
+      NCB = 0
+      NAA = 0
+      NAB = 0
+*
+* Find number of creator and annihilators of alpha and beta
+*
+      DO IGAS =1,NGAS
+* Creator alpha
+        NCA = NCA + IOP(IGAS+0*NGAS) 
+* Creator Beta
+        NCB = NCB + IOP(IGAS+1*NGAS) 
+* Annihilator Alpha
+        NAA = NAA + IOP(IGAS+2*NGAS)
+* Annihilator Beta
+        NAB = NAB + IOP(IGAS+3*NGAS)
+      END DO
+      print*,'NCA,NCB,NAA,NAB,NGAS',NCA,NCB,NAA,NAB,NGAS
+*
+* Particle rank
+*
+      N = (NCA + NCB + NAA + NAB)/2
+*
+* Kramers flip
+*
+      MK = (NCA - NCB - NAA + NAB)/2
+*
+* Mub
+*
+      MUB = (NCA - NCB + NAA - NAB)/2
+*
+      IF(NTEST.EQ.100) THEN
+        WRITE(6,*) ' Information from ANALYZE_OP '
+        CALL WRT_SPOX_TP_CC_KRCC(IOP,1)
+        WRITE(6,*) ' Analysis results '
+        WRITE(6,*) ' Particle rank = ',N
+        WRITE(6,*) ' Kramers flip  = ',MK
+        WRITE(6,*) ' MUB           = ',MUB
+      END IF
+*
+      RETURN
+      END
