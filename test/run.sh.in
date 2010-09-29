@@ -35,9 +35,9 @@ fi
 #
 EXIT=0 
 if [ -n "$TIMEOUT" ]; then
-$PAM_PATH/pam -dirac $DIRAC $NICE -run $TAG -timeout $TIMEOUT -rmwrk -clean $MPIARG $* $MOL $MENU || EXIT=1
+   $PAM_PATH/pam -dirac $DIRAC $NICE -run $TAG -timeout $TIMEOUT -rmwrk -clean $MPIARG $* $MOL $MENU || EXIT=1
 else
-$PAM_PATH/pam -dirac $DIRAC $NICE -run $TAG -rmwrk -clean $MPIARG $* $MOL $MENU || EXIT=1
+   $PAM_PATH/pam -dirac $DIRAC $NICE -run $TAG -rmwrk -clean $MPIARG $* $MOL $MENU || EXIT=1
 fi
 #
 # Finished : either regular or with a crash. Make two branches.
@@ -62,13 +62,13 @@ fi
   if [ -z "$FILTER" ]; then
      FILTER=filter
   fi
-  test_text='ok'
+  test_text='OK'
   if [ ! -s result/$OLDOUT ]; then
      test_text="reference output result/$OLDOUT not found"
   elif [ ! -s result/$FILTER ]; then
      test_text="test filter result/$FILTER not found"
   fi
-  if [ "$test_text" != "ok" ]; then
+  if [ "$test_text" != "OK" ]; then
 #
 # No reference file to compare to or no filter file
 #
@@ -115,14 +115,14 @@ fi
 #
    if [ -s ${NEWOUT}_dif.txt ]; then
       echo " Test `pwd` $MOL $MENU failed : output not consistent with reference output" >>${LOG}/${TAG}_dif.txt
-      echo " Test `pwd` $MOL $MENU failed : output not consistent with reference output" > /dev/stderr
+      echo " :-( Test `pwd` $MOL $MENU failed : output not consistent with reference output" > /dev/stderr
    else
 #
 #     This strange construction (cat an empty file) is needed to make sure that the log file
 #     exists to enable similar checking (using if -e and then if -s) in the testlast script.
 #
       cat ${NEWOUT}_dif.txt >>${LOG}/${TAG}_dif.txt
-      echo " Ok: `pwd` $MOL $MENU" > /dev/stderr
+      echo " OK: `pwd` $MOL $MENU" > /dev/stderr
    fi
 #
 else
@@ -135,7 +135,7 @@ else
   echo "<FONT COLOR="#FF0000"> `pwd` : $MOL $MENU failed </FONT>" >>${LOG}/${TAG}_dif.htm
   echo " <HR>"                                                    >>${LOG}/${TAG}_dif.htm
   echo " Test `pwd` $MOL $MENU failed : runtime error (DIRAC crashed)" >>${LOG}/${TAG}_dif.txt
-  echo " Test `pwd` $MOL $MENU failed : runtime error (DIRAC crashed)" > /dev/stderr
+  echo " :-( :-( Test `pwd` $MOL $MENU failed : runtime error (DIRAC crashed)" > /dev/stderr
 #
 fi
 #
