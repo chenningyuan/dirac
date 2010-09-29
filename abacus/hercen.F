@@ -287,7 +287,7 @@
 !       6      KINBAL      Generate the small component basis by kinetic balance
 !
       CALL RDLINE(LUINFO)
-      READ (MLINE(NMLINE),'(A5,X,A14)') BSET,BSKEYWORD
+      READ (MLINE(NMLINE),'(A5,1X,A14)') BSET,BSKEYWORD
 !
       SELECT CASE (BSET)
       CASE ("LARGE")
