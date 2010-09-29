@@ -3423,7 +3423,8 @@ C
      &         'Error in basis set reading ALPHA(L),'//
      &         '(CPRIMU(L,M), M = 1, MIN(NRCIJ,NCOL - 1))')
               ENDIF
-              DO 200 K = 2, (NRCIJ - 1)/(NCOL - 1) + 1
+
+              DO K = 2, (NRCIJ - 1)/(NCOL - 1) + 1
                  CALL RDLINE(LUINFO)
                  READ (MLINE(NMLINE),FMT2,IOSTAT=IOS) (CPRIMU(L,M),
      &              M = 1 + (NCOL-1)*(K-1), MIN(NRCIJ,(NCOL-1)*K))
@@ -3432,7 +3433,7 @@ C
                    WRITE(LUPRI,*) MLINE(NMLINE)
                    CALL QUIT('Error in basis set reading...') 
                  ENDIF
-  200         CONTINUE
+              END DO
            END IF
   100   CONTINUE
       ELSE
@@ -3950,8 +3951,9 @@ C
 #include "nuclei.h"
 #include "primit.h"
 #include "fitprimit.h"
-      CHARACTER CHRSEG*10,DEG*2
-      LOGICAL SEG, NRMPRI
+      CHARACTER    CHRSEG*10,DEG*2
+      CHARACTER*60 FMTA, FMTB, FMTC, FMTD
+      LOGICAL      SPHER, SEG, NRMPRI
       DIMENSION NONT(KATOM),IQM(KATOM),NBLCK(KATOM),
      &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK),
@@ -3986,14 +3988,14 @@ C
 #else
       ELSEIF(ICLS.EQ.3) THEN
         IPRIMD = NPLRG + NPSML
-        IPRIM  = NPLSH + NPSSH 
+        IPRIM  = NPLSH + NPSSH
       ELSEIF(ICLS.EQ.4) THEN
         write(*,*) 'independent S- fit set inexistent, not printed'
         GOTO 4242
 #endif
       ENDIF
 #if defined (DIRAC_DENSFIT_DEBUG)
-      write (*,*) 'in orbout: iprimd=',iprimd,' iprim=',iprim
+      write (lupri,*) 'in orbout: iprimd=',iprimd,' iprim=',iprim
 #endif
       ICENT  = 0
       IBLOCK = 0
@@ -4010,24 +4012,22 @@ C
             IF (NNUC .EQ. 0) GO TO 200
                ITYP = NHKOFF(J)
                IPSTRT = IPRIM + 1
-               IPRIM =  IPRIM + NNUC
+               IPRIM  =  IPRIM + NNUC
                IF (SEG(KBCH)) THEN
                   CHRSEG = 'seg. cont.'
                ELSE
                   CHRSEG = 'gen. cont.'
                END IF
                IF (NNRC .LE. 5) THEN
-!MI: gfortran accepts ASSIGN, but issues misleading warning "Deleted
-!feature" (http://gcc.gnu.org/ml/fortran/2008-08/msg00257.html)
-                  ASSIGN 1000 TO IFMTA
-                  ASSIGN 1010 TO IFMTB
-                  ASSIGN 1020 TO IFMTC
-                  ASSIGN 1030 TO IFMTD
+                  FMTA='(/2X,A4,A2,1X,A4,I4,1P,D18.10,0P,2X,5F8.4)'
+!                 FMTB='(/2X,A4,3X,   A4,I4,1P,D18.10,0P,2X,5F8.4)'
+                  FMTC='( 3X,A10,        I4,1P,D18.10,0P,2X,5F8.4)'
+                  FMTD='(13X,            I4,1P,D18.10,0P,2X,5F8.4)'
                ELSE
-                  ASSIGN 1005 TO IFMTA
-                  ASSIGN 1015 TO IFMTB
-                  ASSIGN 1025 TO IFMTC
-                  ASSIGN 1035 TO IFMTD
+          FMTA='(/2X,A4,A2,1X,A4,I4,1P,D18.10,0P,2X,5F8.4/,(37X,5F8.4))'
+!         FMTB='(/2X,A4,3X,   A4,I4,1P,D18.10,0P,2X,5F8.4/,(37X,5F8.4))'
+          FMTC='( 3X,A10,        I4,1P,D18.10,0P,2X,5F8.4/,(37X,5F8.4))'
+          FMTD='(13X,            I4,1P,D18.10,0P,2X,5F8.4/,(37X,5F8.4))'
                END IF
                DEG = '  '
                DO 400 L = 1, NDEG
@@ -4044,12 +4044,12 @@ CC                     IF (ICLS.LE.4) THEN
      &                            'gtotyp=',gtotyp(ityp),'nhkoff(j)',
      &                            nhkoff(j)
 #endif
-                       WRITE (LUPRI,IFMTA) NAMN(ICENT),DEG,
+                       WRITE (LUPRI,FMTA)  NAMN(ICENT),DEG,
      &                                     GTOTYP(ITYP),
      &                                     IPRIMD,PRIEXP(IPSTRT),
      &                                     (CPRIMU(1,MM,KBCH),MM=1,NNRC)
 C                      ELSE
-C                      WRITE (LUPRI,IFMTA) NAMN(ICENT),DEG,
+C                      WRITE (LUPRI,FMTA)  NAMN(ICENT),DEG,
 C    &                                     GTOTYP(ITYP),
 C    &                                     IPRIMD,PRIEXP_FIT(IPSTRT),
 C    &                                     (CPRIMU(1,MM,KBCH),MM=1,NNRC)
@@ -4059,11 +4059,11 @@ CC                    ENDIF
                         IPRIMD = IPRIMD + 1
                         IF (IPREAD .GT. 0) THEN
 CC                         IF (ICLS.LE.3) THEN
-                           WRITE (LUPRI,IFMTC) CHRSEG,
+                           WRITE (LUPRI,FMTC) CHRSEG,
      &                                     IPRIMD,PRIEXP(IPSTRT+1),
      &                                     (CPRIMU(2,MM,KBCH),MM=1,NNRC)
 C                          ELSE
-C                          WRITE (LUPRI,IFMTC) CHRSEG,
+C                          WRITE (LUPRI,FMTC) CHRSEG,
 C    &                                     IPRIMD,PRIEXP_FIT(IPSTRT+1),
 C    &                                     (CPRIMU(2,MM,KBCH),MM=1,NNRC)
 CC                         ENDIF
@@ -4072,13 +4072,13 @@ CC                         ENDIF
                      DO 410 M = 3, NNUC
                         IPRIMD = IPRIMD + 1
                         IF (IPREAD .GT. 0) THEN
-                      IF (ICLS.LE.3) THEN
-                      WRITE (LUPRI,IFMTD) IPRIMD,PRIEXP(IPSTRT-1+M),
+                          IF (ICLS.LE.3) THEN
+                           WRITE (LUPRI,FMTD) IPRIMD,PRIEXP(IPSTRT-1+M),
      &                                     (CPRIMU(M,MM,KBCH),MM=1,NNRC)
-C                     ELSE
-C                     WRITE (LUPRI,IFMTD) IPRIMD,PRIEXP_FIT(IPSTRT-1+M),
+C                         ELSE
+C                     WRITE (LUPRI,FMTD) IPRIMD,PRIEXP_FIT(IPSTRT-1+M),
 C    &                                     (CPRIMU(M,MM,KBCH),MM=1,NNRC)
-                      ENDIF
+                          END IF
                        END IF
   410              CONTINUE
   300            CONTINUE
@@ -4087,14 +4087,6 @@ C    &                                     (CPRIMU(M,MM,KBCH),MM=1,NNRC)
   110    CONTINUE
          IBLOCK = IBLOCK + NBLCK(I)
   100 CONTINUE
- 1000 FORMAT(/2X,A4,A2,1X,A4,I4,1P,D18.10,0P,2X,5F8.4)
- 1010 FORMAT(/2X,A4,3X,   A4,I4,1P,D18.10,0P,2X,5F8.4)
- 1020 FORMAT( 3X,A10,        I4,1P,D18.10,0P,2X,5F8.4)
- 1030 FORMAT(13X,            I4,1P,D18.10,0P,2X,5F8.4)
- 1005 FORMAT(/2X,A4,A2,1X,A4,I4,1P,D18.10,0P,2X,5F8.4/,(37X,5F8.4))
- 1015 FORMAT(/2X,A4,3X,   A4,I4,1P,D18.10,0P,2X,5F8.4/,(37X,5F8.4))
- 1025 FORMAT( 3X,A10,        I4,1P,D18.10,0P,2X,5F8.4/,(37X,5F8.4))
- 1035 FORMAT(13X,            I4,1P,D18.10,0P,2X,5F8.4/,(37X,5F8.4))
 C
       IF (NRMPRI) RETURN
 C
