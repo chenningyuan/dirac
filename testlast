@@ -107,7 +107,7 @@ while [ $# != 0 ]; do
          ;;
       *)
          $echo "Invalid argument: ${arg}"
-         $echo "NOTE: $0 does not accept any arguments!"
+         $echo "NOTE: $0 does not accept any arguments, only options!"
          $echo $usage
          exit 
    esac
