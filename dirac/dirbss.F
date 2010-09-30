@@ -1317,7 +1317,6 @@ C****************************************************************************
 #include "dgroup.h"
       DIMENSION IBEIG(*)
       LOGICAL FNDLAB
-      CALL QENTER('INI_SF_RKB')
 
 C     ... initialize NORB_SUB(IB,IFRP,0),ID_SUB_BL(IB,IFRP)
       CALL INISUB
@@ -1326,13 +1325,15 @@ C     ... run over fermion symmetries ...
        CALL INIBOS(IBEIG(1+IORB(I)),I,.TRUE.,IPRINT)
       ENDDO
 
-C    ... do write the boson irreps (Trond's approach) into the BSSMAT file !
+C    ... write the boson irreps (Trond's approach) into the BSSMAT file !
       ISIZE = NORB(1)                                 
       IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)         
       CALL W2BSSMAT(1,.TRUE.,'IBOS_ONB','INI_SF_RKB',
      &              IBEIG,ISIZE,LUBSS,IPRINT)
-
-      CALL QEXIT('INI_SF_RKB')
+      IF (IPRINT.GE.2) THEN
+         WRITE(LUPRI,'(2X,A)')
+     &   'INI_SF_RKB: IBEIG (IBOS_ONB) written to BSSMAT'
+      ENDIF
       RETURN
       END
 
@@ -1438,7 +1439,7 @@ C****************************************************************************
         WRITE(LUPRI,'(2X,A)') 
      & 'TEST_DIAG_MTX: WARNING, sum of diagonal elements/N'//
      &' of a unit matrix differs too much from 1!'
-       CALL FLSHFO(LUPRI)
+        CALL FLSHFO(LUPRI)
       ENDIF
 
       IF (DABS(SUM_ODE-D0).GT.THRNULL) THEN 
@@ -3266,15 +3267,15 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       WRITE(LUPRI,'(/,2X,A,A,A)')
      & '=====  PRINT_IBEIG called from ',CALLED_FROM,'  ====='
       DO I=1,NFSYM
-         WRITE(LUPRI,'(2X,A,I2,A,I1)')
+         WRITE(LUPRI,'(2X,A,I2,A,I1,1X,A,I4)')
      &   '* boson symmetries for fermion corep ',
-     &   I,' /',NFSYM
-         WRITE(LUPRI,*) ' ...negative states:'
+     &   I,' /',NFSYM,':  # of orbitals:',NORB(I)
+         WRITE(LUPRI,*) ' ...negative ("positronic") states:'
          DO J=1,NPSH(I)
            WRITE(LUPRI,'(8X,I3,A,I2)')
      &     -(NPSH(I)-J+1),"--->",IBEIG(IORB(I)+J)
          ENDDO
-         WRITE(LUPRI,*) ' ...positive states:'
+         WRITE(LUPRI,*) ' ...positive (electronic) states:'
          DO J=1,NESH(I)
            WRITE(LUPRI,'(8X,I3,A,I2)')
      &     J,"--->",IBEIG(IORB(I)+NPSH(I)+J)
@@ -3935,6 +3936,7 @@ C
 C    On input:
 C  ------------
 C    TBUF - BNDH in ON RKB / FP "k" basis
+C    IBEIG - only helping array for QCHOLD/QCHOLS, its content is hurt !
 C
 C   On output:
 C  ------------
@@ -4717,6 +4719,7 @@ C   -----------
 C    TBUF -  H2c(ee) in ON MO basis RKB/"k"
 C    WRITEH2C - variable that decides to assign the label of H_DK 1 el.
 C              transformed elements.
+C    IBEIG - array to be refilled with boson info (from BSSMAT)
 C
 C    On output: H2c in SA-AO is written to the file...
 C   ------------
@@ -4743,17 +4746,14 @@ C ... assumes that H2C_ONBA is in FP "k" basis !
       TRAFPRKB = .FALSE.
 C .... NEED TO INTERCHANGE  VARIABLES !!!
       IF (TRAFPRKB.AND.FPB) THEN
-
 C  ... read the transformation matrix "k" -> "theta"
-
       ISIZE = NORB(1)*NORB(1)*NZ
       IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NORB(2)*NZ
       CALL RFBSSMAT('FPMAT_TH',.TRUE.,'H2CFINAL',
      &               TBUF,ISIZE,LUBSS,IPRINT)
-
       IF (IPRINT.GE.3) THEN
         WRITE(LUPRI,'(/2X,A)')
-     &  'FPMAT_TH read into TBUF.'
+     &  'H2CFINAL: FPMAT_TH read into TBUF.'
       ENDIF
 
       IVMAT = 1
@@ -4831,6 +4831,21 @@ C            write(lupri,*) 'elem:',ICX,IBUFX+ICX,TBUF(IBUFX+ICX)
 
       ENDIF
       ENDDO 
+      ENDIF ! end of test sequence
+
+      IF (SPFR.OR.SAVESO1.OR.FPB.OR.SPFR_BEG) THEN
+CMI ... take care of IBEIG, because it is used further 
+      ISIZE =  NORB(1)            
+      IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)
+      CALL RFBSSMAT('IBOS_ONB',.TRUE.,'H2CFINAL',IBEIG,
+     &                ISIZE,LUBSS,IPRINT)
+      IF (IPRINT.GE.3) THEN
+         WRITE(LUPRI,'(2X,A)')                        
+     &   'H2CFINAL: IBEIG was read from BSSMAT' 
+         IF (IPRINT.GE.5) THEN
+           CALL PRINT_IBEIG(IBEIG,'H2CFINAL')
+         ENDIF
+      ENDIF
       ENDIF
 
 C    ... do add SO1  terms in MO into TBUF !!!
@@ -4854,7 +4869,7 @@ C    ... do add SO1  terms in MO into TBUF !!!
          N2EQ = NESH(I)*NESH(I)*NZ
          IF (IPRINT.GE.5) THEN
            CALL HEADER(
-     & 'H2CFINAL: H1_SO1 in ON  RKB/"k" basis, TMAT',-1)
+     & 'H2CFINAL: H1_SO1 in ON RKB/"k" basis, TMAT',-1)
            WRITE(LUPRI,'(/3X,A,I2,A,I1/)')
      & '*** Fermion corep ',I,' /',NFSYM
            CALL PRQMAT(TMAT(IMAT),NESH(I),NESH(I),
@@ -6421,13 +6436,10 @@ C     ... read bosonic symmetries on orbitals
      &               ISIZE,LUBSS,IPRHAM)
       IF (IPRHAM.GE.3) THEN
          WRITE(LUPRI,'(/2X,A)')                        
-     &   'FDTR2C: IBEIG was read from BSSMAT:'     
-         DO J=1, NFSYM
-          write(lupri,*) '> ifsym=',J,'/',NFSYM,
-     &     ' Norbs=',NORB(J),
-     &     ' * boson irreps: ',
-     &    (IBEIG(IORB(J)+K),K=1,NORB(J))
-         ENDDO
+     &   'FDTR2C: IBEIG was read from BSSMAT'
+         IF (IRPINT.GE.5) THEN
+           CALL PRINT_IBEIG(IBEIG,'FDTR2C')
+         ENDIF
        ENDIF
 
       ISIZE = NORB(1)*NORB(1)*NZ      
