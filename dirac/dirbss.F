@@ -388,10 +388,11 @@ C     1. Write transformation matrices to file BSSMAT
 
 C      ... allocate more memmory 
       CALL MEMGET('INTE',KIBEIG,NTBAS(0),WORK,KFREE,LFREE)
+      !CALL IZERO(WORK(KIBEIG),NTBAS(0))
       CALL MEMGET('REAL',KFACKIN,NTBAS(1),WORK,KFREE,LFREE)
 
 C ===============================================================
-C ===       Do prepare the free particle (FP) basis "k"
+C ===       Prepare the free particle (FP) basis "k"
 C ===============================================================
       IF (FPB) THEN
 C generate free particle one-electron matrix in RKB ON basis "theta"
@@ -445,13 +446,10 @@ C        ... we need additional integer array...
           IF (ISIZE.LT.NORB(2)) ISIZE=NORB(2)
          ENDIF
 
-         !CALL MEMGET('INTE',KIPIVOT,ISIZE,WORK,KFREE,LFREE)
-
 C        ... both for FPM "k" & RKB 
          CALL GET_HINF_R(WORK(KTBUF),WORK(KTMAT),VMAT,WORK(KFACKIN),
      &                   WORK(KEIG),WORK(KIBEIG),FPB,YREQ1,
      &               GETPCTM,SF_BEG,WORK(KFREE),LFREE,IPRHAM)
-         !CALL MEMREL('AFTER_INF_R',WORK,KWORK,KIPIVOT,KFREE,LFREE)
 
         ENDIF
 C =======================================================================
@@ -1923,16 +1921,11 @@ C****************************************************************************
      &  '..eliminating SPIN-FREE TERMS..'
        ENDIF
        WRITE(LUPRI,'(2X,A)')
-     & 'SPF_HK: Entering |k> boson symmetries of index 1:'
+     & 'SPF_HK: Entering RKB/"|k>" ON basis boson symmetries:'
        DO I = 1, NROW
         WRITE(LUPRI,'(5X,A,I3,3X,A,I2)')
-     &  'orbital: ',I,'boson symmetry:',IBS1(I)+1
-       ENDDO
-       WRITE(LUPRI,'(2X,A)')
-     & 'SPH_HK: Entering |k> boson symmetries of index 2:'
-       DO I = 1, NCOL
-        WRITE(LUPRI,'(5X,A,I3,3X,A,I2)')
-     &  'orbital: ',I,'boson symmetry:',IBS2(I)+1
+!     &  'orbital: ',I,'boson symmetry:',IBS1(I)+1
+     &  'orbital: ',I,'boson symmetry:',IBS1(I)
        ENDDO
       ENDIF
 
@@ -2373,16 +2366,14 @@ C      VMAT =  TMAT+ * TBUF * TMAT
       ITMAT = 1
       DO I = 1,NFSYM
       IF(NORB(I).GT.0) THEN
-
         IF (IPRHAM.GE.7) THEN
            CALL HEADER(
-     &  'MAKE_FPM: Free particle matrix in SA-AO basis "xhi"'//
-     &  ' (after call FREEMT)',-1)
+     &     'MAKE_FPM: Free particle matrix in SA-AO basis "xhi"'//
+     &     ' (after call FREEMT)',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &     '*** Fermion corep ',I,'/',NFSYM
            CALL PRQMAT(TBUF(I2BASX(I,I)+1),NFBAS(I,0),NFBAS(I,0),
      &                 NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
-
            CALL HEADER(
      &     'MAKE_FPM: ENTERING RKB transf. matrix "xhi"->"theta"'//
      &     ' (nonlinear symmetry!), TMAT',-1)
@@ -2390,7 +2381,6 @@ C      VMAT =  TMAT+ * TBUF * TMAT
      &     '*** Fermion corep ',I,'/',NFSYM
            CALL PRQMAT(TMAT(ITMAT),NFBAS(I,0),NORB(I),
      &                 NFBAS(I,0),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
-
         ENDIF
 
         CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
@@ -2608,10 +2598,11 @@ C ===============================================================
 C    ... write also boson irreps...
        ISIZE = NORB(1)
        IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)
-
        CALL W2BSSMAT(3,.TRUE.,'IBOS_ONB','MAKE_FPM',
      &                IBEIG,ISIZE,LUBSS,IPRHAM)
-
+       IF (IPRHAM.GE.5) THEN
+         CALL PRINT_IBEIG(IBEIG,'MAKE_FPM')
+       ENDIF
        IF (IPRHAM.GE.3) THEN
        WRITE(LUPRI,'(/2X,A)')
      & 'MAKE_FPM: IBOS_ONB (boson irreps) of the free-particle basis'//
@@ -2629,7 +2620,6 @@ C    ... write also boson irreps...
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*          
-C  /* Deck get_a_fac */      
       SUBROUTINE GET_A_FAC(FACKIN,EIG,VMAT,TMAT,TBUF,
      &                      FPB,USEDF,IPRINT,WORK,LWORK)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -3229,8 +3219,6 @@ C .... if spin-free, eliminate spin-orbit dependent terms
      &  ' after elim. spin-orbit dependent terms "BEFORE", TBUF',-1)
           WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &     '*** Fermion corep ',I,'/',NFSYM
-          write(lupri,*) 'boson irreps: ifsym=',I,':',
-     &                   ( (IBEIG(IORB(I)+J)),J=1,NORB(I))
           CALL FLSHFO(LUPRI)
          ENDIF
          IOFT = IOFT + NORB(I)*NORB(I)*NZ
@@ -3238,8 +3226,12 @@ C .... if spin-free, eliminate spin-orbit dependent terms
         ENDDO
       ENDIF
 
-C ... write the TBUF - H1 ON RKB/"k" to the file...
+CMI ... control printout of IBEIG
+      IF (IPRHAM.GE.5) THEN
+        CALL PRINT_IBEIG(IBEIG,'GET_H1_ONB')
+      ENDIF
 
+C ... write the TBUF - H1 ON RKB/"k" to the file...
       ISIZE=NORB(1)*NORB(1)*NZ
       IF (NFSYM.EQ.2) ISIZE=ISIZE+NORB(2)*NORB(2)*NZ
       CALL W2BSSMAT(1,.TRUE.,'H1_ONBAS','GET_H1_ONB',
@@ -3252,6 +3244,43 @@ C ... write the TBUF - H1 ON RKB/"k" to the file...
       ENDIF
 
       CALL QEXIT('GET_H1_ONB')
+      RETURN
+      END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*          
+      SUBROUTINE PRINT_IBEIG(IBEIG,CALLED_FROM)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+C  Prints out IBEIG - boson info on MO's in this separate routine. It's important.
+C 
+C  Written by Miro Ilias, Sept.2010, Banska Bystrica
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+#include "implicit.h"                                       
+#include "priunit.h"   
+#include "dgroup.h"  
+#include "dcborb.h"   
+      DIMENSION IBEIG(*)
+      CHARACTER*(*) CALLED_FROM
+
+      WRITE(LUPRI,'(/,2X,A,A,A)')
+     & '=====  PRINT_IBEIG called from ',CALLED_FROM,'  ====='
+      DO I=1,NFSYM
+         WRITE(LUPRI,'(2X,A,I2,A,I1)')
+     &   '* boson symmetries for fermion corep ',
+     &   I,' /',NFSYM
+         WRITE(LUPRI,*) ' ...negative states:'
+         DO J=1,NPSH(I)
+           WRITE(LUPRI,'(8X,I3,A,I2)')
+     &     -(NPSH(I)-J+1),"--->",IBEIG(IORB(I)+J)
+         ENDDO
+         WRITE(LUPRI,*) ' ...positive states:'
+         DO J=1,NESH(I)
+           WRITE(LUPRI,'(8X,I3,A,I2)')
+     &     J,"--->",IBEIG(IORB(I)+NPSH(I)+J)
+         ENDDO
+      ENDDO
+      CALL FLSHFO(LUPRI)
       RETURN
       END
 
@@ -4103,6 +4132,10 @@ C  -- make b matrix (store in VMAT); B := - Y--.Y+-^+
       ENDIF
       ENDDO
 
+      IF (IPRINT.GE.5) THEN
+        CALL PRINT_IBEIG(IBEIG,'GET_HINF_R (1)')
+      ENDIF
+
 C ... now we have eigenvectors: prepare for solving R equation !
 C        (1-Y-+.Y-+^+) R = Y-+.Y++^+ or
 C        (Y--.Y--^+) R = -Y--.Y+-^+
@@ -4158,10 +4191,14 @@ C   ... print the R
       ENDIF
       ENDDO
 
-C ... save the full R, TMAT, into the file BSSMAT !
+      IF (IPRINT.GE.5) THEN
+        CALL PRINT_IBEIG(IBEIG,'GET_HINF_R (2)')
+      ENDIF
+
+C ... save the full matrix R, stored in TMAT, into the BSSMAT file
       ISIZE = NESH(1)*NESH(1)*NZ
       IF (NFSYM.EQ.2) ISIZE = ISIZE + NESH(2)*NESH(2)*NZ
-      CALL W2BSSMAT(1,.TRUE.,'R_MTX   ','GET_HINF_FPM',
+      CALL W2BSSMAT(1,.TRUE.,'R_MTX   ','GET_HINF_R',
      &              TMAT,ISIZE,LUBSS,IPRINT)
       IF (IPRINT.GE.3) THEN
         WRITE(LUPRI,'(/2X,A)')
@@ -4344,7 +4381,7 @@ C ... read R into VMAT
      &  'R matrix (in ON basis) was read from BSSMAT into VMAT.'
        ENDIF
 
-C ... do make VMAT -> TBUF = (1 R)  !
+C ...  make VMAT -> TBUF = (1 R)  !
       IBUFE  = 1
       IBUF2E = 1
       DO I=1, NFSYM
@@ -4806,6 +4843,10 @@ C    ... do add SO1  terms in MO into TBUF !!!
           WRITE(LUPRI,'(/2X,A)')
      &    'H2CFINAL: HSO1_ONB read into TMAT.'
        ENDIF
+      
+       IF (IPRINT.GE.5) THEN
+         CALL PRINT_IBEIG(IBEIG,'H2CFINAL')
+       ENDIF
 
         IMAT = 1
         DO I=1,NFSYM
@@ -4819,14 +4860,15 @@ C    ... do add SO1  terms in MO into TBUF !!!
            CALL PRQMAT(TMAT(IMAT),NESH(I),NESH(I),
      &     NESH(I),NESH(I),NZ,IPQTOQ(1,0),LUPRI)
          ENDIF
-C      ... do eliminate spinèorbit terms !
+
+CMI      ... eliminate spin-orbit terms 
          IF (SPFR.AND..NOT.SPFR_BEG) THEN
 
           IF (IPRINT.GE.5) THEN
            CALL HEADER(
      &     'H2CFINAL: H2c in RKB/|k> - before elimination '//
      &     ' of spin_orbit terms "AFTER"',-1)
-           WRITE(LUPRI,'(/3X,A,I2,A,I1/)')
+           WRITE(LUPRI,'(3X,A,I2,A,I1)')
      &      '*** Fermion corep ',I,' /',NFSYM
             CALL PRQMAT(TBUF(IMAT),NESH(I),NESH(I),NESH(I),NESH(I),
      &                  NZ,IPQTOQ(1,0),LUPRI)
@@ -4878,12 +4920,13 @@ C  ********************************************************************
 
           IF (IPRINT.GE.5) THEN
            CALL HEADER(
-     &     'H2CFINAL: H2c in RKB/|k> - before elimination '//
+     &     'H2CFINAL: H2c in RKB/|k> ON basis - before elimination '//
      &     ' of spin_orbit terms "AFTER"',-1)
-           WRITE(LUPRI,'(/3X,A,I2,A,I1/)')
+           WRITE(LUPRI,'(3X,A,I2,A,I1)')
      &      '*** Fermion corep ',I,' /',NFSYM
             CALL PRQMAT(TBUF(IVMAT),NESH(I),NESH(I),NESH(I),NESH(I),
      &                  NZ,IPQTOQ(1,0),LUPRI)
+
           ENDIF
 
           CALL SPF_HK(TBUF(IVMAT),.TRUE.,IBEIG(IORB(I)+1+NPSH(I)),
