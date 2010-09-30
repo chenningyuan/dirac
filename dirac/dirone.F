@@ -62,9 +62,9 @@ C     =========================================================================
 C
       DO 10 I = 1,NPRPCLS
       IF(.NOT.CLSCAL(I)) GOTO 10
-        IF(IPRONE.GE.2) THEN
-          WRITE(LUPRI,'(A,A7)') '* ONEGEN: operator ',CLSINT(I)
-        ENDIF
+        IF (IPRONE.GE.2) WRITE(LUPRI,'(/2A,2X,A)')
+     &       '* ONEGEN: class operator and class comb ',
+     &       CLSINT(I), CLSCMB(I)
 Chj     CLSCMB and PDOINT is now '+', '-', or '0',
 Chj     corresponding to a factor of +1, -1, or 0 on that block.
 C       The four blocks (AO basis): LL, SL, LS, SS
@@ -127,6 +127,8 @@ C
      &          (CLSINT(I).EQ.'FERMI C').OR.
      &          (CLSINT(I).EQ.'PVC    ').OR.
      &          (CLSINT(I).EQ.'NSTCGO '))
+!       write(lupri,*) 'Test output of CLSINT, TEST, NUCIND',
+!                      CLSINT(I),TEST,NUCIND
         IF(TEST) THEN
           ALLATM = .FALSE.
           NPATOM = 1
@@ -1038,9 +1040,9 @@ C =============================================================
           ENDIF
           IF (SQUARE) THEN
            CALL OUTPUT(OP1INT,1,NTBAS(0),1,NTBAS(0),
-     &                NTBAS(0),NTBAS(0),1,LUPRI)
+     &                NTBAS(0),NTBAS(0),-1,LUPRI)
           ELSE
-           CALL OUTPAK(OP1INT,NTBAS(0),1,LUPRI)
+           CALL OUTPAK(OP1INT,NTBAS(0),-1,LUPRI)
           ENDIF
         ENDIF        
 C
@@ -1056,9 +1058,9 @@ C
      &    '* scaled integrals with the factor=',PFAC
            IF (SQUARE) THEN
             CALL OUTPUT(OP1INT,1,NTBAS(0),1,NTBAS(0),
-     &              NTBAS(0),NTBAS(0),1,LUPRI)
+     &              NTBAS(0),NTBAS(0),-1,LUPRI)
            ELSE
-             CALL OUTPAK(OP1INT,NTBAS(0),1,LUPRI)
+             CALL OUTPAK(OP1INT,NTBAS(0),-1,LUPRI)
            ENDIF
           ENDIF
         ENDIF        
@@ -1099,9 +1101,9 @@ C
      &          '  ( PDOINT = ',PDOINT(KLBL),' )'
              IF (SQUARE) THEN
               CALL OUTPUT(OP1INT,1,NTBAS(0),1,NTBAS(0),
-     &             NTBAS(0),NTBAS(0),1,LUPRI)
+     &             NTBAS(0),NTBAS(0),-1,LUPRI)
              ELSE
-              CALL OUTPAK(OP1INT,NTBAS(0),1,LUPRI)
+              CALL OUTPAK(OP1INT,NTBAS(0),-1,LUPRI)
              ENDIF
           ENDIF
         ENDIF
@@ -1125,9 +1127,9 @@ C         ... accumulate the property ...
           ELSE
            IF (SQUARE) THEN
              CALL OUTPUT(PMAT(1,IZ),1,NTBAS(0),1,NTBAS(0),
-     &                   NTBAS(0),NTBAS(0),1,LUPRI)
+     &                   NTBAS(0),NTBAS(0),-1,LUPRI)
            ELSE
-             CALL OUTPAK(PMAT(1,IZ),NTBAS(0),1,LUPRI)
+             CALL OUTPAK(PMAT(1,IZ),NTBAS(0),-1,LUPRI)
            ENDIF
           END IF
         ENDDO
@@ -1308,9 +1310,9 @@ C
           WRITE(LUPRI,'(A)') '* Integrals from AOPROPER'
           IF (SQUARE) THEN
            CALL OUTPUT(OP1INT,1,NTBAS(0),1,NTBAS(0),
-     &                NTBAS(0),NTBAS(0),1,LUPRI)
+     &                NTBAS(0),NTBAS(0),-1,LUPRI)
           ELSE
-           CALL OUTPAK(OP1INT,NTBAS(0),1,LUPRI)
+           CALL OUTPAK(OP1INT,NTBAS(0),-1,LUPRI)
           ENDIF
         ENDIF
 C
@@ -1326,9 +1328,9 @@ C
      &    '* Scaled integrals with factor=',PFAC
            IF (SQUARE) THEN
             CALL OUTPUT(OP1INT,1,NTBAS(0),1,NTBAS(0),
-     &              NTBAS(0),NTBAS(0),1,LUPRI)
+     &              NTBAS(0),NTBAS(0),-1,LUPRI)
            ELSE
-             CALL OUTPAK(OP1INT,NTBAS(0),1,LUPRI)
+             CALL OUTPAK(OP1INT,NTBAS(0),-1,LUPRI)
            ENDIF
           ENDIF
         ENDIF
@@ -1370,9 +1372,9 @@ C
      &          '  ( PDOINT = ',PDOINT(KLBL),' )'
              IF (SQUARE) THEN
               CALL OUTPUT(OP1INT,1,NTBAS(0),1,NTBAS(0),
-     &             NTBAS(0),NTBAS(0),1,LUPRI)
+     &             NTBAS(0),NTBAS(0),-1,LUPRI)
              ELSE
-              CALL OUTPAK(OP1INT,NTBAS(0),1,LUPRI)
+              CALL OUTPAK(OP1INT,NTBAS(0),-1,LUPRI)
              ENDIF
           ENDIF
         ENDIF
@@ -1394,9 +1396,9 @@ C
           ELSE
            IF (SQUARE) THEN
              CALL OUTPUT(PMAT(1,IZ),1,NTBAS(0),1,NTBAS(0),
-     &                   NTBAS(0),NTBAS(0),1,LUPRI)
+     &                   NTBAS(0),NTBAS(0),-1,LUPRI)
            ELSE
-             CALL OUTPAK(PMAT(1,IZ),NTBAS(0),1,LUPRI)
+             CALL OUTPAK(PMAT(1,IZ),NTBAS(0),-1,LUPRI)
            ENDIF
           END IF
         ENDDO
@@ -3644,7 +3646,7 @@ C
         WRITE(LUPRI,'(A,1X,A3,2X,A1)') 
      &    'SPHLOW: Overlap matrix in solid harmonics for',
      &    REP(IREP),COMP(IC)
-        CALL OUTPUT(VMAT,1,NSPH,1,NSPH,LDM,NSPH,1,LUPRI)
+        CALL OUTPUT(VMAT,1,NSPH,1,NSPH,LDM,NSPH,-1,LUPRI)
       ENDIF
       CALL LOWGEN(VMAT,NSPH,SMAT,NEFF,LDM,STOL,IPRINT,
      &            EIG,WORK,LWORK)
@@ -3753,7 +3755,7 @@ C
         WRITE(LUPRI,'(A,1X,A3,2X,A1)') 
      &    'RKBLOW: Overlap matrix in modified solid harmonics for',
      &    REP(IREP),COMP(IC)
-        CALL OUTPUT(VMAT,1,NSPH,1,NSPH,LDM,NSPH,1,LUPRI)
+        CALL OUTPUT(VMAT,1,NSPH,1,NSPH,LDM,NSPH,-1,LUPRI)
       ENDIF
       CALL LOWGEN(VMAT,NSPH,SMAT,NEFF,LDM,STOL,IPRINT,
      &     EIG,WORK,LWORK)
@@ -3803,7 +3805,7 @@ CMI .. mover before diagonalization which can destroy SMAT
       IF(IPRINT.GE.6) THEN
         CALL HEADER('LOWGEN: Lowdin input (overlap) matrix:',-1)
         WRITE(LUPRI,'(3X,A,2I5)') 'size :',NS,NS
-        CALL OUTPUT(SMAT,1,NS,1,NS,LDM,NS,1,LUPRI)
+        CALL OUTPUT(SMAT,1,NS,1,NS,LDM,NS,-1,LUPRI)
       ENDIF
 
 #ifdef MOD_LOG
@@ -3872,13 +3874,13 @@ C
 C
       IF(IPRINT.GE.3) THEN
         CALL HEADER('LOWGEN: Eigenvalues in Lowdin diagonalization:',-1)
-        CALL OUTPUT(EIG,1,NS,1,1,NS,1,1,LUPRI)
+        CALL OUTPUT(EIG,1,NS,1,1,NS,1,-1,LUPRI)
       ENDIF
 C
       IF(IPRINT.GE.6) THEN
         CALL HEADER(
      &  'LOWGEN: Canonical Lowdin matrix (i.e. eigenvectors):',-1)
-        CALL OUTPUT(VMAT,1,NS,1,NV,LDM,NS,1,LUPRI)
+        CALL OUTPUT(VMAT,1,NS,1,NV,LDM,NS,-1,LUPRI)
       ENDIF
 
 #ifdef MOD_LOG
@@ -4205,7 +4207,7 @@ C
       IF(IPRINT.GE.11) THEN
          CALL HEADER('BNCORR correction for DC FMAT',-1)
          CALL OUTPUT(WORK(KONEMT),1,NTBAS(0),1,NTBAS(0),
-     &        NTBAS(0),NTBAS(0),1,LUPRI)
+     &        NTBAS(0),NTBAS(0),-1,LUPRI)
       END IF
 
 C
@@ -5071,7 +5073,7 @@ C
 C
       IF(IPRINT.GE.5) THEN
         CALL HEADER('Projection operator in AOC basis',-1)
-        CALL OUTPUT(PTOT,1,LDM,1,LDM,LDM,LDM,1,LUPRI)
+        CALL OUTPUT(PTOT,1,LDM,1,LDM,LDM,LDM,-1,LUPRI)
       ENDIF
 C
       CALL MEMREL('MK1CEX2',WORK,KSAVE,KSAVE,KFREE,LFREE)
@@ -5123,7 +5125,7 @@ C
 C
       IF(IPRINT.GE.7) THEN
         CALL HEADER('Local overlap matrix',-1)
-        CALL OUTPUT(SLOC,1,NLOC,1,NLOC,LDM,NLOC,1,LUPRI)
+        CALL OUTPUT(SLOC,1,NLOC,1,NLOC,LDM,NLOC,-1,LUPRI)
       ENDIF
 C
 C     Form (Sloc)**-1/2 * U
@@ -5132,7 +5134,7 @@ C
 C
       IF(IPRINT.GE.7) THEN
         CALL HEADER('Local Lowdin canonical matrix',-1)
-        CALL OUTPUT(V,1,NLOC,1,NV,LDM,NLOC,1,LUPRI)
+        CALL OUTPUT(V,1,NLOC,1,NV,LDM,NLOC,-1,LUPRI)
       ENDIF
 C
 C     Form (Sloc)**-1/2 * U * U+ * (Sloc)**-1/2 = (Sloc)**-1
@@ -5141,7 +5143,7 @@ C
 C
       IF(IPRINT.GE.7) THEN
         CALL HEADER('Local inverse overlap matrix',-1)
-        CALL OUTPUT(W,1,NLOC,1,NLOC,NLOC,NLOC,1,LUPRI)
+        CALL OUTPUT(W,1,NLOC,1,NLOC,NLOC,NLOC,-1,LUPRI)
       ENDIF
 C
 C     Make (Sloc)**-1  * Stot : the projection operator  
@@ -5150,7 +5152,7 @@ C
 C
       IF(IPRINT.GE.7) THEN
         CALL HEADER('Local projection operator',-1)
-        CALL OUTPUT(PTOT,1,NLOC,1,NTOT,LDM,NLOC,1,LUPRI)
+        CALL OUTPUT(PTOT,1,NLOC,1,NTOT,LDM,NLOC,-1,LUPRI)
       ENDIF
 C
       RETURN
@@ -5288,7 +5290,7 @@ C
       DO IZ = 1, 4
          IF (IPRINT.GE.8) THEN
             CALL HEADER('PR1CEX2: Fock matrix in AO basis',-1)
-            CALL OUTPUT(BUF1(1,1,IZ),1,NB,1,NB,NB,NB,1,LUPRI)
+            CALL OUTPUT(BUF1(1,1,IZ),1,NB,1,NB,NB,NB,-1,LUPRI)
          ENDIF
 C
 C        Construct the right projected fock matrix and store it in FOCK
@@ -5305,9 +5307,9 @@ C        Add the correction to the Fock matrix
 C 
          IF (IPRINT.GE.10) THEN
             CALL HEADER('PR1CEX2 : Projection operator',-1)
-            CALL OUTPUT(PROJ,1,NB,1,NB,NB,NB,1,LUPRI)
+            CALL OUTPUT(PROJ,1,NB,1,NB,NB,NB,-1,LUPRI)
             CALL HEADER('PR1CEX2: Correction to Fock matrix (*2)',-1)
-            CALL OUTPUT(FOCK,1,NB,1,NB,NB,NB,1,LUPRI)
+            CALL OUTPUT(FOCK,1,NB,1,NB,NB,NB,-1,LUPRI)
          ENDIF
 C
          NB2 = NB * NB
@@ -5315,7 +5317,7 @@ C
 C
          IF (IPRINT.GE.8) THEN
             CALL HEADER('PR1CEX2: Corrected Fock matrix',-1)
-            CALL OUTPUT(BUF1(1,1,IZ),1,NB,1,NB,NB,NB,1,LUPRI)
+            CALL OUTPUT(BUF1(1,1,IZ),1,NB,1,NB,NB,NB,-1,LUPRI)
          ENDIF
       ENDDO
 C     
@@ -5394,7 +5396,7 @@ C
       DO IZ = 1, 4
          IF (IPRINT.GE.8) THEN
             CALL HEADER('PR1CEX3: Density matrix in AO basis',-1)
-            CALL OUTPUT(BUF1(1,1,IZ),1,NB,1,NB,NB,NB,1,LUPRI)
+            CALL OUTPUT(BUF1(1,1,IZ),1,NB,1,NB,NB,NB,-1,LUPRI)
          ENDIF
 C
 C        Construct the right projected fock matrix and store it in DENS
@@ -5411,9 +5413,9 @@ C        Add the correction to the density matrix
 C 
          IF (IPRINT.GE.10) THEN
             CALL HEADER('PR1CEX3 : Projection operator',-1)
-            CALL OUTPUT(PROJ,1,NB,1,NB,NB,NB,1,LUPRI)
+            CALL OUTPUT(PROJ,1,NB,1,NB,NB,NB,-1,LUPRI)
             CALL HEADER('PR1CEX3: Correction to density matrix (*2)',-1)
-            CALL OUTPUT(DENS,1,NB,1,NB,NB,NB,1,LUPRI)
+            CALL OUTPUT(DENS,1,NB,1,NB,NB,NB,-1,LUPRI)
          ENDIF
 C
          NB2 = NB * NB
@@ -5421,7 +5423,7 @@ C
 C
          IF (IPRINT.GE.8) THEN
             CALL HEADER('PR1CEX3: Corrected density matrix',-1)
-            CALL OUTPUT(BUF1(1,1,IZ),1,NB,1,NB,NB,NB,1,LUPRI)
+            CALL OUTPUT(BUF1(1,1,IZ),1,NB,1,NB,NB,NB,-1,LUPRI)
          ENDIF
       ENDDO
 C     

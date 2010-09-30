@@ -556,7 +556,7 @@ C
          CALL HEADER('CONMAT_DHF: Final DMAT:',-1)
          WRITE(LUPRI,'(3A)') '*** ',M(1), ' part ***'
          CALL OUTPUT(WORK(KDVAO),1,NTBAS(0),1,NTBAS(0),
-     $        NTBAS(0),NTBAS(0),1,LUPRI)
+     $        NTBAS(0),NTBAS(0),-1,LUPRI)
       END IF
 C
 C     The imaginary parts:
@@ -599,7 +599,7 @@ C
          IF ( IPRINT .GE. 10) THEN
             WRITE(LUPRI,'(3A)') '*** ',M(I), ' part ***'
             CALL OUTPUT(WORK(KDVAO),1,NTBAS(0),1,NTBAS(0),
-     $           NTBAS(0),NTBAS(0),1,LUPRI)
+     $           NTBAS(0),NTBAS(0),-1,LUPRI)
          END IF
 C     
       END DO
@@ -661,7 +661,7 @@ C
      $           CHAR(IMAT+48)//' :',-1)
             WRITE(LUPRI,'(3A)') '*** ',M(1), ' part ***'
             CALL OUTPUT(WORK(KDVAO),1,NTBAS(0),1,NTBAS(0),
-     $           NTBAS(0),NTBAS(0),1,LUPRI)
+     $           NTBAS(0),NTBAS(0),-1,LUPRI)
          END IF
 C
 C        The imaginary parts:
@@ -702,7 +702,7 @@ C
             IF ( IPRINT .GE. 10) THEN
                WRITE(LUPRI,'(3A)') '*** ',M(I), ' part ***'
                CALL OUTPUT(WORK(KDVAO),1,NTBAS(0),1,NTBAS(0),
-     $              NTBAS(0),NTBAS(0),1,LUPRI)
+     $              NTBAS(0),NTBAS(0),-1,LUPRI)
             END IF
 C     
          END DO
@@ -1220,7 +1220,7 @@ C
                CALL HEADER('RMOLGRD1: GABRAO-matrix ('//CHRXYZ(I)//')',
      &              -1)
                CALL OUTPUT(WORK(KGABRAO+N2GAB*I),1,NSYMBL,1,NSYMBL,
-     &                     NSYMBL,NSYMBL,1,LUPRI)
+     &                     NSYMBL,NSYMBL,-1,LUPRI)
             END DO
          END IF
 C
@@ -1773,9 +1773,9 @@ Cjth - endinsert
   100 CONTINUE
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('DSYM1R.INPUT: Total matrix in SO basis',-1)
-         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
          CALL HEADER('DSYM1R.OUTPUT:Total matrix in AO basis',-1)
-         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
 C
       CALL FLSHFO(LUPRI)

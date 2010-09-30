@@ -846,7 +846,7 @@ C***********************************************************************
       ENDDO
       IF(IPRINT.GE.3) THEN
         WRITE(LUPRI,'(A)') '* MO density matrix:'
-        CALL OUTPUT(DMAT,1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
+        CALL OUTPUT(DMAT,1,NORBT,1,NORBT,NORBT,NORBT,-1,LUPRI)
       ENDIF
       RETURN
       END

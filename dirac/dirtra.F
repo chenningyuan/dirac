@@ -194,7 +194,7 @@ C
         WRITE(LUPRI,'(3X,A,I5)') '* Small components:',NPLAB(2)
         WRITE(LUPRI,'(6(3X,I3,2X,A12))')
      &      (I,PLABEL(I,2),I=1+IOFF,NPLAB(0))
-         IF(IPRINT.GE.7) THEN
+        IF(IPRINT.GE.7) THEN
            CALL PRIVEC('IPLAB ',IPLAB(1,2),NAORB)
         ENDIF
       ENDIF
@@ -727,9 +727,9 @@ CTOND               FACA = PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
   100 CONTINUE
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('INPUT: Total matrix in SO basis',-1)
-         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
          CALL HEADER('OUTPUT: Total matrix in AO basis',-1)
-         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
       RETURN
       END
@@ -832,9 +832,9 @@ CMI        ... control print-out to track the AO-SO matrix construction
 
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('INPUT(MTAOSO):  Total matrix in AO basis',-1)
-         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
          CALL HEADER('OUTPUT(MTAOSO): Total matrix in SO basis',-1)
-         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
 
       CALL QEXIT('MTAOSO')
@@ -923,9 +923,9 @@ C
   100 CONTINUE
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('INPUT: Total matrix in SO basis',-1)
-         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
          CALL HEADER('OUTPUT:Total matrix in AO basis',-1)
-         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
       RETURN
       END
@@ -1014,9 +1014,9 @@ C
   100 CONTINUE
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('INPUT: Total matrix in AO basis',-1)
-         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
          CALL HEADER('OUTPUT:Total matrix in SO basis',-1)
-         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
       RETURN
       END
@@ -1096,9 +1096,9 @@ C      CALL DZERO(ASO,NBAST*NBAST)
   100 CONTINUE
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('Total matrix in SO basis',-1)
-         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
          CALL HEADER('Total matrix in AO basis',-1)
-         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
       RETURN
       END
@@ -1156,9 +1156,9 @@ C
   100 CONTINUE
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('INPUT: Vectors in SO basis',-1)
-         CALL OUTPUT(ASO,1,NBAST,1,NVEC,NBAST,NVEC,1,LUPRI)
+         CALL OUTPUT(ASO,1,NBAST,1,NVEC,NBAST,NVEC,-1,LUPRI)
          CALL HEADER('INPUT: Vectors in AO basis',-1)
-         CALL OUTPUT(AAO,1,NBAST,1,NVEC,NBAST,NVEC,1,LUPRI)
+         CALL OUTPUT(AAO,1,NBAST,1,NVEC,NBAST,NVEC,-1,LUPRI)
       END IF
       RETURN
       END
@@ -1230,9 +1230,9 @@ C
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('INPUT: Vectors in SO basis',-1)
          CALL OUTPUT(ASO,1,NFBAS(IFRP,0),1,NVEC,
-     &               NFBAS(IFRP,0),NVEC,1,LUPRI)
+     &               NFBAS(IFRP,0),NVEC,-1,LUPRI)
          CALL HEADER('INPUT: Vectors in AO basis',-1)
-         CALL OUTPUT(AAO,1,NTBAS(0),1,NVEC,NTBAS(0),NVEC,1,LUPRI)
+         CALL OUTPUT(AAO,1,NTBAS(0),1,NVEC,NTBAS(0),NVEC,-1,LUPRI)
       END IF
       RETURN
       END
@@ -1292,9 +1292,9 @@ C
   100 CONTINUE
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('INPUT: Vectors in AO basis',-1)
-         CALL OUTPUT(AAO,1,NBAST,1,NVEC,NBAST,NVEC,1,LUPRI)
+         CALL OUTPUT(AAO,1,NBAST,1,NVEC,NBAST,NVEC,-1,LUPRI)
          CALL HEADER('OUTPUT: Vectors in SO basis',-1)
-         CALL OUTPUT(ASO,1,NBAST,1,NVEC,NBAST,NVEC,1,LUPRI)
+         CALL OUTPUT(ASO,1,NBAST,1,NVEC,NBAST,NVEC,-1,LUPRI)
       END IF
       RETURN
       END
@@ -1354,9 +1354,9 @@ C
   100 CONTINUE
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('INPUT: Vectors in AO basis',-1)
-         CALL OUTPUT(AAO,1,NBAST,1,NVEC,NBAST,NVEC,1,LUPRI)
+         CALL OUTPUT(AAO,1,NBAST,1,NVEC,NBAST,NVEC,-1,LUPRI)
          CALL HEADER('OUTPUT: Vectors in SO basis',-1)
-         CALL OUTPUT(ASO,1,NBAST,1,NVEC,NBAST,NVEC,1,LUPRI)
+         CALL OUTPUT(ASO,1,NBAST,1,NVEC,NBAST,NVEC,-1,LUPRI)
       END IF
       RETURN
       END
@@ -1879,7 +1879,7 @@ C        ... do the multiplication CSP*SPC = WORK(KSCCS)
             WRITE (LUPRI,'(/1X,A,I5)')
      &      'CSP*SPC matrix for L=',L-1
             WRITE (LUPRI,'(1X,A,2I5)') ' size NLM,NLM',NLM,NLM
-            CALL OUTPUT(WORK(KSCCS),1,NLM,1,NLM,NLM,NLM,1,LUPRI)
+            CALL OUTPUT(WORK(KSCCS),1,NLM,1,NLM,NLM,NLM,-1,LUPRI)
           ENDIF
 C        ... do the matrix inverse, WORK(KSCCS)
           CALL MATRIX_INVERSION(WORK(KSCCS),NLM,WORK(KIPIV),
@@ -1888,7 +1888,7 @@ C        ... do the matrix inverse, WORK(KSCCS)
             WRITE (LUPRI,'(1X,A,I5)')
      &      'CSP*SPC inversion matrix for L=',L-1
             WRITE (LUPRI,'(1X,A,2I5)') ' size NLM,NLM',NLM,NLM
-            CALL OUTPUT(WORK(KSCCS),1,NLM,1,NLM,NLM,NLM,1,LUPRI)
+            CALL OUTPUT(WORK(KSCCS),1,NLM,1,NLM,NLM,NLM,-1,LUPRI)
           ENDIF
 C        ... do the matrix multiplication, WORK(KSCCS)*CSP = CSP
            NLX = NLM*NXYZ
@@ -1899,7 +1899,7 @@ C        ... do the matrix multiplication, WORK(KSCCS)*CSP = CSP
             WRITE (LUPRI,'(1X,A,I5)')
      &      'inv(CSP*SPC)*CSP for L=',L-1
             WRITE (LUPRI,'(1X,A,2I5)') ' size NLM, NXYZ:',NLM,NXYZ
-            CALL OUTPUT(CSP(IOFF),1,NLM,1,NXYZ,NLM,NXYZ,1,LUPRI)
+            CALL OUTPUT(CSP(IOFF),1,NLM,1,NXYZ,NLM,NXYZ,-1,LUPRI)
           ENDIF
         ENDDO
       ENDIF
@@ -1915,7 +1915,7 @@ C
           NXYZ           = (LVAL+1)*(LVAL+2)/2
           WRITE (LUPRI,'(1X,A,I5)')
      &     ' Coefficients for angular quantum number ',LVAL
-          CALL OUTPUT(CSP(ISPADR(L)),1,NLM,1,NXYZ,NLM,NXYZ,1,LUPRI)
+          CALL OUTPUT(CSP(ISPADR(L)),1,NLM,1,NXYZ,NLM,NXYZ,-1,LUPRI)
         ENDDO
         CALL HEADER('SPHGEN: Spherical transformation matrix:',-1)
         DO L = 1,MXQN
@@ -1924,7 +1924,7 @@ C
           NXYZ           = (LVAL+1)*(LVAL+2)/2
           WRITE (LUPRI,'(1X,A,I5)')
      &     ' Coefficients for angular quantum number ',LVAL
-          CALL OUTPUT(SPC(ISPADR(L)),1,NXYZ,1,NLM,NXYZ,NLM,1,LUPRI)
+          CALL OUTPUT(SPC(ISPADR(L)),1,NXYZ,1,NLM,NXYZ,NLM,-1,LUPRI)
         ENDDO
       ENDIF
       CALL MEMREL('SPHGEN.SPHGE1',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -1972,7 +1972,7 @@ C    NUCLEI: NLARGE,NSMALL,NBASIS
       IF(IPRINT.GE.5) THEN
         CALL HEADER('VTAOCS: Input vectors:',-1)
         WRITE(LUPRI,'(2X,A,2I4)') 'NROWS, NCOLS',LDA,NVEC
-        CALL OUTPUT(AOV,1,LDA,1,NVEC,LDA,NVEC,1,LUPRI)
+        CALL OUTPUT(AOV,1,LDA,1,NVEC,LDA,NVEC,-1,LUPRI)
       ENDIF
 C
 C     Set limits
@@ -2016,11 +2016,11 @@ C     Print section
 C
       IF(IPRINT.GE.5) THEN
 CMI     CALL HEADER('VTAOCS: Transformed vectors(full size):',-1)
-CMI     CALL OUTPUT(CSV,1,LDC,1,NVEC,LDC,NVEC,1,LUPRI)
+CMI     CALL OUTPUT(CSV,1,LDC,1,NVEC,LDC,NVEC,-1,LUPRI)
 
         CALL HEADER('VTAOCS: Transformed vectors:',-1)
         WRITE(LUPRI,'(2X,A,2I4)') 'NROWS, NCOLS',NSPH,NVEC
-        CALL OUTPUT(CSV,1,NSPH,1,NVEC,LDC,NVEC,1,LUPRI)
+        CALL OUTPUT(CSV,1,NSPH,1,NVEC,LDC,NVEC,-1,LUPRI)
       ENDIF
 C
       RETURN
@@ -2056,7 +2056,7 @@ C
       IF(IPRINT.GE.5) THEN
         CALL HEADER('MTAOCS: Input AO (C) matrix:',-1)
         WRITE(LUPRI,'(2X,A,2I4)') 'NROWS, NCOLS',LDA,LDA
-        CALL OUTPUT(AOM,1,LDA,1,LDA,LDA,LDA,1,LUPRI)
+        CALL OUTPUT(AOM,1,LDA,1,LDA,LDA,LDA,-1,LUPRI)
       ENDIF
 C
 C     Set limits
@@ -2089,7 +2089,7 @@ C
       IF(IPRINT.GE.6) THEN
         CALL HEADER('MTAOCS: Half-transformed matrix:',-1)
         WRITE(LUPRI,'(2X,A,2I4)') 'NSPH,NVEC:',NSPH,NVEC
-        CALL OUTPUT(WORK(KW1),1,NSPH,1,NVEC,NSPH,NVEC,1,LUPRI)
+        CALL OUTPUT(WORK(KW1),1,NSPH,1,NVEC,NSPH,NVEC,-1,LUPRI)
       ENDIF
 C
 C     Transpose and transform columns
@@ -2109,7 +2109,7 @@ C
       IF(IPRINT.GE.5) THEN
         CALL HEADER('MTAOCS: Transformed (S) matrix:',-1)
         WRITE(LUPRI,'(2X,A,2I4)') 'NSPH,NSPH:',NSPH,NSPH
-        CALL OUTPUT(CSM,1,NSPH,1,NSPH,LDC,NSPH,1,LUPRI)
+        CALL OUTPUT(CSM,1,NSPH,1,NSPH,LDC,NSPH,-1,LUPRI)
       ENDIF
       CALL QEXIT ('MTAOCS')
       RETURN
@@ -2174,7 +2174,7 @@ C       Small components
         WRITE(LUPRI,'(2X,A,2I4,A,2I4)')
      &   'desired:  (S) NSPH,NSPH:',NSPH,NSPH,
      &   ' -> (C) NVEC,NVEC:',NVEC,NVEC
-        CALL OUTPUT(CSM,1,LDC,1,LDC,LDC,LDC,1,LUPRI)
+        CALL OUTPUT(CSM,1,LDC,1,LDC,LDC,LDC,-1,LUPRI)
       ENDIF
 
 CMI   NVEC >= NSPH !!
@@ -2205,8 +2205,8 @@ CMI   ... we get WORK(KW1) ... NVECxNSPH
       IF(IPRINT.GE.6) THEN
         CALL HEADER('MTAOSC: Half-transformed matrix, WORK(KW1):',-1)
         WRITE(LUPRI,'(2X,A,2I4)') 'NVEC, NSPH:',NVEC,NSPH
-C       CALL OUTPUT(WORK(KW1),1,NVEC,1,NSPH,NVEC,NSPH,1,LUPRI)
-        CALL OUTPUT(WORK(KW1),1,NVEC,1,NSPH,NVEC,NVEC,1,LUPRI)
+C       CALL OUTPUT(WORK(KW1),1,NVEC,1,NSPH,NVEC,NSPH,-1,LUPRI)
+        CALL OUTPUT(WORK(KW1),1,NVEC,1,NSPH,NVEC,NVEC,-1,LUPRI)
       ENDIF
 
 C      WORK(KW1),NVECxNSPH -> WORK(KW2),NSPHxNVEC
@@ -2222,7 +2222,7 @@ C1    CALL MTRSP(NVEC,NSPH,WORK(KW1),NVEC,WORK(KW2),NVEC)
         CALL HEADER(
      &    'MTAOSC: Half-transformed transposed matrix, WORK(KW2):',-1)
         WRITE(LUPRI,'(2X,A,2I4)') 'NSPH, NVEC:',NSPH,NVEC
-        CALL OUTPUT(WORK(KW2),1,NSPH,1,NVEC,NVEC,NVEC,1,LUPRI)
+        CALL OUTPUT(WORK(KW2),1,NSPH,1,NVEC,NVEC,NVEC,-1,LUPRI)
       ENDIF
 
 
@@ -2235,7 +2235,7 @@ C     CALL VTCSAO(WORK(KW2),NVEC,WORK(KW1),NVEC,NSPH,LCOMP,IPRINT)
         CALL HEADER(
      &    'MTAOSC: Transformed transposed matrix, WORK(KW1):',-1)
         WRITE(LUPRI,'(2X,A,2I4)') 'NVEC, NVEC:',NVEC,NVEC
-        CALL OUTPUT(WORK(KW1),1,NVEC,1,NVEC,NVEC,NVEC,1,LUPRI)
+        CALL OUTPUT(WORK(KW1),1,NVEC,1,NVEC,NVEC,NVEC,-1,LUPRI)
       ENDIF
 
 C
@@ -2255,7 +2255,7 @@ C     Print section
 C
       IF(IPRINT.GE.5) THEN
         CALL HEADER('MTAOSC: Final transformed matrix in C AO:',-1)
-        CALL OUTPUT(AOM,1,LDA,1,LDA,LDA,LDA,1,LUPRI)
+        CALL OUTPUT(AOM,1,LDA,1,LDA,LDA,LDA,-1,LUPRI)
       ENDIF
 
       CALL QEXIT ('MTAOSC')
@@ -2339,7 +2339,7 @@ C
         NDIM = IOFF-1
         CALL HEADER('VTCSAO: Transformed vectors:',-1)
         WRITE(LUPRI,'(2X,A,2I4)') 'NROWS, NCOLS',NDIM,NVEC
-        CALL OUTPUT(AOV,1,NDIM,1,NVEC,LDA,NVEC,1,LUPRI)
+        CALL OUTPUT(AOV,1,NDIM,1,NVEC,LDA,NVEC,-1,LUPRI)
       ENDIF
 C
       RETURN
@@ -2468,7 +2468,7 @@ C
       ENDDO
       CALL HEADER('SPHTS1: Test matrix',-1)
       CALL OUTPUT(AMAT,1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),
-     &            1,LUPRI)
+     &            -1,LUPRI)
       CALL VTAOCS(AMAT,NTBAS(0),BMAT,NSPH,NTBAS(0),0,IPRINT)
       CALL VTCSAO(BMAT,NSPH,AMAT,NTBAS(0),NTBAS(0),0,IPRINT)
       RETURN
@@ -2556,9 +2556,9 @@ C                  END IF
   100 CONTINUE
       IF (IPRINT .GE. 10) THEN
          CALL HEADER('INPUT: Total matrix in SO basis',-1)
-         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(ASO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
          CALL HEADER('OUTPUT: Total matrix in AO basis',-1)
-         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(AAO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
       RETURN
       END
@@ -2667,7 +2667,7 @@ C
       IF (IPRINT.GE.5) THEN
        WRITE(LUPRI,'(A,I6)') '* DELSPH: NSPH',NSPH
        WRITE(LUPRI,'(A)') '* DELSPH: Entering AMAT matrix '
-       CALL OUTPUT(AMAT,1,NLARGE,1,NLARGE,NLARGE,NLARGE,1,LUPRI)
+       CALL OUTPUT(AMAT,1,NLARGE,1,NLARGE,NLARGE,NLARGE,-1,LUPRI)
       ENDIF
 C     Allocate buffers
       CALL MEMGET('REAL',KW1,NWRK,WORK,KFREE,LFREE)
@@ -2875,7 +2875,7 @@ C
         ENDDO
         WRITE(LUPRI,'(A)') 
      &    '* Eigenvectors of minimal overlap matrix'
-        CALL OUTPUT(COEF,1,NXYZ,1,NXYZ,NXYZ,NXYZ,1,LUPRI)
+        CALL OUTPUT(COEF,1,NXYZ,1,NXYZ,NXYZ,NXYZ,-1,LUPRI)
       
       ENDIF
       RETURN

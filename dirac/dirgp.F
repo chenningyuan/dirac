@@ -2975,7 +2975,7 @@ C
         WRITE(LUPRI,'(A,A3,2X,A1)') 
      &    'SPHCAR: Transformation matrix for ',REP(IREP),COMP(IC)
         CALL PRSYMB(LUPRI,'-',40,0)
-        CALL OUTPUT(SPHM,1,NCAR,1,NSPH,NCAR,NPSH,1,LUPRI)
+        CALL OUTPUT(SPHM,1,NCAR,1,NSPH,NCAR,NPSH,-1,LUPRI)
       ENDIF
       RETURN
       END
@@ -3075,7 +3075,7 @@ C
      &       ' * L-value: ',L
         IF(KLM.GT.0) THEN
           WRITE(lupri,*) 'KXYZ,KLM=',KXYZ,KLM
-          CALL OUTPUT(CRED(KOFF+1),1,KXYZ,1,KLM,KXYZ,KLM,1,LUPRI)
+          CALL OUTPUT(CRED(KOFF+1),1,KXYZ,1,KLM,KXYZ,KLM,-1,LUPRI)
         ELSE
           WRITE(LUPRI,'(A)') ' - no functions - '
         ENDIF
@@ -3420,7 +3420,7 @@ C
               IF(IPRINT.GE.4) THEN
                 WRITE(LUPRI,'(A)') '* RKB part:'
                 CALL OUTPUT(CRED(IOFF+1),1,KRKB,1,KLMM2,
-     &                      KRKB,KLMM2,1,LUPRI)
+     &                      KRKB,KLMM2,-1,LUPRI)
               ENDIF
               IOFF = IOFF + KRKB*KLMM2
             ENDIF
@@ -3452,7 +3452,7 @@ C
      &    'RKBCAR: Transformation matrix for ',REP(IREP),COMP(IC)
         WRITE(LUPRI,*) ' NCAR and NSPH:',NCAR,NSPH
         CALL PRSYMB(LUPRI,'-',40,0)
-        CALL OUTPUT(SPHM,1,NCAR,1,NSPH,NCAR,NSPH,1,LUPRI)
+        CALL OUTPUT(SPHM,1,NCAR,1,NSPH,NCAR,NSPH,-1,LUPRI)
       ENDIF
 C
       RETURN

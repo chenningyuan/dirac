@@ -410,9 +410,9 @@ C     ***** LLSS - integrals ******
 C     *****************************
 C
 C
-C       **************************
+C     **************************
 C	***** Coarse sorting *****
-C       **************************
+C     **************************
 C
 C       File assignment:
 C         LUINTA - file of sorted LL-integrals , all indices unequal (class D)
@@ -3829,6 +3829,7 @@ C
 C
 C.... End of loop over integral classes
 C
+         CALL FLSHFO(LUPRI)
       ENDDO
 C
 C
@@ -4196,8 +4197,6 @@ C
 #include "maxorb.h"
 #include "aovec.h"
       LOGICAL LBIT
-Ctec Is FIRST needed??
-      LOGICAL FIRST
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DSO(N2BBASX,NZ,NFMAT),
      &          IFCKOP(NFMAT),NPOS(*),
      &          IHRMOP(NFMAT),ISYMOP(NFMAT),WORK(LWORK)
@@ -4206,8 +4205,6 @@ Ctec Is FIRST needed??
 #include "dcbbas.h"
 #include "blocks.h"
 C
-C      SAVE FIRST
-      FIRST = .TRUE.
       CALL QENTER('DIRSOF')
 #include "memint.h"
 C
@@ -4413,6 +4410,7 @@ C
 C
 C.... End of loop over integral classes
 C
+         CALL FLSHFO(LUPRI)
       ENDDO
 C
 C     Scale matrices

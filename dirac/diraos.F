@@ -392,18 +392,18 @@ C
           WRITE (LUPRI,'(A,3F12.6)') ' CORP ', CORPX,CORPY,CORPZ 
           IF (IPRINT .GT. 200) THEN
              CALL HEADER('Undifferentiated integrals at this point:',-1)
-             CALL OUTPUT(GAO,1,1,1,NBAST,1,NBAST,1,LUPRI)
+             CALL OUTPUT(GAO,1,1,1,NBAST,1,NBAST,-1,LUPRI)
              IF (NDER.GT.0) THEN
                CALL HEADER('1st derivative integrals at this point:',-1)
-               CALL OUTPUT(GAO1,1,NBAST,1,3,NBAST,3,1,LUPRI)
+               CALL OUTPUT(GAO1,1,NBAST,1,3,NBAST,3,-1,LUPRI)
              END IF
              IF (NDER.GT.1) THEN
                CALL HEADER('2nd derivative integrals at this point:',-1)
-               CALL OUTPUT(GAO2,1,NBAST,1,6,NBAST,6,1,LUPRI)
+               CALL OUTPUT(GAO2,1,NBAST,1,6,NBAST,6,-1,LUPRI)
              END IF
              IF (DOLND) THEN
                CALL HEADER('London der. integrals at this point:',-1)
-               CALL OUTPUT(GAB1,1,NBAST,1,3,NBAST,3,1,LUPRI)
+               CALL OUTPUT(GAB1,1,NBAST,1,3,NBAST,3,-1,LUPRI)
              END IF
           END IF
           WRITE (LUPRI,'(1X,A)') ' '

@@ -1222,7 +1222,7 @@ C
          CALL GETTIM(CTIDSTR,WTIDSTR)
          CALL TIMER('START ',TIMSTR,TIMEND)
          WRITE(LUPRI,'(/A,I4,A,3X,A24/)')
-     +     '########## START ITERATION NO.',NITER,'##########',
+     +     '########## START ITERATION NO.',NITER,' ##########',
      &     DAYTID
          CALL FLSHFO(LUPRI)
 C
