@@ -3789,10 +3789,10 @@ C         END IF
 *
           print*,'Calling SKICKJ with incomplete argument list.'
           stop
-                CALL SKICKJ(SIRES,CJRES,LKABTC,NIB,NJB,
-     &                      NKBSTR,XINT,NI,NJ,NK,NL,NKBSTR,
-     &                      I4,XI4S,I2,XI2S,IKORD,
-     &                      FACS,IROUTE )
+!               CALL SKICKJ(SIRES,CJRES,LKABTC,NIB,NJB,
+!    &                      NKBSTR,XINT,NI,NJ,NK,NL,NKBSTR,
+!    &                      I4,XI4S,I2,XI2S,IKORD,
+!    &                      FACS,IROUTE )
                 FACS = 1.0D0
 *
  1930         CONTINUE

@@ -5333,7 +5333,7 @@ C
       IF( IPRINT .ge. 1 )THEN
         WRITE(LUPRI,'(/A)')' (DELPAR): vector of orbital types:'// 
      &              ' mj-/ml-/boson-irrep values'
-        CALL IWRTMA(orb_type_vec,1,NORBT,1,NORBT,LUPRI)
+        CALL IWRTMAMN(orb_type_vec,1,NORBT,1,NORBT,LUPRI)
       END IF
 
       IF(NXOPE.GT.0) THEN
