@@ -1046,6 +1046,7 @@ C
 C
 #include "maxorb.h"
 #include "dcbidx.h"
+#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbopt.h"
