@@ -18,7 +18,7 @@
 #           select some modules
 #           ./pamadm --xpp --adc --visual --london --matrixop
 #
-#           prepare release DIRAC10
+#           prepare release DIRAC10 with selected modules
 #           ./pamadm --xpp --adc --visual --london --matrixop --amfi --krmc --emb --export=DIRAC10
 #
 #           select DIRAC10 functionality without exporting
