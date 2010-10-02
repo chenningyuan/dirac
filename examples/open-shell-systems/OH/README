@@ -7,21 +7,19 @@
 
  The ground state of the OH readical is X 2_Pi_3/2 resulting from the electron configuration of
  
-    1 s_sig(2) 2s_sig(2) 2p_sig(2) 2p_pi_1/2(2) 2p_pi_3/2(1)
-
- The basis set input file brings linear symmery.
+    1s_sig(2) 2s_sig(2) 2pz_sig(2) 2pxy_pi_1/2(2) 2pxy_pi_3/2(1)
 
  SCF configurations
 ---------------------
 
-What does not converge is the 1 electron in 1 open-shell :
+What does not converge is the 1 electron in 1 open-shell:
 .CLOSED SHELL
  8
 .OPEN S
 1
 1/2
 
-Therefore one has to resort to the average-of-configurations (3 electrons over 4 pi shells):
+Therefore for this case one has to resort to the average-of-configurations (3 electrons over 4 pi shells):
 .CLOSED SHELL
  6
 .OPEN S
@@ -65,9 +63,7 @@ the X 2Pi_3/2 state:
 4 0 0
 0 1 0
 
-and 
-
-the A 2Pi_1/2 state:
+and of the  "A 2Pi_1/2" first excited state:
 .CLOSED SHELL
  8
 .OPEN S
@@ -82,15 +78,29 @@ the A 2Pi_1/2 state:
 ../../../pam -noarch OH.ccpVDZ.lsym.mol  OH.dc.scf_mj_2Pi32.inp
 ../../../pam -noarch OH.ccpVDZ.lsym.mol  OH.dc.scf_mj_2Pi12.inp
 
-giving 
+giving energies :
 
-SCF energy 2Pi_3/2 :  -75.446717125968732
-SCF energy 2Pi_1/2 :  -75.446063726708829
+SCF energy X 2Pi_3/2 :  -75.446717125968732
+SCF energy A 2Pi_1/2 :  -75.446063726708829
 
 The fine-structure splitting then makes
 FSS : (-75.446717125968732+75.446063726708829)*219474.631280634 = 143.404561 cm-1
+which is very close to the above given COSCI value of 143.842458 cm-1.
 
-and is close to the above given COSCI value of 143.842458 cm-1.
+Energy order of spinors for the OH "X 2Pi_3/2" ground state is:
+1: -20.623437096718       (Occupation : f = 1.0000)  m_j=  1/2 ; 1s_sig(2)
+2: -1.2970494235574       (Occupation : f = 1.0000)  m_j=  1/2 ; 2s_sig(2)
+3: -0.6455362075645       (Occupation : f = 1.0000)  m_j=  1/2 ; 2pz_sig(2)
+4: -0.5439526090110       (Occupation : f = 1.0000)  m_j=  1/2 ; 2pxy_pi_1/2(2) 
+5: -0.5863405891346       (Occupation : f = 0.5000)  m_j= -3/2 ; 2pxy_pi_3/2(1)
+
+While for the excited "A 2Pi_1/2" state of the OH radical we have this energy order:
+
+1: -20.623901392971       (Occupation : f = 1.0000)  m_j=  1/2  ;  1s_sig(2)
+2: -1.2971646385507       (Occupation : f = 1.0000)  m_j=  1/2  ;  2s_sig(2)
+3: -0.6456515101399       (Occupation : f = 1.0000)  m_j=  1/2  ;  2pz_sig(2)
+4: -0.5431435116553       (Occupation : f = 1.0000)  m_j= -3/2  ;  2pxy_pi_3/2(2)
+5: -0.5874674338778       (Occupation : f = 0.5000)  m_j=  1/2  ;  2pxy_pi_1/2(1)
 
 
 Correlated approach
