@@ -2422,7 +2422,7 @@ C
 C       debug print
         IF( IPRINT .ge. 2 )THEN
           WRITE(LUPRI,*) ' DEBUG info: symmetry-info vector of orbitals'
-          CALL IWRTMA(orb_sym_vec,1,NORBT,1,NORBT,LUPRI)
+          CALL IWRTMAMN(orb_sym_vec,1,NORBT,1,NORBT,LUPRI)
         END IF
 C
         IF( IREDJOB .eq. 10 )THEN 
@@ -5745,7 +5745,7 @@ C
 C
       END IF
 C
-      CALL IWRTMA(NOROTC,NORBT,1,NORBT,1)
+!     CALL IWRTMAMN(NOROTC,NORBT,1,NORBT,1,LUPRI)
 C
 C
 C     Calculate new gradient
