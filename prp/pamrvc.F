@@ -5288,19 +5288,27 @@ C***********************************************************************
 C
 #include "dgroup.h"
       DIMENSION BVEC(NXOP,NZ),JXOP(2,NXOP),IBEIG(*)
+      LOGICAL JJ_JZ_SET
 C
 #include "ibtfun.h"
       JZ  = 0
       TMP = D0
+      JJ_JZ_SET = .FALSE.
       DO IZ = 1,NZ
         DO J = 1,NXOP
           IF(ABS(BVEC(J,IZ)).GT.TMP) THEN
             TMP = ABS(BVEC(J,IZ))
             JZ = IZ
             JJ = J
+            JJ_JZ_SET = .TRUE.
           ENDIF
         ENDDO
       ENDDO
+      IF (.NOT.JJ_JZ_SET) THEN
+       WRITE(LUPRI,*) 'SPFEXC: indexes JZ,JJ not set !'
+       WRITE(LUPRI,*) 'NZ,NXOP: ',NZ,NXOP
+       CALL QUIT('SPFEXC: indexes JZ,JJ not set !')
+      ENDIF
       I1 = JXOP(1,JJ)
       I2 = JXOP(2,JJ)
       JREP = IBTXOR(IBEIG(I1),IBEIG(I2))
