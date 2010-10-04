@@ -215,7 +215,8 @@ c
      &      10X,"****  M. Pernpointner,
      &       J. Chem. Phys. 121, 8782 (2004)."/
      &      10X,"****  For the 2P propagator cite: "/
-     &      10X,"****  M. Pernpointner, J. Phys. B in press."//)
+     &      10X,"****  M. Pernpointner, 
+     &       J. Phys. B 43, 205102 (2010)."//)
       WRITE (IW,1011) MYPROC+1,NMPROC
  1011 FORMAT (/'---< Process ',I5,' of ',I5,'----<'/)
       WRITE (IW,*) 'Numbers of words given to ADC:',MAXCORE
