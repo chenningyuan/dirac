@@ -132,6 +132,10 @@ C
 C
        CALL AROUND('Dispersion coefficient')
        WRITE(LUPRI,'(A)')
+     &  'Please cite:',
+     &  '   Sebastien Villaume, Trond Saue and Patrick Norman,',
+     &  '   J. Chem. Phys. 133 (2010) 064105'
+       WRITE(LUPRI,'(A)')
        WRITE(LUPRI,'(A)')'@'
        WRITE(LUPRI,'(A3,A10,F15.8,A5)') '@  ',
      &                         'C6       ', C6, 'a.u.'
