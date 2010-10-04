@@ -24,19 +24,19 @@ DIRAC serial allocating 120000000 words (915 MB) of memory
  S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:i
  c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::
  S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::
- $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        "&((/?//?|:::
  $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::
  ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::
- Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/??/!:/:
  (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|
  SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||
  $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:
  %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::
  $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:
  $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::
- )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/
- $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii|
- $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////|
+ )[$S$S($|_i:#>::*H&?/::.::/:"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*" `  /%?>%:)://ii|
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`"``          >??:    `SS<S:)!/////|
  Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/
  $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::
  &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::
@@ -44,12 +44,12 @@ DIRAC serial allocating 120000000 words (915 MB) of memory
  $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|
  MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>
  MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:
- MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/"` `     .:/(SS$%(S%)):%
  MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;
  MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<S
  MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$S
  MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<
- MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/??/    _MMHk/7S/]dq&1S<&&></
  MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&
  MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SF
  MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]Zk
@@ -91,12 +91,12 @@ DIRAC serial allocating 120000000 words (915 MB) of memory
  *    Ulf Ekstrom              VU University Amsterdam           Netherlands  *
  *    Ephraim Eliav            University of Tel Aviv            Israel       *
  *    Timo Fleig               Université P. Sabatier, Toulouse  France       *
- *    Andre S. P. Gomes        VU University Amsterdam           Netherlands  *
+ *    Andre S. P. Gomes        CNRS/Universite Lille 1           France       *
  *    Trygve U. Helgaker       University of Oslo                Norway       *
  *    Johan Henriksson         Linkoeping University             Sweden       *
- *    Miroslav Ilias           University of Zilina              Slovakia     *
+ *    Miroslav Ilias           Matej Bel University              Slovakia     *
  *    Christoph R. Jacob       ETH Zurich                        Switzerland  *
- *    Stefan Knecht            University of Duesseldorf         Germany      *
+ *    Stefan Knecht            CNRS/Université de Strasbourg     France       *
  *    Patrick Norman           Linkoeping University             Sweden       *
  *    Jeppe Olsen              Aarhus University                 Denmark      *
  *    Markus Pernpointner      University of Heidelberg          Germany      *
@@ -128,22 +128,22 @@ DIRAC serial allocating 120000000 words (915 MB) of memory
  *                                                                            *
  ******************************************************************************
  Version           : Dirac 8.0 (patchlevel 0) 
- Hostname          : cluster-pci
- Operating system  : Linux 2.6.18-164.15.1.el5
+ Hostname          : hitchcock
+ Operating system  : Linux 2.6.27.34-1-ql-server
  Machine           : x86_64
  Run               : Sequential
- Last compilation  : 18:02:02 Aug 25 2010 (by markus@cluster-pci.cvos.cluster:/home/markus/Dirac10/trunk)
- FORTRAN compiler  : /cvos/shared/apps/intel/Compiler/11.1.046/bin/intel64/ifort -O3 -ip  -g -fpp1 -w -assume byterecl -i8 -Iinclude -module modules -DINT_STAR8 -DVAR_IFC -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MFDS -DMOD_MAGNETIZ -DMOD_LONDON -DMOD_DNF -DMOD_ESR -DMOD_MATRIX_OPERATIONS -DMOD_ADC -DMOD_AMFI -DMOD_KRMC -DMOD_OPENRSP -DMOD_VISUAL -DMOD_IHFSCC -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ERI -DMOD_UNRELEASED   
- C compiler        : /cvos/shared/apps/intel/Compiler/11.1.046/bin/intel64/icc  -g -w -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DINT_STAR8 -DMOD_MAGNETIZ -DMOD_LONDON -DMOD_DNF -DMOD_ESR -DMOD_MATRIX_OPERATIONS -DMOD_ADC -DMOD_AMFI -DMOD_KRMC -DMOD_OPENRSP -DMOD_VISUAL -DMOD_IHFSCC -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ERI -DMOD_UNRELEASED  -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DSYS_FLAVOR=LINUX 
- External libraries: -L/opt/intel/mkl/10.1.0.015/lib/em64t -lmkl_intel_ilp64 -lmkl_lapack -lmkl_sequential -lmkl_core  -lguide -lpthread 
- Internal libraries: DIRAC_BLAS=NO  DIRAC_LAPACK=NO 
+ Last compilation  : 11:37:38 Oct  4 2010 (by markus@hitchcock.pci.uni-heidelberg.de:/home/markus/Dirac10_latest_checkout/trunk)
+ FORTRAN compiler  : /apps/prod/PGI/linux86-64/8.0-1/bin//pgf90 -fastsse -g -Mpreprocess -i8 -Iinclude -module modules -DINT_STAR8 -DUSE_DIRAC_BLAS -DUSE_DIRAC_DLAMCH -DUSE_DIRAC_DLAPACK -DUSE_DIRAC_ZLAPACK -DVAR_PGF90 -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MFDS -DMOD_MAGNETIZ -DMOD_LONDON -DMOD_MCSCF_spinfree -DMOD_KRMC -DMOD_DNF -DMOD_ESR -DMOD_MATRIX_OPERATIONS -DMOD_ADC -DMOD_AMFI -DMOD_KRMC -DMOD_OPENRSP -DMOD_VISUAL -DMOD_IHFSCC -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ERI -DMOD_UNRELEASED   
+ C compiler        : /apps/prod/PGI/linux86-64/8.0-1/bin//pgcc -fastsse -g -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DINT_STAR8 -DMOD_MAGNETIZ -DMOD_LONDON -DMOD_MCSCF_spinfree -DMOD_KRMC -DMOD_DNF -DMOD_ESR -DMOD_MATRIX_OPERATIONS -DMOD_ADC -DMOD_AMFI -DMOD_KRMC -DMOD_OPENRSP -DMOD_VISUAL -DMOD_IHFSCC -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ERI -DMOD_UNRELEASED  -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DSYS_FLAVOR=LINUX 
+ External libraries: /apps/prod/ACML/pgi64_int64/lib/libacml.a 
+ Internal libraries: DIRAC_BLAS=YES  DIRAC_LAPACK=YES 
  ILP data model    : ILP64 
  SVN URL           : http://dirac.chem.sdu.dk/svnDirac/Dirac/trunk 
- SVN Revision      : 11398 
+ SVN Revision      : 11606 
 
  
-     Date and time (Linux)  : Wed Aug 25 18:32:11 2010
-     Host name              : cluster-pci                             
+     Date and time (Linux)  : Mon Oct  4 12:31:57 2010
+     Host name              :                                         
 
 
  *******************************************************************************
@@ -649,24 +649,24 @@ Point group: Cs
    ****************************************************************************
 
 *** WARNING *** : SCFCYC restart info:
-It.  26    -92.85813557611     -3.50D-12  0.00D+00  1.15D-08   DAMP0.25       6000000s   LL SL            d Aug 25
+It.  21    -92.85813557611      4.22D-12  3.46D-09  1.15D-08   DAMP0.25       2000084s   LL SL            n Oct  4
 *** WARNING *** : Differential density restart
 
-########## START ITERATION NO.  27 ##########   Wed Aug 25 18:32:11 2010
+########## START ITERATION NO.  22 ##########   Mon Oct  4 12:31:57 2010
 
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -92.8581355761008638
-* Heading : Core ionization of HCN in a bent structure       Wed Aug 25 18:08:25 2010
-   27 *** Differential density matrix ***
+* REACMO: Coefficients read from file DFCOEF - Total energy: -92.8581355761013900
+* Heading : Core ionization of HCN in a bent structure       Mon Oct  4 12:31:28 2010
+   22 *** Differential density matrix ***
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.01000005s
-SOfock:SL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.01999998s
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.01999998s
+SOfock:SL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.05999994s
 
   QM-QM nuclear repulsion energy :    0.000000607274
   QM-pc interaction energy       :    0.000000000000
   pc-pc interaction energy       :    0.000000000000
   Total interaction energy       :    0.000000607274
-It.  27    -92.85813557611     -3.50D-12  0.00D+00  1.15D-08   DAMP0.25    0.06999999s   LL SL          Wed Aug 25
+It.  22    -92.85813557611     -4.39D-12  0.00D+00  1.15D-08   DAMP0.25    0.18999982s   LL SL          Mon Oct  4
 
 
                                    SCF - CYCLE
@@ -682,50 +682,45 @@ It.  27    -92.85813557611     -3.50D-12  0.00D+00  1.15D-08   DAMP0.25    0.069
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.   1    -31.18016003158      1.00D+20  0.00D+00  0.00D+00               0.04999998s   Scr. nuclei    Wed Aug 25
-It.   2    -92.51561574709      6.13D+01  7.72D+00  2.02D+00               0.78000000s   LL SL          Wed Aug 25
-It.   3    -92.83699795370      3.21D-01 -8.20D-01  2.80D-01   DIIS   2    0.71000004s   LL SL          Wed Aug 25
-It.   4    -92.85429348349      1.73D-02  2.99D-01  1.33D-01   DIIS   3    0.70000005s   LL SL          Wed Aug 25
-It.   5    -92.85712644772      2.83D-03 -1.22D-01  6.08D-02   DIIS   4    0.71000004s   LL SL          Wed Aug 25
-It.   6    -92.85802095531      8.95D-04  3.45D-02  1.04D-02   DIIS   5    0.69999981s   LL SL          Wed Aug 25
-It.   7    -92.85809802381      7.71D-05  3.74D-03  4.24D-03   DIIS   6    0.68000031s   LL SL          Wed Aug 25
-It.   8    -92.85812767865      2.97D-05 -1.35D-03  1.70D-03   DIIS   7    0.69999981s   LL SL          Wed Aug 25
-It.   9    -92.85813412272      6.44D-06 -8.41D-04  7.12D-04   DIIS   8    0.69000006s   LL SL          Wed Aug 25
-It.  10    -92.85813534151      1.22D-06 -3.61D-04  3.04D-04   DIIS   9    0.69000006s   LL SL          Wed Aug 25
-It.  11    -92.85813557229      2.31D-07 -1.93D-04  5.09D-05   DIIS   9    0.67999983s   LL SL          Wed Aug 25
-It.  12    -92.85813557592      3.63D-09 -2.18D-05  1.09D-05   DIIS   9    0.66000032s   LL SL          Wed Aug 25
-It.  13    -92.85813557601      9.00D-11 -2.99D-06  4.45D-06   DIIS   9    0.64999962s   LL SL          Wed Aug 25
-It.  14    -92.85813557605      3.51D-11 -1.23D-06  3.24D-06   DIIS   9    0.64000034s   LL SL          Wed Aug 25
-It.  15    -92.85813557609      3.90D-11 -2.23D-06  1.92D-06   DIIS   9    0.63000011s   LL SL          Wed Aug 25
-It.  16    -92.85813557611      1.82D-11 -2.45D-06  4.17D-07   DIIS   9    0.62999916s   LL SL          Wed Aug 25
-It.  17    -92.85813557611      7.96D-13 -4.02D-07  2.68D-07   DIIS   9    0.60000038s   LL SL          Wed Aug 25
-It.  18    -92.85813557610     -7.13D-12  1.17D-07  5.62D-08   DIIS   9    0.57999992s   LL SL          Wed Aug 25
-It.  19    -92.85813557610      3.30D-12 -1.57D-08  2.78D-08   DIIS   3    0.55999947s   LL SL          Wed Aug 25
-It.  20    -92.85813557610     -1.39D-12 -1.11D-08  1.37D-08   DAMP0.25    0.53000069s   LL SL          Wed Aug 25
-It.  21    -92.85813557611      5.64D-12  3.48D-09  1.15D-08   DAMP0.25    0.46999931s   LL SL          Wed Aug 25
-It.  22    -92.85813557611     -3.50D-12  0.00D+00  1.15D-08   DAMP0.25    0.06000000s   LL SL          Wed Aug 25
-It.  23    -92.85813557611     -3.50D-12  0.00D+00  1.15D-08   DAMP0.25    0.06000000s   LL SL          Wed Aug 25
-It.  24    -92.85813557611     -3.50D-12  0.00D+00  1.15D-08   DAMP0.25    0.06000000s   LL SL          Wed Aug 25
-It.  25    -92.85813557611     -3.50D-12  0.00D+00  1.15D-08   DAMP0.25    0.07000005s   LL SL          Wed Aug 25
-It.  26    -92.85813557611     -3.50D-12  0.00D+00  1.15D-08   DAMP0.25    0.06000000s   LL SL          Wed Aug 25
-It.  27    -92.85813557611     -3.50D-12  0.00D+00  1.15D-08   DAMP0.25    0.06999999s   LL SL          Wed Aug 25
+It.   1    -31.18016003148      1.00D+20  0.00D+00  0.00D+00               0.13000011s   Scr. nuclei    Mon Oct  4
+It.   2    -92.51561574709      6.13D+01  7.72D+00  2.02D+00               1.75999999s   LL SL          Mon Oct  4
+It.   3    -92.83699795370      3.21D-01 -8.20D-01  2.80D-01   DIIS   2    1.65999985s   LL SL          Mon Oct  4
+It.   4    -92.85429348349      1.73D-02  2.99D-01  1.33D-01   DIIS   3    1.63999987s   LL SL          Mon Oct  4
+It.   5    -92.85712644772      2.83D-03 -1.22D-01  6.08D-02   DIIS   4    1.65999985s   LL SL          Mon Oct  4
+It.   6    -92.85802095531      8.95D-04  3.45D-02  1.04D-02   DIIS   5    1.65000010s   LL SL          Mon Oct  4
+It.   7    -92.85809802381      7.71D-05  3.74D-03  4.24D-03   DIIS   6    1.63000011s   LL SL          Mon Oct  4
+It.   8    -92.85812767865      2.97D-05 -1.35D-03  1.70D-03   DIIS   7    1.63000011s   LL SL          Mon Oct  4
+It.   9    -92.85813412272      6.44D-06 -8.41D-04  7.12D-04   DIIS   8    1.60999966s   LL SL          Mon Oct  4
+It.  10    -92.85813534151      1.22D-06 -3.61D-04  3.04D-04   DIIS   9    1.58999920s   LL SL          Mon Oct  4
+It.  11    -92.85813557229      2.31D-07 -1.93D-04  5.09D-05   DIIS   9    1.57999992s   LL SL          Mon Oct  4
+It.  12    -92.85813557592      3.64D-09 -2.18D-05  1.09D-05   DIIS   9    1.56000137s   LL SL          Mon Oct  4
+It.  13    -92.85813557601      9.13D-11 -2.99D-06  4.45D-06   DIIS   9    1.50999832s   LL SL          Mon Oct  4
+It.  14    -92.85813557605      3.53D-11 -1.23D-06  3.24D-06   DIIS   9    1.48999977s   LL SL          Mon Oct  4
+It.  15    -92.85813557609      3.81D-11 -2.23D-06  1.92D-06   DIIS   9    1.47000122s   LL SL          Mon Oct  4
+It.  16    -92.85813557610      1.73D-11 -2.45D-06  4.17D-07   DIIS   9    1.47999954s   LL SL          Mon Oct  4
+It.  17    -92.85813557611      6.82D-13 -4.02D-07  2.68D-07   DIIS   9    1.43000031s   LL SL          Mon Oct  4
+It.  18    -92.85813557610     -6.14D-12  1.17D-07  5.61D-08   DIIS   9    1.38999939s   LL SL          Mon Oct  4
+It.  19    -92.85813557610      3.01D-12  1.57D-08  2.78D-08   DIIS   3    1.28000069s   LL SL          Mon Oct  4
+It.  20    -92.85813557610     -1.07D-12  1.11D-08  1.37D-08   DAMP0.25    1.25999832s   LL SL          Mon Oct  4
+It.  21    -92.85813557611      4.22D-12  3.46D-09  1.15D-08   DAMP0.25    1.12000084s   LL SL          Mon Oct  4
+It.  22    -92.85813557611     -4.39D-12  0.00D+00  1.15D-08   DAMP0.25    0.18999982s   LL SL          Mon Oct  4
 --------------------------------------------------------------------------------------------------------------------------------
-* Convergence after   27 iterations.
+* Convergence after   22 iterations.
 * Average elapsed time per iteration: 
-      LL SL        :    0.00000000s
+      LL SL        :    1.00000000s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -115.17237603251489
+   Electronic energy                        :    -115.17237603251400
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      22.31423984913458
    SS Coulombic correction                  :       0.00000060727380
 
    Sum of all contributions to the energy
-   Total energy                             :     -92.85813557610651
+   Total energy                             :     -92.85813557610561
 
 
                                    Eigenvalues
@@ -734,21 +729,21 @@ It.  27    -92.85813557611     -3.50D-12  0.00D+00  1.15D-08   DAMP0.25    0.069
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
-   -15.66443009579  ( 2)      -11.34512761458  ( 2)       -1.23502351778  ( 2)       -0.77687906074  ( 2)       -0.58273269726  ( 2)
-    -0.48313948569  ( 2)       -0.47821270579  ( 2)
+   -15.66443009578  ( 2)      -11.34512761457  ( 2)       -1.23502351775  ( 2)       -0.77687906073  ( 2)       -0.58273269727  ( 2)
+    -0.48313948563  ( 2)       -0.47821270580  ( 2)
   * Virtual eigenvalues, f = 0.0000
-     0.06497033337  ( 2)        0.13033071933  ( 2)        0.13105234046  ( 2)        0.14617355499  ( 2)        0.14765894511  ( 2)
-     0.18726622487  ( 2)        0.28522411013  ( 2)        0.49028316033  ( 2)        0.52043095101  ( 2)        0.52177261675  ( 2)
-     0.59948449893  ( 2)        0.70020853023  ( 2)        0.77984231429  ( 2)        0.79299742998  ( 2)        0.80978849743  ( 2)
-     0.85103749108  ( 2)        1.01136792800  ( 2)        1.05295158955  ( 2)        1.29307899864  ( 2)        2.10688125613  ( 2)
-     2.16067210398  ( 2)        2.17027253375  ( 2)        2.28108012457  ( 2)        2.59032610167  ( 2)        3.09454877054  ( 2)
-     3.13754305977  ( 2)        3.26370291979  ( 2)        3.82717341712  ( 2)        3.88744469917  ( 2)        3.99565264555  ( 2)
-     4.02942051932  ( 2)        8.44363541566  ( 2)        8.46447631024  ( 2)        8.56807307673  ( 2)        9.91273591820  ( 2)
-    11.73582789837  ( 2)       12.05251406358  ( 2)       12.06825469079  ( 2)       12.25656942633  ( 2)       16.51186413687  ( 2)
-    41.08762869305  ( 2)       41.12657614962  ( 2)       41.25399793644  ( 2)       46.55223249670  ( 2)       58.39343332547  ( 2)
-    58.45584392357  ( 2)       58.54099222457  ( 2)       64.69509085799  ( 2)      167.44148410998  ( 2)      231.96599242964  ( 2)
-   614.10953586022  ( 2)      845.59991230333  ( 2)     2491.69717842601  ( 2)     3368.47807113179  ( 2)    11880.72941283504  ( 2)
- 15292.15332662653  ( 2)
+     0.06497033337  ( 2)        0.13033071933  ( 2)        0.13105234047  ( 2)        0.14617355498  ( 2)        0.14765894512  ( 2)
+     0.18726622488  ( 2)        0.28522411012  ( 2)        0.49028316033  ( 2)        0.52043095102  ( 2)        0.52177261675  ( 2)
+     0.59948449892  ( 2)        0.70020853024  ( 2)        0.77984231429  ( 2)        0.79299742998  ( 2)        0.80978849743  ( 2)
+     0.85103749108  ( 2)        1.01136792801  ( 2)        1.05295158955  ( 2)        1.29307899864  ( 2)        2.10688125612  ( 2)
+     2.16067210399  ( 2)        2.17027253375  ( 2)        2.28108012457  ( 2)        2.59032610169  ( 2)        3.09454877053  ( 2)
+     3.13754305977  ( 2)        3.26370291978  ( 2)        3.82717341713  ( 2)        3.88744469917  ( 2)        3.99565264555  ( 2)
+     4.02942051934  ( 2)        8.44363541564  ( 2)        8.46447631024  ( 2)        8.56807307672  ( 2)        9.91273591818  ( 2)
+    11.73582789836  ( 2)       12.05251406357  ( 2)       12.06825469079  ( 2)       12.25656942633  ( 2)       16.51186413686  ( 2)
+    41.08762869302  ( 2)       41.12657614961  ( 2)       41.25399793644  ( 2)       46.55223249670  ( 2)       58.39343332546  ( 2)
+    58.45584392357  ( 2)       58.54099222456  ( 2)       64.69509085797  ( 2)      167.44148411007  ( 2)      231.96599242980  ( 2)
+   614.10953586013  ( 2)      845.59991230308  ( 2)     2491.69717842606  ( 2)     3368.47807113190  ( 2)    11880.72941283498  ( 2)
+ 15292.15332662661  ( 2)
 * HOMO - LUMO gap:
 
     E(LUMO) :     0.06497033 au (symmetry E1 )
@@ -774,10 +769,10 @@ It.  27    -92.85813557611     -3.50D-12  0.00D+00  1.15D-08   DAMP0.25    0.069
      ************************************************************************
 
 
- Transformation started at : Wed Aug 25 18:32:11 2010
+ Transformation started at : Mon Oct  4 12:31:58 2010
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -92.8581355761008638
-* Heading : Core ionization of HCN in a bent structure       Wed Aug 25 18:08:25 2010
+* REACMO: Coefficients read from file DFCOEF - Total energy: -92.8581355761013900
+* Heading : Core ionization of HCN in a bent structure       Mon Oct  4 12:31:28 2010
      Energy selection of active orbitals :     -2.00 < Eps. <     1.00 with a mininum gap of   0.1000 au.
      Energy selection of active orbitals :     -2.00 < Eps. <     1.00 with a mininum gap of   0.1000 au.
      Energy selection of active orbitals :     -2.00 < Eps. <     1.00 with a mininum gap of   0.1000 au.
@@ -829,16 +824,16 @@ It.  27    -92.85813557611     -3.50D-12  0.00D+00  1.15D-08   DAMP0.25    0.069
        ********************************************************************
 
 
- Transformation started at : Wed Aug 25 18:32:11 2010
+ Transformation started at : Mon Oct  4 12:31:58 2010
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -92.8581355761008638
-* Heading : Core ionization of HCN in a bent structure       Wed Aug 25 18:08:25 2010
+* REACMO: Coefficients read from file DFCOEF - Total energy: -92.8581355761013900
+* Heading : Core ionization of HCN in a bent structure       Mon Oct  4 12:31:28 2010
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   24.81%    0.01%    0.67%   0.06000000s
-SOfock:SL  1.00D-12    0.00%   33.92%    0.01%    0.05%   0.58000004s
+SOfock:LL  1.00D-12    0.00%   24.81%    0.01%    0.67%   0.13000011s
+SOfock:SL  1.00D-12    0.00%   33.92%    0.01%    0.05%   1.33999991s
 
-* REAFCK: Fock matrix read from file /home/markus/Dirac10/trunk/test/53.reladc/DFFCK1            
-* Heading : Core ionization of HCN in a bent structure       Wed Aug 25 18:32:11 2010
+* REAFCK: Fock matrix read from file DFFCK1                                                      
+* Heading : Core ionization of HCN in a bent structure       Mon Oct  4 12:31:57 2010
 
   QM-QM nuclear repulsion energy :    0.000000607274
   QM-pc interaction energy       :    0.000000000000
@@ -857,31 +852,31 @@ SOfock:SL  1.00D-12    0.00%   33.92%    0.01%    0.05%   0.58000004s
    - Beginning task   1 of   8 after      0. seconds and      0. CPU-seconds
    - Beginning task   2 of   8 after      0. seconds and      0. CPU-seconds
    - Beginning task   3 of   8 after      0. seconds and      0. CPU-seconds
-   - Beginning task   4 of   8 after      0. seconds and      0. CPU-seconds
-   - Beginning task   5 of   8 after      0. seconds and      0. CPU-seconds
-   - Beginning task   6 of   8 after      0. seconds and      1. CPU-seconds
-   - Beginning task   7 of   8 after      0. seconds and      1. CPU-seconds
-   - Beginning task   8 of   8 after      1. seconds and      1. CPU-seconds
+   - Beginning task   4 of   8 after      1. seconds and      0. CPU-seconds
+   - Beginning task   5 of   8 after      1. seconds and      1. CPU-seconds
+   - Beginning task   6 of   8 after      2. seconds and      2. CPU-seconds
+   - Beginning task   7 of   8 after      3. seconds and      2. CPU-seconds
+   - Beginning task   8 of   8 after      3. seconds and      3. CPU-seconds
  - Integral class 2 : (SS|??)
-   - Beginning task   9 of  19 after      1. seconds and      2. CPU-seconds
-   - Beginning task  10 of  19 after      1. seconds and      2. CPU-seconds
-   - Beginning task  11 of  19 after      1. seconds and      2. CPU-seconds
-   - Beginning task  12 of  19 after      2. seconds and      2. CPU-seconds
-   - Beginning task  13 of  19 after      2. seconds and      2. CPU-seconds
-   - Beginning task  14 of  19 after      2. seconds and      2. CPU-seconds
-   - Beginning task  15 of  19 after      2. seconds and      2. CPU-seconds
-   - Beginning task  16 of  19 after      2. seconds and      3. CPU-seconds
-   - Beginning task  17 of  19 after      2. seconds and      3. CPU-seconds
-   - Beginning task  18 of  19 after      3. seconds and      3. CPU-seconds
-   - Beginning task  19 of  19 after      3. seconds and      3. CPU-seconds
+   - Beginning task   9 of  19 after      6. seconds and      6. CPU-seconds
+   - Beginning task  10 of  19 after      6. seconds and      6. CPU-seconds
+   - Beginning task  11 of  19 after      6. seconds and      6. CPU-seconds
+   - Beginning task  12 of  19 after      6. seconds and      6. CPU-seconds
+   - Beginning task  13 of  19 after      6. seconds and      6. CPU-seconds
+   - Beginning task  14 of  19 after      7. seconds and      6. CPU-seconds
+   - Beginning task  15 of  19 after      7. seconds and      7. CPU-seconds
+   - Beginning task  16 of  19 after      8. seconds and      8. CPU-seconds
+   - Beginning task  17 of  19 after      9. seconds and      8. CPU-seconds
+   - Beginning task  18 of  19 after      9. seconds and      9. CPU-seconds
+   - Beginning task  19 of  19 after     10. seconds and     10. CPU-seconds
 
- Node    0 finished first half transformation        11938723 HT integrals written ( 88.00%,      0.18 GB)
+ Node    0 finished first half transformation        11938721 HT integrals written ( 88.00%,      0.18 GB)
   
- <<< Starting 2HT on node                      0
+ <<< Starting 2HT on node                         0
   
   
- >>> Finished 2HT on node                      0
- >>> Time used in 2HT_all is   1.26 seconds
+ >>> Finished 2HT on node                         0
+ >>> Time used in 2HT_all is   4.33 seconds
   
  - Binary  file MDCINT was written.
 * Screening statistics:
@@ -891,16 +886,16 @@ SOfock:SL  1.00D-12    0.00%   33.92%    0.01%    0.05%   0.58000004s
 
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
- Time in  First halftransformati       4.900 seconds
- Time in  Second halftransformat       1.260 seconds
+ Time in  First halftransformati      17.210 seconds
+ Time in  Second halftransformat       4.330 seconds
 
 
- Total wall time used in PAMTRA :   00:00:07
- Total CPU  time used in PAMTRA (master only) :   00:00:07
+ Total wall time used in PAMTRA :   00:00:31
+ Total CPU  time used in PAMTRA (master only) :   00:00:24
 
 
 
- Transformation ended at : Wed Aug 25 18:32:18 2010
+ Transformation ended at : Mon Oct  4 12:32:29 2010
 
 
 
@@ -913,17 +908,17 @@ SOfock:SL  1.00D-12    0.00%   33.92%    0.01%    0.05%   0.58000004s
 
 
           ****  written by
-          ****  M. Pernpointner          (University of Heidelberg 2004, 2010)
+          ****  M. Pernpointner                                            (University of Heidelberg 2004, 2010)
           ****  For the 1P propagator cite: 
-          ****  M. Pernpointner,       J. Chem. Phys. 121, 8782 (2004).
+          ****  M. Pernpointner,                                        J. Chem. Phys. 121, 8782 (2004).
           ****  For the 2P propagator cite: 
-          ****  M. Pernpointner, J. Phys. B in press.
+          ****  M. Pernpointner,                                        J. Phys. B 43, 205102 (2010).
 
 
 
 ---< Process     1 of     1----<
 
- Numbers of words given to ADC:             120000000
+ Numbers of words given to ADC:                120000000
 
  Initializing word-addressable I/O : the FORTRAN-interface is used with    16 KB records
 
@@ -954,8 +949,8 @@ SOfock:SL  1.00D-12    0.00%   33.92%    0.01%    0.05%   0.58000004s
  Perform integral sorting (if necc.) : T
 
  Memory for reading and sorting integrals :          794191 8-byte words
- MWORDS allocated for the <VV|VV>/<VO|VV> class:                     0
- MWORDS available for additional buffering:                   112
+ MWORDS allocated for the <VV|VV>/<VO|VV> class:                        0
+ MWORDS available for additional buffering:                      112
  Core used for SIPS calculation:                    2192379 words
  Memory used for active modules :                   2192379 8-byte words
 
@@ -966,7 +961,7 @@ SOfock:SL  1.00D-12    0.00%   33.92%    0.01%    0.05%   0.58000004s
  Type VOVO :     51200 integrals
  Type VOVV :     79360 integrals
  Type VVVV :    123136 integrals
- 
+
  Sorting of first 4 classes done.
 
  Need      1 passes to sort VOVV integrals
@@ -976,8 +971,8 @@ SOfock:SL  1.00D-12    0.00%   33.92%    0.01%    0.05%   0.58000004s
  VVVV sorting done.
 
  Reading Coulomb integrals :
- File date :      25Aug10  
- File time :       18:32:17
+ File date :       4Oct10  
+ File time :       12:32:24
  # of integrals          741762
 
  Finished sorting of integrals
@@ -991,12 +986,12 @@ SOfock:SL  1.00D-12    0.00%   33.92%    0.01%    0.05%   0.58000004s
   O    1    1    1E       -1.2350235178   -1.2350235180
   O    2    2    1E       -0.7768790607   -0.7768790603
   O    3    3    1E       -0.5827326973   -0.5827326978
-  O    4    4    1E       -0.4831394857   -0.4831394862
+  O    4    4    1E       -0.4831394856   -0.4831394862
   O    5    5    1E       -0.4782127058   -0.4782127057
   O    1    6    2E       -1.2350235178   -1.2350235180
   O    2    7    2E       -0.7768790607   -0.7768790603
   O    3    8    2E       -0.5827326973   -0.5827326978
-  O    4    9    2E       -0.4831394857   -0.4831394862
+  O    4    9    2E       -0.4831394856   -0.4831394862
   O    5   10    2E       -0.4782127058   -0.4782127057
   V    1   11    1E        0.0649703334    0.0649703336
   V    2   12    1E        0.1303307193    0.1303307193
@@ -1039,20 +1034,20 @@ SOfock:SL  1.00D-12    0.00%   33.92%    0.01%    0.05%   0.58000004s
  The missing terms may be important !
 
 
- Nuclear repulsion + core energy :           -65.591425499023032
- Zero order electronic energy :               -7.111974935921319
- First order electronic energy :             -20.154735141155030
- Electronic energy :                         -27.266710077076347
- SCF energy :                                -92.858135576099386
- 
- 
+ Nuclear repulsion + core energy :           -65.591425499022450
+ Zero order electronic energy :               -7.111974935891450
+ First order electronic energy :             -20.154735141185060
+ Electronic energy :                         -27.266710077076510
+ SCF energy :                                -92.858135576098960
+
+
  ###############################                                 
  ###
  ### Parameters for the ADC run:                                 
  ###
  ###############################                                 
- 
- 
+
+
 
  Type of ADC calculation:                        ADC(3)  
  Add constant diagrams (in ADC-3):               T
@@ -1065,13 +1060,13 @@ SOfock:SL  1.00D-12    0.00%   33.92%    0.01%    0.05%   0.58000004s
  Entering Qkl loop...
  Complex fermionic group with Kramers pairs
  Only one Kramers partner calculated!
- 
+
  ########################################                        
  ###
  ### computing V affinity block (complex)                        
  ###
  ########################################                        
- 
+
 
           ---                                            ---
           --- Complex Inv. Iteration for the hole states ---
@@ -1086,33 +1081,33 @@ SOfock:SL  1.00D-12    0.00%   33.92%    0.01%    0.05%   0.58000004s
      #  3 with spinor energy  -0.58273270    
      #  4 with spinor energy  -0.48313949    
      #  5 with spinor energy  -0.47821271    
- 
-     Iteration  #  1 convergence   0.14292764     Time     0.130
-     Iteration  #  2 convergence   0.60818874E-01 Time     0.120
-     Iteration  #  3 convergence   0.27145888E-01 Time     0.120
-     Iteration  #  4 convergence   0.12586914E-01 Time     0.120
-     Iteration  #  5 convergence   0.59576338E-02 Time     0.120
-     Iteration  #  6 convergence   0.28636549E-02 Time     0.120
-     Iteration  #  7 convergence   0.13911590E-02 Time     0.120
-     Iteration  #  8 convergence   0.68160287E-03 Time     0.120
-     Iteration  #  9 convergence   0.33628200E-03 Time     0.120
-     Iteration  # 10 convergence   0.16690888E-03 Time     0.120
-     Iteration  # 11 convergence   0.83277463E-04 Time     0.120
-     Iteration  # 12 convergence   0.41742948E-04 Time     0.120
-     Iteration  # 13 convergence   0.21009321E-04 Time     0.120
-     Iteration  # 14 convergence   0.10612177E-04 Time     0.120
-     Iteration  # 15 convergence   0.53773592E-05 Time     0.130
-     Iteration  # 16 convergence   0.27323207E-05 Time     0.120
-     Iteration  # 17 convergence   0.13916652E-05 Time     0.120
-     Iteration  # 18 convergence   0.71029203E-06 Time     0.120
+
+     Iteration  #  1 convergence   0.14292764     Time     0.310
+     Iteration  #  2 convergence   0.60818874E-01 Time     0.320
+     Iteration  #  3 convergence   0.27145888E-01 Time     0.330
+     Iteration  #  4 convergence   0.12586914E-01 Time     0.310
+     Iteration  #  5 convergence   0.59576338E-02 Time     0.310
+     Iteration  #  6 convergence   0.28636549E-02 Time     0.320
+     Iteration  #  7 convergence   0.13911590E-02 Time     0.320
+     Iteration  #  8 convergence   0.68160287E-03 Time     0.320
+     Iteration  #  9 convergence   0.33628200E-03 Time     0.320
+     Iteration  # 10 convergence   0.16690888E-03 Time     0.330
+     Iteration  # 11 convergence   0.83277463E-04 Time     0.330
+     Iteration  # 12 convergence   0.41742948E-04 Time     0.320
+     Iteration  # 13 convergence   0.21009321E-04 Time     0.310
+     Iteration  # 14 convergence   0.10612177E-04 Time     0.330
+     Iteration  # 15 convergence   0.53773592E-05 Time     0.310
+     Iteration  # 16 convergence   0.27323207E-05 Time     0.320
+     Iteration  # 17 convergence   0.13916652E-05 Time     0.320
+     Iteration  # 18 convergence   0.71029203E-06 Time     0.310
   Convergence reached.
- 
+
  ##########################################                      
  ###
  ### computing V ionization block (complex)                      
  ###
  ##########################################                      
- 
+
 
           ---                                                ---
           --- Complex Inv. Iteration for the particle states ---
@@ -1138,7 +1133,7 @@ SOfock:SL  1.00D-12    0.00%   33.92%    0.01%    0.05%   0.58000004s
      # 14 with spinor energy   0.79299743    
      # 15 with spinor energy   0.80978850    
      # 16 with spinor energy   0.85103749    
- 
+
      Iteration  #  1 convergence   0.81581716E-01
      Iteration  #  2 convergence   0.23592452E-01
      Iteration  #  3 convergence   0.66797694E-02
@@ -1152,23 +1147,23 @@ SOfock:SL  1.00D-12    0.00%   33.92%    0.01%    0.05%   0.58000004s
      Iteration  # 11 convergence   0.73338384E-06
  Convergence reached.
   Q_kl duplication could be performed.
- VOOO imag. contr.:  0.355920845240535     
- VOVO imag contr:  0.966327763949379     
- VVOO imag contr:  9.292068696134831E-002
+ VOOO imag. contr.:   0.3559208250058302     
+ VOVO imag contr:   0.9663277274350817     
+ VVOO imag contr:   9.2920684237677520E-002
  Coefficient matrix:
- Asymmetry 1:  0.000000000000000E+000
- Asymmetry 2:  0.000000000000000E+000
- Total asymmetry:  0.000000000000000E+000
- Matrix norm: (238.802620527408,0.000000000000000E+000)
+ Asymmetry 1:    0.000000000000000     
+ Asymmetry 2:    0.000000000000000     
+ Total asymmetry:    0.000000000000000     
+ Matrix norm:  (238.8026207983450,0.000000000000000)
  Inverse matrix:
- Asymmetry 1:  3.364092550442871E-014
- Asymmetry 2:  3.576939531719038E-014
- Total asymmetry:  6.941032082161908E-014
- Matrix norm: (491.310386471436,0.000000000000000E+000)
- 
- 
- B-Vector deviation:  0.000000000000000E+000
- SIGMA_ph/SIGMA_hp  Asymmetry:  7.393392883755506E-017
+ Asymmetry 1:   3.2543504096960389E-014
+ Asymmetry 2:   4.9702236091165474E-014
+ Total asymmetry:   8.2245740188125870E-014
+ Matrix norm:  (491.3103839565035,0.000000000000000)
+
+
+ B-Vector deviation:    0.000000000000000     
+ SIGMA_ph/SIGMA_hp  Asymmetry:   5.9129464128990901E-017
 
  ******************************************
  ***
@@ -1183,66 +1178,67 @@ SOfock:SL  1.00D-12    0.00%   33.92%    0.01%    0.05%   0.58000004s
  Packed ADC matrix written to      ADCMPK
  Hole space & dimension of ADC matrix in this irrep:        5     725
  Max. deviation from hermiticity
- for the h/h block:  2.724234324065565E-017
- 
- Number of buffers after 1h/2h-1p:                     0
- Buffer pointer after 1h/2h-1p:                     3610
- 
+ for the h/h block:   1.8418707417476251E-017
+
+ Number of buffers after 1h/2h-1p:                        0
+ Buffer pointer after 1h/2h-1p:                        3610
+
  ##########################################                      
  ###
  ### Constructing 2h1p/2h1p block (complex)                      
  ###
  ##########################################                      
- 
+
  Length of write buffers:      65536
  Number of buffers written:       2
  Total number of elements in Offdiag-file:    106450
- Writing SIP configs, Reclen, handle, name:                     22
-                    62 ADCCNF
+ Writing SIP configs, Reclen, handle, name:                        22 
+                       62 ADCCNF
  ADC hole space configurations written to ADCCNF
- Record length of direct access file:                         22
- Number of chunks in ADC matfile:                              2
- 
+ Record length of direct access file:                            22
+ Number of chunks in ADC matfile:                                 2
+
  ###########################################                     
  ###
  ###     Matrix attributes for this diagrun:                     
  ###
  ###########################################                     
- 
- 
- ADC matrix is (1=SIP,2=DIP):                           1
- Final states have symmetry:                            1
- ADC matrix is (1=real,2=complex):                      2
- ADC matrix format (1=old/2=new):                       1
- ADC matrix dimension (# of rows):                    725
+
+
+ ADC matrix is (1=SIP,2=DIP):                              1
+ Final states have symmetry:                               1
+ ADC matrix is (1=real,2=complex):                         2
+ ADC matrix format (1=old/2=new):                          1
+ ADC matrix dimension (# of rows):                       725
  Packed matrix stored in:          ADCMPK
  Diagonal elem. (old) stored in:   ADCDIA
  Configuration data stored in:     ADCCNF
  Eigenvalues written to:           SSPEC.#IREP
- Record length of Config file:                         22
- Number of requ. Lanc iterations:                     100
- Half band width (1h/2h states):                        5
- Number of chunks in ADC file:                          2
- Number of requested eigenvectors:                      0
- Printing limit for eigenvalues:      15.0000000000000     
- 
+ Record length of Config file:                            22
+ Number of requ. Lanc iterations:                        100
+ Half band width (1h/2h states):                           5
+ Number of chunks in ADC file:                             2
+ Number of requested eigenvectors:                         0
+ Printing limit for eigenvalues:       15.00000000000000     
+
  ######################################                          
  ###
  ### Entering (complex) LANCZOS routine                          
  ###
  ######################################                          
- 
-  Symmetry                      1
-  Matrix dimension:                   725
-  Band width:                           5
-  Number of iterations:                   100
- 
- ---  Band Lanczos iteration                    100  of                   100
- 
+
+  Symmetry                         1
+  Matrix dimension:                      725
+  Band width:                              5
+  Number of iterations:                      100
+
+ ---  Band Lanczos iteration                       100  of 
+                      100
+
  ---------------------------------------------------
  First 20 RAW Lanczos EVAL/EVECS + intensity.
  ---------------------------------------------------
- 
+
   No.         (a.u.)      (eV)
     1      0.468740   12.755078   mean-res      0.9320
     2      0.474448   12.910392   mean-res      0.9418
@@ -1264,17 +1260,17 @@ SOfock:SL  1.00D-12    0.00%   33.92%    0.01%    0.05%   0.58000004s
    18      0.896157   24.385681   mean-res      0.0004
    19      0.919403   25.018234   mean-res      0.1133
    20      0.946958   25.768039   mean-res      0.0087
- 
+
  #####################################                           
  ###
  ### Processing the spectrum (complex)                           
  ###
  #####################################                           
- 
- Upper limit for printing eigenvalues on screen   15.0000000000000     
- Threshold pole strength for eigenvectors:  1.000000000000000E-002
- Number of iterations:                   100
- Band width:                     5
+
+ Upper limit for printing eigenvalues on screen    15.00000000000000     
+ Threshold pole strength for eigenvectors:   1.0000000000000000E-002
+ Number of iterations:                      100
+ Band width:                        5
 
   Information on purging:
     There are  100 relevant residues out of  100   (100%)
@@ -1285,7 +1281,7 @@ SOfock:SL  1.00D-12    0.00%   33.92%    0.01%    0.05%   0.58000004s
   no.    eigenvalue (eV)   mean-res.   error estimate
   ------------------------------------------------------------
 
-    1@     12.75507823      0.9320       9.10E-07  (    1)
+    1@     12.75507824      0.9320       9.10E-07  (    1)
        1       2       3       4       5
   0.0001  0.0002  0.1354  0.0004  0.7958
 
@@ -1294,7 +1290,7 @@ SOfock:SL  1.00D-12    0.00%   33.92%    0.01%    0.05%   0.58000004s
   no.    eigenvalue (eV)   mean-res.   error estimate
   ------------------------------------------------------------
 
-    2@     12.91039236      0.9418       4.64E-06  (    2)
+    2@     12.91039235      0.9418       4.64E-06  (    2)
        1       2       3       4       5
   0.0000  0.0000  0.0000  0.9412  0.0006
 
@@ -1306,13 +1302,13 @@ SOfock:SL  1.00D-12    0.00%   33.92%    0.01%    0.05%   0.58000004s
     3@     14.00375638      0.8901       3.94E-06  (    3)
        1       2       3       4       5
   0.0007  0.0066  0.7363  0.0002  0.1463
- 
+
         ------------------------------
         Finished SIP calculation
-        In symmetry                     1
+        In symmetry                        1
         ------------------------------
- 
- 
+
+
  SIP ADC done for all selected symmetries.
 
  Statistics for the word-addressable I/O
@@ -1326,9 +1322,9 @@ SOfock:SL  1.00D-12    0.00%   33.92%    0.01%    0.05%   0.58000004s
  average I/O speed for read  (Mb/s)                   0.000
 
 
- CPU time (seconds) used in RELADC:                      4.7200
- CPU time (seconds) used before RELADC:                  7.6200
- CPU time (seconds) used in total sofar:                12.3400
+ CPU time (seconds) used in RELADC:                      9.6500
+ CPU time (seconds) used before RELADC:                 25.5000
+ CPU time (seconds) used in total sofar:                35.1500
 
   --- Normal end of RELADC Run ---
 
@@ -1336,11 +1332,11 @@ SOfock:SL  1.00D-12    0.00%   33.92%    0.01%    0.05%   0.58000004s
 ################################################################################
 
  
-     Date and time (Linux)  : Wed Aug 25 18:32:23 2010
-     Host name              : cluster-pci                             
+     Date and time (Linux)  : Mon Oct  4 12:32:39 2010
+     Host name              :                                         
 *****************************************************
+>>>> Node 0, utime: 27, stime: 7, minflt: 236216, majflt: 1, nvcsw: 120, nivcsw: 14260, maxrss: 0
+>>>> Total WALL time used in DIRAC: 44s
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 
->>>> Node 0, utime: 10, stime: 1, minflt: 239340, majflt: 0, nvcsw: 26, nivcsw: 185, maxrss: 0
->>>> Total WALL time used in DIRAC: 13s
