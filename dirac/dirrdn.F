@@ -120,9 +120,9 @@ CMI   ... instead of calling OP1INI in HAMINP, call it after
 C
 C     Give estimate of memory needed for two-electron integrals
 C
-      IF (.NOT.SKIP2E) THEN
-         CALL TWOMEM(WORK,LWORK)
-      ENDIF
+CTROND      IF (.NOT.SKIP2E) THEN
+CTROND         CALL TWOMEM(WORK,LWORK)
+CTROND      ENDIF
 C
 C
 C     Wave function input
