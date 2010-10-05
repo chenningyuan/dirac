@@ -2375,9 +2375,6 @@ C
 
 C     Determine offsets for start of orbital energies
 
-C      write(IW,*) 'in GET_FSLABEL  1'
-C      call FLSHFO(IW)
- 
       IAO(1) = NIO(1)
       IAV(1) = NIO(1) + NAO(1)
       DO IREP = 1, NREP-1
@@ -2385,9 +2382,6 @@ C      call FLSHFO(IW)
          IAV(IREP+1) = IAV(IREP) + NAV(IREP) + NIO(IREP+1) + NAO(IREP+1)
       END DO
 
-C     write(IW,*) 'in GET_FSLABEL  1.1...ICURFSS=',ICURFSS
-C     call FLSHFO(IW)
-      
       II = 0
 C     II counts the active orbitals
       IF (ICURFSS .EQ. 2) THEN
@@ -2395,31 +2389,19 @@ C     II counts the active orbitals
             DO I = 1, NAV(IREP)
                II = II + 1
                JJ = JJ + 1
-
-C      write(IW,*) 'in GET_FSLABEL  1.1.1'
-C      call FLSHFO(IW)
                CALL CHECK_LABEL_DIMENSION(II,NDIMH)
                WRITE(LABEL(II),1001) REPNA(IREP),I,EPS(IAV(IREP)+I)
             END DO
          END DO
-
-C      write(IW,*) 'in GET_FSLABEL  1.2'
-C      call FLSHFO(IW)
       
       ELSEIF (ICURFSS .EQ. 3) THEN
          DO IREP = 1, NREP
             DO I = 1, NAO(IREP)
                II = II + 1
-
-C      write(IW,*) 'in GET_FSLABEL  1.2.1'
-C      call FLSHFO(IW)
                CALL CHECK_LABEL_DIMENSION(II,NDIMH)
                WRITE(LABEL(II),1001) REPNA(IREP),I,EPS(IAO(IREP)+I)
             END DO
          END DO
-
-C      write(IW,*) 'in GET_FSLABEL  1.3'
-C      call FLSHFO(IW)
 
 C     II counts single excitations
       ELSEIF (ICURFSS .EQ. 4) THEN
@@ -2430,20 +2412,16 @@ C     II counts single excitations
                   DO I = 1, NAO(IREP)
                      II = II + 1
 
-C      write(IW,*) 'in GET_FSLABEL  1.3.1'
-C      call FLSHFO(IW)
-
                CALL CHECK_LABEL_DIMENSION(II,NDIMH)
-                     WRITE(LABEL(II),1011) 
+! miro - g95,ilp64, gives error here....SIGABRT
+                WRITE(LABEL(II),1011) 
      &                     REPNA(IREP),I,EPS(IAO(IREP)+I),
      &                     REPNA(JREP),J,EPS(IAV(JREP)+J)
+
                   END DO
                END DO
             END DO
          END DO
-
-C      write(IW,*) 'in GET_FSLABEL  1.4'
-C      call FLSHFO(IW)
 
 C     II counts the double creations
       ELSEIF (ICURFSS .EQ. 5) THEN
@@ -2454,11 +2432,6 @@ C     II counts the double creations
                   DO J = 1, NAV(JREP)
                      DO I = J+1, NAV(IREP)
                        II = II + 1
-
-C      write(IW,*)
-C    & 'in GET_FSLABEL  1.4.1, IREP,JREP,MXREP,EPS indexes:',
-C    &          IREP,JREP,MXREP,IAV(IREP)+I,IAV(JREP)+J
-       call FLSHFO(IW)
 
                CALL CHECK_LABEL_DIMENSION(II,NDIMH)
                        WRITE(LABEL(II),1002) 
@@ -2472,15 +2445,6 @@ C    &          IREP,JREP,MXREP,IAV(IREP)+I,IAV(JREP)+J
                      DO I = 1, NAV(IREP)
                        II = II + 1
 
-C       write(IW,*) 'IREP=',IREP,' JREP=',JREP,' MXREP=',MXREP
-C       write(IW,*) 'I=',I,' J=',J,' II=',II,' LABEL(II)=',LABEL(II)
-C       call FLSHFO(IW)
-
-C      write(IW,*)
-C    &     'in GET_FSLABEL  1.4.2, EPS indexes:',
-C    &      IAV(IREP)+I,IAV(JREP)+J
-C      call FLSHFO(IW)
-
                CALL CHECK_LABEL_DIMENSION(II,NDIMH)
                        WRITE(LABEL(II),1002) 
      &                       REPNA(IREP),I,EPS(IAV(IREP)+I),
@@ -2491,8 +2455,6 @@ C      call FLSHFO(IW)
                END IF
             END DO
          END DO
-C      write(IW,*) 'in GET_FSLABEL  1.5'
-       call FLSHFO(IW)
 C     II counts the double annihilations
       ELSEIF (ICURFSS .EQ. 6) THEN
          DO IJREP =1, NREP
@@ -2502,7 +2464,6 @@ C     II counts the double annihilations
                   DO J = 1, NAO(JREP)
                      DO I = J+1, NAO(IREP)
                        II = II + 1
-C      write(IW,*) 'in GET_FSLABEL  1.5.1'
                CALL CHECK_LABEL_DIMENSION(II,NDIMH)
                        WRITE(LABEL(II),1002) 
      &                       REPNA(IREP),I,EPS(IAO(IREP)+I),
@@ -2513,8 +2474,6 @@ C      write(IW,*) 'in GET_FSLABEL  1.5.1'
                   DO J = 1, NAO(JREP)
                      DO I = 1, NAO(IREP)
                        II = II + 1
-C      write(IW,*) 'in GET_FSLABEL  1.5.'
-       call FLSHFO(IW)
                CALL CHECK_LABEL_DIMENSION(II,NDIMH)
                        WRITE(LABEL(II),1002) 
      &                       REPNA(IREP),I,EPS(IAO(IREP)+I),
@@ -2524,12 +2483,7 @@ C      write(IW,*) 'in GET_FSLABEL  1.5.'
                END IF
             END DO
          END DO
-C      write(IW,*) 'in GET_FSLABEL  1.6'
-C      call FLSHFO(IW)
       END IF
-
-C      write(IW,*) 'in GET_FSLABEL  2 ... end'
-       call FLSHFO(IW)
 
  1001 FORMAT ('| ',A4,' #',I4,' (',F8.3,') |',25X)
  1002 FORMAT ('| ',A4,' #',I4,' (',F8.3,'), ',
