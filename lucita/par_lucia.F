@@ -2772,11 +2772,16 @@ C
 *
       IF(ICOUNTABLK.LT.NTEMPP) THEN
         IMINNP = MIN(ICOUNTABLK,NTEMPP)
-        IF(NTEST.GT.0) THEN
-          WRITE(6,*) 'subroutine FIND_EVEN... speaking!'
-          WRITE(6,*) 'number of active blocks lower than number of 
-     & procs --> I only use',IMINNP,'procs'
-        END IF
+        write(6,'(/a,i6)') '*** error in find_even_distr:'//
+     &    ' number of active blocks lower than the total number of'//
+     &    ' processes. please decrease the number of processes to:',
+     &    IMINNP
+        write(6,'(/a)') ' alternatively change the GAS'//
+     &    ' specification (more GA spaces) to increase the number of'//
+     &    ' TTSS blocks.***'
+        call quit('*** error in find_even_distr: number of processes >
+     & number of active TTSS blocks. the distribution algorithm
+     & will therefore fail (see output for more information).***')
         NTEMPP = IMINNP
       END IF
 *

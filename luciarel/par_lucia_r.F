@@ -488,7 +488,8 @@ C
             WRITE(6,*)'ILEN = ',ILEN
             WRITE(6,*)'IBLOCKL(ICBL) = ',IBLOCKL(ICBL)
             WRITE(6,*)'ICWEIGHTF(ICBL) = ',ICWEIGHTF( I_AM_ACTIVE )
-            CALL Abend2('Minus block detected. This should not happen!')
+            call quit('*** error in block_distr_1: block type 
+     & (active/inactive) not detected.***')
           END IF
           IF( ILEN .ne. 0 )THEN
              ICOUNTABLK = ICOUNTABLK + 1
@@ -531,13 +532,16 @@ C     store on common block
 C
       IF( ICOUNTABLK .lt. NMPROC ) THEN
         IMINNP = MIN( ICOUNTABLK,IMINNP )
-        IF( NPTEST .ge. 0 ) THEN
-          IF( MYPROC .EQ. 0 ) THEN
-            WRITE(LUWRT,*) 'subroutine BLOCK_DISTR_1 speaking!'
-            WRITE(LUWRT,*) 'number of active blocks lower than number
-     & of procs ==> restricted use of ',IMINNP,'procs'
-          END IF
-        END IF
+        write(luwrt,'(/a,i6)') '*** error in block_distr_1:'//
+     &    ' number of active blocks lower than the total number of'//
+     &    ' processes. please decrease the number of processes to:',
+     &    IMINNP
+        write(luwrt,'(/a)') ' alternatively change the GAS'//
+     &    ' specification (more GA spaces) to increase the number of'//
+     &    ' TTSS blocks.***'
+        call quit('*** error in block_distr_1: number of processes >
+     & number of active TTSS blocks. the distribution algorithm
+     & will therefore fail (see output for more information).***')
         NTEMPP = IMINNP
         IF( MYPROC .ge. ICOUNTABLK ) THEN 
           IAM_NOT_INV = 0
@@ -651,7 +655,8 @@ C
            WRITE(LUWRT,*) 'AAAHHHH, block',II,' is not distributed'
            WRITE(LUWRT,*) 'Since I do not know how to proceed, 
      &                     I will stop!'
-             Call Abend2('NE BLOCK_DISTR_1: Block not distributed')
+             call quit('*** error in block_distr_1: active block
+     & not distributed among the processes.***')
           END IF
         END DO
         WRITE(LUWRT,'(/20X,A)')'================================'
@@ -804,13 +809,16 @@ C
       IAM_NOT_INV = 0
       IF( ICOUNTABLK .lt. NMPROC ) THEN
         IMINNP = MIN( ICOUNTABLK,IMINNP )
-        IF( NPTEST .ge. 0 ) THEN
-          IF( MYPROC .EQ. 0 ) THEN
-            WRITE(LUWRT,*) 'subroutine BLOCK_DISTR_2 speaking!'
-            WRITE(LUWRT,*) 'number of active blocks lower than number
-     & of procs ==> restricted use of ',IMINNP,'procs'
-          END IF
-        END IF
+        write(luwrt,'(/a,i6)') '*** error in block_distr_2:'//
+     &    ' number of active blocks lower than the total number of'//
+     &    ' processes. please decrease the number of processes to:',
+     &    IMINNP
+        write(luwrt,'(/a)') ' alternatively change the GAS'//
+     &    ' specification (more GA spaces) to increase the number of'//
+     &    ' TTSS blocks.***'
+        call quit('*** error in block_distr_2: number of processes >
+     & number of active TTSS blocks. the distribution algorithm
+     & will therefore fail (see output for more information).***')
         NTEMPP = IMINNP
         DO JJ = 1, NTEMPP
           IF( MYPROC .eq. IALLGRPLST(JJ) ) IAM_NOT_INV = 1 
@@ -922,7 +930,8 @@ C
            WRITE(LUWRT,*) 'AAAHHHH, block',II,' is not distributed'
            WRITE(LUWRT,*) 'Since I do not know how to proceed, 
      &                     I will stop!'
-             Call Abend2('NE BLOCK_DISTR_2: Block not distributed')
+             call quit('*** error in block_distr_2: active block
+     & not distributed among the processes.***')
           END IF
         END DO
         WRITE(LUWRT,'(/20X,A)')'================================'
@@ -1224,13 +1233,13 @@ C
       NTEMPP = IMINNP
       IF( ICOUNTABLK .lt. IMINNP ) THEN
         IMINNP = MIN( ICOUNTABLK,IMINNP )
-        IF( NPTEST .ge. 0 ) THEN
-          IF( MYNEW_ID_SM .EQ. N_MASTER_SM ) THEN
-            WRITE(LUWRT,*) 'subroutine T_BLOCK_DISTR speaking:'
-            WRITE(LUWRT,*) 'number of active T-blocks lower than number
-     & of procs ==> restricted use of ',IMINNP,'procs'
-          END IF
-        END IF
+        write(luwrt,'(/a,i6)') '*** error in t_block_distr:'//
+     &    ' number of active T blocks lower than the total number of'//
+     &    ' processes. please decrease the number of processes to:',
+     &    IMINNP
+        call quit('*** error in t_block_distr: number of processes >
+     & number of active T blocks. the distribution algorithm
+     & will therefore fail (see output for more information).***')
         NTEMPP = IMINNP
         IF( MYPROC .ge. ICOUNTABLK ) THEN 
           IAM_NOT_INV_T = 0
@@ -1238,15 +1247,7 @@ C
           GOTO 8888
         END IF
       END IF
-csk      WRITE(LUWRT,*) ' THIS IS IT_TTPL before loop'
-csk      CALL IWRTMAMN(IT_TTPL,1,NDIM*IRC_SAVE,1,NDIM*IRC_SAVE,LUWRT)
-csk          WRITE(LUWRT,*) ' That is enough for the moment! :) '
-csk          CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-csk          CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-csk          CALL MPI_BARRIER(MPI_COMM_WORLD,IERR)
-csk          CALL Abend2('Stefan forced me to stop in T_BLOCK_DISTR')
-csk      WRITE(LUWRT,*) ' IT_ACTIVE_R, IT_ACTIVE_I',IT_ACTIVE_R,
-csk     &                                           IT_ACTIVE_I
+
       IAM_NOT_INV_T = 1
 C
 C     starting the treausure quest for the ?optimal? T-block distribution
@@ -1393,7 +1394,8 @@ C
      &' is not distributed'
              WRITE(LUWRT,*) 'Since I do not know how to proceed, 
      &                       I will stop!'
-               Call Abend2('NE T_BLOCK_DISTR: T block not distributed')
+             call quit('*** error in t_block_distr: active T block
+     & not distributed among the processes.***')
             END IF
           END DO
         END DO
@@ -2231,11 +2233,16 @@ C     ^ loop over real and imag part of density matrix elements
 *
       IF(INONVAN.LT.NMPROC) THEN
         IMINNP = MIN(INONVAN,NMPROC)
-        IF(NTEST.GT.0) THEN
-            WRITE(LUWRT,*) 'subroutine DISTBLKND speaking!'
-            WRITE(LUWRT,*) 'number of active blocks lower than number of
-     & procs --> I only use',IMINNP - 1,'procs'
-        END IF
+        write(luwrt,'(/a,i6)') '*** error in distblknd_rel:'//
+     &    ' number of active blocks lower than the total number of'//
+     &    ' processes. please decrease the number of processes to:',
+     &    IMINNP
+        write(luwrt,'(/a)') ' alternatively change the GAS'//
+     &    ' specification (more GA spaces) to increase the number of'//
+     &    ' TTSS blocks.***'
+        call quit('*** error in distblknd_rel:: number of processes >
+     & number of active TTSS blocks. the distribution algorithm
+     & will therefore fail (see output for more information).***')
         IF(MYPROC.GE.INONVAN) THEN
           IAM_NOT_INV = 0
           GOTO 1001

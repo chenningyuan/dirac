@@ -3248,13 +3248,16 @@ CSK      NTEST = 10
 *
       IF(INONVAN.LT.NMPROC) THEN
         IMINNP = MIN(INONVAN,NMPROC)
-        IF(NTEST.GT.0) THEN
-          IF(MYPROC.EQ.MASTER) THEN
-            WRITE(6,*) 'subroutine DISTBLKND speaking!'
-            WRITE(6,*) 'number of active blocks lower than number of
-     & procs --> I only use',IMINNP+1,'procs'
-          END IF
-        END IF
+        write(6,'(/a,i6)') '*** error in distblknd:'//
+     &    ' number of active blocks lower than the total number of'//
+     &    ' processes. please decrease the number of processes to:',
+     &    IMINNP
+        write(6,'(/a)') ' alternatively change the GAS'//
+     &    ' specification (more GA spaces) to increase the number of'//
+     &    ' TTSS blocks.***'
+        call quit('*** error in distblknd: number of processes >
+     & number of active TTSS blocks. the distribution algorithm
+     & will therefore fail (see output for more information).***')
         IF(MYPROC.GE.INONVAN) GOTO 1001
       ELSE
         IMINNP = NMPROC
@@ -3422,9 +3425,16 @@ C
       NTEMPP = IMINNP
       IF(ICOUNTABLK.LT.NMPROC) THEN
         IMINNP = MIN(ICOUNTABLK,IMINNP)
-        WRITE(LUWRT,*) 'subroutine DISTBLKND_1 speaking!'
-        WRITE(LUWRT,*) 'number of active blocks lower than number of
-     & CPUs --> I only use',IMINNP,'CPUs'
+        write(6,'(/a,i6)') '*** error in distblknd_1:'//
+     &    ' number of active blocks lower than the total number of'//
+     &    ' processes. please decrease the number of processes to:',
+     &    IMINNP
+        write(6,'(/a)') ' alternatively change the GAS'//
+     &    ' specification (more GA spaces) to increase the number of'//
+     &    ' TTSS blocks.***'
+        call quit('*** error in distblknd_1: number of processes >
+     & number of active TTSS blocks. the distribution algorithm
+     & will therefore fail (see output for more information).***')
         NTEMPP = IMINNP
         IF(MYPROC.GE.ICOUNTABLK) THEN
           IAM_NOT_INV =   0
@@ -3847,9 +3857,16 @@ CSK      WRITE(6,*)'MXSIZE of MYPROC',MXSIZE,MYPROC
       NTEMPP = IMINNP
       IF( ICOUNTABLK .lt. NMPROC) THEN
         IMINNP = MIN( ICOUNTABLK, IMINNP )
-        WRITE(LUWRT,*) 'subroutine FIND_SBATCH_DISTR speaking!'
-        WRITE(LUWRT,*) 'number of active blocks lower than number of
-     & CPUs --> I only use',IMINNP,'CPUs'
+        write(6,'(/a,i6)') '*** error in distblknd_2:'//
+     &    ' number of active blocks lower than the total number of'//
+     &    ' processes. please decrease the number of processes to:',
+     &    IMINNP
+        write(6,'(/a)') ' alternatively change the GAS'//
+     &    ' specification (more GA spaces) to increase the number of'//
+     &    ' TTSS blocks.***'
+        call quit('*** error in distblknd_2: number of processes >
+     & number of active TTSS blocks. the distribution algorithm
+     & will therefore fail (see output for more information).***')
         NTEMPP = IMINNP
         IF( MYPROC .ge. ICOUNTABLK ) THEN
           IAM_NOT_INV =   0
