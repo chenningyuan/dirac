@@ -486,7 +486,7 @@ C     call iwrtma(icls,ngas,ncls,ngas,ncls)
       call REWINE(LUSCR,-1)
       call itods(-1,1,-1,LUSCR)
 *
-* Type of alpha and beta strings
+* Loop over real and imaginary parts
       do IRIR = 1,IRC,1
         if (NTEST.ge.50) write(6,*) 'right r/i is  ',IRIR
         if (IRIR.EQ.2) then
