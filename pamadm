@@ -21,8 +21,11 @@
 #           prepare release DIRAC10 with selected modules
 #           ./pamadm --xpp --adc --visual --london --matrixop --amfi --krmc --emb --export=DIRAC10
 #
-#           select DIRAC10 functionality without exporting
+#           select a sebset of DIRAC10 functionalities without exporting
 #           ./pamadm --xpp --adc --visual --london --matrixop --amfi --krmc --emb
+#           or shortly
+#           ./pamadm --dirac10
+#
 
 
 from optparse import OptionParser
@@ -497,6 +500,9 @@ dirac_modules[this_module] = dirac_module('log', 'Will log interesting matrices 
 dirac_modules[this_module].add_cppflag('MOD_LOG')
 dirac_modules[this_module].take_out_of_adm()
 
+# list of selected modules for the DIRAC2010 release
+# ===================================================
+dirac10_modules=['xpp','adc','visual','london','matrixop','amfi','krmc','emb']
 
 # define input options
 # ====================
@@ -527,6 +533,12 @@ parser.add_option('--auto',
                   dest='auto',
                   default=False,
                   help="Automatically include all modules that the selected modules depend on")
+parser.add_option('--dirac10',
+                  action='store_true',
+                  dest='dirac10',
+                  default=False,
+                  help="Include selected modules for the DIRAC2010 release")
+
 
 # complain if user still uses ./pamadm ... make
 if sys.argv[-1] == 'make':
@@ -537,6 +549,12 @@ if sys.argv[-1] == 'make':
 # ===========
 
 (options, args) = parser.parse_args()
+
+
+# can not have both "adm" and "dirac10" ("dirac10" is the subset of "adm" set of modules)
+if (options.adm and options.dirac10):
+   sys.exit('please use either -a/--adm or --dirac10, not both of them!')
+
 if options.adm:
    for module in dirac_modules:
        if dirac_modules[module].is_included:
@@ -546,6 +564,9 @@ if options.adm:
           if dirac_modules[module].part_of_adm:
              dirac_modules[module].include()
 
+if options.dirac10:
+   for module in dirac10_modules:
+      dirac_modules[module].include()
 
 # check dependencies among modules
 # ================================
@@ -562,7 +583,6 @@ for module in dirac_modules:
                  error_message += '\n(use ./pamadm --auto to automatically add all required modules)'
                  sys.exit(error_message)
 
-
 # report on screen
 # ================
 
@@ -574,7 +594,10 @@ if len(sys.argv) == 1:
    print 'only core functionality selected'
    print '(run ./pamadm -h to see all available options)'
 else:
-   print 'Active modules:'
+   if (options.dirac10):
+     print 'Active modules of the DIRAC10 release:'
+   else:
+     print 'Active modules:'
 for module in dirac_modules:
     if dirac_modules[module].is_included:
        print '       ' + dirac_modules[module].message
