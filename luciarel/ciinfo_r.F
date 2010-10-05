@@ -1417,6 +1417,7 @@ C
 *. C2H
         DBGSYM(1:6) ='C2h   '
 *
+*. Adjoints
         IADJSYM(1) = 1
         IADJSYM(2) = 2
         IADJSYM(3) = 3
@@ -1425,7 +1426,7 @@ C
         IADJSYM(6) = 5
         IADJSYM(7) = 8
         IADJSYM(8) = 7
-*
+* inverse elements
         INVELM(1) = 1
         INVELM(2) = 2
         INVELM(3) = 3
@@ -1509,7 +1510,6 @@ C
               end if
            end do
         end do
-        continue
       END IF
 *
 CSK   NTEST = 100
