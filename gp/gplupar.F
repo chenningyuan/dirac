@@ -1669,9 +1669,9 @@ C               recieve block and transfer to file
                 CALL MPI_RECV(VEC1,ILEN,MPI_REAL8,MASTER,91,
      &                        MPI_COMM_WORLD,ISTAT,IERR)
                 LUOUTLIST( IOFFSET_INT_LUOUT + NUM_BLK - 1 ) = IONE
-csk                WRITE(6,*) ' S will write this to disk for block',
-csk     &          IOFFSET_INT_LUOUT + NUM_BLK - 1, IBLK
-csk                CALL WRTMATMN(VEC1,1,ILEN,1,ILEN,6)
+!               WRITE(6,*) ' S will write this to disk for block',
+!    &          IOFFSET_LUOUT, IBLK
+!               CALL WRTMATMN(VEC1,1,ILEN,1,ILEN,6)
                 CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,ILEN,
      &                                 MPI_REAL8,ISTAT,IERR)
 C
@@ -1717,9 +1717,9 @@ C               count active blocks
 C
                 IF( IMZERO .eq. 0 ) THEN
 C
-csk               WRITE(LUWRT,*) ' M will write this to disk for block',
-csk  &            IOFFSET_INT_LUOUT + NUM_BLK - 1, IBLK
-csk               CALL WRTMATMN(VEC1,1,ILEN,1,ILEN,LUWRT)
+!                 WRITE(LUWRT,*) ' M will write this to disk for block',
+!    &            IOFFSET_LUOUT, IBLK
+!                 CALL WRTMATMN(VEC1,1,ILEN,1,ILEN,LUWRT)
 C
                   CALL MPI_FILE_WRITE_AT(LUOUT,IOFFSET_LUOUT,VEC1,ILEN,
      &                                 MPI_REAL8,ISTAT,IERR)

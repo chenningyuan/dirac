@@ -592,7 +592,9 @@ CSK        CALL DZERO(SCRRED,NROOT)
 *
         END DO
 *
-        CALL IZERO(LU2LIST,NROOT)
+!       fix for memory crash on "idle" co-workers
+!       CALL IZERO(LU2LIST,NROOT)
+        CALL IZERO(LU2LIST,NROOT*MY_ACT_BLK2)
 *
         DO IROOT = 1, NROOT
 *

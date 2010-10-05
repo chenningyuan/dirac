@@ -532,16 +532,17 @@ C     store on common block
 C
       IF( ICOUNTABLK .lt. NMPROC ) THEN
         IMINNP = MIN( ICOUNTABLK,IMINNP )
-        write(luwrt,'(/a,i6)') '*** error in block_distr_1:'//
-     &    ' number of active blocks lower than the total number of'//
-     &    ' processes. please decrease the number of processes to:',
-     &    IMINNP
-        write(luwrt,'(/a)') ' alternatively change the GAS'//
-     &    ' specification (more GA spaces) to increase the number of'//
-     &    ' TTSS blocks.***'
-        call quit('*** error in block_distr_1: number of processes >
-     & number of active TTSS blocks. the distribution algorithm
-     & will therefore fail (see output for more information).***')
+        if(IMINNP.lt.NMPROC)then
+        write(luwrt,'(/a,/a,/a,i6,/a)') 
+     &  '  **************** info from block_distr_1 *****************',
+     &  '  number of active blocks lower than the number of processes.',
+     &  '  please decrease the number of processes to:',IMINNP,
+     &  '  or can you afford to let the other processes idle? ;)'
+        write(luwrt,'(a,/a,/a)') 
+     &  '  alternatively change the GAS specification (more GA spaces)',
+     &  '  to increase the number of TTSS blocks.',
+     &  '  **********************************************************'
+        end if
         NTEMPP = IMINNP
         IF( MYPROC .ge. ICOUNTABLK ) THEN 
           IAM_NOT_INV = 0
@@ -809,16 +810,17 @@ C
       IAM_NOT_INV = 0
       IF( ICOUNTABLK .lt. NMPROC ) THEN
         IMINNP = MIN( ICOUNTABLK,IMINNP )
-        write(luwrt,'(/a,i6)') '*** error in block_distr_2:'//
-     &    ' number of active blocks lower than the total number of'//
-     &    ' processes. please decrease the number of processes to:',
-     &    IMINNP
-        write(luwrt,'(/a)') ' alternatively change the GAS'//
-     &    ' specification (more GA spaces) to increase the number of'//
-     &    ' TTSS blocks.***'
-        call quit('*** error in block_distr_2: number of processes >
-     & number of active TTSS blocks. the distribution algorithm
-     & will therefore fail (see output for more information).***')
+        if(IMINNP.lt.NMPROC)then
+        write(luwrt,'(/a,/a,/a,i6,/a)') 
+     &  '  **************** info from block_distr_2 *****************',
+     &  '  number of active blocks lower than the number of processes.',
+     &  '  please decrease the number of processes to:',IMINNP,
+     &  '  or can you afford to let the other processes idle? ;)'
+        write(luwrt,'(a,/a,/a)') 
+     &  '  alternatively change the GAS specification (more GA spaces)',
+     &  '  to increase the number of TTSS blocks.',
+     &  '  **********************************************************'
+        end if
         NTEMPP = IMINNP
         DO JJ = 1, NTEMPP
           IF( MYPROC .eq. IALLGRPLST(JJ) ) IAM_NOT_INV = 1 
@@ -1622,20 +1624,26 @@ C
       DIMENSION IGROUPLIST(*), IBLOCKL_X(NUM_BLOCKS,*)
       DIMENSION IBLOCKD_X(NUM_BLOCKS,*)
       INTEGER NBLK_MAX_GP
+      integer(kind=mpi_offset_kind) ivec_max_gp_tmp2, ivec_max_gp_tmp
+      integer                       nblk_max_gp_tmp2, nblk_max_gp_tmp
       INTEGER(KIND=MPI_OFFSET_KIND) MULT1, MULT2, JVEC1, JVEC2
       INTEGER(KIND=MPI_OFFSET_KIND) LVECLEN, IVEC_MAX_GP, IPROC_OFF
 C
-      IVEC_MAX_GP   = 0
-      NBLK_MAX_GP   = 0
-      JVEC1         = IVECIN_ILU1
-      JVEC2         = IVECIN_ILU2
-      MULT1         = IRC_SAVE 
-      MULT2         = 0
+      IVEC_MAX_GP      = 0
+      NBLK_MAX_GP      = 0
+      ivec_max_gp_tmp2 = 0
+      nblk_max_gp_tmp2 = 0
+      ivec_max_gp_tmp  = 0
+      nblk_max_gp_tmp  = 0
+      JVEC1            = IVECIN_ILU1
+      JVEC2            = IVECIN_ILU2
+      MULT1            = IRC_SAVE 
+      MULT2            = 0
 C
-      LVECLEN      = 0
-      NBLK_ACT     = 0
-      MY_VEC1_IOFF = 0
-      MY_VEC2_IOFF = 0
+      LVECLEN          = 0
+      NBLK_ACT         = 0
+      MY_VEC1_IOFF     = 0
+      MY_VEC2_IOFF     = 0
 C     WRITE(LUWRT,*) '  NEWCOMM_PROC:', NEWCOMM_PROC
 C
 C     determine IVEC_MAX_GP and NBLK_MAX_GP
@@ -1649,8 +1657,8 @@ C         next active symmetry irrep IJSYM (no absolute symmetry label)
           LVECLEN  = 0
           NBLK_ACT = 0
           DO JBLK = 1, NUM_BLOCKS
-C           WRITE(LUWRT,*) '  IBLOCKD_X(JBLK,IJSYM):',
-C    &                        IBLOCKD_X(JBLK,IJSYM)
+!           WRITE(6,*) '  IBLOCKD_X(JBLK,IJSYM):',
+!    &                        IBLOCKD_X(JBLK,IJSYM)
             IF(IBLOCKD_X(JBLK,IJSYM) .eq. JPROC ) THEN
               LVECLEN  = LVECLEN + IBLOCKL_X(JBLK,IJSYM)
               NBLK_ACT = NBLK_ACT + 1
@@ -1658,12 +1666,27 @@ C    &                        IBLOCKD_X(JBLK,IJSYM)
           END DO
 C         max vec length + block count for this symmetry irrep 
 C         and process JPROC
-          IVEC_MAX_GP   = MAX(IVEC_MAX_GP,LVECLEN)
-          NBLK_MAX_GP   = MAX(NBLK_MAX_GP,NBLK_ACT)
-C         WRITE(LUWRT,*) '  IVEC_MAX_GP,NBLK_MAX_GP:',
-C    &                      IVEC_MAX_GP,NBLK_MAX_GP
+          IVEC_MAX_GP_tmp2 = MAX(IVEC_MAX_GP_tmp2,LVECLEN)
+          NBLK_MAX_GP_tmp2 = MAX(NBLK_MAX_GP_tmp2,NBLK_ACT)
+!         WRITE(6,*) '  IVEC_MAX_GP,NBLK_MAX_GP:',
+!    &                      IVEC_MAX_GP,NBLK_MAX_GP
         END DO
       END DO
+
+!     make sure that all processes in this group obtain the correct
+!     offset
+      call mpi_allreduce(ivec_max_gp_tmp2,ivec_max_gp_tmp,
+     &                   1,MPI_INTEGER8,mpi_max,
+     &                   mynew_comm,ierr)
+      call mpi_allreduce(nblk_max_gp_tmp2,nblk_max_gp_tmp,
+     &                   1,my_MPI_INTEGER,mpi_max,
+     &                   mynew_comm,ierr)
+      
+      ivec_max_gp = ivec_max_gp_tmp
+      nblk_max_gp = nblk_max_gp_tmp
+
+!     WRITE(6,*) '  IVEC_MAX_GP,NBLK_MAX_GP:',
+!    &              IVEC_MAX_GP,NBLK_MAX_GP,myproc
 C
 C     set MY_VEC1_IOFF, MY_VEC2_IOFF, MY_ACT_BLK1, MY_ACT_BLK2  
 C     --------------------------------------------------------
@@ -1689,12 +1712,14 @@ C       next process in this group
       END DO
 C
       IF( NPTEST_VAR .ge. 10 ) THEN
-        WRITE(LUWRT,'(2X,A,1X,I18)') 'ILU1  offset :', MY_LU1_OFF
-        WRITE(LUWRT,'(2X,A,1X,I18)') 'ILU2  offset :', MY_LU2_OFF
-        WRITE(LUWRT,*) '  MY_VEC1_IOFF :', MY_VEC1_IOFF
-        WRITE(LUWRT,*) '  MY_VEC2_IOFF :', MY_VEC2_IOFF
-        WRITE(LUWRT,*) '  MY_ACT_BLK1  :', MY_ACT_BLK1
-        WRITE(LUWRT,*) '  MY_ACT_BLK2  :', MY_ACT_BLK2
+        WRITE(LUWRT,'(2X,A,1X,I18,i2)') 'ILU1  offset :', MY_LU1_OFF,
+     &  myproc
+        WRITE(LUWRT,'(2X,A,1X,I18,i2)') 'ILU2  offset :', MY_LU2_OFF,
+     &  myproc
+        WRITE(LUWRT,*) '  MY_VEC1_IOFF :', MY_VEC1_IOFF, myproc
+        WRITE(LUWRT,*) '  MY_VEC2_IOFF :', MY_VEC2_IOFF, myproc
+        WRITE(LUWRT,*) '  MY_ACT_BLK1  :', MY_ACT_BLK1, myproc
+        WRITE(LUWRT,*) '  MY_ACT_BLK2  :', MY_ACT_BLK2, myproc
       END IF
 C
       END
@@ -1744,8 +1769,8 @@ C       offset for ILU1 and LU1LIST
         INT_ILU1_IOFFX = 1 + NVEC_TOT * MY_ACT_BLK2
         NBLOCK         = IXBLK(IXSYM)
 C       WRITE(LUWRT,*) ' copy #vector(s) for sym',NVEC,IXSYM
-C       WRITE(LUWRT,*) ' ILU1_IOFFX and INT_ILU1_IOFFX (MYPROC)',
-C    &                   ILU1_IOFFX,INT_ILU1_IOFFX,MYPROC
+!       WRITE(6,*) ' ILU1_IOFFX and INT_ILU1_IOFFX (MYPROC)',
+!    &                   ILU1_IOFFX,INT_ILU1_IOFFX,MYPROC
 C       WRITE(LUWRT,*) ' LUOUTLIST NOW',MYPROC
 C       CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
 C       distribute C vector(s)
@@ -1758,8 +1783,8 @@ C       close C vector file (opened in GET_LUC_FILE)
 C       keep track of correct offset
         NVEC_TOT = NVEC_TOT + NVEC
       END DO
-!     WRITE(LUWRT,*) ' MY LUOUTLIST AFTER ALL',MYPROC
-!     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,LUWRT)
+!     WRITE(6,*) ' MY LUOUTLIST AFTER ALL',MYPROC
+!     CALL IWRTMAMN(LU1LIST,1,IALL_LU1,1,IALL_LU1,6)
 C
       END
 ***********************************************************************

@@ -2772,16 +2772,18 @@ C
 *
       IF(ICOUNTABLK.LT.NTEMPP) THEN
         IMINNP = MIN(ICOUNTABLK,NTEMPP)
-        write(6,'(/a,i6)') '*** error in find_even_distr:'//
+        if(IMINNP.lt.NMPROC)then
+        write(luwrt,'(/a,/a,i6,/a)') 
+     &    '   *** info from find_even_distr:'//
      &    ' number of active blocks lower than the total number of'//
-     &    ' processes. please decrease the number of processes to:',
-     &    IMINNP
-        write(6,'(/a)') ' alternatively change the GAS'//
+     &    ' processes.',
+     &    '   please decrease the number of processes to:',
+     &        IMINNP,
+     &    '   or can you afford to let the other processes idle? ;)'
+        write(luwrt,'(/a)') '   alternatively change the GAS'//
      &    ' specification (more GA spaces) to increase the number of'//
      &    ' TTSS blocks.***'
-        call quit('*** error in find_even_distr: number of processes >
-     & number of active TTSS blocks. the distribution algorithm
-     & will therefore fail (see output for more information).***')
+        end if
         NTEMPP = IMINNP
       END IF
 *

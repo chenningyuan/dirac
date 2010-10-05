@@ -811,25 +811,20 @@ C
 C
 C     set file offset/view for MPI-I/O files
 #if defined (VAR_MPI2)
-C     dummy file array allocation for neglected CPUs...
-      IF( IAM_NOT_INV .eq. 0 ) THEN
-        IALL_LU1 = 1
-        IALL_LU2 = 1
-        IALL_LUC = NUM_BLOCKS2
-      END IF
 C     set active blocks for C scratch file ILUC
       MY_ACT_BLK_ALL = NUM_BLOCKS
 C     general offset
       MY_LUC_OFF = 0
 C
       CALL CALC_OFF_MPI_FILE_XPRP(IGROUPLIST,WORK(KBLOCKLIST),
-     &                            WORK(KNODELIST),NPROP_ROOTS_KRCI,1)
+     &                            WORK(KNODELIST),NPROP_ROOTS_KRCI,
+     &                            NPROP_ROOTS_KRCI)
 C
 C     length for allocation of file arrays
 C     WRITE(LUWRT,*) ' NPROP_ROOTS_KRCI,MY_ACT_BLK2,NUM_BLOCKS,...',
 C    &NPROP_ROOTS_KRCI,MY_ACT_BLK2,NUM_BLOCKS,NUM_BLOCKS2
       IALL_LU1 = NPROP_ROOTS_KRCI * MY_ACT_BLK2
-      IALL_LU2 = 1 * MY_ACT_BLK2
+      IALL_LU2 = NPROP_ROOTS_KRCI * MY_ACT_BLK2
       IALL_LUC = NUM_BLOCKS2
 C     WRITE(LUWRT,*) ' RMEMCHK before list alloc',
 C    &                 IALL_LU1,IALL_LU2,IALL_LUC
@@ -1116,7 +1111,7 @@ C     print section
 C     _____________
 C
       NTESTX = 00
-      IF( NTESTX .gt. 5)THEN
+      IF( NTESTX .gt. 5 .and. myproc.eq.0)THEN
         WRITE(LUWRT,*) ' calculation of XPROPMAT finished'
         WRITE(LUWRT,*) ' content of XPROPMAT'
         CALL WRTMATMN(XPROPMAT,1,LXPRPKRCI,1,LXPRPKRCI,LUWRT)
