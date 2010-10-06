@@ -267,6 +267,8 @@ C
     5 CALL QUIT('Error exit while reading namelist CCFOPR')
     6 CONTINUE
 C     Switch on evaluation of property output if necessary
+      IF (SPFR.AND.DOMP2G) 
+     & CALL QUIT ('MP2 density matrix not available in spinfree mode')
       IF (DOMP2G) THEN
           DOEXP = .TRUE.
           IPRPWF = 0
@@ -2337,6 +2339,7 @@ C
 #include "complex.inc"
 #include "ccpar.inc"
 #include "dcbmp2no.h"
+#include "mp1stpr.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
       DIMENSION ISTAT(MPI_STATUS_SIZE)
@@ -2395,6 +2398,20 @@ C
       CALL MEMOPT('REAL',XMO,NORBT*NORBT*NZ,CC,KFREE,LFREE,ALLOC)
       NBUF1 = MAX(JOOOO(NREP+1),JVOOO(NREP+1),
      &            JVVOO(NREP+1),JVOVO(NREP+1))
+
+C     Calculate the size of the array needed for the sorted T2 array that
+C     is used in MOLTRA. In spinfree calculations this will be larger than
+C     the the dimension used in RELCCSD (was a nasty bug in DIRAC08)
+C     This initialization does not fix the problem with spinfree calculations,
+C     however, various routines (e.g. DOOTODIR and DVVTODIR) do need to be
+C     adapted to the fact that in spinfree calculations there is a many-to-1 
+C     correspondence between the list of irreps used by RELCCSD and the 
+C     fermion irreps of DIRAC. Probably the best solution is to rewrite these
+C     routines using an index vector that gives the correspondence.
+
+      CALL INIT_T1(CC(T2),.FALSE.)
+      CALL INIT_T2(CC(T2),.FALSE.)
+      NBUF1 = MAX(NBUF1, NTMATR1, NTMATR2)
       NBUF2 = NBUF1
 C
 C The DIIS algorithm is used for the Z-vector and Lamda-equations
@@ -2519,13 +2536,13 @@ C
              RETURN
           ENDIF
 #endif
-CMI      CALL MEMCHK('mp2g 0.1',CC,1)
+         CALL MEMCHK('mp2g 0.1',CC,1)
 C
 C        Get MP2 amplitudes and lambdas
 C
          CALL MP2EQN(EPS,CC(FVO),CC(T1),CC(S1),CC(T2),CC(S2))
 
-CMI      CALL MEMCHK('mp2g 0.2',CC,1)
+         CALL MEMCHK('mp2g 0.2',CC,1)
 C
 C        Get amplitude part of density matrix
 C
@@ -2547,7 +2564,6 @@ C
      &      CALL MP2ZVEC(CC(T2),CC(BUF1),CC(BUF2),CC(BUF3),
      &                   NBUF3,CC(XMO),CC(DMO))
 
-CMI      ... here it fails in the Levy-Leblond mode....
          CALL MEMCHK('mp2g 1.1.1',CC,T2)
          CALL MEMCHK('mp2g 1.1.2',CC,BUF1)
          CALL MEMCHK('mp2g 1.1.2',CC,BUF2)
@@ -2556,8 +2572,6 @@ CMI      ... here it fails in the Levy-Leblond mode....
          CALL MEMCHK('mp2g 1.1.5',CC,DMO)
 
          CALL MEMCHK('mp2g 1.1',CC,1)
-
-CMI       call quit('here in relccsd finished')
 
 C
 C        Create upper triangle of density matrix

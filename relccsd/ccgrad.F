@@ -440,12 +440,10 @@ C     | Generate the T's in the right order for the    |
 C     | contraction with the 3/4 transformed integrals |
 C     +------------------------------------------------+
 C
-CMI   CALL MEMCHK('mp2zvec 1',BUF1,1) 
 
       CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
      &              T2,BUF1)
 
-CMI ... these two subroutines cause the memchk error in the Levy-Leblond mode...
       CALL SRTDIR (NREP,MULTB,MVO,J2VOVO,JJVO,JJVO,BUF1,BUF2)
       CALL SRTT1T2(BUF2,BUF1)
 
@@ -463,7 +461,6 @@ C     +-------------------------------------------------------+
 C
       KFREE=1
       LFREE=NBUF3*RCW
-CMI   CALL MEMCHK('mp2zvec 1',XMO,2) 
       CALL CALCDJI(DMO,XMO,BUF3,KFREE,LFREE)
 C
 C     +-------------------------------------------------+
@@ -480,10 +477,7 @@ C     +----------------------------------------+
 C
       KFREE=1
       LFREE=NBUF3*RCW
-CMI   CALL MEMCHK('mp2zvec 1.1.3',XMO,1) 
-CMI    ... in this routine MEMCHK works fine..
       CALL PRPXLR_MPG(DMO,XMO,BUF3,KFREE,LFREE)
-CMI   CALL MEMCHK('mp2zvec 1.1.3',XMO,1) 
 C 
       CALL FLSHFO(IW)
 

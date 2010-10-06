@@ -1415,7 +1415,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck init_t1*/
-      SUBROUTINE INIT_T1(TMATRX1)
+      SUBROUTINE INIT_T1(TMATRX1,DO_ZERO)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Written by Joost van Stralen june 2003.
@@ -1433,6 +1433,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "mp1stpr.h"
 C
       DIMENSION TMATRX1(*)
+      LOGICAL DO_ZERO
 C
       NTMATR1 = 0
       CALL IZERO(IOFFTM1,32)
@@ -1458,13 +1459,13 @@ C
 C
 C     put the T matrix to zero
 C
-      CALL DZERO(TMATRX1,NTMATR1)  
+      IF (DO_ZERO) CALL DZERO(TMATRX1,NTMATR1)  
 C 
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck init_t2*/
-      SUBROUTINE INIT_T2(TMATRX2)
+      SUBROUTINE INIT_T2(TMATRX2,DO_ZERO)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Written by Joost van Stralen September 2003.
@@ -1482,6 +1483,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "mp1stpr.h"
 C
       DIMENSION TMATRX2(*)
+      LOGICAL DO_ZERO
 C
       NTMATR2 = 0
       CALL IZERO(IOFFTM2,32)
@@ -1507,7 +1509,7 @@ C
 C
 C     put the T matrix to zero
 C
-      CALL DZERO(TMATRX2,NTMATR2)
+      IF (DO_ZERO) CALL DZERO(TMATRX2,NTMATR2)
 C     
       RETURN
       END
@@ -1586,11 +1588,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
       DIMENSION TMATRX1(*), TMATRX2(*)
 
-CMI   CALL MEMCHK('SRTT1T2 1.00',TMATRX1,1)
 C
 C     initialize the 2nd T matrix
 C
-      CALL INIT_T2(TMATRX2)
+      CALL INIT_T2(TMATRX2,.TRUE.)
 C
 C     Reorder the stuff
 C
