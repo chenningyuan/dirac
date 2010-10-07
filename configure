@@ -1484,6 +1484,14 @@ setup_math_lib(){
           exit 1
         fi
         ;;
+    apple*)
+       append LIB "-framework $2"
+    ;;
+    user-defined) 
+       libprev=$2
+       libli $libprev $my_old_libs
+       append LIB "-L$libline"
+    ;;
   esac
 
   if [ $IPRINT -ge "5" ];  then
@@ -1577,13 +1585,9 @@ for index in $lib_index; do
     $echo "Default (internal) LAPACK used."
     append cpp_f90 "-DUSE_DIRAC_DLAMCH -DUSE_DIRAC_DLAPACK -DUSE_DIRAC_ZLAPACK"
   elif [ ! -z $index ]; then
-    if [ -n '$old_libs' ]; then
        get_item "$libs" lib_name $index 2
        set -- $lib_name
        setup_math_lib $1 $2
-    else
-       export LIB="$old_libs"
-    fi
   fi
 done
 
@@ -1618,6 +1622,31 @@ nolib () {
    LIB=
 }
 
+########
+# aspg: helper to sort out the mess of old libs
+
+libli () {
+
+libline=''
+linelib=`./config.status "LIBS"`
+linelib=${linelib#*-L}
+linelib="$linelib -L"
+
+ while [ -n "$linelib" ]; do
+  tmp2libs=${linelib%%-L*}
+  tmp2libs=${tmp2libs## }
+  tmp2libs=${tmp2libs%% }
+  llinelib=${linelib%% *}
+
+  if [ "$1" == "$llinelib"  ]; then
+    libline=$tmp2libs
+  fi
+
+  linelib=${linelib#*-L}
+
+ done
+
+}
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 old_lib () {
 # Gets old libraries from Makefile.config
@@ -1646,7 +1675,7 @@ while [ -n "$old_libs" ]; do
 
 # Undo setup_math_lib routine
   case "$tmp_libs" in
-    "veclib") lib_name="apple's veclib";;
+    "veclib") lib_name="veclib";;
     "-lesslp2") lib_name="libesslp2" ;;
     "-lessl") lib_name="libessl" ;;
     "-lblas") lib_name="libblas" ;;
@@ -1662,6 +1691,7 @@ while [ -n "$old_libs" ]; do
     "-lmkl_lapack -lmkl_intel -lmkl_intel_thread -lmkl_core -lguide -lpthread") lib_name="libmkl_intel";;
     "-lmkl_lapack -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lguide -lpthread") lib_name="libmkl_intel_lp64";;
     "-lguide -lpthread -lmkl_itp") lib_name="libmkl_itp" ;;
+    *) lib_name="user-defined" ;;
   esac
   return_libs="$return_libs $lib_name$col_sep $lib_pwd$col_sep Previous installation$row_sep"
 done
