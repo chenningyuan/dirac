@@ -651,12 +651,14 @@ C     ... integral flags
 C
 C     ... calculating omega values only in linear symmetry
       if(doprop_krci.and.dojzexp)then
-        if(.not.linear) dojzexp = .false.
+        if(.not.linear) then 
+          dojzexp = .false.
         write(lupri,'(/a)') '    *** WARNING: calculation of omega'//
      &    ' (<jz> expectation values) states turned off.***'
         write(lupri,'( a)') '    *** please specify linear symmetry'//
      &    ' in your basis set input otherwise j_z is not properly'//
      &    ' defined.'
+        end if
       end if
 C
 C
