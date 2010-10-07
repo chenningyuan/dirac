@@ -124,7 +124,7 @@ print *, '*    Andre S. P. Gomes        CNRS/Universite Lille 1           France
 print *, '*    Trygve U. Helgaker       University of Oslo                Norway       *'
 print *, '*    Johan Henriksson         Linkoeping University             Sweden       *'
 print *, '*    Miroslav Ilias           Matej Bel University              Slovakia     *'
-print *, '*    Christoph R. Jacob       ETH Zurich                        Switzerland  *'
+print *, '*    Christoph R. Jacob       Karlsruhe Institute of Technology Germany      *'
 print *, '*    Stefan Knecht            CNRS/Université de Strasbourg     France       *'
 print *, '*    Patrick Norman           Linköping University              Sweden       *'
 print *, '*    Jeppe Olsen              Aarhus University                 Denmark      *'
