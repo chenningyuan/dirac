@@ -652,6 +652,11 @@ C
 C     ... calculating omega values only in linear symmetry
       if(doprop_krci.and.dojzexp)then
         if(.not.linear) dojzexp = .false.
+        write(lupri,'(/a)') '    *** WARNING: calculation of omega'//
+     &    ' (<jz> expectation values) states turned off.***'
+        write(lupri,'( a)') '    *** please specify linear symmetry'//
+     &    ' in your basis set input otherwise j_z is not properly'//
+     &    ' defined.'
       end if
 C
 C
@@ -952,6 +957,10 @@ C     ... only natural orbitals occupation numbers
       IF( NATOLCR_KRCI )THEN
         WRITE(LUPRI,'(A)') ' * Calculation of nat. orb. occ. numbers'
       END IF
+!     additional check because we might have turned off the <j_z>
+!     calculation. see comment above for more information.
+      if(dooscillst.or.dodipmom_krci.or.dojzexp) doprop_krci = .true.
+
       IF( DOPROP_KRCI ) THEN
 C       ... obtain operator symmetry in LUCIARELs double group 
 C       subgroup notation
@@ -959,8 +968,8 @@ C       subgroup notation
         WRITE(LUPRI,'(A/)')
      &     ' * Property calculation for the following'// 
      &     ' one-electron operators: '
-        IF(DOOSCILLST.or.dodipmom_krci) CALL DEF_OSCILL(WORK,LWORK,0)
-        IF(DOJZEXP) CALL DEF_OMEGAQUANT(WORK,LWORK,0)
+        if(dooscillst.or.dodipmom_krci)call def_oscill(work,lwork,0)
+        if(dojzexp)                    call def_omegaquant(work,lwork,0)
         DO I = 1, NPROP_KRCI
 C         ... initialize operator symmetry array
           ISYMOPPRP_KRCI(I) = 0
