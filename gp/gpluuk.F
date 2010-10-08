@@ -477,6 +477,7 @@ C     DIMENSION EV(*)
       DIMENSION IRPS(*),IND(*)
       CHARACTER*4 REPNA(*)
       REAL*8   , ALLOCATABLE :: EVI(:)
+      INTEGER :: IERR
       LOGICAL DODBG
 C
 C---------------Local variables--------------------------------------
@@ -516,12 +517,12 @@ C     DODBG = .TRUE.
       call FLSHFO(LUPRI)
 
       IF (IRCW.EQ.2) THEN
-        ALLOCATE(EVI(N_TOTAL))
+        ALLOCATE(EVI(N_TOTAL),STAT=IERR)
         DO I=1,N_TOTAL
          EVI(I) = EV(1,I)
         ENDDO
         CALL INDEXX(N_TOTAL,EVI,INDX)
-        DEALLOCATE(EVI)
+        DEALLOCATE(EVI,STAT=IERR)
       ELSE IF (IRCW.EQ.1) THEN
         CALL INDEXX(N_TOTAL,EV(1,1),INDX)
       ELSE
@@ -555,25 +556,15 @@ C
         CALL QUIT('PRT_EV: wrong IRCW value !')
       ENDIF
 C
-C     write(LUPRI,*) 'in FS_ANALYSIS1...3'
-C     call FLSHFO(LUPRI)
-
       ILEVEL=0
       EW=0.0D0
       EWIM = 0.0D0
-
-CMI   EWF=EV(INDX(1))
       EWF=EV(1,INDX(1))
       NEW=0
       AVER=0.0D0
       AVERIM=0.0D0
 
-C     write(LUPRI,*) 'in FS_ANALYSIS1...4'
-C     call FLSHFO(LUPRI)
-
       DO I=1,N_TOTAL
-
-CMI     E = EV(INDX(I))
         E = EV(1,INDX(I))
         IF (IRCW.EQ.2) EIM = EV(2,INDX(I))
 
@@ -621,11 +612,7 @@ CMI     E = EV(INDX(I))
 
       ENDDO
 
-C     write(LUPRI,*) 'in FS_ANALYSIS1...5'
-C     call FLSHFO(LUPRI)
-
       IF (NEW.NE.0) THEN
-CMI    WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW,EW+E_OFF,NEW
         IF (IRCW.EQ.1) THEN
           WRITE(LUPRI,1010) ILEVEL,EW-EWF,EW,EW+E_OFF,NEW
         ELSE IF (IRCW.EQ.2) THEN
@@ -637,32 +624,19 @@ C    &    EV(2,INDX(I)),NEW
 
       WRITE(LUPRI,1020) AVER/DBLE(N_TOTAL)+E_OFF
 
-CMI ... print out conversion factors (from codata)
-CMI   WRITE(LUPRI,'(/,1X,A,F14.10,A,F17.9,A)')
-CMI  & '( 1 au =',XTEV,' eV  / ',XTKAYS,' cm-1)' 
-
-C     write(LUPRI,*) 'in FS_ANALYSIS1...6'
-C     call FLSHFO(LUPRI)
-
 CMI  ... printout with symmetry classification ...real energies only...
       DO IRP1 = 1, N_IRPS, 8
       IRP2 = MIN0(N_IRPS,IRP1+7)
       WRITE(LUPRI,1025) (REPNA(I),I=IRP1,IRP2)
       ILEVEL=0
       EW=0.0D0
-CMI   EWF=EV(INDX(1))
       EWF=EV(1,INDX(1))
       NEW=0
       DO JRP = IRP1, IRP2
          IND(JRP) = 0
       END DO
 
-C     write(LUPRI,*) 'in FS_ANALYSIS1...7'
-C     call FLSHFO(LUPRI)
-C
-
       DO 140 I=1,N_TOTAL
-CMI     E=EV(INDX(I))
         E=EV(1,INDX(I))
         IF (ABS(E-EW).GT.DEGEN) THEN
           IF (NEW.NE.0)
@@ -682,18 +656,9 @@ CMI     E=EV(INDX(I))
           EW=((NEW-1)*EW+E)/DBLE(NEW)
         ENDIF
 
-C     write(LUPRI,*) 'in FS_ANALYSIS1...8'
-C     call FLSHFO(LUPRI)
-
  140    CONTINUE
 
-C     write(LUPRI,*) 'in FS_ANALYSIS1...8.1'
-C     call FLSHFO(LUPRI)
-
       IF (NEW.NE.0) THEN
-
-C     write(LUPRI,*) 'in FS_ANALYSIS1...9.1'
-C     call FLSHFO(LUPRI)
 
          WRITE(LUPRI,1030) ILEVEL,
      &   XTEV*(EW-EWF),XTKAYS*(EW-EWF),
@@ -701,14 +666,7 @@ C     call FLSHFO(LUPRI)
 
       ENDIF
 
-C     write(LUPRI,*) 'in FS_ANALYSIS1...9.2'
-C     call FLSHFO(LUPRI)
-
       ENDDO
-
-!      write(LUPRI,*) 'PRT_EV done.'
-      call FLSHFO(LUPRI)
-
 
  1000 FORMAT(F17.8)
  1008 FORMAT(17X,I8,2X,16(A1),F16.8)
