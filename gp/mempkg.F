@@ -263,15 +263,16 @@ C
       WRITE(LUPRI,'(/,/,8X,A,/,A,F6.0,A)')
      & "**** To overcome this memory crash: ****",
      & "...please increase the current memory allocation "//
-     & "(pam 'mw' or 'nw' parameter) by", DIFF_MEM," megawords."
+     & "(pam 'mw' or 'nw' parameter) by at least", 
+     & DIFF_MEM," megawords."
 
 #ifdef VAR_MPI
-      WRITE(LUPRI,'(2X,A,/,A)') "This is parallel run.",
+      WRITE(LUPRI,'(2X,A,/,A)') "Well, this is parallel run.",
      & "Check in the error output whether"//
-     &" the increase is for the master"//
+     &" the memory increase is for the master"//
      &" (pam 'mw' parameter) or for the slave (pam 'nw' parameter)."
 #else
-      WRITE(LUPRI,'(2X,A,A)') "This is serial run. ",
+      WRITE(LUPRI,'(2X,A,A)') "Well, this is serial run. ",
      &"Increase the pam 'mw' parameter."
 #endif
       RETURN
