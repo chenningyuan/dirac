@@ -16,7 +16,7 @@
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://dirac.chem.sdu.dk
+!      DIRAC program, see: http://wiki.chem.vu.nl/dirac
 !dirac_copyright_end
 
 C aspg: at this point (2007-05-08) i have not yet setup a way yo 
