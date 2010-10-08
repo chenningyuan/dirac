@@ -640,6 +640,14 @@ f.close()
 make_old_file('build/Makefile.dep')
 make_old_file('build/Makefile.obj')
 
+
+# cheat to avoid error message
+# ============================
+
+make_old_file('gp/compinfo.h')
+make_old_file('include/fortran_interface.h')
+
+
 # prepare Makefile.extobj and Makefile.moddef
 # ===========================================
 
