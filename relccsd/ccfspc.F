@@ -459,20 +459,34 @@ C---------------Local variables -----------------------------------
       REAL*8, ALLOCATABLE :: VECR(:,:),VECI(:,:)
       REAL*8, ALLOCATABLE :: SCR(:,:)
       INTEGER , ALLOCATABLE :: INDX(:)
+      INTEGER :: IERR
       REAL*8 FNOR(RCW),E_OFF
 C---------------Executable code--------------------------------------
 
 
-CMI    ... control print out
-
 C
 C....... Allocate memory for the diagonalization routine
 C
-      ALLOCATE (EVR(NDT))
-      ALLOCATE (EVI(NDT))
-      ALLOCATE (VECR(NDT,NDT))
-      ALLOCATE (SCR(NDT,3))
-      ALLOCATE (INDX(NDT))
+      ALLOCATE (EVR(NDT),STAT=IERR)
+      IF (IERR.NE.0) THEN
+         CALL QUIT('Error in EVR allocation !')
+      ENDIF
+      ALLOCATE (EVI(NDT),STAT=IERR)
+      IF (IERR.NE.0) THEN
+        CALL QUIT('Error in EVI allocation !')
+      ENDIF
+      ALLOCATE (VECR(NDT,NDT),STAT=IERR)
+      IF (IERR.NE.0) THEN
+        CALL QUIT('Error in VECR allocation !')
+      ENDIF
+      ALLOCATE (SCR(NDT,3),STAT=IERR)
+      IF (IERR.NE.0) THEN
+        CALL QUIT('Error in SCR allocation !')
+      ENDIF
+      ALLOCATE (INDX(NDT),STAT=IERR)
+      IF (IERR.NE.0) THEN
+        CALL QUIT('Error in INDX allocation !')
+      ENDIF
 
 C
 C....... Diagonalize effective Hamiltonian.
@@ -481,9 +495,18 @@ C
 C        The diagonalization routine expects separate real and imaginary blocks,
 C        make a local copy
          NDT2=NDT*NDT
-         ALLOCATE (HR(NDT,NDT))
-         ALLOCATE (HI(NDT,NDT))
-         ALLOCATE (VECI(NDT,NDT))
+         ALLOCATE (HR(NDT,NDT),STAT=IERR)
+         IF (IERR.NE.0) THEN
+           CALL QUIT('Error in HR allocation !')
+         ENDIF
+         ALLOCATE (HI(NDT,NDT),STAT=IERR)
+         IF (IERR.NE.0) THEN
+           CALL QUIT('Error in HI allocation !')
+         ENDIF
+         ALLOCATE (VECI(NDT,NDT),STAT=IERR)
+         IF (IERR.NE.0) THEN
+           CALL QUIT('Error in VECI allocation !')
+         ENDIF
          CALL DCOPY (NDT2,H,2,HR,1)
          CALL DCOPY (NDT2,H(2,1,1),2,HI,1)
 
@@ -501,8 +524,14 @@ CMI    ... control print out
 Cluuk       uncomment when debugging, gives huge output
 Cluuk       call output (hr,1,ndt,1,ndt,ndt,ndt,1,iw)
 Cluuk       call output (hi,1,ndt,1,ndt,ndt,ndt,1,iw)
-         DEALLOCATE (HR)
-         DEALLOCATE (HI)
+         DEALLOCATE (HR,STAT=IERR)
+         IF (IERR.NE.0) THEN
+            CALL QUIT('Error in HR deallocation !')
+         ENDIF
+         DEALLOCATE (HI,STAT=IERR)
+         IF (IERR.NE.0) THEN
+           CALL QUIT('Error in HI deallocation !')
+         ENDIF
       ELSE
 Cluuk       uncomment when debugging, gives huge output
 Cluuk       call output (h,1,ndt,1,ndt,ndt,ndt,1,iw)
@@ -568,12 +597,32 @@ C
 C.....Release the memory
 C
 
-      DEALLOCATE (EVR)
-      DEALLOCATE (EVI)
-      DEALLOCATE (VECR)
-      IF (CARITH) DEALLOCATE (VECI)
-      DEALLOCATE (SCR)
-      DEALLOCATE (INDX)
+      DEALLOCATE (EVR,STAT=IERR)
+      IF (IERR.NE.0) THEN
+       CALL QUIT('Error in EVR deallocation !')
+      ENDIF
+      DEALLOCATE (EVI,STAT=IERR)
+      IF (IERR.NE.0) THEN
+       CALL QUIT('Error in EVI deallocation !')
+      ENDIF
+      DEALLOCATE (VECR,STAT=IERR)
+      IF (IERR.NE.0) THEN
+       CALL QUIT('Error in VECR deallocation !')
+      ENDIF
+      IF (CARITH) THEN
+        DEALLOCATE (VECI,STAT=IERR)
+        IF (IERR.NE.0) THEN
+          CALL QUIT('Error in VECI deallocation !')
+        ENDIF
+      ENDIF
+      DEALLOCATE (SCR,STAT=IERR)
+      IF (IERR.NE.0) THEN
+       CALL QUIT('Error in SCR deallocation !')
+      ENDIF
+      DEALLOCATE (INDX,STAT=IERR)
+      IF (IERR.NE.0) THEN
+       CALL QUIT('Error in INDX deallocation !')
+      ENDIF
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -603,12 +652,19 @@ C
 C
 C---------------Local variables -----------------------------------
       INTEGER , ALLOCATABLE :: INDX_ALL(:), IRPS_ALL(:)
+      INTEGER :: IERR
       DIMENSION IND(MXREP)
       REAL*8 E_OFF
 C---------------Executable code--------------------------------------
 
-      ALLOCATE (INDX_ALL(IFS_HE(NREP+1,ICURFSS)))
-      ALLOCATE (IRPS_ALL(IFS_HE(NREP+1,ICURFSS)))
+      ALLOCATE (INDX_ALL(IFS_HE(NREP+1,ICURFSS)),STAT=IERR)
+      IF (IERR.NE.0) THEN
+       CALL QUIT('Error in INDX_ALL allocation !')
+      ENDIF
+      ALLOCATE (IRPS_ALL(IFS_HE(NREP+1,ICURFSS)),STAT=IERR)
+      IF (IERR.NE.0) THEN
+       CALL QUIT('Error in IRPS_ALL allocation !')
+      ENDIF
 
 C     Initialize the reference energy
 
@@ -646,8 +702,14 @@ C        Even electron case : boson irreps
 C     Detailed print-out including oscillator strengths
       CALL FS_ANALYSIS (ICURFSS,EPS,IPRNT,IFS_HE(NREP+1,ICURFSS),
      &                  E_OFF,EIGENVALUES(1),EIGENVECTORS) 
-      DEALLOCATE (INDX_ALL)
-      DEALLOCATE (IRPS_ALL)
+      DEALLOCATE (INDX_ALL,STAT=IERR)
+      IF (IERR.NE.0) THEN
+       CALL QUIT('Error in INDX_ALL deallocation !')
+      ENDIF
+      DEALLOCATE (IRPS_ALL,STAT=IERR)
+      IF (IERR.NE.0) THEN
+       CALL QUIT('Error in IRPS_ALL deallocation !')
+      ENDIF
 
       RETURN
       END

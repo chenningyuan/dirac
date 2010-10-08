@@ -565,7 +565,7 @@ C
       REAL*8 CC(MAXCORE)
 #endif
       PARAMETER (MAXSP=1000)
-      INTEGER IREPSP(MAXSP*4),IREPSPI(MAXSP*MXREP*2)
+      INTEGER IREPSP(MAXSP*4),IREPSPI(MAXSP*MXREP*2),IERR
       REAL*8 EPS(MAXSP),EPS1(MAXSP)
       LOGICAL ALLOC,CA
       REAL*8 CPU0,CPU1,CPU2,CPUTOT,CPUI,CPUS
@@ -747,7 +747,10 @@ C
 C  Allocate the memory and check if it is a standalone version
 C
 #if defined (CC_ALONE)
-      ALLOCATE (CC(MXCORR))
+      ALLOCATE (CC(MXCORR),STAT=IERR)
+      IF (IERR.NE.0) THEN
+        CALL QUIT('Error in CC allocation !')
+      ENDIF
 #endif
 C
       WRITE (IW,1001) MXCORR
@@ -2900,10 +2903,10 @@ C
 C---------------Local variables--------------------------------------
 C
       LOGICAL ALLOC,FOCKSP,REPORT
-CMI   INTEGER IFSS(6)
       CHARACTER*2 IFSS(6)
       REAL*8 TOL
       INTEGER*8 NV5IRP,NV6IRP,NVIRP
+      INTEGER :: IERR
       REAL*8, ALLOCATABLE :: HEFF(:,:),EIGENVALUES(:,:),
      &                                 EIGENVECTORS(:,:)
 C
@@ -3056,9 +3059,18 @@ C
      &  '...maximum number of iterations for this sector:',
      &  MAXIT_SECT(ICURFSS)
 C       Allocate space for the effective Hamiltonian and its eigenvalues and eigenvectors
-        ALLOCATE (HEFF(RCW,IFS_HE2(NREP+1,ICURFSS)))
-        ALLOCATE (EIGENVALUES(RCW,0:IFS_HE(NREP+1,ICURFSS)))
-        ALLOCATE (EIGENVECTORS(RCW,IFS_HE2(NREP+1,ICURFSS)))
+        ALLOCATE (HEFF(RCW,IFS_HE2(NREP+1,ICURFSS)),STAT=IERR)
+        IF (IERR.NE.0) THEN
+         CALL QUIT('Error in HEFF allocation !')
+        ENDIF
+        ALLOCATE (EIGENVALUES(RCW,0:IFS_HE(NREP+1,ICURFSS)),STAT=IERR)
+        IF (IERR.NE.0) THEN
+         CALL QUIT('Error in EIGENVALUES allocation !')
+        ENDIF
+        ALLOCATE (EIGENVECTORS(RCW,IFS_HE2(NREP+1,ICURFSS)),STAT=IERR)
+        IF (IERR.NE.0) THEN
+         CALL QUIT('Error in EIGENVECTORS allocation !')
+        ENDIF
         CALL CCEQN(MAXIT_SECT(ICURFSS),EPS,CC(FOO),CC(FVO),
      &             CC(FVV),CC(T1),CC(S1),
      &             CC(T2),CC(S2),CC(AZ),DUM,CC(H),CC(HO),CC(HV),CC(HOV),
@@ -3070,9 +3082,18 @@ C       Print the Fock space eigenvalues, compute transition moments
 C       Save the updated wave function
         CALL FS_PUTAMPT (ICURFSS,CC(T1),CC(T2),CC(BUF1),CC(BUF2))
 C       Deallocate space for the effective Hamiltonian
-        DEALLOCATE (HEFF)
-        DEALLOCATE (EIGENVALUES)
-        DEALLOCATE (EIGENVECTORS)
+        DEALLOCATE (HEFF,STAT=IERR)
+        IF (IERR.NE.0) THEN
+         CALL QUIT('Error in HEFF deallocation !')
+        ENDIF
+        DEALLOCATE (EIGENVALUES,STAT=IERR)
+        IF (IERR.NE.0) THEN
+         CALL QUIT('Error in EIGENVALUES deallocation !')
+        ENDIF
+        DEALLOCATE (EIGENVECTORS,STAT=IERR)
+        IF (IERR.NE.0) THEN
+         CALL QUIT('Error in EIGENVECTORS deallocation !')
+        ENDIF
 C
       ENDIF
       ENDDO

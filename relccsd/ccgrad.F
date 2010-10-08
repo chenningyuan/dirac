@@ -944,7 +944,10 @@ C---------------Executable code--------------------------------------
 
 C     Read the appropriate correlated density from file
 
-      ALLOCATE (DMO(NORBT,NORBT,NZ))
+      ALLOCATE (DMO(NORBT,NORBT,NZ),STAT=IERR)
+      IF (IERR.NE.0) THEN
+        CALL QUIT('Error in DMO allocation !')
+      ENDIF
       CALL OPNFIL(MCCDENS,'CCDENS','OLD','GET_CC')
       FND =  FNDLAB(LABEL,MCCDENS)
       CALL READT(MCCDENS,NORBT*NORBT*NZ,DMO)
