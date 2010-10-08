@@ -135,7 +135,7 @@ print *, '*    Jørn Thyssen             University of Southern Denmark    Denma
 print *, '*    Jetze Sikkema            VU University Amsterdam           Netherlands  *'
 print *, '*                                                                            *'
 print *, '*    For the complete list of contributors to the DIRAC code see our         *'
-print *, '*    website http://dirac.chem.sdu.dk                                        *'
+print *, '*    website http://wiki.chem.vu.nl/dirac                                    *'
 print *, '*                                                                            *'
 print *, '*    This is an experimental code. The authors accept no responsibility      *'
 print *, '*    for the performance of the code or for the correctness of the results.  *'
@@ -154,7 +154,7 @@ print *, '*    with new contributions from R. Bast, S. Dubillard, K. G. Dyall,  
 print *, '*    U. Ekstrom, E. Eliav, T. Fleig, A. S. P. Gomes, T. U. Helgaker,         *'
 print *, '*    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, P. Norman,            *'
 print *, '*    J. Olsen, M. Pernpointner, K. Ruud, P. Salek, and J. Sikkema            *'
-print *, '*    (see http://dirac.chem.sdu.dk).                                         *'
+print *, '*    (see http://wiki.chem.vu.nl/dirac).                                     *'
 print *, '*                                                                            *'
 print *, '******************************************************************************'
 end
