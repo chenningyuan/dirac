@@ -702,6 +702,9 @@ C        Even electron case : boson irreps
 C     Detailed print-out including oscillator strengths
       CALL FS_ANALYSIS (ICURFSS,EPS,IPRNT,IFS_HE(NREP+1,ICURFSS),
      &                  E_OFF,EIGENVALUES(1),EIGENVECTORS) 
+#ifdef VAR_G95
+#warning miro - another spot of g95/ilp64 runtime error: SIGSEGV, Segmentation fault
+#endif
       DEALLOCATE (INDX_ALL,STAT=IERR)
       IF (IERR.NE.0) THEN
        CALL QUIT('Error in INDX_ALL deallocation !')
@@ -2405,8 +2408,18 @@ C        Make Vec * Dipole * Vec (all possible transition dipoles)
      &                        NFS_PRP,A1,H,D_TERMS_C,A0,
      &                        TRANS_DIPOLE,NREP)
       ENDIF
-
       END
+
+#ifdef VAR_G95
+!miro: routine to reveal memory corruption after 11-sector
+      SUBROUTINE CHECK_WRITE2STRING
+      CHARACTER*8 :: TEST_STRING
+      REAL*8 :: A=-1.23455570D0
+      INTEGER :: I=12
+      WRITE(TEST_STRING,'(F8.3)') A
+      RETURN
+      END
+#endif    
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GET_FSLABEL (ICURFSS,EPS,LABEL,NDIMH)
 C
@@ -2431,6 +2444,10 @@ C
       REAL*8 EPS(*)
       DIMENSION IAO(MXREP),IAV(MXREP)
 
+#ifdef VAR_G95
+      CALL CHECK_WRITE2STRING
+#endif    
+
 C     Determine offsets for start of orbital energies
 
       IAO(1) = NIO(1)
@@ -2447,7 +2464,6 @@ C     II counts the active orbitals
             DO I = 1, NAV(IREP)
                II = II + 1
                JJ = JJ + 1
-               CALL CHECK_LABEL_DIMENSION(II,NDIMH)
                WRITE(LABEL(II),1001) REPNA(IREP),I,EPS(IAV(IREP)+I)
             END DO
          END DO
@@ -2456,7 +2472,6 @@ C     II counts the active orbitals
          DO IREP = 1, NREP
             DO I = 1, NAO(IREP)
                II = II + 1
-               CALL CHECK_LABEL_DIMENSION(II,NDIMH)
                WRITE(LABEL(II),1001) REPNA(IREP),I,EPS(IAO(IREP)+I)
             END DO
          END DO
@@ -2470,12 +2485,19 @@ C     II counts single excitations
                   DO I = 1, NAO(IREP)
                      II = II + 1
 
-               CALL CHECK_LABEL_DIMENSION(II,NDIMH)
-! miro - g95,ilp64, gives error here....SIGABRT
+#ifdef VAR_G95
+#warning miro - g95/ilp64 gives runtime error here....SIGABRT, glibc detected *** .../dirac.x: malloc(): memory corruption:
+#endif
+                ! CALL CHECK_WRITE2STRING
+#ifdef VAR_G95
+                WRITE(IW,1011) 
+     &                     REPNA(IREP),I,EPS(IAO(IREP)+I),
+     &                     REPNA(JREP),J,EPS(IAV(JREP)+J)
+#else
                 WRITE(LABEL(II),1011) 
      &                     REPNA(IREP),I,EPS(IAO(IREP)+I),
      &                     REPNA(JREP),J,EPS(IAV(JREP)+J)
-
+#endif
                   END DO
                END DO
             END DO
@@ -2490,8 +2512,6 @@ C     II counts the double creations
                   DO J = 1, NAV(JREP)
                      DO I = J+1, NAV(IREP)
                        II = II + 1
-
-               CALL CHECK_LABEL_DIMENSION(II,NDIMH)
                        WRITE(LABEL(II),1002) 
      &                       REPNA(IREP),I,EPS(IAV(IREP)+I),
      &                       REPNA(JREP),J,EPS(IAV(JREP)+J)
@@ -2502,12 +2522,9 @@ C     II counts the double creations
                   DO J = 1, NAV(JREP)
                      DO I = 1, NAV(IREP)
                        II = II + 1
-
-               CALL CHECK_LABEL_DIMENSION(II,NDIMH)
                        WRITE(LABEL(II),1002) 
      &                       REPNA(IREP),I,EPS(IAV(IREP)+I),
      &                       REPNA(JREP),J,EPS(IAV(JREP)+J)
-                       call FLSHFO(IW)
                      END DO
                   END DO
                END IF
@@ -2522,7 +2539,6 @@ C     II counts the double annihilations
                   DO J = 1, NAO(JREP)
                      DO I = J+1, NAO(IREP)
                        II = II + 1
-               CALL CHECK_LABEL_DIMENSION(II,NDIMH)
                        WRITE(LABEL(II),1002) 
      &                       REPNA(IREP),I,EPS(IAO(IREP)+I),
      &                       REPNA(JREP),J,EPS(IAO(JREP)+J)
@@ -2532,7 +2548,6 @@ C     II counts the double annihilations
                   DO J = 1, NAO(JREP)
                      DO I = 1, NAO(IREP)
                        II = II + 1
-               CALL CHECK_LABEL_DIMENSION(II,NDIMH)
                        WRITE(LABEL(II),1002) 
      &                       REPNA(IREP),I,EPS(IAO(IREP)+I),
      &                       REPNA(JREP),J,EPS(IAO(JREP)+J)
@@ -2548,16 +2563,4 @@ C     II counts the double annihilations
      &             A4,' #',I4,' (',F8.3,') |')
  1011 FORMAT (1X,A4,' #',I4,' (',F8.3,') -> ',
      &             A4,' #',I4,' (',F8.3,')  ')
-      END
-
-      SUBROUTINE CHECK_LABEL_DIMENSION(II,NDIMH)
-#include "files.inc"
-      INTEGER II,NDIMH
-       IF (II.GT.NDIMH) THEN
-       call FLSHFO(IW)
-        write(IW,*) 'GET_FSLABEL: II=',II,' dimension=',NDIMH
-        write(IW,*) 'Increase NDIMH!!!'
-       call FLSHFO(IW)
-        call QUIT('GET_FSLABEL: increase dimension for LABEL array !!!')
-       ENDIF
       END
