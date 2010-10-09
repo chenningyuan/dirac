@@ -2448,7 +2448,6 @@ C     II counts the active orbitals
          DO IREP = 1, NREP
             DO I = 1, NAV(IREP)
                II = II + 1
-               JJ = JJ + 1
                WRITE(LABEL(II),1001) REPNA(IREP),I,EPS(IAV(IREP)+I)
             END DO
          END DO
