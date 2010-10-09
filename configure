@@ -409,9 +409,9 @@ ask_yesno ()
     shift
     while true; do
 	if [[ "$ask_yesno_default" = "y" ]]; then
-	    $echo "$*"' (Y/n)\c'
+	    $echo "$*"' (Y/n) \c'
 	else
-	    $echo "$*"' (y/N)\c'
+	    $echo "$*"' (y/N) \c'
 	fi
 	read ask_yesno_answer
 	case "$ask_yesno_answer" in
@@ -1869,7 +1869,7 @@ set_installdir ()  {
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 echo
-echo 'INSTALLATION DIRECTORY'
+echo 'INSTALLATION DIRECTORY for binaries and scripts (dirac.x and pam + any of the optional)'
 echo
 
 if [ $IPRINT -ge "7" ];  then
@@ -1892,7 +1892,7 @@ if [ $IPRINT -ge "2" ];  then
 #-------------------------------------------------------------------
 #     ... finally print-out the verified installation directory
 #-------------------------------------------------------------------
-$echo 'Install directory for DIRAC executable and script: '
+$echo 'Installation directory for DIRAC executable "dirac.x" and "pam" script: '
 $echo "$INSTALL_DIR\n"
 fi
 
@@ -1901,57 +1901,59 @@ fi
 set_install_directory () {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
-#                     Determines the proper installation directory
+#  Determines the installation directory for pam, pamq, dirac.x
 #
-#  always called when INSTALL_DIR(might come in as the parameter) is
-#  not functional
+#  Always called when INSTALL_DIR (might come in as the parameter)
+#  is not a valid directory
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
    INSTALL_DIR=
 
-   # repeat until directory found - test on empty
-   while [ -z "$INSTALL_DIR" ]
-   do
-      # ... find out the variable which is in the Makefile.config file (if there is any)
-      curr=`./config.status INSTALLDIR`
-      if [ "$curr" = "$PWD" ]; then
-	  curr=
-      fi
-      # ... if $curr not empty AND is valid directory
-      if [ ! -z "$curr" -a -d "$curr" ]; then
+   # ... find the INSTALLDIR variable in the old Makefile.config file (if there is any)
+   curr=`./config.status INSTALLDIR`
+   # ... if $curr not empty AND is valid directory
+   if [ ! -z "$curr" -a -d "$curr" ]; then
 
-         $echo 'Found (in Makefile.config) proper directory for installation of' \
+      $echo 'Found (in Makefile.config) a directory for installation of' \
          'binaries and scripts:'
-	 $echo $curr
-	 if ask_yesno y "Do you want me to use it?"; then
-	     INSTALL_DIR=$curr
-	 else
-	     curr=`pwd`
-	     if ask_yesno y "Do you want me to use current directory $curr?"; then
-		 INSTALL_DIR=$curr
-	     else
-		 $echo "Well, your choice, now type the directory:\c"
-		 read INSTALL_DIR
-	     fi
-	 fi
-      else
-      # when the previously used directory "$curr" is no longer valid
-         curr=`pwd`
-         INSTALL_DIR=$curr
-         $echo '...using the current directory (pwd) for DIRAC installation:'
-         $echo $curr
+      $echo $curr
+      if ask_yesno y "Do you want me to use it again ?"; then
+	 INSTALL_DIR=$curr
+         # verify installation directory
+         if [ ! -d "$INSTALL_DIR" ]; then
+            echo "ERROR: $INSTALL_DIR does not exist. Please specify a valid directory for installation."
+            INSTALL_DIR=
+         fi
+         # hjaaj: we could also test if the INSTALL_DIR is writable ... (e.g. with touch)
       fi
+   fi
 
-      # verify install directory
+   curr=`pwd`
+   if ask_yesno y "Do you want to use current directory $curr?"; then
+      INSTALL_DIR=$curr
+   else
+      $echo "OK. \c"
+   fi
+
+   # repeat until a directory is found - test on empty
+   while [ -z "$INSTALL_DIR" ]; do
+
+      $echo "Now type your choice for the installation directory (full path, not relative path): \c"
+      read INSTALL_DIR
+
+      # verify installation directory
       if [ ! -d "$INSTALL_DIR" ]; then
-         echo "ERROR: $INSTALL_DIR does not exist, repeat getting it once again!"
+         echo "ERROR: $INSTALL_DIR does not exist. Please specify a valid directory for installation."
          INSTALL_DIR=
-         # ... continues within the "while" cycle
+         # ... continue within the "while" cycle
       fi
 
    done
-echo
+
+   $echo '... directory to be used for DIRAC installation:'
+   $echo $INSTALL_DIR
+   echo
 }
 
 set_scratchdir ()  {
@@ -3044,27 +3046,35 @@ final_words () {
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 echo
-echo "Please check http://wiki.chem.vu.nl/dirac/index.php/Dirac_Program"
-echo "to see hints or/and problems concerning your platform."
+echo "============== configure completed - final words: ==============="
 echo
-if [ "$bit_set" = "64" ]; then
- echo "Dirac is configured to use 64 bit integers. Make sure that"
- echo "your math libraries are of the ILP64 type!"
-fi
+echo "Please check http://dirac.chem.vu.nl"
+echo "to see hints or/and problems concerning your platform."
 
 if [ "$par" = "yes" ]; then
-echo "pam script has been configured for your MPI version."
-echo "If you change the MPI library, please reconfigure the pam script."
-if [ "$bit_set" = "64" ]; then
- echo "If you use 64 bit integers make sure that MPI libraries are of "
- echo "the ILP64 type!"
+  echo
+  echo "pam script has been configured for your MPI version."
+  echo "If you change the MPI library, please reconfigure the pam script."
+  if [ "$bit_set" = "64" ]; then
+    echo "If you use 64 bit integers make sure that MPI libraries and"
+    echo "your math libraries are of the ILP64 type!"
+  fi
+else
+  if [ "$bit_set" = "64" ]; then
+    echo
+    echo "Dirac is configured to use 64 bit integers. Make sure that"
+    echo "your math libraries are of the ILP64 type!"
+  fi
 fi
-fi
+
 echo
 echo "Before you run make, you may check and edit Makefile.config."
 echo
 echo "Then run"
 echo "$ make"
+echo
+echo '( or e.g. "make -j 8" if you have 8 CPU cores available and want to finish quicker )'
+echo
 }
 
 make_pamq ()  {
