@@ -3266,7 +3266,7 @@ C
       real(8), allocatable :: stri(:)
       real(8), allocatable :: sbuf(:)
       CALL QENTER('GTOVLT')
-#include "memint.h"
+!#include "memint.h"
 C      
 C     Allocate integral buffer
 C     ========================
