@@ -4065,6 +4065,7 @@ C
       IOTC = .FALSE.
       SYMSTP = .FALSE.
       INPERR = 0
+      ICHANG  = 0 ! mi-to satisfy ifort runtime check
       CALL TITLER('Hamiltonian defined','*',127)
 C
 C
@@ -5068,8 +5069,10 @@ CMI ... this is on TODO list
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb Hamiltonian'
       ENDIF
 
-      IF(ICHANG.GT.0) WRITE(LUPRI,'(A)')
-     &    '   with the following modifications:'
+      IF (ICHANG.GT.0) THEN
+        WRITE(LUPRI,'(3X,A)')
+     &    'with the following modifications:'
+      ENDIF
 
       IF(VACPOL) THEN
         WRITE(LUPRI,'(3X,A)') 'Vacuum polarization added.'
