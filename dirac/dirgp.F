@@ -1351,7 +1351,18 @@ C
          RETURN
       ENDIF
 C
-      WRITE (LUPRI,1000) ELOW,EHIGH,EGAP
+      WRITE (LUPRI,1000,IOSTAT=IOS) ELOW,EHIGH,EGAP
+      IF (IOS.NE.0) THEN
+        WRITE(LUPRI,*) "Error in formatting this WRITE statement !"
+        WRITE(LUPRI,*) 
+     & "Check numbers formats in order not to get *** in output !"
+        WRITE(LUPRI,*) "number, ELOW=",ELOW
+        WRITE(LUPRI,*) "number, EHIGH=",EHIGH
+        WRITE(LUPRI,*) "number, EGAP=",EGAP
+        CALL FLSHFO(LUPRI)
+        !CALL QUIT('Error in formatting write statement !')
+      ENDIF
+
 C
 C     Check that the specified ELOW and EHIGH are separated by a 
 C     large enough gap from the next lower/higher energies
@@ -1426,8 +1437,9 @@ C
      & 'NUMLS2: Error reading energy criteria, the string is ',A(1:NA)
       CALL QUIT('NUMLS2: Error in Input')
  1000 FORMAT (5X,'Energy selection of active orbitals :',
-     & F10.2,' < Eps. < ',F8.2,' with a mininum gap of ',F8.4,' au.')
- 1001 FORMAT (/' Changed ',A7,' energy for active orbital range to ',
+     & F12.2,' < Eps. < ',F12.2,
+     & ' with a mininum gap of ',F10.4,' au.')
+ 1001 FORMAT (/,' Changed ',A7,' energy for active orbital range to ',
      & F10.4,' because of near-degeneracies.')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
