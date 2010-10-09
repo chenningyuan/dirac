@@ -1703,6 +1703,8 @@ C
       WRITE(LUPRI,'(A,I1)') ' * Number of fermion irreps: ',NFSYM
 C
       IF (.NOT. INIOCC) CALL PROCC()
+!     mi - initialize, otherwise runtime check failure
+      NFROT_DHF  = NFRO_DHF(1)  + NFRO_DHF(2) 
       IF(NFROT_DHF.GT.0) THEN
         WRITE(LUPRI,'(A)') ' * Number of frozen shells:'
         WRITE(LUPRI,'(3X,A,I2,A,3X,I3)')
