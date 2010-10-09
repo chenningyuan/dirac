@@ -454,7 +454,7 @@ C     - REPNA   : Name of each irrep
 C     - E_OFF   : Energy offset
 C     - IRCW    : 1 (real values) or 2 (complex energy values)
 C     - EV      : Eigenvalues
-C     - ISIZE   : size of INDX & IRPS arrays
+C     - ISIZE   : size of INDX & IRPS arrays (checked inside)
 C     - INDX    : Work array of the same length as EV
 C     - IRPS    : Work array of the same length as EV
 C     - IND     : Work array of length N_IRPS

@@ -938,11 +938,11 @@ C
       IF (IRRP.EQ.0) THEN
 C        Even number of electrons, boson irreps
          CALL PRT_EV (6,NREP,NDETI,REPNA(NREP+1),ECORE,0.0D0,1,
-     &                DS,INDX,IRPS,IND)
+     &                DS,N2*N5,INDX,IRPS,IND)
       ELSE
 C        Odd number of electrons, fermion irreps
          CALL PRT_EV (6,NREP,NDETI,REPNA,ECORE,0.0D0,1,
-     &                DS,INDX,IRPS,IND)
+     &                DS,N2*N5,INDX,IRPS,IND)
       ENDIF
 C
  1000 FORMAT(F17.8)
