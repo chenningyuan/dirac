@@ -5765,10 +5765,13 @@ C
      &       (ABS( NINT(D2*EIG(IEIGE+NL-1)))+1)/2
              CALL QUIT ("increase max_sub_bl")
            ENDIF
-           ID_SUB_BL(MJABS,I)  = MJ
-           NORB_SUB(MJABS,I,1) = NORB_SUB(MJABS,I,1) + 1
-           NORB_SUB(MJABS,I,0) = NORB_SUB(MJABS,I,0) + 1
-           MJMAX = MAX(MJABS,MJMAX)
+!        miro: for spin-free avoid MJABS index out-of-bounds
+           IF (MJABS.GT.0) THEN
+             ID_SUB_BL(MJABS,I)  = MJ
+             NORB_SUB(MJABS,I,1) = NORB_SUB(MJABS,I,1) + 1
+             NORB_SUB(MJABS,I,0) = NORB_SUB(MJABS,I,0) + 1
+             MJMAX = MAX(MJABS,MJMAX)
+           ENDIF
         ENDDO
 C
         DO IX = IEIGP, IEIGP+NS-1
@@ -5780,10 +5783,13 @@ C
      &       (ABS( NINT(D2*EIG(IEIGE+NL-1)))+1)/2
              CALL QUIT ("increase max_sub_bl")
            ENDIF
-           ID_SUB_BL(MJABS,I)  = MJ
-           NORB_SUB(MJABS,I,2) = NORB_SUB(MJABS,I,2) + 1
-           NORB_SUB(MJABS,I,0) = NORB_SUB(MJABS,I,0) + 1
-           MJMAX = MAX(MJABS,MJMAX)
+!        miro: for spin-free avoid MJABS index out-of-bounds
+           IF (MJABS.GT.0) THEN
+             ID_SUB_BL(MJABS,I)  = MJ
+             NORB_SUB(MJABS,I,2) = NORB_SUB(MJABS,I,2) + 1
+             NORB_SUB(MJABS,I,0) = NORB_SUB(MJABS,I,0) + 1
+             MJMAX = MAX(MJABS,MJMAX)
+           ENDIF
         ENDDO
 C
         N_SUB_BL(I) = MJMAX
