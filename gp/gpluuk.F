@@ -430,7 +430,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PRT_EV (LUPRI,N_IRPS,N_EV,REPNA,E_OFF,ECCIM,IRCW,EV,
-     &                   INDX,IRPS,IND)
+     &                   ISIZE,INDX,IRPS,IND)
 C
       use codata
 #include "implicit.h"
@@ -454,9 +454,14 @@ C     - REPNA   : Name of each irrep
 C     - E_OFF   : Energy offset
 C     - IRCW    : 1 (real values) or 2 (complex energy values)
 C     - EV      : Eigenvalues
+C     - ISIZE   : size of INDX & IRPS arrays
 C     - INDX    : Work array of the same length as EV
 C     - IRPS    : Work array of the same length as EV
 C     - IND     : Work array of length N_IRPS
+C
+C----------------------------------------------------------------------
+C
+C   Called from FS_ANALYSIS1
 C
 C---------------Routines called----------------------------------------
 C
@@ -477,7 +482,7 @@ C     DIMENSION EV(*)
       DIMENSION IRPS(*),IND(*)
       CHARACTER*4 REPNA(*)
       REAL*8   , ALLOCATABLE :: EVI(:)
-      INTEGER :: IERR
+      INTEGER :: IERR, ISIZE
       LOGICAL DODBG
 C
 C---------------Local variables--------------------------------------
@@ -518,11 +523,17 @@ C     DODBG = .TRUE.
 
       IF (IRCW.EQ.2) THEN
         ALLOCATE(EVI(N_TOTAL),STAT=IERR)
+        IF (IERR.NE.0) THEN
+          CALL QUIT('PRT_EV: EVI wrong allocation !')
+        ENDIF
         DO I=1,N_TOTAL
          EVI(I) = EV(1,I)
         ENDDO
         CALL INDEXX(N_TOTAL,EVI,INDX)
         DEALLOCATE(EVI,STAT=IERR)
+        IF (IERR.NE.0) THEN
+          CALL QUIT('PRT_EV: EVI wrong deallocation !')
+        ENDIF
       ELSE IF (IRCW.EQ.1) THEN
         CALL INDEXX(N_TOTAL,EV(1,1),INDX)
       ELSE
@@ -637,7 +648,17 @@ CMI  ... printout with symmetry classification ...real energies only...
       END DO
 
       DO 140 I=1,N_TOTAL
+
+!MI: check index range 
+        IF (I.LT.1.OR.I.GT.ISIZE) THEN
+          WRITE(LUPRI,*) "I,ISIZE=",I,ISIZE,"...INDX(I)=",INDX(I)
+          WRITE(LUPRI,*) "N_TOTAL=",N_TOTAL 
+          CALL FLSHFO(LUPRI)
+          CALL QUIT('Index I in in INDX(I) out of bounds !')
+        ENDIF
+ 
         E=EV(1,INDX(I))
+
         IF (ABS(E-EW).GT.DEGEN) THEN
           IF (NEW.NE.0)
      &      WRITE(LUPRI,1030) ILEVEL,
@@ -647,7 +668,9 @@ CMI  ... printout with symmetry classification ...real energies only...
             IND(JRP) = 0
           ENDDO
           ILEVEL = ILEVEL + 1
+
           IND(IRPS(INDX(I))) = 1
+
           NEW=1
           EW=E
         ELSE

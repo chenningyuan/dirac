@@ -652,16 +652,18 @@ C
 C
 C---------------Local variables -----------------------------------
       INTEGER , ALLOCATABLE :: INDX_ALL(:), IRPS_ALL(:)
-      INTEGER :: IERR
+      INTEGER :: IERR, ISIZE
       DIMENSION IND(MXREP)
       REAL*8 E_OFF
 C---------------Executable code--------------------------------------
 
-      ALLOCATE (INDX_ALL(IFS_HE(NREP+1,ICURFSS)),STAT=IERR)
+!miro: fixed nastry "+1" index leak bug showing up only with sensitive compilers
+      ISIZE = IFS_HE(NREP+1,ICURFSS)+1
+      ALLOCATE (INDX_ALL(ISIZE),STAT=IERR)
       IF (IERR.NE.0) THEN
        CALL QUIT('Error in INDX_ALL allocation !')
       ENDIF
-      ALLOCATE (IRPS_ALL(IFS_HE(NREP+1,ICURFSS)),STAT=IERR)
+      ALLOCATE (IRPS_ALL(ISIZE),STAT=IERR)
       IF (IERR.NE.0) THEN
        CALL QUIT('Error in IRPS_ALL allocation !')
       ENDIF
@@ -677,7 +679,7 @@ C
 C        Odd electron case : fermion irreps
          CALL PRT_EV (IW,NREP,NFS_HE(1,ICURFSS),REPNA(1),
      &                E_OFF,ECCSDIM,RCW,
-     &                EIGENVALUES(1:IFS_HE(NREP+1,ICURFSS)),
+     &                EIGENVALUES(1:ISIZE),ISIZE,
      &                INDX_ALL,IRPS_ALL,IND)
       ELSE IF (ICURFSS.EQ.4) THEN
 C        Add energy of (0,0) sector to list of printed energies for the (1,1) sector
@@ -687,7 +689,7 @@ C        This makes the routine print excitation energies
 C        Even electron case : boson irreps
          CALL PRT_EV (IW,NREP,NFS_HE(1,ICURFSS),REPNA(NREP+1),
      &                E_OFF,ECCSDIM,RCW,
-     &                EIGENVALUES(0:IFS_HE(NREP+1,ICURFSS)),
+     &                EIGENVALUES(0:ISIZE),ISIZE,
      &                INDX_ALL,IRPS_ALL,IND)
 C        One should not forget this line : the real dimension of the first irrep should be retained !
          NFS_HE(1,ICURFSS) = NFS_HE(1,ICURFSS) - 1
@@ -695,16 +697,13 @@ C        One should not forget this line : the real dimension of the first irrep
 C        Even electron case : boson irreps
          CALL PRT_EV (IW,NREP,NFS_HE(1,ICURFSS),REPNA(NREP+1),
      &                E_OFF,ECCSDIM,RCW,
-     &                EIGENVALUES(1:IFS_HE(NREP+1,ICURFSS)),
+     &                EIGENVALUES(1:ISIZE),ISIZE,
      &                INDX_ALL,IRPS_ALL,IND)
       ENDIF
 
 C     Detailed print-out including oscillator strengths
       CALL FS_ANALYSIS (ICURFSS,EPS,IPRNT,IFS_HE(NREP+1,ICURFSS),
      &                  E_OFF,EIGENVALUES(1),EIGENVECTORS) 
-#ifdef VAR_G95
-#warning miro - another spot of g95/ilp64 runtime error: SIGSEGV, Segmentation fault
-#endif
       DEALLOCATE (INDX_ALL,STAT=IERR)
       IF (IERR.NE.0) THEN
        CALL QUIT('Error in INDX_ALL deallocation !')
@@ -2410,16 +2409,6 @@ C        Make Vec * Dipole * Vec (all possible transition dipoles)
       ENDIF
       END
 
-#ifdef VAR_G95
-!miro: routine to reveal memory corruption after 11-sector
-      SUBROUTINE CHECK_WRITE2STRING
-      CHARACTER*8 :: TEST_STRING
-      REAL*8 :: A=-1.23455570D0
-      INTEGER :: I=12
-      WRITE(TEST_STRING,'(F8.3)') A
-      RETURN
-      END
-#endif    
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GET_FSLABEL (ICURFSS,EPS,LABEL,NDIMH)
 C
@@ -2443,10 +2432,6 @@ C
       INTEGER ICURFSS,I
       REAL*8 EPS(*)
       DIMENSION IAO(MXREP),IAV(MXREP)
-
-#ifdef VAR_G95
-      CALL CHECK_WRITE2STRING
-#endif    
 
 C     Determine offsets for start of orbital energies
 
@@ -2484,20 +2469,9 @@ C     II counts single excitations
                DO J = 1, NAV(JREP)
                   DO I = 1, NAO(IREP)
                      II = II + 1
-
-#ifdef VAR_G95
-#warning miro - g95/ilp64 gives runtime error here....SIGABRT, glibc detected *** .../dirac.x: malloc(): memory corruption:
-#endif
-                ! CALL CHECK_WRITE2STRING
-#ifdef VAR_G95
-                WRITE(IW,1011) 
-     &                     REPNA(IREP),I,EPS(IAO(IREP)+I),
-     &                     REPNA(JREP),J,EPS(IAV(JREP)+J)
-#else
-                WRITE(LABEL(II),1011) 
-     &                     REPNA(IREP),I,EPS(IAO(IREP)+I),
-     &                     REPNA(JREP),J,EPS(IAV(JREP)+J)
-#endif
+                     WRITE(LABEL(II),1011) 
+     &                  REPNA(IREP),I,EPS(IAO(IREP)+I),
+     &                  REPNA(JREP),J,EPS(IAV(JREP)+J)
                   END DO
                END DO
             END DO
