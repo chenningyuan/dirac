@@ -1331,8 +1331,10 @@ C
 C        Write current two-electron Fock matrix to file
 C        ==============================================
 C
-         CALL WRIFCK(LUFCK2,FOCK,NFMAT)
+        CALL WRIFCK(LUFCK2,FOCK,NFMAT)
 
+!       mi - variable initialization (otherwise runtime-check failure)
+        TDXC = SECOND()
 
 !       xc contribution
         if (dirac_cfg_dft_calculation) then
