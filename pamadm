@@ -18,10 +18,10 @@
 #           select some modules
 #           ./pamadm --xpp --adc --visual --london --matrixop
 #
-#           prepare release DIRAC10 with selected modules
+#           select modules for DIRAC10 and export
 #           ./pamadm --xpp --adc --visual --london --matrixop --amfi --krmc --emb --export=DIRAC10
 #
-#           select a sebset of DIRAC10 functionalities without exporting
+#           select modules for DIRAC10 without exporting
 #           ./pamadm --xpp --adc --visual --london --matrixop --amfi --krmc --emb
 #           or shortly
 #           ./pamadm --dirac10
@@ -285,6 +285,7 @@ do_not_release.append('utils/prepare_dyall_fblock_basis.sh')
 do_not_release.append('utils/prepare_dyall_pblock_basis.sh')
 do_not_release.append('utils/prepare_dyall_sblock_basis.sh')
 do_not_release.append('utils/configure.py')
+do_not_release.append('utils/cppp.py')
 do_not_release.append('relccsd/ccdriv_nomemget.F')
 do_not_release.append('relccsd/ccints_nomemget.F')
 do_not_release.append('relccsd/ccsort_lowmem.F')
