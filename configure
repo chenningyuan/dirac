@@ -93,43 +93,48 @@ row_sep=";"
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
-# Read of yes/no answer, the output in standardized to 'y' or 'n'. /hjaaj
-get_yes_or_no() {
-    if test "$do_quick_config" = y; then
-        answer="$2"
-    else
-        answer=
-    fi
-    while [ "$answer" != "y" -a "$answer" != "n" ]
-    do
-      $ECHO "$1 [y/n] \c"
-      read answer
-#     standardize answer
-      case $answer in
-	y* | Y*) answer="y" ;;
-	n* | N*) answer="n" ;;
-      esac
-    done
-} # END get_yes_or_no
-
 #
 # Define backup function /hjaaj
+#   -v : verbose
+#   -k : keep original file
+#   -l 4 : backup 4 levels
 #
 backup () {
-  if [ "$1" = "-v" ]; then ekko=1; shift
-  else ekko=0;
+  ekko=0
+  keep=0
+  max_level=-1
+  while [ -n "$1" ]; do
+     case $1 in
+       -v) shift; ekko=1 ;;
+       -k) shift; keep=1 ;;
+       -l) shift; max_level=$1; shift ;;
+        *) break ;;
+     esac
+  done
+#
+  if [ $max_level -lt 0 ]; then
+#    Test if default to be used. This test also catches non-numeric "-l" specifications
+     max_level=4
   fi
+#
   for i in $* ; do
      if [ -f "${i}" ]; then
-        for j in 6 5 4 3 2 1 0 ; do
-           jp=`expr $j + 1`
+        j=$max_level
+        while [ $j -gt 0 ]; do
+           jp=$j
+           j=`expr $j - 1`
            if [ -f "${i}.${j}" ]; then
               [ $ekko -eq 1 ] && echo "Backup: renaming ${i}.${j} to ${i}.${jp}"
               mv -f "${i}.${j}" "${i}.${jp}"
            fi
         done
-        if [ $ekko -eq 1 ]; then echo "Backup: renaming ${i} to ${i}.0"; fi
-        mv -f "${i}" "${i}.0"
+        if [ $keep -eq 1 ]; then
+           [ $ekko -eq 1 ] && echo "Backup: copying ${i} to ${i}.0"
+           cp -f --preserve="mode,timestamps" "${i}" "${i}.0"
+        else
+           [ $ekko -eq 1 ] && echo "Backup: renaming ${i} to ${i}.0"
+           mv -f "${i}" "${i}.0"
+        fi
      fi
   done
 } # END backup ()
@@ -1864,7 +1869,7 @@ set_installdir ()  {
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 echo
-echo 'INSTALL DIRECTORY'
+echo 'INSTALLATION DIRECTORY'
 echo
 
 if [ $IPRINT -ge "7" ];  then
@@ -2634,7 +2639,7 @@ make_Makefile.config ()  {
 echo
 if [ -f Makefile.config ]; then
    echo 'Makefile.config exists. I will take a backup.'
-   backup  Makefile.config
+   backup -v Makefile.config
 fi
 
 # ... special care of include, modules directories - dealt in Makefile.config 
@@ -2952,7 +2957,13 @@ make_pam_runtest () {
 pam_file=$INSTALL_DIR/pam
 if [ -f $pam_file ]; then
    echo 'pam exists. I will take a backup.'
-   backup  $pam_file
+   backup -v $pam_file
+fi
+
+runsh_file=$SRC_DIR/test/run.sh
+if [ -f $runsh_file ]; then
+   echo 'test/run.sh exists. I will take a backup.'
+   backup -v $runsh_file
 fi
 
 echo '#!/bin/bash' > $pam_file
@@ -3021,9 +3032,7 @@ cat $SRC_DIR/test/run.sh.in                                            >> $SRC_D
 chmod 700 $SRC_DIR/test/run.sh
 ###############################
 
-if [ $IPRINT -ge "5" ]; then
-  echo 'make_pam_runtest: done'
-fi
+test $IPRINT -ge "5" && echo 'make_pam_runtest: done'
 
 } # END make_pam_runtest ()
 
