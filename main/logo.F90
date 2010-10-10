@@ -154,7 +154,7 @@ print *, '*    Release DIRAC10 (2010),                                          
 print *, '*    written by T. Saue, L. Visscher, and H. J. Aa. Jensen,                  *'
 print *, '*    with new contributions from R. Bast, K. G. Dyall, U. Ekström, E. Eliav, *'
 print *, '*    T. Enevoldsen, T. Fleig, A. S. P. Gomes, J. Henriksson, M. Ilias,       *'
-print *, '*    Ch. R. Jacob, S. Knecht, H. Nataraj, P. Norman, J. Olsen,               *'
+print *, '*    Ch. R. Jacob, S. Knecht, H. S. Nataraj, P. Norman, J. Olsen,            *'
 print *, '*    M. Pernpointner, K. Ruud, B. Schimmelpfennig, J. Sikkema,               *'
 print *, '*    A. Thorvaldsen, J.  Thyssen, S. Villaume, and S. Yamamoto               *'
 print *, '*    (see http://dirac.chem.vu.nl).                                          *'
