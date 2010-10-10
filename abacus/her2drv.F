@@ -2563,7 +2563,7 @@ C  /* Deck paove2 */
       SUBROUTINE PAOVE2(IATOM,IPRINT,ORBOUT,
      &                  IPRVOR,IPRVPR,JORBSH,KORBSH)
 C
-CHJMAERKE
+CHJMAERKE TODO
 C hjaaj aug2000: possibilities:
 C                here we can also split a contracted block
 C                in more blocks, if needed for memory
@@ -2575,7 +2575,7 @@ C
 #include "mxcent.h"
 
       PARAMETER (DSM = 1.0D-12)
-      LOGICAL ORBOUT(KMAX)
+      LOGICAL   ORBOUT(KMAX)
       DIMENSION IPRVOR(KMAX), IPRVPR(KMAX),
      *          JORBSH(KMAX,MXAOVC), KORBSH(KMAX,MXAOVC)
 
