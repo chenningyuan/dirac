@@ -322,8 +322,8 @@ contains
   end do 
 ! temporary fix (adding two zeroes) as the 2009 version of mrcc appears to always want to read 4 irreps 
   write (filenumber_55,'(8i6)') (number_of_spinors_in_irrep(i),i=1,number_of_abelian_irreps),0,0
-  call process_2e
-  call process_1e
+!  call process_2e
+!  call process_1e
   write (filenumber_55,'(E28.20,4i4)') core_energy,0,0,0,0
   close (filenumber_55, status='keep')
 
