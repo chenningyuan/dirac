@@ -1977,11 +1977,6 @@ C       END DO
       DIMENSION NSSOA(NSMST,*),NSSOB(NSMST,*),NELFGP(*)
 *. block types
       DIMENSION IBLTP(*)
-#if defined (VAR_MPI2)
-#include "infpar.h"
-#include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
-#endif
 #include "parluci.h"
             
 *
@@ -2011,7 +2006,6 @@ C       END DO
       DO 300 IASM = 1, NSMST
         IF(IBLTP(IASM).EQ.0) GOTO 300
         CALL SYMCOM(2,1,IASM,IBSM,ITOTSM)
-C       write(6,*) ' Iasm ibsm ', iasm,ibsm
         LSB = 0
         IF(IBSM.NE.0) THEN
           IF(IBLTP(IASM).EQ.2) THEN
@@ -2026,7 +2020,6 @@ C       write(6,*) ' Iasm ibsm ', iasm,ibsm
              MXBTP = NOCTPB
            END IF
            LTSSA = NSSOA(IASM,IATP)
-CSK           IF(MYPROC.EQ.MASTER) write(6,*)'LTSSA',LTSSA
            XLTSSA = FLOAT(LTSSA)
            DO 100 IBTP = 1, MXBTP
 *
