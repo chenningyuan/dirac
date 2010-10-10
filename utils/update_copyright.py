@@ -27,7 +27,7 @@ dirac_copyright_fortran = '''
 !
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
-!      DIRAC program, see: http://wiki.chem.vu.nl/dirac
+!      DIRAC program, see: http://dirac.chem.vu.nl
 '''
 
 dirac_copyright_c_start = '/\* dirac_copyright_start \*/'
@@ -52,7 +52,7 @@ dirac_copyright_c = '''
  *
  *     For information on how to get a license, as well as the
  *     author list and the complete list of contributors to the
- *     DIRAC program, see: http://wiki.chem.vu.nl/dirac
+ *     DIRAC program, see: http://dirac.chem.vu.nl
  */
 '''
 
