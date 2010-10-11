@@ -826,7 +826,8 @@ if options.exportfile != None:
        if dirac_modules[module].is_included:
           for test in dirac_modules[module].tests:
               d = 'test/' + test.directory
-              shutil.copytree(d, scratch_dir + '/' + d)
+              if (os.path.isdir(d)) :
+                 shutil.copytree(d, scratch_dir + '/' + d)
 
 #  run the vacuum cleaner: remove all junk files in exported DIRAC
    os.system("rm -f  `find %s -name '*.o'`"   % scratch_dir)
