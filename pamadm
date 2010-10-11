@@ -296,6 +296,7 @@ do_not_release.append('embedding/emb_froz_orb.F90')
 do_not_release.append('embedding/emb_set.F90')
 do_not_release.append('dft/fun-srpbec.c')
 do_not_release.append('dft/fun-srvwn5.c')
+do_not_release.append('dft/fun-hjsx.c')
 
 
 # definition of modules

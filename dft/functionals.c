@@ -85,10 +85,12 @@ Functional* available_functionals[] = {
     &RPBEFunctional,
     &SVWN3Functional,
     &SVWN5Functional,
+#ifdef MOD_UNRELEASED
     /* range-separated fnuctionals */
     &SRVWN5Functional,
     &HjsxFunctional,
     &SrpbecFunctional,
+#endif
     NULL
 };
 
