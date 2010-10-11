@@ -4459,10 +4459,16 @@ C      as they need to be modified within BSS transformations
      &        'HAMINP:give .BSS option before .OPERAT !')
              ENDIF
             GO TO 100
-  127     CONTINUE
+
 C&&& HFXMU: range separation
-             READ(LUCMD,*) HFXMU
-            GO TO 100
+  127     CONTINUE
+#ifdef MOD_UNRELEASED
+          READ(LUCMD,*) HFXMU
+#else
+          write (*,*) 'Keyword inactive in this release'
+#endif 
+          GO TO 100
+
 !#ifdef MOD_AMFI 
 !C&&&&&  AMFI_CHARGE: Get the total charge of the molecule
 !C     for mean-field summations of each atom in the system
