@@ -59,6 +59,16 @@ def is_windows():
   else:
     return True
 
+def get_svn_revision():
+  # returns svn revision, TODO: extend for Windows - avoid Linux commands
+  svn_revision = os.popen("echo `svn info | grep 'Revision' | awk '{ print $2 }'`", "r").read()
+  return svn_revision
+
+def get_svn_url():
+  # returns svn url, TODO: extend for Windows - avoid Linux commands
+  svn_url = os.popen("echo `svn info | grep 'URL' | awk '{ print $2 }'`", "r").read()
+  return svn_url
+
 ###################################################################
 #  create symbolic link (Unix), before make a comprehensive check
 ###################################################################
@@ -511,9 +521,12 @@ dirac10_modules=['xpp','adc','visual','london','matrixop','amfi','krmc','emb']
 
 parser = OptionParser()
 
-parser.add_option('--export',
-                  dest='exportfile',
-                  help='Export or release DIRAC to EXPORTFILE')
+parser.add_option('-e','--export',
+                  dest='exportfile', 
+                  action='store',
+                  help='Export or release DIRAC to EXPORTFILE',
+                  metavar="STRING")
+
 for module in dirac_modules:
     parser.add_option('--' + module,
                       action="callback",
@@ -674,13 +687,13 @@ f.write(flags + '\n')
 # determine subversion url and revision
 is_subversion_working_copy = os.path.exists('.svn')
 if is_subversion_working_copy:
-   svn_revision = os.popen("echo `svn info | grep 'Revision' | awk '{ print $2 }'`", "r").read()
+   svn_revision = get_svn_revision()
    f.write("DIRAC_SVN_REVISION=%s" % svn_revision)
    if options.exportfile != None:
 #     do not export svn url
       f.write("DIRAC_SVN_URL='URL not exported in release'\n")
    else:
-      svn_url = os.popen("echo `svn info | grep 'URL' | awk '{ print $2 }'`", "r").read()
+      svn_url = get_svn_url()
       f.write("DIRAC_SVN_URL=%s" % svn_url)
 
 else:
@@ -770,7 +783,7 @@ os.chmod("test/runtest", stat.S_IRWXU)
 if options.exportfile != None:
    scratch_dir = options.exportfile
 
-#  create scratch dir
+#  create scratch dir for copying files for export
    os.mkdir(scratch_dir)
 
 #  copy all vital directories and files to scratch dir
