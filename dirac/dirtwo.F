@@ -54,6 +54,7 @@ C
 #include "dcbqal.h"
 #include "dcbbas.h"
 #include "ccom.h"
+#include "dcborb.h"
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),
      &          DMAT(N2BBASX,NZ,NFMAT),
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),
@@ -136,8 +137,10 @@ C
 C     Initialize and build Fock matrix
 C     ================================
 C
+      write(lupri,*) 'in TWOFOCK: NASHT=', NASHT
       CALL DZERO(FMAT,N2BBASXQ*NFMAT)
       IF (HFXMU.NE.D0) THEN
+
 C
 C       Calculate attenuated exchange (hfxatt*erf(hfxmu*r12)/r12) 
 C       NOTE that this extra part has to be calculated first,
@@ -148,11 +151,30 @@ C
         HFXFAC = HFXATT 
 C       ...note that when HFXMU.NE.0, Coulomb contributions are
 C       turned off !
+C
+C       Manu: note also that for MCSCF-srDFT BOTH Coulomb and exchange 
+C             contributions should be calculated since long-range and
+C             short-range coulomb terms cannot be recombined
+C             straightforwardly due to the active density matrix
+C             contribution !!!
+C       Manu: this part should be modified so that srH contributions to
+C             the inactive Fock operator and the inactive energy can be
+C             computed. We could for example, when DOSRINT=.TRUE., 
+C             calculate coulomb integrals over 1/r12 and then coulomb
+C             integrals over - erf(mu r12)/r12 and add them.      
+C
 CTROND  Gaunt-integrals should be turned off !
         CALL FOCKBUILD(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &         IFCKOP,NPOS,INTFLG,IPRINT,WORK,LWORK)
         HFXFAC = HFXTMP
       END IF
+CCCCCCCCCC
+C
+C        If this is not an MCSCF-srDFT calculation then ... proceed as
+C        usual ... 
+C         if (.not.dirac_cfg_mcsrdft_calculation) then 
+C
+CCCCCCCCCC
       HFXTMP = HFXMU
       HFXMU = D0
       CALL FOCKBUILD(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
@@ -4109,6 +4131,11 @@ C         An anti-symmetric matrix gives no Coulomb contributions
           IF (IH.EQ.2) IC = 0
 C         No exchange contributions if HFXFAC = 0
           IF (HFXFAC.EQ.D0) IE = 0
+C
+C Manu: the next two lines are fine for HF-srDFT calculations but NOT
+C       for MCSCF-srDFT. For example, when building the long-range active Fock operator, 
+C       we need both coulomb and exchange long-range integrals. 
+C
 C         No Coulomb contributions if HFXMU.NE.0
           IF (HFXMU.NE.D0) IC = 0
           IY   = IC + IE
@@ -4706,6 +4733,7 @@ C
       IF(IDFLAG.NE.0.AND.IDFLAG.GT.8) THEN
         IF(SOFOCK) THEN
 C.........construction of Fock matrix using ERIs in SO-basis
+          write(lupri,*) 'calling DIRSOF'
           CALL DIRSOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &                IFCKOP,NPOS,INTFLG,
      &                IPRINT,WORK,LWORK)
@@ -4714,6 +4742,7 @@ C.........construction of Fock matrix using ERIs in AO-basis:
 C.........skeleton Fock approach
 C aspg, timing
           CALL TIMER('START ',TIMSTR,TIMEND)
+          write(lupri,*) 'calling FASTJK'
           CALL FASTJK(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &                IFCKOP,NPOS,INTFLG,
      &                IPRINT,WORK,LWORK)
