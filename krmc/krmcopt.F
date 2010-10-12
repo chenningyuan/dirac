@@ -1298,6 +1298,10 @@ C     Last revision :
 C      Oct 24, 2003: Diagonalization of FC + FV matrix,
 C                    save orbital energies in ORBENE      T. Fleig
 C
+C
+C     Modified in October 2010 by Emmanuel Fromager for MCSCF-srDFT              
+C
+C
 C***********************************************************************
       use dirac_cfg ! for MCSCF-srDFT calculations
 #include "implicit.h"
@@ -1413,7 +1417,7 @@ C                             - coulomb^{sr} (and calculate EJKVSR = tr(DAO * J^
 C
 C     now call xcfun... with the (inactive+active)DAO to obtain V_{xc}^{sr}
 C     and E_{xc}^{sr} 
-C     having it at hand we calculate -tr(V_{xc}^{sr} * DVAO) - 1/2 tr(V_{xc}^{sr} * DCAO) 
+C     having it at hand we calculate -tr(V_{xc}^{sr} * DVAO) 
 C
 C     ***************************************************
 C     *** Get 1-electron Fock matrix ********************
@@ -1472,11 +1476,30 @@ C     If MCSCF-srDFT calculation: add the srxc
 C     potential V^{sr}_{xc}[D] to the inactive Fock operator
 C     FCAO, where D = DC + DV is the total density matrix.
 C     Note that, in addition, the srXC correction
-C     E^{sr}_{xc}[D] - tr (V^{sr}_xc[D] * dvao)
+C     E^{sr}_{xc}[D] - tr (V^{sr}_xc[D] * DV)
 C     is added to the inactive energy. The second term relates
 C     to the active energy contribution tr(FC*DV) which will be
 C     calculated later on with the MCSCF-srDFT inactive Fock operator
 C     that contains V^{sr}_xc[D].
+      if (dirac_cfg_dft_calculation) then
+         call addsrxc(ntbas(0),
+     &                nz,
+     &                nisht,
+     &                work(kfcao),
+     &                work(kdcao),
+     &                work(kdvao),
+     &                emcmy) ! inactive energy
+      end if 
+C 
+C     If MCSCF-srDFT calculation: add the srH
+C     potential V^{sr}_{H}[D] to the inactive Fock operator
+C     FCAO, where D = DC + DV is the total density matrix.
+C     Note that, in addition, the srH correction
+C     1/2 * tr (D * J^{sr} * D) - tr (DV * J^{sr} * D)
+C     is added to the inactive energy. The second term relates
+C     to the active energy contribution tr(FC*DV) which will be
+C     calculated later on with the MCSCF-srDFT inactive Fock operator
+C     that contains J^{sr} * D.
       if (dirac_cfg_dft_calculation) then
          call addsrxc(ntbas(0),
      &                nz,
