@@ -217,6 +217,7 @@ C***********************************************************************
       use dirac_cfg
 #include "implicit.h"
 #include "priunit.h"
+#include "dcbham.h"
 C
       DIMENSION WORK(LWORK)
       LOGICAL   WFCONV
@@ -348,6 +349,13 @@ C
 C        *************************************************
 C        *** Call PSIOPT for KR-MCSCF wave function ******
 C        *************************************************
+C
+C        If MCSCF-srDFT calculation ...
+C        set dirac_cfg_mcsrdft_calculation to TRUE in order to
+C        calculate proper 2-electron integrals
+         if (hfxmu.ne.d0) then
+         dirac_cfg_mcsrdft_calculation = .true.
+         endif
 C
          CALL PSIOPT('MCSCF',WFCONV,WORK,LWORK)
          IF(DOANA) CALL PAMANA(WORK,LWORK)
