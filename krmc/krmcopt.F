@@ -1481,7 +1481,7 @@ C     is added to the inactive energy. The second term relates
 C     to the active energy contribution tr(FC*DV) which will be
 C     calculated later on with the MCSCF-srDFT inactive Fock operator
 C     that contains V^{sr}_xc[D].
-      if (dirac_cfg_dft_calculation) then
+      if (dirac_cfg_mcsrdft_calculation) then
          call addsrxc(ntbas(0),
      &                nz,
      &                nisht,
@@ -1500,7 +1500,7 @@ C     is added to the inactive energy. The second term relates
 C     to the active energy contribution tr(FC*DV) which will be
 C     calculated later on with the MCSCF-srDFT inactive Fock operator
 C     that contains J^{sr} * D.
-      if (dirac_cfg_dft_calculation) then
+      if (dirac_cfg_mcsrdft_calculation) then
          call addsrxc(ntbas(0),
      &                nz,
      &                nisht,
