@@ -137,7 +137,6 @@ C
 C     Initialize and build Fock matrix
 C     ================================
 C
-      write(lupri,*) 'in TWOFOCK: NASHT=', NASHT
       CALL DZERO(FMAT,N2BBASXQ*NFMAT)
       IF (HFXMU.NE.D0) THEN
 
@@ -4733,7 +4732,6 @@ C
       IF(IDFLAG.NE.0.AND.IDFLAG.GT.8) THEN
         IF(SOFOCK) THEN
 C.........construction of Fock matrix using ERIs in SO-basis
-          write(lupri,*) 'calling DIRSOF'
           CALL DIRSOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &                IFCKOP,NPOS,INTFLG,
      &                IPRINT,WORK,LWORK)
@@ -4742,7 +4740,6 @@ C.........construction of Fock matrix using ERIs in AO-basis:
 C.........skeleton Fock approach
 C aspg, timing
           CALL TIMER('START ',TIMSTR,TIMEND)
-          write(lupri,*) 'calling FASTJK'
           CALL FASTJK(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &                IFCKOP,NPOS,INTFLG,
      &                IPRINT,WORK,LWORK)
