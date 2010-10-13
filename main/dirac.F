@@ -162,7 +162,7 @@ C***********************************************************************
 C*****  G E T    W A V E    F U N C T I O N   **************************
 C***********************************************************************
 C
-      IF(DOPIN) CALL PCMOIN(WORK,LWORK)
+      IF(DOPIN.or.dopin_i3) CALL PCMOIN(WORK,LWORK)
       IF(DOACIN) CALL ACMOIN(WORK,LWORK)
       IF(DOPSI .OR. DOTRA) CALL PAMPSI(WORK,LWORK)
       IF(DOACUT) CALL ACMOUT(WORK,LWORK)
