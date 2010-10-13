@@ -39,6 +39,7 @@
   PARAM(XC_M06C),
   PARAM(XC_M06LC),
   PARAM(XC_M06X2C),
+  PARAM(XC_LDAERFC_JT),
 #endif
   // This has to be last:
   PARAM(XC_NR_PARAMS) 

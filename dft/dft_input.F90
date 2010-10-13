@@ -286,6 +286,11 @@ contains
            f%w(XC_LDAERFC) = f%w(XC_LDAERFC) + w
         end if
       
+        w = get_weight(word_array(i), 'ldaerfc_jt')
+        if (dabs(w) > tiny(0.0d0)) then
+           f%w(XC_LDAERFC_JT) = f%w(XC_LDAERFC_JT) + w
+        end if
+      
         w = get_weight(word_array(i), 'mu')
         if (dabs(w) > tiny(0.0d0)) then
            f%w(XC_RANGESEP_MU) = w
