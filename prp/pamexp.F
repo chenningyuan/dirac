@@ -1220,13 +1220,13 @@ C
         CALL DENST1(DFO(IPD),NFO(IFRP),NFO(IFRP),D1,D0,
      &              BVEC(IPB),NFO(IFRP),NMO(IFRP),
      &              1,NISH(IFRP),NFO(IFRP))  
-        IPB = IPB + NFO(IFRP)*NISH(IFRP)*NZ
+        ISTART = NISH(IFRP)
         DO IOPEN = 1,NOPEN
           NVEC = NACSH(IFRP,IOPEN)
           CALL DENST1(DFO(IPD),NFO(IFRP),NFO(IFRP),DF(IOPEN),D1,
      &                BVEC(IPB),NFO(IFRP),NMO(IFRP),
-     &                1,NVEC,NFO(IFRP))  
-          IPB = IPB + NFO(IFRP)*NVEC*NZ
+     &                ISTART,NVEC,NFO(IFRP))  
+          ISTART = ISTART + NVEC
         END DO
 
         IF(IPRINT.GE.2) THEN
@@ -1236,6 +1236,7 @@ C
      &         NFO(IFRP),NFO(IFRP),NZ,
      &         IPQTOQ(1,0),LUPRI)
         ENDIF
+        IPB = IPB + NFO(IFRP)*NMO(IFRP)*NZ
         IPD = IPD + NFO(IFRP)*NFO(IFRP)*NZ
  10   CONTINUE
       RETURN
