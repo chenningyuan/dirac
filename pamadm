@@ -18,15 +18,11 @@
 #           select some modules
 #           ./pamadm --xpp --adc --visual --london --matrixop
 #
-#           select modules for DIRAC10 and export
-#           ./pamadm --xpp --adc --visual --london --matrixop --amfi --krmc --emb --export=DIRAC10
+#           select modules for release and export
+#           ./pamadm --release --export=DIRAC10
 #
-#           select modules for DIRAC10 without exporting
-#           ./pamadm --xpp --adc --visual --london --matrixop --amfi --krmc --emb
-#           or shortly
-#           ./pamadm --dirac10
-#
-
+#           select modules for release without exporting
+#           ./pamadm --release
 
 from optparse import OptionParser
 import sys
@@ -130,15 +126,16 @@ class long_test(dirac_test):
 
 class dirac_module:
      def __init__(self, flag, message):
-         self.flag        = flag
-         self.message     = message
-         self.is_included = False
-         self.depends_on  = []
-         self.directories = []
-         self.files       = []
-         self.cppflags    = []
-         self.tests       = []
-         self.part_of_adm = True
+         self.flag            = flag
+         self.message         = message
+         self.is_included     = False
+         self.depends_on      = []
+         self.directories     = []
+         self.files           = []
+         self.cppflags        = []
+         self.tests           = []
+         self.part_of_adm     = True
+         self.part_of_release = True
      def add_directory(self, x):
          self.directories.append(x)
      def add_file(self, x):
@@ -155,6 +152,8 @@ class dirac_module:
          self.is_included = False
      def take_out_of_adm(self):
          self.part_of_adm = False
+     def take_out_of_release(self):
+         self.part_of_release = False
 
 def callback_include(option, opt, value, parser):
     dirac_modules[str(option)[2:]].include()
@@ -334,17 +333,20 @@ this_module = 'eri'
 dirac_modules[this_module] = dirac_module('eri', 'ERI integral routines')
 dirac_modules[this_module].add_cppflag('MOD_ERI')
 dirac_modules[this_module].add_directory('eri')
+dirac_modules[this_module].take_out_of_release()
 
 this_module = 'densfit'
 dirac_modules[this_module] = dirac_module('densfit', 'density fitting module')
 dirac_modules[this_module].add_cppflag('MOD_DNF')
 dirac_modules[this_module].add_dependency('eri')
 dirac_modules[this_module].add_directory('densfit')
+dirac_modules[this_module].take_out_of_release()
 
 this_module = 'largemolecules'
 dirac_modules[this_module] = dirac_module('largemolecules', 'Increases common blocks to handle more atoms and basis sets')
 dirac_modules[this_module].add_cppflag('LARGE_MOLECULES')
 dirac_modules[this_module].take_out_of_adm()
+dirac_modules[this_module].take_out_of_release()
 
 this_module = 'fmm'
 dirac_modules[this_module] = dirac_module('fmm', 'fast multipole method')
@@ -353,6 +355,7 @@ dirac_modules[this_module].add_dependency('eri')
 dirac_modules[this_module].add_dependency('densfit')
 dirac_modules[this_module].add_directory('fmm')
 dirac_modules[this_module].take_out_of_adm()
+dirac_modules[this_module].take_out_of_release()
 
 this_module = 'esr'
 dirac_modules[this_module] = dirac_module('esr', 'ESR property module')
@@ -361,6 +364,7 @@ dirac_modules[this_module].add_directory('prp/esr')
 dirac_modules[this_module].add_dependency('krmc')
 #dirac_modules[this_module].add_test(long_test('krmc_gosci'))
 dirac_modules[this_module].add_test(medium_test('krmc_luciarel', fine_with_mpi = False))
+dirac_modules[this_module].take_out_of_release()
 
 this_module = 'xpp'
 dirac_modules[this_module] = dirac_module('xpp', 'PP excitation energy and STEX modules')
@@ -373,6 +377,7 @@ dirac_modules[this_module] = dirac_module('xml', 'XML input/output module')
 dirac_modules[this_module].add_cppflag('MOD_XML')
 dirac_modules[this_module].add_directory('gp/xml')
 dirac_modules[this_module].take_out_of_adm()
+dirac_modules[this_module].take_out_of_release()
 
 this_module = 'krmc'
 dirac_modules[this_module] = dirac_module('krmc', 'KR-MCSCF and LUCIAREL modules')
@@ -385,6 +390,7 @@ dirac_modules[this_module] = dirac_module('krcc', 'KRCC module')
 dirac_modules[this_module].add_cppflag('MOD_KRCC')
 dirac_modules[this_module].add_directory('krcc')
 dirac_modules[this_module].take_out_of_adm()
+dirac_modules[this_module].take_out_of_release()
 
 this_module = 'emb'
 dirac_modules[this_module] = dirac_module('emb', 'ab initio/DFT-embedding module')
@@ -404,6 +410,7 @@ dirac_modules[this_module].add_test(medium_test('openrsp_electric'))
 dirac_modules[this_module].add_test(medium_test('openrsp_jones'))
 dirac_modules[this_module].add_test(medium_test('openrsp_molecular_gradient'))
 dirac_modules[this_module].add_test(medium_test('openrsp_roa'))
+dirac_modules[this_module].take_out_of_release()
 
 this_module = 'xcfun'
 dirac_modules[this_module] = dirac_module('xcfun', 'XCFun module')
@@ -414,12 +421,14 @@ dirac_modules[this_module].add_test(short_test('dft_alda_xcfun'))
 dirac_modules[this_module].add_test(short_test('dft_minnesota'))
 dirac_modules[this_module].add_test(short_test('dft_erf_xcfun'))
 dirac_modules[this_module].take_out_of_adm()
+dirac_modules[this_module].take_out_of_release()
 
 this_module = 'oof'
 dirac_modules[this_module] = dirac_module('oof', 'Object oriented modularity of Fortran 90/95')
 dirac_modules[this_module].add_cppflag('MOD_OOF')
 dirac_modules[this_module].add_directory('oof')
 dirac_modules[this_module].take_out_of_adm()
+dirac_modules[this_module].take_out_of_release()
 
 this_module = 'cap'
 dirac_modules[this_module] = dirac_module('cap', 'CAP module (together with object oriented modularity F90/95')
@@ -427,6 +436,7 @@ dirac_modules[this_module].add_cppflag('MOD_CAP')
 dirac_modules[this_module].add_dependency('oof')
 dirac_modules[this_module].add_directory('cap')
 dirac_modules[this_module].take_out_of_adm()
+dirac_modules[this_module].take_out_of_release()
 
 this_module = 'hscc'
 dirac_modules[this_module] = dirac_module('hscc', 'interface for the (external) HSMRCC code together with its objects')
@@ -438,6 +448,7 @@ dirac_modules[this_module].add_directory('hsmrcc/interface')
 dirac_modules[this_module].add_directory('hsmrcc/hsmrcc_external/modules')
 dirac_modules[this_module].add_directory('hsmrcc/hsmrcc_external/source')
 dirac_modules[this_module].take_out_of_adm()
+dirac_modules[this_module].take_out_of_release()
 
 this_module = 'hsfs'
 dirac_modules[this_module] = dirac_module('hsfs', 'Higher sectors FSCC codes')
@@ -446,6 +457,7 @@ dirac_modules[this_module].add_dependency('oof')
 dirac_modules[this_module].add_dependency('hscc')
 dirac_modules[this_module].add_directory('hsmrcc/high_sect_fscc_external')
 dirac_modules[this_module].take_out_of_adm()
+dirac_modules[this_module].take_out_of_release()
 
 this_module = 'hsfsdyn'
 dirac_modules[this_module] = dirac_module('hsfsdyn', 'Higher sectors FSCC codes- dynamic allocation version.')
@@ -454,6 +466,7 @@ dirac_modules[this_module].add_dependency('oof')
 dirac_modules[this_module].add_dependency('hsfs')
 dirac_modules[this_module].add_dependency('hscc')
 dirac_modules[this_module].take_out_of_adm()
+dirac_modules[this_module].take_out_of_release()
 
 this_module = 'amfi'
 dirac_modules[this_module] = dirac_module('amfi', 'AMFI functionality for DIRAC')
@@ -470,6 +483,7 @@ dirac_modules[this_module] = dirac_module('magnetiz', 'Calculation of magnetizab
 dirac_modules[this_module].add_cppflag('MOD_MAGNETIZ')
 dirac_modules[this_module].add_dependency('london')
 dirac_modules[this_module].add_test(short_test('response_lao_magnetiz'))
+dirac_modules[this_module].take_out_of_release()
 
 this_module = 'adc'
 dirac_modules[this_module] = dirac_module('adc', 'ADC electron propagator module')
@@ -482,6 +496,7 @@ dirac_modules[this_module] = dirac_module('ecp', 'ARGOS ECP module')
 dirac_modules[this_module].add_cppflag('MOD_ECP')
 dirac_modules[this_module].add_directory('argosecp')
 dirac_modules[this_module].take_out_of_adm()
+dirac_modules[this_module].take_out_of_release()
 
 this_module = 'srdft'
 dirac_modules[this_module] = dirac_module('srdft', 'srDFT module')
@@ -490,12 +505,14 @@ dirac_modules[this_module].add_cppflag('MOD_KRMC')
 dirac_modules[this_module].add_directory('srdft')
 dirac_modules[this_module].add_dependency('krmc')
 dirac_modules[this_module].take_out_of_adm()
+dirac_modules[this_module].take_out_of_release()
 
 this_module = 'mcscf_sf'
 dirac_modules[this_module] = dirac_module('mcscf_sf', 'spinfree MCSCF module')
 dirac_modules[this_module].add_cppflag('MOD_MCSCF_spinfree')
 dirac_modules[this_module].add_cppflag('MOD_KRMC')
 dirac_modules[this_module].add_dependency('krmc')
+dirac_modules[this_module].take_out_of_release()
 
 this_module = 'unreleased'
 dirac_modules[this_module] = dirac_module('unreleased', 'unreleased functionality (not covered by other flags)')
@@ -506,15 +523,14 @@ dirac_modules[this_module].add_file('dft/overlap_diagnostic.F90')
 dirac_modules[this_module].add_file('dft/vrg.F')
 dirac_modules[this_module].add_file('dft/xc_geometric.F90')
 dirac_modules[this_module].add_file('dft/xc_london_c1.F90')
+dirac_modules[this_module].take_out_of_release()
 
 this_module = 'log'
 dirac_modules[this_module] = dirac_module('log', 'Will log interesting matrices in matlab format (very verbose!)')
 dirac_modules[this_module].add_cppflag('MOD_LOG')
 dirac_modules[this_module].take_out_of_adm()
+dirac_modules[this_module].take_out_of_release()
 
-# list of selected modules for the DIRAC2010 release
-# ===================================================
-dirac10_modules=['xpp','adc','visual','london','matrixop','amfi','krmc','emb']
 
 # define input options
 # ====================
@@ -548,9 +564,9 @@ parser.add_option('--auto',
                   dest='auto',
                   default=False,
                   help="Automatically include all modules that the selected modules depend on")
-parser.add_option('--dirac10',
+parser.add_option('--release',
                   action='store_true',
-                  dest='dirac10',
+                  dest='release',
                   default=False,
                   help="Include selected modules for the DIRAC2010 release")
 
@@ -565,11 +581,6 @@ if sys.argv[-1] == 'make':
 
 (options, args) = parser.parse_args()
 
-
-# can not have both "adm" and "dirac10" ("dirac10" is the subset of "adm" set of modules)
-if (options.adm and options.dirac10):
-   sys.exit('please use either -a/--adm or --dirac10, not both of them!')
-
 if options.adm:
    for module in dirac_modules:
        if dirac_modules[module].is_included:
@@ -579,9 +590,11 @@ if options.adm:
           if dirac_modules[module].part_of_adm:
              dirac_modules[module].include()
 
-if options.dirac10:
-   for module in dirac10_modules:
-      dirac_modules[module].include()
+if options.release:
+   for module in dirac_modules:
+       if dirac_modules[module].part_of_release:
+          dirac_modules[module].include()
+
 
 # check dependencies among modules
 # ================================
@@ -609,10 +622,8 @@ if len(sys.argv) == 1:
    print 'only core functionality selected'
    print '(run ./pamadm -h to see all available options)'
 else:
-   if (options.dirac10):
-     print 'Active modules of the DIRAC10 release:'
-   else:
-     print 'Active modules:'
+   print 'Active modules:'
+
 for module in dirac_modules:
     if dirac_modules[module].is_included:
        print '       ' + dirac_modules[module].message
