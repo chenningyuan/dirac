@@ -2216,6 +2216,7 @@ C     Read DFPRJC, file from projection analysis
 C     NP(IFRP,1) - number of fragment orbitals in fermion ircop IFRP
 C     NP(IFRP,2) - number of MO (and polarization) orbitals 
 C                  in fermion ircop IFRP
+C     NP(IFRP,0) - nref + npol
 C
 C     Written by T. Saue, Oct 21 2003
 C

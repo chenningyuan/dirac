@@ -818,9 +818,10 @@ C
         ENDDO
         CALL PRJEX3(EXPVL2,IDIMENS,PTRI,PFO(IPD),DFO(IPD),NCNT(IFRP),
      &              NR(1,IFRP),NMO(IFRP),IBUF,PBUF,FMAT,PM,INDX,
-     &              NTOT,INDXPR,IPRINT)
+     &              NTOT,INDXPR,IFRP,IPRINT)
         IPD = IPD + NCNT(IFRP)*NCNT(IFRP)*NZ
  10   CONTINUE
+      CALL DSCAL(NTOT,D2,PM,1)
 C
 C     Give fragment contributions
 C
@@ -1103,8 +1104,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck prjex3 */
       SUBROUTINE PRJEX3(EXPVAL,IDIMENS,PTRI,PFO,DFO,NCNT,
-     &                  NR,NMO,IBUF,PBUF,
-     &                  FMAT,PM,INDX,NTOT,INDXPR,IPRINT)
+     &                  NR,NMO,IBUF,PBUF,FMAT,PM,INDX,NTOT,
+     &                  INDXPR,IFRP,IPRINT)
 C***********************************************************************
 C
 C     Calculate generalized population matrix
@@ -1148,11 +1149,13 @@ C
         ENDDO
       ENDDO      
       CALL DSCAL(NTRI,D2,PTRI,1)
-      CALL DSCAL(NTOT,D2,PM,1)
+C      CALL DSCAL(NTOT,D2,PM,1)
       EXPVAL = DSUM(NTRI,PTRI,1)
       IF(IPRINT.GE.2) THEN
-        WRITE(LUPRI,'(A,A16,E16.10)') 
-     &    '* Expectation value of property ',PRPNAM(INDXPR),EXPVAL
+        WRITE(LUPRI,'(A,A3/A,A16,E16.10)') 
+     &    '* Contribution from fermion ircop ',FREP(IFRP),
+     &    '  to expectation value of property ',PRPNAM(INDXPR),EXPVAL
+        WRITE(LUPRI,'(A)') '* Corresponding population matrix:'
         CALL PRMUTC(PTRI,NCNT,1,LUPRI)      
       ENDIF
 C
@@ -1188,10 +1191,13 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck prjex4 */
-      SUBROUTINE PRJEX4(DFO,BVEC,NCNT,NMO,IPRINT)
+      SUBROUTINE PRJEX4(DFO,BVEC,NFO,NMO,IPRINT)
 C***********************************************************************
 C
 C     Make density matrix in fragment basis
+C
+C     NFO(IFRP) - number of fragment orbitals in fermion ircop IFRP
+C     NMO(IFRP)   - number of molecular orbitals in fermion ircop IFRP
 C
 C     Written by Trond Saue Oct 21 2003 
 C
@@ -1201,7 +1207,9 @@ C***********************************************************************
       PARAMETER(D0 = 0.0D0,D1=1.0D0,D2=2.0D0)
 C
 #include "dgroup.h"
-      DIMENSION DFO(*),NCNT(*),NMO(*),BVEC(*)
+#include "dcborb.h"
+#include "dcbdhf.h"
+      DIMENSION DFO(*),NFO(*),NMO(*),BVEC(*)
 C
 C     Make density matrix in fragment orbitals
 C
@@ -1209,18 +1217,26 @@ C
       IPB = 1
       DO 10 IFRP = 1,NFSYM
         IF(NMO(IFRP).EQ.0) GOTO 10
-        CALL DENST1(DFO(IPD),NCNT(IFRP),NCNT(IFRP),D1,D0,
-     &              BVEC(IPB),NCNT(IFRP),NMO(IFRP),
-     &              1,NMO(IFRP),NCNT(IFRP))  
+        CALL DENST1(DFO(IPD),NFO(IFRP),NFO(IFRP),D1,D0,
+     &              BVEC(IPB),NFO(IFRP),NMO(IFRP),
+     &              1,NISH(IFRP),NFO(IFRP))  
+        IPB = IPB + NFO(IFRP)*NISH(IFRP)*NZ
+        DO IOPEN = 1,NOPEN
+          NVEC = NACSH(IFRP,IOPEN)
+          CALL DENST1(DFO(IPD),NFO(IFRP),NFO(IFRP),DF(IOPEN),D1,
+     &                BVEC(IPB),NFO(IFRP),NMO(IFRP),
+     &                1,NVEC,NFO(IFRP))  
+          IPB = IPB + NFO(IFRP)*NVEC*NZ
+        END DO
+
         IF(IPRINT.GE.2) THEN
           WRITE(LUPRI,'(A,I3)')
      &    'Density matrix in fragment basis..',IFRP
-          CALL PRQMAT(DFO(IPD),NCNT(IFRP),NCNT(IFRP),
-     &         NCNT(IFRP),NCNT(IFRP),NZ,
+          CALL PRQMAT(DFO(IPD),NFO(IFRP),NFO(IFRP),
+     &         NFO(IFRP),NFO(IFRP),NZ,
      &         IPQTOQ(1,0),LUPRI)
         ENDIF
-        IPD = IPD + NCNT(IFRP)*NCNT(IFRP)*NZ
-        IPB = IPB + NCNT(IFRP)*NMO(IFRP)*NZ
+        IPD = IPD + NFO(IFRP)*NFO(IFRP)*NZ
  10   CONTINUE
       RETURN
       END
