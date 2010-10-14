@@ -1220,7 +1220,7 @@ C
         CALL DENST1(DFO(IPD),NFO(IFRP),NFO(IFRP),D1,D0,
      &              BVEC(IPB),NFO(IFRP),NMO(IFRP),
      &              1,NISH(IFRP),NFO(IFRP))  
-        ISTART = NISH(IFRP)
+        ISTART = NISH(IFRP)+1
         DO IOPEN = 1,NOPEN
           NVEC = NACSH(IFRP,IOPEN)
           CALL DENST1(DFO(IPD),NFO(IFRP),NFO(IFRP),DF(IOPEN),D1,
