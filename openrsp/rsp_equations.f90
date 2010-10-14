@@ -732,8 +732,8 @@ contains
                 // 'excitation densities saved in rsp_equations')
       ! zero highest-order D and F for RHS calculation
       do i = 1, pd
-         Dp(i) = tiny(0.0d0)*D(1)
-         Fp(i) = tiny(0.0d0)*F(1)
+         Dp(i) = 0d0*D(1)
+         Fp(i) = 0d0*F(1)
       end do
       ! calculate all lower-order contributions to the
       ! minus-right-hand-sides DSDp and FDSp
@@ -747,11 +747,11 @@ contains
       ! top DSDp off with DSpD and FDSp with (F-w/2S)DSp-SpD(F+w/2S)
       do i = 1, pd
 #ifdef PRG_DIRAC
+!         magic factor
+          Sp(i) = 0.5d0*Sp(i)
 !radovan: this is necessary otherwise matrices inherit wrong irep from Sp
 !         which breaks point group symmetry in DIRAC
           Sp(i)%irep = DSDp(i)%irep
-!         magic factor
-          Sp(i) = 0.5d0*Sp(i)
 #endif
          !ajt fixme This will not result in completely (anti-)symmetric
          !          DSDp and FDSp. Use +=sym*dag(..) to achieve this
