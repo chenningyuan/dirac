@@ -39,7 +39,7 @@ contains
       character(8) :: s, s1, s2, s3
       real(8)      :: f
       integer      :: i, ij, iatom
-      integer      :: irep(6)
+      integer      :: irep(18)
       character(2) ::  i_iter(3) = (/ 'X',  'Y',  'Z'/)
       character(2) :: ij_iter(6) = (/'XX', 'XY', 'XZ', 'YY', 'YZ', 'ZZ'/)
 !     --------------------------------------------------------------------------
@@ -163,6 +163,11 @@ contains
       end if
 
       if (need_1el_v) then
+
+         irep(1) = isymax(1, 1)
+         irep(2) = isymax(2, 1)
+         irep(3) = isymax(3, 1)
+
          do i = 1, size(i_iter)
             s      = ' DIPVEL '
             s(1:1) = i_iter(i)
@@ -170,8 +175,8 @@ contains
                               blocks,          &
                               1,               &
                              -1,               &
-                              1,               &
-                              (/1/),           &
+                              1 + irep(i),     &
+                              (/1 + irep(i)/), &
                               (/f/),           &
                               (/s/))
          end do
@@ -372,6 +377,10 @@ contains
    
          f = cval
          blocks = '0++0'
+
+         irep(1) = ieor(isymax(2, 1), isymax(3, 1))
+         irep(2) = ieor(isymax(3, 1), isymax(1, 1))
+         irep(3) = ieor(isymax(1, 1), isymax(2, 1))
    
          do i = 1, size(i_iter)
             s1 = ' RM1H3X '
@@ -380,16 +389,18 @@ contains
             s1(1:1) = i_iter(i)
             s2(1:1) = i_iter(i)
             s3(1:1) = i_iter(i)
-            call add_operator('dkin/dB' // i_iter(i) // '        ', &
-                              blocks,                               &
-                              8,                                    &
-                              0,                                    &
-                              1,                                    &
-                              (/1,  1,  1/),                        &
-                              (/f,  f,  f/),                        &
+            call add_operator('dkin/dB' // i_iter(i) // '        ',     &
+                              blocks,                                   &
+                              8,                                        &
+                              0,                                        &
+                              1 + irep(i),                              &
+                            (/1 + ieor(isymax(i, 2), isymax(1, 1)),     &
+                              1 + ieor(isymax(i, 2), isymax(2, 1)),     &
+                              1 + ieor(isymax(i, 2), isymax(3, 1))/),   &
+                              (/f,  f,  f/),                            &
                               (/s1, s2, s3/))
          end do
-   
+
          do ij = 1, size(ij_iter)
             s1 = '  RM2H3X'
             s2 = '  RM2H3Y'
@@ -437,6 +448,10 @@ contains
    
          f = 1.0d0
          blocks = '+00'//ss
+
+         irep(1) = ieor(isymax(2, 1), isymax(3, 1))
+         irep(2) = ieor(isymax(3, 1), isymax(1, 1))
+         irep(3) = ieor(isymax(1, 1), isymax(2, 1))
    
          do i = 1, size(i_iter)
             s = 'dS/dB   '
@@ -445,8 +460,8 @@ contains
                               blocks,                               &
                               1,                                    &
                              -1,                                    &
-                              1,                                    &
-                              (/1/),                                &
+                              1 + irep(i),                          &
+                              (/1 + irep(i)/),                      &
                               (/f/),                                &
                               (/s/))
          end do
@@ -472,6 +487,10 @@ contains
             s = '<>S/B2' // ij_iter(ij)
             call add_operator(s // '        ', blocks, 1, 0, 1, (/1/), (/f/), (/s/))
          end do
+
+         irep(1) = ieor(isymax(2, 1), isymax(3, 1))
+         irep(2) = ieor(isymax(3, 1), isymax(1, 1))
+         irep(3) = ieor(isymax(1, 1), isymax(2, 1))
    
          do i = 1, size(i_iter)
             s = 'd|S>/dB '
@@ -480,24 +499,98 @@ contains
                               blocks,                               &
                               1,                                    &
                               0,                                    &
-                              1,                                    &
-                              (/1/),                                &
+                              1 + irep(i),                          &
+                              (/1 + irep(i)/),                      &
                               (/f/),                                &
                               (/s/))
          end do
 
          blocks = '00+0'
          f = -2.0d0*cval
-       
-         call add_operator('XXrdsusll       ', blocks, 5, 0, 1, (/1, 1/), (/f, f/), (/'XXRDSULZ', 'XXRDSULY'/))
-         call add_operator('YXrdsusll       ', blocks, 6, 0, 1, (/1, 1/), (/f, f/), (/'XYRDSULX', 'XYRDSULZ'/))
-         call add_operator('ZXrdsusll       ', blocks, 7, 0, 1, (/1, 1/), (/f, f/), (/'XZRDSULY', 'XZRDSULX'/))
-         call add_operator('XYrdsusll       ', blocks, 5, 0, 1, (/1, 1/), (/f, f/), (/'YXRDSULZ', 'YXRDSULY'/))
-         call add_operator('YYrdsusll       ', blocks, 6, 0, 1, (/1, 1/), (/f, f/), (/'YYRDSULX', 'YYRDSULZ'/))
-         call add_operator('ZYrdsusll       ', blocks, 7, 0, 1, (/1, 1/), (/f, f/), (/'YZRDSULY', 'YZRDSULX'/))
-         call add_operator('XZrdsusll       ', blocks, 5, 0, 1, (/1, 1/), (/f, f/), (/'ZXRDSULZ', 'ZXRDSULY'/))
-         call add_operator('YZrdsusll       ', blocks, 6, 0, 1, (/1, 1/), (/f, f/), (/'ZYRDSULX', 'ZYRDSULZ'/))
-         call add_operator('ZZrdsusll       ', blocks, 7, 0, 1, (/1, 1/), (/f, f/), (/'ZZRDSULY', 'ZZRDSULX'/))
+
+         call add_operator('XXrdsusll       ',                      &
+                           blocks,                                  &
+                           5,                                       &
+                           0,                                       &
+                           (1 + ieor(isymax(1, 1), isymax(1, 1))),  &
+                          (/1 + ieor(isymax(1, 2), isymax(3, 1)),   &
+                            1 + ieor(isymax(1, 2), isymax(2, 1))/), &
+                           (/f, f/),                                &
+                           (/'XXRDSULZ', 'XXRDSULY'/))
+         call add_operator('YXrdsusll       ',                      &
+                           blocks,                                  &
+                           6,                                       &
+                           0,                                       &
+                           (1 + ieor(isymax(2, 1), isymax(1, 1))),  &
+                          (/1 + ieor(isymax(1, 2), isymax(1, 1)),   &
+                            1 + ieor(isymax(1, 2), isymax(3, 1))/), &
+                           (/f, f/),                                &
+                           (/'XYRDSULX', 'XYRDSULZ'/))
+         call add_operator('ZXrdsusll       ',                      &
+                           blocks,                                  &
+                           7,                                       &
+                           0,                                       &
+                           (1 + ieor(isymax(3, 1), isymax(1, 1))),  &
+                          (/1 + ieor(isymax(1, 2), isymax(2, 1)),   &
+                            1 + ieor(isymax(1, 2), isymax(1, 1))/), &
+                           (/f, f/),                                &
+                           (/'XZRDSULY', 'XZRDSULX'/))
+
+         call add_operator('XYrdsusll       ',                      &
+                           blocks,                                  &
+                           5,                                       &
+                           0,                                       &
+                           (1 + ieor(isymax(1, 1), isymax(2, 1))),  &
+                          (/1 + ieor(isymax(2, 2), isymax(3, 1)),   &
+                            1 + ieor(isymax(2, 2), isymax(2, 1))/), &
+                           (/f, f/),                                &
+                           (/'YXRDSULZ', 'YXRDSULY'/))
+         call add_operator('YYrdsusll       ',                      &
+                           blocks,                                  &
+                           6,                                       &
+                           0,                                       &
+                           (1 + ieor(isymax(2, 1), isymax(2, 1))),  &
+                          (/1 + ieor(isymax(2, 2), isymax(1, 1)),   &
+                            1 + ieor(isymax(2, 2), isymax(3, 1))/), &
+                           (/f, f/),                                &
+                           (/'YYRDSULX', 'YYRDSULZ'/))
+         call add_operator('ZYrdsusll       ',                      &
+                           blocks,                                  &
+                           7,                                       &
+                           0,                                       &
+                           (1 + ieor(isymax(3, 1), isymax(2, 1))),  &
+                          (/1 + ieor(isymax(2, 2), isymax(2, 1)),   &
+                            1 + ieor(isymax(2, 2), isymax(1, 1))/), &
+                           (/f, f/),                                &
+                           (/'YZRDSULY', 'YZRDSULX'/))
+
+         call add_operator('XZrdsusll       ',                      &
+                           blocks,                                  &
+                           5,                                       &
+                           0,                                       &
+                           (1 + ieor(isymax(1, 1), isymax(3, 1))),  &
+                          (/1 + ieor(isymax(3, 2), isymax(3, 1)),   &
+                            1 + ieor(isymax(3, 2), isymax(2, 1))/), &
+                           (/f, f/),                                &
+                           (/'ZXRDSULZ', 'ZXRDSULY'/))
+         call add_operator('YZrdsusll       ',                      &
+                           blocks,                                  &
+                           6,                                       &
+                           0,                                       &
+                           (1 + ieor(isymax(2, 1), isymax(3, 1))),  &
+                          (/1 + ieor(isymax(3, 2), isymax(1, 1)),   &
+                            1 + ieor(isymax(3, 2), isymax(3, 1))/), &
+                           (/f, f/),                                &
+                           (/'ZYRDSULX', 'ZYRDSULZ'/))
+         call add_operator('ZZrdsusll       ',                      &
+                           blocks,                                  &
+                           7,                                       &
+                           0,                                       &
+                           (1 + ieor(isymax(3, 1), isymax(3, 1))),  &
+                          (/1 + ieor(isymax(3, 2), isymax(2, 1)),   &
+                            1 + ieor(isymax(3, 2), isymax(1, 1))/), &
+                           (/f, f/),                                &
+                           (/'ZZRDSULY', 'ZZRDSULX'/))
 
          blocks = '+00'//ss
          if (diamagnetic_via_pn) then
@@ -506,6 +599,13 @@ contains
             f = 1.0d0
          end if
       
+         irep(1) = 0
+         irep(2) = ieor(isymax(1, 1), isymax(2, 1))
+         irep(3) = ieor(isymax(1, 1), isymax(3, 1))
+         irep(4) = 0                            
+         irep(5) = ieor(isymax(2, 1), isymax(3, 1))
+         irep(6) = 0
+        
          do ij = 1, size(ij_iter)
             s      = '  DSUSNL'
             s(1:2) = ij_iter(ij)
@@ -513,8 +613,8 @@ contains
                               blocks,                          &
                               1,                               &
                               0,                               &
-                              1,                               &
-                              (/1/),                           &
+                              1 + irep(ij),                    &
+                              (/1 + irep(ij)/),                &
                               (/f/),                           &
                               (/s/))
          end do
@@ -557,25 +657,44 @@ contains
          if (need_1el_q) then
             f = 1.0d0
             blocks = '+00'//ss
+
+            irep( 1) = isymax(1, 2)
+            irep( 2) = isymax(2, 2)
+            irep( 3) = isymax(3, 2)
+            irep( 4) = isymax(1, 2)
+            irep( 5) = isymax(2, 2)
+            irep( 6) = isymax(3, 2)
+            irep( 7) = isymax(1, 2)
+            irep( 8) = isymax(2, 2)
+            irep( 9) = isymax(3, 2)
+            irep(10) = ieor(isymax(1,2),ieor(isymax(1,1),isymax(2,1)))
+            irep(11) = ieor(isymax(2,2),ieor(isymax(1,1),isymax(2,1)))
+            irep(12) = ieor(isymax(3,2),ieor(isymax(1,1),isymax(2,1)))
+            irep(13) = ieor(isymax(1,2),ieor(isymax(1,1),isymax(3,1)))
+            irep(14) = ieor(isymax(2,2),ieor(isymax(1,1),isymax(3,1)))
+            irep(15) = ieor(isymax(3,2),ieor(isymax(1,1),isymax(3,1)))
+            irep(16) = ieor(isymax(1,2),ieor(isymax(2,1),isymax(3,1)))
+            irep(17) = ieor(isymax(2,2),ieor(isymax(2,1),isymax(3,1)))
+            irep(18) = ieor(isymax(3,2),ieor(isymax(2,1),isymax(3,1)))
            
-            call add_operator('XX-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XX-QDB X'/))
-            call add_operator('XY-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XY-QDB X'/))
-            call add_operator('XZ-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XZ-QDB X'/))
-            call add_operator('YY-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YY-QDB X'/))
-            call add_operator('YZ-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YZ-QDB X'/))
-            call add_operator('ZZ-QDB X        ', blocks, 1, -1, 1, (/1/), (/f/), (/'ZZ-QDB X'/))
-            call add_operator('XX-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XX-QDB Y'/))
-            call add_operator('XY-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XY-QDB Y'/))
-            call add_operator('XZ-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XZ-QDB Y'/))
-            call add_operator('YY-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YY-QDB Y'/))
-            call add_operator('YZ-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YZ-QDB Y'/))
-            call add_operator('ZZ-QDB Y        ', blocks, 1, -1, 1, (/1/), (/f/), (/'ZZ-QDB Y'/))
-            call add_operator('XX-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XX-QDB Z'/))
-            call add_operator('XY-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XY-QDB Z'/))
-            call add_operator('XZ-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'XZ-QDB Z'/))
-            call add_operator('YY-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YY-QDB Z'/))
-            call add_operator('YZ-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'YZ-QDB Z'/))
-            call add_operator('ZZ-QDB Z        ', blocks, 1, -1, 1, (/1/), (/f/), (/'ZZ-QDB Z'/))
+            call add_operator('XX-QDB X        ', blocks, 1, -1, 1+irep( 1), (/1+irep( 1)/), (/f/), (/'XX-QDB X'/))
+            call add_operator('XX-QDB Y        ', blocks, 1, -1, 1+irep( 2), (/1+irep( 2)/), (/f/), (/'XX-QDB Y'/))
+            call add_operator('XX-QDB Z        ', blocks, 1, -1, 1+irep( 3), (/1+irep( 3)/), (/f/), (/'XX-QDB Z'/))
+            call add_operator('YY-QDB X        ', blocks, 1, -1, 1+irep( 4), (/1+irep( 4)/), (/f/), (/'YY-QDB X'/))
+            call add_operator('YY-QDB Y        ', blocks, 1, -1, 1+irep( 5), (/1+irep( 5)/), (/f/), (/'YY-QDB Y'/))
+            call add_operator('YY-QDB Z        ', blocks, 1, -1, 1+irep( 6), (/1+irep( 6)/), (/f/), (/'YY-QDB Z'/))
+            call add_operator('ZZ-QDB X        ', blocks, 1, -1, 1+irep( 7), (/1+irep( 7)/), (/f/), (/'ZZ-QDB X'/))
+            call add_operator('ZZ-QDB Y        ', blocks, 1, -1, 1+irep( 8), (/1+irep( 8)/), (/f/), (/'ZZ-QDB Y'/))
+            call add_operator('ZZ-QDB Z        ', blocks, 1, -1, 1+irep( 9), (/1+irep( 9)/), (/f/), (/'ZZ-QDB Z'/))
+            call add_operator('XY-QDB X        ', blocks, 1, -1, 1+irep(10), (/1+irep(10)/), (/f/), (/'XY-QDB X'/))
+            call add_operator('XY-QDB Y        ', blocks, 1, -1, 1+irep(11), (/1+irep(11)/), (/f/), (/'XY-QDB Y'/))
+            call add_operator('XY-QDB Z        ', blocks, 1, -1, 1+irep(12), (/1+irep(12)/), (/f/), (/'XY-QDB Z'/))
+            call add_operator('XZ-QDB X        ', blocks, 1, -1, 1+irep(13), (/1+irep(13)/), (/f/), (/'XZ-QDB X'/))
+            call add_operator('XZ-QDB Y        ', blocks, 1, -1, 1+irep(14), (/1+irep(14)/), (/f/), (/'XZ-QDB Y'/))
+            call add_operator('XZ-QDB Z        ', blocks, 1, -1, 1+irep(15), (/1+irep(15)/), (/f/), (/'XZ-QDB Z'/))
+            call add_operator('YZ-QDB X        ', blocks, 1, -1, 1+irep(16), (/1+irep(16)/), (/f/), (/'YZ-QDB X'/))
+            call add_operator('YZ-QDB Y        ', blocks, 1, -1, 1+irep(17), (/1+irep(17)/), (/f/), (/'YZ-QDB Y'/))
+            call add_operator('YZ-QDB Z        ', blocks, 1, -1, 1+irep(18), (/1+irep(18)/), (/f/), (/'YZ-QDB Z'/))
          end if
       end if
 

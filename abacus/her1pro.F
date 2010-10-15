@@ -1219,18 +1219,15 @@ C
          LABINT( 8) = 'Z-CM1 Y '
          LABINT( 9) = 'Z-CM1 Z '
 
-         if (maxrep > 0) then
-            call quit('implement cm1 for maxrep > 0')
-         end if
-         intrep( 1) = 0
-         intrep( 2) = 0
-         intrep( 3) = 0
-         intrep( 4) = 0
-         intrep( 5) = 0
-         intrep( 6) = 0
-         intrep( 7) = 0
-         intrep( 8) = 0
-         intrep( 9) = 0
+         intrep(1) = ieor(isymax(1, 2), isymax(1, 1))
+         intrep(2) = ieor(isymax(2, 2), isymax(1, 1))
+         intrep(3) = ieor(isymax(3, 2), isymax(1, 1))
+         intrep(4) = ieor(isymax(1, 2), isymax(2, 1))
+         intrep(5) = ieor(isymax(2, 2), isymax(2, 1))
+         intrep(6) = ieor(isymax(3, 2), isymax(2, 1))
+         intrep(7) = ieor(isymax(1, 2), isymax(3, 1))
+         intrep(8) = ieor(isymax(2, 2), isymax(3, 1))
+         intrep(9) = ieor(isymax(3, 2), isymax(3, 1))
 
          anti = .true.
       GOTO 200
@@ -1265,27 +1262,47 @@ C
          LABINT(17) = 'Z-CM2YZ '
          LABINT(18) = 'Z-CM2ZZ '
 
-         if (maxrep > 0) then
-            call quit('implement cm2 for maxrep > 0')
-         end if
-         intrep( 1) = 0
-         intrep( 2) = 0
-         intrep( 3) = 0
-         intrep( 4) = 0
-         intrep( 5) = 0
-         intrep( 6) = 0
-         intrep( 7) = 0
-         intrep( 8) = 0
-         intrep( 9) = 0
-         intrep(10) = 0
-         intrep(11) = 0
-         intrep(12) = 0
-         intrep(13) = 0
-         intrep(14) = 0
-         intrep(15) = 0
-         intrep(16) = 0
-         intrep(17) = 0
-         intrep(18) = 0
+         iret = 1
+         intrep( 1)  = isymax(iret, 1)
+         intrep( 2)  = ieor(ieor(isymax(1, 2), 
+     &                           isymax(2, 2)),
+     &                           isymax(iret, 1))
+         intrep( 3)  = ieor(ieor(isymax(1, 2), 
+     &                           isymax(3, 2)),
+     &                           isymax(iret, 1))
+         intrep( 4)  = isymax(iret, 1)
+         intrep( 5)  = ieor(ieor(isymax(2, 2),
+     &                           isymax(3, 2)),
+     &                           isymax(iret, 1))
+         intrep( 6)  = isymax(iret, 1)
+
+         iret = 2
+         intrep( 7)  = isymax(iret, 1)
+         intrep( 8)  = ieor(ieor(isymax(1, 2), 
+     &                           isymax(2, 2)),
+     &                           isymax(iret, 1))
+         intrep( 9)  = ieor(ieor(isymax(1, 2), 
+     &                           isymax(3, 2)),
+     &                           isymax(iret, 1))
+         intrep(10)  = isymax(iret, 1)
+         intrep(11)  = ieor(ieor(isymax(2, 2),
+     &                           isymax(3, 2)),
+     &                           isymax(iret, 1))
+         intrep(12)  = isymax(iret, 1)
+
+         iret = 3
+         intrep(13)  = isymax(iret, 1)
+         intrep(14)  = ieor(ieor(isymax(1, 2), 
+     &                           isymax(2, 2)),
+     &                           isymax(iret, 1))
+         intrep(15)  = ieor(ieor(isymax(1, 2), 
+     &                           isymax(3, 2)),
+     &                           isymax(iret, 1))
+         intrep(16)  = isymax(iret, 1)
+         intrep(17)  = ieor(ieor(isymax(2, 2),
+     &                           isymax(3, 2)),
+     &                           isymax(iret, 1))
+         intrep(18)  = isymax(iret, 1)
 
          anti = .false.
       GOTO 200
@@ -2111,30 +2128,27 @@ C
          LABINT(17) = 'YZ-QDB Y'
          LABINT(18) = 'YZ-QDB Z'
 
-         if (maxrep > 0) then
-            call quit('implement qdb for maxrep > 0')
-         end if
-         intrep( 1) = 0
-         intrep( 2) = 0
-         intrep( 3) = 0
-         intrep( 4) = 0
-         intrep( 5) = 0
-         intrep( 6) = 0
-         intrep( 7) = 0
-         intrep( 8) = 0
-         intrep( 9) = 0
-         intrep(10) = 0
-         intrep(11) = 0
-         intrep(12) = 0
-         intrep(13) = 0
-         intrep(14) = 0
-         intrep(15) = 0
-         intrep(16) = 0
-         intrep(17) = 0
-         intrep(18) = 0
+         intrep( 1) = isymax(1, 2)
+         intrep( 2) = isymax(2, 2)
+         intrep( 3) = isymax(3, 2)
+         intrep( 4) = isymax(1, 2)
+         intrep( 5) = isymax(2, 2)
+         intrep( 6) = isymax(3, 2)
+         intrep( 7) = isymax(1, 2)
+         intrep( 8) = isymax(2, 2)
+         intrep( 9) = isymax(3, 2)
+         intrep(10) = ieor(isymax(1,2),ieor(isymax(1,1),isymax(2,1)))
+         intrep(11) = ieor(isymax(2,2),ieor(isymax(1,1),isymax(2,1)))
+         intrep(12) = ieor(isymax(3,2),ieor(isymax(1,1),isymax(2,1)))
+         intrep(13) = ieor(isymax(1,2),ieor(isymax(1,1),isymax(3,1)))
+         intrep(14) = ieor(isymax(2,2),ieor(isymax(1,1),isymax(3,1)))
+         intrep(15) = ieor(isymax(3,2),ieor(isymax(1,1),isymax(3,1)))
+         intrep(16) = ieor(isymax(1,2),ieor(isymax(2,1),isymax(3,1)))
+         intrep(17) = ieor(isymax(2,2),ieor(isymax(2,1),isymax(3,1)))
+         intrep(18) = ieor(isymax(3,2),ieor(isymax(2,1),isymax(3,1)))
 
-         ANTI      = .TRUE.
-      GOTO 200
+         anti = .true.
+      goto 200
 
 
 C
