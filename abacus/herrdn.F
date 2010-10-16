@@ -5609,15 +5609,20 @@ C     or if default - kinetic balance - should be used.)
 C
       DATA NMLN_LASTREAD /0/
       SAVE NMLN_LASTREAD
+      INTEGER :: NMLINE_STORED(1:2)=0
 C
 C     If NMLINE is zero, reset NMLN_LASTREAD since this is a new call of readin,
 C     e.g. during a geometry optimization.
 C
-      IF ( NMLINE .EQ. 0) NMLN_LASTREAD = 0
+      IF ( NMLINE .EQ. 0) THEN
+        NMLN_LASTREAD = 0
+      ENDIF
 C
    10 CONTINUE
       NMLINE = NMLINE + 1
 
+      NMLINE_STORED(1) = NMLINE_STORED(2)
+      NMLINE_STORED(2) = NMLINE
 
       IF ( NMLINE .LT. NMLN_LASTREAD ) THEN
          WRITE(LUPRI,'(//A,2(/A,I5))')
@@ -5627,11 +5632,23 @@ C
          CALL QUIT('*** ERROR reading basis')
       ENDIF
 
-      IF (NMLINE .GT. NMLN_LASTREAD) THEN
-CMI     ... to prevent ERR jump, add an extra space after the last exponent
-         READ (LUINFO,'(A)',END=12,ERR=11) MLINE(NMLINE)
-CMI      write(LUPRI,*) 'RDLINE: read NMLINE,MLINE(NMLINE)=',
-CMI  &     NMLINE,MLINE(NMLINE)
+      IF (NMLINE.GT.NMLN_LASTREAD.AND
+     &   .NMLINE_STORED(1).NE.NMLINE_STORED(2)) THEN
+         READ (LUINFO,'(A)',END=12,IOSTAT=IOS) MLINE(NMLINE)
+         IF (IOS.NE.0) THEN
+          WRITE(LUPRI,*) 
+     &    'ERROR(subroutine RDLINE): Error in reading molecule.MOL. '
+     &    //'NODE=',MYTID
+          WRITE(LUPRI,*) 'IOS=',IOS 
+          WRITE(LUPRI,*) 'Line no:', NMLINE
+          WRITE(LUPRI,*) 'NMLN_LASTREAD',NMLN_LASTREAD
+          WRITE(LUPRI,*) 'MLINE(NMLINE)=',MLINE(NMLINE)
+          WRITE(LUPRI,*) 'NMLINE_STORED:',
+     &    NMLINE_STORED(1),NMLINE_STORED(2)
+          IF (NMLINE>1) THEN
+            WRITE(LUPRI,*) 'Previous line:',MLINE(NMLINE-1)
+          ENDIF
+         ENDIF
       ENDIF
 
       IF (NMLINE.GT.KMLINE) THEN
@@ -5640,31 +5657,17 @@ CMI  &     NMLINE,MLINE(NMLINE)
      &        ' Increase dimension in /MOLINP/ to at least',NMLINE
          CALL QUIT('*** ERROR *** Too many input lines for READIN')
       END IF
+
       IF((MLINE(NMLINE)(1:1) .EQ. '#') .OR.
      $   (MLINE(NMLINE)(1:1) .EQ. '!') .OR.
      $   (MLINE(NMLINE)(1:1) .EQ. '$')) GOTO 10
+
       NMLN_LASTREAD = NMLINE
 
-      RETURN
-
-   11 CONTINUE 
-CMI   MLINE(NMLINE)='        '
-C     JHS Remove the next line?
-      WRITE(LUPRI,*) 
-     & 'ERROR(subrout RDLINE): Error in reading molecule.MOL. '
-     &     //'NODE=',MYTID
-      WRITE(LUPRI,*) 'MLINE(NMLINE)=',MLINE(NMLINE)
-      MLINE(NMLINE)='        '
-      IF (NMLINE>1) THEN
-        WRITE(LUPRI,*) 'Line=', NMLINE, 'Prev line:',
-     &        MLINE(NMLINE-1)
-      ELSE
-        WRITE(LUPRI,*) 'Line=', NMLINE
-      END IF
-      
    12 CONTINUE
       RETURN
       END
+
 C  /* Deck wronel */
       SUBROUTINE WRONEL(TITLE,NONTYP,NONT,IQM,IFXYZ,KATOM,JCO2,KANG)
 C
