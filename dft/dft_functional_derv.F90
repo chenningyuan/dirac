@@ -269,6 +269,9 @@ contains
 
          select case (order)
 
+            case (0)
+               call quit('get_functional_derv: order 0; probably programming error')
+
             case (1)
                if (xcfun_is_lda()) then
                   derv(k, d1000000) = f%output(XC_D10, k)
