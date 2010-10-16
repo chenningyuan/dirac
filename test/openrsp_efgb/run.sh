@@ -2,30 +2,30 @@
 
 export MOL=h2o2.mol
 
-export MENU=nr.inp
+export MENU=nr_hf.inp
 ../run.sh
 
-export MOL=hf.mol
+export MOL=fh.mol
 
 # test nonrel transformation
 
-export MENU=nr.inp
+export MENU=nr_hf.inp
 ../run.sh
-export MENU=nr_shifted.inp
+export MENU=nr_hf_shifted.inp
 ../run.sh
 
 # test nonrel limit
 
-export MENU=dc_skipep.inp
+export MENU=dc_hf_skipep.inp
 ../run.sh
-export MENU=dc_skipep_cval=800.inp
+export MENU=dc_hf_skipep_cval=3000.inp
 ../run.sh
 
 # test rel transformation
 
-export MENU=dc.inp
+export MENU=dc_hf.inp
 ../run.sh
-export MENU=dc_shifted.inp
+export MENU=dc_hf_shifted.inp
 ../run.sh
 
 # remove restart files
