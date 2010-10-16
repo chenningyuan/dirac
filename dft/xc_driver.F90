@@ -645,7 +645,10 @@ contains
          if (nr_open_shells > 0) call gtdoav(mat_dim, nz, 1, dmat_0, -1)
 
 !        symmetrize matrices
-         if (dft_cfg_blocked .or. (use_gga .and. .not. do_london_rhs_direct .and. .not. do_geo)) then
+         if (dft_cfg_blocked .or. (use_gga                          &
+                                   .and. .not. do_london_rhs_direct &
+                                   .and. .not. do_london_ks         &
+                                   .and. .not. do_geo)) then
             if (nr_dmat > 0) then
                call gga_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym, dmat_ih_sym)
             else
@@ -1432,15 +1435,28 @@ contains
           end if
 
           if (do_london_ks) then
-             call xc_london_c1_lda(derv(1, d1000000), &
-                                   mat_dim,           &
-                                   nz,                &
-                                   fmat,              &
-                                   ao,                &
-                                   (/rx(ipoint), ry(ipoint), rz(ipoint)/))
+             if (use_gga) then
+                call xc_london_c1_gga(derv(1, d1000000),               &
+                                      derv(1, d0010000),               &
+                                      rhg,                             &
+                                      mat_dim,                         &
+                                      nz,                              &
+                                      fmat,                            &
+                                      ao,                              &
+                                      ao(ao_start(1, 0):ao_end(1, 0)), &
+                                      (/rx(ipoint), ry(ipoint), rz(ipoint)/))
+             else
+                call xc_london_c1_lda(derv(1, d1000000), &
+                                      mat_dim,           &
+                                      nz,                &
+                                      fmat,              &
+                                      ao,                &
+                                      (/rx(ipoint), ry(ipoint), rz(ipoint)/))
+             end if
           end if
 
           if (do_london_lr) then
+!radovan:    program me ...
           end if
 #endif /* ifdef MOD_UNRELEASED */
 
