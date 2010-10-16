@@ -1,6 +1,21 @@
 #!/usr/bin/python 
 ##! /usr/bin/env python        
 #
+# Ulf's idea
+#./configure
+#Configuring Dirac
+#No Fortran compiler given (with --fc),  assuming platform default: ifort
+#ERROR: Compiler ifort not found, use --fc option to select Fortran compiler.
+#<configure quits>
+#
+#A bit later..
+#./configure --fc=/path/to/ifort
+#Configuring Dirac
+#...
+#No math library specified (with --blas and --lapack), using slow built
+#in version.
+#Testing BLAS and LAPACK: OK
+#
                                       
 ############################################################################################
 #
@@ -14,6 +29,7 @@ import  sys, os, string, subprocess, optparse, distutils.util
 # Search in the system for these compilers
 F_compilers=['ifort','gfortran','pgf90','g95','lfc']
 C_compilers=['icc','gcc','pgcc']
+CPP_compilers=['iCC','g++','pgCC']
 
 def guess_system():
 # guess the operating system
