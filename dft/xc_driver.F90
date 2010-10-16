@@ -42,14 +42,14 @@ module xc_driver
 #endif
 #ifdef MOD_OPENRSP
   use xc_response
+  use xc_london_c1
 #endif
   use dirac_mpi
 #ifdef MOD_XCFUN
   use xcfun
 #endif
 
-
-  implicit none
+   implicit none
 
    public xc_integrator
    public xc_mpi_wake_up_coworkers
@@ -194,6 +194,8 @@ module xc_driver
    logical                      :: do_geo_0
    logical                      :: do_geo_1
    logical                      :: do_geo_2
+   logical                      :: do_london_ks
+   logical                      :: do_london_lr
    logical                      :: do_overlap_diagnostic
 
 contains
@@ -216,6 +218,8 @@ contains
                             xc_do_geo_0,              &
                             xc_do_geo_1,              &
                             xc_do_geo_2,              &
+                            xc_do_london_ks,          &
+                            xc_do_london_lr,          &
                             xc_do_overlap_diagnostic, &
                             xc_response_order_mo,     &
                             xc_response_order_ao)
@@ -238,7 +242,8 @@ contains
       integer,                   intent(in)    :: xc_nr_dmat
       integer,                   intent(in)    :: xc_nr_fmat
       real(8), optional, target, intent(in)    :: xc_dmat(xc_mat_dim, xc_mat_dim, xc_nz, xc_nr_dmat)
-      real(8), optional, target, intent(inout) :: xc_fmat(xc_mat_dim, xc_mat_dim, xc_nz, xc_nr_fmat)
+!     real(8), optional, target, intent(inout) :: xc_fmat(xc_mat_dim, xc_mat_dim, xc_nz, xc_nr_fmat)
+      real(8), optional, target                :: xc_fmat(xc_mat_dim, xc_mat_dim, xc_nz, xc_nr_fmat)
       integer, optional, target, intent(in)    :: xc_dmat_ih_sym(xc_nr_dmat)
       integer, optional, target, intent(in)    :: xc_dmat_pg_sym(xc_nr_dmat)
       integer, optional, target, intent(in)    :: xc_fmat_pg_sym(xc_nr_fmat)
@@ -252,6 +257,8 @@ contains
       logical, optional,         intent(in)    :: xc_do_geo_0
       logical, optional,         intent(in)    :: xc_do_geo_1
       logical, optional,         intent(in)    :: xc_do_geo_2
+      logical, optional,         intent(in)    :: xc_do_london_ks
+      logical, optional,         intent(in)    :: xc_do_london_lr
       logical, optional,         intent(in)    :: xc_do_overlap_diagnostic
 
       integer, optional,         intent(in)    :: xc_response_order_mo
@@ -327,6 +334,8 @@ contains
       do_geo_0              = .false.
       do_geo_1              = .false.
       do_geo_2              = .false.
+      do_london_ks          = .false.
+      do_london_lr          = .false.
       do_overlap_diagnostic = .false.
       nr_atoms              = 0
 
@@ -340,6 +349,8 @@ contains
          if (present(xc_do_geo_0))              do_geo_0              = xc_do_geo_0
          if (present(xc_do_geo_1))              do_geo_1              = xc_do_geo_1
          if (present(xc_do_geo_2))              do_geo_2              = xc_do_geo_2
+         if (present(xc_do_london_ks))          do_london_ks          = xc_do_london_ks
+         if (present(xc_do_london_lr))          do_london_lr          = xc_do_london_lr
          if (present(xc_nr_atoms))              nr_atoms              = xc_nr_atoms
          if (present(xc_do_overlap_diagnostic)) do_overlap_diagnostic = xc_do_overlap_diagnostic
       end if
@@ -360,6 +371,8 @@ contains
          call dirac_mpi_bcast(do_geo_0)
          call dirac_mpi_bcast(do_geo_1)
          call dirac_mpi_bcast(do_geo_2)
+         call dirac_mpi_bcast(do_london_ks)
+         call dirac_mpi_bcast(do_london_lr)
          call dirac_mpi_bcast(do_overlap_diagnostic)
       end if
 #endif
@@ -449,6 +462,7 @@ contains
       if (do_geo_0 .or. do_geo_1 .or. do_geo_2) then
          do_geo = .true.
       end if
+
       nullify(property_gradient)
       if (i_am_coworker) then
          if (do_geo) then
@@ -891,28 +905,39 @@ contains
     max_fun_derv = 0
 
     if (do_potential) then
-      max_fun_derv = 1
+       max_fun_derv = 1
     end if
     if (response_order_mo > 0) then
-      max_fun_derv = response_order_mo + 1
+       max_fun_derv = response_order_mo + 1
     end if
     if (do_london_rhs_direct) then
-      if (dft_cfg_no_sdft) then
-        max_fun_derv = 1
-      else
-        max_fun_derv = 2
-      end if
+       if (dft_cfg_no_sdft) then
+          max_fun_derv = 1
+       else
+          max_fun_derv = 2
+       end if
     end if
     if (do_geo_0) then
-      max_fun_derv = 1
+       max_fun_derv = 1
     end if
     if (do_geo_1) then
-      max_fun_derv = 2
+       max_fun_derv = 2
     end if
     if (do_geo_2) then
-      max_fun_derv = 3
+       max_fun_derv = 3
+    end if
+    if (do_london_ks) then
+       max_fun_derv = 1
+    end if
+    if (do_london_lr) then
+       max_fun_derv = 2
     end if
 
+#ifdef MOD_OPENRSP
+    if (do_london_ks .or. do_london_lr) then
+       call xc_london_c1_init(mat_dim)
+    end if
+#endif
 
 #ifdef MOD_XCFUN
 #ifdef MOD_OPENRSP
@@ -1404,6 +1429,18 @@ contains
                                   tmat_2,            &
                                   ao,              &
                                   ao(ao_start(1, 0):ao_end(1, 0)))
+          end if
+
+          if (do_london_ks) then
+             call xc_london_c1_lda(derv(1, d1000000), &
+                                   mat_dim,           &
+                                   nz,                &
+                                   fmat,              &
+                                   ao,                &
+                                   (/rx(ipoint), ry(ipoint), rz(ipoint)/))
+          end if
+
+          if (do_london_lr) then
           end if
 #endif /* ifdef MOD_UNRELEASED */
 

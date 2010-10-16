@@ -926,11 +926,7 @@ contains
             call twofck('M ', D(1:1), A(1:3))
             ! Kohn-Sham contribution
             if (do_dft()) then
-#ifdef PRG_DIRAC
-               call quit('implement di_get_MagDeriv_FxD_DFT')
-#else
                call di_get_MagDeriv_FxD_DFT(A(4:6), D(1))
-#endif
                do i = 1, 3
                   A(i) = A(i) + A(3+i)
                end do
@@ -951,11 +947,7 @@ contains
                call twofck('M ', D(2+j:2+j), A(1:3))
                ! Kohn-Sham
                if (do_dft()) then
-#ifdef PRG_DIRAC
-                  call quit('implement di_get_MagDeriv_GxD_DFT')
-#else
                   call di_get_MagDeriv_GxD_DFT(D(1), D(2+j), A(4:6))
-#endif
                   do i = 1, 3
                      A(i) = A(i) - A(3+i) !negative sign on KS contrib
                   end do

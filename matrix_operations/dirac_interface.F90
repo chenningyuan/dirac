@@ -13,6 +13,8 @@ module dirac_interface
    public di_get_geomderiv_molgrad_dft
    public di_get_geomderiv_fxd_dft
    public di_get_geomderiv_gxd_dft
+   public di_get_magderiv_fxd_dft
+   public di_get_magderiv_gxd_dft
    public do_dft
    public get_s
    public get_f
@@ -166,6 +168,49 @@ contains
                          xc_nr_atoms          = nr_atoms,             &
                          xc_property_gradient = g,                    &
                          xc_do_geo_2          = .true.)
+
+   end subroutine
+
+   subroutine di_get_magderiv_fxd_dft(F, D)
+
+!     --------------------------------------------------------------------------
+      type(matrix)              :: F(3)
+      type(matrix), intent(in)  :: D
+!     --------------------------------------------------------------------------
+      real(8),      allocatable :: mat(:, :, :, :)
+!     --------------------------------------------------------------------------
+
+      call alloc(mat, ntbas(0), ntbas(0), nz, 3)
+      mat = 0.0d0
+
+      call xc_integrator(xc_mat_dim      = ntbas(0),    &
+                         xc_nz           = nz,          &
+                         xc_dmat_0       = D%elms,      &
+                         xc_nr_dmat      = 0,           &
+                         xc_nr_fmat      = 3,           &
+                         xc_fmat         = mat,         &
+                         xc_fmat_pg_sym  = (/1, 1, 1/), &
+                         xc_do_london_ks = .true.)
+
+      call dcopy(ntbas(0)*ntbas(0)*nz, mat(1, 1, 1, 1), 1, F(1)%elms, 1)
+      call dcopy(ntbas(0)*ntbas(0)*nz, mat(1, 1, 1, 2), 1, F(2)%elms, 1)
+      call dcopy(ntbas(0)*ntbas(0)*nz, mat(1, 1, 1, 3), 1, F(3)%elms, 1)
+      call dealloc(mat)
+
+   end subroutine
+
+   subroutine di_get_magderiv_gxd_dft(D, T, F)
+
+!     --------------------------------------------------------------------------
+      type(matrix), intent(in) :: D
+      type(matrix), intent(in) :: T
+      type(matrix)             :: F(3)
+!     --------------------------------------------------------------------------
+      real(8),      allocatable :: mat(:, :, :, :)
+!     --------------------------------------------------------------------------
+
+!     radovan: presently do nothing
+!              apparently no contribution to efgb
 
    end subroutine
 
