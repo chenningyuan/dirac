@@ -369,7 +369,7 @@ void hostnm_(char* buf, fortran_int_t buflen)
     buf[i] = ' ';
 }
 
-double* malloc_(fortran_int_int cnt)
+double* malloc_(fortran_int_t cnt)
 {
   return malloc(cnt);
 }
