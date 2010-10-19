@@ -31,6 +31,8 @@ class pam_enviroment:
     self.wrkdir='/tmp/ilias/xxx'
     self.wrkpath='/tmp/ilias'
     self.parallel = False
+    self.profile = False
+    self.profiler = ''
     self.mpi=1
     self.keepwrk=False
     self.dirac_exe=self.dirac_home
@@ -142,18 +144,35 @@ class pam_enviroment:
     print command
     os.system(command)
 
+  def profile_dirac(self):
+    if self.profile: 
+      print 'profiling...'
+      #default output after finishing DIRAC
+      GMON="gmon.out"
+      #os.system(....)
+
+  def remove_work_dir(self):
+    print 'content of the work directory'
+    # more here http://www.daniweb.com/code/snippet216798.html
+    for filename in os.listdir(self.wrkdir):
+      print  filename, os.path.getsize(self.wrkdir+"/"+filename)
+    if (not self.keepwrk):
+      print 'deleting the work directory'
+      shutil.rmtree(self.wrkdir)      
+    else:
+      print 'keeping the work directory'
+
   def print_header(self):
-    print '****************************************'  
-    print '**** OUTPUT FROM DIRAC SHELL SCRIPT ****'  
-    print '****************************************'
+    print '*****************************************'  
+    print '**** OUTPUT FROM DIRAC PYTHON SCRIPT ****'  
+    print '*****************************************'
     print '                                        '  
-    print '   $Revision: xxxxx $'
-    print  "   User@Host   : `whoami`@`hostname`"
-    print  "   Date        : `date`"
-    print  "   Command     : $0 $ARG_SAVE "
-    print  "   PID         : $$"
-    print  "   Input dir   : $LOC"
-    print  "   Work dir    :",self.wrkdir
+    print "   User@Host   : `whoami`@`hostname`"
+    print "   Date        : `date`"
+    print "   Command     : $0 $ARG_SAVE "
+    print "   PID         : $$"
+    print "   Input dir   : $LOC"
+    print "   Work dir    :",self.wrkdir
 
 #def notify_user() :
 # replacement
@@ -174,6 +193,9 @@ class pam_run(pam_enviroment):
     self.pam_variables.set_wrkdir()
     self.pam_variables.copy_files()
     self.pam_variables.execute_dirac()
+    self.pam_variables.profile_dirac()
+    self.pam_variables.remove_work_dir()
+
 
 #set_work_dir  
 #set_dirac_environment
