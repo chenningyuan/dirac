@@ -39,8 +39,11 @@ class pam_enviroment:
     self.full_restart=False
     self.debugger=''
     self.noarch=False
+    # inpu files
     self.input_molecule=''
     self.input_dirac=''
+    # output file...
+    self.output_dirac=''
 
   #def read_pam_variables(self):
   # important - reads variables from Makefile.config
@@ -96,16 +99,23 @@ class pam_enviroment:
       print 'assigned mw=',self.mem
 
     # remaining arguments - *.mol and *.inp files
-    
     process_remaining_args(args)
-    
-  def execute_dirac(self):
-    print 'executing dirac ...'
+
+  def set_wrkdir(self):
+    if not os.path.isdir(self.wrkdir):
+      print 'creating woorkdirectory '+self.wrkdir
+      os.mkdir(self.wrkdir)
+    else:
+      print 'directory exists'
+
+  def copy_files(self):
+    print 'copying files ...'
     if not os.path.isdir(self.wrkdir):
       print 'creating directory'
       os.mkdir(self.wrkdir)
     else:
       print 'directory exists'
+
     #copy executable
     src=install_dir+'/'+'dirac.x'
     dest_dir=self.wrkdir+'/'+'dirac.x'
@@ -121,26 +131,38 @@ class pam_enviroment:
     shutil.copy(src, dest)
     for filename in os.listdir(self.wrkdir):
       print  filename
-   
+
+  def execute_dirac(self):
+#todo: time limiting !
+# http://efreedom.com/Question/1-366682/Limit-Execution-Time-Function-Call-Python
+# google search: python limit execution time Windows
+    print 'executing dirac ...'
     # launch dirac
     command='cd '+self.wrkdir+' ; ./dirac.x'
     print command
     os.system(command)
-   
+
+  def print_header(self):
+    print '****************************************'  
+    print '**** OUTPUT FROM DIRAC SHELL SCRIPT ****'  
+    print '****************************************'
+    print '                                        '  
+    print '   $Revision: xxxxx $'
+    print  "   User@Host   : `whoami`@`hostname`"
+    print  "   Date        : `date`"
+    print  "   Command     : $0 $ARG_SAVE "
+    print  "   PID         : $$"
+    print  "   Input dir   : $LOC"
+    print  "   Work dir    :",self.wrkdir
 
 #def notify_user() :
 # replacement
 #  print 'notify_user...'
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#class pam_run(pam_variables):
 class pam_run(pam_enviroment):
 #-----------------------------------------------------
 #-----------------------------------------------------
-  #pass
-  #global pam_variables
-  #pam_variables=pam_enviroment()
-
   def __init__(self):
     print 'pam_run class initialize'
     self.pam_variables=pam_enviroment()
@@ -148,6 +170,9 @@ class pam_run(pam_enviroment):
   def perform(self):
     print 'performing own pam run..'
     self.pam_variables.process_pam_arguments()
+    self.pam_variables.print_header()
+    self.pam_variables.set_wrkdir()
+    self.pam_variables.copy_files()
     self.pam_variables.execute_dirac()
 
 #set_work_dir  
