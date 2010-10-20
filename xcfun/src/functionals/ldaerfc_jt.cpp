@@ -53,4 +53,9 @@ void setup_ldaerfc_jt(functional &f)
 	     "Range separation parameter is XC_RANGESEP_MU\n");
 
   SET_LDA_ENERGY_FUNCTION(f, energy);
+
+// radovan:
+// selftest yet to be written. i have compared SCF energy with Dalton
+// and could obtain 11 matching digits
+
 }

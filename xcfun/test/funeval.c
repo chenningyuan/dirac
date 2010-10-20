@@ -49,6 +49,7 @@ int main(int argc, char *argv[])
 {
   xc_functional fun = xc_new_functional();
   int nvar, mode = XC_VARS_AB;
+  int dobench = 0;
   printf("XCFun version: %g\n",xcfun_version());
   if (argc > 1)
     {
@@ -57,6 +58,26 @@ int main(int argc, char *argv[])
 	{
 	  double w;
 	  int param = -1;
+	  if (strcmp(argv[i],"--benchmark") == 0)
+	    {
+	      dobench = 1;
+	      i++;
+	    }
+	  if (strcmp(argv[i],"--ns") == 0)
+	    {
+	      mode = XC_VARS_NS;
+	      i++;
+	    }
+	  if (strcmp(argv[i],"--n") == 0)
+	    {
+	      mode = XC_VARS_N;
+	      i++;
+	    }
+	  if (strcmp(argv[i],"--ab") == 0)
+	    {
+	      mode = XC_VARS_AB;
+	      i++;
+	    }
 	  // Find a setting with name argv[i]
 	  for (j=0;j<XC_NR_PARAMS;j++)
 	    if (xc_name(j) && (strcmp(xc_name(j),argv[i]) == 0))
@@ -91,7 +112,7 @@ int main(int argc, char *argv[])
     }
   xc_set_mode(fun,mode);
   printf("Mode is %i (0: A, 1: N, 2: AB, 3: NS)\n",mode);
-  printf("Type is %i (0: LDA, 1: GGA, 2: MetaGGA)\n",xc_get_type(fun));
+  printf("Type is %i (0: LDA, 1: GGA, 2: MetaGGA 3: MetaGGA[Tau+Laplacian])\n",xc_get_type(fun));
   printf("Maximal compiled order: %i\n", xc_max_order(fun));
   printf("Output length at order %i: %i\n",TEST_ORDER, 
 	 xc_output_length(fun,TEST_ORDER));
@@ -110,7 +131,11 @@ int main(int argc, char *argv[])
 	    return EXIT_FAILURE;
 	  }
       // Only one point, so pitch is unimportant
-      xc_eval(fun,TEST_ORDER,inp,out); 
+      if (dobench)
+	for (i = 1;i<1e6;i++)
+	  xc_eval(fun,TEST_ORDER,inp,out); 
+      else
+	  xc_eval(fun,TEST_ORDER,inp,out); 
       for (i=0;i<nvar;i++)
 	m[i] = 0;
       printf("Derivative        Value\n");

@@ -48,7 +48,7 @@ const char *xcfun_splash(void)
 int xcint_input_length(int mode, int type)
 {
   static int tab[XC_NR_MODES][XC_NR_TYPES] = 
-    {{1,2,3},{1,2,3},{2,5,7},{2,5,7}};
+    {{1,2,3,4},{1,2,3,4},{2,5,7,9},{2,5,7,9}};
   assert(mode>=0 and mode <= XC_NR_MODES);
   assert(type>=0 and type <= XC_NR_TYPES);
   return tab[mode][type];
@@ -169,6 +169,13 @@ void xc_eval(xc_functional fun, int order,
   xc_eval_vec(fun,order,1,density,0,result,0);
 }
 
+void xc_contract(xc_functional fun, int order,
+		 const double *density, 
+		 double *result)
+{
+  xc_eval_vec(fun,order,1,density,0,result,0);
+}
+
 int xc_get_type(xc_functional fun)
 {
   return fun->get_type();
@@ -285,4 +292,10 @@ int xcfun_test(void)
     }
   printf("Nr tests run: %i\n",nr_run);
   return nr_failed;
+}
+
+// Return the tau_a of the uniform electron gas of density n_a
+static double ueg_tau(double na)
+{
+  return 3.0/5.0*pow(6*M_PI*M_PI,2.0/3.0)*pow(na,5.0/3.0);
 }

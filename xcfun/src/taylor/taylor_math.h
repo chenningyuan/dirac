@@ -1,4 +1,3 @@
-#include <cstdio>
 // By Ulf Ekstrom March-June 2009.
 // Elementary functions. For inclusion in taylor.h only!
 
@@ -184,8 +183,7 @@ template<class S,class T,int N>
 static void pow_taylor(taylor<T,1,N>& t, const T &x0, const S &a)
 {
   if (x0 <= 0)
-    *(int *)0 = 0;
-  assert(x0 > 0 && "pow(x,a) not real analytic at x <= 0");
+    assert(x0 > 0 && "pow(x,a) not real analytic at x <= 0");
   t[0] = pow(x0,a);
   T x0inv = 1/x0;
   for (int i=1;i<=N;i++)
@@ -235,13 +233,12 @@ static taylor<T,Nvar,Ndeg> pow(const taylor<T,Nvar,Ndeg> &t,
 template<class T,int N>
 static void sqrt_taylor(taylor<T,1,N>& t, const T &x0)
 {
-  if (x0 <= 0)
-    *(int *)0 = 0;
   assert(x0 > 0 && "sqrt(x) not real analytic at x <= 0");
   t[0] = sqrt(x0);
   T x0inv = 1/x0;
   for (int i=1;i<=N;i++)
-    t[i] = t[i-1]*x0inv*(3.0/(2*i) - 1.0);
+    t[i] = t[i-1]*((3*x0inv)/(2*i) - x0inv);
+  //x0inv*(3.0/(2*i) - 1.0);
 }
 
 template<class T,int Nvar, int Ndeg>
@@ -254,6 +251,28 @@ static taylor<T,Nvar,Ndeg> sqrt(const taylor<T,Nvar,Ndeg> &t)
   t.compose(res,tmp);
   return res;
 }
+
+template<class T,int N>
+static void cbrt_taylor(taylor<T,1,N>& t, const T &x0)
+{
+  assert(x0 > 0 && "pow(x,a) not real analytic at x <= 0");
+  t[0] = cbrt(x0);
+  T x0inv = 1/x0;
+  for (int i=1;i<=N;i++)
+    t[i] = t[i-1]*((4*x0inv)/(3*i) - x0inv);
+}
+
+template<class T,int Nvar, int Ndeg>
+static taylor<T,Nvar,Ndeg> cbrt(const taylor<T,Nvar,Ndeg> &t)
+{
+  taylor<T,1,Ndeg> tmp;
+  cbrt_taylor(tmp,t[0]);
+
+  taylor<T,Nvar,Ndeg> res;
+  t.compose(res,tmp);
+  return res;
+}
+
 
 // Integer exponent version is analytical at t[0] = 0
 // This function gets priority over the normal pow 
@@ -562,7 +581,7 @@ template<class T,int Nvar, int Ndeg>
 static taylor<T,Nvar,Ndeg> min(const taylor<T,Nvar,Ndeg> &a,
 			       const taylor<T,Nvar,Ndeg> &b)
 {
-  if (a <= b)
+  if (a[0] <= b[0])
     return a;
   else
     return b;
@@ -572,7 +591,7 @@ template<class T,int Nvar, int Ndeg>
 static taylor<T,Nvar,Ndeg> max(const taylor<T,Nvar,Ndeg> &a,
 			       const taylor<T,Nvar,Ndeg> &b)
 {
-  if (a > b)
+  if (a[0] > b[0])
     return a;
   else
     return b;

@@ -277,7 +277,7 @@ files_never_compiled.append('relccsd/ccmain.F')
 files_never_compiled.append('relccsd/quit.F')
 files_never_compiled.append('build/gen_fortran_interface_h.c')
 files_never_compiled.append('dirrci/cimain.F')
-files_never_compiled.append('xcfun/fortran/example.F90')
+files_never_compiled.append('xcfun/fortran/example.f90')
 
 do_not_release = []
 do_not_release.append('utils/add_copyright.py')

@@ -13,7 +13,7 @@ void xcint_setup_functionals()
   SETUP(setup_beckexcorr);
   SETUP(setup_beckexsr);
   SETUP(setup_optx);
-  SETUP(setup_lb94);
+  //  SETUP(setup_lb94);
   SETUP(setup_lypc);
 
   SETUP(setup_pbex);
@@ -25,6 +25,7 @@ void xcint_setup_functionals()
 
   SETUP(setup_ldaerfx);
   SETUP(setup_ldaerfc);
+  SETUP(setup_ldaerfc_jt);
   SETUP(setup_ktx);
   SETUP(setup_tfk);
   SETUP(setup_pw91x);
@@ -42,6 +43,8 @@ void xcint_setup_functionals()
   SETUP(setup_m06c);
   SETUP(setup_m06lc);
   SETUP(setup_m06x2c);
-  SETUP(setup_ldaerfc_jt);
+  SETUP(setup_tpssc);
+  SETUP(setup_tpssx);
 #endif
+  SETUP(setup_brx);
 }

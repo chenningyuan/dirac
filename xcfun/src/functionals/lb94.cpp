@@ -1,3 +1,4 @@
+#if 0 // Does not work and should maybe not be here in the first place
 #include "functional.h"
 #include "vwn.h"
 #include "slater.h"
@@ -79,3 +80,4 @@ void setup_lb94(functional &f)
 
   f.add_test(XC_VARS_AB, 2, d, ref, 1e-11);
 }
+#endif

@@ -14,8 +14,8 @@
 #define XC_LDA      0 // Local density
 #define XC_GGA      1 // Local density & gradient
 #define XC_MGGA     2 // Local density, gradient and kinetic energy density
-//#define XC_M2GGA    3 // Local density, gradient, laplacian and kinetic energy density
-#define XC_NR_TYPES 3
+#define XC_MLGGA    3 // Local density, gradient, laplacian and kinetic energy density
+#define XC_NR_TYPES 4
 
 #ifdef __cplusplus
 extern "C" {
@@ -43,6 +43,13 @@ extern "C" {
 		   int density_pitch,
 		   double *result,
 		   int result_pitch);
+
+  // Calculate the xc potential for fun. This is currently only supported for some
+  // types of functionals (LDA or GGA, AB mode). Here density should be the normal
+  // density as for xc_eval, appended with the extra data needed to construct the
+  // potential. For GGA's this is the laplacian of the density. The energy density
+  // is computed as a by-product.
+  void xc_potential(xc_functional fun, const double *density, double *e_xc, double *v_xc);
 
   // Which variables to use/differentiatiate wrt to
   void xc_set_mode(xc_functional fun, int mode);

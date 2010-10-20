@@ -100,5 +100,18 @@ static taylor<T,Nvar,Ndeg> ufunc(const taylor<T,Nvar,Ndeg> &x, const double &a)
   return res;
 }
 
+template<class T, int Ndeg>
+static ctaylor<T,Ndeg> ufunc(const ctaylor<T,Ndeg> &x, const double &a)
+{
+  taylor<T,1,Ndeg> tmp1,tmp2;
+  pow_taylor(tmp1,1+x[0],a);
+  pow_taylor(tmp2,1-x[0],a);
+  for (int i=1;i<=Ndeg;i+=2)
+    tmp2[i] *= -1;
+  tmp1 += tmp2;
+  ctaylor<T,Ndeg> res;
+  x.compose(res,tmp1.c);
+  return res;
+}
 
 #endif

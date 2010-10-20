@@ -15,15 +15,22 @@ module xcfun
   integer, parameter :: XC_D1 = 2
   integer, parameter :: XC_D2 = 3
 
-! lda up to order 3
-! only derivatives that are nonzero at closed-shell reference
-! with XC_VARS_NS are here
+! all lda derivatives up to order 4
   integer, parameter :: XC_D00 =  1
   integer, parameter :: XC_D10 =  2
+  integer, parameter :: XC_D01 =  3
   integer, parameter :: XC_D20 =  4
+  integer, parameter :: XC_D11 =  5
   integer, parameter :: XC_D02 =  6
   integer, parameter :: XC_D30 =  7
+  integer, parameter :: XC_D21 =  8
   integer, parameter :: XC_D12 =  9
+  integer, parameter :: XC_D03 = 10
+  integer, parameter :: XC_D40 = 11
+  integer, parameter :: XC_D31 = 12
+  integer, parameter :: XC_D22 = 13
+  integer, parameter :: XC_D13 = 14
+  integer, parameter :: XC_D04 = 15
 
 ! gga up to order 3
 ! only derivatives that are nonzero at closed-shell reference
@@ -200,6 +207,16 @@ contains
     call xceval(funid,order,npoints,densities(1,1),densities(1,2),&
          results(1,1),results(1,2))
   end subroutine xc_eval
+
+  subroutine xc_potential(funid, density, energy, potentials)
+    integer, intent(in) :: funid    
+!radovan: trying to get it explicitly
+!         maybe later we go back to implicit
+!   integer :: npoints
+    double precision, intent(in) :: density(:)
+    double precision, intent(out) :: energy, potentials(:)
+    call xcpotential(funid,density,energy,potentials)
+  end subroutine xc_potential
 
   function xc_index(funid, exponents)
     integer, intent(in) :: exponents(*)
