@@ -11,6 +11,8 @@ export MOL=fh.mol
 
 export MENU=nr_hf_nolao.inp
 ../run.sh
+export MENU=nr_lda_nolao.inp
+../run.sh
 
 # test nonrel transformation
 
