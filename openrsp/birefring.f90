@@ -11,6 +11,7 @@ module birefring
    use decompMod, only: DecompItem
 #ifdef PRG_DIRAC
    use dirac_interface   !provides lsquit
+   use openrsp_cfg
 #endif
 
    implicit none
@@ -293,15 +294,17 @@ contains
       call print_tensor(int(shape(Eof)),  Eof, 'G-prime-noL = Eof', (/-freq(2),freq(2)/))
       call prop_oneave(S, (/'ELGR'/), (/De/), int(shape(Eqf)), Eqf)
       call print_tensor(int(shape(Eqf)), -Eqf, 'A-tensor = -Eqf', (/-freq(2),freq(2)/))
-      call prop_twoave((/'MAG'/), (/D,De/), int(shape(Ebf)), Ebf)
-      do j = 1, 3
-         DFDe(j) = D*(F-freq(2)/2*S)*De(j) + D*Fe(j)*D &
-                 + De(j)*(F+freq(2)/2*S)*D
-      end do
-      call prop_oneave(S, (/'MAG'/), (/De/), int(shape(Ebf)), Ebf, &
-                       freq=(/-freq(2)/), DFD=(/DFDe/))
-      DFDe = 0
-      call print_tensor(int(shape(Ebf)), Ebf, 'G-prime-Lon = Ebf', (/-freq(2),freq(2)/))
+      if (.not. openrsp_cfg_nolao) then
+         call prop_twoave((/'MAG'/), (/D,De/), int(shape(Ebf)), Ebf)
+         do j = 1, 3
+            DFDe(j) = D*(F-freq(2)/2*S)*De(j) + D*Fe(j)*D &
+                    + De(j)*(F+freq(2)/2*S)*D
+         end do
+         call prop_oneave(S, (/'MAG'/), (/De/), int(shape(Ebf)), Ebf, &
+                          freq=(/-freq(2)/), DFD=(/DFDe/))
+         DFDe = 0
+         call print_tensor(int(shape(Ebf)), Ebf, 'G-prime-Lon = Ebf', (/-freq(2),freq(2)/))
+      end if
       ! second order equations for last two fields
       call pert_dens(decomp, S, (/'EL','EL'/), (/3,3/), (/D,De,Df/), (/F,Fe,Ff/), &
                      Def, Fef, freq=(/freq(2),freq(3)/))
@@ -315,25 +318,27 @@ contains
       call print_tensor(int(shape(Eoff)), Eoff, 'd/df G-prime-noL = Eoff', freq)
       call prop_oneave(S, (/'ELGR'/), (/Def/), int(shape(Eqff)), Eqff)
       call print_tensor(int(shape(Eqff)), -Eqff, 'd/df A-tensor = -Eqff', freq)
-      call prop_oneave(S, (/'MAG','EL '/), (/De/), int(shape(Ebff)), Ebff, perm=(/1,3,2/))
-      call prop_oneave(S, (/'MAG','EL '/), (/Df/), int(shape(Ebff)), Ebff)
-      call prop_twoave((/'MAG'/), (/D,De,Df,Def/), int(shape(Ebff)), Ebff)
-      do k = 1, 3
-         do j = 1, 3
-            DFDef(j,k) = D*Fe(j)*Df(k) + De(j)*Ff(k)*D &
-                       + Df(k)*Fe(j)*D + D*Ff(k)*De(j) &
-                       + De(j)*(F+(freq(2)-freq(3))/2*S)*Df(k) &
-                       + Df(k)*(F-(freq(2)-freq(3))/2*S)*De(j) &
-                       + D*(F-(freq(2)+freq(3))/2*S)*Def(j,k)  &
-                       + Def(j,k)*(F+(freq(2)+freq(3))/2*S)*D + D*Fef(j,k)*D
+      if (.not. openrsp_cfg_nolao) then
+         call prop_oneave(S, (/'MAG','EL '/), (/De/), int(shape(Ebff)), Ebff, perm=(/1,3,2/))
+         call prop_oneave(S, (/'MAG','EL '/), (/Df/), int(shape(Ebff)), Ebff)
+         call prop_twoave((/'MAG'/), (/D,De,Df,Def/), int(shape(Ebff)), Ebff)
+         do k = 1, 3
+            do j = 1, 3
+               DFDef(j,k) = D*Fe(j)*Df(k) + De(j)*Ff(k)*D &
+                          + Df(k)*Fe(j)*D + D*Ff(k)*De(j) &
+                          + De(j)*(F+(freq(2)-freq(3))/2*S)*Df(k) &
+                          + Df(k)*(F-(freq(2)-freq(3))/2*S)*De(j) &
+                          + D*(F-(freq(2)+freq(3))/2*S)*Def(j,k)  &
+                          + Def(j,k)*(F+(freq(2)+freq(3))/2*S)*D + D*Fef(j,k)*D
+            end do
          end do
-      end do
-      call prop_oneave(S, (/'MAG'/), (/Def/), int(shape(Ebff)), Ebff, &
-                       freq=(/freq(1)/), DFD=(/DFDef/))
-      DFDef = 0
-      ! finished with f, free matrices
-      Df=0; Ff=0; Def=0; Fef=0
-      call print_tensor(int(shape(Ebff)), Ebff, 'd/df G-prime-Lon = Ebff', freq)
+         call prop_oneave(S, (/'MAG'/), (/Def/), int(shape(Ebff)), Ebff, &
+                          freq=(/freq(1)/), DFD=(/DFDef/))
+         DFDef = 0
+         ! finished with f, free matrices
+         Df=0; Ff=0; Def=0; Fef=0
+         call print_tensor(int(shape(Ebff)), Ebff, 'd/df G-prime-Lon = Ebff', freq)
+      end if
       ! second order equations for first two fields.
       ! If possible, solve 6 instead of 3x3 eqs.
       if (freq(1)==freq(2) .or. freq(1)==-freq(2)) then
@@ -401,8 +406,10 @@ contains
       !calculate tensor averages sum J'_ijk eps_ijk
       Jprio = Pffo(1,2,3) + Pffo(3,1,2) + Pffo(2,3,1) & !no-London
             - Pffo(3,2,1) - Pffo(2,1,3) - Pffo(1,3,2)
-      Jpril = Pffb(1,2,3) + Pffb(3,1,2) + Pffb(2,3,1) & !London
-            - Pffb(3,2,1) - Pffb(2,1,3) - Pffb(1,3,2)
+      if (.not. openrsp_cfg_nolao) then
+         Jpril = Pffb(1,2,3) + Pffb(3,1,2) + Pffb(2,3,1) & !London
+               - Pffb(3,2,1) - Pffb(2,1,3) - Pffb(1,3,2)
+      end if
       !average sum B_ij(ij)
       Bten = Pffs(1,1,1) + Pffs(2,1,2) + Pffs(3,1,4) &
            + Pffs(1,2,2) + Pffs(2,2,3) + Pffs(3,2,5) &
@@ -416,15 +423,24 @@ contains
                '-----------------------------------------------------------------'
       write (o,'(6x,a,f12.9,a,i7,a,i4,a/)') 'For frequency w = ',w, &
                ' au =',nint(w/cm1),' cm-1 ~ ', nint((2*pi*cvl/w)/nm),' nm'
-      write (o,'(4(6x,a,1x,g13.7/)/2(6x,a,1x,g13.7/)/)') &
-               'B-tensor           <<mu;mu,th>>w0 = -Effq(-w,w,0) average     :',Bten,  &
-               'B-calligraphic     <<mu;mu,th>>0w = -Effq(-w,0,w) average     :',Bcal,  &
-               'no-London J-prime i<<mu;mu,mg>>0w = -Effb(-w,0,w) eps-average :',Jprio, &
-               '   London J-prime i<<mu;mu,mg>>0w = -Effb(-w,0,w) eps-average :',Jpril, &
-               'no-London Buckingham birefringence 2/15(Bten-Bcal)-2/3w*Jpri  :',       &
-                                          2/15d0 * (Bten-Bcal) - 2/(3*w) * Jprio,       &
-               '   London Buckingham birefringence 2/15(Bten-Bcal)-2/3w*Jpri  :',       &
-                                          2/15d0 * (Bten-Bcal) - 2/(3*w) * Jpril
+      if (openrsp_cfg_nolao) then
+         write (o,'(3(6x,a,1x,g13.7/)/1(6x,a,1x,g13.7/)/)') &
+                  'B-tensor           <<mu;mu,th>>w0 = -Effq(-w,w,0) average     :',Bten,  &
+                  'B-calligraphic     <<mu;mu,th>>0w = -Effq(-w,0,w) average     :',Bcal,  &
+                  'no-London J-prime i<<mu;mu,mg>>0w = -Effb(-w,0,w) eps-average :',Jprio, &
+                  'no-London Buckingham birefringence 2/15(Bten-Bcal)-2/3w*Jpri  :',       &
+                                             2/15d0 * (Bten-Bcal) - 2/(3*w) * Jprio
+      else
+         write (o,'(4(6x,a,1x,g13.7/)/2(6x,a,1x,g13.7/)/)') &
+                  'B-tensor           <<mu;mu,th>>w0 = -Effq(-w,w,0) average     :',Bten,  &
+                  'B-calligraphic     <<mu;mu,th>>0w = -Effq(-w,0,w) average     :',Bcal,  &
+                  'no-London J-prime i<<mu;mu,mg>>0w = -Effb(-w,0,w) eps-average :',Jprio, &
+                  '   London J-prime i<<mu;mu,mg>>0w = -Effb(-w,0,w) eps-average :',Jpril, &
+                  'no-London Buckingham birefringence 2/15(Bten-Bcal)-2/3w*Jpri  :',       &
+                                             2/15d0 * (Bten-Bcal) - 2/(3*w) * Jprio,       &
+                  '   London Buckingham birefringence 2/15(Bten-Bcal)-2/3w*Jpri  :',       &
+                                             2/15d0 * (Bten-Bcal) - 2/(3*w) * Jpril
+      end if
    end subroutine
 
 

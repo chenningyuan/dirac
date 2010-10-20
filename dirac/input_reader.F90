@@ -699,6 +699,10 @@ contains
       need_1el_o = .true.
     end if
 
+    if (kw_matches(word, '.NOLAO ')) then
+      openrsp_cfg_nolao = .true.
+    end if
+
     if (kw_matches(word, '.EFGB  ')) then
       openrsp_cfg_efgb = .true.
       need_1el_f = .true.
