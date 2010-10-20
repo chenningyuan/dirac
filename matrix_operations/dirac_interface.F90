@@ -2,7 +2,6 @@ module dirac_interface
 
    use memory_allocator
    use matrix_defop
-!  use openrsp_cfg
    use character_processing
    use dirac_cfg
    use xc_driver
@@ -202,15 +201,31 @@ contains
    subroutine di_get_magderiv_gxd_dft(D, T, F)
 
 !     --------------------------------------------------------------------------
-      type(matrix), intent(in) :: D
-      type(matrix), intent(in) :: T
-      type(matrix)             :: F(3)
+      type(matrix), intent(in)  :: D
+      type(matrix), intent(in)  :: T
+      type(matrix)              :: F(3)
 !     --------------------------------------------------------------------------
       real(8),      allocatable :: mat(:, :, :, :)
 !     --------------------------------------------------------------------------
 
-!     radovan: presently do nothing
-!              apparently no contribution to efgb
+      call alloc(mat, ntbas(0), ntbas(0), nz, 3)
+      mat = 0.0d0
+
+      call xc_integrator(xc_mat_dim      = ntbas(0),    &
+                         xc_nz           = nz,          &
+                         xc_dmat_0       = D%elms,      &
+                         xc_nr_dmat      = 1,           &
+                         xc_dmat         = T%elms,      &
+                         xc_dmat_pg_sym  = (/1/),       &
+                         xc_nr_fmat      = 3,           &
+                         xc_fmat         = mat,         &
+                         xc_fmat_pg_sym  = (/1, 1, 1/), &
+                         xc_do_london_lr = .true.)
+
+      call dcopy(ntbas(0)*ntbas(0)*nz, mat(1, 1, 1, 1), 1, F(1)%elms, 1)
+      call dcopy(ntbas(0)*ntbas(0)*nz, mat(1, 1, 1, 2), 1, F(2)%elms, 1)
+      call dcopy(ntbas(0)*ntbas(0)*nz, mat(1, 1, 1, 3), 1, F(3)%elms, 1)
+      call dealloc(mat)
 
    end subroutine
 

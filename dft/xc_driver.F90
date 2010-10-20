@@ -848,6 +848,7 @@ contains
 !   gosia: temporarily
     real(8) :: u_qi(3,3), s_b(3,3)
     integer :: l
+    real(8) :: x(3)
 
       logical :: un_above_threshold
       logical :: us_above_threshold
@@ -1436,27 +1437,37 @@ contains
 
           if (do_london_ks) then
              if (use_gga) then
-                call xc_london_c1_gga(derv(1, d1000000),               &
-                                      derv(1, d0010000),               &
-                                      rhg,                             &
-                                      mat_dim,                         &
-                                      nz,                              &
-                                      fmat,                            &
-                                      ao,                              &
-                                      ao(ao_start(1, 0):ao_end(1, 0)), &
-                                      (/rx(ipoint), ry(ipoint), rz(ipoint)/))
+                call xc_london_c1_ks_gga(derv(1, d1000000),               &
+                                         derv(1, d0010000),               &
+                                         rhg,                             &
+                                         mat_dim,                         &
+                                         nz,                              &
+                                         fmat,                            &
+                                         ao,                              &
+                                         ao(ao_start(1, 0):ao_end(1, 0)), &
+                                         (/rx(ipoint), ry(ipoint), rz(ipoint)/))
              else
-                call xc_london_c1_lda(derv(1, d1000000), &
-                                      mat_dim,           &
-                                      nz,                &
-                                      fmat,              &
-                                      ao,                &
-                                      (/rx(ipoint), ry(ipoint), rz(ipoint)/))
+                call xc_london_c1_ks_lda(derv(1, d1000000), &
+                                         mat_dim,           &
+                                         nz,                &
+                                         fmat,              &
+                                         ao,                &
+                                         (/rx(ipoint), ry(ipoint), rz(ipoint)/))
              end if
           end if
 
           if (do_london_lr) then
-!radovan:    program me ...
+             call xc_london_c1_lr_lda(&
+                                      mat_dim,                 &
+                                      nz,                      &
+                                      dmat,                    &
+                                      fmat,                    &
+                                      ao,                      &
+                                    (/rx(ipoint), ry(ipoint), rz(ipoint)/), &
+                                      x)
+             do im = 1, 3
+                u%n(im) = -x(im)*derv(1, d2000000)
+             end do
           end if
 #endif /* ifdef MOD_UNRELEASED */
 

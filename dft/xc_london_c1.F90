@@ -47,8 +47,9 @@ module xc_london_c1
   implicit none
 
   public xc_london_c1_init
-  public xc_london_c1_lda
-  public xc_london_c1_gga
+  public xc_london_c1_ks_lda
+  public xc_london_c1_ks_gga
+  public xc_london_c1_lr_lda
 
   private
 
@@ -127,12 +128,12 @@ contains
 
   end subroutine
 
-  subroutine xc_london_c1_lda(d_r,     &
-                              mat_dim, &
-                              nz,      &
-                              fmat,    &
-                              ao,      &
-                              r)
+  subroutine xc_london_c1_ks_lda(d_r,     &
+                                 mat_dim, &
+                                 nz,      &
+                                 fmat,    &
+                                 ao,      &
+                                 r)
 
 !   ----------------------------------------------------------------------------
     real(8), intent(in)    :: d_r
@@ -168,15 +169,55 @@ contains
 
   end subroutine
 
-  subroutine xc_london_c1_gga(d_r,     &
-                              d_z,     &
-                              g,       &
-                              mat_dim, &
-                              nz,      &
-                              fmat,    &
-                              ao,      &
-                              ao_g1,   &
-                              r)
+  subroutine xc_london_c1_lr_lda(&
+                                 mat_dim, &
+                                 nz,      &
+                                 tmat,    &
+                                 fmat,    &
+                                 ao,      &
+                                 r, &
+                                 f)
+
+!   ----------------------------------------------------------------------------
+    integer, intent(in)  :: mat_dim
+    integer, intent(in)  :: nz
+    real(8), intent(in)  :: tmat(mat_dim, mat_dim)
+    real(8), intent(inout) :: fmat(mat_dim, mat_dim, *)
+    real(8), intent(in)  :: ao(mat_dim)
+    real(8), intent(in)  :: r(3)
+    real(8)              :: f(3)
+!   ----------------------------------------------------------------------------
+    integer              :: k, l, bxyz
+    real(8)              :: rkl_cross_r
+    real(8)              :: omega, g
+!   ----------------------------------------------------------------------------
+
+    f = 0.0d0
+    do k = 1, mat_dim
+       do l = 1, mat_dim
+
+        omega = ao(k)*ao(l)*tmat(k, l)
+
+        do bxyz = 1, 3
+          rkl_cross_r = r_kl(k, l, b(bxyz))*r(c(bxyz)) &
+                      - r_kl(k, l, c(bxyz))*r(b(bxyz))
+         
+          f(bxyz) = f(bxyz) - 0.5d0*rkl_cross_r*omega
+        end do
+      end do
+    end do
+
+  end subroutine
+
+  subroutine xc_london_c1_ks_gga(d_r,     &
+                                 d_z,     &
+                                 g,       &
+                                 mat_dim, &
+                                 nz,      &
+                                 fmat,    &
+                                 ao,      &
+                                 ao_g1,   &
+                                 r)
 
 !   ----------------------------------------------------------------------------
     real(8), intent(in)    :: d_r
