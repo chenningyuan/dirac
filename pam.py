@@ -15,7 +15,38 @@ global install_dir
 install_dir='/home/ilias/qch_work/qch_software/dirac/gfortran_noopt_ILP64_ownlibs/adm/trunk'
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-class pam_enviroment:
+class workdir_class:
+# class dealing with the work directory
+  def __init__(self):
+    print 'work_direcory class initialize'
+    self.workdir=''
+    self.wrkpath=''
+    self.scratchdir=''
+    self.iprint=0
+
+  def set_workdir_name(self,mol_file,inp_file):
+    print 'set the name of the work_direcory',mol_file,inp_file
+    current_pid = os.getpid(); print 'pid=',current_pid
+    mol_file_stripped=mol_file.strip('.mol')
+    inp_file_stripped=inp_file.strip('.inp')
+    print mol_file_stripped, inp_file_stripped
+    
+
+  def create_workdir(self):
+    print 'creates the work_direcory'
+
+  def remove_workdir(self):
+    print 'removes the work_direcory'
+
+  def copy_file_to_workdir(self,some_file):
+    print 'copying file to the work_direcory'
+
+  def get_file_from_workdir(self,some_file):
+    print 'getting file to the work_direcory'
+
+
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+class pam_enviroment(workdir_class):
   # ... class containing all important variables, methods for submitting
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def __init__(self):
@@ -28,6 +59,9 @@ class pam_enviroment:
      ### contains installation directory ...
     self.dirac_home=install_dir
     self.basdir=''
+
+    self.wrkdir_obj = workdir_class()
+
     self.wrkdir='/tmp/ilias/xxx'
     self.wrkpath='/tmp/ilias'
     self.parallel = False
@@ -104,6 +138,9 @@ class pam_enviroment:
     process_remaining_args(args)
 
   def set_wrkdir(self):
+
+    self.wrkdir_obj.set_workdir_name(mol_file=self.input_molecule,inp_file=self.input_dirac)
+ 
     if not os.path.isdir(self.wrkdir):
       print 'creating woorkdirectory '+self.wrkdir
       os.mkdir(self.wrkdir)
