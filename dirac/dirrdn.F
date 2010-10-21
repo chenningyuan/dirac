@@ -55,14 +55,18 @@ C
 C     Echo back the input and count the number of keywords given
 C
       CALL TITLER('Input read from DIRAC.INP','*',127)
-      OPEN(LUCMD,FILE = 'DIRAC.INP')
+      OPEN(LUCMD,FILE = 'DIRAC.INP',IOSTAT=IOS)
+      IF (IOS.NE.0) THEN
+        WRITE(LUPRI,*) 'Error in opening DIRAC.INP!'
+        CALL QUIT('Error in opening DIRAC.INP!')
+      ENDIF
       CALL KEYWORD_SCAN (.TRUE.,.TRUE.,.TRUE.,.TRUE.,.TRUE.,.TRUE.,
      &                   .FALSE.,NUMBER_OF_KEYWORDS,WORK)
       CLOSE(LUCMD)
 C
 C     Specify job
 C
-      OPEN(LUCMD,FILE = 'DIRAC.INP')
+      OPEN(LUCMD,FILE = 'DIRAC.INP',IOSTAT=IOS)
       CALL JOBINP
       CLOSE(LUCMD)
 C
