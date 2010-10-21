@@ -20,23 +20,58 @@ class workdir_class:
   def __init__(self):
     print 'work_direcory class initialize'
     self.workdir=''
-    self.wrkpath=''
+    self.workpath='/tmp/ilias'
+    self.keepwrk=False
+
     self.scratchdir=''
     self.iprint=0
+    self.create_workdir_name=True
 
   def set_workdir_name(self,mol_file,inp_file):
     print 'set the name of the work_direcory',mol_file,inp_file
     current_pid = os.getpid(); print 'pid=',current_pid
+
     mol_file_stripped=mol_file.strip('.mol')
     inp_file_stripped=inp_file.strip('.inp')
+
     print mol_file_stripped, inp_file_stripped
-    
+    if (mol_file_stripped == inp_file_stripped):
+
+      workdir_name=mol_file_stripped+"."+str(current_pid)
+    else:
+
+      workdir_name=mol_file_stripped+"_"+inp_file_stripped+"."+str(current_pid)
+    self.workdir=self.workpath+"/"+workdir_name
+    print 'workdir_name=',self.workdir
 
   def create_workdir(self):
-    print 'creates the work_direcory'
+  # creates the working directory
+    if not os.path.isdir(self.workdir):
+      print 'creating work directory '+self.workdir
+      os.mkdir(self.workdir)
+    else:
+      print 'directory exists'
+
+  def copy_file(self,src,dest):
+  # ... copies file from the current dir "scr" to "dest"
+    print 'copying file...',src,' to ',dest
+    shutil.copy(src, dest)
+
+  def list_workdir(self):
+  # ... lists the content of the work-directory
+  # more here http://www.daniweb.com/code/snippet216798.html
+    for filename in os.listdir(self.workdir):
+      print  filename,os.path.getsize(self.workdir+"/"+filename)
 
   def remove_workdir(self):
     print 'removes the work_direcory'
+    self.list_workdir()
+
+    if (not self.keepwrk):
+      print 'deleting the work directory'
+      shutil.rmtree(self.workdir)      
+    else:
+      print 'keeping the work directory'
 
   def copy_file_to_workdir(self,some_file):
     print 'copying file to the work_direcory'
@@ -60,18 +95,23 @@ class pam_enviroment(workdir_class):
     self.dirac_home=install_dir
     self.basdir=''
 
+    # ... object from the inherited "workdirectory" class 
     self.wrkdir_obj = workdir_class()
+    # ... output file
+    self.output_file=''
 
-    self.wrkdir='/tmp/ilias/xxx'
-    self.wrkpath='/tmp/ilias'
     self.parallel = False
+
     self.profile = False
+
     self.profiler = ''
     self.mpi=1
-    self.keepwrk=False
+
     self.dirac_exe=self.dirac_home
+
     self.mem = 64
     self.slavemem = 64
+
     self.full_restart=False
     self.debugger=''
     self.noarch=False
@@ -79,7 +119,7 @@ class pam_enviroment(workdir_class):
     self.input_molecule=''
     self.input_dirac=''
     # output file...
-    self.output_dirac=''
+    self.output_file=''
 
   #def read_pam_variables(self):
   # important - reads variables from Makefile.config
@@ -138,66 +178,64 @@ class pam_enviroment(workdir_class):
     process_remaining_args(args)
 
   def set_wrkdir(self):
+  # ... creates the workdir, copies wanted files
+    if self.wrkdir_obj.create_workdir_name:
+      self.wrkdir_obj.set_workdir_name(mol_file=self.input_molecule,inp_file=self.input_dirac)
+    self.wrkdir_obj.create_workdir()
+    self.wrkdir_obj.copy_file(install_dir+'/'+'dirac.x',self.wrkdir_obj.workdir+'/'+'dirac.x')
+    self.wrkdir_obj.copy_file(self.input_molecule,self.wrkdir_obj.workdir+'/'+'MOLECULE.MOL')
+    self.wrkdir_obj.copy_file(self.input_dirac,self.wrkdir_obj.workdir+'/'+'DIRAC.INP')
+   # TODO: copying more file through flag)
 
-    self.wrkdir_obj.set_workdir_name(mol_file=self.input_molecule,inp_file=self.input_dirac)
+  def set_output_file(self):
+  # sets the name of the output file
+    print 'setting output file..'
+
+    mol_file_stripped=self.input_molecule.strip('.mol')
+    inp_file_stripped=self.input_dirac.strip('.inp')
+
+    self.output_file=mol_file_stripped+"_"+inp_file_stripped+".out"
+    print 'output file..',self.output_file
  
-    if not os.path.isdir(self.wrkdir):
-      print 'creating woorkdirectory '+self.wrkdir
-      os.mkdir(self.wrkdir)
-    else:
-      print 'directory exists'
-
-  def copy_files(self):
-    print 'copying files ...'
-    if not os.path.isdir(self.wrkdir):
-      print 'creating directory'
-      os.mkdir(self.wrkdir)
-    else:
-      print 'directory exists'
-
-    #copy executable
-    src=install_dir+'/'+'dirac.x'
-    dest_dir=self.wrkdir+'/'+'dirac.x'
-    shutil.copy(src, dest_dir)
-    print 'dirac copied'
-    #copy input files
-    src=self.input_molecule
-    dest=self.wrkdir+'/'+'MOLECULE.MOL'
-    shutil.copy(src, dest)
-    #
-    src=self.input_dirac
-    dest=self.wrkdir+'/'+'DIRAC.INP'
-    shutil.copy(src, dest)
-    for filename in os.listdir(self.wrkdir):
-      print  filename
-
   def execute_dirac(self):
 #todo: time limiting !
 # http://efreedom.com/Question/1-366682/Limit-Execution-Time-Function-Call-Python
 # google search: python limit execution time Windows
+
+    print 'going from '+os.getcwd()+' to:'+self.wrkdir_obj.workdir
+    home_dir=os.getcwd()
+    # go to the working directory
+    os.chdir(self.wrkdir_obj.workdir)
+
     print 'executing dirac ...'
+    sys.stdout.flush()
     # launch dirac
-    command='cd '+self.wrkdir+' ; ./dirac.x'
-    print command
-    os.system(command)
+    command='dirac.x'
+
+    #os.system(command) > self.output_file
+    os.system(command) 
+    #subprocess.Popen(command,stdout=self.output_file)
+    #self.output_file=subprocess.Popen(command)
+    #self.output_file= subprocess.Popen([command]).communicate()[0]
+    f = open(home_dir+"/"+self.output_file, 'w')
+    f.write('xxx')
+    #subprocess.Popen(command,stdout=f)
+    #sys.stdout=f
+    #f.write(os.system(command))
+    f.close()
+
+    # do the profiling
+    if self.profile: self.profile_dirac()
 
   def profile_dirac(self):
-    if self.profile: 
-      print 'profiling...'
-      #default output after finishing DIRAC
-      GMON="gmon.out"
-      #os.system(....)
+    print 'profiling...'
+    #default output after finishing DIRAC
+    GMON="gmon.out"
+    #os.system(....)
 
   def remove_work_dir(self):
-    print 'content of the work directory'
-    # more here http://www.daniweb.com/code/snippet216798.html
-    for filename in os.listdir(self.wrkdir):
-      print  filename, os.path.getsize(self.wrkdir+"/"+filename)
-    if (not self.keepwrk):
-      print 'deleting the work directory'
-      shutil.rmtree(self.wrkdir)      
-    else:
-      print 'keeping the work directory'
+    print 'removing work-dir'
+    self.wrkdir_obj.remove_workdir()
 
   def print_header(self):
     print '*****************************************'  
@@ -209,7 +247,7 @@ class pam_enviroment(workdir_class):
     print "   Command     : $0 $ARG_SAVE "
     print "   PID         : $$"
     print "   Input dir   : $LOC"
-    print "   Work dir    :",self.wrkdir
+    print "   Work dir    :"
 
 #def notify_user() :
 # replacement
@@ -228,9 +266,8 @@ class pam_run(pam_enviroment):
     self.pam_variables.process_pam_arguments()
     self.pam_variables.print_header()
     self.pam_variables.set_wrkdir()
-    self.pam_variables.copy_files()
+    self.pam_variables.set_output_file()
     self.pam_variables.execute_dirac()
-    self.pam_variables.profile_dirac()
     self.pam_variables.remove_work_dir()
 
 
@@ -251,10 +288,8 @@ class pam_run(pam_enviroment):
 ###########################################################################
 def main(*args):
    print "pam.py main function..."
-   run = pam_run()
-   run.perform()
+   dirac_run = pam_run()
+   dirac_run.perform()
 
 if __name__ == '__main__':
    sys.exit(main(*sys.argv))
-
-
