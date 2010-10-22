@@ -8,7 +8,7 @@
 #
 ##################################################
 
-import  sys, os, string, subprocess, optparse, distutils.util, shutil
+import  sys, os, string, subprocess, optparse, distutils.util, shutil, signal
 
 # installation directory inserted in by the configure script
 global install_dir
@@ -198,33 +198,69 @@ class pam_enviroment(workdir_class):
     print 'output file..',self.output_file
  
   def execute_dirac(self):
+#
 #todo: time limiting !
 # http://efreedom.com/Question/1-366682/Limit-Execution-Time-Function-Call-Python
 # google search: python limit execution time Windows
+#
+    def signal_handler(signum, frame):
+      print 'Signal handler called with signal', signum
+      print 'takes too long !'
+      #raise Exception("Timed out!")
+      #raise IOError("Take too long !")
+      raise Error("Takes too long !")
 
-    print 'going from '+os.getcwd()+' to:'+self.wrkdir_obj.workdir
     home_dir=os.getcwd()
+    print 'changing directory from  '+home_dir+' to:'+self.wrkdir_obj.workdir
     # go to the working directory
     os.chdir(self.wrkdir_obj.workdir)
 
-    print 'executing dirac ...'
-    sys.stdout.flush()
-    # launch dirac
-    command='dirac.x'
+    f = open(home_dir+"/"+self.output_file, 'w',0)
+
+    signal.signal(signal.SIGALRM, signal_handler)
+    signal.alarm(3)   # 
+
+    try:
+      print 'executing dirac ...'
+      p=subprocess.Popen('dirac.x', shell=False, stdin=subprocess.PIPE, stdout=f)
+      print 'p.pid=',p.pid
+      p.wait()
+      f.close()
+      signal.alarm(0)    
+    except:
+      print "Time limit exceeded, dirac run interrupted !"
+      p.kill()
 
     #os.system(command) > self.output_file
-    os.system(command) 
+
+    print 'pam: end of executable run...'
+
     #subprocess.Popen(command,stdout=self.output_file)
     #self.output_file=subprocess.Popen(command)
     #self.output_file= subprocess.Popen([command]).communicate()[0]
-    f = open(home_dir+"/"+self.output_file, 'w')
-    f.write('xxx')
+    #f.write('xxx')
     #subprocess.Popen(command,stdout=f)
     #sys.stdout=f
     #f.write(os.system(command))
-    f.close()
 
-    # do the profiling
+    #f_so.flush()
+
+    #f_so.close()
+    #f_se.close()
+    
+     #f_so.wait()
+    # restore stdout
+    #sys.stdout = save_stdout
+    #sys.stderr = save_stderr
+
+    #f_so.close()
+
+    #sys.stdout.flush()
+    #sys.stderr.flush()
+
+    print 'end of executable run...'
+
+    # do the profiling after the execution
     if self.profile: self.profile_dirac()
 
   def profile_dirac(self):
