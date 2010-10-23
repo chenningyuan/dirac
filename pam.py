@@ -4,43 +4,45 @@
 #
 # Python replacement of the pam script
 #
-#   Reads all data from Makefile.config  !
+# Reads crucial data from Makefile.config
+#
+#  Written by Miro ILIAS,Banska Bystrica, 2010
+#
 #
 ##################################################
 
 import  sys, os, string, subprocess, optparse, distutils.util, shutil, signal
 
 # installation directory inserted in by the configure script
-global install_dir
-install_dir='/home/ilias/qch_work/qch_software/dirac/gfortran_noopt_ILP64_ownlibs/adm/trunk'
+global install_dir, install_dir_default
+#install_dir_default='/home/ilias/qch_work/qch_software/dirac/gfortran_noopt_ILP64_ownlibs/adm/trunk'
+install_dir_default='/home/dv6-2145ec/Work/qch/software/dirac/gfortran_gcc_noopt_ownlibs_ilp32/adm_hsfsdyn_cap/trunk'
+install_dir=''
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 class workdir_class:
 # class dealing with the work directory
+  global install_dir
   def __init__(self):
     print 'work_direcory class initialize'
     self.workdir=''
-    self.workpath='/tmp/ilias'
+
+    #self.workpath='/tmp/ilias'
+    #self.workpath='/tmp/'+pwd.getpwuid(os.getuid())[0]
+    self.workpath='/tmp/'+os.getlogin()
+    #TODO: Windows user login name !!!
     self.keepwrk=False
 
     self.scratchdir=''
     self.iprint=0
     self.create_workdir_name=True
 
-  def set_workdir_name(self,mol_file,inp_file):
-    print 'set the name of the work_direcory',mol_file,inp_file
+  def set_workdir_name(self,root_name):
+  # sets the working directory name according to 
+  # entering "root_name"
+    print 'set the name of the work_direcory',root_name
     current_pid = os.getpid(); print 'pid=',current_pid
-
-    mol_file_stripped=mol_file.strip('.mol')
-    inp_file_stripped=inp_file.strip('.inp')
-
-    print mol_file_stripped, inp_file_stripped
-    if (mol_file_stripped == inp_file_stripped):
-
-      workdir_name=mol_file_stripped+"."+str(current_pid)
-    else:
-
-      workdir_name=mol_file_stripped+"_"+inp_file_stripped+"."+str(current_pid)
+    workdir_name=root_name+"."+str(current_pid)
     self.workdir=self.workpath+"/"+workdir_name
     print 'workdir_name=',self.workdir
 
@@ -82,6 +84,7 @@ class workdir_class:
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 class pam_enviroment(workdir_class):
+  global install_dir
   # ... class containing all important variables, methods for submitting
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def __init__(self):
@@ -89,6 +92,9 @@ class pam_enviroment(workdir_class):
   #           ... initialize the global set of variables ...
   #
     print 'pam_enviroment class initialize'
+
+    #global install_dir
+
      # print level
     self.iprint=1
      ### contains installation directory ...
@@ -118,24 +124,36 @@ class pam_enviroment(workdir_class):
     # inpu files
     self.input_molecule=''
     self.input_dirac=''
+    # output name from *inp *mol names
+    self.output_name=''
+    # output suffix default
+    self.output_suffix="out"
     # output file...
     self.output_file=''
 
-  #def read_pam_variables(self):
-  # important - reads variables from Makefile.config
-    #print 'reading pam variables...'
+    #execution time-limit
+    self.set_timeout_limit=False
+    self.timeout=''
+	
+  def read_pam_variables(self):
+   #important - reads variables from Makefile.config
+    print 'reading pam variables from Makefile.config...'
 
   def process_pam_arguments(self):
     print 'processing pam arguments....'
+    global install_dir
 
     def process_remaining_args(rem_args):
     # checks and process *.mol & *.inp arguments
+    # which are the only remaining arguments after
+    # picking up all others by flags
       print rem_args
       print len(rem_args)
       if (len(rem_args) == 2):
      # add further checking on input files
         self.input_molecule=rem_args[0]
         self.input_dirac=rem_args[1]
+        self.set_output_name()
       else:
         print 'wrong number of arguments !'
         sys.exit(-2)
@@ -148,17 +166,33 @@ class pam_enviroment(workdir_class):
     parser.add_option("-i", "--iprint", type="int", nargs=1,  
                   action="store", dest="dest_iprint", default=1,
                   help=this_label, metavar="INT_NUM")
+
   # ... get in the  mw
     this_label='memory (in megawords) for the master, default:'+str(self.mem)
     parser.add_option("--mw", type="int", nargs=1,  
-                  action="store", dest="dest_mw", default=1,
+                  action="store", dest="dest_mw", default=64,
                   help=this_label, metavar="INT_NUM")
 
-  # ... get in the  nw
+    # ... get in the  nw
     this_label='memory (in megawords) for nodes, default:'+str(self.slavemem)
     parser.add_option("--nw", type="int", nargs=1,  
-                  action="store", dest="dest_nw", default=1,
+                  action="store", dest="dest_nw", default=64,
                   help=this_label, metavar="INT_NUM")
+
+    # ... get in the timeout limit
+    this_label='limit dirac.x execution time (in seconds)'
+    parser.add_option("--timeout", type="int", nargs=1,  
+                  action="store", dest="dest_timeout",
+                  help=this_label, metavar="INT_NUM")
+
+    # .. read in the install_dir, what is global variable...
+    this_label="pam.py\'s directory, default:"+install_dir_default
+    parser.add_option("--install_dir", type="string", nargs=1,
+                  action="store",dest="dest_install_dir",  
+                  help=this_label,metavar="STRING")
+
+    # ... read in timeout limit for dirac execution
+       
 
     # process all
     (options, args) = parser.parse_args()
@@ -170,9 +204,28 @@ class pam_enviroment(workdir_class):
       print 'assigned iprint=',self.iprint
 
     if (options.dest_mw is not None) :
-     self.iprint=int(options.dest_mw)
+     self.mem=int(options.dest_mw)
      if self.iprint > 7:
       print 'assigned mw=',self.mem
+
+    if (options.dest_nw is not None) :
+     self.memslave=int(options.dest_mw)
+     if self.iprint > 7:
+      print 'assigned mw=',self.memslave
+
+    if (options.dest_install_dir is not None) :
+     install_dir=str(options.dest_install_dir)
+     print 'assigned install_dir=',install_dir
+     if self.iprint > 7:
+      print 'assigned install-dir=',install_dir
+    elif (install_dir_default is None) :
+     sys.exit("you must set the installation directory !")
+
+    if (options.dest_timeout is not None) :
+     self.timeout=int(options.dest_timeout)
+     self.set_timeout_limit=True
+     if self.iprint > 7:
+      print 'assigned timeout=',self.timeout
 
     # remaining arguments - *.mol and *.inp files
     process_remaining_args(args)
@@ -180,21 +233,32 @@ class pam_enviroment(workdir_class):
   def set_wrkdir(self):
   # ... creates the workdir, copies wanted files
     if self.wrkdir_obj.create_workdir_name:
-      self.wrkdir_obj.set_workdir_name(mol_file=self.input_molecule,inp_file=self.input_dirac)
+      self.wrkdir_obj.set_workdir_name(self.output_name)
     self.wrkdir_obj.create_workdir()
+    print 'set_wrkdir: install_dir=',install_dir
     self.wrkdir_obj.copy_file(install_dir+'/'+'dirac.x',self.wrkdir_obj.workdir+'/'+'dirac.x')
     self.wrkdir_obj.copy_file(self.input_molecule,self.wrkdir_obj.workdir+'/'+'MOLECULE.MOL')
     self.wrkdir_obj.copy_file(self.input_dirac,self.wrkdir_obj.workdir+'/'+'DIRAC.INP')
    # TODO: copying more file through flag)
 
+  def set_output_name(self):
+  # set the output name string to be used later 
+  # for naming output and work directory
+    #mol_file_stripped=self.input_molecule.strip(".mol" )
+    mol_file_stripped=self.input_molecule.replace(".mol","",1 )
+    #inp_file_stripped=self.input_dirac.strip(".inp")
+    inp_file_stripped=self.input_dirac.replace(".inp","",1)
+    print mol_file_stripped, inp_file_stripped
+    if (mol_file_stripped == inp_file_stripped):
+      self.output_name=mol_file_stripped
+    else:
+      self.output_name=mol_file_stripped+"_"+inp_file_stripped
+    print "output_name=",self.output_name
+
   def set_output_file(self):
-  # sets the name of the output file
+  # sets the name of the output file by using "self.output_name"
     print 'setting output file..'
-
-    mol_file_stripped=self.input_molecule.strip('.mol')
-    inp_file_stripped=self.input_dirac.strip('.inp')
-
-    self.output_file=mol_file_stripped+"_"+inp_file_stripped+".out"
+    self.output_file=self.output_name+"."+self.output_suffix
     print 'output file..',self.output_file
  
   def execute_dirac(self):
@@ -217,8 +281,10 @@ class pam_enviroment(workdir_class):
 
     f = open(home_dir+"/"+self.output_file, 'w',0)
 
-    signal.signal(signal.SIGALRM, signal_handler)
-    signal.alarm(3)   # 
+    if (self.set_timeout_limit) :
+      print 'signal stuff initiated, self.timeout=',self.timeout
+      signal.signal(signal.SIGALRM, signal_handler)
+      signal.alarm(self.timeout)   # 
 
     try:
       print 'executing dirac ...'
@@ -228,7 +294,7 @@ class pam_enviroment(workdir_class):
       f.close()
       signal.alarm(0)    
     except:
-      print "Time limit exceeded, dirac run interrupted !"
+      print "dirac run interrupted !"
       p.kill()
 
     #os.system(command) > self.output_file
