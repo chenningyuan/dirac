@@ -61,7 +61,7 @@ C       We want the analytical gradient, check whether it is implemented
      &           DOLUCT.OR.DOKRMC.OR.DOLUCIAR
         IF(DONGRD) THEN
           WRITE(LUPRI,'(/A/A)')
-     &     ' * PAMGEO INFO: will use numerical molecular gradient',
+     &     ' * PAMGEO INFO: will use NUMERICAL MOLECULAR GRADIENT',
      &     '         (analytical gradient not implemented for this wave'
      *     //' function type).'
         ENDIF

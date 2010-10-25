@@ -325,7 +325,7 @@ C&&&&: DFP   : Use 1st order method with Davidon-Fletcher-Powell (DFP) update
 C&&&&: BFGS  : Use 1st order method with Broyden-Fletcher-Goldfarb-Shanno update
  29         BFGS   = .TRUE.
             GOTO 100
-C&&&&: NEWTON:  Use 2nd order Newton method
+C&&&&: NEWTON:  Use 2nd order Newton method (default FALSE)
  30         NEWTON = .TRUE.
             GOTO 100
 C&&&&: QUADSD:  2nd order quadratic steepest descent method will be used
