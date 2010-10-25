@@ -13,6 +13,9 @@
 
 import  sys, os, string, subprocess, optparse, distutils.util, shutil, signal
 
+# you must make PYTHONPATH pointing to $DIRACDIR/trunk/utils #
+import common 
+
 # installation directory inserted in by the configure script
 global install_dir, install_dir_default
 #install_dir_default='/home/ilias/qch_work/qch_software/dirac/gfortran_noopt_ILP64_ownlibs/adm/trunk'
@@ -344,12 +347,13 @@ class pam_enviroment(workdir_class):
     print '**** OUTPUT FROM DIRAC PYTHON SCRIPT ****'  
     print '*****************************************'
     print '                                        '  
-    print "   User@Host   : `whoami`@`hostname`"
+#    print is_windows()
+#    print "   User@Host   : ",get_username(),"@",get_hostname()
     print "   Date        : `date`"
     print "   Command     : $0 $ARG_SAVE "
-    print "   PID         : $$"
-    print "   Input dir   : $LOC"
-    print "   Work dir    :"
+    print "   PID         :",os.getpid()  
+    print "   Input dir   :",os.getcwd()
+    print "   Work dir    :",self.wrkdir_obj.workdir
 
 #def notify_user() :
 # replacement
@@ -366,9 +370,9 @@ class pam_run(pam_enviroment):
   def perform(self):
     print 'performing own pam run..'
     self.pam_variables.process_pam_arguments()
-    self.pam_variables.print_header()
     self.pam_variables.set_wrkdir()
     self.pam_variables.set_output_file()
+    self.pam_variables.print_header()
     self.pam_variables.execute_dirac()
     self.pam_variables.remove_work_dir()
 
