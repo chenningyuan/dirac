@@ -13,14 +13,30 @@
 
 import  sys, os, string, subprocess, optparse, distutils.util, shutil, signal
 
+#os.environ['PYTHONPATH']="/home/ilias/qch_work/qch_software/dirac/gfortran_noopt_ILP64_ownlibs/adm/trunk/utils"
+#sys.path.append('/home/ilias/qch_work/qch_software/dirac/gfortran_noopt_ILP64_ownlibs/adm/trunk/utils')
+#import common 
+
 # you must make PYTHONPATH pointing to $DIRACDIR/trunk/utils #
-import common 
+#import common 
 
 # installation directory inserted in by the configure script
 global install_dir, install_dir_default
 #install_dir_default='/home/ilias/qch_work/qch_software/dirac/gfortran_noopt_ILP64_ownlibs/adm/trunk'
 install_dir_default='/home/dv6-2145ec/Work/qch/software/dirac/gfortran_gcc_noopt_ownlibs_ilp32/adm_hsfsdyn_cap/trunk'
 install_dir=''
+
+def append_dirac_py_modules(dirac_install_dir):
+# append directory with common dirac python-modules and imports them
+  modules_directory = dirac_install_dir + '/utils'
+  if (not os.access(modules_directory,os.R_OK) ):
+    print 'wrong directory or directory not readable !'
+    sys.exit("wrong directory !")
+  sys.path.append(modules_directory)
+  #import common.* 
+  from common import *
+  print 'common dirac modules loaded !'
+  print 'is_windows=',is_windows()
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 class workdir_class:
@@ -97,6 +113,11 @@ class pam_enviroment(workdir_class):
     print 'pam_enviroment class initialize'
 
     #global install_dir
+    #os.environ['PYTHONPATH']="/home/ilias/qch_work/qch_software/dirac/gfortran_noopt_ILP64_ownlibs/adm/trunk/utils"
+    #import common 
+
+    #sys.path.append('/home/ilias/qch_work/qch_software/dirac/gfortran_noopt_ILP64_ownlibs/adm/trunk/utils')
+    #import common 
 
      # print level
     self.iprint=1
@@ -230,6 +251,8 @@ class pam_enviroment(workdir_class):
      if self.iprint > 7:
       print 'assigned timeout=',self.timeout
 
+    append_dirac_py_modules(install_dir)
+
     # remaining arguments - *.mol and *.inp files
     process_remaining_args(args)
 
@@ -343,13 +366,14 @@ class pam_enviroment(workdir_class):
     self.wrkdir_obj.remove_workdir()
 
   def print_header(self):
+    import datetime
+    from common import get_username,get_hostname
     print '*****************************************'  
     print '**** OUTPUT FROM DIRAC PYTHON SCRIPT ****'  
     print '*****************************************'
     print '                                        '  
-#    print is_windows()
-#    print "   User@Host   : ",get_username(),"@",get_hostname()
-    print "   Date        : `date`"
+    print "   User@Host   : ",get_username(),"@",get_hostname()
+    print "   Date        : ",datetime.datetime.now()
     print "   Command     : $0 $ARG_SAVE "
     print "   PID         :",os.getpid()  
     print "   Input dir   :",os.getcwd()
