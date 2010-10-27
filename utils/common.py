@@ -6,7 +6,7 @@
 #
 #########################################################################
 #
-# to include them into your python scripts type once(Unix):
+# to utilize them in your python scripts use this command once (Unix):
 #
 #  sys.path.append("$DIRAC_dir/utils")
 #
@@ -74,6 +74,27 @@ def get_hostname():
   import socket
   this_ip = get_ip()
   this_host_id =  socket.gethostname()+" (IP="+this_ip+")"
-  #return this_ip
   return this_host_id
+
+def backup_file(some_file,upto):
+  import os.path, shutil
+#
+# backup-s file by copiyng it  'upto' version
+#
+  #print 'backing up the file ',some_file
+  upto_default = 7
+  if (upto is None):
+    upto = upto_default
+  #for vers in range(upto-1,0,-1):
+  for vers in range(upto-1,-1,-1):
+    backup_file_name=some_file+"."+str(vers)
+    backup_file_name_p1=some_file+"."+str(vers+1)
+    #print backup_file_name 
+    if (os.path.isfile(backup_file_name)):
+      shutil.copy(backup_file_name,backup_file_name_p1)
+      print 'backing up file:',backup_file_name,'-->',backup_file_name_p1
+    # copy the existing out into out.0
+  if (os.path.isfile(some_file)):
+    shutil.copy(some_file,backup_file_name)
+    print 'backing up file:',some_file,'-->',backup_file_name
 

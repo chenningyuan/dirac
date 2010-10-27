@@ -13,13 +13,6 @@
 
 import  sys, os, string, subprocess, optparse, distutils.util, shutil, signal
 
-#os.environ['PYTHONPATH']="/home/ilias/qch_work/qch_software/dirac/gfortran_noopt_ILP64_ownlibs/adm/trunk/utils"
-#sys.path.append('/home/ilias/qch_work/qch_software/dirac/gfortran_noopt_ILP64_ownlibs/adm/trunk/utils')
-#import common 
-
-# you must make PYTHONPATH pointing to $DIRACDIR/trunk/utils #
-#import common 
-
 # installation directory inserted in by the configure script
 global install_dir, install_dir_default
 #install_dir_default='/home/ilias/qch_work/qch_software/dirac/gfortran_noopt_ILP64_ownlibs/adm/trunk'
@@ -305,6 +298,9 @@ class pam_enviroment(workdir_class):
     # go to the working directory
     os.chdir(self.wrkdir_obj.workdir)
 
+    from common import backup_file
+    backup_file(some_file=home_dir+"/"+self.output_file,upto=None)
+
     f = open(home_dir+"/"+self.output_file, 'w',0)
 
     if (self.set_timeout_limit) :
@@ -326,31 +322,6 @@ class pam_enviroment(workdir_class):
     #os.system(command) > self.output_file
 
     print 'pam: end of executable run...'
-
-    #subprocess.Popen(command,stdout=self.output_file)
-    #self.output_file=subprocess.Popen(command)
-    #self.output_file= subprocess.Popen([command]).communicate()[0]
-    #f.write('xxx')
-    #subprocess.Popen(command,stdout=f)
-    #sys.stdout=f
-    #f.write(os.system(command))
-
-    #f_so.flush()
-
-    #f_so.close()
-    #f_se.close()
-    
-     #f_so.wait()
-    # restore stdout
-    #sys.stdout = save_stdout
-    #sys.stderr = save_stderr
-
-    #f_so.close()
-
-    #sys.stdout.flush()
-    #sys.stderr.flush()
-
-    print 'end of executable run...'
 
     # do the profiling after the execution
     if self.profile: self.profile_dirac()
