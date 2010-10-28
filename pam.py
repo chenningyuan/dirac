@@ -13,6 +13,9 @@
 
 import  sys, os, string, subprocess, optparse, distutils.util, shutil, signal
 
+#import common 
+#from common import *
+
 # installation directory inserted in by the configure script
 global install_dir, install_dir_default
 #install_dir_default='/home/ilias/qch_work/qch_software/dirac/gfortran_noopt_ILP64_ownlibs/adm/trunk'
@@ -27,7 +30,8 @@ def append_dirac_py_modules(dirac_install_dir):
     sys.exit("wrong directory !")
   sys.path.append(modules_directory)
   # import common # does not work..
-  from common import *
+  #from common import *
+  from common import is_windows
   print 'common dirac modules loaded !'
   print 'is_windows=',is_windows()
 
