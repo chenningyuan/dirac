@@ -26,7 +26,8 @@ def append_dirac_py_modules(dirac_install_dir):
     print 'wrong directory or directory not readable !'
     sys.exit("wrong directory !")
   sys.path.append(modules_directory)
-  import common
+  # import common # does not work..
+  from common import *
   print 'common dirac modules loaded !'
   print 'is_windows=',is_windows()
 
