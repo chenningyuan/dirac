@@ -148,6 +148,9 @@ class pam_enviroment(workdir_class):
     # output file...
     self.output_file=''
 
+    # do not backup files
+    self.nobackup=False
+
     #execution time-limit
     self.set_timeout_limit=False
     self.timeout=''
@@ -196,20 +199,23 @@ class pam_enviroment(workdir_class):
                   action="store", dest="dest_nw", default=64,
                   help=this_label, metavar="INT_NUM")
 
-    # ... get in the timeout limit
+    # ... get in the timeout limit (in seconds)
     this_label='limit dirac.x execution time (in seconds)'
     parser.add_option("--timeout", type="int", nargs=1,  
                   action="store", dest="dest_timeout",
                   help=this_label, metavar="INT_NUM")
 
-    # .. read in the install_dir, what is global variable...
+    # .. read in the install_dir, what is the basic global variable...
     this_label="pam.py\'s directory, default:"+install_dir_default
     parser.add_option("--install_dir", type="string", nargs=1,
                   action="store",dest="dest_install_dir",  
                   help=this_label,metavar="STRING")
 
-    # ... read in timeout limit for dirac execution
-       
+    # ... no backup 
+    this_label="do not backup files (default: backup them)"
+    parser.add_option("--nobackup", 
+                  action="store_true",dest="dest_nobackup",  
+                  help=this_label)
 
     # process all
     (options, args) = parser.parse_args()
@@ -239,10 +245,15 @@ class pam_enviroment(workdir_class):
      sys.exit("you must set the installation directory !")
 
     if (options.dest_timeout is not None) :
-     self.timeout=int(options.dest_timeout)
-     self.set_timeout_limit=True
-     if self.iprint > 7:
-      print 'assigned timeout=',self.timeout
+      self.timeout=int(options.dest_timeout)
+      self.set_timeout_limit=True
+      if self.iprint > 7:
+        print 'assigned timeout=',self.timeout
+
+    if (options.dest_nobackup is not None) :
+      self.nobackup=options.dest_nobackup      
+      if self.iprint > 7:
+        print 'assigned nobackup=',self.nobackup
 
     append_dirac_py_modules(install_dir)
 
@@ -298,8 +309,9 @@ class pam_enviroment(workdir_class):
     # go to the working directory
     os.chdir(self.wrkdir_obj.workdir)
 
-    from common import backup_file
-    backup_file(some_file=home_dir+"/"+self.output_file,upto=None)
+    if (self.nobackup is False):
+      from common import backup_file
+      backup_file(some_file=home_dir+"/"+self.output_file,upto=None)
 
     f = open(home_dir+"/"+self.output_file, 'w',0)
 

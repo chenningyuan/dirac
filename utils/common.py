@@ -76,25 +76,65 @@ def get_hostname():
   this_host_id =  socket.gethostname()+" (IP="+this_ip+")"
   return this_host_id
 
+class extract_path_file:
+#
+# used for backup procedure
+#
+  def __init__(self):
+    self.pure_file_name=''
+    self.pure_file_path=''
+    self.extracted=False
+  def get_path_file(self,full_file_name):
+# extracts file name and it's path (directory) by splitting string
+    from string import rfind
+    #print 'extract. path, file..',full_file_name
+    if is_windows():
+      string_to_find='\\' # Windows
+    else: 
+      string_to_find='/' # Unix
+    position=full_file_name.rfind(string_to_find)
+    if (position+1 < len(full_file_name)) :
+      self.pure_file_name=full_file_name[position+1:len(full_file_name)]
+      self.pure_file_path=full_file_name[0:position]
+      self.extracted=True
+      #print 'was extracted'
+      #print pure_file_path,pure_file_name
+      #return sepure_file_path,pure_file_name
+    else: 
+      print 'can not extract' 
+      self.extracted=False
+
 def backup_file(some_file,upto):
   import os.path, shutil
+  def do_copy_print(backup_file_name,backup_file_name_p1):
+      shutil.copy(backup_file_name,backup_file_name_p1)
+      #         "file.n"  -->  "file.n+1"
+      pure_file_path='';pure_file_name=''
+      pure_file_path_p1='';pure_file_name_p1=''
+      result=extract_path_file()
+      result.get_path_file(backup_file_name)
+      result_p1=extract_path_file()
+      result_p1.get_path_file(backup_file_name_p1)
+      #print result.extracted, result.pure_file_path
+      #print result_p1.extracted, result_p1.pure_file_path 
+      if (result.extracted is True and result_p1.extracted is True  and \
+          result.pure_file_path == result_p1.pure_file_path ) :
+        print 'backing up file:', result.pure_file_name,'-->',result_p1.pure_file_name,\
+        'in directory:',result.pure_file_path
+      else:
+        print 'backing up file:',backup_file_name,'-->',backup_file_name_p1
+
 #
-# backup-s file by copiyng it  'upto' version
+# backup-s file by copiyng it to 'upto' version
 #
-  #print 'backing up the file ',some_file
   upto_default = 7
   if (upto is None):
     upto = upto_default
-  #for vers in range(upto-1,0,-1):
   for vers in range(upto-1,-1,-1):
     backup_file_name=some_file+"."+str(vers)
     backup_file_name_p1=some_file+"."+str(vers+1)
-    #print backup_file_name 
     if (os.path.isfile(backup_file_name)):
-      shutil.copy(backup_file_name,backup_file_name_p1)
-      print 'backing up file:',backup_file_name,'-->',backup_file_name_p1
-    # copy the existing out into out.0
+      do_copy_print(backup_file_name,backup_file_name_p1)
   if (os.path.isfile(some_file)):
-    shutil.copy(some_file,backup_file_name)
-    print 'backing up file:',some_file,'-->',backup_file_name
+    do_copy_print(some_file,backup_file_name)
 
