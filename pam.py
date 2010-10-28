@@ -26,14 +26,17 @@ def append_dirac_py_modules(dirac_install_dir):
     print 'wrong directory or directory not readable !'
     sys.exit("wrong directory !")
   sys.path.append(modules_directory)
-  #import common.* 
-  from common import *
+  import common
   print 'common dirac modules loaded !'
   print 'is_windows=',is_windows()
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 class workdir_class:
-# class dealing with the work directory
+###########################################################################################
+#
+#    class dealing with the work directory only
+#
+###########################################################################################
   global install_dir
   def __init__(self):
     print 'work_direcory class initialize'
@@ -44,6 +47,8 @@ class workdir_class:
     self.workpath='/tmp/'+os.getlogin()
     #TODO: Windows user login name !!!
     self.keepwrk=False
+
+    self.cleanwrkdir=False
 
     self.scratchdir=''
     self.iprint=0
@@ -217,6 +222,18 @@ class pam_enviroment(workdir_class):
                   action="store_true",dest="dest_nobackup",  
                   help=this_label)
 
+    # ... clean workdir before calculation
+    this_label="clean the directory before calculations (default: do not clean)"
+    parser.add_option("--clean", 
+                  action="store_true",dest="dest_clean",  
+                  help=this_label)
+
+    # ... keep workdir after calculations
+    this_label="keep the work directory after calculations (default: remove it)"
+    parser.add_option("--keepwrk", 
+                  action="store_true",dest="dest_keepwrk",  
+                  help=this_label)
+
     # process all
     (options, args) = parser.parse_args()
     
@@ -255,6 +272,22 @@ class pam_enviroment(workdir_class):
       if self.iprint > 7:
         print 'assigned nobackup=',self.nobackup
 
+    if (options.dest_clean is not None) :
+      self.wrkdir_obj.cleanwrkdir=options.dest_clean
+      if self.iprint > 7:
+        print 'assigned wrkdir_obj.cleanwrkdir==',self.wrkdir_obj.cleanwrkdir
+
+    if (options.dest_keepwrk is not None) :
+      self.wrkdir_obj.keepwrk=options.dest_keepwrk
+      if self.iprint > 7:
+        print 'assigned wrkdir_obj.keepwrk =',self.wrkdir_obj.keepwrk
+
+
+
+
+
+
+    # append external dirac modules to the path dir
     append_dirac_py_modules(install_dir)
 
     # remaining arguments - *.mol and *.inp files
@@ -291,13 +324,15 @@ class pam_enviroment(workdir_class):
     self.output_file=self.output_name+"."+self.output_suffix
     print 'output file..',self.output_file
  
+  #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def execute_dirac(self):
-#
-#todo: time limiting !
-# http://efreedom.com/Question/1-366682/Limit-Execution-Time-Function-Call-Python
-# google search: python limit execution time Windows
-#
+  #############################################################################################
+  #
+  # Excecute dirac.x, either in serial or parallel mode
+  #
+  #############################################################################################
     def signal_handler(signum, frame):
+    # ... controling the time of the execution
       print 'Signal handler called with signal', signum
       print 'takes too long !'
       #raise Exception("Timed out!")
@@ -330,8 +365,6 @@ class pam_enviroment(workdir_class):
     except:
       print "dirac run interrupted !"
       p.kill()
-
-    #os.system(command) > self.output_file
 
     print 'pam: end of executable run...'
 
