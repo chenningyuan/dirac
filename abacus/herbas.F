@@ -111,11 +111,12 @@ C      except for 2c NR calculations
       TEST = UNCONT.OR.((INTQ.GT.36).AND.(.NOT.TEST))
       IF(TEST.AND.(.NOT.UNCONT)) THEN
         WRITE(LUPRI,'(A)')
-     &    '*** WARNING(BASLIB) : Decontracting basis set '
+     & '*** WARNING(BASLIB): Heavy element (Z>=36) => automatic'//
+     & ' decontraction of the (contracted) input basis set.'
         WRITE(LUPRI,'(A,I5)')
      &    ' - nuclear charge: ',INTQ
         WRITE(LUPRI,'(A,A)')
-     &    ' - basis file    : ',BASNAM
+     &    ' - basis set file    : ',BASNAM
       ENDIF
 
       IF (ISET .EQ. 2) THEN
