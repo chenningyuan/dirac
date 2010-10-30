@@ -10,7 +10,7 @@
 #
 #  sys.path.append("$DIRAC_dir/utils")
 #
-# and in each routine or at the beginning of the file (as globally visible):
+# and to use the external module type in each routine or at the beginning of the file (as globally visible):
 #
 #  from common import get_username,get_hostname
 #  from common import *
@@ -21,8 +21,8 @@
 #            .......  
 #
 #########################################################################
-import os
 
+#no global 'import XXX' here, these are within individual fuctions
 def is_windows():
   import distutils
   # returns true if this machine is Windows operating system
@@ -104,7 +104,15 @@ class extract_path_file:
       print 'can not extract' 
       self.extracted=False
 
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 def backup_file(some_file,upto):
+#############################################################################
+#
+# Important routine doing backup of the file "some_file", version up to
+# numebr "upto"
+#
+#
+#############################################################################
   import os.path, shutil
   def do_copy_print(backup_file_name,backup_file_name_p1):
       shutil.copy(backup_file_name,backup_file_name_p1)
@@ -137,4 +145,65 @@ def backup_file(some_file,upto):
       do_copy_print(backup_file_name,backup_file_name_p1)
   if (os.path.isfile(some_file)):
     do_copy_print(some_file,backup_file_name)
+
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+def make_old_file(path):
+#############################################################
+#  Create (if not already there) a file at path,
+#  set the date ("time stamp") in the past.
+#############################################################
+  import os, datetime, time
+  if not os.path.isfile(path):
+    f = open(path,'w')
+    f.close
+  today = datetime.datetime.now()
+  pastday = today - datetime.timedelta(days=11)
+  atime = int(time.mktime(pastday.timetuple()))
+  mtime = atime
+  times = (atime,mtime)
+  os.utime(path,times)
+
+def get_svn_revision():
+# returns svn revision, TODO: extend for Windows - avoid Linux commands
+  import os
+  svn_revision = os.popen("echo `svn info | grep 'Revision' | awk '{ print $2 }'`", "r").read()
+  return svn_revision
+
+def get_svn_url():
+# returns svn url, TODO: extend for Windows - avoid Linux commands
+  import os
+  svn_url = os.popen("echo `svn info | grep 'URL' | awk '{ print $2 }'`", "r").read()
+  return svn_url
+
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+def create_link(source, dest_dir, dest_file):
+###################################################################
+#
+#  create symbolic link (Unix), before make a comprehensive check
+#
+###################################################################
+  import os
+  if not os.path.exists(source):
+     print "create_link error ! source does not exist:"+source
+     sys.exit(source+' does not exist ! No linking possible, error exit !')
+
+  if not os.path.exists(dest_dir):
+     print "create_link error ! destination dir does not exist :"+dest_dir
+
+  dest = dest_dir+"/"+dest_file
+
+  # always remove old stuff (file or link) before
+  if os.path.isfile(dest) or os.path.islink(dest):
+      #print 'removing old regular file:'+dest
+      os.remove(dest)
+
+  if not is_windows():
+    try:
+       os.symlink(source,dest)
+    except (OSError, ValueError):
+       print "*** linking error !!! "
+       print "source : ",source
+       print "destination : ",dest
+       sys.exit("Linking error ! Check source and destination !")
+
 
