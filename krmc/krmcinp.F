@@ -193,9 +193,9 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in KRMCINP.'
+     *            '" not recognized in *KRMCSCF.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in KRMCINP.')
+               CALL QUIT('Illegal keyword in *KRMCSCF.')
     1          CONTINUE
 C&&& THRESHOLD : convergence threshold
                   READ(LUCMD,*) DKRMC_THRGRD
@@ -237,9 +237,9 @@ C&&& .MAX BACKSTEPS : max. number of backsteps
    10          CONTINUE
 C&&& .MAKE COFFEE:
                WRITE(LUPRI,'(1X,A)')
-     &              '*** ERROR in KRMCINP *** ',
+     &              '*** ERROR in *KRMCSCF *** ',
      &              'Don''t know how to make coffee yet!'
-               CALL QUIT('*** ERROR in KRMCINP *** ' //
+               CALL QUIT('*** ERROR in *KRMCSCF *** ' //
      &              'Don''t know how to make coffee yet!')
                GO TO 100
    11          CONTINUE
@@ -273,7 +273,7 @@ C&&& THRPCI: threshold for printing CI vector
    18          CONTINUE
 C&&& NR SYMMETRY: use non-relativistic boson spatial spinor symmetry for CI expansion
                IF (IKWSET(18) .GT. 0) THEN
-                  CALL QUIT('*** ERROR in KRMCINP *** ' //
+                  CALL QUIT('*** ERROR in *KRMCSCF *** ' //
      &                 'You can only specify symmetry once')
                END IF
                READ(LUCMD,*) IKRMC_SYMMETRY
@@ -293,12 +293,12 @@ C&&& MAX MK2: maximum value of 2 * MK
    21          CONTINUE
 C&&& GASSH: GAS setup
                   IF (NKRMCGAS .GT. 0) THEN
-                     CALL QUIT('*** ERROR in KRMCINP *** ' //
+                     CALL QUIT('*** ERROR in *KRMCSCF *** ' //
      &                 'You cannot specify both .GASSH and .CASSCF')
                   END IF
                   READ(LUCMD,*) NKRMCGAS
                   IF (NKRMCGAS .LT. 1 .OR. NKRMCGAS .GT. MXMCGAS) THEN
-                     CALL QUIT('*** ERROR in KRMCINP *** ' //
+                     CALL QUIT('*** ERROR in *KRMCSCF *** ' //
      &                         'illegal value of NKRMCGAS')
                   END IF
                   DO I = 1, NKRMCGAS
@@ -308,9 +308,9 @@ C&&& GASSH: GAS setup
    22          CONTINUE
 C&&& GASSPC: GAS space constraints
                   IF (NKRMCGAS .EQ. 0) THEN
-                     WRITE(LUPRI,'(A)') ' *** ERROR in KRMCINP ***'
+                     WRITE(LUPRI,'(A)') ' *** ERROR in *KRMCSCF ***'
      &                  //' .GASSH must be specified before .GASSP!'
-                     CALL QUIT('*** ERROR in KRMCINP ***')
+                     CALL QUIT('*** ERROR in *KRMCSCF ***')
                   END IF
                   DO I = 1, NKRMCGAS
                      READ(LUCMD,*) (NKRMCGSP(J,I),J=1,2)
@@ -329,12 +329,12 @@ C&&& MK2DELTA: 2 * DELTA M_K
                GO TO 100
  25            CONTINUE
 C&&& FREEZE ORBITALS:
-                  WRITE(LUPRI,'(A)') ' *** ERROR in KRMCINP ***'//
+                  WRITE(LUPRI,'(A)') ' *** ERROR in *KRMCSCF ***'//
      &            ' FREEZE option is not working yet! '//
      &            ' You have to be patient.'
 C                 SK - Aug 2008
                CALL QUIT(
-     &         '*** ERROR in KRMCINP: FREEZE option not working yet***')
+     &         '*** ERROR in *KRMCSCF: FREEZE option not working yet.')
                   DO I = 1, NFSYM
                      READ(LUCMD,'(A72)') KRMC_FRZSTR(I)
                   END DO
@@ -350,7 +350,7 @@ C&&&  INACTIVE ORBITALS
  28            CONTINUE
 C&&&  CASSCF -- this defines a CAS space
                IF (NKRMCGAS .GT. 0) THEN
-                  CALL QUIT('*** ERROR in KRMCINP *** ' //
+                  CALL QUIT('*** ERROR in *KRMCSCF *** ' //
      &                 'You cannot specify both .GASSH and .CASSCF')
                END IF
                READ(LUCMD,*) NKRMCAELEC
@@ -365,7 +365,7 @@ C              GO TO 100
  30            CONTINUE
 C&&&  SYMMETRY: symmetry of the wave function
                IF (IKWSET(18) .GT. 0) THEN
-                  CALL QUIT('*** ERROR in KRMCINP *** ' //
+                  CALL QUIT('*** ERROR in *KRMCSCF *** ' //
      &                 'You can only specify symmetry once')
                END IF
                READ(LUCMD,*) IKRMC_SYMMETRY
@@ -375,7 +375,7 @@ C&&&  SYMMETRY: symmetry of the wave function
 C&&&  RELSYM: use relativistic double group symmetry of the wave function
 C              including spin in symmetry
                IF (IKWSET(18) .GT. 0) THEN
-                  CALL QUIT('*** ERROR in KRMCINP *** ' //
+                  CALL QUIT('*** ERROR in *KRMCSCF *** ' //
      &                 'You can only specify symmetry once')
                END IF
                READ(LUCMD,*) IKRMC_SYMMETRY
@@ -388,11 +388,11 @@ C             luciarel/ciinfo_r.F - Z_BLKFO_REL
                READ(LUCMD,*) IKRMC_MEMFAC
                IF( IKRMC_MEMFAC .LE. 0 ) THEN
                   WRITE(LUPRI,'(//3A,I6)')
-     &                  '*** ERROR in KRMCINP *** ',
+     &                  '*** ERROR in *KRMCSCF *** ',
      &                  ' Illegal multiplier for ',
      &                  ' subtracting scratch memory: ',
      &                   IKRMC_MEMFAC
-                  CALL QUIT('*** ERROR in KRMCINP *** ' //
+                  CALL QUIT('*** ERROR in *KRMCSCF *** ' //
      &                 'Illegal memory multiplier')
                END IF
                GO TO 100
@@ -400,7 +400,7 @@ C             luciarel/ciinfo_r.F - Z_BLKFO_REL
 C&&&  .NOCKJZ  -- do not refine orbital rotation vector (kappa matrix) wrt
 C                 the m_j values of each orbital
                  IF( .NOT. LINEAR )THEN
-                   CALL QUIT('*** ERROR in KRMCINP *** ' //
+                   CALL QUIT('*** ERROR in *KRMCSCF *** ' //
      &             ' mj-blocking is only active for linear symmetry')
                  END IF
                  KRMC_CHCKJZ = .FALSE.
@@ -415,9 +415,9 @@ C&&&  .xxxxxx  -- xxx
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in KRMCINP.'
+     *            '" not recognized in *KRMCSCF.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in KRMCINP.')
+               CALL QUIT('Illegal prompt in *KRMCSCF.')
             END IF
       END IF
   300 CONTINUE
@@ -467,9 +467,9 @@ C
       END DO
       IF (NTEST .GT. MAXASH) THEN
         WRITE(LUPRI,'(A,I5/10X,A,I4)')
-     &       ' *** ERROR in KRMCINP *** Too many active orbitals: ',
+     &       ' *** ERROR in *KRMCSCF *** Too many active orbitals: ',
      &       NTEST, ' -- max is ',MAXASH
-        CALL QUIT('*** ERROR in KRMCINP *** Too many active orbitals!')
+        CALL QUIT('*** ERROR in *KRMCSCF *** Too many active orbitals!')
       END IF
 C
 C     Use boson symmetry for CI expansion for the spin-free and
@@ -493,7 +493,7 @@ C     =============
 C
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(A)')
-     &   ' KRMCINP: Set-up for KR-MCSCF calculation:'
+     &   ' *KRMCSCF: Set-up for KR-MCSCF calculation:'
       CALL PRSYMB(LUPRI,'=',75,0)
 C
       WRITE(LUPRI,'(A,I4)') ' * General print level   : ',IPRKRMC
@@ -506,6 +506,7 @@ C
       IF (NKRMCGAS .GT. 0) THEN
          WRITE(LUPRI,'(A,I3,A)')
      &        ' * GAS space setup for ',NKRMCGAS,' GAS space(s) : '
+         N_GAS_ERR = 0
          DO I = 1, NKRMCGAS
             WRITE(LUPRI,'(A,I3,A,2I4)')
      &           '   - GAS space ',I,'       : ',
@@ -513,10 +514,27 @@ C
             WRITE(LUPRI,'(A,I3,A1,I3,A)')
      &      '    (constraints: min/max active electrons after space : ',
      &           NKRMCGSP(1,I),'/',NKRMCGSP(2,I),')'
+C
+C           Consistency checks:
+C
+            IF (NKRMCGSP(1,I) .GT. NKRMCGSP(2,I))
+     &         N_GAS_ERR = N_GAS_ERR + 1
+            IF (I .GT. 1) THEN
+               IF (NKRMCGSP(1,I-1) .GT. NKRMCGSP(1,I))
+     &            N_GAS_ERR = N_GAS_ERR + 1
+               IF (NKRMCGSP(2,I-1) .GT. NKRMCGSP(2,I))
+     &            N_GAS_ERR = N_GAS_ERR + 1
+            END IF
          END DO
          IF (NKRMCGSP(2,NKRMCGAS) .NE. NKRMCAELEC)
-     &        CALL QUIT('*** ERROR in KRMCINP *** ' //
-     &        'Inconsistency between .GASSP and .CASSCF')
+     &      N_GAS_ERR = N_GAS_ERR + 1
+         IF (N_GAS_ERR .GT. 0) THEN
+            WRITE(LUPRI,'(//A)')
+     &         'INPUT ERROR: The GAS specifications are not consistent'
+            CALL QUIT('*** ERROR in *KRMCCALC *** ' //
+     &        'Inconsistency in GAS specification')
+         END IF
+
       END IF
       WRITE(LUPRI,'(A,I4)')
      &     ' * State number          : ',IKRMC_ISTATE
