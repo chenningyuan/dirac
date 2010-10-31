@@ -110,13 +110,12 @@ C      except for 2c NR calculations
       TEST = (TWOCOMP.AND.(.NOT.TWOCOMPBSS)).OR.LEVYLE
       TEST = UNCONT.OR.((INTQ.GT.36).AND.(.NOT.TEST))
       IF(TEST.AND.(.NOT.UNCONT)) THEN
-        WRITE(LUPRI,'(A)')
-     & '*** WARNING(BASLIB): Heavy element (Z>=36) => automatic'//
-     & ' decontraction of the (contracted) input basis set.'
-        WRITE(LUPRI,'(A,I5)')
-     &    ' - nuclear charge: ',INTQ
-        WRITE(LUPRI,'(A,A)')
-     &    ' - basis set file    : ',BASNAM
+        WRITE(LUPRI,'(/A/A,I5/2A/A/A)')
+     &   '*** WARNING (BASLIB) : Decontracting basis set',
+     &   ' - nuclear charge: ',INTQ,
+     &   ' - basis file    : ',BASNAM,
+     &   'Reason: DIRAC cannot yet create proper small component basis',
+     &   '        for contracted large component basis when Z > 36'
       ENDIF
 
       IF (ISET .EQ. 2) THEN
