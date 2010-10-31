@@ -244,9 +244,9 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in KRCICA.'
+     *            '" not recognized in *KRCICALC'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in KRCICA.')
+               CALL QUIT('Illegal keyword in *KRCICALC')
     1          CONTINUE
 C&&& .MAX CI ITER...: maximum number of initial CI iterations.
                   READ(LUCMD,*) MAXCIT_KRCI
@@ -411,7 +411,7 @@ C             reordered integrals
                   CINT_REORD_KRCI = .TRUE.
 C             ... this requires the use of MPI-2 I/O handling
 #if !defined (VAR_MPI2)
-                  WRITE(LUPRI,*) '  *** ERROR in KRCICALC *** '//
+                  WRITE(LUPRI,*) '  *** ERROR for *KRCICALC *** '//
      &                           ' Keyword .IJKLRO only valid in'//
      &                           ' parallel calculations'
                   WRITE(LUPRI,'(/A)') '  User input will be ignored.'
@@ -452,7 +452,7 @@ C&&& THRPCI: threshold for printing CI vector
    22          CONTINUE
 C&&& NR SYMMETRY: use non-relativistic boson spatial spinor symmetry for CI expansion
                IF (IKWSET(22) .GT. 0) THEN
-                  CALL QUIT('*** ERROR in KRCICALC *** ' //
+                  CALL QUIT('*** ERROR in *KRCICALC *** ' //
      &                 'You can only specify symmetry once')
                END IF
                KRCI_UCIBOS = .TRUE.
@@ -471,12 +471,12 @@ C&&& MAX MK2: maximum value of 2 * MK
    25          CONTINUE
 C&&& GASSH: GAS setup
                   IF (NKRCIGAS .GT. 0) THEN
-                     CALL QUIT('*** ERROR in KRCICALC *** ' //
+                     CALL QUIT('*** ERROR in *KRCICALC *** ' //
      &                 'You cannot specify both .GASSH and .CASSCF')
                   END IF
                   READ(LUCMD,*) NKRCIGAS
                   IF (NKRCIGAS .LT. 1 .OR. NKRCIGAS .GT. MXMCGAS) THEN
-                     CALL QUIT('*** ERROR in KRCICALC *** ' //
+                     CALL QUIT('*** ERROR in *KRCICALC *** ' //
      &                         'illegal value of NKRCIGAS')
                   END IF
                   DO I = 1, NKRCIGAS
@@ -486,9 +486,9 @@ C&&& GASSH: GAS setup
    26          CONTINUE
 C&&& GASSPC: GAS space constraints
                   IF (NKRCIGAS .EQ. 0) THEN
-                     WRITE(LUPRI,'(A)') ' *** ERROR in KRCICALC ***'
+                     WRITE(LUPRI,'(A)') ' *** ERROR in *KRCICALC ***'
      &                  //' .GASSH must be specified before .GASSP!'
-                     CALL QUIT('*** ERROR in KRCICALC ***')
+                     CALL QUIT('*** ERROR in *KRCICALC ***')
                   END IF
                   DO I = 1, NKRCIGAS
                      READ(LUCMD,*) (NKRCIGSP(J,I),J=1,2)
@@ -516,7 +516,7 @@ C&&&  INACTIVE ORBITALS
    31          CONTINUE
 C&&&  CASSCF -- this defines a CAS space
                IF (NKRCIGAS .GT. 0) THEN
-                  CALL QUIT('*** ERROR in KRCICALC *** ' //
+                  CALL QUIT('*** ERROR in *KRCICALC *** ' //
      &                 'You cannot specify both .GASSH and .CASSCF')
                END IF
                   READ(LUCMD,*) NKRCIAELEC
@@ -540,7 +540,7 @@ C                          using j_z = l_z + s_z
 C&&&  RELSYM:  use relativistic double group symmetry of the wave function
 C              including spin in symmetry
                IF (IKWSET(22) .GT. 0) THEN
-                  CALL QUIT('*** ERROR in KRCICALC *** ' //
+                  CALL QUIT('*** ERROR in *KRCICALC *** ' //
      &                 'You can only specify symmetry once')
                END IF
                KRCI_UCIBOS = .FALSE.
@@ -615,9 +615,9 @@ C&&&  xxxxxx:
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *            '" not recognized in KRCICALC.'
+     *            '" not recognized in *KRCICALC.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in KRCICALC.')
+               CALL QUIT('Illegal prompt in *KRCICALC')
             END IF
       END IF
   300 CONTINUE
@@ -684,9 +684,9 @@ C
       END DO
       IF (NTEST .GT. MAXASH) THEN
         WRITE(LUPRI,'(A,I5/10X,A,I4)')
-     &       ' *** ERROR in KRCICALC *** Too many active orbitals: ',
+     &       ' *** ERROR in *KRCICALC *** Too many active orbitals: ',
      &       NTEST, ' -- max is ',MAXASH
-        CALL QUIT('*** ERROR in KRCICALC *** Too many active orbitals!')
+        CALL QUIT('*** ERROR in *KRCICALC : Too many active orbitals.')
       END IF
 C
 C     Use boson symmetry for CI expansion for the spin-free and
@@ -709,7 +709,7 @@ C     =============
 C
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(A)')
-     &   ' KRCICALC: General set-up for KR-CI calculation:'
+     &   ' *KRCICALC: General set-up for KR-CI calculation:'
       CALL PRSYMB(LUPRI,'=',75,0)
 C
       WRITE(LUPRI,'(A,2I4)')
@@ -720,7 +720,8 @@ C
      &     ' * Active electrons      : ',NKRCIAELEC
       IF (NKRCIGAS .GT. 0) THEN
          WRITE(LUPRI,'(A,I3,A)')
-     &        ' * GAS space setup for ',NKRCIGAS,' GAS space(s) : '
+     &      ' * GAS space setup for ',NKRCIGAS,' GAS space(s) : '
+         N_GAS_ERR = 0
          DO I = 1, NKRCIGAS
             WRITE(LUPRI,'(A,I3,A,2I4)')
      &           '   - GAS space ',I,'       : ',
@@ -728,10 +729,24 @@ C
             WRITE(LUPRI,'(A,I3,A1,I3,A)')
      &      '    (constraints: min/max active electrons after space : ',
      &           NKRCIGSP(1,I),'/',NKRCIGSP(2,I),')'
+C
+C           Consistency checks:
+C
+            IF (NKRCIGSP(1,I) .GT. NKRCIGSP(2,I))
+     &         N_GAS_ERR = N_GAS_ERR + 1
+            IF (I .GT. 1) THEN
+               IF (NKRCIGSP(1,I-1) .GT. NKRCIGSP(1,I))
+     &            N_GAS_ERR = N_GAS_ERR + 1
+               IF (NKRCIGSP(2,I-1) .GT. NKRCIGSP(2,I))
+     &            N_GAS_ERR = N_GAS_ERR + 1
+            END IF
          END DO
-         IF (NKRCIGSP(2,NKRCIGAS) .NE. NKRCIAELEC)
-     &        CALL QUIT('*** ERROR in KRCICALC *** ' //
-     &        'Inconsistency between .GASSP and .CASSCF')
+         IF (N_GAS_ERR .GT. 0) THEN
+            WRITE(LUPRI,'(//A)')
+     &         'INPUT ERROR: The GAS specifications are not consistent'
+            CALL QUIT('*** ERROR in *KRCICALC *** ' //
+     &        'Inconsistency in GAS specification')
+         END IF
       END IF
       WRITE(LUPRI,'(2A)')
      &     ' * CI program used       : ',KRCI_CIPROGRAM
