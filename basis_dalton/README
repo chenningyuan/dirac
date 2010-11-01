@@ -4,4 +4,10 @@ Please use no stars (*) in file names; Windows can not handle them.
 Prefer this notation:
 
  6-311++G** -->  6-311++G-star-star
+ 6-311+G*   -->  6-311+G-star 
+ 6-311G**   -->  6-311G-star-star   
+ 6-31G**    -->  6-31G-star-star
+
  3-21++G*   -->  3-21++G-star
+ 3-21G*     -->  3-21G-star
+ 
