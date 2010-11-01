@@ -166,7 +166,9 @@ def make_old_file(path):
 def get_svn_revision():
 # returns svn revision, TODO: extend for Windows - avoid Linux commands
   import os
-  svn_revision = os.popen("echo `svn info | grep 'Revision' | awk '{ print $2 }'`", "r").read()
+  svn_revision_raw = os.popen("svn info | grep 'Revision' | awk '{ print $2 }'", "r").read()
+  svn_revision_raw=svn_revision_raw.replace(' ','')
+  svn_revision=svn_revision_raw.replace('\n','')
   return svn_revision
 
 def get_svn_url():
