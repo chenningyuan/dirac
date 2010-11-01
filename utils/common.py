@@ -133,7 +133,7 @@ def backup_file(some_file,upto):
         print 'backing up file:',backup_file_name,'-->',backup_file_name_p1
 
 #
-# backup-s file by copiyng it to 'upto' version
+# backup-s file by copying it up to 'upto' version
 #
   upto_default = 7
   if (upto is None):
@@ -164,17 +164,27 @@ def make_old_file(path):
   os.utime(path,times)
 
 def get_svn_revision():
-# returns svn revision, TODO: extend for Windows - avoid Linux commands
-  import os
-  svn_revision_raw = os.popen("svn info | grep 'Revision' | awk '{ print $2 }'", "r").read()
-  svn_revision_raw=svn_revision_raw.replace(' ','')
-  svn_revision=svn_revision_raw.replace('\n','')
+# returns svn revision
+  import os, subprocess
+  command="svn info"
+  process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+  #svn_revision_raw = os.popen("svn info | grep 'Revision' | awk '{ print $2 }'", "r").read()
+  output = process.stdout.read().splitlines(False)
+  #print output
+  svn_revision=output[4].replace("Revision:","")
+  svn_revision=svn_revision.replace(" ","")
+  #print svn_revision
   return svn_revision
 
 def get_svn_url():
 # returns svn url, TODO: extend for Windows - avoid Linux commands
-  import os
-  svn_url = os.popen("echo `svn info | grep 'URL' | awk '{ print $2 }'`", "r").read()
+  import os, subprocess
+  command="svn info"
+  process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+  output = process.stdout.read().splitlines(False)
+  #print output
+  #svn_url = os.popen("echo `svn info | grep 'URL' | awk '{ print $2 }'`", "r").read()
+  svn_url=output[2].replace("Repository Root: ","")
   return svn_url
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
