@@ -1,5 +1,7 @@
 
-Please use no stars (*) in file names; Windows can not handle them.
+***********************************************************************
+  Please use no stars (*) in file names; Windows can not handle them !
+***********************************************************************
 
 Prefer this notation:
 
@@ -10,4 +12,7 @@ Prefer this notation:
 
  3-21++G*   -->  3-21++G-star
  3-21G*     -->  3-21G-star
+ .
+ .
+ .
  
