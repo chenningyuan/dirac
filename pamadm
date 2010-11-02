@@ -135,8 +135,9 @@ def provide_star_basisfile_names():
 ### import external functions, assuming you are always in trunk/ directory !
 sys.path.append(os.getcwd()+'/utils')
 from common import make_old_file, is_windows
-from common import get_svn_revision,get_svn_url,create_link
+from common import svn_info, create_link
 
+svn_object = svn_info() # object of the class
 
 # list of vital directories and files - these are always exported/released
 # ========================================================================
@@ -678,13 +679,13 @@ f.write(flags + '\n')
 # determine subversion url and revision
 is_subversion_working_copy = os.path.exists('.svn')
 if is_subversion_working_copy:
-   svn_revision = get_svn_revision()
+   svn_revision = svn_object.get_svn_revision()
    f.write("DIRAC_SVN_REVISION=%s\n" % svn_revision)
    if options.exportfile != None:
 #     do not export svn url
       f.write("DIRAC_SVN_URL='URL not exported in release'\n")
    else:
-      svn_url = get_svn_url()
+      svn_url = svn_object.get_svn_url()
       f.write("DIRAC_SVN_URL=%s" % svn_url)
 
 else:
@@ -866,7 +867,7 @@ if options.exportfile != None:
        command = "for file in `find %s -name '%s'`; do grep -v copyright_start $file | grep -v copyright_end > deleteme; mv -f deleteme $file; done" % (scratch_dir, suffix)
        os.system(command)
 
-   exportfile_svn_tgz = options.exportfile+"_svn_"+str(get_svn_revision())
+   exportfile_svn_tgz = options.exportfile+"_svn_"+str(svn_object.get_svn_revision())
 #  create tar.gz
    command = 'tar -czf %s.tar.gz %s' % (exportfile_svn_tgz, scratch_dir)
    print '...creating export file, command: "',command,'"'

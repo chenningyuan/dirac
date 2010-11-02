@@ -23,7 +23,9 @@
 #########################################################################
 
 #no global 'import XXX' here, these are within individual fuctions
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 def is_windows():
+# important function - check if it's Windows :)
   import distutils
   # returns true if this machine is Windows operating system
   platform=distutils.util.get_platform()
@@ -32,13 +34,16 @@ def is_windows():
   else:
     return True
 
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 def get_username():
+# get the name of the user
   import getpass
   if is_windows():
     return win32api.GetUserName()
   else:
     return getpass.getuser()
 
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 def get_ip():
 #########################################################################################
 #
@@ -109,8 +114,7 @@ def backup_file(some_file,upto):
 #############################################################################
 #
 # Important routine doing backup of the file "some_file", version up to
-# numebr "upto"
-#
+# number "upto"
 #
 #############################################################################
   import os.path, shutil
@@ -163,29 +167,26 @@ def make_old_file(path):
   times = (atime,mtime)
   os.utime(path,times)
 
-def get_svn_revision():
-# returns svn revision
-  import os, subprocess
-  command="svn info"
-  process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
-  #svn_revision_raw = os.popen("svn info | grep 'Revision' | awk '{ print $2 }'", "r").read()
-  output = process.stdout.read().splitlines(False)
-  #print output
-  svn_revision=output[4].replace("Revision:","")
-  svn_revision=svn_revision.replace(" ","")
-  #print svn_revision
-  return svn_revision
-
-def get_svn_url():
-# returns svn url, TODO: extend for Windows - avoid Linux commands
-  import os, subprocess
-  command="svn info"
-  process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
-  output = process.stdout.read().splitlines(False)
-  #print output
-  #svn_url = os.popen("echo `svn info | grep 'URL' | awk '{ print $2 }'`", "r").read()
-  svn_url=output[2].replace("Repository Root: ","")
-  return svn_url
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+class svn_info:
+#############################################
+#       handle svn repository data
+#############################################
+  def __init__(self):
+  #  initialize  svn_revision, svn_url
+    import os, subprocess
+    command="svn info" # valid for both Unix,Windows
+    process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+    output = process.stdout.read().splitlines(False)
+    #print output
+    self.svn_revision=output[4].replace("Revision:","")
+    self.svn_revision=self.svn_revision.replace(" ","")
+    self.svn_url=output[2].replace("Repository Root: ","")
+    #print self.svn_url, self.svn_revision
+  def get_svn_revision(self):
+    return self.svn_revision
+  def get_svn_url(self):
+    return self.svn_url
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 def create_link(source, dest_dir, dest_file):
