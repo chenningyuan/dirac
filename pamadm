@@ -794,8 +794,10 @@ if options.exportfile != None:
        shutil.copytree(directory, scratch_dir + '/' + directory)
    for file in vital_files:
 #      need to copy with parent, don't know how to do it in python
-       command = 'cp --parent %s %s' % (file, scratch_dir)
-       os.system(command)
+       #command = 'cp --parent %s %s' % (file, scratch_dir)
+       #os.system(command)
+#      miro: this is python solution :)
+       shutil.copy(file, scratch_dir)
 
 #  preventively remove all module directories in scratch dir (example is prp/esr which is copied along with prp and maybe not wanted)
    for module in dirac_modules:
@@ -872,7 +874,7 @@ if options.exportfile != None:
    command = 'tar -czf %s.tar.gz %s' % (exportfile_svn_tgz, scratch_dir)
    print '...creating export file, command: "',command,'"'
    os.system(command)
-   print '...done, release directory "',scratch_dir,'" kept.'
+   print '...done, release directory "',scratch_dir,'" kept for checking.'
 
 #  do not remove scratch dir, is worth for checking the bitten-buildup
 #   shutil.rmtree(scratch_dir)
