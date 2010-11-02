@@ -796,8 +796,8 @@ if options.exportfile != None:
 #      need to copy with parent, don't know how to do it in python
        command = 'cp --parent %s %s' % (file, scratch_dir)
        os.system(command)
-#      miro: this is python solution  (working at least for me :)
-       #shutil.copy(file, scratch_dir)
+#      miro: TODO python solution needed for "--parent"
+       #copy_parent(file, scratch_dir)
 
 #  preventively remove all module directories in scratch dir (example is prp/esr which is copied along with prp and maybe not wanted)
    for module in dirac_modules:
