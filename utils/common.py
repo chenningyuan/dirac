@@ -176,13 +176,19 @@ class svn_info:
   #  initialize  svn_revision, svn_url
     import os, subprocess
     command="svn info" # valid for both Unix,Windows
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
-    output = process.stdout.read().splitlines(False)
-    #print output
-    self.svn_revision=output[4].replace("Revision:","")
-    self.svn_revision=self.svn_revision.replace(" ","")
-    self.svn_url=output[2].replace("Repository Root: ","")
-    #print self.svn_url, self.svn_revision
+    try:
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+        output = process.stdout.read().splitlines(False)
+        #print output
+        self.svn_revision=output[4].replace("Revision:","")
+        self.svn_revision=self.svn_revision.replace(" ","")
+        self.svn_url=output[2].replace("Repository Root: ","")
+        #print self.svn_url, self.svn_revision
+    except:
+#       this is not a subversion working copy
+#       (some people are working with git)
+        self.svn_revision = 'unknown; not a subversion working copy'
+        self.svn_url      = 'unknown; not a subversion working copy'
   def get_svn_revision(self):
     return self.svn_revision
   def get_svn_url(self):
