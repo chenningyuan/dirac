@@ -99,7 +99,38 @@ class dirac_module:
 def callback_include(option, opt, value, parser):
     dirac_modules[str(option)[2:]].include()
 
+def provide_star_basisfile_names():
+#########################################################
+#
+# Restore basis set files with "*" in name
+#
+#########################################################
+  # : ls basis_dalton/*star
+  basfile={   \
+     '3-21++G-star':'3-21++G*',\
+     '3-21G-star':'3-21G*',\
+     '6-311+G-star':'6-311+G*',\
+     '6-311G-star':'6-311G*', \
+     '6-311++G-star-star':'6-311++G**',\
+     '6-311G-star-star':'6-311G**',\
+     '6-31++G-star':'6-31++G*', \
+     '6-31+G-star':'6-31+G*',\
+     '6-31G-star':'6-31G*',\
+     '6-31++G-star-star':'6-31++G**',\
+     '6-31G-star-star':'6-31G**' \
+     }
+  basdir="basis_dalton"+"/"
+  for basfilename in basfile:
+    src=basdir+basfilename
+    dest=basdir+basfile[basfilename]
+    #print basfilename,basfile[basfilename]
+    #print src,dest
+    shutil.copy(src,dest)
+  print '...restored basis set files with "*" in name'
+
+###########################
 ### main function start ###
+###########################
 
 ### import external functions, assuming you are always in trunk/ directory !
 sys.path.append(os.getcwd()+'/utils')
@@ -736,6 +767,10 @@ runtest_file.close()
 runtest_file_in.close()
 # read,write and execute by the owner (Windows accepted solution)
 os.chmod("test/runtest", stat.S_IRWXU) 
+
+## provide *-provided basis set files ##
+provide_star_basisfile_names()
+
 
 # export dirac to tar.gz file
 # ===========================
