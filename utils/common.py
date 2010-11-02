@@ -92,7 +92,6 @@ class extract_path_file:
   def get_path_file(self,full_file_name):
 # extracts file name and it's path (directory) by splitting string
     from string import rfind
-    #print 'extract. path, file..',full_file_name
     if is_windows():
       string_to_find='\\' # Windows
     else: 
@@ -102,9 +101,6 @@ class extract_path_file:
       self.pure_file_name=full_file_name[position+1:len(full_file_name)]
       self.pure_file_path=full_file_name[0:position]
       self.extracted=True
-      #print 'was extracted'
-      #print pure_file_path,pure_file_name
-      #return sepure_file_path,pure_file_name
     else: 
       print 'can not extract' 
       self.extracted=False
@@ -127,8 +123,6 @@ def backup_file(some_file,upto):
       result.get_path_file(backup_file_name)
       result_p1=extract_path_file()
       result_p1.get_path_file(backup_file_name_p1)
-      #print result.extracted, result.pure_file_path
-      #print result_p1.extracted, result_p1.pure_file_path 
       if (result.extracted is True and result_p1.extracted is True  and \
           result.pure_file_path == result_p1.pure_file_path ) :
         print 'backing up file:', result.pure_file_name,'-->',result_p1.pure_file_name,\
@@ -179,11 +173,9 @@ class svn_info:
     try:
         process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
         output = process.stdout.read().splitlines(False)
-        #print output
         self.svn_revision=output[4].replace("Revision:","")
         self.svn_revision=self.svn_revision.replace(" ","")
         self.svn_url=output[2].replace("Repository Root: ","")
-        #print self.svn_url, self.svn_revision
     except:
 #       this is not a subversion working copy
 #       (some people are working with git)
@@ -213,7 +205,6 @@ def create_link(source, dest_dir, dest_file):
 
   # always remove old stuff (file or link) before
   if os.path.isfile(dest) or os.path.islink(dest):
-      #print 'removing old regular file:'+dest
       os.remove(dest)
 
   if not is_windows():
@@ -238,5 +229,4 @@ def copy_parent(src,dest):
 #########################################################################################
   import os, shutil
   command = 'cp --parent %s %s' % (src, dest)
-  #print 'cp --parent ',src, dest
   os.system(command)
