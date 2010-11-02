@@ -241,6 +241,7 @@ directories_never_compiled = []
 directories_never_compiled.append('utils')
 directories_never_compiled.append('xcfun/src')
 directories_never_compiled.append('xcfun/test')
+directories_never_compiled.append('Debug')
 
 files_never_compiled = []
 files_never_compiled.append('utils/cube2pov.c')
@@ -713,6 +714,50 @@ for module in dirac_modules:
       for directory in dirac_modules[module].directories:
         create_link(source_dir,dirac_dir+"/"+directory,"Makefile")
 
+
+# prepare files for cmake
+# =======================
+
+ignore_directory_l = []
+ignore_file_l      = []
+
+for module in dirac_modules:
+    if not dirac_modules[module].is_included:
+        for directory in dirac_modules[module].directories:
+            ignore_directory_l.append(directory)
+        for file in dirac_modules[module].files:
+            ignore_file_l.append(file)
+for directory in directories_never_compiled:
+    ignore_directory_l.append(directory)
+for file in files_never_compiled:
+    ignore_file_l.append(file)
+
+s = ''
+for root, directory_l, file_l in os.walk('./'):
+    skip_directory = False
+    for directory in ignore_directory_l:
+        if directory in root:
+            skip_directory = True
+    if not skip_directory:
+       for f in file_l:
+           if f[-2:] == '.F' or f[-2:] == '.c' or f[-4:] == '.F90' or f[-4:] == '.f90':
+               g = (root + '/' + f)[2:]
+               if not g in ignore_file_l:
+                   s += '%s\n' % g
+
+f = open('build/cmake.sources', 'w')
+f.write('add_executable(dirac.x %s)' % s)
+f.close()
+
+s = ''
+for module in dirac_modules:
+    if dirac_modules[module].is_included:
+        for cppflag in dirac_modules[module].cppflags:
+            s += '-D%s ' % cppflag
+
+f = open('build/cmake.definitions', 'w')
+f.write('add_definitions(%s -DVAR_IFC -DPRG_DIRAC -DINSTALL_WRKMEM=100000)' % s)
+f.close()
 
 
 # package tests
