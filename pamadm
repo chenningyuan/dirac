@@ -119,14 +119,14 @@ def provide_star_basisfile_names():
      '6-31++G-star-star':'6-31++G**',\
      '6-31G-star-star':'6-31G**' \
      }
-  basdir="basis_dalton"+"/"
+  basdir="basis_dalton"+"/" # basis set directory
   for basfilename in basfile:
     src=basdir+basfilename
     dest=basdir+basfile[basfilename]
     #print basfilename,basfile[basfilename]
     #print src,dest
     shutil.copy(src,dest)
-  print '...restored basis set files with "*" in name'
+ # print '...generated basis set files with "*" in names'
 
 ###########################
 ### main function start ###
@@ -768,8 +768,8 @@ runtest_file_in.close()
 # read,write and execute by the owner (Windows accepted solution)
 os.chmod("test/runtest", stat.S_IRWXU) 
 
-## provide *-provided basis set files ##
-provide_star_basisfile_names()
+## generate *-provided basis set files ##
+if ( not is_windows() ): provide_star_basisfile_names()
 
 
 # export dirac to tar.gz file
