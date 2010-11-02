@@ -219,4 +219,18 @@ def create_link(source, dest_dir, dest_file):
        print "destination : ",dest
        sys.exit("Linking error ! Check source and destination !")
 
-
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+def copy_parent(src,dest):
+#########################################################################################
+#
+# ensures copying with parent, ie Linux 'cp --parent' functionality
+#
+# this function serves for 'Windows'-ing DIRAC
+#
+# TODO: write me :)
+#
+#########################################################################################
+  import os, shutil
+  command = 'cp --parent %s %s' % (src, dest)
+  #print 'cp --parent ',src, dest
+  os.system(command)

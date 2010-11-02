@@ -135,7 +135,7 @@ def provide_star_basisfile_names():
 ### import external functions, assuming you are always in trunk/ directory !
 sys.path.append(os.getcwd()+'/utils')
 from common import make_old_file, is_windows
-from common import svn_info, create_link
+from common import svn_info, create_link, copy_parent
 
 svn_object = svn_info() # object of the class
 
@@ -794,10 +794,7 @@ if options.exportfile != None:
        shutil.copytree(directory, scratch_dir + '/' + directory)
    for file in vital_files:
 #      need to copy with parent, don't know how to do it in python
-       command = 'cp --parent %s %s' % (file, scratch_dir)
-       os.system(command)
-#      miro: TODO python solution needed for "--parent"
-       #copy_parent(file, scratch_dir)
+       copy_parent(file, scratch_dir)
 
 #  preventively remove all module directories in scratch dir (example is prp/esr which is copied along with prp and maybe not wanted)
    for module in dirac_modules:
