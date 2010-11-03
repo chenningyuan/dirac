@@ -1595,7 +1595,8 @@ C
      &        WORK(KTEMP4),WORK(KTEMP5),CSTEP,GRDARR,STPARR,
      &        ACTIVE,EMOD,VECMOD)
       END IF
-      GECONV = MINEND(MXRCRD,SCLVEC,BMTRAN,WORK(KTEMP1),WORK(KTEMP2))
+      GECONV = 
+     &  MINEND(MXRCRD,SCLVEC,BMTRAN,WORK(KTEMP1),WORK(KTEMP2))
 C
 C     If there has been a completely failed step, the geometry has
 C     by default not converged.
@@ -1794,7 +1795,8 @@ C
      &           WORK(KTEMP4),WORK(KTEMP5),CSTEP,GRDARR,STPARR,
      &           ACTIVE,EMOD,VECMOD)
          END IF
-         GECONV = MINEND(MXRCRD,SCLVEC,BMTRAN,WORK(KTEMP1),WORK(KTEMP2))
+         GECONV = 
+     &   MINEND(MXRCRD,SCLVEC,BMTRAN,WORK(KTEMP1),WORK(KTEMP2))
          IF (ABS(GEINFO(ITRNMR,6)) .GT. 1.0D-3) GECONV = .FALSE.
          CALL PRIALL(CSTEP,WORK(KTEMP1))
          CALL ATMINI(WORK(KTEMP1),IATOM,.TRUE.)
@@ -6895,9 +6897,11 @@ C
          NWSYMM = .TRUE.
       END IF
 C
-C     Output from the testing is written.
+C     Output from the testing is written. IPRINT is in optinf.h
 C
-      IF (IPRINT .GT. 2) THEN
+CMI IPRINT is not preserved here from *OPTIMIZE, therefore deactivated
+C
+      !IF (IPRINT .GE. 2) THEN
          CALL TITLER('Output from MINEND','*',103)
          LOGTXT = 'no  '
          IF (CNVERG) LOGTXT = 'yes '
@@ -6921,7 +6925,7 @@ C
          IF (BRKSYM) LOGTXT = 'yes*'
          WRITE(LUPRI,'(A,1P,A5)') ' End of minimization   ',LOGTXT
          IF (BRKSYM) WRITE(LUPRI,'(/A)') ' *) Within given symmetry.'
-      END IF
+      !END IF
       RETURN
       END
 
