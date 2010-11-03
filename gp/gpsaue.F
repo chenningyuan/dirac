@@ -626,9 +626,9 @@ c     first let lapack estimate memory use
      &            M,EIG,VEC,LRV,IDUM,WORKDUM,-1,IWORKDUM,-1,INFO)
       LLWORK = WORKDUM
       LILWORK = IWORKDUM
-      lwork = LLWORK + LILWORK + 2*N +6
+      lwork = LLWORK + LILWORK + 2*N +8
 #else
-      lwork = 6 + 2*N
+      lwork = 8 + 2*N
       IF(NZ.GT.1) THEN
         NTAU = N*NZ
         lwork = lwork + ntau
