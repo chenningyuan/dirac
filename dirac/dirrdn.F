@@ -679,7 +679,8 @@ Ctsaue: retained for backwards compatibility
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
       ELSE
-         WRITE (LUPRI,'(/,3A,/)') ' Prompter "',PROMPT,'" illegal'
+         WRITE (LUPRI,'(/,3A,A,/)') ' Prompter "',PROMPT,
+     &    '" illegal in input word:',WORD
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
          CALL QUIT('Illegal prompt in JOBINP.')
       END IF
