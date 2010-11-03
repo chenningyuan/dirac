@@ -435,6 +435,15 @@ contains
       visual_cfg_2d = .true.
     end if
 
+    if (kw_matches(word, '.PLANE ')) then
+       visual_cfg_plane = .true.
+       read(unit_in, *) visual_cfg_plane_p_origin(1:3)
+       read(unit_in, *) visual_cfg_plane_p_right(1:3)
+       read(unit_in, *) visual_cfg_plane_n_right
+       read(unit_in, *) visual_cfg_plane_p_top(1:3)
+       read(unit_in, *) visual_cfg_plane_n_top
+    end if
+
     if (kw_matches(word, '.3D    ')) then
       visual_cfg_3d = .true.
     end if

@@ -36,6 +36,7 @@ module visual_cfg
 
   logical,       public :: visual_cfg_list               = .false.
   logical,       public :: visual_cfg_line               = .false.
+  logical,       public :: visual_cfg_plane              = .false.
   logical,       public :: visual_cfg_2d                 = .false.
   logical,       public :: visual_cfg_3d                 = .false.
   logical,       public :: visual_cfg_use_orbital_string = .false.
@@ -59,6 +60,8 @@ module visual_cfg
   integer,       public :: visual_cfg_lao_icomp(max_nr_xvectors)         = 0
   integer,       public :: visual_cfg_connection(max_nr_xvectors)        = 1
   integer,       public :: visual_cfg_lao_contributions(max_nr_xvectors) = 7 !all contributions by default
+  integer,       public :: visual_cfg_plane_n_right                      = 0
+  integer,       public :: visual_cfg_plane_n_top                        = 0
 
   real(8),       public :: visual_cfg_add_3d                             = 4.0d0
   real(8),       public :: visual_cfg_common_factor                      = 1.0d0
@@ -69,6 +72,9 @@ module visual_cfg
   real(8),       public :: visual_cfg_step_2d                            = 0.1d0
   real(8),       public :: visual_cfg_line_from(3)                       = 0.0d0
   real(8),       public :: visual_cfg_line_to(3)                         = 0.0d0
+  real(8),       public :: visual_cfg_plane_p_origin(3)                  = 0.0d0
+  real(8),       public :: visual_cfg_plane_p_right(3)                   = 0.0d0
+  real(8),       public :: visual_cfg_plane_p_top(3)                     = 0.0d0
 
 
   integer,       public :: vector_to_matrix(max_nr_xvectors) = 0

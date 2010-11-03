@@ -573,14 +573,29 @@ contains
       real(8) :: r(3), v(3), px, py, pz
       integer :: ICUBE, jCUBE, kCUBE, IORIENTATION, IPOINT_IN_LIST
       integer :: istep, i, j, k, l, m, ni, nj, nk, nr_steps, IXVECTOR
-      integer :: lunit_2d, lunit_3d, lunit_line
+      integer :: lunit_2d, lunit_3d, lunit_line, lunit_plane
+      integer :: ix, iy
+      real(8), allocatable :: p(:, :)
 
 
 !     open files
 
-      lunit_2d   = 13
-      lunit_3d   = 14
-      lunit_line = 15
+      lunit_2d    = 13
+      lunit_3d    = 14
+      lunit_line  = 15
+      lunit_plane = 16
+
+      if (visual_cfg_plane) then
+         open(lunit_plane, &
+              file   = 'plot.plane', &
+              status = 'new',        &
+              access = 'sequential', &
+              form   = 'formatted')
+      end if
+
+
+
+
 
       if (visual_cfg_2d) then
         open(lunit_2d, &
@@ -691,6 +706,61 @@ contains
      &                                   quantity(3, 1)
 
         end do
+      end if
+
+      if (visual_cfg_plane) then
+
+         allocate(p(3, (visual_cfg_plane_n_top + 1)*(visual_cfg_plane_n_right + 1)))
+
+         call generate_plane(visual_cfg_plane_p_origin, &
+                             visual_cfg_plane_p_top,    &
+                             visual_cfg_plane_p_right,  &
+                             visual_cfg_plane_n_top,    &
+                             visual_cfg_plane_n_right,  &
+                             p)
+
+         i = 0
+         do ix = 0, visual_cfg_plane_n_right
+            do iy = 0, visual_cfg_plane_n_top
+               i = i + 1
+#ifdef MOD_UNRELEASED
+               if (visual_cfg_london) then
+                  if (.not. present(D_con) .or. nr_dmat_con == 0) then
+                     call quit("no D_con or nr_dmat_con = 0")
+                  end if
+                  call get_quantity_lao_in_point(nr_dmat,     &
+                                                 D,           &
+                                                 nr_dmat_con, &
+                                                 D_con,       &
+                                                 ao,          &
+                                                 p(1, i),     &
+                                                 p(2, i),     &
+                                                 p(3, i),     &
+                                                 buffer,      &
+                                                 quantity)
+               else
+#endif
+                  call get_quantity_in_point(nr_dmat, &
+                                             D,       &
+                                             ao,      &
+                                             p(1, i), &
+                                             p(2, i), &
+                                             p(3, i), &
+                                             buffer,  &
+                                             quantity)
+#ifdef MOD_UNRELEASED
+               end if
+#endif
+               write(lunit_plane, '(7e18.10)') p(1:3, i),      &
+                                               quantity(0, 1), &
+                                               quantity(1, 1), &
+                                               quantity(2, 1), &
+                                               quantity(3, 1)
+            end do
+         end do
+
+         deallocate(p)
+
       end if
 
       if (visual_cfg_2d) then
@@ -888,9 +958,10 @@ contains
 
 !     close files
 
-      if (visual_cfg_2d)   close(lunit_2d,   status = 'keep')
-      if (visual_cfg_3d)   close(lunit_3d,   status = 'keep')
-      if (visual_cfg_line) close(lunit_line, status = 'keep')
+      if (visual_cfg_2d)    close(lunit_2d,    status = 'keep')
+      if (visual_cfg_3d)    close(lunit_3d,    status = 'keep')
+      if (visual_cfg_line)  close(lunit_line,  status = 'keep')
+      if (visual_cfg_plane) close(lunit_plane, status = 'keep')
 
       end subroutine
 
@@ -1287,5 +1358,37 @@ contains
     end do
 
   end subroutine
+
+   subroutine generate_plane(p_origin, &
+                             p_top,    &
+                             p_right,  &
+                             n_top,    &
+                             n_right,  &
+                             p)
+
+!     --------------------------------------------------------------------------
+      real(8), intent(in)  :: p_origin(3)
+      real(8), intent(in)  :: p_top(3)
+      real(8), intent(in)  :: p_right(3)
+      integer, intent(in)  :: n_top
+      integer, intent(in)  :: n_right
+      real(8), intent(out) :: p(3, (n_top + 1)*(n_right + 1))
+!     --------------------------------------------------------------------------
+      integer              :: i, ix, iy
+      real(8)              :: vx(3), vy(3)
+!     --------------------------------------------------------------------------
+
+      vx = (p_right - p_origin)/n_top
+      vy = (p_top   - p_origin)/n_right
+
+      i = 0
+      do ix = 0, n_right
+         do iy = 0, n_top
+            i = i + 1
+            p(1:3, i) = p_origin + ix*vx + iy*vy
+         end do
+      end do
+
+   end subroutine
 
 end module
