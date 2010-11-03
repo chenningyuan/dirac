@@ -615,24 +615,24 @@ C
 C     Like QDIAG but uses f90 memory allocation internally.
 #include "implicit.h"
       real(8)         , allocatable :: work(:)
-#ifdef LAPACK_QDIAG
-      DDUM = 0.0D0
-      IDUM = 0
-      WORKDUM = 0.0D0
-      IWORKDUM = 0
-c     first let lapack estimate memory use
-      INFO = 0
-      CALL DSYEVR('V','A','U',N,A,LRA,DDUM,DDUM,IDUM,IDUM,0.0D0,
-     &            M,EIG,VEC,LRV,IDUM,WORKDUM,-1,IWORKDUM,-1,INFO)
-      LLWORK = WORKDUM
-      LILWORK = IWORKDUM
-      lwork = LLWORK + LILWORK + 2*N +8
-#else
+
       lwork = 8 + 2*N
-      IF(NZ.GT.1) THEN
-        NTAU = N*NZ
-        lwork = lwork + ntau
-      ENDIF
+      if(nz.gt.1) lwork = lwork + N*NZ
+
+#ifdef LAPACK_QDIAG
+      if(matz.eq.1)then
+        DDUM = 0.0D0
+        IDUM = 0
+        WORKDUM = 0.0D0
+        IWORKDUM = 0
+c       first let lapack estimate memory use
+        INFO = 0
+        CALL DSYEVR('V','A','U',N,A,LRA,DDUM,DDUM,IDUM,IDUM,0.0D0,
+     &              M,EIG,VEC,LRV,IDUM,WORKDUM,-1,IWORKDUM,-1,INFO)
+        LLWORK = WORKDUM
+        LILWORK = IWORKDUM
+        lwork = LLWORK + LILWORK + 2*N +8
+      end if
 #endif
       allocate(work(lwork))
       work = 0
