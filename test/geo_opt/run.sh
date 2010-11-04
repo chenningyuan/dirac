@@ -5,22 +5,27 @@
 if [ ! -z "$RUNTYPE" ]; then
    case "${RUNTYPE}" in
       "short")
-         MENU=HeH+;
-         MOL=HeH+;
+         export MENU=HeH+;
+         export MOL=HeH+;
+         ../run.sh
          ;;
       "medium")
-         MENU=acetone;
-         MOL=acetone;
+         export MENU=acetone;
+         export MOL=acetone;
+         ../run.sh
+         export MENU=HCCF.x2c_zdipf.scf_mp2_geopt.inp;
+         export MOL=HCCF.sto-2g.mol;
+          ../run.sh
          ;;
       "long")
-         MENU=1.3.5_trisilacyclohexane;
-         MOL=1.3.5_trisilacyclohexane.mol;
+         export MENU=1.3.5_trisilacyclohexane;
+         export MOL=1.3.5_trisilacyclohexane.mol;
+         ../run.sh
          ;;
    esac
 else
-   MENU=acetone;
-   MOL=acetone;
+# if no runtype test, use acetone as the default
+   export MENU=acetone;
+   export MOL=acetone;
+   ../run.sh
 fi
-export MENU;
-export MOL;
-../run.sh
