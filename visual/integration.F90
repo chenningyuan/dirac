@@ -38,7 +38,7 @@ module visual_integrate
 
 contains
 
-      subroutine visual_integration(nr_dmat, D, ao, buffer, nr_dmat_con, D_con)
+      subroutine visual_integration(nr_dmat, D, nr_dmat_con, D_con, ao, buffer)
 
 #include "implicit.h"
 #include "priunit.h"
@@ -50,7 +50,7 @@ contains
       real(8), intent(in) :: buffer(*)
 
       integer, intent(in) :: nr_dmat_con
-      type(matrix), optional :: D_con(nr_dmat_con)
+      type(matrix)        :: D_con(nr_dmat_con)
 
       dimension QUANTITY_INTEGRAL(0:3), &
                 QUANTITY_INTEGRAL_LAST(0:3)

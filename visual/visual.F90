@@ -498,33 +498,23 @@ contains
 
     time_start = second()
 
-#ifdef MOD_UNRELEASED
-!gosia todo: merge these two to one call to visual_driver
-    if (visual_cfg_london) then
-      call visual_driver(nr_dmat, D, ao, buffer, nr_dmat_con, D_con=D_con)
-    else
-#endif
-      call visual_driver(nr_dmat, D, ao, buffer, 0)
-#ifdef MOD_UNRELEASED
-    end if
-#endif
+    call visual_driver(nr_dmat,     &
+                       D,           &
+                       nr_dmat_con, &
+                       D_con,       &
+                       ao,          &
+                       buffer)
 
-!   end if
     call timtxt('>>>> time used in plot:', (second() - time_start), lupri)
 
     time_start = second()
     if (visual_cfg_integrate .or. visual_cfg_plane_integration) then
-
-#ifdef MOD_UNRELEASED
-! gosia fixme: merge these two to one call to visual_integration
-      if (visual_cfg_london) then
-        call visual_integration(nr_dmat,D,ao,buffer,nr_dmat_con,D_con=D_con)
-      else
-#endif
-        call visual_integration(nr_dmat, D, ao, buffer, 0)
-#ifdef MOD_UNRELEASED
-      end if
-#endif
+       call visual_integration(nr_dmat,     &
+                               D,           &
+                               nr_dmat_con, &
+                               D_con,       &
+                               ao,          &
+                               buffer)
     end if
     call timtxt('>>>> time used in integration:', (second() - time_start), lupri)
 
@@ -554,7 +544,7 @@ contains
 
 
 
-      subroutine visual_driver(nr_dmat, D, ao, buffer, nr_dmat_con, D_con)
+      subroutine visual_driver(nr_dmat, D, nr_dmat_con, D_con, ao, buffer)
 
       integer, intent(in) :: nr_dmat
       type(matrix)        :: D(nr_dmat)
@@ -562,7 +552,7 @@ contains
       real(8), intent(in) :: buffer(*)
 
       integer, intent(in)      :: nr_dmat_con
-      type(matrix), optional :: D_con(nr_dmat_con)
+      type(matrix)           :: D_con(nr_dmat_con)
 
       real(8) ::          QUANTITY(0:3,visual_cfg_NCUBE(3))
       real(8) ::          STEP_3D(3,0:3)
@@ -579,8 +569,8 @@ contains
 
 #ifdef MOD_UNRELEASED
       if (visual_cfg_london) then
-         if (.not. present(D_con) .or. nr_dmat_con == 0) then
-            call quit("no D_con or nr_dmat_con=0")
+         if (nr_dmat_con == 0) then
+            call quit("nr_dmat_con = 0")
          end if
       end if
 #endif
