@@ -439,9 +439,18 @@ contains
        visual_cfg_plane = .true.
        read(unit_in, *) visual_cfg_plane_p_origin(1:3)
        read(unit_in, *) visual_cfg_plane_p_right(1:3)
-       read(unit_in, *) visual_cfg_plane_n_right
+       read(unit_in, *) visual_cfg_plane_nr_right
        read(unit_in, *) visual_cfg_plane_p_top(1:3)
-       read(unit_in, *) visual_cfg_plane_n_top
+       read(unit_in, *) visual_cfg_plane_nr_top
+    end if
+
+    if (kw_matches(word, '.2D_INT')) then
+       visual_cfg_plane_integration = .true.
+       read(unit_in, *) visual_cfg_plane_integration_p_origin(1:3)
+       read(unit_in, *) visual_cfg_plane_integration_p_right(1:3)
+       read(unit_in, *) visual_cfg_plane_integration_p_top(1:3)
+       read(unit_in, *) visual_cfg_plane_integration_nr_pieces
+       read(unit_in, *) visual_cfg_plane_integration_order
     end if
 
     if (kw_matches(word, '.3D    ')) then

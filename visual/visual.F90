@@ -513,7 +513,7 @@ contains
     call timtxt('>>>> time used in plot:', (second() - time_start), lupri)
 
     time_start = second()
-    if (visual_cfg_integrate) then
+    if (visual_cfg_integrate .or. visual_cfg_plane_integration) then
 
 #ifdef MOD_UNRELEASED
 ! gosia fixme: merge these two to one call to visual_integration
@@ -706,18 +706,18 @@ contains
 
       if (visual_cfg_plane) then
 
-         allocate(p(3, (visual_cfg_plane_n_top + 1)*(visual_cfg_plane_n_right + 1)))
+         allocate(p(3, (visual_cfg_plane_nr_top + 1)*(visual_cfg_plane_nr_right + 1)))
 
          call generate_plane(visual_cfg_plane_p_origin, &
                              visual_cfg_plane_p_top,    &
                              visual_cfg_plane_p_right,  &
-                             visual_cfg_plane_n_top,    &
-                             visual_cfg_plane_n_right,  &
+                             visual_cfg_plane_nr_top,    &
+                             visual_cfg_plane_nr_right,  &
                              p)
 
          i = 0
-         do ix = 0, visual_cfg_plane_n_right
-            do iy = 0, visual_cfg_plane_n_top
+         do ix = 0, visual_cfg_plane_nr_right
+            do iy = 0, visual_cfg_plane_nr_top
                i = i + 1
                    call get_quantity_in_point(nr_dmat,     &
                                                     D,           &
@@ -1316,28 +1316,28 @@ contains
    subroutine generate_plane(p_origin, &
                              p_top,    &
                              p_right,  &
-                             n_top,    &
-                             n_right,  &
+                             nr_top,    &
+                             nr_right,  &
                              p)
 
 !     --------------------------------------------------------------------------
       real(8), intent(in)  :: p_origin(3)
       real(8), intent(in)  :: p_top(3)
       real(8), intent(in)  :: p_right(3)
-      integer, intent(in)  :: n_top
-      integer, intent(in)  :: n_right
-      real(8), intent(out) :: p(3, (n_top + 1)*(n_right + 1))
+      integer, intent(in)  :: nr_top
+      integer, intent(in)  :: nr_right
+      real(8), intent(out) :: p(3, (nr_top + 1)*(nr_right + 1))
 !     --------------------------------------------------------------------------
       integer              :: i, ix, iy
       real(8)              :: vx(3), vy(3)
 !     --------------------------------------------------------------------------
 
-      vx = (p_right - p_origin)/n_top
-      vy = (p_top   - p_origin)/n_right
+      vx = (p_right - p_origin)/nr_top
+      vy = (p_top   - p_origin)/nr_right
 
       i = 0
-      do ix = 0, n_right
-         do iy = 0, n_top
+      do ix = 0, nr_right
+         do iy = 0, nr_top
             i = i + 1
             p(1:3, i) = p_origin + ix*vx + iy*vy
          end do
