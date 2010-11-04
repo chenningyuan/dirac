@@ -170,23 +170,6 @@ contains
 
   end subroutine visual_london_init
 
-
-
-
-!  subroutine visual_london_alloc()
-!
-!
-!  end subroutine visual_london_alloc
-!
-!
-!
-!  subroutine visual_london_dealloc()
-!
-!
-!  end subroutine visual_london_dealloc
-
-
-
   subroutine setup_fo_conmat_ao(D_con_ao, ivector)
 !   --------------------------------------------------------------------
     type(matrix)         :: D_con_ao
