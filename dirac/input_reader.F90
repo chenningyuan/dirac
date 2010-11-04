@@ -432,26 +432,22 @@ contains
     end if
 
     if (kw_matches(word, '.2D    ')) then
-      visual_cfg_2d = .true.
-    end if
-
-    if (kw_matches(word, '.PLANE ')) then
-       visual_cfg_plane = .true.
-       read(unit_in, *) visual_cfg_plane_p_origin(1:3)
-       read(unit_in, *) visual_cfg_plane_p_right(1:3)
-       read(unit_in, *) visual_cfg_plane_nr_right
-       read(unit_in, *) visual_cfg_plane_p_top(1:3)
-       read(unit_in, *) visual_cfg_plane_nr_top
+       visual_cfg_2d = .true.
+       read(unit_in, *) visual_cfg_2d_p_origin(1:3)
+       read(unit_in, *) visual_cfg_2d_p_right(1:3)
+       read(unit_in, *) visual_cfg_2d_nr_right
+       read(unit_in, *) visual_cfg_2d_p_top(1:3)
+       read(unit_in, *) visual_cfg_2d_nr_top
     end if
 
     if (kw_matches(word, '.2D_INT')) then
-       visual_cfg_plane_integration = .true.
-       read(unit_in, *) visual_cfg_plane_integration_p_origin(1:3)
-       read(unit_in, *) visual_cfg_plane_integration_p_right(1:3)
-       read(unit_in, *) visual_cfg_plane_integration_nr_right
-       read(unit_in, *) visual_cfg_plane_integration_p_top(1:3)
-       read(unit_in, *) visual_cfg_plane_integration_nr_top
-       read(unit_in, *) visual_cfg_plane_integration_order
+       visual_cfg_2d_integration = .true.
+       read(unit_in, *) visual_cfg_2d_integration_p_origin(1:3)
+       read(unit_in, *) visual_cfg_2d_integration_p_right(1:3)
+       read(unit_in, *) visual_cfg_2d_integration_nr_right
+       read(unit_in, *) visual_cfg_2d_integration_p_top(1:3)
+       read(unit_in, *) visual_cfg_2d_integration_nr_top
+       read(unit_in, *) visual_cfg_2d_integration_order
     end if
 
     if (kw_matches(word, '.3D    ')) then
@@ -516,10 +512,6 @@ contains
       call kw_read(word, visual_cfg_common_factor)
     end if
 
-    if (kw_matches(word, '.2DADD ')) then
-      call kw_read(word, visual_cfg_add_2d)
-    end if
-
     if (kw_matches(word, '.3DADD ')) then
       call kw_read(word, visual_cfg_add_3d)
     end if
@@ -528,27 +520,6 @@ contains
       call kw_read(word, visual_cfg_ncube(1), &
                          visual_cfg_ncube(2), &
                          visual_cfg_ncube(3))
-    end if
-
-    if (kw_matches(word, '.2DORIE')) then
-      call kw_read(word, reply)
-      if(reply(1:2) .EQ. 'XY') then
-        visual_cfg_orientation = 1
-      elseif(reply(1:2) .EQ. 'XZ') then
-        visual_cfg_orientation = 2
-      elseif(reply(1:2) .EQ. 'YZ') then
-        visual_cfg_orientation = 3
-      endif
-    end if
-
-    if (kw_matches(word, '.2DORIG')) then
-      call kw_read(word, visual_cfg_origin_2d(1), &
-                         visual_cfg_origin_2d(2), &
-                         visual_cfg_origin_2d(3))
-    end if
-
-    if (kw_matches(word, '.2DSTEP')) then
-      call kw_read(word, visual_cfg_step_2d)
     end if
 
     if (kw_matches(word, '.GAUGE ')) then

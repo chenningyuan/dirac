@@ -36,22 +36,22 @@ module visual_cfg
 
 
 
-!                     visualization in plane
-   logical, public :: visual_cfg_plane             = .false.
-   real(8), public :: visual_cfg_plane_p_origin(3) = 0.0d0
-   real(8), public :: visual_cfg_plane_p_right(3)  = 0.0d0
-   real(8), public :: visual_cfg_plane_p_top(3)    = 0.0d0
-   integer, public :: visual_cfg_plane_nr_right    = 0
-   integer, public :: visual_cfg_plane_nr_top      = 0
+!                     visualization in 2d
+   logical, public :: visual_cfg_2d             = .false.
+   real(8), public :: visual_cfg_2d_p_origin(3) = 0.0d0
+   real(8), public :: visual_cfg_2d_p_right(3)  = 0.0d0
+   real(8), public :: visual_cfg_2d_p_top(3)    = 0.0d0
+   integer, public :: visual_cfg_2d_nr_right    = 0
+   integer, public :: visual_cfg_2d_nr_top      = 0
    
-!                     integration in plane
-   logical, public :: visual_cfg_plane_integration             = .false.
-   real(8), public :: visual_cfg_plane_integration_p_origin(3) = 0.0d0
-   real(8), public :: visual_cfg_plane_integration_p_right(3)  = 0.0d0
-   real(8), public :: visual_cfg_plane_integration_p_top(3)    = 0.0d0
-   integer, public :: visual_cfg_plane_integration_nr_right    = 0
-   integer, public :: visual_cfg_plane_integration_nr_top      = 0
-   integer, public :: visual_cfg_plane_integration_order       = 0
+!                     integration in 2d
+   logical, public :: visual_cfg_2d_integration             = .false.
+   real(8), public :: visual_cfg_2d_integration_p_origin(3) = 0.0d0
+   real(8), public :: visual_cfg_2d_integration_p_right(3)  = 0.0d0
+   real(8), public :: visual_cfg_2d_integration_p_top(3)    = 0.0d0
+   integer, public :: visual_cfg_2d_integration_nr_right    = 0
+   integer, public :: visual_cfg_2d_integration_nr_top      = 0
+   integer, public :: visual_cfg_2d_integration_order       = 0
 
 
 
@@ -59,11 +59,9 @@ module visual_cfg
 
   logical,       public :: visual_cfg_list               = .false.
   logical,       public :: visual_cfg_line               = .false.
-  logical,       public :: visual_cfg_2d                 = .false.
   logical,       public :: visual_cfg_3d                 = .false.
   logical,       public :: visual_cfg_use_orbital_string = .false.
   logical,       public :: visual_cfg_integrate          = .false.
-  logical,       public :: visual_cfg_2d_integrate          = .false.
   logical,       public :: visual_cfg_radial             = .false.
   logical,       public :: visual_cfg_force_small_ao     = .false.
   logical,       public :: visual_cfg_london             = .false.
@@ -88,10 +86,7 @@ module visual_cfg
   real(8),       public :: visual_cfg_add_3d                             = 4.0d0
   real(8),       public :: visual_cfg_common_factor                      = 1.0d0
   real(8),       public :: visual_cfg_xyz_list(max_nr_points_in_list, 3) = 0.0d0
-  real(8),       public :: visual_cfg_origin_2d(3)                       = 0.0d0
   real(8),       public :: visual_cfg_gauge_origin(3)                    = 0.0d0
-  real(8),       public :: visual_cfg_add_2d                             = 4.0d0
-  real(8),       public :: visual_cfg_step_2d                            = 0.1d0
   real(8),       public :: visual_cfg_line_from(3)                       = 0.0d0
   real(8),       public :: visual_cfg_line_to(3)                         = 0.0d0
 

@@ -508,7 +508,7 @@ contains
     call timtxt('>>>> time used in plot:', (second() - time_start), lupri)
 
     time_start = second()
-    if (visual_cfg_integrate .or. visual_cfg_plane_integration) then
+    if (visual_cfg_integrate .or. visual_cfg_2d_integration) then
        call visual_integration(nr_dmat,     &
                                D,           &
                                nr_dmat_con, &
@@ -563,7 +563,7 @@ contains
       real(8) :: r(3), v(3), px, py, pz
       integer :: ICUBE, jCUBE, kCUBE, IORIENTATION, IPOINT_IN_LIST
       integer :: istep, i, j, k, l, m, ni, nj, nk, nr_steps, IXVECTOR
-      integer :: lunit_2d, lunit_3d, lunit_line, lunit_plane
+      integer :: lunit_3d, lunit_line, lunit_2d
       integer :: ix, iy
       real(8), allocatable :: p(:, :)
 
@@ -577,14 +577,13 @@ contains
 
 !     open files
 
-      lunit_2d    = 13
       lunit_3d    = 14
       lunit_line  = 15
-      lunit_plane = 16
+      lunit_2d = 16
 
-      if (visual_cfg_plane) then
-         open(lunit_plane, &
-              file   = 'plot.plane', &
+      if (visual_cfg_2d) then
+         open(lunit_2d,              &
+              file   = 'plot.2d',    &
               status = 'new',        &
               access = 'sequential', &
               form   = 'formatted')
@@ -594,13 +593,6 @@ contains
 
 
 
-      if (visual_cfg_2d) then
-        open(lunit_2d, &
-     &       file   = 'PLOT_2D', &
-     &       status = 'new', &
-     &       access = 'sequential', &
-     &       form   = 'formatted')
-      end if
 
       if (visual_cfg_3d) then
         open(lunit_3d, &
@@ -694,20 +686,20 @@ contains
         end do
       end if
 
-      if (visual_cfg_plane) then
+      if (visual_cfg_2d) then
 
-         allocate(p(3, (visual_cfg_plane_nr_top + 1)*(visual_cfg_plane_nr_right + 1)))
+         allocate(p(3, (visual_cfg_2d_nr_top + 1)*(visual_cfg_2d_nr_right + 1)))
 
-         call generate_plane(visual_cfg_plane_p_origin, &
-                             visual_cfg_plane_p_top,    &
-                             visual_cfg_plane_p_right,  &
-                             visual_cfg_plane_nr_top,    &
-                             visual_cfg_plane_nr_right,  &
+         call generate_plane(visual_cfg_2d_p_origin, &
+                             visual_cfg_2d_p_top,    &
+                             visual_cfg_2d_p_right,  &
+                             visual_cfg_2d_nr_top,   &
+                             visual_cfg_2d_nr_right, &
                              p)
 
          i = 0
-         do ix = 0, visual_cfg_plane_nr_right
-            do iy = 0, visual_cfg_plane_nr_top
+         do ix = 0, visual_cfg_2d_nr_right
+            do iy = 0, visual_cfg_2d_nr_top
                i = i + 1
                    call get_quantity_in_point(nr_dmat,     &
                                                     D,           &
@@ -719,7 +711,7 @@ contains
                                                     ao,          &
                                                     buffer,      &
                                                     quantity)
-               write(lunit_plane, '(7e18.10)') p(1:3, i),      &
+               write(lunit_2d, '(7e18.10)') p(1:3, i),      &
                                                quantity(0, 1), &
                                                quantity(1, 1), &
                                                quantity(2, 1), &
@@ -731,65 +723,6 @@ contains
 
       end if
 
-      if (visual_cfg_2d) then
-
-        NR_STEPS = 1 + visual_cfg_ADD_2D*2.0d0/visual_cfg_STEP_2D
-
-        DO IORIENTATION = 1,3
-
-          NI = NR_STEPS
-          NJ = NR_STEPS
-          NK = NR_STEPS
-
-          IF(IORIENTATION .EQ. 1) NK = 1   ! 'xy'
-          IF(IORIENTATION .EQ. 2) NJ = 1   ! 'xz'
-          IF(IORIENTATION .EQ. 3) NI = 1   ! 'yz'
-
-          WRITE(LUNIT_2D,'(A)')
-          WRITE(LUNIT_2D,'(A)')  &
-     &             'plane: ' // grid_orientation(IORIENTATION)
-
-          DO I = 1,NI
-            DO J = 1,NJ
-              DO K = 1,NK
-
-        PX = visual_cfg_ORIGIN_2D(1) - visual_cfg_ADD_2D  &
-     &          + (I-1)*visual_cfg_STEP_2D
-        PY = visual_cfg_ORIGIN_2D(2) - visual_cfg_ADD_2D &
-     &          + (j-1)*visual_cfg_STEP_2D
-        PZ = visual_cfg_ORIGIN_2D(3) - visual_cfg_ADD_2D &
-     &          + (k-1)*visual_cfg_STEP_2D
-
-                IF(IORIENTATION .EQ. 1) &                        ! 'xy'
-     &                     PZ = visual_cfg_ORIGIN_2D(3)
-                IF(IORIENTATION .EQ. 2) &                        ! 'xz'
-     &                     PY = visual_cfg_ORIGIN_2D(2)
-                IF(IORIENTATION .EQ. 3) &                        ! 'yz'
-     &                     PX = visual_cfg_ORIGIN_2D(1)
-
-
-                   call get_quantity_in_point(nr_dmat,     &
-                                                    D,           &
-                                                    nr_dmat_con, &
-                                                    D_con,       &
-     &                                       PX,PY,PZ, &
-                                                    ao,          &
-                                                    buffer,      &
-                                                    quantity)
-
-
-!               write to file
-
-                WRITE(LUNIT_2D,'(7E18.10)') PX, PY, PZ, &
-     &                                      QUANTITY(0,1), &
-     &                                      QUANTITY(1,1), &
-     &                                      QUANTITY(2,1), &
-     &                                      QUANTITY(3,1)
-              ENDDO
-            ENDDO
-          ENDDO
-        ENDDO
-      ENDIF !2D
 
       if (visual_cfg_3d) then
 
@@ -902,10 +835,9 @@ contains
 
 !     close files
 
-      if (visual_cfg_2d)    close(lunit_2d,    status = 'keep')
       if (visual_cfg_3d)    close(lunit_3d,    status = 'keep')
       if (visual_cfg_line)  close(lunit_line,  status = 'keep')
-      if (visual_cfg_plane) close(lunit_plane, status = 'keep')
+      if (visual_cfg_2d) close(lunit_2d, status = 'keep')
 
       end subroutine
 
@@ -1168,8 +1100,8 @@ contains
    subroutine generate_plane(p_origin, &
                              p_top,    &
                              p_right,  &
-                             nr_top,    &
-                             nr_right,  &
+                             nr_top,   &
+                             nr_right, &
                              p)
 
 !     --------------------------------------------------------------------------

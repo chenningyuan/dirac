@@ -128,33 +128,33 @@ contains
       ENDIF !3D
 
 
-      if (visual_cfg_plane_integration) then
+      if (visual_cfg_2d_integration) then
 
          call around('2D Gauss-Lobatto numerical integration')
 
          write(lupri, *)
          write(lupri, '(6x, a)')          'plane is spanned by 3 points:'
          write(lupri, *)                  
-         write(lupri, '(6x, a, 3f10.4)')  '"origin" ', visual_cfg_plane_integration_p_origin
-         write(lupri, '(6x, a, 3f10.4)')  '"right"  ', visual_cfg_plane_integration_p_right
-         write(lupri, '(6x, a, 3f10.4)')  '"top"    ', visual_cfg_plane_integration_p_top
+         write(lupri, '(6x, a, 3f10.4)')  '"origin" ', visual_cfg_2d_integration_p_origin
+         write(lupri, '(6x, a, 3f10.4)')  '"right"  ', visual_cfg_2d_integration_p_right
+         write(lupri, '(6x, a, 3f10.4)')  '"top"    ', visual_cfg_2d_integration_p_top
          write(lupri, *)                  
-         write(lupri, '(6x, a, i4)')      'nr of pieces to "right"', visual_cfg_plane_integration_nr_right
-         write(lupri, '(6x, a, i4)')      'nr of pieces to "top"  ', visual_cfg_plane_integration_nr_top
+         write(lupri, '(6x, a, i4)')      'nr of pieces to "right"', visual_cfg_2d_integration_nr_right
+         write(lupri, '(6x, a, i4)')      'nr of pieces to "top"  ', visual_cfg_2d_integration_nr_top
          write(lupri, *)                  
-         write(lupri, '(6x, a, i22)')     'order', visual_cfg_plane_integration_order
+         write(lupri, '(6x, a, i22)')     'order', visual_cfg_2d_integration_order
          write(lupri, *)
          write(lupri, '(a12, a25, 2a20)') 'scalar', 'x-component', 'y-component', 'z-component'
          write(lupri, *)
 
          lunit = 45
 
-         call lobatto_2d_grid(visual_cfg_plane_integration_order,    &
-                              visual_cfg_plane_integration_p_origin, &
-                              visual_cfg_plane_integration_p_right,  &
-                              visual_cfg_plane_integration_p_top,    &
-                              visual_cfg_plane_integration_nr_right, &
-                              visual_cfg_plane_integration_nr_top,   &
+         call lobatto_2d_grid(visual_cfg_2d_integration_order,    &
+                              visual_cfg_2d_integration_p_origin, &
+                              visual_cfg_2d_integration_p_right,  &
+                              visual_cfg_2d_integration_p_top,    &
+                              visual_cfg_2d_integration_nr_right, &
+                              visual_cfg_2d_integration_nr_top,   &
                               lunit)
 
          rewind lunit
