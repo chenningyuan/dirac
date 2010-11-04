@@ -23,6 +23,7 @@ module visual_in_point
 
   use memory_allocator
   use visual_cfg
+  use visual_london
   use codata
   use ao_eval
   use density_eval
@@ -55,25 +56,39 @@ module visual_in_point
 
 contains
 
-      SUBROUTINE GET_QUANTITY_IN_POINT(nr_dmat, D, &
-     &                                 ao, &
-     &                                 PX,PY,PZ, &
-     &                                 buffer, &
-     &                                 QUANTITY_ADDMEUP)
+   subroutine get_quantity_in_point(nr_dmat,     &
+                                    D,           &
+                                    nr_dmat_con, &
+                                    D_con,       &
+                                    px,          &
+                                    py,          &
+                                    pz,          &
+                                    ao,          &
+                                    buffer,      &
+                                    result)
 
-      integer, intent(in) :: nr_dmat
-      type(matrix)        :: D(nr_dmat)
-      real(8) ::          AO(*)
-      real(8) ::          buffer(*)
+!     --------------------------------------------------------------------------
+      integer,     intent(in)  :: nr_dmat
+      type(matrix)             :: D(nr_dmat)
+      integer,     intent(in)  :: nr_dmat_con
+      type(matrix)             :: D_con(nr_dmat_con)
+      real(8),     intent(in)  :: px
+      real(8),     intent(in)  :: py
+      real(8),     intent(in)  :: pz
+      real(8)                  :: ao(*)
+      real(8)                  :: buffer(*)
+      real(8),     intent(out) :: result(0:3)
+!     --------------------------------------------------------------------------
+
+
       real(8) ::          QUANTITY(0:3)
-      real(8) ::          QUANTITY_ADDMEUP(0:3)
       real(8) ::          VECTOR_A(3)
       real(8) ::          VECTOR_B(3)
       real(8) :: factor, f, elf_chi, tau, matrix_33(3, 3)
       real(8) :: density, density_gradient(3), density_gradient_squared
       real(8) :: RSQ
       real(8) :: rxx, rxy, rxz, ryy, ryz, rzz
-      real(8) :: px, py, pz, ddot, scalar
+      real(8) :: ddot, scalar
       real(8) :: rx, ry, rz, t, b, distance_to_origin
       integer :: ic, iq, IXVECTOR, ixyz, imat
 
@@ -81,7 +96,7 @@ contains
 
       distance_to_origin = dsqrt(px*px + py*py + pz*pz)
 
-      CALL DZERO(QUANTITY_ADDMEUP,4)
+      result = 0.0d0
 
       DO IXVECTOR = 1, visual_cfg_NR_XVECTORS
         imat = vector_to_matrix(ixvector)
@@ -219,12 +234,22 @@ contains
 !       ==========================================
 
         if (visual_cfg_iq_xvector(ixvector) == iq_j) then
-           call get_j(vector_a,                          &
-                      visual_cfg_irep_xvector(ixvector), &
-                      D(imat)%nrow,                      &
-                      D(imat)%elms,                      &
-                      buffer,                            &
-                      ao)
+           if (visual_cfg_london) then
+              call get_jblao(ixvector,            &
+                             nr_dmat, D,          &
+                             nr_dmat_con, D_con,  &
+                             ao,                  &
+                             buffer,              &
+                             px, py, pz,          &
+                             vector_a)
+           else
+              call get_j(vector_a,                          &
+                         visual_cfg_irep_xvector(ixvector), &
+                         D(imat)%nrow,                      &
+                         D(imat)%elms,                      &
+                         buffer,                            &
+                         ao)
+           end if
 
            quantity(1) = quantity(1) + vector_a(1)
            quantity(2) = quantity(2) + vector_a(2)
@@ -347,12 +372,22 @@ contains
             (visual_cfg_iq_xvector(ixvector) == iq_nucdipy) .or. &
             (visual_cfg_iq_xvector(ixvector) == iq_nucdipz)) then
 
-           call get_j(vector_a,                          &
-                      visual_cfg_irep_xvector(ixvector), &
-                      D(imat)%nrow,                      &
-                      D(imat)%elms,                      &
-                      buffer,                            &
-                      ao)
+           if (visual_cfg_london) then
+              call get_jblao(ixvector,            &
+                             nr_dmat, D,          &
+                             nr_dmat_con, D_con,  &
+                             ao,                  &
+                             buffer,              &
+                             px, py, pz,          &
+                             vector_a)
+           else
+              call get_j(vector_a,                          &
+                         visual_cfg_irep_xvector(ixvector), &
+                         D(imat)%nrow,                      &
+                         D(imat)%elms,                      &
+                         buffer,                            &
+                         ao)
+           end if
 
            rx = px - cord(1, visual_cfg_ioption_xvector(ixvector))
            ry = py - cord(2, visual_cfg_ioption_xvector(ixvector))
@@ -417,10 +452,10 @@ contains
         if (visual_cfg_radial) then
            f = f*(distance_to_origin**2.0d0)
         end if
-        quantity_addmeup(0) = quantity_addmeup(0) + f*quantity(0)
-        quantity_addmeup(1) = quantity_addmeup(1) + f*quantity(1)
-        quantity_addmeup(2) = quantity_addmeup(2) + f*quantity(2)
-        quantity_addmeup(3) = quantity_addmeup(3) + f*quantity(3)
+        result(0) = result(0) + f*quantity(0)
+        result(1) = result(1) + f*quantity(1)
+        result(2) = result(2) + f*quantity(2)
+        result(3) = result(3) + f*quantity(3)
 
       end do
 

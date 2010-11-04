@@ -312,33 +312,16 @@ contains
 
       DO IPOINT = 1,NR_POINTS
 
-#ifdef MOD_UNRELEASED
-        if (visual_cfg_london) then
-          if (.not. present(D_con) .or. nr_dmat_con == 0)  &
-             call quit("integrate_quantity: no D_con or nr_dmat_con=0")
-
-          call get_quantity_lao_in_point(nr_dmat, D,         &
-                                         nr_dmat_con, D_con, &
-                                         ao,                 &
-                                         px(ipoint),         &
-                                         py(ipoint),         &
-                                         pz(ipoint),         &
-                                         buffer,             &
-                                         quantity)
-        else
-#endif
-
-          CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &
-     &                               AO, &
-     &                               PX(IPOINT), &
-     &                               PY(IPOINT), &
-     &                               PZ(IPOINT), &
-     &                               buffer, &
-     &                               QUANTITY)
-
-#ifdef MOD_UNRELEASED
-        end if
-#endif
+           call get_quantity_in_point(nr_dmat,     &
+                                      D,           &
+                                      nr_dmat_con, &
+                                      D_con,       &
+                                      px(ipoint),  &
+                                      py(ipoint),  &
+                                      pz(ipoint),  &
+                                      ao,          &
+                                      buffer,      &
+                                      quantity)
 
         CALL DAXPY(4,WEIGHT(IPOINT),QUANTITY,1, &
      &                              QUANTITY_INTEGRAL,1)

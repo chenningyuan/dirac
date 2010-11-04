@@ -577,6 +577,13 @@ contains
       integer :: ix, iy
       real(8), allocatable :: p(:, :)
 
+#ifdef MOD_UNRELEASED
+      if (visual_cfg_london) then
+         if (.not. present(D_con) .or. nr_dmat_con == 0) then
+            call quit("no D_con or nr_dmat_con=0")
+         end if
+      end if
+#endif
 
 !     open files
 
@@ -637,31 +644,17 @@ contains
 
         DO IPOINT_IN_LIST = 1, visual_cfg_nr_points_in_list
 
-#ifdef MOD_UNRELEASED
-                if (visual_cfg_london) then
-                  if (.not. present(D_con) .or. nr_dmat_con == 0) &
-                     call quit("no D_con or nr_dmat_con=0")
-                  call get_quantity_lao_in_point(nr_dmat, D,         &
-                                                 nr_dmat_con, D_con, &
-                                                 ao,                 &
-                                                 visual_cfg_xyz_list(ipoint_in_list, 1), &
-                                                 visual_cfg_xyz_list(ipoint_in_list, 2), &
-                                                 visual_cfg_xyz_list(ipoint_in_list, 3), &
-                                                 buffer,             &
-                                                 quantity)
-                else
-#endif
+                   call get_quantity_in_point(nr_dmat,     &
+                                                    D,           &
+                                                    nr_dmat_con, &
+                                                    D_con,       &
+                  visual_cfg_XYZ_LIST(IPOINT_IN_LIST,1), &
+                  visual_cfg_XYZ_LIST(IPOINT_IN_LIST,2), &
+                  visual_cfg_XYZ_LIST(IPOINT_IN_LIST,3), &
+                                                    ao,          &
+                                                    buffer,      &
+                                                    quantity)
 
-          CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &
-     &                               AO, &
-     &            visual_cfg_XYZ_LIST(IPOINT_IN_LIST,1), &
-     &            visual_cfg_XYZ_LIST(IPOINT_IN_LIST,2), &
-     &            visual_cfg_XYZ_LIST(IPOINT_IN_LIST,3), &
-     &                               buffer, &
-     &                               QUANTITY)
-#ifdef MOD_UNRELEASED
-          end if
-#endif
 
           WRITE(LUPRI,'(3E14.6,4E18.10)')  &
      &             visual_cfg_XYZ_LIST(IPOINT_IN_LIST,1), &
@@ -691,11 +684,14 @@ contains
 
           r = visual_cfg_line_from + istep*v
 
-          call get_quantity_in_point(nr_dmat, D, &
-     &                               ao, &
+                   call get_quantity_in_point(nr_dmat,     &
+                                                    D,           &
+                                                    nr_dmat_con, &
+                                                    D_con,       &
      &                               r(1), r(2), r(3), &
-     &                               buffer, &
-     &                               quantity)
+                                                    ao,          &
+                                                    buffer,      &
+                                                    quantity)
 
           write(lunit_line, '(7e18.10)') r(1),  &
      &                                   r(2), &
@@ -723,34 +719,16 @@ contains
          do ix = 0, visual_cfg_plane_n_right
             do iy = 0, visual_cfg_plane_n_top
                i = i + 1
-#ifdef MOD_UNRELEASED
-               if (visual_cfg_london) then
-                  if (.not. present(D_con) .or. nr_dmat_con == 0) then
-                     call quit("no D_con or nr_dmat_con = 0")
-                  end if
-                  call get_quantity_lao_in_point(nr_dmat,     &
-                                                 D,           &
-                                                 nr_dmat_con, &
-                                                 D_con,       &
-                                                 ao,          &
-                                                 p(1, i),     &
-                                                 p(2, i),     &
-                                                 p(3, i),     &
-                                                 buffer,      &
-                                                 quantity)
-               else
-#endif
-                  call get_quantity_in_point(nr_dmat, &
-                                             D,       &
-                                             ao,      &
+                   call get_quantity_in_point(nr_dmat,     &
+                                                    D,           &
+                                                    nr_dmat_con, &
+                                                    D_con,       &
                                              p(1, i), &
                                              p(2, i), &
                                              p(3, i), &
-                                             buffer,  &
-                                             quantity)
-#ifdef MOD_UNRELEASED
-               end if
-#endif
+                                                    ao,          &
+                                                    buffer,      &
+                                                    quantity)
                write(lunit_plane, '(7e18.10)') p(1:3, i),      &
                                                quantity(0, 1), &
                                                quantity(1, 1), &
@@ -800,26 +778,14 @@ contains
      &                     PX = visual_cfg_ORIGIN_2D(1)
 
 
-#ifdef MOD_UNRELEASED
-                if (visual_cfg_london) then
-                  if (.not. present(D_con) .or. nr_dmat_con == 0) &
-                     call quit("no D_con or nr_dmat_con=0")
-                  call get_quantity_lao_in_point(nr_dmat, D,         &
-                                                 nr_dmat_con, D_con, &
-                                                 ao,                 &
-                                                 px, py, pz,         &
-                                                 buffer,             &
-                                                 quantity)
-                else
-#endif
-                  CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &
-     &                                       ao, &
+                   call get_quantity_in_point(nr_dmat,     &
+                                                    D,           &
+                                                    nr_dmat_con, &
+                                                    D_con,       &
      &                                       PX,PY,PZ, &
-     &                                       buffer, &
-     &                                       QUANTITY)
-#ifdef MOD_UNRELEASED
-                end if
-#endif
+                                                    ao,          &
+                                                    buffer,      &
+                                                    quantity)
 
 
 !               write to file
@@ -921,28 +887,16 @@ contains
 !             zero weight is so that it does not mess up results
 !             write(lunit_3d, '(4d20.12)') px, py, pz, 0.0d0
 
-#ifdef MOD_UNRELEASED
-              if (visual_cfg_london) then
-                if (.not. present(D_con) .or. nr_dmat_con == 0) &
-                   call quit("no D_con or nr_dmat_con=0")
-                call get_quantity_lao_in_point(nr_dmat, D,         &
-                                               nr_dmat_con, D_con, &
-                                               ao,                 &
-                                               px, py, pz,         &
-                                               buffer,             &
-                                               quantity(0,kcube))
-              else
-#endif
 
-                CALL GET_QUANTITY_IN_POINT(nr_dmat, D, &
-     &                                     ao, &
-     &                                     PX,PY,PZ, &
-     &                                     buffer, &
+                   call get_quantity_in_point(nr_dmat,     &
+                                                    D,           &
+                                                    nr_dmat_con, &
+                                                    D_con,       &
+     &                                       PX,PY,PZ, &
+                                                    ao,          &
+                                                    buffer,      &
      &                                     QUANTITY(0,KCUBE))
 
-#ifdef MOD_UNRELEASED
-              end if
-#endif
 
             ENDDO
 
