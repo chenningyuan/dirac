@@ -49,7 +49,8 @@ module visual_cfg
    real(8), public :: visual_cfg_plane_integration_p_origin(3) = 0.0d0
    real(8), public :: visual_cfg_plane_integration_p_right(3)  = 0.0d0
    real(8), public :: visual_cfg_plane_integration_p_top(3)    = 0.0d0
-   integer, public :: visual_cfg_plane_integration_nr_pieces   = 0
+   integer, public :: visual_cfg_plane_integration_nr_right    = 0
+   integer, public :: visual_cfg_plane_integration_nr_top      = 0
    integer, public :: visual_cfg_plane_integration_order       = 0
 
 

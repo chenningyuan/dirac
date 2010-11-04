@@ -130,33 +130,35 @@ contains
 
       if (visual_cfg_plane_integration) then
 
-         CALL AROUND('2D Gauss-Lobatto numerical integration')
+         call around('2D Gauss-Lobatto numerical integration')
 
-         WRITE(LUPRI,'(A)')
-         WRITE(LUPRI,'(A12,A25,2A20,A14,A13)') 'scalar', &
-     &                                         'x-component', &
-     &                                         'y-component', &
-     &                                         'z-component', &
-     &                                         'pieces', &
-     &                                         'order'
-         WRITE(LUPRI,'(A)')
+         write(lupri, *)
+         write(lupri, '(6x, a)')          'plane is spanned by 3 points:'
+         write(lupri, *)                  
+         write(lupri, '(6x, a, 3f10.4)')  '"origin" ', visual_cfg_plane_integration_p_origin
+         write(lupri, '(6x, a, 3f10.4)')  '"right"  ', visual_cfg_plane_integration_p_right
+         write(lupri, '(6x, a, 3f10.4)')  '"top"    ', visual_cfg_plane_integration_p_top
+         write(lupri, *)                  
+         write(lupri, '(6x, a, i4)')      'nr of pieces to "right"', visual_cfg_plane_integration_nr_right
+         write(lupri, '(6x, a, i4)')      'nr of pieces to "top"  ', visual_cfg_plane_integration_nr_top
+         write(lupri, *)                  
+         write(lupri, '(6x, a, i22)')     'order', visual_cfg_plane_integration_order
+         write(lupri, *)
+         write(lupri, '(a12, a25, 2a20)') 'scalar', 'x-component', 'y-component', 'z-component'
+         write(lupri, *)
 
-         LUNIT     = 45
+         lunit = 45
 
-         NR_PIECES = visual_cfg_plane_integration_nr_pieces
-         N         = visual_cfg_plane_integration_order
-         DIMI      = 10.0D0
-         DIMJ      = 10.0D0
-
-         call lobatto_2d_grid(nr_pieces, &
-                              n,         &
-                          visual_cfg_plane_integration_p_origin, &
-                          visual_cfg_plane_integration_p_right, &
-                          visual_cfg_plane_integration_p_top, &
+         call lobatto_2d_grid(visual_cfg_plane_integration_order,    &
+                              visual_cfg_plane_integration_p_origin, &
+                              visual_cfg_plane_integration_p_right,  &
+                              visual_cfg_plane_integration_p_top,    &
+                              visual_cfg_plane_integration_nr_right, &
+                              visual_cfg_plane_integration_nr_top,   &
                               lunit)
 
-         REWIND LUNIT
-         READ(LUNIT) NR_POINTS
+         rewind lunit
+         read(lunit) nr_points
 
          call alloc(x, nr_points)
          call alloc(y, nr_points)
@@ -183,11 +185,10 @@ contains
 
          CLOSE(LUNIT,STATUS = 'DELETE')
 
-         WRITE(LUPRI,'(4E20.10,I8,I14)') QUANTITY_INTEGRAL(0), &
-     &                                   QUANTITY_INTEGRAL(1), &
-     &                                   QUANTITY_INTEGRAL(2), &
-     &                                   QUANTITY_INTEGRAL(3), &
-     &                                   NR_PIECES, N
+         WRITE(LUPRI,'(4E20.10)') QUANTITY_INTEGRAL(0), &
+     &                            QUANTITY_INTEGRAL(1), &
+     &                            QUANTITY_INTEGRAL(2), &
+     &                            QUANTITY_INTEGRAL(3)
 
          WRITE(LUPRI,'(A)')
          CALL PRSYMB(LUPRI,'-',100,0)
@@ -383,24 +384,29 @@ contains
       END subroutine
 
 
-   subroutine lobatto_2d_grid(nr_pieces, &
-                              n,         &
+
+
+
+   subroutine lobatto_2d_grid(n,         &
                               p_origin,  &
                               p_right,   &
                               p_top,     &
+                              nr_right,  &
+                              nr_top,    &
                               u)
 
       implicit none
 
 !     --------------------------------------------------------------------------
-      integer, intent(in)  :: nr_pieces
       integer, intent(in)  :: n
       real(8), intent(in)  :: p_origin(3)
       real(8), intent(in)  :: p_right(3)
       real(8), intent(in)  :: p_top(3)
+      integer, intent(in)  :: nr_right
+      integer, intent(in)  :: nr_top
       integer, intent(in)  :: u
 !     --------------------------------------------------------------------------
-      integer              :: ipoint, ipiece, jpiece, i, j, m
+      integer              :: ipoint, ix, iy, i, j
       character(30)        :: file_name
       real(8), allocatable :: rx(:), ry(:), rz(:), rw(:), x(:), w(:)
       real(8)              :: vx(3), vy(3), p_off(3), p(3)
@@ -420,33 +426,30 @@ contains
       sx = (vx(1)*vx(1) + vx(2)*vx(2) + vx(3)*vx(3))**0.5d0
       sy = (vy(1)*vy(1) + vy(2)*vy(2) + vy(3)*vy(3))**0.5d0
 
-      m = nr_pieces*n
-
-      call alloc(x,  m)
-      call alloc(w,  m)
-      call alloc(rx, m*m)
-      call alloc(ry, m*m)
-      call alloc(rz, m*m)
-      call alloc(rw, m*m)
+      call alloc(x,  n)
+      call alloc(w,  n)
+      call alloc(rx, nr_right*nr_top*n*n)
+      call alloc(ry, nr_right*nr_top*n*n)
+      call alloc(rz, nr_right*nr_top*n*n)
+      call alloc(rw, nr_right*nr_top*n*n)
 
       call lobatto_1d_grid(n, x, w)
 
       ipoint = 0
-      do ipiece = 0, nr_pieces-1
-         do jpiece = 0, nr_pieces-1
-            p_off = p_origin + ipiece*vx/nr_pieces + jpiece*vy/nr_pieces
+      do ix = 0, nr_right - 1
+         do iy = 0, nr_top - 1
+            p_off = p_origin + ix*vx/nr_right + iy*vy/nr_top
             do i = 1, n
                do j = 1, n
                   ipoint = ipoint + 1
 
-                  p = p_off                             &
-                    + 0.5d0*(x(i) + 1.0d0)*vx/nr_pieces &
-                    + 0.5d0*(x(j) + 1.0d0)*vy/nr_pieces
+                  p = p_off + 0.5d0*(x(i) + 1.0d0)*vx/nr_right  &
+                            + 0.5d0*(x(j) + 1.0d0)*vy/nr_top
 
                   rx(ipoint) = p(1)
                   ry(ipoint) = p(2)
                   rz(ipoint) = p(3)
-                  rw(ipoint) = w(i)*w(j)*sx*sy/((2.0d0*nr_pieces)**2.0d0)
+                  rw(ipoint) = w(i)*w(j)*sx*sy/(4.0d0*nr_right*nr_top)
                end do
             end do
          end do
