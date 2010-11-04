@@ -85,38 +85,16 @@ contains
 
         call reaqua(x, y, z, w, lunit, nr_points)
 
-#ifdef MOD_UNRELEASED
-!temporarily - gosia: fixme make all in 1 call
-        if (visual_cfg_london) then
-
-          if (.not. present(D_con) .or. nr_dmat_con == 0)  &
-             call quit("visual_integration: no D_con or nr_dmat_con=0")
-
-          CALL INTEGRATE_QUANTITY(nr_dmat, D,  &
-     &                            AO, &
-     &                            x, y, z, &
-     &                            buffer, &
-     &                            QUANTITY_INTEGRAL, &
-     &                            w, &
-     &                            NR_POINTS, &
-     &                            nr_dmat_con, &
-     &                            D_con=D_con)
-
-        else
-#endif
 
           CALL INTEGRATE_QUANTITY(nr_dmat, D, &
-     &                            AO, &
-     &                            x, y, z, &
-     &                            buffer, &
-     &                            QUANTITY_INTEGRAL, &
-     &                            w, &
-     &                            NR_POINTS, &
-     &                            0)
+                                  nr_dmat_con, D_con, &
+                                  AO, &
+                                  x, y, z, &
+                                  buffer, &
+                                  QUANTITY_INTEGRAL, &
+                                  w, &
+                                  NR_POINTS)
 
-#ifdef MOD_UNRELEASED
-        end if
-#endif
 
         call dealloc(x)
         call dealloc(y)
@@ -203,35 +181,14 @@ contains
 
             CALL DZERO(QUANTITY_INTEGRAL,4)
 
-#ifdef MOD_UNRELEASED
-!temporarily - gosia: fixme make all in 1 call
-            if (visual_cfg_london) then
-
-              if (.not. present(D_con) .or. nr_dmat_con == 0)  &
-                 call quit("visual_integration: no D_con or nr_dmat_con=0")
-
-              CALL INTEGRATE_QUANTITY(nr_dmat, D,  &
-     &                                AO, &
-     &                                x, y, z, &
-     &                                buffer, &
-     &                                QUANTITY_INTEGRAL, &
-     &                                w, &
-     &                                NR_POINTS, &
-     &                                nr_dmat_con, &
-     &                                D_con=D_con)
-
-            else
-#endif
-              CALL INTEGRATE_QUANTITY(nr_dmat, D, &
-     &                                AO, &
-     &                                x, y, z, &
-     &                                buffer, &
-     &                                QUANTITY_INTEGRAL, &
-     &                                w, &
-     &                                NR_POINTS, 0)
-#ifdef MOD_UNRELEASED
-            end if
-#endif
+          CALL INTEGRATE_QUANTITY(nr_dmat, D, &
+                                  nr_dmat_con, D_con, &
+                                  AO, &
+                                  x, y, z, &
+                                  buffer, &
+                                  QUANTITY_INTEGRAL, &
+                                  w, &
+                                  NR_POINTS)
 
             call dealloc(x)
             call dealloc(y)
@@ -274,22 +231,15 @@ contains
 
       RETURN
       END subroutine
-!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!     /* INTEGRATE_QUANTITY */
+
       SUBROUTINE INTEGRATE_QUANTITY(nr_dmat, D, &
-     &                              AO, &
-     &                              PX,PY,PZ, &
-     &                              buffer, &
-     &                              QUANTITY_INTEGRAL, &
-     &                              WEIGHT, &
-     &                              NR_POINTS, &
-     &                              nr_dmat_con, D_con)
-!=======================================================================
-!     description in here ...
-!-----------------------------------------------------------------------
-!                                                           radovan bast
-!                                              last revision: april 2007
-!=======================================================================
+                                    nr_dmat_con, D_con, &
+                                    AO, &
+                                    PX,PY,PZ, &
+                                    buffer, &
+                                    QUANTITY_INTEGRAL, &
+                                    WEIGHT, &
+                                    NR_POINTS)
 
 #include "implicit.h"
 #include "priunit.h"
@@ -299,7 +249,7 @@ contains
 
       integer, intent(in) :: nr_dmat, nr_dmat_con
       type(matrix)        :: D(nr_dmat)
-      type(matrix), optional :: D_con(nr_dmat_con)
+      type(matrix)        :: D_con(nr_dmat_con)
       dimension AO(*), &
      &          PX(*), &
      &          PY(*), &
