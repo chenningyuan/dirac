@@ -2089,7 +2089,8 @@ C
 #include "nuclei.h"
       DIMENSION CSTEP(MXCOOR), CORDNW(3,MXCENT)
       CHARACTER*1 MARK
-      INTEGER     START
+      LOGICAL ILL_NUMBER ! external function
+      INTEGER  START
 C
 C     We have to construct the updated geometry before printing it
 C
@@ -2097,6 +2098,11 @@ C
       DO 10 J = 1, NUCIND
          DO 20 I = 1, 3
             CORDNW(I,J) = CORD(I,J) + CSTEP(IJ)
+            IF ( ILL_NUMBER(CORDNW(I,J)) ) THEN
+               WRITE(LUPRI,*) 'I,J,CORD(I,J),CSTEP(IJ):',
+     &          I,J,CORD(I,J),CSTEP(IJ)
+               CALL QUIT('ill number detected !')
+            ENDIF
             IJ = IJ + 1
  20      CONTINUE
  10   CONTINUE

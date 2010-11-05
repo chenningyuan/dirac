@@ -33,3 +33,16 @@ C     found.
       enddo
       ifind = 0
       end
+
+      LOGICAL FUNCTION ILL_NUMBER(x)
+! Returns true if the input number is "ill", NaN,+Inf or -Inf.
+! Calls internal C-function "is_ill_number(x)" in gp/gpc.c
+      real*8, intent(in) :: x
+      external :: is_ill_number
+      if (is_ill_number(x) .ne. 0) then
+          ILL_NUMBER = .True.
+      else
+          ILL_NUMBER = .False.
+      endif
+      return
+      end 

@@ -45,6 +45,7 @@
 #include <sys/utsname.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#include <math.h>
 #include "patchlevel.h"
 #include "compinfo.h"
 #include "fortran_interface.h"
@@ -381,4 +382,18 @@ double* malloc_(fortran_int_t cnt)
 void crash_(void)
 {
   *(int *)0 = 0;
+}
+
+/*
+ Often  we need to detect "ill" real numbers - NaN, +Inf, -Inf.
+ For that we use C <math.h> functions isnan(x), isinf(x).
+ since not all Fortran compilers have these, IMHO(MI) functions.
+*/
+int is_ill_number_(double x)
+{
+if (isnan(x) != 0 || isinf(x) ==-1 || isinf(x) ==+1)
+{
+ return 1;
+}
+else{return 0;}
 }
