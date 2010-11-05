@@ -1,4 +1,6 @@
-DIRAC serial allocating 64000000 words (488 MB) of memory
+===========================================================================================
+Size of all static allocations (pam script) : 92.723 MB
+DIRAC master    (fe6) allocating 104857600 words (800 MB) of memory
  ******************************************************************************
  *                                                                            *
  *                                O U T P U T                                 *
@@ -68,44 +70,48 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
  MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
  ******************************************************************************
  *                                                                            *
- *         =======================================================            *
+ *         =========================================================          *
  *                     Program for Atomic and Molecular                       *
- *          Direct Iterative Relativistic Allelectron Calculations            *
- *         =======================================================            *
+ *          Direct Iterative Relativistic All-electron Calculations           *
+ *         =========================================================          *
  *                                                                            *
- *                        VERSION 08.00  17 September 2008                    *
+ *                      VERSION 10.00  10 October 2010                        *
  *                                                                            *
  ******************************************************************************
  *                                                                            *
  *    Written by:                                                             *
  *                                                                            *
+ *    Trond Saue               Université P. Sabatier, Toulouse  France       *
  *    Lucas Visscher           VU University Amsterdam           Netherlands  *
- *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *
- *    Trond Saue               CNRS/ULP Strasbourg               France       *
+ *    Hans Jørgen Aa. Jensen   University of Southern Denmark    Denmark      *
  *                                                                            *
- *    with new contributions to DIRAC08 from:                                 *
+ *    with new contributions since the DIRAC08 release from:                  *
  *                                                                            *
- *    Radovan Bast             University of Tromsoe             Norway       *
- *    Sebastien Dubillard      CNRS/ULP Strasbourg               France       *
+ *    Radovan Bast             University of Tromsø              Norway       *
  *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *
- *    Ulf Ekstrom              VU University Amsterdam           Netherlands  *
+ *    Ulf Ekström              VU University Amsterdam           Netherlands  *
  *    Ephraim Eliav            University of Tel Aviv            Israel       *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark      *
  *    Timo Fleig               Université P. Sabatier, Toulouse  France       *
- *    Andre S. P. Gomes        VU University Amsterdam           Netherlands  *
- *    Trygve U. Helgaker       University of Oslo                Norway       *
- *    Johan Henriksson         Linkoeping University             Sweden       *
- *    Miroslav Ilias           University of Zilina              Slovakia     *
- *    Christoph R. Jacob       ETH Zurich                        Switzerland  *
- *    Stefan Knecht            University of Duesseldorf         Germany      *
- *    Patrick Norman           Linkoeping University             Sweden       *
+ *    Andre S. P. Gomes        CNRS/Universite Lille 1           France       *
+ *    Johan Henriksson         Linkôping University              Sweden       *
+ *    Miroslav Ilias           Matej Bel University              Slovakia     *
+ *    Christoph R. Jacob       Karlsruhe Institute of Technology Germany      *
+ *    Stefan Knecht            CNRS/Université de Strasbourg     France       *
+ *    Huliyar Nataraj          BME/Budapest Univ. Tech. & Econ.  Hungary      *
+ *    Patrick Norman           Linköping University              Sweden       *
  *    Jeppe Olsen              Aarhus University                 Denmark      *
  *    Markus Pernpointner      University of Heidelberg          Germany      *
- *    Kenneth Ruud             University of Tromsoe             Norway       *
- *    Pawel Salek              Stockholm Inst. of Technology     Sweden       *
+ *    Kenneth Ruud             University of Tromsø              Norway       *
+ *    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany      *
  *    Jetze Sikkema            VU University Amsterdam           Netherlands  *
+ *    Andreas Thorvaldsen      University of Tromsø              Norway       *
+ *    Jørn Thyssen             University of Southern Denmark    Denmark      *
+ *    Sebastien Villaume       Linköping University              Sweden       *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan        *
  *                                                                            *
  *    For the complete list of contributors to the DIRAC code see our         *
- *    website http://dirac.chem.sdu.dk                                        *
+ *    website http://dirac.chem.vu.nl                                         *
  *                                                                            *
  *    This is an experimental code. The authors accept no responsibility      *
  *    for the performance of the code or for the correctness of the results.  *
@@ -118,32 +124,33 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
  *    appropriate citation would be:                                          *
  *                                                                            *
  *    DIRAC, a relativistic ab initio electronic structure program,           *
- *    Release DIRAC08 (2008),                                                 *
- *    written by L. Visscher, H. J. Aa. Jensen, and T. Saue,                  *
- *    with new contributions from R. Bast, S. Dubillard, K. G. Dyall,         *
- *    U. Ekstrom, E. Eliav, T. Fleig, A. S. P. Gomes, T. U. Helgaker,         *
- *    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, P. Norman,            *
- *    J. Olsen, M. Pernpointner, K. Ruud, P. Salek, and J. Sikkema            *
- *    (see http://dirac.chem.sdu.dk).                                         *
+ *    Release DIRAC10 (2010),                                                 *
+ *    written by T. Saue, L. Visscher, and H. J. Aa. Jensen,                  *
+ *    with new contributions from R. Bast, K. G. Dyall, U. Ekström, E. Eliav, *
+ *    T. Enevoldsen, T. Fleig, A. S. P. Gomes, J. Henriksson, M. Ilias,       *
+ *    Ch. R. Jacob, S. Knecht, H. S. Nataraj, P. Norman, J. Olsen,            *
+ *    M. Pernpointner, K. Ruud, B. Schimmelpfennig, J. Sikkema,               *
+ *    A. Thorvaldsen, J.  Thyssen, S. Villaume, and S. Yamamoto               *
+ *    (see http://dirac.chem.vu.nl).                                          *
  *                                                                            *
  ******************************************************************************
  Version           : Dirac 8.0 (patchlevel 0) 
- Hostname          : linux-1ypw
- Operating system  : Linux 2.6.25.18-0.2-pae
- Machine           : i686
- Run               : Sequential
- Last compilation  : 09:46:02 Aug 25 2009 (by timo@linux-1ypw.ups-tlse.fr:/home/timo/prog/dirac/trunk)
- FORTRAN compiler  : /usr/bin/gfortran -g -O3 -ffast-math -funroll-loops -Iinclude -Jmodules -DUSE_DIRAC_BLAS -DUSE_DIRAC_DLAMCH -DUSE_DIRAC_DLAPACK -DUSE_DIRAC_ZLAPACK -DGFORTRAN=431 -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MFDS -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_CDFT -DMOD_VISUAL -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON 
- C compiler        : /usr/bin/gcc -g -O3 -ffast-math -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_CDFT -DMOD_VISUAL -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DSYS_FLAVOR=LINUX 
- External libraries:  
- Internal libraries: DIRAC_BLAS=  DIRAC_LAPACK= 
- ILP data model    : ILP32 
- SVN URL:          : 'http://dirac.chem.sdu.dk/svnDirac/Dirac/trunk' 
- SVN Changeset     : '9467' 
+ Hostname          : fe6
+ Operating system  : Linux 2.6.18-128.el5
+ Machine           : x86_64
+ Run               : Parallel
+ Last compilation  : 13:42:51 Nov  3 2010 (by hjj@fe6.dcsc.sdu.dk:/people/disk2/hjj/prog/dirac10_dev_gfortran)
+ FORTRAN compiler  : /people/disk2/stefan/lib64/int4/openmpi-1.3.2/bin/mpif90 -O3 -ffast-math -funroll-loops -g -fno-range-check -fcray-pointer -Iinclude -Jmodules -DUSE_DIRAC_BLAS -DUSE_DIRAC_DLAMCH -DUSE_DIRAC_DLAPACK -DUSE_DIRAC_ZLAPACK -DVAR_GFORTRAN -DGFORTRAN=433 -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=104857600 -DVAR_MPI -DSYS_LOCALDISKS -DVAR_MFDS -DVAR_MPI2 -DMOD_XCFUN -DMOD_MAGNETIZ -DMOD_LONDON -DMOD_MCSCF_spinfree -DMOD_KRMC -DMOD_DNF -DMOD_ESR -DMOD_MATRIX_OPERATIONS -DMOD_ADC -DMOD_AMFI -DMOD_KRMC -DMOD_OPENRSP -DMOD_VISUAL -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ERI -DMOD_UNRELEASED   
+ C compiler        : /people/disk2/stefan/lib64/int4/openmpi-1.3.2/bin/mpicc -O3 -ffast-math -g -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DMOD_XCFUN -DMOD_MAGNETIZ -DMOD_LONDON -DMOD_MCSCF_spinfree -DMOD_KRMC -DMOD_DNF -DMOD_ESR -DMOD_MATRIX_OPERATIONS -DMOD_ADC -DMOD_AMFI -DMOD_KRMC -DMOD_OPENRSP -DMOD_VISUAL -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ERI -DMOD_UNRELEASED  -DSYS_LINUX -DINSTALL_WRKMEM=104857600 -DVAR_MPI -DSYS_LOCALDISKS -DVAR_MPI2 -DSYS_FLAVOR=LINUX 
+ External libraries: -Lxcfun/lib -lxcfun 
+ Internal libraries: DIRAC_BLAS=YES  DIRAC_LAPACK=YES 
+ ILP data model    : I32LP64 
+ SVN URL           : http://dirac.chem.sdu.dk/svnDirac/Dirac/trunk 
+ SVN Revision      : 11825 
 
  
-     Date and time (Linux)  : Wed Aug 26 09:59:09 2009 
-     Host name              : linux-1ypw.                             
+     Date and time (Linux)  : Wed Nov  3 15:38:40 2010 
+     Host name              : fe6                                     
 
 
  *******************************************************************************
@@ -153,7 +160,7 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
 #################################
 **DIRAC
 .TITLE
- Testing 4-component CI calculation on F atom, group C2h
+ Testing 4-component CI calculation on F atom in C2h, complex CMICDV optimizatio
 .WAVE FUNCTION
 #################################
 **WAVE FUNCTION
@@ -197,18 +204,20 @@ LUCIAREL
 
 
     **************************************************************************
-    ***********  Testing 4-component CI calculation on F atom, gro ***********
+    ***********  Testing 4-component CI calculation on F atom in C ***********
     **************************************************************************
 
  Jobs in this run:
    * Wave function
-   * If crash, end with the segment.fault. Worth for debugging.
 
 
     **************************************************************************
     ************************** General DIRAC set-up **************************
     **************************************************************************
 
+   CODATA Recommended Values of the Fundamental Physical Constants: 1998  
+                Peter J. Mohr and Barry N. Taylor                         
+   Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
  * The speed of light :        137.0359998
  * Running in the four-component mode
  * Direct evaluation of the following two-electron integrals:
@@ -491,7 +500,6 @@ Point group: C2h
 
  * Print level:    0
  * Dirac-Coulomb Hamiltonian
-   with the following modifications:
  * Default integral flags passed to all modules
    - LL-integrals:     1
    - LS-integrals:     1
@@ -506,21 +514,6 @@ Point group: C2h
  * Default RKB projection:
    1: Pre-projection in scalar basis
    2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
-
-
- *******************************************************************************
- ************************** Memory required by HERMIT **************************
- *******************************************************************************
-
-===========================================================================
- Maximum memory load for two-electron integral processing:
-===========================================================================
- * LL-integrals:
-   3(F  1 Ld)   2(F  1 Lp)   3(F  1 Ld)   2(F  1 Lp)              419483
- * SL-integrals:
-   7(F  1 Sd)   5(F  1 Sp)   3(F  1 Ld)   2(F  1 Lp)             1387036
- * SS-integrals:
-   7(F  1 Sd)   5(F  1 Sp)   7(F  1 Sd)   5(F  1 Sp)             4603689
 
 
     **************************************************************************
@@ -574,7 +567,7 @@ Point group: C2h
  ***** OUTPUT CONTROL *****
  * Only electron eigenvalues written out.
 ===========================================================================
- KRCICALC: General set-up for KR-CI calculation:
+ *KRCICALC: General set-up for KR-CI calculation:
 ===========================================================================
  * Inactive orbitals     :    1   0
  * Active orbitals       :    2   6
@@ -601,6 +594,7 @@ Point group: C2h
 ===========================================================================
  * Maximum number of CI iterations for each symmetry:  20
  * Maximum subspace dimension set to  60
+ * Integrals on slave nodes provided by the MASTER
 
 
  ********************************************************************************
@@ -613,17 +607,10 @@ Point group: C2h
     ************************ End of input processing ************************
     *************************************************************************
 
-* ONEGEN: OVERLAP
-* PR1IN1: INTTYP =     1 NOPTYP=     1      NELMNT=           12403
-* ONEGEN: MOLFLD 
-* ONEGEN: BETAMAT
-* PR1IN1: INTTYP =     1 NOPTYP=     1      NELMNT=           12403
-* ONEGEN: DIPVEL 
-* PR1IN1: INTTYP =     3 NOPTYP=     3      NELMNT=           12403
 
 
-                            Generating Lowdin matrix:
-                            -------------------------
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
 
    L   Ag    * Deleted:          3(Proj:          3, Lindep:          0)
    L   Bg    * Deleted:          0(Proj:          0, Lindep:          0)
@@ -660,159 +647,159 @@ Total no. of orbitals      (NORB):    50      36      86
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Wed Aug 26 09:59:09 2009
+########## START ITERATION NO.   1 ##########   Wed Nov  3 15:38:40 2010
 
-It.   1    -54.87691596729      1.00D+20  0.00D+00  0.00D+00               0.02400202s   Scr. nuclei    Wed Aug 26
+It.   1    -52.28490521034      1.00D+20  0.00D+00  0.00D+00               0.01199800s   Scr. nuclei    Wed Nov  3
 
-########## START ITERATION NO.   2##########   Wed Aug 26 09:59:09 2009
+########## START ITERATION NO.   2 ##########   Wed Nov  3 15:38:40 2010
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    7.78%   48.14%   10.74%   32.06%   0.01199996s
-SOfock:SL  1.00D-12   11.57%   45.51%    9.14%   29.77%   0.10800701s
-SOfock:SS  1.00D-12   11.22%   49.22%    7.51%   29.20%   0.31202000s
+SOfock:LL  1.00D-12    7.78%   47.91%    7.77%   29.30%   0.00599900s
+SOfock:SL  1.00D-12   10.02%   47.03%    7.88%   29.49%   0.04899198s
+SOfock:SS  1.00D-12   11.22%   49.32%    7.50%   29.14%   0.13398001s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.54003400s
+>>> Total CPU-time : 0.23896497s
 
-########## END ITERATION NO.   2 ##########   Wed Aug 26 09:59:09 2009
+########## END ITERATION NO.   2 ##########   Wed Nov  3 15:38:40 2010
 
-It.   2    -99.18284681936      4.43D+01  1.07D+01  2.47D+00               0.54003400s   LL SL SS       Wed Aug 26
+It.   2    -99.15785235088      4.69D+01  9.42D+00  1.97D+00               0.23896497s   LL SL SS       Wed Nov  3
 
-########## START ITERATION NO.   3##########   Wed Aug 26 09:59:09 2009
+########## START ITERATION NO.   3 ##########   Wed Nov  3 15:38:40 2010
 
-    3 *** Differential density matrix. DCOVLP     = 0.9777
-    3 *** Differential density matrix. DVOVLP( 1) = 1.0015
+    3 *** Differential density matrix. DCOVLP     = 1.0600
+    3 *** Differential density matrix. DVOVLP( 1) = 0.9619
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    7.78%   48.18%   10.74%   32.02%   0.01200104s
-SOfock:SL  1.00D-12   11.57%   46.08%    9.02%   29.51%   0.10800600s
-SOfock:SS  1.00D-12   11.22%   51.04%    7.15%   28.42%   0.30401897s
+SOfock:LL  1.00D-12    7.78%   48.08%    7.67%   28.80%   0.00599903s
+SOfock:SL  1.00D-12   10.02%   47.70%    7.14%   29.17%   0.04799300s
+SOfock:SS  1.00D-12   11.22%   51.15%    7.21%   28.31%   0.13198000s
 >>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.44802701s
+>>> Total CPU-time : 0.20396805s
 
-########## END ITERATION NO.   3 ##########   Wed Aug 26 09:59:09 2009
+########## END ITERATION NO.   3 ##########   Wed Nov  3 15:38:40 2010
 
-It.   3    -99.45124117530      2.68D-01 -1.42D+00  5.23D-01   DIIS   2    0.44802701s   LL SL SS       Wed Aug 26
+It.   3    -99.48157983703      3.24D-01  2.74D-01  2.07D-01   DIIS   2    0.20396805s   LL SL SS       Wed Nov  3
 
-########## START ITERATION NO.   4##########   Wed Aug 26 09:59:10 2009
+########## START ITERATION NO.   4 ##########   Wed Nov  3 15:38:41 2010
 
-    4 *** Differential density matrix. DCOVLP     = 1.0244
-    4 *** Differential density matrix. DVOVLP( 1) = 1.0108
+    4 *** Differential density matrix. DCOVLP     = 0.9978
+    4 *** Differential density matrix. DVOVLP( 1) = 1.0167
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    7.78%   48.28%   10.68%   31.94%   0.01200104s
-SOfock:SL  1.00D-12   13.94%   44.33%    9.08%   29.65%   0.10400701s
-SOfock:SS  1.00D-12   11.22%   52.54%    6.98%   27.66%   0.30001795s
+SOfock:LL  1.00D-12    7.78%   48.27%   10.69%   30.34%   0.00599903s
+SOfock:SL  1.00D-12   10.28%   48.23%    8.43%   28.76%   0.04699296s
+SOfock:SS  1.00D-12   11.22%   53.19%    6.88%   27.33%   0.12998003s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.44002795s
+>>> Total CPU-time : 0.19997001s
 
-########## END ITERATION NO.   4 ##########   Wed Aug 26 09:59:10 2009
+########## END ITERATION NO.   4 ##########   Wed Nov  3 15:38:41 2010
 
-It.   4    -99.48730704455      3.61D-02  4.77D-01  1.28D-01   DIIS   3    0.44002795s   LL SL SS       Wed Aug 26
+It.   4    -99.48856277664      6.98D-03 -1.10D-01  5.33D-02   DIIS   3    0.19997001s   LL SL SS       Wed Nov  3
 
-########## START ITERATION NO.   5##########   Wed Aug 26 09:59:10 2009
+########## START ITERATION NO.   5 ##########   Wed Nov  3 15:38:41 2010
 
-    5 *** Differential density matrix. DCOVLP     = 0.9990
-    5 *** Differential density matrix. DVOVLP( 1) = 1.0030
+    5 *** Differential density matrix. DCOVLP     = 1.0024
+    5 *** Differential density matrix. DVOVLP( 1) = 1.0045
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    7.78%   48.39%   10.65%   32.09%   0.00800014s
-SOfock:SL  1.00D-12   11.57%   47.60%    8.76%   28.73%   0.10800695s
-SOfock:SS  1.00D-12   11.22%   54.42%    6.69%   26.69%   0.30001903s
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.44002807s
-
-########## END ITERATION NO.   5 ##########   Wed Aug 26 09:59:10 2009
-
-It.   5    -99.48913190909      1.82D-03 -7.99D-02  5.10D-03   DIIS   4    0.44002807s   LL SL SS       Wed Aug 26
-
-########## START ITERATION NO.   6##########   Wed Aug 26 09:59:11 2009
-
-    6 *** Differential density matrix. DCOVLP     = 1.0006
-    6 *** Differential density matrix. DVOVLP( 1) = 1.0013
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   15.18%   40.20%   11.29%   34.36%   0.01200104s
-SOfock:SL  1.00D-12   11.57%   49.45%    8.34%   27.78%   0.10400605s
-SOfock:SS  1.00D-12   11.22%   58.98%    6.28%   24.21%   0.28801799s
+SOfock:LL  1.00D-12    7.78%   48.30%   10.71%   29.90%   0.00599903s
+SOfock:SL  1.00D-12   10.28%   49.44%    8.12%   28.20%   0.04699302s
+SOfock:SS  1.00D-12   11.22%   55.99%    6.57%   25.86%   0.12698090s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.43202591s
+>>> Total CPU-time : 0.19696999s
 
-########## END ITERATION NO.   6 ##########   Wed Aug 26 09:59:11 2009
+########## END ITERATION NO.   5 ##########   Wed Nov  3 15:38:41 2010
 
-It.   6    -99.48914219919      1.03D-05  7.02D-04  5.94D-04   DIIS   5    0.43202591s   LL SL SS       Wed Aug 26
+It.   5    -99.48908894590      5.26D-04  5.00D-02  1.82D-02   DIIS   4    0.19696999s   LL SL SS       Wed Nov  3
 
-########## START ITERATION NO.   7##########   Wed Aug 26 09:59:11 2009
+########## START ITERATION NO.   6 ##########   Wed Nov  3 15:38:41 2010
 
-    7 *** Differential density matrix. DCOVLP     = 1.0001
-    7 *** Differential density matrix. DVOVLP( 1) = 1.0002
+    6 *** Differential density matrix. DCOVLP     = 0.9998
+    6 *** Differential density matrix. DVOVLP( 1) = 1.0021
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    7.78%   49.22%   10.39%   31.58%   0.01200104s
-SOfock:SL  1.00D-12   11.57%   51.67%    7.88%   26.52%   0.10000610s
-SOfock:SS  1.00D-12   11.22%   65.02%    5.64%   20.92%   0.28001785s
+SOfock:LL  1.00D-12    7.78%   48.44%    7.59%   29.81%   0.00599897s
+SOfock:SL  1.00D-12   10.02%   50.23%    6.87%   27.81%   0.04799294s
+SOfock:SS  1.00D-12   11.22%   57.41%    6.39%   25.12%   0.12498105s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.41602588s
+>>> Total CPU-time : 0.19596994s
 
-########## END ITERATION NO.   7 ##########   Wed Aug 26 09:59:11 2009
+########## END ITERATION NO.   6 ##########   Wed Nov  3 15:38:41 2010
 
-It.   7    -99.48914238027      1.81D-07  6.64D-05  7.23D-05   DIIS   6    0.41602588s   LL SL SS       Wed Aug 26
+It.   6    -99.48914198127      5.30D-05 -9.63D-03  9.60D-04   DIIS   5    0.19596994s   LL SL SS       Wed Nov  3
 
-########## START ITERATION NO.   8##########   Wed Aug 26 09:59:11 2009
+########## START ITERATION NO.   7 ##########   Wed Nov  3 15:38:41 2010
+
+    7 *** Differential density matrix. DCOVLP     = 0.9999
+    7 *** Differential density matrix. DVOVLP( 1) = 1.0003
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    7.78%   49.11%   10.41%   28.99%   0.00599909s
+SOfock:SL  1.00D-12   10.28%   52.52%    7.61%   26.42%   0.04599297s
+SOfock:SS  1.00D-12   11.22%   64.33%    5.69%   21.32%   0.11898196s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.18797207s
+
+########## END ITERATION NO.   7 ##########   Wed Nov  3 15:38:41 2010
+
+It.   7    -99.48914237936      3.98D-07  1.65D-04  1.05D-04   DIIS   6    0.18797207s   LL SL SS       Wed Nov  3
+
+########## START ITERATION NO.   8 ##########   Wed Nov  3 15:38:41 2010
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
     8 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    7.78%   50.56%   10.05%   30.80%   0.01200104s
-SOfock:SL  1.00D-12   11.57%   55.88%    7.24%   24.23%   0.10000610s
-SOfock:SS  1.00D-12   11.22%   73.89%    4.91%   16.09%   0.26001596s
+SOfock:LL  1.00D-12    7.78%   51.11%   10.03%   30.04%   0.00599897s
+SOfock:SL  1.00D-12   10.28%   58.57%    6.90%   23.04%   0.04399395s
+SOfock:SS  1.00D-12   11.22%   74.69%    5.13%   15.47%   0.10798311s
 >>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.39202523s
+>>> Total CPU-time : 0.17397308s
 
-########## END ITERATION NO.   8 ##########   Wed Aug 26 09:59:11 2009
+########## END ITERATION NO.   8 ##########   Wed Nov  3 15:38:41 2010
 
-It.   8    -99.48914238137      1.10D-09 -3.50D-05  6.03D-06   DIIS   7    0.39202523s   LL SL SS       Wed Aug 26
+It.   8    -99.48914238134      1.98D-09 -5.74D-05  9.93D-06   DIIS   7    0.17397308s   LL SL SS       Wed Nov  3
 
-########## START ITERATION NO.   9##########   Wed Aug 26 09:59:12 2009
+########## START ITERATION NO.   9 ##########   Wed Nov  3 15:38:42 2010
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
     9 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    7.78%   53.11%    7.01%   27.97%   0.01200104s
-SOfock:SL  1.00D-12   10.02%   63.14%    6.03%   20.94%   0.08800602s
-SOfock:SS  1.00D-12   11.22%   80.62%    4.79%   12.36%   0.24001479s
+SOfock:LL  1.00D-12    7.78%   52.21%    9.60%   29.46%   0.00499904s
+SOfock:SL  1.00D-12   10.28%   60.74%    6.43%   22.16%   0.04299402s
+SOfock:SS  1.00D-12   11.22%   78.39%    4.73%   13.50%   0.10298395s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.36402321s
+>>> Total CPU-time : 0.16897380s
 
-########## END ITERATION NO.   9 ##########   Wed Aug 26 09:59:12 2009
+########## END ITERATION NO.   9 ##########   Wed Nov  3 15:38:42 2010
 
-It.   9    -99.48914238139      1.44D-11 -4.67D-07  9.29D-07   DIIS   8    0.36402321s   LL SL SS       Wed Aug 26
+It.   9    -99.48914238139      4.57D-11  1.65D-06  2.01D-06   DIIS   8    0.16897380s   LL SL SS       Wed Nov  3
 
-########## START ITERATION NO.  10##########   Wed Aug 26 09:59:12 2009
+########## START ITERATION NO.  10 ##########   Wed Nov  3 15:38:42 2010
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
    10 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    7.78%   55.31%    6.82%   26.51%   0.00799990s
-SOfock:SL  1.00D-12   10.02%   68.16%    5.45%   18.51%   0.08800507s
-SOfock:SS  1.00D-12   11.22%   86.00%    4.19%   10.26%   0.23201466s
+SOfock:LL  1.00D-12    7.78%   54.34%    6.73%   28.10%   0.00499892s
+SOfock:SL  1.00D-12   10.02%   65.65%    5.54%   19.77%   0.04099405s
+SOfock:SS  1.00D-12   11.22%   83.76%    4.56%   11.20%   0.09698498s
 >>> Total wall time: 0.00000000s
->>> Total CPU-time : 0.36002254s
+>>> Total CPU-time : 0.15997601s
 
-########## END ITERATION NO.  10 ##########   Wed Aug 26 09:59:12 2009
+########## END ITERATION NO.  10 ##########   Wed Nov  3 15:38:42 2010
 
-It.  10    -99.48914238139     -3.13D-13 -2.23D-07  1.75D-07   DIIS   9    0.36002254s   LL SL SS       Wed Aug 26
+It.  10    -99.48914238139      2.36D-12 -2.59D-07  1.63D-07   DIIS   9    0.15997601s   LL SL SS       Wed Nov  3
 
-########## START ITERATION NO.  11##########   Wed Aug 26 09:59:12 2009
+########## START ITERATION NO.  11 ##########   Wed Nov  3 15:38:42 2010
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
    11 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    7.78%   58.25%    8.57%   26.68%   0.01200104s
-SOfock:SL  1.00D-12   11.57%   72.16%    5.67%   16.59%   0.08400488s
-SOfock:SS  1.00D-12   11.36%   87.70%    4.64%    9.21%   0.22801399s
->>> Total wall time: 1.00000000s
->>> Total CPU-time : 0.34802151s
+SOfock:LL  1.00D-12    7.78%   58.08%    6.60%   24.73%   0.00500011s
+SOfock:SL  1.00D-12   10.02%   73.93%    5.14%   15.82%   0.03699398s
+SOfock:SS  1.00D-12   11.92%   87.42%    4.64%    9.55%   0.09098577s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.14797807s
 
-########## END ITERATION NO.  11 ##########   Wed Aug 26 09:59:12 2009
+########## END ITERATION NO.  11 ##########   Wed Nov  3 15:38:42 2010
 
-It.  11    -99.48914238139     -1.28D-13  5.33D-08  4.43D-09   DIIS   9    0.34802151s   LL SL SS       Wed Aug 26
+It.  11    -99.48914238139      8.81D-13  5.98D-08  3.77D-09   DIIS   9    0.14797807s   LL SL SS       Wed Nov  3
 
 
                                    SCF - CYCLE
@@ -828,34 +815,34 @@ It.  11    -99.48914238139     -1.28D-13  5.33D-08  4.43D-09   DIIS   9    0.348
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.   1    -54.87691596729      1.00D+20  0.00D+00  0.00D+00               0.02400202s   Scr. nuclei    Wed Aug 26
-It.   2    -99.18284681936      4.43D+01  1.07D+01  2.47D+00               0.54003400s   LL SL SS       Wed Aug 26
-It.   3    -99.45124117530      2.68D-01 -1.42D+00  5.23D-01   DIIS   2    0.44802701s   LL SL SS       Wed Aug 26
-It.   4    -99.48730704455      3.61D-02  4.77D-01  1.28D-01   DIIS   3    0.44002795s   LL SL SS       Wed Aug 26
-It.   5    -99.48913190909      1.82D-03 -7.99D-02  5.10D-03   DIIS   4    0.44002807s   LL SL SS       Wed Aug 26
-It.   6    -99.48914219919      1.03D-05  7.02D-04  5.94D-04   DIIS   5    0.43202591s   LL SL SS       Wed Aug 26
-It.   7    -99.48914238027      1.81D-07  6.64D-05  7.23D-05   DIIS   6    0.41602588s   LL SL SS       Wed Aug 26
-It.   8    -99.48914238137      1.10D-09 -3.50D-05  6.03D-06   DIIS   7    0.39202523s   LL SL SS       Wed Aug 26
-It.   9    -99.48914238139      1.44D-11 -4.67D-07  9.29D-07   DIIS   8    0.36402321s   LL SL SS       Wed Aug 26
-It.  10    -99.48914238139     -3.13D-13 -2.23D-07  1.75D-07   DIIS   9    0.36002254s   LL SL SS       Wed Aug 26
-It.  11    -99.48914238139     -1.28D-13  5.33D-08  4.43D-09   DIIS   9    0.34802151s   LL SL SS       Wed Aug 26
+It.   1    -52.28490521034      1.00D+20  0.00D+00  0.00D+00               0.01199800s   Scr. nuclei    Wed Nov  3
+It.   2    -99.15785235088      4.69D+01  9.42D+00  1.97D+00               0.23896497s   LL SL SS       Wed Nov  3
+It.   3    -99.48157983703      3.24D-01  2.74D-01  2.07D-01   DIIS   2    0.20396805s   LL SL SS       Wed Nov  3
+It.   4    -99.48856277664      6.98D-03 -1.10D-01  5.33D-02   DIIS   3    0.19997001s   LL SL SS       Wed Nov  3
+It.   5    -99.48908894590      5.26D-04  5.00D-02  1.82D-02   DIIS   4    0.19696999s   LL SL SS       Wed Nov  3
+It.   6    -99.48914198127      5.30D-05 -9.63D-03  9.60D-04   DIIS   5    0.19596994s   LL SL SS       Wed Nov  3
+It.   7    -99.48914237936      3.98D-07  1.65D-04  1.05D-04   DIIS   6    0.18797207s   LL SL SS       Wed Nov  3
+It.   8    -99.48914238134      1.98D-09 -5.74D-05  9.93D-06   DIIS   7    0.17397308s   LL SL SS       Wed Nov  3
+It.   9    -99.48914238139      4.57D-11  1.65D-06  2.01D-06   DIIS   8    0.16897380s   LL SL SS       Wed Nov  3
+It.  10    -99.48914238139      2.36D-12 -2.59D-07  1.63D-07   DIIS   9    0.15997601s   LL SL SS       Wed Nov  3
+It.  11    -99.48914238139      8.81D-13  5.98D-08  3.77D-09   DIIS   9    0.14797807s   LL SL SS       Wed Nov  3
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   11 iterations.
 * Average elapsed time per iteration: 
       No 2-ints    :    0.00000000s
-      LL SL SS     :    0.40000000s
+      LL SL SS     :    0.20000000s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -99.489142381388277
+   Electronic energy                        :    -99.489142381389513
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      0.000000000000000
 
    Sum of all contributions to the energy
-   Total energy                             :    -99.489142381388277
+   Total energy                             :    -99.489142381389513
 
 
                                    Eigenvalues
@@ -864,18 +851,18 @@ It.  11    -99.48914238139     -1.28D-13  5.33D-08  4.43D-09   DIIS   9    0.348
 
 * Fermion symmetry E1g
   * Closed shell, f = 1.0000
-   -26.41639945188  ( 2)       -1.57727610526  ( 2)
+   -26.41639945535  ( 2)       -1.57727610776  ( 2)
   * Virtual eigenvalues, f = 0.0000
-     0.31104503807  ( 2)        0.82018640722  ( 6)        0.82025716297  ( 4)        2.22131617433  ( 2)        3.01093114882  ( 4)
-     3.01115027788  ( 6)       10.78943851853  ( 4)       10.79227227045  ( 6)       15.29678355364  ( 2)       70.77214728527  ( 2)
-   263.68296406603  ( 2)      971.32251116113  ( 2)     3857.33949050990  ( 2)    17131.06473439707  ( 2)
+     0.31104503750  ( 2)        0.82018640649  ( 6)        0.82025716217  ( 4)        2.22131617223  ( 2)        3.01093114697  ( 4)
+     3.01115027598  ( 6)       10.78943851550  ( 4)       10.79227226723  ( 6)       15.29678355008  ( 2)       70.77214728161  ( 2)
+   263.68296406286  ( 2)      971.32251115843  ( 2)     3857.33949050744  ( 2)    17131.06473439464  ( 2)
 
 * Fermion symmetry E1u
   * Open shell #1, f = 0.8333
-    -0.73206287728  ( 2)       -0.72947241525  ( 4)
+    -0.73206287872  ( 2)       -0.72947241728  ( 4)
   * Virtual eigenvalues, f = 0.0000
-     0.24298715686  ( 2)        0.24318805679  ( 4)        1.18596083939  ( 2)        1.18725706259  ( 4)        4.85389264212  ( 2)
-     4.85889791924  ( 4)       19.58722956932  ( 2)       19.60922562839  ( 4)       95.51145679366  ( 2)       95.72887759688  ( 4)
+     0.24298715700  ( 2)        0.24318805683  ( 4)        1.18596083863  ( 2)        1.18725706156  ( 4)        4.85389263945  ( 2)
+     4.85889791632  ( 4)       19.58722956586  ( 2)       19.60922562480  ( 4)       95.51145679019  ( 2)       95.72887759340  ( 4)
 * HOMO - LUMO gap:
 
     E(LUMO) :     0.24298716 au (symmetry E1u)
@@ -899,7 +886,7 @@ It.  11    -99.48914238139     -1.28D-13  5.33D-08  4.43D-09   DIIS   9    0.348
    Integral transformation: 
      Luuk Visscher, Jon K. Laerdahl, and Trond Saue
 
-   GOSCI CI code: 
+   GASCIP CI code: 
      Joern Thyssen and Hans Joergen Aa. Jensen
 
    LUCIAREL CI code: 
@@ -912,13 +899,13 @@ It.  11    -99.48914238139     -1.28D-13  5.33D-08  4.43D-09   DIIS   9    0.348
 
  This module is published in:
 
-    GOSCI: J Thyssen, T Fleig, and H J Aa Jensen
+    GASCIP: J Thyssen, T Fleig, and H J Aa Jensen
                        J Chem Phys 129, 034109 (2008), suppl. material.
     DIRAC-LUCIAREL: T Fleig, J Olsen, and L Visscher
                        J Chem Phys, 119,6 (2003) 2963
     PARALLEL LUCIAREL:
                     S. Knecht, H J Aa Jensen, and T Fleig
-                       manuscript in preparation.
+                       J Chem Phys, 132,1 (2010) 014108
 
  *******************************************************************************
 
@@ -977,7 +964,7 @@ It.  11    -99.48914238139     -1.28D-13  5.33D-08  4.43D-09   DIIS   9    0.348
 
  (RSETCI) Number of determinants:          451 (dimension          902)
 
- CPU (Wall) time for generation of determinants:  0.00399971s( 0.00000000s)
+ CPU (Wall) time for generation of determinants:  0.00199890s( 0.00000000s)
 
  (RSETWOP) Orbital classes:
    Fermion irrep 1
@@ -1003,27 +990,31 @@ It.  11    -99.48914238139     -1.28D-13  5.33D-08  4.43D-09   DIIS   9    0.348
    - Beginning task   5 of   8 after      0. seconds and      0. CPU-seconds
    - Beginning task   6 of   8 after      0. seconds and      0. CPU-seconds
    - Beginning task   7 of   8 after      0. seconds and      0. CPU-seconds
-   - Beginning task   8 of   8 after      1. seconds and      1. CPU-seconds
+   - Beginning task   8 of   8 after      1. seconds and      0. CPU-seconds
  - Starting symmetrization after           1.00 seconds
  - Finished symmetrization after           1.00 seconds
 
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
- Time in  Computing+transform. i       1.384 seconds
+ Time in  Initializing MS4IND fi       0.001 seconds
+ Time in  Computing+transform. i       0.696 seconds
+
+------ End of timing report ------
+
 
  (RTRACTL1) Total CPU (wall) time used :   00:00:01 (   00:00:01)
-            Transformation ended Wed Aug 26 09:59:14 2009
+            Transformation ended Wed Nov  3 15:38:43 2010
   //  LUCIAREL called
   //  CIRUN = KR-CI 
   //  Running large-scale CI calculation
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   78.23%    9.97%    3.63%   12.60%   0.00400019s
-SOfock:SL  1.00D-12   73.74%   13.73%    3.47%    7.02%   0.04000282s
-SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
-
-  Allocating for            12064 integrals.
+SOfock:LL  1.00D-12   78.23%    9.97%    3.63%   11.97%   0.00200009s
+SOfock:SL  1.00D-12   73.74%   13.73%    3.47%    7.02%   0.01599693s
+SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.05399179s
   Allocating for              784 diagonal integrals.
 
+
+  Allocating for            12064 integrals.
 
  Reading from file : 4INDINFO 
  Reading from file : 4IND1XXXX0
@@ -1034,128 +1025,513 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
 
   Number of determinants/combinations           451
 
+       ===================================================
+        parallel distribution setup for symmetry irrep  7
+       ===================================================
+
+  total number of processes to distribute on :                  1
+  total number of blocks                     :                320
+  total number of active blocks              :                 17
+  size of largest TTSS block                 :                120
+  overall weighted active block length       :              58414
+  Maximum weighted block size                :              21120
+
+                    ================================
+                     Summation of even distribution 
+                    ================================
+
+  CPU    0  computes     17 blocks with a total weight of              58414
+
    ==============================================================
    ==> allocation of two CI vectors and one resolution vector <==
   
-   current available free memory in double words:        63956849
+   current available free memory in double words:       104814536
    allocate two CI vectors each of length:                    451
    allocate resolution vector of length:                     2160
    ==============================================================
 
   
+   
+   
   IROOT NDEG            1           2
   WARNING WARNING WARNING WARNING ! 
   DEGENERATE INITIAL VECTORS FOR CI 
   IROOT NDEG            2           1
   IROOT NDEG            3           1
-                   :::::::::::::::::::
-                     Entering CMICDV  
-                   :::::::::::::::::::
 
-  Nuclear repulsion + core energy:   -75.555932064277542     
+        ===========================================
+        start of complex Davidson solver CMICDV_PAR
+        ===========================================
 
-  Info from iteration ....            1
-  _________________________
- Iter RNORM EIGAPR          1   .1017522600743E+00      -99.489783902853
- Iter RNORM EIGAPR          1   .1017522600745E+00      -99.489783902852
- Iter RNORM EIGAPR          1   .1017543988645E+00      -99.487859338461
- Dimension of projected matrix:           6
- >>>  CPU (WALL) TIME IN ITERATION:  2.57616138s( 3.00000000s)
 
-  Info from iteration ....            2
-  _________________________
- Iter RNORM EIGAPR          2   .3127034933750E-01      -99.494097573008
- Iter RNORM EIGAPR          2   .3127387854513E-01      -99.494097467352
- Iter RNORM EIGAPR          2   .3119297505572E-01      -99.492169132076
- Dimension of projected matrix:           9
- >>>  CPU (WALL) TIME IN ITERATION:  4.50428104s( 4.00000000s)
+       ==============================================
+        I will take you to a place 
+        Where we shall find our
+         ROOTS, BLOODY ROOTS 
 
-  Info from iteration ....            3
-  _________________________
- Iter RNORM EIGAPR          3   .1861880651071E-01      -99.494641461894
- Iter RNORM EIGAPR          3   .1862216075905E-01      -99.494641396683
- Iter RNORM EIGAPR          3   .1855321087244E-01      -99.492708862138
- Dimension of projected matrix:          12
- >>>  CPU (WALL) TIME IN ITERATION:  6.80042648s( 7.00000000s)
+                      Sepultura 
+       ==============================================
 
-  Info from iteration ....            4
-  _________________________
- Iter RNORM EIGAPR          4   .1058512273793E-01      -99.494863210715
- Iter RNORM EIGAPR          4   .1058578717243E-01      -99.494863202200
- Iter RNORM EIGAPR          4   .1060892565249E-01      -99.492929850407
- Dimension of projected matrix:          15
- >>>  CPU (WALL) TIME IN ITERATION:  9.58059692s(10.00000000s)
 
-  Info from iteration ....            5
-  _________________________
- Iter RNORM EIGAPR          5   .3236597898323E-02      -99.494920201228
- Iter RNORM EIGAPR          5   .3239441881220E-02      -99.494920190156
- Iter RNORM EIGAPR          5   .3249794150575E-02      -99.492987195795
- Dimension of projected matrix:          18
- >>>  CPU (WALL) TIME IN ITERATION: 12.95681000s(13.00000000s)
+  Nuclear repulsion + core energy:       -75.555932064281549
 
-  Info from iteration ....            6
-  _________________________
- Iter RNORM EIGAPR          6   .1203078236700E-02      -99.494925194086
- Iter RNORM EIGAPR          6   .1204906058574E-02      -99.494925192034
- Iter RNORM EIGAPR          6   .1206137160256E-02      -99.492992228080
- Dimension of projected matrix:          21
- >>>  CPU (WALL) TIME IN ITERATION: 16.89705276s(17.00000000s)
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.02278185s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.00259995s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.00430107s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.02270699s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.00262094s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.00434017s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00001192s
+ >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    :  0.08201003s
 
-  Info from iteration ....            7
-  _________________________
- Iter RNORM EIGAPR          7   .3984348371315E-03      -99.494925821489
- Iter RNORM EIGAPR          7   .3986369225234E-03      -99.494925821377
- Iter RNORM EIGAPR          7   .3979418324062E-03      -99.492992857177
- Dimension of projected matrix:          24
- >>>  CPU (WALL) TIME IN ITERATION: 21.44534302s(21.00000000s)
+    
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.02267385s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.00260282s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.00429606s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.02270699s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.00264096s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.00433302s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000310s
+ >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    :  0.08294892s
 
-  Info from iteration ....            8
-  _________________________
- Iter RNORM EIGAPR          8   .1928808356423E-03      -99.494925903430
- Iter RNORM EIGAPR          8   .1929830631181E-03      -99.494925903389
- Iter RNORM EIGAPR          8   .1917113480029E-03      -99.492992938583
- Dimension of projected matrix:          27
- >>>  CPU (WALL) TIME IN ITERATION: 26.30964661s(27.00000000s)
+    
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.02263618s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.00260186s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.00429296s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.02283216s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.00265789s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.00433922s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000381s
+ >>>  WALL TIME FOR INITIAL SIGMA VECTOR CALL    :  0.08330894s
 
-  Info from iteration ....            9
-  _________________________
- Iter RNORM EIGAPR          9   .6640215091935E-04      -99.494925931479
- Iter RNORM EIGAPR          9   .6651687167747E-04      -99.494925931471
- Iter RNORM EIGAPR          9   .6720406825899E-04      -99.492992966509
- Dimension of projected matrix:          30
- >>>  CPU (WALL) TIME IN ITERATION: 31.94999695s(32.00000000s)
+    
+ >>>  WALL TIME FOR INITIAL ITERATION            :  0.24862409s
 
-  Info from iteration ....           10
-  _________________________
- Iter RNORM EIGAPR         10   .2093312658105E-04      -99.494925933583
- Iter RNORM EIGAPR         10   .2094669916382E-04      -99.494925933582
- Iter RNORM EIGAPR         10   .2162188581249E-04      -99.492992968662
- Dimension of projected matrix:          33
- >>>  CPU (WALL) TIME IN ITERATION: 38.01837158s(38.00000000s)
 
-  Info from iteration ....           11
-  _________________________
- Iter RNORM EIGAPR         11   .6634353601835E-05      -99.494925933748
- Iter RNORM EIGAPR         11   .6644019039263E-05      -99.494925933748
- Iter RNORM EIGAPR         11   .6724655672770E-05      -99.492992968838
- Dimension of projected matrix:          36
- >>>  CPU (WALL) TIME IN ITERATION: 44.41078186s(45.00000000s)
+ Info from iteration      1
+ _______________________
+ Iter RNORM EIGAPR          1   .1017522604433E+00      -99.489783902859
+ Iter RNORM EIGAPR          1   .1017522604431E+00      -99.489783902859
+ Iter RNORM EIGAPR          1   .1017543992457E+00      -99.487859338447
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.34410191s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03703904s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.12560296s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.34546185s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03706384s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.12552595s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000310s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.03634596s
 
-  Info from iteration ....           12
-  _________________________
- Iter RNORM EIGAPR         12   .2961352613806E-05      -99.494925933769
- Iter RNORM EIGAPR         12   .2972100577358E-05      -99.494925933769
- Iter RNORM EIGAPR         12   .2963503552991E-05      -99.492992968859
- >>>  CPU (WALL) TIME IN ITERATION:  7.50045776s( 7.00000000s)
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.34380198s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03703117s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.12582111s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.34439301s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03714108s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.12566185s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.03163791s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.34370017s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03691983s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.12585902s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.34500408s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03686595s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.12581491s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000381s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.03276205s
+
+ >>>  WALL TIME FOR PART 2.1 - 2.2               :  3.10171294s
+
+ >>>  WALL TIME FOR CURRENT ITERATION            :  3.10357809s
+
+
+ Info from iteration      2
+ _______________________
+ Iter RNORM EIGAPR          2   .3127060330443E-01      -99.494097567121
+ Iter RNORM EIGAPR          2   .3127476110038E-01      -99.494097441045
+ Iter RNORM EIGAPR          2   .3119328187490E-01      -99.492169125405
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35201788s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03703785s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18040800s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35261822s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03709888s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18050098s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.16271400s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35246706s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03692198s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18035197s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35369205s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03700614s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18078995s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.16734695s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35247207s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03694105s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18057704s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35344005s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03712296s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18038702s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000286s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.16524696s
+
+ >>>  WALL TIME FOR PART 2.1 - 2.2               :  3.49686384s
+
+ >>>  WALL TIME FOR CURRENT ITERATION            :  3.50029206s
+
+
+ Info from iteration      3
+ _______________________
+ Iter RNORM EIGAPR          3   .1861843886374E-01      -99.494641463714
+ Iter RNORM EIGAPR          3   .1862211865872E-01      -99.494641392551
+ Iter RNORM EIGAPR          3   .1855280572616E-01      -99.492708861433
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35326600s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03706598s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18057990s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35332608s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03711009s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18024611s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000381s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.16091204s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35231090s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03688788s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18060803s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35364699s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03706884s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18042994s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.16483402s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35379100s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03703690s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18014598s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35332298s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03693581s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18044209s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000381s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.16603708s
+
+ >>>  WALL TIME FOR PART 2.1 - 2.2               :  3.49384785s
+
+ >>>  WALL TIME FOR CURRENT ITERATION            :  3.49908900s
+
+
+ Info from iteration      4
+ _______________________
+ Iter RNORM EIGAPR          4   .1058536810607E-01      -99.494863211737
+ Iter RNORM EIGAPR          4   .1058565737511E-01      -99.494863203369
+ Iter RNORM EIGAPR          4   .1060925622487E-01      -99.492929849637
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35295701s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03701305s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18050909s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35305381s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03708601s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18065405s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000286s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.16630101s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35284400s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03700495s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18020892s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35349488s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03689194s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18034720s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15645909s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35276413s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03713012s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18026996s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35344696s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03704810s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18051291s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000381s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15723205s
+
+ >>>  WALL TIME FOR PART 2.1 - 2.2               :  3.48259211s
+
+ >>>  WALL TIME FOR CURRENT ITERATION            :  3.48966193s
+
+
+ Info from iteration      5
+ _______________________
+ Iter RNORM EIGAPR          5   .3236695273725E-02      -99.494920201013
+ Iter RNORM EIGAPR          5   .3240020906758E-02      -99.494920188102
+ Iter RNORM EIGAPR          5   .3249765222537E-02      -99.492987196078
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35283685s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03706622s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18073988s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35254598s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03700900s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18034720s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000310s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15563393s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35303712s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03712392s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18042302s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35272598s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03710699s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18038297s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.16539192s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35335994s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03708410s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18040299s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35396504s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03696799s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18036509s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000310s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15801501s
+
+ >>>  WALL TIME FOR PART 2.1 - 2.2               :  3.48215008s
+
+ >>>  WALL TIME FOR CURRENT ITERATION            :  3.49107003s
+
+
+ Info from iteration      6
+ _______________________
+ Iter RNORM EIGAPR          6   .1203011184805E-02      -99.494925194128
+ Iter RNORM EIGAPR          6   .1205043306611E-02      -99.494925191837
+ Iter RNORM EIGAPR          6   .1206016616910E-02      -99.492992228177
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35245180s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03697896s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18028998s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35346508s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03707504s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18043995s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.16119695s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35268092s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03698206s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18047619s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35387897s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03687096s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18003702s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000310s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15673590s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35219502s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03699899s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18041301s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35337496s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03701091s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18036699s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000286s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15605903s
+
+ >>>  WALL TIME FOR PART 2.1 - 2.2               :  3.47763491s
+
+ >>>  WALL TIME FOR CURRENT ITERATION            :  3.48830795s
+
+
+ Info from iteration      7
+ _______________________
+ Iter RNORM EIGAPR          7   .3984462090853E-03      -99.494925821498
+ Iter RNORM EIGAPR          7   .3986984606660E-03      -99.494925821384
+ Iter RNORM EIGAPR          7   .3979490224993E-03      -99.492992857190
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35238314s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03696084s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18041396s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35341001s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03696799s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18009186s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000381s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.16033602s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35253286s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03698087s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18017912s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35395598s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03702688s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18035603s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15732598s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35297894s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03692889s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18073583s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35293198s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03703213s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18061399s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15649509s
+
+ >>>  WALL TIME FOR PART 2.1 - 2.2               :  3.47831011s
+
+ >>>  WALL TIME FOR CURRENT ITERATION            :  3.49088120s
+
+
+ Info from iteration      8
+ _______________________
+ Iter RNORM EIGAPR          8   .1928807608354E-03      -99.494925903439
+ Iter RNORM EIGAPR          8   .1929787343477E-03      -99.494925903394
+ Iter RNORM EIGAPR          8   .1916924588309E-03      -99.492992938589
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35352302s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03692508s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18045688s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35350704s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03703213s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18042016s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.16784692s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35249996s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03693104s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18047976s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35300398s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03707218s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18002105s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15434885s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35228586s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03706312s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18031502s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35433698s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03708291s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18065786s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000286s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15788293s
+
+ >>>  WALL TIME FOR PART 2.1 - 2.2               :  3.48474884s
+
+ >>>  WALL TIME FOR CURRENT ITERATION            :  3.49909091s
+
+
+ Info from iteration      9
+ _______________________
+ Iter RNORM EIGAPR          9   .6641289687835E-04      -99.494925931488
+ Iter RNORM EIGAPR          9   .6653262299759E-04      -99.494925931479
+ Iter RNORM EIGAPR          9   .6721719554435E-04      -99.492992966509
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35292792s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03689981s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18047214s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35313201s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03704095s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18032098s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15568614s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35447598s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03714514s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18081212s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35277486s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03707099s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18027592s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15774107s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35332203s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03699207s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18025899s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35241103s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03707004s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18037510s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000620s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15507388s
+
+ >>>  WALL TIME FOR PART 2.1 - 2.2               :  3.47368193s
+
+ >>>  WALL TIME FOR CURRENT ITERATION            :  3.48987293s
+
+
+ Info from iteration     10
+ _______________________
+ Iter RNORM EIGAPR         10   .2092821277734E-04      -99.494925933592
+ Iter RNORM EIGAPR         10   .2094045818378E-04      -99.494925933592
+ Iter RNORM EIGAPR         10   .2162380176565E-04      -99.492992968663
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35354614s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03705406s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18057513s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35286283s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03692102s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18063283s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000882s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.16410494s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35179210s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03698015s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18061399s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35292196s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03708315s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18049097s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000381s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15419078s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35256100s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03708386s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18062901s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35274410s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03702903s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18026423s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000310s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15623713s
+
+ >>>  WALL TIME FOR PART 2.1 - 2.2               :  3.48022604s
+
+ >>>  WALL TIME FOR CURRENT ITERATION            :  3.49831796s
+
+
+ Info from iteration     11
+ _______________________
+ Iter RNORM EIGAPR         11   .6638375736808E-05      -99.494925933757
+ Iter RNORM EIGAPR         11   .6640296448388E-05      -99.494925933757
+ Iter RNORM EIGAPR         11   .6725309690976E-05      -99.492992968839
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35227418s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03702998s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18046594s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35346508s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03702998s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18051004s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.16122413s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35215902s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03706503s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18066120s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35374308s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03702903s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18053198s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000310s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15613604s
+
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35212302s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03698301s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18059492s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.35342908s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.03710103s
+ >>>  WALL TIME IN TOTAL FOR CURRENT S-BATCH     :          0.18043423s
+ >>>  WALL TIME FOR C-COEFFICIENT EXCHANGE       :          0.00000405s
+ >>>  WALL TIME FOR SIGMA VECTOR CALL            :  1.15523696s
+
+ >>>  WALL TIME FOR PART 2.1 - 2.2               :  3.47880316s
+
+ >>>  WALL TIME FOR CURRENT ITERATION            :  3.49883199s
+
+
+ Info from iteration     12
+ _______________________
+ Iter RNORM EIGAPR         12   .2966698033145E-05      -99.494925933778
+ Iter RNORM EIGAPR         12   .2964961029822E-05      -99.494925933778
+ Iter RNORM EIGAPR         12   .2962520377128E-05      -99.492992968860
+ >>>  WALL TIME IN STEP 3 OF CURRENT ITERATION   :  0.00998807s
+
+ >>>  WALL TIME FOR CURRENT ITERATION            :  0.01969409s
+
 
   Convergence was obtained in  12 iterations
 
  *++++++++++++++++++++++++++++++++++++++++++++*
 
- Final Eigenvalue   1 :    -99.4949259337692
- Final Eigenvalue   2 :    -99.4949259337691
- Final Eigenvalue   3 :    -99.4929929688591
+ The final eigenvalue    1        -99.4949259338 (converged)
+ The final eigenvalue    2        -99.4949259338 (converged)
+ The final eigenvalue    3        -99.4929929689 (converged)
 
  *++++++++++++++++++++++++++++++++++++++++++++*
 
@@ -1167,10 +1543,27 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
   //  Analyzing the current CI vector(s).
   Number of determinants/combinations           451
 
+       ===================================================
+        parallel distribution setup for symmetry irrep  7
+       ===================================================
+
+  total number of processes to distribute on :                  1
+  total number of blocks                     :                320
+  total number of active blocks              :                 17
+  size of largest TTSS block                 :                120
+  overall weighted active block length       :              58414
+  Maximum weighted block size                :              21120
+
+                    ================================
+                     Summation of even distribution 
+                    ================================
+
+  CPU    0  computes     17 blocks with a total weight of              58414
+
    ==============================================================
    ==> allocation of two CI vectors and one resolution vector <==
   
-   current available free memory in double words:        63972607
+   current available free memory in double words:       104830288
    allocate two CI vectors each of length:                    451
    allocate resolution vector of length:                     2160
    ==============================================================
@@ -1187,14 +1580,10 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
   Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
   =========================================================
 
-  Coefficient of combination        1 is -.61734432E+00
+  Coefficient of combination        1 is -.99825479E+00
   Corresponding alpha- and beta-strings
   alpha   1   2   3   4
    beta   1   2   3
-  Coefficient of combination        2 is -.78447346E+00
-  Corresponding alpha- and beta-strings
-  alpha   1   2   3   4
-   beta   1   2   4
 
   Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
   =========================================================
@@ -1215,72 +1604,72 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
    Magnitude of CI coefficients 
   ==============================
 
-  10- 1 TO 10- 0           2  0.99651262E+00    0.99651262E+00
-  10- 2 TO 10- 1           2  0.26228401E-03    0.99677490E+00
-  10- 3 TO 10- 2         101  0.28310797E-02    0.99960598E+00
-  10- 4 TO 10- 3         148  0.33493811E-04    0.99963948E+00
-  10- 5 TO 10- 4          46  0.16517164E-06    0.99963964E+00
-  10- 6 TO 10- 5          16  0.57301735E-09    0.99963964E+00
-  10- 7 TO 10- 6           6  0.15096614E-11    0.99963964E+00
-  10- 8 TO 10- 7           0  0.00000000E+00    0.99963964E+00
-  10- 9 TO 10- 8           0  0.00000000E+00    0.99963964E+00
-  10-10 TO 10- 9           6  0.15089607E-17    0.99963964E+00
-  Number of coefficients less than  10-11 IS             0
+  10- 1 TO 10- 0           1  0.99651262E+00    0.99651262E+00
+  10- 2 TO 10- 1           8  0.97210379E-03    0.99748472E+00
+  10- 3 TO 10- 2          63  0.11426231E-02    0.99862735E+00
+  10- 4 TO 10- 3          71  0.18028202E-04    0.99864538E+00
+  10- 5 TO 10- 4          99  0.23381579E-06    0.99864561E+00
+  10- 6 TO 10- 5          44  0.82503525E-09    0.99864561E+00
+  10- 7 TO 10- 6          16  0.32506590E-11    0.99864561E+00
+  10- 8 TO 10- 7           5  0.26737075E-13    0.99864561E+00
+  10- 9 TO 10- 8           8  0.99021169E-16    0.99864561E+00
+  10-10 TO 10- 9           6  0.14760399E-17    0.99864561E+00
+  Number of coefficients less than  10-11 IS             6
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
 
 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10-11       276
+         Number of coefficients larger than 10-11       270
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2          65  0.16485509E-02    0.16485509E-02
-  10- 4 TO 10- 3         141  0.30782328E-04    0.16793332E-02
-  10- 5 TO 10- 4          45  0.16121112E-06    0.16794944E-02
-  10- 6 TO 10- 5          16  0.57301735E-09    0.16794950E-02
-  10- 7 TO 10- 6           6  0.15096614E-11    0.16794950E-02
-  10- 8 TO 10- 7           0  0.00000000E+00    0.16794950E-02
-  10- 9 TO 10- 8           0  0.00000000E+00    0.16794950E-02
-  10-10 TO 10- 9           3  0.75985954E-19    0.16794950E-02
+  10- 2 TO 10- 1           3  0.30903143E-03    0.30903143E-03
+  10- 3 TO 10- 2          38  0.87548268E-03    0.11845141E-02
+  10- 4 TO 10- 3          63  0.16165418E-04    0.12006795E-02
+  10- 5 TO 10- 4          94  0.20312311E-06    0.12008827E-02
+  10- 6 TO 10- 5          43  0.82182877E-09    0.12008835E-02
+  10- 7 TO 10- 6          16  0.32506590E-11    0.12008835E-02
+  10- 8 TO 10- 7           4  0.25665900E-13    0.12008835E-02
+  10- 9 TO 10- 8           4  0.88078594E-16    0.12008835E-02
+  10-10 TO 10- 9           5  0.12039038E-17    0.12008835E-02
 
        Occupation of active sets :  6  1
          Number of coefficients larger than 10-11        48
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           2  0.26228401E-03    0.26228401E-03
-  10- 3 TO 10- 2          36  0.11825288E-02    0.14448128E-02
-  10- 4 TO 10- 3           7  0.27114824E-05    0.14475243E-02
-  10- 5 TO 10- 4           1  0.39605172E-08    0.14475283E-02
-  10- 6 TO 10- 5           0  0.00000000E+00    0.14475283E-02
-  10- 7 TO 10- 6           0  0.00000000E+00    0.14475283E-02
-  10- 8 TO 10- 7           0  0.00000000E+00    0.14475283E-02
-  10- 9 TO 10- 8           0  0.00000000E+00    0.14475283E-02
-  10-10 TO 10- 9           2  0.14009590E-17    0.14475283E-02
+  10- 2 TO 10- 1           5  0.66307236E-03    0.66307236E-03
+  10- 3 TO 10- 2          25  0.26714045E-03    0.93021281E-03
+  10- 4 TO 10- 3           8  0.18627843E-05    0.93207559E-03
+  10- 5 TO 10- 4           5  0.30692680E-07    0.93210629E-03
+  10- 6 TO 10- 5           1  0.32064757E-11    0.93210629E-03
+  10- 7 TO 10- 6           0  0.00000000E+00    0.93210629E-03
+  10- 8 TO 10- 7           0  0.00000000E+00    0.93210629E-03
+  10- 9 TO 10- 8           3  0.86526995E-17    0.93210629E-03
+  10-10 TO 10- 9           1  0.27213616E-18    0.93210629E-03
 
        Occupation of active sets :  7  0
          Number of coefficients larger than 10-11         3
 
-  10- 1 TO 10- 0           2  0.99651262E+00    0.99651262E+00
+  10- 1 TO 10- 0           1  0.99651262E+00    0.99651262E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.99651262E+00
   10- 3 TO 10- 2           0  0.00000000E+00    0.99651262E+00
   10- 4 TO 10- 3           0  0.00000000E+00    0.99651262E+00
   10- 5 TO 10- 4           0  0.00000000E+00    0.99651262E+00
   10- 6 TO 10- 5           0  0.00000000E+00    0.99651262E+00
   10- 7 TO 10- 6           0  0.00000000E+00    0.99651262E+00
-  10- 8 TO 10- 7           0  0.00000000E+00    0.99651262E+00
-  10- 9 TO 10- 8           0  0.00000000E+00    0.99651262E+00
-  10-10 TO 10- 9           1  0.32015705E-19    0.99651262E+00
+  10- 8 TO 10- 7           1  0.10711759E-14    0.99651262E+00
+  10- 9 TO 10- 8           1  0.22898754E-17    0.99651262E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.99651262E+00
 
    Total weight and number of SD's (> 10 ** -11 )  : 
   =================================================
 
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-       276   .1679E-02       .1679E-02    5  2
-        48   .1448E-02       .3127E-02    6  1
-         3   .9965E+00       .9996E+00    7  0
+       270   .1201E-02       .1201E-02    5  2
+        48   .9321E-03       .2133E-02    6  1
+         3   .9965E+00       .9986E+00    7  0
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im     3  1
@@ -1362,14 +1751,14 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           4  0.92398294E-05    0.92398294E-05
-  10- 4 TO 10- 3           6  0.79958395E-06    0.10039413E-04
-  10- 5 TO 10- 4           1  0.84808087E-09    0.10040261E-04
-  10- 6 TO 10- 5           1  0.71335438E-10    0.10040333E-04
-  10- 7 TO 10- 6           0  0.00000000E+00    0.10040333E-04
-  10- 8 TO 10- 7           0  0.00000000E+00    0.10040333E-04
-  10- 9 TO 10- 8           0  0.00000000E+00    0.10040333E-04
-  10-10 TO 10- 9           0  0.00000000E+00    0.10040333E-04
+  10- 3 TO 10- 2           2  0.53598526E-05    0.53598526E-05
+  10- 4 TO 10- 3           5  0.42626335E-06    0.57861159E-05
+  10- 5 TO 10- 4           2  0.59462425E-08    0.57920622E-05
+  10- 6 TO 10- 5           2  0.44467887E-11    0.57920666E-05
+  10- 7 TO 10- 6           1  0.72728440E-13    0.57920667E-05
+  10- 8 TO 10- 7           0  0.00000000E+00    0.57920667E-05
+  10- 9 TO 10- 8           0  0.00000000E+00    0.57920667E-05
+  10-10 TO 10- 9           0  0.00000000E+00    0.57920667E-05
   Number of coefficients less than  10-11 IS             0
 
    Magnitude of CI coefficients for each excitation level 
@@ -1381,21 +1770,21 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           4  0.92398294E-05    0.92398294E-05
-  10- 4 TO 10- 3           6  0.79958395E-06    0.10039413E-04
-  10- 5 TO 10- 4           1  0.84808087E-09    0.10040261E-04
-  10- 6 TO 10- 5           1  0.71335438E-10    0.10040333E-04
-  10- 7 TO 10- 6           0  0.00000000E+00    0.10040333E-04
-  10- 8 TO 10- 7           0  0.00000000E+00    0.10040333E-04
-  10- 9 TO 10- 8           0  0.00000000E+00    0.10040333E-04
-  10-10 TO 10- 9           0  0.00000000E+00    0.10040333E-04
+  10- 3 TO 10- 2           2  0.53598526E-05    0.53598526E-05
+  10- 4 TO 10- 3           5  0.42626335E-06    0.57861159E-05
+  10- 5 TO 10- 4           2  0.59462425E-08    0.57920622E-05
+  10- 6 TO 10- 5           2  0.44467887E-11    0.57920666E-05
+  10- 7 TO 10- 6           1  0.72728440E-13    0.57920667E-05
+  10- 8 TO 10- 7           0  0.00000000E+00    0.57920667E-05
+  10- 9 TO 10- 8           0  0.00000000E+00    0.57920667E-05
+  10-10 TO 10- 9           0  0.00000000E+00    0.57920667E-05
 
    Total weight and number of SD's (> 10 ** -11 )  : 
   =================================================
 
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-        12   .1004E-04       .1004E-04    5  2
+        12   .5792E-05       .5792E-05    5  2
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im     7  1
@@ -1577,55 +1966,55 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2          15  0.34028785E-03    0.34028785E-03
-  10- 4 TO 10- 3          48  0.99751537E-05    0.35026301E-03
-  10- 5 TO 10- 4          26  0.53169743E-07    0.35031618E-03
-  10- 6 TO 10- 5          10  0.23278875E-09    0.35031641E-03
-  10- 7 TO 10- 6           0  0.00000000E+00    0.35031641E-03
-  10- 8 TO 10- 7           2  0.24987960E-14    0.35031641E-03
-  10- 9 TO 10- 8           4  0.15305607E-15    0.35031641E-03
-  10-10 TO 10- 9           3  0.23409744E-18    0.35031641E-03
-  Number of coefficients less than  10-11 IS             4
+  10- 3 TO 10- 2           9  0.13081118E-03    0.13081118E-03
+  10- 4 TO 10- 3          27  0.35360059E-05    0.13434718E-03
+  10- 5 TO 10- 4          32  0.11635133E-06    0.13446353E-03
+  10- 6 TO 10- 5          21  0.42711169E-09    0.13446396E-03
+  10- 7 TO 10- 6           6  0.19937562E-11    0.13446396E-03
+  10- 8 TO 10- 7           1  0.47982332E-15    0.13446396E-03
+  10- 9 TO 10- 8           3  0.14188784E-15    0.13446396E-03
+  10-10 TO 10- 9           7  0.16955450E-17    0.13446396E-03
+  Number of coefficients less than  10-11 IS             6
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
 
 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10-11        96
+         Number of coefficients larger than 10-11        94
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           7  0.12128027E-04    0.12128027E-04
-  10- 4 TO 10- 3          46  0.87917716E-05    0.20919799E-04
-  10- 5 TO 10- 4          26  0.53169743E-07    0.20972969E-04
-  10- 6 TO 10- 5          10  0.23278875E-09    0.20973201E-04
-  10- 7 TO 10- 6           0  0.00000000E+00    0.20973201E-04
-  10- 8 TO 10- 7           2  0.24987960E-14    0.20973201E-04
-  10- 9 TO 10- 8           2  0.11548881E-15    0.20973201E-04
-  10-10 TO 10- 9           3  0.23409744E-18    0.20973201E-04
+  10- 3 TO 10- 2           2  0.84041341E-05    0.84041341E-05
+  10- 4 TO 10- 3          25  0.31527602E-05    0.11556894E-04
+  10- 5 TO 10- 4          31  0.11384784E-06    0.11670742E-04
+  10- 6 TO 10- 5          21  0.42711169E-09    0.11671169E-04
+  10- 7 TO 10- 6           6  0.19937562E-11    0.11671171E-04
+  10- 8 TO 10- 7           1  0.47982332E-15    0.11671171E-04
+  10- 9 TO 10- 8           2  0.10171311E-15    0.11671171E-04
+  10-10 TO 10- 9           6  0.16793205E-17    0.11671171E-04
 
        Occupation of active sets :  6  1
          Number of coefficients larger than 10-11        12
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           8  0.32815983E-03    0.32815983E-03
-  10- 4 TO 10- 3           2  0.11833822E-05    0.32934321E-03
-  10- 5 TO 10- 4           0  0.00000000E+00    0.32934321E-03
-  10- 6 TO 10- 5           0  0.00000000E+00    0.32934321E-03
-  10- 7 TO 10- 6           0  0.00000000E+00    0.32934321E-03
-  10- 8 TO 10- 7           0  0.00000000E+00    0.32934321E-03
-  10- 9 TO 10- 8           2  0.37567258E-16    0.32934321E-03
-  10-10 TO 10- 9           0  0.00000000E+00    0.32934321E-03
+  10- 3 TO 10- 2           7  0.12240704E-03    0.12240704E-03
+  10- 4 TO 10- 3           2  0.38324574E-06    0.12279029E-03
+  10- 5 TO 10- 4           1  0.25034934E-08    0.12279279E-03
+  10- 6 TO 10- 5           0  0.00000000E+00    0.12279279E-03
+  10- 7 TO 10- 6           0  0.00000000E+00    0.12279279E-03
+  10- 8 TO 10- 7           0  0.00000000E+00    0.12279279E-03
+  10- 9 TO 10- 8           1  0.40174726E-16    0.12279279E-03
+  10-10 TO 10- 9           1  0.16224453E-19    0.12279279E-03
 
    Total weight and number of SD's (> 10 ** -11 )  : 
   =================================================
 
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-        96   .2097E-04       .2097E-04    5  2
-        12   .3293E-03       .3503E-03    6  1
+        94   .1167E-04       .1167E-04    5  2
+        12   .1228E-03       .1345E-03    6  1
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im    -1  1
@@ -1706,71 +2095,71 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
   ==============================
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
-  10- 6 TO 10- 5          10  0.13517877E-10    0.13517877E-10
-  10- 7 TO 10- 6          44  0.12272587E-10    0.25790464E-10
-  10- 8 TO 10- 7          81  0.14973909E-12    0.25940204E-10
-  10- 9 TO 10- 8          53  0.93342112E-15    0.25941137E-10
-  10-10 TO 10- 9          71  0.19042032E-16    0.25941156E-10
-  Number of coefficients less than  10-11 IS            68
+  10- 2 TO 10- 1           2  0.30784369E-03    0.30784369E-03
+  10- 3 TO 10- 2          36  0.65993761E-03    0.96778130E-03
+  10- 4 TO 10- 3          81  0.15218712E-04    0.98300001E-03
+  10- 5 TO 10- 4          86  0.22410545E-06    0.98322412E-03
+  10- 6 TO 10- 5          49  0.15241359E-08    0.98322564E-03
+  10- 7 TO 10- 6          14  0.37960264E-11    0.98322565E-03
+  10- 8 TO 10- 7           3  0.94141468E-14    0.98322565E-03
+  10- 9 TO 10- 8           9  0.60762225E-16    0.98322565E-03
+  10-10 TO 10- 9          16  0.25318548E-17    0.98322565E-03
+  Number of coefficients less than  10-11 IS            31
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
 
 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10-11       215
+         Number of coefficients larger than 10-11       248
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
-  10- 6 TO 10- 5           5  0.62676334E-11    0.62676334E-11
-  10- 7 TO 10- 6          41  0.10709896E-10    0.16977529E-10
-  10- 8 TO 10- 7          71  0.14539534E-12    0.17122925E-10
-  10- 9 TO 10- 8          31  0.42561045E-15    0.17123350E-10
-  10-10 TO 10- 9          67  0.17661521E-16    0.17123368E-10
+  10- 3 TO 10- 2          23  0.46692418E-03    0.46692418E-03
+  10- 4 TO 10- 3          67  0.13563119E-04    0.48048730E-03
+  10- 5 TO 10- 4          82  0.20730601E-06    0.48069460E-03
+  10- 6 TO 10- 5          49  0.15241359E-08    0.48069613E-03
+  10- 7 TO 10- 6          13  0.37709128E-11    0.48069613E-03
+  10- 8 TO 10- 7           3  0.94141468E-14    0.48069613E-03
+  10- 9 TO 10- 8           5  0.28049913E-16    0.48069613E-03
+  10-10 TO 10- 9           6  0.42021694E-18    0.48069613E-03
 
        Occupation of active sets :  6  1
-         Number of coefficients larger than 10-11        43
+         Number of coefficients larger than 10-11        46
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
-  10- 6 TO 10- 5           4  0.52475183E-11    0.52475183E-11
-  10- 7 TO 10- 6           3  0.15626916E-11    0.68102099E-11
-  10- 8 TO 10- 7          10  0.43437436E-14    0.68145537E-11
-  10- 9 TO 10- 8          22  0.50781067E-15    0.68150615E-11
-  10-10 TO 10- 9           4  0.13805112E-17    0.68150629E-11
+  10- 2 TO 10- 1           2  0.30784369E-03    0.30784369E-03
+  10- 3 TO 10- 2          13  0.19301344E-03    0.50085712E-03
+  10- 4 TO 10- 3          14  0.16555931E-05    0.50251272E-03
+  10- 5 TO 10- 4           4  0.16799436E-07    0.50252952E-03
+  10- 6 TO 10- 5           0  0.00000000E+00    0.50252952E-03
+  10- 7 TO 10- 6           0  0.00000000E+00    0.50252952E-03
+  10- 8 TO 10- 7           0  0.00000000E+00    0.50252952E-03
+  10- 9 TO 10- 8           4  0.32712312E-16    0.50252952E-03
+  10-10 TO 10- 9           9  0.20690030E-17    0.50252952E-03
 
        Occupation of active sets :  7  0
-         Number of coefficients larger than 10-11         1
+         Number of coefficients larger than 10-11         2
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
   10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
   10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
   10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
-  10- 6 TO 10- 5           1  0.20027253E-11    0.20027253E-11
-  10- 7 TO 10- 6           0  0.00000000E+00    0.20027253E-11
-  10- 8 TO 10- 7           0  0.00000000E+00    0.20027253E-11
-  10- 9 TO 10- 8           0  0.00000000E+00    0.20027253E-11
-  10-10 TO 10- 9           0  0.00000000E+00    0.20027253E-11
+  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
+  10- 7 TO 10- 6           1  0.25113645E-13    0.25113645E-13
+  10- 8 TO 10- 7           0  0.00000000E+00    0.25113645E-13
+  10- 9 TO 10- 8           0  0.00000000E+00    0.25113645E-13
+  10-10 TO 10- 9           1  0.42634840E-19    0.25113688E-13
 
    Total weight and number of SD's (> 10 ** -11 )  : 
   =================================================
 
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-       215   .1712E-10       .1712E-10    5  2
-        43   .6815E-11       .2394E-10    6  1
-         1   .2003E-11       .2594E-10    7  0
+       248   .4807E-03       .4807E-03    5  2
+        46   .5025E-03       .9832E-03    6  1
+         2   .2511E-13       .9832E-03    7  0
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im     3  2
@@ -1853,13 +2242,13 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
   10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
-  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
-  10- 7 TO 10- 6           4  0.28328766E-12    0.28328766E-12
-  10- 8 TO 10- 7           3  0.67586866E-14    0.29004634E-12
-  10- 9 TO 10- 8           3  0.29931827E-16    0.29007628E-12
-  10-10 TO 10- 9           2  0.90047006E-18    0.29007718E-12
+  10- 4 TO 10- 3           6  0.14358048E-05    0.14358048E-05
+  10- 5 TO 10- 4           2  0.22182800E-08    0.14380231E-05
+  10- 6 TO 10- 5           3  0.57641265E-10    0.14380807E-05
+  10- 7 TO 10- 6           1  0.56080499E-12    0.14380813E-05
+  10- 8 TO 10- 7           0  0.00000000E+00    0.14380813E-05
+  10- 9 TO 10- 8           0  0.00000000E+00    0.14380813E-05
+  10-10 TO 10- 9           0  0.00000000E+00    0.14380813E-05
   Number of coefficients less than  10-11 IS             0
 
    Magnitude of CI coefficients for each excitation level 
@@ -1872,20 +2261,20 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
   10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
-  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
-  10- 7 TO 10- 6           4  0.28328766E-12    0.28328766E-12
-  10- 8 TO 10- 7           3  0.67586866E-14    0.29004634E-12
-  10- 9 TO 10- 8           3  0.29931827E-16    0.29007628E-12
-  10-10 TO 10- 9           2  0.90047006E-18    0.29007718E-12
+  10- 4 TO 10- 3           6  0.14358048E-05    0.14358048E-05
+  10- 5 TO 10- 4           2  0.22182800E-08    0.14380231E-05
+  10- 6 TO 10- 5           3  0.57641265E-10    0.14380807E-05
+  10- 7 TO 10- 6           1  0.56080499E-12    0.14380813E-05
+  10- 8 TO 10- 7           0  0.00000000E+00    0.14380813E-05
+  10- 9 TO 10- 8           0  0.00000000E+00    0.14380813E-05
+  10-10 TO 10- 9           0  0.00000000E+00    0.14380813E-05
 
    Total weight and number of SD's (> 10 ** -11 )  : 
   =================================================
 
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-        12   .2901E-12       .2901E-12    5  2
+        12   .1438E-05       .1438E-05    5  2
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im     7  2
@@ -2066,56 +2455,56 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
   ==============================
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
-  10- 6 TO 10- 5           1  0.18736991E-11    0.18736991E-11
-  10- 7 TO 10- 6          11  0.94777935E-12    0.28214784E-11
-  10- 8 TO 10- 7          25  0.58439064E-13    0.28799175E-11
-  10- 9 TO 10- 8          27  0.54302951E-15    0.28804605E-11
-  10-10 TO 10- 9          18  0.45577586E-17    0.28804651E-11
-  Number of coefficients less than  10-11 IS            30
+  10- 2 TO 10- 1           1  0.11294155E-03    0.11294155E-03
+  10- 3 TO 10- 2          11  0.11314123E-03    0.22608278E-03
+  10- 4 TO 10- 3          28  0.32874681E-05    0.22937025E-03
+  10- 5 TO 10- 4          39  0.10000831E-06    0.22947026E-03
+  10- 6 TO 10- 5          11  0.20016500E-09    0.22947046E-03
+  10- 7 TO 10- 6           5  0.12997294E-11    0.22947046E-03
+  10- 8 TO 10- 7           1  0.16237109E-15    0.22947046E-03
+  10- 9 TO 10- 8           5  0.93995359E-16    0.22947046E-03
+  10-10 TO 10- 9           6  0.11204355E-17    0.22947046E-03
+  Number of coefficients less than  10-11 IS             5
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
 
 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10-11        72
+         Number of coefficients larger than 10-11        95
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
-  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
-  10- 7 TO 10- 6           9  0.37208690E-12    0.37208690E-12
-  10- 8 TO 10- 7          24  0.58241667E-13    0.43032857E-12
-  10- 9 TO 10- 8          22  0.40246115E-15    0.43073103E-12
-  10-10 TO 10- 9          17  0.44714381E-17    0.43073550E-12
+  10- 3 TO 10- 2           3  0.69310189E-05    0.69310189E-05
+  10- 4 TO 10- 3          27  0.29964173E-05    0.99274362E-05
+  10- 5 TO 10- 4          39  0.10000831E-06    0.10027445E-04
+  10- 6 TO 10- 5          11  0.20016500E-09    0.10027645E-04
+  10- 7 TO 10- 6           5  0.12997294E-11    0.10027646E-04
+  10- 8 TO 10- 7           1  0.16237109E-15    0.10027646E-04
+  10- 9 TO 10- 8           3  0.78199728E-16    0.10027646E-04
+  10-10 TO 10- 9           6  0.11204355E-17    0.10027646E-04
 
        Occupation of active sets :  6  1
-         Number of coefficients larger than 10-11        10
+         Number of coefficients larger than 10-11        12
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
-  10- 6 TO 10- 5           1  0.18736991E-11    0.18736991E-11
-  10- 7 TO 10- 6           2  0.57569244E-12    0.24493915E-11
-  10- 8 TO 10- 7           1  0.19739655E-15    0.24495889E-11
-  10- 9 TO 10- 8           5  0.14056836E-15    0.24497295E-11
-  10-10 TO 10- 9           1  0.86320450E-19    0.24497296E-11
+  10- 2 TO 10- 1           1  0.11294155E-03    0.11294155E-03
+  10- 3 TO 10- 2           8  0.10621021E-03    0.21915176E-03
+  10- 4 TO 10- 3           1  0.29105083E-06    0.21944281E-03
+  10- 5 TO 10- 4           0  0.00000000E+00    0.21944281E-03
+  10- 6 TO 10- 5           0  0.00000000E+00    0.21944281E-03
+  10- 7 TO 10- 6           0  0.00000000E+00    0.21944281E-03
+  10- 8 TO 10- 7           0  0.00000000E+00    0.21944281E-03
+  10- 9 TO 10- 8           2  0.15795630E-16    0.21944281E-03
+  10-10 TO 10- 9           0  0.00000000E+00    0.21944281E-03
 
    Total weight and number of SD's (> 10 ** -11 )  : 
   =================================================
 
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-        72   .4307E-12       .4307E-12    5  2
-        10   .2450E-11       .2880E-11    6  1
+        95   .1003E-04       .1003E-04    5  2
+        12   .2194E-03       .2295E-03    6  1
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im    -1  2
@@ -2178,19 +2567,15 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
   Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
   =========================================================
 
-  Coefficient of combination        1 is -.78447346E+00
-  Corresponding alpha- and beta-strings
-  alpha   1   2   3   4
-   beta   1   2   3
-  Coefficient of combination        2 is 0.61734432E+00
-  Corresponding alpha- and beta-strings
-  alpha   1   2   3   4
-   beta   1   2   4
+    ( no coefficients )
 
   Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
   =========================================================
 
-    ( no coefficients )
+  Coefficient of combination        2 is -.20188159E+00
+  Corresponding alpha- and beta-strings
+  alpha   1   2   3   4
+   beta   1   2   4
 
   Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
   =========================================================
@@ -2201,77 +2586,77 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
   =========================================================
 
     ( no coefficients )
-  Norm of printed CI vector ..  0.99651262E+00
+  Norm of printed CI vector ..  0.40756178E-01
 
    Magnitude of CI coefficients 
   ==============================
 
-  10- 1 TO 10- 0           2  0.99651262E+00    0.99651262E+00
-  10- 2 TO 10- 1           4  0.55033466E-03    0.99706295E+00
-  10- 3 TO 10- 2          99  0.25312529E-02    0.99959421E+00
-  10- 4 TO 10- 3         139  0.35728629E-04    0.99962994E+00
-  10- 5 TO 10- 4          51  0.14175305E-06    0.99963008E+00
-  10- 6 TO 10- 5          18  0.46344339E-09    0.99963008E+00
-  10- 7 TO 10- 6           7  0.22551403E-11    0.99963008E+00
-  10- 8 TO 10- 7           1  0.13528825E-14    0.99963008E+00
-  10- 9 TO 10- 8           1  0.47567733E-17    0.99963008E+00
-  10-10 TO 10- 9           3  0.10004737E-17    0.99963008E+00
-  Number of coefficients less than  10-11 IS             2
+  10- 1 TO 10- 0           1  0.40756178E-01    0.40756178E-01
+  10- 2 TO 10- 1           4  0.42662652E-03    0.41182804E-01
+  10- 3 TO 10- 2          56  0.81746629E-03    0.42000270E-01
+  10- 4 TO 10- 3         100  0.19809904E-04    0.42020080E-01
+  10- 5 TO 10- 4         106  0.24598244E-06    0.42020326E-01
+  10- 6 TO 10- 5          28  0.89000558E-09    0.42020327E-01
+  10- 7 TO 10- 6           9  0.19287262E-11    0.42020327E-01
+  10- 8 TO 10- 7           4  0.69141711E-14    0.42020327E-01
+  10- 9 TO 10- 8           7  0.16831623E-15    0.42020327E-01
+  10-10 TO 10- 9           6  0.15027000E-17    0.42020327E-01
+  Number of coefficients less than  10-11 IS             6
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
 
 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10-11       274
+         Number of coefficients larger than 10-11       271
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2          67  0.16507640E-02    0.16507640E-02
-  10- 4 TO 10- 3         129  0.30433601E-04    0.16811976E-02
-  10- 5 TO 10- 4          51  0.14175305E-06    0.16813393E-02
-  10- 6 TO 10- 5          18  0.46344339E-09    0.16813398E-02
-  10- 7 TO 10- 6           7  0.22551403E-11    0.16813398E-02
-  10- 8 TO 10- 7           1  0.13528825E-14    0.16813398E-02
-  10- 9 TO 10- 8           0  0.00000000E+00    0.16813398E-02
-  10-10 TO 10- 9           1  0.26069404E-19    0.16813398E-02
+  10- 2 TO 10- 1           1  0.10013373E-03    0.10013373E-03
+  10- 3 TO 10- 2          36  0.67337918E-03    0.77351292E-03
+  10- 4 TO 10- 3          81  0.12000581E-04    0.78551350E-03
+  10- 5 TO 10- 4         104  0.23963329E-06    0.78575313E-03
+  10- 6 TO 10- 5          28  0.89000558E-09    0.78575402E-03
+  10- 7 TO 10- 6           8  0.19025416E-11    0.78575402E-03
+  10- 8 TO 10- 7           4  0.69141711E-14    0.78575402E-03
+  10- 9 TO 10- 8           5  0.14116517E-15    0.78575402E-03
+  10-10 TO 10- 9           4  0.12693170E-17    0.78575402E-03
 
        Occupation of active sets :  6  1
-         Number of coefficients larger than 10-11        48
+         Number of coefficients larger than 10-11        47
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           4  0.55033466E-03    0.55033466E-03
-  10- 3 TO 10- 2          32  0.88048896E-03    0.14308236E-02
-  10- 4 TO 10- 3          10  0.52950281E-05    0.14361186E-02
-  10- 5 TO 10- 4           0  0.00000000E+00    0.14361186E-02
-  10- 6 TO 10- 5           0  0.00000000E+00    0.14361186E-02
-  10- 7 TO 10- 6           0  0.00000000E+00    0.14361186E-02
-  10- 8 TO 10- 7           0  0.00000000E+00    0.14361186E-02
-  10- 9 TO 10- 8           1  0.47567733E-17    0.14361186E-02
-  10-10 TO 10- 9           1  0.66052685E-19    0.14361186E-02
+  10- 2 TO 10- 1           3  0.32649278E-03    0.32649278E-03
+  10- 3 TO 10- 2          20  0.14408711E-03    0.47057989E-03
+  10- 4 TO 10- 3          19  0.78093224E-05    0.47838922E-03
+  10- 5 TO 10- 4           2  0.63491566E-08    0.47839556E-03
+  10- 6 TO 10- 5           0  0.00000000E+00    0.47839556E-03
+  10- 7 TO 10- 6           0  0.00000000E+00    0.47839556E-03
+  10- 8 TO 10- 7           0  0.00000000E+00    0.47839556E-03
+  10- 9 TO 10- 8           2  0.27151062E-16    0.47839556E-03
+  10-10 TO 10- 9           1  0.18863631E-19    0.47839556E-03
 
        Occupation of active sets :  7  0
          Number of coefficients larger than 10-11         3
 
-  10- 1 TO 10- 0           2  0.99651262E+00    0.99651262E+00
-  10- 2 TO 10- 1           0  0.00000000E+00    0.99651262E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.99651262E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.99651262E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.99651262E+00
-  10- 6 TO 10- 5           0  0.00000000E+00    0.99651262E+00
-  10- 7 TO 10- 6           0  0.00000000E+00    0.99651262E+00
-  10- 8 TO 10- 7           0  0.00000000E+00    0.99651262E+00
-  10- 9 TO 10- 8           0  0.00000000E+00    0.99651262E+00
-  10-10 TO 10- 9           1  0.90835158E-18    0.99651262E+00
+  10- 1 TO 10- 0           1  0.40756178E-01    0.40756178E-01
+  10- 2 TO 10- 1           0  0.00000000E+00    0.40756178E-01
+  10- 3 TO 10- 2           0  0.00000000E+00    0.40756178E-01
+  10- 4 TO 10- 3           0  0.00000000E+00    0.40756178E-01
+  10- 5 TO 10- 4           0  0.00000000E+00    0.40756178E-01
+  10- 6 TO 10- 5           0  0.00000000E+00    0.40756178E-01
+  10- 7 TO 10- 6           1  0.26184535E-13    0.40756178E-01
+  10- 8 TO 10- 7           0  0.00000000E+00    0.40756178E-01
+  10- 9 TO 10- 8           0  0.00000000E+00    0.40756178E-01
+  10-10 TO 10- 9           1  0.21451937E-18    0.40756178E-01
 
    Total weight and number of SD's (> 10 ** -11 )  : 
   =================================================
 
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-       274   .1681E-02       .1681E-02    5  2
-        48   .1436E-02       .3117E-02    6  1
-         3   .9965E+00       .9996E+00    7  0
+       271   .7858E-03       .7858E-03    5  2
+        47   .4784E-03       .1264E-02    6  1
+         3   .4076E-01       .4202E-01    7  0
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im     3  1
@@ -2353,14 +2738,14 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           3  0.55331153E-05    0.55331153E-05
-  10- 4 TO 10- 3           7  0.20201380E-05    0.75532532E-05
-  10- 5 TO 10- 4           1  0.13886120E-09    0.75533921E-05
-  10- 6 TO 10- 5           1  0.11678265E-10    0.75534038E-05
-  10- 7 TO 10- 6           0  0.00000000E+00    0.75534038E-05
-  10- 8 TO 10- 7           0  0.00000000E+00    0.75534038E-05
-  10- 9 TO 10- 8           0  0.00000000E+00    0.75534038E-05
-  10-10 TO 10- 9           0  0.00000000E+00    0.75534038E-05
+  10- 3 TO 10- 2           2  0.49379102E-05    0.49379102E-05
+  10- 4 TO 10- 3           4  0.70654988E-06    0.56444601E-05
+  10- 5 TO 10- 4           4  0.77131351E-08    0.56521732E-05
+  10- 6 TO 10- 5           2  0.54435844E-10    0.56522277E-05
+  10- 7 TO 10- 6           0  0.00000000E+00    0.56522277E-05
+  10- 8 TO 10- 7           0  0.00000000E+00    0.56522277E-05
+  10- 9 TO 10- 8           0  0.00000000E+00    0.56522277E-05
+  10-10 TO 10- 9           0  0.00000000E+00    0.56522277E-05
   Number of coefficients less than  10-11 IS             0
 
    Magnitude of CI coefficients for each excitation level 
@@ -2372,21 +2757,21 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           3  0.55331153E-05    0.55331153E-05
-  10- 4 TO 10- 3           7  0.20201380E-05    0.75532532E-05
-  10- 5 TO 10- 4           1  0.13886120E-09    0.75533921E-05
-  10- 6 TO 10- 5           1  0.11678265E-10    0.75534038E-05
-  10- 7 TO 10- 6           0  0.00000000E+00    0.75534038E-05
-  10- 8 TO 10- 7           0  0.00000000E+00    0.75534038E-05
-  10- 9 TO 10- 8           0  0.00000000E+00    0.75534038E-05
-  10-10 TO 10- 9           0  0.00000000E+00    0.75534038E-05
+  10- 3 TO 10- 2           2  0.49379102E-05    0.49379102E-05
+  10- 4 TO 10- 3           4  0.70654988E-06    0.56444601E-05
+  10- 5 TO 10- 4           4  0.77131351E-08    0.56521732E-05
+  10- 6 TO 10- 5           2  0.54435844E-10    0.56522277E-05
+  10- 7 TO 10- 6           0  0.00000000E+00    0.56522277E-05
+  10- 8 TO 10- 7           0  0.00000000E+00    0.56522277E-05
+  10- 9 TO 10- 8           0  0.00000000E+00    0.56522277E-05
+  10-10 TO 10- 9           0  0.00000000E+00    0.56522277E-05
 
    Total weight and number of SD's (> 10 ** -11 )  : 
   =================================================
 
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-        12   .7553E-05       .7553E-05    5  2
+        12   .5652E-05       .5652E-05    5  2
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im     7  1
@@ -2567,56 +2952,56 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
   ==============================
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           1  0.10506494E-03    0.10506494E-03
-  10- 3 TO 10- 2          13  0.24650041E-03    0.35156535E-03
-  10- 4 TO 10- 3          48  0.10749976E-04    0.36231533E-03
-  10- 5 TO 10- 4          24  0.52418463E-07    0.36236774E-03
-  10- 6 TO 10- 5          12  0.39721742E-09    0.36236814E-03
-  10- 7 TO 10- 6           1  0.17629246E-12    0.36236814E-03
-  10- 8 TO 10- 7           2  0.41608729E-15    0.36236814E-03
-  10- 9 TO 10- 8           4  0.90523883E-16    0.36236814E-03
-  10-10 TO 10- 9           3  0.33156523E-18    0.36236814E-03
-  Number of coefficients less than  10-11 IS             4
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2          12  0.20438721E-03    0.20438721E-03
+  10- 4 TO 10- 3          31  0.36787509E-05    0.20806596E-03
+  10- 5 TO 10- 4          32  0.73657282E-07    0.20813962E-03
+  10- 6 TO 10- 5          16  0.34257678E-09    0.20813996E-03
+  10- 7 TO 10- 6           3  0.11355554E-11    0.20813996E-03
+  10- 8 TO 10- 7           5  0.10343115E-13    0.20813996E-03
+  10- 9 TO 10- 8           4  0.26556109E-16    0.20813996E-03
+  10-10 TO 10- 9           3  0.69003617E-19    0.20813996E-03
+  Number of coefficients less than  10-11 IS             6
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
 
 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10-11        96
+         Number of coefficients larger than 10-11        94
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           6  0.11995937E-04    0.11995937E-04
-  10- 4 TO 10- 3          46  0.95665969E-05    0.21562534E-04
-  10- 5 TO 10- 4          24  0.52418463E-07    0.21614952E-04
-  10- 6 TO 10- 5          12  0.39721742E-09    0.21615349E-04
-  10- 7 TO 10- 6           1  0.17629246E-12    0.21615349E-04
-  10- 8 TO 10- 7           2  0.41608729E-15    0.21615349E-04
-  10- 9 TO 10- 8           2  0.18739851E-16    0.21615349E-04
-  10-10 TO 10- 9           3  0.33156523E-18    0.21615349E-04
+  10- 3 TO 10- 2           3  0.75462588E-05    0.75462588E-05
+  10- 4 TO 10- 3          30  0.34198875E-05    0.10966146E-04
+  10- 5 TO 10- 4          32  0.73657282E-07    0.11039804E-04
+  10- 6 TO 10- 5          16  0.34257678E-09    0.11040146E-04
+  10- 7 TO 10- 6           3  0.11355554E-11    0.11040147E-04
+  10- 8 TO 10- 7           5  0.10343115E-13    0.11040147E-04
+  10- 9 TO 10- 8           2  0.15003064E-16    0.11040147E-04
+  10-10 TO 10- 9           3  0.69003617E-19    0.11040147E-04
 
        Occupation of active sets :  6  1
          Number of coefficients larger than 10-11        12
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           1  0.10506494E-03    0.10506494E-03
-  10- 3 TO 10- 2           7  0.23450447E-03    0.33956941E-03
-  10- 4 TO 10- 3           2  0.11833789E-05    0.34075279E-03
-  10- 5 TO 10- 4           0  0.00000000E+00    0.34075279E-03
-  10- 6 TO 10- 5           0  0.00000000E+00    0.34075279E-03
-  10- 7 TO 10- 6           0  0.00000000E+00    0.34075279E-03
-  10- 8 TO 10- 7           0  0.00000000E+00    0.34075279E-03
-  10- 9 TO 10- 8           2  0.71784032E-16    0.34075279E-03
-  10-10 TO 10- 9           0  0.00000000E+00    0.34075279E-03
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           9  0.19684095E-03    0.19684095E-03
+  10- 4 TO 10- 3           1  0.25886331E-06    0.19709981E-03
+  10- 5 TO 10- 4           0  0.00000000E+00    0.19709981E-03
+  10- 6 TO 10- 5           0  0.00000000E+00    0.19709981E-03
+  10- 7 TO 10- 6           0  0.00000000E+00    0.19709981E-03
+  10- 8 TO 10- 7           0  0.00000000E+00    0.19709981E-03
+  10- 9 TO 10- 8           2  0.11553046E-16    0.19709981E-03
+  10-10 TO 10- 9           0  0.00000000E+00    0.19709981E-03
 
    Total weight and number of SD's (> 10 ** -11 )  : 
   =================================================
 
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-        96   .2162E-04       .2162E-04    5  2
-        12   .3408E-03       .3624E-03    6  1
+        94   .1104E-04       .1104E-04    5  2
+        12   .1971E-03       .2081E-03    6  1
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im    -1  1
@@ -2675,7 +3060,10 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
   Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
   =========================================================
 
-    ( no coefficients )
+  Coefficient of combination        2 is 0.97762797E+00
+  Corresponding alpha- and beta-strings
+  alpha   1   2   3   4
+   beta   1   2   4
 
   Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
   =========================================================
@@ -2691,77 +3079,77 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
   =========================================================
 
     ( no coefficients )
-  Norm of printed CI vector ..  0.00000000E+00
+  Norm of printed CI vector ..  0.95575644E+00
 
    Magnitude of CI coefficients 
   ==============================
 
-  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
-  10- 6 TO 10- 5           8  0.12961573E-10    0.12961573E-10
-  10- 7 TO 10- 6          49  0.11523129E-10    0.24484702E-10
-  10- 8 TO 10- 7          73  0.10670619E-12    0.24591408E-10
-  10- 9 TO 10- 8          64  0.10311432E-14    0.24592439E-10
-  10-10 TO 10- 9          65  0.20163779E-16    0.24592459E-10
-  Number of coefficients less than  10-11 IS            68
+  10- 1 TO 10- 0           1  0.95575644E+00    0.95575644E+00
+  10- 2 TO 10- 1           3  0.39593614E-03    0.95615238E+00
+  10- 3 TO 10- 2          83  0.14548022E-02    0.95760718E+00
+  10- 4 TO 10- 3          97  0.13145398E-04    0.95762033E+00
+  10- 5 TO 10- 4          92  0.23218108E-06    0.95762056E+00
+  10- 6 TO 10- 5          18  0.57605889E-09    0.95762056E+00
+  10- 7 TO 10- 6           9  0.23621306E-11    0.95762056E+00
+  10- 8 TO 10- 7           6  0.87582958E-14    0.95762056E+00
+  10- 9 TO 10- 8           3  0.15358800E-16    0.95762056E+00
+  10-10 TO 10- 9          10  0.22385783E-17    0.95762056E+00
+  Number of coefficients less than  10-11 IS             5
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
 
 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10-11       215
+         Number of coefficients larger than 10-11       272
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
-  10- 6 TO 10- 5           6  0.71945629E-11    0.71945629E-11
-  10- 7 TO 10- 6          41  0.98930807E-11    0.17087644E-10
-  10- 8 TO 10- 7          62  0.10294845E-12    0.17190592E-10
-  10- 9 TO 10- 8          44  0.53267065E-15    0.17191125E-10
-  10-10 TO 10- 9          62  0.19312768E-16    0.17191144E-10
+  10- 2 TO 10- 1           1  0.10118163E-03    0.10118163E-03
+  10- 3 TO 10- 2          49  0.78033093E-03    0.88151256E-03
+  10- 4 TO 10- 3          90  0.11757553E-04    0.89327012E-03
+  10- 5 TO 10- 4          91  0.23052040E-06    0.89350064E-03
+  10- 6 TO 10- 5          18  0.57605889E-09    0.89350121E-03
+  10- 7 TO 10- 6           9  0.23621306E-11    0.89350122E-03
+  10- 8 TO 10- 7           5  0.86294098E-14    0.89350122E-03
+  10- 9 TO 10- 8           2  0.10390846E-16    0.89350122E-03
+  10-10 TO 10- 9           7  0.69958445E-18    0.89350122E-03
 
        Occupation of active sets :  6  1
-         Number of coefficients larger than 10-11        43
+         Number of coefficients larger than 10-11        48
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
-  10- 6 TO 10- 5           1  0.25331368E-11    0.25331368E-11
-  10- 7 TO 10- 6           8  0.16300483E-11    0.41631851E-11
-  10- 8 TO 10- 7          11  0.37577434E-14    0.41669429E-11
-  10- 9 TO 10- 8          20  0.49847257E-15    0.41674413E-11
-  10-10 TO 10- 9           3  0.85101189E-18    0.41674422E-11
+  10- 2 TO 10- 1           2  0.29475451E-03    0.29475451E-03
+  10- 3 TO 10- 2          34  0.67447130E-03    0.96922581E-03
+  10- 4 TO 10- 3           7  0.13878451E-05    0.97061366E-03
+  10- 5 TO 10- 4           1  0.16606713E-08    0.97061532E-03
+  10- 6 TO 10- 5           0  0.00000000E+00    0.97061532E-03
+  10- 7 TO 10- 6           0  0.00000000E+00    0.97061532E-03
+  10- 8 TO 10- 7           1  0.12888602E-15    0.97061532E-03
+  10- 9 TO 10- 8           0  0.00000000E+00    0.97061532E-03
+  10-10 TO 10- 9           3  0.15389938E-17    0.97061532E-03
 
        Occupation of active sets :  7  0
-         Number of coefficients larger than 10-11         1
+         Number of coefficients larger than 10-11         2
 
-  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
-  10- 6 TO 10- 5           1  0.32338731E-11    0.32338731E-11
-  10- 7 TO 10- 6           0  0.00000000E+00    0.32338731E-11
-  10- 8 TO 10- 7           0  0.00000000E+00    0.32338731E-11
-  10- 9 TO 10- 8           0  0.00000000E+00    0.32338731E-11
-  10-10 TO 10- 9           0  0.00000000E+00    0.32338731E-11
+  10- 1 TO 10- 0           1  0.95575644E+00    0.95575644E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.95575644E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.95575644E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.95575644E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.95575644E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.95575644E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.95575644E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.95575644E+00
+  10- 9 TO 10- 8           1  0.49679543E-17    0.95575644E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.95575644E+00
 
    Total weight and number of SD's (> 10 ** -11 )  : 
   =================================================
 
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-       215   .1719E-10       .1719E-10    5  2
-        43   .4167E-11       .2136E-10    6  1
-         1   .3234E-11       .2459E-10    7  0
+       272   .8935E-03       .8935E-03    5  2
+        48   .9706E-03       .1864E-02    6  1
+         2   .9558E+00       .9576E+00    7  0
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im     3  2
@@ -2843,14 +3231,14 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
-  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
-  10- 7 TO 10- 6           4  0.18568411E-12    0.18568411E-12
-  10- 8 TO 10- 7           3  0.73540448E-14    0.19303816E-12
-  10- 9 TO 10- 8           3  0.81789873E-17    0.19304634E-12
-  10-10 TO 10- 9           2  0.69134196E-18    0.19304703E-12
+  10- 3 TO 10- 2           1  0.34296888E-05    0.34296888E-05
+  10- 4 TO 10- 3           6  0.12768013E-05    0.47064901E-05
+  10- 5 TO 10- 4           3  0.48228039E-08    0.47113129E-05
+  10- 6 TO 10- 5           2  0.48791070E-10    0.47113617E-05
+  10- 7 TO 10- 6           0  0.00000000E+00    0.47113617E-05
+  10- 8 TO 10- 7           0  0.00000000E+00    0.47113617E-05
+  10- 9 TO 10- 8           0  0.00000000E+00    0.47113617E-05
+  10-10 TO 10- 9           0  0.00000000E+00    0.47113617E-05
   Number of coefficients less than  10-11 IS             0
 
    Magnitude of CI coefficients for each excitation level 
@@ -2862,21 +3250,21 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
-  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
-  10- 7 TO 10- 6           4  0.18568411E-12    0.18568411E-12
-  10- 8 TO 10- 7           3  0.73540448E-14    0.19303816E-12
-  10- 9 TO 10- 8           3  0.81789873E-17    0.19304634E-12
-  10-10 TO 10- 9           2  0.69134196E-18    0.19304703E-12
+  10- 3 TO 10- 2           1  0.34296888E-05    0.34296888E-05
+  10- 4 TO 10- 3           6  0.12768013E-05    0.47064901E-05
+  10- 5 TO 10- 4           3  0.48228039E-08    0.47113129E-05
+  10- 6 TO 10- 5           2  0.48791070E-10    0.47113617E-05
+  10- 7 TO 10- 6           0  0.00000000E+00    0.47113617E-05
+  10- 8 TO 10- 7           0  0.00000000E+00    0.47113617E-05
+  10- 9 TO 10- 8           0  0.00000000E+00    0.47113617E-05
+  10-10 TO 10- 9           0  0.00000000E+00    0.47113617E-05
 
    Total weight and number of SD's (> 10 ** -11 )  : 
   =================================================
 
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-        12   .1930E-12       .1930E-12    5  2
+        12   .4711E-05       .4711E-05    5  2
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im     7  2
@@ -3058,55 +3446,55 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
-  10- 6 TO 10- 5           2  0.52047094E-11    0.52047094E-11
-  10- 7 TO 10- 6          11  0.44817536E-12    0.56528848E-11
-  10- 8 TO 10- 7          25  0.65618357E-13    0.57185032E-11
-  10- 9 TO 10- 8          24  0.47681436E-15    0.57189800E-11
-  10-10 TO 10- 9          20  0.66840728E-17    0.57189867E-11
-  Number of coefficients less than  10-11 IS            30
+  10- 3 TO 10- 2           8  0.13677016E-03    0.13677016E-03
+  10- 4 TO 10- 3          29  0.37738529E-05    0.14054401E-03
+  10- 5 TO 10- 4          34  0.65827299E-07    0.14060984E-03
+  10- 6 TO 10- 5          19  0.48002915E-09    0.14061032E-03
+  10- 7 TO 10- 6           4  0.11637282E-11    0.14061032E-03
+  10- 8 TO 10- 7           5  0.97527525E-14    0.14061032E-03
+  10- 9 TO 10- 8           4  0.28609525E-16    0.14061032E-03
+  10-10 TO 10- 9           3  0.24310517E-18    0.14061032E-03
+  Number of coefficients less than  10-11 IS             6
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
 
 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10-11        72
+         Number of coefficients larger than 10-11        94
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
-  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
-  10- 7 TO 10- 6          10  0.43068098E-12    0.43068098E-12
-  10- 8 TO 10- 7          23  0.65177036E-13    0.49585802E-12
-  10- 9 TO 10- 8          20  0.37241202E-15    0.49623043E-12
-  10-10 TO 10- 9          19  0.65446881E-17    0.49623698E-12
+  10- 3 TO 10- 2           3  0.68959329E-05    0.68959329E-05
+  10- 4 TO 10- 3          26  0.29007430E-05    0.97966759E-05
+  10- 5 TO 10- 4          32  0.52432809E-07    0.98491087E-05
+  10- 6 TO 10- 5          19  0.48002915E-09    0.98495888E-05
+  10- 7 TO 10- 6           4  0.11637282E-11    0.98495899E-05
+  10- 8 TO 10- 7           5  0.97527525E-14    0.98495899E-05
+  10- 9 TO 10- 8           2  0.17489675E-16    0.98495899E-05
+  10-10 TO 10- 9           3  0.24310517E-18    0.98495899E-05
 
        Occupation of active sets :  6  1
-         Number of coefficients larger than 10-11        10
+         Number of coefficients larger than 10-11        12
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
-  10- 6 TO 10- 5           2  0.52047094E-11    0.52047094E-11
-  10- 7 TO 10- 6           1  0.17494373E-13    0.52222038E-11
-  10- 8 TO 10- 7           2  0.44132183E-15    0.52226451E-11
-  10- 9 TO 10- 8           4  0.10440235E-15    0.52227495E-11
-  10-10 TO 10- 9           1  0.13938468E-18    0.52227497E-11
+  10- 3 TO 10- 2           5  0.12987423E-03    0.12987423E-03
+  10- 4 TO 10- 3           3  0.87310984E-06    0.13074734E-03
+  10- 5 TO 10- 4           2  0.13394490E-07    0.13076073E-03
+  10- 6 TO 10- 5           0  0.00000000E+00    0.13076073E-03
+  10- 7 TO 10- 6           0  0.00000000E+00    0.13076073E-03
+  10- 8 TO 10- 7           0  0.00000000E+00    0.13076073E-03
+  10- 9 TO 10- 8           2  0.11119850E-16    0.13076073E-03
+  10-10 TO 10- 9           0  0.00000000E+00    0.13076073E-03
 
    Total weight and number of SD's (> 10 ** -11 )  : 
   =================================================
 
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-        72   .4962E-12       .4962E-12    5  2
-        10   .5223E-11       .5719E-11    6  1
+        94   .9850E-05       .9850E-05    5  2
+        12   .1308E-03       .1406E-03    6  1
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im    -1  2
@@ -3169,7 +3557,7 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
   Printout of coefficients in interval  0.3162E+00 to 0.1000E+01
   =========================================================
 
-  Coefficient of combination        3 is 0.99826035E+00
+  Coefficient of combination        3 is -.98912985E+00
   Corresponding alpha- and beta-strings
   alpha   1   2   3   4
    beta   1   3   4
@@ -3188,77 +3576,77 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
   =========================================================
 
     ( no coefficients )
-  Norm of printed CI vector ..  0.99652373E+00
+  Norm of printed CI vector ..  0.97837785E+00
 
    Magnitude of CI coefficients 
   ==============================
 
-  10- 1 TO 10- 0           1  0.99652373E+00    0.99652373E+00
-  10- 2 TO 10- 1           9  0.12738188E-02    0.99779755E+00
-  10- 3 TO 10- 2          68  0.18078197E-02    0.99960537E+00
-  10- 4 TO 10- 3         119  0.26462452E-04    0.99963183E+00
-  10- 5 TO 10- 4          64  0.17129660E-06    0.99963200E+00
-  10- 6 TO 10- 5          13  0.36908621E-09    0.99963200E+00
-  10- 7 TO 10- 6           5  0.55825319E-12    0.99963200E+00
-  10- 8 TO 10- 7           4  0.31174322E-13    0.99963200E+00
-  10- 9 TO 10- 8          10  0.30619695E-15    0.99963200E+00
-  10-10 TO 10- 9          23  0.28476383E-17    0.99963200E+00
-  Number of coefficients less than  10-11 IS            11
+  10- 1 TO 10- 0           1  0.97837785E+00    0.97837785E+00
+  10- 2 TO 10- 1           4  0.63117613E-03    0.97900903E+00
+  10- 3 TO 10- 2          71  0.12380677E-02    0.98024710E+00
+  10- 4 TO 10- 3          88  0.15988259E-04    0.98026309E+00
+  10- 5 TO 10- 4          76  0.19288868E-06    0.98026328E+00
+  10- 6 TO 10- 5          30  0.98990440E-09    0.98026328E+00
+  10- 7 TO 10- 6           9  0.15479209E-11    0.98026328E+00
+  10- 8 TO 10- 7           4  0.14854802E-13    0.98026328E+00
+  10- 9 TO 10- 8           8  0.29770434E-15    0.98026328E+00
+  10-10 TO 10- 9          18  0.45892120E-17    0.98026328E+00
+  Number of coefficients less than  10-11 IS            18
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
 
 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10-11       265
+         Number of coefficients larger than 10-11       261
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           3  0.32747126E-03    0.32747126E-03
-  10- 3 TO 10- 2          40  0.13239310E-02    0.16514023E-02
-  10- 4 TO 10- 3         118  0.26220106E-04    0.16776224E-02
-  10- 5 TO 10- 4          64  0.17129660E-06    0.16777937E-02
-  10- 6 TO 10- 5          13  0.36908621E-09    0.16777941E-02
-  10- 7 TO 10- 6           2  0.27881428E-12    0.16777941E-02
-  10- 8 TO 10- 7           1  0.82506030E-14    0.16777941E-02
-  10- 9 TO 10- 8           7  0.25964492E-15    0.16777941E-02
-  10-10 TO 10- 9          17  0.86696870E-18    0.16777941E-02
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2          50  0.88216858E-03    0.88216858E-03
+  10- 4 TO 10- 3          80  0.13549571E-04    0.89571815E-03
+  10- 5 TO 10- 4          74  0.18220838E-06    0.89590036E-03
+  10- 6 TO 10- 5          30  0.98990440E-09    0.89590135E-03
+  10- 7 TO 10- 6           6  0.12657200E-11    0.89590135E-03
+  10- 8 TO 10- 7           1  0.12619629E-14    0.89590135E-03
+  10- 9 TO 10- 8           3  0.25118946E-15    0.89590135E-03
+  10-10 TO 10- 9          17  0.42601675E-17    0.89590135E-03
 
        Occupation of active sets :  6  1
-         Number of coefficients larger than 10-11        48
+         Number of coefficients larger than 10-11        45
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           6  0.94634755E-03    0.94634755E-03
-  10- 3 TO 10- 2          28  0.48388863E-03    0.14302362E-02
-  10- 4 TO 10- 3           1  0.24234607E-06    0.14304785E-02
-  10- 5 TO 10- 4           0  0.00000000E+00    0.14304785E-02
-  10- 6 TO 10- 5           0  0.00000000E+00    0.14304785E-02
-  10- 7 TO 10- 6           3  0.27943892E-12    0.14304785E-02
-  10- 8 TO 10- 7           3  0.22923719E-13    0.14304785E-02
-  10- 9 TO 10- 8           3  0.46552034E-16    0.14304785E-02
-  10-10 TO 10- 9           4  0.10346793E-17    0.14304785E-02
+  10- 2 TO 10- 1           4  0.63117613E-03    0.63117613E-03
+  10- 3 TO 10- 2          21  0.35589909E-03    0.98707522E-03
+  10- 4 TO 10- 3           8  0.24386875E-05    0.98951391E-03
+  10- 5 TO 10- 4           2  0.10680302E-07    0.98952459E-03
+  10- 6 TO 10- 5           0  0.00000000E+00    0.98952459E-03
+  10- 7 TO 10- 6           3  0.28220093E-12    0.98952459E-03
+  10- 8 TO 10- 7           3  0.13592840E-13    0.98952459E-03
+  10- 9 TO 10- 8           3  0.39049641E-16    0.98952459E-03
+  10-10 TO 10- 9           1  0.32904455E-18    0.98952459E-03
 
        Occupation of active sets :  7  0
          Number of coefficients larger than 10-11         3
 
-  10- 1 TO 10- 0           1  0.99652373E+00    0.99652373E+00
-  10- 2 TO 10- 1           0  0.00000000E+00    0.99652373E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.99652373E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.99652373E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.99652373E+00
-  10- 6 TO 10- 5           0  0.00000000E+00    0.99652373E+00
-  10- 7 TO 10- 6           0  0.00000000E+00    0.99652373E+00
-  10- 8 TO 10- 7           0  0.00000000E+00    0.99652373E+00
-  10- 9 TO 10- 8           0  0.00000000E+00    0.99652373E+00
-  10-10 TO 10- 9           2  0.94599031E-18    0.99652373E+00
+  10- 1 TO 10- 0           1  0.97837785E+00    0.97837785E+00
+  10- 2 TO 10- 1           0  0.00000000E+00    0.97837785E+00
+  10- 3 TO 10- 2           0  0.00000000E+00    0.97837785E+00
+  10- 4 TO 10- 3           0  0.00000000E+00    0.97837785E+00
+  10- 5 TO 10- 4           0  0.00000000E+00    0.97837785E+00
+  10- 6 TO 10- 5           0  0.00000000E+00    0.97837785E+00
+  10- 7 TO 10- 6           0  0.00000000E+00    0.97837785E+00
+  10- 8 TO 10- 7           0  0.00000000E+00    0.97837785E+00
+  10- 9 TO 10- 8           2  0.74652441E-17    0.97837785E+00
+  10-10 TO 10- 9           0  0.00000000E+00    0.97837785E+00
 
    Total weight and number of SD's (> 10 ** -11 )  : 
   =================================================
 
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-       265   .1678E-02       .1678E-02    5  2
-        48   .1430E-02       .3108E-02    6  1
-         3   .9965E+00       .9996E+00    7  0
+       261   .8959E-03       .8959E-03    5  2
+        45   .9895E-03       .1885E-02    6  1
+         3   .9784E+00       .9803E+00    7  0
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im     3  1
@@ -3340,40 +3728,40 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           3  0.66829292E-05    0.66829292E-05
-  10- 4 TO 10- 3           5  0.20904583E-05    0.87733876E-05
-  10- 5 TO 10- 4           2  0.16031573E-08    0.87749907E-05
-  10- 6 TO 10- 5           1  0.23520599E-10    0.87750142E-05
-  10- 7 TO 10- 6           0  0.00000000E+00    0.87750142E-05
-  10- 8 TO 10- 7           0  0.00000000E+00    0.87750142E-05
-  10- 9 TO 10- 8           0  0.00000000E+00    0.87750142E-05
-  10-10 TO 10- 9           1  0.10784775E-19    0.87750142E-05
-  Number of coefficients less than  10-11 IS             0
+  10- 3 TO 10- 2           1  0.16984491E-05    0.16984491E-05
+  10- 4 TO 10- 3           6  0.14192941E-05    0.31177432E-05
+  10- 5 TO 10- 4           2  0.84680320E-08    0.31262112E-05
+  10- 6 TO 10- 5           1  0.49912137E-10    0.31262611E-05
+  10- 7 TO 10- 6           1  0.56243709E-12    0.31262617E-05
+  10- 8 TO 10- 7           0  0.00000000E+00    0.31262617E-05
+  10- 9 TO 10- 8           0  0.00000000E+00    0.31262617E-05
+  10-10 TO 10- 9           0  0.00000000E+00    0.31262617E-05
+  Number of coefficients less than  10-11 IS             1
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
 
 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10-11        12
+         Number of coefficients larger than 10-11        11
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           3  0.66829292E-05    0.66829292E-05
-  10- 4 TO 10- 3           5  0.20904583E-05    0.87733876E-05
-  10- 5 TO 10- 4           2  0.16031573E-08    0.87749907E-05
-  10- 6 TO 10- 5           1  0.23520599E-10    0.87750142E-05
-  10- 7 TO 10- 6           0  0.00000000E+00    0.87750142E-05
-  10- 8 TO 10- 7           0  0.00000000E+00    0.87750142E-05
-  10- 9 TO 10- 8           0  0.00000000E+00    0.87750142E-05
-  10-10 TO 10- 9           1  0.10784775E-19    0.87750142E-05
+  10- 3 TO 10- 2           1  0.16984491E-05    0.16984491E-05
+  10- 4 TO 10- 3           6  0.14192941E-05    0.31177432E-05
+  10- 5 TO 10- 4           2  0.84680320E-08    0.31262112E-05
+  10- 6 TO 10- 5           1  0.49912137E-10    0.31262611E-05
+  10- 7 TO 10- 6           1  0.56243709E-12    0.31262617E-05
+  10- 8 TO 10- 7           0  0.00000000E+00    0.31262617E-05
+  10- 9 TO 10- 8           0  0.00000000E+00    0.31262617E-05
+  10-10 TO 10- 9           0  0.00000000E+00    0.31262617E-05
 
    Total weight and number of SD's (> 10 ** -11 )  : 
   =================================================
 
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-        12   .8775E-05       .8775E-05    5  2
+        11   .3126E-05       .3126E-05    5  2
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im     7  1
@@ -3554,56 +3942,56 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
   ==============================
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           2  0.21616026E-03    0.21616026E-03
-  10- 3 TO 10- 2          11  0.13606051E-03    0.35222077E-03
-  10- 4 TO 10- 3          39  0.69610966E-05    0.35918187E-03
-  10- 5 TO 10- 4          20  0.41192967E-07    0.35922306E-03
-  10- 6 TO 10- 5          15  0.60118556E-09    0.35922366E-03
-  10- 7 TO 10- 6           4  0.11253744E-11    0.35922367E-03
-  10- 8 TO 10- 7           7  0.55598942E-14    0.35922367E-03
-  10- 9 TO 10- 8           5  0.17557144E-15    0.35922367E-03
-  10-10 TO 10- 9           6  0.22603404E-17    0.35922367E-03
-  Number of coefficients less than  10-11 IS             3
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           8  0.12376867E-03    0.12376867E-03
+  10- 4 TO 10- 3          27  0.34126970E-05    0.12718136E-03
+  10- 5 TO 10- 4          28  0.67555194E-07    0.12724892E-03
+  10- 6 TO 10- 5          15  0.32249611E-09    0.12724924E-03
+  10- 7 TO 10- 6          11  0.32805797E-11    0.12724924E-03
+  10- 8 TO 10- 7           6  0.12831377E-13    0.12724924E-03
+  10- 9 TO 10- 8           9  0.22385539E-15    0.12724924E-03
+  10-10 TO 10- 9           1  0.68777342E-19    0.12724924E-03
+  Number of coefficients less than  10-11 IS             7
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
 
 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10-11        97
+         Number of coefficients larger than 10-11        94
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           5  0.14278131E-04    0.14278131E-04
-  10- 4 TO 10- 3          39  0.69610966E-05    0.21239228E-04
-  10- 5 TO 10- 4          20  0.41192967E-07    0.21280421E-04
-  10- 6 TO 10- 5          15  0.60118556E-09    0.21281022E-04
-  10- 7 TO 10- 6           2  0.81737538E-12    0.21281023E-04
-  10- 8 TO 10- 7           7  0.55598942E-14    0.21281023E-04
-  10- 9 TO 10- 8           4  0.15367002E-15    0.21281023E-04
-  10-10 TO 10- 9           5  0.14875889E-17    0.21281023E-04
+  10- 3 TO 10- 2           3  0.68532863E-05    0.68532863E-05
+  10- 4 TO 10- 3          25  0.25053987E-05    0.93586850E-05
+  10- 5 TO 10- 4          27  0.58330555E-07    0.94170156E-05
+  10- 6 TO 10- 5          15  0.32249611E-09    0.94173381E-05
+  10- 7 TO 10- 6          10  0.31050791E-11    0.94173412E-05
+  10- 8 TO 10- 7           5  0.38237612E-14    0.94173412E-05
+  10- 9 TO 10- 8           8  0.20066216E-15    0.94173412E-05
+  10-10 TO 10- 9           1  0.68777342E-19    0.94173412E-05
 
        Occupation of active sets :  6  1
-         Number of coefficients larger than 10-11        12
+         Number of coefficients larger than 10-11        11
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           2  0.21616026E-03    0.21616026E-03
-  10- 3 TO 10- 2           6  0.12178238E-03    0.33794264E-03
-  10- 4 TO 10- 3           0  0.00000000E+00    0.33794264E-03
-  10- 5 TO 10- 4           0  0.00000000E+00    0.33794264E-03
-  10- 6 TO 10- 5           0  0.00000000E+00    0.33794264E-03
-  10- 7 TO 10- 6           2  0.30799903E-12    0.33794264E-03
-  10- 8 TO 10- 7           0  0.00000000E+00    0.33794264E-03
-  10- 9 TO 10- 8           1  0.21901416E-16    0.33794264E-03
-  10-10 TO 10- 9           1  0.77275158E-18    0.33794264E-03
+  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
+  10- 3 TO 10- 2           5  0.11691538E-03    0.11691538E-03
+  10- 4 TO 10- 3           2  0.90729824E-06    0.11782268E-03
+  10- 5 TO 10- 4           1  0.92246388E-08    0.11783190E-03
+  10- 6 TO 10- 5           0  0.00000000E+00    0.11783190E-03
+  10- 7 TO 10- 6           1  0.17550061E-12    0.11783190E-03
+  10- 8 TO 10- 7           1  0.90076160E-14    0.11783190E-03
+  10- 9 TO 10- 8           1  0.23193235E-16    0.11783190E-03
+  10-10 TO 10- 9           0  0.00000000E+00    0.11783190E-03
 
    Total weight and number of SD's (> 10 ** -11 )  : 
   =================================================
 
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-        97   .2128E-04       .2128E-04    5  2
-        12   .3379E-03       .3592E-03    6  1
+        94   .9417E-05       .9417E-05    5  2
+        11   .1178E-03       .1272E-03    6  1
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im    -1  1
@@ -3667,7 +4055,10 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
   Printout of coefficients in interval  0.1000E+00 to 0.3162E+00
   =========================================================
 
-    ( no coefficients )
+  Coefficient of combination        3 is -.13470662E+00
+  Corresponding alpha- and beta-strings
+  alpha   1   2   3   4
+   beta   1   3   4
 
   Printout of coefficients in interval  0.3162E-01 to 0.1000E+00
   =========================================================
@@ -3678,77 +4069,77 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
   =========================================================
 
     ( no coefficients )
-  Norm of printed CI vector ..  0.00000000E+00
+  Norm of printed CI vector ..  0.18145874E-01
 
    Magnitude of CI coefficients 
   ==============================
 
-  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
-  10- 6 TO 10- 5          13  0.19813638E-10    0.19813638E-10
-  10- 7 TO 10- 6          22  0.25914618E-11    0.22405100E-10
-  10- 8 TO 10- 7          56  0.13235439E-12    0.22537454E-10
-  10- 9 TO 10- 8          30  0.78323833E-15    0.22538237E-10
-  10-10 TO 10- 9          40  0.97874295E-17    0.22538247E-10
-  Number of coefficients less than  10-11 IS           166
+  10- 1 TO 10- 0           1  0.18145874E-01    0.18145874E-01
+  10- 2 TO 10- 1           3  0.42948923E-03    0.18575363E-01
+  10- 3 TO 10- 2          49  0.77393330E-03    0.19349296E-01
+  10- 4 TO 10- 3          91  0.19144913E-04    0.19368441E-01
+  10- 5 TO 10- 4          93  0.27858935E-06    0.19368720E-01
+  10- 6 TO 10- 5          28  0.60576212E-09    0.19368720E-01
+  10- 7 TO 10- 6           8  0.15172752E-11    0.19368720E-01
+  10- 8 TO 10- 7           6  0.11140663E-13    0.19368720E-01
+  10- 9 TO 10- 8           7  0.28423285E-15    0.19368720E-01
+  10-10 TO 10- 9          14  0.15807335E-17    0.19368720E-01
+  Number of coefficients less than  10-11 IS            27
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
 
 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10-11       128
+         Number of coefficients larger than 10-11       251
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
-  10- 6 TO 10- 5          10  0.16297997E-10    0.16297997E-10
-  10- 7 TO 10- 6          16  0.66928851E-12    0.16967285E-10
-  10- 8 TO 10- 7          55  0.12755694E-12    0.17094842E-10
-  10- 9 TO 10- 8          28  0.78115106E-15    0.17095623E-10
-  10-10 TO 10- 9          19  0.58435152E-17    0.17095629E-10
+  10- 2 TO 10- 1           1  0.10027468E-03    0.10027468E-03
+  10- 3 TO 10- 2          34  0.66550795E-03    0.76578263E-03
+  10- 4 TO 10- 3          75  0.15840267E-04    0.78162290E-03
+  10- 5 TO 10- 4          91  0.26923537E-06    0.78189213E-03
+  10- 6 TO 10- 5          28  0.60576212E-09    0.78189274E-03
+  10- 7 TO 10- 6           8  0.15172752E-11    0.78189274E-03
+  10- 8 TO 10- 7           3  0.58890912E-14    0.78189274E-03
+  10- 9 TO 10- 8           4  0.28180956E-16    0.78189274E-03
+  10-10 TO 10- 9           7  0.17975240E-18    0.78189274E-03
 
        Occupation of active sets :  6  1
-         Number of coefficients larger than 10-11        32
+         Number of coefficients larger than 10-11        47
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
-  10- 6 TO 10- 5           3  0.35156414E-11    0.35156414E-11
-  10- 7 TO 10- 6           6  0.19221733E-11    0.54378146E-11
-  10- 8 TO 10- 7           0  0.00000000E+00    0.54378146E-11
-  10- 9 TO 10- 8           2  0.20872660E-17    0.54378167E-11
-  10-10 TO 10- 9          21  0.39439143E-17    0.54378207E-11
+  10- 2 TO 10- 1           2  0.32921455E-03    0.32921455E-03
+  10- 3 TO 10- 2          15  0.10842534E-03    0.43763989E-03
+  10- 4 TO 10- 3          16  0.33046462E-05    0.44094454E-03
+  10- 5 TO 10- 4           2  0.93539803E-08    0.44095389E-03
+  10- 6 TO 10- 5           0  0.00000000E+00    0.44095389E-03
+  10- 7 TO 10- 6           0  0.00000000E+00    0.44095389E-03
+  10- 8 TO 10- 7           3  0.52515715E-14    0.44095389E-03
+  10- 9 TO 10- 8           3  0.25605190E-15    0.44095389E-03
+  10-10 TO 10- 9           6  0.13077509E-17    0.44095389E-03
 
        Occupation of active sets :  7  0
-         Number of coefficients larger than 10-11         1
+         Number of coefficients larger than 10-11         2
 
-  10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
-  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
-  10- 7 TO 10- 6           0  0.00000000E+00    0.00000000E+00
-  10- 8 TO 10- 7           1  0.47974534E-14    0.47974534E-14
-  10- 9 TO 10- 8           0  0.00000000E+00    0.47974534E-14
-  10-10 TO 10- 9           0  0.00000000E+00    0.47974534E-14
+  10- 1 TO 10- 0           1  0.18145874E-01    0.18145874E-01
+  10- 2 TO 10- 1           0  0.00000000E+00    0.18145874E-01
+  10- 3 TO 10- 2           0  0.00000000E+00    0.18145874E-01
+  10- 4 TO 10- 3           0  0.00000000E+00    0.18145874E-01
+  10- 5 TO 10- 4           0  0.00000000E+00    0.18145874E-01
+  10- 6 TO 10- 5           0  0.00000000E+00    0.18145874E-01
+  10- 7 TO 10- 6           0  0.00000000E+00    0.18145874E-01
+  10- 8 TO 10- 7           0  0.00000000E+00    0.18145874E-01
+  10- 9 TO 10- 8           0  0.00000000E+00    0.18145874E-01
+  10-10 TO 10- 9           1  0.93230204E-19    0.18145874E-01
 
    Total weight and number of SD's (> 10 ** -11 )  : 
   =================================================
 
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-       128   .1710E-10       .1710E-10    5  2
-        32   .5438E-11       .2253E-10    6  1
-         1   .4797E-14       .2254E-10    7  0
+       251   .7819E-03       .7819E-03    5  2
+        47   .4410E-03       .1223E-02    6  1
+         2   .1815E-01       .1937E-01    7  0
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im     3  2
@@ -3830,40 +4221,40 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
-  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
-  10- 7 TO 10- 6           5  0.23379672E-12    0.23379672E-12
-  10- 8 TO 10- 7           1  0.93063672E-14    0.24310309E-12
-  10- 9 TO 10- 8           2  0.49481418E-16    0.24315257E-12
-  10-10 TO 10- 9           1  0.72596283E-18    0.24315330E-12
-  Number of coefficients less than  10-11 IS             3
+  10- 3 TO 10- 2           2  0.50481991E-05    0.50481991E-05
+  10- 4 TO 10- 3           4  0.59603947E-06    0.56442386E-05
+  10- 5 TO 10- 4           4  0.45090884E-08    0.56487477E-05
+  10- 6 TO 10- 5           1  0.54559191E-11    0.56487531E-05
+  10- 7 TO 10- 6           0  0.00000000E+00    0.56487531E-05
+  10- 8 TO 10- 7           0  0.00000000E+00    0.56487531E-05
+  10- 9 TO 10- 8           0  0.00000000E+00    0.56487531E-05
+  10-10 TO 10- 9           0  0.00000000E+00    0.56487531E-05
+  Number of coefficients less than  10-11 IS             1
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
 
 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10-11         9
+         Number of coefficients larger than 10-11        11
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
-  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
-  10- 7 TO 10- 6           5  0.23379672E-12    0.23379672E-12
-  10- 8 TO 10- 7           1  0.93063672E-14    0.24310309E-12
-  10- 9 TO 10- 8           2  0.49481418E-16    0.24315257E-12
-  10-10 TO 10- 9           1  0.72596283E-18    0.24315330E-12
+  10- 3 TO 10- 2           2  0.50481991E-05    0.50481991E-05
+  10- 4 TO 10- 3           4  0.59603947E-06    0.56442386E-05
+  10- 5 TO 10- 4           4  0.45090884E-08    0.56487477E-05
+  10- 6 TO 10- 5           1  0.54559191E-11    0.56487531E-05
+  10- 7 TO 10- 6           0  0.00000000E+00    0.56487531E-05
+  10- 8 TO 10- 7           0  0.00000000E+00    0.56487531E-05
+  10- 9 TO 10- 8           0  0.00000000E+00    0.56487531E-05
+  10-10 TO 10- 9           0  0.00000000E+00    0.56487531E-05
 
    Total weight and number of SD's (> 10 ** -11 )  : 
   =================================================
 
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-         9   .2432E-12       .2432E-12    5  2
+        11   .5649E-05       .5649E-05    5  2
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im     7  2
@@ -4044,56 +4435,56 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
   ==============================
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
-  10- 6 TO 10- 5           1  0.34837894E-11    0.34837894E-11
-  10- 7 TO 10- 6           8  0.71095344E-12    0.41947428E-11
-  10- 8 TO 10- 7          22  0.38433972E-13    0.42331768E-11
-  10- 9 TO 10- 8          19  0.33499478E-15    0.42335118E-11
-  10-10 TO 10- 9          10  0.20836638E-17    0.42335139E-11
-  Number of coefficients less than  10-11 IS            52
+  10- 2 TO 10- 1           1  0.11621199E-03    0.11621199E-03
+  10- 3 TO 10- 2           6  0.11022059E-03    0.22643258E-03
+  10- 4 TO 10- 3          31  0.54723941E-05    0.23190498E-03
+  10- 5 TO 10- 4          31  0.69230584E-07    0.23197421E-03
+  10- 6 TO 10- 5          12  0.22918748E-09    0.23197444E-03
+  10- 7 TO 10- 6           7  0.24674594E-11    0.23197444E-03
+  10- 8 TO 10- 7           8  0.15982323E-13    0.23197444E-03
+  10- 9 TO 10- 8           8  0.28418255E-15    0.23197444E-03
+  10-10 TO 10- 9           3  0.97919869E-18    0.23197444E-03
+  Number of coefficients less than  10-11 IS             5
 
    Magnitude of CI coefficients for each excitation level 
   =========================================================
 
 
        Occupation of active sets :  5  2
-         Number of coefficients larger than 10-11        52
+         Number of coefficients larger than 10-11        95
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
   10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
-  10- 6 TO 10- 5           0  0.00000000E+00    0.00000000E+00
-  10- 7 TO 10- 6           7  0.41794661E-12    0.41794661E-12
-  10- 8 TO 10- 7          22  0.38433972E-13    0.45638058E-12
-  10- 9 TO 10- 8          19  0.33499478E-15    0.45671558E-12
-  10-10 TO 10- 9           4  0.10449040E-17    0.45671662E-12
+  10- 3 TO 10- 2           2  0.75602878E-05    0.75602878E-05
+  10- 4 TO 10- 3          28  0.42339326E-05    0.11794220E-04
+  10- 5 TO 10- 4          31  0.69230584E-07    0.11863451E-04
+  10- 6 TO 10- 5          12  0.22918748E-09    0.11863680E-04
+  10- 7 TO 10- 6           6  0.23496402E-11    0.11863683E-04
+  10- 8 TO 10- 7           7  0.99536190E-14    0.11863683E-04
+  10- 9 TO 10- 8           7  0.26971054E-15    0.11863683E-04
+  10-10 TO 10- 9           2  0.42531374E-18    0.11863683E-04
 
        Occupation of active sets :  6  1
-         Number of coefficients larger than 10-11         8
+         Number of coefficients larger than 10-11        12
 
   10- 1 TO 10- 0           0  0.00000000E+00    0.00000000E+00
-  10- 2 TO 10- 1           0  0.00000000E+00    0.00000000E+00
-  10- 3 TO 10- 2           0  0.00000000E+00    0.00000000E+00
-  10- 4 TO 10- 3           0  0.00000000E+00    0.00000000E+00
-  10- 5 TO 10- 4           0  0.00000000E+00    0.00000000E+00
-  10- 6 TO 10- 5           1  0.34837894E-11    0.34837894E-11
-  10- 7 TO 10- 6           1  0.29300682E-12    0.37767962E-11
-  10- 8 TO 10- 7           0  0.00000000E+00    0.37767962E-11
-  10- 9 TO 10- 8           0  0.00000000E+00    0.37767962E-11
-  10-10 TO 10- 9           6  0.10387598E-17    0.37767973E-11
+  10- 2 TO 10- 1           1  0.11621199E-03    0.11621199E-03
+  10- 3 TO 10- 2           4  0.10266030E-03    0.21887230E-03
+  10- 4 TO 10- 3           3  0.12384615E-05    0.22011076E-03
+  10- 5 TO 10- 4           0  0.00000000E+00    0.22011076E-03
+  10- 6 TO 10- 5           0  0.00000000E+00    0.22011076E-03
+  10- 7 TO 10- 6           1  0.11781915E-12    0.22011076E-03
+  10- 8 TO 10- 7           1  0.60287036E-14    0.22011076E-03
+  10- 9 TO 10- 8           1  0.14472008E-16    0.22011076E-03
+  10-10 TO 10- 9           1  0.55388495E-18    0.22011076E-03
 
    Total weight and number of SD's (> 10 ** -11 )  : 
   =================================================
 
          N      Weight      Acc. Weight   Occupation 
   ===================================================
-        52   .4567E-12       .4567E-12    5  2
-         8   .3777E-11       .4234E-11    6  1
+        95   .1186E-04       .1186E-04    5  2
+        12   .2201E-03       .2320E-03    6  1
 
  ----------------------------------------------
  Contrib. Kramers proj., real/im    -1  2
@@ -4152,17 +4543,17 @@ SOfock:SS  1.00D-12   63.97%   21.46%    3.33%    8.80%   0.13200808s
 
  (ROPTST)  KR-CI calculation ended after   20 CI iterations.
 
->>> TOTAL CPU (WALL) TIME IN KR-CI:  3min45.298s( 3min46.000s)
+>>> TOTAL CPU (WALL) TIME IN KR-CI: 40.62282562s(42.00000000s)
 
 
 
 
  
-     Date and time (Linux)  : Wed Aug 26 10:02:59 2009 
-     Host name              : linux-1ypw.                             
->>>> Node 0, utime: 73, stime: 156, minflt: 126654, majflt: 0, nvcsw: 29, nivcsw: 10167
->>>> Total WALL time used in DIRAC: 3min51s
+     Date and time (Linux)  : Wed Nov  3 15:39:24 2010 
+     Host name              : fe6                                     
 *****************************************************
+>>>> Node 0, utime: 42, stime: 0, minflt: 207794, majflt: 0, nvcsw: 615, nivcsw: 256, maxrss: 0
+>>>> Total WALL time used in DIRAC: 44s
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 
