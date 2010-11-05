@@ -1215,8 +1215,6 @@ C               MVCSMD(LUIN,FAC,LUOUT,LUSCR,VEC1,VEC2,NVEC,IREW,LBLK)
          RNORM = SQRT( INPRDD(VEC1,VEC1,LU4,LU4,0,LBLK)
      &         +       INPRDD(VEC1,VEC1,LU4,LU4,0,LBLK) )
          RNRM(IROOT,ITER) = RNORM
-         WRITE(LUWRT,'(A19,7X,I3,3X,1E18.13,3X,1F19.12)')
-     &     ' Iter RNORM EIGAPR ', ITER,RNORM,EIGAPR+EIGSHF
 *
 * Flush output buffer
          CALL FLSHFO(6)
@@ -1228,6 +1226,8 @@ C               MVCSMD(LUIN,FAC,LUOUT,LUSCR,VEC1,VEC2,NVEC,IREW,LBLK)
             RTCNV(IROOT) = .FALSE.
             CONVER = .FALSE.
          END IF
+         WRITE(LUWRT,'(A19,I5,1P,E15.6,0P,F20.12,L10)')
+     &     ' Iter RNORM EIGAPR RTCNV', ITER,RNORM,EIGAPR+EIGSHF,RTCNV
 * I suppose this is only a check for the necessity of defining
 * a new search direction. Using intermediate ITERIM instead ...
 CTF      ITER = ITER + 1
@@ -1567,11 +1567,16 @@ C!?      ITER = ITER - 1
      &    ' Information about convergence for root... ' ,IROOT,
      &    ' ============================================'
           FINEIG(IROOT) = EIG(IROOT,ITER)
-          WRITE(LUWRT,1190) FINEIG(IROOT)+EIGSHF
- 1190     FORMAT(' The final approximation to eigenvalue ',F22.10)
+          IF (RTCNV(IROOT)) THEN
+             WRITE(LUWRT,1190) IROOT,FINEIG(IROOT)+EIGSHF
+          ELSE
+             WRITE(LUWRT,1191) IROOT,FINEIG(IROOT)+EIGSHF
+          END IF
+ 1190 FORMAT(' The final eigenvalue',I5,F22.10,' (converged)')
+ 1191 FORMAT(' The final eigenvalue',I5,F22.10,' (NOT converged)')
           IF(IPRT.GE.10) THEN
-            WRITE(LUWRT,1201)
- 1201       FORMAT(/' The final approximation to eigenvector')
+            WRITE(LUWRT,1201) IROOT
+ 1201       FORMAT(/' The final approximation to eigenvector',I5)
             CALL WRTVCDC(VEC1,LU1,0,IRC,LBLK)
  1200       FORMAT(/' The final sigma vector')
             CALL WRTVCDC(VEC1,LU2,0,IRC,LBLK)
@@ -1592,8 +1597,11 @@ C!?      ITER = ITER - 1
         write(LUWRT,*)
         do 1601 IROOT = 1, NROOT
           FINEIG(IROOT) = EIG(IROOT,ITER)+EIGSHF
-          write(LUWRT,9000) ' Final Eigenvalue ',IROOT,' : ',
-     &                        FINEIG(IROOT)
+          IF (RTCNV(IROOT)) THEN
+             WRITE(LUWRT,1190) IROOT,FINEIG(IROOT)
+          ELSE
+             WRITE(LUWRT,1191) IROOT,FINEIG(IROOT)
+          END IF
  1601   continue
         write(LUWRT,*)
         write(LUWRT,*) '*++++++++++++++++++++++++++++++++++++++++++++*'
@@ -1601,8 +1609,6 @@ C!?      ITER = ITER - 1
       end if
 *
       ECI = EIG(1,ITER)
-*
- 9000 format(A18,1I3,A3,F20.13)
 *
       IF(IPRT .EQ. 1 ) THEN
         DO 1607 IROOT = 1, NROOT
@@ -2705,14 +2711,19 @@ C      END IF
      &    ' Information about convergence for root...' ,IROOT,
      &    '==============================================='
           FINEIG(IROOT) = EIG(ITER,IROOT)
-          WRITE(6,1190) FINEIG(IROOT)+EIGSHF
- 1190     FORMAT(' The final approximation to eigenvalue ',F18.10)
+          IF (RTCNV(IROOT)) THEN
+             WRITE(6,1190) IROOT,FINEIG(IROOT)+EIGSHF
+          ELSE
+             WRITE(6,1191) IROOT,FINEIG(IROOT)+EIGSHF
+          END IF
+ 1190 FORMAT(' The final eigenvalue',I5,F22.10,' (converged)')
+ 1191 FORMAT(' The final eigenvalue',I5,F22.10,' (NOT converged)')
           IF(IPRT.GE.400) THEN
-            WRITE(6,1200)
- 1200       FORMAT(/' The final approximation to eigenvector')
+            WRITE(6,1200) IROOT
+ 1200       FORMAT(/' The final approximation to eigenvector',I5)
             CALL WRTVCD(VEC1,LU1,0,LBLK)
           END IF
- 1340     FORMAT(1H ,6X,I4,8X,F20.13,2X,E12.5)
+ 1340     FORMAT(I10,F28.13,E14.5)
  1600   CONTINUE
       ELSE
         write(6,*)
@@ -2739,8 +2750,8 @@ C      END IF
            WRITE(6,'(3X,I3,2X,I3,3X,F18.10,2X,E10.3,3X,E10.3)')
      &               ITER,IROOT,FINEIG(IROOT),RNRM(ITER,IROOT),
      &               RNRM(1,IROOT)/RNRM(ITER,IROOT)
-           write(6,'(A,F18.10)') 
-     &               ' Final energy ',FINEIG(IROOT)
+           write(6,'(A,I5,F20.10)') 
+     &               ' Final energy root',IROOT,FINEIG(IROOT)
  1601   CONTINUE
       END IF
 *
@@ -2826,7 +2837,7 @@ C      END IF
 *      H0SCR  : 2*(NP1+NP2) ** 2 +  4 * (NP1+NP2+NQ)
 *
        DIMENSION FINEIG(1)
-       LOGICAL CONVER,RTCNV(10)
+       LOGICAL CONVER,RTCNV(100)
        REAL*8 INPRDD
        CHARACTER SECTID*12, CPUTID*12, WALLTID*12,FILELAB*8
 *
@@ -3247,8 +3258,13 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
      &    '============================================'
           WRITE(LUWRT,*)
           FINEIG(IROOT) = EIG(ITER,IROOT)
-          WRITE(LUWRT,1190) FINEIG(IROOT)+EIGSHF
- 1190     FORMAT(' The final approximation to eigenvalue ',F18.10)
+          IF (RTCNV(IROOT)) THEN
+             WRITE(6,1190) IROOT,FINEIG(IROOT)+EIGSHF
+          ELSE
+             WRITE(6,1191) IROOT,FINEIG(IROOT)+EIGSHF
+          END IF
+ 1190 FORMAT(' The final eigenvalue',I5,F22.10,' (converged)')
+ 1191 FORMAT(' The final eigenvalue',I5,F22.10,' (NOT converged)')
           IF(IPRT.GE.400) THEN
             WRITE(LUWRT,1200)
  1200       FORMAT(' The final approximation to eigenvector ')
@@ -3269,21 +3285,19 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
         write(LUWRT,*)
         write(LUWRT,*) '*++++++++++++++++++++++++++++++++++++++++++++*'
         write(LUWRT,*)
-        DO 1601 IROOT = 1, NROOT
+        DO IROOT = 1, NROOT
           FINEIG(IROOT) = EIG(ITER,IROOT)+EIGSHF
-          write(LUWRT,9000) ' Final Eigenvalue ',IROOT,' : ',
-     & FINEIG(IROOT)
-          IF(IPRT.GE.400) THEN
-            WRITE(LUWRT,1200)
-            CALL WRTVCD(VEC1,LU1,0,LBLK)
+          IF (RTCNV(IROOT)) THEN
+             WRITE(6,1190) IROOT,FINEIG(IROOT)
+          ELSE
+             WRITE(6,1191) IROOT,FINEIG(IROOT)
           END IF
- 1601   CONTINUE
+        END DO
         write(LUWRT,*)
         write(LUWRT,*) '*++++++++++++++++++++++++++++++++++++++++++++*'
         write(LUWRT,*)
       END IF
 *
- 9000 format(A18,1I3,A3,F20.13)
 *
       IF(IPRT .EQ. 1 ) THEN
         DO 1607 IROOT = 1, NROOT

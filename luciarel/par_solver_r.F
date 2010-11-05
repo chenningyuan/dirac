@@ -681,8 +681,13 @@ C
      &    '============================================'
           WRITE(LUWRT,*)
           FINEIG(IROOT) = EIG(ITER,IROOT)
-          WRITE(LUWRT,1190) FINEIG(IROOT)+EIGSHF
- 1190     FORMAT(' The final approximation to eigenvalue ',F18.10)
+          IF (RTCNV(IROOT)) THEN
+             WRITE(LUWRT,1190) IROOT,FINEIG(IROOT)+EIGSHF
+          ELSE
+             WRITE(LUWRT,1191) IROOT,FINEIG(IROOT)+EIGSHF
+          END IF
+ 1190 FORMAT(' The final eigenvalue',I5,F22.10,' (converged)')
+ 1191 FORMAT(' The final eigenvalue',I5,F22.10,' (NOT converged)')
           WRITE(LUWRT,1300)
  1300     FORMAT(1H0,' Summary of iterations ',/,1H
      +          ,' ----------------------')
@@ -698,14 +703,16 @@ C
      &  '  *++++++++++++++++++++++++++++++++++++++++++++*'
         DO 1601 IROOT = 1, NROOT
           FINEIG(IROOT) = EIG(ITER,IROOT)+EIGSHF
-          write(LUWRT,9000) '   Final Eigenvalue ',IROOT,' : ',
-     & FINEIG(IROOT)
+          IF (RTCNV(IROOT)) THEN
+             WRITE(LUWRT,1190) IROOT,FINEIG(IROOT)
+          ELSE
+             WRITE(LUWRT,1191) IROOT,FINEIG(IROOT)
+          END IF
  1601   CONTINUE
         write(LUWRT,'(/A/)')
      &  '  *++++++++++++++++++++++++++++++++++++++++++++*'
       END IF
 *
- 9000 FORMAT(A20,1I3,A3,F20.13)
       IF(IPRT .EQ. 1 ) THEN
         DO 1607 IROOT = 1, NROOT
           WRITE(LUWRT,'(A,2I3,E13.6,2E10.3)')
@@ -1443,8 +1450,13 @@ C!?      ITER = ITER - 1
      &    ' Information about convergence for root... ' ,IROOT,
      &    ' ============================================'
           FINEIG(IROOT) = EIG(IROOT,ITER)
-          WRITE(LUWRT,1190) FINEIG(IROOT)+EIGSHF
- 1190     FORMAT(' The final approximation to eigenvalue ',F22.10)
+          IF (RTCNV(IROOT)) THEN
+             WRITE(LUWRT,1190) IROOT,FINEIG(IROOT)+EIGSHF
+          ELSE
+             WRITE(LUWRT,1191) IROOT,FINEIG(IROOT)+EIGSHF
+          END IF
+ 1190 FORMAT(' The final eigenvalue',I5,F22.10,' (converged)')
+ 1191 FORMAT(' The final eigenvalue',I5,F22.10,' (NOT converged)')
           WRITE(LUWRT,1300)
  1300     FORMAT(/'  Summary of iterations '
      +           /'  ----------------------')
@@ -1461,8 +1473,11 @@ C!?      ITER = ITER - 1
         write(LUWRT,*)
         do 1601 IROOT = 1, NROOT
           FINEIG(IROOT) = EIG(IROOT,ITER)+EIGSHF
-          write(LUWRT,9000) ' Final Eigenvalue ',IROOT,' : ',
-     &                        FINEIG(IROOT)
+          IF (RTCNV(IROOT)) THEN
+             WRITE(LUWRT,1190) IROOT,FINEIG(IROOT)
+          ELSE
+             WRITE(LUWRT,1191) IROOT,FINEIG(IROOT)
+          END IF
  1601   continue
         write(LUWRT,*)
         write(LUWRT,*) '*++++++++++++++++++++++++++++++++++++++++++++*'
@@ -1471,7 +1486,6 @@ C!?      ITER = ITER - 1
 *
       ECI = EIG(1,ITER)
 *
- 9000 format(A20,1I3,A3,F20.13)
 *
       IF(IPRT .EQ. 1 ) THEN
         DO 1607 IROOT = 1, NROOT
