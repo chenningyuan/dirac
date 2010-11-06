@@ -118,6 +118,9 @@ class pam_enviroment(workdir_class):
     self.iprint=1
      ### contains installation directory ...
     self.dirac_home=install_dir
+
+    ## basis set directory
+    #self.basdir=self.dirac_home+"/basis:"+self.dirac_home+"/basis_dalton"
     self.basdir=''
 
     # ... object from the inherited "workdirectory" class 
@@ -126,7 +129,7 @@ class pam_enviroment(workdir_class):
     self.output_file=''
 
     # parallel stuff 
-    self.parallel = False
+    self.parallel=False
     self.mpirun=''
     self.mpi=1
 
@@ -139,6 +142,7 @@ class pam_enviroment(workdir_class):
     self.dirac_exe=self.dirac_home
 
     self.mem = 64
+    self.maxmem=''
     self.slavemem = 64
 
     self.full_restart=False
@@ -194,17 +198,24 @@ class pam_enviroment(workdir_class):
                   action="store", dest="dest_iprint", default=1,
                   help=this_label, metavar="INT_NUM")
 
-  # ... get in the  mw
+  # ... get in the "mw"
     this_label='memory (in megawords) for the master, default:'+str(self.mem)
     parser.add_option("--mw", type="int", nargs=1,  
                   action="store", dest="dest_mw", default=64,
                   help=this_label, metavar="INT_NUM")
 
-    # ... get in the  nw
+    # ... get in the "nw" ...
     this_label='memory (in megawords) for nodes, default:'+str(self.slavemem)
     parser.add_option("--nw", type="int", nargs=1,  
                   action="store", dest="dest_nw", default=64,
                   help=this_label, metavar="INT_NUM")
+
+    # ... get in the "aw"
+    this_label='maximum memory(in megawords) that can be allocated dynamically (per allocation) '
+    parser.add_option("--aw", type="int", nargs=1,  
+                  action="store", dest="dest_aw",
+                  help=this_label, metavar="INT_NUM")
+
 
     # ... get in the parallel stuff, TODO: add default from Makefile.config
     this_label="mpi launcher, default..."
@@ -214,7 +225,7 @@ class pam_enviroment(workdir_class):
 
     this_label='run parallel with n nodes, default: serial run'
     parser.add_option("--mpi", type="int", nargs=1,  
-                  action="store", dest="dest_mpi", default=self.mpi,
+                  action="store", dest="dest_mpi", 
                   help=this_label, metavar="INT_NUM")
 
     # ... get in the timeout limit (in seconds)
@@ -227,6 +238,12 @@ class pam_enviroment(workdir_class):
     this_label="pam.py\'s directory, default:"+install_dir_default
     parser.add_option("--install_dir", type="string", nargs=1,
                   action="store",dest="dest_install_dir",  
+                  help=this_label,metavar="STRING")
+
+    # .. read in the install_dir, what is the basic global variable...
+    this_label="basis set directory, default:"+self.basdir
+    parser.add_option("--basdir", type="string", nargs=1,
+                  action="store",dest="dest_basdir",  
                   help=this_label,metavar="STRING")
 
     # ... no backup 
@@ -266,27 +283,44 @@ class pam_enviroment(workdir_class):
      if self.iprint > 7:
       print 'assigned mw=',self.memslave
 
+    if (options.dest_aw is not None) :
+     self.maxmem=int(options.dest_aw)
+     if self.iprint > 7:
+      print 'assigned maxmem=',self.maxmem
+
     if (options.dest_mpi is not None) :
      self.mpi=int(options.dest_mpi)
      # todo: check number of mpi's wrt to computer architecture
-     self.parallel = True 
+     self.parallel=True
      if self.iprint > 7:
+      print 'parallel TRUE !',options.dest_mpi
       print 'assigned mpi=',self.mpi
 
     if (options.dest_mpirun is not None):
-     self.mpirun=int(options.dest_mpirun)
+     self.mpirun=options.dest_mpirun
      # todo: check it
      self.parallel = True 
      if self.iprint > 7:
+      print 'parallel TRUE  2!'
       print 'assigned mpirun=',self.mpirun
 
     if (options.dest_install_dir is not None) :
      install_dir=str(options.dest_install_dir)
-     print 'assigned install_dir=',install_dir
      if self.iprint > 7:
       print 'assigned install-dir=',install_dir
     elif (install_dir_default is None) :
      sys.exit("you must set the installation directory !")
+
+    if (options.dest_basdir is not None) :
+     self.basdir=str(options.dest_basdir)
+     if self.iprint > 7:
+      print 'assigned basdir=',self.basdir
+    else:
+     #self.basdir=self.dirac_home+"/basis:"+self.dirac_home+"/basis_dalton"
+     self.basdir=install_dir+"/basis:"+install_dir+"/basis_dalton"
+     if self.iprint > 7:
+      print 'default basdir=',self.basdir
+
 
     if (options.dest_timeout is not None) :
       self.timeout=int(options.dest_timeout)
@@ -310,15 +344,13 @@ class pam_enviroment(workdir_class):
         print 'assigned wrkdir_obj.keepwrk =',self.wrkdir_obj.keepwrk
 
 
-
-
-
-
     # append external dirac modules to the path dir
     append_dirac_py_modules(install_dir)
 
     # remaining arguments - *.mol and *.inp files
     process_remaining_args(args)
+
+    print 'Parallel ?:',self.parallel
 
   def set_wrkdir(self):
   # ... creates the workdir, copies wanted files
@@ -351,12 +383,41 @@ class pam_enviroment(workdir_class):
     self.output_file=self.output_name+"."+self.output_suffix
     print 'output file..',self.output_file
  
+  def set_dirac_environment(self):
+  # export important variables for DIRAC
+  # TODO: implement for WINDOWS
+
+    """ basis set directory """
+    os.putenv("BASDIR",self.basdir)
+
+
+    dirwrk  =  str( self.mem     *1000000 )
+    if (self.parallel) :
+      os.putenv("DIRPAR","1")
+      dirnod  =  str( self.memslave*1000000 )
+
+    if (self.maxmem is not None): 
+      dirmaxmem=str( self.maxmem*1000000 )
+      os.putenv("DIRMAX",dirmaxmem)
+ 
+    #print dirwrk,dirwrk
+    os.putenv("DIRWRK", dirwrk)
+    if (self.parallel) :
+      os.putenv("DIRNOD", dirnod)
+ 
+  # Next line is for IBM only but will not hurt other systems
+    os.putenv("XLFRTEOPTS","'namelist=old'")
+
+    # control printout ... giving None
+    print "DIRWRK=",os.getenv("$DIRWRK")
+
   def set_dirac_cmd(self):
   # set the dirac command
     if (self.parallel):
       # DIRAC_CMD="$DIRAC_CMD -np $MPI_NPROC -wd $WRK"
       # and/if  $DIRAC_CMD -machinefile $MACH_FILE $DIRAC_CMD
-      self.dirac_cmd=self.mpirun+" -np "+self.mpi+" -wd"+self.wrkdir_obj.workdir
+      self.dirac_cmd=self.mpirun+" -np "+str(self.mpi)+" -wd "+self.wrkdir_obj.workdir
+      self.dirac_cmd=self.dirac_cmd+' dirac.x'
     else:
       self.dirac_cmd='dirac.x'
 
@@ -380,8 +441,6 @@ class pam_enviroment(workdir_class):
     # go to the working directory
     os.chdir(self.wrkdir_obj.workdir)
 
-    set_dirac_cmd()
-
     if (self.nobackup is False):
       from common import backup_file
       backup_file(some_file=home_dir+"/"+self.output_file,upto=None)
@@ -393,16 +452,21 @@ class pam_enviroment(workdir_class):
       signal.signal(signal.SIGALRM, signal_handler)
       signal.alarm(self.timeout)   # 
 
+    if (self.parallel) :
+      print 'executing parallel dirac'
+    else :
+      print 'executing serial dirac'
+
     try:
-      print 'executing dirac ...'
-      p=subprocess.Popen(self.dirac_cmd, shell=False, stdin=subprocess.PIPE, stdout=f)
+      print 'executing dirac ...',self.dirac_cmd
+      #p=subprocess.Popen(self.dirac_cmd, shell=False, stdin=subprocess.PIPE, stdout=f)
+      p=subprocess.Popen(self.dirac_cmd, shell=True, stdin=subprocess.PIPE, stdout=f)
       print 'p.pid=',p.pid
       p.wait()
       f.close()
       signal.alarm(0)    
     except:
-      print "dirac run interrupted !"
-      p.kill()
+      print "dirac launching failed with command ",self.dirac_cmd
 
     print 'pam: end of executable run...'
 
@@ -451,6 +515,8 @@ class pam_run(pam_enviroment):
     self.pam_variables.set_wrkdir()
     self.pam_variables.set_output_file()
     self.pam_variables.print_header()
+    self.pam_variables.set_dirac_environment()
+    self.pam_variables.set_dirac_cmd()
     self.pam_variables.execute_dirac()
     self.pam_variables.remove_work_dir()
 
