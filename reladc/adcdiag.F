@@ -1774,6 +1774,8 @@ C
       INTEGER IREC,NACT,JDUMMY,IROW,ICOL
       REAL*8 A
       INTEGER LONGRC,MASK
+!radovan: i get the following error with gfortran:
+!     Arithmetic overflow converting INTEGER(8) to INTEGER(4)
       DATA MASK/Z'00000000FFFFFFFF'/
 C
 C---------------Executable code--------------------------------------
@@ -1913,6 +1915,8 @@ C
       INTEGER IREC,NACT,JDUMMY,IROW,ICOL
       COMPLEX*16 A
       INTEGER LONGRC,MASK
+!radovan: i get the following error with gfortran:
+!     Arithmetic overflow converting INTEGER(8) to INTEGER(4)
       DATA MASK/Z'00000000FFFFFFFF'/
 C
 C---------------Executable code--------------------------------------
