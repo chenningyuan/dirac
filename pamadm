@@ -754,7 +754,7 @@ for module in dirac_modules:
             s += '-D%s ' % cppflag
 
 f = open('build/cmake.definitions', 'w')
-f.write('add_definitions(%s -DVAR_IFC -DPRG_DIRAC -DINSTALL_WRKMEM=100000)' % s)
+f.write('add_definitions(%s)' % s)
 f.close()
 
 
