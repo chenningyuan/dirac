@@ -203,7 +203,7 @@ abacus/hermodules.o: abacus/hermodules.F
 	@echo "abacus/hermodules.F compilation with 1st level (of 3) optimization"
 	$(F77) $(F77FLAGS_OPT_1) $(F77FLAGS_SAFE) -c -o $*.o $<
 
-matrix_operations/matrix_defop.o: matrix_operations/matrix_defop.f90
+matrix_operations/matrix_defop.o: matrix_operations/matrix_defop.F90
 	@echo "matrix_operations/matrix_defop.f90 compilation with 1st level (of 3) optimization"
 	$(F90) $(F77FLAGS_OPT_1) $(F90FLAGS_SAFE) -c -o $*.o $<
 
