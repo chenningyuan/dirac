@@ -6,8 +6,7 @@
 #
 # Reads crucial data from Makefile.config
 #
-#  Written by Miro ILIAS,Banska Bystrica, 2010
-#
+# Written by Miro ILIAS,Banska Bystrica, October, November, 2010
 #
 ##################################################
 
@@ -115,13 +114,6 @@ class pam_enviroment(workdir_class):
   #
     print 'pam_enviroment class initialize'
 
-    #global install_dir
-    #os.environ['PYTHONPATH']="/home/ilias/qch_work/qch_software/dirac/gfortran_noopt_ILP64_ownlibs/adm/trunk/utils"
-    #import common 
-
-    #sys.path.append('/home/ilias/qch_work/qch_software/dirac/gfortran_noopt_ILP64_ownlibs/adm/trunk/utils')
-    #import common 
-
      # print level
     self.iprint=1
      ### contains installation directory ...
@@ -133,12 +125,16 @@ class pam_enviroment(workdir_class):
     # ... output file
     self.output_file=''
 
+    # parallel stuff 
     self.parallel = False
+    self.mpirun=''
+    self.mpi=1
+
+    self.dirac_cmd=''
 
     self.profile = False
 
     self.profiler = ''
-    self.mpi=1
 
     self.dirac_exe=self.dirac_home
 
@@ -189,8 +185,9 @@ class pam_enviroment(workdir_class):
         sys.exit(-2)
 
     from optparse import OptionParser
-    usage="usage: %prog arg1 arg2..."
+    usage="usage: %prog [options] [*.mol] [*.inp]"
     parser = OptionParser(usage)
+
   # ... get in the print level 
     this_label='script verbose print level, default:'+str(1)
     parser.add_option("-i", "--iprint", type="int", nargs=1,  
@@ -207,6 +204,17 @@ class pam_enviroment(workdir_class):
     this_label='memory (in megawords) for nodes, default:'+str(self.slavemem)
     parser.add_option("--nw", type="int", nargs=1,  
                   action="store", dest="dest_nw", default=64,
+                  help=this_label, metavar="INT_NUM")
+
+    # ... get in the parallel stuff, TODO: add default from Makefile.config
+    this_label="mpi launcher, default..."
+    parser.add_option("--mpirun", type="string", nargs=1,
+                  action="store",dest="dest_mpirun",  
+                  help=this_label,metavar="STRING")
+
+    this_label='run parallel with n nodes, default: serial run'
+    parser.add_option("--mpi", type="int", nargs=1,  
+                  action="store", dest="dest_mpi", default=self.mpi,
                   help=this_label, metavar="INT_NUM")
 
     # ... get in the timeout limit (in seconds)
@@ -254,9 +262,23 @@ class pam_enviroment(workdir_class):
       print 'assigned mw=',self.mem
 
     if (options.dest_nw is not None) :
-     self.memslave=int(options.dest_mw)
+     self.memslave=int(options.dest_nw)
      if self.iprint > 7:
       print 'assigned mw=',self.memslave
+
+    if (options.dest_mpi is not None) :
+     self.mpi=int(options.dest_mpi)
+     # todo: check number of mpi's wrt to computer architecture
+     self.parallel = True 
+     if self.iprint > 7:
+      print 'assigned mpi=',self.mpi
+
+    if (options.dest_mpirun is not None):
+     self.mpirun=int(options.dest_mpirun)
+     # todo: check it
+     self.parallel = True 
+     if self.iprint > 7:
+      print 'assigned mpirun=',self.mpirun
 
     if (options.dest_install_dir is not None) :
      install_dir=str(options.dest_install_dir)
@@ -329,6 +351,15 @@ class pam_enviroment(workdir_class):
     self.output_file=self.output_name+"."+self.output_suffix
     print 'output file..',self.output_file
  
+  def set_dirac_cmd(self):
+  # set the dirac command
+    if (self.parallel):
+      # DIRAC_CMD="$DIRAC_CMD -np $MPI_NPROC -wd $WRK"
+      # and/if  $DIRAC_CMD -machinefile $MACH_FILE $DIRAC_CMD
+      self.dirac_cmd=self.mpirun+" -np "+self.mpi+" -wd"+self.wrkdir_obj.workdir
+    else:
+      self.dirac_cmd='dirac.x'
+
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def execute_dirac(self):
   #############################################################################################
@@ -349,6 +380,8 @@ class pam_enviroment(workdir_class):
     # go to the working directory
     os.chdir(self.wrkdir_obj.workdir)
 
+    set_dirac_cmd()
+
     if (self.nobackup is False):
       from common import backup_file
       backup_file(some_file=home_dir+"/"+self.output_file,upto=None)
@@ -362,7 +395,7 @@ class pam_enviroment(workdir_class):
 
     try:
       print 'executing dirac ...'
-      p=subprocess.Popen('dirac.x', shell=False, stdin=subprocess.PIPE, stdout=f)
+      p=subprocess.Popen(self.dirac_cmd, shell=False, stdin=subprocess.PIPE, stdout=f)
       print 'p.pid=',p.pid
       p.wait()
       f.close()
