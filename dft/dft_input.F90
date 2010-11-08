@@ -312,6 +312,11 @@ contains
            f%w(XC_SLATERX) = f%w(XC_SLATERX) + w
         end if
 
+        w = get_weight(word_array(i), 'vwn')
+        if (dabs(w) > tiny(0.0d0)) then
+           f%w(XC_VWN5C) = f%w(XC_VWN5C) + w
+        end if
+
         w = get_weight(word_array(i), 'becke')
         if (dabs(w) > tiny(0.0d0)) then
            f%w(XC_BECKEX) = f%w(XC_BECKEX) + w
