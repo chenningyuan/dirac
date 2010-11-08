@@ -71,49 +71,53 @@ contains
 
       read(unit_in, '(a7)', end=1) word
 
-      select case (word(1:1))
-
-        case ('!', '#')
-!         comment
-
-        case ('*')
-!         section
-          kw_section = uppercase(word)
-
-        case default
-!         keyword
-          select case (kw_section)
-
-!           case ('**METHO', '**WAVE ')
-!             call read_input_method(word, kw_section)
-
-            case ('*DFT   ')
-              call read_input_dft(word, kw_section)
-
-!           *VISUAL is for backward compatibility
-!           *VISUAL used to be under **ANALYZE
-            case ('**VISUA', '*VISUAL')
-              call read_input_visual(word, kw_section)
-
-            case ('*OPENRS')
-              call read_input_openrsp(word, kw_section)
-
-            case ('**RELCC')
-              call read_input_relcc(word, kw_section)
-
-            case ('*END OF')
-              go to 1
-
-!           case ('       ')
-!             call quit('keyword '//word//' without section')
-
-            case default
-!             activate as soon as everything is merged to here
-!             call quit('section '//kw_section//' not recognized')
-
-          end select
-
-      end select
+      if (word == '       ') then
+!         blank line
+      else
+         select case (word(1:1))
+         
+           case ('!', '#')
+!            comment
+         
+           case ('*')
+!            section
+             kw_section = uppercase(word)
+         
+           case default
+!            keyword
+             select case (kw_section)
+         
+!              case ('**METHO', '**WAVE ')
+!                call read_input_method(word, kw_section)
+         
+               case ('*DFT   ')
+                 call read_input_dft(word, kw_section)
+         
+!              *VISUAL is for backward compatibility
+!              *VISUAL used to be under **ANALYZE
+               case ('**VISUA', '*VISUAL')
+                 call read_input_visual(word, kw_section)
+         
+               case ('*OPENRS')
+                 call read_input_openrsp(word, kw_section)
+         
+               case ('**RELCC')
+                 call read_input_relcc(word, kw_section)
+         
+               case ('*END OF')
+                 go to 1
+         
+!              case ('       ')
+!                call quit('keyword '//word//' without section')
+         
+               case default
+!                activate as soon as everything is merged to here
+!                call quit('section '//kw_section//' not recognized')
+         
+             end select
+         
+         end select
+      end if
 
     end do
 
