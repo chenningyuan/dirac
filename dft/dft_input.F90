@@ -273,7 +273,7 @@ contains
       
         w = get_weight(word_array(i), 'lypc')
         if (dabs(w) > tiny(0.0d0)) then
-           f%w(XC_PBEC) = f%w(XC_LYPC) + w
+           f%w(XC_LYPC) = f%w(XC_LYPC) + w
         end if
       
         w = get_weight(word_array(i), 'hfx')
