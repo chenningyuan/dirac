@@ -271,6 +271,11 @@ contains
            f%w(XC_PBEC) = f%w(XC_PBEC) + w
         end if
       
+        w = get_weight(word_array(i), 'lypc')
+        if (dabs(w) > tiny(0.0d0)) then
+           f%w(XC_PBEC) = f%w(XC_LYPC) + w
+        end if
+      
         w = get_weight(word_array(i), 'hfx')
         if (dabs(w) > tiny(0.0d0)) then
            call add_hfx(w)
