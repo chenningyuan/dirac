@@ -311,6 +311,11 @@ contains
         if (dabs(w) > tiny(0.0d0)) then
            f%w(XC_SLATERX) = f%w(XC_SLATERX) + w
         end if
+
+        w = get_weight(word_array(i), 'becke')
+        if (dabs(w) > tiny(0.0d0)) then
+           f%w(XC_BECKEX) = f%w(XC_BECKEX) + w
+        end if
       
       end do
       
