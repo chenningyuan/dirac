@@ -744,7 +744,7 @@ for root, directory_l, file_l in os.walk('./'):
                    s += '%s\n' % g
 
 f = open('build/cmake.sources', 'w')
-f.write('add_executable(dirac.x %s)' % s)
+f.write('set(DIRAC_SOURCES %s)' % s)
 f.close()
 
 s = ''

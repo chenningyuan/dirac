@@ -67,8 +67,50 @@ include_directories(include ${CMAKE_BINARY_DIR}/modules)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/modules)
 
+add_custom_command (
+        OUTPUT 
+        ${CMAKE_SOURCE_DIR}/include/fortran_interface.h
+        DEPENDS 
+        gen_fortran_interface_h
+        COMMAND 
+        gen_fortran_interface_h > ${CMAKE_SOURCE_DIR}/include/fortran_interface.h
+        )
+
+add_custom_command (
+        OUTPUT 
+        ${CMAKE_SOURCE_DIR}/gp/compinfo.h
+        DEPENDS 
+        ${CMAKE_SOURCE_DIR}/utils/generate_compinfo.sh
+        COMMAND 
+        ${CMAKE_SOURCE_DIR}/utils/generate_compinfo.sh > ${CMAKE_SOURCE_DIR}/gp/compinfo.h
+        )
+
+#add_custom_target(gen_fortran_interface_h ALL DEPENDS ${CMAKE_SOURCE_DIR}/include/fortran_interface.h)
+#add_custom_target(gen_fortran_interface_h ALL DEPENDS ${CMAKE_SOURCE_DIR}/include/fortran_interface.h)
+
+#) add_custom_command(OUTPUT generated.h COMMAND...) to create the header
+#) add_custom_target(genhead ALL DEPENDS generated.h)
+
+add_executable(gen_fortran_interface_h ${CMAKE_SOURCE_DIR}/build/gen_fortran_interface_h.c)
+#add_custom_target(gen_fortran_interface_h ALL DEPENDS ${CMAKE_SOURCE_DIR}/include/fortran_interface.h)
+
 include(build/cmake.sources)
 include(build/cmake.definitions)
+
+set (GENERATED_FILES 
+        ${CMAKE_SOURCE_DIR}/include/fortran_interface.h
+        ${CMAKE_SOURCE_DIR}/gp/compinfo.h
+        )
+
+add_custom_target(interfaces ALL 
+        DEPENDS 
+        ${GENERATED_FILES}
+)
+
+add_executable(dirac.x 
+        ${DIRAC_SOURCES}
+        ${GENERATED_FILES}
+        )
 
 if (WITH_EXTERNAL_MATH)
         target_link_libraries(dirac.x blas lapack)
