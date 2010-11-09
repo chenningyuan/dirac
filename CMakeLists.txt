@@ -85,14 +85,7 @@ add_custom_command (
         ${CMAKE_SOURCE_DIR}/utils/generate_compinfo.sh > ${CMAKE_SOURCE_DIR}/gp/compinfo.h
         )
 
-#add_custom_target(gen_fortran_interface_h ALL DEPENDS ${CMAKE_SOURCE_DIR}/include/fortran_interface.h)
-#add_custom_target(gen_fortran_interface_h ALL DEPENDS ${CMAKE_SOURCE_DIR}/include/fortran_interface.h)
-
-#) add_custom_command(OUTPUT generated.h COMMAND...) to create the header
-#) add_custom_target(genhead ALL DEPENDS generated.h)
-
 add_executable(gen_fortran_interface_h ${CMAKE_SOURCE_DIR}/build/gen_fortran_interface_h.c)
-#add_custom_target(gen_fortran_interface_h ALL DEPENDS ${CMAKE_SOURCE_DIR}/include/fortran_interface.h)
 
 include(build/cmake.sources)
 include(build/cmake.definitions)
