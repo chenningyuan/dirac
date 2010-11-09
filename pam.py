@@ -146,7 +146,11 @@ class pam_enviroment(workdir_class):
     self.slavemem = 64
 
     self.full_restart=False
+
+    # debugging
+    self.debug=False
     self.debugger=''
+
     self.noarch=False
     # inpu files
     self.input_molecule=''
@@ -264,6 +268,17 @@ class pam_enviroment(workdir_class):
                   action="store_true",dest="dest_keepwrk",  
                   help=this_label)
 
+    # ... keep workdir after calculations
+    this_label="run in debugger (default: do not run)"
+    parser.add_option("--debug", 
+                  action="store_true",dest="dest_debug", 
+                  help=this_label)
+
+    this_label="debugger (full path), default: "+self.debugger
+    parser.add_option("--debugger",
+                  action="store",dest="dest_debugger",
+                  help=this_label, metavar="STRING")
+
     # process all
     (options, args) = parser.parse_args()
     
@@ -343,8 +358,18 @@ class pam_enviroment(workdir_class):
       if self.iprint > 7:
         print 'assigned wrkdir_obj.keepwrk =',self.wrkdir_obj.keepwrk
 
+    if (options.dest_debug is not None) :
+      self.debug=True
+      if self.iprint > 7:
+        print 'do debugging,',self.debug
 
-    # append external dirac modules to the path dir
+    if (options.dest_debugger is not None) :
+      self.debugger=options.dest_debugger
+      if self.iprint > 7:
+        print 'assigned debugger,',self.debugger
+
+    # VERY IMPORTANT: append external dirac modules to the path dir
+    #################################################################
     append_dirac_py_modules(install_dir)
 
     # remaining arguments - *.mol and *.inp files
