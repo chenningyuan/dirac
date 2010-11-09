@@ -1774,12 +1774,22 @@ C
       INTEGER IREC,NACT,JDUMMY,IROW,ICOL
       REAL*8 A
       INTEGER LONGRC,MASK
-!radovan: i get the following error with gfortran:
-!     Arithmetic overflow converting INTEGER(8) to INTEGER(4)
+
+#ifdef INT_STAR8
       DATA MASK/Z'00000000FFFFFFFF'/
+#else
+!radovan: this is just a workaround to get it compiled
+!         the code stops later until a real solution comes up
+!         we have discussed this with Markus
+      DATA MASK/Z'00000000'/
+#endif
 C
 C---------------Executable code--------------------------------------
 
+#ifndef INT_STAR8
+!radovan: temporary "solution"
+      call quit('adcdiag.F only works with 64bit integers')
+#endif
 
 C  for the matrix elements we note that only the lower triangular
 C  part *AND* the diagonal of the ADC-matrix is stored. 
@@ -1915,12 +1925,22 @@ C
       INTEGER IREC,NACT,JDUMMY,IROW,ICOL
       COMPLEX*16 A
       INTEGER LONGRC,MASK
-!radovan: i get the following error with gfortran:
-!     Arithmetic overflow converting INTEGER(8) to INTEGER(4)
+
+#ifdef INT_STAR8
       DATA MASK/Z'00000000FFFFFFFF'/
+#else
+!radovan: this is just a workaround to get it compiled
+!         the code stops later until a real solution comes up
+!         we have discussed this with Markus
+      DATA MASK/Z'00000000'/
+#endif
 C
 C---------------Executable code--------------------------------------
 
+#ifndef INT_STAR8
+!radovan: temporary "solution"
+      call quit('adcdiag.F only works with 64bit integers')
+#endif
 
 C  for the matrix elements we note that only the lower triangular
 C  part *AND* the diagonal of the ADC-matrix is stored. 
