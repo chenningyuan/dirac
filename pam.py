@@ -202,6 +202,13 @@ class pam_enviroment(workdir_class):
                   action="store", dest="dest_iprint", default=1,
                   help=this_label, metavar="INT_NUM")
 
+  # ... output suffix 
+    this_label='file suffix for output; default:'+self.output_suffix
+    parser.add_option("--run", type="string", nargs=1,  
+                  action="store", dest="dest_run", 
+                  help=this_label, metavar="STRING")
+
+
   # ... get in the "mw"
     this_label='memory (in megawords) for the master, default:'+str(self.mem)
     parser.add_option("--mw", type="int", nargs=1,  
@@ -287,6 +294,13 @@ class pam_enviroment(workdir_class):
      self.iprint=int(options.dest_iprint)
      if self.iprint > 7:
       print 'assigned iprint=',self.iprint
+
+    # now assign individual arguments
+    if (options.dest_run is not None) :
+     self.output_suffix=options.dest_run
+     if self.iprint > 7:
+      print 'assigned suffix=',self.output_suffix
+
 
     if (options.dest_mw is not None) :
      self.mem=int(options.dest_mw)
@@ -445,7 +459,9 @@ class pam_enviroment(workdir_class):
       self.dirac_cmd=self.dirac_cmd+' dirac.x'
     else:
       if (self.debug):
-        self.dirac_cmd=self.debugger+' '+'dirac.x | tee '
+       #TODO: adapt it for Windows
+        self.dirac_cmd=self.debugger+' '+'dirac.x | tee -a '+os.getcwd()+"/"+self.output_file
+        #self.dirac_cmd=self.debugger+' '+'dirac.x'
       else:
         self.dirac_cmd='dirac.x'
 
@@ -473,7 +489,7 @@ class pam_enviroment(workdir_class):
       from common import backup_file
       backup_file(some_file=home_dir+"/"+self.output_file,upto=None)
 
-    f = open(home_dir+"/"+self.output_file, 'w',0)
+    #f = open(home_dir+"/"+self.output_file, 'w',0)
 
     if (self.set_timeout_limit) :
       print 'signal stuff initiated, self.timeout=',self.timeout
@@ -486,12 +502,19 @@ class pam_enviroment(workdir_class):
       print 'executing serial dirac'
 
     try:
-      print 'executing dirac ...',self.dirac_cmd
-      #p=subprocess.Popen(self.dirac_cmd, shell=False, stdin=subprocess.PIPE, stdout=f)
-      p=subprocess.Popen(self.dirac_cmd, shell=True, stdin=subprocess.PIPE, stdout=f)
-      print 'p.pid=',p.pid
-      p.wait()
-      f.close()
+      if (not self.debug):
+        print 'executing dirac ...',self.dirac_cmd
+        f = open(home_dir+"/"+self.output_file, 'w',0)
+        #p=subprocess.Popen(self.dirac_cmd, shell=False, stdin=subprocess.PIPE, stdout=f)
+        p=subprocess.Popen(self.dirac_cmd, shell=True, stdin=subprocess.PIPE, stdout=f)
+        print 'p.pid=',p.pid
+        p.wait()
+        f.close()
+      else:
+        print 'debugging dirac...',self.dirac_cmd
+        os.system(self.dirac_cmd) # this works...
+        #p=subprocess.Popen(self.dirac_cmd, shell=True, stdin=subprocess.PIPE, stdout=f)
+
       signal.alarm(0)    
     except:
       print "dirac launching failed with command ",self.dirac_cmd
