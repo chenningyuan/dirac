@@ -444,7 +444,10 @@ class pam_enviroment(workdir_class):
       self.dirac_cmd=self.mpirun+" -np "+str(self.mpi)+" -wd "+self.wrkdir_obj.workdir
       self.dirac_cmd=self.dirac_cmd+' dirac.x'
     else:
-      self.dirac_cmd='dirac.x'
+      if (self.debug):
+        self.dirac_cmd=self.debugger+' '+'dirac.x | tee '
+      else:
+        self.dirac_cmd='dirac.x'
 
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def execute_dirac(self):
