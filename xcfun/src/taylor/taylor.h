@@ -185,14 +185,14 @@ public:
     assert(Nres >= Ndeg);
     taylor<T, Nvar,Ndeg> tmp = *this;
     tmp[0] = 0;
-    polymul::taylorcompose0(res,tmp,coeff.c);
+    polymul::taylorcompose0<T,Nvar,Nres,Nres>(res,tmp,coeff.c);
   }
   // Like compose, but this->c[0] _must_ be equal to 0. Slightly faster.
   template<int Nres>
   void compose0(taylor<T, Nvar,Nres>& res, const taylor<T,1,Nres> &coeff) const
   {
     assert(Nres >= Ndeg);
-    polymul::taylorcompose0(res,*this,coeff.c);
+    polymul::taylorcompose0<T,Nvar,Nres,Nres>(res,*this,coeff.c);
   }
   template<int Nres>
   taylor<T, Nvar,Nres> compose(const taylor<T,1,Nres> &coeff) const
@@ -337,22 +337,23 @@ static taylor<T, Nvar, Ndeg> operator+(const taylor<T, Nvar,Ndeg>& t1, const tay
   return tmp;
 }
 
-template<class T, int Nvar, int Ndeg>
-static taylor<T, Nvar, Ndeg> operator-(const T& x, const taylor<T, Nvar,Ndeg>& t)
+template<class T, int Nvar, int Ndeg, class S>
+static taylor<T, Nvar, Ndeg> operator-(const S& x, const taylor<T, Nvar,Ndeg>& t)
 {
   taylor<T, Nvar,Ndeg> tmp = -t;
   tmp[0] += x;
   return tmp;
 }
 
-template<class T, int Nvar, int Ndeg>
-static taylor<T, Nvar, Ndeg> operator-(const taylor<T, Nvar,Ndeg>& t, const T &x)
+template<class T, int Nvar, int Ndeg, class S>
+static taylor<T, Nvar, Ndeg> operator-(const taylor<T, Nvar,Ndeg>& t, const S &x)
 {
   taylor<T, Nvar,Ndeg> tmp = t;
   tmp[0] -= x;
   return tmp;
 }
 
+/*
 template<class T, int Nvar, int Ndeg>
 static taylor<T, Nvar, Ndeg> operator-(int x, const taylor<T, Nvar,Ndeg>& t)
 {
@@ -368,6 +369,7 @@ static taylor<T, Nvar, Ndeg> operator-(const taylor<T, Nvar,Ndeg>& t, int x)
   tmp[0] -= x;
   return tmp;
 }
+*/
 
 template<class T, int Nvar, int Ndeg>
 static taylor<T, Nvar, Ndeg> operator-(const taylor<T, Nvar,Ndeg>& t1, 
