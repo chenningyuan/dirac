@@ -498,14 +498,16 @@ exitfunc()
 #  radovan: this is not always reliable
 #  if [ $EXIT -eq 0 ]; then
 #  instead check whether $OUTPUT_FILE contains "E N D   of   D I R A C  output"
-   if [ `grep -l "E N D   of   D I R A C  output" $OUTPUT_FILE | cat` ]; then
-      echo
-      echo "   Exit date: `date`"
-      echo "   *** NORMAL EXIT"
-   else
-      echo
-      echo "   Exit date: `date`"
-      echo "   *** ABNORMAL EXIT"
+   if [ -r "$OUTPUT_FILE" ]; then
+       if [ `grep -l "E N D   of   D I R A C  output" $OUTPUT_FILE | cat` ]; then
+           echo
+           echo "   Exit date: `date`"
+           echo "   *** NORMAL EXIT"
+       else
+           echo
+           echo "   Exit date: `date`"
+           echo "   *** ABNORMAL EXIT"
+       fi
    fi
    if [ -n "$NOTIFY" ]; then
       notify_user
