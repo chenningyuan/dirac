@@ -202,7 +202,7 @@ contains
           rkl_cross_r = r_kl(k, l, b(bxyz))*r(c(bxyz)) &
                       - r_kl(k, l, c(bxyz))*r(b(bxyz))
          
-          f(bxyz) = f(bxyz) - 0.5d0*rkl_cross_r*omega
+          f(bxyz) = f(bxyz) + 0.5d0*rkl_cross_r*omega
         end do
       end do
     end do

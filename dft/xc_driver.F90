@@ -1457,16 +1457,19 @@ contains
           end if
 
           if (do_london_lr) then
-             call xc_london_c1_lr_lda(&
-                                      mat_dim,                 &
-                                      nz,                      &
-                                      dmat,                    &
-                                      fmat,                    &
-                                      ao,                      &
-                                    (/rx(ipoint), ry(ipoint), rz(ipoint)/), &
-                                      x)
+             if (use_gga) then
+             else
+                call xc_london_c1_lr_lda(&
+                                         mat_dim,                 &
+                                         nz,                      &
+                                         dmat,                    &
+                                         fmat,                    &
+                                         ao,                      &
+                                       (/rx(ipoint), ry(ipoint), rz(ipoint)/), &
+                                         x)
+             end if
              do im = 1, 3
-                u%n(im) = -x(im)*derv(1, d2000000)
+                u%n(im) = derv(1, d2000000)*x(im)
              end do
           end if
 #endif /* ifdef MOD_UNRELEASED */
