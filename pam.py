@@ -151,8 +151,9 @@ class pam_enviroment(workdir_class):
     self.debug=False
     self.debugger=''
 
-    self.noarch=False
-    # inpu files
+    # input directory
+    self.input_directory='' 
+    # input files
     self.input_molecule=''
     self.input_dirac=''
     # output name from *inp *mol names
@@ -165,6 +166,15 @@ class pam_enviroment(workdir_class):
     # do not backup files
     self.nobackup=False
 
+    # default - do archivation of files
+    self.no_archive=False
+    # list of possible files for the archivation
+    self.archive_files=['MOLECULE.MOL','MOLECULE.XYZ','DIRAC.INP','DFCOEF','*.cube','AOPROPER', \
+                        'AOMOMAT','BSSMAT','matexport.m','DFCOEF.BEST']
+
+    # all files from the archive are unpacked, it is assumed that archive file is copied into workdir 
+    self.fullrestart=False
+ 
     #execution time-limit
     self.set_timeout_limit=False
     self.timeout=''
@@ -202,12 +212,25 @@ class pam_enviroment(workdir_class):
                   action="store", dest="dest_iprint", default=1,
                   help=this_label, metavar="INT_NUM")
 
+  # ... archivation of files
+    this_label='Do not create a .tgz archive for the calculation; default - create.'
+    parser.add_option("--noarch",
+                  action="store_true", dest="dest_noarch", 
+                  help=this_label)
+
+  # ... full-restart  ...
+    this_label='All files from ARCHIVE.tgz are unpacked, not just DFCOEF. \
+                This allows you to omit the molecule and input files. '
+
+    parser.add_option("--full-restart",
+                  action="store_true", dest="dest_fullrestart", 
+                  help=this_label)
+
   # ... output suffix 
     this_label='file suffix for output; default:'+self.output_suffix
     parser.add_option("--run", type="string", nargs=1,  
                   action="store", dest="dest_run", 
                   help=this_label, metavar="STRING")
-
 
   # ... get in the "mw"
     this_label='memory (in megawords) for the master, default:'+str(self.mem)
@@ -226,7 +249,6 @@ class pam_enviroment(workdir_class):
     parser.add_option("--aw", type="int", nargs=1,  
                   action="store", dest="dest_aw",
                   help=this_label, metavar="INT_NUM")
-
 
     # ... get in the parallel stuff, TODO: add default from Makefile.config
     this_label="mpi launcher, default..."
@@ -350,7 +372,6 @@ class pam_enviroment(workdir_class):
      if self.iprint > 7:
       print 'default basdir=',self.basdir
 
-
     if (options.dest_timeout is not None) :
       self.timeout=int(options.dest_timeout)
       self.set_timeout_limit=True
@@ -361,6 +382,16 @@ class pam_enviroment(workdir_class):
       self.nobackup=options.dest_nobackup      
       if self.iprint > 7:
         print 'assigned nobackup=',self.nobackup
+
+    if (options.dest_noarch is not None):
+      self.no_archive=options.dest_noarch
+      if self.iprint > 7:
+        print 'assigned no_archive=',self.no_archive
+
+    if (options.dest_fullrestart is not None):
+      self.fullrestart=dest_fullrestart
+      if self.iprint > 7:
+        print 'assigned full-restart=',self.fullrestart
 
     if (options.dest_clean is not None) :
       self.wrkdir_obj.cleanwrkdir=options.dest_clean
@@ -382,9 +413,14 @@ class pam_enviroment(workdir_class):
       if self.iprint > 7:
         print 'assigned debugger,',self.debugger
 
+    #################################################################
     # VERY IMPORTANT: append external dirac modules to the path dir
     #################################################################
     append_dirac_py_modules(install_dir)
+
+    # assign input directory ...
+    self.input_directory=os.getcwd()
+
 
     # remaining arguments - *.mol and *.inp files
     process_remaining_args(args)
@@ -449,6 +485,12 @@ class pam_enviroment(workdir_class):
 
     # control printout ... giving None
     print "DIRWRK=",os.getenv("$DIRWRK")
+
+  def copy_files(self):
+  # before running DIRAC copy files into working directory
+    print 'copying files into working directory...'
+    if (self.fullrestart):
+      print 'restarting from copied ARCHIVE file '
 
   def set_dirac_cmd(self):
   # set the dirac command
@@ -530,6 +572,32 @@ class pam_enviroment(workdir_class):
     GMON="gmon.out"
     #os.system(....)
 
+  def save_files(self):
+    # ... save files in various manners from the work directory 
+    from common import backup_file
+    if (not self.no_archive):
+      # set name of the archive file
+      archive_name=self.input_molecule+"_"+self.input_dirac+".tgz"
+      print 'creating archive file ',archive_name
+      archive_full_name=self.input_directory+"/"+archive_name
+      print 'full archive file ',archive_full_name
+
+      # select existing files in self.archive_files for the archive
+      existing_archive_files=''
+      for archfile in self.archive_files:
+        if (os.path.isfile(archfile)):
+           existing_archive_files=existing_archive_files+' '+archfile
+      print 'existing archive files:',existing_archive_files
+      # backup 
+      if (self.nobackup is False):
+         backup_file(some_file=archive_full_name,upto=None)
+      #archive_command='tar c '+self.archive_files+' | gzip > '+archive_full_name
+      archive_command='tar c '+existing_archive_files+' | gzip > '+archive_full_name
+      # own packing (Linux)
+      os.system(archive_command)
+
+      # take care of the rest
+
   def remove_work_dir(self):
     print 'removing work-dir'
     self.wrkdir_obj.remove_workdir()
@@ -545,7 +613,7 @@ class pam_enviroment(workdir_class):
     print "   Date        : ",datetime.datetime.now()
     print "   Command     : $0 $ARG_SAVE "
     print "   PID         :",os.getpid()  
-    print "   Input dir   :",os.getcwd()
+    print "   Input dir   :",self.input_directory
     print "   Work dir    :",self.wrkdir_obj.workdir
 
 #def notify_user() :
@@ -569,6 +637,7 @@ class pam_run(pam_enviroment):
     self.pam_variables.set_dirac_environment()
     self.pam_variables.set_dirac_cmd()
     self.pam_variables.execute_dirac()
+    self.pam_variables.save_files()
     self.pam_variables.remove_work_dir()
 
 
