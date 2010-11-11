@@ -21,6 +21,7 @@
 
 module xc_london_c1
 
+
 ! radovan: this is the "equation on paper approach" to LAO XC
 !
 !      (+) the code is very close to equations
@@ -41,17 +42,18 @@ module xc_london_c1
 ! todo (*) work only on matrix blocks that couple AOs of different centers
 !      (*) figure out centers of AOs in dft_ao
 
-  use memory_allocator
-  use basis_info
+   use memory_allocator
+   use basis_info
 
-  implicit none
+   implicit none
 
-  public xc_london_c1_init
-  public xc_london_c1_ks_lda
-  public xc_london_c1_ks_gga
-  public xc_london_c1_lr_lda_densities
+   public xc_london_c1_init
+   public xc_london_c1_ks_lda
+   public xc_london_c1_ks_gga
+   public xc_london_c1_lr_lda_densities
+   public xc_london_c1_lr_gga_densities
 
-  private
+   private
 
 !radovan: these common blocks will go away
 !         p array should be set up in dft_ao
@@ -68,65 +70,65 @@ module xc_london_c1
 #include "dgroup.h"
 #include "dcbham.h"
 
-!                         ideally calculated only once
-  real(8), allocatable :: p(:, :)
-!                         ideally calculated only once
-  real(8), allocatable :: r_kl(:, :, :)
-  logical              :: all_set = .false.
+!                          both ideally calculated only once
+   real(8), allocatable :: p(:, :)
+   real(8), allocatable :: r_kl(:, :, :)
 
-  integer              :: b(3) = (/2, 3, 1/)
-  integer              :: c(3) = (/3, 1, 2/)
+   logical :: all_set = .false.
+
+   integer :: b(3) = (/2, 3, 1/)
+   integer :: c(3) = (/3, 1, 2/)
 
 contains
 
-  subroutine xc_london_c1_init(mat_dim)
+   subroutine xc_london_c1_init(mat_dim)
 
-!   ----------------------------------------------------------------------------
-    integer, intent(in) :: mat_dim
-!   ----------------------------------------------------------------------------
-    integer             :: i, j, k, l, ixyz, ishell, isym
-    real(8)             :: px, py, pz
-!   ----------------------------------------------------------------------------
+!     --------------------------------------------------------------------------
+      integer, intent(in) :: mat_dim
+!     --------------------------------------------------------------------------
+      integer             :: i, j, k, l, ixyz, ishell, isym
+      real(8)             :: px, py, pz
+!     --------------------------------------------------------------------------
 
-    if (.not. all_set) then
+      if (.not. all_set) then
 
-      call alloc(r_kl, mat_dim, mat_dim, 3)
-      call alloc(p, mat_dim, 3)
+         call alloc(r_kl, mat_dim, mat_dim, 3)
+         call alloc(p, mat_dim, 3)
 
-      i = 1
-      do ishell = 1, kmax
-        do isym = 0, maxopr
-          if (iand(isym, istbao(ishell)) == 0) then
+         i = 1
+         do ishell = 1, kmax
+            do isym = 0, maxopr
+               if (iand(isym, istbao(ishell)) == 0) then
 
-            px = pt(iand(isymax(1, 1), isym))*cent(ishell, 1, 1)
-            py = pt(iand(isymax(2, 1), isym))*cent(ishell, 2, 1)
-            pz = pt(iand(isymax(3, 1), isym))*cent(ishell, 3, 1)
+                  px = pt(iand(isymax(1, 1), isym))*cent(ishell, 1, 1)
+                  py = pt(iand(isymax(2, 1), isym))*cent(ishell, 2, 1)
+                  pz = pt(iand(isymax(3, 1), isym))*cent(ishell, 3, 1)
 
-            do j = i, i + spherical_deg(ishell) - 1
-              p(j, 1) = px
-              p(j, 2) = py
-              p(j, 3) = pz
+                  do j = i, i + spherical_deg(ishell) - 1
+                     p(j, 1) = px
+                     p(j, 2) = py
+                     p(j, 3) = pz
+                  end do
+
+                  i = i + spherical_deg(ishell)
+               end if
             end do
+         end do
 
-            i = i + spherical_deg(ishell)
-          end if
-        end do
-      end do
+         do ixyz = 1, 3
+            do l = 1, mat_dim
+               do k = 1, mat_dim
+                  r_kl(k, l, ixyz) = p(k, ixyz) - p(l, ixyz)
+               end do
+            end do
+         end do
 
-      do ixyz = 1, 3
-        do k = 1, mat_dim
-          do l = 1, mat_dim
-            r_kl(k, l, ixyz) = p(k, ixyz) - p(l, ixyz)
-          end do
-        end do
-      end do
+         call dealloc(p)
 
-      call dealloc(p)
+         all_set = .true.
+      end if
 
-      all_set = .true.
-    end if
-
-  end subroutine
+   end subroutine
 
   subroutine xc_london_c1_ks_lda(d_r,     &
                                  mat_dim, &
@@ -158,9 +160,9 @@ contains
         do bxyz = 1, 3
           rkl_cross_r = r_kl(k, l, b(bxyz))*r(c(bxyz)) &
                       - r_kl(k, l, c(bxyz))*r(b(bxyz))
-         
+
           f = 0.5d0*d_r*rkl_cross_r*omega
-         
+
           fmat(k, l, (bxyz-1)*nz + 1) = fmat(k, l, (bxyz-1)*nz + 1) + f
           fmat(l, k, (bxyz-1)*nz + 1) = fmat(l, k, (bxyz-1)*nz + 1) - f
         end do
@@ -168,6 +170,67 @@ contains
     end do
 
   end subroutine
+
+   subroutine xc_london_c1_ks_gga(d_n,     &
+                                  d_gnn,   &
+                                  gn_0,    &
+                                  mat_dim, &
+                                  nz,      &
+                                  fmat,    &
+                                  ao,      &
+                                  ao_r,    &
+                                  r)
+
+!     --------------------------------------------------------------------------
+      real(8), intent(in)    :: d_n
+      real(8), intent(in)    :: d_gnn
+      real(8), intent(in)    :: gn_0(3)
+      integer, intent(in)    :: mat_dim
+      integer, intent(in)    :: nz
+      real(8), intent(inout) :: fmat(mat_dim, mat_dim, *)
+      real(8), intent(in)    :: ao(mat_dim)
+      real(8), intent(in)    :: ao_r(mat_dim, 3)
+      real(8), intent(in)    :: r(3)
+!     --------------------------------------------------------------------------
+      integer                :: k, l, bxyz, gxyz
+      real(8)                :: f, gnn_kl
+      real(8)                :: rkl_cross_r, rkl_cross_gn_0
+      real(8)                :: omega, nabla_omega(3)
+!     --------------------------------------------------------------------------
+
+      do k = 1, mat_dim
+!        work only on the triangle without diagonal elements
+         do l = 1, k - 1
+
+            omega = ao(k)*ao(l)
+            do gxyz = 1, 3
+               nabla_omega(gxyz) = ao(k)*ao_r(l, gxyz) + ao_r(k, gxyz)*ao(l)
+            end do
+
+            gnn_kl = gn_0(1)*nabla_omega(1) &
+                   + gn_0(2)*nabla_omega(2) &
+                   + gn_0(3)*nabla_omega(3)
+            gnn_kl = 2.0d0*gnn_kl
+
+            do bxyz = 1, 3
+               rkl_cross_r = r_kl(k, l, b(bxyz))*r(c(bxyz)) &
+                           - r_kl(k, l, c(bxyz))*r(b(bxyz))
+               rkl_cross_r = 0.5d0*rkl_cross_r
+
+               rkl_cross_gn_0 = r_kl(k, l, b(bxyz))*gn_0(c(bxyz)) &
+                              - r_kl(k, l, c(bxyz))*gn_0(b(bxyz))
+
+               f =   d_n*rkl_cross_r*omega  &
+                 + d_gnn*rkl_cross_r*gnn_kl &
+                 + d_gnn*rkl_cross_gn_0*omega
+
+               fmat(k, l, (bxyz-1)*nz + 1) = fmat(k, l, (bxyz-1)*nz + 1) + f
+               fmat(l, k, (bxyz-1)*nz + 1) = fmat(l, k, (bxyz-1)*nz + 1) - f
+            end do
+         end do
+      end do
+
+   end subroutine
 
    subroutine xc_london_c1_lr_lda_densities(mat_dim, &
                                             nz,      &
@@ -192,13 +255,13 @@ contains
       n_b = 0.0d0
       do k = 1, mat_dim
          do l = 1, mat_dim
-    
+
             omega = ao(k)*ao(l)*dmat(k, l)
-            
+
             do bxyz = 1, 3
                rkl_cross_r = r_kl(k, l, b(bxyz))*r(c(bxyz)) &
                            - r_kl(k, l, c(bxyz))*r(b(bxyz))
-              
+
                n_b(bxyz) = n_b(bxyz) + 0.5d0*rkl_cross_r*omega
             end do
          end do
@@ -206,59 +269,76 @@ contains
 
    end subroutine
 
-  subroutine xc_london_c1_ks_gga(d_r,     &
-                                 d_z,     &
-                                 g,       &
-                                 mat_dim, &
-                                 nz,      &
-                                 fmat,    &
-                                 ao,      &
-                                 ao_g1,   &
-                                 r)
+   subroutine xc_london_c1_lr_gga_densities(mat_dim, &
+                                            nz,      &
+                                            dmat,    &
+                                            ao,      &
+                                            ao_r,    &
+                                            r,       &
+                                            gn_0,    &
+                                            n_b,     &
+                                            gn_b,    &
+                                            gnn_b)
 
-!   ----------------------------------------------------------------------------
-    real(8), intent(in)    :: d_r
-    real(8), intent(in)    :: d_z
-    real(8), intent(in)    :: g(3)
-    integer, intent(in)    :: mat_dim
-    integer, intent(in)    :: nz
-    real(8), intent(inout) :: fmat(mat_dim, mat_dim, *)
-    real(8), intent(in)    :: ao(mat_dim)
-    real(8), intent(in)    :: ao_g1(mat_dim, 3)
-    real(8), intent(in)    :: r(3)
-!   ----------------------------------------------------------------------------
-    integer                :: k, l, bxyz, gxyz
-    real(8)                :: f
-    real(8)                :: rkl_cross_r, rkl_cross_g
-    real(8)                :: omega, nabla_omega(3)
-    real(8), external      :: ddot
-!   ----------------------------------------------------------------------------
+!     --------------------------------------------------------------------------
+      integer, intent(in)  :: mat_dim
+      integer, intent(in)  :: nz
+      real(8), intent(in)  :: dmat(mat_dim, mat_dim)
+      real(8), intent(in)  :: ao(mat_dim)
+      real(8), intent(in)  :: ao_r(mat_dim, 3)
+      real(8), intent(in)  :: r(3)
+      real(8), intent(in)  :: gn_0(3)
+      real(8), intent(out) :: n_b(3)
+      real(8), intent(out) :: gn_b(3, 3)
+      real(8), intent(out) :: gnn_b(3)
+!     --------------------------------------------------------------------------
+      integer              :: k, l, bxyz, gxyz
+      real(8)              :: f, gnn_kl
+      real(8)              :: rkl_cross_r, rkl_cross_gn_0
+      real(8)              :: omega, nabla_omega(3)
+!     --------------------------------------------------------------------------
 
-    do k = 1, mat_dim
-!     work only on the triangle without diagonal elements
-      do l = 1, k - 1
+      n_b   = 0.0d0
+      gn_b  = 0.0d0
+      gnn_b = 0.0d0
 
-        omega = ao(k)*ao(l)
-        do gxyz = 1, 3
-          nabla_omega(gxyz) = ao(k)*ao_g1(l, gxyz) + ao_g1(k, gxyz)*ao(l)
-        end do
+      do k = 1, mat_dim
+         do l = 1, mat_dim
 
-        do bxyz = 1, 3
-          rkl_cross_r = r_kl(k, l, b(bxyz))*r(c(bxyz)) &
-                      - r_kl(k, l, c(bxyz))*r(b(bxyz))
-          rkl_cross_g = r_kl(k, l, b(bxyz))*g(c(bxyz)) &
-                      - r_kl(k, l, c(bxyz))*g(b(bxyz))
-         
-          f = 0.5d0*d_r*rkl_cross_r*omega &
-            +       d_z*rkl_cross_g*omega &
-            +       d_z*rkl_cross_r*ddot(3, g, 1, nabla_omega, 1)
-         
-          fmat(k, l, (bxyz-1)*nz + 1) = fmat(k, l, (bxyz-1)*nz + 1) + f
-          fmat(l, k, (bxyz-1)*nz + 1) = fmat(l, k, (bxyz-1)*nz + 1) - f
-        end do
+            f = -1.0d0*dmat(l, k)
+            omega = ao(k)*ao(l)*f
+            do gxyz = 1, 3
+               nabla_omega(gxyz) = (ao(k)*ao_r(l, gxyz) + ao_r(k, gxyz)*ao(l))*f
+            end do
+
+            gnn_kl = gn_0(1)*nabla_omega(1) &
+                   + gn_0(2)*nabla_omega(2) &
+                   + gn_0(3)*nabla_omega(3)
+            gnn_kl = 2.0d0*gnn_kl
+
+            do bxyz = 1, 3
+               rkl_cross_r = r_kl(k, l, b(bxyz))*r(c(bxyz)) &
+                           - r_kl(k, l, c(bxyz))*r(b(bxyz))
+               rkl_cross_r = 0.5d0*rkl_cross_r
+
+               rkl_cross_gn_0 = r_kl(k, l, b(bxyz))*gn_0(c(bxyz)) &
+                              - r_kl(k, l, c(bxyz))*gn_0(b(bxyz))
+
+               n_b(bxyz) = n_b(bxyz) &
+                         + rkl_cross_r*omega
+
+               gnn_b(bxyz) = gnn_b(bxyz)        &
+                           + rkl_cross_r*gnn_kl &
+                           + rkl_cross_gn_0*omega
+
+               do gxyz = 1, 3
+                  gn_b(gxyz, bxyz) = gn_b(gxyz, bxyz) &
+                                   + rkl_cross_r*nabla_omega(gxyz)
+               end do
+            end do
+         end do
       end do
-    end do
 
-  end subroutine
+   end subroutine
 
 end module

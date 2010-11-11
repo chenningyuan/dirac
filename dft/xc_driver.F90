@@ -1460,6 +1460,18 @@ contains
 
           if (do_london_lr) then
              if (use_gga) then
+                call xc_london_c1_lr_gga_densities(mat_dim,                         &
+                                                   nz,                              &
+                                                   dmat,                            &
+                                                   ao,                              &
+                                                   ao(ao_start(1, 0):ao_end(1, 0)), &
+                                                 (/rx(ipoint),                      &
+                                                   ry(ipoint),                      &
+                                                   rz(ipoint)/),                    &
+                                                   gn_0,                            &
+                                                   n_b,                             &
+                                                   gn_b,                            &
+                                                   gnn_b)
              else
                 call xc_london_c1_lr_lda_densities(mat_dim,      &
                                                    nz,           &
@@ -1474,9 +1486,9 @@ contains
                 u%n(im) = derv(1, d2000000)*n_b(im)
                 if (use_gga) then
                    u%n(im) = u%n(im) + derv(1, d1010000)*gnn_b(im)
-                   u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gn_0(1:3)*n_b(im)*derv(1, d1010000) &
-                                                 + 2.0d0*gn_0(1:3)*gnn_b(im)*derv(1, d0020000) &
-                                                 + 2.0d0*gn_b(1:3, im)*derv(1, d0010000)
+                   u%gn(1:3, im) = 2.0d0*gn_0(1:3)*n_b(im)*derv(1, d1010000)   &
+                                 + 2.0d0*gn_0(1:3)*gnn_b(im)*derv(1, d0020000) &
+                                 + 2.0d0*gn_b(1:3, im)*derv(1, d0010000)
                 end if
              end do
           end if
