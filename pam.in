@@ -508,6 +508,10 @@ exitfunc()
            echo "   Exit date: `date`"
            echo "   *** ABNORMAL EXIT"
        fi
+   else
+       echo
+       echo "   Exit date: `date`"
+       echo "   *** ABNORMAL EXIT"
    fi
    if [ -n "$NOTIFY" ]; then
       notify_user
