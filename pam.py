@@ -10,16 +10,18 @@
 #
 ##################################################
 
-import  sys, os, string, subprocess, optparse, distutils.util, shutil, signal
+import os
+import sys,string, subprocess, optparse, distutils.util, shutil, signal
+import stat
+import time
 
-#import common 
-#from common import *
 
 # installation directory inserted in by the configure script
 global install_dir, install_dir_default
-#install_dir_default='/home/ilias/qch_work/qch_software/dirac/gfortran_noopt_ILP64_ownlibs/adm/trunk'
-install_dir_default='/home/dv6-2145ec/Work/qch/software/dirac/gfortran_gcc_noopt_ownlibs_ilp32/adm_hsfsdyn_cap/trunk'
-install_dir=''
+install_dir_default=''
+#install_dir_default='/home/dv6-2145ec/Work/qch/software/dirac/gfortran_gcc_noopt_ownlibs_ilp32/adm_hsfsdyn_cap/trunk'
+install_dir_default='/home/ilias/qch_work/qch_software/dirac/gfortran_noopt_ILP64_ownlibs/adm/trunk'
+install_dir=install_dir_default
 
 def append_dirac_py_modules(dirac_install_dir):
 # append directory with common dirac python-modules and imports them
@@ -83,13 +85,48 @@ class workdir_class:
   def list_workdir(self):
   # ... lists the content of the work-directory
   # more here http://www.daniweb.com/code/snippet216798.html
+    print 
+    print 'Content of the work directory',os.getcwd(),':'
+    print '-------------------------------------------------------------------------------' 
+    #print 'file............size'
     for filename in os.listdir(self.workdir):
-      print  filename,os.path.getsize(self.workdir+"/"+filename)
+      filesize_kB=float(os.path.getsize(self.workdir+"/"+filename))/1024
+      # create a dictionary to hold file info
+      file_name = filename; file_stats = os.stat(file_name)
+      file_info = {
+             'fname': file_name,
+             'fsize': file_stats [stat.ST_SIZE],
+             'f_lm': time.strftime("%m/%d/%Y %I:%M:%S %p",time.localtime(file_stats[stat.ST_MTIME])),
+             'f_la': time.strftime("%m/%d/%Y %I:%M:%S %p",time.localtime(file_stats[stat.ST_ATIME])),
+             'f_ct': time.strftime("%m/%d/%Y %I:%M:%S %p",time.localtime(file_stats[stat.ST_CTIME]))
+      } 
+      print "%20s"%filename,".....%10.4f"%filesize_kB,' kB'," last accessed = %(f_la)s" % file_info
+      if (self.iprint > 7) :
+        print
+        print "file name = %(fname)s" % file_info
+        print "file size = %(fsize)s bytes" % file_info
+        print "last modified = %(f_lm)s" % file_info
+        print "last accessed = %(f_la)s" % file_info
+        print "creation time = %(f_ct)s" % file_info
+        print
+        if stat.S_ISDIR(file_stats[stat.ST_MODE]):
+          print "This a directory"
+        else:
+          print "This is not a directory"
+        print
+        print "A closer look at the os.stat(%s) tuple:" % file_name
+        print file_stats
+        print
+        print "The above tuple has the following sequence:"
+        print """st_mode (protection bits), st_ino (inode number),
+           st_dev (device), st_nlink (number of hard links),
+           st_uid (user ID of owner), st_gid (group ID of owner),
+           st_size (file size, bytes), st_atime (last access time, seconds since epoch),
+           st_mtime (last modification time), st_ctime (time of creation, Windows)"""
 
   def remove_workdir(self):
-    print 'removes the work_direcory'
+    #print 'removes the work_direcory'
     self.list_workdir()
-
     if (not self.keepwrk):
       print 'deleting the work directory'
       shutil.rmtree(self.workdir)      
@@ -421,11 +458,11 @@ class pam_enviroment(workdir_class):
     # assign input directory ...
     self.input_directory=os.getcwd()
 
-
     # remaining arguments - *.mol and *.inp files
     process_remaining_args(args)
 
-    print 'Parallel ?:',self.parallel
+    if (self.iprint > 7) :
+      print 'Parallel ?:',self.parallel
 
   def set_wrkdir(self):
   # ... creates the workdir, copies wanted files
@@ -454,9 +491,10 @@ class pam_enviroment(workdir_class):
 
   def set_output_file(self):
   # sets the name of the output file by using "self.output_name"
-    print 'setting output file..'
+    #print 'setting output file..'
     self.output_file=self.output_name+"."+self.output_suffix
-    print 'output file..',self.output_file
+    if (self.iprint > 7):
+      print 'the output file..',self.output_file
  
   def set_dirac_environment(self):
   # export important variables for DIRAC
@@ -484,7 +522,7 @@ class pam_enviroment(workdir_class):
     os.putenv("XLFRTEOPTS","'namelist=old'")
 
     # control printout ... giving None
-    print "DIRWRK=",os.getenv("$DIRWRK")
+    #print "DIRWRK=",os.getenv("$DIRWRK")
 
   def copy_files(self):
   # before running DIRAC copy files into working directory
@@ -522,21 +560,18 @@ class pam_enviroment(workdir_class):
       #raise IOError("Take too long !")
       raise Error("Takes too long !")
 
-    home_dir=os.getcwd()
-    print 'changing directory from  '+home_dir+' to:'+self.wrkdir_obj.workdir
+    print 'changing directory from Input dir to Work dir'
     # go to the working directory
     os.chdir(self.wrkdir_obj.workdir)
 
     if (self.nobackup is False):
       from common import backup_file
-      backup_file(some_file=home_dir+"/"+self.output_file,upto=None)
-
-    #f = open(home_dir+"/"+self.output_file, 'w',0)
+      backup_file(some_file=self.input_directory+"/"+self.output_file,upto=None)
 
     if (self.set_timeout_limit) :
       print 'signal stuff initiated, self.timeout=',self.timeout
       signal.signal(signal.SIGALRM, signal_handler)
-      signal.alarm(self.timeout)   # 
+      signal.alarm(self.timeout)  # 
 
     if (self.parallel) :
       print 'executing parallel dirac'
@@ -546,10 +581,11 @@ class pam_enviroment(workdir_class):
     try:
       if (not self.debug):
         print 'executing dirac ...',self.dirac_cmd
-        f = open(home_dir+"/"+self.output_file, 'w',0)
+        output_file_full=self.input_directory+"/"+self.output_file
+        f=open(output_file_full,'w',0)
         #p=subprocess.Popen(self.dirac_cmd, shell=False, stdin=subprocess.PIPE, stdout=f)
-        p=subprocess.Popen(self.dirac_cmd, shell=True, stdin=subprocess.PIPE, stdout=f)
-        print 'p.pid=',p.pid
+        p=subprocess.Popen(self.dirac_cmd,shell=True,stdin=subprocess.PIPE,stdout=f)
+        #print 'p.pid=',p.pid
         p.wait()
         f.close()
       else:
@@ -612,7 +648,7 @@ class pam_enviroment(workdir_class):
     print "   User@Host   : ",get_username(),"@",get_hostname()
     print "   Date        : ",datetime.datetime.now()
     print "   Command     : $0 $ARG_SAVE "
-    print "   PID         :",os.getpid()  
+    print "   PID         :",os.getpid()
     print "   Input dir   :",self.input_directory
     print "   Work dir    :",self.wrkdir_obj.workdir
 
