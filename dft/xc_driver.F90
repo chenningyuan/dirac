@@ -23,7 +23,6 @@ module xc_driver
 
 !   written by T. Helgaker
 !   DIRAC adaption by T. Saue
-
 #ifdef MOD_EMB
   use fde_mod
 #endif
@@ -841,14 +840,17 @@ contains
       real(8) :: rho13, rho_outer, rho_resp, f
     integer :: ipoint
     integer :: k
-      real(8) :: RHG(3),VT(3)
+      real(8) :: gn_0(3),VT(3)
     integer              :: derv_length, im
     real(8), allocatable :: derv(:, :)
 
 !   gosia: temporarily
     real(8) :: u_qi(3,3), s_b(3,3)
     integer :: l
-    real(8) :: x(3)
+
+    real(8) :: n_b(3)
+    real(8) :: gnn_b(3)
+    real(8) :: gn_b(3, 3)
 
       logical :: un_above_threshold
       logical :: us_above_threshold
@@ -1026,8 +1028,8 @@ contains
       time_density_start = second()
       if (need_ao_order(1, 0)) then
 !        density and density gradient
-         call get_gn(r_0(1), rhg, 0, mat_dim, dmat_0, buffer, ao, ao(ao_start(1, 0):ao_end(1, 0)))
-         z_0(1) = rhg(1)*rhg(1) + rhg(2)*rhg(2) + rhg(3)*rhg(3)
+         call get_gn(r_0(1), gn_0, 0, mat_dim, dmat_0, buffer, ao, ao(ao_start(1, 0):ao_end(1, 0)))
+         z_0(1) = gn_0(1)*gn_0(1) + gn_0(2)*gn_0(2) + gn_0(3)*gn_0(3)
       else
 !        density
          call get_n(r_0(1), 0, mat_dim, dmat_0, buffer, ao)
@@ -1069,17 +1071,17 @@ contains
            if ( fde_froz_n(ipoint) > dft_cfg_dfthr0 ) then
               r_0_t(1) = r_0(1) + fde_froz_n(ipoint)
 
-              z0tt(1)  = rhg(1) + fde_froz_ng(ipoint,1)
-              z0tt(2)  = rhg(2) + fde_froz_ng(ipoint,2)
-              z0tt(3)  = rhg(3) + fde_froz_ng(ipoint,3)
+              z0tt(1)  = gn_0(1) + fde_froz_ng(ipoint,1)
+              z0tt(2)  = gn_0(2) + fde_froz_ng(ipoint,2)
+              z0tt(3)  = gn_0(3) + fde_froz_ng(ipoint,3)
 
               if (.false.) then
 ! aspg: debugging the use of imported gradient
 !                r_0_t(1) = r_0(1)
                  r_0_t(1) = r_0(1) + fde_froz_n(ipoint)
-                 z0tt(1)  = rhg(1) + fde_froz_ng(ipoint,1) * .50
-                 z0tt(2)  = rhg(2) + fde_froz_ng(ipoint,2) * .50
-                 z0tt(3)  = rhg(3) + fde_froz_ng(ipoint,3) * .50
+                 z0tt(1)  = gn_0(1) + fde_froz_ng(ipoint,1) * .50
+                 z0tt(2)  = gn_0(2) + fde_froz_ng(ipoint,2) * .50
+                 z0tt(3)  = gn_0(3) + fde_froz_ng(ipoint,3) * .50
               endif
 
               z_0_t(1) = z0tt(1)*z0tt(1) + z0tt(2)*z0tt(2) + z0tt(3)*z0tt(3)
@@ -1092,7 +1094,7 @@ contains
 !        if ( dirac_cfg_fde_response.and.((ipoint.eq.5000).or.(ipoint.eq.8000)) )  then
 !           write (*,*) ' '
 !           write (*,*) ' debug: at point',ipoint
-!           write (*,*) ' debug: rhg(1,2,3)  ',rhg(1),rhg(2),rhg(3)
+!           write (*,*) ' debug: gn_0(1,2,3)  ',gn_0(1),gn_0(2),gn_0(3)
 !           write (*,*) ' debug: frz(1,2,3)  ',fde_froz_ng(ipoint,1), &
 !                         fde_froz_ng(ipoint,2),fde_froz_ng(ipoint,3)
 !           write (*,*) ' debug: z0tt(1,2,3) ',z0tt(1),z0tt(2),z0tt(3)
@@ -1201,7 +1203,7 @@ contains
 !           with symmetrization later
 !           it comes from the fact that derivative of z
 !           yields two identical terms (one left, one right)
-            u%gn(:, 1) = 2.0d0*derv(1, d0010000)*rhg
+            u%gn(:, 1) = 2.0d0*derv(1, d0010000)*gn_0
           end if
 #ifdef MOD_UNRELEASED
          if (is_tau_mgga) then
@@ -1222,7 +1224,7 @@ contains
             if (use_gga) then
               call gga_london_distribute_r(derv(1, d1000000),                      &
                                            2.0d0*derv(1, d0010000),                      &
-                                           rhg,                               &
+                                           gn_0,                               &
                                            0,                                 &
                                            mat_dim,                           &
                                            nz,                                &
@@ -1300,7 +1302,7 @@ contains
                   .false.,        &
                   ao,           &
                   r_0,            &
-                  rhg,            &
+                  gn_0,            &
                   z_0,            &
                   w,              &
                   use_gga_qr,     &
@@ -1320,7 +1322,7 @@ contains
                        dft_cfg_no_sdft,        &
                        mat_dim, dmat,        &
                        dmat_pg_sym,dmat_ih_sym,ao,ao(ao_start(1, 0)), &
-                       r_0(1),z_0(1),rhg,w(1), &
+                       r_0(1),z_0(1),gn_0,w(1), &
                        buffer,             &
                   derv_length,    &
                   derv, u)
@@ -1345,7 +1347,7 @@ contains
                   .true.,          &
                   ao,            &
                   r_0,             &
-                  rhg,             &
+                  gn_0,             &
                   z_0,             &
                   w,               &
                   use_gga_qr,      &
@@ -1372,7 +1374,7 @@ contains
                                           ao(ao_start(0, 0):ao_end(0, 0)), &
                                           ao(ao_start(1, 0):ao_end(1, 0)), &
                                           r_0(1),                            &
-                                          rhg,                               &
+                                          gn_0,                               &
                                           rx(ipoint),                      &
                                           ry(ipoint),                      &
                                           rz(ipoint),                      &
@@ -1390,7 +1392,7 @@ contains
                 call xc_geo_0_gga_c1(property_gradient,               &
                                      derv(1, d1000000),                    &
                                      derv(1, d0010000),                    &
-                                     rhg,                             &
+                                     gn_0,                             &
                                      mat_dim,                         &
                                      dmat_0,                          &
                                      ao,                              &
@@ -1439,7 +1441,7 @@ contains
              if (use_gga) then
                 call xc_london_c1_ks_gga(derv(1, d1000000),               &
                                          derv(1, d0010000),               &
-                                         rhg,                             &
+                                         gn_0,                             &
                                          mat_dim,                         &
                                          nz,                              &
                                          fmat,                            &
@@ -1459,17 +1461,23 @@ contains
           if (do_london_lr) then
              if (use_gga) then
              else
-                call xc_london_c1_lr_lda(&
-                                         mat_dim,                 &
-                                         nz,                      &
-                                         dmat,                    &
-                                         fmat,                    &
-                                         ao,                      &
-                                       (/rx(ipoint), ry(ipoint), rz(ipoint)/), &
-                                         x)
+                call xc_london_c1_lr_lda_densities(mat_dim,      &
+                                                   nz,           &
+                                                   dmat,         &
+                                                   ao,           &
+                                                 (/rx(ipoint),   &
+                                                   ry(ipoint),   &
+                                                   rz(ipoint)/), &
+                                                   n_b)
              end if
              do im = 1, 3
-                u%n(im) = derv(1, d2000000)*x(im)
+                u%n(im) = derv(1, d2000000)*n_b(im)
+                if (use_gga) then
+                   u%n(im) = u%n(im) + derv(1, d1010000)*gnn_b(im)
+                   u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gn_0(1:3)*n_b(im)*derv(1, d1010000) &
+                                                 + 2.0d0*gn_0(1:3)*gnn_b(im)*derv(1, d0020000) &
+                                                 + 2.0d0*gn_b(1:3, im)*derv(1, d0010000)
+                end if
              end do
           end if
 #endif /* ifdef MOD_UNRELEASED */
@@ -2076,7 +2084,7 @@ contains
                 allow_nonhermitian, &
                 ao_p,               &
                 r_0,                &
-                gr_0,               &
+                gn_0,               &
                 z_0,                &
                 w,                  &
                 is_gga_qr,          &
@@ -2096,7 +2104,7 @@ contains
     logical, intent(in)    :: allow_nonhermitian
     real(8), intent(in)    :: ao_p(*)
     real(8), intent(in)    :: r_0(*)
-    real(8), intent(in)    :: gr_0(*)
+    real(8), intent(in)    :: gn_0(*)
     real(8), intent(in)    :: z_0(*)
     real(8), intent(in)    :: w(*)
     logical, intent(in)    :: is_gga_qr
@@ -2187,14 +2195,14 @@ contains
         u%n(im) = u%n(im) + derv(1, d2000000)*r_b
         
         if (is_gga_qr) then
-           z_b = 2.0d0*(gr_0(1)*gr_b(1) &
-                      + gr_0(2)*gr_b(2) &
-                      + gr_0(3)*gr_b(3))
+           z_b = 2.0d0*(gn_0(1)*gr_b(1) &
+                      + gn_0(2)*gr_b(2) &
+                      + gn_0(3)*gr_b(3))
           
            u%n(im) = u%n(im) + derv(1, d1010000)*z_b
           
-           u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gr_0(1:3)*r_b*derv(1, d1010000) &
-                                         + 2.0d0*gr_0(1:3)*z_b*derv(1, d0020000) &
+           u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gn_0(1:3)*r_b*derv(1, d1010000) &
+                                         + 2.0d0*gn_0(1:3)*z_b*derv(1, d0020000) &
                                          + 2.0d0*gr_b(1:3)*derv(1, d0010000)
         end if
 
@@ -2204,7 +2212,7 @@ contains
            u%tn(im) = u%tn(im) + derv(1, d1000010)*r_b
            u%tn(im) = u%tn(im) + derv(1, d0010010)*z_b
            u%n(im)  = u%n(im)  + derv(1, d1000010)*t_b
-           u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gr_0(1:3)*t_b*derv(1, d0010010)
+           u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gn_0(1:3)*t_b*derv(1, d0010010)
         end if
 #endif /* ifdef MOD_UNRELEASED */
 
@@ -2257,14 +2265,14 @@ contains
            u%s(k, im) = u%s(k, im) + derv(1, d0200000)*s_b(k)
            
            if (is_gga_qi) then
-              y_b(k)  = gr_0(1)*gs_b(1, k) &
-                      + gr_0(2)*gs_b(2, k) &
-                      + gr_0(3)*gs_b(3, k)
+              y_b(k)  = gn_0(1)*gs_b(1, k) &
+                      + gn_0(2)*gs_b(2, k) &
+                      + gn_0(3)*gs_b(3, k)
            
               u%s(k, im) = u%s(k, im) + derv(1, d0101000)*y_b(k)
            
-              u%gs(1:3, k, im) = u%gs(1:3, k, im) +       gr_0(1:3)*s_b(k)*derv(1, d0101000) &
-                                                  +       gr_0(1:3)*y_b(k)*derv(1, d0002000) &
+              u%gs(1:3, k, im) = u%gs(1:3, k, im) +       gn_0(1:3)*s_b(k)*derv(1, d0101000) &
+                                                  +       gn_0(1:3)*y_b(k)*derv(1, d0002000) &
                                                   + 2.0d0*gs_b(1:3, k)*derv(1, d0000100)
            end if
 #ifdef MOD_UNRELEASED
@@ -2273,7 +2281,7 @@ contains
               u%ts(k, im) = u%ts(k, im) + derv(1, d0100001)*s_b(k)
               u%ts(k, im) = u%ts(k, im) + derv(1, d0001001)*y_b(k)
               u%s(k, im) = u%s(k, im) + derv(1, d0100001)*ts_b(k)
-              u%gs(1:3, k, im) = u%gs(1:3, k, im) + gr_0(1:3)*ts_b(k)*derv(1, d0001001)
+              u%gs(1:3, k, im) = u%gs(1:3, k, im) + gn_0(1:3)*ts_b(k)*derv(1, d0001001)
            end if
 #endif /* ifdef MOD_UNRELEASED */
         end do
@@ -2295,7 +2303,7 @@ contains
                          gao1, &
                          r_0, &
                          z_0, &
-                         gr_0, &
+                         gn_0, &
                          w, &
                          buf, &
                          derv_len, &
@@ -2318,7 +2326,7 @@ contains
      real(8) ::          z_0(*)
      real(8) ::          w(*)
 !
-     real(8) ::          gr_0 (  3)
+     real(8) ::          gn_0 (  3)
      real(8) ::          gr_b (  3)
      real(8) ::          gr_c (  3)
 !
@@ -2446,12 +2454,12 @@ contains
 
       if (add_grad) then
 !       z = \nabla r \cdot \nabla r
-        z_b  = gr_0(1)*gr_b(1) &
-             + gr_0(2)*gr_b(2) &
-             + gr_0(3)*gr_b(3)
-        z_c  = gr_0(1)*gr_c(1) &
-             + gr_0(2)*gr_c(2) &
-             + gr_0(3)*gr_c(3)
+        z_b  = gn_0(1)*gr_b(1) &
+             + gn_0(2)*gr_b(2) &
+             + gn_0(3)*gr_b(3)
+        z_c  = gn_0(1)*gr_c(1) &
+             + gn_0(2)*gr_c(2) &
+             + gn_0(3)*gr_c(3)
         z_bc = gr_b(1)*gr_c(1) &
              + gr_b(2)*gr_c(2) &
              + gr_b(3)*gr_c(3)
@@ -2463,12 +2471,12 @@ contains
       if(add_grad .and. .not. no_sdft) then
 !       y = \nabla r \cdot \nabla s
         do k = k_start,3
-        y_b(k)  = gr_0(1)*gs_b(1, k) &
-                + gr_0(2)*gs_b(2, k) &
-                + gr_0(3)*gs_b(3, k)
-        y_c(k)  = gr_0(1)*gs_c(1, k) &
-                + gr_0(2)*gs_c(2, k) &
-                + gr_0(3)*gs_c(3, k)
+        y_b(k)  = gn_0(1)*gs_b(1, k) &
+                + gn_0(2)*gs_b(2, k) &
+                + gn_0(3)*gs_b(3, k)
+        y_c(k)  = gn_0(1)*gs_c(1, k) &
+                + gn_0(2)*gs_c(2, k) &
+                + gn_0(3)*gs_c(3, k)
         y_bc(k) = gr_b(1)*gs_c(1, k) &
                 + gr_b(2)*gs_c(2, k) &
                 + gr_b(3)*gs_c(3, k) &
@@ -2597,12 +2605,12 @@ contains
         endif
 
         do j = 1,3
-          v_bc_h(j) = v_bc_h(j) + v_bc_h_z_0*gr_0(j)*2.0d0 &
+          v_bc_h(j) = v_bc_h(j) + v_bc_h_z_0*gn_0(j)*2.0d0 &
      &                          + v_bc_h_z_b*gr_b(j)*2.0d0 &
      &                          + v_bc_h_z_c*gr_c(j)*2.0d0
           if(.not. no_sdft) then
             do k = k_start,3
-              v_bc_ah(j,k) = v_bc_ah(j,k) + v_bc_h_y_0(k)*gr_0(j) &
+              v_bc_ah(j,k) = v_bc_ah(j,k) + v_bc_h_y_0(k)*gn_0(j) &
      &                                    + v_bc_h_y_b(k)*gr_b(j) &
      &                                    + v_bc_h_y_c(k)*gr_c(j)
 
