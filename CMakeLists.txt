@@ -2,10 +2,12 @@ cmake_minimum_required(VERSION 2.6)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
-    ${PROJECT_SOURCE_DIR}/cmake
+    ${CMAKE_SOURCE_DIR}/cmake
     )
 
-set(CMAKE_BUILD_TYPE Debug)
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+endif ()
 
 project(Dirac Fortran C)
 
@@ -31,32 +33,32 @@ add_definitions(-DINSTALL_WRKMEM=${DIRAC_WORK_MEM_WORDS})
 # now only Linux, later add more machine info
 add_definitions(-DSYS_LINUX)
 
-get_filename_component(Fortran_COMPILER_NAME ${CMAKE_Fortran_COMPILER} NAME)
-if (Fortran_COMPILER_NAME STREQUAL "gfortran")
+include(ConfigCompilerFlags)
+if (CMAKE_COMPILER_IS_GNUC)
+    set (CMAKE_C_FLAGS "-Wall")
+    set (CMAKE_C_FLAGS_DEBUG "-O0 -g3")
+    set (CMAKE_C_FLAGS_RELEASE "-g -O2 -Wno-unused")
+elseif (CMAKE_C_COMPILER_ID MATCHES Intel)
+    set (CMAKE_C_FLAGS "-wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd177")
+    set (CMAKE_C_FLAGS_DEBUG "-g -O0")
+    set (CMAKE_C_FLAGS_RELEASE "-g -O2")
+    set (CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} -shared-intel")
+endif ()
+config_compiler_flags(C)
+
+if (CMAKE_COMPILER_IS_GNUFORTRAN)
 #   set(CMAKE_Fortran_FLAGS         "-Wall")
     set(CMAKE_Fortran_FLAGS         "     ")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g3")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -funroll-all-loops")
     add_definitions(-DVAR_GFORTRAN)
-elseif (Fortran_COMPILER_NAME STREQUAL "ifort")
+elseif (CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     set(CMAKE_Fortran_FLAGS         "-w -assume byterecl")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
     add_definitions(-DVAR_IFC)
 endif ()
-
-if (CMAKE_COMPILER_IS_GNUCC)
-    set(CMAKE_CC_FLAGS         "-Wall -Wno-sign-compare")
-    set(CMAKE_CC_FLAGS_DEBUG   "-O0 -g3")
-    set(CMAKE_CC_FLAGS_RELEASE "-O3 -Wno-unused")
-    if (DIRAC_ENABLE_CODE_COVERAGE)
-        set(CMAKE_CC_FLAGS "${CMAKE_CC_FLAGS} --coverage")
-    endif ()
-elseif (CMAKE_CC_COMPILER_ID MATCHES Intel)
-    set(CMAKE_CC_FLAGS         "")
-    set(CMAKE_CC_FLAGS_DEBUG   "-O0 -g")
-    set(CMAKE_CC_FLAGS_RELEASE "-O3 -DNDEBUG")
-endif ()
+config_compiler_flags(Fortran)
 
 set(DIRAC_LIBRARIES_TO_LINK)
 
