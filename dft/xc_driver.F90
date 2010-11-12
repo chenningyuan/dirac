@@ -647,6 +647,7 @@ contains
          if (dft_cfg_blocked .or. (use_gga                          &
                                    .and. .not. do_london_rhs_direct &
                                    .and. .not. do_london_ks         &
+                                   .and. .not. do_london_lr         &
                                    .and. .not. do_geo)) then
             if (nr_dmat > 0) then
                call gga_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym, dmat_ih_sym)

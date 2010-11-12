@@ -219,10 +219,11 @@ contains
 
                rkl_cross_gn_0 = r_kl(k, l, b(bxyz))*gn_0(c(bxyz)) &
                               - r_kl(k, l, c(bxyz))*gn_0(b(bxyz))
+               rkl_cross_gn_0 = 0.5d0*rkl_cross_gn_0
 
-               f =   d_n*rkl_cross_r*omega  &
+               f = d_n*rkl_cross_r*omega    &
                  + d_gnn*rkl_cross_r*gnn_kl &
-                 + d_gnn*rkl_cross_gn_0*omega
+                 + d_gnn*2.0d0*rkl_cross_gn_0*omega
 
                fmat(k, l, (bxyz-1)*nz + 1) = fmat(k, l, (bxyz-1)*nz + 1) + f
                fmat(l, k, (bxyz-1)*nz + 1) = fmat(l, k, (bxyz-1)*nz + 1) - f
@@ -323,19 +324,29 @@ contains
 
                rkl_cross_gn_0 = r_kl(k, l, b(bxyz))*gn_0(c(bxyz)) &
                               - r_kl(k, l, c(bxyz))*gn_0(b(bxyz))
+               rkl_cross_gn_0 = 0.5d0*rkl_cross_gn_0
 
                n_b(bxyz) = n_b(bxyz) &
                          + rkl_cross_r*omega
 
                gnn_b(bxyz) = gnn_b(bxyz)        &
                            + rkl_cross_r*gnn_kl &
-                           + rkl_cross_gn_0*omega
+                           + 2.0d0*rkl_cross_gn_0*omega
 
                do gxyz = 1, 3
-                  gn_b(gxyz, bxyz) = gn_b(gxyz, bxyz) &
+                  gn_b(gxyz, bxyz) = gn_b(gxyz, bxyz)              &
                                    + rkl_cross_r*nabla_omega(gxyz)
                end do
             end do
+!           gn_b(1, 1)
+            gn_b(1, 2) = gn_b(1, 2) + 0.5d0*r_kl(k, l, 3)*omega
+            gn_b(1, 3) = gn_b(1, 3) - 0.5d0*r_kl(k, l, 2)*omega
+            gn_b(2, 1) = gn_b(2, 1) - 0.5d0*r_kl(k, l, 3)*omega
+!           gn_b(2, 2)
+            gn_b(2, 3) = gn_b(2, 3) + 0.5d0*r_kl(k, l, 1)*omega
+            gn_b(3, 1) = gn_b(3, 1) + 0.5d0*r_kl(k, l, 2)*omega
+            gn_b(3, 2) = gn_b(3, 2) - 0.5d0*r_kl(k, l, 1)*omega
+!           gn_b(3, 3)
          end do
       end do
 
