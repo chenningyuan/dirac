@@ -11,7 +11,13 @@
 ##################################################
 
 import os
-import sys,string, subprocess, optparse, distutils.util, shutil, signal
+import sys
+import string 
+import subprocess
+import optparse
+import distutils.util 
+import shutil
+import signal
 import stat
 import time
 
@@ -177,6 +183,10 @@ class pam_enviroment(workdir_class):
     self.profiler = ''
 
     self.dirac_exe=self.dirac_home
+ 
+    ### put/get files ###
+    self.put_files=''
+    self.get_files=''
 
     self.mem = 64
     self.maxmem=''
@@ -322,6 +332,18 @@ class pam_enviroment(workdir_class):
                   action="store_true",dest="dest_nobackup",  
                   help=this_label)
 
+    # .. get files from the work dir
+    this_label="get files from the working directory"
+    parser.add_option("--get",type="string", nargs=1,
+                  action="store",dest="dest_get",
+                  help=this_label,metavar="STRING")
+
+    # .. copy files into the work dir
+    this_label="copy files into the working directory"
+    parser.add_option("--put",type="string", nargs=1,
+                  action="store",dest="dest_put",
+                  help=this_label,metavar="STRING")
+
     # ... clean workdir before calculation
     this_label="clean the directory before calculations (default: do not clean)"
     parser.add_option("--clean", 
@@ -415,7 +437,7 @@ class pam_enviroment(workdir_class):
       if self.iprint > 7:
         print 'assigned timeout=',self.timeout
 
-    if (options.dest_nobackup is not None) :
+    if (options.dest_nobackup is not None):
       self.nobackup=options.dest_nobackup      
       if self.iprint > 7:
         print 'assigned nobackup=',self.nobackup
@@ -424,6 +446,16 @@ class pam_enviroment(workdir_class):
       self.no_archive=options.dest_noarch
       if self.iprint > 7:
         print 'assigned no_archive=',self.no_archive
+
+    if (options.dest_put is not None):
+      self.put_files=options.dest_put
+      if self.iprint > 7:
+        print 'assigned put_files=',self.put_files
+
+    if (options.dest_get is not None):
+      self.get_files=options.dest_get
+      if self.iprint > 7:
+        print 'assigned get_files=',self.get_files
 
     if (options.dest_fullrestart is not None):
       self.fullrestart=dest_fullrestart
@@ -488,6 +520,17 @@ class pam_enviroment(workdir_class):
     else:
       self.output_name=mol_file_stripped+"_"+inp_file_stripped
     print "output_name=",self.output_name
+
+  def copy_files(self):
+  # copies files from home to the workdir
+    if (self.put_files is not None):
+        for file_name in self.put_files:
+          #full_file_name=self.wrkdir_obj.workdir+"/"+file_name
+          full_file_name=self.input_directory+"/"+file_name
+          if ( os.path.isfile(full_file_name) ):
+            file_name_wrkdir=self.wrkdir_obj.workdir+"/"+file_name
+            self.wrkdir_obj.copy_file(full_file_name,file_name_wrkdir)
+
 
   def set_output_file(self):
   # sets the name of the output file by using "self.output_name"
@@ -632,7 +675,14 @@ class pam_enviroment(workdir_class):
       # own packing (Linux)
       os.system(archive_command)
 
-      # take care of the rest
+      # take care of the rest - get files from workdir to home dir
+      if (self.get_files is not None):
+        for file_name in self.get_files:
+          full_file_name=self.wrkdir_obj.workdir+"/"+file_name
+          if ( os.path.isfile(full_file_name) ):
+            file_name_home=self.input_directory+"/"+file_name
+            self.wrkdir_obj.copy_file(full_file_name,file_name_home)
+
 
   def remove_work_dir(self):
     print 'removing work-dir'
@@ -668,6 +718,7 @@ class pam_run(pam_enviroment):
     print 'performing own pam run..'
     self.pam_variables.process_pam_arguments()
     self.pam_variables.set_wrkdir()
+    self.pam_variables.copy_files()
     self.pam_variables.set_output_file()
     self.pam_variables.print_header()
     self.pam_variables.set_dirac_environment()
