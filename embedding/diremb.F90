@@ -49,6 +49,7 @@
       PUBLIC DO_GRID_OUT
       public fde_grid, fde_frozen_prp, fde_grid_np, fde_nprop
       public skip_kin_contribution, skip_xc_contribution
+      public get_xml_export_level
 
       LOGICAL,SAVE :: DO_GRID_OUT=.FALSE.
       logical,save :: have_frozen_density = .false.
@@ -58,8 +59,8 @@
       logical,save :: skip_xc_contribution  = .false.
       INTEGER,SAVE :: LUFDEPOT=45,LUTESTING=46,LUGRIDOUT=47, LUFDEFRZDNS=48
       INTEGER,SAVE :: print_fde=0, fde_grid_np=0, fde_nprop=1
-      CHARACTER(LEN=60),SAVE :: FDEPOT='EMBPOT',FDEDNS='FRZDNS',GRIDOUT_NAME=''
-      CHARACTER(LEN=60),SAVE :: out_level='HF'
+      CHARACTER(LEN=60),SAVE :: FDEPOT='EMBPOT',FDEDNS='FRZDNS',GRIDOUT_NAME='GRIDOUT'
+      CHARACTER(LEN=4),SAVE :: xmlexport_dens_level='HF'
       real(kind=8), pointer :: fde_grid(:,:), fde_frozen_prp(:,:) 
 
 #ifdef MOD_UNRELEASED
@@ -73,6 +74,11 @@
       
       CONTAINS
 
+        subroutine get_xml_export_level(level)
+           CHARACTER(LEN=4), intent(OUT) :: level
+   
+           level = xmlexport_dens_level 
+        end subroutine 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! FDE_ImportStaticPotential_FileOpen: opens file containing the embedding potential
 !                                    (static) exported on a grid
@@ -270,14 +276,14 @@
 #endif /* ifdef MOD_XCFUN */
 
             CASE ('.LEVEL')
-              READ(LUCMD,'(A60)') out_level
-              select case(out_level)
-              case('HF','MP2')
+              READ(LUCMD,'(A4)') xmlexport_dens_level
+              select case(xmlexport_dens_level)
+              case('DHF','MP2')
                  WRITE(LUPRI,*) 'Outputted density will be taken from: ' &
-                      ,trim(out_level)
+                      ,trim(xmlexport_dens_level)
               case default
                  WRITE(LUPRI,*) 'Input for outputted density not a &
-     &  x  valid calculation, HF will be used instead. Given:',out_level
+     &  x  valid calculation, HF will be used instead. Given:',xmlexport_dens_level
               end select
             CASE ('.GRIDOU')
 ! WRITE TO THIS GRIDFILE
@@ -446,6 +452,7 @@
       character(len=132) :: csizegrdrho1, csizehesrho1
       REAL(KIND=8) :: DMAT(NTBAS(0),NTBAS(0),4)
       REAL(KIND=8) :: CMO(NTBAS(0),NTBAS(0),4)
+      real(kind=8) :: test_int_density
       REAL(kind=8), pointer :: points(:,:)
       REAL(kind=8), allocatable, target :: grad_rho(:,:)
       REAL(kind=8), allocatable, target :: hes_rho(:,:),vc(:),rho(:,:)
@@ -496,10 +503,10 @@
 !     Get CMO from file.
       CMO(:,:,:)=0.0
 
-      select case(out_level)
+      select case(xmlexport_dens_level)
       case('MP2')
          write(lupri,*) 'Reading CC_DENSITY'
-         call GET_CC_DENSITY(out_level,'AO',DMAT,ierr)
+         call GET_CC_DENSITY(xmlexport_dens_level,'AO',DMAT,ierr)
          if (ierr.ne.0) then
             write(lupri,*) 'Error in reading density matrix'
             call quit('error readin density matrix')
@@ -510,24 +517,25 @@
          CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','EMBDRV')
          CALL REACMO(LUCOEF,'DFCOEF',CMO,dummy,dummy,dummy,3,WORK,1, &
               LWORK)
-         if (print_fde>20) then
+         if (print_fde.gt.20) then
             WRITE(LUPRI,*) 'CMO', CMO
             WRITE(LUPRI,*) 'DMAT OLD', DMAT
          end if
 !     SCF construct density matrix
          CALL DENMAT(DMAT,CMO,print_fde)
-!     Correct DMAT for occupationnumbers
-         DMAT(:,:,:)=2*DMAT(:,:,:)
 
 !     TMP scaling
       end select
+!     Correct DMAT for occupationnumbers, both for scf and mp2...
+      DMAT(:,:,:)=2*DMAT(:,:,:)
 
 !     GET an id for LUGRIDOUT.
       LUGRIDOUT=OPEN_FILE(GRIDOUT_NAME)
-      IF (LUGRIDOUT<0) &
+      write (*,*) 'lugridout id is:',LUGRIDOUT
+      IF (LUGRIDOUT.lt.0) &
            CALL QUIT('ERROR OPENING GRIDOUT FILE. FILE: ' &
            //GRIDOUT_NAME)
-      IF (LUGRIDOUT==0) &
+      IF (LUGRIDOUT.eq.0) &
            CALL QUIT('FILE FOR GRIDOUT DOES NOT EXISTS. FILE: ' &
            //GRIDOUT_NAME)
 
@@ -548,6 +556,8 @@
       hes_rho  = 0.0d0
       vc       = 0.0d0
 
+      test_int_density = 0.0d0
+
       WRITE(LUPRI,*) 'Calculating the density and its derivatives.'
       DO i=1,size(points,2)
 !     JHS Get the values of the basisfunctions in every gridpoint
@@ -561,7 +571,11 @@
              hes_rho(4,i),hes_rho(5,i),hes_rho(6,i), &
              GAO,GAO1,GAO2,DMAT,BUF)
 !     JHS Calculate the coulomb potential.
+         test_int_density = test_int_density + rho(1,i)*points(4,i)
       END DO
+
+      WRITE(LUPRI,*) ' Integrated density adds up to ',test_int_density,&
+     &               ' electrons.'
 
       call dealloc (gao)
       call dealloc (gao1)

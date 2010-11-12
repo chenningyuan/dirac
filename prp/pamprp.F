@@ -146,6 +146,7 @@ C
 C
       DIMENSION WORK(LWORK)
       CHARACTER WF*4
+      CHARACTER WFEXPORT*4
 C
       CALL QENTER('PAMPR1')
 C
@@ -277,7 +278,8 @@ C
 C JHS 17 apr 2008
 C
 #ifdef MOD_EMB
-      IF (DO_GRID_OUT) THEN
+      call get_xml_export_level(wfexport)
+      IF (DO_GRID_OUT.and.(WF.eq.wfexport)) THEN
 #ifdef MOD_XML
          CALL FDE_GRIDOUT(WORK,LFREE)
 #else
