@@ -55,7 +55,7 @@ module xc_london_c1
 
    private
 
-!radovan: these common blocks will go away
+!radovan: these common blocks should go away
 !         p array should be set up in dft_ao
 #include "mxcent.h"
 #include "maxorb.h"
