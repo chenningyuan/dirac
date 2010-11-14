@@ -265,7 +265,8 @@ contains
 !     --------------------------------------------------------------------------
     real(8), external :: ddot
    integer, parameter :: max_mat_number = 10
-   integer, target    :: default_sym(max_mat_number)
+   integer, target    :: default_pg_sym(max_mat_number)
+   integer, target    :: default_ih_sym(max_mat_number)
     real(8)             :: save_ddot1, save_ddot2
 
 
@@ -422,7 +423,8 @@ contains
          end if
       end if
 
-      default_sym = 1
+      default_pg_sym = 1
+      default_ih_sym = 0
 
       nullify(fmat_pg_sym)
       nullify(dmat_pg_sym)
@@ -443,17 +445,17 @@ contains
          if (present(xc_fmat_pg_sym)) then
             fmat_pg_sym => xc_fmat_pg_sym
          else
-            fmat_pg_sym => default_sym(1:nr_fmat)
+            fmat_pg_sym => default_pg_sym(1:nr_fmat)
          end if
          if (present(xc_dmat_pg_sym)) then
             dmat_pg_sym => xc_dmat_pg_sym
          else
-            dmat_pg_sym => default_sym(1:nr_dmat)
+            dmat_pg_sym => default_pg_sym(1:nr_dmat)
          end if
          if (present(xc_dmat_ih_sym)) then
             dmat_ih_sym => xc_dmat_ih_sym
          else
-            dmat_ih_sym => default_sym(1:nr_dmat)
+            dmat_ih_sym => default_ih_sym(1:nr_dmat)
          end if
       end if
 
@@ -1371,6 +1373,7 @@ contains
                                           nr_dmat, &
                                           dmat,    &
                                           dmat_pg_sym,      &
+                                          dmat_ih_sym,      &
                                           fmat_pg_sym,      &
                                           use_gga,                           &
                                           ao(ao_start(0, 0):ao_end(0, 0)), &

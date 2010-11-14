@@ -58,6 +58,7 @@ contains
                                       nr_dmat_p, &
                                       dmat_p,    &
                                       isym_d,    &
+                                      ih_d,    &
                                       isym_f,    &
                                       use_gga,   &
                                       ao_g0_m0,  &
@@ -80,6 +81,7 @@ contains
     integer, intent(in)    :: nr_dmat_p
     real(8), intent(in)    :: dmat_p(mat_dim, mat_dim, nz, nr_dmat_p)
     integer, intent(in)    :: isym_d(nr_dmat_p)
+    integer, intent(in)    :: ih_d(nr_dmat_p)
     integer, intent(in)    :: isym_f(*)
     logical, intent(in)    :: use_gga
     real(8), intent(in)    :: ao_g0_m0(*)
@@ -116,14 +118,25 @@ contains
     gn(:, 0) = gn_0
     do i = 1, nr_dmat_p
        if (use_gga) then
-          call get_gn(n(i),               &
-                      gn(1, i),           &
-                      isym_d(i) - 1,      &
-                      mat_dim,            &
-                      dmat_p(1, 1, 1, i), &
-                      buffer,             &
-                      ao_g0_m0,           &
-                      ao_g1_m0)
+          if (ih_d(i) == 0) then
+             call get_gn_nonhermitian(n(i),  &
+                         gn(1, i),           &
+                         isym_d(i) - 1,      &
+                         mat_dim,            &
+                         dmat_p(1, 1, 1, i), &
+                         buffer,             &
+                         ao_g0_m0,           &
+                         ao_g1_m0)
+          else
+             call get_gn(n(i),               &
+                         gn(1, i),           &
+                         isym_d(i) - 1,      &
+                         mat_dim,            &
+                         dmat_p(1, 1, 1, i), &
+                         buffer,             &
+                         ao_g0_m0,           &
+                         ao_g1_m0)
+          end if
        else
           call get_n(n(i),               &
                      isym_d(i) - 1,      &
