@@ -23,13 +23,14 @@ import time
 
 
 # installation directory inserted in by the configure script
-global install_dir, install_dir_default
+global install_dir, install_dir_default,svn_revision
 install_dir_default=''
 #install_dir_default='/home/dv6-2145ec/Work/qch/software/dirac/gfortran_gcc_noopt_ownlibs_ilp32/adm_hsfsdyn_cap/trunk'
 install_dir_default='/home/ilias/qch_work/qch_software/dirac/gfortran_noopt_ILP64_ownlibs/adm/trunk'
 install_dir=install_dir_default
 
 def append_dirac_py_modules(dirac_install_dir):
+  global svn_revision
 # append directory with common dirac python-modules and imports them
   modules_directory = dirac_install_dir + '/utils'
   if (not os.access(modules_directory,os.R_OK) ):
@@ -38,9 +39,12 @@ def append_dirac_py_modules(dirac_install_dir):
   sys.path.append(modules_directory)
   # import common # does not work..
   #from common import *
-  from common import is_windows
+  from common import is_windows,svn_info
   print 'common dirac modules loaded !'
-  print 'is_windows=',is_windows()
+  #print 'is_windows=',is_windows()
+  svn_object = svn_info() # object of the class
+  svn_revision = svn_object.get_svn_revision()
+  #print 'svn_revision =',svn_revision
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 class workdir_class:
@@ -221,6 +225,13 @@ class pam_enviroment(workdir_class):
 
     # all files from the archive are unpacked, it is assumed that archive file is copied into workdir 
     self.fullrestart=False
+
+    # ... DFCOEF 
+    self.incmo=False
+    self.outcmo=False
+    # ... DFFCK2
+    self.infck=False
+    self.outfck=False 
  
     #execution time-limit
     self.set_timeout_limit=False
@@ -279,6 +290,10 @@ class pam_enviroment(workdir_class):
                   action="store", dest="dest_run", 
                   help=this_label, metavar="STRING")
 
+  # ... revision
+    this_label='append svn revision number to output file suffix, which is: '+svn_revision
+    parser.add_option("--revision", action="store_true",dest="dest_revision",help=this_label)
+
   # ... get in the "mw"
     this_label='memory (in megawords) for the master, default:'+str(self.mem)
     parser.add_option("--mw", type="int", nargs=1,  
@@ -336,13 +351,39 @@ class pam_enviroment(workdir_class):
     this_label="get files from the working directory"
     parser.add_option("--get",type="string", nargs=1,
                   action="store",dest="dest_get",
-                  help=this_label,metavar="STRING")
+                  help=this_label,metavar="\"file1 file2...\"")
 
     # .. copy files into the work dir
     this_label="copy files into the working directory"
     parser.add_option("--put",type="string", nargs=1,
                   action="store",dest="dest_put",
-                  help=this_label,metavar="STRING")
+                  help=this_label,metavar="\"file1 file2...\"")
+
+    # .. DFCOEF
+    this_label="Copy DFCOEF from job directory to work area (when restarting)"
+    parser.add_option("--incmo",
+                  action="store_true",dest="dest_incmo",
+                  help=this_label)
+
+    this_label="Save DFCOEF to job directory from work area (for restart)"
+    parser.add_option("--outcmo",
+                  action="store_true",dest="dest_outcmo",
+                  help=this_label)
+
+    # ... DFFCK2
+    this_label="Copy DFFCK2 from job directory to work area"
+    parser.add_option("--infck",
+                  action="store_true",dest="dest_infck",
+                  help=this_label)
+
+    this_label="Save DFFCK2 to job directory from work area"
+    parser.add_option("--outfck",
+                  action="store_true",dest="dest_outfck",
+                  help=this_label)
+
+    this_label="Save DFCOEF to job directory from work area (for restart)"
+
+
 
     # ... clean workdir before calculation
     this_label="clean the directory before calculations (default: do not clean)"
@@ -378,10 +419,14 @@ class pam_enviroment(workdir_class):
 
     # now assign individual arguments
     if (options.dest_run is not None) :
-     self.output_suffix=options.dest_run
-     if self.iprint > 7:
-      print 'assigned suffix=',self.output_suffix
+      self.output_suffix=options.dest_run
+      if self.iprint > 7:
+        print 'assigned suffix=',self.output_suffix
 
+    if (options.dest_revision is not None):
+     self.output_suffix=self.output_suffix+".svn_rev_"+svn_revision
+     if self.iprint > 7:
+      print 'assigned suffix with revision=',self.output_suffix
 
     if (options.dest_mw is not None) :
      self.mem=int(options.dest_mw)
@@ -450,12 +495,32 @@ class pam_enviroment(workdir_class):
     if (options.dest_put is not None):
       self.put_files=options.dest_put
       if self.iprint > 7:
-        print 'assigned put_files=',self.put_files
+        print 'assigned put_files ?',(self.put_files is not None),'...',self.put_files
 
     if (options.dest_get is not None):
       self.get_files=options.dest_get
       if self.iprint > 7:
-        print 'assigned get_files=',self.get_files
+        print 'assigned get_files ?',(self.get_files is not None),'...',self.get_files
+
+    if (options.dest_incmo is not None):
+      self.incmo=options.dest_incmo
+      if self.iprint > 7:
+        print 'assigned self.incmo:',self.incmo
+
+    if (options.dest_outcmo is not None):
+      self.outcmo=options.dest_outcmo
+      if self.iprint > 7:
+        print 'assigned self.outcmo:',self.outcmo
+
+    if (options.dest_infck is not None):
+      self.infck=options.dest_infck
+      if self.iprint > 7:
+        print 'assigned self.infck:',self.infck
+
+    if (options.dest_outfck is not None):
+      self.outfck=options.dest_outfck
+      if self.iprint > 7:
+        print 'assigned self.outfck:',self.outfck
 
     if (options.dest_fullrestart is not None):
       self.fullrestart=dest_fullrestart
@@ -482,11 +547,6 @@ class pam_enviroment(workdir_class):
       if self.iprint > 7:
         print 'assigned debugger,',self.debugger
 
-    #################################################################
-    # VERY IMPORTANT: append external dirac modules to the path dir
-    #################################################################
-    append_dirac_py_modules(install_dir)
-
     # assign input directory ...
     self.input_directory=os.getcwd()
 
@@ -496,16 +556,9 @@ class pam_enviroment(workdir_class):
     if (self.iprint > 7) :
       print 'Parallel ?:',self.parallel
 
-  def set_wrkdir(self):
-  # ... creates the workdir, copies wanted files
+    ### set workdir name here  ###
     if self.wrkdir_obj.create_workdir_name:
       self.wrkdir_obj.set_workdir_name(self.output_name)
-    self.wrkdir_obj.create_workdir()
-    print 'set_wrkdir: install_dir=',install_dir
-    self.wrkdir_obj.copy_file(install_dir+'/'+'dirac.x',self.wrkdir_obj.workdir+'/'+'dirac.x')
-    self.wrkdir_obj.copy_file(self.input_molecule,self.wrkdir_obj.workdir+'/'+'MOLECULE.MOL')
-    self.wrkdir_obj.copy_file(self.input_dirac,self.wrkdir_obj.workdir+'/'+'DIRAC.INP')
-   # TODO: copying more file through flag)
 
   def set_output_name(self):
   # set the output name string to be used later 
@@ -523,14 +576,39 @@ class pam_enviroment(workdir_class):
 
   def copy_files(self):
   # copies files from home to the workdir
-    if (self.put_files is not None):
-        for file_name in self.put_files:
-          #full_file_name=self.wrkdir_obj.workdir+"/"+file_name
-          full_file_name=self.input_directory+"/"+file_name
-          if ( os.path.isfile(full_file_name) ):
-            file_name_wrkdir=self.wrkdir_obj.workdir+"/"+file_name
-            self.wrkdir_obj.copy_file(full_file_name,file_name_wrkdir)
 
+    print 'copying files into working directory...'
+    def copy_single_file(file_name):
+      full_file_name=self.input_directory+"/"+file_name
+      if ( os.path.isfile(full_file_name) ):
+        file_name_wrkdir=self.wrkdir_obj.workdir+"/"+file_name
+        print 'copying ',file_name,' from homedir to workdir '
+        self.wrkdir_obj.copy_file(full_file_name,file_name_wrkdir)
+      else :
+        print file_name,' you want to copy does not exist !'
+
+    self.wrkdir_obj.create_workdir()
+    #print 'set_wrkdir: install_dir=',install_dir
+    self.wrkdir_obj.copy_file(install_dir+'/'+'dirac.x',self.wrkdir_obj.workdir+'/'+'dirac.x')
+    self.wrkdir_obj.copy_file(self.input_molecule,self.wrkdir_obj.workdir+'/'+'MOLECULE.MOL')
+    self.wrkdir_obj.copy_file(self.input_dirac,self.wrkdir_obj.workdir+'/'+'DIRAC.INP')
+
+    if (self.fullrestart):
+      print 'restarting from copied ARCHIVE file '
+
+    if (self.put_files is not None):
+      for file_name in self.put_files:
+        copy_single_file(file_name)
+
+    # copies DFCOEF into workdir
+    if (self.incmo is True):
+      file_name="DFCOEF"
+      copy_single_file(file_name)
+
+    # copies DFFCK2 into workdir
+    if (self.infck is True):
+      file_name="DFFCK2"
+      copy_single_file(file_name)
 
   def set_output_file(self):
   # sets the name of the output file by using "self.output_name"
@@ -566,12 +644,6 @@ class pam_enviroment(workdir_class):
 
     # control printout ... giving None
     #print "DIRWRK=",os.getenv("$DIRWRK")
-
-  def copy_files(self):
-  # before running DIRAC copy files into working directory
-    print 'copying files into working directory...'
-    if (self.fullrestart):
-      print 'restarting from copied ARCHIVE file '
 
   def set_dirac_cmd(self):
   # set the dirac command
@@ -654,6 +726,22 @@ class pam_enviroment(workdir_class):
   def save_files(self):
     # ... save files in various manners from the work directory 
     from common import backup_file
+
+    def save_single_file(file_name):
+    # ... save single file
+      full_file_name=self.wrkdir_obj.workdir+"/"+file_name
+      if self.iprint >= 5:
+        print 'file_name=',file_name
+        print 'full_file_name=', full_file_name
+      if ( os.path.isfile(full_file_name) ):
+        file_name_home=self.input_directory+"/"+file_name
+        print 'copying ',file_name,' from workdir to the homedir.'
+        # backup file if it's there
+        if (self.nobackup is False):
+          backup_file(some_file=file_name_home,upto=None)
+        # finally copy
+        self.wrkdir_obj.copy_file(full_file_name,file_name_home)
+
     if (not self.no_archive):
       # set name of the archive file
       archive_name=self.input_molecule+"_"+self.input_dirac+".tgz"
@@ -665,8 +753,10 @@ class pam_enviroment(workdir_class):
       existing_archive_files=''
       for archfile in self.archive_files:
         if (os.path.isfile(archfile)):
-           existing_archive_files=existing_archive_files+' '+archfile
-      print 'existing archive files:',existing_archive_files
+          existing_archive_files=existing_archive_files+' '+archfile
+      if (self.iprint >= 5):
+        print 'existing archive files:',existing_archive_files
+
       # backup 
       if (self.nobackup is False):
          backup_file(some_file=archive_full_name,upto=None)
@@ -675,14 +765,25 @@ class pam_enviroment(workdir_class):
       # own packing (Linux)
       os.system(archive_command)
 
-      # take care of the rest - get files from workdir to home dir
-      if (self.get_files is not None):
-        for file_name in self.get_files:
-          full_file_name=self.wrkdir_obj.workdir+"/"+file_name
-          if ( os.path.isfile(full_file_name) ):
-            file_name_home=self.input_directory+"/"+file_name
-            self.wrkdir_obj.copy_file(full_file_name,file_name_home)
+    # take care of the rest - get files from workdir to home dir
+    print 'self.get_files=',self.get_files
+    if (self.get_files is not None):
+      files_to_get = self.get_files.split()
+      if self.iprint >= 5:
+        print 'getting files: ',self.get_files
+        print 'files_to_get:  ',files_to_get
+      for file_name in files_to_get:
+        save_single_file(file_name)
 
+    # DFCOEF
+    if (self.outcmo):
+      file_name="DFCOEF"
+      save_single_file(file_name)
+
+    # DFFCK2
+    if (self.outfck):
+      file_name="DFFCK2"
+      save_single_file(file_name)
 
   def remove_work_dir(self):
     print 'removing work-dir'
@@ -702,10 +803,6 @@ class pam_enviroment(workdir_class):
     print "   Input dir   :",self.input_directory
     print "   Work dir    :",self.wrkdir_obj.workdir
 
-#def notify_user() :
-# replacement
-#  print 'notify_user...'
-
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 class pam_run(pam_enviroment):
 #-----------------------------------------------------
@@ -713,14 +810,17 @@ class pam_run(pam_enviroment):
   def __init__(self):
     print 'pam_run class initialize'
     self.pam_variables=pam_enviroment()
+    #################################################################
+    # VERY IMPORTANT: append external dirac modules to the path dir
+    #################################################################
+    append_dirac_py_modules(install_dir)
+
 
   def perform(self):
-    print 'performing own pam run..'
     self.pam_variables.process_pam_arguments()
-    self.pam_variables.set_wrkdir()
+    self.pam_variables.print_header()
     self.pam_variables.copy_files()
     self.pam_variables.set_output_file()
-    self.pam_variables.print_header()
     self.pam_variables.set_dirac_environment()
     self.pam_variables.set_dirac_cmd()
     self.pam_variables.execute_dirac()
