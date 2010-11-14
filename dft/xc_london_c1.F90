@@ -130,46 +130,47 @@ contains
 
    end subroutine
 
-  subroutine xc_london_c1_ks_lda(d_r,     &
-                                 mat_dim, &
-                                 nz,      &
-                                 fmat,    &
-                                 ao,      &
-                                 r)
+   subroutine xc_london_c1_ks_lda(d_n,     &
+                                  mat_dim, &
+                                  nz,      &
+                                  fmat,    &
+                                  ao,      &
+                                  r)
 
-!   ----------------------------------------------------------------------------
-    real(8), intent(in)    :: d_r
-    integer, intent(in)    :: mat_dim
-    integer, intent(in)    :: nz
-    real(8), intent(inout) :: fmat(mat_dim, mat_dim, *)
-    real(8), intent(in)    :: ao(mat_dim)
-    real(8), intent(in)    :: r(3)
-!   ----------------------------------------------------------------------------
-    integer                :: k, l, bxyz
-    real(8)                :: f
-    real(8)                :: rkl_cross_r
-    real(8)                :: omega
-!   ----------------------------------------------------------------------------
+!     --------------------------------------------------------------------------
+      real(8), intent(in)    :: d_n
+      integer, intent(in)    :: mat_dim
+      integer, intent(in)    :: nz
+      real(8), intent(inout) :: fmat(mat_dim, mat_dim, *)
+      real(8), intent(in)    :: ao(mat_dim)
+      real(8), intent(in)    :: r(3)
+!     --------------------------------------------------------------------------
+      integer                :: k, l, bxyz
+      real(8)                :: f
+      real(8)                :: rkl_cross_r
+      real(8)                :: omega
+!     --------------------------------------------------------------------------
 
-    do k = 1, mat_dim
-!     work only on the triangle without diagonal elements
-      do l = 1, k - 1
+      do k = 1, mat_dim
+!        work only on the triangle without diagonal elements
+         do l = 1, k - 1
 
-        omega = ao(k)*ao(l)
+            omega = ao(k)*ao(l)
 
-        do bxyz = 1, 3
-          rkl_cross_r = r_kl(k, l, b(bxyz))*r(c(bxyz)) &
-                      - r_kl(k, l, c(bxyz))*r(b(bxyz))
+            do bxyz = 1, 3
+               rkl_cross_r = r_kl(k, l, b(bxyz))*r(c(bxyz)) &
+                           - r_kl(k, l, c(bxyz))*r(b(bxyz))
+               rkl_cross_r = 0.5d0*rkl_cross_r
 
-          f = 0.5d0*d_r*rkl_cross_r*omega
+               f = d_n*rkl_cross_r*omega
 
-          fmat(k, l, (bxyz-1)*nz + 1) = fmat(k, l, (bxyz-1)*nz + 1) + f
-          fmat(l, k, (bxyz-1)*nz + 1) = fmat(l, k, (bxyz-1)*nz + 1) - f
-        end do
+               fmat(k, l, (bxyz-1)*nz + 1) = fmat(k, l, (bxyz-1)*nz + 1) + f
+               fmat(l, k, (bxyz-1)*nz + 1) = fmat(l, k, (bxyz-1)*nz + 1) - f
+            end do
+         end do
       end do
-    end do
 
-  end subroutine
+   end subroutine
 
    subroutine xc_london_c1_ks_gga(d_n,     &
                                   d_gnn,   &
@@ -249,21 +250,26 @@ contains
       real(8), intent(out) :: n_b(3)
 !     --------------------------------------------------------------------------
       integer              :: k, l, bxyz
+      real(8)              :: f
       real(8)              :: rkl_cross_r
       real(8)              :: omega
 !     --------------------------------------------------------------------------
 
       n_b = 0.0d0
+
       do k = 1, mat_dim
          do l = 1, mat_dim
 
-            omega = ao(k)*ao(l)*dmat(k, l)
+            f = -1.0d0*dmat(l, k)
+            omega = ao(k)*ao(l)*f
 
             do bxyz = 1, 3
                rkl_cross_r = r_kl(k, l, b(bxyz))*r(c(bxyz)) &
                            - r_kl(k, l, c(bxyz))*r(b(bxyz))
+               rkl_cross_r = 0.5d0*rkl_cross_r
 
-               n_b(bxyz) = n_b(bxyz) + 0.5d0*rkl_cross_r*omega
+               n_b(bxyz) = n_b(bxyz) &
+                         + rkl_cross_r*omega
             end do
          end do
       end do
