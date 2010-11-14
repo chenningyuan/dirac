@@ -111,6 +111,7 @@ contains
       type(matrix), intent(in)    :: D
 !     --------------------------------------------------------------------------
 
+      call xc_mpi_wake_up_coworkers()
       call xc_integrator(xc_mat_dim           = ntbas(0), &
                          xc_nz                = nz,       &
                          xc_dmat_0            = D%elms,   &
@@ -119,6 +120,7 @@ contains
                          xc_nr_atoms          = nr_atoms, &
                          xc_property_gradient = g,        &
                          xc_do_geo_0          = .true.)
+      call xc_mpi_release_coworkers()
 
    end subroutine
 
@@ -134,6 +136,7 @@ contains
          return
       end if
 
+      call xc_mpi_wake_up_coworkers()
       call xc_integrator(xc_mat_dim           = ntbas(0),    &
                          xc_nz                = nz,          &
                          xc_dmat_0            = D%elms,      &
@@ -143,6 +146,7 @@ contains
                          xc_nr_atoms          = nr_atoms,    &
                          xc_property_gradient = g,           &
                          xc_do_geo_1          = .true.)
+      call xc_mpi_release_coworkers()
 
    end subroutine
 
@@ -158,6 +162,7 @@ contains
          return
       end if
 
+      call xc_mpi_wake_up_coworkers()
       call xc_integrator(xc_mat_dim           = ntbas(0),             &
                          xc_nz                = nz,                   &
                          xc_dmat_0            = D%elms,               &
@@ -167,6 +172,7 @@ contains
                          xc_nr_atoms          = nr_atoms,             &
                          xc_property_gradient = g,                    &
                          xc_do_geo_2          = .true.)
+      call xc_mpi_release_coworkers()
 
    end subroutine
 
@@ -182,6 +188,7 @@ contains
       call alloc(mat, ntbas(0), ntbas(0), nz, 3)
       mat = 0.0d0
 
+      call xc_mpi_wake_up_coworkers()
       call xc_integrator(xc_mat_dim      = ntbas(0),    &
                          xc_nz           = nz,          &
                          xc_dmat_0       = D%elms,      &
@@ -190,6 +197,7 @@ contains
                          xc_fmat         = mat,         &
                          xc_fmat_pg_sym  = (/1, 1, 1/), &
                          xc_do_london_ks = .true.)
+      call xc_mpi_release_coworkers()
 
       call dcopy(ntbas(0)*ntbas(0)*nz, mat(1, 1, 1, 1), 1, F(1)%elms, 1)
       call dcopy(ntbas(0)*ntbas(0)*nz, mat(1, 1, 1, 2), 1, F(2)%elms, 1)
@@ -211,6 +219,7 @@ contains
       call alloc(mat, ntbas(0), ntbas(0), nz, 3)
       mat = 0.0d0
 
+      call xc_mpi_wake_up_coworkers()
       call xc_integrator(xc_mat_dim      = ntbas(0),    &
                          xc_nz           = nz,          &
                          xc_dmat_0       = D%elms,      &
@@ -221,6 +230,7 @@ contains
                          xc_fmat         = mat,         &
                          xc_fmat_pg_sym  = (/1, 1, 1/), &
                          xc_do_london_lr = .true.)
+      call xc_mpi_release_coworkers()
 
       call dcopy(ntbas(0)*ntbas(0)*nz, mat(1, 1, 1, 1), 1, F(1)%elms, 1)
       call dcopy(ntbas(0)*ntbas(0)*nz, mat(1, 1, 1, 2), 1, F(2)%elms, 1)
