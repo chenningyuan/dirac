@@ -146,6 +146,8 @@ xalpha_read(const char* conf_line)
     if(res) 
         gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, 
                                       1.5*weight);
+    else
+      fun_printf("xalpha_read failed: please give weight");   
     fun_set_hf_weight(0);
     return res;
 }

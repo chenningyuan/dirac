@@ -146,9 +146,13 @@ dft_func_input (const char* line, int* inperr, int len, char** ConfString,
         if(strcasecmp(avail[i]->name, func_name)==0) {
             int ok;
             *func = avail[i];
+            /* running read function of functional if available */
             ok = (*func)->read ?
-                (*func)->read((*ConfString)+strlen(func_name)) : 1;
-            if(!ok) (*inperr)++;
+                 (*func)->read((*ConfString)+strlen(func_name)) : 1; 
+	    if(!ok) { /* read functional failed */
+               fort_print("Read function for '%s' failed. Aborting.\n", func_name);
+	       (*inperr)++;
+            }
             return ok;
         }
 

@@ -4344,7 +4344,7 @@ C                  so if we call more than once (as in geom.opt.)
 C                  we get n*functional for n'th call !!!! /3-Jun-2003 hjaaj
                   CALL DFTINPUT(LINE, INPERR)
                   if (inperr .gt. 0) then
-                    call quit('unknown functional after .DFT')
+                    call quit('failure in DFTINPUT after .DFT')
                   end if
 
 #ifdef MOD_ERI
