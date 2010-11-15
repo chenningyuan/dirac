@@ -404,6 +404,11 @@ class pam_enviroment(workdir_class):
 
     # process all
     (options, args) = parser.parse_args()
+
+#   user has given no arguments: print help and exit
+    if len(sys.argv) == 1:
+        print(parser.format_help().strip())
+        sys.exit()
     
     # now assign individual arguments
     if (options.dest_iprint is not None) :
