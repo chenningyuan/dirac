@@ -243,21 +243,6 @@ class pam_enviroment(workdir_class):
     print 'processing pam arguments....'
     global install_dir
 
-    def process_remaining_args(rem_args):
-    # checks and process *.mol & *.inp arguments
-    # which are the only remaining arguments after
-    # picking up all others by flags
-      print rem_args
-      print len(rem_args)
-      if (len(rem_args) == 2):
-     # add further checking on input files
-        self.input_molecule=rem_args[0]
-        self.input_dirac=rem_args[1]
-        self.set_output_name()
-      else:
-        print 'wrong number of arguments !'
-        sys.exit(-2)
-
     from optparse import OptionParser
     usage="usage: %prog [options] [*.mol] [*.inp]"
     parser = OptionParser(usage)
@@ -402,12 +387,39 @@ class pam_enviroment(workdir_class):
                   action="store",dest="dest_debugger",
                   help=this_label, metavar="STRING")
 
-    # process all
+    parser.add_option('--mol', 
+        type   = 'string',
+        nargs  = 1,
+        action = 'store',
+        dest   = 'mol_file',
+        help   = 'molecule file *.mol'
+        )
+
+    parser.add_option('--inp', 
+        type   = 'string',
+        nargs  = 1,
+        action = 'store',
+        dest   = 'inp_file',
+        help   = 'input file *.inp'
+        )
+
+#   process input
     (options, args) = parser.parse_args()
 
 #   user has given no arguments: print help and exit
     if len(sys.argv) == 1:
         print(parser.format_help().strip())
+        sys.exit()
+
+#   input and molecule are required
+#   check that they are there, if not exit
+#   if yes, assign output file name
+    if (options.mol_file != None and options.inp_file != None):
+        self.input_molecule = options.mol_file
+        self.input_dirac    = options.inp_file
+        self.set_output_name()
+    else:
+        print 'both --mol=... and --inp=... are required'
         sys.exit()
     
     # now assign individual arguments
@@ -543,9 +555,6 @@ class pam_enviroment(workdir_class):
 
     # assign input directory ...
     self.input_directory=os.getcwd()
-
-    # remaining arguments - *.mol and *.inp files
-    process_remaining_args(args)
 
     if (self.iprint > 7) :
       print 'Parallel ?:',self.parallel
