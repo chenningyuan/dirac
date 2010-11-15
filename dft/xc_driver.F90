@@ -1487,6 +1487,14 @@ contains
                                                    rz(ipoint)/), &
                                                    n_b)
              end if
+!radovan:    a short explanation of what is happening here
+!            (because this is done differently than in Dalton):
+!            the above routines evaluate magnetic field derivatives
+!            (there are three: im = 1, 3)
+!            of perturbed density variables using the transition density matrix dmat
+!            next we form u%n and u%gn and distribute over matrices
+!            as if it was a normal linear response run
+!            this makes the otherwise very lengthy operation rather compact
              do im = 1, 3
                 u%n(im) = derv(1, d2000000)*n_b(im)
                 if (use_gga) then
