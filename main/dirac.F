@@ -74,6 +74,7 @@ C  /* Deck dirctl */
       SUBROUTINE DIRCTL(WORK,LWORK)
 
       use basis_info
+      use basis_info_ng
       use occupation_info
 
 #include "implicit.h"
@@ -93,6 +94,7 @@ C
 !     write info to files
 !     this is then used in dft and visualization
       call basis_info_write()
+      call basis_info_write_ng()
       call occupation_info_write()
 
 
