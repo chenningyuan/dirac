@@ -1,6 +1,9 @@
 !dirac_copyright_start
 !dirac_copyright_end
 
+!     how to get the exported info:
+!     pam -get basis_info_ng *mol *inp
+
 !     this is supposed to be the general purpose next generation
 !     basis set importer and exporter
 !     at the moment it only exports
