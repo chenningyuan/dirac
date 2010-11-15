@@ -244,7 +244,7 @@ class pam_enviroment(workdir_class):
     global install_dir
 
     from optparse import OptionParser
-    usage="usage: %prog [options] [*.mol] [*.inp]"
+    usage="usage: %prog [options] --mol=*.mol --inp=*.inp"
     parser = OptionParser(usage)
 
   # ... get in the print level 
