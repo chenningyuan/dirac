@@ -23,14 +23,15 @@ import time
 
 
 # installation directory inserted in by the configure script
-global install_dir, install_dir_default,svn_revision
+global install_dir, install_dir_default
 install_dir_default=''
 #install_dir_default='/home/dv6-2145ec/Work/qch/software/dirac/gfortran_gcc_noopt_ownlibs_ilp32/adm_hsfsdyn_cap/trunk'
 install_dir_default='/home/ilias/qch_work/qch_software/dirac/gfortran_noopt_ILP64_ownlibs/adm/trunk'
+#radovan: presently not inserted
+#install_dir_default='/home/bast/dirac/devel'
 install_dir=install_dir_default
 
 def append_dirac_py_modules(dirac_install_dir):
-  global svn_revision
 # append directory with common dirac python-modules and imports them
   modules_directory = dirac_install_dir + '/utils'
   if (not os.access(modules_directory,os.R_OK) ):
@@ -39,12 +40,9 @@ def append_dirac_py_modules(dirac_install_dir):
   sys.path.append(modules_directory)
   # import common # does not work..
   #from common import *
-  from common import is_windows,svn_info
+  from common import is_windows
   print 'common dirac modules loaded !'
   #print 'is_windows=',is_windows()
-  svn_object = svn_info() # object of the class
-  svn_revision = svn_object.get_svn_revision()
-  #print 'svn_revision =',svn_revision
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 class workdir_class:
@@ -290,10 +288,6 @@ class pam_enviroment(workdir_class):
                   action="store", dest="dest_run", 
                   help=this_label, metavar="STRING")
 
-  # ... revision
-    this_label='append svn revision number to output file suffix, which is: '+svn_revision
-    parser.add_option("--revision", action="store_true",dest="dest_revision",help=this_label)
-
   # ... get in the "mw"
     this_label='memory (in megawords) for the master, default:'+str(self.mem)
     parser.add_option("--mw", type="int", nargs=1,  
@@ -422,11 +416,6 @@ class pam_enviroment(workdir_class):
       self.output_suffix=options.dest_run
       if self.iprint > 7:
         print 'assigned suffix=',self.output_suffix
-
-    if (options.dest_revision is not None):
-     self.output_suffix=self.output_suffix+".svn_rev_"+svn_revision
-     if self.iprint > 7:
-      print 'assigned suffix with revision=',self.output_suffix
 
     if (options.dest_mw is not None) :
      self.mem=int(options.dest_mw)
