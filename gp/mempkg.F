@@ -173,6 +173,7 @@ C
       LFREE  = LFREE - (LREAL + LENID)
       MEMID(2) = 0
       WORK(KFREE-LENID) = WMEMID(1)
+      call push_water_mark(work(kfree))
       IF (LENID .EQ. 2) WORK(KFREE-1) = WMEMID(2)
 Chj1  CALL QEXIT('MEMGET  ')
       RETURN

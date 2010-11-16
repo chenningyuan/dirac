@@ -44,6 +44,7 @@ program dirprg
   real(kind=8), allocatable :: memory(:)
   integer :: memsize, iparcal, status, length, ios, idummy, ierr, maxsize = -1
   integer :: iscr_mem
+  integer :: high_water_mark
 ! initialize common variables (parallel and sequential run)
   mytid   = 0
   mparid  = 0
@@ -114,6 +115,7 @@ program dirprg
 #endif
   if (mytid == 0) then
      call alloc(memory,memsize)
+     call set_mem_start(memory)
      !call print_static_alloc
      call printtitle
      call printlogo
@@ -139,6 +141,8 @@ program dirprg
 #endif
   endif
   if (mytid == 0) then
+     print '(A,F8.2,A)',' MEMGET high-water mark: ',(high_water_mark()*8)*2.0D0**(-20),' MB'
+     print *,'F90 allocated memory not accounted for'
      print '(a)', '*****************************************************'
   endif
 #ifdef VAR_MPI

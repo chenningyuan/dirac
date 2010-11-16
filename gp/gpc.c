@@ -397,3 +397,24 @@ if (isnan(x) != 0 || isinf(x) ==-1 || isinf(x) ==+1)
 }
 else{return 0;}
 }
+
+
+static double *mem_start = 0;
+static double *mem_high = 0;
+
+void set_mem_start_(double *here)
+{
+  mem_start = here;
+  mem_high = here;
+}
+
+void push_water_mark_(double *here)
+{
+  if (mem_high < here)
+    mem_high = here;
+}
+
+int high_water_mark_(void)
+{
+  return mem_high - mem_start;
+}
