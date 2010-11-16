@@ -32,7 +32,9 @@
 !       if it is clear from this that symmetry is C1
 !       then basis_large etc. can be trivially generated
 !       and need not be present
-
+!     - normalization is absorbed in contraction coefficients
+!       (we can discuss this point)
+!     - ireps go from 0 to nr_ireps-1
 
 !radovan: notes to myself
 !       8. dirac specific information
@@ -65,7 +67,7 @@ module basis_info_ng
 
    integer              :: nr_shells(0:2)
    integer         :: sym_axes(3, 2)
-   integer              :: nr_boson_sym
+   integer              :: nr_ireps
    integer, parameter   :: nr_types = 2
    integer              :: max_nr_primitives(0:2)
    integer              :: first_shell(0:2)
@@ -124,8 +126,8 @@ contains
          rewind(file_unit)
       end if
 
-      nr_boson_sym = nbsym
-      sym_axes     = isymax
+      nr_ireps = nbsym
+      sym_axes = isymax
 
       nr_shells(1) = nlrgsh
       nr_shells(2) = kmax - nr_shells(1)
@@ -193,14 +195,24 @@ contains
       write(file_unit, '(4x, a)') 'nr_sym_independent_centers'
       write(file_unit, '(4x, 6i)') nucind
 
-      write(file_unit, '(4x, a)') 'coordinates'
+      write(file_unit, '(4x, a)') 'nr_sym_dependent_centers'
+      write(file_unit, '(4x, 6i)') nucdep
+
+      write(file_unit, '(4x, a)') 'coordinates_independent'
+      do icent = 1, nucind
+         write(file_unit, '(3f26.16)') cord(1, icent), &
+                                       cord(2, icent), &
+                                       cord(3, icent)
+      end do
+
+      write(file_unit, '(4x, a)') 'coordinates_dependent'
       do icent = 1, nucind
          if (mult(istbnu(icent)) == 1) then
                write(file_unit, '(3f26.16)') cord(1, icent), &
                                              cord(2, icent), &
                                              cord(3, icent)
          else
-            do irep = 0, nr_boson_sym - 1
+            do irep = 0, nr_ireps - 1
                if (iand(irep, istbnu(icent)) == 0) then
                   write(file_unit, '(3f26.16)') cord(1, icent)*pt(iand(isymax(1, 1), irep)), &
                                                 cord(2, icent)*pt(iand(isymax(2, 1), irep)), &
@@ -212,13 +224,15 @@ contains
 
       write(file_unit, '(a)') '*** symmetry_general'
 
-      write(file_unit, '(4x, a)') 'nr_boson_sym'
-      write(file_unit, '(4x, 6i)') nr_boson_sym
+      write(file_unit, '(4x, a)') 'nr_ireps'
+      write(file_unit, '(4x, 6i)') nr_ireps
 
-      write(file_unit, '(4x, a)') 'behavior_of_axes_under_sym_operations'
+      write(file_unit, '(4x, a)') 'irep_of_axes'
       write(file_unit, '(4x, 6i)') sym_axes(1, 1)
       write(file_unit, '(4x, 6i)') sym_axes(2, 1)
       write(file_unit, '(4x, 6i)') sym_axes(3, 1)
+
+      write(file_unit, '(4x, a)') 'irep_of_rotations'
       write(file_unit, '(4x, 6i)') sym_axes(1, 2)
       write(file_unit, '(4x, 6i)') sym_axes(2, 2)
       write(file_unit, '(4x, 6i)') sym_axes(3, 2)
@@ -273,12 +287,12 @@ contains
          end do
 
          write(file_unit, '(4x, a)') 'nr_ao_in_irep'
-         do irep = 0, nr_boson_sym - 1
+         do irep = 0, nr_ireps - 1
             write(file_unit, '(4x, 6i)') nbbas(irep, ic)
          end do
 
          write(file_unit, '(4x, a)') 'ao_offset_in_irep'
-         do irep = 0, nr_boson_sym - 1
+         do irep = 0, nr_ireps - 1
             write(file_unit, '(4x, 6i)') ibbas(irep, ic)
          end do
 
