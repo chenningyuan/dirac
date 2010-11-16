@@ -193,10 +193,10 @@ contains
       write(file_unit, '(a)') '*** geometry'
 
       write(file_unit, '(4x, a)') 'nr_sym_independent_centers'
-      write(file_unit, '(4x, 6i)') nucind
+      write(file_unit, '(4x, i6)') nucind
 
       write(file_unit, '(4x, a)') 'nr_sym_dependent_centers'
-      write(file_unit, '(4x, 6i)') nucdep
+      write(file_unit, '(4x, i6)') nucdep
 
       write(file_unit, '(4x, a)') 'coordinates_independent'
       do icent = 1, nucind
@@ -225,17 +225,17 @@ contains
       write(file_unit, '(a)') '*** symmetry_general'
 
       write(file_unit, '(4x, a)') 'nr_ireps'
-      write(file_unit, '(4x, 6i)') nr_ireps
+      write(file_unit, '(4x, i6)') nr_ireps
 
       write(file_unit, '(4x, a)') 'irep_of_axes'
-      write(file_unit, '(4x, 6i)') sym_axes(1, 1)
-      write(file_unit, '(4x, 6i)') sym_axes(2, 1)
-      write(file_unit, '(4x, 6i)') sym_axes(3, 1)
+      write(file_unit, '(4x, i6)') sym_axes(1, 1)
+      write(file_unit, '(4x, i6)') sym_axes(2, 1)
+      write(file_unit, '(4x, i6)') sym_axes(3, 1)
 
       write(file_unit, '(4x, a)') 'irep_of_rotations'
-      write(file_unit, '(4x, 6i)') sym_axes(1, 2)
-      write(file_unit, '(4x, 6i)') sym_axes(2, 2)
-      write(file_unit, '(4x, 6i)') sym_axes(3, 2)
+      write(file_unit, '(4x, i6)') sym_axes(1, 2)
+      write(file_unit, '(4x, i6)') sym_axes(2, 2)
+      write(file_unit, '(4x, i6)') sym_axes(3, 2)
 
       do ic = 1, nr_types
 
@@ -249,27 +249,27 @@ contains
          write(file_unit, '(a)') '*** basis_'//type_label(ic)
 
          write(file_unit, '(4x, a)') 'is_spherical'
-         write(file_unit, '(4x, 6l)') is_spherical(ic)
+         write(file_unit, '(4x, l6)') is_spherical(ic)
 
          write(file_unit, '(4x, a)') 'nr_shells'
-         write(file_unit, '(4x, 6i)') nr_shells(ic)
+         write(file_unit, '(4x, i6)') nr_shells(ic)
 
          write(file_unit, '(4x, a)') 'l_quantum_nr'
          do ishell = first_shell(ic), last_shell(ic)
-            write(file_unit, '(4x, 6i)') l_quantum_nr(ishell)
+            write(file_unit, '(4x, i6)') l_quantum_nr(ishell)
          end do
 
          write(file_unit, '(4x, a)') 'shell_center'
          do ishell = first_shell(ic), last_shell(ic)
-            write(file_unit, '(4x, 6i)') shell_center(ishell)
+            write(file_unit, '(4x, i6)') shell_center(ishell)
          end do
 
          write(file_unit, '(4x, a)') 'max_nr_primitives'
-         write(file_unit, '(4x, 6i)') max_nr_primitives(ic)
+         write(file_unit, '(4x, i6)') max_nr_primitives(ic)
 
          write(file_unit, '(4x, a)') 'nr_primitives'
          do ishell = first_shell(ic), last_shell(ic)
-            write(file_unit, '(4x, 6i)') nr_primitives(ishell)
+            write(file_unit, '(4x, i6)') nr_primitives(ishell)
          end do
 
          write(file_unit, '(4x, a)') 'primitive_exp_and_contraction_coef'
@@ -283,17 +283,17 @@ contains
 
          write(file_unit, '(4x, a)') 'shell_stabilizing_irep'
          do ishell = first_shell(ic), last_shell(ic)
-            write(file_unit, '(4x, 6i)') shell_stabilizing_irep(ishell)
+            write(file_unit, '(4x, i6)') shell_stabilizing_irep(ishell)
          end do
 
          write(file_unit, '(4x, a)') 'nr_ao_in_irep'
          do irep = 0, nr_ireps - 1
-            write(file_unit, '(4x, 6i)') nbbas(irep, ic)
+            write(file_unit, '(4x, i6)') nbbas(irep, ic)
          end do
 
          write(file_unit, '(4x, a)') 'ao_offset_in_irep'
          do irep = 0, nr_ireps - 1
-            write(file_unit, '(4x, 6i)') ibbas(irep, ic)
+            write(file_unit, '(4x, i6)') ibbas(irep, ic)
          end do
 
       end do
