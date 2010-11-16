@@ -96,44 +96,52 @@ contains
       real(8)      :: M(nc/3),Mtot,Z(nc/3),G(nc),Rc(nc),H(nc,nc),orig(3)=0
       real(8)      :: diff
       integer      :: IS(nc/3),i,internal=0,negative=0,unit=-1
-      integer      :: ic, jc
+      integer      :: ic, jc, ierr
       logical      :: ex
       call NUCLEI_ifc(nc/3,Z,IS,G)
       call GPINQ('DALTON.HES','EXIST',ex)
       if (.not.ex) call quit('load_vib_modes: Hessian file DALTON.HES not found')
       call GPOPEN(unit,'DALTON.HES','OLD',' ','FORMATTED',0,.false.)
 
-!     read number of coordinates
       rewind(unit)
-      read(unit, *) i
-      if (i/=nc) call quit('load_vib_modes: DALTON.HES inconsistent with MOLECULE.INP')
+
+!     read number of coordinates
+      read(unit, *, iostat=ierr) i
+      if (ierr /= 0) then
+         call quit('load_vib_modes: could not read number of coordinates')
+      end if
+      if (i /= nc) then
+         call quit('load_vib_modes: DALTON.HES inconsistent with MOLECULE.INP')
+      end if
 
 !     read hessian
       do ic = 1, nc
          read(unit, *) !blank line
          do jc = 1, nc
-            read(unit, *) H(jc, ic)
+            read(unit, *, iostat=ierr) H(jc, ic)
          end do
       end do
+      if (ierr /= 0) then
+         call quit('load_vib_modes: could not read Hessian on DALTON.HES')
+      end if
 
 !     read geometry
       read(unit, *) !blank line
       do ic = 1, nc
-         read(unit, *, iostat=i) Rc(ic)
+         read(unit, *, iostat=ierr) Rc(ic)
       end do
-
-      if (i==0) then
-         do ic = 1, nc
-            diff = dabs(G(ic) - Rc(ic))
-!radovan:   do not compare geometry without numeric tolerance
-            if (diff > 1.0d-3) then
-               call quit('load_vib_modes: Different geometry in DALTON.HES and MOLECULE.INP; '// &
-                         'one or more coordinates differ by more than 1.0d-3 bohr')
-            end if
-         end do
-      else
-         call quit('load_vib_modes: error reading DALTON.HES')
+      if (ierr /= 0) then
+         call quit('load_vib_modes: could not read geometry on DALTON.HES')
       end if
+
+      do ic = 1, nc
+         diff = dabs(G(ic) - Rc(ic))
+!        do not compare geometry without numeric tolerance
+         if (diff > 1.0d-3) then
+            call quit('load_vib_modes: Different geometry in DALTON.HES and MOLECULE.INP; '// &
+                      'one or more coordinates differ by more than 1.0d-3 bohr')
+         end if
+      end do
 
       call GPCLOSE(unit,'KEEP')
       call VIBHES(1,nc,G,nq,(/(0d0,i=1,nc)/),H,(/(0d0,i=1,6*nc)/) &
