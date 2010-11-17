@@ -61,18 +61,20 @@ C
 C
 #include "sdpre.h"
       IPOINT = NINT(D10*MIN(WVAL,TEN6))
+      DPOINT = DINT(D10*MIN(WVAL,TEN6))
+
+CMI ... watch the integer value (shown on CygWin/gfortran, 32-bit)
+      IF (IPOINT.LT.0) THEN
+CMI ... inserted this printout to have some statistics on NINT performance
+        WRITE(LUPRI,*) 'GAMFUN: NINT integer overflow !' 
+        WRITE(LUPRI,*) 'IPOINT = NINT(D10*MIN(WVAL,TEN6))=',IPOINT 
+        WRITE(LUPRI,*) 'DPOINT = DINT(D10*MIN(WVAL,TEN6))=',DPOINT
+        IPOINT = INT(DPOINT)
+        WRITE(LUPRI,*) 'fix: IPOINT=INT(DPOINT)=',IPOINT
+      ENDIF
 
       IF (IPOINT .LT. 120) THEN
          ISTART = 1 + 121*JMAX0 + IPOINT
-CMI    ... watch up the value !
-!        IF (ISTART.LT.0) THEN
-!         WRITE(LUPRI,*) 'GAMFUN: wrong index calculation !' 
-!         WRITE(LUPRI,*) 'ISTART=1 + 121*JMAX0 + IPOINT=',ISTART
-!         WRITE(LUPRI,*) 'IPOINT = NINT(D10*MIN(WVAL,TEN6))=',IPOINT 
-!         WRITE(LUPRI,*) 'WVAL,TEN6=', WVAL,TEN6
-!         CALL QUIT('GAMFUN: Error exit- wrong index calculation !')
-!        ENDIF
-
          WDIF = WVAL - TENTH*SDPRE(IPOINT)
          FJW(JMAX0) = (((((COEF6*TABFJW(ISTART + 726)*WDIF
      *                   + COEF5*TABFJW(ISTART + 605))*WDIF
