@@ -4176,7 +4176,7 @@ C?      WRITE(6,*) ' INTIM : IUSE_PH', IUSE_PH
         END IF
       END IF
       ECORE_ORIG = ECORE
-      ECORE = ECORE + ECORE_HEX
+      ECORE      = ECORE + ECORE_HEX
       if (myproc.eq.master) then
         WRITE(6,*) 'Updated core energy ',ECORE
       end if
