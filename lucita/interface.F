@@ -468,16 +468,6 @@ C     dimension IMOKW(NTABLE)
          IPARMODEL  = 0
 #endif
          IMOKW(21) = 2
-      else if (IMOKW(21).eq.1) then
-#if defined (VAR_MPI2)
-         IODENSEPAR = 2
-         IRUNPA     = 1
-         IPARMODEL  = 2
-#else
-         IODENSEPAR = 0
-         IRUNPA     = 0
-         IPARMODEL  = 0
-#endif
       end if
 *
 * 22: Type of I/O model in parallel calculation
@@ -490,14 +480,7 @@ C     dimension IMOKW(NTABLE)
          IIOMOD = 0
          YESSTATEMENT = 'No'
 #endif
-      else if (IMOKW(22).eq.1) then
-#if defined (VAR_MPI2)
-         IIOMOD = 1
-         YESSTATEMENT = 'Yes'
-#else
-         IIOMOD = 0
-         YESSTATEMENT = 'No'
-#endif
+         IMOKW(22) = 2
       end if
 *
 * 23: Number of maximum CI Iterations

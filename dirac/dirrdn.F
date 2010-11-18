@@ -2755,15 +2755,14 @@ C
       CHARACTER WORD*7,WORD1*7,PROMPT*1,TABLE(NTABLE)*7
 C
       DIMENSION WORK(LWORK)
-C     DIMENSION IMOKW(NTABLE)
 C
 C
       DATA TABLE /'.TITLE ','.INIWFC','.CITYPE','.NROOTS','.SYMMET',
      &            '.NACTEL','.MULTIP','.PRINTG','.PRINTL','.SZCALC',
      &            '.INACTI','.GASSHE','.GASSPC','.FROORB','.RAS1  ',
      &            '.RAS2  ','.RAS3  ','.DENSI ','.RSTRCI','.MXCIVE',
-     &            '.PARMOD','.PIOMOD','.MAXITR','.LBLKSZ','.FILSYS',
-     &            '.DISTRT','.FRCTFL','.TRUNCF','.MEMFAC','XXXXXXX'/
+     &            'xxxxxxx','xxxxxxx','.MAXITR','.LBLKSZ','xxxxxxx',
+     &            '.DISTRT','xxxxxxx','.TRUNCF','.MEMFAC','XXXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) THEN
@@ -2779,9 +2778,7 @@ C
 C     Initialize keyword status flags driving interface.
 C     (Therefore local keywords do not have to be initialized!)
 C
-      DO IKW = 1,NTABLE
-         IMOKW(IKW) = 0
-      END DO
+      call izero(imokw,ntable)
 C
 C
 C     Process input for LUCITA
@@ -2924,14 +2921,10 @@ C&&& MXCIVE: Maximum number of subspace CI vectors
                   IMOKW(20) = 1
                GO TO 100
    21          CONTINUE
-C&&& IPARMODEL: Parallel model to use for diagonalization
-                  READ(LUCMD,*) IPARMODEL
-                  IMOKW(21) = 1
+C&&& xxxxxxxxx:
                GO TO 100
    22          CONTINUE
-C&&& IPARIOMOD: Parallel I/O model to use in diagonalization
-                  READ(LUCMD,*) IPARIOMOD
-                  IMOKW(22) = 1
+C&&& xxxxxxxxx:
                GO TO 100
    23          CONTINUE
 C&&& ICIMAXITER: Maximum number of CI Iterations
@@ -2944,9 +2937,7 @@ C&&& IMAXBLKSIZE: Maximum batchsize for c-/sigma-vector
                   IMOKW(24) = 1
                GO TO 100
    25          CONTINUE
-C&&& IFILESYS: Determination of FILESYSTEM
-                  READ(LUCMD,*) IFILESYS
-                  IMOKW(25) = 1
+C&&& xxxxxxxxx:
                GO TO 100
    26          CONTINUE
 C&&& I_USE_DIST_ROUTE: Determination of distribution routine to use
@@ -2954,9 +2945,7 @@ C&&& I_USE_DIST_ROUTE: Determination of distribution routine to use
                   IMOKW(26) = 1
                GO TO 100
    27          CONTINUE
-C&&& IFRACTFILE: use of fractional files in DAVIDSON diagonalizer
-                  READ(LUCMD,*) IFRACTFILE
-                  IMOKW(27) = 1
+C&&& xxxxxxxxx:
                GO TO 100
    28          CONTINUE
 C&&& TRUNCFactor: truncation factor for residual vectors for next trial
