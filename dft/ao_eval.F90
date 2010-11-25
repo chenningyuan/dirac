@@ -420,12 +420,24 @@ contains
                   end if
                end do
     
-               call get_gao_block(block_length, &
-                                  ishell,       &
-                                  ao(1, i),     &
-                                  px,           &
-                                  py,           &
-                                  pz)
+               if (need_ao_order(1, 0)) then
+                  call get_gao1_block(block_length, &
+                                      ishell,       &
+                                      ao(1, i),     &
+                                      ao(1, i + nr_ao*1),     &
+                                      ao(1, i + nr_ao*2),     &
+                                      ao(1, i + nr_ao*3),     &
+                                      px,           &
+                                      py,           &
+                                      pz)
+               else
+                  call get_gao_block(block_length, &
+                                     ishell,       &
+                                     ao(1, i),     &
+                                     px,           &
+                                     py,           &
+                                     pz)
+               end if
     
                i = i + spherical_deg(ishell)
     
@@ -461,6 +473,55 @@ contains
                                   py,                   &
                                   pz,                   &
                                   ao)
+      else
+         call quit('get_gao_block: l too high')
+     !   do ic = 1, cartesian_deg(ishell)
+     !      jc = cartesian_off(ishell) + ic
+     !      do k = 1, block_length
+     !         ao(k, ic) = (px(k)**l_exp(jc)) &
+     !                    *(py(k)**m_exp(jc)) &
+     !                    *(pz(k)**n_exp(jc))*g_00_00_00_000(k)
+     !      end do
+     !   end do
+      end if
+
+   end subroutine
+
+   subroutine get_gao1_block(block_length, &
+                            ishell,       &
+                            ao,           &
+                            aox,           &
+                            aoy,           &
+                            aoz,           &
+                            px,           &
+                            py,           &
+                            pz)
+
+      use ao_eval_block
+!     --------------------------------------------------------------------------
+      integer, intent(in)    :: block_length
+      integer, intent(in)    :: ishell
+      real(8), intent(inout) :: ao(mxbllen, *)
+      real(8), intent(inout) :: aox(mxbllen, *)
+      real(8), intent(inout) :: aoy(mxbllen, *)
+      real(8), intent(inout) :: aoz(mxbllen, *)
+      real(8), intent(in)    :: px(*)
+      real(8), intent(in)    :: py(*)
+      real(8), intent(in)    :: pz(*)
+!     --------------------------------------------------------------------------
+      integer                :: ic, jc, k
+!     --------------------------------------------------------------------------
+
+      if (l_quantum_nr(ishell) < 8) then
+         call get_cartesian_ao_g1(block_length,         &
+                                  l_quantum_nr(ishell), &
+                                  px,                   &
+                                  py,                   &
+                                  pz,                   &
+                                  ao,                   &
+                                  aox,                  &
+                                  aoy,                  &
+                                  aoz)
       else
          call quit('get_gao_block: l too high')
      !   do ic = 1, cartesian_deg(ishell)

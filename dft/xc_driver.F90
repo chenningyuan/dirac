@@ -111,7 +111,7 @@ module xc_driver
    real(8), allocatable :: buffer_block(:, :)
    real(8), allocatable :: dmat_sorted(:)
    real(8), allocatable :: xmat_sorted(:)
-   real(8), allocatable :: ao_sorted(:)
+   real(8), allocatable :: ao_sorted(:, :)
    real(8), allocatable :: bmat(:)
 
    real(8) :: tau_integral
@@ -823,11 +823,16 @@ contains
    subroutine integrate()
 
 !     --------------------------------------------------------------------------
-      real(8) :: r_0(mxbllen)
+!     density
+      real(8) :: n_0(mxbllen)
+!     density gradient
+      real(8) :: gn_0(mxbllen, 3)
+      real(8) :: gn_0_pointwise(3)
+
       real(8) :: tau
-      real(8) :: z_0(mxbllen)
-      real(8) :: r_0_t(mxbllen)
-      real(8) :: z_0_t(mxbllen)
+      real(8) :: gnn_0(mxbllen)
+      real(8) :: n_0_t(mxbllen)
+      real(8) :: gnn_0_t(mxbllen)
       real(8) :: w(mxbllen)
 !     --------------------------------------------------------------------------
 !     geometric business
@@ -844,8 +849,8 @@ contains
       real(8) :: rho13, rho_outer, rho_resp, f
     integer :: ipoint
     integer :: k
-      real(8) :: gn_0(3),VT(3)
-    integer              :: derv_length, im
+      real(8) :: VT(3)
+    integer              :: derv_length, im, i
     real(8), allocatable :: derv(:, :)
 
 !   gosia: temporarily
@@ -903,7 +908,7 @@ contains
        call alloc(ao_sort_index_reverse, mat_dim)
        call alloc(dmat_sorted,           mat_dim*mat_dim)
        call alloc(xmat_sorted,           mxbllen*mat_dim)
-       call alloc(ao_sorted,             mxbllen*total_ao_vector_length)
+       allocate(ao_sorted(mxbllen*mat_dim, 0:4))
        call alloc(bmat,                  mxbllen*total_ao_vector_length)
        block_threshold = get_block_threshold(mat_dim, dmat_0)
     end if
@@ -965,7 +970,7 @@ contains
 #endif
 #endif
 !       set it to zero, otherwise it is undefined with lda
-        z_0 = 0.0d0
+        gnn_0 = 0.0d0
 
 
 #ifdef MOD_UNRELEASED
@@ -973,18 +978,39 @@ contains
       loop_over_points_block: do ipoint = 1, nr_points_process, mxbllen
          block_length = min(mxbllen, nr_points_process - ipoint + 1)
 
-         call get_ao(block_length,                     &
-                     rx(ipoint:ipoint+block_length-1), &
-                     ry(ipoint:ipoint+block_length-1), &
-                     rz(ipoint:ipoint+block_length-1), &
-                     ao_block,                         &
-                     buffer_block)
+!        call get_ao(block_length,                     &
+!                    rx(ipoint:ipoint+block_length-1), &
+!                    ry(ipoint:ipoint+block_length-1), &
+!                    rz(ipoint:ipoint+block_length-1), &
+!                    ao_block,                         &
+!                    buffer_block)
+
+         do k = 1, block_length
+            call get_ao(rx(ipoint + k - 1), &
+                        ry(ipoint + k - 1), &
+                        rz(ipoint + k - 1), &
+                        ao,         &
+                        buffer)
+            do i = 1, mat_dim
+               ao_block(k, i) = ao(i)
+            end do
+            if (use_gga) then
+               do i = 1, mat_dim
+                  ao_block(k, i + mat_dim*1) = ao(i + mat_dim*1)
+                  ao_block(k, i + mat_dim*2) = ao(i + mat_dim*2)
+                  ao_block(k, i + mat_dim*3) = ao(i + mat_dim*3)
+               end do
+            end if
+         end do
 
             call get_n_block( &
+                             use_gga,          &
                              block_length,          &
                              block_threshold,       &
                              mat_dim,               &
-                             r_0,                   &
+                             n_0,                   &
+                             gn_0,                  &
+                             gnn_0,                 &
                              buffer,                &
                              ao_block,              &
                              ao_sorted,             &
@@ -999,11 +1025,10 @@ contains
                              derv_length,           &
                              derv,                  &
                              max_fun_derv,          &
-                             z_0,                   &
                              rw(ipoint))
 
          do k = 1, block_length
-            nr_electrons = nr_electrons + rw(ipoint + k - 1)*r_0(k)
+            nr_electrons = nr_electrons + rw(ipoint + k - 1)*n_0(k)
             xc_energy    = xc_energy    + derv(k, d0000000)
          end do
 
@@ -1032,11 +1057,11 @@ contains
       time_density_start = second()
       if (need_ao_order(1, 0)) then
 !        density and density gradient
-         call get_gn(r_0(1), gn_0, 0, mat_dim, dmat_0, buffer, ao, ao(ao_start(1, 0):ao_end(1, 0)))
-         z_0(1) = gn_0(1)*gn_0(1) + gn_0(2)*gn_0(2) + gn_0(3)*gn_0(3)
+         call get_gn(n_0(1), gn_0_pointwise, 0, mat_dim, dmat_0, buffer, ao, ao(ao_start(1, 0):ao_end(1, 0)))
+         gnn_0(1) = gn_0_pointwise(1)*gn_0_pointwise(1) + gn_0_pointwise(2)*gn_0_pointwise(2) + gn_0_pointwise(3)*gn_0_pointwise(3)
       else
 !        density
-         call get_n(r_0(1), 0, mat_dim, dmat_0, buffer, ao)
+         call get_n(n_0(1), 0, mat_dim, dmat_0, buffer, ao)
 !        for mcscf/srdft also evaluate spin density here
 !        call get_s(spin_density, 0, mat_dim, dmat_0, buffer, ao)
       end if
@@ -1048,7 +1073,7 @@ contains
       end if
 #endif
 
-      if (r_0(1) > dft_cfg_dfthr0) then
+      if (n_0(1) > dft_cfg_dfthr0) then
          nr_points_used = nr_points_used + 1
 
          u%n  = 0.0d0
@@ -1073,36 +1098,36 @@ contains
 
         if ( dirac_cfg_fde_response ) then
            if ( fde_froz_n(ipoint) > dft_cfg_dfthr0 ) then
-              r_0_t(1) = r_0(1) + fde_froz_n(ipoint)
+              n_0_t(1) = n_0(1) + fde_froz_n(ipoint)
 
-              z0tt(1)  = gn_0(1) + fde_froz_ng(ipoint,1)
-              z0tt(2)  = gn_0(2) + fde_froz_ng(ipoint,2)
-              z0tt(3)  = gn_0(3) + fde_froz_ng(ipoint,3)
+              z0tt(1)  = gn_0_pointwise(1) + fde_froz_ng(ipoint,1)
+              z0tt(2)  = gn_0_pointwise(2) + fde_froz_ng(ipoint,2)
+              z0tt(3)  = gn_0_pointwise(3) + fde_froz_ng(ipoint,3)
 
               if (.false.) then
 ! aspg: debugging the use of imported gradient
-!                r_0_t(1) = r_0(1)
-                 r_0_t(1) = r_0(1) + fde_froz_n(ipoint)
-                 z0tt(1)  = gn_0(1) + fde_froz_ng(ipoint,1) * .50
-                 z0tt(2)  = gn_0(2) + fde_froz_ng(ipoint,2) * .50
-                 z0tt(3)  = gn_0(3) + fde_froz_ng(ipoint,3) * .50
+!                n_0_t(1) = n_0(1)
+                 n_0_t(1) = n_0(1) + fde_froz_n(ipoint)
+                 z0tt(1)  = gn_0_pointwise(1) + fde_froz_ng(ipoint,1) * .50
+                 z0tt(2)  = gn_0_pointwise(2) + fde_froz_ng(ipoint,2) * .50
+                 z0tt(3)  = gn_0_pointwise(3) + fde_froz_ng(ipoint,3) * .50
               endif
 
-              z_0_t(1) = z0tt(1)*z0tt(1) + z0tt(2)*z0tt(2) + z0tt(3)*z0tt(3)
+              gnn_0_t(1) = z0tt(1)*z0tt(1) + z0tt(2)*z0tt(2) + z0tt(3)*z0tt(3)
 
            else
-              r_0_t(1) = r_0(1)
-              z_0_t(1) = z_0(1)
+              n_0_t(1) = n_0(1)
+              gnn_0_t(1) = gnn_0(1)
            endif
         else
 !        if ( dirac_cfg_fde_response.and.((ipoint.eq.5000).or.(ipoint.eq.8000)) )  then
 !           write (*,*) ' '
 !           write (*,*) ' debug: at point',ipoint
-!           write (*,*) ' debug: gn_0(1,2,3)  ',gn_0(1),gn_0(2),gn_0(3)
+!           write (*,*) ' debug: gn_0_pointwise(1,2,3)  ',gn_0_pointwise(1),gn_0_pointwise(2),gn_0_pointwise(3)
 !           write (*,*) ' debug: frz(1,2,3)  ',fde_froz_ng(ipoint,1), &
 !                         fde_froz_ng(ipoint,2),fde_froz_ng(ipoint,3)
 !           write (*,*) ' debug: z0tt(1,2,3) ',z0tt(1),z0tt(2),z0tt(3)
-!           write (*,*) ' r_0, r_0_t, z_0, z_0_t ',r_0(1),r_0_t(1),z_0(1),z_0_t(1)
+!           write (*,*) ' n_0, n_0_t, gnn_0, gnn_0_t ',n_0(1),n_0_t(1),gnn_0(1),gnn_0_t(1)
 !           fde_resp_verbose = .true.
 !        else
 !           fde_resp_verbose = .false.
@@ -1111,7 +1136,7 @@ contains
 #endif /* ifdef MOD_UNRELEASED */
 
 !       number of electrons
-        nr_electrons = nr_electrons + w(1)*r_0(1)
+        nr_electrons = nr_electrons + w(1)*n_0(1)
 
         time_derv_start = second()
 #ifdef MOD_XCFUN
@@ -1134,10 +1159,10 @@ contains
                                         max_fun_derv, &
                                         bllen,        &
                                         w,            &
-                                        r_0,          &
-                                        r_0_t,        &
-                                        z_0,          &
-                                        z_0_t,        &
+                                        n_0,          &
+                                        n_0_t,        &
+                                        gnn_0,          &
+                                        gnn_0_t,        &
                                         derv_length,  &
                                         derv,         &
                                         parallel_xc,  &  
@@ -1149,8 +1174,8 @@ contains
                                        max_fun_derv, &
                                        bllen,        &
                                        w,            &
-                                       r_0,          &
-                                       z_0,          &
+                                       n_0,          &
+                                       gnn_0,          &
                                        derv_length,  &
                                        derv,         &
                                        alda_real=dft_cfg_alda_hs, &
@@ -1193,9 +1218,9 @@ contains
             end if
           end if
           if (dft_cfg_grac_is_active .or. dft_cfg_saop_is_active) then
-            rho13 = r_0(1)**(1.0d0/3.0d0)
-            call dftac(derv, w(1), r_0(1), rho13, &
-     &                 rho_resp, rho_outer, z_0(1))
+            rho13 = n_0(1)**(1.0d0/3.0d0)
+            call dftac(derv, w(1), n_0(1), rho13, &
+     &                 rho_resp, rho_outer, gnn_0(1))
           end if
 
 !         energy density
@@ -1207,7 +1232,7 @@ contains
 !           with symmetrization later
 !           it comes from the fact that derivative of z
 !           yields two identical terms (one left, one right)
-            u%gn(:, 1) = 2.0d0*derv(1, d0010000)*gn_0
+            u%gn(:, 1) = 2.0d0*derv(1, d0010000)*gn_0_pointwise
           end if
 #ifdef MOD_UNRELEASED
          if (is_tau_mgga) then
@@ -1228,7 +1253,7 @@ contains
             if (use_gga) then
               call gga_london_distribute_r(derv(1, d1000000),                      &
                                            2.0d0*derv(1, d0010000),                      &
-                                           gn_0,                               &
+                                           gn_0_pointwise,                               &
                                            0,                                 &
                                            mat_dim,                           &
                                            nz,                                &
@@ -1305,9 +1330,9 @@ contains
                   dmat_ih_sym,         &
                   .false.,        &
                   ao,           &
-                  r_0,            &
-                  gn_0,            &
-                  z_0,            &
+                  n_0,            &
+                  gn_0_pointwise,            &
+                  gnn_0,            &
                   w,              &
                   use_gga_qr,     &
                   use_gga_qi,     &
@@ -1326,7 +1351,7 @@ contains
                        dft_cfg_no_sdft,        &
                        mat_dim, dmat,        &
                        dmat_pg_sym,dmat_ih_sym,ao,ao(ao_start(1, 0)), &
-                       r_0(1),z_0(1),gn_0,w(1), &
+                       n_0(1),gnn_0(1),gn_0_pointwise,w(1), &
                        buffer,             &
                   derv_length,    &
                   derv, u)
@@ -1350,9 +1375,9 @@ contains
                   dmat_ih_sym,          &
                   .true.,          &
                   ao,            &
-                  r_0,             &
-                  gn_0,             &
-                  z_0,             &
+                  n_0,             &
+                  gn_0_pointwise,             &
+                  gnn_0,             &
                   w,               &
                   use_gga_qr,      &
                   use_gga_qi,      &
@@ -1378,8 +1403,8 @@ contains
                                           use_gga,                           &
                                           ao(ao_start(0, 0):ao_end(0, 0)), &
                                           ao(ao_start(1, 0):ao_end(1, 0)), &
-                                          r_0(1),                            &
-                                          gn_0,                               &
+                                          n_0(1),                            &
+                                          gn_0_pointwise,                               &
                                           rx(ipoint),                      &
                                           ry(ipoint),                      &
                                           rz(ipoint),                      &
@@ -1397,7 +1422,7 @@ contains
                 call xc_geo_0_gga_c1(property_gradient,               &
                                      derv(1, d1000000),                    &
                                      derv(1, d0010000),                    &
-                                     gn_0,                             &
+                                     gn_0_pointwise,                             &
                                      mat_dim,                         &
                                      dmat_0,                          &
                                      ao,                              &
@@ -1446,7 +1471,7 @@ contains
              if (use_gga) then
                 call xc_london_c1_ks_gga(derv(1, d1000000),               &
                                          derv(1, d0010000),               &
-                                         gn_0,                             &
+                                         gn_0_pointwise,                             &
                                          mat_dim,                         &
                                          nz,                              &
                                          fmat,                            &
@@ -1473,7 +1498,7 @@ contains
                                                  (/rx(ipoint),                      &
                                                    ry(ipoint),                      &
                                                    rz(ipoint)/),                    &
-                                                   gn_0,                            &
+                                                   gn_0_pointwise,                            &
                                                    n_b,                             &
                                                    gn_b,                            &
                                                    gnn_b)
@@ -1499,8 +1524,8 @@ contains
                 u%n(im) = derv(1, d2000000)*n_b(im)
                 if (use_gga) then
                    u%n(im) = u%n(im) + derv(1, d1010000)*gnn_b(im)
-                   u%gn(1:3, im) = 2.0d0*gn_0(1:3)*n_b(im)*derv(1, d1010000)   &
-                                 + 2.0d0*gn_0(1:3)*gnn_b(im)*derv(1, d0020000) &
+                   u%gn(1:3, im) = 2.0d0*gn_0_pointwise(1:3)*n_b(im)*derv(1, d1010000)   &
+                                 + 2.0d0*gn_0_pointwise(1:3)*gnn_b(im)*derv(1, d0020000) &
                                  + 2.0d0*gn_b(1:3, im)*derv(1, d0010000)
                 end if
              end do
@@ -1665,7 +1690,7 @@ contains
 
           time_matrix_dist = time_matrix_dist + second() - time_matrix_dist_start
 
-      end if !if (r_0(1) > dft_cfg_dfthr0) then
+      end if !if (n_0(1) > dft_cfg_dfthr0) then
     end do !do ipoint = 1, nr_points_process
 #ifdef MOD_UNRELEASED
    end if !if (dft_cfg_blocked) then
@@ -1682,7 +1707,7 @@ contains
        call dealloc(ao_sort_index_reverse)
        call dealloc(dmat_sorted)
        call dealloc(xmat_sorted)
-       call dealloc(ao_sorted)
+       deallocate(ao_sorted)
        call dealloc(bmat)
     end if
 
@@ -2108,9 +2133,9 @@ contains
                 ih,                 &
                 allow_nonhermitian, &
                 ao_p,               &
-                r_0,                &
-                gn_0,               &
-                z_0,                &
+                n_0,                &
+                gn_0_pointwise,               &
+                gnn_0,                &
                 w,                  &
                 is_gga_qr,          &
                 is_gga_qi,          &
@@ -2128,9 +2153,9 @@ contains
     integer, intent(in)    :: ih(nr_mat)
     logical, intent(in)    :: allow_nonhermitian
     real(8), intent(in)    :: ao_p(*)
-    real(8), intent(in)    :: r_0(*)
-    real(8), intent(in)    :: gn_0(*)
-    real(8), intent(in)    :: z_0(*)
+    real(8), intent(in)    :: n_0(*)
+    real(8), intent(in)    :: gn_0_pointwise(*)
+    real(8), intent(in)    :: gnn_0(*)
     real(8), intent(in)    :: w(*)
     logical, intent(in)    :: is_gga_qr
     logical, intent(in)    :: is_gga_qi
@@ -2220,14 +2245,14 @@ contains
         u%n(im) = u%n(im) + derv(1, d2000000)*r_b
         
         if (is_gga_qr) then
-           z_b = 2.0d0*(gn_0(1)*gr_b(1) &
-                      + gn_0(2)*gr_b(2) &
-                      + gn_0(3)*gr_b(3))
+           z_b = 2.0d0*(gn_0_pointwise(1)*gr_b(1) &
+                      + gn_0_pointwise(2)*gr_b(2) &
+                      + gn_0_pointwise(3)*gr_b(3))
           
            u%n(im) = u%n(im) + derv(1, d1010000)*z_b
           
-           u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gn_0(1:3)*r_b*derv(1, d1010000) &
-                                         + 2.0d0*gn_0(1:3)*z_b*derv(1, d0020000) &
+           u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gn_0_pointwise(1:3)*r_b*derv(1, d1010000) &
+                                         + 2.0d0*gn_0_pointwise(1:3)*z_b*derv(1, d0020000) &
                                          + 2.0d0*gr_b(1:3)*derv(1, d0010000)
         end if
 
@@ -2237,7 +2262,7 @@ contains
            u%tn(im) = u%tn(im) + derv(1, d1000010)*r_b
            u%tn(im) = u%tn(im) + derv(1, d0010010)*z_b
            u%n(im)  = u%n(im)  + derv(1, d1000010)*t_b
-           u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gn_0(1:3)*t_b*derv(1, d0010010)
+           u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gn_0_pointwise(1:3)*t_b*derv(1, d0010010)
         end if
 #endif /* ifdef MOD_UNRELEASED */
 
@@ -2290,14 +2315,14 @@ contains
            u%s(k, im) = u%s(k, im) + derv(1, d0200000)*s_b(k)
            
            if (is_gga_qi) then
-              y_b(k)  = gn_0(1)*gs_b(1, k) &
-                      + gn_0(2)*gs_b(2, k) &
-                      + gn_0(3)*gs_b(3, k)
+              y_b(k)  = gn_0_pointwise(1)*gs_b(1, k) &
+                      + gn_0_pointwise(2)*gs_b(2, k) &
+                      + gn_0_pointwise(3)*gs_b(3, k)
            
               u%s(k, im) = u%s(k, im) + derv(1, d0101000)*y_b(k)
            
-              u%gs(1:3, k, im) = u%gs(1:3, k, im) +       gn_0(1:3)*s_b(k)*derv(1, d0101000) &
-                                                  +       gn_0(1:3)*y_b(k)*derv(1, d0002000) &
+              u%gs(1:3, k, im) = u%gs(1:3, k, im) +       gn_0_pointwise(1:3)*s_b(k)*derv(1, d0101000) &
+                                                  +       gn_0_pointwise(1:3)*y_b(k)*derv(1, d0002000) &
                                                   + 2.0d0*gs_b(1:3, k)*derv(1, d0000100)
            end if
 #ifdef MOD_UNRELEASED
@@ -2306,7 +2331,7 @@ contains
               u%ts(k, im) = u%ts(k, im) + derv(1, d0100001)*s_b(k)
               u%ts(k, im) = u%ts(k, im) + derv(1, d0001001)*y_b(k)
               u%s(k, im) = u%s(k, im) + derv(1, d0100001)*ts_b(k)
-              u%gs(1:3, k, im) = u%gs(1:3, k, im) + gn_0(1:3)*ts_b(k)*derv(1, d0001001)
+              u%gs(1:3, k, im) = u%gs(1:3, k, im) + gn_0_pointwise(1:3)*ts_b(k)*derv(1, d0001001)
            end if
 #endif /* ifdef MOD_UNRELEASED */
         end do
@@ -2326,9 +2351,9 @@ contains
                          ihrmop, &
                          gao, &
                          gao1, &
-                         r_0, &
-                         z_0, &
-                         gn_0, &
+                         n_0, &
+                         gnn_0, &
+                         gn_0_pointwise, &
                          w, &
                          buf, &
                          derv_len, &
@@ -2347,11 +2372,11 @@ contains
      real(8) ::          gao(*)
      real(8) ::          gao1(*)
      real(8) ::          buf(*)
-     real(8) ::          r_0(*)
-     real(8) ::          z_0(*)
+     real(8) ::          n_0(*)
+     real(8) ::          gnn_0(*)
      real(8) ::          w(*)
 !
-     real(8) ::          gn_0 (  3)
+     real(8) ::          gn_0_pointwise (  3)
      real(8) ::          gr_b (  3)
      real(8) ::          gr_c (  3)
 !
@@ -2374,7 +2399,7 @@ contains
      real(8) ::          v_bc_h_x_c(3)
 
 
-      real(8) ::  v_bc_h_z_0
+      real(8) ::  v_bc_h_gnn_0
       real(8) ::  s_bc_h
       real(8) ::  v_bc_h_z_b
       real(8) ::  v_bc_h_z_c
@@ -2388,14 +2413,14 @@ contains
 !
 !               here we construct (see thesis for notation):
 !
-!               k_{pq,0}^(bc) = r_0^(bc) \omega_{pq,0} + q_{0j}^(bc) \nabla_j \omega_{pq,0}
+!               k_{pq,0}^(bc) = n_0^(bc) \omega_{pq,0} + q_{0j}^(bc) \nabla_j \omega_{pq,0}
 !               k_{pq,z}^(bc) = r_z^(bc) \omega_{pq,z} + q_{zj}^(bc) \nabla_j \omega_{pq,z}
 !               k_{pq,y}^(bc) = r_y^(bc) \omega_{pq,y} + q_{yj}^(bc) \nabla_j \omega_{pq,y}
 !               k_{pq,x}^(bc) = r_x^(bc) \omega_{pq,x} + q_{xj}^(bc) \nabla_j \omega_{pq,x}
 !
 !               all the rest is done elsewhere
 !
-!               scalar h+ part: r_0^[bc]
+!               scalar h+ part: n_0^[bc]
 !               s_bc_h
 !               vector h+ part: q_{0j}^[bc] with j = x,y,z
      real(8) ::          v_bc_h (  3)
@@ -2479,12 +2504,12 @@ contains
 
       if (add_grad) then
 !       z = \nabla r \cdot \nabla r
-        z_b  = gn_0(1)*gr_b(1) &
-             + gn_0(2)*gr_b(2) &
-             + gn_0(3)*gr_b(3)
-        z_c  = gn_0(1)*gr_c(1) &
-             + gn_0(2)*gr_c(2) &
-             + gn_0(3)*gr_c(3)
+        z_b  = gn_0_pointwise(1)*gr_b(1) &
+             + gn_0_pointwise(2)*gr_b(2) &
+             + gn_0_pointwise(3)*gr_b(3)
+        z_c  = gn_0_pointwise(1)*gr_c(1) &
+             + gn_0_pointwise(2)*gr_c(2) &
+             + gn_0_pointwise(3)*gr_c(3)
         z_bc = gr_b(1)*gr_c(1) &
              + gr_b(2)*gr_c(2) &
              + gr_b(3)*gr_c(3)
@@ -2496,12 +2521,12 @@ contains
       if(add_grad .and. .not. no_sdft) then
 !       y = \nabla r \cdot \nabla s
         do k = k_start,3
-        y_b(k)  = gn_0(1)*gs_b(1, k) &
-                + gn_0(2)*gs_b(2, k) &
-                + gn_0(3)*gs_b(3, k)
-        y_c(k)  = gn_0(1)*gs_c(1, k) &
-                + gn_0(2)*gs_c(2, k) &
-                + gn_0(3)*gs_c(3, k)
+        y_b(k)  = gn_0_pointwise(1)*gs_b(1, k) &
+                + gn_0_pointwise(2)*gs_b(2, k) &
+                + gn_0_pointwise(3)*gs_b(3, k)
+        y_c(k)  = gn_0_pointwise(1)*gs_c(1, k) &
+                + gn_0_pointwise(2)*gs_c(2, k) &
+                + gn_0_pointwise(3)*gs_c(3, k)
         y_bc(k) = gr_b(1)*gs_c(1, k) &
                 + gr_b(2)*gs_c(2, k) &
                 + gr_b(3)*gs_c(3, k) &
@@ -2572,16 +2597,16 @@ contains
 
       if(add_grad) then
 
-        v_bc_h_z_0 = 0.0d0
+        v_bc_h_gnn_0 = 0.0d0
         v_bc_h_z_b = 0.0d0
         v_bc_h_z_c = 0.0d0
 
-        v_bc_h_z_0 = v_bc_h_z_0 &
+        v_bc_h_gnn_0 = v_bc_h_gnn_0 &
      &             + derv(1, d0030000)*(z_b*z_c) &
      &             + derv(1, d1020000)*(r_b*z_c + z_b*r_c) &
      &             + derv(1, d2010000)*(r_b*r_c)
 
-        v_bc_h_z_0 = v_bc_h_z_0 &
+        v_bc_h_gnn_0 = v_bc_h_gnn_0 &
      &             + derv(1, d0020000)*z_bc
         v_bc_h_z_b = v_bc_h_z_b &
      &             + derv(1, d1010000)*r_c &
@@ -2600,7 +2625,7 @@ contains
           v_bc_h_x_c = 0.0d0
 
           do k = k_start,3
-            v_bc_h_z_0  = v_bc_h_z_0 &
+            v_bc_h_gnn_0  = v_bc_h_gnn_0 &
      &                  + derv(1, d0012000)*(y_b(k)*y_c(k)) &
      &                  + derv(1, d0111000)*(s_b(k)*y_c(k) + y_b(k)*s_c(k)) &
      &                  + derv(1, d0210000)*(s_b(k)*s_c(k))
@@ -2630,12 +2655,12 @@ contains
         endif
 
         do j = 1,3
-          v_bc_h(j) = v_bc_h(j) + v_bc_h_z_0*gn_0(j)*2.0d0 &
+          v_bc_h(j) = v_bc_h(j) + v_bc_h_gnn_0*gn_0_pointwise(j)*2.0d0 &
      &                          + v_bc_h_z_b*gr_b(j)*2.0d0 &
      &                          + v_bc_h_z_c*gr_c(j)*2.0d0
           if(.not. no_sdft) then
             do k = k_start,3
-              v_bc_ah(j,k) = v_bc_ah(j,k) + v_bc_h_y_0(k)*gn_0(j) &
+              v_bc_ah(j,k) = v_bc_ah(j,k) + v_bc_h_y_0(k)*gn_0_pointwise(j) &
      &                                    + v_bc_h_y_b(k)*gr_b(j) &
      &                                    + v_bc_h_y_c(k)*gr_c(j)
 
