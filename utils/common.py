@@ -91,6 +91,7 @@ class extract_path_file:
     def __init__(self):
         self.pure_file_name = ''
         self.pure_file_path = ''
+        self.short_file_path= '' 
         self.extracted = False
     def get_path_file(self,full_file_name):
         """
@@ -110,6 +111,13 @@ class extract_path_file:
             print 'can not extract' 
             self.extracted=False
 
+        if (len(self.pure_file_path) > 20):
+           max_len=12
+           temp_path=self.pure_file_path
+           len_tp=len(temp_path)
+           #print  temp_path 
+           self.short_file_path=temp_path[0:max_len]+'...'+temp_path[len_tp-max_len:len_tp]
+ 
 def backup_file(some_file,upto):
     """
     Important routine doing backup of the file "some_file", version up to
@@ -128,7 +136,7 @@ def backup_file(some_file,upto):
         if (result.extracted is True and result_p1.extracted is True  and \
             result.pure_file_path == result_p1.pure_file_path ) :
             print 'backing up file:', result.pure_file_name,'-->',result_p1.pure_file_name,\
-            'in directory:',result.pure_file_path
+            'in:',result.short_file_path
         else:
             print 'backing up file:',backup_file_name,'-->',backup_file_name_p1
 
