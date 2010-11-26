@@ -109,8 +109,8 @@ module xc_driver
    integer, allocatable :: ao_sort_index(:)
    integer, allocatable :: ao_sort_index_reverse(:)
    real(8), allocatable :: buffer_block(:, :)
-   real(8), allocatable :: dmat_sorted(:)
-   real(8), allocatable :: xmat_sorted(:)
+   real(8), allocatable :: dmat_sorted(:, :)
+   real(8), allocatable :: xmat(:, :)
    real(8), allocatable :: ao_sorted(:, :)
    real(8), allocatable :: bmat(:)
 
@@ -823,11 +823,16 @@ contains
    subroutine integrate()
 
 !     --------------------------------------------------------------------------
-!     density
+!     unperturbed density
       real(8) :: n_0(mxbllen)
-!     density gradient
+!     unperturbed density gradient
       real(8) :: gn_0(mxbllen, 3)
       real(8) :: gn_0_pointwise(3)
+
+!     density
+      real(8) :: n(mxbllen, 0:1)
+
+
 
       real(8) :: tau
       real(8) :: gnn_0(mxbllen)
@@ -906,8 +911,8 @@ contains
        call alloc(buffer_block,          mxbllen, total_ao_vector_length)
        call alloc(ao_sort_index,         mat_dim)
        call alloc(ao_sort_index_reverse, mat_dim)
-       call alloc(dmat_sorted,           mat_dim*mat_dim)
-       call alloc(xmat_sorted,           mxbllen*mat_dim)
+       allocate(dmat_sorted(mat_dim*mat_dim, 0:1))
+       allocate(xmat(mxbllen*mat_dim, 0:1))
        allocate(ao_sorted(mxbllen*mat_dim, 0:4))
        call alloc(bmat,                  mxbllen*total_ao_vector_length)
        block_threshold = get_block_threshold(mat_dim, dmat_0)
@@ -1004,11 +1009,12 @@ contains
          end do
 
             call get_n_block( &
-                             use_gga,          &
+                             use_gga,               &
+                             (response_order_mo == 1),               &
                              block_length,          &
                              block_threshold,       &
                              mat_dim,               &
-                             n_0,                   &
+                             n,                     &
                              gn_0,                  &
                              gnn_0,                 &
                              buffer,                &
@@ -1019,8 +1025,10 @@ contains
                              ao_sort_index_reverse, &
                              fmat,                  &
                              dmat_0,                &
+                             dmat,                  &
+                             dmat_pg_sym,           &
                              dmat_sorted,           &
-                             xmat_sorted,           &
+                             xmat,           &
                              0,                     &
                              derv_length,           &
                              derv,                  &
@@ -1028,7 +1036,7 @@ contains
                              rw(ipoint))
 
          do k = 1, block_length
-            nr_electrons = nr_electrons + rw(ipoint + k - 1)*n_0(k)
+            nr_electrons = nr_electrons + rw(ipoint + k - 1)*n(k, 0)
             xc_energy    = xc_energy    + derv(k, d0000000)
          end do
 
@@ -1705,8 +1713,8 @@ contains
        call dealloc(buffer_block)
        call dealloc(ao_sort_index)
        call dealloc(ao_sort_index_reverse)
-       call dealloc(dmat_sorted)
-       call dealloc(xmat_sorted)
+       deallocate(dmat_sorted)
+       deallocate(xmat)
        deallocate(ao_sorted)
        call dealloc(bmat)
     end if
