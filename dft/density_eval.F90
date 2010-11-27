@@ -1574,8 +1574,8 @@ contains
                if (is_gga) then
                   do ixyz = 1, 3
                      do k = 1, block_length
-!miro: gfortran compilation error here, temporarily deactivating
-!                        bmat(ikoff + k) = bmat(ikoff + k) + 4.0d0*gn_0(k, ixyz)*ao_sorted(iksoff(iblock) + ikoff + k, ixyz)*derv(k, d0010000)
+                         bmat(ikoff + k) = bmat(ikoff + k) &
+                       + 4.0d0*gn_0(k, ixyz)*ao_sorted(iksoff(iblock) + ikoff + k, ixyz)*derv(k, d0010000)
                      end do
                   end do
                end if
