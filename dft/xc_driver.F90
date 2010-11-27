@@ -106,12 +106,9 @@ module xc_driver
    real(8), allocatable :: ao(:)
    real(8), allocatable :: buffer(:)
    real(8), allocatable :: ao_block(:, :)
-   integer, allocatable :: ao_sort_index(:)
-   integer, allocatable :: ao_sort_index_reverse(:)
    real(8), allocatable :: buffer_block(:, :)
    real(8), allocatable :: dmat_sorted(:, :)
    real(8), allocatable :: xmat(:, :)
-   real(8), allocatable :: ao_sorted(:, :)
    real(8), allocatable :: bmat(:)
 
    real(8) :: tau_integral
@@ -909,11 +906,8 @@ contains
     if (dft_cfg_blocked) then
        call alloc(ao_block,              mxbllen, total_ao_vector_length)
        call alloc(buffer_block,          mxbllen, total_ao_vector_length)
-       call alloc(ao_sort_index,         mat_dim)
-       call alloc(ao_sort_index_reverse, mat_dim)
        allocate(dmat_sorted(mat_dim*mat_dim, 0:1))
        allocate(xmat(mxbllen*mat_dim, 0:1))
-       allocate(ao_sorted(mxbllen*mat_dim, 0:4))
        call alloc(bmat,                  mxbllen*total_ao_vector_length)
        block_threshold = get_block_threshold(mat_dim, dmat_0)
     end if
@@ -1019,10 +1013,7 @@ contains
                              gnn_0,                 &
                              buffer,                &
                              ao_block,              &
-                             ao_sorted,             &
                              bmat,                  &
-                             ao_sort_index,         &
-                             ao_sort_index_reverse, &
                              fmat,                  &
                              dmat_0,                &
                              dmat,                  &
@@ -1711,11 +1702,8 @@ contains
     if (dft_cfg_blocked) then
        call dealloc(ao_block)
        call dealloc(buffer_block)
-       call dealloc(ao_sort_index)
-       call dealloc(ao_sort_index_reverse)
        deallocate(dmat_sorted)
        deallocate(xmat)
-       deallocate(ao_sorted)
        call dealloc(bmat)
     end if
 
