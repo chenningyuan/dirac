@@ -244,9 +244,11 @@ vital_tests.append(medium_test('stex',fine_with_mpi = False))
 vital_tests.append(medium_test('visual_general'))
 vital_tests.append(medium_test('visual_div_rot'))
 vital_tests.append(medium_test('reladc', fine_with_mpi = False))
+vital_tests.append(medium_test('krmc_luciarel', fine_with_mpi = False))
 # long tests
 vital_tests.append(long_test('response_pv_nmr'))
 vital_tests.append(long_test('lucita_large'))
+vital_tests.append(long_test('krmc_gosci'))
 
 
 # list of directories and files that are never compiled as part of DIRAC main executable
@@ -341,12 +343,6 @@ this_module = 'esr'
 dirac_modules[this_module] = dirac_module('esr', 'ESR property module')
 dirac_modules[this_module].add_cppflag('MOD_ESR')
 dirac_modules[this_module].add_directory('prp/esr')
-#radovan: why is this test commented out?
-#stefan: i have no idea and i do not see any reason why.
-#dirac_modules[this_module].add_test(long_test('krmc_gosci'))
-#radovan: why is this test under esr?
-#stefan: i have no idea either, i am pretty sure it wasn't me. 
-dirac_modules[this_module].add_test(medium_test('krmc_luciarel', fine_with_mpi = False))
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'xml'
