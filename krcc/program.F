@@ -861,8 +861,10 @@ C     END IF
       I_TEST_JACO = 0
       IF(I_TEST_JACO.EQ.1) THEN
         WRITE(6,*) ' Control will be transferred to TEST_JACO'
-        CALL JACO_TEST(WORK(KCC1),WORK(KVEC1),WORK(KVEC2),
-     &                 WORK(KCC2))
+!radovan:
+        call quit('subroutine JACO_TEST missing')
+!       CALL JACO_TEST(WORK(KCC1),WORK(KVEC1),WORK(KVEC2),
+!    &                 WORK(KCC2))
       END IF
 *
 *

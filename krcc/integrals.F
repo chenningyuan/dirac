@@ -507,7 +507,10 @@ C
 C
 C#include "mx2orb.h"
 #include "maxorb.h"
-#include "krmc/dcbnrt.h" !hope we don't need it
+
+!hope we don't need it
+#include "../krmc/dcbnrt.h"
+
 #include "dcbpsi.h"
 #include "dcbkrmc_itinfo.h"
 #include "dcbgen.h"
