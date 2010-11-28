@@ -198,23 +198,26 @@ contains
       write(file_unit, '(4x, a)') 'nr_sym_dependent_centers'
       write(file_unit, '(4x, i6)') nucdep
 
-      write(file_unit, '(4x, a)') 'coordinates_independent'
+      write(file_unit, '(4x, a)') 'charges_and_coordinates_independent'
       do icent = 1, nucind
-         write(file_unit, '(3f26.16)') cord(1, icent), &
+         write(file_unit, '(4f26.16)') charge(icent),  &
+                                       cord(1, icent), &
                                        cord(2, icent), &
                                        cord(3, icent)
       end do
 
-      write(file_unit, '(4x, a)') 'coordinates_dependent'
+      write(file_unit, '(4x, a)') 'charges_and_coordinates_dependent'
       do icent = 1, nucind
          if (mult(istbnu(icent)) == 1) then
-               write(file_unit, '(3f26.16)') cord(1, icent), &
+               write(file_unit, '(4f26.16)') charge(icent),  &
+                                             cord(1, icent), &
                                              cord(2, icent), &
                                              cord(3, icent)
          else
             do irep = 0, nr_ireps - 1
                if (iand(irep, istbnu(icent)) == 0) then
-                  write(file_unit, '(3f26.16)') cord(1, icent)*pt(iand(isymax(1, 1), irep)), &
+                  write(file_unit, '(4f26.16)') charge(icent),                               &
+                                                cord(1, icent)*pt(iand(isymax(1, 1), irep)), &
                                                 cord(2, icent)*pt(iand(isymax(2, 1), irep)), &
                                                 cord(3, icent)*pt(iand(isymax(3, 1), irep))
                end if
