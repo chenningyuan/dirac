@@ -1307,6 +1307,8 @@ contains
       real(8)                :: gnn_0(*)
       real(8)                :: w(*)
 !     --------------------------------------------------------------------------
+      real(8), allocatable   :: u_n(:)
+      real(8), allocatable   :: u_gn(:, :)
       integer                :: i, j, k
       integer                :: ixyz
       integer                :: ikoff, jkoff, ijoff
@@ -1324,9 +1326,12 @@ contains
       allocate(ao_sort_index(mat_dim))
       allocate(ao_sort_index_reverse(mat_dim))
       allocate(ao_sorted(mxbllen*mat_dim, 0:4))
+      allocate(u_n(mxbllen))
+      allocate(u_gn(mxbllen, 3))
 
-      isoff = 0
-      iksoff = 0
+      isoff              = 0
+      iksoff             = 0
+      nr_above_threshold = 0
 
 !     zero out density and gradient
       do k = 1, block_length
@@ -1353,7 +1358,6 @@ contains
 
 !        get buffer for sorting
 !        and get number of functions above block_threshold
-         nr_above_threshold(iblock) = 0
          do i = 1, nr1
             buffer(i) = 0.0d0
             is = i + st1 - 1
@@ -1404,30 +1408,34 @@ contains
          end do
       end do
 
-      iblock_loop_1: do iblock = 1, llss_nr_density_blocks(0, irep)
-
-!        check for early return
-         if (nr_above_threshold(iblock) == 0) then
-            cycle
+      do iblock = 1, llss_nr_density_blocks(0, irep)
+         if (do_lr) then
+            jblock = ieor(iblock - 1, dmat_pg_sym(1) - 1) + 1
+         else
+            jblock = iblock
          end if
-
-         call evaluate_densities(                            &
-                                 do_lr,                      &
-                                 is_gga,                     &
-                                 block_length,               &
-                                 mat_dim,                    &
-                                 ao_sort_index,              &
-                                 ao_sorted,                  &
-                                 dmat_0,                     &
-                                 dmat_p,                     &
-                                 nr_above_threshold(iblock), &
-                                 isoff(iblock),              &
-                                 iksoff(iblock),             &
-                                 n,                          &
-                                 gn_0                        &
-                                )
-
-      end do iblock_loop_1
+         if ((nr_above_threshold(iblock) > 0) .and. (nr_above_threshold(jblock) > 0)) then
+   !        different ireps need separate calls!
+            call evaluate_densities(                            &
+                                    do_lr,                      &
+                                    is_gga,                     &
+                                    block_length,               &
+                                    mat_dim,                    &
+                                    ao_sort_index,              &
+                                    ao_sorted,                  &
+                                    dmat_0,                     &
+                                    dmat_p,                     &
+                                    nr_above_threshold(iblock), &
+                                    isoff(iblock),              &
+                                    iksoff(iblock),             &
+                                    nr_above_threshold(jblock), &
+                                    isoff(jblock),              &
+                                    iksoff(jblock),             &
+                                    n,                          &
+                                    gn_0                        &
+                                   )
+         end if
+      end do
 
       if (is_gga) then
          do k = 1, block_length
@@ -1447,120 +1455,166 @@ contains
                                derv_length,  &
                                derv)
 
-      iblock_loop_2: do iblock = 1, llss_nr_density_blocks(0, irep)
-
-!        check for early return
-         if (nr_above_threshold(iblock) == 0) then
-            cycle
-         end if
-
-         if (do_lr) then
-            do i = 1, nr_above_threshold(iblock)
-               ikoff = (i - 1)*block_length
-               do k = 1, block_length
-                  bmat(ikoff + k) = ao_sorted(iksoff(iblock) + ikoff + k, 0)*derv(k, d2000000)*n(k, 1)
-               end do
-            end do
-         else
-            do i = 1, nr_above_threshold(iblock)
-               ikoff = (i - 1)*block_length
-               do k = 1, block_length
-                  bmat(ikoff + k) = ao_sorted(iksoff(iblock) + ikoff + k, 0)*derv(k, d1000000)
-               end do
-               if (is_gga) then
-                  do ixyz = 1, 3
-                     do k = 1, block_length
-                         bmat(ikoff + k) = bmat(ikoff + k) &
-                       + 4.0d0*gn_0(k, ixyz)*ao_sorted(iksoff(iblock) + ikoff + k, ixyz)*derv(k, d0010000)
-                     end do
-                  end do
-               end if
-            end do
-         end if
-          
-       ! if (nr_above_threshold(iblock) > blas_limit) then
-            call dsyr2k('u',                           & !uplo 
-                        't',                           & !trans
-                        nr_above_threshold(iblock),    & !n    
-                        block_length,                  & !k    
-                        1.0d0,                         & !alpha
-                        ao_sorted(iksoff(iblock) + 1, 0), & !a    
-                        block_length,                  & !lda  
-                        bmat,                          & !b    
-                        block_length,                  & !ldb  
-                        0.0d0,                         & !beta 
-                        xmat(1, 0),                    & !c    
-                        nr_above_threshold(iblock))      !ldc  
-         !  call dgemm('t',                            & !transa
-         !             'n',                            & !transb 
-         !             nr_above_threshold(iblock),     & !m      
-         !             nr_above_threshold(iblock),     & !n      
-         !             block_length,                   & !k      
-         !             2.0d0,                          & !alpha  
-         !             ao_sorted(iksoff(iblock) + 1, 0),  & !a    
-         !             block_length,                   & !lda    
-         !             bmat,                           & !b      
-         !             block_length,                   & !ldb    
-         !             0.0d0,                          & !beta   
-         !             xmat,                           & !c       
-         !             nr_above_threshold(iblock))       !ldc     
-       ! else
-       !    do i = 1, nr_above_threshold(iblock)
-       !       ijoff = (i - 1)*nr_above_threshold(iblock)
-       !       ikoff = (i - 1)*block_length
-!      !       triangle except diagonal
-       !       do j = 1, i - 1
-       !          xmat(ijoff + j, 0) = 0.0d0
-       !          jkoff = (j - 1)*block_length
-       !          do k = 1, block_length
-       !             xmat(ijoff + j, 0) = xmat(ijoff + j, 0) &
-       !                             + 2.0d0*ao_sorted(iksoff(iblock) + ikoff + k, 0)*bmat(jkoff + k)
-       !          end do
-       !       end do
-!      !       diagonal
-       !       xmat(ijoff + i, 0) = 0.0d0
-       !       do k = 1, block_length
-       !          xmat(ijoff + i, 0) = xmat(ijoff + i, 0) &
-       !                          + 2.0d0*ao_sorted(iksoff(iblock) + ikoff + k, 0)*bmat(ikoff + k)
-       !       end do
-       !    end do
-       ! end if
-
-!        unsort onto fmat
-         do i = 1, nr_above_threshold(iblock)
-            is = ao_sort_index(isoff(iblock) + i)
-            ijoff = (i - 1)*nr_above_threshold(iblock)
-!           diagonal
-            fmat(is, is, 1) = fmat(is, is, 1) + 0.5d0*xmat(ijoff + i, 0)
-            do j = 1, i - 1
-               js = ao_sort_index(isoff(iblock) + j)
-!              upper triangle
-               fmat(js, is, 1) = fmat(js, is, 1) + xmat(ijoff + j, 0)
-            end do
+!     form prefactors
+      if (do_lr) then
+         do k = 1, block_length
+            u_n(k) = derv(k, d2000000)*n(k, 1)
          end do
+      else
+         do k = 1, block_length
+            u_n(k) = derv(k, d1000000)
+         end do
+         if (is_gga) then
+            do ixyz = 1, 3
+               do k = 1, block_length
+                  u_gn(k, ixyz) = 2.0d0*gn_0(k, ixyz)*derv(k, d0010000)
+               end do
+            end do
+         end if
+      end if
 
-      end do iblock_loop_2
+      do iblock = 1, llss_nr_density_blocks(0, irep)
+         if (nr_above_threshold(iblock) > 0) then
+            call distribute_prefactors(                    &
+                                       is_gga,                     &
+                                       block_length,               &
+                                       mat_dim,                    &
+                                       ao_sort_index,              &
+                                       fmat,                       &
+                                       ao_sorted,                  &
+                                       nr_above_threshold(iblock), &
+                                       isoff(iblock),              &
+                                       iksoff(iblock),             &
+                                       n,                          &
+                                       gn_0,                       &
+                                       u_n,                        &
+                                       u_gn                        &
+                                      )
+         end if
+      end do
 
       deallocate(ao_sort_index)
       deallocate(ao_sort_index_reverse)
       deallocate(ao_sorted)
+      deallocate(u_n)
+      deallocate(u_gn)
 
    end subroutine
 
-   subroutine evaluate_densities(                    &
-                                 do_lr,              &
+   subroutine distribute_prefactors(                    &
                                  is_gga,             &
                                  block_length,       &
                                  mat_dim,            &
                                  ao_sort_index,      &
+                                 fmat,      &
                                  ao_sorted,          &
-                                 dmat_0,             &
-                                 dmat_p,             &
                                  nr_above_threshold, &
                                  isoff,              &
                                  iksoff,             &
                                  n,                  &
-                                 gn_0                &
+                                 gn_0,               &
+                                 u_n,                  &
+                                 u_gn                  &
+                                )
+
+      use block_config
+!     --------------------------------------------------------------------------
+      logical                :: is_gga
+      integer                :: block_length
+      integer                :: mat_dim
+      integer                :: ao_sort_index(*)
+      real(8)                :: ao_sorted(mxbllen*mat_dim, 0:4)
+      real(8), intent(inout) :: fmat(mat_dim, mat_dim, *)
+      integer                :: nr_above_threshold
+      integer                :: isoff
+      integer                :: iksoff
+      real(8)                :: n(mxbllen, 0:1)
+      real(8)                :: gn_0(mxbllen, 3)
+      real(8)                :: u_n(mxbllen)
+      real(8)                :: u_gn(mxbllen, 3)
+!     --------------------------------------------------------------------------
+      integer :: i, k, ixyz, j, is, ijoff, js, ikoff
+      real(8), allocatable   :: bmat(:)
+      real(8), allocatable   :: xmat(:, :)
+!     --------------------------------------------------------------------------
+
+      allocate(bmat(mxbllen*mat_dim))
+      allocate(xmat(mat_dim*mxbllen, 0:1))
+
+      do i = 1, nr_above_threshold
+         ikoff = (i - 1)*block_length
+         do k = 1, block_length
+            bmat(ikoff + k) = ao_sorted(iksoff + ikoff + k, 0)*u_n(k)
+         end do
+         if (is_gga) then
+            do ixyz = 1, 3
+               do k = 1, block_length
+                  bmat(ikoff + k) = 2.0d0*ao_sorted(iksoff + ikoff + k, ixyz)*u_gn(k, ixyz)
+               end do
+            end do
+         end if
+      end do
+       
+         call dsyr2k('u',                           & !uplo 
+                     't',                           & !trans
+                     nr_above_threshold,    & !n    
+                     block_length,                  & !k    
+                     1.0d0,                         & !alpha
+                     ao_sorted(iksoff + 1, 0), & !a    
+                     block_length,                  & !lda  
+                     bmat,                          & !b    
+                     block_length,                  & !ldb  
+                     0.0d0,                         & !beta 
+                     xmat(1, 0),                    & !c    
+                     nr_above_threshold)      !ldc  
+      !  call dgemm('t',                            & !transa
+      !             'n',                            & !transb 
+      !             nr_above_threshold,     & !m      
+      !             nr_above_threshold,     & !n      
+      !             block_length,                   & !k      
+      !             2.0d0,                          & !alpha  
+      !             ao_sorted(iksoff + 1, 0),  & !a    
+      !             block_length,                   & !lda    
+      !             bmat,                           & !b      
+      !             block_length,                   & !ldb    
+      !             0.0d0,                          & !beta   
+      !             xmat,                           & !c       
+      !             nr_above_threshold)       !ldc     
+
+!     unsort onto fmat
+      do i = 1, nr_above_threshold
+         is = ao_sort_index(isoff + i)
+         ijoff = (i - 1)*nr_above_threshold
+!        diagonal
+         fmat(is, is, 1) = fmat(is, is, 1) + 0.5d0*xmat(ijoff + i, 0)
+         do j = 1, i - 1
+            js = ao_sort_index(isoff + j)
+!           upper triangle
+            fmat(js, is, 1) = fmat(js, is, 1) + xmat(ijoff + j, 0)
+         end do
+      end do
+      deallocate(bmat)
+      deallocate(xmat)
+
+   end subroutine
+
+   subroutine evaluate_densities(                      &
+                                 do_lr,                &
+                                 is_gga,               &
+                                 block_length,         &
+                                 mat_dim,              &
+                                 ao_sort_index,        &
+                                 ao_sorted,            &
+                                 dmat_0,               &
+                                 dmat_p,               &
+                                 nr_above_threshold_l, &
+                                 isoff_l,              &
+                                 iksoff_l,             &
+                                 nr_above_threshold_r, &
+                                 isoff_r,              &
+                                 iksoff_r,             &
+                                 n,                    &
+                                 gn_0                  &
                                 )
 
       use block_config
@@ -1573,47 +1627,63 @@ contains
       real(8), intent(in)    :: ao_sorted(mxbllen*mat_dim, 0:4)
       real(8), intent(in)    :: dmat_0(mat_dim, mat_dim)
       real(8), intent(in)    :: dmat_p(mat_dim, mat_dim)
-      integer, intent(in)    :: nr_above_threshold
-      integer, intent(in)    :: isoff
-      integer, intent(in)    :: iksoff
+      integer, intent(in)    :: nr_above_threshold_l
+      integer, intent(in)    :: isoff_l
+      integer, intent(in)    :: iksoff_l
+      integer, intent(in)    :: nr_above_threshold_r
+      integer, intent(in)    :: isoff_r
+      integer, intent(in)    :: iksoff_r
       real(8), intent(inout) :: n(mxbllen, 0:1)
       real(8), intent(inout) :: gn_0(mxbllen, 3)
 !     --------------------------------------------------------------------------
       integer :: i, ikoff, ixyz, k, jkoff, j, ijoff, is, js
-      integer, parameter     :: blas_limit = 10
       real(8), allocatable   :: dmat_sorted(:, :)
       real(8), allocatable   :: xmat(:, :)
 !     --------------------------------------------------------------------------
 
-      allocate(dmat_sorted(nr_above_threshold*nr_above_threshold, 0:1))
+      allocate(dmat_sorted(nr_above_threshold_l*nr_above_threshold_r, 0:1))
       allocate(xmat(mat_dim*mxbllen, 0:1))
 
-!     sort density matrices (upper triangle)
-!     note that the lower triangle of the sorted density matrix
-!     can contain numerical dirt from previous batch or previous
-!     symmetry block but it is not used
-      do i = 1, nr_above_threshold
-         is = ao_sort_index(isoff + i)
-         ijoff = (i - 1)*nr_above_threshold
-         do j = 1, i
-            js = ao_sort_index(isoff + j)
-            dmat_sorted(ijoff + j, 0) = dmat_0(js, is)
-            if (do_lr) then
-               dmat_sorted(ijoff + j, 1) = dmat_p(js, is)
-            end if
+      if (iksoff_l == iksoff_r) then !diagonal block
+!        sort density matrices (upper triangle)
+!        note that the lower triangle of the sorted density matrix
+!        can contain numerical dirt from previous batch or previous
+!        symmetry block but it is not used
+         do i = 1, nr_above_threshold_l
+            is = ao_sort_index(isoff_l + i)
+            ijoff = (i - 1)*nr_above_threshold_l
+            do j = 1, i
+               js = ao_sort_index(isoff_l + j)
+               dmat_sorted(ijoff + j, 0) = dmat_0(js, is)
+               if (do_lr) then
+                  dmat_sorted(ijoff + j, 1) = dmat_p(js, is)
+               end if
+            end do
          end do
-      end do
+      else !off-diagonal block
+!        sort density matrices
+         do i = 1, nr_above_threshold_l
+            is = ao_sort_index(isoff_l + i)
+            ijoff = (i - 1)*nr_above_threshold_r
+            do j = 1, nr_above_threshold_r
+               js = ao_sort_index(isoff_r + j)
+               dmat_sorted(ijoff + j, 0) = dmat_0(js, is)
+               if (do_lr) then
+                  dmat_sorted(ijoff + j, 1) = dmat_p(js, is)
+               end if
+            end do
+         end do
+      end if
 
-      if (nr_above_threshold > blas_limit) then
-
+      if (iksoff_l == iksoff_r) then !diagonal block
          call dsymm('r',                            & !side   
                     'u',                            & !uplo   
                     block_length,                   & !m      
-                    nr_above_threshold,     & !n      
+                    nr_above_threshold_l,           & !n      
                     1.0d0,                          & !alpha  
                     dmat_sorted(1, 0),              & !a      
-                    nr_above_threshold,     & !lda    
-                    ao_sorted(iksoff + 1, 0),  & !b      
+                    nr_above_threshold_l,           & !lda    
+                    ao_sorted(iksoff_l + 1, 0),     & !b      
                     block_length,                   & !ldb    
                     0.0d0,                          & !beta   
                     xmat(1, 0),                     & !c      
@@ -1622,90 +1692,65 @@ contains
             call dsymm('r',                            & !side   
                        'u',                            & !uplo   
                        block_length,                   & !m      
-                       nr_above_threshold,     & !n      
+                       nr_above_threshold_l,           & !n      
                        1.0d0,                          & !alpha  
                        dmat_sorted(1, 1),              & !a      
-                       nr_above_threshold,     & !lda    
-                       ao_sorted(iksoff + 1, 0),  & !b      
+                       nr_above_threshold_l,           & !lda    
+                       ao_sorted(iksoff_l + 1, 0),     & !b      
                        block_length,                   & !ldb    
                        0.0d0,                          & !beta   
                        xmat(1, 1),                     & !c      
                        block_length)                     !ldc     
          end if
-
-         do i = 1, nr_above_threshold
-            ikoff = (i - 1)*block_length
-            do k = 1, block_length
-               n(k, 0) = n(k, 0) + xmat(ikoff + k, 0)*ao_sorted(iksoff + ikoff + k, 0)
-            end do
-            if (do_lr) then
-               do k = 1, block_length
-                  n(k, 1) = n(k, 1) + xmat(ikoff + k, 1)*ao_sorted(iksoff + ikoff + k, 0)
-               end do
-            end if
-            if (is_gga) then
-               do ixyz = 1, 3
-                  do k = 1, block_length
-                     gn_0(k, ixyz) = gn_0(k, ixyz) + 2.0d0*xmat(ikoff + k, 0)*ao_sorted(iksoff + ikoff + k, ixyz)
-                  end do
-               end do
-            end if
-         end do
-      else
-         do i = 1, nr_above_threshold
-            ijoff = (i - 1)*nr_above_threshold
-            ikoff = (i - 1)*block_length
-!           triangle except diagonal
-            do j = 1, i - 1
-               jkoff = (j - 1)*block_length
-               do k = 1, block_length
-                  n(k, 0) = n(k, 0) &
-                         + 2.0d0*ao_sorted(iksoff + ikoff + k, 0) &
-                                *ao_sorted(iksoff + jkoff + k, 0)*dmat_sorted(ijoff + j, 0)
-               end do
-               if (do_lr) then
-                  do k = 1, block_length
-                     n(k, 1) = n(k, 1) &
-                            + 2.0d0*ao_sorted(iksoff + ikoff + k, 0) &
-                                   *ao_sorted(iksoff + jkoff + k, 0)*dmat_sorted(ijoff + j, 1)
-                  end do
-               end if
-               if (is_gga) then
-                  do ixyz = 1, 3
-                     do k = 1, block_length
-                        gn_0(k, ixyz) = gn_0(k, ixyz) &
-                         + 2.0d0*ao_sorted(iksoff + ikoff + k, ixyz) &
-                                *ao_sorted(iksoff + jkoff + k, 0)*dmat_sorted(ijoff + j, 0) &
-                         + 2.0d0*ao_sorted(iksoff + ikoff + k, 0) &
-                                *ao_sorted(iksoff + jkoff + k, ixyz)*dmat_sorted(ijoff + j, 0)
-                     end do
-                  end do
-               end if
-            end do
-!           diagonal
-            do k = 1, block_length
-               n(k, 0) = n(k, 0) &
-                      + ao_sorted(iksoff + ikoff + k, 0) &
-                       *ao_sorted(iksoff + ikoff + k, 0)*dmat_sorted(ijoff + i, 0)
-            end do
-            if (do_lr) then
-               do k = 1, block_length
-                  n(k, 1) = n(k, 1) &
-                      + ao_sorted(iksoff + ikoff + k, 0) &
-                       *ao_sorted(iksoff + ikoff + k, 0)*dmat_sorted(ijoff + i, 1)
-               end do
-            end if
-            if (is_gga) then
-               do ixyz = 1, 3
-                  do k = 1, block_length
-                     gn_0(k, ixyz) = gn_0(k, ixyz) &
-                      + 2.0d0*ao_sorted(iksoff + ikoff + k, ixyz) &
-                       *ao_sorted(iksoff + ikoff + k, 0)*dmat_sorted(ijoff + i, 0)
-                  end do
-               end do
-            end if
-         end do
+      else !off-diagonal block
+         call dgemm('n',                            & !transa
+                    'n',                            & !transb 
+                    block_length,                   & !m      
+                    nr_above_threshold_l,           & !n      
+                    nr_above_threshold_l,           & !k      
+                    1.0d0,                          & !alpha  
+                    ao_sorted(iksoff_l + 1, 0),     & !a      
+                    block_length,                   & !lda    
+                    dmat_sorted(1, 0),              & !b    
+                    nr_above_threshold_l,           & !ldb
+                    0.0d0,                          & !beta   
+                    xmat(1, 0),                     & !c       
+                    block_length)                     !ldc     
+         if (do_lr) then
+            call dgemm('n',                            & !transa
+                       'n',                            & !transb 
+                       block_length,                   & !m      
+                       nr_above_threshold_l,           & !n      
+                       nr_above_threshold_l,           & !k      
+                       1.0d0,                          & !alpha  
+                       ao_sorted(iksoff_l + 1, 0),     & !a      
+                       block_length,                   & !lda    
+                       dmat_sorted(1, 1),              & !b    
+                       nr_above_threshold_l,           & !ldb
+                       0.0d0,                          & !beta   
+                       xmat(1, 1),                     & !c       
+                       block_length)                     !ldc     
+         end if
       end if
+
+      do i = 1, nr_above_threshold_l
+         ikoff = (i - 1)*block_length
+         do k = 1, block_length
+            n(k, 0) = n(k, 0) + xmat(ikoff + k, 0)*ao_sorted(iksoff_l + ikoff + k, 0)
+         end do
+         if (do_lr) then
+            do k = 1, block_length
+               n(k, 1) = n(k, 1) + xmat(ikoff + k, 1)*ao_sorted(iksoff_l + ikoff + k, 0)
+            end do
+         end if
+         if (is_gga) then
+            do ixyz = 1, 3
+               do k = 1, block_length
+                  gn_0(k, ixyz) = gn_0(k, ixyz) + 2.0d0*xmat(ikoff + k, 0)*ao_sorted(iksoff_l + ikoff + k, ixyz)
+               end do
+            end do
+         end if
+      end do
 
       deallocate(dmat_sorted)
       deallocate(xmat)
