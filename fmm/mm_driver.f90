@@ -491,6 +491,7 @@ SUBROUTINE mm_getj_sync_slaves
    INTEGER ierr
    INTEGER, PARAMETER :: master = 0
 
+#ifdef FIX_THIS_CODE
    CALL MPI_COMM_RANK(MPI_COMM_WORLD,MYNUM, IERR)
    CALL MPI_COMM_SIZE(MPI_COMM_WORLD,NNODES,IERR)
    CALL MPI_Bcast(integral_type,1,MPI_INTEGER,master,MPI_COMM_WORLD,IERR)
@@ -498,6 +499,9 @@ SUBROUTINE mm_getj_sync_slaves
    CALL bcast_T_searcher_type(master,scheme%T_searcher)
    CALL bcast_T_contract_schm(master,scheme%T_con)
    CALL bcast_W_contract_schm(master,scheme%W_con)
+#else
+   call quit('fix code in mm_getj_sync_slaves')
+#endif
 END SUBROUTINE mm_getj_sync_slaves
 
 ! note that broadcasting system size is redundant, it is not an
@@ -508,6 +512,7 @@ SUBROUTINE bcast_scheme_paras(master)
    INTEGER, INTENT(IN) :: master
    INTEGER intEx, logEx, doubleEx, ierr, theType
    INTEGER, DIMENSION(4) :: bllen, types, disps
+#ifdef FIX_THIS_CODE
    CALL MPI_TYPE_EXTENT(MPI_INTEGER,intex,ierr)
    CALL MPI_TYPE_EXTENT(MPI_LOGICAL,logex,ierr)
    CALL MPI_TYPE_EXTENT(MPI_DOUBLE_PRECISION,doubleEX,ierr)
@@ -522,17 +527,25 @@ SUBROUTINE bcast_scheme_paras(master)
    CALL MPI_TYPE_COMMIT(theType,ierr)
    CALL MPI_Bcast(scheme,1,theType,master,MPI_COMM_WORLD,IERR)
    CALL MPI_TYPE_FREE(theType,ierr)
+#else
+   call quit('fix code in bcast_scheme_paras')
+#endif
 END SUBROUTINE bcast_scheme_paras
 
 SUBROUTINE bcast_T_searcher_type(master,searcher)
    IMPLICIT NONE
    INCLUDE 'mpif.h'
    INTEGER, INTENT(IN)   :: master
+#ifdef FIX_THIS_CODE
    TYPE(T_searcher_type) :: searcher(5)
+#else
+   INTEGER :: searcher
+#endif
 
    INTEGER intEx, logEx, ierr, theType
    INTEGER, DIMENSION(2) :: bllen, types, disps
 
+#ifdef FIX_THIS_CODE
    CALL MPI_TYPE_EXTENT(MPI_INTEGER,intex,ierr)
    CALL MPI_TYPE_EXTENT(MPI_LOGICAL,logex,ierr)
    
@@ -544,45 +557,61 @@ SUBROUTINE bcast_T_searcher_type(master,searcher)
    CALL MPI_TYPE_COMMIT(theType,IERR)
    CALL MPI_Bcast(searcher,5,theType,master,MPI_COMM_WORLD,IERR)
    CALL MPI_TYPE_FREE(theType,ierr)
+#else
+   call quit('fix code in bcast_T_searcher_type')
+#endif
 END SUBROUTINE bcast_T_searcher_type
 
 SUBROUTINE bcast_T_contract_schm(master,contractor)
    IMPLICIT NONE
    INTEGER, INTENT(IN)                  :: master
+#ifdef FIX_THIS_CODE
    TYPE(T_contract_schm), INTENT(INOUT) :: contractor
+#else
+   integer ::                              contractor
+#endif
    INCLUDE 'mpif.h'
    INTEGER ierr
+#ifdef FIX_THIS_CODE
    CALL MPI_Bcast(contractor,6,MPI_INTEGER,master,MPI_COMM_WORLD,IERR)
+#else
+   call quit('fix code in bcast_T_contract_schm')
+#endif
 END SUBROUTINE bcast_T_contract_schm
 
 SUBROUTINE bcast_W_contract_schm(master,w_con)
    IMPLICIT NONE
    INCLUDE 'mpif.h'
    INTEGER, INTENT(In)                  :: master
+#ifdef FIX_THIS_CODE
    TYPE(W_contract_schm), INTENT(INOUT) :: w_con
    integer ierr
    CALL MPI_Bcast(w_con,3,MPI_INTEGER,master,MPI_COMM_WORLD,ierr)
+#else
+   INTEGER::                               w_con
+   call quit('fix code in bcast_W_contract_schm')
+#endif
 END SUBROUTINE bcast_W_contract_schm
 
 SUBROUTINE mm_getj_collect(tm)
    IMPLICIT NONE
    INCLUDE 'mpif.h'
+   INCLUDE 'dcbbas.h'
    INTEGER IERR, MASTER,I
-   REAL(REALK) :: Work(NBAST*NBAST)
+   REAL(8) :: Work(ntbas(0)*ntbas(0))
    DOUBLE PRECISION, INTENT(IN) :: tm
+#ifdef FIX_THIS_CODE
    DOUBLE PRECISION  :: tms(NNODES)
-   
    MASTER = 0
    CALL DCOPY(NBAST*NBAST,J_matrix, 1, Work, 1)
    CALL MPI_Reduce(work,J_matrix,NBAST*NBAST,MPI_DOUBLE_PRECISION,&
         & MPI_SUM, MASTER, MPI_COMM_WORLD, IERR)
-#if 1
    CALL MPI_GATHER(tm,1,MPI_DOUBLE_PRECISION,&
         &          tms,1,MPI_DOUBLE_PRECISION,MASTER,MPI_COMM_WORLD,IERR)
    WRITE(LUPRI,"(I3,'Node times:',/,20(10F7.2,/))") MYNUM,&
         & (tms(i),i=1,NNODES)
+#else
+   call quit('fix code in mm_getj_collect')
 #endif
 END SUBROUTINE mm_getj_collect
-#endif
-
-!-------------------------------------------------------------------------------
+#endif /* ifdef VAR_MPI */

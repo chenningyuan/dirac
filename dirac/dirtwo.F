@@ -3295,6 +3295,7 @@ C*****************************************************************************
       DIMENSION FMAT(N2BBASX,NZC1,NDMT),DMAT(N2BBASX,NZC1,NDMT),
      &        ISYMDM(NZC1,NDMT),IFCTYP(NZC1,NDMT),WORK(LWORK)
 #include "dcbbas.h"
+#include "dcbgen.h"
 #include "dgroup.h"
       DO IDMT=1,NDMT
         IF ( (MOD(IFCTYP(1,IDMT),10).EQ.1) .OR.
@@ -3303,7 +3304,11 @@ C*****************************************************************************
           CALL FCK3DRV(FMAT(1,1,IDMT),DMAT(1,1,IDMT),1,DUMMY,DUMMY,
      &             DUMMY,WORK,LWORK)
 #ifdef MOD_FMM
-          IF (DOFMM) CALL FMMFCK(FMAT(ISTR),DMAT(ISTR),WORK,LWORK)
+          if (dofmm) then
+!radovan:
+             call quit('fix rank mismatch in fmmfck call')
+!            CALL FMMFCK(FMAT(ISTR),DMAT(ISTR),WORK,LWORK)
+          end if
 #endif /* MOD_FMM */  
         END IF
       END DO
