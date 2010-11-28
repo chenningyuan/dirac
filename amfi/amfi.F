@@ -1,4 +1,3 @@
-#ifdef MOD_AMFI
 CMI AMFI include files:
 C=====================================================================================
 C in AMFI directory: 
@@ -1998,4 +1997,3 @@ cbs   including kinematic factors and even exponents as factors
      *exponents(1,L))
       return
       end
-#endif /*  MOD_AMFI */

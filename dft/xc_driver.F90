@@ -23,9 +23,7 @@ module xc_driver
 
 !   written by T. Helgaker
 !   DIRAC adaption by T. Saue
-#ifdef MOD_EMB
   use fde_mod
-#endif
   use dirac_cfg
   use basis_info
   use occupation_info
@@ -1146,7 +1144,6 @@ contains
 #endif
 #endif
 #ifdef MOD_XCFUN
-#ifdef MOD_EMB
            if (dirac_cfg_fde_response .and. (max_fun_derv > 1)) then
 !             fde_response:
 !             the frozen density has to be passed all the way to here
@@ -1168,7 +1165,6 @@ contains
                                         fde_resp_verbose)
            else
 #endif 
-#endif 
               call get_functional_derv(xc_fun,       &
                                        max_fun_derv, &
                                        bllen,        &
@@ -1181,9 +1177,7 @@ contains
                                        alda_imag=dft_cfg_alda_ha, &
                                        tau=tau)
 #ifdef MOD_XCFUN
-#ifdef MOD_EMB
            end if
-#endif 
 #endif 
 #ifdef MOD_XCFUN
 #ifdef MOD_OPENRSP

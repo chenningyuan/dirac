@@ -146,7 +146,6 @@ contains
          x2c_add_amfi          = - 1
 
 !        set value for amfi module (if at all)
-#if defined MOD_AMFI
          if(.not. noamfi)then
 !          if(new_amfi)then
 !            x2c_add_amfi = 2
@@ -154,10 +153,6 @@ contains
              x2c_add_amfi = 1
 !          end if
          end if
-#else
-!        ignore any request for AMFI contributions
-         x2c_add_amfi = -1
-#endif
 
 !        common block variables for AMFI(old +new(?))
          if(x2c_add_amfi > 0)then

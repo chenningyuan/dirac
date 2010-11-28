@@ -149,9 +149,7 @@ C  LABELS: NLAB
 C
       LOGICAL TOBE,TOBEK,DONETP_M,ADDSML_M,LABDEF_M,ORBDEF_M,ORBDEF
       LOGICAL FNDLAB,CINATORB
-#ifdef MOD_KRMC
       LOGICAL MJVEC_AVAIL
-#endif
       CHARACTER FILELABEL*8
       DIMENSION WORK(LWORK)
 C
@@ -195,15 +193,11 @@ C
 C
 C     Check if coefficients are on file
 C
-#ifdef MOD_KRMC
       IF( MP2NATPOP ) THEN
          INQUIRE(FILE='KRMCOLD',EXIST=TOBEK)
       ELSE
          INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
       END IF
-#else
-      TOBEK=.FALSE.
-#endif /* MOD_KRMC */
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF ((.NOT.TOBE).AND.(.NOT.TOBEK)) GOTO 1000
 C     Memory allocation
@@ -220,7 +214,6 @@ C
 C     Read coefficients, eigenvalues and 
 C     irrep identification + restart info
 C
-#ifdef MOD_KRMC
       IF (TOBEK) THEN
          IF( MP2NATPOP )THEN
            CALL OPNFIL(LUKRMC,'KRMCOLD','OLD','MULPOP')
@@ -275,7 +268,6 @@ C            occupancies
          END IF
          CLOSE (LUKRMC)
       ELSE
-#endif /* MOD_KRMC */
          KRMC_FLG = 0
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
          CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
@@ -291,9 +283,7 @@ C        long run, occupancies should also be stored on DFCOEF. FIXME!
            CALL DCOPY(NORBT,WORK(KEIG),1,WORK(KOCC),1)
            KRMC_FLG = 3
          END IF
-#ifdef MOD_KRMC
       END IF
-#endif /* MOD_KRMC */
 C
 C     Get labels for population analysis
 C
@@ -1889,7 +1879,6 @@ C
 C
       IF(IPRCMP.LE.0) RETURN
       CALL TITLER('Vector print','*',130)
-#ifdef MOD_KRMC
 C
 C     Check if MCSCF coefficients are on file
 C
@@ -1924,7 +1913,6 @@ C
 C     Memory deallocation
       CALL MEMREL('ANAVEC',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
-#endif /* MOD_KRMC */
 C
 C     No MCSCF, then check if RHF on DFCOEF :
 C

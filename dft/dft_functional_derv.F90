@@ -30,9 +30,7 @@ module dft_functional_derv
 
   public get_functional_derv
 #ifdef MOD_XCFUN
-#ifdef MOD_EMB
   public get_general_fun_derv
-#endif
   public xcfun_set_functional
   public xcfun_is_lda
   public xcfun_is_gga
@@ -440,7 +438,6 @@ contains
 
 
 #ifdef MOD_XCFUN
-#ifdef MOD_EMB
   subroutine get_general_fun_derv(f,            &
                                   order,        &
                                   block_length, &
@@ -732,7 +729,6 @@ contains
          enddo
       enddo
   end subroutine debug_general_fun
-#endif /* ifdef MOD_EMB */
 #endif /* ifdef MOD_XCFUN */
 
 end module

@@ -1,6 +1,3 @@
-#ifdef MOD_AMFI
-
-CMI ....
       subroutine initired
 #include "implicit.h"
 cbs   initialize all information for ireducible representations 
@@ -1817,4 +1814,3 @@ cbs   e.g. for spins, arguments are doubled values...
       enddo 
       return 
       end
-#endif /* MOD_AMFI */

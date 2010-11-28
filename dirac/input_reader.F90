@@ -394,9 +394,7 @@ contains
 
   subroutine read_input_visual(word, kw_section)
 
-#ifdef MOD_VISUAL
     use visual_cfg
-#endif
 
 !   ----------------------------------------------------------------------------
     character(kw_length), intent(in) :: word
@@ -406,9 +404,7 @@ contains
     character(6)                     :: reply
 !   ----------------------------------------------------------------------------
 
-#ifndef MOD_VISUAL
     call quit(kw_section//' not available in this version')
-#else
 
     dirac_cfg_visual = .true.
 
@@ -546,7 +542,6 @@ contains
 #endif
 
     call check_whether_kw_found(word, kw_section)
-#endif /* ifndef MOD_VISUAL */
 
   end subroutine
 

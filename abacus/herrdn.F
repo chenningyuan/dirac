@@ -2598,13 +2598,11 @@ C
      &    ' Threshold for integrals (to be written to file):',THRS
       END IF
 
-#ifdef MOD_AMFI
 CMI   ... prepare the MNF.INP basis set input file for AMFI
       CALL MNFOUT(NONTYP,NONT,IQM(1,1),NBLCK(1,1),
      &           JCO(1,1,1),NUC(1,1),NRC(1,1),SEG(1,1),
      &           KATOM,KANG,KBLOCK,
      &           KPRIM,CPRIMU)
-#endif
 
 #ifdef MOD_CAP
 CMI   ... prepare the basis set input files for the CAP program
@@ -6782,7 +6780,6 @@ C
       RETURN
       END
 
-#ifdef MOD_AMFI
 C  /* Deck mnfout */
       SUBROUTINE MNFOUT(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &     KATOM,KANG,KBLOCK,KPRIM,CPRIMU)
@@ -6917,7 +6914,6 @@ C     END of IF master (i.e. if MYTID .eq. MPARID)
       RETURN
 C     end of SUBROUTINE MNFOUT
       END
-#endif
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck Getsph */

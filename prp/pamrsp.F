@@ -393,9 +393,7 @@ C     ***************************
 C     *** I n i t i a l i z e ***
 C     ***************************
 C
-#ifdef MOD_KRMC
       IF ( FKRMC ) CALL GETTIM(CPUTOT1,CPUWALL1)
-#endif
 C
       CALL XRSINI(REDGP,REDS,REDE,GPCI,GPOE,GPOP,RCNV,EVECR,RNORM,
      &            WORK,KFREE,LFREE)
@@ -775,7 +773,6 @@ C
 C     For KR-MCSCF iterations, calculate predicted energy
 C     change and update some info elements.
 C
-#ifdef MOD_KRMC
       IF ( FKRMC ) THEN
 C
 C        Calculate predicted energy change
@@ -798,7 +795,6 @@ C
          IINFO(5) = NERED
          IINFO(6) = NPRED
       END IF
-#endif
 C
 C
 C
@@ -1647,7 +1643,6 @@ C
       E2FULL = .FALSE.
       IF (IPRXRS .GE. 15) THEN
          CALL HEADER('(XRSRED) Sigma vectors',-1)
-#ifdef MOD_KRMC
          IF (NZCONF .GT. 1) THEN
          DO I = 1, NTSIM
             WRITE(LUPRI,'(/I5,A,I5)')
@@ -1656,7 +1651,6 @@ C
      &           XRS_CIPROGRAM,THRZER,LUPRI)
          END DO
          END IF
-#endif
          WRITE(LUPRI,'(/I5,A)') NTSIM,' orbital e-e sigma vectors'
          CALL PRBVEC(LUPRI,SEVEC,NTSIM,NZXOPE)
          WRITE(LUPRI,'(/I5,A)') NTSIM,' orbital e-p sigma vectors'
@@ -2509,14 +2503,10 @@ C
         ENDIF
       ENDIF
 C
-#ifdef MOD_KRMC
       IF (FKRMC) THEN
          CALL KRMCSOL(NZRED,NREDM,REDE,REDS,EVALR,REDGP,
      &        EVECR(1,1),IBTYP,NPRED,IPRXRS,WORK,KFREE,LFREE)
       ELSE IF (LINEQ) THEN
-#else
-      IF (LINEQ) THEN
-#endif
 C
 C     Solve reduced linear response problem in subspace
 C     =================================================
@@ -2551,7 +2541,6 @@ C
 C     Solve reduced general problem in subspace
 C     =========================================
 C
-#ifdef MOD_XPP
         CALL EIGRED(NFREQ,NZRED,NREDM,REDE,REDS,EVALR,EVECR,
      &          IERR,IPRXRS,WORK,KFREE,LFREE)
         IF (IPRXRS .GE. 1) THEN
@@ -2564,9 +2553,6 @@ C         IF (IPRXRS .GE. 3) THEN
           WRITE(LUPRI,'(/A)')'XRSSOL: and the reduced solution vectors:'
           CALL PRIRMT (EVECR,NREDM,NZRED,NFREQ,IBTYP)
         ENDIF
-#else
-        CALL QUIT('XRSSOL: XPP not implemented in this version')
-#endif
       ENDIF
 C
       CALL QEXIT('XRSSOL')

@@ -128,10 +128,8 @@ C***********************************************************************
       use openrsp_main
 #endif
 
-#ifdef MOD_EMB
 !     USE FDE_MOD, ONLY: DO_GRID_OUT,FDE_GRIDOUT
       USE FDE_MOD ! MI: gfortran-4.2 does not accept "ONLY" (yet)
-#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -203,7 +201,6 @@ C***********************************************************************
 C*****  P P   E X C I T A T I O N   E N E R G I E S  *******************
 C***********************************************************************
 C
-#ifdef MOD_XPP
       IF (DOXPP) THEN
          IF (WF. EQ. 'DHF') THEN
             CALL PRPXPP(WORK,KPPF,KOMEGA,KPPCNV,KPPO,KSSYM,KFREE,LFREE)
@@ -212,7 +209,6 @@ C
      &           'PP excitation energies not implemented for ' // WF )
          END IF
       END IF
-#endif
 C
 C***********************************************************************
 C*****  L I N E A R   R E S P O N S E  *********************************
@@ -240,21 +236,17 @@ C
      &        CALL QUIT('*** ERROR in PAMPR1 *** ' //
      &        'Quadratic response not implemented for ' // WF )
          IF (DOXQR) CALL PRPXQR(WORK(KFREE),LFREE)
-#ifdef MOD_XPP
          IF (DOTPA) CALL PRPTPA(WORK(KFREE),LFREE)
          IF (DOEXCPRP) CALL EXCPRP(WORK(KFREE),LFREE)
-#endif
       ENDIF
 C
 C***********************************************************************
 C*****  S T E X  *******************************************************
 C***********************************************************************
 C
-#ifdef MOD_STEX
       IF (DOSTEX) THEN
          CALL STEX(WORK(KFREE),LFREE)
       ENDIF
-#endif
 
 C
 C***********************************************************************
@@ -277,7 +269,6 @@ C*******************************************************************************
 C
 C JHS 17 apr 2008
 C
-#ifdef MOD_EMB
       call get_xml_export_level(wfexport)
       IF (DO_GRID_OUT.and.(WF.eq.wfexport)) THEN
 #ifdef MOD_XML
@@ -286,7 +277,6 @@ C
          call quit("FDE density export unsupported in this version.")
 #endif
       END IF
-#endif /* #ifdef MOD_EMB */
 
 #ifdef MOD_OPENRSP
       if (dirac_cfg_openrsp) then
@@ -3990,9 +3980,7 @@ C     (PFAC(1:2) for Dirac mag. field, PFAC(3) for g_1 QED correction)
 C
 
       IF (LONDON) THEN
-#ifdef MOD_LONDON
         CALL DEF_D1HBLOND(1,WORK,LWORK,IPRINT)
-#endif
       ELSE
 C
 C         Conventional atomic orbitals
@@ -4899,12 +4887,10 @@ C
       CALL IZERO(IPMSUSC,6)
     
       IF (LONDON) THEN ! use London AO's
-#ifdef MOD_LONDON
 C ... always calculate expectation value terms 
        DOEXP = .TRUE. 
 C ... define operators for response and exp.value parts
        CALL DEF_D1HBLOND(2,WORK,LWORK,LPRINT)  
-#endif
       ELSE ! Conventional AO
 
 C      ... XAVECTOR
@@ -5622,10 +5608,8 @@ C=============================================================================
       CALL DZERO(SUSFSY,9)
       CALL DZERO(SUSFS,9)
 
-#ifdef MOD_LONDON
 C     ... evaluate expectation value terms
       IF (LONDON) CALL EXPVSUSLO(WORK(KFREE),LFREE)
-#endif
 
       KFRSAV = KFREE
       CALL TITLER('MAGNETIZABILITIES','*',124)
@@ -6301,7 +6285,6 @@ C        ... DMATLO contains extracted 'diamagnetic' term (NSNL)
          ENDIF
       END IF
 
-#ifdef MOD_LONDON
 C ------------------------------------------------------
 C  Get the London orbital contributions to the exp.value
 C  ... these are RNST terms
@@ -6352,7 +6335,6 @@ C         ... extract the reorthonormalization part into the PMAT
 C         ... add the reorthonormalization terms to the DMAT
          CALL DAXPY(NCMAT,D1,PMAT,1,DMAT,1)
       END IF
-#endif /* MOD_LONDON */
 C
 C     *** Extract shieldings ***
 C
@@ -8263,9 +8245,7 @@ C     (PFAC(1:2) for Dirac mag. field, PFAC(3) for g_1 QED correction)
 C
 
       IF (LONDON) THEN
-#ifdef MOD_LONDON
         CALL DEF_D1HBLOND(1,WORK,LWORK,IPRINT)
-#endif
       ELSE
 C
 C     Conventional atomic orbitals

@@ -1903,7 +1903,6 @@ C
 C
 C     Quadratic convergent DHF?
 C
-#ifdef MOD_KRMC
       IF (NOQCDHF) THEN
          WRITE(LUPRI,'(A)')
      &   ' * No quadratic convergent Hartree-Fock'
@@ -1913,7 +1912,6 @@ C
      &   '   - Maximum number of macro iterations:',MXMACRO,
      &   '   - Maximum number of micro iterations:',MXMICRO
       END IF
-#endif
       IF (DYNSEL .AND. .NOT. OVLSEL) OVLSEL = .TRUE.
       IF (OVLSEL) THEN
          IF (AUTOCC)
@@ -2383,12 +2381,10 @@ C&&&& MP2 NO: Calculate MP2 natural orbitals and their occupations
             NJOBS = NJOBS + 1
             GO TO 100
  115     CONTINUE
-#ifdef MOD_ADC
 C&&&& RELADC: Calculate one-particle electron propagator with ADC
             IF (.NOT.NOTRA) DOTRA = .TRUE.
             DOADC   = .TRUE.
             NJOBS = NJOBS + 1
-#endif
             GO TO 100
  116     CONTINUE
 C&&&& KR CI :  perform (large-scale) KR-CI calculation 
@@ -2407,12 +2403,8 @@ C&&& COSCI: Do a COSCI calculation
             GO TO 100
  119     CONTINUE
 C&&& GASCIP: Do a GASCIP calculation (new code)
-#ifdef MOD_KRMC
             DOGASCIP = .TRUE.
             NJOBS = NJOBS + 1
-#else
-            CALL QUIT('Sorry, .GASCIP not available in this version')
-#endif
             GO TO 100
  120     CONTINUE
 C&&& HSFS : Do High Sect FSCC calculations (new code)
@@ -2455,10 +2447,6 @@ C
      &   ' * Generate MP2 natural orbitals'
       IF(DOKRMC) WRITE(LUPRI,'(A)')
      &   ' * Kramers restricted MCSCF calculation'
-#ifndef MOD_KRMC
-      IF(DOKRMC .OR. DOLUCIAR)
-     &  CALL QUIT('*** KRMCSCF is not included in this version')
-#endif
       IF(DOLUCIAR) THEN
 C hj aug03: TODO: idea was/is to maybe follow MCSCF by big CI
          WRITE(LUPRI,'(A)') ' * Run LUCIAREL CI code'
@@ -2470,14 +2458,10 @@ C hj aug03: TODO: idea was/is to maybe follow MCSCF by big CI
       IF (DOHSFS) WRITE(LUPRI,'(A)') ' * Run Higher Sectors FSCC code'
 #endif
       IF(DOCOSCI) WRITE(LUPRI,'(A)') ' * Run COSCI CI code'
-#ifdef MOD_KRMC
       IF(DOGASCIP) WRITE(LUPRI,'(A)') ' * Run GASCIP CI code'
-#endif
       IF(DOCIM) WRITE(LUPRI,'(A)') ' * Run DIRRCI CI code'
       IF(DOLUCT)WRITE(LUPRI,'(A)') ' * Run LUCITA CI code'
-#ifdef MOD_ADC
       IF(DOADC) WRITE(LUPRI,'(A)') ' * Run RELADC code'
-#endif
       IF(DOKRCI)
      &   WRITE(LUPRI,'(A)') ' * Kramers restricted CI calculation'
       IF(DOKRCC)
@@ -2557,20 +2541,14 @@ C
         CALL RESINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     7 CONTINUE
-#ifdef MOD_KRMC
         CALL KRMCINP(WORD,.FALSE.,WORK,LWORK)
-#endif
         GO TO 200
     8 CONTINUE
-#ifdef MOD_KRMC
         CALL RSTPINP(WORD,.FALSE.,WORK,LWORK)
-#endif
         GO TO 200
 C     '*OPTIMI' - control KRMCSCF optimization
     9 CONTINUE
-#ifdef MOD_KRMC
         CALL ROPTINP(WORD,.FALSE.,WORK,LWORK)
-#endif
         GO TO 200
 C     '*MP2 NO' - MP2 Natural Orbitals
    10 CONTINUE
@@ -2578,9 +2556,7 @@ C     '*MP2 NO' - MP2 Natural Orbitals
         GO TO 200
 C     '*KRCICALC' - Kramers Restricted CI CALCulation
    11 CONTINUE
-#ifdef MOD_KRMC
         CALL KRCI_INP(WORD,.FALSE.,WORK,LWORK)
-#endif
         GO TO 200
 C
 !.s/sya,2007.01.31
@@ -2589,17 +2565,13 @@ C
 !       Input for COSCI module
 !       Read input data
 !
-#ifdef MOD_KRMC
         CALL COSCI_INP(WORD,.FALSE.,WORK,LWORK)
-#endif
 !.q
         GO TO 200
 C
 !.s/sya,2007.02.06
    13 CONTINUE
-#ifdef MOD_KRMC
         CALL GASCIP_INP(WORD,.FALSE.,WORK,LWORK)
-#endif
         GO TO 200
 C
    14 CONTINUE
@@ -2656,12 +2628,10 @@ C
       CALL MP2INP(WORD,.TRUE.,WORK,LWORK)
       CALL LUCTINP(WORD,.TRUE.,WORK,LWORK)
 
-#ifdef MOD_KRMC
       CALL KRMCINP(WORD,.TRUE.,WORK,LWORK)
       CALL RSTPINP(WORD,.TRUE.,WORK,LWORK)
       CALL ROPTINP(WORD,.TRUE.,WORK,LWORK)
       CALL KRCI_INP(WORD,.TRUE.,WORK,LWORK)
-#endif
 
 #ifdef MOD_KRCC
       CALL KRCC_INP(WORD,.TRUE.,WORK,LWORK)
@@ -2687,7 +2657,6 @@ C
 C
 C     Input of reladc module
 C
-#ifdef MOD_ADC
       IF(DOADC) THEN
          if (parcal) then
             write (*,*) ' '
@@ -2716,7 +2685,6 @@ C
          CALL ADCINPT(LUCMD,LUPRI)
          CLOSE(LUCMD)
       ENDIF
-#endif
 !
 !     Input of COSCI module
 !     Reset and just return back.
@@ -2725,11 +2693,9 @@ C
          CALL COSCI_INP(WORD,.TRUE.,WORK,LWORK)
       END IF
 
-#ifdef MOD_KRMC
       IF( DOGASCIP ) THEN
          CALL GASCIP_INP(WORD,.TRUE.,WORK,LWORK)
       END IF
-#endif
 C
       RETURN
 C
@@ -3955,9 +3921,7 @@ C     Initialize XCBXPR - list of properties
 C     ======================================
       NPRPS        = 0
 C
-#ifdef MOD_KRMC
       CALL OPTINI()
-#endif
 #ifdef MOD_ERI
       CALL FCK3INI
 #endif
@@ -3977,9 +3941,7 @@ C     Written by T.Saue - May 1996
 C
 C***********************************************************************
       use dirac_cfg
-#ifdef MOD_EMB
       USE FDE_MOD, ONLY: FDEINI, FDEINP
-#endif
       use dft_cfg
       use dft_input
       use input_reader
@@ -4103,11 +4065,7 @@ C
       x2c     = .false.
       x2c_mod = .false.
 !     default for X2C module: add spin-same orbit MFSSO2 terms
-#if defined MOD_AMFI
       isorder_amfi_x2c = 2
-#else
-      isorder_amfi_x2c = 0
-#endif
 !     (fragment-) or atom-by-atom X2C (for now: always false!)
       X2C_aba = .false.
       IBSS    = -1
@@ -4139,11 +4097,7 @@ CMI   ... own keywords for 1. or 2.order Douglas-Kroll-Hess with AMFI SSO
 C     ... default L&S components... needs discussion about relation to DO2C4C/DO4C2C
       MC      = 2
 CMI     ... default initialization - always include AMFI contribution
-#ifdef MOD_AMFI
       NOAMFI = .FALSE.
-#else
-      NOAMFI = .TRUE.
-#endif
 CMI   ... default value - no artificial atom
       QDOTS = .FALSE.
 Culfek: Do not scale gaunt integrals with exchange scale factor by default.
@@ -4463,12 +4417,10 @@ C&&& HFXMU: range separation
 #endif 
           GO TO 100
 
-!#ifdef MOD_AMFI 
 !C&&&&&  AMFI_CHARGE: Get the total charge of the molecule
 !C     for mean-field summations of each atom in the system
 !C          ... read integer number
 !             READ(LUCMD,*) IMFCH
-!#endif
             GO TO 100
   128     CONTINUE
 C&&&&   Solve R-equation 1
@@ -4556,7 +4508,6 @@ C&&& POSVAC: Use positronic vacuum polarisation
 !         frozen density embedding
   142     continue
           dirac_cfg_fde = .true.
-!endif /* ifdef MOD_EMB */
           go to 100
 
   143     CONTINUE
@@ -4609,9 +4560,7 @@ C&&& DKH1: first order Douglas-Kroll-Hess with AMFI SSO, set other
   149     CONTINUE
 C&&& .NOAMFI: do not include AMFI contribution to the 2comp. Hamiltonian
 CMI    when the AMFI-module is selected through the preprocessor command
-#ifdef MOD_AMFI
              NOAMFI = .TRUE.
-#endif
              GO TO 100
   150     CONTINUE
 C&&& QDOTS: activate artificial atom (quantum dots)
@@ -4695,11 +4644,7 @@ C activates fde response
 
 
       if (dirac_cfg_fde .or. dirac_cfg_fde_response) then
-#ifdef MOD_EMB
          call fdeini()
-#else
-         call quit('embedding is not included in this version')
-#endif
       end if 
       
 
@@ -5024,7 +4969,6 @@ C       ... take care of AMFI contribution
      &   //'2-component transformed Hamiltonian !'
         ENDIF
         IF (IBSS.GT.999.AND..NOT.NOAMFI) THEN
-#ifdef MOD_AMFI
           WRITE(LUPRI,'(A)')
      &     ' * Spin-orbit corrections to the instantaneous Coulomb ',
      &     '   interaction provided by the AMFI code. ',
@@ -5040,7 +4984,6 @@ C       ... take care of AMFI contribution
      &     '     Adding :',
      &     '       some AMFI contribution'//
      &     ' (see output from EXTR_BSS_INFO below)'  
-#endif
           IF (GAUNT_SAVE) THEN
             WRITE(LUPRI,'(A)')
      &     '     N.B: Gaunt key is on '
@@ -5634,24 +5577,15 @@ C       if *CAP in input but MOD_CAP is not defined !!!
         GO TO 200
 !     .FDE, frozen density embedding
     5 CONTINUE
-#ifdef MOD_EMB
       call fdeinp(word, .true.)
-#else
-      call quit('embedding is not included in this version')
-#endif
       GO TO 200
     6 CONTINUE
-#ifdef MOD_AMFI
 CMI  ... reading input routine for AMFI+RELSCF
         IF((IBSS.GT.999.or.x2c).AND..NOT.NOAMFI) THEN
           CALL AMFI_RELSCF_INP(WORD,.FALSE.)
         ELSE
           GO TO 1
         ENDIF
-#else
-        CALL QUIT(
-     &  '*AMFI specified, but AMFI is not included in this version')
-#endif
         GO TO 200
 
     7 CONTINUE
@@ -5669,11 +5603,9 @@ C
       IF (CAP) CALL CAPINP(WORD,.TRUE.,WORK,LWORK)
 #endif
 
-#ifdef MOD_AMFI
       IF((IBSS.GT.999.or.x2c).AND..NOT.NOAMFI) THEN
          CALL AMFI_RELSCF_INP(WORD,.TRUE.)
       ENDIF
-#endif
 C
  500  CONTINUE
 C

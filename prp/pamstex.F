@@ -19,7 +19,6 @@
 !      DIRAC program, see: http://dirac.chem.vu.nl
 !dirac_copyright_end
 
-#ifdef MOD_STEX
 C VERSION : $Revision$
 C DATE    : $Date$
 C FILE    : pamstex.F
@@ -1895,9 +1894,5 @@ C
      &     'N',OP,IPQTOQ(1,0),CORB1,NTBAS(0),1,NZ,
      &     'H','N',IPQTOQ(1,0),CORB2,NTBAS(0),1,NZ,
      &     0.0D0,IPQTOQ(1,0),DAO,NTBAS(0),NTBAS(0),NZ)
-      END
-#endif
-#else
-      SUBROUTINE STEX_DUMMY
       END
 #endif

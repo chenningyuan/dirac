@@ -146,9 +146,7 @@ C     Written by T. Saue - November 1994
 C     Last revision : Sep 11 1995 - tsaue
 C***********************************************************************
       use dirac_cfg
-#ifdef MOD_VISUAL
       use visual
-#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -187,10 +185,8 @@ C
 
 
 
-#ifdef MOD_VISUAL
 !     visualization module
       if (dirac_cfg_visual) call run_visual()
-#endif
 
 C
 C***********************************************************************
@@ -271,13 +267,7 @@ C
          IF ( .NOT. NOQCDHF .AND. 
      &        .NOT. dirac_cfg_dft_calculation .AND.
      &       (.NOT. WFCONV .AND. MAXITR .GT.0 )) THEN
-#ifdef MOD_KRMC
             CALL PSIOPT('SCF  ',WFCONV,WORK,LWORK)
-#else
-c           CALL QUIT(
-c    &   'Second order SCF optimization not included in this version')
-c        ... let it stop below ... /hjaaj Feb 2004
-#endif
          END IF
 C........Export mean-field integrals
 CTROND         IF(DOMFI) CALL PAMFI(WORK,LWORK)
@@ -340,7 +330,6 @@ C      Do MCSCF before CC and CI because user may want
 C      to do an MR-CC or MR-CI /hjaaj aug 03
 C
       IF(DOKRMC.AND.DOPSI) THEN
-#ifdef MOD_KRMC
 C
 C        Transfer DHF info to common block DCBORB
 C        and recalculate DCBORB.
@@ -361,10 +350,6 @@ C        calculate proper 2-electron integrals
 C
          CALL PSIOPT('MCSCF',WFCONV,WORK,LWORK)
          IF(DOANA) CALL PAMANA(WORK,LWORK)
-#else
-            CALL QUIT(
-     &  'Second order KMCSCF optimization not included in this version')
-#endif
       END IF
 C
 C***********************************************************************
@@ -395,9 +380,7 @@ C***********************************************************************
 C***** R E L A D C  M O D U L E ****************************************
 C***********************************************************************
 C
-#ifdef MOD_ADC
       IF(DOADC.AND.DOPSI) CALL PAMADC(WORK,LWORK)
-#endif
 C
 C***********************************************************************
 C***** C O S C I        stand-alone version of RESOLVE   ***************
@@ -423,7 +406,6 @@ C***** C I *************************************************************
 C***********************************************************************
 C
       IF(DOKRCI.AND.DOPSI) THEN
-#ifdef MOD_KRMC
 C
 C        Transfer KR-CI info to common block DCBORB
 C        and recalculate DCBORB.
@@ -434,10 +416,6 @@ C        ... reset dcbopt.h
          CALL SETDC2(0)
 C
          CALL KRCI_CALC('KR-CI ',WFCONV,WORK,LWORK)
-#else
-            CALL QUIT(
-     &  ' KR-CI module not included in this version')
-#endif
       END IF
 C
 C***********************************************************************
@@ -971,27 +949,15 @@ C        Enter the LUCITA module
 C
          CALL LUCINOD(WORK,LWORK)
       ELSE IF (ITASK .EQ. 6) THEN
-#ifdef MOD_KRMC
 C
 C        start KRMC-LUCIAREL calculation.
 C
          CALL LUCINOD_REL(WORK,LWORK)
-#else
-            CALL QUIT(
-     &  'KRMC-LUCIAREL module not included in this version')
-
-#endif
       ELSE IF (ITASK .EQ. 7) THEN
-#ifdef MOD_KRMC
 C
 C        start KR-MCSCF calculation.
 C
          CALL KRMC_NODE_DRIVER(WORK,LWORK)
-#else
-            CALL QUIT(
-     &  'Second order KMCSCF optimization not included in this version')
-
-#endif
 #endif /* VAR_MPI2 */
       ELSE
 C
@@ -1103,27 +1069,15 @@ C        Enter the LUCITA module
 C
          CALL LUCINOD(WORK,LWORK)
       ELSE IF (ITASK .EQ. 6) THEN
-#ifdef MOD_KRMC
 C
 C        start KRMC-LUCIAREL calculation.
 C
          CALL LUCINOD_REL(WORK,LWORK)
-#else
-            CALL QUIT(
-     &  'Second order KMCSCF optimization not included in this version')
-
-#endif
       ELSE IF (ITASK .EQ. 7) THEN
-#ifdef MOD_KRMC
 C
 C        start KR-MCSCF calculation.
 C
          CALL KRMC_NODE_DRIVER(WORK,LWORK)
-#else
-            CALL QUIT(
-     &  'Second order KMCSCF optimization not included in this version')
-
-#endif
 #endif /* VAR_MPI2 */
       ELSE
 C

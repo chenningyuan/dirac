@@ -12,11 +12,11 @@
 #           select all modules that are part of adm
 #           ./pamadm --adm
 #
-#           select all modules that are part of adm except adc and amfi
-#           ./pamadm --adm --minus --adc --amfi
+#           select all modules that are part of adm except modules foo and bar
+#           ./pamadm --adm --minus --foo --bar
 #
 #           select some modules
-#           ./pamadm --xpp --adc --visual --london --matrixop
+#           ./pamadm --foo --bar
 #
 #           select modules for release and export
 #           ./pamadm --release --export=DIRAC10
@@ -161,6 +161,14 @@ vital_directories.append('include')
 vital_directories.append('modules')
 vital_directories.append('basis')
 vital_directories.append('basis_dalton')
+vital_directories.append('visual')
+vital_directories.append('matrix_operations')
+vital_directories.append('reladc')
+vital_directories.append('prp/xpp')
+vital_directories.append('amfi')
+vital_directories.append('krmc')
+vital_directories.append('luciarel')
+vital_directories.append('embedding')
 
 vital_files = []
 vital_files.append('configure')
@@ -215,6 +223,11 @@ vital_tests.append(short_test('krci_properties_perm_dipmom'))
 vital_tests.append(short_test('krci_properties_omega_tdm'))
 vital_tests.append(short_test('krci_energy'))
 vital_tests.append(short_test('mcscf_energy'))
+vital_tests.append(short_test('response_lao_shield'))
+vital_tests.append(short_test('visual_elf'))
+vital_tests.append(short_test('visual_gamma5'))
+vital_tests.append(short_test('visual_virtual_density'))
+vital_tests.append(short_test('fde_static-vemb_dipole'))
 # medium tests
 vital_tests.append(medium_test('dft_alda'))
 vital_tests.append(medium_test('response_nmr_spin-spin'))
@@ -228,6 +241,9 @@ vital_tests.append(medium_test('density_at_nuclei'))
 vital_tests.append(medium_test('mp2_properties'))
 vital_tests.append(medium_test('response_qr'))
 vital_tests.append(medium_test('stex',fine_with_mpi = False))
+vital_tests.append(medium_test('visual_general'))
+vital_tests.append(medium_test('visual_div_rot'))
+vital_tests.append(medium_test('reladc', fine_with_mpi = False))
 # long tests
 vital_tests.append(long_test('response_pv_nmr'))
 vital_tests.append(long_test('lucita_large'))
@@ -292,22 +308,6 @@ do_not_release.append('dft/fun-hjsx.c')
 
 dirac_modules = {}
 
-this_module = 'visual'
-dirac_modules[this_module] = dirac_module('visual', 'visualization module')
-dirac_modules[this_module].add_cppflag('MOD_VISUAL')
-dirac_modules[this_module].add_directory('visual')
-dirac_modules[this_module].add_dependency('matrixop')
-dirac_modules[this_module].add_test(short_test('visual_elf'))
-dirac_modules[this_module].add_test(short_test('visual_gamma5'))
-dirac_modules[this_module].add_test(short_test('visual_virtual_density'))
-dirac_modules[this_module].add_test(medium_test('visual_general'))
-dirac_modules[this_module].add_test(medium_test('visual_div_rot'))
-
-this_module = 'matrixop'
-dirac_modules[this_module] = dirac_module('matrixop', 'matrix operations module')
-dirac_modules[this_module].add_cppflag('MOD_MATRIX_OPERATIONS')
-dirac_modules[this_module].add_directory('matrix_operations')
-
 this_module = 'eri'
 dirac_modules[this_module] = dirac_module('eri', 'ERI integral routines')
 dirac_modules[this_module].add_cppflag('MOD_ERI')
@@ -340,16 +340,11 @@ this_module = 'esr'
 dirac_modules[this_module] = dirac_module('esr', 'ESR property module')
 dirac_modules[this_module].add_cppflag('MOD_ESR')
 dirac_modules[this_module].add_directory('prp/esr')
-dirac_modules[this_module].add_dependency('krmc')
+#radovan: why is this test commented out?
 #dirac_modules[this_module].add_test(long_test('krmc_gosci'))
+#radovan: why is this test under esr?
 dirac_modules[this_module].add_test(medium_test('krmc_luciarel', fine_with_mpi = False))
 dirac_modules[this_module].take_out_of_release()
-
-this_module = 'xpp'
-dirac_modules[this_module] = dirac_module('xpp', 'PP excitation energy and STEX modules')
-dirac_modules[this_module].add_cppflag('MOD_XPP')
-dirac_modules[this_module].add_cppflag('MOD_STEX')
-dirac_modules[this_module].add_directory('prp/xpp')
 
 this_module = 'xml'
 dirac_modules[this_module] = dirac_module('xml', 'XML input/output module')
@@ -359,12 +354,6 @@ dirac_modules[this_module].add_test(short_test('fde_export_density'))
 dirac_modules[this_module].take_out_of_adm()
 dirac_modules[this_module].take_out_of_release()
 
-this_module = 'krmc'
-dirac_modules[this_module] = dirac_module('krmc', 'KR-MCSCF and LUCIAREL modules')
-dirac_modules[this_module].add_cppflag('MOD_KRMC')
-dirac_modules[this_module].add_directory('krmc')
-dirac_modules[this_module].add_directory('luciarel')
-
 this_module = 'krcc'
 dirac_modules[this_module] = dirac_module('krcc', 'KRCC module')
 dirac_modules[this_module].add_cppflag('MOD_KRCC')
@@ -372,17 +361,10 @@ dirac_modules[this_module].add_directory('krcc')
 dirac_modules[this_module].take_out_of_adm()
 dirac_modules[this_module].take_out_of_release()
 
-this_module = 'emb'
-dirac_modules[this_module] = dirac_module('emb', 'ab initio/DFT-embedding module')
-dirac_modules[this_module].add_cppflag('MOD_EMB')
-dirac_modules[this_module].add_directory('embedding')
-dirac_modules[this_module].add_test(short_test('fde_static-vemb_dipole'))
-
 this_module = 'openrsp'
 dirac_modules[this_module] = dirac_module('openrsp', 'OpenRSP')
 dirac_modules[this_module].add_cppflag('MOD_OPENRSP')
 dirac_modules[this_module].add_directory('openrsp')
-dirac_modules[this_module].add_dependency('matrixop')
 dirac_modules[this_module].add_test(medium_test('openrsp_cars'))
 dirac_modules[this_module].add_test(medium_test('openrsp_cme'))
 dirac_modules[this_module].add_test(medium_test('openrsp_delta'))
@@ -448,28 +430,11 @@ dirac_modules[this_module].add_dependency('hscc')
 dirac_modules[this_module].take_out_of_adm()
 dirac_modules[this_module].take_out_of_release()
 
-this_module = 'amfi'
-dirac_modules[this_module] = dirac_module('amfi', 'AMFI functionality for DIRAC')
-dirac_modules[this_module].add_cppflag('MOD_AMFI')
-dirac_modules[this_module].add_directory('amfi')
-
-this_module = 'london'
-dirac_modules[this_module] = dirac_module('london', 'London orbitals functionality for magnetic properties')
-dirac_modules[this_module].add_cppflag('MOD_LONDON')
-dirac_modules[this_module].add_test(short_test('response_lao_shield'))
-
 this_module = 'magnetiz'
 dirac_modules[this_module] = dirac_module('magnetiz', 'Calculation of magnetizabilities')
 dirac_modules[this_module].add_cppflag('MOD_MAGNETIZ')
-dirac_modules[this_module].add_dependency('london')
 dirac_modules[this_module].add_test(short_test('response_lao_magnetiz'))
 dirac_modules[this_module].take_out_of_release()
-
-this_module = 'adc'
-dirac_modules[this_module] = dirac_module('adc', 'ADC electron propagator module')
-dirac_modules[this_module].add_cppflag('MOD_ADC')
-dirac_modules[this_module].add_directory('reladc')
-dirac_modules[this_module].add_test(medium_test('reladc', fine_with_mpi = False))
 
 this_module = 'ecp'
 dirac_modules[this_module] = dirac_module('ecp', 'ARGOS ECP module')
@@ -481,17 +446,13 @@ dirac_modules[this_module].take_out_of_release()
 this_module = 'srdft'
 dirac_modules[this_module] = dirac_module('srdft', 'srDFT module')
 dirac_modules[this_module].add_cppflag('MOD_SRDFT')
-dirac_modules[this_module].add_cppflag('MOD_KRMC')
 dirac_modules[this_module].add_directory('srdft')
-dirac_modules[this_module].add_dependency('krmc')
 dirac_modules[this_module].take_out_of_adm()
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'mcscf_sf'
 dirac_modules[this_module] = dirac_module('mcscf_sf', 'spinfree MCSCF module')
 dirac_modules[this_module].add_cppflag('MOD_MCSCF_spinfree')
-dirac_modules[this_module].add_cppflag('MOD_KRMC')
-dirac_modules[this_module].add_dependency('krmc')
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'unreleased'

@@ -192,7 +192,6 @@ C     ***                                                    ***
 C     *** L I N E A R   R E S P O N S E   F U N C T I O N S  ***
 C     ***                                                    ***
 C     **********************************************************
-#ifdef MOD_LONDON
       if (london) then
         call alloc(cmo,   ncmotq)
         call alloc(ibeig, ntbas(0))
@@ -214,7 +213,6 @@ c.......reorthonormalization contribution
         call dealloc(cmo)
         call dealloc(ibeig)
       endif
-#endif /* MOD_LONDON */
 
 C
 C     Memory allocation

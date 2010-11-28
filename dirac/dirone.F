@@ -36,9 +36,7 @@ C
 C     Written by T.Saue - May 1996
 C
 C*****************************************************************************
-#ifdef MOD_EMB
       use FDE_ImportPotentials
-#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -93,10 +91,8 @@ C          ... zero SS integrals
 C
 C     Contribution from (static) embedding potential
 C
-#ifdef MOD_EMB
       ELSEIF (CLSINT(i).EQ.'FDEVEMB') THEN 
          CALL FDE_SaveAOPROPER_StaticEmbPot(COMB,IPRONE)
-#endif
 C
 C     Contribution from beta-matrix
 C
@@ -685,9 +681,7 @@ C                  MI / Febr.2006
 C
 C*****************************************************************************
       use dirac_cfg
-#ifdef MOD_EMB
       use fde_mod
-#endif
 
 #include "implicit.h"
 #include "priunit.h"

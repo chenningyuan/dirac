@@ -31,9 +31,7 @@ module london_reorth_hb
 
   implicit none
 
-#ifdef MOD_LONDON
   public london_reort_hb
-#endif
   save
 
   private
@@ -47,7 +45,6 @@ module london_reorth_hb
 
 
 
-#ifdef MOD_LONDON
 contains
 
   subroutine london_reort_hb(cmo, ibeig, work, lwork)
@@ -314,7 +311,7 @@ contains
     end do
 
 !gosia fixme parallel run
-    call stex_get_npos(npos)
+    call my_get_npos(npos)
     call alloc(npos_array, npos)
 
     lwork = len_f77_work
@@ -368,6 +365,23 @@ contains
     end if
 
   end subroutine get_gtb
+
+
+      SUBROUTINE my_GET_NPOS(NPOS)
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "dcbgen.h"
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "cbihr2.h"
+#include "blocks.h"
+#include "dcbfir.h"
+      integer npos
+      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
+      call SetIntTaskArrayDimension(NPOS,PARCAL)
+      end subroutine
 
 
 
@@ -554,5 +568,4 @@ contains
       call SetIntTaskArrayDimension(NPOS,PARCAL)
       end subroutine
 
-#endif /* ifdef MOD_LONDON */
 end module

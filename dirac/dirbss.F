@@ -9042,11 +9042,9 @@ C     ... Bernd Schim., help us !
 C     .... call the AMFI program of B.Schimmelpfennig 
 C     ... if file with integrals is present, return back without calculations
        IF (.NOT.EXAMF.AND.NOAMFC) EXAMF=.TRUE. 
-#ifdef MOD_AMFI
        CALL AMFI(LUTMP2,LUMNFPRP,OLDNRM,BREIT,GAUNUC,EXPNUCL,
      &          CVAL_AMFI,EXAMF,IC_AMFI,IACHNUC,WORK(KFREE),LFREE)
 
-#endif 
 C      ... read the AOPROPER.MNF file if AMFI has calculated it ..
       IF (.NOT.NOAMFC) THEN
 
@@ -9642,7 +9640,6 @@ C      .... charges per nucleis
 
 !      CALL MEMCHK('before AMFI2',WORK,1)
 
-#ifdef MOD_AMFI
        CVAL_AMFI = CVAL
 
        CALL AMFIIN(WORK(KBUF2),NB,WORK(KIPTYPAO),WORK(KHINLM),
@@ -9650,7 +9647,6 @@ C      .... charges per nucleis
      &  WORK(KANUCS),WORK(KSTNUCTYP),WORK(KCHPNUC),
      &  NSPH,LABINT,ONLYSO1,ONLYTRA,IMFCHA,IC_AMFI,JM4POS,
      &  CVAL_AMFI,IPRINT,WORK(KFREE),LFREE)
-#endif
 !     CALL MEMCHK('before S->C',WORK,1)
 
       IF (IPRINT.GE.4) THEN
@@ -9871,7 +9867,6 @@ C
       RETURN
       END
 
-#ifdef MOD_AMFI
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 C  /* Deck amfi_relscf_inp */
       SUBROUTINE AMFI_RELSCF_INP(WORD,RESET)
@@ -10125,4 +10120,3 @@ C
 C
       RETURN
       END
-#endif /* MOD_AMFI */

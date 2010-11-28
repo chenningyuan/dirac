@@ -172,7 +172,6 @@ C        Get relaxed density matrix computed by RELCCSD.
 C
          CALL GET_CC_DENSITY (WF,'AO',DMAT,IERR)
 C
-#ifdef MOD_KRMC
       ELSE IF (WF .EQ. 'KRMC') THEN
 C
          IF (ORBANA) 
@@ -216,7 +215,6 @@ C        Result is scaled by 2 in PRPEX2...
 C
          CALL DSCAL(N2BBASXQ,DP5,DMAT,1)
 C
-#endif
       ELSE
          WRITE(LUPRI,'(1X,2A)')
      &        '*** ERROR in PRPEX1 *** Unknown wave function: ',WF

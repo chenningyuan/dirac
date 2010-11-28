@@ -194,9 +194,7 @@ module numoper_integrals
 
       subroutine NumOper_OneElOp_SetMatrix_PS(oneint,from_file,doint,irrep_oper)
          use memory_allocator
-#ifdef MOD_EMB
          use grid_file
-#endif
          use ao_eval
          use basis_info
 
@@ -214,9 +212,7 @@ module numoper_integrals
 
          if (.not.numoper_cb_initialized) call NumOper_CB_init() 
 
-#ifdef MOD_EMB
          call read_grid(from_file,grid,operator)
-#endif
          npoint = size(grid,2)
 
          call basis_info_read(.true., .false.) 

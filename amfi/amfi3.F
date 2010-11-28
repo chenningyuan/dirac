@@ -1,5 +1,3 @@
-#ifdef MOD_AMFI
-
       Subroutine contandmult(Lhigh,makemean,AIMP,oneonly,
      &  ADDSO1,numballcart,
      *  LUPROP,ifinite,OLDNRM,WRK,LWRK)
@@ -2823,4 +2821,3 @@ C
    80 CONTINUE
       RETURN
       END
-#endif /* MOD_AMFI */

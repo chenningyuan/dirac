@@ -115,7 +115,6 @@ contains
  
        if(x2c_add_amfi == 1)then
 !        interface to "old" AMFI (by B. Schimmelpfennig)
-#if defined MOD_AMFI
          call x2c_interface2old_amfi(naosh_ls,             &
                                      nr_ao_L,              &
                                      naosh_all,            &
@@ -140,9 +139,6 @@ contains
                                      x2c_file_glb,         &
                                      print_lvl)
          is_final_ham_lvl = -3
-#else
-         print('(a)'), ' *** warning: (old) AMFI module not enabled; no AMFI contributions will be added! ***'
-#endif
        else if(x2c_add_amfi == 2)then
 !        interface to new AMFI
 !        call x2c_interface2new_amfi
@@ -354,7 +350,6 @@ contains
        call alloc(itmp_mat9,nuclei_totnum)
        call alloc(rcha_pnuc,nuclei_totnum)
 
-#ifdef MOD_AMFI
 !      ------------------------------
 !      step 2. add AMFI contributions
 !      ------------------------------
@@ -385,7 +380,6 @@ contains
                    wrk,                    &
                    lwrk)
 
-#endif
 
 !      release scratch memory
        deallocate(clab_int)

@@ -580,21 +580,17 @@ C
 C
 C     Write coefficients to either KRMCSCF or DFCOEF
 C
-#ifdef MOD_KRMC
       IF(DOKRMC.or.DOKRCI.or.DOKRCC)THEN
         CALL OPNFIL(LUKRMC,'KRMCOLD','UNKNOWN','PCMOIN')
         CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
         CLOSE (LUKRMC,STATUS='KEEP')
         IWRTMO = 1
       ELSE
-#endif /* MOD_KRMC */
         CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','PCMOIN')        
         CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
         CLOSE(LUCOEF,STATUS='KEEP')
         IWRTMO = 2
-#ifdef MOD_KRMC
       END IF
-#endif /* MOD_KRMC */
 C
       CALL PRSYMB(LUPRI,'=',75,0)
       IF( IWRTMO .eq. 1 )THEN
@@ -637,18 +633,13 @@ C
 C
 C     Get coefficients from either KRMCSCF or DFCOEF 
 C
-#ifdef MOD_KRMC
       INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
-#else
-      TOBEK=.FALSE.
-#endif
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF((.NOT.TOBE).and.(.NOT.TOBEK)) THEN
         WRITE(LUPRI,'(A)') 
      &     'PCMOUT: Unformatted file DFCOEF/KRMCSCF not found !'
         CALL QUIT('PCMOUT: Unformatted file DFCOEF/KRMCSCF not found !')
       ENDIF
-#ifdef MOD_KRMC
       IF(TOBEK.and.(DOKRMC.or.DOKRCI.or.DOKRCC))THEN
         CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','PCMOUT')
         JRDMO = -1
@@ -675,15 +666,12 @@ C       ... set to zero
         CALL IZERO(IBEIG,NORBT)
         IREADMO = 3
       ELSE
-#endif /* MOD_KRMC */
         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PCMOUT')        
         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
      &              WORK,KFREE,LFREE)
         CLOSE(LUCOEF,STATUS='KEEP')
         IREADMO = 2
-#ifdef MOD_KRMC
       END IF
-#endif /* MOD_KRMC */
 C
 C     Write coefficients to DFPCMO
 C
@@ -1995,13 +1983,9 @@ C
 C
 C     First check if file KRMCSCF or DFCOEF is there
 C
-#ifdef MOD_KRMC
       MCORB = .FALSE.
       MJAVA = .FALSE.
       INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
-#else
-      TOBEK=.FALSE.
-#endif
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF((.NOT.TOBE).and.(.NOT.TOBEK)) THEN
         WRITE(LUPRI,'(A)') 
@@ -2029,7 +2013,6 @@ C
 C     Get coefficients from KRMCSCF/DFCOEF --> stored in CMO1
 C     =======================================================
 C
-#ifdef MOD_KRMC
       IF(TOBEK)THEN
         CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','ACMOU1')
         REWIND LUKRMC
@@ -2062,15 +2045,12 @@ C
         END IF
         CLOSE (LUKRMC,STATUS='KEEP')
       ELSE
-#endif /* MOD_KRMC */
         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','ACMOUT')
         CALL REACMO(LUCOEF,'DFCOEF',CMO1,EIG1,IBEIG1,TOTERG,14,
      &              WORK,KFREE,LFREE)
         CLOSE(LUCOEF,STATUS='KEEP')
         IREADMO = 2
-#ifdef MOD_KRMC
       END IF
-#endif /* MOD_KRMC */
 C
 C     Transform to AO-basis --> stored in CMO2
 C     ========================================

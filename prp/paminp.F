@@ -338,11 +338,7 @@ C&&&& FIRST HYPERPOLARIZABILITY - compute complete beta tensor
             GO TO 100
  124     CONTINUE
 C&&&& TWO-PHOTON ABSORPTION - compute all two-photon absorption matrix elements
-#ifdef MOD_XPP
             CALL DEF_TPA(WORK,LWORK,DOTPA)
-#else
-            CALL QUIT('TPA not included in this version')
-#endif
             GO TO 100
  125     CONTINUE
 C&&&& .VERDET - Calculates the Verdet constant with the QR module
@@ -376,12 +372,8 @@ C             do NOT activate picture change transformation...
             GO TO 100
   130    CONTINUE 
 C&&&& .EXCDIP - Calculates excited state expectation values of dipole op.
-#ifdef MOD_XPP
             CALL EXCPRPINP(1,DOEXCPRP,EXCPRPTYP,WORK,LWORK)
             CALL EXCPRPINP(4,DOEXCPRP,EXCPRPTYP,WORK,LWORK)
-#else
-            CALL QUIT('EXCPRP not included in this version')
-#endif
             GO TO 100
   131    CONTINUE 
 C&&&& .MAGOUT - specify the hard-output for the magnetizability
@@ -528,11 +520,7 @@ C
         CALL XLRINP(WORD,.FALSE.,WORK,LWORK)
         GO TO 200
     4 CONTINUE
-#ifdef MOD_XPP
         CALL XPPINP(WORD,.FALSE.,WORK,LWORK)
-#else
-        CALL QUIT('*EXCITA not included in this version')
-#endif
         GO TO 200
     5 CONTINUE
         CALL GRDINP(WORD,.FALSE.)
@@ -556,11 +544,7 @@ CMI ... changed for LAO-based magnetic properties
          GO TO 200
 C     *STEX
     9 CONTINUE
-#ifdef MOD_STEX
          CALL STEX_INPUT(WORD,.FALSE.,WORK,LWORK)
-#else
-         CALL QUIT('*STEX not included in this version')
-#endif
          GO TO 200
 
 !     *OPENRSP    
@@ -591,9 +575,7 @@ CMI ... read again the input
       end if
 !
       CALL GRDINP(WORD,.TRUE.)
-#ifdef MOD_XPP
       IF(DOXPP) CALL XPPINP(WORD,.TRUE.,WORK,LWORK)
-#endif
       IF(DOXQR) CALL XQRINP(WORD,.TRUE.,WORK,LWORK)
 #ifdef MOD_ESR
       IF(DOESR) CALL ESRINP(WORD,.TRUE.,WORK,LWORK)

@@ -217,9 +217,7 @@ C
 #include "dcbham.h"
 #include "mxcent.h"
 #include "dcbprp.h"
-#ifdef MOD_KRMC
 #include "dcbpsi.h"
-#endif
 C
       DIMENSION GPOE(*),GPOP(*),JXOPE(*),JXOPP(*),
      &          PRPMO(NORBT,NORBT,NZ),CMO(*),IBEIG(*),WORK(*)
@@ -232,7 +230,6 @@ C
 C     Read coefficients
 C     =================
 C
-#ifdef MOD_KRMC
 C
 C     check for coefficients from the current KRMCSCF run
       INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
@@ -252,7 +249,6 @@ C       CLOSE (LUKRM5,STATUS='KEEP')
 C       ... set to zero
         TOTERG = 0.0D0
       ELSE
-#endif /* MOD_KRMC */
 C
 C       read HF coefficients 
         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GRDOR1')
@@ -264,9 +260,7 @@ C       read HF coefficients
      &                WORK,KFREE,LFREE)
         ENDIF
         CLOSE(LUCOEF,STATUS='KEEP')
-#ifdef MOD_KRMC
       END IF
-#endif /* MOD_KRMC */
 C
 C     Get property matrix in MO-basis and scale by factor -1
 C     ======================================================
@@ -282,11 +276,9 @@ CMI... distinguish between standard and LAO-based atomic orbitals
 CMI NOTE/27.10'04 The new IBEIG parameters for spin-free properties !
 CMI This has to be adapted also for LAO properties !
       IF (PRPNAM(INDXPR)(1:3).EQ.'LAO') THEN
-#ifdef MOD_LONDON
         IB = 7 ! 0111 = full H(B) prop. gradient
         CALL GETDHB(IB,FAC2LO,PRPMO,INDXPR,IOPSY,
      &                    WORK,KFREE,LFREE,IPRINT)
-#endif
       ELSE
         CALL PRPMAT(INDXPR,IOPSY,PRPMO,CMO,IBEIG,ICMOQ,NORB,
      &              WORK,KFREE,LFREE,IPRINT)
@@ -907,11 +899,9 @@ C
      &         FILE='AOPROPER')
 #endif
       IF (PRPNAM(INDXPR)(1:3).EQ.'LAO') THEN
-#ifdef MOD_LONDON
         IB = 7 ! 111
         CALL GETDHB(IB,FAC2LO,PRPMO,INDXPR,IOPSY,
      &                    WORK,KFREE,LFREE,IPRINT)
-#endif
       ELSE
         CALL PRPMAT(INDXPR,IOPSY,PRPMO,CMO,IBEIG,ICMOQ,NORB,
      &            WORK,KFREE,LFREE,IPRINT)

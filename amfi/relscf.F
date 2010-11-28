@@ -1,4 +1,3 @@
-#ifdef MOD_AMFI
 C
 C Authorship of this program should be dicussed before
 C distributing it within the DIRAC package (MI,jan 2005);
@@ -6251,4 +6250,3 @@ C
       END IF
 C
       END
-#endif /*  MOD_AMFI  */
