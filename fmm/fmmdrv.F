@@ -652,8 +652,10 @@ C
 C     Density matrix
 C     ==============
 C
-      CALL GETDMT(WORK(KDMAT),1,WORK(KLAST),LWRK,.FALSE.,.TRUE.,.TRUE.,
-     &            IPRINT)
+!radovan:
+      call quit('subroutine GETDMT missing')
+!     CALL GETDMT(WORK(KDMAT),1,WORK(KLAST),LWRK,.FALSE.,.TRUE.,.TRUE.,
+!    &            IPRINT)
 C
 C     One-electron interactions
 C     =========================
@@ -665,9 +667,11 @@ C
       CALL READIN(WORK(KLAST),LWRK,.TRUE.)
       CALL ONEDRV(WORK(KLAST),LWRK,IPRINT,.FALSE.,0,.FALSE.,.TRUE.,
      &            .TRUE.,.FALSE.,.FALSE.,.FALSE.)
-      CALL RDONEL('ONEHAMIL',.TRUE.,WORK(KHMAT),NNBAST)
+!radovan:
+      call quit('subroutine GETDMT missing')
+!     CALL RDONEL('ONEHAMIL',.TRUE.,WORK(KHMAT),NNBAST)
       CALL GET1EL(ERGONE,WORK(KDMAT),WORK(KHMAT),IPRINT)
-      CALL RDONEL('KINETINT',.TRUE.,WORK(KHMAT),NNBAST)
+!     CALL RDONEL('KINETINT',.TRUE.,WORK(KHMAT),NNBAST)
       CALL GET1EL(ERGKIN,WORK(KDMAT),WORK(KHMAT),IPRINT)
 C
 C     nonclassical 
@@ -677,7 +681,9 @@ C
       CALL READIN(WORK(KLAST),LWRK,.TRUE.)
       CALL ONEDRV(WORK(KLAST),LWRK,IPRINT,.FALSE.,0,.FALSE.,.TRUE.,
      &            .TRUE.,.FALSE.,.TRUE.,.TRUE.)
-      CALL RDONEL('ONEHAMIL',.TRUE.,WORK(KHMAT),NNBAST)
+!radovan:
+      call quit('subroutine GETDMT missing')
+!     CALL RDONEL('ONEHAMIL',.TRUE.,WORK(KHMAT),NNBAST)
       CALL GET1EL(ERGNCL,WORK(KDMAT),WORK(KHMAT),IPRINT)
 C
 C     contributions
@@ -989,7 +995,9 @@ C
                CORBZ  = CENT(ISHELB,3,1)
                LA     = NHKT(ISHELA) - 1
                LB     = NHKT(ISHELB) - 1
-               CALL GAUDST(PX,PY,PZ,PM,IPRINT)
+!radovan:
+               call quit('subroutine GAUDST missing')
+!              CALL GAUDST(PX,PY,PZ,PM,IPRINT)
 CMAW FIXME: why are some of these centres broken?
                DO M = -L, L
 c                 columns are ordered as 0, 1, -1, 2, -2, etc.

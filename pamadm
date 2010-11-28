@@ -274,6 +274,8 @@ files_never_compiled.append('relccsd/quit.F')
 files_never_compiled.append('build/gen_fortran_interface_h.c')
 files_never_compiled.append('dirrci/cimain.F')
 files_never_compiled.append('xcfun/fortran/example.f90')
+files_never_compiled.append('fmm/mm_standalone_drv.f90')
+files_never_compiled.append('fmm/mm_standalone_aux.F')
 
 do_not_release = []
 do_not_release.append('utils/add_copyright.py')
@@ -333,7 +335,6 @@ dirac_modules[this_module].add_cppflag('MOD_FMM')
 dirac_modules[this_module].add_dependency('eri')
 dirac_modules[this_module].add_dependency('densfit')
 dirac_modules[this_module].add_directory('fmm')
-dirac_modules[this_module].take_out_of_adm()
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'esr'
