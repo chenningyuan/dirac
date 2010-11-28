@@ -444,7 +444,6 @@ this_module = 'srdft'
 dirac_modules[this_module] = dirac_module('srdft', 'srDFT module')
 dirac_modules[this_module].add_cppflag('MOD_SRDFT')
 dirac_modules[this_module].add_directory('srdft')
-dirac_modules[this_module].take_out_of_adm()
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'mcscf_sf'
