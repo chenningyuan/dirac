@@ -42,6 +42,9 @@ C*****************************************************************************
 #include "dcbnmr.h"
 #include "dcbham.h"
 #include "nuclei.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "symmet.h"
 C
 
       PARAMETER (NTABLE = 15)
@@ -261,9 +264,13 @@ C     CALL PRSYMB(LUPRI,'=',75,0)
          CALL PRSYMB(LUPRI,'=',75,0)
          WRITE(LUPRI,'(3X,A,3F12.6)') 'User defined gauge '//
      &   'origin used (a.u.):',(GAGORG(I), I = 1, 3)
-         IF (.NOT.SYMCON.AND.LONDON) WRITE(LUPRI,'(3X,A,/)')
-     &  'WARNING: User defined gauge '//
-     &  'may give wrong results when using symmetry !'   
+
+         if (maxrep > 0) then
+            IF (.NOT.SYMCON.AND.LONDON) WRITE(LUPRI,'(3X,A,/)')
+     &     'WARNING: User defined gauge '//
+     &     'may give wrong results when using symmetry !'   
+         end if
+
 CMI      .... Don't forget to copy GAGORG into the DIPORG !!!
          CALL DCOPY(3,GAGORG,1,DIPORG,1)
       ELSE
