@@ -732,8 +732,14 @@ contains
                 // 'excitation densities saved in rsp_equations')
       ! zero highest-order D and F for RHS calculation
       do i = 1, pd
-         Dp(i) = 0d0*D(1)
-         Fp(i) = 0d0*F(1)
+!fixme
+!radovan: this breaks magnetizability
+!        Dp(i) = 0d0*D(1)
+!        Fp(i) = 0d0*F(1)
+!radovan: this breaks point group symmetry
+!         beats me
+         Dp(i) = tiny(0.0d0)*D(1)
+         Fp(i) = tiny(0.0d0)*F(1)
       end do
       ! calculate all lower-order contributions to the
       ! minus-right-hand-sides DSDp and FDSp
