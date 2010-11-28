@@ -3,17 +3,23 @@ c
 c
 c     read DIRAC input files and convert to ARGOS input file
 c
-#include "argosparm.h"   ! general parameter
-#include "argosbas.h"    ! basis
-#include "argosecp.h"    ! ecp
-#include "argosatm.h"    ! atom & coordinate
-#include "argosopti.h"   ! options
+! general parameter
+#include "argosparm.h"
+! basis
+#include "argosbas.h"
+! ecp
+#include "argosecp.h"
+! atom & coordinate
+#include "argosatm.h"
+! options
+#include "argosopti.h"
 c
-#include "argoscom.h"    ! variables from DIRAC
-#include "argoscomch.h"  ! 
-#include "pgroup.h"      !
-#include "mxcent.h"      !
-#include "nuclei.h"      !
+! variables from DIRAC
+#include "argoscom.h"
+#include "argoscomch.h"
+#include "pgroup.h"
+#include "mxcent.h"
+#include "nuclei.h"
       integer blkcnt
 c
 c files 
