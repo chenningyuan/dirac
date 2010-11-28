@@ -388,7 +388,6 @@ this_module = 'oof'
 dirac_modules[this_module] = dirac_module('oof', 'Object oriented modularity of Fortran 90/95')
 dirac_modules[this_module].add_cppflag('MOD_OOF')
 dirac_modules[this_module].add_directory('oof')
-dirac_modules[this_module].take_out_of_adm()
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'cap'
