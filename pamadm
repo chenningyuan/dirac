@@ -332,11 +332,12 @@ dirac_modules[this_module].take_out_of_adm()
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'fmm'
-dirac_modules[this_module] = dirac_module('fmm', 'fast multipole method')
+dirac_modules[this_module] = dirac_module('fmm', 'fast multipole method - not compilable ! fix it !')
 dirac_modules[this_module].add_cppflag('MOD_FMM')
 dirac_modules[this_module].add_dependency('eri')
 dirac_modules[this_module].add_dependency('densfit')
 dirac_modules[this_module].add_directory('fmm')
+dirac_modules[this_module].take_out_of_adm() 
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'esr'
