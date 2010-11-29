@@ -404,8 +404,6 @@ contains
     character(6)                     :: reply
 !   ----------------------------------------------------------------------------
 
-    call quit(kw_section//' not available in this version')
-
     dirac_cfg_visual = .true.
 
     call reset_available_kw_list()
