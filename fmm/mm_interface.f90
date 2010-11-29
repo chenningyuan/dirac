@@ -669,7 +669,11 @@ CONTAINS
 
       ! now build packed data by summing raw data in the same batch
       CALL mm_allocate(MEM_RAW_QLM,pkd_paras,nbatch)
-      CALL mm_allocate(MEM_RAW_QLM,pkd_qlm,SIZE(raw_mms%qlm,1),nbatch)
+!miro-------------------------------------------------------------------------
+!      CALL mm_allocate(MEM_RAW_QLM,pkd_qlm,SIZE(raw_mms%qlm,1),nbatch)
+!   Error: There is no specific subroutine for the generic 'mm_allocate' at (1)
+      call quit('error in compilation, discarded !')
+
       CALL get_pkd_data(dens,raw_mms,pkd_paras,pkd_qlm)
       ndim = nbatch
 
@@ -1020,7 +1024,11 @@ CONTAINS
          CALL mm_allocate(MEM_RAW_QLM,RHS_paras,qlm_dim)
          RHS_paras = RHS_mms%paras(:)
          ! RHS W-matrix
-         CALL mm_allocate(MEM_RAW_QLM,RHS_qlm_W,(1+LMAX)**2,qlm_dim)
+ 
+
+         !CALL mm_allocate(MEM_RAW_QLM,RHS_qlm_W,(1+LMAX)**2,qlm_dim)
+         call quit('miro: discarded !')
+
          RHS_qlm_W = RHS_mms%qlm(:,:)
          IF ( scheme%RHS_dens ) THEN
             CALL mm_factor_in_dens(RHS_mms%dens,RHS_qlm_W)
@@ -1044,7 +1052,9 @@ CONTAINS
       CASE (USE_RAW_QLM)
          RHS_mms%qlm_T => RHS_qlm_W(:,:qlm_dim)
       CASE (USE_T_SYM_QLM)
-         CALL mm_allocate(MEM_RAW_QLM,RHS_qlm_T,(1+LMAX)**2,qlm_dim)
+        ! compilation error  There is no specific subroutine for the generic 'mm_allocate' 
+         !CALL mm_allocate(MEM_RAW_QLM,RHS_qlm_T,(1+LMAX)**2,qlm_dim)
+          call quit('miro: discarded!')
           ! build %qlm_T by rescaling significant %qlm_W
          CALL mm_get_T_sym_qlm(LMAX,RHS_mms%qlm_W,RHS_qlm_T)
          RHS_mms%qlm_T => RHS_qlm_T(:,:)

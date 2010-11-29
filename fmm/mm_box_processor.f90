@@ -196,7 +196,8 @@ CONTAINS
       IF (ASSOCIATED(pkd_paras)) CALL QUIT ('paras should be nullified!')
       IF (.FALSE.) THEN
          ! just build unpacked paras
-         CALL mm_allocate(MEM_BOX_QLM,pkd_paras,SIZE(raw_paras))
+         ! mi - discarded
+         !CALL mm_allocate(MEM_BOX_QLM,pkd_paras,SIZE(raw_paras))
          pkd_paras(:) = tmp_paras(:)
          tmp_map = (/ (i,i=1,SIZE(raw_paras)) /)
       ELSE
@@ -245,7 +246,8 @@ CONTAINS
 
       IF (.FALSE.) THEN
          ! just build unpacked paras
-         CALL mm_allocate(MEM_BOX_QLM,paras_out,SIZE(paras_in))
+        ! miro-discarded
+         !CALL mm_allocate(MEM_BOX_QLM,paras_out,SIZE(paras_in))
          paras_out(:) = tmp_paras(:)
          tmp_map = (/ (i,i=1,SIZE(paras_in)) /)
       ELSE
