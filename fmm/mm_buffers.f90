@@ -90,12 +90,15 @@ CONTAINS
       TYPE(T_pair_batch) :: ptr, ptr2
       INTEGER(INTK) :: i, lo, hi
       REAL(REALK)   :: q1,q2
+      integer*4 :: itemp4_1
 
       ptr%ndim = MIN(BUFFER_SIZE,T_pair_buffer%ndim)
       ptr%items => T_pair_buffer%items(1:ptr%ndim)
 
       ! recursively sort wrt T-vectors, starting with x-component
-      CALL sort_wrt_axis(1,ptr%items)
+      !CALL sort_wrt_axis(1,ptr%items)
+      itemp4_1=1
+      CALL sort_wrt_axis(itemp4_1,ptr%items)
 
       ! expunge in batches of the same T-vector direction
       lo = 1
@@ -141,6 +144,7 @@ CONTAINS
 
          INTEGER(INTK) :: i, lo, hi
          REAL(REALK)   :: q1,q2
+         integer*4 :: itemp_xyzp1
 
          IF (SIZE(items) == 1) RETURN
 
@@ -166,7 +170,9 @@ CONTAINS
                   CALL mm_quicksort_wrt_ratio(items(lo:hi))
                   RETURN
                ELSE
-                  CALL sort_wrt_axis(xyz+1,items(lo:hi))
+                  !CALL sort_wrt_axis(xyz+1,items(lo:hi))
+                  itemp_xyzp1=xyz+1
+                  CALL sort_wrt_axis(itemp_xyzp1,items(lo:hi))
                END IF
                lo = i
             END IF
@@ -178,7 +184,9 @@ CONTAINS
             CALL mm_quicksort_wrt_ratio(items(lo:hi))
             RETURN
          ELSE
-            CALL sort_wrt_axis(xyz+1,items(lo:hi))
+            !CALL sort_wrt_axis(xyz+1,items(lo:hi))
+             itemp_xyzp1=xyz+1 
+            CALL sort_wrt_axis(itemp_xyzp1,items(lo:hi))
          END IF
 
       END SUBROUTINE sort_wrt_axis

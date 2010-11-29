@@ -52,8 +52,11 @@ CONTAINS
 
       REAL(REALK) :: I_sh((1+2*LMAX)**2)
       INTEGER(INTK), EXTERNAL :: get_JMAX
+      integer*4 :: itemp4_2lmax
 
-      CALL mm_generate_I(2*LMAX,r_ab,I_sh)
+      !CALL mm_generate_I(2*LMAX,r_ab,I_sh)
+      itemp4_2lmax = 2*LMAX
+      CALL mm_generate_I(itemp4_2lmax,r_ab,I_sh)
       CALL mm_generate_T(LMAX,mm_FLTSQ_JMAX,I_sh,T_matrix)
 
    END SUBROUTINE mm_get_FLTSQ_T_matrix
@@ -516,8 +519,12 @@ CONTAINS
       REAL(REALK),   INTENT(OUT) :: T_matrix(:,:,:)
 
       REAL(REALK) :: I_sh(ndim,(1+2*LMAX)**2)
+      integer*4 :: itemp4_2lmax
      
-      CALL mm_generate_I(ndim,2*LMAX,r_ab,I_sh)
+      !CALL mm_generate_I(ndim,2*LMAX,r_ab,I_sh)
+      itemp4_2lmax=2*LMAX
+      CALL mm_generate_I(ndim,itemp4_2lmax,r_ab,I_sh)
+
       CALL mm_generate_T(ndim,LMAX,.TRUE.,I_sh,T_matrix)
 
    END SUBROUTINE mm_get_FLTSQ_T_matrices

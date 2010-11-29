@@ -210,13 +210,16 @@ CONTAINS
       TYPE(grid_type),    POINTER    :: grid_head
       TYPE(hi_lo)   :: xtbox
       INTEGER(INTK) :: i
+      integer*4 :: itemp4_0
 
       ! get extremum box indices to avoid over-allocating grid
       CALL get_xtbox(overs,xtbox)
       ! initialise first grid in linked list over branches
       ALLOCATE(grid_head)
 !      CALL init_new_grid(overs(1)%bra,overs(1)%level,grid_head,xtbox)
-      CALL init_new_grid(overs(1)%bra,0,grid_head,xtbox)
+      !CALL init_new_grid(overs(1)%bra,0,grid_head,xtbox)
+      itemp4_0=0
+      CALL init_new_grid(overs(1)%bra,itemp4_0,grid_head,xtbox)
       ! add remaining overlap distributions to this grid, or make/add to next 
       DO i = 1, SIZE(overs)
          CALL add_to_grid(i,overs(i),grid_head,xtbox)
@@ -295,6 +298,7 @@ CONTAINS
       TYPE(hi_lo),        INTENT(IN)    :: xtbox
       TYPE(grid_type),    INTENT(INOUT) :: grid
       TYPE(grid_type),    POINTER       :: new_grid
+      integer*4 :: itemp4_0
 
       IF (over%bra == grid%bra) THEN
 !         IF (over%level /= grid%level) CALL QUIT('can only do one level!')
@@ -305,7 +309,9 @@ CONTAINS
             ! no grid for this branch, so make one
             ALLOCATE(new_grid)
 !            CALL init_new_grid(over%bra,over%level,new_grid,xtbox)
-            CALL init_new_grid(over%bra,0,new_grid,xtbox)
+            !CALL init_new_grid(over%bra,0,new_grid,xtbox)
+            itemp4_0=0
+            CALL init_new_grid(over%bra,itemp4_0,new_grid,xtbox)
             grid%next => new_grid
          END IF
          ! try adding again to next grid in list

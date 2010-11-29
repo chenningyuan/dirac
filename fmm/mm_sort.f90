@@ -77,12 +77,15 @@ CONTAINS
       INTEGER(INTK),      INTENT(IN)    :: left, right
       INTEGER(INTK) :: bra_median_of_three
       INTEGER(INTK) :: cntr
+      integer*4 :: itemp4_rightm1
 
       cntr = (left + right)/2
       IF(arr(left)%bra > arr(cntr)%bra)  CALL bra_swap_elements(arr,left,cntr)
       IF(arr(left)%bra > arr(right)%bra) CALL bra_swap_elements(arr,left,right)
       IF(arr(cntr)%bra > arr(right)%bra) CALL bra_swap_elements(arr,cntr,right)
-      CALL bra_swap_elements(arr,cntr,right-1)
+      !CALL bra_swap_elements(arr,cntr,right-1)
+      itemp4_rightm1=right-1
+      CALL bra_swap_elements(arr,cntr,itemp4_rightm1)
       bra_median_of_three = arr(right-1)%bra
 
    END FUNCTION bra_median_of_three
@@ -96,6 +99,7 @@ CONTAINS
 
       INTEGER(INTK) :: left, right
       INTEGER(INTK) :: i,j, pivot
+      integer*4 :: itemp4_rightm1
 
       left = 1
       right = SIZE(arr)
@@ -131,7 +135,9 @@ CONTAINS
       END DO
       ! i is now the position where the pivot should be 
       ! swap pivot back to middle of array
-      CALL bra_swap_elements(arr,i,right-1)
+      !CALL bra_swap_elements(arr,i,right-1)
+      itemp4_rightm1=right-1
+      CALL bra_swap_elements(arr,i,itemp4_rightm1)
 
       ! now sort sub-arrays either side of pivot
       CALL mm_quicksort_wrt_branches( arr( left:(i-1) ) )
@@ -193,6 +199,7 @@ CONTAINS
       INTEGER(INTK),       INTENT(IN)    :: left, right
       INTEGER(INTK) :: RHS_median_of_three
       INTEGER(INTK) :: cntr, id_left, id_right, id_cntr
+      integer*4 :: itemp4_rightm1
 
       cntr = (left + right)/2
 
@@ -203,7 +210,9 @@ CONTAINS
       IF (arr(cntr)%paras%RHS_id > arr(right)%paras%RHS_id)  &
          CALL RHS_swap_elements(arr,cntr,right)
 
-      CALL RHS_swap_elements(arr,cntr,right-1)
+      !CALL RHS_swap_elements(arr,cntr,right-1)
+      itemp4_rightm1=right-1
+      CALL RHS_swap_elements(arr,cntr,itemp4_rightm1)
       RHS_median_of_three = arr(right-1)%paras%RHS_id
 
    END FUNCTION RHS_median_of_three
@@ -217,6 +226,7 @@ CONTAINS
 
       INTEGER(INTK) :: left, right
       INTEGER(INTK) :: i,j, pivot
+      integer*4 :: itemp4_rightm1
 
       left = 1
       right = SIZE(arr)
@@ -252,7 +262,9 @@ CONTAINS
       END DO
       ! i is now the position where the pivot should be 
       ! swap pivot back to middle of array
-      CALL RHS_swap_elements(arr,i,right-1)
+      !CALL RHS_swap_elements(arr,i,right-1)
+       itemp4_rightm1 = right-1
+      CALL RHS_swap_elements(arr,i,itemp4_rightm1)
 
       ! now sort sub-arrays either side of pivot
       CALL mm_quicksort_wrt_RHS( arr( left:(i-1) ) )
@@ -318,6 +330,7 @@ CONTAINS
 
       REAL(REALK)   :: vector_median_of_three
       INTEGER(INTK) :: cntr
+      integer*4 itemp4_rightm1
 
       cntr = (left + right)/2
 
@@ -328,7 +341,9 @@ CONTAINS
       IF (arr(cntr)%r_ab(xyz) > arr(right)%r_ab(xyz))  &
          CALL vector_swap_elements(arr,cntr,right)
 
-      CALL vector_swap_elements(arr,cntr,right-1)
+      !CALL vector_swap_elements(arr,cntr,right-1)
+      itemp4_rightm1=right-1
+      CALL vector_swap_elements(arr,cntr,itemp4_rightm1)
       vector_median_of_three = arr(right-1)%r_ab(xyz)
 
    END FUNCTION vector_median_of_three
@@ -344,6 +359,7 @@ CONTAINS
       INTEGER(INTK) :: left, right
       INTEGER(INTK) :: i,j
       REAL(REALK)   :: pivot
+      integer*4 :: itemp4_rightm1
 
       left = 1
       right = SIZE(arr)
@@ -379,7 +395,9 @@ CONTAINS
       END DO
       ! i is now the position where the pivot should be 
       ! swap pivot back to middle of array
-      CALL vector_swap_elements(arr,i,right-1)
+      !CALL vector_swap_elements(arr,i,right-1)
+      itemp4_rightm1 = right-1
+      CALL vector_swap_elements(arr,i,itemp4_rightm1)
 
       ! now sort sub-arrays either side of pivot
       CALL mm_quicksort_wrt_vector( arr( left:(i-1) ),xyz )
@@ -444,6 +462,7 @@ CONTAINS
       REAL(REALK)   :: ratio_median_of_three
       REAL(REALK)   :: xyz_cntr, xyz_left, xyz_right
       INTEGER(INTK) :: cntr
+      integer*4 :: itemp4_rightm1
 
       cntr = (left + right)/2
 
@@ -454,7 +473,9 @@ CONTAINS
       IF (arr(cntr)%paras%ratio > arr(right)%paras%ratio)  &
          CALL ratio_swap_elements(arr,cntr,right)
 
-      CALL ratio_swap_elements(arr,cntr,right-1)
+      !CALL ratio_swap_elements(arr,cntr,right-1)
+      itemp4_rightm1=right-1
+      CALL ratio_swap_elements(arr,cntr,itemp4_rightm1)
       ratio_median_of_three = arr(right-1)%paras%ratio
 
    END FUNCTION ratio_median_of_three
@@ -469,6 +490,7 @@ CONTAINS
       INTEGER(INTK) :: left, right
       INTEGER(INTK) :: i,j
       REAL(REALK)   :: pivot
+      integer*4 :: itemp4_rightm1
 
       left = 1
       right = SIZE(arr)
@@ -504,7 +526,9 @@ CONTAINS
       END DO
       ! i is now the position where the pivot should be 
       ! swap pivot back to middle of array
-      CALL ratio_swap_elements(arr,i,right-1)
+      !CALL ratio_swap_elements(arr,i,right-1)
+      itemp4_rightm1=right-1
+      CALL ratio_swap_elements(arr,i,itemp4_rightm1)
 
       ! now sort sub-arrays either side of pivot
       CALL mm_quicksort_wrt_ratio( arr( left:(i-1) ) )

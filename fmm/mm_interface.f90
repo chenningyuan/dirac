@@ -76,6 +76,8 @@ CONTAINS
       INTEGER(INTK), INTENT(IN)    :: LMAX, LWORK
       INTEGER(INTK), INTENT(INOUT) :: KWRK
       REAL(REALK),   INTENT(INOUT) :: WORK(LWORK)
+      integer*4 :: itemp4_lwlm
+
 
 #ifdef VAR_MPI
       INCLUDE 'mpif.h'
@@ -86,7 +88,9 @@ CONTAINS
 #else
       CALL mm_get_n_mms_from_file(LMAX)
 #endif
-      CALL mm_allocate_mms_arrays(LMAX,WORK,LWORK/(LMAX+1)**2)
+      !CALL mm_allocate_mms_arrays(LMAX,WORK,LWORK/(LMAX+1)**2)
+      itemp4_lwlm=LWORK/(LMAX+1)**2
+      CALL mm_allocate_mms_arrays(LMAX,WORK,itemp4_lwlm)
       KWRK = KWRK + ((LMAX+1)**2)*n_mms%tot
    END SUBROUTINE mm_init_moments
 

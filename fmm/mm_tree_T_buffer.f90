@@ -110,8 +110,11 @@ CONTAINS
       EXTERNAL pack_ev 
 
       INTEGER(INTK) :: i
+      integer*4 ::  itemp4_1
 
-      CALL node_evaluator(root, 1, pack_ev)
+      !CALL node_evaluator(root, 1, pack_ev)
+      itemp4_1=1
+      CALL node_evaluator(root, itemp4_1, pack_ev)
 
       DO i=1, pack_inter_tree_used
          IF(ASSOCIATED(pack_inter_tree(i)%abl1l2))&
@@ -138,6 +141,7 @@ CONTAINS
       INTEGER(INTK),   INTENT(IN) :: ll,lr,lm
      ! For translations must know if qlm or Vff translation
       CHARACTER(1),    INTENT(IN) :: NT 
+      integer*4 :: itemp4_levelp1
 
       pack_inter_tree_used = pack_inter_tree_used + 1
       node => pack_inter_tree(pack_inter_tree_used)
@@ -146,7 +150,9 @@ CONTAINS
       NULLIFY(node%left); NULLIFY(node%right)
       IF(level<3) THEN
          NULLIFY(node%abl1l2)
-         CALL point_node_new(node%this, level+1, r,ll,lr,lm,NT, T_pair)
+         !CALL point_node_new(node%this, level+1, r,ll,lr,lm,NT, T_pair)
+         itemp4_levelp1=level+1
+         CALL point_node_new(node%this, itemp4_levelp1, r,ll,lr,lm,NT, T_pair)
       ELSE 
          stat_tpack_unique = stat_tpack_unique + 1
          node%this => node
@@ -169,15 +175,17 @@ CONTAINS
       TYPE(PointNode), POINTER  :: node
       INTEGER(INTK), INTENT(IN) :: level
       EXTERNAL                     pack_ev   ! pair evaluator
-
       REAL(REALK), SAVE :: r(3)
+      integer*4 :: itemp4_levelp1
 
       IF(.NOT.ASSOCIATED(node)) RETURN
       IF(ASSOCIATED(node%left)) CALL node_evaluator(node%left, level,pack_ev)
       IF(ASSOCIATED(node%right))CALL node_evaluator(node%right,level,pack_ev)
       r(level) = node%coord
       IF(level<3) THEN
-         CALL node_evaluator(node%this, level+1, pack_ev)
+         !CALL node_evaluator(node%this, level+1, pack_ev)
+         itemp4_levelp1=level+1
+         CALL node_evaluator(node%this, itemp4_levelp1, pack_ev)
       ELSE
          ! evaluate current point using provided evaluator.
          ! We sort node%ratio node%abl1l2 wrt to abl1l2(:)%RHS_id first.
@@ -197,6 +205,7 @@ CONTAINS
       INTEGER(INTK), INTENT(IN)    :: N
       TYPE(T_paras) :: idxs
       INTEGER(INTK) :: i
+      integer*4 :: itemp4_1,itemp4_im1
 
       DO i = N/2, 1, -1
          CALL downheap(abl1l2, i, N)
@@ -208,7 +217,9 @@ CONTAINS
          idxs      = abl1l2(i)
          abl1l2(i) = abl1l2(1)
          abl1l2(1) = idxs
-         CALL downheap(abl1l2,1,i-1) ! restore a[1..i-1] heap
+         !CALL downheap(abl1l2,1,i-1) ! restore a[1..i-1] heap
+         itemp4_1 = 1; itemp4_im1=i-1
+         CALL downheap(abl1l2,itemp4_1,itemp4_im1) ! restore a[1..i-1] heap
       END DO
    END SUBROUTINE momentsort
 
@@ -278,6 +289,7 @@ CONTAINS
       INTEGER(INTK)            :: ll,lr,lm
       ! for translations must know if qlm or Vff translation per node
       CHARACTER(1)             :: NT 
+      integer*4 :: itemp4_1
 
       r_pq = T_pair_in%r_ab
       new_T_pair = T_pair_in%paras
@@ -304,7 +316,9 @@ CONTAINS
       new_T_pair%ratio = r_pq_scale
 
       IF(pack_inter_tree_used==0) THEN
-         CALL point_node_new(node,1,direction,ll,lr,lm,NT,new_T_pair)
+         !CALL point_node_new(node,1,direction,ll,lr,lm,NT,new_T_pair)
+         itemp4_1 = 1
+         CALL point_node_new(node,itemp4_1,direction,ll,lr,lm,NT,new_T_pair)
          RETURN
       END IF
 
