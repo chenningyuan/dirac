@@ -2482,7 +2482,8 @@ c  these routines.
 *mdc*endif
 *deck dcopy
 *mdc*if ( cray .and. inline) or fujitsu
-      subroutine  dcopy(n,dx,incx,dy,incy)
+      !subroutine  dcopy(n,dx,incx,dy,incy)
+      subroutine  dcopyARGOS(n,dx,incx,dy,incy)
 c
 c     copies a vector, x, to a vector, y.
 c     uses rolled loops for increments equal to one.
