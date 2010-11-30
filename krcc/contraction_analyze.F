@@ -2,7 +2,28 @@
      &                               TOP,NTOP,
      &                               HOP,IHTP,RESOP,
      &                               RESOPS,RESOPF,
+     &                               NUMCON,IFACTOR,
+     &                               NCONNECTTOT,
+     &                               RESULTANTOP,
+     &                               CONTRACTEDT,
+     &                               INUMNUM,
      &                               WORK,KFREE,LFREE)
+
+
+C       CALL CONTRACTION_ANALYZE(INI,NPART,NHOLE,NPARTTOT,NHOLETOT,
+C    &                           WORK(KLSOBEX_CC),NSPOBEX_TPE,
+C    &                           WORK(KLSOBEX),IHTP,WORK(KINTM12),
+C    &                           WORK(KINT12_IDXS),WORK(KINT12_IDXF),
+C    &                           NUMCON,IFACTOR,
+C    &                           NCONNECTTOT,
+C    &                           IDUMMY,
+C    &                           IDUMMY,
+C    &                           WORK,KFREE,LFREE)
+
+
+
+
+
 *
 * Will find which cluster operator TOP can contract NPART,NHOLE indices
 * of a given Hamiltonian or intemediate operator (IHTP of HOP) and find
@@ -20,30 +41,85 @@
 *
       INTEGER TOP(4*NGAS,*),HOP(4*NGAS,*),RESOP(4*NGAS,*)
       INTEGER RESOPS(*),RESOPF(*) !for now
+      INTEGER RESULTANTOP(*),CONTRACTEDT(*)
 * Scratch
       INTEGER INDXP(2),INDXH(2) !up to 4 indices can be contracted 
-      INTEGER INUMCON(4,4)
+      INTEGER INUMCON(4,4),IFACTOR(4),INUMNUM(4)
+*
+      NTEST = 100
+*
+* Initialize IFACTOR and INUMNUM
+*
+      CALL MEMCHK_KRCC(WORK)
+      CALL ISETVC(IFACTOR,1,4)
+      CALL ISETVC(INUMNUM,0,4)
 *
 * First find which indices in HOP to be contracted
 * See GAS_INDICES_CONTRACTED for assumptions on this
 *
+      CALL MEMCHK_KRCC(WORK)
       CALL GAS_INDICES_CONTRACTED(NPARTTOT,NHOLETOT,
      &                            HOP(1,IHTP),INDXP,INDXH)
-      stop
+*
 * Now find the number of ways NPART,NHOLE can be contracted among
 * NPARTTOT,NHOLETOT
 *
+      CALL MEMCHK_KRCC(WORK)
       CALL NUMBER_OF_CONTRACTIONS(NPART,NHOLE,NPARTTOT,NHOLETOT,
      &                            INDXP,INDXH,INUMCON,NUMCON)
 *
+* Will now reduce the contraction by eliminating all that will give the
+* same result and thereby give a factor in front. Thereby eleminating
+* the zeroes in INUMCON and change how it is read since it will now
+* really depend on NHOLE and NPART.
+*
+      CALL MEMCHK_KRCC(WORK)
+      CALL REDUCE_CONTRACTIONS(INUMCON,NUMCON,IFACTOR)
+*
 * Now find which T operator has the match
 *
+*
+* Remember to store where the diferent contractions start and the type
+* of contraction
+*
+      CALL MEMCHK_KRCC(WORK)
+      NCONNECTTOT = 0
       DO INUM =1,NUMCON
-        CALL CONTRACT_WITH_T(INI,INUMCON(INUM,1),
+        CALL CONTRACT_WITH_T(INI,INUMCON(1,INUM),HOP(1,IHTP),
      &                       TOP,NTOP,NPART,NHOLE,
-     &                       RESOP,RESOPS,RESOPF)
+     &                       RESOP,RESOPS,RESOPF,NCONNECT,
+     &                       RESULTANTOP(NCONNECTTOT+1),
+     &                       CONTRACTEDT(NCONNECTTOT+1))
+        INUMNUM(INUM) = NCONNECT
+        NCONNECTTOT = NCONNECTTOT + NCONNECT
       END DO
 *
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' For operator '
+        CALL WRT_SPOX_TP_CC_KRCC(HOP(1,IHTP),1)
+        WRITE(6,*) ' With ',NPART,' NPART ',
+     &             ' and ',NHOLE,' NHOLE contracted'
+        WRITE(6,*) ' from a total ',NPARTTOT,' particles ',
+     &             ' and ',NHOLETOT,' holes'
+        WRITE(6,*) ' A total of ',NCONNECTTOT,' connections was found'
+        IF(NCONNECTTOT.GE.1) THEN
+          ICOUNT = 0
+          DO I =1,NUMCON
+            WRITE(6,*) ' Number of connections ',INUMNUM(I),
+     &                 ' for combination ',I,
+     &                 ' with permutation factor ',IFACTOR(I)       
+            IF(INI.EQ.1) THEN
+              WRITE(6,*) '======Connections====='      
+              DO J =1+ICOUNT,INUMNUM(I)+ICOUNT
+                WRITE(6,*) ' Cluster op ',CONTRACTEDT(J),
+     &                     ' Res op ',RESULTANTOP(J)
+              END DO
+              ICOUNT = ICOUNT + INUMNUM(I)
+            END IF        
+          END DO
+        END IF
+      END IF
+*      
       RETURN
       END
 *
@@ -86,22 +162,22 @@
             IF(IOP(IGAS,ICAAB).EQ.1) THEN
               IF(ICA.EQ.2.AND.IHPVGAS_AB(IGAS,IAB).EQ.2) THEN
                 IPINDX = IPINDX + 1
-                INDXP(IPINDX) = (IGAS-1)*4+ICAAB
+                INDXP(IPINDX) = (ICAAB-1)*NGAS+IGAS
               ELSE IF(ICA.EQ.1.AND.IHPVGAS_AB(IGAS,IAB).EQ.1) THEN
                 IHINDX = IHINDX + 1
-                INDXH(IHINDX) = (IGAS-1)*4+ICAAB
+                INDXH(IHINDX) = (ICAAB-1)*NGAS+IGAS
               END IF
             ELSE IF(IOP(IGAS,ICAAB).EQ.2) THEN
               IF(ICA.EQ.2.AND.IHPVGAS_AB(IGAS,IAB).EQ.2) THEN
                 IPINDX = IPINDX + 1
-                INDXP(IPINDX) = (IGAS-1)*4+ICAAB
+                INDXP(IPINDX) = (ICAAB-1)*NGAS+IGAS
                 IPINDX = IPINDX + 1
-                INDXP(IPINDX) = (IGAS-1)*4+ICAAB
+                INDXP(IPINDX) = (ICAAB-1)*NGAS+IGAS
               ELSE IF(ICA.EQ.1.AND.IHPVGAS_AB(IGAS,IAB).EQ.1) THEN
                 IHINDX = IHINDX + 1
-                INDXH(IHINDX) = (IGAS-1)*4+ICAAB
+                INDXH(IHINDX) = (ICAAB-1)*NGAS+IGAS
                 IHINDX = IHINDX + 1
-                INDXH(IHINDX) = (IGAS-1)*4+ICAAB
+                INDXH(IHINDX) = (ICAAB-1)*NGAS+IGAS
               END IF
             END IF
           END DO 
@@ -110,10 +186,15 @@
 *
       IF(IPINDX.NE.NPARTTOT.OR.IHINDX.NE.NHOLETOT) THEN
         WRITE(6,*) 'Lasse has made a bug in the code'
+        WRITE(6,*) ' IPINDX ',IPINDX,' NPARTTOT ',NPARTTOT
+        WRITE(6,*) ' IHINDX ',IHINDX,' NHOLETOT ',NHOLETOT
+        CALL WRT_SPOX_TP_CC_KRCC(IOP,1)
         STOP 'Lasse has made a bug in the code'
       END IF
 *
       IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' For the Hamiltonian '
+        CALL WRT_SPOX_TP_CC_KRCC(IOP,1)
         WRITE(6,*) ' The possible absolute adresses '
         WRITE(6,*) ' in H to be contracted '
         WRITE(6,*) ' Number of particle ',IPINDX
@@ -164,55 +245,98 @@
 *
       IF(NPOSTOT.EQ.1) THEN
         DO I=1,2
-          INUMCON(1,I) = INDXP(I)
-          INUMCON(1,I+2) = INDXH(I)
+          DO J=1,2
+            IF(NPART.EQ.0) THEN
+              INUMCON(J,I) = 0
+            ELSE IF(NPART.EQ.2) THEN
+              INUMCON(J,I) = INDXP(J)
+            ELSE IF(NPART.EQ.1) THEN
+              IF(J.EQ.1) THEN
+                INUMCON(J,I) = INDXP(J)
+              ELSE
+                INUMCON(J,I) = 0
+              END IF
+            END IF
+            IF(NHOLE.EQ.0) THEN
+              INUMCON(J+2,I) = 0
+            ELSE IF(NHOLE.EQ.2) THEN
+              INUMCON(J+2,I) = INDXH(J)
+            ELSE IF(NHOLE.EQ.1) THEN
+              IF(J.EQ.1) THEN
+                INUMCON(J+2,I) = INDXH(J)
+              ELSE
+                INUMCON(J+2,I) = 0
+              END IF
+            END IF
+          END DO
         END DO
       ELSE IF(NPOSTOT.EQ.2) THEN
         IF(NPOSPART.EQ.2) THEN
           DO I=1,2
             DO J=1,2
               IF(I.EQ.J) THEN
-                INUMCON(I,J) = INDXP(J)
+                INUMCON(J,I) = INDXP(J)
               END IF
-              INUMCON(I,J+2) = INDXH(J)
+              IF(NHOLE.EQ.0) THEN
+                INUMCON(J+2,I) = 0
+              ELSE IF(NHOLE.EQ.2) THEN
+                INUMCON(J+2,I) = INDXH(J)
+              ELSE IF(NHOLE.EQ.1) THEN
+                IF(J.EQ.1) THEN
+                  INUMCON(J+2,I) = INDXH(J)
+                ELSE
+                  INUMCON(J+2,I) = 0
+                END IF
+              END IF
             END DO
           END DO
         ELSE
           DO I=1,2
             DO J=1,2
-              INUMCON(I,J) = INDXP(J)
+              IF(NPART.EQ.0) THEN
+                INUMCON(J,I) = 0
+              ELSE IF(NPART.EQ.2) THEN
+                INUMCON(J,I) = INDXP(J)
+              ELSE IF(NPART.EQ.1) THEN
+                IF(J.EQ.1) THEN
+                  INUMCON(J,I) = INDXP(J)
+                ELSE
+                  INUMCON(J,I) = 0
+                END IF
+              END IF
               IF(I.EQ.J) THEN
-                INUMCON(I,J+2) = INDXH(J)
+                INUMCON(J+2,I) = INDXH(J)
               END IF
             END DO
           END DO
         END IF
       ELSE IF(NPOSTOT.EQ.4) THEN
         DO I=1,4
-          CALL EVENODD(I,ITEST)
+          CALL EVENODD(ITEST,I)
           DO J=1,2
             IF(J.EQ.ITEST) THEN
-              INUMCON(I,J) = INDXP(I)
+              INUMCON(J,I) = INDXP(J)
             END IF
             IF(I.GE.3) THEN
               IF(J.EQ.2) THEN
-                INUMCON(I,J+2) = INDXH(J)
+                INUMCON(J+2,I) = INDXH(J)
               END IF
             ELSE
               IF(J.EQ.1) THEN
-                INUMCON(I,J+2) = INDXH(J)
+                INUMCON(J+2,I) = INDXH(J)
               END IF
             END IF
           END DO
         END DO
       END IF
+      NUMCON = NPOSTOT
 *
       IF(NTEST.GE.100) THEN
-        WRITE(6,*) ' Number of possible ways to contract ',NPOSTOT
-        DO I =1,NPOSTOT
+        WRITE(6,*) ' Number of possible ways to contract ',NUMCON
+        DO I =1,NUMCON
           WRITE(6,*) ' Absolute entries of contraction ',I
           DO J =1,4
-            WRITE(6,*) INUMCON(I,J)
+            WRITE(6,*) INUMCON(J,I)
           END DO
         END DO
       END IF
@@ -220,9 +344,102 @@
       RETURN
       END
 *
-      SUBROUTINE CONTRACT_WITH_T(INI,INUMCON,
+      SUBROUTINE REDUCE_CONTRACTIONS(INUMCON,NUMCON,IFACTOR)
+*
+* Simple routine to eliminate all of the same type of contractions
+*
+#include "implicit.inc"
+*
+      INTEGER INUMCON(4,4),IFACTOR(4)
+* Scratch
+      INTEGER ITEMP(4,4),ISIM(4)
+*
+      NTEST = 100
+*
+* First eliminate the zeroes
+*
+      DO I =1,NUMCON
+        ICOUNT = 0
+        DO J =1,4
+          ITEMP(J,I) = 0
+          IF(INUMCON(J,I).NE.0) THEN
+            ICOUNT = ICOUNT + 1
+            ITEMP(ICOUNT,I) = INUMCON(J,I)
+          END IF
+        END DO
+      END DO
+* Copy back 
+      CALL ICOPVE(ITEMP,INUMCON,16)
+*
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Zeroes removed'
+        CALL IWRTMA(INUMCON,4,4,4,4)
+      END IF
+*
+*  compare first against rest
+*
+      ISTART = 2
+      IZERO = 0
+      IREST = NUMCON
+      IF(NUMCON.GE.2) THEN
+      DO
+        NSIM = 0
+        NOTSIM = 0
+        DO I =ISTART,NUMCON
+          ISIM(I) = 0
+        END DO
+        ILENGTH = 16-(ISTART-1)*4
+        CALL ISETVC(ITEMP,IZERO,ILENGTH)
+        DO I =ISTART,NUMCON
+          DO J =1,ICOUNT
+            IF(INUMCON(J,I-1).NE.INUMCON(J,I)) THEN
+              ISIM(I)  = 1
+              EXIT
+            END IF
+          END DO  
+        END DO
+* Check for zeroes in ISIM since these will be the same contraction
+        DO I =ISTART,NUMCON
+          IF(ISIM(I).EQ.1) THEN
+C            NSIM = NSIM - 1
+            NOTSIM = NOTSIM + 1
+* Copy rest
+            CALL ICOPVE(INUMCON(1,I),ITEMP(1,NOTSIM),4)
+          ELSE
+            NSIM = NSIM + 1
+            IFACTOR(ISTART-1) = IFACTOR(ISTART-1) + 1
+          END IF
+        END DO
+        CALL IWRTMA(INUMCON,4,4,4,4)
+        CALL IWRTMA(ITEMP,4,4,4,4)
+        CALL ICOPVE(ITEMP,INUMCON(1,ISTART),ILENGTH)
+        ISTART = ISTART + 1
+        NUMCON = NUMCON - NSIM
+        IREST = IREST - NSIM
+        IF(ISTART.GT.NUMCON) EXIT    
+      END DO
+      END IF
+*      
+      NUMCON = IREST
+*
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Remaining terms ',IREST
+        WRITE(6,*) ' Actual contractions '
+        CALL IWRTMA(INUMCON,4,4,4,4)
+        WRITE(6,*) ' Prefactor for each term '
+        DO I =1,4
+          WRITE(6,*) IFACTOR(I)
+        END DO
+      END IF        
+*
+      RETURN
+      END
+*
+      SUBROUTINE CONTRACT_WITH_T(INI,INUMCON,HOP,
      &                           TOP,NTOP,NPART,NHOLE,
-     &                           RESOP,RESOPS,RESOPF)
+     &                           RESOP,RESOPS,RESOPF,NCONNECT,
+     &                           RESULTANTOP,
+     &                           CONTRACTEDT)
 *
 * Routine to find the possible contractions of a given set of indices
 *
@@ -230,11 +447,17 @@
 #include "mxpdim.inc"
 #include "cgas.inc"
 *
-      INTEGER TOP(4*NGAS,*),INUMCON(4),ITINDX(4)
+      INTEGER TOP(4*NGAS,*),INUMCON(4),ITINDX(4),HOP(4*NGAS)
       INTEGER RESOP(4*NGAS,*),RESOPS(*),RESOPF(*)
+      INTEGER RESULTANTOP(*),CONTRACTEDT(*)
+* Scratch
+      INTEGER IOP(4*NGAS)
 *
-      CALL FROM_O_TO_T_INDX(NPART,NHOLE,INUMCON,ITINDX)
+      NTEST = 100
 *
+      CALL FROM_O_TO_T_INDX(NPART,NHOLE,NGAS,INUMCON,ITINDX)
+*
+      NCONNECT = 0
       DO ITOP =1,NTOP
         ICONNECT = 0
         IF(TOP(ITINDX(1),ITOP).GE.1) THEN
@@ -265,16 +488,54 @@
             ICONNECT = 1
           END IF
         END IF
-* store connection
+* connection found. Is it also a part of the resulting operator
         IF(ICONNECT.EQ.1) THEN
-
+          CALL WRT_SPOX_TP_CC_KRCC(TOP(1,ITOP),1)
+          WRITE(6,*) ' will check'
+* Find operator form of connection
+          CALL OP_FORM(IOP,HOP,TOP(1,ITOP),
+     &                 INUMCON,ITINDX,
+     &                 NPART,NHOLE,NGAS)
+* Analyse operator
+          CALL ANALYZE_OP(IOP,NGAS,N,MK,MUB)
+* Check if this operator is part of resulting operator
+          CALL IS_IT_IN(IOP,N,MK,MUB,RESOP,RESOPS,RESOPF,
+     &                  ICONNECT,INUM)
+          IF(ICONNECT.EQ.1) THEN
+* Connection complete. Store it. Coming soon!
+            NCONNECT = NCONNECT + 1
+            IF(INI.EQ.1) THEN
+* Store connection
+              RESULTANTOP(NCONNECT) = INUM
+              CONTRACTEDT(NCONNECT) = ITOP
+            END IF        
+            CALL WRT_SPOX_TP_CC_KRCC(TOP(1,ITOP),1)
+          ELSE
+            CALL WRT_SPOX_TP_CC_KRCC(TOP(1,ITOP),1)
+          END IF
+        ELSE
+          CALL WRT_SPOX_TP_CC_KRCC(TOP(1,ITOP),1)
         END IF
       END DO
+*
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Number of connections ',NCONNECT,' for operator '
+        CALL WRT_SPOX_TP_CC_KRCC(HOP,1)
+        IF(INI.EQ.1) THEN
+          DO I =1, NCONNECT
+            WRITE(6,*) '==========================='
+            WRITE(6,*) ' Connected to T op ',CONTRACTEDT(I)
+            CALL WRT_SPOX_TP_CC_KRCC(TOP(1,CONTRACTEDT(I)),1)
+            WRITE(6,*) ' Resulting in op ',RESULTANTOP(I)
+            CALL WRT_SPOX_TP_CC_KRCC(RESOP(1,RESULTANTOP(I)),1)
+          END DO
+        END IF
+      END IF   
 *
       RETURN
       END
 *
-      SUBROUTINE FROM_O_TO_T_INDX(NPART,NHOLE,INUMCON,ITINDX)
+      SUBROUTINE FROM_O_TO_T_INDX(NPART,NHOLE,NGAS,INUMCON,ITINDX)
 *
 * Reforms from indices contracted to indices to be found
 * and moves indices to front and joins common indices
@@ -283,29 +544,254 @@
 *
       INTEGER INUMCON(4),ITEMP(4),ITINDX(4)
 *
-* First remove zeroes 
-*
-      ICOUNT = 0
-      DO I =1,4
-        ITEMP(I) = 0
-        IF(INUMCON(I).NE.0) THEN
-          ICOUNT = ICOUNT + 1
-          ITEMP(ICOUNT) = INUMCON(I)
-        END IF
-      END DO
-*
-* Copy back
-*
-      CALL ICOPVE(ITEMP,INUMCON,4)
+      NTEST = 100
 *
 * Calculate the T indices
 *
       DO IPART =1,NPART
-        ITINDX(IPART) = INUMCON(IPART) - 2
+        ITINDX(IPART) = INUMCON(IPART) - 2*NGAS
       END DO
 *
-      DO IHOLE =1,NHOLE
-        ITINDX(IHOLE) = INUMCON(IHOLE) + 2
+      DO IHOLE =1+NPART,NHOLE+NPART
+        ITINDX(IHOLE) = INUMCON(IHOLE) + 2*NGAS
+      END DO
+*
+      IF(NTEST.EQ.100) THEN
+        WRITE(6,*) ' Indices in the Hamiltonian to be contracted '
+        DO I = 1,NPART+NHOLE
+          WRITE(6,*) INUMCON(I)
+        END DO
+        WRITE(6,*) ' The corresponding indices in T '
+        DO I = 1,NPART+NHOLE
+          WRITE(6,*) ITINDX(I)
+        END DO
+      END IF
+*      
+      RETURN
+      END
+*
+      SUBROUTINE OP_FORM(IOP,HOP,TOP,
+     &                   INUMCON,ITINDX,
+     &                   NPART,NHOLE,NGAS)
+*
+* Will calculate the resultant operator from a contraction between HOP
+* and TOP defined from INUMCON
+*
+#include "implicit.inc"
+*
+      INTEGER IOP(4*NGAS),HOP(4*NGAS),TOP(4*NGAS)
+      INTEGER INUMCON(4),ITINDX(4)
+*
+      NTEST = 100
+*      
+* First add HOP and TOP
+*   
+      DO I =1,4*NGAS
+        IOP(I) = HOP(I) + TOP(I)
+      END DO
+*
+* Apply contraction by removing contracted operator from IOP
+*
+      DO I =1,NPART+NHOLE
+        IOP(INUMCON(I)) = IOP(INUMCON(I)) - 1
+        IOP(ITINDX(I)) = IOP(ITINDX(I)) - 1
+      END DO
+*
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Hamiltonian Operator '
+        CALL WRT_SPOX_TP_CC_KRCC(HOP,1)
+        WRITE(6,*) ' Cluster Operator '
+        CALL WRT_SPOX_TP_CC_KRCC(TOP,1)
+        WRITE(6,*) ' Was contracted to '
+        CALL WRT_SPOX_TP_CC_KRCC(IOP,1)
+        WRITE(6,*) ' Number of particles contracted ',NPART
+        WRITE(6,*) ' Number of holes contracted ',NHOLE
+        WRITE(6,*) ' Hamiltonian indices contracted '
+        DO I =1,NPART+NHOLE
+          WRITE(6,*) INUMCON(I)
+        END DO
+        WRITE(6,*) ' Cluster operator indices contracted '
+        DO I =1,NPART+NHOLE
+          WRITE(6,*) ITINDX(I)
+        END DO
+      END IF
+*
+      RETURN
+      END
+*
+      SUBROUTINE IS_IT_IN(IOP,N,MK,MUB,RESOP,RESOPS,RESOPF,
+     &                    ICONNECT,INUM)
+*
+* See if IOP belongs to RESOP
+*
+#include "implicit.inc"
+#include "mxpdim.inc"
+#include "crun.inc"
+#include "cgas.inc"
+*
+      INTEGER IOP(4*NGAS),RESOPS(*),RESOPF(*),RESOP(4*NGAS,*)
+*
+      NTEST = 100
+*
+* Find range to look for operator
+*
+      CALL OP_RANGE(N,MK,MUB,RESOPS,RESOPF,IFROM,ITO,ICONNECT,
+     &              MX_EXC_LEVEL,IMAXKRFLIP,IMUBMAX)
+*
+* We now know the start and the end of the possible intermediate
+* operators which we have to search though. Therefore search!
+*
+      INUM = 0
+      IF(ICONNECT.EQ.1) THEN
+        DO I =IFROM,ITO
+          IDIFF = 0
+          DO J =1,4*NGAS
+            IDIFF = IOP(J) - RESOP(J,I)
+            IF(IDIFF.NE.0) EXIT
+          END DO
+          IF(IDIFF.EQ.0) THEN
+* We have found the operator now get out of here                  
+            INUM = I
+            EXIT
+          END IF
+        END DO
+      END IF
+* In case it is not in T dagger
+      IF(INUM.EQ.0) ICONNECT = 0      
+*
+      IF(NTEST.GE.100) THEN
+        IF(ICONNECT.EQ.1) THEN
+          WRITE(6,*) ' A connection to operator ',INUM,' was found '
+          CALL WRT_SPOX_TP_CC_KRCC(IOP,1)
+        ELSE
+          WRITE(6,*) ' No connection found for operator '
+          CALL WRT_SPOX_TP_CC_KRCC(IOP,1)
+        END IF        
+        WRITE(6,*) ' Searched from ',IFROM,' TO ',ITO
+      END IF
+*
+      RETURN
+      END
+*
+      SUBROUTINE OP_RANGE(N,MK,MUB,RESOPS,RESOPF,IFROM,ITO,ICONNECT,
+     &                    IEXCITE,IKRFLIP,IMUB)
+*
+* Checks if operator would be accepted on N,MK,MUB basis
+* and calculates the range where to search for an operator
+*
+#include "implicit.inc"
+*
+      INTEGER RESOPS(0:IEXCITE,-IKRFLIP:IKRFLIP,-IMUB:IMUB)
+      INTEGER RESOPF(0:IEXCITE,-IKRFLIP:IKRFLIP,-IMUB:IMUB)
+*
+* Check N,MK,MUB
+*
+      IF(N.GT.IEXCITE) THEN
+        ICONNECT = 0
+        RETURN
+      END IF
+*
+      IF(ABS(MK).GT.IKRFLIP) THEN
+        ICONNECT = 0
+        RETURN
+      END IF
+*
+      IF(ABS(MUB).GT.IMUB) THEN
+        ICONNECT = 0
+        RETURN
+      END IF
+*
+* Now for the start and end
+*
+      IFROM = RESOPS(N,MK,MUB)
+      ITO = RESOPF(N,MK,MUB)
+*
+      ILENGTH = ITO-IFROM
+      IF(ILENGTH.LT.0) THEN
+        ICONNECT = 0
+      END IF        
+*
+      RETURN
+      END
+*
+C       CALL CONTRACTION_TESTER(NGAS,NH22,WORK(KNH22),
+C    &                          NH22TOM12,WORK(KNH22TOM12),WORK(KNH22T12),
+C    &                          WORK(KCOMBNH22TOM12),
+C    &                          WORK(KFACNH22TOM12),
+C    &                          WORK(KSNH22TOM12),WORK(KFNH22TOM12))
+      SUBROUTINE CONTRACTION_TESTER(NOP,IOP,
+     &                              NCONT,IOPRES,
+     &                              IOPT,
+     &                              IPOSCON,
+     &                              IPERM,
+     &                              IPREFAC,
+     &                              IPOSCONPERM,
+     &                              ISTARTOP,IENDOP,
+     &                              ITOP,NTOP,
+     &                              IRESOP,NRESOP,
+     &                              IHOP,IHM)
+*
+* Routine for testing and printing of all possible contractions any
+* given operator can have including the operator contracted with and the
+* resultant operator along with prefactors of contractions
+*
+#include "implicit.inc"
+#include "mxpdim.inc"
+#include "cgas.inc"
+*
+      INTEGER IOP(NOP),IPOSCON(NOP),IPREFAC(4,NOP),IPERM(NOP)
+      INTEGER IPOSCONPERM(4,NOP)
+      INTEGER IOPRES(NCONT),IOPT(NCONT)
+      INTEGER ISTARTOP(NOP),IENDOP(NOP)
+      INTEGER ITOP(4*NGAS,NTOP),IHOP(4*NGAS,NOP),IRESOP(4*NGAS,NRESOP)
+* Scratch
+      INTEGER ITEMP(NOP)
+*
+      ICOUNT = 0
+*
+      DO IH =1,NOP
+        ITEMP(IH) = ICOUNT
+        WRITE(6,*) ' Contractions for operator ',IH
+        IF(IHM.EQ.1) THEN
+* For the Hamiltonian operators
+        IJ = IOP(IH) 
+        WRITE(6,*) ' Absolute address for op ', IJ
+        CALL WRT_SPOX_TP_CC_KRCC(IHOP(1,IJ),1)
+        ELSE IF(IHM.EQ.2) THEN
+* For the intermediate operators
+        CALL WRT_SPOX_TP_CC_KRCC(IHOP(1,IH),1)
+        END IF
+        WRITE(6,*) ' Number of possible contractions ',IPOSCON(IH)
+        WRITE(6,*) ' The number of different permutations ',IPERM(IH)
+        IF(IPOSCON(IH).GE.1) THEN
+          DO I =1,IPERM(IH)
+            WRITE(6,*) 'Number of possible contractions ',
+     &      IPOSCONPERM(I,IH),' for contraction number ',I
+            WRITE(6,*) 'Permutation factor for contraction ',
+     &      IPREFAC(I,IH)
+            IF(IPOSCONPERM(I,IH).GE.1) THEN
+              DO J=1,IPOSCONPERM(I,IH)
+                ICOUNT = ICOUNT + 1
+                WRITE(6,*) ' Operator contracted with ',IOPT(ICOUNT)
+                CALL WRT_SPOX_TP_CC_KRCC(ITOP(1,IOPT(ICOUNT)),1)
+                WRITE(6,*) ' Operators contracted to ',IOPRES(ICOUNT)
+                CALL WRT_SPOX_TP_CC_KRCC(IRESOP(1,IOPRES(ICOUNT)),1)
+              END DO
+            END IF
+          END DO
+        END IF
+        WRITE(6,*) ' =================================== '
+      END DO
+*
+* For internal count check
+*
+      DO IH =1,NOP
+        IF(ISTARTOP(IH).NE.(ITEMP(IH)+1)) STOP ' Wrong start count '
+        IF(IH.LT.NOP) THEN
+          IF(IENDOP(IH).NE.ITEMP(IH+1)) STOP 'Wrong end count '
+        ELSE
+          IF(IENDOP(IH).NE.ICOUNT) STOP 'Wrong end count for end'
+        END IF
       END DO
 *
       RETURN

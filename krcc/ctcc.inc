@@ -27,8 +27,12 @@
      &             NCONN_IN,NCONN_IN2,NCONN_IN3,NCONN_IN4,
      &             KFCACM,KH2AC,KINC_HX,
 ! New ones for intermediates Lasse
-     &             KINTM10,KINTM01,KINTM11,KINTM02,KINTM12,
-     &             NINTER10,NINTER01,NINTER11,NINTER02,NINTER12,
+     &             KLAOBEX_KRCC,KLBOBEX_KRCC,
+     &             LENA_KRCC,LENB_KRCC,
+     &             KINTM10,KINTM01,KINTM11,
+     &             KINTM02,KINTM20,KINTM12,
+     &             NINTER10,NINTER01,NINTER11,
+     &             NINTER02,NINTER20,NINTER12,
      &             KNH22,KNH21,KNH12,KNH20,
      &             KNH11,KNH02,KNH10,KNH01,KNH00,
      &             NH22,NH21,NH12,NH20,
@@ -36,4 +40,4 @@
      &             KT_IDXS,KT_IDXF,
      &             KINT01_IDXS,KINT01_IDXF,KINT10_IDXS,KINT10_IDXF,
      &             KINT11_IDXS,KINT11_IDXF,KINT02_IDXS,KINT02_IDXF,
-     &             KINT12_IDXS,KINT12_IDXF
+     &             KINT20_IDXS,KINT20_IDXF,KINT12_IDXS,KINT12_IDXF

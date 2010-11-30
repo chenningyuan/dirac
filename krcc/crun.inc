@@ -9,9 +9,6 @@
      &            IAPRREF,IAPRZER,IIDUM,
      &            NSEQCI(MXCMBSPCK),ISEQCI(MXPICI,MXPICI),
 * added by lasse for sequen
-     &            CSEQCI(MXPICI,MXCMBSPCK),ISEQCI2(MXPICI,MXPICI),
-     &            I_DO_NEWCCV,
-     &            IEXTKOP,
      &            IE0AVEX,IC1DSC,
      &            IH0SPC,NPTSPC,IPTSPC(MXPPTSPC),
      &            IOCPTSPC(2,MXPNGAS,MXPPTSPC),IH0INSPC(MXPPTSPC),
@@ -43,10 +40,10 @@
      &            I_RE_MS2_SPACE,I_RE_MS2_VALUE, IPRECOND,
      &            ISIMSYM, IUSE_HW, 
      &            IUSEH0P, I_DO_MCSCF, MX_EXC_LEVEL,
-     &            IMAXKRFLIP,
+     &            IMAXKRFLIP,IMUBMAX,
      &            I_DO_LZ2, ICCSOLVE,I_DO_CCN, I_DO_SBSPJA,
      &            IDUM1,CCCONV, N_HOLE_ORBSPACEX, I_DO_CC3,
-     &            I_DO_CI_TO_CC,CCFORM,PADDY2,LCCBD12,LCCB,
+     &            I_DO_CI_TO_CC,LCCBD12,LCCB,
      &            I_DO_CC_EXC_E, NEXC_PER_SYM(8),IRES_EXC,
      &            IFRZ_CC, NFRZ_CC,IFRZ_CC_AR(100),
      &            I_DO_CC_EXP, I_DO_GENTRD,
@@ -60,7 +57,8 @@
 * for real/complex algebra
      &            IRECOM,
 * to control ISIMSYM_LOC
-     &            I_EXPT_REF
+     &            I_EXPT_REF,
+     &            CSEQCI(MXPICI,MXCMBSPCK),CCFORM
       character*72 ENVIRO
       CHARACTER*6 PROPER,SIGDEN_ROUTE,CSEQCI,CCFORM
       COMMON/CRUNCR/ENVIRO,SIGDEN_ROUTE,PROPER(20)

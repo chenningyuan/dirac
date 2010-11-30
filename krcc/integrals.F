@@ -1,3 +1,11 @@
+      SUBROUTINE IIII(IM,INN)
+      implicit real*8 (A-H,O-Z)
+      DIMENSION IM(INN)
+      CALL ISETVC(IM,INN,INN)
+      DO I=1,INN
+        PRINT*,'IM(I),I',IM(I),I
+      END DO
+      END
       SUBROUTINE INTIM_KRCC(INTSPACE,MCSCF, !F1,F2,IBOSYM,CIRUN,
      &                   WORK,KFREE,LFREE)
 *
@@ -317,14 +325,7 @@ C           call memmar(KISTR_AB,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'STR_AB')
       CALL MEMGET('INTE',KISTR_AA,MX_ST_TSOSO_BLK_MX,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KISTR_AB,MX_ST_TSOSO_BLK_MX,WORK,KFREE,LFREE)
 *
-      print*,'before dist_in..'
-              CALL MEMCHK_KRCC(WORK)
-      print*,'after memchk'
-      print*,'NTEST,KFREE,LFREE',NTEST,KFREE,LFREE
-      print*,'KFCACM,KH2AC',KFCACM,KH2AC
-      DO I=1,10
-        print*,'WORK(KFCACM),I',WORK(KFCACM+I),I
-      END DO
+      CALL MEMCHK_KRCC(WORK)
        call dist_ints_sigden_KRCC(INTIMP,ISPINFREE,ISYM_T,
      &                            WORK(KLSOBEX),WORK(KT_CC),
      &                            WORK(KISTR_CA),WORK(KISTR_CB),
@@ -507,10 +508,8 @@ C
 C
 C#include "mx2orb.h"
 #include "maxorb.h"
-
 !hope we don't need it
 #include "../krmc/dcbnrt.h"
-
 #include "dcbpsi.h"
 #include "dcbkrmc_itinfo.h"
 #include "dcbgen.h"
@@ -594,7 +593,7 @@ C
      &              ' file DFCOEF'
             END IF
          END IF
-C        CALL MEMCHK_KRCC(WORK)
+        CALL MEMCHK_KRCC(WORK)
       print*,'after DFCOEF read'
       CALL RGMCMO(WORK(KCMO),WORK(KFREE),LFREE)
 C        CALL MEMCHK_KRCC(WORK)

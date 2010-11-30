@@ -30,21 +30,23 @@ C#include "chktyp.inc"
 C#include "wrkspc.inc"
 C added by lasse
 #include "cintfo.inc"
+C#include "iratdef.h"
 #include "ipoist8.inc"
 C
 C#include "memint.h"
-      DIMENSION WORK(*)!(LWORK)
+      DIMENSION WORK(LWORK)
 C
 C
 #include "memint.h"
 C
       CALL QENTER('KRCC ')
+*. Ratio beteeen real and integer word length
+      CALL ZIRAT_KRCC !ok
 * First make an entry on memory to look for
       IONE = 1
-      CALL MEMGET('REAL',KLOOK,IONE,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KLOOK,IONE,WORK,KFREE,LFREE)
 * First do transformation and get integrals from DIRAC
       CALL READ_DIRAC_FOR_KRCC(WORK,KFREE,LFREE)
-      CALL MEMCHK('LL0',WORK,KLOOK)
 *. Assign diskunits 
 !!!!needs updating!!!!
 !!!!needs updating!!!!
@@ -55,7 +57,7 @@ C
       CALL WRTHD_KRCC(LUOUT) !ok
       CALL MEMCHK('LL1',WORK,KLOOK)
 *. Ratio beteeen real and integer word length
-      CALL ZIRAT_KRCC !ok
+C      CALL ZIRAT_KRCC !ok
 *. From shells to orbitals
       CALL ORBINF_KRCC(LUOUT,IPRORB)
 *. Types of determinants to be included
@@ -74,25 +76,20 @@ C
 !!!!needs updating!!!!
 !!!!needs updating!!!!
       CALL ALLOC_KRCC(WORK,KFREE,LFREE)
-      print*,'after alloc'
-      print*,'KFREE,LFREE',KFREE,LFREE
       CALL MEMCHK('LULU6',WORK,KLOOK)
 *. Internal string information (stored in WORK, bases in /STRBAS/)
       CALL STRINF_GAS_KRCC(WORK,KFREE,LFREE,IPRSTR)
-      print*,'after STRINF_GAS_KRCC'
-      CALL MEMCHK('LULU5',WORK,KINT1)
+      CALL MEMCHK('LULU5',WORK,KLOOK)
 *. Internal subspaces
       CALL LCISPC_KRCC(WORK,KFREE,LFREE,LCSBLK,IPRCIX)
-      print*,'after LCISPC_KRCC'
-      CALL MEMCHK('LULU1',WORK,KINT1)
+      CALL MEMCHK('LULU1',WORK,KLOOK)
 *. Divide orbital spaces into inactive/active/secondary!!!!not sure to include!!!!
 C      CALL GASSPC_KRCC
 * Find occupation of GAS
 C Notice JCMBSPC is hardwired
       JCMBSPC = 1
       CALL GET_GASOCC_KRCC(JCMBSPC)
-      print*,'after GET_GASOCC_KRCC'
-      CALL MEMCHK('LULU3',WORK,KINT1)
+      CALL MEMCHK('LULU3',WORK,KLOOK)
 * Get Hamiltonian strings. 
 * Notice a similar routine is called later which does the actual setup for the cc runs. 
 * This is just for the integral sorting
@@ -104,14 +101,14 @@ C assumes totally symmetric hamiltonian
 !!!!!May need updating to elminate obsolete operators!!!!!
       ISYM_T = 1
       CALL SET_HOP_DBG_FOR_NEWCCV(4,1,WORK,KFREE,LFREE)
-      CALL MEMCHK('LULU2',WORK,KINT1)
+      CALL MEMCHK('LULU2',WORK,KLOOK)
 C      CALL MEMCHK_KRCC(WORK)
       print*,'after SET_HOP_DBG_KRCC'
 *. Read in integrals !!!!Notice non-matching call!!!!
 C       call picasso(INTSPACE,ISO1,IPRTRA,
 C    &               NL2D,IUB2D,ISM2D)
       CALL INTIM_KRCC(INTSPACE,MCSCF,WORK,KFREE,LFREE)
-      CALL MEMCHK('LUL22',WORK,KINT1)
+      CALL MEMCHK('LUL22',WORK,KLOOK)
 *
 *******************************************************
 C
@@ -147,6 +144,7 @@ C
 *
 #include "implicit.inc"
       REAL*8 INPRDD
+#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "strinp.inc"
 #include "cgas.inc"
@@ -612,6 +610,9 @@ C           CALL MEMMAR(KLSPOBEX_AC_CC,NSPOBEX_TPE,'ADDL  ',1,'SPOBAC')
 * It boggles the mind why ISETVC doesn't set IONE in vec?
             IONE = 1
             CALL ISETVC(WORK(KLSPOBEX_AC_CC),IONE,NSPOBEX_TPE)
+            DO I=1,NSPOBEX_TPE
+              print*,'WORK(KLSPOBEX_AC_CC+I)',WORK(KLSPOBEX_AC_CC+I)
+            END DO
 *
 CLasse      MX_ST_TSOSO_MX = 0
 CLasse      MX_ST_TSOSO_BLK_MX = 0

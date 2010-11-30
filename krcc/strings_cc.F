@@ -5000,6 +5000,29 @@ C     END DO
 *
       CALL MEMREL('INT02_IDX',WORK,KHELP_OP,KHELP_OP,KFREE,LFREE)
 *
+* Sort intermediate 20
+*
+      CALL MEMGET('INTE',KINT20_IDXS,IDIMINDX,WORK,KFREE,LFREE)
+      CALL ISETVC(WORK(KINT20_IDXS),IZERO,IDIMINDX)
+      CALL MEMGET('INTE',KINT20_IDXF,IDIMINDX,WORK,KFREE,LFREE)
+      CALL ISETVC(WORK(KINT20_IDXF),IZERO,IDIMINDX)
+*
+* Allocate help arrays
+*
+      CALL MEMGET('INTE',KHELP_OP,4*NGAS*NINTER20,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KHELP_IDX,NINTER20,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KT_IDXH,IDIMINDX,WORK,KFREE,LFREE)
+      CALL ISETVC(WORK(KT_IDXH),IZERO,IDIMINDX)
+*
+      CALL SORT_OP_3_INDEX(WORK(KINTM20),NINTER20,NGAS,
+     &                     MX_EXC_LEVEL,IMAXKRFLIP,
+     &                     WORK(KINT20_IDXS),WORK(KINT20_IDXF),
+     &                     WORK(KT_IDXH),WORK(KHELP_OP),WORK(KHELP_IDX))
+*
+* release memory
+*
+      CALL MEMREL('INT20_IDX',WORK,KHELP_OP,KHELP_OP,KFREE,LFREE)
+*
 * Sort intermediate 12
 *
       CALL MEMGET('INTE',KINT12_IDXS,IDIMINDX,WORK,KFREE,LFREE)
@@ -5071,6 +5094,10 @@ C     END DO
       CALL MEMGET('INTE',KNH01,NH01,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KNH00,NH00,WORK,KFREE,LFREE)
 *
+      CALL ISETVC(WORK(KNH22),1,5)
+      DO I=1,5
+        print*,'WORK(KNH22+I)',WORK(KNH22+I)
+      END DO
       INI = 1
       CALL HTYPE_PH_CONTRACTIONS(INI,WORK(KLSOBEX),NSPOBEX_TP,NGAS,
      &                                 NH22,NH21,NH12,NH20,
@@ -5081,6 +5108,11 @@ C     END DO
      &                                 WORK(KNH10),WORK(KNH01),
      &                                 WORK(KNH00))
 *
+      CALL MEMCHK_KRCC(WORK)
+      print*,'KNH22,KFREE,LFREE',KNH22,KFREE,LFREE
+      DO I=1,5
+        print*,'WORK(KNH22+I)',WORK(KNH22+I),WORK(KNH21+I),WORK(KNH20+I)
+      END DO
       RETURN
       END
 *
@@ -5304,3 +5336,184 @@ C     END DO
 *
       RETURN
       END
+*
+      SUBROUTINE FIND_ALL_ABOBEX(INI,NGAS,IOBEX_TP,
+     &                           NOBEX_TP,IOBEX_TP_KRCC,NOBEX_TP_KRCC)
+*
+*
+#include "implicit.inc"
+*
+*. Input
+      INTEGER IOBEX_TP(2*NGAS,NOBEX_TP)
+*. Output
+      INTEGER IOBEX_TP_KRCC(2*NGAS,*)
+*. Scratch
+      INTEGER ITEMP(2*NGAS,NOBEX_TP)
+*
+      NTEST = 100
+*
+* First find number of different creation and annihilation types
+*
+      CALL FIND_CA_ABOBEX(INI,NGAS,IOBEX_TP,NOBEX_TP,ITEMP,
+     &                    NOBEX_TP_KRCC,NC,NA)
+*
+* Now construct the OBEX for the KRCC
+*
+      IF(INI.EQ.1) THEN
+*
+* First copy alpha creators and annihilators
+*
+        ICOUNT = 0
+*
+        DO I = 1,NC
+          DO J = 1,NA
+            ICOUNT = ICOUNT + 1
+* Copy creators
+            print*,'ICOUNT',ICOUNT
+            WRITE(6,*) (ITEMP(K,I),K=1,NGAS)
+            CALL ICOPVE(ITEMP(1,I),IOBEX_TP_KRCC(1,ICOUNT),NGAS)
+            WRITE(6,*) (IOBEX_TP_KRCC(K,ICOUNT),K=1,NGAS)
+* Copy annihilators
+            WRITE(6,*) (ITEMP(K+NGAS,J),K=1,NGAS)
+            CALL ICOPVE(ITEMP(1+NGAS,J),IOBEX_TP_KRCC(1+NGAS,ICOUNT),
+     &                  NGAS)
+            WRITE(6,*) (IOBEX_TP_KRCC(K+NGAS,ICOUNT),K=1,NGAS)
+          END DO
+        END DO
+      END IF
+*
+      IF(NTEST.EQ.100) THEN
+        WRITE(6,*) ' Number of combinations ',NOBEX_TP_KRCC
+        WRITE(6,*) ' From which ',NC,' is creators and ',NA,' anni'
+        IF(INI.EQ.1) THEN
+          WRITE(6,*) ' The combinations '
+          DO I =1,NOBEX_TP_KRCC
+            WRITE(6,*) ' Combination ',I
+            WRITE(6,*) (IOBEX_TP_KRCC(J,I),J=1,NGAS)
+            WRITE(6,*) (IOBEX_TP_KRCC(J+NGAS,I),J=1,NGAS)
+          END DO
+        END IF
+      END IF
+*
+*      
+      RETURN
+      END
+*
+      SUBROUTINE FIND_CA_ABOBEX(INI,NGAS,IABOBEX,NABOBEX,IOUT,
+     &                          NDIM,NC,NA)
+*
+* Finds the number of unique types of creators and annihilators from the
+* ABOBEX types
+*
+#include "implicit.inc"
+*
+*. Input
+      INTEGER IABOBEX(2*NGAS,NABOBEX)
+*. Output
+      INTEGER IOUT(2*NGAS,NABOBEX)
+
+      INTEGER ISCR(2,NABOBEX)
+*
+      NTEST = 100
+*
+      CALL ISETVC(ISCR,1,2*NABOBEX)
+*
+      ICOUNT = 1
+*
+* First check creators (in case there is only two we assume they are
+* different since one will be the identity)
+*      
+      DO
+        ICOUNT = ICOUNT + 1
+        IF(ICOUNT.GE.NABOBEX) EXIT
+        IF(ISCR(1,ICOUNT).EQ.0) CYCLE
+        DO I =ICOUNT,NABOBEX
+          IF(ISCR(1,I).EQ.0) CYCLE
+* Compare
+          CALL COMPARE_OP(IABOBEX(1,I),IABOBEX(1,ICOUNT-1),
+     &                           NGAS,IDIFF)
+          IF(IDIFF.EQ.0) THEN
+            ISCR(1,I) = 0
+          END IF        
+        END DO
+      END DO
+*
+* Now annihilators
+*
+      ICOUNT = 1
+*      
+      DO
+        ICOUNT = ICOUNT + 1
+        IF(ICOUNT.GE.NABOBEX) EXIT
+        IF(ISCR(2,ICOUNT).EQ.0) CYCLE
+        DO I =ICOUNT,NABOBEX
+          IF(ISCR(2,I).EQ.0) CYCLE
+* Compare
+          CALL COMPARE_OP(IABOBEX(1+NGAS,I),IABOBEX(1+NGAS,ICOUNT-1),
+     &                           NGAS,IDIFF)
+          IF(IDIFF.EQ.0) THEN
+            ISCR(2,I) = 0
+          END IF
+        END DO
+      END DO
+*
+      NC = 0
+      NA = 0
+*
+      DO I =1,NABOBEX
+        IF(ISCR(1,I).EQ.1) THEN
+          NC = NC + 1
+          IF(INI.EQ.1) THEN
+            CALL ICOPVE(IABOBEX(1,I),IOUT(1,I),NGAS)
+          END IF        
+        END IF
+        IF(ISCR(2,I).EQ.1) THEN
+          NA = NA + 1
+          IF(INI.EQ.1) THEN
+            CALL ICOPVE(IABOBEX(1+NGAS,I),IOUT(1+NGAS,I),NGAS)
+          END IF
+        END IF
+      END DO
+*
+      NDIM = NC*NA
+*
+      IF(NTEST.EQ.100) THEN
+        WRITE(6,*) ' Total dimension of combination ',NDIM
+        WRITE(6,*) '================================'
+        WRITE(6,*) ' Number of unique creators ',NC
+        IF(INI.EQ.1) THEN
+          WRITE(6,*) ' The creator types '
+          DO I =1,NC
+            WRITE(6,*) (IABOBEX(J,I),J=1,NGAS)
+          END DO
+        END IF
+        WRITE(6,*) ' Number of unique annihilators ',NA
+        IF(INI.EQ.1) THEN
+          WRITE(6,*) ' The annihilator types '
+          DO I =1,NA
+            WRITE(6,*) (IABOBEX(J+NGAS,I),J=1,NGAS)
+          END DO
+        END IF  
+      END IF
+*      
+      RETURN
+      END
+*
+      SUBROUTINE COMPARE_OP(IOP,JOP,NGAS,IDIFF)
+*
+* Compare two operators
+*
+      INTEGER IOP(NGAS),JOP(NGAS)
+*
+      IDIFF = 0
+*      
+      DO IGAS =1,NGAS
+        IF(IOP(IGAS).NE.JOP(IGAS)) THEN
+          IDIFF = 1
+          EXIT
+        END IF        
+      END DO
+*
+      RETURN
+      END
+
