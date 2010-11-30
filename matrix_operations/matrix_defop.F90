@@ -315,6 +315,7 @@ contains
          if (associated(T%A,T%Z)) T%Z => dupA
          if (associated(T%A,T%Y)) T%dy = .true.
          if (associated(T%A,T%Y)) T%Y => dupA
+         Azero = .true.
       end if
       !decide whether the result should be complex or not
       complex = (dimag(T%fx)/=0 .or. T%X%complex)
@@ -419,9 +420,11 @@ contains
       type(tmp_mat), pointer           :: TA, TB, TC
       logical                          :: zeroA, zeroB, swap, ltmp, plus
 
+#ifdef PRG_DIRAC
 !radovan: fix for g95
       C%nrow = -1
       C%ncol = -1
+#endif
 
       !if (matrix_defop_debug) print *, 'mat_plus_minus_mat', loc(A), &
       !                                 merge(' + ',' - ',plus), loc(B), ' => ', loc(C)
@@ -536,10 +539,11 @@ contains
       !if (matrix_defop_debug) print *, 'mat_times_mat', loc(A), &
       !                            ' *', loc(B), ' => ', loc(C)
 
-
+#ifdef PRG_DIRAC
 !radovan: fix for g95
       C%nrow = -1
       C%ncol = -1
+#endif
 
       TA => find_tmp(A, 'matrix A * B : A undefined')
       zeroA = .false.
@@ -595,9 +599,11 @@ contains
       call copy_matrix_sym(B, A)
 #endif
 
+#ifdef PRG_DIRAC
 !radovan: fix for g95
       B%nrow = -1
       B%ncol = -1
+#endif
 
       !if (matrix_defop_debug) print *,'real_times_mat',r,' *',loc(A),' =>',loc(B)
       TA => find_tmp(A, 'matrix r * A : A undefined')
@@ -656,9 +662,11 @@ contains
       type(matrix),target            :: B
       type(tmp_mat),pointer          :: TA, TB
 
+#ifdef PRG_DIRAC
 !radovan: fix for g95
       B%nrow = -1
       B%ncol = -1
+#endif
 
       !if (matrix_defop_debug) print *,'mat_dagger',loc(A),' => ',loc(B)
       TA => find_tmp(A,'matrix dag(A) : A undefined')

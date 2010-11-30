@@ -86,7 +86,7 @@ contains
    subroutine mat_free(A)
       type(matrix),intent(inout) :: A
       !if (associated(A%elms)) print *,'mat_free',loc(A),' elms=',loc(A%elms)
-      if (associated(A%elms)) call mat_free_nonzero(A)
+      if (.not.mat_iszero(A)) call mat_free_nonzero(A)
       A%nrow = -1; A%ncol = -1
    end subroutine
 
@@ -143,6 +143,12 @@ contains
       C%ncol = ncol
       if (zer .or. res) then
          nullify(C%elms)
+#ifdef VAR_LINSCA
+         nullify(C%idata)
+         nullify(C%selm1)
+         nullify(C%block)
+         nullify(C%row)
+#endif
 #ifdef PRG_DIRAC
          C%ih_sym = 1
          C%tr_sym = 1
@@ -191,11 +197,36 @@ contains
 
 
    function mat_iszero(A)
+#ifdef VAR_LINSCA
+      use matrix_operations, &
+            only: matrix_type, &
+                  mtype_dense, &
+                  mtype_sparse_block, &
+                  mtype_sparse1, &
+                  mtype_unres_dense, &
+                  mtype_unres_sparse1, &
+                  mtype_csr
+#endif
       type(matrix), intent(in) :: A
       logical                  :: mat_iszero
-      if (A%nrow==-1 .and. A%ncol==-1) &
+      if (.not.mat_isdef(A)) &
          call quit('mat_iszero(A): matrix A undefined')
+#ifdef VAR_LINSCA
+      select case (matrix_type)
+      case (mtype_dense, mtype_unres_dense)
+         mat_iszero = .not.associated(A%elms)
+      case (mtype_sparse_block)
+         mat_iszero = .not.associated(A%block)
+      case (mtype_sparse1, mtype_unres_sparse1)
+         mat_iszero = .not.associated(A%idata)
+      case (mtype_csr)
+         mat_iszero = .not.associated(A%row)
+      case default
+         call quit('error in function mat_izero: unexpected matrix_type')
+      end select
+#else /*not VAR_LINSCA*/
       mat_iszero = .not.associated(A%elms)
+#endif
    end function
 
 
@@ -233,6 +264,16 @@ contains
    !> private 'driving' routine for mat_axtpy
    !> add/put block ix from X to block iy in Y
    subroutine blk_axtpy(a, ix, X, tx, py, iy, Y)
+#ifdef VAR_LINSCA
+      use matrix_operations, &
+            only: matrix_type, &
+                  mtype_dense, &
+                  mtype_sparse_block, &
+                  mtype_sparse1, &
+                  mtype_unres_dense, &
+                  mtype_unres_sparse1, &
+                  mtype_csr
+#endif
       real(8),      intent(in) :: a      !scale factor for X
       integer,      intent(in) :: ix, iy !block indices
       logical,      intent(in) :: tx, py !transpose X or not, add to Y or overwrite Y
@@ -243,7 +284,22 @@ contains
       logical          :: Ycomplex, Xis0, XisY
       integer          :: siz
       Xis0 = (ix/=1 .and. .not.X%complex)
+#ifdef VAR_LINSCA
+      select case (matrix_type)
+      case (mtype_dense, mtype_unres_dense)
+         XisY = (associated(X%elms, Y%elms) .and. ix==iy)
+      case (mtype_sparse_block)
+         XisY = (associated(X%block, Y%block) .and. ix==iy)
+      case (mtype_sparse1, mtype_unres_sparse1)
+         XisY = (associated(X%idata, Y%idata) .and. ix==iy)
+      case (mtype_csr)
+         XisY = (associated(X%row, Y%row) .and. ix==iy)
+      case default
+         call quit('error in function blk_axtpy: unexpected matrix_type')
+      end select
+#else /* not VAR_LINSCA */
       XisY = (associated(X%elms, Y%elms) .and. ix==iy)
+#endif
       if (Xis0) then
          !nothing
       else if (X%complex) then
@@ -280,6 +336,16 @@ contains
 
 
    subroutine mat_axtpy(a, X, tx, py, Y)
+#ifdef VAR_LINSCA
+      use matrix_operations, &
+            only: matrix_type, &
+                  mtype_dense, &
+                  mtype_sparse_block, &
+                  mtype_sparse1, &
+                  mtype_unres_dense, &
+                  mtype_unres_sparse1, &
+                  mtype_csr
+#endif
       complex(8),   intent(in)    :: a
       type(matrix), intent(in)    :: X
       logical,      intent(in)    :: tx, py
@@ -288,35 +354,50 @@ contains
       logical            :: XisY, useZ
       logical, parameter :: trps=.true., norm=.false., &
                             plus=.true., eqls=.false.
-      XisY = associated(X%elms,Y%elms)
+#ifdef VAR_LINSCA
+      select case (matrix_type)
+      case (mtype_dense, mtype_unres_dense)
+         XisY = associated(X%elms, Y%elms)
+      case (mtype_sparse_block)
+         XisY = associated(X%block, Y%block)
+      case (mtype_sparse1, mtype_unres_sparse1)
+         XisY = associated(X%idata, Y%idata)
+      case (mtype_csr)
+         XisY = associated(X%row, Y%row)
+      case default
+         call quit('error in function mat_axtpy: unexpected matrix_type')
+      end select
+#else /* not VAR_LINSCA */
+      XisY = associated(X%elms, Y%elms)
+#endif
       useZ = (((XisY .or. (tx .and. X%complex)) &
               .and. dimag(a) /= 0) .or. (tx .and. py))
       if (useZ) call mat_init(Z, Y, complex=.false.)
       if (tx .and. py) then
          call blk_axtpy(      1d0, 1, X, trps, eqls, 1, Z) !Z  = X^T
-         call blk_axtpy( dimag(a), 1, Z, norm, plus, 2, Y) !Y´+= a´* Z
+         call blk_axtpy( dimag(a), 1, Z, norm, plus, 2, Y) !Y'+= a'* Z
          call blk_axtpy( dreal(a), 1, Z, norm, plus, 1, Y) !Y += a * Z
-         call blk_axtpy(      1d0, 2, X, trps, eqls, 1, Z) !Z  = X´^T
-         call blk_axtpy( dimag(a), 1, Z, norm, plus, 1, Y) !Y += a´* Z
-         call blk_axtpy(-dreal(a), 1, Z, norm, plus, 2, Y) !Y´-= a * Z
+         call blk_axtpy(      1d0, 2, X, trps, eqls, 1, Z) !Z  = X'T
+         call blk_axtpy( dimag(a), 1, Z, norm, plus, 1, Y) !Y += a'* Z
+         call blk_axtpy(-dreal(a), 1, Z, norm, plus, 2, Y) !Y'-= a * Z
       else if (tx .or. XisY) then
          if (tx) &
             call blk_axtpy(1d0, 1, X, trps, eqls, 1, Y)
          if (tx .and. X%complex) &
             call blk_axtpy(1d0, 2, X, trps, eqls, 2, Y)
          if (dimag(a) /= 0) &
-            call blk_axtpy(1d0, 2, Y, norm, eqls, 1, Z) !Z = Y´
-                                                       !Y´ = -a * X´^T (or a * Y´)
+            call blk_axtpy(1d0, 2, Y, norm, eqls, 1, Z) !Z = Y'
+                                                        !Y'= -a * X'T (or a * Y')
          call blk_axtpy(dreal(a)*merge(-1,1,tx), 2, Y, norm, eqls, 2, Y)
-         call blk_axtpy(dimag(a), 1, Y, norm, plus, 2, Y) !Y´+= a´* X^T (or a´* Y)
+         call blk_axtpy(dimag(a), 1, Y, norm, plus, 2, Y) !Y'+= a'* X^T (or a'* Y)
          call blk_axtpy(dreal(a), 1, Y, norm, eqls, 1, Y) !Y += a * X^T (or a * Y)
-                                                         !Y += a´* X´T (or -a´* Y)
+                                                          !Y += a'* X'T (or-a'* Y)
          call blk_axtpy(dimag(a)*merge(1,-1,tx), 1, Z, norm, plus, 1, Y)
       else
-         call blk_axtpy( dreal(a), 2, X, norm, py  , 2, Y) !Y´+= a * X´
-         call blk_axtpy( dimag(a), 1, X, norm, plus, 2, Y) !Y´+= a´* X
+         call blk_axtpy( dreal(a), 2, X, norm, py  , 2, Y) !Y'+= a * X'
+         call blk_axtpy( dimag(a), 1, X, norm, plus, 2, Y) !Y'+= a'* X
          call blk_axtpy( dreal(a), 1, X, norm, py  , 1, Y) !Y += a * X
-         call blk_axtpy(-dimag(a), 2, X, norm, plus, 1, Y) !Y -= a´* X´
+         call blk_axtpy(-dimag(a), 2, X, norm, plus, 1, Y) !Y -= a'* X'
       end if
       if (useZ) call mat_free(Z)
    end subroutine
@@ -383,29 +464,46 @@ contains
       type(matrix)       :: X, Y !temporary matrices
       logical, parameter :: trps=.true., norm=.false., &
                             plus=.true., eqls=.false.
+      logical :: first, second, third
       !print *,'dgemm ta=',ta,' tb=',tb,' ',C%nrow,C%ncol,A%ncol,A%nrow,B%ncol,B%nrow
-      !call mat_mul(A, B, ta, tb, dreal(fab), dreal(fc), C)
-      call mat_init(X, A, complex=.false.)
-      call blk_axtpy( dreal(fab), 1, A, norm, eqls, 1, X)
-      call blk_axtpy(-dimag(fab), 2, A, norm, plus, 1, X)
-      call mat_init(Y, C, complex=.false.)
-      call blk_gemm(1d0, 1, X, ta, 2, B, tb, eqls, 1, Y)
-      call blk_axtpy( 1d0, 1, Y, norm, pc, 1, C)
-      call blk_axtpy( 1d0, 1, Y, norm, pc, 2, C)
-      call blk_axtpy( dreal(fab), 2, A, norm, eqls, 1, X)
-      call blk_axtpy( dimag(fab), 1, A, norm, plus, 1, X)
-      call blk_gemm(1d0, 1, X, ta, 1, B, tb, eqls, 1, Y)
-      call blk_axtpy( 1d0, 1, Y, norm, plus, 2, C)
-      call blk_axtpy(-1d0, 1, Y, norm, plus, 1, C)
-      call mat_free(Y)
-      call blk_axtpy( dreal(fab) + dimag(fab), 1, A, norm, eqls, 1, X)
-      call blk_axtpy( dreal(fab) - dimag(fab), 2, A, norm, plus, 1, X)
-      call mat_init(Y, B, complex=.false.)
-      call blk_axtpy( 1d0, 1, B, norm, eqls, 1, Y)
-      call blk_axtpy(-1d0, 2, B, norm, plus, 1, Y)
-      call blk_gemm(1d0, 1, X, ta, 1, Y, tb, plus, 1, C)
-      call mat_free(Y)
-      call mat_free(X)
+      first  = ((dreal(fab) /= 0 .or. (A%complex .and. dimag(fab) /= 0)) .and. B%complex)
+      second = (dimag(fab) /= 0 .or. (A%complex .and. dreal(fab) /= 0))
+      third  = (dimag(fab) /= 0 .or. A%complex .or. B%complex .or. C%complex)
+      if (first .or. second .or. third) call mat_init(X, A, complex=.false.)
+      if (first .or. second) call mat_init(Y, C, complex=.false.)
+      if (first) then
+         call blk_axtpy( dreal(fab), 1, A, norm, eqls, 1, X)
+         call blk_axtpy(-dimag(fab), 2, A, norm, plus, 1, X)
+         call blk_gemm(1d0, 1, X, ta, 2, B, tb, eqls, 1, Y)
+         call blk_axtpy( 1d0, 1, Y, norm, pc, 1, C)
+         call blk_axtpy( 1d0, 1, Y, norm, pc, 2, C)
+      end if
+      if (second) then
+         call blk_axtpy( dreal(fab), 2, A, norm, eqls, 1, X)
+         call blk_axtpy( dimag(fab), 1, A, norm, plus, 1, X)
+         call blk_gemm(1d0, 1, X, ta, 1, B, tb, eqls, 1, Y)
+         call blk_axtpy( 1d0, 1, Y, norm, pc .or. first, 2, C)
+         call blk_axtpy(-1d0, 1, Y, norm, pc .or. first, 1, C)
+      end if
+      if (first .or. second) call mat_free(Y)
+      if (third) then
+         call blk_axtpy( dreal(fab) + dimag(fab), 1, A, norm, eqls, 1, X)
+         call blk_axtpy( dreal(fab) - dimag(fab), 2, A, norm, plus, 1, X)
+         call mat_init(Y, B, complex=.false.)
+         call blk_axtpy( 1d0, 1, B, norm, eqls, 1, Y)
+         call blk_axtpy(-1d0, 2, B, norm, plus, 1, Y)
+         call blk_gemm(1d0, 1, X, ta, 1, Y, tb, &
+                       pc .or. first .or. second, 1, C)
+         if (.not.(pc .or. first .or. second)) &
+            call blk_axtpy( 0d0, 2, C, norm, eqls, 2, C)
+         call mat_free(Y)
+      end if
+      if (first .or. second .or. third) then
+         call mat_free(X)
+      else
+         call mat_mul(A, B, merge('T','N',ta), merge('T','N',tb), &
+                      dreal(fab), merge(1d0,0d0,pc), C)
+      end if
    end subroutine
 
 
