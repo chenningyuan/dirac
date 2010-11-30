@@ -1790,8 +1790,10 @@ contains
 #ifdef VAR_MPI
    subroutine dft_collect()
       integer :: ierr
-    real(8) :: sum_r
-    integer :: sum_i
+      real(8) :: sum_r
+      integer :: sum_i
+      real(8), allocatable :: reduce_container_1d(:)
+      real(8), allocatable :: reduce_container_4d(:, :, :, :)
 
       call mpi_reduce(nr_electrons,         &
                       sum_r,                &
@@ -1845,11 +1847,11 @@ contains
 
       if (nr_fmat > 0) then
          if (i_am_master) then
-            call alloc(fmat_container, mat_dim, mat_dim, nz, nr_fmat)
+            call alloc(reduce_container_4d, mat_dim, mat_dim, nz, nr_fmat)
          end if
 
          call mpi_reduce(fmat,                       &
-                         fmat_container,             &
+                         reduce_container_4d,        &
                          mat_dim*mat_dim*nz*nr_fmat, &
                          mpi_double_precision,       &
                          mpi_sum,                    &
@@ -1858,28 +1860,28 @@ contains
                          ierr)
 
          if (i_am_master) then
-            call dcopy(mat_dim*mat_dim*nz*nr_fmat, fmat_container, 1, fmat, 1)
-            call dealloc(fmat_container)
+            call dcopy(mat_dim*mat_dim*nz*nr_fmat, reduce_container_4d, 1, fmat, 1)
+            call dealloc(reduce_container_4d)
          end if
       end if
 
       if (do_geo) then
          if (i_am_master) then
-            call alloc(property_gradient_container, nr_atoms*3)
+            call alloc(reduce_container_1d, nr_atoms*3)
          end if
 
-         call mpi_reduce(property_gradient,           &
-                         property_gradient_container, &
-                         nr_atoms*3,                   &
-                         mpi_double_precision,         &
-                         mpi_sum,                      &
-                         0,                            &
-                         mpi_comm_world,               &
+         call mpi_reduce(property_gradient,    &
+                         reduce_container_1d,  &
+                         nr_atoms*3,           &
+                         mpi_double_precision, &
+                         mpi_sum,              &
+                         0,                    &
+                         mpi_comm_world,       &
                          ierr)
 
          if (i_am_master) then
-            call dcopy(nr_atoms*3, property_gradient_container, 1, property_gradient, 1)
-            call dealloc(property_gradient_container)
+            call dcopy(nr_atoms*3, reduce_container_1d, 1, property_gradient, 1)
+            call dealloc(reduce_container_1d)
          end if
       end if
 
