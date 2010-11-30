@@ -32,7 +32,7 @@
 
 // Some platforms do not have erf(), make erf() calls stop
 // AT RUN TIME!
-#define XCFUN_NO_ERF 
+//#define XCFUN_NO_ERF 
 
 // This is the internal scalar type of the library, can be
 // different from the external interface. 
