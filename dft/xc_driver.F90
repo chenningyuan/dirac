@@ -1791,6 +1791,7 @@ contains
    subroutine dft_collect()
       integer :: ierr
       real(8) :: sum_r
+!     real(8) :: dummy
       integer :: sum_i
       real(8), allocatable :: reduce_container_1d(:)
       real(8), allocatable :: reduce_container_4d(:, :, :, :)
@@ -1867,6 +1868,8 @@ contains
 !        suggestion for Radovan (no dcopy + no extra alloc needed) - 
 !        a simple test with this code piece works fine for me.
 !        if (i_am_master) then
+!          important change in declaration scheme (if set already as either IN or OUT):
+!          real(8), intent(INOUT) :: fmat
 !          call mpi_reduce(MPI_IN_PLACE,               &
 !                          fmat,                       &
 !                          mat_dim*mat_dim*nz*nr_fmat, &
@@ -1876,8 +1879,9 @@ contains
 !                          mpi_comm_world,             &
 !                          ierr)
 !        else
+!          declare dummy as --> real(8) :: dummy
 !          call mpi_reduce(fmat,                       &
-!                          fmat,                       &
+!                          dummy,                      &
 !                          mat_dim*mat_dim*nz*nr_fmat, &
 !                          mpi_double_precision,       &
 !                          mpi_sum,                    &
