@@ -3530,6 +3530,7 @@ C
             ENDDO
           ENDDO
         ELSEIF(DIAGHE) THEN
+           call memchk('XRSST2.diaghe 1 ',WORK,1)
           GPTMP = DNRM2(NBDIM,GP,1)
           HDTMP = DNRM2(NVAR,HDIAG,1)/NVAR
           IF (IPRXRS.GE.3) WRITE(LUPRI,'(1X,A,1P,D12.5)')
@@ -3551,12 +3552,17 @@ C           If partial gradient (e-e, e-p, or conf) is small compared to the
 C           total gradient we assume that it is unnecessary to provide a 
 C           corresponding trial vector now. If not then create a trial vector 
 C           from the gradient vector and the diagonal of the Hessian.
-C           
+C 
+            call memchk('XRSST2 skj38 ',WORK,1)
+          
             IF (GPTMP.LT.0.3D0*GPTNRM.AND.(.NOT.UNCOUP)) THEN
+              call memchk('XRSST2 sjdd837 ',WORK,1)
               IVEC(IP) = 0
               IVEC(IM) = 0
+              call memchk('XRSST2 sjdhd ',WORK,1)
             ELSE
               FREQ = EVALR(IP)
+              call memchk('XRSST2 sduu84 ',WORK,1)
               IF(FREQ.EQ.D0) THEN
 C              IF ( FREQ.LT.0.01D0*HDTMP ) THEN
                 DO IZ = 1,NZ
@@ -3598,7 +3604,9 @@ C               tsaue:         retain norm for numerical stability !
                 IVEC(IM) = 1
               END IF
             ENDIF
+            call memchk('XRSST2 sdxhsg',WORK,1)
           ENDDO          
+          call memchk('XRSST2 xhsg',WORK,1)
         ELSE IF (IXRSTB(NBTYP) .GT. 0) THEN
 C
 C         Restart on IXRSTB trial vectors read from trial vector file
