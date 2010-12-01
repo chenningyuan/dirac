@@ -33,11 +33,12 @@ module openrsp_cfg
    logical, public :: openrsp_cfg_cars              = .false.
    logical, public :: openrsp_cfg_efgb              = .false.
    logical, public :: openrsp_cfg_nolao             = .false.
-   logical, public :: openrsp_cfg_jprime            = .false.
    logical, public :: openrsp_cfg_jones             = .false.
    logical, public :: openrsp_cfg_cme               = .false.
    logical, public :: openrsp_cfg_dg_energy         = .false.
    logical, public :: openrsp_cfg_test_delta        = .false.
+   logical, public :: openrsp_cfg_vib_beta          = .false.
+   logical, public :: openrsp_cfg_vib_gamma         = .false.
 
    logical, public :: openrsp_cfg_integrate = .false.
    logical, public :: openrsp_cfg_visual    = .false.
