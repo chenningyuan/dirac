@@ -146,7 +146,7 @@ contains
            call print_shypol(dreal(cfg_rsp_freq(1))*(/-1,1,-1,1/),dreal(tsr(1:3)), &
                              (/dreal(tsr(4:12)),(0d0,i=1,9*3)/),(/(0d0,i=1,27*6)/), &
                              dreal(tsr(13:93)),lupri)
-           call vib_ana_polari(dreal(cfg_rsp_freq(1))*(/-1,1,-1,1/),dreal(tsr(1:3)),l,(/(0d0,i=1,3*l*4)/), &
+           call vib_ana_polari(decomp, dreal(cfg_rsp_freq(1))*(/-1,1,-1,1/),dreal(tsr(1:3)),l,(/(0d0,i=1,3*l*4)/), &
                                (/((dreal(tsr(94+i+l*j)),j=0,8),i=0,l-1), (0d0,i=1,9*l), &
                                  ((dreal(tsr(94+i+l*j)),j=0,8),i=0,l-1), &
                                  ((dreal(tsr(94+i+l*j)),j=0,8),i=0,l-1), (0d0,i=1,9*l), &

@@ -6,6 +6,17 @@ module vib_prop
    use matrix_defop
    use rsp_equations
    use prop_contribs
+!#ifdef PRG_DIRAC
+!   use dirac_interface
+!#endif
+
+   ! ajt LSDALTON has replaced the (global) quit with lsquit
+   !     with unit (lupri) as extra argument, which doesn't
+   !     exist in DIRAC. For now, this macro gets around that.
+#ifdef LSDALTON_ONLY
+#define quit(msg) lsquit(msg,-1)
+#endif
+
    implicit none
 
    public roa_pol_Gpri_Aten_grads
@@ -13,6 +24,7 @@ module vib_prop
    public vib_ana_polari
    public print_shypol
    public vibhyp_hyp_dipgra_polgra
+   public vibshyp_shyp_dipg_polg_hypg
 
    private
 
@@ -84,22 +96,36 @@ contains
    end subroutine
 
 
-   subroutine load_vib_modes(nc,nq,w,Q)
+   !> Load Hessian form DALTON.HES, mass-weight, diagonalize
+   !> and sqrt eigenvalues for frequencies (w<0 means imaginary).
+   !> ajt FIXME Does not work in LSDALTON.
+   subroutine load_vib_modes(decomp, nc, nq, w, Q)
+!     use files
 #if defined(DALTON_AO_RSP)
-       use dalton_ifc
+      use dalton_ifc
 #endif
-   !load Hessian form DALTON.HES, mass-weight, diagonalize
-   !and sqrt eigenvalues for frequencies (w<0 means imaginary)
-      integer,intent(in)  :: nc !number of coordinates
-      integer,intent(out) :: nq !number of vib. modes
-      real(8),intent(out) :: w(nc),Q(nc,nc) !frequencies, normal modes Q(:,k)
-      real(8)      :: M(nc/3),Mtot,Z(nc/3),G(nc),Rc(nc),H(nc,nc),orig(3)=0
-      real(8)      :: diff
-      integer      :: IS(nc/3),i,internal=0,negative=0,unit=-1
-      integer      :: ic, jc, ierr
-      logical      :: ex
+      type(decompItem),intent(inout) :: decomp
+      !> number of (cartesian) coordinates
+      integer, intent(in)            :: nc
+      !> number of vibrational normal mode coordinates
+      integer, intent(out)           :: nq
+      !> resulting vibrational frequencies
+      real(8), intent(out)           :: w(nc)
+      !> resulting mass-weighted normal modes Q(:,:nq)
+      real(8), intent(out)           :: Q(nc,nc)
+      !-----------------------------------------
+      real(8)       :: M(nc/3),Mtot,Z(nc/3),G(nc),Rc(nc),H(nc,nc),orig(3)=0
+      integer       :: IS(nc/3),i,internal=0,negative=0,unit=-1
+      integer       :: ic, jc, ierr
+      real(8)       :: diff
+      logical       :: ex
+      character(22) :: fmt
+#ifdef LSDALTON_ONLY
+      call quit('Cannot call NUCLEI_ifc or GPINQ, only new integral code is compiled')
+#else
       call NUCLEI_ifc(nc/3,Z,IS,G)
       call GPINQ('DALTON.HES','EXIST',ex)
+#endif
       if (.not.ex) call quit('load_vib_modes: Hessian file DALTON.HES not found')
       call GPOPEN(unit,'DALTON.HES','OLD',' ','FORMATTED',0,.false.)
 
@@ -144,12 +170,16 @@ contains
       end do
 
       call GPCLOSE(unit,'KEEP')
+#ifdef LSDALTON_ONLY
+      call quit('Cannot call VIBHES, VIBMAS, or VIBNOR - only new integral code is compiled')
+#else
       call VIBHES(1,nc,G,nq,(/(0d0,i=1,nc)/),H,(/(0d0,i=1,6*nc)/) &
                  ,nint(Z),(/(0d0,i=1,2*nc*nc)/)); nq=nc-nq
       call VIBMAS(M,Mtot,IS,nint(Z),nc/3,G,orig,1)
       call VIBNOR(H,M,(/(0d0,i=1,nc)/),(/(0d0,i=1,nc*(nc+1)/2)/) &
                  ,w,Q,(/(0d0,i=1,nc*nc)/),(/(0d0,i=1,30*nc*nc+1)/) &
                  ,30*nc*nc+1,nc,internal,negative,.false.,1)
+#endif
       w = sign(sqrt(abs(w)),w)
    end subroutine
 
@@ -330,13 +360,29 @@ contains
    end subroutine
 
 
-   subroutine vib_ana_polari(w, dip, nc, dipg, polg, hypg, o)
-      real(8) :: dipg(3,nc,4),polg(3,3,nc,6),hypg(3,3,3,nc,4),w(4),dip(3)
-      integer :: nc,o,nq,i,j,k,l,m,n,ij,ik,jk
+   !> Print vibrational contributions to polarizabilities
+   subroutine vib_ana_polari(decomp, w, dip, nc, dipg, polg, hypg, o)
+      type(decompItem),intent(inout) :: decomp
+      !> frequencies of 4 electric fields
+      real(8),           intent(in) :: w(4)
+      !> dipole moment, used to determine dipole axis
+      real(8),           intent(in) :: dip(3)
+      !> number of cartesian geometrical coordinates
+      integer,           intent(in) :: nc
+      !> dipole gradient (up to 4 of them)
+      real(8),           intent(in) :: dipg(3,nc,4)
+      !> polarizability gradient (up to 6)
+      real(8),           intent(in) :: polg(3,3,nc,6)
+      !> hyperpolarizability gradient (up to 4)
+      real(8),           intent(in) :: hypg(3,3,3,nc,4)
+      !> printing unit
+      integer,           intent(in) :: o
+      !---------------------------------
+      integer :: nq,i,j,k,l,m,n,ij,ik,jk
       real(8) :: dax(3),dipq(3,nc*4),polq(3,3,nc*6),hypq(3,3,3,nc*4),wq(nc),Q(nc,nc)
       if (sqrt(sum(dip*dip))< 0.00001) dax = (/0d0,0d0,1d0/)
       if (sqrt(sum(dip*dip))>=0.00001) dax = dip/sqrt(sum(dip*dip))
-      call load_vib_modes(nc,nq,wq,Q)
+      call load_vib_modes(decomp,nc,nq,wq,Q)
       write (o,'(//20x,a/20x,a/)') 'Mass-weighted normal coordinates (au)', &
                                    '-------------------------------------'
       call OUTPUT(Q(:,1:nq),1,nc,1,nq,nc,nq,1,o)
@@ -360,6 +406,7 @@ contains
          if (all(polq(:,:,1+nq*(ij-1):nq*ij)==0).and. &
              all(polq(:,:,1+nq*(ik-1):nq*ik)==0).and. &
              all(polq(:,:,1+nq*(jk-1):nq*jk)==0)) cycle
+#ifdef PRG_DIRAC
 #ifdef VAR_PGF90
 !radovan pgf complains here
 !PGF90-S-0152-All dimension specifiers must be ':'
@@ -369,6 +416,7 @@ contains
                  -(/dipq(:,1+nq*(i-1):nq*i),dipq(:,1+nq*(j-1):nq*j),dipq(:,1+nq*(k-1):nq*k)/), &
                  -(/polq(:,:,1+nq*(ij-1):nq*ij),polq(:,:,1+nq*(ik-1):nq*ik), &
                    polq(:,:,1+nq*(jk-1):nq*jk)/),o)
+#endif
 #endif
          exit !only one
       end do
@@ -564,18 +612,28 @@ contains
    end subroutine
 
 
-   subroutine roa_pol_Gpri_Aten_grads(decomp, S, D, F, ng, freq, Eff, Ebf, Eqf, &
-                                      Egff, Egbf, Egqf)
-   ! For frequency w=freq calculate polarizability -Eff, G-prime Ebf(w,-w),
-   ! A-tensor -Eqf, pol. gradient Egff, G-prime gradient Egbf(0,w,-w),
-   ! A-tensor gradient Egqf
-      !> Contains matrices from OAO decomposition of overlap matrix
+   !> For frequency w=freq calculate polarizability -Eff, G-prime Ebf(w,-w),
+   !> A-tensor -Eqf, pol. gradient Egff, G-prime gradient Egbf(0,w,-w),
+   !> A-tensor gradient Egqf
+   subroutine roa_pol_Gpri_Aten_grads(decomp, S, D, F, ng, freq, &
+                                      Eff, Ebf, Eqf, Egff, Egbf, Egqf)
       type(decompItem),intent(inout) :: decomp
-      type(matrix),intent(in)  :: S, D, F
-      integer,     intent(in)  :: ng
-      complex(8),  intent(in)  :: freq
-      complex(8),  intent(out) :: Eff(3,3), Ebf(3,3), Eqf(6,3), &
-                                  Egff(ng,3,3),Egbf(ng,3,3),Egqf(ng,6,3)
+      !> overlap matrix
+      type(matrix),      intent(in)  :: S
+      !> density matrix
+      type(matrix),      intent(in)  :: D
+      !> Fock matrix
+      type(matrix),      intent(in)  :: F
+      !> number of geometrical coordinates
+      integer,           intent(in)  :: ng
+      !> external laser frequency
+      complex(8),        intent(in)  :: freq
+      !> polarizability is returned in Eff, G' in Ebf, A-tensor in Eqf,
+      !> and the respective gradients in Egff, Egbf and Egqf
+      !> ajt FIXME: Sign-name confusion Eff should be -alpha
+      complex(8),        intent(out) :: Eff(3,3), Ebf(3,3), Eqf(6,3), &
+                                        Egff(ng,3,3),Egbf(ng,3,3),   &
+                                        Egqf(ng,6,3)
       type(matrix) :: De(3), Df(3), Db(3), Dq(6), Def(3,3), Dbf(3,3), Dqf(6,3), &
                       Fe(3), Ff(3), Fb(3), Fq(6), Fef(3,3), Fbf(3,3), Fqf(6,3), &
                       DFDef(3,3), DFDbf(3,3), DFDqf(6,3)
@@ -583,12 +641,12 @@ contains
       ! electric equations, polarizability, G-prime, A-tensor
       call pert_dens(decomp, S, (/'EL'/), (/3/), (/D/), (/F/), Df, Ff, freq=(/-freq/))
       Eff=0; Ebf=0; Eqf=0
-      call prop_oneave(S, (/'EL'/), (/Df/), int(shape(Eff)), Eff)
-      call prop_oneave(S, (/'MAGO'/),(/Df/), int(shape(Ebf)), Ebf)
-      call prop_oneave(S, (/'ELGR'/), (/Df/), int(shape(Eqf)), Eqf)
-      call print_tensor(int(shape(Eff)), -Eff, 'Alpha = -Eff', (/freq,-freq/))
-      call print_tensor(int(shape(Ebf)),  Ebf, 'G-prime = Ebf', (/freq,-freq/))
-      call print_tensor(int(shape(Eqf)), -Eqf, 'A-tensor = -Eqf', (/freq,-freq/))
+      call prop_oneave(S, (/'EL'/), (/Df/), shape(Eff), Eff)
+      call prop_oneave(S, (/'MAGO'/),(/Df/), shape(Ebf), Ebf)
+      call prop_oneave(S, (/'ELGR'/), (/Df/), shape(Eqf), Eqf)
+      call print_tensor(shape(Eff), -Eff, 'Alpha = -Eff', (/freq,-freq/))
+      call print_tensor(shape(Ebf),  Ebf, 'G-prime = Ebf', (/freq,-freq/))
+      call print_tensor(shape(Eqf), -Eqf, 'A-tensor = -Eqf', (/freq,-freq/))
       !--------------------------------------------------
       ! electric-electric equations, solve 6 eqs, not 3x3
       do k = 1, 3;
@@ -605,9 +663,11 @@ contains
       !------------------------
       ! polarizability gradient
       Egff = 0
-      call prop_oneave(S, (/'GEO','EL '/), (/Df/), int(shape(Egff)), Egff)
-      call prop_oneave(S, (/'GEO','EL '/), (/De/), int(shape(Egff)), Egff, perm=(/1,3,2/))
-      call prop_twoave((/'GEO'/), (/D,De,Df,Def/), int(shape(Egff)), Egff)
+      call prop_oneave(S, (/'GEO','EL '/), (/Df/), shape(Egff), Egff)
+      ! call print_tensor(Egff, shape(Egff), 'E1geDf'); Egff=0
+      call prop_oneave(S, (/'GEO','EL '/), (/De/), shape(Egff), Egff, perm=(/1,3,2/))
+      ! call print_tensor(Egff, shape(Egff), 'E1gfDe'); Egff=0
+      call prop_twoave((/'GEO'/), (/D,De,Df,Def/), shape(Egff), Egff)
       do k = 1, 3
          do j = 1, 3
             DFDef(j,k) = De(j)*Ff(k)*D + De(j)*(F+freq*S)*Df(k) + D*Fe(j)*Df(k) &
@@ -615,11 +675,12 @@ contains
                        + Def(j,k)*F*D + D*Fef(j,k)*D + D*F*Def(j,k)
          end do
       end do
-      call prop_oneave(S, (/'GEO'/), (/Def/), int(shape(Egff)), Egff, DFD=(/DFDef/))
+      call prop_oneave(S, (/'GEO'/), (/Def/), shape(Egff), Egff, DFD=(/DFDef/))
       DFDef = 0
-      call print_tensor(int(shape(Egff)), -Egff, 'd/dg Polari = -Egff', &
+      ! call print_tensor(Egff, shape(Egff), 'E1gDef+E2gDeDf-SgDFDef'); Egff=0
+      call print_tensor(shape(Egff), -Egff, 'd/dg Polari = -Egff', &
                         (/0*freq,freq,-freq/))
-      De=0; Fe=0; Def=0; Fef=0
+      DFDef=0; De=0; Fe=0; Def=0; Fef=0
       !----------------------------------------
       ! magetic and electric-magnetic equations
       call pert_dens(decomp, S, (/'MAGO'/), (/3/), (/D/), (/F/), Db, Fb, freq=(/freq/))
@@ -628,9 +689,11 @@ contains
       !-----------------
       ! G-prime gradient
       Egbf = 0
-      call prop_oneave(S, (/'GEO ','MAGO'/), (/Df/), int(shape(Egbf)), Egbf)
-      call prop_oneave(S, (/'GEO','EL '/), (/Db/), int(shape(Egbf)), Egbf, perm=(/1,3,2/))
-      call prop_twoave((/'GEO'/), (/D,Db,Df,Dbf/), int(shape(Egbf)), Egbf)
+      call prop_oneave(S, (/'GEO ','MAGO'/), (/Df/), shape(Egbf), Egbf)
+      ! call print_tensor(Egbf, shape(Egbf), 'E1gbDf'); Egbf=0
+      call prop_oneave(S, (/'GEO','EL '/), (/Db/), shape(Egbf), Egbf, perm=(/1,3,2/))
+      ! call print_tensor(Egbf, shape(Egbf), 'E1gfDb'); Egbf=0
+      call prop_twoave((/'GEO'/), (/D,Db,Df,Dbf/), shape(Egbf), Egbf)
       do k = 1, 3
          do j = 1, 3
             DFDbf(j,k) = Db(j)*Ff(k)*D + Db(j)*(F+freq*S)*Df(k) + D*Fb(j)*Df(k) &
@@ -638,11 +701,11 @@ contains
                        + Dbf(j,k)*F*D + D*Fbf(j,k)*D + D*F*Dbf(j,k)
          end do
       end do
-      call prop_oneave(S, (/'GEO'/), (/Dbf/), int(shape(Egbf)), Egbf, DFD=(/DFDbf/))
-      call print_tensor(int(shape(Egbf)), Egbf, 'd/dg G-prime = Egbf', &
+      call prop_oneave(S, (/'GEO'/), (/Dbf/), shape(Egbf), Egbf, DFD=(/DFDbf/))
+      ! call print_tensor(Egbf, shape(Egbf), 'E2gDbDf + E1gDfb - SgDFDbf'); Egbf=0
+      call print_tensor(shape(Egbf), Egbf, 'd/dg G-prime = Egbf', &
                         (/0*freq,freq,-freq/))
-      DFDbf=0
-      Db=0; Fb=0; Dbf=0; Fbf=0
+      DFDbf=0; Db=0; Fb=0; Dbf=0; Fbf=0
       !---------------------------------------------
       ! quadrupole and quadrupole-electric equations
       call pert_dens(decomp, S, (/'ELGR'/), (/6/), (/D/), (/F/), Dq, Fq, freq=(/freq/))
@@ -651,9 +714,11 @@ contains
       !------------------
       ! A-tensor gradient
       Egqf = 0
-      call prop_oneave(S, (/'GEO ','ELGR'/), (/Df/), int(shape(Egqf)), Egqf)
-      call prop_oneave(S, (/'GEO','EL '/), (/Dq/), int(shape(Egqf)), Egqf, perm=(/1,3,2/))
-      call prop_twoave((/'GEO'/), (/D,Dq,Df,Dqf/), int(shape(Egqf)), Egqf)
+      call prop_oneave(S, (/'GEO ','ELGR'/), (/Df/), shape(Egqf), Egqf)
+      ! call print_tensor(shape(Egqf), Egqf, 'E1gqDf'); Egqf=0
+      call prop_oneave(S, (/'GEO','EL '/), (/Dq/), shape(Egqf), Egqf, perm=(/1,3,2/))
+      ! call print_tensor(shape(Egqf), Egqf, 'E1gfDq'); Egqf=0
+      call prop_twoave((/'GEO'/), (/D,Dq,Df,Dqf/), shape(Egqf), Egqf)
       do k = 1, 3
          do j = 1, 6
             DFDqf(j,k) = Dq(j)*Ff(k)*D + Dq(j)*(F+freq*S)*Df(k) + D*Fq(j)*Df(k) &
@@ -661,25 +726,37 @@ contains
                        + Dqf(j,k)*F*D + D*Fqf(j,k)*D + D*F*Dqf(j,k)
          end do
       end do
-      call prop_oneave(S, (/'GEO'/), (/Dqf/), int(shape(Egqf)), Egqf, DFD=(/DFDqf/))
-      call print_tensor(int(shape(Egqf)), -Egqf, 'd/dg A-tensor = -Egqf', &
+      call prop_oneave(S, (/'GEO'/), (/Dqf/), shape(Egqf), Egqf, DFD=(/DFDqf/))
+      ! call print_tensor(shape(Egqf), Egqf, 'E2gDqDf + E1gDqf - SgDFDqf'); Egqf=0
+      call print_tensor(shape(Egqf), -Egqf, 'd/dg A-tensor = -Egqf', &
                         (/0*freq,freq,-freq/))
-      DFDqf=0
-      Dq=0; Fq=0; Df=0; Ff=0; Dqf=0; Fqf=0
+      DFDqf=0; Dq=0; Fq=0; Df=0; Ff=0; Dqf=0; Fqf=0
       ! change sign on quasi-energy derivatives to get properties
       Eff=-Eff; Eqf=-Eqf; Egff=-Egff; Egqf=-Egqf
    end subroutine
 
 
+   !> For frequency freq (w), calculates polarizability the alpha(-w,w) in Eff,
+   !> polarizability gradient d/dg alpha(-w,w) in Eff, and 2nd hyperpolarizability
+   !> gamma(-w,w,-w,w) in Effff
    subroutine cars_pol_shyp_polgra(decomp, S, D, F, ng, freq, Ef, Eff, Effff, Egff)
-   ! For frequency freq (w), calculates polarizability the alpha(-w,w) in Eff,
-   ! polarizability gradient d/dg alpha(-w,w) in Eff, and 2nd hyperpolarizability
-   ! gamma(-w,w,-w,w) in Effff
+      !> reference to molecule, solver- and integral settings
       type(decompItem),intent(inout) :: decomp
-      type(matrix),intent(in)  :: S, D, F
-      integer,     intent(in)  :: ng
-      complex(8),  intent(in)  :: freq
-      complex(8),  intent(out) :: Ef(3), Eff(3,3), Effff(3,3,3,3), Egff(ng,3,3)
+      !> overlap matrix
+      type(matrix),      intent(in)  :: S
+      !> density matrix
+      type(matrix),      intent(in)  :: D
+      !> Fock matrix
+      type(matrix),      intent(in)  :: F
+      !> number of geometrical coordinates
+      integer,           intent(in)  :: ng
+      !> external laser frequency
+      complex(8),        intent(in)  :: freq
+      !> dipole moment returned in Ef, polarizability in in Eff
+      !> 2nd hyperpolarizability in Effff and polarizability gradient in Egff
+      !> ajt FIXME: Sign-name confusion Ef should be -dipmom
+      complex(8),        intent(out) :: Ef(3), Eff(3,3), Effff(3,3,3,3), &
+                                        Egff(ng,3,3)
       type(matrix) :: De(3), Df(3), Def(3,3), Dff(3,3), FeDS(3), FDSfef, DSDfef
       type(matrix) :: Fe(3), Ff(3), Fef(3,3), Fff(3,3), DeSD(3), DFDef(3,3)
       integer      :: i, j, k, l
@@ -712,11 +789,11 @@ contains
       !------------------------
       ! polarizability gradient
       Egff = 0
-      call prop_oneave(S, (/'GEO','EL '/), (/Df/), int(shape(Egff)), Egff)
+      call prop_oneave(S, (/'GEO','EL '/), (/Df/), shape(Egff), Egff)
       ! call print_tensor(Egff, shape(Egff), 'E1geDf'); Egff=0
-      call prop_oneave(S, (/'GEO','EL '/), (/De/), int(shape(Egff)), Egff, perm=(/1,3,2/))
+      call prop_oneave(S, (/'GEO','EL '/), (/De/), shape(Egff), Egff, perm=(/1,3,2/))
       ! call print_tensor(Egff, shape(Egff), 'E1gfDe'); Egff=0
-      call prop_twoave((/'GEO'/), (/D,De,Df,Def/), int(shape(Egff)), Egff)
+      call prop_twoave((/'GEO'/), (/D,De,Df,Def/), shape(Egff), Egff)
       do k = 1, 3
          do j = 1, 3
             DFDef(j,k) = De(j)*Ff(k)*D + De(j)*(F-freq*S)*Df(k) + D*Fe(j)*Df(k) &
@@ -724,10 +801,10 @@ contains
                        + Def(j,k)*F*D + D*Fef(j,k)*D + D*F*Def(j,k)
          end do
       end do
-      call prop_oneave(S, (/'GEO'/), (/Def/), int(shape(Egff)), Egff, DFD=(/DFDef/))
+      call prop_oneave(S, (/'GEO'/), (/Def/), shape(Egff), Egff, DFD=(/DFDef/))
       DFDef = 0
       ! call print_tensor(Egff, shape(Egff), 'E1gDef+E2gDeDf-SgDFDef'); Egff=0
-      call print_tensor(int(shape(Egff)), -Egff, 'd/dg Alpha = -Egff', &
+      call print_tensor(shape(Egff), -Egff, 'd/dg Alpha = -Egff', &
                         (/0*freq,-freq,freq/))
       DFDef=0
       !------------------------------------------------------------------
@@ -789,11 +866,22 @@ contains
                                        dip, Eff, Efff, Egf, Egff)
       !> Contains matrices from OAO decomposition of overlap matrix
       type(decompItem),intent(inout) :: decomp
-      type(matrix), intent(in)  :: S, D, F
-      integer,      intent(in)  :: ng
-      complex(8),   intent(in)  :: freq(3)
-      complex(8),   intent(out) :: dip(3), Eff(3,3,3), Efff(3,3,3), &
-                                   Egf(ng,3,3), Egff(ng,3,3,3)
+      !> overlap matrix
+      type(matrix),      intent(in)  :: S
+      !> density matrix
+      type(matrix),      intent(in)  :: D
+      !> Fock matrix
+      type(matrix),      intent(in)  :: F
+      !> number of geometrical coordinates
+      integer,           intent(in)  :: ng
+      !> external laser frequency
+      complex(8),        intent(in)  :: freq(3)
+      !> dipole moment returned in dip, polarizability in in Eff
+      !> hyperpolarizability in Efff, dipole gradient in Egf,
+      !> polarizability gradient in Egff.
+      !> ajt FIXME: Sign-name confusion Ef should be -dipmom
+      complex(8),        intent(out) :: dip(3), Eff(3,3,3), Efff(3,3,3), &
+                                        Egf(ng,3,3), Egff(ng,3,3,3)
       type(matrix) :: Df(3,3), Dff(3,3,3), DFDf(3), &
                       Ff(3,3), Fff(3,3,3), DFDff(3,3)
       integer      :: i, j, k, m, n, nj, nk, mj, mk
@@ -802,8 +890,12 @@ contains
       if (abs(sum(freq)) > 1d-15) &
          call quit('vibhyp_hyp_dipgra_polgra: sum(freq) should be zero!')
       ! verify that DALTON.HES exists before doing anything
+#ifdef LSDALTON_ONLY
+      call quit('Cannot call GPINQ, only new integral code is compiled')
+#else
       call GPINQ('DALTON.HES', 'EXIST', exists)
-      if (.not.exists) call quit('vibhyp_hyp_dipgra_polgra: Hessian file'// &
+#endif
+      if (.not.exists) call quit('vibhyp_hyp_dipgra_polgra: Hessian file', &
                                  ' DALTON.HES not found, but will be needed')
       ! dipole moment
       dip = 0
@@ -991,6 +1083,417 @@ contains
       Df=0; Dff=0; Ff=0; Fff=0
       ! reverse signs on quasi-energy derivatives to get dipole, alpha and beta
       Eff=-Eff; Efff=-Efff; Egf=-Egf; Egff=-Egff
+   end subroutine
+
+
+
+   subroutine vibshyp_shyp_dipg_polg_hypg(decomp, S, D, F, ng, freq, &
+                                          dip, Effff, Egf, Egff, Egfff)
+      type(decompItem),intent(inout) :: decomp
+      !> overlap matrix
+      type(matrix),      intent(in)  :: S
+      !> density matrix
+      type(matrix),      intent(in)  :: D
+      !> Fock matrix
+      type(matrix),      intent(in)  :: F
+      !> number of geometrical coordinates
+      integer,           intent(in)  :: ng
+      !> external laser frequencies
+      complex(8),        intent(in)  :: freq(4)
+      !> dipole moment returned in dip, polarizability in in Eff
+      !> 2nd hyperpolarizability in Effff, 4 dipole gradients in Egf,
+      !> 6 polarizability gradients in Egff. and 4 hyperpolarizability
+      !> gradients in Egfff
+      !> ajt FIXME: Sign-name confusion Ef should be -dipmom
+      complex(8),        intent(out) :: dip(3), Effff(3,3,3,3), Egf(ng,3,4)
+      complex(8),        intent(out) :: Egff(ng,3,3,6), Egfff(ng,3,3,3,4)
+      type(matrix) :: Df(3,4), Dff(3,3,6), Dfff(3,3,3), DFDf(3), DFDff(3,3)
+      type(matrix) :: Ff(3,4), Fff(3,3,6), Ffff(3,3,3), DFDfff(3,3,3), DFD
+      type(matrix) :: FD0, FD1, FD2, FD3
+      complex(8)   :: Eff(3,3), Efff(3,3,3), Rg333(ng,3,3,3)
+      integer      :: i, j, k, l, m, n, ni, nj, nk, nl, mi, mj, mk, ml
+      integer      :: nij, nik, njk, njl, nkl, mij, mik, mjk
+      logical      :: exists
+      type(matrix)              :: zeromat
+      ! verify that frequencies sum to zero
+      if (abs(sum(freq)) > 1d-15) &
+         call quit('vibgam_shyp_dipg_polg_hypg: sum(freq) should be zero!',-1)
+      ! verify that DALTON.HES exists before doing anything
+#ifdef LSDALTON_ONLY
+      call quit('Cannot call GPINQ, only new integral code is compiled',-1)
+#else
+      call GPINQ('DALTON.HES', 'EXIST', exists)
+#endif
+      if (.not.exists) call quit('vibgam_shyp_dipg_polg_hypg: Hessian file', &
+                                 ' DALTON.HES not found, but will be needed',-1)
+      ! dipole moment
+      dip = 0
+      call prop_oneave(S, (/'EL'/), (/D/), (/3/), dip)
+      dip = -dip
+      call print_tensor((/3/), dip, 'dipmom = -Ef')
+      !----------------------
+      ! first order equations
+      do n=1,4
+         ! if frequency previously solved for, copy and skip
+         do m=1,n
+            if (freq(m)==freq(n) .or. freq(m)==-freq(n)) exit
+         end do
+         if (m /= n) then
+            do i=1,3
+               if (freq(m)==freq(n)) Df(i,n) = Df(i,m)
+               if (freq(m)==freq(n)) Ff(i,n) = Ff(i,m)
+               if (freq(m)/=freq(n)) Df(i,n) = dag(Df(i,m))
+               if (freq(m)/=freq(n)) Ff(i,n) = dag(Ff(i,m))
+               Egf(:,:,n) = Egf(:,:,m)
+            end do
+            cycle
+         end if
+         ! new frequency, so solve
+         call pert_dens(decomp, S, (/'EL'/), (/3/), (/D/), (/F/), &
+                        Df(:,n), Ff(:,n), freq=(/freq(n)/))
+         ! polarizability
+         Eff(:,:) = 0
+         call prop_oneave(S, (/'EL'/), (/Df(:,n)/), (/3,3/), Eff(:,:))
+         call print_tensor((/3,3/), -Eff(:,:), 'Alpha = -Eff', (/-freq(n),freq(n)/))
+         ! dipole moment gradient
+         Egf(:,:,n) = 0
+         call prop_oneave(S, (/'GEO','EL '/), (/D/), (/ng,3/), Egf(:,:,n))
+         ! call print_tensor((/ng,3/), Egf(:,:,n), 'E0gf'); Egf(:,:,n)=0
+         call prop_twoave((/'GEO'/), (/D,Df(:,n)/), (/ng,3/), Egf(:,:,n))
+         ! call print_tensor( (/3,ng/), Efg(:,:,n), 'E1gDf'); Efg(:,:,n)=0
+         do i=1,3
+            DFDf(i) = Df(i,n)*(F+freq(n)/2*S)*D + D*Ff(i,n)*D &
+                          + D*(F-freq(n)/2*S)*Df(i,n)
+         end do
+         call prop_oneave(S, (/'GEO'/), (/Df(:,n)/), (/ng,3/), Egf(:,:,n), &
+                          DFD=(/DFDf/), freq=(/-freq(n)/))
+         DFDf = 0
+         ! call print_tensor((/ng,3/), Egf(:,:,n), 'E1gDf - i/2TgDf - Sg(DFD)f'); Egf(:,:,n)=0
+         call print_tensor((/ng,3/), -Egf(:,:,n), 'd/dg dipmom = -Egf', &
+                           (/-freq(n),freq(n)/))
+      end do
+      !-----------------------
+      ! second order equations
+      do n=1,6
+         nj = merge(merge(2,3,n<2),4,n<4)
+         ni = n - (nj-2)*(nj-1)/2
+         ! if these equations have been solved previously, copy and skip
+         do m=1,n
+            mj = merge(merge(2,3,m<2),4,m<4)
+            mi = m - (mj-2)*(mj-1)/2
+            if ((freq(mi)== freq(ni) .and. freq(mj)== freq(nj)) .or. &
+                (freq(mi)== freq(nj) .and. freq(mj)== freq(ni)) .or. &
+                (freq(mi)==-freq(ni) .and. freq(mj)==-freq(nj)) .or. &
+                (freq(mi)==-freq(nj) .and. freq(mj)==-freq(ni))) exit
+         end do
+         if (m/=n) then
+            do j=1,3
+               do i=1,3
+                  if (freq(mi)==freq(ni) .and. freq(mj)== freq(nj)) then
+                     Dff(i,j,n) = Dff(i,j,m)
+                     Fff(i,j,n) = Fff(i,j,m)
+                     Egff(:,i,j,n) = Egff(:,i,j,m)
+                  else if (freq(mi)==freq(nj) .and. freq(mj)== freq(ni)) then
+                     Dff(i,j,n) = Dff(j,i,m)
+                     Fff(i,j,n) = Fff(j,i,m)
+                     Egff(:,i,j,n) = Egff(:,j,i,m)
+                  else if (freq(mi)==-freq(ni) .and. freq(mj)==-freq(nj)) then
+                     Dff(i,j,n) = dag(Dff(i,j,m))
+                     Fff(i,j,n) = dag(Fff(i,j,m))
+                     Egff(:,i,j,n) = Egff(:,i,j,m)
+                  else !freq(mi)==-freq(nj) .and. freq(mj)==-freq(ni)
+                     Dff(i,j,n) = dag(Dff(j,i,m))
+                     Fff(i,j,n) = dag(Fff(j,i,m))
+                     Egff(:,i,j,n) = Egff(:,j,i,m)
+                  end if
+               end do
+            end do
+            cycle
+         end if
+         ! new pair of frequencies, so must solve
+         ! if same or opposite freqs, only 6 eqns
+         if (freq(ni)==freq(nj) .or. freq(ni)==-freq(nj)) then
+            do j=1,3
+               call pert_dens(decomp, S, (/'EL','EL'/), (/j,1/), &
+                              (/D,Df(1:j,ni),Df(j,nj)/),      &
+                              (/F,Ff(1:j,ni),Ff(j,nj)/),      &
+                              Dff(1:j,j,n), Fff(1:j,j,n),     &
+                              freq=(/freq(ni),freq(nj)/), comp=(/1,j/))
+               do i=1,j-1
+                  if (freq(ni)==freq(nj)) Dff(j,i,n) = Dff(i,j,n)
+                  if (freq(ni)==freq(nj)) Fff(j,i,n) = Fff(i,j,n)
+                  if (freq(ni)/=freq(nj)) Dff(j,i,n) = dag(Dff(i,j,n))
+                  if (freq(ni)/=freq(nj)) Fff(j,i,n) = dag(Fff(i,j,n))
+               end do
+            end do
+         else
+            call pert_dens(decomp, S, (/'EL','EL'/), (/3,3/),                   &
+                           (/D,Df(:,ni),Df(:,nj)/), (/F,Ff(:,ni),Ff(:,nj)/), &
+                           Dff(:,:,n), Fff(:,:,n), freq=(/freq(ni),freq(nj)/))
+         end if
+         ! 1st hyperpolarizability
+         Efff(:,:,:) = 0
+         call prop_oneave(S, (/'EL'/), (/Dff(:,:,n)/), (/3,3,3/), Efff)
+         call print_tensor((/3,3,3/), -Efff, 'Beta = -Efff', &
+                           (/-freq(ni)-freq(nj),freq(ni),freq(nj)/))
+         ! polarizability gradient
+         Egff(:,:,:,n) = 0
+         call prop_oneave(S, (/'GEO','EL '/), (/Df(:,nj)/), (/ng,3,3/), Egff(:,:,:,n))
+         ! call print_tensor((/ng,3,3/), Egff(:,:,:,n), 'E1geDf'); Egff(:,:,:,n)=0
+         call prop_oneave(S, (/'GEO','EL '/), (/Df(:,ni)/), (/ng,3,3/), &
+                          Egff(:,:,:,n), perm=(/1,3,2/))
+         ! call print_tensor((/ng,3,3/), Egff(:,:,:,n), 'E1gfDe'); Egff(:,:,:,n)=0
+         call prop_twoave((/'GEO'/), (/D,Df(:,ni),Df(:,nj),Dff(:,:,n)/), &
+                          (/ng,3,3/), Egff(:,:,:,n))
+         ! prepare DFDff
+         FD0 = (F + (freq(ni)+freq(nj))/2 * S) * D
+         do j=1,3
+            FD1 = Ff(j,nj)*D + (F + (freq(ni)-freq(nj))/2 * S) * Df(j,nj)
+            do i=1,3
+               FD2 = Fff(i,j,n)*D + Ff(j,nj)*Df(i,ni) + Ff(i,ni)*Df(j,nj) &
+                   + (F - (freq(ni)+freq(nj))/2 * S) * Dff(i,j,n)
+               DFDff(i,j) = D*FD2 + Df(i,ni)*FD1 + Dff(i,j,n)*FD0
+            end do
+         end do
+         FD0=0; FD2=0
+         do i=1,3
+            FD1 = Ff(i,ni)*D + (F - (freq(ni)-freq(nj))/2 * S) * Df(i,ni)
+            do j=1,3
+               DFDff(i,j) = DFDff(i,j) + Df(j,nj)*FD1
+            end do
+         end do
+         FD1=0; FD2=0
+         call prop_oneave(S, (/'GEO'/), (/Dff(:,:,n)/), (/ng,3,3/), Egff(:,:,:,n), &
+                          DFD=(/DFDff/), freq=(/-freq(ni)-freq(nj)/))
+         DFDff(:,:) = 0
+         ! call print_tensor((/ng,3,3/), Egff(:,:,:,n), &
+         !                   'E1gDef + E2gDeDf - i/2TgDef - Sg(DFD)ef'); Egff(:,:,:,n)=0
+         call print_tensor((/ng,3,3/), -Egff(:,:,:,n), 'd/dg Alpha = -Egff', &
+                           (/-freq(ni)-freq(nj),freq(ni),freq(nj)/))
+      end do
+      !------------------------
+      ! 4 third order equations
+      do n=1,4
+         ni = merge(1,2,n<4)
+         nj = merge(2,3,n<3)
+         nk = merge(3,4,n<2)
+         nij = ni + (nj-2)*(nj-1)/2
+         nik = ni + (nk-2)*(nk-1)/2
+         njk = nj + (nk-2)*(nk-1)/2
+         !ajt This is overkill, but I'm in a hurry
+         do m=1,n
+            mi = merge(1,2,m<4)
+            mj = merge(2,3,m<3)
+            mk = merge(3,4,m<2)
+            mij = mi + (mj-2)*(mj-1)/2
+            mik = mi + (mk-2)*(mk-1)/2
+            mjk = mj + (mk-2)*(mk-1)/2
+            if ((freq(mi)== freq(ni) .and. freq(mj)== freq(nj)       &
+                                     .and. freq(mk)== freq(nk)) .or. &
+                (freq(mi)== freq(nj) .and. freq(mj)== freq(ni)       &
+                                     .and. freq(mk)== freq(nk)) .or. &
+                (freq(mi)== freq(nk) .and. freq(mj)== freq(nj)       &
+                                     .and. freq(mk)== freq(ni)) .or. &
+                (freq(mi)== freq(ni) .and. freq(mj)== freq(nk)       &
+                                     .and. freq(mk)== freq(nj)) .or. &
+                (freq(mi)== freq(nj) .and. freq(mj)== freq(nk)       &
+                                     .and. freq(mk)== freq(ni)) .or. &
+                (freq(mi)== freq(nk) .and. freq(mj)== freq(ni)       &
+                                     .and. freq(mk)== freq(nj)) .or. &
+                (freq(mi)==-freq(ni) .and. freq(mj)==-freq(nj)       &
+                                     .and. freq(mk)==-freq(nk)) .or. &
+                (freq(mi)==-freq(nj) .and. freq(mj)==-freq(ni)       &
+                                     .and. freq(mk)==-freq(nk)) .or. &
+                (freq(mi)==-freq(nk) .and. freq(mj)==-freq(nj)       &
+                                     .and. freq(mk)==-freq(ni)) .or. &
+                (freq(mi)==-freq(ni) .and. freq(mj)==-freq(nk)       &
+                                     .and. freq(mk)==-freq(nj)) .or. &
+                (freq(mi)==-freq(nj) .and. freq(mj)==-freq(nk)       &
+                                     .and. freq(mk)==-freq(ni)) .or. &
+                (freq(mi)==-freq(nk) .and. freq(mj)==-freq(ni)       &
+                                     .and. freq(mk)==-freq(nj))) exit
+         end do
+         if (m/=n) then
+            do k=1,3
+               do j=1,3
+                  do i=1,3
+                     if ((freq(mi)== freq(ni) .and. freq(mj)== freq(nj)            &
+                              .and. freq(mk)== freq(nk)) .or. (freq(mi)==-freq(ni) &
+                              .and. freq(mj)==-freq(nj) .and. freq(mk)==-freq(nk))) then
+                        Egfff(:,i,j,k,n) = Egfff(:,i,j,k,m)
+                     else if ((freq(mi)== freq(nj) .and. freq(mj)== freq(ni)       &
+                              .and. freq(mk)== freq(nk)) .or. (freq(mi)==-freq(nj) &
+                              .and. freq(mj)==-freq(ni) .and. freq(mk)==-freq(nk))) then
+                        Egfff(:,i,j,k,n) = Egfff(:,j,i,k,m)
+                     else if ((freq(mi)== freq(nk) .and. freq(mj)== freq(nj)       &
+                              .and. freq(mk)== freq(ni)) .or. (freq(mi)==-freq(nk) &
+                              .and. freq(mj)==-freq(nj) .and. freq(mk)==-freq(ni))) then
+                        Egfff(:,i,j,k,n) = Egfff(:,k,j,i,m)
+                     else if ((freq(mi)== freq(ni) .and. freq(mj)== freq(nk)       &
+                              .and. freq(mk)== freq(nj)) .or. (freq(mi)==-freq(ni) &
+                              .and. freq(mj)==-freq(nk) .and. freq(mk)==-freq(nj))) then
+                        Egfff(:,i,j,k,n) = Egfff(:,i,k,j,m)
+                     else if ((freq(mi)== freq(nj) .and. freq(mj)== freq(nk)       &
+                              .and. freq(mk)== freq(ni)) .or. (freq(mi)==-freq(nj) &
+                              .and. freq(mj)==-freq(nk) .and. freq(mk)==-freq(ni))) then
+                        Egfff(:,i,j,k,n) = Egfff(:,k,i,j,m)
+                     else !if ((freq(mi)== freq(nk) .and. freq(mj)== freq(ni)       &
+                          !    .and. freq(mk)== freq(nj)) .or. (freq(mi)==-freq(nk) &
+                          !    .and. freq(mj)==-freq(ni) .and. freq(mk)==-freq(nj))) then
+                        Egfff(:,i,j,k,n) = Egfff(:,j,k,i,m)
+                     end if
+                  end do
+               end do
+            end do
+            cycle
+         end if
+         ! new triple of frequencies, so must solve
+         if (freq(ni)==freq(nj) .and. freq(ni)==freq(nk)) then
+            ! all freqs equal, just 10 eqns
+            do k=1,3
+               do j=1,k
+                  call pert_dens(decomp, S, (/'EL','EL','EL'/), (/j,1,1/),        &
+                                 (/D,Df(:j,ni),Df(j,nj),Df(k,nk),              &
+                                   Dff(:j,j,nij),Dff(:j,k,nik),Dff(j,k,njk)/), &
+                                 (/F,Ff(:j,ni),Ff(j,nj),Ff(k,nk),              &
+                                   Fff(:j,j,nij),Fff(:j,k,nik),Fff(j,k,njk)/), &
+                                 Dfff(:j,j,k), Ffff(:j,j,k),                   &
+                                 freq=(/freq(ni),freq(nj),freq(nk)/), comp=(/1,j,k/))
+                  do i=1,j-1 !i-j symmetry
+                     Dfff(j,i,k) = Dfff(i,j,k)
+                     Ffff(j,i,k) = Ffff(i,j,k)
+                  end do
+               end do
+               do i=1,k-1 !i-k symmetry
+                  do j=1,k-1
+                     Dfff(k,j,i) = Dfff(i,j,k)
+                     Ffff(k,j,i) = Ffff(i,j,k)
+                  end do
+               end do
+               do j=1,k-1 !j-k symmetry
+                  do i=1,k
+                     Dfff(i,k,j) = Dfff(i,j,k)
+                     Ffff(i,k,j) = Ffff(i,j,k)
+                  end do
+               end do
+            end do
+         else if (freq(nj)==freq(nk) .or. (freq(ni)==0 .and. freq(nj)==-freq(nk))) then
+            ! j-k symmetry, 20 eqns
+            do k=1,3
+               call pert_dens(decomp, S, (/'EL','EL','EL'/), (/3,k,1/),        &
+                              (/D,Df(:,ni),Df(:k,nj),Df(k,nk),              &
+                                Dff(:,:k,nij),Dff(:,k,nik),Dff(:k,k,njk)/), &
+                              (/F,Ff(:,ni),Ff(:k,nj),Ff(k,nk),              &
+                                Fff(:,:k,nij),Fff(:,k,nik),Fff(:k,k,njk)/), &
+                              Dfff(:,:k,k), Ffff(:,:k,k),                   &
+                              freq=(/freq(ni),freq(nj),freq(nk)/), comp=(/1,1,k/))
+               do j=1,k-1
+                  do i=1,3
+                     if (freq(nj)==freq(nk)) Dfff(i,k,j) = Dfff(i,j,k)
+                     if (freq(nj)==freq(nk)) Ffff(i,k,j) = Ffff(i,j,k)
+                     if (freq(nj)/=freq(nk)) Dfff(i,k,j) = dag(Dfff(i,j,k))
+                     if (freq(nj)/=freq(nk)) Ffff(i,k,j) = dag(Ffff(i,j,k))
+                  end do
+               end do
+            end do
+         else
+            ! different frequencies, 27 eqns
+            call pert_dens(decomp, S, (/'EL','EL','EL'/), (/3,3,3/),      &
+                           (/D,Df(:,ni),Df(:,nj),Df(:,nk),             &
+                             Dff(:,:,nij),Dff(:,:,nik),Dff(:,:,njk)/), &
+                           (/F,Ff(:,ni),Ff(:,nj),Ff(:,nk),             &
+                             Fff(:,:,nij),Fff(:,:,nik),Fff(:,:,njk)/), &
+                           Dfff(:,:,:), Ffff(:,:,:),                   &
+                           freq=(/freq(ni),freq(nj),freq(nk)/))
+         end if
+         ! 2nd hyperpolarizability
+         Effff(:,:,:,:) = 0
+         call prop_oneave(S, (/'EL'/), (/Dfff/), (/3,3,3,3/), Effff)
+         call print_tensor((/3,3,3,3/), -Effff, 'Gamma = -Effff', &
+                           (/-freq(ni)-freq(nj)-freq(nk),freq(ni),freq(nj),freq(nk)/))
+         ! 1st hyperpolarizability gradient
+         Egfff(:,:,:,:,n) = 0
+         call prop_oneave(S, (/'GEO','EL '/), (/Dff(:,:,njk)/), &
+                          (/ng,3,3,3/), Egfff(:,:,:,:,n))
+         ! call print_tensor((/ng,3,3,3/), Egfff(:,:,:,:,n), 'E1gdDef'); Egfff(:,:,:,:,n)=0
+         call prop_oneave(S, (/'GEO','EL '/), (/Dff(:,:,nik)/), &
+                          (/ng,3,3,3/), Egfff(:,:,:,:,n), perm=(/1,3,2,4/))
+         ! call print_tensor((/ng,3,3,3/), Egfff(:,:,:,:,n), 'E1geDdf'); Egfff(:,:,:,:,n)=0
+         call prop_oneave(S, (/'GEO','EL '/), (/Dff(:,:,nij)/), &
+                          (/ng,3,3,3/), Egfff(:,:,:,:,n), perm=(/1,4,2,3/))
+         ! call print_tensor((/ng,3,3,3/), Egfff(:,:,:,:,n), 'E1gfDde'); Egfff(:,:,:,:,n)=0
+         ! --- two-electron contribution
+         ! third-order density is currently not supported in prop_twoave,
+         ! but can be 'faked' in terms of three second-order densities (*HF ONLY*)
+         call prop_twoave((/'GEO'/), (/D,Df(:,ni),Dff(:,:,njk), &
+                          Dfff(:,:,:)/), (/ng,3,3*3/), Egfff(:,:,:,:,n))
+         ! call print_tensor((/ng,3,3,3/), Egfff(:,:,:,:,n), 'E2GD0Ddef + E2gDdDef'); Egfff(:,:,:,:,n)=0
+         Rg333 = 0
+         call prop_twoave((/'GEO'/), (/D,Df(:,nj),Dff(:,:,nik), &
+                          (zeromat,i=1,3*3*3)/), (/ng,3,3*3/), Rg333)
+         do j=1,3
+            do i=1,3
+               Egfff(:,i,j,:,n) = Egfff(:,i,j,:,n) + Rg333(:,j,i,:)
+            end do
+         end do
+         ! call print_tensor((/ng,3,3,3/), Egfff(:,:,:,:,n), 'E2gDeDdf'); Egfff(:,:,:,:,n)=0
+         call prop_twoave((/'GEO'/), (/D,Df(:,nk),Dff(:,:,nij), &
+                          (zeromat,i=1,3*3*3)/), (/ng,3*3,3/),   &
+                          Egfff(:,:,:,:,n), perm=(/1,3,2/))
+         ! call print_tensor((/ng,3,3,3/), Egfff(:,:,:,:,n), 'E2gDfDde'); Egfff(:,:,:,:,n)=0
+         ! --- one-electron contribution
+         ! reorth matrices DFDfff, to be contracted with perturbed overlap Sg
+         ! first loop: k, j, i
+         FD0 = (F + (freq(ni)+freq(nj)+freq(nk))/2 * S) * D
+         do k=1,3
+            FD1 = Ff(k,nk)*D + (F + (freq(ni)+freq(nj)-freq(nk))/2 * S) * Df(k,nk)
+            do j=1,3
+               FD2 = Fff(j,k,njk)*D + Ff(k,nk)*Df(j,nj) + Ff(j,nj)*Df(k,nk) &
+                   + (F + (freq(ni)-freq(nj)-freq(nk))/2 * S) * Dff(j,k,njk)
+               do i=1,3
+                  FD3 = Ffff(i,j,k)*D + (F - (freq(ni)+freq(nj)+freq(nk))/2 * S) * Dfff(i,j,k) &
+                      + Fff(j,k,njk)*Df(i,ni) + Fff(i,k,nik)*Df(j,nj) + Fff(i,j,nij)*Df(k,nk)  &
+                      + Ff(i,ni)*Dff(j,k,njk) + Ff(j,nj)*Dff(i,k,nik) + Ff(k,nk)*Dff(i,j,nij)
+                  DFDfff(i,j,k) = D*FD3 + Df(i,ni)*FD2 + Dff(i,j,nij)*FD1 + Dfff(i,j,k)*FD0
+               end do
+            end do
+         end do
+         FD0=0; FD3=0
+         ! second loop; j, i, k
+         do j=1,3
+            FD1 = Ff(j,nj)*D + (F + (freq(ni)-freq(nj)+freq(nk))/2 * S) * Df(j,nj)
+            do i=1,3
+               FD2 = Fff(i,j,nij)*D + Ff(j,nj)*Df(i,ni) + Ff(i,ni)*Df(j,nj) &
+                   + (F - (freq(ni)+freq(nj)-freq(nk))/2 * S) * Dff(i,j,nij)
+               do k=1,3
+                  DFDfff(i,j,k) = DFDfff(i,j,k) + Df(k,nk)*FD2
+                  DFDfff(i,j,k) = DFDfff(i,j,k) + Dff(i,k,nik)*FD1
+               end do
+            end do
+         end do
+         ! last loop: i, k, j
+         do i=1,3
+            FD1 = Ff(i,ni)*D + (F - (freq(ni)-freq(nj)-freq(nk))/2 * S) * Df(i,ni)
+            do k=1,3
+               FD2 = Fff(i,k,nik)*D + Ff(k,nk)*Df(i,ni) + Ff(i,ni)*Df(k,nk) &
+                   + (F - (freq(ni)-freq(nj)+freq(nk))/2 * S) * Dff(i,k,nik)
+               do j=1,3
+                  DFDfff(i,j,k) = DFDfff(i,j,k) + Df(j,nj)*FD2
+                  DFDfff(i,j,k) = DFDfff(i,j,k) + Dff(j,k,njk)*FD1
+               end do
+            end do
+         end do
+         FD1=0; FD2=0
+         ! contract with 1DHAM, SQHDOR and DEROVL integrals
+         call prop_oneave(S, (/'GEO'/), (/Dfff/), (/ng,3,3,3/), &
+                          Egfff(:,:,:,:,n), DFD = (/DFDfff/),        &
+                          freq = (/-freq(ni)-freq(nj)-freq(nk)/))
+         DFDfff(:,:,:) = 0
+         ! call print_tensor((/ng,3,3,3/), Egfff(:,:,:,:,n), &
+         !                   'HgDdef - i/2TgDdef - Sg(DFD)def'); Egfff(:,:,:,:,n)=0
+         call print_tensor((/ng,3,3,3/), -Egfff(:,:,:,:,n), 'd/dg Beta = -Egfff', &
+                           (/-freq(ni)-freq(nj)-freq(nk),freq(ni),freq(nj),freq(nk)/))
+      end do
    end subroutine
 
 
