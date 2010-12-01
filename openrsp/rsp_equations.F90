@@ -242,22 +242,22 @@ contains
    !> and SCF equation FDS-SDF, ie. the p-perturbed SCF equations.
    subroutine pert_scf_eq(S0, p, dimp, Dp, Fp, FDSp, DSDp, comp, freq)
       !> unperturbed overlap matrix
-      type(matrix),    intent(in) :: S0
+      type(matrix),      intent(in) :: S0
       !> perturbation lables
-      character(*),    intent(in) :: p(:)
+      character(*),      intent(in) :: p(:)
       !> number of components within each p (dimension)
-      integer,         intent(in) :: dimp(:)
+      integer,           intent(in) :: dimp(:)
       !> perturbation expantion of density matrix
-      type(matrix),    intent(in) :: Dp(:)
+      type(matrix),      intent(in) :: Dp(:)
       !> perturbation expantion of Fock matrix
-      type(matrix),    intent(in) :: Fp(:)
+      type(matrix),      intent(in) :: Fp(:)
       !-----------------------------------
       !> resulting perturbed SCF equation (or residual)
       !> Deferred shape (*) to permit any rank. size(FDSp) = product(dimp)
-      type(matrix), intent(inout) :: FDSp(*)
+      type(matrix),   intent(inout) :: FDSp(*)
       !> resulting perturbed idempotency condition
       !> Deferred shape (*) to permit any rank, size(DSDp) = product(dimp)
-      type(matrix), intent(inout) :: DSDp(*)
+      type(matrix),   intent(inout) :: DSDp(*)
       !-------------------------------------
 #ifdef PRG_DIRAC
       type(matrix) :: SDFp(1), X
@@ -269,7 +269,10 @@ contains
       complex(8), optional, intent(in) :: freq(:)
       !------------------------------------------
       type(matrix), dimension(size(Dp)) :: Sp, DSp, SDp, FDp, DFp
-      integer      :: np, nd, i, j, i0, j0, ij, c(size(p)), k !copy of comp or 1
+      type(matrix) :: SD0, SD1, SD2, SD3
+      integer      :: np, nd, c(size(p))!copy of comp or 1
+      integer      :: i, j, k, i0, j0, k0, i1, j1, k1, ij, ik, jk
+      integer      :: ij0, ik0, jk0, ij1, ik1, jk1, ijk, ijk0, ijk1
       complex(8)   :: w(size(p)) !copy of freq or zero
       character(4) :: UNP(0)
       logical      :: bas(size(p)), presnt
@@ -417,6 +420,77 @@ contains
             end do
             Sp(2:1+dimp(1)) = 0
          end if
+      else if (size(p)==3 .and. all(.not.bas)) then
+         ! offsets into Dp and Fp
+         i0   = 1
+         j0   = i0  + dimp(1)
+         k0   = j0  + dimp(2)
+         ij0  = k0  + dimp(3)
+         ik0  = ij0 + dimp(1)*dimp(2)
+         jk0  = ik0 + dimp(1)*dimp(3)
+         ijk0 = jk0 + dimp(2)*dimp(3)
+         ! first loop: k, j, i
+         SD0 = Dp(1)*S0
+         do k1 = 1, dimp(3)
+            k = k0 + k1
+            SD1 = S0*Dp(k)
+            do j1 = 1, dimp(2)
+               j = j0 + j1
+               jk = jk0 + j1 + dimp(2)*(k1-1)
+               SD2 = S0*Dp(jk)
+               do i1 = 1, dimp(1)
+                  i = i0 + i1
+                  ik = ik0 + i1 + dimp(1)*(k1-1)
+                  ij = ij0 + i1 + dimp(1)*(j1-1)
+                  ijk1 = i1 + dimp(1)*(j1-1 + dimp(2)*(k1-1))
+                  ijk = ijk0 + ijk1
+                  SD3 = S0*Dp(ijk)
+                  FDSp(ijk1) = Fp(ijk)*Dp(1) + (Fp(1)-sum(w)/2*S0) * Dp(ijk) &
+                             + Fp(jk)*Dp(i) + Fp(ik)*Dp(j) + Fp(ij)*Dp(k)   &
+                             + Fp(i)*Dp(jk) + Fp(j)*Dp(ik) + Fp(k)*Dp(ij)
+                  FDSp(ijk1) = FDSp(ijk1) * S0
+                  FDSp(ijk1) = FDSp(ijk1) - SD3*(Fp(1)+sum(w)/2*S0)
+                  FDSp(ijk1) = FDSp(ijk1) - SD2*Fp(i)
+                  FDSp(ijk1) = FDSp(ijk1) - SD1*Fp(ij)
+                  FDSp(ijk1) = FDSp(ijk1) - SD0*Fp(ijk)
+                  DSDp(ijk1) = Dp(ijk)*SD0 + Dp(ij)*SD1 + Dp(i)*SD2 + Dp(1)*SD3
+               end do
+            end do
+         end do
+         SD0=0; SD3=0
+         ! second loop: j, i, k
+         do j1 = 1, dimp(2)
+            SD1 = S0 * Dp(j0 + j1)
+            do i1 = 1, dimp(1)
+               SD2 = S0 * Dp(ij0 + i1 + dimp(1)*(j1-1))
+               do k1 = 1, dimp(3)
+                  k = k0 + k1
+                  ik = ik0 + i1 + dimp(1)*(k1-1)
+                  ijk1 = i1 + dimp(1)*(j1-1 + dimp(2)*(k1-1))
+                  FDSp(ijk1) = FDSp(ijk1) - SD2*Fp(k)
+                  FDSp(ijk1) = FDSp(ijk1) - SD1*Fp(ik)
+                  DSDp(ijk1) = DSDp(ijk1) + Dp(k)*SD2
+                  DSDp(ijk1) = DSDp(ijk1) + Dp(ik)*SD1
+               end do
+            end do
+         end do
+         ! last loop: i, k, j
+         do i1 = 1, dimp(1)
+            SD1 = S0 * Dp(i0 + i1)
+            do k1 = 1, dimp(3)
+               SD2 = S0 * Dp(ik0 + i1 + dimp(1)*(k1-1))
+               do j1 = 1, dimp(2)
+                  j = j0 + j1
+                  jk = jk0 + j1 + dimp(2)*(k1-1)
+                  ijk1 = i1 + dimp(1)*(j1-1 + dimp(2)*(k1-1))
+                  FDSp(ijk1) = FDSp(ijk1) - SD2*Fp(j)
+                  FDSp(ijk1) = FDSp(ijk1) - SD1*Fp(jk)
+                  DSDp(ijk1) = DSDp(ijk1) + Dp(j)*SD2
+                  DSDp(ijk1) = DSDp(ijk1) + Dp(jk)*SD1
+               end do
+            end do
+         end do
+         SD1=0; SD2=0
       else
 #ifdef PRG_DIRAC
 !        this implements arbitrary order pert_scf_eq under two conditions:

@@ -623,15 +623,11 @@ contains
          ! nd==0 has nuclear repulsion contribution to -dipole gradient
          if (nd==0) then
             allocate(RR(3*(3*natom)))
-#ifdef LSDALTON_ONLY
-            call lsquit('Cannot call DIPNUC_ifc, only new integral code is compiled',-1)
-#else
-            call DIPNUC_ifc(natom, R(:3), RR(:3*(3*natom)))
-#endif
+            call DPGNUC_ifc(natom, RR(:(3*natom)*3))
             do j = 0, dp(2)-1
                do i = 0, dp(1)-1
                   E(1+i+dp(1)*j) = E(1+i+dp(1)*j) &
-                                 - RR(c(2)+j + 3*(c(1)+i-1)) !-dipole sign
+                                 - RR(c(1)+i + (3*natom)*(c(2)+j-1)) !-dipole sign
                end do
             end do
             deallocate(RR)
@@ -1665,10 +1661,11 @@ contains
 #ifdef PRG_DIRAC
             call twofck_ks(pd1 - 1, D, F(1))
 #else
-            call lsquit('prop_twoint: nd > 2 not implemented with DFT',-1)
+            call quit('prop_twoint: nd > 2 not implemented with DFT',-1)
 #endif
          end if
          A(1) = 0 !free
+#ifndef LSDALTON_ONLY
       else if (np==1 .and. p(1)=='MAG') then
          do j = 0, pd-1
             if (iszero(D(pd1-pd+1+j))) cycle
@@ -1679,12 +1676,8 @@ contains
             end do
             ! Kohn-Sham
             if (do_dft()) then
-#ifdef PRG_DIRAC
-               call quit('implement di_get_MagDeriv KS')
-#else
                if (nd==0) call di_get_MagDeriv_FxD_DFT(A(1:3), D(1))
                if (nd/=0) call di_get_MagDeriv_GxD_DFT(D(1), D(pd1-pd+1+j), A(1:3))
-#endif
                do i = 0, df(1)-1
                   if (nd==0) F(1+i+df(1)*j) = F(1+i+df(1)*j) + A(c(1)+i)
                   if (nd/=0) F(1+i+df(1)*j) = F(1+i+df(1)*j) - A(c(1)+i) !negative sign
@@ -1694,7 +1687,7 @@ contains
          if (nd==0 .or. nd==1 .or. .not.do_dft()) then
             ! nothing more
          else
-            call lsquit('prop_twoint: MAG, nd > 2 not implemented with DFT',-1)
+            call quit('prop_twoint: MAG, nd > 2 not implemented with DFT')
          end if
       else if (np==1 .and. p(1)=='GEO') then
          do j = 0, pd-1 !highest-order D indices
@@ -1705,7 +1698,7 @@ contains
                   call twofck('G ', D(pd1-pd+1+j:pd1-pd+1+j), A(1:3), &
                               a=1+(c(1)+i-1)/3)
                   if (do_dft()) then
-                     call lsquit('prop_twoint: GEO not implemented with DFT',-1)
+                     call quit('prop_twoint: GEO not implemented with DFT')
                   end if
                end if
                F(1+i+df(1)*j) = F(1+i+df(1)*j) + A(1+mod(c(1)+i-1,3))
@@ -1714,7 +1707,7 @@ contains
          if (nd==0 .or. nd==1 .or. .not.do_dft()) then
             ! nothing more
          else
-            call lsquit('prop_twoint: GEO not implemented with DFT',-1)
+            call quit('prop_twoint: GEO not implemented with DFT')
          end if
          ! if (do_dft()) print* !after all the "...integrated to nn electrons..." prints
       else if (np==2 .and. all(p==(/'MAG','MAG'/))) then
@@ -1724,7 +1717,7 @@ contains
             call twofck('MM', D(1:1), A(1:6))
             ! Kohn-Sham
             if (do_dft()) then
-               call lsquit('prop_twoint: MAG MAG not implemented with DFT',-1)
+               call quit('prop_twoint: MAG MAG not implemented with DFT')
             end if
             do j = 0, df(2)-1
                do i = 0, df(1)-1
@@ -1738,12 +1731,13 @@ contains
          if (nd==0 .or. nd==1 .or. .not.do_dft()) then
              !nothing more
          else
-            call lsquit('prop_twoint: MAG MAG and nd > 2 not implemented with DFT',-1)
+            call quit('prop_twoint: MAG MAG and nd > 2 not implemented with DFT')
          end if
+#endif /*ifndef LSDALTON_ONLY*/
       else
          print *,'prop_twoint: No integrals for these perturbations: ', &
                  (p(i)//' ', i=1,np)
-         call lsquit('prop_twoint: No such integrals',-1)
+         call quit('prop_twoint: No such integrals',-1)
       end if
       A(:) = 0 !delete scratch matrices
    end subroutine
@@ -2300,6 +2294,209 @@ contains
 #endif
 #endif
    end subroutine
+
+
+
+#ifdef LSDALTON_ONLY
+   !> Nuclei-nuclei or nuclei-field contributions to properties
+   !> ajt This should be moved to separate module
+   !>     prop_intifc, together with prop_intifc_2el,
+   !>     prop_intifc_ksm and prop_intifc_1el
+   subroutine prop_intifc_nuc(mol, flds, pnuc)
+      !> structure containing the integral program settings
+      type(prop_molcfg), intent(in) :: mol
+      !> field lables, must currently be either EL or ELGR
+      character(4),      intent(in) :: flds(:)
+      !> resulting integral averages
+      real(8),          intent(out) :: pnuc(:)
+      !---------------------------------------
+      if (size(flds) /= 1) &
+         call quit('prop_intifc_nuc: size(flds) /= 1, but only ' &
+                // 'EL, ELGR and GEO are currently implemented',mol%lupri)
+      ! verify label and size
+      select case(flds(1))
+      case ('EL')
+         if (size(pnuc) /= 3) &
+            call quit('prop_intifc_nuc: For field EL, size(pnuc) must be 3',mol%lupri)
+         call II_get_nucdip(mol%setting, pnuc)
+         pnuc = -pnuc
+      case ('ELGR')
+         if (size(pnuc) /= 6) &
+            call quit('prop_intifc_nuc: For field ELGR, size(pnuc) must be 6',mol%lupri)
+      case ('GEO ')
+         if (size(pnuc) /= 3 * mol%natoms) &
+            call quit('prop_intifc_nuc: For field ELGR, size(pnuc) must be 6',mol%lupri)
+         call II_get_nn_gradient(pnuc, mol%setting, mol%lupri, mol%luerr)
+      case default
+         call quit('prop_intifc_nuc: Unimplemented or unknown field "' // flds(1) &
+                // '". Only EL (-nucdip), ELGR (-qdrnuc) and GEO (gradnn) ' &
+                // 'are implemented so far',mol%lupri)
+      end select
+   end subroutine
+#endif
+
+
+
+#ifdef LSDALTON_ONLY
+   !> Call one-electron integral program to calculate some
+   !> integrals ints(:) and some averages avgs(:).
+   !> ajt This should eventually be moved to separate module
+   !>     prop_intifc, together with prop_intifc_2el,
+   !>     prop_intifc_ksm and prop_intifc_nuc
+   subroutine prop_intifc_1el(mol, flds, dens, avgs, ints)
+      use integraloutput_type,   only: initIntegralOutputDims
+      use ls_Integral_Interface, only: ls_getIntegrals, &
+                                       ls_attachDmatToSetting, &
+                                       ls_freeDmatFromSetting
+      use TYPEDEF,               only: retrieve_output, LSSETTING
+      type lsint_arg
+         integer       :: idens
+         integer       :: dim1
+         integer       :: dim2
+         integer       :: dim5
+         character(12) :: ao2
+         character(12) :: ao3
+         integer       :: nderiv
+         character(12) :: oper
+         character(12) :: spec
+         integer       :: fac
+      end type
+      !> structure containing the integral program settings
+      type(prop_molcfg), intent(in) :: mol
+      !> field lables, must currently be either (/'EL'/) or (/'ELGR'/)
+      character(4),      intent(in) :: flds(:)
+      !> density matrices to contract integrals with
+      type(matrix),      intent(in) :: dens(:)
+      !> resulting integral averages
+      real(8),          intent(out) :: avgs(:)
+      !> resulting integral matrices
+      type(matrix),   intent(inout) :: ints(:)
+      !----------------------------------------------
+      type(LSSETTING), pointer :: setting
+      type(lsint_arg) :: run(3)
+      integer         :: nb, na, nrun, nmat, i, j
+      real(8)         :: tmp(3, (size(avgs)+2)/3)
+      type(matrix)    :: mat(10) !scratch including lower-order integral matrices
+      nb = mol%zeromat%nrow
+      na = mol%natoms
+      setting => mol%setting
+      if (size(flds) /= 1) &
+         call quit('prop_intifc_1el: size(flds) /= 1, but only EL, ELGR and GEO implemented',mol%lupri)
+      ! verify field labels flds(:), while configuring run / num_runs
+      nrun = 1  !default
+      select case(flds(1))
+      case ('EL')
+         if (size(ints) /= 3) &
+            call quit('prop_intifc_1el: For field EL, size(ints) must be 3',mol%lupri)
+         run(1) = lsint_arg(-1,nb,nb, 4,'Regular','Empty',1,'Carmom','Regular',1)
+      case ('ELGR')
+         if (size(ints) /= 6) &
+            call quit('prop_intifc_1el: For field ELGR, size(ints) must be 6',mol%lupri)
+         run(1) = lsint_arg(-1,nb,nb,10,'Regular','Empty',2,'Carmom','Regular',1)
+      case ('GEO')
+         if (size(dens) /= 2) &
+            call quit('prop_intifc_1el: For field GEO, only size(dens)=2 implemented',mol%lupri)
+         if (size(avgs) /= 3*na) &
+            call quit('prop_intifc_1el: For field GEO, size(avgs) must be 3*natoms',mol%lupri)
+         run(1) = lsint_arg(1,3,na,1,'Regular','Nuclear',1,'Nucrep', 'Gradient', 2)
+         run(2) = lsint_arg(1,3,na,1,'Empty',  'Regular',2,'Kinetic','Gradient', 2)
+         run(3) = lsint_arg(2,3,na,1,'Regular','Empty',  1,'Overlap','Gradient',-2)
+         nrun = 3
+      case default
+         call quit('prop_intifc_1el: Unimplemented or unknown field "' // flds(1) &
+                // '". Only EL (DIPLEN), ELGR (SECMOM) and GEO are implemented',mol%lupri)
+      end select
+      ! if there are any integral runs, prepare matrices
+      nmat = 0
+      if (any(run(:nrun)%idens == -1)) then
+         ! zero output integral matrices (before accumulating)
+         do i=1, size(ints)
+            ints(i) = 0d0 * mol%zeromat
+         end do
+         ! allocate temporary integral matrices
+         nmat = maxval(run(:nrun)%dim5)
+         do i=1, nmat
+            call init_mat(mat(i), mol%zeromat)
+         end do
+      end if
+      ! loop over calls to integral program LSint
+      do i=1, nrun
+         ! if this is an average run (not an integral run), register density
+         ! matrix to average over, in setting
+         if (run(i)%idens /= -1) &
+            call ls_attachDmatToSetting(dens(run(i)%idens), 1, setting,'LHS', 1, &
+                           merge(2, 3, run(i)%ao2 == 'Regular'), mol%lupri)
+         ! set up dimensions of output
+         call initIntegralOutputDims(setting%output, run(i)%dim1, &
+                                     run(i)%dim2, 1, 1, run(i)%dim5)
+         ! run integral program
+         call ls_getIntegrals('Regular', run(i)%ao2, run(i)%ao3, 'Empty', &
+                              run(i)%dim5, run(i)%nderiv, run(i)%oper,    &
+                              run(i)%spec, 'Contracted', setting,         &
+                              mol%lupri, mol%luerr)
+         ! retrieve averages or integrals
+         if (run(i)%idens /= -1) then
+            ! retrieve and accumulate averages
+            call retrieve_output(mol%lupri, setting, tmp)
+            avgs = avgs + run(i)%fac * (/tmp/)
+            ! unregister averaged density matrix
+            call ls_freeDmatFromSetting(setting)
+         else
+            ! retrieve and accumulate integrals
+            call retrieve_output(mol%lupri, setting, mat(:run(i)%dim5))
+            do j=1, size(ints)
+               ints(j) = ints(j) + mat(j + run(i)%dim5 - size(ints))
+            end do
+         end if
+      end do
+      ! free temporary matrices
+      mat(:nmat) = 0
+   end subroutine
+#endif
+
+
+
+#ifdef LSDALTON_ONLY
+   !> Call 2-electron integral program.
+   !> FIXME Should support several avg / fock contractions at once
+   subroutine prop_intifc_2el(mol, flds, dens, avgs, fock)
+      use TYPEDEF,       only: LSSETTING
+      use matrix_module, only: Matrixp
+      !> structure containing the integral program settings
+      type(prop_molcfg),    intent(in) :: mol
+      !> field lables, must currently be (/'GEO'/)
+      character(4),         intent(in) :: flds(:)
+      !> density matrices to contract integrals with
+      type(matrix), target, intent(in) :: dens(:)
+      !> resulting integral averages
+      real(8),             intent(out) :: avgs(:)
+      !> resulting integral matrices
+      type(matrix),      intent(inout) :: fock(:)
+      !--------------------------------------------
+      type(LSSETTING), pointer :: setting
+      integer :: nb, na
+      nb = mol%zeromat%nrow
+      na = mol%natoms
+      setting => mol%setting
+      if (size(flds) /= 1) &
+         call quit('prop_intifc_2el: size(flds) /= 1, but only GEO implemented',mol%lupri)
+      ! verify field labels flds(:), while configuring
+      select case(flds(1))
+      case ('GEO')
+         if (size(dens) /= 1 .and. size(dens) /= 2) &
+            call quit('prop_intifc_1el: For field GEO, only size(dens)=1,2 implemented',mol%lupri)
+      case default
+         call quit('prop_intifc_1el: Unimplemented or unknown field "' // flds(1) &
+                // '". Only EL (DIPLEN), ELGR (SECMOM) and GEO are implemented',mol%lupri)
+      end select
+      !ajt FIXME Set up and call Coulomb and Exchange directly
+      call II_get_twoElectron_gradient(avgs, Matrixp(dens(1)),          &
+                                       Matrixp(dens(size(dens))), 1, 1, &
+                                       mol%setting, mol%lupri, mol%luerr)
+      ! factor 8, it seems
+      avgs = avgs * 8
+   end subroutine
+#endif /*LSDALTON_ONLY*/
 
 
 end module

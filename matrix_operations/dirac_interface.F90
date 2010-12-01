@@ -31,6 +31,7 @@ module dirac_interface
    public lsquit
    public read_mo_coef
    public read_ibeig
+   public dpgnuc_ifc
 
    save
    private
@@ -89,6 +90,24 @@ module dirac_interface
   integer            :: mem_wrk_count = 0 ! Counts
 
 contains
+
+  !> \brief gets the nuclear contribution to electric dipole gradient
+  !> \author Bin Gao
+  !> \date 2009-12-10
+  !> \param na is the number of atoms
+  !> \return DGN contains the nuclear contributions to dipole gradient
+  !> \note modified on linsca/linears/VIBCTL_interface.F
+  subroutine DPGNUC_ifc( na, DGN )
+    ! uses MXCOOR
+#include <mxcent.h>
+    ! uses DDIPN
+#include <dipole.h>
+    integer, intent(in) :: na
+    real(8), intent(out) :: DGN( 3*na, 3 )
+    real(8), parameter :: zero = 0.0D+00
+    call DIPNUC(0, .true.)
+    DGN = transpose( DDIPN( :, 1:3*na ) )
+  end subroutine DPGNUC_ifc
 
    subroutine lsquit(text, u)
 

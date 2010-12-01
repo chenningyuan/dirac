@@ -25,12 +25,14 @@ contains
     complex(8) :: cfg_rsp_freq(10)
     complex(8) :: w(10)
     real(8) :: sum_up
-    integer       :: i, j, n, k, l, number_atoms
+    integer       :: i, j, n, k, l, number_atoms, num_coord, ierr
     integer, intent(in)    :: lwork
     real(8), intent(inout) :: work(lwork)
     complex(8), allocatable :: tsr(:)
     complex(8), allocatable :: tsr2(:)
-   type(decompItem) :: decomp
+    type(decompItem) :: decomp
+    real(8), parameter :: zero = 0.0d0
+    complex(8), parameter :: cplx_one = (1.0d0, 0.0d0)
 
     decomp%lupri = 0
 
@@ -154,6 +156,84 @@ contains
                                 (/(0d0,i=1,27*l*4)/),lupri)
            deallocate(tsr)
         endif
+
+        ! calculates vibrational hyperpolarizability
+        if (openrsp_cfg_vib_beta) then
+           call get_natoms( number_atoms )
+           num_coord = 3*number_atoms
+           allocate( tsr(3+3*3*3+3*3*3+num_coord*3*3+num_coord*3*3*3), stat=ierr )
+           if ( ierr /= 0 ) call quit( 'Failed to allocate tsr!')
+           ! static case
+           call vibhyp_hyp_dipgra_polgra( decomp, S, D, F, num_coord, cplx_one* &
+                                          (/zero,zero,zero/),              &
+                                          tsr(1:3), tsr(4:30), tsr(31:57), &
+                                          tsr(58:57+9*num_coord),          &
+                                          tsr(58+9*num_coord:57+36*num_coord) )
+           call print_shypol( (/zero,zero,zero,zero/),               &
+                              dreal(tsr(1:3)),                       &
+                              (/dreal(tsr(4:30)),(zero,i=1,9)/),     &
+                              (/dreal(tsr(31:57)),(zero,i=1,27*5)/), &
+                              (/(zero,i=1,81)/), lupri )
+!          do iw = 0, size( this_info%real_freqs )-2, 2
+             call vib_ana_polari( decomp,   &
+                                  (/zero,   &
+                                    zero,   &
+                                    zero,   &
+                                    zero,   &
+                                    zero/), &
+                                  dreal(tsr(1:3)), num_coord,                                  &
+!      results from \fn(vibhyp_hyp_dipgra_polgra) is (ng,3,3)
+!      to \fn(vib_ana_polari) should be (3,ng,3)
+                                  (/(((dreal(tsr(58+i+num_coord*j+num_coord*3*k)),             &
+                                       j=0,2),i=0,num_coord-1),k=0,2),                         &
+                                    (zero,i=1,num_coord*3*1)/),                                &
+!      results from \fn(vibhyp_hyp_dipgra_polgra) is (ng,3,3,3)
+!      to \fn(vib_ana_polari) should be (3,3,ng,3)
+                                  (/(((dreal(tsr(58+num_coord*9+i+num_coord*j+num_coord*9*k)), &
+                                       j=0,8),i=0,num_coord-1),k=0,2),                         &
+                                    (zero,i=1,num_coord*9*3)/),                                &
+                                  (/(zero,i=1,num_coord*27*4)/), lupri )
+!          end do
+           deallocate( tsr )
+         end if
+
+        if (openrsp_cfg_vib_gamma) then
+      call get_natoms( number_atoms )
+      num_coord = 3*number_atoms
+      allocate( tsr(3+3*3*3*3+(3*4+3*3*6+3*3*3*4)*num_coord), stat=ierr )
+      if ( ierr /= 0 ) call quit( 'Failed to allocate tsr!')
+!     do iw = 0, size( this_info%real_freqs )-4, 4
+           call vibshyp_shyp_dipg_polg_hypg( decomp, S, D, F, num_coord, cplx_one* &
+                                          (/zero,zero,zero,zero/),              &
+                                          tsr(1:3), tsr(4:84),                       &
+                                          tsr(85:84+12*num_coord),                   &
+                                          tsr(85+12*num_coord:84+66*num_coord),      &
+                                          tsr(85+66*num_coord:84+174*num_coord) )
+        !ajt FIXME if freq complex, the nonzero imaginary part is never printed
+           call print_shypol( (/zero,zero,zero,zero/),               &
+                           dreal(tsr(1:3)),                 &
+                           (/(zero,i=1,3*3*4)/),            &
+                           (/(zero,i=1,3*3*3*6)/),          &
+                           (/dreal(tsr(4:84))/), lupri )
+        !ajt FIXME reverse index ordering in vib_ana_polari
+             call vib_ana_polari( decomp,   &
+                                  (/zero,   &
+                                    zero,   &
+                                    zero,   &
+                                    zero/), &
+                             dreal(tsr(1:3)), num_coord,                     &
+                             (/(((dreal(tsr(85+i+num_coord*(j+3*k))),        &
+                                  j=0,3-1),i=0,num_coord-1),k=0,4-1)/),      &
+                             (/(((dreal(tsr(85+i+num_coord*(12+j+3*3*k))),   &
+                                  j=0,3*3-1),i=0,num_coord-1),k=0,6-1)/),    &
+                             (/(((dreal(tsr(85+i+num_coord*(66+j+3*3*3*k))), &
+                                  j=0,3*3*3-1),i=0,num_coord-1),k=0,4-1)/),  &
+                             lupri )
+!     end do
+      deallocate( tsr )
+    end if
+
+
 
         if (openrsp_cfg_efgb) then
            do i=1,1
