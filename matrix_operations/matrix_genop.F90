@@ -150,10 +150,21 @@ contains
          nullify(C%row)
 #endif
 #ifdef PRG_DIRAC
-         C%ih_sym = 1
-         C%tr_sym = 1
+         C%ih_sym = 0
+         C%tr_sym = 0
          C%irep   = 0
-#endif
+         if (present(A) .and. .not. present(B)) then
+           call copy_matrix_sym(C, A)
+         end if
+         if (present(B) .and. .not. present(A)) then
+           call copy_matrix_sym(C, B)
+         end if
+         if (present(A) .and.       present(B)) then
+           C%ih_sym = A%ih_sym*B%ih_sym
+           C%tr_sym = A%tr_sym*B%tr_sym
+           C%irep   = ieor(A%irep, B%irep)
+         end if
+#endif /* ifdef PRG_DIRAC */
       else if (present(alias)) then
          C = A !copies all fields
          if (alias=='RF') then !real full (alpha and beta)
@@ -172,19 +183,6 @@ contains
       else
          !print *,'mat_init',loc(C)
          call mat_init_full(C, nrow, ncol)
-#ifdef PRG_DIRAC
-         if (present(A) .and. .not. present(B)) then
-           call copy_matrix_sym(C, A)
-         end if
-         if (present(B) .and. .not. present(A)) then
-           call copy_matrix_sym(C, B)
-         end if
-         if (present(A) .and.       present(B)) then
-           C%ih_sym = A%ih_sym*B%ih_sym
-           C%tr_sym = A%tr_sym*B%tr_sym
-           C%irep   = ieor(A%irep, B%irep)
-         end if
-#endif /* ifdef PRG_DIRAC */
       end if
    end subroutine
 
