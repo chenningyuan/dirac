@@ -906,8 +906,9 @@ C
 C
       KFRBUF = KFREE
 C     ... set proper dimension for integer arrays. default. SK - Sep 08
-      LEVEC  = NESIM 
-      LPVEC  = NPSIM    
+!     mi : +1 memleak fix
+      LEVEC  = NESIM +1 
+      LPVEC  = NPSIM +1 
       LCVEC  = NCSIM    
 
 !     krmc optimization
@@ -3604,7 +3605,6 @@ C               tsaue:         retain norm for numerical stability !
                 IVEC(IM) = 1
               END IF
             ENDIF
-            call memchk('XRSST2 sdxhsg',WORK,1)
           ENDDO          
           call memchk('XRSST2 xhsg',WORK,1)
         ELSE IF (IXRSTB(NBTYP) .GT. 0) THEN
@@ -3667,9 +3667,7 @@ C
 C        Find lowest NEXST2 elements in HDIAG,
 C        IVEC is temporarily used as pointer
 C
-         call memchk('XRSST2.fndmin 1 ',WORK,1)
          CALL FNDMIN(NEXST2,IVEC,HDIAG,NVAR,WORK(KFREE),LFREE)
-         call memchk('XRSST2.fndmin 2 ',WORK,1)
 
          IF (IPRXRS.GE.3) WRITE(LUPRI,'(2A/,(2I10,F20.5))')
      &         ' Lowest HDIAG elements in XRSST2, type ',TYP,
@@ -3735,7 +3733,6 @@ C     ====================================================
 C     (is is assumed that all new BVECS are consecutively 
 C     ordered on IBTYP)
 C
-      call memchk('before XRSAVE',WORK,1)
       CALL XRSAVE(BVEC,NBTYP,NBDIM,NBVEC,NBPREV,
      &            IBVEC,IBTYP,IVEC,WORK,KFREE,LFREE)
       call memchk('after XRSAVE',WORK,1)
