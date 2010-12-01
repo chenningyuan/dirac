@@ -1868,8 +1868,6 @@ contains
 !        suggestion for Radovan (no dcopy + no extra alloc needed) - 
 !        a simple test with this code piece works fine for me.
 !        if (i_am_master) then
-!          important change in declaration scheme (if set already as either IN or OUT):
-!          real(8), intent(INOUT) :: fmat
 !          call mpi_reduce(MPI_IN_PLACE,               &
 !                          fmat,                       &
 !                          mat_dim*mat_dim*nz*nr_fmat, &
@@ -1880,6 +1878,7 @@ contains
 !                          ierr)
 !        else
 !          declare dummy as --> real(8) :: dummy
+!          alternatively pass MPI_IN_PLACE instead of dummy for the recvbuf.
 !          call mpi_reduce(fmat,                       &
 !                          dummy,                      &
 !                          mat_dim*mat_dim*nz*nr_fmat, &
