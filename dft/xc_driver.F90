@@ -1863,6 +1863,30 @@ contains
             call dcopy(mat_dim*mat_dim*nz*nr_fmat, reduce_container_4d, 1, fmat, 1)
             call dealloc(reduce_container_4d)
          end if
+!
+!        suggestion for Radovan (no dcopy + no extra alloc needed) - 
+!        a simple test with this code piece works fine for me.
+!        if (i_am_master) then
+!          call mpi_reduce(MPI_IN_PLACE,               &
+!                          fmat,                       &
+!                          mat_dim*mat_dim*nz*nr_fmat, &
+!                          mpi_double_precision,       &
+!                          mpi_sum,                    &
+!                          0,                          &
+!                          mpi_comm_world,             &
+!                          ierr)
+!        else
+!          call mpi_reduce(fmat,                       &
+!                          fmat,                       &
+!                          mat_dim*mat_dim*nz*nr_fmat, &
+!                          mpi_double_precision,       &
+!                          mpi_sum,                    &
+!                          0,                          &
+!                          mpi_comm_world,             &
+!                          ierr)
+!        end if
+!        
+!
       end if
 
       if (do_geo) then
