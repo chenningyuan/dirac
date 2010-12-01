@@ -1791,10 +1791,8 @@ contains
    subroutine dft_collect()
       integer :: ierr
       real(8) :: sum_r
-!     real(8) :: dummy
+      real(8) :: dummy
       integer :: sum_i
-      real(8), allocatable :: reduce_container_1d(:)
-      real(8), allocatable :: reduce_container_4d(:, :, :, :)
 
       call mpi_reduce(nr_electrons,         &
                       sum_r,                &
@@ -1847,68 +1845,50 @@ contains
       end if
 
       if (nr_fmat > 0) then
-         if (i_am_master) then
-            call alloc(reduce_container_4d, mat_dim, mat_dim, nz, nr_fmat)
-         end if
-
-         call mpi_reduce(fmat,                       &
-                         reduce_container_4d,        &
-                         mat_dim*mat_dim*nz*nr_fmat, &
-                         mpi_double_precision,       &
-                         mpi_sum,                    &
-                         0,                          &
-                         mpi_comm_world,             &
-                         ierr)
-
-         if (i_am_master) then
-            call dcopy(mat_dim*mat_dim*nz*nr_fmat, reduce_container_4d, 1, fmat, 1)
-            call dealloc(reduce_container_4d)
-         end if
-!
 !        suggestion for Radovan (no dcopy + no extra alloc needed) - 
 !        a simple test with this code piece works fine for me.
-!        if (i_am_master) then
-!          call mpi_reduce(MPI_IN_PLACE,               &
-!                          fmat,                       &
-!                          mat_dim*mat_dim*nz*nr_fmat, &
-!                          mpi_double_precision,       &
-!                          mpi_sum,                    &
-!                          0,                          &
-!                          mpi_comm_world,             &
-!                          ierr)
-!        else
+         if (i_am_master) then
+           call mpi_reduce(MPI_IN_PLACE,               &
+                           fmat,                       &
+                           mat_dim*mat_dim*nz*nr_fmat, &
+                           mpi_double_precision,       &
+                           mpi_sum,                    &
+                           0,                          &
+                           mpi_comm_world,             &
+                           ierr)
+         else
 !          declare dummy as --> real(8) :: dummy
 !          alternatively pass MPI_IN_PLACE instead of dummy for the recvbuf.
-!          call mpi_reduce(fmat,                       &
-!                          dummy,                      &
-!                          mat_dim*mat_dim*nz*nr_fmat, &
-!                          mpi_double_precision,       &
-!                          mpi_sum,                    &
-!                          0,                          &
-!                          mpi_comm_world,             &
-!                          ierr)
-!        end if
-!        
-!
+           call mpi_reduce(fmat,                       &
+                           dummy,                      &
+                           mat_dim*mat_dim*nz*nr_fmat, &
+                           mpi_double_precision,       &
+                           mpi_sum,                    &
+                           0,                          &
+                           mpi_comm_world,             &
+                           ierr)
+         end if
       end if
 
       if (do_geo) then
          if (i_am_master) then
-            call alloc(reduce_container_1d, nr_atoms*3)
-         end if
-
-         call mpi_reduce(property_gradient,    &
-                         reduce_container_1d,  &
-                         nr_atoms*3,           &
-                         mpi_double_precision, &
-                         mpi_sum,              &
-                         0,                    &
-                         mpi_comm_world,       &
-                         ierr)
-
-         if (i_am_master) then
-            call dcopy(nr_atoms*3, reduce_container_1d, 1, property_gradient, 1)
-            call dealloc(reduce_container_1d)
+           call mpi_reduce(MPI_IN_PLACE,               &
+                           property_gradient,          &
+                           nr_atoms*3,                 &
+                           mpi_double_precision,       &
+                           mpi_sum,                    &
+                           0,                          &
+                           mpi_comm_world,             &
+                           ierr)
+         else
+           call mpi_reduce(property_gradient,          &
+                           dummy,                      &
+                           nr_atoms*3,                 &
+                           mpi_double_precision,       &
+                           mpi_sum,                    &
+                           0,                          &
+                           mpi_comm_world,             &
+                           ierr)
          end if
       end if
 
