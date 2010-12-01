@@ -963,12 +963,15 @@ C
          KPDIAS = KEDIAH
          KCDIAH = KEDIAH
       ENDIF
+      call memchk('before XRSST1',WORK,1)
       CALL XRSST1(IBTYP,IBCVC,IBEVC,IBPVC,
      &            WORK(KEVEC),WORK(KPVEC),WORK(KCVEC),
      &            GPCI,GPOE,GPOP,EVALR,EVECR,
      &            WORK(KEDIAH),WORK(KPDIAH),WORK(KCDIAH),
      &            WORK(KEDIAS),WORK(KPDIAS),
      &            WORK,KFREE,LFREE)
+      call memchk('after XRSST1',WORK,1)
+
       NOSIM = NESIM + NPSIM
       NTSIM = NCSIM + NOSIM
 C
@@ -1015,10 +1018,13 @@ Chj       CALL DCOPY(NCDIM,WORK(JBCI),1,WORK(KBCI),1)
           END DO
         END IF
 C
+cmi      deallocate all
         CALL MEMREL('XRSINI.CMP',WORK,1,KFRSAV,KFREE,LFREE)
-        CALL MEMGET('REAL',KBTOT,NBTOT,WORK,KFREE,LFREE)
+        !CALL MEMREL('XRSINI.CMP',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+        !CALL MEMGET('REAL',KBTOT,NBTOT,WORK,KFREE,LFREE)
       ELSE
         CALL MEMREL('XRSINI.BUF',WORK,1,KFRBUF,KFREE,LFREE)
+        !CALL MEMREL('XRSINI.BUF',WORK,KFRBUF,KFRBUF,KFREE,LFREE)
       ENDIF
 C
       CALL QEXIT ('XRSST')
@@ -1052,12 +1058,15 @@ C
 C
       CALL QENTER('XRSST1')
       KFRSAV = KFREE
+      call memchk('XRSST1 0',WORK,1)
 C
 C     If requested, get diagonal elements of Hessian (approximate)
 C        and metric.
 C
       IF(DIAGHE) CALL E2DIAG(HEDIAG,HPDIAG,HCDIAG,SEDIAG,SPDIAG,
      &                       WORK,KFREE,LFREE)
+
+      call memchk('XRSST1 1',WORK,1)
 C
 C
 C
@@ -1077,6 +1086,7 @@ C
      &              JBENDX,NESIM,IND,NERED,NZXOPE,WORK,KFREE,LFREE)
         IND = IND + NESIM
       END IF
+      call memchk('XRSST1 2',WORK,1)
 C
 C     Orbital (e-p) type trial vector
 C     -------------------------------
@@ -1098,6 +1108,10 @@ C
      &              JBCNDX,NCSIM,IND,NCRED,NZCONF,WORK,KFREE,LFREE)
         IND = IND + NCSIM
       END IF
+
+cmi .. memory release
+      call memchk('XRSST1 final',WORK,1)
+      CALL MEMREL('XRSST1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
 C
       CALL QEXIT ('XRSST1')
       RETURN
@@ -1217,7 +1231,8 @@ C
       CALL MEMGET('REAL',KBVNRM,NBNEW,WORK,KFREE,LFREE)      
       CALL XRSOR1(BVECS,NBDIM,NBNEW,NBPREV,THRLDV1,THRLDV2,IBVEC,IBTYP,
      &            WORK(KBVBUF),WORK(KBVNRM),LUBVEC,IVECS,NBTYP)
-      CALL MEMREL('XRSORT',WORK,1,KFRSAV,KFREE,LFREE)
+      !CALL MEMREL('XRSORT',WORK,1,KFRSAV,KFREE,LFREE)
+      CALL MEMREL('XRSORT',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
 C
       CALL QEXIT('XRSORT')
       RETURN
@@ -3423,6 +3438,8 @@ C
 C
       CALL QENTER('XRSST2')
 C
+      call memchk('XRSST2 0',WORK,1)
+
       FFAC = D1
       IF(IMFREQ) FFAC = DM1    
       NBDIM = NVAR*NZ
@@ -3446,6 +3463,7 @@ C
      &        'unknown NBTYP = ',NBTYP
          CALL QUIT('XRSST2: Unknown NBTYP !')
       ENDIF
+      call memchk('XRSST2  5',WORK,1)
       IF(LINEQ) THEN
 C        
 C        L I N E A R   R E S P O N S E   F U N C T I O N S
@@ -3491,6 +3509,8 @@ C
      &           '*** WARNING: No restart vectors found !'
           ENDIF
         ENDIF
+
+        call memchk('XRSST2 3',WORK,1)
 
         IF(E2CHEK) THEN
           IB = 0
@@ -3639,7 +3659,10 @@ C
 C        Find lowest NEXST2 elements in HDIAG,
 C        IVEC is temporarily used as pointer
 C
+         call memchk('XRSST2.fndmin 1 ',WORK,1)
          CALL FNDMIN(NEXST2,IVEC,HDIAG,NVAR,WORK(KFREE),LFREE)
+         call memchk('XRSST2.fndmin 2 ',WORK,1)
+
          IF (IPRXRS.GE.3) WRITE(LUPRI,'(2A/,(2I10,F20.5))')
      &         ' Lowest HDIAG elements in XRSST2, type ',TYP,
      &         (I,IVEC(I),HDIAG(IVEC(I)),I=1,NEXST2)
@@ -3690,6 +3713,9 @@ C
 C     Orthogonalize new b-vectors against all previous b-vectors
 C     and among themselves, and, if requested, renormalize.
 C
+
+      call memchk('XRSST2  7',WORK,1)
+
       IF(.NOT.UNCOUP) THEN
         CALL XRSORT(BVEC,NBTYP,NBVEC,NBPREV,
      &            IBVEC,IBTYP,IVEC,WORK,KFREE,LFREE)
@@ -3701,8 +3727,10 @@ C     ====================================================
 C     (is is assumed that all new BVECS are consecutively 
 C     ordered on IBTYP)
 C
+      call memchk('before XRSAVE',WORK,1)
       CALL XRSAVE(BVEC,NBTYP,NBDIM,NBVEC,NBPREV,
      &            IBVEC,IBTYP,IVEC,WORK,KFREE,LFREE)
+      call memchk('after XRSAVE',WORK,1)
 C
       CALL QEXIT('XRSST2')
 C     
