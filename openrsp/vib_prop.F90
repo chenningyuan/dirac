@@ -157,17 +157,17 @@ contains
          read(unit, *, iostat=ierr) Rc(ic)
       end do
       if (ierr /= 0) then
-         call quit('load_vib_modes: could not read geometry on DALTON.HES')
+         write(*, *) 'WARNING: could not verify DALTON.HES geometry - make sure it is correct'
+      else
+         do ic = 1, nc
+            diff = dabs(G(ic) - Rc(ic))
+!           do not compare geometry without numeric tolerance
+            if (diff > 1.0d-3) then
+               call quit('load_vib_modes: Different geometry in DALTON.HES and MOLECULE.INP; '// &
+                         'one or more coordinates differ by more than 1.0d-3 bohr')
+            end if
+         end do
       end if
-
-      do ic = 1, nc
-         diff = dabs(G(ic) - Rc(ic))
-!        do not compare geometry without numeric tolerance
-         if (diff > 1.0d-3) then
-            call quit('load_vib_modes: Different geometry in DALTON.HES and MOLECULE.INP; '// &
-                      'one or more coordinates differ by more than 1.0d-3 bohr')
-         end if
-      end do
 
       call GPCLOSE(unit,'KEEP')
 #ifdef LSDALTON_ONLY
