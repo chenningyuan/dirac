@@ -248,7 +248,6 @@ vital_tests.append(medium_test('krmc_luciarel', fine_with_mpi = False))
 # long tests
 vital_tests.append(long_test('response_pv_nmr'))
 vital_tests.append(long_test('lucita_large'))
-#vital_tests.append(long_test('krmc_gosci')) # miro: not found
 
 
 # list of directories and files that are never compiled as part of DIRAC main executable
