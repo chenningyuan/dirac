@@ -227,7 +227,6 @@ vital_tests.append(short_test('response_lao_shield'))
 vital_tests.append(short_test('visual_elf'))
 vital_tests.append(short_test('visual_gamma5'))
 vital_tests.append(short_test('visual_virtual_density'))
-vital_tests.append(short_test('fde_static-vemb_dipole'))
 # medium tests
 vital_tests.append(medium_test('dft_alda'))
 vital_tests.append(medium_test('response_nmr_spin-spin'))
@@ -349,7 +348,7 @@ this_module = 'xml'
 dirac_modules[this_module] = dirac_module('xml', 'XML input/output module')
 dirac_modules[this_module].add_cppflag('MOD_XML')
 dirac_modules[this_module].add_directory('gp/xml')
-dirac_modules[this_module].add_test(short_test('fde_export_density'))
+dirac_modules[this_module].add_test(short_test('fde_export_density')) # XCFun
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'krcc'
@@ -379,6 +378,8 @@ dirac_modules[this_module].add_test(short_test('dft_response_xcfun'))
 dirac_modules[this_module].add_test(short_test('dft_alda_xcfun'))
 dirac_modules[this_module].add_test(short_test('dft_minnesota'))
 dirac_modules[this_module].add_test(short_test('dft_erf_xcfun'))
+dirac_modules[this_module].add_test(short_test('fde_static-vemb_dipole'))
+
 dirac_modules[this_module].take_out_of_adm()
 dirac_modules[this_module].take_out_of_release()
 
