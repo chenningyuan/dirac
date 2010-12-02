@@ -1,5 +1,5 @@
 $ERROR 1.E-7
-Nlines 4:cgo Magnetizability = Eoo
+Nlines 4:no-London Magnetizability = Eoo
 
 $ERROR 1.E-7
 Nlines 4:London Magnetizability = Ebb

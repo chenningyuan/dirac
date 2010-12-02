@@ -1,12 +1,12 @@
 module openrsp_main
 
   use prop_test
+  use prop_contribs
   use matrix_defop
   use matrix_stat
   use memory_bouncer
   use dirac_interface
   use openrsp_cfg
-  use decompmod
   use vib_prop
   use birefring
 
@@ -21,6 +21,7 @@ contains
 #include "dcborb.h"
 #include "dgroup.h"
 
+    type(prop_molcfg)             :: mol
     type(matrix)  :: S, C_i, D, F
     complex(8) :: cfg_rsp_freq(10)
     complex(8) :: w(10)
@@ -30,12 +31,8 @@ contains
     real(8), intent(inout) :: work(lwork)
     complex(8), allocatable :: tsr(:)
     complex(8), allocatable :: tsr2(:)
-    type(decompItem) :: decomp
     real(8), parameter :: zero = 0.0d0
     complex(8), parameter :: cplx_one = (1.0d0, 0.0d0)
-
-    decomp%lupri = 0
-
 
 !   initialize fortran 77 work memory interface
     call di_set_f77_work(work, lwork)
@@ -50,6 +47,8 @@ contains
     end do
 
     call get_S(S)
+    call get_natoms(number_atoms)
+    mol = prop_molcfg(0d0*S, number_atoms, lupri)
 
     call get_C(C_i, i=1.0d0, s=0.0d0, g=1.0d0, u=1.0d0)
     D = C_i*dag(C_i)
@@ -63,7 +62,7 @@ contains
 
     if (openrsp_cfg_quadrupole) then
       allocate(tsr(6))
-      call elec_quadrupole(S, D, F, tsr)
+      call elec_quadrupole(mol,S, D, F, tsr)
       deallocate(tsr)
     end if
 
@@ -75,35 +74,35 @@ contains
     if (openrsp_cfg_alpha) then
       n = 2
       allocate(tsr(3**n))
-      call elec_polariz(decomp, S, D, F, cfg_rsp_freq(1), tsr)
+      call elec_polariz(mol, S, D, F, cfg_rsp_freq(1), tsr)
       deallocate(tsr)
     end if
 
     if (openrsp_cfg_beta) then
       n = 3
       allocate(tsr(3**n))
-      call elec_hypolar(decomp, S, D, F, (/cfg_rsp_freq(1:n-1), -sum(cfg_rsp_freq(1:n-1))/), tsr)
+      call elec_hypolar(mol, S, D, F, (/cfg_rsp_freq(1:n-1), -sum(cfg_rsp_freq(1:n-1))/), tsr)
       deallocate(tsr)
     end if
 
     if (openrsp_cfg_beta_2np1) then
       n = 3
       allocate(tsr(3**n))
-      call alt_elec_hypol(decomp, S, D, F, (/cfg_rsp_freq(1:n-1), -sum(cfg_rsp_freq(1:n-1))/), tsr)
+      call alt_elec_hypol(mol, S, D, F, (/cfg_rsp_freq(1:n-1), -sum(cfg_rsp_freq(1:n-1))/), tsr)
       deallocate(tsr)
     end if
 
     if (openrsp_cfg_gamma) then
       n = 4
       allocate(tsr(3**n))
-      call elec_sechyp(decomp, S, D, F, (/cfg_rsp_freq(1:n-1), -sum(cfg_rsp_freq(1:n-1))/), tsr)
+      call elec_sechyp(mol, S, D, F, (/cfg_rsp_freq(1:n-1), -sum(cfg_rsp_freq(1:n-1))/), tsr)
       deallocate(tsr)
     end if
 
     if (openrsp_cfg_magnetizability) then
       allocate(tsr(3*3))
       allocate(tsr2(3*3))
-      call magnetiz(decomp, S, D, F, cfg_rsp_freq(1), tsr, tsr2)
+      call magnetiz(mol, S, D, F, cfg_rsp_freq(1), tsr, tsr2)
       deallocate(tsr)
       deallocate(tsr2)
     end if
@@ -114,7 +113,7 @@ contains
 !     call debug_2grad(D,    natoms_ifc())
 
 !     call dg_energy(S, D, F, 3*nr_atoms)
-      call prop_test_gradient(S, D, F, 3*nr_atoms)
+      call prop_test_gradient(mol,S, D, F, 3*nr_atoms)
     end if
 
         if (openrsp_cfg_roa) then
@@ -124,7 +123,7 @@ contains
            call get_natoms(number_atoms)
            l = 3*number_atoms
            allocate(tsr(3*3+3*3+6*3+l*3*3+l*3*3+l*6*3)) !ajt: hack
-           call roa_pol_Gpri_Aten_grads(decomp,S,D,F,l,cfg_rsp_freq(1)*(1d0,0d0),tsr(1:9), &
+           call roa_pol_Gpri_Aten_grads(mol,S,D,F,l,cfg_rsp_freq(1)*(1d0,0d0),tsr(1:9), &
                                         tsr(10:18),tsr(19:36),tsr(37:36+9*l), &
                                         tsr(37+9*l:36+18*l),tsr(37+18*l:36+36*l))
            call VIBCTL_ifc(l,cfg_rsp_freq(1), &
@@ -143,12 +142,12 @@ contains
            call get_natoms(number_atoms)
            l = 3*number_atoms
            allocate(tsr(3+3*3+3*3*3*3+l*3*3)) !ajt: hack
-           call cars_pol_shyp_polgra(decomp,S,D,F,l,cfg_rsp_freq(1)*(1d0,0d0),tsr(1:3),tsr(4:12), &
+           call cars_pol_shyp_polgra(mol,S,D,F,l,cfg_rsp_freq(1)*(1d0,0d0),tsr(1:3),tsr(4:12), &
                                      tsr(13:93),tsr(94:93+9*l))
            call print_shypol(dreal(cfg_rsp_freq(1))*(/-1,1,-1,1/),dreal(tsr(1:3)), &
                              (/dreal(tsr(4:12)),(0d0,i=1,9*3)/),(/(0d0,i=1,27*6)/), &
                              dreal(tsr(13:93)),lupri)
-           call vib_ana_polari(decomp, dreal(cfg_rsp_freq(1))*(/-1,1,-1,1/),dreal(tsr(1:3)),l,(/(0d0,i=1,3*l*4)/), &
+           call vib_ana_polari(mol, dreal(cfg_rsp_freq(1))*(/-1,1,-1,1/),dreal(tsr(1:3)),l,(/(0d0,i=1,3*l*4)/), &
                                (/((dreal(tsr(94+i+l*j)),j=0,8),i=0,l-1), (0d0,i=1,9*l), &
                                  ((dreal(tsr(94+i+l*j)),j=0,8),i=0,l-1), &
                                  ((dreal(tsr(94+i+l*j)),j=0,8),i=0,l-1), (0d0,i=1,9*l), &
@@ -164,7 +163,7 @@ contains
            allocate( tsr(3+3*3*3+3*3*3+num_coord*3*3+num_coord*3*3*3), stat=ierr )
            if ( ierr /= 0 ) call quit( 'Failed to allocate tsr!')
            ! static case
-           call vibhyp_hyp_dipgra_polgra( decomp, S, D, F, num_coord, cplx_one* &
+           call vibhyp_hyp_dipgra_polgra( mol, S, D, F, num_coord, cplx_one* &
                                           (/zero,zero,zero/),              &
                                           tsr(1:3), tsr(4:30), tsr(31:57), &
                                           tsr(58:57+9*num_coord),          &
@@ -175,7 +174,7 @@ contains
                               (/dreal(tsr(31:57)),(zero,i=1,27*5)/), &
                               (/(zero,i=1,81)/), lupri )
 !          do iw = 0, size( this_info%real_freqs )-2, 2
-             call vib_ana_polari( decomp,   &
+             call vib_ana_polari( mol,   &
                                   (/zero,   &
                                     zero,   &
                                     zero,   &
@@ -203,7 +202,7 @@ contains
       allocate( tsr(3+3*3*3*3+(3*4+3*3*6+3*3*3*4)*num_coord), stat=ierr )
       if ( ierr /= 0 ) call quit( 'Failed to allocate tsr!')
 !     do iw = 0, size( this_info%real_freqs )-4, 4
-           call vibshyp_shyp_dipg_polg_hypg( decomp, S, D, F, num_coord, cplx_one* &
+           call vibshyp_shyp_dipg_polg_hypg( mol, S, D, F, num_coord, cplx_one* &
                                           (/zero,zero,zero,zero/),              &
                                           tsr(1:3), tsr(4:84),                       &
                                           tsr(85:84+12*num_coord),                   &
@@ -216,7 +215,7 @@ contains
                            (/(zero,i=1,3*3*3*6)/),          &
                            (/dreal(tsr(4:84))/), lupri )
         !ajt FIXME reverse index ordering in vib_ana_polari
-             call vib_ana_polari( decomp,   &
+             call vib_ana_polari( mol,   &
                                   (/zero,   &
                                     zero,   &
                                     zero,   &
@@ -240,7 +239,7 @@ contains
 !             print '(//a,f11.8/)','linscf calls efgb_Jpri_Bten_Bcal w=',cfg_rsp_freq(i)
               allocate(tsr(3+6+9+9+9+9+18+27+27+27+27+54+54)) !ajt: This tsr() thing is a hack.
                   !Response functions should perhaps eventually be stored in a dedicated module
-              call efgb_Jpri_Bten_Bcal(decomp,S,D,F,                           &
+              call efgb_Jpri_Bten_Bcal(mol,S,D,F,                           &
                       & cfg_rsp_freq(i)*(1d0,0d0)*(/1,-1,0/),                  &
                       & tsr(1:3),tsr(4:9),tsr(10:18),tsr(19:27),tsr(28:36),    &
                       & tsr(37:45),tsr(46:63),tsr(64:90),tsr(91:117),          &
@@ -269,7 +268,7 @@ contains
 !             print '(//a,f11.8/)','linscf calls cme_jones_eta_apri, freq =',cfg_rsp_freq(i)
               !ajt fixme Apri requires 6 extra equations and some more contractions,
               !          but is not used for Cotton-Mouton
-              call cme_jones_eta_apri(decomp,S,D,F,cfg_rsp_freq(i)*(1d0,0d0)*(/0,0,-1,1/), &
+              call cme_jones_eta_apri(mol,S,D,F,cfg_rsp_freq(i)*(1d0,0d0)*(/0,0,-1,1/), &
                              tsr(1:3),tsr(4:9), &
                              tsr(10:18),tsr(19:27),tsr(28:36),tsr(37:45),tsr(46:63),       &
                              tsr(64:72),tsr(73:99),tsr(100:126),tsr(127:180),tsr(181:234), &
@@ -289,7 +288,7 @@ contains
         !  do i=1,cfg_rsp_nfreq
            do i=1,1
 !             print '(//a,4f11.8/)','linscf calls cme_jones_eta_api, freq =',cfg_rsp_freq(i)
-              call cme_jones_eta_apri(decomp,S,D,F,cfg_rsp_freq(i)*(1d0,0d0)*(/1,0,-1,0/), &
+              call cme_jones_eta_apri(mol,S,D,F,cfg_rsp_freq(i)*(1d0,0d0)*(/1,0,-1,0/), &
                              tsr(1:3),tsr(4:9),tsr(10:18),tsr(19:27),tsr(28:36),    &
                              tsr(37:45),tsr(46:63),tsr(64:72),tsr(73:99),           &
                              tsr(100:126),tsr(127:180),tsr(181:234),                &
@@ -321,11 +320,11 @@ contains
       w(2) = 0.0d0
       w(3) = 0.0d0
 
-      sum_up =          8.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 1, 1, 1)
-      sum_up = sum_up + 8.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 3, 3, 1)
-      sum_up = sum_up + 2.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 1, 3, 3)
-      sum_up = sum_up + 2.0d0*gamma_element(S, D, F, (/w(1:3)/), 3, 3, 1, 1)
-      sum_up = sum_up + 3.0d0*gamma_element(S, D, F, (/w(1:3)/), 3, 3, 3, 3)
+      sum_up =          8.0d0*gamma_element(mol,S, D, F, (/w(1:3)/), 1, 1, 1, 1)
+      sum_up = sum_up + 8.0d0*gamma_element(mol,S, D, F, (/w(1:3)/), 1, 3, 3, 1)
+      sum_up = sum_up + 2.0d0*gamma_element(mol,S, D, F, (/w(1:3)/), 1, 1, 3, 3)
+      sum_up = sum_up + 2.0d0*gamma_element(mol,S, D, F, (/w(1:3)/), 3, 3, 1, 1)
+      sum_up = sum_up + 3.0d0*gamma_element(mol,S, D, F, (/w(1:3)/), 3, 3, 3, 3)
       sum_up = sum_up/15.0d0
 
       print '(a30 " (w = "4f9.4"):" f26.10)', &
@@ -345,12 +344,12 @@ contains
       w(2) = openrsp_cfg_freq_process
       w(3) = 0.0d0
 
-      sum_up =          8.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 1, 1, 1)
-      sum_up = sum_up + 2.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 3, 3, 1)
-      sum_up = sum_up + 2.0d0*gamma_element(S, D, F, (/w(1:3)/), 3, 1, 1, 3)
-      sum_up = sum_up + 4.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 1, 3, 3)
-      sum_up = sum_up + 4.0d0*gamma_element(S, D, F, (/w(1:3)/), 3, 3, 1, 1)
-      sum_up = sum_up + 3.0d0*gamma_element(S, D, F, (/w(1:3)/), 3, 3, 3, 3)
+      sum_up =          8.0d0*gamma_element(mol,S, D, F, (/w(1:3)/), 1, 1, 1, 1)
+      sum_up = sum_up + 2.0d0*gamma_element(mol,S, D, F, (/w(1:3)/), 1, 3, 3, 1)
+      sum_up = sum_up + 2.0d0*gamma_element(mol,S, D, F, (/w(1:3)/), 3, 1, 1, 3)
+      sum_up = sum_up + 4.0d0*gamma_element(mol,S, D, F, (/w(1:3)/), 1, 1, 3, 3)
+      sum_up = sum_up + 4.0d0*gamma_element(mol,S, D, F, (/w(1:3)/), 3, 3, 1, 1)
+      sum_up = sum_up + 3.0d0*gamma_element(mol,S, D, F, (/w(1:3)/), 3, 3, 3, 3)
       sum_up = sum_up/15.0d0
 
       print '(a30 " (w = "4f9.4"):" f26.10)', &
@@ -370,10 +369,10 @@ contains
       w(2) = openrsp_cfg_freq_process
       w(3) = openrsp_cfg_freq_process
 
-      sum_up =          8.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 1, 1, 1)
-      sum_up = sum_up + 6.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 1, 3, 3)
-      sum_up = sum_up + 6.0d0*gamma_element(S, D, F, (/w(1:3)/), 3, 3, 1, 1)
-      sum_up = sum_up + 3.0d0*gamma_element(S, D, F, (/w(1:3)/), 3, 3, 3, 3)
+      sum_up =          8.0d0*gamma_element(mol,S, D, F, (/w(1:3)/), 1, 1, 1, 1)
+      sum_up = sum_up + 6.0d0*gamma_element(mol,S, D, F, (/w(1:3)/), 1, 1, 3, 3)
+      sum_up = sum_up + 6.0d0*gamma_element(mol,S, D, F, (/w(1:3)/), 3, 3, 1, 1)
+      sum_up = sum_up + 3.0d0*gamma_element(mol,S, D, F, (/w(1:3)/), 3, 3, 3, 3)
       sum_up = sum_up/15.0d0
 
       print '(a30 " (w = "4f9.4"):" f26.10)', &
@@ -393,10 +392,10 @@ contains
       w(2) = -openrsp_cfg_freq_process
       w(3) =  openrsp_cfg_freq_process
 
-      sum_up =          8.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 1, 1, 1)
-      sum_up = sum_up + 8.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 1, 3, 3)
-      sum_up = sum_up + 4.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 3, 1, 3)
-      sum_up = sum_up + 3.0d0*gamma_element(S, D, F, (/w(1:3)/), 3, 3, 3, 3)
+      sum_up =          8.0d0*gamma_element(mol,S, D, F, (/w(1:3)/), 1, 1, 1, 1)
+      sum_up = sum_up + 8.0d0*gamma_element(mol,S, D, F, (/w(1:3)/), 1, 1, 3, 3)
+      sum_up = sum_up + 4.0d0*gamma_element(mol,S, D, F, (/w(1:3)/), 1, 3, 1, 3)
+      sum_up = sum_up + 3.0d0*gamma_element(mol,S, D, F, (/w(1:3)/), 3, 3, 3, 3)
       sum_up = sum_up/15.0d0
 
       print '(a30 " (w = "4f9.4"):" f26.10)', &
@@ -413,9 +412,9 @@ contains
 
       w = 0.0d0
 
-      sum_up =           8.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 1, 1, 1)
-      sum_up = sum_up + 12.0d0*gamma_element(S, D, F, (/w(1:3)/), 1, 1, 3, 3)
-      sum_up = sum_up +  3.0d0*gamma_element(S, D, F, (/w(1:3)/), 3, 3, 3, 3)
+      sum_up =           8.0d0*gamma_element(mol,S, D, F, (/w(1:3)/), 1, 1, 1, 1)
+      sum_up = sum_up + 12.0d0*gamma_element(mol,S, D, F, (/w(1:3)/), 1, 1, 3, 3)
+      sum_up = sum_up +  3.0d0*gamma_element(mol,S, D, F, (/w(1:3)/), 3, 3, 3, 3)
       sum_up = sum_up/15.0d0
 
       print '(a30 " (w = "4f9.4"):" f26.10)', &
@@ -440,11 +439,11 @@ contains
 !     for the moment do not sum up
 !     until i have the final isotropic average formula
 !     just print tensor elements
-      sum_up = delta_element(S, D, F, (/w(1:4)/), 3, 1, 1, 1, 1)
-      sum_up = delta_element(S, D, F, (/w(1:4)/), 3, 3, 1, 1, 1)
-      sum_up = delta_element(S, D, F, (/w(1:4)/), 3, 3, 3, 1, 1)
-      sum_up = delta_element(S, D, F, (/w(1:4)/), 3, 3, 3, 3, 1)
-      sum_up = delta_element(S, D, F, (/w(1:4)/), 3, 3, 3, 3, 3)
+      sum_up = delta_element(mol,S, D, F, (/w(1:4)/), 3, 1, 1, 1, 1)
+      sum_up = delta_element(mol,S, D, F, (/w(1:4)/), 3, 3, 1, 1, 1)
+      sum_up = delta_element(mol,S, D, F, (/w(1:4)/), 3, 3, 3, 1, 1)
+      sum_up = delta_element(mol,S, D, F, (/w(1:4)/), 3, 3, 3, 3, 1)
+      sum_up = delta_element(mol,S, D, F, (/w(1:4)/), 3, 3, 3, 3, 3)
 
     end if
 

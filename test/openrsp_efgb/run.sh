@@ -7,13 +7,6 @@ export MENU=nr_hf.inp
 
 export MOL=fh.mol
 
-# test .NOLAO
-
-export MENU=nr_hf_nolao.inp
-../run.sh
-export MENU=nr_lda_nolao.inp
-../run.sh
-
 # test nonrel transformation
 
 export MENU=nr_hf.inp
