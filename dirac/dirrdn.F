@@ -3306,8 +3306,6 @@ C     Process section
 C
       IF(ORBDEF) THEN
         DO I = 1,NFSYM
-CTROND
-          WRITE(6,*) 'TEST..',I,NOCC(I)
           VECPOP(I) = ' '
           IF(NOCC(I).GT.0) THEN
             IF(NOCC(I).EQ.1) THEN
