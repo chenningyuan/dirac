@@ -37,8 +37,8 @@ module openrsp_cfg
    logical, public :: openrsp_cfg_cme               = .false.
    logical, public :: openrsp_cfg_dg_energy         = .false.
    logical, public :: openrsp_cfg_test_delta        = .false.
-   logical, public :: openrsp_cfg_vib_beta          = .false.
-   logical, public :: openrsp_cfg_vib_gamma         = .false.
+   logical, public :: openrsp_cfg_pv_beta          = .false.
+   logical, public :: openrsp_cfg_pv_gamma         = .false.
 
    logical, public :: openrsp_cfg_integrate = .false.
    logical, public :: openrsp_cfg_visual    = .false.

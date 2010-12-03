@@ -680,14 +680,14 @@ contains
       need_1el_g = .true.
     end if
 
-    if (kw_matches(word, '.VIBBET')) then
-       openrsp_cfg_vib_beta = .true.
+    if (kw_matches(word, '.PVBETA')) then
+       openrsp_cfg_pv_beta = .true.
        need_1el_f = .true.
        need_1el_g = .true.
     end if
 
-    if (kw_matches(word, '.VIBGAM')) then
-       openrsp_cfg_vib_gamma = .true.
+    if (kw_matches(word, '.PVGAMM')) then
+       openrsp_cfg_pv_gamma = .true.
        need_1el_f = .true.
        need_1el_g = .true.
     end if

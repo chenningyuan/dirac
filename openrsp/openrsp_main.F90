@@ -157,7 +157,7 @@ contains
         endif
 
         ! calculates vibrational hyperpolarizability
-        if (openrsp_cfg_vib_beta) then
+        if (openrsp_cfg_pv_beta) then
            call get_natoms( number_atoms )
            num_coord = 3*number_atoms
            allocate( tsr(3+3*3*3+3*3*3+num_coord*3*3+num_coord*3*3*3), stat=ierr )
@@ -196,7 +196,7 @@ contains
            deallocate( tsr )
          end if
 
-        if (openrsp_cfg_vib_gamma) then
+        if (openrsp_cfg_pv_gamma) then
       call get_natoms( number_atoms )
       num_coord = 3*number_atoms
       allocate( tsr(3+3*3*3*3+(3*4+3*3*6+3*3*3*4)*num_coord), stat=ierr )
