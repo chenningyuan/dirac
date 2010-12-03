@@ -8,10 +8,6 @@
 # distinguish between different runs residing in one directory.
 # The present definition is coarse grain and serves to
 # exclude directories without a short run
-#
-# Some tests do not work in parallel (yet); the "*_partest" are the short, medum
-# and long tests for parallel runs.
-#
 
 benchmark_test="29.benchmark_cc"
 
@@ -206,35 +202,18 @@ echo
 if [ ! -z "$arg_tests" ]; then
    case "${arg_tests}" in
       "short")
-         if [ -n "$arg_mpi" ]; then
-            echo "Running <<short>> parallel tests ..."
-            tests=$short_partest;
-         else
-            echo "Running <<short>> sequential tests ..."
-            tests=$short_test;
-         fi
+         echo "Running <<short>> tests ..."
+         tests=$short_test;
          if [ $RUNTYPE="undefined" ]; then RUNTYPE="short" ; export RUNTYPE; fi
          ;;
       "medium")
+         echo "Running <<medium>> tests ..."
          tests=$medium_test;
-         if [ -n "$arg_mpi" ]; then
-            echo "Running <<medium>> parallel tests ..."
-            tests=$medium_partest;
-         else
-            echo "Running <<medium>> sequential tests ..."
-            tests=$medium_test;
-         fi
          if [ $RUNTYPE="undefined" ]; then RUNTYPE="medium" ; export RUNTYPE; fi
          ;;
       "long")
+         echo "Running <<long>> tests ..."
          tests=$long_test;
-         if [ -n "$arg_mpi" ]; then
-            echo "Running <<long>> parallel tests ..."
-            tests=$long_partest;
-         else
-            echo "Running <<long>> sequential tests ..."
-            tests=$long_test;
-         fi
          if [ $RUNTYPE="undefined" ]; then RUNTYPE="long" ; export RUNTYPE; fi
          ;;
       "release")
@@ -288,13 +267,8 @@ if [ ! -z "$arg_tests" ]; then
          ;;
    esac
 else
-   if [ -n "$arg_mpi" ]; then
-      echo "Running default: <<short>> parallel tests ..."
-      tests=$short_partest;
-   else
-      echo "Running default: <<short>> sequential tests ..."
-      tests=$short_test;
-   fi
+   echo "Running default: <<short>> tests ..."
+   tests=$short_test;
 #  tests=$all_test
 fi
 #
