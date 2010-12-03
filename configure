@@ -2132,7 +2132,7 @@ get_f90_flags(){
 #
   check_array_bounds=""
   case "$F90real" in
-    g95)
+    g95|/usr/bin/g95)
       cpp_f90="$cpp_f90 -DVAR_G95"
       opt="-g -O3 -ffast-math -Wno=155 -fsloppy-char"
       f90_extraflags="-cpp"
