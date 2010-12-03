@@ -116,18 +116,8 @@ C
         call consistency_after_dft_input()
         call report_after_dft_input()
       end if
-
-
 CMI   ... instead of calling OP1INI in HAMINP, call it after
       CALL OP1INI(WORK,LWORK)
-
-C
-C     Give estimate of memory needed for two-electron integrals
-C
-CTROND      IF (.NOT.SKIP2E) THEN
-CTROND         CALL TWOMEM(WORK,LWORK)
-CTROND      ENDIF
-C
 C
 C     Wave function input
 C
@@ -159,7 +149,6 @@ C
 C     Input of property module
 C
       IF(DOPRP) THEN
-CTROND      IF(DOPRP.AND..NOT.DELSMALL) THEN
          OPEN(LUCMD,FILE = 'DIRAC.INP')
          CALL PRPINP('**PROPE',WORK,LWORK)
          CLOSE(LUCMD)
@@ -1678,7 +1667,6 @@ C     tsaue -
 C     Temporary fix: load HF occupation numbers into dcborb.h
 C
       CALL TDHFORB
-
 C
 C     Print section
 C     =============
@@ -3318,6 +3306,8 @@ C     Process section
 C
       IF(ORBDEF) THEN
         DO I = 1,NFSYM
+CTROND
+          WRITE(6,*) 'TEST..',I,NOCC(I)
           VECPOP(I) = ' '
           IF(NOCC(I).GT.0) THEN
             IF(NOCC(I).EQ.1) THEN
