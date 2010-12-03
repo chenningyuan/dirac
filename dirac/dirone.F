@@ -1043,7 +1043,7 @@ C
 C       Determine factor to scale matrix with
 C       =====================================
 C
-        IFAC  = JCOM(I,IOPTYP)*JM4FAS(IM4)
+        IFAC  = JCOM(I,IOPTYP)
         PFAC  = FACPRP(I,IOP)*IFAC
         IF(PFAC.NE.D1) THEN
           CALL DSCAL(IDIMENS,PFAC,OP1INT,1)
@@ -1313,7 +1313,7 @@ C
 C       Determine factor to scale matrix with
 C       =====================================
 C
-        IFAC  = JCOM(I,IOPTYP)*JM4FAS(IM4)
+        IFAC  = JCOM(I,IOPTYP)
         PFAC  = FACPRP(I,IOP)*IFAC
         IF(PFAC.NE.D1) THEN
           CALL DSCAL(IDIMENS,PFAC,OP1INT,1)
@@ -5965,9 +5965,9 @@ C
       CALL MEMGET('REAL',KONEIN,   NNBBASX,WORK,KFREE,LFREE)
       CALL MEMGET('LOGI',KFIRST,NZ        ,WORK,KFREE,LFREE)
 C
-C     ************************************************
-C     ****** Construct one-electron Fock matrix ******
-C     ************************************************
+C     *************************************************
+C     ****** Construct one-electron matrix of Jz ******
+C     *************************************************
 C
       CALL AMJMA1(FOCK,WORK(KFTRI),WORK(KONEIN),WORK(KFIRST),
      &            WORK,KFREE,LFREE,IPRINT)

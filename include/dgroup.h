@@ -39,17 +39,16 @@
 ! These are: 
 ! 1. P, 2. i[alpha_x]P,3. i[alpha_y]P,...19. beta, 20. iS.P,21 iBETAGAMA5
 ! =========================================================
-      INTEGER NOPTYP
-      PARAMETER (NOPTYP = 21)
+      INTEGER NOPTYP,NMATTYP
+      PARAMETER (NOPTYP = 21,NMATTYP=16)
 
 ! *** 4-component operators : Matrix part ***
 !
 !     M = I_4,iA_z,iA_y,iA_x
 !
-!     JM4REP(0:7) - bosonirrep of matrix operator
-!     JM4POS(0:7) - quaternionic position of matrix operator 
+!     JM4REP(0:16) - bosonirrep of matrix operator
+!     JM4POS(0:16) - quaternionic position of matrix operator 
 !                   (1,2(i),3(j),4(k))
-!     JM4FAS(0:7) - sign of matrix operator (+/- 1)
 !
 !     OPERATORS (NOPTYP types):
 !
@@ -58,7 +57,7 @@
 !     JCOM  - coefficient of component
 !
       INTEGER MCMP(NOPTYP), JM4(3,NOPTYP), JCOM(3,NOPTYP),              &
-     &        JM4REP(0:7),JM4POS(0:7),JM4FAS(0:7)
-      CHARACTER*4 M4COMB(0:7)
-      COMMON /ONEOPS/ MCMP, JM4, JCOM, JM4REP, JM4POS, JM4FAS
-      COMMON /ONECMB/ M4COMB
+     &        JM4REP(0:NMATTYP),JM4POS(0:NMATTYP)
+      CHARACTER*4 M4COMB
+      COMMON /ONEOPS/ MCMP, JM4, JCOM, JM4REP, JM4POS
+      COMMON /ONECMB/ M4COMB(0:NMATTYP)
