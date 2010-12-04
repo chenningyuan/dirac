@@ -27,6 +27,8 @@ module london_reorth_hb
   use dirac_cfg
   use dft_cfg
   use xc_driver
+!  use basis_info
+!  use london_helpers
 
 
   implicit none
@@ -102,10 +104,11 @@ contains
     logical :: print_info
 !   --------------------------------------------------------------------
 
-!    call delete_reorth_info()
 
 !   initialize variables from common blocks
+!    call basis_info_read(.true., .false.)
     call common_blocks_vars()
+
 !
 !   symmetry info for connection matrices in AO basis
 
@@ -118,36 +121,9 @@ contains
 !      !ifckop
 !    end do
 
-!
-!!   variables for modified density matrices:
-!
-!
     print_info = .true.
 
-    if (print_info) then
-      call print_common_blocks_vars()
-!      write(*, *) 'info from initialize_reorth_lao: '
-!      write(*, *) '---------------------------------'
-!      write(*, *) 'nr_xyz_comp = ', nr_xyz_comp
-!      do i = 1, nr_xyz_comp
-!        write(*, *) 'i, isym_2el_lao(i) = ', i, isym_2el_lao(i)
-!        write(*, *) 'i, irep_2el_lao(i) = ', i, irep_2el_lao(i)
-!        write(*, *) 'i, itim_2el_lao(i) = ', i, itim_2el_lao(i)
-!      end do
-    end if
-
-  end subroutine initialize_reorth_lao
-
-!
-!  subroutine delete_reorth_info()
-!
-!    index_conmat = 0
-!    isym_conmat  = 0
-!    irep_conmat  = 0
-!    iopsy_conmat = 0
-!
-!  end subroutine delete_reorth_info
-
+  end subroutine
 
 
   subroutine get_ftb(fmat, cmo, ibeig)
@@ -197,11 +173,6 @@ contains
          access='direct',recl=8*p_n2orbxq,                 &
          status='unknown')
 
-!gosia     open(67, file='reortest', status='unknown', form='formatted', &
-!gosia          access = 'append')
-
-
-!   test
     do icomp = 1, nr_xyz_comp
       indxpr       = ip_conmat(icomp)
       isym(icomp)  = p_iprpsym(indxpr)
@@ -257,16 +228,9 @@ contains
       call wrtdac(fcklon_unit, p_n2orbxq,   &
                   fmat(1, icomp), icomp)
 
-!gosia      write(67, *) 'gosia krtek, icomp, isym(icomp) = ', icomp, isym(icomp)
-
-      call prqmat(fmat(1, icomp), &
-                  p_norbt, p_norbt, p_norbt, p_norbt, &
-                  nr_qu, p_ipqtoq(1, isym(icomp)-1), 67)
-
 
     end do
 
-!gosia    close(67, status='keep')
 
     close(fcklon_unit, status='keep')
     close(int1_unit,   status='keep')
@@ -296,7 +260,9 @@ contains
     integer :: isym(nr_xyz_comp), iopsy(nr_xyz_comp), irep(nr_xyz_comp)
     integer :: isymop(nr_xyz_comp), ihrmop(nr_xyz_comp), ifckop(nr_xyz_comp)
     integer :: indxpr
-    integer :: icomp
+    integer :: icomp, ioff
+
+    logical :: debug_me
 !-----------------------------------------------------------------------
 
 !   set for twofck:
@@ -339,28 +305,56 @@ contains
 !       ================================
 ! gosia: it won't work with visual now
 
-! check if sdft, as only in this case this contribution is != 0
-    if (dirac_cfg_dft_calculation .and. .not. dft_cfg_no_sdft) then
+    !gosia before if (dirac_cfg_dft_calculation .and. .not. dft_cfg_no_sdft) then
+    if (dirac_cfg_dft_calculation) then
+
+      debug_me = .false.
+      if (debug_me) then
+        do icomp = 1, nr_xyz_comp
+          ioff = (icomp - 1)*nr_qu*nr_ao_total**2 + 1
+          write(p_lupri, *) 'london_reorth: fmat before xc_integrator, icomp = ', icomp
+          call prqmat(fao(ioff), &
+                      nr_ao_total, nr_ao_total, nr_ao_total, nr_ao_total, &
+                      nr_qu, p_ipqtoq(1, p_isymax(icomp, 2)), p_lupri)
+          write(p_lupri, *) 'london_reorth: tb_dmat before xc_integrator, icomp = ', icomp
+          call prqmat(tb_dmat(ioff), &
+                      nr_ao_total, nr_ao_total, nr_ao_total, nr_ao_total, &
+                      nr_qu, p_ipqtoq(1, p_isymax(icomp, 2)), p_lupri)
+        end do
+      end if
 
       call alloc(dmat, p_n2bbasxq)
       call genden(dmat, cmo, 1, prp_iprint)
 
-         call xc_mpi_wake_up_coworkers()
-         call xc_integrator(xc_mat_dim           = nr_ao_total,   &
-                            xc_nz                = nr_qu,         &
-                            xc_dmat_0            = dmat,          &
-                            xc_nr_dmat           = nr_xyz_comp,   &
-                            xc_nr_fmat           = nr_xyz_comp,   &
-                            xc_dmat              = tb_dmat,       &
-                            xc_fmat              = fao,           &
-                            xc_fmat_pg_sym       = isymop,        &
-                            xc_dmat_pg_sym       = isymop,        &
-                            xc_dmat_ih_sym       = ihrmop,        &
-                            xc_response_order_mo = 1,             &
-                            xc_do_london_rhs_ro  = .true.)       
-         call xc_mpi_release_coworkers()
+      call xc_mpi_wake_up_coworkers()
+      call xc_integrator(xc_mat_dim           = nr_ao_total,   &
+                         xc_nz                = nr_qu,         &
+                         xc_dmat_0            = dmat,          &
+                         xc_nr_dmat           = nr_xyz_comp,   &
+                         xc_nr_fmat           = nr_xyz_comp,   &
+                         xc_dmat              = tb_dmat,       &
+                         xc_fmat              = fao,           &
+                         xc_fmat_pg_sym       = isymop,        &
+                         xc_dmat_pg_sym       = isymop,        &
+                         xc_dmat_ih_sym       = ihrmop,        &
+                         xc_response_order_mo = 1,             &
+                         xc_do_london_rhs_ro  = .true.)       
+
+      call xc_mpi_release_coworkers()
 
       call dealloc(dmat)
+
+      if (debug_me) then
+        do icomp = 1, nr_xyz_comp
+          ioff = (icomp - 1)*nr_qu*nr_ao_total**2 + 1
+          write(p_lupri, *) 'london_reorth: fmat after xc_integrator, icomp = ', icomp
+          call prqmat(fao(ioff), &
+                      nr_ao_total, nr_ao_total, nr_ao_total, nr_ao_total, &
+                      nr_qu, p_ipqtoq(1, p_isymax(icomp, 2)), p_lupri)
+        end do
+      end if
+
+
 
     end if
 
@@ -475,8 +469,6 @@ contains
       indxpr       = ip_conmat(icomp)
       isym(icomp)  = p_iprpsym(indxpr)
       iopsy(icomp) = p_jbtof(isym(icomp)-1, 1)
-      !write(*, *) 'alamakota icomp, indxpr, isym, jbtof(irep,1) = ', &
-      !             icomp, indxpr, isym(icomp), p_jbtof(isym(icomp)-1, 1)
 
       call dzero(tb, p_n2orbxq)
 

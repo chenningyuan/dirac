@@ -22,8 +22,8 @@
 .NSTDIA
 *NMR
 .LONDON
-.GAUGEO
-0.0  0.0  0.0         
+#.GAUGEO
+#0.0  0.0  0.0         
 *LINEAR RESPONSE
 .MAXITR
 100

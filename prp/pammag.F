@@ -714,11 +714,9 @@ C
          isymop(i) = isymax(i, 2) + 1
 !        anti hermitian
          IHRMOP(I) = -1
-!     write(*, *) 'debug before direct', i
 !     CALL PRQMAT(fmat,NTBAS(0),NTBAS(0),NTBAS(0),
 !    &             NTBAS(0),NZ,IPQTOQ(1,isymax(i, 2)),LUPRI)
       END DO
-
       call xc_mpi_wake_up_coworkers()
       if (dft_cfg_no_sdft) then
          call xc_integrator(xc_mat_dim           = ntbas(0),
@@ -741,12 +739,6 @@ C
      &            xc_do_london_rhs_direct = .true.)
       end if
       call xc_mpi_release_coworkers()
-
-!     DO I=1,3
-!     write(*, *) 'debug after direct', i
-!     CALL PRQMAT(fmat,NTBAS(0),NTBAS(0),NTBAS(0),
-!    &             NTBAS(0),NZ,IPQTOQ(1,isymax(i, 2)),LUPRI)
-!     END DO
 
       endif
       call qexit('add_dft_to_twolon')
@@ -837,11 +829,12 @@ C anti hermitisk
 C ...  routine in 'dirac/dirtwo.F'
 C      Set up IFCTYP and IREPDM
       CALL SETFCK(IFCTYP,IREPDM,NCOMP,4,ISYMOP,IHRMOP,IFCKOP,IPRINT)
-!gosia      write(*, *) 'ifctyp = ', ifctyp
-!gosia      write(*, *) 'irepdm = ', irepdm
 C
 C     Get contravariant density matrix, no folding
 C  --------------------------------------------------
+!      gosia: here dmat(n2bbasxq) even though in twolon there is
+!      n2bbasx*4 allocated and in gtcnvd we need n2bbasx*4*nr_fmat and not n2bbasx*nz
+!      so i don't understand why it works...
        CALL GTCNVD(DMAT,CMO,IBEIG,IPRINT,WORK(KFREE),LWORK)
 
 C
@@ -874,10 +867,6 @@ C     PARCAL = .FALSE.
 
       CALL GETTIM(CPU1,WALL1)
 
-! gosia:
-!        open(88, file='twolo1a', status='unknown', form='formatted',
-!     &       access = 'append')
-
       DO I2TYP = 1,3  ! LL,LS,SS
         IF (LBIT(INTNMR,I2TYP)) THEN
 #if defined (VAR_MPI) || defined (VAR_PVM)
@@ -905,14 +894,7 @@ CMI   - Cauchy-Schwarz inequality does not hold for dg(1,2)/dB integrals !
          ENDIF
 #endif
          ENDIF
-! gosia:
-!        write(88, *) 'i2typ = ', i2typ
-!        call prqmat(fmat(1, 1, i2typ), 
-!     &              ntbas(0), ntbas(0), ntbas(0), ntbas(0), 
-!     &              nz, ipqtoq(1, 0), 88)
       ENDDO
-!gosia:
-!        close(88)
 
 C     PARCAL = PARCAL_SAVE
 
@@ -976,21 +958,6 @@ C
       CALL QENTER('TWOLO1B')
 #include "memint.h"
 
-! gosia: check enetering fock matrix after rsklond:
-!        open(77, file='after_rsklond', status='unknown', 
-!     &       form='formatted', access = 'append')
-!        do i2typ = 1, 3
-!        write(77, *) 'gosia: i2typ, isymax(i2typ,2) = ', 
-!     &                       i2typ, isymax(i2typ,2)
-!        IREP = ISYMAX(i2typ,2)       ! irep of x,y and z
-!        call prqmat(fmat(1, 1, i2typ), 
-!     &              ntbas(0), ntbas(0), ntbas(0), ntbas(0), 
-!     &              nz, ipqtoq(1, irep), 77)
-!        end do
-!        close(77)
-!end
-!        open(66, file='twolo1b', status='unknown', form='formatted',
-!     &       access = 'append')
 C----------------------------------------------------------------
 C       Transform Fock matrix from AO to QO
 C       ===================================
@@ -1000,19 +967,10 @@ C----------------------------------------------------------------
          IREP = ISYMAX(I,2)       ! irep of x,y and z
          IPARI = JBTOF(IREP,1)    !  ??parity ??
 
-!gosia         write(lupri, *) 'twolo1b, i     = ', i    
-!gosia         write(lupri, *) 'twolo1b, irep  = ', irep
-!gosia         write(lupri, *) 'twolo1b, ipari = ', ipari
-
          DO IZ = 1,4
             IREPD = IRQMAT(IZ,IREP)
             IQ    = IQMULT(1,JQBAS(IREPD,IPARI),IZ)            
             IPQ   = IQTOPQ(IQ,IREP)
-
-!gosia            write(lupri, *) 'twolo1b, iz    = ', iz
-!gosia            write(lupri, *) 'twolo1b, irepd = ', irepd
-!gosia            write(lupri, *) 'twolo1b, iq    = ', iq
-!gosia            write(lupri, *) 'twolo1b, ipq   = ', ipq
 
 C ...    transform AO - SO
             CALL MTAOSO(FMAT(1,IZ,I),FOCK(1,IPQ),
@@ -1076,13 +1034,7 @@ C ...
      &            NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,IREP),LUPRI)
          ENDIF
 !
-!        write(66, *) 'gosia: i, irep = ', i, irep
-!        call prqmat(fmat(1, 1, i), 
-!     &              ntbas(0), ntbas(0), ntbas(0), ntbas(0), 
-!     &              nz, ipqtoq(1, irep), 66)
-!
       ENDDO ! Of I = x,y,z
-!      close(66)
       CALL QEXIT('TWOLO1B')
       RETURN
       END
@@ -1134,9 +1086,6 @@ C
      &          CMO(*),WORK(*)
       CALL QENTER('TWOLO1C')
 #include "memint.h"
-!gosia:
-!        open(55, file='twolo1c', status='unknown', form='formatted',
-!     &       access = 'append')
 
 C----------------------------------------------------------------
 C   Open new file for MO-transformed g(B) x,y,z matrixes
@@ -1177,19 +1126,9 @@ C   ....  it would be good to add also QBTRANS for spin-free case
      &               NZ,IPQTOQ(1,IREP),LUPRI)
       ENDIF
 
-C .... write the two-electron London contribution to the file...
-!gosia       write(*, *) 'twolo1c, i=', i
        CALL WRTDAC(LUTWOL,N2ORBXQ,GBMO,I)
 
-!gosia
-!        write(55, *) 'gosia: i = ', i
-!        call prqmat(gbmo, 
-!     &              ntbas(0), ntbas(0), ntbas(0), ntbas(0), 
-!     &              nz, ipqtoq(1, irep), 55)
-
       ENDDO ! Of I = x,y,z
-!gosia:
-!      close(55)
 
       CLOSE(LUTWOL,STATUS='KEEP')
       CALL QEXIT('TWOLO1C')
@@ -2447,13 +2386,6 @@ C
        END DO
       END IF
 
-!gosia fixme
-!       write(lupri, *) 'density matrix before twoint'
-!       call prqmat(dmat(1, 1, 1),
-!     &           ntbas(0), ntbas(0), ntbas(0), ntbas(0), 
-!     &           nz, ipqtoq(1, 0), lupri)
-!
-
 
 C     Dispose used memory
       CALL MEMREL('GTCNVD',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -2592,11 +2524,6 @@ C
       NCOMP = 6
 
 C     get contavariant density matrixes
-
-!gosia: gtcnvd won't always work: 
-!here for dmat we allocate n2bbasx*4 memory, 
-!while inside gtcnvd we need n2bbasx*4*nrfmat memory for this dmat
-!(here it is ok, as we loop over 1 'nrfmat' only inside gtcnvd)
 
       CALL GTCNVD(DMAT,CMO,IBEIG,IPRPRP,WORK,LWORK)
 

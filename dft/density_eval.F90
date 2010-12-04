@@ -25,6 +25,7 @@ module density_eval
 
    implicit none
 
+   public mat_lao_sym
    public gga_sym
    public get_n
    public get_gamma5
@@ -44,8 +45,8 @@ module density_eval
    public nabla_omega_imag
    public lda_london_distribute_r
    public gga_london_distribute_r
-   public lda_london_distribute_i
    public get_s_lao
+   public get_gs_lao
    public get_n_block
    public get_block_threshold
 
@@ -60,6 +61,58 @@ module density_eval
 #include "dcbgen.h"
 
 contains
+
+  subroutine mat_lao_sym(mat_dim, &
+                         nz,      &
+                         nr_mat,  &
+                         mat,     &
+                         isym)
+
+!   ----------------------------------------------------------------------------
+    integer, intent(in)    :: mat_dim
+    integer, intent(in)    :: nz
+    integer, intent(in)    :: nr_mat
+    real(8), intent(inout) :: mat(mat_dim, mat_dim, nz, nr_mat)
+    integer, intent(in)    :: isym(nr_mat)
+!   ----------------------------------------------------------------------------
+    integer                :: irep, iblock, imat, iz
+    integer                :: i, j, ii, jj, h(4)
+    integer                :: st1, st2, nr1, nr2
+    real(8)                :: average
+!   ----------------------------------------------------------------------------
+
+    do imat = 1, nr_mat
+
+       irep = isym(imat) - 1
+
+       h(1) = - 1
+       h(2:nz) = 1
+
+       do iz = 1, nz
+          do iblock = 1, llss_nr_density_blocks(0, irep)
+             nr1 = llss_nr_ao(1, iblock, 0, irep)
+             st1 = llss_st_ao(1, iblock, 0, irep)
+             nr2 = llss_nr_ao(2, iblock, 0, irep)
+             st2 = llss_st_ao(2, iblock, 0, irep)
+
+             do i = 1, nr1
+                do j = 1, nr2
+                   ii = st1 + i - 1
+                   jj = st2 + j - 1
+
+                   average = mat(ii, jj, iz, imat) &
+                           + h(iz)*mat(jj, ii, iz, imat)
+                   average = 0.5d0*average
+
+                   mat(ii, jj, iz, imat) = average
+                   mat(jj, ii, iz, imat) = h(iz)*average
+                end do
+             end do
+          end do
+       end do
+    end do
+
+  end subroutine
 
   subroutine gga_sym(mat_dim, &
                      nz,      &
@@ -969,287 +1022,330 @@ contains
 
    end subroutine
 
-  subroutine lda_london_distribute_r(s, isym, mat_dim, nz, fmat, ao, ao_b1, cx, cy, cz)
+
+   subroutine lda_london_distribute_r(s, isym, mat_dim, nz, fmat, ao, ao_b1, cx, cy, cz)
+   
+!    ----------------------------------------------------------------------------
+     real(8), intent(in)    :: s
+     integer, intent(in)    :: isym(*)
+     integer, intent(in)    :: mat_dim
+     integer, intent(in)    :: nz
+     real(8), intent(inout) :: fmat(mat_dim, mat_dim, nz, *)
+     real(8), intent(in)    :: ao(mat_dim)
+     real(8), intent(in)    :: ao_b1(mat_dim, *)
+     real(8), intent(in)    :: cx, cy, cz
+!    ----------------------------------------------------------------------------
+     integer                :: nr1, nr2, st1, st2, iblock, ii, i, a, b, c
+     real(8)                :: f
+     real(8)                :: r_co(3)
+!    ----------------------------------------------------------------------------
+   
+     r_co(1) = cx
+     r_co(2) = cy
+     r_co(3) = cz
+
+!gosia: todo: "do a = 1, nr_xyz_comp" instead (now we add x/y/z on top)
+     do a = 1, 3
+       select case (a)
+         case (1)
+           b = 2; c = 3
+         case (2)
+           b = 3; c = 1
+         case (3)
+           b = 1; c = 2
+       end select
+     
+         do iblock = 1, llss_nr_density_blocks(0, isym(a) - 1)
+     
+           nr1 = llss_nr_ao(1, iblock, 0, isym(a) - 1)
+           st1 = llss_st_ao(1, iblock, 0, isym(a) - 1)
+           nr2 = llss_nr_ao(2, iblock, 0, isym(a) - 1)
+           st2 = llss_st_ao(2, iblock, 0, isym(a) - 1)
+     
+           do i = 1, nr2
+             ii = st2 + i - 1
+             f  = 2.0d0*(r_co(c)*ao_b1(ii, b) - r_co(b)*ao_b1(ii, c))*s
+     
+             call daxpy(nr1,                     &
+                        f,                       &
+                        ao(st1),                 &
+                        1,                       &
+                        fmat(st1, ii, iq(0), a), &
+                        1)
+     
+           end do
+     
+         end do
+     end do
+
+   end subroutine
+
+   subroutine gga_london_distribute_r(d_r,      &
+                                      d_z,      &
+                                      n_g1,     &
+                                      isym,     &
+                                      mat_dim,  &
+                                      nz,       &
+                                      fmat,     &
+                                      ao_g0_b0, &
+                                      ao_g0_b1, &
+                                      ao_g1_b0, &
+                                      ao_g1_b1, &
+                                      cx,       &
+                                      cy,       &
+                                      cz)
+   
+   
+!    ----------------------------------------------------------------------------
+     real(8), intent(in)    :: d_r
+     real(8), intent(in)    :: d_z
+     real(8), intent(in)    :: n_g1(3)
+     integer, intent(in)    :: isym(*)
+     integer, intent(in)    :: mat_dim
+     integer, intent(in)    :: nz
+     real(8), intent(inout) :: fmat(mat_dim, mat_dim, nz, *)
+     real(8), intent(in)    :: ao_g0_b0(mat_dim)
+     real(8), intent(in)    :: ao_g0_b1(mat_dim, 3)
+     real(8), intent(in)    :: ao_g1_b0(mat_dim, 3)
+     real(8), intent(in)    :: ao_g1_b1(mat_dim, 3, 3)
+     real(8), intent(in)    :: cx, cy, cz
+!    ----------------------------------------------------------------------------
+     integer                :: nr1, nr2, st1, st2, iblock, i, ii
+     integer                :: a, b, c, ixyz
+     real(8)                :: f, f_temp, f_vec(mat_dim)
+     real(8)                :: r(3)
+!    ----------------------------------------------------------------------------
+   
+     r(1) = cx
+     r(2) = cy
+     r(3) = cz
+   
+     do a = 1, 3
+   
+       select case (a)
+         case (1)
+           b = 2; c = 3
+         case (2)
+           b = 3; c = 1
+         case (3)
+           b = 1; c = 2
+       end select
+   
+       do iblock = 1, llss_nr_density_blocks(0, isym(a) - 1)
+   
+         nr1 = llss_nr_ao(1, iblock, 0, isym(a) - 1)
+         st1 = llss_st_ao(1, iblock, 0, isym(a) - 1)
+         nr2 = llss_nr_ao(2, iblock, 0, isym(a) - 1)
+         st2 = llss_st_ao(2, iblock, 0, isym(a) - 1)
+   
+         f_vec(:)  = r(b)*ao_g0_b1(:, c) - r(c)*ao_g0_b1(:, b)
+   
+         do i = 1, nr2
+           ii = st2 + i - 1
+   
+           f_temp = 2.0d0*(r(c)*ao_g0_b1(ii, b) - r(b)*ao_g0_b1(ii, c))
+           f = f_temp*d_r
+   
+!          so far it's lda type contribution, rest are gradient terms
+   
+           f_temp = 2.0d0*(n_g1(c)*ao_g0_b1(ii, b) - n_g1(b)*ao_g0_b1(ii, c))
+           f = f + f_temp*d_z
+   
+           do ixyz = 1, 3
+             f_temp = 2.0d0*(r(c)*ao_g1_b1(ii, b, ixyz) - r(b)*ao_g1_b1(ii, c, ixyz))
+             f = f + f_temp*d_z*n_g1(ixyz)
+           end do
+   
+           call daxpy(nr1,                          &
+                      f,                            &
+                      ao_g0_b0(st1),                &
+                      1,                            &
+                      fmat(st1, ii, iq(0), a),      &
+                      1)
+   
+   
+           f_temp = 2.0d0*(n_g1(1)*ao_g1_b0(ii, 1)  &
+                  +        n_g1(2)*ao_g1_b0(ii, 2)  &
+                  +        n_g1(3)*ao_g1_b0(ii, 3))
+   
+           f = f_temp*d_z
+   
+           call daxpy(nr1,                          &
+                      f,                            &
+                      f_vec(st1),                   &
+                      1,                            &
+                      fmat(st1, ii, iq(0), a),      &
+                      1)
+   
+         end do ! i = 1, nr2
+       end do   ! iblock = 1, llss_nr_density_blocks(0, isym(a) - 1)
+     end do     ! a = 1, 3
+   
+   end subroutine
 
 
-!   ----------------------------------------------------------------------------
-    real(8), intent(in)    :: s
-    integer, intent(in)    :: isym(*)
-    integer, intent(in)    :: mat_dim
-    integer, intent(in)    :: nz
-    real(8), intent(inout) :: fmat(mat_dim, mat_dim, *)
-    real(8), intent(in)    :: ao(mat_dim)
-    real(8), intent(in)    :: ao_b1(mat_dim, *)
-    real(8), intent(in)    :: cx, cy, cz
-!   ----------------------------------------------------------------------------
-    integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz, jj, j
-    integer                :: a, b, c
-    real(8)                :: f
-    real(8)                :: r_co(3)
-!   ----------------------------------------------------------------------------
+   subroutine get_s_lao(s, isym, mat_dim, dmat, ao, ao_b1, cx, cy, cz, buffer)
+   
+!    ----------------------------------------------------------------------------
+     real(8), intent(out) :: s(3, 3)
+     integer, intent(in)  :: isym(*)
+     integer, intent(in)  :: mat_dim
+     real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
+     real(8), intent(in)  :: ao(mat_dim)
+     real(8), intent(in)  :: ao_b1(mat_dim, *)
+     real(8), intent(in)  :: cx, cy, cz
+     real(8), intent(in)  :: buffer(*)
+!    ----------------------------------------------------------------------------
+     integer              :: nr1, nr2, st1, st2, iblock, jxyz
+     integer              :: a, b, c, irp1, irp2, ii, jj
+     real(8)              :: r_co(3), f(mat_dim), ff
+     real(8), external    :: ddot
+     integer :: i, j, k
+!    ----------------------------------------------------------------------------
+   
+     r_co(1) = cx
+     r_co(2) = cy
+     r_co(3) = cz
+   
+     s = 0.0d0
+     f = 0.0d0
+     ff= 0.0d0
 
-!   r_co(1) = cx - dft_origin(1)
-!   r_co(2) = cy - dft_origin(2)
-!   r_co(3) = cz - dft_origin(3)
-    r_co(1) = cx
-    r_co(2) = cy
-    r_co(3) = cz
+     do a = 1, 3   ! Bx, By, Bz
+       select case (a)
+         case (1)
+           b = 2; c = 3
+         case (2)
+           b = 3; c = 1
+         case (3)
+           b = 1; c = 2
+       end select
+    
+       do jxyz = jxyz_start, 3
+    
+         do iblock = 1, llss_nr_density_blocks(jxyz, isym(a) - 1)
+    
+           nr1 = llss_nr_ao(1, iblock, jxyz, isym(a) - 1)
+           st1 = llss_st_ao(1, iblock, jxyz, isym(a) - 1)
+           nr2 = llss_nr_ao(2, iblock, jxyz, isym(a) - 1)
+           st2 = llss_st_ao(2, iblock, jxyz, isym(a) - 1)
+    
 
-    do a = 1, 3
-      select case (a)
-        case (1)
-          b = 2; c = 3
-        case (2)
-          b = 3; c = 1
-        case (3)
-          b = 1; c = 2
-      end select
-
-        do iblock = 1, llss_nr_density_blocks(0, isym(a) - 1)
-
-          nr1 = llss_nr_ao(1, iblock, 0, isym(a) - 1)
-          st1 = llss_st_ao(1, iblock, 0, isym(a) - 1)
-          nr2 = llss_nr_ao(2, iblock, 0, isym(a) - 1)
-          st2 = llss_st_ao(2, iblock, 0, isym(a) - 1)
-
-          do ii = st1, st1 + nr1 - 1
-            do jj = st2, st2 + nr2 - 1
-
-              f = (r_co(c)*ao_b1(jj, b) - r_co(b)*ao_b1(jj, c))*ao(ii) &
-                - (r_co(c)*ao_b1(ii, b) - r_co(b)*ao_b1(ii, c))*ao(jj)
-
-              fmat(ii, jj, (a-1)*nz + 1) = fmat(ii, jj, (a-1)*nz + 1) + s*f
-
-            end do
-          end do
-        end do
-
-    end do
-
-  end subroutine
-
-  subroutine gga_london_distribute_r(d_r,      &
-                                     d_z,      &
-                                     n_g1,     &
-                                     irep,     &
-                                     mat_dim,  &
-                                     nz,       &
-                                     fmat,     &
-                                     ao_g0_b0, &
-                                     ao_g0_b1, &
-                                     ao_g1_b0, &
-                                     ao_g1_b1, &
-                                     cx,       &
-                                     cy,       &
-                                     cz)
+! to reduce loops
+!          'ao_b' on the right
+           call dgemv('N',                      &
+                      nr1,                      &
+                      nr2,                      &
+                      1.0d0,                    &
+                      dmat(st1, st2, iq(jxyz)), &
+                      mat_dim,                  &
+                      f(st2),                   &
+                      1,                        &
+                      0.0d0,                    &
+                      buffer,                   &
+                      1)
+           
+           s(jxyz, a) = s(jxyz, a) &
+                   + llss_prefactor(iblock, jxyz, isym(a) - 1)*ddot(nr1, ao(st1), 1, buffer, 1)
 
 
-!   ----------------------------------------------------------------------------
-    real(8), intent(in)    :: d_r
-    real(8), intent(in)    :: d_z
-    real(8), intent(in)    :: n_g1(3)
-    integer, intent(in)    :: irep
-    integer, intent(in)    :: mat_dim
-    integer, intent(in)    :: nz
-    real(8), intent(inout) :: fmat(mat_dim, mat_dim, *)
-    real(8), intent(in)    :: ao_g0_b0(mat_dim)
-    real(8), intent(in)    :: ao_g0_b1(mat_dim, 3)
-    real(8), intent(in)    :: ao_g1_b0(mat_dim, 3)
-    real(8), intent(in)    :: ao_g1_b1(mat_dim, 3, 3)
-    real(8), intent(in)    :: cx, cy, cz
-!   ----------------------------------------------------------------------------
-    integer                :: nr1, nr2, st1, st2, iblock, jxyz, i, j
-    integer                :: a, b, c, ixyz
-    real(8)                :: f, f_temp
-    real(8)                :: r(3)
-!   ----------------------------------------------------------------------------
-
-!   r(1) = cx - dft_origin(1)
-!   r(2) = cy - dft_origin(2)
-!   r(3) = cz - dft_origin(3)
-    r(1) = cx
-    r(2) = cy
-    r(3) = cz
-
-    do a = 1, 3
-
-      select case (a)
-        case (1)
-          b = 2; c = 3
-        case (2)
-          b = 3; c = 1
-        case (3)
-          b = 1; c = 2
-      end select
-
-        do iblock = 1, llss_nr_density_blocks(0, irep)
-
-          nr1 = llss_nr_ao(1, iblock, 0, irep)
-          st1 = llss_st_ao(1, iblock, 0, irep)
-          nr2 = llss_nr_ao(2, iblock, 0, irep)
-          st2 = llss_st_ao(2, iblock, 0, irep)
-
-          do i = st1, st1 + nr1 - 1
-            do j = st2, st2 + nr2 - 1
-
-              f_temp = (r(c)*ao_g0_b1(j, b) - r(b)*ao_g0_b1(j, c))*ao_g0_b0(i) &
-                     - (r(c)*ao_g0_b1(i, b) - r(b)*ao_g0_b1(i, c))*ao_g0_b0(j)
-
-              f = f_temp*d_r
-
-!             so far it's lda type contribution, rest are gradient terms
-
-              f_temp = (n_g1(c)*ao_g0_b1(j, b) - n_g1(b)*ao_g0_b1(j, c))*ao_g0_b0(i) &
-                     - (n_g1(c)*ao_g0_b1(i, b) - n_g1(b)*ao_g0_b1(i, c))*ao_g0_b0(j)
-
-              f_temp = f_temp                                                               &
-                     + (n_g1(1)*ao_g1_b0(j, 1)                                              &
-                     +  n_g1(2)*ao_g1_b0(j, 2)                                              &
-                     +  n_g1(3)*ao_g1_b0(j, 3))*(r(b)*ao_g0_b1(i, c) - r(c)*ao_g0_b1(i, b)) &
-                     - (n_g1(1)*ao_g1_b0(i, 1)                                              &
-                     +  n_g1(2)*ao_g1_b0(i, 2)                                              &
-                     +  n_g1(3)*ao_g1_b0(i, 3))*(r(b)*ao_g0_b1(j, c) - r(c)*ao_g0_b1(j, b))
-
-              f = f + f_temp*d_z
-
-              do ixyz = 1, 3
-                f_temp = (r(c)*ao_g1_b1(j, b, ixyz) - r(b)*ao_g1_b1(j, c, ixyz))*ao_g0_b0(i) &
-                       - (r(c)*ao_g1_b1(i, b, ixyz) - r(b)*ao_g1_b1(i, c, ixyz))*ao_g0_b0(j)
-
-                f = f + f_temp*d_z*n_g1(ixyz)
-              end do
-
-              fmat(i, j, (a-1)*nz + 1) = fmat(i, j, (a-1)*nz + 1) + f
-
-            end do
-          end do
-      end do
-
-    end do
-
-  end subroutine
-
-  subroutine lda_london_distribute_i(s, isym, mat_dim, nz, fmat, ao, ao_b1, cx, cy, cz)
-
-!   ----------------------------------------------------------------------------
-    real(8), intent(in)    :: s(3)
-    integer, intent(in)    :: isym(*)
-    integer, intent(in)    :: mat_dim
-    integer, intent(in)    :: nz
-    real(8), intent(inout) :: fmat(mat_dim, mat_dim, *)
-    real(8), intent(in)    :: ao(mat_dim)
-    real(8), intent(in)    :: ao_b1(mat_dim, *)
-    real(8), intent(in)    :: cx, cy, cz
-!   ----------------------------------------------------------------------------
-    integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz, jj, j
-    integer                :: a, b, c
-    real(8)                :: f
-    real(8)                :: r_co(3)
-!   ----------------------------------------------------------------------------
-
-    r_co(1) = cx
-    r_co(2) = cy
-    r_co(3) = cz
-
-    do a = 1, 3
-      select case (a)
-        case (1)
-          b = 2; c = 3
-        case (2)
-          b = 3; c = 1
-        case (3)
-          b = 1; c = 2
-      end select
-
-      do jxyz = jxyz_start, 3
-
-        do iblock = 1, llss_nr_density_blocks(jxyz, isym(a) - 1)
-
-          nr1 = llss_nr_ao(1, iblock, jxyz, isym(a) - 1)
-          st1 = llss_st_ao(1, iblock, jxyz, isym(a) - 1)
-          nr2 = llss_nr_ao(2, iblock, jxyz, isym(a) - 1)
-          st2 = llss_st_ao(2, iblock, jxyz, isym(a) - 1)
-
-          do ii = st1, st1 + nr1 - 1
-            do jj = st2, st2 + nr2 - 1
-
-              f = (r_co(c)*ao_b1(jj, b) - r_co(b)*ao_b1(jj, c))*ao(ii) &
-                - (r_co(c)*ao_b1(ii, b) - r_co(b)*ao_b1(ii, c))*ao(jj)
-
-              !fmat(ii, jj, (a-1)*nz + 1) = fmat(ii, jj, (a-1)*nz + 1) + s(jxyz)*f
-              fmat(ii, jj, iq(jxyz)) = fmat(ii, jj, iq(jxyz)) + s(jxyz)*f
-
-            end do
-          end do
-        end do
-      end do
-    end do
-
-  end subroutine
-
-  subroutine gga_london_distribute_i()
-  end subroutine
+!          'ao_b' on the left
+           call dgemv('N',                      &
+                      nr1,                      &
+                      nr2,                      &
+                      1.0d0,                    &
+                      dmat(st1, st2, iq(jxyz)), &
+                      mat_dim,                  &
+                      ao(st2),                  &
+                      1,                        &
+                      0.0d0,                    &
+                      buffer,                   &
+                      1)
+           
+           s(jxyz, a) = s(jxyz, a) &
+                   - llss_prefactor(iblock, jxyz, isym(a) - 1)*ddot(nr1, f(st1), 1, buffer, 1)
 
 
-  subroutine get_s_lao(s, isym, mat_dim, dmat, ao, ao_b1, cx, cy, cz)
 
-!   ----------------------------------------------------------------------------
-    real(8), intent(out) :: s(3, 3)
-    integer, intent(in)  :: isym(*)
-    integer, intent(in)  :: mat_dim
-    real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
-    real(8), intent(in)  :: ao(mat_dim)
-    real(8), intent(in)  :: ao_b1(mat_dim, *)
-    real(8), intent(in)  :: cx, cy, cz
-!   ----------------------------------------------------------------------------
-    integer              :: nr1, nr2, st1, st2, iblock, jxyz
-    integer              :: a, b, c, irp1, irp2, ii, jj
-    real(8)              :: r_co(3), f
-!   ----------------------------------------------------------------------------
+!           do ii = st1, st1 + nr1 - 1
+!             do jj = st2, st2 + nr2 - 1
+!    
+!               ff = (r_co(c)*ao_b1(jj, b) - r_co(b)*ao_b1(jj, c))*ao(ii) &
+!                  - (r_co(c)*ao_b1(ii, b) - r_co(b)*ao_b1(ii, c))*ao(jj)
+!
+!
+!               s(jxyz, a) = s(jxyz, a) - dmat(jj, ii, iq(jxyz))*ff
+!    
+!             end do
+!           end do
 
-    r_co(1) = cx
-    r_co(2) = cy
-    r_co(3) = cz
+         end do  ! do iblock = 1, llss_nr_density_blocks(jxyz, isym(a) - 1)
 
-    s = 0.0d0
-    f = 0.0d0
+       end do    ! do jxyz = 1, jxyz_start, 3
+     end do      ! do a = 1, 3
 
-    do a = 1, 3
-      select case (a)
-        case (1)
-          b = 2; c = 3
-        case (2)
-          b = 3; c = 1
-        case (3)
-          b = 1; c = 2
-      end select
+   end subroutine
 
+   subroutine get_gs_lao(s, isym, mat_dim, dmat, ao, ao_b1, cx, cy, cz)
+!gosia now it does only s, gs terms later
+   
+!    ----------------------------------------------------------------------------
+     real(8), intent(out) :: s(3, 3)
+     integer, intent(in)  :: isym(*)
+     integer, intent(in)  :: mat_dim
+     real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
+     real(8), intent(in)  :: ao(mat_dim)
+     real(8), intent(in)  :: ao_b1(mat_dim, *)
+     real(8), intent(in)  :: cx, cy, cz
+!    ----------------------------------------------------------------------------
+     integer              :: nr1, nr2, st1, st2, iblock, jxyz
+     integer              :: a, b, c, irp1, irp2, ii, jj
+     real(8)              :: r_co(3), f
+!    ----------------------------------------------------------------------------
+   
+     r_co(1) = cx
+     r_co(2) = cy
+     r_co(3) = cz
+   
+     s = 0.0d0
+     f = 0.0d0
 
-      do jxyz = jxyz_start, 3
-        do iblock = 1, llss_nr_density_blocks(jxyz, isym(a) - 1)
-
-          nr1 = llss_nr_ao(1, iblock, jxyz, isym(a) - 1)
-          st1 = llss_st_ao(1, iblock, jxyz, isym(a) - 1)
-          nr2 = llss_nr_ao(2, iblock, jxyz, isym(a) - 1)
-          st2 = llss_st_ao(2, iblock, jxyz, isym(a) - 1)
-
-          do ii = st1, st1 + nr1 - 1
-            do jj = st2, st2 + nr2 - 1
-
-              f = (r_co(c)*ao_b1(jj, b) - r_co(b)*ao_b1(jj, c))*ao(ii) &
-                - (r_co(c)*ao_b1(ii, b) - r_co(b)*ao_b1(ii, c))*ao(jj)
-
-              s(jxyz, a) = s(jxyz, a) + dmat(ii, jj, iq(jxyz))*f
-
-            end do
-          end do
-        end do
-      end do
-
-    end do
-
-
-  end subroutine
+!gosia todo: do a = 1, nr_xyz_comp
+     do a = 1, 3
+       select case (a)
+         case (1)
+           b = 2; c = 3
+         case (2)
+           b = 3; c = 1
+         case (3)
+           b = 1; c = 2
+       end select
+ 
+       do jxyz = jxyz_start, 3
+ 
+         do iblock = 1, llss_nr_density_blocks(jxyz, isym(a) - 1)
+ 
+           nr1 = llss_nr_ao(1, iblock, jxyz, isym(a) - 1)
+           st1 = llss_st_ao(1, iblock, jxyz, isym(a) - 1)
+           nr2 = llss_nr_ao(2, iblock, jxyz, isym(a) - 1)
+           st2 = llss_st_ao(2, iblock, jxyz, isym(a) - 1)
+ 
+           do ii = st1, st1 + nr1 - 1
+             do jj = st2, st2 + nr2 - 1
+ 
+               f = (r_co(c)*ao_b1(jj, b) - r_co(b)*ao_b1(jj, c))*ao(ii) &
+                 - (r_co(c)*ao_b1(ii, b) - r_co(b)*ao_b1(ii, c))*ao(jj)
+ 
+               !s(jxyz, a) = s(jxyz, a) + dmat(ii, jj, iq(jxyz))*f
+               s(jxyz, a) = s(jxyz, a) - dmat(jj, ii, iq(jxyz))*f
+ 
+             end do
+           end do
+         end do
+       end do
+     end do
+ 
+   end subroutine
 
 
    subroutine get_n_block( &

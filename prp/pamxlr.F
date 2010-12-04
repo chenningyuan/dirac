@@ -160,6 +160,7 @@ C
 
       integer, allocatable :: ibeig(:)
       real(8), allocatable :: cmo(:)
+      logical :: parcal_save
 
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(NBFREQ,NLRBPT),
      &          WORK(*)
@@ -193,6 +194,7 @@ C     *** L I N E A R   R E S P O N S E   F U N C T I O N S  ***
 C     ***                                                    ***
 C     **********************************************************
       if (london) then
+
         call alloc(cmo,   ncmotq)
         call alloc(ibeig, ntbas(0))
 
@@ -200,8 +202,8 @@ c.......direct contribution
         call onelon(cmo, ibeig, work, kfree, lfree)
 
         if (.not.notwol) then
-!          call london_twoel_hb(cmo, ibeig, work(kfree), lfree)
-          CALL TWOLON(cmo, ibeig, WORK(KFREE), LFREE)
+          call london_twoel_hb(cmo, ibeig, work(kfree), lfree)
+!          CALL TWOLON(cmo, ibeig, WORK(KFREE), LFREE)
         end if
 
 c.......reorthonormalization contribution
@@ -212,6 +214,7 @@ c.......reorthonormalization contribution
 
         call dealloc(cmo)
         call dealloc(ibeig)
+
       endif
 
 C

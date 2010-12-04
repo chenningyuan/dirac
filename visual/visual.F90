@@ -113,11 +113,7 @@ contains
     end do
 
 #ifdef MOD_UNRELEASED
-!   if calculations with symmetry then the 'direct' lao contribution 
-!   is done with ao derivatives
-!   otherwise (london without symmetry) it is quicker to calculate 
-!   this contibution 'directly' from equation: (R_MN \times r)*ao*ao
-    if (visual_cfg_london .and. visual_cfg_london_with_sym) max_ao_m_order = 1
+    if (visual_cfg_london) max_ao_m_order = 1
 #endif
 
 !   find occupation
@@ -417,18 +413,28 @@ contains
 !   insert half phases
 !   ==================
 
-! gosia: in london direct i need it for D(1) also
-! 
-    !do imat = 2, nr_dmat
-    do imat = 1, nr_dmat
-      if (nz < 4) then
-        do iz = 1, nz
-          iq   = ipqtoq(iz, D(imat)%irep)
-          ioff = ntbas(0)*ntbas(0)*(iz - 1)
-          call q2bphase('D', iq, 1, D(imat)%elms(1 + ioff))
-        end do
-      end if
-    end do
+    if (visual_cfg_london) then
+!     gosia: it is because i also 'reuse' D(1)... 
+      do imat = 1, nr_dmat
+        if (nz < 4) then
+          do iz = 1, nz
+            iq   = ipqtoq(iz, D(imat)%irep)
+            ioff = ntbas(0)*ntbas(0)*(iz - 1)
+            call q2bphase('D', iq, 1, D(imat)%elms(1 + ioff))
+          end do
+        end if
+      end do
+    else
+      do imat = 2, nr_dmat
+        if (nz < 4) then
+          do iz = 1, nz
+            iq   = ipqtoq(iz, D(imat)%irep)
+            ioff = ntbas(0)*ntbas(0)*(iz - 1)
+            call q2bphase('D', iq, 1, D(imat)%elms(1 + ioff))
+          end do
+        end if
+      end do
+    end if
 
 #ifdef MOD_UNRELEASED
     if (visual_cfg_london) then

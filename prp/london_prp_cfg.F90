@@ -21,17 +21,20 @@
 
 module london_prp_cfg
 
+#ifdef VAR_MPI
+  use dirac_mpi
+#endif
+
   implicit none
 
   public common_blocks_vars
-  public print_common_blocks_vars
+  public broadcast_prp_lao_variables
 
 
   save
 
+
 ! parameters:
-  integer, parameter, public :: idummy = -9999999
-  real(8), parameter, public :: dummy  = 1.0D20
   integer, parameter, public :: fcklon_unit = 70
   integer, parameter, public :: twolon_unit = 69
   integer, parameter, public :: p_lupri = 6
@@ -47,8 +50,6 @@ module london_prp_cfg
   integer, public :: int1_unit !should also be a parameter
   integer, public :: prp_iprint
   integer, public :: nr_ao_total
-  integer, public :: nr_ao_large
-  integer, public :: nr_ao_small
   integer, public :: p_n2bbasxq
   integer, public :: p_n2bbasx
   integer, public :: nr_qu
@@ -81,7 +82,6 @@ module london_prp_cfg
   logical, public :: p_first1
   logical, public :: p_first2
   logical, public :: p_first3
-  logical, public :: p_parcal
   integer, public :: p_iprnta
   integer, public :: p_iprntb
   integer, public :: p_iprntc
@@ -100,17 +100,6 @@ module london_prp_cfg
 
 ! new variables
   integer, public :: nr_xyz_comp
-!  integer, parameter, public :: nr_xyz_comp = 3
-!  logical, public :: get_nmr_integrals_ll
-!  logical, public :: get_nmr_integrals_ls
-!  logical, public :: get_nmr_integrals_ss
-!  integer, public :: isym_2el_lao(nr_xyz_comp)
-!  integer, public :: irep_2el_lao(nr_xyz_comp)
-!  integer, public :: iherm_2el_lao(nr_xyz_comp)
-!  integer, public :: ifckop_2el_lao(nr_xyz_comp)
-!  integer, public :: jbtof_2el_lao(nr_xyz_comp)
-!  integer, public :: nr_shells_temp
-!  logical, public :: only_large_shells
   logical, public :: p_levyle
 !
   integer, public :: p_nlrgsh
@@ -119,12 +108,6 @@ module london_prp_cfg
 
 
   private
-
-contains
-
-
-  subroutine common_blocks_vars()
-! ----------------------------------------------------------------------
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
@@ -145,8 +128,24 @@ contains
 #include "symmet.h"
 #include "cbihr2.h"
 #include "dcbqal.h"
-!#include "dummy.h"
-!#include "maxaqn.h"
+
+
+
+#include "infpar.h"
+#ifdef VAR_MPI
+#include "mpif.h"
+#ifdef INT_STAR8
+  dimension     istat(mpi_status_size)
+#else
+  integer    :: istat(mpi_status_size)
+#endif /* ifdef INT_STAR8 */
+#endif /* ifdef VAR_MPI */
+
+
+contains
+
+
+  subroutine common_blocks_vars()
 !-----------------------------------------------------------------------
     integer :: i, j, k
 !-----------------------------------------------------------------------
@@ -158,8 +157,6 @@ contains
 
 ! atomic orbitals:
     nr_ao_total        = ntbas(0)
-    nr_ao_large        = ntbas(1)
-    nr_ao_small        = ntbas(2)
 
     p_n2bbasxq         = n2bbasxq  ! = nr_ao_total*nr_ao_total*nr_qu
     p_n2bbasx          = n2bbasx   ! = nr_ao_total*nr_ao_total
@@ -240,7 +237,6 @@ contains
     p_first2 = first2
     p_first3 = first3
  
-    p_parcal = parcal
 
     p_iprnta = iprnta
     p_iprntb = iprntb
@@ -315,13 +311,76 @@ contains
     end do
 
 
-  end subroutine common_blocks_vars
+  end subroutine
 
 
-  subroutine print_common_blocks_vars()
+  subroutine broadcast_prp_lao_variables()
 
-    write(p_lupri, *) 'nr_xyz_comp = ', nr_xyz_comp
+#ifdef VAR_MPI
+    if (parcal) then
+      call dirac_mpi_bcast(int1_unit   )
+      call dirac_mpi_bcast(prp_iprint  )
+      call dirac_mpi_bcast(nr_ao_total )
+      call dirac_mpi_bcast(p_n2bbasxq  )
+      call dirac_mpi_bcast(p_n2bbasx   )
+      call dirac_mpi_bcast(nr_qu       )
+      call dirac_mpi_bcast(p_norb      )
+      call dirac_mpi_bcast(p_norbt     )
+      call dirac_mpi_bcast(p_n2orbxq   )
+      call dirac_mpi_bcast(p_nfsym     )
+      call dirac_mpi_bcast(p_nbsym     )
+      call dirac_mpi_bcast(p_nfbas     )
+      call dirac_mpi_bcast(p_icmoq     )
+      call dirac_mpi_bcast(p_i2basx    )
+      call dirac_mpi_bcast(p_i2orbx    )
+      call dirac_mpi_bcast(p_ipqtoq    )
+      call dirac_mpi_bcast(p_iqtopq    )
+      call dirac_mpi_bcast(p_jbtof     )
+      call dirac_mpi_bcast(ip_conmat   )
+      call dirac_mpi_bcast(nmr_int     )
+      call dirac_mpi_bcast(p_iprptim   )
+      call dirac_mpi_bcast(p_iprpsym   )
+      call dirac_mpi_bcast(dopct_rntlon)
+      call dirac_mpi_bcast(sum_ep_rn   )
+      call dirac_mpi_bcast(p_maxrep    )
+      call dirac_mpi_bcast(p_kmax      )
+      call dirac_mpi_bcast(p_khk       )
+      call dirac_mpi_bcast(p_khkt      )
+      call dirac_mpi_bcast(p_nhkt      )
+      call dirac_mpi_bcast(p_nhtyp     )
+      call dirac_mpi_bcast(p_nlrgbl    )
+      call dirac_mpi_bcast(p_nsmlbl    )
+      call dirac_mpi_bcast(p_first1    )
+      call dirac_mpi_bcast(p_first2    )
+      call dirac_mpi_bcast(p_first3    )
+      call dirac_mpi_bcast(p_iprnta    )
+      call dirac_mpi_bcast(p_iprntb    )
+      call dirac_mpi_bcast(p_iprntc    )
+      call dirac_mpi_bcast(p_iprntd    )
+      call dirac_mpi_bcast(p_tktime    )
+      call dirac_mpi_bcast(p_isymax    )
+      call dirac_mpi_bcast(p_irqmat    )
+      call dirac_mpi_bcast(p_iqmult    )
+      call dirac_mpi_bcast(p_jqbas     )
+      call dirac_mpi_bcast(p_ihqmat    )
+      call dirac_mpi_bcast(p_ipar      )
+      call dirac_mpi_bcast(p_jm4       )
+      call dirac_mpi_bcast(p_jm4pos    )
+      call dirac_mpi_bcast(nr_xyz_comp )
+      call dirac_mpi_bcast(p_levyle    )
+      call dirac_mpi_bcast(p_nlrgsh    )
+!parameters:
+      call dirac_mpi_bcast(p_noptyp    )
+      call dirac_mpi_bcast(fcklon_unit )
+      call dirac_mpi_bcast(twolon_unit )
+      call dirac_mpi_bcast(p_lupri     )
+      call dirac_mpi_bcast(max_prp_operators)
+      call dirac_mpi_bcast(mxqn        )
+      call dirac_mpi_bcast(mxaqn       )
+      call dirac_mpi_bcast(p_irat      )
+    end if
+#endif
 
-  end subroutine print_common_blocks_vars
+  end subroutine
 
 end module
