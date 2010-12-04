@@ -582,13 +582,12 @@ C***********************************************************************
 C
 C   PURPOSE: 
 C     Construct the two electron contribution
-C     to the property gradient dH~(B)/dB|B=0
+C     to the magnetic property gradient dH~(B)/dB|B=0
 C     of the differentiated Dirac Hamiltonian,dg(B)/dB|B=0,
 C     when using London atomic orbitals.
 C
 C   On input: CMO - MO coefficients
 C             IBEIG - boson info
-C
 C
 C     Written by T. Enevoldsen Feb 4 1998
 C     Added by MI & HJAaJ, 2002/2003
@@ -1143,7 +1142,7 @@ C
 C   PURPOSE:
 C ===========
 C    Do one-index transformation of entering MO-matrixes, {T,h}.
-C    This is expression is used for reorthonormalization terms when
+C    This expression is used for reorthonormalization terms when
 C    employing London atomic orbitals.
 C
 C Definition (Ruud et al., Chem.Phys. 195(1995) 157):
@@ -1321,7 +1320,7 @@ C/* Deck RNTLON */
 C***********************************************************************
 C
 C   PURPOSE: Calculate the {T(1),H(0)} contribution
-C            to the property gradient matrix dH~(B)/dB|B=0
+C            to the  magnetic field property gradient matrix dH~(B)/dB|B=0
 C            for NMR shieldings and magnetizabilities
 C            with London atomic orbitals.
 C            Write resulting matrix (in the MO basis)
@@ -2420,9 +2419,6 @@ C
       CALL QENTER('EXPVSUSLO')
 #include "memint.h" 
 
-C     WRITE(LUPRI,*) "IN DIASUSLO routine!"
-
-
 C 1. Get tensor of two-electron expectation value terms 
 
 C--- Try to get the exp.value over two-electron integrals !!!
@@ -2471,7 +2467,6 @@ C  3. Compute lowest order reorthonormalization term  ...many more terms...
 
       CALL MEMREL('EXPVSUSLO',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('EXPVSUSLO')
-
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
