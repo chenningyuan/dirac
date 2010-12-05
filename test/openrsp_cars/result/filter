@@ -4,4 +4,4 @@ ToRE:SCR
 
 $ERROR 1.E-6
 FromRE:Gamma
-ToRE:matrix allocations
+ToRE: total
