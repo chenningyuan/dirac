@@ -197,3 +197,148 @@
   end subroutine
 
 ! --------------------------------------------------------------------------
+  subroutine interest_eri(fint,nint,                                      &
+                          la,alpha,ax,ay,az,anorm,lb,beta ,bx,by,bz,bnorm,&
+                          lc,gamma,cx,cy,cz,cnorm,ld,delta,dx,dy,dz,dnorm,&
+                          rkb)
+
+    use module_interest_osr
+    use module_interest_hrr
+    implicit none
+
+    !-- output --!
+    integer, intent(out) :: nint
+    real(8), intent(out) :: fint(*)
+    !-- input --!
+    logical, intent(in) :: rkb 
+    integer, intent(in) :: la,lb,lc,ld
+    real(8), intent(in) :: alpha,ax,ay,az,anorm
+    real(8), intent(in) :: beta, bx,by,bz,bnorm
+    real(8), intent(in) :: gamma,cx,cy,cz,cnorm
+    real(8), intent(in) :: delta,dx,dy,dz,dnorm
+    !-- local --!
+    integer :: lab,lcd,n1,n2,nab,ncd
+    real(8) :: rxab,ryab,rzab,rrab
+    real(8) :: rxcd,rycd,rzcd,rrcd
+    real(8) :: pexp,rexp,rxpa,rypa,rzpa
+    real(8) :: qexp,sexp,rxqc,ryqc,rzqc
+    real(8) :: px,py,pz,qx,qy,qz
+    real(8) :: psq,ppq,rho,rxpq,rypq,rzpq
+    real(8) :: rxwp,rywp,rzwp,rxwq,rywq,rzwq
+    real(8) :: cntr,cntab,cntcd,tval,fnbra,fdbra,fnket,fdket
+    real(8), parameter :: pi52 = 2.0d0*dsqrt(pi*pi*pi*pi*pi)
+
+! todo: set the prescreening here
+
+    if( .not.rkb )then
+      nab  = ncc(la)*ncc(lb)
+      ncd  = ncc(lc)*ncc(ld)
+    else
+      nab  = ncc(la)*ncc(lb)*10
+      ncd  = ncc(lc)*ncc(ld)*10
+    endif
+    nint = nab*ncd 
+    fint(1:nint) = 0.0d0
+
+    !-- AB-pair --!
+    lab  = la + lb - 1
+    pexp = alpha + beta
+
+    rxab = ax - bx
+    ryab = ay - by
+    rzab = az - bz
+    rrab = rxab*rxab + ryab*ryab + rzab*rzab
+
+    if( rrab.lt.1.d-12 )then
+      px    = ax 
+      py    = ay
+      pz    = az
+      rxpa  = 0.0d0 
+      rypa  = 0.0d0
+      rzpa  = 0.0d0
+      rxab  = 0.0d0  
+      ryab  = 0.0d0  
+      rzab  = 0.0d0  
+      cntab = anorm*bnorm 
+    else
+      px    = ( alpha*ax + beta*bx )/pexp
+      py    = ( alpha*ay + beta*by )/pexp
+      pz    = ( alpha*az + beta*bz )/pexp
+      rxpa  = px - ax
+      rypa  = py - ay
+      rzpa  = pz - az
+      rexp  = alpha*beta/pexp
+      cntab = anorm*bnorm*dexp(-rexp*rrab)
+    endif
+
+
+    !-- CD-pair --!
+    lcd  = lc + ld - 1
+    qexp = gamma + delta
+
+    rxcd = cx - dx
+    rycd = cy - dy
+    rzcd = cz - dz
+    rrcd = rxcd*rxcd + rycd*rycd + rzcd*rzcd
+
+    if( rrcd.lt.1.d-12 )then
+      qx    = cx 
+      qy    = cy
+      qz    = cz
+      rxqc  = 0.0d0 
+      ryqc  = 0.0d0
+      rzqc  = 0.0d0
+      rxcd  = 0.0d0  
+      rycd  = 0.0d0  
+      rzcd  = 0.0d0  
+      cntcd = cnorm*dnorm 
+    else
+      qx    = ( gamma*cx + delta*dx )/qexp
+      qy    = ( gamma*cy + delta*dy )/qexp
+      qz    = ( gamma*cz + delta*dz )/qexp
+      rxqc  = qx - cx
+      ryqc  = qy - cy
+      rzqc  = qz - cz
+      sexp  = gamma*delta/qexp
+      cntcd = cnorm*dnorm*dexp(-sexp*rrcd)
+    endif
+
+
+    !-- ABCD --!
+    psq = pexp+qexp
+    ppq = pexp*qexp
+    rho = ppq/psq
+
+    rxpq = px - qx
+    rypq = py - qy
+    rzpq = pz - qz
+    tval = rho*((rxpq*rxpq)+(rypq*rypq)+(rzpq*rzpq))
+    cntr = pi52*(1.0d0/dsqrt(psq))*(1.0d0/ppq)*cntab*cntcd
+
+    fnbra = qexp/psq
+    fnket = pexp/psq 
+    fdbra = 1.0d0/(2.0d0*pexp)
+    fdket = 1.0d0/(2.0d0*qexp)
+    rxwp  = ( pexp*px + qexp*qx )/psq - px
+    rywp  = ( pexp*py + qexp*qy )/psq - py
+    rzwp  = ( pexp*pz + qexp*qz )/psq - pz
+    rxwq  = ( pexp*px + qexp*qx )/psq - qx
+    rywq  = ( pexp*py + qexp*qy )/psq - qy
+    rzwq  = ( pexp*pz + qexp*qz )/psq - qz
+
+    if( .not.rkb )then
+      call interest_osr_class_nuclear(n1,n2,fint,cntr,tval,                                          &
+                                      (la  ),(la+lb-1),nab,fnbra,fdbra,rxpa,rypa,rzpa,rxwp,rywp,rzwp,&
+                                      (lc  ),(lc+ld-1),ncd,fnket,fdket,rxqc,ryqc,rzqc,rxwq,rywq,rzwq )
+      call interest_hrr_ket(fint,ncd,nab,la,lb,rxab,ryab,rzab,n2)
+      call interest_hrr_bra(fint,ncd,nab,lc,ld,rxcd,rycd,rzcd) 
+    else
+      call interest_osr_class_nuclear(n1,n2,fint,cntr,tval,                                          &
+                                      (la-1),(la+lb+1),nab,fnbra,fdbra,rxpa,rypa,rzpa,rxwp,rywp,rzwp,&
+                                      (lc-1),(lc+ld+1),ncd,fnket,fdket,rxqc,ryqc,rzqc,rxwq,rywq,rzwq )
+      call interest_hrr_ket_rkb(fint,ncd,nab,la,lb,rxab,ryab,rzab,alpha,beta,n2)
+      call interest_hrr_bra_rkb(fint,ncd,nab,lc,ld,rxcd,rycd,rzcd,gamma,delta) 
+    endif
+
+  end subroutine
+! --------------------------------------------------------------------------
