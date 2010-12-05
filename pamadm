@@ -349,6 +349,13 @@ dirac_modules[this_module].add_directory('gp/xml')
 dirac_modules[this_module].add_test(short_test('fde_export_density')) # XCFun
 dirac_modules[this_module].take_out_of_release()
 
+this_module = 'interest'
+dirac_modules[this_module] = dirac_module('interest', 'Interest module')
+dirac_modules[this_module].add_cppflag('MOD_INTEREST')
+dirac_modules[this_module].add_directory('interest')
+dirac_modules[this_module].take_out_of_adm() 
+dirac_modules[this_module].take_out_of_release()
+
 this_module = 'krcc'
 dirac_modules[this_module] = dirac_module('krcc', 'KRCC module')
 dirac_modules[this_module].add_cppflag('MOD_KRCC')
