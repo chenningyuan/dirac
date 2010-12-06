@@ -34,11 +34,20 @@ fi
 # Run calculation (pass on additional arguments for pam that are supplied by the caller)
 #
 EXIT=0 
+
+# start the clock
+time1=`date +%s`
+
 if [ -n "$TIMEOUT" ]; then
    $PAM_PATH/pam -dirac $DIRAC $NICE -run $TAG -timeout $TIMEOUT -rmwrk -clean $MPIARG $* $MOL $MENU || EXIT=1
 else
    $PAM_PATH/pam -dirac $DIRAC $NICE -run $TAG -rmwrk -clean $MPIARG $* $MOL $MENU || EXIT=1
 fi
+
+# stop the clock
+time2=`date +%s`
+time_spent="spent `expr $time2 - $time1` seconds"
+
 #
 # Finished : either regular or with a crash. Make two branches.
 #
@@ -115,14 +124,14 @@ fi
 #
    if [ -s ${NEWOUT}_dif.txt ]; then
       echo " Test `pwd` $MOL $MENU failed : output not consistent with reference output" >>${LOG}/${TAG}_dif.txt
-      echo " :-( Test `pwd` $MOL $MENU failed : output not consistent with reference output" > /dev/stderr
+      echo " :-( Test `pwd` $MOL $MENU failed : output not consistent with reference output ($time_spent)" > /dev/stderr
    else
 #
 #     This strange construction (cat an empty file) is needed to make sure that the log file
 #     exists to enable similar checking (using if -e and then if -s) in the testlast script.
 #
       cat ${NEWOUT}_dif.txt >>${LOG}/${TAG}_dif.txt
-      echo " OK: `pwd` $MOL $MENU" > /dev/stderr
+      echo " OK: `pwd` $MOL $MENU ($time_spent)" > /dev/stderr
    fi
 #
 else
