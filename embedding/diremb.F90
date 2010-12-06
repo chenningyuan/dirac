@@ -42,6 +42,11 @@
       use dft_input
       use dft_cfg
 
+#ifdef PRG_DIRAC
+!miro: introduced in order to fix g95 integer*8 problem
+#define SIZE(a,b) int(size(a,b))
+#endif
+
       PRIVATE
       PUBLIC FDE_ImportStaticPotential_FileOpen, FDE_ImportStaticPotential_FileClose
       public FDE_setupFDEgrid, FDE_testFrozendensity, FDE_cleanupFDEgrid
@@ -546,10 +551,10 @@
 
       write(lupri,*) 'Number of gridpoints:', size(points,2)
 
-      call alloc(rho,     1,size(points,2))
-      call alloc(grad_rho,3,size(points,2))
-      call alloc(hes_rho, 6,size(points,2))
-      call alloc(vc,      size(points,2))
+      call alloc(rho,     1,SIZE(points,2))
+      call alloc(grad_rho,3,SIZE(points,2))
+      call alloc(hes_rho, 6,SIZE(points,2))
+      call alloc(vc,        SIZE(points,2))
 
       rho      = 0.0d0
       grad_rho = 0.0d0
