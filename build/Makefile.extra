@@ -172,15 +172,6 @@ gp/gptrygve.p : gp/gptrygve.F
 
 ifeq ($(SAFE_FLAGS_MODE),NO) # check only if no safe-flags compilation
 
-#ifeq (-DVAR_GFORTRAN, $(findstring -DVAR_GFORTRAN, $(FPP_FLAGS) ))
-#
-##miro: I checked it with gfortran 4.4, we need to avoid optimization
-##miro: reactivated in order to watch what exactly is causing the problem
-#prp/pamrvc.o : prp/pamrvc.F
-#        @echo " ----  gfortran compiler, watching prp/pamrvc.F compilation :"
-#        $(F77) $(F77FLAGS) -c -o $*.o $<
-#endif
-
 ### TODO: these individual files have to be supplied with make-if-directives to specify on which 
 ### compilers/architectures there is a need of the lower/no level of optimization
 
