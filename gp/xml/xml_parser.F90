@@ -29,8 +29,7 @@ module xml_parser
   public xml_read,xml_write
   public xml_get_data,xml_add_data
   public xml_tag_open,xml_tag_close,xml_tag_next
-  public xml_parent
-  public set_attribute
+  public xml_name,xml_attribute,xml_parent
 
   
   interface xml_tag_open
@@ -53,15 +52,13 @@ module xml_parser
      module procedure get_real_data, get_char_data  !,get_real_vector_data
   end interface
 
-!radovan: this does not work with g95
-! interface xml_attribute
-!    module procedure get_attribute,set_attribute
-! end interface
+  interface xml_attribute
+     module procedure get_attribute,set_attribute
+  end interface
 
-!radovan: this does not work with g95
-! interface xml_name
-!    module procedure get_name,set_name
-! end interface
+  interface xml_name
+     module procedure get_name,set_name
+  end interface
   
 ! A type for the enduser in which the data structure is hidden.
   
