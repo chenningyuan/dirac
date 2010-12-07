@@ -373,7 +373,7 @@ C
       CHARACTER CPUTID*12,SECTID*12,DAYTID*24
       DIMENSION GPCI(*),GPOE(*),GPOP(*),
      &          IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*),RCNV(*),
-     &          EVALR(*),EVECR(NREDM,NFREQ),
+     &          EVALR(*),EVECR(NEVEC,NFREQ),
      &          RNORM(NVPAR,NFREQ),IVECS(NFREQ,NVPAR),
      &          ISIM(NVPAR),NPOS(*),WORK(*)
 C
@@ -1831,7 +1831,7 @@ C
 #include "dcborb.h"
       DIMENSION WORK(*),REDGP(*), REDS(*), REDE(*), 
      &          GPCI(*),GPOE(*),GPOP(*),
-     &          EVECR(NREDM,NFREQ),RNORM(*),RCNV(*)
+     &          EVECR(NEVEC,NFREQ),RNORM(*),RCNV(*)
 C
       CALL QENTER('XRSINI')
       KFRSAV = KFREE
@@ -1885,7 +1885,7 @@ C
       IF(STATIC) NTYP = 1
       ITMIC = 0
       CALL DCOPY(NFREQ,DUMMY,0,RCNV,1)
-      CALL DZERO(EVECR,NREDM*NFREQ)
+      CALL DZERO(EVECR,NEVEC*NFREQ)
       CALL DZERO(REDE,N2REDM)
       CALL DZERO(REDS,N2REDM)
       IF (LINEQ) CALL DZERO(REDGP,NREDM)
@@ -1971,9 +1971,6 @@ C
      &          BVBUF(*),REDMAT(NREDM,NREDM)
       FFAC = D1
       IF(IMFREQ) FFAC = DM1
-CPP ... test damping
-      WRITE(LUPRI,'(A,1P,D12.6)')
-     &' * Damping frequency   : ',DAMPFREQ
 C
 C     C-type trial vectors
 C     ====================
@@ -2474,7 +2471,7 @@ C     Output variables:
 C       EVALR(NZRED)         - real part of eigenvalues
 C                              (excitation energies) 
 C                              (if. NOT.LINEQ)
-C       EVECR(NREDM,NZRED,*) - solutions vectors in reduced space
+C       EVECR(NEVEC,NZRED,*) - solutions vectors in reduced space
 C
 C
 C     Written by T.Saue and Hans Joergen Aa. Jensen. 1996
@@ -2486,7 +2483,7 @@ C
 #include "dcbxrs.h"
 C
       DIMENSION REDGP(NREDM),REDE(NREDM,NREDM),REDS(NREDM,NREDM),
-     &          EVALR(NFREQ),EVECR(NREDM,NFREQ),IBTYP(2,*),RCNV(*),
+     &          EVALR(NFREQ),EVECR(NEVEC,NFREQ),IBTYP(2,*),RCNV(*),
      &          WORK(*)
 C
       PARAMETER ( D0 = 0.0D0 , D1 = 1.0D0 , D2 = 2.0D0 , DP5 = 0.5D0)
@@ -2683,7 +2680,7 @@ C***********************************************************************
 C
 #include "dcbxrs.h"
       DIMENSION IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*),RCNV(*),
-     &          EVALR(*),EVECR(NREDM,*),GPCI(*),GPOE(*),GPOP(*),
+     &          EVALR(*),EVECR(NEVEC,*),GPCI(*),GPOE(*),GPOP(*),
      &          RNORM(NVPAR,NFREQ),IVECS(NFREQ,NVPAR),WORK(*)
       CALL QENTER('XRSNEX')
       KFRSAV = KFREE
@@ -3436,7 +3433,7 @@ C
 C     
       DIMENSION BVEC(NVAR,NZ,*),GP(NVAR,NZ),HDIAG(NVAR),SDIAG(NVAR),
      &          EVALR(NFREQ),IBTYP(2,*),IBVEC(*),IVEC(*),
-     &          EVECR(NREDM,NFREQ),WORK(*)
+     &          EVECR(NEVEC,NFREQ),WORK(*)
       LOGICAL FNDRSP
 #include "chrnos.h"
 C
@@ -4049,11 +4046,14 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
+      PARAMETER(D0=0.0D0)
 #include "dcbxrs.h"
       FKRMC  = .FALSE.
       UNCOUP = .FALSE.
       IMFREQ = .FALSE.
       E2CHEK = .FALSE.
       STERNC = .FALSE.
+      DAMPFREQ = D0
+      NEVEC  = NREDM
       RETURN
       END

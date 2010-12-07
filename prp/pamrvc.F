@@ -1822,7 +1822,7 @@ C
 #include "dcbibn.h"
       PARAMETER(DTOL=1.0D-10)
 C
-      DIMENSION XVEC(*),EVECR(NREDM,MFREQ),
+      DIMENSION XVEC(*),EVECR(NEVEC,MFREQ),
      &               IBTYP(2,*),IBVEC(*),IVECS(*),BVBUF(*)
 C
 C
@@ -1904,7 +1904,7 @@ C
      &          BPPVC(NZXOPPQ,*),BPMVC(NZXOPPQ,*),BPBUF(NZXOPPQ),
      &          BCPVC(NZCONFQ,*),BCMVC(NZCONFQ,*),BCBUF(NZCONFQ),
      &          IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*),
-     &          EVECR(NREDM,MFREQ),EVALR(MFREQ),WORK(*)
+     &          EVECR(NEVEC,MFREQ),EVALR(MFREQ),WORK(*)
 C
       CALL QENTER('ACCS2X')
 C
@@ -2036,7 +2036,7 @@ C***********************************************************************
 C
 #include "dcbxrs.h"
 #include "dcbibn.h"
-      DIMENSION BVEC(*),EVECR(NREDM,MFREQ),
+      DIMENSION BVEC(*),EVECR(NEVEC,MFREQ),
      &               IBTYP(2,*),BVBUF(*)
 C
 C
@@ -2115,7 +2115,7 @@ C
 #include "dcbxrs.h"
 #include "dcbibn.h"
       DIMENSION BEVEC(*),BPVEC(*),BCVEC(*),EVALR(*),
-     &          EVECR(NREDM,*),GPOE(*),GPOP(*),GPCI(*),
+     &          EVECR(NEVEC,*),GPOE(*),GPOP(*),GPCI(*),
      &          IBTYP(2,NREDM),IBCVC(NREDM),IBEVC(NREDM),IBPVC(NREDM),
      &          BEBUF(*),BPBUF(*),BCBUF(*),IVECS(MFREQ,NVPAR),
      &          RNORM(NVPAR,MFREQ),XNORM(MFREQ,NVPAR),WORK(*)

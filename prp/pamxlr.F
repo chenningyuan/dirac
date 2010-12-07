@@ -224,7 +224,7 @@ C
 C     Dimensions of reduced system
 C
       KXLR = KFREE
-      NEVECR    = NREDM*NFREQ
+      NEVECR    = NEVEC*NFREQ
       CALL MEMGET('INTE',KIBTYP,2*NREDM,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBCVC,NREDM  ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBEVC,NREDM  ,WORK,KFREE,LFREE)
@@ -1200,6 +1200,7 @@ C
       STERNC    = XSTERNC
       E2CHEK    = XLR_E2CHEK
       DAMPFREQ  = DMPFRLR
+      IF(DAMPFREQ.NE.D0) NEVEC=2*NREDM
 C
 C     Restart info used by MCSCF program.
 C
@@ -1265,7 +1266,7 @@ C
       LOGICAL FIRST
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(*),
      &          IBTYP(2,*),IBCVC(*),IBEVC(*),IORBCL(4,*),
-     &          IBPVC(*),EVALR(*),EVECR(NREDM,*),WORK(*)
+     &          IBPVC(*),EVALR(*),EVECR(NEVEC,*),WORK(*)
 C
       CALL QENTER('GETLRF')
       KFRSAV = KFREE
@@ -1449,7 +1450,7 @@ C
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(*),
      &          GPO(NXPAR,NZ),XPO(NXPAR,NZ,NFREQ),BBUF(*),
      &          CMO(*),IBEIG(*),IORBCL(4,*),
-     &          IBVEC(*),IBTYP(2,*),EVECR(NREDM,*),EVALR(*),
+     &          IBVEC(*),IBTYP(2,*),EVECR(NEVEC,*),EVALR(*),
      &          JXOP(2,*),IVECS(*),IIBF(*),IVBF(*),INDX(*),
      &          RIBF(*),RVBF(*),WORK(*)
       CHARACTER TYP(3)*1
