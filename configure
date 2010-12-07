@@ -2147,9 +2147,10 @@ get_f90_flags(){
   case "$F90real" in
     g95)
       cpp_f90="$cpp_f90 -DVAR_G95"
-      opt="-g -O3 -ffast-math -Wno=155 -fsloppy-char"
+      #opt="-g -O3 -ffast-math -Wno=155 -fsloppy-char"
+      opt="-g -O3 -ffast-math -fsloppy-char"
       f90_extraflags="-cpp"
-      safe="-g -Wno=155 -fsloppy-char"
+      safe="-g -fsloppy-char"
       opt_1="-O1"
       opt_2="-O2 -ffast-math"
       opt_3="-O3 -ffast-math"
