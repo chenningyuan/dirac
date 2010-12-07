@@ -143,6 +143,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "aovec.h"
 #include "maxorb.h"
+      PARAMETER(D0=0.0D0)
 C
       DIMENSION GPCI(*), GPOE(*),GPOP(*),
      &          IBTYP(2,NREDM), IBCVC(NREDM),IBEVC(NREDM),IBPVC(NREDM),
@@ -161,6 +162,11 @@ C
         NREDGP = NREDM
       ELSE
         NREDGP = 0
+      ENDIF
+      IF(DAMPFREQ.NE.D0) THEN
+        NEVEC=2*NREDM
+      ELSE
+        NEVEC=NREDM
       ENDIF
       CALL MEMGET('REAL',KREDE ,N2REDM ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KREDS ,N2REDM ,WORK,KFREE,LFREE)
