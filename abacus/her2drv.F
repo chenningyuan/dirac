@@ -1357,6 +1357,9 @@ C
       NODCCD = NODSYM(MAXOPR,MULC,MULD)
       KCKMAX = MAX(KCKTA,KCKTB,KCKTC,KCKTD)
 C
+!radovan: these memgets are easily called 25 million times
+!         if somebody modifies the code
+!         please allocate buffers further upstream
       CALL MEMGET('REAL',KPSO  ,NPMAT               ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPSA  ,NPMATA              ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KNPCOA,2*NSETA*(NODCAB + 1),WORK,KFREE,LFREE)
