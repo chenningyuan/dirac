@@ -178,10 +178,12 @@ ifeq (-DVAR_GFORTRAN, $(findstring -DVAR_GFORTRAN, $(FPP_FLAGS) ))
 prp/pamrvc.o : prp/pamrvc.F
 	@echo " ----  gfortran compiler, prp/pamrvc.F with no level of optimization :"
 	$(F77) $(F77FLAGS_SAFE) -c -o $*.o $<
+#miro: following the discussion, reactivated
 gp/gpsaue.o : gp/gpsaue.F
-	@echo " ----  gfortran compiler,  gp/gpsaue.F with no level of optimization :"
+	@echo " ----  gfortran compiler,  gp/gpsaue.F need compiler specific fix for the optimization."
 #	$(F77) $(F77FLAGS_OPT_1) $(F77FLAGS_SAFE) -c -o $*.o $<
-	$(F77) $(F77FLAGS_SAFE) -c -o $*.o $<
+#	$(F77) $(F77FLAGS_SAFE) -c -o $*.o $<
+	$(F77) $(F77FLAGS) -c -o $*.o $<
 endif
 
 ### TODO: these individual files have to be supplied with make-if-directives to specify on which 
