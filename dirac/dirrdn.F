@@ -1458,12 +1458,6 @@ C&&& OLEVEL: Open-shell level shifts
 
   300 CONTINUE
 
-!
-!     Setup embedding
-!     ===============
-
-C      CALL init_embedding ()
-
 C
 C     Determine occupation
 C     ====================

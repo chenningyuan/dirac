@@ -1089,11 +1089,6 @@ C
         CALL SCFCYC(CMO,EIG,IBEIG,FOCK,WORK,LWORK)
       ENDIF
 
-!     Finalize Embedding Module
-!     ===========================
-
-C      CALL end_Embedding ()
-
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
