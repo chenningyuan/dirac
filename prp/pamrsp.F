@@ -2592,7 +2592,7 @@ C***********************************************************************
       PARAMETER(D0 = 0.0D0)
 #include "dcbxrs.h"
 C
-      DIMENSION AE(LDA,N),AS(LDA,N),G(N),X(N),
+      DIMENSION AE(LDA,N),AS(LDA,N),G(N),X(NEVEC),
      &          DET(2),INERT(3),IBTYP(2,*),WORK(*)
 C
       CALL QENTER('XRSLINRED')
