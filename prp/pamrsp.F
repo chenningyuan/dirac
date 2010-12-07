@@ -1971,6 +1971,9 @@ C
      &          BVBUF(*),REDMAT(NREDM,NREDM)
       FFAC = D1
       IF(IMFREQ) FFAC = DM1
+CPP ... test damping
+      WRITE(LUPRI,'(A,1P,D12.6)')
+     &' * Damping frequency   : ',DAMPFREQ
 C
 C     C-type trial vectors
 C     ====================

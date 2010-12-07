@@ -758,7 +758,7 @@ C&&& STERNC: Sternheimer complement
                GO TO 100
  37            CONTINUE
 C&&& DAMPING: specify a damping parameter
-               READ(LUCMD,*) DAMPFRLR
+               READ(LUCMD,*) DMPFRLR
                GO TO 100
  38            CONTINUE
 C&&& FREQ INTERVAL: specify frequencies with start, end, step values
@@ -798,13 +798,16 @@ C specific complex response process section
           NBFREQ = MAXFLR
      	  WRITE(LUPRI,'( 2(/A),I3 )') 'Warning Number of frequencies'//
      &	  ' is exceeding maximum numbers of frequencies allowed',
-     &    ' number of frequencies adjusted to MAXFLR: ',MAXFLR
+     &    'maximum allowed (MAXFLR) is : ',MAXFLR
+        CALL QUIT('Too many frequencies specified!!!')
         END IF
         BFREQ(1)=STARTFREQ
         DO IFREQ=1,NBFREQ-1
           BFREQ(IFREQ+1)=STARTFREQ+IFREQ*STEPFREQ
         END DO
       END IF
+      WRITE(LUPRI,'(A,1P,D12.6)')
+     &' * Damping frequency   :',DMPFRLR
 C end of complex freq processing
       IF(CNVXLR(1).LT.DUMMY) ITRILR(1) = 1
       IF(CNVXLR(2).LT.DUMMY) ITRILR(2) = 1
@@ -1027,7 +1030,7 @@ C     CALL PRSYMB(LUPRI,'-',75,0)
         IF (DMPFRLR.NE.D0) THEN
           FMT = MXFORM(BFREQ(J),12)
           WRITE(LUPRI,'(6X,'//FMT//',A,'//FMT//',A)')
-     &      BFREQ(J),' +',DAMPFRLR,'i a.u.'
+     &      BFREQ(J),' +',DMPFRLR,'i a.u.'
         ELSE
           FMT = MXFORM(BFREQ(J),12)
           WRITE(LUPRI,'(6X,'//FMT//',A)') BFREQ(J),' a.u.'
