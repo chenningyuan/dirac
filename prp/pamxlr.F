@@ -372,7 +372,7 @@ C***********************************************************************
 #include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 36,DRESFAC = 1.0D2)
+      PARAMETER (NTABLE = 38,DRESFAC = 1.0D2)
 C
 #include "dcbgen.h"
 #include "dcbprp.h"
@@ -383,7 +383,7 @@ C
 #include "pgroup.h"
 #include "dcbxpr.h"
 C
-      LOGICAL SET, NEWDEF, RESET
+      LOGICAL SET, NEWDEF, RESET, FINTER, FLIST
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,
      &          MXFORM*6,FMT*6
       DIMENSION WORK(LWORK)
@@ -397,7 +397,8 @@ C
      &            '.ITRINT','.CNVINT','.REAXVC','.TRIAB ',
      &            '.RESFAC','.ANALYZ','.STERNH','.SKIPEE',
      &            '.MXLOAD','.A_NOSP','.B_NOSP','.UNCOUP',
-     &            '.IMAGIN','.GAUSS-','.E2CHEK','.STERNC'/
+     &            '.IMAGIN','.GAUSS-','.E2CHEK','.STERNC',
+     &            '.DAMPIN','.FREQ I'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -449,6 +450,12 @@ C     Ordinary linear response calculation
          XLR_IMFREQ = .FALSE.
          NBFREQ     = 1
          BFREQ(1)   = D0
+         DAMPFRLR   = D0
+         STARTFREQ  = D0
+         ENDFREQ    = D0
+         STEPFREQ   = D1
+         FINTER     = .FALSE.
+         FLIST      = .FALSE.
       ELSE
 C     Calculation of C6 dispersion coefficient
          XLR_IMFREQ = .TRUE.
@@ -508,7 +515,7 @@ C
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                     11,12,13,14,15,16,17,18,19,20,
      &                     21,22,23,24,25,26,27,28,29,30,
-     &                     31,32,33,34,35,36), I
+     &                     31,32,33,34,35,36,37,38), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -556,6 +563,7 @@ C                 set by the choice of quadrature scheme
                      WRITE (LUPRI,'(/A)') 'Warning: frequencies ignored'
                      GOTO 100
                   END IF
+                  FLIST = .TRUE.
                   READ (LUCMD, *) NBFREQ
                   IF (NBFREQ.GT.0) THEN
                     IF (NBFREQ.LE.MAXFLR) THEN
@@ -748,6 +756,15 @@ C&&& E2CHEK: explicit contruction of the electronic Hessian E2
 C&&& STERNC: Sternheimer complement
                XSTERNC = .TRUE.
                GO TO 100
+ 37            CONTINUE
+C&&& DAMPING: specify a damping parameter
+               READ(LUCMD,*) DAMPFRLR
+               GO TO 100
+ 38            CONTINUE
+C&&& FREQ INTERVAL: specify frequencies with start, end, step values
+               FINTER = .TRUE.
+               READ(LUCMD,*) STARTFREQ,ENDFREQ,STEPFREQ
+               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -762,6 +779,33 @@ C
 C     Process section
 C     ===============
 C
+C specific complex response process section
+      IF (XLR_IMFREQ .AND. DMPFRLR.NE.D0) THEN
+      	XLR_IMFREQ = .FALSE.
+      	WRITE(LUPRI,'( 2(/A) )') ' Warning!! .IMAGINARY and .DAMPING'//
+     & 	' both specified',
+     &	'keyword .IMAGINARY ignored assuming complex frequencies!'
+      END IF
+      IF (FINTER .AND. FLIST) THEN
+        FLIST = .FALSE.
+        WRITE(LUPRI,'( 2(/A) )') ' Warning!! .B FREQ and .FREQ I'//
+     &  ' both specified',
+     &  'keyword .B FREQ ignored!'
+      END IF
+      IF (FINTER) THEN
+        NBFREQ = IFIX(0.5+SNGL((ENDFREQ-STARTFREQ)/STEPFREQ))+1
+        IF (NBFREQ .GE. MAXFLR) THEN
+          NBFREQ = MAXFLR
+     	  WRITE(LUPRI,'( 2(/A),I3 )') 'Warning Number of frequencies'//
+     &	  ' is exceeding maximum numbers of frequencies allowed',
+     &    ' number of frequencies adjusted to MAXFLR: ',MAXFLR
+        END IF
+        BFREQ(1)=STARTFREQ
+        DO IFREQ=1,NBFREQ-1
+          BFREQ(IFREQ+1)=STARTFREQ+IFREQ*STEPFREQ
+        END DO
+      END IF
+C end of complex freq processing
       IF(CNVXLR(1).LT.DUMMY) ITRILR(1) = 1
       IF(CNVXLR(2).LT.DUMMY) ITRILR(2) = 1
 C
@@ -970,14 +1014,24 @@ C     CALL PRSYMB(LUPRI,'-',75,0)
         WRITE(LUPRI,'(A)')
      &' * Linear response functions evaluated at the following '//
      &   'IMAGINARY frequencies:'
+      ELSE IF (DMPFRLR.NE.D0) THEN
+      	WRITE(LUPRI,'(A)')
+     &' * Linear response functions evaluated at the following '//
+     &   'COMPLEX frequencies:'
       ELSE
         WRITE(LUPRI,'(A)')
      &' * Linear response functions evaluated at the following '//
      &   'REAL frequencies:'
-      ENDIF    
+      ENDIF
       DO J = 1,NBFREQ
-        FMT = MXFORM(BFREQ(J),12)
-        WRITE(LUPRI,'(6X,'//FMT//',A)') BFREQ(J),' a.u.'
+        IF (DMPFRLR.NE.D0) THEN
+          FMT = MXFORM(BFREQ(J),12)
+          WRITE(LUPRI,'(6X,'//FMT//',A,'//FMT//',A)')
+     &      BFREQ(J),' +',DAMPFRLR,'i a.u.'
+        ELSE
+          FMT = MXFORM(BFREQ(J),12)
+          WRITE(LUPRI,'(6X,'//FMT//',A)') BFREQ(J),' a.u.'
+        ENDIF
       ENDDO
       IF(DOVDW) THEN
         WRITE(LUPRI,'(A)')
@@ -1142,6 +1196,7 @@ C
       STERNH    = XSTERN
       STERNC    = XSTERNC
       E2CHEK    = XLR_E2CHEK
+      DAMPFREQ  = DMPFRLR
 C
 C     Restart info used by MCSCF program.
 C
