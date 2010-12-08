@@ -600,9 +600,7 @@ for file in files_never_compiled:
     f.write(s + '\n')
 
 f.write('.*/CMakeFiles/.*\n')
-
 f.close()
-
 
 # Force make to collect dependencies
 # ==================================
@@ -785,9 +783,12 @@ if options.exportfile != None:
      os.mkdir(scratch_dir)
 
 #  copy all vital directories and files to scratch dir
-   print '...exporting files into newly created "',scratch_dir,'"directory...'
+   print '...exporting DIRAC files into newly created "',scratch_dir,'"directory...'
    for directory in vital_directories:
-       shutil.copytree(directory, scratch_dir + '/' + directory)
+       copytree_dest= scratch_dir + '/' + directory
+       #print directory,copytree_dest
+       if not os.path.isdir(copytree_dest):
+           shutil.copytree(directory, copytree_dest)
    for file in vital_files:
 #      need to copy with parent, don't know how to do it in python
        copy_parent(file, scratch_dir)
