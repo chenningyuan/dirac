@@ -482,7 +482,7 @@ parser.add_option('-e','--export',
                   dest='exportfile', 
                   action='store',
                   help='Export or release DIRAC to EXPORTFILE',
-                  metavar="STRING")
+                  metavar="EXPORTFILE")
 
 for module in dirac_modules:
     parser.add_option('--' + module,
