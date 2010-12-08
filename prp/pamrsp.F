@@ -700,9 +700,11 @@ C        Generate MAXSIM linear independent trial vectors for
 C        next microiteration using solutions of reduced RSP equation
 C        ===========================================================
 C
-         CALL XRSNEX(IBTYP,IBCVC,IBEVC,IBPVC,RCNV,
-     &               EVALR,EVECR,GPCI,GPOE,GPOP,
-     &               RNORM,IVECS,WORK,KFREE,LFREE)
+CPP
+         GOTO 40
+CTROND         CALL XRSNEX(IBTYP,IBCVC,IBEVC,IBPVC,RCNV,
+CTROND     &               EVALR,EVECR,GPCI,GPOE,GPOP,
+CTROND     &               RNORM,IVECS,WORK,KFREE,LFREE)
 C
 C
 C        Zero reduced space if new integrals contribute
@@ -2659,7 +2661,7 @@ C solve A2*X=G
 C
       ALPHAR = DP5 * DDOT(N,G,1,X,2)
       ALPHAI = DP5 * DDOT(N,G,1,X(2),2)
-      WRITE(LUPRI,'(1X,F15.8,1X,F15.8)') ALPHAR,ALPHAI
+      WRITE(LUPRI,'(F9.4,1X,F15.8,1X,F15.8)') W,ALPHAR,ALPHAI
 C
       CALL MEMREL('XRSLINRE2',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('XRSLINRE2')

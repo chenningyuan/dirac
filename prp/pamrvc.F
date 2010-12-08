@@ -1820,7 +1820,7 @@ C***********************************************************************
 C
 #include "dcbxrs.h"
 #include "dcbibn.h"
-      PARAMETER(DTOL=1.0D-10)
+      PARAMETER(DTOL=1.0D-10,D0=0.0D0)
 C
       DIMENSION XVEC(*),EVECR(NEVEC,MFREQ),
      &               IBTYP(2,*),IBVEC(*),IVECS(*),BVBUF(*)
@@ -1849,22 +1849,49 @@ C
 C
       CALL IZERO(IVECS,MFREQ)
       CALL DZERO(XVEC,NBDIM*MFREQ)
-      DO IREC = 1,NBRED
-        IND = IBVEC(IREC)
-        IH  = IBTYP(2,IND)
-        IF(IH.EQ.ITYP) THEN
-          CALL READAC(LUBVEC,NBDIM,BVBUF,IREC+IRECOFF)
-          IBOFF = 1
-          DO IFREQ = 1,MFREQ
-            IF(ABS(EVECR(IND,IFREQ)).GT.DTOL) THEN
-              IVECS(IFREQ) = IVECS(IFREQ) + 1
-              CALL DAXPY(NBDIM,EVECR(IND,IFREQ),
-     &                     BVBUF,1,XVEC(IBOFF),1)
-            ENDIF
-            IBOFF = IBOFF + NBDIM
-          ENDDO
-        ENDIF
-      ENDDO
+      IF(DAMPFREQ.EQ.D0) THEN
+        DO IREC = 1,NBRED
+          IND = IBVEC(IREC)
+          IH  = IBTYP(2,IND)
+          IF(IH.EQ.ITYP) THEN
+            CALL READAC(LUBVEC,NBDIM,BVBUF,IREC+IRECOFF)
+            IBOFF = 1
+            DO IFREQ = 1,MFREQ
+              IF(ABS(EVECR(IND,IFREQ)).GT.DTOL) THEN
+                IVECS(IFREQ) = IVECS(IFREQ) + 1
+                CALL DAXPY(NBDIM,EVECR(IND,IFREQ),
+     &                       BVBUF,1,XVEC(IBOFF),1)
+              ENDIF
+              IBOFF = IBOFF + NBDIM
+            ENDDO
+          ENDIF
+        ENDDO
+      ELSE
+        DO IREC = 1,NBRED
+          IND = IBVEC(IREC)
+          INDR = 2*IND - 1
+          INDI = 2*IND
+          IH  = IBTYP(2,IND)
+          IF(IH.EQ.ITYP) THEN
+            CALL READAC(LUBVEC,NBDIM,BVBUF,IREC+IRECOFF)
+            IBOFF = 1
+            DO IFREQ = 1,MFREQ
+              IF(ABS(EVECR(INDR,IFREQ)).GT.DTOL) THEN
+                IVECS(IFREQ) = IVECS(IFREQ) + 1
+                CALL DAXPY(NBDIM,EVECR(INDR,IFREQ),
+     &                       BVBUF,1,XVEC(IBOFF),1)
+              ENDIF
+              IBOFF = IBOFF + NBDIM
+              IF(ABS(EVECR(INDI,IFREQ)).GT.DTOL) THEN
+                IVECS(IFREQ) = IVECS(IFREQ) + 1
+                CALL DAXPY(NBDIM,EVECR(INDI,IFREQ),
+     &                       BVBUF,1,XVEC(IBOFF),1)
+              ENDIF
+              IBOFF = IBOFF + NBDIM
+            ENDDO
+          ENDIF
+        ENDDO
+      ENDIF
 C
       RETURN
       END
