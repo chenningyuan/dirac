@@ -2496,7 +2496,6 @@ C
       PARAMETER ( DP75 = 0.75D00 )
       PARAMETER ( DRTEST = 1.0D-5 )
 C
-      DIMENSION INERT(3)
 C
       CALL QENTER('XRSSOL')
 C
@@ -2536,7 +2535,7 @@ C
          DO IFREQ = 1,NFREQ
            AFREQ = EVALR(IFREQ)
            CALL XRSLINRED(NZRED,NREDM,REDE,REDS,AFREQ,REDGP,
-     &          EVECR(1,IFREQ),IBTYP,INERT,NPRED,IPRXRS,
+     &          EVECR(1,IFREQ),IBTYP,NPRED,IPRXRS,
      &          WORK,KFREE,LFREE)
          ENDDO
 C
@@ -2582,7 +2581,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck XRSLinred */
-      SUBROUTINE XRSLINRED(N,LDA,AE,AS,W,G,X,IBTYP,INERT,
+      SUBROUTINE XRSLINRED(N,LDA,AE,AS,W,G,X,IBTYP,
      &                  NPVEC,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -2598,8 +2597,8 @@ C***********************************************************************
       PARAMETER(D0 = 0.0D0)
 #include "dcbxrs.h"
 C
-      DIMENSION AE(LDA,N),AS(LDA,N),G(N),X(NEVEC),
-     &          DET(2),INERT(3),IBTYP(2,*),WORK(*)
+      DIMENSION AE(LDA,N),AS(LDA,N),G(N),X(*),
+     &          IBTYP(2,*),WORK(*)
 C
       CALL QENTER('XRSLINRED')
       KFRSAV = KFREE
@@ -2607,9 +2606,15 @@ C
 C     Memory allocation
 C
       N2A = LDA*N
-      CALL MEMGET('REAL',KA2,N2A,WORK,KFREE,LFREE)
-      CALL XRSLINRE1(N,LDA,N2A,AE,AS,WORK(KA2),W,G,X,IBTYP,INERT,
+      IF(DAMPFREQ.NE.D0) THEN
+        CALL MEMGET('REAL',KA2,2*N2A,WORK,KFREE,LFREE)
+        CALL XRSLINRE2(N,LDA,N2A,AE,AS,WORK(KA2),W,G,X,IBTYP,
      &                  NPVEC,IPRINT,WORK,KFREE,LFREE)
+      ELSE
+        CALL MEMGET('REAL',KA2,N2A,WORK,KFREE,LFREE)
+        CALL XRSLINRE1(N,LDA,N2A,AE,AS,WORK(KA2),W,G,X,IBTYP,
+     &                  NPVEC,IPRINT,WORK,KFREE,LFREE)
+      ENDIF
       CALL MEMREL('XRSLINRED',WORK,1,KFRSAV,KFREE,LFREE)
 C
       CALL QEXIT('XRSLINRED')
@@ -2617,7 +2622,52 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck XRSLinre1 */
-      SUBROUTINE XRSLINRE1(N,LDA,N2A,AE,AS,A2,W,G,X,IBTYP,INERT,
+      SUBROUTINE XRSLINRE2(N,LDA,N2A,AE,AS,A2,W,G,X,IBTYP,NPVEC,IPRINT,
+     &                     WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Solve the reduced linear *complex* reponse equation
+C
+C       [AE - (W+iG)*AS]X = G
+C
+C     Written by S.Villaume & T.Saue 2010
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0 = 0.0D0, D2 = 2.0D0, DP5 = 0.5D0)
+#include "dcbxrs.h"
+C
+      DIMENSION AE(LDA,N),AS(LDA,N),A2(*),G(N),X(*),
+     &          IBTYP(2,*),WORK(*)
+C
+      CALL QENTER('XRSLINRE2')
+      KFRSAV = KFREE
+C
+C put the reduced gradient in X
+      CALL DCOPY(N,G,1,X,2)
+      CALL DCOPY(N,D0,0,X(2),2)
+C build the reduced matrices in A2
+      CALL DCOPY(N2A,AE,1,A2,2)
+      CALL DCOPY(N2A,D0,0,A2(2),2)
+      CALL DAXPY(N2A,-W,AS,1,A2,2)
+      CALL DAXPY(N2A,-DAMPFREQ,AS,1,A2(2),2)
+C solve A2*X=G
+      CALL MEMGET('INTE',KPVT,N,WORK,KFREE,LFREE)
+      CALL ZSYSV('L',N,1,A2,LDA,WORK(KPVT),X,LDA,
+     &           WORK(KFREE),LFREE,INFO)
+C
+      ALPHAR = DP5 * DDOT(N,G,1,X,2)
+      ALPHAI = DP5 * DDOT(N,G,1,X(2),2)
+      WRITE(LUPRI,'(1X,F15.8,1X,F15.8)') ALPHAR,ALPHAI
+C
+      CALL MEMREL('XRSLINRE2',WORK,1,KFRSAV,KFREE,LFREE)
+      CALL QEXIT('XRSLINRE2')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck XRSLinre1 */
+      SUBROUTINE XRSLINRE1(N,LDA,N2A,AE,AS,A2,W,G,X,IBTYP,
      &                  NPVEC,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -2625,7 +2675,8 @@ C     Solve the reduced linear reponse equation
 C
 C       [AE - W*AS]X = G
 C
-C     Written by S. Villaume & T.Saue Dec 2010
+C     Written by T.Saue Dec 1996
+C     Updated S.Villaume & T.Saue 2010
 C
 C***********************************************************************
 #include "implicit.h"
