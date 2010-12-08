@@ -25,6 +25,7 @@ program interest_selftest
 
   call interest_initialize()
   call interest_selftest_overlap()
+  call interest_selftest_dipole()
   call interest_selftest_nuclear_attraction_point_nucleus()
 
 end program

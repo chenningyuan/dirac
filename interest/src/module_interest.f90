@@ -341,4 +341,83 @@
     endif
 
   end subroutine
+
+! -------------------------------------------------------------------------
+  subroutine interest_dipole(fintx,finty,fintz,nint, &
+                             la,alpha,ax,ay,az,anorm,&
+                             lb,beta, bx,by,bz,bnorm,&
+                             gx,gy,gz,               &
+                             rkb)
+    use module_interest_osr
+    use module_interest_hrr
+    implicit none
+
+    !-- output --!
+    integer, intent(out) :: nint
+    real(8), intent(out) :: fintx(*)
+    real(8), intent(out) :: finty(*)
+    real(8), intent(out) :: fintz(*)
+    !-- input --!
+    logical, intent(in) :: rkb 
+    integer, intent(in) :: la,lb
+    real(8), intent(in) :: gx,gy,gz 
+    real(8), intent(in) :: alpha,ax,ay,az,anorm
+    real(8), intent(in) :: beta, bx,by,bz,bnorm
+    !-- local --!
+    integer :: n1
+    real(8) :: rxpg,rypg,rzpg
+    real(8) :: rxab,ryab,rzab,rrab
+    real(8) :: pexp,rexp,rxpa,rypa,rzpa,cntr
+
+
+    if( .not.rkb )then
+      nint = ncc(la)*ncc(lb)
+    else
+      nint = ncc(la)*ncc(lb)*10
+    endif
+    fintx(1:nint) = 0.0d0
+    finty(1:nint) = 0.0d0
+    fintz(1:nint) = 0.0d0
+
+    rxab = ax - bx
+    ryab = ay - by
+    rzab = az - bz
+    pexp = alpha + beta
+    rrab = rxab*rxab + ryab*ryab + rzab*rzab
+
+! todo: set the prescreening here
+
+    if( rrab.lt.1.d-12 )then
+      rxpa = 0.0d0 
+      rypa = 0.0d0
+      rzpa = 0.0d0
+      rxab = 0.0d0  
+      ryab = 0.0d0  
+      rzab = 0.0d0  
+      cntr = anorm*bnorm 
+    else
+      rxpa = ( alpha*ax + beta*bx )/pexp - ax
+      rypa = ( alpha*ay + beta*by )/pexp - ay
+      rzpa = ( alpha*az + beta*bz )/pexp - az
+      rexp = alpha*beta/pexp
+      cntr = anorm*bnorm*dexp(-rexp*rrab)
+    endif
+
+    rxpg = rxpa + ax - gx 
+    rypg = rypa + ay - gy 
+    rzpg = rzpa + az - gz 
+
+    if( .not.rkb )then
+      call interest_osr_class_dipole(n1,fintx,finty,fintz,cntr,(la  ),(la+lb-1),pexp,rxpa,rypa,rzpa,rxpg,rypg,rzpg)
+      call interest_hrr_bra(fintx,nint,1,la,lb,rxab,ryab,rzab)
+      call interest_hrr_bra(finty,nint,1,la,lb,rxab,ryab,rzab)
+      call interest_hrr_bra(fintz,nint,1,la,lb,rxab,ryab,rzab)
+    else
+      call interest_osr_class_dipole(n1,fintx,finty,fintz,cntr,(la-1),(la+lb+1),pexp,rxpa,rypa,rzpa,rxpg,rypg,rzpg)
+      call interest_hrr_bra_rkb(fintx,nint,1,la,lb,rxab,ryab,rzab,alpha,beta)
+      call interest_hrr_bra_rkb(finty,nint,1,la,lb,rxab,ryab,rzab,alpha,beta)
+      call interest_hrr_bra_rkb(fintz,nint,1,la,lb,rxab,ryab,rzab,alpha,beta)
+    endif
+
+  end subroutine
 ! --------------------------------------------------------------------------
