@@ -2608,12 +2608,42 @@ C     Memory allocation
 C
       N2A = LDA*N
       CALL MEMGET('REAL',KA2,N2A,WORK,KFREE,LFREE)
+      CALL XRSLINRE1(N,LDA,N2A,AE,AS,WORK(KA2),W,G,X,IBTYP,INERT,
+     &                  NPVEC,IPRINT,WORK,KFREE,LFREE)
+      CALL MEMREL('XRSLINRED',WORK,1,KFRSAV,KFREE,LFREE)
+C
+      CALL QEXIT('XRSLINRED')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck XRSLinre1 */
+      SUBROUTINE XRSLINRE1(N,LDA,N2A,AE,AS,A2,W,G,X,IBTYP,INERT,
+     &                  NPVEC,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Solve the reduced linear reponse equation
+C
+C       [AE - W*AS]X = G
+C
+C     Written by S. Villaume & T.Saue Dec 2010
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0 = 0.0D0)
+#include "dcbxrs.h"
+C
+      DIMENSION AE(LDA,N),AS(LDA,N),A2(*),G(N),X(NEVEC),
+     &          DET(2),INERT(3),IBTYP(2,*),WORK(*)
+C
+      CALL QENTER('XRSLINRE1')
+      KFRSAV = KFREE
 C
 C     Form matrix [AE - W*AS] 
 C
-      CALL DCOPY(N2A,AE,1,WORK(KA2),1)
+      CALL DCOPY(N2A,AE,1,A2,1)
       IF (W.NE.D0) THEN
-        CALL DAXPY(N2A,-W,AS,1,WORK(KA2),1)
+        CALL DAXPY(N2A,-W,AS,1,A2,1)
       END IF
 C
 C     Place G in buffer X
@@ -2621,18 +2651,18 @@ C
       CALL DCOPY(N,G,1,X,1)
       IF(IPRINT.GE.3) THEN
         WRITE(LUPRI,'(A)') 'XRSLINRED: Reduced E[2] - WS[2] matrix'
-        CALL PRIRMT(WORK(KA2),LDA,N,N,IBTYP)
+        CALL PRIRMT(A2,LDA,N,N,IBTYP)
         WRITE(LUPRI,'(A)') 'XRSLINRED: Reduced gradient'
         CALL PRIRVC(X,N,IBTYP)
       ENDIF
       IF(IMFREQ) THEN
         CALL MEMGET('INTE',KPVT,N,WORK,KFREE,LFREE)
-        CALL DGESOL(1,N,LDA,LDA,WORK(KA2),X,WORK(KPVT),INFO)
+        CALL DGESOL(1,N,LDA,LDA,A2,X,WORK(KPVT),INFO)
       ELSE
         NNA = (N*(N+1))/2
         CALL MEMGET('REAL',KAN,NNA,WORK,KFREE,LFREE)
-        CALL DAMATR(N,WORK(KA2),LDA,WORK(KAN))
-        CALL DSPSLI(N,1,WORK(KAN),X,WORK(KA2),INFO,DET,INERT)
+        CALL DAMATR(N,A2,LDA,WORK(KAN))
+        CALL DSPSLI(N,1,WORK(KAN),X,A2,INFO,DET,INERT)
 C
 C       Print section
 C
@@ -2657,8 +2687,8 @@ C
         CALL PRIRVC(X,N,IBTYP)
       ENDIF
 
-      CALL MEMREL('XRSLINRED',WORK,1,KFRSAV,KFREE,LFREE)
-      CALL QEXIT('XRSLINRED')
+      CALL MEMREL('XRSLINRE1',WORK,1,KFRSAV,KFREE,LFREE)
+      CALL QEXIT('XRSLINRE1')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
