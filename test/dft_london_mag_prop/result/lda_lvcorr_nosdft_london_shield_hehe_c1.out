@@ -1,8 +1,8 @@
-DIRAC launched (pam script) by gosia@ibm at wto, 30 lis 2010, 14:31:17 CET
-in : /home/gosia/dirac.git/clear/test/dft_london_mag_prop
+DIRAC launched (pam script) by bast@larry at Thu Dec  9 18:07:23 CET 2010
+in : /home/bast/dirac/svn_gfortran/test/dft_london_mag_prop
 ===========================================================================================
-Size of all static allocations (pam script) : 109.205 MB
-DIRAC master    (ibm) allocating 64000000 words (488 MB) of memory
+Size of all static allocations (pam script) : 106.535 MB
+DIRAC serial allocating 64000000 words (488 MB) of memory
  ******************************************************************************
  *                                                                            *
  *                                O U T P U T                                 *
@@ -137,21 +137,21 @@ DIRAC master    (ibm) allocating 64000000 words (488 MB) of memory
  *                                                                            *
  ******************************************************************************
  Version           : Dirac 8.0 (patchlevel 0) 
- Hostname          : ibm
- Operating system  : Linux 2.6.31-22-generic
+ Hostname          : larry
+ Operating system  : Linux 2.6.35-23-generic
  Machine           : i686
- Run               : Parallel
- Last compilation  : 14:22:24 Nov 30 2010 (by gosia@ibm:/home/gosia/dirac.git/clear)
- FORTRAN compiler  : /usr/bin/mpif90 -g -fno-range-check -fcray-pointer -Iinclude -Jmodules -DARCH32BIT -DUSE_DIRAC_BLAS -DUSE_DIRAC_DLAMCH -DUSE_DIRAC_DLAPACK -DUSE_DIRAC_ZLAPACK -DVAR_GFORTRAN -DGFORTRAN=441 -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MPI -DVAR_MFDS -DVAR_MPI2 -DMOD_XML -DMOD_OPENRSP -DMOD_OOF -DMOD_ESR -DMOD_KRCC -DMOD_SRDFT -DMOD_MAGNETIZ -DMOD_MCSCF_spinfree -DMOD_UNRELEASED -DMOD_CAP -DMOD_ERI -DMOD_DNF  
- C compiler        : /usr/bin/mpicc -g -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DMOD_XML -DMOD_OPENRSP -DMOD_OOF -DMOD_ESR -DMOD_KRCC -DMOD_SRDFT -DMOD_MAGNETIZ -DMOD_MCSCF_spinfree -DMOD_UNRELEASED -DMOD_CAP -DMOD_ERI -DMOD_DNF  -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MPI -DVAR_MPI2 -DSYS_FLAVOR=LINUX 
- External libraries:  
- Internal libraries: DIRAC_BLAS=YES  DIRAC_LAPACK=YES 
+ Run               : Sequential
+ Last compilation  : 17:57:04 Dec  9 2010 (by bast@larry:/home/bast/dirac/svn_gfortran)
+ FORTRAN compiler  : /usr/bin/gfortran  -g -fno-range-check -Iinclude -Jmodules -DARCH32BIT -DVAR_GFORTRAN -DGFORTRAN=445 -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MFDS -DMOD_XML -DMOD_OPENRSP -DMOD_OOF -DMOD_ESR -DMOD_KRCC -DMOD_SRDFT -DMOD_MAGNETIZ -DMOD_MCSCF_spinfree -DMOD_UNRELEASED -DMOD_CAP -DMOD_ERI -DMOD_DNF   
+ C compiler        : /usr/bin/gcc -O3 -ffast-math -g -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DMOD_XML -DMOD_OPENRSP -DMOD_OOF -DMOD_ESR -DMOD_KRCC -DMOD_SRDFT -DMOD_MAGNETIZ -DMOD_MCSCF_spinfree -DMOD_UNRELEASED -DMOD_CAP -DMOD_ERI -DMOD_DNF  -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DSYS_FLAVOR=LINUX 
+ External libraries: -L/opt/intel/mkl/10.2.6.038/lib/32 -lmkl_lapack -lmkl_intel -lmkl_intel_thread -lmkl_core -lguide -lpthread 
+ Internal libraries: DIRAC_BLAS=NO  DIRAC_LAPACK=NO 
  ILP data model    : ILP32 
- SVN URL           : 'unknown Subversion URL' 
- SVN Revision      : 'unknown Subversion revision' 
+ SVN URL           : http://dirac.chem.sdu.dk/svnDirac 
+ SVN Revision      : 12136 
 
  
-     Date and time (Linux)  : Tue Nov 30 14:31:18 2010 
+     Date and time (Linux)  : Thu Dec  9 18:07:24 2010 
      Host name              :                                         
 
 
@@ -173,6 +173,8 @@ DIRAC master    (ibm) allocating 64000000 words (488 MB) of memory
  LDA
 *DFT
 .NOSDFT
+#.IMPORT
+# grid_file
 **WAVE FUNCTIONS
 .DHF
 *DHFCAL
@@ -317,6 +319,11 @@ Point group: C1
     Rep  T(+)
     -----------------------------
     A    1  i  j  k
+
+  QM-QM nuclear repulsion energy :    2.000000000000
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    2.000000000000
 
 
   Atoms and basis sets
@@ -569,8 +576,8 @@ Point group: C1
 
  * Center of mass used for the gauge & dipole origin (a.u.) :    0.000000    0.000000    1.000000
 
- : Reorthonormalization terms only over electronic shells (recommended default for RSKINB,LevyLe,BSS) !
- : Natural connection used for LAO-PDBS.
+ : Reorthonormalization terms over electronic shells (default for ee-LR rotations )
+ : Natural (gauge dependent) connection used for LAO-PDBS.
  : Include London magnet.prop.grad.contributions from the following two-electron integrals:
       - LL-integrals
       - SL-integrals
@@ -1017,17 +1024,17 @@ Total no. of orbitals           (NORB):    28
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Tue Nov 30 14:31:18 2010
+########## START ITERATION NO.   1 ##########   Thu Dec  9 18:07:24 2010
 
-It.   1    0.7102811041530      1.00D+20  0.00D+00  0.00D+00               0.02800202s   Scr. nuclei    Tue Nov 30
+It.   1    0.7102811041532      1.00D+20  0.00D+00  0.00D+00               0.00800097s   Scr. nuclei    Thu Dec  9
 
-########## START ITERATION NO.   2 ##########   Tue Nov 30 14:31:18 2010
+########## START ITERATION NO.   2 ##########   Thu Dec  9 18:07:24 2010
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   58.02%    0.00%    0.00%   0.00400001s
-SOfock:SL  1.00D-12    0.00%   70.86%    0.00%    0.00%   0.03600299s
+SOfock:LL  1.00D-12    0.00%   58.02%    0.00%    0.00%   0.01199996s
+SOfock:SL  1.00D-12    0.00%   70.86%    0.00%    0.00%   0.04400301s
 
 
  ********************************************************************************
@@ -1054,155 +1061,190 @@ He      1   0.998E-05   0.773E+01   0.123E+00      94   27308
    Number of grid points in quadrature:     54616 (100.0%)
 
 
- >>>> Time used in DFTGRD:   0.06 seconds
+ >>>> Time used in DFTGRD:   0.09 seconds
 
 
    number of grid points                          =     54616
    number of grid points below density threshold  =      3978
-   DFT exchange-correlation energy:               =        -2.0410819962980713
-   number of electrons from numerical integration =         3.9999997866440484
+   DFT exchange-correlation energy:               =        -2.0410819962986375
+   number of electrons from numerical integration =         3.9999997866440462
 
-   time spent in DFT integration                  =   3.67 seconds
+   time spent in DFT integration                  =   1.72 seconds
    number of processors                           =         1
 
->>> Total wall time: 5.00000000s
->>> Total CPU-time : 3.77223611s
 
-########## END ITERATION NO.   2 ##########   Tue Nov 30 14:31:18 2010
+  QM-QM nuclear repulsion energy :    0.000000005000
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000005000
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 1.81211311s
 
-It.   2    -5.546726312451      6.26D+00 -2.62D-01  1.12D-01               3.77223611s   LL SL          Tue Nov 30
+########## END ITERATION NO.   2 ##########   Thu Dec  9 18:07:24 2010
 
-########## START ITERATION NO.   3 ##########   Tue Nov 30 14:31:23 2010
+It.   2    -5.546726312451      6.26D+00 -2.62D-01  1.12D-01               1.81211311s   LL SL          Thu Dec  9
+
+########## START ITERATION NO.   3 ##########   Thu Dec  9 18:07:25 2010
 
     3 *** Differential density matrix. DCOVLP     = 0.9920
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   58.57%    0.00%    0.00%   0.01200104s
-SOfock:SL  1.00D-12    0.00%   71.30%    0.00%    0.00%   0.03600216s
+SOfock:LL  1.00D-12    0.00%   58.57%    0.00%    0.00%   0.01199985s
+SOfock:SL  1.00D-12    0.00%   71.30%    0.00%    0.00%   0.04400301s
 
    number of grid points                          =     54616
    number of grid points below density threshold  =      3978
-   DFT exchange-correlation energy:               =        -2.0405494015054590
-   number of electrons from numerical integration =         3.9999997918217187
+   DFT exchange-correlation energy:               =        -2.0405494015040606
+   number of electrons from numerical integration =         3.9999997918217112
 
-   time spent in DFT integration                  =   3.78 seconds
+   time spent in DFT integration                  =   1.66 seconds
    number of processors                           =         1
 
->>> Total wall time: 5.00000000s
->>> Total CPU-time : 3.86023998s
 
-########## END ITERATION NO.   3 ##########   Tue Nov 30 14:31:23 2010
+  QM-QM nuclear repulsion energy :    0.000000005000
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000005000
+>>> Total wall time: 2.00000000s
+>>> Total CPU-time : 1.72010803s
 
-It.   3    -5.547481309756      7.55D-04  1.48D-03  1.73D-03   DIIS   2    3.86023998s   LL SL          Tue Nov 30
+########## END ITERATION NO.   3 ##########   Thu Dec  9 18:07:25 2010
 
-########## START ITERATION NO.   4 ##########   Tue Nov 30 14:31:28 2010
+It.   3    -5.547481309756      7.55D-04  1.48D-03  1.73D-03   DIIS   2    1.72010803s   LL SL          Thu Dec  9
+
+########## START ITERATION NO.   4 ##########   Thu Dec  9 18:07:27 2010
 
     4 *** Differential density matrix. DCOVLP     = 0.9996
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   60.20%    0.00%    0.00%   0.00800037s
-SOfock:SL  1.00D-12    0.00%   72.12%    0.00%    0.00%   0.04000282s
+SOfock:LL  1.00D-12    0.00%   60.20%    0.00%    0.00%   0.00800133s
+SOfock:SL  1.00D-12    0.00%   72.12%    0.00%    0.00%   0.03200197s
 
    number of grid points                          =     54616
    number of grid points below density threshold  =      3978
-   DFT exchange-correlation energy:               =        -2.0410371414616306
-   number of electrons from numerical integration =         3.9999997919140364
+   DFT exchange-correlation energy:               =        -2.0410371414633981
+   number of electrons from numerical integration =         3.9999997919140924
 
-   time spent in DFT integration                  =   3.82 seconds
+   time spent in DFT integration                  =   1.72 seconds
    number of processors                           =         1
 
->>> Total wall time: 5.00000000s
->>> Total CPU-time : 3.92024517s
 
-########## END ITERATION NO.   4 ##########   Tue Nov 30 14:31:28 2010
+  QM-QM nuclear repulsion energy :    0.000000005000
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000005000
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 1.77210951s
 
-It.   4    -5.547481668871      3.59D-07  5.38D-04  3.94D-04   DIIS   3    3.92024517s   LL SL          Tue Nov 30
+########## END ITERATION NO.   4 ##########   Thu Dec  9 18:07:27 2010
 
-########## START ITERATION NO.   5 ##########   Tue Nov 30 14:31:33 2010
+It.   4    -5.547481668871      3.59D-07  5.38D-04  3.94D-04   DIIS   3    1.77210951s   LL SL          Thu Dec  9
+
+########## START ITERATION NO.   5 ##########   Thu Dec  9 18:07:28 2010
 
     5 *** Differential density matrix. DCOVLP     = 1.0001
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   60.32%    0.00%    0.00%   0.00800037s
-SOfock:SL  1.00D-12    0.00%   72.45%    0.00%    0.00%   0.03600311s
+SOfock:LL  1.00D-12    0.00%   60.32%    0.00%    0.00%   0.01200104s
+SOfock:SL  1.00D-12    0.00%   72.45%    0.00%    0.00%   0.04400301s
 
    number of grid points                          =     54616
    number of grid points below density threshold  =      3978
-   DFT exchange-correlation energy:               =        -2.0408978846128134
-   number of electrons from numerical integration =         3.9999997918869661
+   DFT exchange-correlation energy:               =        -2.0408978846119070
+   number of electrons from numerical integration =         3.9999997918869905
 
-   time spent in DFT integration                  =   3.70 seconds
+   time spent in DFT integration                  =   1.54 seconds
    number of processors                           =         1
 
->>> Total wall time: 4.00000000s
->>> Total CPU-time : 3.78423595s
 
-########## END ITERATION NO.   5 ##########   Tue Nov 30 14:31:33 2010
+  QM-QM nuclear repulsion energy :    0.000000005000
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000005000
+>>> Total wall time: 2.00000000s
+>>> Total CPU-time : 1.60410166s
 
-It.   5    -5.547481694811      2.59D-08 -1.65D-04  6.56D-05   DIIS   4    3.78423595s   LL SL          Tue Nov 30
+########## END ITERATION NO.   5 ##########   Thu Dec  9 18:07:28 2010
 
-########## START ITERATION NO.   6 ##########   Tue Nov 30 14:31:37 2010
+It.   5    -5.547481694811      2.59D-08 -1.65D-04  6.56D-05   DIIS   4    1.60410166s   LL SL          Thu Dec  9
+
+########## START ITERATION NO.   6 ##########   Thu Dec  9 18:07:30 2010
 
     6 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   60.52%    0.00%    0.00%   0.00800133s
-SOfock:SL  1.00D-12    0.00%   72.93%    0.00%    0.00%   0.04000092s
+SOfock:LL  1.00D-12    0.00%   60.52%    0.00%    0.00%   0.00800037s
+SOfock:SL  1.00D-12    0.00%   72.93%    0.00%    0.00%   0.04800272s
 
    number of grid points                          =     54616
    number of grid points below density threshold  =      3978
-   DFT exchange-correlation energy:               =        -2.0409176745037323
-   number of electrons from numerical integration =         3.9999997918907897
+   DFT exchange-correlation energy:               =        -2.0409176745050273
+   number of electrons from numerical integration =         3.9999997918907813
 
-   time spent in DFT integration                  =   3.81 seconds
+   time spent in DFT integration                  =   1.61 seconds
    number of processors                           =         1
 
->>> Total wall time: 4.00000000s
->>> Total CPU-time : 3.89624596s
 
-########## END ITERATION NO.   6 ##########   Tue Nov 30 14:31:37 2010
+  QM-QM nuclear repulsion energy :    0.000000005000
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000005000
+>>> Total wall time: 2.00000000s
+>>> Total CPU-time : 1.66810369s
 
-It.   6    -5.547481695631      8.21D-10  2.49D-05  2.33D-06   DIIS   5    3.89624596s   LL SL          Tue Nov 30
+########## END ITERATION NO.   6 ##########   Thu Dec  9 18:07:30 2010
 
-########## START ITERATION NO.   7 ##########   Tue Nov 30 14:31:41 2010
+It.   6    -5.547481695631      8.21D-10  2.49D-05  2.33D-06   DIIS   5    1.66810369s   LL SL          Thu Dec  9
+
+########## START ITERATION NO.   7 ##########   Thu Dec  9 18:07:32 2010
 
     7 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
 SOfock:LL  1.00D-12    0.00%   62.37%    0.00%    0.00%   0.01200104s
-SOfock:SL  1.00D-12    0.00%   75.17%    0.00%    0.00%   0.03600121s
+SOfock:SL  1.00D-12    0.00%   75.17%    0.00%    0.00%   0.04400158s
 
    number of grid points                          =     54616
    number of grid points below density threshold  =      3978
-   DFT exchange-correlation energy:               =        -2.0409174306414375
-   number of electrons from numerical integration =         3.9999997918907901
+   DFT exchange-correlation energy:               =        -2.0409174306437561
+   number of electrons from numerical integration =         3.9999997918908088
 
-   time spent in DFT integration                  =   3.92 seconds
+   time spent in DFT integration                  =   1.65 seconds
    number of processors                           =         1
 
->>> Total wall time: 4.00000000s
->>> Total CPU-time : 4.00824928s
 
-########## END ITERATION NO.   7 ##########   Tue Nov 30 14:31:41 2010
+  QM-QM nuclear repulsion energy :    0.000000005000
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000005000
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 1.70810699s
 
-It.   7    -5.547481695632      9.11D-13 -3.83D-07  1.38D-09   DIIS   6    4.00824928s   LL SL          Tue Nov 30
+########## END ITERATION NO.   7 ##########   Thu Dec  9 18:07:32 2010
 
-########## START ITERATION NO.   8 ##########   Tue Nov 30 14:31:45 2010
+It.   7    -5.547481695632      9.04D-13 -3.83D-07  1.37D-09   DIIS   6    1.70810699s   LL SL          Thu Dec  9
+
+########## START ITERATION NO.   8 ##########   Thu Dec  9 18:07:33 2010
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   12.18%   66.51%    0.64%    0.00%   0.00400162s
-SOfock:SL  1.00D-12   17.18%   74.68%    0.00%    0.00%   0.02799988s
+SOfock:LL  1.00D-12   12.18%   66.59%    0.64%    0.00%   0.00800037s
+SOfock:SL  1.00D-12   17.18%   74.70%    0.00%    0.00%   0.03600311s
 
    number of grid points                          =     54616
    number of grid points below density threshold  =      3978
-   DFT exchange-correlation energy:               =        -2.0409174310255844
-   number of electrons from numerical integration =         3.9999997918907115
+   DFT exchange-correlation energy:               =        -2.0409174310242797
+   number of electrons from numerical integration =         3.9999997918907146
 
-   time spent in DFT integration                  =   3.80 seconds
+   time spent in DFT integration                  =   1.70 seconds
    number of processors                           =         1
 
->>> Total wall time: 4.00000000s
->>> Total CPU-time : 3.85223961s
 
-########## END ITERATION NO.   8 ##########   Tue Nov 30 14:31:45 2010
+  QM-QM nuclear repulsion energy :    0.000000005000
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000005000
+>>> Total wall time: 2.00000000s
+>>> Total CPU-time : 1.75210857s
 
-It.   8    -5.547481695633      9.52D-13  4.51D-10  4.68D-11   DIIS   6    3.85223961s   LL SL          Tue Nov 30
+########## END ITERATION NO.   8 ##########   Thu Dec  9 18:07:33 2010
+
+It.   8    -5.547481695633      9.91D-13  4.58D-10  4.16D-11   DIIS   6    1.75210857s   LL SL          Thu Dec  9
 
 
                                    SCF - CYCLE
@@ -1218,32 +1260,32 @@ It.   8    -5.547481695633      9.52D-13  4.51D-10  4.68D-11   DIIS   6    3.852
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.   1    0.7102811041530      1.00D+20  0.00D+00  0.00D+00               0.02800202s   Scr. nuclei    Tue Nov 30
-It.   2    -5.546726312451      6.26D+00 -2.62D-01  1.12D-01               3.77223611s   LL SL          Tue Nov 30
-It.   3    -5.547481309756      7.55D-04  1.48D-03  1.73D-03   DIIS   2    3.86023998s   LL SL          Tue Nov 30
-It.   4    -5.547481668871      3.59D-07  5.38D-04  3.94D-04   DIIS   3    3.92024517s   LL SL          Tue Nov 30
-It.   5    -5.547481694811      2.59D-08 -1.65D-04  6.56D-05   DIIS   4    3.78423595s   LL SL          Tue Nov 30
-It.   6    -5.547481695631      8.21D-10  2.49D-05  2.33D-06   DIIS   5    3.89624596s   LL SL          Tue Nov 30
-It.   7    -5.547481695632      9.11D-13 -3.83D-07  1.38D-09   DIIS   6    4.00824928s   LL SL          Tue Nov 30
-It.   8    -5.547481695633      9.52D-13  4.51D-10  4.68D-11   DIIS   6    3.85223961s   LL SL          Tue Nov 30
+It.   1    0.7102811041532      1.00D+20  0.00D+00  0.00D+00               0.00800097s   Scr. nuclei    Thu Dec  9
+It.   2    -5.546726312451      6.26D+00 -2.62D-01  1.12D-01               1.81211311s   LL SL          Thu Dec  9
+It.   3    -5.547481309756      7.55D-04  1.48D-03  1.73D-03   DIIS   2    1.72010803s   LL SL          Thu Dec  9
+It.   4    -5.547481668871      3.59D-07  5.38D-04  3.94D-04   DIIS   3    1.77210951s   LL SL          Thu Dec  9
+It.   5    -5.547481694811      2.59D-08 -1.65D-04  6.56D-05   DIIS   4    1.60410166s   LL SL          Thu Dec  9
+It.   6    -5.547481695631      8.21D-10  2.49D-05  2.33D-06   DIIS   5    1.66810369s   LL SL          Thu Dec  9
+It.   7    -5.547481695632      9.04D-13 -3.83D-07  1.37D-09   DIIS   6    1.70810699s   LL SL          Thu Dec  9
+It.   8    -5.547481695633      9.91D-13  4.58D-10  4.16D-11   DIIS   6    1.75210857s   LL SL          Thu Dec  9
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    8 iterations.
 * Average elapsed time per iteration: 
       No 2-ints    :    0.00000000s
-      LL SL        :    4.42857143s
+      LL SL        :    1.57142857s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -7.5474817006332877
+   Electronic energy                        :    -7.5474817006332700
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :     2.0000000000000000
    SS Coulombic correction                  :     0.0000000050000000
 
    Sum of all contributions to the energy
-   Total energy                             :    -5.5474816956332873
+   Total energy                             :    -5.5474816956332695
 
 
                                    Eigenvalues
@@ -1252,11 +1294,11 @@ It.   8    -5.547481695633      9.52D-13  4.51D-10  4.68D-11   DIIS   6    3.852
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
- -0.72893227513869  ( 2)    -0.37840597579973  ( 2)
+ -0.72893227514081  ( 2)    -0.37840597578944  ( 2)
   * Virtual eigenvalues, f = 0.0000
-  0.90001483529081  ( 2)     0.93157470491672  ( 2)     1.75589492149928  ( 2)     1.87114929824943  ( 2)     1.87128203402695  ( 2)
-  2.34373699823296  ( 2)     2.34388220562185  ( 2)     3.34228050542029  ( 2)     7.69303971863540  ( 2)     8.21115007893989  ( 2)
- 60.82862080315597  ( 2)    61.21732637320383  ( 2)
+  0.90001483528512  ( 2)     0.93157470492088  ( 2)     1.75589492149733  ( 2)     1.87114929825048  ( 2)     1.87128203403527  ( 2)
+  2.34373699824408  ( 2)     2.34388220563814  ( 2)     3.34228050542040  ( 2)     7.69303971863142  ( 2)     8.21115007893650  ( 2)
+ 60.82862080315012  ( 2)    61.21732637317683  ( 2)
 * HOMO - LUMO gap:
 
     E(LUMO) :     0.90001484 au (symmetry E1 )
@@ -1311,41 +1353,41 @@ It.   8    -5.547481695633      9.52D-13  4.51D-10  4.68D-11   DIIS   6    3.852
                                                    s0 t0
 ----------------------------------------------------------------------------
     RNSTHe  001X     :     0.105087672157 a.u.      F   F
-    RNSTHe  001Y     :     0.72590794D-13 a.u.      F   F
-    RNSTHe  001Z     :    -0.15188847D-13 a.u.      F   F
-    RNSTHe  002X     :     0.84011374D-13 a.u.      F   F
+    RNSTHe  001Y     :     0.23575078D-13 a.u.      F   F
+    RNSTHe  001Z     :     0.68097248D-14 a.u.      F   F
+    RNSTHe  002X     :     0.16910456D-13 a.u.      F   F
     RNSTHe  002Y     :     0.105087672157 a.u.      F   F
-    RNSTHe  002Z     :     0.23337237D-13 a.u.      F   F
+    RNSTHe  002Z     :    -0.20259821D-13 a.u.      F   F
     RNSTHe  003X     :     0.00000000D+00 a.u.      F   F
     RNSTHe  003Y     :     0.00000000D+00 a.u.      F   F
     RNSTHe  003Z     :     0.00000000D+00 a.u.      F   F
     RNSTHe  004X     :     0.105087672157 a.u.      F   F
-    RNSTHe  004Y     :    -0.64964846D-13 a.u.      F   F
-    RNSTHe  004Z     :    -0.78570866D-15 a.u.      F   F
-    RNSTHe  005X     :    -0.57066455D-13 a.u.      F   F
+    RNSTHe  004Y     :    -0.16535953D-13 a.u.      F   F
+    RNSTHe  004Z     :     0.10348085D-13 a.u.      F   F
+    RNSTHe  005X     :    -0.13300555D-13 a.u.      F   F
     RNSTHe  005Y     :     0.105087672157 a.u.      F   F
-    RNSTHe  005Z     :    -0.10705534D-13 a.u.      F   F
+    RNSTHe  005Z     :     0.27042371D-14 a.u.      F   F
     RNSTHe  006X     :     0.00000000D+00 a.u.      F   F
     RNSTHe  006Y     :     0.00000000D+00 a.u.      F   F
     RNSTHe  006Z     :     0.00000000D+00 a.u.      F   F
     NSNLHe  001X     :     1.118765790016 a.u.      F   F
-    NSNLHe  001Y     :     0.20890047D-18 a.u.      F   F
-    NSNLHe  001Z     :     0.18677886D-13 a.u.      F   F
-    NSNLHe  002X     :     0.20890047D-18 a.u.      F   F
+    NSNLHe  001Y     :     0.35852364D-19 a.u.      F   F
+    NSNLHe  001Z     :    -0.12270687D-13 a.u.      F   F
+    NSNLHe  002X     :     0.35852364D-19 a.u.      F   F
     NSNLHe  002Y     :     1.118765790016 a.u.      F   F
-    NSNLHe  002Z     :    -0.90981344D-15 a.u.      F   F
-    NSNLHe  003X     :    -0.53252380D-14 a.u.      F   F
-    NSNLHe  003Y     :    -0.17094297D-13 a.u.      F   F
-    NSNLHe  003Z     :     1.204685833197 a.u.      F   F
-    NSNLHe  004X     :     1.118765790016 a.u.      F   F
-    NSNLHe  004Y     :    -0.36141586D-18 a.u.      F   F
-    NSNLHe  004Z     :    -0.28112476D-13 a.u.      F   F
-    NSNLHe  005X     :    -0.36141586D-18 a.u.      F   F
-    NSNLHe  005Y     :     1.118765790016 a.u.      F   F
-    NSNLHe  005Z     :    -0.20026553D-13 a.u.      F   F
-    NSNLHe  006X     :    -0.13844337D-13 a.u.      F   F
-    NSNLHe  006Y     :    -0.16638668D-14 a.u.      F   F
-    NSNLHe  006Z     :     1.204685833197 a.u.      F   F
+    NSNLHe  002Z     :     0.12085370D-13 a.u.      F   F
+    NSNLHe  003X     :    -0.23815445D-14 a.u.      F   F
+    NSNLHe  003Y     :     0.14956078D-13 a.u.      F   F
+    NSNLHe  003Z     :     1.204685833196 a.u.      F   F
+    NSNLHe  004X     :     1.118765790015 a.u.      F   F
+    NSNLHe  004Y     :    -0.65348551D-19 a.u.      F   F
+    NSNLHe  004Z     :    -0.77412839D-14 a.u.      F   F
+    NSNLHe  005X     :    -0.65348551D-19 a.u.      F   F
+    NSNLHe  005Y     :     1.118765790015 a.u.      F   F
+    NSNLHe  005Z     :     0.10308079D-13 a.u.      F   F
+    NSNLHe  006X     :    -0.83678869D-14 a.u.      F   F
+    NSNLHe  006Y     :    -0.89287942D-14 a.u.      F   F
+    NSNLHe  006Z     :     1.204685833196 a.u.      F   F
 ----------------------------------------------------------------------------
     s0 = T : Expectation value zero by point group symmetry.
     t0 = T : Expectation value zero by time reversal symmetry.
@@ -1356,8 +1398,8 @@ It.   8    -5.547481695633      9.52D-13  4.51D-10  4.68D-11   DIIS   6    3.852
     - Active orbitals    : No electrons
     - Secondary orbitals :    -14..-1,     3..    14                               
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -5.54748169563233517
-* Heading :DIRAC: No title specified !!!                     Tue Nov 30 14:31:45 2010
+* REACMO: Coefficients read from file DFCOEF - Total energy: -5.54748169563227833
+* Heading :DIRAC: No title specified !!!                     Thu Dec  9 18:07:33 2010
 
 
                                 Output from SETFCK
@@ -1387,14 +1429,14 @@ Matrix symmetry:  A    A    A    A
     3(j)   10   S      0       0      A  
     4(k)   10   S      0       0      A  
 
-cpu time:       0.3400 wall time:       0.0000 used in call to twoint(in get_ao_fock_2el_lao).
+cpu time:       0.3760 wall time:       0.0000 used in call to twoint(in get_ao_fock_2el_lao).
 
 
    number of grid points                          =     54616
    number of grid points below density threshold  =      3978
-   number of electrons from numerical integration =         3.9999997918907115
+   number of electrons from numerical integration =         3.9999997918907146
 
-   time spent in DFT integration                  =   4.96 seconds
+   time spent in DFT integration                  =   2.08 seconds
    number of processors                           =         1
 
 
@@ -1426,34 +1468,42 @@ Matrix symmetry:  A    A    A    A
     3(j)   10   S      0       0      A  
     4(k)   10   S      0       0      A  
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00400162s
-SOfock:SL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.01599884s
-SOfock:SS  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.01600266s
+SOfock:LL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.00399971s
+SOfock:SL  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.01600075s
+SOfock:SS  1.00D-12  100.00%    0.00%    0.00%    0.00%   0.02400208s
+
+   number of grid points                          =     54616
+   number of grid points below density threshold  =      3978
+   number of electrons from numerical integration =         3.9999997918907146
+
+   time spent in DFT integration                  =   1.90 seconds
+   number of processors                           =         1
+
 
 * GETFCK: reading old two-electron Fock matrix
 
 * REAFCK: Fock matrix read from file DFFCK2                                                      
-* Heading :DIRAC: No title specified !!!                     Tue Nov 30 14:31:45 2010
+* Heading :DIRAC: No title specified !!!                     Thu Dec  9 18:07:33 2010
 
    number of grid points                          =     54616
    number of grid points below density threshold  =      3978
-   DFT exchange-correlation energy:               =        -2.0409174310255844
-   number of electrons from numerical integration =         3.9999997918907115
+   DFT exchange-correlation energy:               =        -2.0409174310242797
+   number of electrons from numerical integration =         3.9999997918907146
 
-   time spent in DFT integration                  =   3.79 seconds
+   time spent in DFT integration                  =   1.73 seconds
    number of processors                           =         1
 
 
 * GETFCK: reading old one-electron Fock matrix
 
 * REAFCK: Fock matrix read from file DFFCK1                                                      
-* Heading :DIRAC: No title specified !!!                     Tue Nov 30 14:31:18 2010
+* Heading :DIRAC: No title specified !!!                     Thu Dec  9 18:07:24 2010
 
 
                                 Output from SETXEE
                                 ------------------
 
-# of e-e rotations (non-redundant): **********
+# of e-e rotations (non-redundant):   22554518
 # of extra e-e rotations (redundant):          0
 
 
@@ -1475,17 +1525,17 @@ P(-)-vector no.  1 accepted. Norm :  3.12782D+02
 * Screening threshold in LR solver scaled with norm of property vector:  1.5640D+02
   and changed to:  3.0078D-10
 
-########## START MICROITERATION NO.   1 ##########   Tue Nov 30 14:31:59 2010
+########## START MICROITERATION NO.   1 ##########   Thu Dec  9 18:07:40 2010
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.01D-10  100.00%    0.00%    0.00%    0.00%   0.00400162s
-SOfock:SL  3.01D-10  100.00%    0.00%    0.00%    0.00%   0.01599884s
+SOfock:LL  3.01D-10  100.00%    0.00%    0.00%    0.00%   0.00399971s
+SOfock:SL  3.01D-10  100.00%    0.00%    0.00%    0.00%   0.01600075s
 
    number of grid points                          =     54616
    number of grid points below density threshold  =      3978
-   number of electrons from numerical integration =         3.9999997918907115
+   number of electrons from numerical integration =         3.9999997918907146
 
-   time spent in DFT integration                  =   3.85 seconds
+   time spent in DFT integration                  =   1.77 seconds
    number of processors                           =         1
 
 * Trial vectors in this micro iteration:  E-:  0  P-:  1
@@ -1505,23 +1555,23 @@ SOfock:SL  3.01D-10  100.00%    0.00%    0.00%    0.00%   0.01599884s
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
-     0.00000000  1.00E-09  2.07E+00  2.07E+00  3.24E-13
+     0.00000000  1.00E-09  2.07E+00  2.07E+00  9.14E-14
 E(-)-vector no.  1 accepted. Norm :  4.14963D+00
 P(-)-vector no.  1 not accepted
 
-* End of microiteration no.    1 after  3.87624359s
+* End of microiteration no.    1 after  1.80011368s
 
-########## START MICROITERATION NO.   2 ##########   Tue Nov 30 14:32:03 2010
+########## START MICROITERATION NO.   2 ##########   Thu Dec  9 18:07:42 2010
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.01D-10  100.00%    0.00%    0.00%    0.00%   0.00399780s
-SOfock:SL  3.01D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
+SOfock:LL  3.01D-10  100.00%    0.00%    0.00%    0.00%   0.00799942s
+SOfock:SL  3.01D-10  100.00%    0.00%    0.00%    0.00%   0.01600266s
 
    number of grid points                          =     54616
    number of grid points below density threshold  =      3978
-   number of electrons from numerical integration =         3.9999997918907115
+   number of electrons from numerical integration =         3.9999997918907146
 
-   time spent in DFT integration                  =   3.70 seconds
+   time spent in DFT integration                  =   1.82 seconds
    number of processors                           =         1
 
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
@@ -1541,9 +1591,9 @@ SOfock:SL  3.01D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
-     0.00000000  1.00E-09  1.08E-11  6.90E-12  8.31E-12
+     0.00000000  1.00E-09  8.49E-12  4.06E-12  7.46E-12
 
-* End of microiteration no.    2 after  3.72823334s
+* End of microiteration no.    2 after  1.84811592s
 
 
                              Final output from XRSCTL
@@ -1554,13 +1604,13 @@ SOfock:SL  3.01D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
 
             Freq.(au)   Total norm    E- norm   P- norm 
 ========================================================
-* It.  1   3.87624359s  (LL SL    )     [  0]     [  1]
+* It.  1   1.80011368s  (LL SL    )     [  0]     [  1]
 --------------------------------------------------------
-            0.000000 :   2.07D+00 |   2.07D+00  3.24D-13
+            0.000000 :   2.07D+00 |   2.07D+00  9.14D-14
 ========================================================
-* It.  2   3.72823334s  (LL SL    )     [  1]     [  0]
+* It.  2   1.84811592s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
-            0.000000 :   1.08D-11 |   6.90D-12  8.31D-12
+            0.000000 :   8.49D-12 |   4.06D-12  7.46D-12
 ========================================================
 
 
@@ -1570,15 +1620,15 @@ SOfock:SL  3.01D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
 
 << 1, 1>>:  0.43889385E+00 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 
-<< 2, 1>>:  0.27150109E-10 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+<< 2, 1>>:  0.51875800E-11 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 
-<< 3, 1>>:  0.69067348E-12 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+<< 3, 1>>:  0.74294957E-12 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 
 << 4, 1>>:  0.43889385E+00 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 
-<< 5, 1>>: -0.33238690E-10 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+<< 5, 1>>: -0.52597334E-11 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 
-<< 6, 1>>: -0.40312339E-11 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+<< 6, 1>>: -0.77219810E-12 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 
 
                                 Output from GETLR1
@@ -1587,21 +1637,21 @@ SOfock:SL  3.01D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
 
 << 1, 1>>: -0.74513281E+00 a.u.,     P--contribution at frequency    0.0000000000 a.u.
 
-<< 2, 1>>: -0.10607464E-12 a.u.,     P--contribution at frequency    0.0000000000 a.u.
+<< 2, 1>>: -0.21699439E-13 a.u.,     P--contribution at frequency    0.0000000000 a.u.
 
-<< 3, 1>>:  0.10276278E-13 a.u.,     P--contribution at frequency    0.0000000000 a.u.
+<< 3, 1>>:  0.52411688E-14 a.u.,     P--contribution at frequency    0.0000000000 a.u.
 
 << 4, 1>>: -0.74513281E+00 a.u.,     P--contribution at frequency    0.0000000000 a.u.
 
-<< 5, 1>>:  0.56889749E-13 a.u.,     P--contribution at frequency    0.0000000000 a.u.
+<< 5, 1>>:  0.40651618E-14 a.u.,     P--contribution at frequency    0.0000000000 a.u.
 
-<< 6, 1>>:  0.33420917E-13 a.u.,     P--contribution at frequency    0.0000000000 a.u.
+<< 6, 1>>:  0.82766096E-14 a.u.,     P--contribution at frequency    0.0000000000 a.u.
 
 
                                 Output from SETXEE
                                 ------------------
 
-# of e-e rotations (non-redundant): **********
+# of e-e rotations (non-redundant):         33
 # of extra e-e rotations (redundant):          0
 
 
@@ -1623,17 +1673,17 @@ P(-)-vector no.  1 accepted. Norm :  3.12782D+02
 * Screening threshold in LR solver scaled with norm of property vector:  1.5640D+02
   and changed to:  3.0078D-10
 
-########## START MICROITERATION NO.   1 ##########   Tue Nov 30 14:32:07 2010
+########## START MICROITERATION NO.   1 ##########   Thu Dec  9 18:07:44 2010
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.01D-10  100.00%    0.00%    0.00%    0.00%   0.00400162s
-SOfock:SL  3.01D-10  100.00%    0.00%    0.00%    0.00%   0.01600266s
+SOfock:LL  3.01D-10  100.00%    0.00%    0.00%    0.00%   0.00000000s
+SOfock:SL  3.01D-10  100.00%    0.00%    0.00%    0.00%   0.02400208s
 
    number of grid points                          =     54616
    number of grid points below density threshold  =      3978
-   number of electrons from numerical integration =         3.9999997918907115
+   number of electrons from numerical integration =         3.9999997918907146
 
-   time spent in DFT integration                  =   3.87 seconds
+   time spent in DFT integration                  =   1.92 seconds
    number of processors                           =         1
 
 * Trial vectors in this micro iteration:  E-:  0  P-:  1
@@ -1653,23 +1703,23 @@ SOfock:SL  3.01D-10  100.00%    0.00%    0.00%    0.00%   0.01600266s
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
-     0.00000000  1.00E-09  2.07E+00  2.07E+00  3.21E-13
+     0.00000000  1.00E-09  2.07E+00  2.07E+00  8.95E-14
 E(-)-vector no.  1 accepted. Norm :  4.14963D+00
 P(-)-vector no.  1 not accepted
 
-* End of microiteration no.    1 after  3.89224243s
+* End of microiteration no.    1 after  1.96412277s
 
-########## START MICROITERATION NO.   2 ##########   Tue Nov 30 14:32:11 2010
+########## START MICROITERATION NO.   2 ##########   Thu Dec  9 18:07:45 2010
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.01D-10  100.00%    0.00%    0.00%    0.00%   0.00400162s
-SOfock:SL  3.01D-10  100.00%    0.00%    0.00%    0.00%   0.01599884s
+SOfock:LL  3.01D-10  100.00%    0.00%    0.00%    0.00%   0.00399971s
+SOfock:SL  3.01D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
 
    number of grid points                          =     54616
    number of grid points below density threshold  =      3978
-   number of electrons from numerical integration =         3.9999997918907115
+   number of electrons from numerical integration =         3.9999997918907146
 
-   time spent in DFT integration                  =   3.84 seconds
+   time spent in DFT integration                  =   1.72 seconds
    number of processors                           =         1
 
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
@@ -1689,9 +1739,9 @@ SOfock:SL  3.01D-10  100.00%    0.00%    0.00%    0.00%   0.01599884s
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
-     0.00000000  1.00E-09  1.23E-11  7.76E-12  9.48E-12
+     0.00000000  1.00E-09  1.09E-11  5.40E-12  9.51E-12
 
-* End of microiteration no.    2 after  3.87624359s
+* End of microiteration no.    2 after  1.74010849s
 
 
                              Final output from XRSCTL
@@ -1702,13 +1752,13 @@ SOfock:SL  3.01D-10  100.00%    0.00%    0.00%    0.00%   0.01599884s
 
             Freq.(au)   Total norm    E- norm   P- norm 
 ========================================================
-* It.  1   3.89224243s  (LL SL    )     [  0]     [  1]
+* It.  1   1.96412277s  (LL SL    )     [  0]     [  1]
 --------------------------------------------------------
-            0.000000 :   2.07D+00 |   2.07D+00  3.21D-13
+            0.000000 :   2.07D+00 |   2.07D+00  8.95D-14
 ========================================================
-* It.  2   3.87624359s  (LL SL    )     [  1]     [  0]
+* It.  2   1.74010849s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
-            0.000000 :   1.23D-11 |   7.76D-12  9.48D-12
+            0.000000 :   1.09D-11 |   5.40D-12  9.51D-12
 ========================================================
 
 
@@ -1716,40 +1766,40 @@ SOfock:SL  3.01D-10  100.00%    0.00%    0.00%    0.00%   0.01599884s
                                 ------------------
 
 
-<< 1, 2>>:  0.30911846E-10 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+<< 1, 2>>:  0.11935971E-11 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 
 << 2, 2>>:  0.43889385E+00 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 
-<< 3, 2>>: -0.72269909E-12 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+<< 3, 2>>:  0.24003800E-12 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 
-<< 4, 2>>: -0.30092093E-10 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+<< 4, 2>>: -0.33135615E-11 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 
 << 5, 2>>:  0.43889385E+00 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 
-<< 6, 2>>: -0.30965939E-12 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+<< 6, 2>>:  0.10547786E-11 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 
 
                                 Output from GETLR1
                                 ------------------
 
 
-<< 1, 2>>: -0.92179814E-13 a.u.,     P--contribution at frequency    0.0000000000 a.u.
+<< 1, 2>>: -0.24216414E-13 a.u.,     P--contribution at frequency    0.0000000000 a.u.
 
 << 2, 2>>: -0.74513281E+00 a.u.,     P--contribution at frequency    0.0000000000 a.u.
 
-<< 3, 2>>:  0.13714901E-13 a.u.,     P--contribution at frequency    0.0000000000 a.u.
+<< 3, 2>>: -0.81280468E-14 a.u.,     P--contribution at frequency    0.0000000000 a.u.
 
-<< 4, 2>>:  0.63320259E-13 a.u.,     P--contribution at frequency    0.0000000000 a.u.
+<< 4, 2>>:  0.12913119E-13 a.u.,     P--contribution at frequency    0.0000000000 a.u.
 
 << 5, 2>>: -0.74513281E+00 a.u.,     P--contribution at frequency    0.0000000000 a.u.
 
-<< 6, 2>>:  0.39289514E-13 a.u.,     P--contribution at frequency    0.0000000000 a.u.
+<< 6, 2>>:  0.15688839E-13 a.u.,     P--contribution at frequency    0.0000000000 a.u.
 
 
                                 Output from SETXEE
                                 ------------------
 
-# of e-e rotations (non-redundant): **********
+# of e-e rotations (non-redundant):         33
 # of extra e-e rotations (redundant):          0
 
 
@@ -1771,17 +1821,17 @@ P(-)-vector no.  1 accepted. Norm :  2.75859D+02
 * Screening threshold in LR solver scaled with norm of property vector:  1.3793D+02
   and changed to:  2.6525D-10
 
-########## START MICROITERATION NO.   1 ##########   Tue Nov 30 14:32:15 2010
+########## START MICROITERATION NO.   1 ##########   Thu Dec  9 18:07:47 2010
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.00399780s
-SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01600266s
+SOfock:LL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.00399971s
+SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01600075s
 
    number of grid points                          =     54616
    number of grid points below density threshold  =      3978
-   number of electrons from numerical integration =         3.9999997918907115
+   number of electrons from numerical integration =         3.9999997918907129
 
-   time spent in DFT integration                  =   3.80 seconds
+   time spent in DFT integration                  =   1.78 seconds
    number of processors                           =         1
 
 * Trial vectors in this micro iteration:  E-:  0  P-:  1
@@ -1801,23 +1851,23 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01600266s
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
-     0.00000000  1.00E-09  2.21E-04  2.21E-04  1.98E-13
+     0.00000000  1.00E-09  2.21E-04  2.21E-04  7.96E-14
 E(-)-vector no.  1 accepted. Norm :  4.41589D-04
 P(-)-vector no.  1 not accepted
 
-* End of microiteration no.    1 after  3.82823563s
+* End of microiteration no.    1 after  1.80411339s
 
-########## START MICROITERATION NO.   2 ##########   Tue Nov 30 14:32:19 2010
+########## START MICROITERATION NO.   2 ##########   Thu Dec  9 18:07:49 2010
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.00400162s
-SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
+SOfock:LL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.00399971s
+SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01600266s
 
    number of grid points                          =     54616
    number of grid points below density threshold  =      3978
-   number of electrons from numerical integration =         3.9999997918907115
+   number of electrons from numerical integration =         3.9999997918907129
 
-   time spent in DFT integration                  =   3.74 seconds
+   time spent in DFT integration                  =   1.88 seconds
    number of processors                           =         1
 
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
@@ -1837,9 +1887,9 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
-     0.00000000  1.00E-09  1.99E-13  2.13E-14  1.98E-13
+     0.00000000  1.00E-09  8.02E-14  9.95E-15  7.95E-14
 
-* End of microiteration no.    2 after  3.77223969s
+* End of microiteration no.    2 after  1.90011787s
 
 
                              Final output from XRSCTL
@@ -1850,13 +1900,13 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
 
             Freq.(au)   Total norm    E- norm   P- norm 
 ========================================================
-* It.  1   3.82823563s  (LL SL    )     [  0]     [  1]
+* It.  1   1.80411339s  (LL SL    )     [  0]     [  1]
 --------------------------------------------------------
-            0.000000 :   2.21D-04 |   2.21D-04  1.98D-13
+            0.000000 :   2.21D-04 |   2.21D-04  7.96D-14
 ========================================================
-* It.  2   3.77223969s  (LL SL    )     [  1]     [  0]
+* It.  2   1.90011787s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
-            0.000000 :   1.99D-13 |   2.13D-14  1.98D-13
+            0.000000 :   8.01D-14 |   9.95D-15  7.95D-14
 ========================================================
 
 
@@ -1864,15 +1914,15 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
                                 ------------------
 
 
-<< 1, 3>>:  0.13003786E-11 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+<< 1, 3>>:  0.10488515E-12 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 
-<< 2, 3>>:  0.53321270E-12 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+<< 2, 3>>: -0.54080064E-13 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 
 << 3, 3>>: -0.10366776E-02 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 
-<< 4, 3>>:  0.12664387E-11 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+<< 4, 3>>:  0.43894114E-12 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 
-<< 5, 3>>:  0.53166499E-12 a.u.,     E--contribution at frequency    0.0000000000 a.u.
+<< 5, 3>>: -0.14870507E-12 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 
 << 6, 3>>: -0.10366776E-02 a.u.,     E--contribution at frequency    0.0000000000 a.u.
 
@@ -1881,15 +1931,15 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
                                 ------------------
 
 
-<< 1, 3>>: -0.20932490E-13 a.u.,     P--contribution at frequency    0.0000000000 a.u.
+<< 1, 3>>:  0.86746745E-14 a.u.,     P--contribution at frequency    0.0000000000 a.u.
 
-<< 2, 3>>: -0.82282170E-14 a.u.,     P--contribution at frequency    0.0000000000 a.u.
+<< 2, 3>>: -0.25769317E-14 a.u.,     P--contribution at frequency    0.0000000000 a.u.
 
 << 3, 3>>: -0.83182937E+00 a.u.,     P--contribution at frequency    0.0000000000 a.u.
 
-<< 4, 3>>:  0.24330949E-13 a.u.,     P--contribution at frequency    0.0000000000 a.u.
+<< 4, 3>>:  0.14743523E-14 a.u.,     P--contribution at frequency    0.0000000000 a.u.
 
-<< 5, 3>>:  0.35706817E-13 a.u.,     P--contribution at frequency    0.0000000000 a.u.
+<< 5, 3>>: -0.19689111E-15 a.u.,     P--contribution at frequency    0.0000000000 a.u.
 
 << 6, 3>>: -0.83182937E+00 a.u.,     P--contribution at frequency    0.0000000000 a.u.
 
@@ -1903,7 +1953,7 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
    A - NUCSP001He  A  X     A    T-
    B - LAO-XRM1H1           A    T-
 -----------------------------------------------------------------------------------------------
-   -0.306238957780 a.u. at frequency      0.00000000 a.u.    6.90E-14   (converged)
+   -0.306238957776 a.u. at frequency      0.00000000 a.u.    5.43E-14   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 1),B( 2)>> - linear response function (real):
@@ -1911,7 +1961,7 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
    A - NUCSP001He  A  X     A    T-
    B - LAO-YRM1H1           A    T-
 -----------------------------------------------------------------------------------------------
-    0.30819666D-10 a.u. at frequency      0.00000000 a.u.    7.83E-14   (converged)
+    0.11693807D-11 a.u. at frequency      0.00000000 a.u.    6.99E-14   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 1),B( 3)>> - linear response function (real):
@@ -1919,7 +1969,7 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
    A - NUCSP001He  A  X     A    T-
    B - LAO-ZRM1H1           A    T-
 -----------------------------------------------------------------------------------------------
-    0.12794461D-11 a.u. at frequency      0.00000000 a.u.    1.44E-15   (converged)
+    0.11355982D-12 a.u. at frequency      0.00000000 a.u.    5.81E-16   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 2),B( 1)>> - linear response function (real):
@@ -1927,7 +1977,7 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
    A - NUCSP002He  A  Y     A    T-
    B - LAO-XRM1H1           A    T-
 -----------------------------------------------------------------------------------------------
-    0.27044035D-10 a.u. at frequency      0.00000000 a.u.    6.90E-14   (converged)
+    0.51658806D-11 a.u. at frequency      0.00000000 a.u.    5.43E-14   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 2),B( 2)>> - linear response function (real):
@@ -1935,7 +1985,7 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
    A - NUCSP002He  A  Y     A    T-
    B - LAO-YRM1H1           A    T-
 -----------------------------------------------------------------------------------------------
-   -0.306238957765 a.u. at frequency      0.00000000 a.u.    7.83E-14   (converged)
+   -0.306238957765 a.u. at frequency      0.00000000 a.u.    6.99E-14   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 2),B( 3)>> - linear response function (real):
@@ -1943,7 +1993,7 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
    A - NUCSP002He  A  Y     A    T-
    B - LAO-ZRM1H1           A    T-
 -----------------------------------------------------------------------------------------------
-    0.52498448D-12 a.u. at frequency      0.00000000 a.u.    1.44E-15   (converged)
+   -0.56656995D-13 a.u. at frequency      0.00000000 a.u.    5.81E-16   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 3),B( 1)>> - linear response function (real):
@@ -1951,7 +2001,7 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
    A - NUCSP003He  A  Z     A    T-
    B - LAO-XRM1H1           A    T-
 -----------------------------------------------------------------------------------------------
-    0.70094976D-12 a.u. at frequency      0.00000000 a.u.    6.90E-14   (converged)
+    0.74819074D-12 a.u. at frequency      0.00000000 a.u.    5.43E-14   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 3),B( 2)>> - linear response function (real):
@@ -1959,7 +2009,7 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
    A - NUCSP003He  A  Z     A    T-
    B - LAO-YRM1H1           A    T-
 -----------------------------------------------------------------------------------------------
-   -0.70898419D-12 a.u. at frequency      0.00000000 a.u.    7.83E-14   (converged)
+    0.23190995D-12 a.u. at frequency      0.00000000 a.u.    6.99E-14   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 3),B( 3)>> - linear response function (real):
@@ -1967,7 +2017,7 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
    A - NUCSP003He  A  Z     A    T-
    B - LAO-ZRM1H1           A    T-
 -----------------------------------------------------------------------------------------------
-   -0.832866042950 a.u. at frequency      0.00000000 a.u.    1.44E-15   (converged)
+   -0.832866042950 a.u. at frequency      0.00000000 a.u.    5.81E-16   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 4),B( 1)>> - linear response function (real):
@@ -1975,7 +2025,7 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
    A - NUCSP004He  A  X     A    T-
    B - LAO-XRM1H1           A    T-
 -----------------------------------------------------------------------------------------------
-   -0.306238957772 a.u. at frequency      0.00000000 a.u.    6.90E-14   (converged)
+   -0.306238957771 a.u. at frequency      0.00000000 a.u.    5.43E-14   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 4),B( 2)>> - linear response function (real):
@@ -1983,7 +2033,7 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
    A - NUCSP004He  A  X     A    T-
    B - LAO-YRM1H1           A    T-
 -----------------------------------------------------------------------------------------------
-   -0.30028772D-10 a.u. at frequency      0.00000000 a.u.    7.83E-14   (converged)
+   -0.33006483D-11 a.u. at frequency      0.00000000 a.u.    6.99E-14   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 4),B( 3)>> - linear response function (real):
@@ -1991,7 +2041,7 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
    A - NUCSP004He  A  X     A    T-
    B - LAO-ZRM1H1           A    T-
 -----------------------------------------------------------------------------------------------
-    0.12907697D-11 a.u. at frequency      0.00000000 a.u.    1.44E-15   (converged)
+    0.44041549D-12 a.u. at frequency      0.00000000 a.u.    5.81E-16   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 5),B( 1)>> - linear response function (real):
@@ -1999,7 +2049,7 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
    A - NUCSP005He  A  Y     A    T-
    B - LAO-XRM1H1           A    T-
 -----------------------------------------------------------------------------------------------
-   -0.33181800D-10 a.u. at frequency      0.00000000 a.u.    6.90E-14   (converged)
+   -0.52556682D-11 a.u. at frequency      0.00000000 a.u.    5.43E-14   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 5),B( 2)>> - linear response function (real):
@@ -2007,7 +2057,7 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
    A - NUCSP005He  A  Y     A    T-
    B - LAO-YRM1H1           A    T-
 -----------------------------------------------------------------------------------------------
-   -0.306238957787 a.u. at frequency      0.00000000 a.u.    7.83E-14   (converged)
+   -0.306238957782 a.u. at frequency      0.00000000 a.u.    6.99E-14   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 5),B( 3)>> - linear response function (real):
@@ -2015,7 +2065,7 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
    A - NUCSP005He  A  Y     A    T-
    B - LAO-ZRM1H1           A    T-
 -----------------------------------------------------------------------------------------------
-    0.56737181D-12 a.u. at frequency      0.00000000 a.u.    1.44E-15   (converged)
+   -0.14890196D-12 a.u. at frequency      0.00000000 a.u.    5.81E-16   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 6),B( 1)>> - linear response function (real):
@@ -2023,7 +2073,7 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
    A - NUCSP006He  A  Z     A    T-
    B - LAO-XRM1H1           A    T-
 -----------------------------------------------------------------------------------------------
-   -0.39978130D-11 a.u. at frequency      0.00000000 a.u.    6.90E-14   (converged)
+   -0.76392150D-12 a.u. at frequency      0.00000000 a.u.    5.43E-14   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 6),B( 2)>> - linear response function (real):
@@ -2031,7 +2081,7 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
    A - NUCSP006He  A  Z     A    T-
    B - LAO-YRM1H1           A    T-
 -----------------------------------------------------------------------------------------------
-   -0.27036987D-12 a.u. at frequency      0.00000000 a.u.    7.83E-14   (converged)
+    0.10704675D-11 a.u. at frequency      0.00000000 a.u.    6.99E-14   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 6),B( 3)>> - linear response function (real):
@@ -2039,7 +2089,7 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
    A - NUCSP006He  A  Z     A    T-
    B - LAO-ZRM1H1           A    T-
 -----------------------------------------------------------------------------------------------
-   -0.832866042950 a.u. at frequency      0.00000000 a.u.    1.44E-15   (converged)
+   -0.832866042950 a.u. at frequency      0.00000000 a.u.    5.81E-16   (converged)
 -----------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------
 
@@ -2057,12 +2107,12 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
 
                        Bx             By             Bz
 
-        He   x    -5.59606083    -0.00000000     0.00000000
-        He   y    -0.00000000    -5.59606083    -0.00000000
+        He   x    -5.59606083    -0.00000000    -0.00000000
+        He   y    -0.00000000    -5.59606083     0.00000000
         He   z    -0.00000000    -0.00000000    -0.00000000
 
-        He   x    -5.59606083     0.00000000     0.00000000
-        He   y     0.00000000    -5.59606083     0.00000000
+        He   x    -5.59606083     0.00000000    -0.00000000
+        He   y     0.00000000    -5.59606083    -0.00000000
         He   z    -0.00000000    -0.00000000    -0.00000000
 
 
@@ -2076,11 +2126,11 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
 
         He   x    20.77700840     0.00000000     0.00000000
         He   y     0.00000000    20.77700840     0.00000000
-        He   z    -0.00000000    -0.00000000     0.00000000
+        He   z    -0.00000000     0.00000000     0.00000000
 
         He   x    20.77700840    -0.00000000     0.00000000
         He   y    -0.00000000    20.77700840     0.00000000
-        He   z    -0.00000000    -0.00000000     0.00000000
+        He   z    -0.00000000     0.00000000     0.00000000
 
 
 
@@ -2093,12 +2143,12 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
                        Bx             By             Bz
 
         He   x   -23.37169185    -0.00000000    -0.00000000
-        He   y    -0.00000000   -23.37169185    -0.00000000
-        He   z    -0.00000000     0.00000000     0.05520448
+        He   y    -0.00000000   -23.37169185     0.00000000
+        He   z    -0.00000000    -0.00000000     0.05520448
 
         He   x   -23.37169185     0.00000000    -0.00000000
-        He   y     0.00000000   -23.37169185    -0.00000000
-        He   z     0.00000000     0.00000000     0.05520448
+        He   y     0.00000000   -23.37169185     0.00000000
+        He   z     0.00000000    -0.00000000     0.05520448
 
 
 
@@ -2109,12 +2159,12 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
 
                        Bx             By             Bz
 
-        He   x    39.67933099     0.00000000     0.00000000
+        He   x    39.67933099     0.00000000    -0.00000000
         He   y     0.00000000    39.67933099     0.00000000
-        He   z    -0.00000000    -0.00000000    44.29603997
+        He   z    -0.00000000     0.00000000    44.29603997
 
         He   x    39.67933099    -0.00000000    -0.00000000
-        He   y    -0.00000000    39.67933099    -0.00000000
+        He   y    -0.00000000    39.67933099     0.00000000
         He   z    -0.00000000    -0.00000000    44.29603997
 
 
@@ -2137,9 +2187,9 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
 
                   Bx             By             Bz
 
-  He   x    31.48858671    -0.00000000    -0.00000000
-  He   y    -0.00000000    31.48858670    -0.00000000
-  He   z    -0.00000000     0.00000000    44.35124445
+  He   x    31.48858670    -0.00000000    -0.00000000
+  He   y    -0.00000000    31.48858670     0.00000000
+  He   z    -0.00000000    -0.00000000    44.35124445
 
 
   e-p "diamagnetic" and e-e "paramagnetic" contributions (ppm):
@@ -2147,9 +2197,9 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
 
                Bx         By         Bz             Bx         By         Bz
 
-  He   x    39.6793     0.0000     0.0000       -23.3717    -0.0000    -0.0000
-  He   y     0.0000    39.6793     0.0000        -0.0000   -23.3717    -0.0000
-  He   z    -0.0000    -0.0000    44.2960        -0.0000     0.0000     0.0552
+  He   x    39.6793     0.0000    -0.0000       -23.3717    -0.0000    -0.0000
+  He   y     0.0000    39.6793     0.0000        -0.0000   -23.3717     0.0000
+  He   z    -0.0000     0.0000    44.2960        -0.0000    -0.0000     0.0552
 
  e-p "diamagnetic" contribution:     41.218234         e-e "paramagnetic":     -15.562726
 
@@ -2159,16 +2209,16 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
 
                Bx         By         Bz             Bx         By         Bz
 
-  He   x     0.0000    -0.0000    -0.0000        31.4886    -0.0000    -0.0000
-  He   y     0.0000     0.0000    -0.0000        -0.0000    31.4886    -0.0000
-  He   z     0.0000     0.0000     0.0000        -0.0000    -0.0000    44.3512
+  He   x     0.0000     0.0000     0.0000        31.4886    -0.0000    -0.0000
+  He   y    -0.0000     0.0000     0.0000        -0.0000    31.4886    -0.0000
+  He   z    -0.0000    -0.0000     0.0000        -0.0000    -0.0000    44.3512
 
 
   Principal values and axes:
   --------------------------
 
-  He    1     67.264726  =   35.78  +  31.49:     0.782558 -0.622577  0.000000
-  He    2     67.264726  =   35.78  +  31.49:     0.622577  0.782558  0.000000
+  He    1     67.264726  =   35.78  +  31.49:     0.967787 -0.251770  0.000000
+  He    2     67.264726  =   35.78  +  31.49:     0.251770  0.967787  0.000000
   He    3     80.127384  =   35.78  +  44.35:    -0.000000 -0.000000  1.000000
 
 
@@ -2189,8 +2239,8 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
                   Bx             By             Bz
 
   He   x    31.48858670     0.00000000    -0.00000000
-  He   y     0.00000000    31.48858671    -0.00000000
-  He   z     0.00000000     0.00000000    44.35124445
+  He   y     0.00000000    31.48858671     0.00000000
+  He   z     0.00000000    -0.00000000    44.35124445
 
 
   e-p "diamagnetic" and e-e "paramagnetic" contributions (ppm):
@@ -2199,8 +2249,8 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
                Bx         By         Bz             Bx         By         Bz
 
   He   x    39.6793    -0.0000    -0.0000       -23.3717     0.0000    -0.0000
-  He   y    -0.0000    39.6793    -0.0000         0.0000   -23.3717    -0.0000
-  He   z    -0.0000    -0.0000    44.2960         0.0000     0.0000     0.0552
+  He   y    -0.0000    39.6793     0.0000         0.0000   -23.3717     0.0000
+  He   z    -0.0000    -0.0000    44.2960         0.0000    -0.0000     0.0552
 
  e-p "diamagnetic" contribution:     41.218234         e-e "paramagnetic":     -15.562726
 
@@ -2211,15 +2261,15 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
                Bx         By         Bz             Bx         By         Bz
 
   He   x     0.0000    -0.0000    -0.0000        31.4886     0.0000     0.0000
-  He   y     0.0000     0.0000    -0.0000         0.0000    31.4886    -0.0000
-  He   z     0.0000     0.0000     0.0000         0.0000    -0.0000    44.3512
+  He   y     0.0000     0.0000     0.0000         0.0000    31.4886    -0.0000
+  He   z     0.0000    -0.0000     0.0000         0.0000    -0.0000    44.3512
 
 
   Principal values and axes:
   --------------------------
 
-  He    1     67.264726  =   35.78  +  31.49:     0.781481 -0.623929 -0.000000
-  He    2     67.264726  =   35.78  +  31.49:     0.623929  0.781481 -0.000000
+  He    1     67.264726  =   35.78  +  31.49:     0.945314 -0.326161 -0.000000
+  He    2     67.264726  =   35.78  +  31.49:     0.326161  0.945314  0.000000
   He    3     80.127384  =   35.78  +  44.35:     0.000000 -0.000000  1.000000
 
 
@@ -2239,13 +2289,13 @@ SOfock:SL  2.65D-10  100.00%    0.00%    0.00%    0.00%   0.01200104s
 
 
  
-     Date and time (Linux)  : Tue Nov 30 14:32:24 2010 
+     Date and time (Linux)  : Thu Dec  9 18:07:51 2010 
      Host name              :                                         
+>>>> Node 0, utime: 26, stime: 3, minflt: 142138, majflt: 0, nvcsw: 170, nivcsw: 3548, maxrss: 540656
+>>>> Total WALL time used in DIRAC: 28s
  MEMGET high-water mark:     1.36 MB
  F90 allocated memory not accounted for
 *****************************************************
->>>> Node 0, utime: 59, stime: 2, minflt: 141027, majflt: 0, nvcsw: 80, nivcsw: 5422, maxrss: 0
->>>> Total WALL time used in DIRAC: 1min7s
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 
