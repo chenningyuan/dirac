@@ -26,6 +26,9 @@ module input_reader
 !          - when we have only modules and no common blocks the initialization
 !            problem goes away since variables can be initialized at definition
 
+!radovan: please feel free to copy/use/improve this inside DIRAC/Dalton
+!         without asking
+
   use keyword
   use character_processing
   use dirac_cfg

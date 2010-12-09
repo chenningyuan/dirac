@@ -21,6 +21,9 @@
 
 module character_processing
 
+!radovan: please feel free to copy/use/improve this inside DIRAC/Dalton
+!         without asking
+
   implicit none
 
   public lowercase
