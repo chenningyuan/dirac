@@ -1721,10 +1721,13 @@ C
 #include "dcbxrs.h"
 #include "dcbxpr.h"
 C
-      CHARACTER MXFORM*6,FMT*6,FMT2*6,TTYP(-1:1)*2,FREQLAB*4
+      CHARACTER MXFORM*6,FMT*6,FMT2*6,TTYP(-1:1)*2,FREQLAB*4,
+     &          RESPLAB(2)*20
       DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT,JFAC,*),
      &          RCNV(NBFREQ,NLRBPT),IBUF(2),WORK(*)
       DATA TTYP /'T-','T0','T+'/
+      DATA RESPLAB/'Real part           ',
+     &             'Imaginary part      '/
 C
 C
 C     Loop over perturbation operators
@@ -1753,20 +1756,25 @@ C
                 IREPB  = IPRPSYM(INDPRB)-1
                 ITIMB  = IPRPTIM(INDPRB)
                 ITIMAB = ITIMA*ITIMB
-CPP..add complex case
                 IF(DAMPFREQ.NE.D0) THEN
                   WRITE(LUPRI,'(/A,I2,A,I2,A)')
      &               '<<A(',INDAP,'),B(',INDBP,
      &               ')>> - linear response function (complex):'
+                  J1 = 1
+                  J2 = 2
                 ELSE
                   IF    (ITIMAB.EQ. 1) THEN
                     WRITE(LUPRI,'(/A,I2,A,I2,A)')
      &               '<<A(',INDAP,'),B(',INDBP,
      &               ')>> - linear response function (real):'
+                    J1 = 1
+                    J2 = 1
                   ELSEIF(ITIMAB.EQ.-1) THEN
                     WRITE(LUPRI,'(/A,I2,A,I2,A)')
      &               '<<A(',INDAP,'),B(',INDBP,
      &               ')>> - linear response function (imaginary):'
+                    J1 = 2
+                    J2 = 2
                   ENDIF
                 ENDIF
                 CALL PRSYMB(LUPRI,'-',95,0)
@@ -1774,11 +1782,12 @@ CPP..add complex case
      &             'A - ',PRPNAM(INDPRA),REP(IREPA),TTYP(ITIMA),
      &             'B - ',PRPNAM(INDPRB),REP(IREPB),TTYP(ITIMB)
                 CALL PRSYMB(LUPRI,'-',95,0)
-                WRITE(LUPRI,'(1X,A,A4,A,5X,A,35X,A)')' Frequency (',
-     &           FREQLAB,')','Response','Convergence'
-C                WRITE(LUPRI,'(25X,A,5X,A)')'real part','imag. part'
+                WRITE(LUPRI,'(1X,A,A4,A1,3(A,5X))')' Frequency (',
+     &           FREQLAB,')',(RESPLAB(J),J=J1,J2),'Convergence'
                 CALL PRSYMB(LUPRI,'-',95,0)
                 DO I = 1,NBFREQ
+                  DO J = J1,J2
+                  ENDDO
                   IF(DAMPFREQ.NE.D0) THEN
                     FMT = MXFORM(ABLRF(I,INDAP,INDBP,1,1),15)
                     FMT2 = MXFORM(ABLRF(I,INDAP,INDBP,2,1),15)
@@ -1803,26 +1812,24 @@ C                WRITE(LUPRI,'(25X,A,5X,A)')'real part','imag. part'
      &                    ' a.u.',RCNV(I,INDBP),'(**NOT** converged!)'
                     ENDIF
                   ELSE
-                    DO JJFAC = 1,JFAC
-                      FMT = MXFORM(ABLRF(I,INDAP,INDBP,JJFAC,1),15)
+                      FMT = MXFORM(ABLRF(I,INDAP,INDBP,1,1),15)
                       IF(UNCOUP) THEN
                         WRITE(LUPRI,
      &                   '(F12.8,A,3X,'//FMT//',A,22X,1P,E9.2,3X,A)')
-     &                    BFREQ(I),' a.u.',ABLRF(I,INDAP,INDBP,JJFAC,1),
+     &                    BFREQ(I),' a.u.',ABLRF(I,INDAP,INDBP,1,1),
      &                    ' a.u.',RCNV(I,INDBP),
      &                    '--- (uncoupled calculation)'
                       ELSEIF(RCNV(I,INDBP).LT.THCLR) THEN
                         WRITE(LUPRI,
      &                   '(F12.8,A,3X,'//FMT//',A,22X,1P,E9.2,3X,A)')
-     &                    BFREQ(I),' a.u.',ABLRF(I,INDAP,INDBP,JJFAC,1),
+     &                    BFREQ(I),' a.u.',ABLRF(I,INDAP,INDBP,1,1),
      &                    ' a.u.',RCNV(I,INDBP),'(converged)'
                       ELSE
                         WRITE(LUPRI,
      &                   '(F12.8,A,3X,'//FMT//',A,22X,1P,E9.2,3X,A)')
-     &                    BFREQ(I),' a.u.',ABLRF(I,INDAP,INDBP,JJFAC,1),
+     &                    BFREQ(I),' a.u.',ABLRF(I,INDAP,INDBP,1,1),
      &                    ' a.u.',RCNV(I,INDBP),'(**NOT** converged!)'
                       ENDIF
-                    ENDDO
                   ENDIF
                 ENDDO
                 CALL PRSYMB(LUPRI,'-',95,0)
