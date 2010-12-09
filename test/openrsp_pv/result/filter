@@ -1,8 +1,8 @@
-$ERROR 1.E-7
+$ERROR 1.E-6
 Nlines 14:   freq/cm-1  freq/au     mm         m0m1
 
-$ERROR 1.E-7
+$ERROR 1.E-6
 Nlines 14:   freq/cm-1  freq/au     ma        m0a12
 
-$ERROR 1.E-7
+$ERROR 1.E-6
 Nlines 14:   freq/cm-1  freq/au     aa         mb       a01a23     m0b123
