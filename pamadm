@@ -344,7 +344,6 @@ this_module = 'xml'
 dirac_modules[this_module] = dirac_module('xml', 'XML input/output module')
 dirac_modules[this_module].add_cppflag('MOD_XML')
 dirac_modules[this_module].add_directory('gp/xml')
-dirac_modules[this_module].add_test(short_test('fde_export_density')) # XCFun
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'interest'
@@ -383,6 +382,7 @@ dirac_modules[this_module].add_test(short_test('dft_alda_xcfun'))
 dirac_modules[this_module].add_test(short_test('dft_minnesota'))
 dirac_modules[this_module].add_test(short_test('dft_erf_xcfun'))
 dirac_modules[this_module].add_test(short_test('dft_response_xcfun'))
+dirac_modules[this_module].add_test(short_test('fde_export_density'))
 dirac_modules[this_module].add_test(short_test('fde_static-vemb_dipole'))
 dirac_modules[this_module].take_out_of_adm()
 dirac_modules[this_module].take_out_of_release()
