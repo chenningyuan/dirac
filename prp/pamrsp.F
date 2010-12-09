@@ -701,7 +701,7 @@ C        next microiteration using solutions of reduced RSP equation
 C        ===========================================================
 C
 CPP
-         GOTO 40
+         GOTO 137
 CTROND         CALL XRSNEX(IBTYP,IBCVC,IBEVC,IBPVC,RCNV,
 CTROND     &               EVALR,EVECR,GPCI,GPOE,GPOP,
 CTROND     &               RNORM,IVECS,WORK,KFREE,LFREE)
@@ -720,6 +720,8 @@ C
            NCRED = 0
            NZRED = 0
          ENDIF
+CPP
+ 137     CONTINUE
          TIMITR = SECOND() - TIMITR
          CPUTID = SECTID(TIMITR)
 C
@@ -733,6 +735,7 @@ C
      &       '* End of microiteration no.',ITMIC,' after ',CPUTID
          ENDIF
          CALL FLSHFO(LUPRI)
+         GOTO 138
 CTROND         OPTORB = OPTSAV
 C
 C        Check for state of the calculation
@@ -750,6 +753,8 @@ C****                                            ****
 C****************************************************
 C
  40   CONTINUE
+CPP
+ 138  CONTINUE
       CALL XRSOUT(RCNV,RNORM,ISIM,EVALR,IBTYP)
       IF(NZCONF.GT.0) THEN
         CLOSE(LUBCI,STATUS = 'KEEP')

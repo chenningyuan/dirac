@@ -86,6 +86,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+      PARAMETER(D0=0.0D0)
 C
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -108,7 +109,9 @@ C
         NEP = 1
       ENDIF
       NCI = 0
-      N2LRF  = NLRAPT*NRSPF*(1+NEE+NEP+NCI)
+      JFAC=1
+      IF(DMPFRLR.NE.D0) JFAC=2
+      N2LRF  = NLRAPT*NRSPF*(1+NEE+NEP+NCI)*JFAC
       CALL MEMGET('REAL',KLRF,N2LRF,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KLRF),N2LRF)
       CALL MEMGET('REAL',KCNV,NRSPF,WORK,KFREE,LFREE)
@@ -1763,7 +1766,7 @@ C
                 CALL PRSYMB(LUPRI,'-',95,0)
                 DO I = 1,NBFREQ
                   DO JJFAC = 1,JFAC
-                    FMT = MXFORM(ABLRF(I,INDAP,INDBP,1,1),15)
+                    FMT = MXFORM(ABLRF(I,INDAP,INDBP,JJFAC,1),15)
                     IF(UNCOUP) THEN
                       WRITE(LUPRI,
      &                  '(3X,'//FMT//',A,A,F15.8,A,3X,A)')
