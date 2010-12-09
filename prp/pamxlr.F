@@ -1750,6 +1750,7 @@ C
                 IREPB  = IPRPSYM(INDPRB)-1
                 ITIMB  = IPRPTIM(INDPRB)
                 ITIMAB = ITIMA*ITIMB
+CPP..add complex case
                 IF    (ITIMAB.EQ. 1) THEN
                   WRITE(LUPRI,'(/A,I2,A,I2,A)')
      &             '<<A(',INDAP,'),B(',INDBP,
