@@ -1710,6 +1710,7 @@ C
 C     Written by T.Saue Oct 31 1996
 C
 C***********************************************************************
+      use codata
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1720,7 +1721,7 @@ C
 #include "dcbxrs.h"
 #include "dcbxpr.h"
 C
-      CHARACTER MXFORM*6,FMT*6,TTYP(-1:1)*2
+      CHARACTER MXFORM*6,FMT*6,FMT2*6,TTYP(-1:1)*2,FREQLAB*4
       DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT,JFAC,*),
      &          RCNV(NBFREQ,NLRBPT),IBUF(2),WORK(*)
       DATA TTYP /'T-','T0','T+'/
@@ -1729,6 +1730,8 @@ C
 C     Loop over perturbation operators
 C     ================================
 C
+      FREQLAB = 'real'
+      IF(IMFREQ) FREQLAB = 'imag'
       CALL HEADER('Linear response; final output ',-1)
       IF(.NOT.ALLCMB) THEN
         DO IOPSY = 1,NFSYM
@@ -1751,45 +1754,85 @@ C
                 ITIMB  = IPRPTIM(INDPRB)
                 ITIMAB = ITIMA*ITIMB
 CPP..add complex case
-                IF    (ITIMAB.EQ. 1) THEN
+                IF(DAMPFREQ.NE.D0) THEN
                   WRITE(LUPRI,'(/A,I2,A,I2,A)')
-     &             '<<A(',INDAP,'),B(',INDBP,
-     &             ')>> - linear response function (real):'
-                ELSEIF(ITIMAB.EQ.-1) THEN
-                  WRITE(LUPRI,'(/A,I2,A,I2,A)')
-     &             '<<A(',INDAP,'),B(',INDBP,
-     &             ')>> - linear response function (imaginary):'
+     &               '<<A(',INDAP,'),B(',INDBP,
+     &               ')>> - linear response function (complex):'
+                ELSE
+                  IF    (ITIMAB.EQ. 1) THEN
+                    WRITE(LUPRI,'(/A,I2,A,I2,A)')
+     &               '<<A(',INDAP,'),B(',INDBP,
+     &               ')>> - linear response function (real):'
+                  ELSEIF(ITIMAB.EQ.-1) THEN
+                    WRITE(LUPRI,'(/A,I2,A,I2,A)')
+     &               '<<A(',INDAP,'),B(',INDBP,
+     &               ')>> - linear response function (imaginary):'
+                  ENDIF
                 ENDIF
                 CALL PRSYMB(LUPRI,'-',95,0)
                 WRITE(LUPRI,'(3X,A,A16,5X,A3,2X,A2)')
      &             'A - ',PRPNAM(INDPRA),REP(IREPA),TTYP(ITIMA),
      &             'B - ',PRPNAM(INDPRB),REP(IREPB),TTYP(ITIMB)
                 CALL PRSYMB(LUPRI,'-',95,0)
+                WRITE(LUPRI,'(1X,A,A4,A,5X,A,35X,A)')' Frequency (',
+     &           FREQLAB,')','Response','Convergence'
+C                WRITE(LUPRI,'(25X,A,5X,A)')'real part','imag. part'
+                CALL PRSYMB(LUPRI,'-',95,0)
                 DO I = 1,NBFREQ
-                  DO JJFAC = 1,JFAC
-                    FMT = MXFORM(ABLRF(I,INDAP,INDBP,JJFAC,1),15)
+                  IF(DAMPFREQ.NE.D0) THEN
+                    FMT = MXFORM(ABLRF(I,INDAP,INDBP,1,1),15)
+                    FMT2 = MXFORM(ABLRF(I,INDAP,INDBP,2,1),15)
                     IF(UNCOUP) THEN
                       WRITE(LUPRI,
-     &                  '(3X,'//FMT//',A,A,F15.8,A,3X,A)')
-     &                  ABLRF(I,INDAP,INDBP,JJFAC,1),' a.u.',
-     &                ' at frequency ',BFREQ(I),' a.u.',
-     &                '--- (uncoupled calculation)'
+     &    '(F12.8,A,3X,'//FMT//',A,3X,'//FMT2//',A,1X,E9.2,1X,A)')
+     &                    BFREQ(I),' a.u.',ABLRF(I,INDAP,INDBP,1,1),
+     &                    ' a.u.',ABLRF(I,INDAP,INDBP,2,1),
+     &                    ' a.u.',RCNV(I,INDBP),
+     &                    '--- (uncoupled calculation)'
                     ELSEIF(RCNV(I,INDBP).LT.THCLR) THEN
                       WRITE(LUPRI,
-     &                  '(3X,'//FMT//',A,A,F15.8,A,3X,1P,E9.2,3X,A)')
-     &                 ABLRF(I,INDAP,INDBP,JJFAC,1),' a.u.',
-     &                ' at frequency ',BFREQ(I),' a.u.',
-     &                RCNV(I,INDBP),'(converged)'
+     &    '(F12.8,A,3X,'//FMT//',A,3X,'//FMT2//',A,1X,E9.2,1X,A)')
+     &                    BFREQ(I),' a.u.',ABLRF(I,INDAP,INDBP,1,1),
+     &                    ' a.u.',ABLRF(I,INDAP,INDBP,2,1),
+     &                    ' a.u.',RCNV(I,INDBP),'(converged)'
                     ELSE
-                    WRITE(LUPRI,
-     &                '(3X,'//FMT//',A,A,F15.8,A,3X,1P,E9.2,3X,A)')
-     &                ABLRF(I,INDAP,INDBP,JJFAC,1),' a.u.',
-     &                ' at frequency ',BFREQ(I),' a.u.',
-     &                RCNV(I,INDBP),'(**NOT** converged!)'
+                      WRITE(LUPRI,
+     &    '(F12.8,A,3X,'//FMT//',A,3X,'//FMT2//',A,1X,E9.2,1X,A)')
+     &                    BFREQ(I),' a.u.',ABLRF(I,INDAP,INDBP,1,1),
+     &                    ' a.u.',ABLRF(I,INDAP,INDBP,2,1),
+     &                    ' a.u.',RCNV(I,INDBP),'(**NOT** converged!)'
+                    ENDIF
+                  ELSE
+                    DO JJFAC = 1,JFAC
+                      FMT = MXFORM(ABLRF(I,INDAP,INDBP,JJFAC,1),15)
+                      IF(UNCOUP) THEN
+                        WRITE(LUPRI,
+     &                   '(F12.8,A,3X,'//FMT//',A,22X,1P,E9.2,3X,A)')
+     &                    BFREQ(I),' a.u.',ABLRF(I,INDAP,INDBP,JJFAC,1),
+     &                    ' a.u.',RCNV(I,INDBP),
+     &                    '--- (uncoupled calculation)'
+                      ELSEIF(RCNV(I,INDBP).LT.THCLR) THEN
+                        WRITE(LUPRI,
+     &                   '(F12.8,A,3X,'//FMT//',A,22X,1P,E9.2,3X,A)')
+     &                    BFREQ(I),' a.u.',ABLRF(I,INDAP,INDBP,JJFAC,1),
+     &                    ' a.u.',RCNV(I,INDBP),'(converged)'
+                      ELSE
+                        WRITE(LUPRI,
+     &                   '(F12.8,A,3X,'//FMT//',A,22X,1P,E9.2,3X,A)')
+     &                    BFREQ(I),' a.u.',ABLRF(I,INDAP,INDBP,JJFAC,1),
+     &                    ' a.u.',RCNV(I,INDBP),'(**NOT** converged!)'
+                      ENDIF
+                    ENDDO
                   ENDIF
-                  ENDDO
                 ENDDO
                 CALL PRSYMB(LUPRI,'-',95,0)
+                IF(DAMPFREQ.NE.D0) THEN
+                  DFREQEV = DAMPFREQ * XTEV
+                  DFREQCM = DAMPFREQ * XTKAYS
+                  WRITE(LUPRI,'(3X,A,F10.6,A,F10.6,A,F10.1,A)')
+     &                   'Damping parameter equals',DAMPFREQ,' a.u. =',
+     &                   DFREQEV,' eV =',DFREQCM,' cm-1'
+                ENDIF
               ENDDO
             ENDDO
           ENDDO
