@@ -426,6 +426,9 @@ C            have subtracted 100000 arbitrarily for all other small matrices
 C            /Sep 2005 hjaaj
          MAXSIM = MIN(MAXSIM1,MAXSIM2)
          MAXSIM = MAX(1,MAXSIM)
+CTROND
+         WRITE(6,*) 'MXLOAD:...',NTSIM,NVPAR,NFREQ,NFREQ*NVPAR,NZCONFQ,
+     &           NZXOPEQ,NZOPPQ,MXBVEC,NZVARQ,N2BBASXQ,LFREE
 C        ... always attempt at least one vector
       END IF
 C
@@ -2605,10 +2608,14 @@ C***********************************************************************
 #include "dcbxrs.h"
 C
       DIMENSION AE(LDA,N),AS(LDA,N),G(N),X(*),
-     &          IBTYP(2,*),WORK(*)
+     &          IBTYP(2,*),INERT(3),DET(2),WORK(*)
 C
       CALL QENTER('XRSLINRED')
       KFRSAV = KFREE
+C
+C     Check for instabilies in reduced Hessian
+C
+      CALL XRSSTAB(AE,LDA,N,NPVEC,IPRINT,WORK,KFREE,LFREE)
 C
 C     Memory allocation
 C
@@ -2724,20 +2731,6 @@ C
 C
 C       Print section
 C
-        IPAR = INERT(2) - NPVEC
-        IF(IPRINT.GE.2.OR.IPAR.GT.0 .OR. INERT(3) .ne. 0) THEN
-          WRITE(LUPRI,'(/3X,A,F12.5)') '* Reduced matrix. Frequency:',W
-          WRITE(LUPRI,'(2(5X,A,I5/),5X,A,I5,A,I5)')
-     &      '* Number of positive eigenvalues:',INERT(1),
-     &      '* Number of zero     eigenvalues:',INERT(3),
-     &      '* Number of negative eigenvalues:',INERT(2),
-     &      '  number of +- (ep) trial vectors:',NPVEC
-          IF(IPAR.GT.0) THEN
-            WRITE(LUPRI,'(/A)')
-     &      '*** WARNING - Possible instability detected '//
-     &      'in reduced system !'
-          ENDIF
-        ENDIF
       ENDIF
       IF(IPRINT.GE.3) THEN
         WRITE(LUPRI,'(A,F12.5,A)') 
@@ -4151,3 +4144,49 @@ C
       NEVEC  = NREDM
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck xrsstab */
+      SUBROUTINE XRSSTAB(A,LDA,N,NEPROT,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Check for instability by looking for negative eigenvalues of
+C     the reduced Hessian.
+C
+C     In the general relativistic case the ground state corresponds to
+C     a saddle opint and so one should subtract the number of e-p
+C     rotations given by NEPROT
+C
+C     Written by T. Saue - updated Dec 9 2010
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION A(LDA,N),WORK(*)
+      DIMENSION INERT(3),DET(2)
+C
+      KFRSAV=KFREE
+      NNA = (N*(N+1))/2
+      CALL MEMGET('INTE',KPVT,N,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KAN,NNA,WORK,KFREE,LFREE)
+      CALL DAMATR(N,A,LDA,WORK(KAN))
+      CALL DSPFA (WORK(KAN),N,WORK(KPVT),INFO)
+      CALL DSPDI(WORK(KAN),N,WORK(KPVT),DET,INERT,WORK(KFREE),100)
+      WRITE(6,*) 'TEST:',(INERT(I),I=1,3),NEPROT,IPRINT
+      IPAR = INERT(2) - NEPROT
+      IF(IPRINT.GE.2.OR.IPAR.GT.0 .OR. INERT(3) .ne. 0) THEN
+        WRITE(LUPRI,'(/3X,A,F12.5)') '* Reduced matrix. Frequency:',W
+        WRITE(LUPRI,'(4(5X,A,I5)/)')
+     &      '* Number of positive eigenvalues:',INERT(1),
+     &      '* Number of zero     eigenvalues:',INERT(3),
+     &      '* Number of negative eigenvalues:',INERT(2),
+     &      '  number of +- (ep) trial vectors:',NEPROT
+        IF(IPAR.GT.0) THEN
+          WRITE(LUPRI,'(/A)')
+     &      '*** WARNING - Possible instability detected '//
+     &      'in reduced system !'
+        ENDIF
+      ENDIF
+      CALL MEMREL('XRSSTAB',WORK,1,KFRSAV,KFREE,LFREE)
+      RETURN
+      END
+
