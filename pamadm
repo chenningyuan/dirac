@@ -101,7 +101,8 @@ def callback_include(option, opt, value, parser):
 def provide_star_basisfile_names():
 #########################################################
 #
-# Restore basis set files with "*" in name
+#      Restore basis set files with "*" in name
+#    (this is to be done on non-Windows machines)
 #
 #########################################################
   # : ls basis_dalton/*star
@@ -122,10 +123,7 @@ def provide_star_basisfile_names():
   for basfilename in basfile:
     src=basdir+basfilename
     dest=basdir+basfile[basfilename]
-    #print basfilename,basfile[basfilename]
-    #print src,dest
     shutil.copy(src,dest)
- # print '...generated basis set files with "*" in names'
 
 ###########################
 ### main function start ###
@@ -135,6 +133,7 @@ def provide_star_basisfile_names():
 sys.path.append(os.getcwd()+'/utils')
 from common import make_old_file, is_windows
 from common import svn_info, create_link, copy_parent
+from common import vacuum_cleaner
 
 svn_object = svn_info() # object of the class
 
@@ -614,7 +613,6 @@ make_old_file('build/Makefile.obj')
 make_old_file('gp/compinfo.h')
 make_old_file('include/fortran_interface.h')
 
-
 # prepare Makefile.extobj and Makefile.moddef
 # ===========================================
 
@@ -844,15 +842,15 @@ if options.exportfile != None:
                  shutil.copytree(d, scratch_dir + '/' + d)
 
 #  run the vacuum cleaner: remove all junk files in exported DIRAC
-   os.system("rm -f  `find %s -name '*.o'`"   % scratch_dir)
-   os.system("rm -f  `find %s -name '*.r'`"   % scratch_dir)
-   os.system("rm -f  `find %s -name '*.i'`"   % scratch_dir)
-   os.system("rm -f  `find %s -name '*.opt'`" % scratch_dir)
-   os.system("rm -f  `find %s -name '*.s'`"   % scratch_dir)
-   os.system("rm -f  `find %s -name '*.p'`"   % scratch_dir)
-   os.system("rm -f  `find %s -name '*.fc'`"  % scratch_dir)
-   os.system("rm -f  `find %s -name '*~'`"    % scratch_dir)
-   os.system("rm -rf `find %s -name '.svn'`"  % scratch_dir)
+   vacuum_cleaner(scratch_dir,"*.o")
+   vacuum_cleaner(scratch_dir,"*.r")
+   vacuum_cleaner(scratch_dir,"*.i")
+   vacuum_cleaner(scratch_dir,"*.opt")
+   vacuum_cleaner(scratch_dir,"*.s")
+   vacuum_cleaner(scratch_dir,"*.p")
+   vacuum_cleaner(scratch_dir,"*.fc")
+   vacuum_cleaner(scratch_dir,"*~")
+   vacuum_cleaner(scratch_dir,".svn",True)
 
 #  remove files that are not supposed to be shipped
    for x in do_not_release:
@@ -873,4 +871,4 @@ if options.exportfile != None:
 #  do not remove scratch dir, is worth for checking the bitten-buildup
 #   shutil.rmtree(scratch_dir)
 
-### end of the main function
+## end of the main function ##

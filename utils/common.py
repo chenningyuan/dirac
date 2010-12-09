@@ -230,3 +230,21 @@ def copy_parent(src,dest):
     import os, shutil
     command = 'cp --parent %s %s' % (src, dest)
     os.system(command)
+
+def vacuum_cleaner(where,what,recursive=False):
+    """
+    remove all files specified as 'what' from the 'where' directory
+    examples of 'what': '*.o','*.r','*.opt','.svn','*~'...
+    written as the replacement of: 
+             os.system("rm -f  `find %s -name '*.o'`"   % scratch_dir)
+    TODO: implement for Windows as pure python function
+    """
+    import os, shutil
+    find_command="`find %s -name '"+what +"'`"
+    if (recursive):
+        rm_command="rm -rf  "+find_command
+    else:
+        rm_command="rm -f "+find_command
+    #print rm_command
+    os.system( rm_command % where )
+
