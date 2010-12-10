@@ -3882,57 +3882,54 @@ C
 C
       CALL QENTER('GENPREC')
 C
-      OME = D0
-      GAM = D0
+      SIGNFAC = D1
+      IF(IMFREQ) SIGNFAC=DM1
 C.....Eq.(24)
       IF(DAMPFRE.NE.D0) THEN
-        OME = FREQ
-        GAM = DAMPFREQ
-C.....Eq.(26)
-      ELSEIF(IMFREQ) THEN
-        GAM = FREQ
-C.....Eq.(25)
-      ELSE
-        OME = FREQ
-      ENDIF
-C
-      OME2 = OME * OME
-      GAM2 = GAM * GAM
+        FREQ2 = FREQ * FREQ
+        DAMP2 = DAMPFREQ * DAMPFREQ
 C  compute 4 * omega**2 * gamma**2
-      OM2TGAM2T4 = OME2 * GAM2 * D4
+        FREQ2TDAMP2T4 = FREQ2 * DAMP2 * D4
 C  compute 2 * omega * gamma
-      OMETGAMT2 = OME * GAM * D2
+        FREQTDAMPT2 = FREQ * DAMP * D2
 C  compute omega**2 - gamma**2 and omega**2 + gamma**2
-      OM2MGAM2 = OME2 - GAM2
-      OM2PGAM2 = OME2 + GAM2
-      DO IVAR=1,NVAR
+        FREQ2MDAMP2 = FREQ2 - DAMP2
+        FREQ2PDAMP2 = FREQ2 + DAMP2
+        DO IVAR=1,NVAR
 C  compute few common expressions
-        H2DIAG = HDIAG(IVAR) * HDIAG(IVAR)
-        S2DIAG = SDIAG(IVAR) * SDIAG(IVAR)
-        FAC1 = (H2DIAG - (OM2MGAM2 * S2DIAG))
-        FAC2 = OM2TGAM2T4 * S2DIAG * S2DIAG
-        FAC3 = OM2PGAM2 * S2DIAG
-        FAC = (FAC1 * FAC1) + FAC2
-C       Eq.(24):
-C.......denominator
-        PREC(IVAR,1) = DM1 / FAC
-C.......factor A
-        PREC(IVAR,2) = HDIAG(IVAR) * FAC1
-        IF(DAMPFREQ.NE.D0) THEN
+          H2DIAG = HDIAG(IVAR) * HDIAG(IVAR)
+          S2DIAG = SDIAG(IVAR) * SDIAG(IVAR)
+          FAC1 = (H2DIAG - (FREQ2MDAMP2 * S2DIAG))
+          FAC2 = FREQ2TDAMP2T4 * S2DIAG * S2DIAG
+          FAC3 = FREQ2PDAMP2 * S2DIAG
+          FAC = (FAC1 * FAC1) + FAC2
+C.........denominator
+          PREC(IVAR,1) = DM1 / FAC
+C.........factor A
+          PREC(IVAR,2) = HDIAG(IVAR) * FAC1
 C.........factor D
-          PREC(IVAR,3) = OMETGAMT2 * HDIAG(IVAR) * S2DIAG
+          PREC(IVAR,3) = FREQTDAMPT2 * HDIAG(IVAR) * S2DIAG
 C.........factor B
-          PREC(IVAR,4) = OME * SDIAG(IVAR) * (H2DIAG - FAC3)
+          PREC(IVAR,4) = FREQ * SDIAG(IVAR) * (H2DIAG - FAC3)
 C.........factor C
-          PREC(IVAR,5) = GAM * SDIAG(IVAR) * (H2DIAG + FAC3)
-        ELSEIF(IMFREQ) THEN
-C.........Eq.(26)
-          PREC(IVAR,3) = GAM * SDIAG(IVAR) * (H2DIAG + FAC3)
-        ELSE
-C.........Eq.(25)
-          PREC(IVAR,3) = OME * SDIAG(IVAR) * (H2DIAG - FAC3)
-        ENDIF
-      END DO
+          PREC(IVAR,5) = DAMP * SDIAG(IVAR) * (H2DIAG + FAC3)
+        END DO
+C.....Eq.(25,26)
+      ELSE
+        FREQ2 = FREQ * FREQ
+        DO IVAR=1,NVAR
+C  compute few common expressions
+          H2DIAG = HDIAG(IVAR) * HDIAG(IVAR)
+          S2DIAG = SDIAG(IVAR) * SDIAG(IVAR)
+          FAC = (H2DIAG - (SIGNFAC * FREQ2 * S2DIAG))
+C.......denominator
+          PREC(IVAR,1) = DM1 / FAC
+C.......factor A
+          PREC(IVAR,2) = HDIAG(IVAR)
+C.......factor B
+          PREC(IVAR,3) = FREQ * SDIAG(IVAR)
+        END DO
+      ENDIF
 C
       CALL QEXIT('GENPREC')
 C
