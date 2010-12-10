@@ -3850,13 +3850,14 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck XRSORT */
+C  /* Deck GENPREC */
       SUBROUTINE GENPREC(PREC,HDIAG,SDIAG,FREQ,NVAR)
 C***********************************************************************
 C
 C     Purpose:
 C     compute the preconditioning element P, A, B, C, D for the
 C     complex response solver
+C     see Eqs.(24),(25) and (26) of J. Chem. Phys. 133(2010) 064105
 C
 C     Input
 C     PREC: were to store the preconditioner element
@@ -3871,7 +3872,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-      PARAMETER(DM1 = -1.0D0, D2 = 2.0D0, D4 = 4.0D0)
+      PARAMETER(D0=0.0D0,DM1 = -1.0D0, D2 = 2.0D0, D4 = 4.0D0)
 #include "dcbibn.h"
 C
 #include "dcbxrs.h"
@@ -3883,11 +3884,14 @@ C
 C
       OME = D0
       GAM = D0
+C.....Eq.(24)
       IF(DAMPFRE.NE.D0) THEN
         OME = FREQ
         GAM = DAMPFREQ
+C.....Eq.(26)
       ELSEIF(IMFREQ) THEN
         GAM = FREQ
+C.....Eq.(25)
       ELSE
         OME = FREQ
       ENDIF
@@ -3909,15 +3913,23 @@ C  compute few common expressions
         FAC2 = OM2TGAM2T4 * S2DIAG * S2DIAG
         FAC3 = OM2PGAM2 * S2DIAG
         FAC = (FAC1 * FAC1) + FAC2
+C       Eq.(24):
+C.......denominator
         PREC(IVAR,1) = DM1 / FAC
+C.......factor A
         PREC(IVAR,2) = HDIAG(IVAR) * FAC1
         IF(DAMPFREQ.NE.D0) THEN
-          PREC(IVAR,3) = OME * SDIAG(IVAR) * (H2DIAG - FAC3)
-          PREC(IVAR,4) = GAM * SDIAG(IVAR) * (H2DIAG + FAC3)
-          PREC(IVAR,5) = OMETGAMT2 * HDIAG(IVAR) * S2DIAG
+C.........factor D
+          PREC(IVAR,3) = OMETGAMT2 * HDIAG(IVAR) * S2DIAG
+C.........factor B
+          PREC(IVAR,4) = OME * SDIAG(IVAR) * (H2DIAG - FAC3)
+C.........factor C
+          PREC(IVAR,5) = GAM * SDIAG(IVAR) * (H2DIAG + FAC3)
         ELSEIF(IMFREQ) THEN
+C.........Eq.(26)
           PREC(IVAR,3) = GAM * SDIAG(IVAR) * (H2DIAG + FAC3)
         ELSE
+C.........Eq.(25)
           PREC(IVAR,3) = OME * SDIAG(IVAR) * (H2DIAG - FAC3)
         ENDIF
       END DO
