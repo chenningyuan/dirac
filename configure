@@ -6,7 +6,7 @@
 #       FIRST A LOT OF SCRIPT FUNCTIONS ARE DEFINED.
 #       THE ACTUAL SCRIPT IS AT THE BOTTOM, SEARCH FOR "MAIN SCRIPT" TO FIND IT.
 #
-# Shell script that generates Makefile.config, pam, and test/run.sh.
+# Shell script that generates Makefile.config, pam, and run.sh.
 # The shell script is a heavily modified version of the script used for DALTON
 #
 # It tries to determine what platform we are on (although allowing builds
@@ -2965,8 +2965,8 @@ fi
 
 
 #
-# generate pam and test/run.sh
-# ============================
+# generate pam and run.sh
+# =======================
 
 make_pam_runtest () {
 
@@ -2976,9 +2976,9 @@ if [ -f $pam_file ]; then
    backup -v $pam_file
 fi
 
-runsh_file=$SRC_DIR/test/run.sh
+runsh_file=$SRC_DIR/test/SCRIPTS/run.sh
 if [ -f $runsh_file ]; then
-   echo 'test/run.sh exists. I will take a backup.'
+   echo 'test/SCRIPTS/run.sh exists. I will take a backup.'
    backup -v $runsh_file
 fi
 
@@ -3038,14 +3038,14 @@ chmod a+rx $INSTALL_DIR/pam
 ###############################
 ### take care of the run.sh ###
 ###############################
-echo '#!/bin/sh'                                                        > $SRC_DIR/test/run.sh
-echo ' '                                                               >> $SRC_DIR/test/run.sh
-echo '# Directory that holds the Dirac binary is specified in BIN_DIR' >> $SRC_DIR/test/run.sh
-echo '# which is set by configure'                                     >> $SRC_DIR/test/run.sh
-echo 'BIN_DIR='$INSTALL_DIR                                            >> $SRC_DIR/test/run.sh
-echo ' '                                                               >> $SRC_DIR/test/run.sh
-cat $SRC_DIR/test/run.sh.in                                            >> $SRC_DIR/test/run.sh
-chmod 700 $SRC_DIR/test/run.sh
+echo '#!/bin/sh'                                                        > $SRC_DIR/test/SCRIPTS/run.sh
+echo ' '                                                               >> $SRC_DIR/test/SCRIPTS/run.sh
+echo '# Directory that holds the Dirac binary is specified in BIN_DIR' >> $SRC_DIR/test/SCRIPTS/run.sh
+echo '# which is set by configure'                                     >> $SRC_DIR/test/SCRIPTS/run.sh
+echo 'BIN_DIR='$INSTALL_DIR                                            >> $SRC_DIR/test/SCRIPTS/run.sh
+echo ' '                                                               >> $SRC_DIR/test/SCRIPTS/run.sh
+cat $SRC_DIR/test/SCRIPTS/run.sh.in                                    >> $SRC_DIR/test/SCRIPTS/run.sh
+chmod 700 $SRC_DIR/test/SCRIPTS/run.sh
 ###############################
 
 test $IPRINT -ge "5" && echo 'make_pam_runtest: done'

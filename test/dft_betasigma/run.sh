@@ -2,12 +2,12 @@
 
 export MOL=he
 export MENU=lda_sigma.inp
-../run.sh
+../SCRIPTS/run.sh
 export MENU=lda_betasigma.inp
-../run.sh
+../SCRIPTS/run.sh
 export MENU=blyp_sigma.inp
-../run.sh
+../SCRIPTS/run.sh
 export MENU=blyp_betasigma.inp
-../run.sh
+../SCRIPTS/run.sh
 
 exit 0

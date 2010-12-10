@@ -288,7 +288,7 @@ cd ${testdir};
 #radovan: why this doubling of code? can the value of timeout not be checked inside?
 if [ -n "$TIMEOUT" ]; then
 #  ... include TIMEOUT flag
-./runtest --tests="$tests" --runtype="$RUNTYPE" $pampath $mpi $diracexe --run=$run --timeout=$TIMEOUT --overwrite=$OVERWRITE_REFERENCE> ./logs/$runlog || \
+./SCRIPTS/runtest --tests="$tests" --runtype="$RUNTYPE" $pampath $mpi $diracexe --run=$run --timeout=$TIMEOUT --overwrite=$OVERWRITE_REFERENCE> ./logs/$runlog || \
 { echo " runtest failed" ; \
   echo " Here is the logfile ${testdir}/logs/$runlog" ; \
   cat ${testdir}/logs/$runlog ; \
@@ -296,7 +296,7 @@ if [ -n "$TIMEOUT" ]; then
 }
 else
 # no TIMEOUT flag ...
-./runtest --tests="$tests" --runtype="$RUNTYPE" $pampath $mpi $diracexe --run=$run                    --overwrite=$OVERWRITE_REFERENCE> ./logs/$runlog || \
+./SCRIPTS/runtest --tests="$tests" --runtype="$RUNTYPE" $pampath $mpi $diracexe --run=$run                    --overwrite=$OVERWRITE_REFERENCE> ./logs/$runlog || \
 { echo " runtest failed" ; \
   echo " Here is the logfile ${testdir}/logs/$runlog" ; \
   cat ${testdir}/logs/$runlog ; \

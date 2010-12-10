@@ -3,11 +3,11 @@
 export MOL=mol.mol
 
 export MENU=lda.inp
-../run.sh
+../SCRIPTS/run.sh
 export MENU=blyp.inp
-../run.sh
+../SCRIPTS/run.sh
 export MENU=blyp_shifted.inp
-../run.sh
+../SCRIPTS/run.sh
 
 rm -f *tgz
 

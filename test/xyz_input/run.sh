@@ -10,7 +10,7 @@ if [ ! -z "$RUNTYPE" ]; then
 	 MENU=xyz.inp;
 	 export MOL;
 	 export MENU;
-	 ../run.sh
+	 ../SCRIPTS/run.sh
 	 ;;
 
       "medium")
@@ -18,7 +18,7 @@ if [ ! -z "$RUNTYPE" ]; then
 	 MENU=xyz.inp;
 	 export MOL;
 	 export MENU;
-	 ../run.sh
+	 ../SCRIPTS/run.sh
          ;;
 
       "long")
@@ -26,13 +26,13 @@ if [ ! -z "$RUNTYPE" ]; then
 	 MENU=xyz.inp;
 	 export MOL;
 	 export MENU;
-	 ../run.sh;
+	 ../SCRIPTS/run.sh;
 
 #	 MOL=CH3F.xyz;
 #	 MENU=xyz-2.inp;
 #	 export MOL;
 #	 export MENU;
-#	 ../run.sh 
+#	 ../SCRIPTS/run.sh 
 
          ;;
    esac
@@ -41,6 +41,6 @@ else
     MENU=xyz.inp;
     export MOL;
     export MENU;
-    ../run.sh
+    ../SCRIPTS/run.sh
 
 fi

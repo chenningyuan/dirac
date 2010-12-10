@@ -23,4 +23,4 @@ else
 fi
 export MENU;
 export MOL;
-../run.sh -mw 120
+../SCRIPTS/run.sh -mw 120

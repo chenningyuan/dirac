@@ -19,8 +19,8 @@ else
 fi
 export MENU;
 MOL=f_arpp_d2h; export MOL;
-../run.sh
+../SCRIPTS/run.sh
 MOL=f_sopp_d2h; export MOL;
-../run.sh
+../SCRIPTS/run.sh
 
 

@@ -3,32 +3,32 @@
 export MOL=hf
 
 export MENU=b3lyp.inp
-../run.sh
+../SCRIPTS/run.sh
 
 export MENU=blyp.inp
-../run.sh
+../SCRIPTS/run.sh
 
 export MENU=lda.inp
-../run.sh
+../SCRIPTS/run.sh
 
 export MENU=pbex.inp
-../run.sh
+../SCRIPTS/run.sh
 
 export MENU=pbec.inp
-../run.sh
+../SCRIPTS/run.sh
 
 export MENU=pbe0.inp
-../run.sh
+../SCRIPTS/run.sh
 
 export MENU=pbe.inp
-../run.sh
+../SCRIPTS/run.sh
 
 export MOL=he
 
 export MENU=blyp_sdft.inp
-../run.sh
+../SCRIPTS/run.sh
 
 export MENU=lda_sdft.inp
-../run.sh
+../SCRIPTS/run.sh
 
 exit 0

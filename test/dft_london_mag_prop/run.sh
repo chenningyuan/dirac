@@ -2,78 +2,78 @@
 
 export MOL=hehe_c1
 export MENU=lda_lvcorr_sdft_london_shield.inp
-../run.sh
+../SCRIPTS/run.sh
 export MENU=lda_lvcorr_sdft_london_shield_gauge007.inp
-../run.sh
+../SCRIPTS/run.sh
 export MENU=lda_lvcorr_nosdft_london_shield.inp
-../run.sh
+../SCRIPTS/run.sh
 export MENU=lda_lvcorr_nosdft_london_shield_gauge007.inp
-../run.sh
+../SCRIPTS/run.sh
 
 
 #
 #
 #export MENU=lda_lvcorr_sdft_london_shield.inp
-#../run.sh -put grid_file
+#../SCRIPTS/run.sh -put grid_file
 #export MENU=lda_lvcorr_sdft_london_shield_gauge007.inp
-#../run.sh -put grid_file
+#../SCRIPTS/run.sh -put grid_file
 #export MENU=lda_lvcorr_nosdft_london_shield.inp
-#../run.sh -put grid_file
+#../SCRIPTS/run.sh -put grid_file
 #export MENU=lda_lvcorr_nosdft_london_shield_gauge007.inp
-#../run.sh -put grid_file
+#../SCRIPTS/run.sh -put grid_file
 
 ##OLD
 #
 #export MOL=hehe_c1
 #export MENU=lda_levyle_nosdft_london_shield.inp
-#../run.sh
+#../SCRIPTS/run.sh
 ##export MENU=blyp_levyle_nosdft_london_shield.inp
-##../run.sh
+##../SCRIPTS/run.sh
 ##export MENU=b3lyp_levyle_nosdft_london_shield.inp
-##../run.sh
+##../SCRIPTS/run.sh
 #export MENU=lda_lvcorr_nosdft_london_shield.inp
-#../run.sh
+#../SCRIPTS/run.sh
 #
 #
 #export MOL=hehe_c1
 #export MENU=lda_levyle_nosdft_london_shield_gauge007.inp
-#../run.sh
+#../SCRIPTS/run.sh
 #export MENU=lda_lvcorr_nosdft_london_shield_gauge007.inp
-#../run.sh
+#../SCRIPTS/run.sh
 ##export MOL=hehe_c1_shifted
 ##export MENU=lda_levyle_nosdft_london_shield.inp
-##../run.sh
+##../SCRIPTS/run.sh
 ##export MENU=blyp_levyle_nosdft_london_shield.inp
-##../run.sh
+##../SCRIPTS/run.sh
 ##export MENU=b3lyp_levyle_nosdft_london_shield.inp
-##../run.sh
+##../SCRIPTS/run.sh
 ##export MENU=lda_lvcorr_nosdft_london_shield.inp
-##../run.sh
+##../SCRIPTS/run.sh
 #
 ### SDFT
 #export MOL=hehe_c1
 #export MENU=lda_levyle_sdft_london_shield.inp
-#../run.sh
+#../SCRIPTS/run.sh
 #export MENU=blyp_levyle_sdft_london_shield.inp
-##../run.sh
+##../SCRIPTS/run.sh
 #export MENU=b3lyp_levyle_sdft_london_shield.inp
-##../run.sh
+##../SCRIPTS/run.sh
 #export MENU=lda_levyle_sdft_london_shield_gauge007.inp
-#../run.sh
+#../SCRIPTS/run.sh
 #export MENU=lda_lvcorr_sdft_london_shield.inp
-#../run.sh
+#../SCRIPTS/run.sh
 #export MENU=lda_lvcorr_sdft_london_shield_gauge007.inp
-#../run.sh
+#../SCRIPTS/run.sh
 #
 #export MOL=hehe_c1_shifted
 #export MENU=lda_levyle_sdft_london_shield.inp
-##../run.sh
+##../SCRIPTS/run.sh
 #export MENU=blyp_levyle_sdft_london_shield.inp
-##../run.sh
+##../SCRIPTS/run.sh
 #export MENU=b3lyp_levyle_sdft_london_shield.inp
-##../run.sh
+##../SCRIPTS/run.sh
 #export MENU=lda_lvcorr_sdft_london_shield.inp
-##../run.sh
+##../SCRIPTS/run.sh
 #
 #
 #
@@ -85,23 +85,23 @@ export MENU=lda_lvcorr_nosdft_london_shield_gauge007.inp
 #
 #export MOL=hf
 #export MENU=lda_levyle_nosdft_london_shield.inp
-##../run.sh -copy grid_file
+##../SCRIPTS/run.sh -copy grid_file
 #
 #export MOL=hf_shifted
 #export MENU=lda_levyle_nosdft_london_shield.inp
-##../run.sh
+##../SCRIPTS/run.sh
 #
 #
 #
 #export MOL=hehe_c1
 #export MENU=lda_levyle_sdft_london_shield.inp
-##../run.sh
-##../run.sh -copy grid_file
+##../SCRIPTS/run.sh
+##../SCRIPTS/run.sh -copy grid_file
 #
 #
 #export MOL=hf_shifted
 #export MENU=lda_levyle_sdft_london_shield.inp
-##../run.sh
+##../SCRIPTS/run.sh
 #
 #
 #

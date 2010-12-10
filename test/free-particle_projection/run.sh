@@ -7,8 +7,8 @@ export MOL;
 #
 MENU=std;
 export MENU;
-../run.sh
+../SCRIPTS/run.sh
 #
 MENU=free;
 export MENU;
-../run.sh
+../SCRIPTS/run.sh

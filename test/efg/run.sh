@@ -10,17 +10,17 @@ MENU=zerofield;
 FILTER=filter_zerofield;
 export MENU;
 export FILTER;
-../run.sh -mw 140 -utcmo
+../SCRIPTS/run.sh -mw 140 -utcmo
 ###############################
 echo "Field strength 0.001 ... DC"
 MENU=scf.ccsd.1;
 export MENU;
-../run.sh -mw 140 -incmo
+../SCRIPTS/run.sh -mw 140 -incmo
 ###############################
 echo "Field strength -0.001 ... DC"
 MENU=scf.ccsd.m1;
 export MENU;
-../run.sh -mw 140 -incmo
+../SCRIPTS/run.sh -mw 140 -incmo
 ###############################
 rm DFCOEF
 ###############################
@@ -31,7 +31,7 @@ MENU=bss+mfsso.zerofield;
 FILTER=filter_zerofield;
 export MENU;
 export FILTER;
-../run.sh -utcmo
+../SCRIPTS/run.sh -utcmo
 #<REMOVE_END>
 ###############################
 echo "Zero field...BSS "
@@ -39,17 +39,17 @@ MENU=bss.zerofield;
 FILTER=filter_zerofield;
 export MENU;
 export FILTER;
-../run.sh -incmo -utcmo
+../SCRIPTS/run.sh -incmo -utcmo
 ###############################
 echo "Field strength 0.001 ... BSS"
 MENU=bss.scf.ccsd.1;
 export MENU;
-../run.sh -incmo -mw 140 
+../SCRIPTS/run.sh -incmo -mw 140 
 ###############################
 echo "Field strength -0.001 ... BSS"
 MENU=bss.scf.ccsd.m1;
 export MENU;
-../run.sh -incmo -mw 140
+../SCRIPTS/run.sh -incmo -mw 140
 ###############################
 rm DFCOEF
 

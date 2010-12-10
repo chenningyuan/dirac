@@ -3,9 +3,9 @@
 export MOL=fh
 
 export MENU=lda.inp
-../run.sh
+../SCRIPTS/run.sh
 
 export MENU=blyp.inp
-../run.sh
+../SCRIPTS/run.sh
 
 exit 0

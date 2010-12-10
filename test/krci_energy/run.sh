@@ -27,5 +27,5 @@ else
 fi
 export MENU;
 export MOL;
-../run.sh
+../SCRIPTS/run.sh
 

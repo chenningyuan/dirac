@@ -6,4 +6,4 @@ MENU=He;
 MOL=He;
 export MENU;
 export MOL;
-../run.sh
+../SCRIPTS/run.sh

@@ -167,6 +167,7 @@ vital_directories.append('amfi')
 vital_directories.append('krmc')
 vital_directories.append('luciarel')
 vital_directories.append('embedding')
+vital_directories.append('test/SCRIPTS')
 
 vital_files = []
 vital_files.append('configure')
@@ -180,12 +181,6 @@ vital_files.append('config.sub')
 vital_files.append('pamq.py.in')
 vital_files.append('test/MPI2_test.F')
 vital_files.append('test/README')
-vital_files.append('test/bdrep')
-vital_files.append('test/crep')
-vital_files.append('test/drep')
-vital_files.append('test/hdrep')
-vital_files.append('test/run.sh.in')
-vital_files.append('test/runtest')
 
 
 # list of vital tests - these are always exported/released
@@ -723,7 +718,7 @@ f.close()
 # package tests
 # =============
 
-f = open('test/runtest', 'w')
+f = open('test/SCRIPTS/runtest', 'w')
 
 s = '''
 ################################################
@@ -753,13 +748,13 @@ f.write(s)
 f.close()
 
 # further pythonization:  os.system("cat...") replaced by python io-commands
-runtest_file = open("test/runtest","a")
-runtest_file_in=open("test/runtest.in","r")
+runtest_file = open("test/SCRIPTS/runtest","a")
+runtest_file_in=open("test/SCRIPTS/runtest.in","r")
 runtest_file.write(runtest_file_in.read())
 runtest_file.close()
 runtest_file_in.close()
 # read,write and execute by the owner (Windows accepted solution)
-os.chmod("test/runtest", stat.S_IRWXU) 
+os.chmod("test/SCRIPTS/runtest", stat.S_IRWXU) 
 
 ## generate *-provided basis set files ##
 if ( not is_windows() ): provide_star_basisfile_names()

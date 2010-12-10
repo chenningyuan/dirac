@@ -9,14 +9,14 @@ MENU=ci;
 MOL=F;
 export MENU;
 export MOL;
-../run.sh
+../SCRIPTS/run.sh
 #######################################
 echo "BSS_rkb_sfB calculations"
 MENU=bss_rkb_sfB.ci;
 MOL=F;
 export MENU;
 export MOL;
-../run.sh
+../SCRIPTS/run.sh
 
 ###############################
 if [ "$RUNTYPE" = "short" ]; then
@@ -33,14 +33,14 @@ MENU=bss_rkb_sfE.ci;
 MOL=F;
 export MENU;
 export MOL;
-../run.sh
+../SCRIPTS/run.sh
 #######################################
 echo "BSS_sfB calculations"
 MENU=bss_sfB.ci;
 MOL=F;
 export MENU;
 export MOL;
-../run.sh
+../SCRIPTS/run.sh
 ###############################
 if [ "$RUNTYPE" = "medium" ]; then
    echo
@@ -57,13 +57,13 @@ MENU=bss_sfE.ci;
 MOL=F;
 export MENU;
 export MOL;
-../run.sh
+../SCRIPTS/run.sh
 #######################################
 echo "DKH2_sfB calculations"
 MENU=dkh2sfB.ci;
 MOL=F.lsym.mol;
 export MENU;
 export MOL;
-../run.sh
+../SCRIPTS/run.sh
 #######################################
 

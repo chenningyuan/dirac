@@ -3,7 +3,7 @@
 export MOL=h2o2.mol
 export MENU=gamma5.inp
 
-../run.sh
+../SCRIPTS/run.sh
 
 rm -f *tgz
 

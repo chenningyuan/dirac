@@ -25,7 +25,7 @@ for mol in Ar; do
             elif [ $hamiltonian == "2C_GT" ]; then
                cat "NR_"$method"_"$scheme".inp" | sed s/.NONREL/".IOTC\n.GAUNT"/ |sed s/"#"// > $MENU".inp"
             fi
-            ../run.sh
+            ../SCRIPTS/run.sh
          done
       done
    done

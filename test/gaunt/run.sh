@@ -18,4 +18,4 @@ fi
 MENU=gaunt;
 export MENU;
 export MOL;
-../run.sh
+../SCRIPTS/run.sh

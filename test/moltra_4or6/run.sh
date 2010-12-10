@@ -23,11 +23,11 @@ export MOL;
 echo "Moltra with scheme 4"
 MENU=moltra4
 export MENU;
-../run.sh
+../SCRIPTS/run.sh
 ###############################
 echo "Moltra with scheme 6"
 MENU=moltra6
 export MENU;
-../run.sh
+../SCRIPTS/run.sh
 ###############################
 echo "Completed benchmark"

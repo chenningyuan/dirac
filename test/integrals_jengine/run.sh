@@ -7,9 +7,9 @@ for mol in H2O2; do
    for method in direct; do
       for hamiltonian in NR 2C_SF 2C_SO 2C_GT; do
          MENU=$hamiltonian"_"$method"_Jengine+LinK"; export MENU;
-         ../run.sh
+         ../SCRIPTS/run.sh
          MENU=$hamiltonian"_"$method"_Jengine+LinK_LDA"; export MENU;
-         ../run.sh
+         ../SCRIPTS/run.sh
       done
    done
 done

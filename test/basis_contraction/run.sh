@@ -6,9 +6,9 @@ MENU=dhf;
 MOL=H2O.large+small.mol;
 export MENU;
 export MOL;
-../run.sh
+../SCRIPTS/run.sh
 MENU=dhf;
 MOL=H2O.usingfiles.mol;
 export MENU;
 export MOL;
-../run.sh -copy O.ccpvdz.bas -copy H.ccpvdz.bas
+../SCRIPTS/run.sh -copy O.ccpvdz.bas -copy H.ccpvdz.bas

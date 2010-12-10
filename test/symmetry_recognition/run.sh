@@ -3,10 +3,10 @@
 export MENU=lda
 
 export MOL=H2O
-../run.sh
+../SCRIPTS/run.sh
 
 export MOL=CH4
-../run.sh
+../SCRIPTS/run.sh
 
 if [ "$RUNTYPE" = "short" ]; then
    echo
@@ -16,6 +16,6 @@ if [ "$RUNTYPE" = "short" ]; then
 fi
 
 export MOL=SF6
-../run.sh
+../SCRIPTS/run.sh
 
 exit 0

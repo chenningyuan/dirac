@@ -5,23 +5,23 @@ export MOL=fh.mol
 # test nonrel transformation
 
 export MENU=nr_hf.inp
-../run.sh
+../SCRIPTS/run.sh
 export MENU=nr_hf_shifted.inp
-../run.sh
+../SCRIPTS/run.sh
 
 # test nonrel limit
 
 export MENU=dc_hf_skipep.inp
-../run.sh
+../SCRIPTS/run.sh
 export MENU=dc_hf_skipep_cval=900.inp
-../run.sh
+../SCRIPTS/run.sh
 
 # test rel transformation
 
 export MENU=dc_hf_cval=30.inp
-../run.sh
+../SCRIPTS/run.sh
 export MENU=dc_hf_shifted_cval=30.inp
-../run.sh
+../SCRIPTS/run.sh
 
 # remove restart files
 
