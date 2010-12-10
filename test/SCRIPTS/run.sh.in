@@ -11,7 +11,7 @@ fi
 
 # Generic place for the log-file
 #
-LOG=../logs
+LOG=../LOGS
 #
 # Set the default arguments for the pam script
 #

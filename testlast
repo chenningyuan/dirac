@@ -180,7 +180,7 @@ done
 #
 # Define the output and log files
 #
-errfile=${testdir}/logs/lastrun
+errfile=${testdir}/LOGS/lastrun
 if [ -f $errfile ]; then
    backup -v $errfile
 fi
@@ -224,10 +224,10 @@ htmlog=${run}_dif.htm;
 # Make sure that we do not overwrite recent logfiles
 #
 echo " Saving old log files ..." 
-if [ ! -d "${testdir}/logs" ]; then
-   mkdir ${testdir}/logs;
+if [ ! -d "${testdir}/LOGS" ]; then
+   mkdir ${testdir}/LOGS;
 fi
-cd ${testdir}/logs;
+cd ${testdir}/LOGS;
 backup $makelog
 backup $svnlog
 backup $runlog
@@ -240,35 +240,35 @@ cd ${testlastpath};
 #
 if [ "${svn}" = "yes" ]; then
   echo ' Starting SVN Update ... ' ;
- # cvs update -P -d > ${testdir}/logs/$cvslog 2>&1 || \
-  svn up > ${testdir}/logs/$svnlog 2>&1 || \
+ # cvs update -P -d > ${testdir}/LOGS/$cvslog 2>&1 || \
+  svn up > ${testdir}/LOGS/$svnlog 2>&1 || \
   { echo " SVN update failed" ; \
-    echo " Here is the logfile ${testdir}/logs/$svnlog" ; \
-    cat ${testdir}/logs/$svnlog ; \
+    echo " Here is the logfile ${testdir}/LOGS/$svnlog" ; \
+    cat ${testdir}/LOGS/$svnlog ; \
     exit 1 ;\
   }
 #
 #
   echo ' Making the Makefiles (running ./pamadm --adm) - basic set of modules ...'
-  ./pamadm --adm  > ${testdir}/logs/$makelog 2>&1 || \
+  ./pamadm --adm  > ${testdir}/LOGS/$makelog 2>&1 || \
   { echo " Running pamadm failed" ; \
-    echo " Here is the logfile ${testdir}/logs/$makelog" ; \
-    cat ${testdir}/logs/$makelog ; \
+    echo " Here is the logfile ${testdir}/LOGS/$makelog" ; \
+    cat ${testdir}/LOGS/$makelog ; \
     exit 1 ;\
   }
   echo ' Cleaning (and checking dependencies...) '
-  #make depend >> ${testdir}/logs/$makelog 2>&1 || \
-  make clean >> ${testdir}/logs/$makelog 2>&1 || \
+  #make depend >> ${testdir}/LOGS/$makelog 2>&1 || \
+  make clean >> ${testdir}/LOGS/$makelog 2>&1 || \
   { echo " Make clean/depend failed" ; \
-    echo " Here is the logfile ${testdir}/logs/$makelog" ; \
-    cat ${testdir}/logs/$makelog ; \
+    echo " Here is the logfile ${testdir}/LOGS/$makelog" ; \
+    cat ${testdir}/LOGS/$makelog ; \
     exit 1 ;\
   }
   echo ' Recompiling ... '
-  make >> ${testdir}/logs/$makelog 2>&1 || \
+  make >> ${testdir}/LOGS/$makelog 2>&1 || \
   { echo " Make failed" ; \
-    echo " Here is the logfile ${testdir}/logs/$makelog" ; \
-    cat ${testdir}/logs/$makelog ; \
+    echo " Here is the logfile ${testdir}/LOGS/$makelog" ; \
+    cat ${testdir}/LOGS/$makelog ; \
     exit 1 ;\
   }
 fi
@@ -288,37 +288,37 @@ cd ${testdir};
 #radovan: why this doubling of code? can the value of timeout not be checked inside?
 if [ -n "$TIMEOUT" ]; then
 #  ... include TIMEOUT flag
-./SCRIPTS/runtest --tests="$tests" --runtype="$RUNTYPE" $pampath $mpi $diracexe --run=$run --timeout=$TIMEOUT --overwrite=$OVERWRITE_REFERENCE> ./logs/$runlog || \
+./SCRIPTS/runtest --tests="$tests" --runtype="$RUNTYPE" $pampath $mpi $diracexe --run=$run --timeout=$TIMEOUT --overwrite=$OVERWRITE_REFERENCE> ./LOGS/$runlog || \
 { echo " runtest failed" ; \
-  echo " Here is the logfile ${testdir}/logs/$runlog" ; \
-  cat ${testdir}/logs/$runlog ; \
+  echo " Here is the logfile ${testdir}/LOGS/$runlog" ; \
+  cat ${testdir}/LOGS/$runlog ; \
   exit 1 ;\
 }
 else
 # no TIMEOUT flag ...
-./SCRIPTS/runtest --tests="$tests" --runtype="$RUNTYPE" $pampath $mpi $diracexe --run=$run                    --overwrite=$OVERWRITE_REFERENCE> ./logs/$runlog || \
+./SCRIPTS/runtest --tests="$tests" --runtype="$RUNTYPE" $pampath $mpi $diracexe --run=$run                    --overwrite=$OVERWRITE_REFERENCE> ./LOGS/$runlog || \
 { echo " runtest failed" ; \
-  echo " Here is the logfile ${testdir}/logs/$runlog" ; \
-  cat ${testdir}/logs/$runlog ; \
+  echo " Here is the logfile ${testdir}/LOGS/$runlog" ; \
+  cat ${testdir}/LOGS/$runlog ; \
   exit 1 ;\
 }
 fi
 
-if [ -f logs/$txtlog ]; then
+if [ -f LOGS/$txtlog ]; then
    echo " =============================================================================="
    echo "           Final summary from $0"
    echo " =============================================================================="
-   if [ -s logs/$txtlog ]; then
+   if [ -s LOGS/$txtlog ]; then
       echo " Calculations completed at \`date\` with one or more errors"
       echo " Below follows the list of tests that failed :"
-      cat logs/$txtlog
-      exit \`sed -n '\$=' logs/$txtlog\`
+      cat LOGS/$txtlog
+      exit \`sed -n '\$=' LOGS/$txtlog\`
     else
       echo " Calculations completed at \`date\` : no errors were detected"
     fi
 else
-    echo ' Calculations were not completed : the run log logs/$runlog follows'
-    cat logs/$runlog
+    echo ' Calculations were not completed : the run log LOGS/$runlog follows'
+    cat LOGS/$runlog
 fi
 EOF
 
@@ -345,7 +345,7 @@ if [ "${queue}" = "none" ]; then
   exit $RT
 else
   echo " Submitting test calculations to queue $queue ... "
-  echo " When they are done please check the results in the directory ${testdir}/logs. "
+  echo " When they are done please check the results in the directory ${testdir}/LOGS. "
   #
   # This is a script that works with the pbs (qsub) batch environment
   #

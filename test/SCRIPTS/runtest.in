@@ -287,7 +287,7 @@ echo
 #                           CREATE HTML HEADER
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-cat <<\eor > logs/${arg_tag}_dif.htm
+cat <<\eor > LOGS/${arg_tag}_dif.htm
 <HTML>
 <TITLE> Error report for DIRAC test runs </TITLE>
 <BODY TEXT="#FFFFFF" BGCOLOR="#000000">
@@ -303,8 +303,8 @@ and absolute errors otherwise.</p>
 1.2<FONT COLOR="#FF0000">3456789</FONT>    red: probably significant difference (more than 0.001)
 
 eor
-echo "<p>Date and time for start of test: " `date` "</p>" >> logs/${arg_tag}_dif.htm
-echo "<p> </p><hr><p> </p>"                               >> logs/${arg_tag}_dif.htm
+echo "<p>Date and time for start of test: " `date` "</p>" >> LOGS/${arg_tag}_dif.htm
+echo "<p> </p><hr><p> </p>"                               >> LOGS/${arg_tag}_dif.htm
 #
 #
 # RUN THE REQUESTED TESTS
@@ -318,8 +318,8 @@ echo
 $echo "Using tests: $tests \c"
 echo
 
-if [ -e logs/${arg_tag}_dif.txt ]; then
-   rm logs/${arg_tag}_dif.txt
+if [ -e LOGS/${arg_tag}_dif.txt ]; then
+   rm LOGS/${arg_tag}_dif.txt
 fi
 
 for tt in $tests; do
@@ -350,7 +350,7 @@ for tt in $tests; do
      cd .. )  
 done
 #
-cat <<\eor >> logs/${arg_tag}_dif.htm
+cat <<\eor >> LOGS/${arg_tag}_dif.htm
 
 </BODY>
 </HTML>
