@@ -19,7 +19,6 @@ diracexe=' '
 testdir=`pwd`/test
 RUNTYPE="undefined"
 TIMEOUT=''
-svn="no"
 mpi=" "
 parallel=" "
 nodes=1
@@ -79,8 +78,6 @@ usage='Usage: '$0'\n'\
 '\tshort, medium, etc. (default: undefined)\n'\
 '--testdir=TESTDIR\n'\
 '\tDirectory in which the tests should be run (default: --testdir=test)\n'\
-'--svn=yes/no\n'\
-'\tRun svn prior to compilation (default: --svn=no)\n'\
 '--mpi=MPI\n'\
 '\tNumber of nodes to be used (default: run serial job)\n'\
 '--time=TIME\n'\
@@ -131,11 +128,6 @@ while [ $# != 0 ]; do
       "runtype")
          if [ "${valomitted}" = "no" ]; then
             RUNTYPE="$val"
-         fi
-         ;;
-      "svn")
-         if [ "${valomitted}" = "no" ]; then
-            svn="$val"
          fi
          ;;
       "mpi")
@@ -215,7 +207,6 @@ fi
 
 #
 
-svnlog=svn_log;
 makelog=make_log;
 runlog=${run}_run.log;
 txtlog=${run}_dif.txt;
@@ -229,49 +220,11 @@ if [ ! -d "${testdir}/LOGS" ]; then
 fi
 cd ${testdir}/LOGS;
 backup $makelog
-backup $svnlog
 backup $runlog
 backup $txtlog
 backup $htmlog
 
-# >>-*-*-*-*> do svn update and make if $svn is yes
-
 cd ${testlastpath};
-#
-if [ "${svn}" = "yes" ]; then
-  echo ' Starting SVN Update ... ' ;
- # cvs update -P -d > ${testdir}/LOGS/$cvslog 2>&1 || \
-  svn up > ${testdir}/LOGS/$svnlog 2>&1 || \
-  { echo " SVN update failed" ; \
-    echo " Here is the logfile ${testdir}/LOGS/$svnlog" ; \
-    cat ${testdir}/LOGS/$svnlog ; \
-    exit 1 ;\
-  }
-#
-#
-  echo ' Making the Makefiles (running ./pamadm --adm) - basic set of modules ...'
-  ./pamadm --adm  > ${testdir}/LOGS/$makelog 2>&1 || \
-  { echo " Running pamadm failed" ; \
-    echo " Here is the logfile ${testdir}/LOGS/$makelog" ; \
-    cat ${testdir}/LOGS/$makelog ; \
-    exit 1 ;\
-  }
-  echo ' Cleaning (and checking dependencies...) '
-  #make depend >> ${testdir}/LOGS/$makelog 2>&1 || \
-  make clean >> ${testdir}/LOGS/$makelog 2>&1 || \
-  { echo " Make clean/depend failed" ; \
-    echo " Here is the logfile ${testdir}/LOGS/$makelog" ; \
-    cat ${testdir}/LOGS/$makelog ; \
-    exit 1 ;\
-  }
-  echo ' Recompiling ... '
-  make >> ${testdir}/LOGS/$makelog 2>&1 || \
-  { echo " Make failed" ; \
-    echo " Here is the logfile ${testdir}/LOGS/$makelog" ; \
-    cat ${testdir}/LOGS/$makelog ; \
-    exit 1 ;\
-  }
-fi
 
 # >>-*-*-*-*> Create job script "job_testlast.sh"
 
