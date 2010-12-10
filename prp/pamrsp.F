@@ -1077,8 +1077,8 @@ C
 #include "dcbxrs.h"
 #include "dgroup.h"
       DIMENSION IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*),EVALR(*),EVECR(*),
-     &          GPCI(*),GPOE(*),GPOP(*),IEVEC(*),IPVEC(*),ICVEC(*),
-     &          HEDIAG(*),HPDIAG(*),HCDIAG(*),
+     &          GPCI(*),GPOE(*),GPOP(*),IEVEC(NDAMP,*),IPVEC(NDAMP,*),
+     &          ICVEC(*),HEDIAG(*),HPDIAG(*),HCDIAG(*),
      &          SEDIAG(*),SPDIAG(*),WORK(*)
 C
       CALL QENTER('XRSST1')
@@ -3536,14 +3536,15 @@ C
 C     
       DIMENSION BVEC(NVAR,NZ,*),GP(NVAR,NZ),HDIAG(NVAR),SDIAG(NVAR),
      &          EVALR(NFREQ),IBTYP(2,*),IBVEC(*),IVEC(*),
-     &          EVECR(NEVEC,NFREQ),PREC(NVAR,*),WORK(*)
+     &          EVECR(NEVEC,NFREQ),PREC(NVAR,2,*),WORK(*)
       LOGICAL FNDRSP
 #include "chrnos.h"
 C
       CALL QENTER('XRSST2')
 C
       call memchk('XRSST2 0',WORK,1)
-
+      IFAC = 2
+      IF(STATIC) IFAC = 1
       FFAC = D1
       IF(IMFREQ) FFAC = DM1    
       NBDIM = NVAR*NZ
@@ -3634,22 +3635,32 @@ C
             ENDDO
           ENDDO
         ELSEIF(DIAGHE) THEN
-           call memchk('XRSST2.diaghe 1 ',WORK,1)
+          call memchk('XRSST2.diaghe 1 ',WORK,1)
+C.........If the contribution to the norm of the property gradient
+C         from this parameter type is below threshold, then no
+C         trial vectors of this kind is generated
           GPTMP = DNRM2(NBDIM,GP,1)
-          HDTMP = DNRM2(NVAR,HDIAG,1)/NVAR
+          IF (GPTMP.LT.0.3D0*GPTNRM.AND.(.NOT.UNCOUP)) THEN
+            NDIM = NFREQ*IFAC*NDAMP
+            CALL IZERO(IVEC,NDIM)
+            GOTO 20
+          ENDIF
           IF (IPRXRS.GE.3) WRITE(LUPRI,'(1X,A,1P,D12.5)')
      &         'Norm of gradient ratio in XRSST2:',GPTMP/GPTNRM
           DO IP = 1,NFREQ
-            IM = IP + NFREQ
-            IBTYP(1,IBOFF+IP)     = NBTYP
-            IBTYP(2,IBOFF+IP)     = IPX
-            IBVEC(NBPREV+IP)      = IBOFF + IP
-            IBTYP(1,IBOFF+IM)     = NBTYP
-            IBTYP(2,IBOFF+IM)     = IMX
-            IBVEC(NBPREV+IM)      = IBOFF + IM
-            IF(UNCOUP) THEN
-              EVECR(IBOFF+IP,IP) = D1
-            ENDIF
+            IM = IP + NFREQ*NDAMP
+            DO IDAMP = 0,NDAMP-1
+              IBTYP(1,IBOFF+IP+IDAMP)     = NBTYP
+              IBTYP(2,IBOFF+IP+IDAMP)     = IPX
+              IBVEC(NBPREV+IP+IDAMP)      = IBOFF+IP+IDAMP
+              IBTYP(1,IBOFF+IM+IDAMP)     = NBTYP
+              IBTYP(2,IBOFF+IM+IDAMP)     = IMX
+              IBVEC(NBPREV+IM+IDAMP)      = IBOFF+IM+IDAMP
+CPP...........check this !
+              IF(UNCOUP) THEN
+                EVECR(IBOFF+IP+1,IP+1) = D1
+              ENDIF
+            ENDDO
 C              
 C           hjj+patrick:
 C           If partial gradient (e-e, e-p, or conf) is small compared to the
@@ -3658,54 +3669,48 @@ C           corresponding trial vector now. If not then create a trial vector
 C           from the gradient vector and the diagonal of the Hessian.
 C 
             call memchk('XRSST2 skj38 ',WORK,1)
-          
-            IF (GPTMP.LT.0.3D0*GPTNRM.AND.(.NOT.UNCOUP)) THEN
-              call memchk('XRSST2 sjdd837 ',WORK,1)
-              IVEC(IP) = 0
+            FREQ = EVALR(IP)
+            call memchk('XRSST2 sduu84 ',WORK,1)
+            IF(FREQ.EQ.D0) THEN
+              DO IZ = 1,NZ
+                DO IVAR = 1,NVAR
+                  IF ( ABS(HDIAG(IVAR)) .GT. DLIM ) THEN
+                       BVEC(IVAR,IZ,IP) =
+     &                        -GP(IVAR,IZ)/HDIAG(IVAR)
+                  ELSE
+                       BVEC(IVAR,IZ,IP) = - GP(IVAR,IZ)
+                  END IF
+                ENDDO
+              ENDDO
+C             tsaue:         retain norm for numerical stability !
+              IF(.NOT.UNCOUP) THEN
+                BNRM = GPTMP/DNRM2(NBDIM,BVEC(1,1,IP),1)
+                CALL DSCAL(NBDIM,BNRM,BVEC(1,1,IP),1)
+              ENDIF
+              IVEC(IP) = 1
               IVEC(IM) = 0
-              call memchk('XRSST2 sjdhd ',WORK,1)
             ELSE
-              FREQ = EVALR(IP)
-              call memchk('XRSST2 sduu84 ',WORK,1)
-              IF(FREQ.EQ.D0) THEN
-C              IF ( FREQ.LT.0.01D0*HDTMP ) THEN
-                DO IZ = 1,NZ
-                  DO IVAR = 1,NVAR
-                    IF ( ABS(HDIAG(IVAR)) .GT. DLIM ) THEN
-                         BVEC(IVAR,IZ,IP) =
-     &                          -GP(IVAR,IZ)/HDIAG(IVAR)
-                    ELSE
-                         BVEC(IVAR,IZ,IP) = - GP(IVAR,IZ)
-                    END IF
-                  ENDDO
-                ENDDO
-C               tsaue:         retain norm for numerical stability !
-                IF(.NOT.UNCOUP) THEN
-                  BNRM = GPTMP/DNRM2(NBDIM,BVEC(1,1,IP),1)
-                  CALL DSCAL(NBDIM,BNRM,BVEC(1,1,IP),1)
-                ENDIF
-                IVEC(IP) = 1
-                IVEC(IM) = 0
-              ELSE
-                CALL GENPREC(PREC,HDIAG,SDIAG,FREQ,NVAR)
+              CALL GENPREC(PREC,HDIAG,SDIAG,FREQ,NVAR)
 Csebastien: introduce the diagonal of S[2] in preconditioning 
+              DO ID = 0,NDAMP-1
+                ID2 = ID+1
                 DO IZ = 1,NZ
                   DO IVAR = 1,NVAR
-                    BVEC(IVAR,IZ,IP) = PREC(IVAR,1)*GP(IVAR,IZ)
-                    BVEC(IVAR,IZ,IM) = PREC(IVAR,2)*GP(IVAR,IZ)
+                    BVEC(IVAR,IZ,IP+ID) = PREC(IVAR,1,ID2)*GP(IVAR,IZ)
+                    BVEC(IVAR,IZ,IM+ID) = PREC(IVAR,2,ID2)*GP(IVAR,IZ)
                   ENDDO
                 ENDDO
-C               tsaue:         retain norm for numerical stability !
+C             tsaue:         retain norm for numerical stability !
                 IF(.NOT.UNCOUP) THEN
-                  BNRM = GPTMP/DNRM2(NBDIM,BVEC(1,1,IP),1)
-                  CALL DSCAL(NBDIM,BNRM,BVEC(1,1,IP),1)
-                  BNRM = GPTMP/DNRM2(NBDIM,BVEC(1,1,IM),1)
-                  CALL DSCAL(NBDIM,BNRM,BVEC(1,1,IM),1)
+                  BNRM = GPTMP/DNRM2(NBDIM,BVEC(1,1,IP+ID),1)
+                  CALL DSCAL(NBDIM,BNRM,BVEC(1,1,IP+ID),1)
+                  BNRM = GPTMP/DNRM2(NBDIM,BVEC(1,1,IM+ID),1)
+                  CALL DSCAL(NBDIM,BNRM,BVEC(1,1,IM+ID),1)
                 ENDIF
-                IVEC(IP) = 1
-                IVEC(IM) = 1
-              END IF
-            ENDIF
+                IVEC(IP+ID) = 1
+                IVEC(IM+ID) = 1
+              ENDDO
+            END IF
           ENDDO          
           call memchk('XRSST2 xhsg',WORK,1)
         ELSE IF (IXRSTB(NBTYP) .GT. 0) THEN
@@ -3871,7 +3876,7 @@ C
 #include "dcbxrs.h"
 #include "dgroup.h"
 C
-      DIMENSION PREC(NVAR,*),HDIAG(NVAR),SDIAG(NVAR)
+      DIMENSION PREC(NVAR,2,*),HDIAG(NVAR),SDIAG(NVAR)
 C
       CALL QENTER('GENPREC')
 C
@@ -3898,13 +3903,13 @@ C  compute few common expressions
 C.........denominator
           FAC = DM1/((FAC1 * FAC1) + FAC2)
 C.........factor A/P
-          PREC(IVAR,1) = HDIAG(IVAR) * FAC1 * FAC
-C.........factor D/P
-          PREC(IVAR,2) = FREQTDAMPT2 * HDIAG(IVAR) * S2DIAG * FAC
+          PREC(IVAR,1,1) = HDIAG(IVAR) * FAC1 * FAC
 C.........factor B/P
-          PREC(IVAR,3) = FREQ * SDIAG(IVAR) * (H2DIAG - FAC3) * FAC
+          PREC(IVAR,2,1) = FREQ * SDIAG(IVAR) * (H2DIAG - FAC3) * FAC
+C.........factor D/P
+          PREC(IVAR,1,2) = FREQTDAMPT2 * HDIAG(IVAR) * S2DIAG * FAC
 C.........factor C/P
-          PREC(IVAR,4) = DAMP * SDIAG(IVAR) * (H2DIAG + FAC3) * FAC
+          PREC(IVAR,2,2) = DAMP * SDIAG(IVAR) * (H2DIAG + FAC3) * FAC
         END DO
 C.....Eq.(25,26)
       ELSE
@@ -3916,9 +3921,9 @@ C  compute few common expressions
 C.......denominator
           FAC = DM1/(H2DIAG - (SIGNFAC * FREQ2 * S2DIAG))
 C.......factor A/P
-          PREC(IVAR,1) = HDIAG(IVAR)*FAC
+          PREC(IVAR,1,1) = HDIAG(IVAR)*FAC
 C.......factor B/P
-          PREC(IVAR,2) = FREQ * SDIAG(IVAR)*FAC
+          PREC(IVAR,2,1) = FREQ * SDIAG(IVAR)*FAC
         END DO
       ENDIF
 C
