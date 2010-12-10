@@ -3850,6 +3850,83 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck XRSORT */
+      SUBROUTINE GENPREC(PREC,HDIAG,SDIAG,FREQ,NVAR)
+C***********************************************************************
+C
+C     Purpose:
+C     compute the preconditioning element P, A, B, C, D for the
+C     complex response solver
+C
+C     Input
+C     PREC: were to store the preconditioner element
+C     HDIAG: diagonal of the hessian
+C     SDIAG: diagonal of the metric
+C     FREQ: omega, imaginary if IMFREQ
+C     NVAR: total number of element in each vector
+C
+C     written by S.Villaume & T.Saue Nov-Dec 10
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      PARAMETER(DM1 = -1.0D0, D2 = 2.0D0, D4 = 4.0D0)
+#include "dcbibn.h"
+C
+#include "dcbxrs.h"
+#include "dgroup.h"
+C
+      DIMENSION PREC(NVAR,*),HDIAG(NVAR),SDIAG(NVAR)
+C
+      CALL QENTER('GENPREC')
+C
+      OME = D0
+      GAM = D0
+      IF(DAMPFRE.NE.D0) THEN
+        OME = FREQ
+        GAM = DAMPFREQ
+      ELSEIF(IMFREQ) THEN
+        GAM = FREQ
+      ELSE
+        OME = FREQ
+      ENDIF
+C
+      OME2 = OME * OME
+      GAM2 = GAM * GAM
+C  compute 4 * omega**2 * gamma**2
+      OM2TGAM2T4 = OME2 * GAM2 * D4
+C  compute 2 * omega * gamma
+      OMETGAMT2 = OME * GAM * D2
+C  compute omega**2 - gamma**2 and omega**2 + gamma**2
+      OM2MGAM2 = OME2 - GAM2
+      OM2PGAM2 = OME2 + GAM2
+      DO IVAR=1,NVAR
+C  compute few common expressions
+        H2DIAG = HDIAG(IVAR) * HDIAG(IVAR)
+        S2DIAG = SDIAG(IVAR) * SDIAG(IVAR)
+        FAC1 = (H2DIAG - (OM2MGAM2 * S2DIAG))
+        FAC2 = OM2TGAM2T4 * S2DIAG * S2DIAG
+        FAC3 = OM2PGAM2 * S2DIAG
+        FAC = (FAC1 * FAC1) + FAC2
+        PREC(IVAR,1) = DM1 / FAC
+        PREC(IVAR,2) = HDIAG(IVAR) * FAC1
+        IF(DAMPFREQ.NE.D0) THEN
+          PREC(IVAR,3) = OME * SDIAG(IVAR) * (H2DIAG - FAC3)
+          PREC(IVAR,4) = GAM * SDIAG(IVAR) * (H2DIAG + FAC3)
+          PREC(IVAR,5) = OMETGAMT2 * HDIAG(IVAR) * S2DIAG
+        ELSEIF(IMFREQ) THEN
+          PREC(IVAR,3) = GAM * SDIAG(IVAR) * (H2DIAG + FAC3)
+        ELSE
+          PREC(IVAR,3) = OME * SDIAG(IVAR) * (H2DIAG - FAC3)
+        ENDIF
+      END DO
+C
+      CALL QEXIT('GENPREC')
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck fndxlb */
       LOGICAL FUNCTION FNDXLB(RTNLBL,LU)
 C
