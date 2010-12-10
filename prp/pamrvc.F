@@ -1927,8 +1927,8 @@ C***********************************************************************
 C
 #include "dcbxrs.h"
 #include "dcbibn.h"
-      DIMENSION BEPVC(NZXOPEQ,*),BEMVC(NZXOPEQ,*),BEBUF(NZXOPEQ),
-     &          BPPVC(NZXOPPQ,*),BPMVC(NZXOPPQ,*),BPBUF(NZXOPPQ),
+      DIMENSION BEPVC(NZXOPEQ,*),BEMVC(NZXOPEQ,*),BEBUF(NZXOPEQ,NDAMP),
+     &          BPPVC(NZXOPPQ,*),BPMVC(NZXOPPQ,*),BPBUF(NZXOPPQ,NDAMP),
      &          BCPVC(NZCONFQ,*),BCMVC(NZCONFQ,*),BCBUF(NZCONFQ),
      &          IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*),
      &          EVECR(NEVEC,MFREQ),EVALR(MFREQ),WORK(*)
@@ -1941,40 +1941,39 @@ C
 C
       FFAC = D1
       IF(IMFREQ) FFAC = DM1
+      II = 1
       DO I = 1,MFREQ
-        FAC = -EVALR(I)
-        IF(FAC.NE.D0) THEN
+        FREQ = EVALR(I)
+        IF(FREQ.NE.D0) THEN
 C
-C         Accumulate T(-) = S[2}X(+) in buffer
+C         Accumulate T(-) = S[2]X(+) in buffer
 C         ------------------------------------
 C
-          CALL XRSTVC(BEPVC(1,I),1,NBEVC,0,
-     &                BPPVC(1,I),1,NBPVC,0,
+          CALL XRSTVC(BEPVC(1,II),1,NBEVC,0,
+     &                BPPVC(1,II),1,NBPVC,0,
      &                BCPVC(1,I),1,NBCVC,0,
-     &                BEBUF,BPBUF,BCBUF,1,0,
+     &                BEBUF,BPBUF,BCBUF,NDAMP,0,
      &                IBTYP,WORK,KFREE,LFREE)
 C
-C         Accumulate T(+) = S[2}X(-) in b(+)
+C         Accumulate T(+) = S[2]X(-) in b(+)
 C         ------------------------------------
 C
-          CALL XRSTVC(BEMVC(1,I),1,NBEVC,0,
-     &                BPMVC(1,I),1,NBPVC,0,
+          CALL XRSTVC(BEMVC(1,II),1,NBEVC,0,
+     &                BPMVC(1,II),1,NBPVC,0,
      &                BCMVC(1,I),1,NBCVC,0,
-     &                BEPVC(1,I),BPPVC(1,I),BCPVC(1,I),1,0,
+     &                BEPVC(1,II),BPPVC(1,II),BCPVC(1,I),NDAMP,0,
      &                IBTYP,WORK,KFREE,LFREE)
 C
 C         Scale T = S[2]X with negative frequency
 C         ---------------------------------------
 C
           IF(NZXOPE.GT.0) THEN
-            CALL DCOPY(NZXOPEQ,BEBUF,1,BEMVC(1,I),1)
-            CALL DSCAL(NZXOPEQ,FAC,BEMVC(1,I),1)
-            CALL DSCAL(NZXOPEQ,FFAC*FAC,BEPVC(1,I),1)
+            CALL DCOPY(NDAMP*NZXOPEQ,BEBUF,1,BEMVC(1,II),1)
+            CALL ACCS2XX(BEPVC(1,II),BEMVC(1,II),BEBUF,FREQ,NZXOPEQ)
           ENDIF
           IF(NZXOPP.GT.0) THEN
-            CALL DCOPY(NZXOPPQ,BPBUF,1,BPMVC(1,I),1)
-            CALL DSCAL(NZXOPPQ,FAC,BPMVC(1,I),1)
-            CALL DSCAL(NZXOPPQ,FFAC*FAC,BPPVC(1,I),1)
+            CALL DCOPY(NDAMP*NZXOPPQ,BPBUF,1,BPMVC(1,II),1)
+            CALL ACCS2XX(BPPVC(1,II),BPMVC(1,II),BPBUF,FREQ,NZXOPPQ)
           ENDIF
           IF(NZCONF.GT.0) THEN
             CALL DCOPY(NZCONFQ,BCBUF,1,BCMVC(1,I),1)
@@ -1999,6 +1998,7 @@ C
             CALL DZERO(BCMVC(1,I),NZCONFQ)
           ENDIF
         ENDIF
+        II = II + NDAMP
       ENDDO
 C
       CALL QEXIT('ACCS2X')
@@ -2278,46 +2278,42 @@ C
 C       In frequency-dependent case, the resultant X-vectors
 C       split into X(+) and X(-).
 C
-        KBE2 = 1 + MFREQ*NZXOPEQ
-        KBP2 = 1 + MFREQ*NZXOPPQ
+        KBE2 = 1 + MFREQ*NZXOPEQ*NDAMP
+        KBP2 = 1 + MFREQ*NZXOPPQ*NDAMP
         KBC2 = 1 + MFREQ*NZCONFQ
-        IXE2 = MFREQ
-        IXP2 = MFREQ
-        IXC2 = MFREQ
 C
 C       Orbital (e-e) part
 C       ------------------
 C
         IF(NZXOPE.GT.0) THEN
-          NESIM = MFREQ + MFREQ
+          NESIM = MFREQ*NSTAT*NDAMP
           IF((IND+NESIM).GT.NREDM) THEN
             WRITE(LUPRI,'(A,I4,A,I4)')
      &        'XRSNE1 ERROR: IBTYP beyond NREDM(',NREDM,
      &        ') in microiteration no.',ITMIC
             CALL QUIT('XRSNE1: Exceeded reduced space')
           ENDIF
-          IOFF = NERED
-          DO I = 1,MFREQ
-            IND = IND + 1
-            IBTYP(1,IND)  = JBENDX
-            IBTYP(2,IND)  = IPX
-            IBEVC(IOFF+I) = IND
+          NBPREV = NERED
+          DO IP = 1,NFREQ
+            IM = IP + NFREQ*NDAMP
+            DO IDAMP = 0,NDAMP-1
+              IBTYP(1,IND+IP+IDAMP)     = JBENDX
+              IBTYP(2,IND+IP+IDAMP)     = IPX
+              IBEVC(NBPREV+IP+IDAMP)    = IND+IP+IDAMP
+              IBTYP(1,IND+IM+IDAMP)     = JBENDX
+              IBTYP(2,IND+IM+IDAMP)     = IMX
+              IBEVC(NBPREV+IM+IDAMP)    = IND+IM+IDAMP
+            ENDDO
           ENDDO
-          IOFF = NERED + MFREQ
-          DO I = 1,MFREQ
-            IND = IND + 1
-            IBTYP(1,IND)  = JBENDX
-            IBTYP(2,IND)  = IMX
-            IBEVC(IOFF+I) = IND
-          ENDDO
+          IND = IND + NESIM         
           CALL DZERO(BEVEC,NESIM*NZXOPEQ)
           IF(NERED.GT.0) THEN
             CALL XRSXV1(IPX,JBENDX,BEVEC      ,EVECR,MFREQ,
      &                  IBTYP,IBEVC,IVECS(1,IPEP),BEBUF)
+            CALL XVCNRM(XNORM(1,IPEP),BEVEC      ,NZXOPEQ*NDAMP,MFREQ)
             CALL XRSXV1(IMX,JBENDX,BEVEC(KBE2),EVECR,MFREQ,
      &                  IBTYP,IBEVC,IVECS(1,IPEM),BEBUF)
-            CALL XVCNRM(XNORM(1,IPEP),BEVEC      ,NZXOPEQ,MFREQ)
-            CALL XVCNRM(XNORM(1,IPEM),BEVEC(KBE2),NZXOPEQ,MFREQ)
+            CALL XVCNRM(XNORM(1,IPEM),BEVEC(KBE2),NZXOPEQ*NDAMP,MFREQ)
 C           Print section
             IF(IPRXRS.GE.3) THEN
               WRITE(LUPRI,'(A)')
@@ -2328,6 +2324,7 @@ C           Print section
               WRITE(LUPRI,'(1P,8(3X,E8.2))') (XNORM(I,IPEM),I=1,MFREQ)
             ENDIF
             IF(IPRXRS.GE.5) THEN
+CPP...........print both unbarred and barred  solution vector in complex case!
               WRITE(LUPRI,'(/I5,A)') MFREQ,
      &          ' orbital (e-e) X(+) solution vectors'
               CALL PRBVEC(LUPRI,BEVEC      ,MFREQ,NZXOPE)
@@ -2345,35 +2342,34 @@ C       Orbital (e-p) part
 C       ------------------
 C
         IF(NZXOPP.GT.0) THEN
-          NPSIM = MFREQ + MFREQ
+          NPSIM = MFREQ*NSTAT*NDAMP
           IF((IND+NPSIM).GT.NREDM) THEN
             WRITE(LUPRI,'(A,I4,A,I4)')
      &        'XRSNE1 ERROR: IBTYP beyond NREDM(',NREDM,
      &        ') in microiteration no.',ITMIC
             CALL QUIT('XRSNE1: Exceeded reduced space')
           ENDIF
-          IOFF = NPRED
-          DO I = 1,MFREQ
-            IND = IND + 1
-            IBTYP(1,IND)   = JBPNDX
-            IBTYP(2,IND)   = IPX
-            IBPVC(IOFF+I) = IND
+          NBPREV = NPRED
+          DO IP = 1,NFREQ
+            IM = IP + NFREQ*NDAMP
+            DO IDAMP = 0,NDAMP-1
+              IBTYP(1,IND+IP+IDAMP)     = JBPNDX
+              IBTYP(2,IND+IP+IDAMP)     = IPX
+              IBPVC(NBPREV+IP+IDAMP)    = IND+IP+IDAMP
+              IBTYP(1,IND+IM+IDAMP)     = JBPNDX
+              IBTYP(2,IND+IM+IDAMP)     = IMX
+              IBPVC(NBPREV+IM+IDAMP)    = IND+IM+IDAMP
+            ENDDO
           ENDDO
-          IOFF = NPRED + MFREQ
-          DO I = 1,MFREQ
-            IND = IND + 1
-            IBTYP(1,IND)   = JBPNDX
-            IBTYP(2,IND)   = IMX
-            IBPVC(IOFF)    = IND
-          ENDDO
+          IND = IND + NPSIM         
           CALL DZERO(BPVEC,NPSIM*NZXOPPQ)
           IF(NPRED.GT.0) THEN
             CALL XRSXV1(IPX,JBPNDX,BPVEC      ,EVECR,MFREQ,
      &                  IBTYP,IBPVC,IVECS(1,IPPP),BPBUF)
+            CALL XVCNRM(XNORM(1,IPPP),BPVEC      ,NZXOPPQ*NDAMP,MFREQ)
             CALL XRSXV1(IMX,JBPNDX,BPVEC(KBP2),EVECR,MFREQ,
      &                  IBTYP,IBPVC,IVECS(1,IPPM),BPBUF)
-            CALL XVCNRM(XNORM(1,IPPP),BPVEC      ,NZXOPPQ,MFREQ)
-            CALL XVCNRM(XNORM(1,IPPM),BPVEC(KBP2),NZXOPPQ,MFREQ)
+            CALL XVCNRM(XNORM(1,IPPM),BPVEC(KBP2),NZXOPPQ*NDAMP,MFREQ)
 C           Print section
             IF(IPRXRS.GE.3) THEN
               WRITE(LUPRI,'(A)')
@@ -2383,6 +2379,7 @@ C           Print section
      &          'Norm of orbital(e-p) X(-)-solution vectors:'
               WRITE(LUPRI,'(1P,8(3X,E8.2))') (XNORM(I,IPPM),I=1,MFREQ)
             ENDIF
+CPP...........print both unbarred and barred  solution vector in complex case!
             IF(IPRXRS.GE.5) THEN
               WRITE(LUPRI,'(/I5,A)') MFREQ,
      &          ' orbital (e-p) X(+) solution vectors'
@@ -5341,3 +5338,43 @@ C
       CALL QEXIT('XRSAPPFQ')
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck ACCS2XX */
+      SUBROUTINE ACCS2XX(TPVEC,TMVEC,BBUF,FREQ,NVARQ)
+C***********************************************************************
+C
+C     Constructing contribution from S[2] to residuals,
+C     see Eq. (21) in J. Chem. Phys. 133 (2010) 064105
+C
+C     On input
+C       TPVEC contains T(+)
+C       TMVEC  contains T(-)
+C
+C     T. Saue and S. Villaume 2010
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0 = 0.0D0,D1=1.0D0,DM1=-1.0D0)
+C
+#include "dcbxrs.h"
+      DIMENSION BBUF(NVARQ,NDAMP),TPVEC(NVARQ,NDAMP),TMVEC(NVARQ,NDAMP)
+      FFAC = D1
+      IF(IMFREQ) FFAC = DM1
+      IF(DAMPFREQ.EQ.D0) THEN
+        CALL DSCAL(NVARQ*NDAMP,-FREQ,TMVEC(1,1),1) 
+        CALL DAXPY(NVARQ, DAMPFREQ,BBUF(1,2),1,TMVEC(1,1),1)
+        CALL DAXPY(NVARQ,-DAMPFREQ,BBUF(1,1),1,TMVEC(1,2),1)
+        CALL DCOPY(NDAMP*NVARQ,TPVEC(1,1),1,BBUF,1)
+        CALL DSCAL(NVARQ, FREQ,TPVEC(1,1),1) 
+        CALL DSCAL(NVARQ,-FREQ,TPVEC(1,2),1) 
+        CALL DAXPY(NVARQ, DAMPFREQ,BBUF(1,2),1,TPVEC(1,1),1)
+        CALL DAXPY(NVARQ,-DAMPFREQ,BBUF(1,1),1,TPVEC(1,2),1)
+      ELSE
+        CALL DSCAL(NVARQ,-FREQ,TMVEC(1,1),1)
+        CALL DSCAL(NVARQ,-FFAC*FREQ,TPVEC(1,1),1)
+      ENDIF
+C
+      RETURN
+      END
+

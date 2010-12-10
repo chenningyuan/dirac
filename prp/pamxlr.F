@@ -816,7 +816,7 @@ C.....check frequencies; zeros not allowed
           IF(BFREQ(IFREQ).EQ.D0) THEN
              WRITE(LUPRI,'(A)')
      &     'FATAL ERROR: do not combine zero frequencies with damping.',
-     &     'Purely imaginary frequencies are handled by '\\
+     &     'Purely imaginary frequencies are handled by '//
      &     'keyword IMAGINARY'
            CALL QUIT(
      &     'XLRINP: Do not combine zero frequency with damping')
