@@ -2929,10 +2929,11 @@ C
 C     Orbital (e-e) type trial vectors
 C
       IF(NZXOPE.GT.0) THEN
+        CALL MEMGET('REAL',KDENOM,NZXOPE,WORK,KFREE,LFREE)
         CALL XBVGEN(BEVEC,USEXVC,WORK(KEDIAH),EVALR,EVECR,
      &              IBTYP,IBEVC,IVECS(1,IPEP),
      &              MFREQ,JBENDX,IBOFF,NEPREV,NZXOPE,
-     &              BEBUF,WORK,KFREE,LFREE)
+     &              BEBUF,WORK(KDENOM),WORK,KFREE,LFREE)
         CALL XRSORT(BEVEC,JBENDX,NESIM,NEPREV,
      &              IBEVC,IBTYP,IVECS(1,IPEP),WORK,KFREE,LFREE)
         CALL XRSAVE(BEVEC,JBENDX,NZXOPEQ,NESIM,NEPREV,
@@ -2943,10 +2944,11 @@ C
 C     Orbital (e-p) type trial vectors
 C
       IF(NZXOPP.GT.0) THEN
+        CALL MEMGET('REAL',KDENOM,NZXOPP,WORK,KFREE,LFREE)
         CALL XBVGEN(BPVEC,USEXVC,WORK(KPDIAH),EVALR,EVECR,
      &              IBTYP,IBPVC,IVECS(1,IPPP),
      &              MFREQ,JBPNDX,IBOFF,NPPREV,NZXOPP,
-     &              BPBUF,WORK,KFREE,LFREE)
+     &              BPBUF,WORK(KDENOM),WORK,KFREE,LFREE)
         CALL XRSORT(BPVEC,JBPNDX,NPSIM,NPPREV,
      &              IBPVC,IBTYP,IVECS(1,IPPP),WORK,KFREE,LFREE)
         CALL XRSAVE(BPVEC,JBPNDX,NZXOPPQ,NPSIM,NPPREV,
@@ -2957,10 +2959,11 @@ C
 C     Configuration type trial vectors
 C
       IF(NZCONF.GT.0) THEN
+        KDENOM=KFREE
         CALL XBVGEN(BCVEC,USEXVC,WORK(KCDIAH),EVALR,EVECR,
      &              IBTYP,IBCVC,IVECS(1,IPCP),
      &              MFREQ,JBCNDX,IBOFF,NCPREV,NZCONF,
-     &              BCBUF,WORK,KFREE,LFREE)
+     &              BCBUF,WORK(KDENOM),WORK,KFREE,LFREE)
         CALL XRSORT(BCVEC,JBCNDX,NCSIM,NCPREV,
      &              IBCVC,IBTYP,IVECS(1,IPCP),WORK,KFREE,LFREE)
         CALL XRSAVE(BCVEC,JBCNDX,NZCONFQ,NCSIM,NCPREV,
@@ -2993,7 +2996,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck XBVGEN */
       SUBROUTINE XBVGEN(BVEC,USEXVC,HDIAG,EVALR,EVECR,IBTYP,IBVEC,IVECS,
-     &            MFREQ,JBTYP,IBOFF,NBPREV,NVAR,BBUF,
+     &            MFREQ,JBTYP,IBOFF,NBPREV,NVAR,BBUF,DENOM,
      &            WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -3020,7 +3023,7 @@ C
       LOGICAL USEXVC,TEST
       DIMENSION BVEC(NVAR,NZ,*),HDIAG(*),
      &          EVALR(MFREQ),IBTYP(2,*),IBVEC(*),IVECS(*),
-     &          BBUF(*),WORK(*)
+     &          BBUF(NVAR,NZ,*),DENOM(NVAR),WORK(*)
 C
       CALL QENTER('XBVGEN')
 Csebastien: the diagonal of S[2] is introduced in the preconditioning
@@ -3152,52 +3155,42 @@ C
 C           where fac = (hdiag**2 + freq**2*sdiag2)**(-1)
 C           for the res(ip), res(im) pair
             FREQ2 = FREQ**2
-C           Both res(ip) and res(im) present:
-            IF(IVECS(IP).EQ.1.AND.IVECS(IM).EQ.1) THEN
-              BNRMP = DNRM2(NVARQ,BVEC(1,1,IP),1)
-              BNRMM = DNRM2(NVARQ,BVEC(1,1,IM),1)
-              DO IZ = 1,MZ
-                DO IVAR = 1,NVAR
-                  FAC = D1/(FFAC*SDIAG2*FREQ2-HDIAG(IVAR)**2)
-                  BP = HDIAG(IVAR)* FAC * BVEC(IVAR,IZ,IP)
-     &               + FFAC * FREQ * SDIAG * FAC * BVEC(IVAR,IZ,IM)
-                  BM = HDIAG(IVAR)* FAC * BVEC(IVAR,IZ,IM)
-     &               + FREQ * SDIAG * FAC * BVEC(IVAR,IZ,IP)
-                  BVEC(IVAR,IZ,IP) = BP
-                  BVEC(IVAR,IZ,IM) = BM
-                ENDDO
-              ENDDO
-              BNRMP = BNRMP/DNRM2(NVARQ,BVEC(1,1,IP),1)
-              BNRMM = BNRMM/DNRM2(NVARQ,BVEC(1,1,IM),1)
+            DO IVAR = 1,NVAR
+              DENOM(IVAR) = D1/(FFAC*SDIAG2*FREQ2-HDIAG(IVAR)**2)
+            ENDDO
+C           Note that all residuals are employed, independent of norm
+            IF(IVECS(IP).EQ.1) THEN
+               DO IZ = 1,MZ
+                 DO IVAR = 1,NVAR
+                  FAC = DENOM(IVAR)
+                  BBUF(IVAR,IZ,1)=HDIAG(IVAR)*FAC*BVEC(IVAR,IZ,IP)
+     &               + FFAC*FREQ*SDIAG*FAC*BVEC(IVAR,IZ,IM)
+                 ENDDO
+               ENDDO
 C             retain norm for numerical stability !
-              CALL DSCAL(NVARQ,BNRMP,BVEC(1,1,IP),1)
-              CALL DSCAL(NVARQ,BNRMM,BVEC(1,1,IM),1)
-C...        Only res(ip) present
-            ELSEIF(IVECS(IP).EQ.1) THEN
-              BNRMP = DNRM2(NVARQ,BVEC(1,1,IP),1)
-              DO IZ = 1,MZ
-                DO IVAR = 1,NVAR
-                  FAC = HDIAG(IVAR)/(FFAC*SDIAG2*FREQ2-HDIAG(IVAR)**2)
-                  BVEC(IVAR,IZ,IP) = FAC * BVEC(IVAR,IZ,IP)
-C                 hj:    Here bvec(ivar,iz,im) should be negligible
-                ENDDO
-              ENDDO
-              BNRMP = BNRMP/DNRM2(NVARQ,BVEC(1,1,IP),1)
+              FAC=DNRM2(NVARQ,BVEC(1,1,IP),1)/
+     &            DNRM2(NVARQ,BBUF(1,1,1),1)
+              CALL DSCAL(NVARQ,FAC,BBUF(1,1,1),1)
+            ENDIF
+            IF(IVECS(IM).EQ.1) THEN
+               DO IZ = 1,MZ
+                 DO IVAR = 1,NVAR
+                  FAC = DENOM(IVAR)
+                  BBUF(IVAR,IZ,2)=HDIAG(IVAR)*FAC*BVEC(IVAR,IZ,IM)
+     &               + FREQ*SDIAG*FAC*BVEC(IVAR,IZ,IP)
+                 ENDDO
+               ENDDO
 C             retain norm for numerical stability !
-              CALL DSCAL(NVARQ,BNRMP,BVEC(1,1,IP),1)
-C...        Only res(im) present
-            ELSEIF(IVECS(IM).EQ.1) THEN
-              BNRMM = DNRM2(NVARQ,BVEC(1,1,IM),1)
-              DO IZ = 1,MZ
-                DO IVAR = 1,NVAR
-                  FAC = HDIAG(IVAR)/(FFAC*SDIAG2*FREQ2-HDIAG(IVAR)**2)
-                  BVEC(IVAR,IZ,IM) = FAC * BVEC(IVAR,IZ,IM)
-C                 hj:    Here bvec(ivar,iz,ip) should be negligible
-                ENDDO
-                BNRMM = BNRMM/DNRM2(NVARQ,BVEC(1,1,IM),1)
-C               retain norm for numerical stability !
-                CALL DSCAL(NVARQ,BNRMM,BVEC(1,1,IM),1)
-              ENDDO
+              FAC=DNRM2(NVARQ,BVEC(1,1,IM),1)/
+     &            DNRM2(NVARQ,BBUF(1,1,2),1)
+              CALL DSCAL(NVARQ,FAC,BBUF(1,1,2),1)
+            ENDIF
+C...........and put buffer back into BVEC
+            IF(IVECS(IP).EQ.1) THEN
+              CALL DCOPY(NVARQ,BBUF(1,1,1),1,BVEC(1,1,IP),1)
+            ENDIF
+            IF(IVECS(IM).EQ.1) THEN
+              CALL DCOPY(NVARQ,BBUF(1,1,2),1,BVEC(1,1,IM),1)
             ENDIF
           ENDIF
         ENDIF

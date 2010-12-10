@@ -705,9 +705,9 @@ C        ===========================================================
 C
 CPP
          GOTO 137
-CTROND         CALL XRSNEX(IBTYP,IBCVC,IBEVC,IBPVC,RCNV,
-CTROND     &               EVALR,EVECR,GPCI,GPOE,GPOP,
-CTROND     &               RNORM,IVECS,WORK,KFREE,LFREE)
+         CALL XRSNEX(IBTYP,IBCVC,IBEVC,IBPVC,RCNV,
+     &               EVALR,EVECR,GPCI,GPOE,GPOP,
+     &               RNORM,IVECS,WORK,KFREE,LFREE)
 C
 C
 C        Zero reduced space if new integrals contribute
@@ -833,6 +833,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+      PARAMETER(D0=0.0D0)
       DIMENSION IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*),
      &          GPCI(*),GPOE(*),GPOP(*),
      &          EVALR(*),EVECR(*),WORK(*)
@@ -851,21 +852,29 @@ C
 C
       IF(LINEQ) THEN
 C       ... linear response
+        IFAC = 1
+        IF(.NOT.STATIC) IFAC = 2
+C.......DIAGHE: diagonal Hessian calculated => preconditioning
+C       RSREST: restart on solution vectors from previous run
+C       UNCOUP: uncoupled response; solution vectors generated here
+        JFAC=1
         IF(DIAGHE.OR.RSREST.OR.UNCOUP) THEN
+          IF(DAMPFREQ.NE.D0) JFAC = 2
           NVEC = NFREQ
+C.......no preconditioning; use gradient only for trial vectors
         ELSE
           NVEC = 1
         ENDIF
-        IFAC = 1
-        IF(.NOT.STATIC) IFAC = 2
-        IF(NZXOPE.GT.0) NESIM = NVEC*IFAC
-        IF(NZXOPP.GT.0) NPSIM = NVEC*IFAC
-        IF(NZCONF.GT.0) NCSIM = NVEC*IFAC
         IF(E2CHEK) THEN
+CPP.......check static case ! and cmoplex case !
           IFAC = NZ*IFAC
           NESIM = NZXOPE*IFAC
           NPSIM = NZXOPP*IFAC
           NCSIM = NZCONF*IFAC
+        ELSE
+          IF(NZXOPE.GT.0) NESIM = NVEC*IFAC*JFAC
+          IF(NZXOPP.GT.0) NPSIM = NVEC*IFAC*JFAC
+          IF(NZCONF.GT.0) NCSIM = NVEC*IFAC*JFAC
         ENDIF
       ELSE
 C       ... linear response single residue; excitation energies
@@ -1063,6 +1072,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+      PARAMETER(D0=0.0D0)
 C
 #include "dcbibn.h"
 C
@@ -1092,15 +1102,20 @@ C     =================================================
 C     (or single residue for excitations)
 C
 C
+      JFAC=1
+      IF(DAMPFREQ.NE.D0) JFAC=2
       IND = NZRED
 C
 C     Orbtial (e-e) type trial vector
 C     -------------------------------
 C
       IF(NESIM.GT.0) THEN
+CPP.....test for which case you need this allocation        
+        CALL MEMGET('REAL',KPREC,(1+2*JFAC)*NZXOPE,WORK,KFREE,LFREE)
         CALL XRSST2('E',WORK(KBOE),GPOE,HEDIAG,SEDIAG,EVALR,EVECR,
-     &              IBTYP,IBEVC,IEVEC,
-     &              JBENDX,NESIM,IND,NERED,NZXOPE,WORK,KFREE,LFREE)
+     &              IBTYP,IBEVC,IEVEC,JBENDX,NESIM,IND,NERED,NZXOPE,
+     &              WORK(KPREC),WORK,KFREE,LFREE)
+        CALL MEMREL('XRSST1.eprec',WORK,1,KPREC,KFREE,LFREE)
         IND = IND + NESIM
       END IF
       call memchk('XRSST1 2',WORK,1)
@@ -1109,9 +1124,12 @@ C     Orbital (e-p) type trial vector
 C     -------------------------------
 C
       IF(NPSIM.GT.0) THEN
+CPP.....test for which case you need this allocation        
+        CALL MEMGET('REAL',KPREC,(1+2*JFAC)*NZXOPP,WORK,KFREE,LFREE)
         CALL XRSST2('P',WORK(KBOP),GPOP,HPDIAG,SPDIAG,EVALR,EVECR,
-     &              IBTYP,IBPVC,IPVEC,
-     &              JBPNDX,NPSIM,IND,NPRED,NZXOPP,WORK,KFREE,LFREE)
+     &              IBTYP,IBPVC,IPVEC,JBPNDX,NPSIM,IND,NPRED,NZXOPP,
+     &              WORK(KPREC),WORK,KFREE,LFREE)
+        CALL MEMREL('XRSST1.eprec',WORK,1,KPREC,KFREE,LFREE)
         IND = IND + NPSIM
       END IF
 C
@@ -1120,9 +1138,11 @@ C     ---------------------------------
 C
       IF(NCSIM.GT.0) THEN
         CALL MEMGET('REAL',KCDIAS,0,WORK,KFREE,LFREE)      
+        KPREC=KFREE
         CALL XRSST2('C',WORK(KBCI),GPCI,HCDIAG,WORK(KCDIAS),
      &              EVALR,EVECR,IBTYP,IBCVC,ICVEC,
-     &              JBCNDX,NCSIM,IND,NCRED,NZCONF,WORK,KFREE,LFREE)
+     &              JBCNDX,NCSIM,IND,NCRED,NZCONF,
+     &              WORK(KPREC),WORK,KFREE,LFREE)
         IND = IND + NCSIM
       END IF
 
@@ -3492,8 +3512,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck XRSST2 */
       SUBROUTINE XRSST2(TYP,BVEC,GP,HDIAG,SDIAG,
-     &     EVALR,EVECR,IBTYP,IBVEC,IVEC,
-     &     NBTYP,NBVEC,IBOFF,NBPREV,NVAR,WORK,KFREE,LFREE)
+     &     EVALR,EVECR,IBTYP,IBVEC,IVEC,NBTYP,NBVEC,IBOFF,
+     &     NBPREV,NVAR,PREC,WORK,KFREE,LFREE)
 C***********************************************************************
 C     
 C     Generate start vectors
@@ -3520,7 +3540,7 @@ C
 C     
       DIMENSION BVEC(NVAR,NZ,*),GP(NVAR,NZ),HDIAG(NVAR),SDIAG(NVAR),
      &          EVALR(NFREQ),IBTYP(2,*),IBVEC(*),IVEC(*),
-     &          EVECR(NEVEC,NFREQ),WORK(*)
+     &          EVECR(NEVEC,NFREQ),PREC(NVAR,*),WORK(*)
       LOGICAL FNDRSP
 #include "chrnos.h"
 C
@@ -3608,7 +3628,7 @@ C
               DO IH = 1,2
                 IB = IB + 1
                 CALL DZERO(BVEC(1,1,IB),NBDIM)
-                BVEC(IVAR,IZ,IB) = D1
+                BVEC(IVAR,IZ,IB)      = D1
                 IBTYP(1,IBOFF+IB)     = NBTYP
                 IBTYP(2,IBOFF+IB)     = IXX
                 IBVEC(NBPREV+IB)      = IBOFF + IB
@@ -3671,6 +3691,7 @@ C               tsaue:         retain norm for numerical stability !
                 IVEC(IP) = 1
                 IVEC(IM) = 0
               ELSE
+                CALL GENPREC(PREC,HDIAG,SDIAG,FREQ,NVAR)
                 FREQ2 = FREQ**2
 Csebastien: introduce the diagonal of S[2] in preconditioning 
                 DO IZ = 1,NZ
@@ -3727,12 +3748,12 @@ C         start with GP vectors as start vectors
             IBTYP(1,IBOFF+1) = NBTYP
             IBTYP(2,IBOFF+1) = IPX
             IBVEC(NBPREV+1)  = IBOFF + 1
-            IVEC(1)         = 1
+            IVEC(1)          = 1
             CALL DCOPY(NBDIM,GP,1,BVEC(1,1,2),1)
             IBTYP(1,IBOFF+2) = NBTYP
             IBTYP(2,IBOFF+2) = IMX
             IBVEC(NBPREV+2)  = IBOFF + 2
-            IVEC(2)         = 1
+            IVEC(2)          = 1
           ENDIF
         ENDIF
  20     CONTINUE
@@ -4189,4 +4210,3 @@ C
       CALL MEMREL('XRSSTAB',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
       END
-
