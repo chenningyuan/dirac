@@ -2098,6 +2098,7 @@ CPP ... compare with XRSXV1 and figure out why IBVEC is not used
               IBOFF = IBOFF + NBDIM
             ENDDO
           ENDIF
+        ENDDO
       ELSE
         DO IREC = 1,NZRED
           IH  = IBTYP(2,IREC)
