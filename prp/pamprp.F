@@ -5608,8 +5608,10 @@ C=============================================================================
       CALL DZERO(SUSFSY,9)
       CALL DZERO(SUSFS,9)
 
-C     ... evaluate expectation value terms
-      IF (LONDON) CALL EXPVSUSLO(WORK(KFREE),LFREE)
+C     ... evaluate expectation value terms first
+      IF (LONDON) THEN
+        CALL EXPVSUSLO(WORK(KFREE),LFREE)
+      ENDIF
 
       KFRSAV = KFREE
       CALL TITLER('MAGNETIZABILITIES','*',124)

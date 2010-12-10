@@ -664,6 +664,8 @@ contains
 
    subroutine magnetiz(mol, S, D, F, freq, Eoo, Ebb)
    !no-Lon and London magnetizability
+!miro: Rado, please help - we need (intermediate) outputs of individual tensor terms
+!      for London magnetizabilities
       type(prop_molcfg), intent(in)  :: mol
       type(matrix),      intent(in)  :: S, D, F
       complex(8),        intent(in)  :: freq
