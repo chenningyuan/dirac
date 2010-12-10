@@ -17,6 +17,7 @@
 !
 !    FKRMC  - is this a KR-MCSCF optimization
 !    ENRGY - energy
+!    NSTAT - integer factor =1 in the static case and =2 else
 !    NDAMP - integer factor =1 without damping, =2 with damping
 !
 !    THCXRS - threshold for convergence of reduced response equations
@@ -52,7 +53,7 @@
      &        NPRED, KCONV, NCSIM, NESIM, NPSIM, NOSIM, NTSIM, IZRED,   &
      &        ICRED, IERED, IPRED, INTXRS, INTFLG, INTDEF, INTBUF,      &
      &        ITRINT(2), NFOCKMAT, IXRSTB(-1:2), MCTYPE, JTRLVL,NEVEC,  &
-     &        NDAMP
+     &        NDAMP, NSTAT
       COMMON /XRSICB/ IPRXRS, JSYMOP, JTIMOP, JOPSY, MAXITR, ITMIC,     &
      &                NFREQ, NEXSIM, NEXSTV, NEXCNV, LOFFTY, IPX, IMX,  &
      &                MAXSIM, NZVAR, NZVARQ, NZCONF, NZCONFQ, NTYP,     &
@@ -62,7 +63,7 @@
      &                NCSIM, NESIM, NPSIM, NOSIM, NTSIM, IZRED, ICRED,  &
      &                IERED, IPRED, INTXRS, INTFLG, INTDEF, INTBUF,     &
      &                ITRINT, NFOCKMAT, IXRSTB, MCTYPE, JTRLVL,NEVEC,   &
-     &                NDAMP
+     &                NDAMP, NSTAT
 
       REAL*8 THCXRS, CNVINT(2), RESFAC, GPTNRM, ENRGY, DAMPFREQ
       COMMON /XRSRCB/ THCXRS, CNVINT, RESFAC, GPTNRM, ENRGY, DAMPFREQ

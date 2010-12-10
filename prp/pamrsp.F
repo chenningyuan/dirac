@@ -163,6 +163,9 @@ C
       ELSE
         NREDGP = 0
       ENDIF
+C.....NSTAT is set to one in the static case, two otherwise
+      NSTAT = 2
+      IF(STATIC) NSTAT = 1
 C.....NDAMP is set to two in the complex case since the solution vector now
 C     now has complex coefficients
       NDAMP = 1
@@ -852,8 +855,6 @@ C
 C
       IF(LINEQ) THEN
 C       ... linear response
-        IFAC = 1
-        IF(.NOT.STATIC) IFAC = 2
 C.......DIAGHE: diagonal Hessian calculated => preconditioning
 C       RSREST: restart on solution vectors from previous run
 C       UNCOUP: uncoupled response; solution vectors generated here
@@ -865,14 +866,14 @@ C.......no preconditioning; use gradient only for trial vectors
         ENDIF
         IF(E2CHEK) THEN
 CPP.......check static case ! and cmoplex case !
-          IFAC = NZ*IFAC
+          IFAC = NZ*NSTAT
           NESIM = NZXOPE*IFAC
           NPSIM = NZXOPP*IFAC
           NCSIM = NZCONF*IFAC
         ELSE
-          IF(NZXOPE.GT.0) NESIM = NVEC*IFAC*NDAMP
-          IF(NZXOPP.GT.0) NPSIM = NVEC*IFAC*NDAMP
-          IF(NZCONF.GT.0) NCSIM = NVEC*IFAC*NDAMP
+          IF(NZXOPE.GT.0) NESIM = NVEC*NSTAT*NDAMP
+          IF(NZXOPP.GT.0) NPSIM = NVEC*NSTAT*NDAMP
+          IF(NZCONF.GT.0) NCSIM = NVEC*NSTAT*NDAMP
         ENDIF
       ELSE
 C       ... linear response single residue; excitation energies
@@ -3543,8 +3544,6 @@ C
       CALL QENTER('XRSST2')
 C
       call memchk('XRSST2 0',WORK,1)
-      IFAC = 2
-      IF(STATIC) IFAC = 1
       FFAC = D1
       IF(IMFREQ) FFAC = DM1    
       NBDIM = NVAR*NZ
@@ -3641,7 +3640,7 @@ C         from this parameter type is below threshold, then no
 C         trial vectors of this kind is generated
           GPTMP = DNRM2(NBDIM,GP,1)
           IF (GPTMP.LT.0.3D0*GPTNRM.AND.(.NOT.UNCOUP)) THEN
-            NDIM = NFREQ*IFAC*NDAMP
+            NDIM = NFREQ*NSTAT*NDAMP
             CALL IZERO(IVEC,NDIM)
             GOTO 20
           ENDIF

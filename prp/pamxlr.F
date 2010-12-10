@@ -810,8 +810,21 @@ C specific complex response process section
           BFREQ(IFREQ+1)=STARTFREQ+IFREQ*STEPFREQ
         END DO
       END IF
-      WRITE(LUPRI,'(A,1P,D12.6)')
-     &' * Damping frequency   :',DMPFRLR
+      IF(DMPFRLR.NE.D0) THEN
+C.....check frequencies; zeros not allowed
+        DO IFREQ = 1,NBFREQ
+          IF(BFREQ(IFREQ).EQ.D0) THEN
+             WRITE(LUPRI,'(A)')
+     &     'FATAL ERROR: do not combine zero frequencies with damping.',
+     &     'Purely imaginary frequencies are handled by '\\
+     &     'keyword IMAGINARY'
+           CALL QUIT(
+     &     'XLRINP: Do not combine zero frequency with damping')
+          ENDIF
+        ENDDO
+        WRITE(LUPRI,'(A,1P,D12.6)')
+     &    ' * Damping frequency   :',DMPFRLR
+      ENDIF
 C end of complex freq processing
       IF(CNVXLR(1).LT.DUMMY) ITRILR(1) = 1
       IF(CNVXLR(2).LT.DUMMY) ITRILR(2) = 1
@@ -1283,8 +1296,6 @@ C
       NESIM = 0
       NPSIM = 0
       NCSIM = 0
-      IFAC  = 1
-      IF(.NOT.STATIC) IFAC = 2
 C
 C     Get coefficients
 C     ----------------
@@ -1319,7 +1330,7 @@ C     ====================================
 C
       IOFF  = 1*NDAMP
       IF(NZXOPE.GT.0) THEN
-        NESIM = NFREQ * IFAC
+        NESIM = NFREQ * NSTAT
         KEE   = KFREE
         CALL MEMGET('REAL',KGVEC,NZXOPEQ            ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KXVEC,NZXOPEQ*NFREQ*NDAMP,WORK,KFREE,LFREE)
@@ -1368,7 +1379,7 @@ C     Solution vector - orbital (e-p) part
 C     ====================================
 C
       IF(NZXOPP.GT.0) THEN
-        NPSIM = NFREQ * IFAC
+        NPSIM = NFREQ * NSTAT
         KEP   = KFREE
         CALL MEMGET('REAL',KXVEC,NZXOPPQ*NFREQ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KGVEC,NZXOPPQ      ,WORK,KFREE,LFREE)
