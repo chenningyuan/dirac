@@ -109,9 +109,9 @@ C
         NEP = 1
       ENDIF
       NCI = 0
-      JFAC=1
-      IF(DMPFRLR.NE.D0) JFAC=2
-      N2LRF  = NLRAPT*NRSPF*(1+NEE+NEP+NCI)*JFAC
+      NDAMP=1
+      IF(DMPFRLR.NE.D0) NDAMP=2
+      N2LRF  = NLRAPT*NRSPF*(1+NEE+NEP+NCI)*NDAMP
       CALL MEMGET('REAL',KLRF,N2LRF,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KLRF),N2LRF)
       CALL MEMGET('REAL',KCNV,NRSPF,WORK,KFREE,LFREE)
@@ -351,9 +351,7 @@ C
 C
 C     Final print section
 C
-      JFAC=1
-      IF(DAMPFREQ.NE.D0) JFAC = 2
-      CALL XLROUT(ABLRF,RCNV,JFAC,WORK,KFREE,LFREE)
+      CALL XLROUT(ABLRF,RCNV,WORK,KFREE,LFREE)
       CLOSE(LUXVC,STATUS = 'KEEP')
       CALL MEMREL('PRPXL1',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('PRPXL1')
@@ -1276,9 +1274,7 @@ C
       CALL QENTER('GETLRF')
       KFRSAV = KFREE
       FIRST = .TRUE.
-      JFAC=1
-      IF(DAMPFREQ.NE.D0)  JFAC=2
-      NRSP = NFREQ*NLRAPT*NLRBPT*JFAC
+      NRSP = NFREQ*NLRAPT*NLRBPT*NDAMP
 C
 C     First evaluate solution vectors for all frequencies
 C     and write them to direct access file
@@ -1321,14 +1317,14 @@ C
 C     Solution vector - orbital (e-e) part
 C     ====================================
 C
-      IOFF  = 1*JFAC
+      IOFF  = 1*NDAMP
       IF(NZXOPE.GT.0) THEN
         NESIM = NFREQ * IFAC
         KEE   = KFREE
-        CALL MEMGET('REAL',KGVEC,NZXOPEQ           ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KXVEC,NZXOPEQ*NFREQ*JFAC,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KBBUF,NZXOPEQ           ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIVEC,NESIM             ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KGVEC,NZXOPEQ            ,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KXVEC,NZXOPEQ*NFREQ*NDAMP,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KBBUF,NZXOPEQ            ,WORK,KFREE,LFREE)
+        CALL MEMGET('INTE',KIVEC,NESIM              ,WORK,KFREE,LFREE)
         IF(XLRANA) THEN
           NI = 0
           NV = 0
@@ -1357,7 +1353,7 @@ C...secondary electron orbitals
      &              WORK(KCMO),WORK(KBEIG),IORBCL,WORK(KZXOPE),
      &              WORK(KIVEC),NI,NV,
      &              WORK(KINDX),WORK(KII),WORK(KIV),WORK(KRI),WORK(KRV),
-     &              JFAC,WORK,KFREE,LFREE)
+     &              WORK,KFREE,LFREE)
         IF(FIRST) THEN
           CALL DCOPY(NRSP,ABLRF(1,1,1,IOFF+1),1,ABLRF,1)
           FIRST = .FALSE.
@@ -1365,7 +1361,7 @@ C...secondary electron orbitals
           CALL DAXPY(NRSP,D1,ABLRF(1,1,1,IOFF+1),1,ABLRF,1)
         ENDIF
         CALL MEMREL('GETLRF.e-e',WORK,1,KEE,KFREE,LFREE)
-        IOFF = IOFF + 1*JFAC
+        IOFF = IOFF + 1*NDAMP
       ENDIF
 C
 C     Solution vector - orbital (e-p) part
@@ -1406,7 +1402,7 @@ C...secondary positron orbitals
      &              WORK(KCMO),WORK(KBEIG),IORBCL,WORK(KZXOPP),
      &              WORK(KIVEC),NI,NV,
      &              WORK(KINDX),WORK(KII),WORK(KIV),WORK(KRI),WORK(KRV),
-     &              JFAC,WORK,KFREE,LFREE)
+     &              WORK,KFREE,LFREE)
         IF(FIRST) THEN
           CALL DCOPY(NRSP,ABLRF(1,1,1,IOFF+1),1,ABLRF,1)
           FIRST = .FALSE.
@@ -1414,7 +1410,7 @@ C...secondary positron orbitals
           CALL DAXPY(NRSP,D1,ABLRF(1,1,1,IOFF+1),1,ABLRF,1)
         ENDIF
         CALL MEMREL('GETLRF.e-p',WORK,1,KEP,KFREE,LFREE)
-        IOFF = IOFF + 1*JFAC
+        IOFF = IOFF + 1*NDAMP
       ENDIF
 C
 C     Solution vector - configurational part
@@ -1433,7 +1429,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck GETLR1 */
       SUBROUTINE GETLR1(ABLRF,NBTYP,EVECR,EVALR,RCNV,IBTYP,IBVEC,
      &                  GPO,XPO,BBUF,NXPAR,CMO,IBEIG,IORBCL,JXOP,
-     &                  IVECS,NI,NV,INDX,IIBF,IVBF,RIBF,RVBF,JFAC,
+     &                  IVECS,NI,NV,INDX,IIBF,IVBF,RIBF,RVBF,
      &                  WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -1454,8 +1450,8 @@ C
 #include "dgroup.h"
 #include "dcbxpr.h"
       CHARACTER FILNAM*6,MEMTYP*6,BLANK16*16,BLANK2*2
-      DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,JFAC,*),RCNV(*),
-     &          GPO(NXPAR,NZ),XPO(NXPAR,NZ,JFAC,NFREQ),BBUF(*),
+      DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,NDAMP,*),RCNV(*),
+     &          GPO(NXPAR,NZ),XPO(NXPAR,NZ,NDAMP,NFREQ),BBUF(*),
      &          CMO(*),IBEIG(*),IORBCL(4,*),
      &          IBVEC(*),IBTYP(2,*),EVECR(NEVEC,*),EVALR(*),
      &          JXOP(2,*),IVECS(*),IIBF(*),IVBF(*),INDX(*),
@@ -1528,7 +1524,7 @@ C
       OPEN(LUBVEC,FILE=FILNAM,FORM='UNFORMATTED',
      +         ACCESS='DIRECT',RECL=8*NBDIM,STATUS='UNKNOWN')
       ITIM = IPX
-      NXDIM = NBDIM*NFREQ*JFAC
+      NXDIM = NBDIM*NFREQ*NDAMP
 C
 C     If static we have one round with ITIM = IPX, if
 C     non-zero freq. then we have a second round with ITIM = IMX
@@ -1585,14 +1581,14 @@ C         ----------------------------
 C
           DO IFREQ = 1,NFREQ
             IF (KTIMOP .EQ. ITIM) THEN
-              DO JJFAC = 1,JFAC
-                ABLRF(IFREQ,INDAP,INDBP,JJFAC,1)  =
-     &          D2*DDOT(NBDIM,GPO,1,XPO(1,1,JJFAC,IFREQ),1)
+              DO IDAMP = 1,NDAMP
+                ABLRF(IFREQ,INDAP,INDBP,IDAMP,1)  =
+     &          D2*DDOT(NBDIM,GPO,1,XPO(1,1,IDAMP,IFREQ),1)
                 IF(XLRANA.OR.IPRXLR.GE.2) THEN
                   FREQ = EVALR(IFREQ)
                   WRITE(LUPRI,1000)
      &            '<<',INDAP,',',INDBP,'>>:',
-     &            ABLRF(IFREQ,INDAP,INDBP,JJFAC,1),
+     &            ABLRF(IFREQ,INDAP,INDBP,IDAMP,1),
      &            ' a.u.,  ',BVTYP(ITYP),
      &            '-contribution at frequency',FREQ,' a.u.'
                 ENDIF
@@ -1602,11 +1598,11 @@ C
                   CALL DZERO(BBUF,NXPAR)
                   DO IZ = 1,NZ
                     DO I = 1,NXPAR
-                      BBUF(I) = BBUF(I)+GPO(I,IZ)*XPO(I,IZ,JJFAC,IFREQ)
+                      BBUF(I) = BBUF(I)+GPO(I,IZ)*XPO(I,IZ,IDAMP,IFREQ)
                     ENDDO
                   ENDDO
                   CALL DSCAL(NXPAR,D2,BBUF,1)
-                  TMP = 100.0D0/ABLRF(IFREQ,INDAP,INDBP,JJFAC,1)
+                  TMP = 100.0D0/ABLRF(IFREQ,INDAP,INDBP,IDAMP,1)
                   CALL DZERO(RIBF,NI)
                   CALL DZERO(RVBF,NV)
                   DO J = 1,NXPAR
@@ -1702,7 +1698,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck XLROUT */
-      SUBROUTINE XLROUT(ABLRF,RCNV,JFAC,WORK,KFREE,LFREE)
+      SUBROUTINE XLROUT(ABLRF,RCNV,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Final output from linear response module
@@ -1723,7 +1719,7 @@ C
 C
       CHARACTER MXFORM*6,FMT*6,FMT2*6,TTYP(-1:1)*2,FREQLAB*4,
      &          RESPLAB(2)*20
-      DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT,JFAC,*),
+      DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT,NDAMP,*),
      &          RCNV(NBFREQ,NLRBPT),IBUF(2),WORK(*)
       DATA TTYP /'T-','T0','T+'/
       DATA RESPLAB/'Real part           ',

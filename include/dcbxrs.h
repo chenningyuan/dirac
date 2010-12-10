@@ -17,6 +17,7 @@
 !
 !    FKRMC  - is this a KR-MCSCF optimization
 !    ENRGY - energy
+!    NDAMP - integer factor =1 without damping, =2 with damping
 !
 !    THCXRS - threshold for convergence of reduced response equations
 !     
@@ -50,7 +51,8 @@
      &        IPPM, IPCP, IPCM, NREDM, N2REDM, NZRED, NCRED, NERED,     &
      &        NPRED, KCONV, NCSIM, NESIM, NPSIM, NOSIM, NTSIM, IZRED,   &
      &        ICRED, IERED, IPRED, INTXRS, INTFLG, INTDEF, INTBUF,      &
-     &        ITRINT(2), NFOCKMAT, IXRSTB(-1:2), MCTYPE, JTRLVL,NEVEC
+     &        ITRINT(2), NFOCKMAT, IXRSTB(-1:2), MCTYPE, JTRLVL,NEVEC,  &
+     &        NDAMP
       COMMON /XRSICB/ IPRXRS, JSYMOP, JTIMOP, JOPSY, MAXITR, ITMIC,     &
      &                NFREQ, NEXSIM, NEXSTV, NEXCNV, LOFFTY, IPX, IMX,  &
      &                MAXSIM, NZVAR, NZVARQ, NZCONF, NZCONFQ, NTYP,     &
@@ -59,7 +61,8 @@
      &                NREDM, N2REDM, NZRED, NCRED, NERED, NPRED, KCONV, &
      &                NCSIM, NESIM, NPSIM, NOSIM, NTSIM, IZRED, ICRED,  &
      &                IERED, IPRED, INTXRS, INTFLG, INTDEF, INTBUF,     &
-     &                ITRINT, NFOCKMAT, IXRSTB, MCTYPE, JTRLVL,NEVEC
+     &                ITRINT, NFOCKMAT, IXRSTB, MCTYPE, JTRLVL,NEVEC,   &
+     &                NDAMP
 
       REAL*8 THCXRS, CNVINT(2), RESFAC, GPTNRM, ENRGY, DAMPFREQ
       COMMON /XRSRCB/ THCXRS, CNVINT, RESFAC, GPTNRM, ENRGY, DAMPFREQ

@@ -163,11 +163,11 @@ C
       ELSE
         NREDGP = 0
       ENDIF
-      IF(DAMPFREQ.NE.D0) THEN
-        NEVEC=2*NREDM
-      ELSE
-        NEVEC=NREDM
-      ENDIF
+C.....NDAMP is set to two in the complex case since the solution vector now
+C     now has complex coefficients
+      NDAMP = 1
+      IF(DAMPFREQ.NE.D0) NDAMP = 2
+      NEVEC=NDAMP*NREDM
       CALL MEMGET('REAL',KREDE ,N2REDM ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KREDS ,N2REDM ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KREDGP,NREDGP,WORK,KFREE,LFREE)
@@ -857,9 +857,7 @@ C       ... linear response
 C.......DIAGHE: diagonal Hessian calculated => preconditioning
 C       RSREST: restart on solution vectors from previous run
 C       UNCOUP: uncoupled response; solution vectors generated here
-        JFAC=1
         IF(DIAGHE.OR.RSREST.OR.UNCOUP) THEN
-          IF(DAMPFREQ.NE.D0) JFAC = 2
           NVEC = NFREQ
 C.......no preconditioning; use gradient only for trial vectors
         ELSE
@@ -872,9 +870,9 @@ CPP.......check static case ! and cmoplex case !
           NPSIM = NZXOPP*IFAC
           NCSIM = NZCONF*IFAC
         ELSE
-          IF(NZXOPE.GT.0) NESIM = NVEC*IFAC*JFAC
-          IF(NZXOPP.GT.0) NPSIM = NVEC*IFAC*JFAC
-          IF(NZCONF.GT.0) NCSIM = NVEC*IFAC*JFAC
+          IF(NZXOPE.GT.0) NESIM = NVEC*IFAC*NDAMP
+          IF(NZXOPP.GT.0) NPSIM = NVEC*IFAC*NDAMP
+          IF(NZCONF.GT.0) NCSIM = NVEC*IFAC*NDAMP
         ENDIF
       ELSE
 C       ... linear response single residue; excitation energies
@@ -1102,8 +1100,6 @@ C     =================================================
 C     (or single residue for excitations)
 C
 C
-      JFAC=1
-      IF(DAMPFREQ.NE.D0) JFAC=2
       IND = NZRED
 C
 C     Orbtial (e-e) type trial vector
@@ -1111,7 +1107,7 @@ C     -------------------------------
 C
       IF(NESIM.GT.0) THEN
 CPP.....test for which case you need this allocation        
-        CALL MEMGET('REAL',KPREC,2*JFAC*NZXOPE,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KPREC,2*NDAMP*NZXOPE,WORK,KFREE,LFREE)
         CALL XRSST2('E',WORK(KBOE),GPOE,HEDIAG,SEDIAG,EVALR,EVECR,
      &              IBTYP,IBEVC,IEVEC,JBENDX,NESIM,IND,NERED,NZXOPE,
      &              WORK(KPREC),WORK,KFREE,LFREE)
@@ -1125,7 +1121,7 @@ C     -------------------------------
 C
       IF(NPSIM.GT.0) THEN
 CPP.....test for which case you need this allocation        
-        CALL MEMGET('REAL',KPREC,2*JFAC*NZXOPP,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KPREC,2*NDAMP*NZXOPP,WORK,KFREE,LFREE)
         CALL XRSST2('P',WORK(KBOP),GPOP,HPDIAG,SPDIAG,EVALR,EVECR,
      &              IBTYP,IBPVC,IPVEC,JBPNDX,NPSIM,IND,NPRED,NZXOPP,
      &              WORK(KPREC),WORK,KFREE,LFREE)
