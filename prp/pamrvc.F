@@ -2061,6 +2061,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
+      PARAMETER(D0=0.0D0)
 #include "dcbxrs.h"
 #include "dcbibn.h"
       DIMENSION BVEC(*),EVECR(NEVEC,MFREQ),
@@ -2085,17 +2086,35 @@ C
         CALL QUIT('ADDSV1: Unknown NBTYP !')
       ENDIF
 C
-      DO IREC = 1,NZRED
-        IH  = IBTYP(2,IREC)
-        IF(IH.EQ.ITYP) THEN
-          CALL READAC(LUBVEC,NBDIM,BVBUF,IREC+IRECOFF)
-          IBOFF = 1
-          DO IFREQ = 1,MFREQ
-            CALL DAXPY(NBDIM,EVECR(IREC,IFREQ),BVBUF,1,BVEC(IBOFF),1)
-            IBOFF = IBOFF + NBDIM
-          ENDDO
-        ENDIF
-      ENDDO
+CPP ... compare with XRSXV1 and figure out why IBVEC is not used
+      IF(DAMPFREQ.EQ.D0) THEN
+        DO IREC = 1,NZRED
+          IH  = IBTYP(2,IREC)
+          IF(IH.EQ.ITYP) THEN
+            CALL READAC(LUBVEC,NBDIM,BVBUF,IREC+IRECOFF)
+            IBOFF = 1
+            DO IFREQ = 1,MFREQ
+              CALL DAXPY(NBDIM,EVECR(IREC,IFREQ),BVBUF,1,BVEC(IBOFF),1)
+              IBOFF = IBOFF + NBDIM
+            ENDDO
+          ENDIF
+      ELSE
+        DO IREC = 1,NZRED
+          IH  = IBTYP(2,IREC)
+          INDR = 2*IREC - 1
+          INDI = 2*IREC
+          IF(IH.EQ.ITYP) THEN
+            CALL READAC(LUBVEC,NBDIM,BVBUF,IREC+IRECOFF)
+            IBOFF = 1
+            DO IFREQ = 1,MFREQ
+              CALL DAXPY(NBDIM,EVECR(INDR,IFREQ),BVBUF,1,BVEC(IBOFF),1)
+              IBOFF = IBOFF + NBDIM
+              CALL DAXPY(NBDIM,EVECR(INDI,IFREQ),BVBUF,1,BVEC(IBOFF),1)
+              IBOFF = IBOFF + NBDIM
+            ENDDO
+          ENDIF
+        ENDDO
+      ENDIF
 C
       RETURN
       END
