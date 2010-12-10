@@ -1111,7 +1111,7 @@ C     -------------------------------
 C
       IF(NESIM.GT.0) THEN
 CPP.....test for which case you need this allocation        
-        CALL MEMGET('REAL',KPREC,(1+2*JFAC)*NZXOPE,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KPREC,2*JFAC*NZXOPE,WORK,KFREE,LFREE)
         CALL XRSST2('E',WORK(KBOE),GPOE,HEDIAG,SEDIAG,EVALR,EVECR,
      &              IBTYP,IBEVC,IEVEC,JBENDX,NESIM,IND,NERED,NZXOPE,
      &              WORK(KPREC),WORK,KFREE,LFREE)
@@ -1125,7 +1125,7 @@ C     -------------------------------
 C
       IF(NPSIM.GT.0) THEN
 CPP.....test for which case you need this allocation        
-        CALL MEMGET('REAL',KPREC,(1+2*JFAC)*NZXOPP,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',KPREC,2*JFAC*NZXOPP,WORK,KFREE,LFREE)
         CALL XRSST2('P',WORK(KBOP),GPOP,HPDIAG,SPDIAG,EVALR,EVECR,
      &              IBTYP,IBPVC,IPVEC,JBPNDX,NPSIM,IND,NPRED,NZXOPP,
      &              WORK(KPREC),WORK,KFREE,LFREE)
@@ -3692,14 +3692,11 @@ C               tsaue:         retain norm for numerical stability !
                 IVEC(IM) = 0
               ELSE
                 CALL GENPREC(PREC,HDIAG,SDIAG,FREQ,NVAR)
-                FREQ2 = FREQ**2
 Csebastien: introduce the diagonal of S[2] in preconditioning 
                 DO IZ = 1,NZ
                   DO IVAR = 1,NVAR
-                    FAC = GP(IVAR,IZ)/
-     &               (FFAC*FREQ2*SDIAG(IVAR)**2-HDIAG(IVAR)**2)
-                    BVEC(IVAR,IZ,IP) = HDIAG(IVAR)*FAC
-                    BVEC(IVAR,IZ,IM) = FREQ*SDIAG(IVAR)*FAC
+                    BVEC(IVAR,IZ,IP) = PREC(IVAR,1)*GP(IVAR,IZ)
+                    BVEC(IVAR,IZ,IM) = PREC(IVAR,2)*GP(IVAR,IZ)
                   ENDDO
                 ENDDO
 C               tsaue:         retain norm for numerical stability !
@@ -3902,17 +3899,16 @@ C  compute few common expressions
           FAC1 = (H2DIAG - (FREQ2MDAMP2 * S2DIAG))
           FAC2 = FREQ2TDAMP2T4 * S2DIAG * S2DIAG
           FAC3 = FREQ2PDAMP2 * S2DIAG
-          FAC = (FAC1 * FAC1) + FAC2
 C.........denominator
-          PREC(IVAR,1) = DM1 / FAC
-C.........factor A
-          PREC(IVAR,2) = HDIAG(IVAR) * FAC1
-C.........factor D
-          PREC(IVAR,3) = FREQTDAMPT2 * HDIAG(IVAR) * S2DIAG
-C.........factor B
-          PREC(IVAR,4) = FREQ * SDIAG(IVAR) * (H2DIAG - FAC3)
-C.........factor C
-          PREC(IVAR,5) = DAMP * SDIAG(IVAR) * (H2DIAG + FAC3)
+          FAC = DM1/((FAC1 * FAC1) + FAC2)
+C.........factor A/P
+          PREC(IVAR,1) = HDIAG(IVAR) * FAC1 * FAC
+C.........factor D/P
+          PREC(IVAR,2) = FREQTDAMPT2 * HDIAG(IVAR) * S2DIAG * FAC
+C.........factor B/P
+          PREC(IVAR,3) = FREQ * SDIAG(IVAR) * (H2DIAG - FAC3) * FAC
+C.........factor C/P
+          PREC(IVAR,4) = DAMP * SDIAG(IVAR) * (H2DIAG + FAC3) * FAC
         END DO
 C.....Eq.(25,26)
       ELSE
@@ -3921,13 +3917,12 @@ C.....Eq.(25,26)
 C  compute few common expressions
           H2DIAG = HDIAG(IVAR) * HDIAG(IVAR)
           S2DIAG = SDIAG(IVAR) * SDIAG(IVAR)
-          FAC = (H2DIAG - (SIGNFAC * FREQ2 * S2DIAG))
 C.......denominator
-          PREC(IVAR,1) = DM1 / FAC
-C.......factor A
-          PREC(IVAR,2) = HDIAG(IVAR)
-C.......factor B
-          PREC(IVAR,3) = FREQ * SDIAG(IVAR)
+          FAC = DM1/(H2DIAG - (SIGNFAC * FREQ2 * S2DIAG))
+C.......factor A/P
+          PREC(IVAR,1) = HDIAG(IVAR)*FAC
+C.......factor B/P
+          PREC(IVAR,2) = FREQ * SDIAG(IVAR)*FAC
         END DO
       ENDIF
 C
