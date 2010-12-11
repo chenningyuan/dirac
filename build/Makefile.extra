@@ -190,4 +190,16 @@ amfi/amfi1.o: amfi/amfi1.F
 abacus/hermodules.o: abacus/hermodules.F
 	@echo "abacus/hermodules.F compilation with 1st level (of 3) optimization"
 	$(F77) $(F77FLAGS_OPT_1) $(F77FLAGS_SAFE) -c -o $*.o $<
+
+#radovan: this file is under safeflags because imax gets strange values
+#         here with optimized ifort 12.0.0 32bit
+gp/order2.o: gp/order2.F
+	@echo "gp/order2.F compilation with 1st level (of 3) optimization"
+	$(F77) $(F77FLAGS_OPT_1) $(F77FLAGS_SAFE) -c -o $*.o $<
+
+#radovan: this file is under safeflags because of NaN problems
+#         with optimized ifort 12.0.0 32bit
+abacus/vibnor.o: abacus/vibnor.F
+	@echo "abacus/vibnor.F compilation with 1st level (of 3) optimization"
+	$(F77) $(F77FLAGS_OPT_1) $(F77FLAGS_SAFE) -c -o $*.o $<
 endif
