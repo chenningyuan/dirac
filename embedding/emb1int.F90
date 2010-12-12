@@ -167,7 +167,7 @@
 !
         IDENB = 0
         ISOFRB(:) = 0
-        INDFA(:,:) = -10 000 000
+        INDFA(:,:) = -10000000
         DO NA = 1, KHKTA
           DO IREP = 0, MAXREP
           IF (IAND(MULA,IEOR(IREP,ISYMAO(NHKTA,NA)))==0) THEN
@@ -208,7 +208,7 @@
 !        from this block.  Note that at present this assumes all
 !        components from a shell are included
 !
-          INDFB(:,:) = -10 000 000
+          INDFB(:,:) = -10000000
           DO NB = 1, KHKTB
             DO IREP = 0, MAXREP
             IF (IAND(MULB,IEOR(IREP,ISYMAO(NHKTB,NB)))==0) THEN
@@ -374,7 +374,7 @@
 
 
 !     Local variables
-      REAL(KIND=8),PARAMETER :: D0=0.0D0, D1=1.00 D00, D3=3.00 D00,     &
+      REAL(KIND=8),PARAMETER :: D0=0.0D0, D1=1.00D00, D3=3.00D00,       &
      &                          THIRD=D1/D3, GNUTHR=1.D-4,D1P5=1.5D0
       REAL(KIND=8)::AHGTF(0:JMAX,0:JMAX,0:JMAX)
       REAL(KIND=8),ALLOCATABLE::ODC(:,:,:,:,:,:)
