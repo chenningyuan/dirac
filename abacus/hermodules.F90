@@ -37,7 +37,7 @@
       PRIVATE
       PUBLIC OPEN_FILE, GET_EXTENSION, filter_comments
 
-        CHARACTER(LEN=8), DIMENSION(2), PARAMETER :: filetypes=(/'MOL', &
+        CHARACTER(LEN=8), DIMENSION(2), PARAMETER :: filetypes=(/'MOL', &&
      &                                                           'XYZ'/)
         INTEGER :: linewidth=0
 
@@ -106,7 +106,7 @@
 
         END FUNCTION OPEN_SCRATCH
 
-        INTEGER FUNCTION OPEN_FILE_NUM(filename, filenum, formatted,    &
+        INTEGER FUNCTION OPEN_FILE_NUM(filename, filenum, formatted,    &&
      &                                 lupri)
 !     Opens a file and returns it's identifying number (>0) if the operation was succesful.
 !     If the opening was insuccesful a negative or 0 is returned. 
@@ -312,7 +312,7 @@
             ALLOCATE(FAM(5))
             read(filenum,*,iostat=ios) FAM(1:5)
             if (ios.ne.0) then
-              write(lupri,*) "ERROR(add_fam) : ", 
+              write(lupri,*) "ERROR(add_fam) : ",                       &
      &          "Specify 5 coefficients for WELLTEMP basis."
               call exit(1)
             end if
@@ -321,7 +321,7 @@
             ALLOCATE(FAM(3))
             read(filenum,*,iostat=ios) FAM(1:3)
             if (ios.ne.0) then
-              write(lupri,*) "ERROR(add_fam) : ", 
+              write(lupri,*) "ERROR(add_fam) : ",                       &
      &          "Specify 3 coefficients for EVENTEMP basis."
               call exit(1)
             end if
@@ -330,7 +330,7 @@
             ALLOCATE(FAM(5))
             read(filenum,*,iostat=ios) FAM(1:2), FAM(5)
             if (ios.ne.0) then
-              write(lupri,*) "ERROR(add_fam) : ", 
+              write(lupri,*) "ERROR(add_fam) : ",                       &
      &          "Specify 3 coefficients for GEOM basis."
               call exit(1)
             end if
@@ -341,7 +341,7 @@
             ALLOCATE(FAM(1))
             read(filenum,*,iostat=ios) FAM(1)
             if (ios.ne.0) then
-              write(lupri,*) "ERROR(add_fam) : ", 
+              write(lupri,*) "ERROR(add_fam) : ",                       &
      &          "Specify 1 coefficients for FAMILY basis."
               call exit(1)
             end if
@@ -350,7 +350,7 @@
             ALLOCATE(FAM(2))
             read(filenum,*,iostat=ios) FAM(1:2)
             if (ios.ne.0) then
-              write(lupri,*) "ERROR(add_fam) : ", 
+              write(lupri,*) "ERROR(add_fam) : ",                       &
      &          "Specify 2 coefficients for DUAL basis."
               call exit(1)
             end if
@@ -374,7 +374,7 @@
           CALL QENTER('READ_ATOMS')
 
           mol=>null()
-          IF (.NOT.(PARHER).AND.IPREAD>1)                               
+          IF (.NOT.(PARHER).AND.IPREAD>1)                               &
      &         WRITE(LUPRI,*) 'Reading coordinates from xyz file...'
 
           ios=0
@@ -385,7 +385,7 @@
 
             READ(filenum, *,iostat=ios) name, x(1), x(2), x(3)
             IF (IPREAD >= 4) THEN
-              write(lupri,*) 'READ_ATOMS: read coordinates:',           
+              write(lupri,*) 'READ_ATOMS: read coordinates:',           &
      &        x(1),x(2),x(3)," error code = ",ios
             ENDIF
 
@@ -551,8 +551,8 @@ c           todo : the current reading relies on ios giving an error for no-atom
               DO WHILE(ASSOCIATED(bas))
                 bas=>find_basis(bas, mol%name)
                 IF (first.AND..NOT.(ASSOCIATED(bas))) THEN
-                  IF (.NOT.(ASSOCIATED(default)))                       &
-     &              CALL QUIT('*** ERROR SORT_BASIS, no defaultbasis    &
+                  IF (.NOT.(ASSOCIATED(default)))                       &&
+     &              CALL QUIT('*** ERROR SORT_BASIS, no defaultbasis    &&
      &                    found for atom')
 
                   CALL ADD_BASIS(newbas, newfirstbas,default)           
@@ -593,7 +593,7 @@ c           todo : the current reading relies on ios giving an error for no-atom
                 bas=>find_basis(fbas, mol%name)                  
                 IF (first.AND..NOT.(ASSOCIATED(bas))) THEN
                   WRITE(lupri,*) 'Atom not found the given basissets.'
-                  CALL QUIT('*** ERROR SORT_BASIS, basis                & 
+                  CALL QUIT('*** ERROR SORT_BASIS, basis                & &
      &                   not found for atom')                  
                 END IF
                 IF (.NOT.(ASSOCIATED(bas))) EXIT
@@ -624,7 +624,7 @@ c           todo : the current reading relies on ios giving an error for no-atom
               RETURN
             END IF
           END DO
-          IF (PRESENT(LUPRI)) WRITE(LUPRI,*) 'WARING:                   & 
+          IF (PRESENT(LUPRI)) WRITE(LUPRI,*) 'WARING:                   & &
      &         No charge found for element: ', atomname
 
         END FUNCTION
@@ -698,7 +698,7 @@ c           todo : the current reading relies on ios giving an error for no-atom
             IF(section(1)=='**MOLECULE') THEN
 
 !            Symmetry specification
-              IF (section(2)=='*SYMMETRY'.AND.                         
+              IF (section(2)=='*SYMMETRY'.AND.                          &
      &            section(3)=='.NOSYM') THEN
                       ADDSYM=.FALSE.
 !             ELSE IF(section(2)=='*SYMMETRY') THEN
@@ -718,7 +718,7 @@ c           todo : the current reading relies on ios giving an error for no-atom
 !                end do
 
 !             Basis specification
-              ELSE IF (section(2)=='*BASIS'.AND.
+              ELSE IF (section(2)=='*BASIS'.AND.                        &
      &                 section(3)=='.DEFAULT') THEN
 !               In the subsection .DEFAULT we give only give the name of a 'LARGE BASIS' type
 !               like cc-pVDZ etc. This will be the basisset for all atoms that are not
@@ -732,12 +732,12 @@ c           todo : the current reading relies on ios giving an error for no-atom
                   CALL ADD_BASIS(bas,firstbas,tmpbas)
                   CYCLE
                 else if (ios.ne.0) then
-                  write(lupri,*) "ERROR(readbasis): ",                  
+                  write(lupri,*) "ERROR(readbasis): ",                  &
      &                           "Expecting default basisset name."
 
                   exit
                 end if
-              ELSE IF(section(2)=='*BASIS'.AND.                         
+              ELSE IF(section(2)=='*BASIS'.AND.                         &
      &                section(3)=='.SPECIAL') THEN
 !     JHS050707 For some or all atoms we can give an other basisset than the .DEFAULT
                 tmpbas%name=' '
@@ -746,7 +746,7 @@ c           todo : the current reading relies on ios giving an error for no-atom
                 tmpbas%file=' '
                 tmpbas%next=>NULL()
                 
-                read(tmp_file,*,iostat=ios) tmpbas%name,tmpbas%comp,
+                read(tmp_file,*,iostat=ios) tmpbas%name,tmpbas%comp,    &
      &                                      tmpbas%type
                 if (ios.ne.0) then
                   backspace(tmp_file)
@@ -758,22 +758,22 @@ c           todo : the current reading relies on ios giving an error for no-atom
                     CALL ADD_BASIS(bas,firstbas,tmpbas)
                     CYCLE
                   else if (ios.ne.0) then
-                     write(tmp_file,*) "ERROR(readbasis) :", 
-     &                 "Specify a filename or full basisname for ",
+                     write(tmp_file,*) "ERROR(readbasis) :",            &
+     &                 "Specify a filename or full basisname for ",     &
      &                 ".SPECIAL basis."
                      exit
                   end if
-                else if(tmpbas%name>' ' .and. tmpbas%type>' ' 
+                else if(tmpbas%name>' ' .and. tmpbas%type>' '           &
      &            .and. tmpbas%comp>' ') then
                   SELECT CASE(tmpbas%type)
                   CASE ('BASIS','MOLFBAS')
                     backspace(tmp_file)               
-                    read(tmp_file,*,iostat=ios) tmpbas%name,tmpbas%comp,
+                    read(tmp_file,*,iostat=ios) tmpbas%name,tmpbas%comp,&
      &                                      tmpbas%type,tmpbas%file
                     if (.not.(ios.ne.0) .and. tmpbas%file>' ') then
                       CALL ADD_BASIS(bas,firstbas,tmpbas)
                     else if (ios.ne.0) then
-                     write(tmp_file,*) "ERROR(readbasis) :", 
+                     write(tmp_file,*) "ERROR(readbasis) :",            &
      &                 "Specify a filename for ",tmpbas%type
                     end if
                   CASE('INTGRL','EXPLICIT')
@@ -781,14 +781,14 @@ c           todo : the current reading relies on ios giving an error for no-atom
 !     TMP We read the coefficients in in the old way in write commonblock
                     read(tmp_file,*,iostat=ios) iqm
                     if ( ios.ne.0 .or. iqm.eq.0) then
-                      write(tmp_file,*) "ERROR(readbasis) :", 
+                      write(tmp_file,*) "ERROR(readbasis) :",           &
      &                 "No iqm for ",tmpbas%type," specified."
                       cycle
                     end if
                     ALLOCATE(JCO(iqm))
                     read(tmp_file,*,iostat=ios) iqm,JCO(1:iqm)
                     if (ios.ne.0) then
-                      write(tmp_file,*) "ERROR(readbasis) :", 
+                      write(tmp_file,*) "ERROR(readbasis) :",           &
      &                 "Specify at least ",iqm," coefficients"
                       cycle
                     end if
@@ -801,14 +801,14 @@ c           todo : the current reading relies on ios giving an error for no-atom
                     
                     read(tmp_file,*,iostat=ios) iqm
                     if (ios.ne.0 .or. iqm==0) then
-                      write(tmp_file,*) "ERROR(readbasis) :", 
+                      write(tmp_file,*) "ERROR(readbasis) :",           &
      &                 "No iqm for ",tmpbas%type," specified."
                       cycle
                     end if
                     ALLOCATE(JCO(iqm))
                     read(tmp_file,*,iostat=ios) iqm,JCO(1:iqm)
                     if (ios.ne.0) then
-                      write(tmp_file,*) "ERROR(readbasis) :", 
+                      write(tmp_file,*) "ERROR(readbasis) :",           &
      &                 "Specify at least ",iqm," coefficients"
                       cycle
                     end if
@@ -822,7 +822,7 @@ c           todo : the current reading relies on ios giving an error for no-atom
                   END SELECT
                 end if
                   
-              ELSE IF (section(2)==''.AND.                         
+              ELSE IF (section(2)==''.AND.                              &
      &                 section(3)=='.CENTERS') THEN
 !               Explicit specification of charges for non-standard nuclei, defaults are taken from nucdata.h
                 BACKSPACE(tmp_file)
@@ -834,7 +834,7 @@ c           todo : the current reading relies on ios giving an error for no-atom
                 if (ios.ne.0) then
                   read(tmp_file,*,iostat=ios) name, charge
                   if (ios.ne.0) then
-                    write(tmp_file,*) "ERROR(readbasis) :", 
+                    write(tmp_file,*) "ERROR(readbasis) :",             &
      &          "Not a valid name and charge specified for *CENTERS"
                     cycle
                   end if
@@ -852,7 +852,7 @@ c           todo : the current reading relies on ios giving an error for no-atom
                   END IF
                 END DO
 
-              ELSE IF (section(2)==''.AND.                         
+              ELSE IF (section(2)==''.AND.                              &
      &                 section(3)=='.UNITS') THEN
 !               If this block is specified, the coordinates in the .XYZ file are given in these 
 !               units and we have to transform them to a.u.
@@ -870,7 +870,7 @@ c           todo : the current reading relies on ios giving an error for no-atom
                   backspace (tmp_file)
                   read(tmp_file,*,iostat=ios) unitname,unit_conversion
                   if (ios.ne.0) then
-                    write(lupri,*) "ERROR(readbasis) :", 
+                    write(lupri,*) "ERROR(readbasis) :",                &
      &    "Specify a unitname and the conversion factor to atomic units"
                     call Quit ("error reading units in .UNITS")
                   end if
@@ -883,15 +883,15 @@ c           todo : the current reading relies on ios giving an error for no-atom
 
 !         We want users to specify the default basis, quit if they don't
           IF(.NOT.(ASSOCIATED(firstbas))) THEN
-            WRITE(LUPRI,*) 'No basisset given in input file.            & 
+            WRITE(LUPRI,*) 'No basisset given in input file.            & &
      &            Specify a basisset in  **MOLECULE *BASIS .DEFAULT'
-            CALL QUIT('*** ERROR SORT_BASIS, no defaultbasis given in   & 
+            CALL QUIT('*** ERROR SORT_BASIS, no defaultbasis given in   & &
      &           input file.')
           END IF
           
 !     We now have add all data that was explicitly added in the .INP file.
 !     Add default basis.
-          IF(.NOT.(PARHER).AND.IPREAD>1)                                &
+          IF(.NOT.(PARHER).AND.IPREAD>1)                                &&
      &         WRITE(LUPRI,*) 'Processing basissets...'
           CALL SORT_BASIS(firstatom,firstbas,.TRUE.,lupri)
 !     Sort the atoms according to the bases.
@@ -901,7 +901,7 @@ c           todo : the current reading relies on ios giving an error for no-atom
           prevname=' '
           DO WHILE(ASSOCIATED(mol))
             IF (mol%charge==0) THEN
-              IF(.NOT.(mol%name)==prevname)                             & 
+              IF(.NOT.(mol%name)==prevname)                             & &
      &              charge=FIND_CHARGE(mol%name,lupri)                
               mol%charge=charge
             END IF
@@ -913,7 +913,7 @@ c           todo : the current reading relies on ios giving an error for no-atom
 !     Convert units
           IF(.NOT.(unitname=='bohr')) THEN
             WRITE(LUPRI,*) 'Coordinates were entered in ', unitname
-            WRITE(LUPRI,*) 'Converting to atomic units with',
+            WRITE(LUPRI,*) 'Converting to atomic units with',           &
      &                     ' conversion factor=', UNIT_CONVERSION 
             mol=>firstatom
             DO WHILE (ASSOCIATED(mol))
@@ -958,7 +958,7 @@ c           todo : the current reading relies on ios giving an error for no-atom
 
       KATOM=count_atoms(firstatom)
       IF (KATOM>MXCENT) THEN
-         WRITE(lupri,*) 'Number of atoms specified greater max number   & 
+         WRITE(lupri,*) 'Number of atoms specified greater max number   & &
      &        of atoms'
          WRITE(lupri,*) 'Adjust maxorb.h'
          CALL QUIT('*** ERROR (READIN) natom>mxcent')
@@ -988,11 +988,11 @@ c           todo : the current reading relies on ios giving an error for no-atom
               WRITE(lupri,*) 'WARNING!!!'
               WRITE(lupri,*) 'WARNING!!!'
               WRITE(lupri,*) 'WARNING!!!'
-              WRITE(lupri,*) 'Nuclear gaussian exponent small: ',       &
+              WRITE(lupri,*) 'Nuclear gaussian exponent small: ',       &&
      &                         mol%nucexp
             END IF
-            WRITE(lupri,'(/A,F8.3,A,1P,D20.10)')                        &
-     &       '  Nuclear Gaussian exponent for atom of charge',          &
+            WRITE(lupri,'(/A,F8.3,A,1P,D20.10)')                        &&
+     &       '  Nuclear Gaussian exponent for atom of charge',          &&
      &       mol%charge,' :',mol%nucexp
           ELSE
             mol%nucexp=D0
@@ -1011,7 +1011,7 @@ c           todo : the current reading relies on ios giving an error for no-atom
           IF (IPREAD.GE.4) THEN
             write(LUPRI,*) 'NAMN(natom)=',NAMN(natom)
             write(LUPRI,*) 'mol%x:',mol%x(1),mol%x(2),mol%x(3)
-            write(LUPRI,*) 'CORD(:,natom)',                             &
+            write(LUPRI,*) 'CORD(:,natom)',                             &&
      &      CORD(1,natom),CORD(2,natom),CORD(3,natom)
           ENDIF
           
@@ -1036,7 +1036,7 @@ c           todo : the current reading relies on ios giving an error for no-atom
 
       END SUBROUTINE WRITE_ATOMS
 
-        SUBROUTINE POS_FILE(infile,lupri,linelen,                       &
+        SUBROUTINE POS_FILE(infile,lupri,linelen,                       &&
      &     section,subsection,name,comp)
 !     JHS050707 A function for later use, positions a file to a specific keyword.
         
@@ -1068,7 +1068,7 @@ c           todo : the current reading relies on ios giving an error for no-atom
           END DO
         END SUBROUTINE POS_FILE
 
-        SUBROUTINE WRITE_BASIS(infile,lupri,WORK,LWORK,                 &
+        SUBROUTINE WRITE_BASIS(infile,lupri,WORK,LWORK,                 &&
      &                  KANG,KSETS,KBLOCK,KPRIM,HERMIT)
 !     JHS050707 Writes the contained in the basisset list to the commonblocks.
 !               Note the routine is higly similar tot the subroutine READI1 for
@@ -1092,12 +1092,12 @@ c           todo : the current reading relies on ios giving an error for no-atom
       INTEGER,INTENT(IN)   :: lupri,infile,KANG,KSETS,KBLOCK,KPRIM
       INTEGER,INTENT(INOUT)::LWORK
 
-      INTEGER      :: KLAST,i,j,IBSFLAG, KAOVEC, NBLOCK,                &
+      INTEGER      :: KLAST,i,j,IBSFLAG, KAOVEC, NBLOCK,                &&
      &                katom,basindex,index
 
       REAL(KIND=8) :: QEXP=D0
       REAL         :: MXSPD
-      LOGICAL      :: HERMIT,DOOWN,ANG,NOORBTS,NOFITFS,                 & 
+      LOGICAL      :: HERMIT,DOOWN,ANG,NOORBTS,NOFITFS,                 & &
      &                CNTBAS=.FALSE.,DIRCON(2)=.FALSE.,IFXYZ(3)
       CHARACTER(LEN=72) :: TTITLE(2)=' '
       CHARACTER(LEN=11) :: SYMTXT
@@ -1108,12 +1108,12 @@ c           todo : the current reading relies on ios giving an error for no-atom
       TYPE(atom),POINTER            :: mol
 
       REAL(KIND=8):: WORK(LWORK) 
-      REAL(KIND=8),ALLOCATABLE::                                        & 
-     &               ALPHA(:,:,:),                                      &
-     &               CPRIM(:,:,:,:),                                    &
+      REAL(KIND=8),ALLOCATABLE::                                        & &
+     &               ALPHA(:,:,:),                                      &&
+     &               CPRIM(:,:,:,:),                                    &&
      &               CPRIMU(:,:,:,:)
-      INTEGER,ALLOCATABLE :: NONT(:),JCO(:,:,:),JCO2(:,:),IBLOCK(:),    &
-     &                       NUC(:,:),IQM(:,:),NRC(:,:),NBLCK(:,:),     &
+      INTEGER,ALLOCATABLE :: NONT(:),JCO(:,:,:),JCO2(:,:),IBLOCK(:),    &&
+     &                       NUC(:,:),IQM(:,:),NRC(:,:),NBLCK(:,:),     &&
      &                       ISGEN(:)
       LOGICAL,ALLOCATABLE :: SEG(:,:)
       CHARACTER(LEN=80),ALLOCATABLE :: BASREF(:,:,:)
@@ -1213,27 +1213,27 @@ c           todo : the current reading relies on ios giving an error for no-atom
           KAOVEC = KBLOCK + 1 - IBLOCK(1)
 
 !     POSITION the input file.
-          CALL POS_FILE(infile, lupri, linelen,                         &
+          CALL POS_FILE(infile, lupri, linelen,                         &&
      &         '**BASIS', '*BASIS', baspointer%name,baspointer%comp)
-          CALL GTOINP(infile,IQM(basindex,1),JCO(1,basindex,1),         &
-     &         NUC(IBLOCK(1),1),NRC(IBLOCK(1),1),                       &
-     &         SEG(IBLOCK(1),1),                                        &
-     &         ALPHA(1,IBLOCK(1),1),CPRIM(1,1,IBLOCK(1),1),             &
-     &         CPRIMU(1,1,IBLOCK(1),1),ISGEN(IBLOCK(1)),                &
+          CALL GTOINP(infile,IQM(basindex,1),JCO(1,basindex,1),         &&
+     &         NUC(IBLOCK(1),1),NRC(IBLOCK(1),1),                       &&
+     &         SEG(IBLOCK(1),1),                                        &&
+     &         ALPHA(1,IBLOCK(1),1),CPRIM(1,1,IBLOCK(1),1),             &&
+     &         CPRIMU(1,1,IBLOCK(1),1),ISGEN(IBLOCK(1)),                &&
      &         NBLOCK,KAOVEC,KPRIM)
           NBLCK(basindex,1) = NBLOCK
-          BASREF(1,basindex,1) =                                        &
+          BASREF(1,basindex,1) =                                        &&
      &          "Basis set typed explicitly in input file "
         CASE ('MOLFBAS')
           IBSFLAG=2
           BASNAM = baspointer%file
           KLAST = 1 + (1+KPRIM)*KPRIM
-          IF (KLAST.GT.LWORK)                                           &
+          IF (KLAST.GT.LWORK)                                           &&
      &      CALL STOPIT('BASINP','BFGINP',KLAST,LWORK)
           DIRCON(1) = .TRUE.
-          CALL BFGINP(basindex,IBLOCK(1),1,WORK(1),WORK(1+KPRIM),       &
-     &         IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                  &
-     &         NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                     &
+          CALL BFGINP(basindex,IBLOCK(1),1,WORK(1),WORK(1+KPRIM),       &&
+     &         IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                  &&
+     &         NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                     &&
      &         baspointer%file,BASREF(1,1,1))
         CASE ('BASIS')
           IBSFLAG=3
@@ -1242,50 +1242,50 @@ c           todo : the current reading relies on ios giving an error for no-atom
 
           NBLOCK=basindex+1
           mol=>find_atom(mol,baspointer%name)
-          CALL BASLIB(IQM(basindex,1),JCO(1,basindex,1),                &
-     &             NUC(IBLOCK(1),1),                                    &
-     &             NRC(IBLOCK(1),1),SEG(IBLOCK(1),1),                   &
-     &             ALPHA(1,IBLOCK(1),1),                                &
-     &             CPRIM(1,1,IBLOCK(1),1),CPRIMU(1,1,IBLOCK(1),1),      &
-     &             NBLOCK,ISGEN(IBLOCK(1)),                             &
-     &             KAOVEC,KPRIM,mol%charge,                             &
+          CALL BASLIB(IQM(basindex,1),JCO(1,basindex,1),                &&
+     &             NUC(IBLOCK(1),1),                                    &&
+     &             NRC(IBLOCK(1),1),SEG(IBLOCK(1),1),                   &&
+     &             ALPHA(1,IBLOCK(1),1),                                &&
+     &             CPRIM(1,1,IBLOCK(1),1),CPRIMU(1,1,IBLOCK(1),1),      &&
+     &             NBLOCK,ISGEN(IBLOCK(1)),                             &&
+     &             KAOVEC,KPRIM,mol%charge,                             &&
      &             1,DSM,BASREF(1,basindex,1))                         
           NBLCK(basindex,1) = NBLOCK
         CASE ('WELLTEMP','EVENTEMP','GEOM')
           IBSFLAG=4
-          CALL POS_FILE(infile, lupri, linelen,
+          CALL POS_FILE(infile, lupri, linelen,                         &
      &         '**BASIS', '*BASIS', baspointer%name,baspointer%comp)
           CALL GENFAMEXP(infile,0)
           i=SIZE(baspointer%fam)-1            
           FAMPAR(1:i)=baspointer%fam(1:i)
           NFAMEXP(1)=TRANSFER(baspointer%fam(i+1),int8)
           KAOVEC = KBLOCK + 1 - IBLOCK(1)
-          CALL FAMBAS(infile,IQM(basindex,1),JCO(1,basindex,1),         &
-     &         NUC(IBLOCK(1),1),NRC(IBLOCK(1),1),                       &
-     &         SEG(IBLOCK(1),1),                                        &
-     &         ALPHA(1,IBLOCK(1),1),CPRIM(1,1,IBLOCK(1),1),             &
-     &         CPRIMU(1,1,IBLOCK(1),1),ISGEN(IBLOCK(1)),                &
+          CALL FAMBAS(infile,IQM(basindex,1),JCO(1,basindex,1),         &&
+     &         NUC(IBLOCK(1),1),NRC(IBLOCK(1),1),                       &&
+     &         SEG(IBLOCK(1),1),                                        &&
+     &         ALPHA(1,IBLOCK(1),1),CPRIM(1,1,IBLOCK(1),1),             &&
+     &         CPRIMU(1,1,IBLOCK(1),1),ISGEN(IBLOCK(1)),                &&
      &         NBLOCK,KAOVEC,KPRIM)
           NBLCK(basindex,1) = NBLOCK
-          BASREF(1,basindex,1) =                                        &
+          BASREF(1,basindex,1) =                                        &&
      & "Well-tempered basis set typed explicitly in input file "
         CASE ('FAMILY','DUALFAMILY')
           IBSFLAG=4
-          CALL POS_FILE(infile, lupri, linelen,
+          CALL POS_FILE(infile, lupri, linelen,                         &
      &         '**BASIS', '*BASIS', baspointer%name,baspointer%comp)
           IF (baspointer%type=='FAMILY') i=1
           IF (baspointer%type=='DUALFAMILY') i=2
           CALL GENFAMEXP(infile,i)
           NFAMEXP(1:i)=TRANSFER(baspointer%fam(1:i),int8)
           KAOVEC = KBLOCK + 1 - IBLOCK(1)
-          CALL FAMBAS(infile,IQM(basindex,1),JCO(1,basindex,1),         &
-     &         NUC(IBLOCK(1),1),NRC(IBLOCK(1),1),                       &
-     &         SEG(IBLOCK(1),1),                                        &
-     &         ALPHA(1,IBLOCK(1),1),CPRIM(1,1,IBLOCK(1),1),             &
-     &         CPRIMU(1,1,IBLOCK(1),1),ISGEN(IBLOCK(1)),                &
+          CALL FAMBAS(infile,IQM(basindex,1),JCO(1,basindex,1),         &&
+     &         NUC(IBLOCK(1),1),NRC(IBLOCK(1),1),                       &&
+     &         SEG(IBLOCK(1),1),                                        &&
+     &         ALPHA(1,IBLOCK(1),1),CPRIM(1,1,IBLOCK(1),1),             &&
+     &         CPRIMU(1,1,IBLOCK(1),1),ISGEN(IBLOCK(1)),                &&
      &         NBLOCK,KAOVEC,KPRIM)
           NBLCK(basindex,1) = NBLOCK
-          BASREF(1,basindex,1) =                                        &
+          BASREF(1,basindex,1) =                                        &&
      & "Well-tempered basis set typed explicitly in input file "
         CASE DEFAULT
           WRITE(lupri,*) 'BASISSET specification not implemented'
@@ -1296,14 +1296,14 @@ c           todo : the current reading relies on ios giving an error for no-atom
         NOORBTS=NOORBTS.AND.IQM(basindex,1).EQ.0
         IF (IQM(basindex,1).GT.0) THEN
           WRITE(lupri,'(3X,A)') 'Large component set:'
-          WRITE(lupri,'(6X,A,I5,A,12I5)')                               &
-     &    'Max.ang.quantum no.:',(IQM(basindex,1)-1),                   & 
+          WRITE(lupri,'(6X,A,I5,A,12I5)')                               &&
+     &    'Max.ang.quantum no.:',(IQM(basindex,1)-1),                   & &
      &    '  Blocks:',(JCO(i,basindex,1), i=1,  IQM(basindex,1))
           NHTYP  =   MAX(NHTYP,IQM(basindex,1))
         ENDIF
 
         DO i = 1, NBLCK(basindex,1)
-           IF ((NUC(i,1).NE.NRC(i,1)).AND.(NRC(i,1).GT.0))              &
+           IF ((NUC(i,1).NE.NRC(i,1)).AND.(NRC(i,1).GT.0))              &&
      &          CNTBAS = .TRUE.
         END DO
         IF ( CNTBAS .AND. (IBSFLAG .EQ. 3 .OR. IBSFLAG .EQ. 1 )) THEN
@@ -1312,7 +1312,7 @@ c           todo : the current reading relies on ios giving an error for no-atom
           
         IF(.NOT.TWOCOMP) THEN
           IF (ASSOCIATED(baspointer%next)) THEN
-            IF (baspointer%next%name==baspointer%name)                    &
+            IF (baspointer%next%name==baspointer%name)                    &&
      &            baspointer=>baspointer%next
 !     JHS060707 Move to small component.
 !               TMP We can extend it to include a search for the small component
@@ -1322,13 +1322,13 @@ c           todo : the current reading relies on ios giving an error for no-atom
             WRITE(lupri,*) 'Small component not specified.'
             WRITE(lupri,*) 'Assuming kinetic balance.'
             IBSFLAG=4
-            CALL KINBAL(basindex,IBLOCK(1),IBLOCK(2),                     &
-     &           IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                  &
-     &           NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                     &
+            CALL KINBAL(basindex,IBLOCK(1),IBLOCK(2),                     &&
+     &           IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                  &&
+     &           NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                     &&
      &           INPTST,CNTBAS)
             BASREF(1,basindex,2) = ' Derived from large component'
 
-          ELSE IF (baspointer%comp=='INTGRL'.OR.                          &
+          ELSE IF (baspointer%comp=='INTGRL'.OR.                          &&
      &           baspointer%comp=='EXPLICIT') THEN
             IBSFLAG=1
             IQM(basindex,2)=SIZE(baspointer%jco)
@@ -1338,35 +1338,35 @@ c           todo : the current reading relies on ios giving an error for no-atom
             BASNAM=baspointer%file
             KAOVEC = KBLOCK + 1 - IBLOCK(2)
 !     POSITION the input file.
-            CALL POS_FILE(infile, lupri, linelen,
+            CALL POS_FILE(infile, lupri, linelen,                       &
      &           '**BASIS', '*BASIS', baspointer%name,baspointer%comp) 
-            CALL GTOINP(infile,IQM(basindex,2),JCO(1,basindex,2),         &
-     &           NUC(IBLOCK(2),2),NRC(IBLOCK(2),2),                       &
-     &           SEG(IBLOCK(2),2),                                        &
-     &           ALPHA(1,IBLOCK(2),2),CPRIM(1,1,IBLOCK(2),2),             &
-     &           CPRIMU(1,1,IBLOCK(2),2),ISGEN(IBLOCK(2)),                &
+            CALL GTOINP(infile,IQM(basindex,2),JCO(1,basindex,2),         &&
+     &           NUC(IBLOCK(2),2),NRC(IBLOCK(2),2),                       &&
+     &           SEG(IBLOCK(2),2),                                        &&
+     &           ALPHA(1,IBLOCK(2),2),CPRIM(1,1,IBLOCK(2),2),             &&
+     &           CPRIMU(1,1,IBLOCK(2),2),ISGEN(IBLOCK(2)),                &&
      &           NBLOCK,KAOVEC,KPRIM)
             NBLCK(basindex,2) = NBLOCK
-            BASREF(1,basindex,2) =                                        &
+            BASREF(1,basindex,2) =                                        &&
      &            "Basis set typed explicitly in input file "
           ELSE IF (baspointer%type(1:7)=='MOLFBAS') THEN
             IBSFLAG=2
             BASNAM=baspointer%file
             KLAST = 1 + (1+KPRIM)*KPRIM
-            IF (KLAST.GT.LWORK)                                           &
+            IF (KLAST.GT.LWORK)                                           &&
      &        CALL STOPIT('BASINP','BFGINP',KLAST,LWORK)
             DIRCON(1) = .TRUE.
-            CALL BFGINP(basindex,IBLOCK(1),1,WORK(1),WORK(1+KPRIM),       &
-     &           IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                  & 
-     &           NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                     &
+            CALL BFGINP(basindex,IBLOCK(1),1,WORK(1),WORK(1+KPRIM),       &&
+     &           IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                  & &
+     &           NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                     &&
      &           baspointer%file,BASREF(1,1,1))                       
 
           ELSE IF (.NOT.(baspointer%type(1:6)=='KINBAL')) THEN
             IBSFLAG=4
-            CALL KINBAL(basindex,                                         &
-     &           IBLOCK(1),IBLOCK(2),                                     &
-     &           IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                  &
-     &           NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                     &
+            CALL KINBAL(basindex,                                         &&
+     &           IBLOCK(1),IBLOCK(2),                                     &&
+     &           IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                  &&
+     &           NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                     &&
      &           INPTST,CNTBAS)
             BASREF(1,basindex,2) = ' Derived from large component'
           END IF   
@@ -1375,8 +1375,8 @@ c           todo : the current reading relies on ios giving an error for no-atom
 
           IF (IQM(basindex,2).GT.0) THEN
             WRITE(lupri,'(3X,A)') 'Small component set:'
-            WRITE(lupri,'(6X,A,I5,A,12I5)')                               &
-     &        'Max.ang.quantum no.:',(IQM(basindex,2)-1),                 &
+            WRITE(lupri,'(6X,A,I5,A,12I5)')                               &&
+     &        'Max.ang.quantum no.:',(IQM(basindex,2)-1),                 &&
      &        '  Blocks:',(JCO(i,basindex,2), i=1,IQM(basindex,2))
           ENDIF
 
@@ -1385,8 +1385,8 @@ c           todo : the current reading relies on ios giving an error for no-atom
           IF (IQM(basindex,2).GT.0) THEN
             IF(INPTST) THEN
                WRITE(lupri,'(3X,A)') 'Small component set:'
-               WRITE(lupri,'(6X,A,I5,A,12I5)')                            &
-     &              'Max.ang.quantum no.:',(IQM(basindex,2)-1),           &
+               WRITE(lupri,'(6X,A,I5,A,12I5)')                            &&
+     &              'Max.ang.quantum no.:',(IQM(basindex,2)-1),           &&
      &              '  Blocks:',(JCO(i,basindex,2), i=1,IQM(basindex,2))
             ENDIF
             NHTYP     = MAX(NHTYP,IQM(basindex,2))
@@ -1394,7 +1394,7 @@ c           todo : the current reading relies on ios giving an error for no-atom
           ENDIF
           
           DO i = 1, NBLCK(basindex,2)
-            IF ((NUC(i,2).NE.NRC(i,2)).AND.(NRC(i,2).GT.0))               &
+            IF ((NUC(i,2).NE.NRC(i,2)).AND.(NRC(i,2).GT.0))               &&
      &             CNTBAS = .TRUE.
           END DO
           IF ( CNTBAS .AND. IBSFLAG .NE. 4 ) DIRCON(2) = .TRUE.
@@ -1421,7 +1421,7 @@ c           todo : the current reading relies on ios giving an error for no-atom
       LINEAR = .FALSE.
       CLASS = 'N/A'
       IF (ADDSYM) THEN
-         CALL SYMADD(WORK,LWORK,basindex,NSYMOP,NONT,KATOM,KASYM,
+         CALL SYMADD(WORK,LWORK,basindex,NSYMOP,NONT,KATOM,KASYM,       &
      &               CLASS,.false.)
          IF (CLASS(3:4).EQ.'oo') LINEAR = .TRUE.
       END IF
@@ -1444,8 +1444,8 @@ c           todo : the current reading relies on ios giving an error for no-atom
 !     ***** Process orbital and geometry input data *****
 !     ****************************************************
 !
-      CALL BASPRO(WORK,LWORK,basindex,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,NRC,&
-     &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM, &
+      CALL BASPRO(WORK,LWORK,basindex,NSYMOP,NONT,IQM,NBLCK,JCO,NUC,NRC,&&
+     &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM, &&
      &            DOOWN, blk)
 !
 !     *************************************************
@@ -1453,8 +1453,8 @@ c           todo : the current reading relies on ios giving an error for no-atom
 !     *************************************************
 !
 
-      CALL BASOUT(WORK,LWORK,basindex,NONT,IQM,NBLCK,JCO,BASREF,        &
-     &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,      &
+      CALL BASOUT(WORK,LWORK,basindex,NONT,IQM,NBLCK,JCO,BASREF,        &&
+     &            NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,      &&
      &            KBLOCK,KPRIM,HERMIT, blk)
 !
 !     TMP copy input to .out file.
@@ -1469,7 +1469,7 @@ c           todo : the current reading relies on ios giving an error for no-atom
 !     ****************************************
 !
 
-      IF (HERMIT) CALL WRONEL(TTITLE,basindex,NONT,IQM,IFXYZ,KATOM,JCO2,&
+      IF (HERMIT) CALL WRONEL(TTITLE,basindex,NONT,IQM,IFXYZ,KATOM,JCO2,&&
      &                        KANG)
 
           DEALLOCATE(NONT)
@@ -1496,12 +1496,12 @@ c           todo : the current reading relies on ios giving an error for no-atom
           TYPE(atom), POINTER :: mol
 
           CALL TITLER('XYZ coordinates read','*',118)
-          WRITE(lupri,'(a,t13,a,t25,a,t37,a,t49,a,t61,a)') 'Label',     &
+          WRITE(lupri,'(a,t13,a,t25,a,t37,a,t49,a,t61,a)') 'Label',     &&
      &         'x','y','z','charge','nuc exp'
           mol=>firstatom
           DO
             IF (associated(mol)) THEN
-              WRITE(lupri,'(a,t9, 5f12.6)')                             & 
+              WRITE(lupri,'(a,t9, 5f12.6)')                             & &
      &          TRIM(mol%name), mol%x, mol%charge, mol%nucexp
               mol=>mol%next
             ELSE
@@ -1519,14 +1519,14 @@ c           todo : the current reading relies on ios giving an error for no-atom
           TYPE(basistype), POINTER :: bas
 
           CALL TITLER('Basisset read','*',118)
-          WRITE(lupri,'(a,t9,a,t41,a,t73,a)')                           &
+          WRITE(lupri,'(a,t9,a,t41,a,t73,a)')                           &&
      &         'Label','component', 'input type','file'
           bas=>firstbas
           DO
             IF (associated(bas)) THEN
-              WRITE(lupri,'(a,t9,a,a,a)')                               &
+              WRITE(lupri,'(a,t9,a,a,a)')                               &&
      &          TRIM(bas%name),bas%comp,bas%type,bas%file
-              IF(associated(bas%jco).AND.associated(bas%fam))            &
+              IF(associated(bas%jco).AND.associated(bas%fam))            &&
      &           WRITE(lupri,*) 'Exponents:', bas%jco, bas%fam
               bas=>bas%next
 

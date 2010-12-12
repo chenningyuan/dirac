@@ -187,8 +187,8 @@ amfi/amfi1.o: amfi/amfi1.F
 	@echo "amfi/amfi1.F compilation with 1st level (of 3) optimization"
 	$(F77) $(F77FLAGS_OPT_1) $(F77FLAGS_SAFE) -c -o $*.o $<
 
-abacus/hermodules.o: abacus/hermodules.F
-	@echo "abacus/hermodules.F compilation with 1st level (of 3) optimization"
+abacus/hermodules.o: abacus/hermodules.F90
+	@echo "abacus/hermodules.F90 compilation with 1st level (of 3) optimization"
 	$(F77) $(F77FLAGS_OPT_1) $(F77FLAGS_SAFE) -c -o $*.o $<
 
 #radovan: this file is under safeflags because imax gets strange values
