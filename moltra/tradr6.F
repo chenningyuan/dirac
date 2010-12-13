@@ -595,7 +595,7 @@ C
       IF (MOD(NBSYMP*NSTR1T,NBUF_L).GT.0) KL_IN_BUF = KL_IN_BUF + 1
 
 c temporarty storage for 1HT fine-sorting 
-      call alloc(node_for_buffer,N_BUFFER)
+      call alloc(node_for_buffer,N_BUFFER, id="node_for_buffer")
 
 C
 C     Assign each (ireprs,k,l) combination to a buffer

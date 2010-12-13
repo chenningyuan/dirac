@@ -26,6 +26,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCSETI_LM (ICALC,EPS,NSP,IREPSP,IREPSPI)
 C
       use memory_allocator
+      use allocator_parameters, only : klongint, kreal
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -74,18 +75,20 @@ Caspg, replacing memget
       integer,      allocatable, target :: a_kr(:),     a_index(:), 
      &                                     a_indk(:),   a_indl(:), 
      &                                     a_ibuf(:)
-      real(kind=8), allocatable, target :: a_cbuf(:),   a_buf1(:), 
+      real(kind=kreal), allocatable, target :: a_cbuf(:),   a_buf1(:), 
      &                                     a_buf2(:),   a_foo(:), 
      &                                     a_fvv(:),    a_fvo(:),
      &                                     a_ints(:),   a_intsa(:)
 C
-      integer:: total_mem_new = 0
-      integer:: verbose = 0, freemem = 0
-C
-Caspg, replacing memget
+      real(kind=kreal)    :: total_mem_new = 0
+      integer(kind=klongint) :: current_mem_use = 0
+      integer(kind=klongint) :: start_mem_use   = 0
+      integer(kind=klongint) :: mxcorr
+      integer        :: freemem = 0
 C
 C---------------Executable code--------------------------------------
 C
+      call allocator_get_words_inuse(start_mem_use)
       ALLOC_ME = ICALC.GE.2
 C
 C  Read integrals & make fock matrices
@@ -101,41 +104,25 @@ C
 C
 C  Allocate core for integral sorting step
 C
-      if (alloc_me) then
-      call alloc(a_kr,2*NSP+2, id="kr")                   !  total_mem_new = total_mem_new + (2*NSP+2)/2
-      IF (EQNS.EQ.'FOCKSP') THEN                          !
-         CALL alloc(a_INDEX,NSP*NSP*16, id="index")       !  total_mem_new = total_mem_new + (NSP*NSP*16)/2
-      ELSE                                                !
-         CALL alloc(a_INDEX,NSP*NSP*4, id="index")        !  total_mem_new = total_mem_new + (NSP*NSP*4)/2
-      ENDIF                                               !
-      CALL alloc(a_INDK,NSP*NSP    , id="indk")           !  total_mem_new = total_mem_new + (NSP*NSP)/2
-      CALL alloc(a_INDL,NSP*NSP    , id="indl")           !  total_mem_new = total_mem_new + (NSP*NSP)/2
-      CALL alloc(a_CBUF,NSP*NSP*RCW, id="cbuf")           !  total_mem_new = total_mem_new + (NSP*NSP*RCW)
-      IF (EQNS.EQ.'FOCKSP') THEN                          !
-         CALL alloc(a_IBUF,NSP*NSP*7*256, id="ibuf")      !  total_mem_new = total_mem_new + (NSP*NSP*7*256)
-      ELSE                                                !
-         CALL alloc(a_IBUF,NSP*NSP*7*16, id="ibuf" )      !  total_mem_new = total_mem_new + (NSP*NSP*7*16)
-      ENDIF                                               !
-      CALL alloc(a_BUF1,NSP*NSP, id="buf1" )              !  total_mem_new = total_mem_new + (NSP*NSP)
-      CALL alloc(a_BUF2,NSP*NSP, id="buf2" )              !  total_mem_new = total_mem_new + (NSP*NSP)
-      CALL alloc(a_FOO,NFOO*RCW, id="foo" )               !  total_mem_new = total_mem_new + (NFOO*RCW)
-      CALL alloc(a_FVO,NFVO*RCW, id="fvo" )               !  total_mem_new = total_mem_new + (NFVO*RCW)
-      CALL alloc(a_FVV,NFVV*RCW, id="fvv" )               !  total_mem_new = total_mem_new + (NFVV*RCW)
-      endif ! if alloc_me true
-
-      total_mem_new = ( (2*NSP+2)+(NSP*NSP)+(NSP*NSP))*kind(integer)
-     &              + ( (NSP*NSP*RCW)+(NSP*NSP)+(NSP*NSP)+(NFOO*RCW)
-     &                 +(NFVO*RCW)+(NFVV*RCW) )*8
-
-      IF (EQNS.EQ.'FOCKSP') THEN
-         total_mem_new = total_mem_new + (NSP*NSP*16)*kind(integer)
-     &                 + (NSP*NSP*7*256)*8
-      ELSE
-         total_mem_new = total_mem_new + (NSP*NSP*4)*kind(integer) 
-     &                 + (NSP*NSP*7*16)*8
-      ENDIF
-
-      total_mem_new = total_mem_new / 8
+      call alloc(a_kr,2*NSP+2, id="kr")                   
+      IF (EQNS.EQ.'FOCKSP') THEN                          
+         call alloc(a_INDEX,NSP*NSP*16, id="index")       
+      ELSE                                                
+         call alloc(a_INDEX,NSP*NSP*4, id="index")        
+      ENDIF                                               
+      call alloc(a_INDK,NSP*NSP    , id="indk")           
+      call alloc(a_INDL,NSP*NSP    , id="indl")           
+      call alloc(a_CBUF,NSP*NSP*RCW, id="cbuf")           
+      IF (EQNS.EQ.'FOCKSP') THEN                          
+         call alloc(a_IBUF,NSP*NSP*7*256, id="ibuf")      
+      ELSE                                                
+         call alloc(a_IBUF,NSP*NSP*7*16, id="ibuf" )      
+      ENDIF                                               
+      call alloc(a_BUF1,NSP*NSP, id="buf1" )              
+      call alloc(a_BUF2,NSP*NSP, id="buf2" )              
+      call alloc(a_FOO,NFOO*RCW, id="foo" )               
+      call alloc(a_FVO,NFVO*RCW, id="fvo" )               
+      call alloc(a_FVV,NFVV*RCW, id="fvv" )               
 
 Caspg, replacing memget
 C
@@ -153,7 +140,7 @@ C
          NVT = MAX(NVT,JVOOO(2))
 C
 C     now we get what is the maximum allocatable dimension
-         call alloc_maxsize(freemem,nv4,verbose)
+         call allocator_get_maxsize(freemem,kind(a_ints))
 C     and rescale the result so that two buffers (ints, intsa can be allocated
           NVF = freemem / (2 * RCW) 
       else
@@ -196,12 +183,11 @@ C
 C     in this new scheme we only work with one array that will hold 
 C     the different classes, one at a time
 
-      if (alloc_me) then
-         call alloc(a_ints, NVTMIN*RCW, id="ints")
-         call alloc(a_intsa,NVTMIN*RCW, id="intsa")
-      endif
+      call alloc(a_ints, NVTMIN*RCW, id="ints")
+      call alloc(a_intsa,NVTMIN*RCW, id="intsa")
 
-      total_mem_new = total_mem_new + 2*(NVTMIN*RCW)
+      call allocator_get_words_inuse(current_mem_use)
+      mxcorr = current_mem_use - start_mem_use
 C
       IF (ICALC.EQ.1) THEN
          WRITE (IW,*) ' '
@@ -215,7 +201,7 @@ C
          WRITE (IW,*) '      different integral classes may increase,'
          WRITE (IW,*) '      and therefore higher I/O loads are likely.'
          WRITE (IW,*) ' '
-         WRITE (IW,1001) "reading and sorting integrals",total_mem_new
+         WRITE (IW,1001) "reading+sorting integrals",mxcorr
          WRITE (IW,1001) "integral sorting buffers only",(2*NVTMIN*RCW)
          WRITE (IW,*) ' '
          RETURN
@@ -226,21 +212,19 @@ C
      &               a_FOO,a_FVO,a_FVV,a_ints,a_intsa,BREIT,SRTALL,
      &               INTERFACE)
 
-      if (alloc_me) then
-         call dealloc(a_kr)
-         CALL dealloc(a_INDEX)
-         CALL dealloc(a_INDK)
-         CALL dealloc(a_INDL)
-         CALL dealloc(a_CBUF)
-         CALL dealloc(a_IBUF) 
-         CALL dealloc(a_BUF1)
-         CALL dealloc(a_BUF2)
-         CALL dealloc(a_FOO)
-         CALL dealloc(a_FVO)
-         CALL dealloc(a_FVV)
-         call dealloc(a_ints)
-         call dealloc(a_intsa)
-      endif
+      call dealloc(a_kr)
+      call dealloc(a_INDEX)
+      call dealloc(a_INDK)
+      call dealloc(a_INDL)
+      call dealloc(a_CBUF)
+      call dealloc(a_IBUF) 
+      call dealloc(a_BUF1)
+      call dealloc(a_BUF2)
+      call dealloc(a_FOO)
+      call dealloc(a_FVO)
+      call dealloc(a_FVV)
+      call dealloc(a_ints)
+      call dealloc(a_intsa)
 C
       RETURN
 1001  FORMAT (" Memory for ",A," :",T50,I10," 8-byte words")

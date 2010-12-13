@@ -492,6 +492,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #else
       SUBROUTINE CCMAIN (CC,MAXCORE,IUNIN,IUNUT,CA,INTFCE)
 #endif
+c
+      use memory_allocator
+      use allocator_parameters, only : klongint, kreal 
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -545,6 +548,13 @@ C
       REAL*8 WALLE,WALLFO,WALLSO,WALLFS,WALLVAR
       CHARACTER*10 INTFCE
       integer :: verbose = 0
+      integer(kind=klongint) :: maxcor
+      integer(kind=klongint) :: mxcor
+      integer(kind=klongint) :: mxcor1
+      integer(kind=klongint) :: mword_limit
+      real(kind=kreal)       :: total_mem_new = 0
+      real(kind=kreal)       :: new_mword_limit = 0
+      integer :: word
 C
 C---------------Executable code--------------------------------------
 C
@@ -584,7 +594,9 @@ C
 C     Memory and I/O setup section
 C     ----------------------------
 C
-      call alloc_maxsize(maxcor,maxcore,verbose)
+      call allocator_get_available_mem(total_mem_new)
+      maxcor = nint((total_mem_new/8.0d0),kind(8))
+      mword_limit = maxcor / (1024 * 1024)
       MXCORR = 0
 C
 C     Read symmetry information
@@ -611,21 +623,10 @@ C
          RCW = 1
       ENDIF
 C
-      IF (MWORD.GT.0) MAXCOR = MWORD * 1024 * 1024
-      MWORD = MAXCOR / (1024 * 1024)
-      IF (MOD(MAXCOR,1024*1024).NE.0) MWORD = MWORD + 1
 C
 C  Check the user supplied memory limit with the static maximum.
 C
       IERR = 0
-#if !defined (CC_ALONE)
-      IF (MAXCOR.GT.MAXCORE) IERR = 1
-#endif
-      IF (IERR.NE.0) THEN
-         MWORD = MAXCORE / (1024 * 1024)
-         WRITE (IW,1006) MAXCORE,MWORD
-         CALL QUIT("DECREASE MWORD")
-      ENDIF
 C
 C     In case of dynamic allocation :
 C     Allow for overhead : subtract 800 kWord
@@ -636,7 +637,7 @@ C
 C
 C     Report memory in megaBytes
 C
-      WRITE (IW,1000) MAXCOR / (128 * 1024)
+      WRITE (IW,1000) (MAXCOR / (1024 * 1024))*8
 C
 C     General setup
 C     -------------
@@ -657,7 +658,7 @@ C
       ENDDO
 C
       WRITE (IW,1004) NELECT,NSP-NELECT,CARITH,DOSORT,DOENER,DOFOPR,
-     &                DOSOPR,DEBUG,TIMING,IPRNT,MWORD,INTERFACE
+     &                DOSOPR,DEBUG,TIMING,IPRNT,mword_limit,INTERFACE
 C     
 C     Check the memory requirements of the active modules
 C     ---------------------------------------------------
@@ -678,37 +679,35 @@ C
 
       IF (DOSORT.and..not.lowmem) MXCORR = MAX(MXCORR,MXCORR1)
 
-      MXCORR1 = 0
-      CALL CCENER (ICALC,CC,KFREE,LFREE,MXCORR1,EPS)
-      IF (DOENER) MXCORR = MAX(MXCORR,MXCORR1)
+      IF (DOENER) THEN
+         MXCORR1 = 0
+         CALL CCENER (ICALC,CC,KFREE,LFREE,MXCORR1,EPS)
+         MXCORR = MAX(MXCORR,MXCORR1)
+      ENDIF
 C
-      MXCORR1 = 0
-      CALL CCFOPR (ICALC,NSP,IREPSPI,CC,KFREE,LFREE,MXCORR1,EPS)
-      IF (DOFOPR) MXCORR = MAX(MXCORR,MXCORR1)
+      IF (DOFOPR) THEN
+         MXCORR1 = 0
+         CALL CCFOPR (ICALC,NSP,IREPSPI,CC,KFREE,LFREE,MXCORR1,EPS)
+         MXCORR = MAX(MXCORR,MXCORR1)
+      ENDIF
 C
-      MXCORR1 = 0
-      CALL CCHESS (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,NSP,IREPSPI)
-      IF (DOSOPR) MXCORR = MAX(MXCORR,MXCORR1)
+      IF (DOSOPR) THEN
+         MXCORR1 = 0
+         CALL CCHESS (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,NSP,IREPSPI)
+         MXCORR = MAX(MXCORR,MXCORR1)
+      ENDIF
 C
-      MXCORR1 = 0
-      CALL CCFSPC(ICALC,CC,KFREE,LFREE,MXCORR1,EPS1,EPS,NSP,
-     &            IREPSP,IREPSPI)
-      IF (DOFSPC) MXCORR = MAX(MXCORR,MXCORR1)
+      IF (DOFSPC) THEN
+         MXCORR1 = 0
+         CALL CCFSPC(ICALC,CC,KFREE,LFREE,MXCORR1,EPS1,EPS,NSP,
+     &               IREPSP,IREPSPI)
+         MXCORR = MAX(MXCORR,MXCORR1)
+      ENDIF
 C
 C MXCORR is a cumulative maximum of individual memory requirements
 C and MAXCOR is the fixed maximum of core memory available on this
 C node. ===> if any subroutine would need more core memory we quit.
 
-      IF (MXCORR.GT.MAXCOR) THEN
-#if defined (CC_ALONE)
-         MXCORR = MXCORR+800*1024
-#endif
-         MWORD = MXCORR / (1024 * 1024)
-         IF (MOD(MXCORR,1024*1024).NE.0) MWORD = MWORD + 1
-         WRITE (IW,1002) MXCORR,MWORD
-         CALL FLSHFO (IW)
-         CALL QUIT("INCREASE MWORD")
-      ENDIF
 C
 C  Allocate the memory and check if it is a standalone version
 C
@@ -861,7 +860,7 @@ C
      &        /" Debug information       :",T44,L1
      &        /" Timing information      :",T44,L1
      &        /" Print level          :",T40,I5
-     &        /" Memory limit (MWord) :",T40,I5
+     &        /" Memory limit (MWord) :",T40,I10
      &        /" Interface used       :",T40,A10//)
 1005  FORMAT (" Size of I/O buffers :",T50,I10," kB")
 1006  FORMAT (" Too much memory specified, maximum is",
@@ -1885,6 +1884,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                   NSP,IREPSP,IREPSPI)
 C
       use memory_allocator
+      use allocator_parameters, only : klongint, kreal
+
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -1933,7 +1934,7 @@ Caspg, replacing memget
       integer,       allocatable, target :: a_kr(:),     
      &                              a_indk(:),   a_indl(:), 
      &                              a_ibuf(:),   a_index(:)
-      real (kind=8), allocatable, target :: a_cbuf(:),   
+      real (kind=kreal), allocatable, target :: a_cbuf(:),   
      &                              a_buf1(:), 
      &                              a_buf2(:),   a_foo(:), 
      &                              a_fvv(:),    a_v1(:), 
@@ -1941,59 +1942,49 @@ Caspg, replacing memget
      &                              a_v3a(:),    a_vt(:), 
      &                              a_fvo(:),    a_v1a(:),
      &                              a_v3(:),     a_vta(:)
-      real (kind=8), pointer ::     a_v4(:),     a_v4a(:)
-      integer ::  total_mem_new = 0
-      integer :: verbose = 0, freemem = 0
+      real (kind=kreal), pointer ::     a_v4(:),     a_v4a(:)
+c
+      real (kind=kreal)   :: total_mem_new = 0
+      integer(kind=klongint) :: mxcorr
+      integer(kind=klongint) :: current_mem_use = 0
+      integer(kind=klongint) :: start_mem_use   = 0
+      integer         :: freemem = 0
 C
 C
 C---------------Executable code--------------------------------------
 C
       ALLOC_ME = ICALC.GE.2
 C
+      call allocator_get_words_inuse(start_mem_use)
+C
 C  Allocate core for integral sorting step
 C
-      if (alloc_me) then
-         call alloc(a_kr,2*NSP+2, id="kr")
-         IF (EQNS.EQ.'FOCKSP') THEN
-            CALL alloc(a_INDEX,NSP*NSP*16, id="index")
-         ELSE
-            CALL alloc(a_INDEX,NSP*NSP*4, id="index")
-         ENDIF
-         CALL alloc(a_INDK,NSP*NSP    , id="indk")
-         CALL alloc(a_INDL,NSP*NSP    , id="indl")
-         CALL alloc(a_CBUF,NSP*NSP*RCW, id="cbuf")
-         IF (EQNS.EQ.'FOCKSP') THEN
-            CALL alloc(a_IBUF,NSP*NSP*7*256, id="ibuf")
-         ELSE
-            CALL alloc(a_IBUF,NSP*NSP*7*16, id="ibuf" )
-         ENDIF
-         CALL alloc(a_BUF1,  NSP*NSP , id="buf1" )
-         CALL alloc(a_BUF2,  NSP*NSP , id="buf2" )
-         CALL alloc(a_FOO,   NFOO*RCW, id="foo"  )
-         CALL alloc(a_FVO,   NFVO*RCW, id="fvo"  )
-         CALL alloc(a_FVV,   NFVV*RCW, id="fvv"  )
-         CALL alloc(a_V1 ,   NV1*RCW , id="v1"   )
-         CALL alloc(a_V1A,   NV1*RCW , id="v1a"  )
-         CALL alloc(a_V2 ,   NV2*RCW , id="v2"   )
-         CALL alloc(a_V2A,   NV2*RCW , id="v2a"  )
-         CALL alloc(a_V3 ,   NV3*RCW , id="v3"   )
-         CALL alloc(a_V3A,   NV3*RCW , id="v3a"  )
-      endif ! if alloc_me true
+      call alloc(a_kr,2*NSP+2, id="kr")
+      IF (EQNS.EQ.'FOCKSP') THEN
+         call alloc(a_INDEX,NSP*NSP*16, id="index")
+      ELSE
+         call alloc(a_INDEX,NSP*NSP*4, id="index")
+      ENDIF
+      call alloc(a_INDK,NSP*NSP    , id="indk")
+      call alloc(a_INDL,NSP*NSP    , id="indl")
+      call alloc(a_CBUF,NSP*NSP*RCW, id="cbuf")
+      IF (EQNS.EQ.'FOCKSP') THEN
+         call alloc(a_IBUF,NSP*NSP*7*256, id="ibuf")
+      ELSE
+         call alloc(a_IBUF,NSP*NSP*7*16, id="ibuf" )
+      ENDIF
+      call alloc(a_BUF1,  NSP*NSP , id="buf1" )
+      call alloc(a_BUF2,  NSP*NSP , id="buf2" )
+      call alloc(a_FOO,   NFOO*RCW, id="foo"  )
+      call alloc(a_FVO,   NFVO*RCW, id="fvo"  )
+      call alloc(a_FVV,   NFVV*RCW, id="fvv"  )
+      call alloc(a_V1 ,   NV1*RCW , id="v1"   )
+      call alloc(a_V1A,   NV1*RCW , id="v1a"  )
+      call alloc(a_V2 ,   NV2*RCW , id="v2"   )
+      call alloc(a_V2A,   NV2*RCW , id="v2a"  )
+      call alloc(a_V3 ,   NV3*RCW , id="v3"   )
+      call alloc(a_V3A,   NV3*RCW , id="v3a"  )
 
-      total_mem_new = (2*NSP+2)+(2*NSP*NSP)
-      if (eqns.eq.'FOCKSP') then
-         tota_mem_new = total_mem_new + (NSP*NSP*(16+(7*256))) 
-      else
-         tota_mem_new = total_mem_new + (NSP*NSP*(4+(7*16))) 
-      endif
-      total_mem_new = total_mem_new * (kind(integer))
-      
-      total_mem_new = total_mem_new + (NSP*NSP*2) 
-     &              + (RCW*(NSP*NSP+(NFOO+NFVO+NFVV)+2*(NV1+NV2+NV3)))
-      total_mem_new = (total_mem_new * 8)/8
-      
-
-      MXCORR = MAX(MXCORR,total_mem_new)
 C
 C     After sorting and antisymmetrizing the OOOO,VOOO and VVOO integrals
 C     parts of the above arrays are not needed anymore and could be used
@@ -2008,7 +1999,7 @@ C
       NVT = MAX(NVT,JVOOO(2))
 C
 C     The remaining space is
-      call alloc_maxsize(freemem,nv4,verbose)
+      call allocator_get_maxbuff(freemem,kind(a_VT))
       NVF = freemem / (2 * RCW)
 C
 C  Determine number of available buffers with respect to free memory
@@ -2033,20 +2024,19 @@ C
       NVTMIN = MAX(NVTMIN,JOOOO(2))
       NVTMIN = MAX(NVTMIN,JVOOO(2))
 C
-      if (alloc_me) then
-         CALL alloc(a_VT ,NVTMIN*RCW, id="vt" )
-         CALL alloc(a_VTA,NVTMIN*RCW, id="vta" )
-         a_V4  => a_VT
-         a_V4A => a_VTA
-      endif
-      total_mem_new = total_mem_new + (2*NVTMIN*RCW)
-      MXCORR = MAX(MXCORR,total_mem_new)
+      call alloc(a_VT ,NVTMIN*RCW, id="vt" )
+      call alloc(a_VTA,NVTMIN*RCW, id="vta" )
+      a_V4  => a_VT
+      a_V4A => a_VTA
+
+      call allocator_get_words_inuse(current_mem_use)
+      mxcorr= current_mem_use - start_mem_use
 C
       IF (ICALC.EQ.1) THEN
          WRITE (IW,1001) "reading and sorting integrals",MXCORR
          KFREE = KFRSAV
          LFREE = LFRSAV
-         RETURN
+         GOTO 450
       ENDIF
 C
 C  Read integrals & make fock matrices
@@ -2066,29 +2056,30 @@ C
      &            a_V2,a_V2A,a_V3,a_V3A,a_V4,a_V4A,
      &            a_VT,a_VTA,a_VT,a_VTA,EPS,a_FOO,a_FVO,
      &            a_FVV,BREIT,SRTALL,INTERFACE,CC)
-      if (alloc_me) then
-         call dealloc(a_kr)
-         CALL dealloc(a_INDEX)
-         CALL dealloc(a_INDK)
-         CALL dealloc(a_INDL)
-         CALL dealloc(a_CBUF)
-         CALL dealloc(a_IBUF) 
-         CALL dealloc(a_BUF1)
-         CALL dealloc(a_BUF2)
-         CALL dealloc(a_FOO )
-         CALL dealloc(a_FVO )
-         CALL dealloc(a_FVV )
-         CALL dealloc(a_V1  )
-         CALL dealloc(a_V1A )
-         CALL dealloc(a_V2  )
-         CALL dealloc(a_V2A )
-         CALL dealloc(a_V3  )
-         CALL dealloc(a_V3A )
-         CALL dealloc(a_VT  )
-         CALL dealloc(a_VTA )
-         CALL dealloc(a_V4  )
-         CALL dealloc(a_V4A )
-      endif
+
+ 450  CONTINUE
+      call dealloc(a_kr, id="kr" )
+      call dealloc(a_INDEX, id="index" )
+      call dealloc(a_INDK, id="indk" )
+      call dealloc(a_INDL, id="indl" )
+      call dealloc(a_CBUF, id="cbuf" )
+      call dealloc(a_IBUF, id="ibuf" )  
+      call dealloc(a_BUF1, id="buf1" )
+      call dealloc(a_BUF2, id="buf2" )
+      call dealloc(a_FOO , id="foo" )
+      call dealloc(a_FVO , id="fvo" )
+      call dealloc(a_FVV , id="fvv" )
+      call dealloc(a_V1  , id="v1" )
+      call dealloc(a_V1A , id="v1a" )
+      call dealloc(a_V2  , id="v2" )
+      call dealloc(a_V2A , id="v2a" )
+      call dealloc(a_V3  , id="v3" )
+      call dealloc(a_V3A , id="v3a" )
+
+      a_V4  => NULL()
+      a_V4A => NULL()
+      call dealloc(a_VT  , id="vt" )
+      call dealloc(a_VTA , id="vta" )
 C
       RETURN
 1001  FORMAT (" Memory for ",A," :",T50,I10," 8-byte words")
@@ -2096,6 +2087,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCENER (ICALC,CC,KFREE,LFREE,MXCORR,EPS)
       use memory_allocator
+      use allocator_parameters, only : klongint, kreal
+
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -2139,48 +2132,51 @@ C
       LOGICAL ALLOC_ME
       INTEGER*8 NV5IRP,NV6IRP,NVIRP
 C
-C aspg, hand-added
-      real(kind=8), allocatable, target :: a_FVO(:), a_FOO(:),  
+      real(kind=kreal), allocatable, target :: a_FVO(:), a_FOO(:),  
      &                                     a_FVV(:),
      &                                     a_T1(:),  a_T2(:), 
      &                                     a_S1(:),  a_S2(:)
 c
-      real(kind=8), allocatable, target :: a_AZ(:),  a_H(:),  a_HO(:),
+      real(kind=kreal), allocatable, target :: a_AZ(:), a_H(:), a_HO(:),
      &                             a_HV(:),  a_HOV(:),  a_GOO(:),
      &                             a_GVV(:), a_CCC(:),  a_BB1(:),
      &                             a_BB2(:), a_BUF1(:), a_BUF2(:)
 c
-      real(kind=8), allocatable, target :: a_VOOO(:),a_T2S(:), a_T2T(:),
+      real(kind=kreal), allocatable, target :: a_VOOO(:),a_T2S(:), 
      &                             a_VVOO(:),a_VVVO(:), a_BUF3(:),
-     &                             a_TAU3(:)
+     &                             a_TAU3(:), a_T2T(:)
 c
-      integer(kind=8) :: total_mem_new
-      integer:: verbose = 0, freemem = 0
-
-C aspg, hand-added
-      total_mem_new = 0
+      real(kind=kreal)    :: total_mem_new   = 0
+      integer(kind=klongint) :: current_mem_use = 0
+      integer(kind=klongint) :: start_mem_use   = 0
+      integer(kind=klongint) :: mxcor   = 0 
+      integer(kind=klongint) :: mxcr    = 0
+      integer(kind=klongint) :: mxcorr  
+      integer         :: freemem = 0
 C
 C---------------Executable code--------------------------------------
 C
       ALLOC_ME = ICALC.GE.2
       IF (ICALC.LE.0) RETURN
+
+      call allocator_get_words_inuse(start_mem_use)
 C
 C Allocate space for the calculation of the amplitudes
 C
-      if (alloc_me) then
-         CALL alloc( a_FVO, NFVO*RCW   , id="fvo" )
-         CALL alloc( a_FOO, NFOO*RCW   , id="foo" )
-         CALL alloc( a_FVV, NFVV*RCW   , id="fvv" )
-         CALL alloc( a_T1 , NDIMT1*RCW , id="t1" )
-         CALL alloc( a_T2 , NDIMT2*RCW , id="t2" )
-         CALL alloc( a_S1 , NDIMT1*RCW , id="s1" )
-         CALL alloc( a_S2 , NDIMT2*RCW , id="s2" )
-      endif
-      total_mem_new = (RCW*(NFVO+NFOO+NFVV+2*(NDIMT1+NDIMT2)))
+      call alloc( a_FVO, NFVO*RCW   , id="fvo" )
+      call alloc( a_FOO, NFOO*RCW   , id="foo" )
+      call alloc( a_FVV, NFVV*RCW   , id="fvv" )
+      call alloc( a_T1 , NDIMT1*RCW , id="t1" )
+      call alloc( a_T2 , NDIMT2*RCW , id="t2" )
+      call alloc( a_S1 , NDIMT1*RCW , id="s1" )
+      call alloc( a_S2 , NDIMT2*RCW , id="s2" )
+
+      call allocator_get_words_inuse(current_mem_use)
+      MXCOR = current_mem_use - start_mem_use
 C
 C This is all we need to calculate the MP2 energy
 C
-      IF (DOMP2) MXCORR = total_mem_new 
+      IF (DOMP2) MXCORR = MXCOR
 C
       IF (DOCCSD) THEN
          MAXDIM = MXDIMCC
@@ -2188,30 +2184,25 @@ C
      &               JVVOO(NREP+1),JVOVO(NREP+1))
          NBUF2 = NBUF1
 
-         if (alloc_me) then
-            call alloc( a_AZ   ,    NV1*RCW              , id="az" )
-            call alloc( a_H    ,    NV4*RCW              , id="h" )
-            call alloc( a_HO   ,    NFOO*RCW             , id="ho" )
-            call alloc( a_HV   ,    NFVV*RCW             , id="hv" )
-            call alloc( a_HOV  ,   NFVO*RCW              , id="hov" )
-            call alloc( a_GOO  ,   NFOO*RCW              , id="goo" )
-            call alloc( a_GVV  ,   NFVV*RCW              , id="gvv" )
-            call alloc( a_CCC  ,   MAXDIM                , id="ccc" )
-            call alloc( a_BB1  ,   (MAXDIM+1)*(MAXDIM+2) , id="bb1" ) 
-            call alloc( a_BB2  ,   (MAXDIM+1)*(MAXDIM+2) , id="bb2" ) 
-            call alloc( a_BUF1 ,  NBUF1*RCW              , id="buf1" )
-            call alloc( a_BUF2 ,  NBUF2*RCW              , id="buf2" )
-         endif
+         call alloc( a_AZ   ,    NV1*RCW              , id="az" )
+         call alloc( a_H    ,    NV4*RCW              , id="h" )
+         call alloc( a_HO   ,    NFOO*RCW             , id="ho" )
+         call alloc( a_HV   ,    NFVV*RCW             , id="hv" )
+         call alloc( a_HOV  ,   NFVO*RCW              , id="hov" )
+         call alloc( a_GOO  ,   NFOO*RCW              , id="goo" )
+         call alloc( a_GVV  ,   NFVV*RCW              , id="gvv" )
+         call alloc( a_CCC  ,   MAXDIM                , id="ccc" )
+         call alloc( a_BB1  ,   (MAXDIM+1)*(MAXDIM+2) , id="bb1" ) 
+         call alloc( a_BB2  ,   (MAXDIM+1)*(MAXDIM+2) , id="bb2" ) 
+         call alloc( a_BUF1 ,  NBUF1*RCW              , id="buf1" )
+         call alloc( a_BUF2 ,  NBUF2*RCW              , id="buf2" )
 
-         total_mem_new = total_mem_new 
-     &          + (RCW*(NV1+NV4+NFOO+NFVV+NFVO+NFOO+NFVV+NBUF1+NBUF2))
-     &          + (MAXDIM + 2*((MAXDIM+1)*(MAXDIM+2)))
 C
 C        Calculate size of the 3rd work array
 C        The last array is used to buffer in the <VV||VV> and <VO||VV>
 C        integrals, start by making it as large as possible.
 C
-         call alloc_maxsize(freemem,nv1,verbose)
+         call allocator_get_maxbuff(freemem,kind(a_BUF3))
          NBUF3 = freemem / RCW
 C
 C        Calculate maximum size necessary for the VOVV and VVVV buffers
@@ -2232,44 +2223,18 @@ C
 C
 C        Allocate the work array
 C
-         if (alloc_me) then
-            call alloc(a_BUF3,NBUF3*RCW, id="buf3" )
-         endif
-         total_mem_new = total_mem_new + (NBUF3*RCW)
+         call alloc(a_BUF3,NBUF3*RCW, id="buf3" )
 
-         IF (DOCCSD) THEN
-            MXCORR = MAX(MXCORR,total_mem_new)
-         ENDIF
+         call allocator_get_words_inuse(current_mem_use)
+         MXCR = current_mem_use - start_mem_use
+
+         mxcorr = MAX(MXCOR,mxcr)
 C
       ENDIF
 C
-      IF (ICALC.EQ.1) WRITE (IW,1001) "calculating amplitudes",
-     &                                total_mem_new
-C
-C  Calculate requirements for triples correction.
-C  do memory alloc_meation later, reusing some buffer variables 
-C
-      TOP = S1
-      VOOO  = TOP
-      T2S   = VOOO + NV2*RCW + RCW
-      T2T   = T2S + IVVOOT(NREP+1)*RCW + RCW
-      VVOO  = T2T + LOVVOT(NREP+1)*RCW + RCW
-      VVVO  = VVOO + NDIMT2*RCW + RCW
-      BUF1B = VVVO + KT3VVVOT(NREP+1)*RCW + RCW
-      BUF2B = BUF1B + IVVVTMX*RCW + RCW
-      BUF3B = BUF2B + IVVVTMX*RCW + RCW
-      TAU3B = BUF3B + IVVVTMX*RCW + RCW
-      TOP = TAU3B + NDIMT2*RCW + RCW
-      IF(ICALC.EQ.1) WRITE (IW,1001) "in core evaluation of triples",TOP
-      IF (DOCCSDT) MXCORR = MAX(MXCORR,TOP)
-C
-c
-      if (doccsdt) total_mem_new = total_mem_new + TOP
-c
       IF (ICALC.EQ.1) THEN
-         KFREE = KFRSAV
-         LFREE = LFRSAV
-         RETURN
+         WRITE (IW,1001) "calculating amplitudes",mxcorr
+         GOTO 420 
       ENDIF
 C
       WRITE (IW,1007) DOMP2,DOCCSD,DOCCSDT
@@ -2287,7 +2252,7 @@ C
             GOTO 10
          ENDIF
 C
-C if we are only doing
+C if we ire only doing
          CALL MP2EQN(EPS,a_FVO,a_T1,a_S1,a_T2,a_S2)
 C
 C        This is a restart point: save the amplitudes and update status.
@@ -2359,54 +2324,55 @@ C
 C  Calculate T3 corrections
 C
 C
+ 420  CONTINUE
       IF (DOCCSDT) THEN
+         IF (ICALC.EQ.1) GOTO 421
+
          IF (IMSTAT(6).EQ.3) THEN
             WRITE (IW,1012)
             GOTO 30
          ENDIF
 C
-         if (alloc_me) then
-            CALL dealloc(a_S2  )
-            call dealloc(a_AZ  )
-            call dealloc(a_H   )
-            call dealloc(a_HO  )
-            call dealloc(a_HV  )
-            call dealloc(a_HOV )
-            call dealloc(a_GOO )
-            call dealloc(a_GVV )
-            call dealloc(a_CCC )
-            call dealloc(a_BB1 )
-            call dealloc(a_BB2 )
-            call dealloc(a_BUF1)
-            call dealloc(a_BUF2)
-            call dealloc(a_BUF3)
-         endif
-
-         total_mem_new = total_mem_new
-     &                 - RCW*(NDIMT2+NV1+NV4+NFOO+NFVV)
-     &                 - RCW*(NFVO+NFOO+NFVV+NBUF1+NBUF2+NBUF3)
-     &                 - (MAXDIM + 2*((MAXDIM+1)*(MAXDIM+2)))
-
-         if (alloc_me) then
-            CALL alloc( a_VOOO , NV2*RCW            , id="vooo" )
-            CALL alloc( a_T2S  , IVVOOT(NREP+1)*RCW , id="t2s" )
-            CALL alloc( a_T2T  , LOVVOT(NREP+1)*RCW , id="t2t" )
-            CALL alloc( a_VVOO , NDIMT2*RCW         , id="vvoo" )
+ 421     CONTINUE
+         call dealloc(a_S2  )
+         call dealloc(a_AZ  )
+         call dealloc(a_H   )
+         call dealloc(a_HO  )
+         call dealloc(a_HV  )
+         call dealloc(a_HOV )
+         call dealloc(a_GOO )
+         call dealloc(a_GVV )
+         call dealloc(a_CCC )
+         call dealloc(a_BB1 )
+         call dealloc(a_BB2 )
+         call dealloc(a_BUF1)
+         call dealloc(a_BUF2)
+         call dealloc(a_BUF3)
+C
+C        now we start reallocating
+C
+         call alloc( a_VOOO , NV2*RCW            , id="vooo" )
+         call alloc( a_T2S  , IVVOOT(NREP+1)*RCW , id="t2s" )
+         call alloc( a_T2T  , LOVVOT(NREP+1)*RCW , id="t2t" )
+         call alloc( a_VVOO , NDIMT2*RCW         , id="vvoo" )
 C
 C        Convert the integer*8 variable into an integer*4
 C
-            NVOVV = KT3VVVOT(NREP+1)
-            CALL alloc( a_VVVO , NVOVV*RCW          , id="vvvo" )
-            CALL alloc( a_BUF1 , IVVVTMX*RCW        , id="buf1" )
-            CALL alloc( a_BUF2 , IVVVTMX*RCW        , id="buf2" )
-            CALL alloc( a_BUF3 , IVVVTMX*RCW        , id="buf3" )
-            CALL alloc( a_TAU3 , NDIMT2*RCW         , id="tau3" )
+         NVOVV = KT3VVVOT(NREP+1)
+         call alloc( a_VVVO , NVOVV*RCW          , id="vvvo" )
+         call alloc( a_BUF1 , IVVVTMX*RCW        , id="buf1" )
+         call alloc( a_BUF2 , IVVVTMX*RCW        , id="buf2" )
+         call alloc( a_BUF3 , IVVVTMX*RCW        , id="buf3" )
+         call alloc( a_TAU3 , NDIMT2*RCW         , id="tau3" )
 
-         endif
-         total_mem_new = total_mem_new
-     &                 + (RCW*(NV2+ 3*IVVVTMX + 2*NDIMT2 + NVOVV))
-     &                 + (RCW*(IVVOOT(NREP+1) + LOVVOT(NREP+1))) 
+C
+         IF (ICALC.EQ.1) THEN
+            call allocator_get_words_inuse(current_mem_use)
+            mxcr = current_mem_use - start_mem_use
 
+            WRITE (IW,1001) "in core evaluation of triples",MXCR
+            GOTO 422
+         ENDIF
 C
 C        Check if CCSD amplitudes are available
 C
@@ -2432,27 +2398,24 @@ C
          CALL CCDUMP
    30    CONTINUE
 
-         if (alloc_me) then
-            CALL dealloc(a_T2S  , id="t2s")
-            CALL dealloc(a_T2T  , id="t2t")
-            CALL dealloc(a_VOOO , id="vooo")
-            CALL dealloc(a_VVOO , id="vvoo")
-            CALL dealloc(a_VVVO , id="vvvo")
-            CALL dealloc(a_BUF1 , id="buf1")
-            CALL dealloc(a_BUF2 , id="buf2")
-            CALL dealloc(a_BUF3 , id="buf3")
-            CALL dealloc(a_TAU3 , id="tau3")
-         endif
+ 422     CONTINUE
+         call dealloc(a_T2S  , id="t2s")
+         call dealloc(a_T2T  , id="t2t")
+         call dealloc(a_VOOO , id="vooo")
+         call dealloc(a_VVOO , id="vvoo")
+         call dealloc(a_VVVO , id="vvvo")
+         call dealloc(a_BUF1 , id="buf1")
+         call dealloc(a_BUF2 , id="buf2")
+         call dealloc(a_BUF3 , id="buf3")
+         call dealloc(a_TAU3 , id="tau3")
       ENDIF
 C
-      if (alloc_me) then
-         CALL dealloc(a_FVO , id="fvo")
-         CALL dealloc(a_FOO , id="fvo")
-         CALL dealloc(a_FVV , id="fvo")
-         CALL dealloc(a_T1  , id="fvo")
-         CALL dealloc(a_T2  , id="fvo")
-         CALL dealloc(a_S1  , id="s1")
-      endif
+      call dealloc(a_FVO , id="fvo")
+      call dealloc(a_FOO , id="fvo")
+      call dealloc(a_FVV , id="fvo")
+      call dealloc(a_T1  , id="fvo")
+      call dealloc(a_T2  , id="fvo")
+      call dealloc(a_S1  , id="s1")
 C
       RETURN
 1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
@@ -2475,6 +2438,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                   MXCORR,EPS)
 C
       use memory_allocator
+      use allocator_parameters, only : klongint, kreal
 C
       IMPLICIT INTEGER (A-Z)
 C
@@ -2526,7 +2490,7 @@ C
       LOGICAL ALLOC_ME
 C
 C
-      real(kind=8), allocatable, target :: a_FOO(:), a_FVO(:), a_FVV(:),
+      real(kind=kreal), allocatable, target :: a_FOO(:), a_FVO(:), 
      &                             a_T1(:),  a_T2(:),   a_S1(:),
      &                             a_S2(:),  a_DOO(:),  a_DVV(:),
      &                             a_XOO(:), a_XVV(:),  a_DVO(:),
@@ -2536,14 +2500,19 @@ C
      &                             a_DG(:),  a_DMO(:),  a_XMO(:),
      &                             a_CCC(:), a_BB1(:),  a_BB2(:),
      &                             a_BUF1(:),a_CBUF(:), a_BUF2(:),
-     &                             a_BUF3(:)
+     &                             a_BUF3(:),a_FVV(:)
 
-      integer(kind=8)           :: total_mem_new
-      integer :: freemem, verbose = 0
+      real(kind=kreal)       :: total_mem_new = 0
+      integer(kind=klongint) :: current_mem_use = 0
+      integer(kind=klongint) :: start_mem_use   = 0
+      integer(kind=klongint) :: mxcor   = 0
+      integer(kind=klongint) :: mxcr    = 0
+      integer(kind=klongint) :: mxcorr
+      integer                :: freemem = 0
 C
 C---------------Executable code--------------------------------------
 C
-      total_mem_new = 0
+      call allocator_get_words_inuse(start_mem_use)
 C
       if (doccsdg) then
          WRITE (IW,*) ' CCSD gradient not yet implemented,'
@@ -2559,26 +2528,19 @@ C
 C     here we allocate the variables common to both schemes
 C     the specific ones are allocated as needed
 C
-      if (ALLOC_ME) then
-         CALL alloc( a_FOO   , NFOO*RCW         , id="foo" )
-         CALL alloc( a_FVO   , NFVO*RCW         , id="fvo" )
-         CALL alloc( a_FVV   , NFVV*RCW         , id="fvv" )
-         CALL alloc( a_T1    , NDIMT1*RCW       , id="t1" )
-         CALL alloc( a_T2    , NDIMT2*RCW       , id="t2" )
-         CALL alloc( a_S1    , NDIMT1*RCW       , id="s1" )
-         CALL alloc( a_S2    , NDIMT2*RCW       , id="s2" )
-         CALL alloc( a_DOO   , NFOO*RCW         , id="doo" )
-         CALL alloc( a_DVV   , NFVV*RCW         , id="dvv" )
-         CALL alloc( a_DVO   , NDIMX*RCW        , id="dvo" )
-         CALL alloc( a_DOV   , NDIMX*RCW        , id="dov" )
-         CALL alloc( a_DMO   , NORBT*NORBT*NZ   , id="dmo" )
-         CALL alloc( a_XMO   , NORBT*NORBT*NZ   , id="xmo" )
-      endif
-
-      total_mem_new = total_mem_new 
-     &                 + RCW*(4*(NFOO+NFVV)+NDIMX*(7+2*(NEOPER))+NFVO) 
-     &                 + RCW*(2*(NDIMT1+NDIMT2))
-     &                 + 2*NORBT*NORBT*NZ
+      call alloc( a_FOO   , NFOO*RCW         , id="foo" )
+      call alloc( a_FVO   , NFVO*RCW         , id="fvo" )
+      call alloc( a_FVV   , NFVV*RCW         , id="fvv" )
+      call alloc( a_T1    , NDIMT1*RCW       , id="t1" )
+      call alloc( a_T2    , NDIMT2*RCW       , id="t2" )
+      call alloc( a_S1    , NDIMT1*RCW       , id="s1" )
+      call alloc( a_S2    , NDIMT2*RCW       , id="s2" )
+      call alloc( a_DOO   , NFOO*RCW         , id="doo" )
+      call alloc( a_DVV   , NFVV*RCW         , id="dvv" )
+      call alloc( a_DVO   , NDIMX*RCW        , id="dvo" )
+      call alloc( a_DOV   , NDIMX*RCW        , id="dov" )
+      call alloc( a_DMO   , NORBT*NORBT*NZ   , id="dmo" )
+      call alloc( a_XMO   , NORBT*NORBT*NZ   , id="xmo" )
 
       NBUF1 = MAX(JOOOO(NREP+1),JVOOO(NREP+1),
      &            JVVOO(NREP+1),JVOVO(NREP+1))
@@ -2590,15 +2552,8 @@ C
       MAXIT  = MXITGR
       MAXDIM = MXDIMGR
 
-      if (alloc_me) then
-         CALL alloc( a_BUF1  , NBUF1*RCW             , id="buf2" )
-         CALL alloc( a_BUF2  , NBUF2*RCW             , id="buf1" )
-      endif
-
-      total_mem_new = total_mem_new 
-     &                 + MAXDIM + 2*((MAXDIM+1)*(MAXDIM+2)) 
-     &                 + RCW*(NBUF1+NBUF2) + 2*NSP*NSP
-
+      call alloc( a_BUF1  , NBUF1*RCW             , id="buf2" )
+      call alloc( a_BUF2  , NBUF2*RCW             , id="buf1" )
 C
 C     Read the Fock matrix from file
 C
@@ -2619,54 +2574,44 @@ C
 C
 C allocating stuff specific for this option
 C
-      if (ALLOC_ME) then
-         CALL alloc( a_XOO   , NFOO*RCW         , id="xoo" )
-         CALL alloc( a_XVV   , NFVV*RCW         , id="xvv" )
-         CALL alloc( a_D2VO  , NDIMX*RCW        , id="d2vo" )
-         CALL alloc( a_D2OV  , NDIMX*RCW        , id="d2ov" )
-         CALL alloc( a_XVO   , NDIMX*RCW        , id="xvo" )
-         CALL alloc( a_XOV   , NDIMX*RCW        , id="xov" )
-         CALL alloc( a_EVO   , NEOPER*NDIMX*RCW , id="evo" )
-         CALL alloc( a_EOV   , NEOPER*NDIMX*RCW , id="eov" )
-         CALL alloc( a_EOO   , NFOO*RCW         , id="eoo" )
-         CALL alloc( a_EVV   , NFVV*RCW         , id="evv" )
-         CALL alloc( a_DG    , NDIMX*RCW        , id="dg" )
+      call alloc( a_XOO   , NFOO*RCW         , id="xoo" )
+      call alloc( a_XVV   , NFVV*RCW         , id="xvv" )
+      call alloc( a_D2VO  , NDIMX*RCW        , id="d2vo" )
+      call alloc( a_D2OV  , NDIMX*RCW        , id="d2ov" )
+      call alloc( a_XVO   , NDIMX*RCW        , id="xvo" )
+      call alloc( a_XOV   , NDIMX*RCW        , id="xov" )
+      call alloc( a_EVO   , NEOPER*NDIMX*RCW , id="evo" )
+      call alloc( a_EOV   , NEOPER*NDIMX*RCW , id="eov" )
+      call alloc( a_EOO   , NFOO*RCW         , id="eoo" )
+      call alloc( a_EVV   , NFVV*RCW         , id="evv" )
+      call alloc( a_DG    , NDIMX*RCW        , id="dg" )
 
-         CALL alloc( a_CCC   , MAXDIM                , id="ccc" )
-         CALL alloc( a_BB1   , (MAXDIM+1)*(MAXDIM+2) , id="bb1" )
-         CALL alloc( a_BB2   , (MAXDIM+1)*(MAXDIM+2) , id="bb2" )
-         CALL alloc( a_CBUF  , 2*NSP*NSP             , id="cbuf" )
-      endif
-
-      total_mem_new = total_mem_new
-     &                 + MAXDIM + 2*((MAXDIM+1)*(MAXDIM+2))
-     &                 + RCW*(NBUF1+NBUF2) + 2*NSP*NSP
-
-
+      call alloc( a_CCC   , MAXDIM                , id="ccc" )
+      call alloc( a_BB1   , (MAXDIM+1)*(MAXDIM+2) , id="bb1" )
+      call alloc( a_BB2   , (MAXDIM+1)*(MAXDIM+2) , id="bb2" )
+      call alloc( a_CBUF  , 2*NSP*NSP             , id="cbuf" )
 C
 C     Calculate size of the 3rd work array that is passed on to the
 C     response module as work, we make it as large as possible.
 C
-      call alloc_maxsize(freemem,min(NBUF1,NDIMT1,NDIMT2),verbose)
-      NBUF3 = freemem / RCW   
+      call allocator_get_maxbuff(freemem,kind(a_BUF3))
+      NBUF3 = freemem / RCW
 C
 C     Allocate now also this remaining work array
 C
-      if (alloc_me) then
-         CALL alloc( a_BUF3  , NBUF3*RCW             , id="buf3" )
+      call alloc( a_BUF3  , NBUF3*RCW             , id="buf3" )
 C
 C  now our reference work array is a_BUF3 and KFREE an LFREE relate to that...
 C
-         KFREE = 1
-         LFREE = NBUF3 *RCW
-      endif
+      KFREE = 1
+      LFREE = NBUF3 *RCW
 
-      total_mem_new = total_mem_new + NBUF3*RCW
-C
-      MXCORR = total_mem_new
+      call allocator_get_words_inuse(current_mem_use)
+      mxcorr = current_mem_use - start_mem_use
+
       IF (ICALC.EQ.1) THEN
-         WRITE (IW,1001) "Gradient Calculation",total_mem_new
-         RETURN
+         WRITE (IW,1001) "Gradient Calculation",MXCORR
+         GOTO 430
       ENDIF
 
          WRITE (IW,1007) MXITGR,MXDIMGR,10.0D0**(-NTOLGR)
@@ -2721,24 +2666,24 @@ C
      &                  EPHASE,CEXPA)
             WRITE (IW,1004) NAMEE(EOPER),CEXPA
          ENDDO
-      if (alloc_me) then
-          call dealloc(a_XOO)
-          call dealloc(a_XVV)
-          call dealloc(a_D2VO)
-          call dealloc(a_D2OV)
-          call dealloc(a_XVO)
-          call dealloc(a_XOV)
-          call dealloc(a_EVO)
-          call dealloc(a_EOV)
-          call dealloc(a_EOO)
-          call dealloc(a_EVV)
-          call dealloc(a_DG)
-          call dealloc(a_CCC)
-          call dealloc(a_BB1)
-          call dealloc(a_BB2)
-          call dealloc(a_CBUF)
-          call dealloc(a_BUF3)
-      endif
+
+ 430     CONTINUE
+         call dealloc(a_XOO, id="xoo" )
+         call dealloc(a_XVV, id="xvv" )
+         call dealloc(a_D2VO, id="d2vo" )
+         call dealloc(a_D2OV, id="d2ov" )
+         call dealloc(a_XVO, id="xvo" )
+         call dealloc(a_XOV, id="xov" )
+         call dealloc(a_EVO, id="evo" )
+         call dealloc(a_EOV, id="eov" )
+         call dealloc(a_EOO, id="eoo" )
+         call dealloc(a_EVV, id="evv" )
+         call dealloc(a_DG, id="dg" )
+         call dealloc(a_CCC, id="ccc" )
+         call dealloc(a_BB1, id="bb1" )
+         call dealloc(a_BB2, id="bb2" )
+         call dealloc(a_CBUF, id="cbuf" )
+         call dealloc(a_BUF3, id="buf3" )
 C
       ENDIF ! End of MO code
 C
@@ -2750,26 +2695,24 @@ C
 C     Calculate size of the 3rd work array that is passed on to the
 C     response module as work, we make it as large as possible.
 C
-      call alloc_maxsize(freemem,min(NBUF1,NDIMT1,NDIMT2),verbose)
-      NBUF3 = freemem / RCW  
+      call allocator_get_maxbuff(freemem,kind(a_BUF3))
+      NBUF3 = freemem / RCW
 C
 C     Allocate now also this remaining work array
 C
-      if (alloc_me) then
-         CALL alloc( a_BUF3  , NBUF3*RCW             , id="buf3" )
+      call alloc( a_BUF3  , NBUF3*RCW             , id="buf3" )
 C
 C  now our reference work array is a_BUF3 and KFREE an LFREE relate to that...
 C
-         KFREE = 1
-         LFREE = NBUF3*RCW 
-      endif
+      KFREE = 1
+      LFREE = NBUF3*RCW 
 
-      total_mem_new = total_mem_new + NBUF3*RCW
-C
-      MXCORR = total_mem_new
+      call allocator_get_words_inuse(current_mem_use)
+      mxcorr = current_mem_use - start_mem_use
+
       IF (ICALC.EQ.1) THEN
-         WRITE (IW,1001) "Gradient Calculation",total_mem_new
-         RETURN
+         WRITE (IW,1001) "Gradient Calculation",MXCORR
+         GOTO 431 
       ENDIF
 
           WRITE (IW,1008) 
@@ -2837,26 +2780,26 @@ C
      &                     MPI_COMM_WORLD,IERR)
          ENDDO
 #endif
-         if (alloc_me) call dealloc(a_BUF3)
+ 431  CONTINUE
+         call dealloc(a_BUF3, id="buf3")
       ENDIF
 C
-      if (alloc_me) then
-         CALL dealloc( a_FOO)
-         CALL dealloc( a_FVO)
-         CALL dealloc( a_FVV)
-         CALL dealloc( a_T1 )
-         CALL dealloc( a_T2 )
-         CALL dealloc( a_S1 )
-         CALL dealloc( a_S2 )
-         CALL dealloc( a_DOO)
-         CALL dealloc( a_DVV)
-         CALL dealloc( a_DVO)
-         CALL dealloc( a_DOV)
-         CALL dealloc( a_DMO)
-         CALL dealloc( a_XMO)
-         call dealloc(a_BUF1)
-         call dealloc(a_BUF2)
-      endif
+      call dealloc( a_FOO, id="foo")
+      call dealloc( a_FVO, id="fvo")
+      call dealloc( a_FVV, id="fvv")
+      call dealloc( a_T1 , id="t1")
+      call dealloc( a_T2 , id="t2")
+      call dealloc( a_S1 , id="s1")
+      call dealloc( a_S2 , id="s2")
+      call dealloc( a_DOO, id="doo")
+      call dealloc( a_DVV, id="dvv")
+      call dealloc( a_DVO, id="dvo")
+      call dealloc( a_DOV, id="dov")
+      call dealloc( a_DMO, id="dmo")
+      call dealloc( a_XMO, id="xmo")
+      call dealloc(a_BUF1, id="buf1")
+      call dealloc(a_BUF2, id="buf2")
+
 C
       RETURN
 1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")
@@ -3114,6 +3057,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                  NSP,IREPSP,IREPSPI)
 C
       use memory_allocator
+      use allocator_parameters, only : klongint, kreal
+
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -3156,7 +3101,7 @@ C
       REAL*8 TOL
       INTEGER*8 NV5IRP,NV6IRP,NVIRP
 c
-      real(kind=8), allocatable, target :: a_FVO (:), a_FOO (:), 
+      real(kind=kreal), allocatable, target :: a_FVO (:), a_FOO (:), 
      &                             a_FVV (:), 
      &                             a_T1  (:), a_T2  (:), a_S1  (:),
      &                             a_S2  (:), a_AZ  (:), a_H   (:),
@@ -3166,9 +3111,9 @@ c
      &                             a_BUF2(:), a_BUF3(:),
      &                             a_HEFF(:,:), a_EIGENVALUES(:,:),
      &                             a_EIGENVECTORS(:,:)
-      integer(kind=8) :: total_mem_new
-      integer :: freemem = 0
-
+      real(kind=kreal)       :: total_mem_new = 0
+      integer                :: freemem = 0
+      integer(kind=klongint) :: mxcorr
 C
 C---------------Executable code--------------------------------------
 C
@@ -3208,11 +3153,9 @@ C
       MXCORR1 = 0
       if (lowmem) then
          call CCSETI_LM (ICALC,EPS,NSP,IREPSP,IREPSPI)
-         write (*,*) 'lowmem on'
       else
          CALL CCSETI (ICALC,CC,KFREE,LFREE,MXCORR1,EPS,
      &                NSP,IREPSP,IREPSPI)
-         write (*,*) 'lowmem off'
       endif
       if (.not.lowmem) MXCORR = MAX(MXCORR,MXCORR1)
 C
@@ -3224,47 +3167,38 @@ C
 C
 C Allocate space for the calculation of the amplitudes
 C
-      if (alloc_me) then
-         MAXDIM = MXDIMFS
-         NBUF1 = MAX(JOOOO(NREP+1),JVOOO(NREP+1),
-     &               JVVOO(NREP+1),JVOVO(NREP+1))
-         NBUF2 = NBUF1
+      MAXDIM = MXDIMFS
+      NBUF1 = MAX(JOOOO(NREP+1),JVOOO(NREP+1),
+     &            JVVOO(NREP+1),JVOVO(NREP+1))
+      NBUF2 = NBUF1
 
-         call alloc( a_FVO , NFVO*RCW              )
-         call alloc( a_FOO , NFOO*RCW              )
-         call alloc( a_FVV , NFVV*RCW              )
-         call alloc( a_T1  , NDIMT1*RCW            )
-         call alloc( a_T2  , NDIMT2*RCW            )
-         call alloc( a_S1  , NDIMT1*RCW            )
-         call alloc( a_S2  , NDIMT2*RCW            )
-         call alloc( a_AZ  , NV1*RCW               )
-         call alloc( a_H   , NV4*RCW               )
-         call alloc( a_HO  , NFOO*RCW              )
-         call alloc( a_HV  , NFVV*RCW              )
-         call alloc( a_HOV , NFVO*RCW              )
-         call alloc( a_GOO , NFOO*RCW              )
-         call alloc( a_GVV , NFVV*RCW              )
-         call alloc( a_CCC , MAXDIM                )
-         call alloc( a_BB1 , (MAXDIM+1)*(MAXDIM+2) )
-         call alloc( a_BB2 , (MAXDIM+1)*(MAXDIM+2) )
-         call alloc( a_BUF1,NBUF1*RCW   )
-         call alloc( a_BUF2,NBUF2*RCW   )
-      endif
-
-      total_mem_new = total_mem_new
-     &              + RCW*(2*(NFVO+NDIMT1+NDIMT2)+3*(NFOO+NFVV))
-     &              + RCW*(NV1+NV4+NBUF1+NBUF2) 
-     &              + 2*((MAXDIM+1)*(MAXDIM+2))
-
+      call alloc( a_FVO , NFVO*RCW              , id="fvo")
+      call alloc( a_FOO , NFOO*RCW              , id="foo")
+      call alloc( a_FVV , NFVV*RCW              , id="fvv")
+      call alloc( a_T1  , NDIMT1*RCW            , id="t1")
+      call alloc( a_T2  , NDIMT2*RCW            , id="t2")
+      call alloc( a_S1  , NDIMT1*RCW            , id="s1")
+      call alloc( a_S2  , NDIMT2*RCW            , id="s2")
+      call alloc( a_AZ  , NV1*RCW               , id="az")
+      call alloc( a_H   , NV4*RCW               , id="h")
+      call alloc( a_HO  , NFOO*RCW              , id="ho")
+      call alloc( a_HV  , NFVV*RCW              , id="hv")
+      call alloc( a_HOV , NFVO*RCW              , id="hov")
+      call alloc( a_GOO , NFOO*RCW              , id="goo")
+      call alloc( a_GVV , NFVV*RCW              , id="gvv")
+      call alloc( a_CCC , MAXDIM                , id="ccc")
+      call alloc( a_BB1 , (MAXDIM+1)*(MAXDIM+2) , id="bb1")
+      call alloc( a_BB2 , (MAXDIM+1)*(MAXDIM+2) , id="bb2")
+      call alloc( a_BUF1,NBUF1*RCW              , id="buf1")
+      call alloc( a_BUF2,NBUF2*RCW              , id="buf2")
 C
 C     Calculate size of the 3rd work array
 C     The last array is used to buffer in the <VV||VV> and <VO||VV>
 C     integrals, start by making it as large as possible.
 C
 C     The remaining space is
-      call alloc_maxsize(freemem,nbuf1,verbose)
+      call allocator_get_maxbuff(freemem,kind(a_BUF3))
       NBUF3 = freemem / RCW
-
 C
 C     Calculate maximum size necessary for the VOVV and VVVV buffers
 C
@@ -3284,13 +3218,11 @@ C
 C
 C     Allocate the work array
 C
-      if (alloc_me) then
-         call alloc( a_BUF3 , NBUF3*RCW )
-      endif
-         total_mem_new = total_mem_new + NBUF3*RCW
-      
-C
-      MXCORR = MAX(MXCORR,total_mem_new)
+      call alloc( a_BUF3 , NBUF3*RCW , id="buf3")
+      write (*,*) 'debug, kind buf3 :',kind(a_BUF3)
+
+      call allocator_get_available_mem(total_mem_new)
+      mxcorr= nint((total_mem_new/kind(a_BUF3)),kind(8))
 C
       IF (ICALC.LE.1) THEN
          WRITE (IW,1001) "Fock space CCSD energies",MXCORR
@@ -3303,7 +3235,7 @@ C
          FOCKSP = .FALSE.
          CALL SYMTAB (NELEC,NFROZ,NINACT,NACT,NSP,EPS1,EPS,
      &                IREPSP,IREPSPI,FOCKSP,REPORT,NELEC_F1,NELEC_F2)
-         RETURN
+         GOTO 440
       ENDIF
 C
 C     Read the Fock matrix from file
@@ -3325,6 +3257,7 @@ C
 C     Save the zeroth order wave function
       CALL PUTAMPT ( a_T1 , a_T2 )
 C
+ 440  CONTINUE
       IFSS(1) = '00'
       IFSS(2) = '01'
       IFSS(3) = '10'
@@ -3336,17 +3269,20 @@ C     Solve Fock space equation sector by sector
 C
       DO ICURFSS = 1, 6
       IF (FSSECT(ICURFSS).NE.0) THEN
+        IF (ICALC.LE.1) GOTO 441 
         WRITE (IW,1009) IFSS(ICURFSS)
         WRITE(IW,'(2X,A,I3)')
      &  '...maximum number of iterations for this sector:',
      &  MAXIT_SECT(ICURFSS)
 C       Allocate space for the effective Hamiltonian and its eigenvalues and eigenvectors
 C
+ 441    CONTINUE
         call alloc (a_HEFF, RCW , IFS_HE2(NREP+1,ICURFSS), id="heff" )
-        call alloc (a_eigenvalues,  RCW, (IFS_HE(NREP+1,ICURFSS)+1), 
+        call alloc (a_EIGENVALUES,  RCW, (IFS_HE(NREP+1,ICURFSS)+1), 
      &              id="eigenvalues" )
-        call alloc (a_eigenvectors, RCW, IFS_HE2(NREP+1,ICURFSS)  ,
-     &              id="eigenvalues" )
+        call alloc (a_EIGENVECTORS, RCW, IFS_HE2(NREP+1,ICURFSS)  ,
+     &              id="eigenvectors" )
+        IF (ICALC.LE.1) GOTO 442 
 C
         CALL CCEQN(MAXIT_SECT(ICURFSS),EPS, 
      &             a_FOO , a_FVO , a_FVV  , a_T1   , a_S1   ,
@@ -3355,41 +3291,40 @@ C
      &             a_GOO , a_GVV , a_BUF1 , a_BUF2 , a_BUF3 ,
      &             a_CCC , a_BB1 , a_BB2 ,
      &             TOL, NBUF2, NBUF3,
-     &              a_HEFF,a_EIGENVALUES,a_EIGENVECTORS)
+     &             a_HEFF,a_EIGENVALUES,a_EIGENVECTORS)
 C       Print the Fock space eigenvalues, compute transition moments
         CALL FS_ANALYSIS1(ICURFSS,EPS,a_EIGENVALUES,a_EIGENVECTORS)
 C       Save the updated wave function
         CALL FS_PUTAMPT (ICURFSS, a_T1 , a_T2 , a_BUF1 , a_BUF2 )
 C       Dealloc_meate space for the effective Hamiltonian
-        call dealloc (a_HEFF)
-        call dealloc (a_EIGENVALUES)
-        call dealloc (a_EIGENVECTORS)
+ 442    CONTINUE
+        call dealloc (a_HEFF, id="heff")
+        call dealloc (a_EIGENVALUES, id="eigenvalues")
+        call dealloc (a_EIGENVECTORS, id="eigenvectors")
 C
       ENDIF
       ENDDO
 C
-      if (alloc_me) then
-         call dealloc( a_FVO  )
-         call dealloc( a_FOO  )
-         call dealloc( a_FVV  )
-         call dealloc( a_T1   )
-         call dealloc( a_T2   )
-         call dealloc( a_S1   )
-         call dealloc( a_S2   )
-         call dealloc( a_AZ   )
-         call dealloc( a_H    )
-         call dealloc( a_HO   )
-         call dealloc( a_HV   )
-         call dealloc( a_HOV  )
-         call dealloc( a_GOO  )
-         call dealloc( a_GVV  )
-         call dealloc( a_CCC  )
-         call dealloc( a_BB1  )
-         call dealloc( a_BB2  )
-         call dealloc( a_BUF1 )
-         call dealloc( a_BUF2 )
-         call dealloc( a_BUF3 )
-      endif
+      call dealloc( a_FVO , id="fvo" )
+      call dealloc( a_FOO , id="foo" )
+      call dealloc( a_FVV , id="fvv" )
+      call dealloc( a_T1  , id="t1" )
+      call dealloc( a_T2  , id="t2" )
+      call dealloc( a_S1  , id="s1" )
+      call dealloc( a_S2  , id="s2" )
+      call dealloc( a_AZ  , id="az" )
+      call dealloc( a_H   , id="h" )
+      call dealloc( a_HO  , id="ho" )
+      call dealloc( a_HV  , id="hv" )
+      call dealloc( a_HOV , id="hov" )
+      call dealloc( a_GOO , id="goo" )
+      call dealloc( a_GVV , id="gvv" )
+      call dealloc( a_CCC , id="ccc" )
+      call dealloc( a_BB1 , id="bb1" )
+      call dealloc( a_BB2 , id="bb2" )
+      call dealloc( a_BUF1, id="buf1" )
+      call dealloc( a_BUF2, id="buf2" )
+      call dealloc( a_BUF3, id="buf3" )
 C
       RETURN
 1001  FORMAT (" Core used for ",A," :",T50,I10," 8-byte words")

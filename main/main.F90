@@ -42,7 +42,8 @@ program dirprg
 #include "mpif.h"
 #endif
   real(kind=8), allocatable :: memory(:)
-  integer :: memsize, iparcal, status, length, ios, idummy, ierr, maxsize = -1
+  integer :: memsize, iparcal, status, length, ios, idummy, ierr
+  integer(kind=8) :: maxsize = 2 * INSTALL_WRKMEM
   integer :: iscr_mem
   integer :: high_water_mark
 ! initialize common variables (parallel and sequential run)
@@ -95,26 +96,28 @@ program dirprg
   if (parcal) then
     call mpi_barrier(mpi_comm_world,ierr)
     call allocator_init()
-    call allocator_setmax(maxsize)
+    call allocator_set_max(maxsize)
     call sync_nodes(memsize,0)
     call sync_nodes(maxsize,2)
   else
 !   iparex <= 0
     call allocator_init()
-    call allocator_setmax(maxsize)
+    call allocator_set_max(maxsize)
     print '(a,i0,a,i0,a)', 'DIRAC serial allocating ',memsize,' words (',memsize/2**17,' MB) of memory'
+    print '(a,i0,a,i0,a)', 'DIRAC serial will use at most ',  &
+          maxsize,' words (',maxsize/2**17,' MB) of memory in dynamic allocations'
 #else
     call allocator_init()
-    call allocator_setmax(maxsize)
+    call allocator_set_max(maxsize)
     print '(a,i0,a,i0,a)', 'DIRAC serial allocating ',memsize,' words (',memsize/2**17,' MB) of memory'
-!    print '(a,i0,a,i0,a)', 'DIRAC serial will attempt to use at most ',  &
-!         maxsize,' words (',memsize/2**17,' MB) of memory in dynamic allocations'
+    print '(a,i0,a,i0,a)', 'DIRAC serial will use at most ',  &
+          maxsize,' words (',maxsize/2**17,' MB) of memory in dynamic allocations'
 #endif
 #ifdef VAR_MPI
   endif
 #endif
   if (mytid == 0) then
-     call alloc(memory,memsize)
+     call alloc(memory,memsize, id="work array at main")
      call set_mem_start(memory)
      !call print_static_alloc
      call printtitle
@@ -160,6 +163,8 @@ program dirprg
   if (iparcal .eq. 1 ) call mpixfinalize()
 #endif
 
+ call allocator_report(mytid,0)
+
 #ifdef MOD_HSCC 
  if (DOHSCC) then
    print '(/,2x,a)','Continuing with the external HSCC code.'
@@ -175,6 +180,8 @@ program dirprg
    call HIGH_SECTOR_FSCC_METHODS
  endif
 #endif
+
+   call allocator_cleanup()
 
 #if defined FORTRAN_MAIN_AS_SUBROUTINE
 end subroutine dirprg

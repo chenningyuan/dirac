@@ -42,6 +42,8 @@
 #define LINUX_IFACE_MEMORY
 #endif
 
+#include "fortran_interface.h"
+
 /* using linux's interface to memory */
 #if defined (LINUX_IFACE_MEMORY)
 #include <sys/sysinfo.h>
@@ -52,7 +54,11 @@
 #define BUFFERSIZE (512)
 #define TYPICAL_FCHAR_LENGTH (132)
 
-void get_memory_address_(void *variable, long int *address);
+#ifdef ARCH32BIT
+void get_memory_address_(void *variable, fortran_int4_t *address);
+#else
+void get_memory_address_(void *variable, fortran_int8_t *address);
+#endif
 void get_memory_info_(char *fstring, int *flength);
 void get_free_mwords_(size_t *freemw, size_t *verbose);
 void get_maximum_mwords_(size_t *maxmw, size_t *verbose);
@@ -61,15 +67,24 @@ void catfile_(void);
 
 /* variable: is the real 
    address_string: is a character string with the memory address of variable
-                   question is whether or not this should always be long int in all archs.. we need to be able to hold up to 64 bit ints */
+*/
 
-void get_memory_address_(void *variable, long int *address)
+
+#ifdef ARCH32BIT
+void get_memory_address_(void *variable, fortran_int4_t *address)
+#else
+void get_memory_address_(void *variable, fortran_int8_t *address)
+#endif
 {
    char bufvar[BUFFERSIZE]; 
 
-   snprintf (bufvar,(BUFFERSIZE-1),"%li",variable);
-
-   *address = atol(bufvar); 
+#ifdef ARCH32BIT
+   snprintf (bufvar,(BUFFERSIZE-1), FORTRAN_INT4_CONVERSION ,variable);
+   *address = FORTRAN_STR_TO_INT4(bufvar); 
+#else
+   snprintf (bufvar,(BUFFERSIZE-1), FORTRAN_INT8_CONVERSION ,variable);
+   *address = FORTRAN_STR_TO_INT8(bufvar); 
+#endif
 }
 
 

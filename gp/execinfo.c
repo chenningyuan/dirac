@@ -137,7 +137,7 @@ backtrace_symbols(void *const *buffer, size_t size)
         rval[i] = cp;
         cp += alen;
     }
-    printf ("exiting !\n");
+//  printf ("exiting !\n");
     return rval;
 }
 
