@@ -1903,8 +1903,10 @@ C/* Deck ACCS2X */
      &                  WORK,KFREE,LFREE)
 C***********************************************************************
 C
-C     In the construction of the residual accumulate -W*S[2]X
-C     for all frequencies W.
+C     In the construction of the residual accumulate -freq*S[2]X terms
+C     for all frequencies W+Y*i.
+C       W -> real part of frequency
+C       Y -> imaginary part of frequency
 C
 C     Input:
 C       B(+)-vec contains current X(-) solution vectors
@@ -1912,11 +1914,16 @@ C       B(-)-vec contains current X(+) solution vectors
 C
 C     Output:
 C       For REAL frequencies:
-C         B(+)-vec contains T(+) = -W*S[2]X(-)
-C         B(-)-vec contains T(+) = -W*S[2]X(+)
+C         B(+)-vec contains T(+) = -W*S[2]*X(-)
+C         B(-)-vec contains T(-) = -W*S[2]*X(+)
 C       For IMAGINARY frequencies:     
-C         B(+)-vec contains T(+) = +W*S[2]X(-)
-C         B(-)-vec contains T(+) = -W*S[2]X(+)
+C         B(+)-vec contains T(+) = +Y*S[2]*X(-)
+C         B(-)-vec contains T(-) = -Y*S[2]*X(+)
+C       For COMPLEX frequencies:
+C         B(+)-vec contains T(+) = +W*S[2]*X(-)  +Y*S[2]*X(-)'
+C                      and  T(+)'= -W*S[2]*X(-)' -Y*S[2]*X(-)
+C         B(-)-vec contains T(-) = -W*S[2]*X(+)  +Y*S[2]*X(+)'
+C                      and  T(-)'= -W*S[2]*X(+)' -Y*S[2]*X(+)
 C
 C     Written by T.Saue Oct 17 1996
 C
@@ -2514,7 +2521,7 @@ C
       ENDIF
 C
 C     Print section
-C
+CPP...need to take care of complex case printing
       IF(IPRXRS.GE.5) THEN
         IF(NZXOPE.GT.0) THEN
           WRITE(LUPRI,'(/I5,A)') MFREQ,
@@ -2561,6 +2568,7 @@ C
 C
 C     Print section
 C
+CPP...need to take care of complex case printing
       IF(IPRXRS.GE.5) THEN
         IF(NZXOPE.GT.0) THEN
           WRITE(LUPRI,'(/I5,A)') MFREQ,
@@ -2610,6 +2618,7 @@ C
 C
 C       Print section
 C
+CPP...need to take care of complex case printing
       IF(IPRXRS.GE.5) THEN
         IF(NZXOPE.GT.0) THEN
           WRITE(LUPRI,'(/I5,A)') MFREQ,
@@ -2947,7 +2956,7 @@ C     Orbital (e-e) type trial vectors
 C
       IF(NZXOPE.GT.0) THEN
         CALL MEMGET('REAL',KDENOM,NZXOPE,WORK,KFREE,LFREE)
-        CALL XBVGEN(BEVEC,USEXVC,WORK(KEDIAH),EVALR,EVECR,
+        CALL XBVGEN(BEVEC,USEXVC,WORK(KEDIAH),WORK(KEDIAS),EVALR,EVECR,
      &              IBTYP,IBEVC,IVECS(1,IPEP),
      &              MFREQ,JBENDX,IBOFF,NEPREV,NZXOPE,
      &              BEBUF,WORK(KDENOM),WORK,KFREE,LFREE)
@@ -2962,7 +2971,7 @@ C     Orbital (e-p) type trial vectors
 C
       IF(NZXOPP.GT.0) THEN
         CALL MEMGET('REAL',KDENOM,NZXOPP,WORK,KFREE,LFREE)
-        CALL XBVGEN(BPVEC,USEXVC,WORK(KPDIAH),EVALR,EVECR,
+        CALL XBVGEN(BPVEC,USEXVC,WORK(KPDIAH),WORK(KPDIAS),EVALR,EVECR,
      &              IBTYP,IBPVC,IVECS(1,IPPP),
      &              MFREQ,JBPNDX,IBOFF,NPPREV,NZXOPP,
      &              BPBUF,WORK(KDENOM),WORK,KFREE,LFREE)
@@ -2977,7 +2986,8 @@ C     Configuration type trial vectors
 C
       IF(NZCONF.GT.0) THEN
         KDENOM=KFREE
-        CALL XBVGEN(BCVEC,USEXVC,WORK(KCDIAH),EVALR,EVECR,
+        KCDIAS=KFREE
+        CALL XBVGEN(BCVEC,USEXVC,WORK(KCDIAH),WORK(KCDIAS),EVALR,EVECR,
      &              IBTYP,IBCVC,IVECS(1,IPCP),
      &              MFREQ,JBCNDX,IBOFF,NCPREV,NZCONF,
      &              BCBUF,WORK(KDENOM),WORK,KFREE,LFREE)
@@ -3012,8 +3022,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck XBVGEN */
-      SUBROUTINE XBVGEN(BVEC,USEXVC,HDIAG,EVALR,EVECR,IBTYP,IBVEC,IVECS,
-     &            MFREQ,JBTYP,IBOFF,NBPREV,NVAR,BBUF,DENOM,
+      SUBROUTINE XBVGEN(BVEC,USEXVC,HDIAG,SDIAG,EVALR,EVECR,IBTYP,IBVEC,
+     &            IVECS,MFREQ,JBTYP,IBOFF,NBPREV,NVAR,BBUF,DENOM,
      &            WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -3038,14 +3048,11 @@ C
 #include "dgroup.h"
 C
       LOGICAL USEXVC,TEST
-      DIMENSION BVEC(NVAR,NZ,*),HDIAG(*),
+      DIMENSION BVEC(NVAR,NZ,*),HDIAG(*),SDIAG(*),
      &          EVALR(MFREQ),IBTYP(2,*),IBVEC(*),IVECS(*),
      &          BBUF(NVAR,NZ,*),DENOM(NVAR),WORK(*)
 C
       CALL QENTER('XBVGEN')
-Csebastien: the diagonal of S[2] is introduced in the preconditioning
-      SDIAG = 2.0D0
-      SDIAG2 = SDIAG**2
 C
       TEST = DIAGHE.AND.(.NOT.USEXVC)
       FFAC = D1
@@ -3121,9 +3128,9 @@ C             For MCSCF optimizations FREQ (EVALR) is the
 C             level shift. For LR it's zero.
 C
                 IF ( ABS(BVEC(IVAR,IZ,IP)) .GT. THRBVEC ) THEN
-                  IF ( ABS(HDIAG(IVAR)-FREQ*SDIAG) .GT. DLIM) THEN
+                  IF ( ABS(HDIAG(IVAR)-FREQ*SDIAG(IVAR)) .GT. DLIM) THEN
                        BVEC(IVAR,IZ,IP) =
-     &                -BVEC(IVAR,IZ,IP) / (HDIAG(IVAR)-FREQ*SDIAG)
+     &                -BVEC(IVAR,IZ,IP) / (HDIAG(IVAR)-FREQ*SDIAG(IVAR))
                   ELSE
                     BVEC(IVAR,IZ,IP) = -BVEC(IVAR,IZ,IP)
                   END IF
@@ -3173,7 +3180,7 @@ C           where fac = (hdiag**2 + freq**2*sdiag2)**(-1)
 C           for the res(ip), res(im) pair
             FREQ2 = FREQ**2
             DO IVAR = 1,NVAR
-              DENOM(IVAR) = D1/(FFAC*SDIAG2*FREQ2-HDIAG(IVAR)**2)
+              DENOM(IVAR) =D1/(FFAC*SDIAG(IVAR)**2*FREQ2-HDIAG(IVAR)**2)
             ENDDO
 C           Note that all residuals are employed, independent of norm
             IF(IVECS(IP).EQ.1) THEN
@@ -3181,7 +3188,7 @@ C           Note that all residuals are employed, independent of norm
                  DO IVAR = 1,NVAR
                   FAC = DENOM(IVAR)
                   BBUF(IVAR,IZ,1)=HDIAG(IVAR)*FAC*BVEC(IVAR,IZ,IP)
-     &               + FFAC*FREQ*SDIAG*FAC*BVEC(IVAR,IZ,IM)
+     &                + FFAC*FREQ*SDIAG(IVAR)*FAC*BVEC(IVAR,IZ,IM)
                  ENDDO
                ENDDO
 C             retain norm for numerical stability !
@@ -3194,7 +3201,7 @@ C             retain norm for numerical stability !
                  DO IVAR = 1,NVAR
                   FAC = DENOM(IVAR)
                   BBUF(IVAR,IZ,2)=HDIAG(IVAR)*FAC*BVEC(IVAR,IZ,IM)
-     &               + FREQ*SDIAG*FAC*BVEC(IVAR,IZ,IP)
+     &                     + FREQ*SDIAG(IVAR)*FAC*BVEC(IVAR,IZ,IP)
                  ENDDO
                ENDDO
 C             retain norm for numerical stability !
@@ -5368,9 +5375,9 @@ C     see Eq. (21) in J. Chem. Phys. 133 (2010) 064105
 C
 C     On input
 C       TPVEC contains T(+)
-C       TMVEC  contains T(-)
+C       TMVEC contains T(-)
 C
-C     T. Saue and S. Villaume 2010
+C     T. Saue and S. Villaume Dec 2010
 C
 C***********************************************************************
 #include "implicit.h"
@@ -5382,15 +5389,17 @@ C
       FFAC = D1
       IF(IMFREQ) FFAC = DM1
       IF(DAMPFREQ.EQ.D0) THEN
-        CALL DSCAL(NVARQ*NDAMP,-FREQ,TMVEC(1,1),1) 
-        CALL DAXPY(NVARQ, DAMPFREQ,BBUF(1,2),1,TMVEC(1,1),1)
-        CALL DAXPY(NVARQ,-DAMPFREQ,BBUF(1,1),1,TMVEC(1,2),1)
-        CALL DCOPY(NDAMP*NVARQ,TPVEC(1,1),1,BBUF,1)
-        CALL DSCAL(NVARQ, FREQ,TPVEC(1,1),1) 
-        CALL DSCAL(NVARQ,-FREQ,TPVEC(1,2),1) 
-        CALL DAXPY(NVARQ, DAMPFREQ,BBUF(1,2),1,TPVEC(1,1),1)
-        CALL DAXPY(NVARQ,-DAMPFREQ,BBUF(1,1),1,TPVEC(1,2),1)
+C  Take care of Complex case
+        CALL DSCAL(NVARQ*NDAMP,    -FREQ,TMVEC(1,1),1)
+        CALL DAXPY(NVARQ      , DAMPFREQ, BBUF(1,2),1,TMVEC(1,1),1)
+        CALL DAXPY(NVARQ      ,-DAMPFREQ, BBUF(1,1),1,TMVEC(1,2),1)
+        CALL DCOPY(NVARQ*NDAMP,          TPVEC(1,1),1,BBUF,1)
+        CALL DSCAL(NVARQ      ,     FREQ,TPVEC(1,1),1)
+        CALL DSCAL(NVARQ      ,    -FREQ,TPVEC(1,2),1)
+        CALL DAXPY(NVARQ      , DAMPFREQ, BBUF(1,2),1,TPVEC(1,1),1)
+        CALL DAXPY(NVARQ      ,-DAMPFREQ, BBUF(1,1),1,TPVEC(1,2),1)
       ELSE
+C  Take care of Real of Imaginary case
         CALL DSCAL(NVARQ,-FREQ,TMVEC(1,1),1)
         CALL DSCAL(NVARQ,-FFAC*FREQ,TPVEC(1,1),1)
       ENDIF
