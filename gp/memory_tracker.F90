@@ -146,10 +146,10 @@
                type (memChunk), intent(in) :: activeChunk
                type(memTracker), intent(inout) :: activeTracker
 
-               bytes = activeChunk%n_elements * activeChunk%type
+               bytes = real(activeChunk%n_elements) * real(activeChunk%type)
                if ( bytes.lt.0 ) write (*,*) 'negative memory usage?'
 
-               if ( activeTracker%peakMem%bytes .lt. activeTracker%CurrentMemoryUse ) then 
+               if ( activeTracker%peakMem%bytes .le. activeTracker%CurrentMemoryUse ) then 
                   activeTracker%peakMem%bytes = activeTracker%CurrentMemoryUse
                   activeTracker%peakMem%at    = activeChunk%allocatedAt
                   activeTracker%peakMem%label = activeChunk%varLabel
@@ -419,6 +419,7 @@
                type (memChunk), pointer   :: new
                type (memChunk), pointer   :: tmp 
                type (memList)             :: list 
+               real(kind=kreal)           :: bytes
 
                tmp => list%head
 
@@ -426,7 +427,8 @@
                   list%head => new
                   list%tail => new
                   list%elements = 1
-                  list%nbytes = list%nbytes + (new%n_elements * new%type)
+                  bytes = real(new%n_elements) * real(new%type)
+                  list%nbytes = list%nbytes + bytes
                else
                   do 
                     if (associated(tmp%next)) then
@@ -436,7 +438,8 @@
                        new%prev => tmp
                        list%tail => new
                        list%elements = list%elements + 1
-                       list%nbytes = list%nbytes + (new%n_elements * new%type)
+                       bytes = real(new%n_elements) * real(new%type)
+                       list%nbytes = list%nbytes + bytes
                        exit 
                     endif 
                   enddo
@@ -492,6 +495,7 @@
             subroutine     track_deleteFromList(list,entry)
                type (memChunk), pointer   :: entry, prev, next, head, tail
                type (memList)             :: list
+               real(kind=kreal)           :: bytes
 
                head => list%head
                tail => list%tail
@@ -534,7 +538,8 @@
                list%tail => tail
 
                list%elements = list%elements - 1
-               list%nbytes   = list%nbytes - (entry%n_elements * entry%type)  
+               bytes = real(entry%n_elements) * real(entry%type)
+               list%nbytes   = list%nbytes - bytes 
 
                deallocate(entry)
             end subroutine track_deleteFromList
