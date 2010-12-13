@@ -66,7 +66,7 @@
             character(len=charArrayLength) :: at
          end type memInfo 
 
-         type, public :: memTracker
+         type         :: memTracker
             integer                        :: n_created, n_destroyed
             type (memList)                 :: aL
             type (memList)                 :: dL

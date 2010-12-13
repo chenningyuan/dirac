@@ -2129,6 +2129,7 @@ set_bit_arch(){
   else  
     if [ "$IsLP64" != "1" ]; then # we are on truly 32-bit architectures 
       cpp_f90="-DARCH32BIT $cpp_f90"
+      cpp_cc="-DARCH32BIT $cpp_cc"
     fi
   fi
 
