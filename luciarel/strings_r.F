@@ -3077,7 +3077,6 @@ C
 ***********************************************************************
       SUBROUTINE NST_SPGRP_DBG(NIGRP,IGRP,ISM_TOT,NSMST,NSTRIN,NDIST,
      &                         IAB)
-      use memory_allocator
 *
 * Number of strings for given combination of groups and 
 * symmetry.
@@ -3121,9 +3120,9 @@ C     is called billion of times...
       integer, allocatable :: MXSM(:)
 C
 C     allocate scratch memory
-      call alloc(ISM, MXPNGAS)
-      call alloc(MNSM,MXPNGAS)
-      call alloc(MXSM,MXPNGAS)
+      allocate(ISM(MXPNGAS))
+      allocate(MNSM(MXPNGAS))
+      allocate(MXSM(MXPNGAS))
 #if defined LUCI_DEBUG
       NTEST = 000
       IF(NTEST.GE.10) THEN
@@ -3197,9 +3196,9 @@ C     allocate scratch memory
 #endif
 C
 C     release scratch memory
-      call dealloc(ISM)
-      call dealloc(MNSM)
-      call dealloc(MXSM)
+      deallocate(ISM)
+      deallocate(MNSM)
+      deallocate(MXSM)
 *
       END
 ***********************************************************************
