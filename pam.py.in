@@ -158,9 +158,8 @@ class pam_enviroment(workdir_class):
      ### contains installation directory ...
     self.dirac_home=install_dir
 
-    # basis set directory
-    self.basdir=self.dirac_home+"/basis:"+self.dirac_home+"/basis_dalton"
-    #self.basdir=''
+    # basis set directory - set in the flags readings step 
+    self.basdir=install_dir_default+"/basis:"+install_dir_default+"/basis_dalton"
 
     # ... object from the inherited "workdirectory" class 
     self.wrkdir_obj = workdir_class()
@@ -170,14 +169,18 @@ class pam_enviroment(workdir_class):
     self.mpirun=''
     self.mpi=1
 
+    # dirac command (set in own routine)
     self.dirac_cmd=''
 
+    # dirac profiling
     self.profile = False
     self.profiler = ''
 
-    self.dirac_exe=self.dirac_home
+    # dirac-executable position (later set by after flag reading)
+    self.dirac_exe=install_dir_default+"/dirac.x"
+    self.no_diracexe_copy=False
  
-    ### put/get files ###
+    ### put/get files (flag controlled) ###
     self.put_files=''
     self.get_files=''
 
@@ -239,7 +242,7 @@ class pam_enviroment(workdir_class):
     global install_dir
 
     from optparse import OptionParser
-    usage="usage: %prog [options] --mol=*.mol --inp=*.inp"
+    usage="Usage: %prog [Options] --mol=*.mol --inp=*.inp"
     parser = OptionParser(usage)
 
   # ... get in the print level 
@@ -268,13 +271,15 @@ This allows you to omit the molecule and input files. '
                   help=this_label, metavar="STRING")
 
   # ... get in the "mw"
-    this_label='memory (in megawords) for the master, default:'+str(self.mem)
+    default_mem_label=str(self.mem)+' ('+str(self.mem)+'*8='+str(self.mem*8)+' MB)'
+    this_label='memory (in megawords) for the master, default:'+default_mem_label
     parser.add_option("--mw", type="int", nargs=1,  
                   action="store", dest="dest_mw", default=64,
                   help=this_label, metavar="INT_NUM")
 
     # ... get in the "nw" ...
-    this_label='memory (in megawords) for nodes, default:'+str(self.slavemem)
+    default_slavemem_label=str(self.slavemem)+' ('+str(self.slavemem)+'*8='+str(self.slavemem*8)+' MB)'
+    this_label='memory (in megawords) for nodes, default:'+default_slavemem_label
     parser.add_option("--nw", type="int", nargs=1,  
                   action="store", dest="dest_nw", default=64,
                   help=this_label, metavar="INT_NUM")
@@ -308,11 +313,23 @@ This allows you to omit the molecule and input files. '
                   action="store",dest="dest_install_dir",  
                   help=this_label,metavar="STRING")
 
-    # .. read in the install_dir, what is the basic global variable...
+    # .. read in the basis set directory if different from default
     this_label="basis set directory, default:"+self.basdir
     parser.add_option("--basdir", type="string", nargs=1,
                   action="store",dest="dest_basdir",  
                   help=this_label,metavar="STRING")
+
+    # ... take own dirac executable instead of the default in install_dir
+    this_label="own dirac executable, default:"+self.dirac_exe
+    parser.add_option("--dirac", type="string", nargs=1,
+                  action="store",dest="dest_dirac",  
+                  help=this_label,metavar="/your/path/to/dirac.x")
+
+    # ... do not copy dirac.x executable into workdir
+    this_label="Do not copy dirac.x to the working directory (default), instead run it in place"
+    parser.add_option("--no-exe-copy", 
+                  action="store_true",dest="dest_no_exe_copy",  
+                  help=this_label)
 
     # ... no backup 
     this_label="do not backup files (default: backup them)"
@@ -353,10 +370,6 @@ This allows you to omit the molecule and input files. '
     parser.add_option("--outfck",
                   action="store_true",dest="dest_outfck",
                   help=this_label)
-
-    this_label="Save DFCOEF to job directory from work area (for restart)"
-
-
 
     # ... clean workdir before calculation
     this_label="clean the directory before calculations (default: do not clean)"
@@ -460,16 +473,33 @@ This allows you to omit the molecule and input files. '
      if self.iprint > 7:
       print 'assigned basdir=',self.basdir
     else:
-     #self.basdir=self.dirac_home+"/basis:"+self.dirac_home+"/basis_dalton"
-     self.basdir=install_dir+"/basis:"+install_dir+"/basis_dalton"
      if self.iprint > 7:
-      print 'default basdir=',self.basdir
+      print 'used default basdir=',self.basdir
+
+    if (options.dest_dirac is not None) :
+      self.dirac_exe=str(options.dest_dirac)
+      if self.iprint > 7:
+        print 'assigned dirac_exe=',self.dirac_exe
+    else:
+      if self.iprint > 7:
+        print 'used default dirac_exe=',self.dirac_exe
+
+    if (options.dest_no_exe_copy is not None):
+      self.no_diracexe_copy=options.dest_no_exe_copy
+      if self.iprint > 7:
+        print 'assigned self.no_diracexe_copy=',self.no_diracexe_copy
+    else:
+      if self.iprint > 7:
+        print 'used default self.no_diracexe_copy=',self.no_diracexe_copy
 
     if (options.dest_timeout is not None) :
       self.timeout=int(options.dest_timeout)
       self.set_timeout_limit=True
       if self.iprint > 7:
         print 'assigned timeout=',self.timeout
+    else:
+      if self.iprint > 7:
+        print 'no timeout assigned !'
 
     if (options.dest_nobackup is not None):
       self.nobackup=options.dest_nobackup      
@@ -595,7 +625,11 @@ This allows you to omit the molecule and input files. '
 
     self.wrkdir_obj.create_workdir()
     #print 'set_wrkdir: install_dir=',install_dir
-    self.wrkdir_obj.copy_file(install_dir+'/'+'dirac.x',self.wrkdir_obj.workdir+'/'+'dirac.x')
+
+    # copy dirac.x executable if wanted
+    #self.wrkdir_obj.copy_file(install_dir+'/'+'dirac.x',self.wrkdir_obj.workdir+'/'+'dirac.x')
+    if (not self.no_diracexe_copy) :
+      self.wrkdir_obj.copy_file(self.dirac_exe,self.wrkdir_obj.workdir+'/'+'dirac.x')
 
     if ( os.path.isfile(self.input_molecule) ) : 
       self.wrkdir_obj.copy_file(self.input_molecule,self.wrkdir_obj.workdir+'/'+'MOLECULE.MOL')
@@ -658,17 +692,22 @@ This allows you to omit the molecule and input files. '
 
   def set_dirac_cmd(self):
   # set the dirac command
+    if (self.no_diracexe_copy):
+      this_dirac_exe=self.dirac_exe
+    else:
+      this_dirac_exe=' dirac.x'
+
     if (self.parallel):
       # DIRAC_CMD="$DIRAC_CMD -np $MPI_NPROC -wd $WRK"
       # and/if  $DIRAC_CMD -machinefile $MACH_FILE $DIRAC_CMD
       self.dirac_cmd=self.mpirun+" -np "+str(self.mpi)+" -wd "+self.wrkdir_obj.workdir
-      self.dirac_cmd=self.dirac_cmd+' dirac.x'
+      self.dirac_cmd=self.dirac_cmd+this_dirac_exe
     else:
       if (self.debug):
        #TODO: adapt it for Windows
-        self.dirac_cmd=self.debugger+' '+'dirac.x | tee -a '+os.getcwd()+"/"+self.output_file
+        self.dirac_cmd=self.debugger+' '+this_dirac_exe+' | tee -a '+os.getcwd()+"/"+self.output_file
       else:
-        self.dirac_cmd='dirac.x'
+        self.dirac_cmd=this_dirac_exe
 
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def execute_dirac(self):
@@ -724,7 +763,7 @@ This allows you to omit the molecule and input files. '
 
       signal.alarm(0)    
     except:
-      print "dirac launching failed with command ",self.dirac_cmd
+      print "dirac launching failed with the command ",self.dirac_cmd
 
     # do the profiling after the execution
     if self.profile: self.profile_dirac()
@@ -755,8 +794,7 @@ This allows you to omit the molecule and input files. '
         self.wrkdir_obj.copy_file(full_file_name,file_name_home)
 
     if (not self.no_archive):
-      # set name of the archive file
-      #archive_name=self.input_molecule+"_"+self.input_dirac+".tgz"
+      # set name of the archive file; TODO: Windows packing adaptation
       archive_name=self.output_name+".tgz"
       print 'creating archive file ',archive_name
       archive_full_name=self.input_directory+"/"+archive_name
