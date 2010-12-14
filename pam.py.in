@@ -1,13 +1,13 @@
 
-##################################################
+#########################################################################
 #
 # Python replacement of the pam script
 #
 # Reads crucial data from Makefile.config
 #
-# Written by Miro ILIAS,Banska Bystrica, October, November, 2010
+# Written by Miro ILIAS,Banska Bystrica, end of 2010
 #
-##################################################
+##########################################################################
 
 import os
 import sys
@@ -20,14 +20,7 @@ import signal
 import stat
 import time
 
-
-# installation directory inserted in by the configure script
-global install_dir, install_dir_default
-install_dir_default=''
-#install_dir_default='/home/dv6-2145ec/Work/qch/software/dirac/gfortran_gcc_noopt_ownlibs_ilp32/adm_hsfsdyn_cap/trunk'
-install_dir_default='/home/ilias/qch_work/qch_software/dirac/gfortran_noopt_ILP64_ownlibs/adm/trunk'
-#radovan: presently not inserted
-#install_dir_default='/home/bast/dirac/devel'
+global install_dir
 install_dir=install_dir_default
 
 def append_dirac_py_modules(dirac_install_dir):
@@ -165,9 +158,9 @@ class pam_enviroment(workdir_class):
      ### contains installation directory ...
     self.dirac_home=install_dir
 
-    ## basis set directory
-    #self.basdir=self.dirac_home+"/basis:"+self.dirac_home+"/basis_dalton"
-    self.basdir=''
+    # basis set directory
+    self.basdir=self.dirac_home+"/basis:"+self.dirac_home+"/basis_dalton"
+    #self.basdir=''
 
     # ... object from the inherited "workdirectory" class 
     self.wrkdir_obj = workdir_class()

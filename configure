@@ -535,6 +535,7 @@ usage ()  {
    echo '   --install-directory=INST-DIR : Set install directory to INST-DIR'
    echo '   --scratch-directory=SCR-DIR  : Set work directory to SCR-DIR'
    echo '   --i=PRINT-LEVEL              : Set the print (verbose) level for the script to PRINT-LEVEL (default 0)'
+   echo '   --pam                        : Prepares only the pam.py script for launching dirac.x'
    echo '   --pamq                       : Prepares only the pamq.py script for launching batch jobs'
 }
 
@@ -1914,7 +1915,7 @@ fi
 set_install_directory () {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
-#  Determines the installation directory for pam, pamq, dirac.x
+#  Determines the installation directory for pam, pam.py, pamq.py, dirac.x
 #
 #  Always called when INSTALL_DIR (might come in as the parameter)
 #  is not a valid directory
@@ -3116,6 +3117,34 @@ EOF
 cat ./pamq.py.in  >>  $INSTALL_DIR/pamq.py
 chmod a+rx  $INSTALL_DIR/pamq.py
 
+echo 'pamq.py script file ready'
+}
+
+make_pam ()  {
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#     Make pam.py python script
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+if [ $IPRINT -ge 1 ]; then
+    $echo 'Copying pam.py python script to '$INSTALL_DIR' : \c'
+fi
+
+echo '#! /usr/bin/env python        '            >  $INSTALL_DIR/pam.py
+echo '#                             '           >>  $INSTALL_DIR/pam.py
+#echo 'import  sys, os, string, optparse'       >>  $INSTALL_DIR/pam.py
+echo '                                      '   >>  $INSTALL_DIR/pam.py
+
+cat <<EOF>> $INSTALL_DIR/pam.py
+# installation directory inserted by the configure script
+global install_dir_default
+install_dir_default='$INSTALL_DIR' 
+EOF
+
+cat ./pam.py.in  >>  $INSTALL_DIR/pam.py
+chmod a+rx  $INSTALL_DIR/pam.py
+
+echo 'pam.py script file ready'
 }
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3199,6 +3228,11 @@ while [ $# != 0 ]; do
       "pamq")
          set_installdir
 	 make_pamq
+         exit
+         ;;
+      "pam")
+         set_installdir
+	 make_pam
          exit
          ;;
       "profile")
@@ -3332,5 +3366,6 @@ set_scratchdir
 make_Makefile.config
 make_pam_runtest
 make_pamq
+make_pam
 final_words
 
