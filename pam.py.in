@@ -755,6 +755,7 @@ This allows you to omit the molecule and input files. '
         f=open(output_file_full,'w',0)
         #p=subprocess.Popen(self.dirac_cmd, shell=False, stdin=subprocess.PIPE, stdout=f)
         p=subprocess.Popen(self.dirac_cmd,shell=True,stdin=subprocess.PIPE,stdout=f)
+        print 'dirac.x launching command PID=',p.pid
         p.wait()
         f.close()
       else:
@@ -764,7 +765,9 @@ This allows you to omit the molecule and input files. '
 
       signal.alarm(0)    
     except:
-      print "dirac run failed "
+      print "Dirac run failed. Killing its executable process."
+      #TODO: clean of all dirac.x pid's
+      os.kill(p.pid, signal.SIGTERM)
 
     # do the profiling after the execution
     if self.profile: self.profile_dirac()
