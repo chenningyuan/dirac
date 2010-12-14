@@ -163,8 +163,6 @@ gp/gptrygve.p : gp/gptrygve.F
 #                                                                                              #
 #           'safe'  compilation of individual files with conditional directives                #
 #                                                                                              #
-#    Smart substitution for the "build/safebuild" list of source files designed 
-# for safe compilation   
 #                                                                                              #
 # Note: for --noopt configure flag optimization flags are empty                                #
 #                                                                                              #

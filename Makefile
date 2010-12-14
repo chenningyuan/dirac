@@ -1,6 +1,5 @@
 # This is a generic makefile, please see Makefile.config for compilation settings.
-# Files matching lines in the file dontbuild will not be compiled, while files
-# listed in safebuild will be built with "safe" flags.
+# Files matching lines in the file dontbuild will not be compiled.
 # This files might require GNU make
 #
 #TODO: replace all linux commands with system independent python equivalents
@@ -34,35 +33,13 @@ depend: gp/compinfo.h include/fortran_interface.h
 # Make a list of objects to build, and exceptions for files that need
 # different compilation options ("safe" flags)
 # It is a bit messy because we repeat the same code for .F .f90 .F90 .c
-build/Makefile.obj: build/safebuild build/dontbuild
+build/Makefile.obj: build/dontbuild
 	@echo "Collecting all source files for build into :  build/Makefile.obj"
 	@echo "#Automatically generated file, do not edit" > $@
 	@echo "OBJ=\\" >> $@
 	@(find . -name '*.cpp' -o -name '*.F' -o -name '*.F90' -o -name '*.f90' -o -name '*.c' \
 	| egrep -v -f build/dontbuild|sed 's/\.[cfF90p]*$$/.o \\/g' >> $@)
 	@echo >> $@
-# safe .F files
-# The true command is needed on certain systems (AIX on Jump) where the
-# exit code of the whole for statement is the same as that of grep.
-	@(for f in `grep '\.F$$' build/safebuild; true`; do \
-	echo "`echo $$f | sed 's/.F$$/.o/'`: $$f" >> $@;  \
-	echo '	$$(F77) $$(F77FLAGS_SAFE) -c -o $$*.o $$<'>> $@; \
-	done)
-# safe .c files
-	@(for f in `grep '\.c$$' build/safebuild; true`; do \
-	echo "`echo $$f | sed 's/.c$$/.o/'`: $$f" >> $@;  \
-	echo '	$$(CC) $$(CFLAGS_SAFE) -c -o $$*.o $$<'>> $@; \
-	done)
-# safe .F90 files
-	@(for f in `grep '\.F90$$' build/safebuild; true`; do \
-	echo  "`echo $$f | sed 's/.F90$$/.o/'`: $$f" >> $@;  \
-	echo '	$$(F90) $$(F90FLAGS_SAFE) -c -o $$*.o $$<'>> $@; \
-	done)
-# safe .f90 files
-	@(for f in `grep '\.f90$$' build/safebuild; true`; do \
-	echo "`echo $$f | sed 's/.f90$$/.o/'`: $$f" >> $@;  \
-	echo '	$$(F90) $$(F90FLAGS_SAFE) -c -o $$*.o $$<'>> $@; \
-	done)
 
 build/Makefile.dep: build/Makefile.obj build/Makefile.moddef
 	@#./utils/collect_make_dep.py $(DEPFPP) $(DEPCPP)
