@@ -25,6 +25,7 @@
 !
 
 MODULE GRID_FILE
+  use memory_allocator
   IMPLICIT NONE
   PRIVATE
   public read_grid  
@@ -60,10 +61,10 @@ CONTAINS
     REWIND(file)
     READ(file,*) npoints
     
-    ALLOCATE(points(4,1:npoints))
+    call allocp(points,4,npoints,id="grid_points")
     
     if (present(vc)) then
-       ALLOCATE(vc(1:npoints))
+       call allocp(vc,npoints,id="potential")
        DO i=1,npoints
           READ(file,*) points(:,i),vc(i)
        END DO
@@ -98,8 +99,8 @@ CONTAINS
     REWIND(file)
     READ(file,*) npoints, nprop
    
-    ALLOCATE(points(4,1:npoints))
-    ALLOCATE(properties(nprop,1:npoints))
+    call allocp(points,4,npoints, id="grid_points")
+    call allocp(properties,nprop,npoints, id="properties_on_grid")
 
     DO i=1,npoints
        READ(file,*) points(:,i),properties(:,i)
