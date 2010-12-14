@@ -61,9 +61,25 @@ void xc_potential(xc_functional fun, const double *density, double *e_xc, double
 	  xcint_die("xc_potential() not implemented for metaGGA's",fun->type);
 	}
     }
-  else
+  else if (fun->mode == XC_VARS_N)
     {
-      xcint_die("xc_potential() only implemented for AB mode",fun->mode);
+      if (fun->type == XC_LDA) 
+	{
+	  double out[2];
+	  xc_eval(fun,1,density,out);
+	  e_xc[0] = out[0];
+	  v_xc[0] = out[1];
+	}      
+      else
+	{
+	  xcint_die("xc_potential() GGA not implemented for XC_VARS_N",
+		    fun->type);
+	}
+    }
+  else 
+    {
+      xcint_die("xc_potential() GGA only implemented for AB mode",
+		fun->mode);
     }
 }
 
