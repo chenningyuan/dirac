@@ -161,6 +161,7 @@
                      mbytesRequested = real(sizeLocal)*real(kindLocal)/b2mbfac
                      call allocator_get_meminuse(mbytesInUse)  
                      mbytesInUse = mbytesInUse/b2mbfac
+
                      call allocator_get_max(mbytesMax)
                      mbytesMax   = mbytesMax/b2mbfac
 
@@ -168,6 +169,9 @@
      &                  'Request (',mbytesRequested,' Mb) +'//          &
      &                  ' memory in use (',mbytesInUse,' Mb)'//         &
      &                  '  >  user-defined limit (',mbytesMax,' Mb)'
+
+                     write(InfoMessage,'(a,/)')                         &
+     & 'Increase the limit of maximum allocated memory (--aw flag)!'
 
                      ErrorMessage = 'Memory allocation failure at '//trace_result(1:42)
                      isFatal = .True.
