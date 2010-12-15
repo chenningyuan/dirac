@@ -407,7 +407,6 @@ contains
          if (all(polq(:,:,1+nq*(ij-1):nq*ij)==0).and. &
              all(polq(:,:,1+nq*(ik-1):nq*ik)==0).and. &
              all(polq(:,:,1+nq*(jk-1):nq*jk)==0)) cycle
-#ifdef PRG_DIRAC
 #ifdef VAR_PGF90
 !radovan pgf complains here
 !PGF90-S-0152-All dimension specifiers must be ':'
@@ -417,7 +416,6 @@ contains
                  -(/dipq(:,1+nq*(i-1):nq*i),dipq(:,1+nq*(j-1):nq*j),dipq(:,1+nq*(k-1):nq*k)/), &
                  -(/polq(:,:,1+nq*(ij-1):nq*ij),polq(:,:,1+nq*(ik-1):nq*ik), &
                    polq(:,:,1+nq*(jk-1):nq*jk)/),o)
-#endif
 #endif
          exit !only one
       end do
@@ -1382,6 +1380,11 @@ contains
          else if (freq(nj)==freq(nk) .or. (freq(ni)==0 .and. freq(nj)==-freq(nk))) then
             ! j-k symmetry, 20 eqns
             do k=1,3
+#ifdef VAR_PGF90
+!radovan pgf complains here
+!PGF90-S-0152-All dimension specifiers must be ':'
+         call quit('fix vib_prop.f90 for pgf')
+#else
                call pert_dens(mol, S, (/'EL','EL','EL'/), (/3,k,1/),        &
                               (/D,Df(:,ni),Df(:k,nj),Df(k,nk),              &
                                 Dff(:,:k,nij),Dff(:,k,nik),Dff(:k,k,njk)/), &
@@ -1389,6 +1392,7 @@ contains
                                 Fff(:,:k,nij),Fff(:,k,nik),Fff(:k,k,njk)/), &
                               Dfff(:,:k,k), Ffff(:,:k,k),                   &
                               freq=(/freq(ni),freq(nj),freq(nk)/), comp=(/1,1,k/))
+#endif
                do j=1,k-1
                   do i=1,3
                      if (freq(nj)==freq(nk)) Dfff(i,k,j) = Dfff(i,j,k)
