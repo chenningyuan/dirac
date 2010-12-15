@@ -1301,6 +1301,8 @@ mpxlf|*/mpxlf|mpxlf_r|*/mpxlf_r) # must consider full path !
       F90real=ifort
    elif [[ "$F90_COMP"  == *"gfortran"* ]]; then
       F90real=gfortran
+   elif [[ "$F90_COMP"  == *"pgf90"* ]]; then
+      F90real=pgf90
    fi
 
    if [ "$par" = "yes" ]; then
