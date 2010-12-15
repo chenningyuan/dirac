@@ -5,9 +5,7 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake
     )
 
-if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
-endif ()
+set(CMAKE_BUILD_TYPE Release)
 
 project(Dirac Fortran C)
 
@@ -30,8 +28,14 @@ add_definitions(-DINSTALL_WRKMEM=${DIRAC_WORK_MEM_WORDS})
 # radovan: note to myself for later
 # mark_as_advanced(VALGRIND_EXECUTABLE)
 
-# now only Linux, later add more machine info
-add_definitions(-DSYS_LINUX)
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    add_definitions(-DSYS_LINUX)
+    if(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "i686")
+    elseif(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86_64")
+    else()
+    endif()
+else()
+endif()
 
 include(ConfigCompilerFlags)
 if (CMAKE_COMPILER_IS_GNUC)
