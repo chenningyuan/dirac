@@ -865,7 +865,9 @@ C.......no preconditioning; use gradient only for trial vectors
           NVEC = 1
         ENDIF
         IF(E2CHEK) THEN
-CPP.......check static case ! and cmoplex case !
+CPP.......check static case ! and complex case !
+C svillaume: in static case we need all + bvectors NSTAT = 1
+C for all other case we need all + and all - bvectors, no need of NDAMP
           IFAC = NZ*NSTAT
           NESIM = NZXOPE*IFAC
           NPSIM = NZXOPP*IFAC
@@ -896,11 +898,10 @@ C           elements NEXSTV and NEXSTV+1/+2 are (nearly) degenerate
 C
       NTSIM = NESIM + NPSIM + NCSIM
 C.....Check for out of bounds
-      IF(STATIC) THEN
-        NSIM = NFREQ
-      ELSE
-        NSIM = NFREQ+NFREQ
-      ENDIF
+C reminder NSTAT = 1 in static case, = 2 otherwise
+C          NDAMP = 1 in real or imag case, = 2 in complex case
+      NSIM = NFREQ * NSTAT * NDAMP
+C
       NBUF = 0      
       IF(NZXOPE.GT.0) NBUF = NBUF + 1
       IF(NZXOPP.GT.0) NBUF = NBUF + 1
@@ -1914,6 +1915,7 @@ C     ==========
 C
       IPX  =  JTIMOP
       IMX  = -JTIMOP
+C svillaume: NTYP is defined but not used, and it looks like our NSTAT
       NTYP = 2
       IF(STATIC) NTYP = 1
       ITMIC = 0
@@ -1935,9 +1937,12 @@ C     Calculate GP norm for elimination of trial vectors with small
 C     norm.
 C
       IF (LINEQ) THEN
-         GPTNRM = DNRM2(NZCONFQ,GPCI,1)**2 + DNRM2(NZXOPEQ,GPOE,1)**2 + 
-     &     DNRM2(NZXOPPQ,GPOP,1)**2
-         GPTNRM = SQRT(GPTNRM)
+C svillaume: GPTNRM is already evaluated in PRPXL1 and is stored in a
+C            common block (dbcxrs), so we don't need to do it now
+C         GPTNRM = (D2*DNRM2(NZCONFQ,GPCI,1))**2
+C     &          + (D2*DNRM2(NZXOPEQ,GPOE,1))**2
+C     &          + (D2*DNRM2(NZXOPPQ,GPOP,1))**2
+C         GPTNRM = SQRT(GPTNRM)
          IF (IPRXRS.GE.3) WRITE(LUPRI,'(1X,A,1P,D12.5)')
      &     'Norm of gradient in XRSINI:',GPTNRM
       ELSE

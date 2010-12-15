@@ -109,8 +109,8 @@ C
         NEP = 1
       ENDIF
       NCI = 0
-      NDAMP=1
-      IF(DMPFRLR.NE.D0) NDAMP=2
+      NDAMP = 1
+      IF(DMPFRLR.NE.D0) NDAMP = 2
       N2LRF  = NLRAPT*NRSPF*(1+NEE+NEP+NCI)*NDAMP
       CALL MEMGET('REAL',KLRF,N2LRF,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KLRF),N2LRF)
@@ -164,7 +164,9 @@ C
       integer, allocatable :: ibeig(:)
       real(8), allocatable :: cmo(:)
       logical :: parcal_save
-
+C
+C svillaume: NFREQ=0 right now, not defined until call to SETXRS
+C it should be ABLRF(NBFREQ,NLRAPT,NLRBPT,*) no?
       DIMENSION ABLRF(NFREQ,NLRAPT,NLRBPT,*),RCNV(NBFREQ,NLRBPT),
      &          WORK(*)
       SAVE TTYP
@@ -227,8 +229,7 @@ C
 C     Dimensions of reduced system
 C
       KXLR = KFREE
-      NEVECR = NREDM*NFREQ
-      IF(DMPFRLR.NE.D0) NEVECR = 2*NEVECR
+      NEVECR = NREDM*NFREQ*NDAMP
       CALL MEMGET('INTE',KIBTYP,2*NREDM,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBCVC,NREDM  ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBEVC,NREDM  ,WORK,KFREE,LFREE)
@@ -1217,6 +1218,8 @@ C
       STERNC    = XSTERNC
       E2CHEK    = XLR_E2CHEK
       DAMPFREQ  = DMPFRLR
+      NDAMP     = 1
+      IF(DAMPFREQ.NE.D0) NDAMP = 2
 C
 C     Restart info used by MCSCF program.
 C
@@ -1729,12 +1732,13 @@ C
 #include "dcbxpr.h"
 C
       CHARACTER MXFORM*6,FMT*6,FMT2*6,TTYP(-1:1)*2,FREQLAB*4,
-     &          RESPLAB(2)*20
+     &          RESPLAB(3)*20
       DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT,NDAMP,*),
      &          RCNV(NBFREQ,NLRBPT),IBUF(2),WORK(*)
       DATA TTYP /'T-','T0','T+'/
       DATA RESPLAB/'Real part           ',
-     &             'Imaginary part      '/
+     &             'Imaginary part      ',
+     &             '                    '/
 C
 C
 C     Loop over perturbation operators
@@ -1769,19 +1773,22 @@ C
      &               ')>> - linear response function (complex):'
                   J1 = 1
                   J2 = 2
+                  J3 = 1
                 ELSE
                   IF    (ITIMAB.EQ. 1) THEN
                     WRITE(LUPRI,'(/A,I2,A,I2,A)')
      &               '<<A(',INDAP,'),B(',INDBP,
      &               ')>> - linear response function (real):'
                     J1 = 1
-                    J2 = 1
+                    J2 = 3
+                    J3 = 2
                   ELSEIF(ITIMAB.EQ.-1) THEN
                     WRITE(LUPRI,'(/A,I2,A,I2,A)')
      &               '<<A(',INDAP,'),B(',INDBP,
      &               ')>> - linear response function (imaginary):'
                     J1 = 2
-                    J2 = 2
+                    J2 = 3
+                    J3 = 1
                   ENDIF
                 ENDIF
                 CALL PRSYMB(LUPRI,'-',95,0)
@@ -1789,8 +1796,9 @@ C
      &             'A - ',PRPNAM(INDPRA),REP(IREPA),TTYP(ITIMA),
      &             'B - ',PRPNAM(INDPRB),REP(IREPB),TTYP(ITIMB)
                 CALL PRSYMB(LUPRI,'-',95,0)
-                WRITE(LUPRI,'(1X,A,A4,A1,3(A,5X))')' Frequency (',
-     &           FREQLAB,')',(RESPLAB(J),J=J1,J2),'Convergence'
+                WRITE(LUPRI,'(1X,A,A4,A1,5X,2(A,3X),A)')
+     &           'Frequency (',FREQLAB,')',(RESPLAB(J),J=J1,J2,J3),
+     &           'Convergence'
                 CALL PRSYMB(LUPRI,'-',95,0)
                 DO I = 1,NBFREQ
                   DO J = J1,J2

@@ -1930,7 +1930,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0 = 0.0D0,D1=1.0D0,DM1=-1.0D0)
+      PARAMETER(D0 = 0.0D0)
 C
 #include "dcbxrs.h"
 #include "dcbibn.h"
@@ -1946,8 +1946,6 @@ C
       NBPVC = MIN(NZXOPP,1)
       NBCVC = MIN(NZCONF,1)
 C
-      FFAC = D1
-      IF(IMFREQ) FFAC = DM1
       II = 1
       DO I = 1,MFREQ
         FREQ = EVALR(I)
@@ -2337,6 +2335,7 @@ C
           IF(NERED.GT.0) THEN
             CALL XRSXV1(IPX,JBENDX,BEVEC      ,EVECR,MFREQ,
      &                  IBTYP,IBEVC,IVECS(1,IPEP),BEBUF)
+CPP svillaume: here we are not taking the correct norm...
             CALL XVCNRM(XNORM(1,IPEP),BEVEC      ,NZXOPEQ*NDAMP,MFREQ)
             CALL XRSXV1(IMX,JBENDX,BEVEC(KBE2),EVECR,MFREQ,
      &                  IBTYP,IBEVC,IVECS(1,IPEM),BEBUF)
@@ -2956,6 +2955,7 @@ C     Orbital (e-e) type trial vectors
 C
       IF(NZXOPE.GT.0) THEN
         CALL MEMGET('REAL',KDENOM,NZXOPE,WORK,KFREE,LFREE)
+        WRITE(LUPRI,*) 'BEFORE'
         CALL XBVGEN(BEVEC,USEXVC,WORK(KEDIAH),WORK(KEDIAS),EVALR,EVECR,
      &              IBTYP,IBEVC,IVECS(1,IPEP),
      &              MFREQ,JBENDX,IBOFF,NEPREV,NZXOPE,
