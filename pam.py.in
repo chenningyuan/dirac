@@ -19,6 +19,7 @@ import shutil
 import signal
 import stat
 import time
+import fileinput
 
 global install_dir
 install_dir=install_dir_default
@@ -58,19 +59,28 @@ class workdir_class:
     self.iprint=0
     self.create_workdir_name=True
 
+  #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def set_workdir_name(self,root_name):
-  # sets the working directory name according to 
+  #############################################################################################
+  #
+  # sets the working directory name according to the
   # entering "root_name"
+  #
+  #############################################################################################
     #print 'set the name of the work_direcory',root_name
     current_pid = os.getpid(); #print 'pid=',current_pid
     if (len(root_name) > 0):
       workdir_name=root_name+"."+str(current_pid)
     else:
-      workdir_name='dirac_work_dir.'+str(current_pid)      
+      workdir_name='dirac_work_dir.'+str(current_pid)
 
-    print 'workdir_name=',workdir_name
-    print 'root_name=',root_name,(root_name is not None)
     self.workdir=self.workpath+"/"+workdir_name
+
+    if (self.iprint >=5):
+      print 'workdir_name=',workdir_name
+      print 'root_name=',root_name,(root_name is not None)
+      print 'self.workdir=',self.workdir
+
 
   def create_workdir(self):
   # creates the working directory
@@ -104,7 +114,7 @@ class workdir_class:
              'f_ct': time.strftime("%m/%d/%Y %I:%M:%S %p",time.localtime(file_stats[stat.ST_CTIME]))
       } 
       print "%20s"%filename,".....%10.4f"%filesize_kB,' kB'," last accessed = %(f_la)s" % file_info
-      if (self.iprint > 7) :
+      if (self.iprint >= 5) :
         print
         print "file name = %(fname)s" % file_info
         print "file size = %(fsize)s bytes" % file_info
@@ -173,8 +183,8 @@ class pam_enviroment(workdir_class):
     self.dirac_cmd=''
 
     # dirac profiling
-    self.profile = False
-    self.profiler = ''
+    self.profile  = False
+    self.profiler = '' # empty, but later read from Makefile.config
 
     # dirac-executable position (later set by after flag reading)
     self.dirac_exe=install_dir_default+"/dirac.x"
@@ -193,13 +203,14 @@ class pam_enviroment(workdir_class):
 
     # debugging
     self.debug=False
-    self.debugger=''
+    self.debugger='' # empty, but later to be read from Makefile.config
 
     # input directory
     self.input_directory='' 
     # input files
     self.input_molecule=''
     self.input_dirac=''
+
     # output name created from *inp & *mol names
     self.output_name=''
     # default output suffix
@@ -575,7 +586,7 @@ This allows you to omit the molecule and input files. '
 
     ### set workdir name here  ###
     if self.wrkdir_obj.create_workdir_name:
-      self.wrkdir_obj.set_workdir_name(self.output_name)
+      self.wrkdir_obj.set_workdir_name(root_name=self.output_name)
 
     # reconstruct the pam command
     for arg in sys.argv: 
@@ -593,9 +604,14 @@ This allows you to omit the molecule and input files. '
           print 'both --mol=... and --inp=... are required !'
           sys.exit()
 
+  #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def set_output_name(self):
+  #############################################################################################
+  #
   # set the output name string to be used later 
   # for naming output and work directory
+  #
+  #############################################################################################
     if (len(self.input_molecule) >0 and len(self.input_dirac) >0):
       mol_file_stripped=self.input_molecule.replace(".mol","",1 )
       inp_file_stripped=self.input_dirac.replace(".inp","",1)
@@ -605,6 +621,7 @@ This allows you to omit the molecule and input files. '
         self.output_name=mol_file_stripped+"_"+inp_file_stripped
     else:
        self.output_name="dirac_output."+str(os.getpid())
+    # control prinout
     if (self.iprint >=5 ):
       print 'self.input_molecule=',self.input_molecule
       print 'self.input_dirac=',self.input_dirac
@@ -690,6 +707,7 @@ This allows you to omit the molecule and input files. '
       print "DIRWRK=",os.getenv("$DIRWRK")
       print "BASDIR=",os.getenv('BASDIR')
 
+  #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def set_dirac_cmd(self):
   # set the dirac command
     if (self.no_diracexe_copy):
@@ -708,6 +726,32 @@ This allows you to omit the molecule and input files. '
         self.dirac_cmd=self.debugger+' '+this_dirac_exe+' | tee -a '+os.getcwd()+"/"+self.output_file
       else:
         self.dirac_cmd=this_dirac_exe
+
+  #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+  def read_makefile_config(self):
+  #############################################################################################
+  #
+  #  Makefile.config file is the storage place for important variables 
+  #     -  debugger, profiler, valgrind, mpi-launcher...
+  #
+  #############################################################################################
+    if (self.iprint >= 5) :
+      print 'going to read from Makefile.config:'
+
+    # open and read
+    makefile_config=install_dir+'/'+'Makefile.config'
+    #f=open(makefile_config,'r',0)
+    #f.close
+
+    for line in fileinput.input([makefile_config]):
+      if ( line.find('DEBUGGER') != -1 ):
+        print 'debuuger found, line=',line
+      elif ( line.find('PROFILER') != -1 ):
+        print 'profiler found, line=',line
+      elif ( line.find('VALGRIND') != -1 ):
+        print 'valgrind found, line=',line
+      elif ( line.find('MPIRUN') != -1 ):
+        print 'mpi launcher found, line=',line
 
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def execute_dirac(self):
@@ -765,7 +809,7 @@ This allows you to omit the molecule and input files. '
 
       signal.alarm(0)    
     except:
-      print "Dirac run failed. Killing its executable process."
+      print "Dirac run failed. Going to kill (SIGTERM) its executable process of pid=",p.pid
       #TODO: clean of all dirac.x pid's
       os.kill(p.pid, signal.SIGTERM)
 
@@ -875,6 +919,7 @@ class pam_run(pam_enviroment):
 
   def perform(self):
     self.pam_variables.process_pam_arguments()
+    self.pam_variables.read_makefile_config()
     self.pam_variables.set_output_file()
     self.pam_variables.print_header()
     self.pam_variables.copy_files()
