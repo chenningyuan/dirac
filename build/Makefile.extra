@@ -200,4 +200,19 @@ gp/order2.o: gp/order2.F
 abacus/vibnor.o: abacus/vibnor.F
 	@echo "abacus/vibnor.F compilation with 1st level (of 3) optimization"
 	$(F77) $(F77FLAGS_OPT_1) $(F77FLAGS_SAFE) -c -o $*.o $<
+
+#radovan: on Intel Composer XE 2011.1.107
+#         DIRAC crashes immediately if the optimization level on the following 5 files is raised
+#         i have tested only 1d and fear that the higher ones may not be well covered
+gp/memory_track_if.o: gp/memory_track_if.F90
+	$(F77)                   $(F77FLAGS_SAFE) -c -o $*.o $<
+gp/memory_internal_ada_1d.o: gp/memory_internal_ada_1d.F90
+	$(F77) $(F77FLAGS_OPT_1) $(F77FLAGS_SAFE) -c -o $*.o $<
+gp/memory_internal_ada_2d.o: gp/memory_internal_ada_2d.F90
+	$(F77) $(F77FLAGS_OPT_1) $(F77FLAGS_SAFE) -c -o $*.o $<
+gp/memory_internal_ada_3d.o: gp/memory_internal_ada_3d.F90
+	$(F77) $(F77FLAGS_OPT_1) $(F77FLAGS_SAFE) -c -o $*.o $<
+gp/memory_internal_ada_4d.o: gp/memory_internal_ada_4d.F90
+	$(F77) $(F77FLAGS_OPT_1) $(F77FLAGS_SAFE) -c -o $*.o $<
+
 endif
