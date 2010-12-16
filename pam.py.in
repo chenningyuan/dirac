@@ -59,6 +59,13 @@ class workdir_class:
     self.iprint=0
     self.create_workdir_name=True
 
+  def set_iprint(self,iprint_in):
+  # ... assignes the iprint level
+    self.iprint=iprint_in
+    if (self.iprint >= 5) :
+      print 'workdir_class: iprint set=',self.iprint
+
+
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def set_workdir_name(self,root_name):
   #############################################################################################
@@ -432,6 +439,7 @@ This allows you to omit the molecule and input files. '
     # now assign individual arguments
     if (options.dest_iprint is not None) :
      self.iprint=int(options.dest_iprint)
+     self.wrkdir_obj.set_iprint(iprint_in=self.iprint)
      if self.iprint > 7:
       print 'assigned iprint=',self.iprint
 
@@ -539,33 +547,33 @@ This allows you to omit the molecule and input files. '
 
     if (options.dest_outcmo is not None):
       self.outcmo=options.dest_outcmo
-      if self.iprint > 7:
+      if self.iprint >= 5:
         print 'assigned self.outcmo:',self.outcmo
 
     if (options.dest_infck is not None):
       self.infck=options.dest_infck
-      if self.iprint > 7:
+      if self.iprint >= 5:
         print 'assigned self.infck:',self.infck
 
     if (options.dest_outfck is not None):
       self.outfck=options.dest_outfck
-      if self.iprint > 7:
+      if self.iprint >= 5:
         print 'assigned self.outfck:',self.outfck
 
     if (options.dest_fullrestart is not None):
       self.archive_name=options.dest_fullrestart
       self.full_restart=True
-      if self.iprint > 7:
+      if self.iprint >= 5:
         print 'assigned full-restart from archive file',self.archive_name
 
     if (options.dest_clean is not None) :
       self.wrkdir_obj.cleanwrkdir=options.dest_clean
-      if self.iprint > 7:
+      if self.iprint >= 5:
         print 'assigned wrkdir_obj.cleanwrkdir==',self.wrkdir_obj.cleanwrkdir
 
     if (options.dest_keepwrk is not None) :
       self.wrkdir_obj.keepwrk=options.dest_keepwrk
-      if self.iprint > 7:
+      if self.iprint >= 5:
         print 'assigned wrkdir_obj.keepwrk =',self.wrkdir_obj.keepwrk
 
     if (options.dest_debug is not None) :
@@ -580,13 +588,6 @@ This allows you to omit the molecule and input files. '
 
     # assign input directory ...
     self.input_directory=os.getcwd()
-
-    if (self.iprint > 7) :
-      print 'Parallel ?:',self.parallel
-
-    ### set workdir name here  ###
-    if self.wrkdir_obj.create_workdir_name:
-      self.wrkdir_obj.set_workdir_name(root_name=self.output_name)
 
     # reconstruct the pam command
     for arg in sys.argv: 
@@ -603,6 +604,11 @@ This allows you to omit the molecule and input files. '
         if ( not self.full_restart):
           print 'both --mol=... and --inp=... are required !'
           sys.exit()
+      self.set_output_name()
+
+    ### set workdir name here  ###
+    if self.wrkdir_obj.create_workdir_name:
+      self.wrkdir_obj.set_workdir_name(root_name=self.output_name)
 
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def set_output_name(self):
@@ -674,7 +680,7 @@ This allows you to omit the molecule and input files. '
   def set_output_file(self):
   # sets the name of the output file by using "self.output_name"
     #print 'setting output file..'
-    self.set_output_name()
+    #self.set_output_name()
     self.output_file=self.output_name+"."+self.output_suffix
     if (self.iprint >= 5):
       print 'set_output_file: self.output_file=',self.output_file
@@ -745,13 +751,17 @@ This allows you to omit the molecule and input files. '
 
     for line in fileinput.input([makefile_config]):
       if ( line.find('DEBUGGER') != -1 ):
-        print 'debuuger found, line=',line
+        if (self.iprint >= 5) :
+          print 'debuuger found, line=',line
       elif ( line.find('PROFILER') != -1 ):
-        print 'profiler found, line=',line
+        if (self.iprint >= 5) :
+          print 'profiler found, line=',line
       elif ( line.find('VALGRIND') != -1 ):
-        print 'valgrind found, line=',line
+        if (self.iprint >= 5) :
+          print 'valgrind found, line=',line
       elif ( line.find('MPIRUN') != -1 ):
-        print 'mpi launcher found, line=',line
+        if (self.iprint >= 5) :
+          print 'mpi launcher found, line=',line
 
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def execute_dirac(self):
