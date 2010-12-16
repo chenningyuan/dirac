@@ -2756,6 +2756,22 @@ include \$(SRC_DIR)/build/Makefile.moddef
 WRKMEM=$memsiz
 # scratch directory, the same as in "pam", from where it is used
 SCRATCH_DIR=$worksp
+# debugger
+DEBUGGER=$debug
+# 
+# For passing files to local disks; if empty, no copying to local disks of nodes
+#
+RCP=$rcp
+RSH=$rsh
+# check launcher carefully according to your MPI settings (determined by PATH,LD_LIBS env.variables) 
+MPIRUN=$mpirun
+LOCALDISKS=$localdisks
+# default machine file - either for mpirun or for copying files onto local disks or for both
+MACH_FILE=$mach_file
+#  valgrind debugging and checking tool - check it according to your machine installation
+VALGRIND=$valgrind_tool
+# profiler - check it according to your machine installation, we offer gprof :)
+PROFILER=$profiler
 EOF
 
 if [ "$mesp" = "mpi" ]; then
