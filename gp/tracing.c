@@ -57,6 +57,7 @@
 
 #define MAXSIZE_SYMBOL (300)
 #define MAXDEPTH_TRACE  (30)
+#define TYPICAL_FCHAR_LENGTH (132)
 
 
 enum allowedActions { printAllToStdout = 1, printAllocCaller, printPrettyTrace, prinRawTrace };
@@ -89,8 +90,10 @@ void get_traceback_info_(enum allowedActions *action, char *fstring, int *fsize)
 {
   void *array[MAXDEPTH_TRACE];
   size_t size = 0;
-  char **strings = NULL;
+  void **strings = NULL;
   size_t i=3, j, k = 0;
+  char safe[] = "unknown";
+
   char symbol_name[MAXSIZE_SYMBOL];
 
 /* only support to linux for now. for other systems the traceback is yet to be implemented
@@ -112,8 +115,17 @@ void get_traceback_info_(enum allowedActions *action, char *fstring, int *fsize)
       }
       else if ( *action == printAllocCaller )
       {
-         retrieve_symbol(symbolName,symbol_name,strings[i]);
-         print_trace_to_string(symbol_name,fstring,*fsize);
+// size <= i if, for, instance, part of the traceback information is gone
+// due to compiler optimizations. that being the case, we just return a 
+// default string
+         if ( size > i )
+         {
+            retrieve_symbol(symbolName,symbol_name,strings[i]);
+            print_trace_to_string(symbol_name,fstring,*fsize);
+         }
+         else
+            print_trace_to_string(safe,fstring,*fsize);
+         
       }
       else if ( *action == printPrettyTrace )
       {
@@ -260,6 +272,11 @@ void retrieve_symbol(enum retrieveSymbolKinds kind, char *result, char *backtrac
         {
            result[k] = element;
            k++;
+           if ( k == (TYPICAL_FCHAR_LENGTH - 1 ) )
+           {
+              result[k] = '\0';
+              break;
+           }
         }
      }
 }
