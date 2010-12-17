@@ -23,4 +23,4 @@ fi
 MENU=cc;
 export MENU;
 export MOL;
-../SCRIPTS/run.sh -mw 130
+../SCRIPTS/run.sh -mw 70 -aw 80
