@@ -90,7 +90,7 @@ void get_traceback_info_(enum allowedActions *action, char *fstring, int *fsize)
 {
   void *array[MAXDEPTH_TRACE];
   size_t size = 0;
-  void **strings = NULL;
+  char **strings = NULL;
   size_t i=3, j, k = 0;
   char safe[] = "unknown";
 
@@ -192,7 +192,7 @@ void print_prettytrace_to_stdout (size_t size, char **strings)
       }
       else
       {
-         printf("%3d   function name:   Unknown\n",j);
+         printf("%3lu   function name:   Unknown\n",(unsigned long)j);
       }
       j--;
    }
