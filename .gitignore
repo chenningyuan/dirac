@@ -20,3 +20,12 @@ gp/compinfo.h
 include/fortran_interface.h
 test/SCRIPTS/run.sh
 test/SCRIPTS/runtest
+dirac.x
+job_testlast.sh
+test/LOGS/
+test/*/*.tgz
+test/*/*test
+test/*/*.rep
+test/*/*.htm
+test/*/*.txt
+test/*/result/*.rep
