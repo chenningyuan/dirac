@@ -248,6 +248,14 @@ setup_command()
       DIRAC_CMD=
    fi
 
+
+#  radovan: if the nr of processors == 1
+#           run as if it was a seq run, no mpirun
+   if [ "$MPI_NPROC" = "1" ]; then
+      DIRAC_CMD=
+   fi
+
+
    ############################################################
    #
    # Debug (will ignore any MPIRUN)
