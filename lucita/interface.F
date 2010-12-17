@@ -3300,7 +3300,6 @@ c    &  Line=_MOLCAS_VERSION_
 c       If ( i.eq.16 )
 c    &  Line='module created at : '//
 c    &       _BUILD_DATE_
-c       Call Center(Line)
 c       Write(*,Fmt) '*'//Line//'*'
       End Do
 *----------------------------------------------------------------------*
@@ -3314,7 +3313,6 @@ c       Write(*,Fmt) '*'//Line//'*'
       Line(23:27)=Line(60:64)
       Line(32:39)=Line(52:59)
       Line(40:lLine)=BlLine(40:lLine)
-      Call Center(Line)
       Write(*,Fmt) ' '//Line//' '
       Write(*,*)
 *----------------------------------------------------------------------*
@@ -3505,7 +3503,6 @@ c    &  Line=_MOLCAS_VERSION_
 c       If ( i.eq.16 )
 c    &  Line='module created at : '//
 c    &       _BUILD_DATE_
-c       Call Center(Line)
 c       Write(*,Fmt) '*'//Line//'*'
       End Do
 *----------------------------------------------------------------------*
@@ -3519,7 +3516,6 @@ c       Write(*,Fmt) '*'//Line//'*'
       Line(23:27)=Line(60:64)
       Line(32:39)=Line(52:59)
       Line(40:lLine)=BlLine(40:lLine)
-      Call Center(Line)
       Write(*,Fmt) ' '//Line//' '
       Write(*,*)
 *----------------------------------------------------------------------*
@@ -4477,7 +4473,7 @@ CTF      write(*,'(1X,A6)') MACHINE
          WRITE (NLUCIAIN_MPI,'(A7,A1,I3)') LUCIAIN_MPIN,'.',MYPROC
          LUCIAIN_MPIL=11
       ELSE
-         CALL QUIT("NMPROC.GT.1000! EXTEND LUCINOD.F MODULE")
+         CALL QUIT("NMPROC.GT.1000! EXTEND LUCITA_NODE MODULE")
       ENDIF
 #else
       NLUCIAIN_MPI=LUCIAIN_MPIN
@@ -7130,7 +7126,6 @@ c     call XFLUSH(6)
      &        '*',(' ',I=1,56),'Title:',(' ',I=1,56),'*'
 c     call XFLUSH(6)
       do I=1,NTIT
-         call center(Title(I))
          write(*,'(6X,24A1,A72,24A1)')
      &        '*',(' ',J=1,23),Title(I),(' ',J=1,23),'*'
 c     call XFLUSH(6)
