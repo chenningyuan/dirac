@@ -932,8 +932,8 @@ C
       KFRBUF = KFREE
 C     ... set proper dimension for integer arrays. default. SK - Sep 08
 !     mi : +1 memleak fix
-      LEVEC  = NESIM +1 
-      LPVEC  = NPSIM +1 
+      LEVEC  = NESIM +1
+      LPVEC  = NPSIM +1
       LCVEC  = NCSIM    
 
 !     krmc optimization
@@ -1916,8 +1916,8 @@ C
       IPX  =  JTIMOP
       IMX  = -JTIMOP
 C svillaume: NTYP is defined but not used, and it looks like our NSTAT
-      NTYP = 2
-      IF(STATIC) NTYP = 1
+C      NTYP = 2
+C      IF(STATIC) NTYP = 1
       ITMIC = 0
       CALL DCOPY(NFREQ,DUMMY,0,RCNV,1)
       CALL DZERO(EVECR,NEVEC*NFREQ)
@@ -2664,7 +2664,7 @@ C***********************************************************************
 C
 C     Solve the reduced linear *complex* reponse equation
 C
-C       [AE - (W+iG)*AS]X = G
+C       [AE - (W+i*DAMPFREQ)*AS]X = G
 C
 C     Written by S.Villaume & T.Saue 2010
 C
@@ -2692,7 +2692,7 @@ C solve A2*X=G
       CALL MEMGET('INTE',KPVT,N,WORK,KFREE,LFREE)
       CALL ZSYSV('L',N,1,A2,LDA,WORK(KPVT),X,LDA,
      &           WORK(KFREE),LFREE,INFO)
-C
+CPP remove after debug
       ALPHAR = DP5 * DDOT(N,G,1,X,2)
       ALPHAI = DP5 * DDOT(N,G,1,X(2),2)
       WRITE(LUPRI,'(F9.4,1X,F15.8,1X,F15.8)') W,ALPHAR,ALPHAI
@@ -2707,7 +2707,7 @@ C/* Deck XRSLinre1 */
      &                  NPVEC,IPRINT,WORK,KFREE,LFREE)
 C***********************************************************************
 C
-C     Solve the reduced linear reponse equation
+C     Solve the reduced linear *real or imaginary* reponse equation
 C
 C       [AE - W*AS]X = G
 C
@@ -3688,6 +3688,7 @@ C             tsaue:         retain norm for numerical stability !
                 CALL DSCAL(NBDIM,BNRM,BVEC(1,1,IP),1)
               ENDIF
               IVEC(IP) = 1
+C svillaume: is IM really defined if the frequency is 0.0 ?
               IVEC(IM) = 0
             ELSE
               CALL GENPREC(PREC,HDIAG,SDIAG,FREQ,NVAR)

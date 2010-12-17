@@ -2335,7 +2335,8 @@ C
           IF(NERED.GT.0) THEN
             CALL XRSXV1(IPX,JBENDX,BEVEC      ,EVECR,MFREQ,
      &                  IBTYP,IBEVC,IVECS(1,IPEP),BEBUF)
-CPP svillaume: here we are not taking the correct norm...
+CPP svillaume: here we are not taking the correct norm because of
+CPP            the new structure...
             CALL XVCNRM(XNORM(1,IPEP),BEVEC      ,NZXOPEQ*NDAMP,MFREQ)
             CALL XRSXV1(IMX,JBENDX,BEVEC(KBE2),EVECR,MFREQ,
      &                  IBTYP,IBEVC,IVECS(1,IPEM),BEBUF)
@@ -2350,7 +2351,7 @@ C           Print section
               WRITE(LUPRI,'(1P,8(3X,E8.2))') (XNORM(I,IPEM),I=1,MFREQ)
             ENDIF
             IF(IPRXRS.GE.5) THEN
-CPP...........print both unbarred and barred  solution vector in complex case!
+CPP......print both unbarred and barred solution vector in complex case!
               WRITE(LUPRI,'(/I5,A)') MFREQ,
      &          ' orbital (e-e) X(+) solution vectors'
               CALL PRBVEC(LUPRI,BEVEC      ,MFREQ,NZXOPE)
@@ -2677,11 +2678,13 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0)
+      PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
+#include "dcbxrs.h"
 C
       DIMENSION BVEC(NBDIM,MFREQ),GP(NBDIM)
 C
-      DO I = 1,MFREQ
+
+      DO I = 1,MFREQ,NDAMP
         CALL DAXPY(NBDIM,D1,GP,1,BVEC(1,I),1)
       ENDDO
 C
