@@ -1,0 +1,45 @@
+#radovan: without svn ignores the svn status is useless
+#         svn ignores are implemented in a very braindead way
+#         (you have to edit each directory separately)
+#         the easiest may be to edit ~/.subversion/config
+#         but i have seen many working copies of colleagues where
+#         this was not done
+#         an alternative way using svn propset is this:
+#       $ cd to the dirac root directory
+#       $ for dir in `find . -type d | grep -v \.svn`; do svn propset svn:ignore -F utils/svn-ignores $dir; done
+#         then don't forget to remove Makefile from the top-level ignores
+#       $ svn propedit svn:ignore .
+*.txt
+*.o
+*.mod
+*.pyc
+Makefile
+pam
+pam.py
+pamq.py
+Makefile.config
+Makefile.dep
+Makefile.extobj
+Makefile.moddef
+Makefile.obj
+dontbuild
+gen_fortran_interface_h
+Definitions.cmake
+Sources.cmake
+compinfo.h
+fortran_interface.h
+run.sh
+runtest
+dirac.x
+job_testlast.sh
+LOGS
+*.tgz
+*test
+*.rep
+*.htm
+*.txt
+3*\*
+6*\*
+geninterface
+xcfun_autogen.h
+xcfun_autogen.f90
