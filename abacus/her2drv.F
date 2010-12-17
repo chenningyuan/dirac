@@ -1610,6 +1610,9 @@ C
          MWSOIN = MAX(MWSOIN,NSOINT)
          LWTOT  = LWTOT + KFREE - 1
          MWTOT  = MAX(MWTOT,LWTOT)
+ 
+         CALL MEMCHK('TWOOD1 axsdgd',WORK,1) ! mi check
+
          CALL SYMLOP(WORK(KSOINT),FMAT,DMAT,NDMAT,GMAT,PSO,PSA,
      &               WORK(KFREE),LFREE,WORK(KCOFAB),WORK(KCOFCD),COORAB,
      &               COORCD,EXPAB,EXPCD,FACAB,FACCD,CONTA,CONTB,CONTC,
@@ -1626,6 +1629,8 @@ C
      &               GABRAO,DMRAO,DMRSO,DINTSKP,WORK(KDNSBF),IREPDM,
      &               INDX,INDXAB,GENCNT)
          LWTOT = LWTOT - KFREE + 1
+         !miro: crashing on paralell opteron ompi/ifort/gcc/ILP64/opt/LibMKL
+         CALL MEMCHK('TWOOD1 skssjxxjd',WORK,1) ! mi check
       END IF
       CALL MEMREL('TWOOD1',WORK,KWORK,KWORK,KFREE,LFREE)
  999  CONTINUE
@@ -1710,6 +1715,8 @@ C
       CALL QENTER('SYMLOP')
 #include "memint.h"
       IF (IPRINT .GE. 5) CALL TITLER('Output from SYMLOP','*',103)
+
+      !CALL MEMCHK('SYMLOP abxjdo ',WORK,1) ! mi check
 C
       IF (.NOT.(EXPECT.OR.DIRFCK.OR.DDFOCK) .AND. NSOINT.EQ.0
      &                                      .AND. LAST) GOTO 400
@@ -2276,6 +2283,9 @@ C     ***** Process SO integrals *****
 C     ********************************
 C
   400 CONTINUE
+
+      !CALL MEMCHK('SYMLOP sxskxy',WORK,1) ! mi check
+
       IF (.NOT. (EXPECT.OR.DIRFCK.OR.DDFOCK) .AND. (INTS.OR.LAST)) THEN
 C
 C        A) Undifferentiated integrals
@@ -2338,6 +2348,9 @@ C
       ELSE IF (EXPECT) THEN
          IF (IPRINT .GE. 6) CALL PRIGRD(GRADEE)
       END IF
+
+      !CALL MEMCHK('SYMLOP asuxxndby',WORK,1) ! mi check
+
       CALL QEXIT('SYMLOP')
       RETURN
 C
