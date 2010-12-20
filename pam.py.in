@@ -41,7 +41,7 @@ def append_dirac_py_modules(dirac_install_dir):
 class workdir_class:
 ###########################################################################################
 #
-#    class dealing with the work directory only
+#    class dealing only with the work directory 
 #
 ###########################################################################################
   global install_dir
@@ -49,8 +49,8 @@ class workdir_class:
     #print 'work_direcory class initialize'
     self.workdir=''
 
-    self.workpath='/tmp/'+os.getlogin()
     #TODO: Windows user login name !!!
+    self.workpath='/tmp/'+os.getlogin()
     self.keepwrk=False
 
     self.cleanwrkdir=False
@@ -60,7 +60,7 @@ class workdir_class:
     self.create_workdir_name=True
 
   def set_iprint(self,iprint_in):
-  # ... assignes the iprint level
+  # ... assignes the iprint level from outside
     self.iprint=iprint_in
     if (self.iprint >= 5) :
       print 'workdir_class: iprint set=',self.iprint
@@ -85,9 +85,10 @@ class workdir_class:
 
     if (self.iprint >=5):
       print 'workdir_name=',workdir_name
-      print 'root_name=',root_name,(root_name is not None)
+      print 'root_name set?',(root_name is not None)
+      if (root_name is not None):
+        print 'root_name=',root_name
       print 'self.workdir=',self.workdir
-
 
   def create_workdir(self):
   # creates the working directory
@@ -329,6 +330,18 @@ This allows you to omit the molecule and input files. '
     this_label="pam.py\'s directory, default:"+install_dir_default
     parser.add_option("--install_dir", type="string", nargs=1,
                   action="store",dest="dest_install_dir",  
+                  help=this_label,metavar="STRING")
+
+    # .. read in the workdirectory
+    this_label="Full directory path for work area; default:"
+    parser.add_option("--wrkdir", type="string", nargs=1,
+                  action="store",dest="dest_wrkdir",  
+                  help=this_label,metavar="STRING")
+
+    # .. read in the work-path
+    this_label="Directory path (without user login name) for work area; default..."
+    parser.add_option("--wrkpath", type="string", nargs=1,
+                  action="store",dest="dest_wrkpath",  
                   help=this_label,metavar="STRING")
 
     # .. read in the basis set directory if different from default
