@@ -185,7 +185,7 @@ class pam_enviroment(workdir_class):
     # basis set directory - set in the flags readings step 
     self.basdir=install_dir_default+"/basis:"+install_dir_default+"/basis_dalton"
 
-    # ... object from the inherited "workdirectory" class 
+    # ... object from the inherited class "workdirectory"
     self.wrkdir_obj = workdir_class()
 
     # parallel stuff 
@@ -199,6 +199,8 @@ class pam_enviroment(workdir_class):
     # dirac profiling
     self.profile  = False
     self.profiler = '' # empty, but later read from Makefile.config
+    self.profiling_file='gmon.out' # usuall file 
+    self.profile_command='' # command for profiling
 
     # dirac-executable position (later set by after flag reading)
     self.dirac_exe=install_dir_default+"/dirac.x"
@@ -221,7 +223,8 @@ class pam_enviroment(workdir_class):
 
     # valgrind
     self.vg_debug=False
-    self.valgrind='' # empty,  to be read from Makefile.config    
+    self.valgrind='' # empty, to be read from Makefile.config    
+    self.valgrind_param='' # parameters for valgrind
 
     # rcp, rsh
     self.rcp=''
@@ -239,6 +242,7 @@ class pam_enviroment(workdir_class):
     self.output_suffix="out"
     # output file...
     self.output_file=''
+    self.output_file_full='' # full path
 
     # do not backup files
     self.nobackup=False
@@ -439,6 +443,11 @@ This allows you to omit the molecule and input files. '
                   action="store",dest="dest_debugger",
                   help=this_label, metavar="STRING")
 
+    this_label="run dirac in the valgrind debugger, http://valgrind.org (default: do not run)"
+    parser.add_option("--vg", 
+                  action="store_true",dest="dest_vg", 
+                  help=this_label)
+
     #  ... profiling
     this_label="do the profiling after the run (default: do not do)"
     parser.add_option("--profile", 
@@ -636,6 +645,11 @@ This allows you to omit the molecule and input files. '
       if self.iprint > 7:
         print 'assigned debugger,',self.debugger
 
+    if (options.dest_vg is not None) :
+      self.vg_debug=options.dest_vg
+      if self.iprint >= 5:
+        print 'do the valgrind debug with',self.valgrind
+
     if (options.dest_profile is not None) :
       self.profile=True
       if self.iprint >= 5:
@@ -787,10 +801,16 @@ This allows you to omit the molecule and input files. '
       # and/if  $DIRAC_CMD -machinefile $MACH_FILE $DIRAC_CMD
       self.dirac_cmd=self.mpirun+" -np "+str(self.mpi)+" -wd "+self.wrkdir_obj.workdir
       self.dirac_cmd=self.dirac_cmd+this_dirac_exe
-    else:
+      if (self.vg_debug): # valgrind stuff, DIRAC_CMD="$DIRAC_CMD $VALGRIND_TOOL --log-fd=1"
+         self.dirac_cmd=self.dirac_cmd+' '+self.valgrind+' --log-fd=1'
+    else:  # serial run
       if (self.debug):
        #TODO: adapt it for Windows
         self.dirac_cmd=self.debugger+' '+this_dirac_exe+' | tee -a '+os.getcwd()+"/"+self.output_file
+      elif (self.vg_debug): # set command for valgrid
+      # or: $VALGRIND -v --error-limit=no --leak-check=full --track-origins=yes --show-reachable=yes 
+      # serial: DIRAC_CMD="$VALGRIND_TOOL --log-fd=1
+        self.dirac_cmd=self.valgrind+' --log-fd=1 '+elf.dirac_cmd
       else:
         self.dirac_cmd=this_dirac_exe
 
@@ -903,10 +923,10 @@ This allows you to omit the molecule and input files. '
       print 'executing serial dirac'
 
     try:
-      if (not self.debug):
+      if (not self.debug and not self.vg_debug):
         #print 'executing dirac ...',self.dirac_cmd
-        output_file_full=self.input_directory+"/"+self.output_file
-        f=open(output_file_full,'w',0)
+        self.output_file_full=self.input_directory+"/"+self.output_file
+        f=open(self.output_file_full,'w',0)
         #p=subprocess.Popen(self.dirac_cmd, shell=False, stdin=subprocess.PIPE, stdout=f)
         p=subprocess.Popen(self.dirac_cmd,shell=True,stdin=subprocess.PIPE,stdout=f)
         print 'dirac.x launching command PID=',p.pid
@@ -927,11 +947,16 @@ This allows you to omit the molecule and input files. '
     if self.profile: self.profile_dirac()
 
   def profile_dirac(self):
-    print 'profiling...'
-    #default output after finishing DIRAC
-    GMON="gmon.out"
-    #os.system(....)
-
+  # profile after the DIRAC execution- we are in the working directory
+    if (os.path.isfile(f)):  
+      print 'profiling...'
+      self.profile_command=self.profiler+' '+self.dirac_exe+' '+self.profiling_file 
+      f=open(self.output_file_full,'a',0) # open file for appending
+      p=subprocess.Popen(self.profile_command,shell=True,stdin=subprocess.PIPE,stdout=f)
+      f.close()
+    else:
+      print 'no gmon.out found, so no profiling..'
+ 
   def save_files(self):
     # ... save files in various manners from the work directory 
     from common import backup_file
