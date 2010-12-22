@@ -41,7 +41,7 @@ def append_dirac_py_modules(dirac_install_dir):
 class workdir_class:
 ###########################################################################################
 #
-#    class dealing only with the work directory 
+#              class dealing only with the work directory 
 #
 ###########################################################################################
   global install_dir
@@ -50,7 +50,9 @@ class workdir_class:
     self.workdir=''
 
     #TODO: Windows user login name !!!
-    self.workpath='/tmp/'+os.getlogin()
+    #self.workpath='/tmp/'+os.getlogin()
+    self.workpath=''
+
     self.keepwrk=False
 
     self.cleanwrkdir=False
@@ -73,6 +75,8 @@ class workdir_class:
   # sets the working directory name according to the
   # entering "root_name"
   #
+  # depends on "self.workpath"
+  #
   #############################################################################################
     #print 'set the name of the work_direcory',root_name
     current_pid = os.getpid(); #print 'pid=',current_pid
@@ -81,6 +85,7 @@ class workdir_class:
     else:
       workdir_name='dirac_work_dir.'+str(current_pid)
 
+    # self.workpath MUST BE set before
     self.workdir=self.workpath+"/"+workdir_name
 
     if (self.iprint >=5):
@@ -96,7 +101,7 @@ class workdir_class:
       print 'creating work directory '
       os.mkdir(self.workdir)
     else:
-      print 'work directory already exists'
+      print 'The work directory ',self.workdir,' already exists.'
 
   def copy_file(self,src,dest):
   # ... copies file from the current dir "scr" to "dest"
@@ -173,6 +178,7 @@ class pam_enviroment(workdir_class):
     #print 'pam_enviroment class initialize'
      # print level
     self.iprint=1
+    self.iprint_default=1
      ### contains installation directory ...
     self.dirac_home=install_dir
 
@@ -212,6 +218,14 @@ class pam_enviroment(workdir_class):
     # debugging
     self.debug=False
     self.debugger='' # empty, but later to be read from Makefile.config
+
+    # valgrind
+    self.vg_debug=False
+    self.valgrind='' # empty,  to be read from Makefile.config    
+
+    # rcp, rsh
+    self.rcp=''
+    self.rsh=''
 
     # input directory
     self.input_directory='' 
@@ -265,7 +279,7 @@ class pam_enviroment(workdir_class):
     parser = OptionParser(usage)
 
   # ... get in the print level 
-    this_label='script verbose print level, default:'+str(1)
+    this_label='script verbose print level, default:'+str(self.iprint_default)
     parser.add_option("-i", "--iprint", type="int", nargs=1,  
                   action="store", dest="dest_iprint", default=1,
                   help=this_label, metavar="INT_NUM")
@@ -333,15 +347,15 @@ This allows you to omit the molecule and input files. '
                   help=this_label,metavar="STRING")
 
     # .. read in the workdirectory
-    this_label="Full directory path for work area; default:"
+    this_label="Full directory path for work area, default: "+self.wrkdir_obj.workpath+"/<mol_inp>.$"
     parser.add_option("--wrkdir", type="string", nargs=1,
                   action="store",dest="dest_wrkdir",  
                   help=this_label,metavar="STRING")
 
     # .. read in the work-path
-    this_label="Directory path (without user login name) for work area; default..."
+    this_label="Directory path (without user login name) for work area; default: "+self.wrkdir_obj.workpath
     parser.add_option("--wrkpath", type="string", nargs=1,
-                  action="store",dest="dest_wrkpath",  
+                  action="store",dest="dest_wrkpath",
                   help=this_label,metavar="STRING")
 
     # .. read in the basis set directory if different from default
@@ -414,7 +428,7 @@ This allows you to omit the molecule and input files. '
                   action="store_true",dest="dest_keepwrk",  
                   help=this_label)
 
-    # ... keep workdir after calculations
+    #  ... debugging 
     this_label="run in debugger (default: do not run)"
     parser.add_option("--debug", 
                   action="store_true",dest="dest_debug", 
@@ -425,6 +439,18 @@ This allows you to omit the molecule and input files. '
                   action="store",dest="dest_debugger",
                   help=this_label, metavar="STRING")
 
+    #  ... profiling
+    this_label="do the profiling after the run (default: do not do)"
+    parser.add_option("--profile", 
+                  action="store_true",dest="dest_profile", 
+                  help=this_label)
+
+    this_label="profiler (full path), default: "+self.profiler
+    parser.add_option("--profiler",
+                  action="store",dest="dest_profiler",
+                  help=this_label, metavar="STRING")
+
+    # mol-file
     parser.add_option('--mol', 
         type   = 'string',
         nargs  = 1,
@@ -433,6 +459,7 @@ This allows you to omit the molecule and input files. '
         help   = 'molecule file *.mol'
         )
 
+    # inp-file
     parser.add_option('--inp', 
         type   = 'string',
         nargs  = 1,
@@ -494,19 +521,29 @@ This allows you to omit the molecule and input files. '
       print 'assigned mpirun=',self.mpirun
 
     if (options.dest_install_dir is not None) :
-     install_dir=str(options.dest_install_dir)
-     if self.iprint > 7:
-      print 'assigned install-dir=',install_dir
+      install_dir=str(options.dest_install_dir)
+      if self.iprint >= 5:
+        print 'assigned install-dir=',install_dir
     elif (install_dir_default is None) :
-     sys.exit("you must set the installation directory !")
+      sys.exit("you must set the installation directory !")
+
+    if (options.dest_wrkdir is not None):
+      self.wrkdir_obj.workdir=str(options.dest_wrkdir)
+      if self.iprint >= 5:
+        print 'assigned wrkdir=',self.wrkdir_obj.workdir
+
+    if (options.dest_wrkpath is not None):
+      self.wrkdir_obj.workpath=str(options.dest_wrkpath)
+      if self.iprint >= 5:
+        print 'assigned wrkpath=',self.wrkdir_obj.workpath
 
     if (options.dest_basdir is not None) :
-     self.basdir=str(options.dest_basdir)
-     if self.iprint > 7:
-      print 'assigned basdir=',self.basdir
+      self.basdir=str(options.dest_basdir)
+      if self.iprint > 7:
+        print 'assigned basdir=',self.basdir
     else:
-     if self.iprint > 7:
-      print 'used default basdir=',self.basdir
+      if self.iprint > 7:
+        print 'used default basdir=',self.basdir
 
     if (options.dest_dirac is not None) :
       self.dirac_exe=str(options.dest_dirac)
@@ -591,7 +628,7 @@ This allows you to omit the molecule and input files. '
 
     if (options.dest_debug is not None) :
       self.debug=True
-      if self.iprint > 7:
+      if self.iprint >= 5:
         print 'do debugging,',self.debug
 
     if (options.dest_debugger is not None) :
@@ -599,10 +636,21 @@ This allows you to omit the molecule and input files. '
       if self.iprint > 7:
         print 'assigned debugger,',self.debugger
 
+    if (options.dest_profile is not None) :
+      self.profile=True
+      if self.iprint >= 5:
+        print 'do profiling,',self.profile
+
+    if (options.dest_profiler is not None) :
+      self.profiler=options.dest_profiler
+      if self.iprint >= 5:
+        print 'assigned profiler,',self.profiler
+
+
     # assign input directory ...
     self.input_directory=os.getcwd()
 
-    # reconstruct the pam command
+    # reconstruct the whole pam command
     for arg in sys.argv: 
       self.pam_command=self.pam_command+' '+arg    
 
@@ -750,6 +798,9 @@ This allows you to omit the molecule and input files. '
   def read_makefile_config(self):
   #############################################################################################
   #
+  #  The very first routine  - reading of the Makefile.config to get default values
+  #  of many variables.
+  #
   #  Makefile.config file is the storage place for important variables 
   #     -  debugger, profiler, valgrind, mpi-launcher...
   #
@@ -763,18 +814,54 @@ This allows you to omit the molecule and input files. '
     #f.close
 
     for line in fileinput.input([makefile_config]):
-      if ( line.find('DEBUGGER') != -1 ):
-        if (self.iprint >= 5) :
-          print 'debuuger found, line=',line
+      # remove one character from the end of the string
+      line=line[:-1] 
+      if ( line.find('INSTALL_DIR') != -1 ):
+          #print 'INSTALL_DIR found, line=',line
+          install_dir_temp=line.replace('INSTALL_DIR=','')
+          #print 'install_dir=',install_dir_temp
+          # check if the install-dir is OK
+          if (install_dir != install_dir_temp):
+            print 'wrong installation directory !'
+            print 'install_dir_temp=',install_dir_temp,len(install_dir_temp)
+            print '     install_dir=',install_dir,len(install_dir)
+            sys.exit(-1)
+          else:
+            print 'installation dir OK'
+      elif ( line.find('SCRATCH_DIR') != -1 ):
+          #print 'SCRATCH_DIR found, line=',line
+          scratch_dir_temp=line.replace('SCRATCH_DIR=','')
+          #print 'scratch_dir=',scratch_dir_temp
+          self.wrkdir_obj.scratchdir=scratch_dir_temp
+          self.wrkdir_obj.workpath=self.wrkdir_obj.scratchdir+'/'+os.getlogin()
+          print 'workpath=',self.wrkdir_obj.workpath
+      elif ( line.find('DEBUGGER') != -1 ):
+          debugger_temp=line.replace('DEBUGGER=','')
+          print 'debugger found=',debugger_temp
+          self.debugger=debugger_temp
       elif ( line.find('PROFILER') != -1 ):
-        if (self.iprint >= 5) :
-          print 'profiler found, line=',line
+          profiler_temp=line.replace('PROFILER=','')
+          print 'profiler found=',profiler_temp
+          self.profiler=profiler_temp
       elif ( line.find('VALGRIND') != -1 ):
-        if (self.iprint >= 5) :
-          print 'valgrind found, line=',line
+          #print 'valgrind found, line=',line
+          valgrind_temp=line.replace('VALGRIND=','')
+          print 'valgrind found=',valgrind_temp
+          self.valgrind=valgrind_temp
       elif ( line.find('MPIRUN') != -1 ):
-        if (self.iprint >= 5) :
-          print 'mpi launcher found, line=',line
+          #print 'mpi launcher found, line=',line
+          mpirun_temp=line.replace('MPIRUN=','')
+          print 'mpirun found=',mpirun_temp
+          self.mpirun=mpirun_temp
+      elif ( line.find('RCP') != -1 ):
+          #print 'RCP found, line=',line
+          rcp_temp=line.replace('RCP=','')
+          self.rcp=rcp_temp
+          print 'RCP found, ',self.rcp
+      elif ( line.find('RSH') != -1 ):
+          rsh_temp=line.replace('RSH=','')
+          self.rsh=rsh_temp
+          print 'RSH found,',self.rsh
 
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def execute_dirac(self):
@@ -941,8 +1028,8 @@ class pam_run(pam_enviroment):
 
 
   def perform(self):
-    self.pam_variables.process_pam_arguments()
     self.pam_variables.read_makefile_config()
+    self.pam_variables.process_pam_arguments()
     self.pam_variables.set_output_file()
     self.pam_variables.print_header()
     self.pam_variables.copy_files()
