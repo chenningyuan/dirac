@@ -328,7 +328,10 @@ This allows you to omit the molecule and input files. '
                   help=this_label, metavar="INT_NUM")
 
     # ... get in the parallel stuff, TODO: add default from Makefile.config
-    this_label="mpi launcher, default..."
+    if (len(self.mpirun) > 0):
+      this_label="mpi launcher, default:"+self.mpirun
+    else:
+      this_label="mpi launcher, default - none, serial run"
     parser.add_option("--mpirun", type="string", nargs=1,
                   action="store",dest="dest_mpirun",  
                   help=this_label,metavar="STRING")
@@ -345,7 +348,7 @@ This allows you to omit the molecule and input files. '
                   help=this_label, metavar="INT_NUM")
 
     # .. read in the install_dir, what is the basic global variable...
-    this_label="pam.py\'s directory, default:"+install_dir_default
+    this_label="pam.py\'s directory, inserted default:"+install_dir_default
     parser.add_option("--install_dir", type="string", nargs=1,
                   action="store",dest="dest_install_dir",  
                   help=this_label,metavar="STRING")
@@ -660,7 +663,6 @@ This allows you to omit the molecule and input files. '
       if self.iprint >= 5:
         print 'assigned profiler,',self.profiler
 
-
     # assign input directory ...
     self.input_directory=os.getcwd()
 
@@ -710,7 +712,6 @@ This allows you to omit the molecule and input files. '
 
   def copy_files(self):
   # copies files from home to the workdir
-
     #print 'copying files into working directory...'
     def copy_single_file(file_name):
       full_file_name=self.input_directory+"/"+file_name
@@ -802,7 +803,7 @@ This allows you to omit the molecule and input files. '
       self.dirac_cmd=self.mpirun+" -np "+str(self.mpi)+" -wd "+self.wrkdir_obj.workdir
       self.dirac_cmd=self.dirac_cmd+this_dirac_exe
       if (self.vg_debug): # valgrind stuff, DIRAC_CMD="$DIRAC_CMD $VALGRIND_TOOL --log-fd=1"
-         self.dirac_cmd=self.dirac_cmd+' '+self.valgrind+' --log-fd=1'
+        self.dirac_cmd=self.dirac_cmd+' '+self.valgrind+' --log-fd=1'
     else:  # serial run
       if (self.debug):
        #TODO: adapt it for Windows
@@ -842,8 +843,8 @@ This allows you to omit the molecule and input files. '
           #print 'install_dir=',install_dir_temp
           # check if the install-dir is OK
           if (install_dir != install_dir_temp):
-            print 'wrong installation directory !'
-            print 'install_dir_temp=',install_dir_temp,len(install_dir_temp)
+            print 'disgreement with the installation directory !'
+            print 'Makefile.config install_dir_temp=',install_dir_temp,len(install_dir_temp)
             print '     install_dir=',install_dir,len(install_dir)
             sys.exit(-1)
           else:
@@ -857,31 +858,55 @@ This allows you to omit the molecule and input files. '
           print 'workpath=',self.wrkdir_obj.workpath
       elif ( line.find('DEBUGGER') != -1 ):
           debugger_temp=line.replace('DEBUGGER=','')
-          print 'debugger found=',debugger_temp
-          self.debugger=debugger_temp
+          if ( os.path.isfile(debugger_temp)):
+            #print 'debugger found=',debugger_temp
+            self.debugger=debugger_temp
+          else:
+            print 'The debugger from Makefile.config is not existing!'
+            print 'The debugger from Makefile.config=',debugger_temp
       elif ( line.find('PROFILER') != -1 ):
           profiler_temp=line.replace('PROFILER=','')
-          print 'profiler found=',profiler_temp
-          self.profiler=profiler_temp
+          if (os.path.isfile(profiler_temp)):
+            print 'profiler found=',profiler_temp
+            self.profiler=profiler_temp
+          else:
+            print 'The profiler from Makefile.config is not existing!'
+            print 'The profiler from Makefile.config=',profiler_temp
       elif ( line.find('VALGRIND') != -1 ):
           #print 'valgrind found, line=',line
           valgrind_temp=line.replace('VALGRIND=','')
-          print 'valgrind found=',valgrind_temp
-          self.valgrind=valgrind_temp
+          if ( os.path.isfile(valgrind_temp) ):
+            print 'valgrind found=',valgrind_temp
+            self.valgrind=valgrind_temp
+          else:
+            print 'The valgrind from Makefile.config is not existing!'
+            print 'The valgrind from Makefile.config=',valgrind_temp
       elif ( line.find('MPIRUN') != -1 ):
           #print 'mpi launcher found, line=',line
           mpirun_temp=line.replace('MPIRUN=','')
           print 'mpirun found=',mpirun_temp
-          self.mpirun=mpirun_temp
+          if (os.path.isfile(mpirun_temp)):
+            self.mpirun=mpirun_temp
+          else:
+            print 'The MPIRUN from Makefile.config is not existing!'
+            print 'MPIRUN from Makefile.config=',mpirun_temp
       elif ( line.find('RCP') != -1 ):
           #print 'RCP found, line=',line
           rcp_temp=line.replace('RCP=','')
-          self.rcp=rcp_temp
-          print 'RCP found, ',self.rcp
+          if (os.path.isfile(rcp_temp)):
+            self.rcp=rcp_temp
+            print 'RCP found ',self.rcp
+          else:
+            print 'The RCP from Makefile.config is not existing!'
+            print 'RCP from Makefile.config=',rcp_temp
       elif ( line.find('RSH') != -1 ):
           rsh_temp=line.replace('RSH=','')
-          self.rsh=rsh_temp
-          print 'RSH found,',self.rsh
+          if (os.path.isfile(rsh_temp)):
+            self.rsh=rsh_temp
+            print 'RSH found,',self.rsh
+          else:
+            print 'The RSH from Makefile.config is not existing!'
+            print 'RSH from Makefile.config=',rsh_temp
 
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def execute_dirac(self):
@@ -942,6 +967,7 @@ This allows you to omit the molecule and input files. '
       print "Dirac run failed. Going to kill (SIGTERM) its executable process of pid=",p.pid
       #TODO: clean of all dirac.x pid's
       os.kill(p.pid, signal.SIGTERM)
+      print 'dirac.x killed. Haha :)'
 
     # do the profiling after the execution
     if self.profile: self.profile_dirac()
@@ -1032,10 +1058,12 @@ This allows you to omit the molecule and input files. '
     print "   User@Host   :",get_username(),"@",get_hostname()
     print "   Date        :",datetime.datetime.now()
     print "   Command     :",self.pam_command
-    print "   PID         :",os.getpid()
+    #print "   PID         :",os.getpid()
     print "   Input dir   :",self.input_directory
     print "   Work dir    :",self.wrkdir_obj.workdir
     print "   Output file :",self.output_file
+    if (self.set_timeout_limit):
+      print "Killing dirac.x executable after ",self.timeout,' seconds'
     print
     sys.stdout.flush()
 
