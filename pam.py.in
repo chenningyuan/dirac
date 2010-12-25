@@ -192,6 +192,10 @@ class pam_enviroment(workdir_class):
     self.parallel=False
     self.mpirun=''
     self.mpi=1
+    #   local disks for parallel calculations (to be set by configure)   #
+    self.localdisks=False
+    # machine file
+    self.machinefile=''
 
     # dirac command (set in own routine)
     self.dirac_cmd=''
@@ -753,14 +757,29 @@ This allows you to omit the molecule and input files. '
       file_name="DFFCK2"
       copy_single_file(file_name)
 
+  def distribute_work_dir(self):
+  ######################################################################
+  #  This routine is only called when local disks are selected
+  #  for parallel calculations
+  #  The list of machines available to dirac.x
+  ######################################################################a
+    print 'distribute_work_dir'
+
+
   def set_output_file(self):
   # sets the name of the output file by using "self.output_name"
     #print 'setting output file..'
     #self.set_output_name()
-    self.output_file=self.output_name+"."+self.output_suffix
-    if (self.iprint >= 5):
-      print 'set_output_file: self.output_file=',self.output_file
- 
+    if (len(self.output_name) > 0 and len(self.output_suffix) >0):
+      self.output_file=self.output_name+"."+self.output_suffix
+      if (self.iprint >= 5):
+        print 'set_output_file: self.output_file=',self.output_file
+    else:
+      print 'can not set output file - some strings not set up !'
+      print 'self.output_name=',self.output_name
+      print 'self.output_suffix=',self.output_suffix
+      sys.exit(-1)
+
   def set_dirac_environment(self):
   # export important variables for DIRAC
   # TODO: implement for WINDOWS
@@ -890,6 +909,16 @@ This allows you to omit the molecule and input files. '
           else:
             print 'The MPIRUN from Makefile.config is not existing!'
             print 'MPIRUN from Makefile.config=',mpirun_temp
+      elif ( line.find('LOCALDISKS') != -1 ):
+          localdisks_temp=line.replace('LOCALDISKS=','')
+          if (localdisks_temp=="yes"):
+            self.localdisks=True
+            print 'local disks for parallel calculations'
+      elif ( line.find('MACH_FILE') != -1 ):
+          machinefile_temp=line.replace('MACH_FILE=','')
+          if (len(machinefile_temp) >= 1):
+            self.machinefile=machinefile_temp
+            print 'self.machinefile assigned=',self.machinefile
       elif ( line.find('RCP') != -1 ):
           #print 'RCP found, line=',line
           rcp_temp=line.replace('RCP=','')
@@ -1086,6 +1115,8 @@ class pam_run(pam_enviroment):
     self.pam_variables.set_output_file()
     self.pam_variables.print_header()
     self.pam_variables.copy_files()
+    if (self.pam_variables.parallel and self.localdisks):
+      self.pam_variables.distribute_work_dir()
     self.pam_variables.set_dirac_environment()
     self.pam_variables.set_dirac_cmd()
     self.pam_variables.execute_dirac()
