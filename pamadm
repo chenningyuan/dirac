@@ -237,9 +237,8 @@ vital_tests.append(medium_test('symmetry_scf_energy'))
 vital_tests.append(medium_test('visual_div_rot'))
 vital_tests.append(medium_test('visual_general'))
 vital_tests.append(medium_test('zora'))
-# long tests
-vital_tests.append(long_test('lucita_large'))
-vital_tests.append(long_test('response_pv_nmr'))
+vital_tests.append(medium_test('lucita_large'))
+vital_tests.append(medium_test('response_pv_nmr'))
 
 # list of directories and files that are never compiled as part of DIRAC main executable
 # ======================================================================================
