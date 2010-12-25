@@ -52,15 +52,6 @@ export MENU;
 ../SCRIPTS/run.sh
 #REMOVE_END
 ###############################
-if [ "$RUNTYPE" = "medium" ]; then
-   echo
-   echo "Completed medium test"
-   echo "<-----"
-   exit
-fi
-# Skipping rarely used BSS specialities, testng these requires update of reference output
-exit
-###############################
 #REMOVE_BEGIN
 echo "BSSsfBSO1+MFSSO Hamiltonian"
 MENU=bss_sfBso1+mfsso.ci;
@@ -158,12 +149,3 @@ MENU=bss+mfsso.ci_Flike;
 export MENU;
 ../SCRIPTS/run.sh
 #REMOVE_END
-######################################"
-###############################
-if [ "$RUNTYPE" = "long" ]; then
-   echo
-   echo "Completed long test"
-   echo "<-----"
-   exit
-fi
-###############################

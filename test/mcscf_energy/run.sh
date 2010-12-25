@@ -12,7 +12,7 @@ if [ ! -z "$RUNTYPE" ]; then
          MENU=Be;
          MOL=Be.mol;
          ;;
-      "long")
+      "benchmark")
          MENU=Be.gascip;
          MOL=Be.gascip.mol;
          ;;

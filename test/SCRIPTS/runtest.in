@@ -4,7 +4,7 @@
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 # predefined restricted test sequences:
-# note that the variable RUNTYPE (with values short, medium and long) is also used to 
+# note that the variable RUNTYPE (with values short or medium) is also used to 
 # distinguish between different runs residing in one directory.
 # The present definition is coarse grain and serves to
 # exclude directories without a short run
@@ -210,11 +210,6 @@ if [ ! -z "$arg_tests" ]; then
          echo "Running <<medium>> tests ..."
          tests=$medium_test;
          if [ $RUNTYPE="undefined" ]; then RUNTYPE="medium" ; export RUNTYPE; fi
-         ;;
-      "long")
-         echo "Running <<long>> tests ..."
-         tests=$long_test;
-         if [ $RUNTYPE="undefined" ]; then RUNTYPE="long" ; export RUNTYPE; fi
          ;;
       "release")
          tests=$release_test;

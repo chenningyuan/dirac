@@ -10,7 +10,7 @@ if [ ! -z "$RUNTYPE" ]; then
       "medium")
          MOL=N2.ccpVDZ.mol
          ;;
-      "long"|"small_benchmark")
+      "small_benchmark")
          MOL=N2.ccpVQZ.mol
          ;;
       "benchmark"|"large_benchmark")

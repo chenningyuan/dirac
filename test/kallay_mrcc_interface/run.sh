@@ -10,7 +10,7 @@ if [ ! -z "$RUNTYPE" ]; then
       "medium")
          MOL=Be_D2h
          ;;
-      "long"|"small_benchmark")
+      "small_benchmark")
          MOL=CO_C2v
          ;;
    esac

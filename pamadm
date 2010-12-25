@@ -57,13 +57,6 @@ class medium_test(dirac_test):
       def type(self):
           return 'medium'
 
-class long_test(dirac_test):
-      """
-      long test
-      """
-      def type(self):
-          return 'long'
-
 class dirac_module:
      def __init__(self, flag, message):
          self.flag            = flag
@@ -726,7 +719,7 @@ s = '''
 '''
 f.write(s)
 
-for type in ['short', 'medium', 'long']:
+for type in ['short', 'medium']:
     s = ''
     for test in vital_tests:
         if test.type() == type:
@@ -739,7 +732,6 @@ for type in ['short', 'medium', 'long']:
     f.write('%s_tests="%s"\n' % (type, s))
 
 s = '''
-long_test="   $short_tests $medium_tests $long_tests"
 medium_test=" $short_tests $medium_tests"
 short_test="  $short_tests"
 '''

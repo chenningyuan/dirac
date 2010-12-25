@@ -54,15 +54,6 @@ MENU=F.dkh2_sfEso1+mfsso.cisd;
 export MENU;
 ../SCRIPTS/run.sh
 ###############################
-
-###############################
-if [ "$RUNTYPE" = "medium" ]; then
-   echo
-   echo "Completed medium test"
-   echo "<-----"
-   exit
-fi
-###############################
 echo "BSS_RKB+MFSSO cisd run"
 MENU=F.bss_rkb+mfsso.cisd;
 export MENU;
@@ -87,12 +78,6 @@ echo "DKH2sfESO1 cisd run"
 MENU=F.dkh2_sfEso1.cisd;
 export MENU;
 ../SCRIPTS/run.sh
-###############################
-if [ "$RUNTYPE" = "long" ]; then
-   echo
-   echo "Completed long test"
-   echo "<-----"
-   exit
-fi
-###############################
+
+
 
