@@ -1,26 +1,13 @@
-#!/bin/sh
-#
-# Set up calculation
-#
-if [ ! -z "$RUNTYPE" ]; then
-   case "${RUNTYPE}" in
-      "short")
-         MENU=cosci.Li2;
-	   MOL=Li2;
-         ;;
-      "medium")
-         MENU=cosci.H3;
-	   MOL=H3;
-         ;;
-      "long")
-         MENU=cosci.H3;
-	   MOL=H3;
-         ;;
-   esac
+#!/bin/bash
+
+if [ "$RUNTYPE" = "medium" ]; then
+   export MOL=H3
+   export MENU=cosci.H3
 else
-   MENU=cosci.Li2;
-   MOL=Li2;
+   export MOL=Li2
+   export MENU=cosci.Li2
 fi
-export MENU;
-export MOL;
+
 ../SCRIPTS/run.sh -mw 120
+
+exit 0

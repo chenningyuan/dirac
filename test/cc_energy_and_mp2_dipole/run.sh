@@ -1,23 +1,13 @@
-#!/bin/sh
-#
-# Set up calculation
-#
-if [ ! -z "$RUNTYPE" ]; then
-   case "${RUNTYPE}" in
-      "short")
-         MENU=ccsd.small
-         ;;
-      "medium")
-         MENU=ccsd
-         ;;
-      "long")
-         MENU=ccsd
-         ;;
-   esac
+#!/bin/bash
+
+export MOL=H2O
+
+if [ "$RUNTYPE" = "medium" ]; then
+   export MENU=ccsd
 else
-   MENU=ccsd;
+   export MENU=ccsd.small
 fi
-MOL=H2O;
-export MENU;
-export MOL;
+
 ../SCRIPTS/run.sh -mw 120
+
+exit 0

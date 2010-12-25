@@ -1,31 +1,15 @@
-#!/bin/sh
-#
-# Set up calculation
-#
-if [ ! -z "$RUNTYPE" ]; then
-   case "${RUNTYPE}" in
-      "short")
-         MENU=Be.d2h;
-         MOL=Be.d2h.mol;
-         cp result/filter_be result/filter;
-         ;;
-      "medium")
-         MENU=F;
-         MOL=F.mol;
-         cp result/filter_f result/filter;
-         ;;
-      "long")
-         MENU=F;
-         MOL=F.mol;
-         cp result/filter_f result/filter;
-         ;;
-   esac
+#!/bin/bash
+
+if [ "$RUNTYPE" = "medium" ]; then
+   export MOL=F.mol
+   export MENU=F
+   cp result/filter_f result/filter
 else
-   MENU=Be.d2h;
-   MOL=Be.d2h.mol;
-   cp result/filter_be result/filter;
+   export MOL=Be.d2h.mo
+   export MENU=Be.d2h
+   cp result/filter_be result/filter
 fi
-export MENU;
-export MOL;
+
 ../SCRIPTS/run.sh
 
+exit 0

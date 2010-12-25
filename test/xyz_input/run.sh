@@ -1,46 +1,7 @@
-#!/bin/sh
-#
-# Set up calculation
-#
+#!/bin/bash
 
-if [ ! -z "$RUNTYPE" ]; then
-   case "${RUNTYPE}" in
-      "short")
-	 MOL=CH3F.xyz;
-	 MENU=xyz.inp;
-	 export MOL;
-	 export MENU;
-	 ../SCRIPTS/run.sh
-	 ;;
+export MOL=CH3F.xyz
+export MENU=xyz.inp
+../SCRIPTS/run.sh
 
-      "medium")
-         MOL=CH3F.xyz;
-	 MENU=xyz.inp;
-	 export MOL;
-	 export MENU;
-	 ../SCRIPTS/run.sh
-         ;;
-
-      "long")
-         MOL=CH3F.xyz;
-	 MENU=xyz.inp;
-	 export MOL;
-	 export MENU;
-	 ../SCRIPTS/run.sh;
-
-#	 MOL=CH3F.xyz;
-#	 MENU=xyz-2.inp;
-#	 export MOL;
-#	 export MENU;
-#	 ../SCRIPTS/run.sh 
-
-         ;;
-   esac
-else
-    MOL=CH3F.xyz;
-    MENU=xyz.inp;
-    export MOL;
-    export MENU;
-    ../SCRIPTS/run.sh
-
-fi
+exit 0
