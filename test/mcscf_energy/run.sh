@@ -8,7 +8,7 @@ if [ ! -z "$RUNTYPE" ]; then
          MENU=Be.gascip.bss+mfsso.krmc;
          MOL=Be.gascip.mol;
          ;;
-      "medium")
+      "regular")
          MENU=Be;
          MOL=Be.mol;
          ;;

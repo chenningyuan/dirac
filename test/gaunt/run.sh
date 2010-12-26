@@ -4,7 +4,7 @@
 #
 if [ ! -z "$RUNTYPE" ]; then
    case "${RUNTYPE}" in
-      "short"|"medium")
+      "short"|"regular")
          MOL=Ne.C2.mol
          ;;
       *)

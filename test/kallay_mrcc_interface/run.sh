@@ -7,7 +7,7 @@ if [ ! -z "$RUNTYPE" ]; then
       "short")
          MOL=Be_D2h
          ;;
-      "medium")
+      "regular")
          MOL=Be_D2h
          ;;
       "small_benchmark")

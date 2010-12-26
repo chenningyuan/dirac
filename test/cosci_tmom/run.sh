@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ "$RUNTYPE" = "medium" ]; then
+if [ "$RUNTYPE" = "regular" ]; then
    export MOL=H3
    export MENU=cosci.H3
 else

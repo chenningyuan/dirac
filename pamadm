@@ -50,12 +50,12 @@ class short_test(dirac_test):
       def type(self):
           return 'short'
 
-class medium_test(dirac_test):
+class regular_test(dirac_test):
       """
-      medium test
+      regular test
       """
       def type(self):
-          return 'medium'
+          return 'regular'
 
 class dirac_module:
      def __init__(self, flag, message):
@@ -213,25 +213,25 @@ vital_tests.append(short_test('visual_elf'))
 vital_tests.append(short_test('visual_gamma5'))
 vital_tests.append(short_test('visual_virtual_density'))
 vital_tests.append(short_test('xyz_input'))
-# medium tests
-vital_tests.append(medium_test('density_at_nuclei'))
-vital_tests.append(medium_test('dft_alda'))
-vital_tests.append(medium_test('dft_london_mag_prop'))
-vital_tests.append(medium_test('efg'))
-vital_tests.append(medium_test('frozen_orbitals'))
-vital_tests.append(medium_test('fscc'))
-vital_tests.append(medium_test('mp2_properties'))
-vital_tests.append(medium_test('projection_analysis'))
-vital_tests.append(medium_test('reladc'))
-vital_tests.append(medium_test('response_nmr_spin-spin'))
-vital_tests.append(medium_test('response_qr'))
-vital_tests.append(medium_test('stex'))
-vital_tests.append(medium_test('symmetry_scf_energy'))
-vital_tests.append(medium_test('visual_div_rot'))
-vital_tests.append(medium_test('visual_general'))
-vital_tests.append(medium_test('zora'))
-vital_tests.append(medium_test('lucita_large'))
-vital_tests.append(medium_test('response_pv_nmr'))
+# regular tests
+vital_tests.append(regular_test('density_at_nuclei'))
+vital_tests.append(regular_test('dft_alda'))
+vital_tests.append(regular_test('dft_london_mag_prop'))
+vital_tests.append(regular_test('efg'))
+vital_tests.append(regular_test('frozen_orbitals'))
+vital_tests.append(regular_test('fscc'))
+vital_tests.append(regular_test('mp2_properties'))
+vital_tests.append(regular_test('projection_analysis'))
+vital_tests.append(regular_test('reladc'))
+vital_tests.append(regular_test('response_nmr_spin-spin'))
+vital_tests.append(regular_test('response_qr'))
+vital_tests.append(regular_test('stex'))
+vital_tests.append(regular_test('symmetry_scf_energy'))
+vital_tests.append(regular_test('visual_div_rot'))
+vital_tests.append(regular_test('visual_general'))
+vital_tests.append(regular_test('zora'))
+vital_tests.append(regular_test('lucita_large'))
+vital_tests.append(regular_test('response_pv_nmr'))
 
 # list of directories and files that are never compiled as part of DIRAC main executable
 # ======================================================================================
@@ -351,15 +351,15 @@ this_module = 'openrsp'
 dirac_modules[this_module] = dirac_module('openrsp', 'OpenRSP')
 dirac_modules[this_module].add_cppflag('MOD_OPENRSP')
 dirac_modules[this_module].add_directory('openrsp')
-dirac_modules[this_module].add_test(medium_test('openrsp_cars'))
-dirac_modules[this_module].add_test(medium_test('openrsp_cme'))
-dirac_modules[this_module].add_test(medium_test('openrsp_efgb'))
-dirac_modules[this_module].add_test(medium_test('openrsp_electric'))
-dirac_modules[this_module].add_test(medium_test('openrsp_jones'))
-dirac_modules[this_module].add_test(medium_test('openrsp_magnetizability'))
-dirac_modules[this_module].add_test(medium_test('openrsp_molecular_gradient'))
-dirac_modules[this_module].add_test(medium_test('openrsp_pv'))
-dirac_modules[this_module].add_test(medium_test('openrsp_roa'))
+dirac_modules[this_module].add_test(regular_test('openrsp_cars'))
+dirac_modules[this_module].add_test(regular_test('openrsp_cme'))
+dirac_modules[this_module].add_test(regular_test('openrsp_efgb'))
+dirac_modules[this_module].add_test(regular_test('openrsp_electric'))
+dirac_modules[this_module].add_test(regular_test('openrsp_jones'))
+dirac_modules[this_module].add_test(regular_test('openrsp_magnetizability'))
+dirac_modules[this_module].add_test(regular_test('openrsp_molecular_gradient'))
+dirac_modules[this_module].add_test(regular_test('openrsp_pv'))
+dirac_modules[this_module].add_test(regular_test('openrsp_roa'))
 dirac_modules[this_module].take_out_of_release()
 
 this_module = 'xcfun'
@@ -372,7 +372,7 @@ dirac_modules[this_module].add_test(short_test('dft_erf_xcfun'))
 dirac_modules[this_module].add_test(short_test('dft_response_xcfun'))
 dirac_modules[this_module].add_test(short_test('fde_export_density'))
 dirac_modules[this_module].add_test(short_test('fde_static-vemb_dipole'))
-dirac_modules[this_module].add_test(medium_test('fde_response_autodiff'))
+dirac_modules[this_module].add_test(regular_test('fde_response_autodiff'))
 dirac_modules[this_module].take_out_of_adm()
 dirac_modules[this_module].take_out_of_release()
 
@@ -719,7 +719,7 @@ s = '''
 '''
 f.write(s)
 
-for type in ['short', 'medium']:
+for type in ['short', 'regular']:
     s = ''
     for test in vital_tests:
         if test.type() == type:
@@ -732,8 +732,8 @@ for type in ['short', 'medium']:
     f.write('%s_tests="%s"\n' % (type, s))
 
 s = '''
-medium_test=" $short_tests $medium_tests"
-short_test="  $short_tests"
+regular_testset=" $short_tests $regular_tests"
+short_testset="   $short_tests"
 '''
 f.write(s)
 f.close()

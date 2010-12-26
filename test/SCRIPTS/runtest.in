@@ -4,35 +4,14 @@
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
 # predefined restricted test sequences:
-# note that the variable RUNTYPE (with values short or medium) is also used to 
+# note that the variable RUNTYPE (with values short or regular) is also used to 
 # distinguish between different runs residing in one directory.
 # The present definition is coarse grain and serves to
 # exclude directories without a short run
 
 benchmark_test="29.benchmark_cc"
 
-
-
-# all tests
-# =========
-
-#radovan: i don't think the all_test option has been used in years
-#         maybe we could remove it
-#         anyway it won't work with tests that are not numbered
-# all_test takes all directories (and will fail if filters or output are absent !)
-all_test=
-for ff in [1-9]\.* [1-9][0-9]\.*; do
-   if test -d $ff; then
-      all_test=$all_test' '$ff
-   fi
-done
-#
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#
-#
 # Does 'echo' understand escapes?
-#
-#
 if [ "	" = "`echo '\t'`" ]; then
    echo="echo"
 else
@@ -56,7 +35,7 @@ usage () {
    $echo '\tChoose which tests to run (default: short)'
    $echo '--runtype="type of tests to run"'
    $echo '\tWhen tests are specified with number,
-        choose the type (short,medium...) '
+        choose the type (short, regular) '
    $echo '--pampath="path to pam script"'
    $echo '\tSet path to pam script'
    $echo '--dirac="executable"'
@@ -203,17 +182,13 @@ if [ ! -z "$arg_tests" ]; then
    case "${arg_tests}" in
       "short")
          echo "Running <<short>> tests ..."
-         tests=$short_test;
+         tests=$short_testset;
          if [ $RUNTYPE="undefined" ]; then RUNTYPE="short" ; export RUNTYPE; fi
          ;;
-      "medium")
-         echo "Running <<medium>> tests ..."
-         tests=$medium_test;
-         if [ $RUNTYPE="undefined" ]; then RUNTYPE="medium" ; export RUNTYPE; fi
-         ;;
-      "release")
-         tests=$release_test;
-         if [ $RUNTYPE="undefined" ]; then RUNTYPE="release" ; export RUNTYPE; fi
+      "regular")
+         echo "Running <<regular>> tests ..."
+         tests=$regular_testset;
+         if [ $RUNTYPE="undefined" ]; then RUNTYPE="regular" ; export RUNTYPE; fi
          ;;
       "benchmark")
          tests=$benchmark_test;
@@ -227,14 +202,11 @@ if [ ! -z "$arg_tests" ]; then
          tests=$benchmark_test;
          if [ $RUNTYPE="undefined" ]; then RUNTYPE="large_benchmark" ; export RUNTYPE; fi
          ;;
-      "all")
-         tests=$all_test;
-         ;;
       *)
 #        extract and test users list of tests
          tests=
 #        the following solution is a bit clumsy
-#        could be more compact if we would not allow calling tests by number
+#        for historical reasons - refactor later
          if [ "${arg_tests}" != "${arg_tests/\*/}" ]; then
 #           ${arg_tests} contains one or more "*"
 #           expand it with find
@@ -246,16 +218,8 @@ if [ ! -z "$arg_tests" ]; then
 #                  hjaaj: OK, user has specified a test directory
                    tests=$tests' '$ff
                 else
-#                  hjaaj: check if test is specified just by number ?
-                   for ff2 in ${ff}\.*; do
-                       if test -d $ff2; then
-#                         hjaaj: yes, so OK
-                          tests=$tests' '$ff2
-                       else
-                          echo "ERROR: test '$ff' not recognized"
-                          exit 1
-                       fi
-                   done
+                   echo "ERROR: test '$ff' not recognized"
+                   exit 1
                 fi
             done
          fi
@@ -264,7 +228,6 @@ if [ ! -z "$arg_tests" ]; then
 else
    echo "Running default: <<short>> tests ..."
    tests=$short_test;
-#  tests=$all_test
 fi
 #
 # default to RUNTYPE="short" /hjaaj 070111

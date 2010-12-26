@@ -73,9 +73,9 @@ usage='Usage: '$0'\n'\
 '\tA common error is to forget the = character, e.g. -q long instead of the correct -q=long\n'\
 '--tests=TESTS\n'\
 '\tThe tests that should be run (default: --tests=short)\n'\
-'\tKnown tests: "short", "medium", "long", "all", or the number(s) of some specific tests\n'\
+'\tKnown tests: "short", "regular", or individual tests\n'\
 '--runtype=RUNTYPE\n'\
-'\tshort, medium, etc. (default: undefined)\n'\
+'\tshort, regular, etc. (default: undefined)\n'\
 '--testdir=TESTDIR\n'\
 '\tDirectory in which the tests should be run (default: --testdir=test)\n'\
 '--mpi=MPI\n'\
@@ -183,19 +183,11 @@ if [  -z "$tests" ]; then
 else
    case "${tests}" in
       "short")
-      run=short_test;
+      run=short_testset;
       echo ' Will do preselected test set : ' $tests ;
       ;;
-      "medium")
-      run=medium_test;
-      echo ' Will do preselected test set : ' $tests ;
-      ;;
-      "long")
-      run=long_test;
-      echo ' Will do preselected test set : ' $tests ;
-      ;;
-      "all")
-      run=all_test;
+      "regular")
+      run=regular_testset;
       echo ' Will do preselected test set : ' $tests ;
       ;;
       *)

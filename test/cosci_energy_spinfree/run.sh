@@ -42,12 +42,6 @@ export MENU;
 export MOL;
 ../SCRIPTS/run.sh
 ###############################
-if [ "$RUNTYPE" = "medium" ]; then
-   echo
-   echo "Completed medium test"
-   echo "<-----"
-   exit
-fi
 #skipping outdated BSS tests : update output if you want them...
 exit
 ###############################

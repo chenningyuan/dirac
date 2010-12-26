@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ "$RUNTYPE" = "medium" ]; then
+if [ "$RUNTYPE" = "regular" ]; then
    export MOL=F.mol
    export MENU=F
    cp result/filter_f result/filter

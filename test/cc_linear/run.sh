@@ -7,7 +7,7 @@ if [ ! -z "$RUNTYPE" ]; then
       "short")
          MOL=N2.ccpVDZ.mol
          ;;
-      "medium")
+      "regular")
          MOL=N2.ccpVDZ.mol
          ;;
       "small_benchmark")

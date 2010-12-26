@@ -8,7 +8,7 @@ export MENU=HeH+
 export MOL=HeH+
 ../SCRIPTS/run.sh
 
-if [ "$RUNTYPE" = "medium" ]; then
+if [ "$RUNTYPE" = "regular" ]; then
    export MENU=HCCF.x2c_zdipf.scf_mp2_geopt.inp
    export MOL=HCCF.sto-2g.mol
    ../SCRIPTS/run.sh

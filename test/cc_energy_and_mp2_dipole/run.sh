@@ -2,7 +2,7 @@
 
 export MOL=H2O
 
-if [ "$RUNTYPE" = "medium" ]; then
+if [ "$RUNTYPE" = "regular" ]; then
    export MENU=ccsd
 else
    export MENU=ccsd.small
