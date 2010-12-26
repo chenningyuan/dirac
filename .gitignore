@@ -29,3 +29,6 @@ test/*/*.rep
 test/*/*.htm
 test/*/*.txt
 test/*/result/*.rep
+*.short_testset*
+*.regular_testset*
+*.user_test*
