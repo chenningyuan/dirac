@@ -1,0 +1,15 @@
+
+ =========================================================================
+ Version           : Dirac 8.0 (patchlevel 0) 
+ Hostname          : larry
+ Operating system  : Linux 2.6.35-23-generic
+ Machine           : i686
+ Run               : Sequential
+ Last compilation  : 20:39:15 Dec 26 2010 (by bast@larry:/home/bast/dirac/intel_mkl)
+ FORTRAN compiler  : /opt/intel/Compiler/11.1/073/bin/ia32/ifort -O3 -ip  -g -fpp1 -w -assume byterecl -Iinclude -module modules -DARCH32BIT -DVAR_IFC -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM 64000000 -DVAR_MFDS -DMOD_XML -DMOD_OPENRSP -DMOD_OOF -DMOD_ESR -DMOD_KRCC -DMOD_SRDFT -DMOD_MAGNETIZ -DMOD_MCSCF_spinfree -DMOD_UNRELEASED -DMOD_CAP -DMOD_ERI -DMOD_DNF   
+
+ =========================================================================
+$ERROR 1.E-7
+$SIGNCHECK
+quadrupole   -t
+  0.562322614817  0.000000000000  0.562322614817  0.000000000000  0.000000000000 -1.124645229634

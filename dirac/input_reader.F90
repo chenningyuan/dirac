@@ -664,7 +664,7 @@ contains
 
     if (kw_matches(word, '.QUADRU')) then
       openrsp_cfg_quadrupole = .true.
-      need_1el_f = .true.
+      need_1el_q = .true.
     end if
 
     if (kw_matches(word, '.ROA   ')) then
