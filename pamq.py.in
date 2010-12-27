@@ -71,7 +71,8 @@ class PamQVariables:
     self.batch_script_command=''
 
     # ... default pam from the current directory
-    self.pam_script=self.dirac_home+'/pam' 
+    #self.pam_script=self.dirac_home+'/pam' 
+    self.pam_script=self.dirac_home+'/pam.py' 
 
     # ... set home directory from where pamq.py is run...
     self.home_dir=os.getenv("PWD")
@@ -118,7 +119,7 @@ class PamQVariables:
       print 'and self.proc_per_node=',self.proc_per_node
 
     # ... add mpi stuff
-    self.pam_arguments=' -mpi '+str(self.mpi_procs)+self.pam_arguments
+    self.pam_arguments=' --mpi='+str(self.mpi_procs)+self.pam_arguments
 
     if self.iprint >= 7:
       print 'set_pam_mpi: mpi-extended pam arguments:', self.pam_arguments

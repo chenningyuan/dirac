@@ -10,6 +10,7 @@
 ##########################################################################
 
 import os
+import pwd
 import sys
 import string 
 import subprocess
@@ -49,8 +50,6 @@ class workdir_class:
     #print 'work_direcory class initialize'
     self.workdir=''
 
-    #TODO: Windows user login name !!!
-    #self.workpath='/tmp/'+os.getlogin()
     self.workpath=''
 
     self.keepwrk=False
@@ -85,6 +84,9 @@ class workdir_class:
     else:
       workdir_name='dirac_work_dir.'+str(current_pid)
 
+    # attach user login name to the workdir name
+    workdir_name=pwd.getpwuid(os.getuid()).pw_name+"."+workdir_name
+
     # self.workpath MUST BE set before
     self.workdir=self.workpath+"/"+workdir_name
 
@@ -98,10 +100,10 @@ class workdir_class:
   def create_workdir(self):
   # creates the working directory
     if not os.path.isdir(self.workdir):
-      print 'creating work directory '
+      print 'creating the work directory '
       os.mkdir(self.workdir)
     else:
-      print 'The work directory ',self.workdir,' already exists.'
+      print 'The work directory ',self.workdir,' exists.'
 
   def copy_file(self,src,dest):
   # ... copies file from the current dir "scr" to "dest"
@@ -762,8 +764,9 @@ This allows you to omit the molecule and input files. '
   def distribute_work_dir(self):
   ######################################################################
   #
-  #  This routine is only called when local disks are selected
+  #  This routine is called when local disks are selected
   #  for parallel calculations
+  #
   #  The list of machines available to dirac.x
   # 
   ######################################################################a
@@ -887,7 +890,9 @@ This allows you to omit the molecule and input files. '
           scratch_dir_temp=line.replace('SCRATCH_DIR=','')
           #print 'scratch_dir=',scratch_dir_temp
           self.wrkdir_obj.scratchdir=scratch_dir_temp
-          self.wrkdir_obj.workpath=self.wrkdir_obj.scratchdir+'/'+os.getlogin()
+          #self.wrkdir_obj.workpath=self.wrkdir_obj.scratchdir+'/'+os.getlogin()
+          #self.wrkdir_obj.workpath=self.wrkdir_obj.scratchdir+'/'+pwd.getpwuid(os.getuid()).pw_name
+          self.wrkdir_obj.workpath=self.wrkdir_obj.scratchdir
           print 'workpath=',self.wrkdir_obj.workpath
       elif ( line.find('DEBUGGER') != -1 ):
           debugger_temp=line.replace('DEBUGGER=','')
