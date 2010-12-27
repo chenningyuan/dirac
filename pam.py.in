@@ -196,6 +196,8 @@ class pam_enviroment(workdir_class):
     self.localdisks=False
     # machine file
     self.machinefile=''
+    # nodes - list 
+    self.nodes=''
 
     # dirac command (set in own routine)
     self.dirac_cmd=''
@@ -759,11 +761,23 @@ This allows you to omit the molecule and input files. '
 
   def distribute_work_dir(self):
   ######################################################################
+  #
   #  This routine is only called when local disks are selected
   #  for parallel calculations
   #  The list of machines available to dirac.x
+  # 
   ######################################################################a
     print 'distribute_work_dir'
+    print 'machine file=',self.machinefile
+
+    #print os.environ[self.machinefile]
+    os.system('echo machinefile='+self.machinefile)
+
+    # identify master & nodes 
+
+    # ... distribute master workdir over different nodes, "copying $master:$file onto $node:$WRK/."
+    # otherwise print message that all cpus are on one machine
+
 
 
   def set_output_file(self):
@@ -805,7 +819,7 @@ This allows you to omit the molecule and input files. '
     os.putenv("XLFRTEOPTS","'namelist=old'")
 
     if (self.iprint >= 5):
-      print "DIRWRK=",os.getenv("$DIRWRK")
+      print "DIRWRK=",os.getenv("DIRWRK")
       print "BASDIR=",os.getenv('BASDIR')
 
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -972,9 +986,12 @@ This allows you to omit the molecule and input files. '
       signal.alarm(self.timeout)  # 
 
     if (self.parallel) :
-      print 'executing parallel dirac'
+      print 'executing parallel dirac:'
     else :
-      print 'executing serial dirac'
+      print 'executing serial dirac:'
+
+    # print pure launching command
+    print self.dirac_cmd
 
     try:
       if (not self.debug and not self.vg_debug):
@@ -983,7 +1000,7 @@ This allows you to omit the molecule and input files. '
         f=open(self.output_file_full,'w',0)
         #p=subprocess.Popen(self.dirac_cmd, shell=False, stdin=subprocess.PIPE, stdout=f)
         p=subprocess.Popen(self.dirac_cmd,shell=True,stdin=subprocess.PIPE,stdout=f)
-        print 'dirac.x launching command PID=',p.pid
+        print 'dirac.x assigned PID=',p.pid
         p.wait()
         f.close()
       else:
@@ -996,7 +1013,7 @@ This allows you to omit the molecule and input files. '
       print "Dirac run failed. Going to kill (SIGTERM) its executable process of pid=",p.pid
       #TODO: clean of all dirac.x pid's
       os.kill(p.pid, signal.SIGTERM)
-      print 'dirac.x killed. Haha :)'
+      print 'dirac.x was purposely killed. He-he:)'
 
     # do the profiling after the execution
     if self.profile: self.profile_dirac()
@@ -1114,9 +1131,11 @@ class pam_run(pam_enviroment):
     self.pam_variables.process_pam_arguments()
     self.pam_variables.set_output_file()
     self.pam_variables.print_header()
+
     self.pam_variables.copy_files()
-    if (self.pam_variables.parallel and self.localdisks):
+    if (self.pam_variables.parallel and self.pam_variables.localdisks):
       self.pam_variables.distribute_work_dir()
+
     self.pam_variables.set_dirac_environment()
     self.pam_variables.set_dirac_cmd()
     self.pam_variables.execute_dirac()
