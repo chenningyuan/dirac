@@ -77,12 +77,19 @@ def get_ip():
 
 def get_hostname():
     """
-    get the hostname with ip-adress
+    get the hostname (without ip-adress)
     """
     import socket
+    this_host_name =  socket.gethostname()
+    return this_host_name
+
+def get_hostname_ip():
+    """
+    get the hostname's ip-adress
+    """
+    #import socket
     this_ip = get_ip()
-    this_host_id =  socket.gethostname()+" (IP="+this_ip+")"
-    return this_host_id
+    return this_ip
 
 class extract_path_file:
     """

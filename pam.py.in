@@ -197,20 +197,22 @@ class pam_enviroment(workdir_class):
     #   local disks for parallel calculations (to be set by configure)   #
     self.localdisks=False
     # machine file
-    self.machinefile=''
-    # nodes - list 
-    self.nodes=''
+    self.machinefile=''  # could be enviroment variable (like $PBS_NODEFILE)
+    # master 
+    self.master=''
+    # nodes (if any) - list 
+    self.nodes=[]
 
-    # dirac command (set in own routine)
+    # dirac executable command (set in own routine)
     self.dirac_cmd=''
 
     # dirac profiling
     self.profile  = False
     self.profiler = '' # empty, but later read from Makefile.config
-    self.profiling_file='gmon.out' # usuall file 
+    self.profiling_file='gmon.out' # usuall output file 
     self.profile_command='' # command for profiling
 
-    # dirac-executable position (later set by after flag reading)
+    # dirac-executable position (could be reset by after flag reading)
     self.dirac_exe=install_dir_default+"/dirac.x"
     self.no_diracexe_copy=False
  
@@ -234,8 +236,8 @@ class pam_enviroment(workdir_class):
     self.valgrind='' # empty, to be read from Makefile.config    
     self.valgrind_param='' # parameters for valgrind
 
-    # rcp, rsh
-    self.rcp=''
+    # rcp, rsh for parallel, multinodes calculations 
+    self.rcp='' # default taken from Makefile.config
     self.rsh=''
 
     # input directory
@@ -770,18 +772,41 @@ This allows you to omit the molecule and input files. '
   #  The list of machines available to dirac.x
   # 
   ######################################################################a
-    print 'distribute_work_dir'
-    print 'machine file=',self.machinefile
+    if (self.iprint>=0):
+      print 'distribute_work_dir'
+      print 'machine file=',self.machinefile
 
     #print os.environ[self.machinefile]
-    os.system('echo machinefile='+self.machinefile)
+    #os.system('echo machinefile='+self.machinefile)
 
-    # identify master & nodes 
+    # extract content of "machinefile"
+
+    # check if this is an enviromental variable with "$" - than get its content
+    if (self.machinefile[0]=="$"):
+      print 'enviroment variable:'
+      machinefile_temp=self.machinefile[1:len(self.machinefile)]
+      print 'machine file variable=',machinefile_temp
+      machinefile_content=os.environ[machinefile_temp]
+      print 'machinefile points to',machinefile_content
+    else:  # true file, no pointing variable
+      machinefile_content=self.machinefile 
+
+    # identify nodes 
+    if ( os.path.isfile(machinefile_content) ) :
+      print 'machinefile is a file, reading its content'
+      for line in fileinput.input(machinefile_content):
+        line=line[:-1] 
+        print 'read line=',line
+        if (line != self.master):
+          print 'adding node to the list',line
+          self.nodes.append(line)
 
     # ... distribute master workdir over different nodes, "copying $master:$file onto $node:$WRK/."
     # otherwise print message that all cpus are on one machine
-
-
+    if self.nodes:
+      print 'copying content of master '
+    else:
+      print 'all CPUs'are on master, no distributng over nodes'
 
   def set_output_file(self):
   # sets the name of the output file by using "self.output_name"
@@ -1101,12 +1126,13 @@ This allows you to omit the molecule and input files. '
 
   def print_header(self):
     import datetime
-    from common import get_username,get_hostname
+    from common import get_username,get_hostname,get_hostname_ip
+    self.master=get_hostname()
     print '*****************************************'  
     print '**** OUTPUT FROM DIRAC PYTHON SCRIPT ****'  
     print '*****************************************'
     print '                                        '  
-    print "   User@Host   :",get_username(),"@",get_hostname()
+    print "   User@Host   :",get_username(),"@",get_hostname(),' IP=',get_hostname_ip()
     print "   Date        :",datetime.datetime.now()
     print "   Command     :",self.pam_command
     #print "   PID         :",os.getpid()
@@ -1114,7 +1140,7 @@ This allows you to omit the molecule and input files. '
     print "   Work dir    :",self.wrkdir_obj.workdir
     print "   Output file :",self.output_file
     if (self.set_timeout_limit):
-      print "Killing dirac.x executable after ",self.timeout,' seconds'
+      print "   Killing dirac.x executable run after ",self.timeout,' seconds'
     print
     sys.stdout.flush()
 
