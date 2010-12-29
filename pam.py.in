@@ -129,7 +129,7 @@ class workdir_class:
              'f_ct': time.strftime("%m/%d/%Y %I:%M:%S %p",time.localtime(file_stats[stat.ST_CTIME]))
       } 
       print "%20s"%filename,".....%10.4f"%filesize_kB,' kB'," last accessed = %(f_la)s" % file_info
-      if (self.iprint >= 5) :
+      if (self.iprint >= 8) :
         print
         print "file name = %(fname)s" % file_info
         print "file size = %(fsize)s bytes" % file_info
@@ -797,16 +797,30 @@ This allows you to omit the molecule and input files. '
       for line in fileinput.input(machinefile_content):
         line=line[:-1] 
         print 'read line=',line
-        if (line != self.master):
+        if (line != self.master): # append only nodes different from master
           print 'adding node to the list',line
           self.nodes.append(line)
 
     # ... distribute master workdir over different nodes, "copying $master:$file onto $node:$WRK/."
     # otherwise print message that all cpus are on one machine
     if self.nodes:
-      print 'copying content of master '
+      print 'copying content of master workdir over nodes '
+      for node in self.nodes:
+        print 'copying content of ',self.master,':workdir to ',node
+        # create working directories on nodes
+        command=self.rsh+' '+node+' "mkdir -p '+self.wrkdir_obj.workdir+' "'
+        if (self.iprint>=0):
+          print 'create work dir command:',command
+        os.system(command)
+        for this_file in os.listdir(self.wrkdir_obj.workdir):
+          command=self.rcp+' '+self.wrkdir_obj.workdir+'/'+this_file+' '+node+':'+self.wrkdir_obj.workdir+'/'+this_file 
+          if (self.iprint>=0):
+            print 'copying work dir command:',command
+          os.system(command)
+          if (self.iprint>=0): # control list of directory
+            os.system(self.rsh+' '+node+' "ls -l '+self.wrkdir_obj.workdir+' "')
     else:
-      print 'all CPUs'are on master, no distributng over nodes'
+      print 'All CPUs are on the master, no distribution of workdir over nodes'
 
   def set_output_file(self):
   # sets the name of the output file by using "self.output_name"
@@ -873,7 +887,7 @@ This allows you to omit the molecule and input files. '
       # or: $VALGRIND -v --error-limit=no --leak-check=full --track-origins=yes --show-reachable=yes 
       # serial: DIRAC_CMD="$VALGRIND_TOOL --log-fd=1
         self.dirac_cmd=self.valgrind+' --log-fd=1 '+elf.dirac_cmd
-      else:
+      else: # no debug, plain run
         self.dirac_cmd=this_dirac_exe
 
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
