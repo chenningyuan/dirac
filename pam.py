@@ -133,15 +133,14 @@ class pam_enviroment:
     self.output_file=''
     self.output_file_full='' # full path
 
-    # do not backup files
+    # by default, do backup files
     self.nobackup=False
 
     # default - do the archivation of files
     self.no_archive=False
-    # list of possible files for the archivation
+    # list of all possible DIRAC produced files for the archivation
     self.archive_files=['MOLECULE.MOL','MOLECULE.XYZ','DIRAC.INP','DFCOEF','*.cube','AOPROPER', \
                         'AOMOMAT','BSSMAT','matexport.m','DFCOEF.BEST']
-
     # all files from the archive are unpacked, it is assumed that archive file is copied into workdir 
     self.fullrestart=False
 
@@ -727,7 +726,7 @@ This allows you to omit the molecule and input files. '
         print 'copying ',file_name,' from homedir to workdir '
         self.copy_file(full_file_name,file_name_wrkdir)
       else :
-        print file_name,' you want to copy does not exist !'
+        print 'File:',file_name,' you want to copy does not exist !'
 
     self.create_workdir()
     #print 'set_wrkdir: install_dir=',install_dir
@@ -744,6 +743,8 @@ This allows you to omit the molecule and input files. '
     if (self.full_restart):
       #print 'restarting from copied archive file ',self.archive_name
       copy_single_file(self.archive_name)
+      unpack_command='tar -xvf '+self.archive_name
+      os.system(unpack_command)
 
     if (self.put_files is not None):
       for file_name in self.put_files:
@@ -1000,11 +1001,6 @@ This allows you to omit the molecule and input files. '
     print 'changing directory from Input dir to Work dir'
     # go to the working directory
     os.chdir(self.workdir)
-
-    if (self.full_restart):
-      print 'restarting from copied archive file ',self.archive_name
-      unpack_command='tar -xvf '+self.archive_name
-      os.system(unpack_command)
 
     if (self.nobackup is False):
       from common import backup_file
