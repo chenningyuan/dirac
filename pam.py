@@ -1,14 +1,14 @@
 #! /usr/bin/env python        
 #########################################################################
 #
-# Python replacement of the pam script
+# Python replacement of the previous bash-written pam(.sh) script
 #
 # Reads crucial data from Makefile.config
 #
-# Written by Miro ILIAS,Banska Bystrica, end of 2010
+# Written by Miro ILIAS, Matej Bel University, 
+#        Banska Bystrica, Slovakia, end of 2010
 #
 ##########################################################################
-
 import os
 import pwd
 import sys
@@ -21,161 +21,29 @@ import signal
 import stat
 import time
 import fileinput
+import datetime
 
-# python module with installation directory created by the configure script
+# python module with the installation directory is created by the configure script
 from install_dir import install_dir_default
 global install_dir
 install_dir=install_dir_default
-
+#---------------------------------------------------------------------------------
 def append_dirac_py_modules(dirac_install_dir):
-# append directory with common dirac python-modules and imports them
+#
+# append directory with the common.py module file 
+# to import selected python objects used throughout the script
+#
+# NOTE: do the import of wanted python routine(s) in each procedure 
+#
   modules_directory = dirac_install_dir + '/utils'
   if (not os.access(modules_directory,os.R_OK) ):
     print 'wrong directory or directory not readable !'
     sys.exit("wrong directory !")
   sys.path.append(modules_directory)
   # import common # does not work..
-  #from common import *
-  from common import is_windows
-  #print 'common dirac modules loaded !'
-  #print 'is_windows=',is_windows()
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-class workdir_class:
-###########################################################################################
-#
-#              class dealing only with the work directory 
-#
-###########################################################################################
-  global install_dir
-  def __init__(self):
-    #print 'work_direcory class initialize'
-    self.workdir=''
-
-    self.workpath=''
-
-    self.keepwrk=False
-
-    self.cleanwrkdir=False
-
-    self.scratchdir=''
-    self.iprint=0
-    self.create_workdir_name=True
-
-  def set_iprint(self,iprint_in):
-  # ... assignes the iprint level from outside
-    self.iprint=iprint_in
-    if (self.iprint >= 5) :
-      print 'workdir_class: iprint set=',self.iprint
-
-
-  #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-  def set_workdir_name(self,root_name):
-  #############################################################################################
-  #
-  # sets the working directory name according to the
-  # entering "root_name"
-  #
-  # depends on "self.workpath"
-  #
-  #############################################################################################
-    #print 'set the name of the work_direcory',root_name
-    current_pid = os.getpid(); #print 'pid=',current_pid
-    if (len(root_name) > 0):
-      workdir_name=root_name+"."+str(current_pid)
-    else:
-      workdir_name='dirac_work_dir.'+str(current_pid)
-
-    # attach user login name to the workdir name
-    workdir_name=pwd.getpwuid(os.getuid()).pw_name+"."+workdir_name
-
-    # self.workpath MUST BE set before
-    self.workdir=self.workpath+"/"+workdir_name
-
-    if (self.iprint >=5):
-      print 'workdir_name=',workdir_name
-      print 'root_name set?',(root_name is not None)
-      if (root_name is not None):
-        print 'root_name=',root_name
-      print 'self.workdir=',self.workdir
-
-  def create_workdir(self):
-  # creates the working directory
-    if not os.path.isdir(self.workdir):
-      print 'creating the work directory '
-      os.mkdir(self.workdir)
-    else:
-      print 'The work directory ',self.workdir,' exists.'
-
-  def copy_file(self,src,dest):
-  # ... copies file from the current dir "scr" to "dest"
-    print 'copying file...',src,' to ',dest
-    shutil.copy(src, dest)
-
-  def list_workdir(self):
-  # ... lists the content of the master work-directory
-  # more here http://www.daniweb.com/code/snippet216798.html
-    print 
-    print 'Content of the work directory',os.getcwd(),':'
-    print '-------------------------------------------------------------------------------' 
-    #print 'file............size'
-    for filename in os.listdir(self.workdir):
-      filesize_kB=float(os.path.getsize(self.workdir+"/"+filename))/1024
-      # create a dictionary to hold file info
-      file_name = filename; file_stats = os.stat(file_name)
-      file_info = {
-             'fname': file_name,
-             'fsize': file_stats [stat.ST_SIZE],
-             'f_lm': time.strftime("%m/%d/%Y %I:%M:%S %p",time.localtime(file_stats[stat.ST_MTIME])),
-             'f_la': time.strftime("%m/%d/%Y %I:%M:%S %p",time.localtime(file_stats[stat.ST_ATIME])),
-             'f_ct': time.strftime("%m/%d/%Y %I:%M:%S %p",time.localtime(file_stats[stat.ST_CTIME]))
-      } 
-      print "%20s"%filename,".....%10.4f"%filesize_kB,' kB'," last accessed = %(f_la)s" % file_info
-      sys.stdout.flush()
-      if (self.iprint >= 8) :
-        print
-        print "file name = %(fname)s" % file_info
-        print "file size = %(fsize)s bytes" % file_info
-        print "last modified = %(f_lm)s" % file_info
-        print "last accessed = %(f_la)s" % file_info
-        print "creation time = %(f_ct)s" % file_info
-        print
-        if stat.S_ISDIR(file_stats[stat.ST_MODE]):
-          print "This a directory"
-        else:
-          print "This is not a directory"
-        print
-        print "A closer look at the os.stat(%s) tuple:" % file_name
-        print file_stats
-        print
-        print "The above tuple has the following sequence:"
-        print """st_mode (protection bits), st_ino (inode number),
-           st_dev (device), st_nlink (number of hard links),
-           st_uid (user ID of owner), st_gid (group ID of owner),
-           st_size (file size, bytes), st_atime (last access time, seconds since epoch),
-           st_mtime (last modification time), st_ctime (time of creation, Windows)"""
-        sys.stdout.flush()
-
-  def remove_workdir(self):
-    #print 'removes the work_direcory'
-    self.list_workdir()
-    if (not self.keepwrk):
-      print 'deleting the entire master work directory'
-      sys.stdout.flush()
-      shutil.rmtree(self.workdir)      
-    else:
-      print 'keeping the work directory'
-      sys.stdout.flush()
-
-  def copy_file_to_workdir(self,some_file):
-    print 'copying file to the work_direcory'
-
-  def get_file_from_workdir(self,some_file):
-    print 'getting file to the work_direcory'
-
-
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-class pam_enviroment(workdir_class):
+class pam_enviroment():
   global install_dir
   # ... class containing all important variables, methods for submitting
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -193,8 +61,12 @@ class pam_enviroment(workdir_class):
     # basis set directory - set in the flags readings step 
     self.basdir=install_dir_default+"/basis:"+install_dir_default+"/basis_dalton"
 
-    # ... object from the inherited class "workdirectory"
-    self.wrkdir_obj = workdir_class()
+    # ... variables related to the work directory
+    self.workdir=''
+    self.workpath=''
+    self.keepwrk=False
+    self.cleanwrkdir=False
+    self.create_workdir_name=True
 
     # parallel stuff 
     self.parallel=False
@@ -283,17 +155,109 @@ class pam_enviroment(workdir_class):
     self.set_timeout_limit=False
     self.timeout=''
 
-    #pam.py command
+    #exact prescription (all flags) for the pam(.py) command
     self.pam_command=''
-	
-  def read_pam_variables(self):
-   #important - reads variables from Makefile.config
-    print 'reading pam variables from Makefile.config...'
+
+  #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+  def set_workdir_name(self,root_name):
+  #############################################################################################
+  #
+  # sets the working directory name according to the
+  # entering "root_name"
+  #
+  # depends on "self.workpath"
+  #
+  #############################################################################################
+    current_pid = os.getpid(); #print 'pid=',current_pid
+    if (len(root_name) > 0):
+      workdir_name=root_name+"."+str(current_pid)
+    else:
+      workdir_name='dirac_work_dir.'+str(current_pid)
+
+    # attach user login name to the workdir name
+    workdir_name=pwd.getpwuid(os.getuid()).pw_name+"."+workdir_name
+
+    # self.workpath MUST BE set before
+    self.workdir=self.workpath+"/"+workdir_name
+
+    if (self.iprint >=5):
+      print 'workdir_name=',workdir_name
+      print 'root_name set?',(root_name is not None)
+      if (root_name is not None):
+        print 'root_name=',root_name
+      print 'self.workdir=',self.workdir
+
+  def create_workdir(self):
+  # creates the working directory
+    if not os.path.isdir(self.workdir):
+      print 'creating the work directory '
+      os.mkdir(self.workdir)
+    else:
+      print 'The work directory ',self.workdir,' exists.'
+
+  def copy_file(self,src,dest):
+  # ... copies file from the current dir "scr" to "dest"
+    print 'copying file...',src,' to ',dest
+    shutil.copy(src, dest)
+
+  def list_workdir(self):
+  # ... lists the content of the master work-directory
+  # more here http://www.daniweb.com/code/snippet216798.html
+    print 
+    print 'Content of the work directory',os.getcwd(),':'
+    print '-------------------------------------------------------------------------------' 
+    #print 'file............size'
+    for filename in os.listdir(self.workdir):
+      filesize_kB=float(os.path.getsize(self.workdir+"/"+filename))/1024
+      # create a dictionary to hold file info
+      file_name = filename; file_stats = os.stat(file_name)
+      file_info = {
+             'fname': file_name,
+             'fsize': file_stats [stat.ST_SIZE],
+             'f_lm': time.strftime("%m/%d/%Y %I:%M:%S %p",time.localtime(file_stats[stat.ST_MTIME])),
+             'f_la': time.strftime("%m/%d/%Y %I:%M:%S %p",time.localtime(file_stats[stat.ST_ATIME])),
+             'f_ct': time.strftime("%m/%d/%Y %I:%M:%S %p",time.localtime(file_stats[stat.ST_CTIME]))
+      } 
+      print "%20s"%filename,".....%10.4f"%filesize_kB,' kB'," last accessed = %(f_la)s" % file_info
+      sys.stdout.flush()
+      if (self.iprint >= 8) :
+        print
+        print "file name = %(fname)s" % file_info
+        print "file size = %(fsize)s bytes" % file_info
+        print "last modified = %(f_lm)s" % file_info
+        print "last accessed = %(f_la)s" % file_info
+        print "creation time = %(f_ct)s" % file_info
+        print
+        if stat.S_ISDIR(file_stats[stat.ST_MODE]):
+          print "This a directory"
+        else:
+          print "This is not a directory"
+        print
+        print "A closer look at the os.stat(%s) tuple:" % file_name
+        print file_stats
+        print
+        print "The above tuple has the following sequence:"
+        print """st_mode (protection bits), st_ino (inode number),
+           st_dev (device), st_nlink (number of hard links),
+           st_uid (user ID of owner), st_gid (group ID of owner),
+           st_size (file size, bytes), st_atime (last access time, seconds since epoch),
+           st_mtime (last modification time), st_ctime (time of creation, Windows)"""
+        sys.stdout.flush()
+
+  def remove_workdir(self):
+    #print 'removes the work_direcory'
+    self.list_workdir()
+    if (not self.keepwrk):
+      print 'deleting the entire master work directory'
+      sys.stdout.flush()
+      shutil.rmtree(self.workdir)      
+    else:
+      print 'keeping the work directory'
+      sys.stdout.flush()
 
   def process_pam_arguments(self):
     #print 'processing pam arguments....'
     global install_dir
-
     from optparse import OptionParser
     usage="Usage: %prog [Options] --mol=*.mol --inp=*.inp"
     parser = OptionParser(usage)
@@ -367,25 +331,25 @@ This allows you to omit the molecule and input files. '
                   help=this_label,metavar="STRING")
 
     # ... get in the timeout limit (in seconds)
-    this_label='limit dirac.x execution time (in seconds)'
+    this_label='limit dirac.x execution time (in seconds); default - do not limit'
     parser.add_option("--timeout", type="int", nargs=1,  
                   action="store", dest="dest_timeout",
                   help=this_label, metavar="INT_NUM")
 
     # .. read in the install_dir, what is the basic global variable...
-    this_label="pam.py\'s directory, inserted default:"+install_dir_default
+    this_label="pam.py\'s directory, inserted module default:"+install_dir_default
     parser.add_option("--install_dir", type="string", nargs=1,
                   action="store",dest="dest_install_dir",  
                   help=this_label,metavar="STRING")
 
     # .. read in the workdirectory
-    this_label="Full directory path for work area, default: "+self.wrkdir_obj.workpath+"/<mol_inp>.$"
+    this_label="Full directory path for work area, default: "+self.workpath+"/<mol_inp>.$"
     parser.add_option("--wrkdir", type="string", nargs=1,
                   action="store",dest="dest_wrkdir",  
                   help=this_label,metavar="STRING")
 
     # .. read in the work-path
-    this_label="Directory path (without user login name) for work area; default: "+self.wrkdir_obj.workpath
+    this_label="Directory path (without user login name) for work area; default: "+self.workpath
     parser.add_option("--wrkpath", type="string", nargs=1,
                   action="store",dest="dest_wrkpath",
                   help=this_label,metavar="STRING")
@@ -493,7 +457,7 @@ This allows you to omit the molecule and input files. '
         nargs  = 1,
         action = 'store',
         dest   = 'mol_file',
-        help   = 'molecule file *.mol'
+        help   = 'molecule file *.mol/*.xyz'
         )
 
     # inp-file
@@ -516,7 +480,6 @@ This allows you to omit the molecule and input files. '
     # now assign individual arguments
     if (options.dest_iprint is not None) :
      self.iprint=int(options.dest_iprint)
-     self.wrkdir_obj.set_iprint(iprint_in=self.iprint)
      if self.iprint > 7:
       print 'assigned iprint=',self.iprint
 
@@ -564,21 +527,25 @@ This allows you to omit the molecule and input files. '
       print 'assigned machinefile=',self.machinefile
 
     if (options.dest_install_dir is not None) :
-      install_dir=str(options.dest_install_dir)
-      if self.iprint >= 5:
-        print 'assigned install-dir=',install_dir
+      if os.path.isdir(str(options.dest_install_dir)):
+        install_dir=str(options.dest_install_dir)
+        if self.iprint >= 5:
+          print 'assigned install-dir=',install_dir
+      else:
+        print 'Installation directory you inserted is non-existent !'
+        print 'Used the default instead:',install_dir
     elif (install_dir_default is None) :
-      sys.exit("you must set the installation directory !")
+      sys.exit("The installation directory is not set ! Error exit !")
 
     if (options.dest_wrkdir is not None):
-      self.wrkdir_obj.workdir=str(options.dest_wrkdir)
+      self.workdir=str(options.dest_wrkdir)
       if self.iprint >= 5:
-        print 'assigned wrkdir=',self.wrkdir_obj.workdir
+        print 'assigned wrkdir=',self.workdir
 
     if (options.dest_wrkpath is not None):
-      self.wrkdir_obj.workpath=str(options.dest_wrkpath)
+      self.workpath=str(options.dest_wrkpath)
       if self.iprint >= 5:
-        print 'assigned wrkpath=',self.wrkdir_obj.workpath
+        print 'assigned wrkpath=',self.workpath
 
     if (options.dest_basdir is not None) :
       self.basdir=str(options.dest_basdir)
@@ -660,14 +627,14 @@ This allows you to omit the molecule and input files. '
         print 'assigned full-restart from archive file',self.archive_name
 
     if (options.dest_clean is not None) :
-      self.wrkdir_obj.cleanwrkdir=options.dest_clean
+      self.cleanwrkdir=options.dest_clean
       if self.iprint >= 5:
-        print 'assigned wrkdir_obj.cleanwrkdir==',self.wrkdir_obj.cleanwrkdir
+        print 'assigned cleanwrkdir==',self.cleanwrkdir
 
     if (options.dest_keepwrk is not None) :
-      self.wrkdir_obj.keepwrk=options.dest_keepwrk
+      self.keepwrk=options.dest_keepwrk
       if self.iprint >= 5:
-        print 'assigned wrkdir_obj.keepwrk =',self.wrkdir_obj.keepwrk
+        print 'assigned keepwrk =',self.keepwrk
 
     if (options.dest_debug is not None) :
       self.debug=True
@@ -715,8 +682,8 @@ This allows you to omit the molecule and input files. '
       self.set_output_name()
 
     ### set workdir name here  ###
-    if self.wrkdir_obj.create_workdir_name:
-      self.wrkdir_obj.set_workdir_name(root_name=self.output_name)
+    if self.create_workdir_name:
+      self.set_workdir_name(root_name=self.output_name)
 
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def set_output_name(self):
@@ -727,7 +694,13 @@ This allows you to omit the molecule and input files. '
   #
   #############################################################################################
     if (len(self.input_molecule) >0 and len(self.input_dirac) >0):
-      mol_file_stripped=self.input_molecule.replace(".mol","",1 )
+      if (self.input_molecule.find(".mol")):
+        mol_file_stripped=self.input_molecule.replace(".mol","",1 )
+      elif (self.input_molecule.find(".xyz")):
+        mol_file_stripped=self.input_molecule.replace(".xyz","",1 )
+      else:
+        print 'molecule input file does not has proper suffix mol/xyz ! error exit !'
+        sys.exit(-1)
       inp_file_stripped=self.input_dirac.replace(".inp","",1)
       if (mol_file_stripped == inp_file_stripped):
         self.output_name=mol_file_stripped
@@ -747,24 +720,23 @@ This allows you to omit the molecule and input files. '
     def copy_single_file(file_name):
       full_file_name=self.input_directory+"/"+file_name
       if ( os.path.isfile(full_file_name) ):
-        file_name_wrkdir=self.wrkdir_obj.workdir+"/"+file_name
+        file_name_wrkdir=self.workdir+"/"+file_name
         print 'copying ',file_name,' from homedir to workdir '
-        self.wrkdir_obj.copy_file(full_file_name,file_name_wrkdir)
+        self.copy_file(full_file_name,file_name_wrkdir)
       else :
         print file_name,' you want to copy does not exist !'
 
-    self.wrkdir_obj.create_workdir()
+    self.create_workdir()
     #print 'set_wrkdir: install_dir=',install_dir
 
     # copy dirac.x executable if wanted
-    #self.wrkdir_obj.copy_file(install_dir+'/'+'dirac.x',self.wrkdir_obj.workdir+'/'+'dirac.x')
     if (not self.no_diracexe_copy) :
-      self.wrkdir_obj.copy_file(self.dirac_exe,self.wrkdir_obj.workdir+'/'+'dirac.x')
+      self.copy_file(self.dirac_exe,self.workdir+'/'+'dirac.x')
 
     if ( os.path.isfile(self.input_molecule) ) : 
-      self.wrkdir_obj.copy_file(self.input_molecule,self.wrkdir_obj.workdir+'/'+'MOLECULE.MOL')
+      self.copy_file(self.input_molecule,self.workdir+'/'+'MOLECULE.MOL')
     if ( os.path.isfile(self.input_dirac) ) : 
-      self.wrkdir_obj.copy_file(self.input_dirac,self.wrkdir_obj.workdir+'/'+'DIRAC.INP')
+      self.copy_file(self.input_dirac,self.workdir+'/'+'DIRAC.INP')
 
     if (self.full_restart):
       #print 'restarting from copied archive file ',self.archive_name
@@ -826,18 +798,18 @@ This allows you to omit the molecule and input files. '
       for node in self.nodes:
         print 'Copying content of ',self.master,' work-directory to the',node
         # create working directories on nodes
-        command=self.rsh+' '+node+' "mkdir -p '+self.wrkdir_obj.workdir+' "'
+        command=self.rsh+' '+node+' "mkdir -p '+self.workdir+' "'
         if (self.iprint>=4):
           print 'create work dir command:',command
         os.system(command)
-        for this_file in os.listdir(self.wrkdir_obj.workdir):
-          this_file_full=self.wrkdir_obj.workdir+'/'+this_file
+        for this_file in os.listdir(self.workdir):
+          this_file_full=self.workdir+'/'+this_file
           command=self.rcp+' '+this_file_full+' '+node+':'+this_file_full 
           if (self.iprint>=0):
             print 'copying work dir command:',command
           os.system(command)
           if (self.iprint>=4): # control list of directory
-            os.system(self.rsh+' '+node+' "ls -l '+self.wrkdir_obj.workdir+' "')
+            os.system(self.rsh+' '+node+' "ls -l '+self.workdir+' "')
     else:
       print 'All CPUs are on the master, no distribution of workdir over different nodes'
 
@@ -892,7 +864,7 @@ This allows you to omit the molecule and input files. '
     if (self.parallel):
       # DIRAC_CMD="$DIRAC_CMD -np $MPI_NPROC -wd $WRK"
       # and/if  $DIRAC_CMD -machinefile $MACH_FILE $DIRAC_CMD
-      self.dirac_cmd=self.mpirun+" -np "+str(self.mpi)+" -wd "+self.wrkdir_obj.workdir
+      self.dirac_cmd=self.mpirun+" -np "+str(self.mpi)+" -wd "+self.workdir
       self.dirac_cmd=self.dirac_cmd+this_dirac_exe
       if (self.vg_debug): # valgrind stuff, DIRAC_CMD="$DIRAC_CMD $VALGRIND_TOOL --log-fd=1"
         self.dirac_cmd=self.dirac_cmd+' '+self.valgrind+' --log-fd=1'
@@ -919,11 +891,9 @@ This allows you to omit the molecule and input files. '
   #
   #############################################################################################
     if (self.iprint >= 5) :
-      print 'going to read from Makefile.config:'
-
+      print 'read_makefile_config: Going to read from Makefile.config:'
     # open and read
     makefile_config=install_dir+'/'+'Makefile.config'
-
     for line in fileinput.input([makefile_config]):
       # remove one character from the end of the string
       line=line[:-1] 
@@ -938,16 +908,16 @@ This allows you to omit the molecule and input files. '
             print '     install_dir=',install_dir,len(install_dir)
             sys.exit(-1)
           else:
-            print 'installation dir OK'
+            #print 'installation dir OK'
+            pass
       elif ( line.find('SCRATCH_DIR') != -1 ):
           #print 'SCRATCH_DIR found, line=',line
           scratch_dir_temp=line.replace('SCRATCH_DIR=','')
-          #print 'scratch_dir=',scratch_dir_temp
-          self.wrkdir_obj.scratchdir=scratch_dir_temp
-          #self.wrkdir_obj.workpath=self.wrkdir_obj.scratchdir+'/'+os.getlogin()
-          #self.wrkdir_obj.workpath=self.wrkdir_obj.scratchdir+'/'+pwd.getpwuid(os.getuid()).pw_name
-          self.wrkdir_obj.workpath=self.wrkdir_obj.scratchdir
-          print 'workpath=',self.wrkdir_obj.workpath
+          self.workpath=scratch_dir_temp
+          if (not os.path.isdir(self.workpath)):
+            print 'NB: the workpath ',self.workpath,' does not exist on this machine.'
+            print 'Running on your own risk (might not create workdir).'
+          #print 'workpath=',self.workpath
       elif ( line.find('DEBUGGER') != -1 ):
           debugger_temp=line.replace('DEBUGGER=','')
           if ( os.path.isfile(debugger_temp)):
@@ -959,7 +929,6 @@ This allows you to omit the molecule and input files. '
       elif ( line.find('PROFILER') != -1 ):
           profiler_temp=line.replace('PROFILER=','')
           if (os.path.isfile(profiler_temp)):
-            print 'profiler found=',profiler_temp
             self.profiler=profiler_temp
           else:
             print 'The profiler from Makefile.config is not existing!'
@@ -968,36 +937,36 @@ This allows you to omit the molecule and input files. '
           #print 'valgrind found, line=',line
           valgrind_temp=line.replace('VALGRIND=','')
           if ( os.path.isfile(valgrind_temp) ):
-            print 'valgrind found=',valgrind_temp
+            #print 'valgrind found=',valgrind_temp
             self.valgrind=valgrind_temp
           else:
             print 'The valgrind from Makefile.config is not existing!'
             print 'The valgrind from Makefile.config=',valgrind_temp
       elif ( line.find('MPIRUN') != -1 ):
-          #print 'mpi launcher found, line=',line
           mpirun_temp=line.replace('MPIRUN=','')
-          print 'mpirun found=',mpirun_temp
+          #print 'mpirun found=',mpirun_temp
           if (os.path.isfile(mpirun_temp)):
             self.mpirun=mpirun_temp
           else:
-            print 'The MPIRUN from Makefile.config is not existing!'
-            print 'MPIRUN from Makefile.config=',mpirun_temp
+            #print 'The MPIRUN from Makefile.config is not existing!'
+            #print 'MPIRUN from Makefile.config=',mpirun_temp
+            pass
       elif ( line.find('LOCALDISKS') != -1 ):
           localdisks_temp=line.replace('LOCALDISKS=','')
           if (localdisks_temp=="yes"):
             self.localdisks=True
-            print 'local disks for parallel calculations'
+            #print 'local disks for parallel calculations'
       elif ( line.find('MACH_FILE') != -1 ):
           machinefile_temp=line.replace('MACH_FILE=','')
           if (len(machinefile_temp) >= 1):
             self.machinefile=machinefile_temp
-            print 'self.machinefile assigned=',self.machinefile
+            #print 'self.machinefile assigned=',self.machinefile
       elif ( line.find('RCP') != -1 ):
           #print 'RCP found, line=',line
           rcp_temp=line.replace('RCP=','')
           if (os.path.isfile(rcp_temp)):
             self.rcp=rcp_temp
-            print 'RCP found ',self.rcp
+            #print 'RCP found ',self.rcp
           else:
             print 'The RCP from Makefile.config is not existing!'
             print 'RCP from Makefile.config=',rcp_temp
@@ -1005,7 +974,7 @@ This allows you to omit the molecule and input files. '
           rsh_temp=line.replace('RSH=','')
           if (os.path.isfile(rsh_temp)):
             self.rsh=rsh_temp
-            print 'RSH found,',self.rsh
+            #print 'RSH found,',self.rsh
           else:
             print 'The RSH from Makefile.config is not existing!'
             print 'RSH from Makefile.config=',rsh_temp
@@ -1028,7 +997,7 @@ This allows you to omit the molecule and input files. '
 
     print 'changing directory from Input dir to Work dir'
     # go to the working directory
-    os.chdir(self.wrkdir_obj.workdir)
+    os.chdir(self.workdir)
 
     if (self.full_restart):
       print 'restarting from copied archive file ',self.archive_name
@@ -1089,12 +1058,13 @@ This allows you to omit the molecule and input files. '
       print 'no gmon.out found, so no profiling..'
  
   def save_files(self):
-    # ... save files in various manners from the work directory 
+  #------------------------------------------------------------
+  # ... save files in various manners from the work directory 
+  #------------------------------------------------------------
     from common import backup_file
-
     def save_single_file(file_name):
     # ... save single file
-      full_file_name=self.wrkdir_obj.workdir+"/"+file_name
+      full_file_name=self.workdir+"/"+file_name
       if self.iprint >= 5:
         print 'file_name=',file_name
         print 'full_file_name=', full_file_name
@@ -1105,7 +1075,7 @@ This allows you to omit the molecule and input files. '
         if (self.nobackup is False):
           backup_file(some_file=file_name_home,upto=None)
         # finally copy
-        self.wrkdir_obj.copy_file(full_file_name,file_name_home)
+        self.copy_file(full_file_name,file_name_home)
 
     if (not self.no_archive):
       # set name of the archive file; TODO: Windows packing adaptation
@@ -1151,30 +1121,29 @@ This allows you to omit the molecule and input files. '
 
   def remove_work_dir(self):
     #print 'removing master work-dir'
-    self.wrkdir_obj.remove_workdir()
+    self.remove_workdir()
     # take care of individual nodes if parallel run
     if self.nodes:
       for this_node in self.nodes:
         sys.stdout.flush()
-        print 'content of the workdir, slave node ',this_node,':',self.wrkdir_obj.workdir 
-        command=self.rsh+' '+this_node+' "ls -l '+self.wrkdir_obj.workdir+' "'
+        print 'content of the workdir, slave node ',this_node,':',self.workdir 
+        command=self.rsh+' '+this_node+' "ls -l '+self.workdir+' "'
         os.system(command)
         sys.stdout.flush()
         print ' Total size of the slave node work directory:\c'
-        command=self.rsh+' '+this_node+' "du -h -s '+self.wrkdir_obj.workdir+' "' 
+        command=self.rsh+' '+this_node+' "du -h -s '+self.workdir+' "' 
         os.system(command)
         sys.stdout.flush()
         print '  Info on the disk space usage on the slave node:'
         command=self.rsh+' '+this_node+' "df -h  ."' 
         os.system(command)
         # finally removing node content
-        command=self.rsh+' '+this_node+' "rm -fr  '+self.wrkdir_obj.workdir+' "'
+        command=self.rsh+' '+this_node+' "rm -fr  '+self.workdir+' "'
         os.system(command)
-        print 'Work directory on slave node', this_node,':',self.wrkdir_obj.workdir,' deleted.'
+        print 'Work directory on slave node', this_node,':',self.workdir,' deleted.'
         sys.stdout.flush()
 
   def print_header(self):
-    import datetime
     from common import get_username,get_hostname,get_hostname_ip
     self.master=get_hostname()
     print '*****************************************'  
@@ -1184,9 +1153,8 @@ This allows you to omit the molecule and input files. '
     print "   User@Host   :",get_username(),"@",get_hostname(),' IP=',get_hostname_ip()
     print "   Date        :",datetime.datetime.now()
     print "   Command     :",self.pam_command
-    #print "   PID         :",os.getpid()
     print "   Input dir   :",self.input_directory
-    print "   Work dir    :",self.wrkdir_obj.workdir
+    print "   Work dir    :",self.workdir
     print "   Output file :",self.output_file
     if (self.set_timeout_limit):
       print "   === Killing dirac.x executable run after ",self.timeout,' seconds'
@@ -1211,11 +1179,9 @@ class pam_run(pam_enviroment):
     self.pam_variables.process_pam_arguments()
     self.pam_variables.set_output_file()
     self.pam_variables.print_header()
-
     self.pam_variables.copy_files()
     if (self.pam_variables.parallel and self.pam_variables.localdisks):
       self.pam_variables.distribute_work_dir()
-
     self.pam_variables.set_dirac_environment()
     self.pam_variables.set_dirac_cmd()
     self.pam_variables.execute_dirac()
@@ -1223,7 +1189,7 @@ class pam_run(pam_enviroment):
     self.pam_variables.remove_work_dir()
 
 ###########################################################################
-###                   process the main function
+###                   process the main function                         ###
 ###########################################################################
 def main(*args):
    #print "pam.py main function..."
