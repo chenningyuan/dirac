@@ -36,16 +36,16 @@ def append_dirac_py_modules(dirac_install_dir):
 # to import selected python objects used throughout the script
 #
 # NOTE: do the import of wanted python routine(s) in each procedure 
+# as "import common "  does not work...
 #
   modules_directory = dirac_install_dir + '/utils'
   if (not os.access(modules_directory,os.R_OK) ):
     print 'wrong directory or directory not readable !'
     sys.exit("wrong directory !")
   sys.path.append(modules_directory)
-  # import common # does not work..
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-class pam_enviroment():
+class pam_enviroment:
   global install_dir
   # ... class containing all important variables, methods for submitting
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -70,7 +70,7 @@ class pam_enviroment():
     self.cleanwrkdir=False
     self.create_workdir_name=True
 
-    # parallel stuff 
+    # ... variables related to parallel calculations
     self.parallel=False
     self.mpirun=''
     self.mpi=1
@@ -82,9 +82,9 @@ class pam_enviroment():
     self.master=''
     # nodes (if any) - list 
     self.nodes=[]
-
-    # dirac executable command (set in own routine)
-    self.dirac_cmd=''
+    # rcp, rsh for parallel, multinodes calculations 
+    self.rcp='' # default taken from Makefile.config
+    self.rsh=''
 
     # dirac profiling
     self.profile  = False
@@ -92,6 +92,8 @@ class pam_enviroment():
     self.profiling_file='gmon.out' # usuall output file 
     self.profile_command='' # command for profiling
 
+    # dirac executable command (set in own routine)
+    self.dirac_cmd=''
     # dirac-executable position (could be reset by after flag reading)
     self.dirac_exe=install_dir_default+"/dirac.x"
     self.no_diracexe_copy=False
@@ -100,6 +102,7 @@ class pam_enviroment():
     self.put_files=''
     self.get_files=''
 
+    # DIRAC memory allocation variables
     self.mem = 64
     self.maxmem=''
     self.slavemem = 64
@@ -115,10 +118,6 @@ class pam_enviroment():
     self.vg_debug=False
     self.valgrind='' # empty, to be read from Makefile.config    
     self.valgrind_param='' # parameters for valgrind
-
-    # rcp, rsh for parallel, multinodes calculations 
-    self.rcp='' # default taken from Makefile.config
-    self.rsh=''
 
     # input directory
     self.input_directory='' 
@@ -137,7 +136,7 @@ class pam_enviroment():
     # do not backup files
     self.nobackup=False
 
-    # default - do archivation of files
+    # default - do the archivation of files
     self.no_archive=False
     # list of possible files for the archivation
     self.archive_files=['MOLECULE.MOL','MOLECULE.XYZ','DIRAC.INP','DFCOEF','*.cube','AOPROPER', \
@@ -344,16 +343,16 @@ This allows you to omit the molecule and input files. '
                   action="store",dest="dest_install_dir",  
                   help=this_label,metavar="STRING")
 
-    # .. read in the workdirectory
-    this_label="Full directory path for work area, default: "+self.workpath+"/<mol_inp>.$"
-    parser.add_option("--wrkdir", type="string", nargs=1,
-                  action="store",dest="dest_wrkdir",  
-                  help=this_label,metavar="STRING")
-
     # .. read in the work-path
-    this_label="Directory path (without user login name) for work area; default: "+self.workpath
+    this_label="Directory for the work area; default: "+self.workpath
     parser.add_option("--wrkpath", type="string", nargs=1,
                   action="store",dest="dest_wrkpath",
+                  help=this_label,metavar="STRING")
+
+    # .. read in the workdirectory
+    this_label="Working directory, default: "+self.workpath+"/<loginname.mol_inp>.PID"
+    parser.add_option("--wrkdir", type="string", nargs=1,
+                  action="store",dest="dest_wrkdir",  
                   help=this_label,metavar="STRING")
 
     # .. read in the basis set directory if different from default
