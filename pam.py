@@ -743,7 +743,7 @@ This allows you to omit the molecule and input files. '
     if (self.full_restart):
       #print 'restarting from copied archive file ',self.archive_name
       copy_single_file(self.archive_name)
-      unpack_command='tar -xvf '+self.archive_name
+      unpack_command='tar -xvf '+self.workdir+'/'+self.archive_name
       os.system(unpack_command)
 
     if (self.put_files is not None):
