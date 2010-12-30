@@ -1,3 +1,15 @@
+#! /usr/bin/env python        
+#                             
+import  sys, os, string, optparse
+                                      
+# installation directory inserted by configure script
+#global install_dir
+#install_dir='/people/disk2/ilias/QCH_Work/qch_progs/dirac/ompi_gfortr_gcc_ownlibs_noopt_ILP64/adm/trunk' 
+
+from install_dir import install_dir_default
+global install_dir
+install_dir=install_dir_default
+
 ############################################################################################
 #
 # Script for preparing and submitting DIRAC pam job into a specified  queue system.

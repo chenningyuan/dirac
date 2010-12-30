@@ -1,4 +1,4 @@
-
+#! /usr/bin/env python        
 #########################################################################
 #
 # Python replacement of the pam script
@@ -22,6 +22,8 @@ import stat
 import time
 import fileinput
 
+# python module with installation directory created by the configure script
+from install_dir import install_dir_default
 global install_dir
 install_dir=install_dir_default
 
