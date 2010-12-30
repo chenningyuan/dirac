@@ -1,12 +1,14 @@
-#! /usr/bin/env python        
+#! /usr/bin/env python 
 #########################################################################
 #
 # Python replacement of the previous bash-written pam(.sh) script
 #
-# Reads crucial data from Makefile.config
+# Reads crucial data from Makefile.config (to be replaced by some python module ?)
 #
 # Written by Miro ILIAS, Matej Bel University, 
 #        Banska Bystrica, Slovakia, end of 2010
+#
+# Contributors:
 #
 ##########################################################################
 import os
@@ -679,7 +681,7 @@ This allows you to omit the molecule and input files. '
         if ( not self.full_restart):
           print 'both --mol=... and --inp=... are required !'
           sys.exit()
-      self.set_output_name()
+    self.set_output_name()
 
     ### set workdir name here  ###
     if self.create_workdir_name:
@@ -706,13 +708,15 @@ This allows you to omit the molecule and input files. '
         self.output_name=mol_file_stripped
       else:
         self.output_name=mol_file_stripped+"_"+inp_file_stripped
+    elif (self.full_restart):
+      self.output_name=self.archive_name.replace(".tgz","",1)   
     else:
-       self.output_name="dirac_output."+str(os.getpid())
+      self.output_name="dirac_output."+str(os.getpid())
     # control prinout
     if (self.iprint >=5 ):
       print 'self.input_molecule=',self.input_molecule
       print 'self.input_dirac=',self.input_dirac
-      print 'self.output_name=',self.output_name
+      print 'set self.output_name=',self.output_name
 
   def copy_files(self):
   # copies files from home to the workdir
@@ -814,8 +818,11 @@ This allows you to omit the molecule and input files. '
       print 'All CPUs are on the master, no distribution of workdir over different nodes'
 
   def set_output_file(self):
+  ##################################################################################
   # sets the name of the output file by using "self.output_name"
-    if (len(self.output_name) > 0 and len(self.output_suffix) >0):
+  # which is prepared in set_output_name(self) routine
+  ##################################################################################
+    if (len(self.output_name) > 0 and len(self.output_suffix) > 0 ):
       self.output_file=self.output_name+"."+self.output_suffix
       if (self.iprint >= 5):
         print 'set_output_file: self.output_file=',self.output_file
@@ -828,34 +835,30 @@ This allows you to omit the molecule and input files. '
   def set_dirac_environment(self):
   # export important variables for DIRAC
   # TODO: implement for WINDOWS
-
     """ basis set directory """
     os.putenv("BASDIR",self.basdir)
-
     dirwrk  =  str( self.mem     *1000000 )
     if (self.parallel) :
       os.putenv("DIRPAR","1")
       dirnod  =  str( self.memslave*1000000 )
-
     if (self.maxmem is not None): 
       dirmaxmem=str( self.maxmem*1000000 )
       os.putenv("DIRMAX",dirmaxmem)
- 
-    #print dirwrk,dirwrk
     os.putenv("DIRWRK", dirwrk)
     if (self.parallel) :
       os.putenv("DIRNOD", dirnod)
- 
-  # Next line is for IBM only but will not hurt other systems
+    # Next line is for IBM only but will not hurt other systems
     os.putenv("XLFRTEOPTS","'namelist=old'")
-
     if (self.iprint >= 5):
       print "DIRWRK=",os.getenv("DIRWRK")
       print "BASDIR=",os.getenv('BASDIR')
+      print "IBM stuff, XLFRTEOPTS=",os.getenv('XLFRTEOPTS')
 
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def set_dirac_cmd(self):
-  # set the dirac command
+  #
+  # set the dirac command to be launched by the system (serial or parallel)
+  #
     if (self.no_diracexe_copy):
       this_dirac_exe=self.dirac_exe
     else:
@@ -1014,12 +1017,9 @@ This allows you to omit the molecule and input files. '
       signal.alarm(self.timeout)  # 
 
     if (self.parallel) :
-      print 'executing parallel dirac:'
+      print 'executing parallel dirac with command:',self.dirac_cmd
     else :
-      print 'executing serial dirac:'
-
-    # print pure launching command
-    print self.dirac_cmd
+      print 'executing serial dirac with command:',self.dirac_cmd
 
     try:
       if (not self.debug and not self.vg_debug):
@@ -1041,7 +1041,7 @@ This allows you to omit the molecule and input files. '
       print "Dirac run failed. Going to kill (SIGTERM) its executable process of pid=",p.pid
       #TODO: clean of all dirac.x pid's
       os.kill(p.pid, signal.SIGTERM)
-      print 'dirac.x was purposely killed. He-he:)'
+      print 'Good - dirac.x was purposely killed  ;)'
 
     # do the profiling after the execution
     if self.profile: self.profile_dirac()
