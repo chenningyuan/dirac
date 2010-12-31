@@ -60,7 +60,7 @@ class pam_enviroment:
      ### contains installation directory ...
     self.dirac_home=install_dir
 
-    # basis set directory - initial value can be reset later in the flags-reading step 
+    # basis set directory - initial value which can be reset later in the flags-reading step 
     self.basdir=".:"+install_dir_default+"/basis:"+install_dir_default+"/basis_dalton"
 
     # ... variables related to the work directory
@@ -103,9 +103,10 @@ class pam_enviroment:
     self.get_files=''
 
     # DIRAC memory allocation variables
-    self.mem = 64
-    self.maxmem=''
-    self.slavemem = 64
+    self.mem      = 64   # memory for the master
+    self.slavemem = 64   # memory for the slave
+    self.slavemem_set=False 
+    self.maxmem='' # maximum memory for F90 dynamical allocation (Andre...)
 
     self.full_restart=False
     self.archive_name=''
@@ -272,7 +273,7 @@ class pam_enviroment:
   # ... get in the print level 
     this_label='script verbose print level, default:'+str(self.iprint_default)
     parser.add_option("-i", "--iprint", type="int", nargs=1,  
-                  action="store", dest="dest_iprint", default=1,
+                  action="store", dest="dest_iprint", 
                   help=this_label, metavar="INT_NUM")
 
   # ... archivation of files
@@ -298,14 +299,14 @@ This allows you to omit the molecule and input files. '
     default_mem_label=str(self.mem)+' ('+str(self.mem)+'*8='+str(self.mem*8)+' MB)'
     this_label='memory (in megawords) for the master, default:'+default_mem_label
     parser.add_option("--mw", type="int", nargs=1,  
-                  action="store", dest="dest_mw", default=64,
+                  action="store", dest="dest_mw", 
                   help=this_label, metavar="INT_NUM")
 
     # ... get in the "nw" ...
     default_slavemem_label=str(self.slavemem)+' ('+str(self.slavemem)+'*8='+str(self.slavemem*8)+' MB)'
     this_label='memory (in megawords) for nodes, default:'+default_slavemem_label
     parser.add_option("--nw", type="int", nargs=1,  
-                  action="store", dest="dest_nw", default=64,
+                  action="store", dest="dest_nw", 
                   help=this_label, metavar="INT_NUM")
 
     # ... get in the "aw"
@@ -497,23 +498,24 @@ This allows you to omit the molecule and input files. '
         print 'assigned outpu file suffix=',self.output_suffix
 
     if (options.dest_mw is not None) :
-     self.mem=int(options.dest_mw)
-     if self.iprint >= 5:
-      print 'assigned mw=',self.mem
+      self.mem=int(options.dest_mw)
+      if self.iprint >= 5:
+        print 'assigned master memory, mw=',self.mem
 
     if (options.dest_nw is not None) :
-     self.memslave=int(options.dest_nw)
-     if self.iprint >= 5:
-      print 'assigned mw=',self.memslave
+      self.slavemem=int(options.dest_nw) 
+      self.slavemem_set=True
+      print 'self.slavemem_set!',self.slavemem_set
+      if self.iprint >= 5:
+        print 'assigned slave memory, nw=',self.slavemem
 
     if (options.dest_aw is not None) :
      self.maxmem=int(options.dest_aw)
      if self.iprint >= 5:
-      print 'assigned maxmem=',self.maxmem
+       print 'assigned maxmem=',self.maxmem
 
     if (options.dest_mpi is not None) :
      self.mpi=int(options.dest_mpi)
-     # todo: check number of mpi's wrt to computer architecture
      #self.parallel=True
      if self.iprint >= 5:
       print 'parallel TRUE !',options.dest_mpi
@@ -676,9 +678,9 @@ This allows you to omit the molecule and input files. '
     # assign input directory ...
     self.input_directory=os.getcwd()
 
-    # reconstruct the whole pam command
+    # reconstruct the whole pam command #
     for arg in sys.argv: 
-       self.pam_command += arg + ' '
+      self.pam_command=self.pam_command+' '+arg    
 
 #   input and molecule are required
 #   check that they are there, if not exit
@@ -692,8 +694,8 @@ This allows you to omit the molecule and input files. '
         if ( not self.full_restart):
           print 'both --mol=... and --inp=... input parameters are required !'
           sys.exit()
-    self.set_output_name()
 
+    self.set_output_name()
     ### set workdir name here  ###
     if self.create_workdir_name:
       self.set_workdir_name(root_name=self.output_name)
@@ -916,18 +918,21 @@ This allows you to omit the molecule and input files. '
     """ basis set directory """
     self.basdir=self.input_directory+":"+self.basdir
     os.putenv("BASDIR",self.basdir)
+
     dirwrk  =  str( self.mem     *1000000 )
+    os.putenv("DIRWRK", dirwrk)
+
     if (self.parallel) :
       os.putenv("DIRPAR","1")
-      dirnod  =  str( self.memslave*1000000 )
+      dirnod  =  str( self.slavemem*1000000 )
+      os.putenv("DIRNOD", dirnod)
     if (self.maxmem is not None): 
       dirmaxmem=str( self.maxmem*1000000 )
       os.putenv("DIRMAX",dirmaxmem)
-    os.putenv("DIRWRK", dirwrk)
-    if (self.parallel) :
-      os.putenv("DIRNOD", dirnod)
+
     # Next line is for IBM only but will not hurt other systems
     os.putenv("XLFRTEOPTS","'namelist=old'")
+
     if (self.iprint >= 5):
       print "DIRWRK=",os.getenv("DIRWRK")
       print "BASDIR=",os.getenv('BASDIR')
@@ -1230,23 +1235,30 @@ This allows you to omit the molecule and input files. '
   def print_header(self):
     from common import get_username,get_hostname,get_hostname_ip
     self.master=get_hostname()
-
-    print
-    print '  output from dirac python script'
-    print '  ==============================='
-    print
-    print "  User        :", get_username()
-    print "  Host        :", get_hostname()
-    print "  IP          :", get_hostname_ip()
-    print "  Date        :", datetime.datetime.now()
-    print "  Command     :", self.pam_command
-    print "  Input dir   :", self.input_directory
-    print "  Work dir    :", self.workdir
-    print "  Output file :", self.output_file
-
+    if (self.parallel):
+      dirac_run="Parallel"
+    else:
+      dirac_run="Serial"
+    print '*****************************************'  
+    print '**** OUTPUT FROM DIRAC PYTHON SCRIPT ****'  
+    print '*****************************************'
+    print '                                        '  
+    print "   User@Host   :",get_username(),"@",get_hostname(),' (IP=',get_hostname_ip(),')'
+    print "   Date        :",datetime.datetime.now()
+    print "   Command     :",self.pam_command
+    print "   Input dir   :",self.input_directory
+    print "   Work dir    :",self.workdir
+    print "   Output file :",self.output_file
+    print "   DIRAC run   :",dirac_run 
     if (self.set_timeout_limit):
-      print "   === Killing dirac.x executable run after ",self.timeout,' seconds'
+      print " Allowed runtime:",self.timeout,' seconds. Killing afterwards.'
     print
+    ### take care of the slave memory for parallel runs ###
+    if (self.parallel and self.slavemem_set is False) :
+      #print 'self.slavemem_set=',self.slavemem_set
+      self.slavemem=self.mem
+      print 'Slave memory set to ',self.slavemem
+      pass
     sys.stdout.flush()
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
