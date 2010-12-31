@@ -717,7 +717,11 @@ This allows you to omit the molecule and input files. '
       print 'set self.output_name=',self.output_name
 
   def copy_files(self):
-  # copies files from home to the workdir
+  ################################################################################
+  #
+  #       copies files from home to the workdir
+  #
+  ################################################################################
     #print 'copying files into working directory...'
     def copy_single_file(file_name):
       full_file_name=self.input_directory+"/"+file_name
@@ -741,9 +745,10 @@ This allows you to omit the molecule and input files. '
       self.copy_file(self.input_dirac,self.workdir+'/'+'DIRAC.INP')
 
     if (self.full_restart):
-      #print 'restarting from copied archive file ',self.archive_name
       copy_single_file(self.archive_name)
-      unpack_command='tar -xvf '+self.workdir+'/'+self.archive_name
+      archive_workdir=self.workdir+'/'+self.archive_name
+      unpack_command='tar --directory '+self.workdir+' -xvf '+archive_workdir
+      print 'Unpacking archive file in the work-directory, command ',unpack_command
       os.system(unpack_command)
 
     if (self.put_files is not None):
