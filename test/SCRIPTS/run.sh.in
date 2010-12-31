@@ -39,9 +39,11 @@ EXIT=0
 time1=`date +%s`
 
 if [ -n "$TIMEOUT" ]; then
-   $PAM_PATH/pam -dirac $DIRAC $NICE -run $TAG -timeout $TIMEOUT -rmwrk -clean $MPIARG $* $MOL $MENU || EXIT=1
+  # $PAM_PATH/pam -dirac $DIRAC $NICE -run $TAG -timeout $TIMEOUT -rmwrk -clean $MPIARG $* $MOL $MENU || EXIT=1
+   $PAM_PATH/pam --dirac=$DIRAC --run=$TAG --timeout=$TIMEOUT  --clean --mol=$MOL --inp=$MENU $* || EXIT=1
 else
-   $PAM_PATH/pam -dirac $DIRAC $NICE -run $TAG -rmwrk -clean $MPIARG $* $MOL $MENU || EXIT=1
+  #$PAM_PATH/pam -dirac $DIRAC $NICE -run $TAG -rmwrk -clean $MPIARG $* $MOL $MENU || EXIT=1
+   $PAM_PATH/pam --dirac=$DIRAC  --run=$TAG  --clean --mol=$MOL --inp=$MENU  $*  || EXIT=1
 fi
 
 # stop the clock

@@ -6,7 +6,7 @@ MOL=H;
 MENU=H;
 export MOL;
 export MENU;
-../SCRIPTS/run.sh -utcmo
+../SCRIPTS/run.sh --utcmo
 mv DFCOEF cf.H
 ln -s cf.H DFHAT1
 ln -s cf.H DFHAT2
@@ -19,7 +19,7 @@ MOL=C;
 MENU=C;
 export MOL;
 export MENU;
-../SCRIPTS/run.sh -utcmo
+../SCRIPTS/run.sh --utcmo
 mv DFCOEF cf.C
 ln -s cf.C DFCAT
 #
@@ -29,5 +29,5 @@ MOL=CH4;
 MENU=CH4;
 export MOL;
 export MENU;
-../SCRIPTS/run.sh -copy DFCAT -copy DFHAT1 -copy DFHAT2 -copy DFHAT3 -copy DFHAT4
+../SCRIPTS/run.sh --copy="DFCAT DFHAT1 DFHAT2 DFHAT3 DFHAT4"
 rm DFCAT DFHAT1 DFHAT2 DFHAT3 DFHAT4 cf.H cf.C

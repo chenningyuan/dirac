@@ -8,6 +8,6 @@ else
    export MENU=cosci.Li2
 fi
 
-../SCRIPTS/run.sh -mw 120
+../SCRIPTS/run.sh --mw=120
 
 exit 0

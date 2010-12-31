@@ -8,7 +8,7 @@ MOL=O;
 MENU=O;
 export MOL;
 export MENU;
-../SCRIPTS/run.sh -outcmo
+../SCRIPTS/run.sh --outcmo
 mv DFCOEF cf.O
 ln -sf cf.O DFPROJ
 #
@@ -18,7 +18,7 @@ MOL=H2O;
 MENU=H2O;
 export MOL;
 export MENU;
-../SCRIPTS/run.sh -copy DFPROJ 
+../SCRIPTS/run.sh --copy=DFPROJ 
 rm DFPROJ cf.O
 
 #REMOVE_BEGIN
@@ -33,7 +33,7 @@ MOL=O;
 MENU=O.2c_iotc;
 export MOL;
 export MENU;
-../SCRIPTS/run.sh -utcmo
+../SCRIPTS/run.sh --utcmo
 mv DFCOEF cf.O
 ln -sf cf.O DFPROJ
 
@@ -44,7 +44,7 @@ MOL=H2O;
 MENU=H2O.2c_iotc;
 export MOL;
 export MENU;
-../SCRIPTS/run.sh -copy DFPROJ 
+../SCRIPTS/run.sh --copy=DFPROJ 
 rm DFPROJ cf.O
 #REMOVE_END
 
@@ -59,7 +59,7 @@ MOL=O;
 MENU=O.2c_iotc_noamfi;
 export MOL;
 export MENU;
-../SCRIPTS/run.sh -utcmo
+../SCRIPTS/run.sh --utcmo
 mv DFCOEF cf.O
 ln -sf cf.O DFPROJ
 #
@@ -69,5 +69,5 @@ MOL=H2O;
 MENU=H2O.2c_iotc_noamfi;
 export MOL;
 export MENU;
-../SCRIPTS/run.sh -copy DFPROJ 
+../SCRIPTS/run.sh --copy=DFPROJ 
 rm DFPROJ cf.O

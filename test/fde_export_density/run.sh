@@ -9,7 +9,7 @@ for mol in water.sto6g water.sto6g.c2v; do
    export MOL=$mol.mol
    for inp in fde_dc_hf_exportdens fde_dc_lda_exportdens fde_dc_mp2_exportdens; do
       export MENU=$inp.inp
-      ../SCRIPTS/run.sh -mw 80 -nw 80 -put vemb.grid -put GRIDOUT 
+      ../SCRIPTS/run.sh --mw=80 --nw=80 --put="vemb.grid GRIDOUT "
    done
 done
 

@@ -14,7 +14,7 @@ export MENU;
 echo "Dirac-Coulomb spin-free Hamiltonian "
 MENU=ci.2;
 export MENU;
-../SCRIPTS/run.sh -utcmo
+../SCRIPTS/run.sh --utcmo
 ###############################
 ###############################
 if [ "$RUNTYPE" = "short" ]; then
@@ -27,7 +27,7 @@ fi
 echo "Dirac-Coulomb Hamiltonian using spin-free MO in CI"
 MENU=ci.3;
 export MENU;
-../SCRIPTS/run.sh -incmo
+../SCRIPTS/run.sh --incmo
 ###############################
 echo "Full Dirac-Coulomb Hamiltonian"
 MENU=ci.4;
@@ -40,13 +40,13 @@ rm DFCOEF
 echo "Barysz-Sadlej-Snijders spin-free (from beginning, BSSsfB) Hamiltonian "
 MENU=O.bss_sfB.scf_ci;
 export MENU;
-../SCRIPTS/run.sh -utcmo
+../SCRIPTS/run.sh --utcmo
 ###############################
 #REMOVE_BEGIN
 echo "BSS+MFSSO Hamiltonian at post-SCF"
 MENU=O.bss+mfsso.postscf.ci;
 export MENU;
-../SCRIPTS/run.sh -incmo
+../SCRIPTS/run.sh --incmo
 rm DFCOEF
 ###############################
 echo "Two-component BSS+MFSSO Hamiltonian "

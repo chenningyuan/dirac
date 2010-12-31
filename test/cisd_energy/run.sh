@@ -79,5 +79,3 @@ MENU=F.dkh2_sfEso1.cisd;
 export MENU;
 ../SCRIPTS/run.sh
 
-
-

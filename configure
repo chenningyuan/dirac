@@ -2989,7 +2989,7 @@ fi
 
 make_pam_runtest () {
 
-pam_file=$INSTALL_DIR/pam
+pam_file=$INSTALL_DIR/pam.sh
 if [ -f $pam_file ]; then
    echo 'pam exists. I will take a backup.'
    backup -v $pam_file
@@ -3007,7 +3007,7 @@ let wrkmem_reduced=$memsiz/1000000
 if [ $IPRINT -ge 1 ]; then
    $echo 'Copying pam shell script to '$INSTALL_DIR' : \c'
 fi
-cat <<EOF>> $INSTALL_DIR/pam
+cat <<EOF>> $pam_file
 #
 # default memory used by dirac.x is determined by Makefile.config 
 WRKMEM_DEFAULT=$wrkmem_reduced
@@ -3050,8 +3050,8 @@ ILP_DATATYPE=$ilp_datatype
 #
 EOF
 
-cat ./pam.in >> $INSTALL_DIR/pam
-chmod a+rx $INSTALL_DIR/pam
+cat ./pam.in >> $pam_file
+chmod a+rx      $pam_file
 
 
 ###############################

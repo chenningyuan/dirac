@@ -6,7 +6,7 @@ for molecule in *mol; do
     for input in *inp; do
         export MENU=$input
 
-        ../SCRIPTS/run.sh -get PLOT_3D
+        ../SCRIPTS/run.sh --get=PLOT_3D
         mv PLOT_3D ${molecule%\.mol}_${input%\.inp}.3d
 
     done
