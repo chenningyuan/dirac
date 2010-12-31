@@ -110,28 +110,30 @@ class pam_enviroment:
     self.full_restart=False
     self.archive_name=''
 
-    # debugging
+    # classic debugging (gdb, idb, dbx ...)
     self.debug=False
     self.debugger='' # empty, but later to be read from Makefile.config
 
-    # valgrind
+    # valgrind debugging
     self.vg_debug=False
     self.valgrind='' # empty, to be read from Makefile.config    
     self.valgrind_param='' # parameters for valgrind
 
-    # input directory
+    # input directory (=directory with input files)
     self.input_directory='' 
-    # input files
+    # molecule/input names plus  molecule/input file names
     self.input_molecule=''
+    self.input_file_molecule=''
     self.input_dirac=''
+    self.input_file_dirac=''
 
     # output name created from *inp & *mol names
     self.output_name=''
     # default output suffix
     self.output_suffix="out"
-    # output file...
+    # output file (sitting in the input directory)
     self.output_file=''
-    self.output_file_full='' # full path
+    self.output_file_full='' # full (absolute) path 
 
     # by default, do backup files
     self.nobackup=False
@@ -259,7 +261,7 @@ class pam_enviroment:
     #print 'processing pam arguments....'
     global install_dir
     from optparse import OptionParser
-    usage="Usage: %prog [Options] --mol=*.mol --inp=*.inp"
+    usage="Usage: %prog [Options] --mol=*[.mol] --inp=*[.inp]"
     parser = OptionParser(usage)
 
   # ... get in the print level 
@@ -675,9 +677,10 @@ This allows you to omit the molecule and input files. '
       if (options.mol_file is not None and options.inp_file is not None):
         self.input_molecule = options.mol_file
         self.input_dirac    = options.inp_file
+        self.assign_mol_inp_files()
       else:
         if ( not self.full_restart):
-          print 'both --mol=... and --inp=... are required !'
+          print 'both --mol=... and --inp=... input parameters are required !'
           sys.exit()
     self.set_output_name()
 
@@ -686,32 +689,82 @@ This allows you to omit the molecule and input files. '
       self.set_workdir_name(root_name=self.output_name)
 
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+  def assign_mol_inp_files(self):
+  #############################################################################################
+  #
+  # assign "self.input_file_molecule" and "self.input_file_dirac"
+  # according to filled "self.input_molecule" and "self.input_dirac"
+  #
+  #############################################################################################
+    if (self.iprint >=5):
+      print 'assign_mol_inp_files:'
+      print 'self.input_molecule=',self.input_molecule
+      print 'self.input_dirac=',self.input_dirac
+
+    if (os.path.isfile(self.input_molecule+'.mol')):
+      self.input_file_molecule=self.input_molecule+'.mol'
+    elif (os.path.isfile(self.input_molecule+'.xyz')):
+      self.input_file_molecule=self.input_molecule+'.xyz'
+    elif (os.path.isfile(self.input_molecule)):
+      self.input_file_molecule=self.input_molecule
+    else:
+      print 'Proper molecule input file does not exist !'
+      sys.exit(-1)  
+
+    if (os.path.isfile(self.input_dirac+'.inp')):
+      self.input_file_dirac=self.input_dirac+'.inp'
+    elif (os.path.isfile(self.input_dirac)):
+      self.input_file_dirac=self.input_dirac
+    else:
+      print 'Proper dirac input file does not exist !' 
+      sys.exit(-1)  
+
+    if (self.iprint >=5):
+      print 'assigned self.input_file_molecule=',self.input_file_molecule
+      print 'assigned self.input_file_dirac=',self.input_file_dirac
+
+  #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def set_output_name(self):
   #############################################################################################
   #
   # set the output name string to be used later 
-  # for naming output and work directory
+  # for naming the output file and also the work directory
   #
   #############################################################################################
+    if (self.iprint >=5 ):
+      print 'set_output_name routine:'
+      print 'len(self.input_molecule),len(self.input_dirac):',len(self.input_molecule),len(self.input_dirac)
+  
     if (len(self.input_molecule) >0 and len(self.input_dirac) >0):
-      if (self.input_molecule.find(".mol")):
-        mol_file_stripped=self.input_molecule.replace(".mol","",1 )
-      elif (self.input_molecule.find(".xyz")):
-        mol_file_stripped=self.input_molecule.replace(".xyz","",1 )
-      else:
-        print 'molecule input file does not has proper suffix mol/xyz ! error exit !'
-        sys.exit(-1)
-      inp_file_stripped=self.input_dirac.replace(".inp","",1)
+
+      if (self.input_file_molecule.find(".mol")):
+        mol_file_stripped=self.input_file_molecule.replace(".mol","",1 )
+      elif (self.input_file_molecule.find(".xyz")):
+        mol_file_stripped=self.input_file_molecule.replace(".xyz","",1 )
+      else: # no suffix, never mind
+        mol_file_stripped=self.input_file_molecule
+        print 'The molecule input file does not contain recommended suffix, never mind...'
+
+      if (self.input_file_dirac.find(".inp")):
+        inp_file_stripped=self.input_file_dirac.replace(".inp","",1)
+      else: # no suffix, continuing..
+        print 'The dirac input file does not contain recommended suffix, never mind...'
+        inp_file_stripped=self.input_file_dirac
+
       if (mol_file_stripped == inp_file_stripped):
         self.output_name=mol_file_stripped
       else:
         self.output_name=mol_file_stripped+"_"+inp_file_stripped
+
     elif (self.full_restart):
+      # todo: verify *.tgz ?
       self.output_name=self.archive_name.replace(".tgz","",1)   
-    else:
+    else: # assign default name
       self.output_name="dirac_output."+str(os.getpid())
-    # control prinout
+
+    # control printout
     if (self.iprint >=5 ):
+      #print 'set_output_name routine:'
       print 'self.input_molecule=',self.input_molecule
       print 'self.input_dirac=',self.input_dirac
       print 'set self.output_name=',self.output_name
@@ -719,7 +772,7 @@ This allows you to omit the molecule and input files. '
   def copy_files(self):
   ################################################################################
   #
-  #       copies files from home to the workdir
+  #    copies file from the home directory to the work directory
   #
   ################################################################################
     #print 'copying files into working directory...'
@@ -739,10 +792,9 @@ This allows you to omit the molecule and input files. '
     if (not self.no_diracexe_copy) :
       self.copy_file(self.dirac_exe,self.workdir+'/'+'dirac.x')
 
-    if ( os.path.isfile(self.input_molecule) ) : 
-      self.copy_file(self.input_molecule,self.workdir+'/'+'MOLECULE.MOL')
-    if ( os.path.isfile(self.input_dirac) ) : 
-      self.copy_file(self.input_dirac,self.workdir+'/'+'DIRAC.INP')
+    # the existence of self.input_file molecule,self.input_file_dirac is verified
+    self.copy_file(self.input_file_molecule,self.workdir+'/'+'MOLECULE.MOL')
+    self.copy_file(self.input_file_dirac,self.workdir+'/'+'DIRAC.INP')
 
     if (self.full_restart):
       copy_single_file(self.archive_name)
