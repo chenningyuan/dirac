@@ -126,7 +126,7 @@ while [ $# != 0 ]; do
                   'without an argument'
             exit 1
          fi
-         arg_mpi="-mpi $val"
+         arg_mpi="--mpi=$val"
          ;;
       "dirac")
          if [ "${valomitted}" = "yes" ]; then

@@ -2762,8 +2762,6 @@ DEBUGGER=$debug
 #
 RCP=$rcp
 RSH=$rsh
-# check launcher carefully according to your MPI settings (determined by PATH,LD_LIBS env.variables) 
-MPIRUN=$mpirun
 LOCALDISKS=$localdisks
 # default machine file - either for mpirun or for copying files onto local disks or for both
 MACH_FILE=$mach_file

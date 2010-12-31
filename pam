@@ -514,18 +514,23 @@ This allows you to omit the molecule and input files. '
     if (options.dest_mpi is not None) :
      self.mpi=int(options.dest_mpi)
      # todo: check number of mpi's wrt to computer architecture
-     self.parallel=True
+     #self.parallel=True
      if self.iprint >= 5:
       print 'parallel TRUE !',options.dest_mpi
       print 'assigned mpi=',self.mpi
 
     if (options.dest_mpirun is not None):
-     self.mpirun=options.dest_mpirun
      # todo: check it
-     self.parallel = True 
-     if self.iprint >= 5:
-      print 'parallel TRUE  2!'
-      print 'assigned mpirun=',self.mpirun
+     if (os.path.isfile(options.dest_mpirun)):
+       self.mpirun=options.dest_mpirun
+       self.parallel = True 
+       if self.iprint >= 5:
+         print 'parallel TRUE !'
+         print 'assigned mpirun=',self.mpirun
+     else:
+       self.parallel = False
+       print 'assigned MPIRUN launcher does not exist !'
+       sys,exit(-1)
 
     if (options.dest_machfile is not None):
      self.machinefile=options.dest_machfile
@@ -848,16 +853,19 @@ This allows you to omit the molecule and input files. '
     if (self.machinefile[0]=="$"):
       #print 'enviroment variable:'
       machinefile_temp=self.machinefile[1:len(self.machinefile)]
-      #print 'machine file variable=',machinefile_temp
-      machinefile_content=os.environ[machinefile_temp]
+      machinefile_content=''
+      try:
+        machinefile_content=os.environ[machinefile_temp]
+      except:
+        print 'The ',self.machinefile,' enviroment variable not active (no batch system).'
       if (self.iprint>=4):
-        print 'machinefile points to',machinefile_content
+        print 'machinefile enviromental variable points to',machinefile_content
     else:  # true file, no pointing variable
       machinefile_content=self.machinefile 
 
     # identify nodes in the file
     if ( os.path.isfile(machinefile_content) ) :
-      print 'machinefile is a file, reading its content'
+      print 'machinefile is a true file, reading its content'
       for line in fileinput.input(machinefile_content):
         line=line[:-1] 
         #print 'read line=',line
@@ -1023,8 +1031,10 @@ This allows you to omit the molecule and input files. '
           #print 'mpirun found=',mpirun_temp
           if (os.path.isfile(mpirun_temp)):
             self.mpirun=mpirun_temp
+            self.parallel=True
           else:
-            #print 'The MPIRUN from Makefile.config is not existing!'
+            print 'The MPIRUN',mpirun_temp,' from Makefile.config is not existing! No parallel run set !'
+            self.parallel=False
             #print 'MPIRUN from Makefile.config=',mpirun_temp
             pass
       elif ( line.find('LOCALDISKS') != -1 ):
