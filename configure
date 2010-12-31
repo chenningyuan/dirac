@@ -3343,7 +3343,6 @@ set_installdir
 set_scratchdir
 make_Makefile.config
 make_pam_runtest
-make_pamq
 make_pam
 final_words
 
