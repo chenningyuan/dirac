@@ -1239,17 +1239,19 @@ This allows you to omit the molecule and input files. '
       dirac_run="Parallel"
     else:
       dirac_run="Serial"
-    print '*****************************************'  
-    print '**** OUTPUT FROM DIRAC PYTHON SCRIPT ****'  
-    print '*****************************************'
-    print '                                        '  
-    print "   User@Host   :",get_username(),"@",get_hostname(),' (IP=',get_hostname_ip(),')'
-    print "   Date        :",datetime.datetime.now()
-    print "   Command     :",self.pam_command
-    print "   Input dir   :",self.input_directory
-    print "   Work dir    :",self.workdir
-    print "   Output file :",self.output_file
-    print "   DIRAC run   :",dirac_run 
+
+    print '  output from dirac python script' 
+    print 
+    print "  User        :", get_username() 
+    print "  Host        :", get_hostname() 
+    print "  IP          :", get_hostname_ip() 
+    print "  Date/time   :", datetime.datetime.now() 
+    print "  Command     :", self.pam_command 
+    print "  Input dir   :", self.input_directory 
+    print "  Work dir    :", self.workdir 
+    print "  Output file :", self.output_file 
+    print "  DIRAC run   :", ,dirac_run
+
     if (self.set_timeout_limit):
       print " Allowed runtime:",self.timeout,' seconds. Killing afterwards.'
     print
