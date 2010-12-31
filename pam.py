@@ -60,8 +60,8 @@ class pam_enviroment:
      ### contains installation directory ...
     self.dirac_home=install_dir
 
-    # basis set directory - set in the flags readings step 
-    self.basdir=install_dir_default+"/basis:"+install_dir_default+"/basis_dalton"
+    # basis set directory - initial value can be reset later in the flags-reading step 
+    self.basdir=".:"+install_dir_default+"/basis:"+install_dir_default+"/basis_dalton"
 
     # ... variables related to the work directory
     self.workdir=''
@@ -258,10 +258,15 @@ class pam_enviroment:
       sys.stdout.flush()
 
   def process_pam_arguments(self):
+  ##################################################################
+  #
+  #   The longest routine for processing plenty of pam arguments.
+  #
+  ##################################################################
     #print 'processing pam arguments....'
     global install_dir
     from optparse import OptionParser
-    usage="Usage: %prog [Options] --mol=*[.mol] --inp=*[.inp]"
+    usage="Usage: %prog [Options] --mol=*[.mol/.xyz] --inp=*[.inp]"
     parser = OptionParser(usage)
 
   # ... get in the print level 
@@ -388,7 +393,7 @@ This allows you to omit the molecule and input files. '
 
     # .. copy files into the work dir
     this_label="copy files into the working directory"
-    parser.add_option("--put",type="string", nargs=1,
+    parser.add_option("--put","--copy",type="string", nargs=1,
                   action="store",dest="dest_put",
                   help=this_label,metavar="\"file1 file2...\"")
 
@@ -399,7 +404,7 @@ This allows you to omit the molecule and input files. '
                   help=this_label)
 
     this_label="Save DFCOEF to job directory from work area (for restart)"
-    parser.add_option("--outcmo",
+    parser.add_option("--outcmo","--utcmo",
                   action="store_true",dest="dest_outcmo",
                   help=this_label)
 
@@ -488,29 +493,29 @@ This allows you to omit the molecule and input files. '
     # now assign individual arguments
     if (options.dest_run is not None) :
       self.output_suffix=options.dest_run
-      if self.iprint > 7:
-        print 'assigned suffix=',self.output_suffix
+      if self.iprint >= 5:
+        print 'assigned outpu file suffix=',self.output_suffix
 
     if (options.dest_mw is not None) :
      self.mem=int(options.dest_mw)
-     if self.iprint > 7:
+     if self.iprint >= 5:
       print 'assigned mw=',self.mem
 
     if (options.dest_nw is not None) :
      self.memslave=int(options.dest_nw)
-     if self.iprint > 7:
+     if self.iprint >= 5:
       print 'assigned mw=',self.memslave
 
     if (options.dest_aw is not None) :
      self.maxmem=int(options.dest_aw)
-     if self.iprint > 7:
+     if self.iprint >= 5:
       print 'assigned maxmem=',self.maxmem
 
     if (options.dest_mpi is not None) :
      self.mpi=int(options.dest_mpi)
      # todo: check number of mpi's wrt to computer architecture
      self.parallel=True
-     if self.iprint > 7:
+     if self.iprint >= 5:
       print 'parallel TRUE !',options.dest_mpi
       print 'assigned mpi=',self.mpi
 
@@ -551,40 +556,40 @@ This allows you to omit the molecule and input files. '
 
     if (options.dest_basdir is not None) :
       self.basdir=str(options.dest_basdir)
-      if self.iprint > 7:
+      if self.iprint >= 5:
         print 'assigned basdir=',self.basdir
     else:
-      if self.iprint > 7:
+      if self.iprint >= 5:
         print 'used default basdir=',self.basdir
 
     if (options.dest_dirac is not None) :
       self.dirac_exe=str(options.dest_dirac)
-      if self.iprint > 7:
+      if self.iprint >= 5:
         print 'assigned dirac_exe=',self.dirac_exe
     else:
-      if self.iprint > 7:
+      if self.iprint >= 5:
         print 'used default dirac_exe=',self.dirac_exe
 
     if (options.dest_no_exe_copy is not None):
       self.no_diracexe_copy=options.dest_no_exe_copy
-      if self.iprint > 7:
+      if self.iprint >= 5:
         print 'assigned self.no_diracexe_copy=',self.no_diracexe_copy
     else:
-      if self.iprint > 7:
+      if self.iprint >= 5:
         print 'used default self.no_diracexe_copy=',self.no_diracexe_copy
 
     if (options.dest_timeout is not None) :
       self.timeout=int(options.dest_timeout)
       self.set_timeout_limit=True
-      if self.iprint > 7:
+      if self.iprint >= 5:
         print 'assigned timeout=',self.timeout
     else:
-      if self.iprint > 7:
+      if self.iprint >= 5:
         print 'no timeout assigned !'
 
     if (options.dest_nobackup is not None):
       self.nobackup=options.dest_nobackup      
-      if self.iprint > 7:
+      if self.iprint >= 5:
         print 'assigned nobackup=',self.nobackup
 
     if (options.dest_noarch is not None):
@@ -645,7 +650,7 @@ This allows you to omit the molecule and input files. '
 
     if (options.dest_debugger is not None) :
       self.debugger=options.dest_debugger
-      if self.iprint > 7:
+      if self.iprint >= 5:
         print 'assigned debugger,',self.debugger
 
     if (options.dest_vg is not None) :
@@ -901,6 +906,7 @@ This allows you to omit the molecule and input files. '
   # export important variables for DIRAC
   # TODO: implement for WINDOWS
     """ basis set directory """
+    self.basdir=self.input_directory+":"+self.basdir
     os.putenv("BASDIR",self.basdir)
     dirwrk  =  str( self.mem     *1000000 )
     if (self.parallel) :
@@ -921,9 +927,11 @@ This allows you to omit the molecule and input files. '
 
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def set_dirac_cmd(self):
+  #############################################################################################
   #
-  # set the dirac command to be launched by the system (serial or parallel)
+  #     set the dirac command to be launched by the system (serial or parallel)
   #
+  #############################################################################################
     if (self.no_diracexe_copy):
       this_dirac_exe=self.dirac_exe
     else:
@@ -1080,6 +1088,7 @@ This allows you to omit the molecule and input files. '
       print 'executing parallel dirac with command:',self.dirac_cmd
     else :
       print 'executing serial dirac with command:',self.dirac_cmd
+    print 'with the BASDIR variable:',self.basdir
 
     try:
       if (not self.debug and not self.vg_debug):
@@ -1237,7 +1246,6 @@ class pam_run(pam_enviroment):
     # VERY IMPORTANT: append external dirac modules to the path dir
     #################################################################
     append_dirac_py_modules(install_dir)
-
 
   def perform(self):
     self.pam_variables.read_makefile_config()
