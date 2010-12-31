@@ -678,7 +678,7 @@ This allows you to omit the molecule and input files. '
 
     # reconstruct the whole pam command
     for arg in sys.argv: 
-      self.pam_command=self.pam_command+' '+arg    
+       self.pam_command += arg + ' '
 
 #   input and molecule are required
 #   check that they are there, if not exit
@@ -1230,16 +1230,20 @@ This allows you to omit the molecule and input files. '
   def print_header(self):
     from common import get_username,get_hostname,get_hostname_ip
     self.master=get_hostname()
-    print '*****************************************'  
-    print '**** OUTPUT FROM DIRAC PYTHON SCRIPT ****'  
-    print '*****************************************'
-    print '                                        '  
-    print "   User@Host   :",get_username(),"@",get_hostname(),' IP=',get_hostname_ip()
-    print "   Date        :",datetime.datetime.now()
-    print "   Command     :",self.pam_command
-    print "   Input dir   :",self.input_directory
-    print "   Work dir    :",self.workdir
-    print "   Output file :",self.output_file
+
+    print
+    print '  output from dirac python script'
+    print '  ==============================='
+    print
+    print "  User        :", get_username()
+    print "  Host        :", get_hostname()
+    print "  IP          :", get_hostname_ip()
+    print "  Date        :", datetime.datetime.now()
+    print "  Command     :", self.pam_command
+    print "  Input dir   :", self.input_directory
+    print "  Work dir    :", self.workdir
+    print "  Output file :", self.output_file
+
     if (self.set_timeout_limit):
       print "   === Killing dirac.x executable run after ",self.timeout,' seconds'
     print
