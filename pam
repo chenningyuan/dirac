@@ -297,14 +297,14 @@ This allows you to omit the molecule and input files. '
 
   # ... get in the "mw"
     default_mem_label=str(self.mem)+' ('+str(self.mem)+'*8='+str(self.mem*8)+' MB)'
-    this_label='memory (in megawords) for the master, default:'+default_mem_label
+    this_label='Set memory (in megawords) for the master (and slaves if "--nw=mem" not specified), default:'+default_mem_label
     parser.add_option("--mw", type="int", nargs=1,  
                   action="store", dest="dest_mw", 
                   help=this_label, metavar="INT_NUM")
 
     # ... get in the "nw" ...
     default_slavemem_label=str(self.slavemem)+' ('+str(self.slavemem)+'*8='+str(self.slavemem*8)+' MB)'
-    this_label='memory (in megawords) for nodes, default:'+default_slavemem_label
+    this_label='Set memory (in megawords) for nodes, default:'+default_slavemem_label
     parser.add_option("--nw", type="int", nargs=1,  
                   action="store", dest="dest_nw", 
                   help=this_label, metavar="INT_NUM")
