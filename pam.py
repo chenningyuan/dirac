@@ -589,22 +589,22 @@ This allows you to omit the molecule and input files. '
 
     if (options.dest_noarch is not None):
       self.no_archive=options.dest_noarch
-      if self.iprint > 7:
+      if self.iprint >= 5:
         print 'assigned no_archive=',self.no_archive
 
     if (options.dest_put is not None):
       self.put_files=options.dest_put
-      if self.iprint > 7:
+      if self.iprint >= 5:
         print 'assigned put_files ?',(self.put_files is not None),'...',self.put_files
 
     if (options.dest_get is not None):
       self.get_files=options.dest_get
-      if self.iprint > 7:
+      if self.iprint >= 5:
         print 'assigned get_files ?',(self.get_files is not None),'...',self.get_files
 
     if (options.dest_incmo is not None):
       self.incmo=options.dest_incmo
-      if self.iprint > 7:
+      if self.iprint >= 5:
         print 'assigned self.incmo:',self.incmo
 
     if (options.dest_outcmo is not None):
@@ -717,6 +717,8 @@ This allows you to omit the molecule and input files. '
       self.input_file_dirac=self.input_dirac
     else:
       print 'Proper dirac input file does not exist !' 
+      print 'self.input_dirac=',self.input_dirac
+      print 'self.input_file_dirac=',self.input_file_dirac
       sys.exit(-1)  
 
     if (self.iprint >=5):
@@ -785,6 +787,7 @@ This allows you to omit the molecule and input files. '
         self.copy_file(full_file_name,file_name_wrkdir)
       else :
         print 'File:',file_name,' you want to copy does not exist !'
+        sys.exit(-1)
 
     self.create_workdir()
     #print 'set_wrkdir: install_dir=',install_dir
@@ -805,7 +808,11 @@ This allows you to omit the molecule and input files. '
       os.system(unpack_command)
 
     if (self.put_files is not None):
-      for file_name in self.put_files:
+      files_to_put=self.put_files.split()
+      if self.iprint >= 4:
+        print 'self.put_files=',self.put_files
+        print '  files_to_put=',files_to_put
+      for file_name in files_to_put:
         copy_single_file(file_name)
 
     # copies DFCOEF into workdir
@@ -1062,7 +1069,7 @@ This allows you to omit the molecule and input files. '
 
     if (self.nobackup is False):
       from common import backup_file
-      backup_file(some_file=self.input_directory+"/"+self.output_file,upto=None)
+      backup_file(some_file=self.input_directory+"/"+self.output_file,upto=None,iprint=None)
 
     if (self.set_timeout_limit) :
       #print 'signal stuff initiated, self.timeout=',self.timeout
@@ -1126,9 +1133,11 @@ This allows you to omit the molecule and input files. '
         print 'copying ',file_name,' from workdir to the homedir.'
         # backup file if it's there
         if (self.nobackup is False):
-          backup_file(some_file=file_name_home,upto=None)
+          backup_file(some_file=file_name_home,upto=None,iprint=None)
         # finally copy
         self.copy_file(full_file_name,file_name_home)
+      else:
+        print file_name,' not found in the working directory.' 
 
     if (not self.no_archive):
       # set name of the archive file; TODO: Windows packing adaptation
@@ -1147,7 +1156,7 @@ This allows you to omit the molecule and input files. '
 
       # backup 
       if (self.nobackup is False):
-         backup_file(some_file=archive_full_name,upto=None)
+         backup_file(some_file=archive_full_name,upto=None,iprint=None)
       #archive_command='tar c '+self.archive_files+' | gzip > '+archive_full_name
       archive_command='tar c '+existing_archive_files+' | gzip > '+archive_full_name
       # own packing (Linux)
@@ -1156,9 +1165,9 @@ This allows you to omit the molecule and input files. '
     # take care of the rest - get files from workdir to home dir
     if (self.get_files is not None):
       files_to_get = self.get_files.split()
-      if self.iprint >= 5:
-        print 'getting files: ',self.get_files
-        print 'files_to_get:  ',files_to_get
+      if self.iprint >= 4:
+        print 'self.get_files=',self.get_files
+        print '  files_to_get=',files_to_get
       for file_name in files_to_get:
         save_single_file(file_name)
 
@@ -1173,6 +1182,9 @@ This allows you to omit the molecule and input files. '
       save_single_file(file_name)
 
   def remove_work_dir(self):
+  #
+  # Remove working directory
+  #
     #print 'removing master work-dir'
     self.remove_workdir()
     # take care of individual nodes if parallel run

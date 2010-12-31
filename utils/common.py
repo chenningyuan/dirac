@@ -125,7 +125,7 @@ class extract_path_file:
            #print  temp_path 
            self.short_file_path=temp_path[0:max_len]+'...'+temp_path[len_tp-max_len:len_tp]
  
-def backup_file(some_file,upto):
+def backup_file(some_file,upto,iprint):
     """
     Important routine doing backup of the file "some_file", version up to
     number "upto"
@@ -142,10 +142,14 @@ def backup_file(some_file,upto):
         result_p1.get_path_file(backup_file_name_p1)
         if (result.extracted is True and result_p1.extracted is True  and \
             result.pure_file_path == result_p1.pure_file_path ) :
-            print 'backing up file:', result.pure_file_name,'-->',result_p1.pure_file_name,\
+            if (iprint >=3):
+                print 'backing up file:', result.pure_file_name,'-->',result_p1.pure_file_name,\
             'in:',result.short_file_path
-        else:
-            print 'backing up file:',backup_file_name,'-->',backup_file_name_p1
+            pass
+        else :
+            if (iprint >=3):
+                print 'backing up file:',backup_file_name,'-->',backup_file_name_p1
+            pass
 
 #   backup-s file by copying it up to 'upto' version
     upto_default = 7
@@ -158,6 +162,7 @@ def backup_file(some_file,upto):
             do_copy_print(backup_file_name,backup_file_name_p1)
     if (os.path.isfile(some_file)):
         do_copy_print(some_file,backup_file_name)
+    print 'backed up file ',some_file
 
 def make_old_file(path):
     """
