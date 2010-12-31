@@ -1110,7 +1110,7 @@ This allows you to omit the molecule and input files. '
       print "Dirac run failed. Going to kill (SIGTERM) its executable process of pid=",p.pid
       #TODO: clean of all dirac.x pid's
       os.kill(p.pid, signal.SIGTERM)
-      print 'Good - dirac.x was purposely killed  ;)'
+      print 'Alas ! dirac.x was purposely killed ;)'
 
     # do the profiling after the execution
     if self.profile: self.profile_dirac()
