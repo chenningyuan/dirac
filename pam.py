@@ -754,7 +754,8 @@ This allows you to omit the molecule and input files. '
       if (mol_file_stripped == inp_file_stripped):
         self.output_name=mol_file_stripped
       else:
-        self.output_name=mol_file_stripped+"_"+inp_file_stripped
+        # set proper output file structure
+        self.output_name=inp_file_stripped+"_"+mol_file_stripped
 
     elif (self.full_restart):
       # todo: verify *.tgz ?
