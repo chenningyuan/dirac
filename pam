@@ -8,7 +8,7 @@
 # Written by Miro ILIAS, Matej Bel University, 
 #        Banska Bystrica, Slovakia, end of 2010
 #
-# Contributors:
+# Contributors:  Rado BAST,
 #
 ##########################################################################
 import os
@@ -705,11 +705,12 @@ This allows you to omit the molecule and input files. '
   #############################################################################################
   #
   # assign "self.input_file_molecule" and "self.input_file_dirac"
-  # according to filled "self.input_molecule" and "self.input_dirac"
+  # with proper input file names according to filled variables (class members)
+  # "self.input_molecule" and "self.input_dirac"
   #
   #############################################################################################
     if (self.iprint >=5):
-      print 'assign_mol_inp_files:'
+      print '=== assign_mol_inp_files: ==='
       print 'self.input_molecule=',self.input_molecule
       print 'self.input_dirac=',self.input_dirac
 
@@ -742,7 +743,7 @@ This allows you to omit the molecule and input files. '
   #############################################################################################
   #
   # set the output name string to be used later 
-  # for naming the output file and also the work directory
+  # for naming the output file and the work directory
   #
   #############################################################################################
     if (self.iprint >=5 ):
@@ -1250,7 +1251,7 @@ This allows you to omit the molecule and input files. '
     print "  Input dir   :", self.input_directory 
     print "  Work dir    :", self.workdir 
     print "  Output file :", self.output_file 
-    print "  DIRAC run   :", ,dirac_run
+    print "  DIRAC run   :", dirac_run
 
     if (self.set_timeout_limit):
       print " Allowed runtime:",self.timeout,' seconds. Killing afterwards.'
