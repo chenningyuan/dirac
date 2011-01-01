@@ -947,9 +947,9 @@ This allows you to omit the molecule and input files. '
   #
   #############################################################################################
     if (self.no_diracexe_copy):
-      this_dirac_exe=self.dirac_exe
-    else:
       this_dirac_exe=' dirac.x'
+    else:
+      this_dirac_exe=self.dirac_exe
 
     if (self.parallel):
       # DIRAC_CMD="$DIRAC_CMD -np $MPI_NPROC -wd $WRK"
