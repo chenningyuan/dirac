@@ -158,8 +158,8 @@ class pam_enviroment:
     self.set_timeout_limit=False
     self.timeout=''
 
-    #exact prescription (all flags) for the pam(.py) command
-    self.pam_command=''
+    self.pam_command = ''
+    self.pam_args    = ''
 
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def set_workdir_name(self,root_name):
@@ -191,24 +191,26 @@ class pam_enviroment:
       print 'self.workdir=',self.workdir
 
   def create_workdir(self):
-  # creates the working directory
-    if not os.path.isdir(self.workdir):
-      print 'creating the work directory '
-      os.mkdir(self.workdir)
-    else:
-      print 'The work directory ',self.workdir,' exists.'
+     """
+     creates the scratch directory
+     """
+     if not os.path.isdir(self.workdir):
+        os.mkdir(self.workdir)
+     else:
+        print 'The work directory ',self.workdir,' exists.'
 
-  def copy_file(self,src,dest):
-  # ... copies file from the current dir "scr" to "dest"
-    print 'copying file...',src,' to ',dest
-    shutil.copy(src, dest)
+  def copy_file(self, src, dest):
+     """
+     copy file from directory "scr" to "dest"
+     """
+     shutil.copy(src, dest)
 
   def list_workdir(self):
   # ... lists the content of the master work-directory
   # more here http://www.daniweb.com/code/snippet216798.html
     print 
-    print 'Content of the work directory',os.getcwd(),':'
-    print '-------------------------------------------------------------------------------' 
+    print '  content of the work directory',os.getcwd(),':'
+    print '  ------------------------------------------------------------------------------' 
     #print 'file............size'
     for filename in os.listdir(self.workdir):
       filesize_kB=float(os.path.getsize(self.workdir+"/"+filename))/1024
@@ -251,7 +253,7 @@ class pam_enviroment:
     #print 'removes the work_direcory'
     self.list_workdir()
     if (not self.keepwrk):
-      print 'deleting the entire master work directory'
+      print 'deleting the scratch directory'
       sys.stdout.flush()
       shutil.rmtree(self.workdir)      
     else:
@@ -679,8 +681,10 @@ This allows you to omit the molecule and input files. '
     self.input_directory=os.getcwd()
 
     # reconstruct the whole pam command #
-    for arg in sys.argv: 
-      self.pam_command=self.pam_command+' '+arg    
+    self.pam_command = sys.argv[0]
+    if len(sys.argv) > 1:
+       for i in range(1, len(sys.argv)):
+           self.pam_args += sys.argv[i] + ' '
 
 #   input and molecule are required
 #   check that they are there, if not exit
@@ -1087,7 +1091,6 @@ This allows you to omit the molecule and input files. '
       #raise IOError("Take too long !")
       raise Error("Takes too long !")
 
-    print 'changing directory from Input dir to Work dir'
     # go to the working directory
     os.chdir(self.workdir)
 
@@ -1100,11 +1103,13 @@ This allows you to omit the molecule and input files. '
       signal.signal(signal.SIGALRM, signal_handler)
       signal.alarm(self.timeout)  # 
 
-    if (self.parallel) :
-      print 'executing parallel dirac with command:',self.dirac_cmd
-    else :
-      print 'executing serial dirac with command:',self.dirac_cmd
-    print 'with the BASDIR variable:',self.basdir
+    basis_set_directory_list = self.basdir.split(':')
+    print '  DIRAC command  : %s' % self.dirac_cmd
+    print '  basis set dirs : %s' % basis_set_directory_list[0]
+    if len(basis_set_directory_list) > 1:
+        for i in range(1, len(basis_set_directory_list)):
+            if basis_set_directory_list[i] != '.':
+                print '                   %s' % basis_set_directory_list[i]
 
     try:
       if (not self.debug and not self.vg_debug):
@@ -1113,7 +1118,7 @@ This allows you to omit the molecule and input files. '
         f=open(self.output_file_full,'w',0)
         #p=subprocess.Popen(self.dirac_cmd, shell=False, stdin=subprocess.PIPE, stdout=f)
         p=subprocess.Popen(self.dirac_cmd,shell=True,stdin=subprocess.PIPE,stdout=f)
-        print 'dirac.x assigned PID=',p.pid
+        print '  pid            : %s ' % p.pid
         p.wait()
         f.close()
       else:
@@ -1210,7 +1215,6 @@ This allows you to omit the molecule and input files. '
   #
   # Remove working directory
   #
-    #print 'removing master work-dir'
     self.remove_workdir()
     # take care of individual nodes if parallel run
     if self.nodes:
@@ -1237,25 +1241,26 @@ This allows you to omit the molecule and input files. '
     from common import get_username,get_hostname,get_hostname_ip
     self.master=get_hostname()
     if (self.parallel):
-      dirac_run="Parallel"
+      dirac_run = "parallel"
     else:
-      dirac_run="Serial"
+      dirac_run = "serial"
 
     print '  output from dirac python script' 
     print 
-    print "  User        :", get_username() 
-    print "  Host        :", get_hostname() 
-    print "  IP          :", get_hostname_ip() 
-    print "  Date/time   :", datetime.datetime.now() 
-    print "  Command     :", self.pam_command 
-    print "  Input dir   :", self.input_directory 
-    print "  Work dir    :", self.workdir 
-    print "  Output file :", self.output_file 
-    print "  DIRAC run   :", dirac_run
+    print "  user           :", get_username() 
+    print "  host           :", get_hostname() 
+    print "  ip             :", get_hostname_ip() 
+    print "  date and time  :", datetime.datetime.now() 
+    print "  pam command    :", self.pam_command 
+    print "  pam args       :", self.pam_args
+    print "  input dir      :", self.input_directory 
+    print "  scratch dir    :", self.workdir 
+    print "  output file    :", self.output_file 
+    print "  DIRAC run      :", dirac_run
 
     if (self.set_timeout_limit):
       print " Allowed runtime:",self.timeout,' seconds. Killing afterwards.'
-    print
+
     ### take care of the slave memory for parallel runs ###
     if (self.parallel and self.slavemem_set is False) :
       #print 'self.slavemem_set=',self.slavemem_set
