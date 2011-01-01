@@ -208,12 +208,14 @@ class pam_enviroment:
   def list_workdir(self):
   # ... lists the content of the master work-directory
   # more here http://www.daniweb.com/code/snippet216798.html
+
     print 
-    print '  content of the work directory',os.getcwd(),':'
+    print '  content of the scratch directory', os.getcwd()
     print '  ------------------------------------------------------------------------------' 
-    #print 'file............size'
+    print '%25s %10s %s' % ('name', 'size (MB)', 'last accessed')
+    print '  ------------------------------------------------------------------------------' 
     for filename in os.listdir(self.workdir):
-      filesize_kB=float(os.path.getsize(self.workdir+"/"+filename))/1024
+      filesize_mb=float(os.path.getsize(self.workdir+"/"+filename))/1024000
       # create a dictionary to hold file info
       file_name = filename; file_stats = os.stat(file_name)
       file_info = {
@@ -223,8 +225,9 @@ class pam_enviroment:
              'f_la': time.strftime("%m/%d/%Y %I:%M:%S %p",time.localtime(file_stats[stat.ST_ATIME])),
              'f_ct': time.strftime("%m/%d/%Y %I:%M:%S %p",time.localtime(file_stats[stat.ST_CTIME]))
       } 
-      print "%20s"%filename,".....%10.4f"%filesize_kB,' kB'," last accessed = %(f_la)s" % file_info
+      print "%25s %10.3f %s" % (filename, filesize_mb, file_info['f_la'])
       sys.stdout.flush()
+
       if (self.iprint >= 8) :
         print
         print "file name = %(fname)s" % file_info
@@ -248,16 +251,17 @@ class pam_enviroment:
            st_size (file size, bytes), st_atime (last access time, seconds since epoch),
            st_mtime (last modification time), st_ctime (time of creation, Windows)"""
         sys.stdout.flush()
+    print '  ------------------------------------------------------------------------------' 
 
   def remove_workdir(self):
     #print 'removes the work_direcory'
     self.list_workdir()
     if (not self.keepwrk):
-      print 'deleting the scratch directory'
+      print '  deleting the scratch directory'
       sys.stdout.flush()
       shutil.rmtree(self.workdir)      
     else:
-      print 'keeping the work directory'
+      print '  keeping the work directory'
       sys.stdout.flush()
 
   def process_pam_arguments(self):
