@@ -855,10 +855,9 @@ This allows you to omit the molecule and input files. '
   #  The list of machines available to dirac.x
   # 
   ######################################################################a
-    if (self.iprint>=0):
+    if (self.iprint>=5):
       print 'distribute_work_dir'
-      print 'machine file=',self.machinefile
-
+      print 'assigned machine file=',self.machinefile
 
     # check if this is an enviromental variable with "$" - than get its content
     if (self.machinefile[0]=="$"):
@@ -868,7 +867,7 @@ This allows you to omit the molecule and input files. '
       try:
         machinefile_content=os.environ[machinefile_temp]
       except:
-        print 'The ',self.machinefile,' enviroment variable not active (no batch system).'
+        print 'The ',self.machinefile,' enviroment variable for machinefile not active (no batch system).'
       if (self.iprint>=4):
         print 'machinefile enviromental variable points to',machinefile_content
     else:  # true file, no pointing variable
@@ -904,7 +903,7 @@ This allows you to omit the molecule and input files. '
           if (self.iprint>=4): # control list of directory
             os.system(self.rsh+' '+node+' "ls -l '+self.workdir+' "')
     else:
-      print 'All CPUs are on the master, no distribution of workdir over different nodes'
+      print 'All CPUs are on the master, no distribution of workdir over different nodes.'
 
   def set_output_file(self):
   ##################################################################################
@@ -962,7 +961,7 @@ This allows you to omit the molecule and input files. '
     if (self.parallel):
       # DIRAC_CMD="$DIRAC_CMD -np $MPI_NPROC -wd $WRK"
       # and/if  $DIRAC_CMD -machinefile $MACH_FILE $DIRAC_CMD
-      self.dirac_cmd=self.mpirun+" -np "+str(self.mpi)+" -wd "+self.workdir
+      self.dirac_cmd=self.mpirun+" -np "+str(self.mpi)+" -wd "+self.workdir+" "
       self.dirac_cmd=self.dirac_cmd+this_dirac_exe
       if (self.vg_debug): # valgrind stuff, DIRAC_CMD="$DIRAC_CMD $VALGRIND_TOOL --log-fd=1"
         self.dirac_cmd=self.dirac_cmd+' '+self.valgrind+' --log-fd=1'
@@ -1249,7 +1248,8 @@ This allows you to omit the molecule and input files. '
     else:
       dirac_run = "serial"
 
-    print '  output from dirac python script' 
+    print 
+    print '  output from the dirac python script' 
     print 
     print "  user           :", get_username() 
     print "  host           :", get_hostname() 
@@ -1264,13 +1264,16 @@ This allows you to omit the molecule and input files. '
 
     if (self.set_timeout_limit):
       print " Allowed runtime:",self.timeout,' seconds. Killing afterwards.'
+    print
+    print
 
     ### take care of the slave memory for parallel runs ###
     if (self.parallel and self.slavemem_set is False) :
       #print 'self.slavemem_set=',self.slavemem_set
       self.slavemem=self.mem
-      print 'Slave memory set to ',self.slavemem
+      print 'Slave memory set to ',self.slavemem, ' megawords.'
       pass
+
     sys.stdout.flush()
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
