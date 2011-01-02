@@ -3647,7 +3647,7 @@ C         trial vectors of this kind is generated
           ENDIF
           IF (IPRXRS.GE.3) WRITE(LUPRI,'(1X,A,1P,D12.5)')
      &         'Norm of gradient ratio in XRSST2:',GPTMP/GPTNRM
-          DO IP = 1,NFREQ
+          DO IP = 1,NFREQ*NDAMP,NDAMP
             IM = IP + NFREQ*NDAMP
             DO IDAMP = 0,NDAMP-1
               IBTYP(1,IBOFF+IP+IDAMP)     = NBTYP
@@ -3692,7 +3692,6 @@ C svillaume: is IM really defined if the frequency is 0.0 ?
               IVEC(IM) = 0
             ELSE
               CALL GENPREC(PREC,HDIAG,SDIAG,FREQ,NVAR)
-Csebastien: introduce the diagonal of S[2] in preconditioning 
               DO ID = 0,NDAMP-1
                 ID2 = ID+1
                 DO IZ = 1,NZ
@@ -3701,6 +3700,13 @@ Csebastien: introduce the diagonal of S[2] in preconditioning
                     BVEC(IVAR,IZ,IM+ID) = PREC(IVAR,2,ID2)*GP(IVAR,IZ)
                   ENDDO
                 ENDDO
+CPP svillaume temp print for debugging
+                WRITE(LUPRI,'(3(A,I2,2X))') 'IP=',IP,'ID=',ID,'T=',IP+ID
+                WRITE(LUPRI,*) 'BVEC='
+                WRITE(LUPRI,'(F16.12)') (BVEC(IVAR,1,IP+ID),IVAR=1,10)
+                WRITE(LUPRI,'(3(A,I2,2X))') 'IM=',IM,'ID=',ID,'T=',IM+ID
+                WRITE(LUPRI,*) 'BVEC='
+                WRITE(LUPRI,'(F16.12)') (BVEC(IVAR,1,IM+ID),IVAR=1,10)
 C             tsaue:         retain norm for numerical stability !
                 IF(.NOT.UNCOUP) THEN
                   BNRM = GPTMP/DNRM2(NBDIM,BVEC(1,1,IP+ID),1)
@@ -3881,11 +3887,14 @@ C
 C
       CALL QENTER('GENPREC')
 C
+      CALL DZERO(PREC,2*NVAR*NDAMP)
+
       SIGNFAC = D1
       IF(IMFREQ) SIGNFAC=DM1
 C.....Eq.(24)
-      IF(DAMPFRE.NE.D0) THEN
+      IF(DAMPFREQ.NE.D0) THEN
         FREQ2 = FREQ * FREQ
+        DAMP  = DAMPFREQ
         DAMP2 = DAMPFREQ * DAMPFREQ
 C  compute 4 * omega**2 * gamma**2
         FREQ2TDAMP2T4 = FREQ2 * DAMP2 * D4
@@ -3920,11 +3929,11 @@ C  compute few common expressions
           H2DIAG = HDIAG(IVAR) * HDIAG(IVAR)
           S2DIAG = SDIAG(IVAR) * SDIAG(IVAR)
 C.......denominator
-          FAC = DM1/(H2DIAG - (SIGNFAC * FREQ2 * S2DIAG))
+          FAC = DM1/(H2DIAG + (SIGNFAC * FREQ2 * S2DIAG))
 C.......factor A/P
-          PREC(IVAR,1,1) = HDIAG(IVAR)*FAC
+          PREC(IVAR,1,1) = HDIAG(IVAR) * FAC
 C.......factor B/P
-          PREC(IVAR,2,1) = FREQ * SDIAG(IVAR)*FAC
+          PREC(IVAR,2,1) = FREQ * SDIAG(IVAR) * FAC
         END DO
       ENDIF
 C
