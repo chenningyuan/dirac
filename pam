@@ -1047,7 +1047,7 @@ This allows you to omit the molecule and input files. '
             self.mpirun=mpirun_temp
             self.parallel=True
           else:
-            print 'The MPIRUN',mpirun_temp,' from Makefile.config is not existing! No parallel run set !'
+            #print 'The MPIRUN',mpirun_temp,'from Makefile.config is not existing; no parallel run.'
             self.parallel=False
             #print 'MPIRUN from Makefile.config=',mpirun_temp
             pass
@@ -1278,6 +1278,11 @@ This allows you to omit the molecule and input files. '
     print
     print
 
+    # warning message on # of proc >1 
+    if (not self.parallel and int(self.nr_proc) > 1):
+      print 'This is serial run (no MPIRUN assigned), restricting to one processor, --mpi=1'
+      print
+    
     ### take care of the slave memory for parallel runs ###
     if (self.parallel and self.slavemem_set is False) :
       #print 'self.slavemem_set=',self.slavemem_set
