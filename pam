@@ -73,12 +73,12 @@ class pam_enviroment:
     # ... variables related to parallel calculations
     self.parallel=False
     self.mpirun=''
-    self.mpi=1
+    self.nr_proc=1
     #   local disks for parallel calculations (to be set by configure)   #
     self.localdisks=False
     # machine file
     self.machinefile=''  # could be enviroment variable (like $PBS_NODEFILE)
-    # master 
+    # master node
     self.master=''
     # nodes (if any) - list 
     self.nodes=[]
@@ -135,7 +135,8 @@ class pam_enviroment:
     # output file (sitting in the input directory)
     self.output_file=''
     self.output_file_full='' # full (absolute) path 
-
+    # lu of the file
+    self.f=''
     # by default, do backup files
     self.nobackup=False
 
@@ -325,7 +326,7 @@ This allows you to omit the molecule and input files. '
     if (len(self.mpirun) > 0):
       this_label="mpi launcher, default:"+self.mpirun
     else:
-      this_label="mpi launcher, default - none, serial run"
+      this_label="mpi launcher, default - none, so serial run"
     parser.add_option("--mpirun", type="string", nargs=1,
                   action="store",dest="dest_mpirun",  
                   help=this_label,metavar="STRING")
@@ -337,9 +338,9 @@ This allows you to omit the molecule and input files. '
 
     # machinefile for parallel calculations
     if (len(self.mpirun) > 0):
-      this_label='machinefile for the parallel run, default:'+self.machinefile
+      this_label='machinefile for the parallel run; default:'+self.machinefile
     else:
-      this_label='machinefile for the parallel run, default: none, serial run'
+      this_label='machinefile for the parallel run; default: none, serial run'
     parser.add_option("--machfile",type="string", nargs=1,  
                   action="store",dest="dest_machfile", 
                   help=this_label,metavar="STRING")
@@ -351,7 +352,7 @@ This allows you to omit the molecule and input files. '
                   help=this_label, metavar="INT_NUM")
 
     # .. read in the install_dir, what is the basic global variable...
-    this_label="pam.py\'s directory, inserted module default:"+install_dir_default
+    this_label="pam.py\'s directory, inserted py-module default:"+install_dir_default
     parser.add_option("--install_dir", type="string", nargs=1,
                   action="store",dest="dest_install_dir",  
                   help=this_label,metavar="STRING")
@@ -521,11 +522,10 @@ This allows you to omit the molecule and input files. '
        print 'assigned maxmem=',self.maxmem
 
     if (options.dest_mpi is not None) :
-     self.mpi=int(options.dest_mpi)
+     self.nr_proc=int(options.dest_mpi)
      #self.parallel=True
      if self.iprint >= 5:
-      print 'parallel TRUE !',options.dest_mpi
-      print 'assigned mpi=',self.mpi
+      print 'assigned self.nr_proc=',self.nr_proc
 
     if (options.dest_mpirun is not None):
      # todo: check it
@@ -912,6 +912,7 @@ This allows you to omit the molecule and input files. '
   ##################################################################################
     if (len(self.output_name) > 0 and len(self.output_suffix) > 0 ):
       self.output_file=self.output_name+"."+self.output_suffix
+      self.output_file_full=self.input_directory+"/"+self.output_file
       if (self.iprint >= 5):
         print 'set_output_file: self.output_file=',self.output_file
     else:
@@ -961,7 +962,7 @@ This allows you to omit the molecule and input files. '
     if (self.parallel):
       # DIRAC_CMD="$DIRAC_CMD -np $MPI_NPROC -wd $WRK"
       # and/if  $DIRAC_CMD -machinefile $MACH_FILE $DIRAC_CMD
-      self.dirac_cmd=self.mpirun+" -np "+str(self.mpi)+" -wd "+self.workdir+" "
+      self.dirac_cmd=self.mpirun+" -np "+str(self.nr_proc)+" -wd "+self.workdir+" "
       self.dirac_cmd=self.dirac_cmd+this_dirac_exe
       if (self.vg_debug): # valgrind stuff, DIRAC_CMD="$DIRAC_CMD $VALGRIND_TOOL --log-fd=1"
         self.dirac_cmd=self.dirac_cmd+' '+self.valgrind+' --log-fd=1'
@@ -1078,6 +1079,15 @@ This allows you to omit the molecule and input files. '
             print 'The RSH from Makefile.config is not existing!'
             print 'RSH from Makefile.config=',rsh_temp
 
+  def write_into_output(self):
+  # writes some stuff into the output file at the beginning
+    self.f.write("DIRAC pam run in "+self.input_directory+"\n")
+    # old pam:       size $BIN_DIR/$DIRAC 2> /dev/null | grep $BIN_DIR/$DIRAC 2> /dev/null \
+    #  | awk '{printf $3/(1024*1024)} ' 2> /dev/null >> $OUTPUT_FILE; echo ' MB' >> $OUTPUT_FILE \
+    #  || echo 'can not be determined' >> $OUTPUT_FILE
+
+    self.f.write("size of the static executable : (write me) \n")
+
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def execute_dirac(self):
   #############################################################################################
@@ -1113,22 +1123,21 @@ This allows you to omit the molecule and input files. '
         for i in range(1, len(basis_set_directory_list)):
             if basis_set_directory_list[i] != '.':
                 print '                   %s' % basis_set_directory_list[i]
-
     try:
       if (not self.debug and not self.vg_debug):
         #print 'executing dirac ...',self.dirac_cmd
-        self.output_file_full=self.input_directory+"/"+self.output_file
-        f=open(self.output_file_full,'w',0)
-        #p=subprocess.Popen(self.dirac_cmd, shell=False, stdin=subprocess.PIPE, stdout=f)
-        p=subprocess.Popen(self.dirac_cmd,shell=True,stdin=subprocess.PIPE,stdout=f)
+        self.f=open(self.output_file_full,'w',0)
+        # write something into the output file by pam 
+        self.write_into_output()
+        # process the pam
+        p=subprocess.Popen(self.dirac_cmd,shell=True,stdin=subprocess.PIPE,stdout=self.f)
         print '  pid            : %s ' % p.pid
         p.wait()
-        f.close()
+        self.f.close()
       else:
         print 'debugging dirac...',self.dirac_cmd
         os.system(self.dirac_cmd) # this works...
         #p=subprocess.Popen(self.dirac_cmd, shell=True, stdin=subprocess.PIPE, stdout=f)
-
       signal.alarm(0)    
     except:
       print "Dirac run failed. Going to kill (SIGTERM) its executable process of pid=",p.pid
@@ -1141,14 +1150,16 @@ This allows you to omit the molecule and input files. '
 
   def profile_dirac(self):
   # profile after the DIRAC execution- we are in the working directory
-    if (os.path.isfile(f)):  
+    if (os.path.isfile(self.f)):  
       print 'profiling...'
       self.profile_command=self.profiler+' '+self.dirac_exe+' '+self.profiling_file 
-      f=open(self.output_file_full,'a',0) # open file for appending
-      p=subprocess.Popen(self.profile_command,shell=True,stdin=subprocess.PIPE,stdout=f)
-      f.close()
+      self.f=open(self.output_file_full,'a',0) # open file for appending
+      p=subprocess.Popen(self.profile_command,shell=True,stdin=subprocess.PIPE,stdout=self.f)
+      self.f.close()
     else:
+      print
       print 'no gmon.out found, so no profiling..'
+      print
  
   def save_files(self):
   #------------------------------------------------------------
