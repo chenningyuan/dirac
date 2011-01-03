@@ -3647,7 +3647,9 @@ C         trial vectors of this kind is generated
           ENDIF
           IF (IPRXRS.GE.3) WRITE(LUPRI,'(1X,A,1P,D12.5)')
      &         'Norm of gradient ratio in XRSST2:',GPTMP/GPTNRM
+          IFREQ = 0
           DO IP = 1,NFREQ*NDAMP,NDAMP
+            IFREQ = IFREQ + 1
             IM = IP + NFREQ*NDAMP
             DO IDAMP = 0,NDAMP-1
               IBTYP(1,IBOFF+IP+IDAMP)     = NBTYP
@@ -3669,7 +3671,7 @@ C           corresponding trial vector now. If not then create a trial vector
 C           from the gradient vector and the diagonal of the Hessian.
 C 
             call memchk('XRSST2 skj38 ',WORK,1)
-            FREQ = EVALR(IP)
+            FREQ = EVALR(IFREQ)
             call memchk('XRSST2 sduu84 ',WORK,1)
             IF(FREQ.EQ.D0) THEN
               DO IZ = 1,NZ
@@ -3700,13 +3702,6 @@ C svillaume: is IM really defined if the frequency is 0.0 ?
                     BVEC(IVAR,IZ,IM+ID) = PREC(IVAR,2,ID2)*GP(IVAR,IZ)
                   ENDDO
                 ENDDO
-CPP svillaume temp print for debugging
-                WRITE(LUPRI,'(3(A,I2,2X))') 'IP=',IP,'ID=',ID,'T=',IP+ID
-                WRITE(LUPRI,*) 'BVEC='
-                WRITE(LUPRI,'(F16.12)') (BVEC(IVAR,1,IP+ID),IVAR=1,10)
-                WRITE(LUPRI,'(3(A,I2,2X))') 'IM=',IM,'ID=',ID,'T=',IM+ID
-                WRITE(LUPRI,*) 'BVEC='
-                WRITE(LUPRI,'(F16.12)') (BVEC(IVAR,1,IM+ID),IVAR=1,10)
 C             tsaue:         retain norm for numerical stability !
                 IF(.NOT.UNCOUP) THEN
                   BNRM = GPTMP/DNRM2(NBDIM,BVEC(1,1,IP+ID),1)
@@ -3832,13 +3827,20 @@ C
 C     Orthogonalize new b-vectors against all previous b-vectors
 C     and among themselves, and, if requested, renormalize.
 C
-
       call memchk('XRSST2  7',WORK,1)
 
       IF(.NOT.UNCOUP) THEN
         CALL XRSORT(BVEC,NBTYP,NBVEC,NBPREV,
      &            IBVEC,IBTYP,IVEC,WORK,KFREE,LFREE)
       ENDIF
+C      CPP svillaume temp print for debugging
+      DO IVECTOR = 1,8
+        WRITE(LUPRI,'(A,I2)') 'Vector',IVECTOR
+        WRITE(LUPRI,'(F16.12)') (BVEC(IVAR,1,IVECTOR),IVAR=1,10)
+      ENDDO
+
+      CALL FLSHFO(LUPRI)
+      CALL QUIT('debug')
 C
 C     
 C     Save new vectors on file and update IBCVEC and IBTYP
