@@ -173,6 +173,13 @@ ifeq ($(SAFE_FLAGS_MODE),NO) # check only if no safe-flags compilation
 ### TODO: these individual files have to be supplied with make-if-directives to specify on which 
 ### compilers/architectures there is a need of the lower/no level of optimization
 
+ifeq (-DVAR_GFORTRAN, $(findstring -DVAR_GFORTRAN, $(FPP_FLAGS) ))
+#miro: found for ompi-gfortran 4.4.5 (ILP64), test: mp2_properties
+relccsd/ccrpa.o :  relccsd/ccrpa.F
+	@echo " relccsd/ccrpa.F compilation with 2nd level (of 3) optimization for gfortran"
+	$(F77) $(F77FLAGS_OPT_2) $(F77FLAGS_SAFE) -c -o $*.o $<
+endif
+
 pdpack/dlamch.o: pdpack/dlamch.F
 	@echo " pdpack/dlamch.F compilation with 1st level (of 3) optimization"
 	$(F77) $(F77FLAGS_OPT_1) $(F77FLAGS_SAFE) -c -o $*.o $<
