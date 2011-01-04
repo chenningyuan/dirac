@@ -277,6 +277,7 @@ class pam_enviroment:
         print "   *** NORMAL EXIT" 
      else:
         print "   *** ABNORMAL EXIT" 
+     sys.stdout.flush()
      # notifyuser ?
 
   def process_pam_arguments(self):
@@ -1123,8 +1124,8 @@ This allows you to omit the molecule and input files. '
   #############################################################################################
     def signal_handler(signum, frame):
     # ... controling the time of the execution
-      print 'Signal handler called with signal', signum
-      print '\nDIRAC execution interrupted, because takes longer than the limit of ',self.timeout,' seconds.\n'
+      #print 'Signal handler called with signal', signum
+      print 'DIRAC execution interrupted, because takes longer than the limit of ',self.timeout,' seconds.\n'
       sys.stdout.flush()
       #raise Exception("Timed out!")
       #raise IOError("Take too long !")
@@ -1163,14 +1164,15 @@ This allows you to omit the molecule and input files. '
         self.f.close()
       else:
         print 'debugging dirac...',self.dirac_cmd
-        os.system(self.dirac_cmd) # this works...
-        #p=subprocess.Popen(self.dirac_cmd, shell=True, stdin=subprocess.PIPE, stdout=f)
+        rc=os.system(self.dirac_cmd) # 
+        #self.exit_function(returncode=rc)
       signal.alarm(0)    
     except:
       print "Dirac run failed. Going to kill (SIGTERM) its executable process of pid=",p.pid
       #TODO: clean of all dirac.x pid's
       os.kill(p.pid, signal.SIGTERM)
-      print 'Alas ! dirac.x was purposely killed ;)'
+      print '****  Alas ! dirac.x was purposely killed ;)  ****'
+      self.exit_function(returncode=signal.SIGTERM)
 
     # do the profiling after the execution
     if self.profile: self.profile_dirac()
@@ -1300,7 +1302,7 @@ This allows you to omit the molecule and input files. '
     print "  DIRAC run      :", dirac_run
 
     if (self.set_timeout_limit):
-      print " Allowed runtime:",self.timeout,' seconds. Killing afterwards.'
+      print "  Allowed runtime:",self.timeout,' seconds. Killing afterwards.'
     print
     print
 
