@@ -265,6 +265,20 @@ class pam_enviroment:
       print '  keeping the work directory'
       sys.stdout.flush()
 
+  def exit_function(self,returncode):
+     """
+     prints message on the DIRAC executable exit according to the input parameter
+     """
+     print " " 
+     print " Return code : ",returncode 
+     print " Exit date   : ",datetime.datetime.now()
+     print " " 
+     if (returncode == 0):
+        print "   *** NORMAL EXIT" 
+     else:
+        print "   *** ABNORMAL EXIT" 
+     # notifyuser ?
+
   def process_pam_arguments(self):
   ##################################################################
   #
@@ -755,7 +769,11 @@ This allows you to omit the molecule and input files. '
   #
   #############################################################################################
     if (self.iprint >=5 ):
-      print 'set_output_name routine:'
+      print '\n set_output_name routine:'
+      print 'self.input_molecule=',self.input_molecule
+      print 'self.input_file_molecule=',self.input_file_molecule
+      print 'self.input_dirac=',self.input_dirac
+      print 'self.input_file_dirac=',self.input_file_dirac
       print 'len(self.input_molecule),len(self.input_dirac):',len(self.input_molecule),len(self.input_dirac)
   
     if (len(self.input_molecule) >0 and len(self.input_dirac) >0):
@@ -767,12 +785,16 @@ This allows you to omit the molecule and input files. '
       else: # no suffix, never mind
         mol_file_stripped=self.input_file_molecule
         print 'The molecule input file does not contain recommended suffix, never mind...'
+      if (self.iprint >=5 ):
+        print 'mol_file_stripped=',mol_file_stripped
 
       if (self.input_file_dirac.find(".inp")):
         inp_file_stripped=self.input_file_dirac.replace(".inp","",1)
       else: # no suffix, continuing..
         print 'The dirac input file does not contain recommended suffix, never mind...'
         inp_file_stripped=self.input_file_dirac
+      if (self.iprint >=5 ):
+        print 'inp_file_stripped=',inp_file_stripped
 
       if (mol_file_stripped == inp_file_stripped):
         self.output_name=mol_file_stripped
@@ -1092,7 +1114,7 @@ This allows you to omit the molecule and input files. '
   def execute_dirac(self):
   #############################################################################################
   #
-  # Excecute dirac.x, either in serial or parallel mode
+  #            Excecute dirac.x, either in serial or parallel mode
   #
   #############################################################################################
     def signal_handler(signum, frame):
@@ -1133,6 +1155,7 @@ This allows you to omit the molecule and input files. '
         p=subprocess.Popen(self.dirac_cmd,shell=True,stdin=subprocess.PIPE,stdout=self.f)
         print '  pid            : %s ' % p.pid
         p.wait()
+        self.exit_function(returncode=p.returncode)
         self.f.close()
       else:
         print 'debugging dirac...',self.dirac_cmd
@@ -1258,7 +1281,6 @@ This allows you to omit the molecule and input files. '
       dirac_run = "parallel"
     else:
       dirac_run = "serial"
-
     print 
     print '  output from the dirac python script' 
     print 
