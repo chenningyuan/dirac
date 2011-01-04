@@ -1,4 +1,2 @@
 $ERROR 0.0000001 
-From:Nuclear repulsion + core energy
-ToI:SCF energy
-
+Nlines 1:Total energy
