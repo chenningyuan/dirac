@@ -778,17 +778,21 @@ This allows you to omit the molecule and input files. '
   
     if (len(self.input_molecule) >0 and len(self.input_dirac) >0):
 
-      if (self.input_file_molecule.find(".mol")):
+      if (self.input_file_molecule.find(".mol") != -1):
         mol_file_stripped=self.input_file_molecule.replace(".mol","",1 )
-      elif (self.input_file_molecule.find(".xyz")):
+        if (self.iprint >=7):
+          print '*.mol striped! mol_file_stripped=',mol_file_stripped
+      elif (self.input_file_molecule.find(".xyz") != -1):
         mol_file_stripped=self.input_file_molecule.replace(".xyz","",1 )
+        if (self.iprint >=7):
+          print '*.xyz striped! mol_file_stripped=',mol_file_stripped
       else: # no suffix, never mind
         mol_file_stripped=self.input_file_molecule
-        print 'The molecule input file does not contain recommended suffix, never mind...'
+        #print 'The molecule input file does not contain recommended suffix, never mind...'
       if (self.iprint >=5 ):
         print 'mol_file_stripped=',mol_file_stripped
 
-      if (self.input_file_dirac.find(".inp")):
+      if (self.input_file_dirac.find(".inp") != -1):
         inp_file_stripped=self.input_file_dirac.replace(".inp","",1)
       else: # no suffix, continuing..
         print 'The dirac input file does not contain recommended suffix, never mind...'
