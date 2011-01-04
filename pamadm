@@ -571,13 +571,26 @@ if dirac_modules['xcfun'].is_included:
 # prepare dontbuild
 # =================
 
+# first we need to get a list of all included directories
+# and later check that we don't dontbuild a directory
+# that is needed by some other module
+# example: hsfs and hsfsdyn
+all_included_directories = []
+for module in dirac_modules:
+    if dirac_modules[module].is_included:
+        for directory in dirac_modules[module].directories:
+            all_included_directories.append(directory)
+
 f = open('build/dontbuild', 'w')
 
+# radovan: code below is kafkaesk for historical reasons
+#          feel free to refactor
 for module in dirac_modules:
     if not dirac_modules[module].is_included:
        for directory in dirac_modules[module].directories:
-           s = '%s/.*' % directory
-           f.write(s + '\n')
+           if not directory in all_included_directories:
+               s = '%s/.*' % directory
+               f.write(s + '\n')
        for file in dirac_modules[module].files:
            s = '%s' % file
            f.write(s + '\n')
