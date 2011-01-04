@@ -707,7 +707,7 @@ C        next microiteration using solutions of reduced RSP equation
 C        ===========================================================
 C
 CPP
-         GOTO 137
+C         GOTO 137
          CALL XRSNEX(IBTYP,IBCVC,IBEVC,IBPVC,RCNV,
      &               EVALR,EVECR,GPCI,GPOE,GPOP,
      &               RNORM,IVECS,WORK,KFREE,LFREE)
@@ -2695,7 +2695,6 @@ C solve A2*X=G
 CPP remove after debug
       ALPHAR = DP5 * DDOT(N,G,1,X,2)
       ALPHAI = DP5 * DDOT(N,G,1,X(2),2)
-      WRITE(LUPRI,'(F9.4,1X,F15.8,1X,F15.8)') W,ALPHAR,ALPHAI
 C
       CALL MEMREL('XRSLINRE2',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('XRSLINRE2')
@@ -2825,7 +2824,7 @@ C
       CALL MEMGET('REAL',KBEBUF,NZXOPEQ*NDAMP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KBPBUF,NZXOPPQ*NDAMP,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KBCBUF,NZCONFQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KXNORM,NVPAR*MFREQ,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KXNORM,NVPAR*MFREQ*NDAMP,WORK,KFREE,LFREE)
 C
 C     Generate new trial vectors
 C     ==========================
@@ -3690,7 +3689,6 @@ C             tsaue:         retain norm for numerical stability !
                 CALL DSCAL(NBDIM,BNRM,BVEC(1,1,IP),1)
               ENDIF
               IVEC(IP) = 1
-C svillaume: is IM really defined if the frequency is 0.0 ?
               IVEC(IM) = 0
             ELSE
               CALL GENPREC(PREC,HDIAG,SDIAG,FREQ,NVAR)
@@ -3833,14 +3831,6 @@ C
         CALL XRSORT(BVEC,NBTYP,NBVEC,NBPREV,
      &            IBVEC,IBTYP,IVEC,WORK,KFREE,LFREE)
       ENDIF
-C      CPP svillaume temp print for debugging
-      DO IVECTOR = 1,8
-        WRITE(LUPRI,'(A,I2)') 'Vector',IVECTOR
-        WRITE(LUPRI,'(F16.12)') (BVEC(IVAR,1,IVECTOR),IVAR=1,10)
-      ENDDO
-
-      CALL FLSHFO(LUPRI)
-      CALL QUIT('debug')
 C
 C     
 C     Save new vectors on file and update IBCVEC and IBTYP
