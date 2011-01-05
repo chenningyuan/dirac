@@ -563,6 +563,10 @@ This allows you to omit the molecule and input files. '
             if self.iprint >= 5:
                 print 'parallel run TRUE !'
                 print 'assigned mpirun=',self.mpirun
+        else :
+            print 'MPIRUN "',options.dest_mpirun,'" you assigned is wrong, no parallel run !'
+            self.parallel_build = False
+            self.parallel_run = False
     else:
         pass
 
@@ -1319,7 +1323,7 @@ This allows you to omit the molecule and input files. '
 
     # warning message on # of proc >1 
     if (not self.parallel_build and int(self.nr_proc) >= 1):
-      print 'This is serial run (no MPIRUN assigned), the flag --mpi=',self.nr_proc,' has no meaning.'
+      print 'This is serial run (no or wrong MPIRUN assigned), the flag --mpi=',self.nr_proc,' has no meaning.'
       print
     
     ### take care of the slave memory for parallel runs ###
