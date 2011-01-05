@@ -205,6 +205,8 @@ class pam_enviroment:
      copy file from directory "scr" to "dest"
      """
      shutil.copy(src, dest)
+     if (self.iprint >=2 ):
+        print 'Copying file ',src,' to the work-directory.'
 
   def list_workdir(self):
   # ... lists the content of the master work-directory
@@ -552,8 +554,7 @@ This allows you to omit the molecule and input files. '
          print 'assigned mpirun=',self.mpirun
      else:
        self.parallel = False
-       print 'assigned MPIRUN launcher does not exist !'
-       sys,exit(-1)
+       print 'Assigned MPIRUN launcher - "',options.dest_mpirun ,'" - does not exist. Serial run instead.'
 
     if (options.dest_machfile is not None):
      self.machinefile=options.dest_machfile
@@ -982,9 +983,11 @@ This allows you to omit the molecule and input files. '
   #
   #############################################################################################
     if (self.no_diracexe_copy):
-      this_dirac_exe=' dirac.x'
-    else:
+      # using dirac.x sitting in the installation-directory
       this_dirac_exe=self.dirac_exe
+    else:
+      # using dirac.x which is already copied in the work-directory
+      this_dirac_exe=self.workdir+'/dirac.x'
 
     if (self.parallel):
       # DIRAC_CMD="$DIRAC_CMD -np $MPI_NPROC -wd $WRK"
