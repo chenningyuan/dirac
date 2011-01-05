@@ -2139,6 +2139,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
+
       DIMENSION XVEC(NDIM,*),XNRM(*)
 C
       DO I = 1,MFREQ
@@ -2170,7 +2171,8 @@ C
      &          EVECR(NEVEC,*),GPOE(*),GPOP(*),GPCI(*),
      &          IBTYP(2,NREDM),IBCVC(NREDM),IBEVC(NREDM),IBPVC(NREDM),
      &          BEBUF(*),BPBUF(*),BCBUF(*),IVECS(MFREQ,NVPAR),
-     &          RNORM(NVPAR,MFREQ),XNORM(MFREQ,NVPAR),WORK(*)
+     &          RNORM(NVPAR,MFREQ*NDAMP),XNORM(MFREQ*NDAMP,NVPAR),
+     &          WORK(*)
 C
       IF(IPRXRS.GE.3) CALL HEADER('Output from XRSNE1',-1)
 C
@@ -2319,7 +2321,7 @@ C
             CALL QUIT('XRSNE1: Exceeded reduced space')
           ENDIF
           NBPREV = NERED
-          DO IP = 1,NFREQ
+          DO IP = 1,NFREQ*NDAMP,NDAMP
             IM = IP + NFREQ*NDAMP
             DO IDAMP = 0,NDAMP-1
               IBTYP(1,IND+IP+IDAMP)     = JBENDX
@@ -2337,31 +2339,33 @@ C
      &                  IBTYP,IBEVC,IVECS(1,IPEP),BEBUF)
 CPP svillaume: here we are not taking the correct norm because of
 CPP            the new structure...
-            CALL XVCNRM(XNORM(1,IPEP),BEVEC      ,NZXOPEQ*NDAMP,MFREQ)
+            CALL XVCNRM(XNORM(1,IPEP),BEVEC      ,NZXOPEQ,MFREQ*NDAMP)
             CALL XRSXV1(IMX,JBENDX,BEVEC(KBE2),EVECR,MFREQ,
      &                  IBTYP,IBEVC,IVECS(1,IPEM),BEBUF)
-            CALL XVCNRM(XNORM(1,IPEM),BEVEC(KBE2),NZXOPEQ*NDAMP,MFREQ)
+            CALL XVCNRM(XNORM(1,IPEM),BEVEC(KBE2),NZXOPEQ,MFREQ*NDAMP)
 C           Print section
             IF(IPRXRS.GE.3) THEN
               WRITE(LUPRI,'(A)')
      &          'Norm of orbital(e-e) X(+)-solution vectors:'
-              WRITE(LUPRI,'(1P,8(3X,E8.2))') (XNORM(I,IPEP),I=1,MFREQ)
+              WRITE(LUPRI,'(1P,8(3X,E8.2))')
+     &          (XNORM(I,IPEP),I=1,MFREQ*NDAMP)
               WRITE(LUPRI,'(A)')
      &          'Norm of orbital(e-e) X(-)-solution vectors:'
-              WRITE(LUPRI,'(1P,8(3X,E8.2))') (XNORM(I,IPEM),I=1,MFREQ)
+              WRITE(LUPRI,'(1P,8(3X,E8.2))')
+     &          (XNORM(I,IPEM),I=1,MFREQ*NDAMP)
             ENDIF
             IF(IPRXRS.GE.5) THEN
 CPP......print both unbarred and barred solution vector in complex case!
-              WRITE(LUPRI,'(/I5,A)') MFREQ,
+              WRITE(LUPRI,'(/I5,A)') MFREQ*NDAMP,
      &          ' orbital (e-e) X(+) solution vectors'
-              CALL PRBVEC(LUPRI,BEVEC      ,MFREQ,NZXOPE)
-              WRITE(LUPRI,'(/I5,A)') MFREQ,
+              CALL PRBVEC(LUPRI,BEVEC      ,MFREQ*NDAMP,NZXOPE)
+              WRITE(LUPRI,'(/I5,A)') MFREQ*NDAMP,
      &          ' orbital (e-e) X(-) solution vectors'
-              CALL PRBVEC(LUPRI,BEVEC(KBE2),MFREQ,NZXOPE)
+              CALL PRBVEC(LUPRI,BEVEC(KBE2),MFREQ*NDAMP,NZXOPE)
             ENDIF
           ELSE
-            CALL DZERO(XNORM(1,IPEP),MFREQ)
-            CALL DZERO(XNORM(1,IPEM),MFREQ)
+            CALL DZERO(XNORM(1,IPEP),MFREQ*NDAMP)
+            CALL DZERO(XNORM(1,IPEM),MFREQ*NDAMP)
           ENDIF
         ENDIF
 C
@@ -2377,7 +2381,7 @@ C
             CALL QUIT('XRSNE1: Exceeded reduced space')
           ENDIF
           NBPREV = NPRED
-          DO IP = 1,NFREQ
+          DO IP = 1,NFREQ*NDAMP,NDAMP
             IM = IP + NFREQ*NDAMP
             DO IDAMP = 0,NDAMP-1
               IBTYP(1,IND+IP+IDAMP)     = JBPNDX
@@ -2393,31 +2397,33 @@ C
           IF(NPRED.GT.0) THEN
             CALL XRSXV1(IPX,JBPNDX,BPVEC      ,EVECR,MFREQ,
      &                  IBTYP,IBPVC,IVECS(1,IPPP),BPBUF)
-            CALL XVCNRM(XNORM(1,IPPP),BPVEC      ,NZXOPPQ*NDAMP,MFREQ)
+            CALL XVCNRM(XNORM(1,IPPP),BPVEC      ,NZXOPPQ,MFREQ*NDAMP)
             CALL XRSXV1(IMX,JBPNDX,BPVEC(KBP2),EVECR,MFREQ,
      &                  IBTYP,IBPVC,IVECS(1,IPPM),BPBUF)
-            CALL XVCNRM(XNORM(1,IPPM),BPVEC(KBP2),NZXOPPQ*NDAMP,MFREQ)
+            CALL XVCNRM(XNORM(1,IPPM),BPVEC(KBP2),NZXOPPQ,MFREQ*NDAMP)
 C           Print section
             IF(IPRXRS.GE.3) THEN
               WRITE(LUPRI,'(A)')
      &          'Norm of orbital(e-p) X(+)-solution vectors:'
-              WRITE(LUPRI,'(1P,8(3X,E8.2))') (XNORM(I,IPPP),I=1,MFREQ)
+              WRITE(LUPRI,'(1P,8(3X,E8.2))')
+     &         (XNORM(I,IPPP),I=1,MFREQ*NDAMP)
               WRITE(LUPRI,'(A)')
      &          'Norm of orbital(e-p) X(-)-solution vectors:'
-              WRITE(LUPRI,'(1P,8(3X,E8.2))') (XNORM(I,IPPM),I=1,MFREQ)
+              WRITE(LUPRI,'(1P,8(3X,E8.2))')
+     &         (XNORM(I,IPPM),I=1,MFREQ*NDAMP)
             ENDIF
 CPP...........print both unbarred and barred  solution vector in complex case!
             IF(IPRXRS.GE.5) THEN
-              WRITE(LUPRI,'(/I5,A)') MFREQ,
+              WRITE(LUPRI,'(/I5,A)') MFREQ*NDAMP,
      &          ' orbital (e-p) X(+) solution vectors'
-              CALL PRBVEC(LUPRI,BPVEC,MFREQ,NZXOPP)
-              WRITE(LUPRI,'(/I5,A)') MFREQ,
+              CALL PRBVEC(LUPRI,BPVEC,MFREQ*NDAMP,NZXOPP)
+              WRITE(LUPRI,'(/I5,A)') MFREQ*NDAMP,
      &          ' orbital (e-p) X(-) solution vectors'
-              CALL PRBVEC(LUPRI,BPVEC(KBP2),MFREQ,NZXOPP)
+              CALL PRBVEC(LUPRI,BPVEC(KBP2),MFREQ*NDAMP,NZXOPP)
             ENDIF
           ELSE
-            CALL DZERO(XNORM(1,IPPP),MFREQ)
-            CALL DZERO(XNORM(1,IPPM),MFREQ)
+            CALL DZERO(XNORM(1,IPPP),MFREQ*NDAMP)
+            CALL DZERO(XNORM(1,IPPM),MFREQ*NDAMP)
           ENDIF
         ENDIF
 C
@@ -2483,14 +2489,32 @@ C     Print section
 C
       IF(IPRXRS.GT.0) THEN
         WRITE(LUPRI,'(/A)') '* XRSNEX: Norm of resultant vectors:'
-        WRITE(LUPRI,'(A15,2X,A8,9(2X,A2,A6))')
+        IF(DAMPFREQ.EQ.D0) THEN
+          WRITE(LUPRI,'(A15,2X,A8,9(2X,A2,A6))')
      &      '* Frequency    ',
      &       'Total   ',(BVTYP(I),' part ',I=1,NVPAR)
-        DO IFREQ = 1,MFREQ
-          XTNORM = DNRM2(NVPAR,XNORM(IFREQ,1),MFREQ)
-          WRITE(LUPRI,'(F15.8,1P,10(2X,E8.2))')
-     &        EVALR(IFREQ),XTNORM,(XNORM(IFREQ,I),I=1,NVPAR)
-        ENDDO
+          DO IFREQ = 1,MFREQ
+            XTNORM = DNRM2(NVPAR,XNORM(IFREQ,1),MFREQ)
+            WRITE(LUPRI,'(F15.8,1P,10(2X,E8.2))')
+     &          EVALR(IFREQ),XTNORM,(XNORM(IFREQ,I),I=1,NVPAR)
+          ENDDO
+        ELSE
+          DO IFREQ = 1,MFREQ
+            XTNORM = DNRM2(NVPAR,XNORM(IFREQ,1),MFREQ*NDAMP)
+            INDR = 2 * IFREQ - 1
+            INDI = 2 * IFREQ
+CPP Need to be changed with correct complex label ++,+-,--,-+!
+            WRITE(LUPRI,'(A15,2X,A8,9(2X,A2,A6))')
+     &       '* Frequency    ',
+     &       'Total   ',(BVTYP(I),' part ',I=1,NVPAR),
+     &       (BVTYP(I),' part ',I=1,NVPAR)
+            WRITE(LUPRI,'(F15.8,1P,16(2X,E8.2))')
+     &          EVALR(IFREQ),XTNORM,
+     &         (XNORM(INDR,I),I=1,NVPAR),
+     &         (XNORM(INDI,I),I=1,NVPAR)
+            WRITE(LUPRI,'(A,F15.8)') '  Damping :',DAMPFREQ
+          ENDDO
+        ENDIF
       ENDIF
       CALL FLSHFO(LUPRI)
 C
@@ -2958,7 +2982,6 @@ C     Orbital (e-e) type trial vectors
 C
       IF(NZXOPE.GT.0) THEN
         CALL MEMGET('REAL',KDENOM,NZXOPE,WORK,KFREE,LFREE)
-        WRITE(LUPRI,*) 'BEFORE'
         CALL XBVGEN(BEVEC,USEXVC,WORK(KEDIAH),WORK(KEDIAS),EVALR,EVECR,
      &              IBTYP,IBEVC,IVECS(1,IPEP),
      &              MFREQ,JBENDX,IBOFF,NEPREV,NZXOPE,
