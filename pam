@@ -1310,7 +1310,7 @@ This allows you to omit the molecule and input files. '
     print
 
     # warning message on # of proc >1 
-    if (not self.parallel and int(self.nr_proc) > 1):
+    if (not self.parallel and int(self.nr_proc) >= 1):
       print 'This is serial run (no MPIRUN assigned), the flag --mpi=',self.nr_proc,' has no meaning.'
       print
     
