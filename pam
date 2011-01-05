@@ -71,9 +71,10 @@ class pam_enviroment:
     self.create_workdir_name=True
 
     # ... variables related to parallel calculations
-    self.parallel=False
-    self.mpirun=''
-    self.nr_proc=1
+    self.parallel_build=False  # parallel build - read from Makefile.config
+    self.parallel_run=False  # whether parallel run - decide upon the "--mpi=xxx" parameter
+    self.mpirun='' # MPIRUN launcher
+    self.nr_proc=0 # number of processors, default 0-serial run
     #   local disks for parallel calculations (to be set by configure)   #
     self.localdisks=False
     # machine file
@@ -341,14 +342,17 @@ This allows you to omit the molecule and input files. '
 
     # ... get in the parallel stuff, TODO: add default from Makefile.config
     if (len(self.mpirun) > 0):
-      this_label="mpi launcher, default:"+self.mpirun
+      this_label="mpi launcher, default (from Makefile.config):"+self.mpirun
     else:
       this_label="mpi launcher, default - none, so serial run"
     parser.add_option("--mpirun", type="string", nargs=1,
                   action="store",dest="dest_mpirun",  
                   help=this_label,metavar="STRING")
 
-    this_label='run parallel with n nodes, default: serial run'
+    if (self.parallel_build == True):
+      this_label='run parallel (info from Makefile.config) with n nodes, default '+str(self.nr_proc)+' nodes - what is pure serial run.'
+    else:
+      this_label='run parallel with n nodes, default: serial mode'
     parser.add_option("--mpi", type="int", nargs=1,  
                   action="store", dest="dest_mpi", 
                   help=this_label, metavar="INT_NUM")
@@ -539,22 +543,28 @@ This allows you to omit the molecule and input files. '
        print 'assigned maxmem=',self.maxmem
 
     if (options.dest_mpi is not None) :
-     self.nr_proc=int(options.dest_mpi)
-     #self.parallel=True
-     if self.iprint >= 5:
-      print 'assigned self.nr_proc=',self.nr_proc
+       self.nr_proc=int(options.dest_mpi)
+       self.parallel_run=True
+       if self.iprint >= 5:
+          print 'assigned self.nr_proc=',self.nr_proc
+          print 'assigned self.self.parallel_run=',self.parallel_run
+    else:
+       self.parallel_run=False
+       if (self.parallel_build == True):
+          print
+          print 'Despite parallel build, set serial run as no --mpi=xxx specified.'
 
     if (options.dest_mpirun is not None):
-     # todo: check it
-     if (os.path.isfile(options.dest_mpirun)):
-       self.mpirun=options.dest_mpirun
-       self.parallel = True 
-       if self.iprint >= 5:
-         print 'parallel TRUE !'
-         print 'assigned mpirun=',self.mpirun
-     else:
-       self.parallel = False
-       print 'Assigned MPIRUN launcher - "',options.dest_mpirun ,'" - does not exist. Serial run instead.'
+        if (os.path.isfile(options.dest_mpirun)):
+        # todo : check functionality of mpirun ?
+            self.mpirun=options.dest_mpirun
+            self.parallel_run = True 
+            self.parallel_build = True 
+            if self.iprint >= 5:
+                print 'parallel run TRUE !'
+                print 'assigned mpirun=',self.mpirun
+    else:
+        pass
 
     if (options.dest_machfile is not None):
      self.machinefile=options.dest_machfile
@@ -959,7 +969,7 @@ This allows you to omit the molecule and input files. '
     dirwrk  =  str( self.mem     *1000000 )
     os.putenv("DIRWRK", dirwrk)
 
-    if (self.parallel) :
+    if (self.parallel_run) :
       os.putenv("DIRPAR","1")
       dirnod  =  str( self.slavemem*1000000 )
       os.putenv("DIRNOD", dirnod)
@@ -989,7 +999,7 @@ This allows you to omit the molecule and input files. '
       # using dirac.x which is already copied in the work-directory
       this_dirac_exe=self.workdir+'/dirac.x'
 
-    if (self.parallel):
+    if (self.parallel_run and self.parallel_build):
       # DIRAC_CMD="$DIRAC_CMD -np $MPI_NPROC -wd $WRK"
       # and/if  $DIRAC_CMD -machinefile $MACH_FILE $DIRAC_CMD
       self.dirac_cmd=self.mpirun+" -np "+str(self.nr_proc)+" -wd "+self.workdir+" "
@@ -1075,11 +1085,9 @@ This allows you to omit the molecule and input files. '
           #print 'mpirun found=',mpirun_temp
           if (os.path.isfile(mpirun_temp)):
             self.mpirun=mpirun_temp
-            self.parallel=True
+            self.parallel_build=True
           else:
-            #print 'The MPIRUN',mpirun_temp,'from Makefile.config is not existing; no parallel run.'
-            self.parallel=False
-            #print 'MPIRUN from Makefile.config=',mpirun_temp
+            self.parallel_build=False
             pass
       elif ( line.find('LOCALDISKS') != -1 ):
           localdisks_temp=line.replace('LOCALDISKS=','')
@@ -1286,7 +1294,7 @@ This allows you to omit the molecule and input files. '
   def print_header(self):
     from common import get_username,get_hostname,get_hostname_ip
     self.master=get_hostname()
-    if (self.parallel):
+    if (self.parallel_run and self.parallel_build):
       dirac_run = "parallel"
     else:
       dirac_run = "serial"
@@ -1310,12 +1318,12 @@ This allows you to omit the molecule and input files. '
     print
 
     # warning message on # of proc >1 
-    if (not self.parallel and int(self.nr_proc) >= 1):
+    if (not self.parallel_build and int(self.nr_proc) >= 1):
       print 'This is serial run (no MPIRUN assigned), the flag --mpi=',self.nr_proc,' has no meaning.'
       print
     
     ### take care of the slave memory for parallel runs ###
-    if (self.parallel and self.slavemem_set is False) :
+    if (self.parallel_run and self.slavemem_set is False) :
       #print 'self.slavemem_set=',self.slavemem_set
       self.slavemem=self.mem
       print 'Slave memory set to ',self.slavemem, ' megawords.'
@@ -1341,7 +1349,7 @@ class pam_run(pam_enviroment):
     self.pam_variables.set_output_file()
     self.pam_variables.print_header()
     self.pam_variables.copy_files()
-    if (self.pam_variables.parallel and self.pam_variables.localdisks):
+    if (self.pam_variables.parallel_run and self.pam_variables.localdisks):
       self.pam_variables.distribute_work_dir()
     self.pam_variables.set_dirac_environment()
     self.pam_variables.set_dirac_cmd()
