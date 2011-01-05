@@ -174,8 +174,9 @@ ifeq ($(SAFE_FLAGS_MODE),NO) # check only if no safe-flags compilation
 ### compilers/architectures there is a need of the lower/no level of optimization
 
 ifeq (-DVAR_GFORTRAN, $(findstring -DVAR_GFORTRAN, $(FPP_FLAGS) ))
-#miro: found for ompi-gfortran 4.4.5 (ILP64), test: mp2_properties
-# we are not sure whether this is a OpenMPI-Gfortran optimization bug or a real, good-hidden bug in the code
+#miro: bug found for ompi-gfortran 4.4.5 (ILP64), test: mp2_properties
+# probably this is an OpenMPI-Gfortran related optimization bug rather then a real bug in the code
+#
 relccsd/ccrpa.o :  relccsd/ccrpa.F
 	@echo " relccsd/ccrpa.F compilation with 3nd level (of 3) optimization for gfortran"
 	$(F77) $(F77FLAGS_OPT_3) $(F77FLAGS_SAFE) -c -o $*.o $<
