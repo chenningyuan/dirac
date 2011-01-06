@@ -411,7 +411,7 @@ This allows you to omit the molecule and input files. '
                   help=this_label)
 
     # ... set the priority
-    this_label="Set the lowest priority of the dirac run process (through nice/npri)"
+    this_label="Set the highest priority of the dirac run process (through nice/npri)"
     parser.add_option("--nice", 
                   action="store_true",dest="dest_nice", 
                   help=this_label)
@@ -704,14 +704,18 @@ This allows you to omit the molecule and input files. '
         print 'assigned keepwrk =',self.keepwrk
 
     if (options.dest_debug is not None) :
-      self.debug=True
-      if self.iprint >= 5:
-        print 'do debugging,',self.debug
+        self.debug=True
+        if self.iprint >= 5:
+            print 'do debugging,',self.debug
 
     if (options.dest_debugger is not None) :
-      self.debugger=options.dest_debugger
-      if self.iprint >= 5:
-        print 'assigned debugger,',self.debugger
+        if (os.path.isfile(options.dest_debugger)):
+            self.debugger=options.dest_debugger
+        else:
+            print 'Debugger ',options.dest_debugger,' you want to assign does not exist ! No debugging !'
+            self.debug=False
+        if self.iprint >= 5:
+            print 'assigned debugger,',self.debugger
 
     if (options.dest_vg is not None) :
       self.vg_debug=options.dest_vg
@@ -1192,7 +1196,7 @@ This allows you to omit the molecule and input files. '
             if basis_set_directory_list[i] != '.':
                 print '                   %s' % basis_set_directory_list[i]
     try:
-      if (not self.debug and not self.vg_debug):
+      if (self.debug==False and self.vg_debug==False):
         #print 'executing dirac ...',self.dirac_cmd
         self.f=open(self.output_file_full,'w',0)
         # write something into the output file by pam 
@@ -1203,10 +1207,12 @@ This allows you to omit the molecule and input files. '
         p.wait()
         self.exit_function(returncode=p.returncode)
         self.f.close()
-      else:
-        print 'debugging dirac...',self.dirac_cmd
+      elif (self.parallel_run==False) :
+        print 'debugging dirac in plain serial run...',self.dirac_cmd
         rc=os.system(self.dirac_cmd) # 
-        #self.exit_function(returncode=rc)
+      else:
+        print '\n...no dirac run ... wrong parallel/debugger combination\n'
+      # zero signal alarm
       signal.alarm(0)    
     except:
       print "Dirac run failed. Going to kill (SIGTERM) its executable process of pid=",p.pid
