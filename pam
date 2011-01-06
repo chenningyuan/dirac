@@ -8,7 +8,7 @@
 # Written by Miro ILIAS, Matej Bel University, 
 #        Banska Bystrica, Slovakia, end of 2010
 #
-# Contributors:  Rado BAST,
+# Contributors:  Rado BAST, ...
 #
 ##########################################################################
 import os
@@ -98,6 +98,8 @@ class pam_enviroment:
     # dirac-executable position (could be reset by after flag reading)
     self.dirac_exe=install_dir_default+"/dirac.x"
     self.no_diracexe_copy=False
+    # nice command - priority (nice/npri)
+    self.nice_cmd=''
  
     ### put/get files (flag controlled) ###
     self.put_files=''
@@ -408,6 +410,12 @@ This allows you to omit the molecule and input files. '
                   action="store_true",dest="dest_no_exe_copy",  
                   help=this_label)
 
+    # ... set the priority
+    this_label="Set the lowest priority of the dirac run process (through nice/npri)"
+    parser.add_option("--nice", 
+                  action="store_true",dest="dest_nice", 
+                  help=this_label)
+
     # ... no backup 
     this_label="do not backup files (default: backup them)"
     parser.add_option("--nobackup", 
@@ -612,6 +620,15 @@ This allows you to omit the molecule and input files. '
     else:
       if self.iprint >= 5:
         print 'used default dirac_exe=',self.dirac_exe
+
+    if (options.dest_nice is not None) :
+    # assign here the full nice/npri command; TODO: set for windows (in own routine) 
+        if (os.path.isfile("/usr/sbin/npri")):
+           self.nice_cmd="npri -h129 "
+        else:
+           self.nice_cmd="nice -20 "
+        if self.iprint >= 5:
+           print 'nice prirority set ! self.nice_cmd=',self.nice_cmd
 
     if (options.dest_no_exe_copy is not None):
       self.no_diracexe_copy=options.dest_no_exe_copy
@@ -1010,16 +1027,22 @@ This allows you to omit the molecule and input files. '
       self.dirac_cmd=self.dirac_cmd+this_dirac_exe
       if (self.vg_debug): # valgrind stuff, DIRAC_CMD="$DIRAC_CMD $VALGRIND_TOOL --log-fd=1"
         self.dirac_cmd=self.dirac_cmd+' '+self.valgrind+' --log-fd=1'
-    else:  # serial run
+    else:  # serial run (also in debugger)
       if (self.debug):
        #TODO: adapt it for Windows
-        self.dirac_cmd=self.debugger+' '+this_dirac_exe+' | tee -a '+os.getcwd()+"/"+self.output_file
+        self.dirac_cmd=self.debugger+' '+this_dirac_exe+' | tee '+os.getcwd()+"/"+self.output_file
       elif (self.vg_debug): # set command for valgrid
       # or: $VALGRIND -v --error-limit=no --leak-check=full --track-origins=yes --show-reachable=yes 
       # serial: DIRAC_CMD="$VALGRIND_TOOL --log-fd=1
         self.dirac_cmd=self.valgrind+' --log-fd=1 '+elf.dirac_cmd
       else: # no debug, plain run
         self.dirac_cmd=this_dirac_exe
+
+      # at the end add priority command (either empty or not) #
+      self.dirac_cmd=self.nice_cmd+self.dirac_cmd
+
+      if self.iprint >= 5:
+          print 'set_dirac_cmd: self.dirac_cmd=',self.dirac_cmd
 
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def read_makefile_config(self):
@@ -1158,8 +1181,11 @@ This allows you to omit the molecule and input files. '
       signal.signal(signal.SIGALRM, signal_handler)
       signal.alarm(self.timeout)  # 
 
-    basis_set_directory_list = self.basdir.split(':')
+    if ( len(self.nice_cmd)>1 ):
+        print '  Lowest process priority set through ',self.nice_cmd
     print '  DIRAC command  : %s' % self.dirac_cmd
+
+    basis_set_directory_list = self.basdir.split(':')
     print '  basis set dirs : %s' % basis_set_directory_list[0]
     if len(basis_set_directory_list) > 1:
         for i in range(1, len(basis_set_directory_list)):
