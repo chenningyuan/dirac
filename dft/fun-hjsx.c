@@ -36,11 +36,13 @@
 
     This functional has been generated from following input:
     ------ cut here -------
- For details of the max-input see Suceria et al JCTC 5(4), 754 (2009) (and  Suceria et al JCP 128, 194105 (2008)) 
- dfine constants where AE= A, B , C, D E and a[i], b[i] are the coefficient of hse fubction 
+ For details of the max-input see Weintraub et al JCTC 5(4), 754 (2009) (and  Henderson et al JCP 128, 194105 (2008)) 
+ define constants where AE= A, B , C, D E and a[i], b[i] are the coefficient of hse function 
 
 PI:3.14159265358979312;
 AE:[0.757211,-0.106364,-0.118649,0.609650,-0.0477963];
+a and be are the parameters defining the fnuction H(s) for the PBE functional, see
+table 1 of Weintraub et al JCTC 5(4), 754 (2009)
 a:[0.0159941, 0.0852995, -0.160368, 0.152645, -0.0971263, 0.0422061];
 b:[5.33319, -12.4780, 11.0988, -5.11013, 1.71468, -0.610380, 0.307555, -0.0770547, 0.0334840];
 kf(rhox):=(6.0 * PI * PI * rhox)^(1/3);
@@ -50,7 +52,7 @@ kf(rhox):=(6.0 * PI * PI * rhox)^(1/3);
 xa:sqrt(grada*grada)/(2.0 * kf(rhoa) * rhoa);
 xb:sqrt(gradb*gradb)/(2.0 * kf(rhob) * rhob);
 
- dfine the function hse(sx), sx = sa,sb   
+ define the function hse(sx), sx = sa,sb   
 hse1(sx):= a[1]*sx^2   + a[2]*sx^3 + a[3]*sx^4 + a[4]*sx^5 + a[5]*sx^6 + a[6]*sx^7;
 hse2(sx):= 1.0 + b[1]*sx + b[2]*sx^2 + b[3]*sx^3 + b[4]*sx^4 + b[5]*sx^5 + b[6]*sx^6 + b[7]*sx^7 + b[8]*sx^8 + b[9]*sx^9;
 
@@ -64,10 +66,10 @@ nu(rhox):=MU/kf(rhox);
 chi(sx,rhox):=nu(rhox)/sqrt(lamb(sx) + nu(rhox) * nu(rhox));
 gama(sx,rhox):=(1.0 + chi(sx,rhox)) * (lamb(sx) + nu(rhox) * nu(rhox));
 
-  note I put Fs(sx) = -H(s). First becouse numerically beavebetter, secondly it apperas in all expressions in the form -H(s) 
+  note I put Fs(sx) = -H(s). First because it numerically behaves better, secondly it appears in all expressions in the form -H(s) 
 Fs(sx):= -1.0 + (1.0/(27.0 * AE[3])) * (sx^2/(1.0 + sx^2/4.0)) + sx^2 * hse(sx)/(2.0 * AE[3]);
 
- note E= AE[5] is included in the definition pf eGs, whereas C=AE[3] is not included in the defintion of Fs 
+ note E= AE[5] is included in the definition pf eGs, whereas C=AE[3] is not included in the definition of Fs 
 
 eGs(sx):=(2.0/5.0)*AE[3]*Fs(sx)*lamb(sx)-(4.0/15.0)*AE[2]*lamb(sx)^3-(6.0/5.0)*AE[1]*lamb(sx)^3-(4.0/5.0)*sqrt(PI)*lamb(sx)^(7/2)-(12.0/5.0)*lamb(sx)^(7/2)*(sqrt(xi(sx))-sqrt(eta(sx)));
  
