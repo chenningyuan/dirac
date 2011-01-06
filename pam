@@ -1038,11 +1038,11 @@ This allows you to omit the molecule and input files. '
       else: # no debug, plain run
         self.dirac_cmd=this_dirac_exe
 
-      # at the end add priority command (either empty or not) #
-      self.dirac_cmd=self.nice_cmd+self.dirac_cmd
+    # at the end add priority command (either empty or not) #
+    self.dirac_cmd=self.nice_cmd+self.dirac_cmd
 
-      if self.iprint >= 5:
-          print 'set_dirac_cmd: self.dirac_cmd=',self.dirac_cmd
+    if self.iprint >= 5:
+        print 'set_dirac_cmd: self.dirac_cmd=',self.dirac_cmd
 
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def read_makefile_config(self):
