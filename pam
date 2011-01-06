@@ -626,7 +626,8 @@ This allows you to omit the molecule and input files. '
         if (os.path.isfile("/usr/sbin/npri")):
            self.nice_cmd="npri -h129 "
         else:
-           self.nice_cmd="nice -20 "
+           # Ulf's advice: set rather -1 than -20 what could cause lower system performance 
+           self.nice_cmd="nice -1 "
         if self.iprint >= 5:
            print 'nice prirority set ! self.nice_cmd=',self.nice_cmd
 
