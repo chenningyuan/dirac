@@ -1136,18 +1136,10 @@ This allows you to omit the molecule and input files. '
           rcp_temp=line.replace('RCP=','')
           if (os.path.isfile(rcp_temp)):
             self.rcp=rcp_temp
-            #print 'RCP found ',self.rcp
-          else:
-            print 'The RCP from Makefile.config is not existing!'
-            print 'RCP from Makefile.config=',rcp_temp
       elif ( line.find('RSH') != -1 ):
           rsh_temp=line.replace('RSH=','')
           if (os.path.isfile(rsh_temp)):
             self.rsh=rsh_temp
-            #print 'RSH found,',self.rsh
-          else:
-            print 'The RSH from Makefile.config is not existing!'
-            print 'RSH from Makefile.config=',rsh_temp
 
   def write_into_output(self):
   # writes some stuff into the output file at the beginning
