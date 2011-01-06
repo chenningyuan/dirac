@@ -3957,7 +3957,7 @@ C
       LOGICAL  SYMSTP,NOINPUT,SETFUN,SUCCESS,IOTC,GAUNT_SAVE,
      &         TWOCOMP_SAVE, TWOCOMPBSS_SAVE
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
-     &          WORD1*7, LINE*80
+     &          WORD1*7, LINE*80, LINE100*100
       DIMENSION KSOP(0:7),WORK(LWORK)
 C
       SAVE SETFUN
@@ -4262,12 +4262,13 @@ C             projection scheme
 !          .DFT
   117      CONTINUE
 C&&& DFT    : Kohn-Sham (DFT) Hamiltonian
-               READ(LUCMD,'(A80)') LINE
+!radovan: line can be longer than 80
+               read(lucmd, '(a100)') line100
                IF (.NOT. SETFUN) THEN
 C              ... hjaaj: DFTINPUT accumulates def. of functional
 C                  so if we call more than once (as in geom.opt.)
 C                  we get n*functional for n'th call !!!! /3-Jun-2003 hjaaj
-                  CALL DFTINPUT(LINE, INPERR)
+                  CALL DFTINPUT(line100, INPERR)
                   if (inperr .gt. 0) then
                     call quit('failure in DFTINPUT after .DFT')
                   end if
