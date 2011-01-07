@@ -1142,13 +1142,12 @@ This allows you to omit the molecule and input files. '
             self.rsh=rsh_temp
 
   def write_into_output(self):
-  # writes some stuff into the output file at the beginning
-    self.f.write("DIRAC pam run in "+self.input_directory+"\n")
-    # old pam:       size $BIN_DIR/$DIRAC 2> /dev/null | grep $BIN_DIR/$DIRAC 2> /dev/null \
-    #  | awk '{printf $3/(1024*1024)} ' 2> /dev/null >> $OUTPUT_FILE; echo ' MB' >> $OUTPUT_FILE \
-    #  || echo 'can not be determined' >> $OUTPUT_FILE
-
-    self.f.write("size of the static executable : (write me) \n")
+      """
+      write usefull info at the beginning of te output file - size of all static allocation, for example  
+      """
+      self.f.write("DIRAC pam run in "+self.input_directory+"\n")
+      size_command="echo -e 'Size of all static allocations :\c' ; size "+self.dirac_exe+" 2> /dev/null | grep "+self.dirac_exe+" 2> /dev/null | awk '{printf $3/(1024*1024)} ' 2> /dev/null; echo ' MB ' || echo 'can not be determined' "
+      p1=subprocess.Popen(size_command,shell=True,stdin=subprocess.PIPE,stdout=self.f)
 
   #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def execute_dirac(self):
