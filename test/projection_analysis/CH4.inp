@@ -5,6 +5,8 @@ Projection analysis for CH4
 .ANALYZE
 **HAMILTONIAN
 .LVCORR
+.PRINT
+1
 **WAVE FUNCTIONS
 .DHF
 *DHFCAL
