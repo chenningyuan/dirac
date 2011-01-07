@@ -9874,6 +9874,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C   Input reading for AMFI/RELSCF module.
 C
+C   Input data are under the *AMFI keyword within the **HAMILTONIAN section.
+C
 C   Called from HAMINP.
 C
 C   Written by Miro ILIAS, Prievidza, 2008
