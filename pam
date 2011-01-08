@@ -1027,6 +1027,8 @@ This allows you to omit the molecule and input files. '
     if (self.parallel_run and self.parallel_build):
       # DIRAC_CMD="$DIRAC_CMD -np $MPI_NPROC -wd $WRK"
       # and/if  $DIRAC_CMD -machinefile $MACH_FILE $DIRAC_CMD
+      # stefan: assuming -wd is dangerous; it is only valid for Open MPI; Intel MPI and MPICH(2) use -wdir
+      # maybe this can be inserted after configure...?
       self.dirac_cmd=self.mpirun+" -np "+str(self.nr_proc)+" -wd "+self.workdir+" "
       self.dirac_cmd=self.dirac_cmd+this_dirac_exe
       if (self.vg_debug): # valgrind stuff, DIRAC_CMD="$DIRAC_CMD $VALGRIND_TOOL --log-fd=1"
