@@ -67,7 +67,6 @@ class pam_enviroment:
     self.workdir=''
     self.workpath=''
     self.keepwrk=False
-    self.cleanwrkdir=False
     self.create_workdir_name=True
 
     # ... variables related to parallel calculations
@@ -471,12 +470,6 @@ This allows you to omit the molecule and input files. '
                   action="store_true",dest="dest_outfck",
                   help=this_label)
 
-    # ... clean workdir before calculation
-    this_label="clean the directory before calculations (default: do not clean)"
-    parser.add_option("--clean", 
-                  action="store_true",dest="dest_clean",  
-                  help=this_label)
-
     # ... keep workdir after calculations
     this_label="keep the work directory after calculations (default: remove it)"
     parser.add_option("--keepwrk", 
@@ -706,11 +699,6 @@ This allows you to omit the molecule and input files. '
       self.full_restart=True
       if self.iprint >= 5:
         print 'assigned full-restart from archive file',self.archive_name
-
-    if (options.dest_clean is not None) :
-      self.cleanwrkdir=options.dest_clean
-      if self.iprint >= 5:
-        print 'assigned cleanwrkdir==',self.cleanwrkdir
 
     if (options.dest_keepwrk is not None) :
       self.keepwrk=options.dest_keepwrk
