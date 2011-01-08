@@ -2988,16 +2988,7 @@ fi
 make_pam_runtest () {
 
 pam_file=$INSTALL_DIR/pam.sh
-if [ -f $pam_file ]; then
-   echo 'pam exists. I will take a backup.'
-   backup -v $pam_file
-fi
-
 runsh_file=$SRC_DIR/test/SCRIPTS/run.sh
-if [ -f $runsh_file ]; then
-   echo 'test/SCRIPTS/run.sh exists. I will take a backup.'
-   backup -v $runsh_file
-fi
 
 echo '#!/bin/bash' > $pam_file
 
