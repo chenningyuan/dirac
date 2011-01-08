@@ -105,11 +105,14 @@ class pam_enviroment:
     self.put_files=''
     self.get_files=''
 
-    # DIRAC memory allocation variables
-    self.mem      = 64   # memory for the master
-    self.slavemem = 64   # memory for the slave
-    self.slavemem_set=False 
-    self.maxmem='' # maximum memory for F90 dynamical allocation (Andre...)
+    # memory allocation
+    self.default_memory_work_master = 64
+    self.default_memory_work_slave  = self.default_memory_work_master
+    self.default_memory_dynamic     = 0
+
+    self.max_memory_work_master = self.default_memory_work_master
+    self.max_memory_work_slave  = self.default_memory_work_slave 
+    self.max_memory_dynamic     = self.default_memory_dynamic    
 
     self.full_restart=False
     self.archive_name=''
@@ -300,7 +303,7 @@ class pam_enviroment:
     this_label='script verbose print level, default:'+str(self.iprint_default)
     parser.add_option("-i", "--iprint", type="int", nargs=1,  
                   action="store", dest="dest_iprint", 
-                  help=this_label, metavar="INT_NUM")
+                  help=this_label, metavar="INTEGER")
 
   # ... archivation of files
     this_label='Do not create a .tgz archive for the calculation; default - create.'
@@ -321,25 +324,38 @@ This allows you to omit the molecule and input files. '
                   action="store", dest="dest_run", 
                   help=this_label, metavar="STRING")
 
-  # ... get in the "mw"
-    default_mem_label=str(self.mem)+' ('+str(self.mem)+'*8='+str(self.mem*8)+' MB)'
-    this_label='Set memory (in megawords) for the master (and slaves if "--nw=mem" not specified), default:'+default_mem_label
-    parser.add_option("--mw", type="int", nargs=1,  
-                  action="store", dest="dest_mw", 
-                  help=this_label, metavar="INT_NUM")
 
-    # ... get in the "nw" ...
-    default_slavemem_label=str(self.slavemem)+' ('+str(self.slavemem)+'*8='+str(self.slavemem*8)+' MB)'
-    this_label='Set memory (in megawords) for nodes, default:'+default_slavemem_label
-    parser.add_option("--nw", type="int", nargs=1,  
-                  action="store", dest="dest_nw", 
-                  help=this_label, metavar="INT_NUM")
+    parser.add_option('--mw', 
+                      type='int', 
+                      nargs=1,  
+                      action='store', 
+                      dest='dest_mw', 
+                      help='''set max memory (in megawords) for WORK array
+                              for the master (and slaves if --nw not specified)
+                              default = %i
+                           ''' % self.default_memory_work_master, 
+                      metavar='INTEGER')
 
-    # ... get in the "aw"
-    this_label='maximum memory(in megawords) that can be allocated dynamically (per allocation) '
-    parser.add_option("--aw", type="int", nargs=1,  
-                  action="store", dest="dest_aw",
-                  help=this_label, metavar="INT_NUM")
+    parser.add_option('--nw', 
+                      type='int', 
+                      nargs=1,  
+                      action='store', 
+                      dest='dest_nw', 
+                      help='''set max memory (in megawords) for WORK array
+                              for the slaves, default = %i
+                           ''' % self.default_memory_work_slave, 
+                      metavar='INTEGER')
+
+    parser.add_option('--aw', 
+                      type='int', 
+                      nargs=1,  
+                      action='store', 
+                      dest='dest_aw', 
+                      help='''set max dynamically allocatable memory (in megawords)
+                              default = %i
+                           ''' % self.default_memory_dynamic, 
+                      metavar='INTEGER')
+
 
     # ... get in the parallel stuff, TODO: add default from Makefile.config
     if (len(self.mpirun) > 0):
@@ -356,7 +372,7 @@ This allows you to omit the molecule and input files. '
       this_label='run parallel with n nodes, default: serial mode'
     parser.add_option("--mpi", type="int", nargs=1,  
                   action="store", dest="dest_mpi", 
-                  help=this_label, metavar="INT_NUM")
+                  help=this_label, metavar="INTEGER")
 
     # machinefile for parallel calculations
     if (len(self.mpirun) > 0):
@@ -371,7 +387,7 @@ This allows you to omit the molecule and input files. '
     this_label='limit dirac.x execution time (in seconds); default - do not limit'
     parser.add_option("--timeout", type="int", nargs=1,  
                   action="store", dest="dest_timeout",
-                  help=this_label, metavar="INT_NUM")
+                  help=this_label, metavar="INTEGER")
 
     # .. read in the install_dir, what is the basic global variable...
     this_label="pam.py\'s directory, inserted py-module default:"+install_dir_default
@@ -533,19 +549,17 @@ This allows you to omit the molecule and input files. '
         print 'assigned outpu file suffix=',self.output_suffix
 
     if (options.dest_mw is not None) :
-      self.mem=int(options.dest_mw)
+      self.max_memory_work_master=int(options.dest_mw)
       if self.iprint >= 5:
         print 'assigned master memory, mw=',self.mem
 
     if (options.dest_nw is not None) :
-      self.slavemem=int(options.dest_nw) 
-      self.slavemem_set=True
-      print 'self.slavemem_set!',self.slavemem_set
+      self.max_memory_work_slave=int(options.dest_nw) 
       if self.iprint >= 5:
         print 'assigned slave memory, nw=',self.slavemem
 
     if (options.dest_aw is not None) :
-     self.maxmem=int(options.dest_aw)
+     self.max_memory_dynamic=int(options.dest_aw)
      if self.iprint >= 5:
        print 'assigned maxmem=',self.maxmem
 
@@ -991,16 +1005,13 @@ This allows you to omit the molecule and input files. '
     self.basdir=self.input_directory+":"+self.basdir
     os.putenv("BASDIR",self.basdir)
 
-    dirwrk  =  str( self.mem     *1000000 )
-    os.putenv("DIRWRK", dirwrk)
+    os.putenv('DIRWRK', str(self.max_memory_work_master*1000000))
 
     if (self.parallel_run) :
-      os.putenv("DIRPAR","1")
-      dirnod  =  str( self.slavemem*1000000 )
-      os.putenv("DIRNOD", dirnod)
-    if (self.maxmem is not None): 
-      dirmaxmem=str( self.maxmem*1000000 )
-      os.putenv("DIRMAX",dirmaxmem)
+        os.putenv('DIRPAR', '1')
+        os.putenv('DIRNOD', str(self.max_memory_work_slave*1000000))
+    if (self.max_memory_dynamic is not None): 
+        os.putenv('DIRMAX', str(self.max_memory_dynamic*1000000))
 
     # Next line is for IBM only but will not hurt other systems
     os.putenv("XLFRTEOPTS","'namelist=old'")
@@ -1350,13 +1361,6 @@ This allows you to omit the molecule and input files. '
       print 'This is serial run (no or wrong MPIRUN assigned), the flag --mpi=',self.nr_proc,' has no meaning.'
       print
     
-    ### take care of the slave memory for parallel runs ###
-    if (self.parallel_run and self.slavemem_set is False) :
-      #print 'self.slavemem_set=',self.slavemem_set
-      self.slavemem=self.mem
-      print 'Slave memory set to ',self.slavemem, ' megawords.'
-      pass
-
     sys.stdout.flush()
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
