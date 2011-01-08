@@ -394,7 +394,7 @@ class pam_enviroment:
         help    = "set scratch directory [default: %default]",
         metavar = "FULL_PATH"
         )
-    group.add_option("--put", 
+    group.add_option("--put", "--copy", 
         type    = "string", 
         action  = "store", 
         dest    = "dest_put", 
