@@ -981,7 +981,7 @@ class pam_enviroment:
       elif (self.vg_debug): # set command for valgrid
       # or: $VALGRIND -v --error-limit=no --leak-check=full --track-origins=yes --show-reachable=yes 
       # serial: DIRAC_CMD="$VALGRIND_TOOL --log-fd=1
-        self.dirac_cmd=self.valgrind+' --log-fd=1 '+self.dirac_cmd
+        self.dirac_cmd = self.valgrind + ' --log-fd=1 ' + this_dirac_exe
       else: # no debug, plain run
         self.dirac_cmd=this_dirac_exe
 
