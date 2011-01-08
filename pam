@@ -96,7 +96,6 @@ class pam_enviroment:
     self.dirac_cmd=''
     # dirac-executable position (could be reset by after flag reading)
     self.dirac_exe=install_dir_default+"/dirac.x"
-    self.no_diracexe_copy=False
     # nice command - priority (nice/npri)
     self.nice_cmd=''
  
@@ -157,8 +156,8 @@ class pam_enviroment:
     self.incmo=False
     self.outcmo=False
     # ... DFFCK2
-    self.infck=False
-    self.outfck=False 
+    self.infock=False
+    self.outfock=False 
  
     #execution time-limit
     self.set_timeout_limit=False
@@ -294,232 +293,265 @@ class pam_enviroment:
   ##################################################################
     #print 'processing pam arguments....'
     global install_dir
-    from optparse import OptionParser
-    usage="Usage: %prog [Options] --mol=*[.mol/.xyz] --inp=*[.inp]"
+
+    from optparse import OptionParser, OptionGroup
+
+    usage = """
+          %prog [options] --inp=*.inp --mol=*.mol
+      or: %prog [options] --inp=*.inp --mol=*.xyz
+      or: %prog [options] --fullrestart=ARCHIVE.tgz"""
+
     parser = OptionParser(usage)
 
-  # ... get in the print level 
-    this_label='script verbose print level, default:'+str(self.iprint_default)
-    parser.add_option("-i", "--iprint", type="int", nargs=1,  
-                  action="store", dest="dest_iprint", 
-                  help=this_label, metavar="INTEGER")
-
-  # ... archivation of files
-    this_label='Do not create a .tgz archive for the calculation; default - create.'
-    parser.add_option("--noarch",
-                  action="store_true", dest="dest_noarch", 
-                  help=this_label)
-
-  # ... full-restart  ...
-    this_label='All files from ARCHIVE.tgz are unpacked, not just DFCOEF. \
-This allows you to omit the molecule and input files. '
-    parser.add_option("--full-restart",type="string",nargs=1,
-                  action="store", dest="dest_fullrestart", 
-                  help=this_label, metavar="ARCHIVE.tgz")
-
-  # ... output suffix 
-    this_label='file suffix for output; default:'+self.output_suffix
-    parser.add_option("--run", type="string", nargs=1,  
-                  action="store", dest="dest_run", 
-                  help=this_label, metavar="STRING")
-
-
-    parser.add_option('--mw', 
-                      type='int', 
-                      nargs=1,  
-                      action='store', 
-                      dest='dest_mw', 
-                      help='''set max memory (in megawords) for WORK array
-                              for the master (and slaves if --nw not specified)
-                              default = %i
-                           ''' % self.default_memory_work_master, 
-                      metavar='INTEGER')
-
-    parser.add_option('--nw', 
-                      type='int', 
-                      nargs=1,  
-                      action='store', 
-                      dest='dest_nw', 
-                      help='''set max memory (in megawords) for WORK array
-                              for the slaves, default = %i
-                           ''' % self.default_memory_work_slave, 
-                      metavar='INTEGER')
-
-    parser.add_option('--aw', 
-                      type='int', 
-                      nargs=1,  
-                      action='store', 
-                      dest='dest_aw', 
-                      help='''set max dynamically allocatable memory (in megawords)
-                              default = %i
-                           ''' % self.default_memory_dynamic, 
-                      metavar='INTEGER')
-
-
-    # ... get in the parallel stuff, TODO: add default from Makefile.config
-    if (len(self.mpirun) > 0):
-      this_label="mpi launcher, default (from Makefile.config):"+self.mpirun
-    else:
-      this_label="mpi launcher, default - none, so serial run"
-    parser.add_option("--mpirun", type="string", nargs=1,
-                  action="store",dest="dest_mpirun",  
-                  help=this_label,metavar="STRING")
-
-    if (self.parallel_build == True):
-      this_label='run parallel (info from Makefile.config) with n nodes, default '+str(self.nr_proc)+' nodes - what is pure serial run.'
-    else:
-      this_label='run parallel with n nodes, default: serial mode'
-    parser.add_option("--mpi", type="int", nargs=1,  
-                  action="store", dest="dest_mpi", 
-                  help=this_label, metavar="INTEGER")
-
-    # machinefile for parallel calculations
-    if (len(self.mpirun) > 0):
-      this_label='machinefile for the parallel run; default:'+self.machinefile
-    else:
-      this_label='machinefile for the parallel run; default: none, serial run'
-    parser.add_option("--machfile",type="string", nargs=1,  
-                  action="store",dest="dest_machfile", 
-                  help=this_label,metavar="STRING")
-
-    # ... get in the timeout limit (in seconds)
-    this_label='limit dirac.x execution time (in seconds); default - do not limit'
-    parser.add_option("--timeout", type="int", nargs=1,  
-                  action="store", dest="dest_timeout",
-                  help=this_label, metavar="INTEGER")
-
-    # .. read in the install_dir, what is the basic global variable...
-    this_label="pam.py\'s directory, inserted py-module default:"+install_dir_default
-    parser.add_option("--install_dir", type="string", nargs=1,
-                  action="store",dest="dest_install_dir",  
-                  help=this_label,metavar="STRING")
-
-    # .. read in the work-path
-    this_label="Directory for the work area; default: "+self.workpath
-    parser.add_option("--wrkpath", type="string", nargs=1,
-                  action="store",dest="dest_wrkpath",
-                  help=this_label,metavar="STRING")
-
-    # .. read in the workdirectory
-    this_label="Working directory, default: "+self.workpath+"/<loginname.mol_inp>.PID"
-    parser.add_option("--wrkdir", type="string", nargs=1,
-                  action="store",dest="dest_wrkdir",  
-                  help=this_label,metavar="STRING")
-
-    # .. read in the basis set directory if different from default
-    this_label="basis set directory, default:"+self.basdir
-    parser.add_option("--basdir", type="string", nargs=1,
-                  action="store",dest="dest_basdir",  
-                  help=this_label,metavar="STRING")
-
-    # ... take own dirac executable instead of the default in install_dir
-    this_label="own dirac executable, default:"+self.dirac_exe
-    parser.add_option("--dirac", type="string", nargs=1,
-                  action="store",dest="dest_dirac",  
-                  help=this_label,metavar="/your/path/to/dirac.x")
-
-    # ... do not copy dirac.x executable into workdir
-    this_label="Do not copy dirac.x to the working directory (default), instead run it in place"
-    parser.add_option("--no-exe-copy", 
-                  action="store_true",dest="dest_no_exe_copy",  
-                  help=this_label)
-
-    # ... set the priority
-    this_label="Set the highest priority of the dirac run process (through nice/npri)"
-    parser.add_option("--nice", 
-                  action="store_true",dest="dest_nice", 
-                  help=this_label)
-
-    # ... no backup 
-    this_label="do not backup files (default: backup them)"
-    parser.add_option("--nobackup", 
-                  action="store_true",dest="dest_nobackup",  
-                  help=this_label)
-
-    # .. get files from the work dir
-    this_label="get files from the working directory"
-    parser.add_option("--get",type="string", nargs=1,
-                  action="store",dest="dest_get",
-                  help=this_label,metavar="\"file1 file2...\"")
-
-    # .. copy files into the work dir
-    this_label="copy files into the working directory"
-    parser.add_option("--put","--copy",type="string", nargs=1,
-                  action="store",dest="dest_put",
-                  help=this_label,metavar="\"file1 file2...\"")
-
-    # .. DFCOEF
-    this_label="Copy DFCOEF from job directory to work area (when restarting)"
-    parser.add_option("--incmo",
-                  action="store_true",dest="dest_incmo",
-                  help=this_label)
-
-    this_label="Save DFCOEF to job directory from work area (for restart)"
-    parser.add_option("--outcmo","--utcmo",
-                  action="store_true",dest="dest_outcmo",
-                  help=this_label)
-
-    # ... DFFCK2
-    this_label="Copy DFFCK2 from job directory to work area"
-    parser.add_option("--infck",
-                  action="store_true",dest="dest_infck",
-                  help=this_label)
-
-    this_label="Save DFFCK2 to job directory from work area"
-    parser.add_option("--outfck",
-                  action="store_true",dest="dest_outfck",
-                  help=this_label)
-
-    # ... keep workdir after calculations
-    this_label="keep the work directory after calculations (default: remove it)"
-    parser.add_option("--keepwrk", 
-                  action="store_true",dest="dest_keepwrk",  
-                  help=this_label)
-
-    #  ... debugging 
-    this_label="run in debugger (default: do not run)"
-    parser.add_option("--debug", 
-                  action="store_true",dest="dest_debug", 
-                  help=this_label)
-
-    this_label="debugger (full path), default: "+self.debugger
-    parser.add_option("--debugger",
-                  action="store",dest="dest_debugger",
-                  help=this_label, metavar="STRING")
-
-    this_label="run dirac in the valgrind debugger, http://valgrind.org (default: do not run)"
-    parser.add_option("--vg", 
-                  action="store_true",dest="dest_vg", 
-                  help=this_label)
-
-    #  ... profiling
-    this_label="do the profiling after the run (default: do not do)"
-    parser.add_option("--profile", 
-                  action="store_true",dest="dest_profile", 
-                  help=this_label)
-
-    this_label="profiler (full path), default: "+self.profiler
-    parser.add_option("--profiler",
-                  action="store",dest="dest_profiler",
-                  help=this_label, metavar="STRING")
-
-    # mol-file
-    parser.add_option('--mol', 
-        type   = 'string',
-        nargs  = 1,
-        action = 'store',
-        dest   = 'mol_file',
-        help   = 'molecule file *.mol/*.xyz'
+    group = OptionGroup(parser, "Input and molecule files")
+    group.add_option("--inp", 
+        type   = "string",
+        action = "store",
+        dest   = "inp_file",
+        help   = "input file *.inp"
         )
-
-    # inp-file
-    parser.add_option('--inp', 
-        type   = 'string',
-        nargs  = 1,
-        action = 'store',
-        dest   = 'inp_file',
-        help   = 'input file *.inp'
+    group.add_option("--mol", 
+        type   = "string",
+        action = "store",
+        dest   = "mol_file",
+        help   = "molecule file *.mol or *.xyz"
         )
+    group.add_option("--fullrestart", 
+        type   = "string",
+        action = "store",
+        dest   = "dest_fullrestart",
+        help   = """all files from ARCHIVE.tgz are unpacked,
+                    not just DFCOEF - this allows you to omit --inp and --mol
+                 """,
+        metavar = "ARCHIVE.tgz"
+        )
+    parser.add_option_group(group)
+
+    group = OptionGroup(parser, "Output files")
+    group.add_option("--suffix", 
+        type    = "string", 
+        action  = "store", 
+        dest    = "dest_suffix", 
+        default = self.output_suffix,
+        help    = "file suffix for output [default: %default]",
+        metavar = "STRING"
+        )
+    group.add_option("--noarch", 
+        action  = "store_true", 
+        dest    = "dest_noarch", 
+        default = False,
+        help    = "do not create a tgz archive [default: create it]",
+        )
+    group.add_option("--nobackup", 
+        action  = "store_true", 
+        dest    = "dest_nobackup", 
+        default = False,
+        help    = "do not backup old outputs [default: back them up]",
+        )
+    parser.add_option_group(group)
+
+    group = OptionGroup(parser, "Memory specification")
+    group.add_option("--mw", 
+        type    = "int", 
+        action  = "store", 
+        dest    = "dest_mw", 
+        default = self.default_memory_work_master,
+        help    = """set max memory (in megawords) for WORK array
+                     for the master (and slaves if --nw not specified)
+                     [default: %default]
+                  """,
+        metavar = "INTEGER"
+        )
+    group.add_option("--nw", 
+        type    = "int", 
+        action  = "store", 
+        dest    = "dest_nw", 
+        default = self.default_memory_work_slave,
+        help    = """set max memory (in megawords) for WORK array
+                     for the slaves
+                     [default: %default]
+                  """,
+        metavar = "INTEGER"
+        )
+    group.add_option("--aw", 
+        type    = "int", 
+        action  = "store", 
+        dest    = "dest_aw", 
+        default = self.default_memory_dynamic,
+        help    = """set max dynamically allocatable memory (in megawords)
+                     [default: %default]
+                  """,
+        metavar = "INTEGER"
+        )
+    parser.add_option_group(group)
+
+    group = OptionGroup(parser, "Scratch directory")
+    group.add_option("--scratch", 
+        type    = "string", 
+        action  = "store", 
+        dest    = "dest_wrkdir", 
+        default = self.workpath + "/<loginname.mol_inp>.PID",
+        help    = "set scratch directory [default: %default]",
+        metavar = "FULL_PATH"
+        )
+    group.add_option("--put", 
+        type    = "string", 
+        action  = "store", 
+        dest    = "dest_put", 
+        help    = "copy files to scratch directory",
+        metavar = "\"file1 file2 ...\""
+        )
+    group.add_option("--get", 
+        type    = "string", 
+        action  = "store", 
+        dest    = "dest_get", 
+        help    = "get files from scratch directory",
+        metavar = "\"file1 file2 ...\""
+        )
+    group.add_option("--incmo", 
+        action  = "store_true", 
+        dest    = "dest_incmo", 
+        default = False,
+        help    = "copy DFCOEF to scratch directory [default: %default]",
+        )
+    group.add_option("--outcmo", 
+        action  = "store_true", 
+        dest    = "dest_outcmo", 
+        default = False,
+        help    = "get DFCOEF from scratch directory [default: %default]",
+        )
+    group.add_option("--infock", 
+        action  = "store_true", 
+        dest    = "dest_infock", 
+        default = False,
+        help    = "copy DFFCK2 to scratch directory [default: %default]",
+        )
+    group.add_option("--outfock", 
+        action  = "store_true", 
+        dest    = "dest_outfock", 
+        default = False,
+        help    = "get DFFCK2 from scratch directory [default: %default]",
+        )
+    group.add_option("--keepwrk", 
+        action  = "store_true", 
+        dest    = "dest_keepwrk", 
+        default = False,
+        help    = "keep the scratch directory after calculation [default: create it]",
+        )
+    parser.add_option_group(group)
+
+    group = OptionGroup(parser, "MPI parallelization")
+    group.add_option("--mpi", 
+        type    = "int", 
+        action  = "store", 
+        dest    = "dest_mpi", 
+        default = None,
+        help    = "set number of cores [default: %default]",
+        metavar = "INTEGER"
+        )
+    group.add_option("--mpirun", 
+        type    = "string", 
+        action  = "store", 
+        dest    = "dest_mpirun", 
+        help    = "set MPI launcher, default is to use MPIRUN set in Makefile.config",
+        metavar = "STRING"
+        )
+    group.add_option("--machfile", 
+        type    = "string", 
+        action  = "store", 
+        dest    = "dest_machfile", 
+        help    = """set machinefile for parallel run
+                     default is to use the machinefile set in Makefile.config
+                  """,
+        metavar = "STRING"
+        )
+    parser.add_option_group(group)
+
+#   radovan: this can be evaluated from sys.argv[0]
+    group = OptionGroup(parser, "Modify default locations")
+    group.add_option("--installdir", 
+        type    = "string", 
+        action  = "store", 
+        dest    = "dest_install_dir", 
+        default = install_dir_default,
+        help    = "directory where pam resides [default: %default]",
+        metavar = "FULL_PATH"
+        )
+    group.add_option("--basis", 
+        type    = "string", 
+        action  = "store", 
+        dest    = "dest_basdir", 
+        default = self.basdir,
+        help    = "basis set directory [default: %default]",
+        metavar = "FULL_PATH"
+        )
+    group.add_option("--dirac", 
+        type    = "string", 
+        action  = "store", 
+        dest    = "dest_dirac", 
+        default = self.dirac_exe,
+        help    = "dirac executable [default: %default]",
+        metavar = "FULL_PATH"
+        )
+    parser.add_option_group(group)
+
+    group = OptionGroup(parser, "Advanced (programming, debugging, and automation)")
+    group.add_option("--debug", 
+        action  = "store_true", 
+        dest    = "dest_debug", 
+        default = False,
+        help    = "run in debugger [default: %default]",
+        )
+    group.add_option("--debugger", 
+        type    = "string", 
+        action  = "store", 
+        dest    = "dest_debugger", 
+        default = self.debugger,
+        help    = "set full path to debugger [default: %default]",
+        metavar = "FULL_PATH"
+        )
+    group.add_option("--valgrind", 
+        action  = "store_true", 
+        dest    = "dest_vg", 
+        default = False,
+        help    = "run with valgrind [default: %default]",
+        )
+    group.add_option("--profile", 
+        action  = "store_true", 
+        dest    = "dest_profile", 
+        default = False,
+        help    = "perform profiling [default: %default]",
+        )
+    group.add_option("--profiler", 
+        type    = "string", 
+        action  = "store", 
+        dest    = "dest_profiler", 
+        default = self.profiler,
+        help    = "set full path to profiler [default: %default]",
+        metavar = "FULL_PATH"
+        )
+    group.add_option("--verbosity", 
+        type    = "int", 
+        action  = "store", 
+        dest    = "dest_iprint", 
+        default = self.iprint_default,
+        help    = "set pam verbosity [default: %default]",
+        metavar = "INTEGER"
+        )
+    group.add_option("--timeout", 
+        type    = "int", 
+        action  = "store", 
+        dest    = "dest_timeout", 
+        help    = "limit dirac.x execution time (in seconds) [default: no limit]",
+        metavar = "INTEGER"
+        )
+    group.add_option("--nice", 
+        action  = "store_true", 
+        dest    = "dest_nice", 
+        default = False,
+        help    = "run with low priority [default: %default]",
+        )
+    parser.add_option_group(group)
 
 #   process input
     (options, args) = parser.parse_args()
@@ -529,32 +561,11 @@ This allows you to omit the molecule and input files. '
         print(parser.format_help().strip())
         sys.exit()
 
-    # now assign individual arguments
-    if (options.dest_iprint is not None) :
-     self.iprint=int(options.dest_iprint)
-     if self.iprint > 7:
-      print 'assigned iprint=',self.iprint
-
-    # now assign individual arguments
-    if (options.dest_run is not None) :
-      self.output_suffix=options.dest_run
-      if self.iprint >= 5:
-        print 'assigned outpu file suffix=',self.output_suffix
-
-    if (options.dest_mw is not None) :
-      self.max_memory_work_master=int(options.dest_mw)
-      if self.iprint >= 5:
-        print 'assigned master memory, mw=',self.mem
-
-    if (options.dest_nw is not None) :
-      self.max_memory_work_slave=int(options.dest_nw) 
-      if self.iprint >= 5:
-        print 'assigned slave memory, nw=',self.slavemem
-
-    if (options.dest_aw is not None) :
-     self.max_memory_dynamic=int(options.dest_aw)
-     if self.iprint >= 5:
-       print 'assigned maxmem=',self.maxmem
+    self.iprint                 = int(options.dest_iprint)
+    self.output_suffix          = options.dest_suffix
+    self.max_memory_work_master = int(options.dest_mw)
+    self.max_memory_work_slave  = int(options.dest_nw)
+    self.max_memory_dynamic     = int(options.dest_aw)
 
     if (options.dest_mpi is not None) :
        self.nr_proc=int(options.dest_mpi)
@@ -568,6 +579,7 @@ This allows you to omit the molecule and input files. '
           print
           print 'Despite parallel build, set serial run as no --mpi=xxx specified.'
 
+#radovan: it is always not none
     if (options.dest_mpirun is not None):
         if (os.path.isfile(options.dest_mpirun)):
         # todo : check functionality of mpirun ?
@@ -584,6 +596,7 @@ This allows you to omit the molecule and input files. '
     else:
         pass
 
+#radovan: it is always not none
     if (options.dest_machfile is not None):
      self.machinefile=options.dest_machfile
      # todo: check it
@@ -601,33 +614,11 @@ This allows you to omit the molecule and input files. '
     elif (install_dir_default is None) :
       sys.exit("The installation directory is not set ! Error exit !")
 
-    if (options.dest_wrkdir is not None):
-      self.workdir=str(options.dest_wrkdir)
-      if self.iprint >= 5:
-        print 'assigned wrkdir=',self.workdir
+    self.workdir   = str(options.dest_wrkdir)
+    self.basdir    = str(options.dest_basdir)
+    self.dirac_exe = str(options.dest_dirac)
 
-    if (options.dest_wrkpath is not None):
-      self.workpath=str(options.dest_wrkpath)
-      if self.iprint >= 5:
-        print 'assigned wrkpath=',self.workpath
-
-    if (options.dest_basdir is not None) :
-      self.basdir=str(options.dest_basdir)
-      if self.iprint >= 5:
-        print 'assigned basdir=',self.basdir
-    else:
-      if self.iprint >= 5:
-        print 'used default basdir=',self.basdir
-
-    if (options.dest_dirac is not None) :
-      self.dirac_exe=str(options.dest_dirac)
-      if self.iprint >= 5:
-        print 'assigned dirac_exe=',self.dirac_exe
-    else:
-      if self.iprint >= 5:
-        print 'used default dirac_exe=',self.dirac_exe
-
-    if (options.dest_nice is not None) :
+    if (options.dest_nice):
     # assign here the full nice/npri command; TODO: set for windows (in own routine) 
         if (os.path.isfile("/usr/sbin/npri")):
            self.nice_cmd="npri -h129 "
@@ -636,14 +627,6 @@ This allows you to omit the molecule and input files. '
            self.nice_cmd="nice -1 "
         if self.iprint >= 5:
            print 'nice prirority set ! self.nice_cmd=',self.nice_cmd
-
-    if (options.dest_no_exe_copy is not None):
-      self.no_diracexe_copy=options.dest_no_exe_copy
-      if self.iprint >= 5:
-        print 'assigned self.no_diracexe_copy=',self.no_diracexe_copy
-    else:
-      if self.iprint >= 5:
-        print 'used default self.no_diracexe_copy=',self.no_diracexe_copy
 
     if (options.dest_timeout is not None) :
       self.timeout=int(options.dest_timeout)
@@ -654,15 +637,8 @@ This allows you to omit the molecule and input files. '
       if self.iprint >= 5:
         print 'no timeout assigned !'
 
-    if (options.dest_nobackup is not None):
-      self.nobackup=options.dest_nobackup      
-      if self.iprint >= 5:
-        print 'assigned nobackup=',self.nobackup
-
-    if (options.dest_noarch is not None):
-      self.no_archive=options.dest_noarch
-      if self.iprint >= 5:
-        print 'assigned no_archive=',self.no_archive
+    self.nobackup=options.dest_nobackup      
+    self.no_archive=options.dest_noarch
 
     if (options.dest_put is not None):
       self.put_files=options.dest_put
@@ -674,25 +650,10 @@ This allows you to omit the molecule and input files. '
       if self.iprint >= 5:
         print 'assigned get_files ?',(self.get_files is not None),'...',self.get_files
 
-    if (options.dest_incmo is not None):
-      self.incmo=options.dest_incmo
-      if self.iprint >= 5:
-        print 'assigned self.incmo:',self.incmo
-
-    if (options.dest_outcmo is not None):
-      self.outcmo=options.dest_outcmo
-      if self.iprint >= 5:
-        print 'assigned self.outcmo:',self.outcmo
-
-    if (options.dest_infck is not None):
-      self.infck=options.dest_infck
-      if self.iprint >= 5:
-        print 'assigned self.infck:',self.infck
-
-    if (options.dest_outfck is not None):
-      self.outfck=options.dest_outfck
-      if self.iprint >= 5:
-        print 'assigned self.outfck:',self.outfck
+    self.incmo=options.dest_incmo
+    self.outcmo=options.dest_outcmo
+    self.infock=options.dest_infock
+    self.outfock=options.dest_outfock
 
     if (options.dest_fullrestart is not None):
       self.archive_name=options.dest_fullrestart
@@ -700,15 +661,10 @@ This allows you to omit the molecule and input files. '
       if self.iprint >= 5:
         print 'assigned full-restart from archive file',self.archive_name
 
-    if (options.dest_keepwrk is not None) :
-      self.keepwrk=options.dest_keepwrk
-      if self.iprint >= 5:
-        print 'assigned keepwrk =',self.keepwrk
+    self.keepwrk=options.dest_keepwrk
 
-    if (options.dest_debug is not None) :
-        self.debug=True
-        if self.iprint >= 5:
-            print 'do debugging,',self.debug
+    if options.dest_debug:
+        self.debug = True
 
     if (options.dest_debugger is not None) :
         if (os.path.isfile(options.dest_debugger)):
@@ -719,20 +675,13 @@ This allows you to omit the molecule and input files. '
         if self.iprint >= 5:
             print 'assigned debugger,',self.debugger
 
-    if (options.dest_vg is not None) :
-      self.vg_debug=options.dest_vg
-      if self.iprint >= 5:
-        print 'do the valgrind debug with',self.valgrind
+    if options.dest_vg:
+        self.vg_debug = True
 
-    if (options.dest_profile is not None) :
-      self.profile=True
-      if self.iprint >= 5:
-        print 'do profiling,',self.profile
+    if options.dest_profile:
+        self.profile = True
 
-    if (options.dest_profiler is not None) :
-      self.profiler=options.dest_profiler
-      if self.iprint >= 5:
-        print 'assigned profiler,',self.profiler
+    self.profiler=options.dest_profiler
 
     # assign input directory ...
     self.input_directory=os.getcwd()
@@ -879,8 +828,7 @@ This allows you to omit the molecule and input files. '
     #print 'set_wrkdir: install_dir=',install_dir
 
     # copy dirac.x executable if wanted
-    if (not self.no_diracexe_copy) :
-      self.copy_file(self.dirac_exe,self.workdir+'/'+'dirac.x')
+    self.copy_file(self.dirac_exe,self.workdir+'/'+'dirac.x')
 
     # the existence of self.input_file molecule,self.input_file_dirac is verified
     self.copy_file(self.input_file_molecule,self.workdir+'/'+'MOLECULE.MOL')
@@ -907,7 +855,7 @@ This allows you to omit the molecule and input files. '
       copy_single_file(file_name)
 
     # copies DFFCK2 into workdir
-    if (self.infck is True):
+    if (self.infock is True):
       file_name="DFFCK2"
       copy_single_file(file_name)
 
@@ -994,12 +942,11 @@ This allows you to omit the molecule and input files. '
     os.putenv("BASDIR",self.basdir)
 
     os.putenv('DIRWRK', str(self.max_memory_work_master*1000000))
+    os.putenv('DIRMAX', str(self.max_memory_dynamic*1000000))
 
     if (self.parallel_run) :
         os.putenv('DIRPAR', '1')
         os.putenv('DIRNOD', str(self.max_memory_work_slave*1000000))
-    if (self.max_memory_dynamic is not None): 
-        os.putenv('DIRMAX', str(self.max_memory_dynamic*1000000))
 
     # Next line is for IBM only but will not hurt other systems
     os.putenv("XLFRTEOPTS","'namelist=old'")
@@ -1016,12 +963,7 @@ This allows you to omit the molecule and input files. '
   #     set the dirac command to be launched by the system (serial or parallel)
   #
   #############################################################################################
-    if (self.no_diracexe_copy):
-      # using dirac.x sitting in the installation-directory
-      this_dirac_exe=self.dirac_exe
-    else:
-      # using dirac.x which is already copied in the work-directory
-      this_dirac_exe=self.workdir+'/dirac.x'
+    this_dirac_exe=self.workdir+'/dirac.x'
 
     if (self.parallel_run and self.parallel_build):
       # DIRAC_CMD="$DIRAC_CMD -np $MPI_NPROC -wd $WRK"
@@ -1289,7 +1231,7 @@ This allows you to omit the molecule and input files. '
       save_single_file(file_name)
 
     # DFFCK2
-    if (self.outfck):
+    if (self.outfock):
       file_name="DFFCK2"
       save_single_file(file_name)
 
