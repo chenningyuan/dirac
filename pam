@@ -274,14 +274,13 @@ class pam_enviroment:
      """
      prints message on the DIRAC executable exit according to the input parameter
      """
-     print " " 
-     print " Return code : ",returncode 
-     print " Exit date   : ",datetime.datetime.now()
-     print " " 
+     print
+     print '  exit date      :', datetime.datetime.now()
+     print '  exit code      :', returncode 
      if (returncode == 0):
-        print "   *** NORMAL EXIT" 
+        print '  exit           : normal'
      else:
-        print "   *** ABNORMAL EXIT" 
+        print '  exit           : ABNORMAL (CHECK DIRAC OUTPUT)'
      sys.stdout.flush()
      # notifyuser ?
 
@@ -1342,7 +1341,6 @@ This allows you to omit the molecule and input files. '
 
     if (self.set_timeout_limit):
       print "  Allowed runtime:",self.timeout,' seconds. Killing afterwards.'
-    print
     print
 
     # warning message on # of proc >1 
