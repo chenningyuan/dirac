@@ -282,6 +282,7 @@ class pam_enviroment:
         print '  exit           : normal'
      else:
         print '  exit           : ABNORMAL (CHECK DIRAC OUTPUT)'
+     print
      sys.stdout.flush()
      # notifyuser ?
 
@@ -1139,7 +1140,7 @@ class pam_enviroment:
         p=subprocess.Popen(self.dirac_cmd,shell=True,stdin=subprocess.PIPE,stdout=self.f)
         print '  pid            : %s ' % p.pid
         p.wait()
-        self.exit_function(returncode=p.returncode)
+        return_code = p.returncode
         self.f.close()
       elif (self.parallel_run==False) :
         print 'debugging dirac in plain serial run...',self.dirac_cmd
@@ -1153,10 +1154,11 @@ class pam_enviroment:
       #TODO: clean of all dirac.x pid's
       os.kill(p.pid, signal.SIGTERM)
       print '****  Alas ! dirac.x was purposely killed ;)  ****'
-      self.exit_function(returncode=signal.SIGTERM)
+      return_code = signal.SIGTERM
 
     # do the profiling after the execution
     if self.profile: self.profile_dirac()
+    return return_code
 
   def profile_dirac(self):
   # profile after the DIRAC execution- we are in the working directory
@@ -1315,9 +1317,10 @@ class pam_run(pam_enviroment):
       self.pam_variables.distribute_work_dir()
     self.pam_variables.set_dirac_environment()
     self.pam_variables.set_dirac_cmd()
-    self.pam_variables.execute_dirac()
+    return_code = self.pam_variables.execute_dirac()
     self.pam_variables.save_files()
     self.pam_variables.remove_work_dir()
+    self.exit_function(return_code)
 
 ###########################################################################
 ###                   process the main function                         ###
