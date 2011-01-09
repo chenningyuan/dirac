@@ -39,12 +39,12 @@ module xc_driver
 #endif
 #ifdef MOD_OPENRSP
   use xc_response
-  use xc_london_c1
 #endif
   use dirac_mpi
 #ifdef MOD_XCFUN
   use xcfun
 #endif
+  use xc_london_c1
 
    implicit none
 
