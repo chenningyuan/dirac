@@ -8,7 +8,7 @@
 # Written by Miro ILIAS, Matej Bel University, 
 #        Banska Bystrica, Slovakia, end of 2010
 #
-# Contributors:  Rado BAST, ...
+# Contributors:  Rado BAST, Norway
 #
 ##########################################################################
 import os
@@ -437,7 +437,7 @@ class pam_enviroment:
         action  = "store_true", 
         dest    = "dest_keepwrk", 
         default = False,
-        help    = "keep the scratch directory after calculation [default: create it]",
+        help    = "keep the scratch directory after calculation [default: delete it]",
         )
     parser.add_option_group(group)
 
