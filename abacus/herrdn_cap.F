@@ -445,6 +445,11 @@ CMI  &      JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
 
       INTEGER FINDIUNNO
 
+!radovan: initialize iunno
+!         valgrind issues use of uninitialized values
+!         in findiunno
+      iunno = 0
+
 C ... make unique numbers on centers
       ICENT   = 0
       IX = 0
@@ -572,7 +577,11 @@ C***********************************************************************
 
       INNO = 0
       DO I = 1 , MXCENT
-       IF (IUNNO(I,1).EQ.ICENT.AND.IUNNO(I,2).EQ.LL) INNO = I
+        if (iunno(i, 1) == icent) then
+           if (iunno(i, 2) == ll) then
+              inno = i
+           end if
+        end if
       ENDDO
 
       IF (INNO.EQ.0) THEN
