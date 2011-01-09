@@ -531,9 +531,12 @@ C     ***********************************************
 C     ***** Set up overlap distribution vectors *****
 C     ***********************************************
 C
+      SRFMAX = D0
       IF (ITYPE .EQ. 12) THEN
          IELCTR = 1
-         SRFMAX = D0
+!radovan: i moved it outside this if,
+!         otherwise it can be used uninitialized
+!        SRFMAX = D0
          THRSH  = THRESH
       ELSE
          IELCTR = 2
