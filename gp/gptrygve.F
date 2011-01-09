@@ -771,7 +771,7 @@ C
       CHARACTER*80  FILENM, STATUF, ACCESF, FORMF
       CHARACTER*(*) FILEIN, STATIN, ACCEIN, FORMIN
       INTEGER       FILELN, STATLN, ACCELN, FORMLN
-      LOGICAL OLDDX, FEXST, FIRST
+      LOGICAL OLDDX, FEXST, FIRST, access_is_direct
       COMMON /UNITAR/ IUNTAB(1:99)
       DATA FIRST /.TRUE./
       SAVE FIRST
@@ -819,9 +819,15 @@ C
 C
 C     We've got a file number now, get rid of the direct access case
 C
-!radovan: if we don't check for statln, valgrind issues *many* errors
-!         anyway it can't be 'DIRECT' if it's not at least six characters long
-      IF ((STATLN .GT. 5) .and. (ACCESF(1:6) .EQ. 'DIRECT')) THEN
+
+      access_is_direct = .false.
+      if (acceln > 5) then
+         if (accesf(1:6) == 'DIRECT') then
+            access_is_direct = .true.
+         end if
+      end if
+
+      IF (access_is_direct) THEN
          IF (FILELN .EQ. 0) THEN
             FILELN = 13
             FILENM(1:FILELN) = 'GPOPEN_UNIT'//CHRNOS(LUNIT/10)//
