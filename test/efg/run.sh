@@ -10,7 +10,7 @@ MENU=zerofield;
 FILTER=filter_zerofield;
 export MENU;
 export FILTER;
-../SCRIPTS/run.sh --mw=140  --aw=160 --utcmo
+../SCRIPTS/run.sh --mw=140  --aw=160 --outcmo
 ###############################
 echo "Field strength 0.001 ... DC"
 MENU=scf.ccsd.1;
@@ -31,7 +31,7 @@ MENU=bss+mfsso.zerofield;
 FILTER=filter_zerofield;
 export MENU;
 export FILTER;
-../SCRIPTS/run.sh --utcmo
+../SCRIPTS/run.sh --outcmo
 #<REMOVE_END>
 ###############################
 echo "Zero field...BSS "
@@ -39,7 +39,7 @@ MENU=bss.zerofield;
 FILTER=filter_zerofield;
 export MENU;
 export FILTER;
-../SCRIPTS/run.sh --incmo --utcmo
+../SCRIPTS/run.sh --incmo --outcmo
 ###############################
 echo "Field strength 0.001 ... BSS"
 MENU=bss.scf.ccsd.1;

@@ -33,7 +33,7 @@ MOL=O;
 MENU=O.2c_iotc;
 export MOL;
 export MENU;
-../SCRIPTS/run.sh --utcmo
+../SCRIPTS/run.sh --outcmo
 mv DFCOEF cf.O
 ln -sf cf.O DFPROJ
 
@@ -59,7 +59,7 @@ MOL=O;
 MENU=O.2c_iotc_noamfi;
 export MOL;
 export MENU;
-../SCRIPTS/run.sh --utcmo
+../SCRIPTS/run.sh --outcmo
 mv DFCOEF cf.O
 ln -sf cf.O DFPROJ
 #
