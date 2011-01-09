@@ -886,6 +886,19 @@ if [ $IPRINT -ge "7" ];  then
   echo '... after mpi stuff' 
 fi
 } # END mpi2check ()
+mpivendor_check () {
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+#
+#  Check "vendor" of MPI library 
+#
+#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+mpivendor=" "
+if [ "$mesp" = "mpi" ]; then
+
+  mpivendor="MPICH_deriv"
+ $echo "\nChecking for MPI library distributor other than MPICH(2), Intel MPI or Bull MPI:"
+fi
+} # END mpi2check ()
 
 
 find_mpi_path () {
@@ -2672,6 +2685,7 @@ arflag=
 # Parallel preprocessor directive need to be set
 set_compile_flags
 mpi2check
+mpivendor_check
 get_largefiles
 
 # given that all unix clones like linux, *bsd and mac osx have no
