@@ -4,8 +4,8 @@
 */Makefile
 */*/Makefile
 basis_dalton/*\*
-pam
-pam.py
+install_dir.py
+pam.sh
 pamq.py
 Makefile.config
 build/Makefile.dep
