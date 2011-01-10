@@ -367,10 +367,10 @@ class pam_enviroment:
         type    = "int", 
         action  = "store", 
         dest    = "dest_nw", 
-        default = self.default_memory_work_slave,
+        #default = self.default_memory_work_slave,
         help    = """set max memory (in megawords) for WORK array
                      for the slaves
-                     [default: %default]
+                     [default: the same set value as for Master ]
                   """,
         metavar = "INTEGER"
         )
@@ -565,7 +565,16 @@ class pam_enviroment:
     self.iprint                 = int(options.dest_iprint)
     self.output_suffix          = options.dest_suffix
     self.max_memory_work_master = int(options.dest_mw)
-    self.max_memory_work_slave  = int(options.dest_nw)
+
+    #miro: no read-in default for "--nw", as we need to check whether the parameter was set
+    # take the default value from the previously set "self.max_memory_work_master"
+    if (options.dest_nw is not None) :
+        # own set value
+        self.max_memory_work_slave  = int(options.dest_nw)
+    else :
+        # none value set - take the master setting
+        self.max_memory_work_slave  = self.max_memory_work_master
+
     self.max_memory_dynamic     = int(options.dest_aw)
 
     if (options.dest_mpi is not None) :
