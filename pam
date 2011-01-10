@@ -29,15 +29,13 @@ import datetime
 from install_dir import install_dir_default
 global install_dir
 install_dir=install_dir_default
-#---------------------------------------------------------------------------------
 def append_dirac_py_modules(dirac_install_dir):
-#
-# append directory with the common.py module file 
-# to import selected python objects used throughout the script
-#
-# NOTE: do the import of wanted python routine(s) in each procedure 
-# as "import common "  does not work...
-#
+  '''Append directory with the common.py module file 
+  to import selected python objects used throughout the script
+  
+  NOTE: do the import of wanted python routine(s) in each procedure 
+  as "import common "  does not work...'''
+
   modules_directory = dirac_install_dir + '/utils'
   if (not os.access(modules_directory,os.R_OK) ):
     print 'wrong directory or directory not readable !'
@@ -663,7 +661,7 @@ class pam_enviroment:
     if options.dest_debug:
         self.debug = True
 
-    if (options.dest_debugger is not None) :
+    if options.dest_debugger is not None:
         if (os.path.isfile(options.dest_debugger)):
             self.debugger=options.dest_debugger
         else:
@@ -705,24 +703,24 @@ class pam_enviroment:
     '''Assign "self.input_file_molecule" and "self.input_file_dirac"
     with proper input file names according to filled variables (class members)
     "self.input_molecule" and "self.input_dirac"'''
-    if (self.iprint >=5):
+    if self.iprint >=5:
       print '=== assign_mol_inp_files: ==='
       print 'self.input_molecule=',self.input_molecule
       print 'self.input_dirac=',self.input_dirac
 
-    if (os.path.isfile(self.input_molecule+'.mol')):
+    if os.path.isfile(self.input_molecule+'.mol'):
       self.input_file_molecule=self.input_molecule+'.mol'
-    elif (os.path.isfile(self.input_molecule+'.xyz')):
+    elif os.path.isfile(self.input_molecule+'.xyz'):
       self.input_file_molecule=self.input_molecule+'.xyz'
-    elif (os.path.isfile(self.input_molecule)):
+    elif os.path.isfile(self.input_molecule):
       self.input_file_molecule=self.input_molecule
     else:
       print 'Proper molecule input file does not exist !'
       sys.exit(-1)  
 
-    if (os.path.isfile(self.input_dirac+'.inp')):
+    if os.path.isfile(self.input_dirac+'.inp'):
       self.input_file_dirac=self.input_dirac+'.inp'
-    elif (os.path.isfile(self.input_dirac)):
+    elif os.path.isfile(self.input_dirac):
       self.input_file_dirac=self.input_dirac
     else:
       print 'Proper dirac input file does not exist !' 
@@ -730,13 +728,13 @@ class pam_enviroment:
       print 'self.input_file_dirac=',self.input_file_dirac
       sys.exit(-1)  
 
-    if (self.iprint >=5):
+    if self.iprint >=5:
       print 'assigned self.input_file_molecule=',self.input_file_molecule
       print 'assigned self.input_file_dirac=',self.input_file_dirac
 
   def set_output_name(self):
     'Set the output name string to be used later for naming the output file and the work directory'
-    if (self.iprint >=5 ):
+    if self.iprint >=5:
       print '\n set_output_name routine:'
       print 'self.input_molecule=',self.input_molecule
       print 'self.input_file_molecule=',self.input_file_molecule
@@ -744,32 +742,32 @@ class pam_enviroment:
       print 'self.input_file_dirac=',self.input_file_dirac
       print 'len(self.input_molecule),len(self.input_dirac):',len(self.input_molecule),len(self.input_dirac)
   
-    if (len(self.input_molecule) >0 and len(self.input_dirac) >0):
+    if len(self.input_molecule) >0 and len(self.input_dirac) >0:
 
-      if (self.input_file_molecule.find(".mol") != -1):
+      if self.input_file_molecule.find(".mol") != -1:
         mol_file_stripped=self.input_file_molecule.replace(".mol","",1 )
-        if (self.iprint >=7):
+        if self.iprint >=7:
           print '*.mol striped! mol_file_stripped=',mol_file_stripped
-      elif (self.input_file_molecule.find(".xyz") != -1):
+      elif self.input_file_molecule.find(".xyz") != -1:
         self.xyz_molecule_input = True
         mol_file_stripped=self.input_file_molecule.replace(".xyz","",1 )
-        if (self.iprint >=7):
+        if self.iprint >=7:
           print '*.xyz striped! mol_file_stripped=',mol_file_stripped
       else: # no suffix, never mind
         mol_file_stripped=self.input_file_molecule
         #print 'The molecule input file does not contain recommended suffix, never mind...'
-      if (self.iprint >=5 ):
+      if self.iprint >=5:
         print 'mol_file_stripped=',mol_file_stripped
 
-      if (self.input_file_dirac.find(".inp") != -1):
+      if self.input_file_dirac.find(".inp") != -1:
         inp_file_stripped=self.input_file_dirac.replace(".inp","",1)
       else: # no suffix, continuing..
         print 'The dirac input file does not contain recommended suffix, never mind...'
         inp_file_stripped=self.input_file_dirac
-      if (self.iprint >=5 ):
+      if self.iprint >=5:
         print 'inp_file_stripped=',inp_file_stripped
 
-      if (mol_file_stripped == inp_file_stripped):
+      if mol_file_stripped == inp_file_stripped:
         self.output_name=mol_file_stripped
       else:
         # set proper output file structure
@@ -782,8 +780,7 @@ class pam_enviroment:
       self.output_name="dirac_output."+str(os.getpid())
 
     # control printout
-    if (self.iprint >=5 ):
-      #print 'set_output_name routine:'
+    if self.iprint >=5:
       print 'self.input_molecule=',self.input_molecule
       print 'XYZ molecule input ?  : ',self.xyz_molecule_input 
       print 'self.input_dirac=',self.input_dirac
@@ -793,7 +790,7 @@ class pam_enviroment:
     'copies file from the home directory to the work directory'
     def copy_single_file(file_name):
       full_file_name=self.input_directory+"/"+file_name
-      if ( os.path.isfile(full_file_name) ):
+      if os.path.isfile(full_file_name):
         file_name_wrkdir=self.workdir+"/"+file_name
         print 'copying ',file_name,' from homedir to workdir '
         self.copy_file(full_file_name,file_name_wrkdir)
@@ -807,21 +804,21 @@ class pam_enviroment:
     self.copy_file(self.dirac_exe,self.workdir+'/'+'dirac.x')
 
     # the existence of self.input_file molecule,self.input_file_dirac is verified
-    if (self.xyz_molecule_input == True):
+    if self.xyz_molecule_input == True:
         self.copy_file(self.input_file_molecule,self.workdir+'/'+'MOLECULE.XYZ')
     else:
         self.copy_file(self.input_file_molecule,self.workdir+'/'+'MOLECULE.MOL')
 
     self.copy_file(self.input_file_dirac,self.workdir+'/'+'DIRAC.INP')
 
-    if (self.full_restart):
+    if self.full_restart:
       copy_single_file(self.archive_name)
       archive_workdir=self.workdir+'/'+self.archive_name
       unpack_command='tar --directory '+self.workdir+' -xvf '+archive_workdir
       print 'Unpacking archive file in the work-directory, command ',unpack_command
       os.system(unpack_command)
 
-    if (self.put_files is not None):
+    if self.put_files is not None:
       files_to_put=self.put_files.split()
       if self.iprint >= 4:
         print 'self.put_files=',self.put_files
@@ -830,12 +827,12 @@ class pam_enviroment:
         copy_single_file(file_name)
 
     # copies DFCOEF into workdir
-    if (self.incmo is True):
+    if self.incmo:
       file_name="DFCOEF"
       copy_single_file(file_name)
 
     # copies DFFCK2 into workdir
-    if (self.infock is True):
+    if self.infock:
       file_name="DFFCK2"
       copy_single_file(file_name)
 
@@ -847,7 +844,7 @@ class pam_enviroment:
       print 'assigned machine file=',self.machinefile
 
     # check if this is an enviromental variable with "$" - than get its content
-    if (self.machinefile[0]=="$"):
+    if self.machinefile[0]=="$":
       #print 'enviroment variable:'
       machinefile_temp=self.machinefile[1:len(self.machinefile)]
       machinefile_content=''
@@ -861,12 +858,12 @@ class pam_enviroment:
       machinefile_content=self.machinefile 
 
     # identify nodes in the file
-    if ( os.path.isfile(machinefile_content) ) :
+    if os.path.isfile(machinefile_content):
       print 'machinefile is a true file, reading its content'
       for line in fileinput.input(machinefile_content):
         line=line[:-1] 
         #print 'read line=',line
-        if (line != self.master): # append only nodes different from master
+        if line != self.master: # append only nodes different from master
           print 'adding node to the list',line
           self.nodes.append(line)
 
@@ -878,16 +875,16 @@ class pam_enviroment:
         print 'Copying content of ',self.master,' work-directory to the',node
         # create working directories on nodes
         command=self.rsh+' '+node+' "mkdir -p '+self.workdir+' "'
-        if (self.iprint>=4):
+        if self.iprint>=4:
           print 'create work dir command:',command
         os.system(command)
         for this_file in os.listdir(self.workdir):
           this_file_full=self.workdir+'/'+this_file
           command=self.rcp+' '+this_file_full+' '+node+':'+this_file_full 
-          if (self.iprint>=0):
+          if self.iprint>=0:
             print 'copying work dir command:',command
           os.system(command)
-          if (self.iprint>=4): # control list of directory
+          if self.iprint>=4: # control list of directory
             os.system(self.rsh+' '+node+' "ls -l '+self.workdir+' "')
     else:
       print 'All CPUs are on the master, no distribution of workdir over different nodes.'
@@ -895,10 +892,10 @@ class pam_enviroment:
   def set_output_file(self):
     '''Set the name of the output file by using "self.output_name"
     which is prepared in set_output_name(self) routine'''
-    if (len(self.output_name) > 0 and len(self.output_suffix) > 0 ):
+    if len(self.output_name) > 0 and len(self.output_suffix) > 0:
       self.output_file=self.output_name+"."+self.output_suffix
       self.output_file_full=self.input_directory+"/"+self.output_file
-      if (self.iprint >= 5):
+      if self.iprint >= 5:
         print 'set_output_file: self.output_file=',self.output_file
     else:
       print 'can not set output file - some strings not set up !'
@@ -916,14 +913,14 @@ class pam_enviroment:
     os.putenv('DIRWRK', str(self.max_memory_work_master*1000000))
     os.putenv('DIRMAX', str(self.max_memory_dynamic*1000000))
 
-    if (self.parallel_run) :
+    if self.parallel_run:
         os.putenv('DIRPAR', '1')
         os.putenv('DIRNOD', str(self.max_memory_work_slave*1000000))
 
     # Next line is for IBM only but will not hurt other systems
     os.putenv("XLFRTEOPTS","'namelist=old'")
 
-    if (self.iprint >= 5):
+    if self.iprint >= 5:
       print "DIRWRK=",os.getenv("DIRWRK")
       print "BASDIR=",os.getenv('BASDIR')
       print "IBM stuff, XLFRTEOPTS=",os.getenv('XLFRTEOPTS')
@@ -932,7 +929,7 @@ class pam_enviroment:
     "set the dirac command to be launched by the system (serial or parallel)"
     this_dirac_exe=self.workdir+'/dirac.x'
 
-    if (self.parallel_run and self.parallel_build):
+    if self.parallel_run and self.parallel_build:
       # DIRAC_CMD="$DIRAC_CMD -np $MPI_NPROC -wd $WRK"
       # and/if  $DIRAC_CMD -machinefile $MACH_FILE $DIRAC_CMD
 
@@ -943,13 +940,13 @@ class pam_enviroment:
         self.dirac_cmd=self.mpirun+" -np "+str(self.nr_proc)+""
       
       self.dirac_cmd=self.dirac_cmd+this_dirac_exe
-      if (self.vg_debug): # valgrind stuff, DIRAC_CMD="$DIRAC_CMD $VALGRIND_TOOL --log-fd=1"
+      if self.vg_debug: # valgrind stuff, DIRAC_CMD="$DIRAC_CMD $VALGRIND_TOOL --log-fd=1"
         self.dirac_cmd=self.dirac_cmd+' '+self.valgrind+' --log-fd=1'
     else:  # serial run (also in debugger)
-      if (self.debug):
+      if self.debug:
        #TODO: adapt it for Windows
         self.dirac_cmd=self.debugger+' '+this_dirac_exe+' | tee '+os.getcwd()+"/"+self.output_file
-      elif (self.vg_debug): # set command for valgrid
+      elif self.vg_debug: # set command for valgrid
       # or: $VALGRIND -v --error-limit=no --leak-check=full --track-origins=yes --show-reachable=yes 
       # serial: DIRAC_CMD="$VALGRIND_TOOL --log-fd=1
         self.dirac_cmd = self.valgrind + ' --log-fd=1 ' + this_dirac_exe
@@ -966,81 +963,78 @@ class pam_enviroment:
     """Read the Makefile.config to get default values of many variables.
     Makefile.config file is the storage place for important variables 
     -  debugger, profiler, valgrind, mpi-launcher... """
-    if (self.iprint >= 5) :
+    if self.iprint >= 5:
       print 'read_makefile_config: Going to read from Makefile.config:'
     # open and read
     makefile_config=install_dir+'/'+'Makefile.config'
     for line in fileinput.input([makefile_config]):
       # remove one character from the end of the string
       line=line[:-1] 
-      if ( line.find('INSTALL_DIR') != -1 ):
+      if line.find('INSTALL_DIR') != -1:
           install_dir_temp=line.replace('INSTALL_DIR=','')
           # check if the install-dir is OK
-          if (install_dir != install_dir_temp):
+          if install_dir != install_dir_temp:
             print 'disgreement with the installation directory !'
             print 'Makefile.config install_dir_temp=',install_dir_temp,len(install_dir_temp)
             print '     install_dir=',install_dir,len(install_dir)
             sys.exit(-1)
           else:
             pass
-      elif ( line.find('SCRATCH_DIR') != -1 ):
+      elif line.find('SCRATCH_DIR') != -1:
           scratch_dir_temp=line.replace('SCRATCH_DIR=','')
           self.workpath=scratch_dir_temp
-          if (not os.path.isdir(self.workpath)):
+          if not os.path.isdir(self.workpath):
             print 'NB: the workpath ',self.workpath,' does not exist on this machine.'
             print 'Running on your own risk (might not create workdir).'
-      elif ( line.find('DEBUGGER') != -1 ):
+      elif line.find('DEBUGGER') != -1:
           debugger_temp=line.replace('DEBUGGER=','')
-          if ( os.path.isfile(debugger_temp)):
+          if os.path.isfile(debugger_temp):
             self.debugger=debugger_temp
           else:
             print 'The debugger from Makefile.config is not existing!'
             print 'The debugger from Makefile.config=',debugger_temp
-      elif ( line.find('PROFILER') != -1 ):
+      elif line.find('PROFILER') != -1:
           profiler_temp=line.replace('PROFILER=','')
-          if (os.path.isfile(profiler_temp)):
+          if os.path.isfile(profiler_temp):
             self.profiler=profiler_temp
           else:
             print 'The profiler from Makefile.config is not existing!'
             print 'The profiler from Makefile.config=',profiler_temp
-      elif ( line.find('VALGRIND') != -1 ):
+      elif line.find('VALGRIND') != -1:
           valgrind_temp=line.replace('VALGRIND=','')
-          if ( os.path.isfile(valgrind_temp) ):
+          if os.path.isfile(valgrind_temp):
             self.valgrind=valgrind_temp
           else:
             print 'The valgrind from Makefile.config is not existing!'
             print 'The valgrind from Makefile.config=',valgrind_temp
-      elif ( line.find('MPIRUN') != -1 ):
+      elif line.find('MPIRUN') != -1:
           mpirun_temp=line.replace('MPIRUN=','')
-          if (os.path.isfile(mpirun_temp)):
+          if os.path.isfile(mpirun_temp):
             self.mpirun=mpirun_temp
             self.parallel_build=True
           else:
             self.parallel_build=False
             pass
-      elif ( line.find('LOCALDISKS') != -1 ):
+      elif line.find('LOCALDISKS') != -1:
           localdisks_temp=line.replace('LOCALDISKS=','')
-          if (localdisks_temp=="yes"):
+          if localdisks_temp=="yes":
             self.localdisks=True
             print 'local disks for parallel calculations'
-      elif ( line.find('MPI_PASS_WRKDIR_ARGUMENT') != -1 ):
-          if (localdisks_temp=="yes"):
+      elif line.find('MPI_PASS_WRKDIR_ARGUMENT') != -1:
+          if localdisks_temp=="yes":
             localdisks_pass_wrkdir_temp=line.replace('MPI_PASS_WRKDIR_ARGUMENT=','')
             self.argument_to_pass_work_dir_to_slaves=localdisks_pass_wrkdir_temp
-#           print 'argument found for mpirun',localdisks_pass_wrkdir_temp
-      elif ( line.find('MACH_FILE') != -1 ):
+      elif line.find('MACH_FILE') != -1:
           machinefile_temp=line.replace('MACH_FILE=','')
-          if (len(machinefile_temp) >= 1):
+          if len(machinefile_temp) >= 1:
             self.machinefile=machinefile_temp
-            #print 'self.machinefile assigned=',self.machinefile
-      elif ( line.find('RCP') != -1 ):
-          #print 'RCP found, line=',line
+      elif line.find('RCP') != -1:
           rcp_temp=line.replace('RCP=','')
-          if (os.path.isfile(rcp_temp)):
+          if os.path.isfile(rcp_temp):
             self.rcp=rcp_temp
-      elif ( line.find('RSH') != -1 ):
+      elif line.find('RSH') != -1:
           rsh_temp=line.replace('RSH=','')
-          if (os.path.isfile(rsh_temp)):
+          if os.path.isfile(rsh_temp):
             self.rsh=rsh_temp
 
   def write_into_output(self):
@@ -1067,15 +1061,15 @@ class pam_enviroment:
     # go to the working directory
     os.chdir(self.workdir)
 
-    if (self.nobackup is False):
+    if not self.nobackup:
       from common import backup_file
       backup_file(some_file=self.input_directory+"/"+self.output_file,upto=None,iprint=self.iprint)
 
-    if (self.set_timeout_limit) :
+    if self.set_timeout_limit:
       signal.signal(signal.SIGALRM, signal_handler)
       signal.alarm(self.timeout)  # 
 
-    if ( len(self.nice_cmd)>1 ):
+    if len(self.nice_cmd)>1:
         print '  Lowest process priority set through ',self.nice_cmd
     print '  DIRAC command  : %s' % self.dirac_cmd
 
@@ -1086,7 +1080,7 @@ class pam_enviroment:
             if basis_set_directory_list[i] != '.':
                 print '                   %s' % basis_set_directory_list[i]
     try:
-      if (self.debug==False and self.vg_debug==False):
+      if not self.debug and not self.vg_debug:
         self.f=open(self.output_file_full,'w',0)
         # write something into the output file by pam 
         self.write_into_output()
@@ -1096,7 +1090,7 @@ class pam_enviroment:
         p.wait()
         return_code = p.returncode
         self.f.close()
-      elif (self.parallel_run==False) :
+      elif self.parallel_run==False:
         print 'debugging dirac in plain serial run...',self.dirac_cmd
         rc=os.system(self.dirac_cmd) # 
       else:
@@ -1116,7 +1110,7 @@ class pam_enviroment:
 
   def profile_dirac(self):
   # profile after the DIRAC execution- we are in the working directory
-    if (os.path.isfile(self.f)):  
+    if os.path.isfile(self.f):  
       print 'profiling...'
       self.profile_command=self.profiler+' '+self.dirac_exe+' '+self.profiling_file 
       self.f=open(self.output_file_full,'a',0) # open file for appending
@@ -1138,18 +1132,18 @@ class pam_enviroment:
       if self.iprint >= 5:
         print 'file_name=',file_name
         print 'full_file_name=', full_file_name
-      if ( os.path.isfile(full_file_name) ):
+      if os.path.isfile(full_file_name):
         file_name_home=self.input_directory+"/"+file_name
         print 'copying ',file_name,' from workdir to the homedir.'
         # backup file if it's there
-        if (self.nobackup is False):
+        if not self.nobackup:
           backup_file(some_file=file_name_home,upto=None,iprint=self.iprint)
         # finally copy
         self.copy_file(full_file_name,file_name_home)
       else:
         print file_name,' not found in the working directory.' 
 
-    if (not self.no_archive):
+    if not self.no_archive:
       # set name of the archive file; TODO: Windows packing adaptation
       archive_name=self.output_name+".tgz"
       print 'creating archive file ',archive_name
@@ -1159,21 +1153,20 @@ class pam_enviroment:
       # select existing files in self.archive_files for the archive
       existing_archive_files=''
       for archfile in self.archive_files:
-        if (os.path.isfile(archfile)):
+        if os.path.isfile(archfile):
           existing_archive_files=existing_archive_files+' '+archfile
-      if (self.iprint >= 5):
+      if self.iprint >= 5:
         print 'existing archive files:',existing_archive_files
 
       # backup 
-      if (self.nobackup is False):
+      if not self.nobackup:
          backup_file(some_file=archive_full_name,upto=None,iprint=self.iprint)
-      #archive_command='tar c '+self.archive_files+' | gzip > '+archive_full_name
       archive_command='tar c '+existing_archive_files+' | gzip > '+archive_full_name
       # own packing (Linux)
       os.system(archive_command)
 
     # take care of the rest - get files from workdir to home dir
-    if (self.get_files is not None):
+    if self.get_files is not None:
       files_to_get = self.get_files.split()
       if self.iprint >= 4:
         print 'self.get_files=',self.get_files
@@ -1182,12 +1175,12 @@ class pam_enviroment:
         save_single_file(file_name)
 
     # DFCOEF
-    if (self.outcmo):
+    if self.outcmo:
       file_name="DFCOEF"
       save_single_file(file_name)
 
     # DFFCK2
-    if (self.outfock):
+    if self.outfock:
       file_name="DFFCK2"
       save_single_file(file_name)
 
@@ -1220,7 +1213,7 @@ class pam_enviroment:
   def print_header(self):
     from common import get_username,get_hostname,get_hostname_ip
     self.master=get_hostname()
-    if (self.parallel_run and self.parallel_build):
+    if self.parallel_run and self.parallel_build:
       dirac_run = "parallel"
     else:
       dirac_run = "serial"
@@ -1238,12 +1231,12 @@ class pam_enviroment:
     print "  output file    :", self.output_file 
     print "  DIRAC run      :", dirac_run
 
-    if (self.set_timeout_limit):
+    if self.set_timeout_limit:
       print "  Allowed runtime:",self.timeout,' seconds. Killing afterwards.'
     print
 
     # warning message on # of proc >1 
-    if (not self.parallel_build and int(self.nr_proc) >= 1):
+    if not self.parallel_build and int(self.nr_proc) >= 1:
       print 'This is serial run (no or wrong MPIRUN assigned), the flag --mpi=',self.nr_proc,' has no meaning.'
       print
     
