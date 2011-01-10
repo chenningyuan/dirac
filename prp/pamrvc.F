@@ -1920,12 +1920,15 @@ C       For IMAGINARY frequencies:
 C         B(+)-vec contains T(+) = +Y*S[2]*X(-)
 C         B(-)-vec contains T(-) = -Y*S[2]*X(+)
 C       For COMPLEX frequencies:
-C         B(+)-vec contains T(+) = +W*S[2]*X(-)  +Y*S[2]*X(-)'
+C see JCP133,064105,2010 eq(21)
+C /!\ eq(21) first line: the first "+" should be a "-"
+C         B(+)-vec contains T(+) = -W*S[2]*X(-)  +Y*S[2]*X(-)'
 C                      and  T(+)'= -W*S[2]*X(-)' -Y*S[2]*X(-)
 C         B(-)-vec contains T(-) = -W*S[2]*X(+)  +Y*S[2]*X(+)'
 C                      and  T(-)'= -W*S[2]*X(+)' -Y*S[2]*X(+)
 C
 C     Written by T.Saue Oct 17 1996
+c     Updated Dec10 - Jan11 S.Villaume & T.Saue
 C
 C***********************************************************************
 #include "implicit.h"
@@ -1956,7 +1959,7 @@ C         ------------------------------------
 C
           CALL XRSTVC(BEPVC(1,II),1,NBEVC,0,
      &                BPPVC(1,II),1,NBPVC,0,
-     &                BCPVC(1,I),1,NBCVC,0,
+     &                BCPVC(1,I) ,1,NBCVC,0,
      &                BEBUF,BPBUF,BCBUF,NDAMP,0,
      &                IBTYP,WORK,KFREE,LFREE)
 C
@@ -1965,7 +1968,7 @@ C         ------------------------------------
 C
           CALL XRSTVC(BEMVC(1,II),1,NBEVC,0,
      &                BPMVC(1,II),1,NBPVC,0,
-     &                BCMVC(1,I),1,NBCVC,0,
+     &                BCMVC(1,I) ,1,NBCVC,0,
      &                BEPVC(1,II),BPPVC(1,II),BCPVC(1,I),NDAMP,0,
      &                IBTYP,WORK,KFREE,LFREE)
 C
@@ -5414,18 +5417,21 @@ C
       DIMENSION BBUF(NVARQ,NDAMP),TPVEC(NVARQ,NDAMP),TMVEC(NVARQ,NDAMP)
       FFAC = D1
       IF(IMFREQ) FFAC = DM1
-      IF(DAMPFREQ.EQ.D0) THEN
+      IF(DAMPFREQ.NE.D0) THEN
 C  Take care of Complex case
         CALL DSCAL(NVARQ*NDAMP,    -FREQ,TMVEC(1,1),1)
         CALL DAXPY(NVARQ      , DAMPFREQ, BBUF(1,2),1,TMVEC(1,1),1)
         CALL DAXPY(NVARQ      ,-DAMPFREQ, BBUF(1,1),1,TMVEC(1,2),1)
         CALL DCOPY(NVARQ*NDAMP,          TPVEC(1,1),1,BBUF,1)
-        CALL DSCAL(NVARQ      ,     FREQ,TPVEC(1,1),1)
-        CALL DSCAL(NVARQ      ,    -FREQ,TPVEC(1,2),1)
+CPP: error in the first line of eq (21) of JCP133,064105,2010
+C        CALL DSCAL(NVARQ      ,     FREQ,TPVEC(1,1),1)
+C        CALL DSCAL(NVARQ      ,    -FREQ,TPVEC(1,2),1)
+        CALL DSCAL(NVARQ*NDAMP,    -FREQ,TPVEC(1,1),1)
+
         CALL DAXPY(NVARQ      , DAMPFREQ, BBUF(1,2),1,TPVEC(1,1),1)
         CALL DAXPY(NVARQ      ,-DAMPFREQ, BBUF(1,1),1,TPVEC(1,2),1)
       ELSE
-C  Take care of Real of Imaginary case
+C  Take care of Real or Imaginary case
         CALL DSCAL(NVARQ,-FREQ,TMVEC(1,1),1)
         CALL DSCAL(NVARQ,-FFAC*FREQ,TPVEC(1,1),1)
       ENDIF
