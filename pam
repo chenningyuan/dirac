@@ -79,6 +79,8 @@ class pam_enviroment:
     self.nr_proc=0 # number of processors, default 0-serial run
     #   local disks for parallel calculations (to be set by configure)   #
     self.localdisks=False
+    #   command to pass the location of the work directory to the slaves (to be set by configure)
+    self.argument_to_pass_work_dir_to_slaves=''
     # machine file
     self.machinefile=''  # could be enviroment variable (like $PBS_NODEFILE)
     # master node
@@ -999,9 +1001,13 @@ class pam_enviroment:
     if (self.parallel_run and self.parallel_build):
       # DIRAC_CMD="$DIRAC_CMD -np $MPI_NPROC -wd $WRK"
       # and/if  $DIRAC_CMD -machinefile $MACH_FILE $DIRAC_CMD
-      # stefan: assuming -wd is dangerous; it is only valid for Open MPI; Intel MPI and MPICH(2) use -wdir
-      # maybe this can be inserted after configure...?
-      self.dirac_cmd=self.mpirun+" -np "+str(self.nr_proc)+" -wd "+self.workdir+" "
+
+      # stefan: first try of a rudimentary correct passing of -wd/-wdir...
+      if(self.argument_to_pass_work_dir_to_slaves!=""):
+        self.dirac_cmd=self.mpirun+" -np "+str(self.nr_proc)+" -"+self.argument_to_pass_work_dir_to_slaves+" "+self.workdir+" "
+      else:
+        self.dirac_cmd=self.mpirun+" -np "+str(self.nr_proc)+""
+      
       self.dirac_cmd=self.dirac_cmd+this_dirac_exe
       if (self.vg_debug): # valgrind stuff, DIRAC_CMD="$DIRAC_CMD $VALGRIND_TOOL --log-fd=1"
         self.dirac_cmd=self.dirac_cmd+' '+self.valgrind+' --log-fd=1'
@@ -1098,7 +1104,12 @@ class pam_enviroment:
           localdisks_temp=line.replace('LOCALDISKS=','')
           if (localdisks_temp=="yes"):
             self.localdisks=True
-            #print 'local disks for parallel calculations'
+            print 'local disks for parallel calculations'
+      elif ( line.find('MPI_PASS_WRKDIR_ARGUMENT') != -1 ):
+          if (localdisks_temp=="yes"):
+            localdisks_pass_wrkdir_temp=line.replace('MPI_PASS_WRKDIR_ARGUMENT=','')
+            self.argument_to_pass_work_dir_to_slaves=localdisks_pass_wrkdir_temp
+#           print 'argument found for mpirun',localdisks_pass_wrkdir_temp
       elif ( line.find('MACH_FILE') != -1 ):
           machinefile_temp=line.replace('MACH_FILE=','')
           if (len(machinefile_temp) >= 1):
