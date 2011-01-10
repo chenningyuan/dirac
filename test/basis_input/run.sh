@@ -2,6 +2,8 @@
 #
 # Set up calculation
 #  
+#miro: passing the --basdir=`pwd` argument is not working for current SCRIPTS/run.sh
+#  
 MENU=ch4; export MENU;
 MOL=ch4_temp; export MOL;
 ../SCRIPTS/run.sh
