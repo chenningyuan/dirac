@@ -1960,8 +1960,16 @@ C
           CALL XRSTVC(BEPVC(1,II),1,NBEVC,0,
      &                BPPVC(1,II),1,NBPVC,0,
      &                BCPVC(1,I) ,1,NBCVC,0,
-     &                BEBUF,BPBUF,BCBUF,NDAMP,0,
+     &                BEBUF(1,1),BPBUF(1,1),BCBUF,1,0,
      &                IBTYP,WORK,KFREE,LFREE)
+
+          IF(DAMPFREQ.NE.D0) THEN
+            CALL XRSTVC(BEPVC(1,II+1),1,NBEVC,0,
+     &                  BPPVC(1,II+1),1,NBPVC,0,
+     &                  BCPVC(1,I)   ,1,NBCVC,0,
+     &                  BEBUF(1,2),BPBUF(1,2),BCBUF,1,0,
+     &                  IBTYP,WORK,KFREE,LFREE)
+          ENDIF
 C
 C         Accumulate T(+) = S[2]X(-) in b(+)
 C         ------------------------------------
@@ -1969,8 +1977,16 @@ C
           CALL XRSTVC(BEMVC(1,II),1,NBEVC,0,
      &                BPMVC(1,II),1,NBPVC,0,
      &                BCMVC(1,I) ,1,NBCVC,0,
-     &                BEPVC(1,II),BPPVC(1,II),BCPVC(1,I),NDAMP,0,
+     &                BEPVC(1,II),BPPVC(1,II),BCPVC(1,I),1,0,
      &                IBTYP,WORK,KFREE,LFREE)
+
+          IF(DAMPFREQ.NE.D0) THEN
+            CALL XRSTVC(BEMVC(1,II+1),1,NBEVC,0,
+     &                  BPMVC(1,II+1),1,NBPVC,0,
+     &                  BCMVC(1,I)   ,1,NBCVC,0,
+     &                  BEPVC(1,II+1),BPPVC(1,II+1),BCPVC(1,I),1,0,
+     &                  IBTYP,WORK,KFREE,LFREE)
+          ENDIF
 C
 C         Scale T = S[2]X with negative frequency
 C         ---------------------------------------
