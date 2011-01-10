@@ -210,13 +210,22 @@ class pam_enviroment:
   def copy_file(self, src, dest):
      """
      copy file from directory "scr" to "dest"
+     for the printout use 'purified' file names 
      """
      from common import extract_path_file
-     epf=extract_path_file() 
-     epf.get_path_file(dest)
+
+     epf_dest=extract_path_file() 
+     epf_dest.get_path_file(dest)
+
+     epf_src=extract_path_file()
+     epf_src.get_path_file(src)
+
      shutil.copy(src, dest)
-     if (self.iprint >=2 ):
-        print 'Copying file ',src,' to the work-directory (as ',epf.pure_file_name,').'
+     if (self.iprint >=0 ):
+        print '  Copying file ',epf_src.pure_file_name,' to the work-directory (as ',epf_dest.pure_file_name,').'
+     if (self.iprint >=3 ):
+        print ' src full path:',src
+        print 'dest full path:',dest
 
   def list_workdir(self):
   # ... lists the content of the master work-directory
@@ -1134,7 +1143,7 @@ class pam_enviroment:
 
     if (self.nobackup is False):
       from common import backup_file
-      backup_file(some_file=self.input_directory+"/"+self.output_file,upto=None,iprint=None)
+      backup_file(some_file=self.input_directory+"/"+self.output_file,upto=None,iprint=self.iprint)
 
     if (self.set_timeout_limit) :
       #print 'signal stuff initiated, self.timeout=',self.timeout
@@ -1210,7 +1219,7 @@ class pam_enviroment:
         print 'copying ',file_name,' from workdir to the homedir.'
         # backup file if it's there
         if (self.nobackup is False):
-          backup_file(some_file=file_name_home,upto=None,iprint=None)
+          backup_file(some_file=file_name_home,upto=None,iprint=self.iprint)
         # finally copy
         self.copy_file(full_file_name,file_name_home)
       else:
@@ -1233,7 +1242,7 @@ class pam_enviroment:
 
       # backup 
       if (self.nobackup is False):
-         backup_file(some_file=archive_full_name,upto=None,iprint=None)
+         backup_file(some_file=archive_full_name,upto=None,iprint=self.iprint)
       #archive_command='tar c '+self.archive_files+' | gzip > '+archive_full_name
       archive_command='tar c '+existing_archive_files+' | gzip > '+archive_full_name
       # own packing (Linux)

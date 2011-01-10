@@ -163,7 +163,12 @@ def backup_file(some_file,upto,iprint):
             do_copy_print(backup_file_name,backup_file_name_p1)
     if (os.path.isfile(some_file)):
         do_copy_print(some_file,backup_file_name)
-    print 'backed up file ',some_file
+
+    epf=extract_path_file()
+    epf.get_path_file(some_file)
+    if (iprint >= 0):
+        #print 'backed up file ',some_file
+        print '  backed up file ',epf.pure_file_name
 
 def make_old_file(path):
     """
