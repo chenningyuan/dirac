@@ -2172,7 +2172,12 @@ C       Give major orbital rotations in excitations
      &                        iorbcl(2, i2),        
      &                        buf2(jj))
            enddo
-           write(*, *) 'lambda = ', lambda_numerator/lambda_denominator
+           write(lupri, '(a)') '   PBHT MO Overlap Diagnostic'
+           write(lupri, '(a)') '     ref.: M. J. G. Peach, '//
+     &        'P. Benfield, T. Helgaker, and D. J. Tozer'
+           write(lupri, '(a44)') 'J. Chem. Phys. 128, 044118 (2008)'
+           write(lupri, '(a, f8.5)') '     lambda = ', 
+     &        lambda_numerator/lambda_denominator
         end if
 #endif
       ENDIF

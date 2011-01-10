@@ -105,6 +105,7 @@ module xc_driver
    real(8), allocatable :: fde_prop2(:)
    real(8), allocatable :: ao(:)
    real(8), allocatable :: buffer(:)
+   real(8), allocatable :: lambda_buffer(:, :)
    real(8), allocatable :: ao_block(:, :)
    real(8), allocatable :: buffer_block(:, :)
    real(8), allocatable :: dmat_sorted(:, :)
@@ -898,6 +899,9 @@ contains
     call alloc(ao,     total_ao_vector_length)
     call alloc(buffer, total_ao_vector_length)
 
+    if (do_overlap_diagnostic) then
+       call alloc(lambda_buffer, norbt, nz)
+    end if
 
     if (dft_cfg_blocked) then
        call alloc(ao_block,              mxbllen, total_ao_vector_length)
@@ -1064,7 +1068,7 @@ contains
 
 #ifdef MOD_UNRELEASED
       if (do_overlap_diagnostic) then
-         call integrate_lambda_matrix(rw(ipoint), ao, buffer)
+         call integrate_lambda_matrix(rw(ipoint), ao, lambda_buffer)
       end if
 #endif
 
@@ -1722,6 +1726,9 @@ contains
        deallocate(dmat_sorted)
        deallocate(xmat)
        call dealloc(bmat)
+    end if
+    if (do_overlap_diagnostic) then
+       call dealloc(lambda_buffer)
     end if
 
     deallocate(u%n)

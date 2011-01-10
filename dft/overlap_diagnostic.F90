@@ -22,7 +22,8 @@
 module overlap_diagnostic
 
 !  MO overlap diagnostic according to Peach, Benfield, Helgaker, and Tozer:
-!  M. J. G. Peach, P. Benfield, T. U. Helgaker, and D. J. Tozer, J. Chem. Phys. 128, 044118 (2008)
+!  M. J. G. Peach, P. Benfield, T. U. Helgaker, and D. J. Tozer
+!  J. Chem. Phys. 128, 044118 (2008)
 
 !  implemented 2010/06/30 by Radovan Bast <radovan.bast@uit.no>
 
@@ -44,6 +45,7 @@ module overlap_diagnostic
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbham.h"
+#include "dcbgen.h"
 #include "dgroup.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -99,7 +101,7 @@ contains
    subroutine overlap_diagnostic_init()
 
 !     --------------------------------------------------------------------------
-      integer :: k, irep, ic
+      integer :: k, irep, ic, nc
 !     --------------------------------------------------------------------------
 
       nr_g_mo_ns = npsh(1)
@@ -122,10 +124,16 @@ contains
       g_ao_end       = 0
       u_ao_end       = 0
 
-      do ic = 1, mc
+      if (twocomp) then
+         nc = 1
+      else
+         nc = 2
+      end if
+
+      do ic = 1, nc
          do irep = 0, maxrep
             if (nbbas(irep, ic) > 0) then
-               if (jbtof(irep, 1) == 1) then
+               if (jbtof(irep, ic) == 1) then
                   nr_g_ao_blocks = nr_g_ao_blocks + 1
                   g_ao_start(nr_g_ao_blocks) = ibbas(irep, ic) + 1
                   g_ao_end(nr_g_ao_blocks)   = ibbas(irep, ic) + nbbas(irep, ic)
@@ -271,16 +279,14 @@ contains
 !     --------------------------------------------------------------------------
       real(8), intent(in)    :: w
       real(8), intent(in)    :: ao(*)
-      real(8), intent(inout) :: buffer(*)
+      real(8), intent(inout) :: buffer(:, :)
 !     --------------------------------------------------------------------------
-      integer                :: p, q, r
-      integer                :: i, k, l, n
+      integer                :: s, t
+      integer                :: i, k, n
       integer                :: iz
+      real(8)                :: q1, q2, q3, q4, q_norm
 !     --------------------------------------------------------------------------
 !
-!     the complication in this routine comes from the
-!     inconvenient but memory-economic structure of mo_coef
-
 !     structure of mo_coef (assuming no active orbitals):
 !
 !      _____  1 ... nz
@@ -313,55 +319,66 @@ contains
 !     | |___
 !     |_____
 
-
-!     gerade
       i = 0
       do iz = 1, nz
-         do p = 1, nr_g_mo
-            buffer(p) = 0.0d0
-         end do
-         q = 0
-   	 do p = 1, nr_g_mo
-            q = q + 1
-            l = 0
+!        gerade
+         do s = 1, nr_g_mo
+            buffer(s, iz) = 0.0d0
             do n = 1, nr_g_ao_blocks
                do k = g_ao_start(n), g_ao_end(n)
-   	          l = l + 1
-   	          buffer(q) = buffer(q) + mo_coef(i + l)*ao(k)
+                  i = i + 1
+                  buffer(s, iz) = buffer(s, iz) + ao(k)*mo_coef(i)
                end do
-            end do
-            i = i + nr_g_ao
-   	 end do
-         do p = 1, nr_g_mo
-            do q = p, nr_g_mo
-               lambda_matrix(p, q) = lambda_matrix(p, q) + w*dabs(buffer(p)*buffer(q))
             end do
          end do
       end do
-
-      if (nfsym == 1) return
-
-!     ungerade
       do iz = 1, nz
-         do p = nr_g_mo + 1, nr_g_mo + nr_u_mo
-            buffer(p) = 0.0d0
-         end do
-         q = nr_g_mo
-   	 do p = 1, nr_u_mo
-            q = q + 1
-            l = 0
-            do n = 1, nr_u_ao_blocks
-               do k = u_ao_start(n), u_ao_end(n)
-   	          l = l + 1
-   	          buffer(q) = buffer(q) + mo_coef(i + l)*ao(k)
+         if (nfsym > 1) then
+!           ungerade
+            do s = nr_g_mo + 1, nr_g_mo + nr_u_mo
+               buffer(s, iz) = 0.0d0
+               do n = 1, nr_u_ao_blocks
+                  do k = u_ao_start(n), u_ao_end(n)
+                     i = i + 1
+                     buffer(s, iz) = buffer(s, iz) + ao(k)*mo_coef(i)
+                  end do
                end do
             end do
-            i = i + nr_u_ao
-   	 end do
-         do p = nr_g_mo + 1, nr_g_mo + nr_u_mo
-            do q = p, nr_g_mo + nr_u_mo
-               lambda_matrix(p, q) = lambda_matrix(p, q) + w*dabs(buffer(p)*buffer(q))
-            end do
+         end if
+      end do
+
+      do s = 1, nr_g_mo + nr_u_mo
+         do t = s, nr_g_mo + nr_u_mo
+            select case (nz)
+               case (1)
+                  q1 = buffer(s, 1)*buffer(t, 1)
+                  q_norm = dsqrt(q1*q1)
+               case (2)
+                  q1 = buffer(s, 1)*buffer(t, 1) &
+                     - buffer(s, 2)*buffer(t, 2)
+                  q2 = buffer(s, 1)*buffer(t, 2) &
+                     + buffer(s, 2)*buffer(t, 1)
+                  q_norm = dsqrt(q1*q1 + q2*q2)
+               case (4)
+                  q1 = buffer(s, 1)*buffer(t, 1) &
+                     - buffer(s, 2)*buffer(t, 2) &
+                     - buffer(s, 3)*buffer(t, 3) &
+                     - buffer(s, 4)*buffer(t, 4)
+                  q2 = buffer(s, 1)*buffer(t, 2) &
+                     + buffer(s, 2)*buffer(t, 1) &
+                     + buffer(s, 3)*buffer(t, 4) &
+                     - buffer(s, 4)*buffer(t, 3)
+                  q3 = buffer(s, 1)*buffer(t, 3) &
+                     + buffer(s, 3)*buffer(t, 1) &
+                     - buffer(s, 2)*buffer(t, 4) &
+                     + buffer(s, 4)*buffer(t, 2)
+                  q4 = buffer(s, 1)*buffer(t, 4) &
+                     + buffer(s, 4)*buffer(t, 1) &
+                     + buffer(s, 2)*buffer(t, 3) &
+                     - buffer(s, 3)*buffer(t, 2)
+                  q_norm = dsqrt(q1*q1 + q2*q2 + q3*q3 + q4*q4)
+            end select
+            lambda_matrix(s, t) = lambda_matrix(s, t) + w*q_norm
          end do
       end do
 
