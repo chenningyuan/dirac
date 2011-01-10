@@ -1,4 +1,4 @@
-#! /usr/bin/env python 
+#! /usr/bin/env python
 #########################################################################
 #
 # Python replacement of the previous bash-written pam(.sh) script
@@ -37,7 +37,7 @@ def append_dirac_py_modules(dirac_install_dir):
   as "import common "  does not work...'''
 
   modules_directory = dirac_install_dir + '/utils'
-  if (not os.access(modules_directory,os.R_OK) ):
+  if not os.access(modules_directory,os.R_OK):
     print 'wrong directory or directory not readable !'
     sys.exit("wrong directory !")
   sys.path.append(modules_directory)
@@ -46,7 +46,7 @@ class pam_enviroment:
   global install_dir
   "class containing all important variables, methods for submitting"
   def __init__(self):
-    #      ... initialize the global set of variables ...
+    "Initialize the global set of variables"
     # print level
     self.iprint=1
     self.iprint_default=1
@@ -138,7 +138,7 @@ class pam_enviroment:
     self.output_file=''
     self.output_file_full='' # full (absolute) path 
     # lu of the file
-    self.f=''
+    self.f=None
     # by default, do backup files
     self.nobackup=False
 
@@ -178,10 +178,10 @@ class pam_enviroment:
     # self.workpath MUST BE set before
     self.workdir=self.workpath+"/"+workdir_name
 
-    if (self.iprint >=5):
+    if self.iprint >=5:
       print 'workdir_name=',workdir_name
       print 'root_name set?',(root_name is not None)
-      if (root_name is not None):
+      if root_name is not None:
         print 'root_name=',root_name
       print 'self.workdir=',self.workdir
 
@@ -203,9 +203,9 @@ class pam_enviroment:
      epf_src.get_path_file(src)
 
      shutil.copy(src, dest)
-     if (self.iprint >=0 ):
+     if self.iprint >=0:
         print '  Copying file ',epf_src.pure_file_name,' to the work-directory (as ',epf_dest.pure_file_name,').'
-     if (self.iprint >=3 ):
+     if self.iprint >=3:
         print ' src full path:',src
         print 'dest full path:',dest
 
@@ -230,7 +230,7 @@ class pam_enviroment:
       print "%25s %10.3f %s" % (filename, filesize_mb, file_info['f_la'])
       sys.stdout.flush()
 
-      if (self.iprint >= 8) :
+      if self.iprint >= 8:
         print
         print "file name = %(fname)s" % file_info
         print "file size = %(fsize)s bytes" % file_info
@@ -257,7 +257,7 @@ class pam_enviroment:
 
   def remove_workdir(self):
     self.list_workdir()
-    if (not self.keepwrk):
+    if not self.keepwrk:
       print '  deleting the scratch directory'
       sys.stdout.flush()
       shutil.rmtree(self.workdir)      
@@ -270,7 +270,7 @@ class pam_enviroment:
      print
      print '  exit date      :', datetime.datetime.now()
      print '  exit code      :', returncode 
-     if (returncode == 0):
+     if returncode == 0:
         print '  exit           : normal'
      else:
         print '  exit           : ABNORMAL (CHECK DIRAC OUTPUT)'
@@ -554,7 +554,7 @@ class pam_enviroment:
 
     #miro: no read-in default for "--nw", as we need to check whether the parameter was set
     # take the default value from the previously set "self.max_memory_work_master"
-    if (options.dest_nw is not None) :
+    if options.dest_nw is not None:
         # own set value
         self.max_memory_work_slave  = int(options.dest_nw)
     else :
@@ -563,7 +563,7 @@ class pam_enviroment:
 
     self.max_memory_dynamic     = int(options.dest_aw)
 
-    if (options.dest_mpi is not None) :
+    if options.dest_mpi is not None:
        self.nr_proc=int(options.dest_mpi)
        self.parallel_run=True
        if self.iprint >= 5:
@@ -571,13 +571,13 @@ class pam_enviroment:
           print 'assigned self.self.parallel_run=',self.parallel_run
     else:
        self.parallel_run=False
-       if (self.parallel_build == True):
+       if self.parallel_build == True:
           print
           print 'Despite parallel build, set serial run as no --mpi=xxx specified.'
 
 #radovan: it is always not none
     if options.dest_mpirun is not None:
-        if (os.path.isfile(options.dest_mpirun)):
+        if os.path.isfile(options.dest_mpirun):
         # todo : check functionality of mpirun ?
             self.mpirun=options.dest_mpirun
             self.parallel_run = True 
@@ -607,23 +607,23 @@ class pam_enviroment:
       else:
         print 'Installation directory you inserted is non-existent !'
         print 'Used the default instead:',install_dir
-    elif (install_dir_default is None) :
+    elif install_dir_default is None:
       sys.exit("The installation directory is not set ! Error exit !")
 
     self.workdir   = str(options.dest_wrkdir)
     self.basdir    = str(options.dest_basdir)
     self.dirac_exe = str(options.dest_dirac)
 
-    if (options.dest_nice):
+    if options.dest_nice:
     # assign here the full nice/npri command; TODO: set for windows (in own routine) 
-        if (os.path.isfile("/usr/sbin/npri")):
+        if os.path.isfile("/usr/sbin/npri"):
            self.nice_cmd="npri -h129 "
         else:
            self.nice_cmd="nice -1 "
         if self.iprint >= 5:
            print 'nice prirority set ! self.nice_cmd=',self.nice_cmd
 
-    if (options.dest_timeout is not None) :
+    if options.dest_timeout is not None:
       self.timeout=int(options.dest_timeout)
       self.set_timeout_limit=True
       if self.iprint >= 5:
@@ -635,12 +635,12 @@ class pam_enviroment:
     self.nobackup=options.dest_nobackup      
     self.no_archive=options.dest_noarch
 
-    if (options.dest_put is not None):
+    if options.dest_put is not None:
       self.put_files=options.dest_put
       if self.iprint >= 5:
         print 'assigned put_files ?',(self.put_files is not None),'...',self.put_files
 
-    if (options.dest_get is not None):
+    if options.dest_get is not None:
       self.get_files=options.dest_get
       if self.iprint >= 5:
         print 'assigned get_files ?',(self.get_files is not None),'...',self.get_files
@@ -650,7 +650,7 @@ class pam_enviroment:
     self.infock=options.dest_infock
     self.outfock=options.dest_outfock
 
-    if (options.dest_fullrestart is not None):
+    if options.dest_fullrestart is not None:
       self.archive_name=options.dest_fullrestart
       self.full_restart=True
       if self.iprint >= 5:
@@ -662,7 +662,7 @@ class pam_enviroment:
         self.debug = True
 
     if options.dest_debugger is not None:
-        if (os.path.isfile(options.dest_debugger)):
+        if os.path.isfile(options.dest_debugger):
             self.debugger=options.dest_debugger
         else:
             print 'Debugger ',options.dest_debugger,' you want to assign does not exist ! No debugging !'
@@ -684,13 +684,13 @@ class pam_enviroment:
 #   input and molecule are required
 #   check that they are there, if not exit
 #   if yes, assign output file name
-    if (not self.full_restart) :
-      if (options.mol_file is not None and options.inp_file is not None):
+    if not self.full_restart:
+      if options.mol_file is not None and options.inp_file is not None:
         self.input_molecule = options.mol_file
         self.input_dirac    = options.inp_file
         self.assign_mol_inp_files()
       else:
-        if ( not self.full_restart):
+        if not self.full_restart:
           print 'both --mol=... and --inp=... input parameters are required !'
           sys.exit()
 
@@ -773,7 +773,7 @@ class pam_enviroment:
         # set proper output file structure
         self.output_name=inp_file_stripped+"_"+mol_file_stripped
 
-    elif (self.full_restart):
+    elif self.full_restart:
       # todo: verify *.tgz ?
       self.output_name=self.archive_name.replace(".tgz","",1)   
     else: # assign default name
@@ -839,20 +839,19 @@ class pam_enviroment:
   def distribute_work_dir(self):
     '''This routine is called when local disks are selected
     for parallel calculations. The list of machines available to dirac.x'''
-    if (self.iprint>=5):
+    if self.iprint>=5:
       print 'distribute_work_dir'
       print 'assigned machine file=',self.machinefile
 
     # check if this is an enviromental variable with "$" - than get its content
     if self.machinefile[0]=="$":
-      #print 'enviroment variable:'
       machinefile_temp=self.machinefile[1:len(self.machinefile)]
       machinefile_content=''
       try:
         machinefile_content=os.environ[machinefile_temp]
       except:
         print 'The ',self.machinefile,' enviroment variable for machinefile not active (no batch system).'
-      if (self.iprint>=4):
+      if self.iprint>=4:
         print 'machinefile enviromental variable points to',machinefile_content
     else:  # true file, no pointing variable
       machinefile_content=self.machinefile 
@@ -904,8 +903,8 @@ class pam_enviroment:
       sys.exit(-1)
 
   def set_dirac_environment(self):
-  # export important variables for DIRAC
-  # TODO: implement for WINDOWS
+    """export important variables for DIRAC
+    TODO: implement for WINDOWS"""
     """ basis set directory """
     self.basdir=self.input_directory+":"+self.basdir
     os.putenv("BASDIR",self.basdir)
@@ -968,7 +967,6 @@ class pam_enviroment:
     # open and read
     makefile_config=install_dir+'/'+'Makefile.config'
     for line in fileinput.input([makefile_config]):
-      # remove one character from the end of the string
       line=line[:-1] 
       if line.find('INSTALL_DIR') != -1:
           install_dir_temp=line.replace('INSTALL_DIR=','')
@@ -1039,26 +1037,20 @@ class pam_enviroment:
 
   def write_into_output(self):
       """
-      write usefull info at the beginning of te output file - size of all static allocation, for example  
+      Write useful info at the beginning of te output file - size of all static allocation, for example  
       """
       self.f.write("DIRAC pam run in "+self.input_directory+"\n")
       size_command="echo -e 'Size of all static allocations :\c' ; size "+self.dirac_exe+" 2> /dev/null | grep "+self.dirac_exe+" 2> /dev/null | awk '{printf $3/(1024*1024)} ' 2> /dev/null; echo ' MB ' || echo 'can not be determined' "
       p1=subprocess.Popen(size_command,shell=True,stdin=subprocess.PIPE,stdout=self.f)
 
-  #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def execute_dirac(self):
-  #############################################################################################
-  #
-  #            Excecute dirac.x, either in serial or parallel mode
-  #
-  #############################################################################################
+    "Excecute dirac.x, either in serial or parallel mode"
     def signal_handler(signum, frame):
       "Controling the time of the execution"
       print 'DIRAC execution interrupted, because takes longer than the limit of ',self.timeout,' seconds.\n'
       sys.stdout.flush()
       raise Error("Takes too long !")
 
-    # go to the working directory
     os.chdir(self.workdir)
 
     if not self.nobackup:
@@ -1067,7 +1059,7 @@ class pam_enviroment:
 
     if self.set_timeout_limit:
       signal.signal(signal.SIGALRM, signal_handler)
-      signal.alarm(self.timeout)  # 
+      signal.alarm(self.timeout)
 
     if len(self.nice_cmd)>1:
         print '  Lowest process priority set through ',self.nice_cmd
@@ -1148,7 +1140,6 @@ class pam_enviroment:
       archive_name=self.output_name+".tgz"
       print 'creating archive file ',archive_name
       archive_full_name=self.input_directory+"/"+archive_name
-      #print 'full archive file ',archive_full_name
 
       # select existing files in self.archive_files for the archive
       existing_archive_files=''
@@ -1243,8 +1234,6 @@ class pam_enviroment:
     sys.stdout.flush()
 
 class pam_run(pam_enviroment):
-#-----------------------------------------------------
-#-----------------------------------------------------
   def __init__(self):
     self.pam_variables=pam_enviroment()
     append_dirac_py_modules(install_dir)
@@ -1255,7 +1244,7 @@ class pam_run(pam_enviroment):
     self.pam_variables.set_output_file()
     self.pam_variables.print_header()
     self.pam_variables.copy_files()
-    if (self.pam_variables.parallel_run and self.pam_variables.localdisks):
+    if self.pam_variables.parallel_run and self.pam_variables.localdisks:
       self.pam_variables.distribute_work_dir()
     self.pam_variables.set_dirac_environment()
     self.pam_variables.set_dirac_cmd()
