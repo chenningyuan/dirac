@@ -38,10 +38,12 @@ EXIT=0
 # start the clock
 time1=`date +%s`
 
+echo "run.sh passing arguments = $@"
+
 if [ -n "$TIMEOUT" ]; then
-   $PAM_PATH/pam --dirac=$DIRAC --suffix=$TAG --timeout=$TIMEOUT --mol=$MOL --inp=$MENU $MPIARG "$*" || EXIT=1
+   $PAM_PATH/pam --dirac=$DIRAC --suffix=$TAG --timeout=$TIMEOUT --mol=$MOL --inp=$MENU $MPIARG "$@" || EXIT=1
 else
-   $PAM_PATH/pam --dirac=$DIRAC  --suffix=$TAG  --mol=$MOL --inp=$MENU $MPIARG "$*" || EXIT=1
+   $PAM_PATH/pam --dirac=$DIRAC  --suffix=$TAG  --mol=$MOL --inp=$MENU $MPIARG "$@" || EXIT=1
 fi
 
 # stop the clock
