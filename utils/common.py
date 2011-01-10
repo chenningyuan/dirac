@@ -93,7 +93,8 @@ def get_hostname_ip():
 
 class extract_path_file:
     """
-    used for backup procedure
+    general class which can separate the pure file name from its path
+    used (not only) for the backup procedure
     """
     def __init__(self):
         self.pure_file_name = ''

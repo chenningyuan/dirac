@@ -61,7 +61,10 @@ class pam_enviroment:
     self.dirac_home=install_dir
 
     # basis set directory - initial value which can be reset later in the flags-reading step 
+    # note: Due to the "." in the basdir path there is no need to use --basdir='pwd'
     self.basdir=".:"+install_dir_default+"/basis:"+install_dir_default+"/basis_dalton"
+
+    self.xyz_molecule_input=False
 
     # ... variables related to the work directory
     self.workdir=''
@@ -208,9 +211,12 @@ class pam_enviroment:
      """
      copy file from directory "scr" to "dest"
      """
+     from common import extract_path_file
+     epf=extract_path_file() 
+     epf.get_path_file(dest)
      shutil.copy(src, dest)
      if (self.iprint >=2 ):
-        print 'Copying file ',src,' to the work-directory.'
+        print 'Copying file ',src,' to the work-directory (as ',epf.pure_file_name,').'
 
   def list_workdir(self):
   # ... lists the content of the master work-directory
@@ -781,6 +787,7 @@ class pam_enviroment:
         if (self.iprint >=7):
           print '*.mol striped! mol_file_stripped=',mol_file_stripped
       elif (self.input_file_molecule.find(".xyz") != -1):
+        self.xyz_molecule_input = True
         mol_file_stripped=self.input_file_molecule.replace(".xyz","",1 )
         if (self.iprint >=7):
           print '*.xyz striped! mol_file_stripped=',mol_file_stripped
@@ -814,6 +821,7 @@ class pam_enviroment:
     if (self.iprint >=5 ):
       #print 'set_output_name routine:'
       print 'self.input_molecule=',self.input_molecule
+      print 'XYZ molecule input ?  : ',self.xyz_molecule_input 
       print 'self.input_dirac=',self.input_dirac
       print 'set self.output_name=',self.output_name
 
@@ -841,7 +849,11 @@ class pam_enviroment:
     self.copy_file(self.dirac_exe,self.workdir+'/'+'dirac.x')
 
     # the existence of self.input_file molecule,self.input_file_dirac is verified
-    self.copy_file(self.input_file_molecule,self.workdir+'/'+'MOLECULE.MOL')
+    if (self.xyz_molecule_input == True):
+        self.copy_file(self.input_file_molecule,self.workdir+'/'+'MOLECULE.XYZ')
+    else:
+        self.copy_file(self.input_file_molecule,self.workdir+'/'+'MOLECULE.MOL')
+
     self.copy_file(self.input_file_dirac,self.workdir+'/'+'DIRAC.INP')
 
     if (self.full_restart):

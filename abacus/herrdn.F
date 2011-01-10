@@ -557,8 +557,10 @@ C***********************************************************************
       READ (MLINE(NMLINE),'(BN,A1,I4,I3,A11,A1,D10.2,6I5)',IOSTAT=IOS)
      &     CRT,NONTYP,KCHARG,SYMTXT,ID3,THRS
       IF (IOS.NE.0) THEN
-       WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
+       WRITE(LUPRI,*)
+       WRITE(LUPRI,*) 'Error reading line no ',NMLINE,':'
        WRITE(LUPRI,*) MLINE(NMLINE)
+       WRITE(LUPRI,*) 'Wanted format BN,A1,I4,I3,A11,A1,D10.2,6I5'
        CALL QUIT('Error in basis reading..BN,A1,I4,I3,A11,A1,D10.2,6I5')
       ENDIF
       IF(NONTYP.GT.KATOM) GOTO 5000
