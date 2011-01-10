@@ -1,4 +1,5 @@
 !
-! This test calculates the energy of CH3F
-! Using different versions of the same input.
+! This test calculates the SCF energy of the CH3F molecule
+! using two different versions of the same input (with different
+! interatomic distances).
 ! 
