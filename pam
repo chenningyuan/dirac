@@ -44,17 +44,12 @@ def append_dirac_py_modules(dirac_install_dir):
     sys.exit("wrong directory !")
   sys.path.append(modules_directory)
 
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 class pam_enviroment:
   global install_dir
-  # ... class containing all important variables, methods for submitting
-  #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+  "class containing all important variables, methods for submitting"
   def __init__(self):
-  #
-  #      ... initialize the global set of variables ...
-  #
-    #print 'pam_enviroment class initialize'
-     # print level
+    #      ... initialize the global set of variables ...
+    # print level
     self.iprint=1
     self.iprint_default=1
      ### contains installation directory ...
@@ -169,20 +164,12 @@ class pam_enviroment:
     self.timeout=''
 
     self.pam_command = ''
-    self.pam_args    = ''
 
-  #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def set_workdir_name(self,root_name):
-  #############################################################################################
-  #
-  # sets the working directory name according to the
-  # entering "root_name"
-  #
-  # depends on "self.workpath"
-  #
-  #############################################################################################
-    current_pid = os.getpid(); #print 'pid=',current_pid
-    if (len(root_name) > 0):
+    ''' sets the working directory name according to the
+    entering "root_name". depends on self.workpath '''
+    current_pid = os.getpid()
+    if len(root_name) > 0:
       workdir_name=root_name+"."+str(current_pid)
     else:
       workdir_name='dirac_work_dir.'+str(current_pid)
@@ -201,19 +188,14 @@ class pam_enviroment:
       print 'self.workdir=',self.workdir
 
   def create_workdir(self):
-     """
-     creates the scratch directory
-     """
      if not os.path.isdir(self.workdir):
         os.mkdir(self.workdir)
      else:
         print 'The work directory ',self.workdir,' exists.'
 
   def copy_file(self, src, dest):
-     """
-     copy file from directory "scr" to "dest"
-     for the printout use 'purified' file names 
-     """
+     """copy file from directory "scr" to "dest"
+     for the printout use 'purified' file names"""
      from common import extract_path_file
 
      epf_dest=extract_path_file() 
@@ -230,9 +212,7 @@ class pam_enviroment:
         print 'dest full path:',dest
 
   def list_workdir(self):
-  # ... lists the content of the master work-directory
-  # more here http://www.daniweb.com/code/snippet216798.html
-
+    '''lists the content of the master work-directory more here http://www.daniweb.com/code/snippet216798.html'''
     print 
     print '  content of the scratch directory', os.getcwd()
     print '  ------------------------------------------------------------------------------' 
@@ -278,7 +258,6 @@ class pam_enviroment:
     print '  ------------------------------------------------------------------------------' 
 
   def remove_workdir(self):
-    #print 'removes the work_direcory'
     self.list_workdir()
     if (not self.keepwrk):
       print '  deleting the scratch directory'
@@ -289,9 +268,7 @@ class pam_enviroment:
       sys.stdout.flush()
 
   def exit_function(self,returncode):
-     """
-     prints message on the DIRAC executable exit according to the input parameter
-     """
+     "prints message on the DIRAC executable exit according to the input parameter"
      print
      print '  exit date      :', datetime.datetime.now()
      print '  exit code      :', returncode 
@@ -304,12 +281,6 @@ class pam_enviroment:
      # notifyuser ?
 
   def process_pam_arguments(self):
-  ##################################################################
-  #
-  #   The longest routine for processing plenty of pam arguments.
-  #
-  ##################################################################
-    #print 'processing pam arguments....'
     global install_dir
 
     from optparse import OptionParser, OptionGroup
@@ -607,7 +578,7 @@ class pam_enviroment:
           print 'Despite parallel build, set serial run as no --mpi=xxx specified.'
 
 #radovan: it is always not none
-    if (options.dest_mpirun is not None):
+    if options.dest_mpirun is not None:
         if (os.path.isfile(options.dest_mpirun)):
         # todo : check functionality of mpirun ?
             self.mpirun=options.dest_mpirun
@@ -624,13 +595,13 @@ class pam_enviroment:
         pass
 
 #radovan: it is always not none
-    if (options.dest_machfile is not None):
+    if options.dest_machfile is not None:
      self.machinefile=options.dest_machfile
      # todo: check it
      if self.iprint >= 5:
       print 'assigned machinefile=',self.machinefile
 
-    if (options.dest_install_dir is not None) :
+    if options.dest_install_dir is not None:
       if os.path.isdir(str(options.dest_install_dir)):
         install_dir=str(options.dest_install_dir)
         if self.iprint >= 5:
@@ -650,7 +621,6 @@ class pam_enviroment:
         if (os.path.isfile("/usr/sbin/npri")):
            self.nice_cmd="npri -h129 "
         else:
-           # Ulf's advice: set rather -1 than -20 what could cause lower system performance 
            self.nice_cmd="nice -1 "
         if self.iprint >= 5:
            print 'nice prirority set ! self.nice_cmd=',self.nice_cmd
@@ -713,12 +683,6 @@ class pam_enviroment:
     # assign input directory ...
     self.input_directory=os.getcwd()
 
-    # reconstruct the whole pam command #
-    self.pam_command = sys.argv[0]
-    if len(sys.argv) > 1:
-       for i in range(1, len(sys.argv)):
-           self.pam_args += sys.argv[i] + ' '
-
 #   input and molecule are required
 #   check that they are there, if not exit
 #   if yes, assign output file name
@@ -737,15 +701,10 @@ class pam_enviroment:
     if self.create_workdir_name:
       self.set_workdir_name(root_name=self.output_name)
 
-  #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def assign_mol_inp_files(self):
-  #############################################################################################
-  #
-  # assign "self.input_file_molecule" and "self.input_file_dirac"
-  # with proper input file names according to filled variables (class members)
-  # "self.input_molecule" and "self.input_dirac"
-  #
-  #############################################################################################
+    '''Assign "self.input_file_molecule" and "self.input_file_dirac"
+    with proper input file names according to filled variables (class members)
+    "self.input_molecule" and "self.input_dirac"'''
     if (self.iprint >=5):
       print '=== assign_mol_inp_files: ==='
       print 'self.input_molecule=',self.input_molecule
@@ -775,14 +734,8 @@ class pam_enviroment:
       print 'assigned self.input_file_molecule=',self.input_file_molecule
       print 'assigned self.input_file_dirac=',self.input_file_dirac
 
-  #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def set_output_name(self):
-  #############################################################################################
-  #
-  # set the output name string to be used later 
-  # for naming the output file and the work directory
-  #
-  #############################################################################################
+    'Set the output name string to be used later for naming the output file and the work directory'
     if (self.iprint >=5 ):
       print '\n set_output_name routine:'
       print 'self.input_molecule=',self.input_molecule
@@ -837,12 +790,7 @@ class pam_enviroment:
       print 'set self.output_name=',self.output_name
 
   def copy_files(self):
-  ################################################################################
-  #
-  #    copies file from the home directory to the work directory
-  #
-  ################################################################################
-    #print 'copying files into working directory...'
+    'copies file from the home directory to the work directory'
     def copy_single_file(file_name):
       full_file_name=self.input_directory+"/"+file_name
       if ( os.path.isfile(full_file_name) ):
@@ -854,7 +802,6 @@ class pam_enviroment:
         sys.exit(-1)
 
     self.create_workdir()
-    #print 'set_wrkdir: install_dir=',install_dir
 
     # copy dirac.x executable if wanted
     self.copy_file(self.dirac_exe,self.workdir+'/'+'dirac.x')
@@ -893,14 +840,8 @@ class pam_enviroment:
       copy_single_file(file_name)
 
   def distribute_work_dir(self):
-  ######################################################################
-  #
-  #  This routine is called when local disks are selected
-  #  for parallel calculations
-  #
-  #  The list of machines available to dirac.x
-  # 
-  ######################################################################a
+    '''This routine is called when local disks are selected
+    for parallel calculations. The list of machines available to dirac.x'''
     if (self.iprint>=5):
       print 'distribute_work_dir'
       print 'assigned machine file=',self.machinefile
@@ -952,10 +893,8 @@ class pam_enviroment:
       print 'All CPUs are on the master, no distribution of workdir over different nodes.'
 
   def set_output_file(self):
-  ##################################################################################
-  # sets the name of the output file by using "self.output_name"
-  # which is prepared in set_output_name(self) routine
-  ##################################################################################
+    '''Set the name of the output file by using "self.output_name"
+    which is prepared in set_output_name(self) routine'''
     if (len(self.output_name) > 0 and len(self.output_suffix) > 0 ):
       self.output_file=self.output_name+"."+self.output_suffix
       self.output_file_full=self.input_directory+"/"+self.output_file
@@ -989,13 +928,8 @@ class pam_enviroment:
       print "BASDIR=",os.getenv('BASDIR')
       print "IBM stuff, XLFRTEOPTS=",os.getenv('XLFRTEOPTS')
 
-  #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def set_dirac_cmd(self):
-  #############################################################################################
-  #
-  #     set the dirac command to be launched by the system (serial or parallel)
-  #
-  #############################################################################################
+    "set the dirac command to be launched by the system (serial or parallel)"
     this_dirac_exe=self.workdir+'/dirac.x'
 
     if (self.parallel_run and self.parallel_build):
@@ -1003,7 +937,7 @@ class pam_enviroment:
       # and/if  $DIRAC_CMD -machinefile $MACH_FILE $DIRAC_CMD
 
       # stefan: first try of a rudimentary correct passing of -wd/-wdir...
-      if(self.argument_to_pass_work_dir_to_slaves!=""):
+      if self.argument_to_pass_work_dir_to_slaves:
         self.dirac_cmd=self.mpirun+" -np "+str(self.nr_proc)+" -"+self.argument_to_pass_work_dir_to_slaves+" "+self.workdir+" "
       else:
         self.dirac_cmd=self.mpirun+" -np "+str(self.nr_proc)+""
@@ -1028,17 +962,10 @@ class pam_enviroment:
     if self.iprint >= 5:
         print 'set_dirac_cmd: self.dirac_cmd=',self.dirac_cmd
 
-  #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   def read_makefile_config(self):
-  #############################################################################################
-  #
-  #  The very first routine  - reading of the Makefile.config to get default values
-  #  of many variables.
-  #
-  #  Makefile.config file is the storage place for important variables 
-  #     -  debugger, profiler, valgrind, mpi-launcher...
-  #
-  #############################################################################################
+    """Read the Makefile.config to get default values of many variables.
+    Makefile.config file is the storage place for important variables 
+    -  debugger, profiler, valgrind, mpi-launcher... """
     if (self.iprint >= 5) :
       print 'read_makefile_config: Going to read from Makefile.config:'
     # open and read
@@ -1047,9 +974,7 @@ class pam_enviroment:
       # remove one character from the end of the string
       line=line[:-1] 
       if ( line.find('INSTALL_DIR') != -1 ):
-          #print 'INSTALL_DIR found, line=',line
           install_dir_temp=line.replace('INSTALL_DIR=','')
-          #print 'install_dir=',install_dir_temp
           # check if the install-dir is OK
           if (install_dir != install_dir_temp):
             print 'disgreement with the installation directory !'
@@ -1057,20 +982,16 @@ class pam_enviroment:
             print '     install_dir=',install_dir,len(install_dir)
             sys.exit(-1)
           else:
-            #print 'installation dir OK'
             pass
       elif ( line.find('SCRATCH_DIR') != -1 ):
-          #print 'SCRATCH_DIR found, line=',line
           scratch_dir_temp=line.replace('SCRATCH_DIR=','')
           self.workpath=scratch_dir_temp
           if (not os.path.isdir(self.workpath)):
             print 'NB: the workpath ',self.workpath,' does not exist on this machine.'
             print 'Running on your own risk (might not create workdir).'
-          #print 'workpath=',self.workpath
       elif ( line.find('DEBUGGER') != -1 ):
           debugger_temp=line.replace('DEBUGGER=','')
           if ( os.path.isfile(debugger_temp)):
-            #print 'debugger found=',debugger_temp
             self.debugger=debugger_temp
           else:
             print 'The debugger from Makefile.config is not existing!'
@@ -1083,17 +1004,14 @@ class pam_enviroment:
             print 'The profiler from Makefile.config is not existing!'
             print 'The profiler from Makefile.config=',profiler_temp
       elif ( line.find('VALGRIND') != -1 ):
-          #print 'valgrind found, line=',line
           valgrind_temp=line.replace('VALGRIND=','')
           if ( os.path.isfile(valgrind_temp) ):
-            #print 'valgrind found=',valgrind_temp
             self.valgrind=valgrind_temp
           else:
             print 'The valgrind from Makefile.config is not existing!'
             print 'The valgrind from Makefile.config=',valgrind_temp
       elif ( line.find('MPIRUN') != -1 ):
           mpirun_temp=line.replace('MPIRUN=','')
-          #print 'mpirun found=',mpirun_temp
           if (os.path.isfile(mpirun_temp)):
             self.mpirun=mpirun_temp
             self.parallel_build=True
@@ -1141,12 +1059,9 @@ class pam_enviroment:
   #
   #############################################################################################
     def signal_handler(signum, frame):
-    # ... controling the time of the execution
-      #print 'Signal handler called with signal', signum
+      "Controling the time of the execution"
       print 'DIRAC execution interrupted, because takes longer than the limit of ',self.timeout,' seconds.\n'
       sys.stdout.flush()
-      #raise Exception("Timed out!")
-      #raise IOError("Take too long !")
       raise Error("Takes too long !")
 
     # go to the working directory
@@ -1157,7 +1072,6 @@ class pam_enviroment:
       backup_file(some_file=self.input_directory+"/"+self.output_file,upto=None,iprint=self.iprint)
 
     if (self.set_timeout_limit) :
-      #print 'signal stuff initiated, self.timeout=',self.timeout
       signal.signal(signal.SIGALRM, signal_handler)
       signal.alarm(self.timeout)  # 
 
@@ -1173,7 +1087,6 @@ class pam_enviroment:
                 print '                   %s' % basis_set_directory_list[i]
     try:
       if (self.debug==False and self.vg_debug==False):
-        #print 'executing dirac ...',self.dirac_cmd
         self.f=open(self.output_file_full,'w',0)
         # write something into the output file by pam 
         self.write_into_output()
@@ -1319,7 +1232,7 @@ class pam_enviroment:
     print "  ip             :", get_hostname_ip() 
     print "  date and time  :", datetime.datetime.now() 
     print "  pam command    :", self.pam_command 
-    print "  pam args       :", self.pam_args
+    print "  pam args       :", ' '.join(sys.argv[1:])
     print "  input dir      :", self.input_directory 
     print "  scratch dir    :", self.workdir 
     print "  output file    :", self.output_file 
@@ -1336,16 +1249,11 @@ class pam_enviroment:
     
     sys.stdout.flush()
 
-#&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 class pam_run(pam_enviroment):
 #-----------------------------------------------------
 #-----------------------------------------------------
   def __init__(self):
-    #print 'pam_run class initialize'
     self.pam_variables=pam_enviroment()
-    #################################################################
-    # VERY IMPORTANT: append external dirac modules to the path dir
-    #################################################################
     append_dirac_py_modules(install_dir)
 
   def perform(self):
@@ -1363,11 +1271,7 @@ class pam_run(pam_enviroment):
     self.pam_variables.remove_work_dir()
     self.exit_function(return_code)
 
-###########################################################################
-###                   process the main function                         ###
-###########################################################################
 def main(*args):
-   #print "pam.py main function..."
    dirac_run = pam_run()
    dirac_run.perform()
 
