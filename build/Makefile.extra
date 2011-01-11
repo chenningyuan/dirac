@@ -72,7 +72,7 @@ FTNCHEK_FLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet
 .F.s:
 	$(F77) $(F77FLAGS_SAFE) -c -o $*.o $*.F > $*.s
 .F.r:
-	$(F77) $(FFLAGS_CHECK) $(F77FLAGS_OPT_3) $(F77FLAGS_SAFE) -c -o $*.o $*.F   > $*.r
+	$(F77) $(FFLAGS_CHECK) $(F77FLAGS_SAFE) -c -o $*.o $*.F   > $*.r
 .F.p:
 	$(F77) $(FFLAG_PROFILE) $(F77FLAGS_SAFE) -c -o $*.o $*.F > $*.p
 .F.i:
