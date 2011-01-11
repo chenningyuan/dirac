@@ -25,9 +25,7 @@ module overlap_diagnostic
 !  M. J. G. Peach, P. Benfield, T. U. Helgaker, and D. J. Tozer
 !  J. Chem. Phys. 128, 044118 (2008)
 
-!  implemented 2010/06/30 by Radovan Bast <radovan.bast@uit.no>
-
-!  known problems: so far no mpi, some point groups make problems with lvcorr
+!  implemented 2011/01/11 by Radovan Bast <radovan.bast@uit.no>
 
    use memory_allocator
 
