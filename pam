@@ -11,6 +11,16 @@
 # Contributors:  Rado BAST, Norway
 #
 ##########################################################################
+
+#radovan: suggestions:
+#         1. please use standard indentation of 4 spaces (not 2 spaces, no tabs)
+#         2. please do not use if bar>=5:
+#                                  foo="bar"+oof#hard to read
+#            instead use       if bar >= 5:
+#                                  foo = "bar" + oof # easy to read
+#         3. ###please no banner comments###
+#            # one hash is enough
+
 import os
 import pwd
 import sys
