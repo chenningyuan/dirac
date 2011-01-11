@@ -1761,7 +1761,7 @@ C
 
 #ifdef MOD_UNRELEASED
       if (dirac_cfg_overlap_diagnostic) then
-         call lambda_matrix_from_disc()
+         call o_matrix_from_disc()
       end if
 #endif
 
@@ -2170,6 +2170,8 @@ C       Give major orbital rotations in excitations
      &                        lambda_denominator,
      &                        iorbcl(2, i1),            
      &                        iorbcl(2, i2),        
+     &                        iorbcl(3, i1),
+     &                        iorbcl(3, i2),
      &                        buf2(jj))
            enddo
            write(lupri, '(a)') '   PBHT MO Overlap Diagnostic'

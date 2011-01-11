@@ -1,0 +1,1739 @@
+DIRAC pam run in /home/bast/dirac/git_trunk/test/dft_overlap_diagnostic
+-e Size of all static allocations :108.425 MB 
+DIRAC serial allocating 64000000 words (488 MB) of memory
+DIRAC serial will use at most 0 words (0 MB) of memory in dynamic allocations
+ ******************************************************************************
+ *                                                                            *
+ *                                O U T P U T                                 *
+ *                                   from                                     *
+ *                                                                            *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                   *
+ *                   @@  @@        @@  @@   @@  @@   @@                       *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                       *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                       *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                   *
+ *                                                                            *
+ *                                                                            *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:i
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii|
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////|
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<S
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$S
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SF
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]Zk
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&F
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969k
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9Z
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][F
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
+ ******************************************************************************
+ *                                                                            *
+ *         =========================================================          *
+ *                     Program for Atomic and Molecular                       *
+ *          Direct Iterative Relativistic All-electron Calculations           *
+ *         =========================================================          *
+ *                                                                            *
+ *                      VERSION 10.00  10 October 2010                        *
+ *                                                                            *
+ ******************************************************************************
+ *                                                                            *
+ *    Written by:                                                             *
+ *                                                                            *
+ *    Trond Saue               Université P. Sabatier, Toulouse  France       *
+ *    Lucas Visscher           VU University Amsterdam           Netherlands  *
+ *    Hans Jørgen Aa. Jensen   University of Southern Denmark    Denmark      *
+ *                                                                            *
+ *    with new contributions since the DIRAC08 release from:                  *
+ *                                                                            *
+ *    Radovan Bast             University of Tromsø              Norway       *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *
+ *    Ulf Ekström              VU University Amsterdam           Netherlands  *
+ *    Ephraim Eliav            University of Tel Aviv            Israel       *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark      *
+ *    Timo Fleig               Université P. Sabatier, Toulouse  France       *
+ *    Andre S. P. Gomes        CNRS/Universite Lille 1           France       *
+ *    Johan Henriksson         Linkôping University              Sweden       *
+ *    Miroslav Ilias           Matej Bel University              Slovakia     *
+ *    Christoph R. Jacob       Karlsruhe Institute of Technology Germany      *
+ *    Stefan Knecht            CNRS/Université de Strasbourg     France       *
+ *    Huliyar Nataraj          BME/Budapest Univ. Tech. & Econ.  Hungary      *
+ *    Patrick Norman           Linköping University              Sweden       *
+ *    Jeppe Olsen              Aarhus University                 Denmark      *
+ *    Markus Pernpointner      University of Heidelberg          Germany      *
+ *    Kenneth Ruud             University of Tromsø              Norway       *
+ *    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany      *
+ *    Jetze Sikkema            VU University Amsterdam           Netherlands  *
+ *    Andreas Thorvaldsen      University of Tromsø              Norway       *
+ *    Jørn Thyssen             University of Southern Denmark    Denmark      *
+ *    Sebastien Villaume       Linköping University              Sweden       *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan        *
+ *                                                                            *
+ *    For the complete list of contributors to the DIRAC code see our         *
+ *    website http://dirac.chem.vu.nl                                         *
+ *                                                                            *
+ *    This is an experimental code. The authors accept no responsibility      *
+ *    for the performance of the code or for the correctness of the results.  *
+ *                                                                            *
+ *    The code (in whole or part) is not to be reproduced for further         *
+ *    distribution without the written permission of the authors or           *
+ *    their representatives.                                                  *
+ *                                                                            *
+ *    If results obtained with this code are published, an                    *
+ *    appropriate citation would be:                                          *
+ *                                                                            *
+ *    DIRAC, a relativistic ab initio electronic structure program,           *
+ *    Release DIRAC10 (2010),                                                 *
+ *    written by T. Saue, L. Visscher, and H. J. Aa. Jensen,                  *
+ *    with new contributions from R. Bast, K. G. Dyall, U. Ekström, E. Eliav, *
+ *    T. Enevoldsen, T. Fleig, A. S. P. Gomes, J. Henriksson, M. Ilias,       *
+ *    Ch. R. Jacob, S. Knecht, H. S. Nataraj, P. Norman, J. Olsen,            *
+ *    M. Pernpointner, K. Ruud, B. Schimmelpfennig, J. Sikkema,               *
+ *    A. Thorvaldsen, J.  Thyssen, S. Villaume, and S. Yamamoto               *
+ *    (see http://dirac.chem.vu.nl).                                          *
+ *                                                                            *
+ ******************************************************************************
+ Version           : Dirac 8.0 (patchlevel 0) 
+ Hostname          : larry
+ Operating system  : Linux 2.6.35-23-generic
+ Machine           : i686
+ Run               : Sequential
+ Last compilation  : 11:32:49 Jan 11 2011 (by bast@larry:/home/bast/dirac/git_trunk)
+ FORTRAN compiler  : /opt/intel/Compiler/11.1/073/bin/ia32/ifort -O3 -ip  -g -fpp1 -w -assume byterecl -Iinclude -module modules -DARCH32BIT -DVAR_IFC -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MKL -DVAR_MFDS -DMOD_XML -DMOD_OPENRSP -DMOD_OOF -DMOD_ESR -DMOD_KRCC -DMOD_SRDFT -DMOD_MAGNETIZ -DMOD_MCSCF_spinfree -DMOD_UNRELEASED -DMOD_CAP -DMOD_ERI -DMOD_DNF   
+ C compiler        : /opt/intel/Compiler/11.1/073/bin/ia32/icc  -g -w -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DARCH32BIT -DMOD_XML -DMOD_OPENRSP -DMOD_OOF -DMOD_ESR -DMOD_KRCC -DMOD_SRDFT -DMOD_MAGNETIZ -DMOD_MCSCF_spinfree -DMOD_UNRELEASED -DMOD_CAP -DMOD_ERI -DMOD_DNF  -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DSYS_FLAVOR=LINUX 
+ External libraries: -L/opt/intel/mkl/10.2.6.038/lib/32 -lmkl_lapack -lmkl_intel -lmkl_intel_thread -lmkl_core -lguide -lpthread 
+ Internal libraries: DIRAC_BLAS=NO  DIRAC_LAPACK=NO 
+ ILP data model    : ILP32 
+ SVN URL           : 'unknown Subversion URL' 
+ SVN Revision      : 'unknown Subversion revision' 
+
+ 
+     Date and time (Linux)  : Tue Jan 11 12:08:10 2011
+     Host name              :                                         
+
+
+ *******************************************************************************
+ ************************** Input read from DIRAC.INP **************************
+ *******************************************************************************
+
+**DIRAC
+.WAVE FUNCTION
+.PROPERTIES
+**HAMILTONIAN
+.X2C
+.DFT
+ LDA
+*DFT
+.LAMBDA
+.COARSE
+**INTEGRALS
+*READIN
+.UNCONTRACT
+**WAVE FUNCTION
+.DHF
+**PROPERTIES
+*EXCITATIONS
+.EXCITATIONS
+ 1 6
+.ANALYZE
+*END OF
+
+
+    *************************************************************************
+    ********************* DIRAC: No title specified !!! *********************
+    *************************************************************************
+
+ Jobs in this run:
+   * Wave function
+   * Properties
+
+
+    **************************************************************************
+    ************************** General DIRAC set-up **************************
+    **************************************************************************
+
+   CODATA Recommended Values of the Fundamental Physical Constants: 1998  
+                Peter J. Mohr and Barry N. Taylor                         
+   Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
+ * The speed of light :        137.0359998
+ * Running in pure two-component mode (with LL integrals only)
+ * Direct evaluation of the following two-electron integrals:
+   - LL-integrals
+ * Spherical transformation embedded in MO-transformation
+   for large components
+ * Transformation to scalar RKB basis embedded in
+   MO-transformation for small components
+ * Thresholds for linear dependence:
+   Large components:   1.00D-06
+   Small components:   1.00D-08
+ DFPCMO: IBEIG read in I2 format.
+ * General print level   :   0
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+ Default print level:        1
+ Nuclear model: Gaussian charge distribution.
+
+ Two-electron integrals not calculated.
+
+
+ Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
+
+
+
+ Changes of defaults for READIN:
+ -------------------------------
+
+
+ Uncontracted basis forced, irrespective of basis input file.
+
+
+
+ Settings for FCK3 calculation:
+ ------------------------------
+
+Dynamical threshold is not (yet) implemented in DIRAC
+
+
+    *************************************************************************
+    ****************** Output from READIN input processing ******************
+    *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+                                                                          
+                                                                          
+
+  Nuclear Gaussian exponent for atom of charge  10.000 :    5.2105715255D+08
+
+
+                      SYMADD: Requested addition of symmetry
+                      --------------------------------------
+
+ Symmetry threshold:  0.50E-05
+
+ Original Coordinates                    
+ --------------------                    
+   10         0.00000000     0.00000000     0.00000000       1
+
+ Symmetry class found: D(oo,h)
+
+ Centered and Rotated                    
+ --------------------                    
+   10         0.00000000     0.00000000     0.00000000       1
+
+ The following elements were found:   X  Y  Z  
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 3
+
+
+
+                          SYMGRP:Point group information
+                          ------------------------------
+
+Full group is:  D(oo,h)        
+Represented as: D2h
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+      Reflection in the xy-plane
+
+   * Group multiplication table
+
+        |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+   -----+----------------------------------------
+     E  |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+    C2z | C2z   E   C2x  C2y  Oxy   i   Oyz  Oxz
+    C2y | C2y  C2x   E   C2z  Oxz  Oyz   i   Oxy
+    C2x | C2x  C2y  C2z   E   Oyz  Oxz  Oxy   i 
+     i  |  i   Oxy  Oxz  Oyz   E   C2z  C2y  C2x
+    Oxy | Oxy   i   Oyz  Oxz  C2z   E   C2x  C2y
+    Oxz | Oxz  Oyz   i   Oxy  C2y  C2x   E   C2z
+    Oyz | Oyz  Oxz  Oxy   i   C2x  C2y  C2z   E 
+
+   * Character table
+
+        |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+   -----+----------------------------------------
+    Ag  |   1    1    1    1    1    1    1    1
+    B3u |   1   -1   -1    1   -1    1    1   -1
+    B2u |   1   -1    1   -1   -1    1   -1    1
+    B1g |   1    1   -1   -1    1    1   -1   -1
+    B1u |   1    1   -1   -1   -1   -1    1    1
+    B2g |   1   -1    1   -1    1   -1    1   -1
+    B3g |   1   -1   -1    1    1   -1   -1    1
+    Au  |   1    1    1    1   -1   -1   -1   -1
+
+   * Direct product table
+
+        | Ag   B3u  B2u  B1g  B1u  B2g  B3g  Au 
+   -----+----------------------------------------
+    Ag  | Ag   B3u  B2u  B1g  B1u  B2g  B3g  Au 
+    B3u | B3u  Ag   B1g  B2u  B2g  B1u  Au   B3g
+    B2u | B2u  B1g  Ag   B3u  B3g  Au   B1u  B2g
+    B1g | B1g  B2u  B3u  Ag   Au   B3g  B2g  B1u
+    B1u | B1u  B2g  B3g  Au   Ag   B3u  B2u  B1g
+    B2g | B2g  B1u  Au   B3g  B3u  Ag   B1g  B2u
+    B3g | B3g  Au   B1u  B2g  B2u  B1g  Ag   B3u
+    Au  | Au   B3g  B2g  B1u  B1g  B2u  B3u  Ag 
+
+
+                            **************************
+                            *** Output from DBLGRP ***
+                            **************************
+
+   * Two fermion irreps:  E1g  E1u
+   * Real group. NZ = 1
+   * Direct product decomposition:
+          E1g x E1g : Ag  + B1g + B2g + B3g
+          E1u x E1g : Au  + B1u + B2u + B3u
+          E1u x E1u : Ag  + B1g + B2g + B3g
+
+
+                                 Spinor structure
+                                 ----------------
+
+
+   * Fermion irrep no.: 1            * Fermion irrep no.: 2
+
+      La  |  Ag (1)  B1g(2)  |                La  |  Au (1)  B1u(2)  |
+      Sa  |  Au (1)  B1u(2)  |                Sa  |  Ag (1)  B1g(2)  |
+      Lb  |  B2g(3)  B3g(4)  |                Lb  |  B2u(3)  B3u(4)  |
+      Sb  |  B2u(3)  B3u(4)  |                Sb  |  B2g(3)  B3g(4)  |
+
+
+                              Quaternion symmetries
+                              ---------------------
+
+    Rep  T(+)
+    -----------------------------
+    Ag   1
+    B3u  k
+    B2u  j
+    B1g  i
+    B1u  i
+    B2g  j
+    B3g  k
+    Au   1
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     1
+  Total number of atoms:    1
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  Ne          1      10      27      27      L  - [9s4p1d|9s4p1d]                                                
+                              0       0      S  - No small component basis functions attached                    
+  ----------------------------------------------------------------------
+                             27      27      L  - large components
+                              0       0      S  - small components
+  ----------------------------------------------------------------------
+  total:      1      10      27      27
+
+  Cartesian basis used.
+  Threshold for integrals (to be written to file):  1.00D-15
+
+  MNF.INP input file (for the AMFI stuff) is ready.
+  CAPOUT: preparing the "CAPDIR.inp" file with DIRAC unique order of atomic basis functions. 
+
+
+  References for the basis sets
+  -----------------------------
+
+  Atom type   1
+   Elements                             References                                
+   --------                             ----------                                
+   H      : T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
+   He     : D.E. Woon and T.H. Dunning, Jr. J. Chem. Phys. 100, 2975 (1994).      
+   Li - Ne: T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
+   Na - Mg: D.E. Woon and T.H. Dunning, Jr.  (to be published)                    
+   Al - Ar: D.E. Woon and T.H. Dunning, Jr.  J. Chem. Phys. 98, 1358 (1993).      
+   Ca     : J. Koput and K.A. Peterson, J. Phys. Chem. A, 106, 9595 (2002).       
+   Ga - Kr: A.K. Wilson, D.E. Woon, K.A. Peterson, T.H. Dunning, Jr.,             
+            J. Chem. Phys., 110, 7667 (1999)                                      
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  3
+
+
+   1   Ne       x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.0000000000
+
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:   0  1  1  0  1  0  0  0
+
+
+  Symmetry 2
+
+   1   Ne    x    1
+
+
+  Symmetry 3
+
+   2   Ne    y    2
+
+
+  Symmetry 5
+
+   3   Ne    z    3
+  Nuclear repulsion energy :    0.000000000000
+
+
+                                GETLAB: AO-labels
+                                -----------------
+
+   * Large components:   10
+     1  L Ne    s        2  L Ne    px       3  L Ne    py       4  L Ne    pz       5  L Ne    dxx      6  L Ne    dxy 
+     7  L Ne    dxz      8  L Ne    dyy      9  L Ne    dyz     10  L Ne    dzz 
+   * Small components:    0
+
+
+
+                                GETLAB: SO-labels
+                                -----------------
+
+   * Large components:   10
+     1  L Ag Ne s        2  L Ag Ne dxx      3  L Ag Ne dyy      4  L Ag Ne dzz      5  L B3uNe px       6  L B2uNe py  
+     7  L B1gNe dxy      8  L B1uNe pz       9  L B2gNe dxz     10  L B3gNe dyz 
+   * Small components:    0
+
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:           12     4     4     1     4     1     1     0
+  Number of large orbitals in each symmetry:     12     4     4     1     4     1     1     0
+  Number of small orbitals in each symmetry:      0     0     0     0     0     0     0     0
+
+* Large component functions
+
+  Symmetry  Ag ( 1)
+
+        9 functions:    Ne s   
+        1 functions:    Ne dxx 
+        1 functions:    Ne dyy 
+        1 functions:    Ne dzz 
+
+  Symmetry  B3u( 2)
+
+        4 functions:    Ne px  
+
+  Symmetry  B2u( 3)
+
+        4 functions:    Ne py  
+
+  Symmetry  B1g( 4)
+
+        1 functions:    Ne dxy 
+
+  Symmetry  B1u( 5)
+
+        4 functions:    Ne pz  
+
+  Symmetry  B2g( 6)
+
+        1 functions:    Ne dxz 
+
+  Symmetry  B3g( 7)
+
+        1 functions:    Ne dyz 
+
+
+   ***************************************************************************
+   *************************** Hamiltonian defined ***************************
+   ***************************************************************************
+
+  - BSS with properties !
+ * Print level:    0
+ * Exact-Two-Component (X2C) Hamiltonian
+   Reference: 
+    M. Ilias and T. Saue:
+    "Implementation of an infinite-order two-component relativistic Hamiltonian 
+    by a simple one-step transformation." 
+    J. Chem. Phys., 126 (2007) 064102. 
+   additional reference for the new X2C module: 
+    S. Knecht and T. Saue:
+    manuscript in preparation, Strasbourg 2010. 
+
+ * running in 2-component modus
+ * Kohn-Sham calculation using the xc functional: LDA
+ * Default integral flags passed to all modules
+   - LL-integrals:     1
+   - LS-integrals:     0
+   - SS-integrals:     0
+   - GT-integrals:     0
+ * Basis set:
+   - uncontracted large component basis set
+===========================================================================
+    Set-up for AMFI/RELSCF calculations
+===========================================================================
+  ...no reading under *AMFI, thus default settings
+   *AMFI code print level:     0
+ *RELSCF code print level:     0
+ * RELSCF maximum number of iterations:   50
+ * All AMFI mean-field summations are on neutral individual atoms.
+ * order of AMFI contributions to the X2C Hamiltonian:  2
+  --> adding spin-same orbit MFSSO2 terms.
+
+
+   Kohn-Sham calculation set-up
+   ----------------------------
+
+ * Print level:     2
+ * Numerical integration grid:
+   - radial quadrature according to R. Lindh, P.-Aa. Malmqvist, and L. Gagliardi
+     precision of radial quadrature set to:  0.10000E-10
+   - angular quadrature using the Lebedev scheme, exact up to order L = 35
+   - accepted error in integrated number of electrons:  0.10000E-02
+ * DFT thresholds:
+   - dfthr0 =  0.10000E-08
+   - dfthri =  0.20000E-11
+ * Spin density contribution in response calculations:
+   - use the norm of the spin magnetization vector as a definition of the spin density (noncollinear definition)
+
+
+    **************************************************************************
+    ************************** Wave function module **************************
+    **************************************************************************
+
+ Jobs in this run (in execution order):
+ * Density functional calculation (Kohn-Sham method)
+
+ * Initial Automatic occupation based on:
+   Total charge of atoms =  10
+   Charge of molecule    =   0
+   i.e. no. of electrons =  10
+===========================================================================
+ DHFINP: Set-up for Kohn-Sham calculation:
+===========================================================================
+ * Number of fermion irreps: 2
+ * Bare nucleus screening correction used for start guess
+ * General print level   :   0
+ ***** TRIAL FUNCTION *****
+ * Trial vectors read from file DFCOEF
+ ***** CONVERGENCE CRITERIA *****
+ * Convergence on norm of error vector (gradient).
+   Desired convergence:1.000D-07
+   Allowed convergence:1.000D-06
+
+ ***** CONVERGENCE CONTROL *****
+ * Fock matrix constructed using differential density matrix
+    with optimal parameter.
+ * DIIS (in MO basis)
+ * DIIS will be activated when convergence reaches : 1.00D+20
+   - Maximum size of B-matrix:   10
+ * Damping of Fock matrix when DIIS is not activated. 
+   Weight of old matrix    : 0.250
+ * Maximum number of SCF iterations  :   50
+ * No quadratic convergent Hartree-Fock
+ * DHF occupation is allowed to change during SCF cycles.
+ * Contributions from 2-electron integrals to Fock matrix:
+   LL-integrals.
+ * NB!!! No e-p rotations in 2nd order optimization.
+ ***** OUTPUT CONTROL *****
+ * Only electron eigenvalues written out.
+ LWORK,LFREE    64000000    64000000
+
+
+   ***************************************************************************
+   ***************************** Property module *****************************
+   ***************************************************************************
+
+ * Print level:  0
+ * Input label:**PROPE
+ * Properties calculated for the following wave functions: 
+     1: DHF 
+ These initial settings of center and origins might be changed later:
+ * Operator center (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * Gauge origin    (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * Dipole origin   (a.u.):      0.0000000000      0.0000000000      0.0000000000
+  ...perform the picture change transformation of the four-comp. property operators
+===========================================================================
+ XPPINP: Electronic PP excitation energies and transition moments
+===========================================================================
+ * Print level                 :    0
+ * Analysis of solution vectors.
+ * Maximum number of iterations:   50
+ * Threshold for convergence   : 1.00000D-05
+ * Max. size of reduced matrix :  400
+ * NB!!! No rotations between electrons and positrons.
+ * Include contributions from the following two-electron integrals:
+   - LL-integrals
+ * Trial vectors will be normalized.
+---------------------------------------------------------------------------
+ * No. of excitations evaluated in each boson symmetry:
+           boson symmetry 1 (Ag ) :    6
+           boson symmetry 2 (B3u) :    0
+           boson symmetry 3 (B2u) :    0
+           boson symmetry 4 (B1g) :    0
+           boson symmetry 5 (B1u) :    0
+           boson symmetry 6 (B2g) :    0
+           boson symmetry 7 (B3g) :    0
+           boson symmetry 8 (Au ) :    0
+---------------------------------------------------------------------------
+ ** No transition moment operators **
+
+
+ ********************************************************************************
+ *************************** Input consistency checks ***************************
+ ********************************************************************************
+
+
+
+    *************************************************************************
+    ************************ End of input processing ************************
+    *************************************************************************
+
+
+  Nuclear Gaussian exponent for atom of charge  10.000 :    5.2105715255D+08
+
+
+                      SYMADD: Requested addition of symmetry
+                      --------------------------------------
+
+ Symmetry threshold:  0.50E-05
+
+ Original Coordinates                    
+ --------------------                    
+   10         0.00000000     0.00000000     0.00000000       1
+
+ Symmetry class found: D(oo,h)
+
+ Centered and Rotated                    
+ --------------------                    
+   10         0.00000000     0.00000000     0.00000000       1
+
+ The following elements were found:   X  Y  Z  
+
+  MNF.INP input file (for the AMFI stuff) is ready.
+
+                   *****************************************************************
+                   *** Starting the Exact-Two-Component (X2C) interface in DIRAC ***
+                   ***          written by Stefan Knecht and Trond Saue,         ***
+                   ***              University of Strasbourg, 2010.              ***
+                   *****************************************************************
+
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+   L   Ag    * Deleted:          1(Proj:          1, Lindep:          0)
+   L   B1g   * Deleted:          0(Proj:          0, Lindep:          0)
+   L   B2g   * Deleted:          0(Proj:          0, Lindep:          0)
+   L   B3g   * Deleted:          0(Proj:          0, Lindep:          0)
+   S   B3u   * Deleted:          1(Proj:          1, Lindep:          0)
+   S   B2u   * Deleted:          1(Proj:          1, Lindep:          0)
+   S   B1u   * Deleted:          1(Proj:          1, Lindep:          0)
+   S   Au    * Deleted:          0(Proj:          0, Lindep:          0)
+   L   B3u   * Deleted:          0(Proj:          0, Lindep:          0)
+   L   B2u   * Deleted:          0(Proj:          0, Lindep:          0)
+   L   B1u   * Deleted:          0(Proj:          0, Lindep:          0)
+   S   Ag    * Deleted:          4(Proj:          4, Lindep:          0)
+   S   B1g   * Deleted:          0(Proj:          0, Lindep:          0)
+   S   B2g   * Deleted:          0(Proj:          0, Lindep:          0)
+   S   B3g   * Deleted:          0(Proj:          0, Lindep:          0)
+
+
+                                Output from MODHAM
+                                ------------------
+
+* Applied strict kinetic balance !
+
+  *** MNF.INP - read number of unique nuclei: 1
+
+  >>> AMFI is going to calculate  1. unique nucleus of charge    10
+
+      *** AMFIIN: corresponding DIRAC nuclei :           1
+      *** AMFIIN: The file name with AMFI integrals: AOPROPER_MNF.10 
+
+
+                         ATOMIC NO-PAIR SO-MF CODE starts
+                         --------------------------------
+
+   Douglas-Kroll type operators 
+  charge on the calculated atom:  0
+  Mean-field summation for electrons #:  10
+    ...electronic occupation of Ne: [He]2s^2 2p^6             
+ ****  Written to the file TOSCF for "relscf" ****
+        charge: 10.000
+      nprimit:   9  4  1  0
+   closed sh.:   2  1  0  0
+     open sh.:   0  0  0  0
+
+
+                       *** PROGRAM AT34 - ALLIANT - @V ***
+                       -----------------------------------
+
+
+      SYMMETRY SPECIES            S       P       D       F
+      NUMBER OF BASIS FUNCTIONS:  9       4       1
+      NUMBER OF CLOSED SHELLS  :  2       1       0
+      OPEN SHELL OCCUPATION    :  0       0       0
+    1. iteration,  total energy:             0.000000000000
+    2. iteration,  total energy:          -117.923235330943
+    3. iteration,  total energy:          -126.178957670543
+    4. iteration,  total energy:          -127.908292613567
+    5. iteration,  total energy:          -128.447331276861
+    6. iteration,  total energy:          -128.480052862810
+    7. iteration,  total energy:          -128.486820290714
+    8. iteration,  total energy:          -128.488338619442
+    9. iteration,  total energy:          -128.488744485904
+   10. iteration,  total energy:          -128.488768037307
+   11. iteration,  total energy:          -128.488773301932
+   12. iteration,  total energy:          -128.488774478405
+   13. iteration,  total energy:          -128.488774794383
+   14. iteration,  total energy:          -128.488774811759
+   15. iteration,  total energy:          -128.488774815844
+   16. iteration,  total energy:          -128.488774816757
+   17. iteration,  total energy:          -128.488774817896
+   17. iteration,  total energy:          -128.488774817015
+  ### NON-RELATIVISTIC APPROX. ###
+        17      -0.1284887748D+03      -0.2569773461D+03       0.1284885713D+03      -0.2000001584D+01
+    1. iteration,  total energy:          -128.613440769128
+    2. iteration,  total energy:          -128.625319186713
+    3. iteration,  total energy:          -128.625326152622
+    4. iteration,  total energy:          -128.625327486736
+    5. iteration,  total energy:          -128.625327839189
+    6. iteration,  total energy:          -128.625327858980
+    7. iteration,  total energy:          -128.625327863540
+    8. iteration,  total energy:          -128.625327864559
+    9. iteration,  total energy:          -128.625327865718
+   10. iteration,  total energy:          -128.625327864849
+   11. iteration,  total energy:          -128.625327864852
+   11. iteration,  total energy:          -128.625327864853
+  ### EV  OPERATOR RESULT      ###
+        11      -0.1286253279D+03      -0.2575394720D+03       0.1289141442D+03      -0.1997759623D+01
+      *** AMFIIN: ADDING nucleus    1 with charge  10 to the BSSn Hamiltonian.
+
+                   ******************************************
+                   *** X2C transformation ended properly. ***
+                   *** continue calculation in 2c mode... ***
+                   ******************************************
+
+
+  Nuclear Gaussian exponent for atom of charge  10.000 :    5.2105715255D+08
+
+
+                      SYMADD: Requested addition of symmetry
+                      --------------------------------------
+
+ Symmetry threshold:  0.50E-05
+
+ Original Coordinates                    
+ --------------------                    
+   10         0.00000000     0.00000000     0.00000000       1
+
+ Symmetry class found: D(oo,h)
+
+ Centered and Rotated                    
+ --------------------                    
+   10         0.00000000     0.00000000     0.00000000       1
+
+ The following elements were found:   X  Y  Z  
+
+  MNF.INP input file (for the AMFI stuff) is ready.
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+   L   Ag    * Deleted:          1(Proj:          1, Lindep:          0)
+   L   B1g   * Deleted:          0(Proj:          0, Lindep:          0)
+   L   B2g   * Deleted:          0(Proj:          0, Lindep:          0)
+   L   B3g   * Deleted:          0(Proj:          0, Lindep:          0)
+   L   B3u   * Deleted:          0(Proj:          0, Lindep:          0)
+   L   B2u   * Deleted:          0(Proj:          0, Lindep:          0)
+   L   B1u   * Deleted:          0(Proj:          0, Lindep:          0)
+
+
+                                Output from LINSYM
+                                ------------------
+
+
+ Parity   MJ  Functions(total) Functions(LC) Functions(SC)
+     1    1/2         11           11            0
+     1   -3/2          2            2            0
+     1    5/2          1            1            0
+    -1    1/2          8            8            0
+    -1   -3/2          4            4            0
+
+
+      **********************************************************************
+      ************************* Orbital dimensions *************************
+      **********************************************************************
+
+                                   Irrep 1 Irrep 2   Sum
+No. of electronic orbitals (NESH):    14      12      26
+No. of positronic orbitals (NPSH):     0       0       0
+Total no. of orbitals      (NORB):    14      12      26
+
+
+  *****************************************************************************
+  ************************* X2C Kohn-Sham calculation *************************
+  *****************************************************************************
+
+
+*** INFO *** No trial vectors found. Using bare nucleus approximation for initial trial vectors.
+             Improved by an estimate of the electronic screening (Slater's rules).
+
+
+########## START ITERATION NO.   1 ##########   Tue Jan 11 12:08:10 2011
+
+
+* AUTOCC( 0) : Initial occupation:
+
+ * Closed shell SCF calculation with   10 electrons in
+       2 orbitals in Fermion irrep 1
+       3 orbitals in Fermion irrep 2
+It.   1    -65.22253715120      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Tue Jan 11
+
+########## START ITERATION NO.   2 ##########   Tue Jan 11 12:08:10 2011
+
+
+* GETGAB: label "GABAO1XX" not found; calling GABGEN.
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   52.70%    0.53%    0.00%    0.00%   0.00000000s
+
+
+ ********************************************************************************
+ ********************** Slater-Bragg atomic size estimates **********************
+ ********************************************************************************
+
+
+
+                        Slater-Bragg relative atomic sizes
+                        ----------------------------------
+
+
+               Column   1
+       1       1.00000000
+
+DFTGRD: ATSIZE not requested or no trial vectors found. Slater-Bragg radii will be used.
+ 
+Atom  Deg   Rmin        Rmax        Step size     #rp     #tp
+=============================================================
+Ne      1   0.215E-05   0.597E+01   0.141E+00      92    2870
+
+   Number of grid points in quadrature:      2870 ( 15.9%)
+
+
+ >>>> Time used in DFTGRD:   0.00 seconds
+
+ 
+   number of grid points                          =      2870
+   number of grid points below density threshold  =       128
+   DFT exchange-correlation energy:               =       -12.1269625371774392
+   number of electrons from numerical integration =         9.9999999458005018
+ 
+   time spent in DFT integration                  =   0.00 seconds
+   number of processors                           =         1
+ 
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.00000000s
+
+########## END ITERATION NO.   2 ##########   Tue Jan 11 12:08:10 2011
+
+It.   2    -128.1077206569      6.29D+01  2.98D+00  2.71D+00               0.00000000s   LL             Tue Jan 11
+
+########## START ITERATION NO.   3 ##########   Tue Jan 11 12:08:10 2011
+
+    3 *** Differential density matrix. DCOVLP     = 1.0130
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   52.70%    0.55%    0.00%    0.00%   0.00000000s
+ 
+   number of grid points                          =      2870
+   number of grid points below density threshold  =       128
+   DFT exchange-correlation energy:               =       -11.3952982024053870
+   number of electrons from numerical integration =         9.9999999304372693
+ 
+   time spent in DFT integration                  =   0.00 seconds
+   number of processors                           =         1
+ 
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.00000000s
+
+########## END ITERATION NO.   3 ##########   Tue Jan 11 12:08:10 2011
+
+It.   3    -128.1995782657      9.19D-02 -1.38D+00  1.12D+00   DIIS   2    0.00000000s   LL             Tue Jan 11
+
+########## START ITERATION NO.   4 ##########   Tue Jan 11 12:08:10 2011
+
+    4 *** Differential density matrix. DCOVLP     = 0.9637
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   52.70%    0.55%    0.00%    0.00%   0.00000000s
+ 
+   number of grid points                          =      2870
+   number of grid points below density threshold  =       128
+   DFT exchange-correlation energy:               =       -11.9900318197593077
+   number of electrons from numerical integration =         9.9999999537218738
+ 
+   time spent in DFT integration                  =   0.00 seconds
+   number of processors                           =         1
+ 
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.00000000s
+
+########## END ITERATION NO.   4 ##########   Tue Jan 11 12:08:10 2011
+
+It.   4    -128.2653709357      6.58D-02  9.78D-01  6.11D-01   DIIS   3    0.00000000s   LL             Tue Jan 11
+
+########## START ITERATION NO.   5 ##########   Tue Jan 11 12:08:11 2011
+
+    5 *** Differential density matrix. DCOVLP     = 0.9987
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   52.70%    0.60%    0.00%    0.00%   0.00000000s
+ 
+   number of grid points                          =      2870
+   number of grid points below density threshold  =       128
+   DFT exchange-correlation energy:               =       -11.7692252977871821
+   number of electrons from numerical integration =         9.9999999451929451
+ 
+   time spent in DFT integration                  =   0.00 seconds
+   number of processors                           =         1
+ 
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.00000000s
+
+########## END ITERATION NO.   5 ##########   Tue Jan 11 12:08:11 2011
+
+It.   5    -128.3011253295      3.58D-02 -3.51D-01  5.47D-03   DIIS   4    0.00000000s   LL             Tue Jan 11
+
+########## START ITERATION NO.   6 ##########   Tue Jan 11 12:08:11 2011
+
+    6 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   52.70%    0.87%    0.00%    0.00%   0.00000000s
+ 
+   number of grid points                          =      2870
+   number of grid points below density threshold  =       128
+   DFT exchange-correlation energy:               =       -11.7669009429352815
+   number of electrons from numerical integration =         9.9999999450761283
+ 
+   time spent in DFT integration                  =   0.00 seconds
+   number of processors                           =         1
+ 
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.00000000s
+
+########## END ITERATION NO.   6 ##########   Tue Jan 11 12:08:11 2011
+
+It.   6    -128.3011290684      3.74D-06 -3.42D-03  5.64D-04   DIIS   5    0.00000000s   LL             Tue Jan 11
+
+########## START ITERATION NO.   7 ##########   Tue Jan 11 12:08:11 2011
+
+    7 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   52.70%    1.09%    0.00%    0.00%   0.00000000s
+ 
+   number of grid points                          =      2870
+   number of grid points below density threshold  =       128
+   DFT exchange-correlation energy:               =       -11.7670903349248999
+   number of electrons from numerical integration =         9.9999999450833688
+ 
+   time spent in DFT integration                  =   0.00 seconds
+   number of processors                           =         1
+ 
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.00000000s
+
+########## END ITERATION NO.   7 ##########   Tue Jan 11 12:08:11 2011
+
+It.   7    -128.3011290962      2.78D-08  3.08D-04  8.20D-06   DIIS   6    0.00000000s   LL             Tue Jan 11
+
+########## START ITERATION NO.   8 ##########   Tue Jan 11 12:08:11 2011
+
+    8 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   52.70%    2.62%    0.00%    0.00%   0.00000000s
+ 
+   number of grid points                          =      2870
+   number of grid points below density threshold  =       128
+   DFT exchange-correlation energy:               =       -11.7670930033302206
+   number of electrons from numerical integration =         9.9999999450834984
+ 
+   time spent in DFT integration                  =   1.00 seconds
+   number of processors                           =         1
+ 
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 1.00000000s
+
+########## END ITERATION NO.   8 ##########   Tue Jan 11 12:08:11 2011
+
+It.   8    -128.3011290962      5.34D-12  4.42D-06  1.17D-08   DIIS   6    1.00000000s   LL             Tue Jan 11
+
+
+                                   SCF - CYCLE
+                                   -----------
+
+* Convergence on norm of error vector (gradient).
+  Desired convergence:1.000D-07
+  Allowed convergence:1.000D-06
+
+* ERGVAL - convergence in total energy
+* FCKVAL - convergence in maximum change in total Fock matrix
+* EVCVAL - convergence in error vector (gradient)
+--------------------------------------------------------------------------------------------------------------------------------
+           Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
+--------------------------------------------------------------------------------------------------------------------------------
+It.   1    -65.22253715120      1.00D+20  0.00D+00  0.00D+00               0.00000000s   Scr. nuclei    Tue Jan 11
+It.   2    -128.1077206569      6.29D+01  2.98D+00  2.71D+00               0.00000000s   LL             Tue Jan 11
+It.   3    -128.1995782657      9.19D-02 -1.38D+00  1.12D+00   DIIS   2    0.00000000s   LL             Tue Jan 11
+It.   4    -128.2653709357      6.58D-02  9.78D-01  6.11D-01   DIIS   3    0.00000000s   LL             Tue Jan 11
+It.   5    -128.3011253295      3.58D-02 -3.51D-01  5.47D-03   DIIS   4    0.00000000s   LL             Tue Jan 11
+It.   6    -128.3011290684      3.74D-06 -3.42D-03  5.64D-04   DIIS   5    0.00000000s   LL             Tue Jan 11
+It.   7    -128.3011290962      2.78D-08  3.08D-04  8.20D-06   DIIS   6    0.00000000s   LL             Tue Jan 11
+It.   8    -128.3011290962      5.34D-12  4.42D-06  1.17D-08   DIIS   6    1.00000000s   LL             Tue Jan 11
+--------------------------------------------------------------------------------------------------------------------------------
+* Convergence after    8 iterations.
+* Average elapsed time per iteration: 
+      No 2-ints    :    0.00000000s
+      LL           :    0.14285714s
+
+
+                                   TOTAL ENERGY
+                                   ------------
+
+   Electronic energy                        :    -128.30112909617284
+
+   Other contributions to the total energy
+   Nuclear repulsion energy                 :       0.00000000000000
+
+   Sum of all contributions to the energy
+   Total energy                             :    -128.30112909617284
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Block   1 in E1g:  Omega =  1/2
+  * Closed shell, f = 1.0000
+   -30.30727255648  ( 2)       -1.29250736896  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+     1.60223143640  ( 2)        4.61907140875  ( 2)        4.62001141069  ( 2)       18.06774601189  ( 2)       90.46285908263  ( 2)
+   343.91054033629  ( 2)     1269.41615677119  ( 2)     4949.54404229726  ( 2)    20990.51318356080  ( 2)
+
+* Block   2 in E1g:  Omega =  3/2
+  * Virtual eigenvalues, f = 0.0000
+     4.61907140875  ( 2)        4.62001141069  ( 2)
+
+* Block   3 in E1g:  Omega =  5/2
+  * Virtual eigenvalues, f = 0.0000
+     4.62001141069  ( 2)
+
+* Block   1 in E1u:  Omega =  1/2
+  * Closed shell, f = 1.0000
+    -0.45794936580  ( 2)       -0.45468166681  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+     1.22181336508  ( 2)        1.22450596954  ( 2)        8.48814568579  ( 2)        8.50107977419  ( 2)       50.93700465173  ( 2)
+    51.05263715338  ( 2)
+
+* Block   2 in E1u:  Omega =  3/2
+  * Closed shell, f = 1.0000
+    -0.45468166681  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+     1.22450596954  ( 2)        8.50107977419  ( 2)       51.05263715338  ( 2)
+
+* Occupation in fermion symmetry E1g
+  * Inactive orbitals
+     1/2 1/2
+  * Virtual orbitals
+     1/2 1/2 3/2 1/2 3/2 5/2 1/2 1/2 1/2 1/2 1/2 1/2
+
+* Occupation in fermion symmetry E1u
+  * Inactive orbitals
+     1/2 3/2 1/2
+  * Virtual orbitals
+     1/2 3/2 1/2 1/2 1/2 3/2 1/2 1/2 3/2
+
+* Occupation of subblocks
+                       E1g:  1/2  3/2  5/2                                                                  
+  closed shells (f=1.0000):    2    0    0
+ virtual shells (f=0.0000):    9    2    1
+tot.num. of pos.erg shells:   11    2    1
+                       E1u:  1/2  3/2                                                                       
+  closed shells (f=1.0000):    2    1
+ virtual shells (f=0.0000):    6    3
+tot.num. of pos.erg shells:    8    4
+
+
+* HOMO - LUMO gap:
+
+    E(LUMO) :     1.22181337 au (symmetry E1u)
+  - E(HOMO) :    -0.45468167 au (symmetry E1u)
+  ------------------------------------------
+    gap     :     1.67649503 au
+
+
+
+       *******************************************************************
+       ************************* Property module *************************
+       *******************************************************************
+
+
+
+   This is output from the Dirac property module:
+
+   HF & DFT first order properties
+   Trond Saue
+
+   First-order ESR properties
+   Hans Joergen Aa. Jensen and Anette Noerager
+
+   MP2 first order properties:
+   J. N. P. van Stralen, L. Visscher, C. V. Larsen and H. J. Aa Jensen, Chem. Phys. 311 (2005) 81.
+
+   KR-RPA second-order properties
+   Hans Joergen Aa. Jensen and Trond Saue
+
+   KR-QR third order properties
+   Patrick Norman and Hans Joergen Aa. Jensen
+
+   Molecular gradient
+   Joern Thyssen
+
+   Additional contributions from:
+   Thomas Enevoldsen
+
+
+
+
+             *******************************************************
+             ********** Properties for DHF  wave function **********
+             *******************************************************
+
+
+    * Orbital classes:
+    Fermion ircop:E1g
+    - Inactive orbitals  :      1..     2                                          
+    - Active orbitals    : No electrons
+    - Secondary orbitals :      3..    14                                          
+    Fermion ircop:E1u
+    - Inactive orbitals  :      1..     3                                          
+    - Active orbitals    : No electrons
+    - Secondary orbitals :      4..    12                                          
+
+* REACMO: Coefficients read from file DFCOEF - Total energy: -128.301129096167500
+* Heading :DIRAC: No title specified !!!                     Tue Jan 11 12:08:11 2011
+
+
+
+ >>>  SOLVING PP EXCITATION ENERGIES - Symmetry: Ag 
+      for the  6 lowest excitation energies.
+
+* GETFCK: reading old two-electron Fock matrix
+
+* REAFCK: Fock matrix read from file /scratch/bast.x2c_ne_auto.21545/DFFCK2                      
+* Heading :DIRAC: No title specified !!!                     Tue Jan 11 12:08:11 2011
+
+
+ ********************************************************************************
+ ********************** Slater-Bragg atomic size estimates **********************
+ ********************************************************************************
+
+
+
+                        Slater-Bragg relative atomic sizes
+                        ----------------------------------
+
+
+               Column   1
+       1       1.00000000
+
+DFTGRD: ATSIZE not requested or no trial vectors found. Slater-Bragg radii will be used.
+ 
+Atom  Deg   Rmin        Rmax        Step size     #rp     #tp
+=============================================================
+Ne      1   0.215E-05   0.597E+01   0.141E+00      92   18064
+
+   Number of grid points in quadrature:     18064 (100.0%)
+
+
+ >>>> Time used in DFTGRD:   0.00 seconds
+
+ 
+   number of grid points                          =     18064
+   number of grid points below density threshold  =       868
+   DFT exchange-correlation energy:               =       -11.7670930033305368
+   number of electrons from numerical integration =         9.9999999450835162
+ 
+   time spent in DFT integration                  =   0.00 seconds
+   number of processors                           =         1
+ 
+
+* GETFCK: reading old one-electron Fock matrix
+
+* REAFCK: Fock matrix read from file /scratch/bast.x2c_ne_auto.21545/DFFCK1                      
+* Heading :DIRAC: No title specified !!!                     Tue Jan 11 12:08:10 2011
+
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  7.16D-08
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 1.40D+02
+
+########## START MICROITERATION NO.   1 ##########   Tue Jan 11 12:08:12 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  7.16D-08   62.47%    1.74%    0.00%    0.00%   0.00000000s
+
+
+ ********************************************************************************
+ ********************** Slater-Bragg atomic size estimates **********************
+ ********************************************************************************
+
+
+
+                        Slater-Bragg relative atomic sizes
+                        ----------------------------------
+
+
+               Column   1
+       1       1.00000000
+
+DFTGRD: ATSIZE not requested or no trial vectors found. Slater-Bragg radii will be used.
+ 
+Atom  Deg   Rmin        Rmax        Step size     #rp     #tp
+=============================================================
+Ne      1   0.215E-05   0.597E+01   0.141E+00      92    2870
+
+   Number of grid points in quadrature:      2870 ( 15.9%)
+
+
+ >>>> Time used in DFTGRD:   0.00 seconds
+
+ 
+   number of grid points                          =      2870
+   number of grid points below density threshold  =       128
+   number of electrons from numerical integration =         9.9999999450835002
+ 
+   time spent in DFT integration                  =   0.00 seconds
+   number of processors                           =         1
+ 
+* Trial vectors in this micro iteration:  E+:  8  E-:  8
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     1.63269960  1.00E-05  5.34E-02  1.26E-09  5.34E-02
+     1.63286674  1.00E-05  5.34E-02  1.65E-03  5.33E-02
+     1.65873425  1.00E-05  5.29E-02  2.21E-02  4.81E-02
+     1.67934400  1.00E-05  2.08E-03  5.43E-04  2.01E-03
+     1.67957128  1.00E-05  5.05E-04  5.05E-04  1.28E-09
+     1.68838073  1.00E-05  4.02E-02  3.81E-02  1.27E-02
+
+########## START MICROITERATION NO.   2 ##########   Tue Jan 11 12:08:12 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  7.16D-08   45.37%    2.29%    9.61%    0.00%   0.00000000s
+ 
+   number of grid points                          =      2870
+   number of grid points below density threshold  =       128
+   number of electrons from numerical integration =         9.9999999450834984
+ 
+   time spent in DFT integration                  =   1.00 seconds
+   number of processors                           =         1
+ 
+* Trial vectors in this micro iteration:  E+:  6  E-:  6
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     1.63229961  1.00E-05  4.36E-04  4.09E-11  4.36E-04
+     1.63246773  1.00E-05  4.28E-04  1.98E-05  4.28E-04
+     1.63249994  1.00E-05  1.30E-02  8.78E-03  9.59E-03
+     1.67934339  1.00E-05  2.00E-05  9.56E-06  1.75E-05
+     1.67934360  1.00E-05  1.07E-03  7.04E-04  8.01E-04
+     1.67957125  1.00E-05  2.42E-05  2.42E-05  2.83E-11
+
+########## START MICROITERATION NO.   3 ##########   Tue Jan 11 12:08:12 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  7.16D-08   45.37%    2.46%    8.31%    0.00%   0.00000000s
+ 
+   number of grid points                          =      2870
+   number of grid points below density threshold  =       128
+   number of electrons from numerical integration =         9.9999999450834984
+ 
+   time spent in DFT integration                  =   0.00 seconds
+   number of processors                           =         1
+ 
+* Trial vectors in this micro iteration:  E+:  6  E-:  6
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     1.63229958  1.00E-05  1.23E-06  2.93E-11  1.23E-06
+     1.63246771  1.00E-05  1.24E-06  2.90E-08  1.24E-06
+     1.63246771  1.00E-05  7.43E-05  7.39E-05  7.93E-06
+     1.67934339  1.00E-05  5.40E-08  1.66E-08  5.14E-08
+     1.67934339  1.00E-05  6.43E-06  6.42E-06  3.59E-07
+     1.67957125  1.00E-05  6.97E-07  6.97E-07  4.42E-12
+
+########## START MICROITERATION NO.   4 ##########   Tue Jan 11 12:08:13 2011
+
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  7.16D-08   47.08%   11.17%    0.00%    0.00%   0.00000000s
+ 
+   number of grid points                          =      2870
+   number of grid points below density threshold  =       128
+   number of electrons from numerical integration =         9.9999999450834984
+ 
+   time spent in DFT integration                  =   0.00 seconds
+   number of processors                           =         1
+ 
+* Trial vectors in this micro iteration:  E+:  1  E-:  1
+
+* Norm of residual vectors:
+  Frequency      Threshold Total     E+ part   E- part 
+     1.63229958  1.00E-05  1.23E-06  2.84E-11  1.23E-06
+     1.63246771  1.00E-05  1.22E-07  1.21E-07  1.54E-08
+     1.63246771  1.00E-05  1.24E-06  2.90E-08  1.24E-06
+     1.67934339  1.00E-05  6.21E-08  1.74E-08  5.96E-08
+     1.67934339  1.00E-05  4.24E-07  7.55E-08  4.17E-07
+     1.67957125  1.00E-05  6.97E-07  6.97E-07  5.18E-12
+
+
+                             Final output from XRSCTL
+                             ------------------------
+
+
+*** Microiterations converged after  4 microiterations
+
+            Freq.(au)   Total norm    E+ norm   E- norm 
+========================================================
+* It.  1   0.00000000s  (LL       )     [  8]     [  8]
+--------------------------------------------------------
+            1.632300 :   5.34D-02 |   1.26D-09  5.34D-02
+            1.632468 :   5.33D-02 |   1.65D-03  5.33D-02
+            1.632468 :   5.29D-02 |   2.21D-02  4.81D-02
+            1.679343 :   2.08D-03 |   5.43D-04  2.01D-03
+            1.679343 :   5.05D-04 |   5.05D-04  1.28D-09
+            1.679571 :   4.02D-02 |   3.81D-02  1.27D-02
+========================================================
+* It.  2   1.00000000s  (LL       )     [  6]     [  6]
+--------------------------------------------------------
+            1.632300 :   4.36D-04 |   4.09D-11  4.36D-04
+            1.632468 :   4.28D-04 |   1.98D-05  4.28D-04
+            1.632468 :   1.30D-02 |   8.78D-03  9.59D-03
+            1.679343 :   1.99D-05 |   9.56D-06  1.75D-05
+            1.679343 :   1.07D-03 |   7.04D-04  8.01D-04
+            1.679571 :   2.42D-05 |   2.42D-05  2.83D-11
+========================================================
+* It.  3   0.00000000s  (LL       )     [  6]     [  6]
+--------------------------------------------------------
+            1.632300 :   1.23D-06 |   2.93D-11  1.23D-06
+            1.632468 :   1.24D-06 |   2.90D-08  1.24D-06
+            1.632468 :   7.43D-05 |   7.39D-05  7.93D-06
+            1.679343 :   5.40D-08 |   1.66D-08  5.14D-08
+            1.679343 :   6.43D-06 |   6.42D-06  3.59D-07
+            1.679571 :   6.97D-07 |   6.97D-07  4.42D-12
+========================================================
+* It.  4   0.00000000s  (LL       )     [  1]     [  1]
+--------------------------------------------------------
+            1.632300 :   1.23D-06 |   2.84D-11  1.23D-06
+            1.632468 :   1.22D-07 |   1.21D-07  1.54D-08
+            1.632468 :   1.24D-06 |   2.90D-08  1.24D-06
+            1.679343 :   6.21D-08 |   1.74D-08  5.96D-08
+            1.679343 :   4.24D-07 |   7.55D-08  4.17D-07
+            1.679571 :   6.97D-07 |   6.97D-07  5.18D-12
+========================================================
+
+
+                    Linear response excitations; final output
+                    -----------------------------------------
+
+================================================================================
+
+ *** Excitations of boson symmetry 1 : Ag 
+
+--------------------------------------------------------------------------------
+ Excitation no.   1 excitation energy     1.63229958 a.u.    1.23D-06 (converged)
+ Linear symmetry:  2g                        44.4171 eV
+--------------------------------------------------------------------------------
+ Excitation no.   2 excitation energy     1.63246771 a.u.    1.22D-07 (converged)
+ Linear symmetry:  0g                        44.4217 eV
+--------------------------------------------------------------------------------
+ Excitation no.   3 excitation energy     1.63246771 a.u.    1.24D-06 (converged)
+ Linear symmetry:  2g                        44.4217 eV
+--------------------------------------------------------------------------------
+ Excitation no.   4 excitation energy     1.67934339 a.u.    6.21D-08 (converged)
+ Linear symmetry:  2g                        45.6973 eV
+--------------------------------------------------------------------------------
+ Excitation no.   5 excitation energy     1.67934339 a.u.    4.24D-07 (converged)
+ Linear symmetry:  0g                        45.6973 eV
+--------------------------------------------------------------------------------
+ Excitation no.   6 excitation energy     1.67957125 a.u.    6.97D-07 (converged)
+ Linear symmetry:  0g                        45.7035 eV
+================================================================================
+
+
+                    Linear response excitations; final output
+                    -----------------------------------------
+
+================================================================================
+
+ *** Excitations of boson symmetry 1 : Ag 
+
+--------------------------------------------------------------------------------
+ Excitation no.   1 excitation energy     1.63229958 a.u.    1.23D-06 (converged)
+ Linear symmetry:  2g                        44.4171 eV
+--------------------------------------------------------------------------------
+ Excitation no.   2 excitation energy     1.63246771 a.u.    1.22D-07 (converged)
+ Linear symmetry:  0g                        44.4217 eV
+--------------------------------------------------------------------------------
+ Excitation no.   3 excitation energy     1.63246771 a.u.    1.24D-06 (converged)
+ Linear symmetry:  2g                        44.4217 eV
+--------------------------------------------------------------------------------
+ Excitation no.   4 excitation energy     1.67934339 a.u.    6.21D-08 (converged)
+ Linear symmetry:  2g                        45.6973 eV
+--------------------------------------------------------------------------------
+ Excitation no.   5 excitation energy     1.67934339 a.u.    4.24D-07 (converged)
+ Linear symmetry:  0g                        45.6973 eV
+--------------------------------------------------------------------------------
+ Excitation no.   6 excitation energy     1.67957125 a.u.    6.97D-07 (converged)
+ Linear symmetry:  0g                        45.7035 eV
+================================================================================
+
+
+                      Analysis of response solution vectors
+                      -------------------------------------
+
+ O_ia matrix (for PBHT MO Overlap Diagnostic)
+
+*** A real part ***; NROW,NCOL,LRQ,LCQ:  26  26  26  26
+
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
+       1       1.00000000     0.26710440     0.25086601     0.09712858     0.09467202     0.09771281
+       2       0.00000000     1.00000000     0.81465671     0.79858620     0.77838835     0.80343592
+       3       0.00000000     0.00000000     1.00000000     0.49983109     0.48718937     0.50286617
+       4       0.00000000     0.00000000     0.00000000     1.00000000     0.63559472     0.65138491
+       5       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000     0.65991170
+       6       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+
+               Column   7     Column   8     Column   9     Column  10     Column  11     Column  12
+       1       0.09626226     0.09388134     0.59621247     0.84157493     0.86416706     0.68502577
+       2       0.79143718     0.77193524     0.74733992     0.47340015     0.31825772     0.21049306
+       3       0.49535677     0.48315025     0.62104005     0.41088254     0.28645271     0.19317873
+       4       0.63127827     0.63349427     0.53384430     0.29416935     0.14483826     0.06835704
+       5       0.64295400     0.63901648     0.52034233     0.28672799     0.14117647     0.06662788
+       6       0.66557333     0.63317161     0.53708478     0.29595273     0.14571398     0.06876891
+       7       1.00000000     0.63403681     0.52906629     0.29153659     0.14354530     0.06774687
+       8       0.00000000     1.00000000     0.51602819     0.28435116     0.13999727     0.06607137
+       9       0.00000000     0.00000000     1.00000000     0.70742507     0.56686182     0.41383744
+      10       0.00000000     0.00000000     0.00000000     1.00000000     0.72369297     0.61095473
+      11       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000     0.73739998
+      12       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+
+               Column  13     Column  14     Column  15     Column  16     Column  17     Column  18
+       1       0.42746119     0.19469886     0.24811392     0.24614746     0.24696118     0.21901776
+       2       0.12269579     0.05429618     0.84174124     0.83821068     0.84052960     0.63503731
+       3       0.11417555     0.05091569     0.74186302     0.73919072     0.74123761     0.81693029
+       4       0.03019498     0.01117860     0.61716960     0.68468143     0.68248209     0.35349621
+       5       0.02943145     0.01089595     0.59599468     0.66843177     0.63594358     0.34136797
+       6       0.03037683     0.01124597     0.63790942     0.65509544     0.69558971     0.36537523
+       7       0.02992553     0.01107883     0.70214828     0.54461329     0.63142997     0.40216965
+       8       0.02918583     0.01080497     0.63047533     0.70572994     0.55027178     0.36111702
+       9       0.25880339     0.11889847     0.66673568     0.66334870     0.66522302     0.55235491
+      10       0.41052163     0.19688881     0.44868412     0.44596396     0.44725615     0.37736787
+      11       0.57229565     0.30104914     0.25696467     0.25520102     0.25605746     0.22067122
+      12       0.74048340     0.46444672     0.13074606     0.12978218     0.13024313     0.11338019
+      13       1.00000000     0.69967209     0.05878752     0.05832396     0.05855777     0.05110992
+      14       0.00000000     1.00000000     0.02164340     0.02147104     0.02155987     0.01880942
+      15       0.00000000     0.00000000     1.00000000     0.63251178     0.63589186     0.82713315
+      16       0.00000000     0.00000000     0.00000000     1.00000000     0.63070692     0.52347407
+      17       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000     0.52627290
+      18       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+
+               Column  19     Column  20     Column  21     Column  22     Column  23     Column  24
+       1       0.21794833     0.21867845     0.43486286     0.43416009     0.43266080     0.73015589
+       2       0.63287030     0.63462657     0.68294096     0.68182080     0.67990082     0.43272748
+       3       0.81337813     0.81562670     0.52328822     0.52246684     0.52098425     0.36932073
+       4       0.39289674     0.39163462     0.50895012     0.56273722     0.56455087     0.26351154
+       5       0.38357176     0.36492917     0.49148863     0.52436469     0.55115117     0.25447294
+       6       0.37591882     0.39915615     0.52605278     0.57354455     0.54015462     0.27236439
+       7       0.31252003     0.36233894     0.57902871     0.52064245     0.44905767     0.29979899
+       8       0.40497430     0.31576713     0.51992151     0.45372348     0.58190290     0.26918800
+       9       0.55055794     0.55212120     0.76058886     0.75954952     0.75734255     0.53033339
+      10       0.37593500     0.37703268     0.59424315     0.59342737     0.59164609     0.73016025
+      11       0.21967524     0.22042728     0.37738549     0.37682816     0.37544505     0.59552140
+      12       0.11281077     0.11322074     0.20028348     0.19991950     0.19913673     0.37179962
+      13       0.05082441     0.05103474     0.09071739     0.09054480     0.09013153     0.17893953
+      14       0.01870252     0.01878259     0.03327749     0.03321575     0.03305778     0.06582540
+      15       0.52343851     0.52623719     0.85865548     0.54592859     0.54301035     0.55159369
+      16       0.82803544     0.52224670     0.54278329     0.54116843     0.85805070     0.34816910
+      17       0.52224670     0.82803544     0.54570023     0.85805070     0.54116843     0.35011981
+      18       0.63251333     0.63589227     0.66543403     0.42305963     0.42079358     0.44988775
+      19       1.00000000     0.63070744     0.42115865     0.41989174     0.66576505     0.28454036
+      20       0.00000000     1.00000000     0.42342664     0.66576505     0.41989174     0.28614765
+      21       0.00000000     0.00000000     1.00000000     0.63587333     0.63244580     0.68939147
+      22       0.00000000     0.00000000     0.00000000     1.00000000     0.63067749     0.43826941
+      23       0.00000000     0.00000000     0.00000000     0.00000000     1.00000000     0.43573169
+      24       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     1.00000000
+
+               Column  25     Column  26
+       1       0.72948615     0.72630325
+       2       0.43178318     0.43037069
+       3       0.36853661     0.36730720
+       4       0.29116474     0.29210396
+       5       0.27131299     0.28516582
+       6       0.29675422     0.27947516
+       7       0.26938447     0.23234345
+       8       0.23475896     0.30106826
+       9       0.52941183     0.52743519
+      10       0.72912439     0.72646667
+      11       0.59516075     0.59217989
+      12       0.37146342     0.36949922
+      13       0.17878593     0.17759611
+      14       0.06577613     0.06530907
+      15       0.35049699     0.34854372
+      16       0.34701327     0.55030594
+      17       0.55030594     0.34701327
+      18       0.28588674     0.28428059
+      19       0.28362526     0.44979954
+      20       0.44979954     0.28362526
+      21       0.43816680     0.43562910
+      22       0.68915233     0.43449509
+      23       0.43449509     0.68915233
+      24       0.63556674     0.63140056
+      25       1.00000000     0.63001256
+      26       0.00000000     1.00000000
+ trace (should be nr of orbitals):   26.0000000000247     
+ trace/nr of orbitals (should be very close to 1):   1.00000000000095     
+
+    * Orbital classes:
+    Fermion ircop:E1g
+    - Inactive orbitals  :      1..     2                                          
+    - Active orbitals    : No electrons
+    - Secondary orbitals :      3..    14                                          
+    Fermion ircop:E1u
+    - Inactive orbitals  :      1..     3                                          
+    - Active orbitals    : No electrons
+    - Secondary orbitals :      4..    12                                          
+** E solution vectors : PP EXCITATIONAg  Irrep: Ag  Trev:   1 Length:         51
+ Freq.:   1.632300 Norm:   0.70718417E+00 Residual norm:   0.12E-05
+   Dominant inactive orbitals:
+     3(E1u) 50.00%
+     2(E1u) 50.00%
+   Dominant virtual orbitals:
+     5(E1u) 50.00%
+     6(E1u) 50.00%
+   Excitation amplitudes larger than threshold   0.99E-01
+
+        3(i:E1u) --->      5(v:E1u)  0.50004130E+00
+        2(i:E1u) --->      6(v:E1u)  0.50004130E+00
+   PBHT MO Overlap Diagnostic
+     ref.: M. J. G. Peach, P. Benfield, T. Helgaker, and D. J. Tozer
+           J. Chem. Phys. 128, 044118 (2008)
+     lambda =  0.52226
+ Freq.:   1.632468 Norm:   0.70718386E+00 Residual norm:   0.12E-06
+   Dominant inactive orbitals:
+     3(E1u) 55.01%
+     1(E1u) 44.98%
+   Dominant virtual orbitals:
+     4(E1u) 55.00%
+     6(E1u) 44.99%
+   Excitation amplitudes larger than threshold   0.99E-01
+
+        3(i:E1u) --->      4(v:E1u)  0.52448238E+00
+        1(i:E1u) --->      6(v:E1u)  0.47429983E+00
+   PBHT MO Overlap Diagnostic
+     ref.: M. J. G. Peach, P. Benfield, T. Helgaker, and D. J. Tozer
+           J. Chem. Phys. 128, 044118 (2008)
+     lambda =  0.52629
+ Freq.:   1.632468 Norm:   0.70718386E+00 Residual norm:   0.12E-05
+   Dominant inactive orbitals:
+     2(E1u) 55.00%
+     1(E1u) 44.98%
+   Dominant virtual orbitals:
+     4(E1u) 55.00%
+     5(E1u) 44.98%
+   Excitation amplitudes larger than threshold   0.99E-01
+
+        2(i:E1u) --->      4(v:E1u)  0.52445692E+00
+        1(i:E1u) --->      5(v:E1u)  0.47427681E+00
+   PBHT MO Overlap Diagnostic
+     ref.: M. J. G. Peach, P. Benfield, T. Helgaker, and D. J. Tozer
+           J. Chem. Phys. 128, 044118 (2008)
+     lambda =  0.52347
+ Freq.:   1.679343 Norm:   0.70710688E+00 Residual norm:   0.62E-07
+   Dominant inactive orbitals:
+     2(E1u) 47.88%
+     3(E1u) 33.85%
+     1(E1u) 18.27%
+   Dominant virtual orbitals:
+     5(E1u) 51.95%
+     6(E1u) 33.87%
+     4(E1u) 14.18%
+   Excitation amplitudes larger than threshold   0.99E-01
+
+        3(i:E1u) --->      5(v:E1u)  0.40986197E+00
+        2(i:E1u) --->      6(v:E1u)  0.40986197E+00
+        1(i:E1u) --->      5(v:E1u)  0.30141601E+00
+        2(i:E1u) --->      4(v:E1u)  0.26556872E+00
+   PBHT MO Overlap Diagnostic
+     ref.: M. J. G. Peach, P. Benfield, T. Helgaker, and D. J. Tozer
+           J. Chem. Phys. 128, 044118 (2008)
+     lambda =  0.52374
+ Freq.:   1.679343 Norm:   0.70710688E+00 Residual norm:   0.42E-06
+   Dominant inactive orbitals:
+     3(E1u) 47.96%
+     2(E1u) 33.78%
+     1(E1u) 18.27%
+   Dominant virtual orbitals:
+     6(E1u) 52.04%
+     5(E1u) 33.78%
+     4(E1u) 14.18%
+   Excitation amplitudes larger than threshold   0.99E-01
+
+        3(i:E1u) --->      6(v:E1u)  0.41095151E+00
+        2(i:E1u) --->      5(v:E1u)  0.41095151E+00
+        1(i:E1u) --->      6(v:E1u)  0.30221727E+00
+        3(i:E1u) --->      4(v:E1u)  0.26627468E+00
+   PBHT MO Overlap Diagnostic
+     ref.: M. J. G. Peach, P. Benfield, T. Helgaker, and D. J. Tozer
+           J. Chem. Phys. 128, 044118 (2008)
+     lambda =  0.73011
+ Freq.:   1.679571 Norm:   0.70710678E+00 Residual norm:   0.70E-06
+   Dominant inactive orbitals:
+     1(E1u) 66.63%
+     2(E1u) 16.69%
+     3(E1u) 16.69%
+   Dominant virtual orbitals:
+     4(E1u) 66.63%
+     5(E1u) 16.69%
+     6(E1u) 16.69%
+   Excitation amplitudes larger than threshold   0.99E-01
+
+        1(i:E1u) --->      4(v:E1u)  0.57718221E+00
+        2(i:E1u) --->      5(v:E1u)  0.28884312E+00
+        3(i:E1u) --->      6(v:E1u)  0.28884312E+00
+   PBHT MO Overlap Diagnostic
+     ref.: M. J. G. Peach, P. Benfield, T. Helgaker, and D. J. Tozer
+           J. Chem. Phys. 128, 044118 (2008)
+     lambda =  0.82743
+
+ 
+     Date and time (Linux)  : Tue Jan 11 12:08:13 2011
+     Host name              :                                         
+ MEMGET high-water mark:     3.66 MB
+ F90 allocated memory not accounted for
+*****************************************************
+********** E N D   of   D I R A C  output  **********
+*****************************************************
+
+  
+  Dynamical Memory Usage Summary
+  
+  Mean allocation size (Mb) :         2.74
+  
+  Largest          10  allocations
+  
+      488.28 Mb at subroutine main+0x51                                  for work array at main                        
+        7.63 Mb at subroutine xc_driver_mp_xc_integrator_+0x1eea         for unnamed variable                          
+        7.63 Mb at subroutine xc_driver_mp_xc_integrator_+0x1eea         for unnamed variable                          
+        7.63 Mb at subroutine xc_driver_mp_xc_integrator_+0x1eea         for unnamed variable                          
+        7.63 Mb at subroutine xc_driver_mp_xc_integrator_+0x1eea         for unnamed variable                          
+        7.63 Mb at subroutine xc_driver_mp_xc_integrator_+0x1eea         for unnamed variable                          
+        7.63 Mb at subroutine xc_driver_mp_xc_integrator_+0x1eea         for unnamed variable                          
+        7.63 Mb at subroutine xc_driver_mp_xc_integrator_+0x1eea         for unnamed variable                          
+        7.63 Mb at subroutine xc_driver_mp_xc_integrator_+0x1eea         for unnamed variable                          
+        7.63 Mb at subroutine xc_driver_mp_xc_integrator_+0x1eea         for unnamed variable                          
+  
+  Peak memory usage    (Mb) :       519.00
+       reached at subroutine : xc_driver_mp_xc_integrator_+0x1eea        
+              for variable   : unnamed variable                          
+  
+  Memory possibly left allocated! 
+     dumping list now... 
+  
+  <<< Tracked variables, alloc >>>
+      >>>            2  variables so far
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :           26
+               was allocated at       : 
+ unknown                                                                        
+                                                      
+               mem.addr. (as integer) :    290858760
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :          676
+               was allocated at       : 
+ unknown                                                                        
+                                                      
+               mem.addr. (as integer) :    290764312
+      >>> Done after           2  el.
+  
+  There were          213  allocations/           211  deallocations
+      Current memory usage (in Mb) is   0.000000000000000E+000
+>>>> Node 0, utime: 3, stime: 0, minflt: 153990, majflt: 0, nvcsw: 21, nivcsw: 427, maxrss: 550620
+>>>> Total WALL time used in DIRAC: 3s

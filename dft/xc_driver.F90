@@ -105,7 +105,6 @@ module xc_driver
    real(8), allocatable :: fde_prop2(:)
    real(8), allocatable :: ao(:)
    real(8), allocatable :: buffer(:)
-   real(8), allocatable :: lambda_buffer(:, :)
    real(8), allocatable :: ao_block(:, :)
    real(8), allocatable :: buffer_block(:, :)
    real(8), allocatable :: dmat_sorted(:, :)
@@ -116,7 +115,8 @@ module xc_driver
    real(8) :: nr_electrons
    real(8) :: xc_energy
    real(8) :: xc_mat_energy
-   logical :: grid_is_done   = .false.
+   logical :: grid_is_done     = .false.
+   logical :: remember_zipgrid = .false.
 
    logical :: use_gga_qr = .false. !quaternion real
    logical :: use_gga_qi = .false. !quaternion imaginary
@@ -488,6 +488,12 @@ contains
          call scale_density_matrices(2.0d0)
          call insert_half_phases()
 
+         if (do_overlap_diagnostic) then
+            remember_zipgrid = dft_cfg_zipgrid
+            dft_cfg_zipgrid = .false.
+            grid_is_done    = .false.
+         end if
+
 !        calculate grid
          if (.not. dirac_cfg_fde_response) then
             if (.not. grid_is_done) then
@@ -611,7 +617,7 @@ contains
 
 #ifdef MOD_UNRELEASED
       if (do_overlap_diagnostic) then
-         call overlap_diagnostic_init()
+         call overlap_diagnostic_init(parallel_xc, i_am_master)
       end if
 #endif
 
@@ -619,7 +625,16 @@ contains
 
 #ifdef MOD_UNRELEASED
       if (do_overlap_diagnostic) then
-         call lambda_matrix_to_disc()
+#ifdef VAR_MPI
+         if (parallel_xc) then
+            call overlap_diagnostic_collect(i_am_master)
+         end if
+#endif
+         if (i_am_master) then
+            call o_matrix_to_disc()
+         end if
+         dft_cfg_zipgrid = remember_zipgrid
+         grid_is_done    = .false.
       end if
 #endif
 
@@ -899,10 +914,6 @@ contains
     call alloc(ao,     total_ao_vector_length)
     call alloc(buffer, total_ao_vector_length)
 
-    if (do_overlap_diagnostic) then
-       call alloc(lambda_buffer, norbt, nz)
-    end if
-
     if (dft_cfg_blocked) then
        call alloc(ao_block,              mxbllen, total_ao_vector_length)
        call alloc(buffer_block,          mxbllen, total_ao_vector_length)
@@ -1068,7 +1079,7 @@ contains
 
 #ifdef MOD_UNRELEASED
       if (do_overlap_diagnostic) then
-         call integrate_lambda_matrix(rw(ipoint), ao, lambda_buffer)
+         call integrate_o_matrix(rw(ipoint), ao)
       end if
 #endif
 
@@ -1726,9 +1737,6 @@ contains
        deallocate(dmat_sorted)
        deallocate(xmat)
        call dealloc(bmat)
-    end if
-    if (do_overlap_diagnostic) then
-       call dealloc(lambda_buffer)
     end if
 
     deallocate(u%n)

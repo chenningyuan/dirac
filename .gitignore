@@ -3,6 +3,8 @@
 *.pyc
 */Makefile
 */*/Makefile
+*.tgz.*
+Makefile.config.*
 basis_dalton/*\*
 install_dir.py
 pam.sh
