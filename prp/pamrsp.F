@@ -2900,6 +2900,34 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck PRBVCC */
+      SUBROUTINE PRBVCC(IUNIT,BVEC,NBSTA,NBSIM,NBSTP,NBDIM)
+C***********************************************************************
+C     Print trial vector in cpp
+C
+C     Adapted from PRBVEC
+C     Written by T.Saue & S.Villaume Jan2011
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+#include "dgroup.h"
+#include "dcbxrs.h"
+      DIMENSION BVEC(NBDIM,NZ,NBSIM)
+C
+      IREP = JSYMOP - 1
+      ICOUNT = 1
+      DO I = NBSTA,NBSIM,NBSTP
+        WRITE(6,'(A,I4)') '* Vector nr. ',ICOUNT
+        CALL PRQMAT(BVEC(1,1,I),NBDIM,1,NBDIM,1,NZ,
+     &              IPQTOQ(1,IREP),IUNIT)
+        ICOUNT = ICOUNT + 1
+      ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck BVINFO */
       SUBROUTINE BVINFO(ISIM,IBTYP,IOFF,NBVEC)
 C***********************************************************************

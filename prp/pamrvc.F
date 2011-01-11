@@ -2383,23 +2383,56 @@ CPP            the new structure...
             CALL XVCNRM(XNORM(1,IPEM),BEVEC(KBE2),NZXOPEQ,MFREQ*NDAMP)
 C           Print section
             IF(IPRXRS.GE.3) THEN
-              WRITE(LUPRI,'(A)')
-     &          'Norm of orbital(e-e) X(+)-solution vectors:'
-              WRITE(LUPRI,'(1P,8(3X,E8.2))')
-     &          (XNORM(I,IPEP),I=1,MFREQ*NDAMP)
-              WRITE(LUPRI,'(A)')
-     &          'Norm of orbital(e-e) X(-)-solution vectors:'
-              WRITE(LUPRI,'(1P,8(3X,E8.2))')
-     &          (XNORM(I,IPEM),I=1,MFREQ*NDAMP)
+              IF(DAMPFREQ.NE.D0) THEN
+                WRITE(LUPRI,'(A)')
+     &            "Norm of orbital(e-e) X(+)-solution vectors:"
+                WRITE(LUPRI,'(1P,8(3X,E8.2))')
+     &            (XNORM(I,IPEP),I=1,MFREQ*NDAMP,NDAMP)
+                WRITE(LUPRI,'(A)')
+     &            "Norm of orbital(e-e) X'(+)-solution vectors:"
+                WRITE(LUPRI,'(1P,8(3X,E8.2))')
+     &            (XNORM(I,IPEP),I=2,MFREQ*NDAMP,NDAMP)
+                WRITE(LUPRI,'(A)')
+     &            "Norm of orbital(e-e) X(-)-solution vectors:"
+                WRITE(LUPRI,'(1P,8(3X,E8.2))')
+     &            (XNORM(I,IPEM),I=1,MFREQ*NDAMP,NDAMP)
+                WRITE(LUPRI,'(A)')
+     &            "Norm of orbital(e-e) X'(-)-solution vectors:"
+                WRITE(LUPRI,'(1P,8(3X,E8.2))')
+     &            (XNORM(I,IPEM),I=2,MFREQ*NDAMP,NDAMP)
+              ELSE
+                WRITE(LUPRI,'(A)')
+     &            'Norm of orbital(e-e) X(+)-solution vectors:'
+                WRITE(LUPRI,'(1P,8(3X,E8.2))')
+     &            (XNORM(I,IPEP),I=1,MFREQ*NDAMP)
+                WRITE(LUPRI,'(A)')
+     &            'Norm of orbital(e-e) X(-)-solution vectors:'
+                WRITE(LUPRI,'(1P,8(3X,E8.2))')
+     &            (XNORM(I,IPEM),I=1,MFREQ*NDAMP)
+              ENDIF
             ENDIF
             IF(IPRXRS.GE.5) THEN
-CPP......print both unbarred and barred solution vector in complex case!
-              WRITE(LUPRI,'(/I5,A)') MFREQ*NDAMP,
-     &          ' orbital (e-e) X(+) solution vectors'
-              CALL PRBVEC(LUPRI,BEVEC      ,MFREQ*NDAMP,NZXOPE)
-              WRITE(LUPRI,'(/I5,A)') MFREQ*NDAMP,
-     &          ' orbital (e-e) X(-) solution vectors'
-              CALL PRBVEC(LUPRI,BEVEC(KBE2),MFREQ*NDAMP,NZXOPE)
+              IF(DAMPFREQ.NE.D0) THEN
+               WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &           " orbital (e-e) X(+) solution vectors"
+               CALL PRBVCC(LUPRI,BEVEC,1,MFREQ*NDAMP,NDAMP,NZXOPE)
+               WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &           " orbital (e-e) X'(+) solution vectors"
+               CALL PRBVCC(LUPRI,BEVEC,2,MFREQ*NDAMP,NDAMP,NZXOPE)
+               WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &           " orbital (e-e) X(-) solution vectors"
+               CALL PRBVCC(LUPRI,BEVEC(KBE2),1,MFREQ*NDAMP,NDAMP,NZXOPE)
+               WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &           " orbital (e-e) X'(-) solution vectors"
+               CALL PRBVCC(LUPRI,BEVEC(KBE2),2,MFREQ*NDAMP,NDAMP,NZXOPE)
+              ELSE
+               WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &           ' orbital (e-e) X(+) solution vectors'
+               CALL PRBVEC(LUPRI,BEVEC      ,MFREQ,NZXOPE)
+               WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &           ' orbital (e-e) X(-) solution vectors'
+               CALL PRBVEC(LUPRI,BEVEC(KBE2),MFREQ,NZXOPE)
+              ENDIF
             ENDIF
           ELSE
             CALL DZERO(XNORM(1,IPEP),MFREQ*NDAMP)
@@ -2441,23 +2474,57 @@ C
             CALL XVCNRM(XNORM(1,IPPM),BPVEC(KBP2),NZXOPPQ,MFREQ*NDAMP)
 C           Print section
             IF(IPRXRS.GE.3) THEN
-              WRITE(LUPRI,'(A)')
-     &          'Norm of orbital(e-p) X(+)-solution vectors:'
-              WRITE(LUPRI,'(1P,8(3X,E8.2))')
-     &         (XNORM(I,IPPP),I=1,MFREQ*NDAMP)
-              WRITE(LUPRI,'(A)')
-     &          'Norm of orbital(e-p) X(-)-solution vectors:'
-              WRITE(LUPRI,'(1P,8(3X,E8.2))')
-     &         (XNORM(I,IPPM),I=1,MFREQ*NDAMP)
+              IF(DAMPFREQ.NE.D0) THEN
+                WRITE(LUPRI,'(A)')
+     &            "Norm of orbital(e-p) X(+)-solution vectors:"
+                WRITE(LUPRI,'(1P,8(3X,E8.2))')
+     &            (XNORM(I,IPPP),I=1,MFREQ*NDAMP,NDAMP)
+                WRITE(LUPRI,'(A)')
+     &            "Norm of orbital(e-p) X'(+)-solution vectors:"
+                WRITE(LUPRI,'(1P,8(3X,E8.2))')
+     &            (XNORM(I,IPPP),I=2,MFREQ*NDAMP,NDAMP)
+                WRITE(LUPRI,'(A)')
+     &            "Norm of orbital(e-p) X(-)-solution vectors:"
+                WRITE(LUPRI,'(1P,8(3X,E8.2))')
+     &            (XNORM(I,IPPM),I=1,MFREQ*NDAMP,NDAMP)
+                WRITE(LUPRI,'(A)')
+     &            "Norm of orbital(e-p) X'(-)-solution vectors:"
+                WRITE(LUPRI,'(1P,8(3X,E8.2))')
+     &            (XNORM(I,IPPM),I=2,MFREQ*NDAMP,NDAMP)
+              ELSE
+                WRITE(LUPRI,'(A)')
+     &            'Norm of orbital(e-p) X(+)-solution vectors:'
+                WRITE(LUPRI,'(1P,8(3X,E8.2))')
+     &           (XNORM(I,IPPP),I=1,MFREQ)
+                WRITE(LUPRI,'(A)')
+     &            'Norm of orbital(e-p) X(-)-solution vectors:'
+                WRITE(LUPRI,'(1P,8(3X,E8.2))')
+     &           (XNORM(I,IPPM),I=1,MFREQ)
+              ENDIF
             ENDIF
 CPP...........print both unbarred and barred  solution vector in complex case!
             IF(IPRXRS.GE.5) THEN
-              WRITE(LUPRI,'(/I5,A)') MFREQ*NDAMP,
-     &          ' orbital (e-p) X(+) solution vectors'
-              CALL PRBVEC(LUPRI,BPVEC,MFREQ*NDAMP,NZXOPP)
-              WRITE(LUPRI,'(/I5,A)') MFREQ*NDAMP,
-     &          ' orbital (e-p) X(-) solution vectors'
-              CALL PRBVEC(LUPRI,BPVEC(KBP2),MFREQ*NDAMP,NZXOPP)
+              IF(DAMPFREQ.NE.D0) THEN
+               WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &           " orbital (e-p) X(+) solution vectors"
+               CALL PRBVCC(LUPRI,BPVEC,1,MFREQ*NDAMP,NDAMP,NZXOPP)
+               WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &           " orbital (e-p) X'(+) solution vectors"
+               CALL PRBVCC(LUPRI,BPVEC,2,MFREQ*NDAMP,NDAMP,NZXOPP)
+               WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &           " orbital (e-p) X(-) solution vectors"
+               CALL PRBVCC(LUPRI,BPVEC(KBP2),1,MFREQ*NDAMP,NDAMP,NZXOPP)
+               WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &           " orbital (e-p) X'(-) solution vectors"
+               CALL PRBVCC(LUPRI,BPVEC(KBP2),2,MFREQ*NDAMP,NDAMP,NZXOPP)
+              ELSE
+               WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &           ' orbital (e-p) X(+) solution vectors'
+               CALL PRBVEC(LUPRI,BPVEC,MFREQ,NZXOPP)
+               WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &           ' orbital (e-p) X(-) solution vectors'
+               CALL PRBVEC(LUPRI,BPVEC(KBP2),MFREQ,NZXOPP)
+              ENDIF
             ENDIF
           ELSE
             CALL DZERO(XNORM(1,IPPP),MFREQ*NDAMP)
@@ -2583,35 +2650,64 @@ C
       ENDIF
 C
 C     Print section
-CPP...need to take care of complex case printing
       IF(IPRXRS.GE.5) THEN
         IF(NZXOPE.GT.0) THEN
-          WRITE(LUPRI,'(/I5,A)') MFREQ,
-     &     ' orbital (e-e) -WS[2}X(-) residual vectors'
-          CALL PRBVEC(LUPRI,BEVEC,MFREQ,NZXOPE)
-          IF(.NOT.STATIC) THEN
+          IF(DAMPFREQ.NE.D0) THEN
             WRITE(LUPRI,'(/I5,A)') MFREQ,
-     &       ' orbital (e-e) -WS[2}X(+) residual vectors'
-            CALL PRBVEC(LUPRI,BEVEC(KBE2),MFREQ,NZXOPE)
+     &       " orbital (e-e) -WS[2]X(-)+YS[2]X'(-) residual vectors"
+            CALL PRBVCC(LUPRI,BEVEC,1,MFREQ*NDAMP,NDAMP,NZXOPE)
+            WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &       " orbital (e-e) -WS[2]X'(-)-YS[2]X(-) residual vectors"
+            CALL PRBVCC(LUPRI,BEVEC,2,MFREQ*NDAMP,NDAMP,NZXOPE)
+            WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &       " orbital (e-e) -WS[2]X(+)+YS[2]X'(+) residual vectors"
+            CALL PRBVCC(LUPRI,BEVEC(KBE2),1,MFREQ*NDAMP,NDAMP,NZXOPE)
+            WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &       " orbital (e-e) -WS[2]X'(+)-YS[2]X(+) residual vectors"
+            CALL PRBVCC(LUPRI,BEVEC(KBE2),2,MFREQ*NDAMP,NDAMP,NZXOPE)
+          ELSE
+            WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &       ' orbital (e-e) -WS[2]X(-) residual vectors'
+            CALL PRBVEC(LUPRI,BEVEC,MFREQ,NZXOPE)
+            IF(.NOT.STATIC) THEN
+              WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &         ' orbital (e-e) -WS[2]X(+) residual vectors'
+              CALL PRBVEC(LUPRI,BEVEC(KBE2),MFREQ,NZXOPE)
+            ENDIF
           ENDIF
         ENDIF
         IF(NZXOPP.GT.0) THEN
-          WRITE(LUPRI,'(/I5,A)') MFREQ,
-     &     ' orbital (e-p) -WS[2}X(-) residual vectors'
-          CALL PRBVEC(LUPRI,BPVEC,MFREQ,NZXOPP)
-          IF(.NOT.STATIC) THEN
+          IF(DAMPFREQ.NE.D0) THEN
             WRITE(LUPRI,'(/I5,A)') MFREQ,
-     &       ' orbital (e-p) -WS[2}X(+) residual vectors'
-            CALL PRBVEC(LUPRI,BPVEC(KBP2),MFREQ,NZXOPP)
+     &       " orbital (e-p) -WS[2]X(-)+YS[2]X'(-) residual vectors"
+            CALL PRBVCC(LUPRI,BPVEC,1,MFREQ*NDAMP,NDAMP,NZXOPP)
+            WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &       " orbital (e-p) -WS[2]X'(-)-YS[2]X(-) residual vectors"
+            CALL PRBVCC(LUPRI,BPVEC,2,MFREQ*NDAMP,NDAMP,NZXOPP)
+            WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &       " orbital (e-p) -WS[2]X(+)+YS[2]X'(+) residual vectors"
+            CALL PRBVCC(LUPRI,BPVEC(KBP2),1,MFREQ*NDAMP,NDAMP,NZXOPP)
+            WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &       " orbital (e-p) -WS[2]X'(+)-YS[2]X(+) residual vectors"
+            CALL PRBVCC(LUPRI,BPVEC(KBP2),2,MFREQ*NDAMP,NDAMP,NZXOPP)
+          ELSE
+            WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &       ' orbital (e-p) -WS[2]X(-) residual vectors'
+            CALL PRBVEC(LUPRI,BPVEC,MFREQ,NZXOPP)
+            IF(.NOT.STATIC) THEN
+              WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &         ' orbital (e-p) -WS[2]X(+) residual vectors'
+              CALL PRBVEC(LUPRI,BPVEC(KBP2),MFREQ,NZXOPP)
+            ENDIF
           ENDIF
         ENDIF
         IF(NZCONF.GT.0) THEN
           WRITE(LUPRI,'(/I5,A)') MFREQ,
-     &     ' configurational -WS[2}X(-) residual vectors'
+     &     ' configurational -WS[2]X(-) residual vectors'
           CALL PRBVEC(LUPRI,BCVEC,MFREQ,NZCONF)
           IF(.NOT.STATIC) THEN
             WRITE(LUPRI,'(/I5,A)') MFREQ,
-     &       ' configurational -WS[2}X(+) residual vectors'
+     &       ' configurational -WS[2]X(+) residual vectors'
             CALL PRBVEC(LUPRI,BCVEC(KBC2),MFREQ,NZCONF)
           ENDIF
         ENDIF
@@ -2630,35 +2726,64 @@ C
 C
 C     Print section
 C
-CPP...need to take care of complex case printing
       IF(IPRXRS.GE.5) THEN
         IF(NZXOPE.GT.0) THEN
-          WRITE(LUPRI,'(/I5,A)') MFREQ,
-     &     ' orbital (e-e) (E[2}X(+)-WS[2]X(-)) residual vectors'
-          CALL PRBVEC(LUPRI,BEVEC,MFREQ,NZXOPE)
-          IF(.NOT.STATIC) THEN
+          IF(DAMPFREQ.NE.D0) THEN
             WRITE(LUPRI,'(/I5,A)') MFREQ,
-     &       ' orbital (e-e) (E[2}X(-)-WS[2]X(+)) residual vectors'
-            CALL PRBVEC(LUPRI,BEVEC(KBE2),MFREQ,NZXOPE)
+     &  " orbital (e-e) E[2]X(+)-WS[2]X(-)+YS[2]X'(-) residual vectors"
+            CALL PRBVCC(LUPRI,BEVEC,1,MFREQ*NDAMP,NDAMP,NZXOPE)
+            WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &  " orbital (e-e) E[2]X'(+)-WS[2]X'(-)-YS[2]X(-) residual vectors"
+            CALL PRBVCC(LUPRI,BEVEC,2,MFREQ*NDAMP,NDAMP,NZXOPE)
+            WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &  " orbital (e-e) E[2]X(-)-WS[2]X(+)+YS[2]X'(+) residual vectors"
+            CALL PRBVCC(LUPRI,BEVEC(KBE2),1,MFREQ*NDAMP,NDAMP,NZXOPE)
+            WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &  " orbital (e-e) E[2]X'(-)-WS[2]X'(+)-YS[2]X(+) residual vectors"
+            CALL PRBVCC(LUPRI,BEVEC(KBE2),2,MFREQ*NDAMP,NDAMP,NZXOPE)
+          ELSE
+            WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &       ' orbital (e-e) (E[2]X(+)-WS[2]X(-)) residual vectors'
+            CALL PRBVEC(LUPRI,BEVEC,MFREQ,NZXOPE)
+            IF(.NOT.STATIC) THEN
+              WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &         ' orbital (e-e) (E[2]X(-)-WS[2]X(+)) residual vectors'
+              CALL PRBVEC(LUPRI,BEVEC(KBE2),MFREQ,NZXOPE)
+            ENDIF
           ENDIF
         ENDIF
         IF(NZXOPP.GT.0) THEN
-          WRITE(LUPRI,'(/I5,A)') MFREQ,
-     &     ' orbital (e-p) (E[2}X(+)-WS[2]X(-)) residual vectors'
-          CALL PRBVEC(LUPRI,BPVEC,MFREQ,NZXOPP)
-          IF(.NOT.STATIC) THEN
+          IF(DAMPFREQ.NE.D0) THEN
             WRITE(LUPRI,'(/I5,A)') MFREQ,
-     &       ' orbital (e-p) (E[2}X(-)-WS[2]X(+)) residual vectors'
-            CALL PRBVEC(LUPRI,BPVEC(KBP2),MFREQ,NZXOPP)
+     &  " orbital (e-p) E[2]X(+)-WS[2]X(-)+YS[2]X'(-) residual vectors"
+            CALL PRBVCC(LUPRI,BPVEC,1,MFREQ*NDAMP,NDAMP,NZXOPP)
+            WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &  " orbital (e-p) E[2]X'(+)-WS[2]X'(-)-YS[2]X(-) residual vectors"
+            CALL PRBVCC(LUPRI,BPVEC,2,MFREQ*NDAMP,NDAMP,NZXOPP)
+            WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &  " orbital (e-p) E[2]X(-)-WS[2]X(+)+YS[2]X'(+) residual vectors"
+            CALL PRBVCC(LUPRI,BPVEC(KBP2),1,MFREQ*NDAMP,NDAMP,NZXOPP)
+            WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &  " orbital (e-p) E[2]X'(-)-WS[2]X'(+)-YS[2]X(+) residual vectors"
+            CALL PRBVCC(LUPRI,BPVEC(KBP2),2,MFREQ*NDAMP,NDAMP,NZXOPP)
+          ELSE
+            WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &       ' orbital (e-p) (E[2]X(+)-WS[2]X(-)) residual vectors'
+            CALL PRBVEC(LUPRI,BPVEC,MFREQ,NZXOPP)
+            IF(.NOT.STATIC) THEN
+              WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &         ' orbital (e-p) (E[2]X(-)-WS[2]X(+)) residual vectors'
+              CALL PRBVEC(LUPRI,BPVEC(KBP2),MFREQ,NZXOPP)
+            ENDIF
           ENDIF
         ENDIF
         IF(NZCONF.GT.0) THEN
           WRITE(LUPRI,'(/I5,A)') MFREQ,
-     &     ' configurational (E[2}X(+)-WS[2]X(-)) residual vectors'
+     &     ' configurational (E[2]X(+)-WS[2]X(-)) residual vectors'
           CALL PRBVEC(LUPRI,BCVEC,MFREQ,NZCONF)
           IF(.NOT.STATIC) THEN
             WRITE(LUPRI,'(/I5,A)') MFREQ,
-     &       'configurational (E[2}X(-)-WS[2]X(+)) residual vectors'
+     &       'configurational (E[2]X(-)-WS[2]X(+)) residual vectors'
             CALL PRBVEC(LUPRI,BCVEC(KBC2),MFREQ,NZCONF)
           ENDIF
         ENDIF
@@ -2683,32 +2808,62 @@ C
 CPP...need to take care of complex case printing
       IF(IPRXRS.GE.5) THEN
         IF(NZXOPE.GT.0) THEN
-          WRITE(LUPRI,'(/I5,A)') MFREQ,
-     &     ' orbital (e-e) (E[2}X(+)-WS[2]X(-)+G) residual vectors'
-          CALL PRBVEC(LUPRI,BEVEC,MFREQ,NZXOPE)
-          IF(.NOT.STATIC) THEN
+          IF(DAMPFREQ.NE.D0) THEN
             WRITE(LUPRI,'(/I5,A)') MFREQ,
-     &       ' orbital (e-e) (E[2}X(-)-WS[2]X(+)) residual vectors'
-            CALL PRBVEC(LUPRI,BEVEC(KBE2),MFREQ,NZXOPE)
+     & " orbital (e-e) E[2]X(+)-WS[2]X(-)+YS[2]X'(-)+G residual vectors"
+            CALL PRBVCC(LUPRI,BEVEC,1,MFREQ*NDAMP,NDAMP,NZXOPE)
+            WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &  " orbital (e-e) E[2]X'(+)-WS[2]X'(-)-YS[2]X(-) residual vectors"
+            CALL PRBVCC(LUPRI,BEVEC,2,MFREQ*NDAMP,NDAMP,NZXOPE)
+            WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &  " orbital (e-e) E[2]X(-)-WS[2]X(+)+YS[2]X'(+) residual vectors"
+            CALL PRBVCC(LUPRI,BEVEC(KBE2),1,MFREQ*NDAMP,NDAMP,NZXOPE)
+            WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &  " orbital (e-e) E[2]X'(-)-WS[2]X'(+)-YS[2]X(+) residual vectors"
+            CALL PRBVCC(LUPRI,BEVEC(KBE2),2,MFREQ*NDAMP,NDAMP,NZXOPE)
+          ELSE
+            WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &       ' orbital (e-e) (E[2]X(+)-WS[2]X(-)+G) residual vectors'
+            CALL PRBVEC(LUPRI,BEVEC,MFREQ,NZXOPE)
+            IF(.NOT.STATIC) THEN
+              WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &         ' orbital (e-e) (E[2]X(-)-WS[2]X(+)) residual vectors'
+              CALL PRBVEC(LUPRI,BEVEC(KBE2),MFREQ,NZXOPE)
+            ENDIF
           ENDIF
         ENDIF
         IF(NZXOPP.GT.0) THEN
-          WRITE(LUPRI,'(/I5,A)') MFREQ,
-     &     ' orbital (e-p) (E[2}X(+)-WS[2]X(-)+G) residual vectors'
-          CALL PRBVEC(LUPRI,BPVEC,MFREQ,NZXOPP)
-          IF(.NOT.STATIC) THEN
+          IF(DAMPFREQ.NE.D0) THEN
             WRITE(LUPRI,'(/I5,A)') MFREQ,
-     &       ' orbital (e-p) (E[2}X(-)-WS[2]X(+)) residual vectors'
-            CALL PRBVEC(LUPRI,BPVEC(KBP2),MFREQ,NZXOPP)
+     & " orbital (e-p) E[2]X(+)-WS[2]X(-)+YS[2]X'(-)+G residual vectors"
+            CALL PRBVCC(LUPRI,BPVEC,1,MFREQ*NDAMP,NDAMP,NZXOPP)
+            WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &  " orbital (e-p) E[2]X'(+)-WS[2]X'(-)-YS[2]X(-) residual vectors"
+            CALL PRBVCC(LUPRI,BPVEC,2,MFREQ*NDAMP,NDAMP,NZXOPP)
+            WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &  " orbital (e-p) E[2]X(-)-WS[2]X(+)+YS[2]X'(+) residual vectors"
+            CALL PRBVCC(LUPRI,BPVEC(KBP2),1,MFREQ*NDAMP,NDAMP,NZXOPP)
+            WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &  " orbital (e-p) E[2]X'(-)-WS[2]X'(+)-YS[2]X(+) residual vectors"
+            CALL PRBVCC(LUPRI,BPVEC(KBP2),2,MFREQ*NDAMP,NDAMP,NZXOPP)
+          ELSE
+            WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &       ' orbital (e-p) (E[2]X(+)-WS[2]X(-)+G) residual vectors'
+            CALL PRBVEC(LUPRI,BPVEC,MFREQ,NZXOPP)
+            IF(.NOT.STATIC) THEN
+              WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &         ' orbital (e-p) (E[2]X(-)-WS[2]X(+)) residual vectors'
+              CALL PRBVEC(LUPRI,BPVEC(KBP2),MFREQ,NZXOPP)
+            ENDIF
           ENDIF
         ENDIF
         IF(NZCONF.GT.0) THEN
           WRITE(LUPRI,'(/I5,A)') MFREQ,
-     &     ' configurational (E[2}X(+)-WS[2]X(-)+G) residual vectors'
+     &     ' configurational (E[2]X(+)-WS[2]X(-)+G) residual vectors'
           CALL PRBVEC(LUPRI,BCVEC,MFREQ,NZCONF)
           IF(.NOT.STATIC) THEN
             WRITE(LUPRI,'(/I5,A)') MFREQ,
-     &       ' configurational (E[2}X(-)-WS[2]X(+)) residual vectors'
+     &       ' configurational (E[2]X(-)-WS[2]X(+)) residual vectors'
             CALL PRBVEC(LUPRI,BCVEC(KBC2),MFREQ,NZCONF)
           ENDIF
         ENDIF
