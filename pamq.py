@@ -12,10 +12,10 @@ import  sys
 import  os
 import  string
 import  optparse
-# read from configure generated module
-from install_dir import install_dir_default
+
 global install_dir
-install_dir=install_dir_default
+install_dir_default = os.path.realpath(__file__)[:-8]
+install_dir = install_dir_default
 
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 class PamQVariables:
