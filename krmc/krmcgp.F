@@ -1863,7 +1863,7 @@ C
 #include "dgroup.h"
       dimension mjvector(norbt), amat(nasht,nasht,nz)
       parameter(xtol_dens = 1.0D-3, d0=0.0D0)
-	logical call_quit
+      logical call_quit
 
       call_quit = .false.
       ioff1 = 0
@@ -2213,7 +2213,7 @@ C           Should be made flexible later on to account for
 C           different symmetry generator setup.
             IBOSYMI = 0
             IF( IFSYM .ne. 1 ) IBOSYMI = IFSYM
-            IBOSYM(IORB(IFSYM)+NPSH(IFSYM)+NISH(IFSYM))=IBOSYMI
+            IBOSYM(IORB(IFSYM)+NPSH(IFSYM)+NISH(IFSYM)+1)=IBOSYMI
          END IF
          DO IGAS = 1, NGAS
 !           write(6,*) 'NGSH(IFSYM,IGAS) is',NGSH(IFSYM,IGAS)
