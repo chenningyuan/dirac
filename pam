@@ -936,7 +936,7 @@ class pam_enviroment:
       if self.argument_to_pass_work_dir_to_slaves:
         self.dirac_cmd=self.mpirun+" -np "+str(self.nr_proc)+" -"+self.argument_to_pass_work_dir_to_slaves+" "+self.workdir+" "
       else:
-        self.dirac_cmd=self.mpirun+" -np "+str(self.nr_proc)+""
+        self.dirac_cmd=self.mpirun+" -np "+str(self.nr_proc)+" "
       
       self.dirac_cmd=self.dirac_cmd+this_dirac_exe
       if self.vg_debug: # valgrind stuff, DIRAC_CMD="$DIRAC_CMD $VALGRIND_TOOL --log-fd=1"
