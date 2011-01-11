@@ -989,7 +989,7 @@ class pam_enviroment:
     for line in fileinput.input([makefile_config]):
       line=line[:-1] 
       if line.find('INSTALL_DIR') != -1:
-          install_dir_temp=line.replace('INSTALL_DIR=','')
+          install_dir_temp=os.path.expandvars(line.replace('INSTALL_DIR=',''))
           # check if the install-dir is OK
           if install_dir != install_dir_temp:
             print 'disgreement with the installation directory !'
@@ -999,34 +999,34 @@ class pam_enviroment:
           else:
             pass
       elif line.find('SCRATCH_DIR') != -1:
-          scratch_dir_temp=line.replace('SCRATCH_DIR=','')
+          scratch_dir_temp=os.path.expandvars(line.replace('SCRATCH_DIR=',''))
           self.workpath=scratch_dir_temp
           if not os.path.isdir(self.workpath):
             print 'NB: the workpath ',self.workpath,' does not exist on this machine.'
             print 'Running on your own risk (might not create workdir).'
       elif line.find('DEBUGGER') != -1:
-          debugger_temp=line.replace('DEBUGGER=','')
+          debugger_temp=os.path.expandvars(line.replace('DEBUGGER=',''))
           if os.path.isfile(debugger_temp):
             self.debugger=debugger_temp
           else:
             print 'The debugger from Makefile.config is not existing!'
             print 'The debugger from Makefile.config=',debugger_temp
       elif line.find('PROFILER') != -1:
-          profiler_temp=line.replace('PROFILER=','')
+          profiler_temp=os.path.expandvars(line.replace('PROFILER=',''))
           if os.path.isfile(profiler_temp):
             self.profiler=profiler_temp
           else:
             print 'The profiler from Makefile.config is not existing!'
             print 'The profiler from Makefile.config=',profiler_temp
       elif line.find('VALGRIND') != -1:
-          valgrind_temp=line.replace('VALGRIND=','')
+          valgrind_temp=os.path.expandvars(line.replace('VALGRIND=',''))
           if os.path.isfile(valgrind_temp):
             self.valgrind=valgrind_temp
           else:
             print 'The valgrind from Makefile.config is not existing!'
             print 'The valgrind from Makefile.config=',valgrind_temp
       elif line.find('MPIRUN') != -1:
-          mpirun_temp=line.replace('MPIRUN=','')
+          mpirun_temp=os.path.expandvars(line.replace('MPIRUN=',''))
           if os.path.isfile(mpirun_temp):
             self.mpirun=mpirun_temp
             self.parallel_build=True
@@ -1043,15 +1043,15 @@ class pam_enviroment:
             localdisks_pass_wrkdir_temp=line.replace('MPI_PASS_WRKDIR_ARGUMENT=','')
             self.argument_to_pass_work_dir_to_slaves=localdisks_pass_wrkdir_temp
       elif line.find('MACH_FILE') != -1:
-          machinefile_temp=line.replace('MACH_FILE=','')
+          machinefile_temp=os.path.expandvars(line.replace('MACH_FILE=',''))
           if len(machinefile_temp) >= 1:
             self.machinefile=machinefile_temp
       elif line.find('RCP') != -1:
-          rcp_temp=line.replace('RCP=','')
+          rcp_temp=os.path.expandvars(line.replace('RCP=',''))
           if os.path.isfile(rcp_temp):
             self.rcp=rcp_temp
       elif line.find('RSH') != -1:
-          rsh_temp=line.replace('RSH=','')
+          rsh_temp=os.path.expandvars(line.replace('RSH=',''))
           if os.path.isfile(rsh_temp):
             self.rsh=rsh_temp
 
