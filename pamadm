@@ -726,7 +726,7 @@ f.close()
 # package tests
 # =============
 
-f = open('test/SCRIPTS/runtest', 'w')
+f = open('test/SCRIPTS/testset', 'w')
 
 s = '''
 ################################################
@@ -753,15 +753,6 @@ short_testset="   $short_tests"
 '''
 f.write(s)
 f.close()
-
-# further pythonization:  os.system("cat...") replaced by python io-commands
-runtest_file = open("test/SCRIPTS/runtest","a")
-runtest_file_in=open("test/SCRIPTS/runtest.in","r")
-runtest_file.write(runtest_file_in.read())
-runtest_file.close()
-runtest_file_in.close()
-# read,write and execute by the owner (Windows accepted solution)
-os.chmod("test/SCRIPTS/runtest", stat.S_IRWXU) 
 
 ## generate *-provided basis set files ##
 if ( not is_windows() ): provide_star_basisfile_names()

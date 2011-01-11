@@ -1,4 +1,5 @@
-#
+#!/bin/bash
+
 # (c) 1998 J. Thyssen
 #
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -8,6 +9,14 @@
 # distinguish between different runs residing in one directory.
 # The present definition is coarse grain and serves to
 # exclude directories without a short run
+
+if [ -f "$(dirname $0)/testset" ]
+then
+    source $(dirname $0)/testset
+else
+    echo file testset does not exist, run pamadm first
+    exit 0
+fi
 
 benchmark_test="29.benchmark_cc"
 
