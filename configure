@@ -6,7 +6,7 @@
 #       FIRST A LOT OF SCRIPT FUNCTIONS ARE DEFINED.
 #       THE ACTUAL SCRIPT IS AT THE BOTTOM, SEARCH FOR "MAIN SCRIPT" TO FIND IT.
 #
-# Shell script that generates Makefile.config, pam, and run.sh.
+# Shell script that generates Makefile.config.
 # The shell script is a heavily modified version of the script used for DALTON
 #
 # It tries to determine what platform we are on (although allowing builds
@@ -3007,14 +3007,10 @@ fi
 
 
 
-#
-# generate pam and run.sh
-# =======================
-
-make_pam_runtest () {
+# generate pam.sh
+make_pam_sh () {
 
 pam_file=$INSTALL_DIR/pam.sh
-runsh_file=$SRC_DIR/test/SCRIPTS/run.sh
 
 echo '#!/bin/bash' > $pam_file
 
@@ -3069,23 +3065,9 @@ EOF
 cat ./pam.in >> $pam_file
 chmod a+rx      $pam_file
 
+test $IPRINT -ge "5" && echo 'make_pam_sh: done'
 
-###############################
-### take care of the run.sh ###
-###############################
-echo '#!/bin/sh'                                                        > $SRC_DIR/test/SCRIPTS/run.sh
-echo ' '                                                               >> $SRC_DIR/test/SCRIPTS/run.sh
-echo '# Directory that holds the Dirac binary is specified in BIN_DIR' >> $SRC_DIR/test/SCRIPTS/run.sh
-echo '# which is set by configure'                                     >> $SRC_DIR/test/SCRIPTS/run.sh
-echo 'BIN_DIR='$INSTALL_DIR                                            >> $SRC_DIR/test/SCRIPTS/run.sh
-echo ' '                                                               >> $SRC_DIR/test/SCRIPTS/run.sh
-cat $SRC_DIR/test/SCRIPTS/run.sh.in                                    >> $SRC_DIR/test/SCRIPTS/run.sh
-chmod 700 $SRC_DIR/test/SCRIPTS/run.sh
-###############################
-
-test $IPRINT -ge "5" && echo 'make_pam_runtest: done'
-
-} # END make_pam_runtest ()
+} # END make_pam_sh ()
 
 
 final_words () {
@@ -3358,7 +3340,7 @@ set_memsize
 set_installdir
 set_scratchdir
 make_Makefile.config
-make_pam_runtest
+make_pam_sh
 make_pam
 final_words
 

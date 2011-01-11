@@ -1,32 +1,15 @@
-
-# this was previously done in runtest
-# but i wonder why we check further below whether $PAM_PATH and $DIRAC are set
-# since they are always set
+#!/bin/sh
+ 
 if [ -z "$PAM_PATH" ]; then
-   PAM_PATH=$BIN_DIR
+   PAM_PATH=../..
 fi
 if [ -z "$DIRAC" ]; then
-   DIRAC=$BIN_DIR/dirac.x
+   DIRAC=$PAM_PATH/dirac.x
 fi
 
 # Generic place for the log-file
-#
 LOG=../LOGS
-#
-# Set the default arguments for the pam script
-#
-if [ -z "$PAM_PATH" ]; then
-   PAM_PATH=`which pam`
-   if [ -n "`echo $PAM_PATH | grep 'Command not found'`" ]; then
-      echo "pam not found. Please either set the enviroment variable"
-      echo "PAM_PATH or put pam in your path."
-      exit 1
-   fi
-   PAM_PATH=${PAM_PATH%/*}
-fi
-if [ -z "$DIRAC" ]; then
-   DIRAC=`which dirac.x`
-fi
+
 if [ -z "$TAG" ]; then
    TAG=out
 fi
