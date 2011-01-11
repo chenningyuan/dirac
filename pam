@@ -1158,7 +1158,7 @@ class pam_enviroment:
     if not self.no_archive:
       # set name of the archive file; TODO: Windows packing adaptation
       archive_name=self.output_name+".tgz"
-      print 'creating archive file ',archive_name
+      print '  creating archive file ',archive_name
       archive_full_name=self.input_directory+"/"+archive_name
 
       # select existing files in self.archive_files for the archive
