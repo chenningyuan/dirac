@@ -41,10 +41,10 @@ import time
 import fileinput
 import datetime
 
-# python module with the installation directory is created by the configure script
-from install_dir import install_dir_default
 global install_dir
-install_dir=install_dir_default
+install_dir_default = os.path.realpath(__file__)[:-4]
+install_dir = install_dir_default
+
 def append_dirac_py_modules(dirac_install_dir):
   '''Append directory with the common.py module file 
   to import selected python objects used throughout the script
