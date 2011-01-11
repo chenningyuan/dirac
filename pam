@@ -808,7 +808,6 @@ class pam_enviroment:
       full_file_name=self.input_directory+"/"+file_name
       if os.path.isfile(full_file_name):
         file_name_wrkdir=self.workdir+"/"+file_name
-        print 'copying ',file_name,' from homedir to workdir '
         self.copy_file(full_file_name,file_name_wrkdir)
       else :
         print 'File:',file_name,' you want to copy does not exist !'
