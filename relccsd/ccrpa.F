@@ -73,6 +73,8 @@ C
       real*8 sdot,ddot
       complex*16 cdotc,zdotc
       CHARACTER*17 TEXT
+
+      CERPA=DCMPLX(0.0D0,0.0D0)
 C
 C---------------Executable code--------------------------------------
 C
