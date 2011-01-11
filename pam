@@ -5,16 +5,16 @@
 #
 # Reads crucial data from Makefile.config (to be replaced by some python module ?)
 #
-# Written by Miro ILIAS, Matej Bel University, 
+# Written by Miro ILIAS, Matej Bel University,
 #        Banska Bystrica, Slovakia, end of 2010
 #
 # Contributors:  Rado BAST, Norway
-#           	 Ulf Ekstrom
+#                Ulf Ekstrom
 #                Stefan Knecht, Denmark
 #
 ##########################################################################
 
-#radovan: suggestions:
+# radovan: suggestions:
 #         1. please use standard indentation of 4 spaces (not 2 spaces, no tabs)
 #         2. please do not use if bar>=5:
 #                                  foo="bar"+oof#hard to read
@@ -30,10 +30,10 @@
 import os
 import pwd
 import sys
-import string 
+import string
 import subprocess
 import optparse
-import distutils.util 
+import distutils.util
 import shutil
 import signal
 import stat
@@ -45,1241 +45,1523 @@ global install_dir
 install_dir_default = os.path.realpath(__file__)[:-4]
 install_dir = install_dir_default
 
+
 def append_dirac_py_modules(dirac_install_dir):
-  '''Append directory with the common.py module file 
+    '''Append directory with the common.py module file
   to import selected python objects used throughout the script
-  
-  NOTE: do the import of wanted python routine(s) in each procedure 
+
+  NOTE: do the import of wanted python routine(s) in each procedure
   as "import common "  does not work...'''
 
-  modules_directory = dirac_install_dir + '/utils'
-  if not os.access(modules_directory,os.R_OK):
-    print 'wrong directory or directory not readable !'
-    sys.exit("wrong directory !")
-  sys.path.append(modules_directory)
+    modules_directory = dirac_install_dir + '/utils'
+    if not os.access(modules_directory, os.R_OK):
+        print 'wrong directory or directory not readable !'
+        sys.exit('wrong directory !')
+    sys.path.append(modules_directory)
+
 
 class pam_enviroment:
-  global install_dir
-  "class containing all important variables, methods for submitting"
-  def __init__(self):
-    "Initialize the global set of variables"
+
+    global install_dir
+
+    def __init__(self):
+        '''Initialize the global set of variables'''
+
     # print level
-    self.iprint=1
-    self.iprint_default=1
-     ### contains installation directory ...
-    self.dirac_home=install_dir
 
-    # basis set directory - initial value which can be reset later in the flags-reading step 
+        self.iprint = 1
+        self.iprint_default = 1
+
+     # ## contains installation directory ...
+
+        self.dirac_home = install_dir
+
+    # basis set directory - initial value which can be reset later in the flags-reading step
     # note: Due to the "." in the basdir path there is no need to use --basdir='pwd'
-    self.basdir=".:"+install_dir_default+"/basis:"+install_dir_default+"/basis_dalton"
 
-    self.xyz_molecule_input=False
+        self.basdir = '.:' + install_dir_default + '/basis:' \
+            + install_dir_default + '/basis_dalton'
+
+        self.xyz_molecule_input = False
 
     # ... variables related to the work directory
-    self.workdir=''
-    self.workpath=''
-    self.keepwrk=False
-    self.create_workdir_name=True
+
+        self.workdir = ''
+        self.workpath = ''
+        self.keepwrk = False
+        self.create_workdir_name = True
 
     # ... variables related to parallel calculations
-    self.parallel_build=False  # parallel build - read from Makefile.config
-    self.parallel_run=False  # whether parallel run - decide upon the "--mpi=xxx" parameter
-    self.mpirun='' # MPIRUN launcher
-    self.nr_proc=0 # number of processors, default 0-serial run
+
+        self.parallel_build = False  # parallel build - read from Makefile.config
+        self.parallel_run = False  # whether parallel run - decide upon the "--mpi=xxx" parameter
+        self.mpirun = ''  # MPIRUN launcher
+        self.nr_proc = 0  # number of processors, default 0-serial run
+
     #   local disks for parallel calculations (to be set by configure)   #
-    self.localdisks=False
+
+        self.localdisks = False
+
     #   command to pass the location of the work directory to the slaves (to be set by configure)
-    self.argument_to_pass_work_dir_to_slaves=''
+
+        self.argument_to_pass_work_dir_to_slaves = ''
+
     # machine file
-    self.machinefile=''  # could be enviroment variable (like $PBS_NODEFILE)
+
+        self.machinefile = ''  # could be enviroment variable (like $PBS_NODEFILE)
+
     # master node
-    self.master=''
-    # nodes (if any) - list 
-    self.nodes=[]
-    # rcp, rsh for parallel, multinodes calculations 
-    self.rcp='' # default taken from Makefile.config
-    self.rsh=''
+
+        self.master = ''
+
+    # nodes (if any) - list
+
+        self.nodes = []
+
+    # rcp, rsh for parallel, multinodes calculations
+
+        self.rcp = ''  # default taken from Makefile.config
+        self.rsh = ''
 
     # dirac profiling
-    self.profile  = False
-    self.profiler = '' # empty, but later read from Makefile.config
-    self.profiling_file='gmon.out' # usuall output file 
-    self.profile_command='' # command for profiling
+
+        self.profile = False
+        self.profiler = ''  # empty, but later read from Makefile.config
+        self.profiling_file = 'gmon.out'  # usuall output file
+        self.profile_command = ''  # command for profiling
 
     # dirac executable command (set in own routine)
-    self.dirac_cmd=''
+
+        self.dirac_cmd = ''
+
     # dirac-executable position (could be reset by after flag reading)
-    self.dirac_exe=install_dir_default+"/dirac.x"
+
+        self.dirac_exe = install_dir_default + '/dirac.x'
+
     # nice command - priority (nice/npri)
-    self.nice_cmd=''
- 
-    ### put/get files (flag controlled) ###
-    self.put_files=''
-    self.get_files=''
+
+        self.nice_cmd = ''
+
+    # ## put/get files (flag controlled) ###
+
+        self.put_files = ''
+        self.get_files = ''
 
     # memory allocation
-    self.default_memory_work_master = 64
-    self.default_memory_work_slave  = self.default_memory_work_master
-    self.default_memory_dynamic     = 0
 
-    self.max_memory_work_master = self.default_memory_work_master
-    self.max_memory_work_slave  = self.default_memory_work_slave 
-    self.max_memory_dynamic     = self.default_memory_dynamic    
+        self.default_memory_work_master = 64
+        self.default_memory_work_slave = self.default_memory_work_master
+        self.default_memory_dynamic = 0
 
-    self.full_restart=False
-    self.archive_name=''
+        self.max_memory_work_master = self.default_memory_work_master
+        self.max_memory_work_slave = self.default_memory_work_slave
+        self.max_memory_dynamic = self.default_memory_dynamic
+
+        self.full_restart = False
+        self.archive_name = ''
 
     # classic debugging (gdb, idb, dbx ...)
-    self.debug=False
-    self.debugger='' # empty, but later to be read from Makefile.config
+
+        self.debug = False
+        self.debugger = ''  # empty, but later to be read from Makefile.config
 
     # valgrind debugging
-    self.vg_debug=False
-    self.valgrind='' # empty, to be read from Makefile.config    
-    self.valgrind_param='' # parameters for valgrind
+
+        self.vg_debug = False
+        self.valgrind = ''  # empty, to be read from Makefile.config
+        self.valgrind_param = ''  # parameters for valgrind
 
     # input directory (=directory with input files)
-    self.input_directory='' 
+
+        self.input_directory = ''
+
     # molecule/input names plus  molecule/input file names
-    self.input_molecule=''
-    self.input_file_molecule=''
-    self.input_dirac=''
-    self.input_file_dirac=''
+
+        self.input_molecule = ''
+        self.input_file_molecule = ''
+        self.input_dirac = ''
+        self.input_file_dirac = ''
 
     # output name created from *inp & *mol names
-    self.output_name=''
+
+        self.output_name = ''
+
     # default output suffix
-    self.output_suffix="out"
+
+        self.output_suffix = 'out'
+
     # output file (sitting in the input directory)
-    self.output_file=''
-    self.output_file_full='' # full (absolute) path 
+
+        self.output_file = ''
+        self.output_file_full = ''  # full (absolute) path
+
     # lu of the file
-    self.f=None
+
+        self.f = None
+
     # by default, do backup files
-    self.nobackup=False
+
+        self.nobackup = False
 
     # default - do the archivation of files
-    self.no_archive=False
+
+        self.no_archive = False
+
     # list of all possible DIRAC produced files for the archivation
-    self.archive_files=['MOLECULE.MOL','MOLECULE.XYZ','DIRAC.INP','DFCOEF','*.cube','AOPROPER', \
-                        'AOMOMAT','BSSMAT','matexport.m','DFCOEF.BEST']
-    # all files from the archive are unpacked, it is assumed that archive file is copied into workdir 
-    self.fullrestart=False
 
-    # ... DFCOEF 
-    self.incmo=False
-    self.outcmo=False
+        self.archive_files = [
+            'MOLECULE.MOL',
+            'MOLECULE.XYZ',
+            'DIRAC.INP',
+            'DFCOEF',
+            '*.cube',
+            'AOPROPER',
+            'AOMOMAT',
+            'BSSMAT',
+            'matexport.m',
+            'DFCOEF.BEST',
+            ]
+
+    # all files from the archive are unpacked, it is assumed that archive file is copied into workdir
+
+        self.fullrestart = False
+
+    # ... DFCOEF
+
+        self.incmo = False
+        self.outcmo = False
+
     # ... DFFCK2
-    self.infock=False
-    self.outfock=False 
- 
-    #execution time-limit
-    self.set_timeout_limit=False
-    self.timeout=''
 
-    self.pam_command = ''
+        self.infock = False
+        self.outfock = False
 
-  def set_workdir_name(self,root_name):
-    ''' sets the working directory name according to the
+    # execution time-limit
+
+        self.set_timeout_limit = False
+        self.timeout = ''
+
+        self.pam_command = ''
+
+    def set_workdir_name(self, root_name):
+        ''' sets the working directory name according to the
     entering "root_name". depends on self.workpath '''
-    current_pid = os.getpid()
-    if len(root_name) > 0:
-      workdir_name=root_name+"."+str(current_pid)
-    else:
-      workdir_name='dirac_work_dir.'+str(current_pid)
+
+        current_pid = os.getpid()
+        if len(root_name) > 0:
+            workdir_name = root_name + '.' + str(current_pid)
+        else:
+            workdir_name = 'dirac_work_dir.' + str(current_pid)
 
     # attach user login name to the workdir name
-    workdir_name=pwd.getpwuid(os.getuid()).pw_name+"."+workdir_name
+
+        workdir_name = pwd.getpwuid(os.getuid()).pw_name + '.' \
+            + workdir_name
 
     # self.workpath MUST BE set before
-    self.workdir=self.workpath+"/"+workdir_name
 
-    if self.iprint >=5:
-      print 'workdir_name=',workdir_name
-      print 'root_name set?',(root_name is not None)
-      if root_name is not None:
-        print 'root_name=',root_name
-      print 'self.workdir=',self.workdir
+        self.workdir = self.workpath + '/' + workdir_name
 
-  def create_workdir(self):
-     if not os.path.isdir(self.workdir):
-        os.mkdir(self.workdir)
-     else:
-        print 'The work directory ',self.workdir,' exists.'
+        if self.iprint >= 5:
+            print 'workdir_name=', workdir_name
+            print 'root_name set?', root_name is not None
+            if root_name is not None:
+                print 'root_name=', root_name
+            print 'self.workdir=', self.workdir
 
-  def copy_file(self, src, dest):
-     """copy file from directory "scr" to "dest"
-     for the printout use 'purified' file names"""
-     from common import extract_path_file
-
-     epf_dest=extract_path_file() 
-     epf_dest.get_path_file(dest)
-
-     epf_src=extract_path_file()
-     epf_src.get_path_file(src)
-
-     shutil.copy(src, dest)
-     if self.iprint >=0:
-        print '  Copying file ',epf_src.pure_file_name,' to the work-directory (as ',epf_dest.pure_file_name,').'
-     if self.iprint >=3:
-        print ' src full path:',src
-        print 'dest full path:',dest
-
-  def list_workdir(self):
-    '''lists the content of the master work-directory more here http://www.daniweb.com/code/snippet216798.html'''
-    print 
-    print '  content of the scratch directory', os.getcwd()
-    print '  ------------------------------------------------------------------------------' 
-    print '%25s %10s %s' % ('name', 'size (MB)', 'last accessed')
-    print '  ------------------------------------------------------------------------------' 
-    for filename in os.listdir(self.workdir):
-      filesize_mb=float(os.path.getsize(self.workdir+"/"+filename))/1024000
-      # create a dictionary to hold file info
-      file_name = filename; file_stats = os.stat(file_name)
-      file_info = {
-             'fname': file_name,
-             'fsize': file_stats [stat.ST_SIZE],
-             'f_lm': time.strftime("%m/%d/%Y %I:%M:%S %p",time.localtime(file_stats[stat.ST_MTIME])),
-             'f_la': time.strftime("%m/%d/%Y %I:%M:%S %p",time.localtime(file_stats[stat.ST_ATIME])),
-             'f_ct': time.strftime("%m/%d/%Y %I:%M:%S %p",time.localtime(file_stats[stat.ST_CTIME]))
-      } 
-      print "%25s %10.3f %s" % (filename, filesize_mb, file_info['f_la'])
-      sys.stdout.flush()
-
-      if self.iprint >= 8:
-        print
-        print "file name = %(fname)s" % file_info
-        print "file size = %(fsize)s bytes" % file_info
-        print "last modified = %(f_lm)s" % file_info
-        print "last accessed = %(f_la)s" % file_info
-        print "creation time = %(f_ct)s" % file_info
-        print
-        if stat.S_ISDIR(file_stats[stat.ST_MODE]):
-          print "This a directory"
+    def create_workdir(self):
+        if not os.path.isdir(self.workdir):
+            os.mkdir(self.workdir)
         else:
-          print "This is not a directory"
+            print 'The work directory ', self.workdir, ' exists.'
+
+    def copy_file(self, src, dest):
+        """copy file from directory "scr" to "dest"
+     for the printout use 'purified' file names"""
+
+        from common import extract_path_file
+
+        epf_dest = extract_path_file()
+        epf_dest.get_path_file(dest)
+
+        epf_src = extract_path_file()
+        epf_src.get_path_file(src)
+
+        shutil.copy(src, dest)
+        if self.iprint >= 0:
+            print '  Copying file ', epf_src.pure_file_name, \
+                ' to the work-directory (as ', epf_dest.pure_file_name, \
+                ').'
+        if self.iprint >= 3:
+            print ' src full path:', src
+            print 'dest full path:', dest
+
+    def list_workdir(self):
+        '''lists the content of the master work-directory more here http://www.daniweb.com/code/snippet216798.html'''
+
         print
-        print "A closer look at the os.stat(%s) tuple:" % file_name
-        print file_stats
-        print
-        print "The above tuple has the following sequence:"
-        print """st_mode (protection bits), st_ino (inode number),
+        print '  content of the scratch directory', os.getcwd()
+        print '  ------------------------------------------------------------------------------'
+        print '%25s %10s %s' % ('name', 'size (MB)', 'last accessed')
+        print '  ------------------------------------------------------------------------------'
+        for filename in os.listdir(self.workdir):
+            filesize_mb = float(os.path.getsize(self.workdir + '/'
+                                + filename)) / 1024000
+
+      # create a dictionary to hold file info
+
+            file_name = filename
+            file_stats = os.stat(file_name)
+            file_info = {
+                'fname': file_name,
+                'fsize': file_stats[stat.ST_SIZE],
+                'f_lm': time.strftime('%m/%d/%Y %I:%M:%S %p',
+                        time.localtime(file_stats[stat.ST_MTIME])),
+                'f_la': time.strftime('%m/%d/%Y %I:%M:%S %p',
+                        time.localtime(file_stats[stat.ST_ATIME])),
+                'f_ct': time.strftime('%m/%d/%Y %I:%M:%S %p',
+                        time.localtime(file_stats[stat.ST_CTIME])),
+                }
+            print '%25s %10.3f %s' % (filename, filesize_mb,
+                    file_info['f_la'])
+            sys.stdout.flush()
+
+            if self.iprint >= 8:
+                print
+                print 'file name = %(fname)s' % file_info
+                print 'file size = %(fsize)s bytes' % file_info
+                print 'last modified = %(f_lm)s' % file_info
+                print 'last accessed = %(f_la)s' % file_info
+                print 'creation time = %(f_ct)s' % file_info
+                print
+                if stat.S_ISDIR(file_stats[stat.ST_MODE]):
+                    print 'This a directory'
+                else:
+                    print 'This is not a directory'
+                print
+                print 'A closer look at the os.stat(%s) tuple:' \
+                    % file_name
+                print file_stats
+                print
+                print 'The above tuple has the following sequence:'
+                print """st_mode (protection bits), st_ino (inode number),
            st_dev (device), st_nlink (number of hard links),
            st_uid (user ID of owner), st_gid (group ID of owner),
            st_size (file size, bytes), st_atime (last access time, seconds since epoch),
            st_mtime (last modification time), st_ctime (time of creation, Windows)"""
+                sys.stdout.flush()
+        print '  ------------------------------------------------------------------------------'
+
+    def remove_workdir(self):
+        self.list_workdir()
+        if not self.keepwrk:
+            print '  deleting the scratch directory'
+            sys.stdout.flush()
+            shutil.rmtree(self.workdir)
+        else:
+            print '  keeping the work directory'
+            sys.stdout.flush()
+
+    def exit_function(self, returncode):
+        '''prints message on the DIRAC executable exit according to the input parameter'''
+
+        print
+        print '  exit date      :', datetime.datetime.now()
+        print '  exit code      :', returncode
+        if returncode == 0:
+            print '  exit           : normal'
+        else:
+            print '  exit           : ABNORMAL (CHECK DIRAC OUTPUT)'
+        print
         sys.stdout.flush()
-    print '  ------------------------------------------------------------------------------' 
 
-  def remove_workdir(self):
-    self.list_workdir()
-    if not self.keepwrk:
-      print '  deleting the scratch directory'
-      sys.stdout.flush()
-      shutil.rmtree(self.workdir)      
-    else:
-      print '  keeping the work directory'
-      sys.stdout.flush()
-
-  def exit_function(self,returncode):
-     "prints message on the DIRAC executable exit according to the input parameter"
-     print
-     print '  exit date      :', datetime.datetime.now()
-     print '  exit code      :', returncode 
-     if returncode == 0:
-        print '  exit           : normal'
-     else:
-        print '  exit           : ABNORMAL (CHECK DIRAC OUTPUT)'
-     print
-     sys.stdout.flush()
      # notifyuser ?
 
-  def process_pam_arguments(self):
-    global install_dir
+    def process_pam_arguments(self):
+        global install_dir
 
-    from optparse import OptionParser, OptionGroup
+        from optparse import OptionParser, OptionGroup
 
-    usage = """
+        usage = \
+            """
           %prog [options] --inp=*.inp --mol=*.mol
       or: %prog [options] --inp=*.inp --mol=*.xyz
       or: %prog [options] --fullrestart=ARCHIVE.tgz"""
 
-    parser = OptionParser(usage)
+        parser = OptionParser(usage)
 
-    group = OptionGroup(parser, "Input and molecule files")
-    group.add_option("--inp", 
-        type   = "string",
-        action = "store",
-        dest   = "inp_file",
-        help   = "input file *.inp"
-        )
-    group.add_option("--mol", 
-        type   = "string",
-        action = "store",
-        dest   = "mol_file",
-        help   = "molecule file *.mol or *.xyz"
-        )
-    group.add_option("--fullrestart", 
-        type   = "string",
-        action = "store",
-        dest   = "dest_fullrestart",
-        help   = """all files from ARCHIVE.tgz are unpacked,
+        group = OptionGroup(parser, 'Input and molecule files')
+        group.add_option('--inp', type='string', action='store',
+                         dest='inp_file', help='input file *.inp')
+        group.add_option('--mol', type='string', action='store',
+                         dest='mol_file',
+                         help='molecule file *.mol or *.xyz')
+        group.add_option(
+            '--fullrestart',
+            type='string',
+            action='store',
+            dest='dest_fullrestart',
+            help="""all files from ARCHIVE.tgz are unpacked,
                     not just DFCOEF - this allows you to omit --inp and --mol
                  """,
-        metavar = "ARCHIVE.tgz"
-        )
-    parser.add_option_group(group)
+            metavar='ARCHIVE.tgz',
+            )
+        parser.add_option_group(group)
 
-    group = OptionGroup(parser, "Output files")
-    group.add_option("--suffix", 
-        type    = "string", 
-        action  = "store", 
-        dest    = "dest_suffix", 
-        default = self.output_suffix,
-        help    = "file suffix for output [default: %default]",
-        metavar = "STRING"
-        )
-    group.add_option("--noarch", 
-        action  = "store_true", 
-        dest    = "dest_noarch", 
-        default = False,
-        help    = "do not create a tgz archive [default: create it]",
-        )
-    group.add_option("--nobackup", 
-        action  = "store_true", 
-        dest    = "dest_nobackup", 
-        default = False,
-        help    = "do not backup old outputs [default: back them up]",
-        )
-    parser.add_option_group(group)
+        group = OptionGroup(parser, 'Output files')
+        group.add_option(
+            '--suffix',
+            type='string',
+            action='store',
+            dest='dest_suffix',
+            default=self.output_suffix,
+            help='file suffix for output [default: %default]',
+            metavar='STRING',
+            )
+        group.add_option('--noarch', action='store_true',
+                         dest='dest_noarch', default=False,
+                         help='do not create a tgz archive [default: create it]'
+                         )
+        group.add_option('--nobackup', action='store_true',
+                         dest='dest_nobackup', default=False,
+                         help='do not backup old outputs [default: back them up]'
+                         )
+        parser.add_option_group(group)
 
-    group = OptionGroup(parser, "Memory specification")
-    group.add_option("--mw", 
-        type    = "int", 
-        action  = "store", 
-        dest    = "dest_mw", 
-        default = self.default_memory_work_master,
-        help    = """set max memory (in megawords) for WORK array
+        group = OptionGroup(parser, 'Memory specification')
+        group.add_option(
+            '--mw',
+            type='int',
+            action='store',
+            dest='dest_mw',
+            default=self.default_memory_work_master,
+            help="""set max memory (in megawords) for WORK array
                      for the master (and slaves if --nw not specified)
                      [default: %default]
                   """,
-        metavar = "INTEGER"
-        )
-    group.add_option("--nw", 
-        type    = "int", 
-        action  = "store", 
-        dest    = "dest_nw", 
-        #default = self.default_memory_work_slave,
-        help    = """set max memory (in megawords) for WORK array
+            metavar='INTEGER',
+            )
+        group.add_option(  # default = self.default_memory_work_slave,
+            '--nw',
+            type='int',
+            action='store',
+            dest='dest_nw',
+            help="""set max memory (in megawords) for WORK array
                      for the slaves
                      [default: the same set value as for Master ]
                   """,
-        metavar = "INTEGER"
-        )
-    group.add_option("--aw", 
-        type    = "int", 
-        action  = "store", 
-        dest    = "dest_aw", 
-        default = self.default_memory_dynamic,
-        help    = """set max dynamically allocatable memory (in megawords)
+            metavar='INTEGER',
+            )
+        group.add_option(
+            '--aw',
+            type='int',
+            action='store',
+            dest='dest_aw',
+            default=self.default_memory_dynamic,
+            help="""set max dynamically allocatable memory (in megawords)
                      [default: %default]
                   """,
-        metavar = "INTEGER"
-        )
-    parser.add_option_group(group)
+            metavar='INTEGER',
+            )
+        parser.add_option_group(group)
 
-    group = OptionGroup(parser, "Scratch directory")
-    group.add_option("--scratch", 
-        type    = "string", 
-        action  = "store", 
-        dest    = "dest_wrkdir", 
-        default = self.workpath + "/<loginname.mol_inp>.PID",
-        help    = "set scratch directory [default: %default]",
-        metavar = "FULL_PATH"
-        )
-    group.add_option("--put", "--copy", 
-        type    = "string", 
-        action  = "store", 
-        dest    = "dest_put", 
-        help    = "copy files to scratch directory",
-        metavar = "\"file1 file2 ...\""
-        )
-    group.add_option("--get", 
-        type    = "string", 
-        action  = "store", 
-        dest    = "dest_get", 
-        help    = "get files from scratch directory",
-        metavar = "\"file1 file2 ...\""
-        )
-    group.add_option("--incmo", 
-        action  = "store_true", 
-        dest    = "dest_incmo", 
-        default = False,
-        help    = "copy DFCOEF to scratch directory [default: %default]",
-        )
-    group.add_option("--outcmo", 
-        action  = "store_true", 
-        dest    = "dest_outcmo", 
-        default = False,
-        help    = "get DFCOEF from scratch directory [default: %default]",
-        )
-    group.add_option("--infock", 
-        action  = "store_true", 
-        dest    = "dest_infock", 
-        default = False,
-        help    = "copy DFFCK2 to scratch directory [default: %default]",
-        )
-    group.add_option("--outfock", 
-        action  = "store_true", 
-        dest    = "dest_outfock", 
-        default = False,
-        help    = "get DFFCK2 from scratch directory [default: %default]",
-        )
-    group.add_option("--keepwrk", 
-        action  = "store_true", 
-        dest    = "dest_keepwrk", 
-        default = False,
-        help    = "keep the scratch directory after calculation [default: delete it]",
-        )
-    parser.add_option_group(group)
+        group = OptionGroup(parser, 'Scratch directory')
+        group.add_option(
+            '--scratch',
+            type='string',
+            action='store',
+            dest='dest_wrkdir',
+            default=self.workpath + '/<loginname.mol_inp>.PID',
+            help='set scratch directory [default: %default]',
+            metavar='FULL_PATH',
+            )
+        group.add_option(
+            '--put',
+            '--copy',
+            type='string',
+            action='store',
+            dest='dest_put',
+            help='copy files to scratch directory',
+            metavar='"file1 file2 ..."',
+            )
+        group.add_option(
+            '--get',
+            type='string',
+            action='store',
+            dest='dest_get',
+            help='get files from scratch directory',
+            metavar='"file1 file2 ..."',
+            )
+        group.add_option('--incmo', action='store_true',
+                         dest='dest_incmo', default=False,
+                         help='copy DFCOEF to scratch directory [default: %default]'
+                         )
+        group.add_option('--outcmo', action='store_true',
+                         dest='dest_outcmo', default=False,
+                         help='get DFCOEF from scratch directory [default: %default]'
+                         )
+        group.add_option('--infock', action='store_true',
+                         dest='dest_infock', default=False,
+                         help='copy DFFCK2 to scratch directory [default: %default]'
+                         )
+        group.add_option('--outfock', action='store_true',
+                         dest='dest_outfock', default=False,
+                         help='get DFFCK2 from scratch directory [default: %default]'
+                         )
+        group.add_option('--keepwrk', action='store_true',
+                         dest='dest_keepwrk', default=False,
+                         help='keep the scratch directory after calculation [default: delete it]'
+                         )
+        parser.add_option_group(group)
 
-    group = OptionGroup(parser, "MPI parallelization")
-    group.add_option("--mpi", 
-        type    = "int", 
-        action  = "store", 
-        dest    = "dest_mpi", 
-        default = None,
-        help    = "set number of cores [default: %default]",
-        metavar = "INTEGER"
-        )
-    group.add_option("--mpirun", 
-        type    = "string", 
-        action  = "store", 
-        dest    = "dest_mpirun", 
-        help    = "set MPI launcher, default is to use MPIRUN set in Makefile.config",
-        metavar = "STRING"
-        )
-    group.add_option("--machfile", 
-        type    = "string", 
-        action  = "store", 
-        dest    = "dest_machfile", 
-        help    = """set machinefile for parallel run
+        group = OptionGroup(parser, 'MPI parallelization')
+        group.add_option(
+            '--mpi',
+            type='int',
+            action='store',
+            dest='dest_mpi',
+            default=None,
+            help='set number of cores [default: %default]',
+            metavar='INTEGER',
+            )
+        group.add_option(
+            '--mpirun',
+            type='string',
+            action='store',
+            dest='dest_mpirun',
+            help='set MPI launcher, default is to use MPIRUN set in Makefile.config'
+                ,
+            metavar='STRING',
+            )
+        group.add_option(
+            '--machfile',
+            type='string',
+            action='store',
+            dest='dest_machfile',
+            help="""set machinefile for parallel run
                      default is to use the machinefile set in Makefile.config
                   """,
-        metavar = "STRING"
-        )
-    parser.add_option_group(group)
+            metavar='STRING',
+            )
+        parser.add_option_group(group)
 
 #   radovan: this can be evaluated from sys.argv[0]
-    group = OptionGroup(parser, "Modify default locations")
-    group.add_option("--installdir", 
-        type    = "string", 
-        action  = "store", 
-        dest    = "dest_install_dir", 
-        default = install_dir_default,
-        help    = "directory where pam resides [default: %default]",
-        metavar = "FULL_PATH"
-        )
-    group.add_option("--basis", 
-        type    = "string", 
-        action  = "store", 
-        dest    = "dest_basdir", 
-        default = self.basdir,
-        help    = "basis set directory [default: %default]",
-        metavar = "FULL_PATH"
-        )
-    group.add_option("--dirac", 
-        type    = "string", 
-        action  = "store", 
-        dest    = "dest_dirac", 
-        default = self.dirac_exe,
-        help    = "dirac executable [default: %default]",
-        metavar = "FULL_PATH"
-        )
-    parser.add_option_group(group)
 
-    group = OptionGroup(parser, "Advanced (programming, debugging, and automation)")
-    group.add_option("--debug", 
-        action  = "store_true", 
-        dest    = "dest_debug", 
-        default = False,
-        help    = "run in debugger [default: %default]",
-        )
-    group.add_option("--debugger", 
-        type    = "string", 
-        action  = "store", 
-        dest    = "dest_debugger", 
-        default = self.debugger,
-        help    = "set full path to debugger [default: %default]",
-        metavar = "FULL_PATH"
-        )
-    group.add_option("--valgrind", 
-        action  = "store_true", 
-        dest    = "dest_vg", 
-        default = False,
-        help    = "run with valgrind [default: %default]",
-        )
-    group.add_option("--profile", 
-        action  = "store_true", 
-        dest    = "dest_profile", 
-        default = False,
-        help    = "perform profiling [default: %default]",
-        )
-    group.add_option("--profiler", 
-        type    = "string", 
-        action  = "store", 
-        dest    = "dest_profiler", 
-        default = self.profiler,
-        help    = "set full path to profiler [default: %default]",
-        metavar = "FULL_PATH"
-        )
-    group.add_option("--verbosity", 
-        type    = "int", 
-        action  = "store", 
-        dest    = "dest_iprint", 
-        default = self.iprint_default,
-        help    = "set pam verbosity [default: %default]",
-        metavar = "INTEGER"
-        )
-    group.add_option("--timeout", 
-        type    = "int", 
-        action  = "store", 
-        dest    = "dest_timeout", 
-        help    = "limit dirac.x execution time (in seconds) [default: no limit]",
-        metavar = "INTEGER"
-        )
-    group.add_option("--nice", 
-        action  = "store_true", 
-        dest    = "dest_nice", 
-        default = False,
-        help    = "run with low priority [default: %default]",
-        )
-    parser.add_option_group(group)
+        group = OptionGroup(parser, 'Modify default locations')
+        group.add_option(
+            '--installdir',
+            type='string',
+            action='store',
+            dest='dest_install_dir',
+            default=install_dir_default,
+            help='directory where pam resides [default: %default]',
+            metavar='FULL_PATH',
+            )
+        group.add_option(
+            '--basis',
+            type='string',
+            action='store',
+            dest='dest_basdir',
+            default=self.basdir,
+            help='basis set directory [default: %default]',
+            metavar='FULL_PATH',
+            )
+        group.add_option(
+            '--dirac',
+            type='string',
+            action='store',
+            dest='dest_dirac',
+            default=self.dirac_exe,
+            help='dirac executable [default: %default]',
+            metavar='FULL_PATH',
+            )
+        parser.add_option_group(group)
+
+        group = OptionGroup(parser,
+                            'Advanced (programming, debugging, and automation)'
+                            )
+        group.add_option('--debug', action='store_true',
+                         dest='dest_debug', default=False,
+                         help='run in debugger [default: %default]')
+        group.add_option(
+            '--debugger',
+            type='string',
+            action='store',
+            dest='dest_debugger',
+            default=self.debugger,
+            help='set full path to debugger [default: %default]',
+            metavar='FULL_PATH',
+            )
+        group.add_option('--valgrind', action='store_true',
+                         dest='dest_vg', default=False,
+                         help='run with valgrind [default: %default]')
+        group.add_option('--profile', action='store_true',
+                         dest='dest_profile', default=False,
+                         help='perform profiling [default: %default]')
+        group.add_option(
+            '--profiler',
+            type='string',
+            action='store',
+            dest='dest_profiler',
+            default=self.profiler,
+            help='set full path to profiler [default: %default]',
+            metavar='FULL_PATH',
+            )
+        group.add_option(
+            '--verbosity',
+            type='int',
+            action='store',
+            dest='dest_iprint',
+            default=self.iprint_default,
+            help='set pam verbosity [default: %default]',
+            metavar='INTEGER',
+            )
+        group.add_option(
+            '--timeout',
+            type='int',
+            action='store',
+            dest='dest_timeout',
+            help='limit dirac.x execution time (in seconds) [default: no limit]'
+                ,
+            metavar='INTEGER',
+            )
+        group.add_option('--nice', action='store_true', dest='dest_nice'
+                         , default=False,
+                         help='run with low priority [default: %default]'
+                         )
+        parser.add_option_group(group)
 
 #   process input
-    (options, args) = parser.parse_args()
+
+        (options, args) = parser.parse_args()
 
 #   user has given no arguments: print help and exit
-    if len(sys.argv) == 1:
-        print(parser.format_help().strip())
-        sys.exit()
 
-    self.iprint                 = int(options.dest_iprint)
-    self.output_suffix          = options.dest_suffix
-    self.max_memory_work_master = int(options.dest_mw)
+        if len(sys.argv) == 1:
+            print parser.format_help().strip()
+            sys.exit()
 
-    #miro: no read-in default for "--nw", as we need to check whether the parameter was set
+        self.iprint = int(options.dest_iprint)
+        self.output_suffix = options.dest_suffix
+        self.max_memory_work_master = int(options.dest_mw)
+
+    # miro: no read-in default for "--nw", as we need to check whether the parameter was set
     # take the default value from the previously set "self.max_memory_work_master"
-    if options.dest_nw is not None:
+
+        if options.dest_nw is not None:
+
         # own set value
-        self.max_memory_work_slave  = int(options.dest_nw)
-    else :
+
+            self.max_memory_work_slave = int(options.dest_nw)
+        else:
+
         # none value set - take the master setting
-        self.max_memory_work_slave  = self.max_memory_work_master
 
-    self.max_memory_dynamic     = int(options.dest_aw)
+            self.max_memory_work_slave = self.max_memory_work_master
 
-    if options.dest_mpi is not None:
-       self.nr_proc=int(options.dest_mpi)
-       self.parallel_run=True
-       if self.iprint >= 5:
-          print 'assigned self.nr_proc=',self.nr_proc
-          print 'assigned self.self.parallel_run=',self.parallel_run
-    else:
-       self.parallel_run=False
-       if self.parallel_build == True:
-          print
-          print 'Despite parallel build, set serial run as no --mpi=xxx specified.'
+        self.max_memory_dynamic = int(options.dest_aw)
 
-#radovan: it is always not none
-    if options.dest_mpirun is not None:
-        if os.path.isfile(options.dest_mpirun):
-        # todo : check functionality of mpirun ?
-            self.mpirun=options.dest_mpirun
-            self.parallel_run = True 
-            self.parallel_build = True 
+        if options.dest_mpi is not None:
+            self.nr_proc = int(options.dest_mpi)
+            self.parallel_run = True
             if self.iprint >= 5:
-                print 'parallel run TRUE !'
-                print 'assigned mpirun=',self.mpirun
-        else :
-            print 'MPIRUN "',options.dest_mpirun,'" you assigned is wrong, no parallel run !'
-            self.parallel_build = False
+                print 'assigned self.nr_proc=', self.nr_proc
+                print 'assigned self.self.parallel_run=', \
+                    self.parallel_run
+        else:
             self.parallel_run = False
-    else:
-        pass
+            if self.parallel_build == True:
+                print
+                print 'Despite parallel build, set serial run as no --mpi=xxx specified.'
 
-#radovan: it is always not none
-    if options.dest_machfile is not None:
-     self.machinefile=options.dest_machfile
+# radovan: it is always not none
+
+        if options.dest_mpirun is not None:
+            if os.path.isfile(options.dest_mpirun):
+
+        # todo : check functionality of mpirun ?
+
+                self.mpirun = options.dest_mpirun
+                self.parallel_run = True
+                self.parallel_build = True
+                if self.iprint >= 5:
+                    print 'parallel run TRUE !'
+                    print 'assigned mpirun=', self.mpirun
+            else:
+                print 'MPIRUN "', options.dest_mpirun, \
+                    '" you assigned is wrong, no parallel run !'
+                self.parallel_build = False
+                self.parallel_run = False
+        else:
+            pass
+
+# radovan: it is always not none
+
+        if options.dest_machfile is not None:
+            self.machinefile = options.dest_machfile
+
      # todo: check it
-     if self.iprint >= 5:
-      print 'assigned machinefile=',self.machinefile
 
-    if options.dest_install_dir is not None:
-      if os.path.isdir(str(options.dest_install_dir)):
-        install_dir=str(options.dest_install_dir)
-        if self.iprint >= 5:
-          print 'assigned install-dir=',install_dir
-      else:
-        print 'Installation directory you inserted is non-existent !'
-        print 'Used the default instead:',install_dir
-    elif install_dir_default is None:
-      sys.exit("The installation directory is not set ! Error exit !")
+            if self.iprint >= 5:
+                print 'assigned machinefile=', self.machinefile
 
-    self.workdir   = str(options.dest_wrkdir)
-    self.basdir    = str(options.dest_basdir)
-    self.dirac_exe = str(options.dest_dirac)
+        if options.dest_install_dir is not None:
+            if os.path.isdir(str(options.dest_install_dir)):
+                install_dir = str(options.dest_install_dir)
+                if self.iprint >= 5:
+                    print 'assigned install-dir=', install_dir
+            else:
+                print 'Installation directory you inserted is non-existent !'
+                print 'Used the default instead:', install_dir
+        elif install_dir_default is None:
+            sys.exit('The installation directory is not set ! Error exit !'
+                     )
 
-    if options.dest_nice:
-    # assign here the full nice/npri command; TODO: set for windows (in own routine) 
-        if os.path.isfile("/usr/sbin/npri"):
-           self.nice_cmd="npri -h129 "
+        self.workdir = str(options.dest_wrkdir)
+        self.basdir = str(options.dest_basdir)
+        self.dirac_exe = str(options.dest_dirac)
+
+        if options.dest_nice:
+
+    # assign here the full nice/npri command; TODO: set for windows (in own routine)
+
+            if os.path.isfile('/usr/sbin/npri'):
+                self.nice_cmd = 'npri -h129 '
+            else:
+                self.nice_cmd = 'nice -1 '
+            if self.iprint >= 5:
+                print 'nice prirority set ! self.nice_cmd=', \
+                    self.nice_cmd
+
+        if options.dest_timeout is not None:
+            self.timeout = int(options.dest_timeout)
+            self.set_timeout_limit = True
+            if self.iprint >= 5:
+                print 'assigned timeout=', self.timeout
         else:
-           self.nice_cmd="nice -1 "
-        if self.iprint >= 5:
-           print 'nice prirority set ! self.nice_cmd=',self.nice_cmd
+            if self.iprint >= 5:
+                print 'no timeout assigned !'
 
-    if options.dest_timeout is not None:
-      self.timeout=int(options.dest_timeout)
-      self.set_timeout_limit=True
-      if self.iprint >= 5:
-        print 'assigned timeout=',self.timeout
-    else:
-      if self.iprint >= 5:
-        print 'no timeout assigned !'
+        self.nobackup = options.dest_nobackup
+        self.no_archive = options.dest_noarch
 
-    self.nobackup=options.dest_nobackup      
-    self.no_archive=options.dest_noarch
+        if options.dest_put is not None:
+            self.put_files = options.dest_put
+            if self.iprint >= 5:
+                print 'assigned put_files ?', self.put_files \
+                    is not None, '...', self.put_files
 
-    if options.dest_put is not None:
-      self.put_files=options.dest_put
-      if self.iprint >= 5:
-        print 'assigned put_files ?',(self.put_files is not None),'...',self.put_files
+        if options.dest_get is not None:
+            self.get_files = options.dest_get
+            if self.iprint >= 5:
+                print 'assigned get_files ?', self.get_files \
+                    is not None, '...', self.get_files
 
-    if options.dest_get is not None:
-      self.get_files=options.dest_get
-      if self.iprint >= 5:
-        print 'assigned get_files ?',(self.get_files is not None),'...',self.get_files
+        self.incmo = options.dest_incmo
+        self.outcmo = options.dest_outcmo
+        self.infock = options.dest_infock
+        self.outfock = options.dest_outfock
 
-    self.incmo=options.dest_incmo
-    self.outcmo=options.dest_outcmo
-    self.infock=options.dest_infock
-    self.outfock=options.dest_outfock
+        if options.dest_fullrestart is not None:
+            self.archive_name = options.dest_fullrestart
+            self.full_restart = True
+            if self.iprint >= 5:
+                print 'assigned full-restart from archive file', \
+                    self.archive_name
 
-    if options.dest_fullrestart is not None:
-      self.archive_name=options.dest_fullrestart
-      self.full_restart=True
-      if self.iprint >= 5:
-        print 'assigned full-restart from archive file',self.archive_name
+        self.keepwrk = options.dest_keepwrk
 
-    self.keepwrk=options.dest_keepwrk
+        if options.dest_debug:
+            self.debug = True
 
-    if options.dest_debug:
-        self.debug = True
+        if options.dest_debugger is not None:
+            if os.path.isfile(options.dest_debugger):
+                self.debugger = options.dest_debugger
+            else:
+                print 'Debugger ', options.dest_debugger, \
+                    ' you want to assign does not exist ! No debugging !'
+                self.debug = False
+            if self.iprint >= 5:
+                print 'assigned debugger,', self.debugger
 
-    if options.dest_debugger is not None:
-        if os.path.isfile(options.dest_debugger):
-            self.debugger=options.dest_debugger
-        else:
-            print 'Debugger ',options.dest_debugger,' you want to assign does not exist ! No debugging !'
-            self.debug=False
-        if self.iprint >= 5:
-            print 'assigned debugger,',self.debugger
+        if options.dest_vg:
+            self.vg_debug = True
 
-    if options.dest_vg:
-        self.vg_debug = True
+        if options.dest_profile:
+            self.profile = True
 
-    if options.dest_profile:
-        self.profile = True
-
-    self.profiler=options.dest_profiler
+        self.profiler = options.dest_profiler
 
     # assign input directory ...
-    self.input_directory=os.getcwd()
+
+        self.input_directory = os.getcwd()
 
 #   input and molecule are required
 #   check that they are there, if not exit
 #   if yes, assign output file name
-    if not self.full_restart:
-      if options.mol_file is not None and options.inp_file is not None:
-        self.input_molecule = options.mol_file
-        self.input_dirac    = options.inp_file
-        self.assign_mol_inp_files()
-      else:
+
         if not self.full_restart:
-          print 'both --mol=... and --inp=... input parameters are required !'
-          sys.exit()
+            if options.mol_file is not None and options.inp_file \
+                is not None:
+                self.input_molecule = options.mol_file
+                self.input_dirac = options.inp_file
+                self.assign_mol_inp_files()
+            else:
+                if not self.full_restart:
+                    print 'both --mol=... and --inp=... input parameters are required !'
+                    sys.exit()
 
-    self.set_output_name()
-    ### set workdir name here  ###
-    if self.create_workdir_name:
-      self.set_workdir_name(root_name=self.output_name)
+        self.set_output_name()
 
-  def assign_mol_inp_files(self):
-    '''Assign "self.input_file_molecule" and "self.input_file_dirac"
+    # ## set workdir name here  ###
+
+        if self.create_workdir_name:
+            self.set_workdir_name(root_name=self.output_name)
+
+    def assign_mol_inp_files(self):
+        '''Assign "self.input_file_molecule" and "self.input_file_dirac"
     with proper input file names according to filled variables (class members)
     "self.input_molecule" and "self.input_dirac"'''
-    if self.iprint >=5:
-      print '=== assign_mol_inp_files: ==='
-      print 'self.input_molecule=',self.input_molecule
-      print 'self.input_dirac=',self.input_dirac
 
-    if os.path.isfile(self.input_molecule+'.mol'):
-      self.input_file_molecule=self.input_molecule+'.mol'
-    elif os.path.isfile(self.input_molecule+'.xyz'):
-      self.input_file_molecule=self.input_molecule+'.xyz'
-    elif os.path.isfile(self.input_molecule):
-      self.input_file_molecule=self.input_molecule
-    else:
-      print 'Proper molecule input file does not exist !'
-      sys.exit(-1)  
+        if self.iprint >= 5:
+            print '=== assign_mol_inp_files: ==='
+            print 'self.input_molecule=', self.input_molecule
+            print 'self.input_dirac=', self.input_dirac
 
-    if os.path.isfile(self.input_dirac+'.inp'):
-      self.input_file_dirac=self.input_dirac+'.inp'
-    elif os.path.isfile(self.input_dirac):
-      self.input_file_dirac=self.input_dirac
-    else:
-      print 'Proper dirac input file does not exist !' 
-      print 'self.input_dirac=',self.input_dirac
-      print 'self.input_file_dirac=',self.input_file_dirac
-      sys.exit(-1)  
+        if os.path.isfile(self.input_molecule + '.mol'):
+            self.input_file_molecule = self.input_molecule + '.mol'
+        elif os.path.isfile(self.input_molecule + '.xyz'):
+            self.input_file_molecule = self.input_molecule + '.xyz'
+        elif os.path.isfile(self.input_molecule):
+            self.input_file_molecule = self.input_molecule
+        else:
+            print 'Proper molecule input file does not exist !'
+            sys.exit(-1)
 
-    if self.iprint >=5:
-      print 'assigned self.input_file_molecule=',self.input_file_molecule
-      print 'assigned self.input_file_dirac=',self.input_file_dirac
+        if os.path.isfile(self.input_dirac + '.inp'):
+            self.input_file_dirac = self.input_dirac + '.inp'
+        elif os.path.isfile(self.input_dirac):
+            self.input_file_dirac = self.input_dirac
+        else:
+            print 'Proper dirac input file does not exist !'
+            print 'self.input_dirac=', self.input_dirac
+            print 'self.input_file_dirac=', self.input_file_dirac
+            sys.exit(-1)
 
-  def set_output_name(self):
-    'Set the output name string to be used later for naming the output file and the work directory'
-    if self.iprint >=5:
-      print '\n set_output_name routine:'
-      print 'self.input_molecule=',self.input_molecule
-      print 'self.input_file_molecule=',self.input_file_molecule
-      print 'self.input_dirac=',self.input_dirac
-      print 'self.input_file_dirac=',self.input_file_dirac
-      print 'len(self.input_molecule),len(self.input_dirac):',len(self.input_molecule),len(self.input_dirac)
-  
-    if len(self.input_molecule) >0 and len(self.input_dirac) >0:
+        if self.iprint >= 5:
+            print 'assigned self.input_file_molecule=', \
+                self.input_file_molecule
+            print 'assigned self.input_file_dirac=', \
+                self.input_file_dirac
 
-      if self.input_file_molecule.find(".mol") != -1:
-        mol_file_stripped=self.input_file_molecule.replace(".mol","",1 )
-        if self.iprint >=7:
-          print '*.mol striped! mol_file_stripped=',mol_file_stripped
-      elif self.input_file_molecule.find(".xyz") != -1:
-        self.xyz_molecule_input = True
-        mol_file_stripped=self.input_file_molecule.replace(".xyz","",1 )
-        if self.iprint >=7:
-          print '*.xyz striped! mol_file_stripped=',mol_file_stripped
-      else: # no suffix, never mind
-        mol_file_stripped=self.input_file_molecule
-        #print 'The molecule input file does not contain recommended suffix, never mind...'
-      if self.iprint >=5:
-        print 'mol_file_stripped=',mol_file_stripped
+    def set_output_name(self):
+        '''Set the output name string to be used later for naming the output file and the work directory'''
 
-      if self.input_file_dirac.find(".inp") != -1:
-        inp_file_stripped=self.input_file_dirac.replace(".inp","",1)
-      else: # no suffix, continuing..
-        print 'The dirac input file does not contain recommended suffix, never mind...'
-        inp_file_stripped=self.input_file_dirac
-      if self.iprint >=5:
-        print 'inp_file_stripped=',inp_file_stripped
+        if self.iprint >= 5:
+            print '\n set_output_name routine:'
+            print 'self.input_molecule=', self.input_molecule
+            print 'self.input_file_molecule=', self.input_file_molecule
+            print 'self.input_dirac=', self.input_dirac
+            print 'self.input_file_dirac=', self.input_file_dirac
+            print 'len(self.input_molecule),len(self.input_dirac):', \
+                len(self.input_molecule), len(self.input_dirac)
 
-      if mol_file_stripped == inp_file_stripped:
-        self.output_name=mol_file_stripped
-      else:
+        if len(self.input_molecule) > 0 and len(self.input_dirac) > 0:
+
+            if self.input_file_molecule.find('.mol') != -1:
+                mol_file_stripped = \
+                    self.input_file_molecule.replace('.mol', '', 1)
+                if self.iprint >= 7:
+                    print '*.mol striped! mol_file_stripped=', \
+                        mol_file_stripped
+            elif self.input_file_molecule.find('.xyz') != -1:
+                self.xyz_molecule_input = True
+                mol_file_stripped = \
+                    self.input_file_molecule.replace('.xyz', '', 1)
+                if self.iprint >= 7:
+                    print '*.xyz striped! mol_file_stripped=', \
+                        mol_file_stripped
+            else:
+
+            # no suffix, never mind
+
+                mol_file_stripped = self.input_file_molecule
+
+        # print 'The molecule input file does not contain recommended suffix, never mind...'
+
+            if self.iprint >= 5:
+                print 'mol_file_stripped=', mol_file_stripped
+
+            if self.input_file_dirac.find('.inp') != -1:
+                inp_file_stripped = self.input_file_dirac.replace('.inp'
+                        , '', 1)
+            else:
+
+            # no suffix, continuing..
+
+                print 'The dirac input file does not contain recommended suffix, never mind...'
+                inp_file_stripped = self.input_file_dirac
+            if self.iprint >= 5:
+                print 'inp_file_stripped=', inp_file_stripped
+
+            if mol_file_stripped == inp_file_stripped:
+                self.output_name = mol_file_stripped
+            else:
+
         # set proper output file structure
-        self.output_name=inp_file_stripped+"_"+mol_file_stripped
 
-    elif self.full_restart:
+                self.output_name = inp_file_stripped + '_' \
+                    + mol_file_stripped
+        elif self.full_restart:
+
       # todo: verify *.tgz ?
-      self.output_name=self.archive_name.replace(".tgz","",1)   
-    else: # assign default name
-      self.output_name="dirac_output."+str(os.getpid())
+
+            self.output_name = self.archive_name.replace('.tgz', '', 1)
+        else:
+
+          # assign default name
+
+            self.output_name = 'dirac_output.' + str(os.getpid())
 
     # control printout
-    if self.iprint >=5:
-      print 'self.input_molecule=',self.input_molecule
-      print 'XYZ molecule input ?  : ',self.xyz_molecule_input 
-      print 'self.input_dirac=',self.input_dirac
-      print 'set self.output_name=',self.output_name
 
-  def copy_files(self):
-    'copies file from the home directory to the work directory'
-    def copy_single_file(file_name):
-      full_file_name=self.input_directory+"/"+file_name
-      if os.path.isfile(full_file_name):
-        file_name_wrkdir=self.workdir+"/"+file_name
-        self.copy_file(full_file_name,file_name_wrkdir)
-      else :
-        print 'File:',file_name,' you want to copy does not exist !'
-        sys.exit(-1)
+        if self.iprint >= 5:
+            print 'self.input_molecule=', self.input_molecule
+            print 'XYZ molecule input ?  : ', self.xyz_molecule_input
+            print 'self.input_dirac=', self.input_dirac
+            print 'set self.output_name=', self.output_name
 
-    self.create_workdir()
+    def copy_files(self):
+        '''copies file from the home directory to the work directory'''
+
+        def copy_single_file(file_name):
+            full_file_name = self.input_directory + '/' + file_name
+            if os.path.isfile(full_file_name):
+                file_name_wrkdir = self.workdir + '/' + file_name
+                self.copy_file(full_file_name, file_name_wrkdir)
+            else:
+                print 'File:', file_name, \
+                    ' you want to copy does not exist !'
+                sys.exit(-1)
+
+        self.create_workdir()
 
     # copy dirac.x executable if wanted
-    self.copy_file(self.dirac_exe,self.workdir+'/'+'dirac.x')
+
+        self.copy_file(self.dirac_exe, self.workdir + '/' + 'dirac.x')
 
     # the existence of self.input_file molecule,self.input_file_dirac is verified
-    if self.xyz_molecule_input == True:
-        self.copy_file(self.input_file_molecule,self.workdir+'/'+'MOLECULE.XYZ')
-    else:
-        self.copy_file(self.input_file_molecule,self.workdir+'/'+'MOLECULE.MOL')
 
-    self.copy_file(self.input_file_dirac,self.workdir+'/'+'DIRAC.INP')
+        if self.xyz_molecule_input == True:
+            self.copy_file(self.input_file_molecule, self.workdir + '/'
+                           + 'MOLECULE.XYZ')
+        else:
+            self.copy_file(self.input_file_molecule, self.workdir + '/'
+                           + 'MOLECULE.MOL')
 
-    if self.full_restart:
-      copy_single_file(self.archive_name)
-      archive_workdir=self.workdir+'/'+self.archive_name
-      unpack_command='tar --directory '+self.workdir+' -xvf '+archive_workdir
-      print 'Unpacking archive file in the work-directory, command ',unpack_command
-      os.system(unpack_command)
+        self.copy_file(self.input_file_dirac, self.workdir + '/'
+                       + 'DIRAC.INP')
 
-    if self.put_files is not None:
-      files_to_put=self.put_files.split()
-      if self.iprint >= 4:
-        print 'self.put_files=',self.put_files
-        print '  files_to_put=',files_to_put
-      for file_name in files_to_put:
-        copy_single_file(file_name)
+        if self.full_restart:
+            copy_single_file(self.archive_name)
+            archive_workdir = self.workdir + '/' + self.archive_name
+            unpack_command = 'tar --directory ' + self.workdir \
+                + ' -xvf ' + archive_workdir
+            print 'Unpacking archive file in the work-directory, command ', \
+                unpack_command
+            os.system(unpack_command)
+
+        if self.put_files is not None:
+            files_to_put = self.put_files.split()
+            if self.iprint >= 4:
+                print 'self.put_files=', self.put_files
+                print '  files_to_put=', files_to_put
+            for file_name in files_to_put:
+                copy_single_file(file_name)
 
     # copies DFCOEF into workdir
-    if self.incmo:
-      file_name="DFCOEF"
-      copy_single_file(file_name)
+
+        if self.incmo:
+            file_name = 'DFCOEF'
+            copy_single_file(file_name)
 
     # copies DFFCK2 into workdir
-    if self.infock:
-      file_name="DFFCK2"
-      copy_single_file(file_name)
 
-  def distribute_work_dir(self):
-    '''This routine is called when local disks are selected
+        if self.infock:
+            file_name = 'DFFCK2'
+            copy_single_file(file_name)
+
+    def distribute_work_dir(self):
+        '''This routine is called when local disks are selected
     for parallel calculations. The list of machines available to dirac.x'''
-    if self.iprint>=5:
-      print 'distribute_work_dir'
-      print 'assigned machine file=',self.machinefile
+
+        if self.iprint >= 5:
+            print 'distribute_work_dir'
+            print 'assigned machine file=', self.machinefile
 
     # check if this is an enviromental variable with "$" - than get its content
-    if self.machinefile[0]=="$":
-      machinefile_temp=self.machinefile[1:len(self.machinefile)]
-      machinefile_content=''
-      try:
-        machinefile_content=os.environ[machinefile_temp]
-      except:
-        print 'The ',self.machinefile,' enviroment variable for machinefile not active (no batch system).'
-      if self.iprint>=4:
-        print 'machinefile enviromental variable points to',machinefile_content
-    else:  # true file, no pointing variable
-      machinefile_content=self.machinefile 
+
+        if self.machinefile[0] == '$':
+            machinefile_temp = self.machinefile[1:len(self.machinefile)]
+            machinefile_content = ''
+            try:
+                machinefile_content = os.environ[machinefile_temp]
+            except:
+                print 'The ', self.machinefile, \
+                    ' enviroment variable for machinefile not active (no batch system).'
+            if self.iprint >= 4:
+                print 'machinefile enviromental variable points to', \
+                    machinefile_content
+        else:
+
+           # true file, no pointing variable
+
+            machinefile_content = self.machinefile
 
     # identify nodes in the file
-    if os.path.isfile(machinefile_content):
-      print 'machinefile is a true file, reading its content'
-      for line in fileinput.input(machinefile_content):
-        line=line[:-1] 
-        #print 'read line=',line
-        if line != self.master: # append only nodes different from master
-          print 'adding node to the list',line
-          self.nodes.append(line)
+
+        if os.path.isfile(machinefile_content):
+            print 'machinefile is a true file, reading its content'
+            for line in fileinput.input(machinefile_content):
+                line = line[:-1]
+
+        # print 'read line=',line
+
+                if line != self.master:  # append only nodes different from master
+                    print 'adding node to the list', line
+                    self.nodes.append(line)
 
     # ... distribute master workdir over different nodes, "copying $master:$file onto $node:$WRK/."
     # otherwise print message that all cpus are on one machine
-    if self.nodes:
-      print 'copying content of master workdir over nodes '
-      for node in self.nodes:
-        print 'Copying content of ',self.master,' work-directory to the',node
+
+        if self.nodes:
+            print 'copying content of master workdir over nodes '
+            for node in self.nodes:
+                print 'Copying content of ', self.master, \
+                    ' work-directory to the', node
+
         # create working directories on nodes
-        command=self.rsh+' '+node+' "mkdir -p '+self.workdir+' "'
-        if self.iprint>=4:
-          print 'create work dir command:',command
-        os.system(command)
-        for this_file in os.listdir(self.workdir):
-          this_file_full=self.workdir+'/'+this_file
-          command=self.rcp+' '+this_file_full+' '+node+':'+this_file_full 
-          if self.iprint>=0:
-            print 'copying work dir command:',command
-          os.system(command)
-          if self.iprint>=4: # control list of directory
-            os.system(self.rsh+' '+node+' "ls -l '+self.workdir+' "')
-    else:
-      print 'All CPUs are on the master, no distribution of workdir over different nodes.'
 
-  def set_output_file(self):
-    '''Set the name of the output file by using "self.output_name"
+                command = self.rsh + ' ' + node + ' "mkdir -p ' \
+                    + self.workdir + ' "'
+                if self.iprint >= 4:
+                    print 'create work dir command:', command
+                os.system(command)
+                for this_file in os.listdir(self.workdir):
+                    this_file_full = self.workdir + '/' + this_file
+                    command = self.rcp + ' ' + this_file_full + ' ' \
+                        + node + ':' + this_file_full
+                    if self.iprint >= 0:
+                        print 'copying work dir command:', command
+                    os.system(command)
+                    if self.iprint >= 4:  # control list of directory
+                        os.system(self.rsh + ' ' + node + ' "ls -l '
+                                  + self.workdir + ' "')
+        else:
+            print 'All CPUs are on the master, no distribution of workdir over different nodes.'
+
+    def set_output_file(self):
+        '''Set the name of the output file by using "self.output_name"
     which is prepared in set_output_name(self) routine'''
-    if len(self.output_name) > 0 and len(self.output_suffix) > 0:
-      self.output_file=self.output_name+"."+self.output_suffix
-      self.output_file_full=self.input_directory+"/"+self.output_file
-      if self.iprint >= 5:
-        print 'set_output_file: self.output_file=',self.output_file
-    else:
-      print 'can not set output file - some strings not set up !'
-      print 'self.output_name=',self.output_name
-      print 'self.output_suffix=',self.output_suffix
-      sys.exit(-1)
 
-  def set_dirac_environment(self):
-    """export important variables for DIRAC
+        if len(self.output_name) > 0 and len(self.output_suffix) > 0:
+            self.output_file = self.output_name + '.' \
+                + self.output_suffix
+            self.output_file_full = self.input_directory + '/' \
+                + self.output_file
+            if self.iprint >= 5:
+                print 'set_output_file: self.output_file=', \
+                    self.output_file
+        else:
+            print 'can not set output file - some strings not set up !'
+            print 'self.output_name=', self.output_name
+            print 'self.output_suffix=', self.output_suffix
+            sys.exit(-1)
+
+    def set_dirac_environment(self):
+        """export important variables for DIRAC
     TODO: implement for WINDOWS"""
-    """ basis set directory """
-    self.basdir=self.input_directory+":"+self.basdir
-    os.putenv("BASDIR",self.basdir)
 
-    os.putenv('DIRWRK', str(self.max_memory_work_master*1000000))
-    os.putenv('DIRMAX', str(self.max_memory_dynamic*1000000))
+        self.basdir = self.input_directory + ':' + self.basdir
+        os.putenv('BASDIR', self.basdir)
 
-    if self.parallel_run:
-        os.putenv('DIRPAR', '1')
-        os.putenv('DIRNOD', str(self.max_memory_work_slave*1000000))
+        os.putenv('DIRWRK', str(self.max_memory_work_master * 1000000))
+        os.putenv('DIRMAX', str(self.max_memory_dynamic * 1000000))
+
+        if self.parallel_run:
+            os.putenv('DIRPAR', '1')
+            os.putenv('DIRNOD', str(self.max_memory_work_slave
+                      * 1000000))
 
     # Next line is for IBM only but will not hurt other systems
-    os.putenv("XLFRTEOPTS","'namelist=old'")
 
-    if self.iprint >= 5:
-      print "DIRWRK=",os.getenv("DIRWRK")
-      print "BASDIR=",os.getenv('BASDIR')
-      print "IBM stuff, XLFRTEOPTS=",os.getenv('XLFRTEOPTS')
+        os.putenv('XLFRTEOPTS', "'namelist=old'")
 
-  def set_dirac_cmd(self):
-    "set the dirac command to be launched by the system (serial or parallel)"
-    this_dirac_exe=self.workdir+'/dirac.x'
+        if self.iprint >= 5:
+            print 'DIRWRK=', os.getenv('DIRWRK')
+            print 'BASDIR=', os.getenv('BASDIR')
+            print 'IBM stuff, XLFRTEOPTS=', os.getenv('XLFRTEOPTS')
+
+    def set_dirac_cmd(self):
+        '''set the dirac command to be launched by the system (serial or parallel)'''
+
+        this_dirac_exe = self.workdir + '/dirac.x'
 
 #   radovan: if self.parallel_build == False,
 #            then self.parallel_run should be set to False
 #            and only self.parallel_run should be checked
 #            no reason to check both several times
-    if self.parallel_run and self.parallel_build:
+
+        if self.parallel_run and self.parallel_build:
+
       # DIRAC_CMD="$DIRAC_CMD -np $MPI_NPROC -wd $WRK"
       # and/if  $DIRAC_CMD -machinefile $MACH_FILE $DIRAC_CMD
 
       # stefan: first try of a rudimentary correct passing of -wd/-wdir...
-      if self.argument_to_pass_work_dir_to_slaves:
-        self.dirac_cmd=self.mpirun+" -np "+str(self.nr_proc)+" -"+self.argument_to_pass_work_dir_to_slaves+" "+self.workdir+" "
-      else:
-        self.dirac_cmd=self.mpirun+" -np "+str(self.nr_proc)+" "
-      
-      self.dirac_cmd=self.dirac_cmd+this_dirac_exe
-      if self.vg_debug: # valgrind stuff, DIRAC_CMD="$DIRAC_CMD $VALGRIND_TOOL --log-fd=1"
-        self.dirac_cmd=self.dirac_cmd+' '+self.valgrind+' --log-fd=1'
-    else:  # serial run (also in debugger)
-      if self.debug:
-       #TODO: adapt it for Windows
-        #self.dirac_cmd=self.debugger+' '+this_dirac_exe+' | tee '+os.getcwd()+"/"+self.output_file
-        self.dirac_cmd=self.debugger+' '+this_dirac_exe+' | tee ' + self.output_file_full
-      elif self.vg_debug: # set command for valgrid
-      # or: $VALGRIND -v --error-limit=no --leak-check=full --track-origins=yes --show-reachable=yes 
+
+            if self.argument_to_pass_work_dir_to_slaves:
+                self.dirac_cmd = self.mpirun + ' -np ' \
+                    + str(self.nr_proc) + ' -' \
+                    + self.argument_to_pass_work_dir_to_slaves + ' ' \
+                    + self.workdir + ' '
+            else:
+                self.dirac_cmd = self.mpirun + ' -np ' \
+                    + str(self.nr_proc) + ' '
+
+            self.dirac_cmd = self.dirac_cmd + this_dirac_exe
+            if self.vg_debug:  # valgrind stuff, DIRAC_CMD="$DIRAC_CMD $VALGRIND_TOOL --log-fd=1"
+                self.dirac_cmd = self.dirac_cmd + ' ' + self.valgrind \
+                    + ' --log-fd=1'
+        else:
+
+           # serial run (also in debugger)
+
+            if self.debug:
+
+       # TODO: adapt it for Windows
+        # self.dirac_cmd=self.debugger+' '+this_dirac_exe+' | tee '+os.getcwd()+"/"+self.output_file
+
+                self.dirac_cmd = self.debugger + ' ' + this_dirac_exe \
+                    + ' | tee ' + self.output_file_full
+            elif self.vg_debug:
+
+                          # set command for valgrid
+      # or: $VALGRIND -v --error-limit=no --leak-check=full --track-origins=yes --show-reachable=yes
       # serial: DIRAC_CMD="$VALGRIND_TOOL --log-fd=1
-        self.dirac_cmd = self.valgrind + ' --log-fd=1 ' + this_dirac_exe+' | tee ' + self.output_file_full
-      else: # no debug, plain run
-        self.dirac_cmd=this_dirac_exe
+
+                self.dirac_cmd = self.valgrind + ' --log-fd=1 ' \
+                    + this_dirac_exe + ' | tee ' + self.output_file_full
+            else:
+
+            # no debug, plain run
+
+                self.dirac_cmd = this_dirac_exe
 
     # at the end add priority command (either empty or not) #
-    self.dirac_cmd=self.nice_cmd+self.dirac_cmd
 
-    if self.iprint >= 5:
-        print 'set_dirac_cmd: self.dirac_cmd=',self.dirac_cmd
+        self.dirac_cmd = self.nice_cmd + self.dirac_cmd
 
-  def read_makefile_config(self):
-    """Read the Makefile.config to get default values of many variables.
-    Makefile.config file is the storage place for important variables 
+        if self.iprint >= 5:
+            print 'set_dirac_cmd: self.dirac_cmd=', self.dirac_cmd
+
+    def read_makefile_config(self):
+        """Read the Makefile.config to get default values of many variables.
+    Makefile.config file is the storage place for important variables
     -  debugger, profiler, valgrind, mpi-launcher... """
-    if self.iprint >= 5:
-      print 'read_makefile_config: Going to read from Makefile.config:'
+
+        if self.iprint >= 5:
+            print 'read_makefile_config: Going to read from Makefile.config:'
+
     # open and read
-    makefile_config=install_dir+'/'+'Makefile.config'
-    for line in fileinput.input([makefile_config]):
-      line=line[:-1] 
-      if line.find('INSTALL_DIR') != -1:
-          install_dir_temp=os.path.expandvars(line.replace('INSTALL_DIR=',''))
+
+        makefile_config = install_dir + '/' + 'Makefile.config'
+        for line in fileinput.input([makefile_config]):
+            line = line[:-1]
+            if line.find('INSTALL_DIR') != -1:
+                install_dir_temp = \
+                    os.path.expandvars(line.replace('INSTALL_DIR=', ''))
+
           # check if the install-dir is OK
-          if install_dir != install_dir_temp:
-            print 'disgreement with the installation directory !'
-            print 'Makefile.config install_dir_temp=',install_dir_temp,len(install_dir_temp)
-            print '     install_dir=',install_dir,len(install_dir)
-            sys.exit(-1)
-          else:
-            pass
-      elif line.find('SCRATCH_DIR') != -1:
-          scratch_dir_temp=os.path.expandvars(line.replace('SCRATCH_DIR=',''))
-          self.workpath=scratch_dir_temp
-          if not os.path.isdir(self.workpath):
-            print 'NB: the workpath ',self.workpath,' does not exist on this machine.'
-            print 'Running on your own risk (might not create workdir).'
-      elif line.find('DEBUGGER') != -1:
-          debugger_temp=os.path.expandvars(line.replace('DEBUGGER=',''))
-          if os.path.isfile(debugger_temp):
-            self.debugger=debugger_temp
-          else:
-            print 'The debugger from Makefile.config is not existing!'
-            print 'The debugger from Makefile.config=',debugger_temp
-      elif line.find('PROFILER') != -1:
-          profiler_temp=os.path.expandvars(line.replace('PROFILER=',''))
-          if os.path.isfile(profiler_temp):
-            self.profiler=profiler_temp
-          else:
-            print 'The profiler from Makefile.config is not existing!'
-            print 'The profiler from Makefile.config=',profiler_temp
-      elif line.find('VALGRIND') != -1:
-          valgrind_temp=os.path.expandvars(line.replace('VALGRIND=',''))
-          if os.path.isfile(valgrind_temp):
-            self.valgrind=valgrind_temp
-          else:
-            print 'The valgrind from Makefile.config is not existing!'
-            print 'The valgrind from Makefile.config=',valgrind_temp
-      elif line.find('MPIRUN') != -1:
-          mpirun_temp=os.path.expandvars(line.replace('MPIRUN=',''))
-          if os.path.isfile(mpirun_temp):
-            self.mpirun=mpirun_temp
-            self.parallel_build=True
-          else:
-            self.parallel_build=False
-            pass
-      elif line.find('LOCALDISKS') != -1:
-          localdisks_temp=line.replace('LOCALDISKS=','')
-          if localdisks_temp=="yes":
-            self.localdisks=True
-            print 'local disks for parallel calculations'
-      elif line.find('MPI_PASS_WRKDIR_ARGUMENT') != -1:
-          if localdisks_temp=="yes":
-            localdisks_pass_wrkdir_temp=line.replace('MPI_PASS_WRKDIR_ARGUMENT=','')
-            self.argument_to_pass_work_dir_to_slaves=localdisks_pass_wrkdir_temp
-      elif line.find('MACH_FILE') != -1:
-          machinefile_temp=os.path.expandvars(line.replace('MACH_FILE=',''))
-          if len(machinefile_temp) >= 1:
-            self.machinefile=machinefile_temp
-      elif line.find('RCP') != -1:
-          rcp_temp=os.path.expandvars(line.replace('RCP=',''))
-          if os.path.isfile(rcp_temp):
-            self.rcp=rcp_temp
-      elif line.find('RSH') != -1:
-          rsh_temp=os.path.expandvars(line.replace('RSH=',''))
-          if os.path.isfile(rsh_temp):
-            self.rsh=rsh_temp
 
-  def write_into_output(self):
+                if install_dir != install_dir_temp:
+                    print 'disgreement with the installation directory !'
+                    print 'Makefile.config install_dir_temp=', \
+                        install_dir_temp, len(install_dir_temp)
+                    print '     install_dir=', install_dir, \
+                        len(install_dir)
+                    sys.exit(-1)
+                else:
+                    pass
+            elif line.find('SCRATCH_DIR') != -1:
+                scratch_dir_temp = \
+                    os.path.expandvars(line.replace('SCRATCH_DIR=', ''))
+                self.workpath = scratch_dir_temp
+                if not os.path.isdir(self.workpath):
+                    print 'NB: the workpath ', self.workpath, \
+                        ' does not exist on this machine.'
+                    print 'Running on your own risk (might not create workdir).'
+            elif line.find('DEBUGGER') != -1:
+                debugger_temp = \
+                    os.path.expandvars(line.replace('DEBUGGER=', ''))
+                if os.path.isfile(debugger_temp):
+                    self.debugger = debugger_temp
+                else:
+                    print 'The debugger from Makefile.config is not existing!'
+                    print 'The debugger from Makefile.config=', \
+                        debugger_temp
+            elif line.find('PROFILER') != -1:
+                profiler_temp = \
+                    os.path.expandvars(line.replace('PROFILER=', ''))
+                if os.path.isfile(profiler_temp):
+                    self.profiler = profiler_temp
+                else:
+                    print 'The profiler from Makefile.config is not existing!'
+                    print 'The profiler from Makefile.config=', \
+                        profiler_temp
+            elif line.find('VALGRIND') != -1:
+                valgrind_temp = \
+                    os.path.expandvars(line.replace('VALGRIND=', ''))
+                if os.path.isfile(valgrind_temp):
+                    self.valgrind = valgrind_temp
+                else:
+                    print 'The valgrind from Makefile.config is not existing!'
+                    print 'The valgrind from Makefile.config=', \
+                        valgrind_temp
+            elif line.find('MPIRUN') != -1:
+                mpirun_temp = os.path.expandvars(line.replace('MPIRUN='
+                        , ''))
+                if os.path.isfile(mpirun_temp):
+                    self.mpirun = mpirun_temp
+                    self.parallel_build = True
+                else:
+                    self.parallel_build = False
+                    pass
+            elif line.find('LOCALDISKS') != -1:
+                localdisks_temp = line.replace('LOCALDISKS=', '')
+                if localdisks_temp == 'yes':
+                    self.localdisks = True
+                    print 'local disks for parallel calculations'
+            elif line.find('MPI_PASS_WRKDIR_ARGUMENT') != -1:
+                if localdisks_temp == 'yes':
+                    localdisks_pass_wrkdir_temp = \
+                        line.replace('MPI_PASS_WRKDIR_ARGUMENT=', '')
+                    self.argument_to_pass_work_dir_to_slaves = \
+                        localdisks_pass_wrkdir_temp
+            elif line.find('MACH_FILE') != -1:
+                machinefile_temp = \
+                    os.path.expandvars(line.replace('MACH_FILE=', ''))
+                if len(machinefile_temp) >= 1:
+                    self.machinefile = machinefile_temp
+            elif line.find('RCP') != -1:
+                rcp_temp = os.path.expandvars(line.replace('RCP=', ''))
+                if os.path.isfile(rcp_temp):
+                    self.rcp = rcp_temp
+            elif line.find('RSH') != -1:
+                rsh_temp = os.path.expandvars(line.replace('RSH=', ''))
+                if os.path.isfile(rsh_temp):
+                    self.rsh = rsh_temp
+
+    def write_into_output(self):
+        """
+      Write useful info at the beginning of te output file - size of all static allocation, for example
       """
-      Write useful info at the beginning of te output file - size of all static allocation, for example  
-      """
-      self.f.write("DIRAC pam run in "+self.input_directory+"\n")
-      size_command="echo -e 'Size of all static allocations :\c' ; size "+self.dirac_exe+" 2> /dev/null | grep "+self.dirac_exe+" 2> /dev/null | awk '{printf $3/(1024*1024)} ' 2> /dev/null; echo ' MB ' || echo 'can not be determined' "
-      p1=subprocess.Popen(size_command,shell=True,stdin=subprocess.PIPE,stdout=self.f)
 
-  def execute_dirac(self):
-    "Excecute dirac.x, either in serial or parallel mode"
-    def signal_handler(signum, frame):
-      "Controling the time of the execution"
-      print 'DIRAC execution interrupted, because takes longer than the limit of ',self.timeout,' seconds.\n'
-      sys.stdout.flush()
-      raise Error("Takes too long !")
+        self.f.write('DIRAC pam run in ' + self.input_directory + '\n')
+        size_command = \
+            "echo -e 'Size of all static allocations :\c' ; size " \
+            + self.dirac_exe + ' 2> /dev/null | grep ' + self.dirac_exe \
+            + " 2> /dev/null | awk '{printf $3/(1024*1024)} ' 2> /dev/null; echo ' MB ' || echo 'can not be determined' "
+        p1 = subprocess.Popen(size_command, shell=True,
+                              stdin=subprocess.PIPE, stdout=self.f)
 
-    os.chdir(self.workdir)
+    def execute_dirac(self):
+        '''Excecute dirac.x, either in serial or parallel mode'''
 
-    if not self.nobackup:
-      from common import backup_file
-      backup_file(some_file=self.input_directory+"/"+self.output_file,upto=None,iprint=self.iprint)
+        def signal_handler(signum, frame):
+            '''Controling the time of the execution'''
 
-    if self.set_timeout_limit:
-      signal.signal(signal.SIGALRM, signal_handler)
-      signal.alarm(self.timeout)
+            print 'DIRAC execution interrupted, because takes longer than the limit of ', \
+                self.timeout, ' seconds.\n'
+            sys.stdout.flush()
+            raise Error('Takes too long !')
 
-    if len(self.nice_cmd)>1:
-        print '  Lowest process priority set through ',self.nice_cmd
-    print '  DIRAC command  : %s' % self.dirac_cmd
+        os.chdir(self.workdir)
 
-    basis_set_directory_list = self.basdir.split(':')
-    print '  basis set dirs : %s' % basis_set_directory_list[0]
-    if len(basis_set_directory_list) > 1:
-        for i in range(1, len(basis_set_directory_list)):
-            if basis_set_directory_list[i] != '.':
-                print '                   %s' % basis_set_directory_list[i]
-    try:
-      if not self.debug and not self.vg_debug:
-        self.f=open(self.output_file_full,'w',0)
-        # write something into the output file by pam 
-        self.write_into_output()
+        if not self.nobackup:
+            from common import backup_file
+            backup_file(some_file=self.input_directory + '/'
+                        + self.output_file, upto=None,
+                        iprint=self.iprint)
+
+        if self.set_timeout_limit:
+            signal.signal(signal.SIGALRM, signal_handler)
+            signal.alarm(self.timeout)
+
+        if len(self.nice_cmd) > 1:
+            print '  Lowest process priority set through ', \
+                self.nice_cmd
+        print '  DIRAC command  : %s' % self.dirac_cmd
+
+        basis_set_directory_list = self.basdir.split(':')
+        print '  basis set dirs : %s' % basis_set_directory_list[0]
+        if len(basis_set_directory_list) > 1:
+            for i in range(1, len(basis_set_directory_list)):
+                if basis_set_directory_list[i] != '.':
+                    print '                   %s' \
+                        % basis_set_directory_list[i]
+        try:
+            if not self.debug and not self.vg_debug:
+                self.f = open(self.output_file_full, 'w', 0)
+
+        # write something into the output file by pam
+
+                self.write_into_output()
+
         # process the pam
-        p=subprocess.Popen(self.dirac_cmd,shell=True,stdin=subprocess.PIPE,stdout=self.f)
-        print '  pid            : %s ' % p.pid
-        p.wait()
-        return_code = p.returncode
-        self.f.close()
-      elif self.parallel_run==False:
-        print 'debugging dirac in plain serial run...',self.dirac_cmd
-        return_code=os.system(self.dirac_cmd) 
-      else:
-        print '\n...no dirac run ... wrong parallel/debugger combination\n'
+
+                p = subprocess.Popen(self.dirac_cmd, shell=True,
+                        stdin=subprocess.PIPE, stdout=self.f)
+                print '  pid            : %s ' % p.pid
+                p.wait()
+                return_code = p.returncode
+                self.f.close()
+            elif self.parallel_run == False:
+                print 'debugging dirac in plain serial run...', \
+                    self.dirac_cmd
+                return_code = os.system(self.dirac_cmd)
+            else:
+                print '''
+...no dirac run ... wrong parallel/debugger combination
+'''
+
       # zero signal alarm
-      signal.alarm(0)    
-    except:
-      print "Dirac run failed. Going to kill (SIGTERM) its executable process of pid=",p.pid
-      #TODO: clean of all dirac.x pid's
-      os.kill(p.pid, signal.SIGTERM)
-      print '****  Alas ! dirac.x was purposely killed ;)  ****'
-      return_code = signal.SIGTERM
+
+            signal.alarm(0)
+        except:
+            print 'Dirac run failed. Going to kill (SIGTERM) its executable process of pid=', \
+                p.pid
+
+      # TODO: clean of all dirac.x pid's
+
+            os.kill(p.pid, signal.SIGTERM)
+            print '****  Alas ! dirac.x was purposely killed ;)  ****'
+            return_code = signal.SIGTERM
 
     # do the profiling after the execution
-    if self.profile: self.profile_dirac()
-    return return_code
 
-  def profile_dirac(self):
+        if self.profile:
+            self.profile_dirac()
+        return return_code
+
+    def profile_dirac(self):
+
   # profile after the DIRAC execution- we are in the working directory
-    if os.path.isfile(self.f):  
-      print 'profiling...'
-      self.profile_command=self.profiler+' '+self.dirac_exe+' '+self.profiling_file 
-      self.f=open(self.output_file_full,'a',0) # open file for appending
-      p=subprocess.Popen(self.profile_command,shell=True,stdin=subprocess.PIPE,stdout=self.f)
-      self.f.close()
-    else:
-      print
-      print 'no gmon.out found, so no profiling..'
-      print
- 
-  def save_files(self):
-  #------------------------------------------------------------
-  # ... save files in various manners from the work directory 
-  #------------------------------------------------------------
-    from common import backup_file
-    def save_single_file(file_name):
-    # ... save single file
-      full_file_name=self.workdir+"/"+file_name
-      if self.iprint >= 5:
-        print 'file_name=',file_name
-        print 'full_file_name=', full_file_name
-      if os.path.isfile(full_file_name):
-        file_name_home=self.input_directory+"/"+file_name
-        print 'copying ',file_name,' from workdir to the homedir.'
-        # backup file if it's there
-        if not self.nobackup:
-          backup_file(some_file=file_name_home,upto=None,iprint=self.iprint)
-        # finally copy
-        self.copy_file(full_file_name,file_name_home)
-      else:
-        print file_name,' not found in the working directory.' 
 
-    if not self.no_archive:
+        if os.path.isfile(self.f):
+            print 'profiling...'
+            self.profile_command = self.profiler + ' ' + self.dirac_exe \
+                + ' ' + self.profiling_file
+            self.f = open(self.output_file_full, 'a', 0)  # open file for appending
+            p = subprocess.Popen(self.profile_command, shell=True,
+                                 stdin=subprocess.PIPE, stdout=self.f)
+            self.f.close()
+        else:
+            print
+            print 'no gmon.out found, so no profiling..'
+            print
+
+    def save_files(self):
+
+  # ------------------------------------------------------------
+  # ... save files in various manners from the work directory
+  # ------------------------------------------------------------
+
+        from common import backup_file
+
+        def save_single_file(file_name):
+
+    # ... save single file
+
+            full_file_name = self.workdir + '/' + file_name
+            if self.iprint >= 5:
+                print 'file_name=', file_name
+                print 'full_file_name=', full_file_name
+            if os.path.isfile(full_file_name):
+                file_name_home = self.input_directory + '/' + file_name
+                print 'copying ', file_name, \
+                    ' from workdir to the homedir.'
+
+        # backup file if it's there
+
+                if not self.nobackup:
+                    backup_file(some_file=file_name_home, upto=None,
+                                iprint=self.iprint)
+
+        # finally copy
+
+                self.copy_file(full_file_name, file_name_home)
+            else:
+                print file_name, ' not found in the working directory.'
+
+        if not self.no_archive:
+
       # set name of the archive file; TODO: Windows packing adaptation
-      archive_name=self.output_name+".tgz"
-      print '  creating archive file ',archive_name
-      archive_full_name=self.input_directory+"/"+archive_name
+
+            archive_name = self.output_name + '.tgz'
+            print '  creating archive file ', archive_name
+            archive_full_name = self.input_directory + '/' \
+                + archive_name
 
       # select existing files in self.archive_files for the archive
-      existing_archive_files=''
-      for archfile in self.archive_files:
-        if os.path.isfile(archfile):
-          existing_archive_files=existing_archive_files+' '+archfile
-      if self.iprint >= 5:
-        print 'existing archive files:',existing_archive_files
 
-      # backup 
-      if not self.nobackup:
-         backup_file(some_file=archive_full_name,upto=None,iprint=self.iprint)
-      archive_command='tar c '+existing_archive_files+' | gzip > '+archive_full_name
+            existing_archive_files = ''
+            for archfile in self.archive_files:
+                if os.path.isfile(archfile):
+                    existing_archive_files = existing_archive_files \
+                        + ' ' + archfile
+            if self.iprint >= 5:
+                print 'existing archive files:', existing_archive_files
+
+      # backup
+
+            if not self.nobackup:
+                backup_file(some_file=archive_full_name, upto=None,
+                            iprint=self.iprint)
+            archive_command = 'tar c ' + existing_archive_files \
+                + ' | gzip > ' + archive_full_name
+
       # own packing (Linux)
-      os.system(archive_command)
+
+            os.system(archive_command)
 
     # take care of the rest - get files from workdir to home dir
-    if self.get_files is not None:
-      files_to_get = self.get_files.split()
-      if self.iprint >= 4:
-        print 'self.get_files=',self.get_files
-        print '  files_to_get=',files_to_get
-      for file_name in files_to_get:
-        save_single_file(file_name)
+
+        if self.get_files is not None:
+            files_to_get = self.get_files.split()
+            if self.iprint >= 4:
+                print 'self.get_files=', self.get_files
+                print '  files_to_get=', files_to_get
+            for file_name in files_to_get:
+                save_single_file(file_name)
 
     # DFCOEF
-    if self.outcmo:
-      file_name="DFCOEF"
-      save_single_file(file_name)
+
+        if self.outcmo:
+            file_name = 'DFCOEF'
+            save_single_file(file_name)
 
     # DFFCK2
-    if self.outfock:
-      file_name="DFFCK2"
-      save_single_file(file_name)
 
-  def remove_work_dir(self):
+        if self.outfock:
+            file_name = 'DFFCK2'
+            save_single_file(file_name)
+
+    def remove_work_dir(self):
+
   #
   # Remove working directory
   #
-    self.remove_workdir()
-    # take care of individual nodes if parallel run
-    if self.nodes:
-      for this_node in self.nodes:
-        sys.stdout.flush()
-        print 'content of the workdir, slave node ',this_node,':',self.workdir 
-        command=self.rsh+' '+this_node+' "ls -l '+self.workdir+' "'
-        os.system(command)
-        sys.stdout.flush()
-        print ' Total size of the slave node work directory:\c'
-        command=self.rsh+' '+this_node+' "du -h -s '+self.workdir+' "' 
-        os.system(command)
-        sys.stdout.flush()
-        print '  Info on the disk space usage on the slave node:'
-        command=self.rsh+' '+this_node+' "df -h  ."' 
-        os.system(command)
-        # finally removing node content
-        command=self.rsh+' '+this_node+' "rm -fr  '+self.workdir+' "'
-        os.system(command)
-        print 'Work directory on slave node', this_node,':',self.workdir,' deleted.'
-        sys.stdout.flush()
 
-  def print_header(self):
-    from common import get_username,get_hostname,get_hostname_ip
-    self.master=get_hostname()
+        self.remove_workdir()
+
+    # take care of individual nodes if parallel run
+
+        if self.nodes:
+            for this_node in self.nodes:
+                sys.stdout.flush()
+                print 'content of the workdir, slave node ', this_node, \
+                    ':', self.workdir
+                command = self.rsh + ' ' + this_node + ' "ls -l ' \
+                    + self.workdir + ' "'
+                os.system(command)
+                sys.stdout.flush()
+                print ' Total size of the slave node work directory:\c'
+                command = self.rsh + ' ' + this_node + ' "du -h -s ' \
+                    + self.workdir + ' "'
+                os.system(command)
+                sys.stdout.flush()
+                print '  Info on the disk space usage on the slave node:'
+                command = self.rsh + ' ' + this_node + ' "df -h  ."'
+                os.system(command)
+
+        # finally removing node content
+
+                command = self.rsh + ' ' + this_node + ' "rm -fr  ' \
+                    + self.workdir + ' "'
+                os.system(command)
+                print 'Work directory on slave node', this_node, ':', \
+                    self.workdir, ' deleted.'
+                sys.stdout.flush()
+
+    def print_header(self):
+        from common import get_username, get_hostname, get_hostname_ip
+        self.master = get_hostname()
+
 #   radovan: if self.parallel_build == False,
 #            then self.parallel_run should be set to False
 #            and only self.parallel_run should be checked
 #            no reason to check both several times
-    if self.parallel_run and self.parallel_build:
-      dirac_run = "parallel"
-    else:
-      dirac_run = "serial"
-    print 
-    print '  output from the dirac python script' 
-    print 
-    print "  user           :", get_username() 
-    print "  host           :", get_hostname() 
-    print "  ip             :", get_hostname_ip() 
-    print "  date and time  :", datetime.datetime.now() 
-    print "  pam command    :", self.pam_command 
-    print "  pam args       :", ' '.join(sys.argv[1:])
-    print "  input dir      :", self.input_directory 
-    print "  scratch dir    :", self.workdir 
-    print "  output file    :", self.output_file 
-    print "  DIRAC run      :", dirac_run
 
-    if self.set_timeout_limit:
-      print "  Allowed runtime:",self.timeout,' seconds. Killing afterwards.'
-    print
+        if self.parallel_run and self.parallel_build:
+            dirac_run = 'parallel'
+        else:
+            dirac_run = 'serial'
+        print
+        print '  output from the dirac python script'
+        print
+        print '  user           :', get_username()
+        print '  host           :', get_hostname()
+        print '  ip             :', get_hostname_ip()
+        print '  date and time  :', datetime.datetime.now()
+        print '  pam command    :', self.pam_command
+        print '  pam args       :', ' '.join(sys.argv[1:])
+        print '  input dir      :', self.input_directory
+        print '  scratch dir    :', self.workdir
+        print '  output file    :', self.output_file
+        print '  DIRAC run      :', dirac_run
 
-    # warning message on # of proc >1 
-    if not self.parallel_build and int(self.nr_proc) >= 1:
-      print 'This is serial run (no or wrong MPIRUN assigned), the flag --mpi=',self.nr_proc,' has no meaning.'
-      print
-    
-    sys.stdout.flush()
+        if self.set_timeout_limit:
+            print '  Allowed runtime:', self.timeout, \
+                ' seconds. Killing afterwards.'
+        print
+
+    # warning message on # of proc >1
+
+        if not self.parallel_build and int(self.nr_proc) >= 1:
+            print 'This is serial run (no or wrong MPIRUN assigned), the flag --mpi=', \
+                self.nr_proc, ' has no meaning.'
+            print
+
+        sys.stdout.flush()
+
 
 class pam_run(pam_enviroment):
-  def __init__(self):
-    self.pam_variables=pam_enviroment()
-    append_dirac_py_modules(install_dir)
 
-  def perform(self):
-    self.pam_variables.read_makefile_config()
-    self.pam_variables.process_pam_arguments()
-    self.pam_variables.set_output_file()
-    self.pam_variables.print_header()
-    self.pam_variables.copy_files()
-    if self.pam_variables.parallel_run and self.pam_variables.localdisks:
-      self.pam_variables.distribute_work_dir()
-    self.pam_variables.set_dirac_environment()
-    self.pam_variables.set_dirac_cmd()
-    return_code = self.pam_variables.execute_dirac()
-    self.pam_variables.save_files()
-    self.pam_variables.remove_work_dir()
-    self.exit_function(return_code)
+    def __init__(self):
+        self.pam_variables = pam_enviroment()
+        append_dirac_py_modules(install_dir)
+
+    def perform(self):
+        self.pam_variables.read_makefile_config()
+        self.pam_variables.process_pam_arguments()
+        self.pam_variables.set_output_file()
+        self.pam_variables.print_header()
+        self.pam_variables.copy_files()
+        if self.pam_variables.parallel_run \
+            and self.pam_variables.localdisks:
+            self.pam_variables.distribute_work_dir()
+        self.pam_variables.set_dirac_environment()
+        self.pam_variables.set_dirac_cmd()
+        return_code = self.pam_variables.execute_dirac()
+        self.pam_variables.save_files()
+        self.pam_variables.remove_work_dir()
+        self.exit_function(return_code)
+
 
 def main(*args):
-   dirac_run = pam_run()
-   dirac_run.perform()
+    dirac_run = pam_run()
+    dirac_run.perform()
+
 
 if __name__ == '__main__':
-   sys.exit(main(*sys.argv))
+    sys.exit(main(*sys.argv))
