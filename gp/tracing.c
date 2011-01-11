@@ -120,12 +120,26 @@ void get_traceback_info_(enum allowedActions *action, char *fstring, int *fsize)
 // default string
          if ( size > i )
          {
-            retrieve_symbol(symbolName,symbol_name,strings[i]);
+//
+// we will verify whether or not the cleaned-up symbol does start with alloc or
+// dealloc; if it does, it is still an internal routine, so we go for the next symbol
+// down the stack until that is not the case, so the resulting symbol is that of
+// the caller to alloc/dealloc. this was necessary to make it find the correct
+// caller, even if the compiler (does/does not) inline code (something that
+// would mess up the caller's position on the call stack, since it was taken to always be
+// i=3 before) 
+//
+            for (j = i; j < size-i; j++)
+            {
+               retrieve_symbol(symbolName,symbol_name,strings[j]);
+               if ( !(strncmp("alloc",symbol_name,5) == 0 || strncmp("dealloc",symbol_name,7) == 0) )
+                  break;
+            }
             print_trace_to_string(symbol_name,fstring,*fsize);
          }
          else
             print_trace_to_string(safe,fstring,*fsize);
-         
+
       }
       else if ( *action == printPrettyTrace )
       {
