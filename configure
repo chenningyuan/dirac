@@ -2345,8 +2345,8 @@ get_cc_flags(){
     c_opt="-g -O3 -ip -w"
     c_safe="-g -w"
     c_opt_1="-O1 -ip"
-    c_opt_1="-O2 -ip"
-    c_opt_1="-O3 -ip"
+    c_opt_2="-O2 -ip"
+    c_opt_3="-O3 -ip"
     C_check_flags="-Wcheck -fpstkchk -fstack-security-check" # 
     C_profile="-pg" 
     ;;
@@ -2522,7 +2522,6 @@ case $machine in
          if [ "$localdisks" = "no" ]; then
             cpp_f90="$cpp_f90 -DVAR_PFS"
          fi
-
       case $os in
          gnu* )
             opt='-g -O3 -qstrict -qextname -q64'
