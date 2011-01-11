@@ -72,9 +72,9 @@ FTNCHEK_FLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet
 .F.s:
 	$(F77) $(F77FLAGS_SAFE) -c -o $*.o $*.F > $*.s
 .F.r:
-	$(F77) $(FFLAGS_CHECK) $(F77FLAGS_SAFE) -c -o $*.o $*.F   > $*.r
+	$(F77) $(FFLAGS_CHECK) $(F77FLAGS)  -c -o $*.o $*.F   > $*.r
 .F.p:
-	$(F77) $(FFLAG_PROFILE) $(F77FLAGS_SAFE) -c -o $*.o $*.F > $*.p
+	$(F77) $(FFLAG_PROFILE) $(F77FLAGS) -c -o $*.o $*.F > $*.p
 .F.i:
 	$(F77) $(FPP_FLAGS) -E $*.F > $*.i
 
@@ -82,24 +82,24 @@ FTNCHEK_FLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet
 	ftnchek $(FTNCHEK_FLAGS) $*.i > $*.fc
 
 .F90.opt:
-	$(F90) $(F77FLAGS_OPT_3)  $(F90FLAGS_SAFE) -c -o $*.o $*.F90  > $*.opt
+	$(F90) $(F77FLAGS_OPT_3) $(F90FLAGS_SAFE) -c -o $*.o $*.F90  > $*.opt
 .F90.s:
 	$(F90) $(F90FLAGS_SAFE) -c -o $*.o $*.F90  > $*.s
 .F90.r:
-	$(F90) $(FFLAGS_CHECK) $(F90FLAGS_SAFE) -c -o $*.o $*.F90  > $*.r
+	$(F90) $(FFLAGS_CHECK) $(F90FLAGS) -c -o $*.o $*.F90  > $*.r
 .F90.p:
-	$(F90) $(FFLAG_PROFILE) $(F90FLAGS_SAFE) -c -o $*.o $*.F90  > $*.p
+	$(F90) $(FFLAG_PROFILE) $(F90FLAGS) -c -o $*.o $*.F90  > $*.p
 .F90.i:
 	$(F90) $(FPP_FLAGS) -E $*.F90 > $*.i
 
 .f90.opt:
-	$(F90) $(F77FLAGS_OPT_3)  $(F90FLAGS_SAFE) -c -o $*.o $*.f90  > $*.opt
+	$(F90) $(F77FLAGS_OPT_3) $(F90FLAGS_SAFE) -c -o $*.o $*.f90  > $*.opt
 .f90.s:
 	$(F90) $(F90FLAGS_SAFE) -c -o $*.o $*.f90  > $*.s
 .f90.r:
-	$(F90) $(FFLAGS_CHECK) $(F90FLAGS_SAFE) -c -o $*.o $*.f90  > $*.r
+	$(F90) $(FFLAGS_CHECK) $(F90FLAGS) -c -o $*.o $*.f90  > $*.r
 .f90.p:
-	$(F90) $(FFLAG_PROFILE) $(FFLAGS_SAFE) -c -o $*.o $*.f90  > $*.p
+	$(F90) $(FFLAG_PROFILE) $(F90FLAGS) -c -o $*.o $*.f90  > $*.p
 .f90.i:
 	$(F90) $(FPP_FLAGS) -E $*.f90  > $*.i
 
@@ -108,9 +108,9 @@ FTNCHEK_FLAGS=-nopure -nopretty -nocommon -nousage -noarray -notruncation -quiet
 .c.s:
 	$(CC) $(CFLAGS_SAFE) -c -o $*.o $*.c > $*.s
 .c.r:
-	$(CC) $(CFLAGS_CHECK) $(CFLAGS_SAFE) -c -o $*.o $*.c > $*.r
+	$(CC) $(CFLAGS_CHECK) $(CFLAGS) -c -o $*.o $*.c > $*.r
 .c.p:
-	$(CC) $(CFLAG_PROFILE) $(CFLAGS_SAFE) -c -o $*.o $*.c > $*.p
+	$(CC) $(CFLAG_PROFILE) $(CFLAGS) -c -o $*.o $*.c > $*.p
 .c.i:
 	$(CC) $(CPP_FLAGS) -E $*.c > $*.i
 
@@ -172,15 +172,6 @@ ifeq ($(SAFE_FLAGS_MODE),NO) # check only if no safe-flags compilation
 
 ### TODO: these individual files have to be supplied with make-if-directives to specify on which 
 ### compilers/architectures there is a need of the lower/no level of optimization
-
-ifeq (-DVAR_GFORTRAN, $(findstring -DVAR_GFORTRAN, $(FPP_FLAGS) ))
-#miro: bug found for ompi-gfortran 4.4.5 (ILP64), test: mp2_properties
-# probably this is an OpenMPI-Gfortran related optimization bug rather then a real bug in the code
-#
-relccsd/ccrpa.o :  relccsd/ccrpa.F
-	@echo " relccsd/ccrpa.F compilation with 3nd level (of 3) optimization for gfortran"
-	$(F77) $(F77FLAGS_OPT_3) $(F77FLAGS_SAFE) -c -o $*.o $<
-endif
 
 pdpack/dlamch.o: pdpack/dlamch.F
 	@echo " pdpack/dlamch.F compilation with 1st level (of 3) optimization"
