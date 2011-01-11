@@ -5592,7 +5592,7 @@ C***********************************************************************
       LOGICAL D12, D23, MAGOUT1,MAGOUT2,MAGOUT3
       DIMENSION WRK(3), IWRK(3), AXES(3,3), PVAL(6),PVAL1(6),
      &         PVAL2(6),DIASUSC(3,3),PARSUS(3,3)
-      DIMENSION SUSREL_EP(3,3,2),SUSDIA_EX(3,3), EXPVAL_NS(6)
+      DIMENSION SUSREL_EP(3,3,2),SUSDIA_EX(3,3), EXPVAL_NS(9)
       CHARACTER*6 ABC(3)
       CHARACTER*1 JCA,JCB
       INTEGER ICONVXYZ
@@ -5664,9 +5664,9 @@ C         SUSDIA_EX(IPTAX(I,2),IPTAX(J,2)) = -D1*EXPVAL(IJ)
 
       ELSE IF (LONDON) THEN 
 C ... accumulate one-electron expectation values into SUSDIA
-C................................................................
+C.......................................................................................
 C   IPDSUSC(1-6)...pqRM2H1, IPDSUSC(7-12)...pqRM2H2, IPDSUSC(13-18)...pqRM3H3, 
-C   IPDSUSC(19-27_...pqRDUSLL, IPDSUSC(28-33)...pqRDSUSNL, IPDSUSC(34-39)...pqSUSCGO
+C   IPDSUSC(19-27)...pqRDUSLL, IPDSUSC(28-33)...pqRDSUSNL, IPDSUSC(34-39)...pqSUSCGO
 C
         CALL DZERO(SUSDIA,9)
         IJ = 0
