@@ -20,6 +20,10 @@
 #                                  foo = "bar" + oof # easy to read
 #         3. ###please no banner comments###
 #            # one hash is enough
+#         4. pleas wrap long lines
+#            my screen can do more than 80 characters, too,
+#            but very often i want to compare files side by side
+#            and then long lines are very annoying
 
 import os
 import pwd
