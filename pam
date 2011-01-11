@@ -928,6 +928,10 @@ class pam_enviroment:
     "set the dirac command to be launched by the system (serial or parallel)"
     this_dirac_exe=self.workdir+'/dirac.x'
 
+#   radovan: if self.parallel_build == False,
+#            then self.parallel_run should be set to False
+#            and only self.parallel_run should be checked
+#            no reason to check both several times
     if self.parallel_run and self.parallel_build:
       # DIRAC_CMD="$DIRAC_CMD -np $MPI_NPROC -wd $WRK"
       # and/if  $DIRAC_CMD -machinefile $MACH_FILE $DIRAC_CMD
@@ -1204,6 +1208,10 @@ class pam_enviroment:
   def print_header(self):
     from common import get_username,get_hostname,get_hostname_ip
     self.master=get_hostname()
+#   radovan: if self.parallel_build == False,
+#            then self.parallel_run should be set to False
+#            and only self.parallel_run should be checked
+#            no reason to check both several times
     if self.parallel_run and self.parallel_build:
       dirac_run = "parallel"
     else:
