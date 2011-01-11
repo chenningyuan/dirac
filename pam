@@ -1104,7 +1104,7 @@ class pam_enviroment:
         self.f.close()
       elif self.parallel_run==False:
         print 'debugging dirac in plain serial run...',self.dirac_cmd
-        rc=os.system(self.dirac_cmd) # 
+        return_code=os.system(self.dirac_cmd) 
       else:
         print '\n...no dirac run ... wrong parallel/debugger combination\n'
       # zero signal alarm
