@@ -1962,13 +1962,22 @@ C
      &                BCPVC(1,I) ,1,NBCVC,0,
      &                BEBUF(1,1),BPBUF(1,1),BCBUF,1,0,
      &                IBTYP,WORK,KFREE,LFREE)
-
+CTROND
+          WRITE(6,*) '* S[2]X(+) :'
+          DO K = 1,NBEVC
+            WRITE(6,*) BEPVC(K,II),BEBUF(K,1)
+          ENDDO
           IF(DAMPFREQ.NE.D0) THEN
             CALL XRSTVC(BEPVC(1,II+1),1,NBEVC,0,
      &                  BPPVC(1,II+1),1,NBPVC,0,
      &                  BCPVC(1,I)   ,1,NBCVC,0,
      &                  BEBUF(1,2),BPBUF(1,2),BCBUF,1,0,
      &                  IBTYP,WORK,KFREE,LFREE)
+CTROND
+          WRITE(6,*) '* S[2]X(+) :',DAMPFREQ
+          DO K = 1,NBEVC
+            WRITE(6,*) BEPVC(K,II+1),BEBUF(K,2)
+          ENDDO
           ENDIF
 C
 C         Accumulate T(+) = S[2]X(-) in b(+)
@@ -1979,6 +1988,11 @@ C
      &                BCMVC(1,I) ,1,NBCVC,0,
      &                BEPVC(1,II),BPPVC(1,II),BCPVC(1,I),1,0,
      &                IBTYP,WORK,KFREE,LFREE)
+CTROND
+          WRITE(6,*) '* S[2]X(+) :'
+          DO K = 1,NBEVC
+            WRITE(6,*) BEMVC(K,II),BEPVC(K,II)
+          ENDDO
 
           IF(DAMPFREQ.NE.D0) THEN
             CALL XRSTVC(BEMVC(1,II+1),1,NBEVC,0,
@@ -1987,6 +2001,11 @@ C
      &                  BEPVC(1,II+1),BPPVC(1,II+1),BCPVC(1,I),1,0,
      &                  IBTYP,WORK,KFREE,LFREE)
           ENDIF
+CTROND
+          WRITE(6,*) '* S[2]X(+) :',DAMPFREQ
+          DO K = 1,NBEVC
+            WRITE(6,*) BEMVC(K,II+1),BEPVC(K,II+1)
+          ENDDO
 C
 C         Scale T = S[2]X with negative frequency
 C         ---------------------------------------
@@ -5435,15 +5454,13 @@ C
       IF(IMFREQ) FFAC = DM1
       IF(DAMPFREQ.NE.D0) THEN
 C  Take care of Complex case
+        CALL DCOPY(NVARQ*NDAMP,          TMVEC(1,1),1,BBUF,1)
         CALL DSCAL(NVARQ*NDAMP,    -FREQ,TMVEC(1,1),1)
         CALL DAXPY(NVARQ      , DAMPFREQ, BBUF(1,2),1,TMVEC(1,1),1)
         CALL DAXPY(NVARQ      ,-DAMPFREQ, BBUF(1,1),1,TMVEC(1,2),1)
-        CALL DCOPY(NVARQ*NDAMP,          TPVEC(1,1),1,BBUF,1)
 CPP: error in the first line of eq (21) of JCP133,064105,2010
-C        CALL DSCAL(NVARQ      ,     FREQ,TPVEC(1,1),1)
-C        CALL DSCAL(NVARQ      ,    -FREQ,TPVEC(1,2),1)
+        CALL DCOPY(NVARQ*NDAMP,          TPVEC(1,1),1,BBUF,1)
         CALL DSCAL(NVARQ*NDAMP,    -FREQ,TPVEC(1,1),1)
-
         CALL DAXPY(NVARQ      , DAMPFREQ, BBUF(1,2),1,TPVEC(1,1),1)
         CALL DAXPY(NVARQ      ,-DAMPFREQ, BBUF(1,1),1,TPVEC(1,2),1)
       ELSE
