@@ -964,11 +964,12 @@ class pam_enviroment:
     else:  # serial run (also in debugger)
       if self.debug:
        #TODO: adapt it for Windows
-        self.dirac_cmd=self.debugger+' '+this_dirac_exe+' | tee '+os.getcwd()+"/"+self.output_file
+        #self.dirac_cmd=self.debugger+' '+this_dirac_exe+' | tee '+os.getcwd()+"/"+self.output_file
+        self.dirac_cmd=self.debugger+' '+this_dirac_exe+' | tee ' + self.output_file_full
       elif self.vg_debug: # set command for valgrid
       # or: $VALGRIND -v --error-limit=no --leak-check=full --track-origins=yes --show-reachable=yes 
       # serial: DIRAC_CMD="$VALGRIND_TOOL --log-fd=1
-        self.dirac_cmd = self.valgrind + ' --log-fd=1 ' + this_dirac_exe
+        self.dirac_cmd = self.valgrind + ' --log-fd=1 ' + this_dirac_exe+' | tee ' + self.output_file_full
       else: # no debug, plain run
         self.dirac_cmd=this_dirac_exe
 
