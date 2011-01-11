@@ -387,7 +387,7 @@ contains
     end if
 
 !radovan: not documented on wiki, code not perfectly tested
-    if (kw_matches(word, '.LAMBDA')) then
+    if (kw_matches(word, '.OVLDIA')) then
       dirac_cfg_overlap_diagnostic = .true.
     end if
 
