@@ -75,9 +75,9 @@ C
           DO K =1, NFSYM
             NGSSH(K,I) = 0
             IF(J.EQ.1) THEN
-              NGSSHK(K,1,I) = 0
+              NGSSHK(K,I,1) = 0
             ELSE
-              NGSSHK(K,2,I) = 0
+              NGSSHK(K,I,2) = 0
             END IF
           END DO
         END DO
