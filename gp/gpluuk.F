@@ -195,20 +195,7 @@ C
 #if  defined (INT_STAR8)
       IRECL = 8 * NREAL + 8 * NINTE + 8 * NLOGI
 #else
-#if defined (SYS_IRIX) || defined (SYS_SX) || defined (SYS_DEC)
-C     SGI IRIX counts recl in *4 words
-      IRECL = 2 * NREAL + 1 * NINTE + 1 * NLOGI
-#else
-#if defined (SYS_ALLIANT) || defined (SYS_CONVEX) || defined (SYS_AIX) || defined (SYS_PARAGON) || defined (SYS_DEC) || defined (SYS_HPUX) || defined (SYS_LINUX) || defined (SYS_DARWIN)
       IRECL = 8 * NREAL + 4 * NINTE + 4 * NLOGI
-#else
-#if defined (SYS_IBM) || defined (SYS_SUN)
-      IRECL = 8 * NREAL + 4 * NINTE + 4 * NLOGI
-#else
-     ===== insert definition for specification of record length
-#endif
-#endif
-#endif
 #endif
 C
       IRECLEN = IRECL
