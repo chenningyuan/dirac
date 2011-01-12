@@ -97,6 +97,7 @@ class pam_enviroment:
         self.parallel_build = False  # parallel build - read from Makefile.config
         self.parallel_run = False  # whether parallel run - decide upon the "--mpi=xxx" parameter
         self.mpirun = ''  # MPIRUN launcher
+        self.mpiarg = ''  # additional arguments for the MPIRUN
         self.nr_proc = 0  # number of processors, default 0-serial run
 
     #   local disks for parallel calculations (to be set by configure)   #
@@ -530,8 +531,15 @@ class pam_enviroment:
             type='string',
             action='store',
             dest='dest_mpirun',
-            help='set MPI launcher, default is to use MPIRUN set in Makefile.config'
-                ,
+            help='set MPI launcher, default is to use MPIRUN set in Makefile.config',
+            metavar='STRING',
+            )
+        group.add_option(
+            '--mpiarg',
+            type='string',
+            action='store',
+            dest='dest_mpiarg',
+            help='additonal arguments for the MPI launcher, default - none',
             metavar='STRING',
             )
         group.add_option(
@@ -696,13 +704,17 @@ class pam_enviroment:
         else:
             pass
 
+        if options.dest_mpiarg is not None:
+            self.mpiarg = options.dest_mpiarg
+            if self.iprint >= 5:
+                print 'assigned mpiarg=', self.mpiarg
+
 # radovan: it is always not none
 
         if options.dest_machfile is not None:
             self.machinefile = options.dest_machfile
 
      # todo: check it
-
             if self.iprint >= 5:
                 print 'assigned machinefile=', self.machinefile
 
@@ -1128,6 +1140,10 @@ class pam_enviroment:
             else:
                 self.dirac_cmd = self.mpirun + ' -np ' \
                     + str(self.nr_proc) + ' '
+
+            #miro: add extra mpi arguments
+            if len(self.mpiarg) > 0 :
+                self.dirac_cmd = self.dirac_cmd + self.mpiarg + ' '
 
             self.dirac_cmd = self.dirac_cmd + this_dirac_exe
             if self.vg_debug:  # valgrind stuff, DIRAC_CMD="$DIRAC_CMD $VALGRIND_TOOL --log-fd=1"
