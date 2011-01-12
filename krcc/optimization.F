@@ -175,7 +175,6 @@ C
       NVEC = 0
       NPVEC = -1
       IM_CONVERGED = 0
-      stop 'to the iterations'
 *. (Maxit is obtained from CRUN)
       DO ITER = 1, MAXIT
         IITER = ITER
@@ -196,8 +195,8 @@ C
 C**************************************************************
 C NOTE perhaps CCVEC6 should be added, Done
 C ADD ECC1_IMG ?
-C       CALL CC_VEC_FNC_KRCC(CC_AMP,CCVEC1,ECC1,
-C    &                       WORK,KFREE,LFREE)
+        CALL CC_VEC_FNC_KRCC(CC_AMP,CCVEC1,ECC1,
+     &                       WORK,KFREE,LFREE)
         stop 'after CC_VEC_FNC_KRCC'
         call rmemchk               
 C**************************************************************
