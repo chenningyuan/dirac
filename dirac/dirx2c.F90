@@ -84,6 +84,7 @@ module dirx2c
   use x2c_pct_ao
   use x2c_fio
   use x2c_utils
+  use atomic_x2c
 
   implicit none
 
@@ -384,6 +385,8 @@ contains
 !      step 2: atom-by-atom X2C run: construct full pct-matrix + reset dimensions on common block 
 !      ------------------------------------------------------------------------------------------
        if(atom_by_atom_x2c.and.(x2c_nuccent > 1))then
+
+         call x2c_atomic_x2c_driver()
 
        end if
 
