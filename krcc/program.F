@@ -715,7 +715,6 @@ C      CALL MEMMAR(KCC2,IMULTFAC*LENNY,'ADDL  ',2,'CC2_VE')
 * process calculate permutation factors and signs for contractions
 *
       CALL CONTRACTION_SOLVER(WORK,KFREE,LFREE)
-      stop 'enough for now'
 *
 * ============================================================
 * Initialize : Restart, set coefs to zero, start from CI coefs

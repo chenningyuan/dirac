@@ -1,4 +1,4 @@
-      SUBROUTINE CC_VEC_FNC_REL(CC_AMP,CC_VEC,E_CC,
+      SUBROUTINE CC_VEC_FNC_KRCC(CC_AMP,CC_VEC,E_CC,
      &                          WORK,KFREE,LFREE)
 *
 * Calculate energy and CC vector function for 
@@ -61,6 +61,10 @@ C#include "wrkspc.inc"
 *. Start by zeroing the CC-vector function 
       ZERO = 0.0D0
       CALL SETVEC(CC_VEC,ZERO,N_CC_AMP+1)
+* I may still need this! But let's see...
+      CALL SUM_ARRAY
+* And this although it is commented out at the moment
+C      call set_hop_dbg_cc(4,2)
 *
 * Now for all possible contractions in the (p,h) scheme
 * Shown as Operator --Type of contarction with T --> New operator
@@ -71,19 +75,6 @@ C#include "wrkspc.inc"
 *
 * H22 --11--> M11'  (Special case of M11)
 *
-* Allocate for M01 (Not yet in use)
-* Allocate for M11
-      NPART = 1
-      NHOLE = 1
-*
-      DO IH = 1,NH22
-        IHTP = WORK(KNH22 +IH) !Not so pretty
-        CALL CONTRACTION_ANALYZE(NPART,NHOLE,
-     &                           WORK(KLSOBEX_CC),NSPOBEX_TPE,
-     &                           WORK(KLSOBEX),IHTP,WORK(KINTM11),
-     &                           WORK(KINT11_IDXS),WORK(KINT11_IDXF),
-     &                           WORK,KFREE,LFREE)
-      END DO
 *
 * M11' --11--> T    (O11' now goes to M11)
 *
@@ -119,7 +110,20 @@ C#include "wrkspc.inc"
 *
 * H22 --21--> M01
 *
-
+* Starter lige her!!!
+*
+      CALL EMTHET_COM_KRCC(T,ITSM,CC_VEC,NSPOBEX_TP_CC,
+     &     WORK(KLSOBEX_CC),WORK(KLIBSOBEX_CC),
+     &     WORK(KLLSOBEX_CC),
+     &     NOBEX_TP,WORK(KIBSOX_FOR_OX),WORK(KNSOX_FOR_OX),
+     &     WORK(KISOX_FOR_OX),
+     &     NSPOBEX_TP,WORK(KLSOBEX),WORK(KLIHIND),WORK(KSIGNNHX),IHSM,
+     &     WORK(KLSPOBEX_AC_CC),ILTTWO,I2DIATP,
+C added    
+     &     WORK(KHTPCO),WORK(KCONNH),
+     &     WORK(KHT0CO),WORK(KHT1CO),WORK(KHT2CO),
+     &     WORK(KHT3CO),WORK(KHT4CO),
+     &     NCONN_IN,NCONN_IN2,NCONN_IN3,NCONN_IN4)
 *
 * H21 --20--> M01
 *
@@ -223,9 +227,11 @@ C      STOP ' Enforced stop after CC_VEC_FNC'
 *
 * Allocate the arrays which are always used 
 *
+*
+* Big arrays for the intermediates are at the moment allocated here and
+* are all stored in memory.
+*
 
 *
       RETURN
       END
-
-*

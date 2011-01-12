@@ -8,22 +8,6 @@
      &                               CONTRACTEDT,
      &                               INUMNUM,
      &                               WORK,KFREE,LFREE)
-
-
-C       CALL CONTRACTION_ANALYZE(INI,NPART,NHOLE,NPARTTOT,NHOLETOT,
-C    &                           WORK(KLSOBEX_CC),NSPOBEX_TPE,
-C    &                           WORK(KLSOBEX),IHTP,WORK(KINTM12),
-C    &                           WORK(KINT12_IDXS),WORK(KINT12_IDXF),
-C    &                           NUMCON,IFACTOR,
-C    &                           NCONNECTTOT,
-C    &                           IDUMMY,
-C    &                           IDUMMY,
-C    &                           WORK,KFREE,LFREE)
-
-
-
-
-
 *
 * Will find which cluster operator TOP can contract NPART,NHOLE indices
 * of a given Hamiltonian or intemediate operator (IHTP of HOP) and find
@@ -502,7 +486,7 @@ C            NSIM = NSIM - 1
           CALL IS_IT_IN(IOP,N,MK,MUB,RESOP,RESOPS,RESOPF,
      &                  ICONNECT,INUM)
           IF(ICONNECT.EQ.1) THEN
-* Connection complete. Store it. Coming soon!
+* Connection complete. Store it. Coming soon! Is here
             NCONNECT = NCONNECT + 1
             IF(INI.EQ.1) THEN
 * Store connection
@@ -793,6 +777,110 @@ C    &                          WORK(KSNH22TOM12),WORK(KFNH22TOM12))
           IF(IENDOP(IH).NE.ICOUNT) STOP 'Wrong end count for end'
         END IF
       END DO
+*
+      RETURN
+      END
+*
+      SUBROUTINE OP_COMPARE(IOP,NOP,IMOP,NMOP,
+     &                      IVECS,IVECF,IEXCITE,IKRFLIP,IMTOH,HOP)
+* 
+* Compares the Hamiltonian types to the intermediates
+*
+#include "implicit.inc"
+#include "mxpdim.inc"
+#include "crun.inc"
+#include "cgas.inc"
+*
+      INTEGER IOP(NOP),IMOP(4*NGAS,NMOP)
+      INTEGER IVECS(0:IEXCITE,-IKRFLIP:IKRFLIP,-IEXCITE:IEXCITE)
+      INTEGER IVECF(0:IEXCITE,-IKRFLIP:IKRFLIP,-IEXCITE:IEXCITE)
+      INTEGER IMTOH(NMOP)
+      INTEGER HOP(4*NGAS,*)
+* Scratch
+      INTEGER INDX(4)
+*
+      NTEST = 100
+*
+      CALL ISETVC(IMTOH,0,NMOP)
+*
+      DO IHOP =1,NOP
+* Analyze H operator
+        CALL ANALYZE_OP(HOP(1,IOP(IHOP)),NGAS,INH,IMK,IMUB)
+* Find non-zero indices
+        CALL NONZERO_INDX(HOP(1,IOP(IHOP)),INH,INDX,IDIFFINDX,NGAS)
+* Compare indices to intermediate
+        ISTART = IVECS(INH,IMK,IMUB)
+        IEND = IVECF(INH,IMK,IMUB)
+        print*,'ISTART,IEND',ISTART,IEND
+C       IF(IEND.GE.ISTART) STOP
+        ISIM = 0
+        DO I = ISTART,IEND
+          DO J = 1,IDIFFINDX
+            IF(HOP(INDX(J),IOP(IHOP)).NE.IMOP(INDX(J),I)) THEN
+* No match
+              print*,' no match '
+              ISIM = 1
+              EXIT
+            END IF
+          END DO
+          IF(ISIM.EQ.0) THEN
+* We have a match. Store the connection
+            print*,' we have a match'
+            IMTOH(IHOP) = I
+            EXIT
+          END IF
+        END DO 
+      END DO
+*
+      IF(NTEST.EQ.100) THEN
+        WRITE(6,*) ' T operator match for H operator '
+        DO I = 1,NOP
+          WRITE(6,*) ' H op ',IOP(I),' match T op ', IMTOH (I)
+          IF(IMTOH(I).NE.0) THEN
+            WRITE(6,*) ' H op match '
+            CALL WRT_SPOX_TP_CC_KRCC(HOP(1,IOP(I)),1)
+            WRITE(6,*) ' T op match '
+            CALL WRT_SPOX_TP_CC_KRCC(IMOP(1,IMTOH(I)),1)
+          ELSE
+            WRITE(6,*) ' No match for H op '
+            CALL WRT_SPOX_TP_CC_KRCC(HOP(1,IOP(I)),1)
+          END IF
+        END DO
+      END IF
+*
+      RETURN
+      END
+*
+      SUBROUTINE NONZERO_INDX(IOP,NINDX,INDX,ICOUNT,NGAS)
+*
+* Will find non-zero entries in a given operator type with a max of
+* NINDX non-zero indices.
+*
+#include "implicit.inc"
+      INTEGER IOP(4*NGAS),INDX(NINDX)
+*
+      NTEST = 100
+*
+      ICOUNT = 0
+      IEND = 0
+* Zero of INDX
+      CALL ISETVC(INDX,0,NINDX)
+*
+      DO I=1,4*NGAS
+        IF(IOP(I).NE.0) THEN
+          ICOUNT = ICOUNT + 1
+          INDX(ICOUNT) = I
+          IEND = IEND + IOP(I)
+          IF(IEND.EQ.2*NINDX) EXIT
+        END IF
+      END DO
+*
+      IF(NTEST.EQ.100) THEN
+        WRITE(6,*) ' Number of non-zero indices ',ICOUNT
+        DO I=1,ICOUNT
+          WRITE(6,*) ' Index number ',I,' Absolute address ',INDX(I)
+        END DO
+      END IF
 *
       RETURN
       END

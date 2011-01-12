@@ -6,10 +6,19 @@
 *
       DIMENSION WORK(*)
 *
-* 1. Find contractions
+* 1. Find individual contractions
 *
       CALL FIND_CONTRACTIONS(WORK,KFREE,LFREE)
       CALL MEMCHK_KRCC(WORK)
+*
+* 2. Find correcpondence between H and M. This is to add them up later
+*
+      CALL H_AND_M(WORK,KFREE,LFREE)
+      CALL MEMCHK_KRCC(WORK)
+*
+* 3. Setup contraction order (algorithm dependant)
+*
+      CALL CONTRACTION_ORDER(WORK,KFREE,LFREE)
 *
       RETURN
       END
@@ -2752,7 +2761,6 @@
 *
 * End all M01 contractions
 *
-      stop 'at the end of the road'
 *
 * End of the line. Was this not long and tedious?
 * Should you find or know a longer subroutine then please write to me at
@@ -2771,4 +2779,124 @@
 *
       RETURN
       END
-
+*
+      SUBROUTINE H_AND_M(WORK,KFREE,LFREE)
+*
+* Overall aim is to reduce the number of contractions by only doing
+* those that are connected!
+*
+* List all operators from intermediates which can be connected to T
+* 
+#include "implicit.inc"
+#include "mxpdim.inc"
+#include "crun.inc"
+#include "ctcc.inc"
+#include "interm.inc"
+*
+      DIMENSION WORK(*)
+*
+      WRITE(6,*) ' Welcome to H and M '
+*
+* First find for every H-type the same M-type so they can be added later
+*
+* H12 + M12
+*
+* How do I want to store it??? Assume for now every H is included in M
+* and then check if that is true!
+* 
+      print*,' matching 12'
+      ISIMHT12 = NH12 !MIN(NINTER12,NH12)
+      CALL MEMGET('INTE',KM12TOH12,ISIMHT12,WORK,KFREE,LFREE)
+      CALL OP_COMPARE(WORK(KNH12),NH12,WORK(KINTM12),NINTER12,
+     &     WORK(KINT12_IDXS),WORK(KINT12_IDXF),MX_EXC_LEVEL,IMAXKRFLIP,
+     &     WORK(KM12TOH12),WORK(KLSOBEX))
+* H11 + M11
+      print*,' matching 11 '
+      ISIMHT11 = NH11 !MIN(NINTER11,NH11)
+      CALL MEMGET('INTE',KM11TOH11,ISIMHT11,WORK,KFREE,LFREE)
+      CALL OP_COMPARE(WORK(KNH11),NH11,WORK(KINTM11),NINTER11,
+     &     WORK(KINT11_IDXS),WORK(KINT11_IDXF),MX_EXC_LEVEL,IMAXKRFLIP,
+     &     WORK(KM11TOH11),WORK(KLSOBEX))
+* H02 + M02
+      print*,' matching 02'
+      ISIMHT02 = NH02 !MIN(NINTER02,NH02)
+      CALL MEMGET('INTE',KM02TOH02,ISIMHT02,WORK,KFREE,LFREE)
+      CALL OP_COMPARE(WORK(KNH02),NH02,WORK(KINTM02),NINTER02,
+     &     WORK(KINT02_IDXS),WORK(KINT02_IDXF),MX_EXC_LEVEL,IMAXKRFLIP,
+     &     WORK(KM02TOH02),WORK(KLSOBEX))
+* H10 + M10
+      print*,' matching 10'
+      ISIMHT10 = NH10 !MIN(NINTER10,NH10)
+      CALL MEMGET('INTE',KM10TOH10,ISIMHT10,WORK,KFREE,LFREE)
+      CALL OP_COMPARE(WORK(KNH10),NH10,WORK(KINTM10),NINTER10,
+     &     WORK(KINT10_IDXS),WORK(KINT10_IDXF),MX_EXC_LEVEL,IMAXKRFLIP,
+     &     WORK(KM10TOH10),WORK(KLSOBEX))
+* H01 + M01
+      print*,' matching 01'
+      ISIMHT01 = NH01 !MIN(NINTER01,NH01)
+      CALL MEMGET('INTE',KM01TOH01,ISIMHT01,WORK,KFREE,LFREE)
+      CALL OP_COMPARE(WORK(KNH01),NH01,WORK(KINTM01),NINTER01,
+     &     WORK(KINT01_IDXS),WORK(KINT01_IDXF),MX_EXC_LEVEL,IMAXKRFLIP,
+     &     WORK(KM01TOH01),WORK(KLSOBEX))
+*
+      RETURN
+      END
+*
+      SUBROUTINE CONTRACTION_ORDER(WORK,KFREE,LFREE)
+*
+* Will combine the possible contractions from FIND_CONTRACTIONS.
+*
+* This routine is algorithm dependant
+*
+* Algorithm in the simplified version goes as following
+*
+* H20 --T-->
+*
+* H22 --T--> M02+H02 --T-->
+*
+* H22 --T--> M11+H11 --T-->
+*
+* H22 --T-->
+*
+* H21 --T-->
+*
+* H12 --T-->
+*
+* H00 
+*
+* H22 + H21 + H12 + H20 --T--> M10+H10 --T-->
+*
+* H22 + H21 + H12 + H11 + H02 --T--> M01+H01 --T-->
+*
+* H22 + H12 --T--> M02 --T--> M01 --T-->
+*
+* H22 + H21 --T--> M11 --T--> M01 --T-->
+*
+* H22 --T--> M12 --T--> M02 --T-->
+*                           \
+*                            \T--> M01 --T-->
+*
+* No intersection of two or more sets is needed in finding the
+* global permutation parameter for the intermediates since the only time
+* a global parameter is needed is when two contractions of the same
+* ph-type follows each other. Here the first contraction is multiplied
+* by 1/2. This simple global permutation factor stems from the
+* insistance on only going "one way" in the multiple possible ways a
+* given number of operators can be contracted.
+*
+* Will create a list of all contractions which can be looped over or??
+* List already exist since all contractions are known! Will here in the
+* first run not start to eliminate intermediate or final contractions*
+* List already exist since all contractions are known! Will here in the
+* first run not start to eliminate intermediate or final contractions.
+* Therefore this will first be an empty subroutine!!!
+*
+*
+#include "implicit.inc"
+*
+*
+*
+*
+*
+      RETURN
+      END
