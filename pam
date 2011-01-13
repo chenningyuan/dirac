@@ -41,7 +41,6 @@ import stat
 import time
 import fileinput
 import datetime
-import re
 
 global install_dir
 install_dir_default = os.path.realpath(__file__)[:-4]
@@ -60,20 +59,6 @@ def append_dirac_py_modules(dirac_install_dir):
         print 'wrong directory or directory not readable !'
         sys.exit('wrong directory !')
     sys.path.append(modules_directory)
-
-def get_confvalue(line,name):
-    """Return VALUE from the line NAME = VALUE, taking 
-    #comments into account. Return None if no match"""
-    n = line.find("#")
-    if n >= 0:
-        line = line[:n]
-    p = "\s*?"+name+"\s*?=\s*?"
-    m = re.match(p,line)
-    if m:
-        return line[m.end():].strip()
-    else:
-        return None
-
 
 class pam_enviroment:
 
