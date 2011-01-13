@@ -41,6 +41,7 @@ import stat
 import time
 import fileinput
 import datetime
+import re
 
 global install_dir
 install_dir_default = os.path.realpath(__file__)[:-4]
@@ -59,6 +60,19 @@ def append_dirac_py_modules(dirac_install_dir):
         print 'wrong directory or directory not readable !'
         sys.exit('wrong directory !')
     sys.path.append(modules_directory)
+
+def get_confvalue(line,name):
+    """Return VALUE from the line NAME = VALUE, taking 
+    #comments into account. Return None if no match"""
+    n = line.find("#")
+    if n >= 0:
+        line = line[:n]
+    p = "\s*?"+name+"\s*?=\s*?"
+    m = re.match(p,line)
+    if m:
+        return line[m.end():].strip()
+    else:
+        return None
 
 
 class pam_enviroment:
@@ -636,7 +650,7 @@ class pam_enviroment:
             )
         group.add_option('--nice', action='store_true', dest='dest_nice'
                          , default=False,
-                         help='run with low priority [default: %default]'
+                         help='run with high priority [default: %default]'
                          )
         parser.add_option_group(group)
 
@@ -1183,23 +1197,32 @@ class pam_enviroment:
 
     def read_makefile_config(self):
         """Read the Makefile.config to get default values of many variables.
-    Makefile.config file is the storage place for important variables
-    -  debugger, profiler, valgrind, mpi-launcher... """
+        Makefile.config file is the storage place for important variables
+        -  debugger, profiler, valgrind, mpi-launcher... """
+        def namval(line):
+            """Return (NAME,VALUE) from lines NAME = VALUE, taking 
+            #comments into account. Return ('','') if no match"""
+            n = line.find("#")
+            if n >= 0:
+                line = line[:n]
+            n = line.find("=")
+            if n>=0:
+                return (line[:n].strip(),line[n+1:].strip())
+            else:
+                return ('','')
 
         if self.iprint >= 5:
             print 'read_makefile_config: Going to read from Makefile.config:'
-
-    # open and read
+            
+        # open and read
 
         makefile_config = install_dir + '/' + 'Makefile.config'
         for line in fileinput.input([makefile_config]):
-            line = line[:-1]
-            if line.find('INSTALL_DIR') != -1:
-                install_dir_temp = \
-                    os.path.expandvars(line.replace('INSTALL_DIR=', ''))
-
-          # check if the install-dir is OK
-
+            (name,value) = namval(line)
+            value = os.path.expandvars(value)
+            if name == 'INSTALL_DIR':
+                install_dir_temp = value
+                # check if the install-dir is OK
                 if install_dir != install_dir_temp:
                     print 'disgreement with the installation directory !'
                     print 'Makefile.config install_dir_temp=', \
@@ -1209,74 +1232,40 @@ class pam_enviroment:
                     sys.exit(-1)
                 else:
                     pass
-            elif line.find('SCRATCH_DIR') != -1:
-                scratch_dir_temp = \
-                    os.path.expandvars(line.replace('SCRATCH_DIR=', ''))
-                self.workpath = scratch_dir_temp
+            elif name == 'SCRATCH_DIR':
+                self.workpath = value
                 if not os.path.isdir(self.workpath):
                     print 'NB: the workpath ', self.workpath, \
                         ' does not exist on this machine.'
                     print 'Running on your own risk (might not create workdir).'
-            elif line.find('DEBUGGER') != -1:
-                debugger_temp = \
-                    os.path.expandvars(line.replace('DEBUGGER=', ''))
-                if os.path.isfile(debugger_temp):
-                    self.debugger = debugger_temp
-                else:
-                    print 'The debugger from Makefile.config is not existing!'
-                    print 'The debugger from Makefile.config=', \
-                        debugger_temp
-            elif line.find('PROFILER') != -1:
-                profiler_temp = \
-                    os.path.expandvars(line.replace('PROFILER=', ''))
-                if os.path.isfile(profiler_temp):
-                    self.profiler = profiler_temp
-                else:
-                    print 'The profiler from Makefile.config is not existing!'
-                    print 'The profiler from Makefile.config=', \
-                        profiler_temp
-            elif line.find('VALGRIND') != -1:
-                valgrind_temp = \
-                    os.path.expandvars(line.replace('VALGRIND=', ''))
-                if os.path.isfile(valgrind_temp):
-                    self.valgrind = valgrind_temp
-                else:
-                    print 'The valgrind from Makefile.config is not existing!'
-                    print 'The valgrind from Makefile.config=', \
-                        valgrind_temp
-            elif line.find('MPIRUN') != -1:
-                mpirun_temp = os.path.expandvars(line.replace('MPIRUN='
-                        , ''))
-                if os.path.isfile(mpirun_temp):
-                    self.mpirun = mpirun_temp
+            elif name == 'DEBUGGER':
+                self.debugger = value
+            elif name == 'PROFILER':
+                self.profiler = value
+            elif name == 'VALGRIND':
+                self.valgrind = value
+            elif name == 'MPIRUN':
+                if os.path.isfile(value): #ulf: Does this make sense??
+                    self.mpirun = value
                     self.parallel_build = True
                 else:
                     self.parallel_build = False
                     pass
-            elif line.find('LOCALDISKS') != -1:
-                localdisks_temp = line.replace('LOCALDISKS=', '')
-                if localdisks_temp == 'yes':
+            elif name == 'LOCALDISKS':
+                if value == 'yes':
                     self.localdisks = True
                     print 'local disks for parallel calculations'
-            elif line.find('MPI_PASS_WRKDIR_ARGUMENT') != -1:
-                if localdisks_temp == 'yes':
-                    localdisks_pass_wrkdir_temp = \
-                        line.replace('MPI_PASS_WRKDIR_ARGUMENT=', '')
+            elif name == 'MPI_PASS_WRKDIR_ARGUMENT':
+                if self.localdisks:
+                    localdisks_pass_wrkdir_temp = value
                     self.argument_to_pass_work_dir_to_slaves = \
                         localdisks_pass_wrkdir_temp
-            elif line.find('MACH_FILE') != -1:
-                machinefile_temp = \
-                    os.path.expandvars(line.replace('MACH_FILE=', ''))
-                if len(machinefile_temp) >= 1:
-                    self.machinefile = machinefile_temp
-            elif line.find('RCP') != -1:
-                rcp_temp = os.path.expandvars(line.replace('RCP=', ''))
-                if os.path.isfile(rcp_temp):
-                    self.rcp = rcp_temp
-            elif line.find('RSH') != -1:
-                rsh_temp = os.path.expandvars(line.replace('RSH=', ''))
-                if os.path.isfile(rsh_temp):
-                    self.rsh = rsh_temp
+            elif name == 'MACH_FILE':
+                self.machinefile = value
+            elif name == 'RCP':
+                self.rcp = value
+            elif name == 'RSH':                
+                self.rsh = value
 
     def write_into_output(self):
         """
