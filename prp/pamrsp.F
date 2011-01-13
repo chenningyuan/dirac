@@ -706,8 +706,6 @@ C        Generate MAXSIM linear independent trial vectors for
 C        next microiteration using solutions of reduced RSP equation
 C        ===========================================================
 C
-CPP
-C         GOTO 137
          CALL XRSNEX(IBTYP,IBCVC,IBEVC,IBPVC,RCNV,
      &               EVALR,EVECR,GPCI,GPOE,GPOP,
      &               RNORM,IVECS,WORK,KFREE,LFREE)
@@ -726,7 +724,6 @@ C
            NCRED = 0
            NZRED = 0
          ENDIF
-CPP
  137     CONTINUE
          TIMITR = SECOND() - TIMITR
          CPUTID = SECTID(TIMITR)
@@ -741,7 +738,7 @@ C
      &       '* End of microiteration no.',ITMIC,' after ',CPUTID
          ENDIF
          CALL FLSHFO(LUPRI)
-         GOTO 138
+C         GOTO 138
 CTROND         OPTORB = OPTSAV
 C
 C        Check for state of the calculation
