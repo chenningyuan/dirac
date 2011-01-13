@@ -3339,7 +3339,7 @@ C
       LOGICAL USEXVC,TEST
       DIMENSION BVEC(NVAR,NZ,*),HDIAG(*),SDIAG(*),
      &          EVALR(MFREQ),IBTYP(2,*),IBVEC(*),IVECS(*),
-     &          BBUF(NVAR,NZ,*),DENOM(NVAR),PREC(NVAR,2,*),WORK(*)
+     &          BBUF(NVAR,NZ,*),PREC(NVAR,2,*),WORK(*)
 C
       CALL QENTER('XBVGEN')
 C
@@ -3480,40 +3480,42 @@ C
 C ------
 C           build preconditioner
             CALL GENPREC(PREC,HDIAG,SDIAG,FREQ,NVAR)
-CPP  stop for today
 C           Note that all residuals are employed, independent of norm
-            IF(IVECS(IP).EQ.1) THEN
-               DO IZ = 1,MZ
-                 DO IVAR = 1,NVAR
-                  FAC = DENOM(IVAR)
-                  BBUF(IVAR,IZ,1)=HDIAG(IVAR)*FAC*BVEC(IVAR,IZ,IP)
-     &                + FFAC*FREQ*SDIAG(IVAR)*FAC*BVEC(IVAR,IZ,IM)
-                 ENDDO
-               ENDDO
-C             retain norm for numerical stability !
-              FAC=DNRM2(NVARQ,BVEC(1,1,IP),1)/
-     &            DNRM2(NVARQ,BBUF(1,1,1),1)
-              CALL DSCAL(NVARQ,FAC,BBUF(1,1,1),1)
-            ENDIF
-            IF(IVECS(IM).EQ.1) THEN
-               DO IZ = 1,MZ
-                 DO IVAR = 1,NVAR
-                  FAC = DENOM(IVAR)
-                  BBUF(IVAR,IZ,2)=HDIAG(IVAR)*FAC*BVEC(IVAR,IZ,IM)
-     &                     + FREQ*SDIAG(IVAR)*FAC*BVEC(IVAR,IZ,IP)
-                 ENDDO
-               ENDDO
-C             retain norm for numerical stability !
-              FAC=DNRM2(NVARQ,BVEC(1,1,IM),1)/
-     &            DNRM2(NVARQ,BBUF(1,1,2),1)
-              CALL DSCAL(NVARQ,FAC,BBUF(1,1,2),1)
-            ENDIF
-C...........and put buffer back into BVEC
-            IF(IVECS(IP).EQ.1) THEN
-              CALL DCOPY(NVARQ,BBUF(1,1,1),1,BVEC(1,1,IP),1)
-            ENDIF
-            IF(IVECS(IM).EQ.1) THEN
-              CALL DCOPY(NVARQ,BBUF(1,1,2),1,BVEC(1,1,IM),1)
+            IF(DAMPFREQ.NE.D0) THEN
+              CALL MEMGET('REAL',KPRBUF,2*NDAMP*NVARQ,WORK,KFREE,LFREE)
+              CALL XRSPREC(PREC,BVEC(1,1,IP),IVECS(IP),WORK(KPRBUF),
+     &                     NVAR,WORK,KFREE,LFREE)
+            ELSE
+              IF(IVECS(IP).EQ.1) THEN
+                DO IZ = 1,MZ
+                  DO IVAR = 1,NVAR
+                   BBUF(IVAR,IZ,1)=PREC(IVAR,1,1)*BVEC(IVAR,IZ,IP)+
+     &                        FFAC*PREC(IVAR,2,1)*BVEC(IVAR,IZ,IM)
+                   ENDDO
+                ENDDO
+CPP what about the norm retained? the new trial vector ++ keeps the norm
+C      of the Residual ++?
+                FAC=DNRM2(NVARQ,BVEC(1,1,IP),1)/
+     &              DNRM2(NVARQ,BBUF(1,1,1),1)
+                CALL DSCAL(NVARQ,FAC,BBUF(1,1,1),1)
+              ENDIF
+              IF(IVECS(IM).EQ.1) THEN
+                DO IZ = 1,MZ
+                  DO IVAR = 1,NVAR
+                    BBUF(IVAR,IZ,2)=PREC(IVAR,1,1)*BVEC(IVAR,IZ,IM)+
+     &                              PREC(IVAR,2,1)*BVEC(IVAR,IZ,IP)
+                  ENDDO
+                ENDDO
+                FAC=DNRM2(NVARQ,BVEC(1,1,IM),1)/
+     &              DNRM2(NVARQ,BBUF(1,1,2),1)
+                CALL DSCAL(NVARQ,FAC,BBUF(1,1,2),1)
+              ENDIF
+              IF(IVECS(IP).EQ.1) THEN
+                CALL DCOPY(NVARQ,BBUF(1,1,1),1,BVEC(1,1,IP),1)
+              ENDIF
+              IF(IVECS(IM).EQ.1) THEN
+                CALL DCOPY(NVARQ,BBUF(1,1,2),1,BVEC(1,1,IM),1)
+              ENDIF
             ENDIF
           ENDIF
         ENDIF
@@ -3521,6 +3523,114 @@ C...........and put buffer back into BVEC
 C
  10   CONTINUE
       CALL QEXIT('XBVGEN')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck xrsprec */
+      SUBROUTINE XRSPREC(PREC,BVEC,IVECS,PRBUF,NVAR,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Generate new trial vectors b_k from residual vectors Res_k
+C
+C     for the complex frequency case.
+C
+C     Written by S.Villaume Jan 2011
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      PARAMETER(D0 = 0.0D0,D1 = 1.0D0,DM1 = -1.0D0)
+      PARAMETER(DLIM = 1.0D-6)
+C
+#include "dcbxrs.h"
+#include "dgroup.h"
+C
+      DIMENSION BVEC(NVAR,NZ,*),IVECS(*),PREC(NVAR,2,*),
+     &          PRBUF(NVAR,NZ,*),WORK(*)
+C
+      CALL QENTER('XRSPREC')
+C
+      NVARQ = NVAR*NZ
+      IOFF = NFREQ*NDAMP
+C
+      CALL DZERO(PRBUF,4*NVAR*NZ)
+C
+C     build b(+)
+      IF(IVECS(1).EQ.1) THEN
+        DO IZ = 1,NZ
+          DO IVAR = 1,NVAR
+            PRBUF(IVAR,IZ,1)=PREC(IVAR,1,1)*BVEC(IVAR,IZ,1)+
+     &                       PREC(IVAR,2,1)*BVEC(IVAR,IZ,1+IOFF)-
+     &                       PREC(IVAR,2,2)*BVEC(IVAR,IZ,2+IOFF)-
+     &                       PREC(IVAR,1,2)*BVEC(IVAR,IZ,2)
+          ENDDO
+        ENDDO
+        FAC=DNRM2(NVARQ,BVEC(1,1,1),1)/
+     &      DNRM2(NVARQ,PRBUF(1,1,1),1)
+        CALL DSCAL(NVARQ,FAC,PRBUF(1,1,1),1)
+      ENDIF
+C
+C     build b'(+)
+      IF(IVECS(2).EQ.1) THEN
+        DO IZ = 1,NZ
+          DO IVAR = 1,NVAR
+            PRBUF(IVAR,IZ,2)=PREC(IVAR,1,2)*BVEC(IVAR,IZ,1)+
+     &                       PREC(IVAR,2,2)*BVEC(IVAR,IZ,1+IOFF)+
+     &                       PREC(IVAR,2,1)*BVEC(IVAR,IZ,2+IOFF)+
+     &                       PREC(IVAR,1,1)*BVEC(IVAR,IZ,2)
+          ENDDO
+        ENDDO
+        FAC=DNRM2(NVARQ,BVEC(1,1,2),1)/
+     &      DNRM2(NVARQ,PRBUF(1,1,2),1)
+        CALL DSCAL(NVARQ,FAC,PRBUF(1,1,2),1)
+      ENDIF
+C
+C     build b(-)
+      IF(IVECS(1+IOFF).EQ.1) THEN
+        DO IZ = 1,NZ
+          DO IVAR = 1,NVAR
+            PRBUF(IVAR,IZ,3)=PREC(IVAR,2,1)*BVEC(IVAR,IZ,1)+
+     &                       PREC(IVAR,1,1)*BVEC(IVAR,IZ,1+IOFF)-
+     &                       PREC(IVAR,1,2)*BVEC(IVAR,IZ,2+IOFF)-
+     &                       PREC(IVAR,2,2)*BVEC(IVAR,IZ,2)
+          ENDDO
+        ENDDO
+        FAC=DNRM2(NVARQ,BVEC(1,1,1+IOFF),1)/
+     &      DNRM2(NVARQ,PRBUF(1,1,3),1)
+        CALL DSCAL(NVARQ,FAC,PRBUF(1,1,3),1)
+      ENDIF
+C
+C     build b'(-)
+      IF(IVECS(2+IOFF).EQ.1) THEN
+        DO IZ = 1,NZ
+          DO IVAR = 1,NVAR
+            PRBUF(IVAR,IZ,4)=PREC(IVAR,2,2)*BVEC(IVAR,IZ,1)+
+     &                       PREC(IVAR,1,2)*BVEC(IVAR,IZ,1+IOFF)+
+     &                       PREC(IVAR,1,1)*BVEC(IVAR,IZ,2+IOFF)+
+     &                       PREC(IVAR,2,1)*BVEC(IVAR,IZ,2)
+          ENDDO
+        ENDDO
+        FAC=DNRM2(NVARQ,BVEC(1,1,2+IOFF),1)/
+     &      DNRM2(NVARQ,PRBUF(1,1,4),1)
+        CALL DSCAL(NVARQ,FAC,PRBUF(1,1,4),1)
+      ENDIF
+C
+C     copy new vectors from buffer to BVEC
+      IF(IVECS(1).EQ.1) THEN
+        CALL DCOPY(NVARQ,PRBUF(1,1,1),1,BVEC(1,1,1),1)
+      ENDIF
+      IF(IVECS(2).EQ.1) THEN
+        CALL DCOPY(NVARQ,PRBUF(1,1,2),1,BVEC(1,1,2),1)
+      ENDIF
+      IF(IVECS(1+IOFF).EQ.1) THEN
+        CALL DCOPY(NVARQ,PRBUF(1,1,3),1,BVEC(1,1,1+IOFF),1)
+      ENDIF
+      IF(IVECS(2+IOFF).EQ.1) THEN
+        CALL DCOPY(NVARQ,PRBUF(1,1,4),1,BVEC(1,1,2+IOFF),1)
+      ENDIF
+C
+      CALL QEXIT('XRSPREC')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
