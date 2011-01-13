@@ -2937,12 +2937,12 @@ C     INTEGER IB_CA_SS(8,8),IB_CB_SS(8,8),IB_AA_SS(8,8),IB_AB_SS(8,8)
         WRITE(6,*) ' Excitation operator 1 :'
         WRITE(6,*)
 C   WRT_SPOX_TP_CC_REL(IEX_TP,NEX_TP)
-        CALL WRT_SPOX_TP_CC_REL(I1SPOBEX,1)
+        CALL WRT_SPOX_TP_CC_KRCC(I1SPOBEX,1)
         WRITE(6,*) ' Excitation operator 2 :'
         WRITE(6,*)
-        CALL WRT_SPOX_TP_CC_REL(I2SPOBEX,1)
+        CALL WRT_SPOX_TP_CC_KRCC(I2SPOBEX,1)
         WRITE(6,*) ' Compound operator '
-        CALL WRT_SPOX_TP_CC_REL(I12SPOBEX,1)
+        CALL WRT_SPOX_TP_CC_KRCC(I12SPOBEX,1)
       END IF
 *. Number of operators in each string 
       N1CA_OP = IELSUM(I1SPOBEX(1,1),NGAS)
@@ -3135,7 +3135,7 @@ C     INTEGER IBSTR_CAAB(NSMST,4)
         WRITE(6,*)
         WRITE(6,*) 
      &  ' Strings will be generated for the four CAAB substrings of '
-        CALL WRT_SPOX_TP_CC_REL(ICAAB,1)
+        CALL WRT_SPOX_TP_CC_KRCC(ICAAB,1)
       END IF
 *
       IDUM = 0
@@ -4518,11 +4518,11 @@ C
         WRITE(6,*) ' ===================== '
         WRITE(6,*)
         WRITE(6,*) ' IOEX, IOD4X, IOD3X, IOD2X, IOD1X  : '
-        CALL WRT_SPOX_TP_CC_REL(IOEX,1)
-        CALL WRT_SPOX_TP_CC_REL(IOD4X,1)
-        CALL WRT_SPOX_TP_CC_REL(IOD3X,1)
-        CALL WRT_SPOX_TP_CC_REL(IOD2X,1)
-        CALL WRT_SPOX_TP_CC_REL(IOD1X,1)
+        CALL WRT_SPOX_TP_CC_KRCC(IOEX,1)
+        CALL WRT_SPOX_TP_CC_KRCC(IOD4X,1)
+        CALL WRT_SPOX_TP_CC_KRCC(IOD3X,1)
+        CALL WRT_SPOX_TP_CC_KRCC(IOD2X,1)
+        CALL WRT_SPOX_TP_CC_KRCC(IOD1X,1)
         WRITE(6,*)
       END IF
 *
@@ -4827,8 +4827,8 @@ CE    CALL REV_ORD_IARR(ICAAB_IN(1,4), ICAAB_OUT(1,2),NGAS)
       NTEST = 00
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' CAAB operator and conjugated CAAB operator : '
-        CALL WRT_SPOX_TP_CC(ICAAB_IN,1)
-        CALL WRT_SPOX_TP_CC(ICAAB_OUT,1)
+        CALL WRT_SPOX_TP_CC_KRCC(ICAAB_IN,1)
+        CALL WRT_SPOX_TP_CC_KRCC(ICAAB_OUT,1)
         WRITE(6,*) ' Sign = ', sign
       END IF
 *
@@ -4916,6 +4916,40 @@ C?    IF(NOP.GT.0) WRITE(6,*) ' INUM_ABS = ', INUM_ABS
         WRITE(6,*) ' Corresponding string : '
         CALL IWRTMA(ISTRING,1,NOP,1,NOP)
       END IF
+*
+      RETURN
+      END
+*
+      SUBROUTINE WRT_CNTR3(ICONT,NCONT,LDIM)
+*
+* Write contraction operator ICONT in the form used in VNEWCCV
+*
+#include "implicit.inc"
+      INTEGER ICONT(LDIM,3)
+*
+      WRITE(6,*)
+     &' Information about operators to be contracted'
+      WRITE(6,*) ' Gasspace  Cr/An   Spin  '
+      WRITE(6,*) ' ========================'
+      DO JCONT = 1, NCONT
+        WRITE(6,'(I4,6X,I2,7X,I2,7X,I2)')
+     &  ICONT(JCONT,1),ICONT(JCONT,2),ICONT(JCONT,3)
+      END DO
+*
+      RETURN
+      END
+      SUBROUTINE WRT_3SM_ARRAY(ISYM, NSYM, MXPSYM)
+*
+* Write array containing three symmetry labels 
+*
+#include "implicit.inc"
+*
+      INTEGER ISYM(MXPSYM,MXPSYM,MXPSYM)
+*
+      DO I3 = 1, NSYM
+        WRITE(6,*) ' Value of third index = ', I3
+        CALL IWRTMA(ISYM(1,1,I3),NSYM,NSYM,MXPSYM,MXPSYM)
+      END DO
 *
       RETURN
       END
