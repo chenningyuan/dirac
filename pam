@@ -1213,10 +1213,14 @@ class pam_enviroment:
 
         if self.iprint >= 5:
             print 'read_makefile_config: Going to read from Makefile.config:'
-            
-        # open and read
 
         makefile_config = install_dir + '/' + 'Makefile.config'
+        # if no Makefile.config present, leave with warning message
+        if not os.path.isfile(makefile_config):
+            print "Makefile.config not present - no default values read."
+            return
+
+        # open and read line by line by avoiding #-comments
         for line in fileinput.input([makefile_config]):
             (name,value) = namval(line)
             value = os.path.expandvars(value)
