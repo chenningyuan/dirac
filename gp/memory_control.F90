@@ -39,9 +39,18 @@
          real(kind=kreal), save :: max_mem = -1
          real(kind=kreal), save :: max_mem_soft = -1
          real(kind=kreal), save :: max_mem_hard = -1
+ 
+         logical, save :: verbose = .false.
+         integer(kind=kint), save :: verbosity_level = 1
 
          public allocator_set_max
          public allocator_get_max
+
+         public allocator_set_quiet
+         public allocator_set_verbose
+         public allocator_get_verbose
+         public allocator_set_verbose_level
+         public allocator_get_verbose_level
 
          interface allocator_set_max
             module procedure allocator_setmax_i4
@@ -49,6 +58,30 @@
          end interface allocator_set_max
 
          contains
+
+            subroutine allocator_get_verbose(isVerbose)
+               logical, intent(out) :: isVerbose
+
+               isVerbose = verbose 
+            end subroutine allocator_get_verbose
+
+            subroutine allocator_set_verbose
+               verbose = .true.
+            end subroutine allocator_set_verbose
+
+            subroutine allocator_set_quiet
+               verbose = .false.
+            end subroutine allocator_set_quiet
+
+            subroutine allocator_set_verbose_level(level)
+               integer(kind=kint) :: level
+               verbosity_level = level
+            end subroutine allocator_set_verbose_level
+
+            subroutine allocator_get_verbose_level
+               return verbosity_level
+            end subroutine allocator_get_verbose_level
+
 
             subroutine allocator_setmax_i4(size)
                integer(kind=4), intent(in) :: size 

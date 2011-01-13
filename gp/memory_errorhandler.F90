@@ -74,14 +74,14 @@
 
 
             subroutine allocator_errorHandler(status,size,data_kind,var_id,ignoreError)
-               integer                        :: status, traceStackDepth
+               integer                        :: status
 ! optional arguments
                logical, optional              :: ignoreError
                integer, optional              :: size
                integer, optional              :: data_kind
                character(len=*), optional     :: var_id 
 ! local variables
-               logical                        :: ignoreErrorLocal, isFatal
+               logical                        :: ignoreErrorLocal, isFatal, isVerbose
                integer                        :: kbytesRequested, sizeLocal, kindLocal
                character(len=charArrayLength) :: ErrorMessage, InfoMessage
                character(len=charArrayLength) :: trace_result
@@ -90,6 +90,7 @@
                real(kind=kreal)               :: mbytesInUse, mbytesRequested, mbytesMax
 
                isFatal = .True.
+               call allocator_get_verbose(isVerbose)
 
                if (present(ignoreError)) then 
                   ignoreErrorLocal = ignoreError
@@ -109,7 +110,7 @@
                   kindLocal = 4
                endif
 
-               if (present(var_id)) then
+               if (present(var_id).and.isVerbose) then
                   if (var_id.ne.'None') then
                      write (*,*) 'Warning: at allocation for var. id '//var_id(1:42)
                   endif
@@ -119,12 +120,12 @@
                ErrorMessage = InfoMessage
                trace_result = 'unknown (stack trace info unavailable)'
 
-               call get_traceback_info (printAllocCaller,trace_result,charArrayLength,traceStackDepth)
+               call get_traceback_info (printAllocCaller,trace_result,charArrayLength)
                
                select case (status)
                   case (alreadyAllocated)      
                      InfoMessage  = 'Trying to allocate variable already allocated.'
-                     ErrorMessage = 'Variable is already allocated!'
+                     ErrorMessage = 'Memory allocation failure at '//trace_result(1:42)
                      isFatal = .True.
 
                   case (alreadyDeallocated)     
@@ -138,12 +139,17 @@
 
                      InfoMessage  = 'Error! Allocation failed!'
                      write (InfoMessage,'(a,i9,a)')                       &
-                        'Attempted to allocate',kbytesRequested,' Kb '//  &
-                        'but memory available is '//kbytesAvailable(1:24)
+                        'Asked for ',kbytesRequested,' Kb, '//  &
+                        'memory available is '//kbytesAvailable(1:24)
+
+                     write (*,*) 'Please verify:'
+                     write (*,*) ' - if the amount of memory installed in the system is sufficient'
+                     write (*,*) '   taking into account the total memory requested (master+slaves)'
+                     write (*,*) ' - if there are any limitations enforced by the shell, queueing '
+                     write (*,*) '   system or OS'
 
                      ErrorMessage = 'Memory allocation failure at '//trace_result(1:42)
                      isFatal = .True.
-
 
                   case (deallocateFailure)
                      InfoMessage  = 'Memory deallocation failed at '//trace_result(1:42)
@@ -159,25 +165,31 @@
                      InfoMessage  = 'Error! Allocation failed!'
 
                      mbytesRequested = real(sizeLocal)*real(kindLocal)/b2mbfac
+!                    write (*,*) 'debug, requested :',mbytesRequested
+
                      call allocator_get_meminuse(mbytesInUse)  
                      mbytesInUse = mbytesInUse/b2mbfac
+!                    write (*,*) 'debug, in use :',mbytesInUse
 
                      call allocator_get_max(mbytesMax)
                      mbytesMax   = mbytesMax/b2mbfac
+!                    write (*,*) 'debug, maximum :',mbytesMax
 
-                     write (InfoMessage,'(a,f12.2,a,f12.2,a,f12.2,a)')  &
+                     write (InfoMessage,'(a,f12.0,a,f12.0,a,f12.0,a)')  &
      &                  'Request (',mbytesRequested,' Mb) +'//          &
      &                  ' memory in use (',mbytesInUse,' Mb)'//         &
      &                  '  >  user-defined limit (',mbytesMax,' Mb)'
-
-                     write(InfoMessage,'(a,/)')                         &
-     & 'Increase the limit of maximum allocated memory (--aw flag)!'
+#ifdef PRG_DIRAC
+                     write (*,*) 'Make -aw',((mbytesRequested+mbytesInUse+1.0D0)/8.0D0)
+#endif
 
                      ErrorMessage = 'Memory allocation failure at '//trace_result(1:42)
                      isFatal = .True.
 
                   case (negativeSizeCall)
-                     InfoMessage  = 'Allocation is not possible at '//trace_result(1:42)
+                     InfoMessage  = 'Negative array dimension (e.g. a '//   &
+     &                              'value larger than what the variable can hold). '// &
+     &                              'Allocation is not possible, program will exit now.'
                      ErrorMessage = 'Memory allocation failure at '//trace_result(1:42)
                      isFatal = .True.
 
@@ -185,15 +197,18 @@
 
                if (isFatal) then
                   if (ignoreErrorLocal) then
-                     write (*,*) 'Non-fatal error at '//trace_result(1:42)//'. The program will continue.'
+                     if (isVerbose) &
+     &               write (*,*) 'Non-fatal error at '//trace_result(1:42)//'. The program will continue.'
                   else
                      write (*,*) InfoMessage
                      call quit(ErrorMessage)
                   endif
                else
-                  write (*,*) 'Non-fatal error at '//trace_result(1:42)
-                  write (*,*) InfoMessage
-                  write (*,*) 'The program will continue.'
+                  if (isVerbose) then
+                     write (*,*) 'Non-fatal error at '//trace_result(1:42)
+                     write (*,*) InfoMessage
+                     write (*,*) 'The program will continue.'
+                  endif
                endif
                
             end subroutine allocator_errorHandler

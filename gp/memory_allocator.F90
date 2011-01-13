@@ -71,6 +71,7 @@
          public deallocp
 
          public allocator_set_max
+         public allocator_get_max
 
 ! making some stuff public
          public allocator_get_available_mem

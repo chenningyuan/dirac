@@ -102,20 +102,15 @@
                newChunk%varID       = varID
                newChunk%varLabel    = varLabel
                bytes = real(size)*real(type)
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
-!
-! the idea here was to keep track of where in the call stack the call to allocate was made from,
-! and keep that information. for the moment, this will be replaced by the groups defined by the 
-! programmer
                write (newChunk%allocatedAt,'(a42)') trackCaller
-!              write (newChunk%allocatedAt,'(a42)') current_group
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+
                call track_AddToList(memTracking%aL,newChunk)
 
                memTracking%n_created        = memTracking%n_created + 1
                memTracking%CurrentMemoryUse = memTracking%CurrentMemoryUse + bytes 
 
                call track_updateTopLists(memTracking,newChunk)
+
             end subroutine track_RegisterAllocation
 !
 ! registerDeallocation will ad the information gathered within dealloc
@@ -129,12 +124,16 @@
                type (memChunk), pointer :: tmp
 
                call track_findEntryFromEnd(varID,tmp,memTracking%aL)
-               bytes = real(tmp%n_elements) * real(tmp%type)
 
-               memTracking%CurrentMemoryUse = memTracking%CurrentMemoryUse - bytes
-               memTracking%n_destroyed = memTracking%n_destroyed + 1
+               if ( associated(tmp) ) then
+                  bytes = real(tmp%n_elements) * real(tmp%type)
+                  memTracking%CurrentMemoryUse = memTracking%CurrentMemoryUse - bytes
+                  memTracking%n_destroyed = memTracking%n_destroyed + 1
+                  call track_moveEntry(tmp,memTracking%aL,memTracking%dL)
+               else
+                  write (*,*) '*** dealloc() was not used on a variable allocated with alloc()'
+               endif
 
-               call track_moveEntry(tmp,memTracking%aL,memTracking%dL)
             end subroutine track_RegisterDeallocation
 
 !
@@ -147,7 +146,7 @@
                type(memTracker), intent(inout) :: activeTracker
 
                bytes = real(activeChunk%n_elements) * real(activeChunk%type)
-               if ( bytes.lt.0 ) write (*,*) 'negative memory usage?'
+               if ( bytes.lt.0 ) write (*,*) '*** negative memory usage?'
 
                if ( activeTracker%peakMem%bytes .le. activeTracker%CurrentMemoryUse ) then 
                   activeTracker%peakMem%bytes = activeTracker%CurrentMemoryUse
@@ -158,9 +157,9 @@
                do i = 1, topListsize 
                   if ( bytes .le. activeTracker%smallMem(i)%bytes ) then
                      do j = i, topListsize-1
-                         activeTracker%smallMem(i+1)%bytes = activeTracker%smallMem(i)%bytes
-                         activeTracker%smallMem(i+1)%at    = activeTracker%smallMem(i)%at
-                         activeTracker%smallMem(i+1)%label = activeTracker%smallMem(i)%label
+                         activeTracker%smallMem(j+1)%bytes = activeTracker%smallMem(j)%bytes
+                         activeTracker%smallMem(j+1)%at    = activeTracker%smallMem(j)%at
+                         activeTracker%smallMem(j+1)%label = activeTracker%smallMem(j)%label
                      enddo
 
                      activeTracker%smallMem(i)%bytes = bytes
@@ -173,11 +172,11 @@
  111           continue
 
                do i = 1, topListsize
-                  if ( bytes .gt. activeTracker%largeMem(i)%bytes ) then
-                     do j = i, topListsize-1
-                         activeTracker%largeMem(i+1)%bytes = activeTracker%largeMem(i)%bytes
-                         activeTracker%largeMem(i+1)%at    = activeTracker%largeMem(i)%at
-                         activeTracker%largeMem(i+1)%label = activeTracker%largeMem(i)%label
+                  if ( bytes .ge. activeTracker%largeMem(i)%bytes ) then
+                     do j = topListsize-1, i, -1
+                         activeTracker%largeMem(j+1)%bytes = activeTracker%largeMem(j)%bytes
+                         activeTracker%largeMem(j+1)%at    = activeTracker%largeMem(j)%at
+                         activeTracker%largeMem(j+1)%label = activeTracker%largeMem(j)%label
                      enddo
 
                      activeTracker%largeMem(i)%bytes = bytes
@@ -219,7 +218,7 @@
                    memTracking%smallMem(i)%at     = ' '
                    memTracking%smallMem(i)%label  = 'unnamed variable'
 
-                   memTracking%largeMem(i)%bytes  = 0
+                   memTracking%largeMem(i)%bytes  = -1
                    memTracking%largeMem(i)%at     = ' '
                    memTracking%largeMem(i)%label  = 'unnamed variable'
                 end do
@@ -466,7 +465,7 @@
                   if (associated(tmp%prev)) then 
                      tmp => tmp%prev 
                   else
-                     write (*,*) ' *** Label',key,' not found!'
+                     write (*,*) '*** label',key,' not found!'
                      entry => NULL()
                      return
                   endif
@@ -500,11 +499,6 @@
                head => list%head
                tail => list%tail
 
-!              write (*,*) ' doing the deletion from the list, ',entry%varID
-!              write (*,*) 'is list head valid? ',associated(list%head)
-!              write (*,*) 'is list tail valid? ',associated(list%tail)
-
-
                if ( list%elements .eq. 1 ) then
                   list%head => NULL()
                   list%tail => NULL()
@@ -514,26 +508,18 @@
                   return
 
                else if ( list%head%varID .eq. entry%varID ) then
-!                 write (*,*) 'will change head 1'
                   head      => entry%next
                   head%prev => NULL()
-!                 write (*,*) 'will change head 2'
                else if ( list%tail%varID .eq. entry%varID ) then
-!                 write (*,*) 'will change tail 1'
                   tail      => entry%prev
                   tail%next => NULL()
-!                 write (*,*) 'will change tail 2'
                else
-!                 write (*,*) 'will change the middle of the list 1'
                   prev => entry%prev 
                   next => entry%next 
-!                 write (*,*) 'will change the middle of the list 2'
                   entry%prev%next => next
                   entry%next%prev => prev
-!                 write (*,*) 'will change the middle of the list 3'
                endif 
 
-!              write (*,*) 'blabla'
                list%head => head 
                list%tail => tail
 
@@ -542,6 +528,7 @@
                list%nbytes   = list%nbytes - bytes 
 
                deallocate(entry)
+
             end subroutine track_deleteFromList
 !
 ! moveEntry will move a given element from one list to another
@@ -564,9 +551,10 @@
                   if (associated(tmp_src%prev)) then
                      tmp_src => tmp_src%prev
                   else
-                     write (*,*) 'No moving to do!'
+                     write (*,*) '*** no moving to do!'
                   endif
                end do
+
             end subroutine track_moveEntry 
 
      end module memory_tracker
