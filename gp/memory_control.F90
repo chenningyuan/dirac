@@ -50,7 +50,7 @@
          public allocator_set_verbose
          public allocator_get_verbose
          public allocator_set_verbose_level
-         public allocator_get_verbose_level
+!        public allocator_get_verbose_level
 
          interface allocator_set_max
             module procedure allocator_setmax_i4
@@ -78,9 +78,10 @@
                verbosity_level = level
             end subroutine allocator_set_verbose_level
 
-            subroutine allocator_get_verbose_level
-               return verbosity_level
-            end subroutine allocator_get_verbose_level
+!radovan: weird construct, should it be a function?
+!           subroutine allocator_get_verbose_level
+!              return verbosity_level
+!           end subroutine allocator_get_verbose_level
 
 
             subroutine allocator_setmax_i4(size)
