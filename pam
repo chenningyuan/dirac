@@ -472,8 +472,7 @@ class pam_enviroment:
             type='string',
             action='store',
             dest='dest_wrkdir',
-            default=self.workpath + '/<loginname.mol_inp>.PID',
-            help='set scratch directory [default: %default]',
+            help='set scratch directory [default: ..../<loginname.mol_inp>.PID]',
             metavar='FULL_PATH',
             )
         group.add_option(
@@ -596,8 +595,7 @@ class pam_enviroment:
             type='string',
             action='store',
             dest='dest_debugger',
-            default=self.debugger,
-            help='set full path to debugger [default: %default]',
+            help='set full path to debugger [default: in Makefile.config]',
             metavar='FULL_PATH',
             )
         group.add_option('--valgrind', action='store_true',
@@ -729,9 +727,17 @@ class pam_enviroment:
             sys.exit('The installation directory is not set ! Error exit !'
                      )
 
-        self.workdir = str(options.dest_wrkdir)
+        if options.dest_wrkdir is not None:
+            self.workdir = str(options.dest_wrkdir)
+            self.create_workdir_name = False
+            if self.iprint >= 5:
+                print '\nassigned self.workdir=',self.workdir
+
         self.basdir = str(options.dest_basdir)
         self.dirac_exe = str(options.dest_dirac)
+        if self.iprint >= 5:
+            print 'assigned self.basdir=',self.basdir
+            print 'assigned self.dirac_exe=',self.dirac_exe
 
         if options.dest_nice:
 
