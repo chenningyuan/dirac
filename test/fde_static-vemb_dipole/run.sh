@@ -8,7 +8,7 @@ for mol in water.sto6g water.sto6g.c2v; do
    export MOL=$mol.mol
    for inp in fde_dc_lda fde_ll_lda fde_twocomp_lda fde_dc_cc; do
       export MENU=$inp.inp
-      ../SCRIPTS/run.sh --mw=80 --nw=80 --put=vemb.grid 
+      ../SCRIPTS/run.sh --mw=80 --nw=80 --aw=90 --put=vemb.grid 
    done
 done
 

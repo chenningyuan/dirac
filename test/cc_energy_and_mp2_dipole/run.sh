@@ -8,6 +8,6 @@ else
    export MENU=ccsd.small
 fi
 
-../SCRIPTS/run.sh --mw=120
+../SCRIPTS/run.sh --mw=120 --aw=130
 
 exit 0
