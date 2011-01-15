@@ -14,7 +14,7 @@ option(DIRAC_ENABLE_BOUNDS_CHECK  "Enable bounds check"       OFF)
 option(DIRAC_ENABLE_CODE_COVERAGE "Enable code coverage"      OFF)
 option(DIRAC_ENABLE_EXTERNAL_MATH "Use external math library" ON)
 option(DIRAC_ENABLE_MPI           "Use MPI parallelization"   OFF)
-option(DIRAC_ENABLE_XCFUN         "Use XCFun library"         ON)
+option(DIRAC_ENABLE_XCFUN         "Use XCFun library"         OFF)
 option(DIRAC_ENABLE_UTILITIES     "Compile utilities"         OFF)
 option(DIRAC_ENABLE_MAIN          "Compile main binary"       ON)
 
