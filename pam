@@ -87,7 +87,7 @@ class pam_enviroment:
     # ... variables related to the work directory
 
         self.workdir = ''
-        self.workpath = ''
+        self.workpath = '/tmp'
         self.keepwrk = False
         self.create_workdir_name = True
 
@@ -258,8 +258,6 @@ class pam_enviroment:
 
         workdir_name = pwd.getpwuid(os.getuid()).pw_name + '.' \
             + workdir_name
-
-    # self.workpath MUST BE set before
 
         self.workdir = self.workpath + '/' + workdir_name
 
