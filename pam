@@ -950,15 +950,19 @@ class pam_enviroment:
     def copy_files(self):
         '''copies file from the home directory to the work directory'''
 
-        def copy_single_file(file_name):
+        def copy_single_file(file_name, warning):
             full_file_name = self.input_directory + '/' + file_name
             if os.path.isfile(full_file_name):
                 file_name_wrkdir = self.workdir + '/' + file_name
                 self.copy_file(full_file_name, file_name_wrkdir)
             else:
-                print 'File:', file_name, \
-                    ' you want to copy does not exist !'
-                sys.exit(-1)
+                if (warning is not None):
+                    print '  Warning: file "', file_name, \
+                    '" you want to copy to workdir does not exist, continuing at your own risk.'
+                else:
+                    print 'Error exit: file "', file_name, \
+                    '" you want to copy to workdir does not exist !  '
+                    sys.exit(-1)
 
         self.create_workdir()
 
@@ -999,7 +1003,7 @@ class pam_enviroment:
 
         if self.incmo:
             file_name = 'DFCOEF'
-            copy_single_file(file_name)
+            copy_single_file(file_name,warning=True)
 
     # copies DFFCK2 into workdir
 
