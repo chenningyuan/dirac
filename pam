@@ -66,6 +66,7 @@ class pam_enviroment:
 
     def __init__(self):
         '''Initialize the global set of variables'''
+        from common import get_username, get_hostname, get_hostname_ip
 
     # print level
 
@@ -114,9 +115,14 @@ class pam_enviroment:
 
         self.machinefile = ''  # could be enviroment variable (like $PBS_NODEFILE)
 
-    # master node
+    # master name, its IP
 
-        self.master = ''
+        self.master = get_hostname()
+        self.hostname_ip = get_hostname_ip()
+
+    #  user login name
+
+        self.user_name=get_username()
 
     # nodes (if any) - list
 
@@ -247,10 +253,11 @@ class pam_enviroment:
 
         self.pam_command = ''
 
-    def set_workdir_name(self, root_name):
+    def set_workdir_name(self):
         ''' sets the working directory name according to the
-    entering "root_name". depends on self.workpath '''
+    self.output_name;  depends on self.workpath '''
 
+        root_name=self.output_name
         if len(root_name) > 0:
             workdir_name = root_name + '.' + str(self.current_pid)
         else:
@@ -258,9 +265,7 @@ class pam_enviroment:
 
     # attach user login name to the workdir name
 
-        workdir_name = pwd.getpwuid(os.getuid()).pw_name + '.' \
-            + workdir_name
-
+        workdir_name = self.user_name + '.' + workdir_name
         self.workdir = self.workpath + '/' + workdir_name
 
         if self.iprint >= 5:
@@ -467,12 +472,14 @@ class pam_enviroment:
         parser.add_option_group(group)
 
         group = OptionGroup(parser, 'Scratch directory')
+   
+        default_scratch_help='set scratch directory [default:'+self.workpath+'/<loginname.mol_inp>.PID]'
         group.add_option(
             '--scratch',
             type='string',
             action='store',
             dest='dest_wrkdir',
-            help='set scratch directory [default: ..../<loginname.mol_inp>.PID]',
+            help=default_scratch_help,
             metavar='FULL_PATH',
             )
         group.add_option(
@@ -834,7 +841,7 @@ class pam_enviroment:
     # ## set workdir name here  ###
 
         if self.create_workdir_name:
-            self.set_workdir_name(root_name=self.output_name)
+            self.set_workdir_name()
 
     def assign_mol_inp_files(self):
         '''Assign "self.input_file_molecule" and "self.input_file_dirac"
@@ -1112,7 +1119,8 @@ class pam_enviroment:
 
         if self.parallel_run:
             os.putenv('DIRPAR', '1')
-            os.putenv('DIRNOD', str(self.max_memory_work_slave * 1000000))
+            os.putenv('DIRNOD', str(self.max_memory_work_slave
+                      * 1000000))
 
     # Next line is for IBM only but will not hurt other systems
 
@@ -1498,8 +1506,6 @@ class pam_enviroment:
                 sys.stdout.flush()
 
     def print_header(self):
-        from common import get_username, get_hostname, get_hostname_ip
-        self.master = get_hostname()
 
 #   radovan: if self.parallel_build == False,
 #            then self.parallel_run should be set to False
@@ -1513,9 +1519,9 @@ class pam_enviroment:
         print
         print '  output from the dirac python script'
         print
-        print '  user           :', get_username()
-        print '  host           :', get_hostname()
-        print '  ip             :', get_hostname_ip()
+        print '  user           :', self.user_name
+        print '  host           :', self.master
+        print '  ip             :', self.hostname_ip
         print '  date and time  :', datetime.datetime.now()
         print '  pam command    :', self.pam_command
         print '  pam args       :', ' '.join(sys.argv[1:])
@@ -1542,8 +1548,8 @@ class pam_enviroment:
 class pam_run(pam_enviroment):
 
     def __init__(self):
-        self.pam_variables = pam_enviroment()
         append_dirac_py_modules(install_dir)
+        self.pam_variables = pam_enviroment()
 
     def perform(self):
         self.pam_variables.read_makefile_config()
@@ -1560,7 +1566,6 @@ class pam_run(pam_enviroment):
         self.pam_variables.save_files()
         self.pam_variables.remove_work_dir()
         self.exit_function(return_code)
-
 
 def main(*args):
     dirac_run = pam_run()
