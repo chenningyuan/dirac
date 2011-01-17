@@ -1,13 +1,20 @@
 cmake_minimum_required(VERSION 2.6)
 
+project(DIRAC Fortran C)
+
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
     )
 
-set(CMAKE_BUILD_TYPE Debug)
-
-project(Dirac Fortran C)
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE
+        Debug
+        CACHE STRING
+        "Choose the type of build, options are: None Debug Release."
+        FORCE
+        )
+endif()
 
 option(DIRAC_ENABLE_PROFILING     "Enable profiling"          OFF)
 option(DIRAC_ENABLE_BOUNDS_CHECK  "Enable bounds check"       OFF)
@@ -27,49 +34,43 @@ set(DIRAC_WORK_MEM_WORDS
     )
 add_definitions(-DINSTALL_WRKMEM=${DIRAC_WORK_MEM_WORDS})
 
-# radovan: note to myself for later
-# mark_as_advanced(VALGRIND_EXECUTABLE)
-
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     add_definitions(-DSYS_LINUX)
     if(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "i686")
         add_definitions(-DARCH32BIT)
     elseif(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86_64")
+        add_definitions(-DARCH64BIT)
     else()
     endif()
 else()
 endif()
 
-include(ConfigCompilerFlags)
-if (CMAKE_COMPILER_IS_GNUC)
-    set (CMAKE_C_FLAGS "-Wall")
-    set (CMAKE_C_FLAGS_DEBUG "-O0 -g3")
-    set (CMAKE_C_FLAGS_RELEASE "-g -O2 -Wno-unused")
-elseif (CMAKE_C_COMPILER_ID MATCHES Intel)
-    set (CMAKE_C_FLAGS "-wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd177")
-    set (CMAKE_C_FLAGS_DEBUG "-g -O0")
-    set (CMAKE_C_FLAGS_RELEASE "-g -O2")
-    set (CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} -shared-intel")
-endif ()
-config_compiler_flags(C)
-
-if (CMAKE_COMPILER_IS_GNUFORTRAN)
-#   set(CMAKE_Fortran_FLAGS         "-Wall")
-    set(CMAKE_Fortran_FLAGS         "     ")
+if(CMAKE_COMPILER_IS_GNUFORTRAN)
+    add_definitions(-DVAR_GFORTRAN)
+    set(CMAKE_Fortran_FLAGS         " ")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g3")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -funroll-all-loops")
-    add_definitions(-DVAR_GFORTRAN)
-elseif (CMAKE_Fortran_COMPILER_ID MATCHES Intel)
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
+    add_definitions(-DVAR_IFC)
     set(CMAKE_Fortran_FLAGS         "-w -assume byterecl")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
-    add_definitions(-DVAR_IFC)
-endif ()
-config_compiler_flags(Fortran)
+endif()
+
+if(CMAKE_COMPILER_IS_GNUC)
+    set(CMAKE_C_FLAGS         "-Wall")
+    set(CMAKE_C_FLAGS_DEBUG   "-O0 -g3")
+    set(CMAKE_C_FLAGS_RELEASE "-g -O2 -Wno-unused")
+elseif(CMAKE_C_COMPILER_ID MATCHES Intel)
+    set(CMAKE_C_FLAGS         "-wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd177")
+    set(CMAKE_C_FLAGS_DEBUG   "-g -O0")
+    set(CMAKE_C_FLAGS_RELEASE "-g -O2")
+    set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} -shared-intel")
+endif()
 
 set(DIRAC_LIBRARIES_TO_LINK)
 
-if (DIRAC_ENABLE_EXTERNAL_MATH)
+if(DIRAC_ENABLE_EXTERNAL_MATH)
     find_package(BLAS)
     find_package(LAPACK)
     set(DIRAC_LIBRARIES_TO_LINK
@@ -77,16 +78,16 @@ if (DIRAC_ENABLE_EXTERNAL_MATH)
         blas
         lapack
         )
-endif ()
+endif()
 
-if (DIRAC_ENABLE_MPI)
+if(DIRAC_ENABLE_MPI)
     find_package(MPI)
     add_definitions(-DVAR_MPI)
-    if (MPI_FOUND)
+    if(MPI_FOUND)
         set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${MPI_COMPILE_FLAGS}")
         include_directories(${MPI_INCLUDE_PATH})
-    endif ()
-endif ()
+    endif()
+endif()
 
 add_custom_command(
     OUTPUT
@@ -136,7 +137,7 @@ set(CMAKE_Fortran_MODULE_DIRECTORY
 include(cmake/Definitions.cmake)
 include(cmake/Sources.cmake)
 
-if (DIRAC_ENABLE_XCFUN)
+if(DIRAC_ENABLE_XCFUN)
     add_subdirectory(xcfun)
     set(DIRAC_INTERFACES_LIST
         ${DIRAC_INTERFACES_LIST}
@@ -146,7 +147,7 @@ if (DIRAC_ENABLE_XCFUN)
         ${DIRAC_LIBRARIES_TO_LINK}
         xcfun
         )
-endif ()
+endif()
 
 add_custom_target(dirac_interfaces
     ALL
@@ -248,5 +249,4 @@ if(DIRAC_ENABLE_UTILITIES)
         utils_dependencies
         ${DIRAC_LIBRARIES_TO_LINK}
         )
-
 endif()
