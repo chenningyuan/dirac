@@ -1112,8 +1112,7 @@ class pam_enviroment:
 
         if self.parallel_run:
             os.putenv('DIRPAR', '1')
-            os.putenv('DIRNOD', str(self.max_memory_work_slave
-                      * 1000000))
+            os.putenv('DIRNOD', str(self.max_memory_work_slave * 1000000))
 
     # Next line is for IBM only but will not hurt other systems
 
