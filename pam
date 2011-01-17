@@ -46,7 +46,6 @@ global install_dir
 install_dir_default = os.path.realpath(__file__)[:-4]
 install_dir = install_dir_default
 
-
 def append_dirac_py_modules(dirac_install_dir):
     '''Append directory with the common.py module file
   to import selected python objects used throughout the script
@@ -251,7 +250,9 @@ class pam_enviroment:
         self.set_timeout_limit = False
         self.timeout = ''
 
-        self.pam_command = ''
+    # pam script sitting in the installation directory (TODO: better specification)
+
+        self.pam_command = install_dir+'/pam'
 
     def set_workdir_name(self):
         ''' sets the working directory name according to the
