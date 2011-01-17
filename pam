@@ -91,6 +91,9 @@ class pam_enviroment:
         self.keepwrk = False
         self.create_workdir_name = True
 
+    # ... current PID to have unique string for each pam run; TODO: get also short random string ?
+        self.current_pid=os.getpid()
+
     # ... variables related to parallel calculations
 
         self.parallel_build = False  # parallel build - read from Makefile.config
@@ -196,7 +199,7 @@ class pam_enviroment:
         self.output_file = ''
         self.output_file_full = ''  # full (absolute) path
 
-    # lu of the file
+    # lu of the DIRAC run output file (open in the "execute_dirac" method)
 
         self.f = None
 
@@ -248,11 +251,10 @@ class pam_enviroment:
         ''' sets the working directory name according to the
     entering "root_name". depends on self.workpath '''
 
-        current_pid = os.getpid()
         if len(root_name) > 0:
-            workdir_name = root_name + '.' + str(current_pid)
+            workdir_name = root_name + '.' + str(self.current_pid)
         else:
-            workdir_name = 'dirac_work_dir.' + str(current_pid)
+            workdir_name = 'dirac_work_dir.' + str(self.current_pid)
 
     # attach user login name to the workdir name
 
@@ -937,7 +939,7 @@ class pam_enviroment:
 
           # assign default name
 
-            self.output_name = 'dirac_output.' + str(os.getpid())
+            self.output_name = 'dirac_output.' + str(self.current_pid)
 
     # control printout
 
