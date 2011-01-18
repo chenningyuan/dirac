@@ -2246,7 +2246,7 @@ C           Print section
             CALL DZERO(XNORM(1,IPCP),NCSIM)
           ENDIF
         ENDIF
-      ELSE
+      ELSE ! from IF(STATIC) THEN
 C
 C       In frequency-dependent case, the resultant X-vectors
 C       split into X(+) and X(-).
@@ -2424,7 +2424,7 @@ C
             CALL DZERO(XNORM(1,IPCM),MFREQ)
           ENDIF
         ENDIF
-      ENDIF
+      ENDIF ! from IF(STATIC) THEN
 C
       NTSIM = NESIM + NPSIM + NCSIM
 C
@@ -2548,7 +2548,7 @@ C
             CALL PRBVEC(LUPRI,BCVEC(KBC2),MFREQ,NZCONF)
           ENDIF
         ENDIF
-      ENDIF
+      ENDIF ! from IF(IPRXRS.GE.5) THEN
 C
 C     If (LINEQ) add gradient
 C     =======================
@@ -2566,39 +2566,39 @@ C
 C
 C       Print section
 C
-      IF(IPRXRS.GE.5) THEN
-        IF(NZXOPE.GT.0) THEN
-          WRITE(LUPRI,'(/I5,A)') MFREQ,
-     &     ' orbital (e-e) (E[2}X(+)-WS[2]X(-)+G) residual vectors'
-          CALL PRBVEC(LUPRI,BEVEC,MFREQ,NZXOPE)
-          IF(.NOT.STATIC) THEN
+        IF(IPRXRS.GE.5) THEN
+          IF(NZXOPE.GT.0) THEN
             WRITE(LUPRI,'(/I5,A)') MFREQ,
-     &       ' orbital (e-e) (E[2}X(-)-WS[2]X(+)) residual vectors'
-            CALL PRBVEC(LUPRI,BEVEC(KBE2),MFREQ,NZXOPE)
+     &       ' orbital (e-e) (E[2}X(+)-WS[2]X(-)+G) residual vectors'
+            CALL PRBVEC(LUPRI,BEVEC,MFREQ,NZXOPE)
+            IF(.NOT.STATIC) THEN
+              WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &         ' orbital (e-e) (E[2}X(-)-WS[2]X(+)) residual vectors'
+              CALL PRBVEC(LUPRI,BEVEC(KBE2),MFREQ,NZXOPE)
+            ENDIF
           ENDIF
-        ENDIF
-        IF(NZXOPP.GT.0) THEN
-          WRITE(LUPRI,'(/I5,A)') MFREQ,
-     &     ' orbital (e-p) (E[2}X(+)-WS[2]X(-)+G) residual vectors'
-          CALL PRBVEC(LUPRI,BPVEC,MFREQ,NZXOPP)
-          IF(.NOT.STATIC) THEN
+          IF(NZXOPP.GT.0) THEN
             WRITE(LUPRI,'(/I5,A)') MFREQ,
-     &       ' orbital (e-p) (E[2}X(-)-WS[2]X(+)) residual vectors'
-            CALL PRBVEC(LUPRI,BPVEC(KBP2),MFREQ,NZXOPP)
+     &       ' orbital (e-p) (E[2}X(+)-WS[2]X(-)+G) residual vectors'
+            CALL PRBVEC(LUPRI,BPVEC,MFREQ,NZXOPP)
+            IF(.NOT.STATIC) THEN
+              WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &         ' orbital (e-p) (E[2}X(-)-WS[2]X(+)) residual vectors'
+              CALL PRBVEC(LUPRI,BPVEC(KBP2),MFREQ,NZXOPP)
+            ENDIF
           ENDIF
-        ENDIF
-        IF(NZCONF.GT.0) THEN
-          WRITE(LUPRI,'(/I5,A)') MFREQ,
-     &     ' configurational (E[2}X(+)-WS[2]X(-)+G) residual vectors'
-          CALL PRBVEC(LUPRI,BCVEC,MFREQ,NZCONF)
-          IF(.NOT.STATIC) THEN
+          IF(NZCONF.GT.0) THEN
+            WRITE(LUPRI,'(/I5,A)') MFREQ,
+     &       ' configurational (E[2}X(+)-WS[2]X(-)+G) residual vectors'
+            CALL PRBVEC(LUPRI,BCVEC,MFREQ,NZCONF)
+            IF(.NOT.STATIC) THEN
             WRITE(LUPRI,'(/I5,A)') MFREQ,
      &       ' configurational (E[2}X(-)-WS[2]X(+)) residual vectors'
             CALL PRBVEC(LUPRI,BCVEC(KBC2),MFREQ,NZCONF)
+            ENDIF
           ENDIF
         ENDIF
-      ENDIF
-      ENDIF
+      ENDIF ! from IF(LINEQ) THEN
 C
       CALL FLSHFO(LUPRI)
 C
