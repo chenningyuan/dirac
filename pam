@@ -15,6 +15,9 @@
 #
 ##########################################################################
 
+# wishlist: 1. it would be very nice to allow wildcards or regex in
+#              --put and --get, example: --get="plot*"
+
 # radovan: suggestions:
 #         1. please use standard indentation of 4 spaces (not 2 spaces, no tabs)
 #         2. please do not use if bar>=5:
