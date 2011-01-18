@@ -3,6 +3,7 @@
 import os
 import sys
 import string
+import subprocess
 from optparse import OptionParser, OptionGroup
 
 # define example usage
@@ -63,7 +64,7 @@ group.add_option('--timeout',
                  action='store',
                  dest='timeout',
                  default=None,
-                 help='set time limit for hanging tests in seconds [default: %default]',
+                 help='set time limit for hanging tests in minutes [default: %default]',
                  metavar='INTEGER')
 parser.add_option_group(group)
 
@@ -85,21 +86,74 @@ if options.individual != None:
     for test in options.individual.split():
         list_of_tests_to_run.append(test)
 
-# at this stage we know which tests we want to run
-# let's run them
+# get total number of tests to run
 
+total_nr_of_tests = 0
 for test in list_of_tests_to_run:
     directory = 'test/%s' % test
-    menu_file = '%s/menu' % directory
-    f = open(menu_file, 'r')
+    os.chdir(directory)
+    f = open('menu', 'r')
     for line in f.readlines():
-        inp = line.split()[0]
-        mol = line.split()[1]
-        inp_file = '%s/%s' % (directory, inp)
-        mol_file = '%s/%s' % (directory, mol)
+        total_nr_of_tests += 1
+    f.close()
+os.chdir('/home/bast/dirac/git')
+
+# print header
+
+print
+print '%8s %11s %20s %20s %20s' % ('progress', 'result', 'test', 'inp', 'mol')
+print '-----------------------------------------------------------------------------------'
+
+# run the tests
+
+nr_of_tests_done = 0
+nr_ok            = 0
+nr_crashed       = 0
+nr_failed        = 0
+for test in list_of_tests_to_run:
+    directory = 'test/%s' % test
+    os.chdir(directory)
+    f = open('menu', 'r')
+    for line in f.readlines():
+        nr_of_tests_done += 1
+        inp_file = line.split()[0]
+        mol_file = line.split()[1]
         pam_flags = ''
         if len(line.split()) > 2:
            for i in range(2, len(line.split())):
                pam_flags += line.split()[i] + ' '
-        os.system('./pam --inp=%s --mol=%s %s' % (inp_file, mol_file, pam_flags))
+# pam dev null flag
+
+#       run pam
+        command = '../../pam --inp=%s --mol=%s %s' % (inp_file, mol_file, pam_flags)
+        p = subprocess.Popen(command,
+                             shell=True,
+                             stdin=subprocess.PIPE,
+                             stdout=subprocess.PIPE)
+
+#       check whether DIRAC terminated normally
+        pam_output = p.communicate()[0]
+        if 'exit           : normal' in pam_output:
+            nr_ok += 1
+            result_text = 'OK'
+
+#           apply the filter on output
+         
+#           compare filtered result with reference
+#           result_text = 'FAIL'
+#           nr_failed += 1
+        else:
+            result_text = 'CRASH'
+            nr_crashed += 1
+
+        progress = '[%3i%s]' % (100.0*float(nr_of_tests_done)/float(total_nr_of_tests), r'%')
+        print '%8s %11s %20s %20s %20s' % (progress, result_text, test, inp_file, mol_file)
+
     f.close()
+
+print
+print 'summary: %5i ok'      % nr_ok
+print '         %5i failed'  % nr_failed
+print '         %5i crashed' % nr_crashed
+
+print
