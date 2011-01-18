@@ -994,7 +994,7 @@ class pam_enviroment:
                        + 'DIRAC.INP')
 
         if self.full_restart:
-            copy_single_file(self.archive_name)
+            copy_single_file(self.archive_name,warning=None)
             archive_workdir = self.workdir + '/' + self.archive_name
             unpack_command = 'tar --directory ' + self.workdir \
                 + ' -xvf ' + archive_workdir
@@ -1008,7 +1008,7 @@ class pam_enviroment:
                 print 'self.put_files=', self.put_files
                 print '  files_to_put=', files_to_put
             for file_name in files_to_put:
-                copy_single_file(file_name)
+                copy_single_file(file_name,warning=None)
 
     # copies DFCOEF into workdir
 
@@ -1020,7 +1020,7 @@ class pam_enviroment:
 
         if self.infock:
             file_name = 'DFFCK2'
-            copy_single_file(file_name)
+            copy_single_file(file_name,warning=None)
 
     def distribute_work_dir(self):
         '''This routine is called when local disks are selected
