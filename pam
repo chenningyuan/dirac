@@ -544,14 +544,22 @@ class pam_enviroment:
             help='set number of cores [default: %default]',
             metavar='INTEGER',
             )
+
+        help_mpirun='set MPI launcher, default is to use MPIRUN set in Makefile.config'
+        if len(self.mpirun)>0:
+            help_mpirun_note=' ['+self.mpirun+']'
+        else:
+            help_mpirun_note=' [none]'
+        help_mpirun=help_mpirun+help_mpirun_note
         group.add_option(
             '--mpirun',
             type='string',
             action='store',
             dest='dest_mpirun',
-            help='set MPI launcher, default is to use MPIRUN set in Makefile.config',
+            help=help_mpirun,
             metavar='STRING',
             )
+        
         group.add_option(
             '--mpiarg',
             type='string',
@@ -560,14 +568,21 @@ class pam_enviroment:
             help='additonal arguments for the MPI launcher, default - none',
             metavar='STRING',
             )
+
+        help_machfile="""set machinefile for parallel run
+                     default is to use the machinefile set in Makefile.config
+                  """
+        if len(self.machinefile)>0:
+            help_machfile_note=' ['+self.machinefile+']'
+        else:
+            help_machfile_note=' [none]'
+        help_machfile=help_machfile+help_machfile_note
         group.add_option(
             '--machfile',
             type='string',
             action='store',
             dest='dest_machfile',
-            help="""set machinefile for parallel run
-                     default is to use the machinefile set in Makefile.config
-                  """,
+            help=help_machfile,
             metavar='STRING',
             )
         parser.add_option_group(group)
@@ -1266,6 +1281,7 @@ class pam_enviroment:
                     self.mpirun = value
                     self.parallel_build = True
                 else:
+                    print 'MPIRUN launcher in Makefile.config in not existing !'
                     self.parallel_build = False
                     pass
             elif name == 'LOCALDISKS':
