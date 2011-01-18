@@ -3666,11 +3666,12 @@ C.........If the contribution to the norm of the property gradient
 C         from this parameter type is below threshold, then no
 C         trial vectors of this kind is generated
           GPTMP = DNRM2(NBDIM,GP,1)
-          IF (GPTMP.LT.0.3D0*GPTNRM.AND.(.NOT.UNCOUP)) THEN
-            NDIM = NFREQ*NSTAT*NDAMP
-            CALL IZERO(IVEC,NDIM)
-            GOTO 20
-          ENDIF
+CPP this makes crash the code
+C          IF (GPTMP.LT.0.3D0*GPTNRM.AND.(.NOT.UNCOUP)) THEN
+C            NDIM = NFREQ*NSTAT*NDAMP
+C            CALL IZERO(IVEC,NDIM)
+C            GOTO 20
+C          ENDIF
           IF (IPRXRS.GE.3) WRITE(LUPRI,'(1X,A,1P,D12.5)')
      &         'Norm of gradient ratio in XRSST2:',GPTMP/GPTNRM
           IFREQ = 0
@@ -3853,7 +3854,6 @@ C     Orthogonalize new b-vectors against all previous b-vectors
 C     and among themselves, and, if requested, renormalize.
 C
       call memchk('XRSST2  7',WORK,1)
-
       IF(.NOT.UNCOUP) THEN
         CALL XRSORT(BVEC,NBTYP,NBVEC,NBPREV,
      &            IBVEC,IBTYP,IVEC,WORK,KFREE,LFREE)
