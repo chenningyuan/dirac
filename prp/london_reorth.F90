@@ -88,6 +88,7 @@ contains
 !   do AO-to-MO transformation on "G" part
     call alloc(fmo, p_n2orbxq*nr_xyz_comp)
     call do_ao_to_mo(fmo, fao, cmo, ibeig)
+    call dealloc(fao)
 
 !   calculate "F" part, add to "G" and write result to file
     call get_ftb(fmo, cmo, ibeig)
@@ -511,6 +512,7 @@ contains
     end do
 
     close(int1_unit)
+    call dealloc(tb)
 
   end subroutine get_tb_dmat
 

@@ -409,7 +409,7 @@ contains
     do while (in_file)
 
       read(11, *, end = 99) line
-      write(*, *) 'line(1:len_trim(p_name)', line(1:len_trim(p_name))
+!      write(*, *) 'line(1:len_trim(p_name)', line(1:len_trim(p_name))
 
       !if (p_name == line(1:len_trim(p_name))) then
       if (line(1:2) == p_name(1:2)) then
