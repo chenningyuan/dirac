@@ -246,7 +246,7 @@ class pam_enviroment:
         self.infock = False
         self.outfock = False
 
-    # execution time-limit
+    # execution time-limit (in seconds; TODO: implement general time format)
 
         self.set_timeout_limit = False
         self.timeout = ''
@@ -304,11 +304,22 @@ class pam_enviroment:
             print ' src full path:', src
             print 'dest full path:', dest
 
+    def process_workdir_name(self,workdir_string):
+        """ Process workdir name """
+        self.create_workdir_name = False
+        # check for PID substring to be replaced with unique string
+        if workdir_string.find('PID') != -1:
+            workdir_string=workdir_string.replace('PID',str(self.current_pid),1)
+        else:
+            pass
+        # assign workdir name
+        self.workdir = workdir_string
+
     def list_workdir(self):
         '''lists the content of the master work-directory more here http://www.daniweb.com/code/snippet216798.html'''
-
+        scratch_id=self.user_name+"@"+self.master+":"+self.workdir
         print
-        print '  content of the scratch directory', os.getcwd()
+        print '  content of the scratch directory ', scratch_id
         print '  ------------------------------------------------------------------------------'
         print '%25s %10s %s' % ('name', 'size (MB)', 'last accessed')
         print '  ------------------------------------------------------------------------------'
@@ -737,8 +748,7 @@ class pam_enviroment:
                      )
 
         if options.dest_wrkdir is not None:
-            self.workdir = str(options.dest_wrkdir)
-            self.create_workdir_name = False
+            self.process_workdir_name(workdir_string=str(options.dest_wrkdir))
             if self.iprint >= 5:
                 print '\nassigned self.workdir=',self.workdir
 
