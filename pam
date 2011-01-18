@@ -72,6 +72,8 @@ class pam_enviroment:
         self.iprint = 1
         self.iprint_default = 1
 
+        self.just_show_settings = False
+
      # ## contains installation directory ...
 
         self.dirac_home = install_dir
@@ -254,6 +256,23 @@ class pam_enviroment:
     # pam script sitting in the installation directory (TODO: better specification)
 
         self.pam_command = install_dir+'/pam'
+
+    def show_settings(self):
+        "Print current settings to stdout"
+        print "Current settings:"
+        print "  Install directory   " + self.dirac_home
+        print "  Basis directories   " + self.basdir
+        print "  Scratch directory   " + self.scratch_dir
+        print "  Parallel build      " + str(self.parallel_build)
+        if self.parallel_build:
+            print "    mpirun            " + str(self.mpirun)
+            print "    mpirun extra args " + str(self.mpiarg)
+            print "    Local disks       " + str(self.localdisks)
+            print "    Machine file      " + self.machinefile
+        print "  Profiler            " + self.profiler
+        print "  Debugger            " + self.debugger
+        print "  Dirac command       " + self.dirac_cmd
+        print "  Dirac executable    " + self.dirac_exe
 
     def set_scratch_dir_name(self):
         ''' sets the scratch directory name according to the
@@ -622,6 +641,9 @@ class pam_enviroment:
         group = OptionGroup(parser,
                             'Advanced (programming, debugging, and automation)'
                             )
+        group.add_option('--show', action='store_true',
+                         dest='just_show_settings', default=False,
+                         help='Print current settings and exit')
         group.add_option('--debug', action='store_true',
                          dest='dest_debug', default=False,
                          help='run in debugger [default: %default]')
@@ -823,6 +845,8 @@ class pam_enviroment:
 
         self.keep_scratch = options.dest_keep_scratch
 
+        self.just_show_settings = options.just_show_settings
+
         if options.dest_debug:
             self.debug = True
 
@@ -852,7 +876,7 @@ class pam_enviroment:
 #   check that they are there, if not exit
 #   if yes, assign output file name
 
-        if not self.full_restart:
+        if not (self.full_restart or self.just_show_settings):
             if options.mol_file is not None and options.inp_file \
                 is not None:
                 self.input_molecule = options.mol_file
@@ -1562,7 +1586,7 @@ class pam_enviroment:
             print
 
         sys.stdout.flush()
-
+    
 
 class pam_run(pam_enviroment):
 
@@ -1574,6 +1598,9 @@ class pam_run(pam_enviroment):
         self.pam_variables.read_makefile_config()
         self.pam_variables.process_pam_arguments()
         self.pam_variables.set_output_file()
+        if self.pam_variables.just_show_settings:
+            self.pam_variables.show_settings()
+            return 0
         self.pam_variables.print_header()
         self.pam_variables.copy_files()
         if self.pam_variables.parallel_run \
@@ -1588,7 +1615,7 @@ class pam_run(pam_enviroment):
 
 def main(*args):
     dirac_run = pam_run()
-    dirac_run.perform()
+    return dirac_run.perform()
 
 
 if __name__ == '__main__':
