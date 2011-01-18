@@ -430,8 +430,8 @@ C            /Sep 2005 hjaaj
          MAXSIM = MIN(MAXSIM1,MAXSIM2)
          MAXSIM = MAX(1,MAXSIM)
 CTROND
-         WRITE(6,*) 'MXLOAD:...',NTSIM,NVPAR,NFREQ,NFREQ*NVPAR,NZCONFQ,
-     &           NZXOPEQ,NZOPPQ,MXBVEC,NZVARQ,N2BBASXQ,LFREE
+C         WRITE(6,*) 'MXLOAD:...',NTSIM,NVPAR,NFREQ,NFREQ*NVPAR,NZCONFQ,
+C     &           NZXOPEQ,NZOPPQ,MXBVEC,NZVARQ,N2BBASXQ,LFREE
 C        ... always attempt at least one vector
       END IF
 C
@@ -731,7 +731,8 @@ C
 C        Write info to PAMCYC
 C        ====================
 C
-         WRITE(LUCYCL,'(1P,6D10.2)') ((RNORM(I,J),I=1,NVPAR),J=1,NFREQ)
+         WRITE(LUCYCL,'(1P,6D10.2)')
+     &                        ((RNORM(I,J),I=1,NVPAR),J=1,NFREQ*NDAMP)
          WRITE(LUCYCL,'(A12)') CPUTID
          IF(IPRXRS.GE.1) THEN
            WRITE(LUPRI,'(/A,I5,A,A12)')
@@ -3091,7 +3092,7 @@ C
 #include "dcbxrs.h"
 C
       CHARACTER CPUTID*12,WORD*3
-      DIMENSION RNORM(NVPAR,NFREQ),EVALR(NFREQ),ISIM(*),
+      DIMENSION RNORM(NVPAR,NFREQ*NDAMP),EVALR(NFREQ),ISIM(*),
      &          RCNV(NFREQ),IBTYP(2,NREDM)
 C
       IF(UNCOUP) RETURN
@@ -3162,7 +3163,8 @@ C
           CALL PRSYMB(LUPRI,'=',NCOL,0)
           READ(LUCYCL,'(I3,2X,A9,6(2X,A3,I3))')
      &       JTR,XRS_INTTYP,(WORD,ISIM(I),I=1,NVPAR)
-          READ(LUCYCL,'(6D10.2)') ((RNORM(I,J),I=1,NVPAR),J=1,NFREQ)
+          READ(LUCYCL,'(6D10.2)')
+     &       ((RNORM(I,J),I=1,NVPAR),J=1,NFREQ*NDAMP)
           READ(LUCYCL,'(A12)') CPUTID
           WRITE(LUPRI,'(A5,I3,2X,A12,1X,A,A9,A,6(5X,A1,I3,A1))') 
      &        '* It.',ITR,CPUTID,' (',XRS_INTTYP,')',
@@ -4301,7 +4303,7 @@ C
       CALL DAMATR(N,A,LDA,WORK(KAN))
       CALL DSPFA (WORK(KAN),N,WORK(KPVT),INFO)
       CALL DSPDI(WORK(KAN),N,WORK(KPVT),DET,INERT,WORK(KFREE),100)
-      WRITE(6,*) 'TEST:',(INERT(I),I=1,3),NEPROT,IPRINT
+C      WRITE(6,*) 'TEST:',(INERT(I),I=1,3),NEPROT,IPRINT
       IPAR = INERT(2) - NEPROT
       IF(IPRINT.GE.2.OR.IPAR.GT.0 .OR. INERT(3) .ne. 0) THEN
         WRITE(LUPRI,'(/3X,A,F12.5)') '* Reduced matrix. Frequency:',W

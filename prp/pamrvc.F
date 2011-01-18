@@ -1963,10 +1963,10 @@ C
      &                BEBUF(1,1),BPBUF(1,1),BCBUF,1,0,
      &                IBTYP,WORK,KFREE,LFREE)
 CTROND
-          WRITE(6,*) '* S[2]X(+) :'
-          DO K = 1,NBEVC
-            WRITE(6,*) BEPVC(K,II),BEBUF(K,1)
-          ENDDO
+C          WRITE(6,*) '* S[2]X(+) :'
+C          DO K = 1,NBEVC
+C            WRITE(6,*) BEPVC(K,II),BEBUF(K,1)
+C          ENDDO
           IF(DAMPFREQ.NE.D0) THEN
             CALL XRSTVC(BEPVC(1,II+1),1,NBEVC,0,
      &                  BPPVC(1,II+1),1,NBPVC,0,
@@ -1974,10 +1974,10 @@ CTROND
      &                  BEBUF(1,2),BPBUF(1,2),BCBUF,1,0,
      &                  IBTYP,WORK,KFREE,LFREE)
 CTROND
-          WRITE(6,*) '* S[2]X(+) :',DAMPFREQ
-          DO K = 1,NBEVC
-            WRITE(6,*) BEPVC(K,II+1),BEBUF(K,2)
-          ENDDO
+C          WRITE(6,*) '* S[2]X(+) :',DAMPFREQ
+C          DO K = 1,NBEVC
+C            WRITE(6,*) BEPVC(K,II+1),BEBUF(K,2)
+C          ENDDO
           ENDIF
 C
 C         Accumulate T(+) = S[2]X(-) in b(+)
@@ -1989,10 +1989,10 @@ C
      &                BEPVC(1,II),BPPVC(1,II),BCPVC(1,I),1,0,
      &                IBTYP,WORK,KFREE,LFREE)
 CTROND
-          WRITE(6,*) '* S[2]X(+) :'
-          DO K = 1,NBEVC
-            WRITE(6,*) BEMVC(K,II),BEPVC(K,II)
-          ENDDO
+C          WRITE(6,*) '* S[2]X(+) :'
+C          DO K = 1,NBEVC
+C            WRITE(6,*) BEMVC(K,II),BEPVC(K,II)
+C          ENDDO
 
           IF(DAMPFREQ.NE.D0) THEN
             CALL XRSTVC(BEMVC(1,II+1),1,NBEVC,0,
@@ -2002,10 +2002,10 @@ CTROND
      &                  IBTYP,WORK,KFREE,LFREE)
           ENDIF
 CTROND
-          WRITE(6,*) '* S[2]X(+) :',DAMPFREQ
-          DO K = 1,NBEVC
-            WRITE(6,*) BEMVC(K,II+1),BEPVC(K,II+1)
-          ENDDO
+C          WRITE(6,*) '* S[2]X(+) :',DAMPFREQ
+C          DO K = 1,NBEVC
+C            WRITE(6,*) BEMVC(K,II+1),BEPVC(K,II+1)
+C          ENDDO
 C
 C         Scale T = S[2]X with negative frequency
 C         ---------------------------------------
@@ -2603,14 +2603,16 @@ CPP check XTNORM
           ENDDO
         ELSE
           DO IFREQ = 1,MFREQ
-            XTNORM = DNRM2(NVPAR,XNORM(IFREQ,1),MFREQ*NDAMP)
             INDR = 2 * IFREQ - 1
             INDI = 2 * IFREQ
+            XTNORMR = DNRM2(NVPAR,XNORM(INDR,1),MFREQ*NDAMP)
+            XTNORMI = DNRM2(NVPAR,XNORM(INDR,1),MFREQ*NDAMP)
+            XTNORM = DSQRT(XTNORMR**2 + XTNORMI**2)
 CPP Need to be changed with correct complex label ++,+-,--,-+!
             WRITE(LUPRI,'(A15,2X,A8,9(2X,A2,A6))')
      &       '* Frequency    ',
      &       'Total   ',(BVTYP(I),' part ',I=1,NVPAR),
-     &       (BVTYP(I),' part ',I=1,NVPAR)
+     &                  (BVTYP(I),' part ',I=1,NVPAR)
             WRITE(LUPRI,'(F15.8,1P,16(2X,E8.2))')
      &          EVALR(IFREQ),XTNORM,
      &         (XNORM(INDR,I),I=1,NVPAR),
@@ -2792,13 +2794,13 @@ C     =======================
 C
       IF(LINEQ) THEN
         IF(NZXOPE.GT.0) THEN
-          CALL GRDADD(BEVEC,GPOE,NZXOPEQ,MFREQ)
+          CALL GRDADD(BEVEC,GPOE,NZXOPEQ,MFREQ*NDAMP)
         ENDIF
         IF(NZXOPP.GT.0) THEN
-          CALL GRDADD(BPVEC,GPOP,NZXOPPQ,MFREQ)
+          CALL GRDADD(BPVEC,GPOP,NZXOPPQ,MFREQ*NDAMP)
         ENDIF
         IF(NZCONF.GT.0) THEN
-          CALL GRDADD(BCVEC,GPCI,NZCONFQ,MFREQ)
+          CALL GRDADD(BCVEC,GPCI,NZCONFQ,MFREQ*NDAMP)
         ENDIF
 C
 C       Print section
@@ -3246,7 +3248,6 @@ C
      &              IBTYP,IBEVC,IVECS(1,IPEP),
      &              MFREQ,JBENDX,IBOFF,NEPREV,NZXOPE,
      &              BEBUF,WORK(KPREC),WORK,KFREE,LFREE)
-        CALL MEMREL('XBVGEN.eprec',WORK,1,KPREC,KFREE,LFREE)
         CALL XRSORT(BEVEC,JBENDX,NESIM,NEPREV,
      &              IBEVC,IBTYP,IVECS(1,IPEP),WORK,KFREE,LFREE)
         CALL XRSAVE(BEVEC,JBENDX,NZXOPEQ,NESIM,NEPREV,
@@ -3262,7 +3263,6 @@ C
      &              IBTYP,IBPVC,IVECS(1,IPPP),
      &              MFREQ,JBPNDX,IBOFF,NPPREV,NZXOPP,
      &              BPBUF,WORK(KPREC),WORK,KFREE,LFREE)
-        CALL MEMREL('XBVGEN.pprec',WORK,1,KPREC,KFREE,LFREE)
         CALL XRSORT(BPVEC,JBPNDX,NPSIM,NPPREV,
      &              IBPVC,IBTYP,IVECS(1,IPPP),WORK,KFREE,LFREE)
         CALL XRSAVE(BPVEC,JBPNDX,NZXOPPQ,NPSIM,NPPREV,
@@ -3274,7 +3274,6 @@ C     Configuration type trial vectors
 C
       IF(NZCONF.GT.0) THEN
         KPREC=FREE
-C        KDENOM=KFREE
         KCDIAS=KFREE
         CALL XBVGEN(BCVEC,USEXVC,WORK(KCDIAH),WORK(KCDIAS),EVALR,EVECR,
      &              IBTYP,IBCVC,IVECS(1,IPCP),
@@ -3485,6 +3484,7 @@ C           Note that all residuals are employed, independent of norm
               CALL MEMGET('REAL',KPRBUF,2*NDAMP*NVARQ,WORK,KFREE,LFREE)
               CALL XRSPREC(PREC,BVEC(1,1,IP),IVECS(IP),WORK(KPRBUF),
      &                     NVAR,WORK,KFREE,LFREE)
+              CALL MEMREL('XRSPREC.cpp',WORK,1,KPRBUF,KFREE,LFREE)
             ELSE
               IF(IVECS(IP).EQ.1) THEN
                 DO IZ = 1,MZ
@@ -3539,9 +3539,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-C
-      PARAMETER(D0 = 0.0D0,D1 = 1.0D0,DM1 = -1.0D0)
-      PARAMETER(DLIM = 1.0D-6)
 C
 #include "dcbxrs.h"
 #include "dgroup.h"
