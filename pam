@@ -84,12 +84,12 @@ class pam_enviroment:
 
         self.xyz_molecule_input = False
 
-    # ... variables related to the work directory
+    # ... variables related to the scratch directory
 
-        self.workdir = ''
-        self.workpath = '/tmp'
-        self.keepwrk = False
-        self.create_workdir_name = True
+        self.scratch_dir = ''
+        self.scratch_path = '/tmp'
+        self.keep_scratch = False
+        self.create_scratch_dir_name = True
 
     # ... current PID to have unique string for each pam run; TODO: get also short random string ?
         self.current_pid=os.getpid()
@@ -106,9 +106,9 @@ class pam_enviroment:
 
         self.localdisks = False
 
-    #   command to pass the location of the work directory to the slaves (to be set by configure)
+    #   command to pass the location of the scratch directory to the slaves (to be set by configure)
 
-        self.argument_to_pass_work_dir_to_slaves = ''
+        self.argument_to_pass_scratch_dir_to_slaves = ''
 
     # machine file
 
@@ -232,7 +232,7 @@ class pam_enviroment:
             'DFCOEF.BEST',
             ]
 
-    # all files from the archive are unpacked, it is assumed that archive file is copied into workdir
+    # all files from the archive are unpacked, it is assumed that archive file is copied into scratch_dir
 
         self.fullrestart = False
 
@@ -255,33 +255,33 @@ class pam_enviroment:
 
         self.pam_command = install_dir+'/pam'
 
-    def set_workdir_name(self):
-        ''' sets the working directory name according to the
-    self.output_name;  depends on self.workpath '''
+    def set_scratch_dir_name(self):
+        ''' sets the scratch directory name according to the
+    self.output_name;  depends on self.scratch_path '''
 
         root_name=self.output_name
         if len(root_name) > 0:
-            workdir_name = root_name + '.' + str(self.current_pid)
+            scratch_dir_name = root_name + '.' + str(self.current_pid)
         else:
-            workdir_name = 'dirac_work_dir.' + str(self.current_pid)
+            scratch_dir_name = 'dirac_scratch_dir.' + str(self.current_pid)
 
-    # attach user login name to the workdir name
+    # attach user login name to the scratch_dir name
 
-        workdir_name = self.user_name + '.' + workdir_name
-        self.workdir = self.workpath + '/' + workdir_name
+        scratch_dir_name = self.user_name + '.' + scratch_dir_name
+        self.scratch_dir = self.scratch_path + '/' + scratch_dir_name
 
         if self.iprint >= 5:
-            print 'workdir_name=', workdir_name
+            print 'scratch_dir_name=', scratch_dir_name
             print 'root_name set?', root_name is not None
             if root_name is not None:
                 print 'root_name=', root_name
-            print 'self.workdir=', self.workdir
+            print 'self.scratch_dir=', self.scratch_dir
 
-    def create_workdir(self):
-        if not os.path.isdir(self.workdir):
-            os.mkdir(self.workdir)
+    def create_scratch_dir(self):
+        if not os.path.isdir(self.scratch_dir):
+            os.mkdir(self.scratch_dir)
         else:
-            print 'The work directory ', self.workdir, ' exists.'
+            print 'The scratch directory ', self.scratch_dir, ' exists.'
 
     def copy_file(self, src, dest):
         """copy file from directory "scr" to "dest"
@@ -298,33 +298,33 @@ class pam_enviroment:
         shutil.copy(src, dest)
         if self.iprint >= 0:
             print '  Copying file ', epf_src.pure_file_name, \
-                ' to the work-directory (as ', epf_dest.pure_file_name, \
+                ' to the scratch directory (as ', epf_dest.pure_file_name, \
                 ').'
         if self.iprint >= 3:
             print ' src full path:', src
             print 'dest full path:', dest
 
-    def process_workdir_name(self,workdir_string):
-        """ Process workdir name """
-        self.create_workdir_name = False
+    def process_scratch_dir_name(self,scratch_dir_string):
+        """ Process scratch_dir name """
+        self.create_scratch_dir_name = False
         # check for PID substring to be replaced with unique string
-        if workdir_string.find('PID') != -1:
-            workdir_string=workdir_string.replace('PID',str(self.current_pid),1)
+        if scratch_dir_string.find('PID') != -1:
+            scratch_dir_string=scratch_dir_string.replace('PID',str(self.current_pid),1)
         else:
             pass
-        # assign workdir name
-        self.workdir = workdir_string
+        # assign scratch_dir name
+        self.scratch_dir = scratch_dir_string
 
-    def list_workdir(self):
-        '''lists the content of the master work-directory more here http://www.daniweb.com/code/snippet216798.html'''
-        scratch_id=self.user_name+"@"+self.master+":"+self.workdir
+    def list_scratch_dir(self):
+        '''lists the content of the master scratch directory more here http://www.daniweb.com/code/snippet216798.html'''
+        scratch_id=self.user_name+"@"+self.master+":"+self.scratch_dir
         print
         print '  content of the scratch directory ', scratch_id
         print '  ------------------------------------------------------------------------------'
         print '%25s %10s %s' % ('name', 'size (MB)', 'last accessed')
         print '  ------------------------------------------------------------------------------'
-        for filename in os.listdir(self.workdir):
-            filesize_mb = float(os.path.getsize(self.workdir + '/'
+        for filename in os.listdir(self.scratch_dir):
+            filesize_mb = float(os.path.getsize(self.scratch_dir + '/'
                                 + filename)) / 1024000
 
       # create a dictionary to hold file info
@@ -371,14 +371,14 @@ class pam_enviroment:
                 sys.stdout.flush()
         print '  ------------------------------------------------------------------------------'
 
-    def remove_workdir(self):
-        self.list_workdir()
-        if not self.keepwrk:
+    def remove_scratch_dir(self):
+        self.list_scratch_dir()
+        if not self.keep_scratch:
             print '  deleting the scratch directory'
             sys.stdout.flush()
-            shutil.rmtree(self.workdir)
+            shutil.rmtree(self.scratch_dir)
         else:
-            print '  keeping the work directory'
+            print '  keeping the scratch directory'
             sys.stdout.flush()
 
     def exit_function(self, returncode):
@@ -486,12 +486,12 @@ class pam_enviroment:
 
         group = OptionGroup(parser, 'Scratch directory')
    
-        default_scratch_help='set scratch directory [default:'+self.workpath+'/<loginname.mol_inp>.PID]'
+        default_scratch_help='set scratch directory [default:'+self.scratch_path+'/<loginname.mol_inp>.PID]'
         group.add_option(
             '--scratch',
             type='string',
             action='store',
-            dest='dest_wrkdir',
+            dest='dest_scratch',
             help=default_scratch_help,
             metavar='FULL_PATH',
             )
@@ -528,8 +528,8 @@ class pam_enviroment:
                          dest='dest_outfock', default=False,
                          help='get DFFCK2 from scratch directory [default: %default]'
                          )
-        group.add_option('--keepwrk', action='store_true',
-                         dest='dest_keepwrk', default=False,
+        group.add_option('--keep_scratch', action='store_true',
+                         dest='dest_keep_scratch', default=False,
                          help='keep the scratch directory after calculation [default: delete it]'
                          )
         parser.add_option_group(group)
@@ -747,10 +747,10 @@ class pam_enviroment:
             sys.exit('The installation directory is not set ! Error exit !'
                      )
 
-        if options.dest_wrkdir is not None:
-            self.process_workdir_name(workdir_string=str(options.dest_wrkdir))
+        if options.dest_scratch is not None:
+            self.process_scratch_dir_name(scratch_dir_string=str(options.dest_scratch))
             if self.iprint >= 5:
-                print '\nassigned self.workdir=',self.workdir
+                print '\nassigned self.scratch_dir=',self.scratch_dir
 
         self.basdir = str(options.dest_basdir)
         self.dirac_exe = str(options.dest_dirac)
@@ -806,7 +806,7 @@ class pam_enviroment:
                 print 'assigned full-restart from archive file', \
                     self.archive_name
 
-        self.keepwrk = options.dest_keepwrk
+        self.keep_scratch = options.dest_keep_scratch
 
         if options.dest_debug:
             self.debug = True
@@ -850,10 +850,10 @@ class pam_enviroment:
 
         self.set_output_name()
 
-    # ## set workdir name here  ###
+    # ## set scratch_dir name here  ###
 
-        if self.create_workdir_name:
-            self.set_workdir_name()
+        if self.create_scratch_dir_name:
+            self.set_scratch_dir_name()
 
     def assign_mol_inp_files(self):
         '''Assign "self.input_file_molecule" and "self.input_file_dirac"
@@ -892,7 +892,7 @@ class pam_enviroment:
                 self.input_file_dirac
 
     def set_output_name(self):
-        '''Set the output name string to be used later for naming the output file and the work directory'''
+        '''Set the output name string to be used later for naming the output file and the scratch directory'''
 
         if self.iprint >= 5:
             print '\n set_output_name routine:'
@@ -969,46 +969,46 @@ class pam_enviroment:
             print 'set self.output_name=', self.output_name
 
     def copy_files(self):
-        '''copies file from the home directory to the work directory'''
+        '''copies file from the home directory to the scratch directory'''
 
         def copy_single_file(file_name, warning):
             full_file_name = self.input_directory + '/' + file_name
             if os.path.isfile(full_file_name):
-                file_name_wrkdir = self.workdir + '/' + file_name
-                self.copy_file(full_file_name, file_name_wrkdir)
+                file_name_scratch = self.scratch_dir + '/' + file_name
+                self.copy_file(full_file_name, file_name_scratch)
             else:
                 if (warning is not None):
                     print '  Warning: file "', file_name, \
-                    '" you want to copy to workdir does not exist, continuing at your own risk.'
+                    '" you want to copy to scratch_dir does not exist, continuing at your own risk.'
                 else:
                     print 'Error exit: file "', file_name, \
-                    '" you want to copy to workdir does not exist !  '
+                    '" you want to copy to scratch_dir does not exist !  '
                     sys.exit(-1)
 
-        self.create_workdir()
+        self.create_scratch_dir()
 
     # copy dirac.x executable if wanted
 
-        self.copy_file(self.dirac_exe, self.workdir + '/' + 'dirac.x')
+        self.copy_file(self.dirac_exe, self.scratch_dir + '/' + 'dirac.x')
 
     # the existence of self.input_file molecule,self.input_file_dirac is verified
 
         if self.xyz_molecule_input == True:
-            self.copy_file(self.input_file_molecule, self.workdir + '/'
+            self.copy_file(self.input_file_molecule, self.scratch_dir + '/'
                            + 'MOLECULE.XYZ')
         else:
-            self.copy_file(self.input_file_molecule, self.workdir + '/'
+            self.copy_file(self.input_file_molecule, self.scratch_dir + '/'
                            + 'MOLECULE.MOL')
 
-        self.copy_file(self.input_file_dirac, self.workdir + '/'
+        self.copy_file(self.input_file_dirac, self.scratch_dir + '/'
                        + 'DIRAC.INP')
 
         if self.full_restart:
             copy_single_file(self.archive_name,warning=None)
-            archive_workdir = self.workdir + '/' + self.archive_name
-            unpack_command = 'tar --directory ' + self.workdir \
-                + ' -xvf ' + archive_workdir
-            print 'Unpacking archive file in the work-directory, command ', \
+            archive_scratch_dir = self.scratch_dir + '/' + self.archive_name
+            unpack_command = 'tar --directory ' + self.scratch_dir \
+                + ' -xvf ' + archive_scratch_dir
+            print 'Unpacking archive file in the scratch directory, command ', \
                 unpack_command
             os.system(unpack_command)
 
@@ -1020,24 +1020,24 @@ class pam_enviroment:
             for file_name in files_to_put:
                 copy_single_file(file_name,warning=None)
 
-    # copies DFCOEF into workdir
+    # copies DFCOEF into scratch_dir
 
         if self.incmo:
             file_name = 'DFCOEF'
             copy_single_file(file_name,warning=True)
 
-    # copies DFFCK2 into workdir
+    # copies DFFCK2 into scratch_dir
 
         if self.infock:
             file_name = 'DFFCK2'
             copy_single_file(file_name,warning=None)
 
-    def distribute_work_dir(self):
+    def distribute_scratch_dir(self):
         '''This routine is called when local disks are selected
     for parallel calculations. The list of machines available to dirac.x'''
 
         if self.iprint >= 5:
-            print 'distribute_work_dir'
+            print 'distribute_scratch_dir'
             print 'assigned machine file=', self.machinefile
 
     # check if this is an enviromental variable with "$" - than get its content
@@ -1072,34 +1072,34 @@ class pam_enviroment:
                     print 'adding node to the list', line
                     self.nodes.append(line)
 
-    # ... distribute master workdir over different nodes, "copying $master:$file onto $node:$WRK/."
+    # ... distribute master scratch_dir over different nodes, "copying $master:$file onto $node:$WRK/."
     # otherwise print message that all cpus are on one machine
 
         if self.nodes:
-            print 'copying content of master workdir over nodes '
+            print 'copying content of master scratch_dir over nodes '
             for node in self.nodes:
                 print 'Copying content of ', self.master, \
-                    ' work-directory to the', node
+                    ' scratch directory to the', node
 
-        # create working directories on nodes
+        # create scratch directories on nodes
 
                 command = self.rsh + ' ' + node + ' "mkdir -p ' \
-                    + self.workdir + ' "'
+                    + self.scratch_dir + ' "'
                 if self.iprint >= 4:
-                    print 'create work dir command:', command
+                    print 'create scratch dir command:', command
                 os.system(command)
-                for this_file in os.listdir(self.workdir):
-                    this_file_full = self.workdir + '/' + this_file
+                for this_file in os.listdir(self.scratch_dir):
+                    this_file_full = self.scratch_dir + '/' + this_file
                     command = self.rcp + ' ' + this_file_full + ' ' \
                         + node + ':' + this_file_full
                     if self.iprint >= 0:
-                        print 'copying work dir command:', command
+                        print 'copying scratch dir command:', command
                     os.system(command)
                     if self.iprint >= 4:  # control list of directory
                         os.system(self.rsh + ' ' + node + ' "ls -l '
-                                  + self.workdir + ' "')
+                                  + self.scratch_dir + ' "')
         else:
-            print 'All CPUs are on the master, no distribution of workdir over different nodes.'
+            print 'All CPUs are on the master, no distribution of scratch_dir over different nodes.'
 
     def set_output_file(self):
         '''Set the name of the output file by using "self.output_name"
@@ -1145,7 +1145,7 @@ class pam_enviroment:
     def set_dirac_cmd(self):
         '''set the dirac command to be launched by the system (serial or parallel)'''
 
-        this_dirac_exe = self.workdir + '/dirac.x'
+        this_dirac_exe = self.scratch_dir + '/dirac.x'
 
 #   radovan: if self.parallel_build == False,
 #            then self.parallel_run should be set to False
@@ -1159,11 +1159,11 @@ class pam_enviroment:
 
       # stefan: first try of a rudimentary correct passing of -wd/-wdir...
 
-            if self.argument_to_pass_work_dir_to_slaves:
+            if self.argument_to_pass_scratch_dir_to_slaves:
                 self.dirac_cmd = self.mpirun + ' -np ' \
                     + str(self.nr_proc) + ' -' \
-                    + self.argument_to_pass_work_dir_to_slaves + ' ' \
-                    + self.workdir + ' '
+                    + self.argument_to_pass_scratch_dir_to_slaves + ' ' \
+                    + self.scratch_dir + ' '
             else:
                 self.dirac_cmd = self.mpirun + ' -np ' \
                     + str(self.nr_proc) + ' '
@@ -1250,11 +1250,11 @@ class pam_enviroment:
                 else:
                     pass
             elif name == 'SCRATCH_DIR':
-                self.workpath = value
-                if not os.path.isdir(self.workpath):
-                    print 'NB: the workpath ', self.workpath, \
+                self.scratch_path = value
+                if not os.path.isdir(self.scratch_path):
+                    print 'NB: the scratch_path ', self.scratch_path, \
                         ' does not exist on this machine.'
-                    print 'Running on your own risk (might not create workdir).'
+                    print 'Running on your own risk (might not create scratch_dir).'
             elif name == 'DEBUGGER':
                 self.debugger = value
             elif name == 'PROFILER':
@@ -1272,11 +1272,11 @@ class pam_enviroment:
                 if value == 'yes':
                     self.localdisks = True
                     print 'local disks for parallel calculations'
-            elif name == 'MPI_PASS_WRKDIR_ARGUMENT':
+            elif name == 'MPI_PASS_scratch_ARGUMENT':
                 if self.localdisks:
-                    localdisks_pass_wrkdir_temp = value
-                    self.argument_to_pass_work_dir_to_slaves = \
-                        localdisks_pass_wrkdir_temp
+                    localdisks_pass_scratch_temp = value
+                    self.argument_to_pass_scratch_dir_to_slaves = \
+                        localdisks_pass_scratch_temp
             elif name == 'MACH_FILE':
                 self.machinefile = value
             elif name == 'RCP':
@@ -1308,7 +1308,7 @@ class pam_enviroment:
             sys.stdout.flush()
             raise Error('Takes too long !')
 
-        os.chdir(self.workdir)
+        os.chdir(self.scratch_dir)
 
         if not self.nobackup:
             from common import backup_file
@@ -1378,7 +1378,7 @@ class pam_enviroment:
 
     def profile_dirac(self):
 
-  # profile after the DIRAC execution- we are in the working directory
+  # profile after the DIRAC execution- we are in the scratch directory
 
         if os.path.isfile(self.f):
             print 'profiling...'
@@ -1396,7 +1396,7 @@ class pam_enviroment:
     def save_files(self):
 
   # ------------------------------------------------------------
-  # ... save files in various manners from the work directory
+  # ... save files in various manners from the scratch directory
   # ------------------------------------------------------------
 
         from common import backup_file
@@ -1405,14 +1405,14 @@ class pam_enviroment:
 
     # ... save single file
 
-            full_file_name = self.workdir + '/' + file_name
+            full_file_name = self.scratch_dir + '/' + file_name
             if self.iprint >= 5:
                 print 'file_name=', file_name
                 print 'full_file_name=', full_file_name
             if os.path.isfile(full_file_name):
                 file_name_home = self.input_directory + '/' + file_name
                 print 'copying ', file_name, \
-                    ' from workdir to the homedir.'
+                    ' from scratch_dir to the homedir.'
 
         # backup file if it's there
 
@@ -1424,7 +1424,7 @@ class pam_enviroment:
 
                 self.copy_file(full_file_name, file_name_home)
             else:
-                print file_name, ' not found in the working directory.'
+                print file_name, ' not found in the scratch directory.'
 
         if not self.no_archive:
 
@@ -1457,7 +1457,7 @@ class pam_enviroment:
 
             os.system(archive_command)
 
-    # take care of the rest - get files from workdir to home dir
+    # take care of the rest - get files from scratch_dir to home dir
 
         if self.get_files is not None:
             files_to_get = self.get_files.split()
@@ -1479,28 +1479,20 @@ class pam_enviroment:
             file_name = 'DFFCK2'
             save_single_file(file_name)
 
-    def remove_work_dir(self):
-
-  #
-  # Remove working directory
-  #
-
-        self.remove_workdir()
-
     # take care of individual nodes if parallel run
 
         if self.nodes:
             for this_node in self.nodes:
                 sys.stdout.flush()
-                print 'content of the workdir, slave node ', this_node, \
-                    ':', self.workdir
+                print 'content of the scratch_dir, slave node ', this_node, \
+                    ':', self.scratch_dir
                 command = self.rsh + ' ' + this_node + ' "ls -l ' \
-                    + self.workdir + ' "'
+                    + self.scratch_dir + ' "'
                 os.system(command)
                 sys.stdout.flush()
-                print ' Total size of the slave node work directory:\c'
+                print ' Total size of the slave node scratch directory:\c'
                 command = self.rsh + ' ' + this_node + ' "du -h -s ' \
-                    + self.workdir + ' "'
+                    + self.scratch_dir + ' "'
                 os.system(command)
                 sys.stdout.flush()
                 print '  Info on the disk space usage on the slave node:'
@@ -1510,10 +1502,10 @@ class pam_enviroment:
         # finally removing node content
 
                 command = self.rsh + ' ' + this_node + ' "rm -fr  ' \
-                    + self.workdir + ' "'
+                    + self.scratch_dir + ' "'
                 os.system(command)
-                print 'Work directory on slave node', this_node, ':', \
-                    self.workdir, ' deleted.'
+                print 'scratch directory on slave node', this_node, ':', \
+                    self.scratch_dir, ' deleted.'
                 sys.stdout.flush()
 
     def print_header(self):
@@ -1537,7 +1529,7 @@ class pam_enviroment:
         print '  pam command    :', self.pam_command
         print '  pam args       :', ' '.join(sys.argv[1:])
         print '  input dir      :', self.input_directory
-        print '  scratch dir    :', self.workdir
+        print '  scratch dir    :', self.scratch_dir
         print '  output file    :', self.output_file
         print '  DIRAC run      :', dirac_run
 
@@ -1570,12 +1562,12 @@ class pam_run(pam_enviroment):
         self.pam_variables.copy_files()
         if self.pam_variables.parallel_run \
             and self.pam_variables.localdisks:
-            self.pam_variables.distribute_work_dir()
+            self.pam_variables.distribute_scratch_dir()
         self.pam_variables.set_dirac_environment()
         self.pam_variables.set_dirac_cmd()
         return_code = self.pam_variables.execute_dirac()
         self.pam_variables.save_files()
-        self.pam_variables.remove_work_dir()
+        self.pam_variables.remove_scratch_dir()
         self.exit_function(return_code)
 
 def main(*args):
