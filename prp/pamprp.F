@@ -68,7 +68,7 @@ C
      &     3X,'Molecular gradient',/,
      &     3X,'Joern Thyssen',//,
      &     3X,'Additional contributions from:',/,
-     &     3X,'Thomas Enevoldsen'//)
+     &     3X,'Thomas Enevoldsen, Miroslav Ilias (London orbitals)'//)
 C
       DO I = 1, NPRPWF
          WF = PRPWF(I)
@@ -5286,12 +5286,12 @@ C -----------------------------------
 
 C ... RDSUSLL terms,  IPDSUSC(19-27)
 C ... off-diagonal terms need to be symmetrized !
-C       IF (LEVYLE) THEN
         IF (RDSUSLLMOD) THEN
            FACLL = -2.0D0
         ELSE
 !radovan:  why is this factor different?
 !          in which situation is this needed?
+!miro: this is to be carefully examined
            FACLL = -1.0D0
         ENDIF
 
@@ -5641,14 +5641,10 @@ C     ... evaluate expectation value terms first
      &   "PRP_MSUSCP: NEXPP is exceeded!"
          IF (XLR_SKIPEP) THEN
 C  -1 is for the compatibility with Dalton
-C         SUSDIA(IPTAX(J,2),IPTAX(I,2)) = -D1*EXPVAL(IJ)
           SUSDIA(IPTAX(J,2),IPTAX(I,2)) = -D1*EXPVAL(IJX)
-C         SUSDIA(IPTAX(I,2),IPTAX(J,2)) = -D1*EXPVAL(IJ)
           SUSDIA(IPTAX(I,2),IPTAX(J,2)) = -D1*EXPVAL(IJX)
          ELSE                
-C         SUSDIA_EX(IPTAX(J,2),IPTAX(I,2)) = -D1*EXPVAL(IJ)
           SUSDIA_EX(IPTAX(J,2),IPTAX(I,2)) = -D1*EXPVAL(IJX)
-C         SUSDIA_EX(IPTAX(I,2),IPTAX(J,2)) = -D1*EXPVAL(IJ)
           SUSDIA_EX(IPTAX(I,2),IPTAX(J,2)) = -D1*EXPVAL(IJX)
          ENDIF
         ENDDO
@@ -5695,7 +5691,7 @@ C              22  23  24
 C              25  26  27
 C
 
-C       ... symmetrize off-diagonal terms ...
+C       ...     symmetrize off-diagonal terms ...
         PLLXY = (EXPVAL(IPDSUSC(20))+EXPVAL(IPDSUSC(22)))/D2
         PLLXZ = (EXPVAL(IPDSUSC(21))+EXPVAL(IPDSUSC(25)))/D2
         PLLYZ = (EXPVAL(IPDSUSC(24))+EXPVAL(IPDSUSC(26)))/D2
@@ -5703,13 +5699,11 @@ C       ... symmetrize off-diagonal terms ...
 C       ... store non-symmetrized data ...
         IIC=1
         DO II = 19, 27
-!fixme
-!radovan: this goes out of bounds of EXPVAL_NS
          EXPVAL_NS(IIC) = EXPVAL(IPDSUSC(II))
          IIC = IIC + 1
         ENDDO
 
-C ......... store RDSUSLL symmetrized off-diagonal quantities ...
+C ......... store RDSUSLL symmetrized off-diagonal terms ...
         EXPVAL(IPDSUSC(20))=PLLXY
         EXPVAL(IPDSUSC(22))=PLLXY
         EXPVAL(IPDSUSC(21))=PLLXZ
@@ -5718,7 +5712,7 @@ C ......... store RDSUSLL symmetrized off-diagonal quantities ...
         EXPVAL(IPDSUSC(26))=PLLYZ
 
 C       ... control print-out of symmetrized and nosymmetrized RDSUSLL data as well
-        IF (IPRPRP.GE.3) THEN
+        IF (IPRPRP.GE.2) THEN
          WRITE(LUPRI,'(/,10X,A)')
      &   'RDSUSLL contributions to the expect.values:'
          WRITE(LUPRI,'(A)')
@@ -5729,8 +5723,6 @@ C       ... control print-out of symmetrized and nosymmetrized RDSUSLL data as w
      &   '  symmetrized       diff. from unsymmetrized'
          IIC = 1
          DO II = 19, 27
-!fixme
-!radovan: this goes out of bounds of EXPVAL_NS
            INDXPR = LEXPP(IPDSUSC(II))
            WRITE(LUPRI,'(2X,A16,1X,F24.12,4X,D12.5)')
      &     PRPNAM(INDXPR),EXPVAL(IPDSUSC(II)),
@@ -5780,8 +5772,8 @@ C ... This is needed for compatibility with Dalton
 
         ENDIF
 
-C ... Write output...
-       IF (IPRPRP.GE.1) THEN
+C ... Write output - always print out partial results
+       IF (IPRPRP.GE.0) THEN
         CALL HEADER('One-electron expectation values',-1)
         CALL POLPRI(SUSDIA,'   ',-2)
         AVERAG = (SUSDIA(1,1) + SUSDIA(2,2) + SUSDIA(3,3))/D3
@@ -5857,7 +5849,6 @@ CMI  ...    extract first character, like 'X magnetic field'
            JA = ICONVXYZ(JCA)  
           ELSE
            IAX = IPMSUSC(1,IA)
-CMI        READ (PRPNAM(LLRAPU(IAX)),'(6X,A1)') JCA
            READ (PRPNAM(LLRAPU(IAX)),'(A1)') JCA
            JA = ICONVXYZ(JCA)
            IF (JA.NE.1.AND.JA.NE.2.AND.JA.NE.3)  THEN
@@ -5991,10 +5982,6 @@ C
        MAGOUT3 = .TRUE.
       ELSE
        write(lupri,*)
-C      write(lupri,*)
-C    & '....forced output, D12DIFF,D23DIFF,THRESHM:',
-C    &  D12DIFF,D23DIFF,THRESHM
-
        IF (D12.AND.D23) THEN
          write(lupri,'(3X,A)')
      &   'forced output, otherwise would be magnetizability output 1'
@@ -6031,8 +6018,8 @@ C
      &  ' London atomic orbitals used in calculations.'
       END IF
 
-CMI   ... we have theree defferent types of output !!!
-CMI  =========================================================
+CMI   ...there are three defferent types of the magnetizability output 
+CMI  ====================================================================
 CMI   IF (D12 .AND. D23) THEN
       IF (MAGOUT1) THEN
          AVE = (PVAL(1) + PVAL(2) + PVAL(3))/D3
