@@ -67,7 +67,7 @@ module visual_cfg
   logical,       public :: visual_cfg_london             = .false.
   logical,       public :: visual_cfg_london_with_sym    = .true.
 
-  integer,       public :: visual_cfg_ncube(0:3)                         = 80
+  integer,       public :: visual_cfg_ncube(1:3)                         = 80
   integer,       public :: visual_cfg_nr_points_in_list                  = 0
   integer,       public :: visual_cfg_nr_xvectors                        = 0
   integer,       public :: visual_cfg_iq_xvector(max_nr_xvectors)        = 0

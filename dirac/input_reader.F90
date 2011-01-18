@@ -423,13 +423,13 @@ contains
 
     if (kw_matches(word, '.LINE  ')) then
       visual_cfg_line = .true.
-      call kw_read(word, visual_cfg_line_nr_steps)
       call kw_read(word, visual_cfg_line_from(1), &
                          visual_cfg_line_from(2), &
                          visual_cfg_line_from(3))
       call kw_read(word, visual_cfg_line_to(1), &
                          visual_cfg_line_to(2), &
                          visual_cfg_line_to(3))
+      call kw_read(word, visual_cfg_line_nr_steps)
     end if
 
     if (kw_matches(word, '.2D    ')) then

@@ -104,9 +104,6 @@ contains
       if (visual_cfg_iq_xvector(ivector) == iq_gradient ) max_ao_g_order = 1
 
       if (visual_cfg_iq_xvector(ivector) == iq_laplacian) then
-!         debug this:
-!         call getsos(gao,gao1,gao2,(/0.0d0/),ncnt,px,py,pz, &
-!    &                buf,ntbas(0),2,.false.,0)
           call quit('debug laplacian in visual/visual.f90')
       end if
 
@@ -255,7 +252,7 @@ contains
 !     and pass only D and total nr_dmat to visual_driver (one call to visual_driver)
 
       if (visual_cfg_london) then
-      
+
         nr_dmat_con = nr_dmat_con + 1
         vector_to_matrix_con(ivector) = nr_dmat_con
 
@@ -402,7 +399,7 @@ contains
         else
           call quit('run_visual: visual_cfg_connection(ivector) != {0,1,2}')
         end if
-      
+
       end if
 #endif /* ifdef MOD_UNRELEASED */
 
@@ -414,7 +411,7 @@ contains
 !   ==================
 
     if (visual_cfg_london) then
-!     gosia: it is because i also 'reuse' D(1)... 
+!     gosia: it is because i also 'reuse' D(1)...
       do imat = 1, nr_dmat
         if (nz < 4) then
           do iz = 1, nz
@@ -458,7 +455,7 @@ contains
 !gosia: here valgrind gives a warning about uninitialised value
 !now D is a "temporary matrix" (function new_tmp in matrix_defop.f90)
 !actually a pointer to (initialized) matrix D_mo
-!to be checked...  
+!to be checked...
       D(imat) = 2.0d0*D(imat)
     end do
 
@@ -550,35 +547,41 @@ contains
 
 
 
-      subroutine visual_driver(nr_dmat, D, nr_dmat_con, D_con, ao, buffer)
+   subroutine visual_driver(nr_dmat,     &
+                            D,           &
+                            nr_dmat_con, &
+                            D_con,       &
+                            ao,          &
+                            buffer)
 
-      integer, intent(in) :: nr_dmat
-      type(matrix)        :: D(nr_dmat)
-      real(8), intent(in) :: ao(*)
-      real(8), intent(in) :: buffer(*)
-
-      integer, intent(in)      :: nr_dmat_con
-      type(matrix)           :: D_con(nr_dmat_con)
-
-      real(8) ::          QUANTITY(0:3,visual_cfg_NCUBE(3))
-      real(8) ::          STEP_3D(3,0:3)
-      real(8) ::          ATOM_XYZ(4,NUCDEP)
-
+!     --------------------------------------------------------------------------
+      integer, intent(in)  :: nr_dmat
+      type(matrix)         :: D(nr_dmat)
+      integer, intent(in)  :: nr_dmat_con
+      type(matrix)         :: D_con(nr_dmat_con)
+      real(8), intent(in)  :: ao(*)
+      real(8), intent(in)  :: buffer(*)
+!     --------------------------------------------------------------------------
+      real(8), allocatable :: q(:, :)
+      real(8), allocatable :: atom_xyz(:, :)
+      real(8)              :: step_3d(3, 0:3)
+      integer              :: i, j, k, l, m, istep
+      integer              :: icube, jcube, kcube
       integer              :: ix, iy
       real(8)              :: vx(3), vx_norm
       real(8)              :: vy(3), vy_norm
+      real(8)              :: r(3), v(3), s
+      integer              :: lunit_2d_scalar_field
+      integer              :: lunit_2d_vector_field
+      integer              :: lunit_3d_cube
+      integer              :: lunit_3d_vector_field
+      integer              :: lunit_line_scalar
+      integer              :: lunit_line_vector
+!     --------------------------------------------------------------------------
 
-      character(2) :: grid_orientation(1:3) = (/'xy', 'xz', 'yz'/)
-      real(8) :: s, r(3), v(3), px, py, pz, p(3)
-      integer :: ICUBE, jCUBE, kCUBE, IORIENTATION, IPOINT_IN_LIST
-      integer :: istep, i, j, k, l, m, ni, nj, nk, nr_steps, IXVECTOR
+      allocate(q(0:3, visual_cfg_ncube(3)))
+      allocate(atom_xyz(4, nucdep))
 
-      integer :: lunit_2d_scalar_field
-      integer :: lunit_2d_vector_field
-      integer :: lunit_3d_cube
-      integer :: lunit_3d_vector_field
-      integer :: lunit_line
-      
 #ifdef MOD_UNRELEASED
       if (visual_cfg_london) then
          if (nr_dmat_con == 0) then
@@ -587,13 +590,12 @@ contains
       end if
 #endif
 
-!     open files
-
       lunit_2d_scalar_field = 14
       lunit_2d_vector_field = 15
       lunit_3d_cube         = 16
       lunit_3d_vector_field = 17
-      lunit_line            = 18
+      lunit_line_scalar     = 18
+      lunit_line_vector     = 19
 
       if (visual_cfg_2d) then
          open(lunit_2d_scalar_field,           &
@@ -622,91 +624,88 @@ contains
       end if
 
       if (visual_cfg_line) then
-         open(lunit_line,            &
-              file   = 'plot.line',  &
-              status = 'new',        &
-              access = 'sequential', &
+         open(lunit_line_scalar,           &
+              file   = 'plot.line.scalar', &
+              status = 'new',              &
+              access = 'sequential',       &
+              form   = 'formatted')
+         open(lunit_line_vector,           &
+              file   = 'plot.line.vector', &
+              status = 'new',              &
+              access = 'sequential',       &
               form   = 'formatted')
       end if
 
-
-
-
-
-
-
       if (visual_cfg_list) then
 
-        CALL AROUND('Requested density at point(s)')
+         call around('Requested density at point(s)')
 
-        WRITE(LUPRI,'(A)')
-        WRITE(LUPRI,'(A8,2A14,A18,A21,2A18)') 'r_x', &
-     &                                        'r_y', &
-     &                                        'r_z', &
-     &                                        'scalar', &
-     &                                        'x-component', &
-     &                                        'y-component', &
-     &                                        'z-component'
-        WRITE(LUPRI,'(A)')
+         write(lupri, *)
+         write(lupri, '(a8, 2a14, a18, a21, 2a18)') &
+            'r_x',                                  &
+            'r_y',                                  &
+            'r_z',                                  &
+            'scalar',                               &
+            'x-component',                          &
+            'y-component',                          &
+            'z-component'
+         write(lupri, *)
 
-        DO IPOINT_IN_LIST = 1, visual_cfg_nr_points_in_list
+         do i = 1, visual_cfg_nr_points_in_list
+            call get_quantity_in_point(nr_dmat,                   &
+                                       D,                         &
+                                       nr_dmat_con,               &
+                                       D_con,                     &
+                                       visual_cfg_xyz_list(i, 1), &
+                                       visual_cfg_xyz_list(i, 2), &
+                                       visual_cfg_xyz_list(i, 3), &
+                                       ao,                        &
+                                       buffer,                    &
+                                       q)
 
-                   call get_quantity_in_point(nr_dmat,     &
-                                                    D,           &
-                                                    nr_dmat_con, &
-                                                    D_con,       &
-                  visual_cfg_XYZ_LIST(IPOINT_IN_LIST,1), &
-                  visual_cfg_XYZ_LIST(IPOINT_IN_LIST,2), &
-                  visual_cfg_XYZ_LIST(IPOINT_IN_LIST,3), &
-                                                    ao,          &
-                                                    buffer,      &
-                                                    quantity)
+          write(lupri, '(3e14.6, 4e18.10)') &
+             visual_cfg_xyz_list(i, 1),     &
+             visual_cfg_xyz_list(i, 2),     &
+             visual_cfg_xyz_list(i, 3),     &
+             q(0:3, 1)
+         end do
 
+         write(lupri, *)
+         call prsymb(lupri, '-', 100, 0)
+         write(lupri, *)
+         write(lupri, *)
 
-          WRITE(LUPRI,'(3E14.6,4E18.10)')  &
-     &             visual_cfg_XYZ_LIST(IPOINT_IN_LIST,1), &
-     &             visual_cfg_XYZ_LIST(IPOINT_IN_LIST,2), &
-     &             visual_cfg_XYZ_LIST(IPOINT_IN_LIST,3), &
-     &                                    QUANTITY(0,1), &
-     &                                    QUANTITY(1,1), &
-     &                                    QUANTITY(2,1), &
-     &                                    QUANTITY(3,1)
-
-        ENDDO
-
-        WRITE(LUPRI,'(A)')
-        CALL PRSYMB(LUPRI,'-',100,0)
-
-        WRITE(LUPRI,'(A)')
-        WRITE(LUPRI,'(A)')
-
-      ENDIF
+      end if
 
       if (visual_cfg_line) then
 
-        v = visual_cfg_line_to - visual_cfg_line_from
-        v = v/visual_cfg_line_nr_steps
+         v = visual_cfg_line_to - visual_cfg_line_from
+         v = v/visual_cfg_line_nr_steps
 
-        do istep = 0, visual_cfg_line_nr_steps
+         do istep = 0, visual_cfg_line_nr_steps
 
-          r = visual_cfg_line_from + istep*v
+           r = visual_cfg_line_from + istep*v
+           call get_quantity_in_point(nr_dmat,     &
+                                      D,           &
+                                      nr_dmat_con, &
+                                      D_con,       &
+                                      r(1),        &
+                                      r(2),        &
+                                      r(3),        &
+                                      ao,          &
+                                      buffer,      &
+                                      q)
 
-                   call get_quantity_in_point(nr_dmat,     &
-                                                    D,           &
-                                                    nr_dmat_con, &
-                                                    D_con,       &
-     &                               r(1), r(2), r(3), &
-                                                    ao,          &
-                                                    buffer,      &
-                                                    quantity)
-
-          write(lunit_line, '(7e18.10)') r(1),  &
-     &                                   r(2), &
-     &                                   r(3), &
-     &                                   quantity(0, 1), &
-     &                                   quantity(1, 1), &
-     &                                   quantity(2, 1), &
-     &                                   quantity(3, 1)
+           write(lunit_line_scalar, '(4e18.10)') &
+              r(1),                              &
+              r(2),                              &
+              r(3),                              &
+              q(0, 1)
+           write(lunit_line_vector, '(6e18.10)') &
+              r(1),                              &
+              r(2),                              &
+              r(3),                              &
+              q(1:3, 1)
 
         end do
       end if
@@ -718,25 +717,25 @@ contains
 
          vx_norm = dsqrt(vx(1)*vx(1) + vx(2)*vx(2) + vx(3)*vx(3))
          vy_norm = dsqrt(vy(1)*vy(1) + vy(2)*vy(2) + vy(3)*vy(3))
- 
+
          i = 0
          do ix = 0, visual_cfg_2d_nr_right
             do iy = 0, visual_cfg_2d_nr_top
                i = i + 1
-               p = visual_cfg_2d_p_origin + ix*vx + iy*vy
+               r = visual_cfg_2d_p_origin + ix*vx + iy*vy
                call get_quantity_in_point(nr_dmat,     &
                                           D,           &
                                           nr_dmat_con, &
                                           D_con,       &
-                                          p(1),        &
-                                          p(2),        &
-                                          p(3),        &
+                                          r(1),        &
+                                          r(2),        &
+                                          r(3),        &
                                           ao,          &
                                           buffer,      &
-                                          quantity)
+                                          q)
 
-                s      = quantity(0,   1)
-                v(1:3) = quantity(1:3, 1)
+                s      = q(0,   1)
+                v(1:3) = q(1:3, 1)
 
                 write(lunit_2d_scalar_field, '(3e18.10)')         &
                    ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2, &
@@ -754,125 +753,113 @@ contains
 
       if (visual_cfg_3d) then
 
-!       calculate cube parameters
+!        step_3d(*, 0)  coordinates of initial point
+!        step_3d(*, 1)  step vector for the "x"-direction
+!        step_3d(*, 2)  step vector for the "y"-direction
+!        step_3d(*, 3)  step vector for the "z"-direction
 
-!       NCUBE(0)      number of atoms
-!       NCUBE(1)      number of points in the "x"-direction
-!       NCUBE(2)      number of points in the "y"-direction
-!       NCUBE(3)      number of points in the "z"-direction
+!        atom_xyz(1, i) x-coordinate of atom i
+!        atom_xyz(2, i) y-coordinate of atom i
+!        atom_xyz(3, i) z-coordinate of atom i
+!        atom_xyz(4, i) charge of atom i
 
-!       STEP_3D(*,0)  coordinates of initial point
-!       STEP_3D(*,1)  step vector for the "x"-direction
-!       STEP_3D(*,2)  step vector for the "y"-direction
-!       STEP_3D(*,3)  step vector for the "z"-direction
+         step_3d = 0.0d0
 
-!       ATOM_XYZ(1,I) x-coordinate of atom I
-!       ATOM_XYZ(2,I) y-coordinate of atom I
-!       ATOM_XYZ(3,I) z-coordinate of atom I
-!       ATOM_XYZ(4,I) charge of atom I
+         do i = 1, 3
+            step_3d(i, 0) = cord(i, 1)
+            step_3d(i, i) = cord(i, 1)
+         enddo
 
-        visual_cfg_NCUBE(0) = NUCDEP
-        CALL DZERO(STEP_3D,12)
-        DO I = 1,3
-          STEP_3D(I,0) = CORD(I,1)
-          STEP_3D(I,I) = CORD(I,1)
-        ENDDO
+         i = 0
+         do j = 1, nucind
+            k = istbnu(j)
+            do l = 0, maxopr
+               if (iand(l, k) == 0) then
+                  i = i + 1
+                  do m = 1, 3
+                     atom_xyz(m, i) = pt(iand(isymax(m, 1), l))*cord(m, j)
 
-        I = 0
-        DO J = 1,NUCIND !loop over all centers
-          K = ISTBNU(J)
-          DO L = 0,MAXOPR
-            IF(iand(L,K) .EQ. 0) THEN
-              I = I + 1
-              DO M = 1,3
-                ATOM_XYZ(M,I) = PT(iand(ISYMAX(M,1),L))*CORD(M,J)
+                     step_3d(m, 0) = min(step_3d(m, 0), atom_xyz(m, i))
+                     step_3d(m, m) = max(step_3d(m, m), atom_xyz(m, i))
+                  end do
+                  atom_xyz(4, i) = charge(j)
+               end if
+            end do
+         end do
 
-                STEP_3D(M,0) = MIN(STEP_3D(M,0),ATOM_XYZ(M,I))
-                STEP_3D(M,M) = MAX(STEP_3D(M,M),ATOM_XYZ(M,I))
-              ENDDO
-              ATOM_XYZ(4,I) = CHARGE(J)
-            ENDIF
-          ENDDO
-        ENDDO
+!        add some space, calculate step sizes and convert step vectors to angstrom
 
-!       add some space, calculate step sizes and convert step vectors to angstrom
+         do i = 1, 3
+            step_3d(i, 0) =  step_3d(i, 0) -  visual_cfg_add_3d
+            step_3d(i, i) = (step_3d(i, i) + (visual_cfg_add_3d*2.0d0))*xtang
+            step_3d(i, i) = (step_3d(i, i) -  step_3d(i, 0))/(visual_cfg_ncube(i) - 1)
+         end do
 
-        DO I = 1,3
-          STEP_3D(I,0) = STEP_3D(I,0) - visual_cfg_ADD_3D
-          STEP_3D(I,I) = (STEP_3D(I,I) + (visual_cfg_ADD_3D*2.0d0))*XTANG
-      STEP_3D(I,I) = (STEP_3D(I,I) - STEP_3D(I,0)) &
-     &        /(visual_cfg_NCUBE(I) - 1)
-        ENDDO
+!        write header
 
-!       write header
+         write(lunit_3d_cube, '(a)') 'cube file'
+         write(lunit_3d_cube, '(a)') 'generated by DIRAC'
 
-        WRITE(lunit_3d_cube,'(A)') 'some'
-        WRITE(lunit_3d_cube,'(A)') 'text'
-        DO I = 0,3
-          WRITE(lunit_3d_cube,'(I5,4F12.6)') visual_cfg_NCUBE(I),  &
-     &               (STEP_3D(J,I),J=1,3)
-        ENDDO
-        DO I = 1,NUCDEP
-          WRITE(lunit_3d_cube,'(I5,4F12.6)') &
-     &         NINT(ATOM_XYZ(4,I)), ATOM_XYZ(4,I), (ATOM_XYZ(J,I),J=1,3)
-        ENDDO
+         write(lunit_3d_cube,'(i5, 4f12.6)') &
+            nucdep,                          &
+           (step_3d(j, 0), j = 1, 3)
+         do i = 1, 3
+           write(lunit_3d_cube,'(i5, 4f12.6)') &
+              visual_cfg_ncube(i),             &
+             (step_3d(j, i), j = 1, 3)
+         end do
 
-!       grid walk
+         do i = 1, nucdep
+           write(lunit_3d_cube, '(i5, 4f12.6)') &
+                nint(atom_xyz(4, i)),           &
+                atom_xyz(4, i),                 &
+               (atom_xyz(j, i), j = 1, 3)
+         end do
 
-        DO ICUBE = 1,visual_cfg_NCUBE(1)
-          DO JCUBE = 1,visual_cfg_NCUBE(2)
-            DO KCUBE = 1,visual_cfg_NCUBE(3)
+         do icube = 1, visual_cfg_ncube(1)
+            do jcube = 1, visual_cfg_ncube(2)
+               do kcube = 1, visual_cfg_ncube(3)
 
-              PX = STEP_3D(1,0) + (ICUBE-1)*STEP_3D(1,1) &
-     &                          + (JCUBE-1)*STEP_3D(1,2) &
-     &                          + (KCUBE-1)*STEP_3D(1,3)
-              PY = STEP_3D(2,0) + (ICUBE-1)*STEP_3D(2,1) &
-     &                          + (JCUBE-1)*STEP_3D(2,2) &
-     &                          + (KCUBE-1)*STEP_3D(2,3)
-              PZ = STEP_3D(3,0) + (ICUBE-1)*STEP_3D(3,1) &
-     &                          + (JCUBE-1)*STEP_3D(3,2) &
-     &                          + (KCUBE-1)*STEP_3D(3,3)
+                  r(1) = step_3d(1, 0) + (icube-1)*step_3d(1, 1) &
+                                       + (jcube-1)*step_3d(1, 2) &
+                                       + (kcube-1)*step_3d(1, 3)
+                  r(2) = step_3d(2, 0) + (icube-1)*step_3d(2, 1) &
+                                       + (jcube-1)*step_3d(2, 2) &
+                                       + (kcube-1)*step_3d(2, 3)
+                  r(3) = step_3d(3, 0) + (icube-1)*step_3d(3, 1) &
+                                       + (jcube-1)*step_3d(3, 2) &
+                                       + (kcube-1)*step_3d(3, 3)
 
-!             write even grid so that it can be fed into XC integrator
-!             for subsequent experiments
-!             zero weight is so that it does not mess up results
-!             write(lunit_3d_cube, '(4d20.12)') px, py, pz, 0.0d0
+                  call get_quantity_in_point(nr_dmat,     &
+                                             D,           &
+                                             nr_dmat_con, &
+                                             D_con,       &
+                                             r(1),        &
+                                             r(2),        &
+                                             r(3),        &
+                                             ao,          &
+                                             buffer,      &
+                                             q(0, kcube))
 
+                  write(lunit_3d_vector_field, '(6e13.5)') &
+	             r(1:3),                               &
+	             q(1:3, kcube)
+               end do
+               write(lunit_3d_cube, '(6e13.5)')  &
+                  (q(0, m), m = 1, visual_cfg_ncube(3))
+            end do
+         end do
+      end if
 
-                   call get_quantity_in_point(nr_dmat,     &
-                                                    D,           &
-                                                    nr_dmat_con, &
-                                                    D_con,       &
-     &                                       PX,PY,PZ, &
-                                                    ao,          &
-                                                    buffer,      &
-     &                                     QUANTITY(0,KCUBE))
-
-
-            write(lunit_3d_vector_field, '(6e13.5)') &
-	       px,                                   &
-               py,                                   &
-               pz,                                   &
-	       quantity(1, kcube),                   &
-	       quantity(2, kcube),                   &
-	       quantity(3, kcube)
-
-       ENDDO
-
-!           write to file
-
-            WRITE(lunit_3d_cube,'(6E13.5)')  &
-     &         (QUANTITY(0,M),M=1, visual_cfg_NCUBE(3))
-          ENDDO
-        ENDDO
-      ENDIF !3D
-
-!     close files
       if (visual_cfg_2d)   close(lunit_2d_scalar_field, status = 'keep')
       if (visual_cfg_2d)   close(lunit_2d_vector_field, status = 'keep')
       if (visual_cfg_3d)   close(lunit_3d_cube,         status = 'keep')
       if (visual_cfg_3d)   close(lunit_3d_vector_field, status = 'keep')
-      if (visual_cfg_line) close(lunit_line,            status = 'keep')
+      if (visual_cfg_line) close(lunit_line_scalar,     status = 'keep')
+      if (visual_cfg_line) close(lunit_line_vector,     status = 'keep')
+
+      deallocate(q)
+      deallocate(atom_xyz)
 
    end subroutine
 
@@ -957,7 +944,7 @@ contains
 !gosia, i'll remove it later
       integer :: i, j
       character(10) :: pattern
-      character(16) :: text   
+      character(16) :: text
 
       INQUIRE(FILE = visual_cfg_xvector_file(IXVECTOR),EXIST = FILE_EXISTS)
       IF(.NOT. FILE_EXISTS) THEN
