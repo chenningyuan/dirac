@@ -564,20 +564,21 @@ contains
       real(8) ::          STEP_3D(3,0:3)
       real(8) ::          ATOM_XYZ(4,NUCDEP)
 
+      integer              :: ix, iy
+      real(8)              :: vx(3), vx_norm
+      real(8)              :: vy(3), vy_norm
 
       character(2) :: grid_orientation(1:3) = (/'xy', 'xz', 'yz'/)
-      real(8) :: r(3), v(3), px, py, pz
+      real(8) :: s, r(3), v(3), px, py, pz, p(3)
       integer :: ICUBE, jCUBE, kCUBE, IORIENTATION, IPOINT_IN_LIST
       integer :: istep, i, j, k, l, m, ni, nj, nk, nr_steps, IXVECTOR
 
-      integer :: lunit_2d
+      integer :: lunit_2d_scalar_field
+      integer :: lunit_2d_vector_field
       integer :: lunit_3d_cube
       integer :: lunit_3d_vector_field
       integer :: lunit_line
       
-      integer :: ix, iy
-      real(8), allocatable :: p(:, :)
-
 #ifdef MOD_UNRELEASED
       if (visual_cfg_london) then
          if (nr_dmat_con == 0) then
@@ -588,16 +589,22 @@ contains
 
 !     open files
 
-      lunit_2d              = 14
-      lunit_3d_cube         = 15
-      lunit_3d_vector_field = 16
-      lunit_line            = 17
+      lunit_2d_scalar_field = 14
+      lunit_2d_vector_field = 15
+      lunit_3d_cube         = 16
+      lunit_3d_vector_field = 17
+      lunit_line            = 18
 
       if (visual_cfg_2d) then
-         open(lunit_2d,              &
-              file   = 'plot.2d',    &
-              status = 'new',        &
-              access = 'sequential', &
+         open(lunit_2d_scalar_field,           &
+              file   = 'plot.2d.scalar_field', &
+              status = 'new',                  &
+              access = 'sequential',           &
+              form   = 'formatted')
+         open(lunit_2d_vector_field,           &
+              file   = 'plot.2d.vector_field', &
+              status = 'new',                  &
+              access = 'sequential',           &
               form   = 'formatted')
       end if
 
@@ -706,41 +713,44 @@ contains
 
       if (visual_cfg_2d) then
 
-         allocate(p(3, (visual_cfg_2d_nr_top + 1)*(visual_cfg_2d_nr_right + 1)))
+         vx = (visual_cfg_2d_p_right - visual_cfg_2d_p_origin)/visual_cfg_2d_nr_top
+         vy = (visual_cfg_2d_p_top   - visual_cfg_2d_p_origin)/visual_cfg_2d_nr_right
 
-         call generate_plane(visual_cfg_2d_p_origin, &
-                             visual_cfg_2d_p_top,    &
-                             visual_cfg_2d_p_right,  &
-                             visual_cfg_2d_nr_top,   &
-                             visual_cfg_2d_nr_right, &
-                             p)
-
+         vx_norm = dsqrt(vx(1)*vx(1) + vx(2)*vx(2) + vx(3)*vx(3))
+         vy_norm = dsqrt(vy(1)*vy(1) + vy(2)*vy(2) + vy(3)*vy(3))
+ 
          i = 0
          do ix = 0, visual_cfg_2d_nr_right
             do iy = 0, visual_cfg_2d_nr_top
                i = i + 1
-                   call get_quantity_in_point(nr_dmat,     &
-                                                    D,           &
-                                                    nr_dmat_con, &
-                                                    D_con,       &
-                                             p(1, i), &
-                                             p(2, i), &
-                                             p(3, i), &
-                                                    ao,          &
-                                                    buffer,      &
-                                                    quantity)
-               write(lunit_2d, '(7e18.10)') p(1:3, i),      &
-                                               quantity(0, 1), &
-                                               quantity(1, 1), &
-                                               quantity(2, 1), &
-                                               quantity(3, 1)
+               p = visual_cfg_2d_p_origin + ix*vx + iy*vy
+               call get_quantity_in_point(nr_dmat,     &
+                                          D,           &
+                                          nr_dmat_con, &
+                                          D_con,       &
+                                          p(1),        &
+                                          p(2),        &
+                                          p(3),        &
+                                          ao,          &
+                                          buffer,      &
+                                          quantity)
+
+                s      = quantity(0,   1)
+                v(1:3) = quantity(1:3, 1)
+
+                write(lunit_2d_scalar_field, '(3e18.10)')         &
+                   ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2, &
+                   iy*vy_norm - vy_norm*visual_cfg_2d_nr_right/2, &
+                   s
+
+                write(lunit_2d_vector_field, '(4e18.10)')          &
+                   ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2,  &
+                   iy*vy_norm - vy_norm*visual_cfg_2d_nr_right/2,  &
+                   (v(1)*vx(1) + v(2)*vx(2) + v(3)*vx(3))/vx_norm, &
+                   (v(1)*vy(1) + v(2)*vy(2) + v(3)*vy(3))/vy_norm
             end do
          end do
-
-         deallocate(p)
-
       end if
-
 
       if (visual_cfg_3d) then
 
@@ -858,7 +868,8 @@ contains
       ENDIF !3D
 
 !     close files
-      if (visual_cfg_2d)   close(lunit_2d,              status = 'keep')
+      if (visual_cfg_2d)   close(lunit_2d_scalar_field, status = 'keep')
+      if (visual_cfg_2d)   close(lunit_2d_vector_field, status = 'keep')
       if (visual_cfg_3d)   close(lunit_3d_cube,         status = 'keep')
       if (visual_cfg_3d)   close(lunit_3d_vector_field, status = 'keep')
       if (visual_cfg_line) close(lunit_line,            status = 'keep')
@@ -1120,37 +1131,5 @@ contains
     end do
 
   end subroutine
-
-   subroutine generate_plane(p_origin, &
-                             p_top,    &
-                             p_right,  &
-                             nr_top,   &
-                             nr_right, &
-                             p)
-
-!     --------------------------------------------------------------------------
-      real(8), intent(in)  :: p_origin(3)
-      real(8), intent(in)  :: p_top(3)
-      real(8), intent(in)  :: p_right(3)
-      integer, intent(in)  :: nr_top
-      integer, intent(in)  :: nr_right
-      real(8), intent(out) :: p(3, (nr_top + 1)*(nr_right + 1))
-!     --------------------------------------------------------------------------
-      integer              :: i, ix, iy
-      real(8)              :: vx(3), vy(3)
-!     --------------------------------------------------------------------------
-
-      vx = (p_right - p_origin)/nr_top
-      vy = (p_top   - p_origin)/nr_right
-
-      i = 0
-      do ix = 0, nr_right
-         do iy = 0, nr_top
-            i = i + 1
-            p(1:3, i) = p_origin + ix*vx + iy*vy
-         end do
-      end do
-
-   end subroutine
 
 end module
