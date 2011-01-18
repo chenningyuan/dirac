@@ -79,9 +79,8 @@ class PamQVariables:
     # ... what is going to be in script
     self.batch_script_command=''
 
-    # ... default pam from the current directory
-    #self.pam_script=self.dirac_home+'/pam' 
-    self.pam_script=self.dirac_home+'/pam.py' 
+    # ... default DIRAC pam from the current directory
+    self.pam_script=self.dirac_home+'/pam' 
 
     # ... set home directory from where pamq.py is run...
     self.home_dir=os.getenv("PWD")
