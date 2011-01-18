@@ -1,0 +1,31 @@
+#! /usr/bin/env python
+
+#
+# Python script for automatized atom-by-atom X2C calculations
+#
+# reads the Dirac input and molecule file and calls Dirac via pam
+#
+# Written by Stefan Knecht, Denmark, Jan 2011 - ?
+#
+# Contributors:  everybody is welcome. :)
+#
+#
+
+import os
+import sys
+import string
+import subprocess
+from optparse import OptionParser, OptionGroup
+
+root_directory = os.path.realpath(__file__)[:-11]
+
+# define example usage
+
+usage = './%prog --inp=input[.inp,.menu] --mol=molecule[.mol] [--mpi=4]'
+
+# initialize parser
+
+parser = OptionParser(usage)
+
+# define options
+print 'bla bla bla'
