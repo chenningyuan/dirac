@@ -70,8 +70,7 @@ class pam_enviroment:
         '''Initialize the global set of variables'''
         from common import get_username, get_hostname, get_hostname_ip
 
-    # print level
-
+        # print level
         self.iprint = 1
         self.iprint_default = 1
 
@@ -318,7 +317,7 @@ class pam_enviroment:
         epf_src.get_path_file(src)
 
         shutil.copy(src, dest)
-        if self.iprint >= 0:
+        if self.iprint > 0:
             print '  Copying file ', epf_src.pure_file_name, \
                 ' to the scratch directory (as ', epf_dest.pure_file_name, \
                 ').'
@@ -394,19 +393,21 @@ class pam_enviroment:
         print '  ------------------------------------------------------------------------------'
 
     def remove_scratch_dir(self):
-        self.list_scratch_dir()
+        if self.iprint > 0:
+            self.list_scratch_dir()
         if not self.keep_scratch:
-            print '  deleting the scratch directory'
+            if self.iprint > 0:
+                print '  deleting the scratch directory'
             sys.stdout.flush()
             shutil.rmtree(self.scratch_dir)
         else:
-            print '  keeping the scratch directory'
+            if self.iprint > 0:
+                print '  keeping the scratch directory'
             sys.stdout.flush()
 
     def exit_function(self, returncode):
         '''prints message on the DIRAC executable exit according to the input parameter'''
 
-        print
         print '  exit date      :', datetime.datetime.now()
         print '  exit code      :', returncode
         if returncode == 0:
@@ -646,7 +647,10 @@ class pam_enviroment:
                             )
         group.add_option('--show', action='store_true',
                          dest='just_show_settings', default=False,
-                         help='Print current settings and exit')
+                         help='print current settings and exit')
+        group.add_option('--silent', action='store_true',
+                         dest='silent_pam', default=False,
+                         help='run pam silent with minimal output')
         group.add_option('--debug', action='store_true',
                          dest='dest_debug', default=False,
                          help='run in debugger [default: %default]')
@@ -708,6 +712,10 @@ class pam_enviroment:
             sys.exit()
 
         self.iprint = int(options.dest_iprint)
+
+        if options.silent_pam:
+            self.iprint = 0
+
         self.output_suffix = options.dest_suffix
         self.max_memory_work_master = int(options.dest_mw)
 
@@ -1266,13 +1274,9 @@ class pam_enviroment:
             else:
                 return ('','')
 
-        if self.iprint >= 5:
-            print 'read_makefile_config: Going to read from Makefile.config:'
-
         makefile_config = install_dir + '/' + 'Makefile.config'
         # if no Makefile.config present, leave with warning message
         if not os.path.isfile(makefile_config):
-            print "Makefile.config not present - no default values read."
             return
 
         # open and read line by line by avoiding #-comments
@@ -1366,15 +1370,17 @@ class pam_enviroment:
         if len(self.nice_cmd) > 1:
             print '  Lowest process priority set through ', \
                 self.nice_cmd
-        print '  DIRAC command  : %s' % self.dirac_cmd
+        if self.iprint > 0:
+            print '  DIRAC command  : %s' % self.dirac_cmd
 
         basis_set_directory_list = self.basdir.split(':')
-        print '  basis set dirs : %s' % basis_set_directory_list[0]
-        if len(basis_set_directory_list) > 1:
-            for i in range(1, len(basis_set_directory_list)):
-                if basis_set_directory_list[i] != '.':
-                    print '                   %s' \
-                        % basis_set_directory_list[i]
+        if self.iprint > 0:
+            print '  basis set dirs : %s' % basis_set_directory_list[0]
+            if len(basis_set_directory_list) > 1:
+                for i in range(1, len(basis_set_directory_list)):
+                    if basis_set_directory_list[i] != '.':
+                        print '                   %s' \
+                            % basis_set_directory_list[i]
         try:
             if not self.debug and not self.vg_debug:
                 self.f = open(self.output_file_full, 'w', 0)
@@ -1387,7 +1393,8 @@ class pam_enviroment:
 
                 p = subprocess.Popen(self.dirac_cmd, shell=True,
                         stdin=subprocess.PIPE, stdout=self.f)
-                print '  pid            : %s ' % p.pid
+                if self.iprint > 0:
+                    print '  pid            : %s ' % p.pid
                 p.wait()
                 return_code = p.returncode
                 self.f.close()
@@ -1454,8 +1461,9 @@ class pam_enviroment:
                 print 'full_file_name=', full_file_name
             if os.path.isfile(full_file_name):
                 file_name_home = self.input_directory + '/' + file_name
-                print 'copying ', file_name, \
-                    ' from scratch_dir to the homedir.'
+                if self.iprint > 0:
+                    print 'copying ', file_name, \
+                        ' from scratch_dir to the homedir.'
 
         # backup file if it's there
 
@@ -1563,18 +1571,22 @@ class pam_enviroment:
         else:
             dirac_run = 'serial'
         print
-        print '  output from the dirac python script'
+        print '  output from the DIRAC python script'
         print
-        print '  user           :', self.user_name
-        print '  host           :', self.master
-        print '  ip             :', self.hostname_ip
-        print '  date and time  :', datetime.datetime.now()
-        print '  pam command    :', self.pam_command
-        print '  pam args       :', ' '.join(sys.argv[1:])
-        print '  input dir      :', self.input_directory
-        print '  scratch dir    :', self.scratch_dir
-        print '  output file    :', self.output_file
-        print '  DIRAC run      :', dirac_run
+        if self.iprint < 1:
+            print '  input file     :', self.input_dirac
+            print '  molecule file  :', self.input_molecule
+        else:
+            print '  user           :', self.user_name
+            print '  host           :', self.master
+            print '  ip             :', self.hostname_ip
+            print '  date and time  :', datetime.datetime.now()
+            print '  pam command    :', self.pam_command
+            print '  pam args       :', ' '.join(sys.argv[1:])
+            print '  input dir      :', self.input_directory
+            print '  scratch dir    :', self.scratch_dir
+            print '  output file    :', self.output_file
+            print '  DIRAC run      :', dirac_run
 
         if self.set_timeout_limit:
             print '  Allowed runtime:', self.timeout, \
