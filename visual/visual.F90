@@ -569,7 +569,12 @@ contains
       real(8) :: r(3), v(3), px, py, pz
       integer :: ICUBE, jCUBE, kCUBE, IORIENTATION, IPOINT_IN_LIST
       integer :: istep, i, j, k, l, m, ni, nj, nk, nr_steps, IXVECTOR
-      integer :: lunit_3d, lunit_line, lunit_2d
+
+      integer :: lunit_2d
+      integer :: lunit_3d_cube
+      integer :: lunit_3d_vector_field
+      integer :: lunit_line
+      
       integer :: ix, iy
       real(8), allocatable :: p(:, :)
 
@@ -583,13 +588,35 @@ contains
 
 !     open files
 
-      lunit_3d    = 14
-      lunit_line  = 15
-      lunit_2d = 16
+      lunit_2d              = 14
+      lunit_3d_cube         = 15
+      lunit_3d_vector_field = 16
+      lunit_line            = 17
 
       if (visual_cfg_2d) then
          open(lunit_2d,              &
               file   = 'plot.2d',    &
+              status = 'new',        &
+              access = 'sequential', &
+              form   = 'formatted')
+      end if
+
+      if (visual_cfg_3d) then
+         open(lunit_3d_cube,           &
+              file   = 'plot.3d.cube', &
+              status = 'new',          &
+              access = 'sequential',   &
+              form   = 'formatted')
+         open(lunit_3d_vector_field,           &
+              file   = 'plot.3d.vector_field', &
+              status = 'new',                  &
+              access = 'sequential',           &
+              form   = 'formatted')
+      end if
+
+      if (visual_cfg_line) then
+         open(lunit_line,            &
+              file   = 'plot.line',  &
               status = 'new',        &
               access = 'sequential', &
               form   = 'formatted')
@@ -600,21 +627,6 @@ contains
 
 
 
-      if (visual_cfg_3d) then
-        open(lunit_3d, &
-     &       file   = 'PLOT_3D', &
-     &       status = 'new', &
-     &       access = 'sequential', &
-     &       form   = 'formatted')
-      end if
-
-      if (visual_cfg_line) then
-        open(lunit_line, &
-     &       file   = 'PLOT_LINE', &
-     &       status = 'new', &
-     &       access = 'sequential', &
-     &       form   = 'formatted')
-      end if
 
       if (visual_cfg_list) then
 
@@ -784,14 +796,14 @@ contains
 
 !       write header
 
-        WRITE(LUNIT_3D,'(A)') 'some'
-        WRITE(LUNIT_3D,'(A)') 'text'
+        WRITE(lunit_3d_cube,'(A)') 'some'
+        WRITE(lunit_3d_cube,'(A)') 'text'
         DO I = 0,3
-          WRITE(LUNIT_3D,'(I5,4F12.6)') visual_cfg_NCUBE(I),  &
+          WRITE(lunit_3d_cube,'(I5,4F12.6)') visual_cfg_NCUBE(I),  &
      &               (STEP_3D(J,I),J=1,3)
         ENDDO
         DO I = 1,NUCDEP
-          WRITE(LUNIT_3D,'(I5,4F12.6)') &
+          WRITE(lunit_3d_cube,'(I5,4F12.6)') &
      &         NINT(ATOM_XYZ(4,I)), ATOM_XYZ(4,I), (ATOM_XYZ(J,I),J=1,3)
         ENDDO
 
@@ -814,7 +826,7 @@ contains
 !             write even grid so that it can be fed into XC integrator
 !             for subsequent experiments
 !             zero weight is so that it does not mess up results
-!             write(lunit_3d, '(4d20.12)') px, py, pz, 0.0d0
+!             write(lunit_3d_cube, '(4d20.12)') px, py, pz, 0.0d0
 
 
                    call get_quantity_in_point(nr_dmat,     &
@@ -827,25 +839,31 @@ contains
      &                                     QUANTITY(0,KCUBE))
 
 
-            ENDDO
+            write(lunit_3d_vector_field, '(6e13.5)') &
+	       px,                                   &
+               py,                                   &
+               pz,                                   &
+	       quantity(1, kcube),                   &
+	       quantity(2, kcube),                   &
+	       quantity(3, kcube)
+
+       ENDDO
 
 !           write to file
 
-            !write(*, *) 'xyzq', px, py, pz, 
-            WRITE(LUNIT_3D,'(6E13.5)')  &
+            WRITE(lunit_3d_cube,'(6E13.5)')  &
      &         (QUANTITY(0,M),M=1, visual_cfg_NCUBE(3))
           ENDDO
         ENDDO
       ENDIF !3D
 
-
 !     close files
+      if (visual_cfg_2d)   close(lunit_2d,              status = 'keep')
+      if (visual_cfg_3d)   close(lunit_3d_cube,         status = 'keep')
+      if (visual_cfg_3d)   close(lunit_3d_vector_field, status = 'keep')
+      if (visual_cfg_line) close(lunit_line,            status = 'keep')
 
-      if (visual_cfg_3d)    close(lunit_3d,    status = 'keep')
-      if (visual_cfg_line)  close(lunit_line,  status = 'keep')
-      if (visual_cfg_2d) close(lunit_2d, status = 'keep')
-
-      end subroutine
+   end subroutine
 
 
       subroutine setup_orbital_string(occupation)

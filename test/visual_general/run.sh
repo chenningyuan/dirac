@@ -7,8 +7,8 @@ if [ "$RUNTYPE" = "short" ]; then
        export MENU=response_ez_ez.inp
        ../SCRIPTS/run.sh --outcmo --get=PAMXVC
        export MENU=visual_zo.inp
-       ../SCRIPTS/run.sh --incmo  --copy=PAMXVC --get=PLOT_3D
-       mv PLOT_3D ${molecule%\.mol}_zo.3d
+       ../SCRIPTS/run.sh --incmo  --copy=PAMXVC --get=plot.3d.cube
+       mv plot.3d.cube ${molecule%\.mol}_zo.3d
        export MENU=visual_ez_ez.inp
        ../SCRIPTS/run.sh --incmo  --copy=PAMXVC
    
@@ -24,8 +24,8 @@ else
        export MENU=response_ez_ez.inp
        ../SCRIPTS/run.sh --outcmo --get=PAMXVC
        export MENU=visual_zo.inp
-       ../SCRIPTS/run.sh --incmo  --copy=PAMXVC --get=PLOT_3D
-       mv PLOT_3D ${molecule%\.mol}_zo.3d
+       ../SCRIPTS/run.sh --incmo  --copy=PAMXVC --get=plot.3d.cube
+       mv plot.3d.cube ${molecule%\.mol}_zo.3d
        export MENU=visual_ez_ez.inp
        ../SCRIPTS/run.sh --incmo  --copy=PAMXVC
    
