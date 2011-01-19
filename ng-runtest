@@ -124,6 +124,8 @@ for test in list_of_tests_to_run:
            for i in range(2, len(line.split())):
                pam_flags += line.split()[i] + ' '
         pam_flags += '--silent '
+        pam_flags += '--nobackup '
+        pam_flags += '--noarch '
         if options.mpi > 1:
             pam_flags += '--mpi=%i ' % options.mpi
 
