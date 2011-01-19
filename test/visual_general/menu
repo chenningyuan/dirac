@@ -1,13 +1,13 @@
-response_ez_ez.inp         ne_d2h.mol --outcmo --get=PAMXVC
-visual_zo.inp              ne_d2h.mol --incmo  --copy=PAMXVC
-visual_ez_ez.inp           ne_d2h.mol --incmo  --copy=PAMXVC
+response_ez_ez_dc.inp         ne_d2h.mol --outcmo --get=PAMXVC
+visual_zo_dc.inp              ne_d2h.mol --incmo  --copy=PAMXVC
+visual_ez_ez_dc.inp           ne_d2h.mol --incmo  --copy=PAMXVC
 
-response_bz_bz.inp         ne_d2h.mol --outcmo --get=PAMXVC
-visual_bz_bz.inp           ne_d2h.mol --incmo  --copy=PAMXVC
+response_bz_bz_dc.inp         ne_d2h.mol --outcmo --get=PAMXVC
+visual_bz_bz_dc.inp           ne_d2h.mol --incmo  --copy=PAMXVC
 
-response_1z_bz.inp         co.mol     --outcmo --get=PAMXVC
-visual_1z_bz.inp           co.mol     --incmo  --copy=PAMXVC
-visual_1z_bz_only_para.inp co.mol     --incmo  --copy=PAMXVC
+response_1z_bz_dc.inp         co_c1.mol  --outcmo --get=PAMXVC
+visual_1z_bz_dc.inp           co_c1.mol  --incmo  --copy=PAMXVC
+visual_1z_bz_only_para_dc.inp co_c1.mol  --incmo  --copy=PAMXVC
 
-response_1z_2z.inp         co.mol     --outcmo --get=PAMXVC
-visual_1z_2z.inp           co.mol     --incmo  --copy=PAMXVC
+response_1z_2z_dc.inp         co_c1.mol  --outcmo --get=PAMXVC
+visual_1z_2z_dc.inp           co_c1.mol  --incmo  --copy=PAMXVC

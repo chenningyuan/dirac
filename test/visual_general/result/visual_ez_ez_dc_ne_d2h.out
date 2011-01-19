@@ -1,8 +1,10 @@
-DIRAC launched (pam script) by bast@larry at Thu Jan  7 17:42:58 CET 2010
-in : /home/bast/dirac/levy_j/test/043.visual
-===========================================================================================
-Size of all static allocations (pam script) : 71.5048 MB
-DIRAC serial allocating 64000000 words (488 MB) of memory
+DIRAC pam run in /home/bast/dirac/git/test/visual_general
+-e Size of all static allocations :108.447 MB 
+DIRAC serial starts by allocating 64000000 words (488 MB) of memory
+DIRAC serial has no limitations in place for the amount of dynamically allocated memory
+ 
+Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in pam
+ 
  ******************************************************************************
  *                                                                            *
  *                                O U T P U T                                 *
@@ -72,44 +74,48 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
  MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
  ******************************************************************************
  *                                                                            *
- *         =======================================================            *
+ *         =========================================================          *
  *                     Program for Atomic and Molecular                       *
- *          Direct Iterative Relativistic Allelectron Calculations            *
- *         =======================================================            *
+ *          Direct Iterative Relativistic All-electron Calculations           *
+ *         =========================================================          *
  *                                                                            *
- *                        VERSION 08.00  17 September 2008                    *
+ *                      VERSION 10.00  10 October 2010                        *
  *                                                                            *
  ******************************************************************************
  *                                                                            *
  *    Written by:                                                             *
  *                                                                            *
+ *    Trond Saue               Université P. Sabatier, Toulouse  France       *
  *    Lucas Visscher           VU University Amsterdam           Netherlands  *
- *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *
- *    Trond Saue               CNRS/ULP Strasbourg               France       *
+ *    Hans Jørgen Aa. Jensen   University of Southern Denmark    Denmark      *
  *                                                                            *
- *    with new contributions to DIRAC08 from:                                 *
+ *    with new contributions since the DIRAC08 release from:                  *
  *                                                                            *
- *    Radovan Bast             University of Tromsoe             Norway       *
- *    Sebastien Dubillard      CNRS/ULP Strasbourg               France       *
+ *    Radovan Bast             University of Tromsø              Norway       *
  *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *
- *    Ulf Ekstrom              VU University Amsterdam           Netherlands  *
+ *    Ulf Ekström              VU University Amsterdam           Netherlands  *
  *    Ephraim Eliav            University of Tel Aviv            Israel       *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark      *
  *    Timo Fleig               Université P. Sabatier, Toulouse  France       *
- *    Andre S. P. Gomes        VU University Amsterdam           Netherlands  *
- *    Trygve U. Helgaker       University of Oslo                Norway       *
- *    Johan Henriksson         Linkoeping University             Sweden       *
- *    Miroslav Ilias           University of Zilina              Slovakia     *
- *    Christoph R. Jacob       ETH Zurich                        Switzerland  *
- *    Stefan Knecht            University of Duesseldorf         Germany      *
- *    Patrick Norman           Linkoeping University             Sweden       *
+ *    Andre S. P. Gomes        CNRS/Universite Lille 1           France       *
+ *    Johan Henriksson         Linkôping University              Sweden       *
+ *    Miroslav Ilias           Matej Bel University              Slovakia     *
+ *    Christoph R. Jacob       Karlsruhe Institute of Technology Germany      *
+ *    Stefan Knecht            CNRS/Université de Strasbourg     France       *
+ *    Huliyar Nataraj          BME/Budapest Univ. Tech. & Econ.  Hungary      *
+ *    Patrick Norman           Linköping University              Sweden       *
  *    Jeppe Olsen              Aarhus University                 Denmark      *
  *    Markus Pernpointner      University of Heidelberg          Germany      *
- *    Kenneth Ruud             University of Tromsoe             Norway       *
- *    Pawel Salek              Stockholm Inst. of Technology     Sweden       *
+ *    Kenneth Ruud             University of Tromsø              Norway       *
+ *    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany      *
  *    Jetze Sikkema            VU University Amsterdam           Netherlands  *
+ *    Andreas Thorvaldsen      University of Tromsø              Norway       *
+ *    Jørn Thyssen             University of Southern Denmark    Denmark      *
+ *    Sebastien Villaume       Linköping University              Sweden       *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan        *
  *                                                                            *
  *    For the complete list of contributors to the DIRAC code see our         *
- *    website http://dirac.chem.sdu.dk                                        *
+ *    website http://dirac.chem.vu.nl                                         *
  *                                                                            *
  *    This is an experimental code. The authors accept no responsibility      *
  *    for the performance of the code or for the correctness of the results.  *
@@ -122,31 +128,32 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
  *    appropriate citation would be:                                          *
  *                                                                            *
  *    DIRAC, a relativistic ab initio electronic structure program,           *
- *    Release DIRAC08 (2008),                                                 *
- *    written by L. Visscher, H. J. Aa. Jensen, and T. Saue,                  *
- *    with new contributions from R. Bast, S. Dubillard, K. G. Dyall,         *
- *    U. Ekstrom, E. Eliav, T. Fleig, A. S. P. Gomes, T. U. Helgaker,         *
- *    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, P. Norman,            *
- *    J. Olsen, M. Pernpointner, K. Ruud, P. Salek, and J. Sikkema            *
- *    (see http://dirac.chem.sdu.dk).                                         *
+ *    Release DIRAC10 (2010),                                                 *
+ *    written by T. Saue, L. Visscher, and H. J. Aa. Jensen,                  *
+ *    with new contributions from R. Bast, K. G. Dyall, U. Ekström, E. Eliav, *
+ *    T. Enevoldsen, T. Fleig, A. S. P. Gomes, J. Henriksson, M. Ilias,       *
+ *    Ch. R. Jacob, S. Knecht, H. S. Nataraj, P. Norman, J. Olsen,            *
+ *    M. Pernpointner, K. Ruud, B. Schimmelpfennig, J. Sikkema,               *
+ *    A. Thorvaldsen, J.  Thyssen, S. Villaume, and S. Yamamoto               *
+ *    (see http://dirac.chem.vu.nl).                                          *
  *                                                                            *
  ******************************************************************************
  Version           : Dirac 8.0 (patchlevel 0) 
  Hostname          : larry
- Operating system  : Linux 2.6.27-15-generic
+ Operating system  : Linux 2.6.35-24-generic
  Machine           : i686
  Run               : Sequential
- Last compilation  : 17:21:43 Jan  7 2010 (by bast@larry:/home/bast/dirac/levy_j)
- FORTRAN compiler  : /usr/bin/gfortran -g -fno-range-check -O3 -ffast-math -funroll-loops -Iinclude -Jmodules -DARCH32BIT -DVAR_GFOTRAN -DGFORTRAN=432 -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MFDS -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON 
- C compiler        : /usr/bin/gcc -g -O3 -ffast-math -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DMOD_ERI -DMOD_DNF -DMOD_DFT -DMOD_KRMC -DMOD_ESR -DMOD_XPP -DMOD_STEX -DMOD_EMB -DMOD_ADC -DMOD_VISUAL -DMOD_AORESPONSE -DMOD_MATRIX_OPERATIONS -DMOD_IHFSCC -DMOD_AMFI -DMOD_LONDON -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DSYS_FLAVOR=LINUX 
- External libraries: -L/usr/lib -lblas -L/usr/lib -llapack -lcblas -lf77blas -latlas -L/usr/lib -llapack 
- Internal libraries: DIRAC_BLAS=NO  DIRAC_LAPACK=NO 
- ILP data model    : ILP32 
- SVN URL:          : 'http://dirac.chem.sdu.dk/svnDirac/Dirac/trunk' 
- SVN Changeset     : '10145' 
+ Last compilation  : 09:12:46 Jan 19 2011 (by foo@foo:foo)
+ FORTRAN compiler  : foo 
+ C compiler        : foo 
+ External libraries: foo 
+ Internal libraries: DIRAC_BLAS=foo  DIRAC_LAPACK=foo 
+ ILP data model    : foo 
+ SVN URL           : foo 
+ SVN Revision      : foo 
 
  
-     Date and time (Linux)  : Thu Jan  7 17:42:59 2010 
+     Date and time (Linux)  : Wed Jan 19 10:16:09 2011
      Host name              :                                         
 
 
@@ -156,7 +163,6 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
 
 **DIRAC
 #.WAVE FUNCTION
-.ANALYZE
 **HAMILTONIAN
 .LVCORR
 .INTFLG
@@ -166,14 +172,12 @@ DIRAC serial allocating 64000000 words (488 MB) of memory
 .UNCONTRACT
 **WAVE FUNCTION
 .DHF
-**ANALYZE
-.VISUAL
-*VISUAL
+**VISUAL
 .3D
 .INTEGRATE
 .QUANTITIES
 1
-PAMXVC 1 18 1
+PAMXVC 1 21 0
 .CUBE
 25 25 25
 *END OF
@@ -183,9 +187,6 @@ PAMXVC 1 18 1
     ********************* DIRAC: No title specified !!! *********************
     *************************************************************************
 
- Jobs in this run:
-   * Analysis
-   * If crash, end with the segment.fault. Worth for debugging.
 
 
     **************************************************************************
@@ -250,54 +251,92 @@ Dynamical threshold is not (yet) implemented in DIRAC
   Title Cards
   -----------
 
-  .                                                                       
-  .                                                                       
+                                                                          
+                                                                          
 
-  Coordinates are entered in Angstroms and converted to atomic units.
-          - Conversion factor : 1 bohr = 0.52917721 A
+  Nuclear Gaussian exponent for atom of charge  10.000 :    5.2105715255D+08
 
-  Nuclear Gaussian exponent for atom of charge   6.000 :    6.8077502929D+08
 
-  Nuclear Gaussian exponent for atom of charge   8.000 :    5.8631436655D+08
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 3
+
 
 
                           SYMGRP:Point group information
                           ------------------------------
 
-Point group: C1 
+Point group: D2h
+
+   * The point group was generated by:
+
+      Reflection in the xy-plane
+      Reflection in the xz-plane
+      Reflection in the yz-plane
+
+   * Group multiplication table
+
+        |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+   -----+----------------------------------------
+     E  |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+    C2z | C2z   E   C2x  C2y  Oxy   i   Oyz  Oxz
+    C2y | C2y  C2x   E   C2z  Oxz  Oyz   i   Oxy
+    C2x | C2x  C2y  C2z   E   Oyz  Oxz  Oxy   i 
+     i  |  i   Oxy  Oxz  Oyz   E   C2z  C2y  C2x
+    Oxy | Oxy   i   Oyz  Oxz  C2z   E   C2x  C2y
+    Oxz | Oxz  Oyz   i   Oxy  C2y  C2x   E   C2z
+    Oyz | Oyz  Oxz  Oxy   i   C2x  C2y  C2z   E 
 
    * Character table
 
-        |  E 
-   -----+-----
-    A   |   1
+        |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+   -----+----------------------------------------
+    Ag  |   1    1    1    1    1    1    1    1
+    B1u |   1    1   -1   -1   -1   -1    1    1
+    B2u |   1   -1    1   -1   -1    1   -1    1
+    B3g |   1   -1   -1    1    1   -1   -1    1
+    B3u |   1   -1   -1    1   -1    1    1   -1
+    B2g |   1   -1    1   -1    1   -1    1   -1
+    B1g |   1    1   -1   -1    1    1   -1   -1
+    Au  |   1    1    1    1   -1   -1   -1   -1
 
    * Direct product table
 
-        | A  
-   -----+-----
-    A   | A  
+        | Ag   B1u  B2u  B3g  B3u  B2g  B1g  Au 
+   -----+----------------------------------------
+    Ag  | Ag   B1u  B2u  B3g  B3u  B2g  B1g  Au 
+    B1u | B1u  Ag   B3g  B2u  B2g  B3u  Au   B1g
+    B2u | B2u  B3g  Ag   B1u  B1g  Au   B3u  B2g
+    B3g | B3g  B2u  B1u  Ag   Au   B1g  B2g  B3u
+    B3u | B3u  B2g  B1g  Au   Ag   B1u  B2u  B3g
+    B2g | B2g  B3u  Au   B1g  B1u  Ag   B3g  B2u
+    B1g | B1g  Au   B3u  B2g  B2u  B3g  Ag   B1u
+    Au  | Au   B1g  B2g  B3u  B3g  B2u  B1u  Ag 
 
 
                             **************************
                             *** Output from DBLGRP ***
                             **************************
 
-   * One fermion irrep:   E1 
-   * Quaternionic group. NZ = 4
+   * Two fermion irreps:  E1g  E1u
+   * Real group. NZ = 1
    * Direct product decomposition:
-          E1  x E1  : A   + A   + A   + A  
+          E1g x E1g : Ag  + B1g + B2g + B3g
+          E1u x E1g : Au  + B1u + B2u + B3u
+          E1u x E1u : Ag  + B1g + B2g + B3g
 
 
                                  Spinor structure
                                  ----------------
 
 
-   * Fermion irrep no.: 1
-      La  |  A  (1)  A  (1)  |
-      Sa  |  A  (1)  A  (1)  |
-      Lb  |  A  (1)  A  (1)  |
-      Sb  |  A  (1)  A  (1)  |
+   * Fermion irrep no.: 1            * Fermion irrep no.: 2
+
+      La  |  Ag (1)  B1g(2)  |                La  |  Au (1)  B1u(2)  |
+      Sa  |  Au (1)  B1u(2)  |                Sa  |  Ag (1)  B1g(2)  |
+      Lb  |  B2g(3)  B3g(4)  |                Lb  |  B2u(3)  B3u(4)  |
+      Sb  |  B2u(3)  B3u(4)  |                Sb  |  B2g(3)  B3g(4)  |
 
 
                               Quaternion symmetries
@@ -305,37 +344,43 @@ Point group: C1
 
     Rep  T(+)
     -----------------------------
-    A    1  i  j  k
+    Ag   1
+    B1u  i
+    B2u  j
+    B3g  k
+    B3u  k
+    B2g  j
+    B1g  i
+    Au   1
 
 
   Atoms and basis sets
   --------------------
 
-  Number of atom types:     2
-  Total number of atoms:    2
+  Number of atom types:     1
+  Total number of atoms:    1
 
   label    atoms   charge   prim    cont     basis   
   ----------------------------------------------------------------------
-  C           1       6      27      27      L  - [9s4p1d|9s4p1d]                                                
-                             68      68      S  - [4s10p4d1f|4s10p4d1f]                                          
-  O           1       8      27      27      L  - [9s4p1d|9s4p1d]                                                
+  Ne          1      10      27      27      L  - [9s4p1d|9s4p1d]                                                
                              68      68      S  - [4s10p4d1f|4s10p4d1f]                                          
   ----------------------------------------------------------------------
-                             54      54      L  - large components
-                            136     136      S  - small components
+                             27      27      L  - large components
+                             68      68      S  - small components
   ----------------------------------------------------------------------
-  total:      2      14     190     190
+  total:      1      10      95      95
 
   Cartesian basis used.
   Threshold for integrals (to be written to file):  1.00D-15
 
   MNF.INP input file (for the AMFI stuff) is ready.
+  CAPOUT: preparing the "CAPDIR.inp" file with DIRAC unique order of atomic basis functions. 
 
 
   References for the basis sets
   -----------------------------
 
-  Atom type   1   2
+  Atom type   1
    Elements                             References                                
    --------                             ----------                                
    H      : T.H. Dunning, Jr. J. Chem. Phys. 90, 1007 (1989).                     
@@ -351,135 +396,148 @@ Point group: C1
   Cartesian Coordinates
   ---------------------
 
-  Total number of coordinates:  6
+  Total number of coordinates:  3
 
 
-   1   C        x      0.0000000000
+   1   Ne       x      0.0000000000
    2            y      0.0000000000
    3            z      0.0000000000
 
-   4   O        x      0.0000000000
-   5            y      0.0000000000
-   6            z      2.1316110791
 
 
+  Symmetry Coordinates
+  --------------------
 
-   Interatomic separations (in Angstroms):
-   ---------------------------------------
-
-            C           O   
-
-   C       0.000000
-   O       1.128000    0.000000
+  Number of coordinates in each symmetry:   0  1  1  0  1  0  0  0
 
 
+  Symmetry 2
+
+   1   Ne    z    3
 
 
-  Bond distances (angstroms):
-  ---------------------------
+  Symmetry 3
 
-                  atom 1     atom 2                           distance
-                  ------     ------                           --------
-  bond distance:    O          C                              1.128000
+   2   Ne    y    2
 
 
-  Nuclear repulsion energy :   22.518179076596
+  Symmetry 5
+
+   3   Ne    x    1
+  Nuclear repulsion energy :    0.000000000000
 
 
                                 GETLAB: AO-labels
                                 -----------------
 
-   * Large components:   20
-     1  L C     s        2  L C     px       3  L C     py       4  L C     pz       5  L C     dxx      6  L C     dxy 
-     7  L C     dxz      8  L C     dyy      9  L C     dyz     10  L C     dzz     11  L O     s       12  L O     px  
-    13  L O     py      14  L O     pz      15  L O     dxx     16  L O     dxy     17  L O     dxz     18  L O     dyy 
-    19  L O     dyz     20  L O     dzz 
-   * Small components:   40
-    21  S C     s       22  S C     px      23  S C     py      24  S C     pz      25  S C     dxx     26  S C     dxy 
-    27  S C     dxz     28  S C     dyy     29  S C     dyz     30  S C     dzz     31  S C     fxxx    32  S C     fxxy
-    33  S C     fxxz    34  S C     fxyy    35  S C     fxyz    36  S C     fxzz    37  S C     fyyy    38  S C     fyyz
-    39  S C     fyzz    40  S C     fzzz    41  S O     s       42  S O     px      43  S O     py      44  S O     pz  
-    45  S O     dxx     46  S O     dxy     47  S O     dxz     48  S O     dyy     49  S O     dyz     50  S O     dzz 
-    51  S O     fxxx    52  S O     fxxy    53  S O     fxxz    54  S O     fxyy    55  S O     fxyz    56  S O     fxzz
-    57  S O     fyyy    58  S O     fyyz    59  S O     fyzz    60  S O     fzzz
+   * Large components:   10
+     1  L Ne    s        2  L Ne    px       3  L Ne    py       4  L Ne    pz       5  L Ne    dxx      6  L Ne    dxy 
+     7  L Ne    dxz      8  L Ne    dyy      9  L Ne    dyz     10  L Ne    dzz 
+   * Small components:   20
+    11  S Ne    s       12  S Ne    px      13  S Ne    py      14  S Ne    pz      15  S Ne    dxx     16  S Ne    dxy 
+    17  S Ne    dxz     18  S Ne    dyy     19  S Ne    dyz     20  S Ne    dzz     21  S Ne    fxxx    22  S Ne    fxxy
+    23  S Ne    fxxz    24  S Ne    fxyy    25  S Ne    fxyz    26  S Ne    fxzz    27  S Ne    fyyy    28  S Ne    fyyz
+    29  S Ne    fyzz    30  S Ne    fzzz
+
+
+                                GETLAB: SO-labels
+                                -----------------
+
+   * Large components:   10
+     1  L Ag Ne s        2  L Ag Ne dxx      3  L Ag Ne dyy      4  L Ag Ne dzz      5  L B1uNe pz       6  L B2uNe py  
+     7  L B3gNe dyz      8  L B3uNe px       9  L B2gNe dxz     10  L B1gNe dxy 
+   * Small components:   20
+    11  S Ag Ne s       12  S Ag Ne dxx     13  S Ag Ne dyy     14  S Ag Ne dzz     15  S B1uNe pz      16  S B1uNe fxxz
+    17  S B1uNe fyyz    18  S B1uNe fzzz    19  S B2uNe py      20  S B2uNe fxxy    21  S B2uNe fyyy    22  S B2uNe fyzz
+    23  S B3gNe dyz     24  S B3uNe px      25  S B3uNe fxxx    26  S B3uNe fxyy    27  S B3uNe fxzz    28  S B2gNe dxz 
+    29  S B1gNe dxy     30  S Au Ne fxyz
 
 
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:          190
-  Number of large orbitals in each symmetry:     54
-  Number of small orbitals in each symmetry:    136
+  Number of orbitals in each symmetry:           28    17    17     5    17     5     5     1
+  Number of large orbitals in each symmetry:     12     4     4     1     4     1     1     0
+  Number of small orbitals in each symmetry:     16    13    13     4    13     4     4     1
 
 * Large component functions
 
-  Symmetry  A  ( 1)
+  Symmetry  Ag ( 1)
 
-        9 functions:    C  s   
-        4 functions:    C  px  
-        4 functions:    C  py  
-        4 functions:    C  pz  
-        1 functions:    C  dxx 
-        1 functions:    C  dxy 
-        1 functions:    C  dxz 
-        1 functions:    C  dyy 
-        1 functions:    C  dyz 
-        1 functions:    C  dzz 
-        9 functions:    O  s   
-        4 functions:    O  px  
-        4 functions:    O  py  
-        4 functions:    O  pz  
-        1 functions:    O  dxx 
-        1 functions:    O  dxy 
-        1 functions:    O  dxz 
-        1 functions:    O  dyy 
-        1 functions:    O  dyz 
-        1 functions:    O  dzz 
+        9 functions:    Ne s   
+        1 functions:    Ne dxx 
+        1 functions:    Ne dyy 
+        1 functions:    Ne dzz 
+
+  Symmetry  B1u( 2)
+
+        4 functions:    Ne pz  
+
+  Symmetry  B2u( 3)
+
+        4 functions:    Ne py  
+
+  Symmetry  B3g( 4)
+
+        1 functions:    Ne dyz 
+
+  Symmetry  B3u( 5)
+
+        4 functions:    Ne px  
+
+  Symmetry  B2g( 6)
+
+        1 functions:    Ne dxz 
+
+  Symmetry  B1g( 7)
+
+        1 functions:    Ne dxy 
 
 * Small component functions
 
-  Symmetry  A  ( 1)
+  Symmetry  Ag ( 1)
 
-        4 functions:    C  s   
-       10 functions:    C  px  
-       10 functions:    C  py  
-       10 functions:    C  pz  
-        4 functions:    C  dxx 
-        4 functions:    C  dxy 
-        4 functions:    C  dxz 
-        4 functions:    C  dyy 
-        4 functions:    C  dyz 
-        4 functions:    C  dzz 
-        1 functions:    C  fxxx
-        1 functions:    C  fxxy
-        1 functions:    C  fxxz
-        1 functions:    C  fxyy
-        1 functions:    C  fxyz
-        1 functions:    C  fxzz
-        1 functions:    C  fyyy
-        1 functions:    C  fyyz
-        1 functions:    C  fyzz
-        1 functions:    C  fzzz
-        4 functions:    O  s   
-       10 functions:    O  px  
-       10 functions:    O  py  
-       10 functions:    O  pz  
-        4 functions:    O  dxx 
-        4 functions:    O  dxy 
-        4 functions:    O  dxz 
-        4 functions:    O  dyy 
-        4 functions:    O  dyz 
-        4 functions:    O  dzz 
-        1 functions:    O  fxxx
-        1 functions:    O  fxxy
-        1 functions:    O  fxxz
-        1 functions:    O  fxyy
-        1 functions:    O  fxyz
-        1 functions:    O  fxzz
-        1 functions:    O  fyyy
-        1 functions:    O  fyyz
-        1 functions:    O  fyzz
-        1 functions:    O  fzzz
+        4 functions:    Ne s   
+        4 functions:    Ne dxx 
+        4 functions:    Ne dyy 
+        4 functions:    Ne dzz 
+
+  Symmetry  B1u( 2)
+
+       10 functions:    Ne pz  
+        1 functions:    Ne fxxz
+        1 functions:    Ne fyyz
+        1 functions:    Ne fzzz
+
+  Symmetry  B2u( 3)
+
+       10 functions:    Ne py  
+        1 functions:    Ne fxxy
+        1 functions:    Ne fyyy
+        1 functions:    Ne fyzz
+
+  Symmetry  B3g( 4)
+
+        4 functions:    Ne dyz 
+
+  Symmetry  B3u( 5)
+
+       10 functions:    Ne px  
+        1 functions:    Ne fxxx
+        1 functions:    Ne fxyy
+        1 functions:    Ne fxzz
+
+  Symmetry  B2g( 6)
+
+        4 functions:    Ne dxz 
+
+  Symmetry  B1g( 7)
+
+        4 functions:    Ne dxy 
+
+  Symmetry  Au ( 8)
+
+        1 functions:    Ne fxyz
 
 
    ***************************************************************************
@@ -508,17 +566,6 @@ Point group: C1
    2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
 
 
- *******************************************************************************
- ************************** Memory required by HERMIT **************************
- *******************************************************************************
-
-===========================================================================
- Maximum memory load for two-electron integral processing:
-===========================================================================
- * LL-integrals:
-   5(O    Lp)   2(C    Lp)   5(O    Lp)   2(C    Lp)              101645
-
-
     **************************************************************************
     ************************** Wave function module **************************
     **************************************************************************
@@ -527,15 +574,13 @@ Point group: C1
  * Hartree-Fock calculation
 
  * Initial Automatic occupation based on:
-   Total charge of atoms =  14
+   Total charge of atoms =  10
    Charge of molecule    =   0
-   i.e. no. of electrons =  14
+   i.e. no. of electrons =  10
 ===========================================================================
  DHFINP: Set-up for Hartree-Fock calculation:
 ===========================================================================
- * Number of fermion irreps: 1
- * Closed shell SCF calculation with   14 electrons in
-       7 orbitals in Fermion irrep 1
+ * Number of fermion irreps: 2
  * Bare nucleus screening correction used for start guess
  * General print level   :   0
  ***** TRIAL FUNCTION *****
@@ -555,16 +600,12 @@ Point group: C1
    Weight of old matrix    : 0.250
  * Maximum number of SCF iterations  :   50
  * No quadratic convergent Hartree-Fock
+ * DHF occupation is allowed to change during SCF cycles.
  * Contributions from 2-electron integrals to Fock matrix:
    LL-integrals.
  ***** OUTPUT CONTROL *****
  * Only electron eigenvalues written out.
-
-
-   ***************************************************************************
-   ***************************** Analysis module *****************************
-   ***************************************************************************
-
+ LWORK,LFREE    64000000    64000000
 
 
  ********************************************************************************
@@ -582,8 +623,21 @@ Point group: C1
                        Generating Lowdin canonical matrix:
                        -----------------------------------
 
-   L   A     * Deleted:          2(Proj:          2, Lindep:          0)
-   S   A     * Deleted:         14(Proj:         14, Lindep:          0)
+   L   Ag    * Deleted:          1(Proj:          1, Lindep:          0)
+   L   B3g   * Deleted:          0(Proj:          0, Lindep:          0)
+   L   B2g   * Deleted:          0(Proj:          0, Lindep:          0)
+   L   B1g   * Deleted:          0(Proj:          0, Lindep:          0)
+   S   B1u   * Deleted:          1(Proj:          1, Lindep:          0)
+   S   B2u   * Deleted:          1(Proj:          1, Lindep:          0)
+   S   B3u   * Deleted:          1(Proj:          1, Lindep:          0)
+   S   Au    * Deleted:          0(Proj:          0, Lindep:          0)
+   L   B1u   * Deleted:          0(Proj:          0, Lindep:          0)
+   L   B2u   * Deleted:          0(Proj:          0, Lindep:          0)
+   L   B3u   * Deleted:          0(Proj:          0, Lindep:          0)
+   S   Ag    * Deleted:          4(Proj:          4, Lindep:          0)
+   S   B3g   * Deleted:          0(Proj:          0, Lindep:          0)
+   S   B2g   * Deleted:          0(Proj:          0, Lindep:          0)
+   S   B1g   * Deleted:          0(Proj:          0, Lindep:          0)
 
 
                                 Output from MODHAM
@@ -596,13 +650,14 @@ Point group: C1
       ************************* Orbital dimensions *************************
       **********************************************************************
 
-No. of positive energy orbitals (NESH):    52
-No. of negative energy orbitals (NPSH):    52
-Total no. of orbitals           (NORB):   104
+                                   Irrep 1 Irrep 2   Sum
+No. of electronic orbitals (NESH):    14      12      26
+No. of positronic orbitals (NPSH):    14      12      26
+Total no. of orbitals      (NORB):    28      24      52
 
- >>> Time used in PAMSET is   0.18 seconds
-
- >>>> time used in plot:   1.58 seconds
+  *** Visualisation module ***
+  Visualisation : DFCOEF file read
+ >>>> time used in plot:   0.25 seconds
 
 
                             +--------------------------+
@@ -621,38 +676,60 @@ Total no. of orbitals           (NORB):   104
                         ----------------------------------
 
 
-               Column   1     Column   2
-       1       1.00000000     1.16666667
-       2       0.85714286     1.00000000
+               Column   1
+       1       1.00000000
 
 DFTGRD: ATSIZE not requested or no trial vectors found. Slater-Bragg radii will be used.
-
+ 
 Atom  Deg   Rmin        Rmax        Step size     #rp     #tp
 =============================================================
-C       1   0.757E-06   0.115E+02   0.117E+00     124   29732
-O       1   0.571E-06   0.856E+01   0.117E+00     124   29156
+Ne      1   0.462E-06   0.684E+01   0.117E+00     123    4464
 
-   Number of grid points in quadrature:     58888 (100.0%)
+   Number of grid points in quadrature:      4464 ( 15.5%)
 
 
- >>>> Time used in DFTGRD:   0.04 seconds
+ >>>> Time used in DFTGRD:   0.03 seconds
 
 
       scalar              x-component         y-component         z-component
 
-    0.6508829999E-01    0.0000000000E+00    0.0000000000E+00    0.0000000000E+00
+   -0.5029658596E+00    0.0000000000E+00    0.0000000000E+00    0.0000000000E+00
 
 ----------------------------------------------------------------------------------------------------
 
 
- >>>> time used in integration:   5.51 seconds
+ >>>> time used in integration:   0.07 seconds
 
  
-     Date and time (Linux)  : Thu Jan  7 17:43:07 2010 
+     Date and time (Linux)  : Wed Jan 19 10:16:09 2011
      Host name              :                                         
->>>> Node 0, utime: 7, stime: 0, minflt: 139835, majflt: 0, nvcsw: 14, nivcsw: 570
->>>> Total WALL time used in DIRAC: 9s
-*****************************************************
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 
+  
+  Dynamical Memory Usage Summary
+  
+  Mean allocation size (Mb) :        15.26
+  
+  Largest          10  allocations
+  
+      488.28 Mb at subroutine                                            for work array at main                        
+        7.63 Mb at subroutine                                            for unnamed variable                          
+        7.63 Mb at subroutine                                            for unnamed variable                          
+        7.63 Mb at subroutine                                            for unnamed variable                          
+        7.63 Mb at subroutine                                            for unnamed variable                          
+        0.07 Mb at subroutine                                            for unnamed variable                          
+        0.07 Mb at subroutine                                            for unnamed variable                          
+        0.03 Mb at subroutine                                            for unnamed variable                          
+        0.03 Mb at subroutine                                            for unnamed variable                          
+        0.03 Mb at subroutine                                            for unnamed variable                          
+  
+  Peak memory usage    (Mb) :       519.00
+       reached at subroutine :                                           
+              for variable   : unnamed variable                          
+  
+ MEMGET high-water mark:     0.35 MB
+
+*****************************************************
+>>>> Node 0, utime: 0, stime: 0, minflt: 134504, majflt: 0, nvcsw: 0, nivcsw: 79, maxrss: 537304
+>>>> Total WALL time used in DIRAC: 1s
