@@ -3,12 +3,12 @@
 #
 # Python script for automatized atom-by-atom X2C calculations
 #
-# reads the Dirac input and molecule file and calls Dirac via pam
+# reads the original Dirac input and molecule file. 
+# creates atomic fragment inputs and calls Dirac via "pam".
 #
 # Written by Stefan Knecht, Denmark, Jan 2011 - ?
 #
 # Contributors:  everybody is welcome. :)
-#
 #
 
 import os
@@ -17,15 +17,57 @@ import string
 import subprocess
 from optparse import OptionParser, OptionGroup
 
-root_directory = os.path.realpath(__file__)[:-11]
+# set root directory
+
+root_directory = os.path.realpath(__file__)[:-14]
 
 # define example usage
 
-usage = './%prog --inp=input[.inp,.menu] --mol=molecule[.mol] [--mpi=4]'
+usage = './atomicX2C-run --inp=[.inp] --mol=[.mol] [--pam_options="string with all your additional pam options"]'
 
 # initialize parser
 
 parser = OptionParser(usage)
 
 # define options
-print 'bla bla bla'
+
+group = OptionGroup(parser, 'dirac input file')
+group.add_option('--inp',
+                 type='string',
+                 action='store',
+                 dest='original_dirac_input',
+                 default=None,
+                 metavar='xxx.inp',
+                 help='specifies the Dirac calculation input [default: %default]')
+parser.add_option_group(group)
+
+group = OptionGroup(parser, 'molecule input file')
+group.add_option('--mol',
+                 type='string',
+                 action='store',
+                 dest='original_molecular_input',
+                 default=None,
+                 metavar='xxx.mol',
+                 help='specifies the molecular input file [default: %default]')
+parser.add_option_group(group)
+
+group = OptionGroup(parser, '\"pam\" options')
+group.add_option('--pam_options',
+                 type='string',
+                 action='store',
+                 dest='pam_argument_list',
+                 default=None,
+                 metavar='\"--silent\"',
+                 help='provides keywords passed on to pam [default: %default]')
+parser.add_option_group(group)
+
+# process input
+
+(options, args) = parser.parse_args()
+
+# user has given no arguments: print help and exit
+
+if len(sys.argv) == 1:
+    print parser.format_help().strip()
+    sys.exit()
+
