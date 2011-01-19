@@ -1,0 +1,8 @@
+response_london_bz.inp        co2_d2h.mol --outcmo --get="PAMXVC  AOPROPER property_info"
+vis_shield_natural_zz.inp     co2_d2h.mol --incmo  --copy="PAMXVC AOPROPER property_info"
+
+response_london_symcon_bz.inp co2_d2h.mol --outcmo --get="PAMXVC  AOPROPER property_info"
+vis_shield_symmetric_zz.inp   co2_d2h.mol --incmo  --copy="PAMXVC AOPROPER property_info"
+vis_shield_none_zz.inp        co2_d2h.mol --incmo  --copy="PAMXVC AOPROPER property_info"
+
+sh rm DFCOEF PAMXVC AOPROPER property_info

@@ -113,8 +113,8 @@ for test in list_of_tests_to_run:
 # print header
 
 print
-print '%8s %11s %20s %30s %10s' % ('progress', 'result', 'test', 'inp', 'mol')
-print '-----------------------------------------------------------------------------------'
+print '%8s %6s %25s %30s %15s' % ('progress', 'result', 'test', 'inp', 'mol')
+print '----------------------------------------------------------------------------------------'
 
 # run the tests
 
@@ -188,7 +188,7 @@ for test in list_of_tests_to_run:
                     nr_crashed += 1
                 
                 progress = '[%3i%s]' % (100.0*float(nr_of_tests_done)/float(total_nr_of_tests), r'%')
-                print '%8s %11s %20s %30s %10s' % (progress, result_text, test, inp_file, mol_file)
+                print '%8s %6s %25s %30s %15s' % (progress, result_text, test, inp_file, mol_file)
 
     f.close()
 
