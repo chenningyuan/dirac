@@ -73,7 +73,17 @@ if len(sys.argv) == 1:
     print parser.format_help().strip()
     sys.exit()
 
-# get total number of atomic/molecular fragment X2C calculations to run
+# read original molecular input
+
+total_nr_of_lines = 0
+mol_file_orig = options.original_molecular_input
+f = open(mol_file_orig, 'r')
+for line in f.readlines():
+    total_nr_of_lines += 1    
+f.close()
+
+print total_nr_of_lines
+# calculate total number of atomic/molecular fragments
 
 #total_nr_of_atomic_x2c = 0
 #for fragment in list_of_fragments:
