@@ -1,4 +1,4 @@
-DIRAC pam run in /home/gosia/dirac.git/trunk/test/visual_lao_current
+DIRAC pam run in /home/bast/dirac/git/test/visual_lao_current
 -e Size of all static allocations : MB 
 DIRAC serial starts by allocating 64000000 words (488 MB) of memory
 DIRAC serial has no limitations in place for the amount of dynamically allocated memory
@@ -139,21 +139,21 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
  *                                                                            *
  ******************************************************************************
  Version           : Dirac 8.0 (patchlevel 0) 
- Hostname          : ibm
- Operating system  : Linux 2.6.31-22-generic
+ Hostname          : larry
+ Operating system  : Linux 2.6.35-24-generic
  Machine           : i686
  Run               : Sequential
- Last compilation  : 20:46:07 Jan 18 2011 (by gosia@ibm:/home/gosia/dirac.git/trunk)
- FORTRAN compiler  : /usr/bin/gfortran -g -fbacktrace -fno-range-check -Iinclude -Jmodules -DARCH32BIT -DUSE_DIRAC_BLAS -DUSE_DIRAC_DLAMCH -DUSE_DIRAC_DLAPACK -DUSE_DIRAC_ZLAPACK -DVAR_GFORTRAN -DGFORTRAN=441 -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MFDS -DMOD_XML -DMOD_OPENRSP -DMOD_OOF -DMOD_ESR -DMOD_KRCC -DMOD_SRDFT -DMOD_MAGNETIZ -DMOD_MCSCF_spinfree -DMOD_UNRELEASED -DMOD_CAP -DMOD_ERI -DMOD_DNF  
- C compiler        : /usr/bin/gcc -g -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DARCH32BIT -DMOD_XML -DMOD_OPENRSP -DMOD_OOF -DMOD_ESR -DMOD_KRCC -DMOD_SRDFT -DMOD_MAGNETIZ -DMOD_MCSCF_spinfree -DMOD_UNRELEASED -DMOD_CAP -DMOD_ERI -DMOD_DNF  -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DSYS_FLAVOR=LINUX 
- External libraries:  
- Internal libraries: DIRAC_BLAS=YES  DIRAC_LAPACK=YES 
- ILP data model    : ILP32 
- SVN URL           : 'unknown Subversion URL' 
- SVN Revision      : 'unknown Subversion revision' 
+ Last compilation  : 16:52:31 Jan 18 2011 (by foo@foo:foo)
+ FORTRAN compiler  : foo 
+ C compiler        : foo 
+ External libraries: foo 
+ Internal libraries: DIRAC_BLAS=foo  DIRAC_LAPACK=foo 
+ ILP data model    : foo 
+ SVN URL           : foo 
+ SVN Revision      : foo 
 
  
-     Date and time (Linux)  : Tue Jan 18 21:34:11 2011 
+     Date and time (Linux)  : Tue Jan 18 22:06:40 2011
      Host name              :                                         
 
 
@@ -163,27 +163,16 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
 
 **DIRAC
 .ANALYZE
+**GENERAL
+.CVALUE
+ 7000.0
 **HAMILTONIAN
 .LVCORR
-**INTEGRALS
-.NUCMOD
-2
-*TWOINT
-.SCREEN
-1.0D-16
-*READIN
-.UNCONTRACT
 **WAVE FUNCTION
 .DHF
 **ANALYZE
 .VISUAL
 *VISUAL
-#.2D
-#-2.0  -1.0  0.0
-# 2.0  -1.0  0.0
-#20
-#-2.0   1.0  0.0
-#20
 .LIST
 3
  1.0  1.0  0.0
@@ -215,6 +204,7 @@ AOPROPER Z symmetric 7
                 Peter J. Mohr and Barry N. Taylor                         
    Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
  * The speed of light :        137.0359998
+   * The speed of light scaled by  5.11D+01 to :  7000.00000000
  * Running in the four-component mode
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
@@ -235,32 +225,6 @@ AOPROPER Z symmetric 7
     *************************************************************************
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
-
- Default print level:        1
- Nuclear model: Gaussian charge distribution.
-
- Two-electron integrals not calculated.
-
-
- Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
-
-
-
-  Set-up from HR2INP:
-  -------------------
-
- Print level in TWOINT:    1
- * Direct calculation of Fock matrices in SO-basis.
- * User specified screening threshold in direct Fock matrix construction: 1.00E-16
- * Separate density screening of Coulomb integral batches
- * Separate density screening of exchange integral batches
-
-
- Changes of defaults for READIN:
- -------------------------------
-
-
- Uncontracted basis forced, irrespective of basis input file.
 
 
 
@@ -347,17 +311,17 @@ Point group: C1
 
   label    atoms   charge   prim    cont     basis   
   ----------------------------------------------------------------------
-  O           1       8      27      27      L  - [9s4p1d|9s4p1d]                                                
+  O           1       8      27      15      L  - [9s4p1d|3s2p1d]                                                
                              68      68      S  - [4s10p4d1f|4s10p4d1f]                                          
-  H           1       1       7       7      L  - [4s1p|4s1p]                                                    
+  H           1       1       7       5      L  - [4s1p|2s1p]                                                    
                              19      19      S  - [1s4p1d|1s4p1d]                                                
-  H           1       1       7       7      L  - [4s1p|4s1p]                                                    
+  H           1       1       7       5      L  - [4s1p|2s1p]                                                    
                              19      19      S  - [1s4p1d|1s4p1d]                                                
   ----------------------------------------------------------------------
-                             41      41      L  - large components
+                             41      25      L  - large components
                             106     106      S  - small components
   ----------------------------------------------------------------------
-  total:      3      10     147     147
+  total:      3      10     147     131
 
   Cartesian basis used.
   Threshold for integrals (to be written to file):  1.00D-15
@@ -454,29 +418,29 @@ Point group: C1
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:          147
-  Number of large orbitals in each symmetry:     41
+  Number of orbitals in each symmetry:          131
+  Number of large orbitals in each symmetry:     25
   Number of small orbitals in each symmetry:    106
 
 * Large component functions
 
   Symmetry  A  ( 1)
 
-        9 functions:    O  s   
-        4 functions:    O  px  
-        4 functions:    O  py  
-        4 functions:    O  pz  
+        3 functions:    O  s   
+        2 functions:    O  px  
+        2 functions:    O  py  
+        2 functions:    O  pz  
         1 functions:    O  dxx 
         1 functions:    O  dxy 
         1 functions:    O  dxz 
         1 functions:    O  dyy 
         1 functions:    O  dyz 
         1 functions:    O  dzz 
-        4 functions:    H  s   
+        2 functions:    H  s   
         1 functions:    H  px  
         1 functions:    H  py  
         1 functions:    H  pz  
-        4 functions:    H  s   
+        2 functions:    H  s   
         1 functions:    H  px  
         1 functions:    H  py  
         1 functions:    H  pz  
@@ -543,7 +507,7 @@ Point group: C1
    - SS-integrals:     0
    - GT-integrals:     0
  * Basis set:
-   - uncontracted large component basis set
+   - contracted large component basis set
    - uncontracted small component basis set
 
 
@@ -632,10 +596,9 @@ Point group: C1
       ************************* Orbital dimensions *************************
       **********************************************************************
 
-No. of positive energy orbitals (NESH):    40
-No. of negative energy orbitals (NPSH):    40
-Total no. of orbitals           (NORB):    80
- >>> Time used in PAMSET is   0.34 seconds
+No. of positive energy orbitals (NESH):    24
+No. of negative energy orbitals (NPSH):    24
+Total no. of orbitals           (NORB):    48
 
   *** Visualisation module ***
   Visualisation : DFCOEF file read
@@ -646,6 +609,317 @@ Total no. of orbitals           (NORB):    80
  symmetric connection is used in visual_london
  read symmetry info for connection matrices
  entering ivector, p_name, len_trim(p_name) =            1 dS/dBZ           6
+ line(1:len_trim(p_name)LAO-XR
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)-1    
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)-98000
+ line(1:len_trim(p_name)7     
+ line(1:len_trim(p_name)000+  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)-1    
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)LAO-XR
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)-1    
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1.0000
+ line(1:len_trim(p_name)10    
+ line(1:len_trim(p_name)+00+  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)-1    
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)LAO-XR
+ line(1:len_trim(p_name)8     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)7000.0
+ line(1:len_trim(p_name)13    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)7000.0
+ line(1:len_trim(p_name)14    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)7000.0
+ line(1:len_trim(p_name)15    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)LAO-XR
+ line(1:len_trim(p_name)5     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)3500.0
+ line(1:len_trim(p_name)24    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)3500.0
+ line(1:len_trim(p_name)23    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)LAO-YR
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)-1    
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)-98000
+ line(1:len_trim(p_name)8     
+ line(1:len_trim(p_name)000+  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)-1    
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)LAO-YR
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)-1    
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1.0000
+ line(1:len_trim(p_name)11    
+ line(1:len_trim(p_name)+00+  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)-1    
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)LAO-YR
+ line(1:len_trim(p_name)8     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)7000.0
+ line(1:len_trim(p_name)16    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)7000.0
+ line(1:len_trim(p_name)17    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)7000.0
+ line(1:len_trim(p_name)18    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)LAO-YR
+ line(1:len_trim(p_name)6     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)3500.0
+ line(1:len_trim(p_name)22    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)3500.0
+ line(1:len_trim(p_name)24    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)LAO-ZR
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)-1    
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)-98000
+ line(1:len_trim(p_name)9     
+ line(1:len_trim(p_name)000+  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)-1    
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)LAO-ZR
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)-1    
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1.0000
+ line(1:len_trim(p_name)12    
+ line(1:len_trim(p_name)+00+  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)-1    
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)LAO-ZR
+ line(1:len_trim(p_name)8     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)7000.0
+ line(1:len_trim(p_name)19    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)7000.0
+ line(1:len_trim(p_name)20    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)7000.0
+ line(1:len_trim(p_name)21    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)LAO-ZR
+ line(1:len_trim(p_name)7     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)3500.0
+ line(1:len_trim(p_name)23    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)3500.0
+ line(1:len_trim(p_name)22    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)dS    
+ line(1:len_trim(p_name)dS    
  visual_london: symmetric connection used
  visual_london: direct contribution included
  visual_london: response contribution included
@@ -653,30 +927,339 @@ Total no. of orbitals           (NORB):    80
  symmetric connection is used in visual_london
  read symmetry info for connection matrices
  entering ivector, p_name, len_trim(p_name) =            2 dS/dBZ           6
+ line(1:len_trim(p_name)LAO-XR
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)-1    
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)-98000
+ line(1:len_trim(p_name)7     
+ line(1:len_trim(p_name)000+  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)-1    
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)LAO-XR
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)-1    
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1.0000
+ line(1:len_trim(p_name)10    
+ line(1:len_trim(p_name)+00+  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)-1    
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)LAO-XR
+ line(1:len_trim(p_name)8     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)7000.0
+ line(1:len_trim(p_name)13    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)7000.0
+ line(1:len_trim(p_name)14    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)7000.0
+ line(1:len_trim(p_name)15    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)LAO-XR
+ line(1:len_trim(p_name)5     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)3500.0
+ line(1:len_trim(p_name)24    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)3500.0
+ line(1:len_trim(p_name)23    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)LAO-YR
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)-1    
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)-98000
+ line(1:len_trim(p_name)8     
+ line(1:len_trim(p_name)000+  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)-1    
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)LAO-YR
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)-1    
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1.0000
+ line(1:len_trim(p_name)11    
+ line(1:len_trim(p_name)+00+  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)-1    
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)LAO-YR
+ line(1:len_trim(p_name)8     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)7000.0
+ line(1:len_trim(p_name)16    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)7000.0
+ line(1:len_trim(p_name)17    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)7000.0
+ line(1:len_trim(p_name)18    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)LAO-YR
+ line(1:len_trim(p_name)6     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)3500.0
+ line(1:len_trim(p_name)22    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)3500.0
+ line(1:len_trim(p_name)24    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)LAO-ZR
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)-1    
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)-98000
+ line(1:len_trim(p_name)9     
+ line(1:len_trim(p_name)000+  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)-1    
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)LAO-ZR
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)-1    
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1.0000
+ line(1:len_trim(p_name)12    
+ line(1:len_trim(p_name)+00+  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)-1    
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)LAO-ZR
+ line(1:len_trim(p_name)8     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)7000.0
+ line(1:len_trim(p_name)19    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)7000.0
+ line(1:len_trim(p_name)20    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)7000.0
+ line(1:len_trim(p_name)21    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)LAO-ZR
+ line(1:len_trim(p_name)7     
+ line(1:len_trim(p_name)1     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)3500.0
+ line(1:len_trim(p_name)23    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)4     
+ line(1:len_trim(p_name)3500.0
+ line(1:len_trim(p_name)22    
+ line(1:len_trim(p_name)0++0  
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)0     
+ line(1:len_trim(p_name)2     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)3     
+ line(1:len_trim(p_name)dS    
+ line(1:len_trim(p_name)dS    
 
 
                          +-------------------------------+
                          ! Requested density at point(s) !
                          +-------------------------------+
 
-
+ 
      r_x           r_y           r_z            scalar          x-component       y-component       z-component
-
-  0.100000E+01  0.100000E+01  0.000000E+00  0.0000000000E+00  0.1247177346E+00 -0.5220967530E-01  0.1304507962E-14
- -0.100000E+01 -0.100000E+01  0.000000E+00  0.0000000000E+00 -0.6110144837E-01  0.6638247596E-01  0.5457110347E-15
- -0.100000E+01  0.100000E+01  0.000000E+00  0.0000000000E+00  0.1247177346E+00  0.5220967530E-01  0.2236771676E-14
-
+ 
+  0.100000E+01  0.100000E+01  0.000000E+00  0.0000000000E+00  0.1220544292E+00 -0.4088817842E-01 -0.1413148894E-10
+ -0.100000E+01 -0.100000E+01  0.000000E+00  0.0000000000E+00 -0.5813018937E-01  0.5646763219E-01  0.1032260044E-10
+ -0.100000E+01  0.100000E+01  0.000000E+00  0.0000000000E+00  0.1220544293E+00  0.4088817821E-01  0.1940677816E-11
+ 
 ----------------------------------------------------------------------------------------------------
-
-
- >>>> time used in plot:   0.01 seconds
+ 
+ 
+ >>>> time used in plot:   0.00 seconds
  >>>> time used in integration:   0.00 seconds
 
  
-     Date and time (Linux)  : Tue Jan 18 21:34:16 2011 
+     Date and time (Linux)  : Tue Jan 18 22:06:41 2011
      Host name              :                                         
->>>> Node 0, utime: 4, stime: 0, minflt: 128304, majflt: 0, nvcsw: 1, nivcsw: 485, maxrss: 0
->>>> Total WALL time used in DIRAC: 6s
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 
@@ -687,21 +1270,23 @@ Total no. of orbitals           (NORB):    80
   
   Largest          10  allocations
   
-      488.28 Mb at subroutine __allocator_internal_a_1d_r_MOD_alloc_a_no for work array at main                        
-        0.16 Mb at subroutine __allocator_internal_a_1d_r_MOD_alloc_a_no for unnamed variable                          
-        0.16 Mb at subroutine __allocator_internal_a_1d_r_MOD_alloc_a_no for unnamed variable                          
-        0.16 Mb at subroutine __allocator_internal_a_1d_r_MOD_alloc_a_no for unnamed variable                          
-        0.16 Mb at subroutine __allocator_internal_a_1d_r_MOD_alloc_a_no for unnamed variable                          
-        0.08 Mb at subroutine __allocator_internal_a_1d_r_MOD_alloc_a_no for unnamed variable                          
-        0.08 Mb at subroutine __allocator_internal_a_1d_r_MOD_alloc_a_no for unnamed variable                          
-        0.08 Mb at subroutine __allocator_internal_a_1d_r_MOD_alloc_a_no for unnamed variable                          
-        0.08 Mb at subroutine __allocator_internal_a_1d_r_MOD_alloc_a_no for unnamed variable                          
-        0.01 Mb at subroutine __allocator_internal_a_2d_r_MOD_alloc_a_no for unnamed variable                          
+      488.28 Mb at subroutine                                            for work array at main                        
+        0.13 Mb at subroutine                                            for unnamed variable                          
+        0.13 Mb at subroutine                                            for unnamed variable                          
+        0.13 Mb at subroutine                                            for unnamed variable                          
+        0.13 Mb at subroutine                                            for unnamed variable                          
+        0.07 Mb at subroutine                                            for unnamed variable                          
+        0.07 Mb at subroutine                                            for unnamed variable                          
+        0.07 Mb at subroutine                                            for unnamed variable                          
+        0.07 Mb at subroutine                                            for unnamed variable                          
+        0.00 Mb at subroutine                                            for unnamed variable                          
   
-  Peak memory usage    (Mb) :       489.00
-       reached at subroutine : __allocator_internal_a_1d_r_MOD_alloc_a_no
+  Peak memory usage    (Mb) :       488.00
+       reached at subroutine :                                           
               for variable   : unnamed variable                          
   
- MEMGET high-water mark:     3.05 MB
+ MEMGET high-water mark:     2.43 MB
 
 *****************************************************
+>>>> Node 0, utime: 0, stime: 0, minflt: 127910, majflt: 0, nvcsw: 0, nivcsw: 143, maxrss: 509680
+>>>> Total WALL time used in DIRAC: 1s

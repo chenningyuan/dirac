@@ -1,4 +1,4 @@
-DIRAC pam run in /home/gosia/dirac.git/trunk/test/visual_lao_current
+DIRAC pam run in /home/bast/dirac/git/test/visual_lao_current
 -e Size of all static allocations : MB 
 DIRAC serial starts by allocating 64000000 words (488 MB) of memory
 DIRAC serial has no limitations in place for the amount of dynamically allocated memory
@@ -139,21 +139,21 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
  *                                                                            *
  ******************************************************************************
  Version           : Dirac 8.0 (patchlevel 0) 
- Hostname          : ibm
- Operating system  : Linux 2.6.31-22-generic
+ Hostname          : larry
+ Operating system  : Linux 2.6.35-24-generic
  Machine           : i686
  Run               : Sequential
- Last compilation  : 20:46:07 Jan 18 2011 (by gosia@ibm:/home/gosia/dirac.git/trunk)
- FORTRAN compiler  : /usr/bin/gfortran -g -fbacktrace -fno-range-check -Iinclude -Jmodules -DARCH32BIT -DUSE_DIRAC_BLAS -DUSE_DIRAC_DLAMCH -DUSE_DIRAC_DLAPACK -DUSE_DIRAC_ZLAPACK -DVAR_GFORTRAN -DGFORTRAN=441 -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MFDS -DMOD_XML -DMOD_OPENRSP -DMOD_OOF -DMOD_ESR -DMOD_KRCC -DMOD_SRDFT -DMOD_MAGNETIZ -DMOD_MCSCF_spinfree -DMOD_UNRELEASED -DMOD_CAP -DMOD_ERI -DMOD_DNF  
- C compiler        : /usr/bin/gcc -g -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DARCH32BIT -DMOD_XML -DMOD_OPENRSP -DMOD_OOF -DMOD_ESR -DMOD_KRCC -DMOD_SRDFT -DMOD_MAGNETIZ -DMOD_MCSCF_spinfree -DMOD_UNRELEASED -DMOD_CAP -DMOD_ERI -DMOD_DNF  -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DSYS_FLAVOR=LINUX 
- External libraries:  
- Internal libraries: DIRAC_BLAS=YES  DIRAC_LAPACK=YES 
- ILP data model    : ILP32 
- SVN URL           : 'unknown Subversion URL' 
- SVN Revision      : 'unknown Subversion revision' 
+ Last compilation  : 16:52:31 Jan 18 2011 (by foo@foo:foo)
+ FORTRAN compiler  : foo 
+ C compiler        : foo 
+ External libraries: foo 
+ Internal libraries: DIRAC_BLAS=foo  DIRAC_LAPACK=foo 
+ ILP data model    : foo 
+ SVN URL           : foo 
+ SVN Revision      : foo 
 
  
-     Date and time (Linux)  : Tue Jan 18 21:34:24 2011 
+     Date and time (Linux)  : Tue Jan 18 22:06:43 2011
      Host name              :                                         
 
 
@@ -164,16 +164,11 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
 **DIRAC
 .WAVE FUNCTION
 .PROPERTIES
+**GENERAL
+.CVALUE
+ 7000.0
 **HAMILTONIAN
 .LVCORR
-**INTEGRALS
-.NUCMOD
-2
-*TWOINT
-.SCREEN
-1.0D-16
-*READIN
-.UNCONTRACT
 **WAVE FUNCTION
 .DHF
 **PROPERTIES
@@ -201,6 +196,7 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
                 Peter J. Mohr and Barry N. Taylor                         
    Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
  * The speed of light :        137.0359998
+   * The speed of light scaled by  5.11D+01 to :  7000.00000000
  * Running in the four-component mode
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
@@ -221,32 +217,6 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
     *************************************************************************
     ****************** Output from HERMIT input processing ******************
     *************************************************************************
-
- Default print level:        1
- Nuclear model: Gaussian charge distribution.
-
- Two-electron integrals not calculated.
-
-
- Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
-
-
-
-  Set-up from HR2INP:
-  -------------------
-
- Print level in TWOINT:    1
- * Direct calculation of Fock matrices in SO-basis.
- * User specified screening threshold in direct Fock matrix construction: 1.00E-16
- * Separate density screening of Coulomb integral batches
- * Separate density screening of exchange integral batches
-
-
- Changes of defaults for READIN:
- -------------------------------
-
-
- Uncontracted basis forced, irrespective of basis input file.
 
 
 
@@ -333,17 +303,17 @@ Point group: C1
 
   label    atoms   charge   prim    cont     basis   
   ----------------------------------------------------------------------
-  O           1       8      27      27      L  - [9s4p1d|9s4p1d]                                                
+  O           1       8      27      15      L  - [9s4p1d|3s2p1d]                                                
                              68      68      S  - [4s10p4d1f|4s10p4d1f]                                          
-  H           1       1       7       7      L  - [4s1p|4s1p]                                                    
+  H           1       1       7       5      L  - [4s1p|2s1p]                                                    
                              19      19      S  - [1s4p1d|1s4p1d]                                                
-  H           1       1       7       7      L  - [4s1p|4s1p]                                                    
+  H           1       1       7       5      L  - [4s1p|2s1p]                                                    
                              19      19      S  - [1s4p1d|1s4p1d]                                                
   ----------------------------------------------------------------------
-                             41      41      L  - large components
+                             41      25      L  - large components
                             106     106      S  - small components
   ----------------------------------------------------------------------
-  total:      3      10     147     147
+  total:      3      10     147     131
 
   Cartesian basis used.
   Threshold for integrals (to be written to file):  1.00D-15
@@ -440,29 +410,29 @@ Point group: C1
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:          147
-  Number of large orbitals in each symmetry:     41
+  Number of orbitals in each symmetry:          131
+  Number of large orbitals in each symmetry:     25
   Number of small orbitals in each symmetry:    106
 
 * Large component functions
 
   Symmetry  A  ( 1)
 
-        9 functions:    O  s   
-        4 functions:    O  px  
-        4 functions:    O  py  
-        4 functions:    O  pz  
+        3 functions:    O  s   
+        2 functions:    O  px  
+        2 functions:    O  py  
+        2 functions:    O  pz  
         1 functions:    O  dxx 
         1 functions:    O  dxy 
         1 functions:    O  dxz 
         1 functions:    O  dyy 
         1 functions:    O  dyz 
         1 functions:    O  dzz 
-        4 functions:    H  s   
+        2 functions:    H  s   
         1 functions:    H  px  
         1 functions:    H  py  
         1 functions:    H  pz  
-        4 functions:    H  s   
+        2 functions:    H  s   
         1 functions:    H  px  
         1 functions:    H  py  
         1 functions:    H  pz  
@@ -529,7 +499,7 @@ Point group: C1
    - SS-integrals:     0
    - GT-integrals:     0
  * Basis set:
-   - uncontracted large component basis set
+   - contracted large component basis set
    - uncontracted small component basis set
 
 
@@ -608,7 +578,7 @@ Point group: C1
                        Total mass:    18.010565 amu
                        Natural abundance:  99.730 %
 
- * Center of mass used for the gauge & dipole origin (a.u.) :   -0.000000   -0.099054    0.000000
+ * Center of mass used for the gauge & dipole origin (a.u.) :    0.000000   -0.099054    0.000000
 
  : Reorthonormalization terms over both "positronic" and electronic shells  (recommended as the default for ee+ep rotations in the LR) 
  THIS IS WRONG FOR THE RESTRICTED KINETIC BALANCE SCHEME !
@@ -652,7 +622,7 @@ Point group: C1
       LAO-ZRM1H1           A       T-
 ...........................................................................
       Operator type DIAGONAL : scalar operator
-      Labels and factors     : dS/dBZ   000+    -37557.730487547 (imaginary)
+      Labels and factors     : dS/dBZ   000+    -98000000.000000 (imaginary)
 ...........................................................................
       LAO-ZRM1H2           A       T-
 ...........................................................................
@@ -662,15 +632,15 @@ Point group: C1
       LAO-ZRM1H3           A       T0
 ...........................................................................
       Operator type ALPHADOT : [alpha.P]
-      Labels and factors     : ZRM1H3X  0++0     137.03599980944 (complex)  
-                               ZRM1H3Y  0++0     137.03599980944 (complex)  
-                               ZRM1H3Z  0++0     137.03599980944 (complex)  
+      Labels and factors     : ZRM1H3X  0++0     7000.0000000000 (complex)  
+                               ZRM1H3Y  0++0     7000.0000000000 (complex)  
+                               ZRM1H3Z  0++0     7000.0000000000 (complex)  
 ...........................................................................
       LAO-ZRM1RN           A       T0
 ...........................................................................
       Operator type ZAVECTOR : [alpha x P]_z
-      Labels and factors     : YRM1RN   0++0     68.517999904721 (complex)  
-                               XRM1RN   0++0     68.517999904721 (complex)  
+      Labels and factors     : YRM1RN   0++0     3500.0000000000 (complex)  
+                               XRM1RN   0++0     3500.0000000000 (complex)  
 ...........................................................................
 ---------------------------------------------------------------------------
  ** B operators for blao, component ** Z
@@ -678,7 +648,7 @@ Point group: C1
       LAO-ZRM1H1           A       T-
 ...........................................................................
       Operator type DIAGONAL : scalar operator
-      Labels and factors     : dS/dBZ   000+    -37557.730487547 (imaginary)
+      Labels and factors     : dS/dBZ   000+    -98000000.000000 (imaginary)
 ...........................................................................
       LAO-ZRM1H2           A       T-
 ...........................................................................
@@ -688,19 +658,19 @@ Point group: C1
       LAO-ZRM1H3           A       T0
 ...........................................................................
       Operator type ALPHADOT : [alpha.P]
-      Labels and factors     : ZRM1H3X  0++0     137.03599980944 (complex)  
-                               ZRM1H3Y  0++0     137.03599980944 (complex)  
-                               ZRM1H3Z  0++0     137.03599980944 (complex)  
+      Labels and factors     : ZRM1H3X  0++0     7000.0000000000 (complex)  
+                               ZRM1H3Y  0++0     7000.0000000000 (complex)  
+                               ZRM1H3Z  0++0     7000.0000000000 (complex)  
 ...........................................................................
       LAO-ZRM1RN           A       T0
 ...........................................................................
       Operator type ZAVECTOR : [alpha x P]_z
-      Labels and factors     : YRM1RN   0++0     68.517999904721 (complex)  
-                               XRM1RN   0++0     68.517999904721 (complex)  
+      Labels and factors     : YRM1RN   0++0     3500.0000000000 (complex)  
+                               XRM1RN   0++0     3500.0000000000 (complex)  
 ...........................................................................
  * Operator center:      0.0000000000      0.0000000000      0.0000000000
- * Gauge origin   :     -0.0000000000     -0.0990543907      0.0000000000
- * Dipole origin  :     -0.0000000000     -0.0990543907      0.0000000000
+ * Gauge origin   :      0.0000000000     -0.0990543907      0.0000000000
+ * Dipole origin  :      0.0000000000     -0.0990543907      0.0000000000
 
 
  ********************************************************************************
@@ -732,10 +702,9 @@ Point group: C1
       ************************* Orbital dimensions *************************
       **********************************************************************
 
-No. of positive energy orbitals (NESH):    40
-No. of negative energy orbitals (NPSH):    40
-Total no. of orbitals           (NORB):    80
- >>> Time used in PAMSET is   0.53 seconds
+No. of positive energy orbitals (NESH):    24
+No. of negative energy orbitals (NPSH):    24
+Total no. of orbitals           (NORB):    48
 
 
    ****************************************************************************
@@ -747,226 +716,942 @@ Total no. of orbitals           (NORB):    80
              Improved by an estimate of the electronic screening (Slater's rules).
 
 
-########## START ITERATION NO.   1 ##########   Tue Jan 18 21:34:25 2011
+########## START ITERATION NO.   1 ##########   Tue Jan 18 22:06:43 2011
 
-It.   1    -33.09779843441      1.00D+20  0.00D+00  0.00D+00               0.59203708s   Scr. nuclei    Tue Jan 18
+It.   1    -32.92628527261      1.00D+20  0.00D+00  0.00D+00               0.04000002s   Scr. nuclei    Tue Jan 18
 
-########## START ITERATION NO.   2 ##########   Tue Jan 18 21:34:26 2011
+########## START ITERATION NO.   2 ##########   Tue Jan 18 22:06:43 2011
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   45.76%    0.00%    0.00%   0.15600991s
-SOfock:SL  1.00D-16    0.00%   51.16%    0.00%    0.03%   1.40008807s
+SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.65%   0.03999996s
+SOfock:SL  1.00D-12    0.00%   52.23%    0.00%   10.94%   0.31000000s
 
   QM-QM nuclear repulsion energy :    0.000000028368
   QM-pc interaction energy       :    0.000000000000
   pc-pc interaction energy       :    0.000000000000
   Total interaction energy       :    0.000000028368
->>> Total wall time: 3.00000000s
->>> Total CPU-time : 2.38414884s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.42999995s
 
-########## END ITERATION NO.   2 ##########   Tue Jan 18 21:34:26 2011
+########## END ITERATION NO.   2 ##########   Tue Jan 18 22:06:43 2011
 
-It.   2    -75.58203301519      4.25D+01  9.78D+00  2.71D+00               2.38414884s   LL SL          Tue Jan 18
+It.   2    -75.72959382561      4.28D+01  5.12D+00  1.36D+00               0.42999995s   LL SL          Tue Jan 18
 
-########## START ITERATION NO.   3 ##########   Tue Jan 18 21:34:29 2011
+########## START ITERATION NO.   3 ##########   Tue Jan 18 22:06:43 2011
 
-    3 *** Differential density matrix. DCOVLP     = 0.9441
+    3 *** Differential density matrix. DCOVLP     = 0.6704
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   45.76%    0.00%    0.00%   0.14800882s
-SOfock:SL  1.00D-16    0.00%   51.18%    0.00%    0.04%   1.39208698s
+SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.79%   0.04000008s
+SOfock:SL  1.00D-12    0.00%   52.35%    0.00%   11.48%   0.31999993s
 
   QM-QM nuclear repulsion energy :    0.000000028368
   QM-pc interaction energy       :    0.000000000000
   pc-pc interaction energy       :    0.000000000000
   Total interaction energy       :    0.000000028368
->>> Total wall time: 3.00000000s
->>> Total CPU-time : 2.24814081s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.40000010s
 
-########## END ITERATION NO.   3 ##########   Tue Jan 18 21:34:29 2011
+########## END ITERATION NO.   3 ##########   Tue Jan 18 22:06:43 2011
 
-It.   3    -75.92652659621      3.44D-01 -2.11D+00  1.00D+00   DIIS   2    2.24814081s   LL SL          Tue Jan 18
+It.   3    -75.92539351335      1.96D-01 -1.39D+00  7.42D-01   DIIS   2    0.40000010s   LL SL          Tue Jan 18
 
-########## START ITERATION NO.   4 ##########   Tue Jan 18 21:34:32 2011
+########## START ITERATION NO.   4 ##########   Tue Jan 18 22:06:44 2011
 
-    4 *** Differential density matrix. DCOVLP     = 0.9467
+    4 *** Differential density matrix. DCOVLP     = 1.0812
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   45.80%    0.00%    0.00%   0.14400911s
-SOfock:SL  1.00D-16    0.00%   51.25%    0.00%    0.04%   1.41608858s
+SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.72%   0.03999996s
+SOfock:SL  1.00D-12    0.00%   52.60%    0.00%   11.60%   0.32000005s
 
   QM-QM nuclear repulsion energy :    0.000000028368
   QM-pc interaction energy       :    0.000000000000
   pc-pc interaction energy       :    0.000000000000
   Total interaction energy       :    0.000000028368
->>> Total wall time: 2.00000000s
->>> Total CPU-time : 2.23613977s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.39999998s
 
-########## END ITERATION NO.   4 ##########   Tue Jan 18 21:34:32 2011
+########## END ITERATION NO.   4 ##########   Tue Jan 18 22:06:44 2011
 
-It.   4    -76.07644642420      1.50D-01  8.96D-01  2.32D-01   DIIS   3    2.23613977s   LL SL          Tue Jan 18
+It.   4    -76.02515272622      9.98D-02  5.45D-01  5.14D-02   DIIS   3    0.39999998s   LL SL          Tue Jan 18
 
-########## START ITERATION NO.   5 ##########   Tue Jan 18 21:34:34 2011
+########## START ITERATION NO.   5 ##########   Tue Jan 18 22:06:44 2011
 
-    5 *** Differential density matrix. DCOVLP     = 1.0010
+    5 *** Differential density matrix. DCOVLP     = 0.9985
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   45.91%    0.00%    0.09%   0.14400864s
-SOfock:SL  1.00D-16    0.00%   51.45%    0.00%    0.04%   1.38408661s
+SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    1.16%   0.03999996s
+SOfock:SL  1.00D-12    0.00%   53.17%    0.00%   11.69%   0.31000006s
 
   QM-QM nuclear repulsion energy :    0.000000028368
   QM-pc interaction energy       :    0.000000000000
   pc-pc interaction energy       :    0.000000000000
   Total interaction energy       :    0.000000028368
->>> Total wall time: 2.00000000s
->>> Total CPU-time : 2.21613789s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.38999999s
 
-########## END ITERATION NO.   5 ##########   Tue Jan 18 21:34:34 2011
+########## END ITERATION NO.   5 ##########   Tue Jan 18 22:06:44 2011
 
-It.   5    -76.08400125307      7.55D-03 -1.57D-01  7.88D-03   DIIS   4    2.21613789s   LL SL          Tue Jan 18
+It.   5    -76.02568521399      5.32D-04 -2.44D-02  3.01D-03   DIIS   4    0.38999999s   LL SL          Tue Jan 18
 
-########## START ITERATION NO.   6 ##########   Tue Jan 18 21:34:36 2011
+########## START ITERATION NO.   6 ##########   Tue Jan 18 22:06:44 2011
 
-    6 *** Differential density matrix. DCOVLP     = 1.0004
+    6 *** Differential density matrix. DCOVLP     = 1.0005
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   46.10%    0.00%    0.58%   0.14400864s
-SOfock:SL  1.00D-16    0.00%   51.71%    0.00%    0.05%   1.38808632s
+SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    1.25%   0.02999997s
+SOfock:SL  1.00D-12    0.00%   53.90%    0.00%   11.60%   0.31999993s
 
   QM-QM nuclear repulsion energy :    0.000000028368
   QM-pc interaction energy       :    0.000000000000
   pc-pc interaction energy       :    0.000000000000
   Total interaction energy       :    0.000000028368
->>> Total wall time: 2.00000000s
->>> Total CPU-time : 2.20413780s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.39000010s
 
-########## END ITERATION NO.   6 ##########   Tue Jan 18 21:34:36 2011
+########## END ITERATION NO.   6 ##########   Tue Jan 18 22:06:44 2011
 
-It.   6    -76.08401890829      1.77D-05  1.88D-03  1.58D-03   DIIS   5    2.20413780s   LL SL          Tue Jan 18
+It.   6    -76.02568948230      4.27D-06  2.31D-04  6.46D-04   DIIS   5    0.39000010s   LL SL          Tue Jan 18
 
-########## START ITERATION NO.   7 ##########   Tue Jan 18 21:34:38 2011
+########## START ITERATION NO.   7 ##########   Tue Jan 18 22:06:45 2011
 
-    7 *** Differential density matrix. DCOVLP     = 1.0002
+    7 *** Differential density matrix. DCOVLP     = 1.0001
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   46.33%    0.00%    0.70%   0.14400864s
-SOfock:SL  1.00D-16    0.00%   51.98%    0.00%    0.04%   1.38008595s
+SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    1.10%   0.02999997s
+SOfock:SL  1.00D-12    0.00%   54.74%    0.00%   11.82%   0.30999994s
 
   QM-QM nuclear repulsion energy :    0.000000028368
   QM-pc interaction energy       :    0.000000000000
   pc-pc interaction energy       :    0.000000000000
   Total interaction energy       :    0.000000028368
->>> Total wall time: 3.00000000s
->>> Total CPU-time : 2.20013809s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.38999987s
 
-########## END ITERATION NO.   7 ##########   Tue Jan 18 21:34:38 2011
+########## END ITERATION NO.   7 ##########   Tue Jan 18 22:06:45 2011
 
-It.   7    -76.08401983586      9.28D-07  4.45D-04  2.41D-04   DIIS   6    2.20013809s   LL SL          Tue Jan 18
+It.   7    -76.02568972670      2.44D-07  7.41D-05  1.80D-04   DIIS   6    0.38999987s   LL SL          Tue Jan 18
 
-########## START ITERATION NO.   8 ##########   Tue Jan 18 21:34:41 2011
+########## START ITERATION NO.   8 ##########   Tue Jan 18 22:06:45 2011
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   46.63%    0.00%    0.63%   0.14400864s
-SOfock:SL  1.00D-16    0.00%   52.51%    0.00%    0.05%   1.37608719s
+SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    1.26%   0.02999997s
+SOfock:SL  1.00D-12    0.00%   56.04%    0.00%   13.32%   0.31999993s
 
   QM-QM nuclear repulsion energy :    0.000000028368
   QM-pc interaction energy       :    0.000000000000
   pc-pc interaction energy       :    0.000000000000
   Total interaction energy       :    0.000000028368
->>> Total wall time: 2.00000000s
->>> Total CPU-time : 2.19213676s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.39000010s
 
-########## END ITERATION NO.   8 ##########   Tue Jan 18 21:34:41 2011
+########## END ITERATION NO.   8 ##########   Tue Jan 18 22:06:45 2011
 
-It.   8    -76.08401987484      3.90D-08 -5.36D-05  6.79D-05   DIIS   7    2.19213676s   LL SL          Tue Jan 18
+It.   8    -76.02568974860      2.19D-08  2.36D-05  2.71D-05   DIIS   7    0.39000010s   LL SL          Tue Jan 18
 
-########## START ITERATION NO.   9 ##########   Tue Jan 18 21:34:43 2011
+########## START ITERATION NO.   9 ##########   Tue Jan 18 22:06:46 2011
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   46.89%    0.00%    0.15%   0.14400864s
-SOfock:SL  1.00D-16    0.00%   52.96%    0.00%    0.04%   1.37208557s
+SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.98%   0.02999997s
+SOfock:SL  1.00D-12    0.00%   57.30%    0.00%   15.84%   0.30999994s
 
   QM-QM nuclear repulsion energy :    0.000000028368
   QM-pc interaction energy       :    0.000000000000
   pc-pc interaction energy       :    0.000000000000
   Total interaction energy       :    0.000000028368
->>> Total wall time: 2.00000000s
->>> Total CPU-time : 2.18413544s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.36999989s
 
-########## END ITERATION NO.   9 ##########   Tue Jan 18 21:34:43 2011
+########## END ITERATION NO.   9 ##########   Tue Jan 18 22:06:46 2011
 
-It.   9    -76.08401987785      3.01D-09  2.04D-05  9.44D-06   DIIS   8    2.18413544s   LL SL          Tue Jan 18
+It.   9    -76.02568974916      5.59D-10 -3.67D-06  6.22D-06   DIIS   8    0.36999989s   LL SL          Tue Jan 18
 
-########## START ITERATION NO.  10 ##########   Tue Jan 18 21:34:45 2011
+########## START ITERATION NO.  10 ##########   Tue Jan 18 22:06:46 2011
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   47.49%    0.00%    1.08%   0.14000893s
-SOfock:SL  1.00D-16    0.00%   53.75%    0.00%    0.04%   1.36008453s
+SOfock:LL  1.00D-12    0.00%   48.05%    0.02%    0.73%   0.02999997s
+SOfock:SL  1.00D-12    0.00%   59.39%    0.00%   20.66%   0.29999995s
 
   QM-QM nuclear repulsion energy :    0.000000028368
   QM-pc interaction energy       :    0.000000000000
   pc-pc interaction energy       :    0.000000000000
   Total interaction energy       :    0.000000028368
->>> Total wall time: 2.00000000s
->>> Total CPU-time : 2.18013763s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.38000011s
 
-########## END ITERATION NO.  10 ##########   Tue Jan 18 21:34:45 2011
+########## END ITERATION NO.  10 ##########   Tue Jan 18 22:06:46 2011
 
-It.  10    -76.08401987792      6.55D-11 -1.21D-06  2.06D-06   DIIS   9    2.18013763s   LL SL          Tue Jan 18
+It.  10    -76.02568974919      2.83D-11 -9.93D-07  9.65D-07   DIIS   9    0.38000011s   LL SL          Tue Jan 18
 
-########## START ITERATION NO.  11 ##########   Tue Jan 18 21:34:47 2011
+########## START ITERATION NO.  11 ##########   Tue Jan 18 22:06:46 2011
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   47.92%    0.00%    0.80%   0.14400864s
-SOfock:SL  1.00D-16    0.00%   54.50%    0.00%    0.05%   1.34808350s
+SOfock:LL  1.00D-12    0.00%   48.12%    0.02%    0.73%   0.03000021s
+SOfock:SL  1.00D-12    0.00%   63.04%    0.00%   29.48%   0.28999996s
 
   QM-QM nuclear repulsion energy :    0.000000028368
   QM-pc interaction energy       :    0.000000000000
   pc-pc interaction energy       :    0.000000000000
   Total interaction energy       :    0.000000028368
->>> Total wall time: 2.00000000s
->>> Total CPU-time : 2.18013573s
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.36000013s
 
-########## END ITERATION NO.  11 ##########   Tue Jan 18 21:34:47 2011
+########## END ITERATION NO.  11 ##########   Tue Jan 18 22:06:46 2011
 
-It.  11    -76.08401987792      2.61D-12 -3.11D-07  6.14D-07   DIIS   9    2.18013573s   LL SL          Tue Jan 18
+It.  11    -76.02568974919      3.13D-13  1.49D-07  2.34D-07   DIIS   9    0.36000013s   LL SL          Tue Jan 18
 
-########## START ITERATION NO.  12 ##########   Tue Jan 18 21:34:49 2011
+########## START ITERATION NO.  12 ##########   Tue Jan 18 22:06:47 2011
 
    12 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   48.16%    0.00%    0.94%   0.14000893s
-SOfock:SL  1.00D-16    0.00%   55.36%    0.00%    0.04%   1.34808540s
+SOfock:LL  1.00D-12    0.00%   48.61%    0.10%    0.54%   0.04000044s
+SOfock:SL  1.00D-12    0.00%   66.30%    0.08%   32.83%   0.28999996s
 
   QM-QM nuclear repulsion energy :    0.000000028368
   QM-pc interaction energy       :    0.000000000000
   pc-pc interaction energy       :    0.000000000000
   Total interaction energy       :    0.000000028368
->>> Total wall time: 3.00000000s
->>> Total CPU-time : 2.16413498s
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.36999989s
 
-########## END ITERATION NO.  12 ##########   Tue Jan 18 21:34:49 2011
+########## END ITERATION NO.  12 ##########   Tue Jan 18 22:06:47 2011
 
-It.  12    -76.08401987792      1.62D-12 -1.25D-07  1.65D-07   DIIS   9    2.16413498s   LL SL          Tue Jan 18
+It.  12    -76.02568974919      1.42D-13 -2.98D-08  2.29D-07   DIIS   9    0.36999989s   LL SL          Tue Jan 18
 
-########## START ITERATION NO.  13 ##########   Tue Jan 18 21:34:52 2011
+########## START ITERATION NO.  13 ##########   Tue Jan 18 22:06:47 2011
 
    13 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   48.55%    0.00%    1.31%   0.14400864s
-SOfock:SL  1.00D-16    0.00%   56.13%    0.00%    0.05%   1.33608437s
+SOfock:LL  1.00D-12    0.00%   48.82%    0.07%    0.45%   0.02999973s
+SOfock:SL  1.00D-12    0.00%   67.03%    0.01%   32.72%   0.28999996s
 
   QM-QM nuclear repulsion energy :    0.000000028368
   QM-pc interaction energy       :    0.000000000000
   pc-pc interaction energy       :    0.000000000000
   Total interaction energy       :    0.000000028368
->>> Total wall time: 2.00000000s
->>> Total CPU-time : 1.88811874s
 
-########## END ITERATION NO.  13 ##########   Tue Jan 18 21:34:52 2011
+ DIIS aborted because of the last two iterations
 
-It.  13    -76.08401987792     -8.10D-13 -4.03D-08  4.97D-08   DIIS   9    1.88811874s   LL SL          Tue Jan 18
+ the lowest energy has the largest gradient and
+
+ DIIS minimizes gradient !!!
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.34999943s
+
+########## END ITERATION NO.  13 ##########   Tue Jan 18 22:06:47 2011
+
+It.  13    -76.02568974919     -1.99D-13  2.98D-08  2.50D-07   DAMP0.25    0.34999943s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  14 ##########   Tue Jan 18 22:06:47 2011
+
+   14 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.78%    0.09%    0.34%   0.02999973s
+SOfock:SL  1.00D-12    0.00%   67.20%    0.04%   32.35%   0.29000092s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.36000061s
+
+########## END ITERATION NO.  14 ##########   Tue Jan 18 22:06:47 2011
+
+It.  14    -76.02568974919     -2.42D-13  7.45D-08  2.37D-07   DAMP0.25    0.36000061s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  15 ##########   Tue Jan 18 22:06:48 2011
+
+   15 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.79%    0.09%    0.47%   0.03999996s
+SOfock:SL  1.00D-12    0.00%   66.77%    0.01%   32.68%   0.28000021s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.36999989s
+
+########## END ITERATION NO.  15 ##########   Tue Jan 18 22:06:48 2011
+
+It.  15    -76.02568974919     -2.56D-13 -5.96D-08  2.48D-07   DIIS   2    0.36999989s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  16 ##########   Tue Jan 18 22:06:48 2011
+
+   16 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.53%    0.07%    0.57%   0.03999996s
+SOfock:SL  1.00D-12    0.00%   66.26%    0.01%   33.05%   0.27999973s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.34999990s
+
+########## END ITERATION NO.  16 ##########   Tue Jan 18 22:06:48 2011
+
+It.  16    -76.02568974919      9.95D-14  2.98D-08  3.01D-07   DIIS   3    0.34999990s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  17 ##########   Tue Jan 18 22:06:49 2011
+
+   17 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.60%    0.09%    0.71%   0.02999973s
+SOfock:SL  1.00D-12    0.00%   66.78%    0.00%   32.83%   0.30000019s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+
+ DIIS aborted because of the last two iterations
+
+ the lowest energy has the largest gradient and
+
+ DIIS minimizes gradient !!!
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.37000036s
+
+########## END ITERATION NO.  17 ##########   Tue Jan 18 22:06:49 2011
+
+It.  17    -76.02568974919     -5.68D-14  4.47D-08  3.19D-07   DAMP0.25    0.37000036s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  18 ##########   Tue Jan 18 22:06:49 2011
+
+   18 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.66%    0.15%    0.42%   0.02999973s
+SOfock:SL  1.00D-12    0.00%   66.58%    0.03%   32.98%   0.28999996s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.36999989s
+
+########## END ITERATION NO.  18 ##########   Tue Jan 18 22:06:49 2011
+
+It.  18    -76.02568974919      1.42D-13 -2.98D-08  2.35D-07   DAMP0.25    0.36999989s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  19 ##########   Tue Jan 18 22:06:49 2011
+
+   19 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.80%    0.17%    0.55%   0.03000021s
+SOfock:SL  1.00D-12    0.00%   67.36%    0.08%   32.42%   0.28999996s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.34999990s
+
+########## END ITERATION NO.  19 ##########   Tue Jan 18 22:06:49 2011
+
+It.  19    -76.02568974919      3.41D-13  4.47D-08  2.61D-07   DIIS   2    0.34999990s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  20 ##########   Tue Jan 18 22:06:50 2011
+
+   20 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.88%    0.20%    0.53%   0.03000021s
+SOfock:SL  1.00D-12    0.00%   67.10%    0.07%   32.41%   0.28999996s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.35999966s
+
+########## END ITERATION NO.  20 ##########   Tue Jan 18 22:06:50 2011
+
+It.  20    -76.02568974919     -1.71D-13 -7.45D-08  2.09D-07   DIIS   3    0.35999966s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  21 ##########   Tue Jan 18 22:06:50 2011
+
+   21 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.89%    0.25%    0.32%   0.03999996s
+SOfock:SL  1.00D-12    0.00%   67.19%    0.24%   32.35%   0.28000021s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+
+ DIIS aborted because of the last two iterations
+
+ the lowest energy has the largest gradient and
+
+ DIIS minimizes gradient !!!
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.37000036s
+
+########## END ITERATION NO.  21 ##########   Tue Jan 18 22:06:50 2011
+
+It.  21    -76.02568974919     -1.28D-13  2.98D-08  2.42D-07   DAMP0.25    0.37000036s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  22 ##########   Tue Jan 18 22:06:50 2011
+
+   22 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.74%    0.16%    0.94%   0.02999973s
+SOfock:SL  1.00D-12    0.00%   67.04%    0.03%   32.48%   0.28999996s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.35000038s
+
+########## END ITERATION NO.  22 ##########   Tue Jan 18 22:06:50 2011
+
+It.  22    -76.02568974919     -3.98D-13 -4.47D-08  2.49D-07   DAMP0.25    0.35000038s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  23 ##########   Tue Jan 18 22:06:51 2011
+
+   23 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.52%    0.10%    0.53%   0.03999996s
+SOfock:SL  1.00D-12    0.00%   65.76%    0.00%   33.54%   0.29999924s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.36999893s
+
+########## END ITERATION NO.  23 ##########   Tue Jan 18 22:06:51 2011
+
+It.  23    -76.02568974919     -1.28D-13  4.47D-08  4.32D-07   DIIS   2    0.36999893s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  24 ##########   Tue Jan 18 22:06:51 2011
+
+   24 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.60%    0.15%    0.37%   0.02999973s
+SOfock:SL  1.00D-12    0.00%   66.15%    0.04%   33.51%   0.28999996s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.36000061s
+
+########## END ITERATION NO.  24 ##########   Tue Jan 18 22:06:51 2011
+
+It.  24    -76.02568974919      3.41D-13 -2.98D-08  4.09D-07   DIIS   3    0.36000061s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  25 ##########   Tue Jan 18 22:06:51 2011
+
+   25 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.59%    0.27%    0.43%   0.03999996s
+SOfock:SL  1.00D-12    0.00%   66.93%    0.09%   32.37%   0.27999973s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.34999943s
+
+########## END ITERATION NO.  25 ##########   Tue Jan 18 22:06:51 2011
+
+It.  25    -76.02568974919      8.53D-14  6.41D-08  2.82D-07   DIIS   4    0.34999943s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  26 ##########   Tue Jan 18 22:06:52 2011
+
+   26 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.66%    0.02%    0.49%   0.03999996s
+SOfock:SL  1.00D-12    0.00%   65.95%    0.00%   33.37%   0.29000092s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+
+ DIIS aborted because of the last two iterations
+
+ the lowest energy has the largest gradient and
+
+ DIIS minimizes gradient !!!
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.36000061s
+
+########## END ITERATION NO.  26 ##########   Tue Jan 18 22:06:52 2011
+
+It.  26    -76.02568974919     -3.13D-13 -1.06D-07  2.95D-07   DAMP0.25    0.36000061s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  27 ##########   Tue Jan 18 22:06:52 2011
+
+   27 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.68%    0.06%    0.39%   0.02999973s
+SOfock:SL  1.00D-12    0.00%   66.30%    0.00%   33.15%   0.27999973s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.34999943s
+
+########## END ITERATION NO.  27 ##########   Tue Jan 18 22:06:52 2011
+
+It.  27    -76.02568974919     -1.14D-13  6.24D-08  2.72D-07   DAMP0.25    0.34999943s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  28 ##########   Tue Jan 18 22:06:53 2011
+
+   28 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.59%    0.10%    0.32%   0.03999996s
+SOfock:SL  1.00D-12    0.00%   66.39%    0.01%   33.25%   0.28000069s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.36000061s
+
+########## END ITERATION NO.  28 ##########   Tue Jan 18 22:06:53 2011
+
+It.  28    -76.02568974919      1.14D-13 -2.98D-08  2.43D-07   DIIS   2    0.36000061s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  29 ##########   Tue Jan 18 22:06:53 2011
+
+   29 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.90%    0.16%    0.45%   0.03999996s
+SOfock:SL  1.00D-12    0.00%   67.12%    0.08%   32.55%   0.27999973s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.35000038s
+
+########## END ITERATION NO.  29 ##########   Tue Jan 18 22:06:53 2011
+
+It.  29    -76.02568974919     -1.56D-13 -8.94D-08  2.61D-07   DIIS   3    0.35000038s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  30 ##########   Tue Jan 18 22:06:53 2011
+
+   30 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.70%    0.08%    0.60%   0.03000069s
+SOfock:SL  1.00D-12    0.00%   67.12%    0.01%   32.52%   0.28999996s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.36999893s
+
+########## END ITERATION NO.  30 ##########   Tue Jan 18 22:06:53 2011
+
+It.  30    -76.02568974919     -7.11D-14 -2.98D-08  2.26D-07   DIIS   4    0.36999893s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  31 ##########   Tue Jan 18 22:06:54 2011
+
+   31 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.63%    0.06%    0.51%   0.02999973s
+SOfock:SL  1.00D-12    0.00%   66.48%    0.02%   33.13%   0.28999996s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.35000038s
+
+########## END ITERATION NO.  31 ##########   Tue Jan 18 22:06:54 2011
+
+It.  31    -76.02568974919      8.38D-13  8.94D-08  2.11D-07   DIIS   5    0.35000038s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  32 ##########   Tue Jan 18 22:06:54 2011
+
+   32 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.88%    0.09%    0.60%   0.03000069s
+SOfock:SL  1.00D-12    0.00%   67.21%    0.11%   32.56%   0.28999996s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+
+ DIIS aborted because of the last two iterations
+
+ the lowest energy has the largest gradient and
+
+ DIIS minimizes gradient !!!
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.35999966s
+
+########## END ITERATION NO.  32 ##########   Tue Jan 18 22:06:54 2011
+
+It.  32    -76.02568974919     -5.68D-14 -7.45D-08  2.57D-07   DAMP0.25    0.35999966s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  33 ##########   Tue Jan 18 22:06:54 2011
+
+   33 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.90%    0.07%    0.67%   0.02999973s
+SOfock:SL  1.00D-12    0.00%   67.40%    0.00%   32.34%   0.30000019s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.36999989s
+
+########## END ITERATION NO.  33 ##########   Tue Jan 18 22:06:54 2011
+
+It.  33    -76.02568974919     -7.53D-13 -4.47D-08  2.65D-07   DAMP0.25    0.36999989s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  34 ##########   Tue Jan 18 22:06:55 2011
+
+   34 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.63%    0.13%    0.53%   0.02999973s
+SOfock:SL  1.00D-12    0.00%   66.72%    0.02%   33.06%   0.28000069s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.35000038s
+
+########## END ITERATION NO.  34 ##########   Tue Jan 18 22:06:55 2011
+
+It.  34    -76.02568974919      7.67D-13  4.47D-08  3.20D-07   DIIS   2    0.35000038s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  35 ##########   Tue Jan 18 22:06:55 2011
+
+   35 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.70%    0.18%    0.49%   0.02999973s
+SOfock:SL  1.00D-12    0.00%   66.33%    0.04%   33.34%   0.30000019s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.38000011s
+
+########## END ITERATION NO.  35 ##########   Tue Jan 18 22:06:55 2011
+
+It.  35    -76.02568974919      1.42D-13 -3.55D-08  2.48D-07   DIIS   3    0.38000011s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  36 ##########   Tue Jan 18 22:06:55 2011
+
+   36 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.66%    0.08%    0.44%   0.02999973s
+SOfock:SL  1.00D-12    0.00%   66.23%    0.00%   33.42%   0.28999996s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+
+ DIIS aborted because of the last two iterations
+
+ the lowest energy has the largest gradient and
+
+ DIIS minimizes gradient !!!
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.35000038s
+
+########## END ITERATION NO.  36 ##########   Tue Jan 18 22:06:55 2011
+
+It.  36    -76.02568974919      1.42D-14  4.47D-08  2.51D-07   DAMP0.25    0.35000038s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  37 ##########   Tue Jan 18 22:06:56 2011
+
+   37 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.67%    0.06%    0.43%   0.03999996s
+SOfock:SL  1.00D-12    0.00%   66.36%    0.00%   32.98%   0.30000019s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.38000011s
+
+########## END ITERATION NO.  37 ##########   Tue Jan 18 22:06:56 2011
+
+It.  37    -76.02568974919      1.56D-13  4.47D-08  2.32D-07   DAMP0.25    0.38000011s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  38 ##########   Tue Jan 18 22:06:56 2011
+
+   38 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.96%    0.12%    0.82%   0.03999996s
+SOfock:SL  1.00D-12    0.00%   67.75%    0.00%   32.12%   0.27999973s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.34999943s
+
+########## END ITERATION NO.  38 ##########   Tue Jan 18 22:06:56 2011
+
+It.  38    -76.02568974919     -5.68D-14 -2.98D-08  2.65D-07   DIIS   2    0.34999943s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  39 ##########   Tue Jan 18 22:06:57 2011
+
+   39 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.75%    0.13%    0.32%   0.02999973s
+SOfock:SL  1.00D-12    0.00%   67.49%    0.02%   32.04%   0.28999996s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.36999989s
+
+########## END ITERATION NO.  39 ##########   Tue Jan 18 22:06:57 2011
+
+It.  39    -76.02568974919      1.99D-13 -4.47D-08  2.84D-07   DIIS   3    0.36999989s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  40 ##########   Tue Jan 18 22:06:57 2011
+
+   40 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.76%    0.18%    0.33%   0.03000069s
+SOfock:SL  1.00D-12    0.00%   66.92%    0.09%   32.86%   0.28999996s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.36999989s
+
+########## END ITERATION NO.  40 ##########   Tue Jan 18 22:06:57 2011
+
+It.  40    -76.02568974919      5.68D-14  7.45D-08  2.77D-07   DIIS   4    0.36999989s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  41 ##########   Tue Jan 18 22:06:57 2011
+
+   41 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.83%    0.09%    0.36%   0.02999973s
+SOfock:SL  1.00D-12    0.00%   67.09%    0.01%   32.43%   0.28999996s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.36999989s
+
+########## END ITERATION NO.  41 ##########   Tue Jan 18 22:06:57 2011
+
+It.  41    -76.02568974919     -3.27D-13 -7.45D-08  2.00D-07   DIIS   5    0.36999989s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  42 ##########   Tue Jan 18 22:06:58 2011
+
+   42 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.67%    0.11%    0.49%   0.03999996s
+SOfock:SL  1.00D-12    0.00%   66.97%    0.00%   32.75%   0.27999973s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+
+ DIIS aborted because of the last two iterations
+
+ the lowest energy has the largest gradient and
+
+ DIIS minimizes gradient !!!
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.36000061s
+
+########## END ITERATION NO.  42 ##########   Tue Jan 18 22:06:58 2011
+
+It.  42    -76.02568974919      1.42D-13  2.98D-08  2.12D-07   DAMP0.25    0.36000061s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  43 ##########   Tue Jan 18 22:06:58 2011
+
+   43 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.53%    0.09%    0.35%   0.03999996s
+SOfock:SL  1.00D-12    0.00%   66.15%    0.00%   33.14%   0.29000092s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.35999966s
+
+########## END ITERATION NO.  43 ##########   Tue Jan 18 22:06:58 2011
+
+It.  43    -76.02568974919      4.26D-14  2.98D-08  2.70D-07   DAMP0.25    0.35999966s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  44 ##########   Tue Jan 18 22:06:58 2011
+
+   44 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.78%    0.09%    0.26%   0.04000092s
+SOfock:SL  1.00D-12    0.00%   66.98%    0.02%   31.95%   0.27999878s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.36000061s
+
+########## END ITERATION NO.  44 ##########   Tue Jan 18 22:06:58 2011
+
+It.  44    -76.02568974919     -2.84D-14 -4.75D-08  2.99D-07   DIIS   2    0.36000061s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  45 ##########   Tue Jan 18 22:06:59 2011
+
+   45 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   49.02%    0.30%    0.41%   0.03999901s
+SOfock:SL  1.00D-12    0.00%   67.87%    0.11%   31.54%   0.28999901s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.35999870s
+
+########## END ITERATION NO.  45 ##########   Tue Jan 18 22:06:59 2011
+
+It.  45    -76.02568974919      1.71D-13  4.47D-08  2.74D-07   DIIS   3    0.35999870s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  46 ##########   Tue Jan 18 22:06:59 2011
+
+   46 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.84%    0.08%    0.27%   0.02999878s
+SOfock:SL  1.00D-12    0.00%   67.03%    0.03%   32.68%   0.29000092s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+
+ DIIS aborted because of the last two iterations
+
+ the lowest energy has the largest gradient and
+
+ DIIS minimizes gradient !!!
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.36000061s
+
+########## END ITERATION NO.  46 ##########   Tue Jan 18 22:06:59 2011
+
+It.  46    -76.02568974919      2.84D-14  4.47D-08  3.15D-07   DAMP0.25    0.36000061s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  47 ##########   Tue Jan 18 22:06:59 2011
+
+   47 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.90%    0.15%    0.20%   0.02999878s
+SOfock:SL  1.00D-12    0.00%   67.88%    0.02%   31.86%   0.28000069s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.35999870s
+
+########## END ITERATION NO.  47 ##########   Tue Jan 18 22:06:59 2011
+
+It.  47    -76.02568974919      8.53D-14 -6.27D-08  2.64D-07   DAMP0.25    0.35999870s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  48 ##########   Tue Jan 18 22:07:00 2011
+
+   48 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.66%    0.60%    0.41%   0.04000092s
+SOfock:SL  1.00D-12    0.00%   66.94%    0.48%   32.53%   0.28000069s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.36000061s
+
+########## END ITERATION NO.  48 ##########   Tue Jan 18 22:07:00 2011
+
+It.  48    -76.02568974919      1.28D-13  2.98D-08  2.66D-07   DIIS   2    0.36000061s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  49 ##########   Tue Jan 18 22:07:00 2011
+
+   49 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.63%    0.09%    0.44%   0.04000092s
+SOfock:SL  1.00D-12    0.00%   66.76%    0.01%   32.76%   0.27999878s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 1.00000000s
+>>> Total CPU-time : 0.36000061s
+
+########## END ITERATION NO.  49 ##########   Tue Jan 18 22:07:00 2011
+
+It.  49    -76.02568974919     -4.26D-14  5.96D-08  3.18D-07   DIIS   3    0.36000061s   LL SL          Tue Jan 18
+
+########## START ITERATION NO.  50 ##########   Tue Jan 18 22:07:01 2011
+
+   50 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   48.75%    0.18%    0.53%   0.03999901s
+SOfock:SL  1.00D-12    0.00%   67.21%    0.10%   32.39%   0.28000069s
+
+  QM-QM nuclear repulsion energy :    0.000000028368
+  QM-pc interaction energy       :    0.000000000000
+  pc-pc interaction energy       :    0.000000000000
+  Total interaction energy       :    0.000000028368
+>>> Total wall time: 0.00000000s
+>>> Total CPU-time : 0.36000061s
+
+########## END ITERATION NO.  50 ##########   Tue Jan 18 22:07:01 2011
+
+It.  50    -76.02568974919     -2.84D-14 -7.45D-08  2.27D-07   DIIS   4    0.36000061s   LL SL          Tue Jan 18
+
+ ** Exit SCF because maximum number of iterations reached.
 
 
                                    SCF - CYCLE
@@ -982,37 +1667,74 @@ It.  13    -76.08401987792     -8.10D-13 -4.03D-08  4.97D-08   DIIS   9    1.888
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.   1    -33.09779843441      1.00D+20  0.00D+00  0.00D+00               0.59203708s   Scr. nuclei    Tue Jan 18
-It.   2    -75.58203301519      4.25D+01  9.78D+00  2.71D+00               2.38414884s   LL SL          Tue Jan 18
-It.   3    -75.92652659621      3.44D-01 -2.11D+00  1.00D+00   DIIS   2    2.24814081s   LL SL          Tue Jan 18
-It.   4    -76.07644642420      1.50D-01  8.96D-01  2.32D-01   DIIS   3    2.23613977s   LL SL          Tue Jan 18
-It.   5    -76.08400125307      7.55D-03 -1.57D-01  7.88D-03   DIIS   4    2.21613789s   LL SL          Tue Jan 18
-It.   6    -76.08401890829      1.77D-05  1.88D-03  1.58D-03   DIIS   5    2.20413780s   LL SL          Tue Jan 18
-It.   7    -76.08401983586      9.28D-07  4.45D-04  2.41D-04   DIIS   6    2.20013809s   LL SL          Tue Jan 18
-It.   8    -76.08401987484      3.90D-08 -5.36D-05  6.79D-05   DIIS   7    2.19213676s   LL SL          Tue Jan 18
-It.   9    -76.08401987785      3.01D-09  2.04D-05  9.44D-06   DIIS   8    2.18413544s   LL SL          Tue Jan 18
-It.  10    -76.08401987792      6.55D-11 -1.21D-06  2.06D-06   DIIS   9    2.18013763s   LL SL          Tue Jan 18
-It.  11    -76.08401987792      2.61D-12 -3.11D-07  6.14D-07   DIIS   9    2.18013573s   LL SL          Tue Jan 18
-It.  12    -76.08401987792      1.62D-12 -1.25D-07  1.65D-07   DIIS   9    2.16413498s   LL SL          Tue Jan 18
-It.  13    -76.08401987792     -8.10D-13 -4.03D-08  4.97D-08   DIIS   9    1.88811874s   LL SL          Tue Jan 18
+It.   1    -32.92628527261      1.00D+20  0.00D+00  0.00D+00               0.04000002s   Scr. nuclei    Tue Jan 18
+It.   2    -75.72959382561      4.28D+01  5.12D+00  1.36D+00               0.42999995s   LL SL          Tue Jan 18
+It.   3    -75.92539351335      1.96D-01 -1.39D+00  7.42D-01   DIIS   2    0.40000010s   LL SL          Tue Jan 18
+It.   4    -76.02515272622      9.98D-02  5.45D-01  5.14D-02   DIIS   3    0.39999998s   LL SL          Tue Jan 18
+It.   5    -76.02568521399      5.32D-04 -2.44D-02  3.01D-03   DIIS   4    0.38999999s   LL SL          Tue Jan 18
+It.   6    -76.02568948230      4.27D-06  2.31D-04  6.46D-04   DIIS   5    0.39000010s   LL SL          Tue Jan 18
+It.   7    -76.02568972670      2.44D-07  7.41D-05  1.80D-04   DIIS   6    0.38999987s   LL SL          Tue Jan 18
+It.   8    -76.02568974860      2.19D-08  2.36D-05  2.71D-05   DIIS   7    0.39000010s   LL SL          Tue Jan 18
+It.   9    -76.02568974916      5.59D-10 -3.67D-06  6.22D-06   DIIS   8    0.36999989s   LL SL          Tue Jan 18
+It.  10    -76.02568974919      2.83D-11 -9.93D-07  9.65D-07   DIIS   9    0.38000011s   LL SL          Tue Jan 18
+It.  11    -76.02568974919      3.13D-13  1.49D-07  2.34D-07   DIIS   9    0.36000013s   LL SL          Tue Jan 18
+It.  12    -76.02568974919      1.42D-13 -2.98D-08  2.29D-07   DIIS   9    0.36999989s   LL SL          Tue Jan 18
+It.  13    -76.02568974919     -1.99D-13  2.98D-08  2.50D-07   DAMP0.25    0.34999943s   LL SL          Tue Jan 18
+It.  14    -76.02568974919     -2.42D-13  7.45D-08  2.37D-07   DAMP0.25    0.36000061s   LL SL          Tue Jan 18
+It.  15    -76.02568974919     -2.56D-13 -5.96D-08  2.48D-07   DIIS   2    0.36999989s   LL SL          Tue Jan 18
+It.  16    -76.02568974919      9.95D-14  2.98D-08  3.01D-07   DIIS   3    0.34999990s   LL SL          Tue Jan 18
+It.  17    -76.02568974919     -5.68D-14  4.47D-08  3.19D-07   DAMP0.25    0.37000036s   LL SL          Tue Jan 18
+It.  18    -76.02568974919      1.42D-13 -2.98D-08  2.35D-07   DAMP0.25    0.36999989s   LL SL          Tue Jan 18
+It.  19    -76.02568974919      3.41D-13  4.47D-08  2.61D-07   DIIS   2    0.34999990s   LL SL          Tue Jan 18
+It.  20    -76.02568974919     -1.71D-13 -7.45D-08  2.09D-07   DIIS   3    0.35999966s   LL SL          Tue Jan 18
+It.  21    -76.02568974919     -1.28D-13  2.98D-08  2.42D-07   DAMP0.25    0.37000036s   LL SL          Tue Jan 18
+It.  22    -76.02568974919     -3.98D-13 -4.47D-08  2.49D-07   DAMP0.25    0.35000038s   LL SL          Tue Jan 18
+It.  23    -76.02568974919     -1.28D-13  4.47D-08  4.32D-07   DIIS   2    0.36999893s   LL SL          Tue Jan 18
+It.  24    -76.02568974919      3.41D-13 -2.98D-08  4.09D-07   DIIS   3    0.36000061s   LL SL          Tue Jan 18
+It.  25    -76.02568974919      8.53D-14  6.41D-08  2.82D-07   DIIS   4    0.34999943s   LL SL          Tue Jan 18
+It.  26    -76.02568974919     -3.13D-13 -1.06D-07  2.95D-07   DAMP0.25    0.36000061s   LL SL          Tue Jan 18
+It.  27    -76.02568974919     -1.14D-13  6.24D-08  2.72D-07   DAMP0.25    0.34999943s   LL SL          Tue Jan 18
+It.  28    -76.02568974919      1.14D-13 -2.98D-08  2.43D-07   DIIS   2    0.36000061s   LL SL          Tue Jan 18
+It.  29    -76.02568974919     -1.56D-13 -8.94D-08  2.61D-07   DIIS   3    0.35000038s   LL SL          Tue Jan 18
+It.  30    -76.02568974919     -7.11D-14 -2.98D-08  2.26D-07   DIIS   4    0.36999893s   LL SL          Tue Jan 18
+It.  31    -76.02568974919      8.38D-13  8.94D-08  2.11D-07   DIIS   5    0.35000038s   LL SL          Tue Jan 18
+It.  32    -76.02568974919     -5.68D-14 -7.45D-08  2.57D-07   DAMP0.25    0.35999966s   LL SL          Tue Jan 18
+It.  33    -76.02568974919     -7.53D-13 -4.47D-08  2.65D-07   DAMP0.25    0.36999989s   LL SL          Tue Jan 18
+It.  34    -76.02568974919      7.67D-13  4.47D-08  3.20D-07   DIIS   2    0.35000038s   LL SL          Tue Jan 18
+It.  35    -76.02568974919      1.42D-13 -3.55D-08  2.48D-07   DIIS   3    0.38000011s   LL SL          Tue Jan 18
+It.  36    -76.02568974919      1.42D-14  4.47D-08  2.51D-07   DAMP0.25    0.35000038s   LL SL          Tue Jan 18
+It.  37    -76.02568974919      1.56D-13  4.47D-08  2.32D-07   DAMP0.25    0.38000011s   LL SL          Tue Jan 18
+It.  38    -76.02568974919     -5.68D-14 -2.98D-08  2.65D-07   DIIS   2    0.34999943s   LL SL          Tue Jan 18
+It.  39    -76.02568974919      1.99D-13 -4.47D-08  2.84D-07   DIIS   3    0.36999989s   LL SL          Tue Jan 18
+It.  40    -76.02568974919      5.68D-14  7.45D-08  2.77D-07   DIIS   4    0.36999989s   LL SL          Tue Jan 18
+It.  41    -76.02568974919     -3.27D-13 -7.45D-08  2.00D-07   DIIS   5    0.36999989s   LL SL          Tue Jan 18
+It.  42    -76.02568974919      1.42D-13  2.98D-08  2.12D-07   DAMP0.25    0.36000061s   LL SL          Tue Jan 18
+It.  43    -76.02568974919      4.26D-14  2.98D-08  2.70D-07   DAMP0.25    0.35999966s   LL SL          Tue Jan 18
+It.  44    -76.02568974919     -2.84D-14 -4.75D-08  2.99D-07   DIIS   2    0.36000061s   LL SL          Tue Jan 18
+It.  45    -76.02568974919      1.71D-13  4.47D-08  2.74D-07   DIIS   3    0.35999870s   LL SL          Tue Jan 18
+It.  46    -76.02568974919      2.84D-14  4.47D-08  3.15D-07   DAMP0.25    0.36000061s   LL SL          Tue Jan 18
+It.  47    -76.02568974919      8.53D-14 -6.27D-08  2.64D-07   DAMP0.25    0.35999870s   LL SL          Tue Jan 18
+It.  48    -76.02568974919      1.28D-13  2.98D-08  2.66D-07   DIIS   2    0.36000061s   LL SL          Tue Jan 18
+It.  49    -76.02568974919     -4.26D-14  5.96D-08  3.18D-07   DIIS   3    0.36000061s   LL SL          Tue Jan 18
+It.  50    -76.02568974919     -2.84D-14 -7.45D-08  2.27D-07   DIIS   4    0.36000061s   LL SL          Tue Jan 18
 --------------------------------------------------------------------------------------------------------------------------------
-* Convergence after   13 iterations.
+* Desired convergence limit not reached after   50 iterations but the current convergence is acceptable.
 * Average elapsed time per iteration: 
       No 2-ints    :    0.00000000s
-      LL SL        :    2.33333333s
+      LL SL        :    0.36734694s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -85.139024431928519
+   Electronic energy                        :    -85.080694303196907
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      9.055004525637894
    SS Coulombic correction                  :      0.000000028368070
 
    Sum of all contributions to the energy
-   Total energy                             :    -76.084019877922557
+   Total energy                             :    -76.025689749190946
 
 
                                    Eigenvalues
@@ -1021,21 +1743,18 @@ It.  13    -76.08401987792     -8.10D-13 -4.03D-08  4.97D-08   DIIS   9    1.888
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
-   -20.56767478703  ( 2)       -1.33262878809  ( 2)       -0.69276538648  ( 2)       -0.56460142987  ( 2)       -0.49287185131  ( 2)
+-20.55302254855633  ( 2)    -1.32934142562849  ( 2)    -0.69144626262807  ( 2)    -0.56387096900129  ( 2)    -0.49212359525225  ( 2)
   * Virtual eigenvalues, f = 0.0000
-     0.18035056676  ( 2)        0.25130605252  ( 2)        0.66090182113  ( 2)        0.73710686519  ( 2)        1.07464299728  ( 2)
-     1.12298315619  ( 2)        1.19783411345  ( 2)        1.41466791805  ( 2)        1.47147558395  ( 2)        1.63530241715  ( 2)
-     1.66936607701  ( 2)        1.89243830129  ( 2)        2.31509126513  ( 2)        2.39594999932  ( 2)        3.27123895209  ( 2)
-     3.29855932858  ( 2)        3.32285185174  ( 2)        3.39984059641  ( 2)        3.52508208514  ( 2)        3.83230640035  ( 2)
-     4.12819536088  ( 2)        6.12215752973  ( 2)        6.55562992168  ( 2)        6.81995230084  ( 2)       13.05123698037  ( 2)
-    22.16805539391  ( 2)       22.33176366707  ( 2)       33.42100419541  ( 2)       33.66209015517  ( 2)       33.81973583938  ( 2)
-    61.52969862744  ( 2)      230.57095106348  ( 2)      852.00324016040  ( 2)     3409.92055966488  ( 2)    15466.31716097885  ( 2)
+  0.18304182706902  ( 2)     0.25403526751553  ( 2)     0.77887081251717  ( 2)     0.84069362075282  ( 2)     1.16451064304887  ( 2)
+  1.20007993469074  ( 2)     1.25426145095707  ( 2)     1.44696806728410  ( 2)     1.47255803405533  ( 2)     1.67196074969013  ( 2)
+  1.87052749187447  ( 2)     1.91890919106752  ( 2)     2.41834232678657  ( 2)     2.45391712934196  ( 2)     3.27277144201537  ( 2)
+  3.32446046435148  ( 2)     3.49100497903915  ( 2)     3.85003061605798  ( 2)     4.13079439051639  ( 2)
 * HOMO - LUMO gap:
 
-    E(LUMO) :     0.18035057 au (symmetry E1 )
-  - E(HOMO) :    -0.49287185 au (symmetry E1 )
+    E(LUMO) :     0.18304183 au (symmetry E1 )
+  - E(HOMO) :    -0.49212360 au (symmetry E1 )
   ------------------------------------------
-    gap     :     0.67322242 au
+    gap     :     0.67516542 au
 
 
 
@@ -1066,7 +1785,7 @@ It.  13    -76.08401987792     -8.10D-13 -4.03D-08  4.97D-08   DIIS   9    1.888
    Joern Thyssen
 
    Additional contributions from:
-   Thomas Enevoldsen
+   Thomas Enevoldsen, Miroslav Ilias (London orbitals)
 
 
 
@@ -1091,134 +1810,77 @@ It.  13    -76.08401987792     -8.10D-13 -4.03D-08  4.97D-08   DIIS   9    1.888
     Fermion ircop:E1 
     - Inactive orbitals  :      1..     5                                          
     - Active orbitals    : No electrons
-    - Secondary orbitals :    -40..-1,     6..    40                               
+    - Secondary orbitals :    -24..-1,     6..    24                               
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -76.0840198779233674
-* Heading :DIRAC: No title specified !!!                     Tue Jan 18 21:34:52 2011
+* REACMO: Coefficients read from file DFCOEF - Total energy: -76.0256897491909456
+* Heading :DIRAC: No title specified !!!                     Tue Jan 18 22:07:01 2011
 
-cpu time:      47.7990 wall time:      48.0000 used in call to twoint(in get_ao_fock_2el_lao).
+cpu time:       8.1300 wall time:       8.0000 used in call to twoint(in get_ao_fock_2el_lao).
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-16    0.00%   45.78%    0.00%    0.91%   0.14000702s
-SOfock:SL  1.00D-16    0.00%   51.15%    0.00%    0.04%   1.36008453s
-SOfock:SS  1.00D-16    0.00%   56.43%    0.00%    0.00%   4.38027191s
+SOfock:LL  1.00D-12    0.00%   48.04%    0.00%    0.12%   0.02999878s
+SOfock:SL  1.00D-12    0.00%   52.14%    0.00%    0.04%   0.32999992s
+SOfock:SS  1.00D-12    0.00%   87.67%    0.00%    0.13%   0.87000084s
 
 * GETFCK: reading old two-electron Fock matrix
 
-* REAFCK: Fock matrix read from file DFFCK2                                                      
-* Heading :DIRAC: No title specified !!!                     Tue Jan 18 21:34:53 2011
+* REAFCK: Fock matrix read from file /tmp/bast.dc_natural_h2o.8580/DFFCK2                        
+* Heading :DIRAC: No title specified !!!                     Tue Jan 18 22:07:01 2011
 
 * GETFCK: reading old one-electron Fock matrix
 
-* REAFCK: Fock matrix read from file DFFCK1                                                      
-* Heading :DIRAC: No title specified !!!                     Tue Jan 18 21:34:25 2011
+* REAFCK: Fock matrix read from file /tmp/bast.dc_natural_h2o.8580/DFFCK1                        
+* Heading :DIRAC: No title specified !!!                     Tue Jan 18 22:06:43 2011
 
 
 
  <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTY >>>
 LAO-ZRM1H1       - Symmetry: A    T-
 
-* Screening threshold in LR solver scaled with norm of property vector:  3.0323D+02
-  and changed to:  3.0323D-14
 
-########## START MICROITERATION NO.   1 ##########   Tue Jan 18 21:35:58 2011
+* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  7.63D-09
+         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 1.31D+03
+* Screening threshold in LR solver scaled with norm of property vector:  1.5352D+04
+  and changed to:  1.1719D-04
+
+########## START MICROITERATION NO.   1 ##########   Tue Jan 18 22:07:11 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.03D-14    0.00%   45.99%    0.00%    1.39%   0.30001831s
-SOfock:SL  3.03D-14    0.00%   51.05%    0.00%    0.01%   1.34407806s
+SOfock:LL  1.17D-04    0.00%   49.84%    0.00%    0.94%   0.04000092s
+SOfock:SL  1.17D-04    0.00%   55.04%    0.00%    0.06%   0.30999947s
 * Trial vectors in this micro iteration:  E-:  0  P-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
-     0.00000000  1.00E-05  3.18E+00  3.18E+00  3.30E-03
+     0.00000000  1.00E-05  1.04E+00  1.04E+00  5.85E-05
 
-########## START MICROITERATION NO.   2 ##########   Tue Jan 18 21:36:00 2011
+########## START MICROITERATION NO.   2 ##########   Tue Jan 18 22:07:11 2011
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.03D-14    0.00%   45.99%    0.00%    1.46%   0.14000702s
-SOfock:SL  3.03D-14    0.00%   51.50%    0.00%    0.06%   1.33609009s
+SOfock:LL  1.17D-04    0.06%   50.46%    0.00%   37.15%   0.02999878s
+SOfock:SL  1.17D-04   99.74%    0.16%    0.00%    0.26%   0.03000069s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
-     0.00000000  1.00E-05  1.02E+00  1.02E+00  2.75E-03
-
-########## START MICROITERATION NO.   3 ##########   Tue Jan 18 21:36:02 2011
-
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.03D-14    0.00%   46.07%    0.00%    1.04%   0.14000702s
-SOfock:SL  3.03D-14    0.00%   51.66%    0.00%    0.06%   1.63610840s
-* Trial vectors in this micro iteration:  E-:  1  P-:  0
-
-* Norm of residual vectors:
-  Frequency      Threshold Total     E- part   P- part 
-     0.00000000  1.00E-05  3.26E-01  3.26E-01  2.76E-03
-
-########## START MICROITERATION NO.   4 ##########   Tue Jan 18 21:36:04 2011
-
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.03D-14    0.00%   46.22%    0.00%    1.40%   0.14001465s
-SOfock:SL  3.03D-14    0.00%   51.86%    0.00%    0.06%   1.33608246s
-* Trial vectors in this micro iteration:  E-:  1  P-:  0
-
-* Norm of residual vectors:
-  Frequency      Threshold Total     E- part   P- part 
-     0.00000000  1.00E-05  6.67E-02  6.66E-02  2.73E-03
-
-########## START MICROITERATION NO.   5 ##########   Tue Jan 18 21:36:05 2011
-
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.03D-14    0.00%   46.49%    0.00%    1.48%   0.47203064s
-SOfock:SL  3.03D-14    0.00%   52.16%    0.00%    0.05%   1.84011078s
-* Trial vectors in this micro iteration:  E-:  1  P-:  1
-
-* Norm of residual vectors:
-  Frequency      Threshold Total     E- part   P- part 
-     0.00000000  1.00E-05  8.76E-03  8.76E-03  5.83E-06
-
-########## START MICROITERATION NO.   6 ##########   Tue Jan 18 21:36:08 2011
-
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  3.03D-14    0.00%   46.99%    0.00%    1.19%   0.14000702s
-SOfock:SL  3.03D-14    0.00%   52.84%    0.00%    0.06%   1.33208466s
-* Trial vectors in this micro iteration:  E-:  1  P-:  0
-
-* Norm of residual vectors:
-  Frequency      Threshold Total     E- part   P- part 
-     0.00000000  1.00E-05  1.10E-03  1.10E-03  6.30E-06
+     0.00000000  1.00E-05  9.02E-02  9.02E-02  8.34E-05
 
 
                              Final output from XRSCTL
                              ------------------------
 
 
-*** Microiterations converged after  6 microiterations
+*** Microiterations converged after  2 microiterations
 
             Freq.(au)   Total norm    E- norm   P- norm 
 ========================================================
-* It.  1   1.86811829s  (LL SL    )     [  0]     [  1]
+* It.  1   0.36000061s  (LL SL    )     [  0]     [  1]
 --------------------------------------------------------
-            0.000000 :   3.18D+00 |   3.18D+00  3.30D-03
+            0.000000 :   1.04D+00 |   1.04D+00  5.85D-05
 ========================================================
-* It.  2   1.64810181s  (LL SL    )     [  1]     [  0]
+* It.  2   0.07999992s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
-            0.000000 :   1.02D+00 |   1.02D+00  2.75D-03
-========================================================
-* It.  3   1.94812012s  (LL SL    )     [  1]     [  0]
---------------------------------------------------------
-            0.000000 :   3.26D-01 |   3.26D-01  2.76D-03
-========================================================
-* It.  4   1.64410400s  (LL SL    )     [  1]     [  0]
---------------------------------------------------------
-            0.000000 :   6.67D-02 |   6.66D-02  2.73D-03
-========================================================
-* It.  5   2.65616608s  (LL SL    )     [  1]     [  1]
---------------------------------------------------------
-            0.000000 :   8.76D-03 |   8.76D-03  5.83D-06
-========================================================
-* It.  6   1.64009857s  (LL SL    )     [  1]     [  0]
---------------------------------------------------------
-            0.000000 :   1.10D-03 |   1.10D-03  6.30D-06
+            0.000000 :   9.02D-02 |   9.02D-02  8.34D-05
 ========================================================
 
 
@@ -1231,40 +1893,69 @@ SOfock:SL  3.03D-14    0.00%   52.84%    0.00%    0.06%   1.33208466s
    A - LAO-ZRM1H1           A    T-
    B - LAO-ZRM1H1           A    T-
 -----------------------------------------------------------------------------------------------
-    1.743328335931 a.u. at frequency      0.00000000 a.u.    3.64E-06   (converged)
+    1.669457896225 a.u. at frequency      0.00000000 a.u.    5.87E-06   (converged)
 -----------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------
 
  
-     Date and time (Linux)  : Tue Jan 18 21:36:10 2011 
+     Date and time (Linux)  : Tue Jan 18 22:07:11 2011
      Host name              :                                         
->>>> Node 0, utime: 102, stime: 0, minflt: 128377, majflt: 0, nvcsw: 145, nivcsw: 8741, maxrss: 0
->>>> Total WALL time used in DIRAC: 1min47s
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 
   
   Dynamical Memory Usage Summary
   
-  Mean allocation size (Mb) :        17.71
+  Mean allocation size (Mb) :        17.64
   
   Largest          10  allocations
   
-      488.28 Mb at subroutine __allocator_internal_a_1d_r_MOD_alloc_a_no for work array at main                        
-        1.98 Mb at subroutine __allocator_internal_a_3d_r_MOD_alloc_a_no for unnamed variable                          
-        0.66 Mb at subroutine __allocator_internal_a_1d_r_MOD_alloc_a_no for unnamed variable                          
-        0.66 Mb at subroutine __allocator_internal_a_1d_r_MOD_alloc_a_no for unnamed variable                          
-        0.66 Mb at subroutine __allocator_internal_a_1d_r_MOD_alloc_a_no for unnamed variable                          
-        0.66 Mb at subroutine __allocator_internal_a_1d_r_MOD_alloc_a_no for unnamed variable                          
-        0.66 Mb at subroutine __allocator_internal_a_2d_r_MOD_alloc_a_no for unnamed variable                          
-        0.66 Mb at subroutine __allocator_internal_a_2d_r_MOD_alloc_a_no for unnamed variable                          
-        0.36 Mb at subroutine __allocator_internal_a_1d_r_MOD_alloc_a_no for unnamed variable                          
-        0.20 Mb at subroutine __allocator_internal_a_1d_r_MOD_alloc_a_no for unnamed variable                          
+      488.28 Mb at subroutine                                            for work array at main                        
+        1.57 Mb at subroutine                                            for unnamed variable                          
+        0.52 Mb at subroutine                                            for unnamed variable                          
+        0.52 Mb at subroutine                                            for unnamed variable                          
+        0.52 Mb at subroutine                                            for unnamed variable                          
+        0.52 Mb at subroutine                                            for unnamed variable                          
+        0.52 Mb at subroutine                                            for unnamed variable                          
+        0.52 Mb at subroutine                                            for unnamed variable                          
+        0.19 Mb at subroutine                                            for unnamed variable                          
+        0.13 Mb at subroutine                                            for unnamed variable                          
   
   Peak memory usage    (Mb) :       491.00
-       reached at subroutine : __allocator_internal_a_3d_r_MOD_alloc_a_no
+       reached at subroutine :                                           
               for variable   : unnamed variable                          
   
+  Memory possibly left allocated! 
+     dumping list now... 
+  
+  <<< Tracked variables, alloc >>>
+      >>>            2  variables so far
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :         9216
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :    263348728
+      >>> (de)allocated data details <<<
+          var. name                   : 
+ unnamed variable                                                               
+                                                      
+               kind                   :            8
+               tot.dim. (<1 if array) :        68644
+               was allocated at       : 
+                                                                                
+                                                      
+               mem.addr. (as integer) :  -1730252792
+      >>> Done after           2  el.
+  
+  There were           28  allocations/            26  deallocations
+      Current memory usage (in Mb) is    1.00000000000000     
  MEMGET high-water mark:    13.94 MB
 
 *****************************************************
+>>>> Node 0, utime: 28, stime: 0, minflt: 128647, majflt: 0, nvcsw: 4, nivcsw: 5154, maxrss: 508712
+>>>> Total WALL time used in DIRAC: 29s
