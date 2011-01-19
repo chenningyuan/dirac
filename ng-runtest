@@ -96,8 +96,14 @@ if len(sys.argv) == 1:
 list_of_tests_to_run = []
 
 if options.individual != None:
-    for test in options.individual.split():
-        list_of_tests_to_run.append(test)
+    command = 'find test/%s -type d -maxdepth 0' % options.individual
+    p = subprocess.Popen(command,
+                         shell=True,
+                         stdin=subprocess.PIPE,
+                         stdout=subprocess.PIPE)
+    for test in p.communicate()[0].split('\n'):
+        if test != '':
+            list_of_tests_to_run.append(string.replace(test, 'test/', ''))
 
 # get total number of tests to run
 
