@@ -967,7 +967,7 @@ C?    CALL IWRTMA(ICLS_A,1,NCLS,1,NCLS)
       REAL * 8   INPROD,INPRDD
       character*6 SIGDEN_ROUTE
       CHARACTER SECTID*12, CPUTID*12, WALLTID*12, FILELAB*8
-      LOGICAL CONVER,RTCNV(100),EXSTOP
+      LOGICAL CONVER,RTCNV(NROOT),EXSTOP
 *
 #include "krmcluci_inf.h"
 *
@@ -1920,7 +1920,7 @@ CTF
 *      with largest overlap with the previous space
 *
        DIMENSION FINEIG(1)
-       LOGICAL CONVER,RTCNV(10)
+       LOGICAL CONVER,RTCNV(NROOT)
        REAL*8 INPRDD, INPROD
        CHARACTER SECTID*12, CPUTID*12, WALLTID*12
 *. Notice XJEP is also used for ROOTHOMING, should be allocated
@@ -2837,7 +2837,7 @@ C      END IF
 *      H0SCR  : 2*(NP1+NP2) ** 2 +  4 * (NP1+NP2+NQ)
 *
        DIMENSION FINEIG(1)
-       LOGICAL CONVER,RTCNV(100)
+       LOGICAL CONVER,RTCNV(NROOT)
        REAL*8 INPRDD
        CHARACTER SECTID*12, CPUTID*12, WALLTID*12,FILELAB*8
 *
