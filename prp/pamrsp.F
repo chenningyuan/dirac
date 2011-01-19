@@ -3666,12 +3666,26 @@ C.........If the contribution to the norm of the property gradient
 C         from this parameter type is below threshold, then no
 C         trial vectors of this kind is generated
           GPTMP = DNRM2(NBDIM,GP,1)
-CPP this makes crash the code
-C          IF (GPTMP.LT.0.3D0*GPTNRM.AND.(.NOT.UNCOUP)) THEN
-C            NDIM = NFREQ*NSTAT*NDAMP
-C            CALL IZERO(IVEC,NDIM)
-C            GOTO 20
-C          ENDIF
+          IF (GPTMP.LT.0.3D0*GPTNRM.AND.(.NOT.UNCOUP)) THEN
+            NDIM = NFREQ*NSTAT*NDAMP
+            CALL IZERO(IVEC,NDIM)
+            DO IP = 1,NFREQ*NDAMP,NDAMP
+              IFREQ = IFREQ + 1
+              IM = IP + NFREQ*NDAMP
+              DO IDAMP = 0,NDAMP-1
+                IBTYP(1,IBOFF+IP+IDAMP)     = NBTYP
+                IBTYP(2,IBOFF+IP+IDAMP)     = IPX
+                IBVEC(NBPREV+IP+IDAMP)      = IBOFF+IP+IDAMP
+                IBTYP(1,IBOFF+IM+IDAMP)     = NBTYP
+                IBTYP(2,IBOFF+IM+IDAMP)     = IMX
+                IBVEC(NBPREV+IM+IDAMP)      = IBOFF+IM+IDAMP
+                IF(UNCOUP) THEN
+                  EVECR(IBOFF+IP+1,IP+1) = D1
+                ENDIF
+              ENDDO
+            ENDDO
+            GOTO 20
+          ENDIF
           IF (IPRXRS.GE.3) WRITE(LUPRI,'(1X,A,1P,D12.5)')
      &         'Norm of gradient ratio in XRSST2:',GPTMP/GPTNRM
           IFREQ = 0
