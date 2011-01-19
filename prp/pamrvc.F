@@ -2974,15 +2974,21 @@ C
 C
       CALL QENTER('XRSBVC')
       CNVMAX = D0
-CPP Need to print correctly the symmetry in cpp case
-      WRITE(LUPRI,'(/A)') '* Norm of residual vectors:'
-      WRITE(LUPRI,'(A15,2X,A9,1X,A8,18(2X,A2,A6))')
-     &      '  Frequency    ','Threshold ','Total   ',
-     &     (BVTYP(I),' part ',I=1,NVPAR),
-     &     (BVTYP(I),' part ',I=1,NVPAR)
+      IF(DAMPFREQ.NE.D0) THEN
+        WRITE(LUPRI,'(/A)') '* Norm of residual vectors:'
+        WRITE(LUPRI,'(A12,2X,A9,1X,A8,18(2X,A2,A6))')
+     &        '  Frequency ','Threshold ','Total   ',
+     &       (BVTYP(I),' part ',I=1,NVPAR),
+     &       (BVTYP(I),' part ',I=1,NVPAR)
+      ELSE
+        WRITE(LUPRI,'(/A)') '* Norm of residual vectors:'
+        WRITE(LUPRI,'(A15,2X,A9,1X,A8,9(2X,A2,A6))')
+     &        '  Frequency    ','Threshold ','Total   ',
+     &        (BVTYP(I),' part ',I=1,NVPAR)
+      ENDIF
       DO IFREQ = 1,MFREQ
-      INDR = 2*IFREQ-1
-      INDI = 2*IFREQ
+         INDR = 2*IFREQ-1
+         INDI = 2*IFREQ
 C
 C        ************************************
 C        ***** Get norms of residual vectors
@@ -3171,7 +3177,7 @@ C              if less than a fraction (0.2) of convergence threshold.
             ENDIF
          ENDIF
          IF(DAMPFREQ.NE.D0) THEN
-           WRITE(LUPRI,'(F15.8,1P,16(2X,E8.2))')
+           WRITE(LUPRI,'(F12.8,1P,16(2X,E8.2))')
      &        EVALR(IFREQ),THCXRS,RTNORM,
      &        (RNORM(I,INDR),I=1,NVPAR),
      &        (RNORM(I,INDI),I=1,NVPAR)

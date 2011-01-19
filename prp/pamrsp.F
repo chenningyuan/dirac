@@ -3155,9 +3155,16 @@ C
 C     Give summary of calculations
 C
       IF(MAXITR.GT.0) THEN
-        WRITE(LUPRI,'(/12X,A9,3X,A10,2X,6(2X,A2,A6))')
-     &    'Freq.(au)','Total norm',(BVTYP(I),' norm ',I=1,NVPAR)
-        NCOL = 36 + NVPAR*10
+        IF(DAMPFREQ.NE.D0) THEN
+          WRITE(LUPRI,'(/12X,A9,3X,A10,2X,12(2X,A2,A6))')
+     &      'Freq.(au)','Total norm',
+     &      (BVTYP(I),' norm ',I=1,NVPAR),
+     &      (BVTYP(I),' norm ',I=1,NVPAR)
+        ELSE
+          WRITE(LUPRI,'(/12X,A9,3X,A10,2X,6(2X,A2,A6))')
+     &      'Freq.(au)','Total norm',(BVTYP(I),' norm ',I=1,NVPAR)
+        ENDIF
+        NCOL = 36 + NDAMP*NVPAR*10
         REWIND LUCYCL
         DO ITR = 1,ITMIC
           CALL PRSYMB(LUPRI,'=',NCOL,0)
@@ -3171,9 +3178,21 @@ C
      &        ('[',ISIM(I),']',I=1,NVPAR)
           CALL PRSYMB(LUPRI,'-',NCOL,0)
           DO IFREQ = 1,NFREQ
-             RTNORM = DNRM2(NVPAR,RNORM(1,IFREQ),1)
-             WRITE(LUPRI,'(10X,F10.6,A3,1P,D10.2,A3,6(D10.2))') 
-     &       EVALR(IFREQ),' : ',RTNORM,' | ',(RNORM(I,IFREQ),I=1,NVPAR)
+            IF(DAMPFREQ.NE.D0) THEN
+              INDR = 2*IFREQ-1
+              INDI = 2*IFREQ
+              RTNORMR = DNRM2(NVPAR,RNORM(1,INDR),1)
+              RTNORMI = DNRM2(NVPAR,RNORM(1,INDI),1)
+              RTNORM = DSQRT(RTNORMR**2 + RTNORMI**2)
+              WRITE(LUPRI,'(10X,F10.6,A3,1P,D10.2,A3,12(D10.2))')
+     &        EVALR(IFREQ),' : ',RTNORM,' | ',
+     &        (RNORM(I,INDR),I=1,NVPAR),
+     &        (RNORM(I,INDI),I=1,NVPAR)
+            ELSE
+              RTNORM = DNRM2(NVPAR,RNORM(1,IFREQ),1)
+              WRITE(LUPRI,'(10X,F10.6,A3,1P,D10.2,A3,6(D10.2))')
+     &        EVALR(IFREQ),' : ',RTNORM,' | ',(RNORM(I,IFREQ),I=1,NVPAR)
+            ENDIF
           ENDDO
         ENDDO
         CALL PRSYMB(LUPRI,'=',NCOL,0)

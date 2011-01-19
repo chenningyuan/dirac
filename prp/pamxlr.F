@@ -1848,15 +1848,15 @@ C
                   ENDIF
                 ENDDO
                 CALL PRSYMB(LUPRI,'-',95,0)
-                IF(DAMPFREQ.NE.D0) THEN
-                  DFREQEV = DAMPFREQ * XTEV
-                  DFREQCM = DAMPFREQ * XTKAYS
-                  WRITE(LUPRI,'(3X,A,F10.6,A,F10.6,A,F10.1,A)')
-     &                   'Damping parameter equals',DAMPFREQ,' a.u. =',
-     &                   DFREQEV,' eV =',DFREQCM,' cm-1'
-                ENDIF
               ENDDO
             ENDDO
+            IF(DAMPFREQ.NE.D0) THEN
+              DFREQEV = DAMPFREQ * XTEV
+              DFREQCM = DAMPFREQ * XTKAYS
+              WRITE(LUPRI,'(3X,A,F10.6,A,F10.6,A,F10.1,A)')
+     &             'Damping parameter equals',DAMPFREQ,' a.u. =',
+     &              DFREQEV,' eV =',DFREQCM,' cm-1'
+            ENDIF
           ENDDO
         ENDDO
       ELSE
