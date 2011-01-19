@@ -170,17 +170,22 @@ for test in list_of_tests_to_run:
                                 + string.replace(mol_file, '.mol', '') \
                                 + '.out'
                     if os.path.isfile('result/%s' % output_file):
+                      
+                        # create directory where outputs are compared
+                        if not os.path.isdir('compare'):
+                            os.mkdir('compare')
+
                         # apply the filter on output
-                        os.system('../SCRIPTS/crep %s result/filter > %s.rep' \
+                        os.system('../SCRIPTS/crep %s        result/filter > compare/%s.own' \
                                   % (output_file, output_file))
                         # apply the filter on reference output
-                        os.system('../SCRIPTS/crep result/%s result/filter > result/%s.rep' \
+                        os.system('../SCRIPTS/crep result/%s result/filter > compare/%s.ref' \
                                   % (output_file, output_file))
                         # compare filtered result with reference
-                        os.system('../SCRIPTS/bdrep %s.rep result/%s.rep > %s.txt' \
+                        os.system('../SCRIPTS/bdrep compare/%s.own compare/%s.ref > compare/%s.txt' \
                                   % (output_file, output_file, output_file))
                         
-                        if os.path.getsize(output_file + '.txt') == 0:
+                        if os.path.getsize('compare/%s.txt' % output_file) == 0:
                             result_text = 'OK'
                             nr_ok += 1
                         else:
