@@ -8,7 +8,9 @@
 #
 # Written by Stefan Knecht, Denmark, Jan 2011 - ?
 #
-# Contributors:  everybody is welcome. :)
+# Contributors:  Radovan Bast, Norway 
+#                (i benefit from his structure of 
+#                 the next-generation test script)
 #
 
 import os
@@ -57,7 +59,7 @@ group.add_option('--pam_options',
                  action='store',
                  dest='pam_argument_list',
                  default=None,
-                 metavar='\"--silent\"',
+                 metavar='\"--silent --put=\"testfile testfile2\" \"',
                  help='provides keywords passed on to pam [default: %default]')
 parser.add_option_group(group)
 
@@ -71,3 +73,56 @@ if len(sys.argv) == 1:
     print parser.format_help().strip()
     sys.exit()
 
+# get total number of atomic/molecular fragment X2C calculations to run
+
+#total_nr_of_atomic_x2c = 0
+#for fragment in list_of_fragments:
+#    f = open('abaX2C_menu', 'r')
+#    for line in f.readlines():
+#        total_nr_of_atomic_x2c += 1
+#    f.close()
+
+# set useful pam flags in case user has none provided
+pam_flags_tmp  = options.pam_argument_list
+pam_flags      = ''
+print pam_flags_tmp
+
+if pam_flags_tmp == None:
+    pam_flags += '--nobackup --silent ' 
+else:
+    pam_flags += pam_flags_tmp
+
+
+print pam_flags
+
+# print header
+
+print
+print '%50s' % ('fragment X2C Dirac calculation')
+print '  ----------------------------------------------------------------'
+print
+print '%10s %12s %33s' % ('progress', 'result', 'atom/molecular-fragment')
+print '  ----------------------------------------------------------------'
+
+# run the molecular X2C calculation using the atom-by-atom X2C approach
+
+#for fragment in list_of_fragments:
+
+                # run pam
+#               command = '%s/pam --inp=%s --mol=%s %s' \
+#                   % (root_directory, inp_file, mol_file, pam_flags)
+#               p = subprocess.Popen(command,
+#                                    shell=True,
+#                                    stdin=subprocess.PIPE,
+#                                    stdout=subprocess.PIPE)
+#               
+#               # check whether DIRAC terminated normally
+#               pam_output = p.communicate()[0]
+#               if 'exit           : normal' in pam_output:
+#                   output_file = string.replace(inp_file, '.inp', '') \
+#                               + '_'                                  \
+#                               + string.replace(mol_file, '.mol', '') \
+#                               + '.out'
+#               else:
+#                   result_text = 'CRASH'
+#                   nr_crashed += 1
