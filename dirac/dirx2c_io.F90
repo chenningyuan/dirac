@@ -82,14 +82,18 @@ contains
 !**********************************************************************
  
        rewind(funit)
-       if(fndlab12(flabel,funit))then
-         call readt(funit,nlen,fmat)
+       if(nlen > 0)then
+         if(fndlab12(flabel,funit))then
+           call readt(funit,nlen,fmat)
+         else
+           inquire(unit=funit, name=funit_name)
+           lfunit_name = len_trim(funit_name)
+           print '(2x,a,a,a,a)', ' *** error in x2c_read: data with label',flabel,' is not present in the file',  &
+                                   funit_name(1:lfunit_name)
+           call quit('*** error in x2c_read:: data not found on the file. ***')
+         end if
        else
-         inquire(unit=funit, name=funit_name)
-         lfunit_name = len_trim(funit_name)
-         print '(2x,a,a,a,a)', ' *** error in x2c_read: data with label',flabel,' is not present in the file',  &
-                                 funit_name(1:lfunit_name)
-         call quit('*** error in x2c_read:: data not found on the file. ***')
+         print '(2x,a)', ' *** warning in x2c_read: attempt to read data array which is supposed to be zero. ***'
        end if
        
   end subroutine x2c_read
