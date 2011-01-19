@@ -29,7 +29,7 @@ group.add_option('--all',
                  dest='all',
                  default=False,
                  help='run all tests [default: %default]')
-group.add_option('--individual',
+group.add_option('--tests',
                  type='string',
                  action='store',
                  dest='individual',
@@ -50,7 +50,7 @@ group.add_option('--mpi',
                  type='int',
                  action='store',
                  dest='mpi',
-                 default=None,
+                 default=0,
                  help='set number of cores [default: %default]',
                  metavar='INTEGER')
 parser.add_option_group(group)
@@ -123,10 +123,12 @@ for test in list_of_tests_to_run:
         if len(line.split()) > 2:
            for i in range(2, len(line.split())):
                pam_flags += line.split()[i] + ' '
-# pam dev null flag
+        pam_flags += '--silent '
+        if options.mpi > 1:
+            pam_flags += '--mpi=%i ' % options.mpi
 
 #       run pam
-        command = '../../pam --inp=%s --mol=%s %s' % (inp_file, mol_file, pam_flags)
+        command = '%s/pam --inp=%s --mol=%s %s' % (root_directory, inp_file, mol_file, pam_flags)
         p = subprocess.Popen(command,
                              shell=True,
                              stdin=subprocess.PIPE,

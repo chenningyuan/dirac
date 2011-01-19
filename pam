@@ -1391,8 +1391,13 @@ class pam_enviroment:
 
         # process the pam
 
-                p = subprocess.Popen(self.dirac_cmd, shell=True,
-                        stdin=subprocess.PIPE, stdout=self.f)
+                if self.iprint == 0:
+                    p = subprocess.Popen(self.dirac_cmd, shell=True,
+                            stdin=subprocess.PIPE, stdout=self.f, stderr=subprocess.PIPE)
+                else:
+                    p = subprocess.Popen(self.dirac_cmd, shell=True,
+                            stdin=subprocess.PIPE, stdout=self.f)
+
                 if self.iprint > 0:
                     print '  pid            : %s ' % p.pid
                 p.wait()
