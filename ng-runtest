@@ -1,5 +1,16 @@
 #! /usr/bin/env python
 
+# notes: 1. requires a file called menu
+#           see for instance test/visual_general/menu
+#           this file is in "free format" and can have 
+#           empty lines
+#           lines contain: input file, molecule file[, pam flags]
+#        2. --short, --all, --keywords, --timeout, --giveup
+#           not programmed yet
+#        3. the good old html output not programmed yet but will come
+#        4. overwrite feature to be programmed
+#        5. --et (calling home) email feature to be programmed
+
 import os
 import sys
 import string
