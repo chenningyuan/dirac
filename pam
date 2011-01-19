@@ -17,6 +17,10 @@
 
 # wishlist: 1. it would be very nice to allow wildcards or regex in
 #              --put and --get, example: --get="plot*"
+#           2. it would be very nice to have something in the spirit of 
+#              --put_master 
+#              because otherwise we risk with the current setup to copy 
+#              GBs of data to co-workers which absolutely do NOT need it.
 
 # radovan: suggestions:
 #         1. please use standard indentation of 4 spaces (not 2 spaces, no tabs)
