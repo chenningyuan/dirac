@@ -1226,8 +1226,8 @@ C               MVCSMD(LUIN,FAC,LUOUT,LUSCR,VEC1,VEC2,NVEC,IREW,LBLK)
             RTCNV(IROOT) = .FALSE.
             CONVER = .FALSE.
          END IF
-         WRITE(LUWRT,'(A,I5,1P,E15.6,0P,F20.12,L10)')
-     &     ' Iter RNORM EIGAPR RTCNV', ITER,RNORM,EIGAPR+EIGSHF,RTCNV
+         WRITE(LUWRT,'(A19,5X,I5,3X,1E18.13,3X,1F19.10)')
+     &     ' Iter RNORM EIGAPR ', ITER,RNORM,EIGAPR+EIGSHF
 * I suppose this is only a check for the necessity of defining
 * a new search direction. Using intermediate ITERIM instead ...
 CTF      ITER = ITER + 1
