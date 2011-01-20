@@ -23,9 +23,16 @@ from optparse import OptionParser, OptionGroup
 
 root_directory = os.path.realpath(__file__)[:-14]
 
+# set directory for basic dirac input
+
+basic_atomic_input_directory = root_directory + '/utils'
+
+if not os.access(basic_atomic_input_directory, os.R_OK):
+    sys.exit('quit: directory with information to prepare a minimal dirac input not accessible!')
+
 # define example usage
 
-usage = './atomicX2C-run --inp=[.inp] --mol=[.mol] [--pam_options="string with all your additional pam options"]'
+usage = './atomicX2C-run --inp=[.inp] --mol=[.mol] --verbose [--pam_options="string with all your additional pam options"]'
 
 # initialize parser
 
@@ -63,6 +70,14 @@ group.add_option('--pam_options',
                  help='provides keywords passed on to pam [default: %default]')
 parser.add_option_group(group)
 
+group = OptionGroup(parser, 'verbosity level')
+group.add_option('--verbose',
+                 action='store_true',
+                 dest='being_verbose',
+                 default=False,
+                 help='produces more verbose output [default: %default]')
+parser.add_option_group(group)
+
 # process input
 
 (options, args) = parser.parse_args()
@@ -72,6 +87,12 @@ parser.add_option_group(group)
 if len(sys.argv) == 1:
     print parser.format_help().strip()
     sys.exit()
+
+# print location of atomicX2C-run script
+
+if options.being_verbose:
+    print 'run script resides in:'
+    print root_directory
 
 # read original molecular input
 
@@ -83,7 +104,7 @@ for line in f.readlines():
 f.close()
 
 print total_nr_of_lines
-# calculate total number of atomic/molecular fragments
+# determine total number of atomic/molecular fragments
 
 #total_nr_of_atomic_x2c = 0
 #for fragment in list_of_fragments:
@@ -92,18 +113,23 @@ print total_nr_of_lines
 #        total_nr_of_atomic_x2c += 1
 #    f.close()
 
+
 # set useful pam flags in case user has none provided
+
 pam_flags_tmp  = options.pam_argument_list
 pam_flags      = ''
-print pam_flags_tmp
 
 if pam_flags_tmp == None:
-    pam_flags += '--nobackup --silent ' 
+    if not options.being_verbose:
+        pam_flags += '--nobackup --silent '
+    else:
+        pam_flags += '--nobackup '
 else:
     pam_flags += pam_flags_tmp
 
-
-print pam_flags
+if options.being_verbose:
+    print 'options passed on to \"pam\":'
+    print pam_flags
 
 # print header
 
@@ -114,9 +140,38 @@ print
 print '%10s %12s %33s' % ('progress', 'result', 'atom/molecular-fragment')
 print '  ----------------------------------------------------------------'
 
+
+# open the basic atomic dirac input
+
+basic_dirac_input = open(basic_atomic_input_directory+'/atomicX2C-mininmal-dirac-input', 'r')
+if options.being_verbose:
+    total_content_basic_dirac_input = basic_dirac_input.read()
+    print "complete content of the mininmal-dirac-input data file:"
+    print total_content_basic_dirac_input,
+    basic_dirac_input.seek(0)
+
 # run the molecular X2C calculation using the atom-by-atom X2C approach
 
-#for fragment in list_of_fragments:
+list_of_fragments = '1'
+
+for fragment in list_of_fragments:
+
+    # rewind the basic atomic dirac input file
+    basic_dirac_input.seek(0)
+    # seek the start of data
+    line_tmp = basic_dirac_input.readline()
+    print line_tmp,
+    while line_tmp[0:6] != '$start':
+        print line_tmp,
+        line_tmp = basic_dirac_input.readline()
+    print 'last line read in:'
+    print line_tmp,
+    
+    # open the new atomic dirac input file
+#   inp_file = open(
+
+# prepare atomic dirac input
+
 
                 # run pam
 #               command = '%s/pam --inp=%s --mol=%s %s' \
@@ -136,3 +191,6 @@ print '  ----------------------------------------------------------------'
 #               else:
 #                   result_text = 'CRASH'
 #                   nr_crashed += 1
+
+# close the basic atomic dirac input
+basic_dirac_input.close()
