@@ -16,13 +16,13 @@
 #      $Z                      i                  #_of_suggested_e-_configuration
 #
 $start
-$1   2    1
+$1   2 1
 .CLOSED SHELL
  0 0
 .OPEN SHELL
 1
 1/2,0
-$2   2    1
+$2   2 1
 .CLOSED SHELL
  2 0
 $end
