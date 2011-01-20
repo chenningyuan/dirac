@@ -330,7 +330,7 @@ class pam_enviroment:
             print 'dest full path:', dest
 
     def process_scratch_dir_name(self,scratch_dir_string):
-        """ Process scratch_dir name """
+        """ Process scratch_dir name - called from reading --scratch argument """
         self.create_scratch_dir_name = False
         # check for PID substring to be replaced with unique string
         if scratch_dir_string.find('PID') != -1:
@@ -397,6 +397,7 @@ class pam_enviroment:
         print '  ------------------------------------------------------------------------------'
 
     def remove_scratch_dir(self):
+        ''' remove the scratch directory  '''
         if self.iprint > 0:
             self.list_scratch_dir()
         if not self.keep_scratch:
@@ -411,7 +412,6 @@ class pam_enviroment:
 
     def exit_function(self, returncode):
         '''prints message on the DIRAC executable exit according to the input parameter'''
-
         print '  exit date      :', datetime.datetime.now()
         print '  exit code      :', returncode
         if returncode == 0:
@@ -421,9 +421,8 @@ class pam_enviroment:
         print
         sys.stdout.flush()
 
-     # notifyuser ?
-
     def process_pam_arguments(self):
+        ''' the longest method - reading and processing script flags  '''
         global install_dir
 
         from optparse import OptionParser, OptionGroup
@@ -902,10 +901,9 @@ class pam_enviroment:
                     print 'both --mol=... and --inp=... input parameters are required !'
                     sys.exit()
 
+    # set output name and the scratch_dir name
+
         self.set_output_name()
-
-    # ## set scratch_dir name here  ###
-
         if self.create_scratch_dir_name:
             self.set_scratch_dir_name()
 
@@ -1611,7 +1609,6 @@ class pam_enviroment:
 
         sys.stdout.flush()
     
-
 class pam_run(pam_enviroment):
 
     def __init__(self):
@@ -1640,7 +1637,6 @@ class pam_run(pam_enviroment):
 def main(*args):
     dirac_run = pam_run()
     return dirac_run.perform()
-
 
 if __name__ == '__main__':
     sys.exit(main(*sys.argv))
