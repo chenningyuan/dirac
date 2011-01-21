@@ -613,7 +613,7 @@ C
 
       SUBROUTINE QDIAG90(NZ,N,A,LRA,LCA,EIG,MATZ,VEC,LRV,LCV,IERR)
 C     Like QDIAG but uses f90 memory allocation internally.
-      use memeory_allocator
+      use memory_allocator
 #include "implicit.h"
       real(8), allocatable :: work(:)
 
