@@ -3433,10 +3433,13 @@ C        Find the irrep that has the lowest eigenvalue
  110     IEIGSYM = IEIGSYM + 1
          IF (NISH(IEIGSYM) .GE. NESH(IEIGSYM)) GOTO 110
          J = IEIGSYM
-         DO I = J+1,NFSYM
+!        stefan: add test if fermion irrep J+1 contains any orbitals
+         if(norb(j+1).gt.0)then
+           DO I = J+1,NFSYM
             IF (EIG(IEIGMIN(I)) .LT. EIG(IEIGMIN(IEIGSYM)))
      &         IEIGSYM = I
-         END DO
+           END DO
+         end if
 C        We found the lowest yet unoccupied MO, occupy it
          NISH(IEIGSYM) = NISH(IEIGSYM) + 1
          IEIGMIN(IEIGSYM) = IEIGMIN(IEIGSYM) + 1
