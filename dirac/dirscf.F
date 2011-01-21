@@ -3409,7 +3409,8 @@ C
 #include "dgroup.h"
 C
       DIMENSION EIG(*)
-      DIMENSION IEIGMIN(2)
+      DIMENSION IEIGMIN(NFSYM)
+      logical   symmetry_broken
 C
       DO I = 1,NFSYM
          IEIGMIN(I) = 1+IORB(I) + NPSH(I)
@@ -3434,12 +3435,12 @@ C        Find the irrep that has the lowest eigenvalue
          IF (NISH(IEIGSYM) .GE. NESH(IEIGSYM)) GOTO 110
          J = IEIGSYM
 !        stefan: add test if fermion irrep J+1 contains any orbitals
-         if(norb(j+1).gt.0)then
            DO I = J+1,NFSYM
-            IF (EIG(IEIGMIN(I)) .LT. EIG(IEIGMIN(IEIGSYM)))
+            if(norb(I).ge.IEIGMIN(I))then
+               IF (EIG(IEIGMIN(I)) .LT. EIG(IEIGMIN(IEIGSYM)))
      &         IEIGSYM = I
+            end if
            END DO
-         end if
 C        We found the lowest yet unoccupied MO, occupy it
          NISH(IEIGSYM) = NISH(IEIGSYM) + 1
          IEIGMIN(IEIGSYM) = IEIGMIN(IEIGSYM) + 1
@@ -3462,6 +3463,17 @@ C
          NACSH(IEIGSYM,1) = 1
       END IF
 C
+!     stefan + hjaaj - jan 2011:
+!     check for symmetry-broken solution "caused" by the Aufbau
+!     principle, correct it and stop if "fractional occupation" is not 
+!     in use.
+!     if(.not.aoc)then
+!       symmetry_broken = .false.
+!       call check_for_symmetry_breaking_in_automatic_occ(eig,nish,nesh,
+!    &                         ieigmin,nfsym,nelect_dhf,naelec_dhf,norb,
+!    &                         ieigsym,symmetry_broken)
+!     end if
+!
       NASHMFT = 0
       DO I = 1, NFSYM
          NOCC(I) = NISH(I) + NASH(I)
@@ -3480,6 +3492,40 @@ C     Subtract frozen orbitals (if any) from orbital classes
       CALL SUBFRZ()
       RETURN
       END
+
+C***********************************************************************
+
+      SUBROUTINE check_for_symmetry_breaking_in_automatic_occ(eig,nish,
+     &                        nesh,ieigmin,nfsym,nelect_dhf,naelec_dhf,
+     &                        norb,ieigsym_last_occ,symmetry_broken)
+!
+C***********************************************************************
+C
+C     detect symmetry-broken solutions when using the Aufbau principle
+C     to set-up an (initial) electronic configuration.
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C
+      real(8), parameter :: degeneracy_thr = 4.0d-02
+C
+      DIMENSION eig(*), nish(nfsym),nesh(nfsym),norb(nfsym)
+      DIMENSION ieigmin(nfsym)
+      logical   symmetry_broken
+      integer   orboff
+C
+      orboff = 0
+      do i = 1, nfsym
+        print *, 'eigenvalues for isym =',i,' # of orbs =',norb(i)
+        call wrtmat(eig(1+orboff),1,norb(i),1,norb(i))
+        orboff = orboff + norb(i)
+      end do
+
+      print *, '  ieigsym_last_occ is',ieigsym_last_occ,
+     &         ' the last e- went into ',ieigmin(ieigsym_last_occ)-1
+
+      end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dfdiag */
       SUBROUTINE DFDIAG(FMO,EIG,IBEIG,FAO,DODBG,WORK,KFREE,LFREE)
