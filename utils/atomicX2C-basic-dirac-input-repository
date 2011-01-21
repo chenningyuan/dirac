@@ -1,0 +1,28 @@
+#
+# this file contains the basic electronic configuration for each atom
+# and is read by the python-script 'atomicX2C-run'. 
+# feel free to add other (open shell) electronic configuration for your favorite 
+# atom if you think this configuration may be more suitable for your ensuing 
+# molecular calculation.
+#
+# written by Stefan Knecht, SDU Odense, Jan 2011 - ?
+#
+# the structure is: 
+# "atomic number"   "double group symmetry         "number of the suggested
+#                    chosen which contains the      electronic configuration"
+#                    the inversion operation i
+#                    (1: no; 2: yes)"
+#
+#      $Z                      i                  #_of_suggested_e-_configuration
+#
+$start
+$1   2  1
+.CLOSED SHELL
+ 0 0
+.OPEN SHELL
+1
+1/2,0
+$2   2  1
+.CLOSED SHELL
+ 2 0
+$end

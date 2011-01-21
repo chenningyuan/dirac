@@ -143,10 +143,10 @@ print '  ----------------------------------------------------------------'
 
 # open the basic atomic dirac input
 
-basic_dirac_input = open(basic_atomic_input_directory+'/atomicX2C-mininmal-dirac-input', 'r')
+basic_dirac_input = open(basic_atomic_input_directory+'/atomicX2C-basic-dirac-input-repository', 'r')
 if options.being_verbose:
     total_content_basic_dirac_input = basic_dirac_input.read()
-    print "complete content of the mininmal-dirac-input repository:"
+    print "complete content of the basic-dirac-input repository:"
     print total_content_basic_dirac_input,
     basic_dirac_input.seek(0)
 
@@ -169,18 +169,25 @@ for fragment in list_of_fragments:
     
     # create unique search tag for the requested atomic input
     search_tag  = ''
-    blanks_tag  = '    '
     # for now: fixed to groups with inversion sym
     inversion_operation_label      = '2'
     # for now: fixed electronic configuration type
     electronic_configuration_type  = '1'
-    search_tag += '$' + fragment + blanks_tag[0:(4-len(fragment))]\
-                + inversion_operation_label + ' '\
-                + electronic_configuration_type
+    search_tag += '$' + string.ljust(fragment, 4)\
+                + string.ljust(inversion_operation_label, 2)\
+                + string.rjust(electronic_configuration_type, 2)
     if options.being_verbose:
         print 'individual search tag:'
         print search_tag
     
+    line_tmp = basic_dirac_input.readline()
+    print line_tmp,
+    while line_tmp[0:9] != search_tag:
+        print line_tmp,
+        line_tmp = basic_dirac_input.readline()
+    print 'after search - last line read in:'
+    print line_tmp,
+
     # open the new atomic dirac input file
 #   inp_file = open(
 
