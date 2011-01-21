@@ -3413,10 +3413,10 @@ C
       logical   symmetry_broken
 C
       DO I = 1,NFSYM
-         IEIGMIN(I) = 1+IORB(I) + NPSH(I)
-         NISH(I) = 0
-         NASH(I) = 0
-         NACSH(I,1) = 0
+         IEIGMIN(I)     = 1+IORB(I) + NPSH(I)
+         NISH(I)        = 0
+         NASH(I)        = 0
+         NACSH(I,1)     = 0
       END DO
 C
       NELEC2GO = NELECT_DHF
@@ -3436,7 +3436,7 @@ C        Find the irrep that has the lowest eigenvalue
          J = IEIGSYM
 !        stefan: add test if fermion irrep J+1 contains any orbitals
            DO I = J+1,NFSYM
-            if(norb(I).ge.IEIGMIN(I))then
+            if(norb(I)+iorb(i).ge.IEIGMIN(I))then
                IF (EIG(IEIGMIN(I)) .LT. EIG(IEIGMIN(IEIGSYM)))
      &         IEIGSYM = I
             end if
@@ -3510,20 +3510,72 @@ C***********************************************************************
 C
       real(8), parameter :: degeneracy_thr = 4.0d-02
 C
-      DIMENSION eig(*), nish(nfsym),nesh(nfsym),norb(nfsym)
-      DIMENSION ieigmin(nfsym)
-      logical   symmetry_broken
-      integer   orboff
+      DIMENSION  eig(*), nish(nfsym),nesh(nfsym),norb(nfsym)
+      DIMENSION  ieigmin(nfsym)
+      logical    symmetry_broken
+      integer    orboff, deg_counter
+      real(8) :: eig_last
+      integer,   allocatable :: ieig_deg(:)
+      logical    degeneracy_found
 C
-      orboff = 0
+      degeneracy_found = .false.
+      ilast            = ieigmin(ieigsym_last_occ)-1
+      orboff           = 0
       do i = 1, nfsym
         print *, 'eigenvalues for isym =',i,' # of orbs =',norb(i)
         call wrtmat(eig(1+orboff),1,norb(i),1,norb(i))
         orboff = orboff + norb(i)
       end do
 
+      orboff   = 0
+      do i = 1, ieigsym_last_occ-1
+        orboff = orboff + norb(i)
+      end do
+
       print *, '  ieigsym_last_occ is',ieigsym_last_occ,
-     &         ' the last e- went into ',ieigmin(ieigsym_last_occ)-1
+     &         ' the last e- went into ',ilast
+
+      allocate(ieig_deg(norb(ieigsym_last_occ)))
+      call izero(ieig_deg,norb(ieigsym_last_occ))
+
+      eig_last              = eig(ilast)
+      deg_counter           = 1
+      ieig_deg(deg_counter) = ilast
+      iup                   = ilast
+      idown                 = ilast
+      if(naelec_dhf.gt.0)then
+      else
+!       test up and down
+!       a. up
+ 500    continue
+        iup = iup + 1
+        if(iup.le.orboff+norb(ieigsym_last_occ))then
+          if(abs(eig(iup)-eig_last).le.degeneracy_thr)then
+            deg_counter           = deg_counter + 1
+            ieig_deg(deg_counter) = iup
+            goto 500
+          end if
+        end if
+!       b. down
+ 600    continue
+        idown = idown - 1
+        if(idown.gt.orboff)then
+          if(abs(eig(idown)-eig_last).le.degeneracy_thr)then
+            deg_counter           = deg_counter + 1
+            ieig_deg(deg_counter) = idown
+            goto 600
+          end if
+        end if
+        
+        if(deg_counter .gt. 1)then
+          print *,'  found degeneracy in irrep:', ieigsym_last_occ
+          do i = 1,deg_counter
+            print *,'  orbital #:',ieig_deg(i)
+          end do
+        end if
+
+      end if
+      deallocate(ieig_deg)
 
       end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
