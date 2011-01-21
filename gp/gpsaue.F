@@ -4394,6 +4394,7 @@ C
      &                  TM1,LR1,LC1,NZTM1,IQTM1,
      &                  TM2,LR2,LC2,NZTM2,IQTM2,IPRINT)
 c     Like QTRANS, but uses fortran 90 memory allocation internally
+      use memory_allocator
 #include "implicit.h"
       double precision, allocatable :: work(:)
       CHARACTER TREV*1,TYP*4
@@ -4416,8 +4417,15 @@ C     find out how much buffer is needed in qtrans
             NBUF = NRAO*NCMO*NZW
          endif
       endif
-      allocate( work(nbuf), stat=ierr )
-      if (ierr.ne.0) call quit('QTRANS90: error in allocation !')
+
+      if(nbuf.le.0)then
+        call quit(' *** error in QTRANS90: buffer space allocation not
+     & possible for length <= 0.***')
+      end if
+
+      call alloc(work,nbuf, id='QTRANS90-buffer-space')
+!     allocate( work(nbuf), stat=ierr )
+!     if (ierr.ne.0) call quit('QTRANS90: error in allocation !')
       work = 0
       call QTRANS(TYP,TREV,FADD,NRAO,NCAO,NRMO,NCMO,
      &                  FAO,LRAO,LCAO,NZAO,IQAO,
@@ -4425,10 +4433,11 @@ C     find out how much buffer is needed in qtrans
      &                  TM1,LR1,LC1,NZTM1,IQTM1,
      &                  TM2,LR2,LC2,NZTM2,IQTM2,
      &                  work,nbuf,IPRINT)
+      call dealloc(work, id='QTRANS90-buffer-space')
 CMI    ... necessary to eliminate gfortran memory bug...
-      deallocate(work,  stat=ierr)
-      if (ierr.ne.0) call quit('QTRANS90: error in dallocation !')
-      continue
+!     deallocate(work,  stat=ierr)
+!     if (ierr.ne.0) call quit('QTRANS90: error in dallocation !')
+      
       end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Sqstra */
