@@ -613,8 +613,9 @@ C
 
       SUBROUTINE QDIAG90(NZ,N,A,LRA,LCA,EIG,MATZ,VEC,LRV,LCV,IERR)
 C     Like QDIAG but uses f90 memory allocation internally.
+      use memeory_allocator
 #include "implicit.h"
-      real(8)         , allocatable :: work(:)
+      real(8), allocatable :: work(:)
 
       lwork = 8 + 2*N
       if(nz.gt.1) lwork = lwork + N*NZ
@@ -634,10 +635,14 @@ c       first let lapack estimate memory use
         lwork = LLWORK + LILWORK + 2*N +8
       end if
 #endif
-      allocate(work(lwork))
+      if(lwork.le.0)then
+        call quit(' *** error in QDIAG90: buffer space allocation not
+     & possible for length <= 0.***')
+      end if
+      call alloc(work,lwork, id='QDIAG90-buffer-space')
       work = 0
       call qdiag(NZ,N,A,LRA,LCA,EIG,MATZ,VEC,LRV,LCV,work,lwork,IERR)
-      deallocate(work)
+      call dealloc(work, id='QDIAG90-buffer-space')
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4396,7 +4401,7 @@ C
 c     Like QTRANS, but uses fortran 90 memory allocation internally
       use memory_allocator
 #include "implicit.h"
-      double precision, allocatable :: work(:)
+      real(8), allocatable :: work(:)
       CHARACTER TREV*1,TYP*4
       integer IQW(4)
 C     find out how much buffer is needed in qtrans
