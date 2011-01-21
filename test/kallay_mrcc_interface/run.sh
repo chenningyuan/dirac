@@ -20,7 +20,7 @@ fi
 MENU=ccsd;
 export MENU;
 export MOL;
-../SCRIPTS/run.sh -mw=600 --noarch --get="MRCONEE MDCINT"
+../SCRIPTS/run.sh --mw=600 --noarch --get="MRCONEE MDCINT"
 ../../utils/dirac_mointegral_export.x >>${MENU}_$MOL.$TAG
 $MRCCDIR/goldstone >>${MENU}_$MOL.$TAG
 $MRCCDIR/mrcc      >>${MENU}_$MOL.$TAG
