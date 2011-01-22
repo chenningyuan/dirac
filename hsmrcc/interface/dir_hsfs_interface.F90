@@ -23,13 +23,13 @@
 subroutine HSFS_STUFF(WORK,LWORK)
 !----------------------------------------------------------------------------------
 !
-!  Read DIRAC-MOLTRA produced files MRCONEE/MDCINT and  prepare
-!  DIRAC_hsfs file containing all data for the HSFS run.
+!  Read DIRAC-MOLTRA produced files MRCONEE/MDCINT and prepare
+!  DIRAC_hsfs file containing all data for the subsequent HSFS run.
 ! 
-!  If MOLTRA section is skipped, or if .I_FILE is active in HSFS  input, do
+!  If MOLTRA section is skipped, or if .I_FILE is active in HSFS input, do
 !  not prepare the DIRAC_hsfs file
 ! 
-!  Called from PAMTRA, if defined (MOD_HSFS)
+!  Called from PAMTRA, if defined "MOD_HSFS"
 !
 !  Written by Miro Ilias, Tel Aviv/Prievidza 2009
 !

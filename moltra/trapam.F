@@ -445,14 +445,14 @@ C
       CALL FLSHFO(LUPRI)
 
 #ifdef MOD_HSCC
-!     ... interface from HSCC module
+!     ... interface for the HSCC module
       CALL HSCC_STUFF(WORK,LWORK)
 #endif
 
-!#ifdef MOD_HSFS
-!     ... interface from HSFS module
-!      CALL HSFS_STUFF(WORK,LWORK)
-!#endif
+#if defined (MOD_HSFS) || defined (HSFS_DYN_ALLOC)
+!     ... interface for the HSFS module
+      CALL HSFS_STUFF(WORK,LWORK)
+#endif
 
       CALL QEXIT('PAMTRA')
       RETURN
