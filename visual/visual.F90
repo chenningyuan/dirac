@@ -64,8 +64,8 @@ contains
     subroutine run_visual()
 
 !   ----------------------------------------------------------------------------
-    type(matrix)         :: D_mo, D(max_nr_xvectors)
-    type(matrix)         :: D_con_ao, D_con_mo, D_con(max_nr_xvectors)
+    type(matrix)         :: D_mo, D(max_para)
+    type(matrix)         :: D_con_ao, D_con_mo, D_con, D_0
     type(matrix)         :: C, Cig, Ciu, Csg, Csu
 
     real(8), allocatable :: eigenvalues(:)
@@ -75,43 +75,35 @@ contains
 
     real(8)              :: energy, time_start, second
     integer              :: max_ao_g_order, max_ao_m_order
-    integer              :: ioff, imat, iq, iz, m, nr_dmat, ivector
-    integer              :: nr_dmat_con
+    integer              :: ioff, imat, iq, iz, m, ivector
 
-    logical              :: debug_me
+    logical              :: debug_me = .false.
 
     integer :: i, j, off_ij, off_iz, off_ij_s, off_ij_e
-    type(matrix) :: D_mo_dagger, D_1a, D_1b, D_2
+    type(matrix) :: D_mo_dagger, TP, TM, T
 !   ----------------------------------------------------------------------------
 
     max_ao_g_order = 0
+    do imat = 1, visual_cfg_nr_dmat
+       if (                                             &
+           (visual_cfg_property(imat) == iq_elf)   .or. &
+           (visual_cfg_property(imat) == iq_jpara) .or. &
+           (visual_cfg_property(imat) == iq_divs)  .or. &
+           (visual_cfg_property(imat) == iq_rots)  .or. &
+           (visual_cfg_property(imat) == iq_divj)  .or. &
+           (visual_cfg_property(imat) == iq_rotj)       &
+          ) then
+          max_ao_g_order = 1
+       end if
+    end do
+
     max_ao_m_order = 0
+    if (visual_cfg_london) then
+       max_ao_m_order = 1
+    end if
 
     write(LUPRI,'(/,2x,a)') '*** Visualisation module ***'
 
-    do ivector = 1, visual_cfg_nr_xvectors
-
-      if (visual_cfg_iq_xvector(ivector) == iq_divm     ) max_ao_g_order = 1
-      if (visual_cfg_iq_xvector(ivector) == iq_rotm     ) max_ao_g_order = 1
-      if (visual_cfg_iq_xvector(ivector) == iq_divj     ) max_ao_g_order = 1
-      if (visual_cfg_iq_xvector(ivector) == iq_rotj     ) max_ao_g_order = 1
-      if (visual_cfg_iq_xvector(ivector) == iq_jpara    ) max_ao_g_order = 1
-      if (visual_cfg_iq_xvector(ivector) == iq_divjpara ) max_ao_g_order = 1
-      if (visual_cfg_iq_xvector(ivector) == iq_rotjpara ) max_ao_g_order = 1
-      if (visual_cfg_iq_xvector(ivector) == iq_elf      ) max_ao_g_order = 1
-      if (visual_cfg_iq_xvector(ivector) == iq_k        ) max_ao_g_order = 1
-      if (visual_cfg_iq_xvector(ivector) == iq_h        ) max_ao_g_order = 1
-      if (visual_cfg_iq_xvector(ivector) == iq_gradient ) max_ao_g_order = 1
-
-      if (visual_cfg_iq_xvector(ivector) == iq_laplacian) then
-          call quit('debug laplacian in visual/visual.f90')
-      end if
-
-    end do
-
-#ifdef MOD_UNRELEASED
-    if (visual_cfg_london) max_ao_m_order = 1
-#endif
 
 !   find occupation
 !   ===============
@@ -137,326 +129,224 @@ contains
 
 
 !   get coefficients
-!   ================
 
     call get_c(C,   i=1.0d0, s=1.0d0, g=1.0d0, u=1.0d0)
     call get_c(Cig, i=1.0d0, s=0.0d0, g=1.0d0, u=0.0d0)
     call get_c(Csg, i=0.0d0, s=1.0d0, g=1.0d0, u=0.0d0)
+    if (debug_me) then
+       call print_mat(C,   label='debug C')
+       call print_mat(Cig, label='debug Cig')
+       call print_mat(Csg, label='debug Csg')
+    end if
 
     if (nfsym == 2) then
-      call get_c(Ciu, i=1.0d0, s=0.0d0, g=0.0d0, u=1.0d0)
-      call get_c(Csu, i=0.0d0, s=1.0d0, g=0.0d0, u=1.0d0)
+       call get_c(Ciu, i=1.0d0, s=0.0d0, g=0.0d0, u=1.0d0)
+       call get_c(Csu, i=0.0d0, s=1.0d0, g=0.0d0, u=1.0d0)
+       if (debug_me) then
+          call print_mat(Ciu, label='debug Ciu')
+          call print_mat(Csu, label='debug Csu')
+       end if
     end if
-
-!   gosia debug
-!    debug_me = .true.
-    debug_me = .false.
-    if (debug_me) then
-      write(lupri, *) 'nz, nfsym, nbsym = ', nz, nfsym, nbsym
-      call print_mat(C, label='C ')
-      call print_mat(Cig, label='Cig ')
-      call print_mat(Csg, label='Csg ')
-      if (nfsym == 2) then
-        call print_mat(Ciu, label='Ciu ')
-        call print_mat(Csu, label='Csu ')
-      end if
-    end if
-
-!   get unperturbed density matrix
-!   ==============================
 
     call init_mat(D_mo, norbt, norbt)
-    D_mo%elms = 0.0d0
 
-    do m = 1, norbt
-      D_mo%elms((m - 1)*norbt + m) = occupation(m)
-    end do
-
-    D(1) = C*(D_mo*dag(C))
-
-
-!   get perturbed matrices
-!   ======================
-
-    nr_dmat = 1
-
-#ifdef MOD_UNRELEASED
     if (visual_cfg_london) then
 
-      nr_dmat_con = 0
-      call init_mat(D_con_ao, ntbas(0), ntbas(0))
+       D_mo%elms = 0.0d0
+       do m = 1, norbt
+          D_mo%elms((m - 1)*norbt + m) = occupation(m)
+       end do
+       D(imat) = C*(D_mo*dag(C))
 
-      debug_me = .false.
-
-    end if
-#endif
-
-
-    do ivector = 1, visual_cfg_nr_xvectors
-
-#ifdef MOD_UNRELEASED
-      if (visual_cfg_london) call visual_london_init(ivector)
-#endif
-
-      if (.not. visual_cfg_xvector_file(ivector) .eq. 'ZORDER') then
-        nr_dmat = nr_dmat + 1
-        vector_to_matrix(ivector) = nr_dmat
-
-        call setup_fo_dmat_ao(ivector, occupation, D_mo)
-
-        if (nfsym == 2) then
-          if (jbtof(D_mo%irep, 1) == 2) then
-!           ungerade perturbation
-            D(nr_dmat) = (Cig*(D_mo*dag(Csu))) &
-                       + (Ciu*(D_mo*dag(Csg))) &
-                       - (Csg*(D_mo*dag(Ciu))) &
-                       - (Csu*(D_mo*dag(Cig)))
-          else
-!           gerade perturbation
-            D(nr_dmat) = (Cig*(D_mo*dag(Csg))) &
-                       + (Ciu*(D_mo*dag(Csu))) &
-                       - (Csg*(D_mo*dag(Cig))) &
-                       - (Csu*(D_mo*dag(Ciu)))
-          end if
-        else
-          D(nr_dmat) = (Cig*(D_mo*dag(Csg))) &
-                     - (Csg*(D_mo*dag(Cig)))
-        end if
-
-        call copy_matrix_sym(D(nr_dmat), D_mo)
-
-      else
-        vector_to_matrix(ivector) = 1
-#ifdef MOD_UNRELEASED
-        if (visual_cfg_london) then
-          call quit('visual: ZORDER and LONDON cannot go together')
-        end if
-#endif
-      end if
-
-
-#ifdef MOD_UNRELEASED
-!     if london - reorthonormalization contribution
-!     =============================================
-!     london - only for j^B and properties expressed in terms of j^B
-!     so we will need only matrices for iz = 2, 3, 4 (nz=4) as
-!     iz = 2 -> \alpha_z
-!     iz = 3 -> \alpha_y
-!     iz = 4 -> \alpha_x
-
-!     (*) gosia: todo later we can make the scheme
-!     D(1) -> unperturbed density matrix
-!     D(2:nr_dmat) -> perturbed density matrices
-!     D(nr_dmat+1:nr_dmat_con+nr_dmat+1) -> modified density matrices (by connection matrices)
-!     etc..
-!     and pass only D and total nr_dmat to visual_driver (one call to visual_driver)
-
-      if (visual_cfg_london) then
-
-        nr_dmat_con = nr_dmat_con + 1
-        vector_to_matrix_con(ivector) = nr_dmat_con
-
-        D_con_ao%elms = 0.0d0
-
-!       read connection matrices in AO basis from AOPROPER file
-!       -------------------------------------------------------
-        call setup_fo_conmat_ao(D_con_ao, ivector)
-
-        if (debug_me) then
-!         can be compared with matrices from PRPMAO when running response
-          call print_mat(D_con_ao, label = 'run_visual: debug D_con_ao in SA-AO basis')
-        end if
-
-
-!       transform connection matrices to MO basis:
-!       ------------------------------------------
-        D_con_mo = dag(C)*(D_con_ao*C)
-
-        call copy_matrix_sym(D_con_mo, D_con_ao)
-
-        if (debug_me) then
-!         can be compared with matrices from PRPMAT when running response
-          call print_mat(D_con_mo, label = 'run_visual: debug D_con_mo in MO basis')
-        end if
-
-
-!       create modified density matrices
-!       --------------------------------
-!       *) gosia todo: include ep in options, now it is hardcoded to .true.
-!          ep = .true.  - 'p'-summation over e+p shells
-!               .false. - only over e-shells
-
-!
-!        write(*, *) 'gosia: nz, nfsym, jbtof(D_con_mo%irep, 1) = ', &
-!                            nz, nfsym, jbtof(D_con_mo%irep, 1)
-
-!       symmetric connection
-        if (visual_cfg_connection(ivector) == 2) then
-
-!         D_con_mo(iz=1) is antisymmetric
-!         D_con_mo(iz=2,3,4) is symmetric, so:
-
+       D_0 = C*(D_mo*dag(C))
+       D_0 = 2.0d0*D_0
+       
+!      if london - reorthonormalization contribution
+!      =============================================
+!      london - only for j^B and properties expressed in terms of j^B
+!      so we will need only matrices for iz = 2, 3, 4 (nz=4) as
+!      iz = 2 -> \alpha_z
+!      iz = 3 -> \alpha_y
+!      iz = 4 -> \alpha_x
+       
+!      (*) gosia: todo later we can make the scheme
+!      D(1) -> unperturbed density matrix
+!      D(2:nr_dmat) -> perturbed density matrices
+!      D(nr_dmat+1:nr_dmat_con+nr_dmat+1) -> modified density matrices (by connection matrices)
+!      etc..
+!      and pass only D and total nr_dmat to visual_driver (one call to visual_driver)
+       
+       call init_mat(D_con_ao, ntbas(0), ntbas(0))
+       D_con_ao%elms = 0.0d0
+       
+!      read connection matrices in AO basis from AOPROPER file
+!      -------------------------------------------------------
+       call setup_fo_conmat_ao(D_con_ao, 1)
+       
+       
+!      transform connection matrices to MO basis:
+!      ------------------------------------------
+       D_con_mo = dag(C)*(D_con_ao*C)
+       D_con_mo = 0.5d0*D_con_mo
+       
+       call copy_matrix_sym(D_con_mo, D_con_ao)
+       
+!      create modified density matrices
+!      --------------------------------
+!      *) gosia todo: include ep in options, now it is hardcoded to .true.
+!         ep = .true.  - 'p'-summation over e+p shells
+!              .false. - only over e-shells
+       
+!      symmetric connection
+       if (visual_cfg_london_symmetric) then
+       
+!        D_con_mo(iz=1) is antisymmetric
+!        D_con_mo(iz=2,3,4) is symmetric, so:
+       
           if (nfsym == 2) then
-            D_con(nr_dmat_con) = (C*(D_con_mo*dag(Cig))) &
-                               + (C*(D_con_mo*dag(Ciu))) &
-                               + (Cig*(D_con_mo*dag(C))) &
-                               + (Ciu*(D_con_mo*dag(C)))
+             D_con = (C*(D_con_mo*dag(Cig))) &
+                   + (C*(D_con_mo*dag(Ciu))) &
+                   + (Cig*(D_con_mo*dag(C))) &
+                   + (Ciu*(D_con_mo*dag(C)))
           else
-            D_con(nr_dmat_con) = (C*(D_con_mo*dag(Cig))) &
-                               + (Cig*(D_con_mo*dag(C)))
+             D_con = (C*(D_con_mo*dag(Cig))) &
+                   + (Cig*(D_con_mo*dag(C)))
           end if
-
-          call copy_matrix_sym(D_con(nr_dmat_con), D_con_mo)
-
-          if (debug_me) then
-!           can be compared with matrices from GETMDM when running response
-            call print_mat(D_con(nr_dmat_con),   &
-                 label='run_visual: debug D_con (symmetric con)')
-          end if
-
-
-!       natural connection
-        else if (visual_cfg_connection(ivector) == 1) then
-
+       
+!      natural connection
+       else if (visual_cfg_london_natural) then
+       
 !         D_con_mo is a general matrix
 !         so we do dag(D_con_mo), but dag(A) does only transposition
 !         so the sign is changed by hand -> that is why we have "-"
           if (nfsym == 2) then
-            D_con(nr_dmat_con) = (C*(D_con_mo*dag(Cig))) &
-                               + (C*(D_con_mo*dag(Ciu))) &
-                               - (Cig*(dag(D_con_mo)*dag(C))) &
-                               - (Ciu*(dag(D_con_mo)*dag(C)))
-
-            !D_con(nr_dmat_con) = (Cig*(D_con_mo*dag(Cig))) &
-            !                   + (Ciu*(D_con_mo*dag(Ciu))) &
-            !                   - (Cig*(dag(D_con_mo)*dag(Cig))) &
-            !                   - (Ciu*(dag(D_con_mo)*dag(Ciu)))
-
+             D_con = (C*(D_con_mo*dag(Cig))) &
+                   + (C*(D_con_mo*dag(Ciu))) &
+                   - (Cig*(dag(D_con_mo)*dag(C))) &
+                   - (Ciu*(dag(D_con_mo)*dag(C)))
           else
-            D_con(nr_dmat_con) = (C*(D_con_mo*dag(Cig))) &
-                               - (Cig*(dag(D_con_mo)*dag(C)))
+             D_con = (C*(D_con_mo*dag(Cig))) &
+                   - (Cig*(dag(D_con_mo)*dag(C)))
           end if
-
-            call copy_matrix_sym(D_con(nr_dmat_con), D_con_mo)
-          if (debug_me) then
-!           can be compared with matrices from GETMDM when running response
-            call print_mat(D_con(nr_dmat_con),  &
-                 label='run_visual: debug D_con (natural con)')
-          end if
-
-
-!       <none> connection
-        else if (visual_cfg_connection(ivector) == 0) then
-
+       
+!      <none> connection
+       else if (visual_cfg_london_none) then
+       
 !         'ij' block: overlap
 !         ===================
 !         if <none> connection, we take symmetric connection integrals to D_con_ao
 !         and they equal to -0.5d0*S^B, so:
-          D_2 = 2.0d0*D_con_mo
-
+          
 !         create modified density matrix
 !         ------------------------------
-          !D_con(nr_dmat_con) = Cig*(D_2*dag(Cig))
           if (nfsym == 2) then
-            D_con(nr_dmat_con) = Cig*(D_2*dag(Cig)) &
-                               + Ciu*(D_2*dag(Ciu))
+             D_con = Cig*(D_con_mo*dag(Cig)) &
+                   + Ciu*(D_con_mo*dag(Ciu))
           else
-            D_con(nr_dmat_con) = Cig*(D_2*dag(Cig))
+             D_con = Cig*(D_con_mo*dag(Cig))
+          end if
+          D_con = 2.0d0*D_con
+       end if
+       call copy_matrix_sym(D_con, D_con_mo)
+    end if
+
+    do imat = 1, visual_cfg_nr_dmat
+
+       if (visual_cfg_dmat_file(imat) == 'DFCOEF') then
+!         get unperturbed density matrix
+      
+          D_mo%elms = 0.0d0
+          do m = 1, norbt
+             D_mo%elms((m - 1)*norbt + m) = occupation(m)
+          end do
+          D(imat) = C*(D_mo*dag(C))
+          if (debug_me) then
+             call print_mat(D_mo,    label = 'debug MO D matrix')
+             call print_mat(D(imat), label = 'debug AO D matrix')
+          end if
+      
+       else
+!         get perturbed density matrix
+      
+          call setup_fo_dmat_ao(imat, occupation, D_mo)
+
+          if (visual_cfg_london .and. visual_cfg_london_none) then
+             TP = D_mo + D_con_mo
+             TM = D_mo - D_con_mo
+          else
+             TP = 1.0d0*D_mo
+             TM = 1.0d0*D_mo
           end if
 
-!         'ai' block: D_con_mo - D_mo
-!         ===========================
-!         iz = 1     -> D_mo     symmetric, D_con_mo antisymmetric
-!         iz = 2,3,4 -> D_mo antisymmetric, D_con_mo     symmetric
-!                       dag(D_mo) = -D_mo,  dag(D_con_mo) = D_con_mo
-!         and only iz = 2,3,4 are important here, so:
-
-!         later on D matrices are multipled by 2.0d0, so:
-          D_1a = D_con_mo - 2.0d0*D_mo
-!         D_1b = dag(D_1a)
-          D_1b = D_con_mo + 2.0d0*D_mo
-!
-!         create modified density matrix
-!         ------------------------------
-          D(nr_dmat)%elms = 0.0d0
           if (nfsym == 2) then
-            D(nr_dmat) = 0.5d0*(Cig*(D_1b*dag(Csg))) &
-                       + 0.5d0*(Csg*(D_1a*dag(Cig))) &
-                       + 0.5d0*(Ciu*(D_1b*dag(Csu))) &
-                       + 0.5d0*(Csu*(D_1a*dag(Ciu)))
+             if (jbtof(D_mo%irep, 1) == 2) then
+!               ungerade perturbation
+                D(imat) = (Cig*(TP*dag(Csu))) &
+                        + (Ciu*(TP*dag(Csg))) &
+                        - (Csg*(TM*dag(Ciu))) &
+                        - (Csu*(TM*dag(Cig)))
+             else
+!               gerade perturbation
+                D(imat) = (Cig*(TP*dag(Csg))) &
+                        + (Ciu*(TP*dag(Csu))) &
+                        - (Csg*(TM*dag(Cig))) &
+                        - (Csu*(TM*dag(Ciu)))
+             end if
           else
-            D(nr_dmat) = 0.5d0*(Cig*(D_1b*dag(Csg))) &
-                       + 0.5d0*(Csg*(D_1a*dag(Cig)))
+             D(imat) = (Cig*(TP*dag(Csg))) &
+                     - (Csg*(TM*dag(Cig)))
           end if
-
-
-!         "uninitialize"
-!         --------------
-          D_1a = 0
-          D_1b = 0
-          D_2  = 0
-
-        else
-          call quit('run_visual: visual_cfg_connection(ivector) != {0,1,2}')
-        end if
-
-      end if
-#endif /* ifdef MOD_UNRELEASED */
-
-    end do   ! do ivector = 1, visual_cfg_nr_xvectors
-
-
+          call copy_matrix_sym(D(imat), D_mo)
+      
+       end if
+    end do
 
 !   insert half phases
-!   ==================
-
-    if (visual_cfg_london) then
-!     gosia: it is because i also 'reuse' D(1)...
-      do imat = 1, nr_dmat
-        if (nz < 4) then
-          do iz = 1, nz
-            iq   = ipqtoq(iz, D(imat)%irep)
+    if (nz < 4) then
+       do iz = 1, nz
+         if (visual_cfg_london) then
+            iq   = ipqtoq(iz, D_0%irep)
+            call q2bphase('D', iq, 1, D_0%elms(1 + ioff))
+            iq   = ipqtoq(iz, D_con%irep)
+            call q2bphase('D', iq, 1, D_con%elms(1 + ioff))
+         end if
+         do imat = 1, visual_cfg_nr_dmat
             ioff = ntbas(0)*ntbas(0)*(iz - 1)
-            call q2bphase('D', iq, 1, D(imat)%elms(1 + ioff))
-          end do
-        end if
-      end do
-    else
-      do imat = 2, nr_dmat
-        if (nz < 4) then
-          do iz = 1, nz
             iq   = ipqtoq(iz, D(imat)%irep)
-            ioff = ntbas(0)*ntbas(0)*(iz - 1)
             call q2bphase('D', iq, 1, D(imat)%elms(1 + ioff))
-          end do
-        end if
-      end do
+         end do
+       end do
     end if
 
-#ifdef MOD_UNRELEASED
-    if (visual_cfg_london) then
-      do imat = 1, nr_dmat_con
-        if (nz < 4) then
-          do iz = 1, nz
-            iq   = ipqtoq(iz, D_con(imat)%irep)
-            ioff = ntbas(0)*ntbas(0)*(iz - 1)
-            call q2bphase('D', iq, 1, D_con(imat)%elms(1 + ioff))
-          end do
-        end if
-      end do
-    end if
-#endif
+    do imat = 1, visual_cfg_nr_dmat
+       if (visual_cfg_london) then
+          if (.not. visual_cfg_london_skip_ro) then
+!            dirty trick add D_con on top of D
+!            on trunk we will have to check that this only
+!            happes to the current, mag field, and so on
+             D(imat) = D(imat) + D_con
+          end if
+       end if
 
+!      scale density matrix
+       D(imat) = 2.0d0*D(imat)
 
-!   scale density matrices
-!   ======================
-
-    do imat = 1, nr_dmat
-!gosia: here valgrind gives a warning about uninitialised value
-!now D is a "temporary matrix" (function new_tmp in matrix_defop.f90)
-!actually a pointer to (initialized) matrix D_mo
-!to be checked...
-      D(imat) = 2.0d0*D(imat)
+!      collect matrices for identical densities to save time
+       if (visual_cfg_property(imat) /= iq_elf) then
+!         elf has nonlinear dependence
+          j = visual_cfg_property_to_matrix(visual_cfg_property(imat))
+          if (j == 0) then
+             visual_cfg_property_to_matrix(visual_cfg_property(imat)) = imat
+          else
+             D(j) = D(j) + D(imat)
+             if (visual_cfg_london) then
+                T   = 1.0d0*D_0
+                D_0 = D_0 + T
+                T   = 0
+             end if
+             visual_cfg_skip(imat) = .true.
+          end if
+       end if
     end do
 
 
@@ -464,8 +354,6 @@ contains
 !   =========================
 
     call dealloc(occupation)
-
-    D_mo = 0
 
     C    = 0
     Cig  = 0
@@ -501,22 +389,20 @@ contains
 
     time_start = second()
 
-    call visual_driver(nr_dmat,     &
-                       D,           &
-                       nr_dmat_con, &
-                       D_con,       &
-                       ao,          &
+    call visual_driver(visual_cfg_nr_dmat, &
+                       D,                  &
+                       D_0,                &
+                       ao,                 &
                        buffer)
 
     call timtxt('>>>> time used in plot:', (second() - time_start), lupri)
 
     time_start = second()
-    if (visual_cfg_integrate .or. visual_cfg_2d_integration) then
-       call visual_integration(nr_dmat,     &
-                               D,           &
-                               nr_dmat_con, &
-                               D_con,       &
-                               ao,          &
+    if (visual_cfg_2d_integration .or. visual_cfg_3d_integration) then
+       call visual_integration(visual_cfg_nr_dmat, &
+                               D,                  &
+                               D_0,                &
+                               ao,                 &
                                buffer)
     end if
     call timtxt('>>>> time used in integration:', (second() - time_start), lupri)
@@ -526,17 +412,13 @@ contains
 
 
 !   deallocate density matrices
-!   ===========================
 
-    do imat = 1, nr_dmat
-      D(imat) = 0
+    do imat = 1, visual_cfg_nr_dmat
+       D(imat) = 0
     end do
-
 #ifdef MOD_UNRELEASED
     if (visual_cfg_london) then
-      do imat = 1, nr_dmat_con
-        D_con(imat) = 0
-      end do
+       D_con = 0
     end if
 #endif
 
@@ -547,18 +429,16 @@ contains
 
 
 
-   subroutine visual_driver(nr_dmat,     &
-                            D,           &
-                            nr_dmat_con, &
-                            D_con,       &
-                            ao,          &
+   subroutine visual_driver(nr_dmat, &
+                            D,       &
+                            D_0,     &
+                            ao,      &
                             buffer)
 
 !     --------------------------------------------------------------------------
       integer, intent(in)  :: nr_dmat
       type(matrix)         :: D(nr_dmat)
-      integer, intent(in)  :: nr_dmat_con
-      type(matrix)         :: D_con(nr_dmat_con)
+      type(matrix)         :: D_0
       real(8), intent(in)  :: ao(*)
       real(8), intent(in)  :: buffer(*)
 !     --------------------------------------------------------------------------
@@ -574,28 +454,27 @@ contains
       integer              :: lunit_2d_scalar_field
       integer              :: lunit_2d_vector_field
       integer              :: lunit_3d_cube
+      integer              :: lunit_3d_scalar_field
       integer              :: lunit_3d_vector_field
       integer              :: lunit_line_scalar
       integer              :: lunit_line_vector
 !     --------------------------------------------------------------------------
 
-      allocate(q(0:3, visual_cfg_ncube(3)))
-      allocate(atom_xyz(4, nucdep))
-
-#ifdef MOD_UNRELEASED
-      if (visual_cfg_london) then
-         if (nr_dmat_con == 0) then
-            call quit("nr_dmat_con = 0")
-         end if
+      i = 1
+      if (visual_cfg_ncube(3) > 0) then
+         i = visual_cfg_ncube(3)
       end if
-#endif
+      allocate(q(0:3, i))
+
+      allocate(atom_xyz(4, nucdep))
 
       lunit_2d_scalar_field = 14
       lunit_2d_vector_field = 15
       lunit_3d_cube         = 16
-      lunit_3d_vector_field = 17
-      lunit_line_scalar     = 18
-      lunit_line_vector     = 19
+      lunit_3d_scalar_field = 17
+      lunit_3d_vector_field = 18
+      lunit_line_scalar     = 19
+      lunit_line_vector     = 20
 
       if (visual_cfg_2d) then
          open(lunit_2d_scalar_field,           &
@@ -618,6 +497,11 @@ contains
               form   = 'formatted')
          open(lunit_3d_vector_field,           &
               file   = 'plot.3d.vector_field', &
+              status = 'new',                  &
+              access = 'sequential',           &
+              form   = 'formatted')
+         open(lunit_3d_scalar_field,           &
+              file   = 'plot.3d.scalar_field', &
               status = 'new',                  &
               access = 'sequential',           &
               form   = 'formatted')
@@ -652,10 +536,9 @@ contains
          write(lupri, *)
 
          do i = 1, visual_cfg_nr_points_in_list
-            call get_quantity_in_point(nr_dmat,                   &
+            call get_quantity_in_point(visual_cfg_nr_dmat,        &
                                        D,                         &
-                                       nr_dmat_con,               &
-                                       D_con,                     &
+                                       D_0,                       &
                                        visual_cfg_xyz_list(i, 1), &
                                        visual_cfg_xyz_list(i, 2), &
                                        visual_cfg_xyz_list(i, 3), &
@@ -663,11 +546,11 @@ contains
                                        buffer,                    &
                                        q)
 
-          write(lupri, '(3e14.6, 4e18.10)') &
-             visual_cfg_xyz_list(i, 1),     &
-             visual_cfg_xyz_list(i, 2),     &
-             visual_cfg_xyz_list(i, 3),     &
-             q(0:3, 1)
+            write(lupri, '(3e14.6, 4e18.10)') &
+               visual_cfg_xyz_list(i, 1),     &
+               visual_cfg_xyz_list(i, 2),     &
+               visual_cfg_xyz_list(i, 3),     &
+               q(0:3, 1)
          end do
 
          write(lupri, *)
@@ -684,30 +567,29 @@ contains
 
          do istep = 0, visual_cfg_line_nr_steps
 
-           r = visual_cfg_line_from + istep*v
-           call get_quantity_in_point(nr_dmat,     &
-                                      D,           &
-                                      nr_dmat_con, &
-                                      D_con,       &
-                                      r(1),        &
-                                      r(2),        &
-                                      r(3),        &
-                                      ao,          &
-                                      buffer,      &
-                                      q)
+            r = visual_cfg_line_from + istep*v
+            call get_quantity_in_point(visual_cfg_nr_dmat, &
+                                       D,                  &
+                                       D_0,                &
+                                       r(1),               &
+                                       r(2),               &
+                                       r(3),               &
+                                       ao,                 &
+                                       buffer,             &
+                                       q)
 
-           write(lunit_line_scalar, '(4e18.10)') &
-              r(1),                              &
-              r(2),                              &
-              r(3),                              &
-              q(0, 1)
-           write(lunit_line_vector, '(6e18.10)') &
-              r(1),                              &
-              r(2),                              &
-              r(3),                              &
-              q(1:3, 1)
-
-        end do
+            write(lunit_line_scalar, '(4e18.10)') &
+               r(1),                              &
+               r(2),                              &
+               r(3),                              &
+               q(0, 1)
+            write(lunit_line_vector, '(6e18.10)') &
+               r(1),                              &
+               r(2),                              &
+               r(3),                              &
+               q(1:3, 1)
+        
+         end do
       end if
 
       if (visual_cfg_2d) then
@@ -723,30 +605,29 @@ contains
             do iy = 0, visual_cfg_2d_nr_top
                i = i + 1
                r = visual_cfg_2d_p_origin + ix*vx + iy*vy
-               call get_quantity_in_point(nr_dmat,     &
-                                          D,           &
-                                          nr_dmat_con, &
-                                          D_con,       &
-                                          r(1),        &
-                                          r(2),        &
-                                          r(3),        &
-                                          ao,          &
-                                          buffer,      &
+               call get_quantity_in_point(visual_cfg_nr_dmat, &
+                                          D,                  &
+                                          D_0,                &
+                                          r(1),               &
+                                          r(2),               &
+                                          r(3),               &
+                                          ao,                 &
+                                          buffer,             &
                                           q)
 
-                s      = q(0,   1)
-                v(1:3) = q(1:3, 1)
+               s      = q(0,   1)
+               v(1:3) = q(1:3, 1)
 
-                write(lunit_2d_scalar_field, '(3e18.10)')         &
-                   ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2, &
-                   iy*vy_norm - vy_norm*visual_cfg_2d_nr_right/2, &
-                   s
+               write(lunit_2d_scalar_field, '(3e18.10)')         &
+                  ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2, &
+                  iy*vy_norm - vy_norm*visual_cfg_2d_nr_right/2, &
+                  s
 
-                write(lunit_2d_vector_field, '(4e18.10)')          &
-                   ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2,  &
-                   iy*vy_norm - vy_norm*visual_cfg_2d_nr_right/2,  &
-                   (v(1)*vx(1) + v(2)*vx(2) + v(3)*vx(3))/vx_norm, &
-                   (v(1)*vy(1) + v(2)*vy(2) + v(3)*vy(3))/vy_norm
+               write(lunit_2d_vector_field, '(4e18.10)')          &
+                  ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2,  &
+                  iy*vy_norm - vy_norm*visual_cfg_2d_nr_right/2,  &
+                  (v(1)*vx(1) + v(2)*vx(2) + v(3)*vx(3))/vx_norm, &
+                  (v(1)*vy(1) + v(2)*vy(2) + v(3)*vy(3))/vy_norm
             end do
          end do
       end if
@@ -830,20 +711,22 @@ contains
                                        + (jcube-1)*step_3d(3, 2) &
                                        + (kcube-1)*step_3d(3, 3)
 
-                  call get_quantity_in_point(nr_dmat,     &
-                                             D,           &
-                                             nr_dmat_con, &
-                                             D_con,       &
-                                             r(1),        &
-                                             r(2),        &
-                                             r(3),        &
-                                             ao,          &
-                                             buffer,      &
+                  call get_quantity_in_point(visual_cfg_nr_dmat, &
+                                             D,                  &
+                                             D_0,                &
+                                             r(1),               &
+                                             r(2),               &
+                                             r(3),               &
+                                             ao,                 &
+                                             buffer,             &
                                              q(0, kcube))
 
                   write(lunit_3d_vector_field, '(6e13.5)') &
 	             r(1:3),                               &
 	             q(1:3, kcube)
+                  write(lunit_3d_scalar_field, '(4e13.5)') &
+	             r(1:3),                               &
+	             q(0, kcube)
                end do
                write(lunit_3d_cube, '(6e13.5)')  &
                   (q(0, m), m = 1, visual_cfg_ncube(3))
@@ -854,6 +737,7 @@ contains
       if (visual_cfg_2d)   close(lunit_2d_scalar_field, status = 'keep')
       if (visual_cfg_2d)   close(lunit_2d_vector_field, status = 'keep')
       if (visual_cfg_3d)   close(lunit_3d_cube,         status = 'keep')
+      if (visual_cfg_3d)   close(lunit_3d_scalar_field, status = 'keep')
       if (visual_cfg_3d)   close(lunit_3d_vector_field, status = 'keep')
       if (visual_cfg_line) close(lunit_line_scalar,     status = 'keep')
       if (visual_cfg_line) close(lunit_line_vector,     status = 'keep')
@@ -946,16 +830,16 @@ contains
       character(10) :: pattern
       character(16) :: text
 
-      INQUIRE(FILE = visual_cfg_xvector_file(IXVECTOR),EXIST = FILE_EXISTS)
+      INQUIRE(FILE = visual_cfg_dmat_file(IXVECTOR),EXIST = FILE_EXISTS)
       IF(.NOT. FILE_EXISTS) THEN
         WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
         WRITE(LUPRI,'(A,A6,A)') 'solution vector file ', &
-     &    visual_cfg_XVECTOR_FILE(IXVECTOR),' not found'
+     &    visual_cfg_dmat_file(IXVECTOR),' not found'
         CALL QUIT('ERROR in VISUAL')
       ENDIF
       LUNIT_XVECTOR = 17
       OPEN(LUNIT_XVECTOR, &
-     &     FILE = visual_cfg_xvector_file(IXVECTOR), &
+     &     FILE = visual_cfg_dmat_file(IXVECTOR), &
      &     STATUS = 'OLD', &
      &     ACCESS = 'SEQUENTIAL', &
      &     FORM = 'UNFORMATTED')
@@ -980,19 +864,13 @@ contains
 
 !     errors
 
-      IF(visual_cfg_NR_xVECTORS .EQ. 0) THEN
-        WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
-        WRITE(LUPRI,'(A)') 'NR_VECTORS .EQ. 0'
-        CALL QUIT('ERROR in VISUAL')
-      ENDIF
-
-      IF(visual_cfg_IWHICH_XVECTOR(IXVECTOR) .GT. NR_VECTORS) THEN
+      IF(visual_cfg_dmat_file_record(IXVECTOR) .GT. NR_VECTORS) THEN
         WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
         WRITE(LUPRI,'(A)') 'IWHICH_XVECTOR(IXVECTOR) .GT. NR_VECTORS'
         CALL QUIT('ERROR in VISUAL')
       ENDIF
 
-      IF(visual_cfg_IWHICH_XVECTOR(IXVECTOR) .LT. 1) THEN
+      IF(visual_cfg_dmat_file_record(IXVECTOR) .LT. 1) THEN
         WRITE(LUPRI,'(A)') 'ERROR in VISUAL:'
         WRITE(LUPRI,'(A)') 'IWHICH_XVECTOR(IXVECTOR) .LT. 1'
         CALL QUIT('ERROR in VISUAL')
@@ -1005,7 +883,7 @@ contains
  3    CONTINUE
       READ(LUNIT_XVECTOR)
       IVECTOR = IVECTOR + 1
-      IF(IVECTOR .EQ. visual_cfg_IWHICH_XVECTOR(IXVECTOR)) THEN
+      IF(IVECTOR .EQ. visual_cfg_dmat_file_record(IXVECTOR)) THEN
         BACKSPACE(LUNIT_XVECTOR)
         GOTO 4
       ELSE

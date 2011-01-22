@@ -395,156 +395,258 @@ contains
 
   end subroutine
 
-  subroutine read_input_visual(word, kw_section)
+   subroutine read_input_visual(word, kw_section)
 
-    use visual_cfg
+      use visual_cfg
+      use character_processing
 
-!   ----------------------------------------------------------------------------
-    character(kw_length), intent(in) :: word
-    character(kw_length), intent(in) :: kw_section
-!   ----------------------------------------------------------------------------
-    integer                          :: i
-    character(6)                     :: reply
-!   ----------------------------------------------------------------------------
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+      integer                          :: i
+!     --------------------------------------------------------------------------
 
-    dirac_cfg_visual = .true.
+      call reset_available_kw_list()
 
-    call reset_available_kw_list()
+      dirac_cfg_visual = .true.
 
-    if (kw_matches(word, '.LIST  ')) then
-      visual_cfg_list = .true.
-      call kw_read(word, visual_cfg_nr_points_in_list)
-      do i = 1, visual_cfg_nr_points_in_list
-        call kw_read(word, visual_cfg_xyz_list(i, 1), &
-                           visual_cfg_xyz_list(i, 2), &
-                           visual_cfg_xyz_list(i, 3))
-      end do
-    end if
-
-    if (kw_matches(word, '.LINE  ')) then
-      visual_cfg_line = .true.
-      call kw_read(word, visual_cfg_line_from(1), &
-                         visual_cfg_line_from(2), &
-                         visual_cfg_line_from(3))
-      call kw_read(word, visual_cfg_line_to(1), &
-                         visual_cfg_line_to(2), &
-                         visual_cfg_line_to(3))
-      call kw_read(word, visual_cfg_line_nr_steps)
-    end if
-
-    if (kw_matches(word, '.2D    ')) then
-       visual_cfg_2d = .true.
-       read(unit_in, *) visual_cfg_2d_p_origin(1:3)
-       read(unit_in, *) visual_cfg_2d_p_right(1:3)
-       read(unit_in, *) visual_cfg_2d_nr_right
-       read(unit_in, *) visual_cfg_2d_p_top(1:3)
-       read(unit_in, *) visual_cfg_2d_nr_top
-    end if
-
-    if (kw_matches(word, '.2D_INT')) then
-       visual_cfg_2d_integration = .true.
-       read(unit_in, *) visual_cfg_2d_integration_p_origin(1:3)
-       read(unit_in, *) visual_cfg_2d_integration_p_right(1:3)
-       read(unit_in, *) visual_cfg_2d_integration_nr_right
-       read(unit_in, *) visual_cfg_2d_integration_p_top(1:3)
-       read(unit_in, *) visual_cfg_2d_integration_nr_top
-       read(unit_in, *) visual_cfg_2d_integration_order
-    end if
-
-    if (kw_matches(word, '.3D    ')) then
-      visual_cfg_3d = .true.
-    end if
-
-    if (kw_matches(word, '.QUANTI')) then
-      call kw_read(word, visual_cfg_nr_xvectors)
-      do i = 1, visual_cfg_nr_xvectors
-        read(unit_in, *) visual_cfg_xvector_file(i),   &
-                         visual_cfg_iwhich_xvector(i), &
-                         visual_cfg_iq_xvector(i),     &
-                         visual_cfg_ioption_xvector(i)
-      end do
-    end if
-
-    if (kw_matches(word, '.DENSIT')) then
-      visual_cfg_nr_xvectors        = 1
-      visual_cfg_xvector_file(1)    = 'ZORDER'
-      visual_cfg_iwhich_xvector(1)  = 1
-      visual_cfg_iq_xvector(1)      = 1
-      visual_cfg_ioption_xvector(1) = 0
-    end if
-
-    if (kw_matches(word, '.GAMMA5')) then
-      visual_cfg_nr_xvectors        = 1
-      visual_cfg_xvector_file(1)    = 'ZORDER'
-      visual_cfg_iwhich_xvector(1)  = 1
-      visual_cfg_iq_xvector(1)      = 15
-      visual_cfg_ioption_xvector(1) = 0
-    end if
-
-    if (kw_matches(word, '.ELF   ')) then
-      visual_cfg_nr_xvectors        = 1
-      visual_cfg_xvector_file(1)    = 'ZORDER'
-      visual_cfg_iwhich_xvector(1)  = 1
-      visual_cfg_iq_xvector(1)      = 12
-      visual_cfg_ioption_xvector(1) = 0
-    end if
-
-    if (kw_matches(word, '.INTEGR')) then
-      visual_cfg_integrate = .true.
-    end if
-
-    if (kw_matches(word, '.RADIAL')) then
-      visual_cfg_radial = .true.
-    end if
-
-    if (kw_matches(word, '.SMALLA')) then
-      visual_cfg_force_small_ao = .true.
-    end if
-
-    if (kw_matches(word, '.ORBSTR')) then
-      visual_cfg_use_orbital_string = .true.
-      call kw_read(word, visual_cfg_orbital_string(1))
-      if (nfsym > 1) then
-        call kw_read(word, visual_cfg_orbital_string(2))
+      if (kw_matches(word, '.LIST  ')) then
+         visual_cfg_list = .true.
+         call kw_read(word, visual_cfg_nr_points_in_list)
+         allocate(visual_cfg_xyz_list(visual_cfg_nr_points_in_list, 3))
+         do i = 1, visual_cfg_nr_points_in_list
+            call kw_read(word, visual_cfg_xyz_list(i, 1), &
+                               visual_cfg_xyz_list(i, 2), &
+                               visual_cfg_xyz_list(i, 3))
+         end do
       end if
-    end if
 
-    if (kw_matches(word, '.COMMON')) then
-      call kw_read(word, visual_cfg_common_factor)
-    end if
+      if (kw_matches(word, '.LINE  ')) then
+         visual_cfg_line = .true.
+         call kw_read(word, visual_cfg_line_from(1), &
+                            visual_cfg_line_from(2), &
+                            visual_cfg_line_from(3))
+         call kw_read(word, visual_cfg_line_to(1), &
+                            visual_cfg_line_to(2), &
+                            visual_cfg_line_to(3))
+         call kw_read(word, visual_cfg_line_nr_steps)
+      end if
 
-    if (kw_matches(word, '.3DADD ')) then
-      call kw_read(word, visual_cfg_add_3d)
-    end if
+      if (kw_matches(word, '.2D    ')) then
+         visual_cfg_2d = .true.
+         read(unit_in, *) visual_cfg_2d_p_origin(1:3)
+         read(unit_in, *) visual_cfg_2d_p_right(1:3)
+         read(unit_in, *) visual_cfg_2d_nr_right
+         read(unit_in, *) visual_cfg_2d_p_top(1:3)
+         read(unit_in, *) visual_cfg_2d_nr_top
+      end if
+      
+      if (kw_matches(word, '.2D_INT')) then
+         visual_cfg_2d_integration = .true.
+         read(unit_in, *) visual_cfg_2d_integration_p_origin(1:3)
+         read(unit_in, *) visual_cfg_2d_integration_p_right(1:3)
+         read(unit_in, *) visual_cfg_2d_integration_nr_right
+         read(unit_in, *) visual_cfg_2d_integration_p_top(1:3)
+         read(unit_in, *) visual_cfg_2d_integration_nr_top
+         read(unit_in, *) visual_cfg_2d_integration_order
+      end if
 
-    if (kw_matches(word, '.CUBE  ')) then
-      call kw_read(word, visual_cfg_ncube(1), &
-                         visual_cfg_ncube(2), &
-                         visual_cfg_ncube(3))
-    end if
+      if (kw_matches(word, '.3D    ')) then
+         visual_cfg_3d = .true.
+         call kw_read(word, visual_cfg_ncube(1), &
+                            visual_cfg_ncube(2), &
+                            visual_cfg_ncube(3))
+      end if
+     
+      if (kw_matches(word, '.3D_ADD')) then
+         call kw_read(word, visual_cfg_add_3d)
+      end if
+      
+      if (kw_matches(word, '.3D_INT')) then
+         visual_cfg_3d_integration = .true.
+      end if
 
-    if (kw_matches(word, '.GAUGE ')) then
-      call kw_read(word, visual_cfg_gauge_origin(1), &
-                         visual_cfg_gauge_origin(2), &
-                         visual_cfg_gauge_origin(3))
-    end if
+      if (kw_matches(word, '.SCALE ')) then
+         call kw_read(word, visual_cfg_scale)
+      end if
+
+      if (kw_matches(word, '.DENSIT')) then
+         call read_input_visual_helper(iq_density)
+      end if
+
+      if (kw_matches(word, '.ELF   ')) then
+         call read_input_visual_helper(iq_elf)
+      end if
+
+      if (kw_matches(word, '.GAMMA5')) then
+         call read_input_visual_helper(iq_gamma5)
+      end if
+
+      if (kw_matches(word, '.JDIA  ')) then
+         call read_input_visual_helper(iq_jdia)
+      end if
+
+      if (kw_matches(word, '.JPARA ')) then
+         call read_input_visual_helper(iq_jpara)
+      end if
+
+      if (kw_matches(word, '.J     ')) then
+         call read_input_visual_helper(iq_j)
+      end if
+
+      if (kw_matches(word, '.DIVJ  ')) then
+         call read_input_visual_helper(iq_divj)
+      end if
+
+      if (kw_matches(word, '.ROTJ  ')) then
+         call read_input_visual_helper(iq_rotj)
+      end if
+
+      if (kw_matches(word, '.S     ')) then
+         call read_input_visual_helper(iq_s)
+      end if
+
+      if (kw_matches(word, '.DIVS  ')) then
+         call read_input_visual_helper(iq_divs)
+      end if
+
+      if (kw_matches(word, '.ROTS  ')) then
+         call read_input_visual_helper(iq_rots)
+      end if
+
+      if (kw_matches(word, '.EDIPX ')) then
+         call read_input_visual_helper(iq_edipx)
+      end if
+      if (kw_matches(word, '.EDIPY ')) then
+         call read_input_visual_helper(iq_edipy)
+      end if
+      if (kw_matches(word, '.EDIPZ ')) then
+         call read_input_visual_helper(iq_edipz)
+      end if
+
+      if (kw_matches(word, '.BDIPX ')) then
+         call read_input_visual_helper(iq_bdipx)
+      end if
+      if (kw_matches(word, '.BDIPY ')) then
+         call read_input_visual_helper(iq_bdipy)
+      end if
+      if (kw_matches(word, '.BDIPZ ')) then
+         call read_input_visual_helper(iq_bdipz)
+      end if
+
+      if (kw_matches(word, '.NDIPX ')) then
+         call read_input_visual_helper2(iq_ndipx)
+      end if
+      if (kw_matches(word, '.NDIPY ')) then
+         call read_input_visual_helper2(iq_ndipy)
+      end if
+      if (kw_matches(word, '.NDIPZ ')) then
+         call read_input_visual_helper2(iq_ndipz)
+      end if
+
+      if (kw_matches(word, '.GAUGE ')) then
+         call kw_read(word, visual_cfg_gauge_origin(1), &
+                            visual_cfg_gauge_origin(2), &
+                            visual_cfg_gauge_origin(3))
+      end if
+
+      if (kw_matches(word, '.RADIAL')) then
+         visual_cfg_radial = .true.
+      end if
+     
+      if (kw_matches(word, '.SMALLA')) then
+         visual_cfg_force_small_ao = .true.
+      end if
+     
+      if (kw_matches(word, '.ORBSTR')) then
+         visual_cfg_use_orbital_string = .true.
+         call kw_read(word, visual_cfg_orbital_string(1))
+         if (nfsym > 1) then
+            call kw_read(word, visual_cfg_orbital_string(2))
+         end if
+      end if
 
 #ifdef MOD_UNRELEASED
-    if (kw_matches(word, '.LONDON')) then
-      visual_cfg_london = .true.
-      do i = 1, visual_cfg_nr_xvectors
-        read(unit_in, *) visual_cfg_conmat_file(i),      &
-                         visual_cfg_lao_chcomp(i),       &
-                         visual_cfg_connection_key(i),   &
-                         visual_cfg_lao_contributions(i)
-!     gosia todo: the last one should be made optional
-      end do
-    end if
+      if (kw_matches(word, '.LONDON')) then
+         visual_cfg_london = .true.
+         read(unit_in, *) visual_cfg_london_component
+      end if
+      
+      if (kw_matches(word, '.NATURA')) then
+         visual_cfg_london_natural   = .true.
+         visual_cfg_london_symmetric = .false.
+         visual_cfg_london_none      = .false.
+      end if
+      
+      if (kw_matches(word, '.SYMMET')) then
+         visual_cfg_london_natural   = .false.
+         visual_cfg_london_symmetric = .true.
+         visual_cfg_london_none      = .false.
+      end if
+      
+      if (kw_matches(word, '.NONE  ')) then
+         visual_cfg_london_natural   = .false.
+         visual_cfg_london_symmetric = .false.
+         visual_cfg_london_none      = .true.
+      end if
+      
+      if (kw_matches(word, '.NODIRE')) then
+         visual_cfg_london_skip_direct = .true.
+      end if
+      
+      if (kw_matches(word, '.NOREOR')) then
+         visual_cfg_london_skip_ro = .true.
+      end if
 #endif
 
-    call check_whether_kw_found(word, kw_section)
+      call check_whether_kw_found(word, kw_section)
 
-  end subroutine
+   end subroutine
+
+   subroutine read_input_visual_helper(j)
+
+      use visual_cfg
+
+!     --------------------------------------------------------------------------
+      integer, intent(in) :: j
+!     --------------------------------------------------------------------------
+      integer             :: i
+      character(80)       :: line
+!     --------------------------------------------------------------------------
+
+      visual_cfg_nr_dmat = visual_cfg_nr_dmat + 1
+      i = visual_cfg_nr_dmat
+      visual_cfg_property(i) = j
+      read(unit_in, *) line
+      backspace(unit_in)
+      if (word_contains(line, 'DFCOEF')) then
+         read(unit_in, *) visual_cfg_dmat_file(i)
+      else
+         read(unit_in, *) visual_cfg_dmat_file(i), &
+                          visual_cfg_dmat_file_record(i)
+      end if
+
+   end subroutine
+
+   subroutine read_input_visual_helper2(j)
+
+      use visual_cfg
+
+!     --------------------------------------------------------------------------
+      integer, intent(in) :: j
+!     --------------------------------------------------------------------------
+      integer             :: i
+!     --------------------------------------------------------------------------
+
+      visual_cfg_nr_dmat = visual_cfg_nr_dmat + 1
+      i = visual_cfg_nr_dmat
+      visual_cfg_property(i) = j
+      read(unit_in, *) visual_cfg_ref_nucleus(i), &
+                       visual_cfg_dmat_file(i),   &
+                       visual_cfg_dmat_file_record(i)
+
+   end subroutine
 
   subroutine read_input_openrsp(word, kw_section)
 

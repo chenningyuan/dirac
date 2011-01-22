@@ -1,4 +1,4 @@
-!dirac_copyright_start
+
 !      Copyright (c) 2010 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -33,7 +33,6 @@ module visual_london
 
   implicit none
 
-  public visual_london_init
   public setup_fo_conmat_ao
   public get_jblao
 
@@ -84,92 +83,6 @@ module visual_london
 
 contains
 
-  subroutine visual_london_init(ivector)
-!   --------------------------------------------------------------------
-    integer, intent(in) :: ivector
-
-    integer :: key_l
-    logical :: file_exists
-!   --------------------------------------------------------------------
-
-!   london can be done only if iq_j, iq_nucdip, iq_mdip
-!   ---------------------------------------------------
-    if ((visual_cfg_iq_xvector(ivector) .ne. iq_j)       .and.   &
-        (visual_cfg_iq_xvector(ivector) .ne. iq_nucdipx) .and.   &
-        (visual_cfg_iq_xvector(ivector) .ne. iq_nucdipy) .and.   &
-        (visual_cfg_iq_xvector(ivector) .ne. iq_nucdipz) .and.   &
-        (visual_cfg_iq_xvector(ivector) .ne. iq_mdipx)   .and.   &
-        (visual_cfg_iq_xvector(ivector) .ne. iq_mdipy)   .and.   &
-        (visual_cfg_iq_xvector(ivector) .ne. iq_mdipz)) then
-
-      call quit('visual_london_init: london option only for iq_j, iq_nucdip and iq_mdip')
-
-    end if
-
-
-!   file_with_connection_matrices  - AOPROPER
-!   -----------------------------------------
-    if (visual_cfg_conmat_file(ivector) .ne. 'AOPROPER') then
-      call quit('error in visual: property file has to be AOPROPER')
-    end if
-
-    inquire(file = visual_cfg_conmat_file(ivector), exist = file_exists)
-
-    if (.not. file_exists) then
-      call quit('error in visual: no property file found')
-    end if
-
-!   which_component   - x/y/z
-!   -------------------------
-    if (visual_cfg_lao_chcomp(ivector) == 'X') then
-      visual_cfg_lao_icomp(ivector) = 1
-    else if (visual_cfg_lao_chcomp(ivector) == 'Y') then
-      visual_cfg_lao_icomp(ivector) = 2
-    else if (visual_cfg_lao_chcomp(ivector) == 'Z') then
-      visual_cfg_lao_icomp(ivector) = 3
-    else
-      call quit('error in visual_london: icomp != X,Y,Z')
-    end if
-
-!   which_connection  - symmetric/natural/none
-!   ------------------------------------------
-    key_l = len_trim(visual_cfg_connection_key(ivector))
-    if (visual_cfg_connection_key(ivector)(1:key_l) == 'symmetric') then
-      visual_cfg_connection(ivector) = 2
-      write(lupri, *) 'visual_london: symmetric connection used'
-    else if (visual_cfg_connection_key(ivector)(1:key_l) == 'natural') then
-      visual_cfg_connection(ivector) = 1
-      write(lupri, *) 'visual_london: natural connection used'
-    else if (visual_cfg_connection_key(ivector)(1:key_l) == 'none') then
-      visual_cfg_connection(ivector) = 0
-      write(lupri, *) 'visual_london: <none> connection used'
-    else
-      write(lupri, *) 'no connection is set, the default is <natural>'
-    end if
-
-
-!   additional options
-!   ------------------
-    if (btest(visual_cfg_lao_contributions(ivector), 0)) &
-      write(lupri, *) 'visual_london: direct contribution included'
-    if (btest(visual_cfg_lao_contributions(ivector), 1)) then
-      if (visual_cfg_connection(ivector) == 0) then
-        write(lupri, *) 'visual_london: (response-reorth)_ai included'
-      else
-        write(lupri, *) 'visual_london: response contribution included'
-      end if
-    end if
-    if (btest(visual_cfg_lao_contributions(ivector), 2)) then
-      if (visual_cfg_connection(ivector) == 0) then
-        write(lupri, *) 'visual_london: overlap_ij included'
-      else
-        write(lupri, *) 'visual_london: reorthonorm. contrib. included'
-      end if
-    end if
-
-
-  end subroutine visual_london_init
-
   subroutine setup_fo_conmat_ao(D_con_ao, ivector)
 !   --------------------------------------------------------------------
     type(matrix)         :: D_con_ao
@@ -195,27 +108,27 @@ contains
 !   connection matrices info
 !   ========================
 
-    if (visual_cfg_connection(ivector) == 2) then
+    if (visual_cfg_london_symmetric) then
 
       write(lupri, *) 'symmetric connection is used in visual_london'
-      p_name  = 'dS/dB'//visual_cfg_lao_chcomp(ivector)
+      p_name  = 'dS/dB'//visual_cfg_london_component
       pfac    = -0.5d0
       p_int   = '+00+'
       idimens = nnbbasx
 
-    else if (visual_cfg_connection(ivector) == 1) then
+    else if (visual_cfg_london_natural) then
 
       write(lupri, *) 'natural connection is used in visual_london'
-      p_name  = 'd|S>/dB'//visual_cfg_lao_chcomp(ivector)
+      p_name  = 'd|S>/dB'//visual_cfg_london_component
       pfac    = -1.0d0
       p_int   = '+00+'
       idimens = n2bbasx
 
-    else  if (visual_cfg_connection(ivector) == 0) then
+    else if (visual_cfg_london_none) then
 !     gosia: if <none> connection then anyway read 'dS/dB' integrals
 
       write(lupri, *) '<none> connection is used in visual_london, dS/dB integrals read'
-      p_name  = 'dS/dB'//visual_cfg_lao_chcomp(ivector)
+      p_name  = 'dS/dB'//visual_cfg_london_component
       pfac    = -0.5d0
       p_int   = '+00+'
       idimens = nnbbasx
@@ -244,7 +157,7 @@ contains
     file_unit = lu1int
 
     open(file_unit,            &
-         file = visual_cfg_conmat_file(ivector), &
+         file = 'AOPROPER',    &
          status = 'OLD',       &
          form = 'UNFORMATTED', &
          access = 'SEQUENTIAL')
@@ -277,8 +190,8 @@ contains
       write(lupri, *) 'setup_fo_conmat_ao: buffer after calling prprea'
       write(lupri, *) 'p_name, pfac, p_int, idimens = ', &
                        p_name, pfac, p_int, idimens
-      if (visual_cfg_connection(ivector) == 1 .or.       &
-          visual_cfg_connection(ivector) == 0) then
+      if (visual_cfg_london_natural .or.       &
+          visual_cfg_london_none) then
 !       natural connection - square matrix:
         call output(buffer, 1, ntbas(0), 1, ntbas(0), &
                     ntbas(0), ntbas(0), 1, lupri)
@@ -298,7 +211,7 @@ contains
 !   insert phases
 !   =============
     if (nz .lt. 4) then
-      if (visual_cfg_connection(ivector) == 1) then
+      if (visual_cfg_london_natural) then
         call qmphase('S', property_jm4pos, property_lrep, buffer, doint)
       else
         call qmphase('L', property_jm4pos, property_lrep, buffer, doint)
@@ -308,7 +221,7 @@ contains
 
     if (debug_me) then
       write(lupri, *) 'phase-transformed integrals'
-      if (visual_cfg_connection(ivector) == 1) then
+      if (visual_cfg_london_natural) then
         call output(buffer, 1, ntbas(0), 1, ntbas(0), ntbas(0), ntbas(0), 1,lupri)
       else
         call outpak(buffer, ntbas(0), 1, lupri)
@@ -326,8 +239,8 @@ contains
     end do
 
 
-    if ((visual_cfg_connection(ivector) == 2) .or. &
-        (visual_cfg_connection(ivector) == 0)) then
+    if (visual_cfg_london_symmetric .or. &
+        visual_cfg_london_none) then
 
       ioff = ntbas(0)*ntbas(0)*(property_iqtopq(1) - 1) + 1
       if (first(property_iqtopq(1))) then
@@ -367,9 +280,8 @@ contains
 
 !   assign symmetries 
 !   =================
-    D_con_ao%ih_sym = visual_cfg_irep_conmat(ivector) + 1
-    D_con_ao%tr_sym = visual_cfg_itim_conmat(ivector)
-    D_con_ao%irep   = visual_cfg_irep_conmat(ivector)
+    D_con_ao%tr_sym = visual_cfg_itim_conmat
+    D_con_ao%irep   = visual_cfg_irep_conmat
 
 
     if (debug_me) then
@@ -438,8 +350,8 @@ contains
           read(11, *, end = 99) property_iqtopq(i)
         end do
 
-        visual_cfg_irep_conmat(ivector) = isym - 1
-        visual_cfg_itim_conmat(ivector) = itim    
+        visual_cfg_irep_conmat = isym - 1
+        visual_cfg_itim_conmat = itim    
 
       end if
 
@@ -456,9 +368,9 @@ contains
 
       write(lupri, *) 'property_name        = ', property_name
       write(lupri, *) 'property_type        = ', property_type
-      write(lupri, *) 'visual_cfg_irep_conmat(ivector) = ', visual_cfg_irep_conmat(ivector)
+      write(lupri, *) 'visual_cfg_irep_conmat(ivector) = ', visual_cfg_irep_conmat
       write(lupri, *) 'isym                 = ', isym
-      write(lupri, *) 'visual_cfg_itim_conmat(ivector) = ', visual_cfg_itim_conmat(ivector)
+      write(lupri, *) 'visual_cfg_itim_conmat(ivector) = ', visual_cfg_itim_conmat
       write(lupri, *) 'itim                 = ', itim
 
       write(lupri, *) 'number_nz            =', number_nz
@@ -491,19 +403,17 @@ contains
 
 
   subroutine get_jblao(ixvector,            &
-                       nr_dmat, D,          &
-                       nr_dmat_con, D_con,  &
+                       D_0,               &
                        ao, buffer,          &
                        px, py, pz,          &
                        jblao)
 !   --------------------------------------------------------------------
-    type(matrix)             :: D(nr_dmat), D_con(nr_dmat_con)
+    type(matrix)             :: D_0
     real(8), intent(in)      :: ao(*), buffer(*)
-    integer, intent(in)      :: ixvector, nr_dmat, nr_dmat_con
+    integer, intent(in)      :: ixvector
     real(8), intent(in)      :: px, py, pz
     real(8), intent(out)     :: jblao(3)
 
-    integer :: imat, imat_con
     logical :: nodirect, noreorth, norespon, debug_me
 
     integer :: i, j, ixyz
@@ -516,17 +426,14 @@ contains
 
     debug_me = .false.
 
-    imat     = vector_to_matrix(ixvector)
-    imat_con = vector_to_matrix_con(ixvector)
-
 !   'direct' contribution
-    if (btest(visual_cfg_lao_contributions(ixvector), 0)) then
+    if (.not. visual_cfg_london_skip_direct) then
 
       vector_a = 0.0d0
 
       call get_jblao_direct(ixvector, &
                             1, &
-                            D(1)%elms, &
+                            D_0%elms, &
                             ntbas(0), &
                             ao(ao_start(0,0):ao_end(0,0)), &
                             ao(ao_start(0,1):ao_end(0,1)), &
@@ -537,42 +444,6 @@ contains
       call daxpy(3, f, vector_a, 1, jblao, 1)
 
     end if
-
-!   'response' contribution
-    if (btest(visual_cfg_lao_contributions(ixvector), 1)) then
-
-      vector_a = 0.0d0
-
-           call get_j(vector_a,                             &
-                      visual_cfg_irep_xvector(ixvector), &
-                      D(imat)%nrow,                       &
-                      D(imat)%elms,                       &
-                      buffer,                            &
-                      ao)
-
-
-      f = -1.0d0
-      call daxpy(3, f, vector_a, 1, jblao, 1)
-
-    end if
-
-!   'reorthonormalization' contribution
-    if (btest(visual_cfg_lao_contributions(ixvector), 2)) then
-
-      vector_a = 0.0d0
-
-      call get_j(vector_a,                          &
-                 visual_cfg_irep_conmat(ixvector), &
-                 D_con(imat_con)%nrow,                       &
-                 D_con(imat_con)%elms,                       &
-                 buffer, &
-                 ao(ao_start(0, 0):ao_end(0, 0)))
-
-      f = -1.0d0
-      call daxpy(3, f, vector_a, 1, jblao, 1)
-
-    end if
-
 
   end subroutine get_jblao
 
@@ -590,22 +461,24 @@ contains
     real(8), intent(out)   :: vector(3)
 !   ----------------------------------------------------------------------------
     integer                :: nr1, nr2, st1, st2, iblock, i, ii, jxyz, jj, j
-    integer                :: a, b, c, ixyz, iz, ioff
+    integer                :: b, c, ixyz, iz, ioff
     real(8)                :: f(3)
     real(8)                :: vector_a(3)
 !   ----------------------------------------------------------------------------
 
     vector_a = 0.0d0
 
-    a = visual_cfg_lao_icomp(ivector)
-
-    if (a == 1) then
-      b = 2; c = 3
-    else if (a == 2) then
-      b = 3; c = 1
-    else if (a == 3) then
-      b = 1; c = 2
-    end if
+    select case (visual_cfg_london_component)
+       case ('X')
+          b = 2
+          c = 3
+       case ('Y')
+          b = 3
+          c = 1
+       case ('Z')
+          b = 1
+          c = 2
+    end select
     
     do ixyz = 1, 3
       do iblock = 1, lssl_nr_density_blocks(ixyz, isym - 1)

@@ -56,408 +56,300 @@ module visual_in_point
 
 contains
 
-   subroutine get_quantity_in_point(nr_dmat,     &
-                                    D,           &
-                                    nr_dmat_con, &
-                                    D_con,       &
-                                    px,          &
-                                    py,          &
-                                    pz,          &
-                                    ao,          &
-                                    buffer,      &
+   subroutine get_quantity_in_point(nr_dmat, &
+                                    D,       &
+                                    D_0,     &
+                                    px,      &
+                                    py,      &
+                                    pz,      &
+                                    ao,      &
+                                    buffer,  &
                                     result)
 
 !     --------------------------------------------------------------------------
-      integer,     intent(in)  :: nr_dmat
-      type(matrix)             :: D(nr_dmat)
-      integer,     intent(in)  :: nr_dmat_con
-      type(matrix)             :: D_con(nr_dmat_con)
-      real(8),     intent(in)  :: px
-      real(8),     intent(in)  :: py
-      real(8),     intent(in)  :: pz
-      real(8)                  :: ao(*)
-      real(8)                  :: buffer(*)
-      real(8),     intent(out) :: result(0:3)
+      integer, intent(in)  :: nr_dmat
+      type(matrix)         :: D(nr_dmat)
+      type(matrix)         :: D_0
+      real(8), intent(in)  :: px
+      real(8), intent(in)  :: py
+      real(8), intent(in)  :: pz
+      real(8)              :: ao(*)
+      real(8)              :: buffer(*)
+      real(8), intent(out) :: result(0:3)
 !     --------------------------------------------------------------------------
-
-
-      real(8) ::          QUANTITY(0:3)
-      real(8) ::          VECTOR_A(3)
-      real(8) ::          VECTOR_B(3)
-      real(8) :: factor, f, elf_chi, tau, matrix_33(3, 3)
-      real(8) :: density, density_gradient(3), density_gradient_squared
-      real(8) :: RSQ
-      real(8) :: rxx, rxy, rxz, ryy, ryz, rzz
-      real(8) :: ddot, scalar
-      real(8) :: rx, ry, rz, t, b, distance_to_origin
-      integer :: ic, iq, IXVECTOR, ixyz, imat
+      integer              :: imat
+      real(8)              :: v(3), v2(3)
+      real(8)              :: matrix_33(3, 3)
+      real(8)              :: elf_chi, tau
+      real(8)              :: density
+      real(8)              :: density_gradient(3)
+      real(8)              :: density_gradient_squared
+      real(8)              :: b, f, distance_to_origin
+      real(8)              :: rx, ry, rz
+!     --------------------------------------------------------------------------
 
       call get_ao(px, py, pz, ao, buffer)
 
-      distance_to_origin = dsqrt(px*px + py*py + pz*pz)
-
       result = 0.0d0
+      do imat = 1, nr_dmat
+         if (.not. visual_cfg_skip(imat)) then
 
-      DO IXVECTOR = 1, visual_cfg_NR_XVECTORS
-        imat = vector_to_matrix(ixvector)
+!           gamma5 density: \psi^\dag \gamma^5 \psi
+            if (visual_cfg_property(imat) == iq_gamma5) then
+               call get_gamma5(density,       &
+                               D(imat)%irep,  &
+                               D(imat)%nrow,  &
+                               D(imat)%elms,  &
+                               buffer,        &
+                               ao)
+               result(0) = result(0) + density
+            end if
+            
+!           electron density
+            if (visual_cfg_property(imat) == iq_density) then
+               call get_n(density,       &
+                          D(imat)%irep,  &
+                          D(imat)%nrow,  &
+                          D(imat)%elms,  &
+                          buffer,        &
+                          ao)
+               result(0) = result(0) + density
+            end if
+            
+!           elf: electron localization function
+            if (visual_cfg_property(imat) == iq_elf) then
+               call get_tau(tau,          &
+                            D(imat)%irep, &
+                            D(imat)%nrow, &
+                            D(imat)%elms, &
+                            buffer,       &
+                            ao(ao_start(1, 0):ao_end(1, 0)))
+               call get_gn(density,          &
+                           density_gradient, &
+                           D(imat)%irep,     &
+                           D(imat)%nrow,     &
+                           D(imat)%elms,     &
+                           buffer,           &
+                           ao,               &
+                           ao(ao_start(1, 0):ao_end(1, 0)))
+              
+               density_gradient_squared = density_gradient(1)*density_gradient(1) &
+                                        + density_gradient(2)*density_gradient(2) &
+                                        + density_gradient(3)*density_gradient(3)
+              
+               b = density_gradient_squared/(8.0d0*density)
+              
+!                  2.87123400018819d0 = 0.3d0*((3.0d0*pi*pi)**(2.0d0/3.0d0))
+               f = 2.87123400018819d0*(density**(5.0d0/3.0d0))
+               elf_chi = (tau - b)/f
+              
+               result(0) = result(0) + 1.0d0/(1.0d0 + elf_chi*elf_chi)
+            end if
+            
+!           current density: -ec \psi^\dag \alpha \psi
+            if (visual_cfg_property(imat) == iq_j) then
+               call get_j(v,            &
+                          D(imat)%irep, &
+                          D(imat)%nrow, &
+                          D(imat)%elms, &
+                          buffer,       &
+                          ao)
+               if (visual_cfg_london) then
+                  call get_jblao(imat,       &
+                                 D_0,        &
+                                 ao,         &
+                                 buffer,     &
+                                 px, py, pz, &
+                                 v2)
+                  !strange minus sign
+                  v = v2 - v
+               end if
+               result(1:3) = result(1:3) + v(1:3)
+            end if
+            
+!           spin density: \psi^\dag \Sigma \psi
+            if (visual_cfg_property(imat) == iq_s) then
+               call get_s(v,            &
+                          D(imat)%irep, &
+                          D(imat)%nrow, &
+                          D(imat)%elms, &
+                          buffer,       &
+                          ao)
+               result(1:3) = result(1:3) + v(1:3)
+            end if
+            
+!           divergence or curl of spin density
+            if ((visual_cfg_property(imat) == iq_divs) .or. &
+                (visual_cfg_property(imat) == iq_rots)) then
+               call get_gs(v,               &
+                           matrix_33,       &
+                           D(imat)%irep,    &
+                           D(imat)%nrow,    &
+                           D(imat)%elms,    &
+                           buffer,          &
+                           ao,              &
+                           ao(ao_start(1, 0):ao_end(1, 0)))
+               if (visual_cfg_property(imat) == iq_divs) then
+                  result(0) = result(0) + matrix_33(1, 1) + matrix_33(2, 2) + matrix_33(3, 3)
+               end if
+               if (visual_cfg_property(imat) == iq_rots) then
+                  result(1) = result(1) - matrix_33(2, 3) + matrix_33(3, 2)
+                  result(2) = result(2) - matrix_33(3, 1) + matrix_33(1, 3)
+                  result(3) = result(3) - matrix_33(1, 2) + matrix_33(2, 1)
+               end if
+            end if
+            
+!           divergence or curl of current density
+            if ((visual_cfg_property(imat) == iq_divj) .or. &
+                (visual_cfg_property(imat) == iq_rotj)) then
+               call get_gj(v,            &
+                           matrix_33,    &
+                           D(imat)%irep, &
+                           D(imat)%nrow, &
+                           D(imat)%elms, &
+                           buffer,       &
+                           ao,           &
+                           ao(ao_start(1, 0):ao_end(1, 0)))
+               if (visual_cfg_property(imat) == iq_divj) then
+                  result(0) = result(0) + matrix_33(1, 1) + matrix_33(2, 2) + matrix_33(3, 3)
+               end if
+               if (visual_cfg_property(imat) == iq_rotj) then
+                  result(1) = result(1) - matrix_33(2, 3) + matrix_33(3, 2)
+                  result(2) = result(2) - matrix_33(3, 1) + matrix_33(1, 3)
+                  result(3) = result(3) - matrix_33(1, 2) + matrix_33(2, 1)
+               end if
+            end if
+            
+!           nonrel paramagnetic current density (orbital part)
+            if (visual_cfg_property(imat) == iq_jpara) then
+               call get_gn(density,      &
+                           v,            &
+                           D(imat)%irep, &
+                           D(imat)%nrow, &
+                           D(imat)%elms, &
+                           buffer,       &
+                           ao,           &
+                           ao(ao_start(1, 0):ao_end(1, 0)))
+               result(1:3) = result(1:3) + 0.5d0*v(1:3)
+            end if
+            
+!           nonrel diamagnetic current density (hardcoded for B along z)
+            if (visual_cfg_property(imat) == iq_jdia) then
+               call get_n(density,      &
+                          D(imat)%irep, &
+                          D(imat)%nrow, &
+                          D(imat)%elms, &
+                          buffer,       &
+                          ao)
+            
+               rx = px - visual_cfg_gauge_origin(1)
+               ry = py - visual_cfg_gauge_origin(2)
+               rz = pz - visual_cfg_gauge_origin(3)
+            
+               result(1) = result(1) - 0.5d0*ry*density
+               result(2) = result(2) + 0.5d0*rx*density
+               result(3) = result(3) + 0.0d0
+            end if
+            
+!           responding operator is electric dipole
+            if ((visual_cfg_property(imat) == iq_edipx) .or. &
+                (visual_cfg_property(imat) == iq_edipy) .or. &
+                (visual_cfg_property(imat) == iq_edipz)) then
+            
+               call get_n(density,      &
+                          D(imat)%irep, &
+                          D(imat)%nrow, &
+                          D(imat)%elms, &
+                          buffer,       &
+                          ao)
+               if (visual_cfg_property(imat) == iq_edipx) then
+                  result(0) = result(0) + px*density
+               end if
+               if (visual_cfg_property(imat) == iq_edipy) then
+                  result(0) = result(0) + py*density
+               end if
+               if (visual_cfg_property(imat) == iq_edipz) then
+                  result(0) = result(0) + pz*density
+               end if
+            end if
+            
+!           responding operator is magnetic dipole
+            if ((visual_cfg_property(imat) == iq_bdipx) .or. &
+                (visual_cfg_property(imat) == iq_bdipy) .or. &
+                (visual_cfg_property(imat) == iq_bdipz)) then
+            
+               call get_j(v,            &
+                          D(imat)%irep, &
+                          D(imat)%nrow, &
+                          D(imat)%elms, &
+                          buffer,       &
+                          ao)
+            
+               rx = px - visual_cfg_gauge_origin(1)
+               ry = py - visual_cfg_gauge_origin(2)
+               rz = pz - visual_cfg_gauge_origin(3)
+            
+               f = -0.5d0
+               
+               if (visual_cfg_property(imat) == iq_bdipx) then
+                  result(0) = result(0) + f*(ry*v(3) - rz*v(2))
+               end if
+               if (visual_cfg_property(imat) == iq_bdipy) then
+                  result(0) = result(0) + f*(rz*v(1) - rx*v(3))
+               end if
+               if (visual_cfg_property(imat) == iq_bdipz) then
+                  result(0) = result(0) + f*(rx*v(2) - ry*v(1))
+               end if
+            end if
+            
+!           responding operator is nuclear magnetic dipole
+            if ((visual_cfg_property(imat) == iq_ndipx) .or. &
+                (visual_cfg_property(imat) == iq_ndipy) .or. &
+                (visual_cfg_property(imat) == iq_ndipz)) then
+            
+               call get_j(v,            &
+                          D(imat)%irep, &
+                          D(imat)%nrow, &
+                          D(imat)%elms, &
+                          buffer,       &
+                          ao)
+               if (visual_cfg_london) then
+                  call get_jblao(imat,       &
+                                 D_0,        &
+                                 ao,         &
+                                 buffer,     &
+                                 px, py, pz, &
+                                 v2)
+                  !strange minus sign
+                  v = v2 - v
+               end if
+            
+               rx = px - cord(1, visual_cfg_ref_nucleus(imat))
+               ry = py - cord(2, visual_cfg_ref_nucleus(imat))
+               rz = pz - cord(3, visual_cfg_ref_nucleus(imat))
+               
+               f = -1.0d0/((rx*rx + ry*ry + rz*rz)**1.5d0)
+               
+               if (visual_cfg_property(imat) == iq_ndipx) then
+                  result(0) = result(0) + f*(ry*v(3) - rz*v(2))
+               end if
+               if (visual_cfg_property(imat) == iq_ndipy) then
+                  result(0) = result(0) + f*(rz*v(1) - rx*v(3))
+               end if
+               if (visual_cfg_property(imat) == iq_ndipz) then
+                  result(0) = result(0) + f*(rx*v(2) - ry*v(1))
+               end if
+            end if
 
-!       zero out quantity in point
-        quantity = 0.0d0
-
-
-!       electron density
-!       ================
-
-        if (visual_cfg_iq_xvector(ixvector) == iq_n) then
-           call get_n(density,                           &
-                      visual_cfg_irep_xvector(ixvector), &
-                      D(imat)%nrow,                      &
-                      D(imat)%elms,                      &
-                      buffer,                            &
-                      ao)
-
-           quantity(0) = quantity(0) + density
-        end if
-
-
-!       electron density gradient
-!       =========================
-
-        if (visual_cfg_iq_xvector(ixvector) == iq_gradient) then
-           call get_gn(density,                           &
-                       density_gradient,                  &
-                       visual_cfg_irep_xvector(ixvector), &
-                       D(imat)%nrow,                      &
-                       D(imat)%elms,                      &
-                       buffer,                            &
-                       ao,                                &
-                       ao(ao_start(1, 0):ao_end(1, 0)))
-
-           quantity(1) = quantity(1) + density_gradient(1)
-           quantity(2) = quantity(2) + density_gradient(2)
-           quantity(3) = quantity(3) + density_gradient(3)
-        end if
-
-
-!       elf: electron localization function
-!       ===================================
-
-        if (visual_cfg_iq_xvector(ixvector) == iq_elf) then
-           call get_tau(tau,                               &
-                        visual_cfg_irep_xvector(ixvector), &
-                        D(imat)%nrow,                      &
-                        D(imat)%elms,                      &
-                        buffer,                            &
-                        ao(ao_start(1, 0):ao_end(1, 0)))
-           call get_gn(density,                           &
-                       density_gradient,                  &
-                       visual_cfg_irep_xvector(ixvector), &
-                       D(imat)%nrow,                      &
-                       D(imat)%elms,                      &
-                       buffer,                            &
-                       ao,                                &
-                       ao(ao_start(1, 0):ao_end(1, 0)))
-          
-           density_gradient_squared = density_gradient(1)*density_gradient(1) &
-                                    + density_gradient(2)*density_gradient(2) &
-                                    + density_gradient(3)*density_gradient(3)
-          
-           b = density_gradient_squared/(8.0d0*density)
-          
-!              2.87123400018819d0 = 0.3d0*((3.0d0*pi*pi)**(2.0d0/3.0d0))
-           f = 2.87123400018819d0*(density**(5.0d0/3.0d0))
-          
-           elf_chi = (tau - b)/f
-          
-           quantity(0) = quantity(0) + 1.0d0/(1.0d0 + elf_chi*elf_chi)
-        end if
-
-
-!       gamma5 density: \psi^\dag \gamma^5 \psi
-!       =======================================
-
-        if (visual_cfg_iq_xvector(ixvector) == iq_gamma5) then
-           call get_gamma5(density,                           &
-                           visual_cfg_irep_xvector(ixvector), &
-                           D(imat)%nrow,                      &
-                           D(imat)%elms,                      &
-                           buffer,                            &
-                           ao)
-
-           quantity(0) = quantity(0) + density
-        end if
-
-
-!       spin density: \psi^\dag \Sigma \psi
-!       ===================================
-
-        if (visual_cfg_iq_xvector(ixvector) == iq_m) then
-           call get_s(vector_a,                          &
-                      visual_cfg_irep_xvector(ixvector), &
-                      D(imat)%nrow,                      &
-                      D(imat)%elms,                      &
-                      buffer,                            &
-                      ao)
-
-           quantity(1) = quantity(1) + vector_a(1)
-           quantity(2) = quantity(2) + vector_a(2)
-           quantity(3) = quantity(3) + vector_a(3)
-        end if
-
-
-!       nonrel diamagnetic current density (hardcoded for B along z)
-!       ============================================================
-
-        if (visual_cfg_iq_xvector(ixvector) == iq_jdia) then
-           call get_n(density,                           &
-                      visual_cfg_irep_xvector(ixvector), &
-                      D(imat)%nrow,                      &
-                      D(imat)%elms,                      &
-                      buffer,                            &
-                      ao)
-
-           rx = px - visual_cfg_gauge_origin(1)
-           ry = py - visual_cfg_gauge_origin(2)
-           rz = pz - visual_cfg_gauge_origin(3)
-          
-           vector_a(1) = -0.5d0*ry*density
-           vector_a(2) =  0.5d0*rx*density
-           vector_a(3) =  0.0d0
-
-           quantity(1) = quantity(1) + vector_a(1)
-           quantity(2) = quantity(2) + vector_a(2)
-           quantity(3) = quantity(3) + vector_a(3)
-        end if
-
-
-!       current density: -ec \psi^\dag \alpha \psi
-!       ==========================================
-
-        if (visual_cfg_iq_xvector(ixvector) == iq_j) then
-           if (visual_cfg_london) then
-              call get_jblao(ixvector,            &
-                             nr_dmat, D,          &
-                             nr_dmat_con, D_con,  &
-                             ao,                  &
-                             buffer,              &
-                             px, py, pz,          &
-                             vector_a)
-           else
-              call get_j(vector_a,                          &
-                         visual_cfg_irep_xvector(ixvector), &
-                         D(imat)%nrow,                      &
-                         D(imat)%elms,                      &
-                         buffer,                            &
-                         ao)
-           end if
-
-           quantity(1) = quantity(1) + vector_a(1)
-           quantity(2) = quantity(2) + vector_a(2)
-           quantity(3) = quantity(3) + vector_a(3)
-        end if
-
-
-!       nonrel paramagnetic current density (orbital part)
-!       ==================================================
-
-        if (visual_cfg_iq_xvector(ixvector) == iq_jpara) then
-           call get_gn(density,                           &
-                       vector_a,                          &
-                       visual_cfg_irep_xvector(ixvector), &
-                       D(imat)%nrow,                      &
-                       D(imat)%elms,                      &
-                       buffer,                            &
-                       ao,                                &
-                       ao(ao_start(1, 0):ao_end(1, 0)))
-
-           quantity(1) = quantity(1) + 0.5d0*vector_a(1)
-           quantity(2) = quantity(2) + 0.5d0*vector_a(2)
-           quantity(3) = quantity(3) + 0.5d0*vector_a(3)
-        end if
-
-
-!       divergence or curl of spin density
-!       ==================================
-
-        if ((visual_cfg_iq_xvector(ixvector) == iq_divm) .or. &
-            (visual_cfg_iq_xvector(ixvector) == iq_rotm)) then
-
-           call get_gs(vector_a,                          &
-                       matrix_33,                         &
-                       visual_cfg_irep_xvector(ixvector), &
-                       D(imat)%nrow,                      &
-                       D(imat)%elms,                      &
-                       buffer,                            &
-                       ao,                                &
-                       ao(ao_start(1, 0):ao_end(1, 0)))
-
-           if (visual_cfg_iq_xvector(ixvector) == iq_divm) then
-              quantity(0) = quantity(0) + matrix_33(1, 1) + matrix_33(2, 2) + matrix_33(3, 3)
-           end if
-           if (visual_cfg_iq_xvector(ixvector) == iq_rotm) then
-              quantity(1) = quantity(1) - matrix_33(2, 3) + matrix_33(3, 2)
-              quantity(2) = quantity(2) - matrix_33(3, 1) + matrix_33(1, 3)
-              quantity(3) = quantity(3) - matrix_33(1, 2) + matrix_33(2, 1)
-           end if
-        end if
-
-
-!       divergence or curl of current density
-!       =====================================
-
-        if ((visual_cfg_iq_xvector(ixvector) == iq_divj) .or. &
-            (visual_cfg_iq_xvector(ixvector) == iq_rotj)) then
-
-           call get_gj(vector_a,                          &
-                       matrix_33,                         &
-                       visual_cfg_irep_xvector(ixvector), &
-                       D(imat)%nrow,                      &
-                       D(imat)%elms,                      &
-                       buffer,                            &
-                       ao,                                &
-                       ao(ao_start(1, 0):ao_end(1, 0)))
-
-           if (visual_cfg_iq_xvector(ixvector) == iq_divj) then
-              quantity(0) = quantity(0) + matrix_33(1, 1) + matrix_33(2, 2) + matrix_33(3, 3)
-           end if
-           if (visual_cfg_iq_xvector(ixvector) == iq_rotj) then
-              quantity(1) = quantity(1) - matrix_33(2, 3) + matrix_33(3, 2)
-              quantity(2) = quantity(2) - matrix_33(3, 1) + matrix_33(1, 3)
-              quantity(3) = quantity(3) - matrix_33(1, 2) + matrix_33(2, 1)
-           end if
-        end if
-
-
-!       responding operator is electric dipole
-!       ======================================
-
-        if ((visual_cfg_iq_xvector(ixvector) == iq_edipx) .or. &
-            (visual_cfg_iq_xvector(ixvector) == iq_edipy) .or. &
-            (visual_cfg_iq_xvector(ixvector) == iq_edipz)) then
-
-           call get_n(density,                           &
-                      visual_cfg_irep_xvector(ixvector), &
-                      D(imat)%nrow,                      &
-                      D(imat)%elms,                      &
-                      buffer,                            &
-                      ao)
-
-           rx = px - cord(1, visual_cfg_ioption_xvector(ixvector))
-           ry = py - cord(2, visual_cfg_ioption_xvector(ixvector))
-           rz = pz - cord(3, visual_cfg_ioption_xvector(ixvector))
-           
-           vector_b(1) = ry*vector_a(3) - rz*vector_a(2)
-           vector_b(2) = rz*vector_a(1) - rx*vector_a(3)
-           vector_b(3) = rx*vector_a(2) - ry*vector_a(1)
-           
-           rsq = rx*rx + ry*ry + rz*rz
-           f = -1.0d0/(rsq**1.5d0)
-           
-           if (visual_cfg_iq_xvector(ixvector) == iq_edipx) then
-              quantity(0) = quantity(0) + px*density
-           end if
-           if (visual_cfg_iq_xvector(ixvector) == iq_edipy) then
-              quantity(0) = quantity(0) + py*density
-           end if
-           if (visual_cfg_iq_xvector(ixvector) == iq_edipz) then
-              quantity(0) = quantity(0) + pz*density
-           end if
-        end if
-
-
-!       responding operator is nuclear magnetic dipole
-!       ==============================================
-
-        if ((visual_cfg_iq_xvector(ixvector) == iq_nucdipx) .or. &
-            (visual_cfg_iq_xvector(ixvector) == iq_nucdipy) .or. &
-            (visual_cfg_iq_xvector(ixvector) == iq_nucdipz)) then
-
-           if (visual_cfg_london) then
-              call get_jblao(ixvector,            &
-                             nr_dmat, D,          &
-                             nr_dmat_con, D_con,  &
-                             ao,                  &
-                             buffer,              &
-                             px, py, pz,          &
-                             vector_a)
-           else
-              call get_j(vector_a,                          &
-                         visual_cfg_irep_xvector(ixvector), &
-                         D(imat)%nrow,                      &
-                         D(imat)%elms,                      &
-                         buffer,                            &
-                         ao)
-           end if
-
-           rx = px - cord(1, visual_cfg_ioption_xvector(ixvector))
-           ry = py - cord(2, visual_cfg_ioption_xvector(ixvector))
-           rz = pz - cord(3, visual_cfg_ioption_xvector(ixvector))
-           
-           vector_b(1) = ry*vector_a(3) - rz*vector_a(2)
-           vector_b(2) = rz*vector_a(1) - rx*vector_a(3)
-           vector_b(3) = rx*vector_a(2) - ry*vector_a(1)
-           
-           rsq = rx*rx + ry*ry + rz*rz
-           f = -1.0d0/(rsq**1.5d0)
-           
-           if (visual_cfg_iq_xvector(ixvector) == iq_nucdipx) then
-              quantity(0) = quantity(0) + f*vector_b(1)
-           end if
-           if (visual_cfg_iq_xvector(ixvector) == iq_nucdipy) then
-              quantity(0) = quantity(0) + f*vector_b(2)
-           end if
-           if (visual_cfg_iq_xvector(ixvector) == iq_nucdipz) then
-              quantity(0) = quantity(0) + f*vector_b(3)
-           end if
-        end if
-
-
-!       responding operator is magnetic dipole
-!       ======================================
-
-        if ((visual_cfg_iq_xvector(ixvector) == iq_mdipx) .or. &
-            (visual_cfg_iq_xvector(ixvector) == iq_mdipy) .or. &
-            (visual_cfg_iq_xvector(ixvector) == iq_mdipz)) then
-
-           call get_j(vector_a,                          &
-                      visual_cfg_irep_xvector(ixvector), &
-                      D(imat)%nrow,                      &
-                      D(imat)%elms,                      &
-                      buffer,                            &
-                      ao)
-
-           rx = px - visual_cfg_gauge_origin(1)
-           ry = py - visual_cfg_gauge_origin(2)
-           rz = pz - visual_cfg_gauge_origin(3)
-           
-           vector_b(1) = ry*vector_a(3) - rz*vector_a(2)
-           vector_b(2) = rz*vector_a(1) - rx*vector_a(3)
-           vector_b(3) = rx*vector_a(2) - ry*vector_a(1)
-           
-           f = -0.5d0
-           
-           if (visual_cfg_iq_xvector(ixvector) == iq_mdipx) then
-              quantity(0) = quantity(0) + f*vector_b(1)
-           end if
-           if (visual_cfg_iq_xvector(ixvector) == iq_mdipy) then
-              quantity(0) = quantity(0) + f*vector_b(2)
-           end if
-           if (visual_cfg_iq_xvector(ixvector) == iq_mdipz) then
-              quantity(0) = quantity(0) + f*vector_b(3)
-           end if
-        end if
-
-!       multiply with common factor and add up
-        f = visual_cfg_common_factor
-        if (visual_cfg_radial) then
-           f = f*(distance_to_origin**2.0d0)
-        end if
-        result(0) = result(0) + f*quantity(0)
-        result(1) = result(1) + f*quantity(1)
-        result(2) = result(2) + f*quantity(2)
-        result(3) = result(3) + f*quantity(3)
-
+         end if
       end do
+
+      f = visual_cfg_scale
+      if (visual_cfg_radial) then
+         distance_to_origin = dsqrt(px*px + py*py + pz*pz)
+         f = f*(distance_to_origin**2.0d0)
+      end if
+      result = f*result
 
    end subroutine
 

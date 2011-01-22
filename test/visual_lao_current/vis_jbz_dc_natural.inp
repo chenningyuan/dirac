@@ -15,11 +15,10 @@
  1.0  1.0  0.0
 -1.0 -1.0  0.0
 -1.0  1.0  0.0
-.QUANTITIES
-2
-PAMXVC 1 5 1
-PAMXVC 2 5 1
+.J
+ PAMXVC 1
+.J
+ PAMXVC 2
 .LONDON
-AOPROPER Z natural 7
-AOPROPER Z natural 7
+ Z
 *END OF

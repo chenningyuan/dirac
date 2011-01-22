@@ -15,11 +15,11 @@
  1.0  1.0  0.0
 -1.0 -1.0  0.0
 -1.0  1.0  0.0
-.QUANTITIES
-2
-PAMXVC 1 5 1
-PAMXVC 2 5 1
+.J
+ PAMXVC 1
+.J
+ PAMXVC 2
 .LONDON
-AOPROPER Z symmetric 7
-AOPROPER Z symmetric 7
+ Z
+.SYMMETRIC
 *END OF

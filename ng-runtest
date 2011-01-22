@@ -21,7 +21,9 @@ root_directory = os.path.realpath(__file__)[:-11]
 
 # define example usage
 
-usage = './%prog --all [--mpi=4]'
+usage = '''
+  typically ./%prog --tests="some_test another_test" [--mpi=4]
+         or ./%prog --tests=visual*'''
 
 # initialize parser
 
@@ -99,7 +101,7 @@ if options.individual != None:
     s = options.individual.split()
     l = ''
     for w in s:
-        l += 'test/' + w + ' '
+        l += root_directory + '/test/' + w + ' '
 #   this complicated code is to allow --tests="foo* *bar* *oof"
     command = 'find %s -type d -maxdepth 0' % l
     p = subprocess.Popen(command,
@@ -108,14 +110,13 @@ if options.individual != None:
                          stdout=subprocess.PIPE)
     for test in p.communicate()[0].split('\n'):
         if test != '':
-            list_of_tests_to_run.append(string.replace(test, 'test/', ''))
+            list_of_tests_to_run.append(test)
 
 # get total number of tests to run
 
 total_nr_of_tests = 0
 for test in list_of_tests_to_run:
-    directory = '%s/test/%s' % (root_directory, test)
-    os.chdir(directory)
+    os.chdir(test)
     f = open('menu', 'r')
     for line in f.readlines():
         total_nr_of_tests += 1
@@ -135,8 +136,7 @@ nr_crashed       = 0
 nr_failed        = 0
 nr_without_ref   = 0
 for test in list_of_tests_to_run:
-    directory = '%s/test/%s' % (root_directory, test)
-    os.chdir(directory)
+    os.chdir(test)
     f = open('menu', 'r')
     for line in f.readlines():
         if len(line.split()) > 0:
@@ -204,7 +204,13 @@ for test in list_of_tests_to_run:
                     nr_crashed += 1
                 
                 progress = '[%3i%s]' % (100.0*float(nr_of_tests_done)/float(total_nr_of_tests), r'%')
-                print '%8s %6s %25s %30s %15s' % (progress, result_text, test, inp_file, mol_file)
+
+                test_short = string.split(test, '/')[-1]
+                inp_short  = string.replace(inp_file, '.inp', '')
+                mol_short  = string.replace(mol_file, '.mol', '')
+
+                print '%8s %6s %25s %30s %15s' % \
+                    (progress, result_text, test_short, inp_short, mol_short)
 
                 if ((nr_crashed > 0) or (nr_failed > 0)) and options.giveup:
                     print

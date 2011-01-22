@@ -4,6 +4,8 @@
 */Makefile
 */*/Makefile
 *.tgz.*
+Debug
+test/SCRIPTS/testset
 Makefile.config.*
 basis_dalton/*\*
 install_dir.py
@@ -31,6 +33,7 @@ test/*/*.rep
 test/*/*.htm
 test/*/*.txt
 test/*/*out*
+test/*/compare
 test/*/result/*.rep
 *.short_testset*
 *.regular_testset*

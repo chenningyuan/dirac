@@ -38,7 +38,7 @@ module visual_integrate
 
 contains
 
-      subroutine visual_integration(nr_dmat, D, nr_dmat_con, D_con, ao, buffer)
+      subroutine visual_integration(nr_dmat, D, D_0, ao, buffer)
 
 #include "implicit.h"
 #include "priunit.h"
@@ -49,8 +49,7 @@ contains
       real(8), intent(in) :: ao(*)
       real(8), intent(in) :: buffer(*)
 
-      integer, intent(in) :: nr_dmat_con
-      type(matrix)        :: D_con(nr_dmat_con)
+      type(matrix)        :: D_0
 
       dimension QUANTITY_INTEGRAL(0:3), &
                 QUANTITY_INTEGRAL_LAST(0:3)
@@ -62,7 +61,7 @@ contains
       character(2) :: grid_orientation(3) = (/'xy', 'xz', 'yz'/)
 
       CALL DZERO(QUANTITY_INTEGRAL,4)
-      if (visual_cfg_3d) then
+      if (visual_cfg_3d_integration) then
 
         CALL AROUND('3D numerical integration')
 
@@ -87,7 +86,7 @@ contains
 
 
           CALL INTEGRATE_QUANTITY(nr_dmat, D, &
-                                  nr_dmat_con, D_con, &
+                                  D_0, &
                                   AO, &
                                   x, y, z, &
                                   buffer, &
@@ -170,7 +169,7 @@ contains
          quantity_integral = 0.0d0
 
          CALL INTEGRATE_QUANTITY(nr_dmat, D, &
-                                 nr_dmat_con, D_con, &
+                                 D_0, &
                                  AO, &
                                  x, y, z, &
                                  buffer, &
@@ -201,7 +200,7 @@ contains
    end subroutine
 
       SUBROUTINE INTEGRATE_QUANTITY(nr_dmat, D, &
-                                    nr_dmat_con, D_con, &
+                                    D_0, &
                                     AO, &
                                     PX,PY,PZ, &
                                     buffer, &
@@ -215,9 +214,9 @@ contains
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
 
-      integer, intent(in) :: nr_dmat, nr_dmat_con
+      integer, intent(in) :: nr_dmat
       type(matrix)        :: D(nr_dmat)
-      type(matrix)        :: D_con(nr_dmat_con)
+      type(matrix)        :: D_0
       dimension AO(*), &
      &          PX(*), &
      &          PY(*), &
@@ -230,15 +229,14 @@ contains
 
       DO IPOINT = 1,NR_POINTS
 
-           call get_quantity_in_point(nr_dmat,     &
-                                      D,           &
-                                      nr_dmat_con, &
-                                      D_con,       &
-                                      px(ipoint),  &
-                                      py(ipoint),  &
-                                      pz(ipoint),  &
-                                      ao,          &
-                                      buffer,      &
+           call get_quantity_in_point(visual_cfg_nr_dmat, &
+                                      D,                  &
+                                      D_0,                &
+                                      px(ipoint),         &
+                                      py(ipoint),         &
+                                      pz(ipoint),         &
+                                      ao,                 &
+                                      buffer,             &
                                       quantity)
 
         CALL DAXPY(4,WEIGHT(IPOINT),QUANTITY,1, &
