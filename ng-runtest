@@ -50,6 +50,11 @@ group.add_option('--quick',
                  dest='quick',
                  default=False,
                  help='run only a subset that is quick but has less coverage [default: %default]')
+group.add_option('--benchmark',
+                 action='store_true',
+                 dest='benchmark',
+                 default=False,
+                 help='run only benchmark runs [default: %default]')
 group.add_option('--keywords',
                  type='string',
                  action='store',
