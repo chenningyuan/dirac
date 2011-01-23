@@ -5,7 +5,7 @@
 #           this file is in "free format" and can have 
 #           empty lines
 #           lines contain: input file, molecule file[, pam flags]
-#        2. --short, --all, --keywords, --timeout
+#        2. --quick, --keywords, --timeout
 #           not programmed yet
 #        3. the good old html output not programmed yet but will come
 #        4. overwrite feature to be programmed
@@ -22,7 +22,8 @@ root_directory = os.path.realpath(__file__)[:-11]
 # define example usage
 
 usage = '''
-  typically ./%prog --tests="some_test another_test" [--mpi=4]
+  typically ./%prog --all [--mpi=4]
+         or ./%prog --tests="some_test another_test"
          or ./%prog --tests=visual*'''
 
 # initialize parser
@@ -32,11 +33,6 @@ parser = OptionParser(usage)
 # define options
 
 group = OptionGroup(parser, 'Select the test set')
-group.add_option('--short',
-                 action='store_true',
-                 dest='short',
-                 default=False,
-                 help='run the short test set [default: %default]')
 group.add_option('--all',
                  action='store_true',
                  dest='all',
@@ -49,12 +45,17 @@ group.add_option('--tests',
                  default=None,
                  help='select individual test(s)',
                  metavar='\"test1 test2 anothertest\"')
+group.add_option('--quick',
+                 action='store_true',
+                 dest='quick',
+                 default=False,
+                 help='run only a subset that is quick but has less coverage [default: %default]')
 group.add_option('--keywords',
                  type='string',
                  action='store',
                  dest='keywords',
                  default=None,
-                 help='select tests according to keywords',
+                 help='select tests according to keywords (not programmed yet)',
                  metavar='\"dft response\"')
 parser.add_option_group(group)
 
@@ -97,6 +98,17 @@ if len(sys.argv) == 1:
 
 list_of_tests_to_run = []
 
+if options.all:
+    file = root_directory + '/test/list_of_tests'
+    if os.path.isfile(file):
+        f = open(file, 'r')
+        for line in f.readlines():
+            list_of_tests_to_run.append(root_directory + '/test/' + line.strip('\n'))
+        f.close()
+    else:
+        print 'file %s does not exist, run pamadm first' % file
+        sys.exit()
+
 if options.individual != None:
     s = options.individual.split()
     l = ''
@@ -113,14 +125,22 @@ if options.individual != None:
             list_of_tests_to_run.append(test)
 
 # get total number of tests to run
+# also verify that the tests have menu files
+# remove those that don't
+
+list_of_tests_with_menu = []
 
 total_nr_of_tests = 0
 for test in list_of_tests_to_run:
     os.chdir(test)
-    f = open('menu', 'r')
-    for line in f.readlines():
-        total_nr_of_tests += 1
-    f.close()
+    file = 'menu'
+    if os.path.isfile(file):
+        list_of_tests_with_menu.append(test)
+        f = open(file, 'r')
+        for line in f.readlines():
+            total_nr_of_tests += 1
+        f.close()
+list_of_tests_to_run = list_of_tests_with_menu[:]
 
 # print header
 
