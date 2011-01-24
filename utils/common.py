@@ -91,6 +91,23 @@ def get_hostname_ip():
     this_ip = get_ip()
     return this_ip
 
+class disk_space:
+    """
+    extracts disk space data - capacity, available, used -  in GB
+    TODO: Adapt for Windows
+    """
+    def __init__(self,path):
+        """
+        fill (initialize) wanted variables, no other info needed sofar
+        TODO: check the path
+        """
+        import os
+        gb_factor = float(1024*1024*1024)
+        self.disk_info = os.statvfs(path)
+        self.capacity = ( self.disk_info.f_bsize * self.disk_info.f_blocks ) / gb_factor
+        self.available = ( self.disk_info.f_bsize * self.disk_info.f_bavail ) /  gb_factor
+        self.used = ( self.disk_info.f_bsize * (self.disk_info.f_blocks - self.disk_info.f_bavail)) / gb_factor
+
 class extract_path_file:
     """
     general class which can separate the pure file name from its path

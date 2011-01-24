@@ -343,14 +343,17 @@ class pam_enviroment:
     def list_scratch_dir(self):
         '''lists the content of the master scratch directory more here http://www.daniweb.com/code/snippet216798.html'''
         scratch_id=self.user_name+"@"+self.master+":"+self.scratch_dir
+        sum_filesize_mb=0
         print
-        print '  content of the scratch directory ', scratch_id
+        print '  content of the (master) scratch directory ', scratch_id
         print '  ------------------------------------------------------------------------------'
         print '%25s %10s %s' % ('name', 'size (MB)', 'last accessed')
         print '  ------------------------------------------------------------------------------'
         for filename in os.listdir(self.scratch_dir):
             filesize_mb = float(os.path.getsize(self.scratch_dir + '/'
                                 + filename)) / 1024000
+
+            sum_filesize_mb=sum_filesize_mb+filesize_mb
 
       # create a dictionary to hold file info
 
@@ -395,6 +398,13 @@ class pam_enviroment:
            st_mtime (last modification time), st_ctime (time of creation, Windows)"""
                 sys.stdout.flush()
         print '  ------------------------------------------------------------------------------'
+        print '       Total size of all files :  %10.3f  MB ' % sum_filesize_mb
+
+        from common import disk_space
+        disk = disk_space(self.scratch_dir)
+        print '      Disk info:  used    available   capacity [GB]'
+        print '           %10.3f     %10.3f     %10.3f ' % (disk.used,disk.available,disk.capacity)
+        print ''
 
     def remove_scratch_dir(self):
         ''' remove the scratch directory  '''
