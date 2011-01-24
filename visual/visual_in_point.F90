@@ -161,8 +161,7 @@ contains
                                  buffer,     &
                                  px, py, pz, &
                                  v2)
-                  !strange minus sign
-                  v = v2 - v
+                  v = v - v2
                end if
                result(1:3) = result(1:3) + v(1:3)
             end if
@@ -320,8 +319,7 @@ contains
                                  buffer,     &
                                  px, py, pz, &
                                  v2)
-                  !strange minus sign
-                  v = v2 - v
+                  v = v - v2
                end if
             
                rx = px - cord(1, visual_cfg_ref_nucleus(imat))
