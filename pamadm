@@ -165,13 +165,13 @@ vital_directories.append('test/SCRIPTS')
 vital_files = []
 vital_files.append('configure')
 vital_files.append('testlast')
-vital_files.append('pam.in')
+vital_files.append('pam')
 vital_files.append('Makefile')
 vital_files.append('README')
 vital_files.append('config.guess')
 vital_files.append('config.status')
 vital_files.append('config.sub')
-vital_files.append('pamq.py.in')
+vital_files.append('ng-runtest')
 vital_files.append('test/MPI2_test.F')
 vital_files.append('test/README')
 
@@ -274,7 +274,6 @@ do_not_release.append('utils/cppp.py')
 do_not_release.append('relccsd/ccdriv_nomemget.F')
 do_not_release.append('relccsd/ccints_nomemget.F')
 do_not_release.append('relccsd/ccsort_lowmem.F')
-do_not_release.append('gp/memory_tracker.F90')
 do_not_release.append('embedding/emb1int.F')
 do_not_release.append('embedding/embd.F90')
 do_not_release.append('embedding/emb_froz_orb.F90')
@@ -542,10 +541,9 @@ for module in dirac_modules:
 # blank line
 print
 
-#  there are no flags
-if len(sys.argv) == 1:
+#  there are no modules
+if (len(sys.argv) == 1) or (len(sys.argv) == 2 and 'export' in sys.argv[1]):
    print 'only core functionality selected'
-   print '(run ./pamadm -h to see all available options)'
 else:
    print 'Active modules:'
 
@@ -770,20 +768,18 @@ if ( not is_windows() ): provide_star_basisfile_names()
 if options.exportfile != None:
    scratch_dir = options.exportfile
 
-   print 'Exporting DIRAC:'
+   print 'exporting DIRAC:'
 #  create scratch dir for copying files for export, if exists, remove it first
    if os.path.isdir(scratch_dir):
-     print '...removed old "',scratch_dir,'" directory'
-     shutil.rmtree(scratch_dir)
+       print '   removed old %s directory' % scratch_dir
+       shutil.rmtree(scratch_dir)
    else:
-     #print 'creating RELEASE directory inside'
-     os.mkdir(scratch_dir)
+       os.mkdir(scratch_dir)
 
 #  copy all vital directories and files to scratch dir
-   print '...exporting DIRAC files into newly created "',scratch_dir,'"directory...'
+   print '   exporting DIRAC files into newly created %s directory' % scratch_dir
    for directory in vital_directories:
        copytree_dest= scratch_dir + '/' + directory
-       #print directory,copytree_dest
        if not os.path.isdir(copytree_dest):
            shutil.copytree(directory, copytree_dest)
    for file in vital_files:
@@ -863,11 +859,8 @@ if options.exportfile != None:
    exportfile_svn_tgz = options.exportfile+"_svn_"+str(svn_object.get_svn_revision())
 #  create tar.gz
    command = 'tar -czf %s.tar.gz %s' % (exportfile_svn_tgz, scratch_dir)
-   print '...creating export file, command: "',command,'"'
+   print '   creating export file with command: %s' % command
    os.system(command)
-   print '...done, release directory "',scratch_dir,'" kept for checking.'
 
-#  do not remove scratch dir, is worth for checking the bitten-buildup
-#   shutil.rmtree(scratch_dir)
-
-## end of the main function ##
+#  remove scratch dir
+   shutil.rmtree(scratch_dir)

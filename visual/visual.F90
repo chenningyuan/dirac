@@ -150,6 +150,7 @@ contains
 
     call init_mat(D_mo, norbt, norbt)
 
+#ifdef MOD_UNRELEASED
     if (visual_cfg_london) then
 
        D_mo%elms = 0.0d0
@@ -249,6 +250,7 @@ contains
        end if
        call copy_matrix_sym(D_con, D_con_mo)
     end if
+#endif
 
     do imat = 1, visual_cfg_nr_dmat
 
@@ -319,6 +321,7 @@ contains
     end if
 
     do imat = 1, visual_cfg_nr_dmat
+#ifdef MOD_UNRELEASED
        if (visual_cfg_london) then
           if (.not. visual_cfg_london_skip_ro) then
 !            dirty trick add D_con on top of D
@@ -327,6 +330,7 @@ contains
              D(imat) = D(imat) + D_con
           end if
        end if
+#endif
 
 !      scale density matrix
        D(imat) = 2.0d0*D(imat)
