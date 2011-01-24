@@ -16,6 +16,17 @@ if(NOT CMAKE_BUILD_TYPE)
         )
 endif()
 
+if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/Sources.cmake")
+    include(cmake/Sources.cmake)
+else()
+    message(FATAL_ERROR "could not find cmake/Sources.cmake; run pamadm first")
+endif()
+if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/Definitions.cmake")
+    include(cmake/Definitions.cmake)
+else()
+    message(FATAL_ERROR "could not find cmake/Definitions.cmake; run pamadm first")
+endif()
+
 option(DIRAC_ENABLE_PROFILING     "Enable profiling"          OFF)
 option(DIRAC_ENABLE_BOUNDS_CHECK  "Enable bounds check"       OFF)
 option(DIRAC_ENABLE_CODE_COVERAGE "Enable code coverage"      OFF)
@@ -133,9 +144,6 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
 set(CMAKE_Fortran_MODULE_DIRECTORY
     ${PROJECT_BINARY_DIR}/modules
     )
-
-include(cmake/Definitions.cmake)
-include(cmake/Sources.cmake)
 
 if(DIRAC_ENABLE_XCFUN)
     add_subdirectory(xcfun)

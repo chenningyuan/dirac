@@ -1,11 +1,5 @@
 #! /bin/bash
 
-echo 
-echo '   You are not running autoconf/automake tools!'
-echo '   DIRAC is built using cmake'
-echo '   check http://wiki.chem.vu.nl/dirac/'
-echo 
-
 tcmake=`which cmake`
 if test $tcmake; then
    cd cbuild; cmake ..
@@ -20,8 +14,13 @@ if test $tcmake; then
    echo '   $ make'
 else       
    echo    
+   echo '   You are not running autoconf/automake tools!'
+   echo '   DIRAC is built using cmake'
+   echo '   check http://wiki.chem.vu.nl/dirac/'
+   echo 
    echo '   cmake is not found'
    echo '   get cmake at http://www.cmake.org/'
+   echo 
 fi
 
 exit 0
