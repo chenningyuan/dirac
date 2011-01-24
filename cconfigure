@@ -2,16 +2,20 @@
 
 tcmake=`which cmake`
 if test $tcmake; then
-   cd cbuild; cmake ..
-   echo
-   echo '   to compile DIRAC with modified parameters:'
-   echo '   $ cd cbuild'
-   echo '   $ ccmake ..'
-   echo '   $ make'
-   echo
-   echo '   to compile DIRAC with default parameters:'
-   echo '   $ cd cbuild'
-   echo '   $ make'
+   cd cbuild
+   cmake ..
+   RETURN=$?
+   if [ $RETURN -eq 0 ]; then
+       echo
+       echo '   to compile DIRAC with modified parameters:'
+       echo '   $ cd cbuild'
+       echo '   $ ccmake ..'
+       echo '   $ make'
+       echo
+       echo '   to compile DIRAC with default parameters:'
+       echo '   $ cd cbuild'
+       echo '   $ make'
+   fi
 else       
    echo    
    echo '   You are not running autoconf/automake tools!'
