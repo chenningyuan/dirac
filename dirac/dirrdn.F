@@ -50,7 +50,7 @@ C
 C
 C     Initializations
 C
-      CALL PAMINI(WORK,LWORK)
+      CALL PAMINI()
 C
 C     Echo back the input and count the number of keywords given
 C
@@ -776,8 +776,8 @@ C***********************************************************************
 #include "dummy.h"
 #include "mxcent.h"
       PARAMETER (NTABLE = 65)
-      PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00,
-     &           DTHRS=1.0D-13, DP5 = 0.50D00)
+      PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D0,
+     &           DTHRS=1.0D-13, DP5 = 0.50D0)
 C
       LOGICAL SET, NEWDEF, LBIT, RESET, NOAUTOCC
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -1180,7 +1180,7 @@ C
      &               'Input error for .OPEN SHELL under *DHFCAL')
                   END IF
                   TEXT = LINE(1:ISLASH-1)
-                  READ (TEXT,*) DELEC
+                  READ (TEXT,*) IELEC
 C
                   IPERIOD= INDEX(LINE,',')
                   IF (IPERIOD .GT. 0) THEN
@@ -1227,7 +1227,6 @@ C
      &                         'a positive even number')
                   END IF
 c                 IF (IELEC .LE. 0 .OR. IELEC .GT. IAC1+IAC2) THEN
-                  IELEC = DELEC
                   IF (IELEC .LT. 0 .OR. IELEC .GT. IAC1+IAC2) THEN
                      WRITE(LUPRI,'(A,I3,A,I3)')
      &                  'ERROR: Number of electrons (',IELEC,
@@ -1237,7 +1236,7 @@ c                 IF (IELEC .LE. 0 .OR. IELEC .GT. IAC1+IAC2) THEN
                   END IF
                   NACSH(1,IOPEN) = IAC1/2
                   NACSH(2,IOPEN) = IAC2/2
-                  DF(IOPEN) = DELEC/SDPRE(IAC1+IAC2)
+                  DF(IOPEN) = real(IELEC,8)/real(IAC1+IAC2,8)
                END DO
                INIOCC = .FALSE.
                GO TO 100
@@ -1511,8 +1510,8 @@ C
                DALPHA(1) = D2
 C
                NELECT_DHF = NELECT_DHF - 1
-               NAELEC_DHF = D1
-               NASHT_DHF = 1
+               NAELEC_DHF = 1
+               NASHT_DHF  = 1
                WRITE(LUPRI,'(/,6X,A)')
      &            'WARNING! INIOCC assumes 1 electron in 1 open shell!'
             END IF
@@ -1524,18 +1523,18 @@ C
          END IF
       END IF
       IF (.NOT. INIOCC) THEN
-         DF(0) = D1
-         DA(0) = D1
+         DF(0)     = D1
+         DA(0)     = D1
          DALPHA(0) = D0
-         DTEMP = D0
-         NASHMFT = 0
+         DTEMP     = D0
+         NASHMFT   = 0
          DO IFRP = 1,NFSYM
             DO IOPEN = 1,NOPEN
                NASH_DHF(IFRP) = NASH_DHF(IFRP) + NACSH(IFRP,IOPEN)
                NACSHMF(IFRP,IOPEN) = NACSH(IFRP,IOPEN)
                NASHMFT = NASHMFT + NACSHMF(IFRP,IOPEN)
                DTEMP          = DTEMP +
-     &                          NACSH(IFRP,IOPEN)*D2*DF(IOPEN)
+     &                          real(NACSH(IFRP,IOPEN),8)*D2*DF(IOPEN)
             END DO
             IF (NELEC_DHF(IFRP).LT.0)
      &         CALL QUIT('DHFINP: negative number of '//
@@ -1573,10 +1572,13 @@ C
                DF(IOPEN)     = D0
                DALPHA(IOPEN) = D0
             ELSE
-               DM        = D2*(NACSH(1,IOPEN)+NACSH(2,IOPEN))
+               DM        = D2*(real(NACSH(1,IOPEN)+NACSH(2,IOPEN),8))
                DN        = DM*DF(IOPEN)
                DA(IOPEN) = (DM*(DN-D1))/(DN*(DM-D1))
+               IF (ABS(DA(IOPEN)).LE.DTHRS) DA(IOPEN) = d0
                DALPHA(IOPEN) = (D1-DA(IOPEN))/(D1-DF(IOPEN))
+!              print *,'dm,dn,df(iopen),da(iopen),dalpha(iopen)',
+!    &                  dm,dn,df(iopen),da(iopen),dalpha(iopen)
             END IF
          ENDDO
          NASHT_DHF  = NASH_DHF(1)  + NASH_DHF(2)
@@ -1910,6 +1912,12 @@ C
       IF (AUTOCC .AND. NASHT_DHF .GT. 1) THEN
          WRITE(LUPRI,'(A)')
      &      ' WARNING! .AUTOCC and NASHT > 1 does not work',
+     &      '  ==> turning .AUTOCC off'
+         AUTOCC = .FALSE.
+      END IF
+      IF (AUTOCC .AND. NOPEN .GT. 1)THEN
+         WRITE(LUPRI,'(A)')
+     &      ' WARNING! .AUTOCC and NOPEN > 1 does not work',
      &      '  ==> turning .AUTOCC off'
          AUTOCC = .FALSE.
       END IF
@@ -3782,8 +3790,7 @@ Cluuk IF(NTOT.EQ.0) IPRCMP = 0
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck pamini */
-      SUBROUTINE PAMINI(WORK,LWORK)
+      SUBROUTINE PAMINI()
 C***********************************************************************
 C
 C     Initialize data in DIRAC
@@ -3807,7 +3814,6 @@ C
 #include "dcbxpr.h"
 #include "dcbcls.h"
 #include "dcbprl.h"
-      DIMENSION WORK(LWORK)
 C
 C     Initialize temporary variables
 C     ==============================
@@ -5538,6 +5544,7 @@ C
          CALL QUIT('Program stopped in HAMINP, error in prompt.')
       END IF
     2 CONTINUE
+!       work can be easily removed by changing internal memget to alloc
         CALL SOLVIN(WORD,WORK,LWORK)
         GO TO 200
 
@@ -5553,7 +5560,7 @@ C
     4 CONTINUE
 #ifdef MOD_CAP
 CMI    ... reading the CAP integrals characteristic
-        CALL CAPINP(WORD,.FALSE.,WORK,LWORK)
+        CALL CAPINP(WORD,.FALSE.)
 #else
 CMI       dirac.x went into an infinite loop here
 C       if *CAP in input but MOD_CAP is not defined !!!
@@ -5583,10 +5590,11 @@ C
 
 
 
+!       work can be easily removed by changing internal memget to alloc
       IF(SOLVEN) CALL SOLVIN(WORD,WORK,LWORK)
 
 #ifdef MOD_CAP
-      IF (CAP) CALL CAPINP(WORD,.TRUE.,WORK,LWORK)
+      IF (CAP) CALL CAPINP(WORD,.TRUE.)
 #endif
 
       IF((IBSS.GT.999.or.x2c).AND..NOT.NOAMFI) THEN

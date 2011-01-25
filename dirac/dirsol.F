@@ -485,7 +485,6 @@ C
 C
 C     Process section
 C
-      CALL MEMGET('REAL',KRNUC,LMTOT ,WORK,KFREE,LFREE)
       IF (.NOT.CAVUSR) THEN
          DO I = 1, MXCENT
             ISOTOP(I) = 1

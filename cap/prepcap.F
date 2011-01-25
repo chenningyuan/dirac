@@ -20,7 +20,7 @@
 !dirac_copyright_end
 
 C  /* Deck capinp */
-      SUBROUTINE CAPINP(WORD,RESET,WORK,LWORK)
+      SUBROUTINE CAPINP(WORD,RESET)
 C*****************************************************************************
 C
 C  Input section for CAP-module
@@ -42,7 +42,6 @@ C*****************************************************************************
 C
       LOGICAL SET, NEWDEF,RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-      DIMENSION WORK(LWORK)
 C
       SAVE SET
       DATA TABLE /'.INPQD ','.INPCAP','.PRINT ','.OVLCAP',
