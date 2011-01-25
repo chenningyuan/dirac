@@ -84,7 +84,7 @@ c     iopt(10) .ne.0 - do not write tape9
       if (filenm(1:1).eq.' ') filenm='tape12'
       open(12,file=filenm,form='UNFORMATTED')
 
-      write (LUPRI,*) '   $$$$$$$$$   csw   $$$$$$$$$  '
+      write (LUPRI,*) '   $$$$$$$$$   csw - (0,3) sector  $$$$$$$$$  '
 
       call check_modules
 
@@ -127,11 +127,13 @@ c     iopt(10) .ne.0 - do not write tape9
       call t1sqr    ("t1v ","t1v ","tu  ","tum ")
       call ordv_csw
       call ordta0_csw
+
       if (iopt(17).ne.0) then
         call calvw0_csw
         call move     ("v30 ","t33 ")
         call sqr3     ("t33 ")
         call zero     ("t33 ")
+
         if (iopt(17).ne.3) then
           call dveps6   ("t33 ")
         else if (iopt(17).eq.3) then
@@ -165,15 +167,20 @@ c     iopt(10) .ne.0 - do not write tape9
             end if
             call fmax6   ("t3nw",tmax,idmax,indmax)
             call dfmax3 ("t3nw","t33 ","s2  ",df3,iddf3,inddf3)
+
+!------------- iteration process ------------------------------------
             write (6,*) ' '
             write (6,'('' iteration # '',i3,'' diffmx='',
      1      e10.3,2x,i12,2x,i12)') iter,df3,idec(iddf3),idec(inddf3)
             write(6,2400) tmax,idec(idmax),idec(indmax)
 2400        format(' max t3=',f15.9,2x,i6,2x,i10)
+
+
             if (abs(tmax).gt.1.d10.or.abs(tmax).lt.1.d-10) then
               write (*,*) ' abort. tmax out of bounds'
               call abext('tmax    ')      
             endif
+
             call wrtfile (59,0,"twf ")
             if (iopt(17).gt.0) then
               call prt6 ("t33 ","t33 ",2)
@@ -204,14 +211,23 @@ c     iopt(10) .ne.0 - do not write tape9
               end if
             end if
           end do
+
+          ! --- iterations end
           if (iparm.eq.1) then
             write (6,*) ' csw converged after iter ',iter
           else if (iparm.eq.2) then
             write (6,*) ' iteration limit'
             call abext('limit   ')     
+          else
+            write(LUPRI,*) 'iparm=',iparm
+            write(LUPRI,*) 'dead branch for iterations...iter=',iter
           end if
           call prt6 ("t33 ","last t33",0)
         end if
+      else
+        !
+        write(LUPRI,*) '=== no iterations ==='
+        write(LUPRI,*) ' iopt(17)=',iopt(17)
       end if
 
       call check_modules
