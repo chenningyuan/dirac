@@ -357,7 +357,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck SYMFINT */
       SUBROUTINE SYMFINT(IPRINT,IREPIJ,IREPIJB,IREPKLB,IJ,IKR,JKR,
-     &           NSTR3,NSTR4,NKL,FMAT,WORK,KFREE,LFREE)
+     &           NSTR3,NSTR4,NKL,FMAT)
 C
 C     Symmetrize the final integrals and write them to file
 C
@@ -369,11 +369,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcbtra.h"
 #include "dcbham.h"
 #include "dgroup.h"
-      DIMENSION WORK(*)
       INTEGER NSTR3(2),NSTR4(2)
       DIMENSION FMAT(NKL,NZ,NZ,*)
       DIMENSION IREPIJB(2),IREPKLB(2,NKL)
       INTEGER RCW
+      Real(8), Allocatable :: FTMAT(:,:),RKL(:,:)
+      Integer, Allocatable :: INDK(:),INDL(:)
 C
 C     Set parameter to indicate whether the integrals are complex or real.
 C
@@ -383,10 +384,10 @@ C
          RCW = 2
       ENDIF
 C
-      CALL MEMGET('REAL',KFTMAT,NKL*RCW,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KINDK,NKL,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KINDL,NKL,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KRKL,RCW*NKL,WORK,KFREE,LFREE)
+      Allocate (FTMAT(NKL,RCW))
+      Allocate (  RKL(NKL,RCW))
+      Allocate (INDK(NKL))
+      Allocate (INDL(NKL))
 C
       IF (SPINFR) THEN
 C
@@ -396,7 +397,7 @@ C     symmetry and can be fed into non-relativistic codes.
 C     Only one class of integrals (all-unbarred) suffices for
 C     this purpose.
 C
-      CALL DZERO(WORK(KFTMAT),RCW*NKL)
+      CALL DZERO(FTMAT,RCW*NKL)
       IREPABR = 0
       DO IREPAB = 0, NBSYM-1
          IF (IREPIJ.EQ.JBTOF(IREPAB,1)) THEN
@@ -426,7 +427,7 @@ C
             FACTR = 1.D0
             CALL DAXPY (NKL,FACTR,
      &                  FMAT(1,1,1,IREPABR),1,
-     &                  WORK(KFTMAT),1)
+     &                  FTMAT,1)
  100        CONTINUE
          ENDIF
       ENDDO
@@ -435,16 +436,14 @@ C     Only one class remains in the spinfree case
 C
       ICLASS = 1
       CALL MDINTB(IPRINT,RCW,ICLASS,IREPIJ,NSTR3,NSTR4,IKR,JKR,
-     &            WORK(KFTMAT),NKL,
-     &            WORK(KINDK),WORK(KINDL),
-     &            WORK(KRKL))
+     &            FTMAT,NKL,INDK,INDL,RKL)
 C
       ELSE ! not spinfree
 C
 C     Real and complex classes
 C
       DO ICLASS = 1, 4
-         CALL DZERO(WORK(KFTMAT),RCW*NKL)
+         CALL DZERO(FTMAT,RCW*NKL)
          IREPABR = 0
          DO IREPAB = 0, NBSYM-1
             IF (IREPIJ.EQ.JBTOF(IREPAB,1)) THEN
@@ -458,7 +457,7 @@ C
                         FACTR = IFAC
                         CALL DAXPY (NKL,FACTR,
      &                              FMAT(1,IZ2,IZ1,IREPABR),1,
-     &                              WORK(KFTMAT),1)
+     &                              FTMAT(:,1),1)
                      ENDIF
                      IF (NZ.GT.1) THEN
                         IFAC=INTCL(ICLASS+4,IQ1,IQ2)
@@ -466,7 +465,7 @@ C
                            FACTR = IFAC
                            CALL DAXPY (NKL,FACTR,
      &                                 FMAT(1,IZ2,IZ1,IREPABR),1,
-     &                                 WORK(KFTMAT+NKL),1)
+     &                                 FTMAT(:,2),1)
                         ENDIF
                      ENDIF
                   ENDDO
@@ -477,19 +476,17 @@ C
 C        Take out integrals that should be zero due to the linear symmetry (can be non-zero due to noise)
 C
          IF (LINEAR)
-     &   CALL LINZERO (ICLASS,IREPIJB,IREPKLB,NKL,WORK(KFTMAT))
+     &   CALL LINZERO (ICLASS,IREPIJB,IREPKLB,NKL,FTMAT)
 
          CALL MDINTB(IPRINT,RCW,ICLASS,IREPIJ,NSTR3,NSTR4,IKR,JKR,
-     &               WORK(KFTMAT),NKL,
-     &                         WORK(KINDK),WORK(KINDL),
-     &                         WORK(KRKL))
+     &               FTMAT,NKL,INDK,INDL,RKL)
       ENDDO
 C
 C     Quaternion classes
 C
       IF (NZ.EQ.4) THEN
          DO ICLASS = 9, 12
-            CALL DZERO(WORK(KFTMAT),RCW*NKL)
+            CALL DZERO(FTMAT,RCW*NKL)
             IREPABR = 0
             DO IREPAB = 0, NBSYM-1
                IF (IREPIJ.EQ.JBTOF(IREPAB,1)) THEN
@@ -503,29 +500,30 @@ C
                             FACTR = IFAC
                             CALL DAXPY (NKL,FACTR,
      &                                  FMAT(1,IZ2,IZ1,IREPABR),1,
-     &                                  WORK(KFTMAT),1)
+     &                                  FTMAT(:,1),1)
                         ENDIF
                         IFAC=INTCL(ICLASS+4,IQ1,IQ2)
                         IF (IFAC.NE.0) THEN
                            FACTR = IFAC
                            CALL DAXPY (NKL,FACTR,
      &                                 FMAT(1,IZ2,IZ1,IREPABR),1,
-     &                                 WORK(KFTMAT+NKL),1)
+     &                                 FTMAT(:,2),1)
                         ENDIF
                      ENDDO
                   ENDDO
                ENDIF
             ENDDO
             CALL MDINTB(IPRINT,RCW,ICLASS,IREPIJ,NSTR3,NSTR4,IKR,JKR,
-     &                  WORK(KFTMAT),NKL,
-     &                  WORK(KINDK),WORK(KINDL),
-     &                  WORK(KRKL))
+     &                  FTMAT,NKL,INDK,INDL,RKL)
          ENDDO
       ENDIF
 C
       ENDIF ! spinfree
 C
-      CALL MEMREL('SYMFINT',WORK,1,KFTMAT,KFREE,LFREE)
+      DeAllocate (FTMAT)
+      DeAllocate (RKL)
+      DeAllocate (INDK)
+      DeAllocate (INDL)
 C
       RETURN
       END

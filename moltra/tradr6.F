@@ -1287,7 +1287,7 @@ C         Only call SYMFINT if this matrix was formed
           IF (INIT) CALL SYMFINT(IPRINT,IREPIJ,
      &                 INDXB12(1,IJ+NIJOFF),INDXB34(1,1+NKLOFF),
      &                 IJ,IKR,JKR,NSTR(1,0,3),NSTR(1,0,4),NKL,
-     &                 WORK(KHMAT),WORK,KFREE,LFREE)
+     &                 WORK(KHMAT))
  100    CONTINUE
         NIJOFF = NIJOFF + NFPCK12(IREPIJ)
         NKLOFF = NKLOFF + NFPCK34(IREPIJ)

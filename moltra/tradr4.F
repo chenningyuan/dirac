@@ -992,8 +992,7 @@ C
              IF (MYTID.EQ.MPARID .OR. MDCSCAT) THEN
                 CALL SYMFINT(IPRINT,IREPIJ,
      &                       INDXB12(1,IJ+NIJOFF),INDXB34(1,1+NKLOFF),
-     &                       IJ,IKR,JKR,NSTR3,NSTR4,NKL,WORK(KHMATS),
-     &                       WORK,KFREE,LFREE)
+     &                       IJ,IKR,JKR,NSTR3,NSTR4,NKL,WORK(KHMATS))
              END IF
           ELSE
              IF (MYTID .EQ. MPARID .OR. MDCSCAT) THEN
@@ -1010,8 +1009,7 @@ C
                CALL MDSCRR(IREPIJ,IJ,LHMAT,WORK(KHMAT))
                CALL SYMFINT(IPRINT,IREPIJ,
      &                      INDXB12(1,IJ+NIJOFF),INDXB34(1,1+NKLOFF),
-     &                      IJ,IKR,JKR,NSTR3,NSTR4,NKL,WORK(KHMAT),
-     &                      WORK,KFREE,LFREE)
+     &                      IJ,IKR,JKR,NSTR3,NSTR4,NKL,WORK(KHMAT))
             END DO
          END IF
 #if defined (VAR_MPI)

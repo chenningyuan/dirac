@@ -573,8 +573,7 @@ C
            IKR = INDXKR(1,IJ)
            JKR = INDXKR(2,IJ)
            CALL SYMFINT(IPRINT,IREPIJ,INDXB12(1,IJ),INDXB34,IJ,IKR,JKR,
-     &                  NSTR3,NSTR4,NKL,WORK(KGMAT),
-     &                  WORK,KFREE,LFREE)
+     &                  NSTR3,NSTR4,NKL,WORK(KGMAT))
         ELSEIF (ISTRAT.EQ.4) THEN
            CALL MDSCRU(IREPIJ,IJS+IJ,LGMAT,WORK(KGMAT),WORK(KGTMP))
         ENDIF
