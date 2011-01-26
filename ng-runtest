@@ -193,7 +193,7 @@ list_of_tests_to_run = list_of_tests_with_menu[:]
 # print screen header
 
 print
-print '%8s %6s %25s %30s %15s' % ('progress', 'result', 'test', 'inp', 'mol')
+print '%8s %6s %25s %30s %15s' % ('progress', 'result', 'test', 'inp', 'mol/xyz')
 print '----------------------------------------------------------------------------------------'
 
 # run the tests
@@ -239,10 +239,10 @@ for test in list_of_tests_to_run:
                     # check whether DIRAC terminated normally
                     pam_output = p.communicate()[0]
                     if 'exit           : normal' in pam_output:
-                        output_file = string.replace(inp_file, '.inp', '') \
-                                    + '_'                                  \
-                                    + string.replace(mol_file, '.mol', '') \
-                                    + '.out'
+                        inp_file_strip = inp_file.strip('.inp')
+                        mol_file_strip = mol_file.strip('.mol')
+                        mol_file_strip = mol_file_strip.strip('.xyz')
+                        output_file = '%s_%s.out' % (inp_file_strip, mol_file_strip)
                         if os.path.isfile('result/%s' % output_file):
 
                             # overwrite reference files
@@ -285,11 +285,9 @@ for test in list_of_tests_to_run:
                     progress = '[%3i%s]' % (100.0*float(nr_of_tests_done)/float(total_nr_of_tests), r'%')
                     
                     test_short = string.split(test, '/')[-1]
-                    inp_short  = string.replace(inp_file, '.inp', '')
-                    mol_short  = string.replace(mol_file, '.mol', '')
                     
                     print '%8s %6s %25s %30s %15s' % \
-                        (progress, result_text, test_short, inp_short, mol_short)
+                        (progress, result_text, test_short, inp_file_strip, mol_file_strip)
                     
                     if ((nr_crashed > 0) or (nr_failed > 0)) and options.giveup:
                         print
