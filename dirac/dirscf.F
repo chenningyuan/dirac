@@ -3406,12 +3406,35 @@ C***********************************************************************
 C
 #include "dcborb.h"
 #include "dcbdhf.h"
+#include "dcbgen.h"
 #include "dgroup.h"
 C
       DIMENSION EIG(*)
       DIMENSION IEIGMIN(NFSYM)
       logical   symmetry_broken
-C
+      integer, save :: icharge       = 0
+      integer       :: total_num_e
+!
+!     (re-)set NELECT_DHF as it might have changed from last time 
+!     because of the detection of symmetry broken solution...
+!     -----------------------------------------------------------
+
+!     a. get total number of electrons: sum_of_atomic_numbers - sum_of_charges
+      if(icharge.lt.1)then
+!       determine total # of electrons
+        call rmolchr(icharge)
+      end if
+      total_num_e = icharge - kcharg
+
+!     b. set nelect_dhf
+      nelect_dhf = total_num_e
+      naelec_dhf = 0
+      if(mod(nelect_dhf,2).eq.1) then
+        nelect_dhf = nelect_dhf - 1
+        naelec_dhf = 1
+      end if
+      
+!     initialize arrays
       DO I = 1,NFSYM
          IEIGMIN(I)     = 1+IORB(I) + NPSH(I)
          NISH(I)        = 0
@@ -3430,49 +3453,51 @@ C     100 loop is over electron pairs (closed shell orbitals)
 C
  100  CONTINUE
 C        Find the irrep that has the lowest eigenvalue
-         IEIGSYM = 0
- 110     IEIGSYM = IEIGSYM + 1
+         IEIGSYM          = 0
+ 110     IEIGSYM          = IEIGSYM + 1
          IF (NISH(IEIGSYM) .GE. NESH(IEIGSYM)) GOTO 110
-         J = IEIGSYM
+         J                = IEIGSYM
 !        stefan: add test if fermion irrep J+1 contains any orbitals
            DO I = J+1,NFSYM
             if(norb(I)+iorb(i).ge.IEIGMIN(I))then
                IF (EIG(IEIGMIN(I)) .LT. EIG(IEIGMIN(IEIGSYM)))
-     &         IEIGSYM = I
+     &         IEIGSYM    = I
             end if
            END DO
 C        We found the lowest yet unoccupied MO, occupy it
-         NISH(IEIGSYM) = NISH(IEIGSYM) + 1
+         NISH(IEIGSYM)    = NISH(IEIGSYM) + 1
          IEIGMIN(IEIGSYM) = IEIGMIN(IEIGSYM) + 1
-         NELEC2GO = NELEC2GO - 2
+         NELEC2GO         = NELEC2GO - 2
 C        More orbitals to be filled ?
       IF (NELEC2GO .GT. 0) GOTO 100
 C
 C     Same procedure for the open shell (works only for one e in one open shell)
+C     we take care of degeneracies in the following...
 C
-      IF (NAELEC_DHF .GT. 0) THEN
-         IEIGSYM = 0
- 200     IEIGSYM = IEIGSYM + 1
+      IF (NAELEC_DHF .gt. 0) THEN
+         IEIGSYM          = 0
+ 200     IEIGSYM          = IEIGSYM + 1
             IF (NISH(IEIGSYM) .GE. NESH(IEIGSYM)) GOTO 200
-         J = IEIGSYM
+         J                = IEIGSYM
          DO I = J+1,NFSYM
             IF (EIG(IEIGMIN(I)) .LT. EIG(IEIGMIN(IEIGSYM)))
-     &         IEIGSYM = I
+     &         IEIGSYM    = I
          END DO
-         NASH(IEIGSYM) = 1
+         NASH(IEIGSYM)    = 1
          NACSH(IEIGSYM,1) = 1
+         IEIGMIN(IEIGSYM) = IEIGMIN(IEIGSYM) + 1
       END IF
 C
 !     stefan + hjaaj - jan 2011:
-!     check for symmetry-broken solution "caused" by the Aufbau
-!     principle, correct it and stop if "fractional occupation" is not 
-!     in use.
-!     if(.not.aoc)then
-!       symmetry_broken = .false.
-!       call check_for_symmetry_breaking_in_automatic_occ(eig,nish,nesh,
-!    &                         ieigmin,nfsym,nelect_dhf,naelec_dhf,norb,
-!    &                         ieigsym,symmetry_broken)
-!     end if
+!     check for symmetry-broken solutions "caused" by the Aufbau
+!     principle and correct it.
+!     stop if "fractional occupation" is not in use?
+      symmetry_broken = .false.
+      if(.not.aoc)then
+        call check_for_symmetry_broken_occupations(eig,nish,nash,
+     &                          norb,norbt,ieigsym,nfsym,ieigmin,
+     &                          total_num_e,symmetry_broken)
+      end if
 !
       NASHMFT = 0
       DO I = 1, NFSYM
@@ -3490,92 +3515,293 @@ C
       END DO
 C     Subtract frozen orbitals (if any) from orbital classes
       CALL SUBFRZ()
-      RETURN
+
+      if(symmetry_broken)then
+        write(lupri,'(/a)') '  INFO from FNDOCC: following the'//
+     &  ' Aufbau principle led to a symmetry_broken solution -'//
+     &  ' the program corrected it for you.'
+        write(lupri,'(a/)') '  INFO from FNDOCC: the new occupation'//
+     &  ' will follow below:'
+      end if
+
       END
 
 C***********************************************************************
-
-      SUBROUTINE check_for_symmetry_breaking_in_automatic_occ(eig,nish,
-     &                        nesh,ieigmin,nfsym,nelect_dhf,naelec_dhf,
-     &                        norb,ieigsym_last_occ,symmetry_broken)
+      subroutine check_for_symmetry_broken_occupations(eig,nish,nash,
+     &                     norb,norbt,ieigsym_last_occ,nfsym,ieigmin,
+     &                     total_num_e,symmetry_broken)
+!***********************************************************************
 !
-C***********************************************************************
-C
-C     detect symmetry-broken solutions when using the Aufbau principle
-C     to set-up an (initial) electronic configuration.
-C
-C***********************************************************************
+!     purpose: detect symmetry-broken solutions when using the
+!     Aufbau principle to set-up an (initial) electronic configuration.
+!
+!     written by s. knecht - jan 2011
+!
+!***********************************************************************
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
-C
-      real(8), parameter :: degeneracy_thr = 4.0d-02
-C
-      DIMENSION  eig(*), nish(nfsym),nesh(nfsym),norb(nfsym)
-      DIMENSION  ieigmin(nfsym)
-      logical    symmetry_broken
-      integer    orboff, deg_counter
-      real(8) :: eig_last
-      integer,   allocatable :: ieig_deg(:)
-      logical    degeneracy_found
-C
-      degeneracy_found = .false.
-      ilast            = ieigmin(ieigsym_last_occ)-1
-      orboff           = 0
-      do i = 1, nfsym
-        print *, 'eigenvalues for isym =',i,' # of orbs =',norb(i)
-        call wrtmat(eig(1+orboff),1,norb(i),1,norb(i))
-        orboff = orboff + norb(i)
-      end do
+#include "dcbdhf.h"
+      real(8), parameter   :: dthrs_null     = 1.0d-13
+      real(8), parameter   :: degeneracy_thr = 6.0d-02
+      real(8), parameter   :: d0             = 0.0d0
+      real(8), parameter   :: dp5            = 0.5d0
+      real(8), parameter   :: d1             = 1.0d0
+      real(8), parameter   :: d2             = 2.0d0
+      integer, parameter   :: max_degeneracy = 128
+
+      real(8), intent(in)    :: eig(*)
+      integer, intent(inout) :: nish(nfsym), nash(nfsym), norb(nfsym)
+      integer, intent(inout) :: ieigmin(nfsym)
+      logical, intent(inout) :: symmetry_broken
+      integer, intent(in)    :: total_num_e
+
+      real(8), allocatable :: eig_deg(:)
+      integer, allocatable :: ieig_deg(:)
+      real(8)              :: eig_last
+      integer              :: orboff, deg_counter, subtract_nish
+      logical              :: debug_print
+
+      debug_print      = .false.
+      if(debug_print)then 
+        orboff           = 0
+        do i = 1, nfsym
+          print *, 'eigenvalues for isym =',i,' # of orbs =',norb(i)
+          call wrtmat(eig(1+orboff),1,norb(i),1,norb(i))
+          orboff = orboff + norb(i)
+        end do
+      end if
+
+!     initialize the last Kramers-pair in which electron(s) was (were) put 
+      ilast           = ieigmin(ieigsym_last_occ) - 1
+      naelec_dhf_save = naelec_dhf
+
+      call alloc(ieig_deg,max_degeneracy,
+     &           id='pointer to degenerate orbs')
+      call alloc(eig_deg, max_degeneracy,
+     &           id='eigenvalues of degenerate orbs')
+
+ 400  call izero(ieig_deg,max_degeneracy)
+      call dzero(eig_deg, max_degeneracy)
 
       orboff   = 0
       do i = 1, ieigsym_last_occ-1
         orboff = orboff + norb(i)
       end do
 
-      print *, '  ieigsym_last_occ is',ieigsym_last_occ,
-     &         ' the last e- went into ',ilast
 
-      allocate(ieig_deg(norb(ieigsym_last_occ)))
-      call izero(ieig_deg,norb(ieigsym_last_occ))
+      if(debug_print)then
+        print *, '  naelec_dhf is',naelec_dhf
+        print *, '  ieigsym_last_occ is',ieigsym_last_occ,
+     &           '  the last e- was put into ',ilast
+        print *, '  the eigenvalue is: ',eig(ilast)
+      end if
+
 
       eig_last              = eig(ilast)
       deg_counter           = 1
       ieig_deg(deg_counter) = ilast
+      eig_deg( deg_counter) = eig_last
       iup                   = ilast
       idown                 = ilast
-      if(naelec_dhf.gt.0)then
-      else
-!       test up and down
-!       a. up
- 500    continue
+
+!     search up and down for degenerate (or near-degenerate) kramers-pairs
+!     a. up
+ 500  continue
         iup = iup + 1
         if(iup.le.orboff+norb(ieigsym_last_occ))then
           if(abs(eig(iup)-eig_last).le.degeneracy_thr)then
             deg_counter           = deg_counter + 1
             ieig_deg(deg_counter) = iup
+            eig_deg( deg_counter) = eig(iup)
             goto 500
           end if
         end if
 !       b. down
- 600    continue
+ 600  continue
         idown = idown - 1
         if(idown.gt.orboff)then
           if(abs(eig(idown)-eig_last).le.degeneracy_thr)then
             deg_counter           = deg_counter + 1
             ieig_deg(deg_counter) = idown
+            eig_deg( deg_counter) = eig(idown)
             goto 600
           end if
         end if
-        
-        if(deg_counter .gt. 1)then
-          print *,'  found degeneracy in irrep:', ieigsym_last_occ
-          do i = 1,deg_counter
-            print *,'  orbital #:',ieig_deg(i)
-          end do
+
+!     set new # of active e- according to degeneracies
+!     ==> (ilast - idown ) * 2 - naelec_dhf_save
+!     naelec_dhf_save: 1 for odd numbers of total e-, 0 otherwise
+      naelec_dhf =  2*(ilast-idown) - naelec_dhf_save
+
+      if(debug_print)then
+        print *, '  active e- initial, revised (for re-distribution):',
+     &              naelec_dhf_save, naelec_dhf
+      end if
+      d_nr_acte_revised = real(naelec_dhf,8)
+
+      dalpha(0) = d0
+      df(0)     = d1
+      da(0)     = d1
+      nashmft   = 0
+
+      nopen     = 1
+
+      if(debug_print)then
+        print *,'  found degeneracy in irrep:', ieigsym_last_occ
+        do i = 1,deg_counter
+          print *,'  orbital #:',ieig_deg(i), '; eigenvalue = ',
+     &                                           eig_deg(i)
+        end do
+      end if
+
+!     start revised automatic occupation taking into account degeneracy
+
+!     case a. number of e- == 2 * number of degenerate orbs; the "closed-shell case"
+      if(naelec_dhf .eq. 2*deg_counter) then 
+        nopen      = 0
+        naelec_dhf = 0
+        nasht_dhf  = 0
+        nelect_dhf = 0
+        call izero(nash_dhf,nfsym)
+        call izero(nash    ,nfsym)
+        call icopy(nfsym,nish,1,nish_dhf,1)
+        do ifrp = 1,nfsym
+          nelec_dhf(ifrp) = nish_dhf(ifrp)*2
+          nelect_dhf      = nelect_dhf + nelec_dhf(ifrp)
+        end do
+!       consistency check
+        if(nelect_dhf.ne.total_num_e)then
+          print *, 'calculated # of e-: ',nelect_dhf
+          print *, 'total # of e-     : ',total_num_e
+          call quit(' *** error in automatic occupation module: 
+     & calculated # of e- does not match the total # of e-.***')
         end if
 
-      end if
-      deallocate(ieig_deg)
+      else ! naelec_dhf != 2*deg_counter
+
+!       case b. number of e- < 2*deg_counter and # of degenerate orbs > 1
+!       --> p-shell, d-shell, f-shell, or near-degenerate MOs...
+        if(deg_counter .gt. 1)then
+
+          if(debug_print)then
+            print *,' number of active e- for redistribution ==',
+     &                naelec_dhf
+          end if
+!      
+          call izero(nacsh,nfsym*mxopen)
+          nacsh(ieigsym_last_occ,1) = deg_counter
+          call icopy(nfsym*mxopen,nacsh,1,nacshmf,1)
+  
+          df(1)             = d_nr_acte_revised/real(deg_counter*2,8)
+          dm                = d2*(real(nacsh(1,1)+nacsh(2,1),8))
+          dn                = dm*df(1)
+          da(1)             = (dm*(dn-d1))/(dn*(dm-d1))
+          if(abs(da(1)).le.dthrs_null) da(1) = d0
+          dalpha(1)         = (d1-da(1))/(d1-df(1))
+
+          if(debug_print)then
+            print *,'dm,dn,df(iopen),da(iopen),dalpha(iopen)',
+     &               dm,dn,df(1),da(1),dalpha(1)
+            print *,'nish(1), nish(2), nish_dhf(1), nish_dhf(2)',
+     &               nish(1), nish(2), nish_dhf(1), nish_dhf(2)
+            print *,' ilast, idown =',ilast, idown
+            print *,' naelec_dhf_save, naelec_dhf =',
+     &                naelec_dhf_save, naelec_dhf
+          end if
+
+!         reset nish array - take into account whether an unpaired e-
+!         had been placed in the last orb.
+          subtract_nish          = ilast - idown
+          if(naelec_dhf_save.gt.0) subtract_nish = subtract_nish - 1
+
+          if(debug_print)then
+            print *, 'nish(ieigsym_last...), subtract_nish, naelec_dhf',
+     &                nish(ieigsym_last_occ),subtract_nish, naelec_dhf
+          end if
+
+          nish(ieigsym_last_occ) = nish(ieigsym_last_occ)-subtract_nish
+          call icopy(nfsym,nish,1,nish_dhf,1)
+
+          call izero(nash_dhf,nfsym)
+          call izero(nash,    nfsym)
+          nasht_dhf  = 0
+          nelect_dhf = 0
+          do ifrp = 1,nfsym
+            do iopen = 1,nopen
+              nash_dhf(ifrp) = nash_dhf(ifrp) + nacsh(ifrp,iopen)
+              nashmft        = nashmft + nacshmf(ifrp,iopen)
+            end do
+            nelec_dhf(ifrp) = nish_dhf(ifrp)*2
+            nasht_dhf       = nasht_dhf  + nash_dhf(ifrp)
+            nelect_dhf      = nelect_dhf + nelec_dhf(ifrp)
+          end do
+          call icopy(nfsym,nash_dhf,1,nash,1)
+
+!         consistency check
+          if(nelect_dhf+naelec_dhf.ne.total_num_e)then
+            print *, 'calculated # of e-: ',nelect_dhf+naelec_dhf
+            print *, 'total # of e-     : ',total_num_e
+            call quit(' *** error in automatic occupation module: 
+     & calculated # of e- does not match the total # of e-.***')
+          end if
+
+!         initial occupation from the Aufbau principle ended up with a
+!         symmetry broken solution - therefore set flag to .true.
+          symmetry_broken  = .true.
+
+!       case c. number of e- < 2*deg_counter and # of degenerate orbs == 1
+!       --> s-shell or a "lonely" MO...
+        else if(deg_counter.eq.1)then
+
+!         consistency check
+          if(naelec_dhf.ne.1)then
+            print *, 'calculated # of active e- : ',naelec_dhf
+            print *, 'total # of degenerate orbs: ',deg_counter
+            call quit(' *** error in automatic occupation module:
+     & calculated # of active e- does not match the # of deg. orbs.***')
+          end if
+
+          nasht_dhf  = naelec_dhf
+          nelect_dhf = 0
+          call izero(nacsh,nfsym*mxopen)
+          call izero(nash_dhf,nfsym)
+          call izero(nash,    nfsym)
+
+          nacsh(ieigsym_last_occ,1) = deg_counter
+
+          df(1)             = d_nr_acte_revised/real(deg_counter*2,8)
+          dm                = d2*(real(nacsh(1,1)+nacsh(2,1),8))
+          dn                = dm*df(1)
+          da(1)             = (dm*(dn-d1))/(dn*(dm-d1))
+          if(abs(da(1)).le.dthrs_null) da(1) = d0
+          dalpha(1)         = (d1-da(1))/(d1-df(1))
+
+          call icopy(nfsym,nish,1,nish_dhf,1)
+          do ifrp = 1,nfsym
+            nash_dhf(ifrp)  = nash_dhf(ifrp) + nacsh(ifrp,1)
+            nashmft         = nashmft + nacshmf(ifrp,1)
+            nelec_dhf(ifrp) = nish_dhf(ifrp)*2
+            nelect_dhf      = nelect_dhf + nelec_dhf(ifrp)
+          end do
+          call icopy(nfsym,nash_dhf,1,nash,1)
+
+        end if ! deg_counter > 1
+
+        if(debug_print)then
+          print *,'nash(1), nash(2), nash_dhf(1), nash_dhf(2)',
+     &             nash(1), nash(2), nash_dhf(1), nash_dhf(2)
+          print *,'nelect_dhf - end:',nelect_dhf
+          print *,'nelec_dhf(1), nelec_dhf(2) - end:',
+     &             nelec_dhf(1), nelec_dhf(2)         
+          print *,'nish(1), nish(2), nish_dhf(1), nish_dhf(2)',
+     &             nish(1), nish(2), nish_dhf(1), nish_dhf(2)  
+        end if
+
+      end if ! naelec_dhf .eq. 2*deg_counter ?
+
+      call dealloc( eig_deg)
+      call dealloc(ieig_deg)
 
       end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

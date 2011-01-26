@@ -1475,11 +1475,12 @@ C
      &      '   Charge of molecule    = ',KCHARG,
      &      '   i.e. no. of electrons = ',ICHRG-KCHARG
 C
-         NASHT_DHF = 0
+         NASHT_DHF  = 0
+         NAELEC_DHF = 0
          IF (NFSYM .EQ. 1) THEN
 C
 C           The easy case:
-C              all electrons goes into the only symmetry!
+C              all electrons go into the only symmetry!
 C
             INIOCC = .FALSE.
             NELEC_DHF(1) = ICHRG - KCHARG
@@ -1490,8 +1491,9 @@ C
                NELEC_DHF(1) = NELEC_DHF(1) - 1
                WRITE(LUPRI,'(/,6X,A)')
      &            'WARNING! INIOCC assumes 1 electron in 1 open shell!'
-               NASHT_DHF = 1
+               NASHT_DHF  = 1
             END IF
+            NELECT_DHF = NELEC_DHF(1)
 C
          ELSE
 C
@@ -1510,7 +1512,6 @@ C
                DALPHA(1) = D2
 C
                NELECT_DHF = NELECT_DHF - 1
-               NAELEC_DHF = 1
                NASHT_DHF  = 1
                WRITE(LUPRI,'(/,6X,A)')
      &            'WARNING! INIOCC assumes 1 electron in 1 open shell!'
@@ -1521,6 +1522,7 @@ C           occupation during the SCF.
 C
             AUTOCC = .TRUE.
          END IF
+         NAELEC_DHF = NASHT_DHF
       END IF
       IF (.NOT. INIOCC) THEN
          DF(0)     = D1
@@ -1924,6 +1926,11 @@ C
       IF (AUTOCC .AND. NFSYM .GT. 1) THEN
          WRITE(LUPRI,'(A)')
      &      ' * DHF occupation is allowed to change during SCF cycles.'
+      END IF
+      IF (AUTOCC .AND. AOC)THEN
+         WRITE(LUPRI,'(A)')
+     &      ' WARNING! .AUTOCC and average-of-configuration active.',
+     &      '  ==> you may get what you asked for but no warranty!!!'
       END IF
       WRITE(LUPRI,'(A)')
      +    ' * Contributions from 2-electron integrals to Fock matrix:'
