@@ -184,8 +184,9 @@ for test in list_of_tests_to_run:
         list_of_tests_with_menu.append(test)
         f = open(file, 'r')
         for line in f.readlines():
-            if use_this_line(line):
-                total_nr_of_tests += 1
+            if len(line.split()) > 0:
+                if use_this_line(line):
+                    total_nr_of_tests += 1
         f.close()
 list_of_tests_to_run = list_of_tests_with_menu[:]
 
