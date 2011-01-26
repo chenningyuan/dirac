@@ -7,9 +7,7 @@ export MOL;
 ###############################
 echo "Zero field...DC"
 MENU=zerofield;
-FILTER=filter_zerofield;
 export MENU;
-export FILTER;
 ../SCRIPTS/run.sh --mw=140  --aw=160 --outcmo
 ###############################
 echo "Field strength 0.001 ... DC"
@@ -28,17 +26,13 @@ rm DFCOEF
 #<REMOVE_BEGIN>
 echo "Zero field...BSS+MFSSO "
 MENU=bss+mfsso.zerofield;
-FILTER=filter_zerofield;
 export MENU;
-export FILTER;
 ../SCRIPTS/run.sh --outcmo
 #<REMOVE_END>
 ###############################
 echo "Zero field...BSS "
 MENU=bss.zerofield;
-FILTER=filter_zerofield;
 export MENU;
-export FILTER;
 ../SCRIPTS/run.sh --incmo --outcmo
 ###############################
 echo "Field strength 0.001 ... BSS"

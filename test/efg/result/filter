@@ -3,3 +3,7 @@ Nlines 8:Electronic energy
 
 $ERROR 0.000000001
 Nlines 10:Overview of calculated energies
+
+$ERROR 0.000001
+From:Individual (non-zero) components
+To:Total contribution to principal components
