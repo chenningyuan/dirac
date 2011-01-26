@@ -1,15 +1,15 @@
-b3lyp.inp              hf.mol
-blyp.inp               hf.mol
-lda.inp                hf.mol
-lda_default_dc.inp     he.mol
-lda_default_ll.inp     he.mol
-lda_default_nr.inp     he.mol
-lda_default_x2c.inp    he.mol
-lda_default_x2c4.inp   he.mol
-blyp_sdft.inp          he.mol
-lda_sdft.inp           he.mol
-lda_sdft_collinear.inp he.mol
-lda_nosdft.inp         he.mol
-blyp_qr_sdft.inp       hcl.mol
-blyp_qr_nosdft.inp     hcl.mol
-lda_qr_sdft.inp        hcl.mol
+regular b3lyp.inp              hf.mol
+regular blyp.inp               hf.mol
+regular lda.inp                hf.mol
+regular lda_default_dc.inp     he.mol
+regular lda_default_ll.inp     he.mol
+regular lda_default_nr.inp     he.mol
+regular lda_default_x2c.inp    he.mol
+regular lda_default_x2c4.inp   he.mol
+regular blyp_sdft.inp          he.mol
+regular lda_sdft.inp           he.mol
+regular lda_sdft_collinear.inp he.mol
+regular lda_nosdft.inp         he.mol
+regular blyp_qr_sdft.inp       hcl.mol
+regular blyp_qr_nosdft.inp     hcl.mol
+regular lda_qr_sdft.inp        hcl.mol

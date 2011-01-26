@@ -171,77 +171,78 @@ for test in list_of_tests_to_run:
                 os.system(line[2:])
             else:
                 # run test
-                nr_of_tests_done += 1
-                inp_file = line.split()[0]
-                mol_file = line.split()[1]
-                pam_flags = ''
-                if len(line.split()) > 2:
-                   for i in range(2, len(line.split())):
-                       pam_flags += line.split()[i] + ' '
-                pam_flags += '--silent '
-                pam_flags += '--nobackup '
-                pam_flags += '--noarch '
-                if options.mpi > 1:
-                    pam_flags += '--mpi=%i ' % options.mpi
-                
-                # run pam
-                command = '%s/pam --inp=%s --mol=%s %s' \
-                    % (root_directory, inp_file, mol_file, pam_flags)
-                p = subprocess.Popen(command,
-                                     shell=True,
-                                     stdin=subprocess.PIPE,
-                                     stdout=subprocess.PIPE)
-                
-                # check whether DIRAC terminated normally
-                pam_output = p.communicate()[0]
-                if 'exit           : normal' in pam_output:
-                    output_file = string.replace(inp_file, '.inp', '') \
-                                + '_'                                  \
-                                + string.replace(mol_file, '.mol', '') \
-                                + '.out'
-                    if os.path.isfile('result/%s' % output_file):
-                      
-                        # create directory where outputs are compared
-                        if not os.path.isdir('compare'):
-                            os.mkdir('compare')
-
-                        # apply the filter on output
-                        os.system('../SCRIPTS/crep %s        result/filter > compare/%s.own' \
-                                  % (output_file, output_file))
-                        # apply the filter on reference output
-                        os.system('../SCRIPTS/crep result/%s result/filter > compare/%s.ref' \
-                                  % (output_file, output_file))
-                        # compare filtered result with reference
-                        os.system('../SCRIPTS/bdrep compare/%s.own compare/%s.ref > compare/%s.txt' \
-                                  % (output_file, output_file, output_file))
-                        
-                        if os.path.getsize('compare/%s.txt' % output_file) == 0:
-                            result_text = 'OK'
-                            nr_ok += 1
+                if line.split()[0] != 'benchmark':
+                    nr_of_tests_done += 1
+                    inp_file = line.split()[1]
+                    mol_file = line.split()[2]
+                    pam_flags = ''
+                    if len(line.split()) > 3:
+                       for i in range(3, len(line.split())):
+                           pam_flags += line.split()[i] + ' '
+                    pam_flags += '--silent '
+                    pam_flags += '--nobackup '
+                    pam_flags += '--noarch '
+                    if options.mpi > 1:
+                        pam_flags += '--mpi=%i ' % options.mpi
+                    
+                    # run pam
+                    command = '%s/pam --inp=%s --mol=%s %s' \
+                        % (root_directory, inp_file, mol_file, pam_flags)
+                    p = subprocess.Popen(command,
+                                         shell=True,
+                                         stdin=subprocess.PIPE,
+                                         stdout=subprocess.PIPE)
+                    
+                    # check whether DIRAC terminated normally
+                    pam_output = p.communicate()[0]
+                    if 'exit           : normal' in pam_output:
+                        output_file = string.replace(inp_file, '.inp', '') \
+                                    + '_'                                  \
+                                    + string.replace(mol_file, '.mol', '') \
+                                    + '.out'
+                        if os.path.isfile('result/%s' % output_file):
+                          
+                            # create directory where outputs are compared
+                            if not os.path.isdir('compare'):
+                                os.mkdir('compare')
+                    
+                            # apply the filter on output
+                            os.system('../SCRIPTS/crep %s        result/filter > compare/%s.own' \
+                                      % (output_file, output_file))
+                            # apply the filter on reference output
+                            os.system('../SCRIPTS/crep result/%s result/filter > compare/%s.ref' \
+                                      % (output_file, output_file))
+                            # compare filtered result with reference
+                            os.system('../SCRIPTS/bdrep compare/%s.own compare/%s.ref > compare/%s.txt' \
+                                      % (output_file, output_file, output_file))
+                            
+                            if os.path.getsize('compare/%s.txt' % output_file) == 0:
+                                result_text = 'OK'
+                                nr_ok += 1
+                            else:
+                                result_text = 'FAIL'
+                                nr_failed += 1
                         else:
-                            result_text = 'FAIL'
-                            nr_failed += 1
+                            result_text = ' '
+                            nr_without_ref += 1
                     else:
-                        result_text = ' '
-                        nr_without_ref += 1
-                else:
-                    result_text = 'CRASH'
-                    nr_crashed += 1
-                
-                progress = '[%3i%s]' % (100.0*float(nr_of_tests_done)/float(total_nr_of_tests), r'%')
-
-                test_short = string.split(test, '/')[-1]
-                inp_short  = string.replace(inp_file, '.inp', '')
-                mol_short  = string.replace(mol_file, '.mol', '')
-
-                print '%8s %6s %25s %30s %15s' % \
-                    (progress, result_text, test_short, inp_short, mol_short)
-
-                if ((nr_crashed > 0) or (nr_failed > 0)) and options.giveup:
-                    print
-                    print 'cowardly gave up after the first problem'
-                    print '(fix your code or remove --giveup to continue)'
-                    sys.exit()
+                        result_text = 'CRASH'
+                        nr_crashed += 1
+                    
+                    progress = '[%3i%s]' % (100.0*float(nr_of_tests_done)/float(total_nr_of_tests), r'%')
+                    
+                    test_short = string.split(test, '/')[-1]
+                    inp_short  = string.replace(inp_file, '.inp', '')
+                    mol_short  = string.replace(mol_file, '.mol', '')
+                    
+                    print '%8s %6s %25s %30s %15s' % \
+                        (progress, result_text, test_short, inp_short, mol_short)
+                    
+                    if ((nr_crashed > 0) or (nr_failed > 0)) and options.giveup:
+                        print
+                        print 'cowardly gave up after the first problem'
+                        print '(fix your code or remove --giveup to continue)'
+                        sys.exit()
 
     f.close()
 

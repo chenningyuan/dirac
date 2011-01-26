@@ -1,2 +1,3 @@
-PBE0gracLB94.inp    Ne.mol
-GLLBsaopLBalpha.inp Ne.mol
+regular   PBE0gracLB94.inp    Ne.mol
+regular   GLLBsaopLBalpha.inp Ne.mol
+benchmark doesnotexist.inp    doesnotexist.mol
