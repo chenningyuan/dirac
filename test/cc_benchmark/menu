@@ -1,0 +1,16 @@
+benchmark cc.inp C2H4Cl2_ec1_c2v.mol
+benchmark cc.inp C2H4Cl2_sta_c2h.mol
+benchmark cc.inp C2H4Cl2_ec2_c2.mol
+
+benchmark cc.inp C2H4Cl2_ec1_cs2.mol
+benchmark cc.inp C2H4Cl2_sta_ci.mol
+benchmark cc.inp C2H4Cl2_ec2_c1.mol
+
+benchmark cc.inp C2H4Cl2_ec1_cs1.mol
+benchmark cc.inp C2H4Cl2_sta_cs.mol
+
+benchmark cc.inp C2H4Cl2_ec1_c2.mol
+benchmark cc.inp C2H4Cl2_sta_c2.mol
+
+benchmark cc.inp C2H4Cl2_ec1_c1.mol
+benchmark cc.inp C2H4Cl2_sta_c1.mol
