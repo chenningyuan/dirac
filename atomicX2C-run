@@ -60,6 +60,16 @@ group.add_option('--mol',
                  help='specifies the molecular input file [default: %default]')
 parser.add_option_group(group)
 
+group = OptionGroup(parser, 'dirac input file for fragments provided by the user')
+group.add_option('--inp_fragments',
+                 type='string',
+                 action='store',
+                 dest='fragments_user_dirac_input',
+                 default=None,
+                 metavar='yyy.inp',
+                 help='optional Dirac input file(s) for individual fragments [default: %default]')
+parser.add_option_group(group)
+
 group = OptionGroup(parser, '\"pam\" options')
 group.add_option('--pam_options',
                  type='string',
