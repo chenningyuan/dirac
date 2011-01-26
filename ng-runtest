@@ -5,7 +5,7 @@
 #           this file is in "free format" and can have 
 #           empty lines
 #           lines contain: input file, molecule file[, pam flags]
-#        2. --quick, --keywords, --timeout
+#        2. --keywords, --timeout
 #           not programmed yet
 #        3. the good old html output not programmed yet but will come
 #        4. --et (calling home) email feature to be programmed
@@ -137,6 +137,20 @@ if options.individual != None:
 # also verify that the tests have menu files
 # remove those that don't
 
+def use_this_line(line):
+    if options.quick:
+        if line.split()[0] == 'quick':
+            return True
+    elif options.benchmark:
+        if line.split()[0] == 'benchmark':
+            return True
+    else:
+        if line.split()[0] == 'quick':
+            return True
+        if line.split()[0] == 'regular':
+            return True
+    return False
+
 list_of_tests_with_menu = []
 
 total_nr_of_tests = 0
@@ -147,7 +161,8 @@ for test in list_of_tests_to_run:
         list_of_tests_with_menu.append(test)
         f = open(file, 'r')
         for line in f.readlines():
-            total_nr_of_tests += 1
+            if use_this_line(line):
+                total_nr_of_tests += 1
         f.close()
 list_of_tests_to_run = list_of_tests_with_menu[:]
 
@@ -174,8 +189,8 @@ for test in list_of_tests_to_run:
                 # run shell command
                 os.system(line[2:])
             else:
-                # run test
-                if line.split()[0] != 'benchmark':
+                if use_this_line(line):
+                    # run test
                     nr_of_tests_done += 1
                     inp_file = line.split()[1]
                     mol_file = line.split()[2]
