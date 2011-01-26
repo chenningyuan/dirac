@@ -133,6 +133,29 @@ if options.individual != None:
         if test != '':
             list_of_tests_to_run.append(test)
 
+# write the html header
+
+os.chdir(root_directory)
+html_header = '''
+<HTML>
+<TITLE> Error report for DIRAC test runs </TITLE>
+<BODY TEXT="#FFFFFF" BGCOLOR="#000000">
+<PRE>
+<H1>drep output by color</H1>
+
+<p>The colors are determined using relative errors for numbers larger than 0.001,
+and absolute errors otherwise.</p>
+<p>Only those digits that actually differ are yellow or red, the others are white.</p>
+<p>The coloring scheme used:</p>
+1.23456789  white: difference can be neglected (less than 1e-12)
+1.23456<FONT COLOR="#FFFF00">789</FONT> yellow: difference probably neglegible (less than 0.001)
+1.2<FONT COLOR="#FF0000">3456789</FONT>    red: probably significant difference (more than 0.001)
+<p> </p><hr><p> </p>'''
+
+f = open('report.htm', 'w')
+f.write(html_header)
+f.close()
+
 # get total number of tests to run
 # also verify that the tests have menu files
 # remove those that don't
@@ -166,7 +189,7 @@ for test in list_of_tests_to_run:
         f.close()
 list_of_tests_to_run = list_of_tests_with_menu[:]
 
-# print header
+# print screen header
 
 print
 print '%8s %6s %25s %30s %15s' % ('progress', 'result', 'test', 'inp', 'mol')
@@ -238,6 +261,12 @@ for test in list_of_tests_to_run:
                             # compare filtered result with reference
                             os.system('../SCRIPTS/bdrep compare/%s.own compare/%s.ref > compare/%s.txt' \
                                       % (output_file, output_file, output_file))
+                            # generate individual html
+                            os.system('../SCRIPTS/drep compare/%s.own compare/%s.ref > compare/%s.htm' \
+                                      % (output_file, output_file, output_file))
+                            # generate the one big html
+                            os.system('../SCRIPTS/hdrep compare/%s.own compare/%s.ref >> ../../report.htm' \
+                                      % (output_file, output_file))
                             
                             if os.path.getsize('compare/%s.txt' % output_file) == 0:
                                 result_text = 'OK'

@@ -4,6 +4,7 @@
 */Makefile
 */*/Makefile
 *.tgz.*
+report.htm
 cbuild/*
 test/list_of_tests
 test/SCRIPTS/testset
