@@ -6,16 +6,12 @@ MOL=Z80H.lsym.dir.mol;
 export MOL;
 ###############################
 echo "bss.ccsd run"
-FILTER=filter
 MENU=HF.bss.cc;
-export FILTER;
 export MENU;
 ../SCRIPTS/run.sh --mw=80
 ###############################
 echo "bss_sfb.ccsd-ci run"
-FILTER=filter_cc+ci
 MENU=HF.bss_sfb.cc_cisd;
-export FILTER;
 export MENU;
 ../SCRIPTS/run.sh
 ###############################
