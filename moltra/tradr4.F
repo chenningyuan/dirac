@@ -118,7 +118,7 @@ C       Initialize scratch file as permanent file for Master if NOMDCINT.
 C
         IF (NOMDCINT) THEN
            CALL XTIME(1,1,' Initializing MS4IND file  ')
-           CALL MDSCRI(WORK,KFREE,LFREE)
+           CALL MDSCRI
            CALL XTIME(1,2,' Initializing MS4IND file  ')
         END IF
 C
@@ -218,7 +218,7 @@ C
 C     Initialize scratch output file for final integrals
 C
         CALL XTIME(1,1,' Initializing MS4IND file  ')
-        CALL MDSCRI(WORK,KFREE,LFREE)
+        CALL MDSCRI
         CALL XTIME(1,2,' Initializing MS4IND file  ')
 C
         CALL XTIME(5,1,' Computing+transform. integrals')
@@ -1142,7 +1142,7 @@ C
 C
 C     Initialize output file for final integrals
 C
-      CALL MDSCRI(WORK,KFREE,LFREE)
+      CALL MDSCRI
 C
 C     Wait for tasks until we receive the end message
 C

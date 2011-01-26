@@ -576,7 +576,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MDSCRI */
-      SUBROUTINE MDSCRI(WORK,KFREE,LFREE)
+      SUBROUTINE MDSCRI
 C
 C     Initialize MDINT scratch files
 C     Written by Luuk Visscher, May 1997
@@ -587,18 +587,18 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
 #include "dcbtra.h"
 #include "dgroup.h"
-      DIMENSION WORK(*)
       LOGICAL   FEXIST
       CHARACTER*10 FNODE,LFNAM,FNAM*5
+      Real(8), Allocatable :: FTMAT(:)
 C
-      NQQCLASS = NZ * NZ * NBSYM / NFSYM
-C
-      KFRSAV = KFREE
-      NKL = NFPCK34(1)
-      IF (NFSYM.EQ.2) NKL = MAX(NKL,NFPCK34(2))
-      LFMAT = NQQCLASS*NKL
-      CALL MEMGET('REAL',KFTMAT,LFMAT,WORK,KFREE,LFREE)
-      CALL DZERO(WORK(KFTMAT),LFMAT)
+C     Calculate size of integral batches that will be written
+      NQQCLASS = NZ * NZ * NBSYM / NFSYM        ! Number of quaternion units active for each electron
+      NKL = NFPCK34(1)                          ! Dimension of MO matrix (gg+uu)
+      IF (NFSYM.EQ.2) NKL = MAX(NKL,NFPCK34(2)) ! Dimension of MO matrix (ug+gu)
+      LFMAT = NQQCLASS*NKL                      ! Total maximum dimension of bacth
+
+      Allocate (FTMAT(LFMAT))
+      CALL DZERO(FTMAT,LFMAT)
 C
 C     Open direct access scratch file for 4-indexed transformed integrals
 C
@@ -608,6 +608,7 @@ C
          IRECL = MAX(IRECL,IRECLEN(1,0,0))
          WRITE (FNAM,'(A4,I1)') '4IND',IREPIJ
          FNODE = LFNAM(FNAM)
+
 C        Open and delete first if old file, for some systems
 C        leaving out this leads to errors in MCSCF where the record
 C        length changes as the calculation continues
@@ -618,24 +619,15 @@ C        length changes as the calculation continues
      &            ACCESS='DIRECT',RECL=JRECL)
             CLOSE (LUMLF3+IREPIJ,STATUS='DELETE')
          END IF
+
+C        Now open the new file and initialize the records with zeroes
          OPEN (LUMLF3+IREPIJ,FILE=FNODE,ACCESS='DIRECT',RECL=IRECL)
-         NIJ = NFPCK12(IREPIJ)
-         CALL MDSCRI1(LUMLF3+IREPIJ,NIJ,LFMAT,WORK(KFTMAT))
+         DO IJ = 1, NFPCK12(IREPIJ)
+            WRITE (LUMLF3+IREPIJ,REC=IJ) FTMAT
+         END DO
       ENDDO
 C
-      CALL MEMREL('MDSCRI',WORK,1,KFRSAV,KFREE,LFREE)
-      RETURN
-      END
-C/* Deck MDSCRI1 */
-      SUBROUTINE MDSCRI1(LU,NIJ,LFMAT,FMAT)
-C
-C     HJAaJ Aug 2001
-C
-#include "implicit.h"
-      DIMENSION FMAT(LFMAT)
-      DO IJ = 1, NIJ
-         WRITE (LU,REC=IJ) FMAT
-      ENDDO
+      DeAllocate (FTMAT)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
