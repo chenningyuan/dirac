@@ -1,0 +1,4 @@
+regular minimum.inp     ethane_1.mol
+regular saddle.inp      ethane_1.mol
+regular findre.inp      ethane_2.mol
+regular constrained.inp ethane_2.mol
