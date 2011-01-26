@@ -45,7 +45,7 @@ C
       ELSE
          SET = .TRUE.
       END IF
-      print*,'LWORK,LFREE',LWORK,LFREE
+!     print*,'LWORK,LFREE',LWORK,LFREE
 C
       CALL IZERO(IKWSET,NTABLE)
 C
