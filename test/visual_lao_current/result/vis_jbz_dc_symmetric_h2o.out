@@ -1,5 +1,5 @@
-DIRAC pam run in /home/bast/dirac/git/test/visual_lao_current
--e Size of all static allocations : MB 
+DIRAC pam run in /home/bast/dirac/git_trunk/test/visual_lao_current
+-e Size of all static allocations :108.447 MB 
 DIRAC serial starts by allocating 64000000 words (488 MB) of memory
 DIRAC serial has no limitations in place for the amount of dynamically allocated memory
  
@@ -143,7 +143,7 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
  Operating system  : Linux 2.6.35-24-generic
  Machine           : i686
  Run               : Sequential
- Last compilation  : 16:52:31 Jan 18 2011 (by foo@foo:foo)
+ Last compilation  : 11:06:44 Jan 26 2011 (by foo@foo:foo)
  FORTRAN compiler  : foo 
  C compiler        : foo 
  External libraries: foo 
@@ -153,7 +153,7 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
  SVN Revision      : foo 
 
  
-     Date and time (Linux)  : Tue Jan 18 22:06:40 2011
+     Date and time (Linux)  : Wed Jan 26 11:38:49 2011
      Host name              :                                         
 
 
@@ -178,13 +178,13 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
  1.0  1.0  0.0
 -1.0 -1.0  0.0
 -1.0  1.0  0.0
-.QUANTITIES
-2
-PAMXVC 1 5 1
-PAMXVC 2 5 1
+.J
+ PAMXVC 1
+.J
+ PAMXVC 2
 .LONDON
-AOPROPER Z symmetric 7
-AOPROPER Z symmetric 7
+ Z
+.SYMMETRIC
 *END OF
 
 
@@ -602,642 +602,9 @@ Total no. of orbitals           (NORB):    48
 
   *** Visualisation module ***
   Visualisation : DFCOEF file read
- visual_london: symmetric connection used
- visual_london: direct contribution included
- visual_london: response contribution included
- visual_london: reorthonorm. contrib. included
  symmetric connection is used in visual_london
  read symmetry info for connection matrices
  entering ivector, p_name, len_trim(p_name) =            1 dS/dBZ           6
- line(1:len_trim(p_name)LAO-XR
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)-1    
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)-98000
- line(1:len_trim(p_name)7     
- line(1:len_trim(p_name)000+  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)-1    
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)LAO-XR
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)-1    
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1.0000
- line(1:len_trim(p_name)10    
- line(1:len_trim(p_name)+00+  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)-1    
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)LAO-XR
- line(1:len_trim(p_name)8     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)7000.0
- line(1:len_trim(p_name)13    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)7000.0
- line(1:len_trim(p_name)14    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)7000.0
- line(1:len_trim(p_name)15    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)LAO-XR
- line(1:len_trim(p_name)5     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)3500.0
- line(1:len_trim(p_name)24    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)3500.0
- line(1:len_trim(p_name)23    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)LAO-YR
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)-1    
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)-98000
- line(1:len_trim(p_name)8     
- line(1:len_trim(p_name)000+  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)-1    
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)LAO-YR
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)-1    
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1.0000
- line(1:len_trim(p_name)11    
- line(1:len_trim(p_name)+00+  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)-1    
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)LAO-YR
- line(1:len_trim(p_name)8     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)7000.0
- line(1:len_trim(p_name)16    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)7000.0
- line(1:len_trim(p_name)17    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)7000.0
- line(1:len_trim(p_name)18    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)LAO-YR
- line(1:len_trim(p_name)6     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)3500.0
- line(1:len_trim(p_name)22    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)3500.0
- line(1:len_trim(p_name)24    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)LAO-ZR
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)-1    
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)-98000
- line(1:len_trim(p_name)9     
- line(1:len_trim(p_name)000+  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)-1    
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)LAO-ZR
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)-1    
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1.0000
- line(1:len_trim(p_name)12    
- line(1:len_trim(p_name)+00+  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)-1    
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)LAO-ZR
- line(1:len_trim(p_name)8     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)7000.0
- line(1:len_trim(p_name)19    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)7000.0
- line(1:len_trim(p_name)20    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)7000.0
- line(1:len_trim(p_name)21    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)LAO-ZR
- line(1:len_trim(p_name)7     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)3500.0
- line(1:len_trim(p_name)23    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)3500.0
- line(1:len_trim(p_name)22    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)dS    
- line(1:len_trim(p_name)dS    
- visual_london: symmetric connection used
- visual_london: direct contribution included
- visual_london: response contribution included
- visual_london: reorthonorm. contrib. included
- symmetric connection is used in visual_london
- read symmetry info for connection matrices
- entering ivector, p_name, len_trim(p_name) =            2 dS/dBZ           6
- line(1:len_trim(p_name)LAO-XR
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)-1    
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)-98000
- line(1:len_trim(p_name)7     
- line(1:len_trim(p_name)000+  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)-1    
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)LAO-XR
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)-1    
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1.0000
- line(1:len_trim(p_name)10    
- line(1:len_trim(p_name)+00+  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)-1    
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)LAO-XR
- line(1:len_trim(p_name)8     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)7000.0
- line(1:len_trim(p_name)13    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)7000.0
- line(1:len_trim(p_name)14    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)7000.0
- line(1:len_trim(p_name)15    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)LAO-XR
- line(1:len_trim(p_name)5     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)3500.0
- line(1:len_trim(p_name)24    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)3500.0
- line(1:len_trim(p_name)23    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)LAO-YR
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)-1    
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)-98000
- line(1:len_trim(p_name)8     
- line(1:len_trim(p_name)000+  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)-1    
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)LAO-YR
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)-1    
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1.0000
- line(1:len_trim(p_name)11    
- line(1:len_trim(p_name)+00+  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)-1    
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)LAO-YR
- line(1:len_trim(p_name)8     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)7000.0
- line(1:len_trim(p_name)16    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)7000.0
- line(1:len_trim(p_name)17    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)7000.0
- line(1:len_trim(p_name)18    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)LAO-YR
- line(1:len_trim(p_name)6     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)3500.0
- line(1:len_trim(p_name)22    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)3500.0
- line(1:len_trim(p_name)24    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)LAO-ZR
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)-1    
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)-98000
- line(1:len_trim(p_name)9     
- line(1:len_trim(p_name)000+  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)-1    
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)LAO-ZR
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)-1    
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1.0000
- line(1:len_trim(p_name)12    
- line(1:len_trim(p_name)+00+  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)-1    
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)LAO-ZR
- line(1:len_trim(p_name)8     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)7000.0
- line(1:len_trim(p_name)19    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)7000.0
- line(1:len_trim(p_name)20    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)7000.0
- line(1:len_trim(p_name)21    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)LAO-ZR
- line(1:len_trim(p_name)7     
- line(1:len_trim(p_name)1     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)3500.0
- line(1:len_trim(p_name)23    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)4     
- line(1:len_trim(p_name)3500.0
- line(1:len_trim(p_name)22    
- line(1:len_trim(p_name)0++0  
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)0     
- line(1:len_trim(p_name)2     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)3     
- line(1:len_trim(p_name)dS    
- line(1:len_trim(p_name)dS    
 
 
                          +-------------------------------+
@@ -1247,9 +614,9 @@ Total no. of orbitals           (NORB):    48
  
      r_x           r_y           r_z            scalar          x-component       y-component       z-component
  
-  0.100000E+01  0.100000E+01  0.000000E+00  0.0000000000E+00  0.1220544292E+00 -0.4088817842E-01 -0.1413148894E-10
- -0.100000E+01 -0.100000E+01  0.000000E+00  0.0000000000E+00 -0.5813018937E-01  0.5646763219E-01  0.1032260044E-10
- -0.100000E+01  0.100000E+01  0.000000E+00  0.0000000000E+00  0.1220544293E+00  0.4088817821E-01  0.1940677816E-11
+  0.100000E+01  0.100000E+01  0.000000E+00  0.0000000000E+00 -0.1220544292E+00  0.4088817842E-01  0.1413148894E-10
+ -0.100000E+01 -0.100000E+01  0.000000E+00  0.0000000000E+00  0.5813018937E-01 -0.5646763219E-01 -0.1032260044E-10
+ -0.100000E+01  0.100000E+01  0.000000E+00  0.0000000000E+00 -0.1220544293E+00 -0.4088817821E-01 -0.1940677816E-11
  
 ----------------------------------------------------------------------------------------------------
  
@@ -1258,7 +625,7 @@ Total no. of orbitals           (NORB):    48
  >>>> time used in integration:   0.00 seconds
 
  
-     Date and time (Linux)  : Tue Jan 18 22:06:41 2011
+     Date and time (Linux)  : Wed Jan 26 11:38:49 2011
      Host name              :                                         
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
@@ -1266,7 +633,7 @@ Total no. of orbitals           (NORB):    48
   
   Dynamical Memory Usage Summary
   
-  Mean allocation size (Mb) :        28.76
+  Mean allocation size (Mb) :        32.60
   
   Largest          10  allocations
   
@@ -1274,11 +641,11 @@ Total no. of orbitals           (NORB):    48
         0.13 Mb at subroutine                                            for unnamed variable                          
         0.13 Mb at subroutine                                            for unnamed variable                          
         0.13 Mb at subroutine                                            for unnamed variable                          
-        0.13 Mb at subroutine                                            for unnamed variable                          
         0.07 Mb at subroutine                                            for unnamed variable                          
         0.07 Mb at subroutine                                            for unnamed variable                          
         0.07 Mb at subroutine                                            for unnamed variable                          
-        0.07 Mb at subroutine                                            for unnamed variable                          
+        0.00 Mb at subroutine                                            for unnamed variable                          
+        0.00 Mb at subroutine                                            for unnamed variable                          
         0.00 Mb at subroutine                                            for unnamed variable                          
   
   Peak memory usage    (Mb) :       488.00
@@ -1288,5 +655,5 @@ Total no. of orbitals           (NORB):    48
  MEMGET high-water mark:     2.43 MB
 
 *****************************************************
->>>> Node 0, utime: 0, stime: 0, minflt: 127910, majflt: 0, nvcsw: 0, nivcsw: 143, maxrss: 509680
->>>> Total WALL time used in DIRAC: 1s
+>>>> Node 0, utime: 0, stime: 0, minflt: 128043, majflt: 0, nvcsw: 0, nivcsw: 59, maxrss: 509972
+>>>> Total WALL time used in DIRAC: 0s

@@ -1,6 +1,6 @@
-DIRAC pam run in /home/gosia/jobs_dirac/wizualizacja/testy
--e Size of all static allocations :107.595 MB 
-DIRAC serial starts by allocating 100000000 words (762 MB) of memory
+DIRAC pam run in /home/bast/dirac/git_trunk/test/visual_lao_shielding
+-e Size of all static allocations :108.447 MB 
+DIRAC serial starts by allocating 64000000 words (488 MB) of memory
 DIRAC serial has no limitations in place for the amount of dynamically allocated memory
  
 Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in pam
@@ -139,21 +139,21 @@ Note: maximum allocatable memory for serial run can be set by -aw flag (MW) in p
  *                                                                            *
  ******************************************************************************
  Version           : Dirac 8.0 (patchlevel 0) 
- Hostname          : ibm
- Operating system  : Linux 2.6.32-27-generic
+ Hostname          : larry
+ Operating system  : Linux 2.6.35-24-generic
  Machine           : i686
  Run               : Sequential
- Last compilation  : 02:06:48 Jan 24 2011 (by gosia@ibm:/home/gosia/dirac.git/trunk)
- FORTRAN compiler  : /usr/bin/gfortran -g -fbacktrace -fno-range-check -Iinclude -Jmodules -DARCH32BIT -DUSE_DIRAC_BLAS -DUSE_DIRAC_DLAMCH -DUSE_DIRAC_DLAPACK -DUSE_DIRAC_ZLAPACK -DVAR_GFORTRAN -DGFORTRAN=443 -DPRG_DIRAC -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DVAR_MFDS -DMOD_XML -DMOD_OPENRSP -DMOD_OOF -DMOD_ESR -DMOD_KRCC -DMOD_SRDFT -DMOD_MAGNETIZ -DMOD_MCSCF_spinfree -DMOD_UNRELEASED -DMOD_CAP -DMOD_ERI -DMOD_DNF  
- C compiler        : /usr/bin/gcc -g -Iinclude -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE  -D_LARGEFILE64_SOURCE -DARCH32BIT -DMOD_XML -DMOD_OPENRSP -DMOD_OOF -DMOD_ESR -DMOD_KRCC -DMOD_SRDFT -DMOD_MAGNETIZ -DMOD_MCSCF_spinfree -DMOD_UNRELEASED -DMOD_CAP -DMOD_ERI -DMOD_DNF  -DSYS_LINUX -DINSTALL_WRKMEM=64000000 -DSYS_FLAVOR=LINUX 
- External libraries:  
- Internal libraries: DIRAC_BLAS=YES  DIRAC_LAPACK=YES 
- ILP data model    : ILP32 
- SVN URL           : 'unknown Subversion URL' 
- SVN Revision      : 'unknown Subversion revision' 
+ Last compilation  : 11:06:44 Jan 26 2011 (by foo@foo:foo)
+ FORTRAN compiler  : foo 
+ C compiler        : foo 
+ External libraries: foo 
+ Internal libraries: DIRAC_BLAS=foo  DIRAC_LAPACK=foo 
+ ILP data model    : foo 
+ SVN URL           : foo 
+ SVN Revision      : foo 
 
  
-     Date and time (Linux)  : Mon Jan 24 02:06:56 2011 
+     Date and time (Linux)  : Wed Jan 26 11:39:42 2011
      Host name              :                                         
 
 
@@ -550,7 +550,7 @@ Point group: C1
    SL-integrals from iteration    1
  ***** OUTPUT CONTROL *****
  * Only electron eigenvalues written out.
- LWORK,LFREE   100000000   100000000
+ LWORK,LFREE    64000000    64000000
 
 
    ***************************************************************************
@@ -591,7 +591,6 @@ Point group: C1
 No. of positive energy orbitals (NESH):    24
 No. of negative energy orbitals (NPSH):    24
 Total no. of orbitals           (NORB):    48
- >>> Time used in PAMSET is   0.26 seconds
 
   *** Visualisation module ***
   Visualisation : DFCOEF file read
@@ -623,7 +622,7 @@ Total no. of orbitals           (NORB):    48
        3       0.58333333     1.00000000     1.00000000
 
 DFTGRD: ATSIZE not requested or no trial vectors found. Slater-Bragg radii will be used.
-
+ 
 Atom  Deg   Rmin        Rmax        Step size     #rp     #tp
 =============================================================
 O       1   0.571E-06   0.856E+01   0.117E+00     124   29156
@@ -633,7 +632,7 @@ H       1   0.171E-04   0.121E+02   0.123E+00      93   29010
    Number of grid points in quadrature:     87176 (100.0%)
 
 
- >>>> Time used in DFTGRD:   0.16 seconds
+ >>>> Time used in DFTGRD:   0.04 seconds
 
 
       scalar              x-component         y-component         z-component
@@ -643,38 +642,38 @@ H       1   0.171E-04   0.121E+02   0.123E+00      93   29010
 ----------------------------------------------------------------------------------------------------
 
 
- >>>> time used in integration:  1 minute   4 seconds
+ >>>> time used in integration:   7.61 seconds
 
  
-     Date and time (Linux)  : Mon Jan 24 02:08:01 2011 
+     Date and time (Linux)  : Wed Jan 26 11:39:50 2011
      Host name              :                                         
->>>> Node 0, utime: 65, stime: 0, minflt: 205992, majflt: 0, nvcsw: 0, nivcsw: 5721, maxrss: 820668
->>>> Total WALL time used in DIRAC: 1min7s
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 
   
   Dynamical Memory Usage Summary
   
-  Mean allocation size (Mb) :        17.33
+  Mean allocation size (Mb) :        11.35
   
   Largest          10  allocations
   
-      762.94 Mb at subroutine __allocator_internal_a_1d_r_MOD_alloc_a_no for work array at main                        
-        7.63 Mb at subroutine __allocator_internal_a_1d_r_MOD_alloc_a_no for unnamed variable                          
-        7.63 Mb at subroutine __allocator_internal_a_1d_r_MOD_alloc_a_no for unnamed variable                          
-        7.63 Mb at subroutine __allocator_internal_a_1d_r_MOD_alloc_a_no for unnamed variable                          
-        7.63 Mb at subroutine __allocator_internal_a_1d_r_MOD_alloc_a_no for unnamed variable                          
-        0.22 Mb at subroutine __allocator_internal_a_1d_r_MOD_alloc_a_no for unnamed variable                          
-        0.22 Mb at subroutine __allocator_internal_a_1d_r_MOD_alloc_a_no for unnamed variable                          
-        0.22 Mb at subroutine __allocator_internal_a_1d_r_MOD_alloc_a_no for unnamed variable                          
-        0.22 Mb at subroutine __allocator_internal_a_1d_r_MOD_alloc_a_no for unnamed variable                          
-        0.22 Mb at subroutine __allocator_internal_a_1d_r_MOD_alloc_a_no for unnamed variable                          
+      488.28 Mb at subroutine                                            for work array at main                        
+        7.63 Mb at subroutine                                            for unnamed variable                          
+        7.63 Mb at subroutine                                            for unnamed variable                          
+        7.63 Mb at subroutine                                            for unnamed variable                          
+        7.63 Mb at subroutine                                            for unnamed variable                          
+        0.22 Mb at subroutine                                            for unnamed variable                          
+        0.22 Mb at subroutine                                            for unnamed variable                          
+        0.22 Mb at subroutine                                            for unnamed variable                          
+        0.22 Mb at subroutine                                            for unnamed variable                          
+        0.22 Mb at subroutine                                            for unnamed variable                          
   
-  Peak memory usage    (Mb) :       793.00
-       reached at subroutine : __allocator_internal_a_1d_i_MOD_alloc_a_no
+  Peak memory usage    (Mb) :       519.00
+       reached at subroutine :                                           
               for variable   : unnamed variable                          
   
  MEMGET high-water mark:     2.43 MB
 
 *****************************************************
+>>>> Node 0, utime: 7, stime: 0, minflt: 136482, majflt: 0, nvcsw: 0, nivcsw: 701, maxrss: 540292
+>>>> Total WALL time used in DIRAC: 8s
