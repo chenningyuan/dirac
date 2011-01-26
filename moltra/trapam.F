@@ -43,6 +43,7 @@ C***********************************************************************
 #include "dummy.h"
 C
 #include "maxorb.h"
+#include "dcbpsi.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
@@ -446,12 +447,12 @@ C
 
 #ifdef MOD_HSCC
 !     ... interface for the HSCC module
-      CALL HSCC_STUFF(WORK,LWORK)
+      IF (DOHSCC) CALL HSCC_STUFF(WORK,LWORK)
 #endif
 
 #if defined (MOD_HSFS) || defined (HSFS_DYN_ALLOC)
 !     ... interface for the HSFS module
-      CALL HSFS_STUFF(WORK,LWORK)
+      IF (DOHSFS) CALL HSFS_STUFF(WORK,LWORK)
 #endif
 
       CALL QEXIT('PAMTRA')
