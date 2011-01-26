@@ -364,6 +364,7 @@ C
 C     Written by Luuk Visscher, April 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
@@ -384,10 +385,10 @@ C
          RCW = 2
       ENDIF
 C
-      Allocate (FTMAT(NKL,RCW))
-      Allocate (  RKL(NKL,RCW))
-      Allocate (INDK(NKL))
-      Allocate (INDL(NKL))
+      call alloc(FTMAT,NKL,RCW)
+      call alloc(  RKL,NKL,RCW)
+      call alloc(INDK ,NKL)
+      call alloc(INDL, NKL)
 C
       IF (SPINFR) THEN
 C
@@ -520,10 +521,10 @@ C
 C
       ENDIF ! spinfree
 C
-      DeAllocate (FTMAT)
-      DeAllocate (RKL)
-      DeAllocate (INDK)
-      DeAllocate (INDL)
+      call dealloc(FTMAT)
+      call dealloc(RKL)
+      call dealloc(INDK)
+      call dealloc(INDL)
 C
       RETURN
       END
@@ -583,6 +584,7 @@ C     Written by Luuk Visscher, May 1997
 C     Modified by HJAaJ Aug 2001
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
@@ -597,7 +599,7 @@ C     Calculate size of integral batches that will be written
       IF (NFSYM.EQ.2) NKL = MAX(NKL,NFPCK34(2)) ! Dimension of MO matrix (ug+gu)
       LFMAT = NQQCLASS*NKL                      ! Total maximum dimension of bacth
 
-      Allocate (FTMAT(LFMAT))
+      call alloc(FTMAT,LFMAT)
       CALL DZERO(FTMAT,LFMAT)
 C
 C     Open direct access scratch file for 4-indexed transformed integrals
@@ -627,7 +629,7 @@ C        Now open the new file and initialize the records with zeroes
          END DO
       ENDDO
 C
-      DeAllocate (FTMAT)
+      call dealloc(FTMAT)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
