@@ -60,7 +60,7 @@ group.add_option('--mol',
                  help='specifies the molecular input file [default: %default]')
 parser.add_option_group(group)
 
-group = OptionGroup(parser, 'dirac input file for fragments provided by the user')
+group = OptionGroup(parser, 'dirac input file for fragments provided by the user (NOT OPERATIONAL YET)')
 group.add_option('--inp_fragments',
                  type='string',
                  action='store',
@@ -225,3 +225,25 @@ for fragment in list_of_fragments:
 
 # close the basic atomic dirac input
 basic_dirac_input.close()
+
+# x2c fragment input
+class x2c_fragment_dirac_input:
+
+   def __init__ (self, title, integral_options="", fragment_input_opt="") :
+
+        self.title                  = title
+        self.integral_options       = integral_options
+        self.fragment_input_options = fragment_input_options
+
+   def set_dirac_title_section(self) :
+        text  = ".TITLE\n"
+        text += " automatized fragment x2c run.\n"
+        return text
+   def set_dirac_integral_section(self) :
+        text  = "**INTEGRALS\n"
+        text += "*READIN\n"
+        text += ".UNCONTRACT\n"
+        if len(self.integral_options) > 0:
+           text += self.integral_options
+        return text
+
