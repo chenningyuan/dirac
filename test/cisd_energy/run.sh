@@ -8,8 +8,6 @@
 
 MOL=F;
 export MOL;
-FILTER=filter
-export FILTER;
 ###############################
 echo "DC cisd run"
 MENU=cisd;
