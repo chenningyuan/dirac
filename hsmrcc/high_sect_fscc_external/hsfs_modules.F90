@@ -396,6 +396,7 @@ subroutine dealloc_det_mod
 end subroutine dealloc_det_mod
 end module det_mod
 
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 module dat_mod
 ! .. to replace dat.h
 integer :: norb, idum2
@@ -422,6 +423,12 @@ else
  write(LUPRI,*) 'dat_mod was already initialized'
 endif
 end subroutine init_dat_mod
+
+subroutine print_dat_iopt
+! ... prints some iopt(:) data ...
+#include "priunit.h"
+write(LUPRI,*) 'iopt(1,3,17,19):',iopt(1),iopt(3),iopt(17),iopt(19)
+end subroutine print_dat_iopt
 
 subroutine check_dat_mod
 #include "implicit.h"
