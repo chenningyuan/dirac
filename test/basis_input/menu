@@ -1,0 +1,9 @@
+quick ch4.inp ch4_temp.mol
+quick ch4.inp ch4_explicit.mol
+quick ch4.inp ch4_family.mol
+quick ch4.inp ch4_dualfamily.mol
+quick ch4.inp ch4_basis.mol
+quick ch4.inp ch4_bsse.mol
+quick ch4.inp ch4_basis_vtz.mol
+quick ch4.inp ch4_multibasis_vtz.mol
+quick ch4.inp ch4_molfbas.mol
