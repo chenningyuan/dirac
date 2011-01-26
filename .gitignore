@@ -4,7 +4,8 @@
 */Makefile
 */*/Makefile
 *.tgz.*
-Debug
+cbuild/*
+test/list_of_tests
 test/SCRIPTS/testset
 Makefile.config.*
 basis_dalton/*\*
