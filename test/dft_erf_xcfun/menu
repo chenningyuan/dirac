@@ -1,0 +1,5 @@
+regular ldaerf.inp    he.mol
+regular ldaerf_jt.inp he.mol
+
+regular ldaerf.inp    ne.mol
+regular ldaerf_jt.inp ne.mol

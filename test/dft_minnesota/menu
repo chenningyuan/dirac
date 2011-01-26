@@ -1,0 +1,7 @@
+regular m05.inp   he.mol
+regular m05-l.inp he.mol
+regular m06.inp   he.mol
+
+regular m05.inp   ne.mol
+regular m05-l.inp ne.mol
+regular m06.inp   ne.mol

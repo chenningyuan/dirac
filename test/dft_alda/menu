@@ -1,0 +1,6 @@
+regular pbe0_alda+.inp  zn.mol
+regular pbe0_alda-.inp  zn.mol
+regular pbe0_alda.inp   zn.mol
+regular pbe0_xalda+.inp zn.mol
+regular pbe0_xalda-.inp zn.mol
+regular pbe0_xalda.inp  zn.mol

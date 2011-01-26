@@ -1,0 +1,10 @@
+regular b3lyp.inp     hf.mol
+regular blyp.inp      hf.mol
+regular lda.inp       hf.mol
+regular pbex.inp      hf.mol
+regular pbec.inp      hf.mol
+regular pbe0.inp      hf.mol
+regular pbe.inp       hf.mol
+
+regular blyp_sdft.inp he.mol
+regular lda_sdft.inp  he.mol
