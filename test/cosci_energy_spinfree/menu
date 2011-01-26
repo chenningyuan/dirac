@@ -1,0 +1,5 @@
+quick   ci.inp             F.mol
+quick   bss_rkb_sfB.ci.inp F.mol
+
+regular bss_rkb_sfE.ci.inp F.mol
+regular bss_sfB.ci.inp     F.mol

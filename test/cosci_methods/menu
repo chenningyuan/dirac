@@ -1,0 +1,11 @@
+quick   ci.1.inp                   O.mol
+quick   ci.2.inp                   O.mol --outcmo
+
+regular ci.3.inp                   O.mol --incmo
+regular ci.4.inp                   O.mol
+
+regular O.bss_sfB.scf_ci.inp       O.mol --outcmo
+regular O.bss+mfsso.postscf.ci.inp O.mol --incmo
+
+regular O.bss+mfsso.scf_ci.inp     O.mol
+regular O.bss.scf_ci.inp           O.mol

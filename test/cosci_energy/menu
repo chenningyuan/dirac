@@ -1,0 +1,27 @@
+quick   ci.inp                        F.mol
+quick   bss.ci.inp                    F.mol
+
+regular ci.inp                        F.mol
+regular bss_sfBso1.ci.inp             F.mol
+regular bss_sfEso1.ci.inp             F.mol
+regular bss_rkb.ci.inp                F.mol
+regular dc2bss_rkb_df.ci.inp          F.mol
+regular bss+mfsso.ci.inp              F.mol
+regular bss_sfBso1+mfsso.ci.inp       F.mol
+regular bss_sfEso1+mfsso.ci.inp       F.mol
+regular bss_rkb+mfsso.ci.inp          F.mol
+regular dkh2.ci.inp                   F.mol
+regular dkh2+mfsso.ci.inp             F.mol
+regular dkh2sfBso1+mfsso.ci.inp       F.mol
+regular dkh2sfEso1+mfsso.ci.inp       F.mol
+regular dkh2sfBso1.ci.inp             F.mol
+regular dkh2sfEso1.ci.inp             F.mol
+
+regular ci.inp                        Z86_Flike.mol
+regular bss.ci.inp                    Z86_Flike.mol
+regular dkh2.ci.inp                   Z86_Flike.mol
+regular bss_rkb.ci.inp                Z86_Flike.mol
+regular dkh2+mfsso_Flike.ci.inp       Z86_Flike.mol
+regular dkh2sfBso1.ci.inp             Z86_Flike.mol
+regular dkh2sfBso1+mfsso.ci_Flike.inp Z86_Flike.mol
+regular bss+mfsso.ci_Flike.inp        Z86_Flike.mol
