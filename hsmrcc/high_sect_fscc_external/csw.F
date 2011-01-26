@@ -86,6 +86,8 @@ c     iopt(10) .ne.0 - do not write tape9
 
       write (LUPRI,*) '   $$$$$$$$$   csw - (0,3) sector  $$$$$$$$$  '
 
+      write(LUPRI,*) 'iopt(17)=',iopt(17)
+
       call check_modules
 
       csdstim = cputime(real(0.))
