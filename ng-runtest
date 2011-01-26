@@ -8,8 +8,7 @@
 #        2. --quick, --keywords, --timeout
 #           not programmed yet
 #        3. the good old html output not programmed yet but will come
-#        4. overwrite feature to be programmed
-#        5. --et (calling home) email feature to be programmed
+#        4. --et (calling home) email feature to be programmed
 
 import os
 import sys
@@ -87,6 +86,11 @@ group.add_option('--timeout',
                  default=None,
                  help='set time limit for hanging tests in minutes [default: %default]',
                  metavar='INTEGER')
+group.add_option('--overwrite',
+                 action='store_true',
+                 dest='overwrite',
+                 default=False,
+                 help='overwrite reference files [default: %default]')
 parser.add_option_group(group)
 
 # process input
@@ -201,6 +205,10 @@ for test in list_of_tests_to_run:
                                     + string.replace(mol_file, '.mol', '') \
                                     + '.out'
                         if os.path.isfile('result/%s' % output_file):
+
+                            # overwrite reference files
+                            if options.overwrite:
+                                os.system('cp %s result/%s' % (output_file, output_file))
                           
                             # create directory where outputs are compared
                             if not os.path.isdir('compare'):
