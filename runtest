@@ -219,9 +219,9 @@ for test in list_of_tests_to_run:
                     inp_file = line.split()[1]
                     mol_file = line.split()[2]
 
-                    inp_file_strip = inp_file.strip('.inp')
-                    mol_file_strip = mol_file.strip('.mol')
-                    mol_file_strip = mol_file_strip.strip('.xyz')
+                    inp_file_strip = string.replace(inp_file,       '.inp', '')
+                    mol_file_strip = string.replace(mol_file,       '.mol', '')
+                    mol_file_strip = string.replace(mol_file_strip, '.xyz', '')
 
                     pam_flags = ''
                     if len(line.split()) > 3:
