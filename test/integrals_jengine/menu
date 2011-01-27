@@ -1,8 +1,10 @@
-quick NR_direct_Jengine+LinK.inp        H2O2.mol
-quick NR_direct_Jengine+LinK_LDA.inp    H2O2.mol
-quick 2C_SF_direct_Jengine+LinK.inp     H2O2.mol
-quick 2C_SF_direct_Jengine+LinK_LDA.inp H2O2.mol
-quick 2C_SO_direct_Jengine+LinK.inp     H2O2.mol
-quick 2C_SO_direct_Jengine+LinK_LDA.inp H2O2.mol
-quick 2C_GT_direct_Jengine+LinK.inp     H2O2.mol
-quick 2C_GT_direct_Jengine+LinK_LDA.inp H2O2.mol
+quick 
+
+NR_direct_Jengine+LinK.inp        H2O2.mol
+NR_direct_Jengine+LinK_LDA.inp    H2O2.mol
+2C_SF_direct_Jengine+LinK.inp     H2O2.mol
+2C_SF_direct_Jengine+LinK_LDA.inp H2O2.mol
+2C_SO_direct_Jengine+LinK.inp     H2O2.mol
+2C_SO_direct_Jengine+LinK_LDA.inp H2O2.mol
+2C_GT_direct_Jengine+LinK.inp     H2O2.mol
+2C_GT_direct_Jengine+LinK_LDA.inp H2O2.mol

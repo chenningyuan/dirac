@@ -1,2 +1,3 @@
-quick xyz.inp CH3F.xyz
-quick mol.inp CH3F.mol
+quick
+xyz.inp CH3F.xyz
+mol.inp CH3F.mol

@@ -1,4 +1,4 @@
-regular shielding_dc.inp H2O2.mol
-regular shielding_nr.inp H2O2.mol
-regular spinspin_dc.inp  H2O2.mol
-regular spinspin_nr.inp  H2O2.mol
+shielding_dc.inp H2O2.mol
+shielding_nr.inp H2O2.mol
+spinspin_dc.inp  H2O2.mol
+spinspin_nr.inp  H2O2.mol

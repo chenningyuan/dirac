@@ -1,2 +1,2 @@
-regular lda.inp  hf.mol
-regular blyp.inp hf.mol
+lda.inp  hf.mol
+blyp.inp hf.mol

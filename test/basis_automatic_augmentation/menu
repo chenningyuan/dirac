@@ -1,13 +1,15 @@
-quick hf.inp aug-cc-pVDZ.mol
-quick hf.inp d-aug-cc-pVDZ.mol
-quick hf.inp t-aug-cc-pVDZ.mol
+quick
 
-quick hf.inp Turbomole-DZP.mol
-quick hf.inp s-aug-Turbomole-DZP.mol
-quick hf.inp d-aug-Turbomole-DZP.mol
+hf.inp aug-cc-pVDZ.mol
+hf.inp d-aug-cc-pVDZ.mol
+hf.inp t-aug-cc-pVDZ.mol
 
-quick hf.inp Turbomole-TZVPP.mol
-quick hf.inp s-aug-Turbomole-TZVPP.mol
+hf.inp Turbomole-DZP.mol
+hf.inp s-aug-Turbomole-DZP.mol
+hf.inp d-aug-Turbomole-DZP.mol
 
-quick hf.inp dyall.v2z.mol
-quick hf.inp d-aug-dyall.v2z.mol
+hf.inp Turbomole-TZVPP.mol
+hf.inp s-aug-Turbomole-TZVPP.mol
+
+hf.inp dyall.v2z.mol
+hf.inp d-aug-dyall.v2z.mol

@@ -1,4 +1,4 @@
-regular lda_sigma.inp      he.mol
-regular lda_betasigma.inp  he.mol
-regular blyp_sigma.inp     he.mol
-regular blyp_betasigma.inp he.mol
+lda_sigma.inp      he.mol
+lda_betasigma.inp  he.mol
+blyp_sigma.inp     he.mol
+blyp_betasigma.inp he.mol

@@ -1,1 +1,1 @@
-regular HBr.inp HBr.mol --mw=60
+HBr.inp HBr.mol --mw=60

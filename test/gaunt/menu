@@ -1,2 +1,5 @@
-quick   gaunt.inp Ne.C2.mol
-regular gaunt.inp CO.aug-cc-pVDZ.mol
+quick   
+gaunt.inp Ne.C2.mol
+
+regular 
+gaunt.inp CO.aug-cc-pVDZ.mol

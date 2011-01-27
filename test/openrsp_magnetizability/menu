@@ -1,6 +1,6 @@
-regular nr_hf.inp                 hf.mol
-regular nr_hf_shifted.inp         hf.mol
-regular dc_hf_skipep.inp          hf.mol
-regular dc_hf_skipep_cval=900.inp hf.mol
-regular dc_hf_cval=30.inp         hf.mol
-regular dc_hf_shifted_cval=30.inp hf.mol
+nr_hf.inp                 hf.mol
+nr_hf_shifted.inp         hf.mol
+dc_hf_skipep.inp          hf.mol
+dc_hf_skipep_cval=900.inp hf.mol
+dc_hf_cval=30.inp         hf.mol
+dc_hf_shifted_cval=30.inp hf.mol

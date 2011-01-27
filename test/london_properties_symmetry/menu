@@ -1,24 +1,24 @@
-regular lda_levyle_nosdft_shielding.inp   co2_c1.mol
-regular blyp_levyle_nosdft_shielding.inp  co2_c1.mol
-regular b3lyp_levyle_nosdft_shielding.inp co2_c1.mol
-regular lda_levyle_nosdft_shielding.inp   co2_c2.mol
-regular blyp_levyle_nosdft_shielding.inp  co2_c2.mol
-regular b3lyp_levyle_nosdft_shielding.inp co2_c2.mol
-regular lda_levyle_nosdft_shielding.inp   co2_c2h.mol
-regular blyp_levyle_nosdft_shielding.inp  co2_c2h.mol
-regular b3lyp_levyle_nosdft_shielding.inp co2_c2h.mol
-regular lda_levyle_nosdft_shielding.inp   co2_c2v.mol
-regular blyp_levyle_nosdft_shielding.inp  co2_c2v.mol
-regular b3lyp_levyle_nosdft_shielding.inp co2_c2v.mol
-regular lda_levyle_nosdft_shielding.inp   co2_ci.mol
-regular blyp_levyle_nosdft_shielding.inp  co2_ci.mol
-regular b3lyp_levyle_nosdft_shielding.inp co2_ci.mol
-regular lda_levyle_nosdft_shielding.inp   co2_cs.mol
-regular blyp_levyle_nosdft_shielding.inp  co2_cs.mol
-regular b3lyp_levyle_nosdft_shielding.inp co2_cs.mol
-regular lda_levyle_nosdft_shielding.inp   co2_d2.mol
-regular blyp_levyle_nosdft_shielding.inp  co2_d2.mol
-regular b3lyp_levyle_nosdft_shielding.inp co2_d2.mol
-regular lda_levyle_nosdft_shielding.inp   co2_d2h.mol
-regular blyp_levyle_nosdft_shielding.inp  co2_d2h.mol
-regular b3lyp_levyle_nosdft_shielding.inp co2_d2h.mol
+lda_levyle_nosdft_shielding.inp   co2_c1.mol
+blyp_levyle_nosdft_shielding.inp  co2_c1.mol
+b3lyp_levyle_nosdft_shielding.inp co2_c1.mol
+lda_levyle_nosdft_shielding.inp   co2_c2.mol
+blyp_levyle_nosdft_shielding.inp  co2_c2.mol
+b3lyp_levyle_nosdft_shielding.inp co2_c2.mol
+lda_levyle_nosdft_shielding.inp   co2_c2h.mol
+blyp_levyle_nosdft_shielding.inp  co2_c2h.mol
+b3lyp_levyle_nosdft_shielding.inp co2_c2h.mol
+lda_levyle_nosdft_shielding.inp   co2_c2v.mol
+blyp_levyle_nosdft_shielding.inp  co2_c2v.mol
+b3lyp_levyle_nosdft_shielding.inp co2_c2v.mol
+lda_levyle_nosdft_shielding.inp   co2_ci.mol
+blyp_levyle_nosdft_shielding.inp  co2_ci.mol
+b3lyp_levyle_nosdft_shielding.inp co2_ci.mol
+lda_levyle_nosdft_shielding.inp   co2_cs.mol
+blyp_levyle_nosdft_shielding.inp  co2_cs.mol
+b3lyp_levyle_nosdft_shielding.inp co2_cs.mol
+lda_levyle_nosdft_shielding.inp   co2_d2.mol
+blyp_levyle_nosdft_shielding.inp  co2_d2.mol
+b3lyp_levyle_nosdft_shielding.inp co2_d2.mol
+lda_levyle_nosdft_shielding.inp   co2_d2h.mol
+blyp_levyle_nosdft_shielding.inp  co2_d2h.mol
+b3lyp_levyle_nosdft_shielding.inp co2_d2h.mol

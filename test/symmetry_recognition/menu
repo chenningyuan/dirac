@@ -1,3 +1,6 @@
-quick   lda.inp H2O.mol
-quick   lda.inp CH4.mol
-regular lda.inp SF6.mol
+quick
+lda.inp H2O.mol
+lda.inp CH4.mol
+
+regular
+lda.inp SF6.mol

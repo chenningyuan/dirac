@@ -1,9 +1,8 @@
-
 # Run calculation for Hydrogen in linear symmetry
-regular H_lin.inp H_lin.mol --get=DFACMO
+H_lin.inp H_lin.mol --get=DFACMO
 
 # Export coefficients to Cs symmetry
-regular H_Cs.inp H_Cs.mol --get=DFCOEF --put=DFACMO
+H_Cs.inp H_Cs.mol --get=DFCOEF --put=DFACMO
 sh mv DFCOEF cf.H
 sh rm DFACMO
 sh ln -sf cf.H DFHAT1
@@ -11,17 +10,17 @@ sh ln -sf cf.H DFHAT2
 sh ln -sf cf.H DFHAT3
 
 # Run calculation for Nitrogen in linear symmetry
-regular N_lin.inp N_lin.mol --get="DFCOEF DFACMO"
+N_lin.inp N_lin.mol --get="DFCOEF DFACMO"
 sh mv DFCOEF cf.C
 sh ln -s cf.C DFCAT
 
 # Export coefficients to Cs symmetry
-regular N_Cs.inp N_Cs.mol --get=DFCOEF --put=DFACMO
+N_Cs.inp N_Cs.mol --get=DFCOEF --put=DFACMO
 sh mv DFCOEF cf.N
 sh rm DFACMO
 sh ln -sf cf.N DFNNNN
 
 # Run calculation for Ammonia
-regular NH3.inp NH3.mol --put="DFNNNN DFHAT1 DFHAT2 DFHAT3"
+NH3.inp NH3.mol --put="DFNNNN DFHAT1 DFHAT2 DFHAT3"
 
 sh rm DFNNNN DFCAT DFHAT1 DFHAT2 DFHAT3 cf.H cf.N cf.C
