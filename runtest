@@ -5,7 +5,7 @@
 #           this file is in "free format" and can have 
 #           empty lines
 #           lines contain: input file, molecule file[, pam flags]
-#        2. --keywords, --timeout
+#        2. --keywords
 #           not programmed yet
 #        3. the good old html output not programmed yet but will come
 #        4. --et (calling home) email feature to be programmed
@@ -79,13 +79,6 @@ group.add_option('--giveup',
                  dest='giveup',
                  default=False,
                  help='give up after first failing test [default: %default]')
-group.add_option('--timeout',
-                 type='int',
-                 action='store',
-                 dest='timeout',
-                 default=None,
-                 help='set time limit for hanging tests in minutes [default: %default]',
-                 metavar='INTEGER')
 group.add_option('--overwrite',
                  action='store_true',
                  dest='overwrite',
