@@ -18,11 +18,11 @@ for mol in Ar; do
                        Jengine+df_B3LYP            \
          ; do
             MENU=$hamiltonian"_"$method"_"$scheme; export MENU;
-            if [ $hamiltonian == "2C_SF" ]; then
+            if [ "$hamiltonian" = "2C_SF" ]; then
                cat "NR_"$method"_"$scheme".inp" | sed s/.NONREL/".IOTC\n.SPINFREE"/ |sed s/"#"// > $MENU".inp"
-            elif [ $hamiltonian == "2C_SO" ]; then
+            elif [ "$hamiltonian" = "2C_SO" ]; then
                cat "NR_"$method"_"$scheme".inp" | sed s/.NONREL/".IOTC"/ |sed s/"#"// > $MENU".inp"
-            elif [ $hamiltonian == "2C_GT" ]; then
+            elif [ "$hamiltonian" = "2C_GT" ]; then
                cat "NR_"$method"_"$scheme".inp" | sed s/.NONREL/".IOTC\n.GAUNT"/ |sed s/"#"// > $MENU".inp"
             fi
             ../SCRIPTS/run.sh
