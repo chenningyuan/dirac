@@ -1,20 +1,20 @@
 #! /usr/bin/env python
 
 '''
-known problems:    --keywords not implemented
+known problems: --keywords not implemented
 
 report bugs/suggestions to: radovan.bast@uit.no
 
-philosophy:      * keep this script as self contained as possible
-                   do not introduce additional dependencies to DIRAC
-                   infrastructure (e.g. common.py)
-                   because eventually i want to also use it outside DIRAC
-                 * menu format:
-                   free form
-                   blank lines ignored
-                   lines starting with "#" ignored
-                   sections can start with "quick" or "regular" or "benchmark"
-                   "regular" is default" and first "regular" can be missing
+philosophy: keep this script as self contained as possible
+            do not introduce additional dependencies to DIRAC
+            infrastructure (e.g. common.py)
+            because eventually i want to also use it outside DIRAC
+
+menu format: free form
+             blank lines are ignored
+             lines starting with "#" are ignored
+             sections can start with "quick" or "regular" or "benchmark"
+             "regular" is default and can be omitted
 '''
 
 import os
