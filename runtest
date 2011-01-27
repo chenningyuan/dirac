@@ -16,7 +16,7 @@ import string
 import subprocess
 from optparse import OptionParser, OptionGroup
 
-root_directory = os.path.realpath(__file__)[:-11]
+root_directory = os.path.realpath(__file__)[:-8]
 
 # define example usage
 
