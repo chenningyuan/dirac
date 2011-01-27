@@ -1,0 +1,2 @@
+quick   roa_ll.inp h2o2.mol --copy=DALTON.HES
+regular roa_dc.inp h2o2.mol --copy=DALTON.HES

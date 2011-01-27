@@ -1,0 +1,7 @@
+regular nr.inp                 h2o2.mol
+regular nr.inp                 hf.mol
+regular nr_shifted.inp         hf.mol
+regular dc_skipep.inp          hf.mol
+regular dc_skipep_cval=800.inp hf.mol
+regular dc.inp                 hf.mol
+regular dc_shifted.inp         hf.mol
