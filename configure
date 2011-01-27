@@ -848,9 +848,9 @@ if [ "$mesp" = "mpi" ]; then
   esac
 
  $echo "\nChecking if a MPI-2 version is installed:"
-  echo "   $comptst ./test/MPI2_test.F"
+  echo "   $comptst ./build/MPI2_test.F"
   mpi2version="yes"
-  $comptst ./test/MPI2_test.F 2>/dev/null || mpi2version="no"
+  $comptst ./build/MPI2_test.F 2>/dev/null || mpi2version="no"
   rm -f a.out
   if [ "$mpi2version" = "no" ]; then
     echo  " "

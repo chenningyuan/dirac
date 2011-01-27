@@ -172,7 +172,6 @@ vital_files.append('config.guess')
 vital_files.append('config.status')
 vital_files.append('config.sub')
 vital_files.append('ng-runtest')
-vital_files.append('test/MPI2_test.F')
 vital_files.append('test/README')
 
 
@@ -238,7 +237,7 @@ directories_never_compiled.append('xcfun/test')
 
 files_never_compiled = []
 files_never_compiled.append('utils/cube2pov.c')
-files_never_compiled.append('test/MPI2_test.F')
+files_never_compiled.append('build/MPI2_test.F')
 files_never_compiled.append('relccsd/ccdriv_nomemget.F')
 files_never_compiled.append('relccsd/ccints_nomemget.F')
 files_never_compiled.append('eri/eri2par.F')
