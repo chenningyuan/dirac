@@ -624,12 +624,22 @@ C        length changes as the calculation continues
 
 C        Now open the new file and initialize the records with zeroes
          OPEN (LUMLF3+IREPIJ,FILE=FNODE,ACCESS='DIRECT',RECL=IRECL)
-         DO IJ = 1, NFPCK12(IREPIJ)
-            WRITE (LUMLF3+IREPIJ,REC=IJ) FTMAT
-         END DO
+         NIJ = NFPCK12(IREPIJ)
+         CALL MDSCRI1(LUMLF3+IREPIJ,NIJ,LFMAT,FTMAT)
       ENDDO
 C
       call dealloc(FTMAT)
+      END
+
+      SUBROUTINE MDSCRI1(LU,NIJ,LFMAT,FMAT)
+C
+C     HJAaJ Aug 2001
+C
+#include "implicit.h"
+      DIMENSION FMAT(LFMAT)
+      DO IJ = 1, NIJ
+         WRITE (LU,REC=IJ) FMAT
+      ENDDO
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
