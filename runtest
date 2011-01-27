@@ -193,8 +193,8 @@ list_of_tests_to_run = list_of_tests_with_menu[:]
 # print screen header
 
 print
-print '%8s %6s %25s %30s %15s' % ('progress', 'result', 'test', 'inp', 'mol/xyz')
-print '----------------------------------------------------------------------------------------'
+print '%8s %6s %30s %30s %25s' % ('progress', 'result', 'test', 'inp', 'mol/xyz')
+print
 
 # run the tests
 
@@ -288,7 +288,7 @@ for test in list_of_tests_to_run:
                     
                     test_short = string.split(test, '/')[-1]
                     
-                    print '%8s %6s %25s %30s %15s' % \
+                    print '%8s %6s %30s %30s %25s' % \
                         (progress, result_text, test_short, inp_file_strip, mol_file_strip)
                     
                     if ((nr_crashed > 0) or (nr_failed > 0)) and options.giveup:
