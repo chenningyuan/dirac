@@ -1,0 +1,3 @@
+quick     Be.gascip.bss+mfsso.krmc.inp   Be.gascip.mol
+regular   Be.inp                         Be.mol
+benchmark Be.gascip.inp                  Be.gascip.mol
