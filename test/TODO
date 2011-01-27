@@ -11,12 +11,3 @@ mp2_energy
 mp2_properties
 projection_analysis
 pvc_scf
-reladc
-response_C6
-response_hf_polarizability
-response_lao_magnetiz
-response_lao_shield
-response_nmr_levy-leblond
-response_nmr_spin-spin
-response_pv_nmr
-response_qr
