@@ -36,6 +36,7 @@ C                   EXEDIT ( -||-) - optimization
 C
 C***********************************************************************
       use visual_cfg
+      use x2cmod_cfg
 #ifdef MOD_CAP
       USE Memory
 #endif
@@ -70,7 +71,7 @@ C
 C
 C ... if 2c-mode IOTC, read basis in 4c-mode here
 C
-      IF (TWOCOMPBSS .or. x2c_mod) THEN
+      IF (TWOCOMPBSS .or. x2cmod_x2c) THEN
         TWOCOMP = .FALSE.
         RDINPC = .FALSE.
         CNTMAT = .FALSE.

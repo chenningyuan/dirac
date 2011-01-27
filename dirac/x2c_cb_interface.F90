@@ -29,6 +29,7 @@ module x2c_cb_interface
 !          outside this module to keep the interface clean
 !          hide as much as you can for public - it will save us lots of trouble in future
 
+
   implicit none
 
   public init_x2c_cb
@@ -333,20 +334,22 @@ contains
 
 !**********************************************************************
   subroutine reset_x2c_cb_onefck(x2c_run_vl_tmp)
-#include "dcbgen.h"
+
+  use x2cmod_cfg
+
 #include "dcbham.h"
 !**********************************************************************
 !   
-!    purpose: reset X2C and BSS flags on common blocks in dcbgen.h and 
-!             dcbham.h for "call onefck" inside the X2C module
+!    purpose: reset X2C flags on modules/common block (dcbham.h) 
+!             for the "call onefck" inside the X2C module
 !
 !**********************************************************************
      logical, intent(in)    :: x2c_run_vl_tmp
 !-----------------------------------------------------------------------
 !**********************************************************************
 
+       x2cmod_x2c = x2c_run_vl_tmp
 !      modify common block
-       X2C_mod    = x2c_run_vl_tmp
        X2C        = x2c_run_vl_tmp
 !      BSS        = x2c_run_vl_tmp
 !      TWOCOMPBSS = x2c_run_vl_tmp

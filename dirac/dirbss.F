@@ -138,19 +138,6 @@ C ==============================================================================
 C    ... close the BSSMAT file ...
       CLOSE(LUBSS,STATUS='KEEP')
 
-!     x2c     = .true.
-!     x2c_mod = .true.
-!     IOTC = .false.
-!     BSS = .false.
-!     NOPRTR = .false.
-!     IBSS = 2999
-!     TWOCOMPBSS = .false.
-!     TWOCOMP = .false.
-
-!     call x2c_driver(work(kfree),lfree,.false.,1,.true.)
-!
-!     call quit( '*** stop after x2c_driver run ***' )
-
 C ============================================================
 C  Finally set up number of positronic shells equal to zero
 C ============================================================

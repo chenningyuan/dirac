@@ -107,6 +107,9 @@ contains
                case ('**RELCC')
                  call read_input_relcc(word, kw_section)
          
+               case ('*X2C')
+                 call read_input_x2c(word, kw_section)
+
                case ('*END OF')
                  go to 1
          
@@ -898,6 +901,30 @@ contains
 
     if (kw_matches(word, '.PRINT ')) then
       call kw_read(word, relcc_print)
+    end if
+
+    call check_whether_kw_found(word, kw_section)
+
+  end subroutine
+
+  subroutine read_input_x2c(word, kw_section)
+
+    use x2cmod_cfg
+
+!   ----------------------------------------------------------------------------
+    character(kw_length), intent(in) :: word
+    character(kw_length), intent(in) :: kw_section
+!   ----------------------------------------------------------------------------
+!   ----------------------------------------------------------------------------
+
+    call reset_available_kw_list()
+
+    if (kw_matches(word, '.FRAx2c')) then
+      x2cmod_fragment_x2c = .true.
+    end if
+
+    if (kw_matches(word, '.PRINT ')) then
+      x2cmod_debug = .true.
     end if
 
     call check_whether_kw_found(word, kw_section)

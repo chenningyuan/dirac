@@ -51,9 +51,9 @@
 !     IBSS       - what kind of BSS Hamiltonian(1.,2. or infinite order; scalar of full
 !                  relativity)
 !     X2C        - flag for generating matrix elements of
-!                  the exact two-component Hamiltonian using the X2C module (i.e. X2C_mod == .true. (dcbgen.h))
+!                  the exact two-component Hamiltonian using the X2C module (i.e. X2Cmod_x2c == .true. (module x2cmod_cfg))
 !     X2C_aba    - flag for generating matrix elements of
-!                  the exact two-component Hamiltonian using the X2C module (i.e. X2C_mod == .true. (dcbgen.h))
+!                  the exact two-component Hamiltonian using the X2C module (i.e. X2Cmod_x2c == .true. (module x2cmod_cfg))
 !                  in the molecular fragment/atom-by-atom approach
 !     IMFCH      - charge of the system to be spliited among mean-field summations of AMFI centers
 !     NOPRTR     - do not perform the preliminary transformation to the ON basis in the 2c mode

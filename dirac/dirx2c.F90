@@ -75,6 +75,7 @@ module dirx2c
 !
   use memory_allocator
 ! x2c modules
+  use x2cmod_cfg
   use x2c_cb_interface
   use x2c_def_h1_4c
   use x2c_get_h1inf2c_mo

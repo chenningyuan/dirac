@@ -235,10 +235,16 @@ class x2c_fragment_dirac_input:
         self.integral_options       = integral_options
         self.fragment_input_options = fragment_input_options
 
+   def set_dirac_init_section(self) :
+        text  = "**DIRAC\n"
+        text += " automatized fragment x2c run.\n"
+        return text
+
    def set_dirac_title_section(self) :
         text  = ".TITLE\n"
         text += " automatized fragment x2c run.\n"
         return text
+
    def set_dirac_integral_section(self) :
         text  = "**INTEGRALS\n"
         text += "*READIN\n"

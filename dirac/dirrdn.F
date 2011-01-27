@@ -38,6 +38,7 @@ C***********************************************************************
       use dirac_cfg
       use input_reader
       use dft_input
+      use x2cmod_cfg
 
 #include "implicit.h"
 #include "priunit.h"
@@ -108,13 +109,22 @@ C
 !     *DFT
 !     *VISUAL
 !     **RELCC
-!     *OPENRSP     
+!     *OPENRSP
+!     *X2C
 !     ignores rest
       call read_input()
 
       if (dirac_cfg_dft_calculation) then
         call consistency_after_dft_input()
         call report_after_dft_input()
+      end if
+!     consistency check for fragment X2C and the proper X2C module
+      if(x2cmod_fragment_x2c.and..not.x2cmod_x2c)then
+        write(lupri,'(/a,a)') 
+     &  '  *** PAMINP reports and error after readin *X2C input:',
+     &  '  a fragment X2C calculation requires the X2C module'//
+     &  ' via .X2C under **HAMILTONIAN.'
+        call quit('*** fragment X2C calculation not possible. ***')
       end if
 CMI   ... instead of calling OP1INI in HAMINP, call it after
       CALL OP1INI(WORK,LWORK)
@@ -3943,6 +3953,7 @@ C***********************************************************************
       use dft_cfg
       use dft_input
       use input_reader
+      use x2cmod_cfg
 
 #include "implicit.h"
 #include "priunit.h"
@@ -3978,7 +3989,7 @@ C
 C
       SAVE SETFUN
       DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','*CAP   ',
-     &             '*FDE   ','*AMFI  ','XXXXXXX','XXXXXXX'/
+     &             '*FDE   ','*AMFI  ','*X2C   ','XXXXXXX'/
 
 !                    1         2         3         4
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
@@ -4061,11 +4072,8 @@ C
       SSMTRC  = D1
       BSS     = .FALSE.
       x2c     = .false.
-      x2c_mod = .false.
 !     default for X2C module: add spin-same orbit MFSSO2 terms
       isorder_amfi_x2c = 2
-!     (fragment-) or atom-by-atom X2C (for now: always false!)
-      X2C_aba = .false.
       IBSS    = -1
       IMFCH   = 0
 CMI ... default for BSS - do always the preliminary free particle basis transformation
@@ -4476,9 +4484,9 @@ C&&&& X2COLD: flag for the one-step Exact TWO-component relativistic Hamiltonian
   137     CONTINUE
 C&&&  X2C: one-step Exact TWO-component relativistic Hamiltonian
 !                   ^     ^^^ ^
-             NOPRTR  = .true.
-             x2c     = .true.
-             x2c_mod = .true.
+             NOPRTR     = .true.
+             x2c        = .true.
+             x2cmod_x2c = .true.
              GO TO 100
   138     CONTINUE
 C&&& MIXVAC: Alternative definition of vacuum polarisation
@@ -4657,7 +4665,7 @@ CMI   ... needed for output
       if(x2c.and.spinfr)then
 !       disable new x2c module
         x2c        = .false.
-        x2c_mod    = .false.
+        x2cmod_x2c = .false.
 !       enable old bss/x2c module (AMFI flags are taken care of via ibss)
         iotc       = .true.
         bss        = .true.
@@ -5588,7 +5596,10 @@ CMI  ... reading input routine for AMFI+RELSCF
         ENDIF
         GO TO 200
 
+!       *X2C
     7 CONTINUE
+!       this is needed until the old input scheme is replaced
+        call move_to_next_star(word)
         GO TO 200
     8 CONTINUE
         GO TO 200

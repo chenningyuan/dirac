@@ -2380,6 +2380,7 @@ C     Last revision May 21 1996 - tsaue
 C                    2006 - M.Ilias
 C
 C*****************************************************************************
+      use x2cmod_cfg
       use dirx2c
       use x2c_cb_interface, only:
      &    set_wrk_x2c
@@ -2542,7 +2543,7 @@ C         2) do picture change transformation of integrals on AOPROPER
      &           position='rewind')
 
 !           find Hamiltonian on file property integral... and step back
-            if(.not.x2c_aba)then
+            if(.not.x2cmod_fragment_x2c)then
               i2cofk =  0
 !             check for hamiltonian integrals on file X2CMAT and set i2cofk
               if(fndlab12('h12cAOA   00',lux2c))then
@@ -2564,7 +2565,7 @@ C         2) do picture change transformation of integrals on AOPROPER
      &'*** error in gmotra: no h1 data on file X2CMAT ***')
               end if
             else
-!             nothing to do here for now: x2c_aba is always false.
+!             nothing to do here for now: x2cmod_fragment_x2c is always false.
             end if
  
 !           find first property integral... and step back
@@ -2607,7 +2608,8 @@ C         2) do picture change transformation of integrals on AOPROPER
           else if(x2c)then
 
 !           optimized x2c module
-            call x2c_driver(work(kfree),lfree,x2c_aba,1,.true.)
+            call x2c_driver(work(kfree),lfree,x2cmod_fragment_x2c,
+     &                      1,.true.)
 
 !           call quit( '*** stop after x2c_driver run ***' )
           end if
