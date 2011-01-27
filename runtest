@@ -1,14 +1,17 @@
 #! /usr/bin/env python
 
-# notes: 1. requires a file called menu
-#           see for instance test/visual_general/menu
-#           this file is in "free format" and can have 
-#           empty lines
-#           lines contain: input file, molecule file[, pam flags]
-#        2. --keywords
-#           not programmed yet
-#        3. the good old html output not programmed yet but will come
-#        4. --et (calling home) email feature to be programmed
+'''
+known problems: 1. --keywords not implemented
+                2. --quick has known problems that will
+                     be solved as soon as time permits
+
+report bugs/suggestions to: radovan.bast@uit.no
+
+philosophy:     1. keep this script as self contained as possible
+                   do not introduce additional dependencies to DIRAC
+                   infrastructure (e.g. common.py)
+                   because eventually i want to also use it outside DIRAC
+'''
 
 import os
 import sys
