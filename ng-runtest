@@ -256,19 +256,19 @@ for test in list_of_tests_to_run:
                                 os.mkdir('compare')
                     
                             # apply the filter on output
-                            os.system('../SCRIPTS/crep %s        result/filter > compare/%s.own' \
+                            os.system('../../utils/crep %s        result/filter > compare/%s.own' \
                                       % (output_file, output_file))
                             # apply the filter on reference output
-                            os.system('../SCRIPTS/crep result/%s result/filter > compare/%s.ref' \
+                            os.system('../../utils/crep result/%s result/filter > compare/%s.ref' \
                                       % (output_file, output_file))
                             # compare filtered result with reference
-                            os.system('../SCRIPTS/bdrep compare/%s.own compare/%s.ref > compare/%s.txt' \
+                            os.system('../../utils/bdrep compare/%s.own compare/%s.ref > compare/%s.txt' \
                                       % (output_file, output_file, output_file))
                             # generate individual html
-                            os.system('../SCRIPTS/drep compare/%s.own compare/%s.ref > compare/%s.htm' \
+                            os.system('../../utils/drep compare/%s.own compare/%s.ref > compare/%s.htm' \
                                       % (output_file, output_file, output_file))
                             # generate the one big html
-                            os.system('../SCRIPTS/hdrep compare/%s.own compare/%s.ref >> ../../report.htm' \
+                            os.system('../../utils/hdrep compare/%s.own compare/%s.ref >> ../../report.htm' \
                                       % (output_file, output_file))
                             
                             if os.path.getsize('compare/%s.txt' % output_file) == 0:

@@ -77,8 +77,8 @@ fi
     exit
   fi
 #
-  ../SCRIPTS/crep result/$OLDOUT result/$FILTER > result/$OLDOUT.rep
-  ../SCRIPTS/crep $NEWOUT        result/$FILTER > $NEWOUT.rep
+  ../../utils/crep result/$OLDOUT result/$FILTER > result/$OLDOUT.rep
+  ../../utils/crep $NEWOUT        result/$FILTER > $NEWOUT.rep
 
 
 
@@ -93,14 +93,14 @@ fi
 #  Generate file with the observed discrepancies with the standard output that is placed
 #  in the directory of the test. This is done both in html format and in txt format.
 #
-  ../SCRIPTS/bdrep $NEWOUT.rep result/$OLDOUT.rep >${NEWOUT}_dif.txt
-  ../SCRIPTS/drep  $NEWOUT.rep result/$OLDOUT.rep >${NEWOUT}_dif.htm
+  ../../utils/bdrep $NEWOUT.rep result/$OLDOUT.rep >${NEWOUT}_dif.txt
+  ../../utils/drep  $NEWOUT.rep result/$OLDOUT.rep >${NEWOUT}_dif.htm
 #
 #  Now we take this detailed output and add it on to the grand total of differences.
 #  The html output is added to a file that contains ALL the selected output as defined by
 #  the filter files. Observed discrepancies ( possible errors) are colour-coded.
 #
-  ../SCRIPTS/hdrep  $NEWOUT.rep result/$OLDOUT.rep >>${LOG}/${TAG}_dif.htm
+  ../../utils/hdrep  $NEWOUT.rep result/$OLDOUT.rep >>${LOG}/${TAG}_dif.htm
 #
 #  We also write a SINGLE LINE of output ONLY IF a test fails to total txt file. 
 #  The user should then check the full output in the directory of the specific run. 
