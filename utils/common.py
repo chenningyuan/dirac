@@ -39,7 +39,7 @@ def is_windows():
 
 def process_time_string(time_string):
     """
-    process time of this form ":d:h:m:s" (in time_string)
+    process time of this form ":d:h:m:s" (in entering time_string)
     or as pure integer number
     returns the time in seconds
     """
@@ -51,8 +51,21 @@ def process_time_string(time_string):
     # check if the time string is pure integer number - then return  the "virgin" value :)
     if time_string.isdigit(): return (int(time_string))
 
-    # otherwise contine to cut the string into
+    # otherwise continue to cut the string into substrings according to the presence of time units: s,m,h,d
+
+    d_pos=time_string.find("d"); is_d = ( d_pos <> -1 )
+    h_pos=time_string.find("h"); is_h = ( h_pos <> -1 )
+    m_pos=time_string.find("m"); is_m = ( m_pos <> -1 )
+    s_pos=time_string.find("s"); is_s = ( s_pos <> -1 )
+
+    print 'd,h,m,s positions:',d_pos,is_d, h_pos,is_h, m_pos,is_m, s_pos, is_s
+
+    # take care of second - extract all numbers before "s"
+    if is_s:
+        pass;
+
     sys.exit('string number not implemented yet !')
+
     return_time = secs + (60*mins) + (60*60*hours) + (60*60*60*days)
 
     return return_time
