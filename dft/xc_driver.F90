@@ -68,6 +68,7 @@ module xc_driver
       real(8), allocatable :: ts(:, :)
 !gosia, temporarily for sdft+lao
       real(8), allocatable :: s_lao(:, :)
+      real(8), allocatable :: gs_lao(:, :, :)
    end type
 
 
@@ -486,6 +487,7 @@ contains
          if (nr_open_shells > 0) call gtdoav(mat_dim, nz, 1, dmat_0, 1)
 
          call scale_density_matrices(2.0d0)
+
          call insert_half_phases()
 
          if (do_overlap_diagnostic) then
@@ -661,6 +663,7 @@ contains
 !        symmetrize matrices
          if (dft_cfg_blocked .or. (use_gga                          &
                                    .and. .not. do_london_rhs_direct &
+                                   !.and. .not. do_london_rhs_ro &
                                    .and. .not. do_london_ks         &
 !radovan: with do_london_lr matrices have to be symmetrized!
 !                                  .and. .not. do_london_lr         &
@@ -880,6 +883,8 @@ contains
       logical :: utn_above_threshold
       logical :: uts_above_threshold
       logical :: us_lao_above_threshold
+      logical :: ugs_lao_above_threshold
+
 
     type(omega_prefactor) :: u
 
@@ -889,7 +894,8 @@ contains
     allocate(u%gs(3, 3, nr_fmat))
     allocate(u%tn(      nr_fmat))
     allocate(u%ts(   3, nr_fmat))
-    allocate(u%s_lao (   3, nr_fmat))
+    allocate(u%s_lao(3, nr_fmat))
+    allocate(u%gs_lao(3, 3, nr_fmat))
 
 
 
@@ -1093,6 +1099,7 @@ contains
          u%tn = 0.0d0
          u%ts = 0.0d0
          u%s_lao  = 0.0d0
+         u%gs_lao  = 0.0d0
 
          w(1) = rw(ipoint)
 
@@ -1258,59 +1265,53 @@ contains
 !       some xc contributions to differentiated Fock matrix have not been
 !       programmed as for closed-shell systems they are = 0 by definition
 
-!        if (do_london_rhs_direct .and. response_order_mo == 0) then
         if (do_london_rhs_direct) then
             if (use_gga) then
-              call gga_london_distribute_r(derv(1, d1000000),                      &
-                                           2.0d0*derv(1, d0010000),                      &
-                                           gn_0_pointwise,                               &
-                                           fmat_pg_sym,                                 &
+              call gga_london_distribute_r(derv(1, d1000000),                 &
+                                           2.0d0*derv(1, d0010000),           &
+                                           gn_0_pointwise,                    &
+                                           fmat_pg_sym,                       &
                                            mat_dim,                           &
                                            nz,                                &
                                            fmat,                              &
-                                           ao(ao_start(0, 0):ao_end(0, 0)), &
-                                           ao(ao_start(0, 1):ao_end(0, 1)), &
-                                           ao(ao_start(1, 0):ao_end(1, 0)), &
-                                           ao(ao_start(1, 1):ao_end(1, 1)), &
+                                           ao(ao_start(0, 0):ao_end(0, 0)),   &
+                                           ao(ao_start(0, 1):ao_end(0, 1)),   &
+                                           ao(ao_start(1, 0):ao_end(1, 0)),   &
+                                           ao(ao_start(1, 1):ao_end(1, 1)),   &
                                            rx(ipoint), ry(ipoint), rz(ipoint))
             else
-              call lda_london_distribute_r(derv(1, d1000000),                      &
+              call lda_london_distribute_r(derv(1, d1000000),                 &
                                            fmat_pg_sym,                       &
                                            mat_dim,                           &
-                                           nz,                           &
+                                           nz,                                &
                                            fmat,                              &
-                                           ao,                              &
-                                           ao(ao_start(0, 1):ao_end(0, 1)), &
+                                           ao,                                &
+                                           ao(ao_start(0, 1):ao_end(0, 1)),   &
                                            rx(ipoint), ry(ipoint), rz(ipoint))
             end if
 
           end if
 
 
-
 !       linear response
 !       ===============
-! gosia: ideally all contributions with response_order_mo == 1 should be done
-! inside lr subroutine, but i cannot easily implement there sdft-lao contributions:
-! 'direct' (called from london_direct.F90) and reorthonormalization
-! (called from london_reorth.F90)...
-! so i keep it separately for a moment, what also makes it easier for testing
+
         if (response_order_mo == 1) then
            if (do_london_rhs_direct .and. .not. dft_cfg_no_sdft) then
 
-              call lr_sdft_lao_direct(bllen,          &
-                                      mat_dim,        &
-                                      nz,             &
-                                      ao,             &
-                                      n_0,            &
-                                      gn_0_pointwise,           &
-                                      gnn_0,            &
-                                      w,              &
-                                      use_gga_qi,     &
-                                      buffer,         &
-                                      derv_length,    &
-                                      derv, u,        &
-                                      rx(ipoint), ry(ipoint), rz(ipoint))
+              !call lr_sdft_lao_direct(bllen,          &
+              !                        mat_dim,        &
+              !                        nz,             &
+              !                        ao,             &
+              !                        n_0,            &
+              !                        gn_0_pointwise, &
+              !                        gnn_0,          &
+              !                        w,              &
+              !                        use_gga_qi,     &
+              !                        buffer,         &
+              !                        derv_length,    &
+              !                        derv, u,        &
+              !                        rx(ipoint), ry(ipoint), rz(ipoint))
 
            else if (do_london_rhs_ro .and. .not. dft_cfg_no_sdft) then
               call lr_sdft_lao_reorth(bllen,          &
@@ -1696,15 +1697,43 @@ contains
                                 ao(ao_start(1, 0) + mat_dim*2))
              end if
 
-!gosia: sdft+lao now separately, later will be moved to u%s and u%gs,
+!gosia: 
+!sdft+lao now separately, later will be moved to u%s and u%gs,
 !now i left it separately for debugging
+
              us_lao_above_threshold = .false.
              if (maxval((/dabs(u%s_lao(1, im)), &
                           dabs(u%s_lao(2, im)), &
                           dabs(u%s_lao(3, im))/)) > tiny(0.0d0)) then
                 us_lao_above_threshold = .true.
              end if
-             if (us_lao_above_threshold) then
+       
+             ugs_lao_above_threshold = .false.
+             if (maxval((/dabs(u%gs_lao(1, 1, im)), &
+                          dabs(u%gs_lao(1, 2, im)), &
+                          dabs(u%gs_lao(1, 3, im)), &
+                          dabs(u%gs_lao(2, 1, im)), &
+                          dabs(u%gs_lao(2, 2, im)), &
+                          dabs(u%gs_lao(2, 3, im)), &
+                          dabs(u%gs_lao(3, 1, im)), &
+                          dabs(u%gs_lao(3, 2, im)), &
+                          dabs(u%gs_lao(3, 3, im))/)) > tiny(0.0d0)) then
+                ugs_lao_above_threshold = .true.
+             end if
+
+             if (ugs_lao_above_threshold) then
+                call nabla_omega_imag(fmat,                &              
+                                      im,                  &
+                                      fmat_pg_sym(im) - 1, &
+                                      mat_dim,             &
+                                      nz,                  &
+                                      u%s_lao(1, im),      &
+                                      u%gs_lao(1, 1, im),  &
+                                      ao,                  &
+                                      ao(ao_start(1, 0)))
+             else
+                if (us_lao_above_threshold) then
+!                  F_pq += u%s_j \chi_p* \Sigma_j \chi_q
                    call omega_imag(fmat,                &              
                                    im,                  &
                                    fmat_pg_sym(im) - 1, &
@@ -1712,9 +1741,10 @@ contains
                                    nz,                  &
                                    u%s_lao(1:3, im),    &
                                    ao)
+                end if
              end if
-
-
+!end gosia
+ 
 #endif /* ifdef MOD_UNRELEASED */
 
           end do
@@ -1746,6 +1776,7 @@ contains
     deallocate(u%tn)
     deallocate(u%ts)
     deallocate(u%s_lao)
+    deallocate(u%gs_lao)
 
    end subroutine
 
@@ -2413,7 +2444,7 @@ contains
     real(8)                ::  s_b_lao(3, 3), gs_b_lao(3, 3, 3)
 
     real(8)                :: z_b
-    real(8)                :: y_b(3)
+    real(8)                :: y_b(3, 3)
 
     integer                :: k_start, k, im, im_off, j
     type(omega_prefactor) :: u
@@ -2425,17 +2456,17 @@ contains
 
 
     if (is_gga_qi) then
-      !call get_gs_lao(s_b_lao,                           &
-      !                gs_b_lao,                          &
-      !                fmat_pg_sym,                       &
-      !                mat_dim,                           &
-      !                dmat_0,                            &
-      !                buffer,                            &
-      !                ao_p(ao_start(0, 0):ao_end(0, 0)), &
-      !                ao_p(ao_start(1, 0):ao_end(1, 0)), &
-      !                ao_p(ao_start(0, 1):ao_end(0, 1)), &
-      !                ao_p(ao_start(1, 1):ao_end(1, 1)), &
-      !                px, py, pz)
+      call get_gs_lao(s_b_lao,                           &
+                      gs_b_lao,                          &
+                      fmat_pg_sym,                       &
+                      mat_dim,                           &
+                      dmat_0,                            &
+                      buffer,                            &
+                      ao_p(ao_start(0, 0):ao_end(0, 0)), &
+                      ao_p(ao_start(1, 0):ao_end(1, 0)), &
+                      ao_p(ao_start(0, 1):ao_end(0, 1)), &
+                      ao_p(ao_start(1, 1):ao_end(1, 1)), &
+                      px, py, pz)
     else
       call get_s_lao(s_b_lao,                            &
                      fmat_pg_sym,                        &
@@ -2454,15 +2485,18 @@ contains
            u%s_lao(k, im) = u%s_lao(k, im) + derv(1, d0200000)*s_b_lao(k, im)
            
            if (is_gga_qi) then
-           !   y_b(k)  = gn_0(1)*gs_b(1, k) &
-           !           + gn_0(2)*gs_b(2, k) &
-           !           + gn_0(3)*gs_b(3, k)
-           !
-           !   u%s(k, im) = u%s(k, im) + derv(1, d0101000)*y_b(k)
-           !
-           !   u%gs(1:3, k, im) = u%gs(1:3, k, im) +       gn_0(1:3)*s_b(k)*derv(1, d0101000) &
-           !                                       +       gn_0(1:3)*y_b(k)*derv(1, d0002000) &
-           !                                       + 2.0d0*gs_b(1:3, k)*derv(1, d0000100)
+              y_b(k, im)  = gn_0_pointwise(1)*gs_b_lao(1, k, im) &
+                          + gn_0_pointwise(2)*gs_b_lao(2, k, im) &
+                          + gn_0_pointwise(3)*gs_b_lao(3, k, im)
+           
+              u%s_lao(k, im) = u%s_lao(k, im) + derv(1, d0101000)*y_b(k, im)
+           
+              u%gs_lao(1:3, k, im) = u%gs_lao(1:3, k, im)                               &
+                                   +(gn_0_pointwise(1)*s_b_lao(1, k)                    &
+                                   + gn_0_pointwise(2)*s_b_lao(2, k)                    &
+                                   + gn_0_pointwise(3)*s_b_lao(3, k))*derv(1, d0101000) &
+                                   + gn_0_pointwise(1:3)*y_b(k, im)*derv(1, d0002000)   &
+                                   + 2.0d0*gs_b_lao(1:3, k, im)*derv(1, d0000100)
            end if
         end do
 
@@ -2479,7 +2513,7 @@ contains
                                 gn_0_pointwise,     &
                                 gnn_0,              &
                                 w,                  &
-                                is_gga_qi,          &
+                                is_gga,             &
                                 tb_dmat,            &
                                 isym,               &
                                 buffer,             &
@@ -2495,7 +2529,7 @@ contains
     real(8), intent(in)    :: gn_0_pointwise(*)
     real(8), intent(in)    :: gnn_0(*)
     real(8), intent(in)    :: w(*)
-    logical, intent(in)    :: is_gga_qi
+    logical, intent(in)    :: is_gga
     real(8), intent(in)    :: tb_dmat(*)
     integer, intent(in)    :: isym(*)
     real(8), intent(in)    :: buffer(*)
@@ -2520,34 +2554,77 @@ contains
 
        im_off = mat_dim*mat_dim*nz*(im - 1)
 
-       if (dft_cfg_no_sdft) then
+!      only charge density part
+!       if (is_gga) then
+!          call get_gn(r_b,                      &
+!                      gr_b,                     &
+!                      isym(im) - 1,             &
+!                      mat_dim,                  &
+!                      tb_dmat(1 + im_off),      &
+!                      buffer,                   &
+!                      ao_p,                     &
+!                      ao_p(ao_start(1, 0)))
+!       else
+!          call get_n(r_b,                       &
+!                     isym(im) - 1,              &
+!                     mat_dim,                   &
+!                     tb_dmat(1 + im_off),       &
+!                     buffer,                    &
+!                     ao_p)
+!       end if
+!
+!       u%n(im) = u%n(im) + derv(1, d2000000)*r_b
+!
+!       if (is_gga) then
+!          z_b = 2.0d0*(gn_0_pointwise(1)*gr_b(1) &
+!                     + gn_0_pointwise(2)*gr_b(2) &
+!                     + gn_0_pointwise(3)*gr_b(3))
+!         
+!          u%n(im) = u%n(im) + derv(1, d1010000)*z_b
+!         
+!          u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gn_0_pointwise(1:3)*r_b*derv(1, d1010000) &
+!                                        + 2.0d0*gn_0_pointwise(1:3)*z_b*derv(1, d0020000) &
+!                                        + 2.0d0*gr_b(1:3)*derv(1, d0010000)
+!       end if
 
-!         only DFT
-          call get_n(r_b,                        &
-                     isym(im) - 1,               &
-                     !0, &
-                     mat_dim,                    &
-                     tb_dmat(1 + im_off), &
-                     buffer,                     &
-                     ao_p)     
-          u%n(im) = u%n(im) + derv(1, d2000000)*r_b
-
-       else
-
-!         SDFT
-          call get_s(s_b,                        &
-                     isym(im) - 1,               &
-                     !0, &
-                     mat_dim,                    &
-                     tb_dmat(1 + im_off), &
-                     buffer,                     &
-                     ao_p)
+!      SDFT
+       if (.not. dft_cfg_no_sdft) then
+          if (is_gga) then
+             call get_gs(s_b,                       &
+                         gs_b,                      &
+                         isym(im) - 1,              &
+                         mat_dim,                   &
+                         tb_dmat(1 + im_off),       &
+                         buffer,                    &
+                         ao_p,                      &
+                         ao_p(ao_start(1, 0)))
+          else
+             call get_s(s_b,                        &
+                        isym(im) - 1,               &
+                        mat_dim,                    &
+                        tb_dmat(1 + im_off),        &
+                        buffer,                     &
+                        ao_p)
+          end if
 
           do k = k_start, 3
-             u%s(k, im) = u%s(k, im) + derv(1, d0200000)*s_b(k)
-          end do 
-       end if
 
+             u%s(k, im) = u%s(k, im) + derv(1, d0200000)*s_b(k)
+
+             if (is_gga) then
+                y_b(k)  = gn_0_pointwise(1)*gs_b(1, k) &
+                        + gn_0_pointwise(2)*gs_b(2, k) &
+                        + gn_0_pointwise(3)*gs_b(3, k)
+             
+                u%s(k, im) = u%s(k, im) + derv(1, d0101000)*y_b(k)
+             
+                u%gs(1:3, k, im) = u%gs(1:3, k, im) +       gn_0_pointwise(1:3)*s_b(k)*derv(1, d0101000) &
+                                                    +       gn_0_pointwise(1:3)*y_b(k)*derv(1, d0002000) &
+                                                    + 2.0d0*gs_b(1:3, k)*derv(1, d0000100)
+             end if
+          end do 
+
+      end if
     end do
 
   end subroutine

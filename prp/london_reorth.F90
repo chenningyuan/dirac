@@ -306,8 +306,8 @@ contains
 !       ================================
 ! gosia: it won't work with visual now
 
-    !gosia before if (dirac_cfg_dft_calculation .and. .not. dft_cfg_no_sdft) then
-    if (dirac_cfg_dft_calculation) then
+    if (dirac_cfg_dft_calculation .and. .not. dft_cfg_no_sdft) then
+    !if (dirac_cfg_dft_calculation) then
 
       debug_me = .false.
       if (debug_me) then

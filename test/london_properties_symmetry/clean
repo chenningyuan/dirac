@@ -1,3 +1,0 @@
-rm -f *.tgz *user_test*
-rm -f twolo1a* twolo1b* after_rsklond*
-rm -f dft_before* dft_after*
