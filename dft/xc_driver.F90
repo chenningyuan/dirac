@@ -36,6 +36,7 @@ module xc_driver
 #ifdef MOD_UNRELEASED
   use overlap_diagnostic
   use xc_geometric
+  use xc_london_c1
 #endif
 #ifdef MOD_OPENRSP
   use xc_response
@@ -44,7 +45,6 @@ module xc_driver
 #ifdef MOD_XCFUN
   use xcfun
 #endif
-  use xc_london_c1
 
    implicit none
 

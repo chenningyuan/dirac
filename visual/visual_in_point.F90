@@ -154,6 +154,7 @@ contains
                           D(imat)%elms, &
                           buffer,       &
                           ao)
+#ifdef MOD_UNRELEASED
                if (visual_cfg_london) then
                   call get_jblao(imat,       &
                                  D_0,        &
@@ -163,6 +164,7 @@ contains
                                  v2)
                   v = v - v2
                end if
+#endif
                result(1:3) = result(1:3) + v(1:3)
             end if
             
@@ -312,6 +314,7 @@ contains
                           D(imat)%elms, &
                           buffer,       &
                           ao)
+#ifdef MOD_UNRELEASED
                if (visual_cfg_london) then
                   call get_jblao(imat,       &
                                  D_0,        &
@@ -321,6 +324,7 @@ contains
                                  v2)
                   v = v - v2
                end if
+#endif
             
                rx = px - cord(1, visual_cfg_ref_nucleus(imat))
                ry = py - cord(2, visual_cfg_ref_nucleus(imat))

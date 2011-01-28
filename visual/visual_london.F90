@@ -22,6 +22,7 @@
 
 module visual_london
 
+#ifdef MOD_UNRELEASED
   use memory_allocator
   use visual_cfg
   use ao_eval
@@ -29,7 +30,6 @@ module visual_london
   use basis_info
   use matrix_defop
   use dirac_interface
-
 
   implicit none
 
@@ -505,6 +505,5 @@ contains
 
   end subroutine get_jblao_direct
 
-
-
+#endif /* #ifdef MOD_UNRELEASED */
 end module
