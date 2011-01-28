@@ -175,7 +175,10 @@ class run:
          inp_file_strip = string.replace(self.inp,       '.inp', '')
          mol_file_strip = string.replace(self.mol,       '.mol', '')
          mol_file_strip = string.replace(mol_file_strip, '.xyz', '')
-         return '%s_%s.out' % (inp_file_strip, mol_file_strip)
+         if inp_file_strip == mol_file_strip:
+             return '%s.out' % inp_file_strip
+         else:
+             return '%s_%s.out' % (inp_file_strip, mol_file_strip)
      def get_test_name(self):
          return string.split(self.test, '/')[-1]
      def run_and_normal_exit(self):
