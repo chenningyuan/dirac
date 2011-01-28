@@ -1,6 +1,6 @@
 regular 
-HF.bss.cc.inp Z80H.lsym.dir.mol --mw=80
+HF.bss.cc.inp Z80H.lsym.dir.mol --mw=80   --timeout=20
 
 quick   
-HF.bss_sfb.cc_cisd.inp      Z80H.lsym.dir.mol
-HF.dk2_sfb.pnuc.cc_cisd.inp Z80H.lsym.dir.mol
+HF.bss_sfb.cc_cisd.inp      Z80H.lsym.dir.mol  --timeout=20
+HF.dk2_sfb.pnuc.cc_cisd.inp Z80H.lsym.dir.mol  --timeout=20
