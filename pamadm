@@ -66,47 +66,41 @@ def callback_include(option, opt, value, parser):
     dirac_modules[str(option)[2:]].include()
 
 def provide_star_basisfile_names():
-#########################################################
-#
-#      Restore basis set files with "*" in name
-#    (this is to be done on non-Windows machines)
-#
-#########################################################
-  # : ls basis_dalton/*star
-  basfile={   \
-     '3-21++G-star':'3-21++G*',\
-     '3-21G-star':'3-21G*',\
-     '6-311+G-star':'6-311+G*',\
-     '6-311G-star':'6-311G*', \
-     '6-311++G-star-star':'6-311++G**',\
-     '6-311G-star-star':'6-311G**',\
-     '6-31++G-star':'6-31++G*', \
-     '6-31+G-star':'6-31+G*',\
-     '6-31G-star':'6-31G*',\
-     '6-31++G-star-star':'6-31++G**',\
-     '6-31G-star-star':'6-31G**' \
-     }
-  basdir="basis_dalton"+"/" # basis set directory
-  for basfilename in basfile:
-    src=basdir+basfilename
-    dest=basdir+basfile[basfilename]
-    shutil.copy(src,dest)
+    '''
+    Restore basis set files with "*" in name
+    (this is to be done on non-Windows machines)
+    '''
+    # : ls basis_dalton/*star
+    basfile={   \
+       '3-21++G-star':'3-21++G*',\
+       '3-21G-star':'3-21G*',\
+       '6-311+G-star':'6-311+G*',\
+       '6-311G-star':'6-311G*', \
+       '6-311++G-star-star':'6-311++G**',\
+       '6-311G-star-star':'6-311G**',\
+       '6-31++G-star':'6-31++G*', \
+       '6-31+G-star':'6-31+G*',\
+       '6-31G-star':'6-31G*',\
+       '6-31++G-star-star':'6-31++G**',\
+       '6-31G-star-star':'6-31G**' \
+       }
+    basdir="basis_dalton"+"/" # basis set directory
+    for basfilename in basfile:
+        src=basdir+basfilename
+        dest=basdir+basfile[basfilename]
+        shutil.copy(src,dest)
 
-###########################
-### main function start ###
-###########################
+# import external functions, assuming you are always in trunk/ directory
+sys.path.append(os.getcwd() + '/utils')
 
-### import external functions, assuming you are always in trunk/ directory !
-sys.path.append(os.getcwd()+'/utils')
 from common import make_old_file, is_windows
 from common import svn_info, create_link, copy_parent
 from common import vacuum_cleaner
 
 svn_object = svn_info() # object of the class
 
-# list of vital directories and files - these are always exported/released
-# ========================================================================
-
+# list of vital directories and files
+# these are always exported/released
 
 vital_directories = []
 vital_directories.append('dirac')
@@ -147,9 +141,7 @@ vital_files.append('config.sub')
 vital_files.append('ng-runtest')
 vital_files.append('test/README')
 
-
-# list of vital tests - these are always exported/released
-# ========================================================
+# these tests are always exported/released
 
 list_of_tests = []
 list_of_tests.append('basis_automatic_augmentation')
@@ -198,8 +190,8 @@ list_of_tests.append('symmetry_scf_energy')
 list_of_tests.append('xyz_input')
 list_of_tests.append('zora')
 
-# list of directories and files that are never compiled as part of DIRAC main executable
-# ======================================================================================
+# list of directories and files
+# that are never compiled as part of DIRAC main executable
 
 directories_never_compiled = []
 directories_never_compiled.append('utils')
@@ -252,9 +244,7 @@ do_not_release.append('dft/fun-srpbec.c')
 do_not_release.append('dft/fun-srvwn5.c')
 do_not_release.append('dft/fun-hjsx.c')
 
-
 # definition of modules
-# =====================
 
 dirac_modules = {}
 
@@ -425,9 +415,7 @@ dirac_modules[this_module].add_cppflag('MOD_LOG')
 dirac_modules[this_module].take_out_of_adm()
 dirac_modules[this_module].take_out_of_release()
 
-
 # define input options
-# ====================
 
 parser = OptionParser()
 
@@ -464,14 +452,11 @@ parser.add_option('--release',
                   default=False,
                   help="Include selected modules for the DIRAC2010 release")
 
-
 # complain if user still uses ./pamadm ... make
 if sys.argv[-1] == 'make':
    sys.exit('please do not use ./pamadm ... "make"; "make" is not needed')
 
-
 # parse input
-# ===========
 
 (options, args) = parser.parse_args()
 
@@ -489,9 +474,7 @@ if options.release:
        if dirac_modules[module].part_of_release:
           dirac_modules[module].include()
 
-
 # check dependencies among modules
-# ================================
 
 for module in dirac_modules:
     if dirac_modules[module].is_included:
@@ -506,9 +489,7 @@ for module in dirac_modules:
                  sys.exit(error_message)
 
 # report on screen
-# ================
 
-# blank line
 print
 
 #  there are no modules
@@ -530,9 +511,7 @@ if dirac_modules['xcfun'].is_included:
    print "* "
    print
 
-
 # prepare dontbuild
-# =================
 
 # first we need to get a list of all included directories
 # and later check that we don't dontbuild a directory
@@ -567,20 +546,17 @@ for file in files_never_compiled:
 f.write('.*/CMakeFiles/.*\n')
 f.close()
 
-# Force make to collect dependencies
-# ==================================
+# force make to collect dependencies
 
 make_old_file('build/Makefile.dep')
 make_old_file('build/Makefile.obj')
 
 # cheat to avoid error message
-# ============================
 
 make_old_file('gp/compinfo.h')
 make_old_file('include/fortran_interface.h')
 
 # prepare Makefile.extobj and Makefile.moddef
-# ===========================================
 
 make_old_file('build/Makefile.extobj')
 
@@ -618,9 +594,7 @@ else:
 
 f.close()
 
-# ==============================================================================
-#  Link  "build/Makefile.dirs" as "Makefile" over active source code directories
-# ==============================================================================
+# link "build/Makefile.dirs" as "Makefile" over active source code directories
 
 # get position of absolute dirac directory
 dirac_dir=os.path.dirname(os.path.abspath(sys.argv[0]))
@@ -637,9 +611,7 @@ for module in dirac_modules:
       for directory in dirac_modules[module].directories:
         create_link(source_dir,dirac_dir+"/"+directory,"Makefile")
 
-
 # prepare files for cmake
-# =======================
 
 ignore_directory_l = []
 ignore_file_l      = []
@@ -701,9 +673,7 @@ f.close()
 
 if ( not is_windows() ): provide_star_basisfile_names()
 
-
 # export dirac to tar.gz file
-# ===========================
 
 if options.exportfile != None:
    scratch_dir = options.exportfile
