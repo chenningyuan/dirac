@@ -701,7 +701,7 @@ class pam_enviroment:
             )
         group.add_option(
             '--timeout',
-            type='int',
+            type='string',
             action='store',
             dest='dest_timeout',
             help='limit dirac.x execution time (in seconds) [default: no limit]'
@@ -832,7 +832,8 @@ class pam_enviroment:
                     self.nice_cmd
 
         if options.dest_timeout is not None:
-            self.timeout = int(options.dest_timeout)
+            from common import process_time_string
+            self.timeout = process_time_string(options.dest_timeout)
             self.set_timeout_limit = True
             if self.iprint >= 5:
                 print 'assigned timeout=', self.timeout

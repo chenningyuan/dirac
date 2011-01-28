@@ -37,6 +37,26 @@ def is_windows():
     else:
         return True
 
+def process_time_string(time_string):
+    """
+    process time of this form ":d:h:m:s" (in time_string)
+    or as pure integer number
+    returns the time in seconds
+    """
+    secs=0
+    mins=0
+    hours=0
+    days=0
+
+    # check if the time string is pure integer number - then return  the "virgin" value :)
+    if time_string.isdigit(): return (int(time_string))
+
+    # otherwise contine to cut the string into
+    sys.exit('string number not implemented yet !')
+    return_time = secs + (60*mins) + (60*60*hours) + (60*60*60*days)
+
+    return return_time
+
 def get_username():
     """
     returns name of the user
