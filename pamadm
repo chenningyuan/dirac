@@ -97,6 +97,9 @@ from common import make_old_file, is_windows
 from common import svn_info, create_link, copy_parent
 from common import vacuum_cleaner
 
+# radovan: i don't think pamadm should set svn information
+#          this should be done by the makefile
+#          IMO pamadm should not contain anything svn related
 svn_object = svn_info() # object of the class
 
 # list of vital directories and files
