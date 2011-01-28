@@ -258,6 +258,7 @@ do_not_release.append('embedding/emb_set.F90')
 do_not_release.append('dft/fun-srpbec.c')
 do_not_release.append('dft/fun-srvwn5.c')
 do_not_release.append('dft/fun-hjsx.c')
+do_not_release.append('maintenance')
 
 # definition of modules
 
@@ -764,15 +765,16 @@ if options.exportfile != None:
        shutil.copytree(d, scratch_dir + '/' + d)
 
 #  run the vacuum cleaner: remove all junk files in exported DIRAC
-   vacuum_cleaner(scratch_dir,"*.o")
-   vacuum_cleaner(scratch_dir,"*.r")
-   vacuum_cleaner(scratch_dir,"*.i")
-   vacuum_cleaner(scratch_dir,"*.opt")
-   vacuum_cleaner(scratch_dir,"*.s")
-   vacuum_cleaner(scratch_dir,"*.p")
-   vacuum_cleaner(scratch_dir,"*.fc")
-   vacuum_cleaner(scratch_dir,"*~")
-   vacuum_cleaner(scratch_dir,".svn",True)
+   vacuum_cleaner(scratch_dir, '*.o')
+   vacuum_cleaner(scratch_dir, '*.r')
+   vacuum_cleaner(scratch_dir, '*.i')
+   vacuum_cleaner(scratch_dir, '*.opt')
+   vacuum_cleaner(scratch_dir, '*.s')
+   vacuum_cleaner(scratch_dir, '*.p')
+   vacuum_cleaner(scratch_dir, '*.fc')
+   vacuum_cleaner(scratch_dir, '*~')
+   vacuum_cleaner(scratch_dir, '.svn', recursive=True)
+   vacuum_cleaner(scratch_dir, '.git', recursive=True)
 
 #  remove files that are not supposed to be shipped
    for x in do_not_release:
