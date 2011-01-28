@@ -704,9 +704,9 @@ class pam_enviroment:
             type='string',
             action='store',
             dest='dest_timeout',
-            help='limit dirac.x execution time (in seconds) [default: no limit]'
+            help='limit dirac.x execution time (in #d#h#m#s, or in pure seconds-integer) [default: no limit]'
                 ,
-            metavar='INTEGER',
+            metavar='TIME_STRING',
             )
         group.add_option('--nice', action='store_true', dest='dest_nice'
                          , default=False,

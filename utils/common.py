@@ -40,8 +40,8 @@ def is_windows():
 def process_time_string(time_string):
     """
     process time of this form ":d:h:m:s" (in entering time_string)
-    or as pure integer number
-    returns the time in seconds
+    or as pure integer number 
+    returns the time in seconds (integer)
     """
     secs=0
     mins=0
@@ -53,18 +53,44 @@ def process_time_string(time_string):
 
     # otherwise continue to cut the string into substrings according to the presence of time units: s,m,h,d
 
-    d_pos=time_string.find("d"); is_d = ( d_pos <> -1 )
-    h_pos=time_string.find("h"); is_h = ( h_pos <> -1 )
-    m_pos=time_string.find("m"); is_m = ( m_pos <> -1 )
-    s_pos=time_string.find("s"); is_s = ( s_pos <> -1 )
+    d_pos=time_string.find("d"); 
+    h_pos=time_string.find("h"); 
+    m_pos=time_string.find("m"); 
+    s_pos=time_string.find("s"); 
 
-    print 'd,h,m,s positions:',d_pos,is_d, h_pos,is_h, m_pos,is_m, s_pos, is_s
+    #print 'd,h,m,s positions:',d_pos,is_d, h_pos,is_h, m_pos,is_m, s_pos, is_s
 
-    # take care of second - extract all numbers before "s"
-    if is_s:
-        pass;
+    positions=[s_pos,m_pos,h_pos,d_pos]; j=0
+    num=[0,0,0,0]
+    #print 'positions: ', positions
+    for i in positions:
+        if i >-1 :
+            num_str=''
+            #print 'active pos:',i
+            i=i-1
+            while (i>=0 and time_string[i] >= '0' and time_string[i] <= '9' ):
+                #print  'number=',time_string[i]
+                num_str+=str(time_string[i])
+                i=i-1
+            # revert string to get proper order of numbers
+            num[j]=int(num_str[::-1])
+            #print 'number=',num[j] 
+            j=j+1
 
-    sys.exit('string number not implemented yet !')
+    # take care of time units
+    k=0
+    if s_pos > -1:
+        secs=num[k]; k=k+1 
+    if m_pos > -1:
+        mins=num[k]; k=k+1 
+    if h_pos > -1:
+        hours=num[k]; k=k+1 
+    if d_pos > -1:
+        days=num[k]; k=k+1 
+
+   # print 'days,hours,mins,secs:',days,hours,mins,secs
+
+    #sys.exit('string number not implemented yet !')
 
     return_time = secs + (60*mins) + (60*60*hours) + (60*60*60*days)
 
