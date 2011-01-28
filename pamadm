@@ -388,7 +388,6 @@ dirac_modules[this_module] = dirac_module('hsfsdyn', 'Higher sectors FSCC codes-
 dirac_modules[this_module].add_cppflag('HSFS_DYN_ALLOC')
 dirac_modules[this_module].add_directory('hsmrcc/high_sect_fscc_external')
 dirac_modules[this_module].add_dependency('oof')
-#dirac_modules[this_module].add_dependency('hsfs')
 dirac_modules[this_module].add_dependency('hscc')
 dirac_modules[this_module].take_out_of_adm()
 dirac_modules[this_module].take_out_of_release()
