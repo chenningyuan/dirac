@@ -71,6 +71,8 @@ C
       CALL MEMGET('REAL',KORBE,NSTRT(1),WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBORB,NSTRT(1),WORK,KFREE,LFREE)
 C
+!radovan: run the test set with make check
+!         in test bss_energy KIBE(2,1) = 0
       CALL MRCONE(WORK(KFMO),WORK(KORBE),WORK(KE(1,1)),WORK(KE(2,1)),
      &  WORK(KIBORB),WORK(KIBE(1,1)),WORK(KIBE(2,1)),
      &  NSPC,NSTR,NSTRT,IPRTRA,WORK,KFREE,LFREE)
