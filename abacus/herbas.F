@@ -1054,6 +1054,14 @@ C
 C     Add trailing slash if not present.
 C
       IEND = INDEX ( STRING(1:), ' ') - 1
+!     stefan: make check with idb indicates a possible access penalty if
+!     BASDIR is not set...
+      if(iend.lt.1)then
+        write(lupri,'(/a)') '  *** error in FINDEL: empty (non-set)'//
+     & ' BASDIR string causes index leak.***'
+        call quit('*** error in FINDEL: empty BASDIR (non-set) string 
+     &  causes index leak.***')
+      end if
       IF ( STRING(IEND:IEND) .NE. '/' ) THEN
          IEND = IEND + 1
          STRING(IEND:IEND) = '/'
