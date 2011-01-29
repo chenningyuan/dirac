@@ -270,91 +270,104 @@ def line_is_keyword(line):
         return True
     return False
 
-# get list of tasks
+# main function
+def main(*args):
 
-l = []
-for test in list_of_tests_to_run:
-    os.chdir(test)
-    file = 'menu'
-    if os.path.isfile(file):
-        f = open(file, 'r')
-        current_section = 'regular'
-        for line in f.readlines():
-            if len(line.split()) > 0:
-                if line.split()[0] != '#':
-                    current_section = get_current_section(line, current_section)
-                    if use_this_line(current_section):
-                        if line[0:2] == 'sh':
-                            l.append(shell_command(test, line))
-                        else:
-                            if not line_is_keyword(line):
-                                l.append(run(test, line))
-        f.close()
+#  get list of tasks
+    l = []
+    for test in list_of_tests_to_run:
+        os.chdir(test)
+        file = 'menu'
+        if os.path.isfile(file):
+            f = open(file, 'r')
+            current_section = 'regular'
+            for line in f.readlines():
+                if len(line.split()) > 0:
+                    if line.split()[0] != '#':
+                        current_section = get_current_section(line, current_section)
+                        if use_this_line(current_section):
+                            if line[0:2] == 'sh':
+                                l.append(shell_command(test, line))
+                            else:
+                                if not line_is_keyword(line):
+                                    l.append(run(test, line))
+            f.close()
 
-# get number of actual runs
+    # get number of actual runs
 
-total_nr_of_tests = 0
-for task in l:
-    if task.is_run():
-        total_nr_of_tests += 1
+    total_nr_of_tests = 0
+    for task in l:
+        if task.is_run():
+            total_nr_of_tests += 1
 
-# print screen header
+    # print screen header
 
-print
-print '%8s %6s %30s %30s %25s' % ('progress', 'result', 'test', 'inp', 'mol/xyz')
-print
+    print
+    print '%8s %6s %30s %30s %25s' % ('progress', 'result', 'test', 'inp', 'mol/xyz')
+    print
 
-# run the tests
+    # run the tests
 
-nr_of_tests_done = 0
-nr_ok            = 0
-nr_crashed       = 0
-nr_failed        = 0
-nr_without_ref   = 0
+    nr_of_tests_done = 0
+    nr_ok            = 0
+    nr_crashed       = 0
+    nr_failed        = 0
+    nr_without_ref   = 0
 
-for task in l:
-    if task.is_shell_command():
-        task.execute()
-    else:
-        nr_of_tests_done += 1
-        if task.run_and_normal_exit():
-            if os.path.isfile('result/%s' % task.get_output_name()):
-                # overwrite reference files
-                if options.overwrite:
-                    os.system('cp %s result/%s' % (task.get_output_name(), task.get_output_name()))
-                
-                # create directory where outputs are compared
-                if not os.path.isdir('compare'):
-                    os.mkdir('compare')
-               
-                task.apply_filter() 
-                
-                if os.path.getsize('compare/%s.txt' % task.get_output_name()) == 0:
-                    result_text = 'OK'
-                    nr_ok += 1
-                else:
-                    result_text = 'FAIL'
-                    nr_failed += 1
-            else:
-                result_text = ' '
-                nr_without_ref += 1
+    for task in l:
+        if task.is_shell_command():
+            task.execute()
         else:
-            result_text = 'CRASH'
-            nr_crashed += 1
+            nr_of_tests_done += 1
+            if task.run_and_normal_exit():
+                if os.path.isfile('result/%s' % task.get_output_name()):
+                    # overwrite reference files
+                    if options.overwrite:
+                        os.system('cp %s result/%s' % (task.get_output_name(), task.get_output_name()))
+                
+                    # create directory where outputs are compared
+                    if not os.path.isdir('compare'):
+                        os.mkdir('compare')
+               
+                    task.apply_filter() 
+                
+                    if os.path.getsize('compare/%s.txt' % task.get_output_name()) == 0:
+                        result_text = 'OK'
+                        nr_ok += 1
+                    else:
+                        result_text = 'FAIL'
+                        nr_failed += 1
+                else:
+                    result_text = ' '
+                    nr_without_ref += 1
+            else:
+                result_text = 'CRASH'
+                nr_crashed += 1
 
-        progress = '[%3i%s]' % (100.0*float(nr_of_tests_done)/float(total_nr_of_tests), r'%')
-        task.print_result(progress, result_text) 
+            progress = '[%3i%s]' % (100.0*float(nr_of_tests_done)/float(total_nr_of_tests), r'%')
+            task.print_result(progress, result_text) 
         
-        if ((nr_crashed > 0) or (nr_failed > 0)) and options.giveup:
-            print
-            print 'cowardly gave up after the first problem'
-            print '(fix your code or remove --giveup to continue)'
-            sys.exit()
+            if ((nr_crashed > 0) or (nr_failed > 0)) and options.giveup:
+                print
+                print 'cowardly gave up after the first problem'
+                print '(fix your code or remove --giveup to continue)'
+                sys.exit(-1)
 
-print
-print 'summary: %5i ok'                % nr_ok
-print '         %5i failed'            % nr_failed
-print '         %5i crashed'           % nr_crashed
-print '         %5i without reference' % nr_without_ref
+    print
+    print 'summary: %5i ok'                % nr_ok
+    print '         %5i failed'            % nr_failed
+    print '         %5i crashed'           % nr_crashed
+    print '         %5i without reference' % nr_without_ref
 
-print
+    print
+
+    # return code (for trac-bitten)
+    if nr_failed > 0 or nr_crashed > 0:
+        return -1
+    else:
+        return 0
+
+# launch the main function
+if __name__ == '__main__':
+    sys.exit(main(*sys.argv))
+
