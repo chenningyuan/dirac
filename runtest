@@ -91,6 +91,11 @@ group.add_option('--overwrite',
                  dest='overwrite',
                  default=False,
                  help='overwrite reference files [default: %default]')
+group.add_option('--verbose',
+                 action='store_true',
+                 dest='verbose',
+                 default=False,
+                 help='verbose output [default: %default]')
 parser.add_option_group(group)
 
 # process input
@@ -165,7 +170,8 @@ class run:
          if len(line.split()) > 2:
             for i in range(2, len(line.split())):
                 pam_flags += line.split()[i] + ' '
-         pam_flags += '--silent '
+         in not options.verbose:
+             pam_flags += '--silent '
          pam_flags += '--nobackup '
          pam_flags += '--noarch '
          if options.mpi > 1:
