@@ -1,2 +1,2 @@
 quick
-He.inp He.mol
+He.inp He.mol --timeout=10s
