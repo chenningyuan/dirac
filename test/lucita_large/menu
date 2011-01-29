@@ -1,1 +1,1 @@
-HBr.inp HBr.mol --mw=60
+HBr.inp HBr.mol --mw=60 --timeout=5m
