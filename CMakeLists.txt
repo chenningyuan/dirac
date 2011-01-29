@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8)
 
 project(DIRAC Fortran C)
 
@@ -50,13 +50,13 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     if(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "i686")
         add_definitions(-DARCH32BIT)
     elseif(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86_64")
-        add_definitions(-DARCH64BIT)
     else()
     endif()
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
 else()
 endif()
 
-if(CMAKE_COMPILER_IS_GNUFORTRAN)
+if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
     add_definitions(-DVAR_GFORTRAN)
     set(CMAKE_Fortran_FLAGS         " ")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g3")
@@ -66,9 +66,13 @@ elseif(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     set(CMAKE_Fortran_FLAGS         "-w -assume byterecl")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES XL)
+    set(CMAKE_Fortran_FLAGS         "-qzerosize")
+    set(CMAKE_Fortran_FLAGS_DEBUG   "-g")
+    set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
 endif()
 
-if(CMAKE_COMPILER_IS_GNUC)
+if(CMAKE_C_COMPILER_ID MATCHES GNU)
     set(CMAKE_C_FLAGS         "-Wall")
     set(CMAKE_C_FLAGS_DEBUG   "-O0 -g3")
     set(CMAKE_C_FLAGS_RELEASE "-g -O2 -Wno-unused")
@@ -77,6 +81,10 @@ elseif(CMAKE_C_COMPILER_ID MATCHES Intel)
     set(CMAKE_C_FLAGS_DEBUG   "-g -O0")
     set(CMAKE_C_FLAGS_RELEASE "-g -O2")
     set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} -shared-intel")
+elseif(CMAKE_C_COMPILER_ID MATCHES XL)
+    set(CMAKE_C_FLAGS         " ")
+    set(CMAKE_C_FLAGS_DEBUG   " ")
+    set(CMAKE_C_FLAGS_RELEASE " ")
 endif()
 
 set(DIRAC_LIBRARIES_TO_LINK)
@@ -164,14 +172,17 @@ add_custom_target(dirac_interfaces
 )
 
 if(DIRAC_ENABLE_MAIN)
-   #set_source_files_properties(${DIRAC_FREE_FORTRAN_SOURCES}
-   #    PROPERTIES COMPILE_FLAGS
-   #    "-foobar=free"
-   #    )
-   #set_source_files_properties(${DIRAC_FIXED_FORTRAN_SOURCES}
-   #    PROPERTIES COMPILE_FLAGS
-   #    "-raboof=fixed"
-   #    )
+
+    if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
+        set_source_files_properties(${DIRAC_FREE_FORTRAN_SOURCES}
+            PROPERTIES COMPILE_FLAGS
+            "-qfree"
+            )
+        set_source_files_properties(${DIRAC_FIXED_FORTRAN_SOURCES}
+            PROPERTIES COMPILE_FLAGS
+            "-qfixed"
+            )
+    endif()
 
     set(DIRAC_SOURCES
         ${DIRAC_C_SOURCES}
