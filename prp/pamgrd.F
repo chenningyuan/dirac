@@ -589,9 +589,9 @@ CMI   ENDIF
       ENDIF
 
 !gosia: 
-! temporarily i need this info for visual+london
+!       property_info is used for visual+london
         open(11, file='property_info', status = 'unknown',
-     &       form   = 'formatted', access = 'append')
+     &       form   = 'formatted')
         write(11, *) prpnam(indxpr)
         write(11, *) iprptyp(indxpr)
         write(11, *) iprpsym(indxpr)
