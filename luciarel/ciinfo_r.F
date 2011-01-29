@@ -4070,8 +4070,8 @@ C?    write(6,*) ' IA IB IASM LBLOCK ', IA,IB,IASM,LBLOCK
       IFRST = 1
 *. Loop over blocks in batch
  1000 CONTINUE
-      call rmemchk
-      print *,'survived check 7-3-',NBLOCK
+!     call rmemchk
+!     print *,'survived check 7-3-',NBLOCK
 *. Next block : Order is currently : IB, IA, ISM  (leftmost inner loop )
       IF(IFRST.EQ.0) THEN
         call nxt_tts(ITTSS_ORD,IA,IB,ISM,IFINI,NOCTPA,NOCTPB,NSMST)
@@ -4095,8 +4095,8 @@ C?    write(6,*) ' PART_CIV3 IDC IBLTP ', IDC,IBLTP(ISM)
       END IF
 C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
       IF(LENGTH+LBLOCK.LE.MXLNG.OR.ICOMP.EQ.1) THEN
-      call rmemchk
-      print *,'survived check 7-32-',IBLOCK
+!     call rmemchk
+!     print *,'survived check 7-32-',IBLOCK
         NBLOCK = NBLOCK + 1
         IBLOCK = IBLOCK + 1
         LBATCH(NBATCH) = LBATCH(NBATCH)+1
@@ -6339,17 +6339,17 @@ C     ^ keep them after exit
 C
       CALL ISETVC(WORK(KNODELIST),-2,NUM_BLOCKS *IXSYMACT)
       print *,'NUM_BLOCKS,IXSYMACT',NUM_BLOCKS ,IXSYMACT,KNODELIST
-      call rmemchk
-      print *,'survived check 1'
+!     call rmemchk
+!     print *,'survived check 1'
       CALL IZERO(WORK(KBLOCKLIST),   NUM_BLOCKS *IXSYMACT)
-      call rmemchk
-      print *,'survived check 2'
+!     call rmemchk
+!     print *,'survived check 2'
       CALL IZERO(WORK(KXSYMDISTR),               IXSYMACT)
-      call rmemchk
-      print *,'survived check 3'
+!     call rmemchk
+!     print *,'survived check 3'
       CALL IZERO(WORK(KRCCTOS),      NUM_BLOCKS2*NXSYMPAIRS)
-      call rmemchk
-      print *,'survived check 4'
+!     call rmemchk
+!     print *,'survived check 4'
 C
 C     mark for local memory
       IDUM = 0
@@ -6378,16 +6378,16 @@ C
           IOCTPB = IBSPGPFTP(IBTP)
 C
 C         info needed for generation of block info
-      call rmemchk
-      print *,'survived check 5'
+!     call rmemchk
+!     print *,'survived check 5'
           CALL MEMMAR(KLCIOIO,NOCTPA*NOCTPB,'ADDL  ',2,'CIOIO ')
           CALL IAIBCM_REL(ISPC,IATP,IBTP,WORK(KLCIOIO))
-      call rmemchk
-      print *,'survived check 6'
+!     call rmemchk
+!     print *,'survived check 6'
 C
           CALL ZBLTP_REL(ISMOST(1,IJSYM),NSMST,IDC,WORK(KPCBLTP))
-      call rmemchk
-      print *,'survived check 7'
+!     call rmemchk
+!     print *,'survived check 7'
 C
           IF(IMS2.EQ.1) THEN
             IOFFBLK = 1
@@ -6409,9 +6409,9 @@ C         batches of C vector
 C
 C         WRITE(LUWRT,*) 'IJSYM is',IJSYM
 C
-      call rmemchk
-      print *,'survived check 7-2'
-      print *,'IJSYM is ',IJSYM
+!     call rmemchk
+!     print *,'survived check 7-2'
+!     print *,'IJSYM is ',IJSYM
           CALL PART_CIV4(IDC,WORK(KPCBLTP),WORK(KNSTSO(IATP)),
      &                   WORK(KNSTSO2(IBTP)),NOCTPA,NOCTPB,
      &                   IOFFBLK,IOFFBTC,
@@ -6419,8 +6419,8 @@ C
      &                   ISMOST(1,IJSYM),
      &                   NBATCH,WORK(KPCLBT),WORK(KPCLEBT),
      &                   WORK(KPCI1BT),WORK(KPCIBT),0,ITTSS_ORD)
-      call rmemchk
-      print *,'survived check 7-3'
+!     call rmemchk
+!     print *,'survived check 7-3'
 C
 C         number of BLOCKS so far
           NBLOCK = IFRMR_REL(WORK(KPCI1BT),1,NBATCH)
@@ -6429,13 +6429,13 @@ C
         END DO
 C       ^ End of loop over MS2 values
 C
-      call rmemchk
-      print *,'survived check 8'
+!     call rmemchk
+!     print *,'survived check 8'
 C       initialize symmetry irrep block array
         CALL INI_BLOCKL_PRP(WORK(KBLOCKLIST),NUM_BLOCKS,I,
      &                      NBLOCK,WORK(KPCIBT))
-      call rmemchk
-      print *,'survived check 9'
+!     call rmemchk
+!     print *,'survived check 9'
  200  CONTINUE
 C     ^ End of loop over different symmetries
 C     WRITE(LUWRT,*) ' ... after IXSYMACT loop: LBLOCK = ', LBLOCK
