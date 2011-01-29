@@ -46,6 +46,9 @@ C
       LOGICAL TOBE,TRASAM
       DIMENSION WORK(*),NSTR(2,0:2,2),NSTRT(2),KQ(2,2),
      &          NSPC(2,0:2),KQC(2),KE(2,2),KIBE(2,4)
+      Real(8), Allocatable :: FMO(:),ORBE(:)
+      Integer, Allocatable :: IBORB(:)
+
 C
       CALL QENTER('TRAONE')
       KFRSAV = KFREE
@@ -60,21 +63,21 @@ C
 C     Transform core-fock matrix to active MO basis
 C     ---------------------------------------------
 C
-      CALL MEMGET('REAL',KFMO,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL GTCFCK(WORK(KFMO),IPRTRA,WORK(KQ(1,1)),WORK(KQ(1,2)),
+      Allocate (FMO(N2BBASXQ))
+      CALL GTCFCK(FMO,IPRTRA,WORK(KQ(1,1)),WORK(KQ(1,2)),
      &            WORK(KQC(1)),NDMOQR,ICMOQR,NSTR,NDMOQC,ICMOQC,NSPC,
      &            ITRA_INTFL2,WORK,KFREE,LFREE)
 C
 C     Write MOLFDIR file MRCONEE
 C     --------------------------
 C
-      CALL MEMGET('REAL',KORBE,NSTRT(1),WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBORB,NSTRT(1),WORK,KFREE,LFREE)
+      Allocate (ORBE(NSTRT(1)))
+      Allocate (IBORB(NSTRT(1)))
 C
 !radovan: run the test set with make check
 !         in test bss_energy KIBE(2,1) = 0
-      CALL MRCONE(WORK(KFMO),WORK(KORBE),WORK(KE(1,1)),WORK(KE(2,1)),
-     &  WORK(KIBORB),WORK(KIBE(1,1)),WORK(KIBE(2,1)),
+      CALL MRCONE(FMO,ORBE,WORK(KE(1,1)),WORK(KE(2,1)),
+     &  IBORB,WORK(KIBE(1,1)),WORK(KIBE(2,1)),
      &  NSPC,NSTR,NSTRT,IPRTRA,WORK,KFREE,LFREE)
 C
 C     Release the slaves if we run in parallel.
@@ -82,7 +85,9 @@ C        ( ITASK = -1 )
 C
       IF (PARCAL) CALL DIRAC_PARCTL( -1 )
 C
-      CALL MEMREL('TRAONE',WORK,KFRSAV,KFMO,KFREE,LFREE)
+      DeAllocate (FMO)
+      DeAllocate (ORBE)
+      DeAllocate (IBORB)
       CALL QEXIT('TRAONE')
 C
       RETURN
@@ -115,6 +120,7 @@ C
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2),NSTR(2,0:2,2)
       DIMENSION NDMOQC(2,2),ICMOQC(2),NSPC(2,0:2)
       DIMENSION Q1(*),Q2(*),QCO(*)
+      Real(8), Allocatable :: FAO(:),DMAT(:)
 C
       CALL QENTER('GTCFCK')
       KFRSAV = KFREE
@@ -123,10 +129,10 @@ C     Set INTFLG in dcbdhf
 C
       INTFLG = INTFLG2
 C
-      CALL MEMGET('REAL',KFAO ,N2BBASXQ,WORK,KFREE,LFREE)      
-      CALL MEMGET('REAL',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)      
+      Allocate(FAO(N2BBASXQ))
+      Allocate(DMAT(N2BBASXQ))
 C
-      CALL GTCFC1(FMO,WORK(KFAO),WORK(KDMAT),Q1,Q2,QCO,NDMOQR,ICMOQR,
+      CALL GTCFC1(FMO,FAO,DMAT,Q1,Q2,QCO,NDMOQR,ICMOQR,
      &            NSTR,NDMOQC,ICMOQC,NSPC,IPRINT,WORK,KFREE,LFREE)
 C
 C     Print section
@@ -139,7 +145,8 @@ C
 C
       WRITE (LUPRI,1000) DHFERG,ELERGY,E1PART,E2PART
 C
-      CALL MEMREL('GTCFCK',WORK,KFRSAV,KFAO,KFREE,LFREE)
+      DeAllocate(FAO)
+      DeAllocate(DMAT)
       CALL QEXIT('GTCFCK')
 C
  1000 FORMAT (//' Core energy (includes nuclear repulsion) :',T50,F20.10
@@ -182,6 +189,8 @@ C
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2),NSTR(2,0:2,2)
       DIMENSION NDMOQC(2,2),ICMOQC(2),NSPC(2,0:2)
       DIMENSION Q1(*),Q2(*),QCO(*)
+
+      Integer, Allocatable :: POS(:)
 C
       CALL QENTER('GTCFC1')
       KFRSAV = KFREE
@@ -207,11 +216,7 @@ C
         call SaveTaskDistribFlags(saveflags)
        call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
         call SetIntTaskArrayDimension(NPOS,PARCAL)
-        if (NPOS.GT.0) THEN
-           CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
-        else
-           KPOS = KFREE
-        endif
+        Allocate (POS(NPOS))
 C
 C       Closed shell Hartree - Fock
 C       ===========================
@@ -224,11 +229,11 @@ C       Hermitian operator
 C       Get core density matrix
         CALL CDENS(DMAT,QCO,NDMOQC,ICMOQC,NSPC,IPRINT)        
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FMO,DMAT,NFMAT,
-     &       WORK(KPOS),INTFLG,IPRINT,WORK(KFREE),LFREE)
+     &       POS,INTFLG,IPRINT,WORK(KFREE),LFREE)
 
         IF(PARCAL) call SetTaskDistribFlags(saveflags)
 
-        CALL MEMREL('GTCFC1.TWOFCK',WORK,1,KFRSAV,KFREE,LFREE)
+        DeAllocate (POS)
       ELSE
         CALL DZERO(FMO, N2BBASXQ)        
         CALL DZERO(DMAT,N2BBASXQ)        
@@ -389,9 +394,12 @@ C
       DIMENSION ORBE(*),IBORB(*),WORK(*)
       DIMENSION ORBE1(*),ORBE2(*),IBORB1(*),IBORB2(*)
       DIMENSION NSPC(2,0:2),NSTR(2,0:2,2),NSTRT(2)
+    
+      Real(8), Allocatable :: FMOM(:,:,:),ORBMO(:,:)
+      Integer, Allocatable :: IRPMO(:,:),IRPAMO(:,:),IOCCUP(:,:)
+      Integer, Allocatable :: IBSPI(:,:)
 C
       CALL QENTER('MRCONE')
-      KFRSAV = KFREE
 C
       IF (NSTRT(1).NE.NSTRT(2)) THEN
          WRITE (LUPRI,*) ' Ranges for bra and ket are different'
@@ -399,12 +407,12 @@ C
          RETURN
       ENDIF
 C
-      CALL MEMGET('REAL',KFMOM,NSTRT(1)*NSTRT(1)*8,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIRPMO,NSTRT(1)*2,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIRPAMO,NSTRT(1)*2,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KIOCCUP,NSTRT(1)*2,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KORBMO,NSTRT(1)*2,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBSPI,NSTRT(1)*2,WORK,KFREE,LFREE)
+      Allocate (FMOM(NSTRT(1),NSTRT(1),8))
+      Allocate (ORBMO(NSTRT(1),2))
+      Allocate (IRPMO(NSTRT(1),2))
+      Allocate (IRPAMO(NSTRT(1),2))
+      Allocate (IOCCUP(NSTRT(1),2))
+      Allocate (IBSPI(NSTRT(1),2))
 C
       II = 0
       DO I = 1, NFSYM
@@ -422,11 +430,16 @@ C
        ENDDO
       ENDDO
 C
-      CALL MRCON1(FMO,ORBE,IBORB,WORK(KFMOM),NSTR,NSTRT,WORK(KIRPMO),
-     &            WORK(KIRPAMO),WORK(KIOCCUP),WORK(KORBMO),WORK(KIBSPI),
+      CALL MRCON1(FMO,ORBE,IBORB,FMOM,NSTR,NSTRT,IRPMO,
+     &            IRPAMO,IOCCUP,ORBMO,IBSPI,
      &            NSPC,IPRINT,WORK,KFREE,LFREE)
 C
-      CALL MEMREL('TRAONE',WORK,KFRSAV,KFMOM,KFREE,LFREE)
+      DeAllocate (FMOM)
+      DeAllocate (ORBMO)
+      DeAllocate (IRPMO)
+      DeAllocate (IRPAMO)
+      DeAllocate (IOCCUP)
+      DeAllocate (IBSPI)
 C
       CALL QEXIT('MRCONE')
       RETURN
