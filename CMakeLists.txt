@@ -164,6 +164,21 @@ add_custom_target(dirac_interfaces
 )
 
 if(DIRAC_ENABLE_MAIN)
+   #set_source_files_properties(${DIRAC_FREE_FORTRAN_SOURCES}
+   #    PROPERTIES COMPILE_FLAGS
+   #    "-foobar=free"
+   #    )
+   #set_source_files_properties(${DIRAC_FIXED_FORTRAN_SOURCES}
+   #    PROPERTIES COMPILE_FLAGS
+   #    "-raboof=fixed"
+   #    )
+
+    set(DIRAC_SOURCES
+        ${DIRAC_C_SOURCES}
+        ${DIRAC_FREE_FORTRAN_SOURCES}
+        ${DIRAC_FIXED_FORTRAN_SOURCES}
+        )
+
     add_executable(dirac.x
         ${DIRAC_SOURCES}
         ${GENERATED_FILES}
