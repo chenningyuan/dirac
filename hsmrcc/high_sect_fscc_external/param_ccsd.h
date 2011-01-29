@@ -27,7 +27,10 @@
 
       parameter (nrle1=8*ndt1)
       parameter (nrle2=8*ndt2)
-!!c     parameter (nrle3=8*ndp3)
-      parameter (nrle3=1)
+
+!miro: restored for CCSDT run
+      parameter (nrle3=8*ndp3)
+!      parameter (nrle3=1)
+
       parameter (nrle4=1000)
 

@@ -65,7 +65,10 @@ write(LUPRI,'(/,2x,a)') 'assigning HSFS dimensions parameters'
 
  nrle1= 8*ndt1
  nrle2 = 8*ndt2 
- nrle3 = 1
+
+! nrle3 = 1
+ nrle3 = 8*ndp3  ! fix for CCSDT run
+
  nrle4 = 1000
 
  call print_hsfs_parameters
