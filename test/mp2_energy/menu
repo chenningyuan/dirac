@@ -1,1 +1,1 @@
-MP2.inp H2O.mol
+MP2.inp H2O.mol  --timeout=1m
