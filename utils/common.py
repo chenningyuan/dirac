@@ -39,9 +39,9 @@ def is_windows():
 
 def process_time_string(time_string):
     """
-    process time of this form ":d:h:m:s" (in entering time_string)
-    or as pure integer number 
-    returns the time in seconds (integer)
+    process entering time_string of the form "#d#h#m#s" 
+    or as pure integer number; 
+    returns the resulting time in seconds (integer)
     """
     secs=0
     mins=0
@@ -52,12 +52,10 @@ def process_time_string(time_string):
     if time_string.isdigit(): return (int(time_string))
 
     # otherwise continue to cut the string into substrings according to the presence of time units: s,m,h,d
-
     d_pos=time_string.find("d"); 
     h_pos=time_string.find("h"); 
     m_pos=time_string.find("m"); 
     s_pos=time_string.find("s"); 
-
     #print 'd,h,m,s positions:',d_pos,is_d, h_pos,is_h, m_pos,is_m, s_pos, is_s
 
     positions=[s_pos,m_pos,h_pos,d_pos]; j=0
@@ -74,9 +72,7 @@ def process_time_string(time_string):
                 i=i-1
             # revert string to get proper order of numbers
             num[j]=int(num_str[::-1])
-            #print 'number=',num[j] 
             j=j+1
-
     # take care of time units
     k=0
     if s_pos > -1:
@@ -88,13 +84,8 @@ def process_time_string(time_string):
     if d_pos > -1:
         days=num[k]; k=k+1 
 
-   # print 'days,hours,mins,secs:',days,hours,mins,secs
-
-    #sys.exit('string number not implemented yet !')
-
-    return_time = secs + (60*mins) + (60*60*hours) + (60*60*60*days)
-
-    return return_time
+    return_time_secs = secs + (60*mins) + (60*60*hours) + (60*60*60*days)
+    return return_time_secs
 
 def get_username():
     """
