@@ -51,7 +51,8 @@ write(LUPRI,'(/,2x,a)') 'assigning HSFS dimensions parameters'
  ndt2 =500000
 
 ! ndp3 = 700000
- ndp3 = 7000000
+ !ndp3 = 7000000
+  ndp3 = 20000000
 
 ! ndp4 =2000000
 ! ndp4 = 3000000
