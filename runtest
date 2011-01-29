@@ -170,7 +170,7 @@ class run:
          if len(line.split()) > 2:
             for i in range(2, len(line.split())):
                 pam_flags += line.split()[i] + ' '
-         in not options.verbose:
+         if not options.verbose:
              pam_flags += '--silent '
          pam_flags += '--nobackup '
          pam_flags += '--noarch '
