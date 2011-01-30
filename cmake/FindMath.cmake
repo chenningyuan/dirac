@@ -44,31 +44,40 @@ endmacro()
 
 set(MATH_FOUND FALSE)
 
-# try MKL
-if(NOT MATH_FOUND)
-    if(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86_64")
-        check_fortran_libraries(
-            MKL_LIBRARIES
-            MKL
-            "mkl_core;mkl_intel_lp64;mkl_sequential;mkl_lapack;guide;pthread"
-            )
-    else()
-        check_fortran_libraries(
-            MKL_LIBRARIES
-            MKL
-            "mkl_core;mkl_intel;mkl_sequential;mkl_lapack;guide;pthread"
-            )
-    endif()
-    if(MKL_LIBRARIES)
-        set(MATH_LIBS
-            ${MKL_LIBRARIES}
-            )
-#       message("found MKL libraries: ${MKL_LIBRARIES}")
-        set(MATH_FOUND TRUE)
-    endif()
+# user sets
+if(NOT $ENV{USERDEFINED_LIBS} STREQUAL '')
+    set(MATH_LIBS
+        $ENV{USERDEFINED_LIBS}
+        )
+    message("-- User set math libraries: ${MATH_LIBS}")
+    set(MATH_FOUND TRUE)
 endif()
-# mkl code above is too shaky for the moment deactivate
-set(MATH_FOUND FALSE)
+
+# try MKL
+# if(NOT MATH_FOUND)
+#     if(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86_64")
+#         check_fortran_libraries(
+#             MKL_LIBRARIES
+#             MKL
+#             "mkl_core;mkl_intel_lp64;mkl_sequential;mkl_lapack;guide;pthread"
+#             )
+#     else()
+#         check_fortran_libraries(
+#             MKL_LIBRARIES
+#             MKL
+#             "mkl_core;mkl_intel;mkl_sequential;mkl_lapack;guide;pthread"
+#             )
+#     endif()
+#     if(MKL_LIBRARIES)
+#         set(MATH_LIBS
+#             ${MKL_LIBRARIES}
+#             )
+# #       message("found MKL libraries: ${MKL_LIBRARIES}")
+#         set(MATH_FOUND TRUE)
+#     endif()
+# endif()
+# mkl code above is too stupid for the moment deactivate
+# i will come back to it asap
 
 # try default
 if(NOT MATH_FOUND)
@@ -81,4 +90,9 @@ if(NOT MATH_FOUND)
             )
         set(MATH_FOUND TRUE)
     endif()
+endif()
+
+# nothing found
+if(NOT MATH_FOUND)
+    message("-- No math libraries found - defaulting to DIRAC own math libraries")
 endif()

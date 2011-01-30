@@ -1,30 +1,187 @@
-#! /bin/bash
+#! /usr/bin/env python
 
-tcmake=`which cmake`
-if test $tcmake; then
-   cd cbuild
-   cmake ..
-   RETURN=$?
-   if [ $RETURN -eq 0 ]; then
-       echo
-       echo '   to compile DIRAC with modified parameters:'
-       echo '   $ cd cbuild'
-       echo '   $ ccmake ..'
-       echo '   $ make'
-       echo
-       echo '   to compile DIRAC with default parameters:'
-       echo '   $ cd cbuild'
-       echo '   $ make'
-   fi
-else       
-   echo    
-   echo '   You are not running autoconf/automake tools!'
-   echo '   DIRAC is built using cmake'
-   echo '   check http://wiki.chem.vu.nl/dirac/'
-   echo 
-   echo '   cmake is not found'
-   echo '   get cmake at http://www.cmake.org/'
-   echo 
-fi
+import os
+import sys
+import string
+import subprocess
+from optparse import OptionParser, OptionGroup
 
-exit 0
+root_directory = os.path.realpath(__file__)[:-10]
+
+default_path = root_directory + 'cbuild'
+
+# define example usage
+
+usage = '\n  (for example) ./%prog --fc=mpif90 --cc=mpicc --mpi --math="-L/opt/intel/mkl/10.2.6.038/lib/32 -lmkl_lapack -lmkl_intel -lmkl_intel_thread -lmkl_core -lguide -lpthread"'
+
+# initialize parser
+
+parser = OptionParser(usage)
+
+# define options
+
+group = OptionGroup(parser, 'Basic options')
+group.add_option('--fc',
+                 type='string',
+                 action='store',
+                 dest='fc',
+                 default=None,
+                 help='set the Fortran compiler [default: pick automatically]',
+                 metavar='STRING')
+group.add_option('--cc',
+                 type='string',
+                 action='store',
+                 dest='cc',
+                 default=None,
+                 help='set the C compiler [default: pick automatically]',
+                 metavar='STRING')
+group.add_option('--cpp',
+                 type='string',
+                 action='store',
+                 dest='cpp',
+                 default=None,
+                 help='set the C++ compiler [default: pick automatically]',
+                 metavar='STRING')
+group.add_option('--math',
+                 type='string',
+                 action='store',
+                 dest='math',
+                 default=None,
+                 help='provide math library to link [default: pick automatically]',
+                 metavar='STRING')
+group.add_option('--mpi',
+                 action='store_true',
+                 dest='mpi',
+                 default=False,
+                 help='build using MPI parallelization [default: %default]')
+group.add_option('--64int',
+                 action='store_true',
+                 dest='64int',
+                 default=False,
+                 help='build for 64bit integers [default: %default]')
+group.add_option('--auto',
+                 action='store_true',
+                 dest='auto',
+                 default=False,
+                 help='try to configure --fc, --cc, --cpp, and --math automatically [default: %default]')
+parser.add_option_group(group)
+
+group = OptionGroup(parser, 'Advanced options')
+group.add_option('--prefix',
+                 type='string',
+                 action='store',
+                 dest='prefix',
+                 default=default_path,
+                 help='set the build path (you can build several binaries with the same source) [default: %default]',
+                 metavar='PATH')
+group.add_option('--debug',
+                 action='store_true',
+                 dest='debug',
+                 default='release mode',
+                 help='build in debug mode [default: %default]')
+group.add_option('--check',
+                 action='store_true',
+                 dest='check',
+                 default=False,
+                 help='enable bounds checking [default: %default]')
+parser.add_option_group(group)
+
+# process input
+
+(options, args) = parser.parse_args()
+
+# find out whether cmake exists
+
+def which(program):
+    import os
+    def is_exe(fpath):
+        return os.path.exists(fpath) and os.access(fpath, os.X_OK)
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+
+    return None
+
+if not which('cmake'):
+    # there is no cmake
+    # print info
+    print '   You are not running autoconf/automake tools!'
+    print '   DIRAC is built using cmake'
+    print '   check http://wiki.chem.vu.nl/dirac/'
+    print
+    print '   cmake is not found'
+    print '   get cmake at http://www.cmake.org/'
+    # and exit
+    sys.exit()
+
+if len(sys.argv) == 1:
+    # user has given no arguments: print help and exit
+    print parser.format_help().strip()
+    sys.exit()
+
+# create cmake command from flags
+
+command = ''
+if not options.auto:
+    if options.fc != '':
+        command += ' FC=%s' % options.fc
+    if options.cc != '':
+        command += ' CC=%s' % options.cc
+    if options.cpp != '':
+        command += ' CXX=%s' % options.cpp
+    if options.math != '':
+        command += ' USERDEFINED_LIBS="%s"' % options.math
+command += ' cmake'
+if options.mpi:
+    command += ' -DDIRAC_ENABLE_MPI=1'
+command += ' %s' % root_directory
+
+if options.prefix != '':
+    build_path = options.prefix
+else:
+    build_path = default_path
+
+if not os.path.isdir(build_path):
+   #radovan: don't know how to os.mkdir with parent
+   #os.mkdir(build_path)
+    os.system('mkdir -p %s' % build_path)
+os.chdir(build_path)
+
+p = subprocess.Popen(command,
+                     shell=True,
+                     stdin=subprocess.PIPE,
+                     stdout=subprocess.PIPE)
+
+s = p.communicate()[0]
+print s
+
+normal_cmake_termination = True
+if 'Configuring incomplete' in s:
+    normal_cmake_termination = False
+
+if normal_cmake_termination:
+    print '   configure step is done'
+    print '   now you need to compile DIRAC'
+    print
+    print '   to compile DIRAC with configured parameters (recommended):'
+    print '   $ cd ' + build_path
+    print '   $ make'
+    print
+    print '   to compile DIRAC on multicore machines (here use 4 cores):'
+    print '   $ cd ' + build_path
+    print '   $ make -j 4'
+    print
+    print '   to modify configured parameters and then compile DIRAC:'
+    print '   $ cd ' + build_path
+    print '   $ ccmake ' + root_directory
+    print '   $ make'
+    print
+    print '   to compile DIRAC in verbose mode:'
+    print '   $ cd ' + build_path
+    print '   $ make VERBOSE=1'
