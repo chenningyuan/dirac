@@ -276,7 +276,7 @@ def get_current_section(line, current_section):
     return current_section
 
 def line_is_keyword(line):
-    if line.split()[0] == 'sh ':
+    if line.split()[0] == 'sh':
         return True
     if line.split()[0] == 'quick':
         return True
