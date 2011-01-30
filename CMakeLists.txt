@@ -51,9 +51,9 @@ add_definitions(-DINSTALL_WRKMEM=${DIRAC_WORK_MEM_WORDS})
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     add_definitions(-DSYS_LINUX)
-    if(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "i686")
+    if(${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "i686")
         add_definitions(-DARCH32BIT)
-    elseif(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86_64")
+    elseif(${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "x86_64")
     else()
     endif()
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
@@ -221,6 +221,7 @@ if(DIRAC_ENABLE_MAIN)
         dirac.x
         ${LIBS}
         )
+#   SET_TARGET_PROPERTIES("dirac.x" PROPERTIES LINKER_LANGUAGE FORTRAN)
 endif()
 
 if(DIRAC_ENABLE_UTILITIES)
