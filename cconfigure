@@ -177,9 +177,7 @@ if not os.path.isdir(build_path):
     os.system('mkdir -p %s' % build_path)
 os.chdir(build_path)
 
-print 'CMake command:'
-print command
-print
+print '   CMake command: %s\n' % command
 
 p = subprocess.Popen(command,
                      shell=True,
