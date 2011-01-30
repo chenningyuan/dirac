@@ -168,8 +168,8 @@ class run:
          self.mol  = line.split()[1]
          pam_flags = ''
          if len(line.split()) > 2:
-            for i in range(2, len(line.split())):
-                pam_flags += line.split()[i] + ' '
+             for i in range(2, len(line.split())):
+                 pam_flags += line.split()[i] + ' '
          if not options.verbose:
              pam_flags += '--silent '
          pam_flags += '--nobackup '
@@ -203,12 +203,17 @@ class run:
              return True
          else:
              return False
-     def print_result(self, progress, result_text):
+     def print_result(self, progress, result_text, into_stderr):
          inp_file_strip = string.replace(self.inp,       '.inp', '')
          mol_file_strip = string.replace(self.mol,       '.mol', '')
          mol_file_strip = string.replace(mol_file_strip, '.xyz', '')
-         print '%8s %6s %30s %30s %25s' % \
-            (progress, result_text, self.get_test_name(), inp_file_strip, mol_file_strip)
+         if into_stderr:
+             print >> sys.stderr,'%8s %6s %30s %30s %25s' % \
+                 (progress, result_text, self.get_test_name(), inp_file_strip, mol_file_strip)
+         else:
+             print >> sys.stdout,'%8s %6s %30s %30s %25s' % \
+                 (progress, result_text, self.get_test_name(), inp_file_strip, mol_file_strip)
+
      def apply_filter(self):
          # apply the filter on output
          os.system('../../utils/crep %s        result/filter > compare/%s.own' \
@@ -338,20 +343,20 @@ def main(*args):
                     task.apply_filter() 
                 
                     if os.path.getsize('compare/%s.txt' % task.get_output_name()) == 0:
-                        result_text = 'OK'
+                        result_text = 'OK'; into_stderr=False
                         nr_ok += 1
                     else:
-                        result_text = 'FAIL'
+                        result_text = 'FAIL'; into_stderr=True
                         nr_failed += 1
                 else:
                     result_text = ' '
-                    nr_without_ref += 1
+                    nr_without_ref += 1;  into_stderr=False
             else:
-                result_text = 'CRASH'
+                result_text = 'CRASH';  into_stderr=True
                 nr_crashed += 1
 
             progress = '[%3i%s]' % (100.0*float(nr_of_tests_done)/float(total_nr_of_tests), r'%')
-            task.print_result(progress, result_text) 
+            task.print_result(progress, result_text, into_stderr) 
         
             if ((nr_crashed > 0) or (nr_failed > 0)) and options.giveup:
                 print
@@ -361,13 +366,19 @@ def main(*args):
 
     print
     print 'summary: %5i ok'                % nr_ok
-    print '         %5i failed'            % nr_failed
-    print '         %5i crashed'           % nr_crashed
+    if nr_failed > 0:
+         print >> sys.stderr,'         %5i failed'            % nr_failed
+    else:
+         print >> sys.stdout,'         %5i failed'            % nr_failed
+    if nr_crashed > 0:
+         print >> sys.stderr,'         %5i crashed'           % nr_crashed
+    else:
+         print >> sys.stdout,'         %5i crashed'           % nr_crashed
     print '         %5i without reference' % nr_without_ref
-
     print
+    sys.stdout.flush()
 
-    # return code (for trac-bitten)
+    # return code (for trac-bitten to get label of the failed buildup)
     if   nr_failed > 0 :
         return 2
     elif nr_crashed > 0:
