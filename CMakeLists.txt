@@ -87,22 +87,25 @@ elseif(CMAKE_C_COMPILER_ID MATCHES XL)
     set(CMAKE_C_FLAGS_RELEASE " ")
 endif()
 
-set(DIRAC_LIBRARIES_TO_LINK)
+set(LIBS)
 
-if(DIRAC_ENABLE_EXTERNAL_MATH)
-    find_package(BLAS)
-    find_package(LAPACK)
-    set(DIRAC_LIBRARIES_TO_LINK
-        ${DIRAC_LIBRARIES_TO_LINK}
-        blas
-        lapack
+find_package(Math)
+if(DIRAC_ENABLE_EXTERNAL_MATH AND MATH_FOUND)
+    set(LIBS
+        ${LIBS}
+        ${MATH_LIBS}
         )
+else()
+    add_definitions(-DUSE_DIRAC_BLAS)
+    add_definitions(-DUSE_DIRAC_DLAMCH)
+    add_definitions(-DUSE_DIRAC_DLAPACK)
+    add_definitions(-DUSE_DIRAC_ZLAPACK)
 endif()
 
 if(DIRAC_ENABLE_MPI)
     find_package(MPI)
-    add_definitions(-DVAR_MPI)
     if(MPI_FOUND)
+        add_definitions(-DVAR_MPI)
         set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${MPI_COMPILE_FLAGS}")
         include_directories(${MPI_INCLUDE_PATH})
     endif()
@@ -159,8 +162,8 @@ if(DIRAC_ENABLE_XCFUN)
         ${DIRAC_INTERFACES_LIST}
         xcfun
         )
-    set(DIRAC_LIBRARIES_TO_LINK
-        ${DIRAC_LIBRARIES_TO_LINK}
+    set(LIBS
+        ${LIBS}
         xcfun
         )
 endif()
@@ -197,7 +200,7 @@ if(DIRAC_ENABLE_MAIN)
 
     target_link_libraries(
         dirac.x
-        ${DIRAC_LIBRARIES_TO_LINK}
+        ${LIBS}
         )
 endif()
 
@@ -249,7 +252,7 @@ if(DIRAC_ENABLE_UTILITIES)
     target_link_libraries(
         twofit.x
         utils_dependencies
-        ${DIRAC_LIBRARIES_TO_LINK}
+        ${LIBS}
         )
     add_executable(cfread.x
         ${PROJECT_SOURCE_DIR}/utils/twofit.F
@@ -257,7 +260,7 @@ if(DIRAC_ENABLE_UTILITIES)
     target_link_libraries(
         cfread.x
         utils_dependencies
-        ${DIRAC_LIBRARIES_TO_LINK}
+        ${LIBS}
         )
     add_executable(vibcal.x
         ${PROJECT_SOURCE_DIR}/utils/vibcal.F
@@ -265,7 +268,7 @@ if(DIRAC_ENABLE_UTILITIES)
     target_link_libraries(
         vibcal.x
         utils_dependencies
-        ${DIRAC_LIBRARIES_TO_LINK}
+        ${LIBS}
         )
     add_executable(polfit.x
         ${PROJECT_SOURCE_DIR}/utils/polfit.F
@@ -273,7 +276,7 @@ if(DIRAC_ENABLE_UTILITIES)
     target_link_libraries(
         polfit.x
         utils_dependencies
-        ${DIRAC_LIBRARIES_TO_LINK}
+        ${LIBS}
         )
     add_executable(mx2fit.x
         ${PROJECT_SOURCE_DIR}/utils/mx2fit.F
@@ -281,6 +284,6 @@ if(DIRAC_ENABLE_UTILITIES)
     target_link_libraries(
         mx2fit.x
         utils_dependencies
-        ${DIRAC_LIBRARIES_TO_LINK}
+        ${LIBS}
         )
 endif()
