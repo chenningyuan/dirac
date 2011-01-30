@@ -96,6 +96,7 @@ if(DIRAC_ENABLE_EXTERNAL_MATH AND MATH_FOUND)
         ${MATH_LIBS}
         )
 else()
+    message("using own math")
     add_definitions(-DUSE_DIRAC_BLAS)
     add_definitions(-DUSE_DIRAC_DLAMCH)
     add_definitions(-DUSE_DIRAC_DLAPACK)
@@ -197,7 +198,6 @@ if(DIRAC_ENABLE_MAIN)
         ${DIRAC_SOURCES}
         ${GENERATED_FILES}
         )
-
     target_link_libraries(
         dirac.x
         ${LIBS}
