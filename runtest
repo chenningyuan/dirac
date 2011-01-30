@@ -161,6 +161,10 @@ f = open('report.htm', 'w')
 f.write(html_header)
 f.close()
 
+#miro: do backup first ?
+pam_output_file = open('runtest.log','w', 0)
+pam_output_file.write(" runtest pam outputs \n\n ") 
+
 class run:
      def __init__(self, test, line):
          self.test = test
@@ -197,8 +201,9 @@ class run:
                               stdin=subprocess.PIPE,
                               stdout=subprocess.PIPE)
          
-         # check whether DIRAC terminated normally
          pam_output = p.communicate()[0]
+         pam_output_file.write(pam_output) 
+         # check whether DIRAC terminated normally
          if 'exit           : normal' in pam_output:
              return True
          else:
@@ -215,7 +220,7 @@ class run:
                  (progress, result_text, self.get_test_name(), inp_file_strip, mol_file_strip)
 
      def apply_filter(self):
-         # apply the filter on output
+         # apply the filter on output; TODO: replace crep, bdrep
          os.system('../../utils/crep %s        result/filter > compare/%s.own' \
                    % (self.get_output_name(), self.get_output_name()))
          # apply the filter on reference output
@@ -389,4 +394,5 @@ def main(*args):
 # launch the main function
 if __name__ == '__main__':
     sys.exit(main(*sys.argv))
+    pam_output_file.close()
 
