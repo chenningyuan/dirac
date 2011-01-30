@@ -27,16 +27,20 @@ else()
     message(FATAL_ERROR "could not find cmake/Definitions.cmake; run pamadm first")
 endif()
 
-option(DIRAC_ENABLE_PROFILING     "Enable profiling"          OFF)
-option(DIRAC_ENABLE_BOUNDS_CHECK  "Enable bounds check"       OFF)
-option(DIRAC_ENABLE_CODE_COVERAGE "Enable code coverage"      OFF)
-option(DIRAC_ENABLE_EXTERNAL_MATH "Use external math library" ON)
-option(DIRAC_ENABLE_MPI           "Use MPI parallelization"   OFF)
-option(DIRAC_ENABLE_XCFUN         "Use XCFun library"         OFF)
-option(DIRAC_ENABLE_UTILITIES     "Compile utilities"         OFF)
-option(DIRAC_ENABLE_MAIN          "Compile main binary"       ON)
+option(DIRAC_ENABLE_64BIT_INTEGERS "Enable profiling"          OFF)
+option(DIRAC_ENABLE_PROFILING      "Enable profiling"          OFF)
+option(DIRAC_ENABLE_BOUNDS_CHECK   "Enable bounds check"       OFF)
+option(DIRAC_ENABLE_CODE_COVERAGE  "Enable code coverage"      OFF)
+option(DIRAC_ENABLE_EXTERNAL_MATH  "Use external math library" ON)
+option(DIRAC_ENABLE_MPI            "Use MPI parallelization"   OFF)
+option(DIRAC_ENABLE_XCFUN          "Use XCFun library"         OFF)
+option(DIRAC_ENABLE_UTILITIES      "Compile utilities"         OFF)
+option(DIRAC_ENABLE_MAIN           "Compile main binary"       ON)
 
 add_definitions(-DPRG_DIRAC)
+if(DIRAC_ENABLE_64BIT_INTEGERS)
+    add_definitions(-DINT_STAR8)
+endif()
 
 set(DIRAC_WORK_MEM_WORDS
     "64000000"
@@ -61,6 +65,21 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
     set(CMAKE_Fortran_FLAGS         " ")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g3")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -funroll-all-loops")
+    if(DIRAC_ENABLE_64BIT_INTEGERS)
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} -fdefault-integer-8"
+            )
+    endif()
+    if(DIRAC_ENABLE_BOUNDS_CHECK)
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} -fbounds-check"
+            )
+    endif()
+    if(DIRAC_ENABLE_CODE_COVERAGE)
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} -ftest-coverage"
+            )
+    endif()
 elseif(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     add_definitions(-DVAR_IFC)
     set(CMAKE_Fortran_FLAGS         "-w -assume byterecl")
