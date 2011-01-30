@@ -6,7 +6,8 @@
 # reads the original Dirac input and molecule file. 
 # creates atomic fragment inputs and calls Dirac via "pam".
 #
-# Written by Stefan Knecht, Denmark, Jan 2011 - ?
+# Written by  :  Stefan Knecht, Denmark, Jan 2011 - ?
+#                report problems/bugs to knecht@ifk.sdu.dk
 #
 # Contributors:  Radovan Bast, Norway (structure adapted from runtest)
 #                Andre Gomes, France  (thanks for the periodic table)
@@ -35,7 +36,7 @@ def mkdir_p(path):
 
 
 # start of class definitions
-class periodic_table_118(object):
+class periodic_table_plus_ext(object):
 
     def __init__ (self):
         pass
@@ -51,7 +52,10 @@ class periodic_table_118(object):
                                 'Tl','Pb','Bi','Po','At','Rn','Fr','Ra','Ac','Th',
                                 'Pa','U' ,'Np','Pu','Am','Cm','Bk','Cf','Es','Fm',
                                 'Md','No','Lr','Rf','Db','Sg','Bh','Hs','Mt','Ds',
-                                'Rg','Cn','Uut','Uuq','Uup','Uuh','Uus','Uuo']
+                                'Rg','Cn','Uut','Uuq','Uup','Uuh','Uus','Uuo','X',
+                                'Q ','J ','a ','b ','c ','d ','e ','f ','g ','h ',
+                                'i ','j ','k ','l ','m ','n ','o ','p ','q ','r ',
+                                's ','t ','u ','v ','w ','x ','y ','z ']
 
 
     def get_element_number(self,symbol):
@@ -59,6 +63,15 @@ class periodic_table_118(object):
 
     def get_element_symbol(self,Z):
         return self.element_symbols[Z]
+
+    def compare_element_symbols(self,symbol):
+        result = False
+        for element in self.element_symbols:
+            if symbol[0].lower() == element.lower():
+                result = True 
+                break
+        print 'result is %s' % result
+        return result
 
 class x2c_total_symmetry(object):
     """
@@ -196,6 +209,10 @@ class x2c_fragment_dirac_input(object):
 
 root_directory = os.path.realpath(__file__)[:-14]
 
+# set relative path to directory which will contain fragment-input/output files
+
+x2c_fragment_scratch_files_path = 'fragment-x2c-scratch-files'
+
 # set directory for basic dirac input
 
 basic_atomic_input_directory = root_directory + '/utils'
@@ -230,7 +247,7 @@ group.add_option('--mol',
                  dest='original_molecular_input',
                  default=None,
                  metavar='xxx.mol',
-                 help='specifies the molecular input file [default: %default]')
+                 help='specifies the molecular input file (support for .xyz files not implemented yet) [default: %default]')
 parser.add_option_group(group)
 
 group = OptionGroup(parser, 'dirac input file for fragments provided by the user (NOT OPERATIONAL YET)')
@@ -277,28 +294,6 @@ if options.being_verbose:
     print 'run script resides in:'
     print root_directory
 
-# read original molecular input
-
-total_nr_of_lines = 0
-mol_file_orig = options.original_molecular_input
-f = open(mol_file_orig, 'r')
-for line in f.readlines():
-    total_nr_of_lines += 1    
-f.close()
-
-print total_nr_of_lines
-# determine total number of atomic/molecular fragments
-
-
-
-#total_nr_of_atomic_x2c = 0
-#for fragment in list_of_fragments:
-#    f = open('abaX2C_menu', 'r')
-#    for line in f.readlines():
-#        total_nr_of_atomic_x2c += 1
-#    f.close()
-
-
 # set useful pam flags in case user has none provided
 
 pam_flags_tmp  = options.pam_argument_list
@@ -316,9 +311,6 @@ if options.being_verbose:
     print 'options passed on to \"pam\":'
     print pam_flags
 
-# set relative path to directory which will contain fragment-input/output files
-
-x2c_fragment_scratch_files_path = 'fragment-x2c-scratch-files'
 
 # print header
 
@@ -329,19 +321,61 @@ print
 print '%10s %12s %33s' % ('progress', 'result', 'atom/molecular-fragment')
 print '  ----------------------------------------------------------------'
 
+# run first all atomic X2C calculations and in the end the molecular one combining all pct-matrices...
 
-# open the basic atomic dirac input
+# read original molecular input
 
-#basic_dirac_input = open(basic_atomic_input_directory+'/atomicX2C-basic-dirac-input-repository', 'r')
-#if options.being_verbose:
-#    total_content_basic_dirac_input = basic_dirac_input.read()
-#    print "complete content of the basic-dirac-input repository:"
-#    print total_content_basic_dirac_input,
-#    basic_dirac_input.seek(0)
+mol_file_strip = string.replace(options.original_molecular_input,       '.mol', '')
+mol_file_strip = string.replace(mol_file_strip,                         '.xyz', '')
 
-# run the molecular X2C calculation using the atom-by-atom X2C approach
+molecule_file_full_system = mol_file_strip + '.mol'
 
-list_of_fragments = '1'
+if os.path.isfile(molecule_file_full_system):
+    mol_file_lines = []
+    f = open(molecule_file_full_system, 'r')
+    for line in f.readlines():
+        mol_file_lines.append(line.strip('\n'))
+    f.close()
+else:
+    print 'molecular input file for the full system %s does not exist, please check your input'\
+           % molecule_file_full_system
+    sys.exit()
+
+print mol_file_lines
+
+print mol_file_lines[3]
+check_mol_line4_first_char = mol_file_lines[3].split()[0]
+num_fragments              = int(mol_file_lines[3].split()[1])
+
+print num_fragments
+print check_mol_line4_first_char
+
+if check_mol_line4_first_char != 'C':
+    print ' *** error in reading the molecular basis set input: the file has a wrong format. ***'
+    print '     please consult the Dirac-Wiki (http://wiki.chem.vu.nl/dirac/index.php/Manual:Basis:MOL) for more help.'
+    print '     the first character in line 4 is %s rather than C'\
+           % check_mol_line4_first_char
+    sys.exit()
+
+get_symbol = periodic_table_plus_ext()
+if get_symbol.compare_element_symbols('bla'):
+    print 'comparison 1 was successful'
+if get_symbol.compare_element_symbols('.'):
+    print 'comparison 2 was successful'
+else:
+    print 'comparison 2 was NOT successful'
+
+
+
+
+# create a list of fragments
+list_of_fragments = []
+i = 0
+while i < num_fragments:
+    list_of_fragments.append(int(i+1))
+    i += 1
+
+print list_of_fragments
 
 for is_fragment in list_of_fragments:
 
@@ -388,7 +422,7 @@ for is_fragment in list_of_fragments:
     # b. create a new fragment dirac and molecule input file
 
     is_element = int(is_fragment)
-    get_symbol = periodic_table_118()
+    get_symbol = periodic_table_plus_ext()
     element_symbol = get_symbol.get_element_symbol(int(is_fragment))
     print 'the current element is %s' % (element_symbol)
 
