@@ -146,33 +146,16 @@ add_custom_target(dirac_interfaces
 )
 
 if(DIRAC_ENABLE_MAIN)
-
-    if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
-        set_source_files_properties(${DIRAC_FREE_FORTRAN_SOURCES}
-            PROPERTIES COMPILE_FLAGS
-            "-qfree"
-            )
-        set_source_files_properties(${DIRAC_FIXED_FORTRAN_SOURCES}
-            PROPERTIES COMPILE_FLAGS
-            "-qfixed"
-            )
-    endif()
-
-    set(DIRAC_SOURCES
+    add_executable(dirac.x
         ${DIRAC_C_SOURCES}
         ${DIRAC_FREE_FORTRAN_SOURCES}
         ${DIRAC_FIXED_FORTRAN_SOURCES}
-        )
-
-    add_executable(dirac.x
-        ${DIRAC_SOURCES}
         ${GENERATED_FILES}
         )
     target_link_libraries(
         dirac.x
         ${LIBS}
         )
-#   SET_TARGET_PROPERTIES("dirac.x" PROPERTIES LINKER_LANGUAGE FORTRAN)
 endif()
 
 if(DIRAC_ENABLE_UTILITIES)

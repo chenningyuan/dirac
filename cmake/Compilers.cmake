@@ -66,6 +66,15 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set(CMAKE_Fortran_FLAGS         "-qzerosize")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
+
+    set_source_files_properties(${DIRAC_FREE_FORTRAN_SOURCES}
+        PROPERTIES COMPILE_FLAGS
+        "-qfree"
+        )
+    set_source_files_properties(${DIRAC_FIXED_FORTRAN_SOURCES}
+        PROPERTIES COMPILE_FLAGS
+        "-qfixed"
+        )
 endif()
 
 # C compilers
