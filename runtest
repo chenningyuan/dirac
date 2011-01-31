@@ -157,12 +157,12 @@ and absolute errors otherwise.</p>
 1.2<FONT COLOR="#FF0000">3456789</FONT>    red: probably significant difference (more than 0.001)
 <p> </p><hr><p> </p>'''
 
-f = open('report.htm', 'w')
+f = open('test/LOGS/report.htm', 'w')
 f.write(html_header)
 f.close()
 
 #miro: do backup first ?
-pam_output_file = open('runtest.log','w', 0)
+pam_output_file = open('test/LOGS/runtest.log','w', 0)
 pam_output_file.write(" runtest pam outputs \n\n ") 
 
 class run:
@@ -209,15 +209,20 @@ class run:
          else:
              return False
      def print_result(self, progress, result_text, into_stderr):
+         """
+          print result of the test, flush out stdout/stderr buffers
+         """
          inp_file_strip = string.replace(self.inp,       '.inp', '')
          mol_file_strip = string.replace(self.mol,       '.mol', '')
          mol_file_strip = string.replace(mol_file_strip, '.xyz', '')
          if into_stderr:
              print >> sys.stderr,'%8s %6s %30s %30s %25s' % \
                  (progress, result_text, self.get_test_name(), inp_file_strip, mol_file_strip)
+             sys.stderr.flush()
          else:
              print >> sys.stdout,'%8s %6s %30s %30s %25s' % \
                  (progress, result_text, self.get_test_name(), inp_file_strip, mol_file_strip)
+             sys.stdout.flush()
 
      def apply_filter(self):
          # apply the filter on output; TODO: replace crep, bdrep
@@ -302,7 +307,7 @@ def main(*args):
                     if line.split()[0] != '#':
                         current_section = get_current_section(line, current_section)
                         if use_this_line(current_section):
-                            if line[0:2] == 'sh ':
+                            if line[0:2] == 'sh':
                                 l.append(shell_command(test, line))
                             else:
                                 if not line_is_keyword(line):
@@ -381,7 +386,8 @@ def main(*args):
          print >> sys.stdout,'         %5i crashed'           % nr_crashed
     print '         %5i without reference' % nr_without_ref
     print
-    sys.stdout.flush()
+    sys.stdout.flush(); sys.stderr.flush()
+    pam_output_file.close()
 
     # return code (for trac-bitten to get label of the failed buildup)
     if   nr_failed > 0 :
@@ -394,5 +400,4 @@ def main(*args):
 # launch the main function
 if __name__ == '__main__':
     sys.exit(main(*sys.argv))
-    pam_output_file.close()
 
