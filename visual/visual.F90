@@ -455,11 +455,11 @@ contains
       real(8)              :: vx(3), vx_norm
       real(8)              :: vy(3), vy_norm
       real(8)              :: r(3), v(3), s
-      integer              :: lunit_2d_scalar_field
-      integer              :: lunit_2d_vector_field
+      integer              :: lunit_2d_scalar
+      integer              :: lunit_2d_vector
       integer              :: lunit_3d_cube
-      integer              :: lunit_3d_scalar_field
-      integer              :: lunit_3d_vector_field
+      integer              :: lunit_3d_scalar
+      integer              :: lunit_3d_vector
       integer              :: lunit_line_scalar
       integer              :: lunit_line_vector
 !     --------------------------------------------------------------------------
@@ -472,24 +472,24 @@ contains
 
       allocate(atom_xyz(4, nucdep))
 
-      lunit_2d_scalar_field = 14
-      lunit_2d_vector_field = 15
-      lunit_3d_cube         = 16
-      lunit_3d_scalar_field = 17
-      lunit_3d_vector_field = 18
-      lunit_line_scalar     = 19
-      lunit_line_vector     = 20
+      lunit_2d_scalar   = 14
+      lunit_2d_vector   = 15
+      lunit_3d_cube     = 16
+      lunit_3d_scalar   = 17
+      lunit_3d_vector   = 18
+      lunit_line_scalar = 19
+      lunit_line_vector = 20
 
       if (visual_cfg_2d) then
-         open(lunit_2d_scalar_field,           &
-              file   = 'plot.2d.scalar_field', &
-              status = 'new',                  &
-              access = 'sequential',           &
+         open(lunit_2d_scalar,           &
+              file   = 'plot.2d.scalar', &
+              status = 'new',            &
+              access = 'sequential',     &
               form   = 'formatted')
-         open(lunit_2d_vector_field,           &
-              file   = 'plot.2d.vector_field', &
-              status = 'new',                  &
-              access = 'sequential',           &
+         open(lunit_2d_vector,           &
+              file   = 'plot.2d.vector', &
+              status = 'new',            &
+              access = 'sequential',     &
               form   = 'formatted')
       end if
 
@@ -499,15 +499,15 @@ contains
               status = 'new',          &
               access = 'sequential',   &
               form   = 'formatted')
-         open(lunit_3d_vector_field,           &
-              file   = 'plot.3d.vector_field', &
-              status = 'new',                  &
-              access = 'sequential',           &
+         open(lunit_3d_vector,           &
+              file   = 'plot.3d.vector', &
+              status = 'new',            &
+              access = 'sequential',     &
               form   = 'formatted')
-         open(lunit_3d_scalar_field,           &
-              file   = 'plot.3d.scalar_field', &
-              status = 'new',                  &
-              access = 'sequential',           &
+         open(lunit_3d_scalar,           &
+              file   = 'plot.3d.scalar', &
+              status = 'new',            &
+              access = 'sequential',     &
               form   = 'formatted')
       end if
 
@@ -622,12 +622,12 @@ contains
                s      = q(0,   1)
                v(1:3) = q(1:3, 1)
 
-               write(lunit_2d_scalar_field, '(3e18.10)')         &
+               write(lunit_2d_scalar, '(3e18.10)')               &
                   ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2, &
                   iy*vy_norm - vy_norm*visual_cfg_2d_nr_right/2, &
                   s
 
-               write(lunit_2d_vector_field, '(4e18.10)')          &
+               write(lunit_2d_vector, '(4e18.10)')                &
                   ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2,  &
                   iy*vy_norm - vy_norm*visual_cfg_2d_nr_right/2,  &
                   (v(1)*vx(1) + v(2)*vx(2) + v(3)*vx(3))/vx_norm, &
@@ -725,11 +725,11 @@ contains
                                              buffer,             &
                                              q(0, kcube))
 
-                  write(lunit_3d_vector_field, '(6e13.5)') &
-	             r(1:3),                               &
+                  write(lunit_3d_vector, '(6e13.5)') &
+	             r(1:3),                         &
 	             q(1:3, kcube)
-                  write(lunit_3d_scalar_field, '(4e13.5)') &
-	             r(1:3),                               &
+                  write(lunit_3d_scalar, '(4e13.5)') &
+	             r(1:3),                         &
 	             q(0, kcube)
                end do
                write(lunit_3d_cube, '(6e13.5)')  &
@@ -738,11 +738,11 @@ contains
          end do
       end if
 
-      if (visual_cfg_2d)   close(lunit_2d_scalar_field, status = 'keep')
-      if (visual_cfg_2d)   close(lunit_2d_vector_field, status = 'keep')
-      if (visual_cfg_3d)   close(lunit_3d_cube,         status = 'keep')
-      if (visual_cfg_3d)   close(lunit_3d_scalar_field, status = 'keep')
-      if (visual_cfg_3d)   close(lunit_3d_vector_field, status = 'keep')
+      if (visual_cfg_2d)   close(lunit_2d_scalar, status = 'keep')
+      if (visual_cfg_2d)   close(lunit_2d_vector, status = 'keep')
+      if (visual_cfg_3d)   close(lunit_3d_cube,   status = 'keep')
+      if (visual_cfg_3d)   close(lunit_3d_scalar, status = 'keep')
+      if (visual_cfg_3d)   close(lunit_3d_vector, status = 'keep')
       if (visual_cfg_line) close(lunit_line_scalar,     status = 'keep')
       if (visual_cfg_line) close(lunit_line_vector,     status = 'keep')
 
