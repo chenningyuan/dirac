@@ -8,7 +8,7 @@ from optparse import OptionParser, OptionGroup
 
 root_directory = os.path.realpath(__file__)[:-10]
 
-default_path = root_directory + 'cbuild'
+default_path = root_directory + 'cbuild/'
 
 # define example usage
 
@@ -224,3 +224,10 @@ if normal_cmake_termination:
     print '   $ cd ' + build_path
     print '   $ cmake-gui ' + root_directory
     print '   $ make'
+
+    f = open(build_path + 'build', 'w')
+    f.write('%s; make' % command)
+    f.close()
+    os.system('chmod 700 %s' % build_path + 'build')
+
+
