@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 2.6)
 
 project(DIRAC Fortran C)
 
+set(DIRAC_VERSION_MAJOR 10)
+set(DIRAC_VERSION_MINOR 1)
+set(DIRAC_VERSION_PATCH 0)
+
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
@@ -35,7 +39,6 @@ option(DIRAC_ENABLE_EXTERNAL_MATH  "Use external math library" ON)
 option(DIRAC_ENABLE_MPI            "Use MPI parallelization"   OFF)
 option(DIRAC_ENABLE_XCFUN          "Use XCFun library"         OFF)
 option(DIRAC_ENABLE_UTILITIES      "Compile utilities"         OFF)
-option(DIRAC_ENABLE_MAIN           "Compile main binary"       ON)
 
 add_definitions(-DPRG_DIRAC)
 if(DIRAC_ENABLE_64BIT_INTEGERS)
@@ -145,18 +148,17 @@ add_custom_target(dirac_interfaces
     ${DIRAC_INTERFACES_LIST}
 )
 
-if(DIRAC_ENABLE_MAIN)
-    add_executable(dirac.x
-        ${DIRAC_C_SOURCES}
-        ${DIRAC_FREE_FORTRAN_SOURCES}
-        ${DIRAC_FIXED_FORTRAN_SOURCES}
-        ${GENERATED_FILES}
-        )
-    target_link_libraries(
-        dirac.x
-        ${LIBS}
-        )
-endif()
+add_executable(dirac.x
+    ${DIRAC_C_SOURCES}
+    ${DIRAC_FREE_FORTRAN_SOURCES}
+    ${DIRAC_FIXED_FORTRAN_SOURCES}
+    ${GENERATED_FILES}
+    )
+target_link_libraries(
+    dirac.x
+    ${LIBS}
+    )
+install(TARGETS dirac.x DESTINATION dirac)
 
 if(DIRAC_ENABLE_UTILITIES)
     add_executable(dirac_mointegral_export.x
@@ -241,3 +243,19 @@ if(DIRAC_ENABLE_UTILITIES)
         ${LIBS}
         )
 endif()
+
+include(InstallRequiredSystemLibraries)
+
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "DIRAC")
+set(CPACK_PACKAGE_VENDOR "T. Saue, L. Visscher, H. J. Aa. Jensen, and contributors")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "R. Bast")
+set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/INSTALL")
+set(CPACK_RESOURCE_FILE_LICENSE    "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
+set(CPACK_PACKAGE_VERSION_MAJOR    "${DIRAC_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR    "${DIRAC_VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH    "${DIRAC_VERSION_PATCH}")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY
+    "DIRAC ${DIRAC_VERSION_MAJOR}.${DIRAC_VERSION_MINOR}.${DIRAC_VERSION_PATCH}"
+    )
+
+include(CPack)
