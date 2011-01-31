@@ -1921,8 +1921,8 @@ C
 C         Accumulate T(-) = S[2}X(+) in buffer
 C         ------------------------------------
 C
-!radovan: dft_alda test with make check goes out of bounds
-!         BPPVC has size zero, NZXOPPQ = 0
+!radovan: bepvc, bppvc, bcpvc can go out of bounds
+!         if corresponding degrees of freedom are zero
           CALL XRSTVC(BEPVC(1,I),1,NBEVC,0,
      &                BPPVC(1,I),1,NBPVC,0,
      &                BCPVC(1,I),1,NBCVC,0,
@@ -1932,6 +1932,8 @@ C
 C         Accumulate T(+) = S[2}X(-) in b(+)
 C         ------------------------------------
 C
+!radovan: bepvc, bppvc, bcpvc can go out of bounds
+!         if corresponding degrees of freedom are zero
           CALL XRSTVC(BEMVC(1,I),1,NBEVC,0,
      &                BPMVC(1,I),1,NBPVC,0,
      &                BCMVC(1,I),1,NBCVC,0,

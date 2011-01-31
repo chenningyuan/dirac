@@ -928,6 +928,7 @@ C
         CALL MEMGET('REAL',KBBUF,NZXOPEQ       ,WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KIVEC,NESIM         ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KBMAX,NEXCNV        ,WORK,KFREE,LFREE)
+!fixme ATMPPF can get out of bounds (run test dft_response)
         CALL GETPP1(ATMPPF(1,1,1,IOFF+1),JBENDX,EVECR,EVALR,RCNV,
      &              IBTYP,IBEVC,FIRST,ISSYM,
      &              WORK(KGVEC),WORK(KXVEC),WORK(KBBUF),NZXOPE,
