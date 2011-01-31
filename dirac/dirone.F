@@ -3293,6 +3293,7 @@ C
           DO JSYM = 1,NBRP
             ISYM           = JFSYM(JSYM,IP)
             IREP           = ISYM - 1
+!fixme irep can be < 0 in NONREL runs
             IF(NBBAS(IREP,IC).GT.0) THEN
               ISOFF = IOFF + (IBBAS(IREP,IC)-IBAS(I))*(NFBAS(I,0)+1)
               IUOFF = ICOS(ISYM,IC)*(NTBAS(0)+1)
