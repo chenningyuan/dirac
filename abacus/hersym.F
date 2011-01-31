@@ -1934,7 +1934,7 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
          TMPARR(6,2) = ARR(6, IATNO2)
 C ::: The icode determines what should be tested     :::
 C ::: 1 - mirror plane   2 - C2 axis   3 - inversion :::
-         IF (((ICODE .EQ. 1) .AND. (MIRMOL(2,TMPARR, TARR, VEC))) .OR.
+         IF (((ICODE .EQ. 1) .AND. (MIRMOL(mxm,TMPARR,TARR,VEC))) .OR.
      &       ((ICODE .EQ. 2) .AND. (ROTAXS(2,TMPARR,TARR,2,
      &                                         VEC,.TRUE.))) .OR.
      &       ((ICODE .EQ. 3) .AND. (INVMOL(2, TMPARR)))) THEN
