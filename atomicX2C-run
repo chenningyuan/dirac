@@ -68,9 +68,8 @@ class periodic_table_plus_ext(object):
         result = False
         for element in self.element_symbols:
             if symbol[0].lower() == element.lower():
-                result = True 
+                result = True
                 break
-        print 'result is %s' % result
         return result
 
 class x2c_total_symmetry(object):
@@ -142,8 +141,6 @@ class x2c_fragment_basis_set_input(x2c_total_symmetry, x2c_fragment, x2c_coordin
 
         return dirac_fragment_basis_set_input
 
-# end of class definitions
-
 # x2c fragment input
 class x2c_fragment_dirac_input(object):
     """
@@ -203,7 +200,49 @@ class x2c_fragment_dirac_input(object):
         print "end of generated input file"
         return dirac_fragment_input
 
+# prepare lists from original mol file for generating automatized x2c fragment input
+class prepare_lists_for_x2c_fragment_mol(periodic_table_plus_ext):
+    """
+    class for preparation of lists for fragment-x2c mol files
+    """
+
+    def __init__(self, mol_file_lines, num_fragments):
+     self.num_frag  = num_fragments
+     self.mol_lines = mol_file_lines
+     print 'init class: # of tests is %i' % self.num_frag
+    
 # end of class definitions
+
+# function definitions
+def get_original_molfile_content(orig_mol_file, orig_mol_file_lines):
+
+    mol_file_strip     = string.replace(orig_mol_file,  '.mol', '')
+    mol_file_strip     = string.replace(mol_file_strip, '.xyz', '')
+    molecule_file_full = mol_file_strip + '.mol'
+    if os.path.isfile(molecule_file_full):
+        mol_file_lines = []
+        f = open(molecule_file_full, 'r')
+        for line in f.readlines():
+            mol_file_lines.append(line.strip('\n'))
+        f.close()
+    else:
+        print 'molecular input file for the full system %s does not exist, please check your input'\
+             % molecule_file_full
+        sys.exit()
+    return mol_file_lines
+
+def check_original_molfile_content_and_get_num_fragments(mol_file_lines, num_fragments):
+
+    if mol_file_lines[3].split()[0] != 'C':
+        print ' *** error in reading the molecular basis set input: the file has a wrong format. ***'
+        print '     please consult the Dirac-Wiki (http://wiki.chem.vu.nl/dirac/index.php/Manual:Basis:MOL) for more help.'
+        print '     the first character in line 4 is %s rather than C'\
+                    % mol_file_lines[3].split()[0]
+        sys.exit()
+    num_fragments = int(mol_file_lines[3].split()[1])
+    return num_fragments
+
+# end of function definitions
 
 # set root directory
 
@@ -324,49 +363,100 @@ print '  ----------------------------------------------------------------'
 # run first all atomic X2C calculations and in the end the molecular one combining all pct-matrices...
 
 # read original molecular input
-
-mol_file_strip = string.replace(options.original_molecular_input,       '.mol', '')
-mol_file_strip = string.replace(mol_file_strip,                         '.xyz', '')
-
-molecule_file_full_system = mol_file_strip + '.mol'
-
-if os.path.isfile(molecule_file_full_system):
-    mol_file_lines = []
-    f = open(molecule_file_full_system, 'r')
-    for line in f.readlines():
-        mol_file_lines.append(line.strip('\n'))
-    f.close()
-else:
-    print 'molecular input file for the full system %s does not exist, please check your input'\
-           % molecule_file_full_system
-    sys.exit()
+mol_file_lines = []
+mol_file_lines = get_original_molfile_content(options.original_molecular_input, mol_file_lines)
 
 print mol_file_lines
 
-print mol_file_lines[3]
-check_mol_line4_first_char = mol_file_lines[3].split()[0]
-num_fragments              = int(mol_file_lines[3].split()[1])
+num_fragments = 0
+num_fragments = check_original_molfile_content_and_get_num_fragments(mol_file_lines, num_fragments)
 
 print num_fragments
-print check_mol_line4_first_char
 
-if check_mol_line4_first_char != 'C':
-    print ' *** error in reading the molecular basis set input: the file has a wrong format. ***'
-    print '     please consult the Dirac-Wiki (http://wiki.chem.vu.nl/dirac/index.php/Manual:Basis:MOL) for more help.'
-    print '     the first character in line 4 is %s rather than C'\
-           % check_mol_line4_first_char
+line_count   = 0
+start_list   = []
+finish_found = False
+for line in mol_file_lines:
+    if line.split()[0].lower() == 'large':
+        print 'found large at line %i' % line_count
+        start_list.append(int(line_count))
+        print start_list
+    elif line.split()[0].lower() == 'finish':
+        print 'found finish at line %i' % line_count
+        start_list.append(int(line_count))
+        finish_found = True
+        print start_list
+    line_count += 1
+
+if not finish_found:
+    print ' *** error in reading the molecular basis set input: no end marker found (FINISH) in the .mol file.'
     sys.exit()
 
+if len(start_list)-1 != num_fragments:
+    print ' *** error in reading the molecular basis set input: basis set for at least one unique element missing.'
+    print '     number of basis set found: %i <--> number of unique elements specified in .mol input: %i'\
+                % (len(start_list)-1, num_fragments)
+    sys.exit()
+
+print 'range of start_list is %i' % len(start_list)
+print 'start_list[0] is %i' % start_list[0]
+print 'start_list[1] is %i' % start_list[1]
+
+# set basis set end marker for each unique element
 get_symbol = periodic_table_plus_ext()
-if get_symbol.compare_element_symbols('bla'):
-    print 'comparison 1 was successful'
-if get_symbol.compare_element_symbols('.'):
-    print 'comparison 2 was successful'
-else:
-    print 'comparison 2 was NOT successful'
+end_list   = []
+i          = 0
+# elements # 1 -- num_fragments-1
+while i < num_fragments-1:
+    print 'checking for element # %i' % i
+    j         = 1
+    line      = mol_file_lines[start_list[i+1]-j]
+    found_end = False
+    while not found_end:
+        j   += 1
+        print 'check is for %s ' % line.split()[0].lower()
+        if get_symbol.compare_element_symbols(line.split()[0].lower()):
+            line = mol_file_lines[start_list[i+1]-j]
+        else:
+            end_list.append(start_list[i+1]-j)
+            found_end = True
+    i += 1
+# element # num_fragments
+end_list.append(start_list[num_fragments]-1)
+print 'end list for basis sets:'
+print end_list
+     
+atomic_number_list   = []
+atomic_exponent_list = []
+i                    = 0
+# find atomic number of each unique element
+while i < num_fragments:
+    print 'checking for element # %i' % i
+    j         = 1
+    line      = mol_file_lines[start_list[i]-j]
+    found_Z   = False
+    while not found_Z:
+        j   += 1
+        print 'check is for %s ' % line.split()[0].lower()
+        if get_symbol.compare_element_symbols(line.split()[0].lower()):
+            line = mol_file_lines[start_list[i]-j]
+        else:
+            found_Z = True
+            atomic_number_list.append(int(float((line.split()[0]))))
+            if len(line.split()) > 2:
+                exponent = line.split()[2]
+            else:
+                exponent = ''
+            atomic_exponent_list.append(exponent)
+            
+    i += 1
 
+print 'list of atomic numbers for each fragment'
+print atomic_number_list
+print 'list of atomic exponents for each fragment'
+print atomic_exponent_list
 
-
+blabla = prepare_lists_for_x2c_fragment_mol(mol_file_lines, num_fragments)
 
 # create a list of fragments
 list_of_fragments = []
@@ -375,41 +465,10 @@ while i < num_fragments:
     list_of_fragments.append(int(i+1))
     i += 1
 
+print 'list of fragments is'
 print list_of_fragments
 
 for is_fragment in list_of_fragments:
-
-#   # rewind the basic atomic dirac input file
-#   basic_dirac_input.seek(0)
-#   # seek the start of data
-#   line_tmp = basic_dirac_input.readline()
-#   print line_tmp,
-#   while line_tmp[0:6] != '$start':
-#       print line_tmp,
-#       line_tmp = basic_dirac_input.readline()
-#   print 'last line read in:'
-#   print line_tmp,
-#   
-#   # create unique search tag for the requested atomic input
-#   search_tag  = ''
-#   # for now: fixed to groups with inversion sym
-#   inversion_operation_label      = '2'
-#   # for now: fixed electronic configuration type
-#   electronic_configuration_type  = '1'
-#   search_tag += '$' + string.ljust(fragment, 4)\
-#               + string.ljust(inversion_operation_label, 2)\
-#               + string.rjust(electronic_configuration_type, 2)
-#   if options.being_verbose:
-#       print 'individual search tag:'
-#       print search_tag
-#   
-#   line_tmp = basic_dirac_input.readline()
-#   print line_tmp,
-#   while line_tmp[0:9] != search_tag:
-#       print line_tmp,
-#       line_tmp = basic_dirac_input.readline()
-#   print 'after search - last line read in:'
-#   print line_tmp,
 
     # prepare atomic dirac inputs
 
