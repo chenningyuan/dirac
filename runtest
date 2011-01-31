@@ -220,6 +220,7 @@ class run:
          mol_file_strip = string.replace(self.mol,       '.mol', '')
          mol_file_strip = string.replace(mol_file_strip, '.xyz', '')
          if into_stderr:
+             # radovan: why do we need to write to stderr?
              print >> sys.stderr, '%6s %5s %30s %30s %25s %7.1f %s' % \
                  (progress, result_text, self.get_test_name(),        \
                   inp_file_strip, mol_file_strip, elapsed, self.kind)
@@ -397,11 +398,12 @@ def main(*args):
          print >> sys.stdout,'         %5i crashed'           % nr_crashed
     print '         %5i without reference' % nr_without_ref
     print
+
     sys.stdout.flush()
     sys.stderr.flush()
     pam_output_file.close()
 
-    # return code (for trac-bitten to get label of the failed buildup)
+    # return code (for trac-bitten to get label of the failed test)
     if   nr_failed > 0 :
         return 2
     elif nr_crashed > 0:
@@ -412,4 +414,3 @@ def main(*args):
 # launch the main function
 if __name__ == '__main__':
     sys.exit(main(*sys.argv))
-
