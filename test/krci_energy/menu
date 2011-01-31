@@ -1,2 +1,2 @@
-f.inp      F.mol
-be.d2h.inp Be.d2h.mol
+f.inp      F.mol  --timeout=5m
+be.d2h.inp Be.d2h.mol --timeout=5m
