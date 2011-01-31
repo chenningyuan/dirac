@@ -347,6 +347,7 @@ def main(*args):
         else:
             nr_of_tests_done += 1
             start = time.time()
+            into_stderr = False
             if task.run_and_normal_exit():
                 if os.path.isfile('result/%s' % task.get_output_name()):
                     # overwrite reference files
@@ -360,16 +361,17 @@ def main(*args):
                     task.apply_filter() 
                 
                     if os.path.getsize('compare/%s.txt' % task.get_output_name()) == 0:
-                        result_text = 'OK'; into_stderr=False
+                        result_text = 'OK'
                         nr_ok += 1
                     else:
-                        result_text = 'FAIL'; into_stderr=True
+                        result_text = 'FAIL'
                         nr_failed += 1
                 else:
                     result_text = ' '
-                    nr_without_ref += 1;  into_stderr=False
+                    nr_without_ref += 1
             else:
-                result_text = 'CRASH';  into_stderr=True
+                result_text = 'CRASH'
+                into_stderr = True
                 nr_crashed += 1
 
             elapsed = (time.time() - start)
@@ -395,7 +397,8 @@ def main(*args):
          print >> sys.stdout,'         %5i crashed'           % nr_crashed
     print '         %5i without reference' % nr_without_ref
     print
-    sys.stdout.flush(); sys.stderr.flush()
+    sys.stdout.flush()
+    sys.stderr.flush()
     pam_output_file.close()
 
     # return code (for trac-bitten to get label of the failed buildup)
