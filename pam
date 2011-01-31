@@ -713,14 +713,10 @@ class pam_enviroment:
                          help='run with high priority [default: %default]'
                          )
         parser.add_option_group(group)
-
-#   process input
-
+        #   process input
         (options, args) = parser.parse_args()
-
-#   user has given no arguments: print help and exit
-
-        if len(sys.argv) == 1:
+    
+        if len(sys.argv) == 1: #   user has given no arguments: print help and exit    
             print parser.format_help().strip()
             sys.exit()
 
@@ -736,14 +732,10 @@ class pam_enviroment:
     # take the default value from the previously set "self.max_memory_work_master"
 
         if options.dest_nw is not None:
-
-        # own set value
-
+            # own set value
             self.max_memory_work_slave = int(options.dest_nw)
         else:
-
-        # none value set - take the master setting
-
+            # none value set - take the master setting
             self.max_memory_work_slave = self.max_memory_work_master
 
         self.max_memory_dynamic = int(options.dest_aw)
@@ -765,9 +757,7 @@ class pam_enviroment:
 
         if options.dest_mpirun is not None:
             if os.path.isfile(options.dest_mpirun):
-
-        # todo : check functionality of mpirun ?
-
+                # todo : check functionality of mpirun ?
                 self.mpirun = options.dest_mpirun
                 self.parallel_run = True
                 self.parallel_build = True
@@ -788,7 +778,6 @@ class pam_enviroment:
                 print 'assigned mpiarg=', self.mpiarg
 
 # radovan: it is always not none
-
         if options.dest_machfile is not None:
             self.machinefile = options.dest_machfile
 
@@ -805,8 +794,7 @@ class pam_enviroment:
                 print 'Installation directory you inserted is non-existent !'
                 print 'Used the default instead:', install_dir
         elif install_dir_default is None:
-            sys.exit('The installation directory is not set ! Error exit !'
-                     )
+            sys.exit('The installation directory is not set ! Error exit !')
 
         if options.dest_scratch is not None:
             self.process_scratch_dir_name(scratch_dir_string=str(options.dest_scratch))
@@ -831,7 +819,7 @@ class pam_enviroment:
                 print 'nice prirority set ! self.nice_cmd=', \
                     self.nice_cmd
 
-        if options.dest_timeout is not None:
+        if options.dest_timeout:
             from common import process_time_string
             self.timeout = process_time_string(options.dest_timeout)
             self.set_timeout_limit = True
@@ -844,13 +832,13 @@ class pam_enviroment:
         self.nobackup = options.dest_nobackup
         self.no_archive = options.dest_noarch
 
-        if options.dest_put is not None:
+        if options.dest_put:
             self.put_files = options.dest_put
             if self.iprint >= 5:
                 print 'assigned put_files ?', self.put_files \
                     is not None, '...', self.put_files
 
-        if options.dest_get is not None:
+        if options.dest_get:
             self.get_files = options.dest_get
             if self.iprint >= 5:
                 print 'assigned get_files ?', self.get_files \
@@ -869,7 +857,6 @@ class pam_enviroment:
                     self.archive_name
 
         self.keep_scratch = options.dest_keep_scratch
-
         self.just_show_settings = options.just_show_settings
 
         if options.dest_debug:
@@ -887,14 +874,12 @@ class pam_enviroment:
 
         if options.dest_vg:
             self.vg_debug = True
-
         if options.dest_profile:
             self.profile = True
 
         self.profiler = options.dest_profiler
 
     # assign input directory ...
-
         self.input_directory = os.getcwd()
 
 #   input and molecule are required
@@ -913,15 +898,15 @@ class pam_enviroment:
                     sys.exit()
 
     # set output name and the scratch_dir name
-
         self.set_output_name()
         if self.create_scratch_dir_name:
             self.set_scratch_dir_name()
 
     def assign_mol_inp_files(self):
-        '''Assign "self.input_file_molecule" and "self.input_file_dirac"
-    with proper input file names according to filled variables (class members)
-    "self.input_molecule" and "self.input_dirac"'''
+        '''Assign "self.input_file_molecule" and
+        "self.input_file_dirac" with proper input file names according to
+        filled variables (class members) "self.input_molecule" and
+        "self.input_dirac"'''
 
         if self.iprint >= 5:
             print '=== assign_mol_inp_files: ==='
@@ -955,7 +940,8 @@ class pam_enviroment:
                 self.input_file_dirac
 
     def set_output_name(self):
-        '''Set the output name string to be used later for naming the output file and the scratch directory'''
+        '''Set the output name string to be used later for naming the
+        output file and the scratch directory'''
 
         if self.iprint >= 5:
             print '\n set_output_name routine:'
@@ -963,64 +949,34 @@ class pam_enviroment:
             print 'self.input_file_molecule=', self.input_file_molecule
             print 'self.input_dirac=', self.input_dirac
             print 'self.input_file_dirac=', self.input_file_dirac
-            print 'len(self.input_molecule),len(self.input_dirac):', \
-                len(self.input_molecule), len(self.input_dirac)
 
         if len(self.input_molecule) > 0 and len(self.input_dirac) > 0:
-
             if self.input_file_molecule.find('.mol') != -1:
                 mol_file_stripped = \
                     self.input_file_molecule.replace('.mol', '', 1)
-                if self.iprint >= 7:
-                    print '*.mol striped! mol_file_stripped=', \
-                        mol_file_stripped
             elif self.input_file_molecule.find('.xyz') != -1:
                 self.xyz_molecule_input = True
                 mol_file_stripped = \
                     self.input_file_molecule.replace('.xyz', '', 1)
-                if self.iprint >= 7:
-                    print '*.xyz striped! mol_file_stripped=', \
-                        mol_file_stripped
             else:
-
-            # no suffix, never mind
-
+                # no suffix, never mind
                 mol_file_stripped = self.input_file_molecule
 
-        # print 'The molecule input file does not contain recommended suffix, never mind...'
-
-            if self.iprint >= 5:
-                print 'mol_file_stripped=', mol_file_stripped
-
+            # print 'The molecule input file does not contain recommended suffix, never mind...'
             if self.input_file_dirac.find('.inp') != -1:
                 inp_file_stripped = self.input_file_dirac.replace('.inp'
                         , '', 1)
             else:
-
-            # no suffix, continuing..
-
+                # no suffix, continuing..
                 print 'The dirac input file does not contain recommended suffix, never mind...'
                 inp_file_stripped = self.input_file_dirac
-            if self.iprint >= 5:
-                print 'inp_file_stripped=', inp_file_stripped
-
-            if mol_file_stripped == inp_file_stripped:
-                self.output_name = mol_file_stripped
-            else:
-
-        # set proper output file structure
-
-                self.output_name = inp_file_stripped + '_' \
-                    + mol_file_stripped
+            # set proper output file structure
+            self.output_name = inp_file_stripped + '_' + mol_file_stripped
         elif self.full_restart:
-
-      # todo: verify *.tgz ?
-
+            # todo: verify *.tgz ?
             self.output_name = self.archive_name.replace('.tgz', '', 1)
         else:
-
-          # assign default name
-
+            # assign default name
             self.output_name = 'dirac_output.' + str(self.current_pid)
 
     # control printout
@@ -1051,18 +1007,14 @@ class pam_enviroment:
         self.create_scratch_dir()
 
     # copy dirac.x executable if wanted
-
         self.copy_file(self.dirac_exe, self.scratch_dir + '/' + 'dirac.x')
-
     # the existence of self.input_file molecule,self.input_file_dirac is verified
-
         if self.xyz_molecule_input == True:
             self.copy_file(self.input_file_molecule, self.scratch_dir + '/'
                            + 'MOLECULE.XYZ')
         else:
             self.copy_file(self.input_file_molecule, self.scratch_dir + '/'
                            + 'MOLECULE.MOL')
-
         self.copy_file(self.input_file_dirac, self.scratch_dir + '/'
                        + 'DIRAC.INP')
 
@@ -1083,14 +1035,11 @@ class pam_enviroment:
             for file_name in files_to_put:
                 copy_single_file(file_name,warning=None)
 
-    # copies DFCOEF into scratch_dir
+    # copies files to scratch_dir
 
         if self.incmo:
             file_name = 'DFCOEF'
             copy_single_file(file_name,warning=True)
-
-    # copies DFFCK2 into scratch_dir
-
         if self.infock:
             file_name = 'DFFCK2'
             copy_single_file(file_name,warning=None)
@@ -1117,9 +1066,7 @@ class pam_enviroment:
                 print 'machinefile enviromental variable points to', \
                     machinefile_content
         else:
-
-           # true file, no pointing variable
-
+            # true file, no pointing variable
             machinefile_content = self.machinefile
 
     # identify nodes in the file
@@ -1128,9 +1075,6 @@ class pam_enviroment:
             print 'machinefile is a true file, reading its content'
             for line in fileinput.input(machinefile_content):
                 line = line[:-1]
-
-        # print 'read line=',line
-
                 if line != self.master:  # append only nodes different from master
                     print 'adding node to the list', line
                     self.nodes.append(line)
@@ -1185,7 +1129,6 @@ class pam_enviroment:
     def set_dirac_environment(self):
         """export important variables for DIRAC
     TODO: implement for WINDOWS"""
-
         self.basdir = self.input_directory + ':' + self.basdir
         os.putenv('BASDIR', self.basdir)
 
@@ -1240,18 +1183,13 @@ class pam_enviroment:
                 self.dirac_cmd = self.dirac_cmd + ' ' + self.valgrind \
                     + ' --log-fd=1'
         else:
-
-           # serial run (also in debugger)
-
+            # serial run (also in debugger)
             if self.debug:
-
        # TODO: adapt it for Windows
         # self.dirac_cmd=self.debugger+' '+this_dirac_exe+' | tee '+os.getcwd()+"/"+self.output_file
-
                 self.dirac_cmd = self.debugger + ' ' + this_dirac_exe \
                     + ' | tee ' + self.output_file_full
             elif self.vg_debug:
-
                           # set command for valgrid
       # or: $VALGRIND -v --error-limit=no --leak-check=full --track-origins=yes --show-reachable=yes
       # serial: DIRAC_CMD="$VALGRIND_TOOL --log-fd=1
@@ -1259,9 +1197,7 @@ class pam_enviroment:
                 self.dirac_cmd = self.valgrind + ' --log-fd=1 ' \
                     + this_dirac_exe + ' | tee ' + self.output_file_full
             else:
-
             # no debug, plain run
-
                 self.dirac_cmd = this_dirac_exe
 
     # at the end add priority command (either empty or not) #
@@ -1300,11 +1236,10 @@ class pam_enviroment:
                 install_dir_temp = value
                 # check if the install-dir is OK
                 if install_dir != install_dir_temp:
-                    print 'disgreement with the installation directory !'
-                    print 'Makefile.config install_dir_temp=', \
-                        install_dir_temp, len(install_dir_temp)
-                    print '     install_dir=', install_dir, \
-                        len(install_dir)
+                    print 'disagreement with the installation directory !'
+                    print 'Makefile.config:', \
+                        install_dir_temp
+                    print '            pam:', install_dir
                     sys.exit(-1)
                 else:
                     pass
@@ -1346,8 +1281,9 @@ class pam_enviroment:
 
     def write_into_output(self):
         """
-      Write useful info at the beginning of te output file - size of all static allocation, for example
-      """
+        Write useful info at the beginning of te output file - size of
+        all static allocation, for example
+        """
 
         self.f.write('DIRAC pam run in ' + self.input_directory + '\n')
         size_command = \
@@ -1465,10 +1401,7 @@ class pam_enviroment:
             print
 
     def save_files(self):
-
-  # ------------------------------------------------------------
-  # ... save files in various manners from the scratch directory
-  # ------------------------------------------------------------
+        "save files in various manners from the scratch directory"
 
         from common import backup_file
 
@@ -1540,13 +1473,9 @@ class pam_enviroment:
             for file_name in files_to_get:
                 save_single_file(file_name)
 
-    # DFCOEF
-
         if self.outcmo:
             file_name = 'DFCOEF'
             save_single_file(file_name)
-
-    # DFFCK2
 
         if self.outfock:
             file_name = 'DFFCK2'
