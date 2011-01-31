@@ -135,6 +135,7 @@ vital_directories.append('embedding')
 
 vital_files = []
 vital_files.append('pam')
+vital_files.append('pam.in')
 vital_files.append('configure')
 vital_files.append('Makefile')
 vital_files.append('config.guess')
