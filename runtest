@@ -4,6 +4,7 @@
 known problems: --keywords not implemented
 
 report bugs/suggestions to: radovan.bast@uit.no
+(this is for users - developers, please simply develop without asking)
 
 philosophy: keep this script as self contained as possible
             do not introduce additional dependencies to DIRAC
@@ -21,6 +22,7 @@ import os
 import sys
 import string
 import subprocess
+import time
 from optparse import OptionParser, OptionGroup
 
 root_directory = os.path.realpath(__file__)[:-8]
@@ -170,10 +172,11 @@ pam_output_file = open('test/LOGS/runtest.log','w', 0)
 pam_output_file.write(" runtest pam outputs \n\n ") 
 
 class run:
-     def __init__(self, test, line):
+     def __init__(self, test, line, kind):
          self.test = test
          self.inp  = line.split()[0]
          self.mol  = line.split()[1]
+         self.kind = kind
          pam_flags = ''
          if len(line.split()) > 2:
              for i in range(2, len(line.split())):
@@ -209,7 +212,7 @@ class run:
              return True
          else:
              return False
-     def print_result(self, progress, result_text, into_stderr):
+     def print_result(self, progress, result_text, elapsed, into_stderr):
          """
           print result of the test, flush out stdout/stderr buffers
          """
@@ -217,12 +220,14 @@ class run:
          mol_file_strip = string.replace(self.mol,       '.mol', '')
          mol_file_strip = string.replace(mol_file_strip, '.xyz', '')
          if into_stderr:
-             print >> sys.stderr,'%8s %6s %30s %30s %25s' % \
-                 (progress, result_text, self.get_test_name(), inp_file_strip, mol_file_strip)
+             print >> sys.stderr, '%6s %5s %30s %30s %25s %7.1f %s' % \
+                 (progress, result_text, self.get_test_name(),        \
+                  inp_file_strip, mol_file_strip, elapsed, self.kind)
              sys.stderr.flush()
          else:
-             print >> sys.stdout,'%8s %6s %30s %30s %25s' % \
-                 (progress, result_text, self.get_test_name(), inp_file_strip, mol_file_strip)
+             print >> sys.stdout, '%6s %5s %30s %30s %25s %7.1f %s' % \
+                 (progress, result_text, self.get_test_name(),        \
+                  inp_file_strip, mol_file_strip, elapsed, self.kind)
              sys.stdout.flush()
 
      def apply_filter(self):
@@ -312,7 +317,7 @@ def main(*args):
                                 l.append(shell_command(test, line))
                             else:
                                 if not line_is_keyword(line):
-                                    l.append(run(test, line))
+                                    l.append(run(test, line, current_section[0]))
             f.close()
 
     # get number of actual runs
@@ -325,7 +330,7 @@ def main(*args):
     # print screen header
 
     print
-    print '%8s %6s %30s %30s %25s' % ('progress', 'result', 'test', 'inp', 'mol/xyz')
+    print '%12s %30s %30s %25s %7s' % ('result', 'test', 'inp', 'mol/xyz', 'sec')
     print
 
     # run the tests
@@ -341,6 +346,7 @@ def main(*args):
             task.execute()
         else:
             nr_of_tests_done += 1
+            start = time.time()
             if task.run_and_normal_exit():
                 if os.path.isfile('result/%s' % task.get_output_name()):
                     # overwrite reference files
@@ -366,8 +372,10 @@ def main(*args):
                 result_text = 'CRASH';  into_stderr=True
                 nr_crashed += 1
 
+            elapsed = (time.time() - start)
+
             progress = '[%3i%s]' % (100.0*float(nr_of_tests_done)/float(total_nr_of_tests), r'%')
-            task.print_result(progress, result_text, into_stderr) 
+            task.print_result(progress, result_text, elapsed, into_stderr) 
         
             if ((nr_crashed > 0) or (nr_failed > 0)) and options.giveup:
                 print
