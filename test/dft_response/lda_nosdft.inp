@@ -8,8 +8,6 @@
 *DFT
 .ZIPGRID
 .DEBUG          !very coarse grid
-.INTCHK
- 1
 .NOSDFT
 **INTEGRALS
 .NUCMOD

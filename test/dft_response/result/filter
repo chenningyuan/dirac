@@ -12,8 +12,3 @@ Nlines 1:Nonrel. sym.
 $ERROR 1.E-7
 
 Nlines 1:Value of total response
-
-Nlines 1:Absolute average SMAT error
-Nlines 1:Average SMAT error
-Nlines 1:Largest error
-Nlines 1:RMS deviation
