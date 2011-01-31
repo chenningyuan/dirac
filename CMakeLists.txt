@@ -31,7 +31,7 @@ else()
     message(FATAL_ERROR "could not find cmake/Definitions.cmake; run pamadm first")
 endif()
 
-option(DIRAC_ENABLE_64BIT_INTEGERS "Enable profiling"          OFF)
+option(DIRAC_ENABLE_64BIT_INTEGERS "Enable 64-bit integers"    OFF)
 option(DIRAC_ENABLE_PROFILING      "Enable profiling"          OFF)
 option(DIRAC_ENABLE_BOUNDS_CHECK   "Enable bounds check"       OFF)
 option(DIRAC_ENABLE_CODE_COVERAGE  "Enable code coverage"      OFF)
