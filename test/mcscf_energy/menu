@@ -2,7 +2,7 @@ quick
 Be.gascip.bss+mfsso.krmc.inp   Be.gascip.mol  --timeout=6m
 
 regular   
-Be.inp                         Be.mol  --timeout=1m
+Be.inp                         Be.mol  --timeout=10m
 
 benchmark
-Be.gascip.inp                  Be.gascip.mol  --timeout=30m
+Be.gascip.inp                  Be.gascip.mol  --timeout=40m
