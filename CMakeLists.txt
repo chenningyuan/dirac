@@ -72,7 +72,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
     endif()
     if(DIRAC_ENABLE_BOUNDS_CHECK)
         set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -fbounds-check"
+            "${CMAKE_Fortran_FLAGS} -fbounds-check -fbacktrace"
             )
     endif()
     if(DIRAC_ENABLE_CODE_COVERAGE)
@@ -85,6 +85,16 @@ elseif(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     set(CMAKE_Fortran_FLAGS         "-w -assume byterecl")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
+    if(DIRAC_ENABLE_64BIT_INTEGERS)
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} -i8"
+            )
+    endif()
+    if(DIRAC_ENABLE_BOUNDS_CHECK)
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} -check bounds -fpstkchk -check pointers -check uninit -check output_conversion -traceback"
+            )
+    endif()
 elseif(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set(CMAKE_Fortran_FLAGS         "-qzerosize")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-g")
