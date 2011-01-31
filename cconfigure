@@ -140,13 +140,13 @@ if len(sys.argv) == 1:
 command = ''
 
 if not options.auto:
-    if options.fc != None:
+    if options.fc:
         command += ' FC=%s' % options.fc
-    if options.cc != None:
+    if options.cc:
         command += ' CC=%s' % options.cc
-    if options.cpp != None:
+    if options.cpp:
         command += ' CXX=%s' % options.cpp
-    if options.math != None:
+    if options.math:
         command += ' USERDEFINED_LIBS="%s"' % options.math
 
 command += ' cmake'
@@ -172,8 +172,7 @@ else:
     build_path = default_path
 
 if not os.path.isdir(build_path):
-   #radovan: don't know how to os.mkdir with parent
-   #os.mkdir(build_path)
+    # if you change this to proper python make it mkdir *with parent*
     os.system('mkdir -p %s' % build_path)
 os.chdir(build_path)
 
