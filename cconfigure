@@ -211,3 +211,9 @@ if normal_cmake_termination:
     print '   to compile DIRAC in verbose mode:'
     print '   $ cd ' + build_path
     print '   $ make VERBOSE=1'
+    print
+    print '   to configure DIRAC using cmake-gui:'
+    print '   [install cmake-qt-gui (for example using sudo apt-get install cmake-qt-gui)]'
+    print '   $ cd ' + build_path
+    print '   $ cmake-gui ' + root_directory
+    print '   $ make'
