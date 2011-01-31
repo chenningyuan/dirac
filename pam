@@ -935,18 +935,18 @@ class pam_enviroment:
         elif os.path.isfile(self.input_molecule):
             self.input_file_molecule = self.input_molecule
         else:
-            print 'Proper molecule input file does not exist !'
-            sys.exit(-1)
+            print >> sys.stderr,'Proper molecule input file does not exist !'
+            sys.exit(4)
 
         if os.path.isfile(self.input_dirac + '.inp'):
             self.input_file_dirac = self.input_dirac + '.inp'
         elif os.path.isfile(self.input_dirac):
             self.input_file_dirac = self.input_dirac
         else:
-            print 'Proper dirac input file does not exist !'
+            print >> sys.stderr,'Proper dirac input file does not exist !'
             print 'self.input_dirac=', self.input_dirac
             print 'self.input_file_dirac=', self.input_file_dirac
-            sys.exit(-1)
+            sys.exit(5)
 
         if self.iprint >= 5:
             print 'assigned self.input_file_molecule=', \
@@ -1041,10 +1041,10 @@ class pam_enviroment:
                 self.copy_file(full_file_name, file_name_scratch)
             else:
                 if (warning is not None):
-                    print '  Warning: file "', file_name, \
+                    print  >> sys.stderr,'  Warning: file "', file_name, \
                     '" you want to copy to scratch_dir does not exist, continuing at your own risk.'
                 else:
-                    print 'Error exit: file "', file_name, \
+                    print >> sys.stderr,'Error exit: file "', file_name, \
                     '" you want to copy to scratch_dir does not exist !  '
                     sys.exit(-1)
 
@@ -1429,13 +1429,16 @@ class pam_enviroment:
 
             signal.alarm(0)
         except:
-            print 'Dirac run failed. Going to kill (SIGTERM) its executable process of pid=', \
+            print >> sys.stdout,'Dirac run failed. Going to kill (SIGTERM) its executable process of pid=', \
+                p.pid
+            print >> sys.stderr,'Dirac run failed. Going to kill (SIGTERM) its executable process of pid=', \
                 p.pid
 
       # TODO: clean of all dirac.x pid's
 
             os.kill(p.pid, signal.SIGTERM)
-            print '****  Alas ! dirac.x was purposely killed ;)  ****'
+            print >> sys.stderr,'****  Alas ! dirac.x was purposely killed ;)  ****'
+            print >> sys.stdout,'****  Alas ! dirac.x was purposely killed ;)  ****'
             return_code = signal.SIGTERM
 
     # do the profiling after the execution
@@ -1493,7 +1496,8 @@ class pam_enviroment:
 
                 self.copy_file(full_file_name, file_name_home)
             else:
-                print file_name, ' not found in the scratch directory.'
+                print >> sys.stdout, file_name, ' not found in the scratch directory.'
+                print >> sys.stderr, file_name, ' not found in the scratch directory.'
 
         if not self.no_archive:
 
