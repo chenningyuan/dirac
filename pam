@@ -1040,7 +1040,7 @@ class pam_enviroment:
                 file_name_scratch = self.scratch_dir + '/' + file_name
                 self.copy_file(full_file_name, file_name_scratch)
             else:
-                if (warning is not None):
+                if warning:
                     print  >> sys.stderr,'  Warning: file "', file_name, \
                     '" you want to copy to scratch_dir does not exist, continuing at your own risk.'
                 else:
