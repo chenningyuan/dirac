@@ -209,12 +209,165 @@ class prepare_lists_for_x2c_fragment_mol(periodic_table_plus_ext):
     def __init__(self, mol_file_lines, num_fragments):
      self.num_frag  = num_fragments
      self.mol_lines = mol_file_lines
-     print 'init class: # of tests is %i' % self.num_frag
     
+    def prepare_startlist(self):
+
+        line_count   = 0
+        start_list   = []
+        finish_found = False
+        for line in self.mol_lines:
+            if line.split()[0].lower() == 'large':
+                start_list.append(int(line_count))
+            elif line.split()[0].lower() == 'finish':
+                start_list.append(int(line_count))
+                finish_found = True
+            line_count += 1
+
+        if not finish_found:
+            print ' *** error in reading the molecular basis set input: no end marker found (FINISH) in the .mol file.'
+            sys.exit()
+
+        if len(start_list)-1 != self.num_frag:
+            print ' *** error in reading the molecular basis set input: basis set for at least one unique element missing.'
+            print '     number of basis set found: %i <--> number of unique elements specified in .mol input: %i'\
+                        % (len(start_list)-1, self.num_frag)
+            sys.exit()
+        return start_list
+
+    def prepare_endmarkerlist(self, start_list):
+
+        endmarker_list = []
+        i              = 0
+        # elements # 1 -- num_fragments-1
+        while i < self.num_frag - 1:
+            j         = 1
+            line      = self.mol_lines[start_list[i+1]-j]
+            found_end = False
+            while not found_end:
+                j   += 1
+                if self.compare_element_symbols(line.split()[0].lower()):
+                    line = self.mol_lines[start_list[i+1]-j]
+                else:
+                    endmarker_list.append(start_list[i+1]-j)
+                    found_end = True
+            i += 1
+        # element # num_fragments
+        endmarker_list.append(start_list[num_fragments]-1)
+        return endmarker_list
+
+    def prepare_Z_and_exponent_list(self, start_list):
+
+        atomic_number_list   = []
+        atomic_exponent_list = []
+        i                    = 0
+
+        while i < self.num_frag:
+            j         = 1
+            line      = self.mol_lines[start_list[i]-j]
+            found_Z   = False
+            while not found_Z:
+                j   += 1
+                if self.compare_element_symbols(line.split()[0].lower()):
+                    line = self.mol_lines[start_list[i]-j]
+                else:
+                    found_Z = True
+                    atomic_number_list.append(int(float((line.split()[0]))))
+                    if len(line.split()) > 2:
+                        exponent = line.split()[2]
+                    else:
+                        exponent = ''
+                    atomic_exponent_list.append(exponent)
+            
+            i += 1
+
+        return atomic_number_list, atomic_exponent_list
+
+class run_frag:
+     def __init__(self, invoke_path, scratch_path, dirac_input, mol_input):
+         self.root_calc_path = invoke_path
+         self.path_frag      = scratch_path
+         self.inp            = dirac_input
+         self.mol            = mol_input
+         pam_flags_extra  = ''
+         pam_flags_extra += '--get \"X2CMAT\" '
+         if options.pam_argument_list == None:
+            if not options.being_verbose:
+                pam_flags_extra += '--nobackup --silent ' 
+            else:
+                pam_flags_extra += '--nobackup ' 
+         else:
+             pam_flags_extra += options.pam_argument_list
+
+         self.pam_flags = pam_flags_extra
+         if options.being_verbose:
+            print 'options passed on to \"pam\": %s' % pam_flags_extra
+
+     def get_output_name(self):
+         inp_file_strip = string.replace(self.inp,       '.inp', '')
+         mol_file_strip = string.replace(self.mol,       '.mol', '')
+         mol_file_strip = string.replace(mol_file_strip, '.xyz', '')
+         return '%s_%s.out' % (inp_file_strip, mol_file_strip)
+     def get_fragment_name(self):
+         return string.replace(self.mol,       '.mol', '' )
+     def run_and_normal_exit(self):
+         os.chdir(self.path_frag)
+         # run pam
+         command = '%s/pam --inp=%s --mol=%s %s' \
+             % (root_directory, self.inp, self.mol, self.pam_flags)
+         p = subprocess.Popen(command,
+                              shell=True,
+                              stdin=subprocess.PIPE,
+                              stdout=subprocess.PIPE)
+         
+         pam_output = p.communicate()[0]
+         pam_output_file.write(pam_output)
+         os.chdir(self.root_calc_path)
+         # check whether DIRAC terminated normally
+         if 'exit           : normal' in pam_output:
+             return True
+         else:
+             return False
+
+     def print_result(self, progress, result_text, into_stderr):
+         """
+          print result of the fragment run
+         """
+         if into_stderr:
+             print >> sys.stderr, '%10s %12s %33s' % \
+                 (progress, result_text, self.get_fragment_name())
+             sys.stderr.flush()
+         else:
+             print >> sys.stdout, '%10s %12s %33s' % \
+                 (progress, result_text, self.get_fragment_name())
+             sys.stdout.flush()
+
+     def copy_X2C_outputfiles(self):
+         shutil.copy(self.path_frag      + '/' + 'X2CMAT',\
+                     self.root_calc_path + '/' + 'X2CMAT.'\
+                   + self.get_fragment_name())
+         shutil.copy(self.path_frag      + '/' +\
+                     self.get_output_name(),\
+                     self.root_calc_path + '/')
+
+     def clean_fragment_scratch_dir(self):
+         os.chdir(self.root_calc_path)
+         clean_fragment_directory = 'rm -rf '\
+                                  + self.path_frag
+         os.system(clean_fragment_directory)
+
+     def write_fragment_inputs(self, dirac_frag_input_content, mol_frag_input_content):
+         """
+          WRITE ME!!!
+         """
+
+     def is_run(self):
+         return True
+
+
 # end of class definitions
 
 # function definitions
-def get_original_molfile_content(orig_mol_file, orig_mol_file_lines):
+def get_original_molfile_content(orig_mol_file):
 
     mol_file_strip     = string.replace(orig_mol_file,  '.mol', '')
     mol_file_strip     = string.replace(mol_file_strip, '.xyz', '')
@@ -231,7 +384,7 @@ def get_original_molfile_content(orig_mol_file, orig_mol_file_lines):
         sys.exit()
     return mol_file_lines
 
-def check_original_molfile_content_and_get_num_fragments(mol_file_lines, num_fragments):
+def check_original_molfile_content_and_get_num_fragments(mol_file_lines):
 
     if mol_file_lines[3].split()[0] != 'C':
         print ' *** error in reading the molecular basis set input: the file has a wrong format. ***'
@@ -239,6 +392,7 @@ def check_original_molfile_content_and_get_num_fragments(mol_file_lines, num_fra
         print '     the first character in line 4 is %s rather than C'\
                     % mol_file_lines[3].split()[0]
         sys.exit()
+    num_fragments = 0
     num_fragments = int(mol_file_lines[3].split()[1])
     return num_fragments
 
@@ -261,7 +415,10 @@ if not os.access(basic_atomic_input_directory, os.R_OK):
 
 # define example usage
 
-usage = './atomicX2C-run --inp=[.inp] --mol=[.mol] --verbose [--pam_options="string with all your additional pam options"]'
+usage = '''
+  typically ./%prog --inp=[.inp] --mol=[.mol]
+         or ./%prog --inp=[.inp] --mol=[.mol] [--pam_options="string with all your additional pam options"]
+         or ./%prog --inp=[.inp] --mol=[.mol] [--pam_options="string with all your additional pam options"] --verbose'''
 
 # initialize parser
 
@@ -289,14 +446,12 @@ group.add_option('--mol',
                  help='specifies the molecular input file (support for .xyz files not implemented yet) [default: %default]')
 parser.add_option_group(group)
 
-group = OptionGroup(parser, 'dirac input file for fragments provided by the user (NOT OPERATIONAL YET)')
-group.add_option('--inp_fragments',
-                 type='string',
-                 action='store',
-                 dest='fragments_user_dirac_input',
-                 default=None,
-                 metavar='yyy.inp',
-                 help='optional Dirac input file(s) for individual fragments [default: %default]')
+group = OptionGroup(parser, 'provide own dirac fragment input files (NOT OPERATIONAL YET)')
+group.add_option('--user-frag-inp',
+                 action='store_true',
+                 dest='user_dirac_fragment_inp',
+                 default=False,
+                 help='use existing Dirac fragment inputs [default: %default]')
 parser.add_option_group(group)
 
 group = OptionGroup(parser, '\"pam\" options')
@@ -328,28 +483,13 @@ if len(sys.argv) == 1:
     sys.exit()
 
 # print location of atomicX2C-run script
-
 if options.being_verbose:
     print 'run script resides in:'
     print root_directory
 
-# set useful pam flags in case user has none provided
-
-pam_flags_tmp  = options.pam_argument_list
-pam_flags      = ''
-
-if pam_flags_tmp == None:
-    if not options.being_verbose:
-        pam_flags += '--nobackup --silent '
-    else:
-        pam_flags += '--nobackup '
-else:
-    pam_flags += pam_flags_tmp
-
-if options.being_verbose:
-    print 'options passed on to \"pam\":'
-    print pam_flags
-
+cwd = os.getcwd()
+pam_output_file = open(cwd + '/fragmentX2C.log','w',0)
+pam_output_file.write(" fragment-X2C pam output data\n\n")
 
 # print header
 
@@ -364,99 +504,38 @@ print '  ----------------------------------------------------------------'
 
 # read original molecular input
 mol_file_lines = []
-mol_file_lines = get_original_molfile_content(options.original_molecular_input, mol_file_lines)
+mol_file_lines = get_original_molfile_content(options.original_molecular_input)
 
 print mol_file_lines
 
 num_fragments = 0
-num_fragments = check_original_molfile_content_and_get_num_fragments(mol_file_lines, num_fragments)
+num_fragments = check_original_molfile_content_and_get_num_fragments(mol_file_lines)
 
 print num_fragments
 
-line_count   = 0
-start_list   = []
-finish_found = False
-for line in mol_file_lines:
-    if line.split()[0].lower() == 'large':
-        print 'found large at line %i' % line_count
-        start_list.append(int(line_count))
-        print start_list
-    elif line.split()[0].lower() == 'finish':
-        print 'found finish at line %i' % line_count
-        start_list.append(int(line_count))
-        finish_found = True
-        print start_list
-    line_count += 1
+mol_orig_info = prepare_lists_for_x2c_fragment_mol(mol_file_lines, num_fragments)
 
-if not finish_found:
-    print ' *** error in reading the molecular basis set input: no end marker found (FINISH) in the .mol file.'
-    sys.exit()
+start_marker = []
+start_marker = mol_orig_info.prepare_startlist()
 
-if len(start_list)-1 != num_fragments:
-    print ' *** error in reading the molecular basis set input: basis set for at least one unique element missing.'
-    print '     number of basis set found: %i <--> number of unique elements specified in .mol input: %i'\
-                % (len(start_list)-1, num_fragments)
-    sys.exit()
-
-print 'range of start_list is %i' % len(start_list)
-print 'start_list[0] is %i' % start_list[0]
-print 'start_list[1] is %i' % start_list[1]
+print 'start_marker[0] is %i' % start_marker[0]
+print 'start_marker[1] is %i' % start_marker[1]
 
 # set basis set end marker for each unique element
-get_symbol = periodic_table_plus_ext()
-end_list   = []
-i          = 0
-# elements # 1 -- num_fragments-1
-while i < num_fragments-1:
-    print 'checking for element # %i' % i
-    j         = 1
-    line      = mol_file_lines[start_list[i+1]-j]
-    found_end = False
-    while not found_end:
-        j   += 1
-        print 'check is for %s ' % line.split()[0].lower()
-        if get_symbol.compare_element_symbols(line.split()[0].lower()):
-            line = mol_file_lines[start_list[i+1]-j]
-        else:
-            end_list.append(start_list[i+1]-j)
-            found_end = True
-    i += 1
-# element # num_fragments
-end_list.append(start_list[num_fragments]-1)
-print 'end list for basis sets:'
-print end_list
+end_marker = []
+end_marker = mol_orig_info.prepare_endmarkerlist(start_marker)
+print 'end_marker[0] is %i' % end_marker[0]
+print 'end_marker[1] is %i' % end_marker[1]
      
 atomic_number_list   = []
 atomic_exponent_list = []
-i                    = 0
-# find atomic number of each unique element
-while i < num_fragments:
-    print 'checking for element # %i' % i
-    j         = 1
-    line      = mol_file_lines[start_list[i]-j]
-    found_Z   = False
-    while not found_Z:
-        j   += 1
-        print 'check is for %s ' % line.split()[0].lower()
-        if get_symbol.compare_element_symbols(line.split()[0].lower()):
-            line = mol_file_lines[start_list[i]-j]
-        else:
-            found_Z = True
-            atomic_number_list.append(int(float((line.split()[0]))))
-            if len(line.split()) > 2:
-                exponent = line.split()[2]
-            else:
-                exponent = ''
-            atomic_exponent_list.append(exponent)
-            
-    i += 1
+(atomic_number_list, atomic_exponent_list) =  mol_orig_info.prepare_Z_and_exponent_list(start_marker)
 
+# find atomic number of each unique element
 print 'list of atomic numbers for each fragment'
 print atomic_number_list
 print 'list of atomic exponents for each fragment'
 print atomic_exponent_list
-
-blabla = prepare_lists_for_x2c_fragment_mol(mol_file_lines, num_fragments)
 
 # create a list of fragments
 list_of_fragments = []
@@ -502,30 +581,8 @@ for is_fragment in list_of_fragments:
 
     os.chdir(cwd)
 
-
-                # run pam
-#               command = '%s/pam --inp=%s --mol=%s %s' \
-#                   % (root_directory, inp_file, mol_file, pam_flags)
-#               p = subprocess.Popen(command,
-#                                    shell=True,
-#                                    stdin=subprocess.PIPE,
-#                                    stdout=subprocess.PIPE)
-#               
-#               # check whether DIRAC terminated normally
-#               pam_output = p.communicate()[0]
-#               if 'exit           : normal' in pam_output:
-#                   output_file = string.replace(inp_file, '.inp', '') \
-#                               + '_'                                  \
-#                               + string.replace(mol_file, '.mol', '') \
-#                               + '.out'
-#               else:
-#                   result_text = 'CRASH'
-#                   nr_crashed += 1
-
-#                   print '%10s %12s %33s' % \
-#                       (progress, result_text, fragment_label)
-
 # clean-up the scratch directory
 clean_fragment_directory = 'rm -rf '\
                          + x2c_fragment_scratch_files_path
 os.system(clean_fragment_directory)
+pam_output_file.close()
