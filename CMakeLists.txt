@@ -60,6 +60,9 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "AIX")
 else()
 endif()
 
+#message("CMAKE_Fortran_COMPILER_ID = ${CMAKE_Fortran_COMPILER_ID}")
+#message("CMAKE_C_COMPILER_ID       = ${CMAKE_C_COMPILER_ID}")
+
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
     add_definitions(-DVAR_GFORTRAN)
     set(CMAKE_Fortran_FLAGS         " ")
@@ -95,6 +98,26 @@ elseif(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
             "${CMAKE_Fortran_FLAGS} -check bounds -fpstkchk -check pointers -check uninit -check output_conversion -traceback"
             )
     endif()
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
+    add_definitions(-DVAR_PGF90)
+    set(CMAKE_Fortran_FLAGS         " ")
+    set(CMAKE_Fortran_FLAGS_DEBUG   "-g")
+    set(CMAKE_Fortran_FLAGS_RELEASE "-O3")
+    if(DIRAC_ENABLE_64BIT_INTEGERS)
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} "
+            )
+    endif()
+    if(DIRAC_ENABLE_BOUNDS_CHECK)
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} "
+            )
+    endif()
+    if(DIRAC_ENABLE_CODE_COVERAGE)
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} "
+            )
+    endif()
 elseif(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set(CMAKE_Fortran_FLAGS         "-qzerosize")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-g")
@@ -110,6 +133,10 @@ elseif(CMAKE_C_COMPILER_ID MATCHES Intel)
     set(CMAKE_C_FLAGS_DEBUG   "-g -O0")
     set(CMAKE_C_FLAGS_RELEASE "-g -O2")
     set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} -shared-intel")
+elseif(CMAKE_C_COMPILER_ID MATCHES PGI)
+    set(CMAKE_C_FLAGS         " ")
+    set(CMAKE_C_FLAGS_DEBUG   "-g -O0")
+    set(CMAKE_C_FLAGS_RELEASE "-O3")
 elseif(CMAKE_C_COMPILER_ID MATCHES XL)
     set(CMAKE_C_FLAGS         " ")
     set(CMAKE_C_FLAGS_DEBUG   " ")
@@ -118,8 +145,13 @@ endif()
 
 set(LIBS)
 
-find_package(Math)
-if(DIRAC_ENABLE_EXTERNAL_MATH AND MATH_FOUND)
+if(DIRAC_ENABLE_EXTERNAL_MATH)
+    find_package(Math)
+else()
+    set(MATH_FOUND FALSE)
+endif()
+
+if(MATH_FOUND)
     set(LIBS
         ${LIBS}
         ${MATH_LIBS}
