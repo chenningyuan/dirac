@@ -220,9 +220,12 @@ class run:
          mol_file_strip = string.replace(self.mol,       '.mol', '')
          mol_file_strip = string.replace(mol_file_strip, '.xyz', '')
 
-         print '%6s %5s %30s %30s %25s %7.1f (%7.1f)  %s' % \
+         global_elapsed_str=time.strftime('%Hh%Mm%Ss', time.gmtime(global_elapsed))
+         elapsed_str=time.strftime('%Mm%Ss', time.gmtime(elapsed))
+
+         print '%6s %5s %30s %30s %25s %s (%s)  %s' % \
              (progress, result_text, self.get_test_name(),        \
-              inp_file_strip, mol_file_strip, elapsed, global_elapsed, self.kind)
+              inp_file_strip, mol_file_strip, elapsed_str, global_elapsed_str, self.kind)
 
      def apply_filter(self):
          # apply the filter on output; TODO: replace crep, bdrep
@@ -324,7 +327,7 @@ def main(*args):
     # print screen header
 
     print
-    print '%12s %30s %30s %25s %7s' % ('result', 'test', 'inp', 'mol/xyz', 'sec (total)')
+    print '%12s %30s %30s %25s %7s' % ('result', 'test', 'inp', 'mol/xyz', 'time  (total)')
     print
 
     # run the tests
