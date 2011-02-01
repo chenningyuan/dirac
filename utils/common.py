@@ -37,8 +37,9 @@ def is_windows():
     else:
         return True
 
-def process_time_string(time_string):
+def process_time_string_core(time_string):
     """
+    core subroutine :
     process entering time_string of the form "#d#h#m#s" 
     or as pure integer number; 
     returns the resulting time in seconds (integer)
@@ -47,7 +48,6 @@ def process_time_string(time_string):
     mins=0
     hours=0
     days=0
-
     # check if the time string is pure integer number - then return  the "virgin" value :)
     if time_string.isdigit(): return (int(time_string))
 
@@ -86,6 +86,22 @@ def process_time_string(time_string):
 
     return_time_secs = secs + (60*mins) + (60*60*hours) + (60*60*60*days)
     return return_time_secs
+
+def process_time_string(time_string):
+    """
+    process entering time_string of the form "#d#h#m#s" 
+    or as pure integer number; 
+    returns the resulting time in seconds (integer)
+    """
+    import sys
+    try:
+        return_time_secs=process_time_string_core(time_string)
+        return return_time_secs
+    except:
+        for stream in [sys.stdout,sys.stderr]:
+            print >> stream,'error, wrong entering time string:',time_string
+            print >> stream,'proper examples: 1h2m30s  2m40s 1m40s  1h20s 3h ...'
+        sys.exit(13)
 
 def get_username():
     """
