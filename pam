@@ -999,8 +999,12 @@ class pam_enviroment:
                 if warning:
                     print  >> sys.stderr,'  Warning: file "', file_name, \
                     '" you want to copy to scratch_dir does not exist, continuing at your own risk.'
+                    print  >> sys.stdout,'  Warning: file "', file_name, \
+                    '" you want to copy to scratch_dir does not exist, continuing at your own risk.'
                 else:
                     print >> sys.stderr,'Error exit: file "', file_name, \
+                    '" you want to copy to scratch_dir does not exist !  '
+                    print >> sys.stdout,'Error exit: file "', file_name, \
                     '" you want to copy to scratch_dir does not exist !  '
                     sys.exit(-1)
 
