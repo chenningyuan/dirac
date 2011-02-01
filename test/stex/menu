@@ -5,5 +5,5 @@ ion.inp LiH-c1.mol --incmo --outcmo  --timeout=10m
 sh mv DFCOEF DFCOEF.ION
 sh mv DFCOEF.GS DFCOEF
 
-stex.inp LiH-c1.mol --incmo --copy=DFCOEF.IONa--timeout=2m
+stex.inp LiH-c1.mol --incmo --copy=DFCOEF.ION --timeout=2m
 sh rm DFCOEF.ION DFCOEF
