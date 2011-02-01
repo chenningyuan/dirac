@@ -212,25 +212,17 @@ class run:
              return True
          else:
              return False
-     def print_result(self, progress, result_text, elapsed, global_elapsed, into_stderr):
+     def print_result(self, progress, result_text, elapsed, global_elapsed):
          """
-          print result of the test, flush out stdout/stderr buffers
+          print result of the test
          """
          inp_file_strip = string.replace(self.inp,       '.inp', '')
          mol_file_strip = string.replace(self.mol,       '.mol', '')
          mol_file_strip = string.replace(mol_file_strip, '.xyz', '')
-         if into_stderr:
-             # radovan: why do we need to write to stderr?
-             # miro: to get red coloured output in trac-window
-             print >> sys.stderr, '%6s %5s %30s %30s %25s %7.1f (%7.1f) %s' % \
-                 (progress, result_text, self.get_test_name(),        \
-                  inp_file_strip, mol_file_strip, elapsed, global_elapsed, self.kind)
-             sys.stderr.flush()
-         else:
-             print >> sys.stdout, '%6s %5s %30s %30s %25s %7.1f (%7.1f)  %s' % \
-                 (progress, result_text, self.get_test_name(),        \
-                  inp_file_strip, mol_file_strip, elapsed, global_elapsed, self.kind)
-             sys.stdout.flush()
+
+         print '%6s %5s %30s %30s %25s %7.1f (%7.1f)  %s' % \
+             (progress, result_text, self.get_test_name(),        \
+              inp_file_strip, mol_file_strip, elapsed, global_elapsed, self.kind)
 
      def apply_filter(self):
          # apply the filter on output; TODO: replace crep, bdrep
@@ -350,7 +342,6 @@ def main(*args):
         else:
             nr_of_tests_done += 1
             start = time.time()
-            into_stderr = False
             if task.run_and_normal_exit():
                 if os.path.isfile('result/%s' % task.get_output_name()):
                     # overwrite reference files
@@ -374,14 +365,13 @@ def main(*args):
                     nr_without_ref += 1
             else:
                 result_text = 'CRASH'
-                into_stderr = True
                 nr_crashed += 1
 
             elapsed = (time.time() - start)
             global_elapsed = (time.time() - global_start)
 
             progress = '[%3i%s]' % (100.0*float(nr_of_tests_done)/float(total_nr_of_tests), r'%')
-            task.print_result(progress, result_text, elapsed, global_elapsed, into_stderr) 
+            task.print_result(progress, result_text, elapsed, global_elapsed) 
         
             if ((nr_crashed > 0) or (nr_failed > 0)) and options.giveup:
                 print
@@ -392,18 +382,13 @@ def main(*args):
     print
     print 'summary: %5i ok'                % nr_ok
     if nr_failed > 0:
-         print >> sys.stderr,'         %5i failed'            % nr_failed
-    else:
-         print >> sys.stdout,'         %5i failed'            % nr_failed
+         print '         %5i failed'            % nr_failed
     if nr_crashed > 0:
-         print >> sys.stderr,'         %5i crashed'           % nr_crashed
-    else:
-         print >> sys.stdout,'         %5i crashed'           % nr_crashed
-    print '         %5i without reference' % nr_without_ref
+         print '         %5i crashed'           % nr_crashed
+    if nr_without_ref > 0:
+         print '         %5i without reference' % nr_without_ref
     print
 
-    sys.stdout.flush()
-    sys.stderr.flush()
     pam_output_file.close()
 
     # return code (for trac-bitten to get label of the failed test)
