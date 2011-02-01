@@ -40,6 +40,9 @@
 # Clean code
 #
 
+# dictionary:
+# VAR_MFDS means multifile datasets
+
 initialize ()  {
 #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #
