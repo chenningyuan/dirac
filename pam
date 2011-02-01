@@ -1346,7 +1346,7 @@ class pam_enviroment:
 
                 self.write_into_output()
 
-        # process the pam
+        # process the dirac/x as the child subprocess
 
                 if self.iprint == 0:
                     p = subprocess.Popen(self.dirac_cmd, shell=True,
@@ -1378,11 +1378,14 @@ class pam_enviroment:
             print >> sys.stderr,'Dirac run failed. Going to kill (SIGTERM) its executable process of pid=', \
                 p.pid
 
-      # TODO: clean of all dirac.x pid's
+            # kill (one) dirac.x/ (several) mpirun launched dirac.x processes
 
             os.kill(p.pid, signal.SIGTERM)
             print >> sys.stderr,'****  Alas ! dirac.x was purposely killed ;)  ****'
             print >> sys.stdout,'****  Alas ! dirac.x was purposely killed ;)  ****'
+            if self.set_timeout_limit:
+                print  >> sys.stderr,'     (timeout kill, limit ',self.timeout,' seconds exceeded)' 
+                print  >> sys.stdout,'     (timeout kill, limit ',self.timeout,' seconds exceeded)' 
             return_code = signal.SIGTERM
 
     # do the profiling after the execution
