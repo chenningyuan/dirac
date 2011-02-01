@@ -1381,8 +1381,6 @@ class pam_enviroment:
             # kill (one) dirac.x/ (several) mpirun launched dirac.x processes
 
             os.kill(p.pid, signal.SIGTERM)
-            print >> sys.stderr,'****  Alas ! dirac.x was purposely killed ;)  ****'
-            print >> sys.stdout,'****  Alas ! dirac.x was purposely killed ;)  ****'
             if self.set_timeout_limit:
                 print  >> sys.stderr,'     (timeout kill, limit ',self.timeout,' seconds exceeded)' 
                 print  >> sys.stdout,'     (timeout kill, limit ',self.timeout,' seconds exceeded)' 
