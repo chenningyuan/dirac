@@ -154,7 +154,7 @@ if options.all:
         print 'file %s does not exist, run pamadm first' % file
         sys.exit()
 
-if options.individual != None:
+if options.individual:
     s = options.individual.split()
     l = ''
     for w in s:
@@ -171,7 +171,7 @@ if options.individual != None:
 
 timegiveup=0
 timegiveup_set=False
-if options.timegiveup != None:
+if options.timegiveup:
 # extract the total time in seconds
     timegiveup=extract_time(options.timegiveup)
     timegiveup_set=True
