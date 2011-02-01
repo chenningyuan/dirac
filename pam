@@ -920,7 +920,10 @@ class pam_enviroment:
         elif os.path.isfile(self.input_molecule):
             self.input_file_molecule = self.input_molecule
         else:
-            print >> sys.stderr,'Proper molecule input file does not exist !'
+            print >> sys.stdout,'pam: Proper molecule input file does not exist !'
+            print >> sys.stdout,'self.input_molecule=', self.input_molecule,'self.input_dirac=', self.input_dirac
+            print >> sys.stderr,'pam: Proper molecule input file does not exist !'
+            print >> sys.stderr,'self.input_molecule=', self.input_molecule,'self.input_dirac=', self.input_dirac
             sys.exit(4)
 
         if os.path.isfile(self.input_dirac + '.inp'):
@@ -928,9 +931,10 @@ class pam_enviroment:
         elif os.path.isfile(self.input_dirac):
             self.input_file_dirac = self.input_dirac
         else:
-            print >> sys.stderr,'Proper dirac input file does not exist !'
-            print 'self.input_dirac=', self.input_dirac
-            print 'self.input_file_dirac=', self.input_file_dirac
+            print >> sys.stdout,'pam: Proper dirac input file does not exist !'
+            print >> sys.stdout,'self.input_dirac=', self.input_dirac,'self.input_file_dirac=', self.input_file_dirac
+            print >> sys.stderr,'pam: Proper dirac input file does not exist !'
+            print >> sys.stderr,'self.input_dirac=', self.input_dirac,'self.input_file_dirac=', self.input_file_dirac
             sys.exit(5)
 
         if self.iprint >= 5:
