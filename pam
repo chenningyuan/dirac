@@ -920,10 +920,9 @@ class pam_enviroment:
         elif os.path.isfile(self.input_molecule):
             self.input_file_molecule = self.input_molecule
         else:
-            print >> sys.stdout,'pam: Proper molecule input file does not exist !'
-            print >> sys.stdout,'self.input_molecule=', self.input_molecule,'self.input_dirac=', self.input_dirac
-            print >> sys.stderr,'pam: Proper molecule input file does not exist !'
-            print >> sys.stderr,'self.input_molecule=', self.input_molecule,'self.input_dirac=', self.input_dirac
+            for stream in [sys.stdout,sys.stderr]:
+                print >> stream,'pam: Proper molecule input file does not exist !'
+                print >> stream,'self.input_molecule=', self.input_molecule,'self.input_dirac=', self.input_dirac
             sys.exit(4)
 
         if os.path.isfile(self.input_dirac + '.inp'):
@@ -931,10 +930,9 @@ class pam_enviroment:
         elif os.path.isfile(self.input_dirac):
             self.input_file_dirac = self.input_dirac
         else:
-            print >> sys.stdout,'pam: Proper dirac input file does not exist !'
-            print >> sys.stdout,'self.input_dirac=', self.input_dirac,'self.input_file_dirac=', self.input_file_dirac
-            print >> sys.stderr,'pam: Proper dirac input file does not exist !'
-            print >> sys.stderr,'self.input_dirac=', self.input_dirac,'self.input_file_dirac=', self.input_file_dirac
+            for stream in [sys.stdout,sys.stderr]:
+                print >> stream,'pam: Proper dirac input file does not exist !'
+                print >> stream,'self.input_dirac=', self.input_dirac,'self.input_file_dirac=', self.input_file_dirac
             sys.exit(5)
 
         if self.iprint >= 5:
@@ -1001,16 +999,14 @@ class pam_enviroment:
                 self.copy_file(full_file_name, file_name_scratch)
             else:
                 if warning:
-                    print  >> sys.stderr,'  Warning: file "', file_name, \
-                    '" you want to copy to scratch_dir does not exist, continuing at your own risk.'
-                    print  >> sys.stdout,'  Warning: file "', file_name, \
-                    '" you want to copy to scratch_dir does not exist, continuing at your own risk.'
+                    for stream in [sys.stdout,sys.stderr]:
+                        print  >> stream,'  Warning: file "', file_name, \
+                        '" you want to copy to scratch_dir does not exist, continuing at your own risk.'
                 else:
-                    print >> sys.stderr,'Error exit: file "', file_name, \
-                    '" you want to copy to scratch_dir does not exist !  '
-                    print >> sys.stdout,'Error exit: file "', file_name, \
-                    '" you want to copy to scratch_dir does not exist !  '
-                    sys.exit(-1)
+                    for stream in [sys.stdout,sys.stderr]:
+                        print >> stream,'Error exit: file "', file_name, \
+                        '" you want to copy to scratch_dir does not exist !  '
+                    sys.exit(11)
 
         self.create_scratch_dir()
 
@@ -1373,17 +1369,17 @@ class pam_enviroment:
 
             signal.alarm(0)
         except:
-            print >> sys.stdout,'Dirac run failed. Going to kill (SIGTERM) its executable process of pid=', \
-                p.pid
-            print >> sys.stderr,'Dirac run failed. Going to kill (SIGTERM) its executable process of pid=', \
+            for stream in [sys.stdout,sys.stderr]:
+                print >> stream,\
+                'Going to kill (SIGTERM) dirac.x executable process of pid=',\
                 p.pid
 
             # kill (one) dirac.x/ (several) mpirun launched dirac.x processes
 
             os.kill(p.pid, signal.SIGTERM)
             if self.set_timeout_limit:
-                print  >> sys.stderr,'     (timeout kill, limit ',self.timeout,' seconds exceeded)' 
-                print  >> sys.stdout,'     (timeout kill, limit ',self.timeout,' seconds exceeded)' 
+               for stream in [sys.stdout,sys.stderr]:
+                   print  >> stream,'     (timeout kill, limit of ',self.timeout,' seconds exceeded)' 
             return_code = signal.SIGTERM
 
     # do the profiling after the execution
@@ -1438,8 +1434,8 @@ class pam_enviroment:
 
                 self.copy_file(full_file_name, file_name_home)
             else:
-                print >> sys.stdout, file_name, ' not found in the scratch directory.'
-                print >> sys.stderr, file_name, ' not found in the scratch directory.'
+                for stream in [sys.stdout,sys.stderr]:
+                    print >> stream, file_name, ' not found in the scratch directory.'
 
         if not self.no_archive:
 
