@@ -1387,23 +1387,29 @@ class pam_enviroment:
 
         if self.profile:
             self.profile_dirac()
+
         return return_code
 
     def profile_dirac(self):
+        """
+        profile after the DIRAC execution- we are in the scratch directory
+        """
 
-  # profile after the DIRAC execution- we are in the scratch directory
-
-        if os.path.isfile(str(self.f)):
-            print 'profiling...'
-            self.profile_command = self.profiler + ' ' + self.dirac_exe \
-                + ' ' + self.profiling_file
+        if os.path.isfile(self.profiling_file):
             self.f = open(self.output_file_full, 'a', 0)  # open file for appending
+            self.f.write('\n\n Profiling dirac.x in '+os.getcwd())
+            #self.profile_command = self.profiler + ' ' + self.dirac_exe \
+            self.profile_command = self.profiler + ' dirac.x ' \
+                + ' ' + self.profiling_file
+            print '  Going to profile after, command:',self.profile_command
+            self.f.write('\ncommand:'+self.profile_command+'\n\n')
             p = subprocess.Popen(self.profile_command, shell=True,
                                  stdin=subprocess.PIPE, stdout=self.f)
+            p.wait()
             self.f.close()
         else:
             print
-            print 'no gmon.out found, so no profiling..'
+            print 'no gmon.out file found, no profiling..'
             print
 
     def save_files(self):
