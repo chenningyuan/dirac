@@ -1,2 +1,2 @@
-lda.inp  hf.mol
-blyp.inp hf.mol
+lda.inp  fh.mol --timeout=10m
+blyp.inp fh.mol --timeout=10m
