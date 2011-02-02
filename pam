@@ -921,8 +921,9 @@ class pam_enviroment:
             self.input_file_molecule = self.input_molecule
         else:
             for stream in [sys.stdout,sys.stderr]:
-                print >> stream,'pam: Proper molecule input file does not exist !'
+                print >> stream,'\npam: Proper molecule input file does not exist !'
                 print >> stream,'self.input_molecule=', self.input_molecule,'self.input_dirac=', self.input_dirac
+                print >> stream,'  input dir      :', self.input_directory
             sys.exit(4)
 
         if os.path.isfile(self.input_dirac + '.inp'):
@@ -931,8 +932,9 @@ class pam_enviroment:
             self.input_file_dirac = self.input_dirac
         else:
             for stream in [sys.stdout,sys.stderr]:
-                print >> stream,'pam: Proper dirac input file does not exist !'
+                print >> stream,'\npam: Proper dirac input file does not exist !'
                 print >> stream,'self.input_dirac=', self.input_dirac,'self.input_file_dirac=', self.input_file_dirac
+                print >> stream,'  input dir      :', self.input_directory
             sys.exit(5)
 
         if self.iprint >= 5:
