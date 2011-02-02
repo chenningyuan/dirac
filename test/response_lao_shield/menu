@@ -1,6 +1,6 @@
-LiH.levyle.shield_lao_go=cm.inp    LiH.lsym.dir.mol
-LiH.bss.shield_lao_go=cm.inp       LiH.lsym.dir.mol
-LiH.bss+mfsso.shield_lao_go=cm.inp LiH.lsym.dir.mol
-LiH.bss_sfB.shield_lao_go=cm.inp   LiH.lsym.dir.mol
-LiH.dc_rkb.shield_lao_go=cm.inp    LiH.lsym.dir.mol
-LiH.dc_sf.shield_lao_go=cm.inp     LiH.lsym.dir.mol
+LiH.levyle.shield_lao_go=cm.inp    LiH.lsym.dir.mol  --timeout=50s
+LiH.bss.shield_lao_go=cm.inp       LiH.lsym.dir.mol  --timeout=50s
+LiH.bss+mfsso.shield_lao_go=cm.inp LiH.lsym.dir.mol  --timeout=50s
+LiH.bss_sfB.shield_lao_go=cm.inp   LiH.lsym.dir.mol  --timeout=50s
+LiH.dc_rkb.shield_lao_go=cm.inp    LiH.lsym.dir.mol  --timeout=50s
+LiH.dc_sf.shield_lao_go=cm.inp     LiH.lsym.dir.mol  --timeout=50s
